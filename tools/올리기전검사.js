@@ -19,10 +19,13 @@
  *   ⑨ 틱톡 판(10-26, 제작 절차 4) — 인스타 영상 판에 짝 틱톡 판이 없거나(「틱톡없음」에 까닭이 없을 때), 틱톡 판이 키워드 DM 인스타 판 ·
  *      고정 댓글 유튜브 판과 같은 영상이면(끝 말이 틱톡에 없는 길을 가리킬 수 있다) 확인할 것
  *   ⑩ 매일 판(10-26) — 판 계정의 줄(sns-계정.json dailyLine)마다 그 줄의 (막힘 아닌) 계정 가운데 판이 없는 계정이면 확인할 것.
- *      못 가는 판(여러 장 편의 틱톡 · 그날 이미 다른 편이 찬 계정)은 준비.json 「빠진판」: {"계정": "까닭"}에 적는다(「틱톡없음」도 받는다)
+ *      못 가는 판(여러 장 편의 틱톡 · 그날 이미 다른 편이 찬 계정)은 준비.json 「빠진판」: {"계정": "까닭"}에 적는다(「틱톡없음」도 받는다).
+ *      11-10 LAB 39계정: 돌림 판(판 「돌림」: true, tools/돌림표.js)과 「LAB 나라별」 줄은 그 줄의 모든 계정으로 보지 않고, 판마다 현지 칸 형식 ·
+ *      판본 파일 · 판본 검수 지문(뜻 · 글자 — 고치면 무효) · 씨앗 아닌 계정의 프로필 · 예약 경로 확인을 고칠 것으로 본다(설계 1 · 4 · 5 · 22)
  *   ⑪ 슬롯이 오늘이면 확인할 것 — 4일 앞(D+4)에 만드는 것이 기본(제작 절차 0). 같은 날 같은 계정의 두 편은 tools/예약큐.js가 본다
- *   ⑫ 한 편의 틱톡 판 둘(몽골 @synk.mn · 버마어 @synklab.mm 등)이 같은 날이면 고칠 것(10-26 — 거의 같은 영상이 같은 날 두 계정에 나가지 않게).
- *      LAB 두 채널 판은 그 줄의 목표 칸에 두니 편 슬롯과 날이 달라도 「시각이 슬롯 날이 아니다」를 내지 않는다
+ *   ⑫ 한 편의 같은 플랫폼 판 둘(몽골 @synk.mn · 버마어 @synklab.mm 틱톡 등)이 20시간 안이면 고칠 것(10-26 — 거의 같은 영상이 같은 날 두 계정에
+ *      나가지 않게. 11-10부터 시간대가 25개라 한국 날짜 대신 20시간, 틱톡 말고 같은 플랫폼 모두 — 유튜브는 같은 언어 판끼리만).
+ *      LAB 두 채널 판 · 돌림 판은 계정마다 날을 따로 두니 편 슬롯과 날이 달라도 「시각이 슬롯 날이 아니다」를 내지 않는다
  *   ⑬ 한 구성(10-28, tools/한구성.js) — 끝 화면 말고 같은 구성(글 강조 · 테 · 밝기만 바뀜)이 4초를 넘으면 고칠 것. ②는 프레임 차이라
  *      LAB E8의 10초 흑백 글 카드를 정지 0%로 넘겼다
  *   ⑭ 목소리(10-28) — 편 폴더의 나레이션 줄 파일(나레이션굽기 vo.json 줄 · remotion/public/vo, 또는 준비.json 「목소리」에 적은 폴더)마다
@@ -65,6 +68,8 @@ const 오마주 = require('./오마주.js');
 const 반복 = require('./무대반복.js');
 const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
+const T = require('./lib/계정시간.js');
+const 돌림표 = require('./돌림표.js');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -695,6 +700,9 @@ function tiktokFindings(plates, prep, known = {}) {
 
 // ⑩ 매일 판. 한 편은 그 줄의 모든 계정에 간다(유호님 10-26 「하루에 모든 계정에 하나씩」). 막힌 계정(dailyBlocked)은 빼고 본다.
 // 막힌 계정에 판이 달려 있으면 고칠 것 — 14시 게시 세션 · 검토 링크 「함께」가 판대로 걸기 때문이다(11-01 틱톡 @yuhobuilds 쉼, 유호님 「쉬게 해」).
+// 11-10 LAB 39계정: 돌림 판(판 「돌림」: true — tools/돌림표.js가 계정 · 날을 정한다)과 「LAB 나라별」 줄은 「그 줄의 모든 계정」으로 보지 않고
+// 아래 rotationFindings가 칸 · 판본 · 계정 준비를 본다. 시작 전(dailyFrom 「미정」) 계정과, 이 편 형식(준비.json 「돌림」.형식)의 칸이 없는 계정
+// (텔레그램은 21:00 퀴즈뿐)은 판이 없어도 된다.
 function dailyFindings(plates, prep, known = {}) {
   const out = [];
   for (const p of plates) {
@@ -703,30 +711,89 @@ function dailyFindings(plates, prep, known = {}) {
   }
   const have = new Set(plates.map((p) => p.account));
   const excused = prep.빠진판 && typeof prep.빠진판 === 'object' && !Array.isArray(prep.빠진판) ? prep.빠진판 : {};
-  const lines = [...new Set(plates.map((p) => known[p.account]?.dailyLine).filter(Boolean))];
+  const format = prep.돌림?.형식 || null;
+  const own = plates.filter((p) => !p.raw?.돌림);
+  const lines = [...new Set(own.map((p) => known[p.account]?.dailyLine).filter(Boolean))].filter((l) => l !== 'LAB 나라별');
   for (const line of lines) {
     for (const [key, a] of Object.entries(known)) {
-      if (a.dailyLine !== line || a.dailyBlocked || have.has(key) || String(excused[key] || '').trim()) continue;
+      if (a.dailyLine !== line || a.dailyBlocked || T.notStarted(a) || have.has(key) || String(excused[key] || '').trim()) continue;
       if (a.platform === 'tiktok' && prep.틱톡없음) continue;
+      if (format && Array.isArray(a.dailyFormats) && !a.dailyFormats.includes(format)) continue;
       out.push({ level: LOOK, code: 'daily-plate', where: key, message: `매일 판 「${line}」 계정인데 판이 없다 — 판을 달거나, 못 가면 준비.json 「빠진판」에 {"${key}": "까닭"}` });
     }
   }
   return out;
 }
 
-// ⑫ 한 편의 틱톡 판 둘이 같은 날(한국 시각)이면 고칠 것 — 글자만 다른 거의 같은 영상이 우리 틱톡 둘에 같은 날 나가지 않게
-// (유호님 10-26, LAB 장부 「두 채널 판」 — 버마어 판 시각을 다른 날로).
-function tiktokDayFindings(plates) {
-  const byDay = new Map();
-  for (const p of plates) {
+// ⑩ 돌림 판(11-10, 설계 1 · 4 · 5 · 22) — 판마다: 돌림 계정인지, 현지 시각이 이 편 형식의 칸인지, 씨앗이 아니면 프로필 · 예약 경로가
+// 확인됐는지, 판 파일이 그 계정 판본(rotationVersion 또는 countryCode)의 파일인지, 그 판본의 검수(sns-계정.json labRotation.판본검수 —
+// 기본 뜻 · 글자)가 지금 파일 · 글의 지문과 맞는지(내용을 고치면 뜻 검수가, 다시 렌더하면 글자 검수가 무효 — tools/돌림표.js versionState).
+function rotationFindings(bundle, plates, { ledger = null } = {}) {
+  const out = [];
+  const gen = plates.filter((p) => p.raw?.돌림);
+  if (!gen.length) return out;
+  const add = (level, code, where, message) => out.push({ level, code, where, message });
+  const format = bundle.prep.돌림?.형식;
+  if (!['이야기', '퀴즈'].includes(format)) { add(FIX, 'rotation-format', '준비.json', '돌림 판이 있는데 「돌림」.형식(이야기 · 퀴즈)이 없다'); return out; }
+  const cfg = (ledger || 묶음.readJson(path.join(bundle.repo, 'docs', '마케팅', 'sns-계정.json')) || {}).labRotation || {};
+  const required = Array.isArray(cfg.판본검수) && cfg.판본검수.length ? cfg.판본검수 : ['뜻', '글자'];
+  const states = new Map();
+  for (const p of gen) {
+    const a = bundle.accounts[p.account];
+    if (!a || !Array.isArray(a.dailyFormats)) { add(FIX, 'rotation-account', p.account, '돌림 계정이 아니다(sns-계정.json dailyFormats 없음) — 판을 빼고 node tools/돌림표.js로 다시 셈한다'); continue; }
     const at = Date.parse(p.time || '');
-    if (p.platform !== 'tiktok' || !Number.isFinite(at)) continue;
-    const day = kst(at).slice(0, 10);
-    byDay.set(day, [...(byDay.get(day) || []), p.account]);
+    if (Number.isFinite(at)) {
+      const local = T.localTime(at, T.tzOf(a));
+      const slot = T.slotFor(p.time, a);
+      if (slot.format !== format || slot.time !== local) add(FIX, 'rotation-slot', p.account, `현지 ${local}(${a.timeZone || 'Asia/Seoul'})은 이 계정의 ${format} 칸이 아니다(칸: ${T.allSlots(a).map((s) => `${s.time} ${s.format || ''}`.trim()).join(' · ')}) — node tools/돌림표.js --다시`);
+    }
+    if (!a.rotationSeed && (a.publicProfileComplete !== true || a.postRouteVerified !== true)) {
+      add(FIX, 'rotation-ready', p.account, `프로필(publicProfileComplete) · 예약 경로(postRouteVerified)가 확인되기 전 계정이다 — 채운 뒤에만 건다(설계 4 · 5)`);
+    }
+    const key = a.rotationVersion || a.countryCode;
+    const v = bundle.prep.돌림.판본?.[key];
+    if (!v) { add(FIX, 'rotation-version', p.account, `이 편에 판본 ${key || '(키 없음)'}이 없다`); continue; }
+    if (String(v.파일 || '').replace(/\\/g, '/') !== String(p.raw.파일 || '').replace(/\\/g, '/')) add(FIX, 'rotation-version-file', p.account, `판 파일(${p.raw.파일})이 판본 ${key}의 파일(${v.파일})과 다르다`);
+    if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required));
+    const st = states.get(key);
+    if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
   }
-  return [...byDay].filter(([, accounts]) => accounts.length > 1).map(([day, accounts]) => ({ level: FIX, code: 'tiktok-same-day', where: accounts.join(' · '),
-    message: `같은 편의 틱톡 판 둘이 같은 날(${day})이다 — 하나(보통 버마어 판)의 「시각」을 다른 빈 날로(LAB 장부 「두 채널 판」)` }));
+  return out;
 }
+
+// ⑫ 한 편의 같은 플랫폼 판 둘이 20시간 안이면 고칠 것 — 글자만 다른 거의 같은 영상이 우리 계정 둘에 같은 날 나가지 않게(유호님 10-26,
+// LAB 장부 「두 채널 판」 — 버마어 판 시각을 다른 날로). 11-10 LAB 39계정(시간대 25개)부터 「같은 날」은 한국 날짜가 아니라 20시간이다
+// (tools/lib/돌림.js ① — 한국 날짜로 나누면 23:30 · 00:30 두 판이 다른 날로 빠져나갔다). 유튜브는 언어가 다른 판끼리는 같은 날 된다.
+const APART_HOURS = 20;
+const VIDEO_PLATFORMS = new Set(['tiktok', 'youtube', 'instagram', 'facebook', 'telegram', 'xiaohongshu', 'douyin', 'vk', 'rutube']);
+function samePlatformFindings(plates, { apartHours = APART_HOURS } = {}) {
+  const list = plates.filter((p) => VIDEO_PLATFORMS.has(p.platform) && Number.isFinite(Date.parse(p.time || '')));
+  const groups = new Map(); // 플랫폼(유튜브는 + 언어) → 20시간 안에 붙은 판 무리
+  for (const p of list) {
+    const key = p.platform === 'youtube' ? `youtube|${p.language || ''}` : p.platform;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  const out = [];
+  for (const [key, ps] of groups) {
+    ps.sort((x, y) => Date.parse(x.time) - Date.parse(y.time));
+    let run = [ps[0]];
+    const flush = () => {
+      if (run.length < 2) return;
+      const hours = Math.round((Date.parse(run[run.length - 1].time) - Date.parse(run[0].time)) / 360000) / 10;
+      const tiktok = key === 'tiktok';
+      out.push({ level: FIX, code: tiktok ? 'tiktok-same-day' : 'same-platform-close', where: run.map((p) => p.account).join(' · '),
+        message: `같은 편의 ${tiktok ? '틱톡' : key.startsWith('youtube') ? '같은 언어 유튜브' : key} 판 ${run.length}개가 ${hours}시간 안에 나간다(${apartHours}시간 넘게 띄운다) — 돌림 판이면 node tools/돌림표.js --다시, 아니면 하나(보통 버마어 판)의 「시각」을 다른 빈 날로(LAB 장부 「두 채널 판」)` });
+    };
+    for (const p of ps.slice(1)) {
+      if (Date.parse(p.time) - Date.parse(run[run.length - 1].time) < apartHours * 3600000) run.push(p);
+      else { flush(); run = [p]; }
+    }
+    flush();
+  }
+  return out;
+}
+const tiktokDayFindings = (plates) => samePlatformFindings(plates); // 옛 이름(시험 · 다른 도구가 부른다)
 
 async function run(dir, opts = {}) {
   const bundle = 묶음.load(dir);
@@ -758,7 +825,8 @@ async function run(dir, opts = {}) {
     if (!plate.time || Number.isNaN(at) || !/[+-]\d{2}:?\d{2}$|Z$/.test(plate.time)) add(FIX, 'time', where, `「시각」이 시간대가 붙은 시각(YYYY-MM-DDTHH:MM+09:00)이 아니다: ${plate.time || '없음'}`);
     else {
       // LAB 두 채널 판은 그 줄의 목표 칸에 두니(버마어 틱톡은 몽골 틱톡과 다른 날) 편 슬롯과 날이 달라도 된다(10-26).
-      const ownDay = bundle.accounts[plate.account]?.dailyLine === 'LAB 두 채널';
+      // 돌림 판(11-10)은 돌림표가 계정마다 날을 어긋나게 정하니 편 슬롯과 날이 다른 것이 정상이다 — 칸은 rotationFindings가 본다.
+      const ownDay = bundle.accounts[plate.account]?.dailyLine === 'LAB 두 채널' || Boolean(plate.raw?.돌림);
       if (slotOk && !ownDay && kst(at).slice(0, 10) !== prep.슬롯) add(LOOK, 'time-slot', where, `시각 ${plate.time}이 슬롯 ${prep.슬롯} 날이 아니다`);
       if (at < Date.now() && !done) add(LOOK, 'time-past', where, `시각 ${plate.time}이 이미 지났다 — 슬롯을 옮긴다`);
     }
@@ -791,7 +859,8 @@ async function run(dir, opts = {}) {
 
   findings.push(...tiktokFindings(plates, prep, bundle.accounts));
   findings.push(...dailyFindings(plates, prep, bundle.accounts));
-  findings.push(...tiktokDayFindings(plates));
+  findings.push(...rotationFindings(bundle, plates));
+  findings.push(...samePlatformFindings(plates));
   if (slotOk && prep.슬롯 === kst().slice(0, 10) && ![...posted.values()].some((v) => DONE.has(v))) {
     add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — 4일 앞(D+4)에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
   }
@@ -912,5 +981,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, rotationFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

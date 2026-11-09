@@ -200,11 +200,13 @@ function episodes(roots = [공용작업본(ROOT)]) {
   return [...found.values()];
 }
 
-// 그 계정의 지난 n편 — 이 편(exclude) 말고, before보다 이른 판, 나가지 않는 판(보류 · 취소됨 · 지움 · 버린 편) 뺌, 늦은 것부터
-function previousOf(list, account, before, { exclude = null, n = 2 } = {}) {
+// 그 계정의 지난 n편 — 이 편(exclude) 말고, before보다 이른 판, 나가지 않는 판(보류 · 취소됨 · 지움 · 버린 편) 뺌, 늦은 것부터.
+// only(편 → 참/거짓)를 주면 그 편만 센다(11-10 — 이야기 편은 이야기 편끼리, 퀴즈는 퀴즈끼리).
+function previousOf(list, account, before, { exclude = null, n = 2, only = null } = {}) {
   const out = [];
   for (const e of list) {
     if (e.name === exclude || /^버림/.test(String(e.prep?.상태 || ''))) continue;
+    if (only && !only(e)) continue;
     const plate = e.판.find((p) => p.account === account && p.time < before && !GONE.has(p.state));
     if (plate) out.push({ name: e.name, dir: e.dir, prep: e.prep, video: plate.video, time: plate.time });
   }
@@ -217,14 +219,47 @@ function day(ms) {
 
 // ⑯ 지난 편 되풀이. 같은 영상 · 같은 지난 편은 계정을 모아 한 줄로 낸다(인스타 · 유튜브 · 틱톡이 같은 영상).
 // 시험에서는 list(편 목록) · stage(영상 → 첫 · 끝 축소판) · screen(영상들 → 끝 줄) · narration(편 폴더 → 끝 줄)을 바꿔 넣는다.
+// 11-10 LAB 하루 두 편(설계 23): 21:00 퀴즈(준비.json 「돌림」.형식 「퀴즈」)는 매일 같은 뼈대 · 같은 진행자라 ⑯ 셈 밖이다 — 대신
+// 개그 무대(「돌림」.무대 — 문제 은행의 무대 칸)가 그 계정의 지난 두 퀴즈와 같으면 고칠 것, 무대 칸이 없으면 확인할 것.
+// 이야기 편은 지난 이야기 편끼리만 견준다(그 사이 퀴즈는 건너뛴다).
+const formatOf = (prep) => prep?.돌림?.형식 || null;
+const stageWord = (prep) => String(prep?.돌림?.무대 || '').replace(/\s+/g, ' ').trim();
+function quizStageFindings(bundle, plates, all) {
+  const findings = [];
+  const mine = stageWord(bundle.prep);
+  if (!mine) {
+    findings.push({ level: LOOK, code: 'quiz-stage-missing', where: '준비.json', message: '퀴즈 편인데 「돌림」.무대(개그 무대)가 없다 — 문제 은행의 무대 칸을 적어 지난 퀴즈와 무대가 겹치지 않게 돌린다(설계 23)' });
+    return { findings, summary: { 지난편: [] } };
+  }
+  const byPrev = new Map();
+  for (const p of plates) {
+    const at = Date.parse(p.time || '');
+    if (!p.account || !Number.isFinite(at)) continue;
+    for (const prev of previousOf(all, p.account, at, { exclude: bundle.name, only: (e) => formatOf(e.prep) === '퀴즈' })) {
+      if (!byPrev.has(prev.name)) byPrev.set(prev.name, { prev, accounts: [] });
+      byPrev.get(prev.name).accounts.push(p.account);
+    }
+  }
+  const summary = [];
+  for (const { prev, accounts } of byPrev.values()) {
+    const theirs = stageWord(prev.prep);
+    summary.push({ 편: prev.name, 판: accounts, 무대: theirs || null });
+    if (theirs && theirs === mine) findings.push({ level: FIX, code: 'quiz-stage-repeat', where: accounts.join(' · '),
+      message: `개그 무대 「${mine}」가 지난 퀴즈 ${prev.name}(${day(prev.time)})와 같다 — 문제 은행에서 다른 무대를 고른다(설계 23)` });
+  }
+  return { findings, summary: { 지난편: summary } };
+}
+
 function repeatFindings(bundle, plates, { list = null, stage = stageOf, screen = null, narration = narrationEnding, skipOcr = false, work = null } = {}) {
   const findings = [];
   const pairs = new Map(); // `${우리 영상}\t${지난 편}` → { ours, prev, accounts }
   const all = list || episodes([공용작업본(bundle.repo), bundle.repo]);
+  if (formatOf(bundle.prep) === '퀴즈') return quizStageFindings(bundle, plates, all);
+  const notQuiz = (e) => formatOf(e.prep) !== '퀴즈';
   for (const p of plates) {
     const at = Date.parse(p.time || '');
     if (!p.account || !p.video?.exists || !Number.isFinite(at)) continue;
-    for (const prev of previousOf(all, p.account, at, { exclude: bundle.name })) {
+    for (const prev of previousOf(all, p.account, at, { exclude: bundle.name, only: notQuiz })) {
       const key = `${p.video.path}\t${prev.name}`;
       if (!pairs.has(key)) pairs.set(key, { ours: p.video.path, prev, accounts: [] });
       pairs.get(key).accounts.push(p.account);

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-09",
+  "updatedAt": "2026-11-10",
   "registrationStatus": "계정_가입현황.md",
   "labInternationalSetup": "온라인마케팅지도/youtube-setup-20260920.json",
   "labInternationalSocialSetup": "온라인마케팅지도/intl-social/execution-20260920.json",
@@ -44,12 +44,25 @@
       "coverStatus": "existing-russian-vk-cover-saved-web-crop-verified",
       "customHandleStatus": "synklab_ru-saved-and-community-id-verified",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 커뮤니티 개설·프로필 설정 승인, 콘텐츠 게시·예약 미승인",
       "profileVerifiedAt": "2026-11-09",
       "avatarSource": "프로필설정_20261108/avatar-lab-logo.png",
       "coverSource": "온라인마케팅지도/intl-social/vk-profile/cover-ru-v1.png",
       "loginIdentityRef": "vk-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ru",
+      "timeZone": "Europe/Moscow",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "vk-web",
+      "postRouteVerified": false
     },
     "lab-cn-douyin": {
       "brand": "LAB",
@@ -77,9 +90,22 @@
       "externalWebsiteLinkStatus": "not-set-no-field-in-web-profile-editor",
       "profileWebsite": "https://synk.im/lab/",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인",
       "loginIdentityRef": "douyin-app",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "zh-Hans",
+      "timeZone": "Asia/Shanghai",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "douyin-creator",
+      "postRouteVerified": false
     },
     "lab-jp-instagram": {
       "brand": "LAB",
@@ -103,9 +129,22 @@
       "externalWebsiteLinkStatus": "not-set-mobile-app-required",
       "profileWebsite": "https://synk.im/lab/",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ja",
+      "timeZone": "Asia/Tokyo",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "meta-business-suite",
+      "postRouteVerified": false
     },
     "lab-uz-instagram": {
       "brand": "LAB",
@@ -129,9 +168,22 @@
       "externalWebsiteLinkStatus": "not-set-mobile-app-required",
       "profileWebsite": "https://synk.im/lab/",
       "profileEvidence": "프로필설정_20261108/README.md",
-      "dailyOff": "사용자 게시 금지 범위: 계정 기본 설정만 승인, 콘텐츠 게시·예약 미승인",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "uz",
+      "timeZone": "Asia/Tashkent",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "meta-business-suite",
+      "postRouteVerified": false
     },
     "lab-mx-youtube": {
       "brand": "LAB",
@@ -175,9 +227,22 @@
       "profilePublishingAuthorization": "2026-10-02 사용자 '직접 게시해': 직접 화면 확인 후 게시 승인",
       "browserExecutionStatus": "unresponsive-connection-blocking-progress",
       "currentPublicProfileStatus": "not-reverified",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "es",
+      "timeZone": "America/Mexico_City",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-br-youtube": {
       "brand": "LAB",
@@ -245,9 +310,22 @@
       "publicDescriptionCharacterCount": 480,
       "publicProfileVerifiedAt": "2026-10-02T20:52:47.000+09:00",
       "verificationTimeScope": "주 실행자의 검증 결과를 원장에 기록한 시각",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "pt-BR",
+      "timeZone": "America/Sao_Paulo",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-cn-xiaohongshu": {
       "brand": "LAB",
@@ -288,7 +366,21 @@
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
       "previousLoginAlias": "unmet23",
       "previousLoginEvidence": "2026-09-21 사용자가 앱의 unmet23 Google 로그인 완료 보고 후 공식 앱 QR로 웹 본인 프로필 확인",
-      "previousLoginMethod": "user-app-login-and-official-qr-web-login"
+      "previousLoginMethod": "user-app-login-and-official-qr-web-login",
+      "language": "zh-Hans",
+      "timeZone": "Asia/Shanghai",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyTimesFrom": "미정",
+      "postRoute": "xhs-creator",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "lab-mm-tiktok": {
       "brand": "LAB",
@@ -331,7 +423,21 @@
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
       "dailyLine": "LAB 두 채널",
       "loginIdentityRef": "synk-yuh",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "my",
+      "timeZone": "Asia/Yangon",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyTimesFrom": "미정",
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "lab-vn-tiktok": {
       "brand": "LAB",
@@ -368,9 +474,22 @@
       "avatarVerificationScope": "authenticated-tiktok-profile-after-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet27",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "vi",
+      "timeZone": "Asia/Ho_Chi_Minh",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": false
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -415,9 +534,22 @@
       "avatarVerificationScope": "authenticated-public-channel-after-followup-reload",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "synk-yuh",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ru",
+      "timeZone": "Europe/Moscow",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "rutube-studio",
+      "postRouteVerified": false
     },
     "lab-np-facebook": {
       "brand": "LAB",
@@ -449,9 +581,22 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ne",
+      "timeZone": "Asia/Kathmandu",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "meta-business-suite",
+      "postRouteVerified": false
     },
     "lab-kh-facebook": {
       "brand": "LAB",
@@ -484,9 +629,22 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "km",
+      "timeZone": "Asia/Phnom_Penh",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "meta-business-suite",
+      "postRouteVerified": false
     },
     "lab-lk-facebook": {
       "brand": "LAB",
@@ -517,9 +675,22 @@
       "avatarVerificationScope": "authenticated-facebook-profile-after-save-toast",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "si",
+      "timeZone": "Asia/Colombo",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "meta-business-suite",
+      "postRouteVerified": false
     },
     "lab-uz-telegram": {
       "brand": "LAB",
@@ -549,9 +720,20 @@
       "avatarVerificationScope": "new-public-t-me-tab-after-crop-and-separate-save",
       "avatarSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
       "contentPostCountObservationScope": "historical-before-2026-09-21-avatar-update; automatic-photo-activity-not-fully-audited",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "telegram-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "uz",
+      "timeZone": "Asia/Tashkent",
+      "dailyTimes": [
+        "21:00"
+      ],
+      "dailyFormats": [
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "telegram-web",
+      "postRouteVerified": false
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -568,9 +750,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "en",
+      "timeZone": "America/Toronto",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-my-youtube": {
       "brand": "LAB",
@@ -587,9 +782,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ms",
+      "timeZone": "Asia/Kuala_Lumpur",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-nz-youtube": {
       "brand": "LAB",
@@ -606,9 +814,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "en",
+      "timeZone": "Pacific/Auckland",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-py-youtube": {
       "brand": "LAB",
@@ -625,9 +846,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "es",
+      "timeZone": "America/Asuncion",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-au-youtube": {
       "brand": "LAB",
@@ -644,9 +878,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "en",
+      "timeZone": "Australia/Sydney",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-lk-youtube": {
       "brand": "LAB",
@@ -663,9 +910,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "si",
+      "timeZone": "Asia/Colombo",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-ph-youtube": {
       "brand": "LAB",
@@ -682,9 +942,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "fil",
+      "timeZone": "Asia/Manila",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-us-youtube": {
       "brand": "LAB",
@@ -701,9 +974,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "en",
+      "timeZone": "America/New_York",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-kg-youtube": {
       "brand": "LAB",
@@ -720,9 +1006,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ky",
+      "timeZone": "Asia/Bishkek",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-in-youtube": {
       "brand": "LAB",
@@ -739,9 +1038,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "hi",
+      "timeZone": "Asia/Kolkata",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-id-youtube": {
       "brand": "LAB",
@@ -758,9 +1070,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "id",
+      "timeZone": "Asia/Jakarta",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-th-youtube": {
       "brand": "LAB",
@@ -777,9 +1102,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "th",
+      "timeZone": "Asia/Bangkok",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-mm-youtube": {
       "brand": "LAB",
@@ -796,9 +1134,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "my",
+      "timeZone": "Asia/Yangon",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-tw-youtube": {
       "brand": "LAB",
@@ -815,9 +1166,22 @@
       "profileCopy": "온라인마케팅지도/intl-youtube/copy.json",
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "zh-Hant",
+      "timeZone": "Asia/Taipei",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-jp-youtube": {
       "brand": "LAB",
@@ -834,9 +1198,22 @@
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "77yuhbs",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "ja",
+      "timeZone": "Asia/Tokyo",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-vn-youtube": {
       "brand": "LAB",
@@ -853,9 +1230,22 @@
       "profileCopy": "온라인마케팅지도/jp-vn-profile/copy.json",
       "profileEvidence": "온라인마케팅지도/jp-vn-profile/publication.json",
       "setupEvidence": "온라인마케팅지도/youtube-setup-20260920.json",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "77yuhbs",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "vi",
+      "timeZone": "Asia/Ho_Chi_Minh",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "youtube-studio",
+      "postRouteVerified": false
     },
     "lab-youtube": {
       "brand": "LAB",
@@ -875,7 +1265,22 @@
       "loginVerifiedAt": "2026-09-20",
       "dailyLine": "LAB 영어",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "en",
+      "timeZone": "Asia/Seoul",
+      "rotationVersion": "EN",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyTimesFrom": "미정",
+      "postRoute": "workspace",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "lab-instagram": {
       "brand": "LAB",
@@ -888,12 +1293,22 @@
       "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate; link-set-to-mongolian-page-via-business-suite-profile-edit-2026-10-31-after-user-approved-meta-consent; logged-out-public-profile-confirmed; bio-unchanged",
       "dailyLine": "LAB 몽골",
       "dailyTimes": [
-        "13:00",
-        "21:00"
+        "12:00",
+        "20:00"
       ],
       "dailyTimesFrom": "2026-11-13",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "countryCode": "MN",
+      "language": "mn",
+      "timeZone": "Asia/Ulaanbaatar",
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "postRoute": "workspace",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "lab-tiktok": {
       "brand": "LAB",
@@ -907,12 +1322,22 @@
       "profileStatus": "google77-owner-login-confirmed-and-new-bio-79-saved-then-public-profile-reloaded-heading-exact-match-confirmed-2026-09-14; approved-LAB-instagram-copy-with-only-dot-synk-im-suffix-removed-for-80-char-limit; name-handle-photo-existing-videos-unchanged; no-new-posts; native-language-review-incomplete",
       "dailyLine": "LAB 몽골",
       "dailyTimes": [
-        "13:00",
-        "21:00"
+        "12:00",
+        "20:00"
       ],
       "dailyTimesFrom": "2026-11-13",
       "loginIdentityRef": "77yuhbs",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "countryCode": "MN",
+      "language": "mn",
+      "timeZone": "Asia/Ulaanbaatar",
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "yuhobuilds-youtube": {
       "brand": "SHIFT",
@@ -1016,12 +1441,22 @@
       "profileStatus": "bio-196-saved-and-full-MN-KR-public-visibility-rechecked-2026-09-14; cover-saved-directly-by-user-and-public-page-reloaded-top-PNG-full-logo-two-MN-lines-one-KR-vision-line-no-clipping-confirmed-2026-09-14; user-authorized-public-system-cover-update-one-observed-separate-from-zero-new-content-posts; native-language-review-incomplete",
       "dailyLine": "LAB 몽골",
       "dailyTimes": [
-        "13:00",
-        "21:00"
+        "12:00",
+        "20:00"
       ],
       "dailyTimesFrom": "2026-11-13",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "countryCode": "MN",
+      "language": "mn",
+      "timeZone": "Asia/Ulaanbaatar",
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "postRoute": "meta-business-suite",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "yuhobuilds-threads": {
       "brand": "SHIFT",
@@ -1125,7 +1560,19 @@
       "profileStatus": "bio-218-of-255-saved-and-full-four-line-new-public-page-rechecked-2026-09-14; channel-photo-name-personal-info-visibility-bot-permissions-links-unchanged; existing-copy-reused; native-language-review-incomplete; no-posts-sent",
       "dailyLine": "LAB 몽골",
       "loginIdentityRef": "telegram-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "countryCode": "MN",
+      "language": "mn",
+      "timeZone": "Asia/Ulaanbaatar",
+      "dailyTimes": [
+        "20:00"
+      ],
+      "dailyFormats": [
+        "퀴즈"
+      ],
+      "postRoute": "telegram-web",
+      "postRouteVerified": true,
+      "rotationSeed": true
     },
     "yuhobuilds-telegram": {
       "brand": "SHIFT",
@@ -1340,9 +1787,22 @@
       "targetDisplayName": "SYNK LAB Mexico",
       "profileEvidence": "프로필설정_20261108/README.md",
       "publicBio": "",
-      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료",
       "loginIdentityRef": "naver-pulse",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "es",
+      "timeZone": "America/Mexico_City",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": false
     },
     "lab-kz-tiktok": {
       "brand": "LAB",
@@ -1362,9 +1822,22 @@
       "targetDisplayName": "SYNK LAB Kazakhstan",
       "profileEvidence": "프로필설정_20261108/README.md",
       "publicBio": "",
-      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료",
       "loginIdentityRef": "naver-class",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "kk",
+      "timeZone": "Asia/Almaty",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": false
     },
     "lab-th-tiktok": {
       "brand": "LAB",
@@ -1384,9 +1857,22 @@
       "targetDisplayName": "SYNK LAB Thailand",
       "profileEvidence": "프로필설정_20261108/README.md",
       "publicBio": "",
-      "dailyOff": "11-08 가입 확인만. 사용자 지시로 SNS 콘텐츠 게시·예약 금지; 프로필 기본 설정과 게시 연결 미완료",
       "loginIdentityRef": "tiktok-th-email",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "th",
+      "timeZone": "Asia/Bangkok",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": false
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -1431,9 +1917,22 @@
       },
       "publicBio": "Belajar bahasa Korea, langsung coba pakai! 🎮 synk.im/lab/",
       "publicBioVerifiedAt": "2026-10-19T00:13:22.668Z",
-      "dailyOff": "나라별 LAB — 11-02 조기판정 완료 · 현지화 시험판 제작·검수·게시 연결 대기(11-07 날짜 대기 없음)",
       "loginIdentityRef": "unmet29",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "language": "id",
+      "timeZone": "Asia/Jakarta",
+      "dailyTimes": [
+        "13:00",
+        "21:00"
+      ],
+      "dailyFormats": [
+        "이야기",
+        "퀴즈"
+      ],
+      "dailyLine": "LAB 나라별",
+      "dailyFrom": "미정",
+      "postRoute": "tiktok-studio",
+      "postRouteVerified": false
     },
     "pulse-youtube": {
       "brand": "PULSE",
@@ -1486,5 +1985,22 @@
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
     }
   },
-  "loginRoutingAuditedAt": "2026-11-09"
+  "loginRoutingAuditedAt": "2026-11-09",
+  "labRotation": {
+    "설계": "LAB_하루두편_설계_20261110/README.md",
+    "칸": "계정마다 dailyTimes(timeZone의 현지 시각) · dailyFormats — 13:00 이야기 · 21:00 퀴즈, 텔레그램은 21:00 퀴즈 한 편(11-09). 몽골 네 계정은 11-09 결정 시각(한국 13:00 · 21:00 = 울란바토르 12:00 · 20:00) 그대로",
+    "시작": "dailyFrom · dailyTimesFrom이 「미정」이면 그 칸은 시작 전(tools/예약큐.js · tools/돌림표.js가 셈에서 뺀다). 5일치 비축을 건 날을 적는다",
+    "판본검수": [
+      "뜻",
+      "글자"
+    ],
+    "셈": {
+      "followHours": 17,
+      "checkTime": "14:00",
+      "checkZone": "Asia/Seoul",
+      "apartHours": 20,
+      "youtubeCap": 5,
+      "window": 5
+    }
+  }
 }

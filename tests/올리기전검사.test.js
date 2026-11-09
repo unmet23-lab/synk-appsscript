@@ -191,14 +191,59 @@ test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것,
   assert.equal(검사.tiktokFindings(plates('lab-instagram'), {}, {}).filter((f) => f.code === 'tiktok-plate').length, 1, '계정 표에 줄이 없으면 ⑨가 그대로 본다');
 });
 
-test('⑫ 한 편의 틱톡 판 둘이 같은 날(한국 시각)이면 고칠 것 — 버마어 판을 다음 날로 두면 통과(10-26 유호님)', () => {
+test('⑫ 한 편의 같은 플랫폼 판 둘이 20시간 안이면 고칠 것 — 버마어 판을 다음 날로 두면 통과(10-26 유호님 · 11-10 20시간)', () => {
   const tt = (account, time) => ({ account, platform: 'tiktok', time });
   const xhs = { account: 'lab-cn-xiaohongshu', platform: 'xiaohongshu', time: '2026-10-30T22:00:00+09:00' };
   const same = 검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T21:00:00+09:00'), tt('lab-mm-tiktok', '2026-10-30T22:30:00+09:00'), xhs]);
   assert.deepEqual(same.map((f) => `${f.level}:${f.code}:${f.where}`), ['고칠 것:tiktok-same-day:lab-tiktok · lab-mm-tiktok']);
   assert.deepEqual(검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T21:00:00+09:00'), tt('lab-mm-tiktok', '2026-10-31T22:30:00+09:00'), xhs]), [], '다음 날이면 된다 · 샤오훙수는 같은 날이어도 된다');
-  // 한국 시각으로 나눈다 — 10-30 23:30 KST와 10-31 00:30 KST는 다른 날
-  assert.deepEqual(검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T14:30:00Z'), tt('lab-mm-tiktok', '2026-10-30T15:30:00Z')]), []);
+  // 11-10부터 한국 날짜로 나누지 않는다 — 10-30 23:30 KST와 10-31 00:30 KST는 한 시간 차이라 고칠 것(옛 셈은 다른 날로 넘겼다)
+  assert.equal(검사.tiktokDayFindings([tt('lab-tiktok', '2026-10-30T14:30:00Z'), tt('lab-mm-tiktok', '2026-10-30T15:30:00Z')]).length, 1);
+  // 멕시코 저녁(한국 다음 날 12:00)과 몽골 다음 날 저녁(한국 21:00)은 9시간 — 고칠 것, 21시간이면 통과
+  assert.equal(검사.samePlatformFindings([tt('lab-mx-tiktok', '2026-11-20T21:00:00-06:00'), tt('lab-tiktok', '2026-11-21T21:00:00+09:00')]).length, 1);
+  assert.deepEqual(검사.samePlatformFindings([tt('lab-kz-tiktok', '2026-11-20T13:00:00+05:00'), tt('lab-tiktok', '2026-11-21T13:00:00+09:00')]), []);
+  // 틱톡 말고 같은 플랫폼도 — 페북 둘이 같은 날, 유튜브는 같은 언어끼리만
+  const fb = 검사.samePlatformFindings([{ account: 'lab-np-facebook', platform: 'facebook', time: '2026-11-20T13:00:00+05:45' }, { account: 'lab-kh-facebook', platform: 'facebook', time: '2026-11-20T13:00:00+07:00' }]);
+  assert.deepEqual(fb.map((f) => f.code), ['same-platform-close']);
+  const yt = (account, language, time) => ({ account, platform: 'youtube', language, time });
+  assert.deepEqual(검사.samePlatformFindings([yt('lab-th-youtube', 'th', '2026-11-20T21:00:00+07:00'), yt('lab-jp-youtube', 'ja', '2026-11-20T21:00:00+09:00')]), [], '언어가 다른 유튜브 판은 같은 날 된다');
+  assert.equal(검사.samePlatformFindings([yt('lab-us-youtube', 'en', '2026-11-20T21:00:00-05:00'), yt('lab-ca-youtube', 'en', '2026-11-20T21:00:00-05:00')]).length, 1, '같은 언어 유튜브 판은 안 된다');
+});
+
+test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구하지 않고, 판마다 칸 형식 · 판본 파일 · 판본 검수 지문 · 계정 준비를 본다', () => {
+  const crypto = require('node:crypto');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-돌림-'));
+  try {
+    const dir = path.join(root, 'docs', '마케팅', 'LAB_가_mn_20261101');
+    fs.mkdirSync(path.join(dir, '게시', '판본', 'TH'), { recursive: true });
+    const video = path.join(dir, '게시', '판본', 'TH', 'video.mp4');
+    const text = path.join(dir, '게시', '판본', 'TH', '글.json');
+    fs.writeFileSync(video, 'th-video');
+    fs.writeFileSync(text, '{"줄":["th"]}');
+    const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+    const known = {
+      'lab-th-youtube': { platform: 'youtube', dailyLine: 'LAB 나라별', countryCode: 'TH', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'], publicProfileComplete: true, postRouteVerified: true },
+      'lab-th-tiktok': { platform: 'tiktok', dailyLine: 'LAB 나라별', countryCode: 'TH', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'], publicProfileComplete: false, postRouteVerified: true },
+      'lab-vn-tiktok': { platform: 'tiktok', dailyLine: 'LAB 나라별', countryCode: 'VN', timeZone: 'Asia/Ho_Chi_Minh', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'], dailyFrom: '미정' },
+      'lab-telegram': { platform: 'telegram', dailyLine: 'LAB 몽골', countryCode: 'MN', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['20:00'], dailyFormats: ['퀴즈'], rotationSeed: true },
+      'lab-instagram': { platform: 'instagram', dailyLine: 'LAB 몽골', countryCode: 'MN', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['12:00', '20:00'], dailyFormats: ['이야기', '퀴즈'], rotationSeed: true },
+    };
+    const 판본 = { TH: { 언어: 'th', 파일: '게시/판본/TH/video.mp4', 글: '게시/판본/TH/글.json', 검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } } };
+    const prep = { 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본 } };
+    const bundle = { dir, repo: root, prep, accounts: known };
+    const plate = (account, time, raw = {}) => ({ account, platform: known[account].platform, time, raw: { 계정: account, 파일: '게시/판본/TH/video.mp4', 시각: time, 돌림: true, ...raw } });
+    const codes = (list) => 검사.rotationFindings(bundle, list, { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } } }).map((f) => `${f.code}:${f.where}`);
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), []);
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-slot:lab-th-youtube'], '21:00은 퀴즈 칸');
+    assert.deepEqual(codes([plate('lab-th-tiktok', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-tiktok'], '프로필 빈 계정은 채운 뒤에만');
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00', { 파일: '게시/다른.mp4' })]), ['rotation-version-file:lab-th-youtube']);
+    fs.writeFileSync(text, '{"줄":["고친 글"]}');
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), ['rotation-version-check:lab-th-youtube'], '글을 고치면 뜻 검수 무효');
+    // ⑩ 줄 셈: 이야기 편은 텔레그램(퀴즈뿐)을 요구하지 않고, 「LAB 나라별」 · 시작 전 계정도 요구하지 않는다
+    const own = [{ account: 'lab-instagram', video: { path: 'v.mp4' }, texts: {} }];
+    assert.deepEqual(검사.dailyFindings(own, prep, known).map((f) => f.code), []);
+    assert.deepEqual(검사.dailyFindings(own, { 브랜드: 'LAB' }, known).map((f) => `${f.code}:${f.where}`), ['daily-plate:lab-telegram'], '「돌림」 없는 옛 편은 그대로');
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
 
 test('영상 이름표는 편 폴더 기준 — 워크트리에서 돌려 영상이 공용 작업본에 있어도 같다', () => {

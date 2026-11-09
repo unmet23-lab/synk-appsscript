@@ -448,14 +448,41 @@ test('--계정표는 계정 전수 표를 마크다운으로 — 매일 판 · �
   assert.match(out, /^\| lab-us-youtube \| {2}\| 매일 판 밖 \| .* \| 나라별 LAB — 유호님 답 전 \|$/m);
 });
 
-test('실제 sns-계정.json — 모든 계정이 매일 판 줄 · 매일 판 밖 가운데 하나이고, 줄 이름은 정해진 다섯 가운데 하나다', () => {
+test('실제 sns-계정.json — 모든 계정이 매일 판 줄 · 매일 판 밖 가운데 하나이고, 줄 이름은 정해진 여섯 가운데 하나다', () => {
   const real = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'docs', '마케팅', 'sns-계정.json'), 'utf8').replace(/^﻿/, '')).accounts;
-  const lines = new Set(['LAB 영어', 'LAB 몽골', 'LAB 두 채널', 'synkbrief', 'yuhobuilds']);
+  const lines = new Set(['LAB 영어', 'LAB 몽골', 'LAB 두 채널', 'LAB 나라별', 'synkbrief', 'yuhobuilds']);
   for (const [key, a] of Object.entries(real)) {
     assert.equal(Boolean(a.dailyLine) !== Boolean(a.dailyOff), true, `${key}: dailyLine과 dailyOff 가운데 하나만`);
     if (a.dailyLine) assert.ok(lines.has(a.dailyLine), `${key}: 줄 이름 ${a.dailyLine}`);
     if (a.dailyDays !== undefined) assert.match(String(a.dailyDays), /^[일월화수목금토]+$/, `${key}: dailyDays는 요일 글자로만`);
   }
+});
+
+// 11-10 LAB 하루 두 편 · 39계정(설계 1): LAB 모든 계정에 줄 · 현지 칸 · IANA 시간대 · 언어 · 나라 · 예약 경로가 있다 — 예약큐 · 검사 ⑩ · ⑫ · ⑯ · 돌림표가 읽는다.
+test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야기 · 21:00 퀴즈, 텔레그램은 21:00 퀴즈 하나) · 시간대 · 언어 · 경로', () => {
+  const T = require('../tools/lib/계정시간.js');
+  const real = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'docs', '마케팅', 'sns-계정.json'), 'utf8').replace(/^﻿/, '')).accounts;
+  const lab = Object.entries(real).filter(([, a]) => a.brand === 'LAB');
+  assert.equal(lab.length, 39);
+  for (const [key, a] of lab) {
+    assert.ok(a.dailyLine, `${key}: 줄`);
+    assert.ok(T.validZone(a.timeZone) && /\//.test(a.timeZone), `${key}: IANA 시간대 ${a.timeZone}`);
+    assert.match(String(a.language), /^[a-z]{2,3}(-[A-Za-z]+)?$/, `${key}: 언어`);
+    assert.match(String(a.countryCode), /^[A-Z]{2}$/, `${key}: 나라`);
+    assert.ok(a.postRoute, `${key}: 예약 경로`);
+    assert.equal(a.dailyTimes.length, a.dailyFormats.length, `${key}: 칸 시각과 형식 수`);
+    assert.ok(a.dailyTimes.every(T.isTime), `${key}: 칸 시각 꼴`);
+    if (a.platform === 'telegram') assert.deepEqual(a.dailyFormats, ['퀴즈'], `${key}: 텔레그램은 하루 한 편(21:00 퀴즈)`);
+    else assert.deepEqual(a.dailyFormats, ['이야기', '퀴즈'], `${key}: 13:00 이야기 · 21:00 퀴즈`);
+    // 현지 시각: 몽골 네 계정은 11-09 결정 시각(한국 13:00 · 21:00) 그대로, 나머지는 현지 13:00 · 21:00
+    const korea = a.dailyTimes.map((t) => T.localTime(T.zonedMs('2026-11-20', t, a.timeZone), 'Asia/Seoul'));
+    if (a.countryCode === 'MN' && a.dailyLine === 'LAB 몽골') assert.deepEqual(korea, a.platform === 'telegram' ? ['21:00'] : ['13:00', '21:00'], `${key}: 몽골은 한국 시각 그대로`);
+    else assert.deepEqual(a.dailyTimes, a.platform === 'telegram' ? ['21:00'] : ['13:00', '21:00'], `${key}: 현지 13:00 · 21:00`);
+    // 시작은 5일치 비축을 건 날(그 전엔 「미정」)
+    if (a.dailyLine === 'LAB 나라별') assert.ok(a.dailyFrom === '미정' || /^\d{4}-\d{2}-\d{2}$/.test(a.dailyFrom), `${key}: dailyFrom ${a.dailyFrom}`);
+  }
+  assert.equal(new Set(lab.map(([, a]) => a.language)).size, 21);
+  assert.equal(new Set(lab.map(([, a]) => a.countryCode)).size, 25);
 });
 
 test('슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제 시각 날로 센다(작업실 판은 그대로)', () => {

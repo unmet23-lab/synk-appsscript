@@ -106,3 +106,30 @@ test('⑯ 결과 — 같은 영상 · 같은 지난 편은 계정을 모아 한 
   const first = 반복.repeatFindings(bundle, plates, { list: [], stage, screen, narration: () => [] });
   assert.deepEqual(first, { findings: [], summary: { 지난편: [] } }, '지난 편이 없는 새 계정');
 });
+
+// 11-10 LAB 하루 두 편(설계 23) — 21:00 퀴즈는 ⑯ 셈 밖, 대신 개그 무대가 지난 두 퀴즈와 같으면 고칠 것. 이야기 편은 이야기 편끼리만.
+test('⑯ 돌림 — 퀴즈는 개그 무대만 견주고, 이야기 편은 그 사이 퀴즈를 건너뛰고 지난 이야기 편과 견준다', () => {
+  const frame = (v) => Buffer.alloc(9 * 16 * 3, v);
+  const ep = (name, time, video, 돌림) => ({ name, dir: `/x/${name}`, prep: 돌림 ? { 돌림 } : {}, 판: [{ account: 'lab-th-youtube', video, time: Date.parse(time), state: '' }] });
+  const list = [
+    ep('Q2', '2026-11-19T21:00:00+07:00', '/v/Q2.mp4', { 형식: '퀴즈', 무대: '시장 국숫집' }),
+    ep('S2', '2026-11-19T13:00:00+07:00', '/v/S2.mp4', { 형식: '이야기' }),
+    ep('Q1', '2026-11-18T21:00:00+07:00', '/v/Q1.mp4', { 형식: '퀴즈', 무대: '학교 운동장' }),
+    ep('S1', '2026-11-18T13:00:00+07:00', '/v/S1.mp4', { 형식: '이야기' }),
+  ];
+  const at = '2026-11-20T21:00:00+07:00';
+  const plates = [{ account: 'lab-th-youtube', time: at, video: { path: '/v/Q3.mp4', exists: true } }];
+  const quiz = (무대) => ({ name: 'Q3', dir: '/x/Q3', repo: '/x', prep: { 돌림: { 형식: '퀴즈', 무대 } } });
+  const stage = () => { throw new Error('퀴즈는 장면을 읽지 않는다'); };
+  assert.deepEqual(codes(반복.repeatFindings(quiz('바닷가 매점'), plates, { list, stage, narration: () => [] }).findings), []);
+  const same = 반복.repeatFindings(quiz('학교  운동장'), plates, { list, stage, narration: () => [] });
+  assert.deepEqual(codes(same.findings), ['고칠 것:quiz-stage-repeat']);
+  assert.match(same.findings[0].message, /Q1/);
+  assert.deepEqual(same.summary.지난편.map((s) => s.편), ['Q2', 'Q1'], '지난 두 퀴즈(이야기 편은 건너뜀)');
+  assert.deepEqual(codes(반복.repeatFindings(quiz(''), plates, { list, stage, narration: () => [] }).findings), ['확인할 것:quiz-stage-missing']);
+  // 이야기 편: 지난 두 편은 S2 · S1(퀴즈 Q2 · Q1은 건너뜀)
+  const stages = { '/v/S3.mp4': { first: frame(10), last: frame(10) }, '/v/S2.mp4': { first: frame(200), last: frame(200) }, '/v/S1.mp4': { first: frame(90), last: frame(240) } };
+  const story = { name: 'S3', dir: '/x/S3', repo: '/x', prep: { 돌림: { 형식: '이야기' } } };
+  const r = 반복.repeatFindings(story, [{ account: 'lab-th-youtube', time: '2026-11-20T13:00:00+07:00', video: { path: '/v/S3.mp4', exists: true } }], { list, stage: (f) => stages[f], skipOcr: true, narration: () => [] });
+  assert.deepEqual(r.summary.지난편.map((s) => s.편), ['S2', 'S1']);
+});

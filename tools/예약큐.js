@@ -45,6 +45,7 @@ const { handleOf, VIDEO } = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const { aestheticBlock } = require('./lib/미학관문.js');
+const T = require('./lib/계정시간.js');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -60,7 +61,7 @@ const LOOKBACK_DAYS = 3;
 const LEAD = 4; // 비축 목표(일) — 07시가 D+4 편을 만든다(제작 절차 0)
 const RESERVE_ALERT_HOUR = 21; // 비축 알림은 그날 슬롯이 나간 뒤 한 번
 const BLOG = new Set(['naver-blog', 'tistory']);
-const LINE_ORDER = ['LAB 영어', 'LAB 몽골', 'LAB 두 채널', 'synkbrief', 'yuhobuilds'];
+const LINE_ORDER = ['LAB 영어', 'LAB 몽골', 'LAB 두 채널', 'LAB 나라별', 'synkbrief', 'yuhobuilds'];
 // 작업실 검토 링크 기록(tools/작업실예약.js LOCAL_DIR). 만료 시각과 편 이름만 읽는다. --폴더로 다른 곳을 보면 따로 줄 때만.
 const LINK_DIR = process.env.SYNK_WORKSPACE_LINK_DIR
   || (argValue('--폴더') ? null : path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'synk', '작업실예약'));
@@ -88,20 +89,16 @@ function isDay(s) {
 const offDay = (a, day) => Boolean(a?.dailyDays) && !String(a.dailyDays).includes('일월화수목금토'[new Date(day + 'T00:00:00Z').getUTCDay()]);
 const resting = (list, a, day) => offDay(a, day) && list.every((p) => p.state === '보류');
 
-// 하루 두 칸 계정(11-09 유호님 「두 편으로」 — LAB 몽골 12:00 · 21:00): sns-계정.json dailyTimes(시각 목록) · dailyTimesFrom(그날부터).
-// 그 계정은 시각마다 칸을 따로 센다 — 맨 끝 시각이 원래 칸(계정 이름 그대로), 앞 시각은 「<계정> 12시」 칸이고, 판은 「시각」이
-// 가장 가까운 칸에 든다. dailyTimesFrom 앞 날은 앞 칸이 쉼(–)이라 비축 · 빈 칸 · 알림에 안 든다.
-const slotTimes = (a, day) => (Array.isArray(a?.dailyTimes) && a.dailyTimes.length > 1 && (!a.dailyTimesFrom || day >= a.dailyTimesFrom) ? a.dailyTimes : null);
-const extraSlots = (key, a) => (Array.isArray(a?.dailyTimes) && a.dailyTimes.length > 1
-  ? a.dailyTimes.slice(0, -1).map((t) => ({ key: `${key} ${Number(String(t).slice(0, 2))}시`, time: t })) : []);
-const minuteOf = (t) => Number(String(t).slice(0, 2)) * 60 + Number(String(t).slice(3, 5));
-function slotFor(time, times) {
-  const ms = Date.parse(time || '');
-  if (!Number.isFinite(ms)) return times[times.length - 1];
-  const kst = new Date(ms + 9 * 3600000);
-  const m = kst.getUTCHours() * 60 + kst.getUTCMinutes();
-  return times.reduce((best, t) => (Math.abs(minuteOf(t) - m) < Math.abs(minuteOf(best) - m) ? t : best), times[times.length - 1]);
-}
+// 하루 두 칸 계정(11-09 유호님 「두 편으로」 — LAB 몽골, 11-10 LAB 39계정 「하루 두 편」): sns-계정.json dailyTimes(timeZone의 현지 시각 목록)
+// · dailyFormats(칸 형식) · dailyTimesFrom(그날부터 앞 칸) · dailyFrom(그날부터 줄 — 「미정」이면 시작 전). 날짜 · 시각 계산은 tools/lib/계정시간.js.
+// 그 계정은 칸마다 따로 센다 — 맨 끝 칸이 원래 칸(계정 이름 그대로), 앞 칸은 「<계정> 이야기」(형식이 없으면 「<계정> 13시」)이고,
+// 판은 현지 시각이 가장 가까운 칸에 든다. 칸이 안 열린 날은 쉼(–)이라 비축 · 빈 칸 · 알림에 안 든다. 날짜는 그 계정의 현지 날짜다.
+const extraSlots = (key, a) => {
+  const slots = T.allSlots(a);
+  return slots.length > 1 ? slots.slice(0, -1).map((s) => ({ key: T.slotKey(key, a, s), time: s.time })) : [];
+};
+const slotOpen = (a, day, time) => T.slotsOn(a, day).some((s) => s.time === time);
+const lastSlot = (a) => { const slots = T.allSlots(a); return slots[slots.length - 1].time; };
 
 function readJson(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); } catch { return null; }
@@ -234,21 +231,34 @@ function collect(server, accounts, now) {
 }
 
 const fixNeeded = (x) => x.state !== '채움' && ['고칠 것', '다시 검사'].includes(x.check);
-const dayOf = (plate, item) => (plate.time && Number.isFinite(Date.parse(plate.time)) ? kstDate(Date.parse(plate.time)) : item.slot);
+// 판이 든 날 — 그 계정의 현지 날짜(timeZone, 없으면 한국 시각).
+const dayOf = (plate, item, accounts = {}) => (plate.time && Number.isFinite(Date.parse(plate.time)) ? T.localDate(Date.parse(plate.time), T.tzOf(accounts[plate.account])) : item.slot);
 
-// 매일 판의 줄(sns-계정.json dailyLine). 막힌 계정(dailyBlocked)은 줄에 적되 셈에서 뺀다.
+// 매일 판의 줄(sns-계정.json dailyLine). 막힌 계정(dailyBlocked)은 줄에 적되 셈에서 뺀다. dailyFrom이 「미정」인 계정(11-10 LAB 나라별 —
+// 5일치 비축을 건 날 연다)은 「시작 전」으로 따로 보이고 셈에서 뺀다.
 function dailyLines(accounts) {
   const lines = new Map();
   for (const [key, a] of Object.entries(accounts)) {
     if (!a.dailyLine) continue;
-    if (!lines.has(a.dailyLine)) lines.set(a.dailyLine, { line: a.dailyLine, accounts: [], blocked: [] });
+    if (!lines.has(a.dailyLine)) lines.set(a.dailyLine, { line: a.dailyLine, accounts: [], blocked: [], pending: [] });
     if (a.dailyBlocked) lines.get(a.dailyLine).blocked.push({ account: key, reason: a.dailyBlocked });
+    else if (T.notStarted(a)) lines.get(a.dailyLine).pending.push(key);
     else lines.get(a.dailyLine).accounts.push(key);
   }
   const rank = (l) => (LINE_ORDER.includes(l) ? LINE_ORDER.indexOf(l) : LINE_ORDER.length);
   return [...lines.values()].sort((x, y) => rank(x.line) - rank(y.line) || x.line.localeCompare(y.line));
 }
 const blockedAccounts = (accounts) => dailyLines(accounts).flatMap((l) => l.blocked.map((b) => ({ ...b, line: l.line })));
+// 시작 전 계정과 아직 못 여는 까닭(설계 4 · 5 — 씨앗이 아니면 프로필 · 예약 경로가 확인돼야 돌림표가 칸을 준다).
+function pendingAccounts(accounts) {
+  return dailyLines(accounts).flatMap((l) => l.pending.map((key) => {
+    const a = accounts[key];
+    const why = [];
+    if (!a.rotationSeed && a.publicProfileComplete !== true) why.push('프로필');
+    if (!a.rotationSeed && a.postRouteVerified !== true) why.push('예약 경로');
+    return { account: key, line: l.line, platform: a.platform, why };
+  }));
+}
 
 // 계정별: 판 계정마다 그 날 판이 예약·게시됐는지. 매일 판 계정은 비어 있어도 줄을 낸다.
 function accountRows(items, range, accounts = {}) {
@@ -263,7 +273,7 @@ function accountRows(items, range, accounts = {}) {
   for (const item of items) {
     for (const plate of item.plates) {
       if (!plate.account) continue;
-      const day = dayOf(plate, item);
+      const day = dayOf(plate, item, accounts);
       if (!day || !range.includes(day)) continue;
       const done = DONE.has(plate.state) || (BLOG.has(plate.platform) && videoDone.has(item.folder));
       // 보류 판(버린 편)은 나가지 않으니 그 편의 옛 「고칠 것」 검사로 그날 칸을 막지 않는다(10-30 B2 보류 + 같은 날 B15).
@@ -271,21 +281,24 @@ function accountRows(items, range, accounts = {}) {
         title: item.title, time: plate.time, url: plate.url, unseen: plate.unseen, platform: plate.platform });
     }
   }
-  for (const [key, a] of Object.entries(accounts)) if (a.dailyLine && !a.dailyBlocked) rowOf(key, a.dailyLine.startsWith('LAB') ? 'LAB' : a.dailyLine);
-  // 하루 두 칸 계정은 앞 시각 칸을 줄로 떼어 낸다(「lab-instagram 12시」) — 판은 「시각」이 가장 가까운 칸에, 그 칸이 아직 안 열린 날은 쉼.
+  // 시작 전(dailyFrom 「미정」) 계정은 판이 없으면 줄을 내지 않는다(「시작 전」 한 줄로 따로 보인다).
+  for (const [key, a] of Object.entries(accounts)) if (a.dailyLine && !a.dailyBlocked && !T.notStarted(a)) rowOf(key, a.dailyLine.startsWith('LAB') ? 'LAB' : a.dailyLine);
+  // 하루 두 칸 계정은 앞 칸을 줄로 떼어 낸다(「lab-instagram 이야기」) — 판은 현지 시각이 가장 가까운 칸에, 그 칸이 아직 안 열린 날은 쉼.
   for (const row of [...rows.values()]) {
     const a = accounts[row.account];
+    if (!a?.dailyLine) continue;
+    // 줄이 안 열린 날(dailyFrom 앞)은 원래 칸도 쉼
+    row.closed = range.filter((d) => !T.slotsOn(a, d).length);
     const extras = extraSlots(row.account, a);
     if (!extras.length) continue;
     row.base = row.account;
-    row.slot = a.dailyTimes[a.dailyTimes.length - 1];
+    row.slot = lastSlot(a);
     for (const x of extras) {
       const sub = { account: x.key, base: row.account, slot: x.time, brand: row.brand, line: row.line, byDay: Object.fromEntries(range.map((d) => [d, []])), closed: [] };
       for (const d of range) {
-        const times = slotTimes(a, d);
-        if (!times) { sub.closed.push(d); continue; }
+        if (!slotOpen(a, d, x.time)) { sub.closed.push(d); continue; }
         const keep = [];
-        for (const p of row.byDay[d]) (slotFor(p.time, times) === x.time ? sub.byDay[d] : keep).push(p);
+        for (const p of row.byDay[d]) (T.slotFor(p.time, a).time === x.time ? sub.byDay[d] : keep).push(p);
         row.byDay[d] = keep;
       }
       rows.set(x.key, sub);
@@ -333,10 +346,12 @@ function lineRows(accountList, range, accounts) {
       byDay[d] = { mark, cells };
     }
     const run = (ok) => { let n = 0; for (const d of range.slice(1)) { if (ok(byDay[d])) n += 1; else break; } return n; };
-    // 하루 두 칸 계정의 칸 시각(빈 칸 글이 「12:00 · 21:00 칸마다 한 편」을 쓰게) — 한 칸 계정은 넣지 않는다
+    // 하루 두 칸 계정의 칸 이름(빈 칸 글이 「이야기 · 퀴즈 칸마다 한 편」, 형식이 없으면 「12:00 · 21:00 칸마다 한 편」을 쓰게) — 한 칸 계정은 넣지 않는다
     const times = Object.fromEntries(l.accounts.flatMap((a) => {
-      const extras = extraSlots(a, accounts[a]);
-      return extras.length ? [...extras.map((x) => [x.key, x.time]), [a, accounts[a].dailyTimes[accounts[a].dailyTimes.length - 1]]] : [];
+      const slots = T.allSlots(accounts[a]);
+      if (slots.length < 2) return [];
+      const name = (s) => s.format || s.time;
+      return [...extraSlots(a, accounts[a]).map((x, i) => [x.key, name(slots[i])]), [a, name(slots[slots.length - 1])]];
     }));
     return { line: l.line, accounts: l.accounts, byDay, times,
       reserve: run((x) => x.mark === '●' || x.mark === '–'), made: run((x) => Object.values(x.cells).every((s) => s === '채움' || s === '만듦' || s === '쉼')) };
@@ -410,6 +425,7 @@ function build(today, days, server, accounts, now) {
   report.lead = LEAD;
   report.lines = lineRows(report.accounts, range, accounts);
   report.blocked = blockedAccounts(accounts);
+  report.pending = pendingAccounts(accounts);
   report.reserve = report.lines.length ? Math.min(...report.lines.map((l) => l.reserve)) : null;
   report.todayGaps = todayGaps(report);
   // 보류 편은 나가지 않으니 검사가 「고칠 것」이어도 세지 않는다(10-23 — 알림이 고칠 것 하나만으로도 나가게 되면서).
@@ -448,7 +464,8 @@ function gapsOf(line, range) {
     const kinds = [...new Set(notDone.map(([, s]) => s))];
     const whole = notDone.length === live.length && kinds.length === 1;
     // 하루 두 칸이 열린 날 통째로 비면 칸마다 한 편이 필요하다는 것을 함께 적는다(「만든 편 없음(12:00 · 21:00 칸마다 한 편)」)
-    const times = [...new Set(live.map(([k]) => line.times?.[k]).filter(Boolean))].sort();
+    const order = (x) => (x === '이야기' ? 0 : x === '퀴즈' ? 1 : 2);
+    const times = [...new Set(live.map(([k]) => line.times?.[k]).filter(Boolean))].sort((x, y) => order(x) - order(y) || x.localeCompare(y));
     out.push(`${d.slice(5)} ${whole ? WHY[kinds[0]] + (times.length > 1 ? `(${times.join(' · ')} 칸마다 한 편)` : '') : notDone.map(([a, s]) => `${a} ${WHY[s]}`).join(', ')}`);
   }
   return out;
@@ -477,6 +494,12 @@ function print(report) {
     for (const l of report.lines) { const gaps = gapsOf(l, range); if (gaps.length) console.log(`  ${l.line} 빈 칸: ${gaps.join(' · ')}`); }
   }
   if (report.blocked.length) console.log(`  막혀 셈에서 뺀 계정: ${report.blocked.map((b) => `${b.account}(${b.reason})`).join(' · ')}`);
+  if (report.pending.length) {
+    const count = (list, f) => [...list.reduce((m, x) => m.set(f(x), (m.get(f(x)) || 0) + 1), new Map())].map(([k, n]) => `${k} ${n}`).join(' · ');
+    const waiting = report.pending.filter((p) => p.why.length);
+    console.log(`  시작 전(dailyFrom 「미정」 — 5일치 비축을 건 날 연다) ${report.pending.length}곳: ${count(report.pending, (p) => `${p.line} ${p.platform}`)}`
+      + (waiting.length ? ` · 아직 못 엶: ${count(waiting.flatMap((p) => p.why.map((w) => ({ w }))), (x) => `${x.w} 확인 전`)}(node tools/돌림표.js가 계정마다 보인다)` : ''));
+  }
   console.log(`예약 큐 · 오늘 ${report.today} · ● 채움  ◐ 일부  ○ 승인 대기  ✗ 고칠 것(검사)  × 보류(게시결과 「보류」)  · 빔`);
   console.log('브랜드'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축');
   for (const brand of BRANDS) {
@@ -593,25 +616,47 @@ const ROUTE = {
   'naver-clip': ['네이버 앱 전용 — 웹 올리기 없음(10-26 확인)', '—'],
   rutube: ['러튜브 스튜디오(손)', '확인 전'],
 };
-const LINE_WHAT = { 'LAB 영어': 'LAB 영어 편', 'LAB 몽골': 'LAB 몽골 편', synkbrief: 'synkbrief 편', yuhobuilds: 'yuhobuilds 편' };
+const LINE_WHAT = { 'LAB 영어': 'LAB 영어 편', 'LAB 몽골': 'LAB 몽골 편', 'LAB 나라별': 'LAB 나라별 돌림 판', synkbrief: 'synkbrief 편', yuhobuilds: 'yuhobuilds 편' };
+// 돌림 계정(11-10)의 예약 경로 이름(sns-계정.json postRoute) → ROUTE 키
+const ROUTE_OF = { workspace: 'workspace', 'youtube-studio': 'youtube', 'tiktok-studio': 'tiktok', 'meta-business-suite': 'instagram', 'telegram-web': 'telegram',
+  'xhs-creator': 'xiaohongshu', 'douyin-creator': 'douyin', 'vk-web': 'vk', 'rutube-studio': 'rutube' };
+ROUTE.douyin = ['더우인 크리에이터 센터 定时发布(ego) — 첫 예약 확인 전', '확인 전'];
+ROUTE.vk = ['VK 커뮤니티 예약 글(ego) — 첫 예약 확인 전', '확인 전'];
 
 function accountTable(accounts) {
   const what = (key, a) => {
-    if (a.dailyLine === 'LAB 두 채널') return a.platform === 'xiaohongshu' ? 'LAB 두 채널 판(간체)' : 'LAB 두 채널 판(버마어)';
-    const times = Array.isArray(a.dailyTimes) && a.dailyTimes.length > 1 ? ` 하루 ${a.dailyTimes.length}편(${a.dailyTimes.join(' · ')}${a.dailyTimesFrom ? ` · ${a.dailyTimesFrom.slice(5)}부터` : ''})` : '';
+    const slots = T.allSlots(a).filter((s) => s.time);
+    const from = (v, label) => (v ? ` · ${v === T.PENDING ? `${label} 미정` : `${label ? `${label} ` : ''}${v.slice(5)}부터`}` : '');
+    // 칸 시각은 그 계정 현지 시각(timeZone) — 하루 한 칸 · 시간대가 없으면 적지 않는다(옛 계정)
+    const times = slots.length > 1 || a.timeZone ? ` 하루 ${slots.length}편(${slots.map((s) => `${s.time}${s.format ? ` ${s.format}` : ''}`).join(' · ')}${a.timeZone ? ` ${a.timeZone}` : ''}`
+      + `${from(a.dailyTimesFrom, a.timeZone ? '앞 칸' : '')}${from(a.dailyFrom, '시작')}${a.language ? ` · ${a.language}` : ''})` : '';
+    if (a.dailyLine === 'LAB 두 채널') return (a.platform === 'xiaohongshu' ? 'LAB 두 채널 판(간체)' : 'LAB 두 채널 판(버마어)') + times;
     const base = (LINE_WHAT[a.dailyLine] || a.dailyLine) + times + (a.dailyDays ? `(${[...String(a.dailyDays)].join(' · ')})` : '');
     return BLOG.has(a.platform) ? `${base}의 블로그 글` : base;
   };
+  const readiness = (a) => {
+    if (a.dailyBlocked) return `막힘 — ${a.dailyBlocked}`;
+    const why = [];
+    if (a.brand === 'LAB' && Array.isArray(a.dailyFormats) && !a.rotationSeed) {
+      if (a.publicProfileComplete !== true) why.push('프로필 확인 전');
+      if (a.postRouteVerified !== true) why.push('예약 경로 확인 전');
+    }
+    if (T.notStarted(a)) why.unshift('시작 전');
+    return why.length ? why.join(' · ') : '—';
+  };
   const rows = Object.entries(accounts).map(([key, a]) => {
-    const [route, ahead] = WORKSPACE_PUBLISH.has(key) ? ROUTE.workspace : (ROUTE[a.platform] || ['—', '—']);
+    const routeKey = a.postRoute ? ROUTE_OF[a.postRoute] : null;
+    const [route, ahead] = WORKSPACE_PUBLISH.has(key) ? ROUTE.workspace : (ROUTE[routeKey || a.platform] || ['—', '—']);
     const handle = String(a.handle || a.expectedHandle || '').replace(/\|/g, '/');
-    if (a.dailyLine) return { key, order: 0, cells: [key, handle, what(key, a), route, ahead, a.dailyBlocked ? `막힘 — ${a.dailyBlocked}` : '—'] };
+    if (a.dailyLine) return { key, order: 0, cells: [key, handle, what(key, a), route, ahead, readiness(a)] };
     return { key, order: 1, cells: [key, handle, '매일 판 밖', route, ahead, a.dailyOff || '정하지 않음'] };
   });
   const lineRank = (key) => { const l = accounts[key].dailyLine; return l ? (LINE_ORDER.indexOf(l) + 1 || 99) : 100; };
   rows.sort((x, y) => x.order - y.order || lineRank(x.key) - lineRank(y.key) || x.key.localeCompare(y.key));
   const daily = rows.filter((r) => r.order === 0);
-  return [`계정 ${rows.length}개 · 매일 판 ${daily.filter((r) => r.cells[5] === '—').length} · 막힘 ${daily.filter((r) => r.cells[5] !== '—').length} · 매일 판 밖 ${rows.length - daily.length}`, '',
+  const pending = daily.filter((r) => r.cells[5].startsWith('시작 전')).length;
+  return [`계정 ${rows.length}개 · 매일 판 ${daily.filter((r) => r.cells[5] === '—').length} · 막힘 ${daily.filter((r) => r.cells[5] !== '—' && !r.cells[5].startsWith('시작 전')).length}`
+    + `${pending ? ` · 시작 전 ${pending}` : ''} · 매일 판 밖 ${rows.length - daily.length}`, '',
     '| 계정 | 핸들 | 매일 무엇이 | 올리는 길 | 며칠 앞서 | 막힌 것 · 까닭 |', '|---|---|---|---|---|---|',
     ...rows.map((r) => `| ${r.cells.join(' | ')} |`)].join('\n');
 }
