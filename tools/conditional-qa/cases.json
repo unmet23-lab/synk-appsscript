@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 119,
+  "expectedCount": 122,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -956,6 +956,30 @@
       "name": "고요(가짜 영상) — 떨리는 쪽지는 걸림, 가만한 쪽지는 통과, 밀리는 큰 판 · 천천히 미는 판(고정 영역)은 걸림, 소리 봉우리와 실제 시작 시각",
       "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
       "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S120",
+      "file": "tests/글자검사.test.js",
+      "name": "글꼴 검사(fontTools · HarfBuzz) — 네모 글자 · 결합 깨짐(점선 원) · 한자권 부호를 라틴 글꼴이 맡음",
+      "group": "Windows 글꼴과 fontTools · HarfBuzz",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S121",
+      "file": "tests/글자검사.test.js",
+      "name": "엔진 잼(크롬) — 실제 크롬으로 넘침을 잰다",
+      "group": "로컬 Chrome과 Windows 글꼴",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S122",
+      "file": "tests/글자검사.test.js",
+      "name": "판본 명령 — 영상 프레임을 기준 판과 견주고 --기록이면 돌림.판본[키].검수.글자에 영상 지문을 적는다",
+      "group": "ffmpeg와 Windows OCR",
+      "route": "local",
       "profile": "default"
     }
   ]

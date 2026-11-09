@@ -17,8 +17,18 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 119);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 29, linux: 11, local: 79 });
+  assert.equal(check(root), 122);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 29, linux: 11, local: 82 });
+});
+test('the text checker conditional cases keep their localization inputs and have real local routes', () => {
+  const rows = ['S120', 'S121', 'S122'].map(id => manifest.cases.find(row => row.id === id));
+  const source = fs.readFileSync(path.join(root, 'tests/글자검사.test.js'), 'utf8');
+  const skipping = [...source.matchAll(/^test\('([^']+)', \{ skip:/gm)].map(match => match[1]);
+  assert.deepEqual(rows.map(row => row.name).sort(), skipping.sort());
+  for (const row of rows) assert.deepEqual([row.route, row.profile, row.file], ['local', 'default', 'tests/글자검사.test.js']);
+  const { outsideTestedTree } = require('../tools/conditional-qa/tested-tree.cjs');
+  assert.equal(outsideTestedTree('docs/마케팅/현지화/언어프로필.json'), false);
+  assert.equal(outsideTestedTree('docs/브랜드_폰트/InterTight/InterTight-Bold.ttf'), false);
 });
 test('S117–S119 run on the Linux host with the hash-pinned image libraries, never by skipping', () => {
   const rows = ['S117', 'S118', 'S119'].map(id => manifest.cases.find(item => item.id === id));

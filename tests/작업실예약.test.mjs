@@ -54,13 +54,17 @@ async function fixture(t, { options = ALL_OPTIONS } = {}) {
   const day = new Date(slot.getTime() + 9 * 3600000).toISOString().slice(0, 10);
   const stat = fs.statSync(video);
   const rel = path.relative(root, video).split(path.sep).join('/');
-  fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'yuhobuilds', 슬롯: day, 상태: '올릴 준비', 제목: '멈춘 시간 재기', 역할: '권위', 맹검못함: '시험 편 — 실제 화면이 아니다',
+  fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'yuhobuilds', 슬롯: day, 상태: '올릴 준비', 제목: '멈춘 시간 재기', 역할: '권위',
     판: [
       { 계정: 'yuhobuilds-instagram', 파일: rel, 원고: '게시/01-ig/원고.json', 시각: `${day}T21:00:00+09:00` },
       { 계정: 'yuhobuilds-youtube', 파일: rel, 원고: '게시/02-yt/원고.json', 시각: `${day}T21:00:00+09:00` },
       { 계정: 'shift-tistory', 파일: '게시/티스토리.md', 시각: `${day}T21:30:00+09:00` },
     ],
     검사: { 결과: '확인할 것', 파일: [{ 경로: rel, 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString(), sha256: createHash('sha256').update(fs.readFileSync(video)).digest('hex') }] } }, null, 2));
+
+  // 예약·오디오 시험의 정상 입력도 현재 미학 관문을 만족해야 한다. 실제 편의 검수 기록은 쓰지 않는다.
+  fs.writeFileSync(path.join(dir, '게시', '미학맹검.json'), JSON.stringify({ 만든때: new Date().toISOString(),
+    낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] }));
 
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   let at = new Date().toISOString();
