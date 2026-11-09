@@ -1,0 +1,22 @@
+// 이야기(드라마 말하기)에서 막힌 말이 맞춤 연습의 판단 재료로 넘어오나 — WORLD 코치 지도에 드라마 능력이 있는지, 내 위치가 그 영역을 보여 주는지 잰다. 읽기 전용.
+import {createRequire} from 'node:module';
+import path from 'node:path';
+import fs from 'node:fs';
+import {pathToFileURL} from 'node:url';
+const ROOT = process.argv[2];
+const imp = p => import(pathToFileURL(path.join(ROOT, p)).href);
+const require = createRequire(pathToFileURL(path.join(ROOT, 'package.json')).href);
+const {worldMap, worldLearning} = await imp('experiences/synk-world-app/world-learning-map.mjs');
+const speaking = JSON.parse(fs.readFileSync(path.join(ROOT, 'strata/maps/ko-speaking.json'), 'utf8'));
+const dramaSkills = (speaking.nodes || speaking.items).filter(n => n.kind === 'skill' && n.domain === 'speaking').map(n => n.id);
+console.log('드라마 지도의 말하기 능력:', dramaSkills.join(', '));
+for (const id of dramaSkills) console.log(`  WORLD 코치 지도에 ${id}:`, !!worldMap.getNode(id));
+const domains = {}; for (const n of worldMap.allNodes().filter(n => n.kind === 'skill')) (domains[n.domain] = domains[n.domain] || []).push(n.id);
+console.log('WORLD 코치 지도 능력:', Object.entries(domains).map(([k, v]) => `${k} ${v.length}`).join(' · '));
+console.log('말하기:', (domains.speaking || []).join(', '));
+const store = () => { const m = new Map(); return {getItem: k => m.get(k) || null, setItem: (k, v) => m.set(k, v)}; };
+const c = worldLearning.engine.createGame({gameId: 'world-persona', storage: store(), clock: () => '2026-11-09T03:00:00.000Z'});
+const s = c.summary();
+console.log('요약에 든 능력 수', s.skills.length, '· 드라마 능력 포함', s.skills.filter(x => dramaSkills.includes(x.id)).length);
+const entry = fs.readFileSync(path.join(ROOT, 'experiences/drama/pilot/learning-entry.cjs'), 'utf8');
+console.log('드라마 기록 게임 ID:', (entry.match(/GAME_ID\s*=\s*['"]([^'"]+)/) || [])[1], '· 지도 파일:', (entry.match(/ko-speaking\.json/) || ['없음'])[0]);
