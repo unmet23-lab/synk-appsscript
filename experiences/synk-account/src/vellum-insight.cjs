@@ -30,6 +30,10 @@ function finalOf(word) {
 }
 const josa = (word, withFinal, withoutFinal) => `${word}${finalOf(word) ? withFinal : withoutFinal}`;
 const euro = word => { const final = finalOf(word); return `${word}${final && final !== 8 ? '으로' : '로'}`; };
+// A learning item's name from the record (a practised skill or topic) stands in 「」, as Atlas Vellum says it
+// (atlas/vellum.js learningReason, 2026-11-10): bare, a several-word name melts into the sentence. finalOf skips
+// the closing 」, so the particle still follows the name. What the person chose keeps ‘’; apps and modes stay bare.
+const item = name => `「${name}」`;
 // "가와 나", "가, 나와 다": the last pair takes 와/과, longer lists use commas before it.
 function joinAnd(words) {
   if (words.length <= 1) return words[0] || '';
@@ -102,7 +106,7 @@ function memberInsightNow({ connected, reasons = [], chosen = [], interests = []
   const lines = (...rows) => rows.filter(Boolean).slice(0, 2);
   if (!connected) return { kind: 'disconnected', headline: '학습 기록 연결이 꺼져 있어 연습 기록은 보지 않아요.',
     support: [reasons.length ? '배우는 이유만 보여요. 연결을 켜면 해 본 것과 다음에 할 것도 함께 봐요.' : '연결을 켜면 해 본 것과 다음에 할 것을 여기서 함께 봐요.'] };
-  const practised = answered > 0, topicLine = top ? `요즘은 ${josa(top.label, '을', '를')} 가장 많이 연습했어요.` : '';
+  const practised = answered > 0, topicLine = top ? `요즘은 ${josa(item(top.label), '을', '를')} 가장 많이 연습했어요.` : '';
   if (practised && practice.comparable === true && recent && previous && recent.independent > previous.independent) {
     // "처음으로" only when no independent answer exists outside this window either.
     const headline = previous.independent ? `최근 30일, 혼자 답한 횟수가 ${previous.independent}번에서 ${recent.independent}번으로 늘었어요.`
@@ -110,7 +114,7 @@ function memberInsightNow({ connected, reasons = [], chosen = [], interests = []
         : `최근 30일, 혼자 답한 횟수가 0번에서 ${recent.independent}번으로 늘었어요.`;
     return { kind: 'growth', headline, support: lines(declaredLine(), topicLine) };
   }
-  if (practised && practice.strong) return { kind: 'strong', headline: `${josa(practice.strong, '을', '를')} 최근 혼자 해냈어요.`, support: lines(declaredLine(), topicLine) };
+  if (practised && practice.strong) return { kind: 'strong', headline: `${josa(item(practice.strong), '을', '를')} 최근 혼자 해냈어요.`, support: lines(declaredLine(), topicLine) };
   if (practised && recent?.answered && recent.activeDays >= 2)
     return { kind: 'volume', headline: `최근 30일 동안 ${recent.activeDays}일, ${recent.answered}번 답했어요.`, support: lines(declaredLine(), topicLine) };
   if (practised && recent?.answered) {
@@ -118,7 +122,7 @@ function memberInsightNow({ connected, reasons = [], chosen = [], interests = []
     const first = recent.activeDays === 1 && previous?.answered === 0 && answered === recent.answered;
     const word = top ? kindWord(top.kind) : '';
     const alike = top ? topics.filter(topic => kindWord(topic.kind) === word).length : 0;
-    const did = top ? `${alike > 1 ? `${top.label} 같은 ${word} ${countWord(alike)} 가지를` : josa(top.label, '을', '를')} ${recent.independent ? '' : '도움 받으며 '}연습했어요.` : '연습 기록이 생겼어요.';
+    const did = top ? `${alike > 1 ? `${item(top.label)} 같은 ${word} ${countWord(alike)} 가지를` : josa(item(top.label), '을', '를')} ${recent.independent ? '' : '도움 받으며 '}연습했어요.` : '연습 기록이 생겼어요.';
     return { kind: 'one-day', headline: first ? `${when}, 처음으로 ${recent.answered}번 답했어요.` : `${when} ${recent.answered}번 답했어요.`,
       support: [did, recent.independent ? '같은 걸 한 번 더 해 볼까요?' : '이번엔 혼자 한 번 해 볼까요? 틀려도 괜찮아요.'] };
   }
@@ -176,9 +180,9 @@ function memberUnderstandingLine({ kind, label: name, labels = null, count: time
   if (state === 'empty') return '아직 여러 날의 기록이 없어요. 원하는 방식을 직접 고를 수 있어요.';
   if (state === 'declared') {
     if (kind === 'learning-topic') {
-      if (selection === 'interested') return `${josa(name, '을', '를')} 더 배우고 싶다고 알려 줬어요.`;
-      if (selection === 'practice-only') return `${josa(name, '은', '는')} 연습에서 나온 것뿐이라고 알려 줬어요.`;
-      if (selection === 'not-now') return `${josa(name, '은', '는')} 지금 배우고 싶은 게 아니라고 알려 줬어요.`;
+      if (selection === 'interested') return `${josa(item(name), '을', '를')} 더 배우고 싶다고 알려 줬어요.`;
+      if (selection === 'practice-only') return `${josa(item(name), '은', '는')} 연습에서 나온 것뿐이라고 알려 줬어요.`;
+      if (selection === 'not-now') return `${josa(item(name), '은', '는')} 지금 배우고 싶은 게 아니라고 알려 줬어요.`;
       fail('member topic selection');
     }
     const chosen = Array.isArray(labels) && labels.length && labels.every(label) ? labels : [name];
@@ -187,7 +191,7 @@ function memberUnderstandingLine({ kind, label: name, labels = null, count: time
   if (!Number.isSafeInteger(times) || !Number.isSafeInteger(activeDays)) fail('member observation count');
   const period = periodEnd ? `${memberDate(periodEnd)} 기준 최근 30일` : '최근 30일';
   const fact = kind === 'usage-repeat' ? `${period} 동안 ${josa(name, '을', '를')} ${activeDays}일, ${times}번 열었어요.`
-    : kind === 'learning-topic' ? `${period} 동안 ${josa(name, '을', '를')} ${activeDays}일에 걸쳐 ${times}번 연습했어요.`
+    : kind === 'learning-topic' ? `${period} 동안 ${josa(item(name), '을', '를')} ${activeDays}일에 걸쳐 ${times}번 연습했어요.`
       : `${period} 동안 ${euro(name)} ${activeDays}일에 걸쳐 ${times}번 답했어요.`;
   if (state === 'agreed') return `${fact} ${kind === 'learning-topic' ? '더 배우고 싶은 내용이라고 알려 줬어요.' : '나에게 맞는 방식이라고 알려 줬어요.'}`;
   if (state === 'contextual') return `${fact} 때에 따라 다르다고 알려 줬어요.`;
@@ -247,7 +251,7 @@ function memberUnderstandingNote({ line, note }) {
 function memberUnderstandingActivityReason({ kind, labels }) {
   if (!['topic', 'learning', 'app'].includes(kind) || !Array.isArray(labels) || !labels.length || labels.some(name => typeof name !== 'string')) fail('member activity link');
   const named = labels.join(' · ');
-  if (kind === 'learning') return `더 배우고 싶다고 한 ‘${named}’ 연습을 WORLD에서 골라 볼 수 있어요.`;
+  if (kind === 'learning') return `더 배우고 싶다고 한 ${item(named)} 연습을 WORLD에서 골라 볼 수 있어요.`;
   if (kind === 'app') return `${josa(named, '을', '를')} 이어서 쓸 앱으로 골랐어요.`;
   return `고른 관심 주제 ‘${named}’${finalOf(named) ? '과' : '와'} 이어지는 앱이에요.`;
 }

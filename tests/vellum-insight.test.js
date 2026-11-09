@@ -37,7 +37,7 @@ test('one day of practice says the day and what was practised, and invites one m
   const day = now({ practice: practice({ answered: 6, lastAt: '2026-10-18T09:00:00.000Z', recent: period(6, 0, 4, 1), previous: period(0, 0, 0, 0),
     topics: [{ label: '-(으)세요', kind: 'grammar_point', count: 3, activeDays: 1 }, { label: '-아요/어요', kind: 'grammar_point', count: 2, activeDays: 1 }, { label: '카페', kind: 'situation', count: 1, activeDays: 1 }] }) });
   assert.equal(day.kind, 'one-day');assert.equal(day.headline, '어제, 처음으로 6번 답했어요.');
-  assert.deepEqual(day.support, ['-(으)세요 같은 표현 두 가지를 도움 받으며 연습했어요.', '이번엔 혼자 한 번 해 볼까요? 틀려도 괜찮아요.']);
+  assert.deepEqual(day.support, ['「-(으)세요」 같은 표현 두 가지를 도움 받으며 연습했어요.', '이번엔 혼자 한 번 해 볼까요? 틀려도 괜찮아요.']);
   const later = now({ practice: practice({ answered: 20, lastAt: '2026-10-16T09:00:00.000Z', recent: period(6, 2, 1, 1), previous: period(0, 0, 0, 0) }) });
   assert.equal(later.headline, '사흘 전 6번 답했어요.', 'older answers outside the window rule out "처음으로"');
 });
@@ -65,7 +65,7 @@ test('a confirmed statement is said back whole or not at all', () => {
     'an avoidance cannot be said this way, so no part of the statement is shown');
   assert.equal(V.memberInsightStatement([{ field: 'work-style', value: 'plan-first', polarity: 'prefer', condition: null }]), '');
   const strong = now({ statement: [{ field: 'explanation', value: 'brief', polarity: 'prefer', condition: null }], practice: practice({ answered: 9, independent: 6, strong: '짧은 지시 듣기', recent: period(9, 6, 0, 2) }) });
-  assert.equal(strong.headline, '짧은 지시 듣기를 최근 혼자 해냈어요.');assert.equal(strong.support[0], '짧은 설명을 보고 싶다고 알려 줬어요.');
+  assert.equal(strong.headline, '「짧은 지시 듣기」를 최근 혼자 해냈어요.');assert.equal(strong.support[0], '짧은 설명을 보고 싶다고 알려 줬어요.');
 });
 
 test('facts, questions and corrections stay about the record and the answer', () => {
@@ -90,4 +90,15 @@ test('particles follow the last sound, including digits, Latin letters and closi
   assert.equal(V.joinAnd(['한국 여행', '드라마·음악·웹툰', '시험·자격']), '한국 여행, 드라마·음악·웹툰과 시험·자격');
   assert.equal(V.dayLabel('2025-12-31T16:00:00.000Z', at), '1월 1일', 'Korea\'s calendar decides the date');
   assert.equal(V.dayLabel('2025-12-30T00:00:00.000Z', at), '2025년 12월 30일', 'another year is named');
+});
+
+test('a learning item from the record stands in 「」 (Vellum, 2026-11-10); choices keep ‘’, apps and modes stay bare', () => {
+  assert.equal(V.memberUnderstandingLine({ kind: 'learning-topic', label: '카페 주문', state: 'declared', selection: 'interested' }), '「카페 주문」을 더 배우고 싶다고 알려 줬어요.');
+  assert.equal(V.memberUnderstandingLine({ kind: 'learning-topic', label: '주세요', state: 'declared', selection: 'practice-only' }), '「주세요」는 연습에서 나온 것뿐이라고 알려 줬어요.');
+  assert.equal(V.memberUnderstandingLine({ kind: 'learning-topic', label: '카페 주문', count: 5, activeDays: 3, state: 'observed' }), '최근 30일 동안 「카페 주문」을 3일에 걸쳐 5번 연습했어요. 연습했다는 것만으로 관심이라고 정하지 않아요.');
+  const busy = now({ practice: practice({ answered: 9, independent: 6, strong: '짧은 지시 듣기', recent: period(9, 6, 0, 2), topics: [{ label: '주세요', kind: 'word', count: 6, activeDays: 2 }] }) });
+  assert.equal(busy.headline, '「짧은 지시 듣기」를 최근 혼자 해냈어요.');assert.ok(busy.support.includes('요즘은 「주세요」를 가장 많이 연습했어요.'));
+  assert.equal(V.memberInsightUsage({ label: 'SYNK WORLD', count: 5, activeDays: 3 }), 'SYNK WORLD를 3일 동안 5번 열었어요.');
+  assert.equal(V.memberUnderstandingLine({ kind: 'practice-mode', label: '듣기', count: 7, activeDays: 3, state: 'observed' }), '최근 30일 동안 듣기로 3일에 걸쳐 7번 답했어요. 기록된 방식일 뿐 선호를 뜻하지 않아요.');
+  assert.equal(V.memberCorrectionLine({ kind: 'override', facet: 'explanation', labels: ['자세히'] }), '설명 길이로 ‘자세히’를 골랐어요.');
 });

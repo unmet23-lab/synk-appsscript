@@ -34,7 +34,7 @@ const accountFactory = () => ({
       ['sit-travel-lodging', '숙소', '숙소에서', '방을 예약했어요.'], ['sit-travel-shopping', '쇼핑', '물건을 살 때', '이거 얼마예요?']].map(situation) },
     { reason: 'life', situations: [['sit-life-office', '주민센터·병원·은행', '주민센터·병원·은행에서', '주소를 바꾸러 왔어요.'], ['sit-life-notice', '공공 안내문 읽기', '안내문을 읽을 때', '수영 모자를 꼭 써야 합니다.']]
       .map(situation) }],
-    practice: enabled ? { answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 듣고 세부 정보 찾기를 조금 더 연습해 봐요.' }, { line: '낱말 듣기를 최근 혼자 해냈어요. 가볍게 이어가요.' }] } : { answered: 0, independent: 0, assisted: 0, skills: [] } } })
+    practice: enabled ? { answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 「듣고 세부 정보 찾기」를 조금 더 연습해 봐요.' }, { line: '「낱말 듣기」를 최근 혼자 해냈어요. 가볍게 이어가요.' }] } : { answered: 0, independent: 0, assisted: 0, skills: [] } } })
 });
 // SYNK TOWN's 「마을 기록」 in the shape talk's records route sends (synthetic — ?town=new|unready|switch|granted|academy|fail picks a state).
 const townMode = params.get('town') || 'entered';let townRevision = 7, townBands = true, townConsent = townMode === 'granted' ? 'granted' : 'unasked';

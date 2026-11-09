@@ -28,7 +28,7 @@
     "experiences/synk-account/src/member-statement-v9.cjs": "a49fe82eaea20135170a2ef92644089df1f8034541d6c7b2375b1aa106b099a3",
     "experiences/synk-account/src/member-statement.cjs": "50e2e3fccba5e2564c47f6a3b10999044e84bec41f230870f3f1c97d51b9875e",
     "experiences/synk-account/src/member-understanding-data.mjs": "b05543646d5f154be5336ad7a2eb6ff5ec781369ccb9220ccf2d1fb3fd309866",
-    "experiences/synk-account/src/vellum-insight.cjs": "3b207667003ad7798dda238c147caa5c053e01e42ae56d68664f1d002a487d68"
+    "experiences/synk-account/src/vellum-insight.cjs": "e5febdbe48a500d897abac9bac2b1fc06809cd772e51ec86e684968d7203f42e"
   },
   "files": {
     "member-activity-data.mjs": {
@@ -68,7 +68,7 @@
       ]
     },
     "member-understanding.mjs": {
-      "sha256": "5ca243e887e3dd7c73c7f70e3bc6be12bd69637e29afdff07ef0a95c2af870c0",
+      "sha256": "9a86905d16e40a4fe9bdecfdaddfaaccc6136b28cebcce65605f85a50afe10eb",
       "imports": [
         "member-shared/chunk-2PM2464V.mjs",
         "member-shared/chunk-4G5MC6EL.mjs",

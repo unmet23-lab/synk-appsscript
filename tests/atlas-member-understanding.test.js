@@ -252,7 +252,7 @@ test('learning links require an explicit current interest and app corrections ob
   const document = { ...empty(), reviews: [feedback(110, f)] };
   const confirmed = report({ accountSummary, document, asOf: after(2) });
   assert.deepEqual(confirmed.activities.map(row => row.targetId), ['world']);
-  assert.match(confirmed.activities[0].reason, /더 배우고 싶다고 한 ‘주문’/);
+  assert.match(confirmed.activities[0].reason, /더 배우고 싶다고 한 「주문」/);
   document.overrides.push(correction(111, f.id, ['practice-only'], after(3)));
   assert.deepEqual(report({ accountSummary, document, asOf: after(4) }).activities, []);
   const denied = { ...accountSummary, learning: { enabled: false, revision: 8 }, shared: 'declared-only' };
