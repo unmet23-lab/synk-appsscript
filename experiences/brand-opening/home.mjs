@@ -165,6 +165,10 @@ function disposePanelContent({keepView=false}={}){
  if(!keepView)content.replaceChildren();
 }
 // 3D 방에서는 다음 학습 알약이 숨어 있다. 오늘 카드에서 보이는 첫 주 행동으로 초점을 돌린다(홈이 준비되기 전에는 inert라 받지 못한다).
+// 스크립트가 옮긴 이 초점은 키보드를 쓰기 전에는 고리를 그리지 않는다(home.css data-input, 11-09 — 홈을 열자마자 흰 단추에 2px 고리 + 3px 틈이
+// 붙어 「이중 고리」로 읽혔다. 브라우저는 아무 입력도 없던 첫 화면의 스크립트 초점에 :focus-visible을 켠다). 키를 누르면 바로 보이고, 화면을 누르면 다시 숨는다.
+window.addEventListener('keydown',event=>{if(!['Shift','Control','Alt','Meta'].includes(event.key))document.documentElement.dataset.input='keyboard';},true);
+window.addEventListener('pointerdown',()=>{document.documentElement.dataset.input='pointer';},true);
 function focusHomeAction(){[...document.querySelectorAll('#home-tutor .home-tutor-action,#home-tutor .home-tutor-choose,#home-tutor .game-tutor-help,#life-next-button')].find(el=>el.getClientRects().length&&!el.disabled&&!el.closest('[inert]'))?.focus({preventScroll:true});}
 // 닫기 전환(유호님 10-14 B안): 정리·상태는 바로 하고, 판 모습만 160ms 동안 흐려지며 작아진 뒤 닫는다(home.css .is-closing).
 // 게임·튜터 고르기(틀 전체)와 움직임 줄이기에서는 바로 닫는다. 그 사이 다른 시트가 열리면 닫기를 취소한다(openPanel).

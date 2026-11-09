@@ -85,14 +85,15 @@ html[lang=mn] .study-home-note .quiet-button{padding:0 4px}
 #home-tutor .game-tutor-message small b:not(.w-name){font-weight:var(--wt-strong);color:var(--w-ink-2)}
 #home-tutor .game-tutor-line{margin:3px 0 0;min-height:0;max-height:none;font-size:16px;line-height:1.5;font-weight:500;color:var(--w-ink);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 #home-tutor .game-tutor-sound,#home-tutor .game-tutor-name{display:none}
-/* 추천 이유 한 줄(Core·Vellum이 고른 까닭, 10-20 검수 #6·#17): 튜터 말 아래 작게, 두 줄까지. */
-#home-tutor .home-tutor-context{margin:4px 0 0;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 추천 이유 한 줄(Core·Vellum이 고른 까닭, 10-20 검수 #6·#17): 튜터 말 아래 작게, 세 줄까지 — 두 줄 제한은 문장 끝을 잘랐다(10-22 몽골어 「…танд тааруулж өгнө.」,
+   11-09 360폭 이하 한국어 28문장 중 5개). 390폭 이상 한국어는 두 줄에 든다. */
+#home-tutor .home-tutor-context{margin:4px 0 0;font-size:13px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 #home-tutor .home-tutor-context:empty{display:none}
-/* 영어·몽골어는 같은 이유 문장이 한국어보다 길어 세 줄까지(10-22 — 몽골어 「…танд тааруулж өгнө.」가 두 줄에서 잘렸다). */
-html[lang=en] #home-tutor .home-tutor-context,html[lang=mn] #home-tutor .home-tutor-context{-webkit-line-clamp:3}
 #home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
 #home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 #home-tutor .home-tutor-action:active,.home-tutor-choose:active{transform:scale(.98)}
+/* 홈이 스크립트로 초점을 준 첫 행동 단추는 키보드를 쓰기 전(data-input이 keyboard가 아님)에는 초점 고리를 그리지 않는다(home.mjs focusHomeAction, 11-09). */
+html:not([data-input=keyboard]) :is(#home-tutor .home-tutor-action,#home-tutor .home-tutor-choose,#home-tutor .game-tutor-help,#life-next-button):focus-visible{outline:none}
 #home-tutor .game-tutor-help:disabled{opacity:.55;cursor:wait}
 .home-tutor-choose{flex-basis:100%}
 .home-tutor-choose span{display:none}

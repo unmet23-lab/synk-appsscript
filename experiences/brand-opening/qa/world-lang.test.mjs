@@ -73,7 +73,9 @@ test('Vellum 추천 이유는 여섯 꼴 × 18 항목 × 고른 목표 줄 있�
  for(const skill of strataSkills())for(const status of STATUSES)for(const goal of [false,true]){
   if(goal&&status==='unseen')continue; // activityReason은 처음 보는 항목에 이름을 붙이지 않는다.
   const ko=goal?activityReason({reasons:[`practice.${status}`,'goal.declared'],state:status,label:skill.label_ko}):learningReason({status,label:skill.label_ko});
-  assert.equal(tMessage(ko,'ko'),ko);
+  // 한국어 화면은 같은 문장에서 항목 이름만 낫표로 묶는다(11-09). 두 번 거쳐도 한 번만 묶인다.
+  const shown=ko.replace(skill.label_ko,`「${skill.label_ko}」`);
+  assert.equal(tMessage(ko,'ko'),shown,ko);assert.equal(tMessage(shown,'ko'),shown,shown);
   for(const code of ['en','mn']){
    const want=t(`msg.vellum.${status}`,{skill:t(`position.skill.${skill.id}`,undefined,code)},code)+(goal?` ${t('msg.vellum.goal',undefined,code)}`:'');
    const got=tMessage(ko,code);
@@ -84,6 +86,20 @@ test('Vellum 추천 이유는 여섯 꼴 × 18 항목 × 고른 목표 줄 있�
  assert.equal(missingStrings().length,before,'바뀐 문장은 빠진 말로 남지 않는다');
  assert.equal(tMessage(learningReason({status:'checking',label:'듣고 세부 정보 찾기'}),'en'),'Let’s check ‘Listening for details’ a little more.');
  assert.equal(tMessage(learningReason({status:'review',label:'소리 듣고 글자 찾기'}),'mn'),'«Авиаг сонсоод үсгийг олох» чадварыг дахин харах цаг боллоо.');
+ // 홈 튜터 카드에 나오던 줄(synk.im 「쓸수록 달라지는 것」 조각) — 이름이 문장에 녹지 않게.
+ assert.equal(tMessage(activityReason({reasons:['practice.practice','goal.declared'],state:'practice',label:'듣고 세부 정보 찾기'}),'ko'),
+  '최근 놓친 「듣고 세부 정보 찾기」를 조금 더 연습해 봐요. 고른 목표와 이어지는 활동이에요.');
+ assert.equal(tMessage(learningReason({status:'unseen',label:'낱말 듣기'}),'ko'),'「낱말 듣기」는 아직 기록이 적어요. 짧게 확인해 봐요.');
+});
+
+test('이번 주 숙제 이유(world-learning-plan.mjs)도 한국어는 항목 이름을 묶고, 영어 · 몽골어는 그 언어 틀로',()=>{
+ const ko='이번 주 숙제예요. 듣고 세부 정보 찾기에서 놓친 답이 있어 새 문항으로 다시 확인해요.',old='이번 주 숙제예요. 듣고 세부 정보 찾기 기록이 오래돼 새 문항으로 다시 확인해요.';
+ assert.equal(tMessage(ko,'ko'),'이번 주 숙제예요. 「듣고 세부 정보 찾기」에서 놓친 답이 있어 새 문항으로 다시 확인해요.');
+ assert.equal(tMessage(old,'ko'),'이번 주 숙제예요. 「듣고 세부 정보 찾기」 기록이 오래돼 새 문항으로 다시 확인해요.');
+ assert.equal(tMessage(ko,'en'),'This is this week’s homework. You missed an answer in ‘Listening for details’, so we’ll check it again with new questions.');
+ // 이름이 표에 없으면 한국어도 그대로 둔다(묶을 이름인지 모른다).
+ const unknown='이번 주 숙제예요. 표에 없는 이름에서 놓친 답이 있어 새 문항으로 다시 확인해요.';
+ assert.equal(tMessage(unknown,'ko'),unknown);
 });
 
 test('조사는 이름 끝 받침을 따르고, 맞지 않는 조사·모르는 이름·틀 밖 문장은 그대로 두고 기록한다',async()=>{
@@ -96,7 +112,7 @@ test('조사는 이름 끝 받침을 따르고, 맞지 않는 조사·모르는 
   assert.match(learningReason({status:'checking',label:'낱말 소리 익힘'}),/익힘을 /);
   for(const text of ['낱말 소리 익힘를 조금 더 확인해 봐요.','듣고 세부 정보 찾기을 조금 더 확인해 봐요.','듣고 세부 정보 찾기은 아직 기록이 적어요. 짧게 확인해 봐요.',
    '조사 — 은/는·이/가를 조금 더 확인해 봐요.','모르는 문장이에요. 고른 목표와 이어지는 활동이에요.','{skill}을(를) 조금 더 확인해 봐요.']){
-   assert.equal(fresh.tMessage(text,'en'),text);assert.equal(fresh.tMessage(text,'mn'),text);
+   assert.equal(fresh.tMessage(text,'en'),text);assert.equal(fresh.tMessage(text,'mn'),text);assert.equal(fresh.tMessage(text,'ko'),text);
    if(HANGUL.test(text))assert.ok(fresh.missingStrings().some(item=>item.key===`msg:${text.slice(0,60)}`&&item.lang==='mn'),text);
   }
  }finally{delete STRINGS['position.skill.qa.final'];}

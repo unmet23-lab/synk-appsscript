@@ -2,7 +2,7 @@
 # 사이트 구역 그림을 만든다(2026-11-09). 나가는 곳은 SYNK-website site-v10/assets/learner/(공개 주소 /assets/v10/learner/).
 #  ① 사진 두 연작: 홈 · 아틀라스의 창가 다섯 장(window-*)과 LAB의 교실 창가 넉 장(class-*). 구운 원본(GPT 이미지 2.6 구독,
 #     지시문은 창가사진_지시문.md)을 연작의 첫 판에 맞춰 옮겨(칸이 바뀔 때 창틀 · 칠판 · 책상이 떨지 않게) webp로.
-#  ② 실제 화면 부품: 장면 캡처(experiences/synk-world-app/qa/site-learner-scene.mjs 출력 — 한국어 --폭 390, 영어 --폭 470)에서 물음에 답하는 자리만 언어마다 webp로.
+#  ② 실제 화면 부품: 장면 캡처(experiences/synk-world-app/qa/site-learner-scene.mjs 출력 — 한국어 --폭 390, 영어 --폭 430)에서 물음에 답하는 자리만 언어마다 webp로.
 #     튜터 카드는 단추까지(아래 링크 셋은 뺀다), 다시 확인은 그 항목 카드만(위 설명문은 뺀다) — 11-09 맹검 「위젯처럼 보인다」.
 #  ③ LAB 문제 카드의 펠트 그림(앱의 첫 레슨 장면 그림, experiences/brand-opening/assets/world-felt/greetings.webp)을 작게.
 # 쓰기: python -I -X utf8 그림.py <구운 사진 폴더> <캡처 폴더(ko · en이 든)> <나갈 폴더> [SYNK-appsscript 뿌리]
@@ -17,14 +17,16 @@ os.makedirs(나갈, exist_ok=True)
 
 # ── ① 사진 ──
 여백 = 8  # 옮긴 뒤 가장자리에 빈 칸이 보이지 않게 네 변을 조금 자른다
+def 읽기(p):  # cv2.imread는 윈도우에서 한글 경로를 못 읽는다(사진 원본이 SYNK-보관함/연구 아래에 있다)
+    return cv2.imdecode(np.fromfile(p, np.uint8), cv2.IMREAD_COLOR)
 def 연작(접두, 장면, 가림칠):
-    기준 = cv2.imread(os.path.join(사진폴더, 장면[0][1] + '.png'))
+    기준 = 읽기(os.path.join(사진폴더, 장면[0][1] + '.png'))
     H, W = 기준.shape[:2]
     가림 = np.zeros((H, W), np.uint8)
     가림칠(가림, W, H)  # 움직이지 않는 실내(벽 · 틀 · 책상 가장자리)로만 맞춘다
     g0 = cv2.GaussianBlur(cv2.cvtColor(기준, cv2.COLOR_BGR2GRAY).astype(np.float32), (0, 0), 2)
     for 이름, 원본 in 장면:
-        im = cv2.imread(os.path.join(사진폴더, 원본 + '.png'))
+        im = 읽기(os.path.join(사진폴더, 원본 + '.png'))
         if im.shape[:2] != (H, W):
             im = cv2.resize(im, (W, H), interpolation=cv2.INTER_AREA)
         if 원본 != 장면[0][1]:
@@ -54,13 +56,16 @@ def 둥글게(im, r):
     m = m.resize(im.size, Image.LANCZOS); im = im.convert('RGBA'); im.putalpha(m)
     return im
 def 단추아래(im):
-    # 튜터 카드의 흰 단추(바깥 고리 · 채움 · 바깥 고리 세 덩어리)의 맨 아래 줄
+    # 튜터 카드의 흰 단추 맨 아래 줄(채움 + 아래 안쪽 그림자 2px까지). 11-09까지는 홈이 스크립트로 준 초점의 고리(2px + 3px 틈)가
+    # 단추 둘레에 함께 찍혀 「바깥 고리 · 채움 · 바깥 고리」 세 덩어리였다 — 앱이 키보드를 쓰기 전에는 그 고리를 그리지 않게 고친 뒤로는 한 덩어리다.
     a = np.array(im.convert('RGB')).astype(int); h, w, _ = a.shape
-    white = (a[:, int(w * .15):int(w * .85)].min(axis=2) > 232).mean(axis=1)
-    rows = np.where(white > .55)[0]
+    bright = (a[:, int(w * .15):int(w * .85)].min(axis=2) > 200).mean(axis=1)
+    rows = np.where(bright > .55)[0]
     blocks = np.split(rows, np.where(np.diff(rows) > 3)[0] + 1)
-    assert len(blocks) >= 3, '튜터 카드 단추를 못 찾음'
-    return int(blocks[2][-1])
+    단추 = max(blocks, key=len)
+    assert len(단추) > 60, '튜터 카드 단추를 못 찾음'
+    assert len(blocks) == 1, f'단추 둘레에 고리가 또 찍혔다(덩어리 {len(blocks)}) — 초점 고리가 보이는 판이다'
+    return int(단추[-1])
 def 아래줄지움(im, 몇=46):
     # 조각 맨 아래에 걸린 구분선(카드 밑 테두리 · 목록 줄)을 바탕색으로 지운다 — 가로로 고르게 이어진 줄만(글자 · 밑줄 링크는 고르지 않다).
     # 둥근 틀 안에서 바닥에 곧은 줄이 비치면 캡처를 오린 자국으로 보인다(11-09 마감 점검).
@@ -92,11 +97,17 @@ for 언어 in ('ko', 'en'):
     os.makedirs(폴더, exist_ok=True)
     열기 = lambda n: Image.open(os.path.join(캡처, n + '.png')).convert('RGB')
     쓰기 = lambda 이름, im: (im.save(os.path.join(폴더, 이름 + '.webp'), 'WEBP', quality=88, method=6), print(언어, 이름, im.size, os.path.getsize(os.path.join(폴더, 이름 + '.webp')) // 1024, 'KB'))
-    # 튜터 카드 — 단추 아래 34px(@2x)에서 자른다
-    for 이름, 원본 in (('piece-tutor', '30-day8-home.crop'), ('piece-tutor-review', '63-day2-home-review.crop')):
+    # 튜터 카드 — 단추 아래 34px(@2x)에서 자른다. 사이트 카드에는 「최근 놓친 …」 이유가 나온 날을 쓴다 — 환승 러시 결과는 판마다 달라 그 문장이
+    # 나오는 날도 판마다 다르다(11-09: 8일째가 「다시 살펴볼 때」인 판이 있었다). 8일째를 먼저 본다 — 둘째 날은 추천도 「듣기 짧은 연습 · 듣고 세부 정보 찾기」라
+    # 카드 위아래 줄에 같은 말이 겹쳤다(11-09 맹검). 8일째는 「바람길 · 짧은 지시 듣기」 + 놓친 항목이라 겹치지 않는다.
+    찾을글 = {'ko': '최근 놓친', 'en': 'since you missed'}[언어]
+    놓친날 = next((n for n in ('30-day8-home', '20-day2-home', '40-day31-home') if 찾을글 in open(os.path.join(캡처, n + '.txt'), encoding='utf-8').read()), None)
+    assert 놓친날, f'{언어}: 「{찾을글}」 이유가 나온 날이 없다 — 장면을 다시 돌린다'
+    print(언어, 'piece-tutor 원본', 놓친날)
+    for 이름, 원본 in (('piece-tutor', 놓친날 + '.crop'), ('piece-tutor-review', '63-day2-home-review.crop')):
         im = 열기(원본); 아래 = 단추아래(im) + 34
         쓰기(이름, 둥글게(im.crop((0, 0, im.width, min(im.height, 아래))), 58))
-    # 같은 표현, 다른 장면 · 돌아올 표현 · 게임 — 자리를 재서 찍은 띠 그대로(영어는 470 폭으로 찍어 튜터 줄이 말줄임 없이 다 보인다)
+    # 같은 표현, 다른 장면 · 돌아올 표현 · 게임 — 자리를 재서 찍은 띠 그대로(영어는 430 폭으로 찍어 튜터 줄이 말줄임 없이 다 보인다)
     쓰기('piece-scene', 열기('05-review-new-scene.band'))
     쓰기('piece-back', 아래줄지움(열기('04-review-summary.band')))
     쓰기('piece-game', 열기('13-game-pick.band'))
