@@ -337,7 +337,21 @@ const Bubble: React.FC<{ t: number; from: number; until: number; left: number; t
   );
 };
 
-// 위아래 판 위 이름표
+// 위아래 판 구석의 ✕ · ✓ — 크림 펠트 동그라미 하나(글 없음)
+const Tick: React.FC<{ t: number; at: number; left: number; top: number; color: string; mark: string }> = ({ t, at, left, top, color, mark }) => {
+  if (t < at) return null;
+  const a = interpolate(t, [at, at + 0.08, at + 0.2], [0.4, 1.15, 1], clamp);
+  return (
+    <div style={{ position: 'absolute', left, top, width: 140, height: 140, transform: `scale(${a})`, filter: 'drop-shadow(0 8px 12px rgba(20,12,4,0.4))' }}>
+      <div style={{ position: 'relative', width: 140, height: 140, borderRadius: 70, overflow: 'hidden', border: `6px solid ${color}`, boxSizing: 'border-box', background: FELT, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Img src={staticFile('img/clothCream.jpg')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <span style={{ position: 'relative', fontFamily: KO, fontWeight: 900, fontSize: 88, lineHeight: 1, color }}>{mark}</span>
+      </div>
+    </div>
+  );
+};
+
+// 위아래 판 위 이름표(지금은 쓰지 않는다 — Tick으로 바꿈)
 const Label: React.FC<{ t: number; at: number; top: number; color: string; mark: string; children: React.ReactNode }> = ({ t, at, top, color, mark, children }) => {
   const a = interpolate(t, [at, at + 0.14], [0, 1], clamp);
   return (
@@ -423,7 +437,8 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
           <Bubble t={t} from={T.b1} until={T.rule} left={330} top={520} w={690} h={250} tip={[800, 860]} color={WARM} size={72} ko={TEXT.b1Ko} read={TEXT.b1Read} mn={TEXT.b1Mn} />
           {t >= T.rule && t < T.gag ? (
             <>
-              <Sign t={t} at={T.rule} until={T.gag} size={48}>
+              {/* 규칙 팻말은 두 판 사이 이음매에, ✕ · ✓는 글 없는 작은 표로 — 위 팻말 + 이름표 둘, 글 상자 셋이 「카드뉴스 틀 · 교수 머리와 인형 몸을 가림」(아르곤 맹검 v12 [K8] [K5] [C017]) */}
+              <Sign t={t} at={T.rule} until={T.gag} size={46} top={872}>
                 {TEXT.ruleFriend}
                 {': '}
                 <span style={{ fontFamily: KO, fontWeight: 900 }}>수고하세요</span>
@@ -432,8 +447,8 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
                 {': '}
                 <span style={{ fontFamily: KO, fontWeight: 900 }}>안녕히 계세요</span>
               </Sign>
-              <Label t={t} at={T.rule + 0.15} top={812} color={COLD} mark="✕">{TEXT.no}</Label>
-              <Label t={t} at={T.rule + 1.0} top={1000} color={WARM} mark="✓">{TEXT.yes}</Label>
+              <Tick t={t} at={T.rule + 0.15} left={880} top={70} color={COLD} mark="✕" />
+              <Tick t={t} at={T.rule + 1.0} left={880} top={1090} color={WARM} mark="✓" />
             </>
           ) : null}
           <Sign t={t} at={T.gag + 0.1} until={T.a3} size={54}>{TEXT.gagMn}</Sign>

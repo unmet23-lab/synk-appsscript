@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep EXACTLY the same frozen felt study room covered in frost and icicles, the same camera, framing, cold light, door, window, desk with icicles, lamp, mug, papers, rug, the same frozen felt professor doll with the same stiff worried face — and the floor by the door stays empty, with no doll there — every position and size unchanged, everything still frosted. Image 2 is only a reference for what stands on the bookshelf. Only change what is written below.
+
+Change: the bookshelf behind must hold exactly the same things as the bookshelf in Image 2 — rows of felt books on every shelf, the same books in the same order — now covered in the same frost and small icicles as the rest of the room. There is NO potted plant and no other object on the bookshelf. Nothing else changes. Absolutely no text, letters, numbers, logos or symbols anywhere.

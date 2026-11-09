@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, small pale-pink felt cheeks). Mongle has NO mouth, NO arms, NO legs, ever.
+
+Use Image 1 as the base picture: keep EXACTLY the same small felt dorm room at night, the same bed, pillow, window, shelf, desk lamp, the same felt phone lying on the blanket with its glowing screen, the same camera, framing and light, and the same tall, energized Mongle with its wool standing up and its wide bead eyes. Only change what is written below.
+
+Change: Mongle stands firmly ON the bed — its scalloped hem rests on the blanket and presses a soft dent into it, with a soft contact shadow, so it clearly is not floating. The light-green felt blanket lies naturally on the mattress, rumpled around Mongle's hem, with no part of it rising up into the air. Absolutely no text, letters, numbers, logos or symbols anywhere.

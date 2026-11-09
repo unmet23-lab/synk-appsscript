@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, small pale-pink felt cheeks). Mongle has NO mouth, NO arms, NO legs, ever.
+
+Use Image 1 as the base picture: keep EXACTLY the same convenience-store stock room, the same open felt box, the same tape roll, the same camera, framing and light, and the same Mongle pose draped over the front flap of the box with its face in the same place. Only change what is written below.
+
+Change: Mongle looks exhausted, not alert: each glossy black bead eye is half covered by a heavy, droopy felt eyelid in the same coral wool (the lid covers the top half of each bead), the eyes look down at the flap, and the face sags a little against the flap. Same eye positions and spacing as in Image 1, same two small pale-pink cheeks. It must read instantly as "so tired". Absolutely no text, letters, numbers, logos or symbols anywhere.

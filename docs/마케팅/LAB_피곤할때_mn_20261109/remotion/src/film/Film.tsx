@@ -222,7 +222,8 @@ const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
   const blink = low ? (Math.sin(t * 9) > -0.1 ? 1 : 0.35) : 1;
   const full = t >= UP_AT && t < NEXT_AT;
   const grow = 1 + (full ? 0.22 * interpolate(t, [UP_AT, UP_AT + 0.12, UP_AT + 0.5], [1, 1.4, 1], clamp) : 0) + 0.08 * bump(t, 5.2, 0.05, 0.3) + 0.08 * bump(t, 9.8, 0.05, 0.3) + 0.08 * bump(t, 14.6, 0.05, 0.3) + 0.08 * bump(t, 19.6, 0.05, 0.3);
-  const col = v > 0.5 ? '#3FBF6A' : v > 0.2 ? '#F2B02E' : '#E5383B';
+  // 100%의 초록을 펠트 결에 맞게 눌렀다 — 「형광 초록 배터리가 밤 조명 톤을 깬다」(아르곤 맹검 v8 [K16])
+  const col = v > 0.5 ? '#6DAA6A' : v > 0.2 ? '#E2A93A' : '#D9463F';
   const W = 118;
   const H = 228;
   const fillH = Math.max(0.03, v) * (H - 20);
@@ -360,7 +361,8 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       {/* 몽글 머리 위에서 아래로 — 아래에 두면 몸 · 이불 위 휴대폰을 덮는다 */}
       <Small t={t} from={UP_AT + 0.08} until={KARAOKE_AT} left={250} top={460} width={580} ko={TEXT.goKo} read={TEXT.goRead} mn={TEXT.goMn} tip={[590, 770]} koSize={96} />
       <Small t={t} from={KARAOKE_AT + 0.1} until={NEXT_AT} left={480} top={540} width={560} ko={TEXT.moreKo} read={TEXT.moreRead} mn={TEXT.moreMn} tip={[520, 880]} koSize={92} />
-      <Small t={t} from={NEXT_AT + 0.33} until={TOTAL + 1} left={300} top={620} width={560} ko="졸려…" read="жоллё" mn="Нойр хүрч байна…" tip={[640, 860]} koSize={92} />
+      {/* 꼬리가 몸 안에 묻혀 「꼬리 없는 말풍선이 머리 위에 벽돌처럼」(아르곤 맹검 v7) — 말풍선을 올리고 꼬리를 머리 꼭대기에 */}
+      <Small t={t} from={NEXT_AT + 0.33} until={TOTAL + 1} left={300} top={548} width={560} ko="졸려…" read="жоллё" mn="Нойр хүрч байна…" tip={[690, 880]} koSize={92} />
       {!scene && t >= END_AT && t < NEXT_AT ? (
         <div style={{ position: 'absolute', left: 60, right: 60, top: 290, textAlign: 'center', opacity: interpolate(t, [END_AT, END_AT + 0.15], [0, 1], clamp) }}>
           <span style={{ display: 'inline-block', background: 'rgba(28,22,20,0.88)', color: '#fff', fontFamily: FONT, fontWeight: 800, fontSize: 54, lineHeight: 1.2, padding: '16px 30px 20px', borderRadius: 26 }}>{TEXT.end}</span>

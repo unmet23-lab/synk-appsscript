@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep EXACTLY the same felt study room flooded with warm morning sunlight, the same camera, framing, light rays, door, window, desk, lamp, mug, papers, rug, the same felt professor doll in the same pose with the same raised waving hand, the same coral felt doll in the same place — every position and size unchanged. Image 2 is only a reference for the bookshelf. Only change what is written below.
+
+Change: the bookshelf behind must hold exactly the same things as the bookshelf in Image 2 — rows of felt books on every shelf, the same books in the same colors and order. There is NO potted plant and no other object on the bookshelf. Keep the warm sunlight on it. Nothing else changes. Absolutely no text, letters, numbers, logos or symbols anywhere.

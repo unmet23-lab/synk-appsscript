@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep EXACTLY the same room, same desk, same notebook, same window, same picture frame, same pencil cup and plant, same camera, same framing, same light and shadows, same big wall clock (still with NO hands and NO numbers). Only change what is written below.
+
+Change: remove the coral wool doll that sits on the desk at the lower left. Where it was, show the same green felt wall, the same wooden desk top and the same open notebook continuing naturally, with the same warm window light and soft shadows. Nothing else in the picture changes. Absolutely no text, letters, numbers, logos or symbols anywhere.

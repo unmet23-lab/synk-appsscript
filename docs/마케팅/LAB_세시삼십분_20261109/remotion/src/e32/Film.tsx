@@ -190,7 +190,8 @@ const Hand: React.FC<{ who: 'hour' | 'minute'; angle: number; sw: number }> = ({
         height: H,
         transformOrigin: `${ox}px ${oy}px`,
         // 긴 바늘은 몸통을 조금 굵게 — 화살촉이 납작한 선처럼 보인다(아르곤 맹검 v15). 짧은 바늘은 좁게 — 몸통 날개가 머리 옆으로 삐져나와 「삼각형 조각」으로 보인다(v18 [C132])
-        transform: `rotate(${angle}deg) scale(${(who === 'minute' ? 1.38 : 0.62) * (1 + 0.12 * sw)}, ${1 + 0.06 * sw})`,
+        // 긴 바늘은 0.9배 길이 — 화살촉이 눈금에 겹쳐 「바늘 끝과 눈금이 한 덩어리로 뭉개진다」(아르곤 맹검 v20 · v21)
+        transform: `rotate(${angle}deg) scale(${(who === 'minute' ? 1.38 : 0.62) * (1 + 0.12 * sw)}, ${(1 + 0.06 * sw) * (who === 'minute' ? 0.9 : 1)})`,
         filter: 'drop-shadow(5px 9px 6px rgba(60,30,8,0.42))',
       }}
     />
@@ -200,22 +201,34 @@ const Hand: React.FC<{ who: 'hour' | 'minute'; angle: number; sw: number }> = ({
 const Head: React.FC<{ t: number; who: 'hour' | 'minute'; face: Face; angle: number; sw: number }> = ({ t, who, face, angle, sw }) => {
   const h = HEAD[who];
   const a = (angle * Math.PI) / 180;
-  const bl = blow(t);
-  const x = CLOCK.x + h.d * Math.sin(a) + h.dir[0] * sw + 12 * bl;
-  const y = CLOCK.y - h.d * Math.cos(a) + h.dir[1] * sw - 12 * bl;
+  // 몽글이 외칠 때 머리를 밖으로 밀고 줄이면 바늘 막대가 드러나 「머리가 막대 끝으로 밀려나 촉이 변형」(아르곤 맹검 v20 [K12]) — 머리는 제자리에서 떨기만 한다
+  const x = CLOCK.x + h.d * Math.sin(a) + h.dir[0] * sw;
+  const y = CLOCK.y - h.d * Math.cos(a) + h.dir[1] * sw;
   const size = HEADSIZE[who];
-  const w = h.w * (1 + 0.22 * sw) * (1 - 0.16 * bl); // 움찔하면 작아진다
+  const w = h.w * (1 + 0.22 * sw);
   const hh = (w * size.h) / size.w;
   // 머리는 스스로 까딱인다 — 숨 + 외칠 때 흔들림
   const rot = 3 * Math.sin(t * 2.6 + (who === 'hour' ? 0 : 1.7)) + 9 * Math.min(sw, 1.4) * Math.sin(t * 34);
   return <Img src={staticFile(`img/${who}Head${face}.webp`)} style={{ position: 'absolute', left: x - w / 2, top: y - hh / 2, width: w, height: hh, transform: `rotate(${rot}deg)`, filter: 'drop-shadow(5px 9px 7px rgba(60,30,8,0.45))' }} />;
 };
 
-// 같은 그림의 한 자리(몽글)만 따로 움직인다
-const Patch: React.FC<{ img: string; cx: number; cy: number; rx: number; ry: number; sx?: number; sy?: number; dx?: number; dy?: number; rot?: number; oy?: number }> = ({ img, cx, cy, rx, ry, sx = 1, sy = 1, dx = 0, dy = 0, rot = 0, oy }) => {
-  const mask = `radial-gradient(ellipse ${rx}px ${ry}px at ${cx}px ${cy}px, black 78%, transparent 100%)`;
-  return <Img src={staticFile(`img/${img}.jpg`)} style={{ ...FULL, WebkitMaskImage: mask, maskImage: mask, transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${sx}, ${sy})`, transformOrigin: `${cx}px ${oy ?? cy + ry * 0.85}px` }} />;
+// 몽글 윤곽 가면(소리/몽글가면.py — 판과 빈방의 차이). 타원으로 오리면 부풀릴 때 타원 안의 벽 · 책상까지 함께 커진다
+const pngMask = (file: string): React.CSSProperties => {
+  const url = `url("${staticFile(`mask/${file}.png`)}")`;
+  return { WebkitMaskImage: url, maskImage: url, WebkitMaskSize: '1080px 1920px', maskSize: '1080px 1920px', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' };
 };
+// CSS 가면은 Remotion이 기다려 주지 않는다 — 같은 주소를 crossOrigin으로 함께 그려 로드를 기다리게 한다(M32 서리 가면에서 배운 것, 현장 노트 영상_ffmpeg_자막)
+const PngLoad: React.FC<{ file: string }> = ({ file }) => <Img src={staticFile(`mask/${file}.png`)} crossOrigin="anonymous" style={{ position: 'absolute', left: 0, top: 0, width: 1, height: 1, opacity: 0 }} />;
+
+// 같은 그림의 한 자리(몽글)만 따로 움직인다 — 밑에는 몽글 없는 빈방을 깔아 움직인 자리에 원래 몽글이 비치지 않게
+const Patch: React.FC<{ img: string; cx: number; cy: number; rx: number; ry: number; sx?: number; sy?: number; dx?: number; dy?: number; rot?: number; oy?: number }> = ({ img, cx, cy, ry, sx = 1, sy = 1, dx = 0, dy = 0, rot = 0, oy }) => (
+  <>
+    <PngLoad file={`under_${img}`} />
+    <PngLoad file={`mongle_${img}`} />
+    <Img src={staticFile('img/roomEmpty.jpg')} style={{ ...FULL, ...pngMask(`under_${img}`) }} />
+    <Img src={staticFile(`img/${img}.jpg`)} style={{ ...FULL, ...pngMask(`mongle_${img}`), transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${sx}, ${sy})`, transformOrigin: `${cx}px ${oy ?? cy + ry * 0.85}px` }} />
+  </>
+);
 
 const mongleImg = (t: number) => {
   if (t >= T.hour1 && t < T.try2) return 'startled';
@@ -479,11 +492,11 @@ export const Film: React.FC<{ lang: Lang; scene?: boolean }> = ({ lang, scene })
             <span style={{ color: C.minute }}>십오 분<El />?</span>
           </Bubble>
           {/* 끝 — 이번엔 몽글이 바늘보다 크게 외친다. 옆 꼬리가 몽글 머리를 가리킨다 */}
-          <Bubble t={t} from={T.yell} until={T.sum} x={695} y={1490} tipX={392} tipY={1590} color={C.coral} sub={ROMAN.ten} w={510} h={360} size={108} shout={-4}>
+          <Bubble t={t} from={T.yell} until={T.sum} x={690} y={1520} tipX={330} tipY={1440} color={C.coral} sub={ROMAN.ten} w={470} h={320} size={98} shout={-3}>
             <span style={{ color: C.hour }}>{'열 시\n'}</span>
             <span style={{ color: C.minute }}>십오 분!</span>
           </Bubble>
-          <Sign t={t} at={T.yell + 0.3} until={T.sum} lang={lang}>{L.whoNow}</Sign>
+          {/* 「Now the clock is scared」 팻말은 뺐다 — 겁먹은 바늘 얼굴이 이미 말하는데 글로 풀어 「사족」(아르곤 맹검 v21 [K2]) */}
           <Sign t={t} at={T.sum} until={T.total + 1} lang={lang} cream size={L.size * 0.875}>
             <span style={{ fontFamily: FONT[lang], color: C.brown }}>{L.endH} </span>
             <span style={{ fontFamily: KO, fontWeight: 900, color: C.hour }}>한 · 두 · 세</span>

@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep EXACTLY the same frozen close-up of the felt professor doll — the same face with the same stiff, crooked, worried expression, the same frosted glasses, the same sweat drop, the same frosted hair, cardigan, hand holding the frozen pen, the same steaming frosted mug and frozen desk with icicles, the same camera, framing and cold light. Image 2 is only a reference for what stands on the bookshelf. Only change what is written below.
+
+Change: the frosted bookshelf behind the professor holds only rows of felt books like the bookshelf in Image 2, covered in the same frost and small icicles. There is NO potted plant and no other object on the bookshelf. Nothing else changes. Absolutely no text, letters, numbers, logos or symbols anywhere.
