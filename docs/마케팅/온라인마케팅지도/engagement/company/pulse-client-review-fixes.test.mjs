@@ -46,12 +46,16 @@ test('the entry page introduces PULSE in the approved words and keeps the invite
     // 만드는 사람
     '카메라 앞에 서 본 사람이 AI 모델의 연기를 연출해요',
     'AI 광고가 어색해지는 곳은 대개 표정과 호흡, 말이 끝나는 타이밍이에요. SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요.',
+    // 11-07 서울로 당선 줄(synk.im/pulse 「만드는 사람」 맨 앞과 같은 말 — 11-10 앱에도).
+    '2026 서울로미디어캔버스 단편 애니메이션 공모 당선 「다리가 기억하는 것」(2026년 12월~2027년 2월 서울로미디어캔버스 전시)',
     '넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연','tvN 「코미디빅리그」 코너 출연','웹드라마 「알바왕 98과 99사이」 주연(페이스북 조회수 1,000만 회)','부활 「너의 모습」 뮤직비디오 주연',
     // 고지
     '상담은 제품 사진 한 장과 올릴 곳만으로 시작해요.',
     '영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.',
     '가상 브랜드로 만든 자체 작품이에요.',
   ])assert.ok(text.includes(line),line);
+  // 이력 차례도 synk.im/pulse와 같다 — 서울로 당선이 맨 앞 줄.
+  assert.match(html,/<ul class="sx-maker-credits"><li class="sx-small" data-in>2026 서울로미디어캔버스 단편 애니메이션 공모 당선/);
   assert.equal(CASTING_MODELS.length,21,'모델 수가 바뀌면 소개글의 「21명」(첫 화면 · index.html · 원고)도 함께 고친다');
   // 쓰지 않기로 한 말(원고 1절): 도구 이름, 최상급, 납기 · 부가세 · 세금계산서 약속, 실제 촬영을 고른다는 말, 같은 얼굴 보증, 옛 머리말.
   assert.doesNotMatch(text,/실제 촬영|실사 촬영|납기|부가세|세금계산서|같은 얼굴|무제한|최고|최초|유일|1위|솔서리|Seedance|Sora|Veo|Omni|Gemini|GPT|Suno|Higgsfield|힉스필드|시댄스|CLIENT ROOM|함께 완성해요/i);

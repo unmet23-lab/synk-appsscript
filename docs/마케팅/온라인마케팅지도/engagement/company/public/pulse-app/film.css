@@ -251,6 +251,12 @@ html.sx.view-entry .app-header{display:none!important}
   @media (max-height:769.98px){.sx-end .sx-display{display:none}}
   .on-end .sx-shade{background:none}
   .on-maker .sx-layer-reel{transform:none}
+  /* 세로 창의 「만드는 사람」 글은 아래 그늘 위에 둔다 — 넓은 창의 왼쪽 정렬(.sx-p.is-maker flex-start)이 세로 쌓기에서 맨 위로 읽혀
+     11-05부터 글 묶음이 쇼릴 매진 임박 컷의 얼굴을 덮고 아래 어두운 칸은 비어 있었다(11-10 서울로 이력 줄을 넣으며 찾음). */
+  .sx-p.is-maker{justify-content:flex-end}
+  /* 낮은 휴대폰 세로(높이 770 미만 — 아이폰 SE · 360×740): 본문까지 두면 글 묶음이 세로 쇼릴의 가로 띠까지 올라가 얼굴 · 입에 닿는다(영어 판이 더 높다).
+     첫 쪽 소개 줄처럼 본문 한 문단만 빼고 제목 · 이력은 둔다. */
+  @media (max-width:519.98px) and (max-aspect-ratio:1/1) and (max-height:769.98px){.sx-maker .sx-body{display:none}}
   .on-maker .sx-shade{background:linear-gradient(0deg,rgba(0,0,0,.94) 0,rgba(0,0,0,.82) 54%,rgba(0,0,0,0) 78%),linear-gradient(180deg,rgba(0,0,0,.4) 0,rgba(0,0,0,0) 12%)}
   .sx-reel{scroll-snap-type:y proximity}
   .sx-work,.sx-work.is-contest{grid-template-columns:1fr}

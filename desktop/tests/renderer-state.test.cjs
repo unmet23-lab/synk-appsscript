@@ -76,6 +76,8 @@ test('PULSE guide keeps the approved intro and still says what the app does',asy
   assert.match(pulse.features[0][1],/들어갈 모든 컷을 완성 화질로 먼저 보여 드려요/);
   // 이력 자리의 경력은 「엔터테인먼트·광고 업계 10년」이다(배우만 앞세우지 않는다, 유호님 11-05).
   assert.match(pulse.maker.body,/SYNK PULSE는 엔터테인먼트·광고 업계에서 10년 일한 대표 유호가 연출해요\./);
+  // 이력 줄은 synk.im/pulse 「만드는 사람」과 같은 말 · 같은 차례다(11-07 서울로 당선이 맨 앞, 11-10 앱에도).
+  assert.ok(pulse.maker.credits.startsWith('2026 서울로미디어캔버스 단편 애니메이션 공모 당선 「다리가 기억하는 것」(2026년 12월~2027년 2월 서울로미디어캔버스 전시) · 넷플릭스 공개 「보라! 데보라」'),pulse.maker.credits);
   for(const old of ['모든 컷을 먼저 보여 드리는','배우로 활동한'])assert.ok(!copy.includes(old),old);
   for(const words of ['AI 모델 21명','같은 모델','제품·로고·글자는 합성이라 달라지지 않아요','움직이는 동안 작은 부분은 달라질 수 있고','대표 유호','뮤직비디오 주연'])assert.ok(copy.includes(words),words);
   // 소개가 앱의 실제 일을 가리면 안 된다: 초대받은 프로젝트의 진행 · 시안 확인 · 승인이 함께 읽혀야 한다.

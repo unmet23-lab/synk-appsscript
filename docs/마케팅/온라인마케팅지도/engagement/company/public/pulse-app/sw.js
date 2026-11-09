@@ -12,7 +12,9 @@
 // v32(11-09): 작품 최신화 — 완성 광고 목록 · 첫 화면 쇼릴 3판(포스터 둘은 같은 이름에 바이트만 바뀜) · 의뢰서 업종 그림. 목록은 그대로이고 바뀐 모듈 · 쇼릴 포스터를 새로 받게 판만 올린다.
 // v33(11-09): 다국어 판 2 — 언어 메뉴 locale-menu.mjs를 더했다. 손님 화면 글이 번역 틀을 지나고, 한국어 화면은 그대로다.
 // v34(11-09): 쇼릴 새 판 — 영상 둘과 포스터 둘이 같은 이름에 바이트만 바뀐다(자르지 않는 판, 1920×1200 · 1080×1920). 목록은 그대로이고 포스터를 새로 받게 판만 올린다.
-const CACHE = 'synk-pulse-shell-v35-shard-20261110';
+// v35(11-10): 첫 화면 5쪽 그림 새 판(shard.webp 2520×2016)과 제목 새 문구 — 같은 회사 판 59로 나갔다.
+// v36(11-10): 「만드는 사람」 이력 맨 앞에 서울로 당선 줄, 세로 창에서 그 글 묶음을 아래 그늘 위로. 목록은 그대로이고 바뀐 film-home.mjs · i18n/en.mjs · film.css를 새로 받게 판만 올린다.
+const CACHE = 'synk-pulse-shell-v36-maker-20261110';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/SUIT.woff2','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

@@ -795,6 +795,7 @@ export default {
   "목소리와 음악을 먼저 만들고 그 박자에 컷을 맞춰요. 제품 · 로고 · 글자는 실제 파일을 그대로 얹어요.":"Voice and music come first, then we cut to their rhythm. Your product, logo and text go in straight from the real files.",
   "파일을 받아요":"Get your files",
   "올릴 곳에 맞는 파일로 받아요. 다음 편도 같은 모델과 같은 자막 규격으로 이어요.":"You get a file for every place it will run. Your next ad continues with the same model and the same subtitle style.",
+  "2026 서울로미디어캔버스 단편 애니메이션 공모 당선 「다리가 기억하는 것」(2026년 12월~2027년 2월 서울로미디어캔버스 전시)":"Selected in the 2026 Seoullo Media Canvas short animation open call with “What the Bridge Remembers” (on show Dec 2026 – Feb 2027)",
   "넷플릭스 공개 「보라! 데보라」 1화 오프닝 시퀀스 출연":"Appeared in the opening sequence of episode 1, “Bo-ra! Deborah” (Netflix)",
   "tvN 「코미디빅리그」 코너 출연":"Appeared in a sketch segment on tvN’s “Comedy Big League”",
   "웹드라마 「알바왕 98과 99사이」 주연(페이스북 조회수 1,000만 회)":"Lead in the web drama “Part-Time King: Between 98 and 99” (10 million views on Facebook)",

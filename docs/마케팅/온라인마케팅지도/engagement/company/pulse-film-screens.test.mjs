@@ -34,7 +34,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v35-shard-20261110';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v36-maker-20261110';/);
 });
 test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
   // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.
@@ -46,6 +46,17 @@ test('the step-five still is the sharp re-render and its layer keeps the logo re
   const css=read('film.css');
   assert.match(css,/@media \(min-width:861px\) and \(min-aspect-ratio:1001\/1000\)\{\.sx-layer-shard\{height:max\(52vh,calc\(100vh - 432px\)\)\}\}/);
   assert.match(css,/\.sx-layer-shard::after\{content:'';position:absolute;inset:0;background:radial-gradient\(48% 72% at 0% 0%/);
+});
+
+test('on a tall window the maker page sits on the dark shade at the bottom, not over the faces in the reel',()=>{
+  // 11-10: 넓은 창의 왼쪽 정렬(.sx-p.is-maker flex-start)이 세로 쌓기에서 맨 위로 읽혀 글 묶음이 매진 임박 컷의 얼굴을 덮었다.
+  // 세로 창 규칙 안에서 아래 정렬로 되돌리고, 그늘(아래가 어두운 판)과 같은 묶음에 둔다.
+  const css=read('film.css'),tall=css.slice(css.indexOf('@media (max-width:820px),(max-aspect-ratio:1/1){'));
+  assert.match(css,/\.sx-p\.is-maker\{justify-content:flex-start\}/,'넓은 창은 그대로 왼쪽');
+  assert.match(tall,/\.on-maker \.sx-layer-reel\{transform:none\}[\s\S]*?\.sx-p\.is-maker\{justify-content:flex-end\}[\s\S]*?\.on-maker \.sx-shade\{background:linear-gradient\(0deg,rgba\(0,0,0,\.94\) 0/);
+  // 낮은 휴대폰 세로에서는 본문 한 문단만 뺀다 — 제목과 이력(서울로 당선 줄부터)은 남는다.
+  assert.match(tall,/@media \(max-width:519\.98px\) and \(max-aspect-ratio:1\/1\) and \(max-height:769\.98px\)\{\.sx-maker \.sx-body\{display:none\}\}/);
+  assert.doesNotMatch(css,/\.sx-maker-credits\{[^}]*display:none/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);
