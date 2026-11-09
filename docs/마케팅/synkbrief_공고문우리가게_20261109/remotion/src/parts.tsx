@@ -45,11 +45,13 @@ export const T: React.FC<{ lines: React.ReactNode[]; from: number; to: number; s
 export const Y: React.FC<{ children: React.ReactNode }> = ({ children }) => <span style={{ color: BUTTER }}>{children}</span>;
 
 // 작은 표시 — 위 안전선 줄(28px 회색), 왼쪽 · 오른쪽
-export const Small: React.FC<{ text: string; from: number; to: number; right?: boolean }> = ({ text, from, to, right }) => {
+export const Small: React.FC<{ text: string; from: number; to: number; right?: boolean; brand?: boolean }> = ({ text, from, to, right, brand }) => {
   const f = useCurrentFrame();
   if (f < sec(from) || f >= sec(to)) return null;
   const pos = right ? { right: 1080 - 1006 } : { left: X };
-  return <div style={{ position: 'absolute', ...pos, top: 206, fontFamily: KO, fontWeight: 600, fontSize: 28, color: 'rgba(255,255,255,0.72)', letterSpacing: -0.4 }}>{text}</div>;
+  // 끝의 브랜드 표시는 출처 줄과 갈리게(작게 두되 희고 굵게)
+  const look = brand ? { fontWeight: 800, fontSize: 32, color: '#fff', letterSpacing: -0.8, top: 202 } : { fontWeight: 600, fontSize: 28, color: 'rgba(255,255,255,0.62)', letterSpacing: -0.4, top: 206 };
+  return <div style={{ position: 'absolute', ...pos, fontFamily: KO, ...look }}>{text}</div>;
 };
 
 export const Sfx: React.FC<{ at: number; src: string; v?: number }> = ({ at, src, v = 0.5 }) => (
@@ -78,12 +80,13 @@ export const Screen: React.FC<{ dir: string; pre: string; k0: number; k1?: numbe
 
 // 답 전체 한 장(1080×6430)을 위아래로 움직인다 — lit은 그 줄 밖을 어둡게 누른다(화면 결 ⑥)
 export const FULL_H = 6430;
+// 답 화면 바탕이 순수 검정(#000)이라 바탕도 같게 — 잘라 낸 띠의 위아래 경계가 보이지 않는다
 export const FullPan: React.FC<{ y0: number; y1?: number; dur: number; h: number; top: number; note?: string; lit?: [number, number]; ease?: boolean; zoom?: number; ox?: number; oy?: number }> = ({ y0, y1, dur, h, top, note, lit, ease = true, zoom = 0, ox = 540, oy }) => {
   const f = useCurrentFrame();
   const y = y1 === undefined ? y0 : interpolate(f, [0, sec(dur)], [y0, y1], { ...clamp, ...(ease ? { easing: EASE_IO } : {}) });
   const z = interpolate(f, [0, 8], [1.03, 1], { ...clamp, easing: EASE_OUT }) + f * (zoom || 0.00025);
   return (
-    <AbsoluteFill style={{ background: '#0b0b0b' }}>
+    <AbsoluteFill style={{ background: '#000' }}>
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: `${ox}px ${oy ?? top + h * 0.45}px` }}>
         {note ? <div style={{ position: 'absolute', left: X, top: top - 52, fontFamily: KO, fontWeight: 600, fontSize: 30, color: '#9a9a9a', letterSpacing: -0.4 }}>{note}</div> : null}
         <div style={{ position: 'absolute', left: 0, top, width: 1080, height: h, overflow: 'hidden' }}>

@@ -384,7 +384,8 @@ function episodeVideo(dir) {
   for (const p of prep.판 || []) {
     const f = p.원본 || p.파일;
     if (typeof f === 'string' && /\.mp4$/i.test(f)) {
-      const abs = [path.resolve(dir, f), path.resolve(dir, '게시', f), path.resolve(공용작업본(ROOT), f)].find((x) => fs.existsSync(x));
+      // 워크트리 안 판이 먼저다 — 공용 작업본에 같은 경로의 옛 판이 있어도 지금 작업본의 영상을 잰다(11-09 나란히가 옛 판을 재 「맞음」으로 나옴).
+      const abs = [path.resolve(dir, f), path.resolve(dir, '게시', f), path.resolve(ROOT, f), path.resolve(공용작업본(ROOT), f)].find((x) => fs.existsSync(x));
       if (abs) return abs;
     }
   }
