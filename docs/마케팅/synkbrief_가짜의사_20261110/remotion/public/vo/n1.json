@@ -1,0 +1,76 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "그 의사, 사람이 아니었어요. AI로 만든 가상 인물이었어요.",
+ "show": "그 의사, 사람이 아니었어요. AI로 만든 가상 인물이었어요.",
+ "dur": 3.896,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.06,
+   "end": 0.14
+  },
+  {
+   "text": "의사,",
+   "start": 0.241,
+   "end": 0.502
+  },
+  {
+   "text": "사람이",
+   "start": 0.923,
+   "end": 1.224
+  },
+  {
+   "text": "아니었어요.",
+   "start": 1.284,
+   "end": 1.766
+  },
+  {
+   "text": "AI로",
+   "start": 2.227,
+   "end": 2.609
+  },
+  {
+   "text": "만든",
+   "start": 2.669,
+   "end": 2.89
+  },
+  {
+   "text": "가상",
+   "start": 2.95,
+   "end": 3.191
+  },
+  {
+   "text": "인물이었어요.",
+   "start": 3.251,
+   "end": 3.896
+  }
+ ],
+ "source": {
+  "key": "115161536bc5ec7af6f0e73b1e1bd75b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

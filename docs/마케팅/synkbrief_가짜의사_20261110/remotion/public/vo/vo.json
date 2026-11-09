@@ -1,0 +1,54 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1110,
+  "lufs": -17
+ },
+ "made": "2026-11-09T23:45:53.729Z",
+ "lines": [
+  {
+   "id": "n1",
+   "text": "그 의사, 사람이 아니었어요. AI로 만든 가상 인물이었어요.",
+   "show": "그 의사, 사람이 아니었어요. AI로 만든 가상 인물이었어요.",
+   "scene": "드러남",
+   "dur": 3.896,
+   "syllablesPerSec": 5.65,
+   "src": "n1.wav",
+   "key": "115161536bc5ec7af6f0e73b1e1bd75b",
+   "words": 8
+  },
+  {
+   "id": "n2",
+   "text": "아버지만 산 게 아니었어요.",
+   "show": "아버지만 산 게 아니었어요.",
+   "scene": "아버지 탓 아님",
+   "dur": 1.347,
+   "syllablesPerSec": 8.17,
+   "src": "n2.wav",
+   "key": "2a470ea76db4d966dbd1c7891adec526",
+   "words": 4
+  },
+  {
+   "id": "n3",
+   "text": "아홉 달 동안 육십오만 개, 팔십일억 원어치가 팔렸어요.",
+   "show": "아홉 달 동안 65만 개, 81억 원어치가 팔렸어요.",
+   "scene": "숫자",
+   "dur": 3.297,
+   "syllablesPerSec": 6.67,
+   "src": "n3.wav",
+   "key": "5e9ec503d85a4c2b47200cc9c306a569",
+   "words": 8
+  }
+ ]
+}
