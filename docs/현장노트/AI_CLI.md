@@ -731,6 +731,12 @@
 - 고침: 명령·부모·생성 시각을 확인한 두 프로세스만 Normal로 올리고 기존 복구 예약의 Settings.Priority를 5로 변경했다. 설치 원문에도 Priority 5를 명시했다. 새 예약·강제 종료·재시작은 하지 않았다.
 - 다시 확인: 복구 시험 10개 통과. 05:18 실제 자동 회차 completed·health=ok 확인. 현재 예약 action·10분 trigger·Interactive/Limited를 확인했으나 전후 XML 전체 일치는 증명하지 못했다.
 
+### Hermes 코드는 v0.22.2인데 설치 기록의 0.21.5 때문에 플러그인이 빠진다 (2026-11-10 GPT)
+- 증상: `synk-work`가 `requires hermes >=0.22.2,<0.23.0, running 0.21.5`로 빠지고 휴대폰 명령이 등록되지 않았다.
+- 원인: HEAD의 태그는 v0.22.2였지만 같은 커밋의 `install-stamp.json`이 baseVersion 0.21.5를 담았다. 플러그인 검사는 git 태그보다 유효한 설치 기록을 먼저 쓴다.
+- 고침: 원래 기록·SHA를 보존하고 공식 `scripts/write_install_stamp.py`가 만든 후보의 커밋·버전·distance를 대조한 뒤 설치 기록만 원자 교체했다. 코드·플러그인 조건·선택 세대·bootstrap 완료 영수증은 그대로다. 실제 진행 대화·자식·예약 회차가 비었을 때 공식 gateway restart를 불렀다.
+- 다시 확인: 같은 코드의 baseVersion 0.22.2, 플러그인 enabled=true·error=null·명령 9개 등록. restart 명령은 기동 확인 시간초과로 exit 1이었으나 중복 start 없이 05:44 Telegram polling healthy·Gateway running을 확인했고, 05:50 감시 health=ok였다. CPU가 바쁠 때 10초 플러그인 로딩과 90초 감시 수집 제한이 한 회차 실패할 수 있어, 명령 종료만으로 꺼졌다고 단정하지 않는다. 원본·유휴 근거는 `.tmp/hermes-version-stamp-20261109T202759Z/`.
+
 ### 팁 적용안이 「OAuth session expired」로 실패하고, 재부팅에 죽은 실행의 잠금이 3시간 동안 다음 회차를 막는다 (2026-11-04 Claude)
 - 증상: 예약 「SYNK 팁 적용안」이 11-04 14:31 · 15:42 · 16:24 · 16:49에 구독 경로에서 `Failed to authenticate: OAuth session expired and could not be refreshed`로 끝나 카드가 안 만들어졌다. 그 뒤 회차는 `이미 도는 중이다(잠금 N분 전)`와 종료 코드 3으로 바로 끝났다.
 - 원인 ①(구독으로 넘어간 까닭): 무인 목록의 키가 unmet27 하나인데, 11-04 11:32 「중계」 첫 요청에서 크레딧 부족으로 소진 표시됐다(풀림 11-22 0시). 이 키의 10-22 뒤 기록은 중계 $79 · 팁 적용안 $44 · TOPIK 검수 $28이다.
