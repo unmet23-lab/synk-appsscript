@@ -2,7 +2,9 @@
 /**
  * 드라마 테이크 로컬 왕복(2026-10-31) — SYNK-talk world-speaking의 실제 코드(lib/world-speaking-runtime.js · voice-link.js · 드라마 두 사본)에
  * 진짜 OpenAI 받아 적기(gpt-transcribe)를 붙여 테이크 목록을 차례로 보내고, 판정 · 노트 종류가 기대와 같은지 본다.
- *   node experiences/drama/qa/리허설-20261031/로컬왕복.mjs --talk <SYNK-talk 작업본> [--목록 <takes.json>] [--결과 <파일>]
+ *   node experiences/drama/qa/리허설-20261031/로컬왕복.mjs --talk <SYNK-talk 작업본> [--목록 <takes.json>] [--결과 <파일>] [--초안닫기]
+ * · --초안닫기(11-10): 운영처럼 검수 전 대사를 열지 않는다(WORLD_SPEAKING_DRAFT_ITEMS 없음) — 초안 줄은 409 ITEM_NOT_OPEN으로 받아 적기 전에 거절된다.
+ *   기대에 { code }를 적으면 그 거절 코드와 견준다. 결과 파일에 판정 판(JUDGE_VERSION)과 초안 열림 여부를 함께 남긴다.
  * · 리허설 함수의 드라마 스위치를 켜기 전에도 「받아 적기 → 판정 → 노트 종류」를 같은 코드로 재려고 둔다. 원장(횟수 · 금액)과 로그인만
  *   가짜이고(기록만 남긴다), 받아 적기 · 판정 · 다음 걸음은 함수 그대로다. 리허설 함수 왕복은 talk tools/말하기피드백_왕복.js --드라마.
  * · 키는 tools/lib/오픈AI키.mjs 차례(결제 수단 없는 월 크레딧 조직)를 쓴다 — 한 테이크 받아 적기 약 0.01센트. 값은 찍지 않는다.
@@ -29,6 +31,7 @@ const spendConfig = prices.parseSpendConfig((name) => (name === 'SYNK_AI_PRICES'
 const 키들 = 키차례('말하기').map((k) => fs.readFileSync(k.파일, 'utf8').replace(/^﻿/, '').trim()).filter((v) => /^sk-\S+$/.test(v));
 if (!키들.length) { console.error('[로컬왕복] OpenAI 키가 없다'); process.exit(2); }
 
+const 초안열림 = !args.includes('--초안닫기');
 const 기록 = { usage: [], spend: [], logs: [] };
 let serial = 0;
 const service = runtime.createSpeakingService({
@@ -40,7 +43,7 @@ const service = runtime.createSpeakingService({
     dispatch: async () => ({ status: 'dispatched' }), settle: async (id, v) => { 기록.spend.push(['settle', id, v.actualMicroUsd]); return {}; },
     hold: async (id) => { 기록.spend.push(['hold', id]); return {}; }, cancel: async () => ({ status: 'cancelled' }) },
   prices, spendConfig,
-  settings: runtime.readSettings((name) => ({ SYNK_WORLD_DRAMA_ENABLED: 'true', WORLD_SPEAKING_DRAFT_ITEMS: 'true' })[name]),
+  settings: runtime.readSettings((name) => ({ SYNK_WORLD_DRAMA_ENABLED: 'true', ...(초안열림 ? { WORLD_SPEAKING_DRAFT_ITEMS: 'true' } : {}) })[name]),
   voice: voiceLink.createVoiceLink({ keys: 키들, logger: (e) => 기록.logs.push(e), event: 'drama_local' }),
   claude: { available: () => false, count: async () => null, send: async () => ({ ok: false, status: 0, notSent: true }) },
   logger: (e) => 기록.logs.push(e),
@@ -52,23 +55,26 @@ const 보내기 = async (body) => {
 };
 const 같다 = (take, e) => (e.status ? take?.status === e.status : take?.status === 'ok' && take?.verdict === e.verdict && (take?.note?.kind ?? null) === (e.note ?? null) && (e.sure === undefined || take?.sure === e.sure));
 const 결과 = [];
-let 맞음수 = 0, 쓴돈 = 0;
+let 맞음수 = 0, 쓴돈 = 0, 정산수 = 0;
 for (const [i, t] of 목록.takes.entries()) {
   const body = { action: 'take', request_id: crypto.randomUUID(), consent: 'send-once', line_id: t.line, lines_version: LINES.LINES_HASH, lang: 'mn',
     audio: { mime: t.mime, data: fs.readFileSync(t.file).toString('base64') }, seconds: t.seconds, speech_seconds: t.speechSeconds ?? t.seconds, take: { judged: 0, unheard: 0 } };
   const started = Date.now();
   const res = await 보내기(body);
-  const take = res.j?.take || null, 맞음 = res.j?.status === 'ok' && 같다(take, t.expect);
-  const 돈 = 기록.spend.filter((x) => x[0] === 'settle').at(-1)?.[2] ?? null;
+  const take = res.j?.take || null, 맞음 = t.expect.code ? res.j?.code === t.expect.code : res.j?.status === 'ok' && 같다(take, t.expect);
+  // 이 테이크의 정산만 센다 — 받아 적기 전에 거절된 테이크(정산 없음)가 앞 테이크 값을 다시 세지 않게.
+  const 정산 = 기록.spend.filter((x) => x[0] === 'settle');
+  const 돈 = 정산.length > 정산수 ? 정산.at(-1)[2] ?? null : null;
+  정산수 = 정산.length;
   if (Number.isFinite(돈)) 쓴돈 += 돈;
   if (맞음) 맞음수++;
   const 실제 = res.j?.status === 'ok' ? `${take.status === 'ok' ? take.verdict : take.status}${take.note ? `:${take.note.kind}` : ''}${take.sure ? '·확신' : ''}` : `${res.j?.status || res.j?.code}`;
-  const 기대 = t.expect.status || `${t.expect.verdict}${t.expect.note ? `:${t.expect.note}` : ''}${t.expect.sure ? '·확신' : ''}`;
+  const 기대 = t.expect.code || t.expect.status || `${t.expect.verdict}${t.expect.note ? `:${t.expect.note}` : ''}${t.expect.sure ? '·확신' : ''}`;
   console.log(`${맞음 ? '✅' : '❌'} ${String(i + 1).padStart(2)} ${t.line.padEnd(10)} ${t.name.padEnd(20)} ${실제}${맞음 ? '' : `  (기대 ${기대})`} · 다음 ${take?.next?.action ?? '-'} · ${Date.now() - started}ms`);
   결과.push({ i: i + 1, name: t.name, line: t.line, said: t.said ?? null, expect: t.expect, http: res.http, status: res.j?.status ?? res.j?.code ?? null,
     take, ms: Date.now() - started, microUsd: 돈, 맞음 });
 }
-fs.writeFileSync(결과파일, `${JSON.stringify({ at: new Date().toISOString(), linesVersion: LINES.LINES_HASH, 맞음: 맞음수, 전체: 결과.length, microUsd: 쓴돈, takes: 결과 }, null, 2)}\n`);
+fs.writeFileSync(결과파일, `${JSON.stringify({ at: new Date().toISOString(), judgeVersion: LINES.JUDGE_VERSION, linesVersion: LINES.LINES_HASH, drafts: 초안열림, 맞음: 맞음수, 전체: 결과.length, microUsd: 쓴돈, takes: 결과 }, null, 2)}\n`);
 console.log(`· ${결과.length}개 중 ${맞음수} 기대와 같음 · 받아 적기 정산 합 ${쓴돈}µ$($${(쓴돈 / 1e6).toFixed(4)}) · 결과 → ${결과파일}`);
 const 기록줄 = JSON.stringify(기록.logs);
 const 새어나감 = 결과.filter((r) => r.take?.heard && r.take.heard.length > 3 && 기록줄.includes(r.take.heard));
