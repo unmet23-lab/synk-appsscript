@@ -124,6 +124,13 @@ test('팁 워커는 종료 상태·키 미조회·오래됨을 나누고 raw 이
     assert.equal(snapshot.state, expected);
     assert.equal(snapshot.keyAvailability, observed === '키없음' ? '부재 기록' : '미확인');
     assert.doesNotMatch(JSON.stringify(snapshot), /private-secret|private.example|token=/);
+    assert.equal(snapshot.failureKind, observed === '실패' ? 'unknown' : null);
+  }
+  for (const [이유, expected] of [['구독 로그인 끊김', 'subscription_login'], ['사전 확인 예외', 'preflight_exception'],
+    ['모델 실행 예외', 'execution_exception'], ['사후 처리 예외', 'postprocess_exception'],
+    ['모델 실행 오류', 'model_error'], ['모델 결과를 읽지 못함', 'unreadable_result']]) {
+    workerReceipt(f, '실패', { 이유 });
+    assert.equal(tipWorkerSnapshot(options).failureKind, expected);
   }
   workerReceipt(f, '끝', { 시각: new Date(NOW.getTime() - TIP_WORKER_STALE_MS - 1).toISOString() });
   assert.deepEqual([tipWorkerSnapshot(options).state, tipWorkerSnapshot(options).observedState], ['오래됨', '성공']);
@@ -151,9 +158,17 @@ test('팁 워커 한도 기록은 성공을 가리지 않고 시각 갱신은 �
   assert.equal(failure.fingerprint, later.fingerprint);
   assert.equal(failure.events.find(row => row.id === 'tip-worker').needs_attention, true);
   workerReceipt(f, '실패', { directNotificationAttempted: true });
-  assert.equal((await readOverview(options)).events.find(row => row.id === 'tip-worker').needs_attention, false);
+  const directlyNotified = (await readOverview(options)).events.find(row => row.id === 'tip-worker');
+  assert.equal(directlyNotified.needs_attention, true);
+  assert.equal(directlyNotified.notify, false);
   workerReceipt(f, '실패');
-  assert.equal((await readOverview(options)).events.find(row => row.id === 'tip-worker').needs_attention, false);
+  const legacy = (await readOverview(options)).events.find(row => row.id === 'tip-worker');
+  assert.equal(legacy.needs_attention, true);
+  assert.equal(legacy.notify, false);
+  workerReceipt(f, '실패', { 이유: '구독 로그인 끊김', directNotificationAttempted: false });
+  const suppressedLogin = (await readOverview(options)).events.find(row => row.id === 'tip-worker');
+  assert.equal(suppressedLogin.needs_attention, true);
+  assert.equal(suppressedLogin.notify, false);
 });
 
 test('팁 워커는 공용 작업본 파일이 아닌 검증된 운영 사본 포인터의 기록을 읽는다', t => {

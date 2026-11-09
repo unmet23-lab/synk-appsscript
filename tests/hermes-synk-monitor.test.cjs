@@ -9,7 +9,7 @@ const event=(fingerprint='a',extra={})=>({id:'task:one',kind:'task',severity:'in
 const at=x=>new Date(x);
 const {tipStatusEvents}=require('../tools/hermes-synk/overview.cjs');
 
-test('tip worker alerts only unnotified failure; timestamps and its direct attempt stay quiet',()=>{
+test('tip worker separates ongoing failure from notification ownership and recognizes new failures',()=>{
   const worker=(state,extra={})=>({available:true,observedState:state,stale:false,cooldownActive:false,route:null,...extra});
   const overview=value=>({events:tipStatusEvents(value)});
   const clock=at('2026-10-18T07:00:00Z');
@@ -20,17 +20,46 @@ test('tip worker alerts only unnotified failure; timestamps and its direct attem
   }
   cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:true})),clock);
   assert.equal(cursor.notifications.length,0,'existing direct notification owns the failure');
+  const directIncident=cursor.state.attentionIncidents['tip-worker'].id;
   cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false})),clock);
+  assert.equal(cursor.notifications.length,0,'a direct attempt is not a recovery before the next round');
+  assert.equal(cursor.state.attentionIncidents['tip-worker'].id,directIncident);
+  const unnotified={directNotificationAttempted:false,failureKind:'preflight_exception'};
+  cursor=plan(cursor.state,overview(worker('실패',unnotified)),clock);
   assert.equal(cursor.notifications.length,1);
-  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false,checkedAt:'2026-10-18T08:00:00Z'})),clock);
+  cursor=plan(cursor.state,overview(worker('실패',{...unnotified,checkedAt:'2026-10-18T08:00:00Z'})),clock);
   assert.equal(cursor.notifications.length,0);
   cursor=plan(cursor.state,overview({available:false,coverage:'읽기 실패'}),clock);
   assert.ok(cursor.state.attentionIncidents['tip-worker'],'an unreadable receipt is not resolution');
-  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false})),clock);
+  cursor=plan(cursor.state,overview(worker('실패',unnotified)),clock);
   assert.equal(cursor.notifications.length,0);
   cursor=plan(cursor.state,overview(worker('성공')),clock);
-  cursor=plan(cursor.state,overview(worker('실패',{directNotificationAttempted:false})),clock);
+  cursor=plan(cursor.state,overview(worker('실패',unnotified)),clock);
   assert.equal(cursor.notifications.length,1,'a confirmed recovery permits a new incident');
+});
+
+test('login failure does not repeat when the producer alternates direct sends and suppressed rounds',()=>{
+  const worker=(state,extra={})=>({available:true,observedState:state,stale:false,...extra});
+  const overview=value=>({events:tipStatusEvents(value)});
+  const clock=at('2026-11-10T00:00:00Z');
+  let cursor=plan(null,overview(worker('성공')),clock);
+  let incident;
+  for(const directNotificationAttempted of [false,true,false,false,true,false]) {
+    const value=worker('실패',{failureKind:'subscription_login',directNotificationAttempted});
+    const row=overview(value).events[0];
+    assert.equal(row.needs_attention,true,'an unresolved login is still a failure');
+    assert.equal(row.notify,false,'the producer owns both direct and suppressed login notifications');
+    cursor=plan(cursor.state,overview(value),clock);
+    assert.equal(cursor.notifications.length,0);
+    incident ||= cursor.state.attentionIncidents['tip-worker'].id;
+    assert.equal(cursor.state.attentionIncidents['tip-worker'].id,incident);
+  }
+  cursor=plan(cursor.state,overview({available:false,coverage:'읽기 실패'}),clock);
+  assert.equal(cursor.state.attentionIncidents['tip-worker'].id,incident);
+  cursor=plan(cursor.state,overview(worker('실패',{failureKind:'postprocess_exception',directNotificationAttempted:false})),clock);
+  assert.equal(cursor.notifications.length,1,'a different unnotified error remains visible');
+  cursor=plan(cursor.state,overview(worker('성공')),clock);
+  assert.equal(cursor.state.attentionIncidents['tip-worker'],undefined,'only a healthy receipt clears the failure');
 });
 
 test('tip inbox partial reads cannot resolve duplicates; exact reconciliation permits recurrence',()=>{

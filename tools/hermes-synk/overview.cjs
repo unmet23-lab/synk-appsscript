@@ -830,13 +830,16 @@ function tipStatusEvents(worker, intake) {
     const failed = ['키없음', '실패'].includes(worker.observedState);
     const labels = { 한도쉼: worker.cooldownActive ? '구독 한도 풀림 대기' : '구독 한도 기록 · 다음 실행 미확인',
       키없음: '사용 가능한 크레딧 키 없음 기록', 실패: '최근 실행 실패', 할일없음: '최근 확인할 일 없음', 성공: '최근 실행 완료 기록' };
-    // The producer already attempts its own failure notification. Only a receipt
-    // explicitly saying it did not attempt one may enter this existing channel.
-    const needsAttention = worker.observedState === '실패' && worker.directNotificationAttempted === false;
-    rows.push(attention(event('tip-worker', 'tip-worker', failed ? 'warning' : 'info', '팁 적용안 처리 · ' + worker.observedState,
+    // Sending elsewhere (or suppressing a repeat there) is not recovery. Login
+    // failures stay owned by the producer's 12-hour notification policy even on
+    // rounds whose directNotificationAttempted is false.
+    const failureKind = worker.failureKind || 'unknown';
+    const row = attention(event('tip-worker', 'tip-worker', failed ? 'warning' : 'info', '팁 적용안 처리 · ' + worker.observedState,
       labels[worker.observedState] + (worker.stale ? ' · 마지막확인 오래됨' : '') + ' · 현재 인증 미조회',
       { state: worker.observedState, stale: worker.stale, cooldownActive: worker.cooldownActive, route: worker.route }),
-    needsAttention, { kind: 'tip-worker', state: worker.observedState, needsAttention }));
+    failed, { kind: 'tip-worker', state: worker.observedState, failureKind });
+    row.notify = worker.observedState === '실패' && worker.directNotificationAttempted === false && failureKind !== 'subscription_login';
+    rows.push(row);
     if (worker.stale) rows.push(event('coverage-tip-worker-stale', 'coverage', 'info', '팁 적용안 마지막확인 오래됨',
       '저장된 종료 상태이며 현재 실행 여부는 미확인입니다. 절전·긴 실행만으로 실패를 단정하지 않습니다.', { stale: true }));
   } else if (worker) rows.push(event('coverage-tip-worker', 'coverage', 'info', '팁 적용안 처리 기록 미확인', worker.coverage));

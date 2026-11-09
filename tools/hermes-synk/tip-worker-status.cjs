@@ -10,6 +10,12 @@ const TIP_WORKER_STATUS = 'output/크레딧작업/팁적용안/마지막확인.j
 const TIP_WORKER_QUOTA = 'output/크레딧작업/구독한도.json';
 // A run may take two hours; allow another two hours before marking the receipt old.
 const TIP_WORKER_STALE_MS = 4 * 60 * 60_000;
+// Only fixed producer labels cross into monitor identity; raw errors may contain private input.
+const FAILURE_KINDS = new Map([
+  ['구독 로그인 끊김', 'subscription_login'], ['사전 확인 예외', 'preflight_exception'],
+  ['모델 실행 예외', 'execution_exception'], ['사후 처리 예외', 'postprocess_exception'],
+  ['모델 실행 오류', 'model_error'], ['모델 결과를 읽지 못함', 'unreadable_result'],
+]);
 const iso = value => typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d(?:\.\d+)?)?(?:Z|[+-]\d\d:\d\d)$/.test(value)
   && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
 const key = value => {
@@ -26,7 +32,7 @@ function workerRoot(root) {
 
 function tipWorkerSnapshot({ root, now = new Date(), sourceRoot } = {}) {
   const unknown = { available: false, state: '미확인', observedState: null, checkedAt: null, stale: true,
-    keyAvailability: '미확인', cooldownUntil: null, cooldownActive: false, route: null, directNotificationAttempted: null, source: '운영 사본 마지막확인' };
+    keyAvailability: '미확인', cooldownUntil: null, cooldownActive: false, route: null, failureKind: null, directNotificationAttempted: null, source: '운영 사본 마지막확인' };
   let base;
   try { base = sourceRoot || workerRoot(root); } catch { return { ...unknown, coverage: '운영 사본 경로 미확인' }; }
   let receipt;
@@ -47,6 +53,7 @@ function tipWorkerSnapshot({ root, now = new Date(), sourceRoot } = {}) {
   return { ...unknown, available: true, state: stale ? '오래됨' : observedState, observedState, checkedAt, stale,
     keyAvailability: observedState === '키없음' ? '부재 기록' : '미확인', cooldownUntil,
     cooldownActive: !!cooldownUntil && Date.parse(cooldownUntil) > new Date(now).getTime(),
+    failureKind: observedState === '실패' ? FAILURE_KINDS.get(receipt.이유) || 'unknown' : null,
     directNotificationAttempted: typeof receipt.directNotificationAttempted === 'boolean' ? receipt.directNotificationAttempted : null,
     route: ['구독', '크레딧'].includes(receipt.경로) ? receipt.경로 : null, coverage: '저장된 종료 상태 · 현재 인증 미조회' };
 }

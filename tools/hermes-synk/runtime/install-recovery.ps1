@@ -31,7 +31,7 @@ $action = New-ScheduledTaskAction -Execute $pwshPath -Argument $arguments
 # and restarted the gateway 0 times in its first day. Ten keeps every gap under the 15-minute sleep heuristic in overview.cjs.
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes 10)
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
-$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit ([TimeSpan]::Zero)
+$settings = New-ScheduledTaskSettingsSet -Priority 5 -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit ([TimeSpan]::Zero)
 $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description 'Checks the local Hermes process without AI calls and uses the official gateway start command only when absent. Existing tip bot startup is preserved.'
 Register-ScheduledTask -TaskName $taskName -InputObject $task -Force:$([bool]$existing) -ErrorAction Stop | Out-Null
 Write-Output 'SYNK recovery task installed: ten-minute checks, current interactive user, no elevation.'
