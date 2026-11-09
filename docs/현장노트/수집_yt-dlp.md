@@ -170,6 +170,7 @@
   - 콘테스트코리아: `https://www.contestkorea.com/sub/list.php?displayrow=100&int_gbn=1&Txt_bcode=<분야 코드>&page=N`(접수 중이 앞쪽에 몰린다). 상세 본문은 `<div class="view_detail_area">`부터 `<!-- //세부요강 -->`까지만 자른다.
   - 씽유: 목록 `https://thinkyou.co.kr/contest/?serstatus=1|0|2&pagesize=45&page=N`. 상세가 느리니 다른 사이트에 없는 공고만 5개씩 동시에 읽는다(10-19 299건 중 61건).
   - K-Startup: `https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=list&schStr=<낱말>`. 가을엔 경진대회가 적고 지역·기업 한정이 많다. 부처 공모는 기사·공식 사이트로 따로 찾는다.
+  - 기업마당(11-10): 모집중 목록에 `rows=100`을 줘도 실제 응답은 15건씩이었다. 요청한 행수를 페이지 크기로 믿으면 중간에 수집을 끝내게 된다 → 서버가 고정한 실제 행수와 마지막 쪽을 보고 페이지를 이어 읽는다 → 90쪽 마지막 7건까지 총1,343건 수집해 목록 총수와 대조했다. 이 수치는 자격 검증 건수가 아니다.
   - 판정을 에이전트 여럿에 나눠 맡길 때는 보조 파일 폴더를 따로 정해 준다([AI CLI 노트](AI_CLI.md) 「병렬 서브에이전트가 같은 scratchpad에…」).
 - 다시 확인: 10-24 읽기만 — 링커리어 `OPEN` totalCount 639(상세 글 포함), `SCHEDULED`는 「Value "SCHEDULED" does not exist in "ActivityStatus" enum」. 위비티 목록 첫 쪽 15건, 상세는 302 → `viewok`에서 두 칸이 다 있다. 콘테스트코리아 아이디어 분야 첫 쪽 접수 중 28건, 상세에 두 표지가 있고 끝 표지 뒤로 약 3만 3천 자가 더 붙는다. 씽유 목록 45건이 1초, 상세 한 건은 8.4초. K-Startup 「공모전」 진행 공고 3건.
 
