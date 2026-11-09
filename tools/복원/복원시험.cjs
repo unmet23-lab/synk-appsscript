@@ -55,6 +55,19 @@ function 대조(풀린곳, 집) {
   return 결과;
 }
 
+/** 묶음 장부(파일상태.json)에 적힌 파일이 풀린 곳에 다 있는지 센다. */
+function 장부대조(풀린곳, 집, 묶음들) {
+  const 결과 = {};
+  for (const 묶음 of 묶음들) {
+    let 장부;
+    try { 장부 = JSON.parse(fs.readFileSync(path.join(집, 'Documents', 'SYNK_원본창고', '상태', '복원꾸러미', 묶음, '파일상태.json'), 'utf8')); } catch { continue; }
+    const 이름들 = Object.keys(장부);
+    const 없음 = 이름들.filter((n) => !fs.existsSync(path.join(풀린곳, ...n.replace(/^OneDrive\//, 'SYNK복원_작업기록/').split('/'))));
+    결과[묶음] = { 장부: 이름들.length, 없음: 없음.length, 표본: 없음.slice(0, 5) };
+  }
+  return 결과;
+}
+
 const 표지 = '.복원시험-폴더';
 
 /** 시험 폴더를 새로 만든다. 이미 있으면 이 도구가 만든 곳(표지가 있는 곳)만 비운다. */
@@ -84,7 +97,7 @@ async function main() {
   try {
     if (!값.받은곳) {
       console.log(`드라이브에서 받는 중: ${값.묶음.join(' · ')}`);
-      const r = spawnSync(process.env.SYNK_복원_파이썬 || 'python', ['-X', 'utf8', '-B', path.join(__dirname, '암호묶음.py'), '받기', ...값.묶음, '--폴더', 받는곳],
+      const r = spawnSync(process.env.SYNK_복원_파이썬 || 'python', ['-X', 'utf8', '-B', path.join(__dirname, '암호묶음.py'), '받기', ...값.묶음, '--폴더', 받는곳, '--집', 값.집],
         { encoding: 'utf8', windowsHide: true });
       if (r.status !== 0) throw new Error('드라이브 받기 실패');
       표.받음 = JSON.parse(String(r.stdout).trim().split('\n').pop());
@@ -94,6 +107,7 @@ async function main() {
     표.풀기 = 합;
     console.log('원본과 해시 대조 중');
     표.대조 = 대조(풀린곳, 값.집);
+    표.장부누락 = 장부대조(풀린곳, 값.집, 값.묶음); // 장부에는 올렸다고 적혔는데 안 풀린 파일. 시험 중에 올라간 조각이면 생길 수 있어 숫자만 알린다
     표.걸린초 = Math.round((Date.now() - 시작) / 1000);
     표.성공 = 표.대조.다름 === 0 && 합.손상 === 0 && 합.실패 === 0 && 합.거절 === 0 && 합.조각실패 === 0 && 합.풀림 > 0;
   } finally {
@@ -111,4 +125,4 @@ async function main() {
 
 if (require.main === module) main().catch((e) => { console.error(`실패: ${e.message}`); process.exitCode = 1; });
 
-module.exports = { 대조 };
+module.exports = { 대조, 장부대조 };

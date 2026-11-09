@@ -13,7 +13,8 @@
 #            대조될 때까지 임시 조각과 장부를 그대로 두고, 48시간이 지나도 안 보이면 다시 넣고 알린다(11-09 GPT 설계 검토).
 #   77yuhbs  API로 올리고 그 자리에서 md5를 대조한다. 11-08 사고(남의 전송 잠금을 기다리다 조용히 멈춤) 때문에 .drive-transfer.lock은 잡지 않는다.
 # 휴대폰 핫스팟에서는 큰 올리기를 쉰다(열쇠만 작아서 그대로, 올리는 도중 옮겨 가면 그 자리에서 기다린다).
-# 장부(상태/복원꾸러미/<묶음>/): 조각.jsonl(끝난 조각) · 파일상태.json(경로 → 크기 · 수정 시각 · 넣은 때 · 조각, 모든 목적지가 끝난 뒤에만 갱신) · 묶음.json.
+# 목적지는 서로 독립이다: 한 곳에라도 대조되면 장부에 적고 새 조각을 계속 만든다. 임시 조각은 모든 목적지가 끝날 때까지 남아 막힌 쪽으로 다시 간다(11-09 아르곤 설계 재검토 — G: 하나가 막혀 77yuhbs까지 멈추던 것).
+# 장부(상태/복원꾸러미/<묶음>/): 조각.jsonl(적은 조각) · 파일상태.json(경로 → 크기 · 수정 시각 · 넣은 때 · 조각, 한 곳이라도 대조된 뒤 갱신) · 묶음.json.
 # 열쇠 묶음은 온전한 판만 올린다: 읽지 못한 파일 · 못 걸은 폴더 · 필수 폴더 빔 · 20% 넘는 줄어듦이면 새 판을 만들지 않고 알린다(옛 판도 지우지 않는다). 새 판은 바뀌면 3시간 안에 만든다.
 # 묶음마다 잠금을 잡아 겹치는 회차가 서로의 임시 조각을 지우지 않게 한다. 조각 끝에 파일별 sha256 목록을 넣어 풀 때 대조한다.
 # 되살아난 옛 노트북: 작업방식.cjs가 push 거절을 보면 「다른PC가앞섬」 표식을 쓰고, 표식이 있으면 여기서는 아무것도 올리지 않는다.
@@ -45,9 +46,11 @@ import 드라이브  # noqa: E402
 REMOTE_ROOT = 'SYNK_복원'
 EMAIL_5TB, EMAIL_20TB = 'unmet23@gmail.com', '77yuhbs@gmail.com'
 PART_RAW_LIMIT = 4 << 30           # 조각 하나의 원문 상한(대화 기록 약 2.6GB 암호문)
+MTIME_TOLERANCE_NS = 2000
 KEYS_RAW_LIMIT = 300 << 20         # 열쇠 묶음이 이보다 크면 엉뚱한 것이 끌려온 것으로 본다
 READ_WHOLE_LIMIT = 64 << 20        # 이보다 작은 파일은 먼저 다 읽어 머리에 실제 크기를 적는다(읽는 사이 바뀌어도 묶음이 안 깨진다)
-G_MIN_FREE = 30 << 30              # 드라이브 데스크톱 캐시가 C:에 있다 — 이보다 빠듯하면 G: 복사를 미룬다
+G_MIN_FREE = 3 << 30               # 드라이브 데스크톱 캐시가 C:에 있다 — 이보다(또는 파일 크기의 두 배보다) 빠듯하면 G: 복사를 미룬다
+TEMP_BACKLOG_BYTES = 50 << 30      # 막힌 목적지 때문에 임시 조각이 이만큼 쌓이면 새 조각을 멈추고 알린다
 TEMP_MIN_FREE = 12 << 30
 G_VERIFY_GRACE_HOURS = 48
 G_WAIT_SMALL_BYTES = 64 << 20      # 작은 조각은 올라가기를 잠깐 기다려 본다
@@ -59,6 +62,7 @@ WHOLE_DAILY_DAYS = 90
 # 어떤 파일이 늘 바뀌는지 목록으로 가르면 진짜 열쇠를 빠뜨리게 되므로(11-09 GPT 검수) 시간으로만 막는다. 곧바로 올리려면 --지금.
 WHOLE_MIN_HOURS = 3
 OTHER_PC_MARKER = '다른PC가앞섬'
+OUTSIDE_HOME = 'SYNK복원_집밖'
 MANIFEST_DIR = '.synk-복원/조각목록/'
 CREATE_NO_WINDOW = 0x08000000 if os.name == 'nt' else 0
 # 뒤의 여섯 자리는 두 PC가 같은 초에 만들어도 이름이 안 겹치게 한다(11-09 첫 판 조각에는 없다).
@@ -157,7 +161,6 @@ class Root:
     skip_files: object = None   # 정규식
     only_files: object = None   # 정규식(이것만)
     max_file: int = 0           # 0이면 제한 없음
-    follow_top: bool = False    # 뿌리 자체가 junction이어도 따라간다(그 아래 링크는 안 따라간다)
     required: bool = False      # 없거나 비면 문제로 친다(열쇠 묶음이 조용히 줄어들지 않게)
 
 
@@ -249,7 +252,7 @@ def define_bundles(home):
             Root(home / '.config', max_file=small, skip_dirs=config_skip), Root(home / '.supabase', max_file=small, skip_dirs=('traces',)),
             Root(home / '.codex' / 'auth.json'), Root(home / '.codex' / 'config.toml'), Root(home / '.codex' / 'secrets'),
             Root(home / '.codex' / '.sandbox-secrets'),
-            Root(home / '.codex-bake', max_file=small, follow_top=True, skip_dirs=config_skip + ('generated_images', 'skills', 'memories', 'archived_sessions', 'plugins', 'vendor_imports'), only_files=re.compile(r'(^|[\\/])(계정\.json|auth\.json|config\.toml)$')),
+            Root(home / '.codex-bake', max_file=small, skip_dirs=config_skip + ('generated_images', 'skills', 'memories', 'archived_sessions', 'plugins', 'vendor_imports'), only_files=re.compile(r'(^|[\\/])(계정\.json|auth\.json|config\.toml)$')),
             Root(home / '.ai-accounts' / 'codex-synk.yuh', max_file=small, skip_dirs=config_skip, only_files=re.compile(r'(^|[\\/])(auth\.json|config\.toml)$')),
             Root(home / '.ai-accounts' / 'higgsfield-founder'), Root(home / '.ai-accounts' / 'higgsfield-unmet23'), Root(home / '.ai-accounts' / 'typecast-unmet23'),
             Root(home / '.ai-accounts' / 'claude-unmet23', max_file=small, skip_dirs=config_skip + ('projects', 'file-history', 'shell-snapshots', 'telemetry', 'plugins', 'skills', 'cache', 'statsig', 'todos', 'paste-cache'), only_files=re.compile(r'[^\\/]+\.json$')),
@@ -292,7 +295,8 @@ def define_bundles(home):
     ]}
 
 
-DAILY = ('창고장부', '비공개문서', '작업기록', '릴리스계보', '대화기록')  # 열쇠는 30분 회차가 맡는다(두 예약이 겹치지 않게)
+# 열쇠는 30분 회차가 맡는다(두 예약이 겹치지 않게). 창고장부는 맨 뒤 — 다른 묶음의 오늘 장부(파일상태.json)가 들어가야 새 노트북이 처음부터 다시 올리지 않는다.
+DAILY = ('비공개문서', '작업기록', '릴리스계보', '대화기록', '창고장부')
 
 
 def state_root(home):
@@ -300,8 +304,9 @@ def state_root(home):
 
 
 def walk_root(root, home, problems=None):
-    """(절대 경로, arcname, 크기, 수정 시각 ns). junction · 심볼릭 링크 · 클라우드 자리표시자는 따라가지 않는다.
-    사라진 파일은 정상이고, 그 밖에 못 읽은 곳은 problems에 센다(조용히 빠지면 줄어든 묶음을 온전한 판으로 치게 된다)."""
+    """(절대 경로, arcname, 크기, 수정 시각 ns). 뿌리가 junction이면 따라가고(D:로 옮긴 폴더), 그 아래 junction · 심볼릭 링크 · 클라우드 자리표시자는 안 따라간다.
+    사라진 파일은 정상이고, 그 밖에 못 읽은 곳은 problems에 센다(조용히 빠지면 줄어든 묶음을 온전한 판으로 치게 된다).
+    집 밖 파일(C:\\SYNK-LoRA 등)은 SYNK복원_집밖/<드라이브>/ 아래 이름으로 넣는다 — 빠뜨리지 않고, 새 노트북에서 원래 자리를 덮지도 않는다."""
     def note(error):
         if problems is not None and not isinstance(error, FileNotFoundError):
             problems.append(type(error).__name__)
@@ -310,7 +315,7 @@ def walk_root(root, home, problems=None):
     try:
         rel_base = base.relative_to(home)
     except ValueError:
-        return  # 집 밖은 묶음에 넣지 않는다(풀 자리가 없다)
+        rel_base = Path(OUTSIDE_HOME) / (base.drive.strip(':') or '_') / base.relative_to(base.anchor)
     try:
         top = os.stat(base, follow_symlinks=False)
     except OSError as error:
@@ -318,8 +323,6 @@ def walk_root(root, home, problems=None):
         return
     real = base
     if is_reparse(top):
-        if not root.follow_top:
-            return
         real = Path(os.path.realpath(base))  # D:로 옮긴 폴더(11-07 junction) — 맨 위만 따라가고 arcname은 원래 자리 그대로다
         try:
             top = os.stat(real, follow_symlinks=False)
@@ -466,7 +469,8 @@ def changed_files(files, ledger, bundle, now):
     for row in files:
         _, arc, size, mtime = row
         known = ledger.files.get(arc)
-        if known and known[0] == size and known[1] == mtime:
+        # 복원된 파일의 시각은 tar의 소수 초를 거쳐 몇백 ns 어긋난다 — 새 노트북이 수십 GB를 처음부터 다시 올리지 않게 오차를 둔다.
+        if known and known[0] == size and abs(known[1] - mtime) < MTIME_TOLERANCE_NS:
             continue
         age = now - mtime / 1e9
         if bundle.quiet and age < bundle.quiet:
@@ -547,16 +551,20 @@ def seal(rows, generated, out, public_key=None):
                             continue
                         info.size = len(data)
                         tar.addfile(info, io.BytesIO(data))
-                        digest, short = hashlib.sha256(data).hexdigest(), False
+                        # 잰 크기와 다르면 읽는 사이 바뀐 것이다(덮어쓰는 도중일 수 있다). 묶음에는 두되 장부에 안 적어 다음 회차가 다시 넣고, 열쇠 판은 올리지 않는다.
+                        digest, short = hashlib.sha256(data).hexdigest(), len(data) != size
                         real_size = len(data)
                     else:
                         info.size = size
                         exact = Exact(fh, size)
                         tar.addfile(info, exact)
                         digest, short, real_size = exact.hash.hexdigest(), exact.short, size
-                if short:
+                if short and size > READ_WHOLE_LIMIT:
                     skipped.append(arc)
-                    manifest.append([arc, real_size, None])  # 풀 때 이 파일은 버리고 더 옛 조각에서 찾는다
+                    manifest.append([arc, real_size, None])  # 0으로 채운 큰 파일 — 풀 때 버리고 더 옛 조각에서 찾는다
+                elif short:
+                    skipped.append(arc)
+                    manifest.append([arc, real_size, digest])
                 else:
                     manifest.append([arc, real_size, digest])
                     captured.append((arc, size, mtime))
@@ -594,16 +602,16 @@ class UnmetG:
     def mounted(self):
         return self.root.parent.is_dir()
 
-    def has_room(self):
+    def has_room(self, size=0):
         try:
-            return shutil.disk_usage(Path(os.environ.get('SystemDrive', 'C:') + '\\')).free >= G_MIN_FREE
+            return shutil.disk_usage(Path(os.environ.get('SystemDrive', 'C:') + '\\')).free >= max(G_MIN_FREE, size * 2)
         except OSError:
             return False
 
     def put(self, path, folder, name=None):
         if not self.mounted():
             raise RuntimeError('UNMET23_G_NOT_MOUNTED')
-        if not self.has_room():
+        if not self.has_room(Path(path).stat().st_size):
             raise RuntimeError('UNMET23_G_LOW_SPACE')
         target = self.root / folder / (name or Path(path).name)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -757,7 +765,10 @@ def part_waiting(sidecar, bundle):
     return any(not (sidecar['dests'].get(d) or {}).get('done') for d in bundle.dests)
 
 
-def finish_part(ctx, bundle, ledger, part, sidecar):
+def record_part(bundle, ledger, part, sidecar):
+    """한 곳에라도 대조되면 장부에 적는다. 한 목적지가 막혀도 다른 목적지로 계속 백업하기 위해서다(막힌 쪽은 임시 조각으로 따로 잇는다)."""
+    if sidecar.get('committed') or not any((sidecar['dests'].get(d) or {}).get('done') for d in bundle.dests):
+        return
     ledger.append({'name': part.name, 'at': sidecar['at'], 'files': len(sidecar['rows']), 'raw': sidecar['raw'], 'enc': sidecar['enc'],
                    'md5': sidecar['md5'], 'sha256': sidecar['sha256'], 'keyId': sidecar.get('keyId'), 'dests': sidecar['dests']})
     ledger.commit([tuple(r) for r in sidecar['rows']], time.time(), part.name)
@@ -767,27 +778,40 @@ def finish_part(ctx, bundle, ledger, part, sidecar):
         if sidecar.get('fileCount'):
             ledger.meta['wholeFiles'] = sidecar['fileCount']
         ledger.save_meta()
+    sidecar['committed'] = True
+    write_json(Path(str(part) + '.json'), sidecar)
+
+
+def retire_part(bundle, part, sidecar):
+    """모든 목적지가 끝난 조각만 임시에서 지운다. 지웠으면 True."""
+    if part_waiting(sidecar, bundle):
+        return False
     part.unlink(missing_ok=True)
     Path(str(part) + '.json').unlink(missing_ok=True)
+    return True
 
 
 def flush_leftovers(ctx, bundle, ledger, temp_dir):
-    """지난 회차가 끊겨 남았거나 unmet23 대조를 기다리는 조각부터 처리한다. (문제 목록, 아직 기다리는 조각 수)."""
+    """지난 회차가 끊겨 남았거나 한 목적지를 기다리는 조각부터 처리한다. (문제 목록, 아직 남은 조각 수, 새 조각을 막을지).
+    막는 것은 어느 곳에도 못 간 조각이 있을 때(같은 파일이 또 묶인다)와 임시가 너무 쌓였을 때뿐이다."""
     for leftover in sorted(temp_dir.glob('*.part')):
         leftover.unlink(missing_ok=True)  # 암호화 도중 끊긴 것(복호화할 수 없다). 묶음 잠금 안이라 다른 회차의 것이 아니다
-    errors, waiting = [], 0
+    errors, waiting, blocked, backlog = [], 0, False, 0
     for part in sorted(temp_dir.glob('*.enc')):
         sidecar = read_json(Path(str(part) + '.json'))
         if not sidecar:
             part.unlink(missing_ok=True)  # 사이드카를 쓰기 전에 끊겼다 — 다음 회차가 다시 만든다
             continue
-        problems = deliver(ctx, bundle, part, sidecar)
-        errors += problems
-        if part_waiting(sidecar, bundle):
+        errors += deliver(ctx, bundle, part, sidecar)
+        record_part(bundle, ledger, part, sidecar)
+        if not retire_part(bundle, part, sidecar):
             waiting += 1
-        else:
-            finish_part(ctx, bundle, ledger, part, sidecar)
-    return errors, waiting
+            backlog += sidecar.get('enc', 0)
+            blocked = blocked or not sidecar.get('committed')
+    if backlog > TEMP_BACKLOG_BYTES:
+        blocked = True
+        errors.append('BUNDLE_TEMP_BACKLOG')
+    return errors, waiting, blocked
 
 
 def make_and_send(ctx, bundle, ledger, rows, generated, temp_dir, seq, at, fingerprint=None):
@@ -803,9 +827,8 @@ def make_and_send(ctx, bundle, ledger, rows, generated, temp_dir, seq, at, finge
                'keyId': info.get('keyId'), 'skipped': len(skipped), 'fingerprint': fingerprint, 'fileCount': len(rows) if bundle.mode == 'whole' else None, 'dests': {}}
     write_json(Path(str(part) + '.json'), sidecar)
     errors = deliver(ctx, bundle, part, sidecar)
-    waiting = part_waiting(sidecar, bundle)
-    if not waiting:
-        finish_part(ctx, bundle, ledger, part, sidecar)
+    record_part(bundle, ledger, part, sidecar)
+    waiting = not retire_part(bundle, part, sidecar)
     return errors, len(skipped), sidecar, waiting
 
 
@@ -871,7 +894,7 @@ def publish_key_files(ctx, bundle, ledger):
                 try:
                     if not getattr(dest, 'needs_confirm', False):
                         if done.get(key) != digest:
-                            dest.put(source, bundle.name, name)
+                            dest.replace(source, bundle.name, name)  # 같은 이름 파일이 둘 생기지 않게 갈아 끼운다
                             done[key] = digest
                         continue
                     answer = dest.confirm(bundle.name, name, md5, size)
@@ -920,11 +943,12 @@ def _add_part(report, sidecar, skipped):
 
 def _run_locked(ctx, bundle, heartbeat, temp_dir, report):
     ledger = Ledger(ctx.home, bundle.name)
-    errors, waiting = flush_leftovers(ctx, bundle, ledger, temp_dir)
+    errors, waiting, blocked = flush_leftovers(ctx, bundle, ledger, temp_dir)
     report['issues'] += errors
     report['waiting'] = waiting
-    if errors or waiting:
-        # 못 올린 조각이 있으면 새 조각을 만들지 않는다(쌓이지 않게). 대조를 기다리는 것은 문제가 아니라 다음 회차의 일이다.
+    if blocked:
+        if bundle.name == '열쇠':
+            report['issues'] += publish_key_files(ctx, bundle, ledger)
         return
     now = time.time()
     list_problems = []
@@ -973,7 +997,7 @@ def _run_locked(ctx, bundle, heartbeat, temp_dir, report):
         heartbeat()
         report['issues'] += problems
         report['waiting'] += int(part_wait)
-        if problems:
+        if not sidecar.get('committed'):  # 어느 곳에도 못 갔으면 멈춘다. 한쪽만 막혔으면 다음 조각을 잇는다
             break
 
 
@@ -988,7 +1012,7 @@ def settle(ctx, table, reports, tries=SETTLE_TRIES, wait=SETTLE_SECONDS):
             temp_dir = ctx.temp.root() / name
             try:
                 with BundleLock(temp_dir / '.묶음잠금'):
-                    errors, left = flush_leftovers(ctx, table[name], Ledger(ctx.home, name), temp_dir)
+                    errors, left, _ = flush_leftovers(ctx, table[name], Ledger(ctx.home, name), temp_dir)
             except BundleBusy:
                 continue
             except (OSError, RuntimeError, ValueError) as error:
@@ -1092,7 +1116,8 @@ def publish_workmethod(ctx, mirror, keep_daily=14, keep_monthly=12, run=subproce
         zip_file.unlink(missing_ok=True)
         zip_enc.unlink(missing_ok=True)
         report['dests'] = dests
-        write_json(state_file, {**state, 'head': head, 'dests': dests, 'at': stamp()})
+        # 실패한 회차는 시각을 안 남긴다 — 새 판이 나와도 3시간을 기다리지 않고 바로 다시 한다.
+        write_json(state_file, {**state, 'head': head, 'dests': dests, 'at': state.get('at') if report['issues'] else stamp()})
         return report
     finally:
         lock.__exit__()
@@ -1147,7 +1172,7 @@ def extract(archive, home):
     """복호화된 묶음을 집 아래에 푼다. 이미 있는 파일은 건너뛴다. 집 밖 경로 · 링크는 풀지 않는다.
     조각 끝의 sha256 목록과 다른 파일은 지워 더 옛 조각이 채우게 한다."""
     home = Path(home).resolve()
-    counts = {'풀림': 0, '건너뜀': 0, '거절': 0, '실패': 0, '손상': 0, '바이트': 0}
+    counts = {'풀림': 0, '건너뜀': 0, '거절': 0, '실패': 0, '손상': 0, '바이트': 0, '손상이름': []}
     written, manifest = {}, None
     with tarfile.open(archive, mode='r:zst') as tar:
         for member in tar:
@@ -1205,7 +1230,8 @@ def extract(archive, home):
             got[0].unlink(missing_ok=True)
             counts['풀림'] -= 1
             counts['바이트'] -= got[2]
-            counts['손상'] += 1  # 묶을 때 줄어든 파일(want가 None)도 센다 — 더 옛 조각이 채웠는지는 사람이 본다
+            counts['손상'] += 1  # 묶을 때 줄어든 파일(want가 None)도 센다 — 더 옛 조각이 채웠는지는 복원풀기가 끝에 다시 본다
+            counts['손상이름'].append(restore_name(arc))
     return counts
 
 
@@ -1225,7 +1251,7 @@ def fetch(yuhbs, names, folder):
             if dest.exists() and 드라이브.file_hashes(dest)[0] == row.get('md5Checksum'):
                 count += 1
                 continue
-            yuhbs.drive.download(row['id'], dest, row.get('md5Checksum'))
+            yuhbs.drive.download(row['id'], dest, row.get('md5Checksum'), row.get('size'))
             count += 1
         got[name] = count
     return got
@@ -1287,7 +1313,7 @@ class Receipt:
         elif issues:
             self.body['status'] = 'partial_failure'
         else:
-            # 대조를 기다리거나 다른 회차가 잡은 묶음이 있으면 아직 끝이 아니다(장부도 아직 안 적었다).
+            # 대조를 기다리거나 다른 회차가 잡은 묶음이 있으면 아직 끝이 아니다(한 목적지에는 갔어도 다른 곳은 임시 조각으로 남아 있다).
             self.body['status'] = 'pending' if unfinished else 'success'
         self.body['finishedAt'] = self.body['checkedAt'] = stamp()
         if self.body['status'] == 'success':
@@ -1370,6 +1396,8 @@ def main(argv=None):
         if ctx.stopped():
             issues.append('BUNDLE_STOPPED')
             break
+        if name == '창고장부':
+            settle(ctx, table, reports)  # 다른 묶음의 대조가 끝난 장부가 오늘 판에 들어가게
         try:
             report = run_bundle(ctx, table[name], receipt.save)
         except (OSError, RuntimeError, ValueError, KeyError) as error:

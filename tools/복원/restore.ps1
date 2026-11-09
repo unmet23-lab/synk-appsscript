@@ -4,9 +4,9 @@
 # 유호님 손: Windows 설치 · GitHub 로그인 · 구글 드라이브 로그인 · 복호화 암호 한 번. 나머지는 이 스크립트가 한다.
 #
 #   복원 시작.cmd                                   처음부터(또는 이어서)
-#   ... restore.ps1 -대화기록                        대화 기록(약 32GB)도 받아 푼다
+#   ... restore.ps1 -대화기록                        대화 기록(풀면 약 50GB, 받는 양은 그 절반 아래)도 받아 푼다(앱을 처음 켜기 전에 하면 세션 목록 · 설정까지 그대로 온다)
 #   ... restore.ps1 -릴리스계보                      회사 릴리스 사슬이 따라가는 .tmp 계보 폴더(약 8GB)도 받아 푼다(회사 서버를 배포할 때 필요)
-#   ... restore.ps1 -예약켜기                        꺼 둔 예약 작업을 켠다(옛 노트북이 안 도는 것을 확인한 뒤 — 둘 다 돌면 SNS가 두 번 나간다)
+#   ... restore.ps1 -예약켜기                        꺼 둔 예약 작업만 켜고 끝낸다(옛 노트북이 안 도는 것을 확인한 뒤 — 둘 다 돌면 SNS가 두 번 나간다)
 #   ... restore.ps1 -전부설치                        기록된 프로그램 · 파이썬 패키지 전부
 #   ... restore.ps1 -집 D:\복원시험\q1212 -시험 [-가볍게]   가짜 집에 푼다: 설치 · 로그인 기다림 · 예약 · 환경 변수를 건드리지 않는다
 # Windows PowerShell 5.1에서 돈다(새 PC에는 pwsh가 처음에 없다). 파일은 UTF-8 BOM이다.
@@ -49,6 +49,22 @@ function CopyMissing($from, $to, [string[]]$빼기 = @()) {
   $line = $out | Where-Object { $_ -match '^\s*(Files|파일)\s*:' } | Select-Object -First 1
   if ($line -match ':\s*(\d+)\s+(\d+)') { return [int]$Matches[2] }
   return 0
+}
+
+# -예약켜기는 예약만 켜고 끝낸다(전체를 다시 돌리면 암호를 또 묻는다). 옛 노트북이 안 도는 것을 확인한 뒤에 쓴다.
+if ($예약켜기) {
+  $예약폴더 = Join-Path $Root '윈도우\예약작업'
+  $목록 = Join-Path $예약폴더 '목록.json'
+  $옛상태 = @{}
+  if (Test-Path -LiteralPath $목록) { foreach ($t in @(Get-Content -LiteralPath $목록 -Raw -Encoding utf8 | ConvertFrom-Json)) { $옛상태[$t.이름] = $t.상태 } }
+  $켬 = 0
+  foreach ($x in Get-ChildItem -LiteralPath $예약폴더 -Filter '*.xml') {
+    if ($옛상태[$x.BaseName] -eq 'Disabled') { continue }
+    if (Enable-ScheduledTask -TaskName $x.BaseName -ErrorAction SilentlyContinue) { $켬++ } else { Say "  못 켬(등록 전일 수 있어요): $($x.BaseName)" }
+  }
+  Say "예약 작업 $켬개를 켰어요."
+  if ($진짜) { Read-Host '이 창은 Enter를 누르면 닫혀요' | Out-Null }
+  exit 0
 }
 
 Say "SYNK 복원 $(Get-Date -Format 'yyyy-MM-dd HH:mm')  집: $집$(if ($시험) { '  (시험)' })"
@@ -199,13 +215,21 @@ function FindKeysFile {
   }
   return $null
 }
+function FindLockedKey {
+  if ($비밀키) { return $비밀키 }
+  foreach ($곳 in @('G:\내 드라이브\SYNK_복원\열쇠', (Join-Path $env:USERPROFILE 'Downloads'))) {
+    $f = Join-Path $곳 '비밀키_잠금.json'
+    if (Test-Path -LiteralPath $f) { return $f }
+  }
+  return $null
+}
 $열쇠 = FindKeysFile
-if (-not $열쇠 -and $진짜) {
+if ((-not $열쇠 -or -not (FindLockedKey)) -and $진짜) {
   Say '  열쇠 파일을 못 찾았어요. 브라우저에서 드라이브의 SYNK_복원/열쇠 폴더를 열어'
   Say '  가장 새 「열쇠-….tar.zst.enc」와 「비밀키_잠금.json」을 내려받기 폴더에 받아 주세요.'
   Start-Process 'https://drive.google.com/drive/search?q=SYNK_%EB%B3%B5%EC%9B%90'
   $t = 0
-  while (-not ($열쇠 = FindKeysFile) -and $t -lt 1800) { Start-Sleep 5; $t += 5 }
+  while (-not (($열쇠 = FindKeysFile) -and (FindLockedKey)) -and $t -lt 1800) { Start-Sleep 5; $t += 5 }
 }
 $풀기 = Join-Path $PSScriptRoot '복원풀기.cjs'
 $받을것 = @('비공개문서', '창고장부', '작업기록')
@@ -283,20 +307,7 @@ if ($시험) { Say '  시험: 건너뜀' } else {
     }
   }
   Say "  예약 작업 $등록개를 꺼진 채 등록"
-  if ($예약켜기) {
-    $목록 = Join-Path $예약폴더 '목록.json'
-    $옛상태 = @{}
-    if (Test-Path -LiteralPath $목록) { foreach ($t in @(Get-Content -LiteralPath $목록 -Raw -Encoding utf8 | ConvertFrom-Json)) { $옛상태[$t.이름] = $t.상태 } }
-    $켬 = 0
-    foreach ($x in Get-ChildItem -LiteralPath $예약폴더 -Filter '*.xml') {
-      if ($옛상태[$x.BaseName] -eq 'Disabled') { continue }
-      Enable-ScheduledTask -TaskName $x.BaseName -ErrorAction SilentlyContinue | Out-Null
-      $켬++
-    }
-    Say "  예약 작업 $켬개를 켬"
-  } else {
-    $남은일.Add('옛 노트북이 안 도는 것을 확인한 뒤 예약 작업 켜기: restore.ps1 -예약켜기')
-  }
+  $남은일.Add('옛 노트북이 안 도는 것을 확인한 뒤 예약 작업 켜기: 복원 시작.cmd -예약켜기')
 }
 
 # ── 8. 점검 ──

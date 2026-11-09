@@ -206,6 +206,32 @@ test('고르기에서 못 읽은 파일도 지우기가 되지 않고 알린다'
   } finally { t.끝(); }
 });
 
+test('qa · build 같은 경로 규칙에 걸린 파일도 본문의 비밀 대입 검사를 받는다', () => {
+  const t = 판();
+  try {
+    t.쓰기('memory/qa/설정.json', '{"password": "real-looking-value-123"}');
+    t.쓰기('memory/qa/멀쩡.json', '{"a": 1}');
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 목록 = t.맨목록().join('\n');
+    assert.ok(!목록.includes('설정.json'));
+    assert.ok(목록.includes('멀쩡.json'));
+  } finally { t.끝(); }
+});
+
+test('줄어듦으로 막히면 거울도 HEAD로 돌아가 다음 회차에 지우기가 새지 않는다', () => {
+  const t = 판();
+  try {
+    const 파일들 = [];
+    for (let i = 0; i < 10; i++) 파일들.push(t.쓰기(`Documents/repo/글${i}.md`, `글 ${i}\n`));
+    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 거울 = path.join(t.뿌리, 'mirror');
+    파일들.slice(0, 6).forEach((f) => fs.rmSync(f));
+    assert.equal(도구.돌리기({}, t.의존()).status, 'failed');
+    assert.ok(fs.existsSync(path.join(거울, '문서', 'repo', '글0.md')));
+    assert.equal(execFileSync('git', ['-C', 거울, 'status', '--porcelain'], { encoding: 'utf8' }).trim(), '');
+  } finally { t.끝(); }
+});
+
 test('svg 속 비밀 대입도 잡고, 평문에 못 두는 설정 글은 버리지 않고 암호 묶음으로 보낸다', () => {
   const t = 판();
   try {
@@ -246,7 +272,8 @@ test('메모 묶음만 크게 줄어도 전체가 커서 넘어가지 않고 막
     const 메모들 = [];
     for (let i = 0; i < 12; i++) 메모들.push(t.쓰기(`memory/메모${i}.md`, `메모 ${i}\n`));
     for (let i = 0; i < 100; i++) t.쓰기(`Documents/repo/글${i}.md`, `글 ${i}\n`);
-    assert.equal(도구.돌리기({}, t.의존()).status, 'success');
+    const 첫 = 도구.돌리기({}, t.의존());
+    assert.equal(첫.status, 'success', JSON.stringify(첫.issues));
     for (const f of 메모들.slice(0, 10)) fs.rmSync(f);
     const 값 = 도구.돌리기({}, t.의존());
     assert.equal(값.status, 'failed');

@@ -194,11 +194,11 @@ function 판정(줄, 파일, 도구, 모음, 받은데이터) {
   const 원본검사경로 = 줄.곳.startsWith('문서/SYNK-appsscript') ? rel : 경로;
   const 검사경로 = 원본검사경로.replace(/(^|\/)(worktrees)(\/|$)/, '$1wt$3');
   let 정책 = 도구.textPolicy(검사경로, 데이터);
-  if (정책 === 'non-text-extension') 정책 = 도구.textPolicy(`${검사경로}.txt`, 데이터); // svg 등 정책 표에 없는 글도 비밀 대입 검사를 받는다
+  // 경로 규칙(확장자 · qa · build 등)에 걸려 본문을 안 본 답이면 중립 이름으로 다시 물어 본문까지 본다 — 평문으로 나가는 파일은 모두 비밀 대입 검사를 받는다.
+  if (정책 === 'non-text-extension' || 정책 === 'generated-or-excluded-path') 정책 = 도구.textPolicy('본문검사.txt', 데이터);
   if (정책 === 'secret-signature' || 정책 === 'secret-literal' || 정책 === 'credential-path') return { 까닭: 정책, 갈곳: '열쇠' };
   // 평문에 못 두는 글은 버리지 않고 암호 묶음으로 보낸다
   if (정책 === 'embedded-media-or-base64' || 정책 === 'over-10MiB' || 정책 === 'binary-control-bytes' || 정책 === 'not-utf8-text') return { 까닭: 정책, 갈곳: '작업기록' };
-  // generated-or-excluded-path · non-text-extension은 설정 폴더의 정상 파일에서도 나온다 — 아래 서명 검사로 갈음한다.
   const 글 = 데이터.toString('utf8');
   if (더한서명.test(글)) return { 까닭: 'secret-signature', 갈곳: '열쇠' };
   if (열쇠값이들었나(글, 모음)) return { 까닭: 'known-secret-value', 갈곳: '열쇠' };
@@ -355,15 +355,17 @@ function 맞추기(거울, 내보냄, 덧붙임, 검사 = () => null, 지우기�
   return { 복사, 지움, 걸림, 읽기실패 };
 }
 
-/** 예약 작업 XML · 설치 목록 · 연결 목록. 하루에 한 번 만든다(거울의 기록을 그대로 두면 변경 없음으로 본다). */
+/**
+ * 예약 작업 XML · 설치 목록 · 연결 목록. 하루에 한 번 만들어 상태 폴더에 둔다.
+ * 거울에서 다시 읽지 않는다 — 비밀 검사에 걸려 거울에 없는 기록이 있으면 회차마다 다시 만들게 되고, 옛 평문 판을 되돌려 줄 수도 있다.
+ */
 function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSync) {
   const 상태 = 캐시읽기(상태파일);
   const 덧 = new Map();
-  const 옛것 = (rel) => { try { 덧.set(rel, fs.readFileSync(path.join(거울, ...rel.split('/')))); } catch {} };
-  if (상태.at && 지금 - 상태.at < 설치목록주기ms) {
-    for (const rel of 상태.files || []) 옛것(rel);
-    // 거울을 새로 받았으면(옛 기록이 거울에 없으면) 하루를 기다리지 않고 다시 만든다
-    if (덧.size === (상태.files || []).length && 덧.size) return 덧;
+  const 기록폴더 = path.join(path.dirname(상태파일), '보호', '윈도우기록');
+  if (상태.at && 지금 - 상태.at < 설치목록주기ms && (상태.files || []).length) {
+    for (const rel of 상태.files) { try { 덧.set(rel, fs.readFileSync(path.join(기록폴더, ...rel.split('/')))); } catch {} }
+    if (덧.size === 상태.files.length) return 덧;
     덧.clear();
   }
   const 실행 = (cmd, args, timeout = 180000) => {
@@ -393,6 +395,11 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
   const 연결 = 실행('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
     `[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); $roots=@($env:USERPROFILE, (Join-Path $env:USERPROFILE 'Documents'), (Join-Path $env:USERPROFILE '.cache'), (Join-Path $env:USERPROFILE '.claude\\skills'), 'C:\\'); $rows=foreach($r in $roots){ Get-ChildItem -LiteralPath $r -Force -ErrorAction SilentlyContinue | Where-Object { $_.LinkType -in 'Junction','SymbolicLink' -and $_.Name -notin 'Documents and Settings','My Music','My Pictures','My Videos' } | ForEach-Object { [pscustomobject]@{ 자리=$_.FullName; 대상=($_.Target -join ';'); 종류=[string]$_.LinkType } } }; ConvertTo-Json -InputObject @($rows) -Compress`]);
   if (연결) 덧.set('윈도우/연결목록.json', 연결.replace(/^\uFEFF/, ''));
+  for (const [rel, 내용] of 덧) {
+    const 곳 = path.join(기록폴더, ...rel.split('/'));
+    fs.mkdirSync(path.dirname(곳), { recursive: true });
+    fs.writeFileSync(곳, 내용);
+  }
   쓰기(상태파일, { at: 지금, files: [...덧.keys()] });
   return 덧;
 }
@@ -473,7 +480,9 @@ function 돌리기(옵션 = {}, 의존 = {}) {
   git(거울, ['add', '-A']);
   const 걸린묶음 = 옵션.줄어듦허용 ? null : 줄어듦검사(거울);
   if (걸린묶음) {
-    git(거울, ['reset', '--quiet']); // 커밋 · push 하지 않는다. 원본이 돌아오면 다음 회차의 맞추기가 거울을 되돌린다.
+    // 커밋 · push 하지 않고 거울을 HEAD로 되돌린다. 지운 채로 두면 다음 회차의 읽기 실패가 삭제 커밋으로 이어질 수 있다. 거울에만 있는 내용은 없다.
+    git(거울, ['reset', '--hard', '--quiet', 'HEAD']);
+    git(거울, ['clean', '-fdq']);
     return 끝('failed', { ...요약, issues: [{ code: 'WORKMETHOD_SHRINK_GUARD' }], 걸린묶음 });
   }
   const 바뀜 = !!git(거울, ['status', '--porcelain']).trim();

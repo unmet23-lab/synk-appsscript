@@ -280,8 +280,8 @@ class Drive:
             raise RuntimeError('DRIVE_UPLOAD_MISMATCH')
         return finished, md5, sha
 
-    def download(self, file_id, dest, want_md5=None):
-        """.part로 받고 md5가 맞을 때만 이름을 바꾼다. 끊기면 받은 데까지 이어 받는다."""
+    def download(self, file_id, dest, want_md5=None, want_size=None):
+        """.part로 받고 md5가 맞을 때만 이름을 바꾼다. 끊기면(오류 없이 일찍 끝나도) 받은 데까지 이어 받는다."""
         dest = Path(dest)
         dest.parent.mkdir(parents=True, exist_ok=True)
         part = dest.with_name(dest.name + '.part')
@@ -308,6 +308,9 @@ class Drive:
                     with open(part, 'ab') as out:
                         for block in response.iter_content(1 << 20):
                             out.write(block)
+                if want_size and part.stat().st_size < int(want_size):
+                    self.sleep(min(60, 2 ** attempt) + random.random())
+                    continue
                 break
             except requests.RequestException:
                 self.sleep(min(60, 2 ** attempt) + random.random())
