@@ -1534,7 +1534,10 @@ test('기준: 쪽을 안 고르면 달라진 쪽만 보이고, 고른 쪽만 옛
   assert.deepEqual(미리.기준갱신.axe못돎, ['/|mobile'], '그 회차 axe에 열쇠가 없는 쪽은 옛 접근성 기준을 둔다(Fable F3)');
   const 미리글 = 속.기준글(미리, ['기준', '/']);
   assert.match(미리글, /axe가 안 돈 쪽 1개는 접근성 기준을 옛것으로 둔다: \/\|mobile/);
-  assert.match(미리글, /node tools\/공개\.js 기준 \/ --점검 77 -m "<메시지>" --검수 "<이름·폴더>" --실행 --계획 [0-9a-f]+/, '올리는 명령이 같은 회차와 검수 증거를 잡는다');
+  assert.match(미리글, /git diff --quiet origin\/master -- tools\/공개\.js && node tools\/공개\.js 기준 \/ --점검 77 -m '<메시지>' --검수 <이름> --실행 --계획 [0-9a-f]+/, '올리는 명령이 같은 회차와 검수 증거를 잡고, 판정기 상시 허락 꼴 그대로다');
+  const 메시지준글 = 속.기준글(미리, ['기준', '/', '-m', '한 번에 올림', '--후보폴더', 'x']);
+  assert.match(메시지준글, / 기준 \/ --점검 77 -m '<메시지>' --검수 <이름> --실행/, '미리 보기에 준 메시지 · 후보 폴더는 다시 찍지 않는다(허용 줄은 작은따옴표 글자 그대로만 덮는다)');
+  assert.ok(!메시지준글.includes('한 번에 올림'));
   assert.match(미리글, /알림 \[공개 경로\]\s+— 배포 점검의 기준 이미지 4개를 바꾼다/);
   assert.ok(!/baseline\/desktop\/home\.jpg — 배포 점검·워크플로/.test(미리글), '기준 그림마다 알리지 않는다');
   const 올림 = await 도구.기준(공.옵션({ gh: gh(), 항목: ['/'], 점검: '77', 실행: true, 계획: 미리.계획, 메시지: 'Site check baseline: home' }));
@@ -1695,4 +1698,51 @@ test('공개 전 점검: --실행도 push 전에 다시 잰다 — 미리 보기
   assert.equal(r.결과, '걸림');
   assert.ok(r.걸림.some((x) => x.검사 === '공개 전 점검' && /TypeError: x/.test(x.이유)));
   assert.equal(공.머리(), 공.바탕, '걸리면 push하지 않는다');
+});
+
+test('관문 모듈: 진짜 공개는 검수 · 점검 모듈이 origin/master와 다르면 사본을 열기 전에 멈춘다 — 판정기 앞머리 git diff는 공개.js만 본다(2026-11-09)', async () => {
+  const 속 = 원도구._시험;
+  // 공개.js에서 따라가며 부르는 저장소 안 모듈은 다 목록에 있어야 한다 — 새 모듈을 부르면 여기서 걸려 목록(과 허용 줄의 설명)을 함께 본다.
+  // 검수자를 부르는 통로는 묶음을 만들 때만 쓰고 --실행의 판정에는 안 쓰여 뺀다.
+  const 통로 = new Set(['tools/codex계정.js', 'desktop/src/ai-subscriptions.cjs', 'tools/lib/그록호출.js', 'tools/lib/제미나이구독호출.js']);
+  const 본 = new Set(), 줄 = ['tools/공개.js'];
+  while (줄.length) {
+    const 파일 = 줄.pop();
+    if (본.has(파일) || 통로.has(파일)) continue;
+    본.add(파일);
+    const 글 = fs.readFileSync(path.join(REPO, 파일), 'utf8');
+    for (const m of 글.matchAll(/(?:require|import)\(\s*'(\.{1,2}\/[^']+)'\s*\)|from\s+'(\.{1,2}\/[^']+)'/g)) {
+      줄.push(path.posix.join(path.posix.dirname(파일), m[1] || m[2]));
+    }
+  }
+  본.delete('tools/공개.js');
+  assert.deepEqual([...본].sort(), 속.관문모듈.filter((p) => !p.endsWith('.json')).sort(), '관문모듈과 실제로 따라가며 부르는 모듈이 같다');
+  const 도구글 = fs.readFileSync(path.join(REPO, 'tools', '공개.js'), 'utf8');
+  assert.match(도구글, /'lib', '거둔말\.json'/, 'fs로 읽는 거둔 말 규칙도 목록에 둔 까닭');
+
+  const 불림 = [];
+  assert.deepEqual(속.관문모듈다름((인자) => { 불림.push(인자); return { status: 0, stdout: '' }; }), []);
+  assert.deepEqual(불림[0].slice(0, 5), ['diff', '--name-only', '-z', 'origin/master', '--']);
+  assert.deepEqual(불림[0].slice(5), 속.관문모듈.map((p) => `:/${p}`), '저장소 뿌리 기준으로 견준다');
+  assert.deepEqual(속.관문모듈다름(() => ({ status: 0, stdout: 'tools/검수묶음.mjs\0tools/lib/검수증명.mjs\0' })), ['tools/검수묶음.mjs', 'tools/lib/검수증명.mjs']);
+
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '공개-관문-'));
+  try {
+    const 파일 = path.join(방, 'a.txt');
+    fs.writeFileSync(파일, 'x');
+    const 사본 = path.join(방, '사본');
+    const 입력 = { 항목: [`a.txt=${파일}`], 실행: true, 계획: 'abc', 메시지: 'x', 검수: 'y', 사본 };
+    const 다름 = await 원도구.올리기({ ...입력, _관문모듈다름: () => ['tools/검수묶음.mjs'] });
+    assert.equal(다름.결과, '멈춤');
+    assert.match(다름.이유, /tools\/검수묶음\.mjs/);
+    assert.match(다름.이유, /따라가기/, '뒤처졌을 때의 길을 함께 보인다');
+    assert.ok(!fs.existsSync(사본), '멈출 때 사본(원격)을 건드리지 않는다');
+    // 못 견주면 통과가 아니다(origin/master가 없는 곳 등)
+    const 못봄 = await 원도구.올리기({ ...입력, _관문모듈다름: () => 속.관문모듈다름(() => ({ status: 128, stderr: "fatal: bad revision 'origin/master'" })) });
+    assert.equal(못봄.결과, '멈춤');
+    assert.match(못봄.이유, /견주지 못했다 — fatal: bad revision/);
+    assert.ok(!fs.existsSync(사본));
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
+  }
 });

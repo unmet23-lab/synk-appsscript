@@ -44,6 +44,7 @@
  *      검수 뒤 후보를 고쳤으면 새 --후보폴더로 미리 보고 `node tools/검수묶음.mjs 다시 <새 이름> --앞 <검수> --배포후보 <새 후보폴더>`로 바뀐 diff만 다시 검수해
  *      --검수 <새 이름>을 준다 — 사슬(처음 검수 → 다시 검수 …)의 이음·검수는 검수확인이, 사슬 끝 후보 = 최종 바이트는 여기서 본다(2026-10-24).
  *      push(강제 없음). 그사이 origin/main이 움직였으면 새 판 위에 다시 만들고, 계획이 바뀌면(남이 내 경로를 고침) 멈춘다(세 번까지).
+ *      검수 · 점검 모듈(관문모듈)이 origin/master와 다르면 처음부터 멈춘다 — 판정기 상시 허락 꼴(미리 보기가 끝에 보이는 명령)의 앞머리 git diff는 이 파일만 본다(2026-11-09).
  *   6. push 뒤 확인을 한다.
  *
  * 확인 — curl로 공개 주소(…?probe=임의값, no-cache)를 받아 받은 바이트의 git blob id를 커밋 blob과 대조한다(지운 파일은 404, Jekyll 머리말 파일과
@@ -1546,6 +1547,17 @@ function 결과요약(후보) {
   return { ...나머지, 항목: 후보.항목.map(({ 버퍼, ...x }) => ({ ...x, 크기: 버퍼 ? 버퍼.length : 0 })) };
 }
 
+// 판정기 허용 줄 「Gated synk.im publish」의 앞머리 git diff는 이 파일만 본다. 이 파일이 믿는 검수 · 점검 모듈도 올라간 판이어야
+// 어느 세션의 미커밋 · 안 올린 고침이 관문을 타고 나가지 않는다(2026-11-09). 잣대는 앞머리와 같다(origin/master와 같은가).
+const 관문모듈 = ['tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/lib/검수캡처.mjs', 'tools/lib/공개전점검.js', 'tools/lib/크롬조종.js', 'tools/접근성검사.js',
+  'tools/lib/import엇갈림.js', 'tools/lib/importmap-csp.cjs', 'tools/lib/거둔말.json'];
+function 관문모듈다름(돌리기 = (인자) => spawnSync('git', 인자, { cwd: path.resolve(__dirname, '..'), encoding: 'utf8', windowsHide: true })) {
+  // :/ = 저장소 뿌리 기준(도구를 다른 자리에 복사해 돌려도 빈 결과로 통과하지 않게)
+  const r = 돌리기(['diff', '--name-only', '-z', 'origin/master', '--', ...관문모듈.map((p) => `:/${p}`)]);
+  if (r.status !== 0) throw new 멈춤(`관문 모듈을 origin/master와 견주지 못했다 — ${String(r.stderr || r.error || `종료 ${r.status}`).trim().split('\n').pop()}`);
+  return String(r.stdout || '').split('\0').filter(Boolean);
+}
+
 /** 올리기. 옵션: 항목[]·원본·공개폴더·지움[]·기준·기준폴더·전부·줄끝도·토큰·토큰안함·허용[]·후보폴더·위에·실행·계획·메시지·사본·새사본·원격주소·주소… */
 async function 올리기(옵션 = {}) {
   const 입력 = 항목모으기(옵션);
@@ -1560,6 +1572,11 @@ async function 올리기(옵션 = {}) {
   const 알리기 = 옵션.알리기 || (() => {});
   let 사본 = null;
   try {
+    // 진짜 공개만 — 시험은 임시 원격(--원격주소)으로 돈다
+    if (옵션.실행 && !옵션.원격주소) {
+      const 다름 = (옵션._관문모듈다름 || 관문모듈다름)();
+      if (다름.length) return { 결과: '멈춤', 이유: `검수 · 점검 모듈이 origin/master와 다르다: ${다름.join(', ')} — 미커밋 · 안 올린 고침이면 먼저 올리고, 이 작업본이 뒤처졌으면 node tools/바로올리기.js 따라가기 --실행 뒤 다시 한다` };
+    }
     사본 = 사본열기(옵션);
     const { git } = 사본;
     const 저장 = new Map();
@@ -1989,11 +2006,13 @@ function 올리기글(r, argv) {
   if (r.결과 === '미리 보기' && (argv || []).includes('--위에')) {
     줄.push('--위에로 지난 공개를 재현한 미리 보기다 — 올리는 명령은 없다');
   } else if (r.결과 === '미리 보기') {
-    const 남길 = (argv || []).filter((a, i, all) => a !== '--json' && !(i > 0 && all[i - 1] === '--후보폴더') && a !== '--후보폴더');
-    const 메시지없음 = !남길.includes('-m') && !남길.includes('-F') && !남길.includes('--메시지') && !남길.includes('--메시지파일');
+    // 메시지는 값째 뺀다 — 미리 보기에 준 값을 큰따옴표로 다시 찍으면 허용 줄(작은따옴표 글자 그대로) 밖이 된다
+    const 값뺄 = new Set(['--후보폴더', '-m', '--메시지', '-F', '--메시지파일']);
+    const 남길 = (argv || []).filter((a, i, all) => a !== '--json' && !값뺄.has(a) && !(i > 0 && 값뺄.has(all[i - 1])));
     const 엇갈림있음 = r.엇갈림 && r.엇갈림.셈 && (r.엇갈림.셈['①'] || r.엇갈림.셈['②']);
     줄.push(엇갈림있음 ? '한 번에 올리려면(위 import ①·② 영향과 최종 후보 검수를 확인한 뒤):' : '검사와 최종 후보 검수를 마친 뒤 올리기:');
-    줄.push(`  node tools/공개.js ${남길.map(인용).join(' ')}${메시지없음 ? ' -m "<메시지>"' : ''}${남길.includes('--검수') ? '' : ' --검수 "<이름·폴더>"'} --실행 --계획 ${r.계획}`);
+    // 판정기 상시 허락 꼴 그대로 보인다(앞머리 git diff · 작은따옴표 메시지 · 파이프 없이) — 다른 꼴이면 「Production Deploy」로 막힌다
+    줄.push(`  git diff --quiet origin/master -- tools/공개.js && node tools/공개.js ${남길.map(인용).join(' ')} -m '<메시지>'${남길.includes('--검수') ? '' : ' --검수 <이름>'} --실행 --계획 ${r.계획}`);
   }
   if (r.확인) 줄.push(...확인글(r.확인));
   if (r.주의) 줄.push(`주의: ${r.주의}`);
@@ -2171,5 +2190,5 @@ if (require.main === module) main().then((code) => { process.exitCode = code; })
 
 module.exports = {
   올리기, 확인, 채우기, 기준, 인자읽기, main,
-  _시험: { 토큰맞춤, 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식, git도구, 차례읽개 },
+  _시험: { 토큰맞춤, 토큰고치기, 토큰값, 참조풀기, 점검규칙읽기, 검사하기, 더한줄, 계획해시, 바이트대조, 점검기다리기, 줄끝만다름, 공개경로, 올리기글, 확인결과글, 기준글, 점검결과받기, 쪽되살리기, glob식, git도구, 차례읽개, 관문모듈, 관문모듈다름 },
 };

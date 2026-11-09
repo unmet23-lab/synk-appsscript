@@ -97,7 +97,8 @@ function 워크트리인가(cwd) {
 export function 폴더찾기(이름, 폴더 = null) {
   if (폴더) return path.resolve(폴더);
   if (!이름) throw new Error('이름이 필요하다');
-  if (/[\\/]/.test(이름) || fs.existsSync(path.join(path.resolve(이름), '묶음.json'))) return path.resolve(이름);
+  // 경로 꼴만 폴더로 본다 — 맨 이름은 늘 검수 저장소에서 찾는다(지금 자리의 같은 이름 폴더가 끼어들지 않게, 2026-11-09)
+  if (/[\\/]/.test(이름)) return path.resolve(이름);
   if (/[:*?"<>|]/.test(이름)) throw new Error(`이름에 쓸 수 없는 글자가 있다: ${이름}`);
   return path.join(process.env.SYNK_REVIEW_DIR || path.join(공용작업본(), '.tmp', '검수'), 이름);
 }
