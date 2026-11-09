@@ -655,6 +655,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 커밋을 다시 올리지 않는다. 동시 세션을 줄이거나 PC를 다시 시작한 뒤 `node tools/운영사본.js`와 `node tools/바로올리기.js 따라가기`(미리 보기)로 다시 본다.
 - 다시 확인: 11-03 05:45 재시작 뒤 운영 사본은 origin과 0커밋 차이로 돌아왔고, 따라가기 미리 보기도 이 코드 없이 끝났다.
 
+### `git mv`로 이름을 바꾼 뒤 고친 파일이 있으면 올리기 끝의 따라가기가 「staged content different from both the file and the HEAD」로 되돌아온다 — push는 된 것이다 (2026-11-10 Claude)
+- 증상: 워크트리에서 붙임 두 개를 `git mv`로 이름을 바꾸고 그 파일을 더 고친 뒤(`git status`에 `RM` → 올린 뒤 `AM`) `바로올리기.js --모두 … --실행`을 돌리자, 검사·push·공용 작업본 따라가기는 끝났는데 「따라가기: 실패 — 고치는 파일을 바탕 판으로 돌리지 못했다 — git … rm -q --cached … error: the following files have staged content different from both the file and the HEAD … (되돌림)」이 찍히고 워크트리는 옛 HEAD에 내 수정이 모두 미커밋으로 남았다.
+- 원인: `git mv`가 새 이름을 인덱스에 올려 두었는데 그 뒤의 수정은 인덱스에 없어, 인덱스 판이 작업 파일과도 HEAD와도 달랐다. `git rm --cached`는 이 꼴을 `-f` 없이 지우지 않는다.
+- 고침: 다시 올리지 않는다. `git log origin/master --grep "<내 커밋 제목 낱말>"`로 커밋이 origin에 있는지 보고, 커밋의 파일마다 `git hash-object <파일>`과 `git rev-parse <커밋>:<경로>`가 같은지 대조한다(`git diff --stat <커밋>`은 stat만 다른 파일도 「0 insertions」로 찍으니 해시로 본다). 같으면 그 새 이름 파일들을 `git add -- <경로>`로 인덱스에 맞춘 뒤 `node tools/바로올리기.js 따라가기`(미리 보기) → `--실행`. 처음부터 피하려면 이름을 바꾼 뒤 고친 파일은 올리기 전에 `git add`해 둔다.
+- 다시 확인: 따라간 뒤 `git status --short`가 비고 `git log --oneline HEAD`에 내 커밋이 있다(11-10 전북 제안 묶음 — 24개 파일 해시 같음, 0d494f20e → 368120588).
+
 ### `바로올리기 --실행`을 `| tail`로 자르면 첫 줄 `[멈춤]`이 안 보여 올라간 줄 안다 (2026-11-04 Claude)
 - 증상: 게시판 해독 첫 커밋을 `… --실행 2>&1 | tail -10`으로 돌렸더니 「관련 시험 통과 75/75」와 CI 경고만 보이고 끝나 올라간 줄 알았다. origin에 커밋이 없었다.
 - 원인: 결과는 맨 첫 줄(`[올림]` · `[멈춤] …`)에 찍힌다. 시험 줄은 그 아래라 tail에 남는다. 그 회차가 왜 멈췄는지는 출력을 잘라 버려 끝내 모른다.
