@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>말 랠리 체험 의견 결과 · SYNK 운영</title>
+<link rel="icon" href="/wordmark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/trial-feedback/trial-feedback.css">
+<script type="module" src="/trial-feedback/trial-feedback.js"></script>
+</head>
+<body>
+<div class="tf-page">
+  <header class="tf-bar">
+    <a class="tf-back" href="/?tab=workroom">← 회사 작업실</a>
+    <h1>말 랠리 체험 의견 결과</h1>
+    <p class="tf-sub">synk.im 말 랠리 결과 화면의 「체험 의견」 카드에서 동의하고 답을 보낸 기록만 세요. 외부 AI로 보내지 않고, 고칠 점은 사람이 정해요.</p>
+  </header>
+
+  <form class="tf-filter" id="filter" aria-label="보기 고르기">
+    <label>묶음 <select name="cohort" id="f-cohort"><option value="all">전체</option></select></label>
+    <label>기간 <select name="days" id="f-days"><option value="7">최근 7일</option><option value="30" selected>최근 30일</option><option value="90">최근 90일</option></select></label>
+    <fieldset class="tf-data"><legend>자료</legend>
+      <label><input type="radio" name="data" value="real" checked> 실제 참여</label>
+      <label><input type="radio" name="data" value="synthetic"> 시험 자료</label>
+    </fieldset>
+    <button type="button" id="reload" class="tf-btn">다시 읽기</button>
+  </form>
+
+  <p class="tf-banner" id="synthetic-banner" hidden>시험 자료예요 — 실제 참여 기록이 아니에요. 실제 참여 숫자와 섞어 보지 않아요.</p>
+  <p class="tf-unit">숫자의 단위는 <b>참여 번호</b>예요. 참여 번호는 이 브라우저의 익명 번호라 사람 수가 아니에요(한 사람이 두 기기면 2, 사생활 모드면 매번 새 번호). 동의 전 방문과 WORLD 안 플레이는 기록하지 않아서, 전체 방문에서 완료로 가는 비율은 여기서 알 수 없어요.</p>
+
+  <main id="out" aria-live="polite" aria-busy="true">
+    <p class="tf-state">결과를 읽고 있어요…</p>
+  </main>
+</div>
+</body>
+</html>

@@ -38,6 +38,10 @@ let qaLane = null;   // 시안 영상(?qa): 다음 공의 맞는 대답을 놓�
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 const impacts = [];   // 확인용(?qa): 받아친 순간의 시각·판정
+// 체험 의견(2026-11-09, LAB 공개판만 — trial-feedback-ui.mjs): WORLD에서는 불러오지 않는다. 불러오기 · 만들기에 실패하면 기능만 꺼지고 게임은 그대로다.
+// 동의(보내기) 전에는 어떤 요청도 없고, 학습 기록(Atlas) · 게임 저장 · 코인과 따로 이 브라우저의 익명 참여 번호만 쓴다.
+let trial = null;
+if (!WORLD) { try { trial = (await import('./trial-feedback-ui.mjs')).createTrialUi({ announce: (t) => announce(t) }); } catch { trial = null; } }
 
 /* ── 저장: 판 수·연습 여부·천천히 모드·최고 기록. 학습 기록은 아틀라스가 따로 맡는다 ── */
 const KEY = 'synk.talk-rally.v1';
@@ -138,6 +142,7 @@ function renderLobby() {
   if (hosted) $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
   syncToggles();
   world?.lobby();
+  trial?.lobby();   // 참여자면 그날 첫 방문 · 밀린 기록 보내기, 입구 한 줄(동의 전이면 아무것도 안 함)
   show('lobby');
 }
 
@@ -201,6 +206,7 @@ async function startRound(mode = 'normal') {
   if (!live(run)) return;
   tip(null);
   stage.pause(state.paused);
+  trial?.roundStart({ mode: state.mode });   // 체험 참여자만 판 시작을 보낸다(아니면 이 판 번호만 기억했다가 결과 카드에 쓴다)
   // 시작 안내 음성: 이번 접속에서 처음 여는 보통 판·하루 도전에 한 번. 같은 문장을 안내 글로도 보인다. 끝나야 몽글이 말한다(틀 수 없으면 곧바로)
   const intro = daily ? NARRATION.dailyIntro : NARRATION.intro;
   if (!heardIntro.has(intro.id) && sound.canNarrate(intro.id)) {
@@ -508,6 +514,8 @@ function finish() {
   save();
   const dres = daily ? recordDaily(loadDaily(), state.dailyDate, s) : null;
   if (dres) saveDaily(dres.records);
+  // 체험 의견: 참여자면 판 완료를 보내고, 아니면 이 브라우저에서 처음 한 번 결과 화면 맨 아래에 접힌 카드를 띄운다(게임을 막지 않는다)
+  trial?.roundComplete({ mode: state.mode, total: s.total, correct: s.correct, helped: s.helped || 0, soundOn: sound.isOn() });
   sound.play('achieve');
   // 완주 15 + 정답 비율 × 10(다른 게임과 같은 규칙). 맞힌 수는 결과 화면 그대로다 — 연습 공은 세지 않는다.
   const coinRound = state.coinRound; state.coinRound = null; $('#r-coins').textContent = '';
@@ -778,6 +786,7 @@ if (QA) {
     stage: () => stage,
     gear: () => ({ ...gear }),
     world: () => world?.state() ?? null,
+    trial: () => trial?.status() ?? null,   // qa/trial-feedback.cjs
     fitCards: () => fitCards(),   // qa/cards-fit.cjs: 모든 대답을 카드에 넣어 볼 때
   };
 }

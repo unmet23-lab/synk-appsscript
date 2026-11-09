@@ -168,3 +168,39 @@
   .res-grid.daily-on .skills{grid-column:2;grid-row:1 / span 2}
   .res-grid.daily-on .next{grid-column:3;grid-row:2}
 }
+
+/* ── 체험 의견(2026-11-09, LAB 공개판만 — trial-feedback-ui.mjs). 결과 맨 아래 접힌 카드, 넓은 화면은 한 줄 전체 · 질문 셋을 나란히 ── */
+.res-grid .trial{display:grid;gap:10px;align-content:start}
+.trial .tf-title{margin:0;font:800 19px/1.35 var(--sans);letter-spacing:-.01em}
+.trial .tf-title:focus{outline:none}
+.trial .tf-title:focus-visible{outline:2px solid var(--coral-deep);outline-offset:3px;border-radius:6px}
+.trial .reason{margin:0}
+.tf-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.tf-actions .text-link{font:700 14px/1.4 var(--sans);color:var(--ink-2);min-height:44px}
+.tf-form{display:grid;gap:12px}
+.tf-consent{display:grid;gap:6px;padding:12px 14px;border-radius:14px;background:var(--cream)}
+.tf-consent p{margin:0;max-width:72ch;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.tf-age,.tf-opt{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:8px 2px;cursor:pointer;font:600 15px/1.45 var(--sans)}
+.tf-age{font-weight:800;color:var(--ink)}
+.tf-age input,.tf-opt input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--coral-deep)}
+.tf-opt:has(input:checked) span{color:var(--coral-deep);font-weight:800}
+.tf-qs{display:grid;gap:12px}
+.tf-q{display:grid;align-content:start;gap:0;min-width:0;margin:0;padding:10px 12px 12px;border:1.5px solid var(--line);border-radius:14px}
+.tf-q legend{padding:0 4px;font:800 15.5px/1.45 var(--sans);color:var(--ink)}
+.tf-q legend b{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:4px;border-radius:50%;background:var(--coral-wash);color:var(--coral-deep);font:800 12.5px/1 var(--sans)}
+.tf-clear{justify-self:start;margin-top:2px;font:600 13px/1.4 var(--sans);color:var(--ink-2);min-height:36px}
+.tf-note{display:grid;gap:6px;margin-top:8px;font:600 14px/1.45 var(--sans);color:var(--ink-2)}
+.tf-note textarea{width:100%;box-sizing:border-box;min-height:64px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font:500 15px/1.5 var(--sans);resize:vertical}
+.tf-note textarea:focus-visible{outline:2px solid var(--coral-deep);outline-offset:1px}
+.tf-note small{font:600 12px/1.45 var(--sans);color:var(--muted)}
+.tf-send[disabled]{opacity:.55;cursor:not-allowed}
+.tf-status{margin:0;font:700 15px/1.55 var(--sans)}
+.tf-status.ok{color:var(--meadow-deep)}
+.tf-status.warn{color:var(--coral-deep)}
+.tf-status:focus{outline:none}
+.trial-line{margin:0 0 8px;font:700 13.5px/1.6 var(--sans);color:var(--ink-2)}
+.trial-line .text-link{font:inherit;color:var(--coral-deep);min-height:32px}
+@media (min-width:960px){
+  .res-grid .trial{grid-column:1 / -1}
+  .tf-qs{grid-template-columns:repeat(3,minmax(0,1fr))}
+}

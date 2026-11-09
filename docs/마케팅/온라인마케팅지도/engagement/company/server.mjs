@@ -81,6 +81,8 @@ import { createSocialInquiries } from './social-inquiries.mjs';
 import { createSocialWorkflowsService } from './social-workflows.mjs';
 import { createSocialReview } from './social-review.mjs';
 import { createSocialPublicRoutes } from './social-public-routes.mjs';
+import { createTrialFeedback } from './trial-feedback.mjs';
+import { createTrialFeedbackRoutes } from './trial-feedback-routes.mjs';
 import { createSocialCapacity } from './social-capacity.mjs';
 import { createSocialReplies } from './social-replies.mjs';
 import { createSocialVariantPerformanceService } from './social-variant-performance.mjs';
@@ -371,6 +373,7 @@ export function createCompanyApp(options={}) {
   const socialRecovery=createSocialRecovery({store,publishing:socialPublishing,marketing:socialMarketing,clock});
   const socialTracking=createSocialTracking({store,publishing:socialPublishing,clock,origin,...options.socialTrackingOptions});
   const socialInquiries=createSocialInquiries({store,tracking:socialTracking,clock});
+  const trialFeedback=createTrialFeedback({store,clock,...options.trialFeedbackOptions});
   const socialCapacity=createSocialCapacity({store,publishing:socialPublishing,provider:socialProvider,clock});
   const socialCopyInsights=createSocialVariantPerformanceService({store,publishing:socialPublishing,performance:postPerformance,tracking:socialTracking,validatePostInput:socialMarketing.validatePostInput,clock});
   const socialFollowups=createSocialFollowups({store,clock,origin,tasks:{options:user=>messenger.taskOptionsForCompanyUser(user.id),create:(user,input)=>messenger.createTaskForCompanyUser(user.id,input),get:(user,input)=>messenger.taskForCompanyUser(user.id,input),find:(user,input)=>messenger.findTaskForCompanyUser(user.id,input)}});
@@ -431,6 +434,7 @@ export function createCompanyApp(options={}) {
   const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
   const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
+  const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
@@ -983,6 +987,7 @@ export function createCompanyApp(options={}) {
     if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 보기만 할 수 있어요. 바꾸려면 실제 화면으로 돌아가 주세요.',403);
     if(path.startsWith('/social-publish-media/')&&await socialPublishMedia.handle(req,res,{url,signal:socialAbort.signal}))return;
     if(await socialPublicRoutes(req,res,{url}))return;
+    if(await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
@@ -1001,6 +1006,8 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.count('users')===0,platformUrl});
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
+    if(await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
+    if(path==='/trial-feedback'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/trial-feedback/','Cache-Control':'no-store'});res.end();return;}
     if(path==='/api/client-search'){
       if(!auth)throw httpError('먼저 로그인해 주세요.',401);
       if(demoRequest||url.search)throw httpError('프로젝트 검색 주소를 확인해 주세요.');
@@ -1906,6 +1913,7 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/workroom.js':['public/workroom.js','text/javascript; charset=utf-8'],'/workroom.css':['public/workroom.css','text/css; charset=utf-8']});
     Object.assign(files,{'/social-workspace.js':['public/social-workspace.js','text/javascript; charset=utf-8'],'/social-workspace.css':['public/social-workspace.css','text/css; charset=utf-8'],'/social-simple.js':['public/social-simple.js','text/javascript; charset=utf-8'],'/social-simple.css':['public/social-simple.css','text/css; charset=utf-8']});
     Object.assign(files,{'/social-tracking.js':['public/social-tracking.js','text/javascript; charset=utf-8'],'/social-review':['public/social-review.html','text/html; charset=utf-8'],'/social-review.js':['public/social-review.js','text/javascript; charset=utf-8'],'/social-review.css':['public/social-review.css','text/css; charset=utf-8']});
+    Object.assign(files,{'/trial-feedback/':['public/trial-feedback.html','text/html; charset=utf-8'],'/trial-feedback/trial-feedback.js':['public/trial-feedback.js','text/javascript; charset=utf-8'],'/trial-feedback/trial-feedback.css':['public/trial-feedback.css','text/css; charset=utf-8']});
     Object.assign(files,{'/publication-flow.js':['public/publication-flow.js','text/javascript; charset=utf-8'],'/publication-flow.css':['public/publication-flow.css','text/css; charset=utf-8']});
     files['/publication-learning-plan.js']=['public/publication-learning-plan.js','text/javascript; charset=utf-8'];
     // Fictional practice assets are public. Account records use the authenticated
@@ -1959,7 +1967,7 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
-        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
+        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries.maintain();trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation follows the workroom opt-in while broad
         // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}

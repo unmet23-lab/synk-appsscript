@@ -2,6 +2,8 @@
 
 > **WORLD 앱 안 캠퍼스 판(2026-11-04):** 앱 「놀이」에서 열면 동아리 탁구장 실사 · 상대 태오 선배로 바뀐다(움직여서 치는 영상 · 상황별 표정과 말). 재료 · 다시 돌리는 법은 [world-campus-20261104](qa/world-campus-20261104/README.md), 설계는 [설계](qa/world-campus-20261104/설계.md). 아래 LAB 공개판 내용과 규칙 · 문항은 그대로다.
 
+> **체험 의견 카드(2026-11-09, LAB 공개판만):** 한 판을 끝낸 결과 화면 맨 아래에 접힌 「체험 의견 · 선택」 카드가 페이지를 열 때마다 첫 결과 화면에 한 번 뜬다 — 참여하거나 「괜찮아요」를 누르면 다시 안 뜬다(덮개 · 자동 포커스 없음 — 「다음 판 시작」은 그대로). 「참여하기」 → 동의(만 14세 이상 자기 신고) + 질문 셋(재미 · 막힌 점 · 내일/일주일 안에 다시 할지) → 보내기. 동의하기 전에는 회사 서버로 어떤 요청도 가지 않고, 동의한 브라우저만 익명 참여 번호로 30일 동안 다시 온 날 · 판 시작/완료(완료한 판의 맞힌 수 · 도움 · 소리 설정 · 판 종류)를 보낸다. 입구 아래 줄에서 그만두면 보낸 기록을 지운다. WORLD 안 · 수집 주소가 없는 곳(로컬 기본)에서는 꺼진다. 로직 [`trial-feedback.mjs`](trial-feedback.mjs), 화면 [`trial-feedback-ui.mjs`](trial-feedback-ui.mjs), 운영자 결과는 회사 작업실 `/trial-feedback/`(작업실 메뉴 「체험 의견 결과」). 설계 · 계약은 `.tmp/trial-feedback-1109/`(design.md · backend-contract.json `trial-feedback.v1-final`). 확인: `node --test experiences/talk-rally/trial-feedback.test.mjs`, `node experiences/talk-rally/qa/trial-feedback.cjs`(fixture 수집 서버 — 실제 서버 아님, `TRIAL_COLLECTOR=`로 바꿈). 로컬에서 켜 보려면 `http://localhost:<게임 포트>/?trialCollector=http://localhost:<수집 포트>&trial=qa-<이름>(localhost 주소만 받는다)`.
+
 몽글이 한국어로 말을 걸며 공을 치면, **알맞은 대답 카드 쪽으로 받아치는** 3D 한국어 듣기 탁구 게임. 2026-10-03 MVP.
 
 > 본문은 10-03~07의 제작·검증 이력이다. 현재 계정 지갑·진도 연결은 [공통 컬렉션의 10-09 계약](../play-common/README.md)을 따른다. `app.mjs`는 `SynkPlayAccount.ready()` 뒤 계정 저장 포트를 읽으므로 아래 ‘정식 계정 연결은 MVP 뒤’는 초기 상태다. 교사 과제·학습 평가·다른 사람과의 순위까지 완료됐다는 뜻은 아니다. 기존 자산·음성·제작 도구는 출처 기록으로 보존하고 새 제작·브라우저 작업에는 [AI 운영 원칙](../../docs/AI_운영원칙.md)을 적용한다.
