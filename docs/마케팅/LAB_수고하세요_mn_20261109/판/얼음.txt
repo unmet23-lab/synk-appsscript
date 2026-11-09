@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep exactly the same room, same door, same desk, same bookshelf, same window, same camera, same framing, same professor doll position, same Mongle size and same Mongle position with its contact shadow. Only change what is written below. Image 2 is only a mood reference for the frost.
+
+Change: the whole room is suddenly frozen solid. Thick white hoarfrost and felt icicles cover the desk edge, the mug, the lamp, the bookshelf, the door frame and the window; blue-grey cold light replaces the warm light; pale felt snowflakes hang in the air. The professor doll is frozen stiff with the very same mild smile, now awkward: frost on its grey hair and glasses, a tiny icicle on its chin. Mongle has turned slightly pale, frost on its head and hem, its black bead eyes wide open. Absolutely no text, letters, numbers, logos or symbols anywhere. No speech bubbles.

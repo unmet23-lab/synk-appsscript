@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "그래요, 잘 가요.",
+ "dur": 1.208,
+ "words": [
+  {
+   "text": "그래요,",
+   "start": 0.02,
+   "end": 0.345
+  },
+  {
+   "text": "잘",
+   "start": 0.568,
+   "end": 0.711
+  },
+  {
+   "text": "가요.",
+   "start": 0.792,
+   "end": 1.208
+  }
+ ],
+ "source": {
+  "key": "a3e501b17ab6507d66944424fd517e6a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 0.6,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1109,
+  "lufs": -17
+ },
+ "made": "2026-11-09T07:09:15.685Z",
+ "lines": [
+  {
+   "id": "a1",
+   "text": "교수님, 수고하세요!",
+   "dur": 1.437,
+   "syllablesPerSec": 5.57,
+   "src": "a1.wav",
+   "key": "bb06202d120a996b032a39c9279e6da8",
+   "words": 2
+  },
+  {
+   "id": "a2",
+   "text": "안녕히 계세요!",
+   "dur": 1.005,
+   "syllablesPerSec": 5.97,
+   "src": "a2.wav",
+   "key": "90e7f1f40fb5f1a31d508e5f531065a5",
+   "words": 2
+  },
+  {
+   "id": "a3",
+   "text": "네! 수고하…",
+   "dur": 1.081,
+   "syllablesPerSec": 3.7,
+   "src": "a3.wav",
+   "key": "edd5ff1280fd74d0db3eef9041cec974",
+   "words": 2
+  },
+  {
+   "id": "a4",
+   "text": "안녕히 계세요!!",
+   "dur": 1.034,
+   "syllablesPerSec": 5.8,
+   "src": "a4.wav",
+   "key": "82b563dcb1f63086e1900941fb7bd134",
+   "words": 2
+  },
+  {
+   "id": "b1",
+   "text": "그래요, 잘 가요.",
+   "dur": 1.208,
+   "syllablesPerSec": 4.97,
+   "src": "b1.wav",
+   "key": "a3e501b17ab6507d66944424fd517e6a",
+   "words": 3
+  },
+  {
+   "id": "b2",
+   "text": "수고해요.",
+   "dur": 0.743,
+   "syllablesPerSec": 5.38,
+   "src": "b2.wav",
+   "key": "952f7ebb75fe9c54ac8f53cc3aed7718",
+   "words": 1
+  }
+ ]
+}

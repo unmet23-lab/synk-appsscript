@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a4",
+ "text": "안녕히 계세요!!",
+ "dur": 1.034,
+ "words": [
+  {
+   "text": "안녕히",
+   "start": 0.02,
+   "end": 0.324
+  },
+  {
+   "text": "계세요!!",
+   "start": 0.385,
+   "end": 1.034
+  }
+ ],
+ "source": {
+  "key": "82b563dcb1f63086e1900941fb7bd134",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "toneup",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 381
+ }
+}

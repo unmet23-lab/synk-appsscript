@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "교수님, 수고하세요!",
+ "dur": 1.437,
+ "words": [
+  {
+   "text": "교수님,",
+   "start": 0.03,
+   "end": 0.553
+  },
+  {
+   "text": "수고하세요!",
+   "start": 0.734,
+   "end": 1.437
+  }
+ ],
+ "source": {
+  "key": "bb06202d120a996b032a39c9279e6da8",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1109,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 506
+ }
+}

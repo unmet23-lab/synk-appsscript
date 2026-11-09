@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Use Image 1 as the base picture: keep exactly the same room, same door, same desk, same bookshelf, same window, same camera, same framing, same professor doll position, same Mongle size and same Mongle position with its contact shadow. Only change what is written below. Image 2 is only a mood reference for the sunlight.
+
+Change: the room is flooded with warm golden late-afternoon sunshine: strong soft sun rays stream through the window across the bookshelf and desk, dust motes glow, the plant looks fresh. The professor doll now smiles broadly with happy curved stitched eyes behind the round glasses and raises one felt hand high, waving goodbye at Mongle. Mongle bows slightly forward, happy, deep pink felt cheeks, black bead eyes. Absolutely no text, letters, numbers, logos or symbols anywhere. No speech bubbles.

@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Image 1 shows the room and the professor doll. Make a new close-up shot of this same felt professor doll in this same frozen room: the camera has moved in on the professor, seen from the chest up behind the frosted desk, filling the lower two thirds of the frame. The professor is frozen stiff mid-smile, an awkward polite smile that has stopped working: thick white hoarfrost on the grey felt hair and eyebrows, frost-covered round glasses with the eyes barely visible behind them, felt icicles hanging from the chin and from the raised frozen pen in its hand, a frozen mug with a stiff spike of frozen steam on the desk. Pale felt snowflakes hang in the air. Cold blue-grey light. Top 25% of the frame is a calm, out-of-focus frosted bookshelf.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, gentle depth of field, funny and deadpan. Absolutely no text, letters, numbers, logos or symbols anywhere. No speech bubbles.

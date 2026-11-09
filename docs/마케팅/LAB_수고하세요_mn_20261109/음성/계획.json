@@ -1,0 +1,15 @@
+{
+  "note": "LAB 몽골 M32 「수고하세요 ↔ 안녕히 계세요」 — 한국어 줄만(몽골어 목소리 없음). 몽글 = 소진(세기 1.0), 교수 = 범수. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_수고하세요_mn_20261109/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1109, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "a1", "text": "교수님, 수고하세요!", "emotion": "happy" },
+    { "id": "a2", "text": "안녕히 계세요!", "emotion": "happy" },
+    { "id": "a3", "text": "네! 수고하…", "emotion": "happy" },
+    { "id": "a4", "text": "안녕히 계세요!!", "emotion": "toneup" },
+    { "id": "b1", "text": "그래요, 잘 가요.", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "emotion": "happy", "intensity": 0.6 },
+    { "id": "b2", "text": "수고해요.", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" } }
+  ]
+}
