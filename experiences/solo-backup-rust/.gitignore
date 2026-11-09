@@ -1,0 +1,5 @@
+/dist/
+/src-tauri/target/
+/resources/
+/release/
+/node_modules/

@@ -1,0 +1,200 @@
+{
+  "connectRecovery": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": true
+  },
+  "disconnectRecovery": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "syncRecovery": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "findRecoveryBackups": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "importAccountRecovery": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "selectProfile": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "reuseLocalSources": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "setupCloud": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "updateCloudCredentials": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "recoverCredential": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": true
+  },
+  "getState": {
+    "mutating": false,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "chooseSources": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": false
+  },
+  "chooseTarget": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": false
+  },
+  "setup": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "saveRecoveryKit": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": false
+  },
+  "startAutomatic": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "setAutomatic": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "backupNow": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "restoreLatest": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": true
+  },
+  "checkRepository": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": false
+  },
+  "protectNow": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "pauseAutomatic": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "resumeAutomatic": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "probeRestore": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": false
+  },
+  "openFileCatalog": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "queryFileCatalog": {
+    "mutating": false,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "setFileSelection": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "closeFileCatalog": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "restoreSelected": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": true
+  },
+  "openSelectedRestoreFolder": {
+    "mutating": false,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "importRecoveryKit": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": true
+  },
+  "setLaunchAtLogin": {
+    "mutating": true,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  },
+  "openRestoreFolder": {
+    "mutating": false,
+    "timeoutMs": 1800000,
+    "dialog": false,
+    "allowedReadOnly": true
+  }
+}

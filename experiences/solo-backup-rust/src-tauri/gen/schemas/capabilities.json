@@ -1,0 +1,1 @@
+{"backup-main":{"identifier":"backup-main","description":"Local backup window receives status events; all actions use the narrow native command.","local":true,"windows":["main"],"permissions":["core:event:allow-listen","core:event:allow-unlisten"]}}
