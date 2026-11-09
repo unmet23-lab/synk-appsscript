@@ -623,6 +623,13 @@
 - 원인: `재현 안 됨`은 닫힌 처리라 다시 볼 대상이 0이 되고, 정책 판 5부터는 대상 없이 소스만 바뀐 `다시`를 막는다(`--함께올림`이 없으면). 경쟁은 실제였으니 「재현 안 됨」부터 사실과 달랐다.
 - 고침: 같은 지적을 `처리 <앞 이름> GA1=반영:<무엇을 뺐는지>`로 다시 적는다(처리는 덮어쓸 수 있다). 그러면 `다시`가 그 지적 하나를 대상으로 잡아, 뺀 diff(부르던 곳 · 시험 · 고정 해시 · 실행 순서 조각)를 같은 검수자가 본다. 배포할 판에서 코드를 빼는 것도 고침이라 `--함께올림`으로 돌리지 않는다.
 - 다시 확인: `다시 company-pulse57-tools-20261109-f`가 「다시 볼 지적 1건(Q1=GPT GA1) · 바뀐 파일 17개」로 만들어졌고, GPT 0건 · 집계 「배포 조건 충족」(사슬 `company-pulse57-tools-20261109` → `-b` → … → `-f`).
+
+### 코드 묶음이 아닌 설계 문서를 아르곤 · 아스트라에게 직접 보이면 첫 호출이 둘 다 헛돈다 (2026-11-09 Claude)
+- 증상: 학교 사람 말 걸기 설계 검토에서 ① `tools/lib/제미나이구독호출.js --model gemini-3.1-pro-preview --thinking high`가 종료 2 「invalid model selection … gemini-3.1-pro-high is not recognized」로 끝났고 ② `node tools/codex계정.js exec -s read-only -C <저장소>`는 종료 0인데 답이 「로컬 파일 읽기 명령이 실행 정책에 막혀 읽지 못했다」뿐이었다.
+- 원인: ① agy 1.5.3 모델 목록에 그 이름이 없다(아르곤은 `gemini-4-argon`, `tools/검수묶음.mjs` `ARGON`과 같다). ② 읽기 전용 샌드박스의 Codex는 윈도우에서 파일 읽는 명령이 막힌다. 종료 0이라 답을 읽어 봐야 안다.
+- 고침: 지시 + 설계 + 근거 원문 조각을 한 파일로 묶어 표준입력으로 준다 — 아르곤 `--model gemini-4-argon --thinking high -o <답> --timeout 1150000 < 묶음`, 아스트라 `node tools/codex계정.js exec --ephemeral --skip-git-repo-check -s read-only -C <빈 폴더> -o <답> - < 묶음`(`검수묶음.mjs`와 같은 꼴). 근거 파일을 빠뜨리면 그 범위는 「읽지 못함」으로 돌아온다. Fable은 Agent 도구라 저장소를 직접 읽는다.
+- 다시 확인: 78KB 묶음으로 아르곤 P1 11 · P2 1(`gemini-4-argon-high`, 약 3분), 아스트라 P1 7 · P2 1 · P3 2(약 10분). 아르곤이 51줄 뒤를 못 본 지적 하나는 묶음 조각이 잘린 탓이라 코드로 대조해 뺐다.
+
 ## Claude API
 
 ### Claude CLI의 긴 JSON이 이어진 응답으로 나뉘면 result.result에는 마지막 조각만 남는다 (2026-11-09 GPT)
