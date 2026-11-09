@@ -447,11 +447,12 @@ test('끝 — 사본 자리의 사본은 ExitWorktree remove가 아니라 치우
     const 자리 = 사본자리(t);
     도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
     const 폴더 = path.join(자리, 새이름);
-    assert.equal(도구.끝({ 저장소: 폴더 }).자리사본, true);
-    assert.equal(도구.끝({ 저장소: t.사본 }).자리사본, false);
-    assert.equal(도구.main(['끝', '--저장소', 폴더, '--실행']), 0);
-    assert.match(찍음.join('\n'), new RegExp(`ExitWorktree keep으로 나온 뒤 node tools/예약사본.js 치우기 ${새이름} --실행`));
-    찍음.length = 0;
+    assert.equal(도구.끝({ 저장소: 폴더, 자리 }).다음, null, '미리 보기는 지우라고 안내하지 않는다');
+    assert.match(도구.끝({ 저장소: 폴더, 자리, 실행: true }).다음, new RegExp(`ExitWorktree keep으로 나온 뒤 node tools/예약사본.js 치우기 ${새이름} --실행`));
+    // 사본 자리 밖에는 치우기를 안내하지 않는다 — 그 명령은 사본 자리의 같은 이름 사본을 지운다
+    const 밖 = path.join(t.뿌리, 'wt-other', 새이름);
+    깃(t.메인)('worktree', 'add', '-q', '-b', 'elsewhere', 밖, 'origin/master');
+    assert.doesNotMatch(도구.끝({ 저장소: 밖, 자리, 실행: true }).다음, /치우기/);
     assert.equal(도구.main(['끝', '--저장소', t.사본, '--실행']), 0);
     assert.match(찍음.join('\n'), /ExitWorktree remove\(discard_changes: true\)/);
   } finally { t.치우기(); }
@@ -482,7 +483,7 @@ test('치우기 — 끝이 「지워도 됨」일 때만 사본과 그 회차 �
     assert.ok(fs.existsSync(path.join(t.뿌리, 'SYNK-talk/lib/표지.js')));
     assert.ok(fs.existsSync(t.사본), '다른 사본은 그대로');
     assert.equal(도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true }).결과, '없음');
-    assert.equal(도구.main(['치우기', 새이름, '--저장소', t.메인, '--자리', 자리, '--실행', '--json']), 1, '없으면 종료 1');
+    assert.equal(도구.main(['치우기', 새이름, '--저장소', t.메인, '--실행', '--json']), 1, '없으면 종료 1');
   } finally { t.치우기(); }
 });
 
@@ -530,6 +531,9 @@ test('치우기 — 폴더가 사라진 등록은 등록을 지우되 가지의 
     assert.ok(r.남은것.some((x) => x.startsWith('origin에 없는 커밋')), JSON.stringify(r.남은것));
     깃(t.메인)('rev-parse', '--verify', '-q', `refs/heads/worktree-${새이름}`);
 
+    // 등록만 남은 이름은 「이미 있음」으로 돌려주지 않는다 — 없는 경로로 들어가게 된다
+    assert.throws(() => 도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true }), /등록만 남았고/);
+
     // 그 커밋이 origin에 있으면 등록과 가지를 지운다
     깃(t.메인)('push', '-q', 'origin', `worktree-${새이름}:refs/heads/master`);
     깃(t.메인)('fetch', '-q', 'origin');
@@ -540,9 +544,41 @@ test('치우기 — 폴더가 사라진 등록은 등록을 지우되 가지의 
   } finally { t.치우기(); }
 });
 
+test('치우기 — 폴더가 사라지고 머리가 떨어진 등록도 안 올린 커밋이 있으면 남긴다', () => {
+  const t = 판();
+  try {
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    const 폴더 = path.join(자리, 새이름);
+    깃(폴더)('checkout', '-q', '--detach');
+    쓰기(폴더, 'docs/마케팅/편A/기획.md', '떨어진 머리의 판\n');
+    깃(폴더)('commit', '-q', '-am', '떨어진 머리의 커밋');
+    const 머리 = 깃(폴더)('rev-parse', 'HEAD').trim();
+    fs.rmSync(폴더, { recursive: true, force: true });
+    const r = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '남김', JSON.stringify(r));
+    assert.ok(r.남은것.some((x) => x.startsWith('origin에 없는 커밋')), JSON.stringify(r.남은것));
+    assert.ok(깃(t.메인)('worktree', 'list', '--porcelain').includes(새이름), '등록을 지우면 그 커밋을 찾을 길이 없어진다');
+    깃(t.메인)('cat-file', '-e', 머리);
+  } finally { t.치우기(); }
+});
+
+test('만들기 — 등록은 있는데 폴더가 망가졌으면 「이미 있음」으로 돌려주지 않는다', () => {
+  const t = 판();
+  try {
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    const 폴더 = path.join(자리, 새이름);
+    assert.equal(도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true }).결과, '이미 있음');
+    fs.rmSync(path.join(폴더, '.git'));
+    assert.throws(() => 도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true }), /등록만 남았고/);
+  } finally { t.치우기(); }
+});
+
 test('인자 — 만들기 · 치우기는 사본 이름을 받고, 없으면 멈춘다', () => {
   assert.deepEqual(도구.인자읽기(['만들기', 새이름, '--실행']), { 명령: '만들기', 실행: true, json: false, 저장소: null, 이름: 새이름 });
-  assert.deepEqual(도구.인자읽기(['치우기', 새이름, '--자리', 'x']), { 명령: '치우기', 실행: false, json: false, 저장소: null, 이름: 새이름, 자리: 'x' });
+  assert.deepEqual(도구.인자읽기(['치우기', 새이름]), { 명령: '치우기', 실행: false, json: false, 저장소: null, 이름: 새이름 });
+  assert.throws(() => 도구.인자읽기(['치우기', 새이름, '--자리', 'x']), /모르는 인자/, '사본 자리는 명령줄로 못 바꾼다');
   assert.throws(() => 도구.인자읽기(['만들기']), /사본 이름/);
   assert.throws(() => 도구.인자읽기(['치우기', '--실행']), /사본 이름/);
   assert.throws(() => 도구.인자읽기(['끝', 새이름]), /모르는 인자/);

@@ -21,7 +21,8 @@
  *   node tools/예약사본.js 끝 [--실행]          넘기기 → 미커밋 · origin에 없는 커밋 확인 → 없으면 링크 끊기. 「지워도 됨」(종료 0)일 때만 ExitWorktree remove
  *   node tools/예약사본.js 남은사본 [--실행]    끝내지 못하고 남은 예약 워크트리(.claude/worktrees · 사본 자리의 sched-<작업>-<MMDD>-<HHmm>)와 그 미커밋 파일을 보이고, --실행이면
  *                                               그 git 밖 파일을 공용 작업본으로 넘긴다(지우지 않는다 — 깨어나 이어 갈 회차일 수 있다)
- *   공통: --json · --저장소 <폴더>(기본 지금 폴더) · --자리 <폴더>(사본 자리, 기본 D:/SYNK-worktrees/SYNK-appsscript, 환경 변수 SYNK_예약사본자리)
+ *   공통: --json · --저장소 <폴더>(기본 지금 폴더)
+ *   사본 자리는 D:/SYNK-worktrees/SYNK-appsscript 하나이고 명령줄로 못 바꾼다 — 안내한 명령이 다른 자리의 같은 이름 사본을 지우는 길을 두지 않는다(GPT 검수 11-09). 함수의 `자리` 인자는 시험용이다.
  *
  * 넘기기 규칙: 공용 쪽에 없으면 복사, 같은 내용이면 그대로(검사 기록이 이 원본을 검사한 것이면 공용 쪽 수정 시각만 맞춘다), 내용이 다른데 공용 쪽 수정 시각이 같거나 더 늦으면 두고 「공용이 더 새것」, 아니면
  * 공용 쪽을 이 판으로 바꾼다. 복사는 옆 이름(<파일>.예약사본)에 끝낸 뒤 바꿔 끼우고 수정 시각을 지킨다(검사 기록의 시각 대조가 그대로 산다). node_modules 안은 걷지 않는다.
@@ -67,7 +68,7 @@ function 짝(폴더) {
   return { 나, 메인 };
 }
 
-function 사본자리(옵션 = {}) { return path.resolve(옵션.자리 || process.env.SYNK_예약사본자리 || 기본자리); }
+function 사본자리(옵션 = {}) { return path.resolve(옵션.자리 || 기본자리); }
 function 같은길(가, 나) { return path.resolve(가).toLowerCase() === path.resolve(나).toLowerCase(); }
 /** 드라이브가 다르면 path.relative가 절대 경로를 내므로 그것도 밖으로 본다 */
 function 안에있나(바깥, 안) {
@@ -76,13 +77,14 @@ function 안에있나(바깥, 안) {
 }
 function 사본이름꼴(이름) { return 예약이름.test(이름) && /^[A-Za-z0-9-]+$/.test(이름); }
 
-/** git에 등록된 작업본 — [{ 폴더, 가지 }] */
+/** git에 등록된 작업본 — [{ 폴더, 머리, 가지 }]. 떨어진 머리면 가지가 null */
 function 등록사본(메인) {
   const 목록 = [];
   let 지금 = null;
   for (const 줄 of git(메인, ['worktree', 'list', '--porcelain']).split('\n')) {
     const 글 = 줄.replace(/\r$/, '');
-    if (글.startsWith('worktree ')) { 지금 = { 폴더: path.resolve(글.slice(9).trim()), 가지: null }; 목록.push(지금); }
+    if (글.startsWith('worktree ')) { 지금 = { 폴더: path.resolve(글.slice(9).trim()), 머리: null, 가지: null }; 목록.push(지금); }
+    else if (지금 && 글.startsWith('HEAD ')) 지금.머리 = 글.slice(5).trim();
     else if (지금 && 글.startsWith('branch ')) 지금.가지 = 글.slice(7).trim().replace(/^refs\/heads\//, '');
   }
   return 목록;
@@ -134,7 +136,12 @@ function 만들기(옵션 = {}) {
   if (/[^\x00-\x7f]/.test(자리)) throw new Error(`사본 자리에 한글을 넣지 않는다(cv2가 하위 경로도 못 연다): ${자리}`);
   if (안에있나(메인, 자리)) throw new Error(`사본 자리가 저장소 안이다: ${자리}`);
   const 폴더 = path.join(자리, 이름), 가지 = `worktree-${이름}`;
-  if (등록사본(메인).some((w) => 같은길(w.폴더, 폴더))) return { 결과: '이미 있음', 폴더, 가지, 링크: 옆링크맞추기(자리, 메인, 옵션.실행) };
+  if (등록사본(메인).some((w) => 같은길(w.폴더, 폴더))) {
+    let 정상 = false;
+    try { 정상 = 같은길(뿌리(폴더), 폴더); } catch {}
+    if (!정상) throw new Error(`${폴더}는 git에 등록만 남았고 쓸 수 있는 사본이 아니다 — 치우기 ${이름} --실행으로 등록을 지우고 다른 시각의 이름으로 만든다`);
+    return { 결과: '이미 있음', 폴더, 가지, 링크: 옆링크맞추기(자리, 메인, 옵션.실행) };
+  }
   if (fs.existsSync(폴더)) throw new Error(`${폴더}가 있는데 git에 등록된 사본이 아니다 — 손대지 않고 멈춘다`);
   let 가지있음 = true;
   try { git(메인, ['rev-parse', '--verify', '-q', `refs/heads/${가지}`]); } catch { 가지있음 = false; }
@@ -165,9 +172,12 @@ function 치우기(옵션 = {}) {
   const 가지 = 등록.가지;
   const 폴더있음 = fs.existsSync(폴더);
   const 확인 = 폴더있음 ? 끝({ ...옵션, 저장소: 폴더 }) : { 결과: '지워도 됨', 남은것: [] };
-  // 폴더가 사라진 등록이어도 그 가지의 커밋은 잃지 않는다
+  // 폴더가 사라진 등록이어도 그 머리의 커밋은 잃지 않는다(떨어진 머리 포함 — 등록을 지우면 reflog까지 사라진다). 폴더가 있으면 `끝`이 이미 봤다
   const 남은것 = [...확인.남은것];
-  if (!폴더있음 && 가지) for (const c of git(메인, ['rev-list', '--oneline', `refs/heads/${가지}`, '--not', '--remotes=origin']).split('\n').filter(Boolean)) 남은것.push(`origin에 없는 커밋 ${c}`);
+  if (!폴더있음) {
+    if (!등록.머리) 남은것.push('머리를 읽지 못함');
+    else for (const c of git(메인, ['rev-list', '--oneline', 등록.머리, '--not', '--remotes=origin']).split('\n').filter(Boolean)) 남은것.push(`origin에 없는 커밋 ${c}`);
+  }
   if (!옵션.실행) return { 결과: '미리 보기', 폴더, 가지, 남은것 };
   if (확인.결과 !== '지워도 됨' || 남은것.length) return { 결과: '남김', 폴더, 가지, 남은것 };
   let 이유 = null;
@@ -363,8 +373,11 @@ function 끝(옵션 = {}) {
   const 지워도됨 = 옵션.실행 && !남은것.length;
   // 링크는 지울 수 있을 때만 끊는다 — 남은 것을 고쳐 올리려면 node_modules가 있어야 한다
   const 끊은링크 = 지워도됨 ? 링크끊기(나) : [];
-  // 자리사본: EnterWorktree(path)로 들어간 사본 — ExitWorktree가 안 지우므로 `치우기`로 지운다
-  return { 결과: 지워도됨 ? '지워도 됨' : 옵션.실행 ? '남은 것 있음' : '미리 보기', 워크트리: 나, 자리사본: !/[\\/]\.claude[\\/]worktrees[\\/]/i.test(나), 넘김, 끊은링크, 남은것 };
+  // 사본 자리의 사본은 EnterWorktree(path)로 들어갔다 — ExitWorktree가 안 지우므로 `치우기`로 지운다. 그 밖의 자리에는 `치우기`를 안내하지 않는다(그 명령은 사본 자리의 같은 이름을 지운다)
+  const 다음 = !지워도됨 ? null : 같은길(path.dirname(나), 사본자리(옵션))
+    ? `→ ExitWorktree keep으로 나온 뒤 node tools/예약사본.js 치우기 ${path.basename(나)} --실행으로 지운다 — 커밋은 모두 origin에 있다`
+    : '→ ExitWorktree remove(discard_changes: true)로 지운다 — 커밋은 모두 origin에 있다';
+  return { 결과: 지워도됨 ? '지워도 됨' : 옵션.실행 ? '남은 것 있음' : '미리 보기', 워크트리: 나, 다음, 넘김, 끊은링크, 남은것 };
 }
 
 /** 회차를 시작할 때 — 뿌리 node_modules를 공용 작업본에 잇고(바로올리기의 관련 시험 · 도구가 찾는다), 멈춘 회차의 영상을 넘긴다 */
@@ -410,7 +423,6 @@ function 인자읽기(argv) {
     if (a === '--실행') 옵션.실행 = true;
     else if (a === '--json') 옵션.json = true;
     else if (a === '--저장소') 옵션.저장소 = argv[++i];
-    else if (a === '--자리') 옵션.자리 = argv[++i];
     else if (!옵션.명령 && ['만들기', '들기', '넘기기', '끝', '남은사본', '치우기'].includes(a)) 옵션.명령 = a;
     else if (이름받는명령.has(옵션.명령) && !옵션.이름 && !a.startsWith('-')) 옵션.이름 = a;
     else throw new Error(`모르는 인자: ${a}`);
@@ -436,7 +448,7 @@ function 넘김글(r) {
 function main(argv = process.argv.slice(2)) {
   let 옵션;
   try { 옵션 = 인자읽기(argv); } catch (e) {
-    console.error(`${e.message}\n  node tools/예약사본.js 만들기|치우기 <이름> [--실행]  ·  들기|넘기기|끝|남은사본 [--실행]  ·  공통 [--json] [--저장소 <폴더>] [--자리 <폴더>]`);
+    console.error(`${e.message}\n  node tools/예약사본.js 만들기|치우기 <이름> [--실행]  ·  들기|넘기기|끝|남은사본 [--실행]  ·  공통 [--json] [--저장소 <폴더>]`);
     return 2;
   }
   if (이름받는명령.has(옵션.명령)) {
@@ -468,9 +480,7 @@ function main(argv = process.argv.slice(2)) {
     console.log([`[${r.결과}] ${r.워크트리}`, ...넘김글(r.넘김),
       ...(r.끊은링크.length ? [`워크트리 안 링크 ${r.끊은링크.length}개를 끊음(대상은 그대로): ${r.끊은링크.join(' · ')}`] : []),
       ...r.남은것.map((x) => `  남음: ${x}`),
-      r.결과 !== '지워도 됨' ? '' : r.자리사본
-        ? `→ ExitWorktree keep으로 나온 뒤 node tools/예약사본.js 치우기 ${path.basename(r.워크트리)} --실행으로 지운다 — 커밋은 모두 origin에 있다`
-        : '→ ExitWorktree remove(discard_changes: true)로 지운다 — 커밋은 모두 origin에 있다',
+      r.다음 || '',
     ].filter(Boolean).join('\n'));
   } else console.log(사본글(r).join('\n'));
   if (옵션.명령 === '끝') return r.결과 === '지워도 됨' ? 0 : 1;
