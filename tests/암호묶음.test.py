@@ -122,6 +122,20 @@ class WholeBundle(Base):
     def enc_names(self, dest):
         return [n for n in dest.listing('열쇠') if n.endswith('.enc')]
 
+    def test_lost_whole_part_makes_a_new_version_for_both(self):
+        self.write('SYNK_보안/키.txt', 'x')
+        bundle = self.bundle()
+        self.a.fail = 'UNMET23_G_NOT_MOUNTED'
+        M.run_bundle(self.ctx, bundle)
+        self.assertEqual((len(self.enc_names(self.a)), len(self.enc_names(self.b))), (0, 1))
+        for leftover in (self.base / 'temp' / '열쇠').glob('*.enc*'):
+            leftover.unlink()
+        self.a.fail = None
+        report = M.run_bundle(self.ctx, bundle)  # 지문이 그대로여도 새 판을 만들어 양쪽에 둔다
+        self.assertIn('BUNDLE_PART_REQUEUED', report['issues'])
+        self.assertEqual(report['made'], 1)
+        self.assertEqual((len(self.enc_names(self.a)), len(self.enc_names(self.b))), (1, 2))
+
     def test_round_trip_restores_same_bytes_and_generated(self):
         self.write('SYNK_보안/클로드키.txt', 'sk-시험값')
         self.write('SYNK_보안/폴더/한글 이름.json', '{"a":1}')
@@ -395,6 +409,82 @@ class Waiting(Base):
         self.assertEqual(len(self.b.puts), 2)
         self.assertIn('projects/새것.jsonl', M.Ledger(self.home, '비공개문서').files)
         self.assertEqual(len(self.temp_parts()), 2)
+
+    def test_ledger_gets_final_destinations_when_the_blocked_side_finishes(self):
+        M.run_bundle(self.ctx, self.bundle)
+        first = M.Ledger(self.home, '비공개문서').parts()
+        self.assertEqual(len(first), 1)
+        self.assertFalse(first[0]['dests']['unmet23'].get('done'))
+        self.slow.answer = True
+        M.run_bundle(self.ctx, self.bundle)
+        last = M.Ledger(self.home, '비공개문서').parts()[-1]
+        self.assertEqual(last['name'], first[0]['name'])
+        self.assertTrue(last['allDone'])
+        self.assertTrue(last['dests']['unmet23']['done'])
+
+    def test_part_left_in_another_temp_place_is_still_delivered(self):
+        first, second = self.base / 'temp1', self.base / 'temp2'
+
+        class Moved(M.Temp):
+            place = first
+
+            def candidates(self):
+                return [first, second]
+
+            def root(self):
+                self.place.mkdir(parents=True, exist_ok=True)
+                return self.place
+
+        self.ctx.temp = Moved(self.home)
+        M.run_bundle(self.ctx, self.bundle)
+        self.assertEqual(len(list((first / '비공개문서').glob('*.enc'))), 1)
+        Moved.place = second  # D: 여유가 줄어 임시 자리가 바뀌었다
+        self.slow.answer = True
+        report = M.run_bundle(self.ctx, self.bundle)
+        self.assertEqual(report['issues'], [])
+        self.assertEqual(report['waiting'], 0)
+        self.assertEqual(list((first / '비공개문서').glob('*.enc')), [])
+        self.assertTrue(M.Ledger(self.home, '비공개문서').parts()[-1]['allDone'])
+
+    def test_lock_stays_put_when_temp_place_moves(self):
+        temp = M.Temp(self.home)
+        self.assertEqual(temp.lock_file('열쇠'), self.base / 'temp' / '열쇠' / '.묶음잠금')
+
+    def test_lost_temp_part_is_bundled_again_for_both_destinations(self):
+        M.run_bundle(self.ctx, self.bundle)
+        self.assertEqual(list(M.Ledger(self.home, '비공개문서').meta['미완조각']), [self.temp_parts()[0].name])
+        for leftover in (self.base / 'temp' / '비공개문서').glob('*.enc*'):
+            leftover.unlink()
+        report = M.run_bundle(self.ctx, self.bundle)
+        self.assertIn('BUNDLE_PART_REQUEUED', report['issues'])
+        self.assertEqual(report['made'], 1)  # 같은 회차에 양쪽으로 다시 묶는다
+        self.assertEqual((len(self.slow.puts), len(self.b.puts)), (2, 2))
+        self.slow.answer = True
+        report = M.run_bundle(self.ctx, self.bundle)
+        self.assertEqual(report['issues'], [])
+        self.assertEqual(report['waiting'], 0)
+        self.assertEqual(self.temp_parts(), [])
+        self.assertEqual(M.Ledger(self.home, '비공개문서').meta['미완조각'], {})
+        self.assertIn('projects/a.jsonl', M.Ledger(self.home, '비공개문서').files)
+
+    def test_requeue_leaves_files_a_newer_part_already_took(self):
+        ledger = M.Ledger(self.home, '비공개문서')
+        ledger.files = {'옛것': [1, 1, 0, '잃은조각'], '새것': [1, 1, 0, '다른조각']}
+        ledger.meta['미완조각'] = {'잃은조각': 'x', '있는조각': 'x'}
+        self.assertEqual(M.requeue_lost_parts(self.bundle, ledger, {'있는조각'}), ['BUNDLE_PART_REQUEUED'])
+        self.assertEqual(list(ledger.files), ['새것'])
+        self.assertEqual(list(ledger.meta['미완조각']), ['있는조각'])
+
+    def test_backlog_limit_is_checked_inside_the_same_run(self):
+        self.write('projects/b.jsonl', '둘째')
+        real = M.batches, M.TEMP_BACKLOG_BYTES
+        M.batches, M.TEMP_BACKLOG_BYTES = (lambda todo: [[row] for row in todo]), 0
+        try:
+            report = M.run_bundle(self.ctx, self.bundle)
+        finally:
+            M.batches, M.TEMP_BACKLOG_BYTES = real
+        self.assertIn('BUNDLE_TEMP_BACKLOG', report['issues'])
+        self.assertEqual(report['made'], 1)
 
     def test_copy_failing_on_one_destination_does_not_stop_the_other(self):
         self.slow.fail = 'UNMET23_G_LOW_SPACE'

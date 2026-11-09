@@ -14,6 +14,7 @@
 #   77yuhbs  API로 올리고 그 자리에서 md5를 대조한다. 11-08 사고(남의 전송 잠금을 기다리다 조용히 멈춤) 때문에 .drive-transfer.lock은 잡지 않는다.
 # 휴대폰 핫스팟에서는 큰 올리기를 쉰다(열쇠만 작아서 그대로, 올리는 도중 옮겨 가면 그 자리에서 기다린다).
 # 목적지는 서로 독립이다: 한 곳에라도 대조되면 장부에 적고 새 조각을 계속 만든다. 임시 조각은 모든 목적지가 끝날 때까지 남아 막힌 쪽으로 다시 간다(11-09 아르곤 설계 재검토 — G: 하나가 막혀 77yuhbs까지 멈추던 것).
+# 그 임시 조각이 막힌 쪽의 유일한 근거이므로 장부(묶음.json 미완조각)에 이름을 적어 두고, 잃으면 그 파일을 장부에서 되돌려 양쪽으로 다시 묶는다(11-09 GPT).
 # 장부(상태/복원꾸러미/<묶음>/): 조각.jsonl(적은 조각) · 파일상태.json(경로 → 크기 · 수정 시각 · 넣은 때 · 조각, 한 곳이라도 대조된 뒤 갱신) · 묶음.json.
 # 열쇠 묶음은 온전한 판만 올린다: 읽지 못한 파일 · 못 걸은 폴더 · 필수 폴더 빔 · 20% 넘는 줄어듦이면 새 판을 만들지 않고 알린다(옛 판도 지우지 않는다). 새 판은 바뀌면 3시간 안에 만든다.
 # 묶음마다 잠금을 잡아 겹치는 회차가 서로의 임시 조각을 지우지 않게 한다. 조각 끝에 파일별 sha256 목록을 넣어 풀 때 대조한다.
@@ -268,7 +269,8 @@ def define_bundles(home):
             Root(docs / 'yuhobuilds-voice'), Root(docs / 'Last30Days'), Root(docs / 'Codex'), Root(docs / 'SYNK-backups'),
             Root(docs / 'SYNK이전_미커밋보존'), Root(home / 'SYNK이전_인계'),
         ]),
-        Bundle('창고장부', 'incremental', ('unmet23', '77yuhbs'), quiet=600, roots=[
+        # 조용한 시간을 두지 않는다 — 회차 끝에 돌므로 방금 쓴 다른 묶음의 장부가 미뤄지면 안 된다. 쓰는 도중의 파일은 다음 회차가 다시 넣는다.
+        Bundle('창고장부', 'incremental', ('unmet23', '77yuhbs'), quiet=0, roots=[
             # 복원꾸러미 장부도 넣는다: 파일상태.json이 「어느 파일이 어느 조각에 있나」의 색인이고, 새 노트북이 처음부터 다시 올리지 않게 한다.
             Root(vault / '상태', skip_dirs=('OneDrive', '예약실행', '보호'), skip_files=re.compile(r'(read-cache|\.tmp$|작업방식_캐시|' + OTHER_PC_MARKER + r'$)')),
             Root(vault, skip_dirs=tuple(p.name for p in vault.iterdir() if p.is_dir()) if vault.is_dir() else (),
@@ -413,10 +415,27 @@ class Temp:
     def __init__(self, home):
         self.home = home
 
-    def root(self):
+    def candidates(self):
         override = os.environ.get('SYNK_복원_임시')
-        candidates = [Path(override)] if override else [Path('D:/SYNK_복원대기'), self.home / 'AppData' / 'Local' / 'Temp' / 'SYNK_복원대기']
-        for candidate in candidates:
+        return [Path(override)] if override else [Path('D:/SYNK_복원대기'), self.home / 'AppData' / 'Local' / 'Temp' / 'SYNK_복원대기']
+
+    def folders(self, name):
+        """이 묶음의 임시 폴더 후보 전부. 여유가 줄어 자리가 바뀌어도 남은 조각을 찾는다."""
+        return [candidate / name for candidate in self.candidates()]
+
+    def lock_file(self, name):
+        """자리가 바뀌어도 같은 묶음은 같은 잠금을 잡는다(여유와 상관없이 있는 첫 자리)."""
+        for candidate in self.candidates():
+            if Path(candidate.anchor or candidate).exists():
+                folder = candidate / name
+                folder.mkdir(parents=True, exist_ok=True)
+                return folder / '.묶음잠금'
+        raise RuntimeError('BUNDLE_TEMP_NO_SPACE')
+
+    def root(self):
+        """새 조각을 쓸 자리."""
+        override = os.environ.get('SYNK_복원_임시')
+        for candidate in self.candidates():
             try:
                 anchor = Path(candidate.anchor or candidate)
                 if not anchor.exists():
@@ -779,36 +798,75 @@ def record_part(bundle, ledger, part, sidecar):
             ledger.meta['wholeFiles'] = sidecar['fileCount']
         ledger.save_meta()
     sidecar['committed'] = True
+    sidecar['recordedWaiting'] = part_waiting(sidecar, bundle)
+    if sidecar['recordedWaiting']:
+        ledger.meta.setdefault('미완조각', {})[part.name] = stamp()
+        ledger.save_meta()
     write_json(Path(str(part) + '.json'), sidecar)
 
 
-def retire_part(bundle, part, sidecar):
-    """모든 목적지가 끝난 조각만 임시에서 지운다. 지웠으면 True."""
+def retire_part(bundle, ledger, part, sidecar):
+    """모든 목적지가 끝난 조각만 임시에서 지운다. 지웠으면 True. 막혔던 목적지가 뒤늦게 끝났으면 장부에 마지막 상태를 한 줄 더 적는다(같은 이름은 뒤 줄이 맞다)."""
     if part_waiting(sidecar, bundle):
         return False
+    if sidecar.get('recordedWaiting'):
+        ledger.append({'name': part.name, 'at': sidecar['at'], 'allDone': True, 'dests': sidecar['dests']})
+    pending = ledger.meta.get('미완조각')
+    if pending and pending.pop(part.name, None):
+        ledger.save_meta()
     part.unlink(missing_ok=True)
     Path(str(part) + '.json').unlink(missing_ok=True)
     return True
 
 
-def flush_leftovers(ctx, bundle, ledger, temp_dir):
+def temp_parts(ctx, bundle):
+    """임시 자리 어디에 있든 이 묶음의 조각을 찾는다."""
+    return [part for folder in ctx.temp.folders(bundle.name) if folder.is_dir() for part in sorted(folder.glob('*.enc'))]
+
+
+def temp_backlog(ctx, bundle):
+    return sum(part.stat().st_size for part in temp_parts(ctx, bundle))
+
+
+def requeue_lost_parts(bundle, ledger, present):
+    """장부에 적었는데 막힌 목적지로 보낼 임시 조각이 없어졌다(폴더 정리, 디스크 교체 등). 그 파일을 장부에서 되돌려 다음 조각이 양쪽으로 다시 가게 한다 — 안 그러면 그 목적지에 영영 안 간다."""
+    pending = ledger.meta.get('미완조각') or {}
+    lost = [name for name in pending if name not in present]
+    if not lost:
+        return []
+    for name in lost:
+        pending.pop(name)
+        for arc in [arc for arc, row in ledger.files.items() if row[3] == name]:
+            del ledger.files[arc]
+    if bundle.mode == 'whole':
+        ledger.meta.pop('fingerprint', None)  # 안 바뀐 판으로 치지 않게
+        ledger.meta.pop('wholeAt', None)
+    write_json(ledger.state_file, ledger.files)
+    ledger.save_meta()
+    return ['BUNDLE_PART_REQUEUED']  # 저절로 회복되지만 한 번은 알린다 — 왜 없어졌는지 사람이 볼 수 있게
+
+
+def flush_leftovers(ctx, bundle, ledger):
     """지난 회차가 끊겨 남았거나 한 목적지를 기다리는 조각부터 처리한다. (문제 목록, 아직 남은 조각 수, 새 조각을 막을지).
     막는 것은 어느 곳에도 못 간 조각이 있을 때(같은 파일이 또 묶인다)와 임시가 너무 쌓였을 때뿐이다."""
-    for leftover in sorted(temp_dir.glob('*.part')):
-        leftover.unlink(missing_ok=True)  # 암호화 도중 끊긴 것(복호화할 수 없다). 묶음 잠금 안이라 다른 회차의 것이 아니다
-    errors, waiting, blocked, backlog = [], 0, False, 0
-    for part in sorted(temp_dir.glob('*.enc')):
+    for folder in ctx.temp.folders(bundle.name):
+        if folder.is_dir():
+            for leftover in sorted(folder.glob('*.part')):
+                leftover.unlink(missing_ok=True)  # 암호화 도중 끊긴 것(복호화할 수 없다). 묶음 잠금 안이라 다른 회차의 것이 아니다
+    errors, waiting, blocked, present = [], 0, False, set()
+    for part in temp_parts(ctx, bundle):
         sidecar = read_json(Path(str(part) + '.json'))
         if not sidecar:
             part.unlink(missing_ok=True)  # 사이드카를 쓰기 전에 끊겼다 — 다음 회차가 다시 만든다
             continue
         errors += deliver(ctx, bundle, part, sidecar)
         record_part(bundle, ledger, part, sidecar)
-        if not retire_part(bundle, part, sidecar):
+        if not retire_part(bundle, ledger, part, sidecar):
+            present.add(part.name)
             waiting += 1
-            backlog += sidecar.get('enc', 0)
             blocked = blocked or not sidecar.get('committed')
-    if backlog > TEMP_BACKLOG_BYTES:
+    errors += requeue_lost_parts(bundle, ledger, present)
+    if temp_backlog(ctx, bundle) > TEMP_BACKLOG_BYTES:
         blocked = True
         errors.append('BUNDLE_TEMP_BACKLOG')
     return errors, waiting, blocked
@@ -828,7 +886,7 @@ def make_and_send(ctx, bundle, ledger, rows, generated, temp_dir, seq, at, finge
     write_json(Path(str(part) + '.json'), sidecar)
     errors = deliver(ctx, bundle, part, sidecar)
     record_part(bundle, ledger, part, sidecar)
-    waiting = not retire_part(bundle, part, sidecar)
+    waiting = not retire_part(bundle, ledger, part, sidecar)
     return errors, len(skipped), sidecar, waiting
 
 
@@ -918,13 +976,11 @@ def publish_key_files(ctx, bundle, ledger):
 
 
 def run_bundle(ctx, bundle, heartbeat=lambda: None):
-    temp_dir = ctx.temp.root() / bundle.name
-    temp_dir.mkdir(parents=True, exist_ok=True)
     report = {'bundle': bundle.name, 'mode': bundle.mode, 'made': 0, 'rawBytes': 0, 'encBytes': 0, 'files': 0, 'deferred': 0, 'skipped': 0,
               'issues': [], 'unchanged': False, 'waiting': 0}
     try:
-        with BundleLock(temp_dir / '.묶음잠금'):
-            _run_locked(ctx, bundle, heartbeat, temp_dir, report)
+        with BundleLock(ctx.temp.lock_file(bundle.name)):
+            _run_locked(ctx, bundle, heartbeat, report)
     except BundleBusy:
         report['busy'] = True  # 다른 회차가 이 묶음을 돌고 있다 — 그 회차가 끝낸다
     return report
@@ -941,15 +997,17 @@ def _add_part(report, sidecar, skipped):
     report['skipped'] += skipped
 
 
-def _run_locked(ctx, bundle, heartbeat, temp_dir, report):
+def _run_locked(ctx, bundle, heartbeat, report):
     ledger = Ledger(ctx.home, bundle.name)
-    errors, waiting, blocked = flush_leftovers(ctx, bundle, ledger, temp_dir)
+    errors, waiting, blocked = flush_leftovers(ctx, bundle, ledger)
     report['issues'] += errors
     report['waiting'] = waiting
     if blocked:
         if bundle.name == '열쇠':
             report['issues'] += publish_key_files(ctx, bundle, ledger)
         return
+    temp_dir = ctx.temp.root() / bundle.name  # 남은 조각을 보낸 뒤에 고른다 — 그것으로 자리가 날 수 있다
+    temp_dir.mkdir(parents=True, exist_ok=True)
     now = time.time()
     list_problems = []
     rows = select(bundle, ctx.home, list_problems)
@@ -999,6 +1057,9 @@ def _run_locked(ctx, bundle, heartbeat, temp_dir, report):
         report['waiting'] += int(part_wait)
         if not sidecar.get('committed'):  # 어느 곳에도 못 갔으면 멈춘다. 한쪽만 막혔으면 다음 조각을 잇는다
             break
+        if part_wait and temp_backlog(ctx, bundle) > TEMP_BACKLOG_BYTES:
+            report['issues'].append('BUNDLE_TEMP_BACKLOG')
+            break
 
 
 def settle(ctx, table, reports, tries=SETTLE_TRIES, wait=SETTLE_SECONDS):
@@ -1009,10 +1070,9 @@ def settle(ctx, table, reports, tries=SETTLE_TRIES, wait=SETTLE_SECONDS):
             return
         ctx.sleep(wait)
         for name in names:
-            temp_dir = ctx.temp.root() / name
             try:
-                with BundleLock(temp_dir / '.묶음잠금'):
-                    errors, left, _ = flush_leftovers(ctx, table[name], Ledger(ctx.home, name), temp_dir)
+                with BundleLock(ctx.temp.lock_file(name)):
+                    errors, left, _ = flush_leftovers(ctx, table[name], Ledger(ctx.home, name))
             except BundleBusy:
                 continue
             except (OSError, RuntimeError, ValueError) as error:

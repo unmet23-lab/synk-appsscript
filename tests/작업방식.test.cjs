@@ -82,6 +82,50 @@ test('예약 작업 XML · 설치 목록도 같은 검사를 받아, 걸리면 �
   } finally { t.끝(); }
 });
 
+test('더는 안 걸리는 기록의 옛 사본은 보호 폴더에 남지 않는다', () => {
+  const t = 판();
+  try {
+    const 토큰 = ['윈도우/예약작업/토큰.xml', '<Task><Arguments>--token ghp_abcdefghijklmnopqrstuvwxyz0123</Arguments></Task>'];
+    assert.equal(도구.돌리기({}, t.의존({ 윈도우기록: () => new Map([토큰]) })).status, 'success');
+    const 사본 = path.join(t.자리.상태, '보호', '윈도우', '예약작업', '토큰.xml');
+    assert.ok(fs.existsSync(사본));
+    assert.equal(도구.돌리기({}, t.의존({ 윈도우기록: () => new Map([['윈도우/winget.json', '{}']]) })).status, 'success');
+    assert.ok(!fs.existsSync(사본));
+  } finally { t.끝(); }
+});
+
+test('윈도우 기록은 상태 폴더에 두고, 없어진 예약 작업의 옛 XML은 목록을 제대로 받았을 때만 치운다', () => {
+  const t = 판();
+  try {
+    let 예약 = JSON.stringify([{ 이름: 'SYNK 옛작업', 상태: 'Ready', xml: '<Task>옛</Task>' }]);
+    const 돌림 = (cmd, args) => {
+      if (String(args).includes('Get-ScheduledTask')) return 예약 === null ? { status: 1 } : { status: 0, stdout: 예약 };
+      return { status: 1 };
+    };
+    const 상태파일 = path.join(t.자리.상태, '작업방식_기록.json');
+    const 옛 = path.join(t.자리.상태, '보호', '윈도우기록', '윈도우', '예약작업', 'SYNK 옛작업.xml');
+    const 거울 = path.join(t.뿌리, '안씀');
+    const 하루 = 24 * 3600 * 1000;
+    const 첫 = 도구.윈도우기록(거울, t.자리, 하루, 상태파일, 돌림);
+    assert.ok(첫.has('윈도우/예약작업/SYNK 옛작업.xml'));
+    assert.ok(fs.existsSync(옛));
+    assert.ok(!fs.existsSync(거울), '거울을 건드리지 않는다');
+    // 하루 안에는 다시 만들지 않고 상태 폴더에서 읽는다
+    let 부름 = 0;
+    assert.ok(도구.윈도우기록(거울, t.자리, 하루 + 1000, 상태파일, () => { 부름 += 1; return { status: 1 }; }).has('윈도우/예약작업/SYNK 옛작업.xml'));
+    assert.equal(부름, 0);
+    // 목록을 못 받은 날은 옛 XML을 그대로 둔다
+    예약 = null;
+    도구.윈도우기록(거울, t.자리, 하루 * 3, 상태파일, 돌림);
+    assert.ok(fs.existsSync(옛));
+    // 제대로 받으면 없어진 작업의 XML을 치운다
+    예약 = JSON.stringify([{ 이름: 'SYNK 새작업', 상태: 'Ready', xml: '<Task>새</Task>' }]);
+    도구.윈도우기록(거울, t.자리, 하루 * 5, 상태파일, 돌림);
+    assert.ok(!fs.existsSync(옛));
+    assert.ok(fs.existsSync(path.join(path.dirname(옛), 'SYNK 새작업.xml')));
+  } finally { t.끝(); }
+});
+
 test('검사와 복사 사이에 파일에 비밀이 들어가도 검사한 뒤의 바이트만 나간다', () => {
   const t = 판();
   try {

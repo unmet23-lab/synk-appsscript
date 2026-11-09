@@ -376,7 +376,9 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
     '[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); Get-ScheduledTask | Where-Object { $_.TaskName -match "SYNK|Hermes|hermes|헤르메스" } | ForEach-Object { $x = Export-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath; [pscustomobject]@{ 이름=$_.TaskName; 상태=[string]$_.State; xml=$x } } | ConvertTo-Json -Depth 3 -Compress']);
   if (예약) {
     let 줄 = [];
-    try { 줄 = JSON.parse(예약.replace(/^\uFEFF/, '')); } catch {}
+    try { 줄 = JSON.parse(예약.replace(/^\uFEFF/, '')); } catch { 줄 = null; }
+    // 목록을 제대로 받았을 때만 옛 XML을 치운다 — 없어진 예약 작업의 옛 값이 열쇠 묶음에 남지 않게. 못 받은 날은 그대로 둔다.
+    if (줄) fs.rmSync(path.join(기록폴더, '윈도우', '예약작업'), { recursive: true, force: true });
     for (const t of Array.isArray(줄) ? 줄 : [줄]) {
       if (!t || !t.이름 || !t.xml) continue;
       덧.set(`윈도우/예약작업/${t.이름.replace(/[\\/:*?"<>|]/g, '_')}.xml`, t.xml);
@@ -452,6 +454,7 @@ function 돌리기(옵션 = {}, 의존 = {}) {
   const 입구 = 복원입구(의존.코드뿌리 || 코드);
   const 덧붙임 = new Map();
   const 보호폴더 = path.join(상태, '보호');
+  const 이번보호 = new Set();
   const 문제 = [];
   // 복원 도구가 빠진 꾸러미는 쓸모가 없다 — 있어야 할 파일이 없으면 알린다.
   if (!의존.코드뿌리 && !입구.has('복원/restore.ps1')) 문제.push({ code: 'WORKMETHOD_RESTORE_TOOL_MISSING' });
@@ -464,9 +467,12 @@ function 돌리기(옵션 = {}, 의존 = {}) {
       const 곳 = path.join(보호폴더, ...경로.split('/'));
       fs.mkdirSync(path.dirname(곳), { recursive: true });
       fs.writeFileSync(곳, 데이터);
+      이번보호.add(곳);
       뺌.push({ 경로, source: 곳, 까닭: 결과.까닭, 갈곳: '열쇠' });
     }
   }
+  // 이번에 안 걸린 기록의 옛 사본은 지운다 — 없어지거나 고쳐진 예약 작업의 옛 비밀이 열쇠 묶음에 남지 않게.
+  for (const f of 걷기(path.join(보호폴더, '윈도우'), new Set(), [])) if (!이번보호.has(f.절대)) fs.rmSync(f.절대, { force: true });
   // 드라이브의 파일 위치(비밀 아님) — 새 노트북에서 찾는 데 쓴다
   try { 덧붙임.set('위치.json', JSON.stringify({ 원격: 원격주소, 드라이브폴더: 'SYNK_복원', 묶음: 캐시읽기(path.join(상태, '위치.json')) }, null, 1)); } catch {}
   if (걷기오류) 문제.push({ code: 'WORKMETHOD_LIST_ERROR' });
@@ -535,4 +541,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { 범위표, 판정, 고르기, 맞추기, 돌리기, 집자리, 열쇠값이들었나, 열쇠토큰인가, 토큰해시, 거울준비, 더한서명 };
+module.exports = { 범위표, 판정, 고르기, 맞추기, 돌리기, 집자리, 열쇠값이들었나, 열쇠토큰인가, 토큰해시, 거울준비, 더한서명, 윈도우기록 };
