@@ -88,6 +88,12 @@
 - 고침: 통로(`tools/lib/그록호출.js`)와 같은 인자(`--no-auto-update --prompt-file <파일> --no-subagents`)에 읽기를 막는 `--deny "Read(C:/Users/**)" --deny "Read(D:/**)"`를 더하고 `timeout 900`으로 다시 불러 5분(4턴 · $0.23)에 답을 받았다. 기다리는 동안은 events.jsonl 마지막 줄의 시각 · `turn_ended`로 진행을 본다.
 - 다시 확인: 답 json의 `stopReason` end_turn · `num_turns`, events.jsonl 마지막 줄이 `turn_ended` completed.
 
+### 166KB 설계 검토 묶음을 `검수묶음.mjs 그록 --수준 high`로 보내면 두 번 다 「model did not produce structured output」로 끝난다 (2026-11-10 Claude · Atlas 재설계)
+- 증상: 설계 문서 + 시제품 묶음(166KB · 항목 22개)을 그록에 보냈더니 430초 · 333초 뒤 둘 다 「그록 답을 읽지 못했다(끝 코드 1)」였다. 원문 끝이 `"structuredOutput": null, "structuredOutputError": "model did not produce structured output"`이고 `modelCalls` 4 · 출력 2만 토큰쯤이었다. 같은 묶음을 아르곤(high, 429초)과 아스트라(xhigh, 508초)는 끝까지 읽고 답했다.
+- 원인: 확인하지 못했다. 통로가 턴을 넷으로 묶는데(`그록부르기`의 `턴: 4`) 네 번의 호출이 모두 글로 끝나고 꼴 답을 내지 않았다. 묶음이 커서인지 high라서인지는 가르지 않았다.
+- 고침: 그록 없이 아르곤 · 아스트라 두 답으로 진행했다(그록은 더 보는 눈이라 사슬을 막지 않는다). `--다시`는 실패 원문을 덮으므로 첫 실패 json을 따로 복사해 두고 한 번만 다시 보냈다. 같은 크기의 묶음을 그록에 꼭 보여야 하면 `--크기`로 나누거나 수준을 낮춰 본다(해 보지 않았다).
+- 다시 확인: `.tmp/검수/atlas-redesign-design-20261110/그록-A.json`의 `상태` 실패 · `오류` 글.
+
 ## Gemini·agy
 
 ### 몽골어 검문이 Gemini 무료 API의 429로 막힌다
