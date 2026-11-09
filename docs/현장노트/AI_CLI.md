@@ -726,6 +726,12 @@
 - 고침: `tip-worker-status.cjs`는 고정 이유만 실패 종류로 읽고, `overview.cjs`는 장애 지속과 발송 담당을 분리한다. 로그인 장애는 기존 실행기의 12시간 알림이 맡으며 실제 성공 전에는 해소하지 않는다. 인증 복구는 공식 `claude auth login`이 필요하고 앱 로그인과 구분한다.
 - 다시 확인: `node --test tests/hermes-synk-monitor.test.cjs tests/hermes-synk-overview.test.cjs` 90개 통과. 직접 알림 false→true→false는 같은 사건·추가 발송 0건, 다른 예외와 실제 성공 뒤 재발은 각각 새 알림이다. 운영 사본 반영 뒤 계약 해시와 감시 회차를 확인한다.
 
+### 터미널 로그인(`claude auth login`)을 세션 셸에서 띄우면 세션이 다시 시작될 때 같이 죽고, 기본 브라우저 Edge는 「브라우저를 확인할 수 없습니다」로 막힌다 (2026-11-10 Claude)
+- 증상: 무인 작업이 `Not logged in · Please run /login`으로 멈춰(11-09 저녁부터, PULSE 의뢰 메모 · 팁 적용안) 세션의 Bash 배경 작업으로 `claude auth login --claudeai --email founder@synk.im`을 띄웠다. 열린 Edge 로그인 화면은 「Google로 계속하기」 아래 「브라우저를 확인할 수 없습니다」로 넘어가지 않았고, 크롬에서 승인한 뒤에도 `claude auth status`는 `loggedIn: false`였다.
+- 원인: 그사이 세션 프로세스가 다시 시작돼 배경 작업(승인 결과를 기다리던 CLI)이 함께 꺼졌다. Edge 쪽은 claude.ai의 브라우저 확인을 통과하지 못했다(추적 방지 · 확장 프로그램으로 추정, 확인 안 함).
+- 고침: 세션과 따로 사는 터미널 패널 탭(`run_in_terminal`)에서 같은 명령을 띄우고, 찍힌 주소를 크롬에 붙여 승인 → 나온 코드를 그 탭의 `Paste code here if prompted >`에 붙였다. 로그인 계정은 `--email`이 아니라 크롬에서 고른 Google 계정이 정한다 — 이번에도 11-04와 같은 synk.yuh(Max)로 들어갔고, 앱 세션의 founder@와 한도를 나눠 쓰지 않아 그대로 두었다.
+- 다시 확인: `claude auth status`가 `loggedIn: true` · `subscriptionType: max`, 앱 환경 밖 `claude -p --model claude-haiku-5-5 --max-turns 1` 한 번이 답했다. 무인 작업은 다음 새 의뢰 · 새 팁 회차에서 본다.
+
 ### CPU 포화 때 헤르메스 감시가 낮은 우선순위로 오래 멈춘다 (2026-11-10 GPT)
 - 증상: 감시 자식이 20분 넘게 CPU를 약 1초만 배정받고 다음 회차를 막았다. 뒤늦게 수집 시간 초과와 Telegram 연결 지연으로 끝났다.
 - 원인: 복구 예약에 Priority가 없어 게이트웨이와 감시가 BelowNormal을 물려받았다.
