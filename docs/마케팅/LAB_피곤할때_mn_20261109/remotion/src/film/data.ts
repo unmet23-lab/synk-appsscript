@@ -60,8 +60,9 @@ export const CELLS: Cell[] = [
   { at: 12.5, img: 'store1.jpg', sit: 'Цагийн ажил — хайрцаг дуусахгүй…' },
   {
     at: 14.4, img: 'store2.jpg', vo: [{ id: 'a3', at: 14.52 }, { id: 'a3', at: 16.0 }],
-    // 지하철 눌림과 같은 그림이던 상자 더미를 「상자에 머리부터 처박힌 몽글」로 바꿨다(볼 이유 심사 v3 답 4)
-    bubble: { n: 3, ko: '피곤해…', read: 'пигонхэ', mn: 'Ядарч байна…', battery: 0.25, side: 'right', bottom: 790, width: 640, tip: [600, 950] },
+    // 지하철 눌림과 같은 그림이던 상자 더미를 「상자에 머리부터 처박힌 몽글」로 바꿨다(볼 이유 심사 v3 답 4) →
+    // 얼굴이 안 보여 「캐릭터로 안 읽히는 붉은 주머니」(아르곤 맹검 v6 [C137]) — 상자 앞 날개에 축 늘어져 얼굴을 기댄 판(판/알바4.txt)
+    bubble: { n: 3, ko: '피곤해…', read: 'пигонхэ', mn: 'Ядарч байна…', battery: 0.25, side: 'right', bottom: 790, width: 640, tip: [520, 1000] },
   },
   { at: 17.5, img: 'desk1.jpg', sit: 'Шөнийн 3 цаг — даалгавар дуусахгүй…' },
   {
@@ -92,11 +93,11 @@ export const MONGLE: Record<string, { cx: number; cy: number; rx: number; ry: nu
   'sub1.jpg': { cx: 563, cy: 1632, rx: 260, ry: 260 },
   'sub2.jpg': { cx: 505, cy: 1436, rx: 450, ry: 300 },
   'store1.jpg': { cx: 460, cy: 1448, rx: 260, ry: 260 },
-  'store2.jpg': { cx: 545, cy: 1108, rx: 350, ry: 215 },
+  'store2.jpg': { cx: 545, cy: 1190, rx: 320, ry: 225 },
   'desk1.jpg': { cx: 402, cy: 1360, rx: 330, ry: 300 },
   'desk2.jpg': { cx: 483, cy: 1402, rx: 500, ry: 380 },
   'phone.jpg': { cx: 632, cy: 1080, rx: 440, ry: 260 },
-  'up.jpg': { cx: 528, cy: 908, rx: 380, ry: 420 },
+  'up.jpg': { cx: 600, cy: 1080, rx: 300, ry: 520 }, // 머리 위 흐린 띠에 걸리면 늘일 때 머리가 납작해진다
   'karaoke.jpg': { cx: 425, cy: 1195, rx: 400, ry: 440 },
   'next.jpg': { cx: 597, cy: 1103, rx: 500, ry: 320 },
 };

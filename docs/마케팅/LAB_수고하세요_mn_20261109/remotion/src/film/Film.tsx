@@ -136,6 +136,10 @@ const Under: React.FC<{ img: string; plate: string }> = ({ img, plate }) => (
   </>
 );
 
+// 몽글이 얼어 있는 정도(0~1) — 서리가 몽글 자리에 닿을 즈음(ice 0.24~0.4) 한 번에. 방 몽글은 얼음 몽글이 다 덮은 뒤에 빠진다(같이 흐려지면 몸이 비친다)
+const frozenMongle = (ice: number) => interpolate(ice, [0.24, 0.4], [0, 1], clamp);
+const warmMongle = (ice: number) => 1 - interpolate(ice, [0.38, 0.44], [0, 1], clamp);
+
 const Scene: React.FC<{ t: number; base: string; ice?: number }> = ({ t, base, ice = 0 }) => {
   const m = mongleMove(t);
   const waving = base === 'sun';
@@ -148,16 +152,24 @@ const Scene: React.FC<{ t: number; base: string; ice?: number }> = ({ t, base, i
       {waving ? <Patch img={base} cx={HAND.cx} cy={HAND.cy} rx={HAND.rx} ry={HAND.ry} rot={wave} ox={HAND.ox} oy={HAND.oy} /> : null}
       {/* 교수님 — 얼기 전까지 고개를 끄덕이며 웃는다. 얼면 그대로 멈춘다 */}
       {ice === 0 ? <Patch img={base} cx={PROF.cx} cy={PROF.cy} rx={PROF.rx} ry={PROF.ry} rot={1.8 * Math.sin(t * 3.4)} oy={PROF.oy} /> : null}
-      <Patch img={base} cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} png={`mongle_${base}`} />
       {ice > 0 ? (
         <>
           <MaskLoad p={ice} />
+          {/* 서리 판은 몽글 없는 방만 — 서리 경계가 몽글 몸을 가로지르면 반쯤 언 몸이 「뭉개진 인페인팅 불량」으로 보였다(아르곤 맹검 v10 [C132]) */}
           <AbsoluteFill style={frostMask(ice)}>
             <Img src={staticFile('img/ice.jpg')} style={FULL} />
             <Under img="iceEmpty" plate="ice" />
-            <Patch img="ice" cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} png="mongle_ice" />
           </AbsoluteFill>
         </>
+      ) : null}
+      {/* 몽글은 서리 위에 따로, 통째로 언다 — 방 몽글이 사라지는 만큼 얼음 몽글이 온다. 얼음 판 몽글이 조금 위에 있어 방 몽글을 그대로 두면 붉은 밑단이 아래로 삐져나왔다 */}
+      <div style={{ position: 'absolute', inset: 0, opacity: warmMongle(ice) }}>
+        <Patch img={base} cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} png={`mongle_${base}`} />
+      </div>
+      {frozenMongle(ice) > 0 ? (
+        <div style={{ position: 'absolute', inset: 0, opacity: frozenMongle(ice) }}>
+          <Patch img="ice" cx={MONGLE.cx} cy={MONGLE.cy} rx={MONGLE.rx} ry={MONGLE.ry} sx={m.sx} sy={m.sy} dx={m.dx} dy={m.dy} rot={m.rot} oy={MONGLE.oy} png="mongle_ice" />
+        </div>
       ) : null}
       <Glints p={ice} t={t} />
     </>
@@ -188,13 +200,7 @@ const Rays: React.FC<{ t: number; from: number }> = ({ t, from }) => {
   return (
     <>
       <AbsoluteFill style={{ background: 'linear-gradient(115deg, rgba(255,214,120,0) 30%, rgba(255,214,120,0.28) 52%, rgba(255,214,120,0) 74%)', opacity: a * (0.8 + 0.2 * Math.sin(t * 1.7)), mixBlendMode: 'screen' }} />
-      {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((k) => {
-        const x = 300 + rand(k + 2) * 720;
-        const y0 = 500 + rand(k + 9) * 800;
-        const y = y0 - ((t * (24 + 16 * rand(k))) % 200);
-        const s = 8 + rand(k + 5) * 12;
-        return <div key={k} style={{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,240,190,0.95) 0%, rgba(255,240,190,0) 70%)', opacity: a * (0.5 + 0.5 * Math.sin(t * 3 + k)) }} />;
-      })}
+      {/* 떠다니는 빛 먼지 아홉 개는 뺐다 — 실내에 「눈가루처럼 떠 지저분하다」(아르곤 맹검 v10 [K37]) */}
     </>
   );
 };

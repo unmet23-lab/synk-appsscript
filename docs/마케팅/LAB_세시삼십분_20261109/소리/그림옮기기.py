@@ -24,7 +24,7 @@ def 최근(이름):
     return 후보[-1]
 
 
-for ko, en in {'방2': 'room', '놀람2': 'startled', '뿌듯4': 'proud'}.items():
+for ko, en in {'방2': 'room', '놀람2': 'startled', '뿌듯5': 'proud'}.items():
     src = 최근(ko)
     Image.open(src).convert('RGB').resize((1080, 1920), Image.LANCZOS).save(os.path.join(밖, en + '.jpg'), quality=93)
     print(en, '←', os.path.basename(src))

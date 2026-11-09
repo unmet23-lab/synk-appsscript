@@ -126,10 +126,17 @@ const minuteAngle = (t: number) => {
   return 450 + 6 * kick(t, T.ding2 + 0.05, 4, 16) + 2.2 * bl * Math.sin(t * 61);
 };
 
+// 다툼 박 — 상대가 외친 박에는 움찔한다(둘이 한꺼번에 외치는 박만 둘 다 외침). 「세!」 박에 분침까지 입을 벌려 「말과 그림이 어긋난다」(아르곤 맹검 v19 [K13])
+const lastBeat = (t: number) => FIGHT_BEATS.filter((b) => t >= b.at).slice(-1)[0];
+const flinch = (t: number, me: 'h' | 'm') => {
+  const b = lastBeat(t);
+  return !!b && t < T.who && b.who !== me && b.who !== 'b';
+};
+
 // 지금 머리 얼굴 — 우길 땐 외침, 풀이 · 맞을 땐 환호, 몽글이 외치면 움찔
 const hourFace = (t: number): Face => {
   if (t >= T.hour1 && t < T.try2) return 'Shout';
-  if (t >= T.fight && t < T.swingH) return 'Shout';
+  if (t >= T.fight && t < T.swingH) return flinch(t, 'h') ? 'Gasp' : 'Shout';
   if (t >= T.h1 && t < T.ruleM) return 'Cheer';
   if (t >= T.bump && t < T.bump + 0.5) return 'Shout'; // 치고 지나가자 버럭
   if (t >= T.ding && t < T.spin) return 'Cheer';
@@ -138,6 +145,7 @@ const hourFace = (t: number): Face => {
   return 'Calm'; // 10:15로 돈 뒤엔 소리치지 않고 내려다본다(GPT 「맞게 말했는데 왜 또 화내나」)
 };
 const minuteFace = (t: number): Face => {
+  if (t >= T.fight && t < T.ruleM && flinch(t, 'm')) return 'Gasp';
   if (t >= T.min1 && t < T.ruleM) return 'Shout';
   if (t >= T.m1 && t < T.both) return 'Cheer';
   if (t >= T.ding && t < T.spin) return 'Cheer';
@@ -457,8 +465,8 @@ export const Film: React.FC<{ lang: Lang; scene?: boolean }> = ({ lang, scene })
           {/* 일 · 이 · 삼이 어디 있는지 — 이십 · 삼십의 앞 글자를 밝힌다(그록 「일 · 이 · 삼과 십 분 · 이십 분이 연결이 안 된다」) */}
           <Mark t={t} at={T.m2} until={T.both} x={873} y={1185} color={C.minute} n="20"><span style={{ color: '#FFE27A' }}>이</span>십 분</Mark>
           <Mark t={t} at={T.m3} until={T.both} x={546} y={1390} color={C.minute} n="30"><span style={{ color: '#FFE27A' }}>삼</span>십 분</Mark>
-          {/* 넓게 — 몽글이 맞게 읽는다 */}
-          <Bubble t={t} from={T.say} until={T.spin} x={650} y={1482} tipX={400} tipY={1625} color={C.brown} sub={ROMAN.right} w={560} size={66}>
+          {/* 넓게 — 몽글이 맞게 읽는다. 몽글의 말은 모두 몽글 색(산호) 테 — 끝 말풍선만 갈색이라 「앞 컷과 테가 다르다」(아르곤 맹검 v19 [K8]) */}
+          <Bubble t={t} from={T.say} until={T.spin} x={650} y={1482} tipX={400} tipY={1625} color={C.coral} sub={ROMAN.right} w={560} size={66}>
             <span style={{ color: C.hour }}>세 시 </span>
             <span style={{ color: C.minute }}>삼십 분!</span>
           </Bubble>
@@ -466,12 +474,12 @@ export const Film: React.FC<{ lang: Lang; scene?: boolean }> = ({ lang, scene })
           {/* 바늘이 다 돌아 갈 즈음에 — 도는 동안 다른 시각을 가리키는데 「10:15」가 뜨면 어긋나 보인다(GPT 18초) */}
           <Sign t={t} at={T.spin + 0.55} until={T.small} lang={lang}>{L.now}</Sign>
           {/* 떨면서 — 몽글 가까이 */}
-          <Bubble t={t} from={T.small} until={T.cut} x={540} y={1090} tipX={330} tipY={1345} color={C.brown} sub={ROMAN.small} w={750} size={68}>
+          <Bubble t={t} from={T.small} until={T.cut} x={540} y={1090} tipX={330} tipY={1345} color={C.coral} sub={ROMAN.small} w={750} size={68}>
             <span style={{ color: C.hour }}>열 시<El /> </span>
             <span style={{ color: C.minute }}>십오 분<El />?</span>
           </Bubble>
           {/* 끝 — 이번엔 몽글이 바늘보다 크게 외친다. 옆 꼬리가 몽글 머리를 가리킨다 */}
-          <Bubble t={t} from={T.yell} until={T.sum} x={695} y={1490} tipX={392} tipY={1590} color={C.brown} sub={ROMAN.ten} w={510} h={360} size={108} shout={-4}>
+          <Bubble t={t} from={T.yell} until={T.sum} x={695} y={1490} tipX={392} tipY={1590} color={C.coral} sub={ROMAN.ten} w={510} h={360} size={108} shout={-4}>
             <span style={{ color: C.hour }}>{'열 시\n'}</span>
             <span style={{ color: C.minute }}>십오 분!</span>
           </Bubble>

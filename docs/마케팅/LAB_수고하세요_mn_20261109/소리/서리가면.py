@@ -5,6 +5,7 @@ import os
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 여기 = os.path.dirname(os.path.abspath(__file__))
 밖 = os.path.join(여기, '..', 'remotion', 'public', 'mask')
@@ -36,6 +37,11 @@ A = (A - A.min()) / (A.max() - A.min())
 for k in range(41):
     p = k / 40
     alpha = np.clip((p * 1.02 - A) / 0.008, 0, 1)
+    # 앞쪽에 떨어져 생기는 외딴 서리 섬은 지운다 — 벽에 뜬 「정체불명의 푸른 얼룩 점」(아르곤 맹검 v10 [K25]). 책상에서 번지는 한 덩어리만 남긴다
+    라벨, 수 = ndimage.label(alpha > 0.5)
+    if 수 > 1:
+        씨 = 라벨[635, 365] or (int(np.argmax(ndimage.sum(alpha > 0.5, 라벨, range(1, 수 + 1)))) + 1)
+        alpha = alpha * ndimage.binary_dilation(라벨 == 씨, iterations=2)
     la = np.stack([np.full((H, W), 255, np.uint8), (alpha * 255 + 0.5).astype(np.uint8)], axis=-1)
     Image.fromarray(la, 'LA').save(os.path.join(밖, f'{k:02d}.png'), optimize=True)
 

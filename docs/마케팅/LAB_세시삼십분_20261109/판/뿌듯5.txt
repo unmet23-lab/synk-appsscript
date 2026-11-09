@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photo (use it ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, small pale-pink felt cheeks). Mongle has NO mouth, NO arms, NO legs, ever.
+
+Use Image 1 as the base picture: keep exactly the same room, same desk, same window, same camera, same framing, same light, same big wall clock (still with NO hands and NO numbers), same Mongle position sitting on the desk with its contact shadow. (Image 2 is only a Mongle reference.) Only change Mongle's pose, as written below.
+
+Change: Mongle is shouting the right answer up at the clock with all its might. Its whole soft body leans forward and up toward the clock: the top of the body tilts about 15 degrees to the upper right, the front of the body bulges forward, the scalloped hem is pressed flat and wide on the desk as if pushing off. Mongle stays about the same size as in Image 1 — the top of its head must NOT go higher than in Image 1. Its eyes are WIDE OPEN and look up toward the clock: two big round glossy black glass beads pushed into the wool, each sitting in a small dent in the felt, each with one tiny bright window highlight. No white in the eyes, no eyelids, no eyelashes, no drawn lines, no arcs, no closed eyes. Its cheeks are the SAME small pale-pink felt discs as in the reference — same size and same soft pink, NOT darker, NOT magenta. Nothing floats in the air: no motion lines, no sound marks, no sweat drops. Absolutely no text, letters, numbers, logos or symbols anywhere.

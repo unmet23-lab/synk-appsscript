@@ -137,7 +137,9 @@ const Plate: React.FC<{ i: number; t: number }> = ({ i, t }) => {
     z = interpolate(t, [UP_AT, UP_AT + 0.1, UP_AT + 0.8, end], [1.2, 1.06, 1.02, 1.0], { ...clamp, easing: Easing.out(Easing.cubic) });
     ox = m.cx;
     oy = m.cy;
-    mdy = -30 * Math.abs(Math.sin((t - UP_AT) * 6.2)) * Math.max(0, 1 - (t - UP_AT) / 1.6);
+    // 이불 위에 선 판(판/번쩍2.txt — 허공에 뜬 휴대폰은 「AI 생성물 티」, 아르곤 맹검 v6 [K21])이라 몸을 띄우지 않고 위로 늘였다 줄인다(늘 1 이상 — 밑의 원래 몸이 비치지 않게)
+    msy = 1 + 0.07 * Math.abs(Math.sin((t - UP_AT) * 6.2)) * Math.max(0, 1 - (t - UP_AT) / 1.6);
+    msx = 1 + 0.015 * Math.abs(Math.sin((t - UP_AT) * 6.2 + 1.2)) * Math.max(0, 1 - (t - UP_AT) / 1.6);
     const s = interpolate(t, [UP_AT, UP_AT + 0.6], [1, 0], clamp);
     dx = 12 * s * Math.sin(t * 80);
     dy = 9 * s * Math.cos(t * 67);
@@ -227,7 +229,7 @@ const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
   return (
     <div style={{ position: 'absolute', left: 54, top: 620, width: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: `scale(${grow})`, transformOrigin: '50% 40%' }}>
       <div style={{ width: 52, height: 18, background: CREAM, border: `5px solid ${INK}`, borderBottom: 'none', borderRadius: '10px 10px 0 0' }} />
-      <div style={{ position: 'relative', width: W, height: H, background: 'rgba(255,253,247,0.96)', border: `6px solid ${INK}`, borderRadius: 22, boxSizing: 'border-box', boxShadow: full ? '0 0 40px rgba(120,255,160,0.9)' : '0 8px 16px rgba(30,10,10,0.35)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: W, height: H, background: 'rgba(255,253,247,0.96)', border: `6px solid ${INK}`, borderRadius: 22, boxSizing: 'border-box', boxShadow: '0 8px 16px rgba(30,10,10,0.35)', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', left: 6, right: 6, bottom: 6, height: fillH, background: col, borderRadius: 10, opacity: blink }} />
       </div>
       <div style={{ marginTop: 8, fontFamily: EN, fontWeight: 900, fontSize: 44, color: INK, background: CREAM, borderRadius: 14, padding: '2px 12px 4px', lineHeight: 1.1, border: `4px solid ${INK}` }}>{Math.round(v * 100)}%</div>
@@ -355,7 +357,8 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       {!scene && c.sit ? <Sit text={c.sit} at={c.at} t={t} /> : null}
       {c.bubble ? <Speech b={c.bubble} at={c.at} t={t} /> : null}
       <Message t={t} />
-      <Small t={t} from={UP_AT + 0.08} until={KARAOKE_AT} left={250} top={1290} width={580} ko={TEXT.goKo} read={TEXT.goRead} mn={TEXT.goMn} tip={[500, 1240]} koSize={96} />
+      {/* 몽글 머리 위에서 아래로 — 아래에 두면 몸 · 이불 위 휴대폰을 덮는다 */}
+      <Small t={t} from={UP_AT + 0.08} until={KARAOKE_AT} left={250} top={460} width={580} ko={TEXT.goKo} read={TEXT.goRead} mn={TEXT.goMn} tip={[590, 770]} koSize={96} />
       <Small t={t} from={KARAOKE_AT + 0.1} until={NEXT_AT} left={480} top={540} width={560} ko={TEXT.moreKo} read={TEXT.moreRead} mn={TEXT.moreMn} tip={[520, 880]} koSize={92} />
       <Small t={t} from={NEXT_AT + 0.33} until={TOTAL + 1} left={300} top={620} width={560} ko="졸려…" read="жоллё" mn="Нойр хүрч байна…" tip={[640, 860]} koSize={92} />
       {!scene && t >= END_AT && t < NEXT_AT ? (
