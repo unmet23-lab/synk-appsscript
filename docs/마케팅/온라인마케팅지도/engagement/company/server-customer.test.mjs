@@ -1,3 +1,5 @@
+// 회사 판 선택 시험(사슬 59부터): 체험 의견 라우트(3f75b783bd)가 무관한 요청의 종료 접수 순서를 바꾼 회귀를 아래 「종료 중 고객 로그아웃」 시험이 잡았는데,
+// 이 파일이 판 선택 밖이라 회사 판 격리 QA는 통과했고 master CI만 잡았다. 그래서 판 QA(이 PC 격리 · 예비 노드 Linux)도 이 파일을 돌린다 — Linux 시험 컨테이너에는 node_modules가 없으니 저장소 패키지를 부르지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
