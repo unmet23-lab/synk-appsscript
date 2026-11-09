@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const 여기 = dirname(fileURLToPath(import.meta.url));
 const 인자 = process.argv.slice(2);
 const 값 = (이름, 기본) => { const i = 인자.indexOf(이름); return i >= 0 ? 인자[i + 1] : 기본; };
-const 한줄 = 값('--한줄', '사람마다 막히는 곳이 다릅니다|그 한 곳부터 풀어 주는 AI를 만듭니다').split('|');
+const 한줄 = 값('--한줄', '사람마다 막히는 곳이 다릅니다|그 한 곳부터 풀어 주는 AI를 만듭니다').split('|'); // 「풀어 주는」은 줄이 갈리지 않게 붙인다
 const 꼬리 = 값('--꼬리', '') ? '-' + 값('--꼬리', '') : '';
 const 조각 = 인자.includes('--조각'); // 판 나의 입구 오른쪽 아래에 실제 화면 조각(SYNK WORLD 튜터 카드) 한 장을 놓은 판 — 맹검 「첫 화면에 기술의 실체가 없다」에 대한 시험
 const 받기 = async 경로 => (await fetch('https://synk.im' + 경로)).text();
@@ -65,7 +65,7 @@ async function 홈(판) {
     입구 = 바꿈(입구, /<nav class="gate-doors visit"[\s\S]*?<\/nav>/, 조각 ? `<div class="gate-doors k-gate-say has-piece">
 <div><h1 class="k-gate-claim">${제목줄(한줄)}</h1>
 <p class="k-gate-sub">한국어 교육에서 시작했습니다. <a class="k-link" href="#learner">지금 돌아가는 모습 보기 ${화살('↓')}</a></p></div>
-<a class="k-gate-piece" href="#learner"><span>지금 돌아가는 아틀라스 — SYNK WORLD</span><img src="/assets/v10/learner/ko/piece-tutor.webp" alt="SYNK WORLD 튜터 카드. 최근 놓친 「듣고 세부 정보 찾기」를 더 연습하자고 권하며 그 이유를 적었고, 아래에 맞춤 연습 시작 단추가 있다" width="732" height="431"></a>
+<a class="k-gate-piece" href="#learner"><span>지금 돌아가는 아틀라스 — SYNK WORLD</span><img src="/assets/v10/learner/ko/piece-check-d30.webp" alt="SYNK WORLD의 시간을 두고 다시 확인 카드. 낱말 뜻 읽기의 1일 뒤와 7일 뒤 칸은 혼자 맞힘, 30일 뒤 칸은 지금 확인" width="692" height="337"></a>
 </div>` : `<div class="gate-doors k-gate-say">
 <div><h1 class="k-gate-claim">${제목줄(한줄)}</h1>
 <p class="k-gate-sub">한국어 교육에서 시작했습니다.</p></div>
@@ -74,7 +74,9 @@ async function 홈(판) {
   }
 
   // 회사 한 문장(판 가만 — 판 나는 입구가 말했다)
-  const 회사글 = '한국어 학원에서 시작했습니다. 한 사람이 실제로 해 본 것을 읽고 다음 할 일을 고르는 엔진, 아틀라스를 만듭니다. 지금은 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.';
+  // 리라이팅 제안에서 둘을 고쳤다(맹검 2회): 「한국어 학원에서 시작했습니다」는 입구 한 줄(「한국어 교육에서 시작했습니다」)과 겹치고 말이 달라 뺐고,
+  // 「지금은 … 네 곳에서 일합니다」는 주어가 없어 엔진이 네 분야에서 일한다는 주장으로 읽혀 주어를 적었다.
+  const 회사글 = '한 사람이 실제로 해 본 것을 읽고 다음 할 일을 고르는 엔진, 아틀라스를 만듭니다. SYNK는 지금 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.';
   // 판 가의 쪽 주장은 입구 바로 아래에 견본선 사이로 놓이고, 곧바로 증거가 온다(주장과 증거 사이에 글 구역을 따로 두면 한 번 내린 자리에 실물이 안 보인다 — 맹검 1회)
   const 회사 = 판 === '가' ? `<section class="k-sec k-night k-co" id="top" aria-labelledby="co-title"><span id="hero-introduction" class="sr-only" aria-hidden="true"></span><div class="wrap">
 <h1 class="k-claim k-spec" id="co-title">${제목줄(한줄)}</h1>
@@ -93,7 +95,8 @@ async function 홈(판) {
   증거 = 증거.replace('<section class="lw"', '<section class="lw k-night"');
 
   // 문 넷 — 무대(영상 · 예약표 · 지도)는 공개본 것 그대로, 손님으로 둘씩 묶는다.
-  const 틀 = 이름 => { const 칸 = 사이(사업, `class="hs hs-${이름}"`, '<div class="hs-txt">'); return 예약표글(칸.slice(칸.indexOf('<a class="hs-frame'))); };
+  // 좁아진 칸에서 쇼릴 설명이 가운뎃점을 줄 끝에 매달고 넘어가 두 줄로 끊어 둔다(맹검 2회)
+  const 틀 = 이름 => { const 칸 = 사이(사업, `class="hs hs-${이름}"`, '<div class="hs-txt">'); return 예약표글(칸.slice(칸.indexOf('<a class="hs-frame'))).replace('오미톡 · 매진 임박', '오미톡<br>매진 임박'); };
   const 문 = ({ 키, 이름, 줄, 지금 }) => `<li class="k-door hs hs-${키}" id="${키}" data-dur="${{ lab: 8, shift: 7, pulse: 12.3, path: 7 }[키]}">${키 === 'lab' ? '<span id="world" class="sr-only" aria-hidden="true"></span>' : ''}
 ${틀(키)}
 <div class="k-door-txt"><p class="k-brand"><i class="dot dot-${키}" aria-hidden="true"></i>SYNK ${이름}</p>

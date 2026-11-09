@@ -19,6 +19,8 @@ export async function SHIFT({ 받기, 사이, 바꿈, 화살, 예약표글, 공�
     const 예 = (li.match(/<p class="sv-ex"><span>예를 들면<\/span>([^<]*)<\/p>/) || [])[1] || '';
     return dl.replace('강사 증거 카드', '강사 소개서').replace('증거 카드와 샘플', '소개서와 샘플').replace('</dl>', `<div><dt>예</dt><dd>${예.trim()}</dd></div></dl>`);
   };
+  // 첫 화면의 「예를 들면」 — 공개본 서비스마다 적힌 예시 그대로(맹검 2회: 예약표가 콘텐츠 · SNS 일 위주라 「우리 같은 사무직 회사 일도 되나」가 안 풀린다)
+  const 예글 = n => { const li = 사이(공개, `id="service-${n}"`, n < 4 ? `id="service-${n + 1}"` : '</ol>\n</div></section>'); const m = li.match(/<p class="sv-ex"><span>예를 들면<\/span>([^<]*)<\/p>/); if (!m) throw new Error(`서비스 ${n}의 예시를 못 읽음`); return m[1].trim(); };
   const 시간줄 = 사이(공개, '<ol class="lc-time">', '</ol>') + '</ol>';
   const 단계 = [...시간줄.matchAll(/<li><span class="mono">(\d+)<span class="ko">분<\/span><\/span><span>([^<]*?) — ([^<]*)<\/span><\/li>/g)].map(m => ({ 분: +m[1], 이름: m[2], 글: m[3] }));
   if (단계.length !== 4) throw new Error('50분 수업 예시 네 칸을 못 읽음');
@@ -45,8 +47,8 @@ export async function SHIFT({ 받기, 사이, 바꿈, 화살, 예약표글, 공�
 <div class="k-sv-grid">
 <div class="k-sv-copy"><p class="k-lead">도구 이름을 훑는 강의가 아닙니다. 듣는 사람이 자기 일에서 결과물 하나를 직접 만들고, 혼자 다시 하는 법까지 가져갑니다. 원하면 강의 뒤에 회사의 반복 업무 하나를 자동으로 돌려 드립니다.</p>
 <p class="k-acts"><a class="k-btn" href="#services">강의 의뢰 ${화살('↓')}</a><a class="k-btn is-line" href="#process">자동화 의뢰 ${화살('↓')}</a></p>
-<ul class="k-sv-figs"><li><a href="#how">50분 수업 예시 — <b>다시 쓸 요청문 한 줄</b>, <b>AI 답을 확인하는 순서 세 가지</b>가 남습니다</a></li><li class="is-by">이 예약표를 만들고 돌리는 사람이 직접 강의합니다.</li><li><b>30개 넘는 일</b>이 사람 없이 제시간에 돕니다 — 백업, 코드 시험, 게시, 의뢰서 받기</li><li>공개 전에 <b>20가지 넘는 검사</b>가 실수를 막습니다</li><li><b>매일 14:00</b>, 그날 게시물을 스스로 검수해 올립니다</li></ul></div>
-${판}
+<ul class="k-sv-figs"><li class="is-by">이 예약표를 만들고 돌리는 사람이 직접 강의합니다.</li><li><a href="#how">50분 수업 예시 — <b>다시 쓸 요청문 한 줄</b>, <b>AI 답을 확인하는 순서 세 가지</b>가 남습니다</a></li><li class="is-ex"><b>AI 특강</b><span>예를 들면 ${예글(1)}</span></li><li class="is-ex"><b>업무 자동화</b><span>예를 들면 ${예글(4)}</span></li></ul></div>
+${판.replace('<p class="sv-board-foot">', '<p class="k-sv-sum"><b>30개 넘는 일</b>이 사람 없이 제시간에 돕니다. 공개 전에는 <b>20가지 넘는 검사</b>가 실수를 막습니다.</p><p class="sv-board-foot">')}
 </div>
 </div></section>
 <section class="k-sec k-sv-how" id="how" aria-labelledby="how-title"><div class="wrap">
