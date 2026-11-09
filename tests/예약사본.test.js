@@ -333,6 +333,222 @@ test('들기 — 뿌리 node_modules를 공용 작업본에 잇고 남은 사본
   } finally { t.치우기(); }
 });
 
+/** 사본 자리(저장소 밖). 시험 뿌리 안이라 함께 지워진다 */
+const 사본자리 = (t) => path.join(t.뿌리, 'wt-root', 'SYNK-appsscript');
+const 새이름 = 'sched-synk-daily-lab-1110-0711';
+
+test('만들기 — 미리 보기는 아무것도 안 만들고, --실행은 origin 판 사본 · 그 회차 가지 · 옆 링크를 만든다', () => {
+  const t = 판();
+  try {
+    쓰기(t.메인, 'docs/마케팅/편A/공용만의미커밋.md', '공용 쪽 미커밋\n');
+    const 자리 = 사본자리(t);
+    const 미리 = 도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리 });
+    assert.equal(미리.결과, '미리 보기');
+    assert.equal(fs.existsSync(자리), false);
+
+    // 원격에만 있는 새 판까지 받아서 뜬다(공용 작업본이 뒤처져 있어도)
+    const 다른 = path.join(t.뿌리, 'other');
+    깃(t.뿌리)('clone', '-q', t.원격, 다른);
+    쓰기(다른, 'docs/마케팅/편A/새판.md', '원격의 새 판\n');
+    깃(다른)('add', '-A'); 깃(다른)('commit', '-q', '-m', '새 판'); 깃(다른)('push', '-q', 'origin', 'master');
+    const 원격머리 = 깃(다른)('rev-parse', 'HEAD').trim();
+
+    const r = 도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '만듦');
+    assert.equal(r.판, 원격머리);
+    const 폴더 = path.join(자리, 새이름);
+    assert.equal(r.폴더, 폴더);
+    assert.equal(깃(폴더)('rev-parse', 'HEAD').trim(), 원격머리);
+    assert.equal(깃(폴더)('rev-parse', '--abbrev-ref', 'HEAD').trim(), `worktree-${새이름}`);
+    assert.ok(fs.existsSync(path.join(폴더, 'docs/마케팅/편A/새판.md')));
+    assert.equal(fs.existsSync(path.join(폴더, 'docs/마케팅/편A/공용만의미커밋.md')), false, '공용 작업본의 미커밋을 물려받지 않는다');
+    assert.ok(fs.lstatSync(path.join(자리, 'node_modules')).isSymbolicLink());
+    assert.ok(fs.existsSync(path.join(자리, 'node_modules/표지/index.js')), '위로 걸어 찾는 길이 공용 node_modules에 닿는다');
+    assert.deepEqual(r.링크.find((l) => l.이름 === 'node_modules'), { 이름: 'node_modules', 상태: '만듦' });
+    // 공용 옆에 없는 형제는 만들지 않는다(이 시험에는 SYNK-talk이 없다)
+    assert.equal(r.링크.find((l) => l.이름 === 'SYNK-talk').상태, '대상 없음');
+    assert.equal(fs.existsSync(path.join(자리, 'SYNK-talk')), false);
+    assert.ok(fs.existsSync(path.join(t.메인, 'docs/마케팅/편A/공용만의미커밋.md')), '공용 작업본 미커밋은 그대로');
+
+    // 다시 부르면 그 자리를 돌려준다 · 다른 작업본에서 불러도 같다
+    const 또 = 도구.만들기({ 저장소: t.사본, 이름: 새이름, 자리, 실행: true });
+    assert.equal(또.결과, '이미 있음');
+    assert.equal(또.폴더, 폴더);
+  } finally { t.치우기(); }
+});
+
+test('만들기 — 형제가 공용 옆에 있으면 사본의 ../형제가 닿게 잇는다', () => {
+  const t = 판();
+  try {
+    쓰기(t.뿌리, 'SYNK-talk/lib/표지.js', 'module.exports = 2;\n');
+    쓰기(t.뿌리, 'SYNK-worktrees/옛사본/표지.txt', '옛 사본\n');
+    const 자리 = 사본자리(t);
+    const r = 도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.deepEqual(r.링크.map((l) => l.상태), ['만듦', '만듦', '만듦']);
+    const 폴더 = path.join(자리, 새이름);
+    assert.ok(fs.existsSync(path.join(폴더, '..', 'SYNK-talk', 'lib', '표지.js')));
+    assert.ok(fs.existsSync(path.join(폴더, '..', 'SYNK-worktrees', '옛사본', '표지.txt')));
+    // 두 번째 회차는 있는 링크를 그대로 쓴다
+    const 둘 = 도구.만들기({ 저장소: t.메인, 이름: 'sched-synk-daily-lab-1110-1511', 자리, 실행: true });
+    assert.deepEqual(둘.링크.map((l) => l.상태), ['있음', '있음', '있음']);
+  } finally { t.치우기(); }
+});
+
+test('만들기 — 이상한 이름 · 한글 자리 · 저장소 안 자리 · 잘못 이어진 링크 · 낯선 폴더 · 있는 가지에서 멈추고 아무것도 안 바꾼다', () => {
+  const t = 판();
+  try {
+    const 자리 = 사본자리(t);
+    const 부름 = (옵션) => () => 도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true, ...옵션 });
+    for (const 이름 of ['', 'sched-worktree-move', 'other-1110-0711', 'sched-../x-1110-0711', 'sched-한글-1110-0711']) {
+      assert.throws(부름({ 이름 }), /이름은 sched-/, 이름);
+    }
+    assert.throws(부름({ 자리: path.join(t.뿌리, '한글자리') }), /한글/);
+    assert.throws(부름({ 자리: path.join(t.메인, '.tmp', 'wt') }), /저장소 안/);
+    assert.equal(fs.existsSync(자리), false);
+
+    fs.mkdirSync(자리, { recursive: true });
+    const 낯선 = path.join(t.뿌리, 'elsewhere');
+    fs.mkdirSync(낯선);
+    fs.symlinkSync(낯선, path.join(자리, 'node_modules'), 'junction');
+    assert.throws(부름({}), /가리키지 않는다/);
+    assert.equal(path.resolve(자리, fs.readlinkSync(path.join(자리, 'node_modules'))), 낯선, '남의 링크를 고치지 않는다');
+    fs.unlinkSync(path.join(자리, 'node_modules'));
+
+    fs.mkdirSync(path.join(자리, 새이름));
+    assert.throws(부름({}), /등록된 사본이 아니다/);
+    fs.rmdirSync(path.join(자리, 새이름));
+
+    깃(t.메인)('branch', `worktree-${새이름}`, 'origin/master');
+    assert.throws(부름({}), /이미 있다/);
+    assert.equal(fs.readdirSync(자리).includes(새이름), false);
+  } finally { t.치우기(); }
+});
+
+test('남은사본 — 사본 자리의 예약 사본도 보고, 그 자리의 다른 이름 · 링크는 안 본다', () => {
+  const t = 판();
+  try {
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    깃(t.메인)('worktree', 'add', '-q', '-b', 'app', path.join(자리, 'quirky-name-1234'), 'origin/master');
+    const r = 도구.남은사본({ 저장소: t.메인, 자리 });
+    assert.deepEqual(r.사본.map((s) => s.이름).sort(), ['sched-synk-daily-lab-1103-0700', 새이름].sort());
+    // 사본 자리 안에서 부르면 자기 자신은 빠진다
+    assert.deepEqual(도구.남은사본({ 저장소: path.join(자리, 새이름), 자리 }).사본.map((s) => s.이름), ['sched-synk-daily-lab-1103-0700']);
+    // 자리를 다르게 주면 그 사본을 안 본다
+    assert.deepEqual(도구.남은사본({ 저장소: t.메인, 자리: path.join(t.뿌리, 'wt-other') }).사본.map((s) => s.이름), ['sched-synk-daily-lab-1103-0700']);
+  } finally { t.치우기(); }
+});
+
+test('끝 — 사본 자리의 사본은 ExitWorktree remove가 아니라 치우기를 안내한다', (ctx) => {
+  const t = 판();
+  const 찍음 = [];
+  ctx.mock.method(console, 'log', (글) => 찍음.push(String(글)));
+  try {
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    const 폴더 = path.join(자리, 새이름);
+    assert.equal(도구.끝({ 저장소: 폴더 }).자리사본, true);
+    assert.equal(도구.끝({ 저장소: t.사본 }).자리사본, false);
+    assert.equal(도구.main(['끝', '--저장소', 폴더, '--실행']), 0);
+    assert.match(찍음.join('\n'), new RegExp(`ExitWorktree keep으로 나온 뒤 node tools/예약사본.js 치우기 ${새이름} --실행`));
+    찍음.length = 0;
+    assert.equal(도구.main(['끝', '--저장소', t.사본, '--실행']), 0);
+    assert.match(찍음.join('\n'), /ExitWorktree remove\(discard_changes: true\)/);
+  } finally { t.치우기(); }
+});
+
+test('치우기 — 끝이 「지워도 됨」일 때만 사본과 그 회차 가지를 지우고, 공용 쪽 · 링크 대상 · 다른 사본은 그대로', () => {
+  const t = 판();
+  try {
+    쓰기(t.뿌리, 'SYNK-talk/lib/표지.js', 'module.exports = 2;\n');
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    const 폴더 = path.join(자리, 새이름);
+    fs.symlinkSync(path.join(t.메인, 'node_modules'), path.join(폴더, 'node_modules'), 'junction');
+    쓰기(폴더, 'docs/마케팅/편A/게시/b1_master.mp4', '최종본');
+    const 미리 = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리 });
+    assert.equal(미리.결과, '미리 보기');
+    assert.ok(fs.existsSync(폴더));
+    assert.equal(fs.existsSync(path.join(t.메인, 'docs/마케팅/편A/게시/b1_master.mp4')), false, '미리 보기는 넘기지 않는다');
+
+    const r = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '치움', JSON.stringify(r));
+    assert.equal(fs.existsSync(폴더), false);
+    assert.equal(r.가지지움, true);
+    assert.throws(() => 깃(t.메인)('rev-parse', '--verify', '-q', `refs/heads/worktree-${새이름}`));
+    assert.equal(fs.readFileSync(path.join(t.메인, 'docs/마케팅/편A/게시/b1_master.mp4'), 'utf8'), '최종본', 'git 밖 결과물은 공용 쪽으로 넘어간다');
+    assert.ok(fs.existsSync(path.join(t.메인, 'node_modules/표지/index.js')), '링크 대상은 남는다');
+    assert.ok(fs.existsSync(path.join(자리, 'node_modules/표지/index.js')), '사본 자리의 옆 링크는 남는다');
+    assert.ok(fs.existsSync(path.join(t.뿌리, 'SYNK-talk/lib/표지.js')));
+    assert.ok(fs.existsSync(t.사본), '다른 사본은 그대로');
+    assert.equal(도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true }).결과, '없음');
+    assert.equal(도구.main(['치우기', 새이름, '--저장소', t.메인, '--자리', 자리, '--실행', '--json']), 1, '없으면 종료 1');
+  } finally { t.치우기(); }
+});
+
+test('치우기 — 미커밋 · origin에 없는 커밋 · 사본 안에서 부름이면 지우지 않는다', () => {
+  const t = 판();
+  try {
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    const 폴더 = path.join(자리, 새이름);
+    fs.symlinkSync(path.join(t.메인, 'node_modules'), path.join(폴더, 'node_modules'), 'junction');
+    assert.throws(() => 도구.치우기({ 저장소: 폴더, 이름: 새이름, 자리, 실행: true }), /사본 안에서는/);
+    assert.throws(() => 도구.치우기({ 저장소: path.join(폴더, 'docs'), 이름: 새이름, 자리, 실행: true }), /사본 안에서는/);
+
+    쓰기(폴더, 'docs/마케팅/편A/기획.md', '고친 기획\n');
+    let r = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '남김');
+    assert.ok(r.남은것.some((x) => x === '미커밋 docs/마케팅/편A/기획.md'), JSON.stringify(r.남은것));
+    assert.ok(fs.existsSync(폴더));
+    assert.ok(fs.lstatSync(path.join(폴더, 'node_modules')).isSymbolicLink(), '남기면 링크도 그대로 — 고쳐 올려야 한다');
+
+    깃(폴더)('commit', '-q', '-am', '기획 고침');
+    r = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '남김');
+    assert.ok(r.남은것.some((x) => x.startsWith('origin에 없는 커밋')), JSON.stringify(r.남은것));
+    assert.ok(fs.existsSync(폴더));
+    깃(폴더)('rev-parse', '--verify', '-q', `refs/heads/worktree-${새이름}`);
+
+    // 저장소 안 자리의 사본은 이 명령의 대상이 아니다 — 같은 이름이어도 사본 자리만 본다
+    assert.equal(도구.치우기({ 저장소: t.메인, 이름: path.basename(t.사본), 자리, 실행: true }).결과, '없음');
+    assert.ok(fs.existsSync(t.사본));
+  } finally { t.치우기(); }
+});
+
+test('치우기 — 폴더가 사라진 등록은 등록을 지우되 가지의 안 올린 커밋이 있으면 남긴다', () => {
+  const t = 판();
+  try {
+    const 자리 = 사본자리(t);
+    도구.만들기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    const 폴더 = path.join(자리, 새이름);
+    쓰기(폴더, 'docs/마케팅/편A/기획.md', '안 올린 판\n');
+    깃(폴더)('commit', '-q', '-am', '안 올린 커밋');
+    fs.rmSync(폴더, { recursive: true, force: true });
+    let r = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '남김');
+    assert.ok(r.남은것.some((x) => x.startsWith('origin에 없는 커밋')), JSON.stringify(r.남은것));
+    깃(t.메인)('rev-parse', '--verify', '-q', `refs/heads/worktree-${새이름}`);
+
+    // 그 커밋이 origin에 있으면 등록과 가지를 지운다
+    깃(t.메인)('push', '-q', 'origin', `worktree-${새이름}:refs/heads/master`);
+    깃(t.메인)('fetch', '-q', 'origin');
+    r = 도구.치우기({ 저장소: t.메인, 이름: 새이름, 자리, 실행: true });
+    assert.equal(r.결과, '치움', JSON.stringify(r));
+    assert.equal(깃(t.메인)('worktree', 'list', '--porcelain').includes(새이름), false);
+    assert.throws(() => 깃(t.메인)('rev-parse', '--verify', '-q', `refs/heads/worktree-${새이름}`));
+  } finally { t.치우기(); }
+});
+
+test('인자 — 만들기 · 치우기는 사본 이름을 받고, 없으면 멈춘다', () => {
+  assert.deepEqual(도구.인자읽기(['만들기', 새이름, '--실행']), { 명령: '만들기', 실행: true, json: false, 저장소: null, 이름: 새이름 });
+  assert.deepEqual(도구.인자읽기(['치우기', 새이름, '--자리', 'x']), { 명령: '치우기', 실행: false, json: false, 저장소: null, 이름: 새이름, 자리: 'x' });
+  assert.throws(() => 도구.인자읽기(['만들기']), /사본 이름/);
+  assert.throws(() => 도구.인자읽기(['치우기', '--실행']), /사본 이름/);
+  assert.throws(() => 도구.인자읽기(['끝', 새이름]), /모르는 인자/);
+  assert.throws(() => 도구.인자읽기(['만들기', 새이름, '또']), /모르는 인자/);
+});
+
 test('인자 — 모르는 명령 · 인자는 멈춘다', () => {
   assert.throws(() => 도구.인자읽기([]), /명령/);
   assert.throws(() => 도구.인자읽기(['끝', '--모두']), /모르는 인자/);
