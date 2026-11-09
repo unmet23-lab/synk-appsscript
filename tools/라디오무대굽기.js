@@ -215,7 +215,9 @@ function main() {
         const 대조방 = path.join(os.tmpdir(), 'synk-무대대조');
         fs.mkdirSync(대조방, { recursive: true });
         const 옛 = path.join(대조방, `이전_${키이름}.png`);
-        fs.renameSync(저장경로, 옛);
+        // 작업 사본이 D:에 있으면 임시 폴더(C:)와 드라이브가 달라 rename이 EXDEV로 실패한다(11-09) — 복사 뒤 지운다.
+        fs.copyFileSync(저장경로, 옛);
+        fs.rmSync(저장경로);
         console.log(`   ↩ 직전 판 = ${옛} (대조용 · 저장소 밖)`);
       }
       await 한컷({

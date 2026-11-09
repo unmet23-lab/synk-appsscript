@@ -116,7 +116,7 @@ function 보고서({ root, 파일들, 대조, 대조경로, 면제적용 }) {
   const 대조표시 = (() => {
     if (!대조) return '없음(못 읽음 — 자리 칸이 빈 것은 「없음」이 아니다)';
     const rel = path.relative(root, path.resolve(root, 대조경로)).replace(/\\/g, '/');
-    return rel && !rel.startsWith('..') ? rel : path.basename(String(대조경로));
+    return rel && !rel.startsWith('..') && !path.isAbsolute(rel) ? rel : path.basename(String(대조경로));
   })();
   줄들.push(`> 생성 ${오늘} · 도구 \`tools/철학인용.js\` · 과녁 ${파일들.length}벌 중 면제 ${면제된}벌 · 인용이 있는 파일 ${파일별.length}벌 · 인용 ${전체}건(표시됨 ${전체 - 미표시전체} · 미표시 ${미표시전체}) · 대조표 ${대조표시}`);
   줄들.push('>');

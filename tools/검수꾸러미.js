@@ -133,7 +133,8 @@ function 섹션코드(제목) {
  * @returns {{조각:Array, 경고:string[]}}
  */
 function 조각들(묶음) {
-  const 전체 = path.join(ROOT, 묶음.파일);
+  // resolve: 사본과 임시 폴더의 드라이브가 다르면 상대 경로가 절대 경로로 온다 — join이면 D:\…\C:\… 가 된다(11-09).
+  const 전체 = path.resolve(ROOT, 묶음.파일);
   if (!fs.existsSync(전체)) return { 조각: [], 경고: [`파일 없음: ${묶음.파일}`] };
 
   const 줄들 = fs.readFileSync(전체, 'utf8').split(/\r?\n/);

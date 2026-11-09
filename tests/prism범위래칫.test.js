@@ -76,7 +76,8 @@ test('환경변수로 저장소 밖 명부를 실제로 읽되 인자 경로 제
   const f = 픽스처(t);
   const 항목들 = [소비자('합성a.js'), 소비자('합성b.js', '학부모'), 소비자('합성c.js'),소비자('experiences/teacher-world/course-writing.mjs','강사')];
   const 외부 = f.쓰기('외부명부.json', 명부내용(항목들));
-  assert.ok(path.relative(저장소, 외부).startsWith('..'));
+  const 바깥 = path.relative(저장소, 외부);
+  assert.ok(바깥.startsWith('..') || path.isAbsolute(바깥)); // 드라이브가 다르면 절대 경로로 나온다
   process.env.SYNK_PRISM_명부 = 외부;
   const r = 검사({});
   assert.equal(r.종료코드, 0);
