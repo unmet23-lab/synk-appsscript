@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
+import { createSearchIndex, searchRows, visibleChannel, channelSearchFields, identitySearchFields, managedChannels, loginSummary, brandChannelView } from './dashboard/src/content/dashboard/account-view.mjs';
 // 줄끝(CRLF/LF)은 체크아웃마다 달라지므로 원자료는 LF로 맞춘 바이트로 잰다(Windows 작업본과 리눅스·CI가 같은 값을 낸다).
 const sourceHash = bytes => crypto.createHash('sha256').update(bytes.toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex');
 
@@ -33,6 +34,53 @@ const mongoliaIds = ['lab-youtube', 'lab-instagram', 'lab-tiktok', 'lab-facebook
 const countryCodes = ['VN', 'CN', 'JP', 'UZ', 'MN', 'TW', 'MM', 'TH', 'ID', 'RU', 'IN', 'KZ', 'NP', 'KG', 'KH', 'US', 'PH', 'LK', 'AU', 'PY', 'NZ', 'MY', 'CA', 'MX', 'BR'];
 const contentIds = ['L1', 'L2', 'L3', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'C1', 'C2'];
 const identityIds = loginAudit.identities.map(row => row.id);
+
+test('account search intersects the current rows and searches Korean platform names and login routes', () => {
+  const index = createSearchIndex(channels, channelSearchFields);
+  assert.deepEqual(searchRows(channels,index,'  ＹＵＨＯＫＯＲＥＡＮ 인스타  ').map(row=>row.id),['yuhokorean-instagram']);
+  assert.deepEqual(searchRows(channels,index,'PROFILE 2 Behance').map(row=>row.id),['yuhobuilds-behance']);
+  assert.deepEqual(searchRows(channels.filter(row=>row.brand==='LAB'),index,'yuhokorean 인스타'),[]);
+  assert.equal(searchRows(channels,index,'  '),channels);
+  assert.deepEqual(searchRows(channels,index,'no-such-channel'),[]);
+  // Search only the intended visible account fields, not arbitrary source paths or extra private fields.
+  const fixture=[{id:'a',handle:'public-name',privateNote:'never-search-this'}];
+  assert.deepEqual(searchRows(fixture,createSearchIndex(fixture,channelSearchFields),'never-search-this'),[]);
+});
+
+test('the selected detail always belongs to the searched and filtered rows', () => {
+  const index=createSearchIndex(channels,channelSearchFields);
+  const pinterest=searchRows(channels,index,'Pinterest');
+  assert.equal(visibleChannel(pinterest,'yuhobuilds-behance').id,'shift-pinterest');
+  assert.equal(visibleChannel([], 'yuhobuilds-behance'),null);
+  const pulse=channels.filter(row=>row.brand==='PULSE');
+  assert.equal(visibleChannel(pulse,'yuhobuilds-behance'),null);
+  assert.equal(visibleChannel(pulse,'pulse-instagram').id,'pulse-instagram');
+});
+
+test('login overview counts only managed channels and keeps partial and switch-only distinct', () => {
+  assert.equal(managedChannels(channels).length,70);
+  assert.deepEqual(Object.fromEntries(loginSummary(channels).map(row=>[row.id,row.value])),{confirmed:54,'switch-only':6,partial:10,missing:0});
+  assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),70);
+  assert.ok(loginSummary(channels.filter(row=>row.accountStatus==='planned')).every(row=>row.value===0));
+});
+
+test('brand navigation opens its own channels and clears stale destination cuts', () => {
+  assert.deepEqual(brandChannelView('PULSE'),{filters:{brand:'PULSE',channelCountry:'all',channelScope:'all',platform:'all',loginState:'all'},focus:{}});
+  const pulse=channels.filter(row=>row.brand===brandChannelView('PULSE').filters.brand);
+  assert.equal(pulse.length,4);
+  assert.ok(pulse.some(row=>row.id==='pulse-youtube'));
+  assert.ok(!pulse.some(row=>row.id==='lab-youtube'));
+});
+
+test('login filters and connection search use audited values without changing the inventory', () => {
+  assert.deepEqual(dashboard.filters.find(row=>row.id==='loginState'),{id:'loginState',label:'로그인 확인 상태',field:'loginStatusLabel',defaultValue:'all',queryIds:['channels']});
+  assert.equal(channels.filter(row=>row.loginStatusLabel==='일부 확인 · 보완 필요').length,10);
+  const identities=rows('identities');
+  const index=createSearchIndex(identities,identitySearchFields);
+  assert.deepEqual(searchRows(identities,index,'Behance').map(row=>row.id),['adobe-owner']);
+  assert.deepEqual(searchRows(identities,index,'Pinterest').map(row=>row.id),['pinterest-owner']);
+  assert.equal(channels.length,88);
+});
 
 function uniqueIds(items, label, key = 'id') {
   assert.ok(items.every(row => typeof row[key] === 'string' && row[key].length > 0), `${label}: missing ${key}`);

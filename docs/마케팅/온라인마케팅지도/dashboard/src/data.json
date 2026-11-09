@@ -2,7 +2,7 @@
   "id": "dashboard:59868cae-d12b-4e1e-9119-33990ad72c6c",
   "surface": "dashboard",
   "title": "SYNK 온라인 마케팅 지도",
-  "generatedAt": "2026-11-09T12:33:34.362Z",
+  "generatedAt": "2026-11-09T17:16:14.388Z",
   "status": "reviewed-local-records",
   "buildStatus": "complete",
   "exportPreferences": {
@@ -50,6 +50,15 @@
       "id": "platform",
       "label": "플랫폼",
       "field": "platform",
+      "defaultValue": "all",
+      "queryIds": [
+        "channels"
+      ]
+    },
+    {
+      "id": "loginState",
+      "label": "로그인 확인 상태",
+      "field": "loginStatusLabel",
       "defaultValue": "all",
       "queryIds": [
         "channels"
@@ -197,7 +206,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -284,7 +293,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -805,7 +814,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -4957,7 +4966,7 @@
           "docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json",
           "docs/마케팅/프로필_클로드판_20261002/개설기록_브라질멕시코.json"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -5478,7 +5487,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -5758,7 +5767,7 @@
           "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
           "docs/마케팅/로그인경로_점검_20261109.md"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -5880,7 +5889,7 @@
           "docs/마케팅/yuhobuilds_1편_쇼츠수정_20260922/README.md",
           "docs/마케팅/synkbrief_회의메모_20260921/video-v12/README.md"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."
@@ -6070,7 +6079,7 @@
         "files": [
           "docs/마케팅/SNS_계정_전체목록_20260919.md"
         ],
-        "executedAt": "2026-11-09T12:33:34.362Z",
+        "executedAt": "2026-11-09T17:16:14.388Z",
         "classification": "로컬 계정·제작 기록 및 확장 계획",
         "filters": [
           "전체 실시간 SNS 조회 아님 · 11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님."

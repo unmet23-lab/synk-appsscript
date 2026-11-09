@@ -192,6 +192,7 @@ const snapshot={id:original.id,surface:'dashboard',title:'SYNK 온라인 마케�
     {id:'channelCountry',label:'국가·범위',field:'country',defaultValue:'all',queryIds:['channels']},
     {id:'channelScope',label:'운영 분류',field:'channelScope',defaultValue:'all',queryIds:['channels']},
     {id:'platform',label:'플랫폼',field:'platform',defaultValue:'all',queryIds:['channels']},
+    {id:'loginState',label:'로그인 확인 상태',field:'loginStatusLabel',defaultValue:'all',queryIds:['channels']},
     {id:'contentBrand',label:'콘텐츠 브랜드',field:'brand',defaultValue:'all',queryIds:['contents']}
   ],queries:{
     brands:query('회사·브랜드 원문과 확보 계정의 탐색 분류',brands,['docs/마케팅_정본.md',...baseFiles,...expansionFiles],[{label:'기존 운영 채널',definition:'정규화 원장의 기존 운영 36곳을 주 분류에 한 번씩 집계한다. YUHO·yuhokorean·몽글몽글은 탐색용 콘텐츠 트랙이며 새 법인 생성이 아니다.'},{label:'확장 확보',definition:`몽골 외 LAB ${newSlots.length}자리 중 계정 레지스트리에 실재 확인된 ${expansion.length}곳. 게시·성과 수가 아니다.`},{label:'공유 연결',definition:'LAB YouTube의 PULSE 라디오 공유와 SYNK Substack의 LAB·SHIFT 공유만 집계한다.'}]),
