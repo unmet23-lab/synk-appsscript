@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const D = window.MARKET_DATA, C = window.MarketCore, S = window.MARKET_SCHEMA, posts = window.MARKET_POSTS;
-  const state = {filter:'all', spotlight:'automation', draft:{category:'content',mode:'commission'}, review:null, sellerDraft:{category:'content',modes:[]}, sellerReview:null, saved:[], savedKey:null, workStep:0};
+  const state = {filter:'all', spotlight:'automation', communityQuery:'', savedPosts:[], savedOnly:false, serviceMode:'all', sourcePost:null, draft:{category:'content',mode:'commission'}, review:null, sellerDraft:{category:'content',modes:[]}, sellerReview:null, saved:[], savedKey:null, workStep:0};
   const main = document.querySelector('main');
   const e = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const won = value => Number(value).toLocaleString('ko-KR') + '원';
@@ -28,9 +28,28 @@
     '<div class="section-head"><div><h2>잘한 일도, 막힌 일도.</h2><p style="margin-top:12px;max-width:none;text-align:left">작업의 과정을 공유하면 다음 사람의 출발점이 됩니다.</p></div>'+button('커뮤니티 보기','community','text')+'</div>';
   }
   function community() {
-    return '<div class="page-intro"><div class="eyebrow">과정을 읽는 커뮤니티</div><h1>무엇을 만들었는지보다,<br>어떻게 풀었는지.</h1><p>처음에는 실제 제작 기록을 짧은 사례로 정리합니다. 아래 원고는 내부 기록을 바탕으로 한 초안이며, 독립 고객 20건이나 공개 완료 글이 아닙니다.</p></div>'+note('기존 기록으로 만든 원고 20편입니다. 미디어·권리 확인과 게시 선택은 남아 있습니다.')+filters()+
-    posts.items.filter(x=>state.filter==='all'||x.category===state.filter).map((x,i)=>'<div class="draft-row"><span class="muted">'+String(i+1).padStart(2,'0')+'</span><div><h3>'+e(x.title)+'</h3><p>'+cat(x.category)+' · 제작 기록 '+e(x.sourceSection)+' · 공개 전 검토</p></div><button class="button compact" type="button" data-post="'+x.id+'">원고 읽기</button></div>').join('')+
-    (posts.items.filter(x=>state.filter==='all'||x.category===state.filter).length?'':'<div class="empty"><h3>아직 이 분야의 게시 원고가 없습니다.</h3><p>자동화 동선 예시와 실제 사례 원고를 구분해 준비합니다.</p>'+button('자동화 동선 예시 보기','case/automation')+'</div>');
+    const terms=state.communityQuery.trim().toLocaleLowerCase('ko-KR').split(/\s+/).filter(Boolean);
+    const items=posts.items.filter(x=>(state.filter==='all'||x.category===state.filter)&&(!state.savedOnly||state.savedPosts.includes(x.id))&&terms.every(t=>[x.title,x.problem,x.body,x.relatedOfferProposal].join(' ').toLocaleLowerCase('ko-KR').includes(t)));
+    return '<div class="page-intro"><div class="eyebrow">과정을 읽는 커뮤니티</div><h1>내 일의 실마리를<br>다른 사람의 경험에서.</h1><p>관심 있는 과정을 읽고 모아 보세요. 더 배우거나 도움을 받고 싶을 때 관련 서비스를 살펴볼 수 있습니다.</p></div>'+note('기존 제작 기록을 정리한 원고 20편입니다. 공개 전 초안이며, 고객 후기나 실제 입점 판매자의 글은 아닙니다.')+
+    '<form id="community-search" role="search" aria-label="커뮤니티 원고 검색"><label class="field" for="community-query"><span>어떤 작업이 궁금하세요?</span><input id="community-query" name="query" type="search" maxlength="160" placeholder="예: 퀴즈, 자막, 광고" value="'+e(state.communityQuery)+'"></label><button class="button primary" type="submit">검색</button></form>'+filters()+
+    '<div class="community-tools"><button class="button compact" type="button" data-action="saved-posts" aria-pressed="'+state.savedOnly+'">관심 글만 보기 ('+state.savedPosts.length+')</button><button class="button compact" type="button" data-action="reset-community">검색·필터 초기화</button><span class="small">관심 글은 이 창을 새로고침하기 전까지 유지됩니다.</span></div><p class="search-count" id="community-results" tabindex="-1" role="status">'+(state.communityQuery?'“'+e(state.communityQuery)+'” · ':'')+cat(state.filter)+' · '+(state.savedOnly?'관심 글 ':'')+items.length+'편</p>'+
+    items.map((x,i)=>'<article class="draft-row"><span class="muted" aria-hidden="true">'+String(i+1).padStart(2,'0')+'</span><div><div class="meta">'+cat(x.category)+' · 제작 기록 '+e(x.sourceSection)+'</div><h3>'+e(x.title)+'</h3><p>'+e(x.problem)+'</p></div><div class="draft-actions"><button class="button compact" type="button" data-post="'+x.id+'">원고 읽기</button>'+savePostButton(x)+'</div></article>').join('')+
+    (items.length?'':'<div class="empty"><h3>조건에 맞는 원고가 없어요.</h3><p>검색어를 줄이거나 분야·관심 글 필터를 바꿔 보세요. 자동화·개발 분야의 실제 기록 원고는 아직 없습니다.</p><button class="button" type="button" data-action="reset-community">전체 원고 보기</button></div>');
+  }
+  function savePostButton(p) {
+    const saved=state.savedPosts.includes(p.id);
+    return '<button class="button compact" type="button" data-save-post="'+p.id+'" aria-pressed="'+saved+'" aria-label="'+e(p.title)+' 관심 글 '+(saved?'해제':'담기')+'">'+(saved?'관심 글 해제':'관심 글 담기')+'</button>';
+  }
+  function openPost(id) {
+    const p=posts.items.find(x=>x.id===id);if(!p)return;
+    document.getElementById('dialog-body').innerHTML='<article class="dialog-body"><div class="eyebrow">게시 초안 · '+e(p.sourceSection)+'</div><h2 id="dialog-title">'+e(p.title)+'</h2><p>'+e(p.problem)+'</p><p>'+e(p.body)+'</p><dl><div><dt>기록으로 확인한 범위</dt><dd>'+e(p.verifiedResult)+'</dd></div><div><dt>한계·공개 전 확인</dt><dd>'+e(p.limitation)+'</dd></div><div><dt>함께 이야기할 질문</dt><dd>'+e(p.discussionQuestion)+'</dd></div><div><dt>출처</dt><dd>'+e(p.source)+' · '+e(p.sourceSection)+'</dd></div></dl><section class="post-next" aria-label="이 주제에서 이어가기"><h3>이 작업을 내 일에 적용한다면</h3><p>연결을 검토할 주제: '+e(p.relatedOfferProposal)+'</p><div class="post-choices">'+[['learn','직접 배우기'],['digital','자료 찾아보기'],['commission','제작자 서비스 보기']].map(([mode,label])=>'<a class="button" href="#services" data-post-services="'+p.id+'" data-mode="'+mode+'">'+label+'</a>').join('')+'</div><p class="small">같은 분야의 합성 상품을 보는 동선 예시입니다. 이 원고 작성자의 실제 상품·판매 이력으로 연결된 것은 아닙니다.</p>'+savePostButton(p)+'</section><p class="small">이번 작업에서는 미디어를 다시 재생 검증하지 않았습니다. 실제 고객 후기나 게시 완료 자료가 아닙니다.</p></article>';
+    document.getElementById('article-dialog').showModal();
+  }
+  function services() {
+    const source=posts.items.find(p=>p.id===state.sourcePost);
+    const modes=[{id:'all',label:'모든 도움'},...Object.entries(D.modes).map(([id,label])=>({id,label}))];
+    const items=D.offers.filter(o=>(state.filter==='all'||o.category===state.filter)&&(state.serviceMode==='all'||o.mode===state.serviceMode));
+    return '<div class="page-intro"><div class="eyebrow">필요한 결과로 고르기</div><h1>맡기고, 배우고,<br>직접 써 보세요.</h1><p>포함 내용과 사용 조건을 먼저 살펴보세요. 실제 판매 중인 상품이 아닌 검토용 예시입니다.</p></div>'+(source?'<div class="notice source-context"><strong>읽던 원고: '+e(source.title)+'</strong><p>같은 분야의 서비스를 둘러보고 있습니다. 원고 작성자의 실제 판매 상품은 아닙니다.</p><button class="button compact" type="button" data-post="'+source.id+'">원고 다시 읽기</button></div>':'')+filters()+'<div class="filters" role="group" aria-label="도움 방식">'+modes.map(m=>'<button class="filter" type="button" data-service-mode="'+m.id+'" aria-pressed="'+(state.serviceMode===m.id)+'">'+e(m.label)+'</button>').join('')+'</div><p class="search-count" id="service-results" tabindex="-1" role="status">'+cat(state.filter)+' · '+e(modes.find(m=>m.id===state.serviceMode).label)+' · '+items.length+'개 예시</p>'+(items.length?offerRows(items):'<div class="empty"><h3>이 조건의 예시 상품은 아직 없어요.</h3><p>다른 도움 방식이나 분야를 골라 보세요.</p><button class="button" type="button" data-action="reset-services">모든 예시 상품 보기</button></div>');
   }
   function casePage(id) {
     const x=D.cases.find(x=>x.id===id); if(!x)return missing();
@@ -114,7 +133,7 @@
     const [route,id]=(location.hash.slice(1)||'home').split('/');
     document.body.classList.toggle('form-mode',['request','seller-apply'].includes(route));
     document.body.dataset.route=route;
-    const pages={home,community,services:()=>'<div class="page-intro"><div class="eyebrow">필요한 결과로 고르기</div><h1>맡기고, 배우고,<br>직접 써 보세요.</h1><p>시범 상품입니다. 가격·일정·수정·사용권은 실제 제안서에서 확정합니다.</p></div>'+filters()+offerRows(D.offers.filter(o=>state.filter==='all'||o.category===state.filter)),case:()=>casePage(id),seller:()=>sellerPage(id),offer:()=>offerPage(id),request:requestPage,'seller-apply':sellerForm,work,ops};
+    const pages={home,community,services,case:()=>casePage(id),seller:()=>sellerPage(id),offer:()=>offerPage(id),request:requestPage,'seller-apply':sellerForm,work,ops};
     main.innerHTML=(pages[route]||missing)();
     document.querySelectorAll('[data-nav]').forEach(a=>{if(a.dataset.nav===route)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
     if(focus){window.scrollTo(0,0);main.focus({preventScroll:true});}
@@ -144,6 +163,9 @@
   document.addEventListener('change',event=>{const f=event.target.closest('form');if(f&&f.id!=='calculator-form')captureForm(f);});
   document.addEventListener('submit',event=>{
     event.preventDefault();const f=event.target;captureForm(f);
+    if(f.id==='community-search'){
+      state.communityQuery=String(new FormData(f).get('query')||'').trim();render();document.getElementById('community-results').focus();return;
+    }
     if(f.id==='request-form'){
       const result=C.validateRequest(state.draft);
       if(result.valid){state.review=result.value;state.savedKey=null;render({focus:true});}
@@ -157,9 +179,22 @@
   });
   document.addEventListener('click',event=>{
     if(event.target.closest('.skip')){event.preventDefault();main.focus();return;}
-    const el=event.target.closest('[data-filter],[data-action],[data-post],[data-seed],[data-offer],[data-service-category],[data-open-draft],[data-spotlight]');if(!el)return;
+    const el=event.target.closest('[data-filter],[data-action],[data-post],[data-seed],[data-offer],[data-service-category],[data-open-draft],[data-spotlight],[data-save-post],[data-post-services],[data-service-mode]');if(!el)return;
     if(el.dataset.spotlight){state.spotlight=el.dataset.spotlight;const y=scrollY;render();window.scrollTo(0,y);document.querySelector('[data-spotlight="'+state.spotlight+'"]').focus({preventScroll:true});return;}
-    if(el.dataset.filter){state.filter=el.dataset.filter;const y=scrollY;render();window.scrollTo(0,y);document.querySelector('[data-filter="'+state.filter+'"]').focus({preventScroll:true});return;}
+    if(el.dataset.filter){state.filter=el.dataset.filter;if(document.body.dataset.route==='services')state.sourcePost=null;const y=scrollY;render();window.scrollTo(0,y);document.querySelector('[data-filter="'+state.filter+'"]').focus({preventScroll:true});return;}
+    if(el.dataset.serviceMode){state.serviceMode=el.dataset.serviceMode;const y=scrollY;render();window.scrollTo(0,y);document.querySelector('[data-service-mode="'+state.serviceMode+'"]').focus({preventScroll:true});return;}
+    if(el.dataset.savePost){
+      const p=posts.items.find(p=>p.id===el.dataset.savePost);if(!p)return;
+      const saved=state.savedPosts.includes(p.id);state.savedPosts=saved?state.savedPosts.filter(id=>id!==p.id):[...state.savedPosts,p.id];
+      const dialog=document.getElementById('article-dialog');
+      if(document.body.dataset.route==='community'){const y=scrollY;render();window.scrollTo(0,y);if(!dialog.open)(main.querySelector('[data-save-post="'+p.id+'"]')||document.getElementById('community-results')).focus({preventScroll:true});}
+      dialog.querySelectorAll('[data-save-post="'+p.id+'"]').forEach(b=>{b.setAttribute('aria-pressed',String(!saved));b.setAttribute('aria-label',p.title+' 관심 글 '+(saved?'담기':'해제'));b.textContent=saved?'관심 글 담기':'관심 글 해제';});
+      toast(saved?'관심 글에서 뺐습니다.':'이 창의 관심 글에 담았습니다.');return;
+    }
+    if(el.dataset.postServices){
+      const p=posts.items.find(p=>p.id===el.dataset.postServices);if(!p)return;
+      event.preventDefault();state.filter=p.category;state.serviceMode=el.dataset.mode;state.sourcePost=p.id;document.getElementById('article-dialog').close();navigate('services');return;
+    }
     if(el.dataset.seed){
       const x=D.cases.find(x=>x.id===el.dataset.seed);
       const mode=el.dataset.mode;
@@ -169,14 +204,13 @@
       if(location.hash==='#request'){event.preventDefault();render({focus:true});}return;
     }
     if(el.dataset.offer){const o=D.offers.find(o=>o.id===el.dataset.offer);state.draft={category:o.category,mode:o.mode,goal:o.title+'에 관해 제 상황에 맞는 도움을 받고 싶어요.',deliverable:o.included.join(', '),budgetMax:o.from};state.review=null;state.savedKey=null;return;}
-    if(el.dataset.serviceCategory){state.filter=el.dataset.serviceCategory;return;}
+    if(el.dataset.serviceCategory){state.filter=el.dataset.serviceCategory;state.serviceMode='all';state.sourcePost=null;return;}
     if(el.dataset.openDraft){const item=state.saved.find(x=>x.id===el.dataset.openDraft);state.draft={...item.value};state.review={...item.value};state.savedKey=item.id;navigate('request');return;}
-    if(el.dataset.post){
-      const p=posts.items.find(x=>x.id===el.dataset.post);
-      document.getElementById('dialog-body').innerHTML='<article class="dialog-body"><div class="eyebrow">게시 초안 · '+e(p.sourceSection)+'</div><h2 id="dialog-title">'+e(p.title)+'</h2><p>'+e(p.problem)+'</p><p>'+e(p.body)+'</p><dl><div><dt>기록으로 확인한 범위</dt><dd>'+e(p.verifiedResult)+'</dd></div><div><dt>한계·공개 전 확인</dt><dd>'+e(p.limitation)+'</dd></div><div><dt>연결할 수 있는 서비스 제안</dt><dd>'+e(p.relatedOfferProposal)+'</dd></div><div><dt>함께 이야기할 질문</dt><dd>'+e(p.discussionQuestion)+'</dd></div><div><dt>출처</dt><dd>'+e(p.source)+' · '+e(p.sourceSection)+'</dd></div></dl><p class="small">이번 작업에서는 미디어를 다시 재생 검증하지 않았습니다. 실제 고객 후기나 게시 완료 자료가 아닙니다.</p></article>';
-      document.getElementById('article-dialog').showModal();return;
-    }
+    if(el.dataset.post){openPost(el.dataset.post);return;}
     switch(el.dataset.action){
+      case 'saved-posts':state.savedOnly=!state.savedOnly;render();document.querySelector('[data-action="saved-posts"]').focus();break;
+      case 'reset-community':state.communityQuery='';state.filter='all';state.savedOnly=false;render();document.getElementById('community-query').focus();break;
+      case 'reset-services':state.filter='all';state.serviceMode='all';state.sourcePost=null;render();document.getElementById('service-results').focus();break;
       case 'close-dialog': document.getElementById('article-dialog').close();break;
       case 'request-sample':state.draft={category:'automation',mode:'commission',goal:D.cases[2].goal,deliverable:D.cases[2].deliverable,budgetMax:1000000,currentMethod:'메일을 확인한 뒤 사람이 시트에 옮기고 있습니다.',sourceCase:'automation'};state.review=null;render();document.getElementById('goal').focus();break;
       case 'edit-request':state.review=null;render({focus:true});break;
