@@ -48,8 +48,8 @@
 ## 3. 굽는 법
 
 ```bash
-node 굽기.cjs synk <SYNK-website>/dist/assets/v10        # 미리 보기 960 · 540(소리 없음, 2.6MB ÷ 길이 상한) · 포스터
-node 굽기.cjs app <company>/public/pulse-app              # 소리 있는 720p 본편 · 포스터(mp4는 git 밖, 회사 이미지 판이 해시로 싣는다)
+node 굽기.cjs synk <SYNK-website>/dist/assets/v10        # 미리 보기(소리 없음) 큰 줄 1280 · 720, 작은 칸 960 · 540, crf 24 · 포스터(큰 줄 1600 · 900)
+node 굽기.cjs app <company>/public/pulse-app              # 소리 있는 1080p 본편(crf 21, 원본 크기) · 포스터(mp4는 git 밖, 회사 이미지 판이 해시로 싣는다)
 node 굽기.cjs pc <desktop>/assets/pulse/portfolio         # 4:3 그림(세로 작품은 #111 바탕 가운데)
 node 굽기.cjs reel <폴더>                                 # 쇼릴 두 판(1920×1200 · 1080×1920) · 포스터 · reel.json(시각표)
 ```

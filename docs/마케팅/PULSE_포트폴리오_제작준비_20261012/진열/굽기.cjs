@@ -4,9 +4,9 @@
  * PULSE 작품 진열 굽기 (2026-11-09) — 작품.json 한 장으로 세 자리의 영상 · 포스터 · 쇼릴을 굽는다.
  *
  *   node 굽기.cjs synk <synk.im 자산 폴더(dist/assets/v10)> [--tag 20261109] [--only key,…]
- *        → pulse-film-<key>-<tag>.mp4(소리 없는 미리 보기 960 · 540) · .webp(같은 크기 포스터)
+ *        → pulse-film-<key>-<tag>.mp4(소리 없는 미리 보기 — 큰 줄 1280 · 720, 작은 칸 960 · 540) · .webp(포스터 — 큰 줄 1600 · 900)
  *   node 굽기.cjs app <고객 앱 public/pulse-app 폴더> [--only key,…]
- *        → assets/films/<appId>-v1.mp4(소리 있는 720p) · <appId>-poster-v1.webp(1280 · 720)
+ *        → assets/films/<appId>-v1.mp4(소리 있는 1080p) · <appId>-poster-v1.webp(1280 · 720)
  *   node 굽기.cjs pc <desktop/assets/pulse/portfolio 폴더> [--only key,…]
  *        → <pcId>.webp(4:3 1360 × 1020로 자름 — 세로 작품은 작품.json pc.y)
  *   node 굽기.cjs reel <쇼릴 결과 폴더> → reel-wide.mp4(1920 × 1200) · reel-tall.mp4(1080 × 1920) · 포스터 · reel.json(시각표)
@@ -42,30 +42,37 @@ function probe(f) {
 function need(f) { if (!f || !fs.existsSync(f)) throw new Error('없는 파일: ' + f); return f; }
 function posterSrc(w) { return w.poster.src === 'raw' ? vpath(w.raw) : vpath(w.final); }
 
-// 소리 없는 미리 보기: 넓은 작품 960 × 540, 세로 540 × 960. synk.im 시험(qa/pages-v12)이 한 편 3MB 아래를 요구해 길이로 상한을 둔다(2.6MB ÷ 길이, 900k까지).
+// 소리 없는 미리 보기: 큰 줄(쇼릴의 네 편)은 1280 × 720 · 세로 720 × 1280, 작은 칸은 960 × 540 · 세로 540 × 960.
+// 파일 크기가 아니라 화질로 맞춘다(11-09 유호님 「둘 다 바꿔」 — 3MB에 맞추던 판은 폭 1265px 칸에 초당 0.24Mb였다). 칸에 닿기 전에는 받지 않는다.
+const BIG = new Set(DATA.reel.cuts.map((c) => c.work));
 function preview(w, out) {
   const src = need(vpath(w.final));
-  const scale = w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos';
-  const kbps = Math.min(900, Math.floor(2.6 * 8000 / probe(src).d));
-  run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-an', '-vf', `${scale},fps=24,format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '27', '-maxrate', kbps + 'k', '-bufsize', kbps * 2 + 'k', '-profile:v', 'high', '-movflags', '+faststart', ...CLEAN, out]);
+  const big = BIG.has(w.key);
+  const scale = big ? (w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1280:720:flags=lanczos') : (w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos');
+  run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-an', '-vf', `${scale},fps=24,format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '24', '-maxrate', '3000k', '-bufsize', '6000k', '-profile:v', 'high', '-threads', '6', '-movflags', '+faststart', ...CLEAN, out]);
 }
 function stillTo(src, t, vf, out, q = 80) {
   run('ffmpeg', ['-v', 'error', '-y', '-ss', String(t), '-i', src, '-frames:v', '1', '-vf', vf, '-c:v', 'libwebp', '-quality', String(q), ...CLEAN, out]);
 }
-// 고객 앱 완성 광고: 소리 있는 720p.
+// 고객 앱 완성 광고: 소리 있는 1080p(원본 크기), 한 번만 압축(11-09 유호님 「둘 다 바꿔」 — 720p · 초당 0.8~2.8Mb였다).
 function full(w, out) {
   const src = need(vpath(w.final));
-  const scale = w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1280:720:flags=lanczos';
-  run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-vf', `${scale},format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-maxrate', '3500k', '-bufsize', '7000k', '-profile:v', 'high', '-c:a', 'aac', '-b:a', '160k', '-ac', '2', '-movflags', '+faststart', ...CLEAN, out]);
+  const scale = w.tall ? 'scale=1080:1920:flags=lanczos' : 'scale=1920:1080:flags=lanczos';
+  run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-vf', `${scale},format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '21', '-maxrate', '8000k', '-bufsize', '16000k', '-profile:v', 'high', '-threads', '6', '-c:a', 'aac', '-b:a', '160k', '-ac', '2', '-movflags', '+faststart', ...CLEAN, out]);
 }
 
 function doSynk() {
   for (const w of DATA.works.filter(pick)) {
-    if (!w.final || w.poster.src === 'keep') { console.log('그대로', w.key); continue; }
+    if (!w.final) { console.log('그대로', w.key); continue; }
     const base = path.join(outDir, `pulse-film-${w.key}-${tag}`);
     preview(w, base + '.mp4');
-    stillTo(need(posterSrc(w)), w.poster.t, w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos', base + '.webp', 78);
-    console.log(w.key, (fs.statSync(base + '.mp4').size / 1e6).toFixed(2) + 'MB', (fs.statSync(base + '.webp').size / 1e3).toFixed(0) + 'KB');
+    if (w.poster.src !== 'keep') {
+      const big = BIG.has(w.key);
+      const shape = big ? (w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1600:900:flags=lanczos') : (w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos');
+      stillTo(need(posterSrc(w)), w.poster.t, shape, base + '.webp', big ? 82 : 78);
+      console.log(w.key, (fs.statSync(base + '.webp').size / 1e3).toFixed(0) + 'KB');
+    }
+    console.log(w.key, (fs.statSync(base + '.mp4').size / 1e6).toFixed(2) + 'MB');
   }
 }
 function doApp() {

@@ -24,17 +24,17 @@ const MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누�
 // 霜の肌理(11-06 옛 이름 유리결 — id · 파일 이름은 옛 로마자 그대로)는 일곱째, 매진 임박은 11-05에 다시 구운 1분 15초 판으로 바이트를 바꿨다. 공모 작품이 아니라 가상 브랜드로 만든 자체 작품이다(캐스팅북 소개 영상만 우리 서비스 영상).
 // [id, kind, title, 파일 이름, 길이, 세로, featured, 출연, 구분, 포스터 sha256, 본편 sha256]
 const OWN=[
-  ['dodam-heavy','film','이 아이를 보냅니다','dodam-heavy','1분 1초',undefined,true,'준호','가상 브랜드로 만든 자체 작품','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7','a65bbd6fc005abc2148422b4ce9c38620d305013e3dc103099d42a52c8638623'],
-  ['omitok-court','ad','치익이 톡이 될 때까지','omitok-court','15초','portrait',true,'한결','가상 브랜드로 만든 자체 작품','30dc4fdc14b9c8feac86d6678d66741cad51ad046af86b25b64c688ffc044e49','c25364f84fff7670818bdf40b6f8b6a5c826fc3a859abc42bf7e437ae8a2256f'],
-  ['maejin-imbak','ad','매진 임박','maejin-imbak','1분 15초',undefined,true,undefined,'가상 브랜드로 만든 자체 작품','aec527e98d8c198fa731b588aa1ec080b8ce742493a4e35daaac09cc105c8702','ffc6976851c90ed36935f6125db2ab40086512a19bd4566f5c5b33809616eaa0'],
-  ['modu-course','ad','가는 데마다 또 그 사람','modu-course','39초','portrait',true,'유호','가상 브랜드로 만든 자체 작품','e5ace5e16f44285b268beb85708a2d2ca270dcd229f41343bda43d60b092c77a','1c3c64ce25d7ee012f2ebc3786a0c977287ea26b298a7876ead13f046e496b1c'],
-  ['somchae-room','ad','연말 빈방','somchae-room','1분',undefined,undefined,'은정 · 지유','가상 브랜드로 만든 자체 작품','c3382687441f2cf543a9cd4d2e6249249c22219ab1287a0a3ec3f2ff771349d9','2fcedce422ce11c05f7315f23c8b3b76c8eebf4e0e645b01b73e27342cf23558'],
-  ['cheombeong-dang','ad','첨벙댕','cheombeong-dang','26초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','619678febaeec97d24dd60e70ba1cd267832559d635152f60382f73e0c69862d','68027ff12f3d1e434ff3c48d55691d7257dd46848aea1282cf560809979095c1'],
+  ['dodam-heavy','film','이 아이를 보냅니다','dodam-heavy','1분 1초',undefined,true,'준호','가상 브랜드로 만든 자체 작품','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7','e8eb024b412f695548aa29ec016523608c0d95769653337a506fd38c9ddefe7a'],
+  ['omitok-court','ad','치익이 톡이 될 때까지','omitok-court','15초','portrait',true,'한결','가상 브랜드로 만든 자체 작품','30dc4fdc14b9c8feac86d6678d66741cad51ad046af86b25b64c688ffc044e49','d6fe9f7e612f9e347fac2cb81b061b146d346a6acbc3d78a1b6e66a1b05b95a1'],
+  ['maejin-imbak','ad','매진 임박','maejin-imbak','1분 15초',undefined,true,undefined,'가상 브랜드로 만든 자체 작품','aec527e98d8c198fa731b588aa1ec080b8ce742493a4e35daaac09cc105c8702','40d1c703852cafa996d5ddcb968e40b82f18137a04e096823a365e78586e7f84'],
+  ['modu-course','ad','가는 데마다 또 그 사람','modu-course','39초','portrait',true,'유호','가상 브랜드로 만든 자체 작품','e5ace5e16f44285b268beb85708a2d2ca270dcd229f41343bda43d60b092c77a','fef04c4531a0647e14a126ee922ea57c2fe652427a4fc47c9e7acc431e7a210b'],
+  ['somchae-room','ad','연말 빈방','somchae-room','1분',undefined,undefined,'은정 · 지유','가상 브랜드로 만든 자체 작품','c3382687441f2cf543a9cd4d2e6249249c22219ab1287a0a3ec3f2ff771349d9','31ead6bf73eadc59529df7ea8d805b72e42061ed97971638b0dda1a5c3a98d9e'],
+  ['cheombeong-dang','ad','첨벙댕','cheombeong-dang','26초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','619678febaeec97d24dd60e70ba1cd267832559d635152f60382f73e0c69862d','159cc3956c79f9d0c3d007381b09cc779a8d2476fa122fc7fcaf27a28956147f'],
   ['yurigyeol-holiday','ad','霜の肌理','yurigyeol-holiday','15초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','6347222fa25e92998a7f79e0a3284482c0533380c2af2dc4028dc4c04ca6482a','f0dc4ef3b0992ea7357964540d229b82d3a117e62bc9d6e5bcd4890b9233adf1'],
-  ['neujimak-sniper','ad','블프 스나이퍼','neujimak-sniper','33초',undefined,undefined,'준호','가상 브랜드로 만든 자체 작품','58751409481c421eed6143bb6108be264aa04a96a91d205fd02fb7ef46f12756','59c4b798a27a8f9205da516442774624eea447c1c507e5778571250cd1f6f372'],
-  ['himkkeot-sale','ad','오늘 자정까지 70%','himkkeot-sale','15초','portrait',undefined,'채원','가상 브랜드로 만든 자체 작품','637b35e5838b14db0596898483388565e29bbf35578f5216178820edd6c5c3be','40b89d3386ff8ae5798449dc61e4e6f0b6564c00029931f085285fb87169d3ac'],
-  ['castingbook-intro','ad','손님을 부르는 모델','castingbook-intro','30초',undefined,undefined,undefined,'SYNK PULSE 캐스팅북 소개 영상','e167b6dd876ed4cd0a9730209142b4d797f51b2d757d151bd417adafab90077f','b9bd4298c6f6f97542979dc0bf875ab213ce88d334b625a272dd044f20906961'],
-  ['omitok-pour','ad','오미톡','omitok-pour','13초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','ee9f678922bd3791e6db39dad172e546035e345c1ae159ab6b9024ee4b76f3da','b51be97c9442d64f71a70f6c7875e499a84d816158d3b88f6c70acccd1087bdf'],
+  ['neujimak-sniper','ad','블프 스나이퍼','neujimak-sniper','33초',undefined,undefined,'준호','가상 브랜드로 만든 자체 작품','58751409481c421eed6143bb6108be264aa04a96a91d205fd02fb7ef46f12756','f2f3263f5bcd8d688c8a2baf41f70934fbc59efc292c731e1576c8a5159b8fbf'],
+  ['himkkeot-sale','ad','오늘 자정까지 70%','himkkeot-sale','15초','portrait',undefined,'채원','가상 브랜드로 만든 자체 작품','637b35e5838b14db0596898483388565e29bbf35578f5216178820edd6c5c3be','e1f4793055b6a47caa7f5a20270f74011a85a7113974bb0684af4484d18cc6d1'],
+  ['castingbook-intro','ad','손님을 부르는 모델','castingbook-intro','30초',undefined,undefined,undefined,'SYNK PULSE 캐스팅북 소개 영상','e167b6dd876ed4cd0a9730209142b4d797f51b2d757d151bd417adafab90077f','d4cf4bb76ae4215eef44eec2d5e4d3c0e95a845c68aeb7fcf6819ed4aee92d89'],
+  ['omitok-pour','ad','오미톡','omitok-pour','13초','portrait',undefined,undefined,'가상 브랜드로 만든 자체 작품','ee9f678922bd3791e6db39dad172e546035e345c1ae159ab6b9024ee4b76f3da','a44d9baefc8a44969c5aa123abc38f4938a0634c8828b212e728fb94fc43e446'],
 ];
 const N=OWN.length;
 
