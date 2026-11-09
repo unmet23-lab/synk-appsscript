@@ -1,0 +1,342 @@
+{
+  "version": 1,
+  "status": "검토용. 실제 수집·전송 경로는 미연동",
+  "categories": [
+    {
+      "id": "content",
+      "label": "광고·콘텐츠"
+    },
+    {
+      "id": "education",
+      "label": "강의·코칭"
+    },
+    {
+      "id": "automation",
+      "label": "자동화·개발"
+    }
+  ],
+  "request": {
+    "title": "내가 해결하려는 일",
+    "fields": [
+      {
+        "id": "category",
+        "label": "어떤 분야인가요?",
+        "type": "enum",
+        "options": [
+          "content",
+          "education",
+          "automation"
+        ],
+        "required": true,
+        "visibility": "candidate_summary"
+      },
+      {
+        "id": "mode",
+        "label": "원하는 도움",
+        "type": "enum",
+        "options": [
+          "commission",
+          "learn",
+          "digital"
+        ],
+        "required": true,
+        "visibility": "candidate_summary"
+      },
+      {
+        "id": "goal",
+        "label": "지금 어떤 문제를 해결하고 싶나요?",
+        "type": "text",
+        "minLength": 10,
+        "maxLength": 1000,
+        "required": true,
+        "visibility": "private_until_review"
+      },
+      {
+        "id": "deliverable",
+        "label": "완료됐을 때 무엇을 받고 싶나요?",
+        "type": "text",
+        "minLength": 5,
+        "maxLength": 500,
+        "required": true,
+        "visibility": "candidate_summary"
+      },
+      {
+        "id": "currentMethod",
+        "label": "지금 쓰는 방법과 불편한 점",
+        "type": "text",
+        "required": false,
+        "maxLength": 1000,
+        "visibility": "private_until_review"
+      },
+      {
+        "id": "budgetMax",
+        "label": "예산 상한 또는 상담 후 결정",
+        "type": "integer_or_null",
+        "minimum": 1,
+        "maximum": 1000000000,
+        "required": false,
+        "visibility": "candidate_summary"
+      },
+      {
+        "id": "deadline",
+        "label": "필요한 날짜 또는 일정 협의",
+        "type": "date_or_null",
+        "minimum": "today",
+        "required": false,
+        "visibility": "candidate_summary"
+      },
+      {
+        "id": "constraints",
+        "label": "사용 매체·프로그램·보안·권리 등 조건",
+        "type": "text",
+        "maxLength": 1000,
+        "required": false,
+        "visibility": "private_until_review"
+      },
+      {
+        "id": "reference",
+        "label": "참고 링크",
+        "type": "https_url_or_empty",
+        "required": false,
+        "visibility": "private_until_review"
+      },
+      {
+        "id": "contact",
+        "label": "회신받을 연락 방법 하나",
+        "type": "contact",
+        "requiredAt": "actual_submission",
+        "visibility": "operator_only",
+        "prototype": false
+      },
+      {
+        "id": "shareWithCandidates",
+        "label": "검토한 요청 요약을 참여 의사가 확인된 후보에게 공유",
+        "type": "boolean",
+        "default": false,
+        "requiredAt": "candidate_dispatch",
+        "visibility": "consent_log"
+      },
+      {
+        "id": "privacyAgreement",
+        "label": "접수에 필요한 개인정보 처리 안내 확인",
+        "type": "boolean",
+        "default": false,
+        "requiredAt": "actual_submission",
+        "visibility": "consent_log",
+        "prototype": false
+      },
+      {
+        "id": "publishCase",
+        "label": "완료 후 공개 사례 제안 받기",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "visibility": "consent_log"
+      }
+    ],
+    "followUp": {
+      "content": [
+        "영상·이미지 길이·비율·개수",
+        "사용 매체와 기간",
+        "제공 소스·음원·초상 사용 권한",
+        "원본 파일·언어·수정"
+      ],
+      "education": [
+        "참여 인원·현재 수준",
+        "온라인·오프라인과 지역",
+        "시간·실습 결과",
+        "도구 계정·녹화·자료 사용"
+      ],
+      "automation": [
+        "입력·출력과 연동 시스템",
+        "샘플 자료·개인정보 유무",
+        "접근 권한·실행 빈도",
+        "실패 알림·인수인계·월 운영비"
+      ]
+    }
+  },
+  "seller": {
+    "title": "어떤 일을 도울 수 있나요?",
+    "fields": [
+      {
+        "id": "displayName",
+        "label": "활동 이름",
+        "type": "text",
+        "minLength": 2,
+        "maxLength": 60,
+        "required": true,
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "category",
+        "label": "대표 분야",
+        "type": "enum",
+        "options": [
+          "content",
+          "education",
+          "automation"
+        ],
+        "required": true,
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "modes",
+        "label": "제공 방식",
+        "type": "enum_array",
+        "options": [
+          "commission",
+          "learn",
+          "digital"
+        ],
+        "minItems": 1,
+        "required": true,
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "offer",
+        "label": "제공하는 결과와 맡는 범위",
+        "type": "text",
+        "minLength": 10,
+        "maxLength": 1000,
+        "required": true,
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "workUrl",
+        "label": "직접 작업한 사례 링크",
+        "type": "https_url",
+        "required": true,
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "role",
+        "label": "그 사례에서 직접 맡은 역할",
+        "type": "text",
+        "minLength": 5,
+        "maxLength": 1000,
+        "required": true,
+        "visibility": "operator_then_public_summary"
+      },
+      {
+        "id": "priceFrom",
+        "label": "가격 기준 또는 견적 방식",
+        "type": "text",
+        "required": true,
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "availability",
+        "label": "가능한 일정과 동시 작업 여력",
+        "type": "text",
+        "required": true,
+        "visibility": "operator_then_summary"
+      },
+      {
+        "id": "revision",
+        "label": "수정·지원 범위",
+        "type": "text",
+        "requiredAt": "listing",
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "rights",
+        "label": "자료·결과물·도구의 이용 조건",
+        "type": "text",
+        "requiredAt": "listing",
+        "visibility": "public_after_approval"
+      },
+      {
+        "id": "participation",
+        "label": "참여 인터뷰·시범 의뢰 검토 의사",
+        "type": "boolean",
+        "default": false,
+        "requiredAt": "recruitment",
+        "visibility": "operator_only"
+      },
+      {
+        "id": "contact",
+        "label": "회신받을 연락 방법 하나",
+        "type": "contact",
+        "requiredAt": "actual_submission",
+        "visibility": "operator_only",
+        "prototype": false
+      },
+      {
+        "id": "identityAndPayout",
+        "label": "사업자·본인·정산 확인",
+        "type": "provider_protected_flow",
+        "requiredAt": "paid_activation",
+        "visibility": "restricted",
+        "prototype": false
+      }
+    ]
+  },
+  "quote": {
+    "fields": [
+      "requestId",
+      "sellerId",
+      "scope",
+      "excluded",
+      "totalPrice",
+      "taxDisplay",
+      "startDate",
+      "dueDate",
+      "revisions",
+      "acceptanceCriteria",
+      "license",
+      "supportUntil",
+      "recurringCosts",
+      "expiry",
+      "agreementVersion"
+    ]
+  },
+  "case": {
+    "fields": [
+      "title",
+      "problem",
+      "constraints",
+      "role",
+      "process",
+      "verifiedResult",
+      "limitations",
+      "source",
+      "rightsStatus",
+      "relatedOffers",
+      "disclosure",
+      "publicationConsent"
+    ]
+  },
+  "evidence": {
+    "buyerInterview": [
+      "respondentId",
+      "consent",
+      "respondedAt",
+      "lastRealProblem",
+      "currentMethod",
+      "paidBefore",
+      "budget",
+      "deadline",
+      "decisionOwner",
+      "nextAction",
+      "rawResponsePrivatePath"
+    ],
+    "sellerInterview": [
+      "candidateId",
+      "respondedAt",
+      "participation",
+      "roleProof",
+      "availableFrom",
+      "capacity",
+      "pricing",
+      "rights",
+      "platformTermsFeedback",
+      "rawResponsePrivatePath"
+    ]
+  },
+  "rules": [
+    "시범판 예시와 실제 응답을 별도 저장한다.",
+    "필수 동의를 미리 선택하지 않는다.",
+    "공개 사례·홍보 수신 동의는 거래 필수 조건으로 묶지 않는다.",
+    "계좌·주민번호·고객 파일·키는 일반 요청서에 받지 않는다."
+  ]
+}

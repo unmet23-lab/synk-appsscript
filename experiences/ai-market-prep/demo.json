@@ -1,0 +1,339 @@
+{
+  "title": "AI 커뮤니티와 거래",
+  "prototype": true,
+  "categories": [
+    {
+      "id": "all",
+      "label": "전체"
+    },
+    {
+      "id": "content",
+      "label": "광고·콘텐츠"
+    },
+    {
+      "id": "education",
+      "label": "강의·코칭"
+    },
+    {
+      "id": "automation",
+      "label": "자동화·개발"
+    }
+  ],
+  "modes": {
+    "commission": "맞춤 의뢰",
+    "learn": "배우기",
+    "digital": "자료 보기"
+  },
+  "cases": [
+    {
+      "id": "content",
+      "category": "content",
+      "title": "사진 한 장에서,\n제품이 주인공인 15초로.",
+      "subtitle": "제품 숏폼 제작",
+      "goal": "제품 사진을 바탕으로 온라인 광고에 쓸 짧은 영상을 만들고 싶어요.",
+      "deliverable": "세로형 15초 제품 영상 1편과 표지 1장",
+      "problem": "사진은 준비됐지만, 어떤 장면과 문구를 먼저 보여 줘야 할지 정하지 못했어요.",
+      "process": [
+        "사용할 매체와 제품 특징 정리",
+        "장면 구성·권리·수정 범위 합의",
+        "시안 검토 후 영상과 표지 납품"
+      ],
+      "result": "15초 영상 1편 · 표지 1장",
+      "limit": "설명용 가상 프로젝트입니다. 광고 성과·실제 납품 기록이 없습니다.",
+      "sellerId": "creator-a",
+      "theme": "blue"
+    },
+    {
+      "id": "education",
+      "category": "education",
+      "title": "듣고 끝나는 강의에서,\n내 보고서 한 장까지.",
+      "subtitle": "실무 AI 워크숍",
+      "goal": "팀원이 AI를 사용해 자신이 맡은 보고서 초안을 직접 만들도록 배우고 싶어요.",
+      "deliverable": "실습 2시간과 참여자별 보고서 초안 피드백",
+      "problem": "AI 기능을 들어본 적은 있지만 실제 보고서에 어떻게 적용할지 막막해요.",
+      "process": [
+        "참여자 수준과 샘플 업무 확인",
+        "민감정보를 뺀 자료로 함께 실습",
+        "초안 피드백과 반복 사용 방법 정리"
+      ],
+      "result": "실습 워크숍 · 내 업무 초안",
+      "limit": "설명용 가상 프로젝트입니다. 수강 후기나 학습 효과 수치는 없습니다.",
+      "sellerId": "creator-c",
+      "theme": "lime"
+    },
+    {
+      "id": "automation",
+      "category": "automation",
+      "title": "문의가 들어오면,\n담당자에게 바로.",
+      "subtitle": "문의 분류 자동화",
+      "goal": "여러 경로로 들어오는 문의를 한곳에 모으고 담당자에게 빠짐없이 전달하고 싶어요.",
+      "deliverable": "문의 접수·분류·담당자 알림 흐름과 운영 안내",
+      "problem": "메일과 시트에 흩어진 문의를 사람이 매번 옮기고 있어요.",
+      "process": [
+        "입력 경로·분류 기준·권한 확인",
+        "모호한 문의는 사람이 확인하도록 분리",
+        "알림 실패·중복·운영 인수인계 확인"
+      ],
+      "result": "접수 → 분류 → 담당자 확인",
+      "limit": "설명용 가상 프로젝트입니다. 실제 고객 데이터·자동 발송과 연결되지 않습니다.",
+      "sellerId": "creator-e",
+      "theme": "ink"
+    }
+  ],
+  "sellers": [
+    {
+      "id": "creator-a",
+      "name": "예시 · 콘텐츠 제작자 A",
+      "category": "content",
+      "modes": [
+        "commission",
+        "learn",
+        "digital"
+      ],
+      "active": true,
+      "reviewed": true,
+      "description": "제품의 쓰임을 보여 주는 숏폼과 이미지 구성을 다룹니다.",
+      "terms": {
+        "commission": {
+          "from": 300000,
+          "days": 10
+        },
+        "learn": {
+          "from": 100000,
+          "days": 3
+        },
+        "digital": {
+          "from": 19000,
+          "days": 0
+        }
+      }
+    },
+    {
+      "id": "creator-b",
+      "name": "예시 · 콘텐츠 제작자 B",
+      "category": "content",
+      "modes": [
+        "commission"
+      ],
+      "active": true,
+      "reviewed": true,
+      "description": "기획과 후반 편집을 포함한 브랜드 영상을 다룹니다.",
+      "terms": {
+        "commission": {
+          "from": 800000,
+          "days": 14
+        }
+      }
+    },
+    {
+      "id": "creator-c",
+      "name": "예시 · 교육자 C",
+      "category": "education",
+      "modes": [
+        "learn",
+        "digital",
+        "commission"
+      ],
+      "active": true,
+      "reviewed": true,
+      "description": "각자의 업무 자료를 활용한 실습과 피드백을 구성합니다.",
+      "terms": {
+        "learn": {
+          "from": 150000,
+          "days": 7
+        },
+        "digital": {
+          "from": 29000,
+          "days": 0
+        },
+        "commission": {
+          "from": 500000,
+          "days": 14
+        }
+      }
+    },
+    {
+      "id": "creator-d",
+      "name": "예시 · 교육자 D",
+      "category": "education",
+      "modes": [
+        "learn"
+      ],
+      "active": true,
+      "reviewed": true,
+      "description": "조직 단위의 AI 기초·활용 워크숍을 진행하는 설정입니다.",
+      "terms": {
+        "learn": {
+          "from": 600000,
+          "days": 10
+        }
+      }
+    },
+    {
+      "id": "creator-e",
+      "name": "예시 · 자동화 제작자 E",
+      "category": "automation",
+      "modes": [
+        "commission",
+        "learn",
+        "digital"
+      ],
+      "active": true,
+      "reviewed": true,
+      "description": "접수·분류·사람의 확인·오류 알림까지 한 흐름으로 정리합니다.",
+      "terms": {
+        "commission": {
+          "from": 500000,
+          "days": 14
+        },
+        "learn": {
+          "from": 200000,
+          "days": 7
+        },
+        "digital": {
+          "from": 39000,
+          "days": 0
+        }
+      }
+    },
+    {
+      "id": "creator-f",
+      "name": "예시 · 자동화 제작자 F",
+      "category": "automation",
+      "modes": [
+        "commission"
+      ],
+      "active": false,
+      "reviewed": false,
+      "description": "참여·검토 전인 예시. 추천에 넣지 않습니다.",
+      "terms": {
+        "commission": {
+          "from": 300000,
+          "days": 7
+        }
+      }
+    }
+  ],
+  "offers": [
+    {
+      "id": "video",
+      "category": "content",
+      "sellerId": "creator-a",
+      "mode": "commission",
+      "title": "제품 숏폼 1편 제작",
+      "from": 300000,
+      "days": 10,
+      "included": [
+        "15초 세로 영상 1편",
+        "합의한 시안 안에서 수정 2회",
+        "최종 MP4와 표지 1장"
+      ],
+      "excluded": [
+        "광고 집행비",
+        "원본 편집 프로젝트",
+        "별도 촬영·유료 음원"
+      ],
+      "acceptance": "길이·비율·문구·합의한 장면과 대조",
+      "rights": "사용 매체·기간·소스 권리를 견적에서 확인"
+    },
+    {
+      "id": "video-coach",
+      "category": "content",
+      "sellerId": "creator-a",
+      "mode": "learn",
+      "title": "내 제품 영상 콘티 코칭",
+      "from": 100000,
+      "days": 3,
+      "included": [
+        "온라인 60분",
+        "콘티 초안 피드백",
+        "다음 작업 목록"
+      ],
+      "excluded": [
+        "영상 완성본",
+        "녹화·상업 재배포"
+      ],
+      "acceptance": "예약 시간과 피드백 제공 확인",
+      "rights": "수강자의 내부 학습용"
+    },
+    {
+      "id": "video-template",
+      "category": "content",
+      "sellerId": "creator-a",
+      "mode": "digital",
+      "title": "제품 영상 기획 워크시트",
+      "from": 19000,
+      "days": 0,
+      "included": [
+        "편집 가능한 질문지",
+        "장면 구성 예시",
+        "사용 설명"
+      ],
+      "excluded": [
+        "개별 수정",
+        "완성 영상"
+      ],
+      "acceptance": "파일 구성·호환 환경·접근 확인",
+      "rights": "내 프로젝트 사용, 템플릿 재판매 제외"
+    },
+    {
+      "id": "workshop",
+      "category": "education",
+      "sellerId": "creator-c",
+      "mode": "learn",
+      "title": "AI 보고서 실습과 피드백",
+      "from": 150000,
+      "days": 7,
+      "included": [
+        "온라인 실습 2시간",
+        "개별 보고서 초안 1회 피드백"
+      ],
+      "excluded": [
+        "AI 유료 계정",
+        "최종 보고서 대필"
+      ],
+      "acceptance": "진행 시간·실습·피드백 확인",
+      "rights": "교재는 개인 학습용, 녹화는 별도 협의"
+    },
+    {
+      "id": "automation",
+      "category": "automation",
+      "sellerId": "creator-e",
+      "mode": "commission",
+      "title": "문의 분류 흐름 하나 구축",
+      "from": 500000,
+      "days": 14,
+      "included": [
+        "입력 경로 1개와 분류 규칙",
+        "담당자 알림·예외 확인",
+        "운영 안내와 인수인계"
+      ],
+      "excluded": [
+        "월 API·호스팅 비용",
+        "추가 시스템 연동",
+        "무기한 유지보수"
+      ],
+      "acceptance": "정상·오류·중복 요청의 합의된 동작 확인",
+      "rights": "소스·계정 소유·유지보수 범위 별도 합의"
+    },
+    {
+      "id": "automation-template",
+      "category": "automation",
+      "sellerId": "creator-e",
+      "mode": "digital",
+      "title": "자동화 업무 정리 워크시트",
+      "from": 39000,
+      "days": 0,
+      "included": [
+        "입력·출력 정리 양식",
+        "오류 대응 체크 항목"
+      ],
+      "excluded": [
+        "실제 연동 구축",
+        "인증 정보·실행 계정"
+      ],
+      "acceptance": "파일 열기와 안내된 구성 확인",
+      "rights": "내부 사용, 원본 재판매 제외"
+    }
+  ]
+}
