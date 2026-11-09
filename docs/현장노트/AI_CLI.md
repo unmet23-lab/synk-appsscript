@@ -1512,6 +1512,7 @@
 - 원인: 앱 안 브라우저는 창이 보이지 않으면 그리지 않아 입력을 못 받는다. 스크립트 `click()`은 사용자 활성화가 없어 AudioContext · 자동 재생이 막힌다.
 - 고침: ego(`ego-browser nodejs`)로 `http://127.0.0.1:<포트>/`를 열고 `page.click()`(진짜 입력이라 활성화가 생긴다), 폭 캡처는 `page.cdp('Emulation.setDeviceMetricsOverride', …)`. ego 창이 최소화돼 있으면 그것도 막힌다(10-30) — 창이 필요 없는 끝까지 시험은 헤드리스 크롬으로([시험 · 화면 현장 노트](시험_화면확인.md#ego-창이-최소화돼-있으면-캡처가-실패하고-그-뒤-ego-스크립트가-끝나지-않아-다음-스크립트도-붙지-못한다--실시간-음성-끝까지-시험은-헤드리스-크롬으로-2026-10-30-claude)).
 - 다시 확인: ego에서 시험 단추를 누른 뒤 `__상황극기록`에 `pc:connected` · `session.started`가 찍히는지.
+- 11-10 덧붙임(Claude, PULSE 고객 앱 제목 실측): 창이 가려진 채 재기만 해도 두 가지가 어긋났다 — ① 측정 스크립트가 `requestAnimationFrame`을 기다리면 끝나지 않아 javascript_tool이 45초 시간 초과로 멈췄다(가려진 창은 그리지 않으니 rAF가 안 온다). ② 390×844 같은 휴대폰 크기 캡처가 왼쪽 위 일부를 키운 판으로 찍혔다(같은 탭에서 앞서 찍은 판은 정상, `innerWidth`는 390 그대로). 고침: 기다림은 `setTimeout` · 영상 `seeked` 사건으로 하고, 글과 영상 속 얼굴 겹침은 캡처 대신 DOM 상자(`Range.getClientRects`)를 재어 영상 원본 프레임(ffmpeg로 뽑음)에 같은 cover 배율로 그려 본다. 다시 확인: 그렇게 그린 대조표의 글 상자와 브라우저 실측 값이 같은지(이번 판 390×844 머리글 488 · 508px).
 
 ### 「모델 호출만」 키로는 만든 목소리(prompt-to-voice)를 만들지도 부르지도 못한다 — 부를 때는 권한 오류가 아니라 「No voice found」로 보인다 (2026-10-30 Claude)
 - 증상: `POST /v1/audio/voices`(type prompt)가 401 「Missing scopes: api.voices.write」. 플랫폼 화면(Audio → Voices → Create voice → Save voice)으로 같은 조직 · 같은 Default project에 만든 목소리를 GPT-Live `session.start`의 `audio.output.voice: {id}`로 부르자 「No voice found with id 'voice_…'」.
