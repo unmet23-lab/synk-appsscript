@@ -9,7 +9,7 @@
  *        → assets/films/<appId>-v1.mp4(소리 있는 720p) · <appId>-poster-v1.webp(1280 · 720)
  *   node 굽기.cjs pc <desktop/assets/pulse/portfolio 폴더> [--only key,…]
  *        → <pcId>.webp(4:3 1360 × 1020로 자름 — 세로 작품은 작품.json pc.y)
- *   node 굽기.cjs reel <쇼릴 결과 폴더> → reel-wide.mp4(1280 × 800) · reel-tall.mp4(720 × 1280) · 포스터 · reel.json(시각표)
+ *   node 굽기.cjs reel <쇼릴 결과 폴더> → reel-wide.mp4(1920 × 1200) · reel-tall.mp4(1080 × 1920) · 포스터 · reel.json(시각표)
  *
  * poster.src: raw(자막 전 그림 판) · final(완성본) · keep(이 자리의 지금 그림을 그대로 — 굽지 않음).
  * 생성 영상의 도구 표시가 공개 파일에 남지 않게 모든 결과는 다시 인코딩하고 -map_metadata -1 · -map_chapters -1로 머리 정보를 비운다.
@@ -100,32 +100,39 @@ function cutSrc(c) {
   return need(c.src === 'raw' ? vpath(w.raw) : vpath(w.final));
 }
 // box = 그 판에서 그림이 실제로 있는 자리 [x, y, w, h](위아래 검은 띠를 품은 판 — 도담중공업은 1920 × 960 @ y60).
-function cropFor(src, tw, th, o, box) {
-  const p = probe(src), [bx, by, w, h] = box || [0, 0, p.w, p.h], ar = tw / th;
+// 화면 비율이 맞는 작품은 꽉 채우고, 안 맞는 작품은 자르지 않고 어두운 방의 스크린으로 놓는다(11-09 — 잘라 펼치면 720p 원본이 3.6배까지 늘어나 깨졌다).
+function frameFor(src, kind, o, box) {
+  const s = DATA.reel.screens[kind], p = probe(src), [bx, by, w, h] = box || [0, 0, p.w, p.h], srcTall = h > w;
+  const tail = 'fps=24,setsar=1,format=yuv420p';
+  if (kind === 'wide' && srcTall) { const tw = Math.round(w * s.h / h / 2) * 2; return `crop=${w}:${h}:${bx}:${by},scale=${tw}:${s.h}:flags=lanczos,pad=${s.w}:${s.h}:${s.panelX}:0:black,${tail}`; }
+  if (kind === 'tall' && !srcTall) { const th = Math.round(h * s.w / w / 2) * 2; return `crop=${w}:${h}:${bx}:${by},scale=${s.w}:${th}:flags=lanczos,pad=${s.w}:${s.h}:0:${s.panelY}:black,${tail}`; }
+  const ar = s.w / s.h;
   let cw, ch;
   if (w / h > ar) { ch = h; cw = Math.round(ch * ar); } else { cw = w; ch = Math.round(cw / ar); }
   cw -= cw % 2; ch -= ch % 2;
   const cx = bx + Math.round((w - cw) * (o.x ?? 0.5));
   const cy = by + (o.y !== undefined ? Math.max(0, Math.min(o.y, h - ch)) : Math.round((h - ch) / 2));
-  return `crop=${cw}:${ch}:${cx}:${cy},scale=${tw}:${th}:flags=lanczos,fps=24,setsar=1,format=yuv420p`;
+  return `crop=${cw}:${ch}:${cx}:${cy},scale=${s.w}:${s.h}:flags=lanczos,${tail}`;
 }
 function doReel() {
   fs.mkdirSync(outDir, { recursive: true });
   const cuts = DATA.reel.cuts;
   for (const c of cuts) for (const kind of ['wide', 'tall']) { const { d } = probe(cutSrc(c)); const at = c[kind].in ?? c.in; if (at + c.dur > d + 0.01) throw new Error(`${c.work} ${c.src} ${kind}: ${at}+${c.dur} > ${d}`); }
-  for (const [kind, tw, th, crf] of [['wide', 1280, 800, 25], ['tall', 720, 1280, 26]]) {
+  for (const kind of ['wide', 'tall']) {
+    const { crf } = DATA.reel.screens[kind];
     const tmp = path.join(outDir, `_tmp_${kind}`); fs.mkdirSync(tmp, { recursive: true });
     const list = [];
     cuts.forEach((c, i) => {
       const f = path.join(tmp, `${String(i).padStart(2, '0')}.mp4`);
       const box = c.src === 'raw' ? DATA.works.find((x) => x.key === c.work).rawBox : null;
-      run('ffmpeg', ['-v', 'error', '-y', '-ss', String(c[kind].in ?? c.in), '-t', String(c.dur), '-i', cutSrc(c), '-an', '-vf', cropFor(cutSrc(c), tw, th, c[kind], box), '-c:v', 'libx264', '-preset', 'medium', '-crf', String(crf - 4), '-r', '24', f]);
+      // 컷은 무손실로 먼저 잘라 이어 붙인 뒤 한 번만 압축한다(두 번 압축하면 그만큼 뭉개진다).
+      run('ffmpeg', ['-v', 'error', '-y', '-ss', String(c[kind].in ?? c.in), '-t', String(c.dur), '-i', cutSrc(c), '-an', '-vf', frameFor(cutSrc(c), kind, c[kind], box), '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', '-r', '24', f]);
       list.push(`file '${f.replaceAll('\\', '/')}'`);
     });
     const lf = path.join(tmp, 'list.txt'); fs.writeFileSync(lf, list.join('\n'));
     const out = path.join(outDir, `reel-${kind}.mp4`);
-    run('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', lf, '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', ...CLEAN, out]);
-    stillTo(out, 0.05, 'null', path.join(outDir, `reel-${kind}.webp`), 78);
+    run('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', lf, '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', ...CLEAN, out]);
+    stillTo(out, 0.05, 'null', path.join(outDir, `reel-${kind}.webp`), 82);
     run('ffmpeg', ['-v', 'error', '-y', '-i', out, '-vf', `fps=2,scale=${kind === 'wide' ? 240 : 120}:-1,tile=${kind === 'wide' ? '7x4' : '14x2'}`, '-frames:v', '1', path.join(outDir, `_보기-${kind}.jpg`)]);
     fs.rmSync(tmp, { recursive: true, force: true });
     console.log(kind, (fs.statSync(out).size / 1e6).toFixed(2) + 'MB', probe(out).d.toFixed(3) + 's');

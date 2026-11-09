@@ -34,7 +34,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v33-i18n-20261109';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v34-reel-20261109';/);
 });
 test('customer screens name no tool and promise nothing the rules forbid',()=>{
   const words=new RegExp(`${TOOL_NAMES}|같은 얼굴|결제 전|무제한|납기|최고|최초|유일|1위|모루|MORU|드립백`);

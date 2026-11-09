@@ -54,7 +54,7 @@ const demoOn=()=>locale()==='ko';
 const DEMO_LABEL={top:'예시 프로젝트',after:'예시 프로젝트 체험하기 →'}; // i18n-skip
 
 // 쇼릴: 작품 여럿의 자막 없는 구간을 이은 소리 없는 반복 영상. 2026-11-09 3판은 synk.im과 같은 영상이고(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열/굽기.cjs reel),
-// 시간표는 그 도구가 구운 영상의 24fps 컷 경계(reel.json)다. 도담중공업으로 열고 오미톡 · 매진 임박 · 모두의코스가 이어진 뒤 도담 · 매진 · 모두의코스가 한 번 더 나온다. 화면 글이 얼굴을 덮지 않는 컷만 쓴다.
+// 시간표는 그 도구가 구운 영상의 24fps 컷 경계(reel.json)다. 도담중공업으로 열고 오미톡 · 매진 임박 · 모두의코스가 이어진 뒤 도담 · 매진 · 모두의코스가 한 번 더 나온다. 화면 글이 얼굴을 덮지 않는 컷만 쓴다. 화면 비율이 맞는 작품만 꽉 채우고 안 맞는 작품은 자르지 않고 검은 바탕의 스크린으로 영상 안에 구워 두었다(11-09).
 const REEL_TOTAL=12.33;
 const REEL=[[0,'dodam-heavy'],[2,'omitok-court'],[3.13,'maejin-imbak'],[4.96,'modu-course'],[6.79,'dodam-heavy'],[8.58,'maejin-imbak'],[10.42,'modu-course']].map(([at,work])=>({at,work}));
 const filmOf=id=>FINISHED_FILMS.find(film=>film.id===id);
