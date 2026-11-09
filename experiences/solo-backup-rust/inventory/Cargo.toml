@@ -1,0 +1,22 @@
+[package]
+name = "work-backup-inventory"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+
+[lib]
+name = "work_backup_inventory"
+
+[[bin]]
+name = "WorkBackupInventory"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+windows-sys = { version = "=0.59.0", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_Registry", "Win32_System_SystemInformation", "Win32_System_Com", "Win32_UI_Shell"] }
+
+[profile.release]
+strip = true
+lto = "thin"
+
