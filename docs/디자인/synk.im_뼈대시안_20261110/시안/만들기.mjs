@@ -143,8 +143,8 @@ ${맥안내}</div></details></div>
   h = h.replace('<title>SYNK — 쓸수록 나를 아는 AI를 만듭니다</title>', '<title>SYNK — 한 사람에게 맞추는 AI를 만듭니다 (뼈대 시안)</title>');
   h = h.replace(/<nav class="bar-nav" aria-label="주요 메뉴">.*?<\/nav>/s, '<nav class="bar-nav" aria-label="주요 메뉴"><a href="#top">회사 소개</a><a href="/atlas/">아틀라스</a><a href="#business">사업</a><a href="#now">소식</a><a href="#contact">문의</a></nav>');
   h = h.replaceAll('href="/#', 'href="#').replace('href="#drama"', 'href="/lab/#drama"');
-  // 홈에서 뺀 구역의 스타일 · 스크립트
-  h = h.replace(/<link rel="stylesheet" href="\/assets\/v10\/drama\.css[^>]*>\s*/g, '').replace(/<script type="module" src="\/assets\/v10\/drama\.js[^>]*><\/script>\s*/g, '');
+  // 홈에서 뺀 구역의 스타일 · 스크립트. 네 무대의 상영은 skeleton.js가 맡는다(home-v12.js는 네 칸이 옆으로 나란한 짜임에 맞춘 것).
+  h = h.replace(/<link rel="stylesheet" href="\/assets\/v10\/drama\.css[^>]*>\s*/g, '').replace(/<script type="module" src="\/assets\/v10\/(drama|home-v12)\.js[^>]*><\/script>\s*/g, '');
   // 홈에는 「다음에 여는 것」 · 「알아 두실 것」 묶음이 없다(밝힐 상태 · 면책이 없다). 판 나는 입구에서 빠진 방문 집계 안내만 바닥 줄로 옮긴다.
   if (판 === '나') h = 바꿈(h, '<div class="foot-bottom">', '<div class="foot-bottom"><span>방문 목적과 경로를 익명으로 집계합니다. <a href="/privacy/#visitor-stats" style="color:inherit">자세히</a></span>');
   const 이름 = `home-${판 === '가' ? 'ga' : 'na'}${꼬리}.html`;
