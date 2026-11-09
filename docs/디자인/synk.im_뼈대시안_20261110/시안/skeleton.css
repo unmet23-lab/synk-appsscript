@@ -1,0 +1,177 @@
+/* synk.im 뼈대 시안 1단계(2026-11-10) — site.css 위에 덮는다. 정본: ../뼈대.md
+   글자 크기 일곱 단계 · 굵기 넷 · 단추 모양 하나 · 구역 틀 하나. 실물(입구 그림 · 30일 체험 · 네 무대 · 예약표 · 질문창)은 공개본 것 그대로 두고 글자만 단계에 맞춘다.
+   입구 스타일(.gate*)은 원고에서 sha256으로 잠겨 있다 — 여기서는 덮기만 하고, 잠금 갱신은 공개 때 일이다. */
+
+/* ── 0. 토큰 ── */
+:root{
+  --wrap:1680px;                       /* 본문 틀 = 입구 틀: 왼쪽 끝이 싱ㅋ · 견본선과 같은 자리에서 시작한다 */
+  --k1:13px;--k2:15px;--k3:17px;--k4:21px;--k5:28px;--k6:40px;--k7:64px;
+  --hw:600;
+  --k-ink:var(--ink);--k-ink-2:var(--ink-2);--k-ink-3:var(--ink-3);--k-line:var(--line);--k-line-2:var(--line-2);--k-bg:var(--paper);
+}
+@media (max-width:1100px){:root{--k6:34px;--k7:46px}}
+@media (max-width:700px){:root{--k4:19px;--k5:22px;--k6:27px;--k7:33px}}
+body{font-size:var(--k3);font-weight:400}
+.arr{font-family:inherit!important}    /* 화살표는 숫자가 아니다 — 모노는 시각 · 숫자에만 */
+
+/* ── 1. 구역 틀 ── */
+.k-sec{position:relative;padding-block:clamp(64px,9.5vh,104px);overflow-x:clip;background:var(--k-bg);color:var(--k-ink)}
+.k-night{--k-ink:#fafaf9;--k-ink-2:rgba(250,250,249,.8);--k-ink-3:rgba(250,250,249,.6);--k-line:rgba(250,250,249,.16);--k-line-2:rgba(250,250,249,.3);--k-bg:#08090c;background:#08090c;color:#fafaf9}
+/* 구역 머리 줄: 입구의 「싱ㅋ = SYNK ───」처럼 이름이 선 위에 앉는다. 영문 꼬리표 · 점 · 번호 없음 */
+.k-rule{display:flex;align-items:center;gap:16px;margin:0 0 clamp(26px,4vh,44px);font-size:var(--k1);font-weight:500;line-height:1;letter-spacing:.02em;color:var(--k-ink-3)}
+.k-rule::after{content:"";flex:1;height:1px;background:var(--k-line-2)}
+.k-rule .k-n{order:3;font-family:var(--mono);font-weight:400;font-variant-numeric:tabular-nums}
+/* 견본선: 큰 한글 한 줄마다 위아래로 화면 끝까지 가는 선 — 입구의 싱ㅋ를 가로지르는 선과 같은 말 */
+.k-spec{margin:0}
+.k-spec>span{display:block;margin-inline:calc(50% - 50vw);padding-inline:calc(50vw - 50%);border-top:1px solid var(--k-line-2);padding-block:.07em .11em;line-height:1.1}
+.k-spec>span:last-child{border-bottom:1px solid var(--k-line-2)}
+
+/* ── 2. 글자 역할 ── */
+.k-claim{font-size:var(--k7);font-weight:600;letter-spacing:-.035em;color:var(--k-ink)}
+.k-claim .dim,.k-gate-claim .dim{color:var(--k-ink-3)}
+.k-title{margin:0;font-size:var(--k6);font-weight:600;line-height:1.2;letter-spacing:-.03em;color:var(--k-ink)}
+.k-title>span{display:block}
+.k-lead{margin:0;font-size:var(--k4);font-weight:400;line-height:1.6;color:var(--k-ink-2);max-width:31em;text-wrap:pretty}
+.k-body{margin:0;font-size:var(--k3);font-weight:400;line-height:1.65;color:var(--k-ink-2);text-wrap:pretty}
+.k-small{margin:0;font-size:var(--k2);font-weight:400;line-height:1.6;color:var(--k-ink-2)}
+
+/* ── 3. 단추 — 모양 하나(알약) + 글 링크 하나(밑줄 · 화살표) ── */
+.k-btn,.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 22px;border-radius:999px;border:1px solid transparent;font-size:var(--k2);font-weight:600;letter-spacing:0;line-height:1;text-decoration:none;white-space:nowrap;cursor:pointer}
+.k-btn{background:var(--k-ink);color:var(--k-bg);transition:transform .2s var(--ease),background .2s,border-color .2s}
+.k-btn.is-line{background:transparent;color:var(--k-ink);border-color:var(--k-line-2)}
+.k-btn.is-paper{background:#fafaf9;color:#08090c}
+.k-btn:hover{transform:translateY(-1px)}
+.k-btn.is-line:hover{border-color:var(--k-ink)}
+.k-link{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:0 0 4px;border:0;border-bottom:1px solid currentColor;background:none;font-size:var(--k2);font-weight:600;line-height:1.3;color:var(--k-ink);text-decoration:none;white-space:nowrap;cursor:pointer}
+.k-btn .arr,.k-link .arr{transition:transform .2s var(--ease)}
+.k-btn:hover .arr,.k-link:hover .arr{transform:translateX(3px)}
+.k-acts{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;margin:0}
+
+/* ── 4. 입구 ── */
+.gate-top{font-size:var(--k1)}
+.gate-kicker span{font-size:var(--k2);font-weight:600}
+/* 판 나: 문 넷 자리에 회사 문장 하나(문은 아래 「네 가지 사업」으로) */
+.k-gate-say{--k-ink:#fafaf9;--k-ink-3:rgba(250,250,249,.64);grid-template-columns:minmax(0,1fr) auto;align-items:end}
+.k-gate-claim{margin:0;font-size:var(--k6);font-weight:600;line-height:1.24;letter-spacing:-.03em;color:#fafaf9}
+.k-gate-claim>span{display:block}
+.k-gate-sub{margin:14px 0 0;font-size:var(--k3);font-weight:400;line-height:1.5;color:rgba(250,250,249,.8)}
+.k-gate-go{margin:0;padding-bottom:4px}
+@media (max-width:700px),(max-aspect-ratio:4/5){
+  .k-gate-say{grid-template-columns:minmax(0,1fr)}
+  .k-gate-go{margin-top:22px}
+}
+
+/* ── 5. 홈: 회사 한 문장 + 살아 있는 증거(밤) ── */
+.k-co{padding-block:clamp(96px,12vh,112px) 0}
+.k-co-body{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:28px 48px;padding-block:clamp(26px,4vh,40px) 0}
+.lw.k-night{background:#08090c}
+.k-proof-head{display:block;padding-block:clamp(56px,8vh,88px) clamp(26px,3.6vh,40px)}
+.k-proof-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px 48px}
+.k-proof-head .lw-title{font-size:var(--k6);line-height:1.2;letter-spacing:-.03em;font-weight:600}
+.k-proof-head .lw-go{padding-bottom:4px;gap:28px}
+.k-proof-side{max-width:34em;display:grid;gap:22px}
+body[data-k="home-na"] .k-proof-head{padding-top:clamp(40px,6vh,64px)}
+
+/* ── 6. 홈: 문 넷 — 손님으로 둘씩 ── */
+.k-doors-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(28px,4vw,64px)}
+.k-group{min-width:0}
+.k-group-h{margin:0 0 18px;font-size:var(--k6);font-weight:600;line-height:1.2;letter-spacing:-.03em;color:var(--k-ink)}
+.k-door-list{list-style:none;margin:0;padding:0}
+.k-door{display:grid;grid-template-columns:clamp(168px,15.4vw,228px) minmax(0,1fr);gap:clamp(18px,2vw,30px);padding-block:20px;border-top:1px solid var(--k-line-2);flex-direction:initial}
+.k-door .hs-frame{aspect-ratio:4/5}
+.k-door-txt{display:flex;flex-direction:column;min-width:0;padding-block:2px 4px}
+.k-brand{display:flex;align-items:center;gap:8px;margin:0;font-size:var(--k1);font-weight:500;line-height:1;letter-spacing:.04em;color:var(--k-ink-2)}
+.k-door h3{margin:14px 0 0;font-size:var(--k5);font-weight:600;line-height:1.3;letter-spacing:-.025em;color:var(--k-ink)}
+.k-door h3>span{display:block}
+.k-nowline{margin:14px 0 18px;font-size:var(--k2);font-weight:400;line-height:1.55;color:var(--k-ink-2)}
+.k-nowline b{margin-right:10px;font-weight:600;color:var(--k-ink)}
+.k-door .k-link{margin-top:auto}
+.k-doors-foot{margin:0;padding-top:20px;border-top:1px solid var(--k-line-2);font-size:var(--k3);line-height:1.6;color:var(--k-ink-2)}
+@media (max-width:1100px){
+  .k-doors-grid{grid-template-columns:minmax(0,1fr);row-gap:44px}
+}
+@media (max-width:700px){
+  .k-door{grid-template-columns:minmax(0,1fr);gap:16px}
+  .k-door .hs-frame{aspect-ratio:4/3.6}
+}
+
+/* ── 7. 홈: 최근에 새로 연 것 · 지키는 것 셋 ── */
+.k-now{padding-top:0}
+.k-now-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);column-gap:clamp(40px,7vw,120px);row-gap:56px;align-items:start}
+.k-news .k-title{margin-bottom:26px}
+.k-news .news{margin:0;padding:0;list-style:none;border:0}
+.k-news .news li{border:0;border-top:1px solid var(--k-line-2)}
+.k-news .news li a{display:grid;grid-template-columns:7.4em 5.6em minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:20px 0;color:var(--k-ink);text-decoration:none}
+.k-news .news time{font:400 var(--k2)/1.4 var(--mono);color:var(--k-ink-3);font-variant-numeric:tabular-nums}
+.k-news .news-who{display:inline-flex;align-items:center;gap:8px;font-size:var(--k2);font-weight:500;line-height:1.4;letter-spacing:.02em;color:var(--k-ink-2)}
+.k-news .news-what{min-width:0}
+.k-news .news-title{font-size:var(--k4);font-weight:500;line-height:1.4;letter-spacing:-.01em;color:var(--k-ink)}
+.k-news .news-go{font-size:var(--k3);color:var(--k-ink-3)}
+.k-news .news-more{margin:0;border-top:1px solid var(--k-line-2)}
+.k-news .news-more summary{padding:16px 0;font-size:var(--k2);font-weight:500;color:var(--k-ink-2)}
+.k-news .news-more .news li:first-child{border-top:1px solid var(--k-line)}
+.k-pf{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 28px;padding-top:22px;border-top:1px solid var(--k-line-2);font-size:var(--k3);line-height:1.5}
+.k-pf strong{font-weight:600;margin-right:auto}
+.k-pf-get{display:contents}
+.k-pf-get>summary{list-style:none}
+.k-pf-get>summary::-webkit-details-marker{display:none}
+.k-pf-body{flex-basis:100%;display:grid;gap:14px;padding-top:8px}
+.k-keep-h{margin:0 0 18px;font-size:var(--k1);font-weight:500;line-height:1;letter-spacing:.02em;color:var(--k-ink-3)}
+.k-keep{list-style:none;margin:0;padding:0}
+.k-keep li{padding:18px 0 20px;border-top:1px solid var(--k-line-2)}
+.k-keep h3{margin:0;font-size:var(--k4);font-weight:600;line-height:1.4;letter-spacing:-.015em;color:var(--k-ink)}
+.k-keep p{margin:8px 0 0;font-size:var(--k2);font-weight:400;line-height:1.65;color:var(--k-ink-2)}
+.k-keep-go{margin:0;padding-top:20px;border-top:1px solid var(--k-line-2)}
+@media (max-width:1100px){.k-now-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){
+  .k-news .news li a{grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px}
+  .k-news .news-what{grid-column:1/-2}
+}
+
+/* ── 8. 쪽 맨 아래 묶음: 다음에 여는 것 · 알아 두실 것 ── */
+.k-tail{padding-block:clamp(44px,6vh,64px);background:var(--k-bg);color:var(--k-ink)}
+.k-tail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px clamp(40px,7vw,120px)}
+.k-tail h2{margin:0 0 4px;font-size:var(--k1);font-weight:500;line-height:1;letter-spacing:.02em;color:var(--k-ink-3)}
+.k-tail ul{list-style:none;margin:14px 0 0;padding:0}
+.k-tail li{padding:12px 0;border-top:1px solid var(--k-line);font-size:var(--k2);line-height:1.6;color:var(--k-ink-2)}
+.k-tail li b{font-weight:600;color:var(--k-ink);margin-right:10px}
+@media (max-width:700px){.k-tail-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* ── 9. 공개본 부품의 글자를 단계에 맞춘다(모양 · 자리는 그대로) ── */
+.h2{font-size:var(--k6);line-height:1.2;letter-spacing:-.03em;font-weight:600}
+.lead{font-size:var(--k3);font-weight:400}
+.label{font-weight:500}
+.more>summary{font-weight:600}
+/* 메뉴 */
+.bar-nav a{font-size:var(--k2);font-weight:500}
+.bar-brands a,.bar-lang a{font-family:var(--sans);font-size:var(--k1);font-weight:500;letter-spacing:.04em}
+.bar-cta{font-size:var(--k2);font-weight:600}
+.panel-label,.panel-label .ko{font-weight:500}
+/* 입구 */
+.gate-top{font-family:var(--sans);font-weight:500;letter-spacing:.06em}
+.gate-top .ko{font-weight:500}
+.visit-q{font-size:var(--k5);font-weight:700}
+.visit-door strong{font-size:var(--k5);font-weight:700}
+.visit-door small{font-family:var(--sans);font-size:var(--k1);font-weight:500}
+.visit-door b.arr{font-size:var(--k3);font-weight:400}
+.visit-more a,.visit-more a .arr{font-size:var(--k2);font-weight:600}
+.visit-note{font-size:var(--k1)}
+/* 30일 체험 */
+.lw-when{font-size:var(--k2);font-weight:600}
+.lw-q{font-size:var(--k6);font-weight:600}
+.lw-a{font-size:var(--k3)}
+.lw-a b,.lw-link,.lw-by{font-weight:600}
+/* 네 무대 */
+.hs-cap b,.hp-tag b,.hs-board-head strong,.hs-rows li.is-next{font-weight:600}
+.hs-clock{font-size:var(--k4)}
+.hp-n,.hp-pin.is-plain .hp-mk{width:20px;height:20px;font:600 13px/20px var(--sans)}
+/* 묻기 · 바닥 */
+.ask-contact a>span,.ask-contact button>span{font-size:var(--k2);font-weight:600}
+.ask-contact .mono{font-family:var(--sans)}
+.qx-head .ko,.eyebrow .ko{font-weight:500}
+.qx-no,.qx-count{display:none}
+.faq-q{grid-template-columns:minmax(0,1fr) 22px;font-size:var(--k3);font-weight:600}
+.faq-q .qx-text{font-size:var(--k3);font-weight:600}
+.ask-form button>span{font-size:var(--k2);font-weight:600}
+.foot-col h3,.foot-col h3 .ko,.foot-col h2{font-weight:600}
+.foot-bottom .mono{font-size:var(--k1)}
