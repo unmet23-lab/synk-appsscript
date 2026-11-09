@@ -289,7 +289,7 @@ test('all declared sourcePaths and dashboard source files exist within the repos
   }
 });
 
-test('the snapshot does not claim that live account verification occurred', () => {
+test('the snapshot does not claim live verification of the entire inventory', () => {
   assert.equal(inventory.metadata.liveLoginVerified, false);
   assert.equal(production.audit.externalStateRechecked, false);
   for (const query of Object.values(dashboard.queries)) assert.ok(query.source.filters.some(filter => filter.includes('실시간 SNS 조회 아님')));
@@ -327,9 +327,9 @@ test('every registry account and supplemental channel has one explicit login aud
 test('login route confidence reconciles without claiming that every session is live', () => {
   const active=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
   assert.equal(active.length,70);
-  const expected={confirmed:51,'switch-only':6,partial:10,missing:3};
+  const expected={confirmed:54,'switch-only':6,partial:10,missing:0};
   for (const [state,count] of Object.entries(expected)) assert.equal(active.filter(row=>row.loginMappingStatus===state).length,count,state);
-  assert.deepEqual(sorted(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id)),['shift-pinterest','yuhobuilds-behance','yuhobuilds-naver-clip']);
+  assert.deepEqual(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id),[]);
   assert.equal(active.filter(row=>row.platform==='YouTube' && row.loginEvidenceAt==='2026-11-09').length,24);
   for (const id of ['lab-th-tiktok','lab-kz-tiktok','lab-mx-tiktok']) assert.match(channels.find(row=>row.id===id).loginSessionStatus,/로그아웃/);
 });

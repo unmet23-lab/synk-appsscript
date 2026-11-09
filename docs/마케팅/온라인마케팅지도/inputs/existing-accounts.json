@@ -5,7 +5,7 @@
     "sourceEvidenceThrough": "2026-11-09",
     "evidenceMode": "local-source-reconciliation",
     "liveLoginVerified": false,
-    "scope": "11-09 전체 로그인 경로 대조. 11-04 별도 개설 기록·11-08 로그인 복구 기록의 누락 채널 10곳 추가. 11-09 YouTube 전환 메뉴에서 연결을 대조했지만 모든 채널의 현재 로그인·게시 권한을 실시간 재검증한 결과는 아니다.",
+    "scope": "11-09 전체 로그인 경로 대조. 11-04 별도 개설 기록·11-08 로그인 복구 기록의 누락 채널 10곳 추가. 11-09 YouTube 전환 메뉴에서 연결을 대조했지만 모든 채널의 현재 로그인·게시 권한을 실시간 재검증한 결과는 아니다. 후속으로 Behance Google 로그인과 Pinterest·유호 Naver Clip의 현재 소유자 세션·로그인 ID 3곳을 확인했다.",
     "grain": "accounts의 한 행은 실제 관리 계정/채널, 소유 미확인 준비 자리, 운영 제외 계정 또는 별도 웹 도착지 하나다. 공유·재사용 관계는 같은 id에 연결하며 새 계정 행으로 복제하지 않는다.",
     "counts": {
       "registeredAccountEntries": 39,
@@ -116,6 +116,11 @@
       "docs/마케팅/프로필최신화_20260919/실행상태.json",
       "docs/마케팅/프로필최신화_20260919/반영_v5.json",
       "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+    ],
+    "currentOwnerSessionVerifiedIds": [
+      "yuhobuilds-behance",
+      "shift-pinterest",
+      "yuhobuilds-naver-clip"
     ]
   },
   "accounts": [
@@ -459,7 +464,7 @@
       "platform": "behance",
       "handle": "yuhobuilds",
       "publicUrl": "https://www.behance.net/yuhobuilds",
-      "loginAlias": "Adobe · Behance 운영자",
+      "loginAlias": "Adobe · unmet23",
       "accountStatus": "operating",
       "profileStatus": "v6-saved-public-verified",
       "coverStatus": "v4-public-verified-preserved",
@@ -692,7 +697,7 @@
       "platform": "pinterest",
       "handle": "synkshift",
       "publicUrl": "https://www.pinterest.com/synkshift/",
-      "loginAlias": "Pinterest · SHIFT 운영자",
+      "loginAlias": "Pinterest · unmet23",
       "accountStatus": "operating",
       "profileStatus": "v6-saved-public-verified",
       "coverStatus": "v4-public-verified-preserved",

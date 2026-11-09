@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T11:21:42.454Z",
+  "generatedAt": "2026-11-09T12:33:34.362Z",
   "sourceAsOf": {
     "registry": "2026-11-09",
     "social": "2026-09-21",
@@ -18,10 +18,10 @@
     "identities": 27,
     "activeManagedChannels": 70,
     "loginStatusCounts": {
-      "confirmed": 51,
+      "confirmed": 54,
       "switch-only": 6,
       "partial": 10,
-      "missing": 3,
+      "missing": 0,
       "not-created": 0,
       "excluded": 0
     }
@@ -29,11 +29,11 @@
   "files": [
     {
       "file": "inputs/login-audit.json",
-      "sha256": "e6fb5ed224c3c1b1804e964c8d34c43ca6100dba67219ea0ec721fd68424cf08"
+      "sha256": "6d24895425065e63759fedabb71be3aa4df7ad77857af380fd45e203e0774ce0"
     },
     {
       "file": "../로그인경로_점검_20261109.md",
-      "sha256": "582994e0fa75bb0589a55d72dda698916adfd400a427e4e1605c2bf80202ceef"
+      "sha256": "e5c234d93d33bf7af366433fc6217d7b7493eed658130071eeb2d3fb4a82a48e"
     },
     {
       "file": "inputs/plan.json",
@@ -41,7 +41,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "85e683b5f536bbd6ed6873a86966bf14309e0203d4592c01fb42ef4fe7ec01da"
+      "sha256": "c77973536d0216a0eaf7443797e5bc1a57f9061e0bbaaea06ba94c1877f6ce7f"
     },
     {
       "file": "inputs/content-status.json",
