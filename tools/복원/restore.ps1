@@ -8,6 +8,7 @@
 #   ... restore.ps1 -릴리스계보                      회사 릴리스 사슬이 따라가는 .tmp 계보 폴더(약 8GB)도 받아 푼다(회사 서버를 배포할 때 필요)
 #   ... restore.ps1 -예약켜기                        꺼 둔 예약 작업만 켜고 끝낸다(옛 노트북이 안 도는 것을 확인한 뒤 — 둘 다 돌면 SNS가 두 번 나간다)
 #   ... restore.ps1 -전부설치                        기록된 프로그램 · 파이썬 패키지 전부
+#   ... restore.ps1 -드라이브앱만                    77yuhbs를 쓸 수 없을 때: 구글 드라이브 앱(G:)의 비공개 문서 · 창고 장부만 푼다(나중에 77yuhbs를 받아도 이미 푼 파일은 덮지 않는다)
 #   ... restore.ps1 -집 D:\복원시험\q1212 -시험 [-가볍게]   가짜 집에 푼다: 설치 · 로그인 기다림 · 예약 · 환경 변수를 건드리지 않는다
 # Windows PowerShell 5.1에서 돈다(새 PC에는 pwsh가 처음에 없다). 파일은 UTF-8 BOM이다.
 param(
@@ -18,6 +19,7 @@ param(
   [switch]$대화기록,
   [switch]$릴리스계보,
   [switch]$전부설치,
+  [switch]$드라이브앱만,
   [string]$암호파일 = '',
   [string]$비밀키 = '',
   [string]$열쇠파일 = ''
@@ -216,12 +218,13 @@ function FindKeysFile {
   }
   return $null
 }
+# 복원풀기.cjs의 비밀키찾기와 같은 후보를 본다
 function FindLockedKey {
-  if ($비밀키) { return $비밀키 }
-  foreach ($곳 in @('G:\내 드라이브\SYNK_복원\열쇠', (Join-Path $env:USERPROFILE 'Downloads'))) {
-    $f = Join-Path $곳 '비밀키_잠금.json'
-    if (Test-Path -LiteralPath $f) { return $f }
-  }
+  $후보 = @($비밀키, (Join-Path $집 '.synk-backup-key\비밀키_잠금.json'))
+  if ($열쇠) { $후보 += Join-Path (Split-Path $열쇠 -Parent) '비밀키_잠금.json' }
+  $후보 += @('G:\내 드라이브\SYNK_복원\열쇠\비밀키_잠금.json', 'G:\내 드라이브\SYNK_금고\열쇠\백업열쇠_비밀키_잠금.json',
+    (Join-Path $env:USERPROFILE 'Downloads\비밀키_잠금.json'), (Join-Path $env:USERPROFILE 'OneDrive\SYNK\복구열쇠\비밀키_잠금.json'))
+  foreach ($f in $후보) { if ($f -and (Test-Path -LiteralPath $f)) { return $f } }
   return $null
 }
 $열쇠 = FindKeysFile
@@ -237,7 +240,8 @@ $받을것 = @('비공개문서', '창고장부', '작업기록')
 if ($대화기록) { $받을것 += '대화기록' }
 if ($릴리스계보) { $받을것 += '릴리스계보' }
 if ($열쇠) {
-  $인자 = @($풀기, '--집', $집, '--열쇠파일', $열쇠, '--받기', ($받을것 -join ','))
+  $인자 = @($풀기, '--집', $집, '--열쇠파일', $열쇠)
+  if ($드라이브앱만) { $남은일.Add('77yuhbs 쪽은 받지 않았습니다(작업 기록 · 대화 기록 · 릴리스 계보)') } else { $인자 += @('--받기', ($받을것 -join ',')) }
   # 두 드라이브에 가는 묶음은 G: 쪽도 함께 본다 — 77yuhbs가 막혀 unmet23에만 간 조각이 빠지지 않게(같은 이름은 받은 것을 쓴다).
   foreach ($묶음 in @('비공개문서', '창고장부')) {
     $곳 = "G:\내 드라이브\SYNK_복원\$묶음"
@@ -249,7 +253,7 @@ if ($열쇠) {
   & node @인자
   $code = $LASTEXITCODE
   Remove-Item Env:\SYNK_복원_집 -ErrorAction SilentlyContinue
-  if ($code -eq 3) { $남은일.Add('77yuhbs에서 받지 못한 묶음이 있습니다 — 인터넷과 로그인을 확인하고 복원 시작.cmd를 다시 눌러 주세요') }
+  if ($code -eq 3) { $남은일.Add('77yuhbs에서 받지 못해 비공개 문서 · 작업 기록을 아직 못 풀었습니다 — 인터넷과 로그인을 확인하고 복원 시작.cmd를 다시 눌러 주세요(77yuhbs를 쓸 수 없으면 복원 시작.cmd -드라이브앱만)') }
   elseif ($code -eq 2) { $남은일.Add('일부 파일을 못 풀었습니다 — 위 결과와 기록을 Claude에게 보여 주세요') }
   elseif ($code -ne 0) { $남은일.Add('열쇠 · 묶음 풀기 실패 — 암호를 확인하고 다시 돌려 주세요') }
 } else { $남은일.Add('열쇠를 못 찾아 풀지 못했습니다') }

@@ -380,7 +380,7 @@ function 윈도우기록(거울, 자리, 지금, 상태파일, 돌림 = spawnSyn
     return r.status === 0 ? String(r.stdout || '') : null;
   };
   const 예약 = 실행('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-    '[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); Get-ScheduledTask | Where-Object { $_.TaskName -match "SYNK|Hermes|hermes|헤르메스" } | ForEach-Object { $x = Export-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath; [pscustomobject]@{ 이름=$_.TaskName; 상태=[string]$_.State; xml=$x } } | ConvertTo-Json -Depth 3 -Compress']);
+    '[Console]::OutputEncoding=[Text.UTF8Encoding]::new(); $rows = @(Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -match "SYNK|Hermes|hermes|헤르메스" } | ForEach-Object { $x = Export-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath; [pscustomobject]@{ 이름=$_.TaskName; 상태=[string]$_.State; xml=$x } }); ConvertTo-Json -InputObject $rows -Depth 3 -Compress']);
   let 예약받음 = false;
   if (예약) {
     let 줄 = null;

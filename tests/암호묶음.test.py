@@ -655,6 +655,20 @@ class Incremental(Base):
         ledger.commit([('x', 9, row2[3])], later, 'p')
         self.assertNotIn('x', ledger.meta.get('처음본때', {}))
 
+    def test_files_restored_on_a_new_pc_are_not_uploaded_again(self):
+        # 실제 흐름: 묶기 → 올리기 → 새 집에 풀기 → 새 집에서 다시 고르기. 시각이 소수 초를 거쳐도 장부와 같은 파일로 봐야 수십 GB를 다시 안 올린다.
+        for index, moment in enumerate((1794169865764624639, 1794169865999999999, 1600000000123456789, 1794169865000000000)):
+            p = self.write(f'projects/시각{index}.jsonl', f'내용 {index}')
+            os.utime(p, ns=(moment, moment))
+        bundle = self.bundle()
+        M.run_bundle(self.ctx, bundle)
+        home2 = self.base / 'home2'
+        home2.mkdir()
+        self.assertEqual(self.restore(self.base / 'b' / '대화기록', home2)['풀림'], 4)
+        rows = M.select(M.Bundle('대화기록', 'incremental', ('77yuhbs',), roots=[M.Root(home2 / 'projects', skip_dirs=('memory',))]), home2)
+        self.assertEqual(len(rows), 4)
+        self.assertEqual(M.changed_files(rows, M.Ledger(self.home, '대화기록'), bundle, time.time()), ([], 0))
+
     def test_restored_file_with_rounded_mtime_is_not_uploaded_again(self):
         bundle = self.bundle()
         ledger = M.Ledger(self.home, '대화기록')
@@ -895,14 +909,16 @@ class Workmethod(Base):
     def test_after_failure_a_new_head_retries_without_waiting_for_interval(self):
         mirror = self.mirror()
         M.publish_workmethod(self.ctx, mirror)  # 첫 판은 시각을 남긴다
+        self.rewrite_state(at='2026-01-01T00:00:00Z')  # 마지막 성공이 오래됐다
         self.commit(mirror, '둘째')
         self.b.fail = 'DRIVE_HTTP_500: 시험'
-        report = M.publish_workmethod(self.ctx, mirror, interval=0)
-        self.assertEqual(report['issues'], ['77yuhbs:DRIVE_HTTP_500'])
-        self.b.fail = None
-        self.rewrite_state(at='2026-01-01T00:00:00Z')  # 마지막 성공이 오래된 상태
-        self.commit(mirror, '셋째')
         report = M.publish_workmethod(self.ctx, mirror)
+        self.assertEqual(report['issues'], ['77yuhbs:DRIVE_HTTP_500'])
+        state = json.loads((M.state_root(self.home) / '작업방식_드라이브.json').read_text(encoding='utf-8'))
+        self.assertEqual(state['at'], '2026-01-01T00:00:00Z')  # 실패 회차는 시각을 안 남긴다
+        self.b.fail = None
+        self.commit(mirror, '셋째')
+        report = M.publish_workmethod(self.ctx, mirror)  # 3시간을 기다리지 않고 바로 다시 간다
         self.assertFalse(report.get('notDue'))
         self.assertEqual(report['issues'], [])
 
@@ -1166,15 +1182,25 @@ class TwoDrives(Base):
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual((result['조각'], result['풀림'], result['건너뜀']), (1, 1, 0))
 
-    def test_failed_download_skips_partial_folder_unpacks_other_drive_and_says_so(self):
-        self.part('g', '비공개문서-20261101T000000Z-001-aaaaaa.tar.zst.enc', 'x.txt', 'unmet23 판')
-        self.part('받는곳', '비공개문서-20261102T000000Z-001-bbbbbb.tar.zst.enc', 'y.txt', '받다 끊긴 곳의 조각')
+    def test_failed_download_unpacks_nothing_so_a_rerun_still_gets_the_newest(self):
+        self.part('g', '비공개문서-20261101T000000Z-001-aaaaaa.tar.zst.enc', 'x.txt', '옛 판')
+        self.part('받는곳', '비공개문서-20261102T000000Z-001-bbbbbb.tar.zst.enc', 'x.txt', '새 판')
         # 가짜 집에는 77yuhbs 자격이 없어 받기가 실패한다
         done, home2, result = self.unpack('g', extra=('--받기', '비공개문서', '--받는곳', str(self.base / '받는곳')))
         self.assertEqual(done.returncode, 3, done.stderr)
         self.assertTrue(result['받기실패'])
+        self.assertEqual(result['풀림'], 0)
+        self.assertFalse((home2 / 'x.txt').exists())  # 옛 판이 자리를 차지하면 다음 회차의 새 판이 건너뛰어진다
+        done, home2, _ = self.unpack('받는곳', 'g')  # 받기가 된 뒤의 회차
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual((home2 / 'x.txt').read_text(encoding='utf-8'), '새 판')
+
+    def test_one_drive_only_unpacks_just_that_drive(self):
+        self.part('g', '비공개문서-20261101T000000Z-001-aaaaaa.tar.zst.enc', 'x.txt', 'unmet23 판')
+        done, home2, result = self.unpack('g')  # restore.ps1 -드라이브앱만은 --받기 없이 G:만 넘긴다
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertNotIn('받기실패', result)
         self.assertEqual((home2 / 'x.txt').read_text(encoding='utf-8'), 'unmet23 판')
-        self.assertFalse((home2 / 'y.txt').exists())
 
 
 class Order(Base):
