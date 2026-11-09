@@ -88,15 +88,16 @@ const assetUrl=asset=>asset?.media?.url||asset?.url||'';
 function slotsWithFiles(answers,files=[]){const slots={...(answers.slots||{})};for(const file of files){slots[file.slot]={...slots[file.slot],files:[...(slots[file.slot]?.files||[]),file]};}return slots;}
 const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.answers||{},r?.files)});
 // 영상이 도착한 상태면 고객 방 스크린에 그 영상을 소리 없이 튼다.
-const screenFilm=(p,state)=>{const version=state==='deliver'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:'review'}:null;};
+const screenFilm=(p,state)=>{const version=state==='deliver'||state==='done'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:'review'}:null;};
 // 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
 // 「길이 · 구성」은 briefRows의 줄 이름과 견주는 값이라 번역하지 않는다(보일 때는 roomPaper가 옮긴다).
 function roomBrief(r,answers){
   const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성'); // i18n-skip
   // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
   // 방향 제안이 오면 거기 적힌 날 하나만 보인다(같은 화면에 날짜 둘이 서지 않게 — 설계 검토 9).
-  const due=r.directionProposal?.dueDate;
-  if(r.submittedAt&&at>=0)rows.splice(at+1,0,[k('받으실 날'),due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
+  // 판 4(화면 검수 F1): 결제를 확인한 뒤에는 그때 정한 날(payment.dueDate — 결제일 + 기간, 담당자가 고칠 수 있음), 결제 차례에는 날짜 대신 결제 카드와 같은 「결제한 날부터 N일」.
+  const due=r.directionProposal?.dueDate,paidDue=r.payment?.status==='confirmed'?r.payment.dueDate||'':'',paying=payState(r)&&pkg?.days;
+  if(r.submittedAt&&at>=0)rows.splice(at+1,0,[k('받으실 날'),paidDue?t('{date} · 결제 확인 때 정한 날',{date:longDay(paidDue)}):paying?t('결제한 날부터 {days}일',{days:pkg.days}):due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
   return rows;
 }
 export function roomModel(p){
@@ -234,9 +235,11 @@ export const journalNew=(j,seen)=>Number.isFinite(seen)?j.items.filter(item=>ite
 // ── 여기부터 직원 화면(내부 확인 · 새 의뢰 목록)만 쓴다 — 직원 화면은 한국어로 둔다(번역하지 않는다). ──
 // i18n-skip-start
 // 직원 쪽 말로 옮긴 지금 상태(내부 확인의 새 의뢰 목록).
-const DESK_STATE={write:'의뢰서 쓰는 중',check:'새 의뢰',ask:'답을 기다려요',direction:'방향 답을 기다려요',redirect:'방향을 다시 제안해요',model:'모델 답을 기다려요',prepare:'1차안 준비 중','prepare-images':'장면 이미지 준비 중',script:'글 콘티를 보는 중',images:'장면 이미지를 보는 중',revise:'의견 반영 중',make:'제작 중',review:'영상 확인 중',deliver:'납품'};
+const DESK_STATE={write:'의뢰서 쓰는 중',check:'새 의뢰',ask:'답을 기다려요',direction:'방향 답을 기다려요',redirect:'방향을 다시 제안해요',model:'모델 답을 기다려요',prepare:'1차안 준비 중','prepare-images':'장면 이미지 준비 중',script:'글 콘티를 보는 중',images:'장면 이미지를 보는 중',revise:'의견 반영 중',make:'제작 중',review:'영상 확인 중',deliver:'납품',pay:'결제 안내 중',done:'수령 확인 끝'};
+// 결제 차례는 결제 상태로 가른다(판 4 화면 검수 F3 — 결제 확인은 담당자 손 단계라 목록에서 보여야 한다).
+const PAY_DESK={requested:'크몽 결제 요청 보냄',cancelled:'결제 취소'};
 export function deskQueue(projects=[],when=value=>value){
-  return projects.filter(p=>p.studio?.request&&p.studio.request.status!=='retired'&&!['archived','delivered'].includes(p.stage)).sort((a,b)=>String(b.studio.request.submittedAt||b.updatedAt).localeCompare(String(a.studio.request.submittedAt||a.updatedAt))).map(p=>{const state=roomState(p),a=p.studio.request.answers||{};return {id:p.id,title:p.title,meta:[KINDS.find(item=>item.id===a.kind)?.label,when(p.studio.request.submittedAt)].filter(Boolean).join(' · '),state:DESK_STATE[state]||'',tone:state==='check'?'is-new':''};});
+  return projects.filter(p=>p.studio?.request&&p.studio.request.status!=='retired'&&!['archived','delivered'].includes(p.stage)).sort((a,b)=>String(b.studio.request.submittedAt||b.updatedAt).localeCompare(String(a.studio.request.submittedAt||a.updatedAt))).map(p=>{const state=roomState(p),a=p.studio.request.answers||{};return {id:p.id,title:p.title,meta:[KINDS.find(item=>item.id===a.kind)?.label,when(p.studio.request.submittedAt)].filter(Boolean).join(' · '),state:state==='pay'&&PAY_DESK[p.studio.request.payment?.status]||DESK_STATE[state]||'',tone:state==='check'?'is-new':''};});
 }
 // 내부 확인 화면: 답을 그대로 믿지 않고 빠진 칸을 코드가 먼저 짚는다. 판단(묻기 · 넘기기)은 사람이 한다.
 export function deskChecks(p){

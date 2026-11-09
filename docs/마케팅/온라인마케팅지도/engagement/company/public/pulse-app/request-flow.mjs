@@ -45,9 +45,11 @@ const castTile=(a,item,fit)=>`<button type="button" class="sx-cast ${a.models.in
 const picksOf=a=>(MODEL_PICKS[a.kind]||MODEL_PICKS.brand).map(modelOf).filter(Boolean);
 // 모델 칸에서 「추천해 주세요」 · 「사람 없이 제품만」을 골랐을 때 이름 칸 · 큰 사진 밑줄에 쓰는 말(판 4 B6).
 const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t('방향 두 안과 함께 어울리는 모델을 골라 보내 드려요.'),caption:t('어울리는 모델 후보 · 담당자가 방향과 함께 추천해요')}:a.modelChoice==='none'?{name:t('사람 없이 제품만'),line:t('제품 · 손 · 공간만으로 만들어요.'),caption:t('모델 없이 만드는 광고예요')}:null;
+// 그때 큰 사진 자리에는 한 사람 대신 고른 업종의 작품 그림을 둔다(B7과 같은 그림, 판 4 화면 검수 F4).
+const choiceShot=a=>kindOf(a)?.shot||still('w-gift-sphere');
 const wall=a=>{
   const chosen=a.models.map(modelOf).filter(Boolean),picks=[...new Set([...chosen,...picksOf(a)])].slice(0,4),lead=chosen[0]||picks[0];
-  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" aria-hidden="true"><img data-portrait src="${esc(bigScene(lead))}" alt="" decoding="async"><figcaption class="sx-small" data-portrait-name>${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
+  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" aria-hidden="true"><img data-portrait src="${esc(choiceText(a)?choiceShot(a):bigScene(lead))}" alt="" decoding="async"><figcaption class="sx-small" data-portrait-name>${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
 };
 const allWall=a=>{
   const fit=item=>!!MODEL_LINES[item.id]?.fits.includes(a.kind);
@@ -342,7 +344,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     },
   };
   // 판 4 B6: 「추천해 주세요」 · 「사람 없이」를 고르면 하린 같은 한 사람의 이름 · 큰 사진을 남기지 않는다. 고른 것을 풀면 첫 후보로 돌아간다.
-  function showChoice(){const text=choiceText(a);if(!text){const first=a.models[0]||picksOf(a)[0]?.id;if(first)showModel(first);return;}const name=$('[data-cast-name]');if(name){name.textContent=text.name;$('[data-cast-line]').textContent=text.line;$('[data-cast-desc]').textContent='';}const lead=$('[data-portrait-name]');if(lead)lead.textContent=text.caption;}
+  function showChoice(){const text=choiceText(a);if(!text){const first=a.models[0]||picksOf(a)[0]?.id;if(first)showModel(first);return;}const name=$('[data-cast-name]');if(name){name.textContent=text.name;$('[data-cast-line]').textContent=text.line;$('[data-cast-desc]').textContent='';}const lead=$('[data-portrait-name]');if(lead)lead.textContent=text.caption;crossfade($('[data-portrait]'),choiceShot(a));}
   function showModel(id){const item=modelOf(id);if(!item)return;crossfade($('[data-portrait]'),bigScene(item));const lead=$('[data-portrait-name]');if(lead)lead.textContent=`${nameOf(item)} · ${castLine(item)}`;const name=$('[data-cast-name]');if(name){name.textContent=nameOf(item);$('[data-cast-line]').textContent=MODEL_LINES[id]?.line?t(MODEL_LINES[id].line):'';$('[data-cast-desc]').textContent=t(item.description);}}
   function updateSlotStatus(id){const box=form.querySelector(`[data-status="${id}"]`),slot=slotsFor(a.kind).find(item=>item.id===id);if(box&&slot)box.innerHTML=slotStatus(a,slot);}
   async function addFiles(id,list){
