@@ -414,6 +414,9 @@ test('만들기 — 이상한 이름 · 한글 자리 · 저장소 안 자리 ·
     assert.equal(path.resolve(자리, fs.readlinkSync(path.join(자리, 'node_modules'))), 낯선, '남의 링크를 고치지 않는다');
     fs.unlinkSync(path.join(자리, 'node_modules'));
 
+    assert.throws(부름({ 최소여유: 2 ** 60 }), /여유가/);
+    assert.equal(fs.readdirSync(자리).includes(새이름), false, '여유가 모자라면 만들지 않는다');
+
     fs.mkdirSync(path.join(자리, 새이름));
     assert.throws(부름({}), /등록된 사본이 아니다/);
     fs.rmdirSync(path.join(자리, 새이름));

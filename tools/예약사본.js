@@ -148,8 +148,9 @@ function 만들기(옵션 = {}) {
   if (가지있음) throw new Error(`가지 ${가지}가 이미 있다 — 다른 시각의 이름으로 만든다`);
   if (!옵션.실행) return { 결과: '미리 보기', 폴더, 가지, 링크: 옆링크맞추기(자리, 메인, false) };
   fs.mkdirSync(자리, { recursive: true });
-  const 칸 = fs.statfsSync(자리);
-  if (칸.bavail * 칸.bsize < 자리최소여유) throw new Error(`사본 자리 여유가 ${자리최소여유 / 2 ** 30}GiB 아래다: ${자리}`);
+  // 시험(`자리` 인자)은 CI 러너의 작은 디스크에서도 돈다 — 실제 자리에만 건다
+  const 칸 = fs.statfsSync(자리), 최소여유 = 옵션.최소여유 ?? (옵션.자리 ? 0 : 자리최소여유);
+  if (칸.bavail * 칸.bsize < 최소여유) throw new Error(`사본 자리 여유가 ${최소여유 / 2 ** 30}GiB 아래다: ${자리}`);
   const 링크 = 옆링크맞추기(자리, 메인, true);
   const 판 = 원격판받기(메인);
   // CLI가 새 사본을 뜰 때와 같이 병렬로 꺼낸다(k$r). SYNK_LIGHT_OFF: 이 사본은 미디어를 빼지 않는다
