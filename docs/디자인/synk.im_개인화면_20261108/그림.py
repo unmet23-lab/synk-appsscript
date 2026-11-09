@@ -19,7 +19,7 @@ os.makedirs(나갈, exist_ok=True)
 여백 = 8  # 옮긴 뒤 가장자리에 빈 칸이 보이지 않게 네 변을 조금 자른다
 def 읽기(p):  # cv2.imread는 윈도우에서 한글 경로를 못 읽는다(사진 원본이 SYNK-보관함/연구 아래에 있다)
     return cv2.imdecode(np.fromfile(p, np.uint8), cv2.IMREAD_COLOR)
-def 연작(접두, 장면, 가림칠):
+def 연작(접두, 장면, 가림칠, 움직임=cv2.MOTION_AFFINE):
     기준 = 읽기(os.path.join(사진폴더, 장면[0][1] + '.png'))
     H, W = 기준.shape[:2]
     가림 = np.zeros((H, W), np.uint8)
@@ -32,7 +32,7 @@ def 연작(접두, 장면, 가림칠):
         if 원본 != 장면[0][1]:
             g = cv2.GaussianBlur(cv2.cvtColor(im, cv2.COLOR_BGR2GRAY).astype(np.float32), (0, 0), 2)
             w = np.eye(2, 3, dtype=np.float32)
-            cc, w = cv2.findTransformECC(g0, g, w, cv2.MOTION_AFFINE, (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 200, 1e-5), 가림, 5)
+            cc, w = cv2.findTransformECC(g0, g, w, 움직임, (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 200, 1e-5), 가림, 5)
             im = cv2.warpAffine(im, w, (W, H), flags=cv2.INTER_CUBIC | cv2.WARP_INVERSE_MAP, borderMode=cv2.BORDER_REPLICATE)
             print(f'{접두}-{이름} 맞춤 {cc:.3f} 옮김 {w[0, 2]:.1f} {w[1, 2]:.1f}')
         im = im[여백:H - 여백, 여백:W - 여백]
@@ -43,11 +43,12 @@ def 연작(접두, 장면, 가림칠):
 
 def 창가가림(m, W, H):  # 창틀 위 · 책상 위 물건 · 창틀 왼쪽 기둥 · 창 아래 턱
     m[0:40, 640:W] = 255; m[640:H, 560:1300] = 255; m[0:760, 640:700] = 255; m[690:760, 700:W] = 255
-def 교실가림(m, W, H):  # 칠판 틀 · 창틀 · 턱 · 벽(유리 안 바깥 풍경과 책상 위 물건은 날마다 다르다)
-    m[0:780, :] = 255
-    m[58:607, 755:1137] = 0; m[58:607, 1213:1610] = 0
-연작('window', [('evening', 'a1'), ('morning', 'b-morning'), ('golden', 'c-golden'), ('rain', 'd-rain'), ('snow', 'e-snow')], 창가가림)
-연작('class', [('now', 'k1'), ('morning', 'k-morning'), ('rain', 'k-rain'), ('snow', 'k-snow')], 교실가림)
+def 교실가림(m, W, H):  # 칠판 틀 · 창틀 · 턱 · 벽 · 책상 먼 가장자리 왼쪽(유리 안 풍경 · 칠판 안 분필 글 · 책상 위 물건은 날마다 다르다)
+    m[0:700, :] = 255; m[760:815, 0:480] = 255
+    m[50:618, 1027:1335] = 0; m[50:618, 1362:1612] = 0; m[75:652, 5:930] = 0
+# 창가 연작은 옮기기만 한다. 원본 구도가 2~3px 안으로 같은데, 방 전체 빛을 바꾼 판에서는 아핀 맞춤이 빛에 속아 사진을 비튼다(11-09 오후 판: 창틀 안쪽 호박빛 때문에 세로선 38px 기울임, 비 판: 세로 배율 16px)
+연작('window', [('evening', 'a1'), ('morning', 'w-morning'), ('golden', 'w-golden'), ('rain', 'w-rain'), ('snow', 'w-snow')], 창가가림, cv2.MOTION_TRANSLATION)
+연작('class', [('now', 'e1'), ('morning', 'e-morning'), ('rain', 'e-rain'), ('snow', 'e-snow')], 교실가림)
 
 # ── ② 실제 화면 부품 ──
 def 둥글게(im, r):
