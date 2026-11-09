@@ -1,0 +1,206 @@
+첫줄시각(UTC)	실행	커밋	실행결론	시도	deploy결론	deploy시작(UTC)	묶음크기(1GiB넘을때만)	상태줄	끝줄
+2026-11-01T05:19:58Z	41276529914	556dc112	success	1	success	2026-11-01T05:21:28Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T05:38:35Z	41277725904	3c9155db	success	1	success	2026-11-01T05:39:57Z		deployment_in_progress	Reported success!
+2026-11-01T05:46:33Z	41278220370	23db4d4d	success	1	success	2026-11-01T05:48:07Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T06:03:00Z	41279235769	9a010040	success	1	success	2026-11-01T06:04:21Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T06:26:53Z	41280870039	849b14e3	success	1	success	2026-11-01T06:28:22Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T06:53:50Z	41282627032	9e39d9d1	success	1	success	2026-11-01T06:55:08Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T07:18:11Z	41284240348	00c43448	cancelled	1	cancelled	2026-11-01T07:18:51Z			
+2026-11-01T07:18:47Z	41284279528	58deb66d	success	1	success	2026-11-01T07:20:09Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T09:16:08Z	41288139036	01cb659e	success	1	success	2026-11-01T09:17:39Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T09:19:35Z	41288384801	65b0a028	success	1	failure	2026-11-01T09:21:03Z			HttpError: Deployment |in progress deployment
+2026-11-01T09:19:35Z	41288384801	65b0a028	success	2	failure	2026-11-01T09:42:42Z			HttpError: Deployment |in progress deployment
+2026-11-01T09:19:35Z	41288384801	65b0a028	success	3	failure	2026-11-01T09:46:59Z			HttpError: Deployment |in progress deployment
+2026-11-01T09:48:03Z	41290364399	65b0a028	cancelled	1	cancelled	2026-11-01T09:48:29Z			
+2026-11-01T09:19:35Z	41288384801	65b0a028	success	4	success	2026-11-01T09:48:33Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T09:53:11Z	41290709867	b78bdd6a	failure	1	failure	2026-11-01T09:54:31Z			HttpError: Deployment |in progress deployment
+2026-11-01T10:05:09Z	41295886237	4d22b3e5	success	1	success	2026-11-01T10:06:33Z		deployment_in_progress	Reported success!
+2026-11-01T18:39:32Z	41337742774	50886366	success	1	success	2026-11-01T18:41:22Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-01T21:20:25Z	41351504411	8e97ec7b	success	1	success	2026-11-01T21:21:56Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-01T22:07:36Z	41355512128	b3835639	success	1	success	2026-11-01T22:09:35Z		deployment_in_progress	Reported success!
+2026-11-01T22:26:59Z	41357182184	027d6d96	cancelled	1	cancelled	2026-11-01T22:27:54Z			
+2026-11-01T22:27:49Z	41357253574	e8511585	success	1	success	2026-11-01T22:29:15Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-02T06:22:42Z	41399520308	cc283661	success	1	success	2026-11-02T06:24:07Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-02T07:16:45Z	41405258042	06df2745	success	1	success	2026-11-02T07:18:20Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-02T10:29:56Z	41429270152	83e3f4cc	success	1	success	2026-11-02T10:31:37Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-02T11:44:37Z	41439189903	4ecd7d67	success	1	success	2026-11-02T11:49:04Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-02T12:48:59Z	41447765072	03375fa3	success	1	success	2026-11-02T13:15:00Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-02T17:02:46Z	41487319508	ff2cd996	success	1	success	2026-11-02T17:04:48Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-02T18:47:49Z	41503936035	866d3ab8	success	1	success	2026-11-02T19:21:19Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-02T20:00:32Z	41515189295	40d6cf75	success	1	success	2026-11-02T20:02:06Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-02T21:10:35Z	41525923363	8c6c7054	success	1	success	2026-11-02T21:22:49Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-02T21:44:50Z	41531146860	909a2a91	success	1	success	2026-11-02T22:01:51Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-02T22:54:27Z	41541144201	9d358235	success	1	success	2026-11-02T23:01:03Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-03T06:46:15Z	41591985729	1d78fdd1	success	1	success	2026-11-03T06:47:52Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-03T07:03:45Z	41593815245	6cf4be66	success	1	success	2026-11-03T07:05:26Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T08:15:27Z	41601934639	8a6f3791	success	1	success	2026-11-03T08:23:20Z		deployment_in_progress	Reported success!
+2026-11-03T10:05:16Z	41616298279	02114741	success	1	success	2026-11-03T10:08:50Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T10:15:44Z	41617781747	09f21f24	success	1	success	2026-11-03T10:20:40Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T10:41:46Z	41621398874	83b615eb	success	1	success	2026-11-03T10:51:14Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T11:07:16Z	41624885550	ab4872c8	cancelled	1	cancelled	2026-11-03T11:14:23Z			
+2026-11-03T11:16:16Z	41626142781	05ff56f4	success	1	success	2026-11-03T11:22:44Z		deployment_queued>syncing_files	Reported success!
+2026-11-03T12:53:41Z	41639550759	3364165c	success	1	success	2026-11-03T13:15:30Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T13:48:16Z	41647618462	40841d04	success	1	success	2026-11-03T14:18:29Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-03T15:04:31Z	41660058816	7127fd01	success	1	success	2026-11-03T16:22:54Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T16:34:54Z	41675660771	e715070a	cancelled	1	cancelled	2026-11-03T16:47:53Z			
+2026-11-03T16:47:50Z	41677837988	eeb54585	cancelled	1	cancelled	2026-11-03T16:56:32Z			
+2026-11-03T16:56:30Z	41679271510	e42af196	cancelled	1	cancelled	2026-11-03T17:12:29Z			
+2026-11-03T17:12:27Z	41681951009	51c75d5c	cancelled	1	cancelled	2026-11-03T17:24:37Z			
+2026-11-03T17:24:34Z	41683961095	30492147	success	1	success	2026-11-03T18:25:26Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T18:48:15Z	41697272765	7dcdd5fb	cancelled	1	cancelled	2026-11-03T18:56:48Z			
+2026-11-03T18:56:41Z	41698587857	0457ba28	cancelled	1	cancelled	2026-11-03T19:00:39Z			
+2026-11-03T19:00:24Z	41699158977	a2a8a581	success	1	success	2026-11-03T19:11:14Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T19:50:31Z	41707011842	48c72455	success	1	success	2026-11-03T20:06:22Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-03T20:56:32Z	41717172760	9182a716	success	1	success	2026-11-03T21:37:51Z		deployment_in_progress	Reported success!
+2026-11-03T21:58:11Z	41726557206	254c9cf5	success	1	success	2026-11-03T22:54:04Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T00:57:16Z	41750608614	17b09708	success	1	success	2026-11-04T00:58:42Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-04T01:33:19Z	41754843462	44bc875c	success	1	success	2026-11-04T01:34:39Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T06:14:37Z	41784225453	47561faf	success	1	success	2026-11-04T06:16:00Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-04T07:36:06Z	41793407277	e4fa3cd6	success	1	success	2026-11-04T07:37:40Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T07:39:12Z	41793762030	06f8ffd2	success	1	success	2026-11-04T07:40:44Z		deployment_in_progress	Reported success!
+2026-11-04T08:30:44Z	41800063691	775a1740	success	1	success	2026-11-04T08:32:23Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-04T08:45:33Z	41801967419	a251bade	success	1	success	2026-11-04T08:47:01Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-04T10:07:35Z	41812082157	9838b970	success	1	success	2026-11-04T10:09:18Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T10:19:14Z	41813372904	d88db7ba	cancelled	1	cancelled	2026-11-04T10:20:35Z			
+2026-11-04T10:20:20Z	41813499466	e0ead1f4	success	1	success	2026-11-04T10:21:57Z		deployment_in_progress>syncing_files>updating_pages	Reported success!
+2026-11-04T10:42:14Z	41815915993	2ecf0cf8	success	1	success	2026-11-04T10:44:17Z		deployment_in_progress>updating_pages	Reported success!
+2026-11-04T10:57:48Z	41817691377	34cc62ab	success	1	success	2026-11-04T10:59:23Z		deployment_in_progress>syncing_files>updating_pages	Reported success!
+2026-11-04T11:26:16Z	41820852351	80b03bf9	success	1	success	2026-11-04T11:27:41Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-04T11:29:12Z	41821248096	8b48a689	success	1	success	2026-11-04T11:30:43Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T11:36:21Z	41822275113	7d3e53ee	success	1	success	2026-11-04T11:37:58Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T11:45:32Z	41823523866	86fa514e	success	1	success	2026-11-04T11:47:07Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T12:00:30Z	41825556352	132c0dbd	cancelled	1	cancelled	2026-11-04T12:01:52Z			
+2026-11-04T12:00:48Z	41825599629	42e3be52	success	1	success	2026-11-04T12:03:18Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-04T12:23:42Z	41828891078	e2b90103	success	1	success	2026-11-04T12:26:01Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-04T13:10:28Z	41835689768	63970db8	success	1	success	2026-11-04T13:12:04Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T13:21:25Z	41837346747	03cafe0f	success	1	success	2026-11-04T13:22:54Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T13:47:05Z	41841261725	d1bd3c7e	success	1	success	2026-11-04T13:48:31Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T14:13:19Z	41845388684	992b3b72	success	1	success	2026-11-04T14:14:49Z		deployment_queued>syncing_files	Reported success!
+2026-11-04T14:19:32Z	41846412806	4bccb46e	success	1	success	2026-11-04T14:20:58Z		deployment_in_progress	Reported success!
+2026-11-04T14:34:50Z	41848979036	34092d49	success	1	success	2026-11-04T14:36:16Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T15:00:12Z	41853214398	725f3c0a	success	1	success	2026-11-04T15:01:53Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-04T16:53:03Z	41871969569	e7c5344e	success	1	success	2026-11-04T16:57:07Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T16:59:51Z	41873107028	dd0aa374	success	1	success	2026-11-04T17:01:41Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-04T17:05:38Z	41874121789	78aad076	cancelled	1	cancelled	2026-11-04T17:10:47Z			
+2026-11-04T17:09:26Z	41874774365	d8595b92	success	1	success	2026-11-04T17:12:26Z		deployment_in_progress	Reported success!
+2026-11-04T17:17:50Z	41876202869	2592192e	failure	1	failure	2026-11-04T17:21:20Z		deployment_in_progress>syncing_files>updating_pages	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-04T17:17:50Z	41876202869	2592192e	failure	2	failure	2026-11-04T17:55:06Z			Deployment cancelled
+2026-11-04T17:59:39Z	41882523407	97120b20	success	1	success	2026-11-04T18:01:52Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T18:04:08Z	41883341411	82db5c09	cancelled	1	cancelled	2026-11-04T18:06:44Z		deployment_queued	Canceled deployment
+2026-11-04T18:06:42Z	41883809314	97b98581	success	1	success	2026-11-04T18:09:35Z		deployment_queued>syncing_files	Reported success!
+2026-11-04T18:27:03Z	41887271007	8e07ac7f	success	1	success	2026-11-04T18:28:30Z		deployment_in_progress	Reported success!
+2026-11-04T19:05:27Z	41893541046	7404cf3b	success	1	success	2026-11-04T19:06:54Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T19:18:09Z	41895618297	fd991f7c	success	1	success	2026-11-04T19:19:51Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T19:38:39Z	41898916850	4b2755d7	cancelled	1	cancelled	2026-11-04T19:40:02Z			
+2026-11-04T19:39:43Z	41899084954	579b84d5	cancelled	1	cancelled	2026-11-04T19:41:22Z			
+2026-11-04T19:41:13Z	41899324981	f29571b0	success	1	success	2026-11-04T19:42:49Z		deployment_queued>syncing_files	Reported success!
+2026-11-04T20:19:49Z	41905558993	eff37e33	success	1	success	2026-11-04T20:21:20Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-04T20:36:12Z	41908169510	d3a9a425	success	1	success	2026-11-04T20:37:43Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-04T21:05:26Z	41912759048	add2369b	success	1	success	2026-11-04T21:06:54Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-05T01:52:40Z	41951452720	6290cc1e	cancelled	1	cancelled	2026-11-05T01:54:08Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-05T01:54:07Z	41951607572	eff2adb1	success	1	success	2026-11-05T01:56:20Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T04:14:14Z	41966540027	46177b81	success	1	success	2026-11-05T04:15:41Z		deployment_in_progress>updating_pages	Reported success!
+2026-11-05T04:23:49Z	41967544218	7e48b5b6	success	1	success	2026-11-05T04:25:16Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T04:34:14Z	41968617477	2f7bff6f	success	1	success	2026-11-05T04:35:47Z	1074253711	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T05:17:08Z	41973041690	34059d5b	success	1	success	2026-11-05T05:18:38Z	1074252486	deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T05:53:24Z	41976828825	9e362fb1	success	1	success	2026-11-05T05:55:02Z	1074339232	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T07:07:45Z	41985046465	e5818875	success	1	success	2026-11-05T07:09:13Z	1074324740	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T08:55:40Z	41998236166	7dc25d66	success	1	success	2026-11-05T08:57:18Z	1074325187	deployment_queued>deployment_in_progress>updating_pages	Reported success!
+2026-11-05T09:21:30Z	42001704781	d93500c2	success	1	success	2026-11-05T09:23:00Z	1074258848	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T10:44:14Z	42013177737	e8498f7e	success	1	success	2026-11-05T10:45:45Z	1074260826	deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T11:01:09Z	42015470576	d4998b30	success	1	success	2026-11-05T11:02:33Z	1074261100	deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T11:14:30Z	42017354978	102d816a	success	1	success	2026-11-05T11:16:17Z	1074326085	deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T11:56:12Z	42022958112	ba8ac57c	success	1	success	2026-11-05T11:57:37Z	1074261731	deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T13:23:14Z	42035302781	9b724ded	success	1	success	2026-11-05T13:24:55Z	1075289287	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T13:43:41Z	42038321955	92755da9	success	1	success	2026-11-05T13:45:09Z	1075359144	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T13:48:23Z	42039030786	4da552be	success	1	success	2026-11-05T13:50:08Z	1075359440	deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T14:43:40Z	42047795071	00db49b7	success	1	success	2026-11-05T14:45:13Z	1075540751	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T15:05:44Z	42051453086	73a5738f	success	1	success	2026-11-05T15:07:15Z	1075609301	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T15:13:42Z	42052812861	c319ff58	success	1	success	2026-11-05T15:15:34Z	1075533063	deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T15:34:06Z	42056288953	d88ac78d	success	1	success	2026-11-05T15:35:46Z	1075609594	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T17:04:19Z	42070951116	6e9ccff7	success	1	success	2026-11-05T17:06:17Z	1075609208	deployment_in_progress>syncing_files	Reported success!
+2026-11-05T17:30:15Z	42075243742	818a298e	success	1	success	2026-11-05T17:31:48Z	1086721410	deployment_in_progress	Reported success!
+2026-11-05T17:44:31Z	42077567292	607a4c92	success	1	success	2026-11-05T17:46:06Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T17:53:02Z	42078926793	711474c0	success	1	success	2026-11-05T17:54:46Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-05T17:58:06Z	42079721345	4f9bb85c	cancelled	1	cancelled	2026-11-05T17:59:28Z			
+2026-11-05T17:59:07Z	42079876289	12478160	success	1	success	2026-11-05T18:01:15Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T18:10:56Z	42081753000	5c97a26d	success	1	success	2026-11-05T18:12:37Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T18:32:13Z	42085174421	c46313c1	success	1	success	2026-11-05T18:34:01Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-05T18:56:31Z	42089078909	afc39e1f	cancelled	1	cancelled	2026-11-05T18:58:12Z		deployment_in_progress>syncing_files>updating_pages	Canceled deployment
+2026-11-05T18:59:39Z	42089568572	50506866	success	1	success	2026-11-05T19:02:11Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T19:26:23Z	42093889847	6dad6bc9	success	1	success	2026-11-05T19:27:54Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T19:40:22Z	42096114115	1dfb564c	cancelled	1	cancelled	2026-11-05T19:41:44Z			
+2026-11-05T19:41:15Z	42096251030	889b67bf	cancelled	1	failure	2026-11-05T19:43:34Z		deployment_queued>deployment_in_progress>syncing_files>updating_pages	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-05T20:18:34Z	42102168810	889b67bf	cancelled	1	cancelled	2026-11-05T20:18:38Z			
+2026-11-05T19:41:15Z	42096251030	889b67bf	cancelled	2	cancelled	2026-11-05T20:19:59Z			
+2026-11-05T20:18:44Z	42102195756	889b67bf	cancelled	1	cancelled	2026-11-05T20:21:30Z		(빈칸)	Canceled deployment
+2026-11-05T20:24:07Z	42103022738	8fd5632e	success	1	success	2026-11-05T20:27:01Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-05T20:51:30Z	42107257534	957c06dd	success	1	success	2026-11-05T20:53:32Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-05T22:05:43Z	42118485733	4d085dfe	success	1	success	2026-11-05T22:07:16Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-06T03:31:22Z	42157055946	3f054c39	failure	1	failure	2026-11-06T03:33:06Z		deployment_in_progress>syncing_files>(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-06T03:47:27Z	42158644426	2e38eb4f	success	1	success	2026-11-06T03:49:19Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-06T05:41:18Z	42169886618	f8b54768	success	1	success	2026-11-06T05:43:07Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-06T05:49:17Z	42170660132	fdbab48a	success	1	success	2026-11-06T05:50:48Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-06T06:21:09Z	42173876543	2cf1e5df	success	1	success	2026-11-06T06:22:50Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-06T20:53:00Z	42292080634	4c742156	success	1	success	2026-11-06T20:54:40Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-06T21:24:18Z	42296441893	6817f379	cancelled	1	cancelled	2026-11-06T21:25:50Z		deployment_in_progress>syncing_files	Canceled deployment
+2026-11-06T21:26:59Z	42296809950	46529d22	success	1	success	2026-11-06T21:28:50Z		deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-06T22:26:44Z	42304761966	7770a126	success	1	success	2026-11-06T22:28:27Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-06T22:46:12Z	42307175192	9bb747da	success	1	failure	2026-11-06T22:47:43Z		deployment_queued>syncing_files	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-06T22:46:12Z	42307175192	9bb747da	success	2	success	2026-11-06T23:12:04Z		deployment_queued>deployment_in_progress	Reported success!
+2026-11-06T23:35:47Z	42312963283	a41726a5	success	1	success	2026-11-06T23:37:32Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T08:28:14Z	42355616711	e7edd3c7	success	1	success	2026-11-07T08:29:48Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T09:14:12Z	42358867185	fba85257	failure	1	failure	2026-11-07T09:15:44Z		deployment_in_progress>syncing_files>(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-07T09:14:12Z	42358867185	fba85257	failure	2	failure	2026-11-07T09:43:50Z		(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-07T09:54:29Z	42361682531	90dc8db4	failure	1	failure	2026-11-07T09:56:00Z		deployment_in_progress>syncing_files>(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-07T10:07:06Z	42362571668	90dc8db4	cancelled	1	cancelled	2026-11-07T10:07:33Z			
+2026-11-07T09:54:29Z	42361682531	90dc8db4	failure	2	failure	2026-11-07T10:07:37Z		(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-07T09:54:29Z	42361682531	90dc8db4	failure	3	failure	2026-11-07T10:23:59Z		(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-07T09:54:29Z	42361682531	90dc8db4	failure	4	failure	2026-11-07T10:35:32Z		(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-07T11:38:15Z	42369015530	b9ef1bdd	success	1	success	2026-11-07T11:39:43Z		deployment_in_progress	Reported success!
+2026-11-07T12:38:08Z	42373359433	0e051e00	success	1	success	2026-11-07T12:39:45Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T12:49:37Z	42374183685	2349027d	success	1	success	2026-11-07T12:51:12Z		deployment_in_progress	Reported success!
+2026-11-07T13:15:00Z	42376083160	2015aff9	cancelled	1	cancelled	2026-11-07T13:16:33Z		deployment_in_progress>syncing_files	Canceled deployment
+2026-11-07T13:17:18Z	42376261722	8c04f0db	success	1	success	2026-11-07T13:18:56Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T13:49:00Z	42378677249	136d6d43	success	1	success	2026-11-07T13:50:28Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T16:01:51Z	42389217501	21516f40	success	1	success	2026-11-07T16:03:49Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T18:39:44Z	42402385710	d3dcae11	success	1	success	2026-11-07T18:41:16Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T22:02:38Z	42418710049	8ae6c18b	success	1	success	2026-11-07T22:04:34Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-07T23:20:49Z	42424831278	68443ea3	success	1	success	2026-11-07T23:22:19Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T06:35:50Z	42455401345	c4712dd1	success	1	success	2026-11-08T06:37:20Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T07:11:01Z	42457727851	58569a1f	success	1	success	2026-11-08T07:12:36Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T09:30:48Z	42467491067	54256af4	success	1	success	2026-11-08T09:32:41Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T10:47:01Z	42472874500	3cdfb18e	success	1	success	2026-11-08T10:48:36Z		deployment_queued>syncing_files	Reported success!
+2026-11-08T13:12:25Z	42483841236	e65f50d5	cancelled	1	cancelled	2026-11-08T13:13:02Z			
+2026-11-08T13:12:59Z	42483886594	e44fb0ce	success	1	success	2026-11-08T13:14:57Z		deployment_in_progress>finished_file_sync	Reported success!
+2026-11-08T15:40:50Z	42496025728	4cf58c75	success	1	success	2026-11-08T15:42:24Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T18:48:44Z	42511844982	2ca080cd	success	1	success	2026-11-08T18:50:25Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T19:01:08Z	42512860693	1ecb061b	success	1	success	2026-11-08T19:02:39Z		deployment_in_progress>syncing_files	Reported success!
+2026-11-08T20:36:08Z	42520964129	7891f806	success	1	success	2026-11-08T20:37:43Z	1073766824	deployment_in_progress>syncing_files	Reported success!
+2026-11-08T22:01:03Z	42528060156	51f84dfc	cancelled	1	cancelled	2026-11-08T22:02:36Z	1073821600		Canceled deployment
+2026-11-08T22:02:40Z	42528199360	7efc26ec	success	1	success	2026-11-08T22:04:11Z	1073816048	deployment_in_progress>syncing_files	Reported success!
+2026-11-08T22:59:08Z	42532898262	4611baf7	success	1	success	2026-11-08T23:00:45Z	1096218153	deployment_in_progress>syncing_files	Reported success!
+2026-11-08T23:44:48Z	42536639100	99d4b068	success	1	success	2026-11-08T23:46:24Z	1096213226	deployment_in_progress>syncing_files	Reported success!
+2026-11-08T23:58:11Z	42537686957	6368fe1e	success	1	success	2026-11-09T00:00:03Z	1095220522	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T00:25:22Z	42540091752	3e38fc15	success	1	success	2026-11-09T00:26:57Z	1095214004	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T06:47:02Z	42575176916	acf9c1e6	success	1	success	2026-11-09T06:48:44Z	1095240234	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T08:26:55Z	42586009237	1c1e4f88	success	1	success	2026-11-09T08:28:42Z	1095229985	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T08:51:20Z	42588967557	e249e363	success	1	success	2026-11-09T08:53:07Z	1095241798	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T09:27:44Z	42593598278	12e78e01	success	1	success	2026-11-09T09:29:32Z	1109967429	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T09:44:32Z	42595715422	506fd18e	success	1	success	2026-11-09T09:46:18Z	1109967013	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T09:55:57Z	42597123238	9e6b5d6b	success	1	success	2026-11-09T09:57:38Z	1109948429	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T10:36:06Z	42602026121	db05d252	success	1	success	2026-11-09T10:37:54Z	1155906995	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T11:44:56Z	42611463360	4fd3292a	success	1	success	2026-11-09T11:46:46Z	1155904277	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T12:26:44Z	42617064222	87683b4c	success	1	success	2026-11-09T12:28:36Z	1155903582	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T17:33:10Z	42665723050	b885eecb	cancelled	1	cancelled	2026-11-09T17:35:08Z	1155906152	deployment_in_progress	Canceled deployment
+2026-11-09T17:35:46Z	42666159586	cc51eec6	success	1	success	2026-11-09T17:37:49Z	1155585946	deployment_in_progress	Reported success!
+2026-11-09T18:42:27Z	42676378891	448a56d6	success	1	success	2026-11-09T18:44:17Z	1155544089	deployment_in_progress>syncing_files	Reported success!
+2026-11-09T19:12:08Z	42681071059	ac88c2b2	failure	1	failure	2026-11-09T19:14:03Z	1155552539	deployment_in_progress>syncing_files>(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T19:56:11Z	42688093224	39108326	success	1	success	2026-11-09T19:57:59Z	1155551414	deployment_queued>deployment_in_progress>syncing_files	Reported success!
+2026-11-09T20:28:41Z	42693323764	b2e8f31f	failure	1	failure	2026-11-09T20:30:25Z	1155544520	deployment_queued>syncing_files>(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T20:28:41Z	42693323764	b2e8f31f	failure	2	failure	2026-11-09T20:42:47Z	1155544520	(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T20:28:41Z	42693323764	b2e8f31f	failure	3	failure	2026-11-09T20:54:32Z	1155544520	(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T20:28:41Z	42693323764	b2e8f31f	failure	4	failure	2026-11-09T21:06:50Z	1155544520	(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T21:18:40Z	42701279727	b2e8f31f	failure	1	failure	2026-11-09T21:20:39Z	1155552191	(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T21:48:06Z	42705922187	b2e8f31f	failure	1	failure	2026-11-09T21:49:51Z	1155549343	(빈칸)	Timeout reached, aborting!|Timeout reached, aborting!
+2026-11-09T22:10:08Z	42709369864	5663f740	success	1	success	2026-11-09T22:12:00Z	1155554099	deployment_in_progress>syncing_files	Reported success!
