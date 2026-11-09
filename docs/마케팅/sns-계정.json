@@ -62,7 +62,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "vk-web",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "unknown",
+      "metricsRoute": "vk-api",
+      "metricsState": "missing"
     },
     "lab-cn-douyin": {
       "brand": "LAB",
@@ -105,7 +108,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "douyin-creator",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "unknown",
+      "metricsRoute": "screen-only",
+      "metricsState": "missing"
     },
     "lab-jp-instagram": {
       "brand": "LAB",
@@ -144,7 +150,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "missing"
     },
     "lab-uz-instagram": {
       "brand": "LAB",
@@ -183,7 +192,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "missing"
     },
     "lab-mx-youtube": {
       "brand": "LAB",
@@ -198,7 +210,7 @@
       "studioProfilePrepared": null,
       "studioDescriptionMatchesAfterTrim": null,
       "profilePublished": false,
-      "publicProfileComplete": false,
+      "publicProfileComplete": true,
       "publicProfileVerified": false,
       "avatarStatus": "historical-upload-current-state-unverified",
       "coverStatus": "historical-upload-current-state-unverified",
@@ -242,7 +254,12 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "public-api",
+      "metricsState": "missing",
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-br-youtube": {
       "brand": "LAB",
@@ -325,7 +342,12 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "public-api",
+      "metricsState": "missing",
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-cn-xiaohongshu": {
       "brand": "LAB",
@@ -380,13 +402,16 @@
       "dailyTimesFrom": "미정",
       "postRoute": "xhs-creator",
       "postRouteVerified": true,
+      "postRoutePolicy": "unknown",
+      "metricsRoute": "screen-only",
+      "metricsState": "missing",
       "rotationSeed": true
     },
     "lab-mm-tiktok": {
       "brand": "LAB",
       "platform": "tiktok",
       "countryCode": "MM",
-      "displayName": "유호",
+      "displayName": "SYNK LAB Myanmar",
       "desiredDisplayName": "SYNK LAB Myanmar",
       "displayNameStatus": "platform-7-day-change-limit-until-after-2026-09-27",
       "handle": "@synklab.mm",
@@ -437,6 +462,9 @@
       "dailyTimesFrom": "미정",
       "postRoute": "tiktok-studio",
       "postRouteVerified": true,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "reading",
       "rotationSeed": true
     },
     "lab-vn-tiktok": {
@@ -489,7 +517,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed"
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -549,7 +580,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "rutube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "unknown",
+      "metricsRoute": "screen-only",
+      "metricsState": "missing",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 API(profile/user) — 이름 · 소개 · 사진 · 소개 속 링크 synk.im/lab 읽음, 영상 0"
     },
     "lab-np-facebook": {
       "brand": "LAB",
@@ -596,7 +633,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed"
     },
     "lab-kh-facebook": {
       "brand": "LAB",
@@ -644,7 +684,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed"
     },
     "lab-lk-facebook": {
       "brand": "LAB",
@@ -690,7 +733,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "meta-business-suite",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed"
     },
     "lab-uz-telegram": {
       "brand": "LAB",
@@ -733,7 +779,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "telegram-web",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "unknown",
+      "metricsRoute": "public-page",
+      "metricsState": "missing",
+      "publicProfileComplete": false,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 t.me/s 공개 화면 — 이름 · 소개 · 사진 있음, 소개에 링크 없음(채운 뒤 true)"
     },
     "lab-ca-youtube": {
       "brand": "LAB",
@@ -765,7 +817,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-my-youtube": {
       "brand": "LAB",
@@ -797,7 +855,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-nz-youtube": {
       "brand": "LAB",
@@ -829,7 +893,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-py-youtube": {
       "brand": "LAB",
@@ -861,7 +931,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-au-youtube": {
       "brand": "LAB",
@@ -893,7 +969,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-lk-youtube": {
       "brand": "LAB",
@@ -925,7 +1007,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-ph-youtube": {
       "brand": "LAB",
@@ -945,6 +1033,8 @@
       "loginIdentityRef": "unmet23",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
       "language": "fil",
+      "languageGroup": "en",
+      "languageGroupNote": "판은 필리핀어(fil — 채널 소개 「Matuto ng Korean…」, 11-10 공개 화면)지만 채널 이름 줄이 영어(Korean Made Fun)라 같은 언어 묶음 검사(돌림 ⑥)는 유튜브 영어 묶음과 함께 받는다",
       "timeZone": "Asia/Manila",
       "dailyTimes": [
         "13:00",
@@ -957,7 +1047,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-us-youtube": {
       "brand": "LAB",
@@ -989,7 +1085,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-kg-youtube": {
       "brand": "LAB",
@@ -1021,7 +1123,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-in-youtube": {
       "brand": "LAB",
@@ -1053,7 +1161,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-id-youtube": {
       "brand": "LAB",
@@ -1085,7 +1199,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-th-youtube": {
       "brand": "LAB",
@@ -1117,7 +1237,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-mm-youtube": {
       "brand": "LAB",
@@ -1149,7 +1275,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-tw-youtube": {
       "brand": "LAB",
@@ -1181,7 +1313,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-jp-youtube": {
       "brand": "LAB",
@@ -1213,7 +1351,13 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-vn-youtube": {
       "brand": "LAB",
@@ -1245,15 +1389,22 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "youtube-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed",
+      "publicProfileComplete": true,
+      "profileCheckedAt": "2026-11-10",
+      "profileCheckNote": "2026-11-10 공개 채널 화면(about) — 나라말 이름 · 소개 · 로고 사진 · 링크 synk.im/en/lab 읽음"
     },
     "lab-youtube": {
       "brand": "LAB",
       "platform": "youtube",
-      "countryCode": "MN",
+      "audience": "global",
+      "audienceNote": "전 세계 · 영어 — 나라 하나를 겨누지 않는다(판본 키 EN, PULSE 라디오 라이브와 함께 쓰는 채널). 09-20에 몽골 자리로 프로필을 바꿨던 흔적으로 countryCode MN이 남아 있었다(11-10 걷음). 채널 이름은 11-10 공개 화면에서 읽음",
       "handle": "@synkkorean",
       "expectedChannelId": "UCmZplYKuNHLPng4iL2AbLLg",
-      "expectedChannelTitle": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
+      "expectedChannelTitle": "SYNK LAB | Learn Korean",
       "publisher": "direct",
       "categoryId": "27",
       "madeForKids": false,
@@ -1280,6 +1431,9 @@
       "dailyTimesFrom": "미정",
       "postRoute": "workspace",
       "postRouteVerified": true,
+      "postRoutePolicy": "official-api",
+      "metricsRoute": "server",
+      "metricsState": "reading",
       "rotationSeed": true
     },
     "lab-instagram": {
@@ -1306,8 +1460,11 @@
         "이야기",
         "퀴즈"
       ],
-      "postRoute": "workspace",
+      "postRoute": "meta-business-suite",
       "postRouteVerified": true,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "reading",
       "rotationSeed": true
     },
     "lab-tiktok": {
@@ -1337,6 +1494,9 @@
       ],
       "postRoute": "tiktok-studio",
       "postRouteVerified": true,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "reading",
       "rotationSeed": true
     },
     "yuhobuilds-youtube": {
@@ -1456,6 +1616,9 @@
       ],
       "postRoute": "meta-business-suite",
       "postRouteVerified": true,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "reading",
       "rotationSeed": true
     },
     "yuhobuilds-threads": {
@@ -1572,6 +1735,9 @@
       ],
       "postRoute": "telegram-web",
       "postRouteVerified": true,
+      "postRoutePolicy": "unknown",
+      "metricsRoute": "public-page",
+      "metricsState": "missing",
       "rotationSeed": true
     },
     "yuhobuilds-telegram": {
@@ -1802,7 +1968,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "missing"
     },
     "lab-kz-tiktok": {
       "brand": "LAB",
@@ -1837,7 +2006,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "missing"
     },
     "lab-th-tiktok": {
       "brand": "LAB",
@@ -1872,7 +2044,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "missing"
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -1932,7 +2107,10 @@
       "dailyLine": "LAB 나라별",
       "dailyFrom": "미정",
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "postRoutePolicy": "browser-tos-prohibited",
+      "metricsRoute": "server",
+      "metricsState": "unconfirmed"
     },
     "pulse-youtube": {
       "brand": "PULSE",
@@ -1999,8 +2177,11 @@
       "checkTime": "14:00",
       "checkZone": "Asia/Seoul",
       "apartHours": 20,
+      "sameLanguageHours": 24,
       "youtubeCap": 5,
       "window": 5
-    }
+    },
+    "같은언어": "같은 플랫폼에서 같은 말로 올리는 계정(languageGroup, 없으면 language)은 한 묶음 — 같은 원본을 24시간 안에 둘이 받지 않고, 같은 파일(판본 지문)은 날이 달라도 둘이 받지 않는다(tools/lib/돌림.js ⑥, 확인 node tools/돌림표.js --묶음). 유튜브 영어: @synkkorean(전 세계) · 미국 · 캐나다 · 호주 · 뉴질랜드 + 필리핀(판은 필리핀어, 검사만 함께), 유튜브 스페인어: 멕시코 · 파라과이. 인도(힌디어) · 말레이시아(말레이어) · 스리랑카(싱할라어) · 카자흐스탄(카자흐어) · 키르기스스탄(키르기스어)은 현지어판이라 영어 · 러시아어 묶음이 아니다(docs/마케팅/현지화/README.md 「같은 언어 묶음」)",
+    "경로근거": "LAB_하루두편_설계_20261110/게시경로.md — postRoutePolicy(official-api · browser-tos-prohibited · unknown)는 그 문서 2절의 약관 근거, metricsRoute(server · public-api · public-page · vk-api · screen-only) · metricsState(reading 게시물 숫자가 읽힘 · unconfirmed 채널만 등록돼 첫 게시 뒤 확인 · missing 결측)는 4절. 결측은 0이 아니라 빈칸"
   }
 }

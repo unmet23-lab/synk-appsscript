@@ -46,6 +46,7 @@ const { 공용작업본 } = require('./lib/공용작업본.js');
 const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const { aestheticBlock } = require('./lib/미학관문.js');
 const T = require('./lib/계정시간.js');
+const { rowOf } = require('./게시장부.js');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -172,8 +173,10 @@ function collect(server, accounts, now) {
     const prep = readJson(path.join(base, '준비.json'));
     if (!prep || !prep.브랜드) continue;
     const result = readJson(path.join(base, '게시결과.json')) || {};
+    // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다) 걸려 있는 줄, 없으면 마지막 줄 — 게시 장부 · 돌림표와 같은 읽기(rowOf).
+    // 마지막 줄만 보면 「예약됨 · (다른 작업의) 취소됨」 꼴이 빈 칸으로 읽혀 한 번 더 걸게 된다.
     const done = new Map();
-    for (const p of result.판 || []) if (p.계정) done.set(p.계정, p);
+    for (const account of new Set((result.판 || []).map((p) => p && p.계정).filter(Boolean))) done.set(account, rowOf(result.판, account));
     const needsBooking = (prep.판 || []).some(p => !DONE.has(done.get(p.계정)?.상태) && done.get(p.계정)?.상태 !== '보류'
       && !(Date.parse(p.시각) < now));
     const check = checkOf(prep, needsBooking);
@@ -603,17 +606,18 @@ function alert(report) {
 // ── 계정 전수 표(--계정표) ──
 // 작업실(회사 서버)이 자동 게시로 올리는 판 — tools/작업실예약.js 머리말의 여섯 계정.
 const WORKSPACE_PUBLISH = new Set(['lab-youtube', 'lab-instagram', 'synkbrief-instagram', 'synkbrief-youtube', 'yuhobuilds-instagram', 'yuhobuilds-youtube']);
-// 플랫폼마다 올리는 길과 며칠 앞서 예약되는지(10-26 확인: 틱톡·샤오훙수·비즈니스 스위트는 바깥 정리 기준 — 첫 D+4 예약 때 화면으로 본다).
+// 플랫폼마다 올리는 길과 며칠 앞서 예약되는지. 11-10 조사(docs/마케팅/LAB_하루두편_설계_20261110/게시경로.md 1 · 8절)로 고침: 틱톡 10일은
+// 공식 블로그, Business Suite 75일 · 샤오훙수 14일은 원문을 못 읽은 바깥 정리라 꼬리를 달고, 텔레그램 · 샤오훙수는 걸어 본 실측을 적는다.
 const ROUTE = {
   workspace: ['작업실 자동(검토 링크 승인 뒤 서버가 올림)', '7일(링크 수명 = 슬롯+24시간, 최대 168시간)'],
-  youtube: ['유튜브 스튜디오 예약 또는 tools/sns-발행.js', '제한 없음'],
-  instagram: ['Meta Business Suite 예약(ego)', '75일'],
-  facebook: ['Meta Business Suite 예약(ego)', '75일'],
+  youtube: ['유튜브 스튜디오 예약 또는 tools/sns-발행.js', '제한 없음(공식 근거 못 찾음)'],
+  instagram: ['Meta Business Suite 예약(ego)', '75일(바깥 정리 — 확인 전)'],
+  facebook: ['Meta Business Suite 예약(ego)', '75일(바깥 정리 — 확인 전)'],
   tiktok: ['TikTok Studio 예약(그 계정 ego 프로필)', '10일'],
-  xiaohongshu: ['크리에이터 센터 定时发布(ego)', '14일'],
+  xiaohongshu: ['크리에이터 센터 定时发布(ego)', '실측 4일 앞까지(14일은 바깥 정리)'],
   'naver-blog': ['네이버 예약 발행(Aside) — 첫 예약 확인 전, 막히면 붙여넣기 판', '확인 전'],
   tistory: ['티스토리 예약 발행(Aside)', '확인 전'],
-  telegram: ['텔레그램 웹 예약 메시지(ego)', '첫 예약 때 확인'],
+  telegram: ['텔레그램 웹 예약 메시지(ego)', '실측 3일 앞까지'],
   threads: ['스레드 웹 예약(ego)', '로그인 뒤 확인'],
   x: ['X 웹 예약(ego)', '로그인 뒤 확인'],
   linkedin: ['링크드인 웹 예약(ego)', '로그인 뒤 확인'],
@@ -650,7 +654,8 @@ function accountTable(accounts) {
   };
   const rows = Object.entries(accounts).map(([key, a]) => {
     const routeKey = a.postRoute ? ROUTE_OF[a.postRoute] : null;
-    const [route, ahead] = WORKSPACE_PUBLISH.has(key) ? ROUTE.workspace : (ROUTE[routeKey || a.platform] || ['—', '—']);
+    // 원장에 예약 경로(postRoute)가 적힌 계정은 그 길을 보인다 — lab-instagram은 작업실 여섯 계정에 들지만 실제로는 Business Suite로 건다(11-10 조사)
+    const [route, ahead] = (routeKey && ROUTE[routeKey]) || (WORKSPACE_PUBLISH.has(key) ? ROUTE.workspace : (ROUTE[a.platform] || ['—', '—']));
     const handle = String(a.handle || a.expectedHandle || '').replace(/\|/g, '/');
     if (a.dailyLine) return { key, order: 0, cells: [key, handle, what(key, a), route, ahead, readiness(a)] };
     return { key, order: 1, cells: [key, handle, '매일 판 밖', route, ahead, a.dailyOff || '정하지 않음'] };

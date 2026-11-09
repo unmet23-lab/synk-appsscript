@@ -96,7 +96,7 @@
       "이름": "영어",
       "다른이름": ["English"],
       "나라": ["US", "CA", "AU", "NZ"],
-      "나라설명": "lab-youtube(@synkkorean)는 원장 countryCode가 MN이지만 판본 키 EN — 시청자는 세계 영어권이다",
+      "나라설명": "lab-youtube(@synkkorean)는 나라 하나를 겨누지 않는 전 세계 · 영어 계정(원장 audience global · 판본 키 EN) — 시청자는 세계 영어권이다. 필리핀 계정은 판이 필리핀어(fil)다",
       "문자": "라틴",
       "문자범위": ["0041-007A", "00C0-024F"],
       "글꼴": "Inter Tight",

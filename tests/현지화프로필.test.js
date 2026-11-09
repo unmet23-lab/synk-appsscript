@@ -14,7 +14,8 @@ test('세 파일의 꼴이 맞고, 원장 LAB 계정의 언어 · 나라가 프�
   const lab = Object.values(원장.accounts).filter((a) => a.brand === 'LAB');
   for (const a of lab) {
     assert.ok(P.언어(a.language), `언어 ${a.language}`);
-    assert.ok(P.나라(a.countryCode), `나라 ${a.countryCode}`);
+    if (a.audience === 'global') assert.equal(a.countryCode, undefined, '전 세계 계정은 나라 칸이 없다');
+    else assert.ok(P.나라(a.countryCode), `나라 ${a.countryCode}`);
   }
 });
 

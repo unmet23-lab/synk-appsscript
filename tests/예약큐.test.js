@@ -468,7 +468,9 @@ test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야
     assert.ok(a.dailyLine, `${key}: 줄`);
     assert.ok(T.validZone(a.timeZone) && /\//.test(a.timeZone), `${key}: IANA 시간대 ${a.timeZone}`);
     assert.match(String(a.language), /^[a-z]{2,3}(-[A-Za-z]+)?$/, `${key}: 언어`);
-    assert.match(String(a.countryCode), /^[A-Z]{2}$/, `${key}: 나라`);
+    // 겨누는 나라는 하나 — 나라 코드, 아니면 「전 세계」(audience global · 판본 키). 둘 다이거나 둘 다 없으면 안 된다(유호님 11-10 「국가타겟을 정해서 헷갈리면 절대 안 돼」)
+    if (a.audience === 'global') { assert.equal(a.countryCode, undefined, `${key}: 전 세계 계정은 나라 칸을 비운다`); assert.ok(a.rotationVersion, `${key}: 전 세계 계정의 판본 키`); }
+    else assert.match(String(a.countryCode), /^[A-Z]{2}$/, `${key}: 나라`);
     assert.ok(a.postRoute, `${key}: 예약 경로`);
     assert.equal(a.dailyTimes.length, a.dailyFormats.length, `${key}: 칸 시각과 형식 수`);
     assert.ok(a.dailyTimes.every(T.isTime), `${key}: 칸 시각 꼴`);
@@ -482,7 +484,20 @@ test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야
     if (a.dailyLine === 'LAB 나라별') assert.ok(a.dailyFrom === '미정' || /^\d{4}-\d{2}-\d{2}$/.test(a.dailyFrom), `${key}: dailyFrom ${a.dailyFrom}`);
   }
   assert.equal(new Set(lab.map(([, a]) => a.language)).size, 21);
-  assert.equal(new Set(lab.map(([, a]) => a.countryCode)).size, 25);
+  assert.equal(new Set(lab.map(([, a]) => a.countryCode).filter(Boolean)).size, 25);
+  assert.deepEqual(lab.filter(([, a]) => a.audience === 'global').map(([key]) => key), ['lab-youtube'], '전 세계 계정은 @synkkorean 하나');
+  // 같은 나라 · 같은 플랫폼에 계정이 둘이면 안 된다(나라를 헷갈려 같은 영상이 두 번 나간다)
+  const spots = lab.map(([, a]) => `${a.platform}|${a.countryCode || a.audience}`);
+  assert.equal(new Set(spots).size, spots.length, '같은 나라 · 같은 플랫폼 계정 겹침');
+  // 같은 언어 묶음(같은 플랫폼 · 같은 말 — languageGroup, 없으면 language): 유튜브 영어 여섯(필리핀은 판이 필리핀어, 검사만 함께) · 유튜브 스페인어 둘뿐
+  const 돌림 = require('../tools/lib/돌림.js');
+  const bundles = 돌림.bundlesOf(Object.fromEntries(lab));
+  assert.deepEqual(bundles.map((b) => `${b.platform}|${b.group}|${[...b.accounts].sort().join(',')}`), [
+    'youtube|en|lab-au-youtube,lab-ca-youtube,lab-nz-youtube,lab-ph-youtube,lab-us-youtube,lab-youtube',
+    'youtube|es|lab-mx-youtube,lab-py-youtube',
+  ]);
+  // 묶음 안에서 판본 키를 둘이 쓰지 않는다(같은 키면 같은 파일이 두 계정에 간다)
+  for (const b of bundles) { const keys = b.accounts.map((k) => real[k].rotationVersion || real[k].countryCode); assert.equal(new Set(keys).size, keys.length, `${b.platform} ${b.group}: 판본 키 ${keys.join(' · ')}`); }
 });
 
 test('슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제 시각 날로 센다(작업실 판은 그대로)', () => {
@@ -581,4 +596,16 @@ test('하루 두 칸 계정(LAB 몽골 12:00 · 21:00, 11-09 유호님 「두 �
   assert.match(out, / · 11-15 만든 편 없음\(12:00 · 21:00 칸마다 한 편\)$/m, '통째로 빈 날은 칸마다 한 편이 든다고 적는다');
   const table = spawnSync(process.execPath, [tool, '--폴더', base, '--계정표'], { encoding: 'utf8' }).stdout;
   assert.match(table, /\| lab-instagram \| [^|]*\| LAB 몽골 편 하루 2편\(12:00 · 21:00 · 11-12부터\) \|/);
+});
+
+test('한 계정에 줄이 여럿이면 걸려 있는 줄로 읽는다 — 예약됨 뒤에 다른 작업의 취소됨이 와도 빈 칸이 아니다(11-10 게시 장부 rowOf와 같은 읽기)', () => {
+  const base = 매일판('여러줄', [
+    ['en-22', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-a' }, { 계정: 'lab-youtube', 상태: '취소됨', 방법: '작업실', 작업: 'job-b' }] }],
+    ['en-23', 한편('LAB', '2026-10-23', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '취소됨', 방법: '작업실', 작업: 'job-c' }, { 계정: 'lab-youtube', 상태: '취소됨', 방법: '작업실', 작업: 'job-d' }, { 계정: 'lab-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-e' }] }],
+    ['en-24', 한편('LAB', '2026-10-24', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '취소됨', 방법: '작업실', 작업: 'job-f' }, { 계정: 'lab-youtube', 상태: '취소됨', 방법: '작업실', 작업: 'job-g' }] }],
+  ]);
+  const r = 매일큐(base, ['--오늘', '2026-10-21']);
+  const line = r.lines.find((l) => l.line === 'LAB 영어');
+  assert.deepEqual(['2026-10-22', '2026-10-23', '2026-10-24'].map((d) => line.byDay[d].cells['lab-youtube']), ['채움', '채움', '만듦']);
+  assert.equal(line.reserve, 2);
 });

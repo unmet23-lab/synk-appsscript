@@ -235,6 +235,12 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     const codes = (list) => 검사.rotationFindings(bundle, list, { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } } }).map((f) => `${f.code}:${f.where}`);
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), []);
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-slot:lab-th-youtube'], '21:00은 퀴즈 칸');
+    // 첫 판 시험(postRouteVerified 「첫판」)은 걸 수 있는 계정으로 본다 — 판 하나 한도는 돌림 셈 · 게시 장부가 지킨다. false면 고칠 것
+    known['lab-th-youtube'].postRouteVerified = '첫판';
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), []);
+    known['lab-th-youtube'].postRouteVerified = false;
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-youtube']);
+    known['lab-th-youtube'].postRouteVerified = true;
     assert.deepEqual(codes([plate('lab-th-tiktok', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-tiktok'], '프로필 빈 계정은 채운 뒤에만');
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00', { 파일: '게시/다른.mp4' })]), ['rotation-version-file:lab-th-youtube']);
     fs.writeFileSync(text, '{"줄":["고친 글"]}');
@@ -494,4 +500,75 @@ test('⑱ 미학 맹검(11-08 · 11-10 설계 18): 모든 편은 결과가 있�
   assert.equal(aestheticBlock({ ...빈편, prep: { 맹검못함: '막힘' } }, [새판]), '맹검 뒤 영상 바뀜', '예약 큐 · 14시 게시도 같은 판정');
   assert.equal(aestheticBlock(막힌편, []), null);
   assert.equal(aestheticBlock({ ...빈편, prep: { 맹검판단: '막힘' } }, [새판]), '맹검 뒤 영상 바뀜');
+});
+
+// ── 같은 언어 묶음(11-10 — 돌림 ⑥ · ⑫ · ⑫-2) ──
+test('⑫ 같은 언어 묶음 — 유튜브 같은 말은 24시간, 원장 languageGroup으로 묶고, 다른 플랫폼도 같은 말 두 계정은 24시간', () => {
+  const yt = (account, language, time) => ({ account, platform: 'youtube', language, time });
+  // 시드니 13:00 → 다음 날 오클랜드 13:00은 22시간: 예전 20시간 셈은 넘겼다
+  const close = [yt('lab-au-youtube', 'en', '2026-11-20T13:00:00+11:00'), yt('lab-nz-youtube', 'en', '2026-11-21T13:00:00+13:00')];
+  assert.deepEqual(검사.samePlatformFindings(close).map((f) => `${f.code}:${f.where}`), ['same-platform-close:lab-au-youtube · lab-nz-youtube']);
+  assert.match(검사.samePlatformFindings(close)[0].message, /24시간 넘게 띄운다/);
+  assert.deepEqual(검사.samePlatformFindings([close[0], yt('lab-nz-youtube', 'en', '2026-11-22T13:00:00+13:00')]), []);
+  // 필리핀: 판은 필리핀어여도 원장 languageGroup en이면 영어 묶음과 함께 본다
+  const ph = [yt('lab-us-youtube', 'en', '2026-11-20T13:00:00-05:00'), yt('lab-ph-youtube', 'fil', '2026-11-21T13:00:00+08:00')];
+  assert.deepEqual(검사.samePlatformFindings(ph), [], '원장을 안 주면 판 언어로만 묶는다');
+  assert.equal(검사.samePlatformFindings(ph, { accounts: { 'lab-ph-youtube': { language: 'fil', languageGroup: 'en' }, 'lab-us-youtube': { language: 'en' } } }).length, 1);
+  // 유튜브 밖: 플랫폼 전체 20시간은 넘겼지만(22시간) 같은 말 두 계정
+  const fb = (account, language, time) => ({ account, platform: 'facebook', language, time });
+  const same = 검사.samePlatformFindings([fb('lab-a-facebook', 'es', '2026-11-20T13:00:00+00:00'), fb('lab-b-facebook', 'es', '2026-11-21T11:00:00+00:00')]);
+  assert.deepEqual(same.map((f) => `${f.level}:${f.code}:${f.where}`), ['고칠 것:same-language-close:lab-a-facebook · lab-b-facebook']);
+  assert.deepEqual(검사.samePlatformFindings([fb('lab-a-facebook', 'es', '2026-11-20T13:00:00+00:00'), fb('lab-b-facebook', 'ne', '2026-11-21T11:00:00+00:00')]), [], '말이 다르면 20시간이면 된다');
+});
+
+test('⑫-2 같은 언어 묶음의 같은 파일 — 같은 영상 지문 · 같은 표지 · 같은 첫 카드 · 끝 질문이면 고칠 것, 견줄 칸이 없으면 확인할 것', () => {
+  const crypto = require('node:crypto');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-같은언어-'));
+  try {
+    const dir = path.join(root, 'docs', '마케팅', 'LAB_가_mn_20261101');
+    const known = {
+      'lab-us-youtube': { platform: 'youtube', countryCode: 'US', language: 'en', timeZone: 'America/New_York' },
+      'lab-ca-youtube': { platform: 'youtube', countryCode: 'CA', language: 'en', timeZone: 'America/Toronto' },
+      'lab-ph-youtube': { platform: 'youtube', countryCode: 'PH', language: 'fil', languageGroup: 'en', timeZone: 'Asia/Manila' },
+      'lab-th-youtube': { platform: 'youtube', countryCode: 'TH', language: 'th', timeZone: 'Asia/Bangkok' },
+    };
+    const 줄 = (key, over = {}) => ({ 꼴: '판본글/1', 언어: 'en', 줄: [
+      { id: 'h', 칸: '머리', 글: over.머리 || `Hello ${key}!` }, { id: 'q', 칸: '질문', 글: 'What does it mean?' },
+      { id: 'e', 칸: '예문', 글: over.예문 || `An example in ${key}` }, { id: 'z', 칸: '끝질문', 글: over.끝질문 || `How do you say it in ${key}?` }, { id: 'p', 칸: '게시글', 글: over.게시글 || `Caption ${key}` }] });
+    const put = (key, { video = `${key}-video`, cover = `${key}-cover`, text = 줄(key), caption = `${key} caption` } = {}) => {
+      const base = path.join(dir, '게시', '판본', key);
+      fs.mkdirSync(base, { recursive: true });
+      fs.writeFileSync(path.join(base, 'video.mp4'), video);
+      fs.writeFileSync(path.join(base, 'cover.png'), cover);
+      fs.writeFileSync(path.join(base, '글.json'), JSON.stringify(text));
+      fs.writeFileSync(path.join(base, '원고.json'), caption);
+      return { 언어: 'en', 파일: `게시/판본/${key}/video.mp4`, 표지: `게시/판본/${key}/cover.png`, 글: `게시/판본/${key}/글.json`, 원고: { youtube: `게시/판본/${key}/원고.json` } };
+    };
+    const sha = (rel) => crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, rel))).digest('hex');
+    const 판본 = {};
+    const bundle = { dir, repo: root, prep: { 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본 } }, accounts: known };
+    const plate = (account, key, time) => ({ account, platform: 'youtube', language: known[account].language, time, raw: { 계정: account, 파일: 판본[key].파일, 시각: time, 돌림: true, 지문: sha(판본[key].파일) } });
+    const codes = (list) => 검사.sameLanguageFindings(bundle, list).map((f) => `${f.level}:${f.code}:${f.where}`);
+    const us = () => plate('lab-us-youtube', 'US', '2026-11-20T13:00:00-05:00');
+    const ca = () => plate('lab-ca-youtube', 'CA', '2026-11-22T13:00:00-05:00');
+    // 나라마다 다 다르면 통과
+    판본.US = put('US'); 판본.CA = put('CA'); 판본.PH = put('PH'); 판본.TH = put('TH');
+    assert.deepEqual(codes([us(), ca(), plate('lab-ph-youtube', 'PH', '2026-11-24T13:00:00+08:00'), plate('lab-th-youtube', 'TH', '2026-11-20T13:00:00+07:00')]), []);
+    // 똑같은 영상 파일 — 미국 판본을 그대로 캐나다에
+    판본.CA = put('CA', { video: 'US-video' });
+    assert.deepEqual(codes([us(), ca()]), ['고칠 것:same-language-same-file:lab-us-youtube · lab-ca-youtube']);
+    // 필리핀(판 fil · 묶음 en)에 미국 파일을 걸어도 잡는다. 태국(다른 말)은 같은 파일이어도 이 검사가 보지 않는다
+    판본.CA = put('CA'); 판본.PH = put('PH', { video: 'US-video' }); 판본.TH = put('TH', { video: 'US-video' });
+    assert.deepEqual(codes([us(), plate('lab-ph-youtube', 'PH', '2026-11-24T13:00:00+08:00'), plate('lab-th-youtube', 'TH', '2026-11-20T13:00:00+07:00')]), ['고칠 것:same-language-same-file:lab-us-youtube · lab-ph-youtube']);
+    // 영상은 다른데 첫 카드 · 끝 질문 · 표지가 같다(지문만 다르게 만든 판)
+    판본.CA = put('CA', { cover: 'US-cover', text: 줄('CA', { 머리: 'Hello US!', 끝질문: 'How do you say it in US?' }) });
+    const lines = 검사.sameLanguageFindings(bundle, [us(), ca()]);
+    assert.deepEqual(lines.map((f) => `${f.level}:${f.code}`), ['고칠 것:same-language-same-lines']);
+    assert.match(lines[0].message, /표지 · 첫 카드 · 끝 질문이\(가\) 같다/);
+    // 판본 글에 견줄 칸이 없으면 눈으로 본다
+    판본.CA = put('CA', { text: { 줄: ['캐나다'] } });
+    assert.deepEqual(codes([us(), ca()]), ['확인할 것:same-language-unchecked:lab-us-youtube · lab-ca-youtube']);
+    // LAB 편이 아니면 보지 않는다
+    assert.deepEqual(검사.sameLanguageFindings({ ...bundle, prep: { 브랜드: 'PULSE' } }, [us(), ca()]), []);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });

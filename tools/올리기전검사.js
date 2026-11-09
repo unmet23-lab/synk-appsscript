@@ -72,6 +72,7 @@ const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
+const 돌림셈 = require('./lib/돌림.js');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -749,8 +750,9 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
       const slot = T.slotFor(p.time, a);
       if (slot.format !== format || slot.time !== local) add(FIX, 'rotation-slot', p.account, `현지 ${local}(${a.timeZone || 'Asia/Seoul'})은 이 계정의 ${format} 칸이 아니다(칸: ${T.allSlots(a).map((s) => `${s.time} ${s.format || ''}`.trim()).join(' · ')}) — node tools/돌림표.js --다시`);
     }
-    if (!a.rotationSeed && (a.publicProfileComplete !== true || a.postRouteVerified !== true)) {
-      add(FIX, 'rotation-ready', p.account, `프로필(publicProfileComplete) · 예약 경로(postRouteVerified)가 확인되기 전 계정이다 — 채운 뒤에만 건다(설계 4 · 5)`);
+    // postRouteVerified 「첫판」(첫 판 시험)은 판 하나만 — 그 한도는 돌림 셈(tools/lib/돌림.js)과 게시 장부 「걸기」가 지킨다
+    if (!a.rotationSeed && (a.publicProfileComplete !== true || (a.postRouteVerified !== true && a.postRouteVerified !== '첫판'))) {
+      add(FIX, 'rotation-ready', p.account, `프로필(publicProfileComplete) · 예약 경로(postRouteVerified — true, 또는 첫 판 시험 「첫판」)가 확인되기 전 계정이다 — 채운 뒤에만 건다(설계 4 · 5)`);
     }
     const key = a.rotationVersion || a.countryCode;
     const v = bundle.prep.돌림.판본?.[key];
@@ -766,13 +768,17 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
 // ⑫ 한 편의 같은 플랫폼 판 둘이 20시간 안이면 고칠 것 — 글자만 다른 거의 같은 영상이 우리 계정 둘에 같은 날 나가지 않게(유호님 10-26,
 // LAB 장부 「두 채널 판」 — 버마어 판 시각을 다른 날로). 11-10 LAB 39계정(시간대 25개)부터 「같은 날」은 한국 날짜가 아니라 20시간이다
 // (tools/lib/돌림.js ① — 한국 날짜로 나누면 23:30 · 00:30 두 판이 다른 날로 빠져나갔다). 유튜브는 언어가 다른 판끼리는 같은 날 된다.
+// 같은 언어 묶음(같은 플랫폼에서 같은 말로 올리는 계정 — 원장 languageGroup, 없으면 판 언어 · 원장 language)은 24시간이다(돌림 ⑥ — 유호님 11-10 지적:
+// 같은 언어를 쓰는 나라 계정끼리 같은 영상이 겹치지 않게. 24시간을 띄우면 어느 시간대의 달력으로 봐도 같은 날이 아니다).
 const APART_HOURS = 20;
+const SAME_LANGUAGE_HOURS = 24;
 const VIDEO_PLATFORMS = new Set(['tiktok', 'youtube', 'instagram', 'facebook', 'telegram', 'xiaohongshu', 'douyin', 'vk', 'rutube']);
-function samePlatformFindings(plates, { apartHours = APART_HOURS } = {}) {
+const languageGroupOf = (p, accounts) => accounts?.[p.account]?.languageGroup || p.language || accounts?.[p.account]?.language || '';
+function samePlatformFindings(plates, { apartHours = APART_HOURS, sameLanguageHours = SAME_LANGUAGE_HOURS, accounts = null } = {}) {
   const list = plates.filter((p) => VIDEO_PLATFORMS.has(p.platform) && Number.isFinite(Date.parse(p.time || '')));
-  const groups = new Map(); // 플랫폼(유튜브는 + 언어) → 20시간 안에 붙은 판 무리
+  const groups = new Map(); // 플랫폼(유튜브는 + 언어 묶음) → 20시간(유튜브 같은 언어는 24시간) 안에 붙은 판 무리
   for (const p of list) {
-    const key = p.platform === 'youtube' ? `youtube|${p.language || ''}` : p.platform;
+    const key = p.platform === 'youtube' ? `youtube|${languageGroupOf(p, accounts)}` : p.platform;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(p);
   }
@@ -780,18 +786,94 @@ function samePlatformFindings(plates, { apartHours = APART_HOURS } = {}) {
   for (const [key, ps] of groups) {
     ps.sort((x, y) => Date.parse(x.time) - Date.parse(y.time));
     let run = [ps[0]];
+    const apart = key.startsWith('youtube') ? Math.max(apartHours, sameLanguageHours) : apartHours;
     const flush = () => {
       if (run.length < 2) return;
       const hours = Math.round((Date.parse(run[run.length - 1].time) - Date.parse(run[0].time)) / 360000) / 10;
       const tiktok = key === 'tiktok';
       out.push({ level: FIX, code: tiktok ? 'tiktok-same-day' : 'same-platform-close', where: run.map((p) => p.account).join(' · '),
-        message: `같은 편의 ${tiktok ? '틱톡' : key.startsWith('youtube') ? '같은 언어 유튜브' : key} 판 ${run.length}개가 ${hours}시간 안에 나간다(${apartHours}시간 넘게 띄운다) — 돌림 판이면 node tools/돌림표.js --다시, 아니면 하나(보통 버마어 판)의 「시각」을 다른 빈 날로(LAB 장부 「두 채널 판」)` });
+        message: `같은 편의 ${tiktok ? '틱톡' : key.startsWith('youtube') ? '같은 언어 유튜브' : key} 판 ${run.length}개가 ${hours}시간 안에 나간다(${apart}시간 넘게 띄운다) — 돌림 판이면 node tools/돌림표.js --다시(그래도 남으면 한 계정의 돌림 판을 지우고 다음 날 다시 셈한다), 아니면 하나(보통 버마어 판)의 「시각」을 다른 빈 날로(LAB 장부 「두 채널 판」)` });
     };
     for (const p of ps.slice(1)) {
-      if (Date.parse(p.time) - Date.parse(run[run.length - 1].time) < apartHours * 3600000) run.push(p);
+      if (Date.parse(p.time) - Date.parse(run[run.length - 1].time) < apart * 3600000) run.push(p);
       else { flush(); run = [p]; }
     }
     flush();
+  }
+  // 유튜브 밖의 같은 언어 묶음 — 플랫폼 전체 20시간은 넘겼지만 같은 말 두 계정이 24시간 안인 짝
+  const byGroup = new Map();
+  for (const p of list) {
+    const g = languageGroupOf(p, accounts);
+    if (p.platform === 'youtube' || !g) continue;
+    const key = `${p.platform}|${g}`;
+    if (!byGroup.has(key)) byGroup.set(key, []);
+    byGroup.get(key).push(p);
+  }
+  for (const [key, ps] of byGroup) {
+    ps.sort((x, y) => Date.parse(x.time) - Date.parse(y.time));
+    for (let i = 1; i < ps.length; i++) {
+      const gap = Date.parse(ps[i].time) - Date.parse(ps[i - 1].time);
+      if (ps[i].account === ps[i - 1].account || gap < apartHours * 3600000 || gap >= sameLanguageHours * 3600000) continue;
+      out.push({ level: FIX, code: 'same-language-close', where: `${ps[i - 1].account} · ${ps[i].account}`,
+        message: `같은 편이 같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정에 ${Math.round(gap / 360000) / 10}시간 차이로 나간다(${sameLanguageHours}시간 넘게 띄운다) — 돌림 판이면 node tools/돌림표.js --다시` });
+    }
+  }
+  return out;
+}
+
+// ⑫-2 같은 언어 묶음의 같은 파일(돌림 ⑥ — 유호님 11-10 지적 — 같은 언어를 쓰는 나라 계정끼리 같은 영상이 겹치지 않게). LAB 편에서 같은 플랫폼 ·
+// 같은 말 두 계정에 똑같은 영상 파일(지문)이 걸리면 고칠 것. 돌림 판이면 두 계정의 나라별판도 본다 — 표지 · 게시글(원고) 파일이 같거나,
+// 판본 글에서 첫 카드(칸 「머리」) · 그 나라 예문(「예문」 · 「상황」) · 끝 질문(「끝질문」) · 게시글(「게시글」)이 같으면 고칠 것. 판본 글에 그 칸이
+// 하나도 없어 견줄 수 없으면 확인할 것(눈으로 본다). 배속 · 색만 바꿔 지문을 다르게 하는 길은 쓰지 않는다 — 그래서 글 · 표지까지 본다.
+const COUNTRY_SLOTS = [['첫 카드', ['머리']], ['그 나라 예문', ['예문', '상황']], ['끝 질문', ['끝질문']], ['게시글', ['게시글']]];
+function sameLanguageFindings(bundle, plates) {
+  const out = [];
+  if (bundle.prep?.브랜드 !== 'LAB') return out;
+  const crypto = require('node:crypto');
+  const shaMemo = new Map();
+  const fileIn = (p) => { if (!p) return null; for (const f of path.isAbsolute(p) ? [p] : [path.join(bundle.dir, p), path.join(bundle.repo || bundle.dir, p)]) { try { if (fs.statSync(f).isFile()) return f; } catch { /* 다음 자리 */ } } return null; };
+  const shaOf = (p) => { const f = fileIn(p); if (!f) return null; if (!shaMemo.has(f)) shaMemo.set(f, crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')); return shaMemo.get(f); };
+  const groups = new Map();
+  for (const p of plates) {
+    const g = languageGroupOf(p, bundle.accounts);
+    if (!VIDEO_PLATFORMS.has(p.platform) || !g) continue;
+    const key = `${p.platform}|${g}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  const versions = bundle.prep.돌림?.판본 || {};
+  const versionOf = (p) => { const a = bundle.accounts?.[p.account]; return p.raw?.돌림 && a ? versions[a.rotationVersion || a.countryCode] || null : null; };
+  const linesOf1 = (v) => { const f = fileIn(v?.글); if (!f) return null; try { const j = JSON.parse(fs.readFileSync(f, 'utf8').replace(/^\uFEFF/, '')); return Array.isArray(j?.줄) ? j.줄 : null; } catch { return null; } };
+  const textOf = (lines, names) => lines.filter((l) => l && names.includes(l.칸)).map((l) => String(l.글 || '').trim()).join('\n');
+  for (const [key, ps] of groups) {
+    for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) {
+      const [x, y] = [ps[i], ps[j]];
+      if (x.account === y.account) continue;
+      const where = `${x.account} · ${y.account}`;
+      const [fx, fy] = [x, y].map((p) => shaOf(p.video?.path || p.raw?.파일) || p.raw?.지문 || null);
+      const samePath = Boolean(x.raw?.파일) && String(x.raw.파일).replace(/\\/g, '/') === String(y.raw?.파일 || '').replace(/\\/g, '/');
+      if (samePath || (fx && fx === fy)) {
+        out.push({ level: FIX, code: 'same-language-same-file', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정에 똑같은 영상 파일이 걸렸다 — 계정마다 나라별판(첫 카드 · 그 나라 예문 · 끝 질문 · 표지 · 게시글이 다른 판)을 따로 만들어 건다. 배속 · 색만 바꾸지 않는다` });
+        continue;
+      }
+      const [vx, vy] = [versionOf(x), versionOf(y)];
+      if (!vx || !vy) continue;
+      const same = [];
+      const [cx, cy] = [shaOf(vx.표지), shaOf(vy.표지)];
+      if (cx && cx === cy) same.push('표지');
+      const [mx, my] = [shaOf(vx.원고?.[x.platform]), shaOf(vy.원고?.[y.platform])];
+      if (mx && mx === my) same.push('게시글(원고 파일)');
+      const [lx, ly] = [linesOf1(vx), linesOf1(vy)];
+      let compared = 0;
+      if (lx && ly) for (const [label, names] of COUNTRY_SLOTS) {
+        const [tx, ty] = [textOf(lx, names), textOf(ly, names)];
+        if (!tx || !ty) continue;
+        compared += 1;
+        if (tx === ty && !same.includes(label)) same.push(label);
+      }
+      if (same.length) out.push({ level: FIX, code: 'same-language-same-lines', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판에서 ${same.join(' · ')}이(가) 같다 — 나라마다 다르게 쓴다(첫 카드 · 그 나라 예문 · 끝 질문 · 표지 · 게시글)` });
+      else if (!compared) out.push({ level: LOOK, code: 'same-language-unchecked', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판 차이를 판본 글로 견주지 못했다(「글」 파일에 머리 · 예문 · 끝질문 칸이 없다) — 첫 카드 · 그 나라 예문 · 끝 질문이 나라마다 다른지 눈으로 본다` });
+    }
   }
   return out;
 }
@@ -862,7 +944,8 @@ async function run(dir, opts = {}) {
   findings.push(...tiktokFindings(plates, prep, bundle.accounts));
   findings.push(...dailyFindings(plates, prep, bundle.accounts));
   findings.push(...rotationFindings(bundle, plates));
-  findings.push(...samePlatformFindings(plates));
+  findings.push(...samePlatformFindings(plates, { accounts: bundle.accounts }));
+  findings.push(...sameLanguageFindings(bundle, plates));
   if (slotOk && prep.슬롯 === kst().slice(0, 10) && ![...posted.values()].some((v) => DONE.has(v))) {
     add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — 4일 앞(D+4)에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
   }
@@ -983,5 +1066,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, rotationFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, rotationFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };
