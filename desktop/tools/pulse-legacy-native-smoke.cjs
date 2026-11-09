@@ -86,7 +86,10 @@ app.whenReady().then(async()=>{
     await open();await account('probe-a');await click('[data-view="library"]');
     check('fresh-library-has-no-entry',!await run('!!document.querySelector("#detail-content [data-pulse-legacy]")'),{selected:await run('document.querySelector("#app-list [aria-pressed=true]")?.dataset.app')});
     await open(1440,900,`localStorage.setItem('synk-launcher-view-v1:account:probe-b',JSON.stringify({selected:'pulse'}));`);await account('probe-b');await click('[data-view="library"]');
-    check('pulse-left-selected-by-an-older-version-shows-the-entry',await run('!!document.querySelector("#detail-content [data-pulse-legacy]")&&!document.getElementById("app-detail").hidden'));
+    // 11-08 A 진열대부터 라이브러리는 앱 선반으로 열린다 — 옛 판이 남긴 선택도 선반으로 열고, 입구는 앱 소개(홈의 PULSE 칸)와 설정에 있다.
+    check('pulse-left-selected-by-an-older-version-opens-the-shelf',await run('!document.getElementById("library-grid").hidden&&document.getElementById("app-detail").hidden&&document.getElementById("pulse-client").hidden'));
+    await click('[data-view="home"]');await click('[data-member-app="pulse"]');await wait(120);
+    check('pulse-intro-shows-the-saved-draft-entry',await run('!!document.querySelector("#detail-content [data-pulse-legacy]")&&!document.getElementById("app-detail").hidden'));
     // A brief saved when the catalogue held six models and one work.
     const seed=`localStorage.setItem('synk.pulse.brief.v1:'+encodeURIComponent('probe-c'),${JSON.stringify(JSON.stringify(OLD_DRAFT))});`;
     await open(1440,900,seed);await account('probe-c');await openFromSettings();
