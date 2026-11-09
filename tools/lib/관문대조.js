@@ -210,7 +210,7 @@ function 요약절(rows, { 날 = 30 } = {}) {
 }
 
 // 두 브랜드 새 방향(제작 절차 #new-direction-20261109) — 조회 말고 저장 · 공유 · 좋아요로 본다. 슬롯이 이 날부터인 편이 새 방향이다
-const 새방향시작 = { synkbrief: '2026-11-14', yuhobuilds: '2026-11-15' };
+const 새방향시작 = { synkbrief: '2026-11-10', yuhobuilds: '2026-11-10' };
 const 앞날수 = 14;
 const KST날 = iso => new Date(Date.parse(iso) + 9 * 3_600_000).toISOString().slice(0, 10);
 const 판이름 = account => (/instagram/.test(account) ? '인스타' : /youtube/.test(account) ? '유튜브' : /tiktok/.test(account) ? '틱톡' : null);
