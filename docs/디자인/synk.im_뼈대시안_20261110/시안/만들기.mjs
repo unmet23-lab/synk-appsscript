@@ -70,21 +70,17 @@ async function 홈(판) {
 
   // 회사 한 문장(판 가만 — 판 나는 입구가 말했다)
   const 회사글 = '한국어 학원에서 시작했습니다. 한 사람이 실제로 해 본 것을 읽고 다음 할 일을 고르는 엔진, 아틀라스를 만듭니다. 지금은 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.';
-  const 회사단추 = `<p class="k-acts"><a class="k-btn" href="/atlas/">아틀라스가 하는 일 보기 ${화살()}</a><a class="k-link" href="#business">네 가지 사업 ${화살('↓')}</a></p>`;
+  // 판 가의 쪽 주장은 입구 바로 아래에 견본선 사이로 놓이고, 곧바로 증거가 온다(주장과 증거 사이에 글 구역을 따로 두면 한 번 내린 자리에 실물이 안 보인다 — 맹검 1회)
   const 회사 = 판 === '가' ? `<section class="k-sec k-night k-co" id="top" aria-labelledby="co-title"><span id="hero-introduction" class="sr-only" aria-hidden="true"></span><div class="wrap">
-<p class="k-rule"><span>회사 소개</span></p>
 <h1 class="k-claim k-spec" id="co-title">${제목줄(한줄)}</h1>
-<div class="k-co-body"><p class="k-lead">${회사글}</p>${회사단추}</div>
 </div></section>
 ` : '<span id="top" class="sr-only" aria-hidden="true"></span><span id="hero-introduction" class="sr-only" aria-hidden="true"></span>';
 
-  // 살아 있는 증거 — 공개본 #learner 무대 · 시간 줄 그대로. 머리만 새 틀로.
+  // 살아 있는 증거 — 공개본 #learner 무대 · 시간 줄 그대로. 머리만 새 틀로. 회사 설명은 증거 제목 오른쪽 받침 글, 알약 단추는 하나.
   const 증거머리 = `<div class="wrap lw-head k-proof-head">
 <p class="k-rule"><span>지금 돌아가는 아틀라스 — SYNK WORLD</span></p>
 <div class="k-proof-row"><h2 class="lw-title k-title" id="learner-title"><span>틀린 말은 1분 뒤에,</span> <span>맞힌 말은 <span class="nb">잊을 때쯤</span> 돌아옵니다</span></h2>
-${판 === '가'
-    ? `<div class="lw-go"><a class="k-btn is-line" href="/lab/#learner">한 문제 풀어 보기 ${화살()}</a><a class="k-link" href="/atlas/#learner-why">왜 이렇게 만들었나 ${화살()}</a></div>`
-    : `<div class="k-proof-side"><p class="k-body">${회사글}</p><div class="lw-go"><a class="k-btn is-line" href="/lab/#learner">한 문제 풀어 보기 ${화살()}</a><a class="k-link" href="/atlas/">아틀라스가 하는 일 보기 ${화살()}</a></div></div>`}
+<div class="k-proof-side"><p class="k-body">${회사글}</p><div class="lw-go"><a class="k-btn is-line" href="/lab/#learner">한 문제 풀어 보기 ${화살()}</a><a class="k-link" href="/atlas/">아틀라스가 하는 일 보기 ${화살()}</a></div></div>
 </div></div>
 `;
   증거 = 바꿈(증거, /<div class="wrap lw-head">[\s\S]*?(?=<div class="lw-stage">)/, 증거머리);

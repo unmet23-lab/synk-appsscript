@@ -21,9 +21,10 @@ body{font-size:var(--k3);font-weight:400}
 .k-rule{display:flex;align-items:center;gap:16px;margin:0 0 clamp(26px,4vh,44px);font-size:var(--k1);font-weight:500;line-height:1;letter-spacing:.02em;color:var(--k-ink-3)}
 .k-rule::after{content:"";flex:1;height:1px;background:var(--k-line-2)}
 .k-rule .k-n{order:3;font-family:var(--mono);font-weight:400;font-variant-numeric:tabular-nums}
-/* 견본선: 큰 한글 한 줄마다 위아래로 화면 끝까지 가는 선 — 입구의 싱ㅋ를 가로지르는 선과 같은 말 */
+/* 견본선: 쪽 주장의 위아래로 화면 끝까지 가는 선(줄 사이 선은 뺐다 — 한 화면에 가로줄이 많다는 맹검 지적) — 입구의 싱ㅋ를 가로지르는 선과 같은 말 */
 .k-spec{margin:0}
-.k-spec>span{display:block;margin-inline:calc(50% - 50vw);padding-inline:calc(50vw - 50%);border-top:1px solid var(--k-line-2);padding-block:.07em .11em;line-height:1.1}
+.k-spec>span{display:block;margin-inline:calc(50% - 50vw);padding-inline:calc(50vw - 50%);padding-block:.07em .11em;line-height:1.1}
+.k-spec>span:first-child{border-top:1px solid var(--k-line-2)}
 .k-spec>span:last-child{border-bottom:1px solid var(--k-line-2)}
 
 /* ── 2. 글자 역할 ── */
@@ -65,7 +66,7 @@ body{font-size:var(--k3);font-weight:400}
 .k-co{padding-block:clamp(96px,12vh,112px) 0}
 .k-co-body{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:28px 48px;padding-block:clamp(26px,4vh,40px) 0}
 .lw.k-night{background:#08090c}
-.k-proof-head{display:block;padding-block:clamp(56px,8vh,88px) clamp(26px,3.6vh,40px)}
+.k-proof-head{display:block;padding-block:clamp(32px,4.6vh,44px) clamp(24px,3.2vh,32px)}
 .k-proof-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px 48px}
 .k-proof-head .lw-title{font-size:var(--k6);line-height:1.2;letter-spacing:-.03em;font-weight:600}
 .k-proof-head .lw-go{padding-bottom:4px;gap:28px}
@@ -332,3 +333,19 @@ body .more>summary,body details.more>summary{font-weight:600}
 body .section#contact{padding-block:clamp(56px,8.4vh,88px)}
 @media (max-width:700px){body .section#contact{padding-block:40px 28px}}
 .sv-ask .k-rule{max-width:none;margin:0 0 clamp(26px,4vh,44px);font-size:var(--k1);line-height:1;color:var(--k-ink-3)}
+/* PATH 문: 지도 위 설명 글이 길 선과 겹치지 않게 종이색으로 받친다 */
+.k-door .hs-map~.hs-shade{display:block;height:34%;background:linear-gradient(0deg,#f1efe9 46%,rgba(241,239,233,0))}
+
+/* ── 14. 맹검 1회 반영 ── */
+/* SHIFT 첫 화면: 주장 띠 오른쪽이 비어 「칸을 잘못 합친 표」로 읽혔다 — 예약표의 시계를 그 자리에 올린다(넓은 화면만, 좁은 화면은 예약표 머리의 시계 그대로) */
+.k-sv-top{position:relative}
+.k-sv-now{display:none;position:absolute;right:0;bottom:.5em;margin:0;text-align:right;line-height:1;color:var(--k-ink-3)}
+.k-sv-now span{display:block;margin-bottom:12px;font-size:var(--k1);font-weight:500;letter-spacing:.02em}
+.k-sv-now b{font:400 var(--k7)/1 var(--mono);font-variant-numeric:tabular-nums;color:#f3c34a}
+@media (min-width:1101px){
+  .k-sv-now{display:block}
+  .k-sv-hero .sv-clock{display:none}
+}
+.k-sv-figs a{color:inherit;text-decoration:none}
+.k-sv-figs a:hover{text-decoration:underline;text-underline-offset:4px}
+.k-door .hs-map~.hs-shade{height:25%;background:linear-gradient(0deg,#f1efe9 52%,rgba(241,239,233,0))}

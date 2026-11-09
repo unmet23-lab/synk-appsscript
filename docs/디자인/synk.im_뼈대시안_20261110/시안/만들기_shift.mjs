@@ -40,11 +40,12 @@ export async function SHIFT({ 받기, 사이, 바꿈, 화살, 예약표글, 공�
 
   const 본문 = `<section class="k-sec k-night k-sv-hero" id="top" aria-labelledby="p-title"><span id="shift" class="sr-only" aria-hidden="true"></span><span id="worlds" class="sr-only" aria-hidden="true"></span><div class="wrap">
 <p class="k-rule"><span>AI 강의와 업무 자동화</span></p>
-<h1 class="k-claim k-spec" id="p-title"><span class="dim">AI 강의가 끝나면,</span> <span>결과물 하나가 남습니다</span></h1>
+<div class="k-sv-top"><h1 class="k-claim k-spec" id="p-title"><span class="dim">AI 강의가 끝나면,</span> <span>결과물 하나가 남습니다</span></h1>
+<p class="k-sv-now" aria-hidden="true"><span>서울 지금</span><b data-clock-mirror></b></p></div>
 <div class="k-sv-grid">
 <div class="k-sv-copy"><p class="k-lead">도구 이름을 훑는 강의가 아닙니다. 듣는 사람이 자기 일에서 결과물 하나를 직접 만들고, 혼자 다시 하는 법까지 가져갑니다. 원하면 강의 뒤에 회사의 반복 업무 하나를 자동으로 돌려 드립니다.</p>
 <p class="k-acts"><a class="k-btn" href="#services">강의 의뢰 ${화살('↓')}</a><a class="k-btn is-line" href="#process">자동화 의뢰 ${화살('↓')}</a></p>
-<ul class="k-sv-figs"><li class="is-by">이 예약표를 만들고 돌리는 사람이 직접 강의합니다.</li><li><b>30개 넘는 일</b>이 사람 없이 제시간에 돕니다 — 백업, 코드 시험, 게시, 의뢰서 받기</li><li>공개 전에 <b>20가지 넘는 검사</b>가 실수를 막습니다</li><li><b>매일 14:00</b>, 그날 게시물을 스스로 검수해 올립니다</li></ul></div>
+<ul class="k-sv-figs"><li><a href="#how">50분 수업 예시 — <b>다시 쓸 요청문 한 줄</b>, <b>AI 답을 확인하는 순서 세 가지</b>가 남습니다</a></li><li class="is-by">이 예약표를 만들고 돌리는 사람이 직접 강의합니다.</li><li><b>30개 넘는 일</b>이 사람 없이 제시간에 돕니다 — 백업, 코드 시험, 게시, 의뢰서 받기</li><li>공개 전에 <b>20가지 넘는 검사</b>가 실수를 막습니다</li><li><b>매일 14:00</b>, 그날 게시물을 스스로 검수해 올립니다</li></ul></div>
 ${판}
 </div>
 </div></section>

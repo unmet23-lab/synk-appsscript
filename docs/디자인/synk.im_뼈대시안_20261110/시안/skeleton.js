@@ -103,3 +103,11 @@ if (bar) {
   new MutationObserver(tone).observe(bar, { attributes: true, attributeFilter: ['class'] });
   later();
 }
+
+// ④ SHIFT 첫 화면: 예약표의 시계를 쪽 주장 띠 오른쪽에도 비춘다(공개본 shift-v12.js가 예약표 안 시계를 15초마다 고친다 — 그 글자를 그대로 옮긴다).
+const mirror = $('[data-clock-mirror]'), src = $('.sv-board [data-clock]');
+if (mirror && src) {
+  const copy = () => { mirror.textContent = src.textContent; };
+  new MutationObserver(copy).observe(src, { childList: true, characterData: true, subtree: true });
+  copy(); setTimeout(copy, 300);
+}
