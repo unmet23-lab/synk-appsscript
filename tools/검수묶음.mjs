@@ -2,7 +2,7 @@
 // 화면·백엔드 검수 묶음(2026-10-21). docs/AI_운영원칙.md 「백엔드 검수」·「화면 검수」의 GPT(백엔드 — 2026-10-24부터 하나, 막히면 아르곤, 정책 판 6부터 그다음 그록) · 아르곤(화면 1차) → Fable 검수에 넘길 자료를 한 명령으로 묶고,
 // 받은 답을 입력 SHA·끝 표식·읽은 항목으로 대조해 지적표·Fable 요약·「아르곤 N건(반영 M) · GPT N건(반영 M) · Fable N건(반영 M)」 집계를 만든다.
 // 새 LLM 실행기가 아니다 — 아르곤은 tools/lib/제미나이구독호출.js의 부르기를, GPT는 공식 Codex CLI(`codex exec`, 주간 몫이 넉넉한 Pro 계정)를 묶음마다 한 번 부르고
-// (되풀이·다른 모델로 대체 없음, 다시 보내기는 사람이 --다시로), Fable은 세션이 Agent 도구(model: fable)에 fable.md를 준다. 틀은 tools/topik-review.mjs를 본떴다.
+// (되풀이·다른 모델로 대체 없음, 다시 보내기는 사람이 --다시로), Fable은 5.2(claude-fable-5-2)로만 — 세션 모델이 5.2인 세션이 model을 비운 Agent에 fable.md를 준다(Agent model: fable은 5.1이라 쓰지 않는다, 유호님 11-11). 틀은 tools/topik-review.mjs를 본떴다.
 //
 //   node tools/검수묶음.mjs 준비 <이름> --종류 화면|백엔드 --바탕 <커밋> [<경로…>] [준비 옵션]   아르곤 묶음·전후 캡처·시험 TAP·Fable 요약
 //   node tools/검수묶음.mjs 아르곤 <이름> [--수준 high|medium] [--묶음 A …] [--다시]       묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
@@ -789,7 +789,7 @@ function 설계관문보기(폴더, 경로들, 기록) {
   const 걸림 = 연속지적찾기(path.dirname(폴더), 경로들.filter(p => !맞나(p, 기본뺌)));
   if (!걸림.length) return null;
   const 글 = 걸림.map(x => `${x.경로}(${x.회차들.join(' → ')})`).join(' · ');
-  if (!기록) throw new Error(`설계 관문 — 같은 파일이 ${설계관문.창시간}시간 안에 ${설계관문.회차}회차 연달아 P0·P1을 냈다: ${글}. 땜질을 멈추고 설계부터 본다: 구조 대안을 적어 Fable 설계 검토(Agent model: fable, 운영 원칙 「큰 기능의 설계 검토」)를 받고 그 기록 파일을 --설계검토 <파일>로 준다`);
+  if (!기록) throw new Error(`설계 관문 — 같은 파일이 ${설계관문.창시간}시간 안에 ${설계관문.회차}회차 연달아 P0·P1을 냈다: ${글}. 땜질을 멈추고 설계부터 본다: 구조 대안을 적어 Fable 5.2 설계 검토(세션 모델이 claude-fable-5-2인 세션에서 model을 비운 Agent — model: fable은 5.1, 운영 원칙 「큰 기능의 설계 검토」)를 받고 그 기록 파일을 --설계검토 <파일>로 준다`);
   const f = path.resolve(기록);
   if (!fs.existsSync(f) || !fs.statSync(f).size) throw new Error(`--설계검토 기록이 없거나 비었다: ${f}`);
   return { 파일: f, sha256: sha(fs.readFileSync(f)), 걸린곳: 걸림 };
@@ -2284,7 +2284,7 @@ async function main(argv) {
     console.log(`  묶음 ${b.이름}: ${Math.round(b.바이트 / 1024)}KB · 항목 ${b.항목.length}개 · sha ${b.sha256.slice(0, 12)} · 끝 표식 ${b.표식}`);
     if (목록.경고) console.log(`  주의: ${목록.경고}`);
     if (끝판정책(목록.정책) && !목록.검수자들.includes('Claude')) console.log(`  이 사슬의 마지막 판은 Claude까지 본다 — 고칠 것이 끝나면 다시 <새 이름> --앞 ${목록.이름} --끝판`);
-    const 할것 = 목록.검수자들.map(w => (w === 'Fable' ? `Agent 도구(model: fable)에 「${path.join(폴더, 'fable.md')}을 읽고 그대로 검수하라」 → node tools/검수묶음.mjs 페이블받기 ${목록.이름}`
+    const 할것 = 목록.검수자들.map(w => (w === 'Fable' ? `Fable 5.2(세션 모델이 claude-fable-5-2인 세션에서 model을 비운 Agent — model: fable은 5.1이라 안 씀)에 「${path.join(폴더, 'fable.md')}을 읽고 그대로 검수하라」 → node tools/검수묶음.mjs 페이블받기 ${목록.이름}`
       : w === 'Claude' ? `Claude가 ${b.파일}을 검수해 node tools/검수묶음.mjs 검수받기 ${목록.이름} <답 파일> --검수자 Claude --묶음 ${b.이름}` : `node tools/검수묶음.mjs ${w} ${목록.이름}`));
     console.log(`다음: ${할것.join(' · ')} → 새 지적은 처리 ${목록.이름} … → 집계 ${목록.이름} → 배포·공개는 --검수 ${목록.이름}`);
     return 0;
@@ -2351,7 +2351,7 @@ async function main(argv) {
   if (o.명령 === '페이블') {
     const 파일 = await 페이블하기(폴더, { 시험: !o.시험안함, 시험결과: o.시험결과, 캡처: !o.캡처안함, 알리기 });
     console.log(파일);
-    console.log(`다음: Agent 도구(model: fable)에 「${파일}을 읽고 그대로 검수하라」를 주고, 답을 받으면 node tools/검수묶음.mjs 페이블받기 ${목록.이름}`);
+    console.log(`다음: Fable 5.2(세션 모델이 claude-fable-5-2인 세션에서 model을 비운 Agent — model: fable은 5.1이라 안 씀, 답 첫 줄 · 하위 에이전트 기록의 model 칸으로 확인)에 「${파일}을 읽고 그대로 검수하라」를 주고, 답을 받으면 node tools/검수묶음.mjs 페이블받기 ${목록.이름}`);
     return 0;
   }
   if (o.명령 === '페이블받기') {
