@@ -57,9 +57,13 @@ function 기기모델() {
   return String(r.stdout || '').trim();
 }
 
-/** 링크(junction·심볼릭)는 따라 들어가지 않고, 가장 늦은 수정 시각·크기·파일 수를 모은다. */
+/**
+ * 링크(junction·심볼릭)는 따라 들어가지 않고, 가장 늦은 수정 시각·크기·파일 수를 모은다.
+ * 훑는 사이 폴더가 사라졌으면 { 없음: true } — 세션 여럿이 쓰는 .tmp를 날마다 사람 없이 훑게 되면서(11-10 자동 정리) 예외로 통째 멈추지 않게 했다.
+ */
 function 훑기(폴더) {
-  let 최신 = fs.lstatSync(폴더).mtimeMs, 크기 = 0, 파일 = 0;
+  let 최신, 크기 = 0, 파일 = 0;
+  try { 최신 = fs.lstatSync(폴더).mtimeMs; } catch { return { 최신: 0, 크기: 0, 파일: 0, 없음: true }; }
   const 쌓기 = [폴더];
   while (쌓기.length) {
     const 지금 = 쌓기.pop();
@@ -211,14 +215,21 @@ function 참조모으기(임시, 폴더들, 이름들, 상한 = { 폴더당: Inf
  * 앞 고리 전부다. 기준 밖 묶음은 남기되(모음 폴더는 후보가 아니다) 언급은 따라가지 않는다 — 그 묶음으로 다시 배포하거나
  * 다시를 이으려다 후보 폴더가 옮겨졌으면 관문이 「후보.json 없음」으로 멈추고, 정리 대기에서 되돌리면 된다.
  */
-function 모음뿌리(임시, 모음, 기준) {
+function 모음뿌리(임시, 모음, 기준, 지킬 = new Set()) {
   const 방 = path.join(임시, 모음);
-  const 최신 = new Map();
+  const 최신 = new Map(), 잰것 = [];
   let 항목 = [];
   try { 항목 = fs.readdirSync(방, { withFileTypes: true }); } catch { /* 없음 */ }
-  for (const e of 항목) if (e.isDirectory()) 최신.set(e.name, 훑기(path.join(방, e.name)).최신);
+  for (const e of 항목) {
+    if (!e.isDirectory()) continue;
+    const 잰 = 훑기(path.join(방, e.name));
+    if (잰.없음) continue;
+    최신.set(e.name, 잰.최신);
+    잰것.push({ 이름: `${모음}/${e.name}`, 바이트: 잰.크기, 파일: 잰.파일, 마지막ms: 잰.최신 });   // 쌓인 양 재기 · 옛 묶음 고르기(tools/tmp자동정리.js)가 묶음마다 본다
+  }
   const 최근 = [...최신].filter(([, t]) => t >= 기준).map(([이름]) => 이름);
-  const 보존 = [...최신.keys()].filter((이름) => !최근.includes(이름) && fs.existsSync(path.join(방, 이름, '_보존.txt')));
+  // 지킬(`<모음>/<묶음>` 이름) — 부르는 쪽이 남기라고 한 묶음(자동 정리: 살아 있는 문서가 가리키는 묶음)은 _보존.txt처럼 사슬의 뿌리가 된다.
+  const 보존 = [...최신.keys()].filter((이름) => !최근.includes(이름) && (fs.existsSync(path.join(방, 이름, '_보존.txt')) || 지킬.has(`${모음}/${이름}`)));
   const 키 = (p) => (process.platform === 'win32' ? path.resolve(p).toLowerCase() : path.resolve(p));
   // 앞 고리는 검수묶음.mjs 앞폴더()처럼 적힌 폴더(묶음.json이 있으면 — 모음 밖 · .tmp 밖이어도)를 열고, 이 모음에 같은 이름이
   // 있으면 그것도 따른다 — 도구는 둘 가운데 하나만 열지만 넓게 남기는 쪽으로 둘 다(11-07 GPT GA1: 모음 밖 고리에서 사슬이 끊겼다).
@@ -236,7 +247,7 @@ function 모음뿌리(임시, 모음, 기준) {
   }
   // 뿌리는 임시 기준 상대 경로 — 모음 안은 `검수/<묶음>`, 모음 밖 고리는 `<맨 위 폴더>/…`나 `../…`(참조모으기가 임시에서 푼다)
   const 상대 = (p) => path.relative(임시, p).split(path.sep).join('/');
-  return { 묶음: 최신.size, 최근: 최근.length, 보존: 보존.length, 앞고리: 고리.length, 뿌리: [...시작, ...고리].map(상대).sort() };
+  return { 묶음: 최신.size, 최근: 최근.length, 보존: 보존.length, 앞고리: 고리.length, 뿌리: [...시작, ...고리].map(상대).sort(), 잰것 };
 }
 
 /* 릴리스·후보 사본의 갈래(10-21) — 「<갈래>-release…」·「<갈래>-candidate…」 이름 앞부분. 판은 이름 속 날짜와 -vN으로 가른다. */
@@ -269,26 +280,37 @@ function 목록만들기(옵션 = {}) {
   const 최근 = [], 모음들 = [];
   let 오래된파일 = 0, 오래된파일크기 = 0;
   const 폴더들 = [];
+  // 옵션.재기 — 후보가 아닌 폴더까지 모든 맨 위 폴더의 크기 · 마지막 시각을 「잰폴더」로 돌려준다(쌓인 양 재기, tools/tmp자동정리.js).
+  // 남기는 폴더(보존 · _보존.txt · _정리제외.txt)는 평소 재지 않으므로 이때만 따로 잰다. 모음 폴더는 묶음마다 센다(모음뿌리).
+  const 잰폴더 = [];
+  const 재기만 = (이름, p) => { if (옵션.재기) { const 잰 = 훑기(p); if (!잰.없음) 잰폴더.push({ 이름, 바이트: 잰.크기, 마지막ms: 잰.최신 }); } };
   const 제외 = 제외읽기(임시);
+  // 옵션.지킬 — 부르는 쪽이 남기라고 한 이름(맨 위 폴더 · `<모음>/<묶음>`). _보존.txt처럼 남기고 그 폴더가 가리키는 폴더도 따라간다.
+  const 지킬 = new Set(옵션.지킬 || []);
   for (const e of fs.existsSync(임시) ? fs.readdirSync(임시, { withFileTypes: true }) : []) {
     const p = path.join(임시, e.name);
-    const st = fs.lstatSync(p);
+    let st;
+    try { st = fs.lstatSync(p); } catch { continue; }   // 목록을 읽은 뒤 사라진 것
     if (st.isSymbolicLink()) continue;
     if (!st.isDirectory()) {
       if (st.mtimeMs < 기준) { 오래된파일++; 오래된파일크기 += st.size; }
       continue;
     }
     // 이름이 보존으로 시작하면 세션에서 살린 유일한 사본이다. 후보에 넣지 않고 안의 언급도 따라가지 않는다(10-31 보존_작업트리 둘이 정리 대기에 섞임).
-    if (e.name.startsWith('보존')) continue;
-    if (fs.existsSync(path.join(p, '_보존.txt')) || 제외.이름들.has(e.name)) {
+    if (e.name.startsWith('보존')) { 재기만(e.name, p); continue; }
+    if (fs.existsSync(path.join(p, '_보존.txt')) || 제외.이름들.has(e.name) || 지킬.has(e.name)) {
       최근.push(e.name);
       // 통째로 따라가는 모음도 모음 밖에 있는 다시 검수 사슬 고리는 따로 잇는다(실측 계보 절의 닫힌 이름은 따라가지 않는다)
       if (모음.includes(e.name) && !제외.닫힘.has(e.name)) 모음들.push({ 이름: e.name, 통째: true });
+      else 재기만(e.name, p);
       continue;
     }
     // 모음 폴더는 후보가 되지 않고, 뿌리는 묶음마다 고른다(위 _보존.txt · _정리제외.txt에 적으면 예전처럼 통째로 따라간다).
     if (모음.includes(e.name)) { 모음들.push({ 이름: e.name, 통째: false }); continue; }
-    폴더들.push({ 이름: e.name, p, 잰것: 훑기(p) });
+    const 잰것 = 훑기(p);
+    if (잰것.없음) continue;
+    폴더들.push({ 이름: e.name, p, 잰것 });
+    if (옵션.재기) 잰폴더.push({ 이름: e.name, 바이트: 잰것.크기, 마지막ms: 잰것.최신 });
   }
   // 릴리스·후보 사본은 갈래마다 새 판 둘만 남기고, 그보다 옛 판은 14일이 안 됐어도 후보로 보인다(10-21 유호님 확정).
   const 갈래별 = new Map();
@@ -300,7 +322,7 @@ function 목록만들기(옵션 = {}) {
     if (!오래됨 && !옛판.has(f.이름)) { 최근.push(f.이름); continue; }
     const g = 갈래(f.이름);
     후보.push({
-      이름: f.이름, MB: +(f.잰것.크기 / 1048576).toFixed(1), 파일: f.잰것.파일, 마지막: new Date(f.잰것.최신).toISOString().slice(0, 10), git: git정보(f.p),
+      이름: f.이름, MB: +(f.잰것.크기 / 1048576).toFixed(1), 파일: f.잰것.파일, 마지막: new Date(f.잰것.최신).toISOString().slice(0, 10), 마지막ms: f.잰것.최신, git: git정보(f.p),
       까닭: [...(오래됨 ? ['14일'] : []), ...(옛판.has(f.이름) ? ['릴리스옛판'] : [])],
       갈래: g || 앞말(f.이름), 릴리스: Boolean(g), 이사복사: 이사날.includes(지역날짜(f.잰것.최신)), 이름날짜: 이름날짜(f.이름),
     });
@@ -310,7 +332,7 @@ function 목록만들기(옵션 = {}) {
   const 참조로남김 = [];
   // 통째 모음은 모든 묶음이 뿌리라(폴더째 이미 최근에 있다) 모음 밖 사슬 고리만 더한다.
   const 모음본것 = 모음들.map(({ 이름, 통째 }) => {
-    const m = 모음뿌리(임시, 이름, 통째 ? -Infinity : 기준);
+    const m = 모음뿌리(임시, 이름, 통째 ? -Infinity : 기준, 지킬);
     return { 이름, 통째, ...m, 뿌리: 통째 ? m.뿌리.filter((x) => !x.startsWith(`${이름}/`)) : m.뿌리 };
   });
   let 볼곳 = [...최근.filter((이름) => !제외.닫힘.has(이름)), ...모음본것.flatMap((m) => m.뿌리)], 참조잘림 = false;
@@ -353,7 +375,10 @@ function 목록만들기(옵션 = {}) {
     모음: 모음본것.map((m) => (m.통째 ? { 이름: m.이름, 통째: true, 묶음: m.묶음, 밖고리: m.뿌리.length }
       : { 이름: m.이름, 묶음: m.묶음, 뿌리: m.뿌리.length, 최근: m.최근, 보존: m.보존, 앞고리: m.앞고리 })),
     저장소코드: 저장소본것.본파일, 저장소로남김: 저장소본것.찾은.size,
-    참조잘림, 큰파일: [...new Set(큰파일)].map((p) => path.relative(임시, p).split(path.sep).join('/')).sort() };
+    참조잘림, 큰파일: [...new Set(큰파일)].map((p) => path.relative(임시, p).split(path.sep).join('/')).sort(),
+    // 재기를 켠 쪽(자동 정리)에는 묶음마다 잰 값과, 묶음마다 재는 모음의 「남길 묶음」(기준 안 · _보존 · 그 다시 검수 사슬의 앞 고리)도 준다.
+    ...(옵션.재기 ? { 잰폴더: [...잰폴더, ...모음본것.flatMap((m) => m.잰것)],
+      모음남길: 모음본것.filter((m) => !m.통째).map((m) => ({ 이름: m.이름, 뿌리: m.뿌리 })), 통째모음: 모음본것.filter((m) => m.통째).map((m) => m.이름) } : {}) };
 }
 
 /** 고르기 묶음 셋 — 릴리스 옛 판 · 이사 복사 시각 · 14일(과 전부). 이름 목록을 돌려준다. */
@@ -516,6 +541,6 @@ function 실행(argv, 주입 = {}) {
   return 0;
 }
 
-module.exports = { 목록만들기, 글로, 옮기기, 묶음, 훑기, 참조모으기, 갈래, 인자읽기, 실행, 쓰는법 };
+module.exports = { 목록만들기, 글로, 옮기기, 묶음, 훑기, 참조모으기, 갈래, 인자읽기, 실행, 쓰는법, 기본, 기기모델 };
 
 if (require.main === module) process.exitCode = 실행(process.argv.slice(2));
