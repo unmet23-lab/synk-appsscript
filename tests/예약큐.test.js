@@ -616,3 +616,21 @@ test('한 계정에 줄이 여럿이면 걸려 있는 줄로 읽는다 — 예�
   assert.deepEqual(['2026-10-22', '2026-10-23', '2026-10-24'].map((d) => line.byDay[d].cells['lab-youtube']), ['채움', '채움', '만듦']);
   assert.equal(line.reserve, 2);
 });
+
+test('나라별 계정(11-10) — 퀴즈 칸을 닫아 두면 그 줄은 쉼이고, 첫 판 시험 계정은 판이 달린 날만 칸이다(확인해 true로 바꾸면 빈 칸으로 보인다)', () => {
+  const base = path.join(매일, '나라별');
+  fs.mkdirSync(base, { recursive: true });
+  const 나라 = (extra) => ({ brand: 'LAB', platform: 'youtube', dailyLine: 'LAB 나라별', timeZone: 'Asia/Seoul', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'],
+    dailyFrom: '2026-11-12', dailyFormatsFrom: { 퀴즈: '미정' }, ...extra });
+  const 원장 = (state) => fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'lab-th-youtube': 나라({ postRouteVerified: state }) } }));
+  편('story-13', { 브랜드: 'LAB', 슬롯: '2026-11-13', 성격: '상시', 제목: '이야기', 판: [{ 계정: 'lab-th-youtube', 시각: '2026-11-13T13:00:00+09:00', 돌림: true }] }, 결과([['lab-th-youtube', '예약됨']]), base);
+  const cells = (state) => {
+    원장(state);
+    const line = 매일큐(base, ['--오늘', '2026-11-11', '--일수', '5']).lines.find((l) => l.line === 'LAB 나라별');
+    return { reserve: line.reserve, days: ['2026-11-12', '2026-11-13', '2026-11-14'].map((d) => `${line.byDay[d].cells['lab-th-youtube 이야기']}/${line.byDay[d].cells['lab-th-youtube']}`) };
+  };
+  // 첫 판 시험: 판이 달린 11-13만 칸(채움), 나머지 이야기 칸과 퀴즈 칸은 쉼 — 빈 칸으로 알리지 않는다
+  assert.deepEqual(cells('첫판'), { reserve: 4, days: ['쉼/쉼', '채움/쉼', '쉼/쉼'] });
+  // 확인해 true로 바꾸면 이야기 칸의 빈 날이 보인다(퀴즈 칸은 그대로 쉼)
+  assert.deepEqual(cells(true), { reserve: 0, days: ['빔/쉼', '채움/쉼', '빔/쉼'] });
+});

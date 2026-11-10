@@ -241,6 +241,12 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     known['lab-th-youtube'].postRouteVerified = false;
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-youtube']);
     known['lab-th-youtube'].postRouteVerified = true;
+    // 뜻 검사에서 둘 이상이 짚은 줄을 판정으로 내린 판본은 확인할 것으로 보인다(막지는 않는다)
+    판본.TH.검수.뜻.판정줄 = [{ 줄: 'rule', 갈래: '원본', 까닭: '팻말 장면은 동결한 원본의 박자', 짚은수: 2 }];
+    const verdict = 검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')], { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } } });
+    assert.deepEqual(verdict.map((f) => f.level + ':' + f.code), ['확인할 것:rotation-verdict']);
+    assert.ok(verdict[0].message.includes('rule(원본)'));
+    delete 판본.TH.검수.뜻.판정줄;
     assert.deepEqual(codes([plate('lab-th-tiktok', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-tiktok'], '프로필 빈 계정은 채운 뒤에만');
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00', { 파일: '게시/다른.mp4' })]), ['rotation-version-file:lab-th-youtube']);
     fs.writeFileSync(text, '{"줄":["고친 글"]}');

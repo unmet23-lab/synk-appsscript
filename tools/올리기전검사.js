@@ -345,7 +345,10 @@ function gapFinding(r) {
 }
 
 // ── 영상 하나 ──
-async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null, shots }) {
+// light(11-10): 나라 판본(돌림 판) 영상은 올림 규격 · 음량만 본다 — 그림 · 박자 · 뼈대 · 맹검은 동결한 원본의 검사를 따르고(설계 17 · 20),
+// 조판은 글자 검사 기록이 본다(rotationFindings가 그 기록의 지문을 지금 파일과 맞춘다). 판본 26개에 정지 · 한 구성 · 글자표를 다시 돌리면
+// 원본과 같은 확인할 것이 판본 수만큼 되풀이된다(11-10 모의: 「원본과 뼈대 자리이 다르다」 열 줄).
+async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.basename(file), homage = null, shots, light = false }) {
   const 사전 = await import(pathToFileURL(path.join(__dirname, '영상사전검사.mjs')).href);
   const 음량 = await import(pathToFileURL(path.join(__dirname, '음량마감.mjs')).href);
   const findings = [];
@@ -364,6 +367,14 @@ async function checkVideo(file, out, { skipOcr, repo, allowHan, label = path.bas
   if (!loud || loud.integratedLufs == null) add(LOOK, 'loudness-unknown', '음량을 재지 못했다(소리가 없거나 무음)');
   else if (!음량.passes({ I: loud.integratedLufs, peak: loud.truePeakDbfs }, 음량.DEFAULTS)) {
     add(FIX, 'loudness', `${loud.integratedLufs} LUFS · 최대 ${loud.truePeakDbfs} dBFS — 공용 기준 ${음량.DEFAULTS.target}±${음량.DEFAULTS.tolerance} LUFS·최대 ${음량.DEFAULTS.ceiling} dBFS(node tools/음량마감.mjs <렌더.mp4>로 다시 담는다)`);
+  }
+  if (light) {
+    const stat = fs.statSync(file);
+    return { findings, ocrFindings: [], ocrText: '', size: stat.size,
+      summary: { 바이트: stat.size, 수정: new Date(stat.mtimeMs).toISOString(), sha256: report.inputs.video.sha256, 길이: Math.round(m.duration * 10) / 10,
+        해상도: `${m.width}×${m.height}`, 평균Mbps: Math.round(((stat.size * 8) / m.duration) / 1e5) / 10, 오디오비트레이트: m.audioBitrates,
+        음량: loud?.integratedLufs ?? null, 봉우리: loud?.truePeakDbfs ?? null, 판본: true,
+        사전검사: path.relative(repo, report.reportPath).split(path.sep).join('/') } };
   }
   const still = 정지.analyze(file);
   if (!still.pass) {
@@ -761,6 +772,10 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
     if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required));
     const st = states.get(key);
     if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
+    // 뜻 검사에서 둘 이상이 같이 짚은 줄을 판정(원본 박자 · 한국어를 못 읽는 시험 전제)으로 내린 판본은 그 줄을 보이게 한다 — 판본에서 못 고치는
+    // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).
+    const verdicts = Array.isArray(v.검수?.뜻?.판정줄) ? v.검수.뜻.판정줄 : [];
+    if (st.ready && verdicts.length) add(LOOK, 'rotation-verdict', p.account, `판본 ${key}: 뜻 검사에서 둘 이상이 짚은 줄 ${verdicts.length}개를 판정으로 내렸다 — ${verdicts.map((z) => `${z.줄}(${z.갈래})`).join(' · ')}. 판본 글로 못 고치는 줄인지 까닭을 본다(준비.json 돌림.판본.${key}.검수.뜻.판정줄)`);
   }
   return out;
 }
@@ -918,6 +933,7 @@ async function run(dir, opts = {}) {
 
   const plates = 묶음.plates(bundle);
   const videos = new Map();
+  const versionVideos = new Map(); // 돌림 판(나라 판본) 영상 — 가벼운 검사만
   const links = new Set();
   const texts = [];
   for (const plate of plates) {
@@ -943,8 +959,9 @@ async function run(dir, opts = {}) {
       if (plate.video.reduced) add(API_PLATFORMS.has(plate.platform) ? FIX : LOOK, 'reduced-copy', where,
         `화질을 낮춘 사본(${path.basename(plate.video.path)})만 적혀 있다 — 「원본」에 마감 원본을 적는다(v2 §2-4, 서버·API는 원본으로 올린다)`);
       if (plate.video.from === '추정') add(LOOK, 'original-guessed', where, `원본을 이름으로 짐작했다(${path.basename(plate.video.path)}) — 판에 「원본」을 적는다`);
-      if (!videos.has(plate.video.path)) videos.set(plate.video.path, []);
-      videos.get(plate.video.path).push(plate);
+      const into = plate.raw?.돌림 ? versionVideos : videos;
+      if (!into.has(plate.video.path)) into.set(plate.video.path, []);
+      into.get(plate.video.path).push(plate);
     }
     if (!plate.texts.source.length) add(FIX, 'no-text', where, '게시글을 찾지 못했다 — 판에 「원고」(원고.json) 또는 「게시글」을 적는다');
     for (const f of 규칙.checkPlate(plate.texts, { brand: prep.브랜드, language: plate.language, platform: plate.platform })) add(f.level, f.code, `${where} ${f.where}`, f.message);
@@ -985,7 +1002,22 @@ async function run(dir, opts = {}) {
   const hanLanguage = (plate) => /^(zh|ja)/.test(plate.language || '') || plate.platform === 'xiaohongshu';
   const shots = shotRanges(bundle.prep);
   if (shots.error) add(LOOK, 'shot-ranges', '준비.json', shots.error);
+  // 이미 나간 판만 쓰는 파일(예약 · 게시됐고 시각이 지남)은 다시 재지 않는다 — 올릴 것이 없고, 그때 기준으로 이미 본 파일이다. 돌림 원본은
+  // 씨앗 판이 나간 뒤에 나라 판본이 붙으므로, 다시 재면 뒤에 생긴 규격(오디오 320kbps 등)으로 옛 씨앗 파일이 걸려 새 판본까지 막힌다(11-10 모의).
+  const outAlready = (p) => DONE.has(posted.get(p.account)) && Date.parse(p.time || '') < Date.now();
+  for (const [file, users] of versionVideos) {
+    if (videos.has(file) || users.every(outAlready)) continue;
+    try {
+      const label = labelOf(bundle, file);
+      const r = await checkVideo(file, out, { skipOcr: true, repo: bundle.repo, allowHan: true, label, light: true });
+      findings.push(...r.findings);
+      fileSummaries.push({ 경로: 묶음.rel(bundle, file), 판: users.map((p) => p.account), ...r.summary });
+    } catch (error) {
+      add(FIX, 'video-check', path.basename(file), `영상 검사 실패: ${error.message}`);
+    }
+  }
   for (const [file, users] of videos) {
+    if (versionVideos.size && users.every(outAlready)) continue;
     try {
       const label = labelOf(bundle, file);
       const h = homage.per.get(file);

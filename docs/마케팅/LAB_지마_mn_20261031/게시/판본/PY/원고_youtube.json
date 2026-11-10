@@ -1,0 +1,24 @@
+{
+  "id": "판본-PY-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "es",
+  "audioLanguage": "ko",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "Todos los días me retaba… hasta que se fue 🥲 #aprendecoreano",
+  "caption": "En coreano informal, “no hagas…” se arma así: raíz del verbo + -지 마 (-ji ma).\n¿Te vas sin tomar tereré? ¡가지 마! (ga-ji ma) = ¡No te vayas!\nUsalo solo con amigos y familia. Para hablar con respeto decí 가지 마세요 (ga-ji ma-se-yo).\n\nSYNK LAB\n#aprendecoreano #coreano #gramaticacoreana",
+  "pinnedComment": "¿A quién le dirías 가지 마? Contanos 👇",
+  "_원문": {
+    "title": "그는 날마다 나를 혼냈다… 그가 떠날 때까지 🥲 #aprendecoreano",
+    "caption": "반말 한국어에서 “~하지 마”는 이렇게 만든다: 동사 어간 + -지 마.\n테레레도 안 마시고 가? 가지 마! = 가지 마!\n친구와 가족에게만 써. 공손하게 말하려면 가지 마세요라고 해.\n\nSYNK LAB\n#aprendecoreano #coreano #gramaticacoreana",
+    "pinnedComment": "너라면 누구에게 가지 마라고 할래? 알려 줘 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

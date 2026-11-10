@@ -1,10 +1,13 @@
 // LAB 몽골 M22 「-지 마」 — 바리스타의 잔소리 셋(먹지 마 · 자지 마 · 보지 마)이 여행 가방을 감추던 마지막 날로 이어지고,
 // 이번엔 몽글이 「가지 마…」. 「울지 마.」 하고 떠난 사람이 남긴 케이크 한 조각과 「먹어.」 — 첫 잔소리가 끝에서 뒤집힌다.
 // 말은 한국어(바리스타 범수 · 몽글 자리 소진), 뜻은 말풍선 세 줄(한글 · 키릴 읽기 · 몽골어). 전부 useCurrentFrame()으로만 움직인다.
+// 11-10 판본 틀: 화면 글(머리 글 · 읽는 법 · 뜻 · 표지판 · 마지막 날 띠)과 새 끝 카드 · 끝 질문은 판본/<KEY>.json(판본.ts)에서 읽는다 — 그림 · 소리 · 박자는 그대로.
+// 줄 높이는 판본 lineH가 원래 값(머리 글 1.18 · 나머지 1.2)보다 클 때만 그 값을 쓴다(버마 · 타이 글자처럼 위아래가 긴 문자).
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { LINES, Line, TEXT } from './data';
+import { LINES, Line } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8' };
 const KO = "'SUIT', 'Inter Tight', sans-serif";
@@ -76,10 +79,10 @@ const Plate: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-// 말풍선(한글 · 키릴 읽기 · 몽골어)
+// 말풍선(한글 · 읽는 법 · 뜻) — k는 판본 reads · means의 차례
 const TOP = 290;
 const H = 286;
-const Bubble: React.FC<{ line: Line; t: number; from: number; until: number }> = ({ line, t, from, until }) => {
+const Bubble: React.FC<{ line: Line; k: number; L: LocPack; t: number; from: number; until: number }> = ({ line, k, L, t, from, until }) => {
   if (t < from || t >= until) return null;
   const a = interpolate(t, [from, from + 0.18], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const mid = line.left + line.width / 2;
@@ -104,18 +107,18 @@ const Bubble: React.FC<{ line: Line; t: number; from: number; until: number }> =
             line.ko
           )}
         </div>
-        <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 46, lineHeight: 1.2, color: C.coralShade, whiteSpace: 'nowrap' }}>🔊 {line.read}</div>
-        <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 54, lineHeight: 1.2, color: C.brown, whiteSpace: 'nowrap' }}>{line.mn}</div>
+        <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 46, lineHeight: 1.2, color: C.coralShade, whiteSpace: 'nowrap' }}>🔊 {L.reads[k]}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: Math.max(1.2, L.lineH), color: C.brown, whiteSpace: 'nowrap' }}>{L.means[k]}</div>
       </div>
     </div>
   );
 };
 
-const Hook: React.FC<{ t: number }> = ({ t }) => {
+const Hook: React.FC<{ t: number; L: LocPack }> = ({ t, L }) => {
   if (t >= T.scold[0]) return null;
   const a = interpolate(t, [0, 0.14], [0.7, 1], { ...clamp, easing: EASE_OUT });
   return (
-    <div style={{ position: 'absolute', left: 60, top: TOP, width: 860, padding: '34px 36px 38px', borderRadius: 44, background: 'rgba(43,26,20,0.92)', boxShadow: '0 10px 28px rgba(60,20,10,0.28)', transform: `scale(${a})`, fontFamily: MN, fontWeight: 800, fontSize: 66, lineHeight: 1.18, color: C.cream, textAlign: 'center' }}>{TEXT.hook}</div>
+    <div style={{ position: 'absolute', left: 60, top: TOP, width: 860, padding: '34px 36px 38px', borderRadius: 44, background: 'rgba(43,26,20,0.92)', boxShadow: '0 10px 28px rgba(60,20,10,0.28)', transform: `scale(${a})`, fontFamily: L.font, fontWeight: 800, fontSize: L.hookSize, lineHeight: Math.max(1.18, L.lineH), color: C.cream, textAlign: 'center', whiteSpace: 'pre-line' }}>{L.hook}</div>
   );
 };
 
@@ -129,7 +132,7 @@ const Band: React.FC<{ t: number; from: number; until: number; dark?: boolean; t
   );
 };
 
-const Sign: React.FC<{ t: number }> = ({ t }) => {
+const Sign: React.FC<{ t: number; L: LocPack }> = ({ t, L }) => {
   if (t < T.rule || t >= T.dusk) return null;
   const s = t - T.rule;
   const drop = interpolate(s, [0, 0.28], [-520, 0], { ...clamp, easing: Easing.out(Easing.back(1.4)) });
@@ -139,7 +142,7 @@ const Sign: React.FC<{ t: number }> = ({ t }) => {
       <div style={{ position: 'absolute', left: 150, top: -320, width: 6, height: 330, background: '#3B2A1E' }} />
       <div style={{ position: 'absolute', right: 150, top: -320, width: 6, height: 330, background: '#3B2A1E' }} />
       <div style={{ position: 'absolute', inset: 0, borderRadius: 26, background: '#5B3B28', border: '8px solid #3B2A1E', boxShadow: '0 14px 26px rgba(50,25,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 800, fontSize: 100, color: C.cream, whiteSpace: 'nowrap' }}>
-        -지 마 = <span style={{ fontFamily: MN, marginLeft: 22 }}>{TEXT.rule}</span>
+        -지 마 = <span style={{ fontFamily: L.font, fontSize: L.ruleSize, marginLeft: 22 }}>{L.rule}</span>
       </div>
     </div>
   );
@@ -175,23 +178,38 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => {
+// 끝 카드 · 끝 질문(판본 endCard · ask, 선택) — 몽글이 울면서 한 입 문 뒤(18.0초~), 말풍선이 있던 맨 위 줄. 비우면 그리지 않는다(몽골판 그대로).
+const END_AT = T.bite + 0.3;
+const EndCard: React.FC<{ t: number; L: LocPack }> = ({ t, L }) => {
+  if (t < END_AT || (!L.endCard && !L.ask)) return null;
+  const a = interpolate(t, [END_AT, END_AT + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
+  return (
+    <div style={{ position: 'absolute', left: 70, width: 840, top: TOP, padding: '24px 28px 28px', borderRadius: 44, background: 'rgba(24,16,30,0.9)', boxShadow: '0 10px 28px rgba(40,10,0,0.3)', opacity: a, transform: `translateY(${(1 - a) * 20}px)`, textAlign: 'center', fontFamily: L.font, fontWeight: 800, lineHeight: Math.max(1.2, L.lineH), whiteSpace: 'pre-line' }}>
+      {L.endCard ? <div style={{ fontSize: L.endSize, color: C.cream }}>{L.endCard}</div> : null}
+      {L.ask ? <div style={{ fontSize: L.askSize, color: '#FFB199', marginTop: L.endCard ? 8 : 0 }}>{L.ask}</div> : null}
+    </div>
+  );
+};
+
+// L = 판본 글(판본/<KEY>.json) — Root가 판본마다 컴포지션 m22-<KEY>로 넘긴다
+export const Film: React.FC<{ L: LocPack }> = ({ L }) => {
   const f = useCurrentFrame();
   const t = f / 30;
   return (
     <AbsoluteFill style={{ backgroundColor: '#1a1014' }}>
       <Plate t={t} />
-      <Hook t={t} />
-      <Bubble line={LINES[0]} t={t} from={T.scold[0]} until={T.scold[1]} />
-      <Bubble line={LINES[1]} t={t} from={T.scold[1]} until={T.scold[2]} />
-      <Bubble line={LINES[2]} t={t} from={T.scold[2]} until={T.rule} />
-      <Bubble line={LINES[3]} t={t} from={T.go} until={T.pat} />
-      <Bubble line={LINES[4]} t={t} from={T.pat + 0.3} until={T.end} />
-      <Bubble line={LINES[5]} t={t} from={T.eat} until={T.bite} />
-      <Sign t={t} />
+      <Hook t={t} L={L} />
+      <Bubble line={LINES[0]} k={0} L={L} t={t} from={T.scold[0]} until={T.scold[1]} />
+      <Bubble line={LINES[1]} k={1} L={L} t={t} from={T.scold[1]} until={T.scold[2]} />
+      <Bubble line={LINES[2]} k={2} L={L} t={t} from={T.scold[2]} until={T.rule} />
+      <Bubble line={LINES[3]} k={3} L={L} t={t} from={T.go} until={T.pat} />
+      <Bubble line={LINES[4]} k={4} L={L} t={t} from={T.pat + 0.3} until={T.end} />
+      <Bubble line={LINES[5]} k={5} L={L} t={t} from={T.eat} until={T.bite} />
+      <Sign t={t} L={L} />
       <Band t={t} from={T.dusk + 0.15} until={T.go} dark>
-        <div style={{ fontFamily: MN, fontWeight: 800, fontSize: 64, lineHeight: 1.2, color: C.cream, textAlign: 'center' }}>{TEXT.last}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.lastSize, lineHeight: Math.max(1.2, L.lineH), color: C.cream, textAlign: 'center', whiteSpace: 'pre-line' }}>{L.last}</div>
       </Band>
+      <EndCard t={t} L={L} />
       <Sound />
     </AbsoluteFill>
   );

@@ -1,0 +1,24 @@
+{
+  "id": "판본-TW-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "zh-Hant",
+  "audioLanguage": "ko",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "他以前老是這樣說……直到最後一天🥲 #韓文",
+  "caption": "韓文對朋友說「不要……」，只要在動詞語幹後面加上 -지 마（-ji ma）。\n最後一塊雞排？먹지 마!（meok-ji ma）＝不要吃！\n-지 마 是半語，只能對朋友和家人說。想要有禮貌，就說 먹지 마세요（meok-ji ma-se-yo）。\n\nSYNK LAB\n#韓文 #學韓文 #韓語",
+  "pinnedComment": "誰最常對你說 먹지 마？留言告訴我👇",
+  "_원문": {
+    "title": "그는 예전에 늘 이렇게 말했다… 마지막 날까지 🥲 #韓文",
+    "caption": "한국어로 친구에게 「하지 마」라고 하려면 동사 어간 뒤에 -지 마를 붙이기만 하면 된다.\n마지막 남은 지파이 한 조각? 먹지 마! = 먹지 마!\n-지 마는 반말이라 친구와 가족에게만 쓸 수 있다. 예의 있게 하려면 먹지 마세요라고 한다.\n\nSYNK LAB\n#韓文 #學韓文 #韓語",
+    "pinnedComment": "누가 너에게 먹지 마라고 제일 자주 해? 댓글로 알려 줘 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

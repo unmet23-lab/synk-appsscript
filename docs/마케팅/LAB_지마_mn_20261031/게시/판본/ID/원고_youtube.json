@@ -1,0 +1,24 @@
+{
+  "id": "판본-ID-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "id",
+  "audioLanguage": "ko",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "Dia selalu bilang gini… sampai hari terakhirnya 🥲 #belajarkorea",
+  "caption": "Mau bilang “jangan…” ke teman dalam bahasa Korea? Tinggal tambahin -지 마 (-ji ma) di belakang kata dasar kata kerjanya.\nGorengan terakhir? 먹지 마! (meok-ji ma) = Jangan dimakan!\n-지 마 cuma buat teman dan keluarga. Kalau mau sopan, pakai 먹지 마세요 (meok-ji ma-se-yo).\n\nSYNK LAB\n#belajarkorea #bahasakorea #belajarbahasakorea",
+  "pinnedComment": "Siapa yang paling sering bilang 먹지 마 ke kamu? 👇",
+  "_원문": {
+    "title": "그는 늘 이렇게 말했다… 그의 마지막 날까지 🥲 #belajarkorea",
+    "caption": "친구에게 한국어로 “하지 마”라고 하고 싶어? 동사 어간 뒤에 -지 마를 붙이기만 하면 돼.\n마지막 남은 튀김(고렝안)? 먹지 마! = 먹지 마!\n-지 마는 친구와 가족에게만 써. 공손하게 하려면 먹지 마세요를 써.\n\nSYNK LAB\n#belajarkorea #bahasakorea #belajarbahasakorea",
+    "pinnedComment": "누가 너에게 먹지 마라고 제일 자주 해? 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

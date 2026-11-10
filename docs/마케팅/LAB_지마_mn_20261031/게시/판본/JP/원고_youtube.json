@@ -1,0 +1,24 @@
+{
+  "id": "판본-JP-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "ja",
+  "audioLanguage": "ko",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "彼の口ぐせは「〜しないで」…最後の日まで🥲 #韓国語",
+  "caption": "韓国語のタメ口で「〜しないで」と言うときは、動詞の語幹に -지 마（-ji ma）をつけるだけ。\n最後のからあげ？ 먹지 마!（meok-ji ma）＝食べないで！\n-지 마 は友だちや家族に使う言い方。ていねいに言うなら 먹지 마세요（meok-ji ma-se-yo）。\n\nSYNK LAB\n#韓国語 #韓国語勉強 #韓国語文法",
+  "pinnedComment": "あなたは誰に 가지 마 って言いたい？👇",
+  "_원문": {
+    "title": "그의 입버릇은 「~하지 마」… 마지막 날까지 🥲 #韓国語",
+    "caption": "한국어 반말로 「~하지 마」라고 할 때는 동사 어간에 -지 마를 붙이기만 하면 된다.\n마지막 남은 가라아게? 먹지 마! = 먹지 마!\n-지 마는 친구나 가족에게 쓰는 말. 공손하게 말하려면 먹지 마세요.\n\nSYNK LAB\n#韓国語 #韓国語勉強 #韓国語文法",
+    "pinnedComment": "너는 누구에게 가지 마라고 말하고 싶어? 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

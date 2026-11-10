@@ -314,6 +314,16 @@ function accountRows(items, range, accounts = {}) {
       rows.set(x.key, sub);
     }
   }
+  // 닫힌 칸(11-10): 그 줄의 칸이 그날 안 열렸으면 쉼 — 마지막 칸(21:00 퀴즈)을 dailyFormatsFrom 「미정」으로 닫아 둔 나라별 계정은 원래 줄도 쉼이다.
+  // 첫 판 시험 계정(postRouteVerified 「첫판」)은 판이 달린 날만 칸이고 나머지는 쉼 — 첫 판을 확인해 true로 바꾸기 전에는 채울 칸이 아니다
+  // (「만든 편 없음」으로 알리면 19:30 후보를 고르라는 뜻이 되는데, 이 칸은 확인을 기다리는 칸이다).
+  for (const row of rows.values()) {
+    const a = accounts[row.base || row.account];
+    if (!a?.dailyLine) continue;
+    const slot = row.base ? row.slot : lastSlot(a);
+    const trial = !a.rotationSeed && a.postRouteVerified === '첫판';
+    row.closed = [...new Set([...(row.closed || []), ...range.filter((d) => !slotOpen(a, d, slot) || (trial && !row.byDay[d].length))])];
+  }
   for (const row of rows.values()) {
     row.off = range.filter((d) => (row.closed || []).includes(d) || resting(row.byDay[d], accounts[row.base || row.account], d));
     row.reserve = 0;

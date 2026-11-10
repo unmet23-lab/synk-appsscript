@@ -70,3 +70,6 @@ experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-full.js
 experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-blind-all.json text eol=lf
 experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-blind-solved.json text eol=lf
 experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-result.json text eol=lf
+
+# 판본 글(판본글/1)의 SHA-256이 뜻 검수 지문이다(tools/돌림표.js · tools/lib/판본잇기.js) — Windows 체크아웃도 같은 바이트를 쓴다.
+docs/마케팅/*/게시/판본/*/글.json text eol=lf

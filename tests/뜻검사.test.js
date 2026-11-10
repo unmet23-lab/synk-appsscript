@@ -60,6 +60,55 @@ test('재료 — 원문 · 한국어 · 게시글은 안 주고 현지어 글을
   assert.ok(재료.딱지경고.some((w) => w.수준 === '확인할 것'));
 });
 
+test('재료 — 현지어 줄에 섞인 한국어는 그 한국어 줄과 같은 딱지로 보인다(뜻은 숨기고 같은 글자인 것만), 이야기 틀은 마음이 움직이는 자리도 묻는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const 줄 = [
+    { id: 'ko.1', 칸: '한국어', 글: '먹지 마!', 초: [1.6, 3.7] },
+    { id: 'means.1', 칸: '뜻', 글: "Don't eat that!", 원문: '먹지 마!', 초: [1.6, 3.7] },
+    { id: 'ko.4', 칸: '한국어', 글: '가지 마…', 초: [10.6, 12.8] },
+    { id: 'means.4', 칸: '뜻', 글: "Don't go…", 원문: '가지 마…', 초: [10.6, 12.8] },
+    { id: 'ko.6', 칸: '한국어', 글: '먹어.', 초: [15.6, 17.7] },
+    { id: 'means.6', 칸: '뜻', 글: 'Eat up.', 원문: '먹어.', 초: [15.6, 17.7] },
+    { id: 'endCard', 칸: '상황', 글: 'Blizzard out there?\n가지 마!', 원문: '밖에 눈보라가 쳐? 가지 마!', 초: [18, 20.6] },
+    { id: 'ask', 칸: '끝질문', 글: 'Who says 먹지 마 at yours?', 원문: '너희 집에서는 누가 먹지 마라고 해?', 초: [18, 20.6] },
+  ];
+  const { 편, 글파일 } = 판본글만들기(방, { 판본: 'CA', 언어: 'en', 나라: ['CA'], 틀: '이야기', 줄, 퀴즈: [] });
+  const 밖 = path.join(방, '밖');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  const q = fs.readFileSync(path.join(밖, '질문.md'), 'utf8');
+  assert.match(q, /1\. \(1\.6초\) \[한국어 글 ㉮ · 소리 — 너는 아직 뜻을 모른다\]/, q);
+  assert.match(q, /3\. \(10\.6초\) \[한국어 글 ㉯ · 소리 — 너는 아직 뜻을 모른다\]/);
+  assert.match(q, /5\. \(15\.6초\) \[한국어 글 · 소리 — 너는 아직 뜻을 모른다\]/, '다른 줄에 안 나오는 한국어는 딱지가 없다');
+  assert.match(q, /Blizzard out there\? \/ 〔한국어 글 ㉯〕!/);
+  assert.match(q, /Who says 〔한국어 글 ㉮〕 at yours\?/);
+  for (const 숨김 of ['먹지 마', '가지 마', '먹어']) assert.ok(!q.includes(숨김), `질문에 「${숨김}」가 들었다`);
+  assert.match(q, /딱지가 붙은 것은 앞에 나온 같은 딱지의 한국어 글이/);
+  assert.match(q, /마음이 움직이는/);
+  // 팻말 「-지 마 =」(기호로 끝남)가 있어도 끝 카드 「먹지 마 = …」는 더 긴 「먹지 마」 딱지로 보이고, 게시글에서 뽑은 「예문」 줄은 화면 줄이 아니라 뺀다
+  const 방3 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const 줄3 = [
+    { id: 'ko.1', 칸: '한국어', 글: '먹지 마!', 초: [1.6, 3.7] },
+    { id: 'means.1', 칸: '뜻', 글: "Don't eat that!", 원문: '먹지 마!', 초: [1.6, 3.7] },
+    { id: 'ko.rule', 칸: '한국어', 글: '-지 마 =', 초: [7.7, 9.3] },
+    { id: 'rule', 칸: '뜻', 글: "don't", 원문: '~하지 마', 초: [7.7, 9.3] },
+    { id: 'endCard', 칸: '끝', 글: "먹지 마 = Don't eat that", 원문: '먹지 마 = 그거 먹지 마', 초: [18, 20.6] },
+    { id: '게시글.youtube.본문.2', 칸: '예문', 글: 'Last slice of pizza? 먹지 마!', 원문: '마지막 피자 한 조각? 먹지 마!' },
+  ];
+  const 셋 = 판본글만들기(방3, { 판본: 'US', 언어: 'en', 나라: ['US'], 틀: '이야기', 줄: 줄3, 퀴즈: [] });
+  const 밖3 = path.join(방3, '밖');
+  M.재료만들기(셋.글파일, { 편: 셋.편, 밖: 밖3, 기록: [] });
+  const q3 = fs.readFileSync(path.join(밖3, '질문.md'), 'utf8');
+  assert.match(q3, /〔한국어 글 ㉮〕 = Don't eat that/, q3);
+  assert.ok(!q3.includes('먹〔'), '끝 카드의 한국어가 쪼개져 보였다');
+  assert.ok(!q3.includes('pizza'), '게시글 예문 줄이 화면 줄로 들어갔다');
+  // 섞인 한국어가 없으면 예전 그대로(딱지 안내도 없다)
+  const 밖2 = path.join(방, '밖2');
+  const 둘 = 판본글만들기(fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-')));
+  M.재료만들기(둘.글파일, { 편: 둘.편, 밖: 밖2, 기록: [] });
+  const q2 = fs.readFileSync(path.join(밖2, '질문.md'), 'utf8');
+  assert.ok(!q2.includes('㉮') && !q2.includes('딱지가 붙은') && !q2.includes('마음이 움직이는'));
+});
+
 test('시험관 넷 판단 — 새 언어 · 문자 체계 첫 3편 · 새 틀 · 문화 소재 · 같은 실수 다시', () => {
   const 통과 = (언어, 틀, 시각 = '2026-11-01') => ({ 편: `편${시각}${언어}`, 판본: 'X', 언어, 틀, 결과: '통과', 시각 });
   const 기록 = [통과('th', '퀴즈'), 통과('my', '퀴즈'), 통과('km', '퀴즈')];
@@ -157,4 +206,85 @@ test('채점 --기록 — 준비.json 돌림.판본[키].검수.뜻에 판본 �
   // 글을 고치면 지문이 달라 기록하지 않는다
   fs.appendFileSync(글파일, '\n');
   assert.equal(조용히(() => M.main(['채점', 밖, '--기록'])), 2);
+});
+
+test('채점 --눈확인 — 한 시험관만 짚은 확인할 것은 본 메모와 함께 통과로, 고칠 것 · 모호 · 빠진 답은 못 넘긴다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 판본글만들기(방);
+  const 밖 = path.join(방, '밖');
+  조용히(() => M.main(['판본', 편, 'TH', '--밖', 밖]));
+  const 재료 = JSON.parse(fs.readFileSync(path.join(밖, '재료.json'), 'utf8'));
+  재료.딱지경고 = [];
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료));
+  const 좋은 = { 요약: '배꼽이 빠지다는 너무 웃긴다는 뜻', 풀기: [{ 문제: 1, 고름: 'A' }], 유일: [{ 문제: 1, 또있음: null }], 웃음: { 웃김: true, 줄: [3] } };
+  const 검수 = () => JSON.parse(fs.readFileSync(path.join(편, '게시', '준비.json'), 'utf8')).돌림.판본.TH.검수?.뜻;
+  // 시험관 하나가 한 줄을 짚었다 → 확인할 것. 메모 없이는 확인할 것으로, 메모와 함께면 통과로 적는다
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답(s === 'haiku' ? { ...좋은, 모름줄: [{ 줄: 1, 까닭: '너무 빨리 지나간다' }] } : 좋은));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--기록'])), 3);
+  assert.equal(검수().결과, '확인할 것');
+  assert.equal(조용히(() => M.main(['채점', 밖, '--기록', '--눈확인', '진행 줄이 빠르다는 지적 하나 — 원본 박자라 그대로 둔다'])), 0);
+  assert.equal(검수().결과, '통과');
+  assert.equal(검수().눈확인, '진행 줄이 빠르다는 지적 하나 — 원본 박자라 그대로 둔다');
+  assert.equal(검수().확인할것, 1);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(밖, '채점.json'), 'utf8')).눈확인, '진행 줄이 빠르다는 지적 하나 — 원본 박자라 그대로 둔다');
+  // 둘이 같은 줄을 짚으면 고칠 것 — 메모로 못 넘긴다
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답({ ...좋은, 모름줄: [{ 줄: 1, 까닭: '모르겠다' }] }));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--기록', '--눈확인', '봤다'])), 1);
+  assert.equal(검수().결과, '고칠 것');
+  // 요약 모호 · 빠진 답은 메모로 못 넘긴다(--판정 · 답 채우기가 먼저)
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답(좋은));
+  fs.rmSync(path.join(밖, `답_${재료.시험관[0]}.md`));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--기록', '--눈확인', '봤다'])), 3);
+  assert.equal(검수().결과, '확인할 것');
+});
+
+test('채점 --판정 「줄」 — 둘이 같이 짚은 모름줄을 원본 · 전제로 판정하면 확인할 것으로 내리고(눈확인이 있어야 통과) 판정줄로 남긴다, 불편 · 결함 · 까닭 없는 판정은 못 내린다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 판본글만들기(방);
+  const 밖 = path.join(방, '밖');
+  조용히(() => M.main(['판본', 편, 'TH', '--밖', 밖]));
+  const 재료 = JSON.parse(fs.readFileSync(path.join(밖, '재료.json'), 'utf8'));
+  재료.딱지경고 = [];
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료));
+  const 좋은 = { 요약: '배꼽이 빠지다는 너무 웃긴다는 뜻', 풀기: [{ 문제: 1, 고름: 'A' }], 유일: [{ 문제: 1, 또있음: null }], 웃음: { 웃김: true, 줄: [3] } };
+  const 줄1 = 재료.줄.find((z) => z.번호 === 1).id;
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답({ ...좋은, 모름줄: [{ 줄: 1, 까닭: '너무 빨리 지나간다' }] }));
+  const 판정 = path.join(방, '판정.json');
+  // 까닭이 없거나 갈래가 다르면 그대로 고칠 것
+  fs.writeFileSync(판정, JSON.stringify({ 줄: { [줄1]: { 갈래: '원본' } } }));
+  assert.equal(M.채점하기(밖, { 사람판정: JSON.parse(fs.readFileSync(판정, 'utf8')) }).채점.결과, '고칠 것');
+  fs.writeFileSync(판정, JSON.stringify({ 줄: { [줄1]: { 갈래: '취향', 까닭: '괜찮다' } } }));
+  assert.equal(M.채점하기(밖, { 사람판정: JSON.parse(fs.readFileSync(판정, 'utf8')) }).채점.결과, '고칠 것');
+  // 원본 판정 → 확인할 것, 눈확인 없이는 통과가 아니다
+  fs.writeFileSync(판정, JSON.stringify({ 줄: { [줄1]: { 갈래: '원본', 까닭: '첫 카드 1.6초는 동결된 원본 박자' } } }));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--판정', 판정, '--기록'])), 3);
+  const 검수 = () => JSON.parse(fs.readFileSync(path.join(편, '게시', '준비.json'), 'utf8')).돌림.판본.TH.검수.뜻;
+  assert.equal(검수().결과, '확인할 것');
+  assert.deepEqual(검수().판정줄.map((x) => [x.줄, x.갈래, x.짚은수]), [[줄1, '원본', 재료.시험관.length]]);
+  assert.equal(조용히(() => M.main(['채점', 밖, '--판정', 판정, '--기록', '--눈확인', '원본 박자 지적 — 그대로 둔다'])), 0);
+  assert.equal(검수().결과, '통과');
+  assert.ok(검수().판정줄);
+  // 불편 · 결함은 판정으로 못 내린다
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답({ ...좋은, 불편: [{ 줄: 1, 까닭: '거슬린다' }] }));
+  assert.equal(M.채점하기(밖, { 사람판정: JSON.parse(fs.readFileSync(판정, 'utf8')) }).채점.결과, '고칠 것');
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답(s === 'haiku' ? { ...좋은, 결함: [{ 줄: 1, 까닭: '네모 글자' }] } : 좋은));
+  assert.equal(M.채점하기(밖, { 사람판정: JSON.parse(fs.readFileSync(판정, 'utf8')) }).채점.결과, '고칠 것');
+});
+
+test('재료 — 글에 줄 바꿈이 있으면 「 / 」가 줄 바꿈 자리라고 알린다(빗금을 화면 결함으로 짚지 않게)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const 줄 = [
+    { id: 'hook', 칸: '머리', 글: '“Huwag!” ang lagi\nniyang sabi…', 원문: '「하지 마!」가 늘 그의 말이었다…', 초: [0, 1.6] },
+    { id: 'ko.1', 칸: '한국어', 글: '먹지 마!', 초: [1.6, 3.7] },
+    { id: 'means.1', 칸: '뜻', 글: 'Huwag mong kainin!', 원문: '먹지 마!', 초: [1.6, 3.7] },
+  ];
+  const { 편, 글파일 } = 판본글만들기(방, { 판본: 'PH', 언어: 'fil', 나라: ['PH'], 틀: '이야기', 줄, 퀴즈: [] });
+  const 밖 = path.join(방, '밖');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  const q = fs.readFileSync(path.join(밖, '질문.md'), 'utf8');
+  assert.match(q, /ang lagi \/ niyang sabi/);
+  assert.match(q, /「 \/ 」는 화면에서 줄이 바뀌는 자리다/);
+  const 둘 = 판본글만들기(fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-')));
+  M.재료만들기(둘.글파일, { 편: 둘.편, 밖: path.join(방, '밖2'), 기록: [] });
+  assert.ok(!fs.readFileSync(path.join(방, '밖2', '질문.md'), 'utf8').includes('줄이 바뀌는 자리'));
 });

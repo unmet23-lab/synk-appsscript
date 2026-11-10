@@ -106,6 +106,21 @@ test('엔진 판정 — 상자 넘침 · 줄 수 · 테두리 닿음 · 엔진 �
   const 줄 = (id) => f.filter((x) => x.줄 === id).map((x) => `${x.수준}:${x.코드}`);
   assert.ok(줄('wide').includes('고칠 것:상자넘침'), JSON.stringify(f));
   assert.ok(줄('wide').includes('확인할 것:대체글꼴'));
+  // 가변 글꼴의 내부 이름(SUIT → 「SUIT Variable Thin」)은 선언한 글꼴이다 — 대체 글꼴로 짚지 않는다. 이름만 비슷한 다른 글꼴(SUITE)은 짚는다
+  const 가변 = (이름) => G.엔진판정([{ id: 'ko', 글: '먹지 마', 상자: { 폭: 300, 글자크기: 46, 글꼴: "'Inter Tight', 'SUIT', sans-serif" } }],
+    [{ i: 0, boxLeft: 0, boxRight: 300, boxTop: 0, scrollH: 50, clientH: 50, lines: [{ top: 0, bottom: 50, left: 0, right: 150, start: 0, end: 4 }] }],
+    { 0: [{ familyName: 이름, glyphCount: 3 }] }, P.언어('en')).some((x) => x.코드 === '대체글꼴');
+  assert.equal(가변('SUIT Variable Thin'), false);
+  assert.equal(가변('SUIT'), false);
+  assert.equal(가변('SUITE Sans'), true);
+  assert.equal(가변('Malgun Gothic'), true);
+  // 그 나라 말로 온 윈도우 글꼴 이름(微軟正黑體 = Microsoft JhengHei)도 선언한 글꼴이다
+  const 번체 = (이름) => G.엔진판정([{ id: 'tw', 글: '不要吃！', 상자: { 폭: 300, 글자크기: 46, 글꼴: "'Microsoft JhengHei', 'Inter Tight', sans-serif" } }],
+    [{ i: 0, boxLeft: 0, boxRight: 300, boxTop: 0, scrollH: 50, clientH: 50, lines: [{ top: 0, bottom: 50, left: 0, right: 180, start: 0, end: 4 }] }],
+    { 0: [{ familyName: 이름, glyphCount: 4 }] }, P.언어('zh-Hant')).some((x) => x.코드 === '대체글꼴');
+  assert.equal(번체('微軟正黑體'), false);
+  assert.equal(번체('Microsoft JhengHei'), false);
+  assert.equal(번체('微软雅黑'), true, '선언하지 않은 글꼴(간체 YaHei)이 맡으면 짚는다');
   assert.ok(줄('lines').includes('고칠 것:줄수넘침'));
   assert.ok(줄('touch').includes('확인할 것:테두리닿음'));
   assert.ok(줄('mid').includes('고칠 것:낱말중간줄바꿈'));
@@ -138,6 +153,26 @@ test('프레임 판정 — OCR 글이 0.5초 넘게 단추 자리면 고칠 것,
   // 한 장면만 걸친 OCR 글은 확인할 것
   const 한번 = G.프레임판정([{ 초: 0, 번호: 0, 판본상자: [ocr(300, 960)], 기준상자: [] }]);
   assert.ok(한번.찾음.every((f) => f.수준 === '확인할 것'));
+  // 넘은 띠의 화소가 기준 판과 같은 OCR 상자(그림 속 병 · 펠트 결을 글로 읽은 것)는 0.5초 넘게 머물러도 고칠 것이 아니다
+  const 그림 = G.프레임판정([
+    { 초: 0, 번호: 0, 판본상자: [{ ...ocr(900, 1068, 500, 560), 정본같음: true }], 기준상자: [] },
+    { 초: 0.5, 번호: 1, 판본상자: [{ ...ocr(902, 1066, 500, 560), 정본같음: true }], 기준상자: [] },
+  ]);
+  assert.ok(그림.찾음.every((f) => f.수준 === '확인할 것'), JSON.stringify(그림.찾음));
+  assert.ok(그림.찾음.some((f) => f.코드 === '단추가림기준'));
+});
+
+test('넘은 띠 · 다른 화소 비율 — 안전 영역 밖으로 나간 부분이 기준 판과 같은 화소인지', () => {
+  const SAFE = G.안전영역();
+  const 띠 = G.넘은띠들({ x0: 860, x1: 1040, y0: 400, y1: 460 }, SAFE);
+  assert.equal(띠.length, 1);
+  assert.equal(띠[0].x0, SAFE.right);
+  assert.equal(G.넘은띠들({ x0: 300, x1: 600, y0: 400, y1: 460 }, SAFE).length, 0);
+  const W = 540, H = 960;
+  const a = Buffer.alloc(W * H, 100), 같은 = Buffer.alloc(W * H, 110), 다른 = Buffer.alloc(W * H, 100);
+  for (let y = 200; y < 230; y += 1) for (let x = 460; x < 520; x += 1) 다른[y * W + x] = 250; // 기준 판에는 그 자리에 다른 글이 있다
+  assert.equal(G.다른화소비율(a, 같은, 띠[0]), 0, '부호화 잡음(문턱 아래)은 같은 화소다');
+  assert.ok(G.다른화소비율(a, 다른, 띠[0]) > 0.5);
 });
 
 test('차이 덩어리 — 기준 둘과 모두 다르고 머물러 있는 글만 잡는다(움직이는 판 · 기준 글자는 빠진다)', () => {
