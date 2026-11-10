@@ -27,6 +27,8 @@ export function createHud({ route, clock, status, badge, stage, calm = () => fal
     setStatus(text, tone = 'amber') { state.status = text; state.tone = tone; paintStatus(); },
     setLevels(levels) { state.level = Math.min(1, Math.max(0, ...levels.map((v) => v || 0)) * 1.15); },
     flash(text, seconds = 2.2, tone = 'green') { state.flash = { text, tone, left: seconds }; paintStatus(); },
+    /** 흐르던 말을 바로 거둔다(고른 뒤 손짓 안내가 다음 상태 글을 가리지 않게). */
+    clearFlash() { if (state.flash) { state.flash = null; paintStatus(); } },
     render(dt) {
       size(); if (!state.w) return;
       if (state.flash) { state.flash.left -= dt; if (state.flash.left <= 0) { state.flash = null; paintStatus(); } }

@@ -152,7 +152,7 @@ function choose(options, autoId, kind) {
   if (readAlbum().plays < 2 && !hintShown) hud.flash('아래 길을 누르거나 밀어요', 4.8, 'green');
   hintShown = true;
   return new Promise((resolve) => {
-    chooseResolve = (i) => { zones.hidden = true; hud.setStatus(''); map.pick(i); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
+    chooseResolve = (i) => { zones.hidden = true; hud.clearFlash(); hud.setStatus(''); map.pick(i); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
     if (AUTO) { const i = options.findIndex((o) => o.id === autoId); wait(1.1).then(() => pick(i < 0 ? 0 : i)); }
   });
 }
@@ -494,6 +494,7 @@ const platformFor = () => (has('platform-1') ? 'platform-1' : 'platform');
 /** 승강장 결정(3~4급 급행): 들어오는 열차 앞에서 안내를 듣고 세 칸. */
 async function playBoard(run, d, plan) {
   const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  setLine(run.journey.decisions.find((x) => x.kind === 'stop' && x.leg === d.leg)?.line);   // 환승 뒤 승강장이면 탈 노선의 색 · 번호로
   sound.hallStart(); setKeys(false);
   setStatus('announcer'); sound.chime(); await wait(1.2);
   const heard = await say(d.line_);
