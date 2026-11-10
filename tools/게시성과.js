@@ -31,6 +31,7 @@ const 배수 = require('./lib/평소배수.js');
 const 시험 = require('./lib/게시성과시험.js');
 const 연결 = require('./lib/게시성과연결.js');
 const 관문 = require('./lib/관문대조.js');
+const 나라 = require('./lib/게시성과나라.js');
 
 const REPO_DEFAULT = path.resolve(__dirname, '..');
 const LEDGER = 'docs/_ops/게시성과.jsonl';
@@ -155,6 +156,11 @@ function metaOf(item, index, accounts) {
   if (!found || !found.info) return { folder: null, ambiguous: found?.ambiguous || null, account, brand: brandFromAccount, role: null, hook: null, hookSlot: null };
   const hook = 편.hookFor(found.info, { account, platform: r.platform });
   return { folder: found.info.folder, dir: found.info.dir, account, brand: found.info.brand || brandFromAccount, role: found.info.role || null, hook: hook.label, hookSlot: hook.slot };
+}
+
+// 계정 원장 그대로(계정 키 → 값) — LAB 계정 · 나라 · 칸별 절이 나라 · 시간대 · 칸 · 숫자 읽기 길을 읽는다(11-10)
+function loadLedgerAccounts(repo) {
+  try { return JSON.parse(fs.readFileSync(path.join(repo, 'docs', '마케팅', 'sns-계정.json'), 'utf8').replace(/^\uFEFF/, '')).accounts || {}; } catch { return {}; }
 }
 
 function loadAccounts(repo) {
@@ -358,7 +364,7 @@ function 시험요약글(t) {
 
 // ── 요약 ──────────────────────────────────────────────────────────────────
 
-function summarize({ ledger, now, unregistered = [], unmapped = [], index = null, accounts = [] }) {
+function summarize({ ledger, now, unregistered = [], unmapped = [], index = null, accounts = [], labAccounts = {} }) {
   const connections = 연결.latest(ledger);
   const excluded = [...connections.values()].filter(l => l.group !== '콘텐츠');
   const usableLedger = ledger.filter(l => !connections.has(l.post) || connections.get(l.post).group === '콘텐츠');
@@ -431,6 +437,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     ...시험절(test),
     ...관문절,
     ...새방향,
+    ...나라.절({ ledger: usableLedger, accounts: labAccounts, now }),
     '## 훅 이름표별',
     '',
     '| 이름표 | 판 | 72시간 배수 중앙값 | 7일 배수 중앙값 | 상위·보통·하위·그 밖 | 브랜드 |',
@@ -564,7 +571,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   const report = { 결과: '미리 보기', 새판정: [], 편쓰기: [], 건너뜀: [], 올리기: null };
 
   if (o.요약) {
-    const text = summarize({ ledger, now, index: 편.buildIndex(path.join(repo, 'docs', '마케팅'), 연결.latest(ledger)), accounts: loadAccounts(repo) });
+    const text = summarize({ ledger, now, index: 편.buildIndex(path.join(repo, 'docs', '마케팅'), 연결.latest(ledger)), accounts: loadAccounts(repo), labAccounts: loadLedgerAccounts(repo) });
     if (o.실행) writeSummary(summaryFile, text + '\n');
     report.결과 = o.실행 ? '요약 다시 만듦' : '미리 보기';
     report.요약 = text;
@@ -670,7 +677,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
       if (r.changed) { written.add(relPlan); report.편쓰기.push(relPlan); } else if (r.skipped) report.건너뜀.push(`${relPlan}: ${r.skipped}`);
     } else report.건너뜀.push(`${relPlan}: 남의 미커밋이 있어 다음에 쓴다`);
   }
-  if (writeSummary(summaryFile, summarize({ ledger, now, unregistered, unmapped, index, accounts }) + '\n')) written.add(SUMMARY);
+  if (writeSummary(summaryFile, summarize({ ledger, now, unregistered, unmapped, index, accounts, labAccounts: loadLedgerAccounts(repo) }) + '\n')) written.add(SUMMARY);
   report.결과 = written.size ? '씀' : '바뀐 것 없음';
   report.쓴파일 = [...written];
   if (written.size) {

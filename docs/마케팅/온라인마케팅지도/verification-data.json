@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T23:12:08.084Z",
+  "generatedAt": "2026-11-09T23:54:59.584Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -33,7 +33,7 @@
     },
     {
       "file": "inputs/upload-plan.json",
-      "sha256": "051f8ef430f95594b9444f60fff6e64756c6726f132e212561556fa451020329"
+      "sha256": "69baff6b8062d5603041ef2437c9c5d081543efbfe0ef05746a57277507f3437"
     },
     {
       "file": "../로그인경로_점검_20261109.md",
