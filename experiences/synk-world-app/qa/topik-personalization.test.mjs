@@ -113,7 +113,7 @@ test('완료 ③: 도움·다시 듣기·소리 실패는 「혼자 해냄」으
  assert.equal(row.note.kind,'helped');assert.match(view.noteText(row.note),/^도움과 함께 시도 · /);
  assert.ok(row.unassessed>=1,'소리가 나지 않은 답은 세지 않은 답으로 남는다');
  const board=view.renderPositionBoard({map});
- assert.match(board,/도움과 함께 한 시도[\s\S]*틀림 · 도움 받음/);assert.match(board,/data-uncounted[\s\S]*data-why="audio"[\s\S]*소리를 끝까지 듣기 전이라 세지 않았어요/,'세지 않은 답은 그 답의 실제 까닭 하나로(11-08 프론트 검수 F1 — 학습자가 안 한 일을 늘어놓지 않는다)');
+ assert.match(board,/도움과 함께 한 시도[\s\S]*틀림 · 도움 받음/);assert.match(board,/data-uncounted[\s\S]*data-why="audio"[\s\S]*소리를 끝까지 듣기 전이라 반영하지 않았어요/,'세지 않은 답은 그 답의 실제 까닭 하나로(11-08 프론트 검수 F1 — 학습자가 안 한 일을 늘어놓지 않는다)');
  assert.doesNotMatch(board,/소리가 안 났거나 건너뛴|연습용 문제/);
  assert.equal(row.helped[0].experienceId,'world-home');assert.match(board,/data-helped>[\s\S]*짧은 진단/,'도움과 함께 낸 진단 답의 출처는 짧은 진단(10-21 검수)');
  // 읽기 짧은 연습: 답한 뒤 정답·해설을 보는 것은 첫 답 뒤라 그 답은 혼자 낸 첫 시도 그대로다.
@@ -448,7 +448,7 @@ test('내 위치: 듣기 게임으로 가는 단추는 게임 이름으로, 읽�
  // 아르곤 C 반영: TOPIK II 학생의 계획에서 TOPIK I로 세는 항목·영역은 「TOPIK I」을 붙여, 같은 이름의 TOPIK II 항목(내 위치 TOPIK II 판)과 가른다.
  const bridgedPlan=view.renderExamPlan({plan:{...mixed,homework:[{skillId:'ko.listening.detail',domain:'listening',status:'checking',fresh:3,activities:[]}]}});
  assert.match(bridgedPlan,/<strong>TOPIK I · 듣고 세부 정보 찾기<\/strong>/);
- assert.match(bridgedPlan,/data-plan-progress="listening"><span>듣기 · TOPIK I · 확인한 항목 0 \/ 8/);assert.match(bridgedPlan,/data-plan-progress="reading"><span>읽기 · 확인한 항목 0 \/ 7/);
+ assert.match(bridgedPlan,/data-plan-progress="listening"><span>듣기 · TOPIK I · 기록이 있는 항목 0 \/ 8/);assert.match(bridgedPlan,/data-plan-progress="reading"><span>읽기 · 기록이 있는 항목 0 \/ 7/);
  assert.doesNotMatch(view.renderExamPlan({plan:{...closed,homework:[{skillId:'ko.listening.detail',domain:'listening',status:'checking',fresh:3,activities:[]}]}}),/<strong>TOPIK I · |듣기 · TOPIK I · /,'TOPIK I 학생에게는 붙이지 않는다');
  // 내 위치 TOPIK II 판: 그 영역에 한 줄로 알린다(판은 TOPIK II 항목, 계획은 TOPIK I 항목이라 수가 다르다).
  const board2=view.renderPositionBoard({map:position.buildPositionMap({summary:s.coach.summary(),events:s.coach.events(),exam:'topik2'}),bridged:['listening']});
@@ -547,7 +547,10 @@ test('말하기: 켠 학생의 다른 영역 배분은 끈 학생과 같다 — 
  // 화면의 「이번 주 n번」은 말하기 한 번이 더해진 수 그대로다(머리 줄 · 배우기 판 줄 · 홈 단추가 같은 영역 합을 쓴다).
  const s=examStudent('reading'),plan=speakingPlan(s,{chosen:true,weekly:60,date:examDay(s,120)});
  assert.equal(plan.sessions.total,4,'주 1시간(3번) + 말하기 한 번');
- assert.ok(view.renderExamPlan({plan}).includes(t('plan.week.sessions',{n:4,minutes:20})),'머리 줄: 이번 주 연습 4번');
+ const board=view.renderExamPlan({plan});
+ assert.ok(board.includes(t('plan.week.word',{n:4})),'큰 제목: 이번 주 연습 4번');
+ assert.ok(board.includes(t('plan.week.length',{minutes:20})),'이번 주 칸 머리: 한 번에 20분쯤');
+ assert.ok(!/life-poster-word">이번 주 계획/.test(board),'위 막대 제목을 큰 제목에서 되풀이하지 않는다(11-09 미학 맹검)');
 });
 test('말하기: 소리를 끈 날은 듣기처럼 닫고 까닭을 남긴다 — 이번 주에 이미 한 말하기는 그대로 보인다',()=>{
  const s=examStudent('reading'),quiet=speakingPlan(s,{chosen:true,audio:false});
@@ -595,7 +598,8 @@ test('말하기: 남은 횟수가 같으면 안 해 본 유형이 많은 말하�
   assert.ok(html.includes(`<h3>${t('speaking.title',undefined,code)} · ${t('speaking.type.2',undefined,code)}</h3>`),`${code}: 지금 할 것`);
   assert.ok(html.includes(`data-plan-speaking>${t('plan.speaking.open',undefined,code)} `),`${code}: 말하기 연습 열기`);
   assert.ok(html.includes(t('plan.speaking.note',{n:6},code)),`${code}: 아직 안 해 본 유형 수`);
-  assert.ok(html.includes(t('plan.week.sessions',{n:plannedSum(plan),minutes:plan.sessions.minutes},code)),`${code}: 이번 주 ${plannedSum(plan)}번(말하기 한 번 포함)`);
+  assert.ok(html.includes(t('plan.week.word',{n:plannedSum(plan)},code)),`${code}: 이번 주 ${plannedSum(plan)}번(말하기 한 번 포함)`);
+  assert.ok(html.includes(t('plan.week.length',{minutes:plan.sessions.minutes},code)),`${code}: 한 번에 걸리는 시간`);
   if(code!=='ko')assert.doesNotMatch(html.replace(/<span lang="ko">[^<]*<\/span>/g,''),/[가-힣]/,`${code}: lang="ko" 칸 밖에 한글이 없다`);
   assert.doesNotMatch(html,/D-\d|연속|밀린|놓쳤|\d+\s*점|[1-6]급(?! 목표)/,`${code}: 남은 날·연속·점수 말이 없다`);
  }

@@ -297,11 +297,11 @@ test('리허설 WORLD 「말하기 연습」: 기본 켜짐·끄는 스위치·�
    await openPacks();
    checks[`${tag}-planRow`]=await page.locator('#panel-content [data-view="plan"]').innerText();
    await page.locator('#panel-content [data-view="plan"]').click();await page.waitForSelector('#panel-content [data-plan-board]');
-   checks[`${tag}-planAreas`]=await page.evaluate(()=>[...document.querySelectorAll('#panel-content .wplan-areas li')].map(li=>`${li.dataset.area} ${li.querySelector('.wplan-area-name')?.textContent} ${li.querySelector('.wplan-area-count')?.textContent}`));
+   checks[`${tag}-planAreas`]=await page.evaluate(()=>[...document.querySelectorAll('#panel-content .wplan-areas:not([data-extra]) li')].map(li=>`${li.dataset.area} ${li.querySelector('.wplan-area-name')?.textContent} ${li.querySelector('.wplan-area-count')?.textContent}`));
    assert.ok(checks[`${tag}-planAreas`].some(row=>/^speaking 말하기 \d+ \/ 1$/.test(row)),`${tag}: 말하기 영역은 한 주에 한 번 ${checks[`${tag}-planAreas`]}`);
    // 「이번 주 n번」(머리 줄)과 배우기 판 줄의 합이 말하기 한 번을 더한 영역 합 그대로다(10-21 결정 — 말하기는 다른 영역 자리를 빼앗지 않는다).
    const plannedTotal=checks[`${tag}-planAreas`].reduce((n,row)=>n+Number(row.split(' / ')[1]),0);
-   checks[`${tag}-planHead`]=await page.locator('#panel-content .wplan-week h3').textContent();
+   checks[`${tag}-planHead`]=await page.locator('#panel-content [data-plan-board] .life-poster-word').textContent();
    assert.equal(Number(/이번 주 연습 (\d+)번/.exec(checks[`${tag}-planHead`])?.[1]),plannedTotal,`${tag}: 머리 줄 ${checks[`${tag}-planHead`]}`);
    assert.equal(Number(/이번 주 연습 \d+\/(\d+)/.exec(checks[`${tag}-planRow`])?.[1]),plannedTotal,`${tag}: 배우기 판 줄 ${checks[`${tag}-planRow`]}`);
    checks[`${tag}-planSpeaking`]=await page.locator('#panel-content [data-plan-speaking-section]').innerText();

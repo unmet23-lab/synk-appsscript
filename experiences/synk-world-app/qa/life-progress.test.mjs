@@ -62,6 +62,22 @@ test('completion requires all questions, is idempotent, and selects the next les
  assert.equal(progress.finishLesson(lessons[0].id).duplicate,true);assert.equal(progress.summary(packs).nextLesson.id,lessons[1].id);
  progress.startLesson(lessons[0],{replay:true});answerAll(progress,lessons[0]);assert.equal(progress.finishLesson(lessons[0].id).totalCompleted,1);
 });
+test('the review count on screens is expressions, not scenes: the same words back in two lessons are one expression',()=>{
+ const question=(id,expressionId)=>({id,skillId:'cafe-skill-0',expressionId,review:{id:`${id}-transfer`}});
+ const first={id:'count-first',packId:'cafe',expressions:[{id:'hello',korean:'안녕하세요.'},{id:'thanks',korean:'감사합니다.'}],questions:[question('count-a','hello'),question('count-b','hello'),question('count-c','thanks')]};
+ const second={id:'count-second',packId:'cafe',expressions:[{id:'hi-story',korean:'안녕하세요.'}],questions:[question('count-d','hi-story')]};
+ const clock=options(),progress=createLifeProgress({storage:storage(),now:clock.now}),pack=[{id:'cafe',lessons:[first,second]}];
+ for(const lesson of [first,second]){progress.startLesson(lesson);answerAll(progress,lesson,{correct:false});}
+ clock.advance(60000);const summary=progress.summary(pack);
+ assert.equal(summary.dueCount,4,'장면 수는 그대로');assert.equal(summary.dueExpressions,2,'표현은 글자 기준으로 둘');
+ // 표현 정보가 없는 레슨은 복습 하나를 표현 하나로 센다(수가 사라지지 않는다).
+ const plain=createLifeProgress({storage:storage(),now:clock.now});plain.startLesson(lessons[0]);answerAll(plain,lessons[0],{correct:false});clock.advance(60000);
+ assert.equal(plain.summary(packs).dueExpressions,3);
+ // 글이 있는 복습과 없는 복습이 섞이면 글 있는 표현만 센다 — 화면 목록과 같은 기준이다(글 없는 줄은 목록에 없다).
+ const blank={id:'count-blank',packId:'cafe',expressions:[{id:'hello',korean:'안녕하세요.'}],questions:[question('count-e','hello'),question('count-f','missing')]};
+ const mixed=createLifeProgress({storage:storage(),now:clock.now});mixed.startLesson(blank);answerAll(mixed,blank,{correct:false});clock.advance(60000);
+ const shown=mixed.summary([{id:'cafe',lessons:[blank]}]);assert.equal(shown.dueCount,2);assert.equal(shown.dueExpressions,1);
+});
 test('wrong/help reviews become due in a minute; successful transfer reviews expand intervals',()=>{
  const clock=options(),progress=createLifeProgress({storage:storage(),now:clock.now});progress.startLesson(lessons[0]);answerAll(progress,lessons[0],{correct:false});
  assert.equal(progress.dueReviews().length,0);clock.advance(60000);assert.equal(progress.summary(packs).dueCount,3);

@@ -291,15 +291,18 @@ function updateLearning(summary,details){
  button.disabled=summary.status?.phase==='loading';
  label.textContent=summary.status?.phase==='loading'?t('home.next.connecting'):next?next.title:summary.dueCount?t('home.next.dueToday'):t('home.next.packsAgain');
  kicker.textContent=summary.resume?t('home.next.resume'):summary.cafe?.nextNumber?t('home.next.cafeVisit',{n:summary.cafe.nextNumber}):next?t('home.next.packs',{n:summary.packs?.length||6}):t('home.next.kicker');
- caption.textContent=t('home.caption',{done:summary.completed||0,total:summary.total||22,scope:t(summary.status?.scoped?'home.caption.account':'home.caption.device')});
+ caption.textContent=t('home.caption',{done:summary.completed||0,total:summary.total||22});
  renderHeading();
- review.textContent=summary.dueCount?t('home.short.count',{n:summary.dueCount}):t('home.short.schedule');
+ // 수는 장면이 아니라 돌아온 표현(life-progress dueExpressions) — 복습 화면 · 튜터 단추 · 배우기 줄과 같은 단위(11-09).
+ review.textContent=summary.dueCount?t('home.short.count',{n:summary.dueExpressions??summary.dueCount}):t('home.short.schedule');review.dataset.due=summary.dueCount?'yes':'no';
  button.setAttribute('aria-label',t(summary.resume?'home.next.continueLabel':'home.next.nextLabel',{title:label.textContent}));
 }
 // PC 가로 틀의 방 제목 아래 한 줄: 누구와 · 어디까지.
 function renderHeading(tutor=tutorUI?.choice()){
  const line=$('.place-heading>p:last-child'),summary=learningData.summary;if(!line)return;
- line.textContent=[tutor?t('home.heading.with',{name:t(`tutor.name.${tutor.id}`)}):t('home.heading.friends'),summary?t('home.heading.progress',{done:summary.completed||0,total:summary.total||22}):''].filter(Boolean).join(' · ');
+ line.textContent=[tutor?t('home.heading.with',{name:t(`tutor.name.${tutor.id}`)}):t('home.heading.friends'),summary?t('home.heading.progress'):''].filter(Boolean).join(' · ');
+ // 진도 수는 넓은 화면에선 카드에 있다. 세로 화면은 이 줄이 화면 읽기 전용이고 카드의 진도 줄도 숨어 있어 여기서 읽어 준다(home.css).
+ if(summary){const count=document.createElement('span');count.className='place-heading-count';count.textContent=` · ${t('home.caption',{done:summary.completed||0,total:summary.total||22})}`;line.append(count);}
 }
 // 맞춤 학습 후보의 이름: 레슨 제목은 학습 내용이라 한국어 그대로 두고, 붙는 말(이어 하기·새 상황 복습·놀이 이름)만 화면 언어로.
 function planLabel(next){

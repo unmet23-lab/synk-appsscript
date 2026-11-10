@@ -95,7 +95,7 @@ test('저장 스위치를 켜지 않고 누르면 저장하지 않고, 켜고 �
   const values=s.progress.learningProfileValues();
   assert.equal(values.primaryReason,'exam');assert.deepEqual(values.reasons,['exam']);assert.equal(values.examType,'topik2');assert.equal(values.targetGrade,undefined);
   assert.equal(s.progress.learningProfile().profile.status,'active');
-  const plan=s.plan().html;assert.match(plan,/data-plan-board/);assert.match(plan,/<strong class="life-poster-word">이번 주 계획<\/strong>/);
+  const plan=s.plan().html;assert.match(plan,/data-plan-board/);assert.match(plan,/<strong class="life-poster-word">이번 주 연습 \d+번<\/strong>/);
   assert.match(plan,/life-poster-sub">TOPIK II</,'계획 머리에 고른 시험');assert.match(plan,/data-plan-next/,'지금 할 것');
   assert.equal(form.isConnected,false,'목표 창은 닫혔다');assert.deepEqual(s.toasts,[],'계획이 열리면 저장 알림은 따로 띄우지 않는다');
  }finally{s.education.dispose();}

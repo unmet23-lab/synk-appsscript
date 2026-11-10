@@ -77,7 +77,7 @@ export function createHomeTutor({container,getTutor,learn,choose,profile,reduced
   container.dataset.recommendation=recommendation.kind;
   practiceButton.hidden=!practiceRecommendation||recommendation.command==='practice';
   practiceButton.textContent=t('homeTutor.practice');practiceButton.setAttribute('aria-label',practiceRecommendation?t('homeTutor.practiceWith',{title:practiceRecommendation.title}):t('homeTutor.practice'));
-  const due=recommendation.kind==='resume'&&data?.summary?.owner===selected.owner?data.summary.dueCount||0:0;
+  const due=recommendation.kind==='resume'&&data?.summary?.owner===selected.owner?data.summary.dueExpressions??data.summary.dueCount??0:0;
   reviewButton.hidden=!due||!practiceButton.hidden;reviewButton.textContent=t('homeTutor.reviewDue',{n:due});
   const pending=data?.summary.status?.phase==='unsaved';
   note.textContent=(completed?t('homeTutor.note.practised'):tMessage(recommendation.reason)|| (recommendation.kind==='difficult'?t('homeTutor.note.difficult',{title:recommendation.lessonTitle}):recommendation.kind==='review'?t('homeTutor.note.review'):recommendation.kind==='resume'?t('homeTutor.note.resume'):recommendation.kind==='start'?t('homeTutor.note.start'):''))+(pending?t('homeTutor.note.pending'):'');

@@ -211,7 +211,7 @@ test('IBT 학생: 예상 급수 칸에 모은 답 수를 보이지 않고, 시�
  assert.match(ibt,/data-estimate="mode-unsupported"/);assert.doesNotMatch(ibt,/wpos-estimate-count/);
  assert.match(view.renderPositionBoard({map,gate:estimateGate({evidence:rows(4),asOf:'2026-10-21T09:00:00.000Z'})}),/wpos-estimate-count/,'PBT 학생에게는 모은 수를 보인다');
  assert.doesNotMatch(view.renderMockDone({results:[],exam:'topik1',mode:'ibt'}),/예상 급수/);
- assert.match(view.renderMockDone({results:[],exam:'topik1'}),/예상 급수 칸의 근거로도 모아요/);
+ assert.match(view.renderMockDone({results:[],exam:'topik1'}),/예상 급수의 근거로도 모아요/);
  const item={id:'qa.m',itemKey:'topik-items.qa-m.v1',skillId:'ko.reading.main',modality:'reading',question:'알맞은 것을 고르십시오.',choices:[{id:'a',label:'가'},{id:'b',label:'나'}],correctId:'a'};
  const html=view.renderMockItem({view:{section:'reading',partIndex:0,parts:1,index:0,total:1,item,heard:true,audio:'none',plays:{allowed:null,completed:0},answered:true,choiceId:'a',started:true,deadline:0,remainingMs:60000,set:null,marks:['answered']}});
  assert.equal(count(html,/aria-pressed="true"/g),1);assert.equal(count(html,/aria-pressed="false"/g),1);
@@ -229,18 +229,18 @@ test('칸을 열면 세지 않은 답이 까닭 하나씩 줄로 보인다',()=>
  const assessable=key=>key==='life.qa-met'?true:key==='life.qa-draft'?false:null,catalog=key=>key.startsWith('life.')?'<안녕>':null;
  const html=view.renderPositionBoard({map,catalog,assessable});
  const body=html.slice(html.indexOf('data-skill="ko.reading.detail"'));
- assert.match(body,/칸에 세지 않은 답/);assert.equal(count(body,/data-why="/g),4,'답마다 한 줄');
- assert.match(body,/data-why="draft"[\s\S]*?틀림 · 세지 않음[\s\S]*?<span lang="ko">&lt;안녕&gt;<\/span>[\s\S]*?이 문제는 아직 칸을 정하는 데 쓰지 않아요\./);
- assert.match(body,/data-why="met"[\s\S]*?맞음 · 세지 않음[\s\S]*?전에 만난 문제라 세지 않았어요\./);
- assert.match(body,/data-why="unanswered"[\s\S]*?답하지 않음 · 세지 않음[\s\S]*?답을 고르지 않아 세지 않았어요\./);
- assert.match(body,/data-why="visual"[\s\S]*?화면을 보고 풀 수 있는 문제라 세지 않았어요\./);
+ assert.match(body,/내 위치에 반영하지 않은 답/);assert.equal(count(body,/data-why="/g),4,'답마다 한 줄');
+ assert.match(body,/data-why="draft"[\s\S]*?틀림 · 반영 안 함[\s\S]*?<span lang="ko">&lt;안녕&gt;<\/span>[\s\S]*?연습용 문항이라 내 위치에 반영하지 않았어요\./);
+ assert.match(body,/data-why="met"[\s\S]*?맞음 · 반영 안 함[\s\S]*?전에 만난 문항이라 반영하지 않았어요\./);
+ assert.match(body,/data-why="unanswered"[\s\S]*?답하지 않음 · 반영 안 함[\s\S]*?답을 고르지 않아 반영하지 않았어요\./);
+ assert.match(body,/data-why="visual"[\s\S]*?화면을 보고 풀 수 있는 문항이라 반영하지 않았어요\./);
  assert.doesNotMatch(body,/<안녕>/,'문항 첫머리는 이스케이프');
- assert.doesNotMatch(body.slice(0,body.indexOf('</details>')),/답 \d+개는 칸을 정하는 데/,'줄로 다 보이면 수를 또 말하지 않는다');
+ assert.doesNotMatch(body.slice(0,body.indexOf('</details>')),/답 \d+개는 내 위치에 반영하지/,'줄로 다 보이면 수를 또 말하지 않는다');
  // 표에 있는 문항이 아니면(자격을 모름) 판단하지 않는 까닭으로.
  assert.match(view.renderPositionBoard({map}),/data-why="other"/);
  // 세 언어.
  const en=english.renderPositionBoard({map,catalog,assessable}),mn=mongolian.renderPositionBoard({map,catalog,assessable});
- assert.match(en,/Answers not counted/);assert.match(en,/Wrong · Not counted/);assert.match(en,/This question isn’t used to place skills yet\./);
+ assert.match(en,/Answers not counted/);assert.match(en,/Wrong · Not counted/);assert.match(en,/This is a practice question, so it wasn’t counted here./);
  assert.match(mn,/Тооцоонд ороогүй хариултууд/);assert.match(mn,/Буруу · Тооцоонд ороогүй/);
  for(const key of ['title','tag','noAnswer','more',...['draft','met','visual','audio','unanswered','motor','storage','other'].map(why=>`why.${why}`)]){
   const row=STRINGS[`position.uncounted.${key}`];assert.ok(row?.ko&&row?.en&&row?.mn,key);
@@ -258,8 +258,8 @@ test('세지 않은 답이 줄보다 많으면 나머지는 수로, 줄이 하�
  const row=i=>({eventId:`e${i}`,at:'2026-10-19T01:00:00.000Z',verdict:'unassessed',reason:'audio',answer:null,itemKey:`k${i}`,experienceId:null,difficulty:1});
  const board=skill=>view.renderPositionBoard({map:{exam:'topik1',counts:{independent:0,practicing:0,notyet:1},total:1,evidenceComplete:true,skills:[skill],domains:{},attention:[]}});
  const many=board({...base,uncounted:Array.from({length:8},(_,i)=>row(i)),unassessed:9});
- assert.equal(count(many,/data-why="audio"/g),6,'여섯 줄까지');assert.match(many,/그 밖에 답 3개도 세지 않았어요\./);
+ assert.equal(count(many,/data-why="audio"/g),6,'여섯 줄까지');assert.match(many,/그 밖에 답 3개도 반영하지 않았어요\./);
  const folded=board({...base,uncounted:[],unassessed:2});
- assert.equal(count(folded,/data-why="/g),0);assert.match(folded,/답 2개는 칸을 정하는 데 쓰지 않았어요\./,'접힌 옛 기록은 수로');
- assert.doesNotMatch(board({...base,uncounted:[],unassessed:0,note:{kind:'none'}}),/칸에 세지 않은 답|칸을 정하는 데/);
+ assert.equal(count(folded,/data-why="/g),0);assert.match(folded,/답 2개는 내 위치에 반영하지 않았어요\./,'접힌 옛 기록은 수로');
+ assert.doesNotMatch(board({...base,uncounted:[],unassessed:0,note:{kind:'none'}}),/내 위치에 반영하지 않은 답|내 위치에 반영하지 않았어요/);
 });

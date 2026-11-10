@@ -42,12 +42,19 @@ test('다시 확인 1 · 7 · 30일은 눌리는 칸이 아니라 1px 선으로 
 test('돌아올 · 돌아온 표현 목록의 머리는 화면 언어다',()=>{
  for(const old of ['>COMING BACK<','>BACK AGAIN<',"'BACK AGAIN'"])assert.ok(!lifeJs.includes(old),`영어 머리가 되살아났다: ${old}`);
  assert.ok(lifeJs.includes(`<p class="life-section-label\${listHead()}">\${t('life.comingBack')}</p>`));
- assert.ok(lifeJs.includes(`<p class="life-section-label\${listHead()}">\${t('life.backWord')}</p>`));
- assert.ok(lifeJs.includes(`learnedList(items,t('life.backWord'),listHead())`));
+ assert.ok(lifeJs.includes(`<p class="life-section-label\${listHead()}">\${t(s.dueCount>s.dueReviews.length?'life.reviewFirstList':'life.backWord')}</p>`));
+ assert.ok(lifeJs.includes(`learnedList(items,t('life.reviewedList'),listHead(),`));
  // 디자인 규칙: 한글은 모노로 쓰지 않고 13px 밑으로 내리지 않는다(docs/디자인/월드_시그널/README.md) — 한국어 화면에서만 모노 라벨 꼴을 벗는다.
  assert.match(lifeJs,/const listHead=\(\)=>currentLang\(\)==='ko'\?' is-text':'';/);
  const text=rule(lifeCss,'.life-section-label.is-text');
  assert.match(text,/font-family:var\(--w-sans\)/);assert.match(text,/font-size:13px/);assert.match(text,/letter-spacing:0/);assert.match(text,/text-transform:none/);
  // 글자마다 찍는 타이핑은 영문 모노 라벨의 움직임이다.
  assert.ok(!/querySelectorAll\('[^']*\.life-section-label(?!:not\(\.is-text\))[^']*'\)/.test(lifeJs),'화면 언어 머리에 타이핑이 걸린다');
+});
+// 11-09 다듬기 세션 F1: 내 위치 · 연습 화면에 남았던 작은 한글 둘 — 근거 줄 날짜(12px 모노)와 한국어 항목 이름 라벨(11px 모노 대문자).
+test('내 위치 · 연습 화면도 한국어를 모노 · 13px 밑으로 쓰지 않는다(근거 날짜 · 항목 이름 라벨)',()=>{
+ const time=rule(lifeCss,'.wpos-evidence time');
+ assert.doesNotMatch(time,/--w-mono/);assert.match(time,/font-size:13px/);
+ const label=rule(lifeCss,'html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label)');
+ assert.match(label,/font-family:var\(--w-sans\)/);assert.match(label,/font-size:13px/);assert.match(label,/letter-spacing:0/);assert.match(label,/text-transform:none/);
 });

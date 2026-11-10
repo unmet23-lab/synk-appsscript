@@ -5,10 +5,10 @@
  "meaning": "세 겹 확인(결정 표 10-19 「현지어판 확인」): ① 직역 역번역을 Claude Opus가 원문과 줄마다 견줬다 ② Fable이 915줄을 교정했다(지적 26건 → 반영 17 · 고쳐 반영 8 · 그대로 둠 1, fable-20261019.json) ③ 제미나이 아르곤이 문법을 채점했다(tools/몽골어대조.js --구독, 맞춤법 층 spellcheck.mn 포함). 원어민 검수는 같은 결정에 따라 계획에 없다. 10-20 내 위치 position.* 95줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 ② Fable 교정 11곳 반영, mn-check-20261020-position/fable-20261020.json ③ 아르곤 문법·맞춤법 — 고친 줄은 다시 쟀다). 10-20 이름이 든 추천 이유 틀과 한글 만나기 항목 이름 11줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 ② Fable 22항목 교정 + 고친 다섯 줄 재검토 ③ 아르곤 문법·맞춤법 — 고친 줄은 다시 쟀고 마지막에 표 전체를 한 번 더 쟀다). 관심 이유의 {label}(«교통» 같은 학습 내용)은 한국어 그대로다. 「내 위치」 공개(10-20) 뒤 옛 학습 목표 창 「연습에서 본 것」의 goal.seen·goal.state.* 8줄은 표에서 지웠고 기록 줄도 뺐다. 10-20 그림 고르기 지시 position.diagnostic.ask.picture도 세 겹으로 쟀다(아르곤 정상·맞춤법 0, Fable 「그대로」, 역번역 대조). 10-21 듣기 새 항목 이름 position.skill.ko.listening.response는 아르곤 문법 정상·맞춤법 0이고, 직역 역번역(「듣고 적합한 답변 주기」)을 Claude Opus가 원문과 견줬다. Fable 교정도 「그대로」(10-21, 위치판 진단 공백 문장 n=1과 함께). 10-21 학습 알림 reminder.* 40줄도 같은 세 겹으로 쟀다(① Opus 역번역 대조 — 모두 뜻이 같음 ② Fable 교정 — 화면 최종 검수에서 exam.start 한 줄을 고치고, 재확인에서 바꾼 세 줄은 그대로 ③ 아르곤 문법·맞춤법 — 첫 검문에서 어색 다섯 줄(товч·Дээд тал нь·харин·Давтамж)을 고쳐 recheck-01 정상, 그 줄이 든 둘째·셋째 묶음 final 재검문 정상, 시험 점검 시트 글을 바꾼 세 줄(exam.body·exam.mock·exam.start) recheck-02 정상). 「reminder.push.title」(SYNK WORLD)·「reminder.when」(날짜·시각 꼴)은 몽골어 낱말이 없어 재지 않았다. 묶음·결과 파일은 qa 결과 규칙(10-20)대로 이 PC에만 두고, 묶음마다의 판정은 그 폴더 README.md에 적었다. 10-22 연습 한 판의 응답 response.* 18줄도 세 겹으로 쟀다(① Opus 역번역 대조 ③ 아르곤 문법·맞춤법 — 어색 두 줄(note30·removeNote)을 고쳐 다시 재 정상 · ② Fable 교정은 그 기능의 화면 최종 검수에서 — 몽골어는 그대로 두되 연결 꺼짐 안내를 세 언어로 새로 쓰고 30일 안내를 실제 동작으로 줄여 다시 재 정상). 11-01 /world 입구 opening.entrance.* 6줄도 같은 세 겹으로 쟀다(① Claude 역번역 대조 ② Fable 교정 ③ 아르곤 문법·맞춤법 — mn-check-20261101-entrance/README.md). 11-02 펠트 안녕 콘서트 타이틀 공개 뒤 옛 펠트 타이틀의 opening.titleAlt · opening.subtitle 2줄은 표에서 지웠고 기록 줄도 뺐다.",
  "names": "까몽·몽글·마린 → Камон · Монгль · Марин(09-20 카드와 같은 표기), 싱크타운 → SYNK Таун, 수진·지훈 → Сүжин · Жихүн. 맞춤법 층은 이 이름들, 라틴 글자에 붙인 격 어미(WORLD-ийн · ID-д), 한글 낱자에 붙인 어미(ㄱ-г 같은 것), 들어온 말(рамён · апп · Вэб · Мини)을 늘 의심으로 낸다. 상태(status)에서는 이것들을 뺐고 spelling 칸에는 그대로 남겼다. 「Монгль」은 문법 층이 「Монгол의 오타처럼 보인다」고 여러 번 짚었지만, 유호님이 10-19 그대로 두기로 정했다(결정 표 10-19 「몽글 몽골어 이름」). 그 지목(named)은 고칠 문장이 아니다. 드라마 인물 권태오 → Квон Тэо(입구 사진 설명, 11-01).",
  "summary": {
-  "lines": 1210,
+  "lines": 1236,
   "unchecked": 0,
-  "grammarOk": 855,
-  "grammarAwkwardBatch": 355,
+  "grammarOk": 887,
+  "grammarAwkwardBatch": 349,
   "grammarBrokenBatch": 0,
   "namedProblem": 3,
   "spellingUnmeasured": 0,
@@ -476,15 +476,6 @@
   },
   {
    "source": "world-strings",
-   "key": "home.heading.progress",
-   "mnHash": "6aa1011306",
-   "batch": "final-02.txt",
-   "grammar": "어색",
-   "spelling": [],
-   "status": "묶음 판정 어색"
-  },
-  {
-   "source": "world-strings",
    "key": "home.orientation.landscape",
    "mnHash": "7a55d4bd9e",
    "batch": "recheck4-01.txt",
@@ -639,34 +630,16 @@
   {
    "source": "world-strings",
    "key": "home.caption",
-   "mnHash": "2604b1f6f4",
-   "batch": "final-02.txt",
-   "grammar": "어색",
+   "mnHash": "1c7bed4abc",
+   "batch": "mn-check-20261109-copy/home-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
    "key": "home.caption.default",
    "mnHash": "026346c9e5",
-   "batch": "final-02.txt",
-   "grammar": "어색",
-   "spelling": [],
-   "status": "묶음 판정 어색"
-  },
-  {
-   "source": "world-strings",
-   "key": "home.caption.account",
-   "mnHash": "89d33cdd63",
-   "batch": "final-02.txt",
-   "grammar": "어색",
-   "spelling": [],
-   "status": "묶음 판정 어색"
-  },
-  {
-   "source": "world-strings",
-   "key": "home.caption.device",
-   "mnHash": "549314b04f",
    "batch": "final-02.txt",
    "grammar": "어색",
    "spelling": [],
@@ -738,11 +711,11 @@
   {
    "source": "world-strings",
    "key": "home.studyButton",
-   "mnHash": "5a882f51f4",
-   "batch": "final-04.txt",
+   "mnHash": "1bc90bfdb7",
+   "batch": "mn-check-20261109-copy/home-02.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -2981,11 +2954,11 @@
   {
    "source": "world-strings",
    "key": "position.intro",
-   "mnHash": "dc2a28ab31",
-   "batch": "mn-check-20261020-position/final-01.txt",
+   "mnHash": "eb6e0892f5",
+   "batch": "mn-check-20261109-copy/position-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -3278,11 +3251,11 @@
   {
    "source": "world-strings",
    "key": "position.status.unseen",
-   "mnHash": "e83880bd12",
-   "batch": "mn-check-20261020-position/recheck-05.txt",
+   "mnHash": "f966995892",
+   "batch": "mn-check-20261109-copy/position-02.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -3350,11 +3323,11 @@
   {
    "source": "world-strings",
    "key": "position.evidence.unassessed",
-   "mnHash": "0cc0e0d55f",
-   "batch": "mn-check-20261108-front/position-01-r3.txt",
+   "mnHash": "d0e7f030ea",
+   "batch": "mn-check-20261109-copy/position-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "세 겹 깨끗 · Fable F1로 까닭 나열을 뺀 셋째 판(「ангилал тогтооход ашиглаагүй」 — 내 위치 안내의 「ангилал тогтооно」와 같은 말), 첫 판은 어색 판정으로 버림, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -5007,29 +4980,29 @@
   {
    "source": "world-strings",
    "key": "life.reviewMet",
-   "mnHash": "c21531202a",
-   "batch": "recheck4-02.txt",
+   "mnHash": "edf49579cc",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
    "key": "life.reviewRemembered",
-   "mnHash": "7565545101",
-   "batch": "final-10.txt",
-   "grammar": "어색",
+   "mnHash": "553770faba",
+   "batch": "mn-check-20261109-copy/review-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
    "key": "life.reviewSoon",
-   "mnHash": "6263454fea",
-   "batch": "final-10.txt",
-   "grammar": "어색",
+   "mnHash": "cd2b2445b9",
+   "batch": "mn-check-20261109-copy/review-02.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -9513,11 +9486,11 @@
   {
    "source": "world-strings",
    "key": "position.progress",
-   "mnHash": "6f1ee4954f",
-   "batch": "mn-check-20261021-exam-form/recheck-02.txt",
+   "mnHash": "122901ea5c",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -10928,11 +10901,11 @@
   {
    "source": "world-strings",
    "key": "position.note.unassessed",
-   "mnHash": "5b3bfcd0fc",
-   "batch": "mn-check-20261108-front/position-02-r2.txt",
+   "mnHash": "7ddac98695",
+   "batch": "mn-check-20261109-copy/position-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "세 겹 깨끗 · 첫 판(тооцоогүй)은 어색 판정으로 버림, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -11000,20 +10973,20 @@
   {
    "source": "world-strings",
    "key": "followup.openLesson",
-   "mnHash": "1b79a998d1",
-   "batch": "mn-check-20261108-front/open-01-r2.txt",
+   "mnHash": "734ea0dfd4",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "세 겹 깨끗 · 첫 판(хичээлд — 「수업에 참석하다」 쪽 격)은 어색 판정으로 버리고 「хичээл дээр」로 고침, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
    "key": "followup.openReview",
-   "mnHash": "a660608e24",
-   "batch": "mn-check-20261108-front/open-02.txt",
+   "mnHash": "02e828a4d8",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "세 겹 깨끗 · 「Шинэ жишээгээр」는 생활 복습 단추(life.result.againButton)와 같은 말, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -11135,11 +11108,11 @@
   {
    "source": "world-strings",
    "key": "position.uncounted.why.draft",
-   "mnHash": "d684b783d5",
-   "batch": "mn-check-20261108-front2/uncounted-02.txt",
+   "mnHash": "6e0441c427",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -11198,11 +11171,11 @@
   {
    "source": "world-strings",
    "key": "position.uncounted.why.other",
-   "mnHash": "196095a636",
-   "batch": "mn-check-20261108-front2/uncounted-03-r2.txt",
+   "mnHash": "9ca7ed1700",
+   "batch": "mn-check-20261109-copy/position-01.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   },
   {
    "source": "world-strings",
@@ -11221,6 +11194,141 @@
    "grammar": "정상",
    "spelling": [],
    "status": "세 겹 깨끗 · 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "position.attention.note",
+   "mnHash": "53ed93a2b8",
+   "batch": "mn-check-20261109-copy/position-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "followup.note",
+   "mnHash": "f273b37bc1",
+   "batch": "mn-check-20261109-copy/position-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.week.word",
+   "mnHash": "e60433db51",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.week.length",
+   "mnHash": "cce9173c0e",
+   "batch": "mn-check-20261109-copy/plan-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.checks.title",
+   "mnHash": "1931d5a57d",
+   "batch": "mn-check-20261109-copy/plan-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.checks.note",
+   "mnHash": "ed32419b6c",
+   "batch": "mn-check-20261109-copy/plan-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.reach.note",
+   "mnHash": "eea0452d86",
+   "batch": "mn-check-20261109-copy/plan-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.reviewSubScenes",
+   "mnHash": "a4904e02c2",
+   "batch": "mn-check-20261109-copy/review-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.reviewSubFirst",
+   "mnHash": "ddf4ec9361",
+   "batch": "mn-check-20261109-copy/review-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.reviewSpacing",
+   "mnHash": "f4d6d24094",
+   "batch": "mn-check-20261109-copy/review-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "home.heading.progress",
+   "mnHash": "30203cea5c",
+   "batch": "mn-check-20261109-copy/home-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.week.home",
+   "mnHash": "17afb34510",
+   "batch": "mn-check-20261109-copy/home-02.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.reviewFirstList",
+   "mnHash": "6436a18b67",
+   "batch": "mn-check-20261109-copy/review-03.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "plan.area.extraTitle",
+   "mnHash": "cd77a77063",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
+  },
+  {
+   "source": "world-strings",
+   "key": "life.reviewedList",
+   "mnHash": "f6f0f95c5d",
+   "batch": "mn-check-20261109-copy/screen-01.txt",
+   "grammar": "정상",
+   "spelling": [],
+   "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
   }
  ]
 }

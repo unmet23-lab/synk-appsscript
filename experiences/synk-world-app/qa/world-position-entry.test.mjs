@@ -85,7 +85,7 @@ test('TOPIK II를 고른 학생의 판은 TOPIK II 항목(듣기 5·읽기 7)이
  assert.match(board,/TOPIK II 12개 항목: 혼자 해냄 0 · 연습 중 0 · 아직 12/);
  assert.match(board,/data-position-exam="topik1" aria-pressed="false">TOPIK I<[\s\S]*data-position-exam="topik2" aria-pressed="true">TOPIK II</);
  assert.match(board,/data-domain="writing"[\s\S]*쓰기는 맞음·틀림을 자동으로 매기지 않아[\s\S]*data-position-writing>쓰기 연습/);
- assert.match(board,/확인한 항목 0 \/ 5/);assert.match(board,/확인한 항목 0 \/ 7/);
+ assert.match(board,/기록이 있는 항목 0 \/ 5/);assert.match(board,/기록이 있는 항목 0 \/ 7/);
  if(!BANK.items.some(row=>row.exam==='topik-ii'))assert.match(board,/TOPIK II 진단 문항은 준비되는 대로 열려요/,'검수 통과 TOPIK II 문항이 없으면 항목을 늘어놓지 않고 한 줄로');
 });
 

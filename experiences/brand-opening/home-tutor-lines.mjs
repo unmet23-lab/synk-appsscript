@@ -59,14 +59,14 @@ export function homeTutorLine(id,recommendation,{completed='',day=null}={}){
    conditions:'이 몸과 학습 조건을 다시 골라 볼까? 지금 할 수 있는 연습을 찾아보자.',
    difficult:`왔군! ${expression}, 다시 볼 말이지. 이 몸이 같이 봐 주지. …나도 한 번 더 볼게.`,
    review:'왔군! 이 몸과 전에 만난 말들이 돌아왔어. 오늘 복습부터 해 볼까?',
-   resume:`왔군! ${expression}, 하던 자리는 내가 챙겨 뒀지. …같이 이어 가자.`,
+   resume:`왔군! ${expression}, 하던 자리는 내가 챙겨 뒀지. …같이 이어가자.`,
    start:`이 몸이 기다리고 있었지. 오늘은 ${expression}부터 가 보자!`,
    complete:'이 몸과 생활 팩을 다 만났군! …내가 또 같이 가 줄게. 어디로 갈까?'},
   mongle:{loading:'어? 우리 기록이 오고 있어! 조금만 같이 기다리자.',unavailable:'어? 기록을 아직 못 읽었대! 「내 계정」을 눌러서 같이 보자!',
    conditions:'어? 지금 조건에 맞는 연습이 없네. 시간이나 도움 방식을 같이 바꿔 볼까?',
    difficult:`어? 왔구나! ${expression}, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!`,
    review:'우와, 왔구나! 전에 만난 말들이 오늘 돌아왔어! 같이 다시 만나 볼까?',
-   resume:`오! ${expression}, 하던 자리가 여기 있어! 같이 이어 가자!`,
+   resume:`오! ${expression}, 하던 자리가 여기 있어! 같이 이어가자!`,
    start:`어? 왔구나! 오늘은 ${expression}부터 같이 만나 볼까?`,
    complete:'우와! 생활 팩을 다 만났어! 어디에 다시 가 보고 싶어? 같이 가자!'}
  };
@@ -81,7 +81,7 @@ export function homeTutorLine(id,recommendation,{completed='',day=null}={}){
   const next={
    marin:{difficult:`방금 기록 확인. ${expression}, 다시 살필 표현이다. …이어서 함께한다.`,review:'복습 확인. 방금 만난 표현이 다른 장면으로 돌아왔다. …하나씩 확인한다.',reviewEarlier:'복습 확인. 전에 만난 표현도 돌아와 있다. …하나씩 확인한다.',start:`계속 확인. 다음은 ${expression}부터다. …옆에 있겠다.`},
    kkamong:{difficult:`방금 헷갈린 ${expression}, 이 몸이 다시 꺼내 왔지. …나도 같이 볼게.`,review:'벌써 돌아왔군. 이 몸과 방금 만난 말을 새 장면에서 다시 보자.',reviewEarlier:'아직 힘이 남았군. 이 몸과 전에 만난 말들부터 다시 보자.',start:`오늘 제법이군. 이 몸이 다음 것도 골라 뒀지. ${expression}부터 가 보자!`},
-   mongle:{difficult:`방금 헷갈린 ${expression}, 다시 만나 볼까? 나도… 헷갈릴 때 있어!`,review:'우와, 방금 만난 말이 벌써 돌아왔어! 새 장면에서 같이 다시 만나 볼까?',reviewEarlier:'우와, 전에 만난 말들도 돌아와 있어! 이어서 같이 만나 볼까?',start:`좋았어! 이번엔 ${expression}부터 같이 이어 가 볼까?`}
+   mongle:{difficult:`방금 헷갈린 ${expression}, 다시 만나 볼까? 나도… 헷갈릴 때 있어!`,review:'우와, 방금 만난 말이 벌써 돌아왔어! 새 장면에서 같이 다시 만나 볼까?',reviewEarlier:'우와, 전에 만난 말들도 돌아와 있어! 이어서 같이 만나 볼까?',start:`좋았어! 이번엔 ${expression}부터 같이 이어가 볼까?`}
   }[id]?.[r.kind==='review'&&!r.fresh?'reviewEarlier':r.kind];
   if(next)return next;
  }

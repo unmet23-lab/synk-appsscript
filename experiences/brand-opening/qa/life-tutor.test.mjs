@@ -66,10 +66,19 @@ test('돌아온 복습은 표현마다 한 줄 — 레슨 · 이야기에서 따
  // 생활 화면 모듈은 불러올 때 스타일 자리를 찾는다 — 그 한 번만 빈 문서로 넘긴다.
  const had=Object.getOwnPropertyDescriptor(globalThis,'document');
  Object.defineProperty(globalThis,'document',{configurable:true,writable:true,value:{querySelector:()=>({})}});
- let reviewRowsByExpression;
- try{({reviewRowsByExpression}=await import('../../synk-world-app/life-ui.mjs'));}
+ let reviewRowsByExpression,reviewListShape;
+ try{({reviewRowsByExpression,reviewListShape}=await import('../../synk-world-app/life-ui.mjs'));}
  finally{if(had)Object.defineProperty(globalThis,'document',had);else delete globalThis.document;}
  const rows=reviewRowsByExpression([{korean:'안녕하세요.',origin:'a',soon:false},{korean:'감사합니다.',origin:'b',soon:false},{korean:'안녕하세요.',origin:'c',soon:true},{korean:'',origin:'d'},{korean:'감사합니다.',origin:'e',soon:false}]);
  assert.deepEqual(rows.map(row=>[row.korean,row.scenes,row.origin,row.soon]),[['안녕하세요.',2,'a',true],['감사합니다.',2,'b',false]],'첫 줄 자리 · 곧 다시 나올 장면이 하나라도 있으면 soon');
  assert.equal(rows.reduce((sum,row)=>sum+row.scenes,0),4,'글이 없는 줄만 빠지고 장면 수는 그대로');
+ // 11-09 미학 맹검: 줄마다 같은 부가 설명은 복제된 자료처럼 읽혔다 — 같으면 위로 모으고, 다를 때만 줄에 둔다.
+ const same=reviewListShape([{korean:'가',origin:'1일 전 · 첫 모임에서',scenes:2},{korean:'나',origin:'1일 전 · 첫 모임에서',scenes:2},{korean:'다',origin:'1일 전 · 첫 모임에서',scenes:2}]);
+ assert.equal(same.origin,'1일 전 · 첫 모임에서','같은 때 · 곳은 목록 위 한 줄');
+ assert.deepEqual(same.rows.map(row=>[row.korean,row.origin,row.scenes]),[['가','',1],['나','',1],['다','',1]],'줄에는 표현만 — 장면 수는 부제가 말한다');
+ const mixed=reviewListShape([{korean:'가',origin:'1일 전',scenes:2},{korean:'나',origin:'3일 전',scenes:1}]);
+ assert.equal(mixed.origin,'','때 · 곳이 다르면 위로 모으지 않는다');
+ assert.deepEqual(mixed.rows.map(row=>[row.origin,row.scenes]),[['1일 전',2],['3일 전',1]],'다른 것은 줄마다 그대로');
+ const one=reviewListShape([{korean:'가',origin:'1일 전',scenes:2}]);
+ assert.deepEqual([one.origin,one.rows[0].origin,one.rows[0].scenes],['','1일 전',1],'한 줄이면 때 · 곳은 줄에, 장면 수는 부제에');
 });

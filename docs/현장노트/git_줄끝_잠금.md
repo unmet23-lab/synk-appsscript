@@ -265,6 +265,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 회사 선택 시험이 글 파일을 읽어 단언할 때는 줄끝을 맞춰 읽는다(CSS·JS `\r\n` → `\n`). sha를 고정할 때는 「모든 줄끝이 CRLF인 꼴」만 LF로 되돌려 재고, 섞인 줄끝·외톨이 CR은 원시 바이트로 재서 걸리게 한다(`teaching-restoring-client.test.mjs`의 `teachingHostBytes`). 시험만 바꿨어도 운영 후보 사본에 그 시험 파일을 얹어 한 번 돌린다.
 - 다시 확인: 사슬 38 후보 사본에 두 시험만 얹어 10/10, 거절 변이에서 LF · 전부 CRLF · 운영 바이트는 통과하고 줄끝 섞임 · 외톨이 CR은 실패.
 
+### `git -c core.autocrlf=false stash apply`는 CRLF 작업본을 다 바뀐 파일로 보고 「would be overwritten by merge」로 멈춘다 (2026-11-09 Claude)
+- 증상: 워크트리를 origin에 맞추려고 `stash push -u` → `merge --ff-only` 뒤 `git -c core.autocrlf=false stash apply <sha>`를 하자 추적 파일이 하나도 안 돌아오고 위 오류로 끝났다(미추적 파일만 돌아옴). 작업본은 깨끗해 보였다.
+- 원인: 이 저장소는 `core.autocrlf=true`로 풀려 있어 끈 채로 보면 모든 CRLF 파일이 「바뀜」이다.
+- 고침: 돌아온 미추적 파일을 백업과 대조해 지우고, 설정을 붙이지 않은 `git stash apply <sha>`로 다시 한다. 충돌한 생성물(계정 · 생활 묶음)은 HEAD 판으로 되돌려 다시 짓고, 원천은 줄끝을 무시하고 백업과 대조한다(다른 줄은 origin이 고친 줄뿐이어야 한다).
+- 다시 확인: `git status --short`에 내 파일이 다 있고 `<<<<<<<`가 0, 내 항목은 태그로 찾아 지웠다(11-09 · 11-10 두 번).
+
 ## index.lock
 
 ### 주인 없는 0바이트 `.git/index.lock`이 남는다
@@ -706,6 +712,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 워크트리 `node_modules` · `desktop/node_modules` · `experiences/synk-account/node_modules`를 공용 작업본 것으로 가는 junction으로 두고(아래 항목대로 지울 때는 링크만 먼저 끊는다) 다시 `--all --local`.
 - 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
 - 추가 실측(2026-11-01 GPT): 드라마 시범의 새 워크트리도 node_modules가 없어 `바로올리기` 관련 시험의 `공개.test.js`에서 `Cannot find module 'parse5'`가 났다(첫 회502/511, push 안 됨). 오류 뒤 해당 시험 프로세스만 남아 끝나지 않아 PID·부모 PID·시험 경로를 대조해 그 프로세스만 끝내고 실패 요약 로그를 보존했다(임시 TAP 전문은 도구가 종료 시 지워 보존하지 못함). 이 작업본에서는 junction 대신 기존 lock의 `npm ci --no-fund --no-audit`로9개를 설치했다. package.json·lock은 바뀌지 않았다. `require('parse5').parse`와 `esbuild.transformSync`가 정상임을 확인한 뒤 같은 반영 명령으로 관련 시험을 다시 돌린다(시험을 빼거나 실패를 통과로 바꾸지 않음).
+
+- 덧붙임(2026-11-10 Claude): `바로올리기` 짝 검사도 같은 까닭으로 Study 묶음을 「오류」로 막는다(`world-strings.mjs`를 고친 커밋). 링크를 둔 채 지어 보니 내용 변화 없이 줄끝만 달랐다 — 링크를 올리기 동안만 두고 끝나면 PowerShell `[System.IO.Directory]::Delete(<링크>, $false)`로 링크만 끊는다(PowerShell 도구는 `cmd /c rmdir`을 시스템 경로 지우기로 보고 명령째 막는다). 끊은 뒤 공용 `node_modules/esbuild`가 그대로인지 본다.
 
 ### Atlas 원천과 계정 호스트를 함께 고친 뒤 `sync-atlas`를 먼저 돌리면 드라마 시범 묶음에 옛 호스트가 남는다 — `check-account-bundles --build` 뒤 `sync-atlas`를 한 번 더 (2026-11-10 Claude)
 - 증상: Atlas 결함 다섯 고침에서 `node tools/sync-atlas.js --all --local` → `node tools/check-account-bundles.js --build` 순서로 돌렸더니 `--check`는 둘 다 통과했는데, 공개 재료 도구가 `world/drama/atlas-learning.js`(생성기 그대로 옮기는 묶음)에서 「호스트가 열거를 넘기지 않는다」로 멈췄다.

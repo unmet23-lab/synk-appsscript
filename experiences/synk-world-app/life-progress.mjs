@@ -348,6 +348,13 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   if(new TextEncoder().encode(JSON.stringify(next)).length>RECORD_FIT_BYTES)throw fail('PLAY_DATA_TOO_LARGE','옮길 기록을 저장할 공간이 부족해요. 계정과 이 기기의 기록은 그대로 두었어요.');
   commit(next,{preserveDaily:true});return result();
  }
+ // 돌아온 복습이 묻는 표현(화면 글자 기준). 같은 표현이 레슨 · 이야기에서 따로 잡혀 여러 장면으로 돌아와도 하나다. dueCount는 장면 수 그대로다(11-09).
+ function reviewExpression(record){
+  const lesson=lessons.get(record.lessonId),question=lesson?.questions?.find(value=>value.id===record.questionId);
+  return lesson?.expressions?.find(value=>value.id===question?.expressionId)?.korean||question?.choices?.find(value=>value.id===question.answerId)?.text||'';
+ }
+ // 글이 없는 복습은 화면 목록에도 없어 세지 않는다. 다 글이 없으면(표현 정보가 없는 묶음) 복습이 있는데 0으로 보이지 않게 장면 수로 돌아간다.
+ function dueExpressionCount(due){return new Set(due.map(reviewExpression).filter(Boolean)).size||due.length;}
  function summary(packs=[],flat=[]){
   check();catalog(packs,flat);const ordered=packs.flatMap(pack=>(pack.lessons||[]).map(value=>typeof value==='string'?lessons.get(value):lessons.get(value.id)).filter(Boolean));
   if(!ordered.length)ordered.push(...flat);
@@ -364,7 +371,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const resume=!!active&&Object.keys(state.lessons[active.id]?.answers||{}).length>0;
   return {owner,completed,total,allCompleted:total>0&&completed===total,nextLesson:next?{...next,progress:lessonState(next.id)}:null,resume,
    cafe:{completed:visits.filter(l=>state.lessons[l.id]?.completedAt!=null).length,total:visits.length,nextNumber:next&&isCafeLesson(next.id)?CAFE_LESSON_IDS.indexOf(next.id)+1:null},
-   dueCount:due.length,dueReviews:due.slice(0,6),nextReviewAt:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
+   dueCount:due.length,dueExpressions:dueExpressionCount(due),dueReviews:due.slice(0,6),nextReviewAt:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
    packs:packs.map(pack=>{const ids=(pack.lessons||[]).map(value=>typeof value==='string'?value:value.id);return {id:pack.id,completed:ids.filter(id=>state.lessons[id]?.completedAt!=null).length,total:ids.length};}),status:status()};
  }
  async function flush(){
