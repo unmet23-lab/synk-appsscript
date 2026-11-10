@@ -378,38 +378,8 @@ test('on a portrait phone the first page keeps its copy off the faces in the ree
   assert.match(html,/<h1 class="sx-display">(<span class="sx-ln"><span>[^<]+<\/span><\/span>){3}<\/h1>/,'the title is three lines, as on synk.im');
   assert.ok(html.includes('<p class="sx-body sx-hero-lead" data-in>넷플릭스 · tvN에 출연하고 웹드라마 주연(페이스북 1,000만 회)을 맡은 대표가'),'wider screens keep the lead');
 });
-// 11-10: 3쪽 「이렇게 만들어요」 인물 장면 그림(폭 960)이 큰 모니터(2560×1440)에서 1485px 화면에 1.55배로 늘어났다(tools/화면배율.mjs, 사슬 59 반영 뒤 확인).
-// 그림을 새로 굽지 않고, 글 칸이 「42%」와 「화면을 상한에 두는 폭」 가운데 큰 쪽을 쓴다 — 오른쪽 화면은 그 나머지라 칸 안에 빈 띠가 생기지 않는다.
-// 아래 셈은 화면배율 도구와 같은 기기 · 같은 셈(cover는 더 늘어난 축, 100분의 1에서 반올림)이다.
-test('on a big monitor the cast photos of the three checks stay under the stretch limit: the copy column takes the width the photos cannot fill, while 1920, 1440 and phones keep their split',async()=>{
-  const {기기들,기본기준,늘어난배율}=await import('../../../../../tools/화면배율.mjs');
-  const css=read('film.css'),narrow=narrowBlock(css),wide=css.slice(0,css.indexOf(narrow));
-  const column=wide.match(/\.sx-check\{flex:0 0 max\((\d+)%,calc\(100% - (\d+)px\)\);/);
-  assert.ok(column,'the copy column is the larger of its share and what leaves the photo stage at its cap');
-  const share=Number(column[1])/100,cap=Number(column[2]);
-  assert.match(wide,/\.sx-p\.is-check\{padding:0;/,'the row spans the whole window, so the shares are of the window width');
-  assert.match(wide,/\.sx-check-stage\{flex:1;position:relative;overflow:hidden;/,'the photo stage is the rest of the row: no band between the copy and the photo');
-  assert.doesNotMatch(css,/\.sx-check-stage\{[^}]*max-(width|height)/,'the stage is never capped on its own, which would leave a band');
-  assert.match(wide,/\.sx-pane-cast img,\.sx-pane-cuts img\{width:100%;height:100%;object-fit:cover;/,'the photos cover the stage');
-  // 세로 창(휴대폰 · 세로 태블릿)은 화면이 위 · 글이 아래로 쌓여 폭을 꽉 채운다 — 넓은 창의 상한을 덮는다.
-  assert.ok(narrow.includes('.sx-check{flex:none;width:100%;'),'portrait windows stack the copy under the stage and ignore the cap');
-  const tall=Number(narrow.match(/\.sx-check-stage\{flex:none;width:100%;height:(\d+)vh;/)[1])/100;
-  const stageOf=({w,h})=>w>820&&w>h?[Math.min((1-share)*w,cap),h]:[w,tall*h];
-  const pane=entryView({}).match(/<div class="sx-pane sx-pane-cast[^"]*">([\s\S]*?)<\/div>/)[1];
-  const photos=[...pane.matchAll(/model-scene-[a-z]\d+\.webp/g)].map(found=>found[0]);
-  assert.equal(photos.length,4,'four people take turns on the stage');
-  for(const name of photos){
-    const [nw,nh]=webpSize(readFileSync(new URL(`assets/request/${name}`,appDir)));
-    for(const device of 기기들){
-      const [칸폭,칸높이]=stageOf(device);
-      const scale=늘어난배율({칸폭,칸높이,원본폭:nw,원본높이:nh,맞춤:'cover',화소비:device.화소비});
-      assert.ok(scale<기본기준,`${name} ${nw}×${nh} on ${device.w}×${device.h} at ${device.화소비}x: stage ${Math.round(칸폭)}×${Math.round(칸높이)} stretches it ${scale}×`);
-    }
-  }
-  // 상한은 큰 모니터만 건드린다 — 1920 · 1440 · 1366 창은 옛 42 : 58 그대로다(11-10 실측: 칸 1114×1080 · 835×900 · 792×768이 고치기 전과 같다).
-  for(const w of [1366,1440,1920])assert.equal(Math.max(share*w,w-cap),share*w,`a ${w} window keeps the ${Math.round(share*100)}% copy column`);
-  assert.equal(stageOf({w:2560,h:1440})[0],cap,'a 2560 monitor gets the capped stage');
-});
+// 11-10 큰 모니터 인물 장면 배율 시험은 저장소 시험 tests/pulse-film-scale.test.mjs에 있다 — 저장소 전용 도구 tools/화면배율.mjs를
+// 쓰므로, 이 파일(회사 이미지 판의 격리 QA에 실림)에 두면 판 사본에서 ERR_MODULE_NOT_FOUND로 실패한다.
 test('no public file of the customer app quotes internal decisions by name — comments included, a customer can read them with view-source',async()=>{
   const {readdirSync}=await import('node:fs');
   const dir=new URL('./public/pulse-app/',import.meta.url);
