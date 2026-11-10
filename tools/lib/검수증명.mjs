@@ -122,6 +122,9 @@ export const Atlas작업ID = 'atlas-world-learning-20261028';
 // 11-09 이번 Workspace 다음 할 일 연결만 GPT 구현·독립 GPT 검수로 진행한다.
 export const Workspace다음할일작업ID = 'workspace-next-action-20261109';
 export const Workspace다음할일원문 = Object.freeze({ implementationReview: '구현과 검토는 이번 세션에서는 니가 다 해. 허용할게' });
+// 같은 날 후속 지시: 구현뿐 아니라 현재 Codex의 직접 검수와 마감도 승인했다.
+export const 사이트점검단독작업ID = 'site-audit-self-review-20261110';
+export const 사이트점검단독원문 = Object.freeze({ implementation: '이번 수정은 GPT가 직접 진행', review: '너 혼자 직접 검수하고 진행해' });
 export function 사용자지정판(file) {
   const record = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
   return record.version === 2 ? 4 : 3;
@@ -248,6 +251,15 @@ function Workspace다음할일범위맞나(scope, p, role, 종류, author) {
   return scope === Workspace다음할일작업ID && role === '소스' && author === 'GPT'
     && Workspace다음할일원천[종류]?.has(p);
 }
+function 사이트점검단독범위맞나(scope, p, role, 종류, author) {
+  if (scope !== 사이트점검단독작업ID || author !== 'GPT') return false;
+  if (role === '배포 후보') return 종류 === '화면' && 사이트점검공개.has(p);
+  if (종류 === '화면') return 사이트점검원천.has(p) || 사이트점검보조.has(p);
+  return 종류 === '백엔드' && new Set([
+    'tools/lib/검수증명.mjs', 'tools/검수묶음.mjs', 'tests/검수사이트점검예외.test.mjs', 'tests/검수사이트점검단독.test.mjs',
+    'docs/_ops/관문_자동화.md', 'docs/_ops/결정.md', 'docs/_ops/트랙.md',
+  ]).has(p);
+}
 function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 단독 = 판 === 4, 검수자 = 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
   if (o.종류 !== '화면' && !단독) throw new Error('사용자지정은 승인된 화면만 지원한다 — 백엔드의 기존 GPT·Claude 정책을 바꾸지 않는다');
@@ -259,8 +271,10 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 최적화 = 단독 && 지정.taskId === 'optimization-security-20261028';
   const PATH비공개 = 단독 && 지정.taskId === PATH비공개작업ID;
   const Workspace다음할일 = 단독 && 지정.taskId === Workspace다음할일작업ID;
-  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : Workspace다음할일 ? Workspace다음할일작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
-    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : Workspace다음할일 ? Workspace다음할일원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  const 사이트점검단독 = 단독 && 지정.taskId === 사이트점검단독작업ID;
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : Workspace다음할일 ? Workspace다음할일작업ID : 사이트점검단독 ? 사이트점검단독작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
+    || 정규해시(지정.userStatements) !== 정규해시(atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : Workspace다음할일 ? Workspace다음할일원문 : 사이트점검단독 ? 사이트점검단독원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  if (사이트점검단독 && (!files.length || files.some(f => f.옛경로 || !['A', 'M'].includes(f.상태)) || candidate && candidate.종류 !== 'synk.im')) throw new Error('사이트 점검 단독 검수는 정확한 추가·수정 원천과 synk.im 후보만 지원한다 — 삭제·이름 변경·후보 단독 불가');
   if (atlas && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('Atlas 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   if (PATH비공개 && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('PATH 비공개 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   // 회사 배포는 이 원천 증명을 기존 릴리스 결속으로 잇는다. 다른 공개 후보 권한은 열지 않는다.
@@ -273,7 +287,7 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
       안전경로(o.저장소, row.path);
       const match = expected.find(f => f.path === row.path);
       if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author)
-        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : Workspace다음할일 ? Workspace다음할일범위맞나(row.scope, row.path, role, o.종류, row.author) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+        || !(atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : Workspace다음할일 ? Workspace다음할일범위맞나(row.scope, row.path, role, o.종류, row.author) : 사이트점검단독 ? 사이트점검단독범위맞나(row.scope, row.path, role, o.종류, row.author) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
       if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
       if (!match || !/^[a-f0-9]{64}$/.test(row.sha256 || '') || row.sha256 !== match.sha256) throw new Error(`사용자지정 ${role} SHA 불일치: ${row.path}`);
@@ -381,16 +395,44 @@ function 개인화생성물정책(o, files, candidate, 판) {
     담당예외:{taskId:개인화생성물작업ID,userStatement:'웅 이번에는 예외 적용해서 진행해',scope:'이번 Atlas 엔진 생성물·캐시 토큰의 웹·PC 반영. GPT·Claude 공동 검수, 기존 바이트·해시·P0/P1 관문 유지.'}};
 }
 
+// 2026-11-10 사이트 점검: 구현 담당만 직접 승인했다. 검수자·재검수·배포 증명은 일반 화면 정책 그대로다.
+export const 사이트점검작업ID = 'site-audit-20261110';
+export const 사이트점검화면정책 = p => p?.담당예외?.taskId === 사이트점검작업ID && p.작성자 === 'GPT' && p.종류 === '화면';
+const 사이트점검원천 = new Set([
+  'site-v10/build.mjs', 'site-v10/drama.css', 'site-v10/drama.js', 'site-v10/content/ko.mjs', 'site-v10/content/en.mjs', 'site-v10/public-index.mjs',
+  'experiences/path-travel/planner-ui.mjs', 'experiences/path-travel/index.html', 'experiences/brand-opening/home.html',
+  'docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/index.html',
+]);
+const 사이트점검공개 = new Set([
+  'index.html', 'en/index.html', 'lab/index.html', 'en/lab/index.html', 'shift/index.html', 'en/shift/index.html',
+  'assets/v10/drama.css', 'assets/v10/drama.js', 'assets/v10/pulse-redirect.js', 'robots.txt', 'sitemap.xml',
+  'pulse-app/index.html', 'llms.txt', 'try/travel/index.html', 'try/travel/planner-ui.mjs', 'world/index.html', 'world/mobile.html', 'world/desktop.html',
+]);
+const 사이트점검보조 = new Set([
+  'qa/drama.test.mjs', 'qa/shift-lectures.test.mjs', 'qa/v11-site.test.mjs', 'qa/public-index.test.mjs', 'qa/RESULTS.md', 'package.json',
+  'docs/_ops/결정.md', 'docs/_ops/트랙.md',
+  ...[...사이트점검공개].filter(p => !p.startsWith('world/')).map(p => `dist/${p}`),
+]);
+function 사이트점검범위검사(o, files, candidate, 판) {
+  if (판 !== 6 || o.작성자 !== 'GPT' || o.종류 !== '화면' || o.사용자지정 || o.예외 || o.GPT구독 && o.GPT구독 !== '유지'
+    || !files.some(f => 사이트점검원천.has(f.경로))
+    || files.some(f => !['A', 'M'].includes(f.상태) || f.옛경로 || !사이트점검원천.has(f.경로) && !사이트점검보조.has(f.경로))
+    || candidate && (candidate.종류 !== 'synk.im' || candidate.항목.some(f => f.종류 === '지움' || !사이트점검공개.has(f.경로)))) {
+    throw new Error('사이트 점검의 직접 승인 범위를 벗어난 담당 예외 — GPT 화면 구현만, 정확한 원천·공개 경로와 일반 화면 검수 필수');
+  }
+}
 export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   if (![1, 2, 3, 4, 5, 6].includes(판) || ([3, 4].includes(판)) !== Boolean(o.사용자지정)) throw new Error(`모르는 검수 정책 판 또는 사용자지정 누락: ${판}`);
   const candidate = 후보읽기(o.배포후보);
   const 기준이미지만 = candidate?.종류 === 'synk.im' && candidate.항목.every(f => /^\.github\/site-check\/baseline\/.+\.(?:json|png|jpe?g|webp)$/i.test(f.경로));
   if (o.담당예외 === 개인화생성물작업ID) return 개인화생성물정책(o, files, candidate, 판);
   if (candidate && o.종류 !== (candidate.종류 === 'synk.im' && !기준이미지만 ? '화면' : '백엔드')) throw new Error(`배포 후보 ${candidate.종류}에 맞는 검수 종류가 아니다`);
+  const 사이트점검 = o.담당예외 === 사이트점검작업ID;
+  if (사이트점검) 사이트점검범위검사(o, files, candidate, 판);
   if ([3, 4].includes(판)) return 사용자지정정책(o, files, candidate, 판);
   // 2026-10-28 직접 사용자 승인: 이 학습 흐름에 한해 담당과 Fable을 대체한다.
   // 일반 정책·검수 원문·SHA 사슬·P0/P1 처리·배포 바이트 검사는 그대로다.
-  if (o.담당예외 != null) {
+  if (o.담당예외 != null && !사이트점검) {
     const source = p => /^experiences\/korean-study\//.test(p)
       || /^experiences\/synk-account\/qa\/study-town-style-20261028\/[a-z0-9-]+\.mjs$/.test(p)
       || /^experiences\/synk-account\/(?:src\/(?:client|study-login)\.mjs|dist\/client\.js|build-manifest\.json|style\.css|client\.html)$/.test(p)
@@ -409,7 +451,7 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
   }
   const 작성자 = o.작성자 || 'Claude', 구독 = o.GPT구독 || '유지';
   if (!['Claude', 'GPT'].includes(작성자)) throw new Error('--작성자는 Claude|GPT');
-  if (작성자 === 'GPT' && o.종류 === '화면') throw new Error('화면 구현은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
+  if (작성자 === 'GPT' && o.종류 === '화면' && !사이트점검) throw new Error('화면 구현은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
   if (!['유지', '종료'].includes(구독)) throw new Error('--GPT구독은 유지|종료');
   if (구독 === '종료' && (!o.사유?.trim() || 작성자 === 'GPT')) throw new Error('GPT 구독 종료는 Claude 작업에서 --사유와 함께 명시한다');
   // 화면 Fable 생략(2026-10-24 유호님): 그림·글·색만 바꾼 화면처럼 Fable이 볼 것이 적은 일은 아르곤만 받는다 — 까닭을 정책에 남긴다.
@@ -430,7 +472,8 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
     if (o.예외 === '아주작은수정' && candidates.some(f => f.종류 === '지움' || f.경로 !== files[0].경로 || sha256(fs.readFileSync(안전경로(o.저장소, f.경로))) !== f.sha256)) throw new Error('아주 작은 수정의 배포 후보는 검토 대상 원천 파일 그대로여야 한다');
     예외 = { 종류: o.예외, 대상: o.대상.trim(), 사유: o.사유.trim() };
   }
-  return { 판, 작성자, 종류: o.종류, GPT구독: 구독, ...(구독 === '종료' ? { 구독사유: o.사유.trim() } : {}), 필수, 예외, ...(페이블생략 ? { 페이블생략 } : {}) };
+  return { 판, 작성자, 종류: o.종류, GPT구독: 구독, ...(구독 === '종료' ? { 구독사유: o.사유.trim() } : {}), 필수, 예외, ...(페이블생략 ? { 페이블생략 } : {}),
+    ...(사이트점검 ? { 담당예외: { taskId: 사이트점검작업ID, userStatement: '이번 수정은 GPT가 직접 진행', scope: '2026-11-10 사이트 점검의 GPT 화면 구현만 승인. 일반 화면 검수·재검수·앞판·SHA·배포 조건 유지.' } } : {}) };
 }
 /** Claude 백엔드의 다른 회사 검수 순서 — 앞 검수자가 한도·로그인으로 막혔을 때만 다음으로 넘어간다(2026-10-24 다섯 가지 ①).
  *  화면(아르곤 → Fable 최종)과 GPT 작성(GPT·Claude 둘 다, 대체 없음)은 null. 봉인된 정책 판의 순서다 —
@@ -447,7 +490,7 @@ export const 그록대체정책 = 정책 => Boolean(정책 && 대체순서(정�
 export const 실제필수 = 정책 => (대체순서(정책) ? [대체순서(정책)[0]] : 정책.필수);
 export const 필수글 = 정책 => {
   if (정책.담당예외?.taskId === 개인화생성물작업ID) return 'GPT · Claude(이번 Atlas 엔진 생성물의 직접 사용자 승인; 대체 없음)';
-  if (정책.담당예외) return '아르곤(이번 TOPIK 의미 튜터 작업의 직접 사용자 승인; 대체 없음)';
+  if (정책.담당예외?.taskId === 'topik-writing-semantic-20261028') return '아르곤(이번 TOPIK 의미 튜터 작업의 직접 사용자 승인; 대체 없음)';
   if (정책.사용자지정) return `묶음별 ${정책.필수.join(' · ')} + 전체 후보에 대한 최종 ${정책.사용자지정.finalReviewer} 배포 판정(대체 없음)`;
   const 순서 = 대체순서(정책);
   if (정책.페이블생략) return `아르곤(Fable 생략 — ${정책.페이블생략} · 아르곤이 한도·로그인으로 막히거나 아르곤 P0·P1을 고치면 Fable)`;
@@ -527,7 +570,7 @@ export const 끝판정책 = 정책 => 정책.판 >= 5 && 정책.작성자 === 'G
 export function 다시검수자들(정책, 대상, { 끝판 = false } = {}) {
   if (정책.사용자지정) return [...정책.필수];
   if (끝판정책(정책)) return 끝판 || 대상.some(t => t.출처 === 'Claude') ? ['GPT', 'Claude'] : ['GPT'];
-  if (정책.작성자 === 'GPT') return [...정책.필수];
+  if (정책.작성자 === 'GPT' && !사이트점검화면정책(정책)) return [...정책.필수];
   const 낸 = ['아르곤', 'GPT', 'Fable'].filter(w => 대상.some(t => t.출처 === w));
   if (정책.종류 === '화면') return 정책.페이블생략 && !낸.length ? ['아르곤'] : [...new Set([...낸, 'Fable'])];
   return 낸.length ? 낸 : [대체순서(정책)[0]];
@@ -538,7 +581,7 @@ export function 다시검수자들(정책, 대상, { 끝판 = false } = {}) {
  *  아르곤이 낸 지적을 다시 볼 때 아르곤이 막히면 GPT가 먼저다(아르곤 → GPT → 그록 → Fable, 2026-11-08 「그록은 GPT·아르곤이 둘 다 막혔을 때만」). */
 export function 대신할검수자(정책, 누구) {
   if (정책.사용자지정) return [누구];
-  if (정책.작성자 === 'GPT') return [누구];
+  if (정책.작성자 === 'GPT' && !사이트점검화면정책(정책)) return [누구];
   if (그록대체정책(정책)) {
     const 순서 = 대체순서(정책), i = 순서.indexOf(누구), k = 순서.indexOf('그록');
     if (i < 0) return [누구];

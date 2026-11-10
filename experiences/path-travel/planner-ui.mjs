@@ -837,7 +837,7 @@ function showSwap(id){
 }
 function renderExplore(){
  const term=$('#place-search').value.trim().toLowerCase(),mixed=(()=>{const a=TRAVEL_PLACES.filter(p=>p.photo),b=TRAVEL_PLACES.filter(p=>!p.photo),out=[];while(a.length||b.length){out.push(...a.splice(0,2),...b.splice(0,1));}return out;})(),filtered=mixed.filter(p=>(selectedCategory==='all'||p.category===selectedCategory)&&(p.name+' '+p.description).toLowerCase().includes(term));
- $('#catalogue-count').textContent='공식 안내를 확인한 '+TRAVEL_PLACES.length+'곳';
+ $('#catalogue-count').textContent='공식 안내를 확인한 전체 '+TRAVEL_PLACES.length+'곳 · 일정 후보 '+TRAVEL_PLACES.filter(p=>p.dayPlannerEligible!==false).length+'곳';
  $('#place-grid').innerHTML=filtered.map(p=>`<article class="place-card"><button class="place-image-button" data-place="${e(p.id)}" aria-label="${e(p.name)} 자세히" tabindex="-1">${placeCover(p)}</button><p class="place-cat">${e(categoryShort[p.category])}</p><h3><button class="place-title" data-place="${e(p.id)}">${e(p.name)}</button></h3><p class="place-desc">${e(p.description)}</p></article>`).join('')||'<p>이름이 맞는 장소가 없어요. 다른 단어로 찾아보세요.</p>';
 }
 function invalidatePreferencePreview(){
@@ -1021,9 +1021,9 @@ try{const saved=loadTravelMemory();if(saved){memory=saved;restored=true;}}catch(
 writeInput(memory.query);renderExplore();picksFromQuery(memory.query);
 // 앞날의 저장 여행이면 그 날짜·출발 시각을 직접 정한 것으로 둔다.
 handWhen=chooserTimeFromSaved(memory.query,new Date().toISOString());
-$('#hero-place-count').textContent='가입 없이 시작 · 서울 종로의 실제 장소 '+TRAVEL_PLACES.filter(p=>p.dayPlannerEligible!==false).length+'곳';
+$('#hero-place-count').textContent='가입 없이 시작 · 서울 종로의 일정 후보 '+TRAVEL_PLACES.filter(p=>p.dayPlannerEligible!==false).length+'곳';
 $('#photo-credit-list').innerHTML=TRAVEL_PLACES.filter(p=>p.photo).map(p=>`<p class="photo-credit"><strong>${e(p.name)}</strong> · ${credit(p)}</p>`).join('');
-try{const response=await fetch('./assets/jongno-walking.json');if(!response.ok)throw Error('map unavailable');network=await response.json();routeLeg=createWalkingRouter(network);$('#load-status').textContent='실제 장소 '+TRAVEL_PLACES.length+'곳 · 지도 기반 예상 이동으로 비교해요.';}
+try{const response=await fetch('./assets/jongno-walking.json');if(!response.ok)throw Error('map unavailable');network=await response.json();routeLeg=createWalkingRouter(network);$('#load-status').textContent='전체 장소 '+TRAVEL_PLACES.length+'곳 중 일정 후보 '+TRAVEL_PLACES.filter(p=>p.dayPlannerEligible!==false).length+'곳 · 지도 기반 예상 이동으로 비교해요.';}
 catch(error){$('#load-status').textContent='지도를 불러오지 못했어요. 위치 기반 추정으로 비교하며 실제 경로는 따로 확인해 주세요.';}
 mapLoaded();
 // 질문 워커는 지도를 받은 뒤에 미리 띄운다. 같은 지도 파일을 두 번 동시에 받지 않고, 첫 하루 만들기의 질문이 워커 준비를 기다리지 않는다.
