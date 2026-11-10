@@ -21,6 +21,8 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     view: () => record.view(),
     issued: () => record.issued(),
     refresh: () => record.refresh(),
+    // 손님: 지금 든 사건까지 요약을 바로 접는다(판 끝 — 칸에 방금 푼 답이 들게). 계정은 서버가 접으므로 아무것도 안 한다.
+    refold: () => record.refold?.() ?? Promise.resolve(),
     unsent: limit => record.unsent(limit),
     receive: answer =>
       record.receive({

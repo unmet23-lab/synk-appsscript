@@ -418,3 +418,33 @@ test('손님 호스트는 열 때마다 옛 기기 기록을 옮긴다 — 옛 �
   await broken.ready;
   broken.dispose();
 });
+
+test('판을 닫으면 마침 사건에 그 판의 번호가 실리고, 손님은 쓰기가 다 저장된 뒤 요약을 다시 접어 칸에 방금 푼 답이 든다(Fable P2-1 라 · P2-3)', async () => {
+  const items = bankOf(rng(10));
+  const port = memoryPort();
+  const time = clock();
+  const coach = coachOn({ items, time, port, key: keyOf('finish') });
+  await coach.ready;
+  const picked = coach.recommend(items, { set: { length: 3 } });
+  const pid = coach.present(picked.selected);
+  coach.answer(pid, { correct: true, assessable: true }); // 저장을 기다리지 않고 판을 닫는다
+  const set = coach.finishSet({ kind: 'short' });
+  await set.folded;
+  const events = await eventsOf(port);
+  const presented = events.find(e => e.id === pid);
+  for (const id of [set.decisionId, set.completionId])
+    assert.equal(
+      events.find(e => e.id === id).setId,
+      presented.setId,
+      '마침 사건이 그 판의 제시와 이어진다',
+    );
+  const skill = coach.summary().skills.find(s => s.id === picked.selected.skillId);
+  assert.equal(skill.cells.length, 1, '다시 열지 않아도 방금 푼 답이 칸에 든다');
+  // 판 기록 없이 닫아도(record: false) 다시 접는다.
+  const next = coach.recommend(items, { set: { length: 3 } });
+  coach.answer(coach.present(next.selected), { correct: true, assessable: true });
+  const quiet = coach.finishSet({ kind: 'short', record: false });
+  assert.equal(quiet.decisionId, null);
+  await quiet.folded;
+  coach.dispose();
+});

@@ -301,22 +301,33 @@ export function createCoach(options = {}) {
     },
 
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).
+    // 마침 사건에는 그 판의 번호(setId — 제시의 setId와 같은 값)를 싣는다(단계 5 판 비교, Fable 설계 P2-1 라 · 기록 1c412a995).
+    // folded: 그 판의 쓰기가 다 저장된 뒤 손님 요약을 다시 접고 풀린다 — 그 뒤의 summary() 칸에 방금 푼 답이 든다(P2-3, 계정은 서버가 접는다).
     finishSet({ kind, record = true } = {}) {
       const session = live();
       if (!SET_KINDS.includes(kind)) throw new TypeError('Atlas coach: 판의 종류가 아니다');
-      if (record === false) {
-        session.close();
-        return null;
+      const setId = session.setId;
+      let ids = { decisionId: null, completionId: null };
+      if (record !== false) {
+        const experienceId = `${gameId}.set`;
+        const tag = setId ? { setId } : {};
+        const decided = state.host.write(EVENT_TYPES.setDecided, {
+          experienceId,
+          variant: kind,
+          ...tag,
+        });
+        const done = state.host.write(EVENT_TYPES.setCompleted, {
+          decisionId: decided.event.id,
+          experienceId,
+          variant: kind,
+          ...tag,
+        });
+        ids = { decisionId: decided.event.id, completionId: done.event.id };
       }
-      const experienceId = `${gameId}.set`;
-      const decided = state.host.write(EVENT_TYPES.setDecided, { experienceId, variant: kind });
-      const done = state.host.write(EVENT_TYPES.setCompleted, {
-        decisionId: decided.event.id,
-        experienceId,
-        variant: kind,
-      });
       session.close();
-      return { decisionId: decided.event.id, completionId: done.event.id };
+      const folded = state.host.settled().then(() => state.host.trail.refold());
+      folded.catch(() => {});
+      return { ...ids, setId, folded };
     },
 
     feedback(set, value) {

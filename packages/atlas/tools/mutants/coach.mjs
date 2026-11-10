@@ -105,6 +105,22 @@ export const COACH_MUTANTS = [
   ],
   [
     C,
+    '판 수명',
+    '마침 사건에 그 판의 번호를 싣지 않는다(Fable P2-1 라)',
+    'src/coach/index.mjs',
+    'const tag = setId ? { setId } : {};',
+    'const tag = {};',
+  ],
+  [
+    C,
+    '요약',
+    '판을 닫아도 손님 요약을 다시 접지 않는다(칸이 방금 푼 답을 모른다 — Fable P2-3)',
+    'src/coach/index.mjs',
+    'const folded = state.host.settled().then(() => state.host.trail.refold());',
+    'const folded = state.host.settled();',
+  ],
+  [
+    C,
     '호스트',
     '손님 호스트가 옛 기기 기록을 옮기지 않는다(Fable P1-5 ①)',
     HOST,

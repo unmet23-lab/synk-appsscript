@@ -110,6 +110,7 @@ function createHost({
   if (map) index.add(map);
   const pending = new Map(); // 사건 번호 → 접기 사건(아직 저장이 안 끝난 내 답 · 본인 말)
   const issuing = new Map(); // 사건 번호 → 「낸 것」 줄(아직 저장이 안 끝난 내 제시)
+  const inflight = new Set(); // 아직 저장이 안 끝난 쓰기(stored 약속)
   const listeners = new Set();
   const state = {
     trail: null,
@@ -189,6 +190,9 @@ function createHost({
       } else tell('failed', { id });
       return ok;
     });
+    inflight.add(stored);
+    const drop = () => inflight.delete(stored);
+    stored.then(drop, drop);
     return { event: made.event, stored };
   }
 
@@ -229,6 +233,8 @@ function createHost({
       return [...state.trail.issued(), ...issuing.values()];
     },
     pendingCount: () => pending.size + issuing.size,
+    // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이).
+    settled: () => Promise.allSettled([...inflight]).then(() => undefined),
     retain() {
       state.users += 1;
     },
