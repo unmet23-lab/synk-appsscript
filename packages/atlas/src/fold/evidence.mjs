@@ -6,7 +6,7 @@
 //
 // 접기 사건(단계 3의 어댑터가 2판 · 옛 꼴 사건에서 만든다 — docs/_ops/qa/atlas-redesign-20261110/단계2_계획.md §2-2):
 //   답           { kind: 'answer', id, at, item, answer: { correct, assisted, answerShown, unknown, assessable, target } }
-//   도움만 봄    { kind: 'help', id, at, item } — 답 없이 나갔다
+//   도움         { kind: 'help', id, at, item } — 제시에 도움이 하나라도 있으면 첫 도움 시각에 하나(답 없이 나갔든, 답한 뒤 해설을 봤든)
 //   본인 말      { kind: 'say', id, at, unit, say: 'known' | 'relearn' }
 //   제외         { kind: 'exclude', id, at, ref, touches? } — 답이나 본인 말 하나를 거둔다
 //   옮겨 온 장부 { kind: 'carry', id, at, families, after? }
