@@ -1,0 +1,466 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "entry-check.concert-01.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-02.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0056"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 안내문 「의자는 가지고 올 수 없습니다」의 -(으)ㄹ 수 없다(2차) 주 단위, 짐을 규칙에 잇는 의자(1차가 정답 근거로 꼽았으나 지도 밖으로 본 낱말 — 지도에 w0056)",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-03.v1": {
+      "units": [
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견 공통: 표의 8월 16일을 안내문의 9일·10일과 견주는 날짜 숫자. 날짜(1차)·-(으)ㄹ 수 있다(2차)는 16일이 어느 쪽과도 안 맞아 몰라도 거절됨",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-04.v1": {
+      "units": [
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「돗자리는 가지고 와도 됩니다」의 -아/어도 되다(아직 음식 알림 전)",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-05.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0318"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 2차에서 부터를 뺌: 알림 「음식은 가지고 들어갈 수 없습니다」의 -(으)ㄹ 수 없다와 김밥을 규칙에 잇는 음식. 「지금부터」의 부터는 알림이 이미 떠 있어 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-06.v1": {
+      "units": [
+        "ko.word.w0437",
+        "ko.word.w0011"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 알림 「물은 괜찮습니다」의 괜찮다·물(2차)이 통과를 가름(괜찮다를 주 단위로). 만(2차)은 몰라도 되고, 1차의 빈 목록은 화면 알림을 못 본 것",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-07.v1": {
+      "units": [
+        "ko.grammar.G403",
+        "ko.grammar.G212",
+        "ko.word.w1652"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 안내문 「7살 이하 어린이는 보호자와 함께 와야 합니다」의 -아/어야 하다(2차) 주 단위, 6살을 견주는 숫자 표현(2차), 이하(더함). 어린이·언니(1차)는 나이와 「다음 버스로 와요」로 판정돼 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-08.v1": {
+      "units": [
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 표의 「어른 1명 · 어린이 1명(5살)」을 읽는 숫자 표현. -아/어야 하다(2차)는 통과 판정에 필요 없음",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-09.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0056"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「작아도」 안내문 「의자는 가지고 올 수 없습니다」의 -(으)ㄹ 수 없다와 의자(지도에 있음, 1차는 지도 밖으로 봐 빈 목록을 둠)",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-10.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 순서 — 두 의견 단위가 같음: 날짜가 바뀌어도 「8월 9일 표로 들어올 수 있습니다」를 알아보는 -(으)ㄹ 수 있다가 주 단위, 날짜 숫자가 둘째",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-11.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0056"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견의 -(으)ㄹ 수 없다에, 짝 문항(concert-02·09)과 같게 규칙 대상 의자(지도 w0056)를 더함",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-12.v3": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-13.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0318"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — -(으)ㄹ 수 없다(둘 다)와 규칙 낱말 음식(2차). 과자(2차)는 그림·이름표로 보여 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.concert-14.v1": {
+      "units": [
+        "ko.word.w0180",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「함께 들어갈게요」로 보호자와 온 것을 아는 함께(2차) 주 단위, 7살·인원을 읽는 숫자 표현(둘 다). -아/어야 하다(2차)는 통과 판정에 필요 없음",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.library-03.v1": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 안내문 「음료는 뚜껑이 있으면 괜찮습니다」의 -(으)면. -(으)ㄹ 수 없다(2차)는 음식 금지 쪽 말이라 이 판정에 안 쓰임(뚜껑은 지도 밖)",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.library-04.v1": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 뚜껑 없는 커피는 화면 안내문 「음료는 뚜껑이 있으면 괜찮습니다」의 조건을 못 채움 → -(으)면(2차). 커피(1차)는 그림과 「커피(뚜껑 없음)」 이름표로 보이고, -(으)ㄹ 수 없다(2차)는 음식 쪽 말이라 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.library-06.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0318"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 안내문 「음식은 가지고 들어갈 수 없습니다」의 -(으)ㄹ 수 없다(2차) 주 단위, 김밥을 이 규칙에 잇는 음식(안내문 낱말, 더함). 김밥(1차)은 그림으로 보임",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.library-08.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.grammar.S104",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 시계가 「오후 5시 26분」(core.mjs koreanTime)으로 보이고 안내문 「오후 5시 30분부터는 들어올 수 없습니다」와 견줘야 해 셋 다 필요. 1차는 화면 안내문을 보지 못함",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.library-09.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.grammar.S104",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 시계 「오후 5시 34분」과 안내문 「5시 30분부터는 들어올 수 없습니다」를 읽어야 거절. 1차의 빈 목록은 숫자만 보인다고 본 오해",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.library-11.v1": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 뚜껑 닫은 커피가 「음료는 뚜껑이 있으면 괜찮습니다」 조건에 맞아 통과. 커피(1차)는 그림·이름표로 보임",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.museum-03.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w1652",
+        "ko.word.w0433"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 15살을 안내문 「어린이 표는 13살 이하만 쓸 수 있습니다」와 견주는 숫자 표현(둘 다) 주 단위, 이하(더함), 규칙이 걸리는 표 종류 어린이(1차). 만·-(으)ㄹ 수 있다(2차)는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.museum-04.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0944"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 72살을 안내문 「65살 이상은 무료입니다」와 견주는 숫자 표현(둘 다) 주 단위와 이상(더함). 나이(1차)는 「72살」로 칸이 드러나 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.museum-05.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0944"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 62살이 「65살 이상」에 들지 않아 거절: 숫자 표현(둘 다)과 이상(더함). 나이(1차)는 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.museum-06.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w1652"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 9살이 「13살 이하」에 들어 어린이 표가 맞음: 숫자 표현(둘 다)과 이하(더함). 어린이·나이(1차)·만·-(으)ㄹ 수 있다(2차)는 통과 판정에 필요 없음",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.museum-08.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.grammar.S105"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 시계 「오후 5시 4분」과 안내문 「입장은 오후 5시까지만」을 견주는 숫자 표현·까지(2차). 만·-(으)ㄹ 수 있다는 「5시까지」로 판정돼 뺌. 1차의 빈 목록은 시계·안내문이 한국어임을 못 본 것",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.museum-11.v1": {
+      "units": [
+        "ko.word.w0394",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 표가 어른이고 21살이라 표와 나이가 맞음. 만·-(으)ㄹ 수 있다(2차)는 판정을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.pool-05.v1": {
+      "units": [
+        "ko.grammar.G403",
+        "ko.grammar.G212",
+        "ko.word.w1652"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 화면 안내문(content.mjs) 「7살 이하 어린이는 어른과 함께 들어와야 합니다」의 -아/어야 하다(2차) 주 단위, 6살을 견주는 숫자 표현(2차), 기준 방향을 정하는 이하(안내문 낱말, 더함). 어린이(1차)는 9살 어린이가 통과하는 짝 문항이 있어 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.pool-06.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w1652"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 9살이 안내문 「7살 이하」에 들지 않음을 가르는 숫자 표현(둘 다)과 이하(더함). -아/어야 하다(2차)는 통과 판정에 쓰이지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "entry-check.pool-08.v1": {
+      "units": [
+        "ko.word.w0394",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 표의 「어른 1명」으로 아이가 어른과 온 것을 알아 통과하므로 어른(1차) 주 단위, 인원·나이·모자 수를 읽는 숫자 표현(둘 다). 어린이(1차)·-아/어야 하다(2차)는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@
 
 | 폴더 | 무엇 | 채우는 단계 | 설계 |
 |---|---|---|---|
-| `src/map/` | 지도 — 단위 마디 · 문항 색인(주 단위) | 1 | §3-1 · §4 |
+| `src/map/` | 지도 — 읽기(`index.mjs` — 묶음에 드는 유일한 지도 코드) · 번호 장부 · 조립 · 빌드 검사(`ledger` · `compose` · `audit` — 빌드 도구만 부른다). 자료는 `map/`(생성물 커밋) | 1 | §3-1 · §4 |
 | `src/params.mjs` | 매개변수 판 — 기억 · 난도 · 고르기의 숫자와 판 이름(`params-1` · `memory-1` · `ability-1` · `select-1`) | 2 | §6 |
 | `src/memory/` | 기억 1판 — 단위마다 FSRS-6 상태 · 같은 자리 · 「이미 알아요」 · 끈질긴 단위(최근 8자리 창) · 놓친 꼴. ts-fsrs는 `fsrs.mjs` 한 곳에서만 부른다 | 2 | §3-2 · §3-5 |
 | `src/ability/` | 난도 1판 — 능력마다 θ · 이어서 혼자 맞힌 수 · 마지막 측정 난도 | 2 | §3-3 · §3-4 |
@@ -21,7 +21,11 @@
 
 **두뇌 쓰는 법(단계 2).** 기기: `createLearner(요약)` → `startSession(learner, now, PARAMS, { length, newLimit, more, level, dayOffset })` → `choose(후보, learner, memory, now)[0]`(맨 앞 줄: `item` · `tier` · `target` · `p` · `expected` · `why` · `arm` · `brandNew` · `idle` · `none` · `stubborn`) → `present(learner, row)` → `record(learner, memory, item, { correct, …, target: row.target }, now)`. 본인 말은 `say`. 서버 · 손님 기기: `foldServer(접기 사건들, memory)` 또는 줄마다 `foldUnit` · `foldSkill(skillRowsOf(만남))` · `firstMeeting`. 기기 얹기: `overlay(요약, 내 밀린 사건, memory, PARAMS, { familySkills, lookup })`. `memory = createMemory(PARAMS)`. 계약 전문은 [단계 2 기록](../../docs/_ops/qa/atlas-redesign-20261110/단계2_계획.md) §2 · §8.
 
+**지도 쓰는 법(단계 1).** `openMap({ index, units, words })` — `index`는 전체 색인(`map/index.json`) 하나 또는 은행 조각(`map/items/<은행>.json`)의 배열, `units`는 문형 · 생활 표현 · 한글, `words`는 낱말 2,000(쓰는 게임만). `map.item(itemKey | { itemKey, familyKey, skillId, difficulty, responseFormat, … })`이 두뇌 꼴 문항을 낸다(태그 없으면 `units = ['family:<계열>']`, 은퇴 문항은 `null`, 색인에 줄이 없어도 제품 값이 온전하면 태그 없는 문항). 계열 줄(한글 단계 · 드라마 — 판마다 열쇠가 생긴다)은 제품이 넘긴 난도 · 꼴을 얹는다. `map.familySkills`(계열 → 능력들)는 기기 얹기에 그대로 넘기고, `map.editions`(`map-<판>` · `index-<색인 판>`)는 제시 사건의 판 칸에 더한다. 번호 · 이름 바꾸기는 `itemNumber` · `itemKeyOf` · `familyNumber` · `unit`이 사슬을 끝까지 따른다. 꼴 · 번호 규칙 · 판 목록(`map/revisions.json` — 바뀐 문항의 옛 값 · 새 값)은 [단계 1 기록](../../docs/_ops/qa/atlas-redesign-20261110/단계1_계획.md) §2 · §3.
+
 ## 명령
+
+- 지도 — `node packages/atlas/tools/map-build.mjs`(대조: 제품 은행 · strata 원천에서 다시 만든 지도가 커밋된 것과 같은가) · `--write`(다시 써서 커밋 — 장부는 덧붙이기만, 접기 칸이 바뀌면 색인 판 +1, 계열 이름 후보가 있거나 origin 장부가 앞서면 쓰지 않는다). 태그 채우기 · 2중 검수는 `node packages/atlas/tools/map-tags.mjs 준비 | 초안 | 클로드 | 아르곤 | 판정 | 반영 <이름>`(묶음은 `.tmp/atlas-map-tags/`, 판정을 거친 줄만 `map/tags/<은행>.json`에). 제품 문항 은행을 고쳤으면 `map-build --write` 뒤 생성물을 같은 커밋에 — 단계 4 전까지는 어긋나도 build 시험이 알리기만 한다.
 
 ```bash
 npm --prefix packages/atlas ci --ignore-scripts
@@ -55,7 +59,7 @@ node packages/atlas/tools/build.mjs --out <폴더>
 |---|---|---|
 | 포맷터 | Biome 2.6.4 — 폭 100 · 들여쓰기 2칸 · 작은따옴표 · 세미콜론, `useSingleVarDeclarator` | `biome.json` |
 | 함수 복잡도 | `noExcessiveCognitiveComplexity` 15(인지 복잡도) | 올리지 않는다 — 함수를 나눈다 |
-| 묶음 압축 용량 | `atlas.mjs` gzip 64KiB · `loader.js` gzip 2KiB | 설계값이다. 실제 값에 맞춰 올리지 않고, 올릴 때는 [결정 표](../../docs/_ops/결정.md)에 까닭을 적는다 |
+| 묶음 압축 용량 | `atlas.mjs` gzip 64KiB · `loader.js` gzip 2KiB · 지도 `map/index.json` 96KiB · `units.json` 8KiB · `words.json` 20KiB · 은행 조각 가장 큰 것 48KiB | 설계값이다. 실제 값에 맞춰 올리지 않고, 올릴 때는 [결정 표](../../docs/_ops/결정.md)에 까닭을 적는다 |
 
 옛 `atlas/`에는 줄 수 상한이 없고 「새 모듈을 더하지 않는다」는 파일 수 울타리만 있다(`tests/atlas-size-budget.test.js`).
 
@@ -69,6 +73,9 @@ node packages/atlas/tools/build.mjs --out <폴더>
 <밖>/atlas/<판>/atlas.mjs        엔진 묶음
 <밖>/atlas/<판>/manifest.json    판 · 커밋 · 파일마다 바이트 · sha256 · gzip 바이트 · 제3자 코드
 <밖>/atlas/<판>/LICENSES.txt     묶음에 든 제3자 코드의 고지(있을 때만 — ts-fsrs가 들면 MIT 고지)
+<밖>/atlas/<판>/map/index.json   지도 전체 색인(서버 접기 · 도구) — 엔진 묶음과 따로(설계 §9)
+<밖>/atlas/<판>/map/items/<은행>.json   은행 조각 — 제품은 자기 은행만 받는다
+<밖>/atlas/<판>/map/units.json · words.json   단위(문형 · 생활 · 한글) · 낱말 2,000
 ```
 
 - **판 이름.** `--release`면 `package.json`의 판(`1.2.3` 꼴)이다 — 이 패키지에 커밋하지 않은 고침이 없고, HEAD가 `origin/master`에 들었고, 판이 `0.0.0`이 아닐 때만 낸다(꼬리표는 쓰지 않는다 — 바로올리기가 꼬리표를 올리지 않아 다른 세션이 확인할 수 없다). 그 밖은 `<판>-dev.<커밋 앞 7자>`(고침이 있으면 `.dirty`)라 공개 판과 섞이지 않는다.

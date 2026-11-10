@@ -93,6 +93,7 @@ const REVIEW_SCHEMA = {
     units: UNIT_LIST,
     why: { type: 'string' },
     note: { type: 'string' },
+    outside: { type: 'array', items: { type: 'string' } },
   },
 };
 
@@ -197,13 +198,18 @@ function parseBatch(results, rows, kind) {
 // 빼므로(실제 값은 그보다 훨씬 작다). 덩이마다 { 배치id, 키이름 }을 남긴다(옛 꼴 — 맨 위에 배치id 하나 — 도 읽는다).
 const batchesOf = made => made.batches ?? [{ 배치id: made.배치id, 키이름: made.키이름 }];
 
-async function sendBatches(requests, { size, from }, use, 클로드) {
-  const batches = [];
+// 덩이를 보낼 때마다 기록 파일을 다시 쓴다 — 뒤 덩이가 한도로 멈춰도 앞 덩이(이미 보내져 돈이 드는 것)를 잃지 않는다
+// (11-10 실측: 120개씩 다섯째 덩이에서 멈춰 넷째까지의 일괄 번호가 기록에 없었다 — 사용 기록에서 찾아 붙였다).
+async function sendBatches(requests, { size, from, before, batchFile }, use, 클로드) {
+  const batches = [...before];
   for (let at = from; at < requests.length; at += size) {
     const part = requests.slice(at, at + size);
     const made = await 클로드.배치보내기(part, { 용도: use });
     batches.push({ 배치id: made.배치id, 키이름: made.키이름, from: at, count: part.length });
-    console.log(`일괄 ${made.배치id} · 키 ${made.키이름} · 요청 ${part.length}`);
+    writeJson(batchFile, { batches, at: new Date().toISOString(), requests: requests.length });
+    console.log(
+      `일괄 ${made.배치id} · 키 ${made.키이름} · 요청 ${part.length} — 다음은 --부터 ${at + part.length}`,
+    );
   }
   return batches;
 }
@@ -235,9 +241,8 @@ async function claudeStep(kind, name, argv) {
     if (before && !from) throw new Error(`이미 보낸 일괄이 있다: ${batchFile} (--부터 N으로 잇기)`);
     const requests = requestsFor(kind, packet, dir);
     const size = Number(argv[argv.indexOf('--나눔') + 1]) || requests.length;
-    const sent = await sendBatches(requests, { size, from }, use, 클로드);
-    const batches = [...(before ? batchesOf(before) : []), ...sent];
-    writeJson(batchFile, { batches, at: new Date().toISOString(), requests: requests.length });
+    const already = before ? batchesOf(before) : [];
+    await sendBatches(requests, { size, from, before: already, batchFile }, use, 클로드);
     return;
   }
   const made = readJson(batchFile);
@@ -274,6 +279,8 @@ const ARGON_SCHEMA = {
           verdict: { type: 'string', enum: ['pass', 'fix'] },
           units: UNIT_LIST,
           why: { type: 'string' },
+          note: { type: 'string' },
+          outside: { type: 'array', items: { type: 'string' } },
         },
       },
     },
@@ -321,6 +328,9 @@ async function argonGroup(group, context) {
     error,
     at: new Date().toISOString(),
   });
+  // 쓰기 전에 파일의 결과와 합친다 — 같은 묶음을 다른 실행이 함께 쓰고 있어도(멈춘 줄 안 앞 실행 등) 서로의 결과를 덮지 않는다.
+  const onDisk = fs.existsSync(context.outFile) ? readJson(context.outFile) : null;
+  if (onDisk) context.state.results = { ...onDisk.results, ...context.state.results };
   writeJson(context.outFile, context.state);
   const missing = group.filter(row => !context.state.results[row.key]).length;
   console.log(`아르곤 묶음 ${group.length} · 빠짐 ${missing}${error ? ` · ${error}` : ''}`);
@@ -386,7 +396,8 @@ function verdictsOf(dir, packet) {
 
 // 두 검수의 일치: 둘 다 통과면 초안, 둘 다 고쳤고 고친 단위 목록(차례까지)이 같으면 그 목록. 그 밖은 판정(세션)이 정한다.
 const sameUnits = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-export function agreementOf(v) {
+// 일치했어도 지도 밖 단위가 있으면 판정으로 돌린다 — 반영이 멈춘 채 풀 길이 없지 않게(Fable 최종 P2-3).
+function agreedUnits(v) {
   if (v.first?.verdict === 'pass' && v.second?.verdict === 'pass')
     return { units: v.draft, verdict: 'pass' };
   if (
@@ -397,12 +408,19 @@ export function agreementOf(v) {
     return { units: v.first.units, verdict: 'fixed' };
   return null;
 }
+export function agreementOf(v, known = null) {
+  const agreed = agreedUnits(v);
+  if (!agreed || !Array.isArray(agreed.units)) return null;
+  if (known && agreed.units.some(unit => !known.has(unit))) return null;
+  return agreed;
+}
 
 function judgeReport(name) {
   const dir = path.join(WORK, name);
   const packet = readJson(path.join(dir, 'packet.json'));
   const all = verdictsOf(dir, packet);
-  const open = all.filter(v => !agreementOf(v));
+  const known = new Set(labelsOf(dir).keys());
+  const open = all.filter(v => !agreementOf(v, known));
   const lines = [`# ${name} 판정할 줄 ${open.length}/${all.length}`, ''];
   for (const v of open) {
     lines.push(`## ${v.row.key}`, '', itemText(v.row), '');
@@ -419,14 +437,15 @@ function judgeReport(name) {
   console.log(`${path.join(dir, 'judge.md')} · 판정할 줄 ${open.length}/${all.length}`);
 }
 
-// judge.json: { 열쇠: { units, why } } — 엇갈린 줄마다 세션(Opus)이 정한 값. units가 빈 목록이면 태그를 달지 않는다(계열 단위로 둔다).
+// judge.json: { 열쇠: { units, why } } — 엇갈린 줄마다 판정(Opus)이 정한 값. units가 빈 목록이면 단위 없는 줄을 쓴다(계열 단위로 돈다).
 function lineFor(v, judge, known, { name, at }) {
-  const agreed = agreementOf(v);
+  const agreed = judge[v.row.key] ? null : agreementOf(v, known);
   if (!agreed && !judge[v.row.key]) throw new Error(`판정이 없다: ${v.row.key} — judge.json`);
   const chosen = agreed ? agreed.units : judge[v.row.key].units;
   for (const unit of chosen ?? [])
     if (!known.has(unit)) throw new Error(`지도에 없는 단위: ${v.row.key} ${unit}`);
-  if (!chosen?.length) return null;
+  // 빈 목록도 줄로 남긴다 — 줄이 없으면 조립이 제품 conceptIds로 되돌아간다(태그 자료 > 제품). 빈 줄 = 계열 단위로 돈다.
+  if (!Array.isArray(chosen)) throw new Error(`판정 단위 목록이 없다: ${v.row.key}`);
   return {
     units: chosen,
     by: v.row.draft?.by ?? 'draft:opus',

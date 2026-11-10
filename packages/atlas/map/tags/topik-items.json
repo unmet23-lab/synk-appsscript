@@ -1,0 +1,3235 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "topik-items.ti-l-a-014.v1": {
+      "units": [
+        "ko.word.w0039",
+        "ko.word.w0098",
+        "ko.word.w0330"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 장소 문항은 정답 보기 「은행」을 알아보는 것이 주 단위, 가게와 가르는 단서 「돈을 바꾸다」를 함께 둠(두 의견 단위는 같고 순서만 다름)",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-a-024.v1": {
+      "units": [
+        "ko.word.w1476",
+        "ko.word.w0648"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 고치다가 ①을 ②·④와 가르고, ③(새 시계보다 돈이 더 듦)은 「싸요」를 알아들어야 걸러짐. 쓰다는 ①·②·④ 어디서도 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-a-025.v1": {
+      "units": [
+        "ko.word.w0375",
+        "ko.word.w0066"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 오후와 아침이 ③과 ①·④를 가름. 사다는 모든 보기에 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-a-026.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G304"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 대본의 「보지 마세요」(-지 말다)와 정답 보기 「보지 않는」(-지 않다)이 ④ 「보는 것이 좋습니다」와 가르는 바로 그 부분이라 둘 다 필요",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-a-028.v2": {
+      "units": [
+        "ko.word.w0531",
+        "ko.word.w1573"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 매일이 ①(주말에 한 번에)을, 조금씩이 ③(오래)을 가름. 대본·정답에 든 말은 「조금」이 아니라 「조금씩」",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-b-001.v1": {
+      "units": [
+        "ko.grammar.G209",
+        "ko.grammar.G313"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-b-003.v2": {
+      "units": [
+        "ko.grammar.S105",
+        "ko.grammar.S102"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「열두 시까지 꼭」(까지)이 ①·②를, 「주말에도 같아요」(도)가 ③을 가름. -(으)면은 「까지 꼭 들어오세요」로 대신되고, 주말은 보기에 다 있어 몰라도 짝지을 수 있음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-005.v1": {
+      "units": [
+        "ko.grammar.G509",
+        "ko.word.w0660",
+        "ko.word.w0160"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 경험 물음 -(으)ㄴ 적이 있다가 주 단위, ①·②는 「아니요」와 뒷말의 어긋남, ③은 「만들다」로 걸러짐. -아/어 보다는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-006.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.grammar.G311"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-012.v1": {
+      "units": [
+        "ko.grammar.G404",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「들어 줄 수 있어요?」가 부탁임을 알면 ①(사과 받기)도 걸러져 「죄송한데」의 -(으)ㄴ데는 따로 필요 없음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-013.v2": {
+      "units": [
+        "ko.grammar.G311"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 제안 「갈까요?」만 알아들으면 ②가 나오고 ④(그림 칭찬)도 제안에 맞지 않아 걸러짐, -(으)러 가다는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-015.v1": {
+      "units": [
+        "ko.grammar.G404",
+        "ko.word.w0519"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 부탁 꼴 -아/어 주다가 주 단위, 무엇을 해 달라는지(찍다)를 알아야 ①(찍은 뒤 말)·④와 가름. -겠-은 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-018.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G310"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 조건 -(으)면이 주 단위, ③(여자와 손님을 바꿈)은 「저에게」(에게)로 걸러짐. 손님은 보기에 글로 있어 몰라도 짝지을 수 있음, -(으)세요는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-019.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G305"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-021.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G209"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 조건 -(으)면이 주 단위, ③(박 선생님이 계시면)과 ④(다음 주에도 옴)는 「안 계시면」·「안 오세요? 네」의 안 부정을 알아들어야 걸러짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-022.v2": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 조건과 결과의 짝(표가 없으면↔버스로 가요)을 -(으)면으로 맞대면 ①(있으면)·③(안 감)이 걸러짐. 같은 짝짓기 문항(ti-l-c-024 · ti-l-d-038)과 같게 낱말은 붙이지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-024.v1": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 조건과 행동의 짝(배가 고프면↔드세요, 더우면↔창문)은 들려준 말과 보기를 맞대 -(으)면으로 가려지고, 낱말 넷을 다 붙이는 것은 넘침",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-026.v1": {
+      "units": [
+        "ko.word.w0278",
+        "ko.word.w0660"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 까닭 「컴퓨터가 안 됐어요」가 ③을 ①·②와 가르고 ①은 「어려웠어요? 아니요」로 걸러짐. -아/어서는 네 보기에 다 있고 못 부정도 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-027.v1": {
+      "units": [
+        "ko.grammar.G209"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「배가 안 고파요? 아니요, 배는 고파요」의 안 부정이 ①·④를 거르는 바로 그 단위. -아/어서는 네 보기에 다 있고, 고프다·일은 보기와 짝지어 몰라도 되며 ②·③을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-029.v1": {
+      "units": [
+        "ko.word.w0512",
+        "ko.word.w0082",
+        "ko.word.w0224"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 부모님이 오다가 ①(남자가 고향에 감)을, 이번이 ③(다음 주말)을 가름. -아/어서는 ①~③에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-031.v1": {
+      "units": [
+        "ko.word.w0117",
+        "ko.word.w0660"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ④ 「할머니에게 김치를 받아서」는 「할머니가 김치를 주셨어요」를 받다로 바꿔 말한 것이라 받다가 주 단위, 해설이 짚은 함정 ①(생일)은 「생일이에요? 아니요」로 걸러짐(1차 이유 글). 이/가는 확신이 없어 빼고 -아/어서는 ①·③·④에 다 있음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-033.v1": {
+      "units": [
+        "ko.grammar.G306",
+        "ko.word.w0357"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 순서의 -고가 주 단위, 「걸어요」(ㄷ 불규칙)를 보기의 「걷고」와 이으려면 걷다를 알아야 ③·④가 갈림. 뛰다·먼저는 보기와 꼴로 짝지어져 꼭 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-c-034.v1": {
+      "units": [
+        "ko.grammar.G306",
+        "ko.word.w0279",
+        "ko.word.w0187"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 순서의 -고가 주 단위, 「먼저 … 그다음에」가 ②를, 「다음 주」가 ④를 거름. 오늘은 다음 주만 알아들으면 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-001.v1": {
+      "units": [
+        "ko.word.w0040",
+        "ko.word.w0274"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 우체국과 공항(비행기)을 가르는 단서 보내다는 두 의견이 같음. 상자는 지도에 없고 주소는 보내다만으로 답이 나와 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-002.v1": {
+      "units": [
+        "ko.word.w1484"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 맡기다가 세탁소와 옷 가게(사기)를 가르는 단서. 세탁소·빨다는 지도에 없어 쓸 수 없음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-003.v1": {
+      "units": [
+        "ko.word.w0416"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「사진」을 알아듣고 보기 사진관과 이으면 답이 나옴. 사진관은 지도에 없고 찍다는 사진만으로 대신됨",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-004.v1": {
+      "units": [
+        "ko.word.w1514",
+        "ko.word.w1300",
+        "ko.word.w0291"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 부동산과 「살 방을 구하고 있어요」의 구하다·방은 두 의견이 같음. 집은 호텔·기숙사와 가르는 데 더 보태는 것이 없어 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-005.v1": {
+      "units": [
+        "ko.word.w0389",
+        "ko.word.w0367"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 건강과 몸 상태 단서 아프다는 두 의견이 같음. 피곤하다는 같은 구별을 겹쳐 하므로 둘 안에서 멈춤",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-006.v1": {
+      "units": [
+        "ko.word.w1211",
+        "ko.word.w0511",
+        "ko.word.w0334"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 정답 위치와 있는 곳을 묻고 답하는 근처·옆",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-007.v1": {
+      "units": [
+        "ko.word.w1910",
+        "ko.word.w0479"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 휴가와 「회사를 쉬어요」의 쉬다로 충분. 며칠은 몰라도 주제가 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-008.v2": {
+      "units": [
+        "ko.word.w1230"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 보기 이웃을 알아보는 것이 핵심. 위층은 지도에 없고 옆은 다른 단서(위층 아이들)로도 대신돼 꼭 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-009.v1": {
+      "units": [
+        "ko.word.w0429",
+        "ko.word.w0221",
+        "ko.grammar.G209"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ④ 「안경 값으로 십오만 원을 냅니다」를 대본과 잇는 값·내다(2차)에, 해설이 짚은 ③(금요일 오전)을 거르는 「오전에는 문을 안 열어요」의 안 부정(1차)을 더함. 다른 액수 오답이 없어 숫자 표현은 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-010.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0204"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「두 번」(숫자 표현)이 정답을 내고 ②(여섯 시↔일곱 시 반)도 거르므로 G212가 주 단위, 횟수의 번을 둘째로. 일주일·배우다는 보기와 같은 말로 짝지어져 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-011.v2": {
+      "units": [
+        "ko.word.w0429",
+        "ko.word.w0221"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 대본의 「값은 육십만 원이에요」를 정답 ② 「육십만 원을 낼 겁니다」와 잇는 값·내다. 다른 액수를 든 오답이 없어 육십은 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-012.v1": {
+      "units": [
+        "ko.word.w0067",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「점심을 먹고 올게요」의 점심이 정답 ③을 ④(가게에서 기다림)·①과 가르는 주 단위, 「한 시」와 ②의 십만↔십이만은 숫자 표현으로 가림. 오다·-고·다시는 보기와 짝지어 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-013.v1": {
+      "units": [
+        "ko.word.w0058",
+        "ko.word.w0162"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견이 같이 둔 「문 앞」이 정답 ③을 경비실(①·④)과 가르는 단위. 놓다·두다는 「문 앞」만으로 짝지어지고, -아/어 주세요도 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-014.v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.grammar.G405"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「오늘만 … 켜요」의 만이 ①과 함정 ②를 가르는 주 단위, 정답 보기의 「켜려고 합니다」는 두 의견이 같이 둔 -(으)려고 하다. 에어컨·켜다는 ①②④에 다 있고 안 부정은 확신이 없어 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-015.v1": {
+      "units": [
+        "ko.word.w0066",
+        "ko.word.w0999",
+        "ko.word.w1116"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 아침이 ③(오후), 그대로가 ②(시간을 바꿈), 대신이 ①(공원)을 각각 가름. -기로 하다·바뀌다는 몰라도 「대신」·「동물원 앞에서 만나요」로 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-016.v1": {
+      "units": [
+        "ko.word.w0862",
+        "ko.word.w0459"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「칠 층에서 해요」의 칠·층이 정답 ②를 확인하고 ③(오 층)과 가름. -기 전에·-는데는 정답과 따로 선 오답만 거르므로 확신이 없어 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-017.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G612"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 「주문하지 말고 거기로 갈게요」의 -지 말다·-(으)ㄹ게요",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-018.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G612",
+        "ko.grammar.G304"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「고치지 말고 새로 살게요」의 -지 말다·-(으)ㄹ게요에 더해, 정답 보기 「바꾸지 않고」가 ①(바퀴를 바꿀 겁니다)과 가르는 바로 그 부분이라 -지 않다가 필요",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-019.v1": {
+      "units": [
+        "ko.grammar.G405",
+        "ko.grammar.G612"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 「계획을 바꿔서 오늘 밤에」는 「하려고 했어요」와 「오늘 밤에 할게요」로 확인됨. 부터·까지는 정답과 따로 선 ③·④만 거르므로 넷을 채우지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-020.v1": {
+      "units": [
+        "ko.word.w0881",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ④ 「여덟 명」이 주 단위, 해설이 짚은 ③(일곱 시)은 「일곱 시 반」의 숫자·시간 표현으로 걸러짐. 못 부정은 해설 밖 ①만 거르고 바꾸다는 답을 가르지 않아 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-021.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.grammar.G306",
+        "ko.word.w0279"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 보기 ①·②가 같은 「-은 다음에」 꼴로 순서만 달라 S340이 주 단위, 들려준 순서를 잡는 -고·먼저(2차)를 둠. 빨래·돈은 보기와 같은 말로 짝지어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-022.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.word.w0279",
+        "ko.grammar.G306"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 보기 넷이 「-은 다음에」 순서로 갈려 S340이 주 단위, 「먼저 … 반쯤」과 「꽃을 넣고 흙을 위까지」(-고)가 ①을 거름. 1차의 G279는 없는 id(이유 글은 먼저 w0279)이고 흙은 ①·③에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-023.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.word.w0279"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ① 「예약한 다음에 신청하러」는 「먼저 … 예약하세요」로 확인됨. -기 전에는 해설이 짚지 않은 ④만 거르므로 같은 꼴의 ti-l-d-021처럼 넣지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-024.v1": {
+      "units": [
+        "ko.grammar.G308",
+        "ko.grammar.S340",
+        "ko.word.w0263",
+        "ko.word.w0271"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「내려서 … 갈아타세요」(-아/어서)와 정답 「내린 다음에」(-은 다음에)에 더해, 해설이 짚은 ①(공원 앞에서 버스를 탑니다)은 내리다·타다를 알아들어야 걸러짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-025.v1": {
+      "units": [
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ④ 「말릴 수 없어서」는 「말리기가 힘들어요」를 -(으)ㄹ 수 없다로 바꿔 말한 것. -아/어서는 ①·②·④에 다 있어 답을 가르지 않아 주 단위에서 내리고(다른 까닭 문항과 같게), 가르는 낱말 말리다는 지도에 없음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-026.v1": {
+      "units": [
+        "ko.word.w0115",
+        "ko.word.w0276"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ③ 「밤에 일하는 것이 힘들어서」는 「밤에 일해야 해서 너무 피곤했어요」를 피곤하다·밤으로 알아들어야 확인됨(1차 낱말). -아/어서는 보기 여럿에 같이 붙어 답을 가르지 않고(다른 까닭 문항과 같게), -아/어야 하다(2차)도 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-027.v1": {
+      "units": [
+        "ko.word.w1346",
+        "ko.word.w1048"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「반대로 타서」를 정답의 「다른 방향」과 잇는 반대가 주 단위, 방향이 함께 필요(1차). -아/어서는 ①~③에 다 있어 답을 가르지 않으므로 다른 까닭 문항과 같게 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-028.v1": {
+      "units": [
+        "ko.word.w0831",
+        "ko.grammar.G405",
+        "ko.grammar.S115"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「너무 짜요」의 짜다가 주 단위, 정답의 -(으)려고, 해설이 짚은 ②(돈을 아끼려고)는 「돈 때문이 아니에요」(이/가 아니다)로 걸러짐. -아/어야 하다는 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-029.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「물건을 사시면 … 안 내셔도 돼요」의 -(으)면·-아/어도 되다가 정답 ②와 해설이 짚은 ④를 가름. 까지는 해설 밖 ③만 거름",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-030.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G402",
+        "ko.grammar.G209",
+        "ko.grammar.G304"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 조건 「빨았으면 바꿀 수 없어요」(-(으)면 · -(으)ㄹ 수 없다)에 더해, 함정 ②(빨았지만 바지)와 정답 ③(빨지 않은 티셔츠)을 가르는 것은 「티셔츠는 안 빨았어요」(안 부정)와 「빨지 않은」(-지 않다)",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-031.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 조건 「학생증이 있으면」(-(으)면)에 더해, 해설이 짚은 ①(아이 표를 사지 않아도 됩니다)은 「안 사셔도 돼요」(-아/어도 되다)의 조건을 알아들어야 걸러짐. -(으)ㄹ 수 있다는 정답 보기를 읽는 데 꼭 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-032.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.word.w1043",
+        "ko.grammar.G403",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「여섯 명이 넘으면 큰 자리를 쓰셔야 해요」의 -(으)면·넘다·-아/어야 하다와, 다섯+두=일곱을 여섯과 견주는 숫자 표현이 모두 정답 ④와 함정 ①을 가름",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-033.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「들어가실 수 없어요 / 있어요」(-(으)ㄹ 수 있다/없다)가 ①·④와 정답을 가르는 주 단위, 그 조건 「시작하면 / 되면」. 정답의 「기다려야」는 오답과 가르는 말이 아니라 -아/어야 하다는 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-034.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.word.w0154"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 조건 「이 동네에 살면」이 주 단위, 해설이 짚은 ②(회사가 다른 동네)는 값이 사는 곳으로 정해진다는 살다로 걸러짐(1차가 후보의 「살(의)」을 살다로 바로잡음). 동네는 ①·②에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-035.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G404"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「상자에 넣으면 삼천 원」(-(으)면)과 여자의 요청 「상자에 넣어 주세요」가 정답 ③을 확인하고 해설이 짚은 ①(종이 포장)도 거름. -(으)면 안 되다는 해설 밖 ④만 거름",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-036.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G402",
+        "ko.grammar.S107"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 조건 -(으)면, 「앉으실 수 없어요」, 「밖에 있는 자리만」이 정답 ④와 ①을 가름. 밖은 보기와 같은 말로 짝지어져 따로 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-037.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-038.v1": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「조금 오면 체육관 / 많이 오면 다음 주 토요일」의 짝을 -(으)면으로 맞대면 ②가 나오고 ①·④가 걸러짐. 짝짓기 문항(ti-l-c-024)과 같게 낱말 셋은 붙이지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-039.v1": {
+      "units": [
+        "ko.word.w0096",
+        "ko.grammar.G408"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 해설이 짚은 ①(인터넷)과 정답 ③을 가르는 「가게에 가서 사요」의 가게가 주 단위, 「앉아 보고」를 정답의 「확인하고」와 잇는 -아/어 보다(2차). 직접은 보기와 같은 말이고 -어도는 해설 밖 ④만 거름",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-d-040.v1": {
+      "units": [
+        "ko.word.w0520",
+        "ko.word.w0590"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 「가볍게 싸는 것」은 「가방이 무거우면 …」과 가볍다↔무겁다로 이어짐. -(으)면·-(으)니까(2차)는 답을 가르지 않고, 짐·조금은 같은 연결을 겹쳐 하므로 둘에서 멈춤",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-001.v1": {
+      "units": [
+        "ko.word.w0097",
+        "ko.word.w0395"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 화제 「작은 시장이 열립니다」의 시장이 주 단위, 해설이 짚은 ②(버리는 날)는 「팔 수 있습니다」의 팔다로 걸러짐. 빈 목록(2차)보다 꼭 필요한 낱말이 분명함",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-002.v1": {
+      "units": [
+        "ko.word.w0187",
+        "ko.word.w0607",
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 「일요일에 열립니다」는 「비가 오면 … 다음 날」을 토요일의 다음 날로 알아들어야 나옴(다음·일요일·-(으)면). -아/어도 되다는 ①만 거르는데 ①은 「팔고 싶으면」과 꼴부터 달라 꼭 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-003.v1": {
+      "units": [
+        "ko.word.w1646"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 「오늘 여행 순서를 안내하려고」의 순서는 대본에 없는 말이라 알아봐야 차례대로 말한 담화와 이어짐(1차). -(으)ㄴ 후에는 여러 차례 표지 가운데 하나라 몰라도 답이 나와 뺌, 빈 목록(2차)보다 순서가 꼭 필요",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-004.v1": {
+      "units": [
+        "ko.grammar.G406",
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 보기 ①·④의 -기 전에/-(으)ㄴ 후에가 주 단위, 「배에서 내리면 시장을 구경」의 -(으)면이 섬→시장 순서를 줌. 섬·시장은 보기와 같은 말로 짝지어져 따로 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-005.v1": {
+      "units": [
+        "ko.word.w0274"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「사신 물건을 집까지 보내 드립니다」의 보내다가 담화의 화제이자 정답의 핵심(1차 주 단위). 집·까지는 보기와 같은 말로 짝지어져 빼고, 빈 목록(2차)보다 보내다가 꼭 필요",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-006.v1": {
+      "units": [
+        "ko.word.w0189",
+        "ko.grammar.G212",
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 정답은 「네 시 전에 계산하시면」에 「세 시」가 드는지 판단해야 나와 전·시각 표현·-(으)면이 필요. -아/어야 하다는 ③에만 있고 ③도 넘으면/안 되면 조건으로 갈림",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-007.v1": {
+      "units": [],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차(빈 목록) — 정답 「새 직원들이 오늘 할 일을 안내하려고」는 담화 전체가 일정이라는 데서 나오고, 직원·오늘(1차)은 몰라도 ①~③이 담화 요지와 맞지 않아 답이 나옴. 꼭 필요한 단위가 없어 계열 단위로 돔",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-008.v1": {
+      "units": [
+        "ko.grammar.G406",
+        "ko.grammar.G401"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-009.v1": {
+      "units": [
+        "ko.word.w0494"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 네 보기에 모두 「이사」가 있어 정답을 가르는 것은 「준비」. 이사(2차)는 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-010.v1": {
+      "units": [
+        "ko.grammar.G406"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 「짐을 싸기 전에 … 옷부터 정리」의 -기 전에가 정답 ①을 가름",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-011.v1": {
+      "units": [
+        "ko.word.w1821",
+        "ko.word.w0941"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「신청하고 싶은데요」의 신청이 주 단위, 정답 「신청하는 방법」은 절차를 차례로 말한 담화를 방법으로 묶어 알아봐야 ④(시작하는 날)와 갈림. 수업은 ②·④에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-012.v1": {
+      "units": [
+        "ko.grammar.G406"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「반을 알려 드린 후에 내시면 돼요」의 -(으)ㄴ 후에가 정답 ④를 ①·②와 가름. 반·돈은 보기와 같은 말로 짝지어지고, 지도의 반(w0442)은 「반쯤」(절반)과 같은 항목이라 여기 「반」(학급)에 붙이기 어려움",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-013.v1": {
+      "units": [
+        "ko.word.w0355",
+        "ko.word.w0070"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「내일 오후에 갑자기 회의가 생겼어요」의 회의가 주 단위(두 의견 같음), 해설이 짚은 ②(다음 주 화요일 회의)는 내일로 걸러짐. 오후는 해설 밖 ③만 거르고, -아/어야 하다는 정답 보기에만 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-016.v1": {
+      "units": [
+        "ko.grammar.G304",
+        "ko.word.w0479",
+        "ko.word.w0282"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ③은 「지금은 일요일에 쉬어요」를 「문을 열지 않습니다」로 바꿔 말한 것이라 -지 않다(두 의견의 주 단위)와 쉬다·열다가 필요. 일요일은 ③·④에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-017.v2": {
+      "units": [
+        "ko.word.w0117"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「택배를 받아 주셨어요」의 받다가 정답 ②를 ①(부탁)·③(잘못 가져감)과 가르는 주 단위(1차). -아/어서는 네 보기에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-019.v1": {
+      "units": [
+        "ko.word.w1465",
+        "ko.word.w0153"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「차가 고장 났어요」를 정답 「차에 문제가 생겨서」와 잇는 고장·문제. ①(길이 막혀서)은 앞의 「아니요」로 걸러져 -(으)ㄴ/는데는 꼭 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-020.v1": {
+      "units": [
+        "ko.word.w0314",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ①은 「두 시에는 회사에 있어요」를 「두 시에 집에 없습니다」로 바꾼 것이라 회사와 시각 표현이 필요하고, ②(두 시에 감)·③(세 시)도 시각으로 갈림. 빈 목록(2차)보다 꼭 필요한 단위가 분명함",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-021.v1": {
+      "units": [
+        "ko.word.w0128",
+        "ko.word.w0201"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ④ 「아는 사람이 없어서」는 「아는 사람이 한 명도 없었어요」의 없다와, 그것이 까닭임을 잡아 주는 「그래서 모임에 들어갔군요」로 확인됨. -아/어서(2차)는 네 보기에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-023.v1": {
+      "units": [
+        "ko.word.w0548",
+        "ko.word.w0090"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ① 「지하철이 너무 복잡해서」는 「사람이 너무 많아서요」를 복잡하다로 바꾼 것이라 복잡하다·많다가 필요(1차 낱말). -아/어서는 네 보기에 다 있어 답을 가르지 않으므로 다른 까닭 문항과 같게 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-025.v1": {
+      "units": [
+        "ko.grammar.G403",
+        "ko.grammar.G308"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-l-e-027.v1": {
+      "units": [
+        "ko.word.w0117",
+        "ko.word.w0553"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「일한 돈을 통장으로 받아야 해요」의 받다가 ③(식당에 돈을 냄)·④(카드)와, 식당이 ①(고향)과 정답 ②를 가름. -아/어야 하다(2차)는 ①~③에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-a-030.v1": {
+      "units": [
+        "ko.grammar.G305",
+        "ko.grammar.G313",
+        "ko.grammar.G209",
+        "ko.grammar.G304"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 해설이 「안」과 「못」이 무엇을 부정하는지를 묻는 문항이라, 정답 ④의 못 부정·-지 못하다에 더해 ①(안 가지고)·③(전화하지 않았습니다)을 거르는 안 부정·-지 않다가 모두 필요",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-a-031.v2": {
+      "units": [
+        "ko.grammar.G305",
+        "ko.grammar.G313"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-001.v1": {
+      "units": [
+        "ko.word.w0279",
+        "ko.word.w0522"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「이웃을 보면 먼저 인사를 합니다」의 먼저·인사가 정답 ③을 ①·④와 가름. 이웃(2차)은 ②~④에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-002.v1": {
+      "units": [
+        "ko.grammar.G406"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 지문과 정답의 「가기 전에」가 답을 가름. 2차의 적다(w0368)는 「적은/많은」의 적다라 「적어 두다」(쓰다)와 다른 말이고, 필요·물건은 보기 여럿에 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-003.v2": {
+      "units": [
+        "ko.word.w0240",
+        "ko.word.w1217",
+        "ko.word.w0305"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 ④ 「다른 사람들과 같이」를 지문의 모임과 잇는 같이가 주 단위, 해설이 짚은 ③은 혼자로 걸러짐. -(으)니까(1차)는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-004.v1": {
+      "units": [
+        "ko.word.w0567",
+        "ko.word.w0158"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 두 의견이 같이 둔 물어보다·모르다가 정답 ②(모르는 것은 바로 물어보기)를 ①·③과 가름. 바로는 지문과 정답에 같은 말로 있어 따로 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-005.v1": {
+      "units": [
+        "ko.word.w1906",
+        "ko.word.w0368"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ③ 「짐을 적게」는 지문의 「짐을 조금만」을 적다로 바꾼 것이라 짐·적다가 필요. 조금·가지다(2차)는 같은 연결을 겹치거나 보기에 같은 말로 있어 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-006.v1": {
+      "units": [
+        "ko.word.w0240",
+        "ko.grammar.S212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ① 「가족이 같이 식사하는」의 같이가 ②(따로)와 가르는 주 단위(2차), 해설이 짚은 ④(다 먹은 후에 이야기)는 「먹으면서」의 -(으)면서로 걸러짐(1차). 가족·식사는 보기 여럿과 같은 내용이고 -기로 하다는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-010.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.grammar.S104",
+        "ko.grammar.S105"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 「10시부터 2시까지 … 탈 수 없으니까」의 부터·까지·-(으)ㄹ 수 없다가 정답 ③과 해설이 짚은 ①(2시에 시작)을 가름. 시각은 숫자로 적혀 있어 숫자 표현(1차)을 따로 둘 근거가 약함",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-015.v1": {
+      "units": [
+        "ko.word.w1682",
+        "ko.word.w0542"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 「차가울」의 차갑다가 주 단위, 해설이 짚은 ①(따뜻할)은 「몸이 따뜻해지고」와 맞대 따뜻하다로 걸러짐(두 의견 같음). 셋째(1차 -어지다 · 2차 -기 전에)는 엇갈리고 둘 다 몰라도 대조가 잡혀 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-022.v1": {
+      "units": [
+        "ko.word.w0201",
+        "ko.word.w0206",
+        "ko.word.w0187",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 이음말 그래서·그런데가 (라)→(나) 순서를, 해설이 짚은 「다음부터는」이 (다)를 첫 문장에서 빼고, 「빌릴 수 없게」가 늦게 돌려준 결과임을 잡아 줌(2차는 다음이 빠짐)",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-033.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.grammar.G406",
+        "ko.word.w0279"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 정답 ③ 「찍은 다음에」의 -은 다음에가 주 단위(1차), 지문의 「먼저 … 그다음에」의 먼저(2차), ①(가기 전에)·②(먹은 후에)를 거르는 -기 전에/-(으)ㄴ 후에(두 의견 같음)",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-c-034.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.grammar.G406"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ① 「간 다음에」의 -은 다음에가 주 단위, 해설이 짚은 ②는 「영화를 본 후에는」(-(으)ㄴ 후에)으로 걸러짐. 2차의 다음은 -은 다음에와 겹침",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-d-003.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G403"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-014.v1": {
+      "units": [
+        "ko.grammar.G308",
+        "ko.grammar.G307"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-016.v1": {
+      "units": [
+        "ko.word.w0201",
+        "ko.grammar.G305"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「회의가 아주 길었어요. 그래서 점심을 2시에」의 그래서가 정답 ④의 까닭을 잡고, 해설이 짚은 ①(시장에 가서)·③은 「못 갔어요」로 걸러짐. -아/어서는 ①·②·④에 다 있어 답을 가르지 않으므로 다른 까닭 문항과 같게 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-017.v2": {
+      "units": [
+        "ko.grammar.G304",
+        "ko.word.w0831",
+        "ko.word.w0777"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 해설이 짚은 「맵지 않았지만」의 -지 않다가 주 단위이고 ①(매워서)과 정답 ②(짜서)를 가르는 맵다·짜다가 필요. -아/어서는 ①·②에 똑같이 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-018.v1": {
+      "units": [
+        "ko.grammar.G306",
+        "ko.word.w0279",
+        "ko.word.w0187",
+        "ko.word.w0384"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 보기의 -고 순서가 주 단위, 정답 ③(의사 → 약국)은 「그다음에 … 마지막에」로, 해설이 짚은 ④(먼저 약국)는 먼저·마지막으로 가려짐. 같은 틀의 ti-r-e-019 · 020과 같게 순서 낱말 셋을 둠",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-019.v1": {
+      "units": [
+        "ko.grammar.G306",
+        "ko.word.w0279",
+        "ko.word.w0187",
+        "ko.word.w0384"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 보기의 -고 순서가 주 단위, 정답 ①(점심 → 사진)은 「그다음에 … 마지막에」로, 해설이 짚은 ④(먼저 사진)는 먼저·마지막으로 가려짐. 같은 틀의 문항과 같게 다음도 둠",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-020.v1": {
+      "units": [
+        "ko.grammar.G306",
+        "ko.word.w0279",
+        "ko.word.w0187",
+        "ko.word.w0384"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 보기의 -고 순서와 지문의 순서 낱말 먼저·다음·마지막",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.ti-r-e-026.v1": {
+      "units": [
+        "ko.grammar.S219",
+        "ko.word.w0608",
+        "ko.word.w0487"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 지문의 까닭 「값이 비싸기 때문이에요」의 -기 때문에(두 의견의 주 단위)와 비싸다(1차), 해설이 짚은 ①(맛이 없어서)을 거르는 「맛있지만」의 맛있다(2차). -아/어서는 네 보기에 다 있어 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-001.v1": {
+      "units": [
+        "ko.grammar.G305",
+        "ko.word.w0620"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-002.v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.word.w0086",
+        "ko.word.w0973"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-003.v1": {
+      "units": [
+        "ko.word.w0375",
+        "ko.grammar.S104",
+        "ko.word.w0051"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-004.v2": {
+      "units": [
+        "ko.word.w0330",
+        "ko.word.w0252",
+        "ko.word.w0170"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-005.v2": {
+      "units": [
+        "ko.grammar.G305",
+        "ko.word.w0238",
+        "ko.word.w0070"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「아직 못 받아서」의 못 부정·아직이 ①을, 해설이 짚은 ②(회의가 끝났으니까)는 내일로 걸러짐. 보내다는 네 보기에 다 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-006.v2": {
+      "units": [
+        "ko.word.w0776",
+        "ko.word.w1160",
+        "ko.word.w0097"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「정류장도 시장 앞으로 옮긴대요」의 정류장·옮기다·시장이 정답을 가름. ④(일주일)를 거르는 것은 「한 달」이라 동안은 꼭 필요하지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-007.v2": {
+      "units": [
+        "ko.word.w0747",
+        "ko.grammar.S104",
+        "ko.grammar.G404",
+        "ko.word.w0222"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-008.v1": {
+      "units": [
+        "ko.grammar.G306",
+        "ko.word.w0199",
+        "ko.grammar.S352"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-009.v2": {
+      "units": [
+        "ko.word.w0274",
+        "ko.grammar.G404",
+        "ko.grammar.S352"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-010.v2": {
+      "units": [
+        "ko.grammar.G612",
+        "ko.word.w0492",
+        "ko.grammar.G404"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-011.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0466"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-012.v1": {
+      "units": [
+        "ko.word.w0429",
+        "ko.word.w0221"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「부품 값을 내야 합니다」의 값·내다가 정답 ②(부품 값은 따로 든다)와 이어짐. 내다를 알면 -아/어야 하다 없이도 답이 나옴(부품·무료는 지도에 없음)",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-013.v1": {
+      "units": [
+        "ko.word.w0531",
+        "ko.grammar.S410"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-014.v1": {
+      "units": [
+        "ko.word.w0567",
+        "ko.grammar.S226",
+        "ko.word.w0158"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-015.v3": {
+      "units": [
+        "ko.word.w1180",
+        "ko.word.w0240"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-016.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(빈 목록) — 남자의 생각과 정답을 가르는 「중고」가 지도에 없고, 쓰다·사다·-(으)ㄹ 수 있다(2차)는 「중고로 사는 건 어때요?」만으로 답이 나와 꼭 필요하지 않음(사다는 ①·②에 다 있음)",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-017.v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.word.w0265"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「필요한 만큼만」의 만·필요하다가 정답 「필요한 양만」을 ①·④(많이 사기)와 가름. 비싸다는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-018.v1": {
+      "units": [
+        "ko.word.w0442",
+        "ko.word.w1835"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-019.v1": {
+      "units": [
+        "ko.word.w1476",
+        "ko.grammar.S340"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-020.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(빈 목록) — 정답 ③을 가르는 결제·오류가 지도에 없고, 「결제할 때 ↔ 결제하다가」의 -(으)ㄹ 때·-다가(2차)는 같은 장면을 바꿔 말할 뿐 오답 ①·②·④ 어느 것과도 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-021.v1": {
+      "units": [
+        "ko.word.w0330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-022.v1": {
+      "units": [
+        "ko.word.w0330",
+        "ko.word.w1160"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 대본의 「여섯 시로 바꿔 드렸습니다」를 정답 「예약 시간을 옮겼다」와 잇는 바꾸다·옮기다. 때문(1차)은 「회사 일 때문에」가 대본과 보기에 같은 말로 있고 다른 까닭을 대는 오답이 없어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-023.v2": {
+      "units": [
+        "ko.word.w1821",
+        "ko.word.w0043",
+        "ko.grammar.G208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 「새 카드를 신청하고 있다」를 고르는 신청이 주 단위, 새가 ③(잃어버린 카드)을, 해설이 짚은 ②(분실 신고)는 「어젯밤에 전화로 했어요」의 과거로 걸러짐. 신고(1차)는 대본과 ②에 같은 말로 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-024.v2": {
+      "units": [
+        "ko.word.w0199",
+        "ko.word.w0221"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 ③ 「수수료를 내고 카드를 바로 받는다」는 바로·내다로 확인되고 ②(집에서 받기)도 바로로 걸러짐. 「내시면」의 -(으)면은 몰라도 남자의 「그렇게 해 주세요」로 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-025.v1": {
+      "units": [
+        "ko.word.w0240",
+        "ko.word.w0180"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-026.v1": {
+      "units": [
+        "ko.word.w0140",
+        "ko.word.w0651"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 두 의견 단위는 같고, 토요일은 해설이 짚은 ②(토요일 하루만)에도 있어 「토요일에 일이 있어서요」의 일이 정답 ①을 가르는 주 단위",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-027.v1": {
+      "units": [
+        "ko.word.w0120",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-028.v1": {
+      "units": [
+        "ko.word.w0728"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견이 같이 둔 열쇠가 정답 ②를 가름. 내일·저녁(1차)은 다른 때를 든 오답이 없어 답을 가르지 않고, 주다(2차 w0116)는 지도에 보조 동사 항목으로만 있어 「열쇠를 준다」에 붙이지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-029.v1": {
+      "units": [
+        "ko.word.w0033"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「기차로 가면 두 시간이면 돼요」의 기차를 알아들으면 정답(기차 제안)이 나옴. -(으)면은 몰라도 「짐은 택배로 미리 보내요」까지 이어진 권유로 의도가 잡힘",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-030.v1": {
+      "units": [
+        "ko.word.w0033",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-031.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차(빈 목록) — 의도(동의 요청)를 가르는 동의서·찬성·동의하다가 지도에 없고, -(으)러·받다(1차)만으로는 ③을 ①·④와 가를 수 없어 억지로 붙이지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-032.v1": {
+      "units": [
+        "ko.word.w1163",
+        "ko.word.w0257",
+        "ko.word.w0161"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-033.v1": {
+      "units": [
+        "ko.word.w1785",
+        "ko.word.w0662",
+        "ko.word.w1212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-034.v1": {
+      "units": [
+        "ko.word.w0811",
+        "ko.word.w0309",
+        "ko.word.w1411"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-035.v1": {
+      "units": [
+        "ko.grammar.G311",
+        "ko.grammar.G401"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「열어 주면 어떨까요?」의 제안 틀(-(으)면 … -(으)ㄹ까요?)이 정답 ③(제안)을 ①·④와 가름(두 의견 같음). 열다(2차)는 몰라도 「비어 있는 강의실」과 자리가 모자라다는 앞말로 제안 내용이 잡혀 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-a-036.v1": {
+      "units": [
+        "ko.word.w0282",
+        "ko.word.w0058",
+        "ko.word.w0170"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-001.v1": {
+      "units": [
+        "ko.word.w0279",
+        "ko.grammar.S336",
+        "ko.grammar.S104"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-002.v1": {
+      "units": [
+        "ko.word.w0368",
+        "ko.word.w1355"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-003.v1": {
+      "units": [
+        "ko.word.w1043",
+        "ko.word.w1785",
+        "ko.grammar.G401"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 두 의견 단위는 같고, 정답 ① 「한 시간 안에 반납하면 돈을 더 낼 일은 없겠네요」는 「한 시간이 넘으면 … 추가 요금이 붙고」의 넘다를 알아들어야 나오므로 넘다가 주 단위. -(으)면은 대본과 정답에 같은 틀로 있어 둘째 아래로",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-004.v1": {
+      "units": [
+        "ko.grammar.G305",
+        "ko.grammar.S107",
+        "ko.word.w1176"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-005.v1": {
+      "units": [
+        "ko.word.w0736",
+        "ko.word.w0567",
+        "ko.word.w0279"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-006.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.S104",
+        "ko.word.w0376"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-007.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 쪽(빈 목록) — 정답 ①을 가르는 대기자·올리다가 지도에 없음(2차의 올리다는 지도 밖이라 쓸 수 없음). -(으)ㄹ까요?·네(1차)는 ③(수요일 저녁반 제안)도 같은 제안·대답 틀이라 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-008.v1": {
+      "units": [
+        "ko.word.w1169",
+        "ko.word.w0326",
+        "ko.word.w0161",
+        "ko.word.w0279"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-009.v1": {
+      "units": [
+        "ko.word.w1261",
+        "ko.word.w1465"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-b-010.v1": {
+      "units": [
+        "ko.word.w0642",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-c-001.v1": {
+      "units": [
+        "ko.word.w1636",
+        "ko.word.w0491",
+        "ko.word.w1995",
+        "ko.word.w1472"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-c-002.v1": {
+      "units": [
+        "ko.grammar.S104",
+        "ko.word.w0070"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-c-003.v1": {
+      "units": [
+        "ko.word.w0209",
+        "ko.grammar.G402",
+        "ko.grammar.S320"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-c-004.v1": {
+      "units": [
+        "ko.word.w0243",
+        "ko.word.w1289"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「오십 년 동안 일하던 곳」을 정답의 「역사가 담긴 모습」과 잇는 역사가 주 단위, 「살려서 쓰는」이 ④(그대로 두기)와 가름. 찾아오다(2차)는 여자의 말과 ③에도 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-l-c-005.v1": {
+      "units": [
+        "ko.word.w0397",
+        "ko.word.w1437",
+        "ko.word.w0247"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-001.v1": {
+      "units": [
+        "ko.grammar.S214"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 빈칸 「올라가다가」의 -다가가 주 단위. 중간은 도움 말이지만 「갑자기 비가 쏟아져서 … 다시 내려왔다」만으로 다른 보기가 걸러짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-002.v1": {
+      "units": [
+        "ko.grammar.S224",
+        "ko.word.w0518"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 빈칸 「막힐까 봐」의 -(으)ㄹ까 보다와 미리 나선 까닭을 알려 주는 일찍. -자마자는 오답에만 있음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-003.v2": {
+      "units": [
+        "ko.grammar.S454"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-004.v1": {
+      "units": [
+        "ko.grammar.S447",
+        "ko.grammar.S323"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-005.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-006.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-007.v1": {
+      "units": [
+        "ko.word.w0491",
+        "ko.word.w1381",
+        "ko.word.w0193"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-008.v1": {
+      "units": [
+        "ko.word.w0330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-009.v1": {
+      "units": [
+        "ko.word.w1821",
+        "ko.word.w0395"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-010.v1": {
+      "units": [
+        "ko.word.w1538"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-011.v1": {
+      "units": [
+        "ko.word.w0201",
+        "ko.word.w0127"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-012.v1": {
+      "units": [
+        "ko.word.w0132",
+        "ko.word.w0279",
+        "ko.grammar.G401"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-013.v1": {
+      "units": [
+        "ko.word.w0206",
+        "ko.grammar.G304"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-014.v1": {
+      "units": [
+        "ko.word.w0943"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「특히」가 (라)를 첫 문장에서 빼고(②·③) (나) 바로 뒤에 붙여 ①도 거름. 「이러한 의견」은 ①·④ 모두 (다)-(가)라 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-015.v1": {
+      "units": [
+        "ko.word.w0214",
+        "ko.word.w0144"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-016.v1": {
+      "units": [
+        "ko.word.w0367"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-017.v1": {
+      "units": [
+        "ko.word.w0190",
+        "ko.word.w0149",
+        "ko.word.w0249"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 빈칸 「빈 곳이 줄어서」를 뒤 문장 「더 많은 물건을 넣을 수 있다」와 잇는 곳·더·넣다(두 의견 같음). -(으)ㄹ 수 있다는 몰라도 「더 많이 넣다」로 이어져 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-018.v1": {
+      "units": [
+        "ko.word.w1636",
+        "ko.word.w1275"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 두 의견 단위는 같고, 냄새는 해설이 짚은 ②(냄새가 심해진다)에도 있어 정답 ①과 ②를 바로 가르는 없애다가 주 단위",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-019.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-020.v1": {
+      "units": [
+        "ko.word.w1075",
+        "ko.grammar.G403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-021.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-022.v1": {
+      "units": [
+        "ko.word.w1354",
+        "ko.word.w0980",
+        "ko.grammar.G307"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 결론 문장과 정답 ③을 잇는 미리·나누다에 더해, 해설이 짚은 ①은 「말하는 사람도 있지만」의 -지만으로 글쓴이가 아닌 다른 사람의 생각임을 알아야 걸러짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-023.v1": {
+      "units": [
+        "ko.word.w0447"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-024.v2": {
+      "units": [
+        "ko.word.w1650",
+        "ko.word.w0403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-025.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-026.v1": {
+      "units": [
+        "ko.word.w1281",
+        "ko.word.w1132"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-027.v1": {
+      "units": [
+        "ko.word.w1819",
+        "ko.word.w1831"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-028.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-029.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-030.v1": {
+      "units": [
+        "ko.word.w1137",
+        "ko.word.w0293"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문의 「늘 말해 왔는데」를 정답의 「자주 말했다」와 잇는 늘이 주 단위, 떠나다(두 의견 같음). -고 싶다는 지문과 정답에 같은 꼴로 있어 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-031.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-032.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-033.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-034.v1": {
+      "units": [
+        "ko.grammar.G406",
+        "ko.word.w1649",
+        "ko.word.w1285",
+        "ko.word.w0279"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ③의 이사·소식(두 의견 같음)에 더해, 해설이 짚은 ④(이사를 간 뒤에)는 「떠나기 전에」의 -기 전에/-(으)ㄴ 후에, ②(친구가 먼저)는 먼저로 걸러짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-035.v1": {
+      "units": [
+        "ko.word.w0113",
+        "ko.word.w1439"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 「싱글벙글」을 풀어 쓴 기쁘다가 ①과 ②(걱정)를 가르는 주 단위, 늘다가 ③(늘지 않아)을 가름",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-036.v1": {
+      "units": [
+        "ko.word.w0977",
+        "ko.word.w0309"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-037.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-038.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-039.v1": {
+      "units": [
+        "ko.word.w1711",
+        "ko.grammar.S107",
+        "ko.word.w0099"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답 ②의 덜·가격(두 의견 같음)에 더해, 해설이 짚은 ④(돈을 낸다는 사실을 떠올리게)는 「'원'을 보면」과 「숫자만 보면」을 갈라 읽는 만으로 걸러짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-040.v1": {
+      "units": [
+        "ko.word.w0089",
+        "ko.word.w0088",
+        "ko.word.w1605"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-041.v1": {
+      "units": [
+        "ko.word.w1711"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 ③은 「습도를 높일 수 있다」를 「덜 건조해진다」로 바꾼 것이라 덜이 주 단위. 젖다·수건은 지문과 보기에 같은 꼴로 있어 몰라도 짝지어짐",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-042.v1": {
+      "units": [
+        "ko.word.w1012",
+        "ko.grammar.G304"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(두 의견 같음) — 「빠져나가지 않게 막아 준다」를 정답 「열을 지켜 준다」로 읽는 지키다·-지 않다",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-043.v1": {
+      "units": [
+        "ko.word.w0403",
+        "ko.word.w1051",
+        "ko.word.w1552"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-044.v1": {
+      "units": [
+        "ko.word.w1476",
+        "ko.grammar.G403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-045.v1": {
+      "units": [
+        "ko.word.w0508",
+        "ko.word.w0912",
+        "ko.word.w0143"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-r-a-046.v1": {
+      "units": [
+        "ko.word.w0141",
+        "ko.word.w1605"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 넣을 문장의 까닭 표현 「때문이다」와 불편하다가 ㉣ 앞의 「이용하는 사람이 거의 없었다」와 이어짐. 거의는 몰라도 「이용하는 사람이 … 없었다」로 뜻이 잡혀 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-u14-001.v3": {
+      "units": [
+        "ko.grammar.S343",
+        "ko.word.w0648",
+        "ko.word.w0608"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-u14-002.v3": {
+      "units": [
+        "ko.word.w0265",
+        "ko.word.w1180"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-u14-003.v3": {
+      "units": [
+        "ko.word.w0648"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-u14-004.v2": {
+      "units": [
+        "ko.word.w1538",
+        "ko.word.w0066",
+        "ko.word.w1029",
+        "ko.word.w1180"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "topik-items.tii-u14-005.v3": {
+      "units": [
+        "ko.word.w1212",
+        "ko.word.w0068",
+        "ko.grammar.G311"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

@@ -17,7 +17,7 @@ import {
   ITEM_FIELDS,
   TEMPLATE_FIELDS,
 } from '../src/map/compose.mjs';
-import { appendOnly } from '../src/map/ledger.mjs';
+import { appendOnly, currentName } from '../src/map/ledger.mjs';
 import { MAP_FORMAT, UNITS_FORMAT, WORDS_FORMAT } from '../src/map/index.mjs';
 import { readBanks, readUnits, REPO_ROOT } from './map-sources.mjs';
 
@@ -83,7 +83,6 @@ export function loadTags(dir = MAP_DIR) {
 
 const itemRow = row => ITEM_FIELDS.map(field => row[field]);
 const templateRow = row => TEMPLATE_FIELDS.map(field => row[field]);
-const familyRows = ledger => ledger.families;
 
 function decodeRows(index) {
   if (!index) return [];
@@ -109,7 +108,7 @@ export function foldHash(rows) {
 // 계열 이름이 바뀐 것으로 보이는 것(Fable 설계 검토 P2-10): 앞 색인에서 한 계열에 있던 문항들이 지금 모두 새 계열 하나로 갔고
 // 옛 계열은 사라졌다. 생활 계열처럼 원고 삽입 · 덩어리 합침으로 이름이 바뀌면 장부는 은퇴 + 새 번호로 보아 만남 기록이 끊긴다 —
 // renames.families에 적을지 사람이 정해야 한다.
-export function familyRenameCandidates(previous, rows) {
+export function familyRenameCandidates(previous, rows, renames = {}) {
   const before = decodeRows(previous).filter(row => row.n !== null && row.n !== undefined);
   const now = new Map(rows.filter(row => row.n).map(row => [row.n, row]));
   const liveFamilies = new Set(rows.map(row => row.familyKey));
@@ -123,7 +122,8 @@ export function familyRenameCandidates(previous, rows) {
   }
   return [...moved]
     .filter(([, targets]) => targets.size === 1)
-    .map(([from, targets]) => [from, [...targets][0]]);
+    .map(([from, targets]) => [from, [...targets][0]])
+    .filter(([from, to]) => currentName(from, renames) !== to);
 }
 
 function nextRevision(previous, body, hash, revisions, rows) {
@@ -151,7 +151,7 @@ function indexBody(composed, renames) {
     items: composed.items.map(itemRow),
     templateFields: TEMPLATE_FIELDS,
     templates: composed.templates.map(templateRow),
-    families: familyRows(composed.ledger),
+    families: composed.families,
     shared: sharedRows(composed.shared, [...composed.items, ...composed.templates]),
     retired: composed.retired,
     renames,
@@ -205,11 +205,11 @@ export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
     ...units.map(([id, kind]) => ({ id, kind })),
     ...words.map(([id]) => ({ id: `ko.word.${id}`, kind: 'word' })),
   ];
-  const audit = {
-    ...auditMap(rows, catalog),
-    orphanTags: composed.orphanTags,
-    familyRenames: previous ? familyRenameCandidates(previous, rows) : [],
-  };
+  const audit = { ...auditMap(rows, catalog), orphanTags: composed.orphanTags };
+  // 계열 이름 후보는 앞 색인에 기대는 값이라 커밋하는 보고(audit.json)에 싣지 않는다 — 쓴 직후 대조가 어긋나지 않게(Fable 최종 P2-2).
+  const familyRenames = previous
+    ? familyRenameCandidates(previous, rows, renames.families ?? {})
+    : [];
   return {
     files: {
       'index.json': serialize({ ...body, revision, hash }),
@@ -223,6 +223,7 @@ export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
       'revisions.json': `${JSON.stringify({ revisions }, null, 2)}\n`,
     },
     audit,
+    familyRenames,
     ledger: composed.ledger,
     revision,
     hash,
@@ -253,14 +254,15 @@ function originLedger() {
 
 // --write 앞에 멈출 까닭: 계열 이름 후보(사람이 renames에 적거나 --계열이름확인으로 넘긴다) · origin 장부가 앞섬.
 export function writeBlockers(
-  { audit, ledger },
+  { familyRenames, ledger },
   { confirmed = false, origin = originLedger() } = {},
 ) {
   const blockers = [];
-  if (audit.familyRenames.length && !confirmed)
+  if (familyRenames.length && !confirmed)
     blockers.push(
-      `계열 이름이 바뀐 것으로 보인다 — map/renames.json의 families에 적거나 --계열이름확인: ${audit.familyRenames.map(([a, b]) => `${a} → ${b}`).join(' · ')}`,
+      `계열 이름이 바뀐 것으로 보인다 — map/renames.json의 families에 적거나 --계열이름확인: ${familyRenames.map(([a, b]) => `${a} → ${b}`).join(' · ')}`,
     );
+  if (!origin) console.log('atlas map: origin/master의 장부를 읽지 못해 그 대조는 건너뛴다');
   const behind = origin ? appendOnly(origin, ledger) : [];
   if (behind.length)
     blockers.push(

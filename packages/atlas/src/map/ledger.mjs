@@ -42,6 +42,20 @@ export function checkRows(rows, kind = 'items') {
   return problems;
 }
 
+// 옛 이름 → 지금 이름(이름 표를 앞으로 끝까지). 장부 줄은 옛 이름 그대로 두고, 색인 · 읽기는 지금 이름을 쓴다(아르곤 A1).
+export function currentName(key, renames = {}) {
+  const seen = new Set();
+  let at = key;
+  while (Object.hasOwn(renames, at)) {
+    if (seen.has(at)) fail(`이름 표에 고리가 있다(${key})`);
+    seen.add(at);
+    at = renames[at];
+  }
+  return at;
+}
+export const currentRows = (rows, renames = {}) =>
+  rows.map(([n, key]) => [n, currentName(key, renames)]);
+
 // 열쇠 → 번호. 이름이 바뀐 새 열쇠는 옛 줄의 번호를 받는다.
 export function numberer(rows, renames = {}) {
   const byKey = new Map(rows.map(([n, key]) => [key, n]));

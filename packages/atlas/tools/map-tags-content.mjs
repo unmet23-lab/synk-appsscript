@@ -60,7 +60,15 @@ async function snapRaw(root, items) {
   for (const item of items) {
     const [, form, word] = item.itemKey.split('.');
     const entry = wordOf(word);
-    out.set(item.itemKey, { form, word: entry.ko, meaning: entry.mean, ask: entry.ask?.ko });
+    // 화면에 실제로 나오는 글만 싣는다(app.mjs) — 뜻 · 안내판 부탁만 부탁 글(ask)이 있고, 소리 부탁은 낱말 소리, 회상은
+    // 낱말과 뜻 보기뿐이다. 모든 꼴에 ask를 붙이면 검수자가 그 글의 단서 낱말을 단위로 더한다(11-10 태그 판정에서 찾음).
+    const asked = form === 'meaning' || form === 'notice';
+    out.set(item.itemKey, {
+      form,
+      word: entry.ko,
+      meaning: entry.mean,
+      ...(asked ? { ask: entry.ask?.ko } : {}),
+    });
   }
   return out;
 }

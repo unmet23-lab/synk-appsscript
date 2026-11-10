@@ -1,0 +1,1051 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "snap-words.meaning.bank.v1": {
+      "units": [
+        "ko.word.w0039"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 뜻 부탁은 부탁 글에 화면 언어 풀이가 붙고(app.mjs missionLine) 정답은 판에 적힌 「은행」을 찍는 것이라 「돈」은 몰라도 된다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.bookstore.v1": {
+      "units": [
+        "ko.word.w0762"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 부탁 글에 화면 언어 풀이가 붙어 「책」은 몰라도 되고, 판의 「서점」을 알아보는 것이 정답을 가른다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.cafeteria.v1": {
+      "units": [
+        "ko.word.w0553"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.dorm.v1": {
+      "units": [
+        "ko.word.w0743"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.entrance.v1": {
+      "units": [
+        "ko.word.w1715"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.exit.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.library.v1": {
+      "units": [
+        "ko.word.w0600"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.lift.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.office.v1": {
+      "units": [
+        "ko.word.w0605"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.pharmacy.v1": {
+      "units": [
+        "ko.word.w0801"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.post.v1": {
+      "units": [
+        "ko.word.w0040"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 부탁 글에 화면 언어 풀이가 붙어 「편지」는 몰라도 되고 판의 「우체국」이 정답을 가른다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.stairs.v1": {
+      "units": [
+        "ko.word.w1737"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.meaning.toilet.v1": {
+      "units": [
+        "ko.word.w0619"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.notice.n-bike.v1": {
+      "units": [
+        "ko.word.w0035",
+        "ko.grammar.S226"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「자전거」로 판을 찾고, 짝 판 「자전거 수리는…」(places.mjs pairs)과는 금지 「-지 말다」로 갈린다. 「세우다」까지는 넣지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.notice.n-construction.v1": {
+      "units": [
+        "ko.word.w1411"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 못 지나가는 까닭을 담은 판은 「공사」로 갈리고, 「이용하다」는 다른 판과 가르는 데 쓰이지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.notice.n-fresh.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 짝 판 「신입생 환영회는…」과 가르는 「신입생·안내」가 지도 밖이고, 2차의 「학생·새로·설명」은 풀이 붙은 부탁 글 쪽 말이라 판을 가르지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.notice.n-smoke.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 판을 가르는 「금연」이 지도 밖이고, 부탁 글의 「담배·피우다」는 풀이가 붙어 몰라도 되므로 빈 목록",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.bank.v1": {
+      "units": [
+        "ko.word.w0039"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 두 의견 모두 부탁 글의 「돈(·찾다)」을 더했지만 인화 뜻 고르기는 낱말 「은행」과 화면 언어 뜻 보기만 보여 주 단위 하나로 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.bookstore.v1": {
+      "units": [
+        "ko.word.w0762"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 두 의견이 더한 「책(·사다)」은 인화 화면에 없는 부탁 글의 말이라 빼고 「서점」만 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.cafeteria.v1": {
+      "units": [
+        "ko.word.w0553"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 인화 뜻 고르기에는 부탁 글이 나오지 않아 「식당」 하나로 답이 갈린다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.dorm.v1": {
+      "units": [
+        "ko.word.w0743"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 인화 뜻 고르기에는 부탁 글이 나오지 않아 「기숙사」 하나로 답이 갈린다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.entrance.v1": {
+      "units": [
+        "ko.word.w1715"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.exit.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.library.v1": {
+      "units": [
+        "ko.word.w0600"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 인화 뜻 고르기는 「도서관 — 무슨 뜻이에요?」와 화면 언어 뜻 보기만 보이므로(app.mjs askRecall) 부탁 글의 「책·빌리다」는 쓰이지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.lift.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.menu.v1": {
+      "units": [
+        "ko.word.w0752"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.n-bike.v1": {
+      "units": [
+        "ko.word.w0035",
+        "ko.grammar.S226"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「자전거」가 판의 중심이고 「자전거 수리」 뜻과는 금지 「-지 말다」로 갈린다. 「세우다」는 둘 중 하나만으로 충분해 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.n-construction.v1": {
+      "units": [
+        "ko.word.w1411"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 판 글을 보고 뜻을 고르는 문항이라 「공사」가 가르고, 2차의 「지나가다·못 부정」은 화면에 없는 부탁 글의 말이다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.n-fix.v1": {
+      "units": [
+        "ko.word.w0035"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.n-fresh.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.n-smoke.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 뜻을 가르는 「금연」이 지도 밖이고 「담배·피우다·-아/어도 되다」는 인화 화면에 없는 부탁 글의 말이라 빈 목록",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.n-welcome.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 중심 낱말 「신입생·환영회」가 지도 밖이고, 「도서관」은 보기의 층 숫자(2층 ↔ 1층)로도 갈려 꼭 필요하지 않다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.office.v1": {
+      "units": [
+        "ko.word.w0605"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 인화 뜻 고르기에는 부탁 글이 나오지 않아 「사무실」 하나로 답이 갈린다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.pharmacy.v1": {
+      "units": [
+        "ko.word.w0801"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 인화 뜻 고르기에는 부탁 글이 나오지 않아 「약국」 하나로 답이 갈린다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.post.v1": {
+      "units": [
+        "ko.word.w0040"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 두 의견이 더한 「편지(·보내다)」는 인화 화면에 없는 부탁 글의 말이라 빼고 「우체국」만 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.pull.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.push.v1": {
+      "units": [
+        "ko.word.w1467"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「미세요」의 뜻은 지도 안 낱말 「밀다」(w1467)로 갈린다. 2차는 「밀다」가 지도 밖이라 했지만 이름표에 있다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.slide.v1": {
+      "units": [
+        "ko.word.w0334"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합침 — 보기가 같은 무리 Push · Pull · Slide라 「미세요」와 가르는 것은 「옆」이다. 「밀다」를 알아도 Push로 틀리므로 주 단위는 「옆」이고 「밀다」는 몰라도 답이 나와 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.stairs.v1": {
+      "units": [
+        "ko.word.w1737"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.stop.v1": {
+      "units": [
+        "ko.word.w0776"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.store.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.toilet.v1": {
+      "units": [
+        "ko.word.w0619"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-meaning.university.v1": {
+      "units": [
+        "ko.word.w0733"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.bench.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.bike.v1": {
+      "units": [
+        "ko.word.w0035"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.building.v1": {
+      "units": [
+        "ko.word.w0391"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.cat.v1": {
+      "units": [
+        "ko.word.w0042"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.copier.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.sofa.v1": {
+      "units": [
+        "ko.word.w0723"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.tray.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.tree.v1": {
+      "units": [
+        "ko.word.w0050"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.umbrella.v1": {
+      "units": [
+        "ko.word.w0025"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.vending.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.recall-word.water.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.bank.v1": {
+      "units": [
+        "ko.word.w0039"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.bookstore.v1": {
+      "units": [
+        "ko.word.w0762"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 소리 부탁은 「이 말 들어 봐요」와 낱말 소리만 주고 부탁 글을 보이지 않아 「서점」만 알아들으면 된다(1차 id w0018은 당근이라 틀림)",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.cafeteria.v1": {
+      "units": [
+        "ko.word.w0553"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.dorm.v1": {
+      "units": [
+        "ko.word.w0743"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.entrance.v1": {
+      "units": [
+        "ko.word.w1715"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.library.v1": {
+      "units": [
+        "ko.word.w0600"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.office.v1": {
+      "units": [
+        "ko.word.w0605"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.pharmacy.v1": {
+      "units": [
+        "ko.word.w0801"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.post.v1": {
+      "units": [
+        "ko.word.w0040"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.stairs.v1": {
+      "units": [
+        "ko.word.w1737"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.sound.toilet.v1": {
+      "units": [
+        "ko.word.w0619"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.bench.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.bike.v1": {
+      "units": [
+        "ko.word.w0035"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.building.v1": {
+      "units": [
+        "ko.word.w0391"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.cat.v1": {
+      "units": [
+        "ko.word.w0042"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.copier.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.sofa.v1": {
+      "units": [
+        "ko.word.w0723"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.tray.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.tree.v1": {
+      "units": [
+        "ko.word.w0050"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.umbrella.v1": {
+      "units": [
+        "ko.word.w0025"
+      ],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.vending.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "snap-words.word.water.v1": {
+      "units": [],
+      "by": "rule:snap-word",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "korean-runner.listening-check.check-high-sign.v2": {
+      "units": [
+        "ko.grammar.G304",
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 「숙이지 않아도 돼요」의 -지 않다·-아/어도 되다가 가름. 숙이다(1차)는 들은 말과 보기에 같은 꼴로 있어 몰라도 그 보기를 버릴 수 있음(짝 check-no-fence와 같은 꼴)",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-runner.listening-check.check-left-run.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.word.w1199"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「간 다음」의 S340과 뛰어넘기 보기를 가르는 달리다. 왼쪽(2차)은 모든 보기에 있어 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-runner.listening-check.check-middle-left.v1": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.word.w0609"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 들은 순서 표지 「간 다음」은 S340(1차)이 G406보다 정확, 「가운데로만 가기」를 가르는 왼쪽(둘 다). 가운데는 모든 보기에 있어 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-runner.listening-check.check-no-fence.v2": {
+      "units": [
+        "ko.grammar.G304",
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「뛰어넘지 않아도 돼요」의 -지 않다·-아/어도 되다",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-runner.listening-check.check-not-left.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0618"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — -지 말다와 「오른쪽 길이 좋아요」의 오른쪽. 왼쪽(1차)은 -지 마세요로 버려지는 쪽이라 따로 두지 않음(짝 check-not-middle과 같은 꼴)",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-runner.listening-check.check-not-middle.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0618"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 가운데를 버리는 -지 말다와 갈 곳 오른쪽",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-runner.listening-check.check-right-before-jump.v1": {
+      "units": [
+        "ko.grammar.G406"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「뛰어넘기 전에」의 순서가 거꾸로 된 보기를 가름. 오른쪽(2차)은 모든 보기에 있어 가르지 않음",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

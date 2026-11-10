@@ -9,7 +9,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { build } from '../../tools/build.mjs';
-import { buildMap, driftOf } from '../../tools/map-build.mjs';
+import { buildMap, driftOf, familyRenameCandidates } from '../../tools/map-build.mjs';
+import { agreementOf } from '../../tools/map-tags.mjs';
 import { banksOf, MAP_DIR, sliceOf } from '../../tools/map-ship.mjs';
 import { HANGUL_TYPES, REPO_ROOT } from '../../tools/map-sources.mjs';
 import { tempDir } from '../support/temp.mjs';
@@ -69,4 +70,52 @@ test('제품 은행에서 다시 만든 지도 = 커밋된 지도(어긋나면 �
       `지도 생성물이 제품 은행과 어긋난다 — ${drift.join(' · ')} (node packages/atlas/tools/map-build.mjs --write)`,
     );
   assert.ok(Array.isArray(drift));
+});
+
+test('계열 이름 후보 — 이름 표에 적힌 짝은 후보가 아니다(Fable 최종 P2-2)', () => {
+  const previous = {
+    fields: [
+      'n',
+      'itemKey',
+      'f',
+      'skillId',
+      'difficulty',
+      'responseFormat',
+      'units',
+      'order',
+      'bank',
+      'flags',
+    ],
+    items: [
+      [1, 'x', 1, 's', 1, 'single-choice', [], 0, 'g', 0],
+      [2, 'y', 1, 's', 1, 'single-choice', [], 1, 'g', 0],
+    ],
+    templateFields: [],
+    templates: [],
+    families: [[1, 'A']],
+  };
+  const rows = [
+    { n: 1, itemKey: 'x', familyKey: 'B' },
+    { n: 2, itemKey: 'y', familyKey: 'B' },
+  ];
+  assert.deepEqual(familyRenameCandidates(previous, rows), [['A', 'B']]);
+  assert.deepEqual(familyRenameCandidates(previous, rows, { A: 'B' }), []);
+});
+
+test('태그 판정 — 둘이 일치해도 지도 밖 단위면 판정으로 돌린다(Fable 최종 P2-3)', () => {
+  const known = new Set(['ko.word.w0001']);
+  const both = units => ({
+    draft: units,
+    first: { verdict: 'pass', units },
+    second: { verdict: 'pass', units },
+  });
+  assert.deepEqual(agreementOf(both(['ko.word.w0001']), known).units, ['ko.word.w0001']);
+  assert.equal(agreementOf(both(['낱말:없는말']), known), null);
+  const fixed = {
+    draft: [],
+    first: { verdict: 'fix', units: ['ko.word.w0001'] },
+    second: { verdict: 'fix', units: ['ko.word.w0001'] },
+  };
+  assert.equal(agreementOf(fixed, known).verdict, 'fixed');
+  assert.equal(agreementOf({ ...fixed, second: { verdict: 'pass', units: [] } }, known), null);
 });

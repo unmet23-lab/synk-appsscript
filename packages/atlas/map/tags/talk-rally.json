@@ -1,0 +1,696 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "talk-rally.f01.v1": {
+      "units": [
+        "ko.word.w0742",
+        "ko.word.w0447"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f02.v1": {
+      "units": [
+        "ko.word.w0437",
+        "ko.word.w0568"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f03.v1": {
+      "units": [
+        "ko.word.w0487",
+        "ko.word.w0083"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f04.v1": {
+      "units": [
+        "ko.word.w0735"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f05.v1": {
+      "units": [
+        "ko.word.w0231",
+        "ko.word.w0613",
+        "ko.word.w0102"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f06.v1": {
+      "units": [
+        "ko.word.w0573"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「어서 오세요」를 손님 맞는 말로 알아듣는 것이 정답을 가르고, 「안녕히」는 오답 하나를 거르는 길일 뿐 정답에 꼭 필요하지 않다(같은 꼴의 「많이」도 1차가 안 넣음)",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f07.v1": {
+      "units": [
+        "ko.word.w0447"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f08.v1": {
+      "units": [
+        "ko.word.w0614"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f09.v1": {
+      "units": [
+        "ko.word.w0085"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f10.v1": {
+      "units": [
+        "ko.word.w0601",
+        "ko.word.w0447"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f11.v1": {
+      "units": [
+        "ko.word.w0703"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f12.v1": {
+      "units": [
+        "ko.word.w0620",
+        "ko.word.w0274"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f13.v1": {
+      "units": [
+        "ko.word.w0866",
+        "ko.word.w0269"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f14.v1": {
+      "units": [
+        "ko.word.w0654",
+        "ko.word.w0372"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f15.v1": {
+      "units": [
+        "ko.grammar.G208",
+        "ko.word.w0083"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「먹었」(과거)과 「먹겠」을 가르는 -았/었-이 첫째, 들려준 말이 식사 뒤 인사임을 알려면 「먹다」가 필요하고, 「또」는 「어서」로도 갈려 확신 없는 둘째라 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f16.v1": {
+      "units": [
+        "ko.word.w0081",
+        "ko.word.w0070"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f17.v1": {
+      "units": [
+        "ko.word.w0105"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「기다리다」만 알아들으면 고맙다는 말·작별 대답이 걸러지고, -(으)세요는 보기들과 가르지 않아 뺀다(기준의 「물 주세요」 예와 같다)",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f18.v1": {
+      "units": [
+        "ko.word.w1409",
+        "ko.word.w0686"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f19.v1": {
+      "units": [
+        "ko.word.w0118",
+        "ko.grammar.G404"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 같은 동사를 되울리는 오답 「도와줘서 고마워요」와 가르려면 들려준 말이 부탁의 꼴(-아/어 주세요)임을 알아야 하고, 「무슨」은 「네」 수락만으로도 답이 나와 넣지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f20.v1": {
+      "units": [
+        "ko.word.w0513",
+        "ko.word.w0081",
+        "ko.word.w0735"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f21.v1": {
+      "units": [
+        "ko.grammar.S108",
+        "ko.word.w0083",
+        "ko.word.w0487"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f22.v1": {
+      "units": [
+        "ko.word.w0613"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.f23.v1": {
+      "units": [
+        "ko.word.w0614"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r01.v2": {
+      "units": [
+        "ko.word.w0123",
+        "ko.word.w0302",
+        "ko.word.w0660"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「있어요?」를 알아들어야 「물이 좋아요」를 거르고 「아니요, 물이 있어요」의 어긋남도 보이므로 「있다」가 첫째, 네·아니요가 그 짝을 가른다(지도의 있다는 한 낱말 한 단위라 이 뜻도 이 id)",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r02.v1": {
+      "units": [
+        "ko.word.w0128",
+        "ko.word.w0123"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「있어요?」에 「없어요」로 답하는 짝이 정답을 가르고, 「이/가 아니다」는 몰라도 「없어요」만 알면 답이 나와 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r03.v1": {
+      "units": [
+        "ko.grammar.G204"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r04.v1": {
+      "units": [
+        "ko.word.w0084",
+        "ko.grammar.G209"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r05.v1": {
+      "units": [
+        "ko.word.w0449",
+        "ko.word.w0660"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r06.v1": {
+      "units": [
+        "ko.word.w0331"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r07.v1": {
+      "units": [
+        "ko.grammar.G208",
+        "ko.grammar.G209"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r08.v1": {
+      "units": [
+        "ko.grammar.G408",
+        "ko.grammar.G208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r09.v1": {
+      "units": [
+        "ko.grammar.G612",
+        "ko.word.w0240"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.r10.v1": {
+      "units": [
+        "ko.word.w0414",
+        "ko.word.w0390"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w01.v1": {
+      "units": [
+        "ko.word.w0214",
+        "ko.word.w0097"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w02.v1": {
+      "units": [
+        "ko.word.w0453",
+        "ko.word.w0651"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w03.v1": {
+      "units": [
+        "ko.word.w0188",
+        "ko.grammar.G210"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「누구하고」가 사람을, 오답 둘은 「-에」로 장소를 말해 누구·하고가 가르고, 「가족」은 하고 짝만으로도 답이 나와 확신 없는 둘째라 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w04.v1": {
+      "units": [
+        "ko.word.w0232",
+        "ko.word.w0235"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w05.v1": {
+      "units": [
+        "ko.word.w0251",
+        "ko.word.w0318",
+        "ko.word.w0714"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w06.v1": {
+      "units": [
+        "ko.grammar.G208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w07.v1": {
+      "units": [
+        "ko.word.w0322",
+        "ko.word.w0165"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w08.v1": {
+      "units": [
+        "ko.word.w0218"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「왜」(이유)만 알아들으면 시각(아홉 시)·앞일(내일) 대답이 걸러지고, 「늦다」는 정답 고르기에 꼭 필요하지 않아 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w09.v1": {
+      "units": [
+        "ko.word.w0167",
+        "ko.grammar.G309",
+        "ko.word.w0031"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w10.v1": {
+      "units": [
+        "ko.word.w0287",
+        "ko.word.w0168"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w11.v1": {
+      "units": [
+        "ko.grammar.G302"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w12.v1": {
+      "units": [
+        "ko.word.w0214",
+        "ko.word.w0076",
+        "ko.word.w0367"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "talk-rally.w13.v1": {
+      "units": [
+        "ko.word.w0167",
+        "ko.word.w0485"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

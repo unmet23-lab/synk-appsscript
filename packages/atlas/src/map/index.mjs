@@ -84,9 +84,14 @@ function joinSlices(slices) {
   }
   if (slices.length === 1) return first;
   const families = new Map(slices.flatMap(slice => slice.families ?? []));
+  // 두 은행이 함께 쓰는 문항은 조각마다 들어 있다 — 번호로 한 번만 둔다(아르곤 A4).
+  const at = first.fields.indexOf('n');
+  const items = new Map(slices.flatMap(slice => (slice.items ?? []).map(row => [row[at], row])));
+  const shared = new Map(slices.flatMap(slice => slice.shared ?? []));
   return {
     ...first,
-    items: slices.flatMap(slice => slice.items ?? []),
+    items: [...items.values()],
+    shared: [...shared],
     templates: slices.flatMap(slice => slice.templates ?? []),
     families: [...families],
     retired: {
@@ -163,6 +168,9 @@ export function openMap({ index: given, units = null, words = null } = {}) {
   const byNumber = new Map(items.map(row => [row.n, row]));
   const byFamily = new Map(templates.map(row => [row.familyKey, row]));
   const live = row => (row && !retiredKeys.has(row.n) ? row : null);
+  const sharedBanks = new Map(index.shared ?? []);
+  const inBank = (row, bank) =>
+    bank === null || row.bank === bank || (sharedBanks.get(row.n) ?? []).includes(bank);
 
   const map = {
     editions: Object.freeze({ map: `map-${index.edition}`, index: `index-${index.revision}` }),
@@ -170,15 +178,14 @@ export function openMap({ index: given, units = null, words = null } = {}) {
     item(ref) {
       const row = live(byKey.get(itemName(typeof ref === 'string' ? ref : ref?.itemKey)));
       if (row) return brainItem(row);
-      if (typeof ref === 'string') return null;
+      // 은퇴 문항은 메타를 든 객체로 물어도 내지 않는다 — 낡은 제품이 보여도 그 답이 계열 단위에 쌓이지 않게(Fable 최종 P3-1).
+      if (typeof ref === 'string' || retiredNumbers.has(itemName(ref?.itemKey))) return null;
       const familyKey = familyName(ref?.familyKey);
       const template = fromTemplate(byFamily.get(familyKey), ref);
       return template ?? unindexed({ ...ref, familyKey });
     },
     items(bank = null) {
-      return items
-        .filter(row => live(row) && (bank === null || row.bank === bank))
-        .map(row => brainItem(row));
+      return items.filter(row => live(row) && inBank(row, bank)).map(row => brainItem(row));
     },
     itemNumber: itemKey =>
       byKey.get(itemName(itemKey))?.n ?? retiredNumbers.get(itemName(itemKey)) ?? null,
@@ -187,5 +194,11 @@ export function openMap({ index: given, units = null, words = null } = {}) {
     unit: unitLookup(unitTable(units, words), renames),
     renamedUnit: follower(renames.units),
   };
+  // 단계 3 접기 어댑터(src/record/adapt.mjs)가 받는 색인 꼴 — { edition, lookup(itemKey) }. 계열 줄 문항은 열쇠만으로 못 찾아
+  // null이고, 어댑터는 그때 사건에 적힌 값을 쓴다.
+  map.foldIndex = Object.freeze({
+    edition: map.editions.index,
+    lookup: itemKey => map.item(itemKey),
+  });
   return Object.freeze(map);
 }

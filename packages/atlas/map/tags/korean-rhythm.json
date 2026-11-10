@@ -1,0 +1,550 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "korean-rhythm.rhythm-transfer-ti-l-b-001.v1": {
+      "units": [
+        "ko.grammar.G209",
+        "ko.grammar.G313"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-b-003.v1": {
+      "units": [
+        "ko.grammar.S102",
+        "ko.grammar.S105"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「주말에도 같아요」의 도가 주말에도 같은 규칙임을 가르고, 열두 시까지의 까지. 의무·조건·못 부정(2차)은 「꼭 들어오세요」만으로 판단돼 넷을 넘김",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-c-018.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G211"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-c-019.v1": {
+      "units": [
+        "ko.grammar.G305"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견 공통: 「바로 들어갑니다」와 맞서는 「못 들어가요」의 못 부정. -(으)면(2차)·모자(1차)는 「모자가 없어요」와 「못 들어가요」로 판단이 끝나 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-001.v1": {
+      "units": [
+        "ko.word.w0274",
+        "ko.word.w0040"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 상자를 보내다(둘 다)가 우체국 단서이고, 설명의 우체국(2차)을 알아봐야 O를 고름. -(으)려고 하다(2차)는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-002.v1": {
+      "units": [
+        "ko.word.w1484",
+        "ko.word.w0675"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지도 밖 빨다·미용실만 뺌: 옷을 맡기다·바지로 세탁소임을 알아 미용실이 아님을 가름",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-009.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0029"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「십오만 원」을 알아듣는 숫자 표현 주 단위, 무엇의 값인지 안경. 값·내다(2차)는 대화의 돈 액수가 하나뿐이라 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-010.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0457"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 여섯 시(회사 끝)와 일곱 시 반(수업 시작)을 가르는 숫자/시간 표현이 주 단위, 그 시각이 수업 것임을 알 수업. 2차는 시각을 가르는 단위가 빠짐",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-011.v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0429"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「육십만 원」을 알아듣는 숫자 표현(1차) 주 단위, 그 액수가 이사 값임을 알리는 값(2차). 네(1차)·내다(2차)는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-012.v1": {
+      "units": [
+        "ko.word.w0105",
+        "ko.word.w0067"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 2차에서 -는 동안을 뺌: 설명의 기다리다와 대화의 「근처에서 점심을 먹고 올게요」가 맞서 X. -는 동안·-고·-(으)ㄹ게요(1차)는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-013.v1": {
+      "units": [
+        "ko.grammar.G404",
+        "ko.word.w0965"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 여자의 부탁 「문 앞에 놓아 주세요」의 -아/어 주세요(둘 다) 주 단위, 설명의 두다(2차). 지도의 놓다 w0212는 보조 동사 「놓다(보)」라 본동사로 쓰지 않고, -(으)ㄹ게요(1차)는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-014.v1": {
+      "units": [
+        "ko.grammar.G304",
+        "ko.word.w0796"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 설명의 「켜지 않습니다」를 긍정으로 읽으면 O를 고르므로 -지 않다 주 단위, 대상 에어컨. 「오늘만」의 만(2차)은 빼도 「오늘 켜요」로 X가 같고, 안 부정(2차)은 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-015.v1": {
+      "units": [
+        "ko.word.w1163"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 장소가 공원에서 동물원으로 바뀐 것을 알아듣는 바뀌다. -기로 하다·만나다(2차)는 확신이 없는 둘째라 뺌(동물원은 지도 밖)",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-016.v1": {
+      "units": [
+        "ko.word.w1163",
+        "ko.word.w1323"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「원래 두 시였는데 네 시로 바뀌었어요」에서 바뀌다·원래만 알아들어도 「그대로 두 시」가 틀림. 숫자 표현·-는데(1차)는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-017.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G612"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「주문하지 말고 거기로 갈게요」의 -지 말다·-(으)ㄹ게요",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-018.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G612",
+        "ko.grammar.G304"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「고치지 말고 새로 살게요」와 설명의 「사지 않고」",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-025.v1": {
+      "units": [
+        "ko.grammar.G308",
+        "ko.grammar.G402",
+        "ko.word.w0344"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「말리는 게 힘들어서 잘랐어요」의 -아/어서·힘들다를 설명의 「말릴 수 없어서」(-(으)ㄹ 수 없다)와 이어야 O. 머리(1차)는 모든 말에 나와 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-026.v1": {
+      "units": [
+        "ko.grammar.G308",
+        "ko.word.w0115",
+        "ko.word.w0368"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 실제 까닭 「일해야 해서 너무 피곤했어요」의 -아/어서·피곤하다와 「돈은 조금 적지만」의 적다(2차)가 「돈을 더 벌려고」를 뒤집음. -지만(1차)은 적다만 알면 되고 -(으)려고(2차)는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-027.v1": {
+      "units": [
+        "ko.word.w1346",
+        "ko.grammar.G308"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 순서 — 두 의견 단위가 같음: 「반대로 타서」↔「다른 방향 … 타서」를 가르는 반대가 주 단위, -아/어서는 두 말에 같아 둘째",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-028.v1": {
+      "units": [
+        "ko.grammar.S115",
+        "ko.word.w0098"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「돈 때문이 아니에요」의 이/가 아니다가 주 단위, 부정되는 까닭 돈. 2차의 -(으)려고 하다는 설명의 연결 어미 「-려고」와 꼴이 다르고 답을 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-029.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G505"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견 공통: 「물건을 사시면 … 안 내셔도 돼요」의 -(으)면·-아/어도 되다. 까지(1차)는 한 시간 반이 어차피 두 시간 안이라, 안 부정(2차)은 대화와 설명에 똑같이 있어 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-030.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「빨았으면 바꿀 수 없어요」의 -(으)면·-(으)ㄹ 수 없다가 X를 가름. 바지(1차)는 설명에 「한 번 빤 바지」로 이미 나와 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-031.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G212"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「학생증이 있으면 … 삼천 원」의 -(으)면과 삼천/육천을 가르는 숫자 표현. -(으)ㄹ 수 있다(2차)는 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-032.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G403",
+        "ko.grammar.G212",
+        "ko.word.w1043"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「여섯 명이 넘으면 큰 자리를 쓰셔야 해요」의 -(으)면·-아/어야 하다(둘 다), 다섯+두=일곱을 세는 숫자 표현(1차), 넘다(2차). -(으)ㄹ 수 있다(2차)는 가르지 않아 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-033.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.grammar.G402"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「시작하면 들어가실 수 없어요」「쉬는 시간이 되면 들어가실 수 있어요」의 -(으)면·-(으)ㄹ 수 있다/없다. -아/어야 하다(2차)는 몰라도 「밖에서 기다린다」로 판정이 같음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-d-034.v1": {
+      "units": [
+        "ko.grammar.G401",
+        "ko.word.w0154",
+        "ko.word.w1176"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차(id 고침) — 「이 동네에 살면 이만 원」의 -(으)면과, 조건이 회사가 아니라 사는 곳임을 알 살다·동네. 1차가 적은 w0365는 나이 단위 「살(의)」이라 살다 w0154로 바꿈. -아/어서(2차)는 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm.rhythm-transfer-ti-l-e-013.v1": {
+      "units": [
+        "ko.grammar.G308",
+        "ko.word.w0355"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 예약을 바꾼 까닭의 -아/어서(둘 다)와 그 까닭 회의(1차가 O/X를 가른다면서 지도 밖으로 본 낱말 — 지도에 w0355로 있음). -아/어야 하다(2차)는 몰라도 판정이 같음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t0q1:v1:recall": {
+      "units": [
+        "ko.word.w0600"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 지금 있는 곳이 카페가 아니라 도서관임을 알아들으면 X. -고 있다(2차)는 몰라도 「도서관에서」로 자리가 정해짐",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t1q1:v1:claim0": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0476"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 주장 「오래 쓸 수 있나요」의 -(으)ㄹ 수 있다와 오래가 O를 가름. -지만(2차 pass)은 두 절 내용만 알아들으면 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t1q1:v1:claim1": {
+      "units": [
+        "ko.word.w0608",
+        "ko.word.w0648"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 들은 「비싸다」와 질문의 「싸다」가 맞서야 X를 고를 수 있어 싸다까지 필요",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t1q4:v1:claim0": {
+      "units": [
+        "ko.grammar.G410"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「추우니까」를 까닭으로 알아듣는 -(으)니까가 주 단위. -(으)세요(2차)는 들은 말과 주장(닫으라고)에 똑같이 있어 가르지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t1q4:v1:claim1": {
+      "units": [
+        "ko.word.w0588",
+        "ko.word.w0682",
+        "ko.grammar.G410"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 까닭이 추위인지 더위인지가 X를 가르므로 춥다 주 단위와 주장의 덥다, 까닭 표지 -(으)니까",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t1q4:v1:recall": {
+      "units": [
+        "ko.grammar.G410"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 시끄러운 것이 까닭임을 듣는 -(으)니까. -(으)세요(2차)는 가르지 않고 시끄럽다는 지도 밖",
+        "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t2q0:v1:recall": {
+      "units": [
+        "ko.grammar.S319",
+        "ko.grammar.G304",
+        "ko.word.w0939"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 「예약하지 않아도」의 -어도·-지 않다(둘 다)를 질문의 「예약 없이」의 없이(2차)와 이어야 O. -(으)ㄹ 수 있다(2차)는 지문과 질문에 똑같아 뺌",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

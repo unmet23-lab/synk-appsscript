@@ -1,0 +1,885 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "subway-rush.busy.delay.1to2.v1": {
+      "units": [
+        "ko.word.w1465",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「고장」으로 1호선이 멈췄음과 일호선·이호선을 1·2호선으로 알아들으면 답이 나오고, 「이용」은 1차 id가 명사(이용하다는 w0981)인 데다 출구 계열처럼 꼭 필요하지 않아 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.1.2.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「-(으)ㄹ 수 없다」와 숫자 「이 번」(지도의 일·이는 수사가 아니라 숫자 표현으로)만 알아들으면 2번을 고르고, 「이용하다」는 두 문장에 다 있어 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.2.1.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「-(으)ㄹ 수 없다」와 숫자 「일 번」만 알아들으면 1번을 고르고, 「이용하다」는 두 문장에 다 있어 가르지 않아 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.3.4.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0846"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「-(으)ㄹ 수 없다」와 안내한 번호 「사」만 알아들으면 4번을 고르고, 막힌 번호 「삼」은 몰라도 답이 나와 뺀다(출구 계열 모두 같은 틀)",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.4.3.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0774"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「-(으)ㄹ 수 없다」와 안내한 번호 「삼」만 알아들으면 3번을 고르고, 「이용하다」는 두 문장에 다 있어 가르지 않아 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.5.3.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0774"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「-(으)ㄹ 수 없다」와 안내한 번호 「삼」만 알아들으면 3번을 고르고, 「이용하다」는 두 문장에 다 있어 가르지 않아 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.6.7.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0862"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「-(으)ㄹ 수 없다」와 안내한 번호 「칠」만 알아들으면 7번을 고르고, 「이용하다」는 두 문장에 다 있어 가르지 않아 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.exit.7.6.v1": {
+      "units": [
+        "ko.grammar.G402",
+        "ko.word.w0868"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「이용하실 수 없습니다」와 안내한 번호 「육」만 알아들으면 6번을 고르고, 막힌 번호 「칠」은 몰라도 답이 나와 뺀다(출구 계열 모두 같은 틀)",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.express.jonggak.jonggak.v1": {
+      "units": [
+        "ko.grammar.G304",
+        "ko.word.w0241",
+        "ko.word.w0187"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.express.jonggak.jongno3.v1": {
+      "units": [
+        "ko.word.w0170",
+        "ko.grammar.G304",
+        "ko.word.w0241"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 함정(다음 열차)은 「서지 않습니다」만 들은 쪽이고 「다른 역에는 모두 섭니다」를 잡아야 정답이라 「다른」이 첫째, 서다는 두 문장에 함께 있어 바탕일 뿐 가르는 단위가 아니다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.express.jonggak.jongno5.v1": {
+      "units": [
+        "ko.word.w0241",
+        "ko.word.w0170",
+        "ko.grammar.G304"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.short.left.v1": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.busy.short.right.v1": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.1.v1": {
+      "units": [
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.2.v1": {
+      "units": [
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.3.v1": {
+      "units": [
+        "ko.word.w0774"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.4.v1": {
+      "units": [
+        "ko.word.w0846"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.5.v1": {
+      "units": [
+        "ko.word.w0876"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.6.v1": {
+      "units": [
+        "ko.word.w0868"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.7.v1": {
+      "units": [
+        "ko.word.w0862"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.exit.8.v1": {
+      "units": [
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.fork.cheongnyangni.dongdaemun.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.fork.cheongnyangni.jonggak.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.fork.cheongnyangni.jongno3.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.fork.cheongnyangni.jongno5.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.cheongnyangni.airport.v1": {
+      "units": [
+        "ko.word.w0170",
+        "ko.grammar.G209"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 「아니요」는 「안」과 겹쳐 2차대로 빼되, 이 열차가 공항에 안 감을 알려 주는 것은 「다른 노선」뿐이라 「다른」을 첫째로 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.cheongnyangni.cheongnyangni.v1": {
+      "units": [
+        "ko.word.w0081",
+        "ko.word.w0302"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.cheongnyangni.myeongdong.v1": {
+      "units": [
+        "ko.word.w0170",
+        "ko.grammar.G209"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 「아니요」는 「안」과 겹쳐 2차대로 빼되, 「네, 명동에 가요」로 끄는 함정을 넘는 것은 「다른 노선」을 알아듣는 일이라 「다른」을 첫째로 둔다(긍정 짝의 가다·네 순서와 같은 틀)",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.cityhall.airport.v1": {
+      "units": [
+        "ko.grammar.G209",
+        "ko.word.w0170"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.cityhall.cityhall.v1": {
+      "units": [
+        "ko.word.w0081",
+        "ko.word.w0302"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답은 표현(묻는 말)이 아니라 그 대답이라 생활 표현 기준에 맞지 않고, 안내의 「갑니다」로 열차가 시청에 감을 알고 긍정 「네」를 알아보는 것이 가른다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.cityhall.myeongdong.v1": {
+      "units": [
+        "ko.grammar.G209",
+        "ko.word.w0170"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.euljiro3.airport.v1": {
+      "units": [
+        "ko.word.w0170",
+        "ko.grammar.G209"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 공항에 안 감을 알려 주는 것은 「다른 노선」이라 「다른」이 정답과 「네」 보기를 가르는 첫째이고, 대답의 부정은 「안 부정」으로 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.euljiro3.euljiro3.v1": {
+      "units": [
+        "ko.word.w0081",
+        "ko.word.w0302"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 긍정 대답을 고르는 문항이라 오답에만 있는 「안 부정」 대신 정답의 「네」를 두고, 안내의 「갑니다」(가다)가 첫째다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.traveler.euljiro3.myeongdong.v1": {
+      "units": [
+        "ko.grammar.G209",
+        "ko.word.w0170"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.ahyeon.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.chungjeongno.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.cityhall.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.dongdaemun.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.euljiro1.v1": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.euljiro3.v1": {
+      "units": [
+        "ko.word.w0774"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.jongno3.v1": {
+      "units": [
+        "ko.word.w0774"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.meet.worker.jongno5.v1": {
+      "units": [
+        "ko.word.w0876"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.chungjeongno.pass.left.v1": {
+      "units": [
+        "ko.word.w0999"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 지금 역은 이름 소리로 맞춰지고 질문이 이미 역에 섰다고 알려 「이번」은 꼭 필요하지 않으며, 정답 보기 「그대로」를 알아보는 것이 가른다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.chungjeongno.pass.right.v1": {
+      "units": [
+        "ko.word.w0999"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 역 이름(지도 밖 고유명사)으로 내릴 역이 아님을 알고 정답 보기 「그대로」를 알아보는 것이 가르므로 2차의 첫째만 두고, 「이번」(1차)·「내리다」(2차)는 몰라도 답이 나와 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.cityhall.off.left.v1": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.cityhall.off.right.v1": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.dongdaemun.off.left.v1": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.dongdaemun.off.right.v1": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.euljiro3.off.left.v1": {
+      "units": [
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.euljiro3.off.right.v1": {
+      "units": [
+        "ko.word.w0618"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「오른쪽」이 왼쪽 문과 가르고, 내릴 역임은 역 이름 소리로 맞춰져 「내리다」는 확신 없는 둘째라 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.euljiro3.pass.left.v1": {
+      "units": [
+        "ko.word.w0999"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 같은 계열처럼 내릴 역이 아님은 역 이름으로 알고 정답 보기 「그대로」를 알아봐야 고르며, 「이번」·「역」은 정답과 오답을 가르지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.euljiro3.pass.right.v1": {
+      "units": [
+        "ko.word.w0999"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 같은 계열처럼 내릴 역이 아님은 역 이름으로 알고 정답 보기 「그대로」를 알아봐야 고르며, 「이번」·「역」은 정답과 오답을 가르지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jonggak.off.left.v1": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jonggak.off.right.v1": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jongno3.off.left.v1": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jongno3.off.right.v1": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jongno3.pass.left.v1": {
+      "units": [
+        "ko.word.w0774",
+        "ko.word.w0876",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jongno3.pass.right.v1": {
+      "units": [
+        "ko.word.w0774",
+        "ko.word.w0876",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jongno5.off.left.v1": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "subway-rush.stop.jongno5.off.right.v1": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

@@ -8,7 +8,7 @@ import { PACKAGE_ROOT, subject } from '../../support/subject.mjs';
 
 const { openMap, UNIT_KINDS } = await subject('map/index.mjs');
 const { auditMap } = await subject('map/audit.mjs');
-const { checkRows } = await subject('map/ledger.mjs');
+const { checkRows, currentName } = await subject('map/ledger.mjs');
 
 // 지도 자료는 시험 대상(src)이 아니라 패키지의 생성물이다 — 변형 사본이 아니라 패키지의 것을 읽는다.
 const read = name => JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'map', name), 'utf8'));
@@ -22,9 +22,10 @@ const map = openMap({ index, units, words });
 const rowsOf = (table, fields) =>
   table.map(row => Object.fromEntries(fields.map((field, at) => [field, row[at]])));
 const familyKey = new Map(index.families);
+// 계열 줄에는 template 표시를 붙인다 — 빌드 검사가 계열 줄을 문항 둘 이상으로 센다(아르곤 A5).
 const rows = [
   ...rowsOf(index.items, index.fields),
-  ...rowsOf(index.templates, index.templateFields),
+  ...rowsOf(index.templates, index.templateFields).map(row => ({ ...row, template: true })),
 ].map(row => ({ ...row, familyKey: familyKey.get(row.f) }));
 
 test('장부는 1부터 빈틈없고, 색인의 번호 · 은퇴는 장부와 맞는다', () => {
@@ -33,7 +34,13 @@ test('장부는 1부터 빈틈없고, 색인의 번호 · 은퇴는 장부와 �
   const ledger = new Map(numbers.items);
   for (const row of rowsOf(index.items, index.fields)) assert.equal(ledger.get(row.n), row.itemKey);
   for (const [n, key] of index.retired.items) assert.equal(ledger.get(n), key);
-  assert.deepEqual(index.families, numbers.families);
+  // 색인의 계열 표는 장부의 번호 그대로, 이름은 이름 표를 따라간 지금 이름이다(아르곤 A1).
+  assert.deepEqual(
+    index.families.map(([n]) => n),
+    numbers.families.map(([n]) => n),
+  );
+  for (const [n, key] of index.families)
+    assert.equal(currentName(numbers.families[n - 1][1], index.renames.families), key);
 });
 
 test('모든 단위가 지도 안에 있고, 단위 종류는 넷이며 능력 id와 겹치지 않는다', () => {

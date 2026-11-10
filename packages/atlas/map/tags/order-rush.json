@@ -1,0 +1,281 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "order-rush.n01.v1": {
+      "units": [
+        "ko.word.w1682",
+        "ko.word.w0013",
+        "ko.word.w0014"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 2차에서 못 부정을 뺌: 「차가운 커피 · 차가운 차」가 그대로 나와 「못 마셔요」는 몰라도 답이 나온다. 기본 컵이 따뜻해 차갑다가 주 단위, 두 바탕 커피·차(둘 다). 서로 다른 두 음료라 cafe-compose 틀(1차)과 맞지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n03.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0647",
+        "ko.word.w0013",
+        "ko.word.w0014"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — -지 말다 주 단위, 커피에 넣을 설탕, 잔마다 처리를 가르는 커피·차. 따뜻하다(2차)는 기본 컵이 따뜻해, 넣다(2차)는 설탕만 알아들어도 추가가 드러나 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n04.v1": {
+      "units": [
+        "ko.grammar.S115",
+        "ko.word.w0013",
+        "ko.word.w0542"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 둘째 잔을 「아이스가 아니라 따뜻한 라테로」 바로잡는 이/가 아니다가 주 단위, 1차에 빠진 바탕 커피, 바로잡은 내용 따뜻하다. 라테는 지도 밖",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n05.v1": {
+      "units": [
+        "ko.word.w0012",
+        "ko.word.w0013",
+        "ko.life.cafe-order"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 우유 주 단위·커피(둘 다), 「친구에게는 따뜻한 차 한 잔을 주세요」가 cafe-order 그대로(1차)라 차를 따로 두지 않음. 친구 잔이 따로 말해져 「안 마셔요」의 안 부정(2차)은 몰라도 답이 나옴",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n06.v1": {
+      "units": [
+        "ko.word.w0013",
+        "ko.life.cafe-preference"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 바탕을 가르는 커피(2차 주 단위), 첫 문장은 cafe-preference 「따뜻한 … 마시고 싶어요」 변형(1차). -고 싶다·따뜻하다(2차)는 그 표현 안에 있어 따로 두지 않음",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n07.v1": {
+      "units": [
+        "ko.word.w0014",
+        "ko.word.w1682"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지도 밖 「얼음」만 뺌: 반드시 골라야 하는 바탕 차가 주 단위, 차갑게가 둘째(얼음을 넣으면 컵이 저절로 차가워져 차갑다만으로는 가르지 않음)",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n08.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0012",
+        "ko.word.w0647",
+        "ko.word.w0013"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「넣지 마세요」의 -지 말다 주 단위, 빼야 할 우유·설탕, 바탕 커피",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n09.v1": {
+      "units": [
+        "ko.grammar.G506",
+        "ko.word.w1682",
+        "ko.life.cafe-order"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 얼음을 막는 -(으)면 안 되다(둘 다) 주 단위, 기본 컵이 따뜻해 바꿔야 하는 차갑다(2차), 「차가운 라테 한 잔 주세요」는 cafe-order 변형(1차). 얼음·라테는 지도 밖",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n10.v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.word.w0647",
+        "ko.word.w0012",
+        "ko.word.w0013"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 라테에만 설탕을 넣는 만 주 단위, 설탕·우유(라테 알아보기)·커피",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.n11.v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.word.w0542",
+        "ko.word.w0014",
+        "ko.word.w0013"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「차만 따뜻하게」의 만 주 단위, 따뜻하다·차·커피",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.o03.v1": {
+      "units": [
+        "ko.word.w1249",
+        "ko.word.w0647",
+        "ko.life.cafe-order"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 기본 컵이 설탕 없음(core.mjs makeCup)이라 「설탕」을 듣고 「빼」를 모르면 설탕을 넣어 틀린다: 빼다(2차)를 주 단위로, 설탕(둘 다), 첫 문장이 cafe-order 그대로라 차·한 잔을 덮는 생활 표현(1차). 요청 어미와 따로 둔 따뜻하다·차는 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.o05.v1": {
+      "units": [
+        "ko.word.w0647",
+        "ko.word.w0013",
+        "ko.life.cafe-order"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 기본 컵에 설탕이 없어 「설탕」을 알아들어야 넣는다(주 단위), 바탕 커피, 「따뜻한 커피 한 잔 주세요」는 cafe-order 변형. 넣다(2차)는 「설탕도」만으로 추가가 드러나 확신이 없고, 따뜻하다는 기본 컵이 따뜻해 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.o06.v1": {
+      "units": [
+        "ko.word.w1249",
+        "ko.life.cafe-compose",
+        "ko.word.w0139",
+        "ko.word.w0013"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 잔 가운데 한 잔만 얼음을 빼는 조건이 가르므로 빼다(2차) 주 단위, 「아이스커피 두 잔 주세요」는 cafe-compose 변형(1차, 두 잔을 덮음), 한 잔(둘 다), 기본 컵은 바탕이 비어 있어 커피를 골라야 하므로 커피를 더함. 얼음은 지도 밖",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.o08.v2": {
+      "units": [
+        "ko.word.w1249",
+        "ko.word.w0647",
+        "ko.life.cafe-compose",
+        "ko.word.w1682"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 빼다(2차) 주 단위와 설탕(둘 다), 「차가운 차 두 잔 주세요」는 cafe-compose 변형(1차), 기본 컵이 따뜻해 바꿔야 하는 차갑다(2차). 기본 컵이 설탕 없음이라 「둘 다」를 몰라도 두 잔 다 맞으므로 넷을 넘기는 둘·다를 뺌",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.o11.v2": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0647",
+        "ko.word.w0014"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「넣어 주세요」와 「넣지 마세요」를 가르는 -지 말다가 주 단위, 금지 대상 설탕, 바탕 차. 넣다(2차)는 두 말에 똑같이 있어 가르지 않고 얼음은 지도 밖",
+        "at": "2026-11-10"
+      }
+    },
+    "order-rush.r02.v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.word.w0647",
+        "ko.life.cafe-compose"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「한 잔만」의 만이 주 단위, 한 잔에 넣을 설탕, 첫 문장이 cafe-compose 그대로라 차·두 잔을 덮음(2차의 차보다 맞음)",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

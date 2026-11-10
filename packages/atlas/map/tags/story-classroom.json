@@ -1,0 +1,148 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "story-classroom.cleanup-paper.classroom-birthday-2": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0193",
+        "ko.word.w0558"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「버리지 말고」의 -지 말다, 버리다, 종이(서랍은 지도 밖)",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.cleanup-snacks.classroom-birthday-2": {
+      "units": [
+        "ko.word.w0732"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 옮길 물건 과자(상자는 지도 밖), 조사는 몰라도 됨",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.clue-flowers.classroom-birthday-2": {
+      "units": [
+        "ko.word.w0049",
+        "ko.word.w0587"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 옮길 꽃과 놓을 곳 책상",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.clue-letter.classroom-birthday-2": {
+      "units": [
+        "ko.grammar.G406",
+        "ko.word.w0467",
+        "ko.word.w0841"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「꽃을 놓은 뒤」의 순서(먼저 하면 틀림), 편지, 칠판",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.review-cake.classroom-birthday-2": {
+      "units": [
+        "ko.grammar.G406",
+        "ko.word.w0732"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「과자를 옮긴 뒤」의 순서와, 남은 두 일 가운데 먼저 할 것을 고르는 과자",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.review-paper.classroom-birthday-2": {
+      "units": [
+        "ko.grammar.S115",
+        "ko.word.w0558"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차·2차 같음 — 「서랍이 아니라 상자」의 이/가 아니다와 옮길 종이",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.review-snacks.classroom-birthday-2": {
+      "units": [
+        "ko.word.w0732"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 옮길 물건 과자. 위(1차)는 자리를 가르지 않음(선반은 지도 밖)",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.surprise-cake.classroom-birthday-2": {
+      "units": [
+        "ko.word.w0587"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 놓을 곳 책상. 위(1차)는 책상·선반 모두 「위」라 자리를 가르지 않음, 케이크는 지도 밖",
+        "at": "2026-11-10"
+      }
+    },
+    "story-classroom.surprise-ribbon.classroom-birthday-2": {
+      "units": [
+        "ko.grammar.S340",
+        "ko.word.w0841"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「케이크를 놓은 다음」은 지도의 -은 다음에(S340)가 G406보다 정확, 붙일 곳 칠판",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

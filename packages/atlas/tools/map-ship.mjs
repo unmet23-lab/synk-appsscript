@@ -34,6 +34,7 @@ export function sliceOf(index, bank) {
     templateFields: index.templateFields,
     templates,
     families: index.families.filter(([n]) => used.has(n)),
+    shared: (index.shared ?? []).filter(([n]) => items.some(row => row[at('n')] === n)),
     renames: index.renames,
   };
 }

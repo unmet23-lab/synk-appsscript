@@ -1,0 +1,1975 @@
+{
+  "rubric": "atlas-tags-r1",
+  "tags": {
+    "life.cafe-apply-here": {
+      "units": [
+        "ko.life.cafe-here"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-apply-here-transfer": {
+      "units": [
+        "ko.life.cafe-here",
+        "ko.word.w0208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 지문은 「카페 안에서」라 「여기서」를 글자로 맞출 수 없고, 「집에서 마실게요」와 가르는 「여기」가 꼭 필요하다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-apply-order": {
+      "units": [
+        "ko.life.cafe-order",
+        "ko.word.w0161",
+        "ko.word.w0363"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-apply-order-transfer": {
+      "units": [
+        "ko.life.cafe-order",
+        "ko.word.w0542",
+        "ko.word.w0012"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-apply-takeout": {
+      "units": [
+        "ko.life.cafe-takeout"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-apply-takeout-transfer": {
+      "units": [
+        "ko.life.cafe-takeout",
+        "ko.word.w0036"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 친구 「집」에서 마신다는 것이 「여기서 마실게요」를 걸러 내는 단서다. 다른 포장 문항의 목적지 낱말과도 맞춘다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-compose-count": {
+      "units": [
+        "ko.word.w0161",
+        "ko.life.cafe-compose"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「두」가 한·세 잔과 가르고, 「두 잔 주세요」는 이 레슨의 cafe-compose 같은 틀 변형이라 표현을 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-compose-count-transfer": {
+      "units": [
+        "ko.word.w0139",
+        "ko.life.cafe-compose"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「한」이 두·세 잔과 가르고, 정답은 수량을 넣은 주문 틀(cafe-compose) 변형이다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-compose-order": {
+      "units": [
+        "ko.life.cafe-compose",
+        "ko.word.w0161",
+        "ko.word.w0014",
+        "ko.word.w0542"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-compose-order-transfer": {
+      "units": [
+        "ko.life.cafe-compose",
+        "ko.word.w1682",
+        "ko.word.w0015"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-compose-place": {
+      "units": [
+        "ko.life.cafe-here"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-compose-place-transfer": {
+      "units": [
+        "ko.life.cafe-takeout",
+        "ko.word.w0037"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 의견 같음 — 정답 표현 cafe-takeout과 매장 밖 목적지 「학교」, -(으)려고 하다는 몰라도 답이 나와 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-expressions-here": {
+      "units": [
+        "ko.life.cafe-here",
+        "ko.word.w0208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-expressions-here-transfer": {
+      "units": [
+        "ko.life.cafe-here"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-expressions-order": {
+      "units": [
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문 주문을 그대로 찾는 문항이라 「차·한」은 글자 맞추기로도 나와 빼고 표현 하나만 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-expressions-order-transfer": {
+      "units": [
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 같은 틀 변형 주문이 지문에 그대로 있어 「차갑다·주스」는 맞추기로 나오므로 빼고 표현 하나만 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-expressions-takeout": {
+      "units": [
+        "ko.life.cafe-takeout",
+        "ko.word.w0270"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-expressions-takeout-transfer": {
+      "units": [
+        "ko.life.cafe-takeout"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-story-here": {
+      "units": [
+        "ko.word.w0208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-story-here-transfer": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-story-order": {
+      "units": [
+        "ko.word.w0326",
+        "ko.word.w0014"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-story-order-transfer": {
+      "units": [
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 정답이 cafe-order 같은 틀 변형이라 표현을 두고(1차), 새 주문표가 지문에 그대로 있어 「따뜻하다·우유」는 바로 앞 짝 문항과 같이 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-story-takeout": {
+      "units": [
+        "ko.life.cafe-takeout",
+        "ko.word.w0270"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-story-takeout-transfer": {
+      "units": [
+        "ko.life.cafe-takeout",
+        "ko.word.w0697"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 표현 cafe-takeout에 카페 밖 목적지 「공원」을 둔다. 같은 짜임의 compose-place-transfer(학교) · apply-takeout-transfer(집)와 맞춘다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-change-count": {
+      "units": [
+        "ko.life.cafe-add",
+        "ko.word.w0149"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-change-count-transfer": {
+      "units": [
+        "ko.life.cafe-add",
+        "ko.word.w0149"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-change-drink": {
+      "units": [
+        "ko.life.cafe-change",
+        "ko.word.w0014"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-change-drink-transfer": {
+      "units": [
+        "ko.life.cafe-change",
+        "ko.word.w0015"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-change-place": {
+      "units": [
+        "ko.life.cafe-change",
+        "ko.life.cafe-takeout"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-change-place-transfer": {
+      "units": [
+        "ko.life.cafe-change",
+        "ko.word.w0330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-soldout-count": {
+      "units": [
+        "ko.word.w0139",
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-soldout-count-transfer": {
+      "units": [
+        "ko.word.w0161",
+        "ko.word.w0363",
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-soldout-menu": {
+      "units": [
+        "ko.life.cafe-order",
+        "ko.word.w0014"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답이 cafe-order 그대로이고 지문이 「따뜻한 차는 주문할 수 있어요」라 밝혀 품절 표현·「주스」는 꼭 필요하지 않다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-soldout-menu-transfer": {
+      "units": [
+        "ko.word.w0015",
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 2차대로 정답은 cafe-order 변형이고 품절 표현은 뺀다. 보기가 모두 같은 틀이라 하나뿐인 「주스」를 첫째로 올린다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-soldout-takeout": {
+      "units": [
+        "ko.life.cafe-takeout"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-soldout-takeout-transfer": {
+      "units": [
+        "ko.life.cafe-here"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-taste-count": {
+      "units": [
+        "ko.word.w0161",
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 수만 다른 보기라 「두」가 첫째이고, 이 레슨의 표현은 cafe-order라 cafe-compose 대신 그것을 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-taste-count-transfer": {
+      "units": [
+        "ko.word.w0326",
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 세 사람 → 세 잔 셈이 답을 가르고, 「차가운」은 지문 글자와 맞춰도 걸러져 확신 없는 둘째라 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-taste-drink": {
+      "units": [
+        "ko.life.cafe-order",
+        "ko.word.w0014"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 정답이 레슨 표현 그대로이고, 「차」가 든 보기가 하나뿐이라 「따뜻하다」는 몰라도 답이 나온다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-taste-drink-transfer": {
+      "units": [
+        "ko.word.w1682",
+        "ko.life.cafe-order"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합침 — 보기가 모두 같은 틀이라 「차갑다」를 첫째로(1차), 「차가운」 보기가 하나뿐이라 「주스」는 몰라도 답이 나와 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-taste-place": {
+      "units": [
+        "ko.life.cafe-here",
+        "ko.word.w0208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.cafe-visit-taste-place-transfer": {
+      "units": [
+        "ko.life.cafe-takeout",
+        "ko.word.w0036"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-apply-landmark": {
+      "units": [
+        "ko.life.directions-beside",
+        "ko.word.w0334"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-apply-landmark-transfer": {
+      "units": [
+        "ko.life.directions-beside",
+        "ko.word.w0334"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-apply-turn": {
+      "units": [
+        "ko.word.w0618",
+        "ko.life.directions-right"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「오른쪽」이 왼쪽·뒤쪽과 가르는 첫째이고, 정답이 레슨 표현 「오른쪽으로 가세요」의 알맹이라 표현도 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-apply-turn-transfer": {
+      "units": [
+        "ko.word.w0609",
+        "ko.life.directions-right"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「왼쪽」이 첫째이고, 「왼쪽으로 가세요」는 directions-right 같은 틀 변형이다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-apply-where": {
+      "units": [
+        "ko.life.directions-where"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-apply-where-transfer": {
+      "units": [
+        "ko.life.directions-where",
+        "ko.word.w0214"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-expressions-beside": {
+      "units": [
+        "ko.word.w0334",
+        "ko.life.directions-beside"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 보기가 위치 말뿐이라 「옆」이 안·뒤와 가르는 첫째(2차)이고, 정답은 레슨 표현의 알맹이라 표현도 둔다(1차)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-expressions-beside-transfer": {
+      "units": [
+        "ko.word.w0334",
+        "ko.life.directions-beside"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 「옆」이 든 보기가 하나뿐이라 첫째이고(2차), 정답 「학교 옆」은 「은행 옆에 있어요」 같은 틀 변형이라 표현도 둔다(1차)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-expressions-right": {
+      "units": [
+        "ko.word.w0618"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-expressions-right-transfer": {
+      "units": [
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-expressions-where": {
+      "units": [
+        "ko.life.directions-where",
+        "ko.word.w0214",
+        "ko.word.w1211"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-expressions-where-transfer": {
+      "units": [
+        "ko.life.directions-where",
+        "ko.word.w0214"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-story-landmark": {
+      "units": [
+        "ko.word.w0039"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 건물 이름만 고르는 사실 답이라 「은행」만 있으면 되고 「옆」은 몰라도 답이 나온다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-story-landmark-transfer": {
+      "units": [
+        "ko.word.w0038"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-story-turn": {
+      "units": [
+        "ko.word.w0618"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-story-turn-transfer": {
+      "units": [
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-story-where": {
+      "units": [
+        "ko.word.w0697",
+        "ko.life.directions-where"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 보기가 같은 틀이고 장소만 달라 「공원」이 첫째, 정답이 레슨 표현 그대로라 표현을 둘째로 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.directions-story-where-transfer": {
+      "units": [
+        "ko.word.w0600",
+        "ko.life.directions-where"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「도서관」이 같은 틀 보기를 가르는 첫째이고, 정답은 directions-where 같은 틀 변형이다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-apply-hello": {
+      "units": [
+        "ko.life.greet-hello"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-apply-hello-transfer": {
+      "units": [
+        "ko.life.greet-hello"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-apply-introduction": {
+      "units": [
+        "ko.life.greet-name"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답이 greet-name 같은 틀 변형이고, 지문의 「수진」과 맞춰도 답이 나와 「이름」은 확신 없는 둘째라 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-apply-introduction-transfer": {
+      "units": [
+        "ko.life.greet-name"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-apply-thanks": {
+      "units": [
+        "ko.life.greet-thanks"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-apply-thanks-transfer": {
+      "units": [
+        "ko.life.greet-thanks"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-expressions-hello": {
+      "units": [
+        "ko.life.greet-hello"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-expressions-hello-transfer": {
+      "units": [
+        "ko.life.greet-hello"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-expressions-name": {
+      "units": [
+        "ko.life.greet-name"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-expressions-name-transfer": {
+      "units": [
+        "ko.life.greet-name"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-expressions-thanks": {
+      "units": [
+        "ko.life.greet-thanks"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-expressions-thanks-transfer": {
+      "units": [
+        "ko.life.greet-thanks"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-story-hello": {
+      "units": [
+        "ko.life.greet-hello"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-story-hello-transfer": {
+      "units": [
+        "ko.life.greet-hello"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-story-name": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-story-name-transfer": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-story-thanks": {
+      "units": [
+        "ko.word.w0234"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답(마린이 찾아 줌)을 가르는 것은 「찾다」이고, 묻는 말 「이유」는 몰라도 답이 나온다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.greetings-story-thanks-transfer": {
+      "units": [
+        "ko.word.w0234"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답은 표현이 아니라 그 일의 사실이라 greet-thanks는 기준상 단위가 아니고, 보기를 가르는 「찾다」를 둔다(앞 문항과 같은 정답 문장)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-apply-delay": {
+      "units": [
+        "ko.life.plans-delay"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-apply-delay-transfer": {
+      "units": [
+        "ko.life.plans-delay",
+        "ko.word.w0466"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답이 plans-delay 같은 틀 변형이고, 「일찍 왔어요」·「도착했어요」와 가르는 「늦다」를 둔다(표현에 들어 있다는 까닭만으로는 빼지 않는다)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-apply-place": {
+      "units": [
+        "ko.grammar.S115",
+        "ko.word.w0162"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-apply-place-transfer": {
+      "units": [
+        "ko.grammar.S115"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 「안이 아니라」를 알아야 「학교 안」을 걸러 내고, 「학교 앞」은 지문 글자와 맞춰 고를 수 있어 「앞」은 몰라도 된다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-apply-time": {
+      "units": [
+        "ko.word.w0375",
+        "ko.word.w0070"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-apply-time-transfer": {
+      "units": [
+        "ko.word.w0375",
+        "ko.word.w0069"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-expressions-delay": {
+      "units": [
+        "ko.life.plans-delay",
+        "ko.word.w0466"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 레슨 표현의 뜻을 묻는 문항이라 표현이 첫째이고, 일찍·약속 정하지 않음과 가르는 「늦다」를 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-expressions-delay-transfer": {
+      "units": [
+        "ko.life.plans-delay"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-expressions-place": {
+      "units": [
+        "ko.word.w0214",
+        "ko.word.w0544"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-expressions-place-transfer": {
+      "units": [
+        "ko.life.plans-place",
+        "ko.word.w0214",
+        "ko.grammar.G207"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 레슨 표현 「어디에서 만날까요?」에 답하는 문항이라 표현이 첫째이고, 장소를 묻는 「어디」와 장소 답의 「에서」가 시간 답과 가른다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-expressions-time": {
+      "units": [
+        "ko.word.w0070",
+        "ko.word.w0375"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-expressions-time-transfer": {
+      "units": [
+        "ko.word.w0521",
+        "ko.word.w0069"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-story-delay": {
+      "units": [
+        "ko.word.w0105"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-story-delay-transfer": {
+      "units": [
+        "ko.word.w0466"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 도착 상태를 고르는 사실 답이라 표현 단위를 빼고, 도착·취소와 가르는 「늦다」만 둔다(store-story-card-transfer와 맞춘다)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-story-place": {
+      "units": [
+        "ko.word.w0162",
+        "ko.word.w0600"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-story-place-transfer": {
+      "units": [
+        "ko.word.w1715",
+        "ko.word.w0697"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-story-time": {
+      "units": [
+        "ko.word.w0375",
+        "ko.word.w0070"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.plans-story-time-transfer": {
+      "units": [
+        "ko.word.w0521",
+        "ko.word.w0651"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-apply-bag": {
+      "units": [
+        "ko.life.store-bag",
+        "ko.word.w0265"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-apply-bag-transfer": {
+      "units": [
+        "ko.word.w0298",
+        "ko.word.w0128",
+        "ko.word.w0660"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「필요 없어요」(필요+없다)를 알아야 거절할 줄 알고 「아니요」가 「네」와 가른다. 「괜찮다」는 몰라도 답이 나와 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-apply-card": {
+      "units": [
+        "ko.life.store-card",
+        "ko.word.w0643"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-apply-card-transfer": {
+      "units": [
+        "ko.word.w1791",
+        "ko.life.store-card"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-apply-price": {
+      "units": [
+        "ko.life.store-price",
+        "ko.word.w0322",
+        "ko.word.w0099"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-apply-price-transfer": {
+      "units": [
+        "ko.life.store-price",
+        "ko.word.w0322"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-expressions-bag": {
+      "units": [
+        "ko.life.store-bag",
+        "ko.word.w1995"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 레슨 표현 「봉투 하나 주세요」의 뜻을 묻는 문항이라 표현이 첫째이고, 정답을 가르는 「봉투」를 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-expressions-bag-transfer": {
+      "units": [
+        "ko.life.store-bag",
+        "ko.word.w1995"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-expressions-card": {
+      "units": [
+        "ko.word.w0643"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-expressions-card-transfer": {
+      "units": [
+        "ko.word.w1791",
+        "ko.life.store-card"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 묻는 문장 「현금으로 계산할게요」는 store-card 같은 틀 변형이고, 「카드로 내요」와 가르는 「현금」이 첫째다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-expressions-price": {
+      "units": [
+        "ko.life.store-price",
+        "ko.word.w0099",
+        "ko.word.w0322"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-expressions-price-transfer": {
+      "units": [
+        "ko.life.store-price",
+        "ko.word.w0429",
+        "ko.word.w0322"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-story-bag": {
+      "units": [
+        "ko.word.w1995",
+        "ko.word.w1096"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-story-bag-transfer": {
+      "units": [
+        "ko.word.w1995",
+        "ko.word.w1096"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-story-card": {
+      "units": [
+        "ko.word.w0643"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "2차 — 계산 방법은 이야기 속 사실 답이라 표현 단위가 아니고, 「현금으로」와 가르는 「카드」만 둔다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-story-card-transfer": {
+      "units": [
+        "ko.word.w1791"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답은 「했어요」로 알리는 사실 답이라 표현 단위를 빼고, 「카드로」와 가르는 「현금」만 둔다(앞 이야기 문항과 맞춘다)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-story-price": {
+      "units": [
+        "ko.word.w0011"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.store-story-price-transfer": {
+      "units": [
+        "ko.word.w0012"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-apply-alight": {
+      "units": [
+        "ko.life.transit-alight",
+        "ko.word.w0224",
+        "ko.word.w0263"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답이 transit-alight 변형, 「이번」이 지금 멈춘 곳이 목적지임을 알게 하고, 「내리다」가 더 가요·다시 타요와 가른다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-apply-alight-transfer": {
+      "units": [
+        "ko.life.transit-alight",
+        "ko.word.w0187",
+        "ko.word.w0224"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합침 — 표현과 「다음」·「이번」의 맞섬은 1차대로 두고, 「학교」는 지문 안에서 목적지와 글자로 맞춰져 2차대로 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-apply-card": {
+      "units": [
+        "ko.life.transit-card"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「교통카드를 찍으세요」를 단말기에 대기로 알아야 답이 나와 표현이 단위이고, 일반 「찍다」는 오답 「사진을 찍고」 쪽이라 따로 두지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-apply-card-transfer": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "합침 — 지문 「단말기에 대세요」는 표현의 말바꿈이라 transit-card(1차)는 기준상 맞지 않고, 오답은 「사진·의자」로 이미 갈려 -기 전에(2차)도 꼭 필요하지 않다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-apply-route": {
+      "units": [
+        "ko.life.transit-destination"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답은 표현의 장소만 바꾼 변형이고, 「버스」는 지시문에 주어져 있으며 「병원」은 모든 보기에 있어 가르지 못한다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-apply-route-transfer": {
+      "units": [
+        "ko.life.transit-destination"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-expressions-alight": {
+      "units": [
+        "ko.word.w0187",
+        "ko.word.w0149"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-expressions-alight-transfer": {
+      "units": [
+        "ko.word.w0224",
+        "ko.life.transit-alight",
+        "ko.word.w0227"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 「이번」이 「더 가요」와 가르는 첫째이고, 묻는 문장은 transit-alight 같은 틀 변형이라 표현을 두며, 「지금」은 두 의견이 함께 둔 대응 낱말이다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-expressions-card": {
+      "units": [
+        "ko.life.transit-card"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-expressions-card-transfer": {
+      "units": [
+        "ko.life.transit-card"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「찍다」의 탈것 뜻(단말기에 대기)이 곧 표현의 뜻이고, 일반 「찍다」는 오답 「사진을 찍어요」 쪽이라 따로 두지 않는다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-expressions-route": {
+      "units": [
+        "ko.life.transit-destination"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답이 레슨 표현 그대로이고, 「버스」는 지시문에 주어져 있어 확신 없는 둘째라 뺀다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-expressions-route-transfer": {
+      "units": [
+        "ko.life.transit-destination"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-story-alight": {
+      "units": [
+        "ko.word.w0149"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 이야기 속 행동을 가르는 것은 「더」이고, 「도서관」은 몰라도 이야기 흐름으로 답이 나온다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-story-alight-transfer": {
+      "units": [
+        "ko.life.transit-alight",
+        "ko.word.w0187"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답이 레슨 표현 그대로이고, 「학교에서 내려요」와 가르는 「다음」을 둔다(표현에 들어 있다는 까닭만으로는 빼지 않는다)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-story-card": {
+      "units": [
+        "ko.word.w0643"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 창문·좌석과 「카드 단말기」를 가르는 지도 안 단위는 「카드」 하나라 둔다(2차의 빈 목록보다 낫다)",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-story-card-transfer": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「단말기에 대세요」는 「교통카드를 찍으세요」의 말바꿈일 뿐 같은 틀 변형이 아니고, 「카드」는 모든 보기에 있어 가르지 못하며 「대다·단말기」는 지도 밖이다",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-story-route": {
+      "units": [],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    },
+    "life.transit-story-route-transfer": {
+      "units": [
+        "ko.word.w0600"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r1",
+        "packet": "tags-a",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-10"
+      }
+    }
+  }
+}

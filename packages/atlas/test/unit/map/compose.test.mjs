@@ -141,6 +141,7 @@ test('같은 은행 안 같은 열쇠 — 칸이 같으면 하나로, 다르면 
 });
 
 const indexOf = out => ({
+  families: out.families,
   format: MAP_FORMAT,
   edition: 1,
   revision: 2,
@@ -148,7 +149,6 @@ const indexOf = out => ({
   items: out.items.map(row => ITEM_FIELDS.map(field => row[field])),
   templateFields: TEMPLATE_FIELDS,
   templates: out.templates.map(row => TEMPLATE_FIELDS.map(field => row[field])),
-  families: out.ledger.families,
   retired: out.retired,
   renames: { units: { 'ko.word.old': 'ko.word.w0001' }, items: {}, families: {} },
 });
@@ -272,4 +272,128 @@ test('이름 표는 끝까지 따라간다 — 단위 · 문항 · 계열 · fam
   assert.equal(map.item('a').itemKey, 'a3');
   assert.equal(map.familyNumber('a.f'), map.familyNumber('f3'));
   assert.equal(map.unit('family:a.f').id, 'family:f3');
+});
+
+test('빈 태그 줄은 제품 conceptIds를 덮는다 — 검수가 「꼭 필요한 단위 없음」으로 정한 문항은 계열 단위로 돈다', () => {
+  const tags = new Map([['a', { units: [] }]]);
+  const out = compose(
+    [{ bank: 'g', items: [meta('a', { conceptIds: ['G201', 'ko.word.w0001'] })] }],
+    {
+      tags,
+    },
+  );
+  assert.deepEqual(out.items[0].units, []);
+  assert.equal(out.items[0].basis, 'tags');
+});
+
+test('계열 이름을 바꾸면 색인의 계열 표 · 은퇴 목록은 지금 이름이고, 문항의 계열도 지금 이름이다(아르곤 A1)', () => {
+  const first = compose([{ bank: 'g', items: [meta('a'), meta('b')] }]);
+  const renames = { items: { b: 'b2' }, families: { 'a.f': 'a.g' } };
+  const out = compose([{ bank: 'g', items: [meta('a', { familyKey: 'a.g' })] }], {
+    ledger: first.ledger,
+    renames,
+  });
+  assert.deepEqual(out.families[0], [1, 'a.g']);
+  assert.deepEqual(out.ledger.families[0], [1, 'a.f'], '장부는 옛 이름 그대로');
+  assert.deepEqual(out.retired.items, [[2, 'b2']]);
+  const map = openMap({ index: { ...indexOf(out), families: out.families, renames } });
+  assert.equal(map.item('a').familyKey, 'a.g');
+  assert.equal(map.familyNumber('a.g'), 1);
+  assert.equal(map.familyNumber('a.f'), 1);
+  assert.equal(map.itemNumber('b'), 2);
+});
+
+test('앞 색인에서 되살린 계열 줄(난도 · 꼴 칸 없음)은 같은 계열 줄과 「바뀜」이 아니다(아르곤 A2)', () => {
+  const now = {
+    f: 9,
+    skillId: 's',
+    difficulty: null,
+    responseFormat: null,
+    units: ['u'],
+    flags: 0,
+  };
+  const decoded = { f: 9, skillId: 's', units: ['u'], flags: 0 };
+  assert.deepEqual(changesBetween([decoded], [now]).templates.changed, []);
+});
+
+test('공유 문항이 든 조각 둘을 합치면 그 문항은 한 번이고, 두 은행 모두에서 보인다(아르곤 A4)', () => {
+  const out = compose([
+    { bank: 'g', items: [meta('a')] },
+    { bank: 'h', items: [meta('a'), meta('b')] },
+  ]);
+  const whole = indexOf(out);
+  const at = whole.fields.indexOf('n');
+  const shared = [[1, ['h']]];
+  const slice = rows => ({ ...whole, items: rows, shared });
+  const map = openMap({
+    index: [slice(whole.items.filter(r => r[at] === 1)), slice(whole.items)],
+  });
+  assert.equal(map.items().length, 2);
+  assert.deepEqual(
+    map.items('h').map(item => item.itemKey),
+    ['a', 'b'],
+  );
+});
+
+test('이름이 바뀐 문항의 검수 태그가 따라온다 — 옛 열쇠의 태그가 고아가 되지 않는다(Fable 최종 P2-1)', () => {
+  const first = compose([{ bank: 'g', items: [meta('a', { conceptIds: ['ko.word.w0001'] })] }]);
+  const out = compose([{ bank: 'g', items: [meta('a2', { conceptIds: ['ko.word.w0001'] })] }], {
+    ledger: first.ledger,
+    tags: new Map([['a', { units: ['ko.word.w0002'] }]]),
+    renames: { items: { a: 'a2' } },
+  });
+  assert.deepEqual(out.items[0].units, ['ko.word.w0002']);
+  assert.deepEqual(out.orphanTags, []);
+  assert.throws(
+    () =>
+      compose([{ bank: 'g', items: [meta('a2')] }], {
+        ledger: first.ledger,
+        tags: new Map([
+          ['a', { units: ['ko.word.w0002'] }],
+          ['a2', { units: ['ko.word.w0001'] }],
+        ]),
+        renames: { items: { a: 'a2' } },
+      }),
+    /둘 다/,
+  );
+});
+
+test('은퇴 문항은 메타를 든 객체로 물어도 null이고, 은퇴 줄에는 옛 값이 실린다(Fable 최종 P3-1 · P3-2)', () => {
+  const first = compose([
+    { bank: 'g', items: [meta('a'), meta('gone', { conceptIds: ['G201'] })] },
+  ]);
+  const out = compose([{ bank: 'g', items: [meta('a')] }], { ledger: first.ledger });
+  const map = openMap({ index: indexOf(out) });
+  assert.equal(
+    map.item({
+      itemKey: 'gone',
+      familyKey: 'gone.f',
+      skillId: 'ko.reading.vocabulary',
+      difficulty: 1,
+      responseFormat: 'single-choice',
+    }),
+    null,
+  );
+  const change = changesBetween(first.items, out.items).items;
+  assert.deepEqual(change.retired, [
+    {
+      n: 2,
+      from: {
+        f: 2,
+        skillId: 'ko.reading.vocabulary',
+        difficulty: 1,
+        responseFormat: 'single-choice',
+        units: ['ko.grammar.G201'],
+        unknownOption: false,
+      },
+    },
+  ]);
+});
+
+test('단계 3 접기 어댑터가 받는 색인 꼴 — foldIndex { edition, lookup }', () => {
+  const out = compose([{ bank: 'g', items: [meta('a', { conceptIds: ['G201'] })] }]);
+  const map = openMap({ index: indexOf(out) });
+  assert.equal(map.foldIndex.edition, 'index-2');
+  assert.deepEqual(map.foldIndex.lookup('a').units, ['ko.grammar.G201']);
+  assert.equal(map.foldIndex.lookup('nope'), null);
 });

@@ -3,7 +3,7 @@
 // 아래 「멈춤」은 고쳐질 때까지 색인을 내지 않는다(알림은 audit.mjs).
 //   멈춤: 지도에 없는 단위 · 능력 id와 같은 단위 · 모르는 능력 · 난도가 1 · 2 · 3 밖 · 꼴 · 열쇠가 빈 문항 ·
 //         같은 열쇠에 두뇌가 읽는 칸이 다른 두 줄 · 장부 위반
-import { extendRows, numberer } from './ledger.mjs';
+import { currentName, currentRows, extendRows, numberer } from './ledger.mjs';
 
 export const ITEM_FIELDS = Object.freeze([
   'n',
@@ -82,8 +82,8 @@ export function foldViewOf(row) {
   return {
     f: row.f,
     skillId: row.skillId,
-    difficulty: row.difficulty,
-    responseFormat: row.responseFormat,
+    difficulty: row.difficulty ?? null,
+    responseFormat: row.responseFormat ?? null,
     units: row.units,
     unknownOption: !!(row.flags & FLAG.unknown),
   };
@@ -139,8 +139,21 @@ function mergeShared(rows, problems) {
 // banks: [{ bank, template?, items: [meta] }] — meta는 { itemKey, familyKey, skillId, difficulty, responseFormat,
 // conceptIds?, audioRequired?, unknownOption? }. tags: Map(열쇠 → { units }) — 검수를 통과한 줄만 준다.
 // unitIds · skills: Set. ledger: { items, families } 장부 줄. renames: { units, items, families }.
+// 태그 열쇠를 지금 이름으로 옮긴다 — 문항 · 계열 이름을 바꿔도 검수된 태그가 따라온다(Fable 최종 P2-1).
+// 옛 이름과 새 이름 둘 다에 태그 줄이 있으면 어느 쪽이 검수본인지 모르므로 멈춘다.
+function tagsNow(tags, renames, problems) {
+  const out = new Map();
+  for (const [key, line] of tags) {
+    const now = currentName(currentName(key, renames.items), renames.families);
+    if (out.has(now)) problems.push(`태그 줄이 옛 이름과 새 이름에 둘 다 있다(${now})`);
+    out.set(now, line);
+  }
+  return out;
+}
+
 export function composeIndex({ banks, tags = new Map(), unitIds, skills, ledger, renames = {} }) {
-  const ctx = { tags, unitIds, skills, problems: [] };
+  const problems = [];
+  const ctx = { tags: tagsNow(tags, renames, problems), unitIds, skills, problems };
   const merged = mergeShared(
     banks.flatMap(bank => bankRows(bank, ctx)),
     ctx.problems,
@@ -150,7 +163,7 @@ export function composeIndex({ banks, tags = new Map(), unitIds, skills, ledger,
       ctx.problems.push(`옛 단위 이름 ${unit}가 아직 쓰인다(이름 표를 따라 새 이름으로)`);
   if (ctx.problems.length) throw new Error(`Atlas map: ${ctx.problems.join('\n')}`);
   const keys = new Set(merged.rows.map(row => (row.template ? row.familyKey : row.itemKey)));
-  const orphanTags = [...tags.keys()].filter(key => !keys.has(key)).sort();
+  const orphanTags = [...ctx.tags.keys()].filter(key => !keys.has(key)).sort();
   const items = merged.rows.filter(row => !row.template);
   const templates = merged.rows.filter(row => row.template);
   const itemLedger = extendRows(
@@ -177,10 +190,14 @@ export function composeIndex({ banks, tags = new Map(), unitIds, skills, ledger,
     shared: merged.shared,
     orphanTags,
     ledger: { items: itemLedger.rows, families: familyLedger.rows },
+    // 색인에 싣는 계열 표 · 은퇴 목록은 지금 이름이다 — 장부는 옛 이름 그대로 둔다(아르곤 A1).
+    families: currentRows(familyLedger.rows, renames.families),
     // 은퇴 = 장부에 있지만 지금 은행에 없는 것. 만난 표가 번호로 오므로 번호 → 열쇠를 색인이 든다.
     retired: {
-      items: itemLedger.rows.filter(([n]) => !liveItems.has(n)),
-      families: familyLedger.rows.filter(([n]) => !liveFamilies.has(n)),
+      items: currentRows(itemLedger.rows, renames.items).filter(([n]) => !liveItems.has(n)),
+      families: currentRows(familyLedger.rows, renames.families).filter(
+        ([n]) => !liveFamilies.has(n),
+      ),
     },
   };
 }
@@ -199,7 +216,10 @@ function diffBy(before, after, id) {
     else if (JSON.stringify(foldViewOf(prev)) !== JSON.stringify(foldViewOf(row)))
       changed.push({ [id]: key, from: foldViewOf(prev), to: foldViewOf(row) });
   }
-  const retired = [...old.keys()].filter(key => !now.has(key));
+  // 은퇴 줄에도 옛 값을 싣는다 — 서버가 옛 판 색인 없이 그 문항의 답이 적혀 있던 단위를 거둔다(Fable 최종 P3-2).
+  const retired = [...old.keys()]
+    .filter(key => !now.has(key))
+    .map(key => ({ [id]: key, from: foldViewOf(old.get(key)) }));
   return { changed, added, retired };
 }
 
