@@ -12,6 +12,8 @@ const source=readFileSync(new URL('./public/teaching.js',import.meta.url),'utf8'
 const TEACHING_HOST_BUILDS=new Map([
   // master: 28dfe3234(공유 상태 안내)와 b4b28e17a(10-22 로그인 글)까지 든 원천으로 지은 판.
   ['81c825a4a5688b7ec642b23d022bdab921302f69eff8f7ae1db15929ba5566b2','master 28dfe3234'],
+  // PATH a556b16bd: core.mjs의 path-app 이름 추가만 든 판. 원천 검수 path-live-ui-20261110 → path-live-ui-r3-20261110의 SHA 증명과 일치한다.
+  ['a6523a7edfec01267becc707b23f5a771ceb566151a3bd82fd99a0dcac114b03','PATH a556b16bd · path-live-ui-20261110 → r3'],
   // 회사 운영(사슬 27~): a85da04a6 원천에 28dfe3234 고침만 얹어 지은 판 — b4b28e17a 글은 10-31 현재 회사에 나가지 않았다.
   ['143eb4b84073d70b388bbe37e9913678cd6db28cac12aebbe9071e45f53fe395','운영 사슬 27'],
 ]);
