@@ -36,13 +36,15 @@ test('같은 커밋이면 같은 바이트다 — 시각 · 절대 경로가 들
   }
 });
 
-test('나무는 공개 경로 그대로 — 입구 둘과 판 폴더(묶음 · manifest)', () => {
+// 단계 2부터 두뇌가 ts-fsrs(MIT)를 묶음에 넣으므로 판 폴더에 제3자 고지(LICENSES.txt)가 함께 난다.
+test('나무는 공개 경로 그대로 — 입구 둘과 판 폴더(묶음 · manifest · 제3자 고지)', () => {
   assert.equal(first.edition, EDITION);
   assert.match(first.edition, EDITION_FORM);
   const names = listFiles(first.out)
     .map(file => path.relative(first.out, file).replace(/\\/g, '/'))
     .sort();
   assert.deepEqual(names, [
+    `atlas/${EDITION}/LICENSES.txt`,
     `atlas/${EDITION}/atlas.mjs`,
     `atlas/${EDITION}/manifest.json`,
     'atlas/loader.js',
@@ -59,10 +61,10 @@ test('나무는 공개 경로 그대로 — 입구 둘과 판 폴더(묶음 · m
   assert.equal(manifest.commit, STATE.commit);
   assert.deepEqual(
     manifest.thirdParty,
-    [],
-    '단계 0의 묶음에는 제3자 코드가 없다(ts-fsrs는 단계 2부터)',
+    [{ name: 'ts-fsrs', version: '5.4.2', license: 'MIT' }],
+    '두뇌가 ts-fsrs를 묶음에 넣는다(단계 2) — 판 5.4.2 · MIT',
   );
-  assert.deepEqual(Object.keys(manifest.files), ['atlas.mjs']);
+  assert.deepEqual(Object.keys(manifest.files), ['atlas.mjs', 'LICENSES.txt']);
   assert.deepEqual(Object.keys(manifest.entry), ['loader.js', 'loader.mjs']);
 });
 

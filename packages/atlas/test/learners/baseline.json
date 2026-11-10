@@ -1,0 +1,11 @@
+{
+  "editions": {
+    "params": "params-1",
+    "memory": "memory-1",
+    "ability": "ability-1",
+    "select": "select-1"
+  },
+  "learners": 40,
+  "known30": 34.832083645927156,
+  "rest": 23.94718683814214
+}

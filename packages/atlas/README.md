@@ -7,15 +7,19 @@
 | 폴더 | 무엇 | 채우는 단계 | 설계 |
 |---|---|---|---|
 | `src/map/` | 지도 — 단위 마디 · 문항 색인(주 단위) | 1 | §3-1 · §4 |
-| `src/memory/` | 기억 1판 — 단위마다 FSRS-6 상태. ts-fsrs는 `fsrs.mjs` 한 곳에서만 부른다 | 2 | §3-2 |
-| `src/ability/` | 난도 1판 — 능력마다 θ · 이어서 혼자 맞힌 수 | 2 | §3-3 · §3-4 |
-| `src/select/` | 고르기 1판 — 층 · 한도 · 차례, `idle` · `none` | 2 | §3-5 · §3-6 |
-| `src/reason/` | 이유 — 종류와 근거 칸(문장은 Vellum, 단계 4) | 2 | §3-7 |
+| `src/params.mjs` | 매개변수 판 — 기억 · 난도 · 고르기의 숫자와 판 이름(`params-1` · `memory-1` · `ability-1` · `select-1`) | 2 | §6 |
+| `src/memory/` | 기억 1판 — 단위마다 FSRS-6 상태 · 같은 자리 · 「이미 알아요」 · 끈질긴 단위(최근 8자리 창) · 놓친 꼴. ts-fsrs는 `fsrs.mjs` 한 곳에서만 부른다 | 2 | §3-2 · §3-5 |
+| `src/ability/` | 난도 1판 — 능력마다 θ · 이어서 혼자 맞힌 수 · 마지막 측정 난도 | 2 | §3-3 · §3-4 |
+| `src/fold/` | 접기 — 접기 사건 → 근거 줄 · 서버 접기(잎 함수) · 기기 얹기(기다리기). 단계 3이 부른다. 접기 사건의 꼴은 `events.mjs` 한 곳 | 2 | §5-3 · §5-4 |
+| `src/select/` | 고르기 1판 — 층 · 한도 · 차례 · 판 몫, `idle` · `none`, 예상 확률의 세 항, 자리 잡기의 선행값, 활동 고르기 틀 · 설정 거르기 | 2 | §3-4 · §3-5 · §3-6 |
+| `src/reason/` | 이유 — 종류 · 근거 칸 · 근거(`{ code, slots, evidence }`), 한국어 기본 한 벌(`ko.mjs` — 문장 표는 Vellum, 단계 4) | 2 | §3-7 |
 | `src/record/` | 기록 포트 — 사건 2판 · 저장 포트 · 대기열 · 요약에 얹기. 사건 이름표는 `events.mjs` 한 곳 | 3 | §5 |
 | `src/coach/` | 코치 3판의 겉 — 메서드 이름은 §8 표 그대로 | 4 | §8 |
 | `src/health/` | 계기 — 묶음 받기 · 저장 · 추천의 실패를 센다. `legacy.mjs`는 지금 판 코치에 붙이는 덧대기(묶음에 안 든다) | 0 | §1 표 5행 · §11 |
 
-`src/index.mjs`가 바깥 입구이고 빌드가 이것을 묶음 하나로 묶는다. 단계마다 자기 폴더에 짓고 `src/index.mjs`에는 내보내기를 한 줄씩 더한다. 함께 고치는 곳은 `src/index.mjs` · `src/record/events.mjs`(2와 3이 같은 사건 이름을 쓰도록) · `tools/mutants.mjs`의 변형 목록 · `package.json`의 시험 명령뿐이다.
+`src/index.mjs`가 바깥 입구이고 빌드가 이것을 묶음 하나로 묶는다. 단계마다 자기 폴더에 짓고 `src/index.mjs`에는 내보내기를 한 줄씩 더한다. 함께 고치는 곳은 `src/index.mjs` · `src/record/events.mjs`(2와 3이 같은 사건 이름을 쓰도록) · `tools/mutants.mjs`(단계마다 `tools/mutants/<단계>.mjs` 목록 하나를 모은다) · `package.json`의 시험 명령뿐이다. 두뇌가 ts-fsrs를 묶음에 넣으므로 판 폴더에 `LICENSES.txt`(MIT 고지)가 함께 난다.
+
+**두뇌 쓰는 법(단계 2).** 기기: `createLearner(요약)` → `startSession(learner, now, PARAMS, { length, newLimit, more, level, dayOffset })` → `choose(후보, learner, memory, now)[0]`(맨 앞 줄: `item` · `tier` · `target` · `p` · `expected` · `why` · `arm` · `brandNew` · `idle` · `none` · `stubborn`) → `present(learner, row)` → `record(learner, memory, item, { correct, …, target: row.target }, now)`. 본인 말은 `say`. 서버 · 손님 기기: `foldServer(접기 사건들, memory)` 또는 줄마다 `foldUnit` · `foldSkill(skillRowsOf(만남))` · `firstMeeting`. 기기 얹기: `overlay(요약, 내 밀린 사건, memory, PARAMS, { familySkills, lookup })`. `memory = createMemory(PARAMS)`. 계약 전문은 [단계 2 기록](../../docs/_ops/qa/atlas-redesign-20261110/단계2_계획.md) §2 · §8.
 
 ## 명령
 
@@ -35,13 +39,15 @@ npm --prefix packages/atlas run format
 node packages/atlas/tools/build.mjs --out <폴더>
 ```
 
-- `check` — 이 패키지의 관문 한 줄. ① `biome ci`(포맷터: 한 줄 한 문장 · 폭 100, 린트: 함수 인지 복잡도 15 · 한 문장에 선언 하나) ② 빌드를 임시 폴더에 내고 `budget.json`의 묶음 압축 용량 상한을 잰다 ③ 시험 `unit` · `build`. CI는 `syntax-check`의 「verify Atlas package」 단계가 같은 명령을 돈다.
+- `check` — 이 패키지의 관문 한 줄. ① `biome ci`(포맷터: 한 줄 한 문장 · 폭 100, 린트: 함수 인지 복잡도 15 · 한 문장에 선언 하나) ② 빌드를 임시 폴더에 내고 `budget.json`의 묶음 압축 용량 상한을 잰다 ③ 시험 `unit` · `build` · `properties`(줄인 씨앗 — `ATLAS_SEED_SCALE=0.1`). CI는 `syntax-check`의 「verify Atlas package」 단계가 같은 명령을 돈다.
+- `gate` — 두뇌의 관문(설계 §11 가상 학습자 관문 1~7): `properties` 전체 씨앗 · `learners`(가정 36가지 × 40명, 몇 분) · 변형 시험(몇십 분). 두뇌의 규칙이나 매개변수 판을 바꿀 때 돌리고 결과를 단계 기록에 남긴다. 관문 5의 앞 판 값은 `test/learners/baseline.json`(판을 올릴 때 `ATLAS_WRITE_BASELINE=1`로 고쳐 쓰고 결정 표에 적는다).
 - 시험 묶음은 `node packages/atlas/tools/test.mjs <묶음…>`이다(`npm run test` · `test:unit` · `test:props` · `test:learners`).
   - `unit` — 의존 없이 돈다. 패키지 의존(ts-fsrs · esbuild …)을 부르면 훅(`test/support/leaf-only.mjs`)이 멈춘다. 루트 `tests/atlas-package.test.js`가 이 묶음을 부르므로, 패키지 의존을 깔지 않은 작업본의 전체 시험도 깨지지 않는다. `src/index.mjs`가 ts-fsrs를 부르게 되면 index를 거치는 unit 시험은 잎 모듈(`src/<모듈>/`)만 부르게 고치거나 `test/build/`로 옮긴다.
   - `build` — 빌드 · ts-fsrs · 변형 실행기.
-  - `properties` · `learners` — 시제품 시험이 옮겨 올 자리(단계 2 · 3). [옮길 표](test/properties/README.md).
-- 시험은 `src` · `loader`를 `test/support/subject.mjs`로만 부른다(`ATLAS_SUBJECT_ROOT`가 있으면 그 사본을 시험한다 — 변형 실행기가 쓴다). 씨앗은 `test/support/seeds.mjs`(`ATLAS_SEEDS` · `ATLAS_FIRST_SEED`), 임시 폴더는 `test/support/temp.mjs`의 `tempDir`(그 시험 파일이 끝나면 지운다).
-- `test:mutants` — 변형 시험(`tools/mutants.mjs`). 규칙을 더하거나 고칠 때 그 규칙을 깬 변형을 목록에 함께 더한다. 사본은 `.mutants/`(git 밖)에 만들고, 바꾸지 않은 사본에서 시험이 먼저 통과해야 변형을 본다. `--self`는 실행기 자체 시험이다.
+  - `properties` — 장면 단정(시제품 ①~⑯ + 단계 2의 ⑰~⑳) · 간격 모양 · 접기 임의 시험(3,000열) · 고르기 임의 시험(1,500명). 독립 기준은 `test/oracle/spec.mjs`(src를 부르지 않는다).
+  - `learners` — 가상 학습자 관문 2~5와 설계 §1 표 2 · 4 · 7(`test/learners/`). [옮긴 표](test/properties/README.md).
+- 시험은 `src` · `loader`를 `test/support/subject.mjs`로만 부른다(`ATLAS_SUBJECT_ROOT`가 있으면 그 사본을 시험한다 — 변형 실행기가 쓴다). 씨앗은 `test/support/seeds.mjs`(`ATLAS_SEEDS` · `ATLAS_SEED_SCALE` · `ATLAS_FIRST_SEED`), 임시 폴더는 `test/support/temp.mjs`의 `tempDir`(그 시험 파일이 끝나면 지운다).
+- `test:mutants` — 변형 시험(`tools/mutants.mjs`, 두뇌 목록은 `tools/mutants/brain.mjs`). 규칙을 더하거나 고칠 때 그 규칙을 깬 변형을 목록에 함께 더한다. build 묶음이 목록의 바꿀 글이 그 파일에 꼭 한 번 있는지 본다(포맷이 바꿔도 낡지 않게). 사본은 실행마다 `.mutants/<pid>`(git 밖)에 만들고 — 함께 도는 다른 실행의 사본은 건드리지 않는다 — 바꾸지 않은 사본에서 시험이 먼저 통과해야 변형을 본다. `--self`는 실행기 자체 시험이다.
 
 ## 검사 셋 — 줄 수 상한 대신(설계 §14-3)
 

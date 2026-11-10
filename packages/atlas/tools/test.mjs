@@ -1,8 +1,8 @@
 // 시험 묶음 실행기. node packages/atlas/tools/test.mjs <묶음…>
 //   unit        의존 없이 도는 시험 — 패키지 의존(ts-fsrs · esbuild …)을 import하면 훅이 멈춘다. 루트 CI 시험(tests/atlas-package.test.js)이 부른다.
 //   build       빌드 · ts-fsrs · 변형 실행기가 드는 시험(패키지에서 npm ci 뒤)
-//   properties  시제품의 임의 시험 · 장면 단정을 옮겨 올 자리(단계 2 · 3) — 씨앗은 ATLAS_SEEDS · ATLAS_FIRST_SEED
-//   learners    가상 학습자 관문(단계 2)
+//   properties  장면 단정 · 임의 시험(접기 · 고르기) — 씨앗은 ATLAS_SEEDS · ATLAS_SEED_SCALE · ATLAS_FIRST_SEED. check는 줄인 씨앗으로 돈다
+//   learners    가상 학습자 관문 2~5(몇 분 — check에 들지 않고 npm run gate로)
 // unit · build는 꼭 도는 묶음이라 시험 파일이 하나도 없으면 실패다(check가 시험 없이 「통과」하지 않게). properties · learners는
 // 아직 채우지 않은 묶음이라 시험이 없으면 「이 묶음은 단계 N이 채운다」를 찍고 끝낸다(CI의 check에는 들지 않는다).
 import { spawnSync } from 'node:child_process';
@@ -38,8 +38,8 @@ export function testEnv(extra = {}) {
   return env;
 }
 
-// root는 시험이 패키지 밖의 빈 자리를 줄 때만 바꾼다.
-export function runGroup(name, { root = ROOT } = {}) {
+// root는 시험이 패키지 밖의 빈 자리를 줄 때만 바꾼다. env는 그 묶음에만 더할 환경 변수(줄인 씨앗 등).
+export function runGroup(name, { root = ROOT, env = {} } = {}) {
   const group = GROUPS[name];
   if (!group)
     throw new Error(`Atlas test: 모르는 묶음 ${name} — ${Object.keys(GROUPS).join(' · ')}`);
@@ -59,7 +59,7 @@ export function runGroup(name, { root = ROOT } = {}) {
     {
       cwd: root,
       stdio: 'inherit',
-      env: testEnv(),
+      env: testEnv(env),
     },
   );
   return { name, status: run.status ?? 1, files: files.length };

@@ -18,6 +18,7 @@
     "test:props": "node tools/test.mjs properties",
     "test:learners": "node tools/test.mjs learners",
     "test:mutants": "node tools/mutants.mjs",
+    "gate": "node tools/gate.mjs",
     "format": "biome format --write ."
   },
   "dependencies": {

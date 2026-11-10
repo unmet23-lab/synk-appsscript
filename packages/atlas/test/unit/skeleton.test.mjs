@@ -1,4 +1,6 @@
 // 단계 0의 뼈대: 모듈 자리 여섯이 단계 표대로 있고, 빈 코치는 ready만 풀리며 나머지는 분명히 던진다.
+// 단계 2가 채운 두뇌(memory · ability · select · reason)는 ts-fsrs를 부르므로 이 묶음(의존 없이 도는 unit)에서는 파일만 본다 —
+// 바깥 입구의 내보내기는 test/build/entry.test.mjs가 본다.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
@@ -28,28 +30,23 @@ const DESIGN_METHODS = [
 ];
 
 test('모듈 자리 여섯은 채울 단계와 함께 있다(설계 §11)', async () => {
-  const slots = { map: 1, memory: 2, ability: 2, select: 2, reason: 2, record: 3 };
-  for (const [slot, stage] of Object.entries(slots)) {
+  const waiting = { map: 1, record: 3 };
+  for (const [slot, stage] of Object.entries(waiting)) {
     const module = await subject(`${slot}/index.mjs`);
     assert.equal(module.STAGE, stage, `${slot}은 단계 ${stage}이 채운다`);
   }
-  for (const slot of ['coach', 'health']) {
+  for (const slot of ['memory', 'ability', 'select', 'reason', 'fold', 'coach', 'health']) {
     assert.ok(fs.existsSync(subjectPath('src', slot, 'index.mjs')), `${slot} 자리`);
   }
 });
 
-test('바깥 입구는 판 이름 · 코치 · 계기 · 사건 이름표를 내보낸다', async () => {
-  const atlas = await subject();
-  assert.equal(atlas.EDITION, 'dev', '소스의 판 이름은 dev — 빌드가 찍는다');
-  assert.deepEqual([...atlas.COACH_METHODS], DESIGN_METHODS);
-  assert.equal(typeof atlas.createCoach, 'function');
-  assert.equal(typeof atlas.createHealth, 'function');
-  assert.equal(atlas.EVENT_FORM.current, 2);
-  assert.equal(atlas.EVENT_TYPES.stated, 'unit.stated');
+test('설계 §8의 코치 메서드 이름', async () => {
+  const { COACH_METHODS } = await subject('coach/index.mjs');
+  assert.deepEqual([...COACH_METHODS], DESIGN_METHODS);
 });
 
 test('빈 코치: ready는 풀리고, 메서드는 NOT_IMPLEMENTED로 던진다(조용히 빈 값을 주지 않는다)', async () => {
-  const { createCoach, COACH_METHODS } = await subject();
+  const { createCoach, COACH_METHODS } = await subject('coach/index.mjs');
   const coach = createCoach();
   assert.equal(await coach.ready, undefined);
   assert.equal(coach.edition, 'dev');

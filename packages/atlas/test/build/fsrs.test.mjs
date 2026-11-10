@@ -9,19 +9,21 @@ test('ts-fsrs 판은 5.4.2(FSRS-6)이다', () => {
   assert.equal(fsrs.FSRS_VERSION, '5.4.2');
 });
 
-test('정해진 값: 목표 보유율 0.9 · 최대 간격 60일 · 흔들기 없음', () => {
+test('정해진 값: 목표 보유율 0.9 · 최대 간격 60일 · 흔들기 없음 · 짧은 간격 단계 없음', () => {
   assert.deepEqual(
     { ...fsrs.FSRS_SETTINGS },
     {
       request_retention: 0.9,
       maximum_interval: 60,
       enable_fuzz: false,
+      enable_short_term: false,
     },
   );
   const scheduler = fsrs.createFsrs();
   assert.equal(scheduler.parameters.request_retention, 0.9);
   assert.equal(scheduler.parameters.maximum_interval, 60);
   assert.equal(scheduler.parameters.enable_fuzz, false);
+  assert.equal(scheduler.parameters.enable_short_term, false, '같은 날은 같은 자리 규칙이 묶는다');
   assert.equal(scheduler.parameters.w.length, 21, 'FSRS-6 기본 매개변수 21개');
   assert.equal(typeof scheduler.next_state, 'function', '시제품이 쓰는 기억 계산');
 });

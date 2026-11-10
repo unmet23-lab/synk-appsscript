@@ -12,8 +12,11 @@ export const rng = start => {
 
 export const pick = (random, list) => list[Math.floor(random() * list.length)];
 
+// 씨앗 수: ATLAS_SEEDS(정한 수)가 먼저, 없으면 시험의 기본 수 × ATLAS_SEED_SCALE(0~1, check가 줄인 판으로 돌릴 때 — 최소 1).
 export function seedRange({ count, first = 1 } = {}) {
-  const n = Number(process.env.ATLAS_SEEDS) || count;
+  const scale = Number(process.env.ATLAS_SEED_SCALE);
+  const scaled = scale > 0 ? Math.max(1, Math.round(count * Math.min(1, scale))) : count;
+  const n = Number(process.env.ATLAS_SEEDS) || scaled;
   const start = Number(process.env.ATLAS_FIRST_SEED) || first;
   if (!Number.isInteger(n) || n < 1 || !Number.isInteger(start)) {
     throw new TypeError('Atlas seeds: 씨앗 수와 첫 씨앗은 정수다');

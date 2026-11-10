@@ -2,7 +2,7 @@
 //   npm --prefix packages/atlas run check   (CI: syntax-check의 「Atlas package」 단계)
 //   1. biome ci — 포맷터(한 줄 한 문장, 폭 100)와 린트(인지 복잡도 15 · 한 문장에 선언 하나). 고치지 않고 보기만 한다(고치기는 npm run format)
 //   2. 빌드를 임시 폴더에 내고 budget.json의 압축 용량 상한을 잰다
-//   3. 시험 — unit(의존 없이) · build
+//   3. 시험 — unit(의존 없이) · build · properties(줄인 씨앗 — 접기 300열 · 고르기 150명). 전체 씨앗 · 가상 학습자 · 변형은 npm run gate
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -42,6 +42,8 @@ biome();
 await sizes();
 for (const group of ['unit', 'build'])
   if (runGroup(group).status !== 0) failures.push(`시험 ${group}`);
+if (runGroup('properties', { env: { ATLAS_SEED_SCALE: '0.1' } }).status !== 0)
+  failures.push('시험 properties(줄인 씨앗)');
 console.log(
   failures.length ? `atlas check: 걸린 것 — ${failures.join(' · ')}` : 'atlas check: 모두 통과',
 );
