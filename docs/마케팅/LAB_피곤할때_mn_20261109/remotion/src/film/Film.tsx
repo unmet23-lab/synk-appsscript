@@ -18,6 +18,12 @@ const ROSE = '#E2456B';
 const CREAM = '#FFFDF7';
 const FONT = "'Inter Tight', 'SUIT', sans-serif";
 const FULL: React.CSSProperties = { position: 'absolute', inset: 0, width: 1080, height: 1920, objectFit: 'cover' };
+// v10(11-10 15시 회차) — GPT 대체 맹검 v9 넷 다 기각 「글 상자가 둘 셋 쌓인 학습지 틀 · 스피커 이모지 · 배터리 표지판」 → 상자 · 테두리 · 이모지를 모두 걷고
+// 글자만 둔다: 위는 어두운 빛(그늘) 위 크림 글자, 말은 몽글 곁 글자 + 부드러운 그늘, 배터리는 가는 선 하나.
+const SH = '0 3px 0 rgba(24,12,8,0.5), 0 5px 18px rgba(16,8,4,0.62)';
+const PINK = '#FFC2D0';
+const DIM = 'rgba(255,248,236,0.84)';
+const Glow: React.FC<{ x: number; y: number; w: number; h: number; a?: number }> = ({ x, y, w, h, a = 0.5 }) => <div style={{ position: 'absolute', left: x - w / 2, top: y - h / 2, width: w, height: h, background: `radial-gradient(ellipse at 50% 50%, rgba(22,12,8,${a}) 0%, rgba(22,12,8,${a * 0.55}) 45%, rgba(22,12,8,0) 72%)` }} />;
 const bump = (t: number, at: number, up = 0.05, down = 0.35) => interpolate(t, [at - 0.02, at + up, at + down], [0, 1, 0], clamp);
 
 const cellAt = (sec: number) => {
@@ -222,79 +228,60 @@ const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
   const blink = low ? (Math.sin(t * 9) > -0.1 ? 1 : 0.35) : 1;
   const full = t >= UP_AT && t < NEXT_AT;
   const grow = 1 + (full ? 0.22 * interpolate(t, [UP_AT, UP_AT + 0.12, UP_AT + 0.5], [1, 1.4, 1], clamp) : 0) + 0.08 * bump(t, 5.2, 0.05, 0.3) + 0.08 * bump(t, 9.8, 0.05, 0.3) + 0.08 * bump(t, 14.6, 0.05, 0.3) + 0.08 * bump(t, 19.6, 0.05, 0.3);
-  // 100%의 초록을 펠트 결에 맞게 눌렀다 — 「형광 초록 배터리가 밤 조명 톤을 깬다」(아르곤 맹검 v8 [K16])
-  const col = v > 0.5 ? '#6DAA6A' : v > 0.2 ? '#E2A93A' : '#D9463F';
-  const W = 118;
-  const H = 228;
-  const fillH = Math.max(0.03, v) * (H - 20);
+  const col = v > 0.5 ? '#9CCB8E' : v > 0.2 ? '#F0C060' : '#F0766A';
+  const W = 84;
+  const H = 190;
+  const fillH = Math.max(0.04, v) * (H - 16);
   return (
-    <div style={{ position: 'absolute', left: 54, top: 620, width: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: `scale(${grow})`, transformOrigin: '50% 40%' }}>
-      <div style={{ width: 52, height: 18, background: CREAM, border: `5px solid ${INK}`, borderBottom: 'none', borderRadius: '10px 10px 0 0' }} />
-      <div style={{ position: 'relative', width: W, height: H, background: 'rgba(255,253,247,0.96)', border: `6px solid ${INK}`, borderRadius: 22, boxSizing: 'border-box', boxShadow: '0 8px 16px rgba(30,10,10,0.35)', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', left: 6, right: 6, bottom: 6, height: fillH, background: col, borderRadius: 10, opacity: blink }} />
+    <div style={{ position: 'absolute', left: 50, top: 640, width: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: `scale(${grow})`, transformOrigin: '50% 40%', filter: 'drop-shadow(0 4px 10px rgba(16,8,4,0.55))' }}>
+      <div style={{ width: 30, height: 9, background: CREAM, borderRadius: '5px 5px 0 0' }} />
+      <div style={{ position: 'relative', width: W, height: H, border: `4px solid ${CREAM}`, borderRadius: 18, boxSizing: 'border-box', overflow: 'hidden', background: 'rgba(22,12,8,0.28)' }}>
+        <div style={{ position: 'absolute', left: 5, right: 5, bottom: 5, height: fillH, background: col, borderRadius: 9, opacity: blink }} />
       </div>
-      <div style={{ marginTop: 8, fontFamily: EN, fontWeight: 900, fontSize: 44, color: INK, background: CREAM, borderRadius: 14, padding: '2px 12px 4px', lineHeight: 1.1, border: `4px solid ${INK}` }}>{Math.round(v * 100)}%</div>
-      <div style={{ marginTop: 6, fontFamily: FONT, fontWeight: 800, fontSize: 28, color: '#fff', background: 'rgba(28,22,20,0.86)', borderRadius: 12, padding: '4px 10px 6px', whiteSpace: 'nowrap' }}>{TEXT.gauge}</div>
+      <div style={{ marginTop: 8, fontFamily: EN, fontWeight: 900, fontSize: 46, color: CREAM, lineHeight: 1.1, textShadow: SH }}>{Math.round(v * 100)}%</div>
+      <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 26, color: DIM, whiteSpace: 'nowrap', textShadow: SH, letterSpacing: 1 }}>{TEXT.gauge}</div>
     </div>
   );
 };
 
 const Sit: React.FC<{ text: string; at: number; t: number }> = ({ text, at, t }) => {
   const p = interpolate(t, [at, at + 0.17], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  return (
-    <div style={{ position: 'absolute', left: 44, right: 44, top: 276, textAlign: 'center', opacity: p, transform: `translateY(${(1 - p) * 14}px)` }}>
-      <span style={{ display: 'inline-block', background: 'rgba(28,22,20,0.84)', color: '#fff', fontFamily: FONT, fontWeight: 700, fontSize: 54, lineHeight: 1.2, padding: '18px 34px 22px', borderRadius: 28, whiteSpace: 'pre-line' }}>{text}</span>
-    </div>
-  );
+  return <div style={{ position: 'absolute', left: 60, right: 60, top: 250, textAlign: 'center', opacity: p, transform: `translateY(${(1 - p) * 14}px)`, color: CREAM, fontFamily: FONT, fontWeight: 700, fontSize: 58, lineHeight: 1.2, whiteSpace: 'pre-line', textShadow: SH }}>{text}</div>;
 };
 
 const Hook: React.FC<{ t: number }> = ({ t }) => {
   const p = interpolate(t, [0, 0.2], [0.92, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  return (
-    <div style={{ position: 'absolute', left: 44, right: 44, top: 250, textAlign: 'center', transform: `scale(${p})` }}>
-      <span style={{ display: 'inline-block', background: CREAM, border: `7px solid ${INK}`, color: INK, fontFamily: FONT, fontWeight: 800, fontSize: 72, lineHeight: 1.14, padding: '20px 44px 28px', borderRadius: 40, whiteSpace: 'pre-line', boxShadow: '0 10px 28px rgba(0,0,0,0.28)' }}>{TEXT.hook}</span>
-    </div>
-  );
+  return <div style={{ position: 'absolute', left: 60, right: 60, top: 210, textAlign: 'center', transform: `scale(${p})`, color: CREAM, fontFamily: FONT, fontWeight: 800, fontSize: 84, lineHeight: 1.14, whiteSpace: 'pre-line', textShadow: SH }}>{TEXT.hook}</div>;
 };
 
 const Speech: React.FC<{ b: BubbleData; at: number; t: number }> = ({ b, at, t }) => {
   const p = interpolate(t, [at, at + 0.13], [0.86, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
-  const tailL = Math.max(0, b.tip[0] - 56);
+  const cx = b.side === 'right' ? 1080 - 160 - b.width / 2 : 150 + b.width / 2;
   return (
     <>
-      <div style={{ position: 'absolute', bottom: 1920 - b.bottom, ...(b.side === 'right' ? { right: 160 } : { left: 150 }), width: b.width, textAlign: 'center' }}>
-        <div style={{ display: 'inline-block', width: '100%', boxSizing: 'border-box', background: CREAM, border: `6px solid ${INK}`, borderRadius: 48, padding: '20px 30px 24px', boxShadow: '0 10px 28px rgba(0,0,0,0.28)', transform: `scale(${p})`, transformOrigin: '50% 100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-            <span style={{ background: ROSE, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1, padding: '9px 22px 11px', borderRadius: 999 }}>{b.n}/4</span>
-          </div>
-          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 112, color: INK, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{b.ko}</div>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 52, color: '#5F4E42', lineHeight: 1.15, marginTop: 2 }}>🔊 {b.read}</div>
-          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 50, color: MEAN, lineHeight: 1.14, marginTop: 8, whiteSpace: 'pre-line' }}>{b.mn}</div>
-        </div>
+      <Glow x={cx} y={b.bottom - 190} w={b.width + 260} h={560} a={0.46 * Math.min(1, p)} />
+      <div style={{ position: 'absolute', bottom: 1920 - b.bottom, ...(b.side === 'right' ? { right: 160 } : { left: 150 }), width: b.width, textAlign: 'center', transform: `scale(${p}) rotate(-2deg)`, transformOrigin: '50% 100%', textShadow: SH }}>
+        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 40, color: DIM, lineHeight: 1, letterSpacing: 2 }}>{b.n} / 4</div>
+        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 124, color: CREAM, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{b.ko}</div>
+        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 50, color: DIM, lineHeight: 1.15, marginTop: 2, fontStyle: 'italic' }}>{b.read}</div>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 52, color: PINK, lineHeight: 1.14, marginTop: 8, whiteSpace: 'pre-line' }}>{b.mn}</div>
       </div>
-      <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, opacity: p }}>
-        <path d={`M ${tailL} ${b.bottom - 8} L ${tailL + 60} ${b.bottom - 8} L ${b.tip[0]} ${b.tip[1]} Z`} fill={CREAM} stroke={INK} strokeWidth={6} strokeLinejoin="round" />
-        <rect x={tailL + 3} y={b.bottom - 14} width={54} height={9} fill={CREAM} />
-      </svg>
     </>
   );
 };
 
 // 작은 말풍선 — 머리 칸 · 끝 칸(한국어 · 읽기 · 몽골 뜻)
-const Small: React.FC<{ t: number; from: number; until: number; left: number; top: number; width: number; ko: string; read: string; mn?: string; tip: [number, number]; koSize?: number }> = ({ t, from, until, left, top, width, ko, read, mn, tip, koSize = 84 }) => {
+const Small: React.FC<{ t: number; from: number; until: number; left: number; top: number; width: number; ko: string; read: string; mn?: string; tip: [number, number]; koSize?: number }> = ({ t, from, until, left, top, width, ko, read, mn, koSize = 84 }) => {
   if (t < from || t >= until) return null;
   const p = interpolate(t, [from, from + 0.13], [0.8, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const h = Math.round(koSize * 1.14 + 42 * 1.15 + (mn ? 46 * 1.14 + 4 : 0) + 28 + 12 + 6);
-  const bx = Math.min(Math.max(tip[0], left + 70), left + width - 70);
   return (
-    <div style={{ position: 'absolute', inset: 0, opacity: p > 0.8 ? 1 : 0 }}>
-      <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0 }}>
-        <path d={`M ${bx - 32} ${top + h - 14} L ${bx + 32} ${top + h - 14} L ${tip[0]} ${tip[1]} Z`} fill={CREAM} stroke={INK} strokeWidth={6} strokeLinejoin="round" />
-      </svg>
-      <div style={{ position: 'absolute', left, top, width, height: h, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', background: CREAM, border: `6px solid ${INK}`, borderRadius: 40, padding: '8px 18px 10px', boxShadow: '0 10px 24px rgba(0,0,0,0.28)', transform: `scale(${p})`, transformOrigin: `${((bx - left) / width) * 100}% 100%` }}>
-        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: koSize, color: INK, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{ko}</div>
-        <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, color: '#5F4E42', lineHeight: 1.15, whiteSpace: 'nowrap' }}>🔊 {read}</div>
-        {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 46, color: MEAN, lineHeight: 1.14, marginTop: 4, whiteSpace: 'nowrap' }}>{mn}</div> : null}
+    <div style={{ position: 'absolute', inset: 0 }}>
+      <Glow x={left + width / 2} y={top + h / 2} w={width + 220} h={h + 220} a={0.44} />
+      <div style={{ position: 'absolute', left, top, width, height: h, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', transform: `scale(${p}) rotate(-2deg)`, transformOrigin: '50% 100%', textShadow: SH }}>
+        <div style={{ fontFamily: KO, fontWeight: 900, fontSize: koSize * 1.12, color: CREAM, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{ko}</div>
+        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 42, color: DIM, lineHeight: 1.15, whiteSpace: 'nowrap', fontStyle: 'italic' }}>{read}</div>
+        {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 48, color: PINK, lineHeight: 1.14, marginTop: 4, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
     </div>
   );
@@ -305,14 +292,12 @@ const Message: React.FC<{ t: number }> = ({ t }) => {
   if (t < MSG_AT || t >= UP_AT) return null;
   const p = interpolate(t, [MSG_AT, MSG_AT + 0.22], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.5)) });
   return (
-    <div style={{ position: 'absolute', left: 170, width: 760, top: 300, transform: `translateY(${(1 - p) * -40}px) scale(${0.9 + 0.1 * p})`, opacity: p, transformOrigin: '50% 0%' }}>
-      <div style={{ background: 'rgba(255,253,247,0.97)', borderRadius: 44, padding: '20px 30px 26px', boxShadow: '0 18px 40px rgba(20,10,30,0.45)', border: `5px solid ${INK}` }}>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 40, color: '#5F4E42', marginBottom: 6 }}>📱 {TEXT.msgFrom}</div>
-        <div style={{ background: '#EFE8E2', borderRadius: '10px 36px 36px 36px', padding: '12px 26px 16px' }}>
-          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 92, color: INK, lineHeight: 1.16, whiteSpace: 'nowrap' }}>{TEXT.msgKo}</div>
-          <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 46, color: '#5F4E42', lineHeight: 1.15 }}>🔊 {TEXT.msgRead}</div>
-          <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 54, color: MEAN, lineHeight: 1.14, marginTop: 4 }}>{TEXT.msgMn}</div>
-        </div>
+    <div style={{ position: 'absolute', left: 150, width: 780, top: 250, transform: `translateY(${(1 - p) * -40}px) scale(${0.9 + 0.1 * p})`, opacity: p, transformOrigin: '50% 0%' }}>
+      <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 40, color: DIM, marginBottom: 10, marginLeft: 12, textShadow: SH }}>{TEXT.msgFrom}</div>
+      <div style={{ background: 'rgba(255,250,240,0.96)', borderRadius: '12px 44px 44px 44px', padding: '14px 30px 20px', boxShadow: '0 10px 26px rgba(16,8,4,0.4)' }}>
+        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 92, color: INK, lineHeight: 1.16, whiteSpace: 'nowrap' }}>{TEXT.msgKo}</div>
+        <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 44, color: '#6A584C', lineHeight: 1.15, fontStyle: 'italic' }}>{TEXT.msgRead}</div>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 52, color: MEAN, lineHeight: 1.14, marginTop: 4 }}>{TEXT.msgMn}</div>
       </div>
     </div>
   );
@@ -352,6 +337,8 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       <Plate i={i} t={t} />
       {/* 충전되는 순간 번쩍 */}
       {t >= UP_AT - 0.02 && t < UP_AT + 0.35 ? <AbsoluteFill style={{ background: '#FFF4D6', opacity: interpolate(t, [UP_AT - 0.02, UP_AT + 0.03, UP_AT + 0.35], [0, 0.85, 0], clamp) }} /> : null}
+      {/* 위쪽 그늘 — 글자가 놓일 자리(상자가 아니라 빛) */}
+      <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 680, background: 'linear-gradient(to bottom, rgba(20,11,7,0.58) 0%, rgba(20,11,7,0.36) 58%, rgba(20,11,7,0) 100%)' }} />
       <Battery t={t} />
       {!scene && t < 3.2 ? <Hook t={t} /> : null}
       {!scene && t < 3.2 ? <Small t={t} from={0.55} until={3.2} left={330} top={830} width={520} ko={TEXT.openKo} read={TEXT.openRead} mn={TEXT.openMn} tip={[560, 1150]} /> : null}
@@ -365,7 +352,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       <Small t={t} from={NEXT_AT + 0.33} until={TOTAL + 1} left={300} top={548} width={560} ko="졸려…" read="жоллё" mn="Нойр хүрч байна…" tip={[690, 880]} koSize={92} />
       {!scene && t >= END_AT && t < NEXT_AT ? (
         <div style={{ position: 'absolute', left: 60, right: 60, top: 290, textAlign: 'center', opacity: interpolate(t, [END_AT, END_AT + 0.15], [0, 1], clamp) }}>
-          <span style={{ display: 'inline-block', background: 'rgba(28,22,20,0.88)', color: '#fff', fontFamily: FONT, fontWeight: 800, fontSize: 54, lineHeight: 1.2, padding: '16px 30px 20px', borderRadius: 26 }}>{TEXT.end}</span>
+          <span style={{ color: CREAM, fontFamily: FONT, fontWeight: 800, fontSize: 60, lineHeight: 1.2, textShadow: SH }}>{TEXT.end}</span>
         </div>
       ) : null}
       <Sounds from={scene ? SCENE_FROM : 0} />
