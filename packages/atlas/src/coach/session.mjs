@@ -2,14 +2,18 @@
 //   평소: present · answer · tell이 두뇌의 present · record · say로 학습자를 바로 고친다 — 저장이 다 되는 동안 결정은
 //         두뇌만 돌린 것과 한 글자도 다르지 않다.
 //   두뇌에 넘기는 답 · 문항은 그 제시의 사건 묶음을 기록의 어댑터(foldEventsOf)로 바꾼 접기 사건에서 꺼낸다(기기 얹기 · 서버 접기와 같은 값).
-//   판 일지: 판을 열 때의 「낸 것」 · 옵션 · 시각과, 그 뒤의 present · answer · tell. 바깥이 바뀌면(저장 실패 · 다른 탭 · 서버 요약)
-//         기억 · 능력 · 만남은 호스트 보기로 바꿔 끼우고, 판 상태(shown · session · day · log)는 실패한 사건을 뺀 일지를 다시 돌려 세운다.
+//   판 일지: 판을 열 때의 「낸 것」 · 옵션 · 시각 · 보기 사본과, 그 뒤의 present · answer · tell. 바깥이 바뀌면(저장 실패 · 제외 · 다른 탭 ·
+//         같은 문서 다른 코치의 쓰기 · 서버 요약) 기억 · 능력 · 만남은 호스트 보기로 바꿔 끼우고, 판 상태(shown · session · day · log)는
+//         실패 · 제외한 사건을 뺀 일지를 다시 돌려 세운다. 보기가 아무것도 얹지 못하는 동안(waitAll — 판 묶음이 다른 요약 등)은 판을 열 때의
+//         보기 사본 위에 일지를 통째로 다시 돌린다 — 이 판의 내 답은 판 안의 고르기에서 늘 본 것이다(Fable 설계 P2-2 가).
+//   판 수명(Fable 설계 P2-1): set은 한 판에 한 번 — 문항이 나간 판에 같은 뜻의 set이 또 오면 무시한다(「더 배우기」는 more로 새 판).
+//         판 없이 연 기본 판은 날이 바뀌거나 오래 쉬면 새로 연다. 본인 말(tell)은 판을 열지 않는다.
 import { applyOwn } from '../fold/device.mjs';
 import { foldEventsOf } from '../record/adapt.mjs';
 import { EVENT_TYPES } from '../record/events.mjs';
 import { choose } from '../select/choose.mjs';
 import { filterCandidates } from '../select/filter.mjs';
-import { present, record, say, startSession } from '../select/session.mjs';
+import { dayKey, present, record, say, startSession } from '../select/session.mjs';
 import { hostRow, presentedFields } from './fields.mjs';
 
 export const learnerOf = view => ({
@@ -20,7 +24,30 @@ export const learnerOf = view => ({
   session: null,
   seq: 0,
 });
+// 판을 열 때의 보기 사본 — 두뇌가 학습자의 표(Map)를 고치므로 표만 새로 뜬다(줄 값은 늘 새 객체로 바뀐다).
+const copyView = view => ({
+  ...view,
+  memory: new Map(view.memory),
+  ability: new Map(view.ability),
+  met: new Map(view.met),
+  waitUnits: new Set(view.waitUnits ?? []),
+  waitSkills: new Set(view.waitSkills ?? []),
+  mine: new Set(view.mine ?? []),
+});
 const entryOf = event => ({ event, key: event.id, atMs: Date.parse(event.at) });
+// 판 없이 연 기본 판이 이만큼 쉬면 새 판이다(날이 바뀌어도 새 판).
+export const DEFAULT_SET_IDLE_MS = 30 * 60_000;
+// 같은 뜻의 판 옵션인가 — 길이 · 새것 한도 · 연습 수준.
+const setSign = set =>
+  JSON.stringify([
+    set?.length ?? null,
+    set?.newLimit ?? null,
+    set?.level?.min ?? null,
+    set?.level?.max ?? null,
+  ]);
+// 본인 말이 그 줄에 남긴 때 — 「다시 배울래요」는 빈 줄, 「이미 알아요」는 열린 자리가 known이다.
+const saidAt = line =>
+  line?.empty ? line.latestAt : line?.open?.grade === 'known' ? line.open.at : null;
 const issuedOf = row => event => ({
   at: Date.parse(event.at),
   review: row.tier === 1,
@@ -79,25 +106,47 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     setSeq: 0,
     chosen: new Map(),
     groups: new Map(),
+    own: new Set(), // 이 코치가 쓴 사건 번호 — 같은 문서 다른 코치의 쓰기만 다시 세우기를 부른다
+    lastAt: 0,
   };
 
-  function openSet(options = {}) {
+  // 판을 연다. fallback: 판 없이 부른 메서드가 연 기본 판(판 옵션 없음).
+  function openSet(options = {}, { fallback = false } = {}) {
     const now = host.now();
-    const learner = learnerOf(host.view());
+    const base = host.view();
+    const learner = learnerOf(copyView(base));
     learner.log = host.issued();
     const opts = { ...options, dayOffset };
     startSession(learner, now, params, opts);
     s.learner = learner;
-    s.open = { now, opts, log: learner.log.slice() };
+    s.open = { now, opts, log: learner.log.slice(), base, fallback, sign: setSign(options) };
     s.journal = [];
     s.failed.clear();
     s.chosen.clear();
+    s.lastAt = now;
     s.setSeq += 1;
     s.setId = `set.${gameId}.${now}.${s.setSeq}`;
     return s.learner;
   }
 
-  const ensure = () => (s.learner?.session ? s.learner : openSet({}));
+  // 기본 판이 낡았나 — 날이 바뀌었거나 오래 쉬었다(제품이 판을 닫지 않는 길에서 어제의 한도를 들지 않게).
+  const stale = now =>
+    Boolean(s.open?.fallback) &&
+    (dayKey(now, params, dayOffset) !== s.learner.day.key || now - s.lastAt >= DEFAULT_SET_IDLE_MS);
+
+  const ensure = () => {
+    const now = host.now();
+    const learner = s.learner?.session && !stale(now) ? s.learner : openSet({}, { fallback: true });
+    s.lastAt = now;
+    return learner;
+  };
+  // 문항이 나간 판에 같은 뜻의 set이 또 왔다 — 판을 다시 열지 않는다(문항마다 set을 넘기는 제품이 「다시」 · 한도 · 판 번호를 잃지 않게).
+  const repeated = set =>
+    Boolean(s.learner?.session) &&
+    !s.open.fallback &&
+    !set.more &&
+    s.open.sign === setSign(set) &&
+    s.journal.some(op => op.kind === 'present');
 
   // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다).
   function replay(tmp, op) {
@@ -106,16 +155,34 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     else if (op.kind === 'say') say(tmp, memory, op.unit, op.say, op.at, params);
   }
 
+  const kept = op => !s.failed.has(op.eventId) && !s.failed.has(op.parent);
+
+  // 다른 탭 · 다른 코치 · 다른 기기의 본인 말이 이 판에서 놓친 뒤에 왔으면 그 단위의 「다시」를 거둔다(설계 §3-2 — 본인 말은 다시를 거둔다).
+  function dropStated(session, fresh) {
+    for (const unit of [...session.retries.keys()]) {
+      const at = saidAt(fresh.memory.get(unit));
+      if (at == null) continue;
+      const missedAt = Math.max(
+        ...s.journal
+          .filter(op => op.kind === 'answer' && kept(op) && op.item.units.includes(unit))
+          .map(op => op.at),
+      );
+      if (at > missedAt) session.retries.delete(unit);
+    }
+  }
+
   function rebuild() {
     if (!s.open || !s.learner?.session) return;
-    const tmp = learnerOf(host.view());
+    const fresh = host.view();
+    // 보기가 아무것도 얹지 못하는 동안은 판을 열 때의 사본 위에 일지를 통째로(기억까지) 다시 돌린다.
+    const waiting = fresh.waitAll === true;
+    const tmp = learnerOf(copyView(waiting ? s.open.base : fresh));
     tmp.log = s.open.log.slice();
     startSession(tmp, s.open.now, params, s.open.opts);
-    for (const op of s.journal)
-      if (!s.failed.has(op.eventId) && !s.failed.has(op.parent)) replay(tmp, op);
-    const fresh = host.view();
+    for (const op of s.journal) if (kept(op)) replay(tmp, op);
+    dropStated(tmp.session, fresh);
     s.learner = {
-      ...fresh,
+      ...(waiting ? tmp : fresh),
       shown: tmp.shown,
       log: tmp.log,
       day: tmp.day,
@@ -127,8 +194,16 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
 
   const unsubscribe = host.subscribe(note => {
     if (note.kind === 'failed') s.failed.add(note.id);
+    // 같은 문서 다른 코치의 쓰기만 — 내 쓰기는 이미 판에 들었다.
+    if (note.kind === 'written' && s.own.has(note.id)) return;
     if (note.kind !== 'offline') rebuild();
   });
+  // 이 코치의 쓰기(호스트에 넘기고 번호를 적어 둔다).
+  const write = (type, fields, extra) => {
+    const made = host.write(type, fields, extra);
+    s.own.add(made.event.id);
+    return made;
+  };
 
   function pairsOf(candidates, { audio, notNow } = {}) {
     const pairs = candidates
@@ -169,7 +244,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     ensure,
     rebuild,
     choose(candidates, options = {}) {
-      if (options.set) openSet(options.set);
+      if (options.set && !repeated(options.set)) openSet(options.set);
       else ensure();
       const pairs = pairsOf(candidates, options);
       const products = new Map(pairs.map(pair => [pair.item.itemKey, pair.product]));
@@ -209,7 +284,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         firstExposure:
           firstExposure === false || seen === true ? false : seen === false ? true : null,
       });
-      const { event } = host.write(EVENT_TYPES.presented, fields, { issued: issuedOf(chosenRow) });
+      const { event } = write(EVENT_TYPES.presented, fields, { issued: issuedOf(chosenRow) });
       const row = { ...chosenRow, at: Date.parse(event.at) };
       present(s.learner, row);
       s.journal.push({ kind: 'present', eventId: event.id, row });
@@ -234,7 +309,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         contentRef: `${gameId}.${kind}`,
       };
       const fold = first ? event => foldOf(group, event, host.index) : null;
-      const { event, stored } = host.write(EVENT_TYPES.helped, fields, { fold });
+      const { event, stored } = write(EVENT_TYPES.helped, fields, { fold });
       if (first) applyOwn(s.learner, foldOf(group, event, host.index), memory, params, host.index);
       group.children.push(entryOf(event));
       return { event, stored };
@@ -242,7 +317,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
 
     delivery(pid, { audio }) {
       const group = this.group(pid);
-      const { event, stored } = host.write(EVENT_TYPES.delivery, { presentationId: pid, audio });
+      const { event, stored } = write(EVENT_TYPES.delivery, { presentationId: pid, audio });
       group.children.push(entryOf(event));
       return { event, stored };
     },
@@ -255,7 +330,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       const verdict = verdictOf(result, group.item);
       const fields = attemptFields(pid, attemptNo, verdict, result);
       let fold = null;
-      const made = host.write(EVENT_TYPES.attempted, fields, {
+      const made = write(EVENT_TYPES.attempted, fields, {
         fold: event => {
           fold = foldOf(group, event, host.index);
           return fold;
@@ -276,10 +351,10 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       return { event: made.event, verdict, fold, grade: out.grade, stored: made.stored, group };
     },
 
+    // 본인 말 — 판을 열지 않는다(「나」 화면은 판이 아니다). 열린 판이 있으면 그 판의 「다시」도 거둔다.
     tell(unit, kind) {
-      ensure();
       let fold = null;
-      const made = host.write(
+      const made = write(
         EVENT_TYPES.stated,
         { unit, say: kind },
         {
@@ -289,8 +364,21 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
           },
         },
       );
-      say(s.learner, memory, unit, kind, fold.at, params);
-      s.journal.push({ kind: 'say', eventId: made.event.id, unit, say: kind, at: fold.at });
+      if (s.learner?.session) {
+        say(s.learner, memory, unit, kind, fold.at, params);
+        s.journal.push({ kind: 'say', eventId: made.event.id, unit, say: kind, at: fold.at });
+      }
+      return made;
+    },
+
+    // 제외 — 저장되면 그 사건(제시면 그 제시의 답까지)은 판 상태에서도 없던 것이다.
+    exclude(targetId) {
+      const made = write(EVENT_TYPES.excluded, { targetId });
+      made.stored.then(ok => {
+        if (!ok) return;
+        s.failed.add(targetId);
+        rebuild();
+      });
       return made;
     },
 

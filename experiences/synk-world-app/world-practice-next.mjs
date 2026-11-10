@@ -4,9 +4,13 @@
 //   ① 다음 문항은 엔진(코치 3판 recommend)이 고른다 — 그 항목의 연습 문항 전부가 후보이고, 놓친 단위는 다른 문항으로 다시, 돌아온 단위는
 //      돌아온 것으로 나온다. 측정(처음 본 문항의 혼자 낸 첫 답)은 지금 계약 그대로라 「내 위치」 근거는 같은 답에서만 선다.
 //   ② 판은 길이 n(3 · 5 · 7)으로 열고 새것 한도는 단위로 3n이다(TOPIK 문항은 단위가 둘 · 셋인 것이 많다 — 계획 §7 · 아르곤 A1).
-//   ③ 엔진이 낼 것이 없다(none)고 하면 판을 끝낸다. 할 것이 없다(idle)고 해도 엔진이 고른 채우기 문항이 처음 보는 문항이면 이어 간다 —
-//      처음 보는 문항은 측정 기회다(그 항목의 새 문항으로 확인하는 연습의 약속). 이미 본 문항이 채우기로 오면 끝낸다. 끝난 까닭(ending)은
-//      그 판의 사실에서 고른다.
+//   ③ 엔진이 낼 것이 없다(none)고 하면 판을 끝낸다. 할 것이 없다(idle)고 하면 처음 보는 문항으로 잇는다 — 처음 보는 문항은 측정
+//      기회다(그 항목의 새 문항으로 확인하는 연습의 약속). 엔진의 채우기 차례는 「한 번도 안 본 문항」을 앞세우지 않으므로, 맨 앞 채우기가
+//      이미 본 문항이면 후보를 처음 보는 문항으로 좁혀 한 번 더 묻고(엔진이 그 안에서 고른다), 그것도 없을 때만 끝낸다(Fable 설계 P1-1).
+//      끝난 까닭(ending)은 그 판의 사실에서 고르고, 끝 문장에 엔진 문장을 쓰는 것은 그 까닭이 엔진의 것(idle · capped · stubborn)일 때뿐이다
+//      — 돌아온 것을 안 낸 판에 「오늘 돌아온 것은 다 만났어요」를 쓰지 않는다.
+//   ⑥ 판이 끝나거나 그만두면 코치의 판을 닫는다(finishSet record: false — 판 기록은 셸이 응답과 함께 남긴다). 닫지 않으면 다음 판의
+//      같은 뜻 set이 「이미 열린 판」으로 이어진다(코치는 문항이 나간 판에 같은 set이 또 오면 다시 열지 않는다).
 //   ④ 문항마다 이유(why) · 끈질긴 단위 표시(stubborn) · 「모르겠어요」(unknown)를 보기에 싣고, 문항 앞 해설(preHelp)을 받는다.
 //   ⑤ 혼자 맞힘(independent)은 저장이 끝난 뒤의 값이다 — settled()가 판의 답이 모두 저장된 뒤 풀린다(판 끝 화면은 그 뒤에 그린다).
 // 듣기 · 허용 재생 · 건너뛰기 · 그만두기 · 답 뒤 「정답 보기」 도움은 지금 판과 같다(같은 시험을 두 모듈에 건다).
@@ -18,6 +22,17 @@ export const NEXT_POLICY = Object.freeze({
   newPerItem: 3,
 });
 const listeningOf = item => item.audioRequired ?? item.modality === 'listening';
+
+// 엔진 문장이 그 끝 까닭을 말하는 이유 종류 — 이 셋일 때만 엔진의 문장을 판 끝 줄에 쓴다.
+export const ENGINE_ENDINGS = Object.freeze({
+  idle: 'idle',
+  capped: 'day.capped',
+  stubborn: 'pace.stubborn',
+});
+
+// 판 끝 줄의 엔진 문장 — 끝 까닭과 엔진 이유가 같은 말일 때만(아니면 null, 화면은 제품 문장을 쓴다).
+export const endingLine = (kind, why) =>
+  why?.line && ENGINE_ENDINGS[kind] === why.code ? why.line : null;
 
 // 판이 끝난 까닭 — 그 판에서 실제로 일어난 일에서 고른다(돌아온 것을 만나지 않은 판에 「다 만났어요」를 쓰지 않는다).
 export function endingOf(picked, served) {
@@ -126,6 +141,28 @@ export function createPracticeNextSession({
     if (index === 0) options.set = { length, newLimit: NEXT_POLICY.newPerItem * length, more };
     return coach.recommend(pool, options);
   }
+  // 할 것이 없을 때(idle) 처음 보는 문항으로 좁혀 한 번 더 묻는다. 없으면 null.
+  function pickFresh() {
+    const fresh = pool.filter(item => seen(item) === false);
+    if (!fresh.length) return null;
+    const again = coach.recommend(fresh, { audio: audioAvailable, lang });
+    return again.status !== 'none' && seen(again.selected) === false ? again : { ...again, fresh: false };
+  }
+  // 판을 닫는다(판 기록은 셸이 응답과 함께 — 여기서는 닫기만).
+  function closeSet() {
+    try {
+      coach.finishSet?.({ kind: 'short', record: false });
+    } catch {
+      /* 판을 닫지 못해도 답은 이미 남았다 */
+    }
+  }
+  function end(picked, narrowed = null) {
+    const facts = { ...picked.facts, limited: picked.facts?.limited || narrowed?.facts?.limited };
+    const kind = endingOf({ ...picked, facts }, served).kind;
+    ending = { kind, why: endingLine(kind, picked.why) };
+    closeSet();
+    return null;
+  }
   return Object.freeze({
     get total() {
       return length;
@@ -147,14 +184,18 @@ export function createPracticeNextSession({
       current = null;
       if (index >= length) {
         ending = { kind: 'done' };
+        closeSet();
         return null;
       }
-      const picked = pick();
-      const freshFill = picked.status === 'idle' && seen(picked.selected) === false;
-      if (picked.status !== 'ready' && !freshFill) {
-        ending = { ...endingOf(picked, served), why: picked.why?.line ?? null };
-        return null;
+      let picked = pick();
+      let freshFill = picked.status === 'idle' && seen(picked.selected) === false;
+      if (picked.status === 'idle' && !freshFill) {
+        const narrowed = pickFresh();
+        if (!narrowed || narrowed.fresh === false) return end(picked, narrowed);
+        picked = narrowed;
+        freshFill = picked.status === 'idle';
       }
+      if (picked.status !== 'ready' && !freshFill) return end(picked);
       const item = picked.selected;
       if (picked.tier === 1) served.due = true;
       const pid = coach.present(item, setSeen(setPool, item, seen) ? { firstExposure: false } : {});
@@ -265,6 +306,7 @@ export function createPracticeNextSession({
       skip();
       stopped = true;
       current = null;
+      if (!ending) closeSet();
     },
   });
 }

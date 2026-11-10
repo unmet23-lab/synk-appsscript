@@ -11,7 +11,18 @@ import { clock, createCoach, memoryPort } from './support.mjs';
 const REPO = path.join(PACKAGE_ROOT, '..', '..');
 const WORLD = path.join(REPO, 'experiences', 'synk-world-app');
 const load = file => import(pathToFileURL(path.join(WORLD, file)).href);
-const { createPracticeNextSession, endingOf } = await load('world-practice-next.mjs');
+const { createPracticeNextSession, endingLine, endingOf } = await load('world-practice-next.mjs');
+const { createPositionView } = await load('world-position-ui.mjs');
+const STRINGS = (
+  await import(
+    pathToFileURL(path.join(REPO, 'experiences', 'brand-opening', 'world-strings.mjs')).href
+  )
+).default;
+// 판 끝 화면을 한국어로 그린다(화면 글 표의 ko 줄 그대로).
+const view = createPositionView({
+  t: (key, vars = {}) =>
+    String(STRINGS[key]?.ko ?? key).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? ''),
+});
 const { bankItems } = await load('world-topik-items.mjs');
 const { allowedPlays, nextPlay } = await load('world-exam-form.mjs');
 const plays = { allowedPlays, nextPlay };
@@ -114,6 +125,60 @@ test('판이 일찍 끝나면 그 까닭을 사실대로 고른다 — 돌아온
   });
   assert.deepEqual(endingOf({ status: 'idle', facts: {} }, { due: true }), { kind: 'idle' });
   assert.deepEqual(endingOf({ status: 'idle', facts: {} }, { due: false }), { kind: 'exhausted' });
+});
+
+test('판 끝 줄의 엔진 문장은 끝 까닭이 엔진의 것일 때만 — 처음 보는 문항이 바닥난 판에 「다 만났어요」가 없다(Fable P1-1)', () => {
+  const idle = { code: 'idle', line: '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.' };
+  assert.equal(endingLine('idle', idle), idle.line);
+  assert.equal(endingLine('exhausted', idle), null);
+  assert.equal(endingLine('limited', idle), null);
+  assert.equal(endingLine('capped', idle), null, '하루 상한 판에는 그 이유 종류(day.capped)만');
+  assert.equal(
+    endingLine('capped', { code: 'day.capped', line: '오늘은 여기까지예요.' }),
+    '오늘은 여기까지예요.',
+  );
+  const done = ending =>
+    view.renderPracticeNextDone({
+      skill: { id: 'ko.reading.x', label: '읽기' },
+      results: [],
+      ending,
+    });
+  // 판 끝 화면은 끝 까닭이 먼저다 — 엔진 문장(why)이 실려 와도 exhausted · limited에는 제품 문장을 쓴다.
+  assert.doesNotMatch(done({ kind: 'exhausted', why: idle.line }), /다 만났어요/);
+  assert.match(done({ kind: 'exhausted', why: null }), /새 문항은 여기까지예요/);
+  assert.match(done({ kind: 'limited', why: null }), /새 말은 여기까지예요/);
+  assert.match(done({ kind: 'idle', why: idle.line }), /다 만났어요/);
+});
+
+test('처음 보는 문항이 남은 동안은 같은 항목을 잇달아 연습해도 판 길이까지 간다 — idle이면 처음 보는 문항으로 잇는다(Fable P1-1)', async () => {
+  const { coach, time } = await guestCoach();
+  const pool = readingSkill[1];
+  const unseen = () => pool.filter(item => coach.exposure(item).seen === false).length;
+  let rounds = 0;
+  while (unseen() >= 5) {
+    const session = createPracticeNextSession({ plays, coach, pool, length: 5 });
+    const shown = await play(session, time, item => item.correctId);
+    await session.settled();
+    rounds += 1;
+    assert.equal(
+      shown.length,
+      5,
+      `${rounds}판: 낸 문항 ${shown.length} — 끝난 까닭 ${session.ending.kind}`,
+    );
+    if (session.ending.kind !== 'idle')
+      assert.doesNotMatch(session.ending.why ?? '', /다 만났어요/);
+    time.advance(5 * 60_000);
+  }
+  assert.ok(rounds >= 3, `잇달아 ${rounds}판`);
+  // 처음 보는 문항이 바닥난 뒤 끝나는 판은 그 까닭(exhausted)을 말하고, 엔진의 「다 만났어요」를 빌리지 않는다.
+  for (let round = 0; round < 3; round += 1) {
+    const session = createPracticeNextSession({ plays, coach, pool, length: 5 });
+    await play(session, time, item => item.correctId);
+    if (['exhausted', 'limited'].includes(session.ending.kind))
+      assert.equal(session.ending.why, null);
+    time.advance(5 * 60_000);
+  }
+  coach.dispose();
 });
 
 test('문항 앞 해설을 본 답은 도움받은 답이다 — 근거를 부풀리지 않는다', async () => {

@@ -1,14 +1,21 @@
 // 호스트 — 저장소 하나(계정 · 동의 판마다, storeName)에 기록부 하나(단계 4 계획 §3-2, 설계 §5-4 「쓰는 것은 호스트다」).
-//   등록부는 같은 출처의 가장 위 창에 둔다. 같은 문서의 코치들과 그 문서가 연 같은 출처 틀(게임)의 코치들이 이 기록부를 나눠 쓴다 —
-//   틀이 닫혀도 마지막 쓰기가 위 창에서 끝난다. 위 창에 등록부가 없는(혼자 뜬) 페이지는 자기 창에 둔다.
+//   호스트는 늘 같은 출처의 가장 위 창의 엔진이 만든다 — 등록부 · 호스트 객체 · IndexedDB 연결 · 올리기 타이머 · 알림 통로가 모두
+//   위 창의 것이라, 틀(게임)이 먼저 열어도 · 틀이 닫혀도 저장 · 올리기는 위 창에서 끝난다(Fable 설계 P1-3, 아르곤 A6). 엔진 묶음은
+//   불러올 때 자기 창에 「호스트를 만드는 길」(MAKER)을 걸고, 틀의 코치는 위 창의 그 길로 호스트를 받는다. 위 창에 엔진이 없는(혼자 뜬)
+//   페이지만 자기 창에 등록부를 둔다. 틀의 코치는 저장소 열쇠를 스스로 짓지 않고 셸이 연 문서 호스트를 받는다(host.document).
 //   다른 탭은 같은 IndexedDB 저장소에 덧붙이고 BroadcastChannel로 알린다 — 받은 탭은 꼬리만 다시 읽는다(record.refresh()).
 //   올리기는 계정만: 대기열(unsent) → 제품이 준 transport → 서버의 답(receive). 같은 사건을 두 탭이 올려도 서버가 번호로 거른다.
 // 코치가 쓰는 보기 = 기록부 보기(record.view() — 저장이 끝난 사건) + 아직 저장이 안 끝난 내 답 · 본인 말(pending).
+import { EDITION } from '../edition.mjs';
 import { applyOwn } from '../fold/device.mjs';
 import { byTime } from '../fold/order.mjs';
+import { carriedFields, carriedSoFar, legacyToImport } from '../record/carry.mjs';
+import { EVENT_TYPES } from '../record/events.mjs';
+import { idbPort } from '../record/idb.mjs';
 import { openTrail } from './record.mjs';
 
 const REGISTRY = '__synkAtlasHosts';
+const MAKER = '__synkAtlasHostMaker';
 const UPLOAD_DELAY_MS = 1500;
 const UPLOAD_LIMIT = 256;
 
@@ -26,14 +33,21 @@ export function hostScope(scope = globalThis) {
   return top;
 }
 
+const hostError = (code, message, cause) =>
+  Object.assign(new Error(`Atlas host: ${message} (${EDITION})`), { code, cause });
+
+// 이 창의 등록부(저장소 이름 → 호스트). document = 이 창의 셸이 처음 연 저장소 이름(틀이 받는 문서 호스트).
 function registryOf(scope) {
-  const top = hostScope(scope);
+  if (!scope[REGISTRY])
+    Object.defineProperty(scope, REGISTRY, { value: new Map(), configurable: true });
+  return scope[REGISTRY];
+}
+
+function makerOf(scope) {
   try {
-    if (!top[REGISTRY]) top[REGISTRY] = new Map();
-    return top[REGISTRY];
+    return typeof scope[MAKER] === 'function' ? scope[MAKER] : null;
   } catch {
-    if (!scope[REGISTRY]) scope[REGISTRY] = new Map();
-    return scope[REGISTRY];
+    return null;
   }
 }
 
@@ -77,7 +91,20 @@ function channelOf(key, onMessage) {
   return channel;
 }
 
-function createHost({ key, port, revision, guest, memory, params, health, transport, now, map }) {
+function createHost({
+  key,
+  port,
+  revision,
+  guest,
+  memory,
+  params,
+  health,
+  transport,
+  legacy,
+  now,
+  map,
+  onClose,
+}) {
   const index = compositeIndex();
   // 지도를 기록부를 열기 전에 넣는다 — 기록부가 처음 접는 요약의 판 묶음(색인 판)이 그 뒤의 보기와 같아야 한다.
   if (map) index.add(map);
@@ -92,8 +119,15 @@ function createHost({ key, port, revision, guest, memory, params, health, transp
     uploading: null,
     closed: false,
   };
+  // 듣는 함수마다 감싼다 — 하나(사라진 틀의 판 등)가 던져도 쓰기의 stored가 거절로 바뀌거나 뒤 판들이 소식을 놓치지 않는다.
   const tell = (kind, detail = {}) => {
-    for (const listener of listeners) listener({ kind, ...detail });
+    for (const listener of [...listeners]) {
+      try {
+        listener({ kind, ...detail });
+      } catch {
+        listeners.delete(listener);
+      }
+    }
   };
 
   // 다른 탭에 덧붙였다고 알린다. 닫은 뒤 늦게 끝난 쓰기는 알리지 않는다.
@@ -151,6 +185,7 @@ function createHost({ key, port, revision, guest, memory, params, health, transp
       if (ok) {
         announce();
         schedule();
+        tell('written', { id }); // 같은 문서의 다른 코치(판)가 이 쓰기를 본다
       } else tell('failed', { id });
       return ok;
     });
@@ -166,6 +201,7 @@ function createHost({ key, port, revision, guest, memory, params, health, transp
     health,
     async open() {
       state.trail = await openTrail({ port, revision, guest, memory, params, index, health, now });
+      if (guest && legacy) await carryLegacy(state.trail.record, legacy, health);
       state.channel = channelOf(key, () => void refresh());
       if (globalThis.addEventListener) globalThis.addEventListener('online', schedule);
       schedule();
@@ -196,34 +232,91 @@ function createHost({ key, port, revision, guest, memory, params, health, transp
     retain() {
       state.users += 1;
     },
-    async release() {
+    // 동기로 닫는다 — 사라지는 틀의 pagehide에서 불려도 등록부에서 바로 빠진다.
+    release() {
       state.users -= 1;
       if (state.users > 0) return false;
       state.closed = true;
       clearTimeout(state.timer);
       if (globalThis.removeEventListener) globalThis.removeEventListener('online', schedule);
       state.channel?.close();
+      onClose?.();
       return true;
     },
   };
 }
 
-// 저장소 이름마다 호스트 하나. 처음 부른 코치가 열고, 뒤의 코치는 같은 것을 받는다.
-export async function acquireHost(options, scope = globalThis) {
-  const registry = registryOf(scope);
-  let entry = registry.get(options.key);
-  if (!entry) {
-    const host = createHost(options);
-    entry = { host, opening: host.open() };
-    registry.set(options.key, entry);
-    entry.opening.catch(() => registry.delete(options.key));
+// 옛 기기 기록 옮기기(설계 §5-6 · 단계 3 carry.mjs, Fable 설계 P1-5 ①) — 손님 호스트가 열 때마다 옛 저장소(지금 판 코치의 로그 ·
+// 접힌 장부)에서 아직 옮기지 않은 사건 · 새로 든 장부만 옮긴다. 옛 판에 다녀온 기록(되돌리기 2주)도 다음에 열 때 들어온다.
+// legacy()는 제품이 준다 → { log: 옛 꼴 사건들, ledger: 접힌 장부 } | null. 못 읽어도 새 길은 연다(계기에만 남긴다).
+async function carryLegacy(record, legacy, health) {
+  try {
+    const old = await legacy();
+    if (!old) return;
+    await record.importLegacy(legacyToImport(old.log, id => record.has(id)));
+    const fields = carriedFields(old.ledger, carriedSoFar(record.heldEvents()));
+    if (fields && !(await record.add(EVENT_TYPES.carried, fields).stored))
+      throw new Error('carried');
+  } catch {
+    health?.note('save', { ok: false, code: 'LEGACY_CARRY' });
   }
-  await entry.opening;
-  if (options.map) entry.host.index.add(options.map);
-  entry.host.retain();
-  return entry.host;
 }
 
-export async function releaseHost(host, scope = globalThis) {
-  if (await host.release()) registryOf(scope).delete(host.key);
+// 이 창에서 호스트를 연다(저장소 이름마다 하나 — 처음 부른 코치가 열고, 뒤의 코치는 같은 것을 받는다).
+// document: 셸이 연 문서 호스트를 받는다(틀의 코치) — 열린 것이 없으면 HOST_MISSING.
+async function acquireHere(scope, options, openPort) {
+  const registry = registryOf(scope);
+  const key = options.document ? registry.document : options.key;
+  if (key == null) throw hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
+  let entry = registry.get(key);
+  if (!entry) {
+    if (options.document) throw hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
+    const onClose = () => {
+      if (registry.get(key) === entry) registry.delete(key);
+      if (registry.document === key && !registry.has(key)) registry.document = null;
+    };
+    // 등록부에 먼저 넣고 연다 — 같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게.
+    entry = {
+      opening: (async () => {
+        let port = options.port;
+        try {
+          port ??= await openPort(key);
+        } catch (error) {
+          throw hostError('STORAGE_FAILED', '저장소를 열지 못했다', error);
+        }
+        return createHost({ ...options, key, port, onClose }).open();
+      })(),
+    };
+    registry.set(key, entry);
+    registry.document ??= key;
+    entry.opening.catch(onClose);
+  }
+  const host = await entry.opening;
+  if (options.map) host.index.add(options.map);
+  host.retain();
+  return host;
+}
+
+// 이 창의 엔진이 호스트를 만드는 길을 건다(묶음을 불러올 때 한 번). openPort는 시험만 바꾼다.
+export function installHostMaker(scope = globalThis, { openPort = idbPort } = {}) {
+  if (makerOf(scope)) return makerOf(scope);
+  const maker = options => acquireHere(scope, options, openPort);
+  try {
+    Object.defineProperty(scope, MAKER, { value: maker, configurable: true });
+  } catch {
+    // 창에 걸 수 없으면 이 창 안에서만 쓴다.
+  }
+  return maker;
+}
+installHostMaker(globalThis);
+
+// 호스트를 받는다 — 같은 출처의 위 창에 엔진이 있으면 그 창이 만들고, 없으면 이 창에서.
+export function acquireHost(options, scope = globalThis) {
+  const top = hostScope(scope);
+  const maker = (top !== scope && makerOf(top)) || makerOf(scope) || installHostMaker(scope);
+  return maker(options);
+}
+
+export function releaseHost(host) {
+  return host.release();
 }

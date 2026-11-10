@@ -27857,7 +27857,8 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const answered = results.filter((row) => !row.skipped), right = answered.filter((row) => row.verdict === "correct" && row.independent).length;
     const wrong = answered.filter((row) => ["incorrect", "unknown"].includes(row.verdict)).length, skipped = results.length - answered.length;
     const kind = ending?.kind || "done";
-    const line = ending?.why || (kind === "exhausted" ? t3("practice.shortage") : kind === "limited" ? t3("practice.next.limited") : "");
+    const engineLine = ["idle", "capped", "stubborn"].includes(kind) ? ending?.why : null;
+    const line = engineLine || (kind === "exhausted" ? t3("practice.shortage") : kind === "limited" ? t3("practice.next.limited") : "");
     const itemOf = (id) => items?.get?.(id) || null;
     const missedIds = [...new Set(answered.filter((row) => ["incorrect", "unknown"].includes(row.verdict)).map((row) => row.itemId))];
     const misses = missedIds.map((itemId) => ({ itemId })).map((row) => {

@@ -9,12 +9,12 @@ import { openMap } from '../map/index.mjs';
 import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
 import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
-import { idbPort } from '../record/idb.mjs';
 import { storeName } from '../record/port.mjs';
 import { elapsedDays } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
+import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
-import { acquireHost, releaseHost } from './host.mjs';
+import { acquireHost, hostScope, releaseHost } from './host.mjs';
 import { createSession, learnerOf } from './session.mjs';
 
 export { COACH_METHODS } from './methods.mjs';
@@ -43,17 +43,10 @@ async function loadMap(options) {
   return openMap({ index: slices, units, words });
 }
 
-async function portOf(host, key) {
-  if (host.port) return host.port;
-  try {
-    return await idbPort(key);
-  } catch (error) {
-    throw Object.assign(fail('STORAGE_FAILED', '저장소를 열지 못했다'), { cause: error });
-  }
-}
-
+// host.document: 틀(게임) 안 코치 — 저장소 열쇠를 스스로 짓지 않고 위 창의 셸이 연 문서 호스트를 받는다(Fable 설계 P1-3).
 function hostOptions(options) {
   const host = options.host ?? {};
+  if (host.document === true) return { host, guest: null, key: null };
   const guest = host.guest === true || host.account == null;
   // key는 저장소 이름(storeName)이다. 시험 · 호스트가 같은 문서에서 저장소를 가를 때만 직접 준다.
   const key =
@@ -68,8 +61,11 @@ export function createCoach(options = {}) {
   }
   const gameId = options.gameId ?? 'atlas';
   const params = options.params ?? PARAMS;
+  const dayOffset = options.dayOffset ?? -new Date().getTimezoneOffset();
+  const scope = options.scope ?? globalThis; // 시험만 준다(틀 흉내)
   const state = { map: null, host: null, session: null, disposed: false };
   const label = id => options.label?.(id) ?? state.map?.unit(id)?.label ?? null;
+  // 틀이 여럿일 때 같은 날 같은 것에는 같은 말 — Vellum에 하루 열쇠를 넘긴다(Fable 설계 P2-5 ⑥).
   const say = (why, extra = {}) =>
     why
       ? render(why, {
@@ -77,6 +73,7 @@ export function createCoach(options = {}) {
           level: extra.level ?? options.level ?? 'standard',
           speaker: extra.speaker ?? options.speaker ?? 'default',
           label,
+          day: dayKey(state.host.now(), params, dayOffset),
         })
       : null;
   const mapItem = product => {
@@ -90,26 +87,35 @@ export function createCoach(options = {}) {
   const ready = (async () => {
     const map = await loadMap(options);
     const { host, guest, key } = hostOptions(options);
-    const port = await portOf(host, key);
-    const opened = await acquireHost({
-      key,
-      port,
-      revision: host.revision ?? 0,
-      guest,
-      memory: createMemory(params),
-      params,
-      health: host.health ?? null,
-      transport: host.transport ?? null,
-      now: host.now,
-      map,
-    });
+    // 저장소(IndexedDB) · 올리기 타이머 · 알림 통로는 호스트를 만드는 창(같은 출처의 가장 위 창의 엔진)이 연다 — host.mjs.
+    const opened = await acquireHost(
+      {
+        key,
+        document: host.document === true,
+        port: host.port ?? null,
+        revision: host.revision ?? 0,
+        guest,
+        memory: createMemory(params),
+        params,
+        health: host.health ?? null,
+        transport: host.transport ?? null,
+        legacy: host.legacy ?? null,
+        now: host.now,
+        map,
+      },
+      scope,
+    );
+    if (state.disposed) {
+      releaseHost(opened);
+      throw fail('DISPOSED', '준비되기 전에 닫은 코치다');
+    }
     state.map = map;
     state.host = opened;
     state.session = createSession({
       host: opened,
       gameId,
       seed: options.seed ?? gameId,
-      dayOffset: options.dayOffset ?? -new Date().getTimezoneOffset(),
+      dayOffset,
       mapItem,
     });
   })();
@@ -124,6 +130,17 @@ export function createCoach(options = {}) {
   const notYet = name => () => {
     throw fail('NOT_IMPLEMENTED', `${name}은 단계 4의 다음 묶음에서 짓는다`);
   };
+
+  // 측정용 「앞서 만났나」 — 만남(답 · 답 보기 · 도움)의 표와 요약의 문항 줄만 본다. 띄우기만 하고 답도 도움도 없이 닫은 제시는 만남이
+  // 아니다(설계 §5-2) — 그것까지 세는 exposure()는 화면용이다(Fable 설계 P1-2). 모르면 null(계정 기기가 요약을 아직 못 받았을 때).
+  function metBefore(item) {
+    const brain = mapItem(item ?? {});
+    const itemKey = brain?.itemKey ?? item?.itemKey;
+    const familyKey = brain?.familyKey ?? item?.familyKey ?? itemKey;
+    const base = state.host.trail.summary();
+    if (state.host.view().met.has(familyKey) || base?.lines.item.has(itemKey)) return true;
+    return state.host.guest || base != null ? false : null;
+  }
 
   // 고른 줄 → recommend의 결과. none이면 낼 문항이 없다(제품은 판을 끝낸다), idle이면 할 것이 없다(채우기 문항이 selected).
   function picked(top, products, facts, opts) {
@@ -169,8 +186,7 @@ export function createCoach(options = {}) {
         throw new TypeError(
           'Atlas coach: 제품은 「처음이 아니다」(firstExposure: false)만 말할 수 있다',
         );
-      const seen = coach.exposure(item).seen;
-      return session.present(item, { firstExposure: context.firstExposure, seen });
+      return session.present(item, { firstExposure: context.firstExposure, seen: metBefore(item) });
     },
 
     help(pid, kind) {
@@ -213,9 +229,7 @@ export function createCoach(options = {}) {
     },
 
     exclude(eventId) {
-      live();
-      const { event } = state.host.write(EVENT_TYPES.excluded, { targetId: eventId });
-      return event;
+      return live().exclude(eventId).event;
     },
 
     recheck() {
@@ -266,6 +280,7 @@ export function createCoach(options = {}) {
       };
     },
 
+    // 화면용 「봤나」 — 띄우기만 한 제시도 본 것이다(지금 판 exposure와 같은 뜻). 측정에는 쓰지 않는다(metBefore).
     exposure(item) {
       live();
       const product = item ?? {};
@@ -285,9 +300,14 @@ export function createCoach(options = {}) {
       return { seen: state.host.guest || base != null ? false : null };
     },
 
-    finishSet({ kind } = {}) {
+    // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).
+    finishSet({ kind, record = true } = {}) {
       const session = live();
       if (!SET_KINDS.includes(kind)) throw new TypeError('Atlas coach: 판의 종류가 아니다');
+      if (record === false) {
+        session.close();
+        return null;
+      }
       const experienceId = `${gameId}.set`;
       const decided = state.host.write(EVENT_TYPES.setDecided, { experienceId, variant: kind });
       const done = state.host.write(EVENT_TYPES.setCompleted, {
@@ -333,9 +353,10 @@ export function createCoach(options = {}) {
       }));
     },
 
+    // 돌아온 단위 — 늘 호스트 보기에서 읽는다(같은 문서 다른 코치의 답 · 본인 말까지, Fable 설계 P2-1 다).
     due() {
-      const session = live();
-      const learner = session.learner ?? learnerOf(state.host.view());
+      live();
+      const learner = learnerOf(state.host.view());
       const memory = state.host.memory;
       const now = state.host.now();
       return [...learner.memory]
@@ -360,8 +381,11 @@ export function createCoach(options = {}) {
       if (state.disposed) return;
       state.disposed = true;
       state.session?.dispose();
-      if (state.host) void releaseHost(state.host);
+      if (state.host) releaseHost(state.host);
+      scope.removeEventListener?.('pagehide', coach.dispose);
     },
   };
+  // 틀 안 코치는 틀이 사라질 때 스스로 닫는다 — 위 창의 호스트에 듣는 함수 · 쓰는 사람 수를 남기지 않게(Fable 설계 P1-3).
+  if (hostScope(scope) !== scope) scope.addEventListener?.('pagehide', coach.dispose);
   return Object.freeze(coach);
 }

@@ -287,13 +287,16 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   return `<div class="wpos life-heading" data-practice-done tabindex="-1">${poster(t(listening?'practice.doneTitle.listening':'practice.doneTitle'),t('practice.doneSummary',{right,wrong,skipped}))}<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill||{}))}</p><p class="wpos-intro">${posEscape(changed)}</p>${now?`<p class="wpos-note">${posEscape(now)}</p>`:''}</section>${misses?`<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t('practice.misses'))}</p><ul>${misses}</ul></section>`:''}${next}${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t('position.open'))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t('practice.home'))}</button></div></div>`;
  }
  // 새 판(Atlas 단계 4-1, 기능 atlasNext)의 판 끝: 이번 답(혼자 맞힘 · 틀림 · 건너뜀) → 끝난 까닭 한 줄(ending — 그 판의 사실에서) → 틀린 문항 해설 →
- // 다음 한 걸음. 칸 견주기(지금 판 요약의 여섯 상태)는 새 판에 없어 4-4에서 칸으로 되살린다. 끝난 까닭 문장은 엔진 이유(why — Vellum)를 먼저 쓴다.
+ // 다음 한 걸음. 칸 견주기(지금 판 요약의 여섯 상태)는 새 판에 없어 4-4에서 칸으로 되살린다.
  // ending.kind: done(판 길이를 다 냄) · idle · capped · stubborn · limited(새 말이 이 판 한도에 걸림 — 「새 말 더 배우기」) · exhausted · none.
  function renderPracticeNextDone({skill,results=[],items=null,listening=false,count=5,ending=null,response=null}={}){
   const answered=results.filter(row=>!row.skipped),right=answered.filter(row=>row.verdict==='correct'&&row.independent).length;
   const wrong=answered.filter(row=>['incorrect','unknown'].includes(row.verdict)).length,skipped=results.length-answered.length;
   const kind=ending?.kind||'done';
-  const line=ending?.why||(kind==='exhausted'?t('practice.shortage'):kind==='limited'?t('practice.next.limited'):'');
+  // 끝 줄은 끝 까닭이 먼저다 — 엔진 문장(why)은 까닭이 엔진의 것(idle · capped · stubborn)일 때만, 처음 보는 문항이 바닥났거나(exhausted)
+  // 새 말이 이 판 한도에 걸린 것(limited)은 제품 문장(Fable 설계 P1-1 — 돌아온 것을 안 낸 판에 「다 만났어요」를 쓰지 않는다).
+  const engineLine=['idle','capped','stubborn'].includes(kind)?ending?.why:null;
+  const line=engineLine||(kind==='exhausted'?t('practice.shortage'):kind==='limited'?t('practice.next.limited'):'');
   const itemOf=id=>items?.get?.(id)||null;
   // 같은 문항을 「다시」로 또 놓쳤으면 한 번만(새 판은 다른 문항이 없을 때 같은 문항으로 다시 낸다).
   const missedIds=[...new Set(answered.filter(row=>['incorrect','unknown'].includes(row.verdict)).map(row=>row.itemId))];
