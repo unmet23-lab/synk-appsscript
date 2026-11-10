@@ -29,7 +29,7 @@ def terminal_receipt(d):
   if isinstance(value,str) and re.fullmatch(r'[A-Za-z0-9_-]{1,128}',value):receipt[key]=value
  invocation=d.get('invocationId') or os.environ.get('INVOCATION_ID','')
  if isinstance(invocation,str) and re.fullmatch(r'[a-f0-9]{32}',invocation):receipt['invocationId']=invocation
- if d.get('model')=='gemini-4-argon-high':receipt['model']=d['model']
+ if d.get('model')=='gemini-4-carbon-high':receipt['model']=d['model']
  if d.get('agyAccount') in ('77yuhbs','unmet25'):receipt['agyAccount']=d['agyAccount']
  if isinstance(d.get('cliStatus'),str) and re.fullmatch(r'[A-Z_]{1,32}',d['cliStatus']):receipt['cliStatus']=d['cliStatus']
  if d['status']=='failed':receipt['error']=d.get('error') if isinstance(d.get('error'),str) and d['error'] in SAFE_ERRORS else 'RUN_CHECK_FAILED'
@@ -87,7 +87,7 @@ try:
  init=[x for x in events if x.get('event')=='init'];res=[x['result'] for x in events if x.get('event')=='result']
  assert os.environ.get('SERVICE_RESULT','success')=='success','SERVICE_FAILED'
  assert len(init)==1 and len(res)==1,'MISSING_OR_MULTIPLE_RUNS'
- result=res[0];assert init[0]['init']['model']=='gemini-4-argon-high','MODEL_MISMATCH'
+ result=res[0];assert init[0]['init']['model']=='gemini-4-carbon-high','MODEL_MISMATCH'
  assert result['conversation_id']==init[0]['conversation_id'],'CONVERSATION_MISMATCH'
  assert not result.get('denied_actions'),'CLI_FAILED_OR_DENIED'
  cli_ok=result['status']=='SUCCESS'

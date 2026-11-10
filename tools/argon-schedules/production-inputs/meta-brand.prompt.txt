@@ -1,5 +1,5 @@
 [예약 실행 계약 · 2026-10-18]
-현재 역할은 meta-brand. 공식 Antigravity CLI가 77yuhbs Google AI Ultra 구독의 gemini-4-argon-high로 실행한다. 추가 크레딧/유료 API/다른 모델로 대체하지 않는다. Docs는 별도 승인된 unmet23 연결이며 이 역할의 결과 문서는 https://docs.google.com/document/d/1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ/edit 이다.
+현재 역할은 meta-brand. 공식 Antigravity CLI가 77yuhbs Google AI Ultra 구독의 gemini-4-carbon-high로 실행한다. 추가 크레딧/유료 API/다른 모델로 대체하지 않는다. Docs는 별도 승인된 unmet23 연결이며 이 역할의 결과 문서는 https://docs.google.com/document/d/1YTHEzSzgdm76sXUz5hEbwdTiOse575D3_malZz8LWwQ/edit 이다.
 
 실행 순서:
 1. run_command로 /usr/bin/date -u +%Y-%m-%dT%H:%M:%SZ 를 실행해 실제 UTC 시각을 읽는다.
@@ -310,7 +310,7 @@ SYNK_CREATIVE_RESEARCH_COMPLETE
 
 2026-10-17 예약 검수 반영 — 이후 모든 회차에 적용
 
-실행 계정은 77yuhbs@gmail.com의 기존 Google AI Ultra이며 공식 Antigravity CLI의 명시 모델은 gemini-4-argon-high다. 운영자는 실제 예약 실행 로그의 init.model과 인증 계정을 확인하며, 본문이나 모델의 자기 보고를 집행 모델 증거로 쓰지 않는다. 한도·인증·모델 접근 오류가 나면 실패 범위를 알리고 다른 모델·추가 결제·유료 API로 자동 전환하지 않는다. Docs 보관 연결은 별도 승인된 unmet23@gmail.com을 사용하며 모델 실행 계정과 혼동하지 않는다. 수신 호환을 위해 JSON의 schemaVersion=1, provider=gemini-spark를 유지하고 모델명 필드를 새로 만들지 않는다.
+실행 계정은 77yuhbs@gmail.com의 기존 Google AI Ultra이며 공식 Antigravity CLI의 명시 모델은 gemini-4-carbon-high다. 운영자는 실제 예약 실행 로그의 init.model과 인증 계정을 확인하며, 본문이나 모델의 자기 보고를 집행 모델 증거로 쓰지 않는다. 한도·인증·모델 접근 오류가 나면 실패 범위를 알리고 다른 모델·추가 결제·유료 API로 자동 전환하지 않는다. Docs 보관 연결은 별도 승인된 unmet23@gmail.com을 사용하며 모델 실행 계정과 혼동하지 않는다. 수신 호환을 위해 JSON의 schemaVersion=1, provider=gemini-spark를 유지하고 모델명 필드를 새로 만들지 않는다.
 
 05시 전체 조사는 하루 신규 후보 선별, 추가 회차는 담당 원문의 실제 재확인과 가이드 개선을 우선한다. 회사 전체·전체 역할·전체 회차 합계로 하루 신규 약10개가 목표다. 각 역할/회차마다 10개를 다시 채우지 않는다. 전체 이력이 보이지 않으면 그 한계를 밝히고 실제 확인한 수만 보고한다.
 

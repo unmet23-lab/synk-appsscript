@@ -46,7 +46,7 @@ MODES = ('auto', DEFAULT, SPARE)
 # Every account shows the weekly window; the 5-hour one only on some plans (unmet25 had none on 10-22).
 MIN_REMAINING = {'gemini-weekly': 0.10, 'gemini-5h': 0.10}
 REQUIRED_WINDOWS = ('gemini-weekly',)
-RUN_MODEL = 'gemini-4-argon-high'  # the role services' --model; status shows whether each login lists it
+RUN_MODEL = 'gemini-4-carbon-high'  # the role services' --model; status shows whether each login lists it (2026-11-11: argon -> carbon, agy has no carbon max)
 PROBE_TIMEOUT = 60
 AUTH = re.compile(r'authenticated successfully as ([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+)')
 

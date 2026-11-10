@@ -22,7 +22,7 @@ NEW = 'b' * 64
 ROLE = 'synkbrief'
 
 
-def events(response, model='gemini-4-argon-high', denied=None, status='SUCCESS', error=None):
+def events(response, model='gemini-4-carbon-high', denied=None, status='SUCCESS', error=None):
     result = {'conversation_id': 'synthetic-conversation', 'status': status,
               'denied_actions': denied or [], 'response': response}
     if error:
@@ -84,7 +84,7 @@ class RunCheckTest(unittest.TestCase):
         self.begin_and_append(events('SYNK_RUN_COMPLETE: synkbrief : ' + NEW + '\nSummary'))
         code, state, calls = self.run_checker('end', NEW)
         self.assertEqual((code, state['status'], state['sha256']), (0, 'complete', NEW))
-        self.assertEqual(state['model'], 'gemini-4-argon-high')
+        self.assertEqual(state['model'], 'gemini-4-carbon-high')
         self.assertEqual(len(calls), 1)
 
     def test_wrong_model_rejected_before_doc_read(self):
@@ -186,7 +186,7 @@ class RunCheckTest(unittest.TestCase):
                 self.assertNotIn('baselineRevisionId', receipt)
                 self.assertNotIn('SECRET_REPORT_BODY', json.dumps(receipt))
                 if expected != 'failed':
-                    self.assertEqual(receipt['model'], 'gemini-4-argon-high')
+                    self.assertEqual(receipt['model'], 'gemini-4-carbon-high')
                     self.assertEqual(receipt['sha256'], sha)
                 if os.name == 'posix':
                     self.assertTrue(all(stat.S_IMODE(path.stat().st_mode) == 0o600 for path in history))

@@ -316,6 +316,7 @@ function sanitizeArgon(payload, expected) {
 }
 
 // The remote read is a fixed script; only the validated docs.json role list is substituted into it.
+// 2026-11-11: the role services run gemini-4-carbon-high (유호님 「전부 카본」); a role's last record from before the switch (argon-high) still matches.
 function argonStatusSource(roles) {
   return String.raw`import json,pathlib,re,subprocess,datetime,urllib.request
 ROOT=pathlib.Path('/var/lib/synk-argon-77yuhbs/run-status')
@@ -336,7 +337,7 @@ for role in ${JSON.stringify(roles)}:
  service=props('synk-argon-ultra-'+role+'.service');timer=props('synk-argon-ultra-'+role+'.timer')
  code=service.get('ExecMainStatus','')
  rows.append({'role':role,'status':data.get('status','missing'),'startedAt':data.get('startedAt'),'completedAt':data.get('completedAt'),
- 'modelMatches':data.get('model')=='gemini-4-argon-high','documentId':data.get('documentId'),'sha256':data.get('sha256'),
+ 'modelMatches':data.get('model') in ('gemini-4-carbon-high','gemini-4-argon-high'),'documentId':data.get('documentId'),'sha256':data.get('sha256'),
  'errorCode':data.get('error') if re.fullmatch('[A-Z][A-Z0-9_]{0,99}',str(data.get('error',''))) else None,
  'serviceState':service.get('ActiveState'),'serviceResult':service.get('Result'),'exitCode':int(code) if re.fullmatch('[0-9]{1,5}',code) else None,
  'timerActive':timer.get('ActiveState')=='active','timerEnabled':timer.get('UnitFileState')=='enabled'})

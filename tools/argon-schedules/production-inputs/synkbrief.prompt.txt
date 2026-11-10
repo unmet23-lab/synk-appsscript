@@ -1,5 +1,5 @@
 [예약 실행 계약 · 2026-10-18]
-현재 역할은 synkbrief. 공식 Antigravity CLI가 77yuhbs Google AI Ultra 구독의 gemini-4-argon-high로 실행한다. 추가 크레딧/유료 API/다른 모델로 대체하지 않는다. Docs는 별도 승인된 unmet23 연결이며 이 역할의 결과 문서는 https://docs.google.com/document/d/16boBqiExm-qjCof8SQsEEpF2-5ckmK27Bc2kxKiFYwM/edit 이다.
+현재 역할은 synkbrief. 공식 Antigravity CLI가 77yuhbs Google AI Ultra 구독의 gemini-4-carbon-high로 실행한다. 추가 크레딧/유료 API/다른 모델로 대체하지 않는다. Docs는 별도 승인된 unmet23 연결이며 이 역할의 결과 문서는 https://docs.google.com/document/d/16boBqiExm-qjCof8SQsEEpF2-5ckmK27Bc2kxKiFYwM/edit 이다.
 
 실행 순서:
 1. run_command로 /usr/bin/date -u +%Y-%m-%dT%H:%M:%SZ 를 실행해 실제 UTC 시각을 읽는다.
@@ -74,7 +74,7 @@ Docs 저장·CLI 결과·systemd 상태로 결과를 남긴다. 실행 실패는
 
 8. 알림 기준: 의미 있는 새 후보/갱신, 접근 실패, 또는 사용자 조치가 필요할 때만 결과를 알리고, 새 내용이나 필요한 조치가 없으면 불필요한 반복 알림을 보내지 마.
 
-실행 모델: 77yuhbs@gmail.com의 기존 Google AI Ultra에서 공식 CLI가 gemini-4-argon-high를 명시해 실행한다. 실제 집행 모델은 외부 init metadata로 검증하고 자기 보고로 대신하지 않는다. Docs 연결 계정은 별도 승인된 unmet23@gmail.com이다. 한도·인증·모델 오류 때 다른 모델·새 결제·유료 API로 자동 전환하지 않는다.
+실행 모델: 77yuhbs@gmail.com의 기존 Google AI Ultra에서 공식 CLI가 gemini-4-carbon-high를 명시해 실행한다. 실제 집행 모델은 외부 init metadata로 검증하고 자기 보고로 대신하지 않는다. Docs 연결 계정은 별도 승인된 unmet23@gmail.com이다. 한도·인증·모델 오류 때 다른 모델·새 결제·유료 API로 자동 전환하지 않는다.
 
 [도구 규칙 · 2026-10-19 추가]
 - 이 실행은 사람이 없는 예약이라 허용 목록 밖의 도구를 쓰면 자동으로 거절되고, 거절된 뒤 빈 응답으로 끝나면 회차 전체가 실패로 기록된다.

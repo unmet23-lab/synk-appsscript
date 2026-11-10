@@ -22,7 +22,7 @@ SPEC.loader.exec_module(agy)
 PERMISSIONS = {'allow': [r'command(regex:^/usr/bin/date -u \+%Y-%m-%dT%H:%M:%SZ$)'],
                'deny': ['read_file(/var/lib/synk-argon-unmet25/.gemini/antigravity-cli/antigravity-oauth-token)']}
 INVOCATION = '0123456789abcdef' * 2
-ARGON_MODELS = ('gemini-4-argon-medium\tGemini 4 Argon (Medium)\ngemini-4-argon-high\tGemini 4 Argon (High)\n'
+ARGON_MODELS = ('gemini-4-carbon-high\tGemini 4 Carbon (High)\ngemini-4-argon-medium\tGemini 4 Argon (Medium)\ngemini-4-argon-high\tGemini 4 Argon (High)\n'
                 'gemini-3.8-flash-high\tGemini 3.8 Flash (High)\n')
 # What the server listed for unmet25 on 10-22: no Argon at all.
 NO_ARGON_MODELS = ('gemini-3.8-flash-high\tGemini 3.8 Flash (High)\nclaude-opus-4-6-thinking\tClaude Opus 4.6 (Thinking)\n'
@@ -170,19 +170,19 @@ class AgyAccountTest(unittest.TestCase):
                                 ((ARGON_MODELS, 0), 'AUTO_SWITCH_UNMET25')):
             with self.subTest(reason=reason, code=listing[1]):
                 self.model_lists['unmet25'] = listing
-                self.assertEqual(agy.choose('auto', 'gemini-4-argon-high')[1], reason)
+                self.assertEqual(agy.choose('auto', 'gemini-4-carbon-high')[1], reason)
         self.model_lists['unmet25'] = (NO_ARGON_MODELS, 0)
-        self.assertEqual(agy.choose('unmet25', 'gemini-4-argon-high')[:2], ('77yuhbs', 'MODE_UNMET25_NO_MODEL'))
+        self.assertEqual(agy.choose('unmet25', 'gemini-4-carbon-high')[:2], ('77yuhbs', 'MODE_UNMET25_NO_MODEL'))
         self.model_calls.clear()
         self.answers['77yuhbs'] = (usage(0.5, 0.9), '77yuhbs@gmail.com', 0)
-        self.assertEqual(agy.choose('auto', 'gemini-4-argon-high')[0], '77yuhbs')
+        self.assertEqual(agy.choose('auto', 'gemini-4-carbon-high')[0], '77yuhbs')
         self.assertEqual(self.model_calls, [])  # a healthy 77yuhbs needs no model check
 
     def test_five_hour_window_is_optional_but_weekly_is_not(self):
         # unmet25's real 10-22 /usage had only the weekly window.
         self.answers['77yuhbs'] = (usage(0.05, NO_WINDOW), '77yuhbs@gmail.com', 0)
         self.answers['unmet25'] = (usage(1, NO_WINDOW), 'unmet25@gmail.com', 0)
-        self.assertEqual(agy.choose('auto', 'gemini-4-argon-high')[:2], ('unmet25', 'AUTO_SWITCH_UNMET25'))
+        self.assertEqual(agy.choose('auto', 'gemini-4-carbon-high')[:2], ('unmet25', 'AUTO_SWITCH_UNMET25'))
         self.answers['77yuhbs'] = (usage(0.5, NO_WINDOW), '77yuhbs@gmail.com', 0)
         self.assertEqual(agy.choose('auto')[:2], ('77yuhbs', 'AUTO_77YUHBS_OK'))
         no_weekly = json.dumps({'status': 'SUCCESS', 'command': {'name': 'usage', 'data': {'groups': [
@@ -243,7 +243,7 @@ class AgyAccountTest(unittest.TestCase):
         return code, execve, stdout.getvalue(), stderr.getvalue()
 
     def test_launch_execs_same_command_with_chosen_home_and_records_choice(self):
-        command = [agy.AGY, '--input-format', 'stream-json', '--model', 'gemini-4-argon-high']
+        command = [agy.AGY, '--input-format', 'stream-json', '--model', 'gemini-4-carbon-high']
         self.answers['77yuhbs'] = (usage(0.04, 0.9), '77yuhbs@gmail.com', 0)
         _, execve, stdout, stderr = self.launch(['synk-argon-ultra-full', '--'] + command)
         path, argv, env = execve.call_args[0]

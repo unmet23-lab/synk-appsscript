@@ -14,7 +14,7 @@ WORK = '/var/lib/synk-argon-77yuhbs/work'
 HELPER = '/usr/bin/python3 /opt/synk-argon-77yuhbs/docs-io.py'
 
 COMMON_HEAD = """[예약 실행 계약 · 2026-10-19 · 월요일 스캔 수집]
-현재 역할은 {role}. 공식 Antigravity CLI가 77yuhbs Google AI Ultra 구독의 gemini-4-argon-high로 실행한다. 추가 크레딧/유료 API/다른 모델로 대체하지 않는다. Docs는 별도 승인된 unmet23 연결이며 이 역할의 결과 문서는 https://docs.google.com/document/d/{doc}/edit 이다.
+현재 역할은 {role}. 공식 Antigravity CLI가 77yuhbs Google AI Ultra 구독의 gemini-4-carbon-high로 실행한다. 추가 크레딧/유료 API/다른 모델로 대체하지 않는다. Docs는 별도 승인된 unmet23 연결이며 이 역할의 결과 문서는 https://docs.google.com/document/d/{doc}/edit 이다.
 이 결과는 SYNK의 월요일 트렌드 스캔(제작 방식 v2 §6)에서 Claude가 다시 확인해 후보를 고르는 원자료다. 여기서 후보를 확정하거나 제작·게시를 결정하지 않는다. 딥리서치처럼 넓게 찾고, 원문을 직접 읽고, 서로 대조한 것만 남긴다.
 
 실행 순서:
@@ -56,7 +56,7 @@ TOOL_RULES = """
 - docs-io.py의 사용법이 필요하면 view_file로 /opt/synk-argon-77yuhbs/docs-io.py를 읽는다.
 - 어떤 도구가 거절되거나 실패하면 그 단계만 건너뛰고, 모은 근거로 결과 파일을 끝까지 쓴 뒤 검증·저장 절차를 마친다. 거절이나 실패 때문에 빈 응답으로 끝내지 않는다.
 
-실행 모델: 77yuhbs@gmail.com의 기존 Google AI Ultra에서 공식 CLI가 gemini-4-argon-high를 명시해 실행한다. 실제 집행 모델은 외부 init metadata로 검증하고 자기 보고로 대신하지 않는다. Docs 연결 계정은 별도 승인된 unmet23@gmail.com이다. 한도·인증·모델 오류 때 다른 모델·새 결제·유료 API로 자동 전환하지 않는다.
+실행 모델: 77yuhbs@gmail.com의 기존 Google AI Ultra에서 공식 CLI가 gemini-4-carbon-high를 명시해 실행한다. 실제 집행 모델은 외부 init metadata로 검증하고 자기 보고로 대신하지 않는다. Docs 연결 계정은 별도 승인된 unmet23@gmail.com이다. 한도·인증·모델 오류 때 다른 모델·새 결제·유료 API로 자동 전환하지 않는다.
 """
 
 SCOPES = {

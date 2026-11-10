@@ -2,6 +2,14 @@
 
 2026-10-18 12:12 KST 운영 전환을 마쳤다. 기존 Gemini 예약 4개는 일시중지했고, 서버 타이머 4개는 enabled·active로 확인했다. 전환 뒤 첫 정규 회차인 10-18 14:00 YouTube·TikTok 조사가 실제 타이머로 시작해 Argon 실행과 기존 Google Docs의 새 저장까지 성공했다. 장애 알림 메일 실제 수신도 확인해 요청한 운영 검증 목표를 충족했다. [YouTube·TikTok 결과 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit), 최신 운영 결과는 아래 「상태와 실패 확인」의 조회로 본다(트랙의 「Argon 운영」 항목은 남은 일이 끝나 10-25에 [보관](../../docs/_ops/보관/트랙_2026-10.md)으로 옮겼다). 지금 예약 표는 [관문·자동화](../../docs/_ops/관문_자동화.md) 「회사 서버 예약」에도 있다.
 
+## 2026-11-11 · 실행 모델을 gemini-4-carbon-high로
+
+- **왜.** 유호님 11-11 「제미나이 관련한 검수나 이미지 생성할 때나 딥리서치할 때 전부 카본(max)으로」([결정](../../docs/_ops/결정.md) · [운영 원칙](../../docs/AI_운영원칙.md#gemini-carbon)). 서버 agy 1.4.0의 두 계정 목록에 `gemini-4-carbon` low · medium · high가 있고 max는 없다(PC agy 1.5.5도 `--effort max`를 거절) — high가 가장 높다.
+- **바꾼 것(03:32 KST, standby).** 역할 일곱의 service와 `60-agy-account.conf`(실제 실행 명령)의 `--model`, `agy-account.py` RUN_MODEL, `run-check.py`의 모델 대조 둘(받음 기록 · MODEL_MISMATCH), 역할 지시문 `prompts/*.input.jsonl`의 실행 모델 글, 두 서버 시험의 고정값. 25개 모두 `config-backups/20261110T183237Z-carbon`에 백업한 뒤 주인 · 권한 그대로 바꿨고, 저장소 옛 판과 해시가 같던 24개는 저장소 새 판을, 다르던 `agy-account-test.py`(서버 `0490367e…`, 저장소와 이미 달랐다) 하나는 그 안의 모델 이름만 바꿨다. timer는 건드리지 않고 `systemd-analyze verify` · `daemon-reload`만 했다.
+- **확인.** full의 ExecStart가 `--model gemini-4-carbon-high` · 서버 시험 20/20 · 18/18 · `agy-account.py status --usage`의 두 계정 `runModelListed` true(주간 80% · 5시간 86% 남음) · 실행 사용자로 `agy -p … --model gemini-4-carbon-high` SUCCESS 6.7초. 해시 앞 16자리: `60-agy-account.conf` `c084807f1ccc7685` · `agy-account.py` `01af76a2b3b96b3f` · `run-check.py` `41c7fea5613202c1` · full.service `e8377843af8a42b0`. 헤르메스 상태판은 바꾸기 전 회차 기록(argon-high)도 모델 맞음으로 본다(`tools/hermes-synk/overview.cjs`).
+- **되돌리기.** 위 백업 폴더의 파일(경로의 `/`를 `__`로 바꾼 이름)을 제자리에 되돌리고 `daemon-reload`.
+- **참고.** 바꾼 뒤 첫 정규 회차는 11-11 05:00 KST full이다 — 그 회차 `run-status/full.json`의 model이 `gemini-4-carbon-high`이고 status가 complete인지 본다.
+
 ## 2026-10-25 · 월요일 스캔 셋(scan-lab·ai·platform)을 끔
 
 - **왜.** 결과를 읽는 곳이 없다. 10-23부터 매일 19:30 「수요 스캔 + 기획 후보」(앱 예약 `synk-monday-trend-scan-2`)가 `tools/수요스캔/`으로 모으고, 그 지시문(10-25 확인)·[제작 방식 v2 §6](../../docs/마케팅/콘텐츠_제작방식_v2_20261002.md)·결정 10-23 「수요 스캔 매일」·「매일 게시 · 이해 관문」 행 어디에도 세 역할을 읽는 단계가 없다. `scan-read.cjs`를 부르는 예약·도구도 없었다(헤르메스 상태판은 이름표만, 07시 제작은 제작 절차만 따른다). 이어 읽게 하는 것도 득이 적다. 새 기준(v2 §1)의 근거는 「채널 평소보다 크게 튄 편」(정확한 조회수로 잰 평소 대비 배수)이고 질문·달력은 보조인데, 세 역할은 보이는 조회수로 고른 쇼츠·공식 발표·형식·달력을 모으는 10-19 판이라 그 근거가 못 된다. 주 한 번이라 매일 스캔에는 거의 늘 지난 자료이고, 잇자면 매일 예약 지시문에 단계를 더해야 한다(결정 10-23 「예약 작업 지시문 고침은 유호님 승인 뒤」·「지시문은 최소화」). 반면 회차마다 화면·백엔드 검수와 같은 Ultra 주간 몫을 쓴다 — 10-22에 yt-tt·meta-brand를 줄인 까닭과 같다.
