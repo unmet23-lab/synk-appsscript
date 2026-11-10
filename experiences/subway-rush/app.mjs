@@ -5,11 +5,11 @@ import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
 import { LINES } from './lines.mjs';
 import { PEOPLE, CARS, planDay } from './people.mjs';
-import { createScene, loadImage } from './scene.mjs';
+import { createScene, loadImage } from './scene.mjs?v=map20261110';
 import { createLed } from './led.mjs';
-import { createHud } from './hud.mjs';
-import { createRouteMap } from './routemap.mjs';
-import { createSound, haptic } from './audio.mjs';
+import { createHud } from './hud.mjs?v=map20261110';
+import { createRouteMap } from './routemap.mjs?v=map20261110';
+import { createSound, haptic } from './audio.mjs?v=map20261110';
 import { createMusic } from './music.mjs';
 import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney, missedPractice, entryNote } from './learning.mjs?v=return-20261105';
 
