@@ -75,8 +75,9 @@ const PENDING = '미정';
 const before = (day, from) => Boolean(from) && (from === PENDING || day < from);
 const notStarted = (account) => account?.dailyFrom === PENDING;
 
-// 그날(현지) 열린 칸 — dailyFrom 앞이면 없음, dailyTimesFrom 앞이면 맨 끝 칸만. 형식마다 여는 날(dailyFormatsFrom — {"퀴즈": "미정"})이
-// 있으면 그 형식의 칸은 그날 전에는 닫힌다(11-10: 나라별 계정은 13:00 이야기 칸부터 열고, 21:00 퀴즈 칸은 현지어 퀴즈 틀이 열린 뒤).
+// 그날(현지) 열린 칸 — dailyFrom 앞이면 없음, dailyTimesFrom 앞이면 맨 끝 칸만. 형식마다 여는 날(dailyFormatsFrom — {"노래": "미정"})이
+// 있으면 그 형식의 칸은 그날 전에는 닫힌다(11-10: 나라별 계정은 13:00 이야기 칸부터 열고, 21:00 노래 칸은 노래 비축이 찬 뒤 —
+// 11-10 밤 21:00 칸이 퀴즈에서 노래로 바뀌었다).
 function slotsOn(account, day) {
   if (before(day, account?.dailyFrom)) return [];
   let slots = allSlots(account);

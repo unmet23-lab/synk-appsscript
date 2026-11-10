@@ -202,7 +202,16 @@ test('멈춘 원본은 안 쓰고, 예비편은 useSpares일 때만, 판본이 �
   const on = 돌림.plan({ accounts, originals: a.originals, existing: a.existing, from: '2026-11-20', days: 1, useSpares: true });
   assert.equal(on.cells.find((c) => c.account === 'th' && c.format === '이야기').original, 'spare');
   const none = 돌림.plan({ accounts, originals: [{ id: 'x', format: '이야기', versions: ver(['JP']) }], existing: [{ original: 'x', account: 'seed-ig', time: '2026-10-01T21:00:00+09:00' }], from: '2026-11-20', days: 1 });
-  assert.match(none.cells.find((c) => c.account === 'th' && c.format === '이야기').why, /TH 판본/);
+  assert.equal(none.cells.find((c) => c.account === 'th' && c.format === '이야기').why, 'TH 판본이 검수를 넘긴 이야기 원본 없음 — TH 판본이 아직 못 듦 1편(판본 없음)');
+  // 받을 원본이 남았는데 그 판본이 검수 전이거나 쓸날 전이면 「다 올림」이 아니라 그 까닭을 말한다(11-11 — 지마를 받은 채널의 화날때 판본이 검수 전)
+  const seedPlate = (id, day) => ({ original: id, account: 'seed-ig', time: `2026-10-${day}T21:00:00+09:00` });
+  const story = (originals, days = 2) => 돌림.plan({ accounts, originals, existing: originals.map((o, i) => seedPlate(o.id, `0${i + 1}`)), from: '2026-11-20', days })
+    .cells.filter((c) => c.account === 'th' && c.format === '이야기');
+  const half = story([{ id: 'a', format: '이야기', versions: ver(['TH']) }, { id: 'b', format: '이야기', versions: { TH: { ready: false, why: '뜻 검수 전' } } }, { id: 'c', format: '이야기', versions: ver(['TH']), readyFrom: '2026-12-01' }]);
+  assert.equal(half[0].original, 'a');
+  assert.equal(half[1].why, '안 받은 이야기 원본 2편이 아직 못 나간다 — TH 판본이 아직 못 듦 1편(뜻 검수 전) · 쓸날 전 1편');
+  const all = story([{ id: 'a', format: '이야기', versions: ver(['TH']) }]);
+  assert.equal(all[1].why, '이 계정이 이야기 원본을 다 올림', '안 받은 원본이 정말 없을 때만 「다 올림」');
 });
 
 // ── 명령(tools/돌림표.js) — 임시 원장 · 편 폴더 ──
@@ -751,6 +760,10 @@ test('연재 — 앞 차례 판본이 검수 전이면 기다리고, 멈춘 차�
   const waited = got(noSecond);
   assert.deepEqual(waited.map((c) => c.original), ['n1', null, null, null]);
   assert.match(waited[1].why, /연재 「한글노래」 2번째를 먼저/);
+  // 뒤 곡이 모두 검수 전이면 「다 올림」이 아니라 어느 차례의 판본이 검수 전인지 말한다(11-11 Fable 검수)
+  const noRest = got(base.map((o) => (o.id === 'n1' ? o : { ...o, versions: {} })));
+  assert.deepEqual(noRest.map((c) => c.original), ['n1', null, null, null]);
+  assert.equal(noRest[1].why, '안 받은 노래 원본 2편이 아직 못 나간다 — 연재 「한글노래」 2번째 판본부터 · TH 판본이 아직 못 듦 2편(판본 없음)');
   // 둘째 곡이 멈춤(비상 정지) — 그 차례는 건너뛴다(한 곡의 정지가 연재를 세우지 않는다)
   assert.deepEqual(got(base.map((o) => (o.id === 'n2' ? { ...o, stopped: true } : o))).map((c) => c.original), ['n1', 'n3', null, null]);
   // 첫 곡이 사흘째 칸에 이미 걸려 있다 — 그 앞 날에는 둘째 곡을 받지 않는다
@@ -818,6 +831,42 @@ test('다른 길로 올린 판(seenAt)도 같은 원본의 판이다 — 같은 
   assert.deepEqual(돌림.overlaps(r.plates, accounts).map((o) => [o.a, o.b, o.hours, o.sameFile].join('|')), ['glob|au|14|false']);
 });
 
+test('돌림표 명령 — 이미받음의 「때」 · 같은이야기 편의 걸린 때가 씨앗 첫 판으로 든다(seenAt — 11-11: 이 변환을 지워도 시험이 통과했다)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const got = () => {
+    const r = m.run('--부터', '2026-11-20', '--일수', '3', '--json');
+    assert.equal(r.status, 0, r.stderr);
+    return JSON.parse(r.stdout).cells.filter((c) => c.account === 'lab-jp-youtube' && c.original === G).length;
+  };
+  assert.equal(got(), 1, '씨앗이 이 폴더로 올린 편은 일본 채널이 받는다');
+  // 가 편: 씨앗(인스타 @synk.mn)이 이 폴더로는 올린 적이 없다 — 판 · 게시결과를 비운다
+  const prep = 읽기(m, G);
+  prep.판 = [];
+  적기(m, G, '준비.json', prep);
+  적기(m, G, '게시결과.json', { 판: [] });
+  assert.equal(got(), 0, '씨앗 첫 판이 없으면 다른 계정은 못 받는다');
+  // ① 이미받음 — 때 없이 적으면 씨앗 첫 판으로 못 세고, 때를 적으면 센다
+  prep.돌림.이미받음 = ['lab-instagram'];
+  적기(m, G, '준비.json', prep);
+  assert.equal(got(), 0);
+  prep.돌림.이미받음 = [{ 계정: 'lab-instagram', 때: '2026-11-01T13:00:00+09:00' }];
+  적기(m, G, '준비.json', prep);
+  assert.equal(got(), 1, '때를 적은 씨앗은 씨앗 첫 판이다');
+  // ② 같은이야기 — 그 편에 걸린 씨앗 판의 시각이 씨앗 첫 판이다(게시결과에 시각이 없으면 판 시각)
+  delete prep.돌림.이미받음;
+  const 짝 = 'LAB_가_20261102';
+  fs.mkdirSync(path.join(m.root, 짝, '게시'), { recursive: true });
+  적기(m, 짝, '준비.json', { 브랜드: 'LAB', 슬롯: '2026-11-06', 판: [{ 계정: 'lab-instagram', 파일: 'y.mp4', 시각: '2026-11-06T13:00:00+09:00', AI표시: false }] });
+  적기(m, 짝, '게시결과.json', { 판: [{ 계정: 'lab-instagram', 상태: '게시됨', 게시물ID: 'ig-짝' }] });
+  prep.돌림.같은이야기 = [짝];
+  적기(m, G, '준비.json', prep);
+  assert.equal(got(), 1, '같은이야기 편의 씨앗 판 시각이 씨앗 첫 판이다');
+  // 그 편이 취소됐으면 씨앗 첫 판이 아니다
+  적기(m, 짝, '게시결과.json', { 판: [{ 계정: 'lab-instagram', 상태: '취소됨' }] });
+  assert.equal(got(), 0, '취소된 같은이야기 판은 씨앗 첫 판으로 세지 않는다');
+});
+
 test('돌림표 명령 — 노래 원본의 연재 · 이미받음을 읽고, 꼴이 틀리거나 원장에 없는 계정이면 셈을 멈춘다', (t) => {
   const m = 마당();
   t.after(m.cleanup);
@@ -830,11 +879,28 @@ test('돌림표 명령 — 노래 원본의 연재 · 이미받음을 읽고, �
   prep.판[0].시각 = '2026-11-01T21:00:00+09:00';
   적기(m, G, '준비.json', prep);
   const run = () => m.run('--부터', '2026-11-20', '--일수', '3', '--json');
+  // 쓸날 없는 노래 원본은 셈을 멈춘다(11-11 — 씨앗의 빈 21:00 칸에 바로 달려 그날 줄 편과 같은 칸에 두 번 걸린다), 날짜 꼴이 아니어도 멈춘다
+  const noDay = run();
+  assert.notEqual(noDay.status, 0);
+  assert.match(noDay.stderr, /노래 원본에 「돌림」\.쓸날이 없다/);
+  prep.돌림.쓸날 = '11-20';
+  적기(m, G, '준비.json', prep);
+  assert.match(run().stderr, /쓸날은 YYYY-MM-DD 꼴이다/);
+  prep.돌림.쓸날 = '2026-11-20';
+  적기(m, G, '준비.json', prep);
   const ok = run();
   assert.equal(ok.status, 0, ok.stderr);
   const cells = JSON.parse(ok.stdout).cells.filter((c) => c.original === G);
   assert.deepEqual([...new Set(cells.map((c) => c.account))], ['lab-jp-youtube'], '이미 받은 태국 채널은 빼고 일본 채널만');
   assert.equal(cells[0].format, '노래');
+  // 버린 편은 꼴 검사를 하지 않는다 — 원장에서 빠진 계정이 버린 편의 이미받음에 남아 있어도 돌림표가 죽지 않는다(11-11)
+  const dead = 읽기(m, N);
+  dead.상태 = '버림 — 시험';
+  dead.돌림.이미받음 = ['lab-없는계정'];
+  적기(m, N, '준비.json', dead);
+  const withDead = run();
+  assert.equal(withDead.status, 0, withDead.stderr);
+  assert.equal(JSON.parse(withDead.stdout).cells.some((c) => c.original === N), false, '버린 편은 돌림에 안 든다');
   // 원장에 없는 계정 이름 · 틀린 연재 꼴은 조용히 넘기지 않는다
   prep.돌림.이미받음 = ['lab-없는계정'];
   적기(m, G, '준비.json', prep);

@@ -1,7 +1,7 @@
 'use strict';
 /* 돌림표 셈(2026-11-10 LAB 하루 두 편 · 39계정 — 설계 2 · 3, docs/마케팅/LAB_하루두편_설계_20261110/README.md). 읽기만 한다.
  *
- * 원본은 매일 이야기 1편 · 퀴즈 1편이고, 계정마다 날짜를 어긋나게 돌린다(유호님 11-10 「국가별 계정마다 5일치 영상을 동일한걸
+ * 원본은 매일 이야기 1편 · 노래 1편(11-10 밤 21:00 칸이 퀴즈에서 노래로 — 퀴즈는 예비 형식)이고, 계정마다 날짜를 어긋나게 돌린다(유호님 11-10 「국가별 계정마다 5일치 영상을 동일한걸
  * 업로드하는게 아니라 순서를 뒤죽박죽으로」). 지키는 것:
  *   ① 같은 플랫폼에서 같은 원본은 20시간 안에 두 번 나가지 않는다(⑫ — 10-26 「글자만 다른 거의 같은 영상이 같은 날 두 계정에」).
  *      시간대가 25개라 「같은 날」을 한국 날짜로 보면 멕시코 저녁 판과 몽골 다음 날 아침 판(10시간 차이)이 다른 날로 빠져나가고,
@@ -14,7 +14,7 @@
  *      씨앗 첫 판은 플랫폼을 가리지 않는다(그 원본을 가장 먼저 올린 씨앗 계정 하나 — 11-11 정함): 비상 정지 점검이 씨앗 계정 전체의 24시간
  *      숫자 과반으로 가르고, 플랫폼마다 따로 기다리게 하면 씨앗이 없는 플랫폼(VK · RUTUBE · 더우인)과 몽골 원본을 받지 않는 유튜브 씨앗
  *      (@synkkorean — 영어판) 쪽 계정은 영영 못 받는다. 첫 판 시험(trial) 계정은 걸리지 않은 채 지나간 판을 「판 하나」로 세지 않는다.
- *   ③ 한 계정은 같은 원본을 두 번 올리지 않는다. 칸 형식(dailyFormats — 13:00 이야기 · 21:00 퀴즈)이 원본 형식과 같아야 한다.
+ *   ③ 한 계정은 같은 원본을 두 번 올리지 않는다. 칸 형식(dailyFormats — 13:00 이야기 · 21:00 노래)이 원본 형식과 같아야 한다.
  *   ④ 순서 섞기: 계정마다 가장 오래 기다린 원본 다섯(창) 가운데서 계정 이름으로 정한 순서(같은 입력이면 늘 같은 표)로 고르고,
  *      한 플랫폼 · 한 날 · 한 형식 칸들은 맞물림(증가 경로)으로 가장 많이 채운다 — 원본이 모자라면 빈 칸이 남는다
  *      (틱톡 7곳은 원본 7편이 쌓이기 전까지 다 못 채운다).
@@ -29,6 +29,10 @@
  *      앞일 때만) 다음 차례를 받는다 — ④의 섞기보다 먼저다. 앞 차례 원본의 그 계정 판본이 아직 검수 전이거나 쓸 날 전이면 건너뛰지 않고
  *      기다린다(칸이 빈다). 멈춘 원본(⑤)과 안 쓰는 예비편만 있는 차례는 건너뛴다(한 곡의 비상 정지가 연재 전체를 세우지 않게).
  *      같은 날 같은 원본을 둘이 못 받는 플랫폼(①)에서는 이 규칙만으로 계정마다 시작 날이 하루씩 어긋난다(첫 곡을 하루에 한 계정씩).
+ *      차례가 어긋나는 예외 둘 — 전환할 때뿐이다(11-11 Fable 검수): ⓐ 취소 · 지움 · 보류로 닫혔거나 걸리지 않은 채 지나간 앞 곡은 그 계정이
+ *      받은 것으로 세어(③ — 같은 원본을 다시 주지 않는다) 그 곡 없이 다음 차례로 넘어간다. ⓑ 멈춘 차례를 건너뛴 계정은 그 차례가
+ *      되살아나면(멈춤을 풂 · 예비를 켬 · 같은 차례 번호의 새 원본) 그 곡을 뒤늦게 받아 1 → 3 → 2가 된다. 그래서 멈춤은 되돌리지 않고,
+ *      고친 곡은 옛 곡을 멈춤 · 예비로 둔 채 새 원본을 같은 차례 번호로 넣는다(그 차례에 아직 안 온 계정은 차례대로 받는다).
  *   형식은 FORMATS(이야기 · 노래 · 퀴즈) — 21:00 칸은 11-10 밤부터 「노래」다(퀴즈는 예비 형식으로 남는다).
  */
 const crypto = require('node:crypto');
@@ -307,10 +311,25 @@ function whyEmpty(cell, a, originals, mine, seeds, cfg, useSpares, platesOf = ne
   if (!same.length) return `${cell.format} 원본 없음`;
   const live = same.filter((o) => !o.stopped);
   if (!live.length) return `${cell.format} 원본이 모두 멈춤`;
-  const ver = live.filter((o) => o.versions?.[a.versionKey]?.ready && !(o.readyFrom && cell.day < o.readyFrom));
-  if (!ver.length) return `${a.versionKey} 판본이 검수를 넘긴 ${cell.format} 원본 없음`;
-  const fresh = ver.filter((o) => !mine.has(o.id));
-  if (!fresh.length) return `이 계정이 ${cell.format} 원본을 다 올림`;
+  // 안 받은 원본부터 센다 — 판본 준비를 먼저 거르면, 받을 원본이 남았는데 그 판본이 검수 전인 계정이 「다 올림」으로 잘못 나온다
+  // (11-11 Fable 검수: 지마를 받은 채널 가운데 화날때 판본이 검수 전인 곳). 「다 올림」은 정말 안 받은 원본이 없을 때만이다.
+  const unseen = live.filter((o) => !mine.has(o.id));
+  if (!unseen.length) return `이 계정이 ${cell.format} 원본을 다 올림`;
+  const notReady = unseen.filter((o) => !o.versions?.[a.versionKey]?.ready);
+  const early = unseen.filter((o) => o.versions?.[a.versionKey]?.ready && o.readyFrom && cell.day < o.readyFrom);
+  const fresh = unseen.filter((o) => !notReady.includes(o) && !early.includes(o));
+  if (!fresh.length) {
+    const bits = [];
+    const next = notReady.filter((o) => o.series?.id && Number.isFinite(o.series.order)).sort((x, y) => x.series.id.localeCompare(y.series.id) || x.series.order - y.series.order)[0];
+    // 판본이 못 드는 까닭(뜻 검수 전 · 글자 검수 뒤 영상이 바뀜 · 원고 고칠 것 …)은 그 판본 상태의 why 그대로 — 14시 보고에서 무엇을 하면 칸이 차는지 보이게
+    const whyNot = (o) => o.versions?.[a.versionKey]?.why || '판본 없음';
+    const reasons = [...new Set(notReady.map(whyNot))];
+    if (next) bits.push(`연재 「${next.series.id}」 ${next.series.order}번째 판본부터`);
+    if (notReady.length) bits.push(`${a.versionKey} 판본이 아직 못 듦 ${notReady.length}편(${reasons.slice(0, 2).join(' · ')}${reasons.length > 2 ? ' …' : ''})`);
+    if (early.length) bits.push(`쓸날 전 ${early.length}편`);
+    const head = unseen.length < live.length ? `안 받은 ${cell.format} 원본 ${unseen.length}편이 아직 못 나간다` : `${a.versionKey} 판본이 검수를 넘긴 ${cell.format} 원본 없음`;
+    return `${head} — ${bits.join(' · ')}`;
+  }
   // 연재 차례(⑦) — 받을 수 있는 원본이 모두 앞 차례를 기다리는 때(앞 차례 판본이 검수 전이거나, 이 칸보다 뒤에 걸려 있다)
   const waiting = fresh.filter((o) => waitsFor(o, cell.account, cell.ms) !== null);
   if (waiting.length === fresh.length) {

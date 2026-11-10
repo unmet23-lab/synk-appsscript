@@ -717,7 +717,7 @@ function tiktokFindings(plates, prep, known = {}) {
 // 막힌 계정에 판이 달려 있으면 고칠 것 — 14시 게시 세션 · 검토 링크 「함께」가 판대로 걸기 때문이다(11-01 틱톡 @yuhobuilds 쉼, 유호님 「쉬게 해」).
 // 11-10 LAB 39계정: 돌림 판(판 「돌림」: true — tools/돌림표.js가 계정 · 날을 정한다)과 「LAB 나라별」 줄은 「그 줄의 모든 계정」으로 보지 않고
 // 아래 rotationFindings가 칸 · 판본 · 계정 준비를 본다. 시작 전(dailyFrom 「미정」) 계정과, 이 편 형식(준비.json 「돌림」.형식)의 칸이 없는 계정
-// (텔레그램은 21:00 퀴즈뿐)은 판이 없어도 된다.
+// (텔레그램은 21:00 노래뿐)은 판이 없어도 된다.
 function dailyFindings(plates, prep, known = {}) {
   const out = [];
   for (const p of plates) {

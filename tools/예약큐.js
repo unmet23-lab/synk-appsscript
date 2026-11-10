@@ -324,7 +324,7 @@ function accountRows(items, range, accounts = {}) {
       rows.set(x.key, sub);
     }
   }
-  // 닫힌 칸(11-10): 그 줄의 칸이 그날 안 열렸으면 쉼 — 마지막 칸(21:00 퀴즈)을 dailyFormatsFrom 「미정」으로 닫아 둔 나라별 계정은 원래 줄도 쉼이다.
+  // 닫힌 칸(11-10): 그 줄의 칸이 그날 안 열렸으면 쉼 — 마지막 칸(21:00 노래)을 dailyFormatsFrom 「미정」으로 닫아 둔 나라별 계정은 원래 줄도 쉼이다.
   // 첫 판 시험 계정(postRouteVerified 「첫판」)은 판이 달린 날만 칸이고 나머지는 쉼 — 첫 판을 확인해 true로 바꾸기 전에는 채울 칸이 아니다
   // (「만든 편 없음」으로 알리면 19:30 후보를 고르라는 뜻이 되는데, 이 칸은 확인을 기다리는 칸이다).
   for (const row of rows.values()) {
@@ -376,11 +376,13 @@ function lineRows(accountList, range, accounts) {
       byDay[d] = { mark, cells };
     }
     const run = (ok) => { let n = 0; for (const d of range.slice(1)) { if (ok(byDay[d])) n += 1; else break; } return n; };
-    // 하루 두 칸 계정의 칸 이름(빈 칸 글이 「이야기 · 퀴즈 칸마다 한 편」, 형식이 없으면 「12:00 · 21:00 칸마다 한 편」을 쓰게) — 한 칸 계정은 넣지 않는다
+    // 하루 두 칸 계정의 칸 이름(빈 칸 글이 「이야기 · 21:00 칸마다 한 편」, 형식이 없으면 「12:00 · 21:00 칸마다 한 편」을 쓰게) — 한 칸 계정은 넣지 않는다.
+    // 「노래」 칸은 형식 이름 대신 시각으로 적는다 — 노래는 제작 회차가 만드는 칸이 아니다(씨앗의 21:00 칸은 노래 칸을 열기 전까지 지금 줄 편이
+    // 채우고, 연 뒤에는 돌림표가 노래를 단다). 「노래 칸마다 한 편」이라고 쓰면 몽골 21:00에 노래를 만들라는 말로 읽힌다(11-11 Fable 검수).
     const times = Object.fromEntries(l.accounts.flatMap((a) => {
       const slots = T.allSlots(accounts[a]);
       if (slots.length < 2) return [];
-      const name = (s) => s.format || s.time;
+      const name = (s) => (s.format && s.format !== '노래' ? s.format : s.time);
       return [...extraSlots(a, accounts[a]).map((x, i) => [x.key, name(slots[i])]), [a, name(slots[slots.length - 1])]];
     }));
     return { line: l.line, accounts: l.accounts, byDay, times, lead: leadOf(l.line),

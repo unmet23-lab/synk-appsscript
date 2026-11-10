@@ -37,7 +37,7 @@
  * 계정(sns-계정.json): LAB이고 dailyLine · dailyFormats가 있는 계정. rotationSeed는 씨앗(먼저 올림). 씨앗이 아닌 계정은
  * publicProfileComplete가 true이고 postRouteVerified가 true여야 칸을 받는다(설계 4 · 5). postRouteVerified 「첫판」은 첫 판 시험 —
  * 판 하나만 받고, 그 판을 플랫폼 예약 목록에서 확인해 true로 바꾸면 나머지 칸이 열린다. dailyFrom 「미정」은 아직 안 연 계정(칸 없음),
- * dailyTimesFrom 「미정」은 마지막 칸만 연 계정, dailyFormatsFrom {"퀴즈": "미정"}은 그 형식 칸을 닫아 둔 계정(나라별 계정은 이야기 칸부터
+ * dailyTimesFrom 「미정」은 마지막 칸만 연 계정, dailyFormatsFrom {"노래": "미정"}은 그 형식 칸을 닫아 둔 계정(나라별 계정은 이야기 칸부터
  * 연다). --준비무시는 준비 · 「미정」을 풀고 셈만 해 본다(--쓰기와 함께 못 쓴다).
  * 걸린 판(예약됨 · 게시됨 · 거는 중 · 작업실 승인 대기 — 다른 작업본이 게시 장부 표에 잡은 것까지)은 --다시 · --멈춤에도 지우지 않는다.
  * 같은 언어 묶음은 계정의 languageGroup, 없으면 language다(같은 플랫폼 안에서만 묶는다). 나라 칸(countryCode)은 그 계정이 겨누는 나라 하나 —
@@ -178,16 +178,26 @@ function loadPieces(accounts, cfg) {
     // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨) 걸려 있는 줄, 없으면 마지막 줄(게시 장부 rowOf).
     const stateOf = (plate) => 장부.rowOf(result.판, plate.계정);
     const original = prep.돌림 && 돌림.FORMATS.includes(prep.돌림.형식) ? prep.돌림 : null;
-    if (original) checkOriginal(d.name, original, accounts);
+    // 버린 편은 꼴 검사 · 판본 상태를 보지 않는다 — 원장에서 빠진 계정이 버린 편의 이미받음에 남아 있어도 돌림표 전체가 죽지 않게(11-11 Fable 검수)
+    const dead = /^버림/.test(String(prep.상태 || ''));
+    if (original && !dead) checkOriginal(d.name, original, accounts);
     const versions = {};
-    if (original) for (const [k, v] of Object.entries(original.판본 || {})) versions[k] = versionState(dir, v, required, k, { accounts });
-    pieces.push({ name: d.name, dir, prep, result, stateOf, original, versions, dead: /^버림/.test(String(prep.상태 || '')) });
+    if (original && !dead) for (const [k, v] of Object.entries(original.판본 || {})) versions[k] = versionState(dir, v, required, k, { accounts });
+    pieces.push({ name: d.name, dir, prep, result, stateOf, original, versions, dead });
   }
   return pieces;
 }
 
-// 「돌림」.연재 · 이미받음의 꼴 — 틀리면 조용히 넘기지 않는다(이름 하나 틀리면 차례가 풀리거나 이미 올린 계정에 또 나간다).
+// 「돌림」.연재 · 이미받음 · 쓸날의 꼴 — 틀리면 조용히 넘기지 않는다(이름 하나 틀리면 차례가 풀리거나 이미 올린 계정에 또 나간다).
 function checkOriginal(name, original, accounts) {
+  // 쓸날 — 날짜 꼴이 아니면 「그날부터」 셈(글자 비교)이 틀어진다. 노래 원본은 쓸날이 꼭 있어야 한다: 씨앗 계정의 21:00 칸은 닫혀 있지 않아,
+  // 쓸날 없는 노래 원본이 생기면 --쓰기가 씨앗의 빈 21:00 칸(D+4 · D+5)에 바로 달고, 그 뒤 07 · 15시 제작 회차가 그날 줄 편을 만들면
+  // 같은 칸에 두 번 걸린다(11-11 Fable 검수 — 제작 절차 「LAB 하루 두 편」 10 ⑤: 쓸날 = 21:00 노래 칸을 여는 날).
+  const day = original.쓸날;
+  if (day !== undefined && day !== null && !/^\d{4}-\d{2}-\d{2}$/.test(String(day))) throw new Error(`${name}: 「돌림」.쓸날은 YYYY-MM-DD 꼴이다(${day})`);
+  if (original.형식 === '노래' && !day) {
+    throw new Error(`${name}: 노래 원본에 「돌림」.쓸날이 없다 — 21:00 노래 칸을 여는 날(YYYY-MM-DD)을 적는다(쓸날이 없으면 씨앗 계정의 빈 21:00 칸에 바로 달려 그날 줄 편과 같은 칸에 두 번 걸린다 — 제작 절차 「LAB 하루 두 편」 10 ⑤)`);
+  }
   const s = original.연재;
   if (s !== undefined && s !== null && !(typeof s === 'object' && typeof s.이름 === 'string' && s.이름.trim() && Number.isFinite(s.차례))) {
     throw new Error(`${name}: 「돌림」.연재는 {"이름": "<연재 이름>", "차례": <숫자>} 꼴이다`);

@@ -604,6 +604,16 @@ test('하루 두 칸 계정(LAB 몽골 12:00 · 21:00, 11-09 유호님 「두 �
   assert.match(out, / · 11-15 만든 편 없음\(12:00 · 21:00 칸마다 한 편\)$/m, '통째로 빈 날은 칸마다 한 편이 든다고 적는다');
   const table = spawnSync(process.execPath, [tool, '--폴더', base, '--계정표'], { encoding: 'utf8' }).stdout;
   assert.match(table, /\| lab-instagram \| [^|]*\| LAB 몽골 편 하루 2편\(12:00 · 21:00 · 11-12부터\) \|/);
+  // 칸에 형식이 있으면 형식 이름으로 적되 「노래」 칸은 시각으로 적는다 — 「노래 칸마다 한 편」은 제작 회차에 노래를 만들라는 말로 읽힌다(11-11).
+  // 계정표는 칸 이름 그대로(12:00 이야기 · 21:00 노래) 보인다
+  const ledgerFile = path.join(base, 'sns-계정.json');
+  const led = JSON.parse(fs.readFileSync(ledgerFile, 'utf8'));
+  for (const a of Object.values(led.accounts)) a.dailyFormats = ['이야기', '노래'];
+  fs.writeFileSync(ledgerFile, JSON.stringify(led));
+  const out2 = spawnSync(process.execPath, [tool, '--폴더', base, '--오늘', '2026-11-11'], { encoding: 'utf8' }).stdout;
+  assert.match(out2, / · 11-15 만든 편 없음\(이야기 · 21:00 칸마다 한 편\)$/m);
+  assert.doesNotMatch(out2, /노래 칸마다/);
+  assert.match(spawnSync(process.execPath, [tool, '--폴더', base, '--계정표'], { encoding: 'utf8' }).stdout, /LAB 몽골 편 하루 2편\(12:00 이야기 · 21:00 노래 · 11-12부터\)/);
 });
 
 test('한 계정에 줄이 여럿이면 걸려 있는 줄로 읽는다 — 예약됨 뒤에 다른 작업의 취소됨이 와도 빈 칸이 아니다(11-10 게시 장부 rowOf와 같은 읽기)', () => {
