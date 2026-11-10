@@ -72,6 +72,7 @@ test('local-only history restores from a standalone encrypted bundle and needs e
   fs.writeFileSync(restored, decrypt(incremental.filePath)); f.git(['bundle', 'verify', restored], empty);
   f.git(['fetch', restored, 'refs/heads/archive-source:refs/heads/archive-source'], empty);
   assert.equal(f.git(['show', 'refs/heads/archive-source:later.md'], empty).toString(), '# next local-only commit\n');
+  assert.deepEqual(fs.readdirSync(path.join(f.root, '.git-bundle-staging')), [], 'temporary header and pinned refs are removed after incremental verification');
   assert.equal(calls.some(args => ['push', 'ls-remote'].includes(args[0])), false);
   f.git(['remote', 'add', 'origin', f.restore]);
   await assert.rejects(preserveRecord(record, f.root, { PUB: () => pub, encryptStream }, () => {}, { git }), /BUNDLE_ORIGIN_MISMATCH/);
@@ -107,6 +108,22 @@ function fixture(t, { baseOnly = false } = {}) {
   const head = git(['rev-parse', 'HEAD']).toString().trim();
   return { root, source, restore, git, base, head };
 }
+test('bundle prerequisite verification removes its temporary header when the header callback rejects', async t => {
+  const f = fixture(t), staging = path.join(f.root, 'synthetic.enc');
+  const heads = [{ ref: 'refs/heads/archive-source', sha: f.head }];
+  let verified = false;
+  await assert.rejects(createBundle({ repo: f.source, heads, exclusions: [f.base], staging,
+    pubPem: 'synthetic fixture', encryptStream: async (_pub, input) => {
+      let bytes = 0; const sha = crypto.createHash('sha256');
+      for await (const chunk of input) { bytes += chunk.length; sha.update(chunk); }
+      return { bytes, sha256: sha.digest('hex') };
+    }, onHeader(inspector) {
+      assert.deepEqual(inspector.prerequisites, [f.base]); verified = true;
+      throw new Error('SYNTHETIC_HEADER_CALLBACK_REJECTED');
+    } }), /SYNTHETIC_HEADER_CALLBACK_REJECTED/);
+  assert.equal(verified, true);
+  assert.equal(fs.readdirSync(f.root).some(name => name.startsWith('synthetic.enc.header-')), false);
+});
 test('stdout bundle is encrypted, header and pack validated, and fixture history restores exactly', { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
   const f = fixture(t), keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
   const pubPem = keys.publicKey.export({ type: 'spki', format: 'pem' });

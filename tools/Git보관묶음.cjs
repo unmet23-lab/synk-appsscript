@@ -419,8 +419,15 @@ async function createBundle({ repo, heads, exclusions, pubPem, encryptStream, st
   try {
     const [plain, code] = await Promise.all([encryptStream(pubPem, inspector, staging, 'history.bundle'), completion]);
     if (code !== 0 || plain.bytes === 0) throw new Error('GIT_BUNDLE_CREATE_FAILED');
-    // git bundle verify accepts stdin and checks this exact header's prerequisites.
-    gitReader(repo)(['bundle', 'verify', '-'], inspector.header);
+    // Git 2.56 on POSIX closes stdin before spawning the prerequisite connectivity check.
+    // Verify the exact header through a private temporary file instead. Only ref/commit
+    // metadata is written here; the pack payload remains encrypted throughout.
+    const headerFile = staging + '.header-' + crypto.randomUUID();
+    const headerFd = fs.openSync(headerFile, 'wx', 0o600);
+    try {
+      try { fs.writeFileSync(headerFd, inspector.header); } finally { fs.closeSync(headerFd); }
+      gitReader(repo)(['bundle', 'verify', headerFile]);
+    } finally { fs.rmSync(headerFile, { force: true }); }
     if (onHeader) await onHeader(inspector);
     return { plaintext: plain, pack: { bytes: inspector.packBytes, version: inspector.packVersion,
       objects: inspector.objectCount, sha1: inspector.packSha1 }, heads: inspector.heads,
