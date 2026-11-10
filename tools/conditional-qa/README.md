@@ -231,6 +231,16 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 | S070 | `b5bd21079` ~ `76586f0f0` 앞 | `experiences/brand-opening/play-unlocks.mjs`의 `playOrder`가 레슨 하나를 마치면 `runner`를 목록에서 빼고 `subway`를 넣는다. 그 구간 `qa/account-browser.test.mjs:256`은 레슨을 마친 뒤 `button[data-game="runner"]`를 20초 기다린다 | `playOrder`를 커밋별로 불러 레슨 1개에서 `subway,rhythm`이 나오는 것, `b81eef130`·`5425edd70` 영수증의 같은 시간 초과, [GitHub의 같은 실패](https://github.com/unmet23-lab/synk-appsscript/actions/runs/41795766747) |
 | S072 | `a745a1f70` ~ `f577e04d1` 앞 | `experiences/synk-town/day-app.mjs`가 시간 초과된 GET을 모두 한 번 더 물어 과제 화면의 12초 오류가 24초로 늦어졌다. `qa/classroom-homework-browser.test.mjs:178`의 대기는 25초다 | `64c7ad63d` 영수증의 시간 초과, `f577e04d1`의 범위 축소 뒤 같은 시험 통과 |
 
+<a id="git-bundle-header-path"></a>
+
+### Git 보관 헤더의 Windows 긴 경로 실패(11-10)
+
+`ec0da40a2`부터 `2e96edebe` 직전까지 S009만 실패한 회차를 진단 장부에 기록했다. 암호문 이름에 임시 헤더 이름을 붙여 128자 QA TEMP 아래의 헤더 경로가 292자가 됐다. Node에는 파일이 있지만 Windows Git은 열지 못했다. 같은 헤더 바이트를 217자 경로로 옮긴 대조는 통과했다. 고친 판은 별도 짧은 임시 폴더를 써서 Git 검증 경로가 164자다.
+
+등록 전에 정확한 수정 커밋 `2e96edebec9c31bd7eaedc0057c27c9ce2f7d2b4`의 로컬 **82/82**(기본 72·과제 9·클라이언트 1), S009 실제 TAP 통과, 입력·소스 불변과 범위 밖 변경 0을 확인했다. 원래 `ec0da40a2`·`6b8614b3c`·`25cbf55b0`은 모두 81/82, S009의 `GIT_BUNDLE_FAILED` → `createBundle` 헤더 검증 → `seedBundle` 실패였으며 시간 초과가 아니었다. 원본 실패·재현·고친 판 영수증은 저장소 밖 `SYNK-hermes-ci-recovery-20261110`에 보존했다.
+
+`exactCases: true`로 그 구간의 `FAIL 81/82: S009`만 반복 경보에서 뺀다. 원래 커밋과 run의 실패는 유지하고 통과로 세지 않는다. 다른 실패 번호·누락된 결과·수정 커밋 이후의 같은 실패는 계속 경고한다.
+
 <a id="hosted-windows-one-red"></a>
 
 ### 호스트 Windows의 한 번 빨강과 연속 빨강을 섞어 읽지 않는다

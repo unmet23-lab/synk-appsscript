@@ -2,6 +2,14 @@
   "version": 1,
   "ranges": [
     {
+      "cases": ["S009"],
+      "exactCases": true,
+      "from": "ec0da40a2bf417071911992d662556bd858226b4",
+      "fixedBy": "2e96edebec9c31bd7eaedc0057c27c9ce2f7d2b4",
+      "cause": "암호문 경로에 붙인 헤더 이름이 로컬 QA에서 292자가 되어 Windows Git이 열지 못했다. 짧은 별도 TEMP 헤더로 고친 뒤 같은 입력의 82개가 통과했다",
+      "evidence": "tools/conditional-qa/README.md#git-bundle-header-path"
+    },
+    {
       "cases": ["S070"],
       "from": "b5bd2107959294ea49e472950c060e09dfb419c2",
       "fixedBy": "76586f0f07ed27b17078363d53a0ab2490dac116",
