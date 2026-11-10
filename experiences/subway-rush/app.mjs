@@ -86,7 +86,8 @@ let voiceLive = false, currentLine = null, currentExchange = null, canHelp = fal
 function setStatus(role) { hud.setStatus(role === 'guide' ? '길 안내' : role === 'announcer' ? '안내방송' : '', role === 'guide' ? 'green' : 'amber'); }
 const setLine = (n) => { if (LINES[n]) hud.setLine(n, LINES[n].color); };
 // 그 결정에서 타고 있는(탈) 노선: 열차 결정은 제 노선, 승강장 · 출구는 같은 구간 열차의 노선, 그것도 없으면(출구만 남은 맞춤 판) 그 역의 첫 노선
-const lineOf = (journey, d) => d.line || journey.decisions.find((x) => x.kind === 'stop' && x.leg === d.leg)?.line || STATIONS[d.station]?.lines?.[0] || 2;
+// 지금 노선: 열차 결정은 그 노선, 통로는 다음 구간에 탈 노선(1호선 고장 → 2호선으로 다시 타는 판도 2), 승강장은 그 구간 열차, 출구만 남으면 그 역의 노선.
+const lineOf = (journey, d) => { const leg = d.kind === 'fork' ? d.leg + 1 : d.leg; return d.line || journey.decisions.find((x) => x.kind === 'stop' && x.leg === leg)?.line || STATIONS[d.station]?.lines?.[0] || 2; };
 async function say(line, { status = true } = {}) {
   currentLine = line;
   if (status) setStatus(line.role);
