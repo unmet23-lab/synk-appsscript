@@ -7,12 +7,13 @@
 // 사본은 packages/atlas/.mutants/<번호>/에 src · loader를 복사해 만든다 — 패키지 안이라 사본에서도 ts-fsrs 같은 의존이 풀린다.
 // 시험 파일은 패키지의 것 그대로이고, ATLAS_SUBJECT_ROOT=<사본>으로 돌아 사본의 src · loader를 본다(test/support/subject.mjs).
 //   node packages/atlas/tools/mutants.mjs           목록 전부
-//   node packages/atlas/tools/mutants.mjs --self    실행기 자체 시험(빈 코치의 ready를 깨뜨린 변형을 unit 묶음이 잡는가)
+//   node packages/atlas/tools/mutants.mjs --self    실행기 자체 시험(Vellum의 언어 물러서기를 깨뜨린 변형을 unit 묶음이 잡는가)
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BRAIN_MUTANTS } from './mutants/brain.mjs';
+import { COACH_MUTANTS } from './mutants/coach.mjs';
 import { MAP_MUTANTS } from './mutants/map.mjs';
 import { RECORD_MUTANTS } from './mutants/record.mjs';
 import { testEnv } from './test.mjs';
@@ -23,16 +24,16 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = path.join(ROOT, '.mutants');
 const WORK = path.join(BASE, String(process.pid));
 
-export const MUTANTS = [...BRAIN_MUTANTS, ...MAP_MUTANTS, ...RECORD_MUTANTS];
+export const MUTANTS = [...BRAIN_MUTANTS, ...MAP_MUTANTS, ...RECORD_MUTANTS, ...COACH_MUTANTS];
 
 export const SELF_TEST = [
   [
     'unit',
     '실행기',
-    '빈 코치의 ready가 거절된다',
-    'src/coach/index.mjs',
-    'ready: Promise.resolve()',
-    "ready: Promise.reject(new Error('mutant'))",
+    'Vellum이 다른 언어로 물러선다',
+    'src/vellum/index.mjs',
+    '  const row = TABLE[lang]?.[code];',
+    '  const row = TABLE[lang]?.[code] ?? TABLE.en?.[code] ?? TABLE.ko[code];',
   ],
 ];
 

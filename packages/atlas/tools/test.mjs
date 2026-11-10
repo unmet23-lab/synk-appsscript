@@ -4,6 +4,7 @@
 //   properties  장면 단정 · 임의 시험(접기 · 고르기) — 씨앗은 ATLAS_SEEDS · ATLAS_SEED_SCALE · ATLAS_FIRST_SEED. check는 줄인 씨앗으로 돈다
 //   learners    가상 학습자 관문 2~5(몇 분 — check에 들지 않고 npm run gate로)
 //   record      기록 · 저장(단계 3) — 사건 2판 · 측정 계약 · 서버 접기 · 기기 얹기 임의 시험 · 저장 관문 장면(몇 초, check에 든다)
+//   coach       코치 3판(단계 4) — 제시 칸 · 두뇌와 같은 결정 · 저장 실패 다시 세우기 · 호스트 나누기 · 제품 순서 문항(몇 초, check에 든다)
 // unit · build는 꼭 도는 묶음이라 시험 파일이 하나도 없으면 실패다(check가 시험 없이 「통과」하지 않게). properties · learners는
 // 아직 채우지 않은 묶음이라 시험이 없으면 「이 묶음은 단계 N이 채운다」를 찍고 끝낸다(CI의 check에는 들지 않는다).
 import { spawnSync } from 'node:child_process';
@@ -18,6 +19,7 @@ const GROUPS = {
   properties: { stage: 2, leafOnly: false, required: false },
   learners: { stage: 2, leafOnly: false, required: false },
   record: { stage: 3, leafOnly: false, required: false },
+  coach: { stage: 4, leafOnly: false, required: false },
 };
 
 function testFiles(dir) {

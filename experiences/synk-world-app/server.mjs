@@ -109,6 +109,10 @@ const server=http.createServer(async(req,res)=>{
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
   else if(['/world-learning-followups.mjs','/world-followup-items.json'].includes(pathname))base=root;
+  // Atlas 새 길(단계 4, 기능 atlasNext — 리허설만): 엔진 입구 · 판 묶음은 SYNK_ATLAS_DEV_OUT(node packages/atlas/tools/build.mjs --out <폴더>의 그 폴더)에서,
+  // 짧은 연습 새 판 모듈은 이 폴더에서. 공개 사이트에서는 /atlas/가 엔진 공개(4-8)로 생긴다.
+  else if(pathname.startsWith('/atlas/')&&mode==='rehearsal'&&process.env.SYNK_ATLAS_DEV_OUT){base=path.resolve(process.env.SYNK_ATLAS_DEV_OUT);}
+  else if(['/world-practice-next.mjs','/world-atlas-next.mjs'].includes(pathname))base=root;
   else if(['/town/day-language.mjs','/town/dialogue.mjs','/town/new-tea.mjs'].includes(pathname)){pathname=pathname.slice(5);base=town;}
   else if(['/world-bootstrap.js','/app-shell.mjs','/world-session.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-followups.mjs','/life-story.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/world-learning-ui.mjs','/world-learning-profile.mjs','/world-learning-profile-core.mjs','/tutor-selection-sync.mjs','/display-language-sync.mjs','/life-content-lang.mjs','/cafe-activity.mjs','/cafe-ui.mjs','/classroom-lessons.mjs','/classroom-homework.mjs','/topik4-homework.json','/world-writing-practice.mjs','/world-writing-check.mjs','/world-writing-focus.mjs','/world-writing-items.json','/world-writing.css','/world-topik-items.json','/world-reminders.mjs','/world-reminder-device.mjs','/world-push.mjs','/world-push-sw.js','/world-icon-192.png','/seoul-entry.mjs','/seoul-watch.mjs','/seoul-record.mjs'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}

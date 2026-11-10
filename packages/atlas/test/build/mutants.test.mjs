@@ -13,10 +13,10 @@ const run = (...args) =>
     encoding: 'utf8',
   });
 
-test('실행기 자체 시험: 빈 코치의 ready를 깨뜨린 변형을 unit 묶음이 잡고, 사본을 치운다', () => {
+test('실행기 자체 시험: Vellum의 언어 물러서기를 깨뜨린 변형을 unit 묶음이 잡고, 사본을 치운다', () => {
   const result = run('--self');
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /잡음 · 실행기 · 빈 코치의 ready가 거절된다/);
+  assert.match(result.stdout, /잡음 · 실행기 · Vellum이 다른 언어로 물러선다/);
   assert.match(result.stdout, /못 잡은 것: 0/);
   // 제 사본 폴더(.mutants/<pid>)만 치운다 — 함께 도는 다른 변형 실행의 사본은 건드리지 않는다
   const own = result.stdout.match(/사본 폴더 (\S+)/)?.[1];
@@ -33,7 +33,7 @@ test('변형 목록: 바꿀 글이 그 파일에 꼭 한 번 있고, 이름이 �
   assert.ok(MUTANTS.length >= 64, `시제품의 변형 64개 이상 — 지금 ${MUTANTS.length}`);
   const names = new Set();
   for (const [group, , name, file, from, to] of MUTANTS) {
-    assert.ok(['unit', 'build', 'properties', 'learners', 'record'].includes(group), name);
+    assert.ok(['unit', 'build', 'properties', 'learners', 'record', 'coach'].includes(group), name);
     assert.equal(names.has(name), false, `이름 겹침: ${name}`);
     names.add(name);
     const text = fs.readFileSync(path.join(PACKAGE_ROOT, file), 'utf8').replace(/\r\n/g, '\n');

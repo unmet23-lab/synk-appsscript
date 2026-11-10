@@ -79,7 +79,7 @@ test('묶음은 빌드가 찍은 판 이름을 말한다', async () => {
   assert.equal('attachLegacyCoach' in bundle, false, '지금 판 덧대기는 묶음에 들지 않는다');
 });
 
-test('진짜 입구 + 진짜 묶음: await coach.ready가 풀리고 빈 코치의 메서드는 NOT_IMPLEMENTED다', async () => {
+test('진짜 입구 + 진짜 묶음: 지도 없는 코치는 ready가 MAP_FAILED로 거절되고, 지도 · 저장소를 주면 await coach.ready 뒤 고른다', async () => {
   const context = vm.createContext({ setTimeout, clearTimeout, URL });
   context.window = context;
   context.parent = context;
@@ -89,13 +89,25 @@ test('진짜 입구 + 진짜 묶음: await coach.ready가 풀리고 빈 코치�
   new vm.Script(fs.readFileSync(path.join(first.out, 'atlas/loader.js'), 'utf8'), {
     importModuleDynamically: vm.constants.USE_MAIN_CONTEXT_DEFAULT_LOADER,
   }).runInContext(context);
-  const coach = context.SynkAtlas.coach({});
+  const empty = context.SynkAtlas.coach({});
+  await assert.rejects(empty.ready, error => error.code === 'MAP_FAILED');
+  const bundle = await import(
+    pathToFileURL(path.join(first.out, `atlas/${EDITION}/atlas.mjs`)).href
+  );
+  const read = name => JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'map', name), 'utf8'));
+  const coach = context.SynkAtlas.coach({
+    gameId: 'build-check',
+    mapData: { index: read('index.json'), units: read('units.json') },
+    host: { guest: true, port: bundle.memoryPort() },
+  });
   await coach.ready;
   assert.equal(coach.edition, EDITION);
+  assert.equal(coach.recommend([]).status, 'none', '후보가 없으면 낼 것이 없다');
   assert.throws(
-    () => coach.recommend([]),
+    () => coach.live(),
     error => error.code === 'NOT_IMPLEMENTED',
   );
+  coach.dispose();
 });
 
 test('판 이름: 개발 판은 커밋 앞 7자(+ .dirty), 공개 판은 깨끗하고 origin/master에 든 커밋의 0.0.0이 아닌 판만', () => {

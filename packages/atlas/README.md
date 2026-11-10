@@ -14,7 +14,8 @@
 | `src/select/` | 고르기 1판 — 층 · 한도 · 차례 · 판 몫, `idle` · `none`, 예상 확률의 세 항, 자리 잡기의 선행값, 활동 고르기 틀 · 설정 거르기 | 2 | §3-4 · §3-5 · §3-6 |
 | `src/reason/` | 이유 — 종류 · 근거 칸 · 근거(`{ code, slots, evidence }`), 한국어 기본 한 벌(`ko.mjs` — 문장 표는 Vellum, 단계 4) | 2 | §3-7 |
 | `src/record/` | 기록 — 사건 2판(`events.mjs` 한 곳) · 측정 계약(`judge`) · 사건 → 접기 사건 어댑터 · 근거 줄 · 서버 접기 순서(SQL은 SYNK-talk 포트) · 기기 기록부(저장 포트 · 대기열 · 요약 받기 · 얹기) · 옛 기록 옮기기. 시험 `test/record/`(묶음 `record`) | 3 | §5 · [단계 3 계획](../../docs/_ops/qa/atlas-redesign-20261110/단계3_계획.md) |
-| `src/coach/` | 코치 3판의 겉 — 메서드 이름은 §8 표 그대로 | 4 | §8 |
+| `src/coach/` | 코치 3판 — 메서드 이름(`methods.mjs`) · 제시 칸(`fields.mjs`) · 기록 얇은 겹(`record.mjs`) · 호스트(같은 출처 위 창의 기록부 하나 · 알림 · 올리기) · 판과 일지(`session.mjs` — 두뇌만 돌린 결정과 같고, 저장 실패는 그 답이 없던 판으로 다시 세운다). 시험 `test/coach/`(묶음 `coach`) | 4 | §8 · [단계 4 계획](../../docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md) |
+| `src/vellum/` | 이유 문장 표 — 종류 × 화면 언어 × 눈높이 × 말하는 사람(`render`), 언어는 물러서지 않는다. 지금은 한국어 보통 · 기능 글 | 4 | §7 |
 | `src/health/` | 계기 — 묶음 받기 · 저장 · 추천의 실패를 센다. `legacy.mjs`는 지금 판 코치에 붙이는 덧대기(묶음에 안 든다) | 0 | §1 표 5행 · §11 |
 
 `src/index.mjs`가 바깥 입구이고 빌드가 이것을 묶음 하나로 묶는다. 단계마다 자기 폴더에 짓고 `src/index.mjs`에는 내보내기를 한 줄씩 더한다. 함께 고치는 곳은 `src/index.mjs` · `src/record/events.mjs`(2와 3이 같은 사건 이름을 쓰도록) · `tools/mutants.mjs`(단계마다 `tools/mutants/<단계>.mjs` 목록 하나를 모은다) · `package.json`의 시험 명령뿐이다. 두뇌가 ts-fsrs를 묶음에 넣으므로 판 폴더에 `LICENSES.txt`(MIT 고지)가 함께 난다.

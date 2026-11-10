@@ -19,7 +19,7 @@ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../syn
 import {play as playSound,getPref} from '../brand-opening/world-sound.mjs'
 import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
-import {t,tMessage,currentLang} from '../brand-opening/world-lang.mjs';
+import {t,tMessage,currentLang,hasString} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
 import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
 const $=s=>document.querySelector(s);
@@ -30,6 +30,14 @@ const connection=await loadWorldConfig();
 const operating=connection.mode==='account';
 // 학습자 응답(WORLD 학습자 응답 설계 §6): 설정값 worldFeedback이 켜졌을 때만 연습 끝 화면의 「이번 연습 어땠어요?」와 「내 계정」의 응답 목록이 있다(기본 꺼짐).
 const responsesOn=connection.features?.worldFeedback===true;
+// Atlas 새 길(재설계 단계 4, 기능 atlasNext — 리허설만 켠다, operating-mode.mjs): 켜졌을 때만 새 길 입구(world-atlas-next.mjs)를 처음 쓸 때 받는다.
+// 꺼지면 이 입구도 엔진(/atlas/loader.mjs)도 받지 않는다(단계4_계획 §6).
+const atlasNextOn=connection.features?.atlasNext===true;
+function lazyAtlasNext(owner){
+ let made=null;
+ const load=async()=>{if(!made)made=(await import('./world-atlas-next.mjs')).createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;}});return made;};
+ return {async practiceCoach(pool){return (await load()).practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),dispose(){made?.dispose();}};
+}
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
 // 바람길·말의 리듬은 한 판씩 체험으로 연다(guest-trial.mjs, 기록·코인은 로그인 뒤). 체험을 마친 게임은 로그인부터 열고, 추천도 같은 목록을 쓴다.
 const GUEST_GAMES=new Set(['hangul']);
@@ -366,6 +374,7 @@ function mountLifeLearning({owner,keep}){
  const createPlan=options=>createWorldLearningPlan({...options,answers:life.answers,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
  education=keep('education',createWorldEducation({home,getProgress:()=>life.progress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,responses:responsesOn,
+  atlasNext:atlasNextOn?lazyAtlasNext(owner):null,
   readHangulProgress:operating&&owner!=='guest'?async()=>{
    const port=await account.prepareHangulProgress({storage:localStorage,target:window});
    try{return port.read();}finally{port.dispose();}

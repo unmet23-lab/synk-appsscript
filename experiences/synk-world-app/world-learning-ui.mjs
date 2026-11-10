@@ -61,7 +61,7 @@ function examMonths(now){
 // responses: 학습자 응답(설정값 worldFeedback, WORLD 학습자 응답 설계 — 기본 꺼짐). 켜지면 로그인한 학습자의 연습 끝 화면에 「이번 연습 어땠어요?」를 두고,
 //  짧은 연습의 길이(3·5·7)를 그 응답으로 정하고, 「내 계정」이 응답 목록(responses()·removeResponse())을 읽는다. 꺼지면 판 기록(finishSet)도 남기지 않는다.
 export function createWorldEducation({home,getProgress,engine,createPlan,launchGame,startLesson,startReview,prepare=async()=>{},position=null,audioUrl=path=>path,readHangulProgress=null,
- readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis}){
+ readClasswork=null,writingPractice=null,speakingPractice=null,topikBankUrl=null,town=null,responses=false,target=globalThis,atlasNext=null}){
  let stopped=false,coach=null,coachHost=null,practiceCoach=null,practiceHost=null,mockCoach=null,mockHost=null,lifeCoachNow=null,lifeHost=null,current=null,refreshing=false,classwork={at:0,rows:[],pending:null};
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
@@ -773,7 +773,7 @@ async function townSend(coachNow,{wait=true}={}){
   return {play,silence,get playing(){return playing;}};
  }
  let practiceOpen=0;
- async function startPractice(skillId,{followupId=null}={}){
+ async function startPractice(skillId,{followupId=null,more=false}={}){
   if(!position?.practice)return;
   check();const ticket=++practiceOpen;
   let launching=true;
@@ -785,6 +785,8 @@ async function townSend(coachNow,{wait=true}={}){
   if(!active())return;
   if(followupId){await Promise.race([loadFollowupBank(),new Promise(resolve=>setTimeout(resolve,4000))]);if(!active())return;}
   if(!active())return;
+  // Atlas 새 길(재설계 단계 4-1, 기능 atlasNext — 리허설만): 엔진이 다음 문항을 고르는 판. 엔진이 준비되지 못하면 지금 판으로 간다.
+  if(atlasNext&&!followupId){let next=null;try{next=await atlasNext.practiceCoach(position.practice.pool);}catch{next=null;}if(!active())return;if(next){launching=false;return runPracticeNext({next,skillId,more});}}
   const coachNow=readPracticeCoach();if(!coachNow){home.toast(t('practice.unavailable'));return;}
   let audioAvailable=true;try{audioAvailable=getProgress().learningProfileValues().audio!=='off';}catch{}
   const followup=followupId?delayedRows().rows.find(row=>row.id===followupId&&row.status==='due'&&row.available):null;
@@ -832,6 +834,58 @@ async function townSend(coachNow,{wait=true}={}){
     else if(button.hasAttribute('data-practice-skip')){player.silence();session.skip();advance();}
     else if(button.hasAttribute('data-practice-stop')){stop();void openPosition();}
     else if(button.hasAttribute('data-practice-again'))void Promise.resolve(startPractice(skillId)).catch(failed);
+    else if(button.hasAttribute('data-practice-position'))void openPosition();
+    else if(button.hasAttribute('data-practice-home'))home.closePanel();
+   }catch(error){stop();failed(error);}
+  });
+  advance();
+ }
+ // 짧은 연습의 새 판(Atlas 재설계 단계 4-1 — 단계4_계획 §7): 다음 문항은 엔진이 고르고(world-practice-next.mjs), 문항 위에 이유 한 줄,
+ // 끈질긴 단위는 힌트 먼저, 「모르겠어요」는 그 표지가 있는 문항에만. 판 끝은 답이 다 저장된 뒤(혼자 맞힘은 저장 뒤 값) 끝난 까닭과 함께 그린다.
+ function runPracticeNext({next,skillId,more=false}){
+  let audioAvailable=true;try{audioAvailable=getProgress().learningProfileValues().audio!=='off';}catch{}
+  const all=position.practice.pool,listening=String(skillId).split('.')[1]==='listening';
+  const pool=all.filter(item=>item.skillId===skillId&&(audioAvailable||!(item.audioRequired??item.modality==='listening')));
+  if(!pool.length){home.toast(t(audioAvailable?'practice.shortage':'practice.audioOff'));void openPosition();return;}
+  const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};
+  const session=atlasNext.createPracticeNextSession({coach:next,pool,setPool:all,length:count,audioAvailable,more,lang:currentLang(),plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
+  let ended=false,notice='';
+  const player=soundPlayer({session,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'&&session.current?.heard?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-practice-listen]');}});
+  const stop=()=>{if(ended)return;ended=true;player.silence();try{session.stop();}catch{}queueMicrotask(()=>refresh());};
+  home.showPanel(t(listening?'practice.title.listening':'practice.title'),'<div class="wpos-stage" data-practice-stage></div>',{...PANEL,eyebrow:'PRACTICE'});
+  home.attachPanelResource?.({dispose:stop});
+  const box=panelNode('[data-practice-stage]');if(!box){stop();return;}
+  const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
+  function paint(focus='.wpos-run-skill'){
+   const now=session.current;if(!now){void finish();return;}
+   const cue=now.stubborn&&now.targetLabel?t('practice.next.cue',{name:now.targetLabel}):null;
+   box.innerHTML=view.renderPracticeItem({view:{...now,cue},skill,feedback:now.feedback,playing:player.playing,notice});
+   if(focus)box.querySelector(focus)?.focus?.({preventScroll:true});
+  }
+  function advance(){player.silence();notice='';const now=session.next();if(!now){void finish();return;}if(now.stubborn)session.preHelp();paint();top();}
+  async function finish(){
+   if(ended&&!box.isConnected)return;
+   ended=true;player.silence();
+   let results=session.results();try{results=await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
+   if(!box.isConnected)return;
+   const set=finishSet(next,'short');
+   box.innerHTML=view.renderPracticeNextDone({skill,results,items:new Map([...position.itemsById,...all.map(item=>[item.id,item])]),listening,count,ending:session.ending,response:responseView(set,'short')});
+   bindResponse({box,coachNow:next,set,kind:'short'});
+   box.querySelector('[data-practice-done]')?.focus?.({preventScroll:true});top();
+   queueMicrotask(()=>refresh());evidenced();
+  }
+  box.addEventListener('click',event=>{
+   const button=event.target.closest?.('button');if(!button||button.disabled)return;
+   try{
+    check();
+    if(button.dataset.practiceChoice){player.silence();notice='';session.answer(button.dataset.practiceChoice);paint('[data-practice-feedback]');}
+    else if(button.hasAttribute('data-practice-unknown')){player.silence();notice='';session.unknown();paint('[data-practice-feedback]');}
+    else if(button.hasAttribute('data-practice-listen'))player.play();
+    else if(button.hasAttribute('data-practice-next'))advance();
+    else if(button.hasAttribute('data-practice-skip')){player.silence();session.skip();advance();}
+    else if(button.hasAttribute('data-practice-stop')){stop();void openPosition();}
+    else if(button.hasAttribute('data-practice-again'))void Promise.resolve(startPractice(skillId)).catch(failed);
+    else if(button.hasAttribute('data-practice-more'))void Promise.resolve(startPractice(skillId,{more:true})).catch(failed);
     else if(button.hasAttribute('data-practice-position'))void openPosition();
     else if(button.hasAttribute('data-practice-home'))home.closePanel();
    }catch(error){stop();failed(error);}

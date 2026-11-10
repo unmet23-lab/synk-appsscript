@@ -28,6 +28,13 @@ test('account mode validates only public settings and a safe static base path',(
  assert.throws(()=>publicWorldConfig({mode:'account',basePath:'/../private/',account:config},'https://world.example.test/'));
  assert.throws(()=>publicWorldConfig({mode:'account',account:{...config,clients:{world:{...config.clients.world,clientSecret:'wrong'}}}},'https://world.example.test/'));
 });
+// Atlas 재설계 단계 4: 새 길(atlasNext)은 짓는 동안 리허설에서만 켠다 — 공개(account) 설정에 적혀 있어도 넘기지 않는다(단계4_계획 §6).
+test('atlasNext는 리허설에서만 켜지고 공개 설정에는 넘어가지 않는다',()=>{
+ assert.deepEqual(publicWorldConfig({mode:'rehearsal',features:{atlasNext:true}}).features,{atlasNext:true});
+ const live=publicWorldConfig({mode:'account',basePath:'/world/',account:config,features:{atlasNext:true,worldFeedback:true}},'https://world.example.test/world/');
+ assert.deepEqual(live.features,{worldFeedback:true});
+ assert.equal('features' in publicWorldConfig({mode:'account',basePath:'/world/',account:config,features:{atlasNext:true}},'https://world.example.test/world/'),false);
+});
 test('operating WORLD restores verified SYNK ID and never calls synthetic session or cookie routes',async()=>{
  const f=fixture();assert.equal(await f.client.restore(),true);assert.equal(f.client.snapshot.accountId,A);assert.equal(f.client.accessToken,null);
  assert.equal(f.calls.length,1);assert.equal(f.calls[0].url,'https://identity.example.test/functions/v1/synk-world-v1/bootstrap');

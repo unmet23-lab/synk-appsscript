@@ -3,9 +3,13 @@ import {readConfig} from '../synk-account/src/core.mjs';
 // worldFeedback: 연습 끝 화면의 학습자 응답과 「내 계정」의 응답 목록(WORLD 학습자 응답 설계 §6 — 처리방침 문장을 게시한 뒤 켠다).
 // worldPush: 학습 알림 2단 「앱을 닫아도 받기」의 화면(설정 줄·동의 상자·손님·아이폰 안내)과 시작 때 상태 읽기(학습 알림 2단 설계 §8 —
 // 처리방침 문장을 게시하고 서버 스위치 SYNK_WORLD_PUSH_ENABLED를 켠 뒤 켠다. 서버 스위치는 그 뒤로도 비상 끄기로 남는다).
-const FEATURES=Object.freeze(['worldFeedback','worldPush']);
+// atlasNext: Atlas 재설계 단계 4의 새 길(코치 3판 · 엔진이 고르는 짧은 연습 — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §6).
+// 짓는 동안은 리허설 개발 서버에서만 켠다(SYNK_WORLD_FEATURES=atlasNext). 사용자에게 켜는 것은 WORLD의 모든 면이 새 길을 다 지은 뒤(4-8)다.
+const FEATURES=Object.freeze(['worldFeedback','worldPush','atlasNext']);
+// 공개(account) 설정에는 아직 넘기지 않는 이름 — 4-8에서 이 줄을 거둔다.
+const REHEARSAL_ONLY=new Set(['atlasNext']);
 function publicFeatures(value){
- const on=FEATURES.filter(name=>value?.features?.[name]===true);
+ const on=FEATURES.filter(name=>value?.features?.[name]===true&&(value.mode==='rehearsal'||!REHEARSAL_ONLY.has(name)));
  return on.length?{features:Object.fromEntries(on.map(name=>[name,true]))}:{};
 }
 export function publicWorldConfig(value,base){

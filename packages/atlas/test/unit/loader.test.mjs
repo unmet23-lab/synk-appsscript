@@ -57,7 +57,7 @@ test('클래식: 판 폴더는 입구 옆이고, 입구에 든 메서드 목록�
   assert.equal(atlas.base, 'https://synk.im/atlas/1.0.0/');
   assert.ok(Object.isFrozen(atlas));
   const listed = /const METHODS = \[([\s\S]*?)\];/.exec(loaderSource())[1].match(/'[^']+'/g);
-  const { COACH_METHODS } = await subject('coach/index.mjs');
+  const { COACH_METHODS } = await subject('coach/methods.mjs');
   assert.deepEqual(
     listed.map(name => name.slice(1, -1)),
     [...COACH_METHODS],

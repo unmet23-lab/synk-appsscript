@@ -1,0 +1,270 @@
+// WORLD 「짧은 연습」의 새 판(Atlas 재설계 단계 4-1 — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §7). 개발 깃발 atlasNext 뒤에서만 돈다.
+// 지금 판(world-reading-practice.mjs createPracticeSession)은 한 글자도 바꾸지 않고, 같은 겉(next · replay · delivery · answer · skip · stop ·
+// results)을 여기 따로 둔다. 달라진 것:
+//   ① 다음 문항은 엔진(코치 3판 recommend)이 고른다 — 그 항목의 연습 문항 전부가 후보이고, 놓친 단위는 다른 문항으로 다시, 돌아온 단위는
+//      돌아온 것으로 나온다. 측정(처음 본 문항의 혼자 낸 첫 답)은 지금 계약 그대로라 「내 위치」 근거는 같은 답에서만 선다.
+//   ② 판은 길이 n(3 · 5 · 7)으로 열고 새것 한도는 단위로 3n이다(TOPIK 문항은 단위가 둘 · 셋인 것이 많다 — 계획 §7 · 아르곤 A1).
+//   ③ 엔진이 낼 것이 없다(none)고 하면 판을 끝낸다. 할 것이 없다(idle)고 해도 엔진이 고른 채우기 문항이 처음 보는 문항이면 이어 간다 —
+//      처음 보는 문항은 측정 기회다(그 항목의 새 문항으로 확인하는 연습의 약속). 이미 본 문항이 채우기로 오면 끝낸다. 끝난 까닭(ending)은
+//      그 판의 사실에서 고른다.
+//   ④ 문항마다 이유(why) · 끈질긴 단위 표시(stubborn) · 「모르겠어요」(unknown)를 보기에 싣고, 문항 앞 해설(preHelp)을 받는다.
+//   ⑤ 혼자 맞힘(independent)은 저장이 끝난 뒤의 값이다 — settled()가 판의 답이 모두 저장된 뒤 풀린다(판 끝 화면은 그 뒤에 그린다).
+// 듣기 · 허용 재생 · 건너뛰기 · 그만두기 · 답 뒤 「정답 보기」 도움은 지금 판과 같다(같은 시험을 두 모듈에 건다).
+// 재생 셈(allowedPlays · nextPlay)은 지금 판과 같은 것(world-exam-form.mjs)을 셸이 넘긴다 — 브라우저에서 그 파일은 계정 묶음 안에만 있어
+// 이 모듈이 따로 부르면 받지 못한다(리허설 화면 확인에서 잡음).
+
+export const NEXT_POLICY = Object.freeze({
+  version: 'world-practice-next-1',
+  newPerItem: 3,
+});
+const listeningOf = item => item.audioRequired ?? item.modality === 'listening';
+
+// 판이 끝난 까닭 — 그 판에서 실제로 일어난 일에서 고른다(돌아온 것을 만나지 않은 판에 「다 만났어요」를 쓰지 않는다).
+export function endingOf(picked, served) {
+  if (!picked) return { kind: 'done' };
+  if (picked.status === 'none') return { kind: 'none' };
+  const facts = picked.facts ?? {};
+  if (facts.held === 'day') return { kind: 'capped' };
+  if (facts.held === 'stubborn') return { kind: 'stubborn' };
+  if (facts.limited) return { kind: 'limited' };
+  if (facts.servedDue || served.due) return { kind: 'idle' };
+  return { kind: 'exhausted' };
+}
+
+// 같은 지문 세트의 다른 문항을 이미 봤으면 처음 보는 문항이 아니다(world-exam-form.mjs freshBySet과 같은 생각).
+function setSeen(pool, item, seen) {
+  if (!item.setId) return false;
+  return pool.some(other => other !== item && other.setId === item.setId && seen(other) === true);
+}
+
+// setPool: 같은 지문 세트를 찾을 문항 전체(기본은 pool) — 세트의 다른 문항이 다른 항목일 수 있어 셸은 은행 전체를 넘긴다.
+export function createPracticeNextSession({
+  coach,
+  pool,
+  setPool = pool,
+  length = 5,
+  audioAvailable = true,
+  more = false,
+  lang = 'ko',
+  plays: { allowedPlays, nextPlay } = {},
+} = {}) {
+  if (
+    !coach ||
+    ['recommend', 'present', 'answer', 'help', 'delivery', 'exposure'].some(
+      name => typeof coach[name] !== 'function',
+    )
+  )
+    throw TypeError('WORLD practice next needs the Atlas coach');
+  if (typeof allowedPlays !== 'function' || typeof nextPlay !== 'function')
+    throw TypeError('WORLD practice next needs the play counters (allowedPlays · nextPlay)');
+  if (!Array.isArray(pool) || !pool.length || !Number.isInteger(length) || length < 1)
+    throw TypeError('WORLD practice next needs its pool and a length');
+  const seen = item => coach.exposure(item).seen;
+  const results = [];
+  const pending = [];
+  const served = { due: false };
+  let index = -1;
+  let current = null;
+  let stopped = false;
+  let ending = null;
+  const view = () =>
+    current && {
+      index,
+      total: length,
+      item: current.item,
+      answered: current.answered,
+      feedback: current.feedback,
+      heard: current.heard,
+      audio: current.audio,
+      plays: { ...current.plays },
+      next: nextPlay(current.plays, { heard: current.heard }),
+      why: current.why,
+      fresh: current.fresh,
+      stubborn: current.stubborn,
+      targetLabel: current.targetLabel,
+      preHelped: current.preHelped,
+      unknown: current.item.unknownOption === true,
+    };
+  const close = (out, choiceId, skipped) => {
+    current.answered = true;
+    const row = {
+      skillId: current.item.skillId,
+      itemId: current.item.id,
+      itemKey: current.item.itemKey,
+      choiceId,
+      skipped,
+      verdict: out.verdict,
+      independent: false,
+      assisted: null,
+      eventId: out.eventId ?? null,
+      plays: { ...current.plays },
+    };
+    results.push(row);
+    pending.push(
+      out.evidence.then(evidence => {
+        row.independent = evidence.independent === true;
+        row.assisted = evidence.assisted ?? null;
+        row.stored = evidence.stored !== false;
+      }),
+    );
+    return { ...row };
+  };
+  const skip = () => {
+    if (!current || current.answered) return null;
+    return close(
+      coach.answer(current.pid, {
+        correct: null,
+        assessable: false,
+        reason: current.heard ? 'unanswered' : 'audio',
+      }),
+      null,
+      true,
+    );
+  };
+  function pick() {
+    const options = { audio: audioAvailable, lang };
+    if (index === 0) options.set = { length, newLimit: NEXT_POLICY.newPerItem * length, more };
+    return coach.recommend(pool, options);
+  }
+  return Object.freeze({
+    get total() {
+      return length;
+    },
+    get current() {
+      return view();
+    },
+    get ending() {
+      return ending;
+    },
+    results: () => results.map(row => ({ ...row })),
+    // 판의 답이 모두 저장된 뒤 풀린다 — 혼자 맞힘은 그때의 값이다.
+    settled: () => Promise.all(pending).then(() => results.map(row => ({ ...row }))),
+    next() {
+      if (stopped || ending) return null;
+      if (current && !current.answered)
+        throw Error('WORLD practice: answer or skip the current item first');
+      index += 1;
+      current = null;
+      if (index >= length) {
+        ending = { kind: 'done' };
+        return null;
+      }
+      const picked = pick();
+      const freshFill = picked.status === 'idle' && seen(picked.selected) === false;
+      if (picked.status !== 'ready' && !freshFill) {
+        ending = { ...endingOf(picked, served), why: picked.why?.line ?? null };
+        return null;
+      }
+      const item = picked.selected;
+      if (picked.tier === 1) served.due = true;
+      const pid = coach.present(item, setSeen(setPool, item, seen) ? { firstExposure: false } : {});
+      const listening = listeningOf(item);
+      current = {
+        item,
+        pid,
+        answered: false,
+        feedback: null,
+        heard: !listening,
+        audio: listening ? 'pending' : 'none',
+        plays: { allowed: allowedPlays(item), completed: 0, extra: 0 },
+        // 처음 보는 채우기 문항에는 엔진의 「다 만났어요」를 쓰지 않는다 — 돌아온 것을 만나지 않은 판일 수 있다(아르곤 A1).
+        why: freshFill ? null : (picked.why?.line ?? null),
+        fresh: freshFill,
+        stubborn: picked.stubborn === true,
+        targetLabel: picked.targetLabel ?? null,
+        preHelped: false,
+      };
+      return view();
+    },
+    // 끈질긴 단위 문항의 힌트 먼저(설계 §3-5) — 「자꾸 놓치는 말 「…」 — 문제 속에서 먼저 찾아보세요」를 보인 것은 도움(hint)으로 남아
+    // 그 답은 도움받은 답이다(근거를 부풀리지 않는다). 문항의 해설은 정답을 말하므로 답 뒤에만 보인다.
+    preHelp() {
+      if (!current || current.answered || current.preHelped) return false;
+      coach.help(current.pid, 'hint');
+      current.preHelped = true;
+      return true;
+    },
+    replay() {
+      if (!current || current.answered || !listeningOf(current.item)) return false;
+      const kind = nextPlay(current.plays, { heard: current.heard });
+      if (kind === 'first') {
+        current.audio = 'pending';
+        coach.delivery(current.pid, { audio: 'pending' });
+      } else if (kind === 'extra') {
+        coach.help(current.pid, 'replay');
+        current.plays.extra += 1;
+      }
+      return kind;
+    },
+    delivery(status) {
+      if (!current || current.answered || !listeningOf(current.item)) return false;
+      if (!['pending', 'completed', 'failed'].includes(status))
+        throw TypeError('WORLD practice: invalid audio state');
+      if (current.heard) {
+        if (status === 'completed') {
+          current.plays.completed += 1;
+          coach.delivery(current.pid, { audio: 'completed' });
+        }
+        return true;
+      }
+      current.audio = status;
+      if (status === 'completed') {
+        current.heard = true;
+        current.plays.completed += 1;
+      }
+      coach.delivery(current.pid, { audio: status });
+      return true;
+    },
+    answer(choiceId) {
+      if (!current || current.answered || !current.heard) return null;
+      if (!current.item.choices.some(choice => choice.id === choiceId))
+        throw TypeError('WORLD practice: unknown choice');
+      const out = coach.answer(current.pid, {
+        correct: choiceId === current.item.correctId,
+        assessable: true,
+        choice: { selectedId: choiceId, correctId: current.item.correctId },
+      });
+      const row = close(out, choiceId, false);
+      try {
+        coach.help(current.pid, 'answer');
+      } catch {
+        /* The answer itself is already recorded. */
+      }
+      current.feedback = {
+        verdict: row.verdict,
+        choiceId,
+        correctId: current.item.correctId,
+      };
+      return { ...row, correctId: current.item.correctId };
+    },
+    // 「모르겠어요」 — 그 선택지를 둔 문항(지도의 unknownOption)에서만. 놓침으로 적힌다.
+    unknown() {
+      if (!current || current.answered || !current.heard || current.item.unknownOption !== true)
+        return null;
+      const out = coach.answer(current.pid, {
+        correct: null,
+        unknown: true,
+        assessable: true,
+      });
+      const row = close(out, null, false);
+      try {
+        coach.help(current.pid, 'answer');
+      } catch {
+        /* The answer itself is already recorded. */
+      }
+      current.feedback = {
+        verdict: row.verdict,
+        choiceId: null,
+        correctId: current.item.correctId,
+      };
+      return { ...row, correctId: current.item.correctId };
+    },
+    skip,
+    stop() {
+      if (stopped) return;
+      skip();
+      stopped = true;
+      current = null;
+    },
+  });
+}
