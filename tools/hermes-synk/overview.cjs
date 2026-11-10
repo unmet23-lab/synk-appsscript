@@ -716,6 +716,8 @@ function backupEvents(backup) {
   const rows = [];
   if (backup.monitorStale) rows.push(attention(event('backup-monitor', 'backup', 'warning', 'PC 백업 상태 확인이 멈춤',
     `마지막 확인 ${formatTime(backup.checkedAt)} · Windows 예약 「SYNK 백업 상태 확인」이 돌고 있는지 봐 주세요.`, { stale: true }), true, { id: 'backup-monitor', stale: true }));
+  else if (backup.stale === false) rows.push(attention(event('backup-monitor', 'backup', 'info', 'PC 백업 상태 확인 정상',
+    `마지막 확인 ${formatTime(backup.checkedAt)}`, { stale: false }), false, { id: 'backup-monitor', stale: false }));
   for (const row of backup.components) {
     const detail = `${BACKUP_STATUS[row.status]} · 마지막 성공 ${formatTime(row.lastSuccessAt)}${row.codes.length ? ' · ' + row.codes.join(', ') : ''}${row.detail ? ' · ' + row.detail : ''}`;
     // 같은 실패는 다음 성공까지 한 번만 알린다. 칸이 실패 지문을 주면(얼린 보관 묶음) 그 지문이 바뀔 때 — 한 묶음이 계속 실패하는 동안

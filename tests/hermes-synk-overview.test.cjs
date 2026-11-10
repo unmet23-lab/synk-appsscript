@@ -852,6 +852,31 @@ test('PC 백업은 짧은 유예 안의 실패·켠 직후의 오래된 기록·
   assert.match(stopped.text, /PC 백업 1종/);
 });
 
+test('백업 감시는 실제 최신 기록으로만 오래된 주의를 풀고, 다시 멈추면 새 사건으로 한 번 알린다', async t => {
+  const f = fixture(t), at = minutes => new Date(NOW.getTime() + minutes * 60_000);
+  const staleAt = '2026-10-18T04:30:00Z';
+  const file = backupFile(f, [], staleAt);
+  const look = async (minutes, uptimeSeconds = 3600) => ({ events: (await readOverview({ ...f.options,
+    backupHealthFile: file, now: at(minutes), uptimeSeconds })).events.filter(row => row.id === 'backup-monitor') });
+  const first = plan(plan(null, { events: [] }, at(0)).state, await look(0), at(0));
+  assert.equal(first.notifications.length, 1);
+  const boot = plan(first.state, await look(1, 600), at(1));
+  assert.equal(boot.state.observed['backup-monitor'].needs_attention, true, '켠 직후의 오래된 기록은 해소 증거가 아니다');
+  fs.writeFileSync(file, '{}');
+  const unknown = plan(boot.state, await look(2), at(2));
+  assert.equal(unknown.state.observed['backup-monitor'].needs_attention, true, '읽지 못한 기록도 해소가 아니다');
+  backupFile(f, [], at(3).toISOString());
+  const recovered = plan(unknown.state, await look(3), at(3));
+  assert.equal(recovered.state.observed['backup-monitor'].needs_attention, false);
+  assert.equal(recovered.state.attentionObserved['backup-monitor'], undefined);
+  assert.equal(recovered.notifications.length, 0, '정상 갱신은 추가 메시지를 보내지 않는다');
+  backupFile(f, [], staleAt);
+  const again = plan(recovered.state, await look(4), at(4));
+  assert.equal(again.notifications.length, 1);
+  assert.notEqual(again.notifications[0].id, first.notifications[0].id);
+  assert.equal(plan(again.state, await look(5), at(5)).notifications.length, 0);
+});
+
 test('헤르메스 복구는 재시작 뒤에도 그대로이거나 30분 넘게 미룬 어긋남만 한 번 알리고, 오래된 기록으로는 판단을 바꾸지 않는다', async t => {
   const f = fixture(t);
   const GENERATION = 'e3240b89a48f4632a4a798146f6a9034';
