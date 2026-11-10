@@ -572,6 +572,8 @@ html.sx .connection-banner{position:fixed;left:50%;top:12px;transform:translateX
 html.sx .connection-banner[hidden]{display:none}
 html.sx .notice{position:fixed;left:50%;top:calc(var(--sx-m) - 8px);bottom:auto;right:auto;transform:translateX(-50%);z-index:70;background:var(--sx-ink);color:#0a0a0a;padding:7px 14px;font-size:13px;font-weight:600;line-height:1.5;margin:0;border:0;border-radius:0;box-shadow:none;width:max-content;height:auto;max-width:min(520px,calc(100vw - 24px));text-align:center;pointer-events:none}
 html.sx .notice[hidden]{display:none}
+/* 끊김 안내(맨 위)가 떠 있는 동안 알림은 아래로 — 같은 자리에 겹쳐 안내 첫 줄을 덮던 것(11-11 판 6 시나리오 12: 끊긴 채 다시 연 앱에서 「연결하지 못했어요」가 「인터넷 연결이 끊겼어요」를 가림). */
+html.sx body:has(#connection-banner:not([hidden])) .notice{top:auto;bottom:calc(var(--sx-m) - 8px)}
 html.sx .loading{min-height:100dvh;display:grid;place-content:center;justify-items:center;gap:12px;font-size:13px;color:var(--sx-dim);background:#000;margin:0;padding:0;border:0;box-shadow:none}
 html.sx .loading-mark{display:block;width:44px;height:1px;background:var(--sx-ink);border:0;border-radius:0;animation:sx-load 1.4s var(--sx-io) infinite;transform-origin:left}
 @keyframes sx-load{0%{transform:scaleX(0)}50%{transform:scaleX(1)}100%{transform:scaleX(0);transform-origin:right}}

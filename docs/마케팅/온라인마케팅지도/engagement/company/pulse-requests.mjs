@@ -79,7 +79,8 @@ export function normalizeRequestAnswers(input,{strict=false}={}){
   const refs=[];if(input.refs!==undefined){if(!Array.isArray(input.refs)||input.refs.length>3)throw fail('참고 광고는 셋까지 적어 주세요.');for(const ref of input.refs){if(!object(ref)||Object.keys(ref).some(key=>!['url','points','why'].includes(key)))throw fail('참고 광고 항목을 확인해 주세요.');const item={url:link(ref.url,strict,'참고 광고 주소를 확인해 주세요.'),points:many(ref.points,POINTS),why:text(ref.why,300)};if(item.url||item.points.length||item.why)refs.push(item);}}
   let date=text(input.date,10);if(date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date)){if(strict)throw fail('받고 싶은 날을 확인해 주세요.');date='';}
   const email=text(input.email,254);if(strict&&email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw fail('이메일 주소를 확인해 주세요.');
-  const phone=text(input.phone,30);if(strict&&phone&&!/^[0-9+\-() ]{7,30}$/.test(phone))throw fail('휴대폰 번호를 확인해 주세요.');
+  // 점으로 나눈 번호(010.1234.5678 · +1 415.555.0134)도 받는다 — 국내 명함 · 북미에서 흔한 꼴인데 보내기 단계에서 거절되던 것(11-11 판 6 시나리오 12).
+  const phone=text(input.phone,30);if(strict&&phone&&!/^[0-9+\-(). ]{7,30}$/.test(phone))throw fail('휴대폰 번호를 확인해 주세요.');
   return {
     name:text(input.name,120),kind:one(input.kind,REQUEST_KINDS),channels:many(input.channels,REQUEST_CHANNELS),paid:input.paid===true,package:one(input.package,REQUEST_PACKAGES),
     slots,size:text(input.size,120),useNote:text(input.useNote,200),pageUrl:link(input.pageUrl,strict,'제품 페이지 주소를 확인해 주세요.'),driveUrl:link(input.driveUrl,strict,'드라이브 주소를 확인해 주세요.'),

@@ -395,3 +395,12 @@ test('no public file of the customer app names an AI tool, comments included —
   const tools=new RegExp(TOOL_NAMES);
   for(const name of files)assert.doesNotMatch(readFileSync(new URL(name.split('\\').join('/'),dir),'utf8'),tools,name);
 });
+// 11-11 판 6 시나리오 12: 끊긴 채 다시 연 앱에서 알림(「연결하지 못했어요」)이 맨 위 끊김 안내와 같은 자리에 겹쳐 그 첫 줄을 덮었다.
+test('while the offline banner is up, the notice moves to the bottom so the two never share the top slot',()=>{
+  const css=read('film.css');
+  assert.match(css,/html\.sx \.connection-banner\{position:fixed;left:50%;top:12px;/,'the offline banner sits at the top');
+  assert.match(css,/html\.sx \.notice\{position:fixed;left:50%;top:calc\(var\(--sx-m\) - 8px\);bottom:auto;/,'the notice normally sits at the top too');
+  assert.match(css,/html\.sx body:has\(#connection-banner:not\(\[hidden\]\)\) \.notice\{top:auto;bottom:calc\(var\(--sx-m\) - 8px\)\}/,'with the banner up, the notice goes to the bottom');
+  const html=read('index.html');
+  assert.ok(html.indexOf('id="connection-banner"')>0&&html.indexOf('id="notice"')>0,'both live in the shell page');
+});
