@@ -397,6 +397,7 @@
 - 고침: 옮긴 묶음은 `바탕.커밋`·`끝.커밋`에 설명 글자(`parent-22(…)` 같은)를 넣는다 — 보여 주기 칸이라 묶음 글·sha는 그대로다. 처음부터 같은 폴더에서 `아르곤`·`GPT`를 둘 다 보내야 집계가 한 번에 맞는다(옮기는 스크립트 꼴: `.tmp/teacher-copy-23-release-20261022/reviews/gpt/build-gpt-bundle.mjs` — 원래 묶음 머리는 배경, 절은 항목, 답 형식 줄만 빼고 빠진 글 없음 단언). 아르곤을 이미 따로 끝까지 읽혔으면(끝 표식 확인) 그 기록과 도구 집계를 처리표에 함께 적는다.
 - 다시 확인: `node tools/검수묶음.mjs 집계 <폴더>`가 「아르곤 N건 · GPT N건」 한 줄을 낸다(사슬 23: GPT 2건, 반영 1·후속 1).
 - 11-01 덧붙임(Claude): 저장소 밖 도구 파일(`Documents/SYNK_원본창고/보존규칙.py`처럼 git이 없는 곳)은 손 묶음으로 옮기지 않는다. 임시 git 저장소에 옛 판(`.bak`)을 바탕 커밋, 새 판을 끝 커밋으로 넣고(곁으로 볼 파일도 함께), `준비 … --저장소 <그 폴더> --바탕 <커밋> --끝 <커밋> --곁 <파일:줄>`로 준비하면 `GPT`·`처리`·`다시`·`집계`가 그대로 돈다. 고치면 그 저장소에 커밋을 하나 더 쌓고 `다시 … --끝 <새 커밋>`. 파이썬 시험은 unittest 결과를 `# tests`·`# pass`·`# fail` 줄이 있는 TAP로 옮겨 `--시험결과`로 준다. 사례: `.tmp/media-once-20261101/retention-review-repo`, 검수 `pc-retention-media-complete-20261101`(→ `-r2`).
+- 11-10 덧붙임(Claude): 그 임시 저장소는 만들자마자 `git config core.autocrlf false`로 두고 `git stash`를 쓰지 않는다 — 전역 `core.autocrlf=true`(Git for Windows 기본)에서 stash가 작업본을 CRLF로 되돌려, 다음 `add -A` 커밋이 파일마다 통째 diff(+3,926 −3,243)가 됐다(다시 만든 저장소는 +895 −212). 파일을 끼우다 순서가 꼬이면 저장소를 지우고 바탕부터 다시 만든다. 사례: `.tmp/drive-index-cross-run-20261110/review-repo`, 검수 `drive-index-cross-run-20261110`.
 
 ### 같은 검수 diff가 locale에 따라 `PACKET_IS_NOT_DIFF_PATCH`로 거절된다 (2026-10-24 GPT)
 - 증상: 사슬 27의 보존 검수 자료와 원문이 그대로인데 `copy-reviews.cjs --check`가 `LC_ALL=C.UTF-8`·`en_US.UTF-8`에서 멈췄다.
