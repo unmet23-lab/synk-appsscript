@@ -1,0 +1,16 @@
+{
+  "id": "01-ig-fb-mn",
+  "brand": "LAB",
+  "platform": "instagram+facebook+tiktok",
+  "account": "@synk.mn · SYNK(synkworld) · TikTok @synk.mn",
+  "format": "reels",
+  "language": "mn",
+  "audioLanguage": "ko",
+  "caption": "Солонгос найздаа «네.» гэж бичвэл… хүйтэн сонсогдож магадгүй 😅\nНайздаа «네~» эсвэл «넹» гэж бичээд үзээрэй ☀️\n네 [нэ] = тийм\n\nТа ч бас «네.» гэж бичиж байсан уу? Сэтгэгдэл дээр бичээрэй 👇\n\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "firstComment": "Багшид болон хамт ажилладаг хүмүүст «네.» гэж бичихэд зүгээр — зөвхөн найз хоорондын чатад хүйтэн сонсогдож магадгүй.\n\n🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+  "alt": [
+    "A chat screen with a Korean friend named 지우: 내일 떡볶이 먹을래? (Want tteokbokki tomorrow?). The coral felt mascot Mongle proudly replies 네. — the period swells into a heavy black felt ball that drops onto 지우's bed; she freezes and asks 혹시… 화났어? (Are you… angry?). Cards: 네. = cold, 네~ = warm. Mongle re-sends 네~ 좋아! and 지우 smiles, hugging a wavy yellow cushion. A card: 네~ for friends, 네. for teachers. Next morning 지우 replies 응. and the period ball falls on Mongle, flattening it."
+  ],
+  "_비고": "video.mp4 = m40 mn v6(시험 받은 v5에서 말풍선 점을 끝까지 남김 · 끝 2.7초 버둥만 — 19.0초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.6 LUFS. 10MB 올림판 upload_10MB.mp4. 표지 cover.png = 3.3초(마침표 공이 침대에 떨어지고 지우가 굳은 장면). 합성 표시: 필수 아님 — 펠트 그림은 우리 마스코트 · 인형을 GPT 이미지 2.5로 구운 그림, 목소리는 한국어 예문 두 줄(TTS).",
+  "version": "m40-mn-v6"
+}

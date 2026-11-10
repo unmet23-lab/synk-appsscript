@@ -1,0 +1,15 @@
+{
+  "note": "LAB 영어 E34 「리나 둘」 — 영어 목소리 없음(영어는 화면 글). 바리스타 = 범수, 리나(Rina) = 진희, 리나(Lina) = 혜리, 라이언(Ryan) = 이준(보통), 사자 = 도윤(낮게). 11-10 올리기 전 검사 「목소리 엉킴」(서현 15.7% · 이준 happy 57.9% · 주원 29.7% · 소진 한 낱말 줄 21.9%)으로 후보.json을 재서 바꿨고, 해설(소진)의 이름 읽기 줄은 바리스타가 같은 이름을 이미 불러 뺐다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_리나둘_20261110/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1110, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "b1", "text": "리나!", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "emotion": "happy" },
+    { "id": "r1", "text": "저요!", "voice": { "id": "tc_6731b2b2478a48710ecc9158", "name": "진희" }, "emotion": "happy" },
+    { "id": "l1", "text": "저요!", "voice": { "id": "tc_62e8f21e979b3860fe2f6a24", "name": "혜리" }, "emotion": "happy" },
+    { "id": "b3", "text": "라이언!", "voice": { "id": "tc_5c3c52cb5827e00008dd7f3b", "name": "범수" }, "emotion": "happy" },
+    { "id": "y1", "text": "저요!", "voice": { "id": "tc_662a05b17419f60500ac5630", "name": "이준" }, "emotion": "normal" },
+    { "id": "k1", "text": "어흥! 저요!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "tonedown" }
+  ]
+}

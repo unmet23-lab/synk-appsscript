@@ -1,0 +1,18 @@
+{
+  "note": "E34 목소리 엉킴(올리기 전 검사 — 기본음 165Hz 이상 목소리 15% 문턱) 고르기 후보. 줄을 사서 tools/목소리엉킴.py로 재고 가장 깨끗한 판을 계획.json에 옮긴다. 출력은 후보 폴더(렌더에 안 씀).",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "happy", "intensity": 1, "tempo": 1, "seed": 1110, "lufs": -17 },
+  "out": "후보",
+  "trim": "both",
+  "lines": [
+    { "id": "l1_seohyeon_n", "text": "저요!", "voice": { "id": "tc_69f2e455ea79fd197aa0476f", "name": "서현" }, "emotion": "normal" },
+    { "id": "l1_seohyeon_s", "text": "저요!", "voice": { "id": "tc_69f2e455ea79fd197aa0476f", "name": "서현" }, "seed": 2024 },
+    { "id": "l1_hyeri", "text": "저요!", "voice": { "id": "tc_62e8f21e979b3860fe2f6a24", "name": "혜리" } },
+    { "id": "y1_ijun_n", "text": "저요!", "voice": { "id": "tc_662a05b17419f60500ac5630", "name": "이준" }, "emotion": "normal" },
+    { "id": "y1_doyun", "text": "저요!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" } },
+    { "id": "y1_juwon", "text": "저요!", "voice": { "id": "tc_5c547545fcfee90007fed459", "name": "주원" } },
+    { "id": "k1_doyun_d", "text": "어흥! 저요!", "voice": { "id": "tc_6a3350f8e5a50a4abe948fa8", "name": "도윤" }, "emotion": "tonedown" },
+    { "id": "k1_juwon_n", "text": "어흥! 저요!", "voice": { "id": "tc_5c547545fcfee90007fed459", "name": "주원" }, "emotion": "normal" },
+    { "id": "k1_ijun_d", "text": "어흥! 저요!", "voice": { "id": "tc_662a05b17419f60500ac5630", "name": "이준" }, "emotion": "tonedown" }
+  ]
+}

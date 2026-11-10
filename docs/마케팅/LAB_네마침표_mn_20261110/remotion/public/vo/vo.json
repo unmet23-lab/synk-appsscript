@@ -1,0 +1,39 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "tonedown",
+  "intensity": 1,
+  "tempo": 0.9,
+  "seed": 1110,
+  "lufs": -17
+ },
+ "made": "2026-11-09T23:54:56.469Z",
+ "lines": [
+  {
+   "id": "n_cold",
+   "text": "네.",
+   "dur": 0.726,
+   "syllablesPerSec": 1.38,
+   "src": "n_cold.wav",
+   "key": "5802f29480e0feb25b54270c204b2fff",
+   "words": 1
+  },
+  {
+   "id": "n_warm",
+   "text": "네에~",
+   "dur": 0.697,
+   "syllablesPerSec": 2.87,
+   "src": "n_warm.wav",
+   "key": "5721c1fdf0e88966c8e9a8c882412eda",
+   "words": 1
+  }
+ ]
+}

@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "y1",
+ "text": "저요!",
+ "dur": 0.439,
+ "words": [
+  {
+   "text": "저요!",
+   "start": 0.03,
+   "end": 0.439
+  }
+ ],
+ "source": {
+  "key": "4cc6f8cb9417988a41abb83840b9ebf8",
+  "voice": {
+   "id": "tc_662a05b17419f60500ac5630",
+   "name": "이준"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_662a05b17419f60500ac5630"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

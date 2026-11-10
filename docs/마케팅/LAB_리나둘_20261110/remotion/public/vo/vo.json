@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1110,
+  "lufs": -17
+ },
+ "made": "2026-11-10T00:11:22.758Z",
+ "lines": [
+  {
+   "id": "b1",
+   "text": "리나!",
+   "dur": 0.698,
+   "syllablesPerSec": 2.87,
+   "src": "b1.wav",
+   "key": "7c33410f6f9d81c0de7a3c2e1eadfbdb",
+   "words": 1
+  },
+  {
+   "id": "r1",
+   "text": "저요!",
+   "dur": 0.709,
+   "syllablesPerSec": 2.82,
+   "src": "r1.wav",
+   "key": "d3bfcc9d18d1a64295b466f7ad87dae1",
+   "words": 1
+  },
+  {
+   "id": "l1",
+   "text": "저요!",
+   "dur": 0.465,
+   "syllablesPerSec": 4.3,
+   "src": "l1.wav",
+   "key": "3a3a2310d0eab56cc577f67546d33d3d",
+   "words": 1
+  },
+  {
+   "id": "b3",
+   "text": "라이언!",
+   "dur": 0.647,
+   "syllablesPerSec": 4.64,
+   "src": "b3.wav",
+   "key": "21871af513531f1efb5773b28c56c9b0",
+   "words": 1
+  },
+  {
+   "id": "y1",
+   "text": "저요!",
+   "dur": 0.439,
+   "syllablesPerSec": 4.56,
+   "src": "y1.wav",
+   "key": "4cc6f8cb9417988a41abb83840b9ebf8",
+   "words": 1
+  },
+  {
+   "id": "k1",
+   "text": "어흥! 저요!",
+   "dur": 1.385,
+   "syllablesPerSec": 2.89,
+   "src": "k1.wav",
+   "key": "40fef8b2e4cd93ebec718899965d68a9",
+   "words": 2
+  }
+ ]
+}

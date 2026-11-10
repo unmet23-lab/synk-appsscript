@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "저요!",
+ "dur": 0.709,
+ "words": [
+  {
+   "text": "저요!",
+   "start": 0.13,
+   "end": 0.709
+  }
+ ],
+ "source": {
+  "key": "d3bfcc9d18d1a64295b466f7ad87dae1",
+  "voice": {
+   "id": "tc_6731b2b2478a48710ecc9158",
+   "name": "진희"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_6731b2b2478a48710ecc9158"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 337
+ }
+}
