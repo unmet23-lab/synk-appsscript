@@ -699,6 +699,12 @@
 - 고침: agy 통로의 기본을 `gemini-4-carbon` high로 바꿨다 — `tools/lib/제미나이구독호출.js` 경로표에 카본 셋, `tools/검수묶음.mjs`(화면 · 백엔드 모두 high — 옛 판의 「코드 묶음 medium 먼저」는 아르곤 때 실측이라, 카본 high가 같은 꼴로 비면 `--수준 medium`으로 다시 보내고 끝 보고에 적는다), `tools/topik-review.mjs` · `packages/atlas/tools/map-tags.mjs`, `tools/몽골어대조.js` · `tools/현지어대조.js`의 문법 층. 역번역 층은 판정이 아니라 곧이곧대로 옮기는 층이라 flash로 둔다(아래 「몽골어 검문을 아르곤으로 돌리면 … 역번역은 고쳐 읽는다」). Gemini 몫은 모델과 상관없이 「Gemini Models」 한 무리라 몫 읽기는 그대로다(11-11 주간 81% · 5시간 87% 남음).
 - 다시 확인: `agy -p "Reply with just the digit 2." --model gemini-4-carbon-high --output-format json`이 SUCCESS(11-11 13초, 생각 토큰 144). 서버 예약 조사(`tools/argon-schedules`)는 아직 `gemini-4-argon-high`다 — 서버 agy 목록에 카본이 있는지부터 보고 바꾼다(11-11 이 세션의 서버 읽기는 자동 모드 판정기가 「운영 읽기」로 막음, [트랙](../_ops/트랙.md)).
 
+### agy를 `winget upgrade`로 올리면 더 낮은 판으로 내려가려다 「Portable package … modified」로 멈춘다 — agy는 스스로 올라가니 `agy update`로 본다 (2026-11-11 Claude)
+- 증상: 11-11 유호님 「cli 최신인가? 전부 업데이트」로 판을 재는데 `winget list --id Google.AntigravityCLI`는 깔린 판 1.5.2 · 받을 판 1.5.4였고, 실제 `agy --version`은 1.5.5였다. 판만 보려던 `winget upgrade --id Google.AntigravityCLI`가 1.5.4를 받아 설치를 시작했다가 「Unable to remove Portable package as it has been modified」로 아무것도 바꾸지 않고 끝났다.
+- 원인: agy는 뜰 때마다(15분 간격) 스스로 새 판을 찾아 뒤에서 exe를 바꾼다(cli 로그 `auto_updater.go`의 「Spawned background update process」, 이날 01:46에 1.5.5). winget 기록은 처음 깐 판에 멈춰 있고 winget 저장소는 agy 자체 배포보다 늦어, winget에는 더 낮은 판이 「새 판」으로 보인다. exe가 바뀌어 있어 이동식 패키지 검사가 막았다. `winget upgrade --id <ID>`는 확인이 아니라 바로 설치다.
+- 고침: agy 판 확인 · 올리기는 `agy update` 하나로 한다. winget으로 agy를 올리지 않고, 막힘을 `--force`로 넘기지 않는다 — 넘기면 1.5.4로 내려간다(`winget upgrade --all`도 같은 자리에서 멈춘다). 나머지 셋은 `claude update`(터미널 CLI만 — 앱 내장 판은 앱이 올린다, `tools/도구판점검.js` 머리), `npm i -g @openai/codex@latest @google/gemini-cli@latest`, `grok update --check` 뒤 `grok update`.
+- 다시 확인: 11-11 `agy update` → 「current version 1.5.5 … already on the latest version」(종료 0), `agy --version` 1.5.5. 같은 날 `claude update`로 터미널 CLI 2.1.316 → 2.1.322, codex 0.167.0 · gemini-cli 0.67.0 · grok 1.0.77은 이미 최신.
+
 ## Claude API
 
 ### Claude CLI의 긴 JSON이 이어진 응답으로 나뉘면 result.result에는 마지막 조각만 남는다 (2026-11-09 GPT)
