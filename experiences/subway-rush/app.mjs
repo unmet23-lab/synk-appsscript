@@ -5,7 +5,7 @@ import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
 import { LINES, STATIONS } from './lines.mjs';
 import { PEOPLE, CARS, planDay } from './people.mjs';
-import { createScene, loadImage } from './scene.mjs?v=map20261110';
+import { createScene, loadImage } from './scene.mjs?v=photo20261111';
 import { createLed } from './led.mjs';
 import { createHud } from './hud.mjs?v=map20261110';
 import { createRouteMap } from './routemap.mjs?v=map20261110';
@@ -263,8 +263,20 @@ function voicesOf(journey, plan) {
   for (const m of plan.meetings) { const s = m.scene; if (s.lead) names.add(s.lead.voice); names.add(s.ask.voice); for (const r of s.replies) names.add(r.reaction.voice); }
   return [...names];
 }
-const carScene = (id) => ({ img: CARS[id].closed, dep: `${CARS[id].closed}.depth`, c: [0.5, 0.42], streak: 1 });
-const DOOR = { right: { rect: [0.926, 0.54, 0.085, 0.3], lamp: [0.925, 0.27], target: [0.93, 0.55], pan: 0.13 }, left: { rect: [0.074, 0.54, 0.085, 0.3], lamp: [0.075, 0.27], target: [0.07, 0.55], pan: -0.13 } };
+// 칸 사진마다 문 · 문 위 등 · 창 자리(그림 좌표). 11-11 다시 구운 9:16 판을 잰 값 — 콘서트 · 등산객 칸은 한산 칸 판의 편집이라 같은 자리다.
+// rect = [가운데 x, 가운데 y, 반폭, 반높이](문 열림이 드러나는 칸), lamp = 문 위 등, target = 지나갈 때 다가갈 점, glass = 창 빛 띠 칸(x0, y0, x1, y1).
+const doorPair = (x, hw, lampX) => ({
+  left: { rect: [x, 0.56, hw, 0.24], lamp: [lampX, 0.255], target: [x + 0.01, 0.56], pan: -0.16 },
+  right: { rect: [1 - x, 0.56, hw, 0.24], lamp: [1 - lampX, 0.255], target: [0.99 - x, 0.56], pan: 0.16 },
+});
+const CALM_GEO = { door: doorPair(0.03, 0.035, 0.03), glass: [[0, 0.36, 0.02, 0.52], [0.155, 0.37, 0.225, 0.5], [0.775, 0.37, 0.835, 0.5], [0.98, 0.36, 1, 0.52]] };
+const CAR_GEO = {
+  calm: CALM_GEO, concert: CALM_GEO, hike: CALM_GEO,
+  rush: { door: doorPair(0.035, 0.04, 0.04), glass: [[0.02, 0.35, 0.06, 0.53], [0.205, 0.36, 0.265, 0.5], [0.77, 0.36, 0.83, 0.5], [0.94, 0.35, 0.98, 0.53]] },
+};
+let carNow = 'calm';   // 지금 화면의 칸 — 문 자리를 그 칸 사진으로 고른다
+const carScene = (id) => { carNow = id; return { img: CARS[id].closed, dep: `${CARS[id].closed}.depth`, c: [0.5, 0.42], streak: 1, glass: (CAR_GEO[id] || CALM_GEO).glass }; };
+const doorOf = (side) => (CAR_GEO[carNow] || CALM_GEO).door[side];
 const WAYS = [[0.165, 0.5], [0.5, 0.515], [0.86, 0.62]];
 
 /** 문 · 통로를 지나가는 움직임. 움직임 줄이기면 다가가는 대신 가림막으로 장면만 바꾼다. */
@@ -277,7 +289,7 @@ async function pass(target, opts) {
 async function doorOpen(carId, side) {
   const open = CARS[carId][side];
   sound.sfx.doorOpen();
-  if (has(open)) await scene.openDoor(open, DOOR[side].rect, DOOR[side].lamp); else { scene.state.lamp = DOOR[side].lamp; scene.state.lampOn = 1; await wait(0.6); }
+  if (has(open)) await scene.openDoor(open, doorOf(side).rect, doorOf(side).lamp); else { scene.state.lamp = doorOf(side).lamp; scene.state.lampOn = 1; await wait(0.6); }
 }
 async function doorClose() {
   sound.sfx.doorClose(); scene.state.lampOn = 0; endChoice();
@@ -520,7 +532,7 @@ async function playBoard(run, d, plan) {
 async function goOutOfTrain(d, next) {
   endChoice(); sound.hallStart(); music.play('run');
   await scene.prepareNext(next);
-  await pass(DOOR[d.side].target, { pan: DOOR[d.side].pan, push: 1.25, seconds: 1.25, blur: 0.13 });
+  await pass(doorOf(d.side).target, { pan: doorOf(d.side).pan, push: 1.25, seconds: 1.25, blur: 0.13 });
   scene.settleNext();
 }
 

@@ -5,16 +5,17 @@ const FRAG = `precision highp float;
 varying vec2 v;
 uniform sampler2D uImg,uDep,uNext,uNextDep,uOpen;
 uniform vec2 uRes,uC,uNextC,uPan,uLamp;
-uniform float uAspect,uFit,uDrop,uPush,uShift,uNextPush,uMix,uBlur,uFade,uFadeTo,uDoorOpen,uHasOpen,uPhase,uStreak,uLampOn,uFocus,uTop;
+uniform float uAspect,uNextAspect,uFit,uDrop,uPush,uShift,uNextPush,uMix,uBlur,uFade,uFadeTo,uDoorOpen,uHasOpen,uPhase,uStreak,uLampOn,uFocus,uTop;
 uniform vec4 uDoor;
-vec2 toImg(vec2 uv){float a=uRes.x/uRes.y;vec2 q=uv-.5;q.x*=a;float w=a*uFit,h=w/uAspect;return vec2(q.x/w+.5,(q.y-uDrop)/h+.5);}
+uniform vec4 uGlass[4];
+vec2 toImg(vec2 uv,float asp){float a=uRes.x/uRes.y;vec2 q=uv-.5;q.x*=a;float w=a*uFit,h=w/asp;return vec2(q.x/w+.5,(q.y-uDrop)/h+.5);}
 vec2 mir(vec2 p){return abs(mod(p+1.,2.)-1.);}
 float near(float d){return .05+1.15*d*d;}
 vec2 inv(vec2 q,sampler2D dep,vec2 c,float push,float shift){vec2 p=q;for(int i=0;i<5;i++){float d=texture2D(dep,mir(p)).r;float s=1.+push*near(d);vec2 o=vec2(shift*(.012+.11*d),0.);p=c+(q-o-c)/s;}return p;}
-float glassMask(vec2 p){float m=0.;m+=step(.0,p.x)*step(p.x,.06)*step(.31,p.y)*step(p.y,.55);m+=step(.105,p.x)*step(p.x,.145)*step(.33,p.y)*step(p.y,.52);m+=step(.86,p.x)*step(p.x,.92)*step(.33,p.y)*step(p.y,.52);m+=step(.945,p.x)*step(p.x,1.)*step(.31,p.y)*step(p.y,.55);return clamp(m,0.,1.);}
+float glassMask(vec2 p){float m=0.;for(int i=0;i<4;i++){vec4 g=uGlass[i];m+=step(g.x,p.x)*step(p.x,g.z)*step(g.y,p.y)*step(p.y,g.w);}return clamp(m,0.,1.);}
 vec3 shade(sampler2D img,vec2 p,vec2 c,float blur){if(blur<.002)return texture2D(img,mir(p)).rgb;vec3 sum=vec3(0.);for(int i=0;i<7;i++){float k=float(i)/6.;sum+=texture2D(img,mir(c+(p-c)*(1.-blur*k))).rgb;}return sum/7.;}
 void main(){
-  vec2 q=toImg(v)+uPan;
+  vec2 q=toImg(v,uAspect)+uPan;
   vec2 p=inv(q,uDep,uC,uPush,uShift);
   vec3 col=shade(uImg,p,uC,uBlur);
   if(uHasOpen>.5&&uDoorOpen>0.){
@@ -28,7 +29,7 @@ void main(){
     col*=1.+lamp*.13*uStreak;col+=lamp*vec3(.05,.04,.02)*uStreak;
     float g=fract(mp.y*5.+uPhase*2.4);float band=smoothstep(.0,.05,g)*smoothstep(.16,.05,g);col+=m*band*vec3(.9,.86,.72)*.55*uStreak;
   }
-  if(uMix>0.){vec2 pn=inv(q,uNextDep,uNextC,uNextPush,0.);vec3 cn=shade(uNext,pn,uNextC,uBlur*.6);col=mix(col,cn,uMix);}
+  if(uMix>0.){vec2 pn=inv(toImg(v,uNextAspect)+uPan,uNextDep,uNextC,uNextPush,0.);vec3 cn=shade(uNext,pn,uNextC,uBlur*.6);col=mix(col,cn,uMix);}
   // 고를 차례: 사진이 가라앉고(채도 · 밝기) 위 그래픽만 또렷해진다(11-10 A 「노선도」)
   if(uFocus>0.){float g=dot(col,vec3(.3,.59,.11));col=mix(col,vec3(g),.62*uFocus)*(1.-.26*uFocus);col=(col-.5)*(1.+.06*uFocus)+.5;}
   // 위 노선 줄이 떠 있는 동안: 화면 맨 위(사진 위를 거울로 이은 자리)를 어둡게 내린다
@@ -105,8 +106,12 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
   const images = {}, textures = {};
   async function need(name) { if (textures[name]) return textures[name]; const img = images[name] || (images[name] = await loadImage(base + files[name])); textures[name] = makeTex(img); return textures[name]; }
   const blank = (() => { const c = document.createElement('canvas'); c.width = c.height = 2; return makeTex(c); })();
+  // 판마다 제 비율(11-11): 2:3 판은 폰 화면 위아래 약 10%를 거울로 이어 그려 「꺾인 천장」으로 읽혔다 — 9:16 판(칸 · 통로 · 출구)은 화면을 위아래로 거의 다 덮는다.
+  // 창 빛 띠가 지나갈 유리 칸(그림 좌표 x0, y0, x1, y1 넷) — 칸 사진마다 다르니 show({ glass })로 받는다(없으면 11-04 칸 판 자리).
+  const GLASS0 = [[0, 0.31, 0.06, 0.55], [0.105, 0.33, 0.145, 0.52], [0.86, 0.33, 0.92, 0.52], [0.945, 0.31, 1, 0.55]];
+  const aspectOf = (name) => { const im = images[name]; return im && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 1024 / 1536; };
 
-  const state = { img: null, dep: null, open: null, nextImg: null, nextDep: null, c: [0.5, 0.42], nextC: [0.5, 0.5], push: 0, shift: 0, pan: [0, 0], nextPush: 0, mix: 0, blur: 0, fade: 0, fadeTo: 0, doorOpen: 0, door: [0.926, 0.54, 0.085, 0.3], hasOpen: 0, streak: 0, fit: 1.15, drop: 0.03, phase: 0, lamp: [0.92, 0.27], lampOn: 0, focus: 0, top: 0 };
+  const state = { img: null, dep: null, open: null, nextImg: null, nextDep: null, c: [0.5, 0.42], nextC: [0.5, 0.5], push: 0, shift: 0, pan: [0, 0], nextPush: 0, mix: 0, blur: 0, fade: 0, fadeTo: 0, doorOpen: 0, door: [0.926, 0.54, 0.085, 0.3], hasOpen: 0, streak: 0, fit: 1.15, drop: 0.03, phase: 0, lamp: [0.92, 0.27], lampOn: 0, focus: 0, top: 0, aspect: 1024 / 1536, nextAspect: 1024 / 1536 };
 
   function composeSigns(imgName, panels, signs) {
     const img = images[imgName], c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
@@ -126,15 +131,17 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
   return {
     state,
     need,
-    async show({ img, dep, open = null, c = [0.5, 0.42], panels = null, signs = null, draw = null, streak = 0, push = 0 }) {
+    async show({ img, dep, open = null, c = [0.5, 0.42], panels = null, signs = null, draw = null, streak = 0, push = 0, glass = null }) {
+      state.glass = glass || GLASS0;
       await need(img); await need(dep); if (open) await need(open);
       state.img = panels ? composeSigns(img, panels, signs) : draw ? composeDraw(img, draw) : textures[img]; state.dep = textures[dep]; state.open = open ? textures[open] : null;
-      Object.assign(state, { nextImg: null, nextDep: null, mix: 0, c: [...c], push, shift: 0, pan: [0, 0], blur: 0, doorOpen: 0, hasOpen: 0, fade: 0, streak, lampOn: 0 });
+      Object.assign(state, { nextImg: null, nextDep: null, mix: 0, c: [...c], push, shift: 0, pan: [0, 0], blur: 0, doorOpen: 0, hasOpen: 0, fade: 0, streak, lampOn: 0, aspect: aspectOf(img) });
     },
     /** 다음 판을 미리 받아 둔다(문을 지나갈 때 겹쳐 보이는 판). */
-    async prepareNext({ img, dep, c = [0.5, 0.5], panels = null, signs = null }) {
+    async prepareNext({ img, dep, c = [0.5, 0.5], panels = null, signs = null, glass = null }) {
+      state.nextGlass = glass || GLASS0;
       await need(img); await need(dep);
-      state.nextImg = panels ? composeSigns(img, panels, signs) : textures[img]; state.nextDep = textures[dep]; state.nextC = [...c]; state.nextPush = 0;
+      state.nextImg = panels ? composeSigns(img, panels, signs) : textures[img]; state.nextDep = textures[dep]; state.nextC = [...c]; state.nextPush = 0; state.nextAspect = aspectOf(img);
     },
     trainSpeed(v) { state.streak = v; state.push = (1 - v) * 0.014; },
     async openDoor(open, door, lamp) { await need(open); state.open = textures[open]; state.door = door; state.lamp = lamp; state.hasOpen = 1; state.lampOn = 1; await tween(0.95, (k) => { state.doorOpen = k; }, ease.door); },
@@ -149,7 +156,7 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
         if (fadeWhite) { state.fadeTo = 1; state.fade = Math.max(0, (k - 0.62) / 0.38); }
       }, ease.inOut);
     },
-    settleNext() { if (!state.nextImg) return; Object.assign(state, { img: state.nextImg, dep: state.nextDep, c: [...state.nextC], nextImg: null, nextDep: null, mix: 0, push: 0, pan: [0, 0], shift: 0, blur: 0, doorOpen: 0, hasOpen: 0, lampOn: 0, streak: 0 }); },
+    settleNext() { if (!state.nextImg) return; Object.assign(state, { img: state.nextImg, dep: state.nextDep, c: [...state.nextC], aspect: state.nextAspect, glass: state.nextGlass || GLASS0, nextImg: null, nextDep: null, mix: 0, push: 0, pan: [0, 0], shift: 0, blur: 0, doorOpen: 0, hasOpen: 0, lampOn: 0, streak: 0 }); },
     runTo(p, reach = 0.62) { state.push = p * reach; state.blur = p < 1 ? 0.02 : 0; },
     async peek(lane) { const c0 = [...state.c], p0 = state.push; await tween(0.5, (k) => { state.c = [c0[0] + (0.5 + lane * 0.3 - c0[0]) * k, c0[1]]; state.push = p0 + 0.14 * k; }, ease.out); },
     resize() { const dpr = Math.min(window.devicePixelRatio || 1, 2); const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); state.fit = Math.max(1, Math.min(1.15, 0.93 * (1024 / 1536) / (w / h))); } },   // 넓은 창에서도 바닥 스티커가 화면 안에 들도록 그림을 덜 키운다
@@ -158,12 +165,13 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
       state.phase += dt * streak * 0.95;
       if (!state.img) return;
       bind(0, state.img); bind(1, state.dep); bind(2, state.nextImg || state.img); bind(3, state.nextDep || state.dep); bind(4, state.open || blank);
-      set('uRes', canvas.width, canvas.height); set('uAspect', 1024 / 1536); set('uFit', state.fit); set('uDrop', state.drop);
+      set('uRes', canvas.width, canvas.height); set('uAspect', state.aspect); set('uNextAspect', state.nextAspect); set('uFit', state.fit); set('uDrop', state.drop);
       set('uC', ...state.c); set('uPan', ...state.pan); set('uPush', state.push); set('uShift', state.shift);
       set('uNextC', ...state.nextC); set('uNextPush', state.nextPush); set('uMix', state.mix); set('uBlur', state.blur);
       set('uFade', state.fade); set('uFadeTo', state.fadeTo); set('uDoorOpen', state.doorOpen); set('uHasOpen', state.hasOpen);
       set('uDoor', ...state.door); set('uPhase', state.phase); set('uStreak', streak); set('uFocus', state.focus); set('uTop', state.top);
       set('uLamp', ...state.lamp); set('uLampOn', state.lampOn);
+      gl.uniform4fv(U('uGlass'), (state.glass || GLASS0).flat());
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
   };

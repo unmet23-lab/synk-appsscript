@@ -33,8 +33,13 @@ TABLE = {
 }
 
 
+# 깊이 경계가 가파른 판(매단 표지 · 가는 기둥 · 앞사람) — depth_map(soft=True)
+SOFT_DEPTH = {'fork', 'exit-fork', 'car-calm', 'car-rush', 'car-concert', 'car-hike'}
+
+
 def newest(name):
-    files = sorted(f for f in ROOT.iterdir() if re.fullmatch(re.escape(name) + r'_\d{6}(_\d)?\.png', f.name))
+    # 판 이름의 시각은 시분초뿐이라 자정을 넘겨 구운 판이 이름순으로 밀린다(현장 노트 그림 굽기 「자정을 넘겨」) — 파일 수정 시각으로 고른다.
+    files = sorted((f for f in ROOT.iterdir() if re.fullmatch(re.escape(name) + r'_\d{6}(_\d)?\.png', f.name)), key=lambda f: f.stat().st_mtime)
     return files[-1] if files else None
 
 
@@ -52,7 +57,15 @@ def fit23(img):
     return img.resize((1024, 1536), Image.LANCZOS)
 
 
-def depth_map(session, img):
+def fit_plate(img):
+    """9:16로 구운 판(11-11 나노바나나 — 칸 · 통로 · 출구)은 그 비율 그대로 1024×1820으로 둔다(셰이더가 판마다 제 비율을 쓴다 — 2:3로 자르면 폰 화면 위아래를 거울로 이어 그린다). 그 밖은 2:3."""
+    w, h = img.size
+    if abs(w / h - 9 / 16) < 0.01:
+        return img.resize((1024, round(1024 * h / w)), Image.LANCZOS)
+    return fit23(img)
+
+
+def depth_map(session, img, soft=False):
     w, h = img.size
     scale = 518 / min(w, h)
     tw, th = (max(14, round(w * scale / 14) * 14), max(14, round(h * scale / 14) * 14))
@@ -61,7 +74,8 @@ def depth_map(session, img):
     lo, hi = np.percentile(d, 1), np.percentile(d, 99.5)
     d = np.clip((d - lo) / max(1e-6, hi - lo), 0, 1)
     out = Image.fromarray((d * 255).astype(np.uint8), 'L').resize((w // 2, h // 2), Image.BICUBIC)
-    return out.filter(ImageFilter.GaussianBlur(radius=max(1, w // 800)))
+    # soft: 매단 표지 · 가는 막대처럼 깊이가 갑자기 바뀌는 판은 다가갈 때 경계 화소가 톱니로 찢어졌다(11-11 출구 맹검) — 더 흐려 늘어남으로 바꾼다
+    return out.filter(ImageFilter.GaussianBlur(radius=max(6, w // 160) if soft else max(1, w // 800)))
 
 
 def main():
@@ -72,13 +86,13 @@ def main():
         if not f:
             continue
         dest = OUT / f'{name}.webp'
-        img = fit23(Image.open(f).convert('RGB'))
+        img = fit_plate(Image.open(f).convert('RGB'))
         if not dest.exists() or dest.stat().st_mtime < f.stat().st_mtime:
             img.save(dest, quality=84, method=6)
         if want_depth:
             dp = OUT / f'{name}.depth.png'
             if not dp.exists() or dp.stat().st_mtime < f.stat().st_mtime:
-                depth_map(session, img).save(dp, optimize=True)
+                depth_map(session, img, soft=name in SOFT_DEPTH).save(dp, optimize=True)
         have[name] = True
     (GAME / 'assets' / 'assets.json').write_text(json.dumps(sorted(have), ensure_ascii=False) + '\n', encoding='utf-8')
     print(len(have), '장', sum(p.stat().st_size for p in OUT.iterdir()) // 1024 // 1024, 'MB')
