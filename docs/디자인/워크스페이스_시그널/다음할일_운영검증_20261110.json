@@ -1,0 +1,52 @@
+{
+  "schema": "synk-workspace-next-action-live-verification/v1",
+  "date": "2026-11-10",
+  "featureCommit": "a084023e07f818584d0e8a8a6d59ec77920a0008",
+  "release": { "sequence": 59, "completedSealVerifiedByReleaseOwner": true, "backupRestoreAndRearmCompleted": true },
+  "url": "https://workspace.synk.im/?tab=home",
+  "outcome": "verified-after-retry",
+  "checks": {
+    "authenticatedHome": true,
+    "threePublicAssetsMatchReviewedCandidate": true,
+    "recommendationResponse": "ready",
+    "allThreeSourceCoverages": "ok",
+    "recommendationReasonsAndChecksVisible": true,
+    "skipChangesCandidate": true,
+    "restoreReturnsOriginalCandidate": true,
+    "keyboardRefreshAndHeadingFocus": true,
+    "helpDisclosure": true,
+    "sourceRecheckConfirmedConsecutive": 3,
+    "originalRouteAndExpectedProjectVisible": true,
+    "desktopWidth": 1440,
+    "mobileWidth": 390,
+    "horizontalOverflow": false,
+    "finalHomeStatus": "ready",
+    "finalExclusionsCleared": true,
+    "finalError": null
+  },
+  "validation": {
+    "featureTestsPassed": 122,
+    "releaseProductTestsPassed": 3693,
+    "conditionalLocalTestsPassed": 79,
+    "conditionalSourceUnchanged": true,
+    "conditionalInputsUnchanged": true,
+    "workflows": [
+      { "name": "syntax-check", "run": 42688966284, "conclusion": "success" },
+      { "name": "records-check", "run": 42688966646, "conclusion": "success" },
+      { "name": "wide-tests", "run": 42688966157, "conclusion": "success" },
+      { "name": "conditional-qa", "run": 42688966309, "conclusion": "success" }
+    ]
+  },
+  "observations": [
+    { "kind": "request-error", "count": 1, "resolvedOnRetry": true, "causeConfirmed": false, "note": "The first original-open request displayed a generic request error. The original HTTP status/body was not retained. Refresh, three source rechecks, and subsequent original navigation succeeded. This is not recorded as zero errors." },
+    { "kind": "data-quality", "note": "Existing operational test records can be recommended because they remain active source tasks. No title-based exclusion, source-task deletion, or completion was applied." }
+  ],
+  "limits": [
+    "Live verification used one authorized account. Other accounts and simultaneous source edits were covered by isolated tests, not reproduced against production data.",
+    "The customer original route was exercised live. Messenger and publication destinations retain the separate synthetic/API verification scope.",
+    "A second route observation was taken before the project content completed rendering; final verification waited for both the exact route and expected project text."
+  ],
+  "privateEvidence": ".tmp/next-live-20261110/",
+  "productionTaskEdits": 0,
+  "messagesSent": 0
+}
