@@ -89,7 +89,7 @@ export function pulseMailCompose(row,moment,loc='ko',latest=null){
   // 접수 확인은 사람 손 없이 손님이 적은 주소로 바로 나가는 메일이라 손님이 적은 글(이름 · 제품 이름)을 넣지 않는다(판 4 Fable 설계 검토 2).
   if(moment==='request_received'){
     const number=/^P-\d{4}-[0-9A-F]{4}$/.test(request.number||'')?request.number:'';
-    return {subject:number?tx('〔SYNK PULSE〕 의뢰를 받았어요 · {number}',{number}):tx('〔SYNK PULSE〕 의뢰를 받았어요'),body:[tx('안녕하세요, SYNK PULSE입니다.'),'',number?tx('보내 주신 광고 의뢰를 받았어요. 접수 번호는 {number}예요.',{number}):tx('보내 주신 광고 의뢰를 받았어요.'),tx('평일 10~19시에 의뢰서를 확인하고, 빠진 게 있으면 그 칸만 다시 여쭤요. 결제는 글 콘티를 보신 뒤에 크몽에서 해요.'),'',...links,'',tx('의뢰하신 적이 없으면 이 메일은 지우셔도 돼요. 궁금한 점은 이 메일에 답장해 주세요.')].join('\n')};
+    return {subject:number?tx('〔SYNK PULSE〕 의뢰를 받았어요 · {number}',{number}):tx('〔SYNK PULSE〕 의뢰를 받았어요'),body:[tx('안녕하세요, SYNK PULSE입니다.'),'',tx('보내 주신 광고 의뢰를 받았어요.'),...(number?[tx('접수 번호: {number}',{number})]:[]),tx('평일 10~19시에 의뢰서를 확인하고, 빠진 게 있으면 그 칸만 다시 여쭤요. 결제는 글 콘티를 보신 뒤에 크몽에서 해요.'),'',...links,'',tx('의뢰하신 적이 없으면 이 메일은 지우셔도 돼요. 궁금한 점은 이 메일에 답장해 주세요.')].join('\n')};
   }
   const title=product?tx('{product} 광고',{product}):tx('요청하신 광고');
   const entry=moment==='draft_ready'||moment==='images_ready'?roundOf(row,latest):null,revised=revisedRound(row,entry);

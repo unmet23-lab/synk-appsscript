@@ -94,7 +94,7 @@ const EN=Object.freeze({
   '이 기기를 기억해 두셨다면 바로 열려요. 다른 기기에서는 「메일로 다시 열기」에 이 메일 주소를 넣으시면 코드를 보내 드려요.':'If you asked us to remember this device, it opens right away. On another device, enter this email address under “Reopen by email” and we will send you a code.',
   '〔SYNK PULSE〕 의뢰를 받았어요 · {number}':'〔SYNK PULSE〕 We received your brief · {number}',
   '〔SYNK PULSE〕 의뢰를 받았어요':'〔SYNK PULSE〕 We received your brief',
-  '보내 주신 광고 의뢰를 받았어요. 접수 번호는 {number}예요.':'We received your ad brief. Your reference number is {number}.',
+  '접수 번호: {number}':'Reference number: {number}',
   '보내 주신 광고 의뢰를 받았어요.':'We received your ad brief.',
   '평일 10~19시에 의뢰서를 확인하고, 빠진 게 있으면 그 칸만 다시 여쭤요. 결제는 글 콘티를 보신 뒤에 크몽에서 해요.':'We review briefs on weekdays, 10:00–19:00 Korea time, and only ask again about anything missing. Payment happens on Kmong after you have seen the script.',
   '의뢰하신 적이 없으면 이 메일은 지우셔도 돼요. 궁금한 점은 이 메일에 답장해 주세요.':'If you did not send a brief, you can delete this email. Reply to this email with any questions.',

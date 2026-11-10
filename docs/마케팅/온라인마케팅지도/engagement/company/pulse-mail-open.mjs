@@ -54,7 +54,7 @@ export function createPulseMailOpen({store,clientProjects,pulseMail,clock=()=>ne
     const doc=store.get(PULSE_MAIL_CODES,id);if(!doc||doc.state!=='queued')return;
     const code=String(randomInt(0,1000000)).padStart(6,'0');
     const subject=`〔SYNK PULSE〕 프로젝트 열기 코드 ${code}`;
-    const body=['안녕하세요, SYNK PULSE입니다.','',`프로젝트를 여는 코드는 ${code}예요.`,'PULSE 앱의 「메일로 다시 열기」에 넣어 주세요. 10분 동안 한 번 쓸 수 있어요.','','요청하지 않으셨으면 이 메일은 지우셔도 돼요. 코드가 없으면 아무도 프로젝트를 열 수 없어요.'].join('\n');
+    const body=['안녕하세요, SYNK PULSE입니다.','',`프로젝트를 여는 코드: ${code}`,'PULSE 앱의 「메일로 다시 열기」에 넣어 주세요. 10분 동안 한 번 쓸 수 있어요.','','요청하지 않으셨으면 이 메일은 지우셔도 돼요. 코드가 없으면 아무도 프로젝트를 열 수 없어요.'].join('\n');
     const verdict=await pulseMail.sendDirect({key:`open:${id}`,to:email,subject,body});
     const ms=nowMs();
     if(verdict.kind!=='sent'){store.put(PULSE_MAIL_CODES,id,{...doc,state:'failed',reason:String(verdict.code||verdict.kind).slice(0,40)});log({event:'pulse-mail-open',state:'failed',reason:verdict.code||verdict.kind});return;}

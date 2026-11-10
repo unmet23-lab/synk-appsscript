@@ -65,7 +65,7 @@ test('메일 글: 제목 · 본문에 프로젝트 이름과 순간 줄, 줄바�
   // 접수 확인은 손님이 적은 글을 넣지 않는다(공개 의뢰서로 남의 주소에 임의 문장을 보내는 길이 되지 않게 — 판 4 Fable 설계 검토 2).
   const receipt=pulseMailCompose({...row,studio:{request:{...row.studio.request,number:'P-1110-AD6B'}}},'request_received');
   assert.equal(receipt.subject,'〔SYNK PULSE〕 의뢰를 받았어요 · P-1110-AD6B');assert.doesNotMatch(receipt.subject+receipt.body,/오미톡|Bcc|손님님|evil/);
-  assert.match(receipt.body,/접수 번호는 P-1110-AD6B예요\./);assert.match(receipt.body,/의뢰하신 적이 없으면 이 메일은 지우셔도 돼요/);
+  assert.match(receipt.body,/\n접수 번호: P-1110-AD6B\n/);assert.doesNotMatch(receipt.body,/[0-9A-F]예요/,'번호 끝 글자에 따라 받침이 갈리니 「예요」를 붙이지 않는다(11-10 운영 시험 주문)');assert.match(receipt.body,/의뢰하신 적이 없으면 이 메일은 지우셔도 돼요/);
   assert.equal(pulseMailCompose({studio:{request:{number:'P-1110-AD6B\nBcc',answers:{}}}},'request_received').subject,'〔SYNK PULSE〕 의뢰를 받았어요','꼴이 아닌 번호는 싣지 않는다');
   // 판 순간: 같은 종류의 앞 판이 있으면 「고친」, 결제 안내는 값 · 받으실 날 줄, 사진 첫 장은 사진 말.
   const rounds={studio:{request:{answers:{name:'오미톡'},rounds:[{round:1,kind:'script'},{round:2,kind:'script'},{round:3,kind:'images'}],directionProposal:{dueDate:'2026-11-20'}}}};

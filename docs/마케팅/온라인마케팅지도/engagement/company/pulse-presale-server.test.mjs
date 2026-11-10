@@ -161,7 +161,7 @@ test('판 4 메일 코드로 다시 열기: 늘 같은 답 · 맞는 주소에�
   assert.equal(unknown.status,200);assert.deepEqual(unknown.data,known.data,'맞든 안 맞든 같은 답');
   assert.equal(codes().length,1,'맞는 주소로만 보낸다');assert.equal(codes()[0].to,'buyer@pulse-synthetic.test');
   const code=codes()[0].subject.match(/(\d{6})$/)[1];
-  assert.match(codes()[0].body,new RegExp(`프로젝트를 여는 코드는 ${code}예요`));
+  assert.match(codes()[0].body,new RegExp(`\\n프로젝트를 여는 코드: ${code}\\n`));assert.doesNotMatch(codes()[0].body,/\d예요/,'숫자 끝 받침에 따라 갈리니 「예요」를 붙이지 않는다(11-10 운영 시험 주문)');
   assert.equal(JSON.stringify(f.app.store.all('pulseMailCodes')).includes(code),false,'코드 원문은 남기지 않는다');
   assert.equal(JSON.stringify(f.app.store.all('pulseMailCodes')).includes('buyer@'),false,'주소 원문도');
   assert.equal((await verify(off(code))).status,401);
