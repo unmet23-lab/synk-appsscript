@@ -10,6 +10,7 @@
 
 > 도구를 쓰기 전에 여기와 목차만 읽고, 걸리는 절은 `rg -n "^###" docs/현장노트/AI_CLI.md`로 제목을 찾아 그 항목만 읽는다.
 
+- 아르곤(agy) 모델은 11-11부터 `gemini-4-carbon` high다(유호님 「전부 카본(max)」) — agy 1.5.5는 카본에 max가 없어 `--effort max`를 거절하니 high가 가장 높다. 검수묶음 · 문항 검수 · 현지어 문법 채점 · Atlas 태그가 그 값을 쓴다 ([자세히](#agy-카본은-low--medium--high까지다--max를-주면-no-max-effort로-거절된다-2026-11-11-claude))
 - 그록(Grok Build)은 빈 폴더에서도 ~/.claude 훅 · 스킬을 읽고 `--sandbox strict`로는 파일 읽기가 안 막힌다 → `tools/lib/그록호출.js`로만 부르고(파일 · 셸 도구 막음), 설정은 compat 끄기 + 관리 훅만 허용 ([자세히](#그록grok-build))
 - PC를 다시 켜면 agy 로그인이 사라져 모든 세션의 아르곤 호출이 60초 뒤 「auth timed out」으로 끝난다 → 앱 터미널 탭에 인자 없는 `agy`를 **하나만** 띄워 유호님이 승인 · 코드 넣기(창 둘이면 코드가 섞인다). 대화형 기본 모델은 settings.json `"model": "Gemini 4 Argon (High)"`로 둔다 ([로그인](#pc를-다시-켜면-agy-로그인이-사라져-모든-세션의-아르곤-호출이-60초씩-기다리다-auth-timed-out으로-끝난다--로그인-창을-두-개-띄우면-코드가-섞여-token-exchange-failed-2026-11-07-claude), [기본 모델](#대화형-agy-창의-기본-모델이-argon-medium으로-뜬다--settingsjson에-model-키가-없으면-목록-첫-줄을-쓴다-2026-11-07-claude))
 - 무인 키가 소진되면 팁 적용안은 `~/.claude`의 터미널 로그인으로 넘어가는데, 앱 세션이 멀쩡해도 이 로그인은 따로 끊길 수 있다 → `claude auth status`로 본다 ([자세히](#팁-적용안이-oauth-session-expired로-실패하고-재부팅에-죽은-실행의-잠금이-3시간-동안-다음-회차를-막는다-2026-11-04-claude))
@@ -691,6 +692,12 @@
 - 원인: Pages CDN이 몇 분 동안 503을 냈고, 캡처는 응답 코드를 보지 않고 그 오류 쪽(데스크톱 폭 980 꼴)을 그대로 찍었다. 그림 한 장만 503이면 그 칸이 비어 차이로 잡힌다.
 - 고침: 차이 그림을 지적으로 읽기 전에 「전/<폭>/<이름>.txt」 첫 줄이 쪽 본문인지, 그림 폭이 기기 폭 × 배율(390이면 780)인지 본다. 503이면 공개본 HTML을 `curl`로 받아 로컬 dist와 `cmp`로 견주고 배경에 적는다. 아르곤 묶음은 코드 글이라 영향이 없지만, Fable이 보는 캡처는 다시 찍는다(이번에는 공개본이 바뀌어 새 사슬 `-b`를 준비하며 다시 찍혔다).
 - 다시 확인: `synk-im-learner-reshoot-20261111b` 「전」 390 아틀라스 · LAB · 영어 홈이 780폭이고 글 첫 줄이 「본문으로 바로 가기」 · 「Skip to main content」다.
+
+### agy 카본은 low · medium · high까지다 — max를 주면 「no "max" effort」로 거절된다 (2026-11-11 Claude)
+- 증상: 11-11 유호님 「제미나이 관련한 검수 … 전부 카본(max)」으로 바꾸려고 PC agy 1.5.5(77yuhbs)에 `--model gemini-4-carbon --effort max`를 주자 `gemini-4-carbon has no "max" effort (available: low, medium, high)`, `--model gemini-4-carbon-high --effort max`는 `conflicts with --effort=max`, `--model gemini-4-carbon-max`는 「not recognized」였다(셋 다 토큰 0).
+- 원인: agy `models` 목록의 카본은 `gemini-4-carbon-low` · `-medium` · `-high` 셋뿐이다. `agy --help`의 `--effort`는 low · medium · high · xhigh · max를 받지만 모델마다 있는 단계만 된다.
+- 고침: agy 통로의 기본을 `gemini-4-carbon` high로 바꿨다 — `tools/lib/제미나이구독호출.js` 경로표에 카본 셋, `tools/검수묶음.mjs`(화면 · 백엔드 모두 high — 옛 판의 「코드 묶음 medium 먼저」는 아르곤 때 실측이라, 카본 high가 같은 꼴로 비면 `--수준 medium`으로 다시 보내고 끝 보고에 적는다), `tools/topik-review.mjs` · `packages/atlas/tools/map-tags.mjs`, `tools/몽골어대조.js` · `tools/현지어대조.js`의 문법 층. 역번역 층은 판정이 아니라 곧이곧대로 옮기는 층이라 flash로 둔다(아래 「몽골어 검문을 아르곤으로 돌리면 … 역번역은 고쳐 읽는다」). Gemini 몫은 모델과 상관없이 「Gemini Models」 한 무리라 몫 읽기는 그대로다(11-11 주간 81% · 5시간 87% 남음).
+- 다시 확인: `agy -p "Reply with just the digit 2." --model gemini-4-carbon-high --output-format json`이 SUCCESS(11-11 13초, 생각 토큰 144). 서버 예약 조사(`tools/argon-schedules`)는 아직 `gemini-4-argon-high`다 — 서버 agy 목록에 카본이 있는지부터 보고 바꾼다(11-11 이 세션의 서버 읽기는 자동 모드 판정기가 「운영 읽기」로 막음, [트랙](../_ops/트랙.md)).
 
 ## Claude API
 

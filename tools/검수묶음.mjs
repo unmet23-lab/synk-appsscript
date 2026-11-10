@@ -57,11 +57,13 @@ export function 개인화신규검수검사(id) {
   if (id === 'atlas-personalization-20261029') throw new Error('이번 Atlas 개인화 작업의 신규 검수 생성은 은퇴했다 — 과거 정책·증명 확인은 유지한다');
 }
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const ARGON = { model: 'gemini-4-argon' };
+// 11-11 유호님 「제미나이 관련한 검수 … 전부 카본(max)」 — 검수자 이름은 아르곤 그대로, 모델은 Gemini 4 Carbon. agy에는 max가 없어(low·medium·high) high가 가장 높다.
+export const ARGON = { model: 'gemini-4-carbon' };
 // 한 묶음 바이트(머리말 포함) — 10-18 한 번에 넘긴 745KB가 뒷부분이 잘려 0건이었고 190KB 언저리에서도 잘렸다(현장 노트 AI_CLI).
 export const 기본크기 = 150_000;
-// 코드 묶음은 medium으로 먼저(high 코드 묶음이 답 없이 끝난 적이 있다 — 운영 원칙 「백엔드 검수」), 화면은 high(10-20 PULSE 세 묶음 4~6분).
-export const 기본수준 = { 화면: 'high', 백엔드: 'medium' };
+// 11-11부터 화면 · 백엔드 모두 high(카본의 가장 높은 수준 — 유호님 「전부 카본(max)」). 옛 판은 코드 묶음을 medium으로 먼저 보냈다
+// (10-20 Argon high 코드 묶음이 답 없이 끝난 적이 있다) — 카본 high가 같은 꼴로 비면 `--수준 medium`으로 다시 보내고 끝 보고에 적는다.
+export const 기본수준 = { 화면: 'high', 백엔드: 'high' };
 const 제한분 = { high: 25, medium: 20, low: 15 };
 const 긴줄 = 400;    // 바뀐 줄이 이보다 길면 낱말 diff — 템플릿 문자열 한 줄에 화면 하나가 든 파일(10-20 화면 검수 첫 회 376KB)
 const 기본뺌 = ['**/node_modules/**', '**/dist/**', '**/generated/**', '**/*.min.js', '**/*.min.css', '**/*.map', '**/package-lock.json'];
@@ -1325,7 +1327,7 @@ function 페이블쓰기(폴더, 목록, 지금) {
   // 먼저 본 다른 회사 검수자(쓸 만한 답이 있는 쪽). 아르곤이 막혔어도 GPT가 읽었으면 2단계에 GPT 지적이 간다(그록도 같다).
   const 앞검수 = [...(결과들.some(쓸만한가) ? [['아르곤', '아르곤지적표.md', 결과들]] : []), ...(G결과들.some(쓸만한가) ? [['GPT', 'GPT지적표.md', G결과들]] : []),
     ...(K결과들.some(쓸만한가) ? [['그록', '그록지적표.md', K결과들]] : [])];
-  const 앞이름 = 앞검수.map(([이름]) => ({ 아르곤: '아르곤(Gemini 4 Argon)', 그록: '그록(xAI Grok)' }[이름] ?? 이름)).join('과 ');
+  const 앞이름 = 앞검수.map(([이름]) => ({ 아르곤: '아르곤(Gemini 4 Carbon)', 그록: '그록(xAI Grok)' }[이름] ?? 이름)).join('과 ');
   const 끝말 =목록.끝 === '작업본' ? `작업본(HEAD ${목록.머리커밋?.커밋?.slice(0, 9) || '?'} + 미커밋 변경)` : `${목록.끝.커밋.slice(0, 9)} (${목록.끝.제목})`;
   const 캡처표 = 캡 => {
     if (!캡?.장들?.length) return [];

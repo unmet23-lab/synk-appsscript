@@ -38,6 +38,14 @@ const 경로표 = Object.freeze({
     medium: 'gemini-4-argon-medium',
     high: 'gemini-4-argon-high',
   }),
+  /* 11-11 유호님 「제미나이 관련한 검수나 이미지 생성 · 딥리서치 전부 카본(max)」 — 아르곤 검수 · 문법 채점의 기본 모델.
+   * agy 1.5.5 목록은 low · medium · high까지이고 `--effort max`는 「gemini-4-carbon has no "max" effort」로 거절된다 —
+   * 이 통로에서 가장 높은 수준은 high다(현장 노트 AI_CLI). */
+  'gemini-4-carbon': Object.freeze({
+    low: 'gemini-4-carbon-low',
+    medium: 'gemini-4-carbon-medium',
+    high: 'gemini-4-carbon-high',
+  }),
 });
 
 function 값(argv, 이름) {

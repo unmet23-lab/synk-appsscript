@@ -19,7 +19,8 @@ import { ALL_ITEMS, MULTI_ONLY, tagContent } from './map-tags-content.mjs';
 const require = createRequire(import.meta.url);
 export const RUBRIC_ID = 'atlas-tags-r1';
 const CLAUDE_MODEL = 'claude-opus-5-5';
-const ARGON = { model: 'gemini-4-argon', thinking: 'high', label: 'gemini-4-argon-high' };
+// 11-11 유호님 「제미나이 관련한 검수 … 전부 카본(max)」 — 아르곤 검수 모델은 Gemini 4 Carbon high(agy의 가장 높은 수준).
+const ARGON = { model: 'gemini-4-carbon', thinking: 'high', label: 'gemini-4-carbon-high' };
 const WORK = path.join(REPO_ROOT, '.tmp', 'atlas-map-tags');
 const sha = text => crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));

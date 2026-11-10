@@ -28,7 +28,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const bankDir = path.join(root, 'experiences/topik-items');
 export const RUBRIC_ID = 'topik-review-r1';
 export const CLAUDE_MODEL = 'claude-opus-5-5';
-export const ARGON = { model: 'gemini-4-argon', thinking: 'high', label: 'gemini-4-argon-high' };
+// 11-11 유호님 「제미나이 관련한 검수 … 전부 카본(max)」 — 단계 이름은 argon 그대로, 모델은 Gemini 4 Carbon의 가장 높은 수준(agy에는 max가 없다).
+export const ARGON = { model: 'gemini-4-carbon', thinking: 'high', label: 'gemini-4-carbon-high' };
 const sha = text => crypto.createHash('sha256').update(text).digest('hex');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
 const writeJson = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); const tmp = `${file}.${process.pid}.tmp`;

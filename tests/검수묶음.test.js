@@ -203,16 +203,16 @@ test('준비 → 아르곤(가짜) → 처리 → 집계: 생성물은 빼고, �
   const 부름 = [];
   const 잘읽음 = async ({ prompt, model, thinking, schema }) => {
     부름.push({ model, thinking, sha: crypto.createHash('sha256').update(prompt).digest('hex') });
-    assert.equal(model, 'gemini-4-argon');
+    assert.equal(model, 'gemini-4-carbon');
     assert.ok(schema.required.includes('endMarker'));
     const 표식 = /자료 끝 표식: (\S+)\s*$/.exec(prompt)[1];
     const seen = [...prompt.matchAll(/^### \[([^\]]+)\]/gm)].map(m => m[1]);
-    return { text: JSON.stringify({ findings: [{ grade: 'P1', location: 'src/app.js:2', quote: 'b = 3', problem: '부르는 곳이 2를 기대한다', fix: '부르는 곳도 고친다' }], seen, coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }), selectedModel: 'gemini-4-argon-medium', usage: { input_tokens: 10 } };
+    return { text: JSON.stringify({ findings: [{ grade: 'P1', location: 'src/app.js:2', quote: 'b = 3', problem: '부르는 곳이 2를 기대한다', fix: '부르는 곳도 고친다' }], seen, coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }), selectedModel: 'gemini-4-carbon-high', usage: { input_tokens: 10 } };
   };
   const 몫 = () => ({ 주간: 0.25, 다섯시간: 0.8 });
   const 결과 = await 아르곤보내기(폴더, 목록, { call: 잘읽음, 몫 });
   assert.deepEqual(결과.map(x => x.상태), 목록.묶음.map(() => '읽음'));
-  assert.equal(부름[0].thinking, 'medium', '백엔드는 medium 먼저');
+  assert.equal(부름[0].thinking, 'high', '백엔드도 카본 high(11-11)');
   assert.equal(부름[0].sha, 묶음.sha256, '보낸 바이트 = 준비한 묶음');
   const 표 = 지적표읽기(폴더);
   assert.equal(표.지적[0].번호, 'A1');
@@ -840,7 +840,7 @@ test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 
   // fable.md 2단계는 두 검수자의 지적표를 다 가리킨다
   const { 페이블하기 } = await tool();
   const 페 = fs.readFileSync(await 페이블하기(폴더, { 시험: false, 캡처: false }), 'utf8');
-  assert.match(페, /아르곤\(Gemini 4 Argon\)과 GPT\(다른 회사 모델\)이 먼저 본 뒤/);
+  assert.match(페, /아르곤\(Gemini 4 Carbon\)과 GPT\(다른 회사 모델\)이 먼저 본 뒤/);
   assert.match(페, /아르곤지적표\.md`와 `.*GPT지적표\.md`를 읽고/);
 });
 

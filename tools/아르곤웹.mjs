@@ -1,4 +1,4 @@
-// 아르곤 웹 — Gemini 웹 「4 Argon」 · 사고 수준 「높음」 새 대화에 파일(사진 · 글 · 영상)을 올리고 지시문을 보내 답을 파일로 받는 ego 페이지 스크립트.
+// 아르곤 웹 — Gemini 웹 「카본」 · 사고 수준 하위 메뉴의 가장 높은 단계(11-11 「전부 카본(max)」, 그 전은 「4 Argon」 높음) 새 대화에 파일(사진 · 글 · 영상)을 올리고 지시문을 보내 답을 파일로 받는 ego 페이지 스크립트.
 // 부르는 쪽이 tools/아르곤웹.js 페이지글()로 globalThis.JOB과 판단 함수(글정규화 · 대화견주기 · 표시풀까 …, 시험은 그쪽)를 앞에 붙여
 // `ego-browser nodejs` 표준 입력으로 돌린다(한글 경로는 -e import가 안 된다):
 //   tools/아르곤웹.js(사진 · 지시문 검수 — 공용 차례를 잡고 부른다) · tools/오마주.js 아르곤(원본 영상 첫 분석).
@@ -27,8 +27,8 @@ const mode = J.mode || "보내기";
 const files = J.files || (J.video ? [J.video] : []);
 const { prompt, out, u } = J;
 const shots = J.shots || out.replace(/[\\/][^\\/]*$/, "");
-const space = J.space || "synk-argon-web-p2";
-const profile = J.profile || "Profile 2"; // 공간을 처음 만들 때만 넘긴다 — 같은 이름 공간이 있으면 그 프로필이 이것과 같은지만 본다
+const space = J.space || "synk-argon-web-p7";
+const profile = J.profile || "Profile 7"; // 11-11 다시 로그인 뒤 Profile 7(tools/아르곤웹.js 기본프로필) — 공간을 처음 만들 때만 넘긴다 — 같은 이름 공간이 있으면 그 프로필이 이것과 같은지만 본다
 const account = J.account || "";
 const head = J.head || "아르곤 답";
 const mark = J.mark || `${out}.보냄.json`;
@@ -413,62 +413,90 @@ if (mode === "읽기") {
   await 마감확인();
   let s = await 첫화면();
   await 마감확인();
+  // 빈 입력창에서는 모드 단추를 숨긴다(10-31) — 「.」을 먼저 넣고, 모드 단추는 사이드바가 다 뜬 뒤에 나오니 30초까지 기다린다(10-25).
+  if (!s.mode && s.len >= 0) {
+    await page.click('loc=css:[aria-label="Gemini 프롬프트 입력"]', { timeout: 15000, label: "focus prompt box" }).catch(() => {});
+    await page.waitForTimeout(400);
+    await page.keyboard.insertText(".");
+    for (let i = 0; i < 15; i++) { await page.waitForTimeout(2000); s = await state().catch(() => s); if (s.mode) break; }
+  }
+  const mark_ = (re, tag) => page.evaluate(({ re, tag }) => {
+    document.querySelectorAll(`[data-synk="${tag}"]`).forEach((e) => e.removeAttribute("data-synk"));
+    const r = new RegExp(re);
+    const el = [...document.querySelectorAll("gem-menu-item, [role=menuitem], [role=menuitemradio], input-companion-item, button")]
+      .find((e) => r.test((e.innerText || "").trim()) && e.getBoundingClientRect().width > 0);
+    if (el) el.setAttribute("data-synk", tag);
+    return !!el;
+  }, { re, tag });
+  // 「+」를 누른 뒤 모드 단추가 늦게 찬다 — 1.5초씩 여덟 번 보고, 짧은 메뉴는 Escape로 닫고 다시 누른다(10-31 b 줄).
+  const openTools = async () => {
+    for (let i = 0; i < 3; i++) {
+      s = await state();
+      if (s.mode) return;
+      await page.keyboard.press("Escape").catch(() => {});
+      await page.waitForTimeout(500);
+      await page.click('loc=css:button[aria-label="업로드 및 도구"]', { timeout: 15000, label: "open tools panel" }).catch(() => {});
+      for (let k = 0; k < 8; k++) { await page.waitForTimeout(1500); s = await state(); if (s.mode) return; }
+    }
+    s = await state();
+    if (!s.mode) await fail("모드 단추가 없음(도구 판을 열어도)");
+  };
+  // 모드 고르기(11-11 유호님 「제미나이 관련한 검수나 이미지 생성 · 딥리서치 전부 카본(max)」) — 모델 「카본」 + 사고 수준 하위 메뉴의 가장 높은 단계.
+  // 단계 이름은 판마다 바뀌어 와서(낮음 · 보통 · 높음 ↔ 최저가 · 보통 · 최고가) 하위 메뉴를 열어 읽은 항목에 순위를 매겨 가장 높은 것을 누르고,
+  // 모드 칸에 「카본」과 그 단계 이름이 있는지로 대조한다(카본인가 · 수준순위 · 가장높은수준 · 카본모드맞나 — tools/아르곤웹.js 판단 함수, 시험은 그쪽).
+  // 「확인」도 보내기 없이 여기까지 해 본다 — 로그인 · 메뉴가 바뀐 뒤 고를 수 있는지 먼저 가린다.
+  let 고른수준 = null; // { 글, 순위, 차례 } — 이번 탭에서 하위 메뉴를 열어 읽은 가장 높은 단계
+  const OK = (m) => 카본모드맞나(m, 고른수준 && 고른수준.글);
+  const 단계글들 = () => page.evaluate(() => [...document.querySelectorAll("gem-menu-item, [role=menuitem], [role=menuitemradio]")]
+    .filter((e) => e.getBoundingClientRect().width > 0).map((e) => (e.innerText || "").trim()).filter(Boolean));
+  const 단계표시 = (글) => page.evaluate(({ 글 }) => {
+    document.querySelectorAll('[data-synk="lvl"]').forEach((e) => e.removeAttribute("data-synk"));
+    const el = [...document.querySelectorAll("gem-menu-item, [role=menuitem], [role=menuitemradio]")]
+      .find((e) => e.getBoundingClientRect().width > 0 && (e.innerText || "").trim().split(/\r?\n/)[0].trim() === 글);
+    if (el) el.setAttribute("data-synk", "lvl");
+    return !!el;
+  }, { 글 });
+  const chooseCarbon = async () => {
+    for (let i = 0; i < 3; i++) {
+      await openTools();
+      if (OK(s.mode)) return;
+      await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" });
+      await page.waitForTimeout(1300);
+      // 모델 항목 글은 「Most complex work 4 카본」처럼 설명이 앞에 온다(11-11 실물) — 이름은 맨 앞이 아니라 낱말 경계로 찾는다
+      if (!카본인가(s.mode) && (await mark_("(?:^|\\s)(?:\\d+(?:\\.\\d+)?\\s*)?(?:Carbon|카본)(?:\\s|$)", "carbon"))) {
+        await page.click('loc=css:[data-synk="carbon"]', { timeout: 15000, label: "choose Carbon" });
+        await page.waitForTimeout(1300);
+        await openTools();
+        await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" });
+        await page.waitForTimeout(1300);
+      }
+      if (await mark_("^사고 수준", "think")) {
+        await page.click('loc=css:[data-synk="think"]', { timeout: 15000, label: "open thinking submenu" });
+        await page.waitForTimeout(1300);
+        const 글들 = await 단계글들();
+        const 높은 = 가장높은수준(글들);
+        log({ step: "levels", 단계: 글들.filter((g) => 수준순위(g) >= 0).map((g) => g.split(/\r?\n/)[0].trim()), 고름: 높은 ? 높은.글 : null });
+        if (높은) {
+          고른수준 = 높은;
+          if (await 단계표시(높은.글)) { await page.click('loc=css:[data-synk="lvl"]', { timeout: 15000, label: "choose top thinking level" }); await page.waitForTimeout(1300); }
+        }
+      }
+      await page.keyboard.press("Escape").catch(() => {});
+      await page.waitForTimeout(700);
+    }
+    await openTools();
+  };
+  await chooseCarbon();
+  if (!OK(s.mode)) await fail(`모드가 카본 · 사고 수준 가장 높은 단계(${고른수준 ? 고른수준.글 : "하위 메뉴에서 단계를 못 읽음"})가 아님: ${s.mode}`);
+  log({ step: "mode", mode: s.mode, level: 고른수준.글, rank: 고른수준.순위 });
   if (mode === "확인") {
+    // 넣은 「.」만 지우고 닫는다 — 보내기 · 올리기 없음
+    await page.click('loc=css:[aria-label="Gemini 프롬프트 입력"]', { timeout: 15000, label: "focus prompt box" }).catch(() => {});
+    await page.keyboard.press("ControlOrMeta+a").catch(() => {});
+    await page.keyboard.press("Backspace").catch(() => {});
     log({ step: "done", url: await page.url().catch(() => ""), chars: 0, out: null });
     await page.close().catch(() => {});
   } else {
-    // 빈 입력창에서는 모드 단추를 숨긴다(10-31) — 「.」을 먼저 넣고, 모드 단추는 사이드바가 다 뜬 뒤에 나오니 30초까지 기다린다(10-25).
-    if (!s.mode && s.len >= 0) {
-      await page.click('loc=css:[aria-label="Gemini 프롬프트 입력"]', { timeout: 15000, label: "focus prompt box" }).catch(() => {});
-      await page.waitForTimeout(400);
-      await page.keyboard.insertText(".");
-      for (let i = 0; i < 15; i++) { await page.waitForTimeout(2000); s = await state().catch(() => s); if (s.mode) break; }
-    }
-    const mark_ = (re, tag) => page.evaluate(({ re, tag }) => {
-      document.querySelectorAll(`[data-synk="${tag}"]`).forEach((e) => e.removeAttribute("data-synk"));
-      const r = new RegExp(re);
-      const el = [...document.querySelectorAll("gem-menu-item, [role=menuitem], [role=menuitemradio], input-companion-item, button")]
-        .find((e) => r.test((e.innerText || "").trim()) && e.getBoundingClientRect().width > 0);
-      if (el) el.setAttribute("data-synk", tag);
-      return !!el;
-    }, { re, tag });
-    // 「+」를 누른 뒤 모드 단추가 늦게 찬다 — 1.5초씩 여덟 번 보고, 짧은 메뉴는 Escape로 닫고 다시 누른다(10-31 b 줄).
-    const openTools = async () => {
-      for (let i = 0; i < 3; i++) {
-        s = await state();
-        if (s.mode) return;
-        await page.keyboard.press("Escape").catch(() => {});
-        await page.waitForTimeout(500);
-        await page.click('loc=css:button[aria-label="업로드 및 도구"]', { timeout: 15000, label: "open tools panel" }).catch(() => {});
-        for (let k = 0; k < 8; k++) { await page.waitForTimeout(1500); s = await state(); if (s.mode) return; }
-      }
-      s = await state();
-      if (!s.mode) await fail("모드 단추가 없음(도구 판을 열어도)");
-    };
-    const OK = (m) => /Argon/.test(m) && /높음|최고가/.test(m);
-    const chooseArgon = async () => {
-      for (let i = 0; i < 3; i++) {
-        await openTools();
-        if (OK(s.mode)) return;
-        await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" });
-        await page.waitForTimeout(1300);
-        if (!/Argon/.test(s.mode) && (await mark_("^4 Argon", "argon"))) {
-          await page.click('loc=css:[data-synk="argon"]', { timeout: 15000, label: "choose 4 Argon" });
-          await page.waitForTimeout(1300);
-          await openTools();
-          await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" });
-          await page.waitForTimeout(1300);
-        }
-        if (await mark_("^사고 수준", "think")) { await page.click('loc=css:[data-synk="think"]', { timeout: 15000, label: "open thinking submenu" }); await page.waitForTimeout(1300); }
-        if (await mark_("^높음", "hi")) { await page.click('loc=css:[data-synk="hi"]', { timeout: 15000, label: "choose high thinking" }); await page.waitForTimeout(1300); }
-        await page.keyboard.press("Escape").catch(() => {});
-        await page.waitForTimeout(700);
-      }
-      await openTools();
-    };
-    await chooseArgon();
-    if (!OK(s.mode)) await fail("모드가 4 Argon · 높음이 아님: " + s.mode);
-    log({ step: "mode", mode: s.mode });
 
     // 파일 올리기 — 숨은 파일 칸이 없어 「파일 업로드」를 파일 선택 대기와 함께 실제로 누른다(10-22)
     let 올릴바이트 = 0; // 올리기 기다림을 크기에 맞춘다(11-08)
@@ -524,7 +552,7 @@ if (mode === "읽기") {
     await page.waitForTimeout(2500);
     s = await state();
     if (Math.abs(s.len - promptLen) > 3) await fail(`지시문 길이가 다름 ${s.len}/${promptLen}`);
-    if (s.mode && !OK(s.mode)) { await chooseArgon(); s = await state(); if (!OK(s.mode)) await fail("보내기 직전 모드가 바뀜: " + s.mode); }
+    if (s.mode && !OK(s.mode)) { await chooseCarbon(); s = await state(); if (!OK(s.mode)) await fail("보내기 직전 모드가 바뀜: " + s.mode); }
     // 누르기 직전 올리기 끝 기다림(11-08 — 큰 그림 묶음 셋 · 영상 하나가 덜 올라간 채 보내져 새 채팅으로 사라졌다): 미리보기 안 돌고 있는 표시와 꺼진 보내기
     // 단추가 없어질 때까지 크기에 비례한 상한(올리기끝상한초)까지 본다. 표시 선택자는 10-27 p7 실행기 것 — 그 실행기 round-22에서 덜 끝난 올리기(썸네일 6 → 5)를
     // 잡았고 다시 할 때는 바로 지나갔다. 상한을 넘겨도 지금처럼 보낸다(선택자가 다른 것을 잡아도 늦어질 뿐 막히지 않게) — 기다린 초를 단계 기록에 남겨 다음에 가린다

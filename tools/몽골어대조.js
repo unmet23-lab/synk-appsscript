@@ -326,8 +326,10 @@ async function main() {
   const thinking = model === 제미나이픽.model ? 제미나이픽.thinking_level : undefined;
   /* 10-18 유호님 「그게 낫겠다」: 문법 채점은 아르곤, 직역 역번역은 flash. 같은 초안에서 문법 층은 flash 1개·아르곤 3개를 잡았고,
    * 역번역은 아르곤이 의도를 짐작해 고쳐 읽었다(хүй → 「배꼽」, flash는 「탯줄」 — 현장 노트 AI_CLI). 아르곤은 Ultra 계정 agy(구독 문)에만 있어
-   * 구독 문일 때만 쓴다. GEMINI_GRAMMAR_MODEL로 바꿀 수 있고, GEMINI_MODEL만 주면 두 층 모두 그 모델이다(비교 시험용). */
-  const 문법모델 = process.env.GEMINI_GRAMMAR_MODEL || (process.env.GEMINI_MODEL ? model : (구독문 ? 'gemini-4-argon' : model));
+   * 구독 문일 때만 쓴다. GEMINI_GRAMMAR_MODEL로 바꿀 수 있고, GEMINI_MODEL만 주면 두 층 모두 그 모델이다(비교 시험용).
+   * 11-11 유호님 「제미나이 검수는 전부 카본(max)」 — 판정인 문법 층은 gemini-4-carbon high(agy의 가장 높은 수준). 역번역은 판정이 아니라
+   * 일부러 곧이곧대로 옮기는 층이라(똑똑한 모델은 틀린 줄을 고쳐 읽는다 — 위 хүй 실측) flash 그대로 둔다. */
+  const 문법모델 = process.env.GEMINI_GRAMMAR_MODEL || (process.env.GEMINI_MODEL ? model : (구독문 ? 'gemini-4-carbon' : model));
   const 문법사고 = 문법모델 === model ? thinking : 'high';
   const 색 = process.stdout.isTTY ? (t) => `\x1b[31m${t}\x1b[0m` : undefined;
 

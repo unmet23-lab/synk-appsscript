@@ -106,7 +106,8 @@ test('페이지 글 — JOB 머리(슬래시 경로 · 계정 번호 · 표시 �
   assert.ok(JOB.files.every((f) => !f.includes('\\')), JOB.files.join(','));
   assert.equal(JOB.mark, `${JOB.out}.보냄.json`);
   assert.equal(JOB.space, 웹.기본공간);
-  assert.equal(JOB.profile, 'Profile 2', '11-07부터 구글 로그인은 ego 「유호 (Chrome)」 프로필에만 있다');
+  assert.equal(JOB.profile, 'Profile 7', '11-11 다시 로그인 뒤 구글 로그인은 ego 「Profile 7」(유호, 기본)에만 있다');
+  assert.notEqual(웹.기본공간, 'synk-argon-web-p2', '11-07~10 공간은 사라진 Profile 2 것이다');
   assert.notEqual(웹.기본공간, 'synk-argon-web', '옛 이름 공간은 「유호」(Profile 1) 그대로 열려 로그아웃 화면이다');
   assert.ok(s.includes('await taskSpace(space, { profileId: profile })'));
   assert.ok(/oldSpace \? await taskSpace\(space\) :/.test(s), '이미 있는 공간에 profileId를 넘기면 ego가 막는다 — 있으면 이름만으로 연다(11-07 두 번째 실행 실패)');
@@ -114,8 +115,8 @@ test('페이지 글 — JOB 머리(슬래시 경로 · 계정 번호 · 표시 �
   assert.equal(JSON.parse(웹.페이지글(j, 5, '확인').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, '')).account, '', '계정을 안 주면 대조하지 않는다');
   const oj = 오마주.argonJob(path.join('C:', 'x', 'yt_abc'), path.join('C:', 'x', 'yt_abc', '원본.mp4'), '첫 분석');
   const OJ = JSON.parse(웹.페이지글(oj, 1, '보내기').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
-  assert.equal(OJ.space, 'synk-homage-argon-p2', '오마주도 11-07 Profile 2 새 공간(옛 synk-homage-argon은 「유호」 프로필)');
-  assert.equal(OJ.profile, 'Profile 2');
+  assert.equal(OJ.space, 'synk-homage-argon-p7', '오마주도 11-11 Profile 7 새 공간(옛 -p2는 사라진 Profile 2)');
+  assert.equal(OJ.profile, 'Profile 7');
   assert.equal(OJ.files.length, 1);
   assert.match(OJ.out, /아르곤_답\.md$/);
   assert.match(OJ.failShot, /아르곤_실패\.png$/);
@@ -672,7 +673,7 @@ test('같은 지시문 두 영상 읽기 — A 표시 주소로 고르고 B는 A
       ? { text: `${j.이름} 영상의 소리. `.repeat(30), busy: false, uqN: 1, path: new URL(urls[i]).pathname }
       : [{ 글: prompt, 그림: 1 }],
   }));
-  globalThis.listTaskSpaces = async () => [{ name: jobs[0].space, profileId: 'Profile 2' }];
+  globalThis.listTaskSpaces = async () => [{ name: jobs[0].space, profileId: 웹.기본프로필 }];
   // A의 같은 대화가 두 탭에 열린 경우: 하나를 닫아도 다른 A 탭이 남는다. B에서 claimed를 빼면 A · B 둘이 맞아 실패한다.
   const aCopy = { ...pages[0], close: async () => { closed.push('A-copy'); } };
   globalThis.taskSpace = async () => ({ pages: async () => [...pages.filter((p, i) => !closed.includes(i)), ...(!closed.includes('A-copy') ? [aCopy] : [])], newPage: async () => assert.fail('열린 답이 있는데 새 탭을 열면 안 된다') });
@@ -727,7 +728,7 @@ test('같은 지시문 두 영상의 사이드바 읽기 — 8개 탭 한도에�
     waitForTimeout: async () => {}, close: async () => closed.push(current), screenshot: async () => {},
     evaluate: async (fn, arg) => new Function('document', 'location', 'arg', `return (${fn.toString()})(arg);`)(doc, { href: current, pathname: new URL(current).pathname }, arg),
   };
-  globalThis.listTaskSpaces = async () => [{ name: jobs[0].space, profileId: 'Profile 2' }];
+  globalThis.listTaskSpaces = async () => [{ name: jobs[0].space, profileId: 웹.기본프로필 }];
   const 남의탭 = Array.from({ length: 7 }, () => ({ url: async () => 'https://gemini.google.com/u/1/app', evaluate: async () => [], close: async () => assert.fail('다른 작업 탭을 닫음'), goto: async () => assert.fail('다른 작업 탭을 옮김') }));
   // 일곱 탭은 초안이 있어 재사용 불가. 여덟째만 빈 시작 화면이며, 닫고 나면 다음 읽기의 새 탭 한 자리가 난다.
   for (const p of 남의탭) p.evaluate = async fn => fn.toString().includes('const ed =') ? false : [];
@@ -1129,7 +1130,7 @@ const 페이지돌려 = async ({ 열쇠, 잠금열쇠, 마감뒤 = 250, 늦음 =
     goto: () => { 셈.이동 += 1; return new Promise(() => {}); }, close: async () => { 셈.닫음 += 1; }, screenshot: async () => {},
     waitForFileChooser: async () => ({ setFiles: async () => { 셈.파일넣기 += 1; } }),
   };
-  globalThis.listTaskSpaces = async () => [{ name: 웹.기본공간, profileId: 'Profile 2' }];
+  globalThis.listTaskSpaces = async () => [{ name: 웹.기본공간, profileId: 웹.기본프로필 }];
   globalThis.taskSpace = async () => { await 잠시(늦음.공간 || 0); return { pages: async () => { 셈.탭목록 += 1; await 잠시(늦음.탭 || 0); return [쪽]; }, newPage: async () => 쪽 }; };
   console.log = (x) => { 찍힘.push(String(x)); };
   let 끝 = false;
@@ -1252,4 +1253,110 @@ test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 
   const JOB = (x) => JSON.parse(웹.페이지글(x, 1, '보내기', 'acct').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
   assert.deepEqual(JOB({ ...j, upload: { lock: 'C:/t/upload.lock', key: 'k', deadline: 1 } }).upload, { lock: 'C:/t/upload.lock', key: 'k', deadline: 1 });
   assert.equal(JOB(j).upload, undefined, '잠금을 쥐지 않은 부름(읽기 · 오마주)에는 없다');
+});
+
+// ── 11-11 카본 고르기(유호님 「제미나이 관련한 검수나 이미지 생성 · 딥리서치 전부 카본(max)」) ──
+test('카본 판단 — 사고 수준 단계 순위(max > 높음 · 최고가 > 보통 > 낮음), 가장 높은 단계, 모드 칸 대조', () => {
+  assert.equal(웹.수준순위('Max\n가장 깊게 생각'), 3);
+  assert.equal(웹.수준순위('최대'), 3);
+  assert.equal(웹.수준순위('최고'), 3);
+  assert.equal(웹.수준순위('최고가'), 2, '10-19 판의 「최고가」는 「높음」 자리');
+  assert.equal(웹.수준순위('높음(매우 철저함)'), 2);
+  assert.equal(웹.수준순위('보통'), 1);
+  assert.equal(웹.수준순위('낮음\n빠른 응답'), 0);
+  assert.equal(웹.수준순위('사고 수준\n높음'), -1, '하위 메뉴를 여는 항목은 단계가 아니다');
+  assert.equal(웹.수준순위('4 Carbon'), -1);
+  assert.deepEqual(웹.가장높은수준(['4 Carbon', '사고 수준\n높음', '낮음', '보통', '높음\n매우 철저함', 'Max\n가장 깊게']), { 글: 'Max', 순위: 3, 차례: 5 });
+  assert.deepEqual(웹.가장높은수준(['최저가', '보통', '최고가']), { 글: '최고가', 순위: 2, 차례: 2 }, 'max가 없는 판은 그 판의 가장 높은 단계');
+  assert.equal(웹.가장높은수준(['4 Carbon', '4 Argon', '사고 수준']), null);
+  assert.equal(웹.카본인가('모드 선택 도구 열기, 현재 카본 높음 모드 사용 중'), true);
+  assert.equal(웹.카본인가('모드 선택 도구 열기, 현재 Carbon Max 모드 사용 중'), true);
+  assert.equal(웹.카본인가('모드 선택 도구 열기, 현재 Argon 높음 모드 사용 중'), false);
+  assert.equal(웹.카본모드맞나('모드 선택 도구 열기, 현재 카본 Max 모드 사용 중', 'Max'), true);
+  assert.equal(웹.카본모드맞나('모드 선택 도구 열기, 현재 카본 높음 모드 사용 중', 'Max'), false, 'max가 있는데 높음이면 아니다');
+  assert.equal(웹.카본모드맞나('모드 선택 도구 열기, 현재 Argon Max 모드 사용 중', 'Max'), false);
+  assert.equal(웹.카본모드맞나('모드 선택 도구 열기, 현재 카본 높음 모드 사용 중', null), false, '단계를 못 읽었으면 맞다고 하지 않는다');
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { 수준순위, 가장높은수준, 카본모드맞나, 카본인가 };`)();
+  assert.deepEqual(판단.가장높은수준(['낮음', 'Max']), 웹.가장높은수준(['낮음', 'Max']), '페이지 스크립트에 소스째 붙는다');
+});
+
+// 가짜 Gemini 화면 — 모드 칸은 지금 모델 · 단계로 그리고, 모드 메뉴 · 사고 수준 하위 메뉴 · 항목 누르기를 흉내 낸다.
+// 메뉴 글은 11-11 실물 꼴(설명 다음 모델 이름 · 「단계 + 설명」)을 따른다. 실물 아르곤의 단계는 「낮음 · 보통 · 높음」이고, Max는 있다고 치고 본 갈래다.
+const 카본화면 = ({ 모델 = 'Argon', 단계 = '높음', 단계들 = ['낮음\nFast and efficient', '보통\n균형 잡힌 깊이', '높음\n매우 철저함', 'Max\n가장 깊게'], 칸 = null } = {}) => {
+  const 화 = { 모델, 단계, 메뉴: false, 하위: false, 표시: {}, 누름: [] };
+  const 항목 = (t) => ({ innerText: t, getBoundingClientRect: () => ({ width: 100, height: 20 }), setAttribute: (k, v) => { 화.표시[v] = t; }, removeAttribute: () => {} });
+  const 모드칸 = () => (칸 ? 칸(화) : `모드 선택 도구 열기, 현재 ${화.모델} ${화.단계} 모드 사용 중`);
+  const doc = {
+    body: { innerText: '' },
+    querySelector: (s) => (s.includes('Gemini 프롬프트 입력') ? { innerText: '' } : null),
+    querySelectorAll(s) {
+      if (s === 'button') return [{ getAttribute: () => 모드칸() }, { getAttribute: () => '업로드 및 도구' }];
+      if (s === '[aria-label]') return [{ getAttribute: () => 'Google 계정: acct@example.test' }];
+      if (s.startsWith('[data-synk=')) return [];
+      if (s.includes('gem-menu-item')) return [...(화.메뉴 ? ['Quick answers\n3.5 Flash-Lite', '무엇이든 도움을 받으세요\n3.8 Flash', 'Code & analysis\n4 Argon', 'Most complex work\n4 카본', '사고 수준'] : []), ...(화.하위 ? 단계들 : [])].map(항목);
+      return [];
+    },
+  };
+  const 닫기 = () => { 화.메뉴 = false; 화.하위 = false; };
+  const page = {
+    url: async () => 'https://gemini.google.com/u/1/app', info: async () => ({}), cdp: async () => ({ windowId: 1, bounds: { windowState: 'normal' } }),
+    goto: async () => {}, waitForTimeout: async () => {}, screenshot: async () => {}, close: async () => { 화.닫힘 = true; },
+    click: async (sel) => {
+      화.누름.push(sel);
+      if (sel.includes('모드 선택 도구 열기')) 화.메뉴 = true;
+      else if (sel.includes('data-synk="carbon"')) { 화.모델 = '카본'; 닫기(); }
+      else if (sel.includes('data-synk="think"')) 화.하위 = true;
+      else if (sel.includes('data-synk="lvl"')) { 화.단계 = 화.표시.lvl.split('\n')[0]; 닫기(); }
+    },
+    keyboard: { insertText: async () => {}, press: async (k) => { if (k === 'Escape') 닫기(); } },
+    evaluate: async (fn, arg) => new Function('document', 'location', 'arg', `return (${fn.toString()})(arg);`)(doc, { href: 'https://gemini.google.com/u/1/app', pathname: '/u/1/app' }, arg),
+  };
+  return { 화, page };
+};
+const 확인돌리기 = async (화면) => {
+  const dir = 임시();
+  const job = { 이름: '계정 확인', files: [], prompt: '', out: path.join(dir, '확인.md'), shots: dir, space: 웹.기본공간, head: '계정 확인', answerMin: 1 };
+  const steps = [];
+  const old = { taskSpace: globalThis.taskSpace, listTaskSpaces: globalThis.listTaskSpaces, JOB: globalThis.JOB, log: console.log };
+  globalThis.listTaskSpaces = async () => [{ name: 웹.기본공간, profileId: 웹.기본프로필 }];
+  globalThis.taskSpace = async () => ({ pages: async () => [], newPage: async () => 화면.page });
+  console.log = (s) => steps.push(JSON.parse(s));
+  try {
+    const AsyncFunction = (async () => {}).constructor;
+    let 오류 = null;
+    try { await new AsyncFunction(웹.페이지글(job, 1, '확인', 'acct'))(); } catch (e) { 오류 = e; }
+    return { steps, 오류 };
+  } finally {
+    globalThis.taskSpace = old.taskSpace; globalThis.listTaskSpaces = old.listTaskSpaces; globalThis.JOB = old.JOB; console.log = old.log;
+  }
+};
+
+test('페이지 스크립트(카본 고르기) — 확인은 보내기 없이 아르곤 → 카본, 사고 수준 하위 메뉴의 가장 높은 단계(Max)까지 고르고 닫는다', async () => {
+  const 화면 = 카본화면();
+  const { steps, 오류 } = await 확인돌리기(화면);
+  assert.equal(오류, null, 오류 && 오류.message);
+  const 모드 = steps.find((x) => x.step === 'mode');
+  assert.deepEqual([모드.level, 모드.rank], ['Max', 3]);
+  assert.match(모드.mode, /현재 카본 Max 모드/);
+  assert.deepEqual(steps.find((x) => x.step === 'levels').단계, ['낮음', '보통', '높음', 'Max']);
+  assert.ok(steps.some((x) => x.step === 'done'));
+  assert.equal(화면.화.닫힘, true);
+  assert.ok(화면.화.누름.some((s) => s.includes('data-synk="carbon"')), '모델을 카본으로 바꿨다');
+  assert.ok(!화면.화.누름.some((s) => /메시지 보내기|파일 업로드/.test(s)), '확인은 올리거나 보내지 않는다');
+});
+
+test('페이지 스크립트(카본 고르기) — max가 없는 판은 그 판의 가장 높은 단계, 이미 카본이면 모델은 그대로', async () => {
+  const 화면 = 카본화면({ 모델: '카본', 단계: '보통', 단계들: ['낮음', '보통', '높음\n매우 철저함'] });
+  const { steps, 오류 } = await 확인돌리기(화면);
+  assert.equal(오류, null, 오류 && 오류.message);
+  assert.deepEqual([steps.find((x) => x.step === 'mode').level, steps.find((x) => x.step === 'mode').rank], ['높음', 2]);
+  assert.ok(!화면.화.누름.some((s) => s.includes('data-synk="carbon"')), '이미 카본이면 모델 항목을 누르지 않는다');
+});
+
+test('페이지 스크립트(카본 고르기) — 모드 칸에 고른 단계가 안 보이면 맞다고 하지 않고 멈춘다(보내지 않음)', async () => {
+  const 화면 = 카본화면({ 칸: (화) => `모드 선택 도구 열기, 현재 ${화.모델} 모드 사용 중` });
+  const { steps, 오류 } = await 확인돌리기(화면);
+  assert.ok(오류, '멈춘다');
+  assert.match(오류.message, /모드가 카본 · 사고 수준 가장 높은 단계\(Max\)가 아님/);
+  assert.ok(!steps.some((x) => x.step === 'done'));
 });

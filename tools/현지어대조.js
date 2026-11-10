@@ -22,7 +22,8 @@
 //          --맥락 "<어떤 글인지>" 학습 쇼츠가 아닌 글(앱 화면 글 등)의 채점 전제를 바꾼다. --문법만 역번역을 이미 따로 했을 때 직역을 건너뛴다(11-09 PULSE 영어 앱 글).
 //          --이전 <앞 판 파일> 바뀐 줄만 다시. --밖 <결과.json> 결과 자리(기본 <첫 파일>.대조.json).
 //          node tools/현지어대조.js --대조표 <결과.json> --역번역답 <Opus 답 파일>   ← 호출 없이 Opus 직역을 붙여 줄마다 나란히 보인다
-//          모델: 문법 = GEMINI_GRAMMAR_MODEL || gemini-4-argon(high), 역번역 = 모델정책 기본(flash high). 통로는 Google AI 구독(agy 로그인 계정)뿐이다.
+//          모델: 문법 = GEMINI_GRAMMAR_MODEL || gemini-4-carbon(high — 11-11 「제미나이 검수는 전부 카본」, agy에는 max가 없다), 역번역 = 모델정책 기본(flash high —
+//          판정이 아니라 곧이곧대로 옮기는 층이라 그대로, 몽골어대조.js 주석). 통로는 Google AI 구독(agy 로그인 계정)뿐이다.
 // 종료코드: 0 = 모든 줄 문법 「정상」 · 불편 없음 + 역번역 받음 · 2 = 검수 필요한 줄이 있음(어색·파손·불편·판정불능·역번역 실패) · 1 = 실행 오류
 // ⚠ 우리가 쓴 공개 카피 전용 — 남이 보낸 글은 넣지 않는다(본문이 프롬프트에 실린다).
 'use strict';
@@ -322,7 +323,7 @@ async function main(argv = process.argv.slice(2)) {
   const 기본 = 정책.제미나이설정();
   const 역모델 = process.env.GEMINI_MODEL || 기본.model;
   const 역사고 = 기본.thinking_level || 'high';
-  const 문법모델 = process.env.GEMINI_GRAMMAR_MODEL || 'gemini-4-argon';
+  const 문법모델 = process.env.GEMINI_GRAMMAR_MODEL || 'gemini-4-carbon';
   // 시험 이음매: SYNK_LOCALCHECK_CALLER = { 부르기 }를 내보내는 모듈(가짜 응답). 평소엔 Google AI 구독 통로.
   const { 부르기 } = require(process.env.SYNK_LOCALCHECK_CALLER ? path.resolve(process.env.SYNK_LOCALCHECK_CALLER) : './lib/제미나이구독호출.js');
   const 부름 = async (model, prompt, 옵션 = {}) => String(((await 부르기({ model, prompt, thinking: 옵션.thinking || 'high', schema: 옵션.schema || null })) || {}).text || '');
