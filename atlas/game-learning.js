@@ -355,7 +355,7 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
       // reject the entire incoming batch without changing the local log.
       const imported = newSession(combined); session = imported;
       if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, id => known.get(id));
-      // A help left on the server still marks the frozen follow-up pair it came before (temper.js lateHelp).
+      // A help left on the server still marks the frozen follow-up answer it came before, pair or anchor (temper.js lateHelp).
       if (lent.length && ledger?.followups) ledger = { ...ledger, followups: Temper.lateHelp(ledger.followups, lent) };
       if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
       return { added: combined.length - previousLength, skipped };

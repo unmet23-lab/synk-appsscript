@@ -201,4 +201,4 @@ function main() {
   console.log(`미리 보기: node tools/공개.js 올리기 --원본 "${path.join(OUT, 'new')}" --기준폴더 "${path.join(OUT, 'base')}" ${items.join(' ')} --후보폴더 "${path.join(OUT, 'candidate')}"`);
 }
 if (require.main === module) main();
-module.exports = { MODULES, GENERATED, LIFE_EDITS, LIFE_CORE_EDITS, swap, wrappers };
+module.exports = { MODULES, GENERATED, LIFE_EDITS, LIFE_CORE_EDITS, swap, wrappers, squeeze, chunks };

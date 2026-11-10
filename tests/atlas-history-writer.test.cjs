@@ -26,7 +26,7 @@ function browser(storage,accountKey,{manager=locks,protocol='https:',storageScop
  context.parent=!parent?context.window:crossOrigin?new Proxy({},{get(){throw Object.assign(new Error('Blocked a frame from accessing a cross-origin frame.'),{name:'SecurityError'});}}):parent.window;
  if(source!==null)vm.runInContext(source,context,{filename:file});
  context.removeEventListener=(name,fn)=>{listeners.set(name,(listeners.get(name)||[]).filter(other=>other!==fn));};
- return{window:context.window,game:id=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false}),capture:name=>[...(listeners.get(name)||[])],hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();},listeners:()=>[...listeners.values()].reduce((count,rows)=>count+rows.length,0)};
+ return{window:context.window,game:(id,extra={})=>context.module.exports.createGame({gameId:id,map,storage,storageScope,learnerKey,accountKey:storageScope==='account'?accountKey:null,historyComplete:true,fold:false,...extra}),capture:name=>[...(listeners.get(name)||[])],hide:()=>{for(const fn of listeners.get('pagehide')||[])fn();},show:()=>{for(const fn of listeners.get('pageshow')||[])fn();},listeners:()=>[...listeners.values()].reduce((count,rows)=>count+rows.length,0)};
 }
 
 test('disposing every game releases the browser writer and prevents old callbacks from writing',async t=>{
@@ -125,6 +125,90 @@ test('a response arriving after lease loss cannot write history or its outbox',a
  const storage=disk(),a=browser(storage,'writer.stale'),b=browser(storage,'writer.stale'),first=a.game('first'),second=b.game('second');t.after(async()=>{a.hide();b.hide();await tick();});for(let i=0;i<20&&!first.syncPort.canPersist();i++)await tick();
  let resolve;const sync=createLearningSync({adapter:first,accountKey:'writer.stale',revision:1,storage,auto:false,transport:{get:()=>new Promise(done=>{resolve=done;}),post:async()=>{throw Error('Unexpected post');}}});t.after(()=>sync.stop());const pending=sync.start();for(let i=0;i<20&&!resolve;i++)await tick();assert.ok(resolve);a.hide();for(let i=0;i<20&&!second.syncPort.canPersist();i++)await tick();second.finishSet({kind:'short'});
  const before=Array.from({length:storage.length},(_,i)=>storage.key(i)).map(key=>[key,storage.getItem(key)]);resolve({events:[{id:'stale.remote'}],cursor:1,hasMore:false,revision:1});await pending;assert.equal(sync.status().code,'STORAGE_BUSY');assert.deepEqual(Array.from({length:storage.length},(_,i)=>storage.key(i)).map(key=>[key,storage.getItem(key)]),before);
+});
+// 2026-11-10 (GPT GA1, talk-atlas-vellum-sync): a waiting tab's synchroniser read the outbox when it opened. By the time it takes
+// the history over, the tab that wrote has sent, folded and let the log forget entries that copy still expects. The stored outbox
+// is the one outbox: the new writer reads it again before it collects.
+function account(name){
+ let now=Date.parse('2026-11-10T00:00:00Z');const log=[],copy=value=>JSON.parse(JSON.stringify(value)),storage=disk(),clock=()=>new Date(now).toISOString();
+ const transport={get:async({after})=>({events:copy(log.slice(after)),cursor:log.length,hasMore:false,revision:1}),post:async({events})=>{for(const e of events)if(!log.some(x=>x.id===e.id))log.push(copy(e));return{accepted:events.map(e=>e.id),revision:1};}};
+ // A synchronised store folds what the server sent back; a tiny limit folds each answered item at its next complete pull.
+ const tab=()=>{const page=browser(storage,name),game=page.game('world-account',{historyComplete:false,fold:{remote:true,max:2,keep:0,ageMs:0},clock});
+  return{page,game,sync:createLearningSync({adapter:game,accountKey:name,revision:1,storage,transport,auto:false,maxAttempts:1,backoffMs:[0],sleep:async()=>{}})};};
+ const answer=(game,id)=>{now+=1000;const pid=game.present({id,itemKey:id,skillId:'ko.reading.detail',modality:'reading',difficulty:1,responseFormat:'single-choice'});now+=1000;return game.answer(pid,{correct:true,assessable:true});};
+ // Sent, then sent back: the second pull settles the entries and the log folds them and forgets it did.
+ const sendAndFold=async sync=>{now+=1000;assert.equal((await sync.flush()).phase,'synced');now+=1000;assert.equal((await sync.flush()).phase,'synced');};
+ return{log,storage,tab,answer,sendAndFold,step:ms=>{now+=ms;},outbox:()=>JSON.parse(storage.getItem('synk.atlas.learning-sync.v1.'+name)),history:()=>JSON.parse(storage.getItem('synk.atlas.learning.v1.device'))};
+}
+const owns=async game=>{for(let i=0;i<40&&!game.syncPort.canPersist();i++)await tick();assert.equal(game.syncPort.canPersist(),true);};
+test('a tab taking the history over adopts the stored outbox: entries the other tab sent, folded and forgot are not queued here',async t=>{
+ const acct=account('handover.pending'),a=acct.tab();let b;t.after(async()=>{a.sync.stop();b?.sync.stop();a.game.dispose();b?.game.dispose();a.page.hide();b?.page.hide();await tick();await tick();});
+ await owns(a.game);assert.equal((await a.sync.start()).phase,'synced');
+ acct.answer(a.game,'first');
+ b=acct.tab();
+ assert.deepEqual([b.game.syncPort.canPersist(),b.sync.status().queued,b.sync.status().cursor],[false,4,0],'the waiting tab read four queued entries');
+ await acct.sendAndFold(a.sync);
+ assert.deepEqual([acct.history().ledger.folded,acct.history().events.length,acct.history().dropped],[4,0,undefined],'the writer folded them and its log forgot it did');
+ b.game.summary(); // joins the fold: the four entries leave this copy of the log
+ acct.answer(a.game,'second');assert.equal((await a.sync.flush()).queued,0);
+ b.game.summary(); // follows the stored list of folded ids, now empty
+ assert.deepEqual([acct.outbox().pending,acct.outbox().cursor],[[],4]);
+ a.page.hide();await owns(b.game);
+ const taken=b.sync.status();
+ assert.deepEqual([taken.phase,taken.code,taken.queued,taken.cursor],['idle',null,0,4],'the new writer starts from the stored outbox');
+ acct.step(1000);const done=await b.sync.flush();
+ assert.deepEqual([done.phase,done.queued,done.complete,done.cursor],['synced',0,true,8]);
+ acct.answer(b.game,'third');assert.equal((await b.sync.flush()).queued,0);assert.equal(acct.log.length,12,'the server holds every entry once');
+});
+test('a tab taking the history over does not take entries the other tab folded for lost: nothing is fetched or counted twice',async t=>{
+ const acct=account('handover.acknowledged'),a=acct.tab();let b;t.after(async()=>{a.sync.stop();b?.sync.stop();a.game.dispose();b?.game.dispose();a.page.hide();b?.page.hide();await tick();await tick();});
+ await owns(a.game);assert.equal((await a.sync.start()).phase,'synced');
+ acct.answer(a.game,'first');acct.step(1000);assert.equal((await a.sync.flush()).queued,0);
+ b=acct.tab();
+ assert.deepEqual([b.game.syncPort.canPersist(),acct.outbox().acknowledged.length,b.sync.status().queued],[false,4,0],'the waiting tab read four acknowledged entries');
+ acct.step(1000);assert.equal((await a.sync.flush()).phase,'synced');
+ assert.deepEqual([acct.history().ledger.folded,acct.outbox().acknowledged],[4,[]]);
+ b.game.summary();acct.answer(a.game,'second');assert.equal((await a.sync.flush()).queued,0);b.game.summary();
+ a.page.hide();await owns(b.game);
+ assert.deepEqual([b.sync.status().phase,acct.outbox().missing],['idle',[]],'folded entries are on the server, not lost');
+ acct.step(1000);const done=await b.sync.flush();assert.deepEqual([done.phase,done.complete,done.queued],['synced',true,0]);
+ const ledger=acct.history().ledger,counts=b.game.summary().counts;
+ assert.deepEqual([ledger.adjusted||0,counts.attempts,counts.presented],[0,2,2],'the two answers are read once each');
+ assert.equal(acct.log.length,8);
+});
+test('a tab taking the history over is as complete as the outbox it adopts',async t=>{
+ const acct=account('handover.complete'),a=acct.tab();let b;t.after(async()=>{a.sync.stop();b?.sync.stop();a.game.dispose();b?.game.dispose();a.page.hide();b?.page.hide();await tick();await tick();});
+ await owns(a.game);b=acct.tab();
+ assert.deepEqual([acct.outbox().complete,b.sync.status().complete],[false,false],'the waiting tab opened before the first pull ended');
+ assert.equal((await a.sync.start()).complete,true);acct.answer(a.game,'first');assert.equal((await a.sync.flush()).queued,0);
+ a.page.hide();await owns(b.game);
+ assert.equal(b.sync.status().complete,true);
+ assert.equal(acct.answer(b.game,'second').independent,true,'a first answer here counts: the log is whole, as the stored outbox says');
+});
+test('an entry the stored outbox itself queues but no log holds still stops the sync, at opening and at a takeover',async t=>{
+ // What another tab sent and folded is not this copy's to expect; an entry the one stored outbox queues and no fold accounts for is a loss.
+ const name='handover.real-gap',acct=account(name),a=acct.tab();let b;t.after(async()=>{a.sync.stop();b?.sync.stop();a.game.dispose();b?.game.dispose();a.page.hide();b?.page.hide();await tick();await tick();});
+ await owns(a.game);assert.equal((await a.sync.start()).phase,'synced');
+ acct.answer(a.game,'first');b=acct.tab();
+ const broken={...acct.outbox(),pending:[...acct.outbox().pending,'never.written']};
+ acct.storage.setItem('synk.atlas.learning-sync.v1.'+name,JSON.stringify(broken));
+ a.page.hide();await owns(b.game);
+ assert.deepEqual([b.sync.status().phase,b.sync.status().code],['blocked','STORAGE_ERROR'],'a takeover reads the stored outbox and finds the gap');
+ const port={scope:'account',accountKey:name,events:()=>acct.history().events,partial:()=>false,dropped:()=>[],subscribe:()=>()=>{},markComplete(){},importEvents:()=>({added:0})};
+ const refused=()=>assert.fail('a blocked sync makes no request');
+ const opened=createLearningSync({adapter:{syncPort:port},accountKey:name,revision:1,storage:acct.storage,auto:false,transport:{get:refused,post:refused}});
+ assert.deepEqual([opened.status().phase,opened.status().code],['blocked','STORAGE_ERROR'],'so does a copy opened over it');
+ assert.equal((await opened.retry()).phase,'blocked');opened.stop();
+});
+for(const [label,write,code] of [['unreadable',()=>'broken','STORAGE_ERROR'],['of another consent revision',outbox=>JSON.stringify({...outbox,revision:2}),'REVISION_CONFLICT']])
+ test('a stored outbox that is '+label+' stops the tab that takes over and is kept as it is',async t=>{
+ const name='handover.'+code.toLowerCase(),key='synk.atlas.learning-sync.v1.'+name,acct=account(name),a=acct.tab();let b;t.after(async()=>{a.sync.stop();b?.sync.stop();a.game.dispose();b?.game.dispose();a.page.hide();b?.page.hide();await tick();await tick();});
+ await owns(a.game);assert.equal((await a.sync.start()).phase,'synced');
+ acct.answer(a.game,'first');b=acct.tab();
+ const raw=write(acct.outbox());acct.storage.setItem(key,raw);
+ a.page.hide();await owns(b.game);
+ assert.deepEqual([b.sync.status().phase,b.sync.status().code,b.sync.status().complete],['blocked',code,false]);
+ assert.equal(acct.storage.getItem(key),raw,'nothing replaces an outbox this copy could not read');
 });
 // 2026-11-02 (drama in WORLD): the page (WORLD's account bundle) and a same-origin game frame (its own bundle) are two copies
 // of this module in one tab. They share one writer; a separate tab still waits, and a cross-origin frame keeps its own table.

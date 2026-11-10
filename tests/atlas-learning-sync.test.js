@@ -285,6 +285,34 @@ test('passing account options over a guest or another account store never adopts
   assert.equal(wrongAccount.sync.status().code, 'STORAGE_ERROR');assert.equal(wrongAccount.adapter.events().length, 0);wrongAccount.sync.stop();
 });
 
+// 2026-11-10: the stored outbox is the one outbox. A copy asks again rather than record a response on an outbox another copy
+// changed while it waited, and never replaces one it has not read (adopt, save).
+// `answers`: this copy's game adds an entry while the page is on its way, so its own collect() has already read the changed
+// outbox when the page arrives (2026-11-10 Fable design review): the page was still asked for the older one.
+for(const answers of [false,true])test('a recovery page that arrives after another copy brought the entry back is asked again, not imported twice'+(answers?' (this copy answered meanwhile)':''),async t=>{
+ const storage=disk(),accountKey='account.two-recoveries',key=SYNC_KEY+'.'+accountKey,events=[],lost={id:'lost.event'},listeners=[],sent=[];let release=null;
+ storage.setItem(key,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:[lost.id],pending:[],missing:[],recoveryCursor:0}));
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:fn=>(listeners.push(fn),()=>{}),markComplete(){},importEvents:found=>{events.push(...found);return{added:found.length,skipped:[]};}};
+ const copy=waits=>createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,auto:false,maxAttempts:1,transport:{post:async body=>{sent.push(...body.events.map(e=>e.id));return{accepted:body.events.map(e=>e.id),revision:1};},
+  get:async({after})=>{if(waits&&after===0&&!release)await new Promise(done=>{release=done;});return{events:after===0?[lost]:[],cursor:2,hasMore:false,revision:1};}}});
+ const x=copy(true),y=copy(false);t.after(()=>{x.stop();y.stop();});
+ const first=x.start();while(!release)await new Promise(resolve=>setImmediate(resolve));
+ assert.equal((await y.start()).phase,'synced');assert.deepEqual(events.map(e=>e.id),['lost.event']);
+ if(answers){events.push({id:'fresh.event'});listeners[0]({kind:'append'});}
+ release();const done=await first;
+ assert.deepEqual([done.phase,done.complete,done.queued],['synced',true,0]);assert.deepEqual(events.map(e=>e.id),answers?['lost.event','fresh.event']:['lost.event'],'the entry is in the log once');
+ assert.deepEqual(JSON.parse(storage.getItem(key)).missing,[]);assert.deepEqual(sent,answers?['fresh.event']:[]);
+});
+for(const tamper of ['changed','removed'])test(`an outbox ${tamper} outside this copy between its reading and its write is never replaced`,async t=>{
+ const storage=disk(),accountKey='account.foreign-'+tamper,key=SYNC_KEY+'.'+accountKey,events=[];
+ const foreign=JSON.stringify({version:2,accountKey,revision:1,cursor:9,complete:true,acknowledged:[],pending:[],missing:[]});
+ const port={scope:'account',accountKey,events:()=>events,partial:()=>false,subscribe:()=>()=>{},markComplete(){},
+  importEvents:rows=>{events.push(...rows);if(tamper==='changed')storage.setItem(key,foreign);else storage.values.delete(key);return{added:rows.length};}};
+ const sync=createLearningSync({adapter:{syncPort:port},accountKey,revision:1,storage,auto:false,maxAttempts:1,transport:{post:async()=>{throw Error('A blocked sync must not upload');},
+  get:async({after})=>({events:after===0?[{id:'remote.event'}]:[],cursor:1,hasMore:false,revision:1})}});t.after(()=>sync.stop());
+ const result=await sync.start();assert.deepEqual([result.phase,result.code,result.durable],['blocked','STORAGE_ERROR',false]);
+ assert.equal(storage.getItem(key),tamper==='changed'?foreign:null);
+});
 test('server imports clear a previous exhausted set before the same ID is lost again',async t=>{
  const diskStore=disk(),accountKey='followup.server-recovery',events=[{id:'second.event'}];let recover=false,scans=0;
  diskStore.setItem(SYNC_KEY+'.'+accountKey,JSON.stringify({version:2,accountKey,revision:1,cursor:2,complete:true,acknowledged:['first.event','second.event'],pending:[],missing:[]}));

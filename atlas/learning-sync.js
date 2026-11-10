@@ -31,7 +31,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     || backoffMs.some(ms => !Number.isFinite(ms) || ms < 0)) throw new TypeError('Atlas sync: invalid retry bounds');
   const key = `${SYNC_KEY}.${accountKey}`;
   const pages = createPages(storage, key, ['acknowledged', 'pending', 'missing']);
-  let lastStoredRaw = null, exhaustedRecovery = null;
+  let lastStoredRaw = null, exhaustedRecovery = null, era = 0;
   // Outbox v2 keeps ids only: the account log holds every queued entry (v1 kept a second copy).
   // `missing` names acknowledged entries the log has lost; they are fetched from the server again.
   let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
@@ -56,31 +56,32 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     if (stored.revision !== revision) throw failure('REVISION_CONFLICT', 'Atlas sync: a new consent revision requires a fresh account store');
     return { ...stored, version: 2, pending: v1 ? stored.pending.map(e => e.id) : stored.pending, missing: stored.missing || [] };
   };
+  // The stored outbox is the one outbox; this copy is good only until another browser context writes it. While another tab
+  // held the history it sent, folded and let the log forget entries this copy still queues or calls acknowledged. So a copy
+  // that did not write last reads the outbox again (true, a new `era`) before it collects, and a response is recorded only
+  // on the outbox it was asked for: after any such reading meanwhile the copy asks again. Nothing is merged: every change
+  // is saved at once, and what is queued is collected again from the log.
+  const adopt = () => {
+    try {
+      const current = storage.getItem(key);
+      if (current == null || current === lastStoredRaw) return false;
+      state = readState(current); lastStoredRaw = pages.decodedRaw();
+    } catch (error) { throw error?.code ? error : failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement'); }
+    port.markComplete(whole()); era += 1; return true;
+  };
   const save = () => {
     if (!canPersist()) throw failure('STORAGE_BUSY', 'Atlas sync: another browser context owns this history');
     try {
-      const current = storage.getItem(key);
-      if (current !== lastStoredRaw) {
-        if (current == null) throw failure('STORAGE_ERROR', 'Atlas sync: outbox was removed by another context');
-        const latest = readState(current), acknowledged = new Set([...latest.acknowledged, ...state.acknowledged]);
-        state = { ...state, cursor: Math.max(latest.cursor, state.cursor), complete: latest.cursor > state.cursor ? latest.complete : state.complete,
-          acknowledged: [...acknowledged], pending: [...new Set([...latest.pending, ...state.pending])].filter(eventId => !acknowledged.has(eventId)),
-          missing: [...new Set([...latest.missing, ...state.missing])], recoveryCursor: Math.min(latest.recoveryCursor || 0, state.recoveryCursor || 0) };
-        lastStoredRaw = pages.decodedRaw();
-      }
+      // Every change starts from the outbox as stored (adopt): one this copy has not read is never replaced.
+      if (storage.getItem(key) !== lastStoredRaw) throw failure('STORAGE_ERROR', 'Atlas sync: the outbox was removed or changed outside this context');
       if (pages.active() || state.acknowledged.length + state.pending.length + state.missing.length > THRESHOLD) lastStoredRaw = pages.write(state, lastStoredRaw);
       else { lastStoredRaw = JSON.stringify(state); storage.setItem(key, lastStoredRaw); }
     }
     catch { throw failure('STORAGE_ERROR', 'Atlas sync: the durable outbox could not be saved'); }
   };
-  try {
-    const raw = storage.getItem(key);
-    if (raw != null) {
-      state = readState(raw); lastStoredRaw = pages.decodedRaw();
-    }
-    port.markComplete(whole());
-  } catch (error) { block(error?.code ? error : failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement')); }
+  try { if (!adopt()) port.markComplete(whole()); } catch (error) { block(error); }
   const collect = () => {
+    adopt();
     // A log that summarised entries while it was not synchronised cannot be sent whole; sending
     // the rest would leave the server's history quietly incomplete.
     if (typeof port.partial === 'function' && port.partial()) throw failure('HISTORY_FOLDED', 'Atlas sync: this log summarised entries no server received; it cannot be sent');
@@ -154,11 +155,12 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   };
   const pullPages = async token => {
     for (let page = 0; page < maxPages; page++) {
-      const before = state.cursor, response = await request('get', { after: before, revision }, token);
+      const before = state.cursor, asked = era, response = await request('get', { after: before, revision }, token);
       if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < before
         || typeof response.hasMore !== 'boolean' || response.hasMore && response.cursor <= before
         || response.events.length && response.cursor <= before) throw failure('INVALID_RESPONSE', 'Atlas sync: invalid or stalled server cursor');
       if (!active(token)) return;
+      if (adopt() || asked !== era) continue;
       let result;
       try { result = port.importEvents(response.events); }
       catch (error) { throw failure(error?.code || 'INVALID_EVENTS', error.message); }
@@ -182,10 +184,11 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     if (signature && exhaustedRecovery === signature) throw failure('INCOMPLETE_HISTORY', 'Atlas sync: previously acknowledged history is still missing');
     let after = state.recoveryCursor || 0;
     for (let page = 0; page < maxPages && state.missing.length; page++) {
-      const response = await request('get', { after, revision }, token);
+      const asked = era, response = await request('get', { after, revision }, token);
       if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after
         || typeof response.hasMore !== 'boolean' || response.hasMore && response.cursor <= after) throw failure('INVALID_RESPONSE', 'Atlas sync: invalid or stalled server cursor');
       if (!active(token)) return;
+      if (adopt() || asked !== era) { after = state.recoveryCursor || 0; continue; }
       const wanted = new Set(state.missing), found = response.events.filter(event => wanted.has(event.id));
       if (found.length) {
         let result;
@@ -219,10 +222,11 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       if (batch >= maxPages) throw failure('NETWORK_ERROR', 'Atlas sync: batch limit reached; remaining events stay queued');
       const local = new Map(port.events().map(event => [event.id, event]));
       const events = state.pending.slice(0, batchSize).map(eventId => clone(local.get(eventId))), sent = new Set(events.map(event => event.id));
-      const response = await request('post', { revision, events }, token);
+      const asked = era, response = await request('post', { revision, events }, token);
       if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length
         || response.accepted.some(eventId => !sent.has(eventId))) throw failure('INVALID_RESPONSE', 'Atlas sync: acknowledgement contains an unsent event');
       if (!active(token)) return;
+      if (adopt() || asked !== era) continue;
       if (!response.accepted.length) {
         if (++emptyAcks >= maxAttempts) throw failure('NETWORK_ERROR', 'Atlas sync: no acknowledged progress');
         await sleep(backoffMs[Math.min(emptyAcks - 1, backoffMs.length - 1)]);continue;

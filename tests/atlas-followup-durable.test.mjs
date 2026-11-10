@@ -357,19 +357,105 @@ test('a help left on the server for a folded presentation still marks the frozen
   coachA.flush(); coachA.dispose(); a.at(18);
   assert.equal(windowOf(a.open().followups(), mine.answer.eventId, 'd1').reason, 'adjusted-history', 'the mark is kept');
 });
-test('a late help before a frozen pair marks it after the ledger no longer keeps that pair among its recent answers', () => {
-  // 끝 판 둘째 사슬 GPT B: 같은 칸을 25문항 더 풀어 짝이 장부의 최근 증거에서 빠지면, 다른 기기의 늦은 도움이 짝을 거두지 못했다.
+test('a help left on the server for a folded anchor presentation marks the row it called a retention', () => {
+  // 11-10 GPT GA2(talk-atlas-vellum-sync): 기준 답의 제시가 접힌 뒤 그 제시의 도움이 늦게 오면 건너뛰어 adjusted만 늘고, 전체 기록으로는
+  // 도움 받은 답(recovery)인데 접힌 표의 줄은 retention · observed로 남았다 — lateHelp가 짝(row.t)만 봤다.
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' }, other = { skill: 'ko.reading.reason' };
+  b.at(0); const pid = coachB.present(item('b-anchor', cell)); b.at(0.01); coachB.help(pid, 'hint'); b.at(0.02); const anchor = coachB.answer(pid, { correct: true, assessable: true });
+  const help = coachB.events().find(e => e.type === 'practice.helped');
+  a.at(0.5); importLate(coachA, coachB.events().filter(e => e.id !== help.id));
+  const kept = play(coachA, item('a-other', other));
+  a.at(1.5); const pair = play(coachA, item('a-pair', cell)), keptPair = play(coachA, item('a-other-pair', other));
+  a.at(3); fill(a, coachA, 'x', 20); settle(coachA); a.at(5); fill(a, coachA, 'y', 20); settle(coachA);
+  assert.equal(coachA.events().some(e => e.id === pid), false, 'the anchor presentation is folded');
+  const before = rowsOf(coachA.followups(), anchor.eventId);
+  assert.deepEqual([before[0].kind, before[0].status, before[0].outcome, before[0].targetAttemptId], ['retention', 'observed', 'independent-correct', pair.answer.eventId], 'the help has not arrived');
+  assert.deepEqual(importLate(coachA, [help]).skipped, [help.id], 'the help stays on the server');
+  assert.deepEqual(rowsOf(coachA.followups(), anchor.eventId).map(r => [r.status, r.reason]), [['unavailable', 'adjusted-history'], ['unavailable', 'adjusted-history'], ['unavailable', 'adjusted-history']]);
+  const control = windowOf(coachA.followups(), kept.answer.eventId, 'd1');
+  assert.deepEqual([control.kind, control.outcome, control.targetAttemptId], ['retention', 'independent-correct', keptPair.answer.eventId], 'only the row on that presentation');
+  // 표시는 표에 굳어 다시 열어도 남고, 그 사이클이 끝나면 다음 답이 새 앵커가 된다.
+  coachA.flush(); coachA.dispose(); a.at(18);
+  const again = a.open();
+  assert.deepEqual(rowsOf(again.followups(), anchor.eventId).map(r => r.reason), ['adjusted-history', 'adjusted-history', 'adjusted-history'], 'the mark is kept');
+  a.at(47); const next = play(again, item('a-next', cell));
+  assert.deepEqual(rowsOf(again.followups(), next.answer.eventId).map(r => [r.status, r.reason]), [['not_due', null], ['not_due', null], ['not_due', null]]);
+});
+test('a help on the server before an anchor already read as helped or wrong changes nothing', () => {
+  // 도움 받은 답 · 틀린 답은 이미 recovery다 — 늦은 도움이 더 바꿀 것이 없어 줄을 판단 보류로 돌리지 않는다.
+  for (const [correct, helped] of [[false, false], [true, true]]) {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    b.at(0); const pid = coachB.present(item('b-anchor', cell)); b.at(0.005); if (helped) coachB.help(pid, 'text'); b.at(0.01); coachB.help(pid, 'hint'); b.at(0.02); const anchor = coachB.answer(pid, { correct, assessable: true });
+    const help = coachB.events().filter(e => e.type === 'practice.helped').at(-1);
+    a.at(0.5); importLate(coachA, coachB.events().filter(e => e.id !== help.id));
+    a.at(1.5); const pair = play(coachA, item('a-pair', cell));
+    a.at(3); fill(a, coachA, 'x', 20); settle(coachA); a.at(5); fill(a, coachA, 'y', 20); settle(coachA);
+    assert.equal(coachA.events().some(e => e.id === pid), false, 'the anchor presentation is folded');
+    assert.deepEqual(importLate(coachA, [help]).skipped, [help.id]);
+    const d1 = windowOf(coachA.followups(), anchor.eventId, 'd1');
+    assert.deepEqual([d1.kind, d1.status, d1.targetAttemptId], ['recovery', 'observed', pair.answer.eventId], `correct ${correct} helped ${helped}`);
+  }
+});
+test('a help left on the server that came after the frozen answer marks nothing', () => {
+  // 답 뒤에 본 해설 · 정답은 그 답을 도운 것이 아니다 — 서버에만 남아 늦게 와도 앵커 행 · 짝을 판단 보류로 돌리지 않는다.
   const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
-  a.at(0); const mine = play(coachA, item('a-first', cell));
-  a.at(1.5); const pid = coachA.present(item('a-pair', cell)); a.at(1.55); const pair = coachA.answer(pid, { correct: true, assessable: true });
-  a.at(1.6); for (let n = 0; n < 25; n++) { a.step(1000); play(coachA, item(`same-${n}`, cell)); }
-  a.at(2); fill(a, coachA, 'x', 20); settle(coachA); a.at(4); fill(a, coachA, 'y', 20); settle(coachA); fill(a, coachA, 'z', 20); settle(coachA);
-  assert.equal(coachA.events().some(e => e.id === pair.eventId), false, 'the pair is folded');
-  assert.equal(windowOf(coachA.followups(), mine.answer.eventId, 'd1').outcome, 'independent-correct');
-  b.at(1.52); const other = coachB.present(item('b-same', { family: 'a-pair', skill: 'ko.reading.reason' })); b.at(1.53); coachB.help(other, 'hint');
-  importLate(coachA, coachB.events());
-  const d1 = windowOf(coachA.followups(), mine.answer.eventId, 'd1');
-  assert.deepEqual([d1.status, d1.reason, d1.targetAttemptId], ['unavailable', 'adjusted-history', pair.eventId]);
+  const answered = (name, level) => { const pid = coachB.present(item(name, cell)); b.step(1000); const answer = coachB.answer(pid, { correct: true, assessable: true }); b.step(1000); coachB.help(pid, level); return { pid, answer }; };
+  b.at(0); const anchor = answered('b-anchor', 'explanation');
+  b.at(1.5); const pair = answered('b-pair', 'answer');
+  const helps = coachB.events().filter(e => e.type === 'practice.helped');
+  a.at(2); importLate(coachA, coachB.events().filter(e => e.type !== 'practice.helped'));
+  a.at(3); fill(a, coachA, 'x', 20); settle(coachA); a.at(5); fill(a, coachA, 'y', 20); settle(coachA);
+  assert.equal(coachA.events().some(e => e.id === anchor.pid || e.id === pair.pid), false, 'both presentations are folded');
+  assert.deepEqual(importLate(coachA, helps).skipped, helps.map(h => h.id), 'both helps stay on the server');
+  const d1 = windowOf(coachA.followups(), anchor.answer.eventId, 'd1');
+  assert.deepEqual([d1.kind, d1.status, d1.outcome, d1.reason, d1.targetAttemptId], ['retention', 'observed', 'independent-correct', null, pair.answer.eventId]);
+});
+test('a late help or attempt in the log before a frozen retention anchor marks its row, whether or not the ledger still counts that answer', () => {
+  // GA2의 날것 길: 다른 기기가 같은 계열을 앵커 답보다 먼저 도움 받았거나 풀었고 그 기록이 늦게 왔다 — 전체 기록으로는 그 답이 혼자 푼 새 문항이
+  // 아니다(recovery). 앵커 답이 장부 최근 증거(칸마다 12개)에 있으면 demote가 거둬 invalidated가 먼저 보이고, 같은 칸을 더 풀어 최근 증거에서
+  // 빠졌거나 답이 아직 날것이면 표시가 판단 보류로 돌린다. 틀린 답(이미 recovery)은 늦은 기록이 줄을 바꾸지 않는다.
+  const run = ({ more, hold, late, correct = true }) => {
+    const { a, b, coachA, coachB } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    a.at(1); const mine = play(coachA, item('a-first', cell), { correct });
+    const mark = new Set([mine.pid, coachA.events().find(e => e.id === mine.pid).decisionId]);
+    const settle = () => coachA.syncPort.settle(coachA.events().filter(e => !hold || !mark.has(e.id) && !mark.has(e.presentationId) && !mark.has(e.decisionId)).map(e => e.id));
+    a.at(1.2); for (let n = 0; n < more; n++) { a.step(1000); play(coachA, item(`same-${n}`, cell)); }
+    a.at(2); fill(a, coachA, 'x', 20); settle(); a.at(4); fill(a, coachA, 'y', 20); settle(); fill(a, coachA, 'z', 20); settle();
+    assert.equal(coachA.events().some(e => e.id === mine.answer.eventId), hold, hold ? 'the anchor answer is still in the log' : 'the anchor answer is folded');
+    const kind = correct ? 'retention' : 'recovery';
+    assert.ok(a.stored().ledger.followups.rows.some(r => r.id === mine.answer.eventId && r.k === kind), `the row is frozen as a ${kind}`);
+    assert.deepEqual(rowsOf(coachA.followups(), mine.answer.eventId).map(r => r.kind), [kind, kind, kind]);
+    // 다른 칸(능력)의 같은 계열이라 앵커 사슬의 추월(같은 칸의 앞선 답)로는 잡히지 않는다.
+    b.at(0.5); const other = item('b-same', { family: 'a-first', skill: 'ko.reading.reason' });
+    if (late === 'help') { const seen = coachB.present(other); b.step(1000); coachB.help(seen, 'hint'); } else play(coachB, other, { step: b.step });
+    importLate(coachA, coachB.events());
+    return rowsOf(coachA.followups(), mine.answer.eventId).map(r => [r.status, r.reason]);
+  };
+  const withdrawn = Array(3).fill(['invalidated', 'source-withdrawn']), held = Array(3).fill(['unavailable', 'adjusted-history']);
+  for (const late of ['help', 'attempt']) {
+    assert.deepEqual(run({ more: 0, hold: false, late }), withdrawn, `${late}: still among the recent answers, the ledger withdraws it`);
+    assert.deepEqual(run({ more: 25, hold: false, late }), held, `${late}: no longer among the recent answers`);
+    assert.deepEqual(run({ more: 0, hold: true, late }), held, `${late}: frozen while its answer is still in the log`);
+    assert.deepEqual(run({ more: 25, hold: false, late, correct: false }), [['missed', null], ['not_due', null], ['not_due', null]], `${late}: a wrong answer was a recovery already`);
+  }
+});
+test('a late help or attempt before a frozen pair marks it after the ledger no longer keeps that pair among its recent answers', () => {
+  // 끝 판 둘째 사슬 GPT B: 같은 칸을 25문항 더 풀어 짝이 장부의 최근 증거에서 빠지면, 다른 기기의 늦은 도움이 짝을 거두지 못했다.
+  // 11-10: 짝을 보인 뒤 · 풀기 전 다른 기기의 같은 계열 시도도 같다(설계 관문 메모 2 — 전체 기록으로는 그 짝이 새 문항이 아니다).
+  for (const late of ['help', 'attempt']) {
+    const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+    a.at(0); const mine = play(coachA, item('a-first', cell));
+    a.at(1.5); const pid = coachA.present(item('a-pair', cell)); a.at(1.55); const pair = coachA.answer(pid, { correct: true, assessable: true });
+    a.at(1.6); for (let n = 0; n < 25; n++) { a.step(1000); play(coachA, item(`same-${n}`, cell)); }
+    a.at(2); fill(a, coachA, 'x', 20); settle(coachA); a.at(4); fill(a, coachA, 'y', 20); settle(coachA); fill(a, coachA, 'z', 20); settle(coachA);
+    assert.equal(coachA.events().some(e => e.id === pair.eventId), false, 'the pair is folded');
+    assert.equal(windowOf(coachA.followups(), mine.answer.eventId, 'd1').outcome, 'independent-correct');
+    b.at(1.52); const other = coachB.present(item('b-same', { family: 'a-pair', skill: 'ko.reading.reason' }));
+    b.at(1.53); if (late === 'help') coachB.help(other, 'hint'); else coachB.answer(other, { correct: true, assessable: true });
+    importLate(coachA, coachB.events());
+    const d1 = windowOf(coachA.followups(), mine.answer.eventId, 'd1');
+    assert.deepEqual([d1.status, d1.reason, d1.targetAttemptId], ['unavailable', 'adjusted-history', pair.eventId], late);
+  }
 });
 test('a late help before a pair the log can no longer read again marks it', () => {
   // 끝 판 둘째 사슬 GPT B: 짝을 연 사이 다른 판에서 같은 계열을 잠깐 열었다 닫고 짝만 서버에 안 닿은 채 나머지가 접히면, 짝은 날것에 남아도 다시 읽히지 않는다.
@@ -464,6 +550,20 @@ test('a mark a late help made on one tab survives another tab writing the same f
   a.at(18);
   const d1 = windowOf(a.open().followups(), mine.answer.eventId, 'd1');
   assert.deepEqual([d1.status, d1.reason], ['unavailable', 'adjusted-history']);
+});
+test('a mark a late help made on a frozen anchor row survives another tab writing the same fold', () => {
+  // 서버에만 남은 도움이 단 행 표시는 다시 만들 수 없다 — 옛 표를 든 다른 코치가 같은 접힘으로 저장해도 남아야 한다(carryMarks의 행 표시).
+  const { a, b, coachA, coachB, settle } = twoDevices(), cell = { skill: 'ko.reading.detail' };
+  b.at(0); const pid = coachB.present(item('b-anchor', cell)); b.at(0.01); coachB.help(pid, 'hint'); b.at(0.02); const anchor = coachB.answer(pid, { correct: true, assessable: true });
+  const help = coachB.events().find(e => e.type === 'practice.helped');
+  a.at(0.5); importLate(coachA, coachB.events().filter(e => e.id !== help.id));
+  a.at(3); fill(a, coachA, 'x', 20); settle(coachA); a.at(5); fill(a, coachA, 'y', 20); settle(coachA);
+  assert.equal(coachA.events().some(e => e.id === pid), false, 'the anchor presentation is folded');
+  const game = a.open('other-game');
+  importLate(coachA, [help]); coachA.flush(); coachA.dispose();
+  a.step(1000); play(game, item('g-1', { skill: 'ko.reading.reason' })); game.flush(); game.dispose();
+  a.at(18);
+  assert.deepEqual(rowsOf(a.open().followups(), anchor.eventId).map(r => r.reason), ['adjusted-history', 'adjusted-history', 'adjusted-history']);
 });
 test('a fold keeps a family\'s first sight only while it is the earliest one and still inside the live window', () => {
   // 셋째 사슬 아르곤 E1 · G1: 계열마다 가장 이른 시각을 고르기 전에 45일 넘은 것을 걸러, 이번 접기에서 빠지는 옛 처음 시각 자리를

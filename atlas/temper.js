@@ -210,10 +210,13 @@
     for (const [, item, family] of prior?.presented || []) { foldedShown.add(`item:${item}`); foldedShown.add(`family:${family}`); }
     // A pair is chosen or read again only while no sight of its item or family has folded: Trail reads folded history as before everything.
     const fresh = a => trace(byId.get(a.presentationId)).every(key => !foldedShown.has(key) && shown.get(key)?.id === a.presentationId);
-    // Help in the log by item and family: a frozen pair that is not read again was helped late if one came before its answer.
-    const helpedAt = new Map();
-    for (const h of visible) if (h.type === 'practice.helped' && byId.get(h.presentationId)?.type === 'practice.presented')
-      for (const key of trace(byId.get(h.presentationId))) { if (!helpedAt.has(key)) helpedAt.set(key, []); helpedAt.get(key).push(h); }
+    // Help and attempts in the log by item and family. A frozen answer is not read again (an anchor, or a pair the log cannot
+    // judge again). When the table calls it independent and one of these came before it, a late entry has changed what the
+    // whole log reads there: after help it was a helped answer, after an attempt it was not a new item.
+    const metAt = new Map();
+    for (const e of visible) if (['practice.helped', 'practice.attempted'].includes(e.type) && byId.get(e.presentationId)?.type === 'practice.presented')
+      for (const key of trace(byId.get(e.presentationId))) { if (!metAt.has(key)) metAt.set(key, []); metAt.get(key).push(e); }
+    const metLate = (answer, at) => [`item:${answer.i}`, `family:${answer.fa}`].some(key => (metAt.get(key) || []).some(e => stamp(e) < at && !(answer.pf || []).includes(e.id)));
     const ordered = [...original.attempts].sort((a, b) => stamp(a) - stamp(b) || position.get(a.eventId) - position.get(b.eventId));
     const inCell = new Map();
     for (const a of ordered) { const cell = tuple(a); if (!inCell.has(cell)) inCell.set(cell, []); inCell.get(cell).push(a); }
@@ -272,7 +275,9 @@
     for (const anchor of live) {
       const row = frozen(anchor) ? { ...anchor, fx: [...(anchor.fx || [])], t: { ...anchor.t }, pf: anchor.pf || [] } : toRow(anchor), cell = cellOf(row);
       if ([row.id, row.p, row.dc, row.cp, ...row.pf].some(gone)) row.x = 1;
-      if (overtaken.has(row.id)) row.l = 1;
+      // A frozen row keeps its first reading. One the table calls a retention (an independent correct answer) that the log now
+      // shows was helped or met before is marked like any row a late entry overtakes; its windows wait for the next cycle.
+      if (overtaken.has(row.id) || row.k === 'retention' && metLate(row, row.at)) row.l = 1;
       const logged = position.has(row.id) ? { eventId: row.id, at: iso(row.at), recordedAt: iso(row.ra) } : null;
       const follows = e => (logged ? before(logged, e) : row.at <= stamp(e) && row.ra <= Date.parse(e.recordedAt));
       for (const h of summary.help) if (h.presentationId === row.p && ['answer', 'explanation'].includes(h.level) && follows(h) && !row.fx.some(([id]) => id === h.eventId)) row.fx.push([h.eventId, stamp(h)]);
@@ -291,10 +296,10 @@
         const reread = !ahead && !!found && (!kept || found.eventId === kept.id), pair = reread ? pairOf(found) : stored && { ...stored };
         if (pair) row.t[window] = pair;
         if (pair && [pair.id, pair.p, pair.dc, pair.cp, ...(pair.pf || [])].some(gone)) pair.x = 1;
-        // A late entry: an earlier candidate for this window, the pair's item shown before it, or help before an answer the table still
-        // calls independent (the log's reading would have counted it). Appended entries sit last in the log, so this reads their times.
-        const late = key => firstShown.get(key) < pair.pa || /^independent/.test(pair.o) && (helpedAt.get(key) || []).some(h => stamp(h) < pair.at && !(pair.pf || []).includes(h.id));
-        if (pair && (stored?.l || stored && first && stamp(first) < stored.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late))) pair.l = 1;
+        // A late entry: an earlier candidate for this window, the pair's item shown before it, or help or an attempt before an answer
+        // the table still calls independent (the log's reading would have counted it). Appended entries sit last in the log, so this reads their times.
+        const late = key => firstShown.get(key) < pair.pa;
+        if (pair && (stored?.l || stored && first && stamp(first) < stored.at || [`item:${pair.i}`, `family:${pair.fa}`].some(late) || /^independent/.test(pair.o) && metLate(pair, pair.at))) pair.l = 1;
         const shown = ahead ? null : pair;
         let status = now < due ? 'not_due' : now < expires ? 'due' : 'missed', outcome = null, reason = null;
         if (!usable) { status = 'unavailable'; reason = 'incomplete-history'; }
@@ -341,12 +346,16 @@
     // A row from past this clock (a device clock set back) stays for when the clock returns.
     return { v: FOLLOWUP.table, folded, ...(Number.isFinite(floor) ? { floor } : {}), ...(Object.keys(fs).length ? { fs } : {}), rows: [...out, ...later] };
   }
-  // Help kept on the server only (its presentation folded here) that came before a frozen independent pair on that presentation marks
-  // its window, as a late entry in the log would; help on another item of the family is counted in the ledger's `adjusted` only.
+  // Help kept on the server only (its presentation folded here) that came before a frozen answer on that presentation marks it as a
+  // late entry in the log would: a pair the table calls independent marks its window, an anchor it calls a retention marks its row.
+  // Help on another item of the family is counted in the ledger's `adjusted` only.
   function lateHelp(table, helps) {
-    const hit = pair => /^independent/.test(pair.o) && helps.some(h => h.type === 'practice.helped' && h.presentationId === pair.p && Date.parse(h.at) < pair.at);
-    if (!tableOf({ followups: table }) || !table.rows.some(row => row.t && Object.values(row.t).some(hit))) return table;
-    return { ...table, rows: table.rows.map(row => (row.t && Object.values(row.t).some(hit) ? { ...row, t: Object.fromEntries(Object.entries(row.t).map(([w, pair]) => [w, hit(pair) ? { ...pair, l: 1 } : pair])) } : row)) };
+    const came = (p, at) => helps.some(h => h.type === 'practice.helped' && h.presentationId === p && Date.parse(h.at) < at);
+    const hit = pair => /^independent/.test(pair.o) && came(pair.p, pair.at), anchored = row => row.k === 'retention' && came(row.p, row.at);
+    const marked = row => anchored(row) || !!row.t && Object.values(row.t).some(hit);
+    if (!tableOf({ followups: table }) || !table.rows.some(marked)) return table;
+    return { ...table, rows: table.rows.map(row => (!marked(row) ? row : { ...row, ...(anchored(row) ? { l: 1 } : {}),
+      t: Object.fromEntries(Object.entries(row.t).map(([w, pair]) => [w, hit(pair) ? { ...pair, l: 1 } : pair])) })) };
   }
   // Two copies of one table meet when another tab wrote first. A mark is never taken back by a reading, and one an import made (lateHelp)
   // cannot be made again: whichever copy is kept, the same row, window and pair keep it.

@@ -335,6 +335,62 @@ test('a game beside the account synchroniser folds with it and reads like a full
   assert.equal(s.log.length, full.events().length);
 });
 
+// 2026-11-10: the stored outbox is the one outbox (learning-sync.js adopt). Two copies over one store without a browser lock
+// (Node hosts): a response that arrives after the other copy wrote is asked again, never recorded on the outbox it changed.
+function second(s, clock, storage, gameId) {
+  const inner = s.transport({ offline: false }); let gate = null;
+  const through = method => async args => { if (gate?.method === method) { const { arrived, released } = gate; gate = null; arrived(); await released; } return inner[method](args); };
+  const game = createGame({ gameId, map, storage, storageScope: 'account', accountKey: ACCOUNT, historyComplete: false, clock, fold: { remote: true, max: 2, keep: 0, ageMs: 0 } });
+  const sync = createLearningSync({ adapter: game, accountKey: ACCOUNT, revision: 1, storage, transport: { get: through('get'), post: through('post') }, auto: false,
+    maxAttempts: 1, backoffMs: [0], sleep: async () => {} });
+  // The next get or post waits on its way until release(); `reached` resolves once the copy has sent it.
+  const hold = method => { let arrived, release; const reached = new Promise(done => { arrived = done; }), released = new Promise(done => { release = done; }); gate = { method, arrived, released }; return { reached, release }; };
+  return { game, sync, hold };
+}
+const outbox = storage => JSON.parse(storage.getItem(`${SYNC_KEY}.${ACCOUNT}`));
+// `answers`: this copy's game adds an item while its request is on its way, so its own collect() has already read the changed
+// outbox when the response arrives (2026-11-10 Fable design review): the response was still asked for the older one.
+for (const answers of [false, true]) test(`a page that arrives after another copy read on and folded is asked again, never imported a second time${answers ? ' (this copy answered meanwhile)' : ''}`, async () => {
+  const s = server(), time = timeline(), storage = memory();
+  const far = device(s, time.clock, { fold: false, gameId: 'far' });
+  assert.equal((await far.sync.start()).phase, 'synced');
+  play(far.game, script(31, 1, T0)[0], time.set); await synced(far.sync);
+  const sent = s.log.length;
+  const x = second(s, time.clock, storage, 'copy-x'), y = second(s, time.clock, storage, 'copy-y');
+  const page = x.hold('get'), pulling = x.sync.pull();
+  await page.reached;
+  time.set(time.now + 5000);
+  await synced(y.sync);
+  assert.deepEqual([stored(storage).ledger?.folded, stored(storage).events.length, outbox(storage).cursor], [sent, 0, sent], 'the other copy read the page, settled and folded it');
+  if (answers) play(x.game, script(34, 1, time.now + 1000)[0], time.set);
+  const mine = x.game.events().length;
+  page.release();
+  const done = await pulling;
+  assert.deepEqual([done.phase, done.complete, done.cursor], ['synced', true, sent]);
+  assert.deepEqual([stored(storage).ledger.folded, stored(storage).ledger.adjusted || 0, x.game.events().length], [sent, 0, mine], 'no entry came back as a late one');
+  assert.equal(y.game.summary().counts.attempts, x.game.summary().counts.attempts);
+});
+for (const answers of [false, true]) test(`an acknowledgement that arrives after another copy sent, folded and forgot the same entries is not recorded${answers ? ' (this copy answered meanwhile)' : ''}`, async () => {
+  const s = server(), time = timeline(), storage = memory();
+  const x = second(s, time.clock, storage, 'copy-x'), y = second(s, time.clock, storage, 'copy-y');
+  assert.equal((await x.sync.start()).phase, 'synced'); assert.equal((await y.sync.start()).phase, 'synced');
+  play(x.game, script(32, 1, T0)[0], time.set);
+  const queued = x.game.events().length, upload = x.hold('post'), flushing = x.sync.flush();
+  await upload.reached;
+  assert.equal(outbox(storage).pending.length, queued);
+  time.set(time.now + 5000); await synced(y.sync);
+  time.set(time.now + 5000); await synced(y.sync);
+  assert.deepEqual([stored(storage).ledger?.folded, stored(storage).dropped, outbox(storage).pending], [queued, undefined, []], 'the other copy sent, folded and forgot them');
+  x.game.summary(); // joins the fold
+  play(y.game, script(33, 1, time.now + 5000)[0], time.set); await synced(y.sync);
+  x.game.summary(); // its list of folded ids follows the stored one: empty
+  if (answers) play(x.game, script(35, 1, time.now + 1000)[0], time.set);
+  upload.release();
+  const done = await flushing;
+  assert.deepEqual([done.phase, done.queued, outbox(storage).missing], ['synced', 0, []]);
+  assert.equal(stored(storage).ledger.adjusted || 0, 0, 'nothing was fetched again');
+  assert.equal(new Set(s.log.map(e => e.id)).size, s.log.length, 'the server holds each entry once');
+});
 test('syncPort.ids() names the kept entries, in log order, without copying them', () => {
   const time = timeline(), game = createGame({ gameId: 'ids', map, storage: memory(), clock: time.clock, fold: { max: 30, keep: 20, ageMs: 0 } });
   for (const step of script(6, 40, T0)) play(game, step, time.set);
