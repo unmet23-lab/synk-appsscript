@@ -259,6 +259,9 @@ function checkReference(from,value){
  if(!value||value.includes('${')||/^(?:https?:|data:|blob:|#|about:|javascript:)/.test(value)||value.startsWith('/api/')||value.startsWith('api/')||value.startsWith('/auth/v1/')||value.startsWith('/try/'))return;
  if(!value.startsWith('.')&&!value.startsWith('/')&&!/\.[a-z0-9]+(?:[?#]|$)/i.test(value))return;
  const pathname=new URL(value,new URL(config.basePath+from,'https://synk.im')).pathname;
+ // Atlas engine entry (redesign §9): editions move by one line in the entry, so products call only /atlas/loader.js or /atlas/loader.mjs,
+ // written absolutely and without ?v= or #. It is not part of this payload; edition folders (/atlas/<edition>/…) stay blocked below.
+ if(/^\/atlas\/loader\.m?js$/.test(pathname)){if(!/^\/atlas\/loader\.m?js$/.test(value))missing.push({from,reference:value,reason:'atlas-entry-form'});return;}
  if(!pathname.startsWith(config.basePath)){missing.push({from,reference:value,reason:'outside-world'});return;}
  let rel=decodeURIComponent(pathname.slice(config.basePath.length));if(rel.endsWith('/'))rel+='index.html';
  references.push({from,reference:value,path:rel});if(!fs.existsSync(path.join(payload,rel)))missing.push({from,reference:value,path:rel,reason:'missing'});

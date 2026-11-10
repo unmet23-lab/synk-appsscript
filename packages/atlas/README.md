@@ -1,0 +1,107 @@
+# Atlas 새 엔진 — `packages/atlas`
+
+> 재설계 정본은 [아틀라스 재설계](../../docs/아틀라스_재설계_20261110.md)다. 이 패키지는 그 설계의 엔진을 옛 `atlas/` 옆에 새로 짓는 자리이고, 단계 0(길 닦기, 2026-11-10)이 바닥을 깔았다 — [단계 0 기록](../../docs/_ops/qa/atlas-redesign-20261110/단계0_계획.md). 12/10까지 라이브는 옛 판이고, 이 패키지는 스위치 뒤에서 짓는다(공개본 동작을 바꾸지 않는다).
+
+## 모듈 지도
+
+| 폴더 | 무엇 | 채우는 단계 | 설계 |
+|---|---|---|---|
+| `src/map/` | 지도 — 단위 마디 · 문항 색인(주 단위) | 1 | §3-1 · §4 |
+| `src/memory/` | 기억 1판 — 단위마다 FSRS-6 상태. ts-fsrs는 `fsrs.mjs` 한 곳에서만 부른다 | 2 | §3-2 |
+| `src/ability/` | 난도 1판 — 능력마다 θ · 이어서 혼자 맞힌 수 | 2 | §3-3 · §3-4 |
+| `src/select/` | 고르기 1판 — 층 · 한도 · 차례, `idle` · `none` | 2 | §3-5 · §3-6 |
+| `src/reason/` | 이유 — 종류와 근거 칸(문장은 Vellum, 단계 4) | 2 | §3-7 |
+| `src/record/` | 기록 포트 — 사건 2판 · 저장 포트 · 대기열 · 요약에 얹기. 사건 이름표는 `events.mjs` 한 곳 | 3 | §5 |
+| `src/coach/` | 코치 3판의 겉 — 메서드 이름은 §8 표 그대로 | 4 | §8 |
+| `src/health/` | 계기 — 묶음 받기 · 저장 · 추천의 실패를 센다. `legacy.mjs`는 지금 판 코치에 붙이는 덧대기(묶음에 안 든다) | 0 | §1 표 5행 · §11 |
+
+`src/index.mjs`가 바깥 입구이고 빌드가 이것을 묶음 하나로 묶는다. 단계마다 자기 폴더에 짓고 `src/index.mjs`에는 내보내기를 한 줄씩 더한다. 함께 고치는 곳은 `src/index.mjs` · `src/record/events.mjs`(2와 3이 같은 사건 이름을 쓰도록) · `tools/mutants.mjs`의 변형 목록 · `package.json`의 시험 명령뿐이다.
+
+## 명령
+
+```bash
+npm --prefix packages/atlas ci --ignore-scripts
+```
+
+```bash
+npm --prefix packages/atlas run check
+```
+
+```bash
+npm --prefix packages/atlas run format
+```
+
+```bash
+node packages/atlas/tools/build.mjs --out <폴더>
+```
+
+- `check` — 이 패키지의 관문 한 줄. ① `biome ci`(포맷터: 한 줄 한 문장 · 폭 100, 린트: 함수 인지 복잡도 15 · 한 문장에 선언 하나) ② 빌드를 임시 폴더에 내고 `budget.json`의 묶음 압축 용량 상한을 잰다 ③ 시험 `unit` · `build`. CI는 `syntax-check`의 「verify Atlas package」 단계가 같은 명령을 돈다.
+- 시험 묶음은 `node packages/atlas/tools/test.mjs <묶음…>`이다(`npm run test` · `test:unit` · `test:props` · `test:learners`).
+  - `unit` — 의존 없이 돈다. 패키지 의존(ts-fsrs · esbuild …)을 부르면 훅(`test/support/leaf-only.mjs`)이 멈춘다. 루트 `tests/atlas-package.test.js`가 이 묶음을 부르므로, 패키지 의존을 깔지 않은 작업본의 전체 시험도 깨지지 않는다. `src/index.mjs`가 ts-fsrs를 부르게 되면 index를 거치는 unit 시험은 잎 모듈(`src/<모듈>/`)만 부르게 고치거나 `test/build/`로 옮긴다.
+  - `build` — 빌드 · ts-fsrs · 변형 실행기.
+  - `properties` · `learners` — 시제품 시험이 옮겨 올 자리(단계 2 · 3). [옮길 표](test/properties/README.md).
+- 시험은 `src` · `loader`를 `test/support/subject.mjs`로만 부른다(`ATLAS_SUBJECT_ROOT`가 있으면 그 사본을 시험한다 — 변형 실행기가 쓴다). 씨앗은 `test/support/seeds.mjs`(`ATLAS_SEEDS` · `ATLAS_FIRST_SEED`).
+- `test:mutants` — 변형 시험(`tools/mutants.mjs`). 규칙을 더하거나 고칠 때 그 규칙을 깬 변형을 목록에 함께 더한다. 사본은 `.mutants/`(git 밖)에 만들고, 바꾸지 않은 사본에서 시험이 먼저 통과해야 변형을 본다. `--self`는 실행기 자체 시험이다.
+
+## 검사 셋 — 줄 수 상한 대신(설계 §14-3)
+
+| 검사 | 값 | 바꿀 때 |
+|---|---|---|
+| 포맷터 | Biome 2.6.4 — 폭 100 · 들여쓰기 2칸 · 작은따옴표 · 세미콜론, `useSingleVarDeclarator` | `biome.json` |
+| 함수 복잡도 | `noExcessiveCognitiveComplexity` 15(인지 복잡도) | 올리지 않는다 — 함수를 나눈다 |
+| 묶음 압축 용량 | `atlas.mjs` gzip 64KiB · `loader.js` gzip 2KiB | 설계값이다. 실제 값에 맞춰 올리지 않고, 올릴 때는 [결정 표](../../docs/_ops/결정.md)에 까닭을 적는다 |
+
+옛 `atlas/`에는 줄 수 상한이 없고 「새 모듈을 더하지 않는다」는 파일 수 울타리만 있다(`tests/atlas-size-budget.test.js`).
+
+## 빌드와 판
+
+빌드는 묶음 하나와 입구를 공개 경로 그대로의 나무로 낸다. 같은 커밋이면 같은 바이트다(시험이 두 번 빌드해 견준다).
+
+```
+<밖>/atlas/loader.js            입구 — 판 이름 한 줄(올리기 · 되돌리기 모두 이 한 줄)
+<밖>/atlas/loader.mjs           ES 모듈 겉 — 판과 무관해 바뀌지 않는다
+<밖>/atlas/<판>/atlas.mjs        엔진 묶음
+<밖>/atlas/<판>/manifest.json    판 · 커밋 · 파일마다 바이트 · sha256 · gzip 바이트 · 제3자 코드
+<밖>/atlas/<판>/LICENSES.txt     묶음에 든 제3자 코드의 고지(있을 때만 — ts-fsrs가 들면 MIT 고지)
+```
+
+- **판 이름.** `--release`면 `package.json`의 판(`1.2.3` 꼴)이다 — 이 패키지에 커밋하지 않은 고침이 없고, HEAD가 `origin/master`에 들었고, 판이 `0.0.0`이 아닐 때만 낸다(꼬리표는 쓰지 않는다 — 바로올리기가 꼬리표를 올리지 않아 다른 세션이 확인할 수 없다). 그 밖은 `<판>-dev.<커밋 앞 7자>`(고침이 있으면 `.dirty`)라 공개 판과 섞이지 않는다.
+- 묶음에 이 PC의 경로가 남으면 빌드가 멈춘다. 공개 사이트의 도구 이름 검사는 공개 때 `tools/공개.js`가 본다.
+
+## 입구 — `await coach.ready`
+
+```js
+// 게임 · 드라마(클래식 스크립트)
+// <script src="/atlas/loader.js"></script>
+const coach = SynkAtlas.coach(options);
+await coach.ready;
+
+// 계정 셸(ES 모듈) — 묶음 도구에서는 /atlas/를 바깥(external)으로 둔다
+const { coach: open } = await import('/atlas/loader.mjs');
+```
+
+- `loader.js`에는 정적 `import` · `export`가 없어 클래식 스크립트로도 모듈로도 실린다. 판 묶음은 동적 `import()`로 받는다(드라마 CSP `script-src 'self'` · PC 앱 `synk-desktop://` 모두 같은 출처라 통한다).
+- **`ready`는 한 번만 정해진다.** 판 묶음을 못 받으면(404 · 오프라인 · 시간 상한 20초) `code: 'LOAD_FAILED'`(`reason`: `IMPORT` · `TIMEOUT` · `EDITION_MISMATCH` · `NO_BASE`)로 거절한다. 제품은 이때 지금처럼 원고 순서로 가고, 호스트는 계기에 `note('load', { ok: false, code })`로 넘긴다.
+- `ready` 전에 부른 메서드는 `NOT_READY`로 던진다. 떠나는 화면은 `ready` 전에도 `dispose()`할 수 있다 — 그 뒤 도착한 코치는 붙이지 않고 닫고, 메서드는 `DISPOSED`로 던진다.
+- 같은 문서에 입구가 두 번 실리면 먼저 실린 판 하나만 돈다. **같은 출처의 위 창에 입구가 있으면 그 판을 따른다**(WORLD 틀 안 게임과 위 창이 다른 판을 받지 않게). 엇갈린 판은 `SynkAtlas.conflicts`에 남는다.
+- 제품은 입구를 `/atlas/loader.js` · `/atlas/loader.mjs` 절대 주소로, `?v=` 없이 부른다 — 토큰을 붙이면 엔진을 올릴 때마다 `tools/공개.js`가 제품 HTML의 토큰까지 바꿔 「엔진을 고쳐도 제품 묶음을 건드리지 않는다」가 깨진다. 판 폴더(`/atlas/<판>/…`)를 제품이 바로 부르지 않는다. WORLD 공개 빌드(`tools/build-world-app-public.mjs`)가 이것을 막는다.
+
+## 공개 절차(단계 4부터 — 단계 0에서는 공개하지 않는다)
+
+```bash
+node packages/atlas/tools/build.mjs --release --out <밖>
+```
+
+```bash
+node packages/atlas/tools/publish.mjs <밖>
+```
+
+`publish.mjs`는 공개 판인지, 나무가 manifest와 같은지, 공개본에 같은 판 폴더가 다른 바이트로 있지 않은지(판 폴더는 덮지 않는다) 기계로 보고, 맞으면 `tools/공개.js 올리기 --원본 <밖> atlas/<판>/… atlas/loader.js atlas/loader.mjs` 명령을 찍는다. 그 뒤는 `tools/공개.js`의 절차 그대로다(검수 · 계획 해시 · 바이트 대조). synk.im에는 이미 `/atlas/index.html`(Atlas 소개 쪽)이 있고, 판 폴더 이름은 숫자로 시작해 겹치지 않는다. GitHub Pages라 입구가 바뀌면 10분 동안 옛 판 · 새 판이 섞일 수 있다(설계 §9).
+
+## 브라우저 밖 — 판을 동봉하는 자리(정해 두기만, 단계 4에서 짓는다)
+
+| 곳 | 동봉 자리 | 판을 묶어 두는 검사 |
+|---|---|---|
+| PC 앱 | `desktop/renderer/atlas/loader.js` · `desktop/renderer/atlas/<판>/` — `synk-desktop://`가 `/assets/` 밖의 주소를 `renderer/`에서 읽으므로(`desktop/src/native-content.cjs`) 웹과 같은 `/atlas/loader.js`가 그대로 통한다. `.mjs` MIME은 이미 있고, 화면 CSP는 `script-src 'self'; connect-src 'none'`이며 바깥 요청을 끊으므로 원격 입구는 못 쓴다 | 새 울타리를 짓는다 — 지금 `tools/lib/atlas-copies.js`의 미등록 사본 훑기는 `desktop/assets`까지만 보므로 `desktop/renderer/atlas/`는 밖이다. `manifest.json`의 판 · sha256을 빌드 나무와 대조하는 검사를 그 도구에 더한다 |
+| Talk 앱 | `SYNK-talk/lib/atlas/<판>/` | `lib/atlas/sync-manifest.json`에 `edition`과 파일 sha256(지금 `engine` · `files` 꼴을 넓힌다, `tools/sync-atlas.js`) |
+| Talk 서버 | `supabase/functions/_shared/synk-atlas-<판>.mjs` 하나 | Talk `tools/synk-server-build.js`의 `OUTPUTS`에 더하고 머리에 sha256(지금 `_shared/synk-atlas.js` · `synk-atlas-summary.js`와 같은 방식). 사건 표를 읽고 쓰는 함수가 `동봉.json`으로 받는다 — 어느 함수인지는 단계 3에서 서버 코드와 정한다 |

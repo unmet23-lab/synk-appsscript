@@ -4,6 +4,12 @@
 # 형제 저장소와 계약 파일의 바이트를 맞춘다.
 계약/** text eol=lf
 
+# Atlas 새 엔진 패키지: 같은 커밋이면 같은 묶음 바이트(재설계 §9) — 윈도우 체크아웃도 LF로 받아 포맷 검사 · 빌드가 플랫폼을 타지 않는다.
+packages/atlas/**/*.mjs text eol=lf
+packages/atlas/**/*.js text eol=lf
+packages/atlas/**/*.json text eol=lf
+packages/atlas/**/*.md text eol=lf
+
 # 배포 준비·검증 도구의 실행 증거가 실제 소스 SHA를 기록한다.
 tools/company-release/*.cjs text eol=lf
 

@@ -1,39 +1,22 @@
 'use strict';
-// Atlas 압축 기준(docs/아틀라스_설계.md#atlas-size-budget, 2026-10-08). atlas/에는 두 번째 제품이 실제로 쓰는
-// 공통 능력만 두고 크기는 아래 상한을 넘기지 않는다. 늘려야 하면 같은 커밋에서 그 절의 숫자와 이유를 함께 고치고,
-// 줄이면 상한도 함께 내린다. 공통능력 문서에는 지금 상태만 두고 날짜별 기록은 qa 이력으로 옮긴다.
+// 옛 Atlas(atlas/)의 울타리. 2026-11-10 재설계 §14-3(유호님 「추천대로」)으로 줄 수 상한은 폐기했다 — 간결함은 새 엔진
+// packages/atlas/에 건 포맷터 · 인지 복잡도 상한 15 · 묶음 압축 용량 상한이 지킨다(packages/atlas/README.md, docs/아틀라스_설계.md#atlas-size-budget).
+// atlas/는 얼린 옛 엔진이라(결함 고침만, 새 판으로 전환한 뒤 지운다) 여기에는 「새 모듈을 더하지 않는다」는 파일 수 울타리만 남긴다.
+// 공통능력 문서의 줄 수는 코드 상한이 아니라 「지금 상태만 둔다」는 문서 규칙이라 그대로 둔다.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-// 2026-10-29: Core 확인 시점·재확인 질문, Vellum 표본 검사, Temper 중복 검사와 Trail 출처 탐색.
-// 최초 순증 15줄 + LAB·WORLD 제외 전파·오디오 자격·대기 이력 49줄 + 완료·ID·명시적 철회·질문 계산과 판 검사 정리 10줄.
-// 2026-10-30: LAB 게임·WORLD 공용 저장 복구·자동 전송·동시 쓰기 페이지 보호 +29줄.
-// 2026-10-30: paused writers protect their own base/staging pages; later garbage collection continues (+23 lines including quota fallback).
-// 2026-10-31: LAB games and WORLD share an exclusive browser writer; sync lease fencing, missing-history refusal and witnessed restoration (+64 lines, no new file).
-// 2026-10-31: LAB/WORLD reset commits storage before clearing memory/open work (+12 lines).
-// 2026-10-31: drain records arriving during recovery; resume fresh work after a known gap (+2 lines).
-// 2026-10-31: distinguish initial browser ownership from explicit reset (+3 lines).
-// 2026-10-31: LAB/WORLD bounded manual scans expose an incomplete state instead of a stopped spinner (+5 lines).
-// 2026-10-31: reject ambiguous same-about bindings in the shared Atlas question adapter (+5 lines).
-// LAB/WORLD dispose, unchanged paged flush, no-sample and bounded gap-recovery reuse (+27 lines).
-// A disposed waiting game drains only its existing history, then releases ownership (+19 lines).
-// 2026-11-02: same-origin game frames share their page's history writer (the top window's Atlas copy hands out the tab's leases; +23 lines).
-// 2026-11-08: follow-ups pair by ability cell, not map edition (temper-followup-2) and Core marks rows still offerable (`current`) — rhythm · order rush · WORLD · drama (+4 lines).
-// 2026-11-08: follow-ups frozen in the ledger as the log folds (temper-followup-3) instead of holding raw entries — every game's fold (+92 lines).
-const BUDGET = Object.freeze({ atlasFiles: 36, atlasLines: 7511, capabilityDocLines: 150 });
+const BUDGET = Object.freeze({ atlasFiles: 36, capabilityDocLines: 150 });
 const lineCount = text => (text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0));
 
-test('atlas/ stays within the agreed file and line budget', () => {
+test('the frozen atlas/ takes no new modules — new engine code goes to packages/atlas/', () => {
   const dir = path.join(ROOT, 'atlas');
-  const files = fs.readdirSync(dir, { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.js')).map(entry => entry.name);
-  const lines = files.reduce((sum, name) => sum + lineCount(fs.readFileSync(path.join(dir, name), 'utf8')), 0);
+  const files = fs.readdirSync(dir, { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.js'));
   assert.ok(files.length <= BUDGET.atlasFiles,
-    `atlas/ .js ${files.length}개 > 상한 ${BUDGET.atlasFiles}개 — 한 제품만 쓰는 기능은 그 제품 폴더에 둔다(docs/아틀라스_설계.md#common-capability-promotion)`);
-  assert.ok(lines <= BUDGET.atlasLines,
-    `atlas/ ${lines}줄 > 상한 ${BUDGET.atlasLines}줄 — 줄이거나, 두 번째 제품이 쓰는 공통 능력이면 상한과 이유를 함께 고친다(docs/아틀라스_설계.md#atlas-size-budget)`);
+    `atlas/ .js ${files.length}개 > ${BUDGET.atlasFiles}개 — 옛 엔진은 얼렸다. 새 엔진 코드는 packages/atlas/에, 한 제품만 쓰는 기능은 그 제품 폴더에 둔다(docs/아틀라스_설계.md#common-capability-promotion)`);
 });
 
 test('the capability document keeps only the current state', () => {

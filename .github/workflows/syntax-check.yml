@@ -129,6 +129,7 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           (cd experiences/synk-account && npm ci --ignore-scripts --no-audit --no-fund)
+          (cd packages/atlas && npm ci --ignore-scripts --no-audit --no-fund)
       - name: verify all local Atlas consumer copies
         env:
           NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
@@ -140,6 +141,11 @@ jobs:
         run: |
           npm run check:account-bundles
           npm run check:topik4-course
+      - name: verify Atlas package (format · complexity · bundle size · tests)
+        # 새 엔진 packages/atlas의 관문 — 줄 수 상한 대신 포맷터(한 줄 한 문장) · 인지 복잡도 15 · 묶음 압축 용량 상한(재설계 §9 · §14-3).
+        env:
+          NODE_OPTIONS: --require ${{ github.workspace }}/SYNK-appsscript/tools/ci읽기기록.cjs
+        run: npm --prefix packages/atlas run check
       - name: node --check all .js files
         run: |
           set -e

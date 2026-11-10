@@ -1,0 +1,5 @@
+{
+  "_": "묶음 압축 용량 상한(gzip 수준 9 바이트). 설계값이다 — 실제 값에 맞춰 올리지 않고, 올릴 때는 docs/_ops/결정.md에 까닭을 적는다(설계 §14-3).",
+  "engine": { "file": "atlas.mjs", "gzipBytes": 65536 },
+  "entry": { "file": "loader.js", "gzipBytes": 2048 }
+}
