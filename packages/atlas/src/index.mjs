@@ -20,6 +20,7 @@ export { byTime } from './fold/order.mjs';
 export { firstMeeting, foldServer, foldSkill, foldUnit, skillRowsOf } from './fold/server.mjs';
 export { creditedOf, familyUnit, unitsOf } from './fold/units.mjs';
 export { createHealth, HEALTH_VERSION } from './health/index.mjs';
+export { openMap } from './map/index.mjs';
 export { GRADES, gradeOf, PRODUCED } from './memory/grade.mjs';
 export { createMemory } from './memory/index.mjs';
 export { EDITIONS, PARAMS } from './params.mjs';

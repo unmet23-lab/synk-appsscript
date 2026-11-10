@@ -11,10 +11,12 @@ import { tempDir } from '../support/temp.mjs';
 
 const STATE = { commit: 'a'.repeat(40), dirty: false };
 const EDITION = '0.0.0-dev.aaaaaaa';
+// 지도 나무(atlas/<판>/map/)는 test/build/map-build.test.mjs가 따로 본다(단계 1) — 여기서는 엔진 묶음 · 입구만.
 const listFiles = dir =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
     const full = path.join(dir, entry.name);
-    return entry.isDirectory() ? listFiles(full) : [full];
+    if (entry.isDirectory()) return entry.name === 'map' ? [] : listFiles(full);
+    return [full];
   });
 
 const first = await build({ out: tempDir('atlas-build-a-'), state: STATE });

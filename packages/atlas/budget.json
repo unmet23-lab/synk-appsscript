@@ -1,5 +1,9 @@
 {
-  "_": "묶음 압축 용량 상한(gzip 수준 9 바이트). 설계값이다 — 실제 값에 맞춰 올리지 않고, 올릴 때는 docs/_ops/결정.md에 까닭을 적는다(설계 §14-3).",
+  "_": "묶음 압축 용량 상한(gzip 수준 9 바이트). 설계값이다 — 실제 값에 맞춰 올리지 않고, 올릴 때는 docs/_ops/결정.md에 까닭을 적는다(설계 §14-3). map은 엔진과 따로 내는 지도 자료(설계 §9) — 파일마다, slice는 가장 큰 은행 조각 하나.",
   "engine": { "file": "atlas.mjs", "gzipBytes": 65536 },
-  "entry": { "file": "loader.js", "gzipBytes": 2048 }
+  "entry": { "file": "loader.js", "gzipBytes": 2048 },
+  "map": {
+    "files": { "index.json": 98304, "units.json": 8192, "words.json": 20480 },
+    "slice": 49152
+  }
 }

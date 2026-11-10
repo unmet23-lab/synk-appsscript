@@ -1,9 +1,29 @@
 // 묶음 압축 용량 상한을 잰다(설계 §9 · §14-3). 빌드의 manifest와 budget.json을 받아 넘은 것을 돌려준다 — 의존 없는 순수 계산이다.
 // 상한은 설계값이다. 넘으면 줄이거나, 줄일 수 없는 까닭을 결정 표에 적고 budget.json을 고친다(실제 값에 맞춰 올리기만 하지 않는다).
+// 지도 줄(budget.map): 전체 색인 · 단위 · 낱말은 파일마다, 은행 조각(map/items/*)은 가장 큰 조각 하나를 잰다(설계 §9).
+function mapRows(manifest, map) {
+  if (!map) return [];
+  const files = manifest.map?.files ?? {};
+  const rows = Object.entries(map.files ?? {}).map(([file, gzip]) => [
+    'map',
+    files[file],
+    { file: `map/${file}`, gzipBytes: gzip },
+  ]);
+  const slices = Object.entries(files).filter(([file]) => file.startsWith('items/'));
+  const biggest = slices.sort((a, b) => b[1].gzipBytes - a[1].gzipBytes)[0];
+  rows.push([
+    'map',
+    biggest?.[1],
+    { file: `map/${biggest?.[0] ?? 'items/*'}`, gzipBytes: map.slice },
+  ]);
+  return rows;
+}
+
 export function checkBudget(manifest, budget) {
   const rows = [
     ['engine', manifest.files?.[budget.engine?.file], budget.engine],
     ['entry', manifest.entry?.[budget.entry?.file], budget.entry],
+    ...mapRows(manifest, budget.map),
   ];
   const report = rows.map(([part, measured, limit]) => {
     if (!limit || !Number.isInteger(limit.gzipBytes) || limit.gzipBytes <= 0) {

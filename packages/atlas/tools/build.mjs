@@ -4,6 +4,7 @@
 //   <밖>/atlas/<판>/atlas.mjs        엔진 묶음
 //   <밖>/atlas/<판>/manifest.json    판 · 커밋 · 파일마다 바이트 · sha256 · gzip 바이트 · 제3자 코드
 //   <밖>/atlas/<판>/LICENSES.txt     묶음에 든 제3자 코드의 고지(있을 때만)
+//   <밖>/atlas/<판>/map/…            지도 자료 — 엔진 묶음과 따로(설계 §9, tools/map-ship.mjs). manifest의 map 칸
 // 같은 커밋이면 같은 바이트다 — 시각 · 절대 경로를 넣지 않는다(시험이 두 번 빌드해 견준다).
 //
 //   node packages/atlas/tools/build.mjs [--out <폴더>] [--release]
@@ -15,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
+import { mapFiles } from './map-ship.mjs';
 
 export const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const RELEASE_EDITION = /^\d+\.\d+\.\d+$/;
@@ -144,6 +146,7 @@ export async function build({
   if (LOCAL_PATH.test(code.toString('utf8')))
     throw new Error('Atlas build: 묶음에 이 PC의 경로가 남았다');
   const parties = thirdPartyOf(metafile, root);
+  const map = mapFiles(path.join(root, 'map'));
   const files = { 'atlas.mjs': code };
   if (parties.length) files['LICENSES.txt'] = Buffer.from(licensesText(parties));
   const entry = {
@@ -164,9 +167,22 @@ export async function build({
       Object.entries(entry).map(([name, bytes]) => [name, describe(bytes)]),
     ),
     thirdParty: parties.map(({ name, version: v, license }) => ({ name, version: v, license })),
+    map: map && {
+      edition: map.edition,
+      revision: map.revision,
+      hash: map.hash,
+      files: Object.fromEntries(
+        Object.entries(map.files).map(([name, bytes]) => [name, describe(bytes)]),
+      ),
+    },
   };
   const editionDir = path.join(target, 'atlas', edition);
   fs.mkdirSync(editionDir, { recursive: true });
+  for (const [name, bytes] of Object.entries(map?.files ?? {})) {
+    const file = path.join(editionDir, 'map', name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, bytes);
+  }
   for (const [name, bytes] of Object.entries(files))
     fs.writeFileSync(path.join(editionDir, name), bytes);
   fs.writeFileSync(
