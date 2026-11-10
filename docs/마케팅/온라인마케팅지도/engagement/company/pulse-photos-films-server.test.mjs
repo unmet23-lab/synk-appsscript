@@ -12,8 +12,9 @@ import {createProductionFixture} from './pulse-production-fixture.mjs';
 // 10-22 모델은 사진만 · 완성 광고는 따로(유호님): 공개 목록은 모델마다 사진 넉 장과 완성 광고 모듈을 내고,
 // 거둔 것(하린 영상 넷 · 10-12 기획 모음 쪽과 그 그림 · 전신 기준 사진 · 기획 모듈)은 파일이 저장소에 남아도 내지 않는다.
 // 11-02: 캐스팅북 뒤 여섯 명도 같은 사진 넉 장을 낸다(거둔 전신 기준 사진은 처음 일곱 명에게만 있었다).
-const IDS=['m01','f01','f02','f03','m02','f04','m03'],LATER=['f05','m04','f06','f07','m05','m06','f08','f09','f10','f11','m07','m08','m09','m10'],SHOTS=['fullbody','look-1','look-2','context'];
-const PHOTOS=[...IDS,...LATER].flatMap(id=>SHOTS.map(shot=>`assets/casting/photos/${id}-${shot}.webp`));
+const IDS=['m01','f01','f02','f03','m02','f04','m03'],LATER=['f05','m04','f06','f07','m05','m06','f08','f09','f10','f11','m07','m08','m09','m10'],SHOTS=['fullbody','look-1','look-2','context','hair-2','hair-3'];
+// 11-10 옷 · 머리 고르기: 머리 2 · 3(스물한 명)과 F04의 머리 1(캐스팅북 대표 사진, 틀을 맞춤)도 같은 규칙으로 공개한다.
+const PHOTOS=[...[...IDS,...LATER].flatMap(id=>SHOTS.map(shot=>`assets/casting/photos/${id}-${shot}.webp`)),'assets/casting/photos/f04-hair-1.webp'];
 const WITHDRAWN=[
   'production-library/','production-library/index.html','production-library/library.js','production-library/library.css','production-catalog.mjs',
   ...['01-harin-coffee-v3.webp','02-yuna-perfume.webp','03-taejun-tailoring.webp','04-runway-comparison-v2.webp','04-runway-comparison-proportion-v1.webp'].map(name=>'assets/production/'+name),
@@ -43,7 +44,7 @@ function rawGet(path,headers={}){
 }
 
 test('HTTP anonymous casting photos and the films module return exact MIME, nosniff, revalidation and source bytes',async()=>{
-  assert.equal(PHOTOS.length,84);
+  assert.equal(PHOTOS.length,127);
   // 11-02: 뒤 여섯 명(11-03부터 아이돌 두 팀 여덟 명까지 열넷)의 대표 사진도 공개 목록이 카탈로그에서 읽어 낸다. 11-03 목소리는 뺐다 — 목소리 mp3는 열세 명 모두 공개 목록에 없다.
   const later=LATER.map(id=>[`assets/casting/${id}.webp`,'image/webp']);
   assert.equal(later.length,14);

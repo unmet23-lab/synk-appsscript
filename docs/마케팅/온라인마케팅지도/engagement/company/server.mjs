@@ -1983,7 +1983,10 @@ export function createCompanyApp(options={}) {
     for(const id of castingIds.map(value=>value.toLowerCase()))files['/pulse-app/assets/casting/'+id+'.webp']=['public/pulse-app/assets/casting/'+id+'.webp','image/webp'];
     // 11-03 모델 목소리를 뺐다(유호님 「둘 다 전부 빼기」): 목소리 mp3는 공개 목록에 두지 않는다(원본은 archive/casting-voice-20261103/).
     // 10-22 모델은 사진만: 영상 칸·기획 모음(production-library)·하린 영상은 공개 목록에서 뺀다(파일은 저장소에 그대로). 모델마다 사진 넉 장.
-    for(const id of castingIds.map(value=>value.toLowerCase()))for(const shot of ['fullbody','look-1','look-2','context'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
+    // 11-10 옷 · 머리 고르기: 머리 2 · 3 사진(hair-2 · hair-3)도 같은 폴더 · 같은 규칙(캐스팅북 빌드 바이트 복사)으로 둔다.
+    // F04만 대표 사진이 더 가까운 틀이라 머리 1(캐스팅북 hero-s)을 따로 둔다(casting-catalog modelLooks).
+    files['/pulse-app/assets/casting/photos/f04-hair-1.webp']=['public/pulse-app/assets/casting/photos/f04-hair-1.webp','image/webp'];
+    for(const id of castingIds.map(value=>value.toLowerCase()))for(const shot of ['fullbody','look-1','look-2','context','hair-2','hair-3'])files['/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp']=['public/pulse-app/assets/casting/photos/'+id+'-'+shot+'.webp','image/webp'];
     // 완성 광고(films-view.mjs): 갱스터 뮤직비디오와 화성 세 편(10-22 더함, 1분 안쪽이라 발췌 없이 포스터·본편만 — mp4는 git 밖), 유리결 · 매진 임박(11-04 더함, 같은 꼴).
     // 11-09 최신화: 도담중공업 · 오미톡 둘 · 모두의코스 · 솜채 · 첨벙댕 · 느지막 · 힘껏 · 캐스팅북 아홉 편을 같은 꼴로 더했다(docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열).
     for(const file of ['M03-mv-happy-gangster-poster-v1.webp','M03-mv-happy-gangster-excerpt-20s-v1.mp4','M03-mv-happy-gangster-full-v1.mp4'])files['/pulse-app/assets/casting/video/'+file]=['public/pulse-app/assets/casting/video/'+file,file.endsWith('.webp')?'image/webp':'video/mp4'];

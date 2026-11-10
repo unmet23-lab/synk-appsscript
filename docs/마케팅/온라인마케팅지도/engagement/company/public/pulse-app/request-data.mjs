@@ -165,7 +165,7 @@ export const emptyAnswers=()=>({
   audience:'',oneThing:'',action:'',
   screenText:'',avoid:[],avoidNote:'',facts:'',
   win:'',refs:[{url:'',points:[],why:''}],avoidFeel:'',
-  models:[],modelChoice:'',hair:'',
+  models:[],modelChoice:'',hair:'',outfit:'',
   date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,
   contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',
   personaRequest:{kind:'',look:'',use:'',keep:'',relation:'',consentWay:''},
@@ -173,7 +173,8 @@ export const emptyAnswers=()=>({
 // 다국어 · 전용 인물 판 1(11-09)에 더한 칸(서버 pulse-requests.mjs ANSWER_FIELDS와 같은 이름). 비어 있으면 보내지 않는다 —
 // 이 칸을 모르는 옛 서버도 자동 저장을 거절하지 않게. 서버는 빠진 칸을 빈 값으로 채우므로 지운 값도 그대로 전해진다.
 // 판 3의 맞춤 인물 요청(personaRequest)도 같다 — 칸이 모두 비어 있으면 보내지 않는다.
-const LATER_FIELDS=['hair','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+// 옷(outfit, 11-10)은 의뢰서가 아니라 방향을 고를 때 받는 칸이라 의뢰서에서는 늘 비어 있다 — 같은 규칙으로 보내지 않는다.
+const LATER_FIELDS=['hair','outfit','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
 const blank=value=>value===''||value==null||Array.isArray(value)&&!value.length||typeof value==='object'&&!Array.isArray(value)&&Object.values(value).every(item=>item===''||item==null);
 // 이미지 원본 점검(브라우저에서 바로). 막지 않고, 어느 컷에 어떤 영향이 있는지만 말한다. 글은 부를 때의 언어다(화면은 그릴 때마다 다시 부른다).
 export function photoAdvice(width,height,kind){

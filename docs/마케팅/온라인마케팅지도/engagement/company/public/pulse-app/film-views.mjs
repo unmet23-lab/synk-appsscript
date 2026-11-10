@@ -1,8 +1,8 @@
 import {esc,stamp} from './api.mjs';
 import {t,k} from './i18n.mjs';
-import {CASTING_MODELS} from './casting-catalog.mjs';
+import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
 import {MODEL_LINES,MODEL_PICKS} from './request-data.mjs';
-import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard,roomTab} from './room-view.mjs';
+import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard,roomTab,lookOf,lookLine} from './room-view.mjs';
 import {FINISHED_FILMS,filmNote,filmTitle} from './films-view.mjs';
 import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
 import {arrow} from './film-home.mjs';
@@ -121,11 +121,28 @@ function dpModel(d,ui){
   const now=modelCard(ui.modelId)||d.model;
   // 얼굴 줄(판 3): 후보 넷을 작은 얼굴로 늘 보이고, 큰 사진은 「크게 보기」로 접어 둔다. 단추 값은 큰 사진과 같다.
   const face=m=>`<button type="button" class="sx-dp-face ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}" aria-label="${esc(nameOf(m.name))}"><img src="${esc(m.image)}" alt="" width="44" height="44" loading="lazy" decoding="async"></button>`;
-  return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">${esc(t('AI 모델'))}</span><b data-dp-model-name>${esc(now?.name?nameOf(now.name):'')}</b></p>${picks.length>1?`<div class="sx-dp-faces" role="group" aria-label="${esc(t('모델 고르기'))}"><span class="sx-dp-label">${esc(t('다른 모델'))}</span>${picks.map(face).join('')}<button type="button" class="sx-quiet sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${esc(ui.casting?t('접기'):t('크게 보기'))}</button></div>`:''}<span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="${esc(t('다른 모델 고르기'))}" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(nameOf(m.name))}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>${esc(t('이 모델로 바꿔 장면 이미지에서 보여 드려요.'))}</p></div>`;
+  return `<div class="sx-dp-model sx-small"><p><span class="sx-dp-label">${esc(t('AI 모델'))}</span><b data-dp-model-name>${esc(now?.name?nameOf(now.name):'')}</b></p>${picks.length>1?`<div class="sx-dp-faces" role="group" aria-label="${esc(t('모델 고르기'))}"><span class="sx-dp-label">${esc(t('다른 모델'))}</span>${picks.map(face).join('')}<button type="button" class="sx-quiet sx-dp-model-open" data-dp-do="casting" aria-expanded="${ui.casting?'true':'false'}">${esc(ui.casting?t('접기'):t('크게 보기'))}</button></div>`:''}<span data-dp-work-slot></span></div><div class="sx-dp-casts" role="group" aria-label="${esc(t('다른 모델 고르기'))}" data-dp-casts ${ui.casting?'':'hidden'}>${picks.map(m=>`<button type="button" class="sx-dp-cast ${m.id===now?.id?'is-on':''}" aria-pressed="${m.id===now?.id?'true':'false'}" data-dp-model="${esc(m.id)}"><img src="${esc(modelScene(m.id))}" alt="" width="538" height="720" loading="lazy" decoding="async"><span class="sx-small">${esc(nameOf(m.name))}</span></button>`).join('')}<p class="sx-small sx-dp-cast-note" data-dp-cast-note ${now?.id&&now.id!==d.model?.id?'':'hidden'}>${esc(t('이 모델로 바꿔 장면 이미지에서 보여 드려요.'))}</p></div>${d.looks?dpLooks(d,ui):''}`;
 }
+// ── 옷 · 머리(2026-11-10, 설계 4-1) ──
+// 모델마다 이미 있는 사진(옷 세 벌 · 머리 세 가지) 가운데 고른다. 기본은 「담당자에게 맡기기」(값 없음), 「직접 고르기」로 펼친다.
+// 칸을 누르면 고르고 다시 누르면 풀린다(그 줄은 맡김). 처음 값은 같은 모델로 앞서 고른 값(d.look), 모델을 바꾸면 비운다.
+// 펼친 칸은 모델 큰 사진(「크게 보기」)과 함께 펼치지 않는다 — 방향을 고르는 화면이 주인공이라 높이를 지킨다.
+const seedLook=(d,ui)=>{if(ui.outfit===undefined)ui.outfit=d.look?.outfit||'';if(ui.hair===undefined)ui.hair=d.look?.hair||'';};
+const lookModel=(d,ui)=>(modelCard(ui.modelId)||d.model)?.id||'';
+const lookSum=look=>look.outfit||look.hair?lookLine(look):t('담당자에게 맡기기 · 방향에 맞춰 골라 드려요');
+function dpLooks(d,ui){
+  const id=lookModel(d,ui),looks=modelLooks(id);if(!looks)return '';
+  const now=lookOf(id,ui);
+  // 이름은 칸 폭에 맞춰 줄여 보이므로 전체 이름을 title(마우스를 올리면)과 단추 이름에 둔다.
+  const cell=(key,item)=>{const on=now[key]===item.id,name=t(item.label);return `<button type="button" class="sx-dp-pic${on?' is-on':''}" aria-pressed="${on?'true':'false'}" aria-label="${esc(name)}" title="${esc(name)}" data-dp-look-pick="${key}" data-value="${esc(item.id)}"><img src="${esc(item.src)}" alt="" loading="lazy" decoding="async"><span class="sx-small">${esc(name)}</span></button>`;};
+  const set=(key,label,items)=>`<div class="sx-dp-look-set is-${key}" role="group" aria-label="${esc(label)}"><span class="sx-dp-label">${esc(label)}</span><div class="sx-dp-pics">${items.map(item=>cell(key,item)).join('')}</div></div>`;
+  return `<div class="sx-dp-look sx-small" data-dp-look data-model="${esc(id)}"><p class="sx-dp-look-row"><span class="sx-dp-label">${esc(t('옷 · 머리'))}</span><b data-dp-look-sum>${esc(lookSum(now))}</b><button type="button" class="sx-quiet sx-dp-look-open" data-dp-do="looks" aria-expanded="${ui.looks?'true':'false'}" aria-controls="dp-looks">${esc(ui.looks?t('접기'):t('직접 고르기'))}</button></p><div class="sx-dp-looks" id="dp-looks" data-dp-looks ${ui.looks?'':'hidden'}>${set('outfit',t('옷'),looks.outfits)}${set('hair',t('머리'),looks.hairs)}<p class="sx-dp-look-note">${esc(t('고른 옷 · 머리는 장면 이미지에서 이 사진 그대로 맞춰요.'))}</p></div></div>`;
+}
+// 「이 방향으로 갈게요」 양식의 숨은 칸: 줄을 그릴 때만 두고, 그때는 빈 값(맡김)이라도 늘 보낸다(서버 규칙 — 칸이 없으면 건드리지 않음).
+const lookFields=(d,ui)=>{if(!d.looks)return '';const now=lookOf(lookModel(d,ui),ui);return `<input type="hidden" name="outfit" value="${esc(now.outfit)}"><input type="hidden" name="hair" value="${esc(now.hair)}">`;};
 export function directionView(p,{top='',ui={},journal=''}={}){
   const d=p.direction,focus=d.options.some(o=>o.id===ui.focus)?ui.focus:(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id,keep=d.status==='chosen'&&d.note?d.note:'',noteOpen=!!ui.note,view=ui.view==='neither'?'neither':'choose',item=d.options.find(o=>o.id===focus);
-  const terms=termsOf(d);
+  const terms=termsOf(d);if(d.looks)seedLook(d,ui);
   return `<div class="sx-room is-direction" data-state="direction">
     <section class="sx-dp" data-count="${d.options.length}" data-view="${view}" data-dp>
       <div class="sx-dp-reel">${d.options.map((o,i)=>`<button type="button" class="sx-dp-frame" data-dp-frame="${esc(o.id)}" data-at="${i}" aria-pressed="${o.id===focus?'true':'false'}" aria-label="${esc(t('{no} {name} 보기',{no:o.no,name:o.name}))}"><img src="${esc(o.src)}" alt="" decoding="async"><span class="sx-dp-frame-no sx-small"><span class="sx-no">${esc(o.no)}</span> ${esc(o.name)}</span></button>`).join('')}</div>
@@ -139,7 +156,7 @@ export function directionView(p,{top='',ui={},journal=''}={}){
           <div class="sx-dp-terms">${terms}
             <p class="sx-small sx-dp-incl">${esc(t('어느 방향이든 값은 같고, 모델 · 목소리 · 음악 · 자막이 모두 들어 있어요. 결제는 글 콘티를 보신 뒤 크몽에서 해요.'))} <button type="button" class="sx-link" data-dp-do="more" aria-expanded="${ui.more?'true':'false'}">${esc(ui.more?t('접기'):t('자세히'))}</button></p>
             <dl class="sx-dp-more sx-small" data-dp-more ${ui.more?'':'hidden'}><div><dt>${esc(t('만드는 법'))}</dt><dd>${esc(t('사람과 목소리는 모두 AI로 만들어요. 제품 · 로고 · 글자는 보내 주신 파일을 그대로 얹어요. 지금 그림은 방향을 보여 드리는 첫 그림이에요'))}</dd></div>${d.gets?`<div><dt>${esc(t('받으시는 것'))}</dt><dd>${esc(t(d.gets))}</dd></div>`:''}<div><dt>${esc(t('쓸 수 있는 곳'))}</dt><dd>${esc(t('온라인 광고 · SNS · 자사몰 · 상세페이지(음악 · 목소리 포함). TV · 옥외 · 극장 · 인쇄는 따로 여쭤 주세요'))}</dd></div><div><dt>${esc(t('받으실 날'))}</dt><dd>${esc(t('사진 · 로고 · 꼭 넣을 말이 다 모였을 때 기준이에요. 주말과 공휴일을 포함한 날이고, 확인이 늦어지면 그만큼 함께 미뤄요'))}</dd></div><div><dt>${esc(t('수정'))}</dt><dd>${esc(d.photo?t('사진이 나온 뒤 {count}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요',{count:d.revisions}):t('영상이 나온 뒤 {count}번. 글 콘티와 장면 이미지의 의견은 횟수에 세지 않아요',{count:d.revisions}))}</dd></div><div><dt>${esc(t('결제'))}</dt><dd>${esc(t('글 콘티를 보신 뒤 장면 이미지 전에 크몽에서 해요. 크몽 상품에서 「문의하기」로 접수 번호를 보내 주시면 같은 값 · 기간 · 수정 횟수의 결제 요청을 보내 드려요. 글 콘티까지는 값을 받지 않아요'))}</dd></div><div><dt>${esc(t('취소 · 환불'))}</dt><dd>${esc(t('결제 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드려요. 제작을 시작한 뒤에는 맞춤 제작이라 수정 횟수 안에서 고쳐 드려요'))}</dd></div><div><dt>${esc(t('작품 소개'))}</dt><dd>${esc(t('완성한 광고는 공개하신 뒤에 SYNK PULSE 작품으로 소개할 수 있어요. 원하지 않으시면 담당자에게 알려 주세요'))}</dd></div>${p.mail?`<div><dt>${esc(t('알림'))}</dt><dd>${esc(t('글 콘티가 오면 메일({mail})로도 알려 드려요',{mail:p.mail}))}</dd></div>`:''}</dl>
-            <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}"><label class="sx-dp-note" data-dp-note ${noteOpen?'':'hidden'}><span class="sr">${esc(t('덧붙일 말'))}</span><input type="text" name="note" maxlength="200" placeholder="${esc(t('예) 「쌉쌀」은 빼 주세요'))}" value="${esc(keep)}"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>${esc(goLabel(item.name))}</span>${arrow}</button></form>
+            <form class="sx-dp-answer" data-form="direction-pick"><input type="hidden" name="optionId" value="${esc(focus)}"><input type="hidden" name="modelId" value="${esc(ui.modelId||'')}">${lookFields(d,ui)}<label class="sx-dp-note" data-dp-note ${noteOpen?'':'hidden'}><span class="sr">${esc(t('덧붙일 말'))}</span><input type="text" name="note" maxlength="200" placeholder="${esc(t('예) 「쌉쌀」은 빼 주세요'))}" value="${esc(keep)}"></label><button type="submit" class="sx-go is-solid sx-dp-go" data-mutate><span data-dp-go>${esc(goLabel(item.name))}</span>${arrow}</button></form>
             ${keep?`<p class="sx-small sx-dp-kept" ${noteOpen?'hidden':''}>${esc(t('덧붙이신 말 · {note}',{note:keep}))}</p>`:''}<p class="sx-dp-foot"><button type="button" class="sx-quiet" data-dp-do="note" aria-expanded="${noteOpen?'true':'false'}">${esc(keep?t('덧붙인 말 고치기'):t('한마디 덧붙이기'))}</button><button type="button" class="sx-quiet" data-dp-do="neither">${esc(d.options.length>2?t('모두 아니에요'):t('둘 다 아니에요'))}</button></p>
           </div>
         </div>
@@ -155,6 +172,23 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   const $=selector=>host.querySelector(selector),works=Object.fromEntries(FINISHED_FILMS.map(film=>[film.id,film]));
   let playing=null;
   if(!ui.focus||!d.options.some(o=>o.id===ui.focus))ui.focus=(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id;
+  if(d.looks)seedLook(d,ui);
+  // 옷 · 머리 사진을 못 받으면 사진만 숨기고 이름은 남긴다(글로는 늘 고를 수 있게).
+  const bindPics=()=>host.querySelectorAll('.sx-dp-pic img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;},{once:true}));
+  function syncLooks(){
+    const box=$('[data-dp-look]');if(!box)return;
+    const now=lookOf(lookModel(d,ui),ui);ui.outfit=now.outfit;ui.hair=now.hair;
+    box.querySelectorAll('[data-dp-look-pick]').forEach(button=>{const on=now[button.dataset.dpLookPick]===button.dataset.value;button.classList.toggle('is-on',on);button.setAttribute('aria-pressed',on?'true':'false');});
+    const sum=box.querySelector('[data-dp-look-sum]');if(sum)sum.textContent=lookSum(now);
+    const form=$('[data-form="direction-pick"]');if(form?.elements.outfit){form.elements.outfit.value=now.outfit;form.elements.hair.value=now.hair;}
+  }
+  // 모델 큰 사진과 옷 · 머리는 한 번에 하나만 펼친다.
+  function fold(key){
+    if(!ui[key])return;ui[key]=false;
+    const [box,button,label]=key==='casting'?[$('[data-dp-casts]'),$('[data-dp-do="casting"]'),t('크게 보기')]:[$('[data-dp-looks]'),$('[data-dp-do="looks"]'),t('직접 고르기')];
+    if(box)box.hidden=true;if(button){button.setAttribute('aria-expanded','false');button.textContent=label;}
+  }
+  bindPics();
   const workOf=o=>{const film=works[o.workId];return film?{src:film.excerpt?.src||film.full?.src||'',poster:film.poster||'',title:filmTitle(film),note:filmNote(film)}:null;};
   function stopFilm(){if(!playing)return;playing.video.pause?.();playing.video.remove();playing.cap.remove();const was=playing;playing=null;syncFilmButtons();return was;}
   function playFilm(kind){
@@ -197,12 +231,23 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
     const frame=event.target.closest('[data-dp-frame]');if(frame&&ui.view!=='neither'){setFocus(frame.dataset.dpFrame);return;}
     const pick=event.target.closest('[data-dp-pick]');if(pick){setFocus(pick.dataset.dpPick);return;}
     const model=event.target.closest('[data-dp-model]')?.dataset.dpModel;
-    if(model){ui.modelId=model===d.model?.id?'':model;const card=modelCard(model);$('[data-dp-model-name]').textContent=card?.name?nameOf(card.name):'';host.querySelectorAll('[data-dp-model]').forEach(button=>{const on=button.dataset.dpModel===model;button.classList.toggle('is-on',on);button.setAttribute('aria-pressed',on?'true':'false');});const note=$('[data-dp-cast-note]');if(note)note.hidden=!ui.modelId;$('[data-form="direction-pick"]').elements.modelId.value=ui.modelId;return;}
+    if(model){
+      const was=lookModel(d,ui);
+      ui.modelId=model===d.model?.id?'':model;const card=modelCard(model);$('[data-dp-model-name]').textContent=card?.name?nameOf(card.name):'';host.querySelectorAll('[data-dp-model]').forEach(button=>{const on=button.dataset.dpModel===model;button.classList.toggle('is-on',on);button.setAttribute('aria-pressed',on?'true':'false');});const note=$('[data-dp-cast-note]');if(note)note.hidden=!ui.modelId;$('[data-form="direction-pick"]').elements.modelId.value=ui.modelId;
+      // 모델이 바뀌면 옛 모델의 옷 · 머리는 그 모델 몫으로 접어 두고, 바뀐 모델은 그 모델에서 고르던 값(처음이면 맡김 —
+      // 방향의 모델로 돌아오면 앞서 고른 값)으로 사진째 다시 그린다(펼친 상태는 그대로). 다른 모델의 값이 넘어가지 않는다.
+      const box=$('[data-dp-look]'),now=lookModel(d,ui);
+      if(box&&now!==was){ui.picks={...ui.picks,[was]:{outfit:ui.outfit,hair:ui.hair}};const back=ui.picks[now]||(now===d.model?.id?d.look:null);ui.outfit=back?.outfit||'';ui.hair=back?.hair||'';box.outerHTML=dpLooks(d,ui);bindPics();syncLooks();}
+      return;
+    }
+    const look=event.target.closest('[data-dp-look-pick]');
+    if(look){const key=look.dataset.dpLookPick;ui[key]=ui[key]===look.dataset.value?'':look.dataset.value;syncLooks();return;}
     const film=event.target.closest('[data-dp-film]')?.dataset.dpFilm;if(film){if(playing?.kind===film)stopFilm();else playFilm(film);return;}
     const what=event.target.closest('[data-dp-do]'),act=what?.dataset.dpDo;if(!act)return;
     if(act==='more')toggle('more',$('[data-dp-more]'),what,[t('접기'),t('자세히')]);
     if(act==='note'){toggle('note',$('[data-dp-note]'),what,[]);const kept=$('.sx-dp-kept');if(kept)kept.hidden=!!ui.note;if(ui.note)$('[data-dp-note] input').focus({preventScroll:true});}
-    if(act==='casting')toggle('casting',$('[data-dp-casts]'),what,[t('접기'),t('크게 보기')]);
+    if(act==='casting'){toggle('casting',$('[data-dp-casts]'),what,[t('접기'),t('크게 보기')]);if(ui.casting)fold('looks');}
+    if(act==='looks'){toggle('looks',$('[data-dp-looks]'),what,[t('접기'),t('직접 고르기')]);if(ui.looks)fold('casting');}
     if(act==='neither')setView('neither');
     if(act==='back')setView('choose');
   });
@@ -315,7 +360,9 @@ function doneCard(){
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){
   const o=d.chosen;
-  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">${esc(t('고르신 방향'))}${d.status==='settled'?` · ${esc(t('담당자와 정함'))}`:''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${d.note?`<p class="sx-small">${esc(d.status==='settled'?t('담당자와 정한 내용: {note}',{note:d.note}):t('덧붙이신 말: {note}',{note:d.note}))}</p>`:''}${termsOf(d)}<ol class="sx-dp-road sx-small"><li class="is-done">${esc(t('방향'))}</li><li class="is-now">${esc(t('글 콘티'))}</li><li>${esc(t('장면 이미지'))}</li><li>${esc(t('영상'))}</li></ol>${d.canPick?`<button type="button" class="sx-quiet" data-room-go="pick">${esc(t('다시 고르기'))}</button>`:''}</section>`;
+  // 옷 · 머리(11-10): 그때 고른 모델 · 옷 · 머리 한 줄(서버가 기록을 남긴 판만 — 없으면 전처럼).
+  const look=d.picked&&d.model?`<p class="sx-small sx-dp-chosen-look">${esc(t('모델 {name} · {look}',{name:nameOf(d.model.name),look:lookLine(d.picked)}))}</p>`:'';
+  return `<section class="sx-dp-chosen" data-room-in><p class="sx-small">${esc(t('고르신 방향'))}${d.status==='settled'?` · ${esc(t('담당자와 정함'))}`:''}</p><h2 class="sx-serif">${esc(o.name)}</h2><p class="sx-body">${esc(o.sentence)}</p>${look}${d.note?`<p class="sx-small">${esc(d.status==='settled'?t('담당자와 정한 내용: {note}',{note:d.note}):t('덧붙이신 말: {note}',{note:d.note}))}</p>`:''}${termsOf(d)}<ol class="sx-dp-road sx-small"><li class="is-done">${esc(t('방향'))}</li><li class="is-now">${esc(t('글 콘티'))}</li><li>${esc(t('장면 이미지'))}</li><li>${esc(t('영상'))}</li></ol>${d.canPick?`<button type="button" class="sx-quiet" data-room-go="pick">${esc(t('다시 고르기'))}</button>`:''}</section>`;
 }
 // 되묻기: 칸마다 글로 답하거나 파일을 보낸다. 파일만, 글만 보내도 된다.
 function askList(p){return `<ul class="sx-asks" data-room-in>${p.asks.map(item=>`<li><div class="sx-ask-head"><b class="sx-serif">${esc(item.label)}</b>${item.why?`<p class="sx-small">${esc(item.why)}</p>`:''}</div><form class="sx-ask-reply" data-form="ask" data-id="${esc(item.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:item.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-small sx-link"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form></li>`).join('')}${(p.answered||[]).map(item=>`<li class="is-answered"><div class="sx-ask-head"><b>${esc(item.label)}</b><p class="sx-small">${esc(item.answer||item.fileName||t('파일을 보내 주셨어요.'))}</p></div><span class="sx-small">${esc(t('보냈어요'))}</span></li>`).join('')}</ul>`;}
@@ -395,7 +442,7 @@ export function draftView(d,{top='',head='',journal=''}={}){
       ${top}
       <div class="sx-dr-credit"><p class="sx-small">${credit}</p><p class="sx-small sx-dr-oneline-label">${esc(t('광고가 남길 한 문장'))}</p><h1 class="sx-serif" data-draft-title>${esc(d.oneLine)}</h1>${d.note?`<p class="sx-small sx-draft-note">${esc(d.note)}</p>`:''}</div>
       ${journal}
-      ${d.model?`<div class="sx-draft-cast"><img src="${esc(modelScene(d.model.id))}" alt=""><span class="sx-small"><b>${esc(nameOf(d.model.name))}</b> ${esc(t(d.model.line))}${script&&!locked?` <button type="button" class="sx-quiet" data-draft-do="recast">${esc(t('다른 모델로 바꾸기'))}</button>`:''}</span></div>`:d.persona?`<div class="sx-draft-cast">${d.persona.image?`<img src="${esc(d.persona.image)}" alt="">`:''}<span class="sx-small"><b>${esc(d.persona.name)}</b> ${esc(t('이번 광고에 쓰기로 하신 맞춤 인물'))}</span></div>`:''}
+      ${d.model?`<div class="sx-draft-cast"><img src="${esc(d.look?.outfitSrc||modelScene(d.model.id))}" alt=""${d.look?.outfitSrc?' class="is-outfit"':''}><span class="sx-small"><b>${esc(nameOf(d.model.name))}</b> ${esc(t(d.model.line))}${d.look?`<span class="sx-draft-look">${esc(lookLine(d.look))}</span>`:''}${script&&!locked?` <button type="button" class="sx-quiet" data-draft-do="recast">${esc(t('다른 모델로 바꾸기'))}</button>`:''}</span></div>`:d.persona?`<div class="sx-draft-cast">${d.persona.image?`<img src="${esc(d.persona.image)}" alt="">`:''}<span class="sx-small"><b>${esc(d.persona.name)}</b> ${esc(t('이번 광고에 쓰기로 하신 맞춤 인물'))}</span></div>`:''}
     </header>
     <aside class="sx-dr-right">
       <p class="sx-no sx-draft-cut"><b data-cut-no>01</b> / ${pad(d.cuts.length)} <span class="sx-small" data-cut-sec>${esc(secs(d.cuts[0].seconds))}</span></p>

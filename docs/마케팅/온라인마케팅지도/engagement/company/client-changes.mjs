@@ -1,7 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {strategyView,strategyReadiness,CUSTOMER_STRATEGY_LABELS} from './pulse-strategy.mjs';
 import {clientKickoffSources} from './client-kickoff.mjs';
-import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+import {CASTING_MODELS,modelLooks} from './public/pulse-app/casting-catalog.mjs';
 
 const records=value=>Array.isArray(value)?value:[];
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -12,6 +12,8 @@ const labels={objective:'제작 목적',product:'제품·서비스',audience:'�
 const choices={objective:{sales:'제품·서비스 판매',brand:'브랜드 알리기',both:'판매와 브랜드 둘 다'},distribution:{owned:'직접 운영하는 채널',paid:'유료 광고 노출',mixed:'운영 채널과 유료 광고 함께'},aspectRatio:{multiple:'여러 비율',other:'기타·협의'},planInterest:{basic:'필요한 기본 구성부터',premium:'추가 표현·결과물도 함께',custom:'맞춤 구성으로 상담'},channels:{instagram:'인스타그램',youtube:'유튜브',facebook:'페이스북',tiktok:'틱톡',website:'웹사이트',blog:'블로그',offline:'오프라인',tv:'TV',other:'기타'}};
 const castingOptions={
   hair:{label:'헤어',values:{original:'대표 사진 그대로','look-2':'모델 헤어 2','look-3':'모델 헤어 3',short:'숏 헤어',bob:'단발','long-straight':'긴 생머리',wave:'웨이브',updo:'묶은 머리',custom:'직접 설명'}},
+  // 옷(11-10): 고른 모델의 옷 세 벌. 모델을 알면 그 모델의 옷 이름(casting-catalog modelLooks)으로 읽는다.
+  outfit:{label:'옷',values:{fullbody:'기본 옷','look-1':'모델 룩 1','look-2':'모델 룩 2'}},
   makeup:{label:'메이크업',values:{natural:'내추럴',clean:'깔끔하고 단정하게',glow:'화사한 윤광',smoky:'스모키',custom:'직접 설명'}},
   jacket:{label:'자켓',values:{none:'없음',blazer:'블레이저',casual:'캐주얼 자켓',leather:'레더 자켓',custom:'직접 설명'}},
   top:{label:'상의',values:{tshirt:'티셔츠',shirt:'셔츠',knit:'니트',blouse:'블라우스',custom:'직접 설명'}},
@@ -26,7 +28,8 @@ function castingText(value){
   const model=CASTING_MODELS.find(model=>model.id===value.modelId),parts=['모델: '+(model?model.name+' ('+model.id+')':value.modelId||'미정')];
   // 헤어 1·2·3은 고른 모델의 헤어 이름으로 읽는다(casting-catalog의 hairLabels).
   const modelHair=key=>key==='hair'&&model&&{original:0,'look-2':1,'look-3':2}[value.hair]!==undefined?model.hairLabels?.[{original:0,'look-2':1,'look-3':2}[value.hair]]:'';
-  for(const [key,option]of Object.entries(castingOptions))parts.push(option.label+': '+(modelHair(key)||option.values[value[key]]||value[key]||'미정'));
+  const modelOutfit=key=>key==='outfit'&&model?modelLooks(model.id)?.outfits.find(item=>item.id===value.outfit)?.label||'':'';
+  for(const [key,option]of Object.entries(castingOptions))parts.push(option.label+': '+(modelHair(key)||modelOutfit(key)||option.values[value[key]]||value[key]||'미정'));
   if(value.notes)parts.push('기타·메모: '+value.notes);return parts.join('\n');
 }
 function display(key,value){if(key==='castingSelection')return castingText(value);if(value===null||value===undefined||value==='')return '아직 없음';if(Array.isArray(value))return value.length?value.map(item=>choices[key]?.[item]||structuredText(item)).join(', '):'고르지 않음';if(object(value))return structuredText(value);if(key==='durationSeconds')return value+'초';if(key==='budgetProduction'||key==='budgetMedia')return Number(value).toLocaleString('ko-KR')+'원';return choices[key]?.[value]||String(value);}
@@ -34,7 +37,15 @@ function sourcesOf(row){return clientKickoffSources(row,{customer:true}).filter(
 function currentOf(row){const strategy=strategyView(row.studio?.strategy);return {strategyRevision:strategy.revision,strategy:strategy.data,dueDate:row.dueDate||'',terms:row.terms||'',sources:sourcesOf(row)};}
 // 11-03 목소리를 뺐다: 화면 · 비교(currentOf)는 목소리를 비운 값을 쓰지만, 검토 완료 표시(changeKey)는 그 전 판이 센 해시와 같아야
 // 배포만으로 끝낸 검토가 풀리지 않는다(검수 GPT GA1) — 저장된 목소리를 그 전 판의 읽기 규칙(모델이 있을 때만 A·B·C)대로 되돌려 넣어 센다.
-function keyedCurrent(row,current){const stored=row.studio?.strategy?.data?.castingSelection?.voice,cast=current.strategy?.castingSelection;return cast?.modelId&&['A','B','C'].includes(stored)?{...current,strategy:{...current.strategy,castingSelection:{...cast,voice:stored}}}:current;}
+// 11-10 옷 칸(outfit)을 더했다: 고르지 않은 옷(빈 값)은 키째 빼고 센다 — 칸을 더한 배포만으로 옛 프로젝트의 열쇠가 바뀌어
+// 「바뀐 것 다 봄」이 풀리지 않게(설계 검토 6, 목소리와 같은 결함). 고른 옷이 있으면 실제로 바뀐 것이라 열쇠가 바뀐다.
+function keyedCurrent(row,current){
+  const stored=row.studio?.strategy?.data?.castingSelection?.voice,cast=current.strategy?.castingSelection;if(!cast)return current;
+  let keyed=cast;
+  if(cast.modelId&&['A','B','C'].includes(stored))keyed={...keyed,voice:stored};
+  if(keyed.outfit===''){const {outfit,...rest}=keyed;keyed=rest;}
+  return keyed===cast?current:{...current,strategy:{...current.strategy,castingSelection:keyed}};
+}
 function blockersOf(row,current){const strategy=strategyView(row.studio?.strategy),result=[];if(!strategyReadiness(current.strategy).ready)result.push('기획에 꼭 있어야 하는 것이 아직 안 적혀 있어요.');if(!strategy.revision||strategy.confirmation?.strategyRevision!==strategy.revision)result.push('고객이 지금 기획을 아직 확인하지 않았어요.');if(!/^\d{4}-\d{2}-\d{2}$/.test(current.dueDate)||!Number.isFinite(Date.parse(current.dueDate+'T00:00:00Z'))||new Date(current.dueDate+'T00:00:00Z').toISOString().slice(0,10)!==current.dueDate)result.push('합의한 전달일이 아직 없어요.');if(typeof current.terms!=='string'||!current.terms.trim())result.push('합의한 범위와 조건이 아직 없어요.');return result;}
 function changesOf(baseline,current){
   if(!baseline)return [];

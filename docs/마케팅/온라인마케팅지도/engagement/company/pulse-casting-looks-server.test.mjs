@@ -1,0 +1,177 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,dirname,resolve} from 'node:path';
+import {createCompanyApp} from './server.mjs';
+import {emptyStrategyData,applyStrategyAction,strategyView} from './pulse-strategy.mjs';
+import {normalizeRequestAnswers,emptyRequestAnswers,carryToStrategy,requestActions} from './pulse-requests.mjs';
+import {modelLooks,OUTFIT_IDS,HAIR_IDS,CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+
+// 옷 · 머리 고르기(2026-11-10, docs/마케팅/PULSE_의뢰흐름_20261104/옷머리고르기_설계_20261110.md 5절): 서버가 지키는 약속.
+// 손님이 방향을 고를 때 보낸 옷 · 머리는 「칸 없음 = 건드리지 않음 · '' = 맡김 · 값 = 씀(허용 밖 400)」, 모델이 바뀌면 옛 모델의 값은
+// 의뢰 기록(answers)과 제작 설계(castingSelection) 두 곳에서 모두 비운다 — 방향 고르기 · 직원 정리 · 글 콘티의 「다른 모델로 바꾸기」 세 길.
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
+const answers=(extra={})=>({name:'오미톡 오미자 스파클링',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝나고 목마른 20대',oneThing:'한 캔에 맛이 다섯 번 바뀐다',action:'buy',screenText:'다섯 가지 맛, 톡.',avoid:[],win:'story',refs:[],models:[],modelChoice:'ask',date:'',dateFree:true,approver:'one',contactName:'김합성',company:'합성 음료',email:'buyer@pulse-synthetic.test',phone:'',consent:true,rights:true,slots:{},...extra});
+const kstToday=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+const dayAfter=days=>{const at=new Date(kstToday()+'T00:00:00Z');at.setUTCDate(at.getUTCDate()+days);return at.toISOString().slice(0,10);};
+async function fixture(t){
+  const directory=await mkdtemp(join(tmpdir(),'synk-pulse-looks-'));
+  const options={dataDir:join(directory,'server'),clientIntakeDir:join(directory,'inbox'),host:'127.0.0.1',port:0,origin:'http://127.0.0.1:0',allowTestHost:true,schedule:false,workNotificationsEnabled:false,webPushEnabled:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,pulseRequestFreeBytes:async()=>100*1024**3};
+  const app=createCompanyApp(options),address=await app.start(),base='http://127.0.0.1:'+address.port;
+  const owner=app.store.createUser({name:'담당자',email:'owner@pulse-synthetic.test',role:'admin'}),token=app.store.mint('session',owner.id,{csrfToken:'staff-csrf'},120);
+  t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
+  const jar=new Map();
+  const remember=response=>{for(const line of response.headers.getSetCookie?.()||[]){const [pair,...rest]=line.split(';'),[name,value]=pair.split('=');if(value&&!/max-age=0/i.test(rest.join(';')))jar.set(name,value);else jar.delete(name);}};
+  const parse=async response=>{const bytes=Buffer.from(await response.arrayBuffer());let data=null;try{data=JSON.parse(bytes.toString());}catch{}return {status:response.status,data};};
+  async function call(path,{body,csrf=''}={}){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{...(jar.size?{Cookie:[...jar].map(([k,v])=>`${k}=${v}`).join('; ')}:{}),Origin:app.origin,...(csrf?{'X-Pulse-CSRF':csrf}:{}),...(body!==undefined?{'Content-Type':'application/json'}:{})},body:body===undefined?undefined:JSON.stringify(body)});remember(response);return parse(response);}
+  async function staff(path,{body,raw,headers={}}={}){return parse(await fetch(base+path,{method:body===undefined&&raw===undefined?'GET':'POST',headers:{Cookie:'synk_company_session='+token,'X-CSRF-Token':'staff-csrf',Origin:app.origin,...(body!==undefined?{'Content-Type':'application/json'}:{}),...headers},body:raw??(body===undefined?undefined:JSON.stringify(body))}));}
+  return {call,staff};
+}
+// 의뢰를 넣고 확인까지 마친 프로젝트 하나와 직원 · 고객 손잡이(pulse-direction-server.test.mjs와 같은 꼴).
+async function confirmed(t,extra={}){
+  const f=await fixture(t);
+  const draft=(await f.call('/pulse/api/request/start',{body:{}})).data.draft;
+  const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers(extra)},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));
+  const id=sent.data.projectId;let row=(await f.staff('/api/client-projects/'+id+'/studio')).data.project;
+  const refresh=async()=>{row=(await f.staff('/api/client-projects/'+id+'/studio')).data.project;return row;};
+  // 직원 손잡이는 손님이 그사이 바꾼 판을 먼저 읽는다(판 번호가 낡으면 409).
+  const staffTry=async body=>{await refresh();const result=await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,...body}});if(result.status===200)row=result.data.project;return result;};
+  const act=async body=>{const result=await staffTry(body);assert.equal(result.status,200,JSON.stringify(result.data));return row;};
+  const upload=async name=>{await refresh();const result=await f.staff(`/api/client-projects/${id}/studio/media`,{raw:png,headers:{'Content-Type':'image/png','X-File-Name':encodeURIComponent(name),'X-Project-Revision':String(row.revision)}});assert.equal(result.status,201,JSON.stringify(result.data));row=result.data.project;return result.data.asset.id;};
+  let room=null;const croom=async()=>{room=(await f.call('/pulse/api/project')).data;return room;};
+  const customerTry=async body=>{await croom();const result=await f.call('/pulse/api/studio',{body:{revision:room.project.revision,...body},csrf:room.csrf});if(result.status===200)room=result.data;return result;};
+  const cact=async body=>{const result=await customerTry(body);assert.equal(result.status,200,JSON.stringify(result.data));return room;};
+  await act({action:'request_confirm'});
+  return {f,id,act,staffTry,upload,croom,cact,customerTry,refresh,get row(){return row;}};
+}
+const option=(assetId,extra={})=>({name:'아니, 잠깐',sentence:'맛을 설명하려다 말을 다섯 번 바꿔요.',flow:[{at:'0:00',text:'경기가 끝나고 친구 폰 앞'},{at:'0:11',text:'친구가 뺏어 마셔요'}],why:'',assetId,recommended:true,...extra});
+async function propose(h,extra={}){
+  const a=await h.upload('wait.png'),b=await h.upload('tok.png');
+  await h.act({action:'propose_direction',lead:'두 방향으로 나눴어요.',options:[option(a),option(b,{name:'톡',sentence:'캔 따는 소리에 코트가 멈춰요.',recommended:false})],modelId:'M06',price:390000,dueDate:dayAfter(10),revisions:2,...extra});
+  return h.row.studio.request.directionProposal;
+}
+// 지금 저장된 세 곳: 의뢰 기록 · 제작 설계(정본) · 그때 고른 값의 기록.
+const looks=async h=>{const row=await h.refresh(),r=row.studio.request,cast=row.studio.strategy.data.castingSelection;return {answers:{outfit:r.answers.outfit,hair:r.answers.hair},casting:{modelId:cast.modelId,outfit:cast.outfit,hair:cast.hair},look:r.directionProposal?.look,models:r.answers.models};};
+
+test('every model has three outfit photos and three hair photos, and the ids are the stored values',()=>{
+  assert.deepEqual(OUTFIT_IDS,['fullbody','look-1','look-2']);assert.deepEqual(HAIR_IDS,['original','look-2','look-3']);
+  for(const model of CASTING_MODELS){
+    const set=modelLooks(model.id),file=model.id.toLowerCase();
+    assert.deepEqual(set.outfits.map(item=>item.id),OUTFIT_IDS);assert.deepEqual(set.hairs.map(item=>item.id),HAIR_IDS);
+    assert.deepEqual(set.outfits.map(item=>item.src),[0,1,2].map(i=>model.photos[i].src),model.id+' outfits are the app photos');
+    assert.deepEqual(set.outfits.map(item=>item.label),['기본 옷',model.photos[1].label,model.photos[2].label],model.id+' base outfit is named, looks keep the catalog labels');
+    assert.deepEqual(set.hairs.map(item=>item.label),model.hairLabels.slice(0,3),model.id+' hair names are the hair labels');
+    assert.deepEqual(set.hairs.slice(1).map(item=>item.src),[`./assets/casting/photos/${file}-hair-2.webp`,`./assets/casting/photos/${file}-hair-3.webp`]);
+    assert.equal(set.hairs[0].src,model.id==='F04'?'./assets/casting/photos/f04-hair-1.webp':model.image,model.id+' hair 1 is the portrait (F04: the casting book portrait in the same framing)');
+  }
+  assert.equal(modelLooks('M99'),null);assert.equal(modelLooks(''),null);
+});
+
+test('the server says it takes outfit and hair, in both the customer and the staff view',async t=>{
+  const h=await confirmed(t);
+  assert.equal((await h.croom()).project.studio.request.castingLooks,true,'customer view');
+  assert.equal(h.row.studio.request.castingLooks,true,'staff view');
+  assert.deepEqual(requestActions('answer_direction'),['optionId','modelId','note','neither','outfit','hair']);
+});
+
+test('picking a direction stores the outfit and hair in the request record, the production plan and the proposal; no field leaves it, empty means leave it to us',async t=>{
+  const h=await confirmed(t),d=await propose(h);
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,outfit:'look-2',hair:'look-3'});
+  assert.deepEqual(await looks(h),{answers:{outfit:'look-2',hair:'look-3'},casting:{modelId:'M06',outfit:'look-2',hair:'look-3'},look:{outfit:'look-2',hair:'look-3'},models:['M06']});
+  // 옛 화면(칸 없음)이 방향만 다시 고르면 같은 모델의 고른 값은 그대로다.
+  await h.cact({action:'answer_direction',optionId:d.options[1].id});
+  assert.deepEqual(await looks(h),{answers:{outfit:'look-2',hair:'look-3'},casting:{modelId:'M06',outfit:'look-2',hair:'look-3'},look:{outfit:'look-2',hair:'look-3'},models:['M06']},'a screen without the fields changes nothing');
+  // 한 줄만 맡김으로 되돌린다(빈 값).
+  await h.cact({action:'answer_direction',optionId:d.options[1].id,outfit:'',hair:'look-3'});
+  assert.deepEqual(await looks(h),{answers:{outfit:'',hair:'look-3'},casting:{modelId:'M06',outfit:'',hair:'look-3'},look:{outfit:'',hair:'look-3'},models:['M06']});
+  await h.cact({action:'answer_direction',optionId:d.options[1].id,outfit:'',hair:''});
+  assert.deepEqual(await looks(h),{answers:{outfit:'',hair:''},casting:{modelId:'M06',outfit:'',hair:''},look:{outfit:'',hair:''},models:['M06']});
+});
+
+test('values outside the model photos are refused with one sentence and change nothing',async t=>{
+  const h=await confirmed(t),d=await propose(h);
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,outfit:'fullbody',hair:'original'});
+  const before=await looks(h);
+  for(const bad of [{outfit:'original'},{outfit:'look-3'},{hair:'look-1'},{hair:'wave'},{outfit:null},{hair:0},{outfit:['look-1']},{hair:'LOOK-2'}]){
+    const result=await h.customerTry({action:'answer_direction',optionId:d.options[1].id,outfit:'look-1',hair:'look-2',...bad});
+    assert.equal(result.status,400,JSON.stringify(bad));assert.equal(result.data.error,'옷 · 머리 고름을 확인해 주세요.',JSON.stringify(bad));
+  }
+  assert.deepEqual(await looks(h),before);
+  assert.equal((await h.customerTry({action:'answer_direction',optionId:d.options[1].id,outfit:'look-1',shoes:'x'})).status,400,'unknown fields are still refused');
+});
+
+test('changing the model while picking empties the old model outfit and hair in both places, unless the new model values come along',async t=>{
+  const h=await confirmed(t),d=await propose(h);
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,outfit:'look-1',hair:'look-2'});
+  // 옛 화면이 다른 모델만 보낸다: M06의 헤어 2가 F02의 「하이 포니테일」로 읽히면 안 된다(설계 검토 1).
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,modelId:'F02'});
+  assert.deepEqual(await looks(h),{answers:{outfit:'',hair:''},casting:{modelId:'F02',outfit:'',hair:''},look:{outfit:'',hair:''},models:['F02']});
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,modelId:'M06',outfit:'look-2',hair:''});
+  assert.deepEqual(await looks(h),{answers:{outfit:'look-2',hair:''},casting:{modelId:'M06',outfit:'look-2',hair:''},look:{outfit:'look-2',hair:''},models:['M06']},'values sent with the new model are that model values');
+});
+
+test('switching models on the script empties the outfit and hair; keeping the same model keeps them',async t=>{
+  const h=await confirmed(t),d=await propose(h);
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,outfit:'look-1',hair:'look-3'});
+  await h.act({action:'save_scene',title:'컷 1',description:'벤치 위 캔',narration:'',screenText:'',duration:3,visibility:'customer'});
+  await h.act({action:'send_draft',oneLine:'맛을 설명하려다 말을 다섯 번 바꿔요.',note:'',kind:'script'});
+  await h.cact({action:'answer_model',modelId:'M06',note:'그대로요'});
+  let now=await looks(h);assert.deepEqual([now.answers,now.casting],[{outfit:'look-1',hair:'look-3'},{modelId:'M06',outfit:'look-1',hair:'look-3'}],'same model keeps the picks');
+  await h.cact({action:'answer_model',modelId:'F01',note:'다른 모델로요'});
+  now=await looks(h);
+  assert.deepEqual([now.answers,now.casting,now.models],[{outfit:'',hair:''},{modelId:'F01',outfit:'',hair:''},['F01']],'「다른 모델로 바꾸기」 empties both places');
+});
+
+test('the desk settling a second round on another model empties the picks; on the same model it keeps them and adds nothing',async t=>{
+  for(const [second,kept]of [['F02',false],['M06',true]]){
+    const h=await confirmed(t);let d=await propose(h);
+    await h.cact({action:'answer_direction',optionId:d.options[0].id,outfit:'look-2',hair:'look-2'});
+    await h.cact({action:'answer_direction',neither:true,note:'더 고급스럽게'});
+    d=await propose(h,{modelId:second});assert.equal(d.round,2);assert.equal(d.look,undefined,'a new round starts without a record');
+    await h.cact({action:'answer_direction',neither:true,note:'아직이에요'});
+    d=(await h.refresh()).studio.request.directionProposal;
+    await h.act({action:'settle_direction',optionId:d.options[1].id,note:'통화로 「톡」으로'});
+    const now=await looks(h),expected=kept?{outfit:'look-2',hair:'look-2'}:{outfit:'',hair:''};
+    assert.deepEqual(now,{answers:expected,casting:{modelId:second,...expected},look:expected,models:[second]},second);
+  }
+});
+
+test('a direction without a catalog model ignores outfit and hair; the request form never sends them',async t=>{
+  const h=await confirmed(t,{modelChoice:'none'});
+  const a=await h.upload('a.png'),b=await h.upload('b.png');
+  await h.act({action:'propose_direction',lead:'',options:[option(a),option(b,{name:'톡',recommended:false})],price:390000,dueDate:dayAfter(10),revisions:2});
+  const d=h.row.studio.request.directionProposal;
+  await h.cact({action:'answer_direction',optionId:d.options[0].id,outfit:'look-1',hair:'look-2'});
+  const row=await h.refresh(),r=row.studio.request;
+  assert.equal(r.answers.outfit,'');assert.equal(r.answers.hair,'');assert.equal(r.directionProposal.look,undefined);
+  assert.equal(row.studio.strategy.data.castingSelection.outfit,'');assert.deepEqual(r.answers.models,[]);
+  // 의뢰서는 옷 칸을 받되(빈 값) 고르는 값만 받는다. 옛 답에는 키가 없어도 빈 값으로 읽힌다.
+  assert.equal(normalizeRequestAnswers({}).outfit,'');assert.equal(emptyRequestAnswers().outfit,'');
+  assert.equal(normalizeRequestAnswers({outfit:'look-1'}).outfit,'look-1');
+  assert.throws(()=>normalizeRequestAnswers({outfit:'original'}),/고른 값을 확인해 주세요/);
+});
+
+test('confirming carries an outfit only to the same model, like the hair',()=>{
+  const stamp={author:'staff',authorId:'S',authorName:'담당자',at:'2026-11-10T03:00:00.000Z'},base={revision:0,data:emptyStrategyData(),history:[]};
+  const same=carryToStrategy(base,{...emptyRequestAnswers(),models:['F02'],hair:'look-2',outfit:'look-1'},stamp).data.castingSelection;
+  assert.deepEqual([same.modelId,same.hair,same.outfit],['F02','look-2','look-1']);
+  const other=carryToStrategy({...base,data:{...emptyStrategyData(),castingSelection:{...emptyStrategyData().castingSelection,modelId:'M01'}}},{...emptyRequestAnswers(),models:['F02'],outfit:'look-1'},stamp).data.castingSelection;
+  assert.deepEqual([other.modelId,other.outfit],['M01',''],'another model in the plan takes no outfit');
+});
+
+test('the production plan keeps a picked outfit when an older screen saves without the field, and drops it when the model changes',()=>{
+  const stamp={author:'staff',authorId:'S',authorName:'담당자',at:'2026-11-10T03:00:00.000Z'};
+  let s=applyStrategyAction(null,{action:'save_strategy',strategy:{castingSelection:{modelId:'F02',hair:'look-2',outfit:'look-1'}}},stamp);
+  assert.equal(strategyView(s).data.castingSelection.outfit,'look-1');
+  const {outfit,...older}=strategyView(s).data.castingSelection;
+  s=applyStrategyAction(s,{action:'save_strategy',strategy:{castingSelection:{...older,notes:'메모만 고침'}}},stamp);
+  assert.deepEqual([s.data.castingSelection.outfit,s.data.castingSelection.notes],['look-1','메모만 고침'],'no field: same model keeps the outfit');
+  s=applyStrategyAction(s,{action:'save_strategy',strategy:{castingSelection:{...older,modelId:'M01'}}},stamp);
+  assert.equal(s.data.castingSelection.outfit,'','another model drops it');
+  s=applyStrategyAction(s,{action:'save_strategy',strategy:{castingSelection:{...older,modelId:'M01',outfit:'look-2'}}},stamp);
+  assert.equal(s.data.castingSelection.outfit,'look-2');
+  s=applyStrategyAction(s,{action:'save_strategy',strategy:{castingSelection:{...older,modelId:'M01',outfit:''}}},stamp);
+  assert.equal(s.data.castingSelection.outfit,'','an explicit empty value clears it');
+  assert.throws(()=>applyStrategyAction(s,{action:'save_strategy',strategy:{castingSelection:{modelId:'M01',outfit:'original'}}},stamp),/모델과 스타일 선택값을 확인해 주세요/);
+});

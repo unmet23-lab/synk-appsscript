@@ -743,6 +743,8 @@ html.sx .sx-offer strong{font-weight:600;font-size:15px;color:var(--sx-ink)}
 .sx-draft-decide .sx-go b{font-weight:500;color:inherit}
 .sx-draft-cast{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center;margin-top:auto}
 .sx-draft-cast img{width:64px;height:86px;object-fit:cover}
+.sx-draft-cast img.is-outfit{object-fit:contain;background:#000}
+.sx-draft-look{display:block;margin-top:2px;color:var(--sx-ink)}
 .sx-draft-cast b{font-weight:600;color:var(--sx-ink)}
 .sx-draft-cast :is(.sx-link,.sx-quiet){display:block;margin-top:2px}
 .sx-draft-note{color:var(--sx-ink)}
@@ -866,6 +868,35 @@ html.is-staff{color-scheme:light}
 .sx-dp-cast.is-on .sx-small{color:var(--sx-ink);font-weight:600}
 @media (hover:hover){.sx-dp-cast:hover img{filter:none}}
 .sx-dp-cast-note{grid-column:1/-1;margin-top:2px}
+/* 옷 · 머리(11-10): 모델 줄 아래 한 줄, 「직접 고르기」로 옷 세 칸 · 머리 세 칸. 옷 색을 견줘야 해 흑백으로 두지 않는다.
+   전신 사진은 폭이 달라(402 · 483 · 538 × 720) 자르지 않고 contain(검정 바탕), 세 칸은 같은 높이. 칸 폭은 124px까지(사진 538px을 늘리지 않게). */
+.sx-dp-look{margin-top:clamp(6px,1vh,10px)}
+.sx-dp-look-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 0;margin:0}
+.sx-dp-look-row>b{color:var(--sx-ink);font-weight:400}
+.sx-dp-look-open{margin-left:auto;padding-left:12px}
+.sx-dp-looks{display:grid;gap:8px;margin-top:8px}
+.sx-dp-look-set{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:start}
+.sx-dp-look-set>.sx-dp-label{margin:0;padding-top:2px}
+.sx-dp-pics{display:grid;grid-template-columns:repeat(3,minmax(0,124px));gap:6px;align-items:start}
+.sx-dp-pic{display:block;min-width:0;text-align:left}
+.sx-dp-pic img{display:block;width:100%;height:clamp(84px,13vh,140px);object-fit:cover;object-position:50% 16%;background:#000;opacity:.82;transition:opacity .3s var(--sx-out)}
+.is-outfit .sx-dp-pic img{object-fit:contain;object-position:50% 50%;width:auto;max-width:100%;background:none}
+.sx-dp-pic.is-on img{opacity:1;box-shadow:0 0 0 2px var(--sx-ink)}
+@media (hover:hover){.sx-dp-pic:hover img{opacity:1}}
+.sx-dp-pic>.sx-small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;color:var(--sx-faint);word-break:keep-all}
+.sx-dp-pic.is-on>.sx-small{color:var(--sx-ink);font-weight:600}
+.sx-dp-look-note{margin:0;color:var(--sx-faint)}
+/* 펼친 동안은 「크게 보기」처럼 설명(리드 · 왜)을 접어 고르기 단추 · 값 · 받으실 날이 첫 화면에 남게 한다. */
+.sx-dp-choose:has([data-dp-looks]:not([hidden])) :is(.sx-dp-why,.sx-dp-lead){display:none}
+.sx-dp-sheet:has([data-dp-looks]:not([hidden])) .sx-dp-lead{display:none}
+/* 넓은 화면은 설명 칸이 고정 높이라, 낮은 창에서 펼친 동안 방향 설명을 이름 · 한 문장만 남기고 흐름 · 미리 움직여 보기 · 값 설명 줄을 접는다(접으면 그대로 돌아온다).
+   낮은 창(높이 960 이하)은 사진 칸을 줄이고 이름을 한 줄로(전체 이름은 마우스를 올린 title · 단추 이름 · 위 요약 줄에) — 1440×900에서 펼쳐도 고르기 단추가 첫 화면에 남는다(실측).
+   높이가 넉넉한 창(1400 이상 — 2560×1440 실측)은 흐름을 그대로 둔다 — 접으면 가운데가 비어 보인다. */
+@media (min-width:821px) and (min-aspect-ratio:10001/10000) and (max-height:1399px){
+  .sx-dp-choose:has([data-dp-looks]:not([hidden])) :is(.sx-dp-flow,.sx-dp-taste,.sx-dp-incl,.sx-dp-more){display:none}
+}
+@media (max-height:960px) and (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-dp-pic img{height:clamp(72px,10vh,140px)}.sx-dp-pic>.sx-small{-webkit-line-clamp:1}}
+.sx-dp-chosen-look{color:var(--sx-ink)}
 .sx-dp-terms{margin-top:auto;padding-top:clamp(12px,2vh,20px)}
 .sx-dp-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;border-top:1px solid var(--sx-rule);padding-top:clamp(8px,1.4vh,14px)}
 .sx-dp-kv div{min-width:0}

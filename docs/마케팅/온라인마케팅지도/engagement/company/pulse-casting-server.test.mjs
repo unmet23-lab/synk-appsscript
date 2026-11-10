@@ -11,7 +11,7 @@ const companyDir=dirname(fileURLToPath(import.meta.url));
 const projectDraft={title:'합성 모델 선택 시험',customerName:'합성 고객',contact:'SYNTHETIC-PRIVATE-CONTACT',summary:'캐스팅 API 시험',terms:'합성 합의',internalNotes:'SYNTHETIC-PRIVATE-STAFF',nextStep:'모델 선택',dueDate:'2026-12-01',nextContactDate:''};
 const strategyDraft={objective:'brand',product:'합성 제품',audience:'합성 고객',channels:['instagram'],primaryPromise:'오래 쓰는 제품',value1:'편안함',evidence1:'합성 내구성 시험 장면',value2:'튼튼함',memoryHook:'제품 이름',desiredAction:'자세히 보기'};
 // voice는 11-03에 뺀 목소리 칸이다(유호님 「둘 다 전부 빼기」): 키는 남고 값은 늘 비어 있다.
-const selection={modelId:'F01',hair:'wave',makeup:'natural',jacket:'blazer',top:'shirt',bottom:'trousers',voice:'',earrings:'stud',ring:'simple',notes:'밝은 분위기'};
+const selection={modelId:'F01',hair:'wave',makeup:'natural',jacket:'blazer',top:'shirt',bottom:'trousers',voice:'',earrings:'stud',ring:'simple',outfit:'',notes:'밝은 분위기'};
 
 async function fixture(t){
   const directory=await mkdtemp(join(tmpdir(),'synk-pulse-casting-'));

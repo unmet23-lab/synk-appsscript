@@ -43,7 +43,8 @@ const KST=(day,hm)=>`2026-11-0${day}T${hm}:00+09:00`;
 const EXAMPLE_ORDER=['room','ask','direction','script','pay','draft','review','history'];
 function exampleRequest(scene){
   const upto=EXAMPLE_ORDER.indexOf(scene),has=id=>upto>=EXAMPLE_ORDER.indexOf(id);
-  const request={status:'submitted',number:ROOM.number,submittedAt:KST(1,'10:12'),answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[]};
+  // castingLooks: 실제 서버와 같은 표식(옷 · 머리 고르기). 이 작품은 사람 없이 제품만이라 방향 화면에 옷 · 머리 줄은 서지 않는다.
+  const request={status:'submitted',number:ROOM.number,submittedAt:KST(1,'10:12'),answers:{name:'霜の肌理 홀리데이 세트',kind:'beauty',channels:['shorts'],package:'s15'},files:[],asks:[],rounds:[],castingLooks:true};
   if(scene==='ask')request.asks=ROOM.asks.map(ask=>({...ask,status:'open',at:KST(1,'15:20')}));
   if(has('direction')){
     request.asks=ROOM.asks.map((ask,i)=>({...ask,status:'answered',at:KST(1,'15:20'),answer:i?'원본이 있어 함께 보내요.':'배경 없는 PNG로 보냈어요.',answeredAt:KST(1,'16:05')}));

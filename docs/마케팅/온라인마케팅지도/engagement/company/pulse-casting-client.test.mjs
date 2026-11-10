@@ -54,7 +54,7 @@ test('the voice step is replaced by one line, the steps run 01 to 04, and no sum
   // 옛 저장본: 목소리 B가 남은 선택도 요약에는 목소리 줄 없이 나온다.
   const legacy={modelId:'F02',hair:'look-2',makeup:'natural',jacket:'none',top:'tshirt',bottom:'denim',voice:'B',earrings:'none',ring:'none',notes:''};
   const summary=castingSummary(legacy);assert.match(summary,/<dt>헤어<\/dt><dd>하이 포니테일<\/dd>/);assert.doesNotMatch(summary,/목소리|undefined/);
-  assert.deepEqual(Array.from(summary.matchAll(/<dt>([^<]+)<\/dt>/g),match=>match[1]),['모델','헤어','메이크업','자켓','상의','하의','귀걸이','반지']);
+  assert.deepEqual(Array.from(summary.matchAll(/<dt>([^<]+)<\/dt>/g),match=>match[1]),['모델','헤어','옷','메이크업','자켓','상의','하의','귀걸이','반지']);
   const project={studio:{strategy:{revision:2,data:{castingSelection:legacy},request:{strategyRevision:2},confirmation:null,history:[{revision:1,data:{castingSelection:legacy}}]}}};
   for(const view of [strategyView({project,mode:'customer'}),strategyView({project,mode:'staff',canEdit:false}),strategyView({project,mode:'staff',canEdit:true}),strategyHistory(project)]){
     assert.doesNotMatch(view,/<dt>목소리<\/dt>|목소리 A · B · C|cast_voice|<audio|voice-play|의상 · 목소리|undefined/);

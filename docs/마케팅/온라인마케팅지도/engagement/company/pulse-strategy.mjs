@@ -1,4 +1,4 @@
-import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+import {CASTING_MODELS,OUTFIT_IDS} from './public/pulse-app/casting-catalog.mjs';
 import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
@@ -11,7 +11,9 @@ const NUMBERS={durationSeconds:[1,600],budgetProduction:[0,1e12],budgetMedia:[0,
 // modelId는 고객 앱 카탈로그와 같은 목록이다(11-02 캐스팅북 열세 명).
 // voice는 11-03에 뺀 목소리 칸이다(유호님 「둘 다 전부 빼기」). 저장 모양과 변경 비교가 흔들리지 않게 키는 남기고,
 // 옛 화면·저장본이 보내는 A·B·C는 받되 늘 빈 값으로 두고 보여 주지도 않는다(고객 앱 normalizeDemoCasting과 같은 규칙).
-const CASTING_ENUMS={modelId:['',...CASTING_MODELS.map(model=>model.id)],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
+const CASTING_ENUMS={modelId:['',...CASTING_MODELS.map(model=>model.id)],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],voice:['','A','B','C'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom'],outfit:['',...OUTFIT_IDS]};
+// outfit(2026-11-10 옷 · 머리 고르기): 고른 모델의 옷 세 벌 — 사진 파일 키 그대로 fullbody(기본 옷) · look-1 · look-2(casting-catalog modelLooks).
+// 맨 끝에 둔다: 빈 값이면 바뀐 것 보기 열쇠(client-changes keyedCurrent)가 이 키를 빼고 세어 그 전 판의 모양 · 차례와 같다.
 const CASTING_FIELDS=[...Object.keys(CASTING_ENUMS),'notes'];
 // 전용 인물 참조(2026-11-09 판 1, 기획 12-2 「선택 값」): castingSelection.personaRef={personaId,revisionId}. 고르는 값(enum)이 아니라
 // 서버가 인물 사용 승인 때 붙이는 값이라, 제작 설계 저장은 이 칸을 받아도 쓰지 않고 지금 값을 그대로 둔다(옛 화면이 보내지 않아도 지워지지 않게).
@@ -75,7 +77,12 @@ export function applyStrategyAction(value,input,stamp){
     if(!object(input.strategy))throw fail('제작 설계 입력 항목을 확인해 주세요.');
     const data={...structuredClone(strategy.data),...normalizeStrategyData({...safeData(strategy.data),...input.strategy})};
     if(!Object.hasOwn(input.strategy,'castingSelection'))data.castingSelection=structuredClone(strategy.data.castingSelection);
-    else{const ref=personaRefOf(strategy.data.castingSelection?.[PERSONA_FIELD]);if(ref)data.castingSelection[PERSONA_FIELD]=ref;}
+    else{
+      const ref=personaRefOf(strategy.data.castingSelection?.[PERSONA_FIELD]);if(ref)data.castingSelection[PERSONA_FIELD]=ref;
+      // 옷 칸을 모르는 옛 화면(배포 사이의 캐시)이 저장해도 같은 모델의 고른 옷은 지우지 않는다. 모델을 바꿨으면 빈 값 그대로.
+      const was=strategy.data.castingSelection||{};
+      if(!Object.hasOwn(input.strategy.castingSelection,'outfit')&&was.modelId===data.castingSelection.modelId&&OUTFIT_IDS.includes(was.outfit))data.castingSelection.outfit=was.outfit;
+    }
     // 바뀐 칸이 없으면 새 버전을 만들지 않는다(받은 확인 요청·확인이 그대로 남는다). 호출하는 쪽은 같은 값이 돌아오면 저장을 건너뛴다.
     const before=safeData(strategy.data),after=safeData(data),changed=FIELDS.filter(key=>JSON.stringify(before[key])!==JSON.stringify(after[key]));
     if(strategy.revision>0&&!changed.length)return value;

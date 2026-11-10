@@ -4,7 +4,7 @@ import {emptyCastingSelection,emptyStrategyData,normalizeCastingSelection,normal
 
 const data={objective:'brand',product:'합성 제품',audience:'합성 고객',channels:['instagram'],primaryPromise:'오래 쓰는 제품',value1:'편안함',evidence1:'합성 내구성 시험 장면',value2:'튼튼함',memoryHook:'제품 이름',desiredAction:'자세히 보기'};
 // voice는 11-03에 뺀 목소리 칸이다(유호님 「둘 다 전부 빼기」): 저장 모양을 지키려고 키는 남고 값은 늘 비어 있다.
-const selection={modelId:'F01',hair:'wave',makeup:'natural',jacket:'blazer',top:'shirt',bottom:'trousers',voice:'',earrings:'stud',ring:'simple',notes:'밝은 분위기'};
+const selection={modelId:'F01',hair:'wave',makeup:'natural',jacket:'blazer',top:'shirt',bottom:'trousers',voice:'',earrings:'stud',ring:'simple',outfit:'',notes:'밝은 분위기'};
 const staff={author:'staff',authorId:'synthetic-staff',authorName:'합성 담당자',at:'2026-10-12T00:00:00.000Z'},customer={author:'customer',authorId:'synthetic-customer',authorName:'합성 고객',at:'2026-10-12T00:01:00.000Z'};
 const save=(state,input,stamp=staff)=>applyStrategyAction(state,{action:'save_strategy',strategy:input},stamp);
 const request=state=>applyStrategyAction(state,{action:'request_strategy_review'},staff);
@@ -25,7 +25,7 @@ test('old strategies receive an optional, independent casting selection without 
 });
 
 test('all prepared model and style options normalize without loose coercion, and a legacy voice stays empty',()=>{
-  const enums={modelId:['','M01','F01','F02','F03','M02','F04','M03'],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom']};
+  const enums={modelId:['','M01','F01','F02','F03','M02','F04','M03'],hair:['','original','look-2','look-3','short','bob','long-straight','wave','updo','custom'],makeup:['','natural','clean','glow','smoky','custom'],jacket:['','none','blazer','casual','leather','custom'],top:['','tshirt','shirt','knit','blouse','custom'],bottom:['','trousers','denim','skirt','custom'],earrings:['','none','stud','hoop','drop','custom'],ring:['','none','simple','layered','custom'],outfit:['','fullbody','look-1','look-2']};
   for(const [key,values]of Object.entries(enums))for(const value of values){const input={modelId:'M01',[key]:value};assert.equal(normalizeCastingSelection(input)[key],value,key+': '+value);}
   // 옛 화면이 보내는 목소리 A·B·C(모델 없이도)는 받되 비운다.
   for(const voice of ['','A','B','C'])for(const modelId of ['','M01']){const result=normalizeCastingSelection({modelId,voice});assert.deepEqual(result,{...emptyCastingSelection(),modelId},voice+'/'+modelId);}
@@ -36,7 +36,7 @@ test('all prepared model and style options normalize without loose coercion, and
 
 test('invalid nested keys, types, options, control characters and unknown voice values are rejected',()=>{
   for(const input of [undefined,null,[],false,7,'F01',{extra:'hidden'},{notes:{private:'hidden'}},{notes:null},{notes:undefined},{notes:'x'.repeat(1001)},{notes:'bad\u0000value'},{notes:'bad\u001fvalue'},{modelId:'M99'},{voice:'D'},{modelId:'F01',voice:'a'}])rejects(()=>normalizeStrategyData({castingSelection:input}));
-  for(const key of ['modelId','hair','makeup','jacket','top','bottom','voice','earrings','ring'])for(const value of [null,undefined,0,false,[],{},'unknown'])rejects(()=>normalizeCastingSelection({modelId:'M01',[key]:value}));
+  for(const key of ['modelId','hair','makeup','jacket','top','bottom','voice','earrings','ring','outfit'])for(const value of [null,undefined,0,false,[],{},'unknown'])rejects(()=>normalizeCastingSelection({modelId:'M01',[key]:value}));
   rejects(()=>save(null,{...data,castingSelection:{...selection,privateAssetUrl:'https://example.test/private'}}));
 });
 

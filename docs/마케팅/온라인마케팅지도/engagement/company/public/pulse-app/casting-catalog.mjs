@@ -161,3 +161,28 @@ export const CASTING_MODELS = Object.freeze([
     photos: photos('m10', [k('코듀로이 블루종 · 레트로 저지 · 배기 데님 · 캡'), k('크링클 수트 재킷 · 딥 틸 후드 · 골반에 걸친 팬츠')], k('농구장 벤치 · 농구공')),
   },
 ]);
+
+// 2026-11-10 outfit · hair picks (direction step): each model's three outfits (the base full-body outfit · look 1 · look 2)
+// and three hair styles (the portrait's hair · hair 2 · hair 3) are photos already in this app — the same faces, nothing new
+// is generated. Hair 2 · 3 are byte copies of the casting book build's hair-2-s · hair-3-s.webp, kept next to `photos`.
+// The ids are what the server stores (castingSelection.outfit · .hair): an outfit id is its photo file key, and the hair ids
+// keep the earlier stored values (original · look-2 · look-3 = hair 1 · 2 · 3). Labels stay Korean here; screens translate.
+// Hair 1 is the portrait, as in the casting book (its hair-1 is hero). F04's portrait above is a closer crop of the same
+// face, so its hair 1 is the book's hero-s.webp copied next to hair 2 · 3 — all three hair photos share one framing.
+export const OUTFIT_IDS = Object.freeze(['fullbody', 'look-1', 'look-2']);
+export const HAIR_IDS = Object.freeze(['original', 'look-2', 'look-3']);
+export const BASE_OUTFIT = k('기본 옷');
+const HAIR_ONE = Object.freeze({ F04: './assets/casting/photos/f04-hair-1.webp' });
+export function modelLooks(id) {
+  const model = CASTING_MODELS.find(item => item.id === id);
+  if (!model) return null;
+  const file = model.id.toLowerCase(), [full, look1, look2] = model.photos;
+  return {
+    outfits: [
+      { id: 'fullbody', label: BASE_OUTFIT, src: full.src },
+      { id: 'look-1', label: look1.label, src: look1.src },
+      { id: 'look-2', label: look2.label, src: look2.src },
+    ],
+    hairs: HAIR_IDS.map((hair, index) => ({ id: hair, label: model.hairLabels[index], src: index ? `./assets/casting/photos/${file}-hair-${index + 1}.webp` : HAIR_ONE[model.id] || model.image })),
+  };
+}

@@ -1,4 +1,4 @@
-import {CASTING_MODELS} from './casting-catalog.mjs';
+import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
 import {KINDS,MODEL_LINES,briefRows,slotsFor,emptyAnswers,ratioOf,pkgOf,PACKAGES,price,channelText} from './request-data.mjs';
 import {t,k,locale,intlLocale} from './i18n.mjs';
 import {castingOf,MODEL_OPTIONAL_CHOICES} from './casting-choice.mjs';
@@ -85,6 +85,13 @@ export const ROOM_COPY={
   done:{turn:'done',title:k('완성본을 받으셨어요'),text:k('함께 만들어 주셔서 고마워요. 크몽에서 작업물을 확인하시고 구매확정을 눌러 주시면 이 의뢰가 끝나요.'),action:{label:k('완성본 다시 보기'),go:'review'}},
 };
 export const modelCard=id=>{const item=CASTING_MODELS.find(model=>model.id===id);return item?{id,name:item.name,line:MODEL_LINES[id]?.line||item.description,image:item.image}:null;};
+// 옷 · 머리(11-10): 그 모델의 옷 · 머리 id를 이름(카탈로그 한국어 — 그리는 자리에서 번역)과 사진으로. 고르지 않았거나 그 모델에 없는 값은 ''(맡김).
+export function lookOf(modelId,{outfit='',hair=''}={}){
+  const looks=modelLooks(modelId),o=looks?.outfits.find(item=>item.id===outfit),h=looks?.hairs.find(item=>item.id===hair);
+  return {outfit:o?o.id:'',hair:h?h.id:'',outfitLabel:o?.label||'',hairLabel:h?.label||'',outfitSrc:o?.src||''};
+}
+// 「옷 스트라이프 원피스 · 머리 맡김」 — 고른 카드 · 글 콘티 · 일지 · 방향 화면 요약이 같은 한 줄을 쓴다.
+export const lookLine=look=>t('옷 {outfit} · 머리 {hair}',{outfit:look.outfitLabel?t(look.outfitLabel):t('맡김'),hair:look.hairLabel?t(look.hairLabel):t('맡김')});
 const assetUrl=asset=>asset?.media?.url||asset?.url||'';
 function slotsWithFiles(answers,files=[]){const slots={...(answers.slots||{})};for(const file of files){slots[file.slot]={...slots[file.slot],files:[...(slots[file.slot]?.files||[]),file]};}return slots;}
 const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.answers||{},r?.files)});
@@ -145,10 +152,17 @@ export function directionModel(p){
   const r=requestOf(p),d=r?.directionProposal;if(!d)return null;
   const a=r.answers||{},pkg=PACKAGES.find(item=>item.id===a.package);
   const options=d.options.map((option,i)=>({id:option.id,no:String(i+1).padStart(2,'0'),name:option.name,sentence:option.sentence,flow:option.flow,why:option.why||'',recommended:!!option.recommended,src:assetUrl(assetById(p,option.assetId)),film:option.filmAssetId?assetUrl(assetById(p,option.filmAssetId)):'',filmNote:option.filmNote||'',workId:option.workId||''}));
-  const chosen=options.find(option=>option.id===d.chosenId)||null;
+  const chosen=options.find(option=>option.id===d.chosenId)||null,canPick=['open','chosen'].includes(d.status)&&!lastRound(r);
+  // 옷 · 머리(11-10, 설계 4-1): 이 서버가 받는다고 알리고(castingLooks) 카탈로그 모델로 가는 방향을 고를 수 있을 때만 줄을 그린다.
+  // 맞춤 인물 요청 · 전용 인물은 줄이 없다. 처음 값(look)은 같은 모델로 앞서 고른 값 — 의뢰 기록(answers)에서 읽어
+  // 다시 보낸 제안(2회차)에서도 「맡김」으로 지워지지 않는다. 모델이 다르면 맡김. picked는 그때 고른 값의 기록(고른 카드가 읽는다).
+  const persona=['custom','persona'].includes(a.modelChoice)||castingOf(r,p?.studio?.strategy?.data?.castingSelection).kind==='persona';
+  const looks=!!r.castingLooks&&!!d.modelId&&!!modelLooks(d.modelId)&&canPick&&!persona;
+  const look=looks&&a.models?.[0]===d.modelId?lookOf(d.modelId,a):lookOf('');
+  const picked=d.modelId&&d.look&&modelLooks(d.modelId)?lookOf(d.modelId,d.look):null;
   return {round:d.round,status:d.status,lead:d.lead||'',options,chosen,note:d.answer||'',model:d.modelId?modelCard(d.modelId):null,noModel:!d.modelId,kind:a.kind||'',
     price:won(d.price),due:longDay(d.dueDate),dueDate:d.dueDate||'',revisions:d.revisions,title:p?.title||'',line:[pkg?t(pkg.label):'',channelText({channels:a.channels||[]})].filter(Boolean).join(' · '),gets:pkg?.gets||'',photo:!!pkg?.photo,
-    canPick:['open','chosen'].includes(d.status)&&!lastRound(r),last:d.round>=2};
+    canPick,last:d.round>=2,looks,look:{outfit:look.outfit,hair:look.hair},picked};
 }
 export function draftModel(p){
   const st=p?.studio||{},r=requestOf(p),round=lastRound(r);
@@ -159,7 +173,12 @@ export function draftModel(p){
   const assetSrc=scene=>scene.assetId?assetUrl((st.assets||[]).find(asset=>asset.id===scene.assetId)):'';
   // 전용 인물이 붙은 프로젝트(판 3 — 이번 광고 사용을 확인한 뒤)는 모델 칸 대신 그 인물의 기준 얼굴. 없으면 키가 없다(판 3 전 모양).
   const persona=casting.kind==='persona'?personaFace(p,casting.personaRef):null;
-  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),...(persona?{persona}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
+  // 옷 · 머리(11-10): 정본(제작 설계)이 이 모델이면 그 값, 아니면 의뢰 기록(같은 모델일 때만). 고른 것이 있거나 방향을 고른 의뢰일 때만 한 줄을 둔다
+  // (방향 화면이 없던 사진 상품에 「맡김」만 보이지 않게). 없으면 키가 없다(전 판 모양).
+  const selection=st.strategy?.data?.castingSelection,answers=r.answers||{};
+  const look=r.castingLooks&&casting.kind==='catalog'&&modelCard(modelId)?lookOf(modelId,selection?.modelId===modelId?selection:answers.models?.[0]===modelId?answers:{}):null;
+  const showLook=!!look&&(!!(look.outfit||look.hair)||!!r.directionProposal);
+  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),...(persona?{persona}:{}),...(showLook?{look}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
 }
 // ── 일지(판 3b) ──
@@ -198,8 +217,10 @@ export function journalModel(p){
     // 인용 줄의 이름(「방향 제안」)은 다른 언어에서 「보냈다」는 말이 된다 — 일지 문맥으로 따로 옮긴다.
     add({id:'d:'+d.round,at:d.at,who:'staff',name:d.by||owner,kind:'quote',what:d.round>1?t('방향 제안 {round}판',{round:String(d.round)},'journal'):t('방향 제안',null,'journal'),text:d.lead||t('{count}가지 방향을 보내 드렸어요',{count}),go:pickable?{tab:'pick'}:null});
     const chosen=d.options?.find(option=>option.id===d.chosenId);
+    // 옷 · 머리를 하나라도 골랐으면 고른 줄 끝에 함께 적는다(proposal.look — 그때 고른 값). 다 맡겼으면 전처럼 이름만.
+    const look=chosen&&d.modelId&&d.look?lookOf(d.modelId,d.look):null,lookText=look&&(look.outfit||look.hair)?lookLine(look):'';
     if(d.answeredAt&&d.status==='declined')add({id:'d:'+d.round+':no',at:d.answeredAt,who:'me',name:me,kind:d.answer?'talk':'event',what:count>2?t('방향 모두 아니에요'):t('방향 둘 다 아니에요'),text:d.answer||''});
-    if(d.answeredAt&&chosen&&d.status==='chosen')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'me',name:me,kind:d.answer?'talk':'event',what:t('「{name}」{ro} 정했어요',{name:chosen.name,ro:withRoOf(chosen.name)}),text:d.answer?t('덧붙인 말 · {note}',{note:d.answer}):''});
+    if(d.answeredAt&&chosen&&d.status==='chosen')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'me',name:me,kind:d.answer?'talk':'event',what:lookText?t('「{name}」{ro} 정했어요 · {look}',{name:chosen.name,ro:withRoOf(chosen.name),look:lookText}):t('「{name}」{ro} 정했어요',{name:chosen.name,ro:withRoOf(chosen.name)}),text:d.answer?t('덧붙인 말 · {note}',{note:d.answer}):''});
     if(d.answeredAt&&chosen&&d.status==='settled')add({id:'d:'+d.round+':ok',at:d.answeredAt,who:'staff',name:d.settledBy||owner,kind:d.answer?'talk':'event',what:t('「{name}」{ro} 함께 정했어요',{name:chosen.name,ro:withRoOf(chosen.name)}),text:d.answer||''});
   }
   const rounds=r?.rounds||[],last=rounds.at(-1);
@@ -281,7 +302,9 @@ export function deskModel(p){
   const note=(r.notes||[]).at(-1)||null,assets=p?.studio?.assets||[],a=r.answers||{},proposal=r.modelProposal,direction=r.directionProposal;
   const canDirect=r.status==='confirmed'&&!(r.rounds||[]).length&&a.package!=='photo'&&(!direction||direction.status==='open'||direction.status==='declined'&&direction.round<2);
   return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,paymentFlow:!!r.paymentFlow,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&!MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
-    direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name}))}:null,
+    direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name})),
+      // 옷 · 머리(11-10): 손님이 방향과 함께 고른 값(proposal.look). 고른 · 정리한 방향에 카탈로그 모델이 있을 때만.
+      ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};
 }

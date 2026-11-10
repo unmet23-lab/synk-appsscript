@@ -6,7 +6,7 @@ import {pipeline} from 'node:stream/promises';
 import {validMediaSignature} from './studio-media.mjs';
 import {emptyPulseStudio} from './pulse-studio.mjs';
 import {recordSceneReview} from './client-scene-requests.mjs';
-import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
+import {CASTING_MODELS,OUTFIT_IDS,HAIR_IDS} from './public/pulse-app/casting-catalog.mjs';
 import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from './public/pulse-app/casting-choice.mjs';
 import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
@@ -55,9 +55,10 @@ export const REQUEST_SLOTS=['front','side','logo','label','use','detail','screen
 const DRAFT_SLOTS=[...REQUEST_SLOTS,...PERSONA_SLOTS];
 // 다국어 · 전용 인물 판 1(2026-11-09, 기획 12-2 「답 구조」 — 더하기만): 고른 모델의 헤어(캐스팅북 헤어 1 · 2 · 3), 소통 언어,
 // 납품 언어, 대상 나라(ISO 두 글자), 견적을 보일 통화(표시만 — 값과 결제는 원화 그대로). 옛 화면이 안 보내면 빈 값으로 채운다.
-const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','hair','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+// 옷(outfit, 2026-11-10 옷 · 머리 고르기): 고른 모델의 옷 세 벌(fullbody 기본 옷 · look-1 · look-2). 의뢰서에는 칸이 없고 방향을 고를 때 받는다.
+const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','hair','outfit','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
 const MODEL_IDS=CASTING_MODELS.map(model=>model.id);
-const HAIRS=['original','look-2','look-3'],CURRENCIES=['KRW','USD','JPY','EUR'];
+const HAIRS=HAIR_IDS,OUTFITS=OUTFIT_IDS,CURRENCIES=['KRW','USD','JPY','EUR'];
 // 맞춤 인물 요청(판 3, modelChoice custom일 때만 쓰인다): 인물 종류, 원하는 인상 · 나이대 · 헤어와 참고할 점, 원하는 쓰임, 이번만 / 다음 광고에도,
 // 실제 인물이면 관계(본인 · 소속 모델 · 그 밖)와 당사자 동의 확인 방법(확인 링크 · 서류). 국적 · 신체 치수 · 학습 설정은 묻지 않는다.
 const PERSONA_REQUEST_KEYS=['kind','look','use','keep','relation','consentWay'];
@@ -69,7 +70,7 @@ function personaRequestOf(value){
 }
 const markets=value=>{const out=many(value,null,8,2);if(out.some(code=>!/^[A-Z]{2}$/.test(code)))throw fail('고른 값을 확인해 주세요.');return out;};
 
-export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest()};}
+export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',outfit:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest()};}
 // 저장(strict 아님)은 길이 · 제어문자 · 고르는 값만 본다. 칸을 쓰는 중에 형식 때문에 자동 저장이 끊기면 안 된다.
 // 형식(메일 · 번호 · 주소 · 날짜)은 보낼 때 본다. 파일 목록은 서버가 쥐고, 답에서는 「지금 없어요」 표시만 받는다.
 export function normalizeRequestAnswers(input,{strict=false}={}){
@@ -84,7 +85,7 @@ export function normalizeRequestAnswers(input,{strict=false}={}){
     slots,size:text(input.size,120),useNote:text(input.useNote,200),pageUrl:link(input.pageUrl,strict,'제품 페이지 주소를 확인해 주세요.'),driveUrl:link(input.driveUrl,strict,'드라이브 주소를 확인해 주세요.'),
     audience:text(input.audience,300),oneThing:text(input.oneThing,300),action:one(input.action,ACTIONS),
     screenText:text(input.screenText,300),avoid:many(input.avoid,null,12,40),avoidNote:text(input.avoidNote,300),facts:text(input.facts,300),
-    win:one(input.win,WINS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice:one(input.modelChoice,MODEL_CHOICES),hair:one(input.hair,HAIRS),
+    win:one(input.win,WINS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice:one(input.modelChoice,MODEL_CHOICES),hair:one(input.hair,HAIRS),outfit:one(input.outfit,OUTFITS),
     date,dateFree:input.dateFree===true,approver:one(input.approver,APPROVERS),approverName:text(input.approverName,80),contactName:text(input.contactName,80),company:text(input.company,100),email,phone,consent:input.consent===true,rights:input.rights===true,
     contactLocale:one(input.contactLocale,LOCALES),outputLocales:many(input.outputLocales,LOCALES,LOCALES.length,8),targetMarket:markets(input.targetMarket),quoteCurrency:one(input.quoteCurrency,CURRENCIES),personaRequest:personaRequestOf(input.personaRequest),
   };
@@ -433,13 +434,39 @@ export async function streamDraftFile(res,{paths,file},req){
 const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation','kind'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
-  propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither'],
+  propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither','outfit','hair'],
   payment_request:['amount'],payment_confirm:['ref','dueDate'],payment_cancel:['note'],
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
 const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
 // 카탈로그 모델로 정할 때는 붙어 있던 전용 인물 참조를 뗀다(「카탈로그로 바꿀 때만 교체」 — 기획 12-2 「선택 값」).
-const catalogCasting=(selection,modelId)=>{const {personaRef,...rest}=selection||{};return {...rest,modelId};};
+// 옷 · 머리(2026-11-10): 값은 모델마다 다르다(머리 2는 그 모델의 헤어 2). 모델이 바뀌면 옛 모델의 값을 비우고, 손님이 이번에 보낸 값(look)만 쓴다.
+// 방향 고르기 · 직원 정리 · 글 콘티의 「다른 모델로 바꾸기」가 모두 이 한 자리를 지난다(설계 검토 1).
+const LOOK_KEYS=['outfit','hair'];
+const catalogCasting=(selection,modelId,look={})=>{
+  const {personaRef,...rest}=selection||{},out={...rest,modelId};
+  if(rest.modelId!==modelId)for(const key of LOOK_KEYS)out[key]='';
+  for(const key of LOOK_KEYS)if(look[key]!==undefined)out[key]=look[key];
+  return out;
+};
+// 의뢰서 답(의뢰 기록)도 같은 규칙: 첫 모델이 바뀌면 옷 · 머리를 비우고, 보낸 값만 쓴다.
+function answersWithModel(answers,modelId,look={}){
+  const out={...answers,models:[modelId],modelChoice:''};
+  if(answers?.models?.[0]!==modelId)for(const key of LOOK_KEYS)out[key]='';
+  for(const key of LOOK_KEYS)if(look[key]!==undefined)out[key]=look[key];
+  return out;
+}
+// 손님이 방향을 고를 때 보낸 옷 · 머리(answer_direction): 칸이 없으면(옛 화면) 건드리지 않고, ''는 맡김(비움), 값은 그 모델의 옷 · 머리만.
+// 하나라도 틀리면 400 — 화면이 고른 값을 서버가 조용히 바꾸지 않는다.
+function lookOf(input){
+  const look={};
+  for(const [key,list]of [['outfit',OUTFITS],['hair',HAIRS]]){
+    if(!Object.hasOwn(input,key))continue;
+    const value=input[key];if(typeof value!=='string'||value&&!list.includes(value))throw fail('옷 · 머리 고름을 확인해 주세요.');
+    look[key]=value;
+  }
+  return look;
+}
 // 전용 인물로 가는 프로젝트는 방향 제안 · 제작 시작 때 그 인물 판을 다시 본다(personas: pulse-personas.mjs createPersonaGuard).
 // 제작 시작(start)은 더 엄격하다: 새 전용 인물(custom) · 이미 있는 인물(persona)을 고르고 아직 인물이 붙지 않았으면(손님 사용 승인 전) 시작하지 않는다.
 // 방향 · 글 콘티는 인물을 만드는 동안에도 먼저 맞출 수 있다(GPT 검수 GA1, 2026-11-09).
@@ -531,7 +558,7 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     const picked=input.modelId?one(input.modelId,MODEL_IDS):'';
     if(input.accept!==true&&!picked&&!text(input.note,300))throw fail('진행할 모델을 고르거나 바라는 점을 적어 주세요.');
     const modelId=picked||(input.accept===true?proposal?.modelId:'');
-    studio.request={...request,answers:{...request.answers,...(modelId?{models:[modelId],modelChoice:''}:{})},modelProposal:{...(proposal||{}),status:modelId?'accepted':'declined',answer:text(input.note,300),answeredAt:now,...(modelId?{modelId}:{})}};
+    studio.request={...request,answers:modelId?answersWithModel(request.answers,modelId):request.answers,modelProposal:{...(proposal||{}),status:modelId?'accepted':'declined',answer:text(input.note,300),answeredAt:now,...(modelId?{modelId}:{})}};
     // 확인 끝 뒤에 정해진 모델은 제작 설계에도 옮긴다(확인 때 옮긴 값을 고객이 바꿀 수 있다). 전용 인물이 붙어 있었으면 그 참조도 뗀다.
     if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
     return;
@@ -574,8 +601,9 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
       return;
     }
     const option=proposal.options.find(item=>item.id===input.optionId);if(!option)throw fail('방향 제안이 바뀌었어요. 최신 내용을 불러와 주세요.',409);
-    const modelId=input.modelId?one(input.modelId,MODEL_IDS):proposal.modelId||'';
-    chooseDirection(studio,request,proposal,{option,modelId,note:text(input.note,200),status:'chosen',now,stamp});
+    const modelId=input.modelId?one(input.modelId,MODEL_IDS):proposal.modelId||'',look=lookOf(input);
+    // 옷 · 머리는 카탈로그 모델이 있을 때만 쓴다(사람 없이 · 전용 인물로 가는 방향은 받지 않고 버린다).
+    chooseDirection(studio,request,proposal,{option,modelId,note:text(input.note,200),status:'chosen',now,stamp,look:modelId?look:{}});
     return;
   }
   // 회차 2도 거절되면 더 제안하지 않고, 담당자가 손님과 이야기해 정한 안을 적어 앞으로 간다(설계 검토 1).
@@ -707,10 +735,14 @@ function kstDay(value,now){
   return day;
 }
 // 고르거나(손님) 정리하면(직원) 모델을 의뢰서 답과 제작 설계에 옮긴다. 모델 없는 의뢰(사람 없이 제품만)는 그대로 둔다.
-function chooseDirection(studio,request,proposal,{option,modelId,note,status,now,stamp,extra={}}){
-  studio.request={...request,answers:{...request.answers,...(modelId?{models:[modelId],modelChoice:''}:{})},directionProposal:{...proposal,status,chosenId:option.id,...(modelId?{modelId}:{}),answer:note,answeredAt:now,...extra}};
+// 옷 · 머리(look — 손님만 보낸다, 직원 정리는 값을 더하지 않는다): 정본은 제작 설계(castingSelection), 답은 의뢰 기록,
+// proposal.look은 그때 고른 값의 기록(고른 카드 · 일지가 읽는다 — 다시 고르면 덮어쓴다). 글 콘티 전에는 손님이 고른 값이 직원이 고친 값을 덮는다.
+function chooseDirection(studio,request,proposal,{option,modelId,note,status,now,stamp,extra={},look={}}){
+  const answers=modelId?answersWithModel(request.answers,modelId,look):request.answers,{look:_old,...rest}=proposal;
+  studio.request={...request,answers,directionProposal:{...rest,status,chosenId:option.id,...(modelId?{modelId,look:{outfit:answers.outfit||'',hair:answers.hair||''}}:{}),answer:note,answeredAt:now,...extra}};
   // 카탈로그 모델을 고르면 전용 인물 참조를 뗀다. 모델 없이 고른 방향(사람 없이 · 전용 인물)은 붙은 인물을 그대로 둔다.
-  if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
+  // 제안은 의뢰 확인 뒤에만 생기므로 이 조건은 사실상 늘 참이다(전용 인물 조건은 판 3 그대로).
+  if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId,look)},stamp);
 }
 // 확인이 끝나면 답을 제작 설계 칸으로 옮겨 담는다(직원 도구가 그대로 쓰게). 이미 저장한 칸은 덮지 않는다.
 // 제작 설계에 칸이 없는 것(무엇으로 이길지 · 참고 광고 · 드라이브 · 쓰는 법 등)은 메모 칸에 줄로 남겨 옮겨 적는 일이 없게 한다.
@@ -732,6 +764,7 @@ export function carryToStrategy(strategy,a,stamp){
   // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
   const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];
   if(a.hair&&!casting.hair&&casting.modelId&&casting.modelId===a.models?.[0])casting.hair=a.hair;
+  if(a.outfit&&!casting.outfit&&casting.modelId&&casting.modelId===a.models?.[0])casting.outfit=a.outfit;
   data.castingSelection=casting;
   return strategyWith(strategy,data,stamp);
 }
@@ -745,9 +778,10 @@ export function requestView(studio,{staff=false}={}){
   const {notes,contact,...safe}=request;
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
   // paymentFlow는 직원 보기에도 둔다 — 직원 화면의 결제 줄 · 글 콘티 판 고르기 · 의견 다시 묶기는 이 서버에서만 켠다(화면 묶음이 서버보다 먼저 나가도 옛 서버에 모르는 칸을 보내지 않게).
-  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentFlow:true};
+  // castingLooks(2026-11-10 옷 · 머리 고르기): 이 서버가 방향 고르기의 옷 · 머리(answer_direction outfit · hair)를 안다 — 화면은 이것이 있을 때만 그 줄을 그리고 칸을 보낸다.
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentFlow:true,castingLooks:true};
   // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
-  return {...safe,paymentFlow:true};
+  return {...safe,paymentFlow:true,castingLooks:true};
 }

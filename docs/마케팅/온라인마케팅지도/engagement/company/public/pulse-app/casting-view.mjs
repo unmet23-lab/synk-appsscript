@@ -1,9 +1,11 @@
 import {esc} from './api.mjs';
-import {CASTING_MODELS} from './casting-catalog.mjs';
+import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
 import {hasFinishedFilms} from './films-view.mjs';
 
 export const CASTING_OPTIONS={
   hair:{label:'헤어',values:{original:'대표 사진 그대로','look-2':'모델 헤어 2','look-3':'모델 헤어 3',short:'숏 헤어',bob:'단발', 'long-straight':'긴 생머리',wave:'웨이브',updo:'묶은 머리',custom:'직접 설명'}},
+  // 옷(11-10): 고른 모델의 옷 세 벌(기본 옷 · 룩 1 · 룩 2) — 모델을 알면 그 모델의 옷 이름으로 보인다(modelLooks).
+  outfit:{label:'옷',values:{fullbody:'기본 옷','look-1':'모델 룩 1','look-2':'모델 룩 2'}},
   makeup:{label:'메이크업',values:{natural:'내추럴',clean:'깔끔하고 단정하게',glow:'화사한 윤광',smoky:'스모키',custom:'직접 설명'}},
   jacket:{label:'자켓',values:{none:'없음',blazer:'블레이저',casual:'캐주얼 자켓',leather:'레더 자켓',custom:'직접 설명'}},
   top:{label:'상의',values:{tshirt:'티셔츠',shirt:'셔츠',knit:'니트',blouse:'블라우스',custom:'직접 설명'}},
@@ -13,7 +15,7 @@ export const CASTING_OPTIONS={
 };
 // voice는 11-03에 뺀 목소리 칸이다. 저장 모양을 그대로 두려고 키는 남기고, 옛 화면·저장본이 보내는
 // A·B·C는 받되 늘 빈 값으로 둔다 — 서버(pulse-strategy의 normalizeCastingSelection)와 같은 규칙이다.
-export const CASTING_KEYS=['modelId','hair','makeup','jacket','top','bottom','voice','earrings','ring','notes'];
+export const CASTING_KEYS=['modelId','hair','makeup','jacket','top','bottom','voice','earrings','ring','outfit','notes'];
 export const emptyCastingSelection=()=>Object.fromEntries(CASTING_KEYS.map(key=>[key,'']));
 export function normalizeDemoCasting(value){
   if(value===undefined)return emptyCastingSelection();
@@ -27,7 +29,7 @@ export function castingFromForm(form){return Object.fromEntries(CASTING_KEYS.map
 export function takeCastingValues(values){const selection=Object.fromEntries(CASTING_KEYS.map(key=>[key,values['cast_'+key]||'']));for(const key of CASTING_KEYS)delete values['cast_'+key];return selection;}
 const modelOf=selection=>CASTING_MODELS.find(m=>m.id===selection?.modelId);
 export function castingSummary(selection={}){
-  const model=modelOf(selection),rows=[['모델',model?`${model.name} · ${model.id}`:'미정'],...Object.entries(CASTING_OPTIONS).map(([key,option])=>[option.label,(key==='hair'&&model&&MODEL_HAIR[selection.hair]!==undefined&&model.hairLabels?.[MODEL_HAIR[selection.hair]])||option.values[selection[key]]||'미정'])];
+  const model=modelOf(selection),rows=[['모델',model?`${model.name} · ${model.id}`:'미정'],...Object.entries(CASTING_OPTIONS).map(([key,option])=>[option.label,(key==='hair'&&model&&MODEL_HAIR[selection.hair]!==undefined&&model.hairLabels?.[MODEL_HAIR[selection.hair]])||(key==='outfit'&&model&&modelLooks(model.id)?.outfits.find(item=>item.id===selection.outfit)?.label)||option.values[selection[key]]||'미정'])];
   return `<dl class="casting-summary-list">${rows.map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}${selection.notes?`<div class="casting-note-row"><dt>기타·메모</dt><dd>${esc(selection.notes)}</dd></div>`:''}</dl>`;
 }
 // 헤어는 고른 모델의 헤어 셋(hairLabels)만, 남자 모델에게는 블라우스·스커트를 빼고 보인다. 이미 저장한 값은 「이전 선택」으로 남겨 잃지 않는다(10-19 검수).
@@ -35,6 +37,7 @@ const MODEL_HAIR={original:0,'look-2':1,'look-3':2},MALE_MODELS=new Set(CASTING_
 function optionsFor(selection,key){
   const o=CASTING_OPTIONS[key],model=modelOf(selection),current=selection[key]||'';let entries=Object.entries(o.values);
   if(key==='hair')entries=model?.hairLabels?.length?[...model.hairLabels.slice(0,3).map((label,index)=>[['original','look-2','look-3'][index],label]),['custom',o.values.custom]]:entries.filter(([id])=>!['look-2','look-3'].includes(id));
+  if(key==='outfit'&&model)entries=modelLooks(model.id).outfits.map(item=>[item.id,item.label]);
   if((key==='top'||key==='bottom')&&model&&MALE_MODELS.has(model.id))entries=entries.filter(([id])=>!['blouse','skirt'].includes(id));
   if(current&&!entries.some(([id])=>id===current))entries.push([current,(o.values[current]||current)+' · 이전 선택']);
   return [['','미정'],...entries];
@@ -56,7 +59,7 @@ export function castingView(selection={}, {editable=true}={}){return `<section c
   <fieldset class="casting-models"><legend><span>01</span> 모델 선택 <small>${CASTING_MODELS.length}명</small></legend><div class="casting-model-grid">${CASTING_MODELS.map(m=>`<label class="casting-model-card"><input type="radio" name="cast_modelId" value="${m.id}" ${selection.modelId===m.id?'checked':''}><span class="casting-model-photo">${m.image?`<img src="${esc(m.image)}" alt="${esc(m.name)} 대표 사진" loading="lazy" width="240" height="320"><span class="casting-image-error" hidden>사진을 불러오지 못했어요.</span>`:`<span class="casting-photo-pending"><b>${esc(m.id)}</b>대표 사진 준비 중</span>`}<span class="casting-selected-mark" aria-hidden="true">✓</span></span><span class="casting-model-text"><strong>${esc(m.name)} <small>${esc(m.id)}</small></strong><span>${esc(m.description)}</span></span></label>`).join('')}</div><label class="casting-undecided"><input type="radio" name="cast_modelId" value="" ${selection.modelId?'':'checked'}> 모델은 나중에 정할게요</label></fieldset>
   <div data-casting-photos class="casting-photos">${castingPhotos(selection)}</div>
   <section class="casting-step"><h4><span>02</span> 헤어 · 메이크업</h4><p class="small">헤어는 고른 모델에게 맞는 셋 중에서 고를 수 있어요.</p>${choices(selection,'hair')}${choices(selection,'makeup')}</section>
-  <section class="casting-step"><h4><span>03</span> 의상</h4><p class="small">브랜드의 실제 의류를 쓰려면 ‘직접 설명’을 고르고 참고자료를 취향 보드에 추가해 주세요.</p>${choices(selection,'jacket')}${choices(selection,'top')}${choices(selection,'bottom')}</section>
+  <section class="casting-step"><h4><span>03</span> 의상</h4><p class="small">브랜드의 실제 의류를 쓰려면 ‘직접 설명’을 고르고 참고자료를 취향 보드에 추가해 주세요.</p>${choices(selection,'outfit')}${choices(selection,'jacket')}${choices(selection,'top')}${choices(selection,'bottom')}</section>
   <p class="small casting-voice-note">${esc(CASTING_VOICE_NOTE)}</p>
   <section class="casting-step"><h4><span>04</span> 액세서리</h4>${choices(selection,'earrings')}${choices(selection,'ring')}<label class="field casting-notes">기타·메모<textarea name="cast_notes" rows="3" maxlength="1000" placeholder="예: 검정 블레이저에 브랜드 셔츠. 귀걸이는 작은 은색 스터드로 부탁드려요.">${esc(selection.notes||'')}</textarea><small>직접 설명을 고른 항목, 색상·제품명·피하고 싶은 표현을 적어 주세요.</small></label></section>
   <section class="casting-current" aria-label="현재 모델과 스타일 선택"><h4>지금 고른 조합 <span class="tag">${editable?'선택 미리보기':'저장한 선택'}</span></h4><div data-casting-summary>${castingSummary(selection)}</div>${editable?'<p class="small">저장하면 이 선택이 제작 설계에 함께 남아요. 모델·스타일만 바꾸면 이미 확인한 제작 설계는 그대로예요.</p><button type="submit" class="button primary" data-mutate>모델·스타일 저장</button>':'<p class="small">이 프로젝트에 저장된 모델과 스타일이에요.</p>'}</section>
@@ -65,7 +68,7 @@ export function castingView(selection={}, {editable=true}={}){return `<section c
 export function refreshCasting(form,{modelChanged=false}={}){
   const root=form?.querySelector('.casting-configurator');if(!root)return;
   let selection=castingFromForm(form);
-  if(modelChanged){for(const key of ['hair','top','bottom']){const box=root.querySelector(`[data-casting-choice="${key}"]`);if(box)box.outerHTML=choices(selection,key);}if(root.dataset)root.dataset.choicesModel=selection.modelId||'';}
+  if(modelChanged){for(const key of ['hair','outfit','top','bottom']){const box=root.querySelector(`[data-casting-choice="${key}"]`);if(box)box.outerHTML=choices(selection,key);}if(root.dataset)root.dataset.choicesModel=selection.modelId||'';}
   root.querySelector('[data-casting-summary]').innerHTML=castingSummary(selection);
   const photos=root.querySelector('[data-casting-photos]');if(photos.dataset.model!==(selection.modelId||'')){photos.innerHTML=castingPhotos(selection);photos.dataset.model=selection.modelId||'';}
   for(const img of root.querySelectorAll('.casting-model-photo img'))img.onerror=()=>{img.hidden=true;img.nextElementSibling.hidden=false;};
@@ -78,7 +81,7 @@ export function syncCastingChoices(form,values={}){
   const root=form?.querySelector('.casting-configurator');if(!root)return false;
   const selection=castingFromForm(form);for(const key of CASTING_KEYS)if(typeof values?.['cast_'+key]==='string')selection[key]=values['cast_'+key];
   if(!root.dataset||(root.dataset.choicesModel||'')===(selection.modelId||''))return false;
-  for(const key of ['hair','top','bottom']){const box=root.querySelector(`[data-casting-choice="${key}"]`);if(box)box.outerHTML=choices(selection,key);}
+  for(const key of ['hair','outfit','top','bottom']){const box=root.querySelector(`[data-casting-choice="${key}"]`);if(box)box.outerHTML=choices(selection,key);}
   root.dataset.choicesModel=selection.modelId||'';return true;
 }
 
