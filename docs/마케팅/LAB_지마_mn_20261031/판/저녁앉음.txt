@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep absolutely everything exactly the same — the same evening felt café, the pendant lamps, espresso machine, plants, chairs up on the tables, the open wooden door, the blue dusk street with the glowing street lamp, the same barista in his long brown wool coat and green scarf holding the brown felt suitcase, the same wooden floor, the same camera, framing, light and colors. Change only one thing:
+
+Mongle (the coral felt mascot at the left) must clearly SIT on a seat instead of hovering in the air. Put a small round wooden bar stool directly under it: the round wooden seat is clearly visible just under Mongle's scalloped hem (the seat is a little wider than Mongle's body), Mongle's bottom rests flat on the seat with a soft contact shadow, and the stool's wooden legs go straight down to the floor. Mongle keeps the same size, the same place in the frame, the same coral color and fuzzy wool texture, the same glossy black bead eyes, the same single clear felt tear, and no mouth. It still looks up toward the barista.
+
+Nothing in the image may float in the air. Keep the lower 35% of the image (the wooden floor) calm and empty.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot (use the SECOND attached reference photo ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with NO white in them). No arms, no legs, no hands, ever.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm evening light, gentle depth of field. Absolutely no text, letters, numbers, logos, symbols or speech bubbles anywhere.

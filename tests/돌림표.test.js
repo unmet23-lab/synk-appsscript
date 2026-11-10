@@ -487,6 +487,36 @@ test('돌림표 — 나가지 않는 판(취소됨 · 지움)은 칸을 비우�
   assert.equal(ledger.rows.find((r) => r.원본 === N && r.계정 === th.계정).상태, '예약됨');
 });
 
+test('돌림표 — 같은 이야기를 다른 편 폴더로 낸 계정(「돌림」.같은이야기)은 이 원본을 다시 받지 않는다(11-10 지마 — 영어 · 간체 · 버마어 판이 다른 폴더로 나갔다)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const 짝 = 'LAB_가_20261102';
+  fs.mkdirSync(path.join(m.root, 짝, '게시'), { recursive: true });
+  적기(m, 짝, '준비.json', { 브랜드: 'LAB', 슬롯: '2026-11-06', 판: [
+    { 계정: 'lab-th-youtube', 파일: 'y.mp4', 시각: '2026-11-06T21:00:00+09:00', AI표시: false },
+    { 계정: 'lab-jp-youtube', 파일: 'z.mp4', 시각: '2026-11-06T21:00:00+09:00', AI표시: false }] });
+  적기(m, 짝, '게시결과.json', { 판: [{ 계정: 'lab-th-youtube', 상태: '게시됨', 게시물ID: 'yt-1' }, { 계정: 'lab-jp-youtube', 상태: '취소됨' }] });
+  const cellsOf = (account) => {
+    const r = m.run('--부터', '2026-11-20', '--일수', '6', '--json');
+    assert.equal(r.status, 0, r.stderr);
+    return JSON.parse(r.stdout).cells.filter((c) => c.account === account && c.format === '이야기');
+  };
+  assert.ok(cellsOf('lab-th-youtube').some((c) => c.original === G), '같은이야기를 적기 전에는 태국 채널이 가 편을 받는다');
+  const prep = 읽기(m, G);
+  prep.돌림.같은이야기 = [짝];
+  적기(m, G, '준비.json', prep);
+  const th = cellsOf('lab-th-youtube');
+  assert.equal(th.some((c) => c.original === G), false, '다른 폴더로 같은 이야기를 받은 계정은 이 원본을 다시 받지 않는다');
+  assert.ok(th.some((c) => c.original === N), '다른 원본은 그대로 받는다');
+  assert.ok(cellsOf('lab-jp-youtube').some((c) => c.original === G), '그 편이 취소된 계정은 받은 것으로 치지 않는다');
+  // 없는 폴더 이름은 셈을 멈춘다(조용히 넘기면 같은 이야기가 또 나간다)
+  prep.돌림.같은이야기 = ['LAB_없는편_20261101'];
+  적기(m, G, '준비.json', prep);
+  const bad = m.run('--부터', '2026-11-20', '--일수', '2', '--json');
+  assert.notEqual(bad.status, 0);
+  assert.match(bad.stderr, /같은이야기/);
+});
+
 test('돌림표 — 「미정」 까닭 · 앞 칸이 닫힌 계정 · --준비무시는 셈만(--쓰기와 함께 못 쓴다)', (t) => {
   const m = 마당();
   t.after(m.cleanup);

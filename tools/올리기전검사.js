@@ -989,7 +989,9 @@ async function run(dir, opts = {}) {
 
   const homage = homageFindings(bundle, [...videos.keys()]);
   findings.push(...homage.findings);
-  findings.push(...aestheticFindings(bundle, [...videos.keys()]));
+  // 돌림 원본의 나라 판본 영상도 맹검한 영상으로 받는다(⑱ — 11-10 지마: 씨앗이 나간 뒤 저녁 그림을 고쳐 판본을 다시 렌더했다. tools/lib/미학관문.js 바뀐영상)
+  const 판본영상 = Object.values(prep.돌림?.판본 || {}).map((v) => v && v.파일 && 미디어경로(path.resolve(bundle.dir, v.파일))).filter(Boolean);
+  findings.push(...aestheticFindings(bundle, [...videos.keys()], { 판본영상 }));
   findings.push(...musicLayerFindings(bundle, [...videos.keys()]));
   let repeat = { findings: [], summary: null };
   try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {

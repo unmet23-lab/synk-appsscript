@@ -148,6 +148,16 @@ function videosOf(prep) {
   });
 }
 
+// 돌림 원본의 나라 판본 영상(「돌림」.판본) — ⑱이 맹검한 영상으로 받는다(tools/lib/미학관문.js 바뀐영상, 11-10 지마 저녁 그림 고침)
+function 판본영상of(prep, pieceDir) {
+  const repo = path.resolve(ROOT, '..', '..');
+  const shared = 공용작업본(repo);
+  return Object.values(prep.돌림?.판본 || {}).filter((v) => v && v.파일).map((v) => {
+    const own = path.resolve(pieceDir, v.파일);
+    return shared !== repo && !fs.existsSync(own) ? path.join(shared, path.relative(repo, own)) : own;
+  });
+}
+
 const 헤르메스 = require('./lib/헤르메스보내기.js');
 
 // 판 계정 키(sns-계정.json) → 서버 채널 id들. 핸들이나 유튜브 채널 ID로 맞춘다.
@@ -185,7 +195,7 @@ function collect(server, accounts, now) {
     const check = checkOf(prep, needsBooking);
     // ⑱ 미학 맹검(11-08 유호님 「그냥 지금부터 걸어」) — 준비.json 「검사」가 ⑱ 전에 남은 기록이어도, 아직 걸 판이 남은 편은
     // 지금의 게시/미학맹검.json으로 다시 본다(11-08 14시 회차가 옛 검사 기록만 보고 맹검 없는 비축 편을 건 뒤).
-    const aesthetic = needsBooking ? aestheticBlock({ dir: path.join(ROOT, dir.name), prep }, videosOf(prep)) : null;
+    const aesthetic = needsBooking ? aestheticBlock({ dir: path.join(ROOT, dir.name), prep }, videosOf(prep), { 판본영상: 판본영상of(prep, path.join(ROOT, dir.name)) }) : null;
     const groups = { [prep.브랜드]: [], SHIFT: [] };
     for (const p of prep.판 || []) (String(p.계정 || '').startsWith('shift-') ? groups.SHIFT : groups[prep.브랜드]).push(p);
     for (const [brand, plates] of Object.entries(groups)) {

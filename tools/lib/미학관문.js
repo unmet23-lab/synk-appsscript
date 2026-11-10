@@ -61,7 +61,10 @@ function 막힘증거(기록, 못본번호) {
 
 // 기록이 본 영상 가운데 기록 뒤에 바뀐 것. 「영상」 칸(맹검한 영상)이 있으면 그 영상만 — 언어판은 원본 맹검을 따른다.
 // 그 영상이 편의 판 영상 가운데 하나도 없으면 다른 영상을 맹검한 것이라 바뀜으로 친다(판 영상이 없는 편은 넘긴다).
-function 바뀐영상(기록, 기록파일, videoFiles) {
+// 판본영상(11-10): 돌림 원본의 나라 판본 영상(「돌림」.판본 — 그림 · 박자는 원본과 같고 글만 다르다)도 맹검한 영상으로 받는다. 씨앗이 나간 뒤
+// 원본 그림을 고쳐 판본을 다시 렌더한 편(11-10 지마 저녁 장면)은 씨앗 판 영상이 옛 그림이라, 맹검은 고친 그림의 판본 영상으로 다시 받는다.
+// 「영상」 칸이 없는 옛 기록에는 판본영상을 쓰지 않는다(판본은 원본 맹검 뒤에 굽는 것이라 늘 기록보다 늦다).
+function 바뀐영상(기록, 기록파일, videoFiles, 판본영상 = []) {
   const 만든 = 만든때of(기록, 기록파일);
   const 늦음 = (v) => 바뀐때(v) > 만든 + 1000;
   const 맹검영상 = 배열(기록?.영상).filter((v) => v && (v.이름 || v.파일));
@@ -69,8 +72,9 @@ function 바뀐영상(기록, 기록파일, videoFiles) {
   const 이름 = (v) => String(v.이름 || path.basename(String(v.파일 || '')));
   const 끝같음 = (full, rel) => !rel || full.split(path.sep).join('/').endsWith(String(rel).replace(/\\/g, '/'));
   const 그영상 = (f) => 맹검영상.find((v) => path.basename(f) === 이름(v) && 끝같음(path.resolve(f), v.파일));
-  const 짝 = videoFiles.filter((f) => 그영상(f));
-  if (videoFiles.length && !짝.length) return { 바뀜: [], 다른영상: true, 맹검영상: 맹검영상.map(이름) };
+  const 후보 = [...videoFiles, ...배열(판본영상)];
+  const 짝 = 후보.filter((f) => 그영상(f));
+  if (후보.length && !짝.length) return { 바뀜: [], 다른영상: true, 맹검영상: 맹검영상.map(이름) };
   const 크기다름 = (f) => { const v = 그영상(f); if (!Number.isFinite(v?.크기)) return false; try { return fs.statSync(f).size !== v.크기; } catch { return true; } };
   return { 바뀜: 짝.filter((f) => 늦음(f) || 크기다름(f)), 다른영상: false };
 }
@@ -79,12 +83,12 @@ function 바뀐영상(기록, 기록파일, videoFiles) {
 const 컷맵 = (기록) => new Map(배열(기록?.화면).map((h) => [String(h.번호), h.컷 ? String(h.컷) : null]));
 
 /** 대체 결과 판정 — 아르곤 기록(P)이 못 본 화면을 대체 눈(S)이 덮었나. */
-function 대체판정(S, S파일, P, P파일, 못본번호, videoFiles) {
+function 대체판정(S, S파일, P, P파일, 못본번호, videoFiles, 판본영상 = []) {
   if (!S) return { 상태: '없음' };
   const 눈 = String(S.눈 || '').toLowerCase();
   if (!대체눈.includes(눈)) return { 상태: '눈아님', 눈: S.눈 || '(적지 않음)', 까닭: 뺀눈[눈] || `시각 대체는 ${대체눈.map((x) => 눈이름[x]).join(' → ')}만 받는다` };
   if (눈 === 'gpt' && !(S.적중 && typeof S.적중 === 'object')) return { 상태: '눈아님', 눈: 'GPT', 까닭: 'GPT 적중(11-08 눈가림 기각 사례)을 잰 기록이 대체 결과에 없다 — tools/미학맹검.js --적중시험으로 먼저 잰다' };
-  const 바 = 바뀐영상(S, S파일, videoFiles);
+  const 바 = 바뀐영상(S, S파일, videoFiles, 판본영상);
   if (바.다른영상 || 바.바뀜.length) return { 상태: '낡음', 글: 바.다른영상 ? `대체 맹검한 영상(${바.맹검영상.join(', ')})이 이 편의 판 영상이 아니다` : `대체 맹검 뒤 영상이 바뀌었다(${바.바뀜.map((v) => path.basename(v)).join(', ')})` };
   if (만든때of(S, S파일) + 1000 < 만든때of(P, P파일)) return { 상태: '낡음', 글: '대체 맹검이 지금 아르곤 기록보다 먼저 만들어졌다 — 아르곤이 다시 막힌 판을 대체 눈으로 다시 본다' };
   const 시도 = 배열(S.시도);
@@ -112,8 +116,9 @@ const 적중글 = (S) => {
   return `11-08 눈가림 기각 ${j.기각 ?? '?'}${j.아르곤 ? `(아르곤 ${j.아르곤})` : ''}`;
 };
 
-// bundle = { dir: 편 폴더, prep: 준비.json }, videoFiles = 그 편의 영상 판(맹검 뒤에 바뀌었는지 본다)
-function aestheticFindings(bundle, videoFiles = []) {
+// bundle = { dir: 편 폴더, prep: 준비.json }, videoFiles = 그 편의 영상 판(맹검 뒤에 바뀌었는지 본다),
+// 판본영상 = 돌림 원본의 나라 판본 영상(맹검한 영상으로 받는다 — 위 바뀐영상)
+function aestheticFindings(bundle, videoFiles = [], { 판본영상 = [] } = {}) {
   const findings = [];
   const add = (level, code, message) => findings.push({ level, code, where: '미학 맹검', message });
   const 글칸 = (k) => (typeof bundle.prep?.[k] === 'string' ? bundle.prep[k].trim() : '');
@@ -128,7 +133,7 @@ function aestheticFindings(bundle, videoFiles = []) {
     else add(FIX, 'aesthetic-missing', '보여 드리기 · 게시 전 미학 맹검이 없다(11-08부터 모든 편, 제작 절차 3 관문) — node tools/미학맹검.js <대표 프레임 · 카드 또는 --영상 <최종.mp4> --순간 <초>…> --편 <편 폴더>');
     return findings;
   }
-  const 바 = 바뀐영상(P, P파일, 영상들);
+  const 바 = 바뀐영상(P, P파일, 영상들, 판본영상);
   if (바.다른영상) add(FIX, 'aesthetic-stale', `맹검한 영상(${바.맹검영상.join(', ')})이 이 편의 판 영상이 아니다 — 판 영상으로 다시 맹검한다`);
   else if (바.바뀜.length) add(FIX, 'aesthetic-stale', `맹검 뒤 영상이 바뀌었다(${바.바뀜.map((v) => path.basename(v)).join(', ')}) — 바뀐 판으로 다시 맹검한다(안 바뀐 컷은 지난 판정을 이어받는다). 그때도 아르곤이 막히면 도구가 막힌 증거를 남기고, 대체 눈으로 본다`);
   const 낱장 = 배열(P.낱장);
@@ -141,7 +146,7 @@ function aestheticFindings(bundle, videoFiles = []) {
     if (!증거.ok) {
       add(FIX, 'aesthetic-incomplete', `맹검 답을 못 받은 화면 ${못본.join(', ')} — 통과로 치지 않는다. 막힌 증거(보낸 시각 · 거절 첫 줄)가 기록에 없다${증거.빈?.length ? `(화면 ${증거.빈.join(', ')})` : ''}: 다시 맹검한다(11-10부터 도구가 막힘을 적는다 — 그때도 막히면 대체 눈)${덧글 ? ` · ${덧글} — 글만으로는 못 넘는다` : ''}`);
     } else {
-      대 = 대체판정(S, S파일, P, P파일, 못본, 영상들);
+      대 = 대체판정(S, S파일, P, P파일, 못본, 영상들, 판본영상);
       const 앞 = `아르곤이 화면 ${못본.join(', ')}을 못 봤다(${증거.글})`;
       if (대.상태 === '받음') add(LOOK, 'aesthetic-substitute', `${앞} — 대체 눈 ${눈이름[대.눈]}의 판정을 쓴다${적중글(S) ? `(${적중글(S)})` : ''}. 대체 눈은 약한 눈이라 지적을 프레임과 대조한다${덧글 ? ` · ${덧글}` : ''}`);
       else if (대.상태 === '셋다막힘') add(FIX, 'aesthetic-swap', `${앞} · ${대.시도.map((t) => `${눈이름[String(t.눈).toLowerCase()] || t.눈} ${막힘한줄(t)}`).join(' · ')} — 셋 다 막혔다: 예비편으로 바꿔 건다(「맹검못함」으로 통과하지 않는다, 11-10 설계 18 · 21)`);
@@ -170,8 +175,8 @@ const 짧은까닭 = {
   'aesthetic-missing': '미학 맹검 없음', 'aesthetic-stale': '맹검 뒤 영상 바뀜', 'aesthetic-incomplete': '맹검 답 빠짐', 'aesthetic-reject': '맹검 기각',
   'aesthetic-unverified': '맹검 막힘 · 대체 맹검 없음', 'aesthetic-swap': '맹검 눈 셋 다 막힘 — 예비편', 'aesthetic-eye': '시각 대체 눈 아님', 'aesthetic-order': '아르곤 맹검 기록 없음',
 };
-function aestheticBlock(bundle, videoFiles) {
-  const fix = aestheticFindings(bundle, videoFiles).filter((f) => f.level === FIX);
+function aestheticBlock(bundle, videoFiles, opts = {}) {
+  const fix = aestheticFindings(bundle, videoFiles, opts).filter((f) => f.level === FIX);
   return fix.length ? [...new Set(fix.map((f) => 짧은까닭[f.code] || f.code))].join(' · ') : null;
 }
 

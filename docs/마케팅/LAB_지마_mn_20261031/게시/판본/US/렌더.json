@@ -3,8 +3,8 @@
   "컴포지션": "m22-US",
   "언어": "en",
   "글": "docs/마케팅/LAB_지마_mn_20261031/remotion/src/m22/판본/US.json",
-  "글sha256": "d570a8f6e0a012237dbbc52c401455d34d7e667b2b7ead7cd03bed1471483842",
-  "시각": "2026-11-10T05:30:05.092Z",
+  "글sha256": "9cc0398c149c52efe29bd25df57c774bfc6d3f3dc805d2421beaf7bdf14c382e",
+  "시각": "2026-11-10T09:15:13.003Z",
   "영상": "docs/마케팅/LAB_지마_mn_20261031/게시/판본/US/video.mp4",
   "표지": "docs/마케팅/LAB_지마_mn_20261031/게시/판본/US/cover.png",
   "표지초": 1,
@@ -27,8 +27,8 @@
   },
   "길이초": 20.608,
   "프레임": 618,
-  "영상Mbps": 11.7,
+  "영상Mbps": 11.69,
   "소리kbps": 336,
-  "영상sha256": "7c8522c1233ef88b87b1ca388dc91c42e5aa27dc2ab7c078e2d9298fba68d9cb",
+  "영상sha256": "93f7cd3b7b56a70c7fcc832ffbd2eee0dde353ab0c4e5bf01135a8ae3fb1972d",
   "표지프레임": 30
 }

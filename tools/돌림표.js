@@ -19,7 +19,9 @@
  *
  * 원본 편의 준비.json 「돌림」:
  *   {"형식": "이야기"|"퀴즈", "쓸날": "YYYY-MM-DD"(그날부터 · 동결 뒤 — 설계 20), "멈춤": null|{"날","까닭"}, "예비": false,
- *    "틀"?, "무대"?(⑯ 퀴즈 — 개그 무대), "판본": {"<판본 키>": {"언어", "파일", "표지"?, "글"(그 판본 글 정본 — 뜻 검사 지문),
+ *    "틀"?, "무대"?(⑯ 퀴즈 — 개그 무대), "같은이야기"?: ["<편 폴더 이름>"…](같은 이야기를 다른 폴더로 낸 편 — 그 편이 나간 계정은
+ *    이 원본을 다시 받지 않는다. 11-10 지마: 영어 · 간체 · 버마어 판이 LAB_지마_20261102로 나갔다. 없는 이름이면 셈을 멈춘다),
+ *    "판본": {"<판본 키>": {"언어", "파일", "표지"?, "글"(그 판본 글 정본 — 뜻 검사 지문),
  *    "원고": {"<플랫폼>": "<원고.json 또는 게시글 .txt>"}, "검수": {"뜻": {"결과": "통과", "지문"}, "글자": {"결과": "통과", "지문"}, …}}}}
  *   판본 키는 계정의 rotationVersion, 없으면 countryCode(나라마다 첫 2초 카드 · 끝 카드 · 썸네일 · 끝 질문이 다르다 — 설계 6).
  *   판본이 돌림에 드는 조건(설계 22): 파일이 있고, sns-계정.json labRotation.판본검수(기본 뜻 · 글자)가 모두 「통과」이며
@@ -206,6 +208,19 @@ function existingPlates(pieces, { replan = false, stopped = new Set(), holds = n
         const timed = Number.isFinite(Date.parse(row.시각 || ''));
         out.push({ ...base, time: timed ? row.시각 : null, booked: true, gone: !timed });
       } else if (GONE.has(row?.상태)) out.push({ ...base, time: null, booked: false, gone: true });
+    }
+    // 같은 이야기를 다른 편 폴더로 낸 적이 있는 원본(「돌림」.같은이야기 — 11-10 지마: 영어 · 간체 · 버마어 판이 LAB_지마_20261102로
+    // @synkkorean · 샤오훙수 · 버마어 틱톡에 나갔다). 그 편이 나간(또는 걸린) 계정은 이 원본을 이미 받았다 — 칸은 차지하지 않는다.
+    for (const name of [].concat(piece.original.같은이야기 || [])) {
+      const sib = pieces.find((p) => p.name === name);
+      if (!sib) throw new Error(`${piece.name}의 「돌림」.같은이야기 「${name}」 편 폴더가 없다 — 이름을 고친다(조용히 넘기면 같은 이야기가 그 계정에 또 나간다)`);
+      const accounts = new Set([...(sib.prep.판 || []).map((p) => p && p.계정), ...(sib.result.판 || []).map((r) => r && r.계정)].filter(Boolean));
+      for (const account of accounts) {
+        const row = 장부.rowOf(sib.result.판, account);
+        if (row && !장부.held(row) && GONE.has(row.상태)) continue; // 그 편이 나가지 않은 계정(취소됨 · 지움)
+        if (plated.has(account) || out.some((x) => x.original === piece.name && x.account === account)) continue;
+        out.push({ original: piece.name, account, generated: false, piece: name, state: '같은 이야기(다른 편)', time: null, booked: false, gone: true });
+      }
     }
   }
   return out;

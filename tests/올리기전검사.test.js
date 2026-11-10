@@ -506,6 +506,24 @@ test('⑱ 미학 맹검(11-08 · 11-10 설계 18): 모든 편은 결과가 있�
   assert.equal(aestheticBlock({ ...빈편, prep: { 맹검못함: '막힘' } }, [새판]), '맹검 뒤 영상 바뀜', '예약 큐 · 14시 게시도 같은 판정');
   assert.equal(aestheticBlock(막힌편, []), null);
   assert.equal(aestheticBlock({ ...빈편, prep: { 맹검판단: '막힘' } }, [새판]), '맹검 뒤 영상 바뀜');
+
+  // 11-10 지마: 씨앗이 나간 뒤 원본 그림을 고쳐 나라 판본을 다시 렌더했다 — 맹검은 고친 그림의 판본 영상으로 다시 받는다. 그 기록의 「영상」이
+  // 판본 영상이면(판본영상으로 넘김) 받고, 판본 영상이 맹검 뒤에 또 바뀌면 다시 맹검, 판본영상으로 안 넘기면 예전처럼 「다른 영상」
+  const 돌림편 = 편('LAB_돌림고침_20261031');
+  fs.mkdirSync(path.join(돌림편.dir, '게시', '판본', 'MN'), { recursive: true });
+  const 씨앗판 = path.join(돌림편.dir, '게시', '01-mn', 'video.mp4');
+  fs.mkdirSync(path.dirname(씨앗판), { recursive: true }); fs.writeFileSync(씨앗판, 'old'); fs.utimesSync(씨앗판, new Date(Date.now() - 86_400_000), new Date(Date.now() - 86_400_000));
+  const 판본판 = path.join(돌림편.dir, '게시', '판본', 'MN', 'video.mp4');
+  fs.writeFileSync(판본판, 'fixed'); fs.utimesSync(판본판, new Date(Date.now() - 600_000), new Date(Date.now() - 600_000));
+  결과쓰기(돌림편, { 만든때: new Date(Date.now() - 60_000).toISOString(), 영상: [{ 파일: 'LAB_돌림고침_20261031/게시/판본/MN/video.mp4', 이름: 'video.mp4', 크기: 5 }],
+    낱장: [{ 번호: '01', 판정: '기각', 점수: 4, 약점: ['[K26] 멈춘 그림'] }], 빠짐: [] });
+  const 판단 = { 맹검판단: '맹은 고침 — 남은 지적은 LAB 그림체 틀' };
+  assert.deepEqual(레벨(검사.aestheticFindings({ ...돌림편, prep: 판단 }, [씨앗판])), ['고칠 것:aesthetic-stale', '확인할 것:aesthetic-reject'], '판본영상을 안 넘기면 판본 맹검은 다른 영상');
+  assert.deepEqual(레벨(검사.aestheticFindings({ ...돌림편, prep: 판단 }, [씨앗판], { 판본영상: [판본판] })), ['확인할 것:aesthetic-reject'], '고친 판본으로 받은 맹검 — 기각은 「맹검판단」으로 확인할 것');
+  assert.deepEqual(레벨(검사.aestheticFindings({ ...돌림편, prep: {} }, [씨앗판], { 판본영상: [판본판] })), ['고칠 것:aesthetic-reject']);
+  fs.utimesSync(판본판, new Date(), new Date(Date.now() + 5_000));
+  assert.deepEqual(레벨(검사.aestheticFindings({ ...돌림편, prep: 판단 }, [씨앗판], { 판본영상: [판본판] })), ['고칠 것:aesthetic-stale', '확인할 것:aesthetic-reject'], '맹검한 판본 영상이 맹검 뒤 또 바뀌면 다시 맹검');
+  assert.equal(aestheticBlock({ ...돌림편, prep: 판단 }, [씨앗판], { 판본영상: [판본판] }), '맹검 뒤 영상 바뀜', '예약 큐 · 14시 게시도 같은 판정');
 });
 
 // ── 같은 언어 묶음(11-10 — 돌림 ⑥ · ⑫ · ⑫-2) ──
