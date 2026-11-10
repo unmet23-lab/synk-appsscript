@@ -88,20 +88,22 @@ function 새공개본(t, 파일 = {}) {
   const g = (...a) => execFileSync('git', ['-C', 작업, '-c', 'core.autocrlf=false', '-c', 'core.quotepath=false', ...a], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   /** 남의 공개(다른 세션이 synk-policy에 직접 올림) — 도구가 그사이 올린 커밋 위에 */
   const 올림 = (바꿀 = {}, 지울 = [], 메시지 = '남의 공개') => {
-    const 새것 = 빠른.원격에빠른커밋(origin, 'main', { ...바꿀, ...Object.fromEntries(지울.map((p) => [p, null])) }, `${메시지}\n`);
-    if (새것 === null) return 올림복제(바꿀, 지울, 메시지);
+    // 바꿀 것 · 지울 것 없이 부르면 빈 커밋이다(남이 건 「Pages 다시 걸기」 흉내, 11-11) — 빠른 길은 바뀐 것이 없으면 던지므로 옛 길로 간다
+    const 빈 = !Object.keys(바꿀).length && !지울.length;
+    const 새것 = 빈 ? null : 빠른.원격에빠른커밋(origin, 'main', { ...바꿀, ...Object.fromEntries(지울.map((p) => [p, null])) }, `${메시지}\n`);
+    if (새것 === null) return 올림복제(바꿀, 지울, 메시지, { 빈 });
     g('fetch', '-q', 'origin');
     g('reset', '-q', '--hard', 'origin/main');
     return 새것;
   };
-  /** 올림의 옛 길 — 작업본에서 받아 고치고 커밋해 push한다(fast-import가 같은 커밋을 못 만드는 경우) */
-  const 올림복제 = (바꿀 = {}, 지울 = [], 메시지 = '남의 공개') => {
+  /** 올림의 옛 길 — 작업본에서 받아 고치고 커밋해 push한다(fast-import가 같은 커밋을 못 만드는 경우 · 일부러 거는 빈 커밋) */
+  const 올림복제 = (바꿀 = {}, 지울 = [], 메시지 = '남의 공개', { 빈 = false } = {}) => {
     g('fetch', '-q', 'origin');
     g('reset', '-q', '--hard', 'origin/main');
     for (const [p, v] of Object.entries(바꿀)) 쓰기(작업, p, v);
     for (const p of 지울) fs.rmSync(path.join(작업, ...p.split('/')));
     g('add', '-A');
-    g('commit', '-q', '-m', 메시지);
+    g('commit', '-q', ...(빈 ? ['--allow-empty'] : []), '-m', 메시지);
     g('push', '-q', 'origin', 'main');
     return g('rev-parse', 'HEAD').trim();
   };
@@ -1280,6 +1282,11 @@ test('Pages 유실(11-10): deploy 로그 꼴 — 빈칸(첫 시도 · 다시 건
   assert.equal(꼴(로그줄('Current status: syncing_files', 'Current status: syncing_files_more')), '모름', '값이 있는 상태 줄은 빈칸이 아니다');
   assert.equal(도구.인자읽기(['확인', 'abc1234', '--다시걸기안함']).다시걸기안함, true);
   assert.equal(도구.인자읽기(['확인', 'abc1234']).다시걸기안함, undefined);
+  // --유실간격(11-11): 분, 0이면 연달아 유실에도 바로 건다. 안 주면 도구 기본(15분)
+  assert.equal(도구.인자읽기(['확인', 'abc1234', '--유실간격', '0']).유실간격, 0);
+  assert.equal(도구.인자읽기(['올리기', 'a.txt', '--유실간격', '7.5']).유실간격, 7.5);
+  assert.equal(도구.인자읽기(['확인', 'abc1234']).유실간격, undefined);
+  for (const 값 of ['-1', '십오']) assert.throws(() => 도구.인자읽기(['확인', 'abc1234', '--유실간격', 값]), /--유실간격는 0 이상 숫자다/, 값);
 
   const 공 = 새공개본(t, { 'a.txt': '옛\n' });
   const 커밋 = 공.올림({ 'a.txt': '새\n' });
@@ -1383,15 +1390,15 @@ test('Pages 유실(11-10): 뒤 커밋이 이미 main 머리면 내 커밋 배포
   assert.equal(공.og('log', '-1', '--format=%s', 'main').toString().trim(), `Pages 다시 걸기 — ${뒤.slice(0, 7)} 배포 유실`);
 });
 
-test('Pages 유실(11-10): 겹침 · 멈춤 · 러너 줄에는 빈 커밋을 걸지 않고 알리기만 한다', async (t) => {
+test('Pages 유실(11-10 · 11-11): 겹침 · 러너 줄 · 취소에는 빈 커밋을 걸지 않고 알리기만 한다 — 실행을 다시 돌리지도 않는다', async (t) => {
   const 공 = 새공개본(t, { 'a.txt': '옛\n' });
   const 경우 = [
     ['겹침', (c) => 실행(61, c, 'completed', 'failure'), () => 페이지작업(61, 'failure'), { 611: 배포로그.겹침 },
       /Pages 실행 61\([0-9a-f]{7}\) 배포 겹침\(in progress deployment\) — 빈 커밋은 걸지 않는다\. 앞 배포가 끝난 뒤: gh run rerun 61 -R unmet23-lab\/synk-policy --failed/],
-    ['멈춤', (c) => 실행(62, c, 'completed', 'failure'), () => 페이지작업(62, 'failure'), { 621: 배포로그.멈춤 },
-      /Pages 실행 62\([0-9a-f]{7}\) 배포 멈춤 — 빈칸 없이 syncing_files · updating_pages에서 10분\. 빈 커밋은 걸지 않는다/],
     ['러너 줄', (c) => 실행(63, c, 'queued', ''), () => [{ id: 630, name: 'build', status: 'queued', conclusion: null }], {},
       /Pages 실행 63\([0-9a-f]{7}\) 아직 러너를 못 잡았다 — 빈 커밋은 걸지 않는다/],
+    ['취소', (c) => 실행(64, c, 'completed', 'cancelled'), () => 페이지작업(64, 'cancelled'), { 641: 배포로그.취소 },
+      /Pages 실행 64\([0-9a-f]{7}\) 배포 취소 — 빈칸 · 시간 초과 없이 취소됐다\(뒤 push · 손으로 취소\)/],
   ];
   for (const [꼴, 실행값, 작업, 로그, 글꼴] of 경우) {
     const 커밋 = 공.올림({ 'a.txt': `${꼴}\n` }, [], 꼴);
@@ -1401,21 +1408,223 @@ test('Pages 유실(11-10): 겹침 · 멈춤 · 러너 줄에는 빈 커밋을 �
     assert.equal(공.머리(), 커밋, `${꼴}: 빈 커밋을 걸지 않는다`);
     assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.다시걸기]), [['대조 뒤', 꼴, undefined]], 꼴);
     assert.equal(r.배포.다시건커밋, null, 꼴);
+    assert.equal(gh.부름.filter((x) => x.startsWith('run rerun')).length, 0, `${꼴}: 도구가 실행을 다시 돌리지 않는다`);
     assert.match(속.확인결과글(r), 글꼴);
   }
 });
 
-test('Pages 유실(11-10): 다시 건 빈 커밋의 배포도 빈칸이면 더 걸지 않는다 — 한 번 부를 때 한 번', async (t) => {
+test('Pages 유실(11-11): 멈춤 꼴로 끝난 첫 시도에도 빈 커밋 「… 배포 멈춤」을 건다 — 확인은 대조 전에, 올리기는 대조 뒤에, 같은 실행은 다시 돌리지 않는다', async (t) => {
+  // 확인: 이미 멈춤으로 끝난 실행(11-10 밤 fa8a5e6 첫 시도 꼴) — 기다리지 않고 바로 건다
+  {
+    const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+    const 커밋 = 공.올림({ 'a.txt': '새\n' }, [], '내 공개');
+    const 다시건 = () => 공.머리() !== 커밋;
+    const 받기 = async () => ({ 상태: 200, 버퍼: 글(다시건() ? '새\n' : '옛\n'), 머리: '' });
+    const 잔 = [];
+    const gh = 가짜gh(
+      () => [실행(91, 커밋, 'completed', 'failure'), ...(다시건() ? [실행(92, 공.머리(), 'completed', 'success', 1, '2026-11-10T00:30:00Z')] : [])],
+      { 페이지: () => [실행(62, 커밋, 'completed', 'failure')], 작업: (id) => (id === 62 ? 페이지작업(62, 'failure') : null), 로그: { 621: 배포로그.멈춤 } });
+    const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, 점검안함: false, gh, _잠깐: async (ms) => { 잔.push(ms); } })));
+    assert.equal(r.결과, '확인함', JSON.stringify(r.배포));
+    const 빈 = 공.머리();
+    assert.equal(공.og('rev-parse', `${빈}^`).toString().trim(), 커밋, '부모는 배포가 멈춘 커밋(빨리 감기 push)');
+    assert.equal(공.og('rev-parse', `${빈}^{tree}`).toString().trim(), 공.og('rev-parse', `${커밋}^{tree}`).toString().trim(), '트리가 같다');
+    assert.equal(공.og('rev-list', '--count', `${커밋}..main`).toString().trim(), '1', '빈 커밋은 하나');
+    assert.equal(공.og('log', '-1', '--format=%an <%ae>|%s', 빈).toString().trim(),
+      `yuho <301381929+unmet23-lab@users.noreply.github.com>|Pages 다시 걸기 — ${커밋.slice(0, 7)} 배포 멈춤`);
+    const 본문 = 공.og('log', '-1', '--format=%b', 빈).toString();
+    assert.match(본문, new RegExp(`실행 62이 ${커밋}의 배포를 내보내지 못했다\\(빈칸 없이 syncing_files · updating_pages에서 시간 초과 — GitHub 쪽 멈춤, deploy가 그 배포를 스스로 취소했다\\)`));
+    assert.match(본문, /같은 실행을 다시 돌리는 대신 내용이 같은 빈 커밋으로 새 배포를 건다\(강제 없는 push/);
+    assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 && s.다시걸기.결과, s.기다림]), [['대조 전', '멈춤', 62, '올림', undefined]]);
+    assert.deepEqual(잔, [], '첫 유실은 간격을 기다리지 않는다');
+    assert.equal(gh.부름.filter((x) => x.startsWith('run rerun')).length, 0, '같은 실행을 다시 돌리지 않는다');
+    assert.deepEqual([r.점검.결과, r.점검.실행, r.점검.뒤커밋], ['통과', 92, true], '빈 커밋 회차의 배포 점검이 내 커밋을 품는다');
+    const 글줄 = 속.확인결과글(r);
+    assert.match(글줄, /Pages 실행 62\([0-9a-f]{7}\) 배포 멈춤 — 빈칸 없이 syncing_files · updating_pages에서 10분\(deploy가 그 배포를 스스로 취소했다\)/);
+    assert.match(글줄, new RegExp(`빈 커밋 ${빈.slice(0, 7)}「Pages 다시 걸기 — ${커밋.slice(0, 7)} 배포 멈춤」을 main에 올려 새 배포를 걸었다`));
+    assert.doesNotMatch(글줄, /gh run rerun/, '멈춤 줄은 손으로 다시 돌리라고 안내하지 않는다');
+  }
+  // 올리기: 대조가 시간을 넘긴 뒤 deploy가 멈춤으로 끝난 것을 본다
+  {
+    const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+    const 로컬 = 공.로컬('빌드', { 'a.txt': '새\n' });
+    const 미리 = await 도구.올리기(공.옵션({ 원본: 로컬, 항목: ['a.txt'] }));
+    const 다시건 = () => /^Pages 다시 걸기/.test(공.og('log', '-1', '--format=%s', 'main').toString());
+    const 내것 = () => 공.og('rev-parse', 다시건() ? 'main^' : 'main').toString().trim();
+    const 받기 = async () => ({ 상태: 200, 버퍼: 글(다시건() ? '새\n' : '옛\n'), 머리: '' });
+    const gh = 가짜gh(
+      () => [실행(91, 내것(), 'completed', 'failure'), ...(다시건() ? [실행(92, 공.머리(), 'completed', 'success', 1, '2026-11-10T00:30:00Z')] : [])],
+      { 페이지: () => [실행(81, 내것(), 'completed', 'failure'), ...(다시건() ? [실행(82, 공.머리(), 'in_progress', '', 1, '2026-11-10T00:30:00Z')] : [])],
+        작업: (id) => (id === 81 ? 페이지작업(81, 'failure') : null), 로그: { 811: 배포로그.멈춤 } });
+    const r = await 도구.올리기(공.옵션(유실옵션({ 원본: 로컬, 항목: ['a.txt'], 실행: true, 계획: 미리.계획, 메시지: 'Publish a', 받기, 점검안함: false, gh })));
+    assert.equal(r.결과, '올림', JSON.stringify(r.확인));
+    const 빈 = 공.머리();
+    assert.equal(공.og('rev-parse', `${빈}^`).toString().trim(), r.커밋, '내 공개 커밋 위에 빈 커밋 하나');
+    assert.equal(공.og('log', '-1', '--format=%s', 빈).toString().trim(), `Pages 다시 걸기 — ${r.커밋.slice(0, 7)} 배포 멈춤`);
+    assert.deepEqual(r.확인.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 && s.다시걸기.결과, s.기다림]), [['대조 뒤', '멈춤', 81, '올림', undefined]]);
+    assert.equal(r.확인.배포.다시건커밋, 빈);
+    assert.equal(r.확인.대조.통과, true);
+    assert.deepEqual([r.확인.점검.결과, r.확인.점검.실행], ['통과', 92]);
+    assert.equal(gh.부름.filter((x) => x.startsWith('run rerun')).length, 0);
+    assert.match(속.올리기글(r, []), /\[올림\][\s\S]*Pages 실행 81\([0-9a-f]{7}\) 배포 멈춤[\s\S]*Pages 다시 걸기[\s\S]*바이트 대조 1\/1 같음[\s\S]*배포 점검 통과 — 실행 92/);
+  }
+});
+
+test('Pages 유실(11-10 · 11-11): 다시 건 빈 커밋의 배포도 나가지 않으면 그 호출은 더 걸지 않고(한 번 부를 때 한 번), 이어서 부른 확인이 그 유실이 끝난 뒤 15분을 채우고 한 번 더 건다', async (t) => {
   const 공 = 새공개본(t, { 'a.txt': '옛\n' });
   const 커밋 = 공.올림({ 'a.txt': '새\n' }, [], '내 공개');
-  const 페이지 = () => [실행(71, 커밋, 'completed', 'failure'), ...(공.머리() !== 커밋 ? [실행(72, 공.머리(), 'completed', 'failure', 1, '2026-11-10T00:30:00Z')] : [])];
-  const gh = 가짜gh(() => [], { 페이지, 작업: (id) => 페이지작업(id, 'failure'), 로그: { 711: 배포로그.빈칸, 721: 배포로그.빈칸다시 } });
-  const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기: 옛판, gh })));
+  // 11-10 밤과 같은 꼴: 내 커밋은 빈칸 → 바로 건 빈 커밋은 멈춤(23:11:30 KST에 끝남) → 15분 뒤 그 위에 한 번 더 건 것이 나간다
+  const 뒤커밋 = () => 공.og('rev-list', '--reverse', `${커밋}..main`).toString().trim().split('\n').filter(Boolean);
+  const 페이지 = () => {
+    const [빈1, 빈2] = 뒤커밋();
+    return [실행(71, 커밋, 'completed', 'failure'),
+      ...(빈1 ? [실행(72, 빈1, 'completed', 'failure', 1, '2026-11-10T14:00:00Z')] : []),
+      ...(빈2 ? [실행(73, 빈2, 'completed', 'success', 1, '2026-11-10T14:27:00Z')] : [])];
+  };
+  const 작업 = (id) => 페이지작업(id, 'failure').map((j) => (id === 72 && j.name === 'deploy' ? { ...j, completed_at: '2026-11-10T14:11:30Z' } : j));
+  const 받기 = async () => ({ 상태: 200, 버퍼: 글(뒤커밋().length > 1 ? '새\n' : '옛\n'), 머리: '' });
+  const gh = 가짜gh(() => [], { 페이지, 작업, 로그: { 711: 배포로그.빈칸, 721: 배포로그.멈춤 } });
+  const 잔 = [];
+  let 시계 = Date.parse('2026-11-10T14:12:00Z');
+  const 가짜시계 = { _지금: () => 시계, _잠깐: async (ms) => { 잔.push(ms); 시계 += ms; } };
+
+  const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, gh, ...가짜시계 })));
   assert.equal(r.결과, '확인 덜 됨');
-  assert.equal(공.og('rev-list', '--count', `${커밋}..main`).toString().trim(), '1', '빈 커밋은 하나뿐');
+  assert.equal(뒤커밋().length, 1, '빈 커밋은 하나뿐');
+  const [빈1] = 뒤커밋();
+  assert.deepEqual(잔, [], '첫 유실은 기다리지 않고 건다');
   assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 ? s.다시걸기.결과 : null, Boolean(s.더안함)]),
-    [['대조 전', '빈칸', 71, '올림', false], ['다시 건 뒤', '빈칸', 72, null, true]]);
-  assert.match(속.확인결과글(r), /다시 건 배포도 유실이다 — 한 번에 한 번만 건다/);
+    [['대조 전', '빈칸', 71, '올림', false], ['다시 건 뒤', '멈춤', 72, null, true]]);
+  assert.match(속.확인결과글(r), new RegExp('다시 건 배포도 나가지 않았다 — 한 번 부를 때 한 번만 건다\\. 이어서 다시 부르면 도구가 이 유실이 끝난 뒤 15분을 채우고 한 번 더 건다'
+    + `\\(그사이 다른 공개가 올라가면 그 커밋의 배포를 본다\\): node tools/공개\\.js 확인 ${커밋.slice(0, 7)}`));
+  // --유실간격 0으로 돌린 호출의 안내는 「바로」다
+  assert.match(속.배포살핌글({ 커밋, 유실간격분: 0, 기록: [{ 꼴: '빈칸', 커밋: 빈1, 실행: 72, 더안함: true }] }).join('\n'), /이어서 다시 부르면 바로 한 번 더 건다/);
+
+  // 안내대로 이어서 부른다(같은 커밋) — 머리가 「Pages 다시 걸기」 빈 커밋이라 연달아 유실: 멈춤이 끝난 14:11:30Z + 15분 = 14:26:30Z까지 기다린다
+  const r2 = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, gh, ...가짜시계 })));
+  assert.equal(r2.결과, '확인함', JSON.stringify(r2.배포));
+  assert.deepEqual(잔, [870000], '지금(14:12:00Z)부터 14:26:30Z까지 870초 한 번');
+  assert.equal(뒤커밋().length, 2, '빈 커밋이 하나 더');
+  const 빈2 = 공.머리();
+  assert.equal(공.og('rev-parse', `${빈2}^`).toString().trim(), 빈1, '둘째 빈 커밋은 첫 빈 커밋 위에');
+  assert.equal(공.og('log', '-1', '--format=%s', 빈2).toString().trim(), `Pages 다시 걸기 — ${빈1.slice(0, 7)} 배포 멈춤`);
+  assert.deepEqual(r2.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 && s.다시걸기.결과, s.기다림]),
+    [['대조 전', '멈춤', 72, '올림', { 까지: '2026-11-10T14:26:30.000Z', 초: 870, 분: 15 }]]);
+  assert.equal(r2.배포.다시건커밋, 빈2);
+  assert.equal(r2.대조.통과, true);
+  const 글줄 = 속.확인결과글(r2);
+  assert.match(글줄, /Pages 실행 72\([0-9a-f]{7}\) 배포 멈춤 —[^\n]*\n  연달아 유실\(다시 건 배포까지 나가지 않았다\) — 바로 걸지 않고 이 유실이 끝난 뒤 15분이 되는 11-10 23:26 KST까지 870초 기다렸다\n  빈 커밋 [0-9a-f]{7}「Pages 다시 걸기 — [0-9a-f]{7} 배포 멈춤」/);
+  assert.equal(gh.부름.filter((x) => x.startsWith('run rerun')).length, 0, '어느 호출도 실행을 다시 돌리지 않는다');
+});
+
+test('Pages 유실(11-11): 연달아 유실의 간격은 그 유실이 끝난 때부터 잰다 — 이미 지났으면 바로, 끝난 때를 모르거나 시계가 어긋나면 간격만큼만, --유실간격 0이면 바로', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+  const 커밋 = 공.올림({ 'a.txt': '새\n' }, [], '내 공개');
+  // 앞 호출(또는 다른 세션)이 건 빈 커밋이 머리 — 그 배포도 빈칸으로 사라졌다. 경우마다 도구가 건 빈 커밋이 다음 경우의 머리가 된다
+  공.올림({}, [], `Pages 다시 걸기 — ${커밋.slice(0, 7)} 배포 유실`);
+  const 지금 = Date.parse('2026-11-10T14:12:00Z');
+  const 분 = 60 * 1000;
+  const 경우 = [
+    // [이름, deploy 작업이 끝난 때, --유실간격(분), 기다린 ms(null = 안 기다림)]
+    ['끝난 지 30초', '2026-11-10T14:11:30Z', undefined, 14.5 * 분],
+    ['끝난 지 20분(간격이 이미 지남)', '2026-11-10T13:52:00Z', undefined, null],
+    ['끝난 때 모름', null, undefined, 15 * 분],
+    ['끝난 때가 앞날(시계 어긋남)', '2026-11-10T14:30:00Z', undefined, 15 * 분],
+    ['--유실간격 5', '2026-11-10T14:11:30Z', 5, 4.5 * 분],
+    ['--유실간격 0', '2026-11-10T14:11:30Z', 0, null],
+  ];
+  let 번호 = 70;
+  for (const [이름, 끝난때, 유실간격, 기다린] of 경우) {
+    const 위 = 공.머리();
+    const 이실행 = ++번호;
+    const 잔 = [];
+    let 시계 = 지금;
+    const gh = 가짜gh(() => [], {
+      페이지: () => [실행(이실행, 위, 'completed', 'failure')],
+      작업: () => 페이지작업(이실행, 'failure').map((j) => (끝난때 && j.name === 'deploy' ? { ...j, completed_at: 끝난때 } : j)),
+      로그: { [이실행 * 10 + 1]: 배포로그.빈칸 } });
+    const 받기 = async () => ({ 상태: 200, 버퍼: 글(공.머리() === 위 ? '옛\n' : '새\n'), 머리: '' });
+    const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, gh, 유실간격, _지금: () => 시계, _잠깐: async (ms) => { 잔.push(ms); 시계 += ms; } })));
+    assert.equal(r.결과, '확인함', `${이름}: ${JSON.stringify(r.배포)}`);
+    assert.deepEqual(잔, 기다린 == null ? [] : [기다린], 이름);
+    const 빈 = 공.머리();
+    assert.equal(공.og('rev-parse', `${빈}^`).toString().trim(), 위, `${이름}: 사라진 배포의 커밋 위에 빈 커밋 하나`);
+    assert.equal(공.og('log', '-1', '--format=%s', 빈).toString().trim(), `Pages 다시 걸기 — ${위.slice(0, 7)} 배포 유실`, 이름);
+    const 간격분 = 유실간격 == null ? 15 : 유실간격;
+    assert.equal(r.배포.유실간격분, 간격분, 이름);
+    assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 && s.다시걸기.결과, s.기다림]),
+      [['대조 전', '빈칸', 이실행, '올림', 기다린 == null ? undefined : { 까지: new Date(지금 + 기다린).toISOString(), 초: 기다린 / 1000, 분: 간격분 }]], 이름);
+    assert.equal(/연달아 유실/.test(속.확인결과글(r)), 기다린 != null, `${이름}: 기다렸을 때만 그 줄을 적는다`);
+  }
+});
+
+test('Pages 유실(11-11): 간격을 기다리는 사이 Pages가 바뀌면(누가 다시 돌림 · 남의 새 공개) 걸지 않고 그 배포를 본다 — 다시 본 것을 못 읽었으면 그대로 건다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+  const 커밋 = 공.올림({ 'a.txt': '새\n' }, [], '내 공개');
+  공.올림({}, [], `Pages 다시 걸기 — ${커밋.slice(0, 7)} 배포 유실`);
+  const 지금 = () => Date.parse('2026-11-10T14:12:00Z');
+  // ① 기다리는 사이 누가 그 실행을 다시 돌렸다(2번째 시도가 도는 중) — 걸지 않고, 도는 배포를 알린다
+  {
+    const 위 = 공.머리();
+    let 돌림 = false;
+    const gh = 가짜gh(() => [], {
+      페이지: () => [돌림 ? 실행(75, 위, 'in_progress', '', 2) : 실행(75, 위, 'completed', 'failure')],
+      작업: () => (돌림 ? 페이지작업(75, null, 'in_progress') : 페이지작업(75, 'failure')), 로그: { 751: 배포로그.멈춤 } });
+    const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기: 옛판, gh, _지금: 지금, _잠깐: async () => { 돌림 = true; } })));
+    assert.equal(r.결과, '확인 덜 됨');
+    assert.equal(공.머리(), 위, '빈 커밋을 걸지 않는다');
+    assert.equal(r.배포.다시건커밋, null);
+    assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.시도, s.다시걸기 && s.다시걸기.결과]),
+      [['대조 전', '멈춤', 75, 1, '안 함'], ['대조 뒤', '도는 중', 75, 2, undefined]]);
+    const 글줄 = 속.확인결과글(r);
+    assert.match(글줄, /연달아 유실\(다시 건 배포까지 나가지 않았다\)[^\n]*900초 기다렸다\n  빈 커밋을 걸지 않았다 — 기다리는 사이 Pages가 바뀌었다\(도는 중\) — 그 배포를 본다/);
+    assert.match(글줄, /Pages 실행 75\([0-9a-f]{7} · 2번째 시도\) 아직 도는 중/);
+  }
+  // ② 기다린 뒤 Pages 실행 목록을 못 읽었다 — 그대로 건다(빈 커밋 걸기가 fetch로 머리를 다시 확인한다)
+  {
+    const 위 = 공.머리();
+    let 못읽음 = false;
+    const gh = 가짜gh(() => [], {
+      페이지: () => { if (못읽음) { 못읽음 = false; throw Object.assign(new Error('502'), { 이유: 'gh run list 실패 — HTTP 502' }); } return [실행(76, 위, 'completed', 'failure')]; },
+      작업: () => 페이지작업(76, 'failure'), 로그: { 761: 배포로그.빈칸 } });
+    const 받기 = async () => ({ 상태: 200, 버퍼: 글(공.머리() === 위 ? '옛\n' : '새\n'), 머리: '' });
+    const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, gh, _지금: 지금, _잠깐: async () => { 못읽음 = true; } })));
+    assert.equal(r.결과, '확인함', JSON.stringify(r.배포));
+    assert.equal(공.og('rev-parse', 'main^').toString().trim(), 위, '빈 커밋 하나를 걸었다');
+    assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 && s.다시걸기.결과, s.기다림 && s.기다림.초]), [['대조 전', '빈칸', 76, '올림', 900]]);
+  }
+  // ③ 기다리는 사이 남이 새 공개를 올렸다 — 걸지 않고 그 커밋의 배포로 대조를 잇는다
+  {
+    const 위 = 공.머리(); // ②에서 도구가 건 빈 커밋 — 이 배포도 사라졌다
+    let 남 = null;
+    const gh = 가짜gh(() => [], { 페이지: () => [실행(77, 위, 'completed', 'failure')], 작업: () => 페이지작업(77, 'failure'), 로그: { 771: 배포로그.빈칸 } });
+    const 받기 = async () => ({ 상태: 200, 버퍼: 글(남 ? '새\n' : '옛\n'), 머리: '' }); // 남의 커밋 배포가 내 판도 싣는다
+    const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, gh, _지금: 지금, _잠깐: async () => { 남 = 공.올림({ 'b.txt': 'b\n' }, [], '남의 공개'); } })));
+    assert.equal(r.결과, '확인함', JSON.stringify(r.배포));
+    assert.equal(공.머리(), 남, '남의 커밋이 머리 — 빈 커밋은 없다');
+    assert.equal(r.배포.다시건커밋, null);
+    assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.다시걸기 && s.다시걸기.결과]), [['대조 전', '빈칸', 77, '안 함']]);
+    assert.match(속.확인결과글(r), new RegExp(`빈 커밋을 걸지 않았다 — 기다리는 사이 Pages가 바뀌었다\\(main ${남.slice(0, 7)} · 실행 없음\\) — 그 배포를 본다`));
+  }
+});
+
+test('Pages 유실(11-11): 손으로 다시 돌린 시도(2번째 시도)가 멈춤으로 끝나도 연달아 유실이다 — 실행이 끝난 때(updatedAt)부터 간격을 채우고 「… 배포 멈춤」으로 건다', async (t) => {
+  const 공 = 새공개본(t, { 'a.txt': '옛\n' });
+  const 커밋 = 공.올림({ 'a.txt': '새\n' }, [], '내 공개');
+  const 잔 = [];
+  let 시계 = Date.parse('2026-11-10T14:50:00Z');
+  // deploy 작업에 completed_at이 없으면 실행의 updatedAt(14:45Z)을 끝난 때로 쓴다 → 15:00Z(11-11 00:00 KST)까지 10분
+  const gh = 가짜gh(() => [], { 페이지: () => [{ ...실행(62, 커밋, 'completed', 'failure', 2), updatedAt: '2026-11-10T14:45:00Z' }], 작업: () => 페이지작업(62, 'failure'), 로그: { 621: 배포로그.멈춤 } });
+  const 받기 = async () => ({ 상태: 200, 버퍼: 글(공.머리() === 커밋 ? '옛\n' : '새\n'), 머리: '' });
+  const r = await 도구.확인(공.옵션(유실옵션({ 커밋, 받기, gh, _지금: () => 시계, _잠깐: async (ms) => { 잔.push(ms); 시계 += ms; } })));
+  assert.equal(r.결과, '확인함', JSON.stringify(r.배포));
+  assert.deepEqual(잔, [10 * 60 * 1000]);
+  assert.equal(공.og('rev-parse', 'main^').toString().trim(), 커밋);
+  assert.equal(공.og('log', '-1', '--format=%s', 'main').toString().trim(), `Pages 다시 걸기 — ${커밋.slice(0, 7)} 배포 멈춤`);
+  assert.deepEqual(r.배포.기록.map((s) => [s.때, s.꼴, s.실행, s.시도, s.다시걸기 && s.다시걸기.결과, s.기다림]),
+    [['대조 전', '멈춤', 62, 2, '올림', { 까지: '2026-11-10T15:00:00.000Z', 초: 600, 분: 15 }]]);
+  assert.match(속.확인결과글(r), /Pages 실행 62\([0-9a-f]{7} · 2번째 시도\) 배포 멈춤 —[^\n]*\n  연달아 유실\(다시 건 배포까지 나가지 않았다\) — 바로 걸지 않고 이 유실이 끝난 뒤 15분이 되는 11-11 00:00 KST까지 600초 기다렸다/);
+  assert.equal(gh.부름.filter((x) => x.startsWith('run rerun')).length, 0);
 });
 
 test('Pages 유실(11-10): 빈 커밋을 올리기 직전 남이 새 커밋을 올리면 거절을 받고 걸지 않는다(강제 push 없음) — 남의 배포로 대조를 잇는다', async (t) => {
