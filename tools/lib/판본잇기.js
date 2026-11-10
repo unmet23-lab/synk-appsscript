@@ -34,6 +34,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const 판본글 = require('./판본글.js');
+const 틀들 = require('./돌림.js').FORMATS; // 이야기 · 노래 · 퀴즈 — 판본 지도의 틀 = 돌림 형식(21:00 칸은 11-10 밤부터 노래)
 
 // 렌더.json 「글sha256」은 렌더할 때 판본 글 원천 파일(remotion/src/<틀>/판본/<키>.json)의 바이트 지문이다. 작업본은 올리기 · 따라가기 때
 // 줄끝을 CRLF로 다시 쓸 수 있어(11-10 화날때 — LF로 쓰고 렌더한 원천이 올리기 뒤 CRLF로 내려와 26판본이 「렌더 뒤 글이 바뀜」으로 보였다)
@@ -62,7 +63,7 @@ function 지도검증(지도) {
   const 문제 = [];
   if (!지도 || typeof 지도 !== 'object') return ['JSON 객체가 아니다'];
   if (지도.꼴 !== '판본지도/1') 문제.push(`꼴이 「판본지도/1」이 아니다(${지도.꼴})`);
-  if (!['이야기', '퀴즈'].includes(지도.틀)) 문제.push(`틀은 이야기 · 퀴즈 가운데 하나다(${지도.틀})`);
+  if (!틀들.includes(지도.틀)) 문제.push(`틀은 ${틀들.join(' · ')} 가운데 하나다(${지도.틀})`);
   if (!지도.판본폴더 || typeof 지도.판본폴더 !== 'string') 문제.push('「판본폴더」(판본 글 폴더 — 편 폴더 기준)가 없다');
   if (!Array.isArray(지도.줄) || !지도.줄.length) 문제.push('「줄」이 비었다');
   const ids = new Set();

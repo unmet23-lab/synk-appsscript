@@ -466,7 +466,7 @@ test('실제 sns-계정.json — 모든 계정이 매일 판 줄 · 매일 판 �
 });
 
 // 11-10 LAB 하루 두 편 · 39계정(설계 1): LAB 모든 계정에 줄 · 현지 칸 · IANA 시간대 · 언어 · 나라 · 예약 경로가 있다 — 예약큐 · 검사 ⑩ · ⑫ · ⑯ · 돌림표가 읽는다.
-test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야기 · 21:00 퀴즈, 텔레그램은 21:00 퀴즈 하나) · 시간대 · 언어 · 경로', () => {
+test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야기 · 21:00 노래, 텔레그램은 21:00 노래 하나 — 11-10 밤 퀴즈에서 노래로) · 시간대 · 언어 · 경로', () => {
   const T = require('../tools/lib/계정시간.js');
   const real = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'docs', '마케팅', 'sns-계정.json'), 'utf8').replace(/^﻿/, '')).accounts;
   const lab = Object.entries(real).filter(([, a]) => a.brand === 'LAB');
@@ -481,8 +481,9 @@ test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야
     assert.ok(a.postRoute, `${key}: 예약 경로`);
     assert.equal(a.dailyTimes.length, a.dailyFormats.length, `${key}: 칸 시각과 형식 수`);
     assert.ok(a.dailyTimes.every(T.isTime), `${key}: 칸 시각 꼴`);
-    if (a.platform === 'telegram') assert.deepEqual(a.dailyFormats, ['퀴즈'], `${key}: 텔레그램은 하루 한 편(21:00 퀴즈)`);
-    else assert.deepEqual(a.dailyFormats, ['이야기', '퀴즈'], `${key}: 13:00 이야기 · 21:00 퀴즈`);
+    if (a.platform === 'telegram') assert.deepEqual(a.dailyFormats, ['노래'], `${key}: 텔레그램은 하루 한 편(21:00 노래)`);
+    else assert.deepEqual(a.dailyFormats, ['이야기', '노래'], `${key}: 13:00 이야기 · 21:00 노래`);
+    if (a.dailyFormatsFrom) assert.equal('퀴즈' in a.dailyFormatsFrom, false, `${key}: 닫아 둔 칸 열쇠도 노래다(퀴즈 열쇠가 남으면 21:00 칸이 열린다)`);
     // 현지 시각: 몽골 네 계정은 11-09 결정 시각(한국 13:00 · 21:00) 그대로, 나머지는 현지 13:00 · 21:00
     const korea = a.dailyTimes.map((t) => T.localTime(T.zonedMs('2026-11-20', t, a.timeZone), 'Asia/Seoul'));
     if (a.countryCode === 'MN' && a.dailyLine === 'LAB 몽골') assert.deepEqual(korea, a.platform === 'telegram' ? ['21:00'] : ['13:00', '21:00'], `${key}: 몽골은 한국 시각 그대로`);

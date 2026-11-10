@@ -688,3 +688,102 @@ test('돌림표 명령 — 퀴즈 칸을 닫아 둔 계정은 「닫힌 칸이 �
   const loose = JSON.parse(m.run('--부터', '2026-11-20', '--일수', '2', '--준비무시', '--json').stdout);
   assert.ok(loose.cells.some((c) => c.account === 'lab-th-youtube' && c.slot === '21:00'));
 });
+
+// ── 21:00 노래 칸 · 연재(차례 고정) · 이미받음(11-10 밤 — 유호님 「초보자에게는 노래」, 한글 노래 여섯 곡의 나라별판으로 연다) ──
+const songs = (n, keys, extra = {}) => Array.from({ length: n }, (_, i) => ({ id: `n${i + 1}`, format: '노래', versions: ver(keys), series: { id: '한글노래', order: i + 1 }, ...extra }));
+const seedPlates = (ids) => ids.map((id, i) => ({ original: id, account: 'seed-ig', time: `2026-10-${String(10 + i).padStart(2, '0')}T21:00:00+09:00` }));
+const songAcct = (platform, key, zone, extra = {}) => acct(platform, key, zone, { dailyFormats: ['이야기', '노래'], ...extra });
+
+test('형식 — 이야기 · 노래 · 퀴즈(21:00 칸은 노래)', () => {
+  assert.deepEqual([...돌림.FORMATS], ['이야기', '노래', '퀴즈']);
+});
+
+test('연재(차례 고정) — 틱톡 다섯 곳이 1 → 6 차례로만 받고, 첫 곡을 하루에 한 곳씩 받아 시작 날이 어긋난다', () => {
+  const zones = ['Asia/Bangkok', 'Asia/Jakarta', 'Asia/Ho_Chi_Minh', 'Asia/Almaty', 'America/Mexico_City'];
+  const accounts = Object.fromEntries(zones.map((z, i) => [`tt${i}`, songAcct('tiktok', `C${i}`, z)]));
+  accounts['seed-ig'] = songAcct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' });
+  const originals = songs(6, zones.map((_, i) => `C${i}`));
+  const existing = seedPlates(originals.map((o) => o.id));
+  const r = 돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 12 });
+  const song = r.cells.filter((c) => c.format === '노래' && c.original);
+  const starts = [];
+  for (const k of Object.keys(accounts).filter((x) => x.startsWith('tt'))) {
+    const mine = song.filter((c) => c.account === k).sort((x, y) => x.ms - y.ms).map((c) => c.original);
+    assert.deepEqual(mine, ['n1', 'n2', 'n3', 'n4', 'n5', 'n6'].slice(0, mine.length), `${k}: 1 → 6 차례(건너뛰지 않는다)`);
+    assert.ok(mine.length >= 5, `${k}: 12일 안에 다섯 곡 넘게 받는다(${mine.length})`);
+    starts.push(song.find((c) => c.account === k && c.original === 'n1').day);
+  }
+  assert.equal(new Set(starts).size, starts.length, `첫 곡 받는 날이 계정마다 다르다(${starts.join(' · ')})`);
+  // 같은 플랫폼에서 같은 원본은 20시간 안에 둘이 안 나간다(①은 그대로)
+  for (const x of song) for (const y of song) if (x !== y && x.original === y.original) assert.ok(Math.abs(x.ms - y.ms) >= 20 * HOUR, `${x.account}·${y.account} ${x.original}`);
+  // 같은 입력이면 늘 같은 표
+  assert.deepEqual(돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 12 }).cells.map((c) => c.original), r.cells.map((c) => c.original));
+});
+
+test('연재 — 앞 차례 판본이 검수 전이면 기다리고, 멈춘 차례는 건너뛰고, 뒤에 걸린 앞 차례보다 먼저 받지 않는다', () => {
+  const accounts = { th: songAcct('youtube', 'TH', 'Asia/Bangkok', { language: 'th' }), 'seed-ig': songAcct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' }) };
+  const base = songs(3, ['TH']);
+  const existing = seedPlates(['n1', 'n2', 'n3']);
+  const got = (originals, more = []) => 돌림.plan({ accounts, originals, existing: [...existing, ...more], from: '2026-11-20', days: 4 }).cells.filter((c) => c.account === 'th' && c.format === '노래');
+  assert.deepEqual(got(base).map((c) => c.original), ['n1', 'n2', 'n3', null]);
+  // 둘째 곡의 태국 판본이 검수 전 — 셋째로 건너뛰지 않고 기다린다
+  const noSecond = base.map((o) => (o.id === 'n2' ? { ...o, versions: {} } : o));
+  const waited = got(noSecond);
+  assert.deepEqual(waited.map((c) => c.original), ['n1', null, null, null]);
+  assert.match(waited[1].why, /연재 「한글노래」 2번째를 먼저/);
+  // 둘째 곡이 멈춤(비상 정지) — 그 차례는 건너뛴다(한 곡의 정지가 연재를 세우지 않는다)
+  assert.deepEqual(got(base.map((o) => (o.id === 'n2' ? { ...o, stopped: true } : o))).map((c) => c.original), ['n1', 'n3', null, null]);
+  // 첫 곡이 사흘째 칸에 이미 걸려 있다 — 그 앞 날에는 둘째 곡을 받지 않는다
+  const later = got(base, [{ original: 'n1', account: 'th', time: '2026-11-22T21:00:00+07:00' }]);
+  assert.deepEqual(later.map((c) => [c.day.slice(8), c.original]), [['20', null], ['21', null], ['22', null], ['23', 'n2']]);
+  assert.match(later[0].why, /1번째를 먼저/);
+  // 연재가 아닌 노래는 차례와 상관없이 받는다
+  const mixed = [...noSecond, { id: 'free', format: '노래', versions: ver(['TH']) }];
+  assert.deepEqual(got(mixed, seedPlates(['free'])).map((c) => c.original).filter(Boolean).sort(), ['free', 'n1']);
+});
+
+test('이미받음 · 같은이야기의 때(seenAt) — 다른 길로 올린 계정은 다시 받지 않고, 때가 있는 씨앗은 씨앗 첫 판으로 센다', () => {
+  const accounts = { th: songAcct('youtube', 'TH', 'Asia/Bangkok', { language: 'th' }), us: songAcct('youtube', 'US', 'America/New_York', { language: 'en' }),
+    'seed-ig': songAcct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' }) };
+  const originals = songs(1, ['TH', 'US', 'MN']);
+  const cells = (existing) => 돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 2 }).cells.filter((c) => c.format === '노래');
+  // 씨앗이 다른 길로 올렸지만 때를 모른다 — 씨앗 첫 판이 없어 다른 계정은 기다린다
+  const blind = cells([{ original: 'n1', account: 'seed-ig', gone: true }]);
+  assert.equal(blind.some((c) => c.original), false);
+  assert.match(blind.find((c) => c.account === 'th').why, /씨앗 계정이 아직/);
+  // 때를 적으면 씨앗 첫 판으로 센다 · 이미 받은 미국 채널은 받지 않는다
+  const seen = cells([{ original: 'n1', account: 'seed-ig', gone: true, seenAt: '2026-10-06T21:00:00+09:00' }, { original: 'n1', account: 'us', gone: true }]);
+  assert.deepEqual(seen.filter((c) => c.original).map((c) => c.account), ['th']);
+  assert.equal(seen.some((c) => c.account === 'us' && c.original), false);
+});
+
+test('돌림표 명령 — 노래 원본의 연재 · 이미받음을 읽고, 꼴이 틀리거나 원장에 없는 계정이면 셈을 멈춘다', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  원장고침(m, (acc) => { for (const k of ['lab-instagram', 'lab-th-youtube', 'lab-jp-youtube']) acc[k].dailyFormats = ['이야기', '노래']; });
+  // 가 편을 노래 원본으로(연재 1번) — 태국 채널은 다른 길로 이미 올렸다
+  const prep = 읽기(m, G);
+  prep.돌림.형식 = '노래';
+  prep.돌림.연재 = { 이름: '한글노래', 차례: 1 };
+  prep.돌림.이미받음 = ['lab-th-youtube'];
+  prep.판[0].시각 = '2026-11-01T21:00:00+09:00';
+  적기(m, G, '준비.json', prep);
+  const run = () => m.run('--부터', '2026-11-20', '--일수', '3', '--json');
+  const ok = run();
+  assert.equal(ok.status, 0, ok.stderr);
+  const cells = JSON.parse(ok.stdout).cells.filter((c) => c.original === G);
+  assert.deepEqual([...new Set(cells.map((c) => c.account))], ['lab-jp-youtube'], '이미 받은 태국 채널은 빼고 일본 채널만');
+  assert.equal(cells[0].format, '노래');
+  // 원장에 없는 계정 이름 · 틀린 연재 꼴은 조용히 넘기지 않는다
+  prep.돌림.이미받음 = ['lab-없는계정'];
+  적기(m, G, '준비.json', prep);
+  const bad = run();
+  assert.notEqual(bad.status, 0);
+  assert.match(bad.stderr, /이미받음/);
+  prep.돌림.이미받음 = [{ 계정: 'lab-th-youtube', 때: '2026-10-06T21:00:00+09:00' }];
+  prep.돌림.연재 = { 이름: '한글노래' };
+  적기(m, G, '준비.json', prep);
+  const bad2 = run();
+  assert.notEqual(bad2.status, 0);
+  assert.match(bad2.stderr, /연재/);
+});

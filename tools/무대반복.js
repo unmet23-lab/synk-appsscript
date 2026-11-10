@@ -221,7 +221,9 @@ function day(ms) {
 // 시험에서는 list(편 목록) · stage(영상 → 첫 · 끝 축소판) · screen(영상들 → 끝 줄) · narration(편 폴더 → 끝 줄)을 바꿔 넣는다.
 // 11-10 LAB 하루 두 편(설계 23): 21:00 퀴즈(준비.json 「돌림」.형식 「퀴즈」)는 매일 같은 뼈대 · 같은 진행자라 ⑯ 셈 밖이다 — 대신
 // 개그 무대(「돌림」.무대 — 문제 은행의 무대 칸)가 그 계정의 지난 두 퀴즈와 같으면 고칠 것, 무대 칸이 없으면 확인할 것.
-// 이야기 편은 지난 이야기 편끼리만 견준다(그 사이 퀴즈는 건너뛴다).
+// 이야기 편은 지난 이야기 편끼리만 견준다(그 사이 퀴즈 · 노래는 건너뛴다).
+// 11-10 밤 21:00 칸이 노래로 바뀌며(유호님): 21:00 노래(「돌림」.형식 「노래」)도 매일 같은 가사판 뼈대라 ⑯ 셈 밖이다 — 퀴즈의 개그 무대 검사는
+// 퀴즈에만 걸고, 노래의 되풀이(꼴 · 장르 돌림)는 리듬 한국어 준비안이 정한다(docs/마케팅/LAB_리듬한국어_준비_20261110/README.md).
 const formatOf = (prep) => prep?.돌림?.형식 || null;
 const stageWord = (prep) => String(prep?.돌림?.무대 || '').replace(/\s+/g, ' ').trim();
 function quizStageFindings(bundle, plates, all) {
@@ -255,7 +257,8 @@ function repeatFindings(bundle, plates, { list = null, stage = stageOf, screen =
   const pairs = new Map(); // `${우리 영상}\t${지난 편}` → { ours, prev, accounts }
   const all = list || episodes([공용작업본(bundle.repo), bundle.repo]);
   if (formatOf(bundle.prep) === '퀴즈') return quizStageFindings(bundle, plates, all);
-  const notQuiz = (e) => formatOf(e.prep) !== '퀴즈';
+  if (formatOf(bundle.prep) === '노래') return { findings, summary: { 지난편: [], 셈밖: '21:00 노래 칸(설계 23 — 11-10 밤 퀴즈에서 노래로)' } };
+  const notQuiz = (e) => !['퀴즈', '노래'].includes(formatOf(e.prep));
   for (const p of plates) {
     const at = Date.parse(p.time || '');
     if (!p.account || !p.video?.exists || !Number.isFinite(at)) continue;

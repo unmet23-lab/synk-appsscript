@@ -132,4 +132,12 @@ test('⑯ 돌림 — 퀴즈는 개그 무대만 견주고, 이야기 편은 그 
   const story = { name: 'S3', dir: '/x/S3', repo: '/x', prep: { 돌림: { 형식: '이야기' } } };
   const r = 반복.repeatFindings(story, [{ account: 'lab-th-youtube', time: '2026-11-20T13:00:00+07:00', video: { path: '/v/S3.mp4', exists: true } }], { list, stage: (f) => stages[f], skipOcr: true, narration: () => [] });
   assert.deepEqual(r.summary.지난편.map((s) => s.편), ['S2', 'S1']);
+  // 11-10 밤: 21:00 노래도 ⑯ 셈 밖 — 장면을 읽지 않고, 이야기 편은 그 사이 노래도 건너뛴다
+  const song = { name: 'N3', dir: '/x/N3', repo: '/x', prep: { 돌림: { 형식: '노래' } } };
+  const sung = 반복.repeatFindings(song, plates, { list, stage, narration: () => [] });
+  assert.deepEqual(codes(sung.findings), []);
+  assert.match(sung.summary.셈밖, /노래/);
+  const withSong = [ep('N2', '2026-11-19T21:30:00+07:00', '/v/N2.mp4', { 형식: '노래' }), ...list];
+  const r2 = 반복.repeatFindings(story, [{ account: 'lab-th-youtube', time: '2026-11-20T13:00:00+07:00', video: { path: '/v/S3.mp4', exists: true } }], { list: withSong, stage: (f) => stages[f], skipOcr: true, narration: () => [] });
+  assert.deepEqual(r2.summary.지난편.map((s) => s.편), ['S2', 'S1']);
 });

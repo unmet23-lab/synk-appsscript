@@ -8,7 +8,7 @@
  *       "원고": { "youtube": { title, caption, pinnedComment, "_원문": { title, caption, … } } } } }. 틀의 `_설명` · `_한도`는 그대로 둔다.
  *   node tools/판본글잇기.js 뽑기 <편 폴더> <KEY…|전부>
  *       글.json을 원천(판본 글 · 지도 · 원고)에 맞춘다. 같으면 건드리지 않는다. 글이 아직 빈 판본은 건너뛰며 알린다.
- *   node tools/판본글잇기.js 돌림 <편 폴더> <KEY…|전부> [--형식 이야기|퀴즈] [--쓸날 YYYY-MM-DD]
+ *   node tools/판본글잇기.js 돌림 <편 폴더> <KEY…|전부> [--형식 이야기|노래|퀴즈] [--쓸날 YYYY-MM-DD]
  *       준비.json 「돌림」.판본[KEY] = { 언어, 파일, 표지, 글, 원고 }(검수는 그대로 둔다). 「돌림」이 없으면 만든다(형식은 지도의 틀).
  *       글.json도 같이 맞춘다. 판(게시 칸)은 쓰지 않는다 — 판은 tools/돌림표.js --쓰기가 쓴다.
  *   node tools/판본글잇기.js 확인 <편 폴더> [KEY…|전부] [--json]
@@ -19,6 +19,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const 잇기 = require('./lib/판본잇기.js');
 const 판본글 = require('./lib/판본글.js');
+const { FORMATS } = require('./lib/돌림.js');
 
 const REPO = path.resolve(__dirname, '..');
 const rel = (p) => path.relative(REPO, p).split(path.sep).join('/');
@@ -59,7 +60,7 @@ function main(argv) {
   if (명령 === '뽑기' || 명령 === '돌림') {
     if (!나머지.length) { console.error(쓰는법); return 2; }
     if (값.쓸날 && !/^\d{4}-\d{2}-\d{2}$/.test(값.쓸날)) { console.error('--쓸날은 YYYY-MM-DD'); return 2; }
-    if (값.형식 && !['이야기', '퀴즈'].includes(값.형식)) { console.error('--형식은 이야기 · 퀴즈'); return 2; }
+    if (값.형식 && !FORMATS.includes(값.형식)) { console.error(`--형식은 ${FORMATS.join(' · ')}`); return 2; }
     const 된 = [];
     let 실패 = 0;
     for (const 키 of 고른키(편, 나머지)) {

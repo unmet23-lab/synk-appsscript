@@ -72,6 +72,7 @@ const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
+const { FORMATS } = require('./lib/돌림.js'); // 이야기 · 노래 · 퀴즈(21:00 칸은 11-10 밤부터 노래)
 const { 미디어경로 } = require('./lib/공용작업본.js');
 
 const { FIX, LOOK } = 규칙;
@@ -748,7 +749,7 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
   if (!gen.length) return out;
   const add = (level, code, where, message) => out.push({ level, code, where, message });
   const format = bundle.prep.돌림?.형식;
-  if (!['이야기', '퀴즈'].includes(format)) { add(FIX, 'rotation-format', '준비.json', '돌림 판이 있는데 「돌림」.형식(이야기 · 퀴즈)이 없다'); return out; }
+  if (!FORMATS.includes(format)) { add(FIX, 'rotation-format', '준비.json', `돌림 판이 있는데 「돌림」.형식(${FORMATS.join(' · ')})이 없다`); return out; }
   const cfg = (ledger || 묶음.readJson(path.join(bundle.repo, 'docs', '마케팅', 'sns-계정.json')) || {}).labRotation || {};
   const required = Array.isArray(cfg.판본검수) && cfg.판본검수.length ? cfg.판본검수 : ['뜻', '글자'];
   const states = new Map();

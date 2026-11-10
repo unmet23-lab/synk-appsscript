@@ -235,6 +235,15 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     const codes = (list) => 검사.rotationFindings(bundle, list, { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } } }).map((f) => `${f.code}:${f.where}`);
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), []);
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-slot:lab-th-youtube'], '21:00은 퀴즈 칸');
+    // 11-10 밤: 21:00 칸은 노래 — 형식 「노래」 원본의 판은 노래 칸에 걸리고, 모르는 형식은 고칠 것
+    known['lab-th-youtube'].dailyFormats = ['이야기', '노래'];
+    prep.돌림.형식 = '노래';
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), []);
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), ['rotation-slot:lab-th-youtube'], '13:00은 이야기 칸');
+    prep.돌림.형식 = '춤';
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-format:준비.json']);
+    prep.돌림.형식 = '이야기';
+    known['lab-th-youtube'].dailyFormats = ['이야기', '퀴즈'];
     // 첫 판 시험(postRouteVerified 「첫판」)은 걸 수 있는 계정으로 본다 — 판 하나 한도는 돌림 셈 · 게시 장부가 지킨다. false면 고칠 것
     known['lab-th-youtube'].postRouteVerified = '첫판';
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), []);

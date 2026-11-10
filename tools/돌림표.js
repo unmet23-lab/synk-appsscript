@@ -18,7 +18,11 @@
  *   공통: --폴더 <편 폴더들이 있는 곳, 기본 docs/마케팅>(시험용) · --지금 <ISO>(시험용)
  *
  * 원본 편의 준비.json 「돌림」:
- *   {"형식": "이야기"|"퀴즈", "쓸날": "YYYY-MM-DD"(그날부터 · 동결 뒤 — 설계 20), "멈춤": null|{"날","까닭"}, "예비": false,
+ *   {"형식": "이야기"|"노래"|"퀴즈"(21:00 칸은 11-10 밤부터 노래 — 퀴즈는 예비 형식), "쓸날": "YYYY-MM-DD"(그날부터 · 동결 뒤 — 설계 20), "멈춤": null|{"날","까닭"}, "예비": false,
+ *    "연재"?: {"이름": "<연재 이름>", "차례": <숫자>}(차례 고정 — 한 계정은 그 연재의 앞 차례를 받은 뒤에만 다음 차례를 받는다. 돌림 ⑦ —
+ *    한글 노래 여섯 곡처럼 앞 곡의 글자를 안다고 보고 만든 것. 앞 차례의 그 계정 판본이 검수 전이면 건너뛰지 않고 기다린다),
+ *    "이미받음"?: ["<계정>" | {"계정": "<계정>", "때": "<ISO 시각>"}…](그 원본을 편 폴더 기록 없이 다른 길로 이미 올린 계정 — 다시 받지 않는다.
+ *    「때」를 적은 씨앗 계정은 씨앗 첫 판으로 센다. 원장에 없는 계정이면 셈을 멈춘다),
  *    "틀"?, "무대"?(⑯ 퀴즈 — 개그 무대), "같은이야기"?: ["<편 폴더 이름>"…](같은 이야기를 다른 폴더로 낸 편 — 그 편이 나간 계정은
  *    이 원본을 다시 받지 않는다. 11-10 지마: 영어 · 간체 · 버마어 판이 LAB_지마_20261102로 나갔다. 없는 이름이면 셈을 멈춘다),
  *    "판본": {"<판본 키>": {"언어", "파일", "표지"?, "글"(그 판본 글 정본 — 뜻 검사 지문),
@@ -156,7 +160,8 @@ function loadPieces(accounts, cfg) {
     // 한 편은 한 계정에 한 번만 나가니(돌림 ③) 게시결과는 계정으로 맞춘다 — 게시결과 「시각」은 실제로 나간 때라 판 시각과 다를 수 있다.
     // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨) 걸려 있는 줄, 없으면 마지막 줄(게시 장부 rowOf).
     const stateOf = (plate) => 장부.rowOf(result.판, plate.계정);
-    const original = prep.돌림 && ['이야기', '퀴즈'].includes(prep.돌림.형식) ? prep.돌림 : null;
+    const original = prep.돌림 && 돌림.FORMATS.includes(prep.돌림.형식) ? prep.돌림 : null;
+    if (original) checkOriginal(d.name, original, accounts);
     const versions = {};
     if (original) for (const [k, v] of Object.entries(original.판본 || {})) versions[k] = versionState(dir, v, required);
     pieces.push({ name: d.name, dir, prep, result, stateOf, original, versions, dead: /^버림/.test(String(prep.상태 || '')) });
@@ -164,10 +169,25 @@ function loadPieces(accounts, cfg) {
   return pieces;
 }
 
+// 「돌림」.연재 · 이미받음의 꼴 — 틀리면 조용히 넘기지 않는다(이름 하나 틀리면 차례가 풀리거나 이미 올린 계정에 또 나간다).
+function checkOriginal(name, original, accounts) {
+  const s = original.연재;
+  if (s !== undefined && s !== null && !(typeof s === 'object' && typeof s.이름 === 'string' && s.이름.trim() && Number.isFinite(s.차례))) {
+    throw new Error(`${name}: 「돌림」.연재는 {"이름": "<연재 이름>", "차례": <숫자>} 꼴이다`);
+  }
+  if (original.이미받음 !== undefined && !Array.isArray(original.이미받음)) throw new Error(`${name}: 「돌림」.이미받음은 계정 목록(배열)이다`);
+  for (const x of original.이미받음 || []) {
+    const key = typeof x === 'string' ? x : x && x.계정;
+    if (!key || !accounts[key]) throw new Error(`${name}: 「돌림」.이미받음의 계정 「${key}」가 계정 원장에 없다 — 이름을 고친다(조용히 넘기면 이미 올린 계정에 또 나간다)`);
+    if (x && typeof x === 'object' && x.때 !== undefined && !Number.isFinite(Date.parse(x.때))) throw new Error(`${name}: 「돌림」.이미받음 ${key}의 「때」는 ISO 시각이다(${x.때})`);
+  }
+}
+
 function originalsOf(pieces) {
   return pieces.filter((p) => p.original && !p.dead).map((p) => ({
     id: p.name, format: p.original.형식, stopped: Boolean(p.original.멈춤), spare: Boolean(p.original.예비),
     readyFrom: p.original.쓸날 || null, versions: p.versions,
+    series: p.original.연재 ? { id: p.original.연재.이름.trim(), order: p.original.연재.차례 } : null,
   }));
 }
 
@@ -219,8 +239,16 @@ function existingPlates(pieces, { replan = false, stopped = new Set(), holds = n
         const row = 장부.rowOf(sib.result.판, account);
         if (row && !장부.held(row) && GONE.has(row.상태)) continue; // 그 편이 나가지 않은 계정(취소됨 · 지움)
         if (plated.has(account) || out.some((x) => x.original === piece.name && x.account === account)) continue;
-        out.push({ original: piece.name, account, generated: false, piece: name, state: '같은 이야기(다른 편)', time: null, booked: false, gone: true });
+        // seenAt — 그 편이 그 계정에 걸린 때(씨앗 계정이면 씨앗 첫 판으로 센다 — tools/lib/돌림.js)
+        const seenAt = row && 장부.held(row) ? (row.시각 || (sib.prep.판 || []).find((p) => p && p.계정 === account)?.시각 || null) : null;
+        out.push({ original: piece.name, account, generated: false, piece: name, state: '같은 이야기(다른 편)', time: null, seenAt, booked: false, gone: true });
       }
+    }
+    // 편 폴더 기록 없이 다른 길로 이미 올린 계정(「돌림」.이미받음 — 11-10 한글 노래: @synkkorean에 이미 있다) — 다시 받지 않는다.
+    for (const x of piece.original.이미받음 || []) {
+      const account = typeof x === 'string' ? x : x.계정;
+      if (plated.has(account) || out.some((y) => y.original === piece.name && y.account === account)) continue;
+      out.push({ original: piece.name, account, generated: false, piece: piece.name, state: '이미 받음(다른 길)', time: null, seenAt: (typeof x === 'object' && x.때) || null, booked: false, gone: true });
     }
   }
   return out;
@@ -420,13 +448,13 @@ function printPlan(run, opts) {
   const { result, notReady, rotation } = run;
   const filled = result.cells.filter((c) => c.original && !c.taken);
   const empty = result.cells.filter((c) => !c.original && !c.taken);
-  console.log(`LAB 돌림표 · ${opts.from}부터 ${opts.days}일 · 돌림 계정 ${Object.keys(rotation).length} · 원본 ${run.originals.length}(이야기 ${run.originals.filter((o) => o.format === '이야기').length} · 퀴즈 ${run.originals.filter((o) => o.format === '퀴즈').length})`);
+  console.log(`LAB 돌림표 · ${opts.from}부터 ${opts.days}일 · 돌림 계정 ${Object.keys(rotation).length} · 원본 ${run.originals.length}(${돌림.FORMATS.map((f) => `${f} ${run.originals.filter((o) => o.format === f).length}`).join(' · ')})`);
   console.log(`새로 채울 칸 ${filled.length} · 빈 칸 ${empty.length} · 이미 찬 칸 ${result.cells.filter((c) => c.taken).length}`);
   for (const day of result.range) {
     const today = result.cells.filter((c) => c.day === day && !c.taken);
     if (!today.length) continue;
     console.log(`\n${day}`);
-    for (const format of ['이야기', '퀴즈']) {
+    for (const format of 돌림.FORMATS) {
       const list = today.filter((c) => c.format === format).sort((x, y) => rotation[x.account].platform.localeCompare(rotation[y.account].platform) || x.account.localeCompare(y.account));
       if (!list.length) continue;
       console.log(`  ${format}: ` + list.map((c) => `${c.account} ${c.original ? `← ${c.original}` : `· ${c.why}`}`).join(' | '));
