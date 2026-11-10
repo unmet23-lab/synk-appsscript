@@ -1,6 +1,6 @@
 # 디자인 참고 사이트 장부
 
-> 2026-11-06 처음 씀 · 마지막 크롤링 2026-11-08(Recent web · interface 최근순 각 40개, `recent/*-20261108.json`) · 유호님 「새로운 디자인사이트들 저장해두면 디자인참고할때 매번 들어가지않아도되니까 잘 기억해줘」
+> 2026-11-06 처음 씀 · 마지막 크롤링 2026-11-10(Recent web · interface 최근순 각 60개, `recent/*-20261110.json` — 11-08 뒤 새로 올라온 것은 interface 4 · web 0, 지난 40개 밖이던 것까지 새로 본 interface 21장은 `recent/new-20261110/_sheet.jpg`) · 유호님 「새로운 디자인사이트들 저장해두면 디자인참고할때 매번 들어가지않아도되니까 잘 기억해줘」
 
 화면 · 웹 · 앱 디자인을 시작할 때 **이 장부터 연다**. 여기 있는 사이트는 다시 열지 않고 아래 실측과 「가져올 것」을 쓴다. 「마지막 크롤링」 날짜 뒤에 올라온 것만 새로 받고, 받은 날 이 장의 숫자와 날짜를 고친다. 최신 트렌디 사이트의 평균이 슬롭을 막는 바닥이다([DESIGN](../../../DESIGN.md) 맨 위 「모든 화면이 우리 포트폴리오다」).
 
@@ -62,6 +62,7 @@
 - **모노 글꼴:** 62곳 중 12곳에만 있다. 있어도 숫자 · 코드 · 작은 꼬리표다.
 - **세리프 제목:** 40곳 중 6곳(Emotion Serif · Editorial Old · Times · PP Fragment · Instrument). Recent 상위에도 세리프 제목이 다시 보인다(Sam Cheng · 「Designing artifacts that feel alive」 · Dreamvision).
 - **Recent 9/15 뒤 열람 상위 30의 결:** 넓은 흰 여백 위에 실물 같은 물건 하나(명찰 · 줄에 매단 프로필 카드 · 타자기 · 우표 · 영수증 · 레코드판)를 끌고 흔들고 눌러 보게 한다. 제목은 가늘게, 둘째 줄은 회색으로 이어 쓴다(「Meet the people / behind the work.」). 어두운 판은 유리 · 빛 · 홀로그램처럼 특별한 순간에 쓴다.
+- **Recent 11-10 덧붙임(interface 60 · 새로 본 21장):** 실물 하나가 여전히 주인공 — 손으로 구기면 구겨지는 영수증, 줄에 매단 프로필 카드(누르면 뒤집혀 소개), 책등이 늘어선 선반, 증서 그림, 눈금 하나하나가 해인 시간축. 새 21장 열람 가중 태그 Microinteraction 63% · Light 53% · Clean 41% · Transitions 40% · Minimal 38%. WORLD 첫날 끝 시안 10판이 목표 줄 아래 눈금으로 썼다(실물 하나 = 자리 사진 한 장).
 - **Recent 10월 뒤 태그(열람 가중):** 스타일 Minimal 43% · 3D 28% · Playful 24% · Typographic 19% · Experimental 17%. 인터랙션 Microinteraction 42% · Transitions 32% · Scroll Animation 14% · Drag & Drop 13%.
 - **Cosmos 9/15 뒤 UI · 타이포 컬렉션 저장:** 성격 있는 옛 간판 글자(따뜻한 갈색 · 빨강), 밝은 단색 면 위 실물 하나, 제품 화면은 밝고 조용하다.
 
