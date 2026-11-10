@@ -44,7 +44,7 @@ srv.listen(0, '127.0.0.1', async () => {
     await sleep(GAP * 1000);
     const state = await fr()?.evaluate(() => ({
       music: window.__subway?.music?.playing || '', done: document.documentElement.dataset.done || '', err: document.body.dataset.error || '',
-      lobby: !document.getElementById('lobby').hidden, board: !document.getElementById('board').hidden, zones: !document.getElementById('zones').hidden, hang: !document.getElementById('hang').hidden, replies: !document.getElementById('replies').hidden, notice: !document.getElementById('notice').hidden, result: !document.getElementById('result').hidden,
+      lobby: !document.getElementById('lobby').hidden, board: !document.getElementById('board').hidden, zones: !document.getElementById('zones').hidden, map: !document.getElementById('route-map').hasAttribute('hidden'), replies: !document.getElementById('replies').hidden, notice: !document.getElementById('notice').hidden, result: !document.getElementById('result').hidden,
     })).catch((e) => ({ err: String(e) }));
     n += 1;
     await page.screenshot({ path: path.join(OUT, `${String(n).padStart(2, '0')}.jpg`), type: 'jpeg', quality: 72 }).catch(() => {});

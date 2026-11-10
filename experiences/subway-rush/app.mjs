@@ -3,7 +3,7 @@
 import { SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
 import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
-import { LINES } from './lines.mjs';
+import { LINES, STATIONS } from './lines.mjs';
 import { PEOPLE, CARS, planDay } from './people.mjs';
 import { createScene, loadImage } from './scene.mjs?v=map20261110';
 import { createLed } from './led.mjs';
@@ -85,6 +85,8 @@ requestAnimationFrame(frame);
 let voiceLive = false, currentLine = null, currentExchange = null, canHelp = false;
 function setStatus(role) { hud.setStatus(role === 'guide' ? '길 안내' : role === 'announcer' ? '안내방송' : '', role === 'guide' ? 'green' : 'amber'); }
 const setLine = (n) => { if (LINES[n]) hud.setLine(n, LINES[n].color); };
+// 그 결정에서 타고 있는(탈) 노선: 열차 결정은 제 노선, 승강장 · 출구는 같은 구간 열차의 노선, 그것도 없으면(출구만 남은 맞춤 판) 그 역의 첫 노선
+const lineOf = (journey, d) => d.line || journey.decisions.find((x) => x.kind === 'stop' && x.leg === d.leg)?.line || STATIONS[d.station]?.lines?.[0] || 2;
 async function say(line, { status = true } = {}) {
   currentLine = line;
   if (status) setStatus(line.role);
@@ -149,7 +151,7 @@ function choose(options, autoId, kind) {
   $('route-labels').dataset.kind = kind; map.show(kind, options); setFocus(1); sound.sfx.lanes();
   // 고를 차례는 위 노선 줄이 알린다(사진 위에 글을 띄우지 않는다 — 11-10 맹검). 처음 두 판만 손짓을 한 번 흘려 보인다.
   hud.setStatus('고르세요', 'green');
-  if (readAlbum().plays < 2 && !hintShown) hud.flash('아래 길을 누르거나 밀어요', 4.8, 'green');
+  if ((readAlbum().plays || 0) < 2 && !hintShown) hud.flash('아래 길을 누르거나 밀어요', 4.8, 'green');
   hintShown = true;
   return new Promise((resolve) => {
     chooseResolve = (i) => { zones.hidden = true; hud.clearFlash(); hud.setStatus(''); map.pick(i); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
@@ -408,7 +410,7 @@ async function playJourney(journey, plan) {
   const run = new SubwayRun(journey); activeRun = run; missed.length = 0; met = []; autoCount = 0;
   // 개찰구 → 승강장: 길 안내
   $('lobby').dataset.out = '';
-  $('board').hidden = false; scene.state.top = 1; hud.invalidate(); setLine(journey.decisions.find((x) => x.line)?.line || 2); setClock(run); hud.setStatus(''); setKeys(false); scene.state.drop = 0.03;
+  $('board').hidden = false; scene.state.top = 1; hud.invalidate(); setLine(lineOf(journey, journey.decisions[0])); setClock(run); hud.setStatus(''); setKeys(false); scene.state.drop = 0.03;
   await curtain(true);
   sound.hallStart();
   // 출구 맞춤 판은 이미 내린 역에서 시작한다: 승강장 컷과 앞 길 안내 없이 가림막 뒤로 출구 갈림을 세운다.
@@ -494,7 +496,7 @@ const platformFor = () => (has('platform-1') ? 'platform-1' : 'platform');
 /** 승강장 결정(3~4급 급행): 들어오는 열차 앞에서 안내를 듣고 세 칸. */
 async function playBoard(run, d, plan) {
   const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
-  setLine(run.journey.decisions.find((x) => x.kind === 'stop' && x.leg === d.leg)?.line);   // 환승 뒤 승강장이면 탈 노선의 색 · 번호로
+  setLine(lineOf(run.journey, d));   // 환승 뒤 승강장이면 탈 노선의 색 · 번호로
   sound.hallStart(); setKeys(false);
   setStatus('announcer'); sound.chime(); await wait(1.2);
   const heard = await say(d.line_);
