@@ -104,7 +104,9 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-work.is-on .sx-work-name{transform:translateX(clamp(8px,1.2vw,18px))}
 /* 세 번 확인: 왼쪽 글 · 오른쪽 화면 */
 .sx-p.is-check{padding:0;align-items:stretch;gap:0}
-.sx-check{flex:0 0 42%;padding:calc(var(--sx-m) + 52px) var(--sx-m) calc(var(--sx-m) + 30px);display:flex;flex-direction:column;justify-content:flex-end}
+/* 오른쪽 화면은 글 칸을 뺀 나머지다. 인물 장면 그림은 폭 960이라 화면이 1400px(1.46배)을 넘지 않게, 그보다 넓은 창(폭 약 2414 넘음)에서는 남는 폭을 글 칸이 가져간다.
+   2560 창에서 화면이 1485px로 그림이 1.55배 늘어났다(11-10). 1920 · 1440 · 1366 창은 그대로 42%이고, 세로 창은 아래 규칙(flex:none)이 덮는다. */
+.sx-check{flex:0 0 max(42%,calc(100% - 1400px));padding:calc(var(--sx-m) + 52px) var(--sx-m) calc(var(--sx-m) + 30px);display:flex;flex-direction:column;justify-content:flex-end}
 .sx-check .sx-display{max-width:8em}
 .sx-check-lead{margin-top:12px;max-width:440px}
 .sx-check-list{margin:clamp(18px,3.4vh,32px) 0 14px;border-bottom:1px solid var(--sx-rule)}
