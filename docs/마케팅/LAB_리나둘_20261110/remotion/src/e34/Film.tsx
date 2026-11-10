@@ -101,18 +101,37 @@ const Plate: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-// 머리 글 — 카페 주문 영수증 줄: 위 쇠막대에 나무 집게로 꽂힌 영수증이 흔들린다(지난 두 편의 맨 위 띠 · 펠트 천과 다른 꼴, v2 haiku 9번)
-const Rail: React.FC<{ t: number; on: boolean }> = ({ t, on }) => (on ? <div style={{ position: 'absolute', left: 60, width: 960, top: 196, height: 16, borderRadius: 8, background: 'linear-gradient(180deg, #8C8C8C, #4A4A4A)', boxShadow: '0 6px 10px rgba(0,0,0,0.35)', opacity: 1 }} /> : null);
-const Receipt: React.FC<{ t: number; at: number; until: number; top?: number; size?: number; children: React.ReactNode; w?: number }> = ({ t, at, until, top = 205, size = 66, children, w = 820 }) => {
+// 머리 글 — 카페 주문 쪽지: 벽에 종이테이프 한 조각으로 붙은 손 뜯은 쪽지가 흔들린다(지난 두 편의 맨 위 띠 · 펠트 천과 다른 꼴, v2 haiku 9번)
+// v8 GPT 미학 맹검 기각 「쇠막대 · 금색 집게 · 고른 톱니 · 짙은 그림자가 발표용 입체 도형 같다 · 두 줄이 같은 굵기라 기본 제목판」 →
+// 막대 · 집게를 빼고 납작한 종이테이프, 가장자리는 고르지 않게 뜯긴 종이, 그림자는 옅게, 두 줄은 무게를 나눈다(emph: 힘줄 줄)
+const Rail: React.FC<{ t: number; on: boolean }> = () => null;
+const tornEdge = (seed: string) =>
+  Array.from({ length: 29 }, (_, i) => `${(i * 100) / 28}% calc(100% - ${Math.round(2 + 9 * random(`${seed}-${i}`))}px)`)
+    .reverse()
+    .join(', ');
+const Receipt: React.FC<{ t: number; at: number; until: number; top?: number; size?: number; children: React.ReactNode; w?: number; emph?: 'first' | 'last' }> = ({ t, at, until, top = 205, size = 66, children, w = 820, emph = 'last' }) => {
   if (t < at || t >= until) return null;
   const a = interpolate(t, [at, at + 0.28], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.6)) });
   const swing = 2.2 * Math.exp(-(t - at) * 2.2) * Math.sin((t - at) * 9) + 0.5 * Math.sin(t * 1.7);
-  const teeth = Array.from({ length: 41 }, (_, i) => `${(i * 100) / 40}% calc(100% - ${i % 2 === 0 ? 0 : 14}px)`).reverse().join(', ');
+  const lines = typeof children === 'string' ? children.split('\n') : null;
+  const body =
+    lines && lines.length > 1 ? (
+      lines.map((ln, i) => {
+        const strong = emph === 'first' ? i === 0 : i === lines.length - 1;
+        return (
+          <div key={i} style={{ fontWeight: strong ? 800 : 600, fontSize: strong ? size * 1.08 : size * 0.74, color: strong ? C.ink : '#7A6656', marginTop: i === 0 ? 0 : 6 }}>
+            {ln}
+          </div>
+        );
+      })
+    ) : (
+      children
+    );
   return (
-    <div style={{ position: 'absolute', left: 540 - w / 2, width: w, top, transformOrigin: '50% 0%', transform: `translateY(${(1 - a) * -60}px) rotate(${swing}deg)`, opacity: Math.min(1, a * 2), filter: 'drop-shadow(0 14px 18px rgba(40,22,10,0.4))' }}>
-      <div style={{ position: 'absolute', left: w / 2 - 34, top: -26, width: 68, height: 56, borderRadius: 10, background: 'linear-gradient(180deg, #C89A62, #A0743F)', boxShadow: '0 3px 6px rgba(0,0,0,0.3)', zIndex: 2 }} />
-      <div style={{ background: C.paper, clipPath: `polygon(0 0, 100% 0, ${teeth})`, padding: '44px 40px 48px', boxSizing: 'border-box', textAlign: 'center', borderTop: `10px solid ${C.paperEdge}` }}>
-        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: size, lineHeight: 1.16, color: C.ink, whiteSpace: 'pre-line' }}>{children}</div>
+    <div style={{ position: 'absolute', left: 540 - w / 2, width: w, top, transformOrigin: '50% 0%', transform: `translateY(${(1 - a) * -60}px) rotate(${swing - 0.8}deg)`, opacity: Math.min(1, a * 2), filter: 'drop-shadow(0 5px 7px rgba(60,34,16,0.2))' }}>
+      <div style={{ position: 'absolute', left: w / 2 - 70, top: -22, width: 140, height: 44, background: 'rgba(214,190,150,0.82)', transform: 'rotate(-3deg)', zIndex: 2 }} />
+      <div style={{ background: C.paper, clipPath: `polygon(0 0, 100% 0, ${tornEdge(`e${at}`)})`, padding: '42px 40px 46px', boxSizing: 'border-box', textAlign: 'center' }}>
+        <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: size, lineHeight: 1.16, color: C.ink, whiteSpace: 'pre-line' }}>{body}</div>
       </div>
     </div>
   );
@@ -128,9 +147,10 @@ const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: n
   return (
     <div style={{ position: 'absolute', left, top: y - h / 2, width: w, height: h, transform: `scale(${a})`, transformOrigin: `${(tip / w) * 100}% 100%` }}>
       <svg width={w} height={h + 52} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
-        <path d={`M ${tip - 60} ${h - 4} L ${tip} ${h + 50} L ${tip - 8} ${h - 4} Z`} fill={C.paper} stroke={C.coral} strokeWidth={6} strokeLinejoin="round" />
-        <rect x={3} y={3} width={w - 6} height={h - 6} rx={Math.min(60, h / 2)} fill={C.paper} stroke={C.coral} strokeWidth={6} />
-        <rect x={tip - 58} y={h - 12} width={48} height={12} fill={C.paper} />
+        {/* v8 GPT 미학 맹검 「굵은 빨간 테두리 · 길고 각진 꼬리가 표정보다 먼저 보인다」 → 테두리를 가늘게, 꼬리는 짧고 둥글게 */}
+        <path d={`M ${tip - 44} ${h - 3} Q ${tip - 18} ${h + 12} ${tip} ${h + 30} Q ${tip - 10} ${h + 10} ${tip - 10} ${h - 3} Z`} fill={C.paper} stroke={C.coral} strokeWidth={3.5} strokeLinejoin="round" />
+        <rect x={2} y={2} width={w - 4} height={h - 4} rx={Math.min(60, h / 2)} fill={C.paper} stroke={C.coral} strokeWidth={3.5} />
+        <rect x={tip - 42} y={h - 8} width={30} height={8} fill={C.paper} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.08, color: C.coral, whiteSpace: 'pre' }}>{children}</div>
@@ -140,19 +160,19 @@ const Bubble: React.FC<{ t: number; from: number; until: number; x: number; y: n
   );
 };
 
-// 이름 쪽지 — 「Rina → 리나」(영수증 종이 쪽지, 비스듬히 붙는다)
+// 이름 쪽지 — 컵에 붙이는 이름 스티커처럼 위에 영어 이름, 아래에 한글(비스듬히 붙는다)
+// v8 GPT 미학 맹검 「기본 화살표 · 밑줄 · 둥근 상자 · 외곽 그림자가 교육용 카드 틀」 → 화살표 · 밑줄을 빼고 두 줄 스티커, 그림자는 옅게
 const Chip: React.FC<{ t: number; at: number; until: number; x: number; y: number; en: string; ko: string; r?: number; size?: number; hi?: number[] }> = ({ t, at, until, x, y, en, ko, r = -3, size = 74, hi = [] }) => {
   if (t < at || t >= until) return null;
   const a = pop(t, at, 0.24);
   return (
-    <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, -50%) scale(${a}) rotate(${r}deg)`, background: C.paper, borderRadius: 18, padding: '14px 30px 18px', boxShadow: '0 12px 22px rgba(40,18,6,0.42)', whiteSpace: 'nowrap', border: `4px solid ${C.paperEdge}` }}>
-      <span style={{ fontFamily: FONT, fontWeight: 800, fontSize: size * 0.78, color: C.ink }}>
+    <div style={{ position: 'absolute', left: x, top: y, transform: `translate(-50%, -50%) scale(${a}) rotate(${r}deg)`, background: C.paper, borderRadius: 10, padding: '12px 34px 16px', boxShadow: '0 4px 8px rgba(60,34,16,0.2)', whiteSpace: 'nowrap', textAlign: 'center' }}>
+      <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: size * 0.58, lineHeight: 1.1, color: '#6A5646' }}>
         {en.split('').map((ch, i) => (
-          <span key={i} style={{ color: hi.includes(i) ? C.coral : C.ink, textDecoration: hi.includes(i) ? 'underline' : 'none', textDecorationThickness: 6, textUnderlineOffset: 8 }}>{ch}</span>
+          <span key={i} style={{ color: hi.includes(i) ? C.coral : undefined, fontWeight: hi.includes(i) ? 900 : undefined }}>{ch}</span>
         ))}
-      </span>
-      <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: size * 0.6, color: '#9A8A78', margin: '0 16px' }}>→</span>
-      <span style={{ fontFamily: KO, fontWeight: 900, fontSize: size, color: C.coral }}>{ko}</span>
+      </div>
+      <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.08, color: C.coral }}>{ko}</div>
     </div>
   );
 };
@@ -276,7 +296,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
           <Chip t={t} at={T.lionIn + 0.3} until={T.tug2} x={540} y={600} en="Lion" ko="라이언" r={3} size={70} hi={[0]} />
           <Chip t={t} at={T.tug2 + 0.1} until={T.gulp} x={300} y={420} en="Ryan" ko="라이언" r={-4} hi={[0]} size={80} />
           <Chip t={t} at={T.tug2 + 0.45} until={T.gulp} x={700} y={580} en="Lion" ko="라이언" r={3} hi={[0]} size={80} />
-          <Receipt t={t} at={T.ask} until={T.total + 1} size={60}>{TEXT.ask}</Receipt>
+          <Receipt t={t} at={T.ask} until={T.total + 1} size={60} emph="first">{TEXT.ask}</Receipt>
         </>
       ) : null}
       <Sound />

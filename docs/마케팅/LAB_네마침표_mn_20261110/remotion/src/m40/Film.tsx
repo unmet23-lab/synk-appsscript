@@ -99,7 +99,8 @@ const Chat: React.FC<{ lang: Lang; t: number }> = ({ lang, t }) => {
   const lastAt = list.length ? list[list.length - 1].at : 0;
   const prevOver = Math.max(0, total - hOf(list[list.length - 1] || ({ at: 0, me: true, ko: '' } as Msg)) - CHAT.h + 10);
   const lift = interpolate(t, [lastAt, lastAt + 0.3], [prevOver, over], { ...clamp, easing: EASE });
-  const dim = (t >= T.cold - 0.1 && t < T.resend) || (t >= T.sum && t < T.morning) ? 0.25 : 1;
+  // v8 GPT 미학 맹검 「카드 위로 뒤 말풍선 글자가 잘린 채 남는다」 → 풀이 카드가 뜨는 동안 대화를 아예 감춘다(흐리게 두지 않는다)
+  const dim = interpolate(t, [T.cold - 0.1, T.cold + 0.1, T.resend - 0.12, T.resend + 0.05], [1, 0, 0, 1], clamp) * interpolate(t, [T.sum - 0.1, T.sum + 0.1, T.morning - 0.12, T.morning + 0.05], [1, 0, 0, 1], clamp);
   // 마침표가 부푼다(첫날 「네.」 · 다음 날 「ㅇㅋ.」), 떨어지기 시작하면 말풍선에서 사라진다
   const g1 = t < T.drop ? interpolate(t, [T.grow, T.drop], [1, 5.5], { ...clamp, easing: Easing.in(Easing.quad) }) : interpolate(t, [T.drop, T.drop + 0.18], [0.4, 1.6], { ...clamp, easing: EASE });
   const g2 = t < T.morning + 0.38 ? interpolate(t, [T.morning + 0.05, T.morning + 0.38], [1, 5.5], { ...clamp, easing: Easing.in(Easing.quad) }) : interpolate(t, [T.morning + 0.38, T.morning + 0.56], [0.4, 1.6], { ...clamp, easing: EASE });
@@ -126,13 +127,15 @@ const Card: React.FC<{ t: number; from: number; to: number; children: React.Reac
   if (t < from || t > to + 0.3) return null;
   const out = interpolate(t, [to, to + 0.25], [0, 1], { ...clamp, easing: EASE });
   return (
-    <div style={{ position: 'absolute', left: 60, width: 960, top: CHAT.y + 14, height: CHAT.h - 28, background: '#FFFFFF', borderRadius: 34, boxShadow: '0 14px 34px rgba(80,30,20,0.22)', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', gap: 14, padding: '0 34px', boxSizing: 'border-box', opacity: interpolate(s, [0, 0.4], [0, 1], clamp) * (1 - out), transform: `translateY(${(1 - s) * 40 - out * 30}px) scale(${0.92 + 0.08 * s})` }}>
+    // v8 GPT 미학 맹검 「한 줄 정보에 카드가 너무 크고 아래가 비며 그림자가 두껍다」 → 카드 높이는 보이는 줄만큼, 그림자는 옅게
+    <div style={{ position: 'absolute', left: 60, width: 960, top: CHAT.y + 40, background: '#FFFFFF', borderRadius: 30, boxShadow: '0 4px 12px rgba(80,30,20,0.12)', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'center', gap: 14, padding: '26px 30px', boxSizing: 'border-box', opacity: interpolate(s, [0, 0.4], [0, 1], clamp) * (1 - out), transform: `translateY(${(1 - s) * 40 - out * 30}px) scale(${0.92 + 0.08 * s})` }}>
       {children}
     </div>
   );
 };
 const Row: React.FC<{ t: number; at: number; ko: string; read: string; mean: string; emoji: string; color: string; bg: string; lang: Lang }> = ({ t, at, ko, read, mean, emoji, color, bg, lang }) => {
   const a = interpolate(t, [at, at + 0.25], [0, 1], { ...clamp, easing: EASE });
+  if (t < at) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 22, background: bg, borderRadius: 24, padding: '10px 26px', opacity: a, transform: `translateX(${(1 - a) * 30}px)` }}>
       <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 92, color, lineHeight: 1, minWidth: 190 }}>{ko}</span>
@@ -182,7 +185,7 @@ const Scene: React.FC<{ t: number }> = ({ t }) => {
   const zoom = (cur.z ?? 1.02) + (cur.at === T.sum ? 0.08 : 0.025) * since + (cur.src === 'mongle_flat' ? 0.06 * Math.min(1, since * 2) : 0); // 검사: 12.5~14.5초 정지 → 정리 칸은 더 빨리 다가간다
   const pop = cur.at > 0 ? interpolate(t, [cur.at, cur.at + 0.08, cur.at + 0.3], [1, 1.05, 1], clamp) : 1;
   return (
-    <div style={{ position: 'absolute', left: SCENE.x, top: SCENE.y, width: SCENE.s, height: SCENE.s, borderRadius: 40, overflow: 'hidden', boxShadow: '0 16px 36px rgba(60,30,20,0.28)', background: '#3A2A22', transform: `translateY(${shake}px)` }}>
+    <div style={{ position: 'absolute', left: SCENE.x, top: SCENE.y, width: SCENE.s, height: SCENE.s, borderRadius: 40, overflow: 'hidden', boxShadow: '0 6px 14px rgba(60,30,20,0.14)', background: '#3A2A22', transform: `translateY(${shake}px)` }}>
       <Img src={staticFile(`img/${cur.src}.jpg`)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `translateX(${squirm}px) scale(${zoom * pop}, ${zoom * pop * (1 - Math.abs(squirm) * 0.002)})`, transformOrigin: cur.focus }} />
       {/* 지우가 굳는다 — 얼음빛 */}
       {cur.src === 'jiu_shock' ? <div style={{ position: 'absolute', inset: 0, opacity: 0.4 * interpolate(t, [T.hit + 0.15, T.hit + 0.45], [0, 1], clamp), background: 'radial-gradient(ellipse 210px 260px at 260px 360px, rgba(205,232,255,0.9) 0%, rgba(205,232,255,0.3) 60%, transparent 100%)', mixBlendMode: 'screen' }} /> : null}
@@ -201,7 +204,8 @@ const DotTag: React.FC<{ t: number; lang: Lang; from: number; to: number; until:
   const off = 30 + (d1 / 2) * Math.min(1, p * 1.4);
   const left = Math.min(x + off, 900);
   return (
-    <div style={{ position: 'absolute', left, top: y - 44, transform: `scale(${a}) rotate(-4deg)`, transformOrigin: 'left center', background: '#FFFFFF', border: `5px solid ${C.brown}`, borderRadius: 22, padding: '6px 22px 10px', boxShadow: '0 10px 20px rgba(40,20,10,0.35)', fontFamily: `${FONT[lang]}, ${EMOJI}`, fontWeight: 900, fontSize: 54, color: C.brown, whiteSpace: 'nowrap' }}>
+    // v8 GPT 미학 맹검 「굵은 검정 테두리 · 그림자 쪽지가 기본 밈 스티커 같고 공을 가린다」 → 테두리 없는 종이 꼬리표, 그림자 옅게, 덜 기울게
+    <div style={{ position: 'absolute', left, top: y - 40, transform: `scale(${a}) rotate(-2deg)`, transformOrigin: 'left center', background: C.paper, borderRadius: 12, padding: '6px 20px 9px', boxShadow: '0 3px 8px rgba(40,20,10,0.18)', fontFamily: `${FONT[lang]}, ${EMOJI}`, fontWeight: 800, fontSize: 50, color: C.brown, whiteSpace: 'nowrap' }}>
       {TEXT[lang].dot}
     </div>
   );
@@ -212,7 +216,7 @@ const Ball: React.FC<{ t: number; from: number; to: number; x0: number; y0: numb
   const x = x0 + (x1 - x0) * p;
   const y = y0 + (y1 - y0) * p * p; // 떨어지며 빨라진다
   const d = d0 + (d1 - d0) * Math.min(1, p * 1.4);
-  return <Img src={staticFile('img/ball.png')} style={{ position: 'absolute', left: x - d / 2, top: y - d / 2, width: d, height: d, objectFit: 'contain', transform: `rotate(${p * 200}deg)`, filter: 'drop-shadow(0 18px 18px rgba(0,0,0,0.35))' }} />;
+  return <Img src={staticFile('img/ball.png')} style={{ position: 'absolute', left: x - d / 2, top: y - d / 2, width: d, height: d, objectFit: 'contain', transform: `rotate(${p * 200}deg)`, filter: 'drop-shadow(0 8px 8px rgba(0,0,0,0.2))' }} />; // v8 맹검 「공 둘레 회색 후광」 → 그림자를 줄이고 오린 가장자리 흰 테는 소리/만들기.py에서 걷어냄
 };
 
 // ── 소리 ─────────────────────────────────────────────────────────

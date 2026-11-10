@@ -105,5 +105,17 @@ subprocess.run(['ffmpeg', '-y', '-hide_banner', '-loglevel', 'error', '-ss', '40
 # 공 오리기
 판폴더 = os.path.join(여기, '..', '판')
 공 = sorted(f for f in os.listdir(판폴더) if f.startswith('ball_') and f.endswith('.png'))[-1]
-subprocess.run(['python', '-I', '-X', 'utf8', os.path.join(뿌리, 'tools', '펠트_흰바탕오리기.py'), os.path.join(판폴더, 공), os.path.join(여기, '..', 'remotion', 'public', 'img', 'ball.png')], check=True)
+공밖 = os.path.join(여기, '..', 'remotion', 'public', 'img', 'ball.png')
+subprocess.run(['python', '-I', '-X', 'utf8', os.path.join(뿌리, 'tools', '펠트_흰바탕오리기.py'), os.path.join(판폴더, 공), 공밖], check=True)
+# 가장자리 흰 테 지우기(11-10 v8 GPT 미학 맹검 「공 아래 윤곽에 밝은 테두리 · 회색 후광 — 오려 붙인 합성층」):
+# 흰 바탕과 섞인 반투명 털을 흰색을 걷어낸 본래 색으로 되돌리고(c = (c − (1 − α)·255) / α), 알파를 3px 깎아(바깥에 뜬 흰 털 부스러기까지) 부드럽게 한다
+from PIL import Image, ImageFilter
+im = Image.open(공밖).convert('RGBA')
+a = np.asarray(im).astype(np.float64)
+al = a[..., 3:4] / 255.0
+rgb = np.where(al > 0.02, (a[..., :3] - (1 - al) * 255.0) / np.maximum(al, 0.02), 0)
+rgb = np.clip(rgb, 0, 255)
+알파 = Image.fromarray(a[..., 3].astype(np.uint8)).filter(ImageFilter.MinFilter(7)).filter(ImageFilter.GaussianBlur(1.0))
+out = np.dstack([rgb, np.asarray(알파).astype(np.float64)]).astype(np.uint8)
+Image.fromarray(out, 'RGBA').save(공밖)
 print('소리 · 공 끝')
