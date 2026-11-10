@@ -216,20 +216,14 @@ test('같은 저장소의 코치 둘은 기록부 하나를 나눠 쓴다 — �
   second.dispose();
 });
 
-test('판 없이 present부터 불러도 판이 열리고, 제품 순서 문항은 회차 host · 겨눈 단위가 실린다(아르곤 A2 · 시험 6)', async t => {
+test('판 없이 present부터 불러도 판이 열리고, 제품 순서 문항은 회차 host · 겨눈 단위가 실린다(아르곤 A2 · 시험 6)', async () => {
   const items = bankOf(rng(7));
   const time = clock();
   const { coach, port } = await openCoach({ items, time });
-  if (!PRESENTED_FIELDS_V2.arm.includes('host')) {
-    assert.throws(
-      () => coach.present(items[3]),
-      TypeError,
-      '기록이 host 회차를 받기 전에는 쓰지 않는다',
-    );
-    t.diagnostic('기록 사건 2판이 아직 arm host를 받지 않는다 — 단계 3(atlas-3b)에 알림');
-    coach.dispose();
-    return;
-  }
+  assert.ok(
+    PRESENTED_FIELDS_V2.arm.includes('host'),
+    '기록 사건 2판이 제품 순서 회차를 받는다(단계 3 d633708a7)',
+  );
   const pid = coach.present(items[3]);
   const event = (await port.read()).map(row => row.value.event).find(e => e?.id === pid);
   assert.equal(event.arm, 'host');

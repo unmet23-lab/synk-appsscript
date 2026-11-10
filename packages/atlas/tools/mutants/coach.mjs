@@ -32,6 +32,14 @@ export const COACH_MUTANTS = [
     'introduced: [],',
   ],
   [
+    C,
+    '판 열기',
+    '판이 없을 때 present가 판을 먼저 열지 않는다(제품 순서 문항 · 아르곤 A2)',
+    SESSION,
+    'const ensure = () => (s.learner?.session ? s.learner : openSet({}));',
+    'const ensure = () => s.learner;',
+  ],
+  [
     'unit',
     'Vellum',
     '그 언어 줄이 없으면 한국어로 물러선다',
