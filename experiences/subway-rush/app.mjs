@@ -144,6 +144,8 @@ function setFocus(to, seconds = 0.5) {
   const from = scene.state.focus;
   return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.focus = from + (to - from) * k; $('stage').style.setProperty('--focus', scene.state.focus.toFixed(3)); }, ease.out);
 }
+// 고를 차례의 상태 글 · 처음 두 판의 손짓 안내 — 고를 것마다 그 말로(문 화면에도 「길」, 그 밖에는 「고르세요」 한마디라 맹검 3차가 짚음)
+const PICK = { door: '내릴 문을', fork: '갈 길을', exit: '나갈 출구를', board: '할 일을' };
 function endChoice() { map.hide(); if (scene.state.focus > 0) setFocus(0, 0.3); }
 /** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. kind: door · fork · exit · board(아래 역 지도의 갈래 모양). */
 function choose(options, autoId, kind) {
@@ -151,8 +153,8 @@ function choose(options, autoId, kind) {
   [...zones.children].forEach((b, i) => { b.setAttribute('aria-label', options[i].text || (options[i].exit != null ? `${options[i].exit}번 출구` : '')); });
   $('route-labels').dataset.kind = kind; map.show(kind, options); setFocus(1); sound.sfx.lanes();
   // 고를 차례는 위 노선 줄이 알린다(사진 위에 글을 띄우지 않는다 — 11-10 맹검). 처음 두 판만 손짓을 한 번 흘려 보인다.
-  hud.setStatus('고르세요', 'green');
-  if ((readAlbum().plays || 0) < 2 && !hintShown) hud.flash('아래 길을 누르거나 밀어요', 4.8, 'green');
+  hud.setStatus(`${PICK[kind] || PICK.door} 고르세요`, 'green');
+  if ((readAlbum().plays || 0) < 2 && !hintShown) hud.flash(`${PICK[kind] || PICK.door} 누르거나 밀어요`, 4.8, 'green');
   hintShown = true;
   return new Promise((resolve) => {
     chooseResolve = (i) => { zones.hidden = true; hud.clearFlash(); hud.setStatus(''); map.pick(i); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
