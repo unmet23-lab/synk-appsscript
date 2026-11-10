@@ -1,0 +1,28 @@
+{
+  "판본": "ID",
+  "컴포지션": "angry-ID",
+  "언어": "id",
+  "글": "docs/마케팅/LAB_화날때_mn_20261031/remotion/src/film/판본/ID.json",
+  "글sha256": "09b7fb2ce628dcdc562d568be7088f2eaf9d0838882eace0f9dc8eba912eaceb",
+  "시각": "2026-11-10T10:12:17.228Z",
+  "영상": "docs/마케팅/LAB_화날때_mn_20261031/게시/판본/ID/video.mp4",
+  "표지": "docs/마케팅/LAB_화날때_mn_20261031/게시/판본/ID/cover.png",
+  "표지초": 2.9,
+  "돌림판본": {
+    "언어": "id",
+    "파일": "게시/판본/ID/video.mp4",
+    "표지": "게시/판본/ID/cover.png",
+    "글": "remotion/src/film/판본/ID.json"
+  },
+  "음량": {
+    "LUFS": -14.7,
+    "봉우리dBFS": -1.2,
+    "리미터": 0.84
+  },
+  "길이초": 28.608,
+  "프레임": 858,
+  "영상Mbps": 12.14,
+  "소리kbps": 354,
+  "영상sha256": "e62724b39e3476bcf85c16b84556b89bbe56c5c055751eb3ef0f671e52e8aa5a",
+  "표지프레임": 87
+}

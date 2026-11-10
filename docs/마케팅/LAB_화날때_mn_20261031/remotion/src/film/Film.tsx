@@ -3,7 +3,8 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { BGM_DUCK, BGM_VOL, Bubble as BubbleData, CELLS, END_LINE_AT, FPS, INNER_VO, Loc, LocPack, LOCS, SFX, TEXT, TOTAL, VO_LEN } from './data';
+import { BGM_DUCK, BGM_VOL, Bubble as BubbleData, CELLS, END_LINE_AT, FPS, INNER_VO, SFX, TEXT, TOTAL, VO_LEN } from './data';
+import { LocPack } from './판본';
 
 const fr = (sec: number) => Math.round(sec * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -163,15 +164,15 @@ const End: React.FC<{ L: LocPack }> = ({ L }) => {
       <div style={{ position: 'absolute', left: 30, top: 1236, width: 470, textAlign: 'center', background: CREAM, border: `6px solid ${INK}`, borderRadius: 40, padding: '14px 18px 18px', boxSizing: 'border-box', transform: `scale(${p})` }}>
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 68, color: INK, lineHeight: 1.14 }}>{TEXT.endKo}</div>
         <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, color: '#5F4E42', lineHeight: 1.15 }}>🔊 {L.endRead}</div>
-        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: Math.min(48, L.meanSize), color: MEAN, lineHeight: L.lineH, marginTop: 4 }}>{L.endMn}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.endMnSize, color: MEAN, lineHeight: L.lineH, marginTop: 4 }}>{L.endMn}</div>
       </div>
       <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, opacity: p }}>
         <path d="M 494 1380 L 494 1450 L 590 1470 Z" fill={CREAM} stroke={INK} strokeWidth={6} strokeLinejoin="round" />
         <rect x={488} y={1384} width={10} height={60} fill={CREAM} />
       </svg>
       </>}
-      {/* 화산 옆 「(속으로) 억울해!!」 — 겉말과 속말을 잇는다 */}
-      {frame >= fr(INNER_VO.at) && frame < fr(END_LINE_AT) ? (
+      {/* 화산 옆 「(속으로) 억울해!!」 — 겉말과 속말을 잇는다(두 채널 판 v5부터 — 판본 inner를 비우면 없음: 몽골판 10-31 v8) */}
+      {L.inner && frame >= fr(INNER_VO.at) && frame < fr(END_LINE_AT) ? (
         <div style={{ position: 'absolute', left: 560, top: 300, transform: `rotate(6deg) scale(${interpolate(frame, [fr(INNER_VO.at), fr(INNER_VO.at) + 5], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2.4)) })})` }}>
           <div style={{ background: '#2B2522', color: '#fff', borderRadius: 26, padding: '10px 24px 14px', textAlign: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.35)' }}>
             <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: 40, lineHeight: L.lineH }}>({L.inner})</div>
@@ -185,6 +186,8 @@ const End: React.FC<{ L: LocPack }> = ({ L }) => {
           {L.end1}
           <br />
           <span style={{ color: CORAL }}>{L.end2}</span>
+          {/* 끝 질문(판본 ask, 선택) — 끝 카드 셋째 줄. 비우면 몽골 · 두 채널 · 영어판 그대로 */}
+          {L.ask ? <span style={{ display: 'block', fontSize: L.askSize, lineHeight: L.lineH, color: '#5F4E42', marginTop: 10 }}>{L.ask}</span> : null}
         </span>
       </div>
     </>
@@ -217,19 +220,19 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => {
+// L = 판본 글(판본/<KEY>.json) — Root가 판본마다 컴포지션 angry-<KEY>로 넘긴다
+export const Film: React.FC<{ L: LocPack }> = ({ L }) => {
   const frame = useCurrentFrame();
   const i = cellAt(frame / FPS);
   const c = CELLS[i];
-  const L = LOCS[loc];
   const sitN = CELLS.slice(0, i + 1).filter((x) => x.sit).length - 1; // 몇째 상황 칸인가
   return (
     <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
-      <Plate i={i} hookMove={loc !== 'mn'} />
+      <Plate i={i} hookMove={L.hookMotion} />
       {i > 0 ? <Gauge i={i} L={L} /> : null}
-      {i === 0 && loc !== 'mn' ? <Steam /> : null}
+      {i === 0 && L.hookMotion ? <Steam /> : null}
       {i === 0 ? <Hook L={L} /> : null}
-      {i === 0 && loc !== 'mn' ? <Chips /> : null}
+      {i === 0 && L.hookMotion ? <Chips /> : null}
       {c.sit ? <Sit text={L.sits[sitN]} at={c.at} L={L} /> : null}
       {c.bubble ? <Speech b={c.bubble} at={c.at} L={L} /> : null}
       {i === CELLS.length - 1 ? <End L={L} /> : null}
