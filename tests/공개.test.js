@@ -175,7 +175,7 @@ const 페이지작업 = (id, deploy결론, deploy상태 = 'completed') => [
   { id: id * 10 + 1, name: 'deploy', status: deploy상태, conclusion: deploy상태 === 'completed' ? deploy결론 : null },
 ];
 /** deploy 작업 로그 — 11-10 실측 로그(qa/pages-배포유실-20261110)의 줄 꼴을 줄인 것 */
-const 로그줄 = (...줄) => `﻿${줄.map((x, i) => `2026-11-09T20:${String(30 + i).padStart(2, '0')}:00.0000000Z ${x}`).join('\n')}\n`;
+const 로그줄 = (...줄) => `\uFEFF${줄.map((x, i) => `2026-11-09T20:${String(30 + i).padStart(2, '0')}:00.0000000Z ${x}`).join('\n')}\n`;
 const 배포로그 = {
   // 첫 시도: syncing_files를 되풀이하다 시간 초과 직전에 빈칸 한 줄(b2e8f31f 1번째 시도)
   빈칸: 로그줄('Created deployment for b2e8f31f, ID: b2e8f31f', 'Current status: deployment_queued', 'Current status: syncing_files', 'Getting Pages deployment status...',
