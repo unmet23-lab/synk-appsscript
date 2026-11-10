@@ -33,7 +33,7 @@ test('변형 목록: 바꿀 글이 그 파일에 꼭 한 번 있고, 이름이 �
   assert.ok(MUTANTS.length >= 64, `시제품의 변형 64개 이상 — 지금 ${MUTANTS.length}`);
   const names = new Set();
   for (const [group, , name, file, from, to] of MUTANTS) {
-    assert.ok(['unit', 'build', 'properties', 'learners'].includes(group), name);
+    assert.ok(['unit', 'build', 'properties', 'learners', 'record'].includes(group), name);
     assert.equal(names.has(name), false, `이름 겹침: ${name}`);
     names.add(name);
     const text = fs.readFileSync(path.join(PACKAGE_ROOT, file), 'utf8').replace(/\r\n/g, '\n');

@@ -26,7 +26,37 @@ export { createMemory } from './memory/index.mjs';
 export { EDITIONS, PARAMS } from './params.mjs';
 export { REASON_CODES } from './reason/index.mjs';
 export { reasonLine } from './reason/ko.mjs';
-export { EVENT_FORM, EVENT_TYPES } from './record/events.mjs';
+export {
+  applyDelta,
+  carriedFields,
+  carriedSoFar,
+  checkEvent,
+  checkLinks,
+  clampedOf,
+  createClock,
+  createEvent,
+  createRecord,
+  EMPTY_INDEX,
+  EVENT_FORM,
+  EVENT_TYPES,
+  entryOf,
+  eventId,
+  FOLD_CAP,
+  foldAccount,
+  foldEdition,
+  foldEventsOfAll,
+  groupsOf,
+  idbPort,
+  judge,
+  legacyToImport,
+  linesOfGroups,
+  memoryPort,
+  openRecord,
+  RECORD_EDITION,
+  storeName,
+  summaryOf,
+  viewOf,
+} from './record/index.mjs';
 export { choose } from './select/choose.mjs';
 export { filterCandidates } from './select/filter.mjs';
 export { PLAN_FACTS, planActivities } from './select/plan.mjs';

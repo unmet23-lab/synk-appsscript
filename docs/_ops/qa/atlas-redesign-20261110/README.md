@@ -7,6 +7,7 @@
 | 단계 | 기록 | 상태 |
 |---|---|---|
 | 0 길 닦기 | [계획과 기록](단계0_계획.md) · 공개 빌드 앞뒤 대조 도구 [`단계0/공개대조.cjs`](단계0/공개대조.cjs) · 패키지 [`packages/atlas/`](../../../../packages/atlas/README.md) | 11-10 끝 — 공개본 산출물 같음(WORLD 6,256파일), 설계 검토 Fable 12건 · 끝 판 아르곤 1 · GPT 5건 반영, Fable 최종은 주간 한도로 11-16 초기화 뒤. 단계 1 · 2 · 3 인계는 그 기록 §13 |
+| 3 기록과 저장 | [계획과 기록](단계3_계획.md) · 패키지 [`src/record/`](../../../../packages/atlas/src/record/index.mjs) · SYNK-talk 가지 `claude/atlas-trail-stage3` | 11-10 짓기 · 관문 끝(저장 관문 임의 시험 어긋남 0 · 변형 17/17), Fable 설계 검토 21건 반영. 끝 판 검수 · 서버 반영 남음 |
 | 2 두뇌 | [계획과 기록](단계2_계획.md)(§8 Fable 설계 검토 처리 · §9 결과) · 패키지 `src/{params,memory,ability,fold,select,reason}` · 시험 `test/{properties,oracle,learners}` · 변형 `tools/mutants/brain.mjs` | 11-10 — 시제품과 어긋남 0 확인 뒤 Fable 설계 검토 21건 반영, 가상 학습자 관문 1~7 · 끝 판 검수는 기록 §9 |
 
 ## 1. 시제품

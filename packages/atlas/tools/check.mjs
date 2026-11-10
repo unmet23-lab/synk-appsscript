@@ -42,6 +42,7 @@ biome();
 await sizes();
 for (const group of ['unit', 'build'])
   if (runGroup(group).status !== 0) failures.push(`시험 ${group}`);
+if (runGroup('record').status !== 0) failures.push('시험 record');
 if (runGroup('properties', { env: { ATLAS_SEED_SCALE: '0.1' } }).status !== 0)
   failures.push('시험 properties(줄인 씨앗)');
 console.log(

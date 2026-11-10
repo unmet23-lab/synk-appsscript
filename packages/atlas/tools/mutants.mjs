@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BRAIN_MUTANTS } from './mutants/brain.mjs';
+import { RECORD_MUTANTS } from './mutants/record.mjs';
 import { testEnv } from './test.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -21,7 +22,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = path.join(ROOT, '.mutants');
 const WORK = path.join(BASE, String(process.pid));
 
-export const MUTANTS = [...BRAIN_MUTANTS];
+export const MUTANTS = [...BRAIN_MUTANTS, ...RECORD_MUTANTS];
 
 export const SELF_TEST = [
   [
