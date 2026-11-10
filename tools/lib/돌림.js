@@ -11,6 +11,9 @@
  *      실제 24시간 안에 여덟아홉 채널까지 몰렸다(11-10 Fable 검수 · 재 본 값 8). 앞 날 판 · 이미 있는 판도 같이 센다.
  *   ② 씨앗 먼저: 원본은 씨앗 계정(sns-계정.json rotationSeed)이 먼저 올리고, 다른 계정은 씨앗 첫 판에서 24시간 넘게 지난 뒤(14시 점검 때 씨앗의 24시간 숫자가 있게)
  *      첫 한국 시각 14시(14시 게시 회차의 비상 정지 점검 — 설계 3) 뒤 칸에만 잇는다.
+ *      씨앗 첫 판은 플랫폼을 가리지 않는다(그 원본을 가장 먼저 올린 씨앗 계정 하나 — 11-11 정함): 비상 정지 점검이 씨앗 계정 전체의 24시간
+ *      숫자 과반으로 가르고, 플랫폼마다 따로 기다리게 하면 씨앗이 없는 플랫폼(VK · RUTUBE · 더우인)과 몽골 원본을 받지 않는 유튜브 씨앗
+ *      (@synkkorean — 영어판) 쪽 계정은 영영 못 받는다. 첫 판 시험(trial) 계정은 걸리지 않은 채 지나간 판을 「판 하나」로 세지 않는다.
  *   ③ 한 계정은 같은 원본을 두 번 올리지 않는다. 칸 형식(dailyFormats — 13:00 이야기 · 21:00 퀴즈)이 원본 형식과 같아야 한다.
  *   ④ 순서 섞기: 계정마다 가장 오래 기다린 원본 다섯(창) 가운데서 계정 이름으로 정한 순서(같은 입력이면 늘 같은 표)로 고르고,
  *      한 플랫폼 · 한 날 · 한 형식 칸들은 맞물림(증가 경로)으로 가장 많이 채운다 — 원본이 모자라면 빈 칸이 남는다
@@ -122,7 +125,8 @@ function bundlesOf(accounts) {
  *   accounts: { key: { platform, language, group, versionKey, timeZone, dailyTimes, dailyFormats, dailyFrom, dailyTimesFrom, seed, trial, blocked } }
  *   originals: [{ id, format, stopped, spare, readyFrom, series?: { id, order }, versions: { <versionKey>: { ready: true, sha } } }]
  *   existing: [{ original, account, time(ISO), file, fixed, gone, seenAt? }] — 이미 있는 판(예약 · 게시 · 만든 사람이 단 판 · 지난 돌림 판). file은 그 판 파일 지문.
- *     gone인 줄의 seenAt(ISO)은 그 계정이 그 원본을 다른 길로 이미 올린 때(「같은이야기」 · 「이미받음」) — 씨앗 계정이면 씨앗 첫 판 시각으로 센다(②)
+ *     gone인 줄의 seenAt(ISO)은 그 계정이 그 원본을 다른 길로 이미 올린 때(「같은이야기」 · 「이미받음」) — 씨앗 계정이면 씨앗 첫 판 시각으로 세고(②),
+ *     그 판은 이 원본의 판으로 ① · ⑥(같은 플랫폼 20시간 · 같은 언어 묶음 24시간 · 유튜브 24시간 다섯 채널)에 든다. 칸은 차지하지 않는다
  *   → { cells: [{ account, day, slot, format, time, ms, original|null, why|null }], seeds: { id: ms } }
  * existing에는 원본이 아닌 편의 판도 넣는다(original: null) — 그 칸은 이미 찼다. gone은 나가지 않는 판(보류 · 취소됨 · 지움) —
  * 칸은 비지만 그 계정은 그 원본을 다시 받지 않는다. trial은 첫 판 확인 전 계정 — 판이 하나도 없을 때만 칸 하나를 받는다.
@@ -153,9 +157,14 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
       if (p.original) {
         posted.get(p.account)?.add(p.original);
         if (!postedAt.get(p.account).has(p.original)) postedAt.get(p.account).set(p.original, -Infinity);
-        // 다른 길로 이미 올린 씨앗 계정(seenAt)은 씨앗 첫 판으로 센다 — 안 그러면 그 원본은 씨앗 판이 영영 없어 다른 계정이 못 받는다
+        // 다른 길로 이미 올린 때(seenAt)가 있으면 — ⓐ 씨앗 계정은 씨앗 첫 판으로 센다(안 그러면 그 원본은 씨앗 판이 영영 없어 다른 계정이 못 받는다)
+        // ⓑ 그 판을 이 원본의 판으로 넣는다(11-11 Fable 검수: @synkkorean의 지마 영어판(11-10 21:00) · 버마어 틱톡 판이 창 밖에 있어, 같은 말 채널이나
+        //   같은 플랫폼 계정이 그 24시간 · 20시간 안에 같은 이야기를 받을 수 있었다). 파일은 다른 편 폴더의 것이라 「같은 파일」(⑥)로는 세지 않는다.
         const seen = Date.parse(p.seenAt || '');
-        if (a.seed && Number.isFinite(seen) && platesOf.has(p.original) && (seeds[p.original] === undefined || seen < seeds[p.original])) seeds[p.original] = seen;
+        if (Number.isFinite(seen) && platesOf.has(p.original)) {
+          if (a.seed && (seeds[p.original] === undefined || seen < seeds[p.original])) seeds[p.original] = seen;
+          platesOf.get(p.original).push({ account: p.account, platform: a.platform, language: a.language || null, group: groupOf(a), ms: seen, file: p.file || `다른 길:${p.account}` });
+        }
       }
       continue;
     }
@@ -164,7 +173,10 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
     const day = T.localDate(ms, T.tzOf(a));
     const slot = T.slotFor(p.time, a);
     occupied.add(`${p.account}|${day}|${slot.time}`);
-    if (a.trial) trialUsed.add(p.account);
+    // 첫 판 시험 계정의 「판 하나」 — 걸리지 않은 채(booked: false — 실패 · 못 건 판) 셈 첫날보다 앞으로 지나간 판은 세지 않는다. 안 그러면 그 계정은
+    // 첫 판이 영영 「있는」 것으로 남아 다음 칸을 못 받는다(11-11 Fable 검수). 그 원본은 받은 것으로 남는다(다시 주지 않는다) — 새 칸은 다른 원본이 받는다.
+    const missed = p.booked === false && ms < T.zonedMs(from, '00:00', T.tzOf(a));
+    if (a.trial && !missed) trialUsed.add(p.account);
     if (p.original) note(p.original, p.account, ms, p.file || null);
   }
   // 원본마다 기다린 순서(씨앗 첫 판 · 쓸 수 있게 된 날 · 이름) — 오래 기다린 것부터 창에 든다.

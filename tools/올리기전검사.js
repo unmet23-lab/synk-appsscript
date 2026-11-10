@@ -770,13 +770,16 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
     const v = bundle.prep.돌림.판본?.[key];
     if (!v) { add(FIX, 'rotation-version', p.account, `이 편에 판본 ${key || '(키 없음)'}이 없다`); continue; }
     if (String(v.파일 || '').replace(/\\/g, '/') !== String(p.raw.파일 || '').replace(/\\/g, '/')) add(FIX, 'rotation-version-file', p.account, `판 파일(${p.raw.파일})이 판본 ${key}의 파일(${v.파일})과 다르다`);
-    if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required));
+    if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required, key, { accounts: bundle.accounts }));
     const st = states.get(key);
     if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
     // 뜻 검사에서 둘 이상이 같이 짚은 줄을 판정(원본 박자 · 한국어를 못 읽는 시험 전제)으로 내린 판본은 그 줄을 보이게 한다 — 판본에서 못 고치는
     // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).
     const verdicts = Array.isArray(v.검수?.뜻?.판정줄) ? v.검수.뜻.판정줄 : [];
     if (st.ready && verdicts.length) add(LOOK, 'rotation-verdict', p.account, `판본 ${key}: 뜻 검사에서 둘 이상이 짚은 줄 ${verdicts.length}개를 판정으로 내렸다 — ${verdicts.map((z) => `${z.줄}(${z.갈래})`).join(' · ')}. 판본 글로 못 고치는 줄인지 까닭을 본다(준비.json 돌림.판본.${key}.검수.뜻.판정줄)`);
+    // 시험관의 요약 · 웃음을 사람이 바꾼 판본도 같다(11-11) — 「다름 · 안 웃김」을 「같음」으로 바꾸면 고칠 것이 통과가 된다. 까닭이 보이게 한다.
+    const overrides = Array.isArray(v.검수?.뜻?.사람판정) ? v.검수.뜻.사람판정 : [];
+    if (st.ready && overrides.length) add(LOOK, 'rotation-verdict-human', p.account, `판본 ${key}: 뜻 검사에서 시험관 판정 ${overrides.length}개를 사람이 바꿨다 — ${overrides.map((o) => `${o.시험관} ${o.칸}(${o.앞} → ${o.뒤})`).join(' · ')}. 까닭을 본다(준비.json 돌림.판본.${key}.검수.뜻.사람판정)`);
   }
   return out;
 }

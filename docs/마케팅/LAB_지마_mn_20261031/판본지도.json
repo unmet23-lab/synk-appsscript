@@ -19,7 +19,7 @@
     "reads": ["meok-ji ma", "nup-ji ma", "yeol-ji ma", "ga-ji ma", "ul-ji ma", "meo-geo"]
   },
   "원고기본": {
-    "*": { "audioLanguage": "ko", "alteredContent": false },
+    "*": { "alteredContent": false },
     "youtube": { "format": "shorts", "madeForKids": false, "category": "Education" }
   },
   "원고": {

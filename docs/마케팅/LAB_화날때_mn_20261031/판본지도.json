@@ -19,7 +19,7 @@
     "endRead": "ne, sa-jang-nim"
   },
   "원고기본": {
-    "*": { "audioLanguage": "ko", "alteredContent": false },
+    "*": { "alteredContent": false },
     "youtube": { "format": "shorts", "madeForKids": false, "category": "Education" }
   },
   "원고": {

@@ -208,6 +208,9 @@ test('멈춘 원본은 안 쓰고, 예비편은 useSpares일 때만, 판본이 �
 // ── 명령(tools/돌림표.js) — 임시 원장 · 편 폴더 ──
 const tool = path.resolve(__dirname, '..', 'tools', '돌림표.js');
 const sha = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+// 판본 원고 — 파일이 없거나 게시글 고칠 것이 있으면 그 판본은 돌림에 안 든다(11-11 versionState)
+const 원고쓰기 = (dir, key, language = key.toLowerCase(), extra = {}) => fs.writeFileSync(path.join(dir, '게시', '판본', key, '원고.json'),
+  JSON.stringify({ brand: 'LAB', platform: 'youtube', language, title: 'One Korean phrase', caption: 'A short Korean phrase for friends only.', ...extra }));
 
 function 마당() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), '돌림표-'));
@@ -233,6 +236,7 @@ function 마당() {
       const text = path.join(dir, '게시', '판본', k, '글.json');
       fs.writeFileSync(video, `${name}-${k}-video`);
       fs.writeFileSync(text, JSON.stringify({ 줄: [`${name} ${k}`] }));
+      원고쓰기(dir, k);
       판본[k] = { 언어: k.toLowerCase(), 파일: `게시/판본/${k}/video.mp4`, 글: `게시/판본/${k}/글.json`, 원고: { youtube: `게시/판본/${k}/원고.json` },
         검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } };
     }
@@ -326,6 +330,12 @@ test('돌림표 비상 정지 점검 — 사흘 안 씨앗 판의 24시간 배�
   assert.match(low.stdout, /급락 · LAB_가_mn_20261101/);
   perf(2.4);
   assert.equal(m.run('--점검').status, 0);
+  // 사흘이 지난 원본도 아직 안 나간 돌림 판이 있으면 본다(11-11) — 나 편은 씨앗이 17일 전에 올렸다
+  const seen = () => JSON.parse(m.run('--점검', '--json').stdout);
+  assert.equal(seen().some((x) => x.piece === 'LAB_나_mn_20261102'), false, '돌림 판이 없으면 사흘 창 밖이라 안 본다');
+  assert.equal(m.run('--부터', '2026-11-20', '--일수', '2', '--쓰기').status, 0);
+  const old = seen().find((x) => x.piece === 'LAB_나_mn_20261102');
+  assert.ok(old && old.pending >= 1, `안 나간 돌림 판이 남은 오래된 원본(${JSON.stringify(seen().map((x) => [x.piece, x.pending]))})`);
 });
 
 // ── 11-10 Fable 5.2 계획 검수 뒤 더한 것 — 첫 판 시험 · 판정 불가 · 걸린 판 지키기 · 나가지 않는 판 · 「미정」 까닭 ──
@@ -359,6 +369,15 @@ test('첫 판 시험(trial) — 판이 하나도 없을 때만 칸 하나를 받
   const got = gone.cells.filter((c) => c.account === 'th' && c.original);
   assert.equal(got.length, 1);
   assert.notEqual(got[0].original, 'a');
+  // 걸리지 않은 채 날이 지난 첫 판(실패 · 못 건 판 — booked: false)은 첫 판으로 세지 않는다(11-11): 다른 원본으로 새 첫 판을 받는다.
+  // 걸린 판 · 아직 날이 안 지난 안 건 판은 그대로 「판 하나」다
+  const first = (extra) => 돌림.plan({ accounts, originals: s.originals, existing: [...s.existing, { original: 'a', account: 'th', ...extra }], from: '2026-11-20', days: 3 })
+    .cells.filter((c) => c.account === 'th' && c.original).map((c) => c.original);
+  const missed = first({ time: '2026-11-19T13:00:00+07:00', booked: false });
+  assert.equal(missed.length, 1);
+  assert.notEqual(missed[0], 'a', '그 원본은 받은 것으로 남는다');
+  assert.deepEqual(first({ time: '2026-11-19T13:00:00+07:00', booked: true }), [], '걸린 판은 첫 판이다');
+  assert.deepEqual(first({ time: '2026-11-21T13:00:00+07:00', booked: false }), [], '아직 날이 안 지난 안 건 판은 다시 걸 판이다');
 });
 
 test('돌림표 명령 — 첫 판 시험 계정(postRouteVerified 「첫판」)은 판 하나만 쓰고, 다시 돌려도 더하지 않는다', (t) => {
@@ -616,6 +635,7 @@ test('돌림표 명령 --묶음 — 묶음표 · 나라별판이 같은 파일�
     const text = path.join(dir, '게시', '판본', key, '글.json');
     fs.writeFileSync(video, body);
     fs.writeFileSync(text, JSON.stringify({ 줄: [`${name} ${key}`] }));
+    원고쓰기(dir, key, 'en');
     const prep = 읽기(m, name);
     prep.돌림.판본[key] = { 언어: 'en', 파일: `게시/판본/${key}/video.mp4`, 글: `게시/판본/${key}/글.json`, 원고: { youtube: `게시/판본/${key}/원고.json` },
       검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } };
@@ -755,6 +775,47 @@ test('이미받음 · 같은이야기의 때(seenAt) — 다른 길로 올린 �
   const seen = cells([{ original: 'n1', account: 'seed-ig', gone: true, seenAt: '2026-10-06T21:00:00+09:00' }, { original: 'n1', account: 'us', gone: true }]);
   assert.deepEqual(seen.filter((c) => c.original).map((c) => c.account), ['th']);
   assert.equal(seen.some((c) => c.account === 'us' && c.original), false);
+});
+
+test('돌림표 명령 — 원고에 게시글 고칠 것(상대 날짜)이 있거나 원고 파일이 없는 판본은 돌림에 안 든다(그 원고가 판이 되면 올리기 전 검사가 편 전체를 막는다)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  원고쓰기(path.join(m.root, G), 'TH', 'en', { pinnedComment: 'Which one did you use this week?' });
+  fs.rmSync(path.join(m.root, N, '게시', '판본', 'TH', '원고.json'));
+  const j = JSON.parse(m.run('--부터', '2026-11-20', '--일수', '2', '--json').stdout);
+  assert.match(j.versions[G].TH.why, /원고 고칠 것 — youtube 고정 댓글: 상대 날짜 「this week」/);
+  assert.match(j.versions[N].TH.why, /원고 고칠 것 — youtube: 원고 파일이 없다/);
+  assert.equal(j.versions[G].JP.ready, true, '다른 판본은 그대로 든다');
+  assert.equal(j.cells.some((c) => c.account === 'lab-th-youtube' && c.original), false);
+  assert.ok(j.cells.some((c) => c.account === 'lab-jp-youtube' && c.original === G));
+});
+
+test('다른 길로 올린 판(seenAt)도 같은 원본의 판이다 — 같은 언어 묶음 24시간 · 같은 플랫폼 20시간 창에 든다(11-11: @synkkorean의 지마 영어판이 창 밖이었다)', () => {
+  const accounts = {
+    'seed-ig': acct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' }),
+    glob: acct('youtube', 'EN', 'Asia/Seoul', { language: 'en', seed: true, dailyFrom: '2099-01-01' }), // 다른 편 폴더로 영어판을 올린 전 세계 채널
+    au: acct('youtube', 'AU', 'Australia/Sydney', { language: 'en' }),
+    th: acct('youtube', 'TH', 'Asia/Bangkok', { language: 'th' }),
+    mm: acct('tiktok', 'MM', 'Asia/Yangon', { language: 'my', dailyFrom: '2099-01-01' }), // 다른 편 폴더로 버마어판을 올린 틱톡
+    vn: acct('tiktok', 'VN', 'Asia/Ho_Chi_Minh', { language: 'vi' }),
+  };
+  const originals = [{ id: 's1', format: '이야기', versions: ver(['MN', 'EN', 'AU', 'TH', 'MM', 'VN']) }];
+  const old = { original: 's1', account: 'seed-ig', time: '2026-10-31T13:00:00+08:00' }; // 씨앗 첫 판 — 점검은 오래전에 지났다
+  const at = '2026-11-19T21:00:00+09:00';
+  const story = (existing) => 돌림.plan({ accounts, originals, existing: [old, ...existing], from: '2026-11-20', days: 2 }).cells.filter((c) => c.format === '이야기');
+  const dayOf = (cells, k) => (cells.find((c) => c.account === k && c.original === 's1') || {}).day || null;
+  // 때를 모르는 「이미 받음」은 예전 그대로 — 그 계정만 다시 받지 않는다
+  const blind = story([{ original: 's1', account: 'glob', gone: true }, { original: 's1', account: 'mm', gone: true }]);
+  assert.deepEqual([dayOf(blind, 'au'), dayOf(blind, 'th'), dayOf(blind, 'vn')], ['2026-11-20', '2026-11-20', '2026-11-20']);
+  // 때가 있으면 그 판과 창을 띄운다: 호주(같은 말 유튜브 — 11-20 13:00 시드니는 14시간 뒤) · 베트남 틱톡(같은 플랫폼 — 18시간 뒤)은 하루 미룬다.
+  // 태국 유튜브는 말이 달라 그날 받는다
+  const seen = story([{ original: 's1', account: 'glob', gone: true, seenAt: at }, { original: 's1', account: 'mm', gone: true, seenAt: at }]);
+  assert.deepEqual([dayOf(seen, 'au'), dayOf(seen, 'th'), dayOf(seen, 'vn')], ['2026-11-21', '2026-11-20', '2026-11-21']);
+  // 그 계정은 다시 받지 않고, 칸도 차지하지 않는다(그 칸은 그 편 폴더의 판이 따로 채운다)
+  assert.equal(seen.some((c) => ['glob', 'mm'].includes(c.account) && c.original), false);
+  // 겹침 확인(overlaps)도 그 판을 본다 — 손으로 24시간 안에 단 판이 있으면 짝으로 나온다
+  const r = 돌림.plan({ accounts, originals, existing: [old, { original: 's1', account: 'glob', gone: true, seenAt: at }, { original: 's1', account: 'au', time: '2026-11-20T13:00:00+11:00' }], from: '2026-11-20', days: 1 });
+  assert.deepEqual(돌림.overlaps(r.plates, accounts).map((o) => [o.a, o.b, o.hours, o.sameFile].join('|')), ['glob|au|14|false']);
 });
 
 test('돌림표 명령 — 노래 원본의 연재 · 이미받음을 읽고, 꼴이 틀리거나 원장에 없는 계정이면 셈을 멈춘다', (t) => {

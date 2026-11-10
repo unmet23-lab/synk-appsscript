@@ -33,7 +33,7 @@ const 지도 = () => ({
   꼴: '판본지도/1', 틀: '이야기', 판본폴더: 'remotion/src/m99/판본',
   기준: { 한문장: "'-지 마'는 하지 마라는 뜻이다", 핵심: [['지마', '하지마'], ['떠나', '가지마']], 웃음: "첫 잔소리 '먹지 마'가 끝에서 '먹어'로 뒤집힌다" },
   기본값: { reads: ['meok-ji ma', 'meo-geo'] },
-  원고기본: { '*': { audioLanguage: 'ko' }, youtube: { madeForKids: false } },
+  원고기본: { '*': { alteredContent: false }, youtube: { madeForKids: false } },
   줄: [
     { id: 'hook', 칸: '머리', 값: 'hook', 크기: 'hookSize', 원문: '그 사람은 늘 이렇게 말했다…', 초: [0, 1.6], 장면: '케이크로 다가가는 몽글',
       상자: { 폭: 788, 굵기: 800, 줄높이: 1.18, 판본줄높이: true, 최대줄: 2, 가운데: true, x: 96, y: 324 } },
@@ -62,7 +62,8 @@ function 편만들기(키들 = { US: 'en', MX: 'es', EN: 'en' }) {
 const 미국글 = {
   US: { hook: 'He only ever told me\nthree things…', means: ["Don't eat that!", 'Eat.'], endCard: 'Last slice of pizza? 먹지 마!', ask: 'Who says this to you?',
     _원문: { hook: '그는 나에게 딱 세 마디만 했다…', endCard: '마지막 피자 한 조각? 먹지 마!', ask: '누가 너에게 이 말을 해?' },
-    원고: { youtube: { title: '먹지 마 = "Don\'t eat" #learnkorean', caption: 'Add -지 마 to a verb.\n\n먹지 마 = don\'t eat\n\nSYNK LAB\n#learnkorean #korean', pinnedComment: 'Who says 먹지 마 to you?',
+    // 본문 첫 줄은 125자를 넘긴다 — 첫 125자 안의 해시태그는 게시글 규칙의 고칠 것이고, 고칠 것이 있는 원고의 판본은 돌림에 안 든다(11-11)
+    원고: { youtube: { title: '먹지 마 = "Don\'t eat" #learnkorean', caption: 'Add -지 마 to a verb and you get a short, blunt way to tell a close friend not to do something. Friends only, never with your boss.\n\n먹지 마 = don\'t eat\n\nSYNK LAB\n#learnkorean #korean', pinnedComment: 'Who says 먹지 마 to you?',
       _원문: { title: '먹지 마 = "먹지 마"', caption: '동사에 -지 마를 붙인다.\n\n먹지 마 = 먹지 마\n\nSYNK LAB\n#learnkorean #korean', pinnedComment: '누가 너에게 먹지 마라고 해?' } } } },
 };
 
@@ -87,7 +88,8 @@ test('채우기 — 틀의 안내 칸은 그대로, 없는 칸은 기본값, 틀
   const 원고 = 판본글.readJson(path.join(편, '게시', '판본', 'US', '원고_youtube.json'));
   assert.equal(원고.platform, 'youtube');
   assert.equal(원고.language, 'en');
-  assert.equal(원고.audioLanguage, 'ko');
+  assert.equal(원고.audioLanguage, 'en', '동영상 언어 기본은 그 판 말(설계 게시경로 2-1)');
+  assert.equal(원고.alteredContent, false);
   assert.equal(원고.madeForKids, false);
   assert.equal(원고.pinnedComment, 'Who says 먹지 마 to you?');
   // 이미 찬 칸은 기본값이 덮지 않는다(몽골판의 키릴 읽는 법)
@@ -297,20 +299,65 @@ test('지문 조건 — 판본 글을 고쳐 다시 뽑으면 돌림표가 뜻 �
   판본글.검수쓰기(편, 'US', '뜻', { 결과: '통과', 지문: sha(글파일) });
   판본글.검수쓰기(편, 'US', '글자', { 결과: '통과', 지문: sha(영상) });
   const 캐시 = fs.mkdtempSync(path.join(os.tmpdir(), '판본잇기-지문-'));
-  const 상태 = () => {
+  // 키를 주면(돌림표 · 올리기 전 검사가 부르는 꼴) 글.json이 원천과 같은지 · 원고의 게시글 고칠 것까지 본다
+  const 상태 = (키 = null) => {
     const 코드 = `process.env.SYNK_ROTATION_DIR=${JSON.stringify(캐시)};const d=require(${JSON.stringify(path.join(REPO, 'tools', '돌림표.js'))});const p=require(${JSON.stringify(path.join(REPO, 'tools', 'lib', '판본글.js'))});`
-      + `const v=p.readJson(${JSON.stringify(판본글.준비경로(편))}).돌림.판본.US;console.log(JSON.stringify(d.versionState(${JSON.stringify(편)},v,['뜻','글자'])));`;
+      + `const v=p.readJson(${JSON.stringify(판본글.준비경로(편))}).돌림.판본.US;console.log(JSON.stringify(d.versionState(${JSON.stringify(편)},v,['뜻','글자']${키 ? `,${JSON.stringify(키)},{accounts:${JSON.stringify(원장.accounts)}}` : ''})));`;
     const r = spawnSync(process.execPath, ['-e', 코드], { encoding: 'utf8', windowsHide: true });
     assert.equal(r.status, 0, r.stderr);
     return JSON.parse(r.stdout.trim().split('\n').pop());
   };
+  const 뜻통과 = () => 판본글.검수쓰기(편, 'US', '뜻', { 결과: '통과', 지문: sha(글파일) });
   assert.equal(상태().ready, true);
+  assert.equal(상태('US').ready, true);
   잇기.채우기(편, { US: { ask: 'Who says this to YOU?' } });
-  assert.equal(상태().ready, true, '원천만 고치고 다시 뽑지 않으면 영상 · 글.json 한 쌍은 검수받은 그대로다');
+  assert.equal(상태().ready, true, '키 없이 부르면 영상 · 글.json 한 쌍만 본다');
+  const 낡음 = 상태('US');
+  assert.equal(낡음.ready, false, '원천을 고치고 다시 뽑지 않은 판본은 돌림에 안 든다(11-11 — 고친 글이 뜻 검수 통과를 달고 나가지 않게)');
+  assert.match(낡음.why, /다시 뽑지 않음/);
   잇기.맞추기(편, 'US', { 원장 });
-  const 뒤 = 상태();
+  const 뒤 = 상태('US');
   assert.equal(뒤.ready, false);
   assert.match(뒤.why, /뜻 검수 뒤 글이 바뀜/);
+  뜻통과();
+  assert.equal(상태('US').ready, true);
+
+  // 원고(게시글)만 고친 것도 같다 — 뽑기 전에는 「다시 뽑지 않음」, 뽑은 뒤에는 「뜻 검수 뒤 글이 바뀜」
+  const 원고파일 = path.join(편, '게시', '판본', 'US', '원고_youtube.json');
+  const 원고 = 판본글.readJson(원고파일);
+  원고.pinnedComment = 'Who says 먹지 마 to you the most?';
+  판본글.writeJson(원고파일, 원고);
+  assert.match(상태('US').why, /다시 뽑지 않음/);
+  잇기.맞추기(편, 'US', { 원장 });
+  assert.match(상태('US').why, /뜻 검수 뒤 글이 바뀜/);
+  뜻통과();
+  assert.equal(상태('US').ready, true);
+
+  // 원고의 게시글 고칠 것(상대 날짜) — 뜻 검수를 다시 받아도 돌림에 안 든다(이 원고가 판이 되면 올리기 전 검사가 편 전체를 막는다)
+  원고.pinnedComment = 'Which one did you say this week?';
+  판본글.writeJson(원고파일, 원고);
+  잇기.맞추기(편, 'US', { 원장 });
+  뜻통과();
+  const 글 = 상태('US');
+  assert.equal(글.ready, false);
+  assert.match(글.why, /원고 고칠 것 — youtube 고정 댓글: 상대 날짜 「this week」/);
+  assert.ok(잇기.확인(편, 'US', { 원장 }).문제.some((m) => /원고 고칠 것 — youtube 고정 댓글: 상대 날짜/.test(m)), '확인도 같은 것을 문제로 짚는다');
+  assert.deepEqual(잇기.원고고칠것(편, { 원고: { tiktok: '게시/판본/US/원고_tiktok.json' } }), ['tiktok: 원고 파일이 없다(게시/판본/US/원고_tiktok.json)']);
+  // 유튜브 동영상 언어 칸이 그 판 말이 아니면(옛 기본값 ko) 그 판본도 돌림에 안 든다 — 글.json에는 안 드는 칸이라 뜻 검사는 그대로다
+  원고.pinnedComment = 'Who says 먹지 마 to you the most?';
+  원고.audioLanguage = 'ko';
+  판본글.writeJson(원고파일, 원고);
+  잇기.맞추기(편, 'US', { 원장 });
+  뜻통과();
+  assert.match(상태('US').why, /원고 고칠 것 — youtube 동영상 언어: 원고 audioLanguage\(ko\)가 그 판 말\(en\)이 아니다/);
+  원고.audioLanguage = 'en-US';
+  판본글.writeJson(원고파일, 원고);
+  assert.equal(잇기.낡았나(편, 'US', { 원장 }), false, '동영상 언어 칸은 글.json에 안 든다');
+  assert.equal(상태('US').ready, true, '앞 토막이 같으면 같은 말(en-US · en)');
+  // 지도가 없는 편 · 지도의 글.json이 아닌 글이면 낡음을 보지 않는다(null)
+  assert.equal(잇기.글낡음(편, 'US', { 글: 'remotion/src/m99/판본/US.json' }), null);
+  fs.rmSync(path.join(편, 잇기.지도이름));
+  assert.equal(잇기.글낡음(편, 'US', { 글: '게시/판본/US/글.json' }), null);
 });
 
 test('검사전 — 지도가 없는 편은 null, 「글」이 지도의 글.json이 아니면 이음 아님, 맞으면 맞추고 영상 낡음을 본다', () => {

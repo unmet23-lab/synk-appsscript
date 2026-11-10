@@ -17,7 +17,8 @@
  *   "기준": { "한문장", "핵심": [[낱말…]…], "웃음", "핵심덧": [{ "묶음": 0, "값": "rule" }] }   ← 뜻 검사 채점 기준(한국어 — 판본마다 같다).
  *             핵심덧은 그 판본 글의 낱말(현지어 「하지 마」)을 그 핵심 묶음에 더한다
  *   "기본값": { "reads": ["meok-ji ma", …] }                    ← 「채우기」가 입력에 없는 칸에 넣는 값(판본마다 같은 로마자 읽는 법 등)
- *   "원고기본": { "*": { "audioLanguage": "ko" }, "youtube": { "madeForKids": false } }   ← 「채우기」가 원고마다 깔아 두는 칸
+ *   "원고기본": { "*": { "alteredContent": false }, "youtube": { "madeForKids": false } }   ← 「채우기」가 원고마다 깔아 두는 칸.
+ *       동영상 언어(audioLanguage)는 적지 않으면 그 판 말이다(설계 게시경로 2-1 — ko로 두면 쇼츠 피드에 거의 안 실린다, 11-05 실측)
  *   "원고": { "MN": { "instagram": "게시/01-ig-fb-mn/원고.json" } }   ← (선택) 이미 있는 원고를 쓰는 판본. 없으면 <낼곳>/<KEY>/원고_<플랫폼>.json
  *   "퀴즈": [ … 판본글/1 「퀴즈」 그대로 … ],
  *   "줄": [ { "id": "hook", "칸": "머리", "값": "hook"(판본 글의 칸 — 배열은 "reads.0"), "선택": true(빈 글이면 줄을 뺀다),
@@ -34,6 +35,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const 판본글 = require('./판본글.js');
+const 게시글규칙 = require('./게시글규칙.js');
 const 틀들 = require('./돌림.js').FORMATS; // 이야기 · 노래 · 퀴즈 — 판본 지도의 틀 = 돌림 형식(21:00 칸은 11-10 밤부터 노래)
 
 // 렌더.json 「글sha256」은 렌더할 때 판본 글 원천 파일(remotion/src/<틀>/판본/<키>.json)의 바이트 지문이다. 작업본은 올리기 · 따라가기 때
@@ -242,6 +244,47 @@ function 낡았나(편, 키, 옵션 = {}) {
   return fs.readFileSync(r.글파일, 'utf8') !== r.글자열;
 }
 
+/**
+ * 돌림표 · 올리기 전 검사가 부른다(tools/돌림표.js versionState) — 판본 지도가 있는 편에서 준비.json 판본의 「글」이 지도가 뽑는 글.json일 때
+ * 그 글.json이 원천(판본 글 · 지도 · 원고)과 다른가. 지도가 없는 편 · 지도와 이어지지 않은 글이면 null(볼 것이 없다). 글.json은 건드리지 않는다.
+ * 원고(게시글)를 고치고 「뽑기」를 안 돌리면 글.json 지문이 그대로라 고친 글이 뜻 검수 「통과」를 그대로 달고 나간다(11-11 Fable 검수).
+ */
+function 글낡음(편, 키, 준비판본, 옵션 = {}) {
+  if (!있나(편)) return null;
+  const { 지도 } = 지도읽기(편);
+  if (슬래시((준비판본 && 준비판본.글) || '') !== 글상대(지도, 키)) return null;
+  return 낡았나(편, 키, { ...옵션, 지도 });
+}
+
+/**
+ * 판본 원고(게시글)의 「고칠 것」 — 올리기 전 검사 ⑥(tools/lib/게시글규칙.js checkPlate)이 판에서 잡을 것을 판본 단계에서 먼저 본다.
+ * 원고 하나의 고칠 것이 올리기 전 검사에서 그 원본 편 전체(다른 계정 판까지)를 막기 때문이다(11-10 「화날때」 미국판 고정 댓글 this week ·
+ * 11-11 열다섯 판본의 「이번 주」). 준비판본 = 준비.json 「돌림」.판본[KEY]. → ['youtube 고정 댓글: 상대 날짜 「esta semana」 …']
+ */
+function 원고고칠것(편, 준비판본) {
+  const out = [];
+  for (const [플랫폼, rel] of Object.entries((준비판본 && 준비판본.원고) || {})) {
+    const 파일 = path.join(편폴더(편), String(rel));
+    if (!fs.existsSync(파일)) { out.push(`${플랫폼}: 원고 파일이 없다(${rel})`); continue; }
+    if (!/\.json$/i.test(파일)) continue; // 글 파일(.txt · .md) 원고는 판이 된 뒤 올리기 전 검사가 읽는다(tools/lib/게시묶음.js)
+    let m;
+    try { m = 판본글.readJson(파일); } catch (e) { out.push(`${플랫폼}: 원고를 못 읽는다(${rel})`); continue; }
+    const 글 = {};
+    for (const [k] of 게시글칸) 글[k] = typeof m[k] === 'string' && m[k].trim() ? m[k].trim() : null;
+    const 말 = m.language || 준비판본.언어 || null;
+    for (const f of 게시글규칙.checkPlate(글, { brand: m.brand || 'LAB', language: 말, platform: 플랫폼 })) {
+      if (f.level === 게시글규칙.FIX) out.push(`${플랫폼} ${f.where}: ${f.message}`);
+    }
+    // 유튜브 동영상 언어 칸 — 나라별 판은 그 판 말로 넣는다(설계 게시경로 2-1: 동영상 언어가 ko인 편은 쇼츠 피드에 거의 안 실렸다, 11-05 실측).
+    // 원고에 그 칸이 없으면 판 언어를 따른다(tools/lib/게시묶음.js). 앞 토막이 같으면 같은 말로 본다(zh · zh-Hant).
+    const 앞 = (s) => String(s || '').toLowerCase().split('-')[0];
+    if (플랫폼 === 'youtube' && m.audioLanguage && 말 && 앞(m.audioLanguage) !== 앞(말)) {
+      out.push(`youtube 동영상 언어: 원고 audioLanguage(${m.audioLanguage})가 그 판 말(${말})이 아니다 — 나라별 판은 그 판 말로 넣는다(ko면 쇼츠 피드에 거의 안 실린다)`);
+    }
+  }
+  return out;
+}
+
 /** 글.json을 원천에 맞춘다 — 같으면 건드리지 않는다(지문 · 수정 시각 그대로). → { 글파일, 바뀜, 새로, 경고, 지문 } */
 function 맞추기(편, 키, 옵션 = {}) {
   const r = 뽑기(편, 키, 옵션);
@@ -358,6 +401,8 @@ function 확인(편, 키, { 원장 = null, 검수 = ['뜻', '글자'] } = {}) {
       // 글자 검사 뒤 글.json만 바뀐 것(장면 설명 · 게시글 · 지도)은 영상과 상관없다 — 화면 글이 바뀌었으면 위 「영상이 지금 판본 글로 구운 것이 아니다」가 잡는다
       if (이름 === '글자' && c.글지문 && 글지문 && c.글지문 !== 글지문) 알림.push('글자 검사 뒤 글.json이 바뀌었다(영상은 그대로) — 게시글 · 장면 설명만 고친 것이면 그대로 둔다');
     }
+    // 원고의 게시글 「고칠 것」 — 돌림표(versionState)도 이 판본을 돌림에서 뺀다
+    for (const f of 원고고칠것(편, v)) 문제.push(`원고 고칠 것 — ${f}(원고를 고친 뒤 node tools/판본글잇기.js 뽑기 → 뜻 검사 다시)`);
   }
   return { 키, 문제, 알림 };
 }
@@ -395,7 +440,8 @@ function 채우기(편, 입력) {
       if (!플랫폼들.includes(플랫폼)) throw new Error(`${키}.원고: 모르는 플랫폼 「${플랫폼}」`);
       const 파일 = path.join(편폴더(편), 낼곳(지도), 키, `원고_${플랫폼}.json`);
       fs.mkdirSync(path.dirname(파일), { recursive: true });
-      판본글.writeJson(파일, { id: `판본-${키}-${플랫폼}`, brand: 'LAB', platform: 플랫폼, language: 팩.lang, ...(원고기본['*'] || {}), ...(원고기본[플랫폼] || {}), ...m });
+      // 동영상 언어(audioLanguage)의 기본은 그 판 말 — 지도 「원고기본」이나 입력이 적으면 그 값이 덮는다
+      판본글.writeJson(파일, { id: `판본-${키}-${플랫폼}`, brand: 'LAB', platform: 플랫폼, language: 팩.lang, audioLanguage: 팩.lang, ...(원고기본['*'] || {}), ...(원고기본[플랫폼] || {}), ...m });
       쓴.push(파일);
     }
     out.push({ 키, 팩파일, 원고: 쓴 });
@@ -403,4 +449,4 @@ function 채우기(편, 입력) {
   return out;
 }
 
-module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };
+module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 글낡음, 원고고칠것, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };

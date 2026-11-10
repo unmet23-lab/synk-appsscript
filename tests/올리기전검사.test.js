@@ -48,6 +48,30 @@ test('상대 날짜는 그 판의 언어로 본다 — LAB 외국어판의 한�
   assert.deepEqual(규칙.checkText('10월 23일 21시에 공개', { where: '캡션', brand: 'synkbrief', language: 'ko', platform: 'instagram' }), []);
 });
 
+test('상대 날짜 — 나라 판본의 말(21개 언어)과 꼬리 붙은 언어 코드(11-11: 「화날때」 판본 고정 댓글의 esta semana · 今週가 그냥 지나갔다)', () => {
+  const hit = (text, language) => 규칙.checkText(text, { where: '고정 댓글', brand: 'LAB', language, platform: 'youtube' })
+    .filter((f) => f.code === 'relative-date').map((f) => f.message.match(/「(.+?)」/)[1]);
+  // 실제로 걸린 줄들
+  assert.deepEqual(hit('¿Cuál de las cuatro usaste esta semana? 짜증 나 · 열받아 👇', 'es'), ['esta semana']);
+  assert.deepEqual(hit('Qual das quatro você mais precisou essa semana?', 'pt-BR'), ['essa semana'], '언어 코드는 앞 토막으로(pt-BR → pt)');
+  assert.deepEqual(hit('Alin sa apat ang nagamit mo ngayong linggo?', 'fil'), ['ngayong linggo']);
+  assert.deepEqual(hit('今週いちばん使ったのはどれ？', 'ja'), ['今週']);
+  assert.deepEqual(hit('สัปดาห์นี้คุณใช้คำไหน', 'th'), ['สัปดาห์นี้']);
+  assert.deepEqual(hit('इस हफ़्ते आपने कौन सा बोला?', 'hi'), ['इस हफ़्ते']);
+  assert.deepEqual(hit('На этой неделе какое слово?', 'ru'), ['на этой неделе']);
+  assert.deepEqual(hit('Minggu ini kamu pakai yang mana?', 'id'), ['minggu ini']);
+  assert.deepEqual(hit('Tuần này bạn dùng câu nào?', 'vi'), ['tuần này']);
+  // 한자는 간체 · 번체 계정 둘 다(zh-Hans · zh-Hant → zh), 번체 꼴도 무늬에 있다
+  assert.deepEqual(hit('今天学一句', 'zh-Hans'), ['今天']);
+  assert.deepEqual(hit('這週你最需要哪一句？', 'zh-Hant'), ['這週']);
+  // 잘못 잡지 않을 것 — 낱말 속 · 다른 뜻 · 다른 언어의 낱말 · 교재로 든 한국어
+  assert.deepEqual(hit('¿El vecino pone música a las 3 de la mañana? Un hoyo en la calle', 'es'), [], 'mañana(아침) · hoyo 속 hoy');
+  assert.deepEqual(hit('आज़ादी और आजकल', 'hi'), [], '낱말 속 आज');
+  assert.deepEqual(hit('Bukas ang tindahan ngayon', 'fil'), [], 'bukas(열린) · ngayon(지금)은 넣지 않았다');
+  assert.deepEqual(hit('today is fine · 오늘 날씨가 좋아요', 'es'), [], '그 판의 언어만 본다');
+  assert.deepEqual(hit('¿Cuál de las cuatro usarías más?', 'es'), []);
+});
+
 test('내부 번호·만든 도구 이름·LAB의 AI 이름', () => {
   const r = 규칙.checkText('v6 판은 Typecast 목소리 · docs/마케팅/a.md 참고 · 장부 S17', { where: '캡션', brand: 'synkbrief', language: 'ko', platform: 'instagram' });
   assert.deepEqual(codes(r).sort(), ['고칠 것:internal-code', '고칠 것:internal-code', '고칠 것:internal-code', '고칠 것:maker-tool', '확인할 것:internal-code-maybe'].sort());

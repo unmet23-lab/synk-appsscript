@@ -21,13 +21,34 @@ const TIKTOK_DM = /\bDMs?\b|디엠|(?:다이렉트\s?)?메시지로\s?(?:보내|
 const GREETING = /^\s*(안녕하세요|안녕|반가워요|반갑습니다|여러분 안녕|hello\b|hi\b|hey\b|сайн байна уу|сайн уу|大家好|你好|မင်္ဂလာပါ)/i;
 
 // 상대 날짜: 게시일은 승인 뒤에 정해지므로 「어제·오늘」은 틀린 말이 된다(메모 10-12, 지시문 「날짜를 쓴다」).
+// 낱말 경계가 있는 글자(라틴 · 키릴 · 데바나가리 · 싱할라)의 상대 날짜 무늬 — 앞뒤가 글자가 아닐 때만(힌디어 आज가 आज़ादी 속에서 잡히지 않게).
+const 낱말 = (alts) => new RegExp(`(?<![\\p{L}\\p{M}])(?:${alts})(?![\\p{L}\\p{M}])`, 'giu');
 const RELATIVE = {
   // 낱말 가운데(「제작일」의 작일, 「지원금일」의 금일)와 다른 낱말(오늘날·그제야·내일배움카드)은 빼려고 앞은 한글이 아니어야 하고 금일·작일·명일은 보지 않는다.
   ko: /(?<![가-힣])(그저께|그제(?!서야|야)|어제|오늘(?!날)|내일(?!배움)|모레|이번\s?주|지난\s?주|다음\s?주|이번\s?달|지난\s?달|다음\s?달|방금)/g,
   en: /\b(yesterday|today|tonight|tomorrow|this week|last week|next week|this month|last month|next month|just now)\b/gi,
   mn: /(өнөөдөр|өчигдөр|маргааш|уржигдар|нөгөөдөр|энэ долоо хоног|өнгөрсөн долоо хоног|ирэх долоо хоног)/gi,
-  zh: /(今天|昨天|明天|前天|后天|本周|上周|下周|这周|刚刚)/g,
+  zh: /(今天|昨天|明天|前天|后天|後天|今晚|本周|本週|上周|上週|下周|下週|这周|這週|这个星期|這個星期|这个月|這個月|刚刚|剛剛)/g,
   my: /(ယနေ့|မနေ့က|မနက်ဖြန်|ဒီနေ့)/g,
+  // 11-11 LAB 나라 판본(언어 21개) — 「화날때」 판본 열여섯의 고정 댓글 · 본문에 「이번 주 · 오늘」이 있었는데 규칙이 그 말들을 몰랐다(Fable 검수 P2).
+  // 띄어 쓰지 않는 글자(태국 · 크메르 · 가나 · 한자)는 그대로 찾는다. 다른 뜻으로 잘못 잡힐 낱말(스페인어 mañana = 아침,
+  // 필리핀어 bukas = 열린 · ngayon = 지금)은 넣지 않았다. 열쇠는 언어 코드의 앞 토막이다(pt-BR → pt, zh-Hans · zh-Hant → zh).
+  es: 낱말('hoy|ayer|anoche|esta noche|esta semana|la semana pasada|la pr[oó]xima semana|la semana que viene|este mes|el mes pasado'),
+  pt: 낱말('hoje|ontem|amanh[ãa]|esta semana|essa semana|semana passada|semana que vem|pr[oó]xima semana|este m[eê]s|esse m[eê]s'),
+  fil: 낱말('ngayong araw|ngayong linggo|ngayong buwan|ngayong gabi|kahapon|kagabi|noong nakaraang linggo|sa susunod na linggo'),
+  ms: 낱말('hari ini|semalam|esok|minggu ini|minggu lepas|minggu depan|bulan ini|malam ini'),
+  id: 낱말('hari ini|kemarin|besok|minggu ini|minggu lalu|minggu depan|bulan ini|malam ini'),
+  ru: 낱말('сегодня|вчера|завтра|на этой неделе|на прошлой неделе|на следующей неделе|в этом месяце'),
+  kk: 낱말('бүгін|кеше|ертең|осы аптада|өткен аптада|келесі аптада|осы айда'),
+  ky: 낱말('бүгүн|кечээ|эртең|ушул жумада|бул жумада|өткөн жумада|кийинки жумада'),
+  uz: 낱말("bugun|kecha|ertaga|shu hafta|bu hafta|o[‘ʻ']tgan hafta|keyingi hafta|shu oyda"),
+  vi: 낱말('hôm nay|hôm qua|ngày mai|tối nay|tuần này|tuần trước|tuần sau|tháng này'),
+  hi: 낱말('आज|कल|परसों|इस हफ्ते|इस हफ़्ते|इस सप्ताह|पिछले हफ्ते|पिछले हफ़्ते|अगले हफ्ते|अगले हफ़्ते|इस महीने'),
+  ne: 낱말('आज|हिजो|भोलि|यो हप्ता|गएको हप्ता|अर्को हप्ता|यो महिना'),
+  si: 낱말('අද|ඊයේ|හෙට|මේ සතියේ|පසුගිය සතියේ|ලබන සතියේ|මේ මාසයේ'),
+  th: /(?:วันนี้|เมื่อวาน|พรุ่งนี้|คืนนี้|สัปดาห์นี้|อาทิตย์นี้|สัปดาห์ที่แล้ว|อาทิตย์ที่แล้ว|สัปดาห์หน้า|อาทิตย์หน้า|เดือนนี้)/gu,
+  km: /(?:ថ្ងៃនេះ|ម្សិលមិញ|ថ្ងៃស្អែក|យប់នេះ|សប្តាហ៍នេះ|សប្ដាហ៍នេះ|អាទិត្យនេះ|សប្តាហ៍មុន|សប្តាហ៍ក្រោយ|ខែនេះ)/gu,
+  ja: /(?:今日|昨日|明日|今夜|今週|先週|来週|今月|きょう|あした|きのう)/gu,
 };
 
 // 내부 번호: 판 번호(v6·v4b), 자료 번호(D0008), 저장소 경로, 내부 용어. 장부 사례(S17)·검수 등급(P1)·코드 파일 이름은
@@ -81,7 +102,9 @@ function checkText(text, { where, brand, language, platform, article = false }) 
   for (const [lang, re] of Object.entries(RELATIVE)) {
     // 한국어 학습 편(LAB)의 다른 언어판은 한국어 낱말이 교재 내용일 수 있어 그 판의 언어만 본다.
     if (lang === 'ko' && brand === 'LAB' && language && language !== 'ko') continue;
-    if (lang !== 'ko' && language && lang !== language && !(lang === 'en' && brand !== 'LAB')) continue;
+    // 언어 코드는 앞 토막으로 맞춘다(zh-Hans · zh-Hant → zh, pt-BR → pt — 11-11: 꼬리가 붙은 코드는 어느 무늬에도 안 걸렸다)
+    const base = language ? String(language).toLowerCase().split('-')[0] : null;
+    if (lang !== 'ko' && language && lang !== base && !(lang === 'en' && brand !== 'LAB')) continue;
     const hit = [...new Set(list(re, t).map((x) => x.toLowerCase()))];
     if (hit.length) add(FIX, 'relative-date', `상대 날짜 「${hit.join('·')}」 — 게시일은 승인 뒤에 정해지니 날짜나 날짜와 상관없는 말로`);
   }
