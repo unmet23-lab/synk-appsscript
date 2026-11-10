@@ -11,7 +11,8 @@
  * 옛 묶음은 칸을 300px로 줄여 40px 글자가 11px로 보였고(실제 폰에선 14px 남짓), 0~3초도 2초 간격이라 첫 장면을 거의 못 봤다.
  *
  *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse>
- *       [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더 또는 영상>,<…>]
+ *       [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더 또는 영상>,<…>] [--틀 퀴즈]
+ *   --틀 퀴즈(11-10): 퀴즈 칸 편 — 9번을 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 묻는다(--지난에 그 계정의 지난 퀴즈 영상 둘을 준다).
  *
  * 만드는 것: <밖>/정지컷_01.jpg …(한 장에 휴대폰 크기 칸 넷) · <밖>/지난1_<편>.jpg · 지난2_<편>.jpg(같은 계정의 지난 두 편, 작게) ·
  * <밖>/말.txt · <밖>/질문.md(이해 시험관 넷 — sonnet · haiku · GPT(`node tools/GPT시험관.mjs <밖>`) · 그록(`node tools/그록시험관.mjs <밖>`, 11-08) — 에게 그대로 줄 글) ·
@@ -78,7 +79,12 @@ function 장면안내(cuts) {
 
 // 질문. 1~5는 10-23부터의 이해 질문 그대로, 6~9는 10-28에 더했다 — 이해 시험은 무의미한 슬롭은 막았지만(LAB 10-26~28 버림 12건)
 // 재미 · 첫 3초 · 저장/공유 · 같은 틀 찍어 내기를 거르는 단계가 없어 유호님이 먼저 듣고 지적했다.
-function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = [] }) {
+// 퀴즈 칸(LAB 21:00 「3초 관용구 퀴즈」)은 지난 퀴즈끼리 견주고, 퀴즈 칸에 늘 있는 짜임은 세지 않는다(제작절차 「LAB 하루 두 편」 7 — 설계 23,
+// 11-10 퀴즈 틀 v6d: 이야기 편과 견준 시험관이 문제 → 보기 → 정답 되풀이 · 머리 띠를 「같아 보임」으로 셌다). --틀 퀴즈로 켠다.
+const 퀴즈고정 = '세 문제를 차례로 맞히는 퀴즈 꼴(제목 → 보기 → 셋 · 둘 · 하나 → 정답 → 따라 말하기), 위의 머리 띠와 별 점수, 끝의 점수 칸';
+const 퀴즈9 = (who) => `9. 비교용 묶음(같은 계정의 지난 퀴즈 편)과 견주어 같은 퀴즈를 또 찍어 낸 것처럼 보이나 — 「같아 보임」 또는 「달라 보임」과, 같아 보이면 어디가 같은지(무대 · 주제 · 마스코트 표정 · 색 · 구도 가운데). 이 계정의 퀴즈 칸에 늘 있는 짜임(${퀴즈고정})과 ${who.고정 ? `이 계정에 늘 나오는 것(${who.고정})` : '이 계정에 늘 나오는 캐릭터'}은 같아도 같은 퀴즈로 치지 않는다 — 장면의 무대 · 다루는 주제 · 마스코트의 표정 · 색 · 구도가 겹치는지로만 판단한다.`;
+
+function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = [], 틀 = null }) {
   const who = 시청자[brand];
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${brand}`);
   const list = [].concat(sheets || sheet || []);
@@ -102,7 +108,9 @@ function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = []
     '6. 재미 점수 1~5(5 = 친구에게 보여 주고 싶을 만큼 재밌다, 1 = 지루하다)와 한 줄 까닭 — 이해와 따로 매긴다.',
     '7. 처음 3초(0~3초 장면)만 보고 넘기겠나 — 「넘김」 또는 「계속 봄」과 까닭.',
     '8. 저장하거나 누구에게 보내겠나 — 「저장」 · 「공유」 · 「둘 다」 · 「안 함」 가운데 하나와 까닭.',
-    previous.length
+    previous.length && 틀 === '퀴즈'
+      ? 퀴즈9(who)
+      : previous.length
       ? `9. 비교용 묶음과 견주어 같은 틀을 또 찍어 낸 것처럼 보이나 — 「같아 보임」 또는 「달라 보임」과, 같아 보이면 어디가 같은지(무대 구성 · 말 순서 · 머리 글 · 끝 카드 가운데). ${who.고정 ? `이 계정에 늘 나오는 것(${who.고정})은 같아도 같은 틀로 치지 않는다 — ` : ''}화면에 무엇이 어떻게 놓이고 어떤 순서로 말하고 무엇으로 끝나는지로만 판단한다.`
       : '9. (비교용 묶음 없음 — 「비교 못 함」이라고만 쓴다)',
     '',
@@ -227,12 +235,14 @@ function pickPrevious(account, { exclude = null, roots = [ROOT, 공용작업본(
   return [...found.values()].sort((a, b) => b.time - a.time || a.name.localeCompare(b.name)).slice(0, n);
 }
 
-function previousVideo(arg) {
+function previousVideo(arg, account = null) {
   const p = path.resolve(arg);
   if (fs.existsSync(p) && fs.statSync(p).isFile()) return { name: episodeOf(p) || path.basename(p, path.extname(p)), video: p };
   const 묶음 = require('./lib/게시묶음.js');
   const bundle = 묶음.load(p);
-  const plate = 묶음.plates(bundle).find((x) => x.video?.exists);
+  // 그 브랜드 계정의 판을 먼저(11-10: 퀴즈 #5 폴더를 주면 첫 판 lab-youtube 영어판을 골라 몽골 시험관이 영어 퀴즈와 견줄 뻔했다)
+  const plates = 묶음.plates(bundle).filter((x) => x.video?.exists);
+  const plate = plates.find((x) => account && x.account === account) || plates[0];
   if (!plate) throw new Error(`--지난 ${arg}: 판에 영상이 없다`);
   return { name: path.basename(p), video: plate.video.path };
 }
@@ -245,7 +255,7 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더|영상>,…]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse> [--밖 <폴더>] [--컷 <초,초,…>] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈]');
     return 2;
   }
   const who = 시청자[args['브랜드']];
@@ -263,7 +273,7 @@ function main(argv) {
   const want = args['지난'] === undefined ? '자동' : String(args['지난']);
   const prevList = want === '없음' ? [] : want === '자동'
     ? pickPrevious(who.계정, { exclude: episodeOf(src) })
-    : want.split(',').map((x) => x.trim()).filter(Boolean).map(previousVideo);
+    : want.split(',').map((x) => x.trim()).filter(Boolean).map((x) => previousVideo(x, who.계정));
   const previous = prevList.map((p, i) => {
     const d = probe(p.video).duration;
     const times = [];
@@ -275,7 +285,9 @@ function main(argv) {
 
   const speech = path.join(out, '말.txt');
   fs.writeFileSync(speech, readSpeech(path.resolve(args['말'])));
-  fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous }));
+  if (args['틀'] !== undefined && args['틀'] !== '퀴즈') throw new Error(`--틀은 퀴즈만 있다: ${args['틀']}`);
+  if (args['틀'] === '퀴즈' && want === '자동') console.log('  --틀 퀴즈: 지난 편 자동 고르기는 이야기 편을 넣는다 — --지난 <그 계정의 지난 퀴즈 편 영상 둘>을 준다(제작절차 「LAB 하루 두 편」 7)');
+  fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous, 틀: args['틀'] || null }));
   fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));
   console.log(`재료: ${out} · 장면 ${shots.length}칸 / 그림 ${sheets.length}장 · 지난 편 ${previous.length ? previous.map((p) => p.name).join(' · ') : '없음'}`);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);

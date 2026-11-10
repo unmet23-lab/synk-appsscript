@@ -59,6 +59,15 @@ test('지난 편 묶음이 있으면 9번에만 열게 하고, 같아 보이면 
   assert.match(buildPrompt({ brand: 'synkbrief', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'p.jpg' }] }), /「SYNK 브리핑」 이름표/);
 });
 
+test('--틀 퀴즈: 9번은 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 견주고 퀴즈 칸의 늘 있는 짜임은 세지 않는다(제작절차 LAB 하루 두 편 7)', () => {
+  const prompt = buildPrompt({ brand: 'lab-mn', sheets: ['s1.jpg'], speech: 'm.txt', previous: [{ file: 'C:/a/지난1_Q5.jpg' }, { file: 'C:/a/지난2_Q4.jpg' }], 틀: '퀴즈' });
+  assert.match(prompt, /^9\. 비교용 묶음\(같은 계정의 지난 퀴즈 편\)과 견주어 .*「같아 보임」 또는 「달라 보임」.*무대 · 주제 · 마스코트 표정 · 색 · 구도 가운데/m);
+  assert.match(prompt, /^9\. .*퀴즈 꼴.*머리 띠.*점수 칸.*몽글.*같은 퀴즈로 치지 않는다/m);
+  assert.doesNotMatch(prompt, /^9\. .*끝 카드 가운데/m);
+  // 지난 편이 없으면 퀴즈 틀이어도 비교 못 함
+  assert.match(buildPrompt({ brand: 'lab-mn', sheets: ['s1.jpg'], speech: 'm.txt', 틀: '퀴즈' }), /^9\. \(비교용 묶음 없음/m);
+});
+
 test('브랜드마다 시청자가 있고, 모르는 브랜드는 멈춘다 · 본 계정으로 지난 편을 찾는다', () => {
   for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm', 'synkbrief', 'yuhobuilds', 'pulse']) assert.ok(시청자[brand]);
   assert.equal(시청자['lab-en'].계정, 'lab-youtube');
