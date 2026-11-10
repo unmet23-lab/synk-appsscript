@@ -864,6 +864,12 @@ def build_hangang():
         print(f"  ⚠ 없는 파일 {len(missing)}개: {missing[:4]}{' …' if len(missing) > 4 else ''}")
 
 
+def sound_only(it):
+    # 배역 목소리 판 · 화면 밖 말 판(<편>-말-…)은 소리만 쓰고 화면은 쓰지 않는다 — _순서.json에 밝혀 두면 내기 도구 · 꾸러미점검이 그 판의
+    # 사람 연기(「Everyone else in the frame keeps still」 같은 말) · 컷표 대조를 건너뛴다(11-10, tools/컷연속성검사.py 판정보)
+    return {"소리만": True} if it.get("방식") == "목소리 판" or "-말-" in it["id"] else {}
+
+
 def write_pack(order, out, day2):
     missing = sorted({src for it in order for _, src, _ in it["파일"] if not os.path.exists(src)})
     if os.path.isdir(out):
@@ -885,6 +891,7 @@ def write_pack(order, out, day2):
                      "소리": it["소리"], "묶음": it["묶음"], "대안": it["대안"], "방식": it.get("방식"), "시험": bool(it.get("시험")),
                      "낱판": it.get("낱판", []), "쓰는초": it.get("쓰는초"), "파일": [f[0] for f in it["파일"]],
                      "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])], "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"]),
+                     **sound_only(it),
                      **({"기다림": it["기다림"]} if it.get("기다림") else {}),   # 받은 뒤에야 생기는 그림(로맨스 rs-C53b — 꾸러미점검이 기다림으로 셈)
                      **({"샷수": it["샷수"]} if it.get("샷수") else {})})   # 한강 여러 샷 판(11-01) — 꾸러미점검이 머리의 샷 · 컷 수와 견줌
     json.dump(rows, open(os.path.join(out, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -997,7 +1004,7 @@ def build():
         rows.append({"순서": n, "id": it["id"], "편": it["편"], "컷": it["컷"], "폴더": os.path.basename(d), "길이": it["길이"], "비율": it["비율"],
                      "소리": it["소리"], "묶음": it["묶음"], "대안": it["대안"], "방식": it.get("방식"), "낱판": it.get("낱판", []),
                      "쓰는초": it.get("쓰는초"), "파일": [f[0] for f in it["파일"]], "빠진 파일": [f[0] for f in it["파일"] if not os.path.exists(f[1])],
-                     "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"])})
+                     "지시문 머리": it["지시문"][:160], "지시문 글자 수": len(it["지시문"]), **sound_only(it)})
     json.dump(rows, open(os.path.join(OUT, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     open(os.path.join(OUT, "순서표.html"), "w", encoding="utf-8").write(page(order))
     n_main = sum(1 for it in order if not it["대안"])

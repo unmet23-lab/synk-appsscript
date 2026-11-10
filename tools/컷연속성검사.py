@@ -6,12 +6,19 @@
 #   docs/마케팅/제작양식/광고영상_슬롭점검표.md 33 · 35~42, 적용 기록은 docs/마케팅/제작양식/문앞_지적9건_관문_20261108.md.
 #
 #   python -I -X utf8 tools/컷연속성검사.py <컷순서.json> [--영상 <최종.mp4>] [--받음 <판 폴더> [--앞 <파일 앞머리, 예: siryc->]]
-#                                           [--그림 <정지 그림 폴더>] [--지시문 <꾸러미 폴더 | 지시문.txt …>] [--지도 <소품 지도.json>]
-#                                           [--항목 소품,사건,소리,지시문,점,고요,지도] [--출력 <폴더>] [--json] [--간격 0.6,1.0]
+#                                           [--그림 <정지 그림 폴더>] [--지시문 <꾸러미 폴더 | 지시문.txt …>] [--그림지시문 <폴더 | <컷>.txt …>] [--지도 <소품 지도.json>]
+#                                           [--항목 틀,소품,사건,소리,지시문,그림지시문,점,고요,지도] [--출력 <폴더>] [--json] [--간격 0.6,1.0]
 #   python -I -X utf8 tools/컷연속성검사.py 지시문 <꾸러미 폴더 | 지시문.txt …> [--실내 <컷,…>] [--json]
 #
-#   표만 주면(영상 · 그림 없이) 콘티 단계 검사 — 소품 상태 표 · 사건 네 박 표 · 소리 사건 ↔ 반응 간격 · 표의 물건 반응 메모.
-#   --지시문: 굽기 전 — 물건이 소리 · 바람에 반응 · 큰 물건의 자율 움직임 · 실내 컷의 눈 · 먼지 낱말(시댄스 꾸러미 폴더나 지시문 글 파일).
+#   표만 주면(영상 · 그림 없이) 콘티 단계 검사 — 소품 상태 표 · 사건 네 박 표 · 소리 사건 ↔ 반응 간격 · 표의 물건 반응 메모 · (틀 2) 장면 · 인물 · 연기 · 구도 · 끝 · 글자 칸.
+#   --지시문: 굽기 전 — 물건이 소리 · 바람에 반응 · 큰 물건의 자율 움직임 · 실내 컷의 눈 · 먼지 낱말(시댄스 꾸러미 폴더나 지시문 글 파일)
+#             + 사람 연기(항목 「연기」 — 사람을 멈추는 말 · ACTION에 시간 박자 없음 · 사람이 나오는데 ACTION 칸 없음은 걸림, 「start from it unchanged」는 주의 · 점검표 26).
+#               정지 말은 어느 칸에서든 본다(연기 글에서는 주어가 아는 물건일 때만 지나가고, CAMERA · LOOK · PHYSICS 같은 칸에서는 사람 주어가 드러난 것만 건다).
+#               사람이 나오는 판인지(ACTION 칸 · 박자를 요구할지)는 컷표 그 컷의 「인물」이 먼저 정하고 글의 증거가 더한다 — []인데 글에 사람이 나오면 걸림.
+#               틀 2면 판마다 그 컷 장면의 빛 문장이 글자 그대로 들었는지도 본다(51). 판을 컷에 잇는 법: 판 id = 컷 이름 · <편>-<컷> · 컷의 「판」 · 판 폴더 이름 · _순서.json 판의 "컷": ["C2"](대안 판).
+#               소리만 쓰는 판(_순서.json "방식": "목소리 판" · "소리만": true)과 프리비즈 판(id pv…)은 사람 연기 · 컷표 대조를 건너뛴다. 내기 도구의 굽기전()과 같은 판정 · 같은 등급이고, 걸림은 판 id로 적는다.
+#   --그림지시문: 이미지 콘티 지시문(<폴더>/<컷>.txt) — 틀 2일 때 그 컷 장면의 장소 · 빛, 인물의 묘사 · 옷 문장이 글자 그대로 들었는지(G11 · 51).
+#   굽기전검사(글, 실내, 인물, 소리만, 박자최소)는 내기 도구(크레딧내기.py · 드리미나내기.py)가 내기 전에 부른다 — 걸림이면 내지 않는다.
 #   --그림: 이미지 콘티 단계 — 상태가 적힌 컷의 정지 그림(<폴더>/<컷>.png|jpg)을 소품 지도와 대조하고, 실내 컷의 떠다니는 점 후보 시트를 만든다.
 #   --받음 · --영상: 편집 단계 — 받은 판(쓰는 구간)이나 최종 판(그 컷의 자리)에서 소품 자리 · 소품 고요 · 큰 물건 고요 · 소리 사건 · 점을 잰다.
 #
@@ -28,6 +35,12 @@
 #          "사건": [{"이름": "첫 쪽지", "넓게": "A1", "감정": "A1c", "행동": "A1h", "결과": "A3"}]  — 점검표 33의 네 박(압축 몽타주는 "압축": true, 둘째 토막은 "A11#2")
 #          "점제외": [[x0, y0, x1, y1], …] · "점위까지": 0.72 · "공중": [x0, y0, x1, y1]  — 점 세기에서 뺄 곳(창문 · 표시등) · 바닥 시작 · 공중으로 볼 곳(비율)
 #          "지도": "쪽지지도.json"                     — --지도 대신
+# 컷표 「틀 2」(맨 위 "틀": 2 — 예시 docs/마케팅/제작양식/영상양식/컷표_틀.json, 틀이 없거나 1이면 아래 검사는 돌지 않고 알림 한 줄만 남는다):
+#   맨 위: "이기는것" · "한문장" · "가까운사례" · "엔진": {"그림", "영상"}(하나씩) · "장면": {이름: {"장소", "빛", "시간대", "실내", "기준그림"}} · "인물": {이름: {"묘사", "옷", "기준그림"}}
+#          "글자": [{"글", "종류": 말자막|강조|이름|끝로고|장면속|정보, "어디", "만드는법"}](없는 편은 []) · "소리": {"목소리", "첫말초", "초반을끄는것", …}
+#          "끝": {"컷"(마지막 컷), "가장센그림", "제품보임"|"브랜드보임", "로고멈춤초"(2 이상 · 로고 없는 편은 null + "로고없음": 까닭), "소리한방"} · "seq"의 띠에 기 · 승 · 전 · 결
+#   detail[] 항목: "장면" · "인물": [이름…](사람 없는 컷은 []) · "구도" · "카메라" · "연기": [{"t": 초, "무엇"}](사람 컷은 둘 이상) · "움직임"(사람 없는 컷) · "넘어옴" · "소리"
+#                  "이어찍기": true — 앞 컷과 장면 · 인물 · 구도가 같아도 되는 컷 · "시간건너뜀": true — 앞 컷과 시간대가 달라도 되는 컷
 # 소품 지도.json: {"src", "size": [w, h], "notes": [{"id", "color", "box": [x0, y0, x1, y1], "cx", "cy"}], "상태": {"이름": ["Y1", …]},
 #                  "영역": [0.40, 0.20, 0.84, 0.60](선택 — 소품이 붙는 면, 비율), "따뜻한색": "노랑"(선택 — 두 색일 때 R−B가 큰 쪽)}
 #   .tmp/contests-20261019/siryc/쪽지지도.py가 만든 꼴 그대로다(색은 둘까지 — 밤 · 햇빛 컷은 검출이 흔들려 「확인」으로 남기고 시트를 본다).
@@ -173,8 +186,811 @@ def 남길것검사(글):
     return []
 
 
-def 지시문파일들(경로들):
-    """꾸러미 폴더(_순서.json 또는 */지시문.txt) · 글 파일 → [(컷 이름, 파일, 글, 남길 것)]"""
+# ───────── 사람 연기 규칙(점검표 26) — 꾸러미점검.py도 사람지시문검사 · 판정보를 그대로 부른다(두 벌을 두지 않는다) ─────────
+# 왜 여기: 11-07~10 영상 굽기 제출 115번 가운데 지시문 검사가 같은 문맥에서 돈 것은 많아야 10번이었다 — 어느 꾸러미에나 걸고 내기 도구가 스스로 부르게 한곳에 둔다.
+# 11-10 네 번 다시 짬 — 이 자리에서 독립 검수 다섯 회차 연달아 큰 지적이 나왔다. 낱말을 더하면 미탐 · 오탐이 자리를 옮겼고(둘째 회), 「건너뛰는 갈래」를 두면 그 갈래로 샜고(셋째 회),
+#   오탐을 줄이려고 넣은 「풀어 주는 갈래」가 곧 미탐 구멍이 됐다(넷째 · 다섯째 회 — 앞 절의 물건 따라가기 · 잠깐 예외 · 꾸밈 자리의 still · 「too … to」 부정 · 줄 잇기 · 소문자 줄 안 라벨 ·
+#   물건의 부분 · 증거 좁히기). 실물에 없는 오탐을 고치려던 갈래는 모두 걷었다. 계약은 이렇다:
+#   ① 정지 말(정지낱말 목록)은 어느 판 · 어느 칸에서든 걸린다. 지나가는 것은 ②의 목록뿐이다.
+#   ② 풀어 주는 갈래(더하지 않는다 — 실물 지시문이 잘못 걸릴 때만, tests의 「걸려야」 묶음과 사본 변이 시험을 함께 돌려 더한다):
+#      가. 바로 부정한 말(never holds still · nothing in the frame is ever perfectly still — 부정어와 정지 낱말 사이에 다른 동사가 끼면 부정이 아니다)
+#      나. 그 절에 드러난 주어가 아는 물건 덩이(the can and every sticky note stay still) — 쉼표 나열에 사람이 끼면 사람이다
+#      다. 동사가 있는 절 뒤에 접속사로 이은 물건 주어(she lifts the cup and the can stays still) · 「with + 물건」
+#      라. it이 가리키는 물건(동물 · 아기 · 캐릭터가 가까이 없을 때)
+#      마. 아는 물건 이름씨를 꾸미는 frozen · motionless(a frozen dumpling) — 뒤에 「of + 사람」이 오면 사람이고, 장면 낱말이면 장면 전체다
+#      바. 입술의 barely moving(말하는 결) · 따옴표 안의 한국어(대사) · freezing + 날씨
+#      사. 사람 없는 판(인물 []이거나, 표가 없고 사람 기척이 전혀 없는 판)에서만: 장면 전체를 멈추는 말(Nothing moves · everything is still · the whole scene …) ·
+#          앞 절의 물건을 받는 주어 없는 절과 they
+#   ③ 칸: 연기 글(ACTION · WHO · SHOT 줄의 글 · 모르는 라벨 줄 · ACTION 칸 없는 글의 본문)은 ②대로 — 모르는 낱말 · 이름 · they · 주어 없는 절은 사람이다.
+#      곁 칸(LOOK · NOTE · PHYSICS · PROPS · 머리 글 …)은 드러난 모르는 주어만 물건으로 봐 준다(PHYSICS: the odd gizmo stays still) — 사람 주어 · 주어 없는 절 · they · 장면 전체는 건다.
+#      카메라 칸(CAMERA · FRAME)은 주어 없는 정지 말(almost still)과 「no other movement」까지 카메라의 것으로 본다. 칸은 라벨에서 다음 라벨까지다(줄 머리 라벨과 대문자 줄 안 라벨).
+#   ④ 사람 판(→ ACTION 칸 · 사람의 박자를 요구): 컷표 그 컷의 「인물」이 먼저 정한다. 인물이 []여도 확실한 증거(she · he · 확실한 사람 낱말 · they/model + 산 것만 하는 동사)가 있으면
+#      「표 어긋남」으로 걸고 사람 판으로 본다. 표가 없는 판은 약한 증거(model · speaker 같은 낱말 · 이름 + 연기 동사 · WHO 칸)도 본다 — 틀리면 인물 []로 밝힌다.
+#      증거는 없고 기척(이름일 수 있는 낱말 · 몸 낱말 · model 같은 낱말)만 있는 판은 박자를 요구하지 않을 뿐, 정지 말은 사람 판처럼 본다(이름만 쓴 판이 새지 않게).
+#   ⑤ 박자는 「몇 초에 누가」 — 범위는 한 박자, 길이 · 판 길이 · 나이와 물건 · 날씨가 주어인 문장의 박자는 세지 않는다. 컷표에 이어진 인물 판은 둘 이상.
+#   ⑥ 소리만 쓰는 판(_순서.json 「방식」: 「목소리 판」 · 「소리만」: true)과 프리비즈 판만 통째로 건너뛴다 — 둘 다 판 목록에 밝힌 판이다.
+#   자리 · 자세 · 모양을 지키라는 말(stay where they are · stays seated … she does not stand up · stays rigid)은 정지 말이 아니다(넣었다가 실물이 잘못 걸려 뺐다).
+#   정지 말 목록은 닫힌 목록이 아니다 — 못 잡는 말은 정지낱말에, 물건으로 읽혀야 할 낱말은 _물건에 더한다. 알려진 한계는 docs/마케팅/제작양식/영상작업_진단_20261110.md.
+아는라벨 = ("ACTION", "CAMERA", "LOOK", "SOUND", "VOICE", "WHO", "LIGHT", "SETTING", "PLACE", "PROPS", "PHYSICS", "NOT", "OUTFIT", "PRODUCT", "TEXT", "MOMENT", "FRAME",
+            "INDOORS", "OUTDOORS", "AUDIO", "MUSIC", "SFX", "AMBIENCE", "NOTE")
+# 줄 머리 라벨: 대문자 낱말 하나~넷(「ACTION:」 · 「CLEAR UMBRELLA:」 · 「YUNA:」 · 「HARIN_FACE:」 · 「MOM50:」)이나 아는 낱말(「Indoors:」 · 「Camera:」 · 「Action:」), 「SHOT 1 (0–2 s)」, 한글 이름 줄(「유나:」)
+_줄라벨 = re.compile(r"^[ \t]*(?:(SHOT \d+)\b|((?:[A-Z][A-Z0-9_'’\-]*(?: [A-Z][A-Z0-9_'’\-]*){0,3})|(?i:action|camera|look|sound|voice|who|light|setting|place|props|physics|indoors|outdoors|note)|[가-힣]{1,8})"
+                   r"[ \t]*(?:\([^)\n]{0,40}\))?[ \t]*:)", re.M)
+# 줄 안 라벨: 두 샷을 한 줄에 쓴 판(「SHOT 1 (0–2 s) begins … ACTION: … CAMERA: …」). 대문자 라벨만 읽는다 — 문장 끝 뒤의 「Camera:」 · 「Note:」까지 읽으면
+#   ACTION 안의 정지 말이 그 뒤로 숨는다(다섯째 검수: 「… she looks up. Sound: a soft click. Then stands perfectly still to the end.」)
+_줄안라벨 = re.compile(r"(?<![A-Za-z])(?:(SHOT \d+)(?=[ \t]*\()|(ACTION|CAMERA|LOOK|SOUND|VOICE|WHO|PHYSICS|PROPS|NOTE|INDOORS|Indoors)[ \t]*:)")
+첫장줄 = re.compile(r"@이미지 \d+ is the exact (?:first|last) frame[^.\n]*(?:\.|\n|$)")   # 첫 장 · 끝 장 고정 줄(「… same people and animals …」은 사람이 나온다는 말이 아니다)
+시작그대로 = re.compile(r"start(?:s|ing)? from it unchanged", re.I)   # 「@이미지 1 is the exact first frame … start from it unchanged」가 사람을 붙들었다(11-07 m2v 실측 0.04 · 0.07)
+
+
+def 칸들(글):
+    """지시문 → [(라벨, 글)] 차례대로. 첫 라벨 앞(머리)의 라벨은 ""이다. 라벨은 대문자로 맞춘다(「Indoors」 → 「INDOORS」, 「SHOT 2」)."""
+    자리 = {}
+    for m in _줄라벨.finditer(글):
+        g = 1 if m.group(1) else 2
+        자리[m.start(g)] = (m.group(g).upper(), m.end())
+    for m in _줄안라벨.finditer(글):
+        g = 1 if m.group(1) else 2
+        자리.setdefault(m.start(g), (m.group(g).upper(), m.end()))
+    out, 이름, 끝 = [], "", 0
+    for s in sorted(자리):
+        if s < 끝: continue
+        out.append((이름, 글[끝:s])); 이름, 끝 = 자리[s]
+    out.append((이름, 글[끝:]))
+    return [(a, b) for a, b in out if a or b.strip()]
+
+
+def 연기글(글, 칸=None):
+    """ACTION 칸의 글(여러 샷이면 SHOT마다의 ACTION을 이어서) — 다음 라벨(줄 머리 · 줄 안)에서 끊는다."""
+    return " ".join(t.strip() for l, t in (칸들(글) if 칸 is None else 칸) if l == "ACTION")
+
+
+# ── 낱말 묶음 ──
+_사람명사 = (r"(?:wom[ae]n|m[ae]n|girls?|boys?|persons?|people|models?|actors?|actress(?:es)?|child(?:ren)?|kids?|bab(?:y|ies)|toddlers?|teen(?:ager)?s?|adults?|mothers?|fathers?|mom|mum|dad|parents?|"
+          r"couples?|famil(?:y|ies)|workers?|customers?|students?|friends?|neighbou?rs?|crowds?|staff|clerks?|drivers?|passers?-?by|guests?|idols?|runners?|dancers?|singers?|teachers?|chefs?|baristas?|"
+          r"employees?|colleagues?|boss(?:es)?|cashiers?|strangers?|lady|ladies|gentlem[ae]n|guys?|husbands?|wife|wives|sons?|daughters?|brothers?|sisters?|grand(?:ma|pa|mother|father|parents?)|"
+          r"officers?|soldiers?|doctors?|nurses?|everyone|everybody|anyone|anybody|someone|somebody|companions?|interviewers?|presenters?|diners?|commuters?|passengers?|pedestrians?|"
+          r"athletes?|cyclists?|shoppers?|bystanders?|onlookers?|twins?|teammates?|crew|speakers?|listeners?|visitors?|performers?|riders?|skaters?|assistants?|owners?|guards?|vloggers?|barbers?|"
+          r"receptionists?|waiters?|waitress(?:es)?|monks?|photographers?|cooks?|vendors?|couriers?|bartenders?|managers?|engineers?|technicians?|farmers?|painters?|musicians?|drummers?|guitarists?|"
+          r"pianists?|operators?|hosts?|hostess(?:es)?|pilots?|sailors?|firefighters?|villagers?|tourists?|travell?ers?|hikers?|swimmers?|surfers?|climbers?|"
+          r"brides?|grooms?|florists?|bakers?|butchers?|tailors?|janitors?|gardeners?|fisherm[ae]n|shopkeepers?|librarians?|lifeguards?|referees?|gamers?|streamers?|influencers?|stylists?|hairdressers?|"
+          r"pharmacists?|scientists?|researchers?|programmers?|interns?|trainees?|elders?|aunts?|uncles?|cousins?|nieces?|nephews?|boyfriends?|girlfriends?|roommates?|classmates?|schoolgirls?|schoolboys?|"
+          r"professors?|tutors?|priests?|nuns?|detectives?|thie(?:f|ves)|lawyers?|reporters?|journalists?|writers?|artists?|carpenters?|plumbers?|electricians?|mechanic|welders?|builders?|maids?|"
+          r"nann(?:y|ies)|caregivers?|skiers?|golfers?|divers?|announcers?|infants?|newborns?|youths?|widows?|orphans?|citizens?|protesters?|volunteers?|spectators?|designers?|humans?|"
+          r"salesm[ae]n|businessm[ae]n|businesswom[ae]n|policem[ae]n|policewom[ae]n|postm[ae]n|firem[ae]n|cameram[ae]n|craftsm[ae]n)")
+# 물건으로도 읽히는 사람 낱말 — 물건을 꾸미거나(「passenger door」) 물건의 이름(「wheel guard」 · 「portable speaker」 · 「the new model」)으로도 쓴다.
+#   표가 없는 판의 약한 증거로만 본다(인물 []의 표 어긋남은 걸지 않는다)
+_약한명사 = r"(?:models?|speakers?|guards?|passengers?|assistants?|hosts?|operators?|pilots?|cooks?)"
+# 사람을 가리키는 촬영 말 — 주어 판정에서만 사람으로 본다(「Keep the subject perfectly still」 · 「the talent holds still」). 사람이 나온다는 증거로는 쓰지 않는다
+_가리킴명사 = r"(?:subjects?|talents?|protagonists?|mascots?)"
+_동물명사 = r"(?:dogs?|cats?|pupp(?:y|ies)|kittens?|pets?|animals?|birds?)"
+_몸명사 = (r"(?:hands?|fingers?|fingertips?|thumbs?|palms?|fists?|faces?|eyes?|eyelids?|heads?|bod(?:y|ies)|lips|mouths?|shoulders?|arms?|elbows?|wrists?|legs?|knees?|feet|foot|toes?|hair|backs?|"
+         r"chests?|necks?|cheeks?|chins?|jaws?|(?:eye)?brows?|foreheads?|torsos?|hips?|waists?|expressions?|gazes?|smiles?|stares?|poses?|postures?|figures?|silhouettes?)")
+_대명사 = r"(?:she|he|her|hers|his|him|they|them|their|theirs|herself|himself|we|us|our|you|your)"
+# 판의 상태는 셋이다(11-10 다섯째 검수 뒤):
+#   사람 판(→ ACTION 칸 · 박자를 요구한다) — 확실한 증거(she · he · her · his · him · 확실한 사람 낱말 · they/model + 산 것만 하는 동사), 표가 없으면 약한 증거(model · 이름 + 동사 · WHO 칸)도.
+#   사람 없는 판(→ 장면 전체를 멈추는 말 · 주어 없는 정지 말을 물건의 것으로 푼다) — 인물 []이거나, 표가 없고 사람을 가리킬 수 있는 말(_기척 — 넓게)이 하나도 없는 판.
+#   그 밖(기척은 있는데 증거는 없는 판) — 박자는 요구하지 않지만 정지 말은 사람이 있는 판처럼 본다.
+_센대명사 = re.compile(r"\b(?:she|he|her|hers|his|him|herself|himself)\b", re.I)
+_센주어 = re.compile(r"\b(?:she|he|him|herself|himself)\b", re.I)   # 이름 줄에서의 증거 — 소유격(her · his)만으로는 아니다
+_사람꼴 = re.compile(r"(?<![\w-])" + _사람명사 + r"\b", re.I)
+# 산 것만 하는 동사 — 「they walk」 · 「the model smiles」는 사람이다(「they cool」 · 「the new model sits on the turntable」은 물건일 수 있다)
+_산동사 = (r"(?:walks?|smiles?|laughs?|nods?|glances?|talks?|chats?|whispers?|giggles?|hugs?|kneels?|jogs?|sprints?|frowns?|shrugs?|sighs?|winks?|squints?|gasps?|sips?|chews?|breathes?|exhales?|inhales?|"
+        r"listens?|stares?|grins?|hesitates?|flinch(?:es)?|swallows?|crouch(?:es)?|speaks?|shouts?|cr(?:y|ies))")
+_산주어 = re.compile(r"\b(?:they(?:\s+(?:both|all))?|both|the two|" + _약한명사 + r")\s+(?:(?:[a-z]+ly|then|just|now|also)\s+)?" + _산동사 + r"\b", re.I)
+생물낱말 = re.compile(r"\b(?:" + _대명사 + "|" + _사람명사 + "|" + _가리킴명사 + "|" + _동물명사 + "|" + _몸명사 + r")\b", re.I)   # 정지 낱말의 주어 판정 — 사람 · 동물 · 몸
+_그것사람 = re.compile(r"\b(?:" + _동물명사 + "|bab(?:y|ies)|toddlers?|" + _몸명사 + r")\b", re.I)   # 「it」이 가리킬 수 있는 산 것 — 동물 · 아기 · 몸
+# 사람 기척의 몸 낱말 — 뜻이 하나인 것만. back · face · head · arm · leg · foot · body · neck · chest · palm · mouth는 부사 · 동사 · 물건의 부분으로도 쓴다(「tips back」 · 「faces the camera」 · 「its front face」)
+_몸확실 = (r"(?:hands?|fingers?|fingertips?|thumbs?|fists?|eyes?|eyelids?|lips|shoulders?|elbows?|wrists?|knees?|toes?|hair|cheeks?|chins?|jaws?|(?:eye)?brows?|foreheads?|torsos?|hips?|waists?|"
+         r"gazes?|smiles?|stares?|poses?|postures?|figures?)")   # silhouette는 뺀다 — 나무 · 건물의 것이 흔하다
+_기척말 = re.compile(r"\b(?:she|he|her|hers|his|him|herself|himself|we|us|our|you|your|" + _가리킴명사 + "|" + _동물명사 + "|" + _몸확실 + r")\b(?!-)", re.I)
+# 박자의 주체 — 주어 자리에 올 수 있는 말만(「behind her」의 her는 주체가 아니다)
+_주체말 = re.compile(r"\b(?:she|he|they|we|you|herself|himself|" + _사람명사 + "|" + _가리킴명사 + "|" + _동물명사 + "|" + _몸명사 + r")\b", re.I)
+# 「No new people」 · 「no extra people or animals」 · 「No one else speaks」는 사람이 나온다는 말이 아니다 — 증거를 찾기 전에 지운다
+사람부정구 = re.compile(r"\b(?:no|without|not any|zero|never any)\s+(?:(?:other|new|extra|more|additional|background|second|third)\s+)?"
+                    r"(?:people|persons?|humans?|human beings?|men|women|man|woman|one|animals?|pets?|faces?|crowds?|bystanders?|passers?-?by|extras|hands?|figures?)\b"
+                    r"(?:\s+or\s+(?:animals?|people|pets|faces|hands))?(?:\s+else)?", re.I)
+_연기동사원 = ("stand sit look turn walk hold stay keep face smile say speak lift raise lean step run take put open close reach nod blink breathe wait watch lie kneel glance stare grin laugh sigh pause "
+           "stop shift pick set pull push wear enter leave come go bow wave point drink eat sip bite chew type read write listen hear see notice freeze jump dance sing whisper shout cry sprint jog "
+           "crouch bend straighten tilt lower grab touch hug carry throw catch place give show check tap press wipe brush adjust tie pour stir cook taste swallow exhale inhale gasp frown squint wink "
+           "shrug flinch hesitate remain").split()
+
+
+def _삼인칭(w):
+    return w + "es" if w.endswith(("s", "x", "z", "ch", "sh", "o")) else (w[:-1] + "ies" if w.endswith("y") and w[-2] not in "aeiou" else w + "s")
+
+
+_연기동사집 = {_삼인칭(w) for w in _연기동사원} | set(_연기동사원)
+_연기동사 = "(?:" + "|".join(sorted(_연기동사집, key=len, reverse=True)) + ")"
+# 이름씨로도 쓰는 동사 꼴 — 「Autumn leaves drift」 · 「Luxury watches gleam」의 leaves · watches는 이름씨다. 「Sua steps forward」 · 「Minjae stops short」는 동사다(_동사꼬리)
+_겹치는꼴 = set("leaves waves brushes rings lights drinks points steps places shows checks sets picks bites types ties pours stirs cooks tastes close open stops watches faces".split())
+# 겹치는 꼴이 동사로 쓰였다는 표시 — 바로 뒤가 구두점 · 전치사 · 한정사 · 수 · 방향 말 · -ly 부사(「Sua steps forward」 · 「Sua waves happily」 · 「Minjae stops short」).
+#   「Energy drinks line the shelf」 · 「Autumn leaves drift」처럼 뒤가 다른 낱말이면 이름씨다
+_동사꼬리 = re.compile(r"\s*(?:$|[.,;:!?]|(?:at|to|toward|towards|back|her|his|their|the|a|an|once|twice|in|on|with|up|down|over|and|then|goodbye|hello|by|from|into|out|forward|short|away|off|around|aside|ahead|"
+                    r"closer|past|through|across|along|inside|outside|behind|beside|near|onto|one|two|three|both|each|all|some|[a-z]+ly)\b)", re.I)
+_연기기본 = set(_연기동사원) - {_삼인칭(w) for w in _연기동사원}   # 기본형 — 한 사람 이름 뒤에는 오지 않는다(「Sua looks」 · 「Sua and Minjae look」)
+_이름 = r"[A-Z][a-z]+(?:-[A-Za-z]+)?"
+# 대명사 없이 이름으로만 쓴 사람(표가 없을 때의 짐작) — 「Sua stands」 · 「Sua and Minjae walk」 · 「Sua in a grey hoodie stands」 · 「Sua, tired, stands」 · 「Sua is standing」 · 「Seojin's eyes widen」
+이름주어 = re.compile(
+    r"(?<![A-Za-z'’-])(" + _이름 + r")(?:[’']s\s+(?:[a-z-]+\s+){0,2}?" + _몸명사 + r"\b"
+    r"|(?:\s+and\s+" + _이름 + r")?(?:\s*,[^,.;:\n]{1,30},)?(?:\s+(?:in|at|by|with|on|near|beside|behind|under|inside|outside|across|from)\s+(?:[a-z0-9][a-z0-9'’-]*\s+){1,5}?)?"
+    r"\s*(?:(?:already|then|just|slowly|quickly|now|still|also|gently|quietly|suddenly|finally)\s+)?(?:" + _연기동사 + r"|(?:is|are|was|were)\s+(?:[a-z]+ly\s+)?[a-z]+ing)\b)")
+_이름아님 = set("""the a an it its this that these those there then now here nothing everything all both each every only camera steam light rain snow water smoke wind dust fog mist sunlight
+ daylight moonlight time one two three four five another other something what which who when while as if after before until behind inside outside above below macro close wide extreme medium low
+ high top front back side their his her she he they we you i indoors outdoors shot frame picture image video clip scene background foreground condensation moisture vapor vapour spray powder flour
+ sugar salt seasoning glow sparkle glitter confetti nobody shadow reflection breeze music silence darkness morning evening night day dawn dusk midday noon right left just even still soon later once
+ again almost some any no not but and or so yet also slowly quickly suddenly finally first second third last next final new old young in on at by with from under over across through near between
+ into onto toward towards around along past beyond during insert product title silent korean korea seoul jeju busan han river east west north south sea christmas eve english japanese led
+ autumn spring summer winter gentle gently softly quietly calmly barely nearly really tiny golden overhead ahead detail details luxury meanwhile somewhere everywhere nearby tonight today
+ thunder lightning traffic upstairs downstairs slow fast quick seen lit mid head handheld natural""".split())
+
+
+def _이름연기(t):
+    """글에 「이름 + 연기 동사」(Sua stands · Sua and Minjae walk · Sua is standing · lets Sua smile)나 「이름's + 몸」(Seojin's eyes)이 있나 — 표가 없는 판에서 대명사 없이 이름으로만 쓴 사람을 찾는다.
+    문장 첫머리의 보통 낱말(Blue waves · Extremely close · Overhead look at …) · 동물(Birds sing) · 여럿을 가리키는 보통 낱말(Snowflakes dance — -s로 끝나는 낱말 + 기본형) ·
+    이름씨로 쓴 동사 꼴(Autumn leaves drift · Energy drinks line the shelf — 뒤가 동사의 꼬리가 아니다)은 아니다. 상품 · 음식 이름(Omitok sits …)은 이름과 가를 수 없다 — 사람 없는 판이면 인물 []로 밝힌다."""
+    for m in 이름주어.finditer(t):
+        이름 = m.group(1).lower()
+        if 이름 not in _이름꼴(m.group(1)) or re.fullmatch(_동물명사, 이름) or (len(이름) >= 7 and 이름.endswith("ly")): continue
+        if m.group(0)[len(m.group(1)):len(m.group(1)) + 2] in ("'s", "’s"): return True   # 「Seojin's eyes」
+        끝 = m.group(0).split()[-1].lower()
+        if 끝 in _연기기본 and 이름.endswith("s") and not re.search(r"\sand\s", m.group(0)): continue
+        if 끝 in _겹치는꼴 and not _동사꼬리.match(t[m.end():m.end() + 16]): continue
+        return True
+    return False
+
+
+def _물건줄(l):
+    """이름 줄의 라벨이 물건 이름인가 — 「CUP」 · 「CLEAR UMBRELLA」 · 「CAN_REVEAL」 · 「컵」. 사람 · 몸 낱말이 섞이면(「JUNHO_HAND」 · 「PHONE HAND」) 아니다."""
+    부 = [x for x in re.split(r"[ _]+", l.lower()) if x]
+    return l in _한물건 or (any(x in _물건 for x in 부) and not any(생물낱말.fullmatch(x) for x in 부))
+
+
+def _이름있음(t):
+    """글에 사람 이름일 수 있는 낱말(대문자로 시작하는 모르는 낱말)이 있나. 바로 뒤가 아는 물건이면 상품 이름으로 본다(「Omitok can」).
+    문장 가운데의 낱말은 이름으로 보고, 문장 첫머리의 낱말은 뒤가 쉼표 · & · and · 전치사 · 동사 꼴일 때만 이름으로 본다(「Yuna standing by the window」 · 「Yuna, seated …」 —
+    「Phantom high-frame-rate product shot」 · 「Natural water physics」는 아니다)."""
+    for m in re.finditer(r"(?<![A-Za-z'’-])([A-Z][A-Za-z'’-]*)(\s*[,&])?(?:\s+([A-Za-z-]+))?", t):
+        if m.group(1).lower() not in _이름꼴(m.group(1)): continue
+        다음 = (m.group(3) or "").lower()
+        if 다음 in _물건 and not m.group(2): continue
+        if re.search(r"[A-Za-z0-9,)’'\"”][ \t]*$", t[:m.start()]): return True   # 문장 가운데
+        if m.group(2) or 다음 == "and" or 다음 in _전치사 or 다음.endswith(("s", "ing", "ed")) or 다음 in _물건동사 or 다음 in _이음동사 or 다음 in _연기동사집: return True
+    return False
+
+
+def _기척(t):
+    """글에 사람 · 동물 · 몸을 가리키는 말이 있나 — she · he · her · his · we · you · 사람 낱말(model · guard까지, 사람 자리에 있을 때) · 동물 · 뜻이 하나인 몸 낱말 · 이름일 수 있는 낱말.
+    하나도 없어야 사람 없는 판이다(표가 없을 때). 「no people」 · 「no hand」와, 물건도 받는 they · their, 물건에 딸린 「wheel guard」는 기척이 아니다."""
+    t = 사람부정구.sub(" ", t)
+    return bool(_기척말.search(t)) or _낱말증거(t) or _낱말증거(t, 약한=True) or _이름있음(t)
+
+
+# 그림 속 사람 — 인쇄물임이 드러난 것만: 「a printed photo of a smiling young ▁woman」 · 「a poster of a ▁man」 · 「a photo sticker on the glass door shows a smiling young ▁woman」.
+#   「The photo shows a woman …」 · 「A photo of a woman at a café」는 장면을 그렇게 부른 것일 수 있고, 화면(「the phone shows a man waving」) 속 사람은 움직인다 — 넘기지 않는다
+_그림속 = re.compile(
+    r"\b(?:(?:printed|framed|taped|pinned|pasted|hanging)\s+(?:photo|photograph|picture|image)|poster|portrait|painting|drawing|illustration|print|sticker|cut-?out|statue|figurine|billboard|mural)s?"
+    r"\s+of\s+(?:[a-z-]+\s+){0,4}$"
+    r"|\b(?:sticker|poster|sign|billboard|print|label|card|page|magazine|cover|banner|mural|painting|portrait)s?\b"
+    r"[^.;:]{0,60}?\bshow(?:s|ing)?\s+(?:only\s+)?(?:an?\s+|the\s+)?(?:[a-z-]+\s+){0,4}$", re.I)
+_곳낱말 = set("shop store cafe kitchen office classroom studio station stage court stadium bathroom bedroom garden park yard beach forest city village town harbor harbour pier platform street road alley "
+            "bridge hallway corridor room building house".split())
+
+
+def _낱말증거(t, 약한=False):
+    """글에 사람 낱말이 사람 자리에 있나. 약한=False: 확실한 사람 낱말(woman · customer · rider …), 약한=True: 물건으로도 읽히는 낱말(model · speaker · guard …).
+    증거가 아닌 자리: 붙임표 낱말(「baby-blue」 · 「twin-bell」) · 「a couple of」 · 「driver seat」 · 「driver side」 · 물건을 꾸미는 자리(「the driver mirror folds in」 · 「passenger door」 —
+    뒤 낱말이 동사로도 읽히면 증거다: 「the woman signs the paper」 · 「the men pack the bags」) · 소유격(「the driver's seat」 — 뒤가 몸이면 증거다: 「the woman's eyes open」) ·
+    인쇄물 속 사람(「a sign that shows only a baby's face」 · 「a printed photo of a woman」). 약한 낱말은 물건에 딸린 자리(「wheel guard」)도 증거가 아니다 — 곳 이름 뒤(「shop assistant」)는 사람이다."""
+    for m in _사람꼴.finditer(t):
+        if bool(re.fullmatch(_약한명사, m.group(0), re.I)) != 약한: continue
+        뒤 = t[m.end():m.end() + 48]
+        if m.group(0).lower() == "twin": continue   # 「twin burners」 · 「twin beds」 — 홑꼴은 꾸밈말이다(「the twins run」은 증거다)
+        if 뒤[:1] == "-" or re.match(r"\s+(?:of|seat|neck)\b|\s+side\b(?!\s+by\b)", 뒤) or _그림속.search(t[max(0, m.start() - 140):m.start()]): continue
+        if 뒤[:1] in ("'", "’"):
+            if re.match(r"[’']s?\s+(?:[a-z-]+\s+){0,2}?" + _몸명사 + r"\b", 뒤, re.I): return True
+            continue
+        다음 = re.match(r"\s+([A-Za-z][A-Za-z-]*)(?:\s+([A-Za-z]+))?", 뒤)
+        w, 그뒤 = (다음.group(1).lower(), (다음.group(2) or "").lower()) if 다음 else ("", "")
+        if w in _물건 and w not in _연기동사집 and w not in _물건동사 and not w.endswith("s") and 그뒤 not in _한정사 and 그뒤 not in _수량사: continue
+        if 약한:
+            앞낱 = re.search(r"([A-Za-z][A-Za-z-]*)[ \t]+$", t[:m.start()])
+            if 앞낱 and 앞낱.group(1).lower() in _물건 and 앞낱.group(1).lower() not in _곳낱말: continue
+        return True
+    return False
+
+
+def _센증거(t, 주어만=False):
+    """글에 확실한 사람 증거가 있나 — she · he · her · his · him(주어만=True면 her · his는 빼고) · 확실한 사람 낱말(_낱말증거) · 「they/model + 산 것만 하는 동사」(they walk · the model smiles)."""
+    return bool((_센주어 if 주어만 else _센대명사).search(t)) or _낱말증거(t) or bool(_산주어.search(t))
+
+
+# 아는 물건 — 정지 낱말의 주어가 이 가운데 하나일 때만 물건으로 친다. 사람 · 몸으로도 읽히는 낱말(figure · model · subject · speaker · shadow · reflection · row · rest · fan)은 넣지 않는다
+_물건, _복수물건 = set(), {"tongs", "glasses", "sunglasses", "goggles", "leaves", "shelves", "knives"}
+for _w in ("""camera lens tripod gimbal frame framing picture image shot view scene screen display monitor background backdrop horizon skyline composition focus exposure light lighting lamp bulb lantern
+ spotlight floodlight door gate window pane wall floor ceiling roof room corridor hallway staircase stairwell building house street road alley bridge tower fence railing pillar column post sign
+ signboard billboard banner flag curtain blind shutter handle knob lock latch hinge drawer cupboard cabinet shelf shelves table desk counter chair stool bench sofa couch bed pillow blanket cushion rug
+ carpet mat mirror clock vase pot plant tree branch twig leaf leaves flower petal grass bush stone rock pebble sand soil ground mountain hill field lake river sea ocean wave water puddle pool ice
+ snow frost rain raindrop drop droplet splash crown bubble foam steam smoke mist fog haze cloud sky sun moon air dust flame fire candle spark ember
+ product package packaging pack box carton case casing crate can tin bottle jar tube pouch sachet bag sack backpack tote purse wallet cup mug glass tumbler bowl plate dish tray pan kettle lid cap tab
+ cork straw spoon fork knife knives chopstick ladle tongs label logo sticker tag text letter word title caption subtitle print poster photo photograph polaroid card note memo paper page sheet book
+ notebook magazine newspaper envelope pen pencil brush phone smartphone tablet laptop computer keyboard remote headphone earbud watch ring necklace bracelet glasses sunglasses goggles hat scarf coat
+ jacket shirt hoodie sweater dress skirt shoe sneaker boot sock glove umbrella canopy ribbon bow fabric cloth satin silk towel napkin tissue vest mask strap buckle zipper button
+ food noodle ramen rice soup broth egg meat vegetable fruit apple orange tangerine lemon tomato bread cake cookie candy chocolate cheese butter sauce oil liquid drink beverage coffee tea milk juice
+ beer wine soda cola syrup cream dumpling kimchi pizza burger sandwich snack chip cereal serum lotion lipstick balm perfume soap shampoo
+ car bus truck trailer van taxi train subway tram bike bicycle scooter motorcycle boat ship plane drone quadcopter wheel tire engine blade propeller turbine machine conveyor belt elevator escalator
+ treadmill ball toy doll mannequin statue sculpture figurine trophy medal key coin bill ticket receipt tape string rope wire cable chain needle pin thing object item prop stack pile surface edge
+ corner ledge close-up closeup macro alarm siren bell radio television knit yarn thread fiber fibre loop fold crease bead pearl gem jewel crystal diamond flap arrow pointer cursor icon bar line dot
+ shape pattern texture grain pixel number digit pedal saddle seat dashboard windshield wiper racket net hoop track lane court stadium stage studio store shop cafe kitchen office classroom bathroom
+ bedroom garden park yard beach forest city village town harbor harbour pier station platform tunnel highway crosswalk sidewalk pavement asphalt gravel cone popsicle ice-cream skewer grill barrel
+ basket bucket ladder hook hanger rack rail magnet tile brick plank beam pipe valve switch socket plug charger battery cord doorway archway cube block slice chunk shard sliver crumb puff plume
+ ripple swirl stream trickle drip pad patch capsule pill stick chicken pork beef fish shrimp tofu stew controller console tagline slogan price panel board sleeve collar cuff hem pocket lapel hood
+ stair step slope cliff waterfall fountain sunbeam ray glare flare sparkle glitter confetti balloon kite pull-tab sprig needle pine shadow reflection
+ tent menu dropper pipette pump nozzle earphone headset fridge refrigerator oven microwave stove toaster blender dishwasher vacuum diffuser humidifier heater pendulum
+ cooler vapor vapour lunchbox calendar keyhole wind breeze gust thunder lightning storm sunlight daylight moonlight""").split():
+    _물건.update((_w, _w + "s", _w + "es")); _복수물건.update((_w + "s", _w + "es"))
+# 물건 앞에 올 수 있는 꾸밈말(색 · 크기 · 재질 · 상태) — 여기 없는 모르는 낱말은 한정사가 있고 수가 맞을 때만, 하나만 받는다(「Sua waves」 · 「the interviewer watches」의 waves · watches는 동사다)
+_꾸밈씨 = set("""white black grey gray red blue green yellow orange pink purple brown beige ivory navy silver gold golden bronze copper ruby amber crimson turquoise pastel pale dark light bright dim
+ warm cold cool hot wet dry clear clean dirty old new big small large little tiny huge tall short long wide narrow thick thin heavy flat round square open closed empty full whole single double front
+ back rear side top bottom upper lower left right inner outer main same plain bare soft hard smooth rough sharp blunt wooden metal steel iron brass plastic leather cotton linen wool ceramic concrete
+ brick clay kraft cardboard rubber chrome matte glossy shiny dusty misty frosty icy sticky blank frozen broken woven hidden fallen molten see-through transparent translucent opaque fresh raw
+ ripe sweet spicy fizzy iced steamy neon fluorescent tungsten electric digital analog mini giant premium real fake low high far near distant nearby next last first second third final only very
+ felt paper glass deep""".split())
+_한정사 = set("the a an its this that these those every each her his their my your our".split())
+_수량사 = set("both all any no some several many one two three four five six other another more".split())
+_주어대명사 = set("she he they we you i who".split())
+_전치사 = set("on in at by under behind beside near of with above below inside outside from against around across along over between beneath atop onto into next to through within without toward "
+           "towards upon off past beyond among".split())
+_꼬리표 = _전치사 | set("that which where itself themselves too also alone".split())
+_분사 = set("stuck hung left set held kept put laid worn shut open closed".split())
+_정도말 = set("perfectly completely absolutely totally very quite almost exactly nearly entirely utterly so too just simply always also now there here calmly quietly upright flat again "
+           "forever ever really even extremely never".split())
+_이음동사 = set("stays stay stayed remains remain remained is are was were be been being keeps keep kept hangs hang hung sits sit sat lies lie lay stands stand stood rests rest rested holds hold held "
+            "looks seems seem appears appear floats float hovers hover waits wait continues continue will would must should shall may might could does do did has have had to goes go went becomes "
+            "become grows grow falls fall".split())
+_기본형 = set("stay remain be keep hang sit lie stand rest hold float hover wait continue go become grow fall".split())
+_조동사 = set("can could will would must should shall may might cannot can't can’t won't won’t to".split())
+_단수꼴 = set("stays remains is was keeps hangs sits lies stands rests holds looks seems appears floats hovers waits continues does doesn't doesn’t has goes becomes grows falls".split())
+_복수꼴 = set("stay remain are were keep hang sit lie stand rest hold look seem appear float hover wait continue do don't don’t have go become grow fall".split())
+_여럿말 = set("two three four five six both several many these those".split())
+_딸린것 = {"shadow", "shadows", "reflection", "reflections"}   # 사람에 딸린 것 — 사람 소유격(her shadow · Minjae's shadow)이 붙으면 물건 주어로 치지 않는다
+_사람소유 = ("her", "his", "their", "my", "your", "our")
+_묶음말 = set("pair pairs row rows bunch bunches set sets couple handful cluster clusters heap heaps bundle bundles stack stacks pile piles line lines".split())   # 「a pair of chopsticks」 — 머리는 of 뒤다
+# 모르는 꾸밈말로 받지 않는 꼴 — 사람을 가리키는 낱말의 꼬리(「the janitor light」의 janitor)
+_사람꼴뒤 = re.compile(r"(?:er|or|ist|ian|ant|ent|man|men|ess|ee|eer|ier)$")
+
+
+def _꼴들(낱말들):
+    out = set()
+    for w in 낱말들.split():
+        out.update((w, _삼인칭(w)))
+        out.update((w + "d", w[:-1] + "ing") if w.endswith("e") else (w + "ed", w + "ing"))
+    return out
+
+
+# 물건이 주어일 때 뒤따르는 아는 동사 — 「the shop assistants wait」처럼 물건 뒤에 모르는 낱말이 오면 그 낱말이 주어다(물건 주어가 아니다)
+_물건동사 = _꼴들("""stay remain keep hang sit lie stand rest hold float hover wait continue become grow fall rise roll spin rotate turn slide glide drift move stop start begin open close swing tilt
+ tip wobble shake vibrate rattle jitter ring buzz beep flash blink flicker glow shine gleam glint glitter sparkle shimmer reflect light dim brighten fade darken appear disappear vanish emerge steam
+ smoke burn melt freeze thaw crack pop burst break snap bend stretch shrink fill empty pour drip drop splash spray spill flow run stream trickle bubble boil fizz foam simmer sizzle settle land bounce
+ hit touch cross pass follow lead enter leave arrive reach cover hide show reveal face point lean sway flutter flap ripple rustle stir swirl whirl circle orbit tumble topple collapse slip sink climb
+ lift lower click lock unlock tick play pause loop end cut switch change come go pull push carry catch read display""") | set(
+    "is are was were be been has have had does do did goes went stood sat lay hung held kept fell rose spun slid swung shook rang shone lit hid broke bent shrank sank ran led left froze began came".split())
+_장면꼬리 = {"frame", "scene", "shot", "room", "picture", "image", "view", "background"}
+_장면낱말 = {"scene", "frame", "picture", "image", "shot", "view", "room", "tableau", "world", "moment"}
+_카메라낱말 = {"frame", "shot"}   # 「the frame holds still」은 카메라다 — whole · entire가 붙을 때만 장면 전체로 본다
+
+
+def _장면주어(toks, 낱말도=True):
+    """장면 전체를 가리키는 주어인가 — everything (else) · all (else · of it) (+ in the frame) · the rest of the frame · (낱말도) the (whole · entire) scene · frame · picture · image · shot · view · room.
+    사람 없는 판이 아니면 사람도 멈춘다. 카메라 칸에서는 낱말 꼴을 보지 않는다(「the frame holds still」은 카메라다)."""
+    t = list(toks)
+    if t[:4] == ["the", "rest", "of", "the"]: return len(t) == 5 and t[4] in _장면꼬리
+    if 낱말도 and t[:1] in (["the"], ["this"], ["that"]):
+        온통 = t[1:2] in (["whole"], ["entire"]); u = t[2:] if 온통 else t[1:]
+        return len(u) == 1 and u[0] in _장면낱말 and (온통 or u[0] not in _카메라낱말)
+    if not t or t[0] not in ("everything", "all"): return False
+    t = t[1:]
+    if t[:1] == ["else"]: t = t[1:]
+    if t[:2] == ["of", "it"]: t = t[2:]
+    if len(t) == 3 and t[:2] == ["in", "the"] and t[2] in _장면꼬리: t = []
+    return not t
+
+
+_그것산것 = re.compile(r"\b(?:" + _동물명사 + r"|bab(?:y|ies)|toddlers?|mascots?|creatures?|characters?|robots?|puppets?|sharks?|magpies?|monsters?)\b", re.I)   # 가까이 있으면 it이 누구인지 모른다
+_그것주어 = (["it"], ["it", "itself"], ["this"], ["that"])
+_그들주어 = (["they"], ["they", "all"], ["they", "both"], ["these"], ["those"], ["both"])
+_머리말 = re.compile(
+    r"^\s*(?:(?:and|but|so|then|meanwhile|now|only|also|yet|afterwards?|after that|all the while|the whole time|throughout|as before|again|once more|even|at first|at last|at the end|"
+    r"at the start|in the end|by then|by now|finally|suddenly|slowly|gently|once open|once closed)\b[\s,]*"
+    r"|(?:at|by|from|until|till|after|before|within|for|over|around|during|in)\s+(?:about\s+|around\s+|roughly\s+|the\s+(?:first|last|whole|entire|final)\s+)?\d+(?:\.\d+)?"
+    r"(?:\s*(?:[–-]|to)\s*\d+(?:\.\d+)?)?\s*s(?:ec(?:ond)?s?)?\b(?:\s+(?:to|and|until|through)\s+(?:about\s+)?\d+(?:\.\d+)?\s*s\b)?(?:\s+on(?:wards?)?)?[\s,]*"
+    r"|(?:for|during|throughout|over|in|from|to|until|across)\s+(?:the\s+|this\s+|every\s+|each\s+)?(?:whole\s+|entire\s+|rest of the\s+|very\s+|first\s+|last\s+)?"
+    r"(?:clip|shot|video|take|scene|time|end|frames?|first frame to the last(?: frame)?)\b[\s,]*"
+    r"|(?:behind|beside|above|below|under|inside|around|near|next to|in front of|on top of|on|in|at)\s+(?:it|them|this|that|her|him|(?:the|a|an|its|her|his|their)\s+(?:[a-z'’-]+\s+){0,3}?[a-z'’-]+)"
+    r"\s*,?\s+(?=(?:the|a|an|its|every|each|both|all|this|that|these|those|her|his|their)\s))", re.I)
+# 절 경계 — 구두점(소수점 「1.2 s」의 점은 아니다) · 따옴표 · 줄표, 새 절을 여는 접속사, 「and it …」 · 「and they …」(주어가 바뀐다)
+_절끝 = re.compile(r"[;:!?\n—–(),\"“”]|\.(?!\d)|\s-\s|\b(?:while|as|when|whereas|because|although|though|unless|so that|who|whose|which)\b"
+                 r"|\band\s+(?=(?:it|they|everything|nothing|all)\b)", re.I)
+_문장끝 = re.compile(r"[;!?\n]|\.(?!\d)")
+_조각끝 = re.compile(r"[,—–()]|\s-\s")
+# 정지를 부정하는 말 — 부정어가 정지 낱말(이나 그 동사)을 바로 다스릴 때만: 「never holds still」 · 「not perfectly still」 · 「rather than staying frozen」 · 「never lets her stand still」.
+#   「she never blinks standing perfectly still」 · 「she says nothing and stands still」처럼 다른 동사 · 접속사가 끼면 정지 지시다.
+#   「unable to keep still」 · 「too excited to stand still」은 부정으로 보지 않는다 — 넣었다가 「she too stands perfectly still」이 풀려 뺐다(다섯째 검수). 「not able to keep still」은 not이 있어 부정이다
+_부정뒤 = (r"(?:\s+(?:ever|longer|really|quite|once|just|simply|even|fully|truly|able))*(?:\s+let(?:s|ting)?\s+(?:her|him|them|it|anyone|anybody))?"
+         r"(?:\s+(?:to\s+)?(?:be|being|been|is|are|hold|holds|holding|keep|keeps|keeping|stay|stays|staying|stand|stands|standing|sit|sits|sitting|lie|lies|lying|remain|remains|remaining|go|goes|going|"
+         r"become|becomes|becoming|get|gets|getting|look|looks|looking|seem|seems|strike|strikes|striking|turn|turns|turning|fall|falls|falling))?(?:\s+to)?(?:\s+(?:ever|really|quite|just|simply|even|fully|truly))*"
+         r"(?:\s+(?:a|an|the|any|her|his|their|that|this|one|single))?(?:\s+(?:completely|perfectly|absolutely|totally|entirely|utterly|fully|quite|too|so|very|almost|stiff,?|rigid,?|fixed,?))*\s*$")
+정지부정_부사 = re.compile(r"(?:\b(?:never|not|no|without|nor|neither|hardly|barely|rather than|instead of|avoid(?:s|ing)?|cannot)\b|n[’']t\b)" + _부정뒤, re.I)
+# 부정 주어 — 「nobody holds a frozen pose」 · 「nothing in the frame is ever perfectly still」 · 「no one stands still」. 사이에는 자리 말(in the frame · of them)과 위의 꼬리만 올 수 있다 —
+#   다른 동사가 끼면 부정이 아니다(「Nothing distracts the woman standing perfectly still」 · 「nothing breaks the perfectly still pose」)
+정지부정_주어 = re.compile(r"\b(?:nobody|no one|no-one|nothing|none|neither)\b(?:\s+(?:of them|else|at all|in the [a-z]+|on (?:the|her|his|its) [a-z]+))*" + _부정뒤, re.I)
+# 정지 낱말 — 「동사 + still」 · 「부사 + still」 · 몸 + still · 자세 · 표정을 붙드는 말 · 낱말 자체가 정지 · 움직이지 않는다 · 굳는다
+_세게 = r"(?:very|quite|completely|perfectly|absolutely|totally|almost|nearly|utterly|entirely|fully|so|too|rock|stock|dead|deathly|extremely|really|remarkably|eerily|unnaturally|stone)"
+_자세잡기 = r"(?:hold|holds|held|holding|keep|keeps|kept|keeping|maintain|maintains|maintained|maintaining)"
+_머무름 = r"(?:stay|stays|stayed|staying|remain|remains|remained|remaining)"
+_몸칸 = r"(?:head|body|hands?|face|gaze|eyes|shoulders?|arms?|legs?|feet|fingers?|expression|features|posture|torso|chin|lips|mouth)"
+정지낱말 = re.compile("|".join((
+    r"\b(?:stay|stays|stayed|staying|stand|stands|stood|standing|sit|sits|sat|sitting|hold|holds|held|holding|keep|keeps|kept|keeping|remain|remains|remained|remaining|lie|lies|lay|lying|"
+    r"rest|rests|rested|resting|hang|hangs|hung|hanging|wait|waits|waiting|hover|hovers|hovered|hovering|float|floats|floated|floating)\s+still\b",
+    r"\b" + _세게 + r"(?:[\s-]+" + _세게 + r")*[\s-]+still\b",   # 낱말 사이의 탭 · 줄바꿈 · 줄바꿈 없는 빈칸도(「perfectly⏎still」)
+    r"\b(?:calm|quiet|silent|relaxed|exhausted|composed|poised|serene|tense|rigid|stiff|upright|steady|deadpan|serious|blank),? and still\b(?!\s+(?:[a-z]+ing|has|have|is|are|was|were|does|do|can|will|on|in)\b)",
+    r"\bstill and (?:silent|quiet|calm|deadpan|serious|composed|expressionless|blank|upright|tense|rigid|stiff|steady)\b",
+    r"\b(?:is|are|was|were)\s+still(?=\s*(?:[.,;:!?—–)\n]|$|(?:for|until|throughout|to the end|the whole)\b))",   # 「is still in the room」의 still은 「아직」이다
+    r"\b(?:goes|go|went|going|becomes?|falls?|fell)\s+still\b",   # 「she goes still and waits」
+    r"(?<=[,—–])\s*still\s*(?=[,.;—–]|$)",   # 「…, still, …」 · 「… with his back to the camera, still.」 · 「she waits — still — until the cut」
+    r"\bstill as (?:a|an|the) [a-z]+\b|\bas still as\b",
+    r"\bstill (?:face|figure|body|pose|posture|features|expression|gaze|silhouette)\b",
+    r"\b" + _자세잡기 + r"\s+(?:it|them|(?:her|his|their|the|its)\s+(?:[a-z]+\s+){0,2}?[a-z]+)\s+(?:perfectly\s+|completely\s+|absolutely\s+|very\s+)?still\b",   # keeps her head still · hold it still
+    r"\b" + _자세잡기 + r"\s+(?:him|herself|himself|themselves|everyone|everybody)\s+(?:perfectly\s+|completely\s+|absolutely\s+|very\s+)?still\b",   # keeps him still · holds herself still · keeps everyone still
+    r"\b" + _자세잡기 + r"\s+her\s+still(?=\s*(?:[.,;:!?—–)\n]|$|(?:for|until|throughout|to|the whole|while|as|and|or|but|in|on|at|by|so|then|with)\b))",   # keep her still(「her still-warm cup」 · 「her still wet hair」의 still은 「아직」이다)
+    r"\b(?:her|his|their)\s+(?:[a-z]+\s+)?" + _몸칸 + r"\s+still(?=\s*[,.;:—–)]|\s+and\b|\s*$)",   # 「she waits, her body still, …」
+    r"\b" + _자세잡기 + r"\s+(?:(?:the|her|his|their|this|that|a|an|one)\s+)?(?:(?:exact|same|opening|starting|first|final|last|frozen|fixed|rigid|static|still|single)\s+)*(?:pose|position|posture|stance)\b",
+    r"\b" + _자세잡기 + r"\s+(?:that|the|this|her|his|their)\s+(?:[a-z]+\s+){0,2}?(?:look|stare|expression)\b(?!\s+(?:of|and feel)\b)",   # holds that (quiet) look(「keep the look of a TV drama」는 화면 결이다. 「keeps that smile」은 넣지 않는다 — 실물 p6-22c)
+    r"\b" + _자세잡기 + r"\s+there\s+(?:to the (?:very )?end|until the (?:very )?end|to the last frame)\b",
+    r"\b" + _자세잡기 + r"\s+(?:it|that|the|this|her|his|their)\s*(?:(?:same|exact|steady|fixed)\s+)*(?:gaze|smile|grin|face|look|stare|expression|pose)?\s*"
+    r"(?:to the (?:very )?end|until the (?:very )?end|to the last frame|for the rest)\b",   # holds it to the end
+    r"\b(?:motionless|unmoving|immobile|stock-?still|statue-?like|expressionless|stationary|unblinking)\b",
+    r"\b(?:like|as) an? (?:[a-z]+ ){0,2}?(?:statue|mannequin|wax figure|photograph|photo|freeze-frame)\b",   # 「like a statue」 · 「like a perfectly still statue」
+    r"\b(?:does not|doesn[’']t|do not|don[’']t|did not|didn[’']t|cannot|can[’']t|won[’']t|never|not|without|no longer|barely|hardly|scarcely)\s+(?:ever\s+)?mov(?:e|es|ing)\b(?!\s+(?:like|as if|in sync)\b)",
+    r"\b(?:is|are|was|were)(?:n[’']t|\s+not)\s+moving\b|\bstops? moving\b",
+    r"\bwithout (?:any |a single |the slightest )?(?:movement|motion)\b|\b(?:makes?|making|with) no (?:movement|motion)\b(?!\s+blur)|\bno (?:other|further|more) (?:movement|motion)s?\b",
+    r"\bnothing (?:moves|changes|stirs) (?:on|in|across) (?:her|his|their) (?:face|expression|features|body)\b",
+    r"\b(?:nobody|no one|no-one|neither(?: of them)?|none of them)(?:\s+else)?(?:\s+in the (?:frame|shot|room|scene|picture|background))?\s+(?:moves|stirs)\b",
+    r"\bnothing(?: else| at all)?(?: in the (?:frame|shot|room|scene|picture|background))? (?:moves|stirs)\b|\bnot a (?:single )?thing (?:moves|stirs)\b",   # 장면 전체 — 「Nothing moves.」 · 「nothing else moves.」(「nothing on the door moves」는 물건 문장이라 이 꼴이 아니다)
+    r"\b(?:never|does not|doesn[’']t|do not|don[’']t|did not|didn[’']t) reacts?\b",   # 「stares straight ahead … and never reacts」
+    r"\b(?:face|expression)\s+(?:stays?|remains?)\s+(?:completely\s+|totally\s+|perfectly\s+)?blank\b",   # 「His face stays blank」
+    r"\bfrozen\b",
+    r"\bfr(?:eezes?|eezing|oze)\b(?![- ]frame)(?!(?<=freezing)\s+(?:rain|cold|wind|air|fog|mist|drizzle|temperatures?|weather|night|morning|point)\b)",
+    # 자리 · 자세 · 모양을 지키라는 말은 정지 말이 아니다(실물): 「the guests stay where they are」 · 「she stays seated … to the last frame — she does not stand up」 · 「the dog does not budge」 ·
+    #   「the lattice stays rigid」 · 「her lips stay exactly as they are」 · 「the same wide, fixed smile」 — 넣었다가 실물 스물몇 판이 잘못 걸려 뺐다
+    r"\b" + _머무름 + r"\s+(?:put|like that|(?:exactly\s+)?as (?:she|he) is|as they are)\b|\brooted to the (?:spot|floor|ground)\b",   # 「exactly as they are」는 모양을 지키라는 말이다(실물)
+    r"\b(?:at|to) a (?:complete |total |dead )?standstill\b",
+    r"\bno (?:movement|motion) (?:at all|whatsoever)\b|\bzero (?:movement|motion)\b(?!\s+blur)",
+    r"\b(?:stays?|remains?|is|are|stands?|sits?)\s+paused\b",
+    r"\b" + _머무름 + r"\s+(?:exactly\s+|firmly\s+)?in place\b",
+    r"\b(?:stay|stays|stayed|remain|remains|remained|is|are|sit|sits|stand|stands|lie|lies|wait|waits)\s+in\s+(?:the|that|this|her|his|their)\s+(?:(?:exact|same|opening|starting|first|final|last)\s+)*"
+    r"(?:pose|posture|stance|position)\b",
+    r"\b(?:pose|posture|expression|stance|face|gaze|look)\b[^.;,]{0,24}?\b(?:never|does not|doesn[’']t)\s+(?:shifts?|changes?)\b",
+    r"\b(?:does not|doesn[’']t|do not|don[’']t|never|not|without)\s+chang(?:e|es|ing)\s+(?:her|his|their|the|its)\s+(?:pose|posture|stance|position|expression)\b",
+    r"\b(?:in|holds?|keeps?|maintains?)\s+(?:a\s+)?(?:complete|total|perfect|absolute|utter)\s+stillness\b",
+    r"\bstatic (?:figure|pose|posture|body|face)\b|\b(?:remain|remains|stay|stays|stand|stands|sit|sits)\s+(?:completely\s+|perfectly\s+)?static\b",
+)), re.I)
+_대사 = re.compile(r"\"[^\"\n;]{0,300}\"|“[^”\n;]{0,300}”|「[^」\n;]{0,300}」")   # 쌍반점이 낀 것은 대사가 아니다(짝이 어긋난 따옴표)
+_꾸밈말 = ("frozen", "motionless", "unmoving", "immobile", "expressionless", "statue-like", "statuelike", "stationary", "unblinking")
+_늘사람꾸밈 = ("expressionless", "unblinking", "statue-like", "statuelike")   # 사람에게만 쓰는 꾸밈말 — 물건 이름씨 앞에 와도 사람이다(「an expressionless close-up of her face」)
+_서술뒤 = _전치사 | set("and or but until while as like stiff solid there here still again now then forever before after she he they it for during throughout when".split())
+_사람것 = set("pose position posture stance expression face smile stare gaze look grin figure body silhouette features eyes hand hands".split())
+# 주어를 볼 것 없이 사람인 말(표정 · 자세 · 「아무도 안 움직인다」) / 장면 전체를 멈추는 말(사람이 나오는 판에서만 건다)
+_늘사람 = re.compile(r"^(?:nothing (?:moves|changes|stirs) |(?:nobody|no one|no-one|neither|none of them)\b|still (?:face|figure|body|pose|posture|features|expression|gaze|silhouette)|static (?:figure|pose|posture|body|face)"
+                   r"|(?:pose|posture|expression|stance|face|gaze|look)\b)", re.I)
+_장면말 = re.compile(r"^(?:no (?:other|further|more) (?:movement|motion)|nothing(?: else| at all)?(?: in the [a-z]+)? (?:moves|stirs)$|not a (?:single )?thing (?:moves|stirs)$)", re.I)
+# 사람에게만 쓰는 말 — 자세 · 표정을 붙드는 말과 조각상 비유는 주어를 볼 것 없이 사람이고, 정지 구 안에 her · him · his가 있으면 그 사람을 멈추는 말이다(「Keep her perfectly still」).
+#   look은 넣지 않는다 — LOOK 줄의 「keep the same look to the end」는 화면 결이다(연기 글에서는 주어를 몰라도 걸린다)
+_사람말 = re.compile(r"\b(?:pose|posture|stance|expression|expressionless|statue|statuelike|stare|gaze|smile|grin|face|her|him|his|herself|himself|themselves|everyone|everybody)\b", re.I)
+_초 = r"\d{1,3}(?:\.\d+)?[\s-]?s(?:ec(?:ond)?s?)?\b"
+# 시간 박자 — 「몇 초에」: 시각을 가리키는 말(at · by · from · until · after · first · last …) 뒤의 초(「at about 0.6 s」 · 「at ~0.5 s」 · 「at t=0.5 s」 · 「at the 2-second mark」), 「(0.5 s)」 · 「[0.5 s]」,
+#   「1.2 s after the cut」 · 「0.4 s:」, 나열 가운데 수(「at about 1.5 s, 2.6 s and 3.8 s」). 범위(「from 0.8 s to 1.6 s」 · 「0.3–0.8 s」 · 「0.5~1.0 s」)는 한 박자.
+#   길이(「for 4 seconds」 · 「for about 2 s」) · 판 길이(「the 4 s clip」) · 나이(「in her 20s」) · 그 밖의 「15s」는 박자가 아니다
+_박자범위 = re.compile(r"\b(?:from|between)\s+(?:about\s+|around\s+)?\d{1,3}(?:\.\d+)?(?:\s?s(?:ec(?:ond)?s?)?)?\s*(?:to|and|until|through|[–~-])\s*(?:about\s+|around\s+)?" + _초
+                    + r"|(?<![\w.])\d{1,3}(?:\.\d+)?\s?(?:s\s?)?[–~-]\s?" + _초, re.I)
+_박자점 = re.compile(r"(?<!\bfor\s)(?:\b(?:at|by|from|until|till|after|before|around|about|within|to|and|first|last|starting|over|past|near|toward|towards|roughly|approximately)\s+"
+                   r"(?:(?:about|around|roughly|approximately|approx\.?|nearly|almost|just|exactly|only)\s+)*(?:t\s?=\s?)?[~≈]?|[(\[]\s*|(?<=\d s, )|(?<=\ds, ))" + _초
+                   + r"(?!\s*-?\s*(?:long|clip|shot|video|take|loop|film|spot|ad|reel|cut|version|edit)\b)"   # 「about 4 s long」 · 「the 4 s clip」 · 「about 4 s cut」은 길이다
+                   r"|\b(?:at|by|near|around|about)\s+(?:(?:about|around)\s+)?the\s+" + _초 + r"\s+(?:mark|point)\b"   # 「at the 2-second mark」 — 「over the 4 s of the take」는 길이다
+                   r"|(?<![\w.])" + _초 + r"\s*(?:[:—–]|(?:after|later|into)\b)", re.I)
+
+
+def 박자수(글):
+    """시간 박자(몇 초에)의 수 — 범위는 한 박자로 세고, 길이 · 판 길이 · 나이는 세지 않는다."""
+    범위 = []
+    글 = _박자범위.sub(lambda m: 범위.append(1) or " " * len(m.group(0)), 글)
+    return len(범위) + sum(1 for _ in _박자점.finditer(글))
+
+
+def 사람박자수(글):
+    """사람 연기의 시간 박자 수 — 물건 · 날씨가 주어로 드러난 문장 조각(「at about 0.5 s rain pours off the awning behind her」 · 「at about 1.6 s the kettle clicks off」)의 박자는 세지 않는다.
+    주체(she · 사람 · 몸 낱말 · 이름)가 든 조각 · 주어를 줄인 조각(「1.5 s: turns to the window」) · 모르는 주어(「the magpie pecks twice (about 1.5 s)」)의 박자는 센다 —
+    덜 세면 사람 판을 막으니 물건 주어가 분명할 때만 뺀다. 「behind her」의 her는 주체가 아니다. 범위는 줄을 넘겨 써도 한 박자다(「from 0.5 s⏎to 2.0 s」)."""
+    n = 0
+    for 조각 in re.split(r"[;!?\n]|\.(?!\d)", _박자범위.sub(" § ", 글)):
+        k = 조각.count("§") + sum(1 for _ in _박자점.finditer(조각))
+        if k and not _주체말.search(조각) and not _이름꼴(조각):
+            맨 = _박자점.sub(" ", 조각).replace("§", " ").strip(" ,:—–-()[]")   # 초를 지운 나머지가 물건 주어로 시작하나
+            if _물건으로시작(_낱말들(_머리말뗌(맨))): k = 0
+        n += k
+    return n
+
+
+def _낱말들(s):
+    return re.findall(r"[a-z0-9][a-z0-9'’-]*", s.lower())
+
+
+def _보통낱말(w):
+    return w in _이름아님 or w in _물건 or w in _꾸밈씨 or w in _한정사 or w in _수량사 or w in _전치사 or w in _이음동사
+
+
+def _이름꼴(s):
+    """글에서 대문자로 시작하는 모르는 낱말(소문자로) — 이름일 수 있다. 문장 첫머리의 보통 낱말(The · At · Close-up · Top-down …)과 온통 대문자 낱말은 뺀다."""
+    return frozenset(w.lower() for w in re.findall(r"(?<![A-Za-z'’-])[A-Z][A-Za-z'’-]*", s)
+                     if not w.isupper() and not _보통낱말(w.lower()) and not _보통낱말(w.lower().split("-")[0]) and not (len(w) > 5 and w.lower().endswith(("ing", "ed"))))
+
+
+def _머리말뗌(s):
+    while True:
+        m = _머리말.match(s)
+        if not m or not m.end(): return s
+        s = s[m.end():]
+
+
+def _꼬리뗌(toks, 구=""):
+    """절에서 정지 낱말 바로 앞의 이음 동사 · 정도 부사 · 「calm and」를 떼어 주어만 남긴다 → (낱말들, 주어 곁 동사의 수 "단" · "복" · None, 동사가 있었나).
+    정지 낱말이 동사로 시작하면(「stays still」 · 「does not move」) 그 동사가 주어 곁 동사다. 조동사가 끼면(「the can can stay」 · 「will stay」) 수를 알 수 없다."""
+    toks = list(toks); 동사 = None; 모름 = False; 있었나 = False
+    첫 = (구.split() or [""])[0]
+    if 첫 in _단수꼴 or re.match(r"(?:never|no longer|barely|hardly|scarcely) moves\b", 구): 동사, 있었나 = "단", True
+    elif 첫 in _복수꼴 or re.match(r"(?:never|no longer|barely|hardly|scarcely) move\b", 구): 동사, 있었나 = "복", True
+    elif 첫 in _이음동사 or 첫 in ("stops", "stop", "freezes", "freeze", "froze", "makes", "make"): 있었나 = True
+    if (첫 in _기본형 or 첫 in ("move", "freeze")) and toks and toks[-1] in _조동사: toks.pop(); 모름 = True
+    while toks:
+        t = toks[-1]
+        if t in _정도말: toks.pop()
+        elif t in _이음동사:
+            toks.pop(); 있었나 = True
+            if t in _조동사: 모름 = True
+            else: 동사 = "단" if t in _단수꼴 else "복" if t in _복수꼴 else None
+            if t in _기본형 and toks and toks[-1] in _조동사: toks.pop(); 모름 = True
+        elif t in ("and", "but", "yet", "or"):
+            toks.pop()
+            if toks and toks[-1] not in _물건 and toks[-1] not in _이음동사 and toks[-1] not in _한정사: toks.pop()   # 「stays calm and ▁」의 calm
+        else: break
+    return toks, (None if 모름 else 동사), 있었나
+
+
+def _꼬리시작(t):
+    return t in _꼬리표 or t in _분사 or (len(t) > 4 and t.endswith(("ed", "ing")) and t not in _물건)
+
+
+def _꾸밈되나(t):
+    """물건 앞 꾸밈말로 받는 낱말 — 아는 물건(「door handle」) · 꾸밈씨 · 수량사 · 숫자 · 소유격(「Minjae's」) · 분사(「folded」 · 「sliding」) · 아는 낱말이 든 붙임표 말(「pale-blue」)."""
+    if t in _물건 or t in _꾸밈씨 or t in _수량사 or t[0].isdigit() or t.endswith(("'s", "’s")): return True
+    if 생물낱말.fullmatch(t): return False
+    if "-" in t: return any(x in _꾸밈씨 or x in _물건 for x in t.split("-"))
+    return len(t) > 4 and t.endswith(("ed", "ing"))
+
+
+def _물건덩이(toks, 수=None, 이름꼴=frozenset()):
+    """낱말들이 통째로 「물건 주어」인가 — (한정사) 꾸밈말 + 아는 물건 (+ 전치사구 · 분사구) [and 같은 꼴 …]. 머리 낱말이 모르는 낱말이면 물건이 아니다.
+    수: 주어 곁 동사의 수 — 덩이가 하나일 때 머리 낱말의 수와 다르면 물건 주어가 아니다(「the other waves and ▁stays still」의 waves는 동사).
+    모르는 꾸밈말(「the pull tab」의 pull)은 하나만, 바로 뒤가 머리 낱말일 때만 받는다 — 그 나열이 한정사로 시작하고, 수가 맞고, 동사 꼴(-s · -ing · -ed)도 사람 꼴(-er · -or · -ist …)도 아닐 때.
+    「the waiter pours water and ▁stays still」 · 「the director watches monitor and ▁stays still」 · 「the janitor light ▁stays still」 · 「then grabs cup and ▁stands still」은 그래서 물건 주어가 아니다.
+    이름꼴(대문자로 시작한 낱말)은 꾸밈말로 받지 않는다. 「a pair of chopsticks」 · 「a row of bottles」는 of 뒤가 머리다.
+    그림자 · 비친 모습은 사람의 것(her shadow · Minjae's shadow · the shadow of the man)이면 그 사람이 멈춘 것이다."""
+    i, n, 덩이, 모름쓴, 한정있음 = 0, len(toks), [], False, False
+    while True:
+        여럿 = 소유 = 묶음 = False
+        if i < n and (toks[i] in _한정사 or toks[i] in _수량사):
+            여럿 = toks[i] in _여럿말; 소유 = toks[i] in _사람소유; 한정있음 = True; i += 1
+            if i < n and toks[i] == "of": i += 1
+            if i < n and toks[i] in _한정사: 소유 = toks[i] in _사람소유; i += 1
+        if i + 1 < n and toks[i] in _묶음말 and toks[i + 1] == "of":
+            묶음 = True; i += 2
+            if i < n and toks[i] in _한정사: 소유 = toks[i] in _사람소유; i += 1
+        먹음, 모름뒤 = [], -1
+        while i < n and toks[i] not in ("and", "or"):
+            t = toks[i]
+            if _꼬리시작(t):
+                if 먹음 and 먹음[-1] in _물건: break
+                if t in _꼬리표: return False   # 머리 낱말 없이 전치사가 왔다 — 「everyone else in the frame」 · 「Seojin in the foreground」
+            if t in _주어대명사 or t in _한정사 or len(먹음) >= 6: return False
+            if t.endswith(("'s", "’s")) and t[:-2] not in _물건: 소유 = True   # 「the building's shadow」는 물건의 그림자다
+            if 모름뒤 >= 0: 모름뒤 += 1
+            if not _꾸밈되나(t):
+                if (모름쓴 or not 한정있음 or 수 is None or t in 이름꼴 or 생물낱말.fullmatch(t) or t in _이음동사 or t in _조동사
+                        or not re.fullmatch(r"[a-z][a-z-]*", t) or t.endswith(("s", "ing", "ed")) or _사람꼴뒤.search(t)): return False
+                모름쓴 = True; 모름뒤 = 0
+            elif 모름뒤 > 1: return False   # 모르는 낱말 뒤에는 머리 낱말 하나만 — 「the director watches monitor」는 이름씨 나열이 아니다
+            먹음.append(t); i += 1
+        if not 먹음 or 먹음[-1] not in _물건: return False
+        j = i
+        while i < n and toks[i] not in ("and", "or"):
+            i += 1
+            if i - j > 14: return False
+        if 먹음[-1] in _딸린것 and (소유 or any(생물낱말.fullmatch(t) or t in 이름꼴 for t in toks[j:i])): return False
+        덩이.append((먹음[-1] in _복수물건, 여럿 or any(t in _여럿말 for t in 먹음[:-1]), 묶음))
+        if i >= n: break
+        i += 1
+        if i >= n: return False
+    if len(덩이) == 1:
+        복, 여럿, 묶음 = 덩이[0]; 머리수 = "복" if 복 else "단"
+        if not 묶음 and ((여럿 and 머리수 == "단") or (수 and 수 != 머리수)): return False
+    elif 모름쓴 and 수 != "복": return False
+    return True
+
+
+def _물건머리(toks):
+    """낱말들이 물건 주어로 시작하는 절인가 → None(아니다) | "단" | "복"(머리가 복수거나 and로 이은 나열) — (한정사) 꾸밈말 + 아는 물건 [and 같은 꼴] 바로 뒤가 끝 · 아는 동사 · 전치사일 때만.
+    물건 뒤에 모르는 낱말이 오면 그 낱말이 주어다(「the shop assistants wait」 · 「the camera operator stands」) — 물건 주어가 아니다."""
+    i, n, 복, 덩이수 = 0, len(toks), False, 0
+    if not n: return None
+    while True:
+        if i < n and (toks[i] in _한정사 or toks[i] in _수량사):
+            복 = 복 or toks[i] in _여럿말; i += 1
+            if i < n and toks[i] == "of": i += 1
+            if i < n and toks[i] in _한정사: i += 1
+        먹음 = []
+        while i < n and len(먹음) < 6 and _꾸밈되나(toks[i]) and not (먹음 and 먹음[-1] in _물건 and toks[i] in _물건동사): 먹음.append(toks[i]); i += 1
+        if not 먹음 or 먹음[-1] not in _물건: return None
+        덩이수 += 1; 복 = 복 or 먹음[-1] in _복수물건
+        if i >= n: break
+        if toks[i] in ("and", "or"): i += 1; continue   # 나열 — 다음 것도 물건이어야 한다
+        if not (toks[i] in _물건동사 or toks[i] in _이음동사 or toks[i] in _꼬리표 or toks[i] in _조동사): return None
+        break
+    return "복" if 복 or 덩이수 > 1 else "단"
+
+
+def _물건으로시작(toks):
+    return _물건머리(toks) is not None
+
+
+def _산것으로시작(조각, toks, 사람만=False):
+    """절이 사람 · 동물 · 몸 · 이름 주어로 시작하나 — 첫 동사 앞(낱말 다섯까지)을 본다. 사람만=True면 사람(대명사 · 사람 낱말 · 이름)만 — 동물 · 몸은 빼고 본다."""
+    if toks[0] in ("she", "he", "we", "you", "i"): return True
+    이름 = _이름꼴(조각)
+    for t in toks[:5]:
+        if t in _이음동사 or t in _물건동사: break
+        if t in 이름 or re.fullmatch(_사람명사, t): return True
+        if not 사람만 and (re.fullmatch(_동물명사, t) or re.fullmatch(_몸명사, t)): return True
+    return False
+
+
+def _앞주어(문장들, 그것=False, 여럿만=False):
+    """주어가 없는 절 · 대명사 주어(it · they …)가 가리키는 것 — 가까운 절부터 거슬러 본다 → "물건" | "사람" | None(모름).
+    물건 주어로 시작하는 절(「the cup lands …」)을 만나면 물건, 사람 · 동물 · 몸 · 이름으로 시작하는 절을 만나면 사람. 「calm」 · 「once open」 같은 짧은 토막은 건너뛴다.
+    그것=True(「it」): 사람(she · the woman · Sua)은 「it」으로 받지 않으니 그 절은 물건을 다루는 절로 보고, 동물 · 아기 · 몸으로 시작하는 절만 사람으로 본다.
+    여럿만=True(「they」): 복수 머리나 and로 이은 물건 주어만 물건으로 본다 — 「Rain pours off the awning. They barely move.」의 They는 비가 아니다."""
+    for 문장 in 문장들:
+        for 조각 in reversed(_조각끝.split(문장)):
+            toks = _낱말들(_머리말뗌(조각))
+            if not toks or toks[0] in ("it", "they", "this", "that", "these", "those", "both"): continue   # 그 대명사의 앞말은 더 앞에 있다
+            머리 = _물건머리(toks)
+            if 머리: return "물건" if not 여럿만 or 머리 == "복" else None
+            if 그것:
+                if _그것사람.search(" ".join(toks[:5])): return "사람"   # 「the dog hangs calmly and it ▁stays still」 · 「she lifts her hand and it …」
+                if _산것으로시작(조각, toks, 사람만=True): return "물건"   # 「she sets the can down and it ▁stays still」의 it은 사람이 아니다
+            elif _산것으로시작(조각, toks): return "사람"
+            if len(toks) <= 3 and not (set(toks) & _한정사): continue
+            return None   # 주어를 모르는 절
+    return None
+
+
+def _나열에사람(이문장):
+    """「The woman, the cup and the bottles ▁stay still」 — 절 앞의 쉼표 토막이 사람 · 몸 · 이름으로 끝나는 짧은 이름씨구(동사 · 전치사 없음)면 나란한 주어다.
+    「Behind her, the lamp …」 · 「she lifts the cup, the can …」 · 「one hand on his chest, the can …」은 아니다."""
+    for 조각 in reversed(이문장.split(",")):
+        toks = _낱말들(조각)
+        if not toks: continue
+        if len(toks) > 4 or any(t in _전치사 or t in _물건동사 or t in _이음동사 or t in _연기동사집 for t in toks): return False
+        if re.fullmatch(_사람명사 + "|" + _가리킴명사 + "|" + _몸명사, toks[-1]) or toks[-1] in _이름꼴(조각): return True
+    return False
+
+
+def _주어판정(절, 앞, 구="", 종류="연기", 사람없음=False):
+    """정지 낱말 앞 절의 주어 → "물건" | "사람" | "모름"(드러난 모르는 주어) | "빈"(주어 없는 절) | "그들"(they · both) | "장면"(장면 전체).
+    물건: 주어가 아는 물건 덩이(「the door and every sticky note」)거나, 「she lifts the cup and the can ▁stays still」처럼 동사가 있는 절 뒤에 접속사로 이은 물건 주어거나, it이 물건 절을 가리킨다.
+      사람 없는 판(사람없음)에서는 주어 없는 절 · they도 앞 절의 물건을 따라간다. 곁 · 카메라 칸의 it과, 같은 칸의 복수 물건을 받는 they도 물건이다.
+    사람: 주어에 사람 · 동물 · 몸 낱말이나 이름이 드러나 있다. 물건 나열 앞 쉼표 토막이 사람이어도 사람이다(「The woman, the cup and the bottles ▁stay still」).
+    무엇을 걸지는 사람정지낱말이 칸 종류와 판의 상태로 정한다 — 연기 글에서는 물건이 아니면 모두 걸린다."""
+    몸통 = _머리말뗌(절)
+    toks, 수, 동사있음 = _꼬리뗌(_낱말들(몸통), 구)
+    끝들 = [m.end() for m in _문장끝.finditer(앞)]
+    이문장 = 앞[(끝들[-1] if 끝들 else 0):len(앞) - len(절)]   # 같은 문장에서 이 절 앞까지
+    앞문장 = 앞[(끝들[-2] if len(끝들) > 1 else 0):(끝들[-1] if 끝들 else 0)]
+    연기 = 종류 == "연기"
+    if not toks:   # 주어 없는 절(「…, perfectly still」 · 문장 첫머리의 「Perfectly still.」 · 「Hold still.」)
+        return "물건" if 연기 and 사람없음 and _앞주어([이문장, 앞문장]) == "물건" else "빈"
+    if _장면주어(toks, 낱말도=종류 != "카메라"):   # 「then all is still」은 장면, 「all stay still」은 사람들이다
+        return "사람" if toks[0] == "all" and 수 != "단" else "장면"
+    이름꼴 = _이름꼴(몸통)
+    if toks in _그것주어 or (toks[0] == "it" and len(toks) > 1 and (toks[1] in _물건동사 or toks[1] in _이음동사)   # 「it keeps exactly the shape of the first frame and ▁stays still」
+                          and not 생물낱말.search(" ".join(toks)) and not (set(toks) & 이름꼴)):
+        if not 연기: return "물건"
+        가리킴 = _앞주어([이문장, 앞문장], 그것=True)
+        return "모름" if 가리킴 != "사람" and _그것산것.search(앞) else (가리킴 or "물건")
+    if toks in _그들주어:
+        return "물건" if (사람없음 or not 연기) and _앞주어([이문장, 앞문장], 여럿만=True) == "물건" else "그들"
+    쉼표뒤 = len(앞) > len(절) and 앞[len(앞) - len(절) - 1] == ","
+    if _물건덩이(toks, 수, 이름꼴):
+        return "사람" if 쉼표뒤 and _나열에사람(이문장) else "물건"
+    for 사이 in ("and", "then", "with"):
+        if 사이 not in toks: continue
+        k = len(toks) - 1 - toks[::-1].index(사이)
+        앞쪽, 뒤쪽 = toks[:k], toks[k + 1:]
+        if not 뒤쪽 or not _물건덩이(뒤쪽, 수, 이름꼴): continue
+        # 접속사 뒤의 물건이 그 동사의 주어이려면 앞쪽이 절이어야 한다(동사가 있다) — 「she and the bottles ▁stay still」의 she는 나란한 주어다
+        if 동사있음 and 사이 != "with" and any(t in _물건동사 or t in _이음동사 or t in _연기동사집 for t in 앞쪽): return "물건"
+        if not 생물낱말.search(" ".join(앞쪽)) and not (set(앞쪽) & 이름꼴) and _물건으로시작(앞쪽): return "물건"   # 「the turbine stands with its blades ▁completely still」
+    return "사람" if 생물낱말.search(" ".join(toks)) or (set(toks) & 이름꼴) else "모름"
+
+
+def _꾸밈자리(글, m):
+    """「a frozen dumpling」 · 「the frozen pine needles」처럼 이름씨를 꾸미는 자리 → "물건"(걸지 않는다) · "사람"(「an expressionless face」 · 「a motionless portrait shot of the woman」) ·
+    "장면"(「a frozen scene」) · None(서술 자리이거나 모르는 이름씨 — 주어를 본다).
+    꾸밈 자리는 앞이 한정사 · 꾸밈말 · 전치사거나 절의 첫머리일 때뿐이다 — 「she stands frozen staring at the door」 · 「he stays expressionless the whole shot」처럼 앞이 동사면 서술 자리다.
+    「perfectly still」 같은 still 구는 꾸밈 자리로 풀지 않는다(「a perfectly still lake」도 걸린다 — 넣었다가 「she is a perfectly still statue」가 풀려 뺐다)."""
+    w = m.group(0).lower()
+    if w not in _꾸밈말: return None
+    뒤 = re.match(r"[ \t]+((?:[A-Za-z][A-Za-z'’-]*[ \t]*){1,7})", 글[m.end():])
+    if not 뒤: return None
+    온 = 뒤.group(1).lower().split(); 낱 = 온[:3]
+    if 낱[0] in _서술뒤 or 낱[0] in _한정사 or 낱[0].startswith("mid"): return None
+    앞낱 = re.search(r"([A-Za-z][A-Za-z'’-]*)[ \t]+$", 글[:m.start()])   # 바로 앞 낱말(사이에 구두점이 없을 때)
+    if not 앞낱 and 낱[0].endswith("ing") and 낱[0] not in _물건: return None   # 절 첫머리의 「Frozen staring at the door, she …」
+    if 앞낱:
+        앞 = 앞낱.group(1).lower()
+        if not (앞 in _한정사 or 앞 in _수량사 or 앞 in _꾸밈씨 or 앞 in _전치사 or 앞 in ("and", "or")): return None
+    끝 = len(낱)
+    for i, t in enumerate(낱):   # 꾸밈받는 이름씨는 전치사 · 접속사 앞까지다 — 「the frozen lake behind her」의 her는 호수를 꾸미는 말이 아니다
+        if t in _서술뒤 or t in _꼬리표: 끝 = i; break
+    머리, 나머지, 이름들 = 낱[:끝], 온[끝:], _이름꼴(뒤.group(1))
+    if w in _늘사람꾸밈 or any(t in _사람것 or 생물낱말.fullmatch(t) for t in 머리) or (set(머리) & 이름들): return "사람"   # 「an expressionless face」 · 「a frozen Sua」
+    if 나머지[:1] == ["of"] and (생물낱말.search(" ".join(나머지[1:5])) or (set(나머지[1:5]) & 이름들)): return "사람"   # 「a frozen tableau of the family」
+    if any(t in _장면낱말 for t in 머리): return "장면"
+    if any(t in _물건 for t in 머리): return "물건"
+    # 모르는 이름씨 — 얼린 것은 음식이 흔하다(「frozen yogurt」 · 「frozen berries」), 사람 꼴(「a frozen florist」)이나 다른 꾸밈말이면 주어를 본다
+    return "물건" if w == "frozen" and 머리 and not any(_사람꼴뒤.search(t) for t in 머리) else None
+
+
+def 사람정지낱말(글, 종류="연기", 사람없음=False):
+    """글에서 사람에게 정지를 시키는 낱말(소문자 · 겹침 없이 가나다순). 풀어 주는 갈래는 머리 주석 ②의 목록뿐이다.
+    종류 "연기"(ACTION · WHO · SHOT 줄 · 모르는 라벨 줄 · 컷표 연기 칸): 주어가 아는 물건이 아니면 모두 건다 — 모르는 낱말 · 이름 · they · 주어 없는 절 · 장면 전체.
+    종류 "곁"(LOOK · NOTE · PHYSICS · 머리 글 …): 드러난 모르는 주어만 물건으로 봐 준다. 종류 "카메라"(CAMERA · FRAME): 주어 없는 정지 말도 카메라의 것으로 본다.
+    사람없음(사람 없는 판 — 인물 []이거나 사람 기척이 전혀 없는 판): 장면 전체를 멈추는 말과, 곁 칸의 주어 없는 정지 말, 앞 절의 물건을 받는 주어 없는 절 · they를 물건의 것으로 푼다."""
+    out = set()
+    글 = _대사.sub(lambda q: " " * len(q.group(0)) if re.search(r"[가-힣]", q.group(0)) else q.group(0), 글)   # 따옴표 안 한국어(대사 · 화면 글)는 연기 지시가 아니다 — 길이는 그대로 두고 비운다
+    for m in 정지낱말.finditer(글):
+        w = re.sub(r"\s+", " ", m.group(0).lower()).strip(" ,")
+        앞 = 글[max(0, m.start() - 400):m.start()]
+        끝들 = [x.end() for x in _절끝.finditer(앞)]
+        절 = 앞[(끝들[-1] if 끝들 else 0):]
+        if 정지부정_부사.search(절) or 정지부정_주어.search(절): continue
+        if re.match(r"(?:barely|hardly|scarcely) mov", w) and re.search(r"\b(?:lips|mouth)\s*$", 절, re.I): continue   # 「his lips barely moving: "네."」는 말하는 결이다
+        꾸밈 = _꾸밈자리(글, m)
+        if 꾸밈 == "물건": continue
+        if _장면말.match(w) or 꾸밈 == "장면": 주어 = "장면"
+        elif 꾸밈 == "사람" or _늘사람.match(w) or _사람말.search(w): 주어 = "사람"
+        else: 주어 = _주어판정(절, 앞, w, 종류, 사람없음)
+        if 주어 == "물건": continue
+        if 주어 == "장면" and (사람없음 or 종류 == "카메라"): continue   # 사람 없는 판의 장면 전체 말은 물건의 것이고, 카메라 칸의 「no other movement」는 카메라의 것이다
+        if 주어 == "모름" and 종류 != "연기": continue   # 곁 · 카메라 칸의 드러난 모르는 주어(「PHYSICS: the odd gizmo stays still」)
+        if 주어 == "빈" and (종류 == "카메라" or (종류 == "곁" and 사람없음)): continue   # 카메라 칸의 주어 없는 정지 말은 카메라의 것이다
+        out.add(w)
+    return sorted(out)
+
+
+def 사람글(글, 칸=None):
+    """정지 말을 볼 글 [(이름, 글, 종류)] — "연기": ACTION(샷마다 따로) · WHO · SHOT 줄의 글 · 모르는 라벨 줄(「YUNA:」 · 「END:」), ACTION 칸이 없는 풀어 쓴 지시문의 본문.
+    "카메라": CAMERA · FRAME 칸. "곁": 그 밖의 아는 라벨 칸(LOOK · PHYSICS · NOTE …)과 ACTION 칸이 있는 지시문의 머리 글(첫 장 줄 「@이미지 1 is the exact first frame …」도 본다)."""
+    칸 = 칸들(글) if 칸 is None else 칸
+    act = 연기글(글, 칸)
+    out = [("ACTION", t, "연기") for l, t in 칸 if l == "ACTION" and t.strip()]   # 샷마다 따로 — 앞 샷의 절이 뒤 샷 대명사의 앞말이 되지 않는다
+    for l, t in 칸:
+        if l == "ACTION" or not t.strip(): continue
+        if not l: out.append(("본문", t, "곁" if act.strip() else "연기"))
+        elif l in ("CAMERA", "FRAME"): out.append((l, t, "카메라"))
+        elif l == "WHO" or l.startswith("SHOT") or l not in 아는라벨: out.append((l, t, "연기"))
+        else: out.append((l, t, "곁"))
+    return out
+
+
+def 사람판단(글, 인물=None, 칸=None):
+    """이 판에 사람이 나오나 → (사람 판인가, 표와 어긋남, 사람 없는 판인가).
+    사람 판(→ ACTION 칸 · 사람의 박자를 요구한다): 컷표 그 컷의 「인물」(이나 _순서.json 판의 「인물」)에 이름이 있거나, 글에 확실한 증거(_센증거)가 있다 — ACTION · WHO · SHOT 줄 ·
+      사람 이름 줄 · (ACTION 칸 없는 글의) 본문에서. 표가 없는 판은 약한 증거(model · speaker 같은 낱말 · 「이름 + 연기 동사」 · WHO 칸의 글)도 본다.
+    표와 어긋남: 인물이 []인데 확실한 증거가 있다(손님 · 행인만 나오는 컷을 []로 적기 쉽다). 약한 증거로는 걸지 않는다 — []라고 밝힌 판을 상품 이름 · 「the new model」로 막지 않게.
+    사람 없는 판(→ 장면 전체를 멈추는 말 · 주어 없는 정지 말을 물건의 것으로 푼다): 인물이 []이고 사람 증거(확실한 것 · model 같은 낱말)가 없거나, 표가 없는 판에 사람 증거도
+      사람을 가리킬 수 있는 말(_기척 — 대명사 · 사람 낱말 · 몸 낱말 · 이름일 수 있는 낱말)도 하나도 없다. 기척만 있는 판은 박자는 요구하지 않되 정지 말은 사람 판처럼 본다."""
+    if isinstance(인물, (list, tuple)) and len(인물): return True, False, False
+    칸 = 칸들(글) if 칸 is None else 칸
+    부분 = [(l, 사람부정구.sub(" ", t)) for l, t in 칸]
+    act = " ".join(t for l, t in 부분 if l == "ACTION")
+    who = " ".join(t for l, t in 부분 if l == "WHO")
+    샷글 = " ".join(t for l, t in 부분 if l.startswith("SHOT"))
+    모르는줄 = [(l, t) for l, t in 부분 if l and l != "ACTION" and l not in 아는라벨 and not l.startswith("SHOT")]
+    # 사람 이름 줄(YUNA: · MAN: · SHARK:)만 — 물건 이름 줄(SHIP: · KNIT: · CLEAR UMBRELLA: · CAN_REVEAL:)은 사람을 말해도 그 판에 사람이 나온다는 증거가 아니다
+    이름줄 = " ".join(t for l, t in 모르는줄 if not _물건줄(l))
+    본문 = "" if act.strip() else 첫장줄.sub(" ", " ".join(t for l, t in 부분 if not l))
+    연기 = " ".join((act, 샷글, 본문))
+    who없음 = bool(re.search(r"\b(?:no|none|nobody|not any|without|n/a)\b", " ".join(t for l, t in 칸 if l == "WHO"), re.I))   # 「WHO: no people in this shot.」
+    센 = _센증거(연기) or _센증거(who) or _센증거(이름줄, 주어만=True)
+    if isinstance(인물, (list, tuple)): return 센, 센, not 센 and not _낱말증거(연기, 약한=True)   # 인물 [] — 확실한 증거가 있을 때만 사람 판 · 어긋남, 「the model sits …」가 있으면 사람 없는 판으로 믿지는 않는다
+    있음 = 센 or _낱말증거(연기, 약한=True) or _이름연기(연기) or bool(_이름꼴(who)) or (bool(re.search(r"[A-Za-z]", who)) and not who없음)
+    return 있음, False, not 있음 and not _기척(" ".join((연기, who, 이름줄)))
+
+
+def 사람지시문검사(글, 낼판=False, 인물=None, 소리만=False, 박자최소=1):
+    """지시문 글 하나 → [(등급, "연기", 글)].
+    걸림: 사람을 멈추는 말(still · holds the pose · motionless · frozen · expressionless …) — 어느 칸에서든(사람글 · 사람정지낱말) / 사람이 나오는 판의 ACTION에 사람의 시간 박자
+          (몇 초에 · 누가 무엇을)가 없거나 모자란다 / 표는 사람 없는 컷(인물 [])인데 지시문에 사람이 나온다.
+    낼판=True(내기 도구 · 이 도구의 --지시문): 사람이 나오는데 ACTION: 칸이 없으면 걸림 — 박자를 볼 칸이 없어 굳은 사람을 낳은 풀어 쓴 지시문이 그대로 나간다. False(꾸러미점검)면 주의.
+    주의: 「start from it unchanged」 첫 줄 + 사람 — 시작 자세 첫 줄로 바꾼다(m2v에서 사람을 붙든다).
+    인물: 그 판 컷의 인물 목록(컷표 · _순서.json). 소리만=True(목소리 판)는 그림을 쓰지 않으니 보지 않는다.
+    박자최소: ACTION에 있어야 할 사람의 시간 박자 수 — 컷표(틀 2)의 인물 컷에 이어진 판은 2(컷표 「연기」가 둘 이상이고 지시문은 그것을 그대로 옮긴다), 그 밖의 사람 판은 1."""
+    if 소리만: return []
+    칸 = 칸들(글); out = []
+    있음, 어긋남, 없음 = 사람판단(글, 인물, 칸)
+    if 어긋남: out.append(("걸림", "연기", "컷표에는 사람 없는 컷(인물: [])인데 지시문에 사람이 나온다 — 표의 「인물」 칸을 채우거나 지시문에서 사람을 뺀다(점검표 26)"))
+    본 = set()
+    for 누구, 부분, 종류 in 사람글(글, 칸):
+        for w in 사람정지낱말(부분, 종류, 없음):
+            if (w, 누구) in 본: continue
+            본.add((w, 누구))
+            out.append(("걸림", "연기", f"사람 정지 낱말 「{w}」({누구}) — 숨 · 눈 · 무게 · 손 · 머리칼의 연기 박자로 바꾼다(점검표 26). 물건을 멈추는 말이면 주어(the can · the door)를 밝혀 PHYSICS: 줄에 쓰고, "
+                        "사람 없는 판이면 인물을 []로 밝힌다(컷표 · 컷표 없는 편은 _순서.json 그 판)"))
+    if not 있음: return out
+    act = 연기글(글, 칸)
+    if act.strip():   # 박자는 ACTION 칸 안에서, 사람의 것만 센다 — 샷 머리의 「SHOT 1 (0–2 s)」 · CAMERA 줄의 초 · 물건의 박자는 사람 연기의 박자가 아니다
+        n = 사람박자수(act)
+        if not n:
+            out.append(("걸림", "연기", "사람 연기에 시간 박자 없음 — ACTION에 「at about 0.6 s she …」처럼 몇 초에 누가 무엇을 하는지(점검표 26). 사람 없는 컷이면 인물을 []로 밝힌다(컷표 · 컷표 없는 편은 _순서.json 그 판)"))
+        elif n < 박자최소:
+            out.append(("걸림", "연기", f"사람 연기 박자가 {n}개뿐 — 컷표 「연기」의 박자(둘 이상)를 ACTION에 초와 함께 그대로 옮긴다(범위 「from 0.8 s to 1.6 s」는 한 박자 · 점검표 26)"))
+    else:   # ACTION 칸 없이 풀어 쓴 지시문 — 박자를 볼 칸이 없다
+        out.append(("걸림" if 낼판 else "주의", "연기", "사람이 나오는데 ACTION: 칸이 없다 — 사람 연기의 시간 박자를 보지 못했다, 지시문 틀대로 ACTION: 줄에 박자를 적는다(점검표 26)"))
+    if 시작그대로.search(글):
+        out.append(("주의", "연기", "「start from it unchanged」가 사람을 붙든다 — 시작 자세 첫 줄로(26 — 굽기 시트 지시문 틀: 「@이미지 1 shows her starting pose … the picture never holds still」)"))
+    return out
+
+
+def 굽기전검사(지시문글, 실내=None, 인물=None, 소리만=False, 박자최소=1):
+    """내기 도구(크레딧내기.py · 드리미나내기.py)가 내기 전에 부른다 — 지시문검사(물건 · 실내) + 사람지시문검사(정지 낱말 · 박자 · ACTION 칸 · 시작 첫 줄).
+    → [(등급, 글)], 등급은 "걸림" · "주의". 컷표가 없어도 돈다. 걸림이 하나라도 있으면 내지 않는다. 인물 · 소리만 · 박자최소는 사람지시문검사와 같다(판정보가 판마다 정한다)."""
+    if not 지시문글.strip(): return [("걸림", "지시문이 비었다")]
+    return [(등급, f"({항목}) {말}") for 등급, 항목, 말 in 지시문검사(지시문글, 실내) + 사람지시문검사(지시문글, 낼판=True, 인물=인물, 소리만=소리만, 박자최소=박자최소)]
+
+
+def 판정보(판, seq=None):
+    """_순서.json 판 한 줄(+ 컷표) → 그 판의 컷 이름들 · 인물 · 소리만 · 실내 · 프리비즈 · 박자최소. 내기 도구 · --지시문 · 꾸러미점검이 같은 함수를 쓴다.
+    컷들: 판의 「컷」(이름이나 목록 — 대안 판 C2b는 "컷": ["C2"])이 컷표의 컷 이름이면 그것, 아니면 판 id(판 id = 컷 이름 · <편>-<컷> · 컷의 「판」)나 판 폴더 이름(001_C1 → C1)으로 찾는다.
+    인물: 틀 2 컷표에서 그 컷들의 「인물」을 모은 것, 컷을 못 찾았으면 판의 「인물」(목록 — 컷표 없는 편에서 사람이 나오는 판 · 안 나오는 판을 밝힐 때), 둘 다 없으면 None(글에서 짐작).
+    소리만: 「방식」이 「목소리 판」이거나 「소리만」: true — 그림을 쓰지 않는 판이라 컷표에 없어도 되고 사람 연기도 보지 않는다.
+    프리비즈: 판 id가 pv + 숫자 · 붙임표로 시작(pv5-08-1) — 움직임을 참고 영상에서 받는 판이라 지시문 검사를 건너뛴다.
+    박자최소: ACTION에 있어야 할 시간 박자 수 — 틀 2 컷표의 사람 컷에 이어진 판은 2, 그 밖은 1."""
+    판id = 판.get("id")
+    소리만 = 판.get("방식") == "목소리 판" or 판.get("소리만") is True
+    폴더 = re.sub(r"^\d+_", "", str(판.get("폴더") or ""))
+    컷들 = (판의컷(seq, 판id, 판.get("컷")) or (판의컷(seq, 폴더) if 폴더 else [])) if seq else []
+    인물 = 판.get("인물") if isinstance(판.get("인물"), list) else None
+    실내컷 = {d["cut"] for d in (seq or {}).get("detail", []) if d.get("실내")}
+    if 컷들 and 틀둘(seq):
+        목록 = [d.get("인물") for d in seq.get("detail") or [] if d.get("cut") in 컷들]
+        if 목록 and all(isinstance(x, list) for x in 목록): 인물 = list(dict.fromkeys(n for x in 목록 for n in x if isinstance(n, str)))
+    실내 = True if (판.get("실내") is True or any(c in 실내컷 for c in 컷들)) else (False if 판.get("실내") is False else None)
+    박자최소 = 2 if (컷들 and 틀둘(seq) and 인물) else 1   # 컷표에 이어진 사람 판 — 표의 「연기」 박자(둘 이상)가 ACTION에 옮겨졌는지
+    return dict(컷들=컷들, 인물=인물, 소리만=소리만, 실내=실내, 프리비즈=bool(re.match(r"pv[\d-]", str(판id or ""))), 박자최소=박자최소)
+
+
+def 지시문판들(경로들):
+    """꾸러미 폴더(_순서.json 또는 */지시문.txt) · 글 파일 → [{"id": 판 id, "컷": 컷 이름, "파일", "글", "남길것", "판": _순서.json의 그 판 줄(없으면 {"id"})}]"""
     out = []
     for p in map(Path, 경로들):
         if p.is_dir():
@@ -184,16 +1000,27 @@ def 지시문파일들(경로들):
                     f = p / x["폴더"] / "지시문.txt"
                     sid = str(x.get("id", ""))
                     cut = sid.rsplit("-", 1)[-1] if "-" in sid else re.sub(r"^\d+_", "", x["폴더"])
-                    out.append((cut, f, f.read_text(encoding="utf-8") if f.exists() else "", x.get("남길 것", "")))
+                    out.append(dict(id=sid or cut, 컷=cut, 파일=f, 글=f.read_text(encoding="utf-8") if f.exists() else "", 남길것=x.get("남길 것", ""), 판={**x, "id": sid or cut}))
             else:
                 for f in sorted(p.glob("*/지시문.txt")) + sorted(p.glob("*.txt")):
-                    out.append((re.sub(r"^\d+_", "", f.parent.name if f.name == "지시문.txt" else f.stem), f, f.read_text(encoding="utf-8"), ""))
+                    cut = re.sub(r"^\d+_", "", f.parent.name if f.name == "지시문.txt" else f.stem)
+                    out.append(dict(id=cut, 컷=cut, 파일=f, 글=f.read_text(encoding="utf-8"), 남길것="", 판={"id": cut}))
         else:
-            out.append((re.sub(r"^\d+_", "", p.stem), p, p.read_text(encoding="utf-8"), ""))
+            cut = re.sub(r"^\d+_", "", p.stem)
+            out.append(dict(id=cut, 컷=cut, 파일=p, 글=p.read_text(encoding="utf-8"), 남길것="", 판={"id": cut}))
     return out
 
 
+def 지시문파일들(경로들):
+    """꾸러미 폴더(_순서.json 또는 */지시문.txt) · 글 파일 → [(컷 이름, 파일, 글, 남길 것)]"""
+    return [(x["컷"], x["파일"], x["글"], x["남길것"]) for x in 지시문판들(경로들)]
+
+
 # ───────── 결과 모으기 ─────────
+항목순서 = ("틀", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "점", "고요", "지도")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다)
+기본항목 = ("틀", "소품", "사건", "소리", "지시문", "그림지시문", "점", "고요", "지도")
+
+
 class 결과:
     def __init__(self):
         self.항목들 = []
@@ -204,13 +1031,14 @@ class 결과:
         self.항목들.append(x)
 
     def 코드(self):
+        # 주의 · 알림은 끝 코드를 바꾸지 않는다(알림: 옛 틀 컷표처럼 「이 검사는 돌지 않았다」를 알리는 줄)
         if any(x["등급"] == "걸림" for x in self.항목들): return 1
         if any(x["등급"] == "확인" for x in self.항목들): return 2
         return 0
 
     def 보고(self):
-        표시 = {"걸림": "✗", "확인": "?", "주의": "~", "통과": "✓"}
-        for 항목 in ("소품", "사건", "소리", "지시문", "점", "고요", "지도"):
+        표시 = {"걸림": "✗", "확인": "?", "주의": "~", "통과": "✓", "알림": "·"}
+        for 항목 in 항목순서:
             xs = [x for x in self.항목들 if x["항목"] == 항목]
             if not xs: continue
             n = {g: sum(1 for x in xs if x["등급"] == g) for g in 표시}
@@ -316,19 +1144,310 @@ def 소리표검사(seq, r, 간격=(0.6, 1.0), 영상=None):
                 if abs(봉["시작t"] - t) > 0.05: 간격판정(이름, 봉["시작t"], rt, 어디, "실제 소리로: ")   # 표의 시각이 아니라 실제로 소리가 시작한 시각으로 다시 잰다(11-09 Astra)
 
 
+# ───────── 컷표 「틀 2」 표 검사(콘티 단계 · 2026-11-10) ─────────
+# 왜 있나: 되풀이된 지적(사람이 굳음 · 컷마다 빛 · 배경이 바뀜 · 같은 구도 컷을 잇달아 붙임 · 끝에 제품이 안 보임 · 글자가 기본 글꼴)은 규칙 문서가 안 읽혀서가 아니라
+#   콘티에 그 칸이 없어서 샜다 — 칸을 표로 적게 하고 비면 걸리게 한다. 괄호 번호는 docs/마케팅/제작양식/광고영상_슬롭점검표.md의 줄 번호다.
+글자종류 = ("말자막", "강조", "이름", "끝로고", "장면속", "정보")
+글꼴로침 = re.compile(r"기본 ?글꼴|화면 ?글꼴|회사 ?글꼴|글꼴로 ?(?:침|친|쳐|쳤)|(?<![A-Za-z])(?:SUIT|Inter)(?![A-Za-z])")
+글꼴부정 = re.compile(r".{0,10}?(?:않|아님|아니|말고|대신|금지|없이|안 ?씀|안 ?쓴)")   # 「화면 글꼴 대신 그린 글자」 · 「SUIT 말고」는 글꼴로 친 것이 아니다
+# 연기 박자의 한국어 정지 낱말 — 좁게: 「가만히 서 있다」 · 「멈춘 채(로) 바라본다」 · 「그대로 서 있다」 · 「그 자리에 서 있다」 · 「자세 · 포즈를 유지한다」 · 「꼼짝 않는다」 · 「멈춰 있다」 ·
+#   「표정 없이 바라본다」 · 「미동이 없다」 · 「움직임이 없다」는 걸고, 「숨을 멈춘다」 · 「걸음을 멈추고 돌아본다」 · 「굳은 표정으로 고개를 든다」 · 「가만히 서 있다가 돌아선다」 ·
+#   「그대로 서둘러 나간다」 · 「자세를 낮춘다」 · 「무표정하던 얼굴이 풀린다」는 걸지 않는다(뒤에 「…다가」 · 「…던」이 오면 이어지는 동작이다).
+#   「움직이지 않는다」 · 「움직임이 없다」는 바로 앞의 주어(은 · 는 · 이 · 가가 붙은 낱말 — 사이에는 「조금도」 · 「전혀」 같은 부사만)가 아는 물건일 때만 걸지 않는다(「냄비는 조금도 움직이지 않고 수아가 젓가락을 든다」) —
+#   주어가 없거나 모르는 낱말(「학생이」 · 「손님들은」) · 인물 이름이거나 사람과 나란히 놓였거나(「수아와 컵은」) 주어가 딴 절의 것이면(「문이 닫힌 뒤에도 움직이지 않는다」) 건다(11-10 넷째 · 다섯째 검수).
+_이어짐 = r"(?![^.,;]{0,6}(?:다가|던 ))"
+연기정지_한 = re.compile(r"(?:가만히|꼼짝(?:도)? ?(?:않고|없이)|멈춘 채|굳은 채|얼어붙은 채|정지한 채)(?:로)?(?: 그대로)? ?(?:서|앉|바라|있|누워|기다)" + _이어짐
+                      + r"|(?:그대로|그 자리에) (?:서 ?있|앉아 ?있|누워 ?있|멈춰 ?있|굳어 ?있)" + _이어짐
+                      + r"|멈춰 선 채|멈춰 ?(?:서 ?)?있" + _이어짐 + r"|(?:굳어|얼어붙어) ?있" + _이어짐
+                      + r"|정지(?:한 채| 자세| 상태|해 있)|무표정(?!하던|이던|했던)|표정 ?없이|표정이 없다|표정 없는 얼굴로|미동(?:도|이)? ?없|움직임(?:이)? ?없(?:이|다|는)|움직이지 않(?:는다|고 |은 채)"
+                      r"|꼼짝(?:도)? ?(?:않는|않은|안 ?한|안 ?하|하지 않)|(?:자세|포즈)(?:를|로)? ?(?:그대로 ?)?(?:유지|지킨|지키|버틴|버티)")
+_한주어 = re.compile(r"((?:[가-힣A-Za-z]+(?:와|과|랑|이랑|하고)\s+)*)([가-힣A-Za-z]+?)(?:들)?(?:은|는|이|가)\s+(?:(?:조금도|전혀|여전히|그대로|끝까지|계속|아직|더는|더 이상|꼼짝도|아예|하나도|[가-힣A-Za-z]+\s+(?:위|안|옆|앞|뒤|밑|아래|속|곁|가운데)에(?:서)?|[가-힣A-Za-z]+에서)\s+)*$")   # 정지 말 바로 앞의 주어(나란히 놓인 낱말까지) — 사이에는 부사와 자리 말(「탁자 위에서」)만
+# 아는 물건(한국어) — 사람 · 몸으로도 읽히는 낱말(눈 · 등 · 다리 · 배 · 머리 · 발 · 팬)은 넣지 않는다. 「…들」은 떼고 본다
+_한물건 = set("""냄비 주전자 프라이팬 컵 잔 머그 병 캔 그릇 접시 쟁반 젓가락 숟가락 포크 칼 뚜껑 상자 박스 봉지 봉투 가방 우산 문 창문 창 커튼 블라인드 의자 탁자 테이블 책상 식탁 소파 침대
+ 책 공책 종이 메모 펜 연필 시계 램프 조명 전등 등불 불빛 빛 촛불 카메라 화면 배경 벽 바닥 천장 그림자 물 물방울 김 연기 증기 얼음 국물 면 라면 밥 음식 음료 커피 우유 주스 맥주 케이크 빵 과자
+ 사과 귤 달걀 자동차 차 버스 기차 지하철 자전거 바퀴 공 꽃 꽃잎 나무 나뭇잎 잎 돌 구름 하늘 바다 파도 비 빗방울 눈송이 간판 포스터 스티커 사진 액자 거울 휴대폰 폰 전화기 노트북 키보드 리모컨
+ 선풍기 인형 장난감 로고 글자 자막 제품 상품 패키지 포장 라벨 풍선 깃발 현수막 터빈 날개 기계 엘리베이터 에스컬레이터 신호등 가로등 건물 집 도로 길 다리미 냉장고 세탁기 텔레비전 모니터""".split())
+
+
+def 빈칸(v):
+    return v is None or (isinstance(v, str) and not v.strip())
+
+
+def 숫자(v):
+    """표의 초 칸 — 숫자(참 · 거짓은 아님)나 숫자 글이면 float, 아니면 None"""
+    if isinstance(v, bool): return None
+    if isinstance(v, (int, float)): return float(v)
+    if isinstance(v, str):
+        try: return float(v.strip())
+        except ValueError: return None
+    return None
+
+
+def 한칸(s):
+    """공백 여러 칸 · 줄바꿈을 한 칸으로 — 표의 문장이 지시문에 글자 그대로 들었는지 견줄 때"""
+    return re.sub(r"\s+", " ", str(s)).strip()
+
+
+def 구도정리(s):
+    return re.sub(r"[\s·•ㆍ‧∙・,/]+", "", str(s)).lower()
+
+
+def 틀둘(seq):
+    return isinstance(seq, dict) and 숫자(seq.get("틀")) == 2
+
+
+def 연기정지낱말(글, 이름들=()):
+    """컷표 「연기」 박자 글에서 사람을 멈추는 낱말 — 한국어는 좁게(연기정지_한), 영어는 지시문과 같은 낱말(사람정지낱말).
+    「움직이지 않는다」 · 「움직임이 없다」는 바로 앞의 주어가 아는 물건일 때만 넘긴다. 이름들: 그 편 인물 표의 이름 — 물건 낱말과 같은 이름(「구름」)도 사람이다."""
+    out = []
+    for m in 연기정지_한.finditer(글):
+        w = m.group(0)
+        if w.startswith(("움직이지 않", "움직임")):
+            앞 = 글[:m.start()]
+            주어 = _한주어.search(앞)
+            낱들 = ([re.sub(r"(?:와|과|랑|이랑|하고)$", "", x) for x in 주어.group(1).split()] + [주어.group(2)]) if 주어 else []
+            if 낱들 and all(re.sub(r"들$", "", x) in _한물건 and x not in 이름들 and re.sub(r"들$", "", x) not in 이름들 for x in 낱들): continue   # 바로 앞의 주어가 물건이다 — 사람 정지가 아니다
+        out.append(w)
+    return list(dict.fromkeys(out + 사람정지낱말(글)))   # 이 칸은 사람 컷의 연기다 — 연기 글 규칙 그대로
+
+
+def 글꼴로쳤나(법):
+    return any(not 글꼴부정.match(법[m.end():]) for m in 글꼴로침.finditer(법))
+
+
+def 장면실내채움(seq):
+    """틀 2 — 장면 표의 「실내」를 그 장면을 쓰는 컷에 옮겨 적는다(컷에 실내 · 실외를 따로 적었으면 그것을 따른다).
+    기존 실내 검사(점 시트 · 지시문의 실내 눈 걸림 · 표빈칸)가 컷의 실내 칸을 보기 때문이다. 옛 틀 표는 건드리지 않는다."""
+    if not 틀둘(seq): return seq
+    장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
+    for d in seq.get("detail") or []:
+        if "실내" in d or "실외" in d: continue
+        s = 장면표.get(d.get("장면")) if isinstance(d.get("장면"), str) else None
+        if isinstance(s, dict) and s.get("실내") is True: d["실내"] = True
+        elif isinstance(s, dict) and s.get("실내") is False: d["실외"] = True
+    return seq
+
+
+def 틀검사(seq, r):
+    """컷표 틀 2의 칸 검사(T1~T15) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약)."""
+    def 걸림(컷, 글): r.더함("틀", 컷, "걸림", 글)
+    def 주의(컷, 글): r.더함("틀", 컷, "주의", 글)
+    전 = len(r.항목들)
+    det = seq.get("detail") or []
+    장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
+    인물표 = seq.get("인물") if isinstance(seq.get("인물"), dict) else {}
+    # T10 볼 이유 · T13 가까운 사례 · T12 엔진
+    for k, 뜻 in (("이기는것", "이 편이 무엇으로 이기는지(웃김 · 여운 · 공력)"), ("한문장", "처음 보는 사람이 한 문장으로 말할 내용을")):
+        if 빈칸(seq.get(k)): 걸림("표", f"「{k}」 칸이 비었다 — {뜻} 적는다(3)")
+    if 빈칸(seq.get("가까운사례")): 주의("표", "「가까운사례」 칸이 비었다 — 만족 사례 장부에서 가장 가까운 사례(S번호)를 적는다")
+    엔진 = seq.get("엔진") if isinstance(seq.get("엔진"), dict) else {}
+    for k in ("그림", "영상"):
+        v = 엔진.get(k)
+        if 빈칸(v) or v in ([], {}): 걸림("표", f"「엔진.{k}」 칸이 비었다 — 한 편은 그림 엔진 하나 · 영상 모델 하나(G11)")
+        elif not isinstance(v, str) or re.search(r"[+,/]| 및 ", v): 걸림("표", f"「엔진.{k}」에 둘 이상이 적혔다(「{v}」) — 한 편은 그림 엔진 하나 · 영상 모델 하나(G11)")
+    # T1 · T5 장면 표 / T2 인물 표 — 쓰는 줄마다 한 번씩
+    쓰는장면 = list(dict.fromkeys(d.get("장면") for d in det if isinstance(d.get("장면"), str) and d.get("장면").strip()))
+    for 이름 in 쓰는장면:
+        s = 장면표.get(이름)
+        if not isinstance(s, dict): continue   # 표에 없는 장면은 아래 컷 줄에서 건다
+        빠짐 = [k for k in ("장소", "빛", "기준그림") if 빈칸(s.get(k))]
+        if 빠짐: 걸림(f"장면 {이름}", f"장면 「{이름}」의 {' · '.join(빠짐)} 칸이 비었다 — 장면 · 빛을 표에 한 번 적는다(51)")
+        if 빈칸(s.get("시간대")): 주의(f"장면 {이름}", f"장면 「{이름}」의 「시간대」 칸이 비었다 — 컷 사이 낮 · 밤이 바뀌는지 못 본다(51)")
+    쓰는인물 = list(dict.fromkeys(n for d in det if isinstance(d.get("인물"), list) for n in d["인물"] if isinstance(n, str)))
+    for 이름 in 쓰는인물:
+        p = 인물표.get(이름)
+        if not isinstance(p, dict): continue
+        빠짐 = [k for k in ("묘사", "기준그림") if 빈칸(p.get(k))]
+        if 빠짐: 걸림(f"인물 {이름}", f"인물 「{이름}」의 {' · '.join(빠짐)} 칸이 비었다 — 인물은 표에 한 번 적고 기준 그림을 고정한다(일관성 — 12 · G11)")
+        # T14 인물 설정(11-08 유호님 「스토리보드가 설정되면 캐릭터들의 성격이나 이 씬에서 하는 역할을 먼저」 — 제작 규칙 순서 1-1)
+        설정 = p.get("설정")
+        if 빈칸(설정) or 설정 in ({}, []) or (isinstance(설정, dict) and all(빈칸(v) for v in 설정.values())):
+            걸림(f"인물 {이름}", f"인물 「{이름}」의 「설정」 칸이 비었다 — 바닥의 믿음 · 버릇 · 바라는 것 · 두려운 것 · 이 편에서 맡는 일을 적는다(단역이면 「단역 — …」 한 줄, 제작 규칙 순서 1-1)")
+    # T15 사건마다 감정 설계(목적 · 겹친 감정 · 보이는 장치) — 심사 4-3이 이 칸과 견준다(33). 사건의 「감정」 칸은 감정 클로즈 컷 이름이라 설계는 「감정설계」에 적는다
+    for ev in seq.get("사건") if isinstance(seq.get("사건"), list) else []:
+        if not isinstance(ev, dict) or ev.get("압축") is True: continue
+        설계 = ev.get("감정설계")
+        설계있음 = (isinstance(설계, str) and 설계.strip()) or (isinstance(설계, list) and any((isinstance(g, str) and g.strip()) or (isinstance(g, dict) and not 빈칸(g.get("감정"))) for g in 설계))
+        빠짐 = [k for k, 없음 in (("목적", 빈칸(ev.get("목적"))), ("감정설계", not 설계있음)) if 없음]
+        if 빠짐: 걸림(f"사건 {ev.get('이름', '?')}", f"사건 「{ev.get('이름', '?')}」의 {' · '.join(빠짐)} 칸이 비었다 — 왜 이걸 하는지(목적)와 겹친 감정마다 보이는 장치를 적는다(33 · 심사 4-3, 제작 규칙 순서 1-1)")
+    if not det: 주의("표", "컷(detail)이 아직 없다 — 기획 단계 표다. 콘티 단계에서는 컷마다 장면 · 인물 · 구도 · 카메라 · 연기를 채운다(내기 도구는 컷표에 없는 판을 내지 않는다)")
+    # 컷마다
+    for i, d in enumerate(det):
+        cut = d.get("cut", f"#{i + 1}"); 이름 = d.get("장면"); 인물 = d.get("인물"); 구도 = d.get("구도")
+        if not isinstance(이름, str) or 빈칸(이름): 걸림(cut, "「장면」 칸이 비었다 — 장면 · 빛을 표에 한 번 적는다(51)"); 이름 = None
+        elif not isinstance(장면표.get(이름), dict): 걸림(cut, f"장면 「{이름}」이 장면 표에 없다 — 장면 · 빛을 표에 한 번 적는다(51)")
+        if not isinstance(인물, list) or not all(isinstance(n, str) for n in 인물):
+            걸림(cut, "「인물」 칸이 없다 — 나오는 사람 이름을 적고 사람 없는 컷은 []로 밝힌다(일관성 — 12 · G11)"); 인물 = None
+        else:
+            for 누구 in 인물:
+                if not isinstance(인물표.get(누구), dict): 걸림(cut, f"인물 「{누구}」가 인물 표에 없다 — 묘사 · 기준 그림을 표에 한 번 적는다(일관성 — 12 · G11)")
+        if 인물:   # T3 사람 컷의 연기 박자
+            연기 = [b for b in (d.get("연기") if isinstance(d.get("연기"), list) else []) if isinstance(b, dict)]
+            박자수 = sum(1 for b in 연기 if 숫자(b.get("t")) is not None and not 빈칸(b.get("무엇")))
+            if 박자수 < 2: 걸림(cut, f"사람 컷에 연기 박자(몇 초에 · 무엇을)가 없다(26) — t(초)와 무엇을 적은 박자가 {박자수}개다, 둘 이상 적는다")
+            낱말 = list(dict.fromkeys(w for b in 연기 for w in 연기정지낱말(str(b.get("무엇") or ""), tuple(인물표))))
+            if 낱말: 걸림(cut, f"연기 박자에 사람을 멈추는 낱말 「{' · '.join(낱말)}」 — 숨 · 눈 · 무게 · 손 · 머리칼의 움직임으로 바꾼다(26)")
+        elif 인물 == [] and 빈칸(d.get("움직임")): 주의(cut, "사람 없는 컷 — 무엇이 움직이나(「움직임」 칸이 비었다)")
+        if 빈칸(구도): 걸림(cut, "「구도」 칸이 비었다 — 크기 · 각도를 적는다(50)")
+        if i == 0: continue
+        p = det[i - 1]; 앞이름 = p.get("장면") if isinstance(p.get("장면"), str) else None; 앞인물 = p.get("인물")
+        # T4 이웃한 두 컷이 장면 · 인물 · 구도가 모두 같다
+        if (이름 and 이름 == 앞이름 and 인물 is not None and isinstance(앞인물, list) and all(isinstance(n, str) for n in 앞인물) and set(인물) == set(앞인물)
+                and not 빈칸(구도) and not 빈칸(p.get("구도")) and 구도정리(구도) == 구도정리(p.get("구도")) and d.get("이어찍기") is not True):
+            걸림(cut, f"같은 구도 컷을 잇달아 붙임(50) — 앞 컷 {p.get('cut')}과 장면 · 인물 · 구도(「{구도}」)가 같다(크기 · 각도를 바꾸거나, 이어 찍은 컷이면 이어찍기: true)")
+        # T5 이웃한 두 컷의 시간대가 다르다
+        a = (장면표.get(앞이름) or {}).get("시간대") if 앞이름 and isinstance(장면표.get(앞이름), dict) else None
+        b = (장면표.get(이름) or {}).get("시간대") if 이름 and isinstance(장면표.get(이름), dict) else None
+        if not 빈칸(a) and not 빈칸(b) and 한칸(a) != 한칸(b) and d.get("시간건너뜀") is not True:
+            걸림(cut, f"컷 사이 낮 · 밤이 바뀜(51) — 앞 컷 {p.get('cut')} 「{a}」 → 이 컷 「{b}」(날 · 때가 바뀌는 컷이면 시간건너뜀: true)")
+        # T6
+        if 빈칸(d.get("넘어옴")): 주의(cut, "「넘어옴」 칸이 비었다 — 앞 컷에서 넘어올 까닭(29)")
+    # T7 기승전결
+    rows = [row for row in (seq.get("seq") or []) if isinstance(row, (list, tuple)) and row]
+    띠 = {str(row[2]).strip() for row in rows if len(row) > 2}
+    빠진띠 = [k for k in "기승전결" if not any(b.startswith(k) for b in 띠)]
+    if 빠진띠: 걸림("표", f"seq의 띠에 {' · '.join(빠진띠)}이(가) 없다 — 기 · 승 · 전 · 결을 모두 채운다(14)")
+    # T8 끝
+    끝 = seq.get("끝")
+    if not isinstance(끝, dict): 걸림("끝", "「끝」 표가 없다 — 끝 컷 · 가장 센 그림 · 제품(브랜드)이 보이는지 · 로고 멈춤 초를 적는다(2 · 45 · 53)")
+    else:
+        마지막 = rows[-1][0] if rows else (det[-1].get("cut") if det else None)
+        if 빈칸(끝.get("컷")) or 끝.get("컷") != 마지막: 걸림("끝", f"「끝.컷」({끝.get('컷')})이 seq의 마지막 컷({마지막})이 아니다 — 끝 그림은 마지막 컷에 둔다(2 · 45 · 53)")
+        if 빈칸(끝.get("가장센그림")): 걸림("끝", "「끝.가장센그림」 칸이 비었다 — 끝에 이 편에서 가장 센 그림을 둔다(2 · 45 · 53)")
+        if 끝.get("제품보임") is not True and 끝.get("브랜드보임") is not True: 걸림("끝", "끝에 제품(브랜드)이 안 보인다 — 「끝.제품보임」이나 「끝.브랜드보임」이 true여야 한다(2 · 45 · 53)")
+        멈춤 = 끝.get("로고멈춤초")
+        if 멈춤 is None:
+            if 빈칸(끝.get("로고없음")): 주의("끝", "「끝.로고멈춤초」가 없다 — 로고 없는 편이면 「끝.로고없음」에 까닭을 적는다(2 · 45 · 53)")
+        elif 숫자(멈춤) is None: 걸림("끝", f"「끝.로고멈춤초」({멈춤})는 초 숫자로 적는다(2 · 45 · 53)")
+        elif 숫자(멈춤) < 2: 걸림("끝", f"로고 멈춤 {숫자(멈춤):g}초 — 2초 이상 멈춘다(2 · 45 · 53)")
+    # T9 글자
+    글자 = seq.get("글자")
+    if not isinstance(글자, list): 걸림("글자", "「글자」 칸이 없다 — 화면에 나오는 글자를 모두 적고 글자 없는 편은 []로 밝힌다(24 · 46 · 55)")
+    else:
+        for k, g in enumerate(글자):
+            if not isinstance(g, dict): 걸림("글자", f"글자 {k + 1}번이 표 꼴({{글, 종류, 어디, 만드는법}})이 아니다"); continue
+            누구 = f"글자 「{한칸(g.get('글') or '')[:16] or k + 1}」"; 종류 = g.get("종류"); 법 = g.get("만드는법")
+            if 종류 not in 글자종류: 걸림("글자", f"{누구}의 종류(「{종류}」)가 {' · '.join(글자종류)} 가운데 하나가 아니다")
+            if 빈칸(법): 걸림("글자", f"{누구}의 「만드는법」 칸이 비었다 — 그린 글자 · 장면과 한 장으로 구움 · 자막 도구처럼 어떻게 만드는지 적는다(24 · 46 · 55)")
+            elif 종류 in ("강조", "이름", "끝로고", "장면속") and 글꼴로쳤나(str(법)):
+                걸림("글자", f"{누구}({종류}) 만드는법 「{한칸(법)[:40]}」 — 강조 · 이름 · 장면 속 글자는 글꼴로 치지 않는다(24 · 46 · 55)")
+            if 종류 == "정보" and re.search(r"구석|왼쪽 ?위|오른쪽 ?위", str(g.get("어디") or "")): 주의("글자", f"{누구}(정보)가 화면 구석 · 위쪽에 있다 — 읽히는 자리인지 본다(40)")
+    # T11 소리
+    소리 = seq.get("소리") if isinstance(seq.get("소리"), dict) else {}
+    if 빈칸(소리.get("목소리")): 걸림("소리", "「소리.목소리」 칸이 비었다 — 누구 목소리인지(52), 목소리가 없는 편이면 「없음」이라고 적는다")
+    첫말 = 소리.get("첫말초")
+    if 숫자(첫말) is not None and 숫자(첫말) > 3: 주의("소리", f"첫 말이 {숫자(첫말):g}초 — 처음 3초 안에 말이나 끄는 소리가 나오는지 본다(30)")
+    elif 첫말 is None and 빈칸(소리.get("초반을끄는것")): 주의("소리", "첫 말이 없는데 「소리.초반을끄는것」 칸이 비었다 — 처음 3초를 무엇이 끄는지 적는다(30)")
+    if not any(x["등급"] in ("걸림", "주의") for x in r.항목들[전:]):
+        r.더함("틀", "표", "통과", f"틀 2 — 컷 {len(det)} · 장면 {len(쓰는장면)} · 인물 {len(쓰는인물)} · 빈 칸 없음")
+
+
+def 표검사(seq, r, 항목=기본항목, 간격=(0.6, 1.0), 영상=None):
+    """표만으로 도는 검사(콘티 단계) — main과 내기 도구(크레딧내기.py의 굽기전)가 같은 함수를 쓴다."""
+    표빈칸(seq, r)
+    if "틀" in 항목:
+        if 틀둘(seq): 틀검사(seq, r)
+        # 알림은 끝 코드를 바꾸지 않는다. 항목 이름은 표빈칸과 같은 자리(소품 · 표)에 둔다 — 표가 빈 컷순서의 항목 묶음(소품 · 사건 · 소리)을 고정한 기존 시험을 깨지 않으려고
+        else: r.더함("소품", "표", "알림", "옛 틀 — 장면 · 구도 · 연기 · 끝 칸 검사 없음(틀 2로 옮기면 돈다)")
+    if "소품" in 항목: 소품표검사(seq, r)
+    if "사건" in 항목: 사건표검사(seq, r)
+    if "소리" in 항목: 소리표검사(seq, r, 간격, 영상)
+
+
+컷표에없는판 = ('컷표에 이 판의 컷을 적고 판 id를 컷 이름으로 맞추거나 컷에 「판」을 적는다. 대안 판은 _순서.json 그 판에 "컷": ["<컷 이름>"], '
+              '소리만 쓰는 판은 "소리만": true — 연기 · 구도 · 빛을 못 견줬다')
+
+
+def 판의컷(seq, 판id, 판컷=None):
+    """꾸러미 판 → 컷표의 컷 이름들. 판의 「컷」(이름 · 목록 — 대안 판 C2b의 "컷": ["C2"])이 컷표의 컷 이름이면 그것,
+    아니면 detail의 cut이 판 id와 같거나, detail의 「판」이 그 id거나, 판 id가 <무엇>-<cut>으로 끝나면 그 컷."""
+    det = (seq or {}).get("detail") or []
+    이름들 = list(dict.fromkeys(d.get("cut") for d in det if isinstance(d.get("cut"), str) and d.get("cut")))
+    원함 = [판컷] if isinstance(판컷, str) else [c for c in 판컷 if isinstance(c, str)] if isinstance(판컷, (list, tuple)) else []
+    맞음 = list(dict.fromkeys(c for c in 원함 if c in 이름들))
+    if 맞음: return 맞음
+    컷들 = list(dict.fromkeys(d["cut"] for d in det if d.get("cut") == 판id or d.get("판") == 판id))
+    if not 컷들:
+        후보 = [c for c in 이름들 if str(판id).endswith("-" + c)]
+        if 후보: 컷들 = [max(후보, key=len)]
+    return 컷들
+
+
+def 빛대조(seq, 컷들, 글):
+    """틀 2 — 판의 지시문에 그 컷 장면의 「빛」 문장이 글자 그대로(공백 · 줄바꿈만 한 칸으로) 들었나 → [(등급, 글)]. 표의 빛 칸이 빈 것은 틀 검사(T1)가 건다."""
+    out = []; 장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}; 본 = set(); 정리글 = 한칸(글)
+    for d in seq.get("detail") or []:
+        이름 = d.get("장면")
+        if d.get("cut") not in 컷들 or not isinstance(이름, str) or 이름 in 본: continue
+        본.add(이름)
+        빛 = (장면표.get(이름) or {}).get("빛") if isinstance(장면표.get(이름), dict) else None
+        if 빈칸(빛): continue
+        if 한칸(빛) not in 정리글:
+            out.append(("걸림", f"장면의 빛 문장이 표와 다르다 — 표의 빛 줄을 그대로 쓴다(51): 장면 「{이름}」 「{한칸(빛)[:70]}」"))
+    return out
+
+
 def 지시문항목(seq, r, 경로들, 실내목록=None):
-    실내 = {d["cut"] for d in (seq or {}).get("detail", []) if d.get("실내")} | set(실내목록 or [])
-    파일들 = 지시문파일들(경로들)
-    if not 파일들: r.더함("지시문", "파일", "확인", "지시문 파일을 못 찾음"); return
-    for cut, f, 글, 남길것 in 파일들:
-        if not 글: r.더함("지시문", cut, "확인", f"지시문이 비었다: {f}"); continue
-        hits = 지시문검사(글, True if cut in 실내 else None)
-        for 등급, 항목, 말 in hits: r.더함("지시문", cut, 등급, f"({항목}) {말}")
-        for 등급, 항목, 말 in 남길것검사(남길것 or ""): r.더함("지시문", cut, 등급, f"({항목}) {말}")
-        if not hits: r.더함("지시문", cut, "통과", "물건 · 실내 낱말 없음")
+    """꾸러미 · 지시문 글 검사 — 내기 도구의 굽기전()과 같은 판정 · 같은 등급이다(웹에서 손으로 내는 판은 이 검사가 관문이다). 걸림은 판 id로 적는다."""
+    표실내 = {d["cut"] for d in (seq or {}).get("detail", []) if d.get("실내")}; 준실내 = set(실내목록 or [])
+    틀2 = 틀둘(seq)
+    판들 = 지시문판들(경로들)
+    if not 판들: r.더함("지시문", "파일", "확인", "지시문 파일을 못 찾음"); return
+    for 판 in 판들:
+        이름, cut, f, 글, 남길것 = 판["id"], 판["컷"], 판["파일"], 판["글"], 판["남길것"]
+        정보 = 판정보(판["판"], seq)   # 판을 컷에 이어 그 컷의 실내 · 인물 · (틀 2) 장면의 빛을 본다
+        if 정보["프리비즈"]: r.더함("지시문", 이름, "알림", "프리비즈 판 — 지시문 검사 건너뜀(움직임을 참고 영상에서 받는다)"); continue
+        if not 글.strip(): r.더함("지시문", 이름, "걸림", f"지시문이 비었다: {f}"); continue
+        컷들 = 정보["컷들"]
+        실내 = True if ({cut, 이름} & 표실내 or {cut, 이름, *컷들} & 준실내) else 정보["실내"]
+        hits = 지시문검사(글, 실내)
+        for 등급, 항목, 말 in hits: r.더함("지시문", 이름, 등급, f"({항목}) {말}")
+        for 등급, 항목, 말 in 남길것검사(남길것 or ""): r.더함("지시문", 이름, 등급, f"({항목}) {말}")
+        for 등급, 항목, 말 in 사람지시문검사(글, 낼판=True, 인물=정보["인물"], 소리만=정보["소리만"], 박자최소=정보["박자최소"]): r.더함(항목, 이름, 등급, 말)   # 항목 「연기」 — 물건 · 실내 줄(지시문)과 섞지 않는다
+        if 정보["소리만"]: r.더함("지시문", 이름, "알림", "소리만 쓰는 판 — 사람 연기 · 컷표 대조 건너뜀")
+        elif 틀2 and not 컷들: r.더함("지시문", 이름, "걸림", f"(컷표) 컷표에 없는 판 — {컷표에없는판}")
+        elif 틀2:
+            for 등급, 말 in 빛대조(seq, 컷들, 글): r.더함("지시문", 이름, 등급, f"(빛) {말}")
+        if not hits: r.더함("지시문", 이름, "통과", "물건 · 실내 낱말 없음")
     if seq:
         for d in seq.get("detail", []):
             for 등급, 항목, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항목}) {말}")
+
+
+def 그림지시문항목(seq, r, 경로들):
+    """이미지 콘티 지시문(<폴더>/<컷>.txt — 파일 이름이 컷 이름) — 틀 2일 때 그 컷 장면의 장소 · 빛, 인물마다 묘사 · 옷 문장이 글자 그대로 들었나(G11 · 51)."""
+    if not 틀둘(seq):
+        r.더함("그림지시문", "표", "알림", "옛 틀 컷표 — 이미지 지시문을 표와 견주지 않았다(틀 2로 옮기면 돈다)"); return
+    파일 = {}
+    for p in map(Path, 경로들):
+        if not p.exists(): r.더함("그림지시문", p.name, "확인", f"경로를 못 찾음: {p}"); continue
+        for f in (sorted(p.glob("*.txt")) if p.is_dir() else [p]):
+            파일.setdefault(f.stem, f)
+            파일.setdefault(re.sub(r"^\d+_", "", f.stem), f)   # 「01_C1.txt」처럼 순번을 붙인 이름도 받는다
+    if not 파일: r.더함("그림지시문", "파일", "확인", "이미지 지시문 파일(<컷>.txt)을 못 찾음"); return
+    det = seq.get("detail") or []
+    장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
+    인물표 = seq.get("인물") if isinstance(seq.get("인물"), dict) else {}
+    컷들 = list(dict.fromkeys(d["cut"] for d in det))
+    쓴파일 = set()
+    for cut in 컷들:
+        d = next(x for x in det if x["cut"] == cut); f = 파일.get(cut)
+        if f is None or not f.exists():
+            r.더함("그림지시문", cut, "주의", f"이미지 지시문 파일이 없다: {cut}.txt"); continue
+        쓴파일.add(f); 글 = 한칸(f.read_text(encoding="utf-8")); 빠짐 = []
+        장면 = 장면표.get(d.get("장면")) if isinstance(d.get("장면"), str) else None
+        for k in ("장소", "빛"):
+            v = (장면 or {}).get(k) if isinstance(장면, dict) else None
+            if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"장면 「{d.get('장면')}」의 {k}")
+        for 누구 in (d.get("인물") if isinstance(d.get("인물"), list) else []):
+            p = 인물표.get(누구) if isinstance(누구, str) else None
+            for k in ("묘사", "옷"):
+                v = p.get(k) if isinstance(p, dict) else None
+                if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"인물 「{누구}」의 {k}")
+        if 빠짐: r.더함("그림지시문", cut, "걸림", f"{' · '.join(빠짐)} 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 줄을 그대로 쓴다(G11 · 51)")
+        else: r.더함("그림지시문", cut, "통과", "장소 · 빛 · 인물 줄이 표 그대로")
+    for f in dict.fromkeys(파일.values()):
+        if f not in 쓴파일 and f.exists(): r.더함("그림지시문", f.stem, "주의", f"컷표에 없는 컷 이름의 지시문 파일: {f.name}")
 
 
 # ───────── 그림 · 영상 재기 ─────────
@@ -692,9 +1811,9 @@ def 인자(argv):
     while i < len(argv):
         a = argv[i]
         if a in ("--영상", "--받음", "--그림", "--지도", "--출력", "--앞"): o[a[2:]] = 값(a); i += 2
-        elif a == "--지시문":
-            o["지시문"] = []; i += 1
-            while i < len(argv) and not argv[i].startswith("--"): o["지시문"].append(argv[i]); i += 1
+        elif a in ("--지시문", "--그림지시문"):
+            o[a[2:]] = []; i += 1
+            while i < len(argv) and not argv[i].startswith("--"): o[a[2:]].append(argv[i]); i += 1
         elif a == "--항목": o["항목"] = [s.strip() for s in 값(a).split(",") if s.strip()]; i += 2
         elif a == "--간격":
             parts = [float(s) for s in 값(a).split(",") if s.strip()]
@@ -716,23 +1835,21 @@ def main(argv):
         지시문항목(None, r, o["_"][1:], o["실내"])
         if o["json"]: print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); return r.코드()
         return r.보고()
-    seq_path = Path(o["_"][0]); seq = json.loads(seq_path.read_text(encoding="utf-8"))
+    seq_path = Path(o["_"][0]); seq = 장면실내채움(json.loads(seq_path.read_text(encoding="utf-8")))
     출력 = Path(o.get("출력") or seq_path.parent / "검사_연속성"); 출력.mkdir(parents=True, exist_ok=True)
     지도 = None
     지도경로 = o.get("지도") or seq.get("지도")
     if 지도경로:
         p = Path(지도경로); p = p if p.is_absolute() or p.exists() else seq_path.parent / p
         지도 = json.loads(p.read_text(encoding="utf-8"))
-    항목 = set(o["항목"] or ["소품", "사건", "소리", "지시문", "점", "고요", "지도"])
+    항목 = set(o["항목"] or 기본항목)
     영상 = o.get("영상"); 받음 = o.get("받음"); 그림 = o.get("그림")
-    표빈칸(seq, r)
-    if "소품" in 항목: 소품표검사(seq, r)
-    if "사건" in 항목: 사건표검사(seq, r)
-    if "소리" in 항목: 소리표검사(seq, r, o["간격"], 영상)
+    표검사(seq, r, 항목, o["간격"], 영상)
     if "지시문" in 항목 and o.get("지시문"): 지시문항목(seq, r, o["지시문"], o["실내"])
     elif "지시문" in 항목:
         for d in seq.get("detail", []):
             for 등급, 항, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항}) {말}")
+    if "그림지시문" in 항목 and o.get("그림지시문"): 그림지시문항목(seq, r, o["그림지시문"])
     매체 = 영상 or 받음 or 그림
     if 매체:
         if "점" in 항목: 점항목(seq, r, 출력, 그림, 영상, 받음, o["앞"])

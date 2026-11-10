@@ -17,7 +17,9 @@ from PIL import Image
 
 # 물건 반응 · 큰 물건 자율 움직임 · 실내 눈 낱말은 tools/컷연속성검사.py 한 곳이 정본이다(11-09, 「문 앞」 — 점검표 37 · 38)
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "tools"))   # 저장소 뿌리/tools
-from 컷연속성검사 import 지시문검사  # noqa: E402
+# 사람 연기 규칙(정지 낱말 · 사람이 나오는 판인지 · 박자 · ACTION 칸 읽기)도 같은 곳이 정본이다(11-10 — 내기 도구가 그 규칙으로 제출을 막으므로 두 벌을 두지 않는다).
+#   판정까지 그쪽 함수(사람지시문검사 · 판정보)에 맡긴다 — 낱말만 빌려 와 여기서 다시 판정하면 두 판정이 갈린다
+from 컷연속성검사 import 지시문검사, 사람지시문검사, 판정보  # noqa: E402
 
 BASE = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
 HEAD = "@이미지 1 is the exact first frame of this video"
@@ -31,31 +33,6 @@ WORD = {"TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5, "SIX": 6}
 def ratio(s):
     a, b = map(float, s.split(":"))
     return a / b
-
-
-# 사람 연기(11-07) — 사람에게 정지를 시키는 낱말 · 사람이 나오는지 · 시간 박자
-STILL = re.compile(r"\b(?:completely still|perfectly still|almost (?:perfectly )?still|stays? still|stands? still|sits? still|holds? still|"
-                   r"holds? (?:the|her|his|their|this|that) (?:pose|position)|motionless|does not move|doesn't move|never moves|frozen|without moving|"
-                   r"unmoving|statue-?like|like a statue|expressionless)\b", re.I)
-PERSON = re.compile(r"\b(?:she|he|her|his|they|them|woman|man|girl|boy|person|people|model|actor|actress)\b", re.I)
-# 물건이 정지 동작의 주어일 때만(「the door and every sticky note stay perfectly ▁still」) — 「she stands beside the door, perfectly still」은 사람 정지다(11-09 Astra)
-OBJECT_BEFORE = re.compile(r"\b(?:doors?|notes?|sticky notes?|papers?|frames?|camera|bags?|windows?|curtains?|handles?|locks?|pictures?|posters?)\b(?: and (?:every |the |all the |each |all )?[a-z-]+(?: [a-z-]+)?)? (?:stays?|stayed|remains?|remained|is|are|keeps?|hangs?|sits?|lies?) (?:perfectly |completely |absolutely |totally |very |quite )?$", re.I)
-BEAT = re.compile(r"\b\d+(?:\.\d+)? ?s\b|\bat about \d|\bfrom \d+(?:\.\d+)?")
-LABELS = ("ACTION", "CAMERA", "LOOK", "SOUND", "VOICE", "OUTFIT", "SHOT", "SETTING", "PRODUCT", "TEXT", "LIGHT")
-
-
-def action_text(t):
-    """ACTION 칸(여러 샷이면 SHOT 줄 안의 ACTION까지) 글"""
-    return " ".join(m.group(1) for m in re.finditer(r"ACTION:(.*?)(?=\n[A-Z][A-Z ]+(?:\(|:)|\Z)", t, re.S))
-
-
-def people_text(t):
-    """(이름, 글) — ACTION 칸과 사람 이름 줄(「YUNA: the same young Korean woman …」)"""
-    out = [("ACTION", action_text(t))]
-    for m in re.finditer(r"^([A-Z][A-Z'-]{1,20}(?: [A-Z][A-Z'-]{1,20})?): (.*)$", t, re.M):
-        if m.group(1).split()[0] not in LABELS and PERSON.search(m.group(2)):
-            out.append((m.group(1), m.group(2)))
-    return out
 
 
 def check(name):
@@ -159,19 +136,17 @@ def check(name):
         #   PULSE 412판 중 ACTION 90판이 「still · holds the pose」, 32판이 「expressionless」). 카메라를 멈추는 말은 CAMERA 줄이라 보지 않는다.
         #   프리비즈 판(움직임을 참고 영상에서 받음)은 뺀다
         if not pv:
-            for who, part in people_text(t):
-                # 「the door and every sticky note stay perfectly still」처럼 물건을 멈추라는 말은 사람 정지가 아니다(11-09, 점검표 38의 권장 문장)
-                words = {m.group(0).lower() for m in STILL.finditer(part) if not OBJECT_BEFORE.search(part[max(0, m.start() - 70):m.start()])}
-                for w in sorted(words):
-                    no(f"사람 정지 낱말 「{w}」({who}) — 숨 · 눈 · 무게 · 손 · 머리칼의 연기 박자로 바꾼다")
+            # 사람 정지 낱말 · 박자 없는 사람 연기는 걸림, ACTION 칸 없는 옛 꼴 · 「start from it unchanged」는 알림(내기 도구는 ACTION 칸 없는 사람 지시문도 막는다).
+            #   물건을 멈추라는 말 · 정지를 부정하는 말은 사람 정지가 아니고, 소리만 쓰는 판(방식 「목소리 판」 · 「소리만」: true)은 보지 않는다(tools/컷연속성검사.py 사람지시문검사)
+            정보 = 판정보(x)
+            for 등급, 항목, 말 in 사람지시문검사(t, 인물=정보["인물"], 소리만=정보["소리만"]):
+                if 등급 == "걸림": no(말)
+                elif "start from it unchanged" not in 말: soft.append((pid, f"{항목} — {말}"))   # 첫 줄 꼴은 위에서 따로 본다(이 꾸러미들의 첫 줄이 그 꼴이다)
             # 물건이 소리 · 바람에 반응 · 문 · 창이 손 없이 움직임 · 실내 눈(점검표 37 · 38) — 걸림만 막고 주의(실내 한 줄 권장)는 알리기만.
             # _순서.json 판에 "실내": true를 적으면 그 판의 눈 · 먼지 낱말은 걸림(밝힌 실내), 안 적으면 글의 실내 낱말로 짐작해 알림만(11-09)
             for 등급, 항목, 말 in 지시문검사(t, x.get("실내")):
                 if 등급 == "걸림": no(f"{항목} — {말}")
                 else: soft.append((pid, f"{항목} — {말}"))
-            act = action_text(t)
-            if act and PERSON.search(act) and not BEAT.search(act):
-                no("사람 연기에 시간 박자 없음 — ACTION에 「at about 0.6 s she …」처럼 몇 초에 무엇을 하는지")
         if not 4 <= x["길이"] <= LIMIT:
             no(f"길이 {x['길이']}초")
         for w in OLD:

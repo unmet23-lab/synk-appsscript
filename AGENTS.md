@@ -9,7 +9,7 @@
 - Apps Script 배포 대상은 `Code.js`·`엔진_synkbrief.js`다. 전역 이름공간을 공유하므로 함수·전역 충돌을 확인한다. 익명 웹앱의 `doGet`은 HtmlService를 반환하지 않는다. `엔진_콘텐츠AI.js`는 Strata의 저장소 원천이다.
 - Apps Script를 고친 작업은 검증을 통과하면 [deploy 스킬](.claude/skills/deploy/SKILL.md) 절차로 라이브까지 묻지 않고 반영한다. 반영은 `deploy-security-check.js --push --검수 <ID>` 경로로만 하고, `clasp pull`로 작업본을 덮지 않는다. 시험은 `node --test tests/<파일>`로 돌린다.
 - Atlas 작업은 [8개 담당 엔진의 원문·코드](docs/엔진8종_상향설계_v3.md#engine-owner-sources)에서 시작해 [Atlas 정의](docs/아틀라스_설계.md#atlas-engine-ownership)를 따른다. 별도 LLM 하네스·선택기를 만들지 않는다.
-- AI 영상·이미지는 [만족 사례 장부](docs/마케팅/제작양식/만족사례_장부.md)에서 가장 가까운 사례의 방법으로 시작하고, 유호님이 분명하게 만족을 말한 순간만 그 자리에서 장부에 올린다. 도구 범위는 [제작 도구 선택](docs/마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection), 광고·홍보영상은 [AI 광고영상 제작 규칙](docs/마케팅/제작양식/AI광고영상_제작규칙.md)을 따른다.
+- 영상(광고 · 공모전 · 포트폴리오 · 사람 나오는 SNS)은 [`synk-video` 스킬](.claude/skills/synk-video/SKILL.md)로 시작하고 압축 뒤 또 부른다. AI 영상·이미지는 [만족 사례 장부](docs/마케팅/제작양식/만족사례_장부.md)에서 가장 가까운 사례의 방법으로 시작하고, 유호님이 분명하게 만족을 말한 순간만 그 자리에서 장부에 올린다. 도구 범위는 [제작 도구 선택](docs/마케팅/콘텐츠_제작방식_v2_20261002.md#video-tool-selection).
 - 마스코트(까몽·몽글·마린)는 정본 그림을 화면·영상에 그대로 얹지 않는다. 쓰는 곳마다 그 장면에 맞게 GPT 이미지 2.5로 장면과 한 장으로 새로 굽고, 정본(`tools/lib/마스코트자산.js`)은 생김새 참고로만 넣는다(2026-10-14 확정, [결정 표](docs/_ops/결정.md)).
 - 디자인·자산·생성기는 [DESIGN](DESIGN.md), SNS 제작은 [제작 절차](docs/마케팅/기획장부/제작절차.md) 한 장, 표지·자막은 [SNS 키트](docs/디자인/SNS키트/README.md)에서 시작한다. 자립형 HTML 폰트는 `tools/lib/브랜드폰트.js`를 재사용하고, 발표물은 `_src_*.html` 원고를 `tools/발표물빌드.js`로 만든다.
 - 계정 화면 원천(`experiences/synk-account/src`, 회원 화면 `desktop/renderer` 모듈, 포털이 옮기는 그림·글꼴)을 고치면 `node tools/check-account-bundles.js --build`로 다시 만든 생성물도 같은 커밋에 올린다(CI가 `npm run check:account-bundles`로 낡은 묶음을 잡는다).

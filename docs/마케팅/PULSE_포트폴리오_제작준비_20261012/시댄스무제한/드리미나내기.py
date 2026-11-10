@@ -1,5 +1,8 @@
 # 드리미나 시댄스 2.5 — 꾸러미 판을 공식 CLI(dreamina-canvas)로 내고 받는다(2026-11-04, 유호님 「필요하면 cli 설치하고 진행해도돼」).
-#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--실행]
+#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 <컷순서.json>] [--걸림무시 "<판 id>,…: <까닭>"] [--실행]
+#   내기 전에 낼 판의 지시문을 스스로 검사한다(11-10, 크레딧내기.py의 굽기전) — 사람을 굳히는 낱말 · 손 없이 움직이는 물건 · 실내의 눈이 걸리면 --실행이어도 내지 않는다.
+#   컷표(--컷표, 안 주면 꾸러미 폴더나 그 한 층 위의 컷표.json)가 있으면 표 검사 · 빛 문장 대조도 돈다. 그래도 내야 하면 --걸림무시 "<판 id>,<판 id>: <까닭>"(그 판만) · "모두: <까닭>"
+#   — _드리미나.json 그 판 줄의 「걸림무시」 칸에 남는다. _순서.json 판의 "컷" · "소리만" · "인물" 칸은 크레딧내기.py 머리 설명과 같다.
 #   --계정은 CLI 로그인 칸(--profile)이다. 안 주면 기본 칸(옛 기본 요금제 계정), ultra는 11-05 울트라를 결제한 계정 — 캔버스 id는 칸마다 캔버스_<칸>.txt(git 밖).
 #   기본은 미리 보기(낼 판 · 초 · 크레딧 · 잔액)만 찍는다. --실행일 때만 낸다. 견적이 --상한(안 주면 잔액)을 넘으면 내지 않는다.
 # 판 읽기는 크레딧내기.py의 boards()와 같다(_순서.json 또는 순서표.md). 판을 안 주면 받을곳에 아직 없는 판 전부(판 수만큼), 판을 주면 판마다 한 번씩만 낸다.
@@ -19,8 +22,9 @@ import json, os, re, subprocess, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from 크레딧내기 import boards, PIC
+from 크레딧내기 import boards, PIC, 굽기전, 인자값, 무시쓰는법
 
+IGNORED = {}   # 판 id → 까닭 — --걸림무시로 지시문 걸림을 넘겨 낸 판(장부의 「걸림무시」 칸)
 HOME = os.path.join(os.path.expanduser("~"), ".ai-tools", "dreamina-canvas")
 EXE = os.path.join(HOME, "dreamina-canvas.exe")
 DAY = "C:/Users/q1212/Documents/synk-vendor/pulse-seedance-day-20261028"
@@ -193,6 +197,8 @@ def run_one(pack, out, b):
         time.sleep(60)
     row = {"판": b["id"], "길": "드리미나 CLI", "모드": mode, "길이": b["길이"], "비율": b["비율"], "nodeId": node, "submitId": submit, "resourceId": rid,
            "상태": state, "상한": ceiling, "걸린초": round(time.time() - t0), "지시문": prompt, "오류": made.get("error"), "답": raw if not rid else None}
+    if b["id"] in IGNORED:   # 지시문 걸림을 --걸림무시로 넘겨 낸 판 — 까닭을 그 판 줄에 남긴다(11-10)
+        row["걸림무시"] = IGNORED[b["id"]]
     key = submit or f"{b['id']}-{int(t0)}"
     if state == "failed" and submit:   # 실패 코드(11-05 20114 등)를 기록에 남긴다
         try:
@@ -255,10 +261,15 @@ def main():
     PER_SEC = PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
     if PROFILE:
         PROJECT = open(os.path.join(HOME, f"캔버스_{PROFILE}.txt"), encoding="utf-8").read().strip()
-    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정") if k in a}
+    ignore, table = 인자값(a, "--걸림무시"), 인자값(a, "--컷표")
+    if ignore is not None and not ignore.strip():
+        raise SystemExit(f"--걸림무시에는 까닭을 적는다: {무시쓰는법}")
+    if table is not None and not (table and os.path.exists(table)):
+        raise SystemExit(f"--컷표 파일이 없다: {table or '(경로 없음)'}")
+    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표") if k in a}
     pos = [x for i, x in enumerate(a) if not x.startswith("--") and i not in vals]
     if not pos:
-        raise SystemExit("쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--실행]")
+        raise SystemExit('쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 컷순서.json] [--걸림무시 "판 id,…: 까닭"] [--실행]')
     # 꾸러미를 여럿 줄 수 있다(11-05) — 폴더인 인자는 꾸러미, 나머지는 판 id. 한 프로세스로 내야 장부(_드리미나.json · _받음.json)를 두 프로세스가 덮어쓰지 않는다
     packs = [os.path.abspath(x) for x in pos if os.path.isdir(x)]
     want = [x for x in pos if not os.path.isdir(x)]
@@ -285,6 +296,8 @@ def main():
         s, e, r, au = split_media(p, b)
         print(f"  {b['id']:<18} {b['길이']}초 {b['비율']} · {PER_SEC * b['길이']}크레딧 · {mode_of(s, e, r, au)} · 시작 {len(s)} 끝 {len(e)} 참고 {len(r)} 소리 {len(au)} · {os.path.basename(p)}")
     print(f"낼 것 {len(todo)}판 · {sum(b['길이'] for _, b in todo)}초 · {total}크레딧" + (f" · 건너뜀 {len(held)}: {' · '.join(held)}" if held else ""))
+    if todo:   # 지시문 검사 — 미리 보기에서도 찍고, 걸림이면 --실행이어도 여기서 멈춘다(--걸림무시 "<판 id>,…: <까닭>"이면 그 판만 지나가고 장부에 남는다)
+        IGNORED.update(굽기전(todo, ignore, table))
     limit = min(float(cap) if cap else bal, bal)
     if total > limit:
         raise SystemExit(f"멈춤: 견적 {total}크레딧이 상한 {cap or '-'} · 잔액 {bal}을 넘는다.")
