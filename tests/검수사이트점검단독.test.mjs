@@ -8,7 +8,7 @@ import * as api from '../tools/검수묶음.mjs';
 import {정책만들기, 후보읽기, sha256, 사이트점검단독작업ID, 사이트점검단독원문} from '../tools/lib/검수증명.mjs';
 
 // Only synthetic fixtures. These answers never stand in for a real review.
-function fixture(t,{source='site-v10/drama.js',kind='화면',candidate=false,git=false}={}) {
+function fixture(t,{source='site-v10/drama.js',kind='화면',candidate=false,candidatePath='index.html',candidatePaths=[candidatePath],candidateKind='synk.im',candidateDeleted=false,git=false}={}) {
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-audit-self-')),repo=path.join(dir,'repo');
   t.after(()=>{assert.equal(path.dirname(path.resolve(dir)),path.resolve(os.tmpdir()));assert.ok(path.basename(dir).startsWith('synk-audit-self-'));fs.rmSync(dir,{recursive:true,force:true,maxRetries:5});});
   const write=(p,b)=>{fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,b);};
@@ -26,8 +26,11 @@ function fixture(t,{source='site-v10/drama.js',kind='화면',candidate=false,git
   const record=path.join(dir,'authority.json'),save=()=>write(record,JSON.stringify(authority));
   const options={이름:'audit-self',폴더:path.join(dir,'review'),저장소:repo,바탕:base,끝:'작업본',종류:kind,사용자지정:record,경로:[source]};
   if(candidate){
-    const out=path.join(dir,'candidate');write(path.join(out,'index.html'),'<p>audited</p>\n');
-    write(path.join(out,'후보.json'),JSON.stringify({판:1,종류:'synk.im',항목:[{경로:'index.html',종류:'바꿈',모드:'100644',sha256:sha256(fs.readFileSync(path.join(out,'index.html')))}]}));
+    const out=path.join(dir,'candidate'),rows=candidatePaths.map(p=>{
+      if(!candidateDeleted)write(path.join(out,p),'<p>audited</p>\n');
+      return {경로:p,종류:candidateDeleted?'지움':'바꿈',모드:candidateDeleted?null:'100644',sha256:candidateDeleted?null:sha256(fs.readFileSync(path.join(out,p)))};
+    });
+    write(path.join(out,'후보.json'),JSON.stringify({판:1,종류:candidateKind,항목:rows}));
     const manifest=후보읽기(out);options.배포후보=out;
     authority.candidate={manifestSha256:manifest.manifestSha256,rawManifestSha256:sha256(fs.readFileSync(path.join(out,'후보.json'))),files:manifest.항목.map(f=>({path:f.경로,author:'GPT',scope:사이트점검단독작업ID,sha256:f.sha256}))};
   }
@@ -71,4 +74,47 @@ test('화면과 관문 경로를 분리하고 기존 정책과 다른 제품·�
   for(const source of ['site-v10/site.js','experiences/synk-account/src/core.mjs','Code.js','tools/공개.js','supabase/migrations/remove.sql'])for(const kind of ['화면','백엔드'])assert.throws(fixture(t,{source,kind}).policy,/범위/);
   for(const change of [{상태:'D'},{상태:'R',옛경로:'site-v10/drama.css'},{상태:'C'},{상태:'T'}]){const f=fixture(t);Object.assign(f.files[0],change);assert.throws(f.policy,/사이트 점검/);}
   const empty=fixture(t,{candidate:true});empty.files.length=0;assert.throws(empty.policy,/후보 단독/);
+});
+
+const redirectPaths=['.github/site-check/check.mjs','.github/site-check/redirect-contract.mjs','.github/site-check/redirect-contract.test.mjs'];
+test('PULSE 이동 계약 세 검사 파일만 이번 단독 검수의 화면 원천·synk.im 후보에 추가한다',t=>{
+  for(const source of redirectPaths){
+    const f=fixture(t,{source,candidate:true,candidatePath:source});
+    assert.equal(f.policy().판,4);assert.deepEqual(f.policy().필수,['GPT']);
+    assert.throws(fixture(t,{source,kind:'백엔드'}).policy,/범위/);
+    assert.throws(fixture(t,{source,kind:'백엔드',candidate:true,candidatePath:source}).policy,/검수 종류/);
+    assert.deepEqual(정책만들기({종류:'백엔드',작성자:'GPT'},[{경로:source,상태:'M'}]).필수,['GPT','Claude']);
+    assert.throws(()=>정책만들기({...f.options,사용자지정:undefined,작성자:'GPT'},f.files),/Claude/);
+    assert.throws(()=>정책만들기({...f.options,사용자지정:undefined,종류:'백엔드',작성자:'GPT'},f.files),/검수 종류/);
+    assert.throws(()=>정책만들기({종류:'화면',작성자:'GPT',담당예외:'site-audit-20261110'},f.files),/직접 승인 범위/);
+    const wrongTask=fixture(t,{source,candidate:true,candidatePath:source});wrongTask.authority.taskId='other';wrongTask.save();assert.throws(wrongTask.policy,/사용자지정/);
+    for(const change of [{상태:'D'},{상태:'R',옛경로:'.github/site-check/old.mjs'}]){
+      const removed=fixture(t,{source});Object.assign(removed.files[0],change);assert.throws(removed.policy,/사이트 점검/);
+    }
+    assert.throws(fixture(t,{source,candidate:true,candidatePath:source,candidateDeleted:true}).policy,/삭제 후보/);
+    assert.throws(fixture(t,{source,candidate:true,candidatePath:source,candidateKind:'apps-script'}).policy,/검수 종류/);
+    const empty=fixture(t,{source,candidate:true,candidatePath:source});empty.files.length=0;assert.throws(empty.policy,/후보 단독/);
+  }
+  for(const p of ['.github/workflows/pages.yml','.github/site-check/other.mjs','.github/site-check/check.mjs.bak','account/index.html']){
+    assert.throws(fixture(t,{source:p}).policy,/범위/);
+    assert.throws(fixture(t,{source:redirectPaths[0],candidate:true,candidatePath:p}).policy,/범위/);
+  }
+  assert.equal(fixture(t,{source:redirectPaths[0],candidate:true,candidatePaths:redirectPaths}).policy().판,4);
+  assert.throws(fixture(t,{source:redirectPaths[0],candidate:true,candidatePaths:[...redirectPaths,'.github/site-check/other.mjs']}).policy,/범위/);
+});
+
+test('세 경로의 원천·후보 SHA와 검수 뒤 최종 바이트 변조를 거부한다',async t=>{
+  for(const source of redirectPaths){
+    const f=fixture(t,{source,candidate:true,candidatePath:source,git:true});
+    const sourceFile=path.join(f.repo,source),original=fs.readFileSync(sourceFile);
+    f.write(sourceFile,'unreviewed source');assert.throws(f.policy,/SHA/);f.write(sourceFile,original);
+    const candidateFile=path.join(f.options.배포후보,source),candidateOriginal=fs.readFileSync(candidateFile);
+    f.write(candidateFile,'unreviewed candidate');assert.throws(f.policy,/후보 내용 불일치/);f.write(candidateFile,candidateOriginal);
+    const {끝,...o}=f.options,packet=await api.준비하기(o);
+    assert.equal(api.검수확인(packet.폴더).통과,false);
+    for(const b of packet.목록.묶음)api.검수받기(packet.폴더,'GPT',b.이름,JSON.stringify(answer(b)));
+    const input=api.배포판정준비(packet.폴더);
+    assert.equal(api.배포판정받기(packet.폴더,JSON.stringify(final(input))).통과,true);
+    f.write(candidateFile,'modified after final review');assert.equal(api.검수확인(packet.폴더).통과,false);
+  }
 });

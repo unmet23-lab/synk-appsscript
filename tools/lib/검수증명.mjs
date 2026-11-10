@@ -251,10 +251,13 @@ function Workspace다음할일범위맞나(scope, p, role, 종류, author) {
   return scope === Workspace다음할일작업ID && role === '소스' && author === 'GPT'
     && Workspace다음할일원천[종류]?.has(p);
 }
+const 사이트점검경로계약 = new Set([
+  '.github/site-check/check.mjs', '.github/site-check/redirect-contract.mjs', '.github/site-check/redirect-contract.test.mjs',
+]);
 function 사이트점검단독범위맞나(scope, p, role, 종류, author) {
   if (scope !== 사이트점검단독작업ID || author !== 'GPT') return false;
-  if (role === '배포 후보') return 종류 === '화면' && 사이트점검공개.has(p);
-  if (종류 === '화면') return 사이트점검원천.has(p) || 사이트점검보조.has(p);
+  if (role === '배포 후보') return 종류 === '화면' && (사이트점검공개.has(p) || 사이트점검경로계약.has(p));
+  if (종류 === '화면') return 사이트점검원천.has(p) || 사이트점검보조.has(p) || 사이트점검경로계약.has(p);
   return 종류 === '백엔드' && new Set([
     'tools/lib/검수증명.mjs', 'tools/검수묶음.mjs', 'tests/검수사이트점검예외.test.mjs', 'tests/검수사이트점검단독.test.mjs',
     'docs/_ops/관문_자동화.md', 'docs/_ops/결정.md', 'docs/_ops/트랙.md',
