@@ -821,6 +821,24 @@ function samePlatformFindings(plates, { apartHours = APART_HOURS, sameLanguageHo
   return out;
 }
 
+// ⑩-2 칸 시각(11-10 — 마무리 세션 대조: 버마어 틱톡 판이 양곤 20:00인데 원장 칸은 21:00이었고 아무 도구도 짚지 않았다). 손으로 단 LAB 판의
+// 현지 시각이 그 계정 칸(`dailyTimes`)에서 30분 넘게 벗어나면 확인할 것 — 가장 가까운 칸으로 세어지기는 하지만 약속한 현지 시각이 아니다.
+// 돌림 판은 rotationFindings의 `rotation-slot`이 고칠 것으로 본다. 이미 예약 · 게시된 판은 보지 않는다(옮기지 않는다).
+function slotTimeFindings(bundle, plates, { posted = null } = {}) {
+  const out = [];
+  if (bundle.prep?.브랜드 !== 'LAB') return out;
+  for (const p of plates) {
+    const a = bundle.accounts?.[p.account];
+    const at = Date.parse(p.time || '');
+    if (p.raw?.돌림 || !a || !a.timeZone || !Array.isArray(a.dailyTimes) || !a.dailyTimes.length || !Number.isFinite(at)) continue;
+    if (posted && posted.has(p.account)) continue;
+    const slot = T.slotFor(p.time, a);
+    const off = Math.abs(T.localMinute(at, T.tzOf(a)) - T.minuteOf(slot.time));
+    if (off > 30 && off < 24 * 60 - 30) out.push({ level: LOOK, code: 'slot-time', where: p.account, message: `판 시각이 현지 ${T.localTime(at, T.tzOf(a))}(${a.timeZone})인데 이 계정 칸은 ${T.allSlots(a).map((s) => `${s.time}${s.format ? ` ${s.format}` : ''}`).join(' · ')}다 — 아직 안 건 판이면 칸 시각으로 맞춘다(이미 예약한 판은 옮기지 않는다)` });
+  }
+  return out;
+}
+
 // ⑫-2 같은 언어 묶음의 같은 파일(돌림 ⑥ — 유호님 11-10 지적 — 같은 언어를 쓰는 나라 계정끼리 같은 영상이 겹치지 않게). LAB 편에서 같은 플랫폼 ·
 // 같은 말 두 계정에 똑같은 영상 파일(지문)이 걸리면 고칠 것. 돌림 판이면 두 계정의 나라별판도 본다 — 표지 · 게시글(원고) 파일이 같거나,
 // 판본 글에서 첫 카드(칸 「머리」) · 그 나라 예문(「예문」 · 「상황」) · 끝 질문(「끝질문」) · 게시글(「게시글」)이 같으면 고칠 것. 판본 글에 그 칸이
@@ -947,6 +965,7 @@ async function run(dir, opts = {}) {
   findings.push(...rotationFindings(bundle, plates));
   findings.push(...samePlatformFindings(plates, { accounts: bundle.accounts }));
   findings.push(...sameLanguageFindings(bundle, plates));
+  findings.push(...slotTimeFindings(bundle, plates, { posted: new Set([...posted].filter(([, state]) => DONE.has(state)).map(([account]) => account)) }));
   if (slotOk && prep.슬롯 === kst().slice(0, 10) && ![...posted.values()].some((v) => DONE.has(v))) {
     add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — ${prep.브랜드 === 'LAB' ? '5일 앞(D+5 — 11-10 LAB 하루 두 편)' : '4일 앞(D+4)'}에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
   }
@@ -1067,5 +1086,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, rotationFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, rotationFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

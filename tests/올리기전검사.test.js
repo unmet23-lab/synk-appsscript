@@ -572,3 +572,16 @@ test('⑫-2 같은 언어 묶음의 같은 파일 — 같은 영상 지문 · �
     assert.deepEqual(검사.sameLanguageFindings({ ...bundle, prep: { 브랜드: 'PULSE' } }, [us(), ca()]), []);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
+test('⑩-2 칸 시각 — 손으로 단 LAB 판이 그 계정 현지 칸에서 30분 넘게 벗어나면 확인할 것(이미 건 판 · 돌림 판 · 다른 브랜드는 안 본다)', () => {
+  const acc = { 'lab-mm-tiktok': { platform: 'tiktok', timeZone: 'Asia/Yangon', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'] },
+    'lab-instagram': { platform: 'instagram', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['12:00', '20:00'], dailyFormats: ['이야기', '퀴즈'] }, 'lab-old': { platform: 'tiktok' } };
+  const bundle = { prep: { 브랜드: 'LAB' }, accounts: acc };
+  const p = (account, time, raw = {}) => ({ account, platform: acc[account].platform, time, raw });
+  const codes = (list, opts) => 검사.slotTimeFindings(bundle, list, opts).map((f) => f.level + ':' + f.code + ':' + f.where);
+  // 한국 22:30 = 양곤 20:00 — 칸은 21:00
+  assert.deepEqual(codes([p('lab-mm-tiktok', '2026-11-14T22:30:00+09:00')]), ['확인할 것:slot-time:lab-mm-tiktok']);
+  assert.deepEqual(codes([p('lab-mm-tiktok', '2026-11-14T23:30:00+09:00'), p('lab-instagram', '2026-11-14T21:00:00+09:00'), p('lab-instagram', '2026-11-14T13:00:00+09:00')]), []);
+  assert.deepEqual(codes([p('lab-mm-tiktok', '2026-11-14T22:30:00+09:00', { 돌림: true }), p('lab-old', '2026-11-14T22:30:00+09:00')]), [], '돌림 판은 rotation-slot이 보고, 칸이 없는 옛 계정은 안 본다');
+  assert.deepEqual(codes([p('lab-mm-tiktok', '2026-11-14T22:30:00+09:00')], { posted: new Set(['lab-mm-tiktok']) }), [], '이미 건 판은 옮기지 않는다');
+  assert.deepEqual(검사.slotTimeFindings({ prep: { 브랜드: 'PULSE' }, accounts: acc }, [p('lab-mm-tiktok', '2026-11-14T22:30:00+09:00')]), []);
+});

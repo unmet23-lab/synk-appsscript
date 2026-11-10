@@ -75,12 +75,14 @@ const PENDING = '미정';
 const before = (day, from) => Boolean(from) && (from === PENDING || day < from);
 const notStarted = (account) => account?.dailyFrom === PENDING;
 
-// 그날(현지) 열린 칸 — dailyFrom 앞이면 없음, dailyTimesFrom 앞이면 맨 끝 칸만.
+// 그날(현지) 열린 칸 — dailyFrom 앞이면 없음, dailyTimesFrom 앞이면 맨 끝 칸만. 형식마다 여는 날(dailyFormatsFrom — {"퀴즈": "미정"})이
+// 있으면 그 형식의 칸은 그날 전에는 닫힌다(11-10: 나라별 계정은 13:00 이야기 칸부터 열고, 21:00 퀴즈 칸은 현지어 퀴즈 틀이 열린 뒤).
 function slotsOn(account, day) {
   if (before(day, account?.dailyFrom)) return [];
-  const slots = allSlots(account);
-  if (slots.length > 1 && before(day, account.dailyTimesFrom)) return slots.slice(-1);
-  return slots;
+  let slots = allSlots(account);
+  if (slots.length > 1 && before(day, account.dailyTimesFrom)) slots = slots.slice(-1);
+  const byFormat = account?.dailyFormatsFrom;
+  return byFormat && typeof byFormat === 'object' ? slots.filter((s) => !(s.format && before(day, byFormat[s.format]))) : slots;
 }
 
 // 판 시각이 그 계정의 어느 칸인지 — 현지 시각이 가장 가까운 칸.

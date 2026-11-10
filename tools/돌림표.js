@@ -28,7 +28,8 @@
  * 계정(sns-계정.json): LAB이고 dailyLine · dailyFormats가 있는 계정. rotationSeed는 씨앗(먼저 올림). 씨앗이 아닌 계정은
  * publicProfileComplete가 true이고 postRouteVerified가 true여야 칸을 받는다(설계 4 · 5). postRouteVerified 「첫판」은 첫 판 시험 —
  * 판 하나만 받고, 그 판을 플랫폼 예약 목록에서 확인해 true로 바꾸면 나머지 칸이 열린다. dailyFrom 「미정」은 아직 안 연 계정(칸 없음),
- * dailyTimesFrom 「미정」은 마지막 칸만 연 계정. --준비무시는 준비 · 「미정」을 풀고 셈만 해 본다(--쓰기와 함께 못 쓴다).
+ * dailyTimesFrom 「미정」은 마지막 칸만 연 계정, dailyFormatsFrom {"퀴즈": "미정"}은 그 형식 칸을 닫아 둔 계정(나라별 계정은 이야기 칸부터
+ * 연다). --준비무시는 준비 · 「미정」을 풀고 셈만 해 본다(--쓰기와 함께 못 쓴다).
  * 걸린 판(예약됨 · 게시됨 · 거는 중 · 작업실 승인 대기 — 다른 작업본이 게시 장부 표에 잡은 것까지)은 --다시 · --멈춤에도 지우지 않는다.
  * 같은 언어 묶음은 계정의 languageGroup, 없으면 language다(같은 플랫폼 안에서만 묶는다). 나라 칸(countryCode)은 그 계정이 겨누는 나라 하나 —
  * 나라를 겨누지 않는 계정(@synkkorean — 전 세계 · 영어)은 countryCode를 비우고 rotationVersion · audience를 적는다.
@@ -108,12 +109,15 @@ function rotationAccounts(accounts, { ignoreReady = false } = {}) {
     const blocked = why.length && !(ignoreReady && !a.dailyBlocked) ? why.join(' · ') : null;
     if (T.notStarted(a)) why.push('시작 날 미정(dailyFrom)');
     if (why.length) notReady.push({ account: key, why });
-    else if (a.dailyTimesFrom === T.PENDING) {
-      const closed = T.allSlots(a).slice(0, -1).map((s) => `${s.time} ${s.format || ''}`.trim());
+    else {
+      const label = (s) => `${s.time} ${s.format || ''}`.trim();
+      const closed = a.dailyTimesFrom === T.PENDING ? T.allSlots(a).slice(0, -1).map(label) : [];
+      for (const s of T.allSlots(a)) if (s.format && a.dailyFormatsFrom?.[s.format] === T.PENDING && !closed.includes(label(s))) closed.push(label(s));
       if (closed.length) closedStory.push({ account: key, closed });
     }
     out[key] = { platform: a.platform, language: a.language || null, group: a.languageGroup || a.language || null, versionKey: a.rotationVersion || a.countryCode || null,
       timeZone: a.timeZone, dailyTimes: a.dailyTimes, dailyFormats: a.dailyFormats, dailyFrom: open(a.dailyFrom), dailyTimesFrom: open(a.dailyTimesFrom),
+      dailyFormatsFrom: a.dailyFormatsFrom && typeof a.dailyFormatsFrom === 'object' ? Object.fromEntries(Object.entries(a.dailyFormatsFrom).map(([f, v]) => [f, open(v)])) : undefined,
       seed: Boolean(a.rotationSeed), trial: trial && !ignoreReady, blocked };
   }
   return { rotation: out, notReady, closedStory };
@@ -418,7 +422,7 @@ function printPlan(run, opts) {
   if (why.size) console.log(`\n빈 칸 까닭: ${[...why].map(([w, n]) => `${w} ${n}`).join(' · ')}`);
   const real = opts.ignoreReady ? '(--준비무시 — 셈만 해 본 것) 실제로는 ' : '';
   if (notReady.length) console.log(`${real}칸을 못 받는 계정 ${notReady.length}: ${notReady.map((x) => `${x.account}(${x.why.join(' · ')})`).join(' · ')}`);
-  if (run.closedStory.length) console.log(`${real}앞 칸이 닫힌 계정 ${run.closedStory.length}(dailyTimesFrom 「미정」 — 마지막 칸만 열림): ${run.closedStory.map((x) => `${x.account}(${x.closed.join(' · ')})`).join(' · ')}`);
+  if (run.closedStory.length) console.log(`${real}닫힌 칸이 있는 계정 ${run.closedStory.length}(dailyTimesFrom · dailyFormatsFrom 「미정」): ${run.closedStory.map((x) => `${x.account}(${x.closed.join(' · ')})`).join(' · ')}`);
   const lang = sameLanguageReport(run);
   console.log(`같은 언어 묶음 ${lang.bundles.length}(${lang.bundles.map((b) => `${b.platform} ${b.group} ${b.members.length}곳`).join(' · ') || '없음'}) · 판 겹침 ${lang.overlaps.length} · 같은 파일인 나라별판 ${lang.sameFiles.length}${lang.overlaps.length || lang.sameFiles.length ? ' — node tools/돌림표.js --묶음' : ''}`);
   const notVersion = run.originals.flatMap((o) => Object.entries(o.versions).filter(([, v]) => !v.ready).map(([k, v]) => `${o.id}/${k} ${v.why}`));

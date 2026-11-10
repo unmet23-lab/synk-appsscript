@@ -641,7 +641,7 @@ function accountTable(accounts) {
     const from = (v, label) => (v ? ` · ${v === T.PENDING ? `${label} 미정` : `${label ? `${label} ` : ''}${v.slice(5)}부터`}` : '');
     // 칸 시각은 그 계정 현지 시각(timeZone) — 하루 한 칸 · 시간대가 없으면 적지 않는다(옛 계정)
     const times = slots.length > 1 || a.timeZone ? ` 하루 ${slots.length}편(${slots.map((s) => `${s.time}${s.format ? ` ${s.format}` : ''}`).join(' · ')}${a.timeZone ? ` ${a.timeZone}` : ''}`
-      + `${from(a.dailyTimesFrom, a.timeZone ? '앞 칸' : '')}${from(a.dailyFrom, '시작')}${a.language ? ` · ${a.language}` : ''})` : '';
+      + `${from(a.dailyTimesFrom, a.timeZone ? '앞 칸' : '')}${Object.entries(a.dailyFormatsFrom || {}).map(([f, v]) => from(v, `${f} 칸`)).join('')}${from(a.dailyFrom, '시작')}${a.language ? ` · ${a.language}` : ''})` : '';
     if (a.dailyLine === 'LAB 두 채널') return (a.platform === 'xiaohongshu' ? 'LAB 두 채널 판(간체)' : 'LAB 두 채널 판(버마어)') + times;
     const base = (LINE_WHAT[a.dailyLine] || a.dailyLine) + times + (a.dailyDays ? `(${[...String(a.dailyDays)].join(' · ')})` : '');
     return BLOG.has(a.platform) ? `${base}의 블로그 글` : base;

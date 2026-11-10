@@ -44,6 +44,12 @@ test('계정 칸 — 형식 · 시작 전(미정) · 앞 칸 열리는 날 · �
   assert.deepEqual(T.slotsOn({ ...a, dailyFrom: '2026-11-21' }, '2026-11-20'), []);
   assert.equal(T.slotsOn({ ...a, dailyFrom: '2026-11-21' }, '2026-11-21').length, 2);
   assert.deepEqual(T.slotsOn({ ...a, dailyTimesFrom: '미정' }, '2026-11-20').map((s) => s.time), ['21:00']);
+  // 형식마다 여는 날(11-10) — 나라별 계정은 이야기 칸부터 열고 퀴즈 칸은 닫아 둔다
+  assert.deepEqual(T.slotsOn({ ...a, dailyFormatsFrom: { 퀴즈: '미정' } }, '2026-11-20').map((s) => s.time), ['13:00']);
+  assert.deepEqual(T.slotsOn({ ...a, dailyFormatsFrom: { 퀴즈: '2026-11-25' } }, '2026-11-24').map((s) => s.time), ['13:00']);
+  assert.equal(T.slotsOn({ ...a, dailyFormatsFrom: { 퀴즈: '2026-11-25' } }, '2026-11-25').length, 2);
+  assert.deepEqual(T.slotsOn({ ...a, dailyFrom: '미정', dailyFormatsFrom: { 퀴즈: '미정' } }, '2026-11-20'), []);
+  assert.deepEqual(T.slotsOn({ dailyTimes: ['21:00'], dailyFormats: ['퀴즈'], dailyFormatsFrom: { 퀴즈: '미정' } }, '2026-11-20'), [], '퀴즈 한 칸뿐인 텔레그램은 칸이 없다');
   assert.equal(T.slotFor('2026-11-20T13:05:00+07:00', a).format, '이야기');
   assert.equal(T.slotFor('2026-11-20T15:00:00+09:00', a).format, '이야기'); // 한국 15:00 = 방콕 13:00
   assert.equal(T.slotFor('2026-11-20T22:00:00+09:00', a).format, '퀴즈'); // 한국 22:00 = 방콕 20:00 — 21:00 칸이 가깝다
@@ -495,7 +501,7 @@ test('돌림표 — 「미정」 까닭 · 앞 칸이 닫힌 계정 · --준비�
   assert.match(loose.stdout, /\(--준비무시 — 셈만 해 본 것\) 실제로는 칸을 못 받는 계정 2/);
   assert.match(loose.stdout, /lab-vn-tiktok\(시작 날 미정\(dailyFrom\)\)/);
   assert.match(loose.stdout, /lab-np-facebook\(프로필 빈 칸/);
-  assert.match(loose.stdout, /실제로는 앞 칸이 닫힌 계정 1/);
+  assert.match(loose.stdout, /실제로는 닫힌 칸이 있는 계정 1/);
   const lj = JSON.parse(m.run('--부터', '2026-11-20', '--일수', '2', '--준비무시', '--json').stdout);
   assert.ok(lj.cells.some((c) => c.account === 'lab-vn-tiktok'));
   assert.ok(lj.cells.some((c) => c.account === 'lab-jp-youtube' && c.slot === '13:00'));
@@ -621,4 +627,34 @@ test('돌림표 명령 --묶음 — 묶음표 · 나라별판이 같은 파일�
   const again = m.run('--묶음', ...range);
   assert.equal(again.status, 1);
   assert.match(again.stdout, /판 겹침.* 1: LAB_가_mn_20261101/);
+});
+
+// ── 나라별 계정은 이야기 칸부터 연다(11-10 유호님 「지금 길로 열어」 뒤) — 퀴즈 칸은 dailyFormatsFrom {퀴즈: 「미정」}으로 닫아 둔다 ──
+test('형식마다 여는 날 — 퀴즈 칸을 닫아 둔 계정은 이야기 칸만 받는다(첫 판 시험과 함께 — 판 하나)', () => {
+  const closed = { dailyFormatsFrom: { 퀴즈: '미정' } };
+  const accounts = {
+    'seed-ig': acct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' }),
+    th: acct('youtube', 'TH', 'Asia/Bangkok', closed), jp: acct('youtube', 'JP', 'Asia/Tokyo', { ...closed, trial: true }), vn: acct('youtube', 'VN', 'Asia/Ho_Chi_Minh'),
+  };
+  const story = seeded(['a', 'b'], '이야기', ['TH', 'JP', 'VN']);
+  const quiz = seeded(['q1', 'q2'], '퀴즈', ['TH', 'JP', 'VN']);
+  const r = 돌림.plan({ accounts, originals: [...story.originals, ...quiz.originals], existing: [...story.existing, ...quiz.existing], from: '2026-11-20', days: 2 });
+  const of = (k) => r.cells.filter((c) => c.account === k);
+  assert.deepEqual([...new Set(of('th').map((c) => c.format))], ['이야기']);
+  assert.equal(of('th').filter((c) => c.original).length, 2);
+  assert.deepEqual(of('jp').map((c) => [c.format, Boolean(c.original)]), [['이야기', true], ['이야기', false]], '첫 판 시험 계정은 이야기 한 판만');
+  assert.equal(of('vn').filter((c) => c.format === '퀴즈' && c.original).length, 2, '닫지 않은 계정은 퀴즈 칸도 받는다');
+});
+
+test('돌림표 명령 — 퀴즈 칸을 닫아 둔 계정은 「닫힌 칸이 있는 계정」에 보이고 퀴즈 칸이 없다', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  원장고침(m, (acc) => { acc['lab-th-youtube'].dailyFormatsFrom = { 퀴즈: '미정' }; });
+  const j = JSON.parse(m.run('--부터', '2026-11-20', '--일수', '2', '--json').stdout);
+  assert.deepEqual(j.closedStory, [{ account: 'lab-th-youtube', closed: ['21:00 퀴즈'] }]);
+  assert.deepEqual([...new Set(j.cells.filter((c) => c.account === 'lab-th-youtube').map((c) => c.slot))], ['13:00']);
+  assert.deepEqual([...new Set(j.cells.filter((c) => c.account === 'lab-jp-youtube').map((c) => c.slot))].sort(), ['13:00', '21:00']);
+  // --준비무시는 닫힌 형식 칸도 셈에 넣어 본다
+  const loose = JSON.parse(m.run('--부터', '2026-11-20', '--일수', '2', '--준비무시', '--json').stdout);
+  assert.ok(loose.cells.some((c) => c.account === 'lab-th-youtube' && c.slot === '21:00'));
 });
