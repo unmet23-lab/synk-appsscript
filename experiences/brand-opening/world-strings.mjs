@@ -1142,6 +1142,10 @@ export default {
  'msg.vellum.supported':{ko:'「{skill}」을(를) 도움과 함께 해냈어요. 이어서 살펴봐요.',en:'You did ‘{skill}’ with help. Let’s keep working on it.',mn:'«{skill}» чадварын асуултад тусламжтайгаар зөв хариулсан. Үргэлжлүүлэн харцгаая.'},
  'msg.vellum.recent-independent':{ko:'「{skill}」을(를) 최근 혼자 해냈어요. 가볍게 이어가요.',en:'You recently did ‘{skill}’ on your own. Let’s keep going at an easy pace.',mn:'«{skill}» чадварын асуултад саяхан өөрөө зөв хариулсан. Хөнгөн хэмнэлээр үргэлжлүүлье.'},
  'msg.vellum.review':{ko:'「{skill}」을(를) 다시 살펴볼 때예요.',en:'It’s time to look at ‘{skill}’ again.',mn:'«{skill}» чадварыг дахин харах цаг боллоо.'},
+ // 정책판 5(11-10, atlas/learning.js reasonStatus): 처음 칸이지만 앞 단계를 해냈거나 다른 응답 꼴로 한 기록이 있을 때, 처음 시도를 놓친 문항의 한 번 다시.
+ 'msg.vellum.step-up':{ko:'「{skill}」 앞 단계를 최근 혼자 해냈어요. 한 단계 올려 봐요.',en:'You recently did the previous step of ‘{skill}’ on your own. Let’s go up a step.',mn:'«{skill}» чадварын өмнөх шатны асуултад саяхан өөрөө зөв хариулсан. Нэг шат ахиулж үзье.'},
+ 'msg.vellum.new-format':{ko:'「{skill}」을(를) 다른 방식으로 확인해 봐요.',en:'Let’s check ‘{skill}’ in a different way.',mn:'«{skill}» чадварыг өөр хэлбэрээр шалгацгаая.'},
+ 'msg.vellum.retry':{ko:'「{skill}」에서 놓친 문제를 한 번 더 풀어 봐요.',en:'Let’s try the ‘{skill}’ question you missed once more.',mn:'«{skill}» чадварын алдсан асуултдаа дахин нэг удаа хариулж үзье.'},
  'msg.vellum.goal':{ko:'고른 목표와 이어지는 활동이에요.',en:'It connects to the goal you chose.',mn:'Энэ нь таны сонгосон зорилготой холбогдоно.'},
  // 「내 성향」에서 더 배우고 싶다고 답한 주제가 연습을 앞으로 올렸을 때(world-learning-plan.mjs). {label}은 학습 내용(낱말·문형)이라 한국어 그대로다.
  'msg.reasonInterest':{ko:'더 배우고 싶다고 알려 준 내용이 들어 있는 연습이에요.',en:'This practice includes something you said you want to learn more about.',mn:'Энэ дасгалд таны илүү гүнзгий сурахыг хүссэн сэдэв орсон.'},

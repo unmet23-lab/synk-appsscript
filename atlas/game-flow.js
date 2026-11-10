@@ -202,7 +202,8 @@ function createLive({ coach, port, clock }) {
         const { within = 5, ...rest } = options;
         const recommendation = coach.recommend(candidates, rest);
         if (recommendation.status !== 'ready' || !spec.items) return recommendation;
-        const ranked = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+        // A comeback still in its minute is not a leading choice (learning.js policy 5): only Core's own last resort.
+        const ranked = [recommendation.selected, ...recommendation.alternatives.filter(c => !recommendation.waiting?.includes(c.id))].slice(0, within);
         const focus = SEEN.includes(recommendation.state) && recommendation.focusSkillId;
         const leading = focus ? ranked.filter(candidate => candidate.skillIds?.includes(focus)) : ranked;
         const wanted = run.level(leading.map(candidate => candidate.difficulty));

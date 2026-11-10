@@ -29,7 +29,8 @@ test('서로 다른 세부 정보 문제 넷을 처음 듣고 혼자 맞히면 �
   for (const id of DETAILS) play(coach, id, true);
   const next = plan(coach);
   assert.equal(next.state, 'unseen'); assert.equal(next.responseFormat, 'action');
-  assert.match(next.reason, /세부 정보 찾기」는 아직 기록이 적어요/, '고치기 전 문구의 출처: 달리기 칸은 비어 있다');
+  // 엔진 문구(정책판 5, 11-10): 달리기 칸은 비어 있고 같은 능력 · 단계의 듣기 확인 칸에 기록이 있어 「다른 방식」이다. 입구 문장(runReason)은 그대로다.
+  assert.equal(next.reason, '「듣고 세부 정보 찾기」를 다른 방식으로 확인해 봐요.');
   assert.equal(doneChecks(coach).count, 4);
   assert.equal(runReason(coach, next), DETAIL_LINE);
   assert.doesNotMatch(runReason(coach, next), /기록이 적어요|잘하|좋아하|실력|틀렸|틀린|모르|못하|약해|부족/);

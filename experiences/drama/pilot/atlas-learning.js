@@ -1388,7 +1388,11 @@ var DramaLearning = (() => {
           practice: `최근 놓친 ${object} 조금 더 연습해 봐요.`,
           supported: `${object} 도움과 함께 해냈어요. 이어서 살펴봐요.`,
           "recent-independent": `${object} 최근 혼자 해냈어요. 가볍게 이어가요.`,
-          review: `${object} 다시 살펴볼 때예요.`
+          review: `${object} 다시 살펴볼 때예요.`,
+          // Policy 5 (learning.js reasonStatus): the cell is new, the ability is not; and a missed item's one comeback.
+          "step-up": `${named} 앞 단계를 최근 혼자 해냈어요. 한 단계 올려 봐요.`,
+          "new-format": `${object} 다른 방식으로 확인해 봐요.`,
+          retry: `${named}에서 놓친 문제를 한 번 더 풀어 봐요.`
         };
         if (!Object.hasOwn(reasons, status)) throw new TypeError("Vellum: invalid learning reason");
         return reasons[status];
@@ -2241,7 +2245,7 @@ var DramaLearning = (() => {
   var require_learning = __commonJS({
     "atlas/learning.js"(exports, module) {
       "use strict";
-      var POLICY = Object.freeze({ version: "learning-priority-4", recentDays: 30, reviewDays: 7, sample: 4, stableRatio: 0.8 });
+      var POLICY = Object.freeze({ version: "learning-priority-5", recentDays: 30, reviewDays: 7, sample: 4, stableRatio: 0.8 });
       var RESPONSE_FORMATS = Object.freeze(["binary-choice", "single-choice", "cup-compose", "action", "spoken", "unknown"]);
       var { learningReason, activityReason, SUPPORTS } = require_vellum();
       var Ledger = require_learning_ledger();
@@ -2274,6 +2278,7 @@ var DramaLearning = (() => {
           priority = 0.8;
         }
         const reasonEvidence = status === "supported" ? helped.slice(-12) : status === "review" && !recent.length ? valid.slice(-1) : recent;
+        const missed = recent.filter((a) => a.verdict === "incorrect").map((a) => a.measure?.familyKey).filter((key) => typeof key === "string");
         return {
           difficulty,
           responseFormat,
@@ -2283,6 +2288,7 @@ var DramaLearning = (() => {
           correct,
           incorrect,
           lastAt,
+          missed,
           assisted: helped.length,
           evidence: recent.map((a) => a.eventId),
           reasonEvidence: reasonEvidence.map((a) => a.eventId),
@@ -2322,9 +2328,10 @@ var DramaLearning = (() => {
         };
       }
       var CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
+      var RETRY = Object.freeze({ lift: 0.05, gapMs: 6e4 });
       function rankLearning({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
         if (!Array.isArray(candidates)) throw new TypeError("Core: candidates must be an array");
-        const ids = /* @__PURE__ */ new Set(), skills = new Map(profile.skills.map((s) => [s.id, s]));
+        const ids = /* @__PURE__ */ new Set(), skills = new Map(profile.skills.map((s) => [s.id, s])), now = Date.parse(profile.asOf);
         const content = new Map((profile.concepts || []).map((c) => [c.id, c.status]));
         const history = { task: /* @__PURE__ */ new Map(), item: /* @__PURE__ */ new Map(), family: /* @__PURE__ */ new Map() };
         for (const [index, presentation] of presentations.entries()) {
@@ -2353,6 +2360,8 @@ var DramaLearning = (() => {
           if (!candidate || typeof candidate.id !== "string" || !/^[a-zA-Z0-9_.:-]{1,120}$/.test(candidate.id) || ids.has(candidate.id) || !Array.isArray(candidate.skillIds) || !candidate.skillIds.length || !candidate.skillIds.every((id) => skills.has(id)) || ![1, 2, 3].includes(candidate.difficulty) || typeof candidate.modality !== "string" || !/^[a-z][a-z0-9_-]{0,40}$/.test(candidate.modality) || !RESPONSE_FORMATS.includes(candidate.responseFormat ?? "unknown") || candidate.skillIds.some((id) => skills.get(id).domain !== candidate.modality)) throw new TypeError("Core: invalid learning candidate");
           ids.add(candidate.id);
           if (excludeIds.includes(candidate.id) || !audioAvailable && (candidate.audioRequired ?? candidate.modality === "listening")) continue;
+          if (candidate.conceptIds != null && (!Array.isArray(candidate.conceptIds) || candidate.conceptIds.some((id) => typeof id !== "string"))) throw new TypeError("Core: invalid learning candidate");
+          if (candidate.familyKeys != null && (!Array.isArray(candidate.familyKeys) || !candidate.familyKeys.length || candidate.familyKeys.length > 500 || candidate.familyKeys.some((key) => typeof key !== "string"))) throw new TypeError("Core: invalid learning candidate");
           const responseFormat = candidate.responseFormat ?? "unknown";
           const states = candidate.skillIds.map((id) => ({ ...skills.get(id).levels[candidate.difficulty].formats[responseFormat], skill: skills.get(id) }));
           const focus = states.sort((a, b) => b.priority - a.priority)[0];
@@ -2361,33 +2370,48 @@ var DramaLearning = (() => {
             ...history.item.get(candidate.itemKey) || [],
             ...history.family.get(candidate.familyKey || candidate.itemKey) || []
           ]);
-          const immediate = [...previous].some((index) => typeof index === "number" && index >= presentations.length - 4);
           const count = [...previous].reduce((n, index) => n + (weight.get(index) || 1), 0);
+          const family = candidate.familyKey || candidate.itemKey;
+          const seen = candidate.familyKeys ? candidate.familyKeys.every((key) => history.family.has(key)) : typeof family === "string" && history.family.has(family);
+          const times = [...previous].filter((index) => typeof index === "number").map((index) => Date.parse(presentations[index]?.at)), timed = times.every(Number.isFinite);
+          const retry = !candidate.familyKeys && seen && count === 1 && states.some((state) => state.missed?.includes(family));
+          const lastFour = [...previous].some((index) => typeof index === "number" && index >= presentations.length - 4);
+          const waiting = retry && (timed ? times.some((time) => now - time < RETRY.gapMs) : lastFour), due = retry && !waiting, shownAt = timed ? times[0] : Math.max(-1, ...[...previous].filter((index) => typeof index === "number"));
+          const immediate = !due && lastFour;
           const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every((id) => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === "recent-independent");
-          if (candidate.conceptIds != null && (!Array.isArray(candidate.conceptIds) || candidate.conceptIds.some((id) => typeof id !== "string"))) throw new TypeError("Core: invalid learning candidate");
-          if (candidate.familyKeys != null && (!Array.isArray(candidate.familyKeys) || !candidate.familyKeys.length || candidate.familyKeys.length > 500 || candidate.familyKeys.some((key) => typeof key !== "string"))) throw new TypeError("Core: invalid learning candidate");
           const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
-          const exhausted = !!candidate.familyKeys && candidate.familyKeys.every((key) => history.family.has(key));
-          const score = focus.priority - (immediate ? 0.45 : 0) - (previous.size ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0) - (exhausted ? 0.5 : 0);
-          ranked.push({ candidate, focus, score, lift, count, exhausted });
+          const exhausted = seen && !due, base = focus.priority + (due ? RETRY.lift : 0) - (previous.size && !due ? 0.1 : 0) - (!readyForHarder ? 0.25 * (candidate.difficulty - 1) : 0);
+          const score = base - (immediate ? 0.45 : 0) - (exhausted ? 0.5 : 0);
+          const spent = !!candidate.familyKeys && seen, activityScore = base - (immediate || waiting ? 0.45 : 0) - (spent ? 0.5 : 0);
+          ranked.push({ candidate, focus, score, activityScore, lift, count, exhausted, spent, retry, shownAt, tier: waiting ? 2 : exhausted ? 1 : 0 });
         }
-        ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+        ranked.sort((a, b) => a.tier - b.tier || (a.tier === 1 ? a.count - b.count : a.tier === 2 ? a.shownAt - b.shownAt : 0) || b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
         return ranked;
+      }
+      function reasonOf({ focus, candidate, retry }) {
+        if (retry) return { status: "retry", cell: null };
+        if (focus.status !== "unseen") return { status: focus.status, cell: null };
+        const levels = focus.skill.levels, format = candidate.responseFormat ?? "unknown", difficulty = candidate.difficulty, below = difficulty > 1 && levels[difficulty - 1].formats[format];
+        if (below?.status === "recent-independent") return { status: "step-up", cell: below };
+        const other = Object.entries(levels[difficulty].formats).find(([name, cell]) => name !== format && (cell.n || cell.assisted));
+        return other ? { status: "new-format", cell: other[1] } : { status: "unseen", cell: null };
       }
       function recommend(input) {
         const ranked = rankLearning(input);
         if (!ranked.length) return { status: "unavailable", selected: null, reason: "지금 조건에 맞는 연습이 없어요.", alternatives: [] };
-        const best = ranked[0], label = best.focus.skill.label;
+        const best = ranked[0], label = best.focus.skill.label, why = reasonOf(best);
         return {
           status: "ready",
           selected: best.candidate,
-          reason: learningReason({ status: best.focus.status, label }),
+          reason: learningReason({ status: why.status, label }),
           focusSkillId: best.focus.skill.id,
           state: best.focus.status,
           responseFormat: best.focus.responseFormat,
           policy: POLICY.version,
           evidence: best.focus.evidence,
-          alternatives: ranked.slice(1).map((r) => r.candidate)
+          ...why.cell ? { reasonEvidence: why.cell.reasonEvidence } : {},
+          alternatives: ranked.slice(1).map((r) => r.candidate),
+          waiting: ranked.filter((r) => r.tier === 2).map((r) => r.candidate.id)
         };
       }
       var ACTIVITY_POLICY = "learning-activity-1";
@@ -2423,12 +2447,14 @@ var DramaLearning = (() => {
             excluded.push({ id: candidate.id, reasons: blocked });
             continue;
           }
-          const fresh = targets.filter((row) => !row.exhausted), spent = targets.length > 0 && !fresh.length;
-          const target = fresh[0] || targets[0] || null, state = target?.focus.status || "unseen";
+          const byActivity = (a, b) => (a.tier === 2) - (b.tier === 2) || b.activityScore - a.activityScore || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id);
+          const fresh = targets.filter((row) => !row.spent).sort(byActivity), spent = targets.length > 0 && !fresh.length;
+          const target = fresh[0] || [...targets].sort(byActivity)[0] || null, state = target?.focus.status || "unseen", why = target && !spent ? reasonOf(target) : null;
           const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
           const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY ? candidate.practiceNeed : null;
-          const urgent = due || hostNeed || !spent && ["practice", "supported", "review"].includes(state);
-          const tier = urgent ? 0 : spent || state === "recent-independent" ? 2 : 1;
+          const held = fresh.length > 0 && fresh.every((row) => row.tier === 2);
+          const urgent = !held && (due || hostNeed || !spent && ["practice", "supported", "review"].includes(state));
+          const tier = urgent ? 0 : held ? 3 : spent || state === "recent-independent" ? 2 : 1;
           const matchedGoals = (candidate.goals || []).filter((goal) => goals.has(goal));
           const reasons = [
             ...due ? ["review.due"] : [],
@@ -2438,9 +2464,9 @@ var DramaLearning = (() => {
             ...!profile.evidenceComplete ? ["history.incomplete"] : [],
             ...!due && !hostNeed && !spent && state === "unseen" && !matchedGoals.length ? ["practice.unseen"] : []
           ];
-          ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent });
+          ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent, why });
         }
-        ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.score ?? 0.65) - (a.target?.score ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
+        ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length || Number(b.due) - Number(a.due) || (b.target?.activityScore ?? 0.65) - (a.target?.activityScore ?? 0.65) || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0) || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
         const best = ranked[0];
         const common = {
           policy: ACTIVITY_POLICY,
@@ -2470,6 +2496,7 @@ var DramaLearning = (() => {
           focusSkillId: row.target?.focus.skill.id || null,
           matchedGoals: [...row.matchedGoals],
           evidence: [...row.target?.focus.reasonEvidence || row.target?.focus.evidence || []],
+          ...row.why?.cell ? { reasonEvidence: [...row.why.cell.reasonEvidence] } : {},
           ...row.due ? { reviewAt: row.candidate.reviewAt, reviewSource: "host-schedule" } : {},
           ...row.hostNeed ? { hostEvidence: { kind: row.hostNeed.kind, at: row.hostNeed.at, evidenceRefs: [...row.hostNeed.evidenceRefs], source: "host-practice" } } : {}
         });
@@ -2479,7 +2506,7 @@ var DramaLearning = (() => {
           selected: best.candidate,
           alternatives: ranked.slice(1).map((row) => row.candidate),
           ...detail(best),
-          reason: activityReason({ reasons: best.reasons, state: best.state, label: best.target?.focus.skill.label }),
+          reason: activityReason({ reasons: best.reasons, state: best.why?.status ?? best.state, label: best.target?.focus.skill.label }),
           basis: best.due ? "review-schedule" : best.hostNeed ? "host-practice" : best.target && best.state !== "unseen" ? "practice" : best.matchedGoals.length ? "declared" : "cold-start",
           assessments: ranked.map(detail)
         };
@@ -4198,7 +4225,7 @@ var DramaLearning = (() => {
               const { within = 5, ...rest } = options;
               const recommendation = coach.recommend(candidates, rest);
               if (recommendation.status !== "ready" || !spec.items) return recommendation;
-              const ranked = [recommendation.selected, ...recommendation.alternatives].slice(0, within);
+              const ranked = [recommendation.selected, ...recommendation.alternatives.filter((c) => !recommendation.waiting?.includes(c.id))].slice(0, within);
               const focus = SEEN.includes(recommendation.state) && recommendation.focusSkillId;
               const leading = focus ? ranked.filter((candidate) => candidate.skillIds?.includes(focus)) : ranked;
               const wanted = run.level(leading.map((candidate) => candidate.difficulty));
@@ -4569,7 +4596,7 @@ var DramaLearning = (() => {
           return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]${ledgerJson.text}${settledJson.text}${droppedJson.text}${storageScope === "account" ? `,"owner":${JSON.stringify(accountKey)}` : ""}}`;
         };
         function compact() {
-          if (!folding || paged) return;
+          if (!folding || paged && !complete) return;
           const events = log(), now = Date.parse(monotonicClock());
           if (events.length <= folding.max) return;
           if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
@@ -5279,7 +5306,19 @@ var DramaLearning = (() => {
           guard();
           if (closed || privacyBlocked) throw failure("WORLD account session ended", "MEMORY_SESSION_ENDED");
         };
-        const shared = { getItem(key) {
+        const enumerated = (target, store) => {
+          if (typeof store?.key !== "function" || !("length" in store)) return target;
+          Object.defineProperty(target, "length", { enumerable: true, get() {
+            check();
+            return store.length;
+          } });
+          target.key = (index) => {
+            check();
+            return store.key(index);
+          };
+          return target;
+        };
+        const shared = enumerated({ getItem(key) {
           check();
           return storage.getItem(key);
         }, setItem(key, value) {
@@ -5288,7 +5327,7 @@ var DramaLearning = (() => {
         }, removeItem(key) {
           check();
           storage.removeItem(key);
-        } };
+        } }, storage);
         const ownerKey = (eventId) => `${OWNER}.${eventId}`;
         function owners(ids, now) {
           const raw = shared.getItem(OWNERS);
@@ -5360,10 +5399,10 @@ var DramaLearning = (() => {
           check();
           const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
           if (personalMemory && !personal) {
-            const own2 = personalMemory, ownStorage = Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (...args) => {
+            const own2 = personalMemory, ownStorage = enumerated(Object.fromEntries(["getItem", "setItem", "removeItem"].map((method) => [method, (...args) => {
               check();
               return own2.storage[method]?.(...args);
-            }]));
+            }])), own2.storage);
             personal = make.createGame({ gameId: "world-personal-memory", storage: ownStorage, learnerKey: "device", storageScope: "account", accountKey: own2.accountKey, historyComplete: !own2.connected, fold: { remote: true } });
             if (own2.connected && own2.transport && typeof engine?.createMemorySync === "function") {
               memory = engine.createMemorySync({

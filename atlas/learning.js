@@ -1,7 +1,7 @@
 'use strict';
 // Core: operational practice priorities, NOT calibrated proficiency or TOPIK grades.
 // Receives Trail provenance and Strata nodes; owns neither identity nor storage.
-const POLICY = Object.freeze({ version: 'learning-priority-4', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
+const POLICY = Object.freeze({ version: 'learning-priority-5', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
 const RESPONSE_FORMATS = Object.freeze(['binary-choice', 'single-choice', 'cup-compose', 'action', 'spoken', 'unknown']); // spoken: a learner's own line judged by rules on its transcript
 const { learningReason, activityReason, SUPPORTS } = require('./vellum');
 const Ledger = require('./learning-ledger');
@@ -26,7 +26,9 @@ function formatEvidence(rows, { now, complete, difficulty, responseFormat, base 
   // Keep the actual source even when an old item is due outside the recent window, or
   // a supported success has no independent attempt. A reason must not lose its provenance.
   const reasonEvidence = status === 'supported' ? helped.slice(-12) : status === 'review' && !recent.length ? valid.slice(-1) : recent;
-  return { difficulty, responseFormat, status, priority, n, correct, incorrect, lastAt,
+  // The item families whose recent first try missed: each may come back once (rankLearning retry).
+  const missed = recent.filter(a => a.verdict === 'incorrect').map(a => a.measure?.familyKey).filter(key => typeof key === 'string');
+  return { difficulty, responseFormat, status, priority, n, correct, incorrect, lastAt, missed,
     assisted: helped.length, evidence: recent.map(a => a.eventId), reasonEvidence: reasonEvidence.map(a => a.eventId),
     unassessed: rows.filter(a => a.verdict === 'unassessed' || a.verdict === 'skipped').length + (base?.unassessed || 0) };
 }
@@ -59,9 +61,16 @@ function summarizeLearning({ summary, map, complete = true, prior = null }) {
 // Missed or due content (a word, a grammar point) puts a candidate a little ahead of those its
 // ability's own state ranks alike; it never moves one ability, level or history past another.
 const CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
+// Policy 5. A candidate that can give no new first try (every family already presented) goes behind every one that
+// still can, and among such candidates the least presented comes first: a small bank no longer holds a learner in
+// one cell. One exception: a single family presented once whose first try missed comes back once, a little ahead of
+// new items of its cell, a minute or more after it was shown — until then it waits behind every other candidate (and an
+// activity of only such items waits too), so it comes early only as the very last candidate. A comeback is practice,
+// never new evidence (Trail).
+const RETRY = Object.freeze({ lift: .05, gapMs: 60000 });
 function rankLearning({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
   if (!Array.isArray(candidates)) throw new TypeError('Core: candidates must be an array');
-  const ids = new Set(), skills = new Map(profile.skills.map(s => [s.id, s]));
+  const ids = new Set(), skills = new Map(profile.skills.map(s => [s.id, s])), now = Date.parse(profile.asOf);
   const content = new Map((profile.concepts || []).map(c => [c.id, c.status]));
   // Index history once. A changed choice/item ID is still the same content when
   // it belongs to a seen family; overlapping keys count one presentation.
@@ -94,37 +103,62 @@ function rankLearning({ profile, candidates, presentations = [], audioAvailable 
     ids.add(candidate.id);
     // Any subject's modality (Strata node domain) is accepted; sound needs are explicit or listening.
     if (excludeIds.includes(candidate.id) || (!audioAvailable && (candidate.audioRequired ?? candidate.modality === 'listening'))) continue;
+    if (candidate.conceptIds != null && (!Array.isArray(candidate.conceptIds) || candidate.conceptIds.some(id => typeof id !== 'string'))) throw new TypeError('Core: invalid learning candidate');
+    if (candidate.familyKeys != null && (!Array.isArray(candidate.familyKeys) || !candidate.familyKeys.length || candidate.familyKeys.length > 500
+      || candidate.familyKeys.some(key => typeof key !== 'string'))) throw new TypeError('Core: invalid learning candidate');
     const responseFormat = candidate.responseFormat ?? 'unknown';
     const states = candidate.skillIds.map(id => ({ ...skills.get(id).levels[candidate.difficulty].formats[responseFormat], skill: skills.get(id) }));
     const focus = states.sort((a, b) => b.priority - a.priority)[0];
     const previous = new Set([...(history.task.get(candidate.id) || []), ...(history.item.get(candidate.itemKey) || []),
       ...(history.family.get(candidate.familyKey || candidate.itemKey) || [])]);
-    const immediate = [...previous].some(index => typeof index === 'number' && index >= presentations.length - 4);
     const count = [...previous].reduce((n, index) => n + (weight.get(index) || 1), 0);
+    const family = candidate.familyKey || candidate.itemKey;
+    const seen = candidate.familyKeys ? candidate.familyKeys.every(key => history.family.has(key)) : typeof family === 'string' && history.family.has(family);
+    // The comeback is spent by the second presentation, counted like all history: folded presentations keep counts, not
+    // times, so reading the same history folded or not gives the same answer. Its minute is measured by time (a day's
+    // break is a break); a product passing presentations without times (synk-town) waits while it is among the last four.
+    // Folding never takes a presentation that recent (fold ageMs is ten minutes or more; synk-town keeps the last four).
+    const times = [...previous].filter(index => typeof index === 'number').map(index => Date.parse(presentations[index]?.at)), timed = times.every(Number.isFinite);
+    const retry = !candidate.familyKeys && seen && count === 1 && states.some(state => state.missed?.includes(family));
+    const lastFour = [...previous].some(index => typeof index === 'number' && index >= presentations.length - 4);
+    const waiting = retry && (timed ? times.some(time => now - time < RETRY.gapMs) : lastFour), due = retry && !waiting, shownAt = timed ? times[0] : Math.max(-1, ...[...previous].filter(index => typeof index === 'number'));
+    const immediate = !due && lastFour;
     // Explicit authored difficulty is a language-complexity bucket, never a TOPIK band.
     // Sparse evidence starts with simpler candidates, while supported needs can still be revisited.
     const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every(id => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === 'recent-independent');
-    if (candidate.conceptIds != null && (!Array.isArray(candidate.conceptIds) || candidate.conceptIds.some(id => typeof id !== 'string'))) throw new TypeError('Core: invalid learning candidate');
-    if (candidate.familyKeys != null && (!Array.isArray(candidate.familyKeys) || !candidate.familyKeys.length || candidate.familyKeys.length > 500
-      || candidate.familyKeys.some(key => typeof key !== 'string'))) throw new TypeError('Core: invalid learning candidate');
     const lift = Math.max(0, ...(candidate.conceptIds || []).map(id => CONTENT_LIFT[content.get(id)] || 0));
-    // A candidate whose every item family was already presented can give no new first try:
-    // it goes behind those that still can, and stays available when nothing else is.
-    const exhausted = !!candidate.familyKeys && candidate.familyKeys.every(key => history.family.has(key));
-    const score = focus.priority - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0)
-      - (exhausted ? .5 : 0);
-    ranked.push({ candidate, focus, score, lift, count, exhausted });
+    // Choosing an item: a candidate whose every item family was already presented can give no new first try — it goes
+    // behind those that still can and stays available when nothing else is; a comeback still in its minute counts as seen.
+    const exhausted = seen && !due, base = focus.priority + (due ? RETRY.lift : 0) - (previous.size && !due ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0);
+    const score = base - (immediate ? .45 : 0) - (exhausted ? .5 : 0);
+    // Choosing an activity (recommendActivities) keeps the explicit list: only `familyKeys` all presented make an item spent.
+    // A product that leaves them out says its items are repeatable (a WORLD lesson meets a family again in a new scene, a
+    // speaking type is practised again: Atlas × WORLD D §4-3 · E §4-4). A comeback in its minute counts as just shown there.
+    const spent = !!candidate.familyKeys && seen, activityScore = base - (immediate || waiting ? .45 : 0) - (spent ? .5 : 0);
+    // Tiers: new first tries and due comebacks (0) · no new first try, least presented first (1) · a comeback still in its minute (2).
+    ranked.push({ candidate, focus, score, activityScore, lift, count, exhausted, spent, retry: retry, shownAt, tier: waiting ? 2 : exhausted ? 1 : 0 });
   }
-  ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+  ranked.sort((a, b) => a.tier - b.tier || (a.tier === 1 ? a.count - b.count : a.tier === 2 ? a.shownAt - b.shownAt : 0) || b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
   return ranked;
+}
+// The reason line for a ranked candidate: an unseen cell of an ability with evidence elsewhere is a step up or a new
+// way of answering, not an ability with few records. `evidence` stays the exact cell's (one format's attempts never
+// become another's); the cell a reason cites goes with it as `reasonEvidence` (a reason keeps its provenance).
+function reasonOf({ focus, candidate, retry }) {
+  if (retry) return { status: 'retry', cell: null };
+  if (focus.status !== 'unseen') return { status: focus.status, cell: null };
+  const levels = focus.skill.levels, format = candidate.responseFormat ?? 'unknown', difficulty = candidate.difficulty, below = difficulty > 1 && levels[difficulty - 1].formats[format];
+  if (below?.status === 'recent-independent') return { status: 'step-up', cell: below };
+  const other = Object.entries(levels[difficulty].formats).find(([name, cell]) => name !== format && (cell.n || cell.assisted));
+  return other ? { status: 'new-format', cell: other[1] } : { status: 'unseen', cell: null };
 }
 function recommend(input) {
   const ranked = rankLearning(input);
   if (!ranked.length) return { status: 'unavailable', selected: null, reason: '지금 조건에 맞는 연습이 없어요.', alternatives: [] };
-  const best = ranked[0], label = best.focus.skill.label;
-  return { status: 'ready', selected: best.candidate, reason: learningReason({ status: best.focus.status, label }), focusSkillId: best.focus.skill.id,
-    state: best.focus.status, responseFormat: best.focus.responseFormat, policy: POLICY.version, evidence: best.focus.evidence,
-    alternatives: ranked.slice(1).map(r => r.candidate) };
+  const best = ranked[0], label = best.focus.skill.label, why = reasonOf(best);
+  return { status: 'ready', selected: best.candidate, reason: learningReason({ status: why.status, label }), focusSkillId: best.focus.skill.id,
+    state: best.focus.status, responseFormat: best.focus.responseFormat, policy: POLICY.version, evidence: best.focus.evidence, ...(why.cell ? { reasonEvidence: why.cell.reasonEvidence } : {}),
+    alternatives: ranked.slice(1).map(r => r.candidate), waiting: ranked.filter(r => r.tier === 2).map(r => r.candidate.id) };
 }
 
 // Choose between activities supplied by a product, using the same practice evidence as an
@@ -175,29 +209,33 @@ function recommendActivities({ profile, candidates, settings = {}, at = profile?
     if (settings.audioAvailable === false && (candidate.audioRequired || (candidate.targets.length && !targets.length))) blocked.push('audio.unavailable');
     if (settings.support && settings.support !== 'choose' && candidate.supports && !candidate.supports.includes(settings.support)) blocked.push('support.mismatch');
     if (blocked.length) { excluded.push({ id: candidate.id, reasons: blocked }); continue; }
-    // An item whose every family was already presented gives no new first try. When all of an
+    // An item whose every listed family was already presented gives no new first try. When all of an
     // activity's items are like that (spent), their state, often a 7-day 'review', cannot make the
     // activity urgent: it would win every time and starve a host's due review. It stays available,
-    // behind the activities that still can teach something new.
-    const fresh = targets.filter(row => !row.exhausted), spent = targets.length > 0 && !fresh.length;
-    const target = fresh[0] || targets[0] || null, state = target?.focus.status || 'unseen';
+    // behind the activities that still can teach something new. (Only listed families: rankLearning's spent.)
+    const byActivity = (a, b) => (a.tier === 2) - (b.tier === 2) || b.activityScore - a.activityScore || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id);
+    const fresh = targets.filter(row => !row.spent).sort(byActivity), spent = targets.length > 0 && !fresh.length;
+    const target = fresh[0] || [...targets].sort(byActivity)[0] || null, state = target?.focus.status || 'unseen', why = target && !spent ? reasonOf(target) : null;
     const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
     // A host may have its own assessed activity (for example a language's letter practice).
     // Keep that recent first-response/help fact separate from Trail skill evidence. The host
     // withdraws it when corrected; Core neither persists it nor manufactures a skill mapping.
     const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY
       ? candidate.practiceNeed : null;
-    const urgent = due || hostNeed || (!spent && ['practice', 'supported', 'review'].includes(state));
-    const tier = urgent ? 0 : spent || state === 'recent-independent' ? 2 : 1;
+    // An activity that can offer only comebacks still in their minute waits like them (rankLearning tier 2): it is not
+    // urgent before they are due, whatever the cell's state or the host's schedule (a minute at most).
+    const held = fresh.length > 0 && fresh.every(row => row.tier === 2);
+    const urgent = !held && (due || hostNeed || (!spent && ['practice', 'supported', 'review'].includes(state)));
+    const tier = urgent ? 0 : held ? 3 : spent || state === 'recent-independent' ? 2 : 1;
     const matchedGoals = (candidate.goals || []).filter(goal => goals.has(goal));
     const reasons = [...(due ? ['review.due'] : []), ...(hostNeed ? [`activity.${hostNeed.kind}`] : []),
       ...(spent ? ['practice.spent'] : target && state !== 'unseen' ? [`practice.${state}`] : []),
       ...(matchedGoals.length ? ['goal.declared'] : []), ...(!profile.evidenceComplete ? ['history.incomplete'] : []),
       ...(!due && !hostNeed && !spent && state === 'unseen' && !matchedGoals.length ? ['practice.unseen'] : [])];
-    ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent });
+    ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons, spent, why });
   }
   ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length
-    || Number(b.due) - Number(a.due) || (b.target?.score ?? .65) - (a.target?.score ?? .65)
+    || Number(b.due) - Number(a.due) || (b.target?.activityScore ?? .65) - (a.target?.activityScore ?? .65)
     || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0)
     || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
   const best = ranked[0];
@@ -207,10 +245,10 @@ function recommendActivities({ profile, candidates, settings = {}, at = profile?
     reason: activityReason({ reasons: ['activity.none'] }), evidence: [], focusSkillId: null, state: null, matchedGoals: [] };
   const detail = row => ({ id: row.candidate.id, reasons: [...row.reasons], state: row.state,
     focusSkillId: row.target?.focus.skill.id || null, matchedGoals: [...row.matchedGoals],
-    evidence: [...(row.target?.focus.reasonEvidence || row.target?.focus.evidence || [])], ...(row.due ? { reviewAt: row.candidate.reviewAt, reviewSource: 'host-schedule' } : {}),
+    evidence: [...(row.target?.focus.reasonEvidence || row.target?.focus.evidence || [])], ...(row.why?.cell ? { reasonEvidence: [...row.why.cell.reasonEvidence] } : {}), ...(row.due ? { reviewAt: row.candidate.reviewAt, reviewSource: 'host-schedule' } : {}),
     ...(row.hostNeed ? { hostEvidence: { kind: row.hostNeed.kind, at: row.hostNeed.at, evidenceRefs: [...row.hostNeed.evidenceRefs], source: 'host-practice' } } : {}) });
   return { ...common, status: 'ready', selected: best.candidate, alternatives: ranked.slice(1).map(row => row.candidate),
-    ...detail(best), reason: activityReason({ reasons: best.reasons, state: best.state, label: best.target?.focus.skill.label }),
+    ...detail(best), reason: activityReason({ reasons: best.reasons, state: best.why?.status ?? best.state, label: best.target?.focus.skill.label }),
     basis: best.due ? 'review-schedule' : best.hostNeed ? 'host-practice' : best.target && best.state !== 'unseen' ? 'practice' : best.matchedGoals.length ? 'declared' : 'cold-start',
     assessments: ranked.map(detail) };
 }

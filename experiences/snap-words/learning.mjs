@@ -1,6 +1,6 @@
 // 찰칵 낱말 — 공통 학습 기록(설계 5-3). 게임은 판 짜기와 판정을 맡고, 아틀라스는 기록과 다음 연습의 선택을 맡는다. 연습이지 측정(B/C)이 아니다.
 // 부탁 = 판을 찍어 답하는 한 문항(보기 = 그 무리의 판들), 인화 = 사진 · 판을 보고 낱말이나 뜻을 고르는 회상 문항이다. 찍기만 한 것은 문항이 아니라 기록하지 않는다.
-// 맵은 strata/maps/topik-i.json(tools/build-game-learning.js)이다. 난도(2중 검수 11-04): TOPIK I 칸이라 안내문 2, 그 밖은 짧은 기초 문장 · 낱말 하나라 1.
+// 맵은 게임 묶음의 strata/topik-i.js topikMap()(maps/topik-i.json + 낱말 마디, atlas/game-browser.js)이다. 난도(2중 검수 11-04): TOPIK I 칸이라 안내문 2, 그 밖은 짧은 기초 문장 · 낱말 하나라 1.
 import { wordOf } from './words.mjs';
 
 export const GAME_ID = 'snap-words';
@@ -10,6 +10,16 @@ export const ITEM_VERSION = Object.freeze({});
 
 const BASIC_ABOVE = new Set(['water', 'tray', 'copier', 'vending']);   // 기초 낱말 목록 밖의 물건 이름(2중 검수 11-04)
 export const difficultyOf = (word) => (wordOf(word)?.band === 'notice' || BASIC_ABOVE.has(word) ? 2 : 1);
+// 낱말 태그(11-10 Atlas 검수 결함 4): 문항이 어느 낱말을 묻는지 Core가 알게 한다. 값은 Strata TOPIK I 지도의 낱말 마디
+// (국립국어원 학습용 어휘 A · B, strata/topik-i.words.json)이고 learning.test.mjs가 한국어 낱말과 마디 이름이 같은지 본다.
+// 목록 밖 낱말(band life · notice)은 마디가 없어 태그가 없다.
+export const WORD_CONCEPT = Object.freeze({
+  library: 'ko.word.w0600', dorm: 'ko.word.w0743', cafeteria: 'ko.word.w0553', bank: 'ko.word.w0039',
+  bookstore: 'ko.word.w0762', post: 'ko.word.w0040', pharmacy: 'ko.word.w0801', office: 'ko.word.w0605',
+  university: 'ko.word.w0733', stop: 'ko.word.w0776', cat: 'ko.word.w0042', bike: 'ko.word.w0035', tree: 'ko.word.w0050',
+  building: 'ko.word.w0391', toilet: 'ko.word.w0619', stairs: 'ko.word.w1737', entrance: 'ko.word.w1715',
+  umbrella: 'ko.word.w0025', sofa: 'ko.word.w0723', menu: 'ko.word.w0752',
+});
 export const SKILL = Object.freeze({ meaning: 'ko.reading.vocabulary', word: 'ko.reading.vocabulary', recall: 'ko.reading.vocabulary', notice: 'ko.reading.detail', sound: 'ko.listening.word' });
 
 /** 문항 하나의 기록 칸. form: meaning · word · sound · notice(부탁) / recall-word · recall-meaning(인화). */
@@ -17,7 +27,7 @@ export function itemMetadata(form, word) {
   const version = ITEM_VERSION[`${form}.${word}`] || 1, sound = form === 'sound', notice = wordOf(word)?.band === 'notice';
   const skillId = sound ? SKILL.sound : notice || form === 'notice' ? SKILL.notice : SKILL.meaning;
   return { id: `${GAME_ID}.${form}.${word}`, itemKey: `${GAME_ID}.${form}.${word}.v${version}`, familyKey: `${GAME_ID}.${form}.${word}.v1`, skillId,
-    difficulty: difficultyOf(word), modality: sound ? 'listening' : 'reading', responseFormat: FORMAT, audioRequired: sound, confounded: false, conceptIds: [] };
+    difficulty: difficultyOf(word), modality: sound ? 'listening' : 'reading', responseFormat: FORMAT, audioRequired: sound, confounded: false, conceptIds: WORD_CONCEPT[word] ? [WORD_CONCEPT[word]] : [] };
 }
 export const missionMetadata = (m) => itemMetadata(m.kind, m.word);
 export const recallMetadata = (q) => itemMetadata(q.mode === 'word' ? 'recall-word' : 'recall-meaning', q.answer);

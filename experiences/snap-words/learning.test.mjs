@@ -4,14 +4,35 @@ import { createRequire } from 'node:module';
 import { PLACES, PLACE_ORDER } from './places.mjs';
 import { WORDS } from './words.mjs';
 import { pickMissions, makeRng } from './core.mjs';
-import { itemMetadata, missionMetadata, missionCandidates, createLearning, GAME_ID } from './learning.mjs';
+import { itemMetadata, missionMetadata, missionCandidates, createLearning, GAME_ID, WORD_CONCEPT } from './learning.mjs';
 
 const require = createRequire(import.meta.url);
 const { createGame } = require('../../atlas/game-learning.js');
 const { createMap } = require('../../strata/index.js');
-const map = createMap(require('../../strata/maps/topik-i.json'));
+// 게임 묶음과 같은 지도(atlas/game-browser.js의 topikMap() — 낱말 마디를 펼친 판): 낱말 태그가 이 마디를 가리킨다.
+const map = createMap(require('../../strata/topik-i.js').topikMap());
 let clock = Date.parse('2026-11-04T09:00:00Z');
 const game = (store = new Map()) => createGame({ gameId: GAME_ID, map, storage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }, clock: () => new Date(clock += 60000).toISOString() });
+
+// 11-10 Atlas 검수 결함 4: 낱말 태그가 없어 Core가 어느 낱말을 틀렸는지 몰랐다.
+test('낱말 태그는 TOPIK I 지도의 낱말 마디이고, 목록 안(A · B) 낱말은 모두 태그가 있다', () => {
+  for (const [word, id] of Object.entries(WORD_CONCEPT)) { const node = map.getNode(id); assert.equal(node?.kind, 'word', `${word} ${id}`); assert.equal(node.label_ko, WORDS[word].ko, word); }
+  for (const w of Object.values(WORDS)) assert.equal(Boolean(WORD_CONCEPT[w.id]), ['A', 'B'].includes(w.band), w.id);
+  assert.deepEqual(itemMetadata('meaning', 'dorm').conceptIds, ['ko.word.w0743']); assert.deepEqual(itemMetadata('recall-word', 'store').conceptIds, []);
+});
+
+test('틀린 뜻 부탁의 낱말이 다음 판의 약한 낱말로 먼저 나온다(정책판 5 — 처음 시도를 놓친 문항의 한 번 다시)', () => {
+  const g = game(), L = createLearning(() => g), place = PLACES.gate, words = missionCandidates(place).map((c) => c.word), missed = words.slice(0, 2);
+  for (const word of words.slice(0, 4)) {
+    const m = { kind: 'meaning', word }; L.present(m);
+    if (missed.includes(word)) { L.answer(m, { correct: false, selected: words[5], attemptNo: 1 }); L.answer(m, { correct: true, selected: word, attemptNo: 2 }); }
+    else L.answer(m, { correct: true, selected: word, attemptNo: 1 });
+  }
+  L.leave();
+  assert.deepEqual([...L.weak(place)].sort(), [...missed].sort());
+  const concepts = new Map((g.summary().concepts || []).map((c) => [c.id, c]));
+  for (const word of missed) assert.equal(concepts.get(WORD_CONCEPT[word])?.formats['single-choice'].incorrect, 1, word);
+});
 
 test('모든 낱말 · 꼴의 기록 칸이 맵과 맞다', () => {
   for (const word of Object.keys(WORDS)) for (const form of ['meaning', 'word', 'sound', 'notice', 'recall-word', 'recall-meaning']) {

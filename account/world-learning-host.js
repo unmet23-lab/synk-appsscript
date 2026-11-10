@@ -22,7 +22,16 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
   let sync, primary, memory, memoryReady, personal, privacyBlocked = false, closed = false, run = null, generation = 0;
   const coaches = new Set(), memoryListeners = new Set();
   const check = () => { guard(); if (closed || privacyBlocked) throw failure('WORLD account session ended', 'MEMORY_SESSION_ENDED'); };
-  const shared = { getItem(key) { check(); return storage.getItem(key); }, setItem(key, value) { check(); storage.setItem(key, value); }, removeItem(key) { check(); storage.removeItem(key); } };
+  // Page cleanup (atlas/learning-pages.js) and its writer fences need the store's own enumeration (key · length).
+  // Pass it through, guarded like every call, when the store has it (synk-account scopedStorage does); without it
+  // the engine keeps every page, as before.
+  const enumerated = (target, store) => {
+    if (typeof store?.key !== 'function' || !('length' in store)) return target;
+    Object.defineProperty(target, 'length', { enumerable: true, get() { check(); return store.length; } });
+    target.key = index => { check(); return store.key(index); };
+    return target;
+  };
+  const shared = enumerated({ getItem(key) { check(); return storage.getItem(key); }, setItem(key, value) { check(); storage.setItem(key, value); }, removeItem(key) { check(); storage.removeItem(key); } }, storage);
   const ownerKey = eventId => `${OWNER}.${eventId}`;
   // The list of owner records only serves to remove them later. Each record is its own key, so two
   // tabs writing the list at once can at worst leave a record behind, never lose one.
@@ -93,7 +102,7 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     check();
     const make = engine?.createGame && engine?.createLearningSync ? engine : { createGame: factory, createLearningSync: createSync };
     if (personalMemory && !personal) {
-      const own = personalMemory, ownStorage = Object.fromEntries(['getItem', 'setItem', 'removeItem'].map(method => [method, (...args) => { check(); return own.storage[method]?.(...args); }]));
+      const own = personalMemory, ownStorage = enumerated(Object.fromEntries(['getItem', 'setItem', 'removeItem'].map(method => [method, (...args) => { check(); return own.storage[method]?.(...args); }])), own.storage);
       // This adapter uses the ordinary personal account store, including its existing epoch.
       // It never imports or uploads a class's evidence, and it keeps today's condition local.
       personal = make.createGame({ gameId: 'world-personal-memory', storage: ownStorage, learnerKey: 'device', storageScope: 'account', accountKey: own.accountKey, historyComplete: !own.connected, fold: { remote: true } });

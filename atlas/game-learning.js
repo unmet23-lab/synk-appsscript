@@ -242,9 +242,11 @@ function openHistory({ storage, key, scope, storageScope, accountKey, historyCom
   };
   // Fold older, finished items once the kept log grows past the limit (see `fold`).
   function compact() {
-    // A large server restore keeps its complete causal log in durable pages. In
-    // particular, later pages may contain feedback/exclusions for early parents.
-    if (!folding || paged) return;
+    // A large server restore keeps its complete causal log in durable pages until it is complete: later pages
+    // may hold feedback/exclusions for early parents. Once the server has sent everything, a paged store folds
+    // like any other (plan() folds an item whole with its later entries; a synchronised store folds only what
+    // the server sent back), so a second or long-idle device does not carry its whole history forever.
+    if (!folding || paged && !complete) return;
     const events = log(), now = Date.parse(monotonicClock());
     if (events.length <= folding.max) return;
     // Nothing could fold a moment ago: try again after a minute or once more entries settle.

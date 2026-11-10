@@ -47,6 +47,10 @@ function learningReason({ status, label }) {
     supported: `${object} 도움과 함께 해냈어요. 이어서 살펴봐요.`,
     'recent-independent': `${object} 최근 혼자 해냈어요. 가볍게 이어가요.`,
     review: `${object} 다시 살펴볼 때예요.`,
+    // Policy 5 (learning.js reasonStatus): the cell is new, the ability is not; and a missed item's one comeback.
+    'step-up': `${named} 앞 단계를 최근 혼자 해냈어요. 한 단계 올려 봐요.`,
+    'new-format': `${object} 다른 방식으로 확인해 봐요.`,
+    retry: `${named}에서 놓친 문제를 한 번 더 풀어 봐요.`,
   };
   if (!Object.hasOwn(reasons, status)) throw new TypeError('Vellum: invalid learning reason');
   return reasons[status];

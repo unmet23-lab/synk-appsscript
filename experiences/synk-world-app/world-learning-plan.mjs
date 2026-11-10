@@ -203,6 +203,7 @@ function extraCandidate(candidate,settings){
 // WORLD가 직접 쓰는 이유(10-20 검수 #17): 학습 항목을 겨누지 않는 후보(생활 레슨·복습)가 뽑히면 Core·Vellum은 「아직 연습 기록이 적어요」라고
 // 말한다(practice.unseen — 그 후보가 볼 항목이 없다는 뜻). 기록이 쌓인 사람에게 그 말은 틀리므로 그 후보를 고른 까닭을 말한다.
 // 짧은 진단은 이번 주 계획의 다시 확인이라 그 까닭을 쓴다. 다른 이유(복습 시기·놓친 항목·목표)는 Vellum 문장 그대로다.
+// 엔진도 11-10(정책판 5)부터 대상이 있는 처음 칸을 능력 이름으로 「기록이 적어요」라고 말하지 않는다(앞 단계 · 다른 방식) — 여기는 대상 없는 후보라 겹치지 않는다.
 // 짧은 진단 후보(이번 주 계획의 시작점·다시 확인): 학습 항목을 겨누지 않는 넓은 확인이라 targets를 비운다(급한 연습을 앞지르지 않게).
 export function positionCheckCandidate(){
  return {id:'world.position.check',label:'짧은 진단',route:'position',minutes:5,minutesEstimated:true,targets:[],goals:['exam','prepare'],audioRequired:false,modality:'reading'};
