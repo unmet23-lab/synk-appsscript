@@ -1,0 +1,94 @@
+{
+  "_설명": "틀이 쓰는 진행 글(편마다 바뀌지 않는 글) — 판본 언어마다. ko는 원문(뜻) — 새 언어는 이 원문에서 그 나라 말로 다시 쓰고 세 겹 검수(역번역 · 아르곤 · Fable)를 거친다. 몽골어 줄 가운데 퀴즈 #6 · #7에서 세 겹을 거친 줄은 _검수에 적었다. level은 {n} 자리에 문제 번호.",
+  "ko": {
+    "series": "관용구",
+    "bridgeLabel": "글자 그대로 옮기면:",
+    "but": "하지만 뜻은 전혀 달라요!",
+    "stamp": "아니야!",
+    "question": "진짜 뜻은 뭘까요?",
+    "countLabel": "3초 안에 맞혀 봐요!",
+    "right": "맞아요!",
+    "sayIt": "따라 말해 봐요",
+    "yourTurn": "이제 네가 말해!",
+    "next": "다음 ▶",
+    "scoreNext": "점수 ▶",
+    "level": "{n}단계!",
+    "finish": "끝!",
+    "hooks": [
+      "다음 건 더 어려워요!",
+      "마지막 건 속지 마세요!"
+    ],
+    "howMany": "몇 개 맞혔어요?",
+    "comment": "점수를 댓글에 써 줘요 ↓",
+    "seeYou": "다음 판에서 만나요!",
+    "koCount": [
+      "셋",
+      "둘",
+      "하나"
+    ],
+    "recapTitle": "글자 그대로가 아니라, 진짜 뜻은:",
+    "duelHook": "둘 중 하나를 골라요!",
+    "sayHow": "말할 때는 이렇게:"
+  },
+  "mn": {
+    "series": "ХЭЛЦ ҮГ",
+    "bridgeLabel": "Үгчлэн орчуулбал:",
+    "but": "Гэхдээ утга нь огт өөр!",
+    "stamp": "БИШ!",
+    "question": "Жинхэнэ утга нь юу вэ?",
+    "countLabel": "3 секундэд таагаарай!",
+    "right": "Зөв!",
+    "sayIt": "ДАГАЖ ХЭЛЭЭРЭЙ",
+    "yourTurn": "ОДОО ЧИ ХЭЛ!",
+    "next": "ДАРААХ ▶",
+    "scoreNext": "ОНОО ▶",
+    "level": "{n}-Р ШАТ!",
+    "finish": "ДУУСЛАА!",
+    "hooks": [
+      "ДАРААГИЙНХ НЬ ИЛҮҮ ХЭЦҮҮ!",
+      "СҮҮЛИЙНХЭД НЬ БҮҮ ХУУРТААРАЙ!"
+    ],
+    "howMany": "Хэдийг нь зөв таасан бэ?",
+    "comment": "Оноогоо сэтгэгдэлд бичээрэй ↓",
+    "seeYou": "Дараагийн удаа уулзъя!",
+    "koCount": [
+      "셋",
+      "둘",
+      "하나"
+    ],
+    "_검수": "퀴즈 #6 · #7 세 겹: series · question · countLabel · right · sayIt · yourTurn · next · scoreNext · level · finish · hooks · howMany · comment · seeYou. 2026-11-10 새로(이번 편 세 겹): bridgeLabel(Opus 역번역으로 «Солонгосоор шууд орчуулбал» → «Үгчлэн орчуулбал») · but · stamp · seeYou(Fable 11-10: «шатанд»는 같은 영상의 다음 단계로 읽힌다 → «удаа») · yourTurn(v1 시험: «ЧИНИЙ ЭЭЛЖ»를 haiku가 못 알아들음 → «ОДОО ЧИ ХЭЛ!») · recapTitle(새로) · 2026-11-10 v4 새로: duelHook · recapTitle(«Жинхэнэ утга нь:» → «Үгчилсэн утга биш — жинхэнэ утга нь:»(아르곤 1차: «Үгчлэн биш»는 부동사 뒤 биш라 어색 → 고침), v3 답 1이 퀴즈 꼴에 머묾) — 아르곤 LAB_퀴즈은행/검문/틀_진행글",
+    "recapTitle": "Үгчилсэн утга биш — жинхэнэ утга нь:",
+    "duelHook": "ХОЁРЫН НЭГИЙГ СОНГООРОЙ!",
+    "sayHow": "ЯРИХДАА ИНГЭЖ ХЭЛНЭ:"
+  },
+  "en": {
+    "series": "IDIOM QUIZ",
+    "bridgeLabel": "Word for word:",
+    "but": "But that is NOT what it means!",
+    "stamp": "NOPE!",
+    "question": "What does it really mean?",
+    "countLabel": "Guess in 3 seconds!",
+    "right": "Correct!",
+    "sayIt": "SAY IT",
+    "yourTurn": "NOW YOU SAY IT!",
+    "next": "NEXT ▶",
+    "scoreNext": "SCORE ▶",
+    "level": "LEVEL {n}!",
+    "finish": "FINISH!",
+    "hooks": [
+      "THE NEXT ONE IS HARDER!",
+      "DON'T FALL FOR THE LAST ONE!"
+    ],
+    "howMany": "How many did you get?",
+    "comment": "Comment your score ↓",
+    "seeYou": "See you next round!",
+    "koCount": [
+      "셋",
+      "둘",
+      "하나"
+    ],
+    "_검수": "S29 영어판 글을 옮긴 자리 잡기 — 이 틀로는 아직 렌더 · 시험하지 않았다",
+    "recapTitle": "Not literal — the real meanings:",
+    "duelHook": "PICK ONE OF TWO!"
+  }
+}
