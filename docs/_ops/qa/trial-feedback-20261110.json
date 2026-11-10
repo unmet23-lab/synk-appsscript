@@ -1,0 +1,55 @@
+{
+  "schema": "synk-trial-feedback-verification/v1",
+  "serverRelease": {
+    "chain": 59,
+    "manifestSha256": "336fcf81195ab3f9cbb20f3a193ce68df8759d8fd9361c444894948011a2017b",
+    "rearmPostcheck": "passed",
+    "armed": true,
+    "replicaHealthy": true,
+    "relatedSourceFilesMatched": 8,
+    "shutdownRouteGuardsPresent": true,
+    "customerShutdownTestSelected": true,
+    "isolatedQa": {"tests": 3693, "pass": 3693, "fail": 0, "sourceUnchanged": true}
+  },
+  "ci": {
+    "commit": "1c710a6922ecfb3d40bfc6a759b5068971908e25",
+    "featureSourceUnchangedFromFix": true,
+    "run": "https://github.com/unmet23-lab/synk-appsscript/actions/runs/42615167871",
+    "jobs": {"tools": "success", "experiences": "success", "company": "success", "root": "success", "desktop": "success"}
+  },
+  "liveReadChecks": {
+    "at": "2026-11-10T08:48:53.858Z",
+    "base": "https://workspace.synk.im",
+    "static": [
+      {"path": "/trial-feedback/", "status": 200, "reviewedSha256": "f4c62fa4456e9388cc0f0cb9aedcb422ab91fb5f2e65b7efd3f9a5ab1cb48d87", "matches": true},
+      {"path": "/trial-feedback/trial-feedback.js", "status": 200, "reviewedSha256": "a6f7f1f581d656541a4693bee23a4a4d6a78a242814895fe5bbddd72a1e2aa87", "matches": true},
+      {"path": "/trial-feedback/trial-feedback.css", "status": 200, "reviewedSha256": "55eb8425cea29afb37f88812bcc953da234ce174eeba75cc69e56e428151f2ac", "matches": true}
+    ],
+    "allThreeCollectorPreflights": {"synkOrigin": 204, "otherOrigin": 403, "allowCredentials": false},
+    "anonymousSummary": 401,
+    "productionWrites": 0
+  },
+  "liveClientCheck": {
+    "at": "2026-11-10T09:52:01.096Z",
+    "syntheticCohort": "qa-live-http-20261110",
+    "storage": "isolated in-memory",
+    "beforeConsentRequests": 0,
+    "enroll": 201,
+    "events": [201, 201],
+    "withdraw": 200,
+    "allCredentials": "omit",
+    "finalClientPhase": "withdrawn",
+    "scope": "Actual company HTTP and reviewed client; not the published LAB UI or authenticated staff UI"
+  },
+  "labPublication": {
+    "published": false,
+    "baseCommit": "e7d2f5bbcbcb12b33b1fafaf741595e1902d8b1a",
+    "plan": "7ee9b8c0c6ba",
+    "candidateManifestSha256": "f283670f65695897e6c40a171c7431e01d46aa26c4171177c981b813443d42e7",
+    "review": "trial-feedback-ui-publish-20261110",
+    "argon": {"completed": true, "reviewedItems": 7, "findings": 0},
+    "fable": {"completed": false, "attempts": 1, "httpStatus": 429, "reason": "Fable usage limit"},
+    "localBrowserQa": {"collector": "fixture", "scenarios": 7, "widths": [1440, 390, 320], "errors": 0, "horizontalOverflow": false},
+    "remaining": ["Fable final review", "Official publication", "Published UI submission and withdrawal checks"]
+  }
+}
