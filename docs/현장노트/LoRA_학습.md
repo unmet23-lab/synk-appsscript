@@ -40,6 +40,12 @@
 - 고침: 서버 트리를 끄고(학습이 없을 때만) `D:\SYNK-LoRA\tools\ai-toolkit\ui`에서 `npm run start` — 바로 200. `AI-Toolkit_실행.cmd`도 `cd /d D:\…`로 고쳤다(원본 `.bak_1107`). ComfyUI는 정션 경로로 띄워도 정상이었다.
 - 다시 확인: `curl http://localhost:8675/api/jobs`가 작업 목록 JSON을 내는지.
 
+### SYNK-LoRA의 ComfyUI를 셸에서 출력을 파일로 돌려 띄우면 시작 중 `UnicodeEncodeError: 'cp949'`로 꺼진다 — SeedVR2 노드 경고의 ⚠ 글자 (2026-11-11 Claude)
+- 증상: 11-11 ACE-Step 노래 시험용으로 Git Bash에서 `venv/Scripts/python.exe main.py --port 8190 --disable-auto-launch … > 기록 2>&1`로 띄우자, 커스텀 노드를 읽는 중 `ComfyUI-SeedVR2_VideoUpscaler`가 triton 경고를 내고 그 경고를 찍던 `app/logger.py`가 `UnicodeEncodeError: 'cp949' codec can't encode character '⚠'`을 잇달아 낸 뒤 `main.py`가 끝 코드 1로 죽었다(포트를 열기 전).
+- 원인: 출력을 파일로 돌리면 파이썬 표준 출력이 콘솔 코드 페이지(cp949)로 열려 ⚠(U+26A0)를 못 쓴다. 경고 하나가 로깅 오류가 되고, 그 오류의 traceback을 찍는 것도 같은 글자에서 다시 실패해 시작 함수까지 올라간다. `ComfyUI_실행.cmd`로 콘솔 창에서 띄울 때도 그런지는 확인하지 않았다.
+- 고침: `PYTHONIOENCODING=utf-8`과 `-X utf8`을 붙이고, 기본 노드만 쓰는 일이면 `--disable-all-custom-nodes`로 띄웠다 — 24초에 떴다(결과는 `--output-directory`로 따로). 공용 GPU 줄은 이 서버(8190)도 「ComfyUI 대기열」로 읽었다.
+- 다시 확인: 같은 명령의 기록에 `Starting server`와 `To see the GUI go to: http://127.0.0.1:8190`이 찍히는지.
+
 ## 학습
 
 ### 학습이 시험 때보다 느리다(스텝당 4~7초)
