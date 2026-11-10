@@ -1,12 +1,12 @@
 {
   "revisions": [
     {
-      "revision": 1,
+      "edition": 1,
       "hash": "530f909e0bea5390",
       "initial": true
     },
     {
-      "revision": 2,
+      "edition": 2,
       "hash": "e51107282b458798",
       "items": {
         "changed": [

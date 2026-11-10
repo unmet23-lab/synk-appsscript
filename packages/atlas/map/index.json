@@ -1,6 +1,6 @@
 {
   "format": "atlas-map-index/1",
-  "edition": 1,
+  "skillsEdition": 1,
   "fields": ["n","itemKey","f","skillId","difficulty","responseFormat","units","order","bank","flags"],
   "items": [
     [1,"topik-items.ti-l-a-001.v1",1,"ko.listening.response",1,"single-choice",["ko.grammar.G209"],0,"topik-items",5],
@@ -6714,6 +6714,6 @@
   "shared": [],
   "retired": {"items":[],"families":[]},
   "renames": {"units":{},"items":{},"families":{}},
-  "revision": 2,
+  "edition": 2,
   "hash": "e51107282b458798"
 }

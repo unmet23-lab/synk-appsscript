@@ -22,8 +22,9 @@ import { MAP_FORMAT, UNITS_FORMAT, WORDS_FORMAT } from '../src/map/index.mjs';
 import { readBanks, readUnits, REPO_ROOT } from './map-sources.mjs';
 
 export const MAP_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'map');
-// 사람이 올리는 지도 판(능력 분류가 바뀔 때만 — 설계 §4 「판 이름」).
-export const MAP_EDITION = 1;
+// 사람이 올리는 능력 분류 판(능력 분류가 바뀔 때만 — 설계 §4 「판 이름」). 색인 판(edition)은 빌드가 올린다 — 태그를 고치면
+// 오르는 「태그 판」이고 단계 3 서버의 판 묶음에 든다(조율 세션 · 단계 3 요청 11-11).
+export const SKILLS_EDITION = 1;
 export const GENERATED = Object.freeze([
   'index.json',
   'units.json',
@@ -126,12 +127,12 @@ export function familyRenameCandidates(previous, rows, renames = {}) {
     .filter(([from, to]) => currentName(from, renames) !== to);
 }
 
-function nextRevision(previous, body, hash, revisions, rows) {
-  if (previous?.hash === hash) return { revision: previous.revision, revisions };
-  const revision = (previous?.revision ?? 0) + 1;
-  if (!previous) return { revision, revisions: [...revisions, { revision, hash, initial: true }] };
+export function nextEdition(previous, body, hash, revisions, rows) {
+  if (previous?.hash === hash) return { edition: previous.edition, revisions };
+  const edition = (previous?.edition ?? 0) + 1;
+  if (!previous) return { edition, revisions: [...revisions, { edition, hash, initial: true }] };
   const change = changesBetween(decodeRows(previous), rows);
-  return { revision, revisions: [...revisions, { revision, hash, ...change }] };
+  return { edition, revisions: [...revisions, { edition, hash, ...change }] };
 }
 
 function sharedRows(shared, rows) {
@@ -146,7 +147,7 @@ function sharedRows(shared, rows) {
 function indexBody(composed, renames) {
   return {
     format: MAP_FORMAT,
-    edition: MAP_EDITION,
+    skillsEdition: SKILLS_EDITION,
     fields: ITEM_FIELDS,
     items: composed.items.map(itemRow),
     templateFields: TEMPLATE_FIELDS,
@@ -193,7 +194,7 @@ export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
   const body = indexBody(composed, renames);
   const rows = [...composed.items, ...composed.templates];
   const hash = foldHash(rows);
-  const { revision, revisions } = nextRevision(
+  const { edition, revisions } = nextEdition(
     previous,
     body,
     hash,
@@ -212,10 +213,10 @@ export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
     : [];
   return {
     files: {
-      'index.json': serialize({ ...body, revision, hash }),
+      'index.json': serialize({ ...body, edition, hash }),
       'units.json': serialize(unitDocs.units),
       'words.json': serialize(unitDocs.words),
-      'audit.json': `${JSON.stringify({ revision, hash, ...audit }, null, 2)}\n`,
+      'audit.json': `${JSON.stringify({ edition, hash, ...audit }, null, 2)}\n`,
       'numbers.json': serialize({
         _: '번호 장부 — 덧붙이기만 한다(설계 §4). 줄을 고치거나 지우지 않는다. map-build --write만 늘린다.',
         ...composed.ledger,
@@ -225,7 +226,7 @@ export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
     audit,
     familyRenames,
     ledger: composed.ledger,
-    revision,
+    edition,
     hash,
   };
 }
@@ -275,10 +276,10 @@ const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPa
 if (invoked) {
   const write = process.argv.includes('--write');
   const built = await buildMap();
-  const { files, audit, revision, hash } = built;
+  const { files, audit, edition, hash } = built;
   const drift = driftOf(files);
   console.log(
-    `atlas map · 판 ${MAP_EDITION} · 색인 판 ${revision} (${hash}) · 문항 태그 없음 ${audit.untagged.untagged}/${audit.untagged.total} · 문항 하나뿐인 단위 ${audit.onlyItem.length} · 고아 태그 ${audit.orphanTags.length}`,
+    `atlas map · 능력 분류 판 ${SKILLS_EDITION} · 색인(태그) 판 ${edition} (${hash}) · 문항 태그 없음 ${audit.untagged.untagged}/${audit.untagged.total} · 문항 하나뿐인 단위 ${audit.onlyItem.length} · 고아 태그 ${audit.orphanTags.length}`,
   );
   const blockers = write
     ? writeBlockers(built, { confirmed: process.argv.includes('--계열이름확인') })

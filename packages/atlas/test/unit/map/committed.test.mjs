@@ -66,9 +66,12 @@ test('살아 있는 문항은 모두 두뇌 꼴로 읽힌다(계약 칸 · 난�
 
 test('판 목록의 마지막이 색인 판이다 — 해시도 같다', () => {
   const last = revisions.at(-1);
-  assert.equal(last.revision, index.revision);
+  assert.equal(last.edition, index.edition);
   assert.equal(last.hash, index.hash);
-  assert.deepEqual(map.editions, { map: `map-${index.edition}`, index: `index-${index.revision}` });
+  assert.deepEqual(map.editions, {
+    map: `map-${index.skillsEdition}`,
+    index: `index-${index.edition}`,
+  });
 });
 
 test('빌드 검사 보고는 지금 색인으로 다시 센 값과 같다', () => {

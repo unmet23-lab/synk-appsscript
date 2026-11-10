@@ -9,7 +9,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { build } from '../../tools/build.mjs';
-import { buildMap, driftOf, familyRenameCandidates } from '../../tools/map-build.mjs';
+import {
+  buildMap,
+  driftOf,
+  familyRenameCandidates,
+  foldHash,
+  nextEdition,
+} from '../../tools/map-build.mjs';
 import { agreementOf } from '../../tools/map-tags.mjs';
 import { banksOf, MAP_DIR, sliceOf } from '../../tools/map-ship.mjs';
 import { HANGUL_TYPES, REPO_ROOT } from '../../tools/map-sources.mjs';
@@ -35,7 +41,8 @@ test('판 폴더의 map/ — 전체 색인 · 단위 · 낱말 · 은행마다 �
     assert.equal(first.manifest.map.files[name].sha256, sha, name);
     assert.deepEqual(bytes, fs.readFileSync(path.join(mapDir(second), name)), name);
   }
-  assert.equal(first.manifest.map.revision, index.revision);
+  assert.equal(first.manifest.map.edition, index.edition);
+  assert.equal(first.manifest.map.skillsEdition, index.skillsEdition);
   assert.equal(first.manifest.map.hash, index.hash);
 });
 
@@ -118,4 +125,42 @@ test('태그 판정 — 둘이 일치해도 지도 밖 단위면 판정으로 �
   };
   assert.equal(agreementOf(fixed, known).verdict, 'fixed');
   assert.equal(agreementOf({ ...fixed, second: { verdict: 'pass', units: [] } }, known), null);
+});
+
+test('색인 판(edition)은 태그 판 — 단위가 바뀌면 오르고, 접기 칸이 같으면 그대로다(단계 3 판 묶음)', () => {
+  const row = units => ({
+    n: 1,
+    f: 1,
+    skillId: 's',
+    difficulty: 1,
+    responseFormat: 'x',
+    units,
+    flags: 0,
+  });
+  const before = foldHash([row(['ko.word.w0001'])]);
+  const previous = {
+    edition: 2,
+    hash: before,
+    fields: [
+      'n',
+      'itemKey',
+      'f',
+      'skillId',
+      'difficulty',
+      'responseFormat',
+      'units',
+      'order',
+      'bank',
+      'flags',
+    ],
+    items: [[1, 'a', 1, 's', 1, 'x', ['ko.word.w0001'], 0, 'g', 0]],
+    templateFields: [],
+    templates: [],
+    families: [[1, 'a.f']],
+  };
+  assert.equal(nextEdition(previous, {}, before, [], [row(['ko.word.w0001'])]).edition, 2);
+  const after = foldHash([row(['ko.word.w0002'])]);
+  const next = nextEdition(previous, {}, after, [], [row(['ko.word.w0002'])]);
+  assert.equal(next.edition, 3);
+  assert.deepEqual(next.revisions.at(-1).items.changed[0].to.units, ['ko.word.w0002']);
 });

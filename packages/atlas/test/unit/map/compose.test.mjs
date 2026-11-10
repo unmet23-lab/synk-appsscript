@@ -143,8 +143,8 @@ test('같은 은행 안 같은 열쇠 — 칸이 같으면 하나로, 다르면 
 const indexOf = out => ({
   families: out.families,
   format: MAP_FORMAT,
-  edition: 1,
-  revision: 2,
+  skillsEdition: 1,
+  edition: 2,
   fields: ITEM_FIELDS,
   items: out.items.map(row => ITEM_FIELDS.map(field => row[field])),
   templateFields: TEMPLATE_FIELDS,

@@ -79,8 +79,8 @@ function joinSlices(slices) {
   const [first] = slices;
   for (const slice of slices) {
     if (slice?.format !== MAP_FORMAT) fail(`색인 꼴이 아니다(${slice?.format})`);
-    if (slice.edition !== first.edition || slice.revision !== first.revision)
-      fail(`색인 판이 섞였다(${first.revision} · ${slice.revision})`);
+    if (slice.edition !== first.edition || slice.skillsEdition !== first.skillsEdition)
+      fail(`색인 판이 섞였다(${first.edition} · ${slice.edition})`);
   }
   if (slices.length === 1) return first;
   const families = new Map(slices.flatMap(slice => slice.families ?? []));
@@ -173,7 +173,9 @@ export function openMap({ index: given, units = null, words = null } = {}) {
     bank === null || row.bank === bank || (sharedBanks.get(row.n) ?? []).includes(bank);
 
   const map = {
-    editions: Object.freeze({ map: `map-${index.edition}`, index: `index-${index.revision}` }),
+    // 판 둘: 색인 판(edition — 태그 · 능력 · 난도 · 꼴 · 계열 등 접기 칸이 바뀔 때마다 빌드가 올린다, 단계 3 서버가 이 번호가
+    // 바뀌면 다시 접는다)과 능력 분류 판(skillsEdition — 사람이 올린다, 설계 §4 「판 이름」).
+    editions: Object.freeze({ map: `map-${index.skillsEdition}`, index: `index-${index.edition}` }),
     familySkills: familySkillsOf([...items, ...templates]),
     item(ref) {
       const row = live(byKey.get(itemName(typeof ref === 'string' ? ref : ref?.itemKey)));

@@ -169,7 +169,7 @@ export async function build({
     thirdParty: parties.map(({ name, version: v, license }) => ({ name, version: v, license })),
     map: map && {
       edition: map.edition,
-      revision: map.revision,
+      skillsEdition: map.skillsEdition,
       hash: map.hash,
       files: Object.fromEntries(
         Object.entries(map.files).map(([name, bytes]) => [name, describe(bytes)]),

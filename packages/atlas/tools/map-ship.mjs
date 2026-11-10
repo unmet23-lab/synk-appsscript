@@ -26,7 +26,7 @@ export function sliceOf(index, bank) {
   return {
     format: index.format,
     edition: index.edition,
-    revision: index.revision,
+    skillsEdition: index.skillsEdition,
     hash: index.hash,
     bank,
     fields,
@@ -58,5 +58,5 @@ export function mapFiles(dir = MAP_DIR) {
     'words.json': compact(read(dir, 'words.json')),
   };
   for (const bank of banksOf(index)) files[`items/${bank}.json`] = compact(sliceOf(index, bank));
-  return { files, edition: index.edition, revision: index.revision, hash: index.hash };
+  return { files, edition: index.edition, skillsEdition: index.skillsEdition, hash: index.hash };
 }
