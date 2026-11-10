@@ -33,12 +33,16 @@ test('스킬 머리말이 영상 작업 · 지적 · 압축 뒤에 부르게 적
 
 // 깃허브 꼴 앵커 — 제목을 소문자로, 글자 · 숫자 · 빈칸 · 붙임표만 남기고 빈칸을 붙임표로
 const 앵커꼴 = 제목 => 제목.trim().toLowerCase().replace(/[^\p{L}\p{N}\s_-]/gu, '').replace(/\s/g, '-');
+// 기록 전용 경로(현장 노트 · 트랙 · 결정 · 보관 · _ops jsonl)는 여기서 열지 않는다 — 그 경로만 바꾼 push에서는 이 시험이 돌지 않아서,
+//   열면 CI 「읽기 대조」(tools/ci읽기대조.cjs ②)가 멈춘다. 목록은 .github/workflows/syntax-check.yml의 paths-ignore와 같다
+const 기록전용 = 길 => /^docs\/(?:현장노트\/|_ops\/(?:트랙\.md$|결정\.md$|보관\/|[^/]+\.jsonl$))/.test(길);
 function 링크검사(rel) {
   const 글 = 읽기(rel);
   const 폴더 = path.dirname(path.join(뿌리, rel));
   const 링크 = [...글.matchAll(/\]\(([^)#\s]+)(#[^)\s]*)?\)/g)].filter(m => !/^https?:/.test(m[1]));
   for (const [, 경로, 앵커] of 링크) {
     const 대상 = path.join(폴더, decodeURIComponent(경로));
+    if (기록전용(path.relative(뿌리, 대상).split(path.sep).join('/'))) continue;
     assert.ok(fs.existsSync(대상), `${rel}: 없는 파일을 가리킨다 — ${경로}`);
     if (앵커 && /\.md$/.test(경로)) {
       const 이름 = decodeURIComponent(앵커.slice(1));
