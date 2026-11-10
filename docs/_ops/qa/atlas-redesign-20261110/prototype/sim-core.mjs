@@ -54,41 +54,48 @@ export const policies = {
   // 새 두뇌 시제품. params로 등급 대응(weakWeight) · 한도를 바꿔 견준다.
   brain({ params = PARAMS } = {}) {
     const memory = createMemory(tsfsrs, params), learner = createLearner();
+    let shown = null;
     return { start: now => startSession(learner, now, params),
-      next(now) { const row = choose(items, learner, memory, now, { params })[0]; present(learner, row); return row.item; },
-      answer: (item, correct, now) => record(learner, memory, item, { correct, assessable: true }, now, params), learner };
+      next(now) { const row = choose(items, learner, memory, now, { params })[0]; if (row.none) return null; present(learner, row); shown = row; return row.item; }, // 낼 것이 없으면 판을 끝낸다
+      answer: (item, correct, now) => record(learner, memory, item, { correct, assessable: true, target: shown.target }, now, params), learner };
   },
   // 고정 사다리(생활 한국어의 지금 방식): 맞히면 1 · 3 · 7 · 14 · 30일 뒤, 틀리면 처음 칸부터 · 1분 뒤 다시. 돌아온 것은 가장 오래 밀린 것부터.
-  // 견주는 것이 「언제 다시」뿐이도록 나머지 규칙은 새 두뇌와 같게 둔다: 틀린 것은 다른 문항 둘 뒤에 다시 · 한 판에 두 번까지(넘으면 다음 판 맨 앞),
-  // 새것은 같은 한 판 · 하루 한도, 할 것이 없으면 아는 것(이 판에서 안 만난 것 → 가장 오래 안 본 것)으로 채우고 한도 밖 새것은 맨 뒤.
+  // 견주는 것이 「언제 다시」뿐이도록 나머지 규칙은 새 두뇌와 같게 둔다: 틀린 것은 다른 문항 둘 뒤에 다시 · 한 판에 두 번까지(다 쓰면 그 판에서는 더 내지 않고
+  // 다음 판에 돌아온 것으로 온다), 새것은 같은 한 판 · 하루 한도, 할 것이 없으면 아는 것(이 판에서 안 만난 것 → 가장 오래 안 본 것)으로 채운다.
+  // 채우느라 때가 되기 전에 낸 것을 맞혀도 칸을 올리지 않는다(같은 칸의 간격을 그때부터 다시 센다) — 새 두뇌의 「같은 자리」 규칙과 같은 뜻이다.
+  // 낼 것이 하나도 없으면(다시를 다 쓴 낱말과 한도 밖 새 낱말만 남으면) 판을 끝낸다.
   // 두 갈래로 돌린다: ladder = 복습 먼저(돌아온 것이 남아 있으면 새것을 내지 않는다 — 지금 제품에 가깝다), ladderMix = 새 두뇌처럼 돌아온 것 셋에 새것 하나.
   ladderMix(options = {}) { return policies.ladder({ ...options, interleave: PARAMS.interleave }); },
   ladder({ newPerSession = PARAMS.newPerSession, newPerDay = PARAMS.newPerDay, retryMax = PARAMS.retryMax, interleave = Infinity } = {}) {
     const STEPS = [1, 3, 7, 14, 30], state = new Map(), variant = new Map(), shownAt = new Map();
-    let queue = [], count = 0, nextNew = 0, fresh = 0, sinceNew = 0, tries = new Map(), met = new Set(), day = { key: null, fresh: 0 };
+    let queue = [], count = 0, nextNew = 0, fresh = 0, sinceNew = 0, tries = new Map(), met = new Set(), day = { key: null, fresh: 0 }, filler = false;
     const pick = w => { const v = (variant.get(w) || 0) % 2; variant.set(w, v + 1); return items[w * 2 + v]; };
     const held = w => queue.some(row => row.w === w) || (tries.get(w) ?? -1) >= retryMax; // 다시 낼 차례를 기다리거나 이 판의 재시도를 다 쓴 낱말
     const canNew = () => nextNew < WORDS && fresh < newPerSession && day.fresh < newPerDay;
     const takeNew = () => { nextNew += 1; fresh += 1; day.fresh += 1; sinceNew = 0; return pick(nextNew - 1); };
-    return { start(now) { const key = Math.floor(now / DAY); if (day.key !== key) day = { key, fresh: 0 }; fresh = 0; sinceNew = 0; tries = new Map(); met = new Set(); },
+    return { start(now) { const key = Math.floor(now / DAY); if (day.key !== key) day = { key, fresh: 0 }; fresh = 0; sinceNew = 0; tries = new Map(); met = new Set(); queue = []; },
       next(now) {
+        filler = false;
         const retry = queue.find(row => count - row.at >= 2);
         if (retry) { queue = queue.filter(row => row !== retry); return pick(retry.w); }
         const due = [...state].filter(([w, s]) => s.due <= now && !held(w)).sort((a, b) => a[1].due - b[1].due)[0];
         if (due && sinceNew >= interleave && canNew()) return takeNew();
         if (due) { sinceNew += 1; return pick(due[0]); }
         if (canNew()) return takeNew();
+        filler = true;
         const soon = [...state].filter(([w]) => !held(w) && !met.has(w)).sort((a, b) => a[1].due - b[1].due)[0];
         if (soon) return pick(soon[0]);
         const any = [...state].filter(([w]) => !held(w)).sort((a, b) => (shownAt.get(a[0]) ?? 0) - (shownAt.get(b[0]) ?? 0))[0];
         if (any) return pick(any[0]);
-        if (queue.length) { const row = queue[0]; queue = queue.slice(1); return pick(row.w); }
-        nextNew = Math.min(WORDS, nextNew + 1); return pick(nextNew - 1);
+        filler = false;
+        if (queue.length) { const row = queue[0]; queue = queue.slice(1); return pick(row.w); } // 다시 낼 차례를 기다리는 것뿐이면 차례를 당겨 낸다
+        return null;
       },
       answer(item, correct, now) {
         count += 1; met.add(item.word); shownAt.set(item.word, count);
         const s = state.get(item.word) || { step: -1, due: 0 };
-        if (correct) { s.step = Math.min(STEPS.length - 1, s.step + 1); s.due = now + STEPS[s.step] * DAY; }
+        if (correct && filler && s.step >= 0) s.due = now + STEPS[s.step] * DAY; // 때가 되기 전에 채우기로 맞힌 것: 칸은 그대로, 간격만 다시 센다
+        else if (correct) { s.step = Math.min(STEPS.length - 1, s.step + 1); s.due = now + STEPS[s.step] * DAY; }
         else {
           const tried = (tries.get(item.word) ?? -1) + 1; tries.set(item.word, tried);
           s.step = -1; s.due = now + 60000;
@@ -119,15 +126,17 @@ export function runOne(name, seed, { truth = {}, policy = {}, sessions, marks = 
   const out = { marks: {}, easy: 0, lost: 0, total: 0, correct: 0, sessions: [] };
   const lastDay = Math.max(...sessions.map(s => s.day));
   for (const session of sessions) {
-    let now = T0 + session.day * DAY + (session.at || 0), right = 0; const before = real.met();
+    let now = T0 + session.day * DAY + (session.at || 0), right = 0; const before = real.met(), startTotal = out.total;
     agent.start(now);
     for (let i = 0; i < session.n; i += 1) {
-      const item = agent.next(now), { correct, p } = real.meet(item.word, now + 5000);
+      const item = agent.next(now);
+      if (!item) break; // 낼 것이 없으면 그 판은 거기서 끝난다
+      const { correct, p } = real.meet(item.word, now + 5000);
       if (p > 0.95) out.easy += 1; else if (p > 0 && p < 0.5) out.lost += 1;
       out.total += 1; if (correct) { out.correct += 1; right += 1; }
       agent.answer(item, correct, now); now += 20000;
     }
-    out.sessions.push({ day: session.day, success: right / session.n, fresh: real.met() - before });
+    out.sessions.push({ day: session.day, success: right / Math.max(1, out.total - startTotal), fresh: real.met() - before });
     const isLastOfDay = !sessions.some(s => s.day === session.day && (s.at || 0) > (session.at || 0));
     if (isLastOfDay && marks.includes(session.day + 1)) out.marks[session.day + 1] = { known: real.known(T0 + (session.day + 1) * DAY), met: real.met() };
   }
