@@ -100,24 +100,25 @@ html[data-lobby-fit=side] .ticket-route{flex-wrap:wrap;row-gap:2px;white-space:n
 
 /* ── 아래 역 지도(routemap.mjs) ── 노선 7px · 역 흰 점 · 내 자리 점과 박자 고리, 이름은 역 이름처럼 한글 + 작은 영문 */
 .map-shade{position:absolute;left:0;right:0;bottom:0;height:44%;background:linear-gradient(#0000,#0000008c 52%,#000000d6);opacity:var(--focus,0);pointer-events:none;z-index:1}
-.route-map{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:2}
-.rm-case{fill:none;stroke:#000000a6;stroke-width:11;stroke-linecap:round;stroke-linejoin:round}
+.route-map{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:2;filter:drop-shadow(0 2px 7px #000000b3)}
 .rm-seg{fill:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
 .rm-seg.on{stroke-width:8;filter:brightness(1.3) saturate(1.1)}
 .rm-head{fill:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
-.rm-head-case{fill:none;stroke:#000000a6;stroke-width:11;stroke-linecap:round;stroke-linejoin:round}
 .rm-head.on{stroke-width:8;filter:brightness(1.3) saturate(1.1)}
-.rm-dot{fill:#fff;stroke:#0b0d10;stroke-width:3}
 .rm-me{fill:#fff;stroke:var(--line);stroke-width:4}
 .rm-ring{fill:none;stroke:#ffffffcc;stroke-width:1.2}
 .route-labels{position:absolute;inset:0;pointer-events:none;z-index:2}
 .rm-label{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;text-align:center;opacity:0}
 .rm-name{display:flex;align-items:center;justify-content:center;gap:7px;font:800 25px/1.1 var(--ui);letter-spacing:-.045em;color:#fff;text-shadow:0 2px 14px #000c;white-space:nowrap;transition:color var(--e-fast)}
-.route-labels[data-kind=fork] .rm-name{font-size:19px;white-space:normal;word-break:keep-all;width:max-content;max-width:31cqw}
+.route-labels[data-kind=fork] .rm-name,.route-labels[data-kind=exit] .rm-name{font-size:19px;white-space:normal;word-break:keep-all;width:max-content;max-width:31cqw}
+.rm-mark{margin-bottom:7px}
+.rm-out{width:22px;height:22px;border-radius:4px;background:#f4f6f8;position:relative}
+.rm-out::after{content:'';position:absolute;left:50%;top:5px;width:2.5px;height:11px;margin-left:-1.25px;background:#111}
+.rm-out::before{content:'';position:absolute;left:50%;top:4px;width:7px;height:7px;margin-left:-4.5px;border-left:2.5px solid #111;border-top:2.5px solid #111;transform:rotate(45deg)}
 .route-labels[data-kind=board] .rm-name{font-size:18px;white-space:normal;word-break:keep-all;width:max-content;max-width:31cqw}
 .rm-en{display:block;margin-top:7px;font:600 10px/1 var(--num);letter-spacing:.18em;text-transform:uppercase;color:#ffffffa8;white-space:nowrap}
 .rm-line{width:22px;height:22px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:none;font:700 12px/1 var(--num);color:#fff;letter-spacing:0}
-.rm-exit{min-width:21px;height:21px;padding:0 4px;border-radius:3px;background:#ffd400;color:#111;display:grid;place-items:center;flex:none;font:800 13.5px/1 var(--num);letter-spacing:0;margin-right:2px}
+.rm-exit{min-width:24px;height:24px;padding:0 5px;border-radius:4px;background:#ffd400;color:#111;display:grid;place-items:center;flex:none;font:700 15px/1 var(--num);letter-spacing:0}
 .rm-label.on .rm-name{color:var(--line-hi)}
 
 /* ── 누르는 칸 ── */

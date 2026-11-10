@@ -37,7 +37,8 @@ test('통로 · 출구: 세 갈래 모두 앞(위)으로, 승강장 「기다리
 
 test('이름 칸 글: 문은 한글 + 영문, 통로는 노선 동그라미, 출구는 노란 번호, 글은 이스케이프', () => {
   assert.match(labelHtml('door', DOORS[0]), /왼쪽 문<\/b><span class="rm-en">Left door/);
-  assert.match(labelHtml('fork', FORK[1]), /rm-line" style="--c:#0052A4">1<\/span>서울역 방면/);
-  assert.match(labelHtml('exit', EXIT[0]), /rm-exit">3<\/span>번 출구/);
+  assert.match(labelHtml('fork', FORK[1]), /rm-line" style="--c:#0052A4">1<\/span><b class="rm-name">서울역 방면/);
+  assert.match(labelHtml('fork', FORK[0]), /rm-out"[^>]*><\/span><b class="rm-name">나가는 곳/);   // 셋이 같은 꼴(표지 위 · 이름 아래)
+  assert.match(labelHtml('exit', EXIT[0]), /rm-exit">3<\/span><b class="rm-name">번 출구/);
   assert.doesNotMatch(labelHtml('door', { id: 'x', text: '<b>' }), /<b><\/b>|<b>&/);
 });

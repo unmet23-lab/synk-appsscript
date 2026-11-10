@@ -32,8 +32,9 @@ const headPath = ({ x, y, dir }) => dir === 'left' ? `M${x + 12},${y - 11} L${x}
 /** 이름 칸 글: 문 · 승강장은 한글 + 작은 영문, 통로는 노선 동그라미 + 방면, 출구는 노란 번호 + 「번 출구」. */
 export function labelHtml(kind, o) {
   const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-  if (o.exit != null) return `<b class="rm-name"><span class="rm-exit">${o.exit}</span>번 출구</b>`;
-  if (o.line) return `<b class="rm-name"><span class="rm-line" style="--c:${o.color}">${o.line}</span>${esc(o.text)}</b>`;
+  if (o.exit != null) return `<span class="rm-mark rm-exit">${o.exit}</span><b class="rm-name">번 출구</b>`;
+  if (o.line) return `<span class="rm-mark rm-line" style="--c:${o.color}">${o.line}</span><b class="rm-name">${esc(o.text)}</b>`;
+  if (kind === 'fork') return `<span class="rm-mark rm-out" aria-hidden="true"></span><b class="rm-name">${esc(o.text)}</b>`;
   const en = EN[o.id] || EN[o.arrow] || '';
   return `<b class="rm-name">${esc(o.text)}</b>${en ? `<span class="rm-en">${en}</span>` : ''}`;
 }
@@ -42,7 +43,7 @@ const brighten = (hex, k = 0.28) => { const n = parseInt(hex.slice(1), 16); retu
 
 export function createRouteMap({ svg, labels, stage, calm = () => false, beat = 0.56 }) {
   let L = null, t = 0, picked = -1, tp = 0, on = false, out = 0, W = 0, H = 0, colors = [];
-  const segs = [], heads = [], dots = [], labs = [], cases = [], headCases = [];
+  const segs = [], heads = [], labs = [];
   const me = document.createElementNS(NS, 'circle'), ring = document.createElementNS(NS, 'circle');
   me.setAttribute('class', 'rm-me'); ring.setAttribute('class', 'rm-ring');
   const clamp = (x) => Math.min(1, Math.max(0, x)), seg = (a, b) => clamp((t - a) / (b - a)), expo = (k) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * k));
@@ -50,22 +51,19 @@ export function createRouteMap({ svg, labels, stage, calm = () => false, beat = 
 
   function build(kind, options) {
     const r = stage.getBoundingClientRect(); W = r.width; H = r.height;
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.replaceChildren(); labels.replaceChildren(); segs.length = heads.length = dots.length = labs.length = cases.length = headCases.length = 0;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.replaceChildren(); labels.replaceChildren(); segs.length = heads.length = labs.length = 0;
     L = layoutMap(kind, options, W, H);
     // 갈래 색: 통로는 가는 노선의 색, 나가는 곳 · 출구는 흰색, 그 밖은 지금 노선 색
     colors = options.map((o) => (o.line ? brighten(o.color) : kind === 'exit' || o.id === 'out' ? '#f4f6f8' : 'var(--line)'));
     L.ways.forEach((w, i) => {
       const hp = headPath(w.head);
-      const pc = document.createElementNS(NS, 'path'); pc.setAttribute('d', w.d); pc.setAttribute('class', 'rm-case'); svg.append(pc); cases.push(pc);
-      const hc = document.createElementNS(NS, 'path'); hc.setAttribute('d', hp); hc.setAttribute('class', 'rm-head-case'); svg.append(hc); headCases.push(hc);
       const p = document.createElementNS(NS, 'path'); p.setAttribute('d', w.d); p.setAttribute('class', 'rm-seg'); p.style.stroke = colors[i]; svg.append(p); segs.push(p);
       const h = document.createElementNS(NS, 'path'); h.setAttribute('d', hp); h.setAttribute('class', 'rm-head'); h.style.stroke = colors[i]; svg.append(h); heads.push(h);
-      if (w.station) { const c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', w.station[0]); c.setAttribute('cy', w.station[1]); c.setAttribute('class', 'rm-dot'); svg.append(c); dots.push(c); } else dots.push(null);
       const lab = document.createElement('div'); lab.className = 'rm-label'; lab.innerHTML = labelHtml(kind, options[i]); lab.style.left = `${w.label[0]}px`; lab.style.top = `${w.label[1]}px`; labels.append(lab); labs.push(lab);
     });
     me.setAttribute('cx', L.cx); me.setAttribute('cy', L.ty); ring.setAttribute('cx', L.cx); ring.setAttribute('cy', L.ty);
     svg.append(ring, me);
-    segs.forEach((p, i) => { const n = p.getTotalLength(); for (const q of [p, cases[i]]) { q.style.strokeDasharray = n; q.dataset.len = n; } });
+    segs.forEach((p) => { const n = p.getTotalLength(); p.style.strokeDasharray = n; p.dataset.len = n; });
   }
   return {
     show(kind, options) { svg.removeAttribute('hidden'); labels.hidden = false; build(kind, options); t = 0; picked = -1; tp = 0; on = true; out = 0; this.render(0); },
@@ -80,10 +78,9 @@ export function createRouteMap({ svg, labels, stage, calm = () => false, beat = 
       const kp = still ? 1 : expo(clamp(tp / 0.4)), run = still ? 1 : eio(clamp(tp / 0.42));
       L.ways.forEach((w, i) => {
         const k = expo(seg(i === 1 ? 0.12 : 0, i === 1 ? 0.82 : 0.7)), mine = picked === i, dim = picked >= 0 && !mine ? 1 - 0.78 * kp : 1;
-        const p = segs[i]; for (const q of [p, cases[i]]) { q.style.strokeDashoffset = String(Number(q.dataset.len) * (1 - k)); q.style.opacity = String(dim); }
+        const p = segs[i]; p.style.strokeDashoffset = String(Number(p.dataset.len) * (1 - k)); p.style.opacity = String(dim);
         p.classList.toggle('on', mine); heads[i].classList.toggle('on', mine);
-        heads[i].style.opacity = headCases[i].style.opacity = String(k > 0.92 ? dim : 0);
-        if (dots[i]) { dots[i].setAttribute('r', String(7.5 * back(seg(0.3, 0.62)))); dots[i].style.opacity = String(picked >= 0 && !mine ? 0.3 : 1); }
+        heads[i].style.opacity = String(k > 0.92 ? dim : 0);
         const lk = expo(seg(0.36 + i * 0.06, 0.86 + i * 0.06)), lab = labs[i];
         lab.style.opacity = String(lk * (picked >= 0 && !mine ? 1 - 0.7 * kp : 1));
         lab.style.transform = `translate(-50%,calc(-100% + ${((1 - lk) * 12).toFixed(1)}px)) scale(${mine ? 1 + 0.14 * kp : 1})`;
