@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c305-ff53-7683-8a7b-14865e72eff0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the reference presenter’s face and create the pharmacy advertisement frame."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":94835,"cached_input_tokens":80512,"cache_write_input_tokens":0,"output_tokens":1214,"reasoning_output_tokens":226}}
