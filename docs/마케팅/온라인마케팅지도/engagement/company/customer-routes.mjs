@@ -11,8 +11,8 @@ export function createCustomerRoutes({ identity, interpretation, drafts, origin,
     if (stopping()) throw fail('서버가 다시 시작되고 있어요. 잠시 후 접속해 주세요.', 503);
     if (path === '/api/customer/synk-id/callback' && method === 'GET') {
       let location = '/consultation/';
-      try { await identity.callback(req, res, url); }
-      catch { location += '?login=failed'; }
+      try { const result = await identity.callback(req, res, url); if(result.returnTo === '/ai-market/') location = result.returnTo; }
+      catch (error) { if(error.returnTo === '/ai-market/') location = error.returnTo; location += '?login=failed'; }
       res.writeHead(302, { Location: location, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); res.end(); return true;
     }
     if (!known.has(path)) throw fail('상담 요청 주소를 확인해 주세요.', 404);

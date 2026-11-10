@@ -47,7 +47,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
 import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 후보앞판읽기, 정책만들기, 정책판, 대체순서, 그록대체정책, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로,
-  맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 끝판정책, 대신할검수자, 사용자지정사슬검사, 사용자지정판, Atlas작업ID, 사이트점검작업ID, 사이트점검화면정책 } from './lib/검수증명.mjs';
+  맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 끝판정책, 대신할검수자, 사용자지정사슬검사, 사용자지정판, Atlas작업ID, AI마켓작업ID, AI마켓아르곤대체, 사이트점검작업ID, 사이트점검화면정책 } from './lib/검수증명.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -1422,7 +1422,9 @@ export async function 페이블하기(폴더, { 시험 = true, 시험결과 = nu
 /** 공식 앱/CLI에서 받은 동일 묶음의 응답을 수신한다. 새 모델 호출기는 만들지 않는다. */
 export function 검수받기(폴더, 누구, 묶음이름, 원문) {
   const 목록 = readJson(path.join(폴더, '묶음.json'));
-  if (목록.정책?.판 === 4 && 누구 !== 'GPT') throw new Error('사용자지정 단독 검수는 실제 GPT 응답만 받는다');
+  if (목록.정책?.사용자지정?.taskId === AI마켓작업ID) {
+    if (![...목록.정책.필수, ...(AI마켓아르곤대체(목록.정책) ? ['GPT'] : [])].includes(누구)) throw new Error('AI 마켓은 봉인한 실제 아르곤·독립 GPT 검수만 받는다');
+  } else if (목록.정책?.판 === 4 && 누구 !== 'GPT') throw new Error('사용자지정 단독 검수는 실제 GPT 응답만 받는다');
   // 다시 검수 묶음은 Fable도 같은 묶음을 읽고 답한다(화면의 Fable 재확인 · GPT·아르곤이 다 막혔을 때)
   const 받는검수자 = ['Claude', 'GPT', '아르곤', ...(목록.갈래 === '델타' ? ['Fable'] : [])];
   if (!받는검수자.includes(누구)) throw new Error(`--검수자는 ${받는검수자.join('|')}`);
@@ -1528,7 +1530,7 @@ function 처음고리판정(폴더, 목록) {
   }
   if (!정책.예외) {
     if (정책.사용자지정) {
-      for (const who of 정책.필수) if (!valid[who]) 사유.push(...문제[who], `사용자지정 필수 ${who} 검수 미완료 — 대체 없음`);
+      for (const who of 정책.필수) if (!valid[who] && !(AI마켓아르곤대체(정책) && who === '아르곤' && blocked[who])) 사유.push(...문제[who], `사용자지정 필수 ${who} 검수 미완료 — ${AI마켓아르곤대체(정책) ? '미전송·일반 실패는 대체하지 않는다' : '대체 없음'}`);
     } else if (목록.종류 === '화면') {
       if (!valid.아르곤 && !blocked.아르곤) 사유.push(...문제.아르곤, '필수 아르곤 검수 미완료(미전송은 한도 예외가 아니다)');
       // Fable 생략 묶음(2026-10-24)은 아르곤이 끝까지 읽었으면 Fable 없이 간다 — 아르곤이 막혔으면 Fable이 대신한다.
@@ -1588,10 +1590,10 @@ function 다시고리판정(폴더, 목록) {
   for (const t of p.대상 || []) {
     if (정책.사용자지정) {
       const votes = p.검수자들.map(w => 효력[w] && 답들[효력[w]]?.[b0.이름]?.targets?.find(x => 대상번호(x?.id) === t.아이디));
-      if (votes.every(Boolean)) 대상판정.set(대상열쇠(t.고리, t.번호), { 대상: t, 풀림: votes.every(v => v.resolved === true), 메모: votes.map(v => v.note).join(' / '), 누구: p.검수자들.join('·'),
+      if (votes.every(Boolean)) 대상판정.set(대상열쇠(t.고리, t.번호), { 대상: t, 풀림: votes.every(v => v.resolved === true), 메모: votes.map(v => v.note).join(' / '), 누구: p.검수자들.map(w => AI마켓아르곤대체(정책) ? 효력[w] : w).join('·'),
         // A negative vote becomes this link's own finding. Keep its exact raw-answer identity so
         // a later correction can resolve it without treating a table-only dismissal as approval.
-        후속: votes.flatMap((v, i) => v.resolved ? [] : 답지적들(목록, { targets: [v] }).map(f => ({ 출처: p.검수자들[i], 묶음: b0.이름,
+        후속: votes.flatMap((v, i) => v.resolved ? [] : 답지적들(목록, { targets: [v] }).map(f => ({ 출처: AI마켓아르곤대체(정책) ? 효력[p.검수자들[i]] : p.검수자들[i], 묶음: b0.이름,
           등급: f.grade, 위치: f.location, 인용: f.quote, 문제: f.problem }))) });
       continue;
     }
@@ -1751,10 +1753,30 @@ export function 검수확인(folderOrId, { 저장소 = null } = {}) {
 // 묶음 coverage는 배포 허용이 아니다. 필수 검수가 모두 끝난 현재 후보만 지정된 최종 검수자의 입력으로 만든다.
 function 사용자배포입력(고리들, 증명) {
   const 목록 = 고리들.at(-1).목록;
-  const reviews = 고리들.flatMap(g => g.정책.필수.flatMap(reviewer => g.목록.묶음.map(b => {
+  const reviews = 고리들.flatMap(g => {
+    if (AI마켓아르곤대체(g.정책)) {
+      // 아르곤이 실제로 막히면 남은 묶음을 보내지 않는 기존 동작을 보존한다.
+      // 빈 답을 검수 완료로 꾸미지 않고 실패 원문·입력·미전송 범위를 최종 GPT 입력에 봉인한다.
+      const 결과 = { 아르곤: 결과들읽기(g.폴더, g.목록, '아르곤'), GPT: 결과들읽기(g.폴더, g.목록, 'GPT') }, 사유 = [];
+      const { valid, blocked } = 검수자판정(g.폴더, g.목록, 결과, 사유);
+      if (사유.length || !valid.아르곤 && !blocked.아르곤 || 결과.GPT.length && !valid.GPT) throw new Error('AI 마켓 화면 검수 입력이 미완료다 — 실제 아르곤 막힘 또는 완독 응답을 확인한다');
+      return ['아르곤', ...(결과.GPT.length ? ['GPT'] : [])].flatMap(reviewer => g.목록.묶음.map(b => {
+        const file = path.join(g.폴더, `${reviewer}-${b.이름}.json`);
+        const common = { chain: g.이름, reviewer, bundle: b.이름, inputSha256: b.sha256 };
+        if (!fs.existsSync(file)) return { ...common, status: '미전송', reason: '아르곤의 실제 한도·로그인 막힘 뒤 중단', requiresIndependentFinalReview: true };
+        const raw = fs.readFileSync(file), saved = JSON.parse(raw);
+        if (saved.차단증거 && 정규해시(saved.차단증거) === 정규해시(막힘증거(reviewer, saved.실패원문, saved.몫?.앞))) {
+          return { ...common, resultSha256: sha(raw), status: '막힘', failure: saved.실패원문, blockingEvidence: saved.차단증거, requiresIndependentFinalReview: true };
+        }
+        const answer = 페이블답읽기(saved.원문);
+        return { ...common, resultSha256: sha(raw), coverage: answer.coverage, findings: answer.findings, ...(answer.targets ? { targets: answer.targets } : {}) };
+      }));
+    }
+    return g.정책.필수.flatMap(reviewer => g.목록.묶음.map(b => {
     const file = path.join(g.폴더, `${reviewer}-${b.이름}.json`), raw = fs.readFileSync(file), saved = JSON.parse(raw), answer = 페이블답읽기(saved.원문);
     return { chain: g.이름, reviewer, bundle: b.이름, inputSha256: b.sha256, resultSha256: sha(raw), coverage: answer.coverage, findings: answer.findings, ...(answer.targets ? { targets: answer.targets } : {}) };
-  })));
+    }));
+  });
   const body = { version: 1, taskId: 목록.정책.사용자지정.taskId, reviewInputHash: 증명.검토입력해시,
     candidate: 증명.배포후보 || null, sources: 증명.최종파일, manifestSha256: 증명.배포후보?.manifestSha256 || null,
     requiredReviewsHash: 정규해시(reviews), reviews,

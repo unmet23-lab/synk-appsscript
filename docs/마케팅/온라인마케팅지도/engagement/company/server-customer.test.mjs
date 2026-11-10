@@ -59,7 +59,7 @@ async function fixture(t,{configured=true,ai=true,provider=async()=>providerResp
   f.client=()=>{
     const jar=new Map();
     return {jar,csrf:'',cookie(){return [...jar].map(([key,value])=>key+'='+value).join('; ');},async request(path,{body,method=body===undefined?'GET':'POST',headers={}}={}){
-      const res=await fetch(f.base+path,{method,redirect:'manual',headers:{Cookie:this.cookie(),...(method==='POST'?{'Content-Type':'application/json',Origin:origin,'X-CSRF-Token':this.csrf}:{}),...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});
+      const res=await fetch(f.base+path,{method,redirect:'manual',headers:{Cookie:this.cookie(),...(!['GET','HEAD'].includes(method)?{'Content-Type':'application/json',Origin:origin,'X-CSRF-Token':this.csrf}:{}),...headers},...(body===undefined?{}:{body:JSON.stringify(body)})});
       for(const row of res.headers.getSetCookie()){const pair=row.split(';')[0],index=pair.indexOf('='),name=pair.slice(0,index),value=pair.slice(index+1);if(value)jar.set(name,value);else jar.delete(name);}
       const raw=await res.text(),data=res.headers.get('content-type')?.includes('application/json')&&raw?JSON.parse(raw):null;
       if(data?.csrfToken)this.csrf=data.csrfToken;
@@ -81,6 +81,93 @@ async function fixture(t,{configured=true,ai=true,provider=async()=>providerResp
   };
   return f;
 }
+
+test('AI market stores real customer posts, comments, bookmarks, sellers and services across server restart',async t=>{
+  const f=await fixture(t),a=f.client(),b=f.client(),base='/api/customer/ai-market';
+  assert.equal((await a.request(base+'/posts')).data.items.length,0);
+  assert.equal((await a.request(base+'/posts',{body:{}})).status,401);
+  await a.login();await b.login(secondId);
+  for(const [client,name]of [[a,'공개 제작자'],[b,'공개 독자']]){
+    const saved=await client.request(base+'/profile',{method:'PUT',body:{revision:0,displayName:name,bio:'직접 작성한 소개'}});
+    assert.equal(saved.status,200,JSON.stringify(saved.data));
+  }
+  const seller=await a.request(base+'/seller',{method:'PUT',body:{revision:0,headline:'작업을 함께 배웁니다',description:'직접 만든 작업을 설명합니다.',categories:['education'],portfolioUrl:'https://example.com/portfolio'}});
+  assert.equal(seller.status,200,JSON.stringify(seller.data));
+  const serviceBody={requestId:randomUUID(),category:'education',mode:'learn',title:'AI 광고 제작 배우기',description:'직접 만들어 보는 수업',deliverables:'작업 파일과 설명',includes:'한 번의 수업',excludes:'광고 집행',priceText:'상담 후 안내',contactUrl:'https://example.com/contact'};
+  const createdService=await a.request(base+'/services',{body:serviceBody});assert.equal(createdService.status,201,JSON.stringify(createdService.data));
+  const serviceId=createdService.data.service.id;
+  const postBody={requestId:randomUUID(),kind:'case',category:'education',title:'수업용 작업 사례',body:'과정과 한계를 직접 기록했습니다.'};
+  const created=await a.request(base+'/posts',{body:postBody});assert.equal(created.status,201,JSON.stringify(created.data));
+  const postId=created.data.post.id;
+  assert.equal((await a.request(base+'/posts',{body:postBody})).data.post.id,postId);
+  assert.equal((await a.request(base+'/posts',{body:{...postBody,title:'같은 키의 다른 내용'}})).status,409);
+  const comment=await b.request(base+'/posts/'+postId+'/comments',{body:{requestId:randomUUID(),body:'어떤 과정이 가장 어려웠나요?'}});
+  assert.equal(comment.status,201,JSON.stringify(comment.data));
+  const saved=await b.request(base+'/posts/'+postId+'/bookmark',{method:'PUT',body:{}});assert.equal(saved.status,200);
+  assert.equal((await b.request(base+'/posts?saved=true')).data.items.length,1);
+  assert.equal((await a.request(base+'/posts?saved=true')).data.items.length,0);
+  assert.equal((await b.request(base+'/posts/'+postId,{method:'PATCH',body:{revision:1,title:'다른 회원의 수정'}})).status,403);
+  assert.equal((await b.request(base+'/services/'+serviceId,{method:'DELETE',body:{revision:1}})).status,403);
+  assert.equal((await a.request(base+'/comments/'+comment.data.comment.id,{method:'DELETE',body:{revision:1}})).status,403);
+  assert.equal((await a.request(base+'/posts/'+postId,{method:'PATCH',body:{revision:1,title:'확인한 작업 사례'}})).status,200);
+  assert.equal((await a.request(base+'/posts/'+postId,{method:'PATCH',body:{revision:1,title:'낡은 버전'}})).status,409);
+  await f.restart();
+  const session=await a.request(base+'/session');assert.equal(session.data.authenticated,true);assert.equal(session.data.user.id,firstId);
+  assert.equal(session.data.profile.displayName,'공개 제작자');assert.equal(session.data.user.name,undefined);
+  const detail=await b.request(base+'/posts/'+postId);
+  assert.equal(detail.data.post.title,'확인한 작업 사례');assert.equal(detail.data.post.author.displayName,'공개 제작자');
+  assert.equal(detail.data.comments[0].body,'어떤 과정이 가장 어려웠나요?');assert.equal(detail.data.services[0].id,serviceId);
+  assert.equal((await b.request(base+'/posts/'+postId+'/bookmark')).data.saved,true);
+  assert.equal((await a.request(base+'/posts/'+postId+'/bookmark')).data.saved,false);
+  assert.match(detail.headers.get('cache-control'),/no-store/);
+  assert.equal((await a.request(base+'/posts/'+postId,{method:'DELETE',body:{revision:2}})).status,200);
+  assert.equal((await b.request(base+'/posts/'+postId+'/comments')).status,404);
+  assert.equal((await b.request(base+'/posts?saved=true')).data.items.length,0);
+  assert.equal((await a.request(base+'/services/'+serviceId,{method:'DELETE',body:{revision:1}})).status,200);
+  assert.equal((await b.request(base+'/services')).data.items.length,0);
+});
+
+test('AI market OAuth returns to market; denied or stale sessions cannot write or leak private bookmarks',async t=>{
+  const f=await fixture(t),client=f.client(),base='/api/customer/ai-market';
+  const start=await client.request(base+'/login',{body:{}});assert.equal(start.status,200);
+  const state=new URL(start.data.authorizationUrl).searchParams.get('state');
+  const callback=await client.request('/api/customer/synk-id/callback?'+new URLSearchParams({state,code:firstId}));
+  assert.equal(callback.headers.get('location'),'/ai-market/');
+  const me=await client.request(base+'/session');assert.equal(me.data.authenticated,true);assert.equal(me.data.profile,null);
+  assert.equal((await client.request(base+'/posts',{body:{requestId:randomUUID(),kind:'case',category:'content',title:'제목',body:'본문'}})).data.code,'PROFILE_REQUIRED');
+  for(const headers of [{Origin:'https://other.example.test'},{'X-CSRF-Token':'bad'}]){
+    assert.equal((await client.request(base+'/profile',{method:'PUT',body:{revision:0,displayName:'작성자',bio:''},headers})).status,403);
+  }
+  const staff=await client.request(base+'/posts?saved=true',{headers:{Cookie:'synk_company_session='+f.staffToken}});assert.equal(staff.status,401);
+  f.active=false;
+  assert.equal((await client.request(base+'/profile',{method:'PUT',body:{revision:0,displayName:'작성자',bio:''}})).status,401);
+  assert.equal((await client.request(base+'/posts')).status,200);
+  assert.equal((await client.request(base+'/posts?saved=true')).status,401);
+});
+
+test('AI market rejects writes after logout or central revocation while the body is arriving',async t=>{
+  const f=await fixture(t),client=f.client(),base='/api/customer/ai-market';await client.login();
+  assert.equal((await client.request(base+'/profile',{method:'PUT',body:{revision:0,displayName:'작성자',bio:''}})).status,200);
+  const input={requestId:randomUUID(),kind:'question',category:'other',title:'저장되면 안 되는 글',body:'요청 본문을 보내는 동안 세션을 종료합니다.'};
+  const pending=await f.slowBody(client,base+'/posts',input);
+  assert.equal((await client.request('/api/customer/logout',{body:{}})).status,200);
+  pending.finish();assert.equal((await pending.response).status,401);
+  await client.login();
+  const revoked=await f.slowBody(client,base+'/posts',{...input,requestId:randomUUID()});
+  f.active=false;revoked.finish();assert.equal((await revoked.response).status,401);
+  assert.equal((await client.request(base+'/posts')).data.items.length,0);
+});
+
+test('AI market rejects foreign query input and preserves public browsing during identity outage',async t=>{
+  const f=await fixture(t),client=f.client(),base='/api/customer/ai-market';await client.login();f.centralStatus=503;
+  assert.equal((await client.request(base+'/session')).status,503);
+  assert.equal((await client.request(base+'/posts')).status,200);
+  assert.equal((await client.request(base+'/services')).status,200);
+  assert.equal((await client.request(base+'/posts?q=a&q=b')).status,400);
+  assert.equal((await client.request(base+'/posts?userId='+firstId)).status,400);
+  assert.equal((await client.request(base+'/posts?saved=maybe')).status,400);
+  assert.equal((await client.request(base+'/posts?limit=1000')).status,400);
+});
 
 test('incomplete cloud preparation is rejected before Store or messenger files are created and originals remain intact',async t=>{
   const directory=await mkdtemp(join(tmpdir(),'synk-customer-preflight-'));

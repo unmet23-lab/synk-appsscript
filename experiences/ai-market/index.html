@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AI로 해본 일을 나누고, 함께할 제작자와 서비스를 찾아보세요.">
+  <meta name="referrer" content="no-referrer">
+  <title>AI 마켓 · 경험에서 다음 작업으로</title>
+  <link rel="stylesheet" href="/ai-market/style.css">
+  <script type="module" src="/ai-market/app.mjs"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 이동</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#/community" aria-label="AI 마켓 커뮤니티"><span class="brand-symbol" aria-hidden="true">a.</span>AI 마켓</a>
+      <nav aria-label="주 메뉴">
+        <a href="#/community" data-nav="community">커뮤니티</a>
+        <a href="#/services" data-nav="services">서비스</a>
+        <a href="#/saved" data-nav="saved">관심 글</a>
+      </nav>
+      <div id="account-actions" class="account-actions"><span class="subtle">계정 확인 중</span></div>
+    </div>
+  </header>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+  <main id="main" tabindex="-1"><div class="loading" role="status">마켓을 불러오고 있습니다.</div></main>
+  <footer class="site-footer"><a href="#/community">AI 마켓</a><span>경험을 나누고, 다음 작업을 연결합니다.</span></footer>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+    <form method="dialog">
+      <h2 id="confirm-title">삭제할까요?</h2>
+      <p id="confirm-body"></p>
+      <div class="button-row"><button class="button secondary" value="cancel" autofocus>취소</button><button class="button danger" value="confirm">삭제하기</button></div>
+    </form>
+  </dialog>
+  <noscript>AI 마켓을 이용하려면 브라우저에서 JavaScript를 켜 주세요.</noscript>
+</body>
+</html>

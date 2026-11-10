@@ -126,11 +126,12 @@ export function createCustomerIdentity({store,origin,config=null,fetch:fetcher=g
     if(!response.ok)throw [400,401,403].includes(response.status)?rejected():unavailable();
     try{return await response.json();}catch{throw unavailable();}
   }
-  function start(req,res){
+  function start(req,res,{returnTo='/consultation/'}={}){
     requireEnabled();requireOrigin(req);rate(req);
+    if(!['/consultation/','/ai-market/'].includes(returnTo))throw fail(400,'RETURN_PATH','로그인 후 돌아갈 주소를 확인해 주세요.');
     if(flows.size>=MAX_ENTRIES)throw fail(429,'BUSY','로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
     const state=random(),browser=random(),verifier=random(),key=digest(state),previousHash=sessionHash(req);
-    flows.set(key,{key,browserHash:digest(browser),verifier,previousHash,previousEntry:sessions.get(previousHash)||null,expiresAt:now()+FLOW_MS,consumed:false});
+    flows.set(key,{key,browserHash:digest(browser),verifier,previousHash,previousEntry:sessions.get(previousHash)||null,expiresAt:now()+FLOW_MS,consumed:false,returnTo});
     setCookie(res,FLOW_COOKIE,browser,300);
     const url=new URL('/auth/v1/oauth/authorize',config.issuer);
     url.search=new URLSearchParams({client_id:config.clientId,response_type:'code',redirect_uri:config.redirectUri,scope:'openid profile',state,code_challenge:createHash('sha256').update(verifier).digest('base64url'),code_challenge_method:'S256'}).toString();
@@ -161,7 +162,11 @@ export function createCustomerIdentity({store,origin,config=null,fetch:fetcher=g
       });
       if(flow.previousHash)sessions.delete(flow.previousHash);
       sessions.set(hash,entry);userRefs.set(user,entry);setCookie(res,SESSION_COOKIE,value,SESSION_MS/1000);
-      return {ok:true,...publicAuth(entry)};
+      return {ok:true,...publicAuth(entry),returnTo:flow.returnTo};
+    }catch(error){
+      // This destination was set by the server and the browser/state binding above
+      // has already passed. Never accept a callback query's redirect destination.
+      error.returnTo=flow.returnTo;throw error;
     }finally{flows.delete(flow.key);setCookie(res,FLOW_COOKIE,'',0);}
   }
   async function validate(entry){

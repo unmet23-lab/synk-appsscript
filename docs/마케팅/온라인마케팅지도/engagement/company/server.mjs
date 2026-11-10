@@ -111,6 +111,8 @@ import { createSynkIdentity, synkIdentityConfig } from './synk-identity.mjs';
 import { createCustomerIdentity, customerIdentityConfig } from './customer-identity.mjs';
 import { createCustomerComputerDraft } from './customer-computer-draft.mjs';
 import { createCustomerRoutes } from './customer-routes.mjs';
+import { createAiMarketStore } from './ai-market-store.mjs';
+import { createAiMarketRoutes } from './ai-market-routes.mjs';
 import { createTeachingService, teachingServiceConfig } from './teaching-service.mjs';
 
 // This service also loads Domain. Wait until the interpretation runtime has
@@ -502,6 +504,8 @@ export function createCompanyApp(options={}) {
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
   const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
+  const aiMarket=createAiMarketStore({store,now:clock});
+  const aiMarketRoutes=createAiMarketRoutes({identity:customerIdentity,market:aiMarket,origin,send,body,stopping:()=>stopRequested,clientAddress});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
   const assistant=createAssistantService({clock,today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user),publicationWorkday:user=>readPublicationWorkday(user),weeklySummary:user=>readWeeklySummary(user),automationHealth:user=>readAutomationHealth(user)});
   const migrationAt=clock();
@@ -1015,6 +1019,7 @@ export function createCompanyApp(options={}) {
     if(await socialPublicRoutes(req,res,{url}))return;
     // Keep unrelated requests on their existing shutdown admission order.
     if(path.startsWith('/trial-feedback/')&&await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
+    if((path==='/api/customer/ai-market'||path.startsWith('/api/customer/ai-market/'))&&await aiMarketRoutes(req,res,url))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
@@ -1874,6 +1879,10 @@ export function createCompanyApp(options={}) {
     // Existing teacher CSS has these fixed absolute image paths. No directory
     // traversal, model, data file or wider assets directory is exposed.
     for(const file of ['wide-coral.webp','slab-cream-long.webp','chip-blush-long.webp','badge-cream.webp'])files['/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,'image/webp'];
+    if(path==='/ai-market'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/ai-market/'});return res.end();}
+    files['/ai-market/']=['../../../../../experiences/ai-market/index.html','text/html; charset=utf-8'];
+    for(const file of ['app.mjs','style.css'])files['/ai-market/'+file]=['../../../../../experiences/ai-market/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    files['/ai-market/assets/SUIT-Variable.woff2']=['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'];
     if(path==='/consultation'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/consultation/'});return res.end();}
     files['/consultation/']=['public/customer-computer.html','text/html; charset=utf-8'];
     for(const file of ['customer-computer.js','customer-computer-state.mjs','customer-computer-view.mjs','customer-computer.css'])files['/consultation/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];

@@ -38,10 +38,28 @@ function fixture(t,options={}){
   start();
   function request(extra={}){return {headers:{origin,cookie:[...jar].map(([key,value])=>key+'='+value).join('; '),...extra},socket:{remoteAddress:'127.0.0.1'}};}
   function apply(res){for(const pair of cookieValues(res)){const index=pair.indexOf('='),key=pair.slice(0,index),value=pair.slice(index+1);if(value)jar.set(key,value);else jar.delete(key);}}
-  function begin(){const res=responseSink(),result=identity.start(request(),res);apply(res);return {url:new URL(result.authorizationUrl),result,res};}
+  function begin(options){const res=responseSink(),result=identity.start(request(),res,options);apply(res);return {url:new URL(result.authorizationUrl),result,res};}
   async function complete(beginning){const res=responseSink(),url=new URL(config.redirectUri);url.search=new URLSearchParams({state:beginning.url.searchParams.get('state'),code:'synthetic-one-time-code'});const result=await identity.callback(request(),res,url);apply(res);return {result,res,url};}
   return {get identity(){return identity;},get store(){return store;},directory,calls,jar,request,apply,begin,complete,token,advance:ms=>stamp+=ms,setStatus:value=>centralStatus=value,setActive:value=>active=value,setAccount:value=>accountId=value,setClaims:value=>claimOverrides=value,setSessions:value=>currentSessions=value,async restart(overrides={}){await stop();start(overrides);},async login(){return complete(begin());}};
 }
+
+test('market return destination is bound to a verified OAuth flow; arbitrary destinations are rejected',async t=>{
+  const f=fixture(t);
+  assert.throws(()=>f.begin({returnTo:'https://attacker.example/'}),error=>error.status===400);
+  assert.throws(()=>f.begin({returnTo:'//attacker.example/'}),error=>error.status===400);
+  const result=await f.complete(f.begin({returnTo:'/ai-market/'}));
+  assert.equal(result.result.returnTo,'/ai-market/');
+  assert.equal((await f.identity.authenticate(f.request())).user.synkUserId,id);
+});
+
+test('verified market flow failure returns safely; expired signup can start a new flow',async t=>{
+  const f=fixture(t),begun=f.begin({returnTo:'/ai-market/'});
+  const denied=new URL(config.redirectUri);denied.search=new URLSearchParams({state:begun.url.searchParams.get('state'),error:'access_denied'});
+  await assert.rejects(f.identity.callback(f.request(),responseSink(),denied),error=>error.status===403&&error.returnTo==='/ai-market/');
+  const expired=f.begin({returnTo:'/ai-market/'});f.advance(5*60_000+1);
+  await assert.rejects(f.complete(expired),error=>error.status===403&&error.returnTo===undefined);
+  assert.equal((await f.complete(f.begin({returnTo:'/ai-market/'}))).result.returnTo,'/ai-market/');
+});
 
 test('customer configuration is independent and fails closed for incomplete or employee settings',t=>{
   const f=fixture(t);

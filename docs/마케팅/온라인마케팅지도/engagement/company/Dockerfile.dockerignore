@@ -54,6 +54,10 @@
 !atlas/interpretation.js
 !atlas/work.js
 !experiences/
+!experiences/ai-market/
+!experiences/ai-market/index.html
+!experiences/ai-market/app.mjs
+!experiences/ai-market/style.css
 !experiences/shift-workbench/
 !experiences/shift-workbench/model.mjs
 !experiences/shift-workbench/storage-upgrade.mjs
