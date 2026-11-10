@@ -14,13 +14,13 @@ const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const sec = (s: number) => Math.round(s * FPS);
 const GREY = '#C4C4C4';
 const X = 74;
-const TOP = 284;
+const TOP = 270;
 
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
 const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number }> = ({ src, start, crop, rate = 1, drift = 0.012 }) => {
   const f = useCurrentFrame();
   const s = crop.s * (1 + (f / FPS) * drift);
-  const ay = crop.ay ?? 880;
+  const ay = crop.ay ?? 930; // v8: 내린 폭을 260 → 210으로 줄인 50px만큼 당긴 컷의 기준을 내린다
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
   const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
   const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})` };
@@ -33,13 +33,14 @@ const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; dr
   );
 };
 
-const Lowered: React.FC<{ d?: number; children: React.ReactNode }> = ({ d = 260, children }) => {
+// v8(11-10 맹검 GPT 두 번 「위의 검은 머리판 · 수평 경계가 덧댄 판처럼 보임」): 내린 폭을 줄이고, 또렷한 장면의 윗단을 흐린 거울 쪽으로 녹여 경계를 없앤다
+const Lowered: React.FC<{ d?: number; children: React.ReactNode }> = ({ d = 210, children }) => {
   const f = useCurrentFrame();
   const z = interpolate(f, [0, 8], [1.035, 1], { ...clamp, easing: EASE_OUT });
   return (
     <AbsoluteFill style={{ overflow: 'hidden', background: '#0b0b0b' }}>
-      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(26px) brightness(0.78)' }}>{children}</div>
-      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scale(${z})`, transformOrigin: '50% 30%' }}>{children}</div>
+      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(34px) brightness(0.9)' }}>{children}</div>
+      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scale(${z})`, transformOrigin: '50% 30%', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 150px)', maskImage: 'linear-gradient(to bottom, transparent 0px, black 150px)' }}>{children}</div>
     </AbsoluteFill>
   );
 };
@@ -50,8 +51,8 @@ const AdChrome: React.FC<{ len: number }> = ({ len }) => {
   const p = interpolate(f, [0, len], [0.18, 0.34], clamp);
   return (
     <AbsoluteFill>
-      <div style={{ position: 'absolute', left: X, top: 1500, fontFamily: KO, fontWeight: 700, fontSize: 30, color: 'rgba(255,255,255,0.92)', background: 'rgba(0,0,0,0.42)', borderRadius: 8, padding: '6px 14px', letterSpacing: -0.3 }}>광고</div>
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 1600, height: 6, background: 'rgba(255,255,255,0.22)' }}>
+      <div style={{ position: 'absolute', left: X, top: 1700, fontFamily: KO, fontWeight: 700, fontSize: 30, color: 'rgba(255,255,255,0.92)', background: 'rgba(0,0,0,0.42)', borderRadius: 8, padding: '6px 14px', letterSpacing: -0.3 }}>광고</div>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 1772, height: 6, background: 'rgba(255,255,255,0.22)' }}>
         <div style={{ width: `${p * 100}%`, height: '100%', background: 'rgba(255,255,255,0.85)' }} />
       </div>
     </AbsoluteFill>
@@ -62,13 +63,17 @@ const AdChrome: React.FC<{ len: number }> = ({ len }) => {
 const Shade: React.FC = () => {
   const f = useCurrentFrame();
   const on = LINES.reduce((m, l) => Math.max(m, interpolate(f, [sec(l.from) - 6, sec(l.from), sec(l.to), sec(l.to) + 8], [0, 1, 1, 0], clamp)), 0);
-  const k = 0.42 + 0.58 * on;
-  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.66) 0px, rgba(10,10,10,0.52) 470px, rgba(10,10,10,0.2) 760px, rgba(10,10,10,0) 940px)' }} />;
+  // v7(맹검 GPT 07 「끝의 짙은 띠가 작은 표기에 비해 크다」): 끝 칸은 표기만 읽히게 더 옅게
+  const base = interpolate(f, [sec(S.end), sec(S.end) + 8], [0.42, 0.2], clamp);
+  // v9(아르곤 맹검 06 「밝은 약국 장면 위를 시커멓게 덮음」): 밝은 칸은 그 칸의 shade 배율만큼 옅게
+  const cut = CUTS.find((c) => f >= sec(c.from) && f < sec(c.to));
+  const k = (base + (1 - base) * on) * (cut?.shade ?? 1);
+  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.62) 0px, rgba(10,10,10,0.46) 420px, rgba(10,10,10,0.16) 700px, rgba(10,10,10,0) 880px)' }} />;
 };
 
 // 큰 글자가 곧 말 — 다음 줄까지 0.6초 넘게 비면 끝에서 8프레임에 걸쳐 12px 올라가며 사라진다(맞받는 말은 3프레임)
 // at = 줄마다 뜨는 초(말하는 때 · 원본 박자 자리). 없으면 첫 줄부터 3프레임씩.
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; fade?: number; at?: number[] }> = ({ lines, from, to, grey, size = 92, meta, instant, fade = 3, at }) => {
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; fade?: number; at?: number[]; lead?: boolean }> = ({ lines, from, to, grey, size = 92, meta, instant, fade = 3, at, lead }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
@@ -80,10 +85,10 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
   };
   return (
-    <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: '0 2px 16px rgba(0,0,0,0.75), 0 0 3px rgba(0,0,0,0.5)' }}>
+    <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: '0 1px 10px rgba(0,0,0,0.45)' }}>
       {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: 34, letterSpacing: -0.5, color: '#BDBDBD', marginBottom: 18 }}>{meta}</div> : null}
       {lines.map((l, i) => (
-        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color: grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
+        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: lead && i === 0 ? 600 : 700, fontSize: lead && i === 0 ? Math.round(size * 0.86) : size, lineHeight: 1.18, letterSpacing: -1.8, color: grey || (lead && i === 0) ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
     </div>
   );
@@ -94,7 +99,8 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
 const labelAt = (t: number): string | null => {
   if (t >= S.end) return 'SYNK 브리핑';
   if (t >= S.search && t < S.searchEnd) return null;
-  if (CUTS.some((c) => c.ad && t >= c.from && t < c.to)) return '재연 · AI로 만든 가상 인물';
+  // v9(아르곤 맹검 05 「표기가 컷 도중 바뀌고 아래 큰 글자와 같은 말」): 해설이 「AI로 만든 가상 인물」을 말하는 칸은 앞 칸 표기를 그대로 둔다
+  if (CUTS.some((c) => c.ad && c.chrome !== false && t >= c.from && t < c.to)) return '재연 · AI로 만든 가상 인물';
   return '재연 · 상황은 각색';
 };
 const Label: React.FC = () => {
@@ -103,7 +109,8 @@ const Label: React.FC = () => {
   if (!text) return null;
   let since = 0;
   while (since < 6 && f - since - 1 >= 0 && labelAt((f - since - 1) / FPS) === text) since++;
-  const o = f === 0 ? 1 : interpolate(since, [0, 6], [0, 1], clamp);
+  // 첫 프레임부터 같은 글이면 바뀐 게 아니다(v7 — 맹검 GPT 01 「처음에 표시가 흐려졌다 돌아옴」)
+  const o = f - since <= 0 ? 1 : interpolate(since, [0, 6], [0, 1], clamp);
   return <div style={{ position: 'absolute', left: X, top: 206, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{text}</div>;
 };
 
@@ -114,7 +121,7 @@ export const Film: React.FC = () => {
       {CUTS.map((c, i) => (
         <Sequence key={i} from={sec(c.from)} durationInFrames={sec(c.to) - sec(c.from)}>
           <Lowered><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} /></Lowered>
-          {c.ad ? <AdChrome len={sec(c.to) - sec(c.from)} /> : null}
+          {c.ad && c.chrome !== false ? <AdChrome len={sec(c.to) - sec(c.from)} /> : null}
           {c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
@@ -126,7 +133,7 @@ export const Film: React.FC = () => {
       {LINES.map((l, i) => {
         const next = LINES[i + 1];
         const fade = !next || next.from - l.to > 0.6 ? 8 : 3;
-        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} fade={fade} at={l.at} />;
+        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} fade={fade} at={l.at} lead={l.lead} />;
       })}
 
       <Label />

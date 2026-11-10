@@ -1,6 +1,7 @@
 // 폰 화면 — 광고 속 얼굴로 찾기(재연용으로 직접 만든 화면 · 실제 서비스 로고 · 이름 없음). 글은 우리가 쓴 그대로라 영상 모델이 다시 그리지 않는다.
 // v2(11-10 미학 맹검 04 기각 「폰 앱 꼴 없이 급조한 목업 · 로딩 막대가 툭 사라짐 · 앱에 안 쓰는 설명 글 · 사진 속 청진기」):
 //   상태 줄 · 검색창 안 사진 칩 · 얼굴 위를 훑는 스캔 줄 · 결과 탭 · 빈 결과 아이콘으로 실제 앱 꼴을 갖추고, 찾는 중 → 결과는 밀려 올라오며 바뀐다.
+//   v3(맹검 GPT 04 「결과 글이 앱 글씨보다 너무 큼」): 결과 글을 112 → 88 · 굵기 700으로 앱 꼴에 맞춤.
 //   사진은 A1에서 얼굴만 뽑은 한 장(청진기가 안 보이게). 버터는 이 편에서 「없습니다」 한 곳(화면 결 ②).
 import React from 'react';
 import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame } from 'remotion';
@@ -74,10 +75,10 @@ export const Search: React.FC<{ resultAt: number }> = ({ resultAt }) => {
               <div style={{ position: 'absolute', width: 110, height: 8, background: SUB, borderRadius: 4, left: 22, top: 77, transform: 'rotate(-45deg)' }} />
             </div>
           </div>
-          <div style={{ marginTop: 110, textAlign: 'center', fontWeight: 800, fontSize: 112, lineHeight: 1.14, letterSpacing: -2.6, color: '#fff', wordBreak: 'keep-all' }}>
+          <div style={{ marginTop: 110, textAlign: 'center', fontWeight: 700, fontSize: 88, lineHeight: 1.18, letterSpacing: -1.6, color: '#fff', wordBreak: 'keep-all' }}>
             일치하는 결과가<br /><span style={{ color: BUTTER }}>없습니다</span>
           </div>
-          <div style={{ marginTop: 34, textAlign: 'center', fontWeight: 700, fontSize: 50, color: SUB, letterSpacing: -0.8 }}>비슷한 이미지 0개</div>
+          <div style={{ marginTop: 34, textAlign: 'center', fontWeight: 600, fontSize: 44, color: SUB, letterSpacing: -0.6 }}>비슷한 이미지 0개</div>
         </div>
       </div>
     </AbsoluteFill>
