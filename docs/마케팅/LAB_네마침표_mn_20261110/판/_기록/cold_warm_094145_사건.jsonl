@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c2e7-5f86-71a0-8c58-8b0715c3f5b6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"왼쪽의 얼어붙은 검정 양모 공과 오른쪽의 따뜻한 버터색 물결 쿠션이 대비되는 정사각형 이미지 한 장을 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A frosted black wool sphere contrasts with a golden butter-yellow wave cushion on soft cream felt."}}
+{"type":"turn.completed","usage":{"input_tokens":107860,"cached_input_tokens":75776,"cache_write_input_tokens":0,"output_tokens":829,"reasoning_output_tokens":66}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c2b0-05be-7080-af76-96ed317420a6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"침실과 지우의 모습을 유지하고, 검은 공과 땀방울을 없앤 편안한 저녁 장면을 이미지 생성 도구로 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Jiu smiles softly at her phone in the cozy bedroom, with a fluffy cream pillow and smooth blanket beside her."}}
+{"type":"turn.completed","usage":{"input_tokens":95035,"cached_input_tokens":71552,"cache_write_input_tokens":0,"output_tokens":922,"reasoning_output_tokens":240}}
