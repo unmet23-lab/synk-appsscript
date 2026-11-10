@@ -7,8 +7,9 @@
 #   끝 그림을 넣지 않아(첫 장은 얼굴이 보여 같은 사람이 잠긴다) 끝 자세로 빨려 들어가 멎는 일이 없다. 연기는 원본 7번을 재서 잡았다 — 눈썹이 올라가고(원본 11.08초)
 #   시선이 폰에서 빠져 옆으로 간다(원본 11.24초). 우리 판은 창이 화면 왼쪽이고 다음 컷이 길 건너 가게라, 창 쪽을 보면 8번이 소연이 본 것으로 읽힌다(「저 집은 좋겠다」).
 #   박자 · 문구는 Fable 사전 검수(11-09 「고치고 굽는다」)대로 — 엄지 스크롤을 빼 손 · 폰 뭉개짐을 막고(동작 넷 → 셋), 받은 판 앞 1.04초에 고개 돌림이 끝나게 0.1초씩 당기고, 고개 30도 안 · 두 눈 보임 · 웃지 않음을 박았다.
-# 11번(p8-11e) — 다시_1109_스티커원고.py의 원고를 Gemini로 유리문에 구운 시작 그림(콘티/p8/다시_1109/C11s_pick.jpg — 두 장 중 C11s2, C11s1은 들린 귀퉁이가 「떼」를 가림).
-#   Fable 심사 「이대로 굽는다」(읽힘 8 · 글자 9) — 스티커 위 반사 띠가 유리로 안 이어져 띠만 움직이면 「화면 광택」이 되니, 띠는 그대로 두고 문 전체 광택만 함께 바뀌게.
+# 11번(p8-11e) — 11-10 유호님 「테이프 인쇄물」: 글자 없는 포스터 종이를 마스킹테이프로 붙인 시작 그림(콘티/p8/다시_1109/C11s_pick.jpg — 받음_1110c에서 고른 판). 첫 스티커(SUIT 띠)는 「ai슬롭」으로 폐기.
+#   종이 · 테이프는 저절로 움직이지 않고(영상 열두 원칙 4 — 물건은 손이 닿을 때만 움직인다) 유리 반사만 아주 느리게 바뀐다. 첫 장에 없는 인쇄물 낱말(스티커 · 현수막)은 지시문에 두지 않는다 — 없는 물건을 불러온다.
+#   포스터 속 사람도 사람 낱말(woman · she)로 부르지 않는다 — 꾸러미점검이 사람 컷으로 읽고, 모델이 사진 속 얼굴을 움직일 빌미가 된다(11-10).
 import json
 import os
 import subprocess
@@ -60,15 +61,17 @@ P07F = (P07F.replace(" Nothing appears or passes outside the window.", "")
 assert P07F != P07E and "camera" not in P07F[P07F.index("ACTION:"):P07F.index("\nCAMERA:")] and "lips stay exactly" in P07F and "Any printed picture" in P07F
 
 P11E = "\n".join([
-    "@이미지 1 is the exact first frame of this video: start from it unchanged — same framing, same place, same light, colors and white balance, same fridge, bottles and sticker.",
+    "@이미지 1 is the exact first frame of this video: start from it unchanged — same framing, same place, same light, colors and white balance, same fridge, bottles, poster and tape.",
     HEAD,
-    "ACTION: Close on the glass door of the drinks fridge beside the counter, a glossy printed sticker stuck on the outside of the glass. The sticker, its photo, its letters "
-    "and the reflection streak on it stay exactly as in the first frame — a flat, unchanging print. Behind the glass the bottles stand in soft focus in the cold white light. "
-    "The only movement is a very faint, slow change in the overall sheen of the whole door — the glass and the sticker together, never the streak on the sticker alone.",
-    "CAMERA: the frame stays exactly where it is from the first frame to the last — the fridge door, the sticker and the bottles never shift; no push-in, no zoom, no drift, no shake; only the faint sheen of the whole door changes.",
-    LOOK,
+    "ACTION: Close on the glass door of the drinks fridge beside the counter: a matte paper poster — a printed photo advertising a strawberry latte — is taped to the outside of the glass "
+    "at its two top corners with beige masking tape. Nothing on the door moves — the door, both strips of tape and the poster stay perfectly still; the printed photo is flat ink on paper and never changes. "
+    "Behind the glass the bottles stand in soft focus in the cold white light. Only the faint reflections on the glass shift very slowly as the daylight outside changes.",
+    "CAMERA: the frame stays exactly where it is from the first frame to the last — the fridge door, the poster, the tape and the bottles never shift; no push-in, no zoom, no drift, no shake; only the faint reflections on the glass change.",
+    LOOK.replace("Every printed photo in the scene (on a bag, a window poster, a sticker, a street banner or a wall frame) is a flat print whose picture never moves or changes.",
+                 "Any printed picture already in the scene is a flat print that never moves or changes."),
     "SOUND: silent clip — no dialogue, no narration, no music.",
 ])
+assert "sticker" not in P11E and "Any printed picture" in P11E
 
 
 def frame_jpg(src, n, dst):
