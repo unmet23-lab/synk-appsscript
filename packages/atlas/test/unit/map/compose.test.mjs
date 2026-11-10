@@ -394,6 +394,11 @@ test('단계 3 접기 어댑터가 받는 색인 꼴 — foldIndex { edition, lo
   const out = compose([{ bank: 'g', items: [meta('a', { conceptIds: ['G201'] })] }]);
   const map = openMap({ index: indexOf(out) });
   assert.equal(map.foldIndex.edition, 'index-2');
+  assert.equal(
+    map.foldIndex.familySkills,
+    map.familySkills,
+    '기기 얹기가 받는 계열 → 능력도 같은 색인에서',
+  );
   assert.deepEqual(map.foldIndex.lookup('a').units, ['ko.grammar.G201']);
   assert.equal(map.foldIndex.lookup('nope'), null);
 });

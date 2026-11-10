@@ -196,11 +196,13 @@ export function openMap({ index: given, units = null, words = null } = {}) {
     unit: unitLookup(unitTable(units, words), renames),
     renamedUnit: follower(renames.units),
   };
-  // 단계 3 접기 어댑터(src/record/adapt.mjs)가 받는 색인 꼴 — { edition, lookup(itemKey) }. 계열 줄 문항은 열쇠만으로 못 찾아
-  // null이고, 어댑터는 그때 사건에 적힌 값을 쓴다.
+  // 단계 3이 한 색인으로 두 곳에 넘기는 꼴 — 접기 어댑터(src/record/adapt.mjs itemOf)가 edition · lookup(itemKey)을, 기기 얹기 직전
+  // (src/record/own.mjs familySkillsOf)이 familySkills(계열 → 능력들)를 읽는다. 계열 줄 문항은 열쇠만으로 못 찾아 lookup이
+  // null이고, 어댑터는 그때 사건에 적힌 값을 쓴다. overlay의 index.lookup(사건 번호로 찾기)과는 이름만 같다.
   map.foldIndex = Object.freeze({
     edition: map.editions.index,
     lookup: itemKey => map.item(itemKey),
+    familySkills: map.familySkills,
   });
   return Object.freeze(map);
 }
