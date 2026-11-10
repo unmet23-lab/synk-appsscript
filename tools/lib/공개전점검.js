@@ -259,7 +259,8 @@ async function 크롬열기({ 실행파일 = null, 기다림ms = 20000 } = {}) {
     '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required', '--mute-audio',
     '--remote-debugging-port=0', `--user-data-dir=${프로필}`, 'about:blank',
   ];
-  const 아이 = spawn(크롬, 깃발, { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
+  // 환경은 크롬조종의 크롬환경 — CI 모사가 바꾼 USERPROFILE을 받은 윈도우 크롬은 조종 통로를 안 연다(11-10 실측, 그 함수 머리말)
+  const 아이 = spawn(크롬, 깃발, { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true, env: require('./크롬조종.js').크롬환경() });
   let 끝남 = false;
   const 끝 = new Promise((r) => { 아이.once('exit', () => { 끝남 = true; r(); }); 아이.once('error', () => { 끝남 = true; r(); }); });
   const 치우기 = async () => {

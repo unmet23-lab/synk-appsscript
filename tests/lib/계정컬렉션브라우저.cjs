@@ -25,7 +25,8 @@ async function inspectCollection(base) {
   await once(server, 'listening');
   let browser;
   try {
-    browser = await chromium.launch({ channel: 'chrome', headless: true });
+    // 환경은 크롬조종의 크롬환경 — CI 모사(test-ci)가 바꾼 USERPROFILE을 받은 윈도우 크롬은 원격 디버깅을 거절한다(현장 노트 시험_화면확인 10-19 · 11-10)
+    browser = await chromium.launch({ channel: 'chrome', headless: true, env: require('../../tools/lib/크롬조종.js').크롬환경() });
     const context = await browser.newContext({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 2 });
     const origin = `http://127.0.0.1:${server.address().port}`;
     await context.route('**/*', route => {

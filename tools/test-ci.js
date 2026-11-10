@@ -23,8 +23,16 @@
  *   체크아웃 등 여기서 못 지우는 차이가 더 있다).
  *
  * 쓰는 곳: /deploy 2단계, 완료·배포 보고 직전. `node tools/test-ci.js`
+ *
+ * 🔴 시간 한도 두 겹 (2026-11-10 — 전체 런 두 벌이 글자검사에서 5시간 넘게 멈췄다):
+ *   ① 시험 하나 `--test-timeout`(시험한도ms): 본문이 끝없이 기다리면 그 시험을 취소(실패)로 센다.
+ *   ② 런 전체(전체한도ms): 시험 본문은 끝났는데 남은 자식(그날은 크롬)이 통로를 붙잡아 **파일 프로세스가 안 끝나면** ①로는 못 잡는다
+ *      (11-10 실측 — 본문은 20초에 실패로 끝났는데 파일은 5시간 뒤에도 살아 있었다). 넘기면 그때 도는 시험 파일 이름을 대고
+ *      node --test 를 나무째 끈 뒤 적색으로 낸다.
+ *   `--test-force-exit` 는 쓰지 않는다 — 남은 자식 문제는 덮지만 비동기로 늦게 등록되는 시험을 말없이 빼먹는다
+ *   (11-10 실측: 시험 둘 중 하나만 돌고 초록). 새는 방향이 통과다.
  */
-const { spawnSync } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -159,7 +167,86 @@ function 알림줄들(판, code) {
   return 줄;
 }
 
-function 주() {
+/* 두 한도 모두 실측에서 잡았다 — 11-10 고친 뒤 전체 런 46분 43초(334파일), 그중 `tests/바로올리기.test.js` 한 파일이 약 46분으로
+ *   긴 막대다(git을 수천 번 부른다). 가장 긴 시험 하나는 300초(그 파일의 「공용 작업본: 새 경로 목록이 Windows 명령 길이를…」).
+ *   다른 세션의 런과 겹치면 두 배까지 늘 수 있어 시험 20분 · 전체 120분으로 둔다 — 정상 런을 끊지 않되 멈춘 런은 끝이 있다. */
+const 시험한도ms = 20 * 60e3;
+const 전체한도ms = 120 * 60e3;
+const 분글 = (ms) => `${Math.round(ms / 60e3)}분`;
+
+/** 프로세스 명령 줄 글에서 시험 파일(tests/…test.js) 경로를 뽑는다 — 순수 함수(시험이 문장으로 잰다). */
+function 시험파일뽑기(글) {
+  return [...new Set((String(글 || '').match(/tests[\\/][^\s"'<>|]+?\.test\.[cm]?js/g) || []).map((p) => p.replace(/\\/g, '/')))];
+}
+
+/** 윈도우 밖의 프로세스 표 { pid, ppid, args } — ps -e 는 리눅스 · 맥 모두 있다. */
+function 프로세스표() {
+  const r = spawnSync('ps', ['-e', '-o', 'pid=,ppid=,args='], { encoding: 'utf8', timeout: 30000 });
+  return String(r.stdout || '').split('\n').map((l) => l.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/)).filter(Boolean)
+    .map((m) => ({ pid: Number(m[1]), ppid: Number(m[2]), args: m[3] }));
+}
+
+/** pid 바로 아래에서 아직 도는 프로세스의 명령 줄 — node --test 는 시험 파일마다 아이 node 하나를 띄우고 그 명령 줄에 파일 경로가 있다. */
+function 아이명령줄(pid) {
+  if (process.platform !== 'win32') return 프로세스표().filter((p) => p.ppid === Number(pid)).map((p) => p.args).join('\n');
+  // 출력 인코딩을 UTF-8로 못 박는다 — 안 박으면 콘솔 코드 페이지(CP949)로 나와 한글 시험 파일 이름이 깨진다(11-10 실측)
+  const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+    '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; '
+    + `Get-CimInstance Win32_Process -Filter "ParentProcessId=${Number(pid)}" | ForEach-Object { $_.CommandLine }`],
+  { encoding: 'utf8', windowsHide: true, timeout: 30000 });
+  return String(r.stdout || '');
+}
+
+/** 나무째 끈다 — 윈도우는 taskkill /T(아래 파일 · 크롬까지), 그 밖은 자손을 **먼저 다 모은 뒤**(부모가 죽으면 고아로 옮겨 가 못 찾는다) 끈다. */
+function 나무끄기(아이) {
+  if (process.platform === 'win32') {
+    const r = spawnSync('taskkill', ['/PID', String(아이.pid), '/T', '/F'], { windowsHide: true, timeout: 30000 });
+    if (r.status === 0) return;
+  } else {
+    const 표 = 프로세스표();
+    const 아래 = []; const 볼 = [아이.pid];
+    while (볼.length) { const p = 볼.pop(); for (const x of 표) if (x.ppid === p) { 아래.push(x.pid); 볼.push(x.pid); } }
+    for (const p of 아래) { try { process.kill(p, 'SIGKILL'); } catch (_) { /* 이미 끝났다 */ } }
+  }
+  try { 아이.kill('SIGKILL'); } catch (_) { /* 이미 끝났다 */ }
+}
+
+/**
+ * node --test 를 두 겹 한도(머리말)로 돌린다 → { status, signal, error, 넘김: null | { 파일: string[] } }.
+ * 뿌리 · 한도를 인자로 받는 까닭: 픽스처가 「남은 자식 때문에 안 끝나는 파일」을 진짜로 만들어 한도 · 이름 대기 · 끄기를 행동으로 잰다.
+ */
+function 돌리기(files, env, { cwd = ROOT, 시험ms = 시험한도ms, 전체ms = 전체한도ms, stdio = 'inherit' } = {}) {
+  const 환경 = { ...env };
+  delete 환경.NODE_TEST_CONTEXT; // 시험 안에서 불려도 바깥 러너에 붙지 않고 제 러너로 돈다
+  return new Promise((맞다) => {
+    let 끝 = false;
+    let 넘김 = null;
+    let 아이;
+    try {
+      아이 = spawn(process.execPath, ['--test', `--test-timeout=${시험ms}`, ...files], { cwd, env: 환경, stdio, windowsHide: true });
+    } catch (e) { 맞다({ status: null, signal: null, error: e, 넘김 }); return; }
+    const 시계 = setTimeout(() => {
+      넘김 = { 파일: 시험파일뽑기(아이명령줄(아이.pid)) };
+      나무끄기(아이);
+    }, 전체ms);
+    const 마침 = (r) => { if (끝) return; 끝 = true; clearTimeout(시계); 맞다({ ...r, 넘김 }); };
+    아이.on('error', (e) => 마침({ status: null, signal: null, error: e }));
+    아이.on('exit', (status, signal) => 마침({ status, signal, error: undefined }));
+  });
+}
+
+/** 한도를 넘겼을 때의 줄들 — 순수 함수. */
+function 넘김줄들(넘김, 전체ms = 전체한도ms) {
+  if (!넘김) return [];
+  return [
+    '',
+    `[test-ci] ⏱ 런 전체가 ${분글(전체ms)}을 넘겨 node --test 를 나무째 껐다 — 그때 아직 안 끝난 시험 파일: ${넘김.파일.length ? 넘김.파일.join(' · ') : '(명령 줄에서 못 읽음)'}`,
+    '   → 시험 본문은 끝났는데 파일이 안 끝나면 남은 자식(크롬 · 서버)이 통로를 붙잡은 것이다. 그 파일만',
+    `     \`node --test --test-timeout=${시험한도ms} <파일>\`로 따로 돌려 보고, 현장 노트 시험_화면확인 「몇 시간째 안 끝난다」 절을 본다.`,
+  ];
+}
+
+async function 주() {
   const files = 테스트파일들();
   /* CI 모사 환경은 lib/ci모사환경.js **한 벌**에서 온다 (F389) — clasp-guard 안전테스트와 여기가
    * 각자 조립하다 갈라져, 「여기 초록」이 배포 게이트 통과를 예측하지 못했다. 조리법은 그 파일에. */
@@ -168,9 +255,10 @@ function 주() {
   /* ③ 축 — 지울 수 없으니 잰 자리에서 이름을 댄다(F620 · 머리말). 워크플로에서 읽는다. */
   const ci판 = 모사환경.CI판(ROOT);
 
-  console.log(`[test-ci] CI 모사: TZ=UTC · HOME=${모사.fakeHome}(빈 폴더) · plat=${process.platform} · 테스트 ${files.length}파일`);
+  console.log(`[test-ci] CI 모사: TZ=UTC · HOME=${모사.fakeHome}(빈 폴더) · plat=${process.platform} · 테스트 ${files.length}파일`
+    + ` · 한도 시험마다 ${분글(시험한도ms)} · 전체 ${분글(전체한도ms)}`);
   const before = snapshot();
-  const r = spawnSync(process.execPath, ['--test', ...files], { cwd: ROOT, env: 모사.env, stdio: 'inherit' });
+  const r = await 돌리기(files, 모사.env);
   const after = snapshot(before);
 
   모사.치우기();
@@ -179,7 +267,8 @@ function 주() {
     console.error('[test-ci] 실행 실패: ' + r.error.message);
     process.exit(1);
   }
-  const code = r.status === null ? 1 : r.status;
+  for (const 줄 of 넘김줄들(r.넘김)) console.error(줄);
+  const code = r.넘김 || r.status === null ? 1 : r.status;
 
   // 도는 동안 바뀐 파일 — 스위트가 스스로 만드는 임시물은 위 스냅샷 대상에 없다(tmp 로 나간다).
   for (const 줄 of 알림줄들(판정(before, after), code)) console.error(줄);
@@ -203,6 +292,6 @@ function 주() {
 
 /* 판정을 **내보낸다** — 회귀가 소스에서 정규식으로 블록을 긁어 `new Function` 으로 돌리던 자리다.
  * 긁어 쓰면 구조를 바꿀 때마다 회귀가 조용히 「못 찾음」이 되고, 그때 새는 방향은 통과다. */
-module.exports = { snapshot, 판정, 알림줄들 };
+module.exports = { snapshot, 판정, 알림줄들, 시험파일뽑기, 돌리기, 넘김줄들 };
 
-if (require.main === module) 주();
+if (require.main === module) 주().catch((e) => { console.error('[test-ci] 실행 실패: ' + (e && e.stack || e)); process.exit(1); });
