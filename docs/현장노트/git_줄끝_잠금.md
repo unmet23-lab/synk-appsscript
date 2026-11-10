@@ -704,6 +704,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 열쇠 · 권한 · 원격 주소를 건드리지 말고 ① `curl -s https://github.com/<계정>.keys`에 `~/.ssh/id_ed25519.pub`이 있는지, ② `https://www.githubstatus.com/api/v2/summary.json`에 사건이 있는지, ③ `git ls-remote https://…`가 되는지 본다. 셋 다 그렇다면 `ssh -T git@github.com`이 20초 간격으로 세 번 연달아 될 때만 바로올리기를 다시 돌리는 반복을 배경으로 건다(관련 시험이 1~2분이라 한 번 된 것만 보고 돌리면 시험 끝에 push에서 또 막혀 시험만 거듭 돈다). push 자리에서 막히면 「push가 거절됐다 — … access rights」로 나오므로 다시 할 조건에 이 글도 넣는다. 이번에는 18:50에 막혀 20:26에 여섯 번째 시도로 올라갔다(앞 다섯은 fetch나 push 자리에서 멈춤). 바로올리기의 판정 줄(`[올림]` · `[멈춤] …`)은 출력 맨 앞에 나오므로 `| tail`로 자르면 안 보인다 — 파일로 받아 첫 줄을 본다. 다른 원인(윈도우 ssh의 키 권한)은 [현장 노트 · 윈도우 셸의 ssh 절](윈도우_셸.md#ssh)에 있다.
 - 다시 확인: `ssh -T git@github.com`이 「successfully authenticated」를 낸다. 이때 CI 빨강이 checkout 단계에서 함께 늘었으므로, 장애 시각의 checkout 실패는 코드 탓부터 찾지 않는다.
 
+### WIP 커밋을 `git reset --soft <바탕>`으로 풀고 작업본을 더 고친 뒤 `바로올리기 --모두`를 돌리면 push는 되지만 따라가기가 「staged content different from both the file and the HEAD」로 되돌린다 (2026-11-10 Claude · PULSE 인물 판 3)
+- 증상: 소프트 리셋 뒤 `persona-view.mjs`를 Fable 지적대로 한 번 더 고치고 `바로올리기 --모두 --실행` → origin `cdc94eced`는 올라갔고(올린 판은 작업본 최종 바이트) 공용 작업본 · 운영 사본도 따라갔지만, 이 작업본 따라가기만 `git rm --cached` 단계에서 실패해 되돌렸다.
+- 원인: 소프트 리셋은 WIP 커밋의 판을 인덱스에 남긴다. 그 뒤 고친 파일은 인덱스 · 작업본 · HEAD가 셋 다 달라 따라가기의 「고치는 파일을 바탕 판으로」가 막힌다.
+- 고침: `git reset -q`(인덱스만 비움 — 작업본 파일은 그대로) 뒤 `node tools/바로올리기.js 따라가기 --실행` → `c855a9e71 → cdc94eced`, 바뀐 파일 0. 처음부터 소프트 리셋 바로 뒤에 `git reset -q`를 해 두면 걸리지 않는다.
+- 다시 확인: `git status --short`가 비고 `git log -1`이 올린 커밋.
+
 ## 워크트리·연결 폴더·공간 정리
 
 ### 워크트리에서 `sync-atlas --all --local`이 Study 묶음의 `Cannot find module …/node_modules/esbuild`로 멈춰 날 사본(path-vr trail 등)을 쓰지 않는다 — Study 빌드만 esbuild를 저장소 뿌리 경로로 찾는다 (2026-10-31 Claude)
