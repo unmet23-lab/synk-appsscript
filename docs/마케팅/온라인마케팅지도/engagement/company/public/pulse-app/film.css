@@ -449,6 +449,27 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-casting{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:1px;background:#000}
 .sx-casting-lead{position:relative;grid-row:1/-1;overflow:hidden;min-height:0;background:#111}
 .sx-casting-lead img{width:100%;height:100%;object-fit:cover;object-position:50% 24%}
+/* 모델의 4초(캐스팅북 모델 벽 영상 720×1280, request-flow.mjs modelFilm). 큰 칸은 첫 장면 포스터를 받은 뒤 영상 칸이 사진을 덮는다(has-film).
+   실제 화소의 1.5배 넘게 키우지 않는다. 칸이 9:16보다 좁으면 늘 채운다(높이가 배율을 정해 높이에 맞추는 것과 같다).
+   9:16보다 넓은 칸은 채우면 폭이 배율을 정하므로 「칸 폭 × 화소비 ≤ 약 1,056」(1.47배)일 때만 채우고(1440 · 1366 · 1920 창 — 최대화해도),
+   넘으면(2560 모니터 · 휴대폰) 늘리지 않고 높이에 맞춰 검정 여백을 둔다(채우면 2560 1.56배 · 휴대폰 1.63배). 화소비 3을 넘는 기기와 띠 사이 틈은 늘 높이 맞춤.
+   채울 때 위아래가 조금 잘리면 얼굴이 남게 22%. */
+.sx-casting-lead{container-type:size}
+.sx-casting-lead video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 22%;background:#000;opacity:0;transition:opacity .32s var(--sx-out);pointer-events:none}
+@container (max-aspect-ratio:9/16){.sx-casting-lead video{object-fit:cover}}
+@media (max-resolution:1dppx){@container (max-width:1056px){.sx-casting-lead video{object-fit:cover}}}
+@media (min-resolution:1.01dppx) and (max-resolution:1.25dppx){@container (max-width:844px){.sx-casting-lead video{object-fit:cover}}}
+@media (min-resolution:1.26dppx) and (max-resolution:1.5dppx){@container (max-width:704px){.sx-casting-lead video{object-fit:cover}}}
+@media (min-resolution:1.51dppx) and (max-resolution:2dppx){@container (max-width:528px){.sx-casting-lead video{object-fit:cover}}}
+@media (min-resolution:2.01dppx) and (max-resolution:2.5dppx){@container (max-width:422px){.sx-casting-lead video{object-fit:cover}}}
+@media (min-resolution:2.51dppx) and (max-resolution:3dppx){@container (max-width:352px){.sx-casting-lead video{object-fit:cover}}}
+.sx-casting-lead.has-film video{opacity:1;transition-duration:.6s}
+/* 계속 도는 영상의 멈춤 · 재생(큰 칸 · 예시 작품 칸). 큰 칸은 영상이 덮고 있을 때만 보인다. */
+.sx-film-hold{position:absolute;right:0;bottom:0;z-index:2;background:#000;color:var(--sx-ink);padding:5px 12px 5px 12px}
+.sx-casting-lead:not(.has-film) .sx-film-hold{display:none}
+.sx-casting-lead.has-film figcaption{max-width:calc(100% - 76px)}
+.sx-wall .sx-cast video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;animation:sx-film-in .45s var(--sx-out)}
+@keyframes sx-film-in{from{opacity:0}}
 .sx-casting-lead figcaption{position:absolute;left:0;bottom:0;background:#000;color:var(--sx-ink);padding:5px 12px 5px var(--sx-m)}
 .sx-casting .sx-cast{grid-column:2}
 .sx-casting .sx-cast img{object-position:50% 20%}
