@@ -1,12 +1,14 @@
 // 환승 러시 흐름(설계 v0.3): 개찰구 → 승강장 → 2호선 → 시청 환승 통로 → 1호선 → 출구 → 개찰구 → 지상 → 결과.
-// 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
+// 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 위 노선 줄은 hud.mjs, 아래 역 지도는 routemap.mjs(11-10 A 「노선도」), 결과 정류장 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
 import { SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
 import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
 import { LINES } from './lines.mjs';
 import { PEOPLE, CARS, planDay } from './people.mjs';
-import { createScene, loadImage, paintSign } from './scene.mjs';
+import { createScene, loadImage } from './scene.mjs';
 import { createLed } from './led.mjs';
+import { createHud } from './hud.mjs';
+import { createRouteMap } from './routemap.mjs';
 import { createSound, haptic } from './audio.mjs';
 import { createMusic } from './music.mjs';
 import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney, missedPractice, entryNote } from './learning.mjs?v=return-20261105';
@@ -53,9 +55,10 @@ const has = (n) => assets.has(n);
 const sound = createSound();
 const music = createMusic(sound.ctx, { destination: sound.output });
 sound.onVoice = (on) => music.voice(on);
-await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED')]).catch(() => {});
-const led = createLed($('led'));
-const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
+await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED'), document.fonts.load('700 19px SubwayUI'), document.fonts.load('500 30px SubwayNum')]).catch(() => {});
+const hud = createHud({ route: $('hud-route'), clock: $('hud-clock'), status: $('hud-status'), badge: $('hud-badge'), stage: $('stage'), calm: reduced });
+const map = createRouteMap({ svg: $('route-map'), labels: $('route-labels'), stage: $('stage'), calm: reduced });
+const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced, look: query.get('look') === 'b' ? 'b' : 'a' }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
 const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();
 
 const availableCars = () => Object.keys(CARS).filter((id) => has(CARS[id].closed));
@@ -70,8 +73,8 @@ function frame(now) {
     for (const t of [...tweens]) { t.t += dt; const k = Math.min(1, t.t / t.dur); t.fn(t.e(k)); if (k >= 1) { tweens.delete(t); t.res(); } }
     if (stepping > 0) { stepTimer -= dt; if (stepTimer <= 0) { stepTimer += 1 / stepping; stepSide = -stepSide; sound.sfx.step(stepSide); } }
     sound.railTick();
-    if (voiceLive) led.setLevels(sound.voiceLevels());
-    led.render(dt);
+    if (voiceLive) hud.setLevels(sound.voiceLevels());
+    hud.render(dt); map.render(dt);
     scene.resize(); scene.render(dt);
   }
   requestAnimationFrame(frame);
@@ -80,16 +83,17 @@ requestAnimationFrame(frame);
 
 // ── 전광판 · 안내 ──
 let voiceLive = false, currentLine = null, currentExchange = null, canHelp = false;
-function setStatus(role) { led.setStatus(role === 'guide' ? '길 안내' : role === 'announcer' ? '안내방송' : '', role === 'guide' ? 'green' : 'amber'); }
+function setStatus(role) { hud.setStatus(role === 'guide' ? '길 안내' : role === 'announcer' ? '안내방송' : '', role === 'guide' ? 'green' : 'amber'); }
+const setLine = (n) => { if (LINES[n]) hud.setLine(n, LINES[n].color); };
 async function say(line, { status = true } = {}) {
   currentLine = line;
   if (status) setStatus(line.role);
   voiceLive = true;
   const ok = await sound.speak(line.voice);
-  voiceLive = false; led.setLevels([0, 0, 0, 0, 0]);
+  voiceLive = false; hud.setLevels([0, 0, 0, 0, 0]);
   return ok;
 }
-function setClock(run) { led.setClock(clockText(run.minutes)); }
+function setClock(run) { hud.setClock(clockText(run.minutes)); }
 function setKeys(on) { canHelp = on; $('key-replay').disabled = !on; $('key-text').disabled = !on; }
 $('key-replay').addEventListener('click', async () => {
   if (!canHelp || !currentLine || voiceLive) return;
@@ -118,7 +122,8 @@ async function banner(text, seconds = 2) {
   const b = $('banner'); $('banner-text').textContent = text; delete b.dataset.out; b.hidden = false;
   await wait(seconds); b.dataset.out = ''; await wait(0.3); b.hidden = true;
 }
-async function curtain(on) { const c = $('curtain'); if (on) c.dataset.on = ''; else delete c.dataset.on; await wait(0.26); }
+// 장면이 바뀔 때 노선 색 문이 닫혔다 열린다(색 · 번호는 지금 노선, style.css .door)
+async function curtain(on) { const c = $('curtain'); if (on) { $('door-no').textContent = String(hud.state.line); $('door-tag').textContent = `LINE ${hud.state.line}`; c.dataset.on = ''; } else delete c.dataset.on; await wait(on ? 0.36 : 0.26); }
 
 // ── 고르기 ──
 let chooseResolve = null, hintShown = false;
@@ -131,65 +136,26 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { if (!$('board').hidden && !$('voice-dialog').open) togglePause(); return; }
   const i = { ArrowLeft: 0, a: 0, ArrowUp: 1, w: 1, ArrowRight: 2, d: 2, 1: 0, 2: 1, 3: 2 }[e.key]; if (i !== undefined) pick(i);
 });
-/** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. */
-function choose(options, autoId) {
+/** 고를 차례의 사진 가라앉힘(0~1): 셰이더 uFocus와 아래 그늘(--focus)을 같이 움직인다. */
+function setFocus(to, seconds = 0.5) {
+  const from = scene.state.focus;
+  return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.focus = from + (to - from) * k; $('stage').style.setProperty('--focus', scene.state.focus.toFixed(3)); }, ease.out);
+}
+function endChoice() { map.hide(); if (scene.state.focus > 0) setFocus(0, 0.3); }
+/** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. kind: door · fork · exit · board(아래 역 지도의 갈래 모양). */
+function choose(options, autoId, kind) {
   const zones = $('zones'); zones.hidden = false;
   [...zones.children].forEach((b, i) => { b.setAttribute('aria-label', options[i].text || (options[i].exit != null ? `${options[i].exit}번 출구` : '')); });
-  scene.paintDecals(options); scene.showDecals();
-  const hint = $('gesture-hint'); hint.hidden = readAlbum().plays >= 2 || !!hintShown; hintShown = true;
+  $('route-labels').dataset.kind = kind; map.show(kind, options); setFocus(1); sound.sfx.lanes();
+  // 고를 차례는 위 노선 줄이 알린다(사진 위에 글을 띄우지 않는다 — 11-10 맹검). 처음 두 판만 손짓을 한 번 흘려 보인다.
+  hud.setStatus('고르세요', 'green');
+  if (readAlbum().plays < 2 && !hintShown) hud.flash('아래 길을 누르거나 밀어요', 4.8, 'green');
+  hintShown = true;
   return new Promise((resolve) => {
-    chooseResolve = (i) => { zones.hidden = true; $('gesture-hint').hidden = true; scene.paintDecals(options, i); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
+    chooseResolve = (i) => { zones.hidden = true; hud.setStatus(''); map.pick(i); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
     if (AUTO) { const i = options.findIndex((o) => o.id === autoId); wait(1.1).then(() => pick(i < 0 ? 0 : i)); }
   });
 }
-
-// ── 걸이 표지 ──
-const HANG = { w: 1100, h: 200 };
-const lineColor = (n) => LINES[n]?.color;
-function drawHang(options, lit = null) {
-  const c = $('hang-canvas'); c.width = HANG.w; c.height = HANG.h; const x = c.getContext('2d');
-  x.fillStyle = '#c9cbcf'; x.fillRect(0, 0, HANG.w, HANG.h);
-  const cell = (HANG.w - 12) / 3;
-  options.forEach((o, i) => {
-    const rect = [6 + i * cell + (i ? 3 : 0), 6, 6 + (i + 1) * cell - (i < 2 ? 3 : 0), HANG.h - 6];
-    const arrow = [-Math.PI * 0.72, -Math.PI / 2, -Math.PI * 0.28][i];
-    paintCell(x, rect, o, arrow, lit === i);
-  });
-}
-function arrowGlyph(x, cx, cy, r, angle) {
-  x.save(); x.translate(cx, cy); x.rotate(angle); x.beginPath(); x.moveTo(-r, 0); x.lineTo(r * 0.45, 0); x.moveTo(r * 0.02, -r * 0.62); x.lineTo(r * 0.72, 0); x.lineTo(r * 0.02, r * 0.62);
-  x.lineWidth = r * 0.34; x.lineCap = 'butt'; x.lineJoin = 'miter'; x.stroke(); x.restore();
-}
-function paintCell(x, [x0, y0, x1, y1], o, arrow, lit) {
-  const w = x1 - x0, h = y1 - y0;
-  x.save(); x.beginPath(); x.rect(x0, y0, w, h); x.clip();
-  x.fillStyle = lit ? '#123a86' : '#081430'; x.fillRect(x0, y0, w, h);
-  const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(110,146,226,.14)'); g.addColorStop(0.5, lit ? 'rgba(160,200,255,.5)' : 'rgba(96,136,220,.26)'); g.addColorStop(1, 'rgba(60,90,160,.10)');
-  x.fillStyle = g; x.fillRect(x0, y0, w, h);
-  const cx = x0 + w / 2, top = y0 + h * 0.3, ink = '#f7f9ff';
-  x.textAlign = 'center'; x.textBaseline = 'middle';
-  const paint = (blur) => {
-    x.filter = blur ? `blur(${blur}px)` : 'none';
-    if (o.exit != null) {
-      const s = h * 0.46; x.fillStyle = '#ffd400'; x.beginPath(); x.roundRect(cx - s / 2 - w * 0.13, top - s * 0.42, s, s, s * 0.14); x.fill();
-      if (!blur) { x.fillStyle = '#111'; x.font = `900 ${s * 0.8}px SubwaySign`; x.fillText(String(o.exit), cx - w * 0.13, top - s * 0.42 + s * 0.54); }
-      x.strokeStyle = ink; arrowGlyph(x, cx + w * 0.2, top + h * 0.02, h * 0.15, arrow);
-      x.fillStyle = ink; x.font = `600 ${h * 0.25}px SubwaySign`; x.fillText('번 출구', cx, y0 + h * 0.8);
-    } else {
-      if (o.line) {
-        const r = h * 0.18; x.fillStyle = lineColor(o.line); x.beginPath(); x.arc(cx - w * 0.13, top, r, 0, Math.PI * 2); x.fill();
-        if (!blur) { x.fillStyle = '#fff'; x.font = `800 ${r * 1.4}px SubwaySign`; x.fillText(String(o.line), cx - w * 0.13, top + r * 0.06); }
-        x.strokeStyle = ink; arrowGlyph(x, cx + w * 0.16, top, h * 0.15, arrow);
-      } else { x.strokeStyle = ink; arrowGlyph(x, cx, top, h * 0.16, arrow); }
-      x.fillStyle = ink; let size = h * 0.27; x.font = `600 ${size}px SubwaySign`; while (x.measureText(o.text).width > w * 0.92 && size > 12) { size -= 1; x.font = `600 ${size}px SubwaySign`; }
-      x.fillText(o.text, cx, y0 + h * 0.74);
-    }
-    x.filter = 'none';
-  };
-  x.globalAlpha = 0.45; paint(h * 0.035); x.globalAlpha = 1; paint(0);
-  x.restore();
-}
-function setHang(p) { const h = $('hang'), s = 0.5 + 0.5 * p; h.style.setProperty('--hang-s', s.toFixed(3)); h.style.setProperty('--hang-y', `${Math.round((1 - p) * 34)}px`); h.style.opacity = String(Math.min(1, p * 2.4 + 0.2)); }
 
 // ── 입구 ──
 const STATION_SIGN = [0.054, 0.1725, 0.949, 0.3075];
@@ -219,7 +185,7 @@ async function showLobby(journey) {
   await scene.show({ img: 'gate', dep: 'gate.depth', c: [0.5, 0.5], draw: drawStationSign });
   $('trip-start').textContent = journey.start;
   renderTicket(journey);
-  $('lobby').hidden = false; delete $('lobby').dataset.out; $('board').hidden = true; delete $('reader').dataset.on;
+  $('lobby').hidden = false; delete $('lobby').dataset.out; $('board').hidden = true; scene.state.top = 0; delete $('reader').dataset.on;
   lobbyJourney = journey; fitLobby(); document.fonts?.ready.then(() => { if (lobbyJourney) fitLobby(); });
   document.documentElement.dataset.ready = '1';
   // 천천히 다가감(빛 · 사람이 조금 움직여 살아 있게)
@@ -294,7 +260,6 @@ function voicesOf(journey, plan) {
 }
 const carScene = (id) => ({ img: CARS[id].closed, dep: `${CARS[id].closed}.depth`, c: [0.5, 0.42], streak: 1 });
 const DOOR = { right: { rect: [0.926, 0.54, 0.085, 0.3], lamp: [0.925, 0.27], target: [0.93, 0.55], pan: 0.13 }, left: { rect: [0.074, 0.54, 0.085, 0.3], lamp: [0.075, 0.27], target: [0.07, 0.55], pan: -0.13 } };
-const FORK_PANELS = [[0.0244, 0.3665, 0.3066, 0.415], [0.3695, 0.3665, 0.634, 0.415], [0.704, 0.3665, 0.9825, 0.415]];
 const WAYS = [[0.165, 0.5], [0.5, 0.515], [0.86, 0.62]];
 
 /** 문 · 통로를 지나가는 움직임. 움직임 줄이기면 다가가는 대신 가림막으로 장면만 바꾼다. */
@@ -310,7 +275,7 @@ async function doorOpen(carId, side) {
   if (has(open)) await scene.openDoor(open, DOOR[side].rect, DOOR[side].lamp); else { scene.state.lamp = DOOR[side].lamp; scene.state.lampOn = 1; await wait(0.6); }
 }
 async function doorClose() {
-  sound.sfx.doorClose(); scene.state.lampOn = 0; scene.hideDecals();
+  sound.sfx.doorClose(); scene.state.lampOn = 0; endChoice();
   if (scene.state.hasOpen) await tween(0.6, (k) => { scene.state.doorOpen = 1 - k; }, ease.inOut);
   scene.state.hasOpen = 0;
 }
@@ -320,20 +285,20 @@ async function afterWrong(run, d, result) {
   showNotice({ head: '이렇게 안내했어요', body: `${mark(d.line_.text, highlightFor(d, result.cause))}<span class="why">${escapeHtml(explainDecision(d, run.journey))}</span>` });
   await noticeFor(AUTO ? 2.8 : 4.2);
   await curtain(true);
-  scene.state.fade = 0; scene.hideDecals();
+  scene.state.fade = 0; endChoice();
   if (has('detour')) await scene.show({ img: 'detour', dep: 'detour.depth', c: [0.5, 0.42] });
-  stepping = 3; stepTimer = 0; led.flash('돌아가는 길', 2.0, 'red'); setClock(run);
+  stepping = 3; stepTimer = 0; hud.flash('돌아가는 길', 2.0, 'red'); setClock(run);
   await curtain(false);
   sound.sfx.tick();
   await tween(2.0, (k) => { if (!reduced()) scene.state.push = 0.5 * k; }, ease.linear);
   stepping = 0;
 }
-function streakFlash(result) { if (result.streakHit) { sound.sfx.streak(); led.flash(`빠른 환승! -1분`, 2.2, 'green'); } }
+function streakFlash(result) { if (result.streakHit) { sound.sfx.streak(); hud.flash(`빠른 환승! -1분`, 2.2, 'green'); } }
 
 async function playStop(run, d, index, carId, plan) {
   // 달리다 안내 → 서서히 섬 → 문 열림
   setKeys(false);
-  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex; setLine(d.line);
   scene.trainSpeed(1); sound.railStart(); sound.railSpeed(1);
   await wait(1.1);
   setStatus('announcer'); sound.chime(); await wait(1.2);
@@ -344,13 +309,14 @@ async function playStop(run, d, index, carId, plan) {
   await brake;
   sound.railStop(); ex.heard(heard); run.hearingDone(heard);
   sound.hallStart();
-  await doorOpen(carId, d.side);
+  // 문이 열리기 전에 고른다(11-10): 먼저 열린 문이 답의 문 쪽을 보여 줘 듣지 않고도 고를 수 있었고, 맹검도 「고르기 전에 문이 열려 있다」로 두 번 짚었다
   setKeys(true);
-  const i = await choose(d.options, AUTO ? autoAnswer(d) : null);
+  const i = await choose(d.options, AUTO ? autoAnswer(d) : null, 'door');
   setKeys(false); $('notice').hidden = true;
   const chosen = d.options[i].id, result = run.choose(chosen);
   ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}`, reason: d.assessable ? null : 'guessable' }));
   noteMissed(result, d);
+  await doorOpen(carId, d.side);
   return { result, chosen };
 }
 function sound_seconds(voice) { return manifest[voice]?.seconds || 6; }
@@ -362,7 +328,7 @@ function noteMissed(result, d) { if (!result.correct) missed.push({ text: d.line
 
 async function meeting(m, afterCarId) {
   const p = PEOPLE[m.person], s = m.scene;
-  setKeys(false); $('zones').hidden = true; scene.hideDecals();
+  setKeys(false); $('zones').hidden = true; endChoice();
   sound.railSpeed(0.35);
   if (s.lead) { await wait(0.4); setStatus('announcer'); sound.chime(); await wait(1.1); await say(s.lead); }
   // 그 사람 쪽으로 시점이 돌아간다
@@ -371,7 +337,7 @@ async function meeting(m, afterCarId) {
   scene.settleNext(); scene.state.streak = 0;
   // 말하는 동안 아주 조금 다가감(한 번 — 늘 도는 흔들림 아님)
   tween(3.2, (k) => { if (!reduced()) scene.state.push = 0.03 * k; }, ease.out);
-  led.setStatus('');
+  hud.setStatus('');
   const ex = s.item ? createExchange(coach, meetingMeta(s.item)) : null; currentExchange = ex;
   setKeys(false);
   const heard = await say(s.ask, { status: false });
@@ -384,10 +350,10 @@ async function meeting(m, afterCarId) {
   if (has(p.react) && (happy || !s.answer)) { await scene.prepareNext({ img: p.react, dep: `${p.photo}.depth`, c: [0.5, 0.4] }); await tween(0.2, (k) => { scene.state.mix = k; }, ease.linear); scene.settleNext(); }
   const line = $('their-line'); line.textContent = reply.reaction.text; line.hidden = false;
   await say(reply.reaction, { status: false });
-  if (reply.gift && p.gift) { sound.sfx.gift(); led.flash(p.gift, 1.8, 'green'); met.push({ id: m.person, gift: p.gift }); } else met.push({ id: m.person, gift: null });
+  if (reply.gift && p.gift) { sound.sfx.gift(); hud.flash(p.gift, 1.8, 'green'); met.push({ id: m.person, gift: p.gift }); } else met.push({ id: m.person, gift: null });
   await wait(AUTO ? 0.9 : 1.2);
   line.hidden = true;
-  if (afterCarId) { await curtain(true); await scene.show(carScene(afterCarId)); scene.state.streak = 0.35; led.setStatus(''); await curtain(false); }
+  if (afterCarId) { await curtain(true); await scene.show(carScene(afterCarId)); scene.state.streak = 0.35; hud.setStatus(''); await curtain(false); }
 }
 function chooseReply(s) {
   const box = $('replies'); box.innerHTML = ''; box.hidden = false;
@@ -402,38 +368,36 @@ function chooseReply(s) {
 }
 let met = [], manifest = {}, curtained = false;
 
-async function playSignDecision(run, d, { img, dep, panels, keyLine, auto, note = null }) {
+async function playSignDecision(run, d, { img, dep, keyLine, auto, note = null }) {
   // 달려서 갈림 입구까지 → 멈춤 → 세 칸. 안내가 끝나기 전에는 고를 수 없다.
   const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
-  const signs = d.options.map((o) => o.exit != null ? { exit: o.exit } : o.line ? { line: o.line, color: lineColor(o.line), text: o.text } : { text: o.text });
-  await scene.show({ img, dep, c: [0.5, 0.515], panels, signs });
+  // 사진 속 빈 표지판에는 글을 얹지 않는다(점검표 46 — 얹은 글은 합성으로 읽힌다). 고를 것의 글은 아래 역 지도 이름 자리 하나에만 있다.
+  await scene.show({ img, dep, c: [0.5, 0.515] });
   if (curtained) { curtained = false; await curtain(false); }
   if (note) banner(note, 2.4);
-  drawHang(d.options); setHang(0); $('hang').hidden = false;
   sound.hallStart(); stepping = 2.7; stepTimer = 0; setKeys(false);
   const reach = 0.62;
-  const running = tween(6.2, (k) => { if (!reduced()) scene.runTo(k, reach); setHang(k); }, ease.run);
+  const running = tween(6.2, (k) => { if (!reduced()) scene.runTo(k, reach); }, ease.run);
   await wait(0.9);
   if (d.lead) { await say(d.lead); await wait(0.5); setStatus('announcer'); sound.chime(); await wait(1.1); }
   const heard = await say(keyLine);
   ex.heard(heard); run.hearingDone(heard);
   await running;
-  stepping = 0; setHang(1); setKeys(true);
-  const i = await choose(d.options, auto ? autoAnswer(d) : null);
+  stepping = 0; setKeys(true);
+  const kind = d.kind === 'exit' ? 'exit' : 'fork';
+  const i = await choose(d.options, auto ? autoAnswer(d) : null, kind);
   setKeys(false); $('notice').hidden = true;
   const chosen = d.options[i].id, result = run.choose(chosen);
   ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}` }));
   noteMissed(result, d);
-  drawHang(d.options, i);
   const way = d.options.findIndex((o) => o.id === d.answer);
   if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
-  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); $('hang').hidden = true; await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], panels, signs, push: reach }); drawHang(d.options, way); $('hang').hidden = false; setHang(1); await wait(0.25); }
+  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); map.show(kind, d.options); map.pick(way); await wait(0.7); }   // 맞는 길을 지도에서 짚고 그리로 달린다
   return { way, result };
 }
 async function dashThrough(way, next) {
-  stepping = 3.6; stepTimer = 0; scene.hideDecals();
+  stepping = 3.6; stepTimer = 0; endChoice();
   sound.sfx.whoosh();
-  tween(0.55, (k) => { const h = $('hang'); h.style.setProperty('--hang-y', `${-k * 220}px`); h.style.setProperty('--hang-s', (1 + k * 0.5).toFixed(3)); h.style.opacity = String(1 - k); }, ease.inOut).then(() => { $('hang').hidden = true; });
   if (next) await scene.prepareNext(next);
   await pass(WAYS[way], { push: 1.5, seconds: 1.3, blur: 0.17 });
   if (next) scene.settleNext();
@@ -444,7 +408,7 @@ async function playJourney(journey, plan) {
   const run = new SubwayRun(journey); activeRun = run; missed.length = 0; met = []; autoCount = 0;
   // 개찰구 → 승강장: 길 안내
   $('lobby').dataset.out = '';
-  $('board').hidden = false; led.invalidate(); setClock(run); led.setStatus(''); setKeys(false); scene.state.drop = 0.03;
+  $('board').hidden = false; scene.state.top = 1; hud.invalidate(); setLine(journey.decisions.find((x) => x.line)?.line || 2); setClock(run); hud.setStatus(''); setKeys(false); scene.state.drop = 0.03;
   await curtain(true);
   sound.hallStart();
   // 출구 맞춤 판은 이미 내린 역에서 시작한다: 승강장 컷과 앞 길 안내 없이 가림막 뒤로 출구 갈림을 세운다.
@@ -465,7 +429,7 @@ async function playJourney(journey, plan) {
     await scene.prepareNext(carScene(plan.cars[first.leg]));
     await pass([0.22, 0.6], { push: 0.9, seconds: 1.0, blur: 0.08 });
     scene.settleNext(); stepping = 0; sound.hallStop();
-    scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); led.setStatus('');
+    scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); hud.setStatus('');
     await wait(0.5);
   } else {
     // 맞춤 판의 첫 문항이 통로 · 승강장 · 출구면 열차 컷 없이 그 앞으로 바로 간다.
@@ -504,7 +468,7 @@ async function playJourney(journey, plan) {
       }
     } else if (d.kind === 'fork') {
       banner('교수님 아직 안 오셨어요! 어디쯤이에요?', 2);
-      const { way } = await playSignDecision(run, d, { img: 'fork', dep: 'fork.depth', panels: FORK_PANELS, keyLine: d.line_, auto: AUTO });
+      const { way } = await playSignDecision(run, d, { img: 'fork', dep: 'fork.depth', keyLine: d.line_, auto: AUTO });
       if (d.after) await say(d.after);
       const nextD = journey.decisions[i + 1];
       if (nextD.kind === 'board') { await dashThrough(way, { img: platformFor(nextD), dep: `${platformFor(nextD)}.depth`, c: [0.5, 0.5] }); }
@@ -512,9 +476,9 @@ async function playJourney(journey, plan) {
     } else if (d.kind === 'board') {
       await playBoard(run, d, plan);
     } else if (d.kind === 'exit') {
-      const panels = has('exit-fork') ? EXIT_PANELS : FORK_PANELS, img = has('exit-fork') ? 'exit-fork' : 'fork';
-      const { way } = await playSignDecision(run, d, { img, dep: `${img}.depth`, panels, keyLine: d.line_, auto: AUTO, note: i === 0 && !journey.opening ? `${d.station}역 도착! 이제 출구만 찾아요.` : null });
-      if (m) { $('hang').hidden = true; await meeting(m, null); }
+      const img = has('exit-fork') ? 'exit-fork' : 'fork';
+      const { way } = await playSignDecision(run, d, { img, dep: `${img}.depth`, keyLine: d.line_, auto: AUTO, note: i === 0 && !journey.opening ? `${d.station}역 도착! 이제 출구만 찾아요.` : null });
+      if (m) await meeting(m, null);
       await dashThrough(way, null);
     }
   }
@@ -522,7 +486,7 @@ async function playJourney(journey, plan) {
   // 개찰구 「삑」 → 계단 위 아침 빛
   await curtain(true);
   sound.railStop();
-  if (has('gate-out')) { await scene.show({ img: 'gate-out', dep: 'gate-out.depth', c: [0.5, 0.42] }); await curtain(false); await wait(0.5); sound.sfx.gate(); led.flash('삑', 0.8, 'green'); await tween(1.0, (k) => { if (!reduced()) scene.state.push = 0.5 * k; }, ease.inOut); await curtain(true); }
+  if (has('gate-out')) { await scene.show({ img: 'gate-out', dep: 'gate-out.depth', c: [0.5, 0.42] }); await curtain(false); await wait(0.5); sound.sfx.gate(); hud.flash('삑', 0.8, 'green'); await tween(1.0, (k) => { if (!reduced()) scene.state.push = 0.5 * k; }, ease.inOut); await curtain(true); }
   if (has('stairs-sun')) { await scene.show({ img: 'stairs-sun', dep: 'stairs-sun.depth', c: [0.5, 0.25] }); await curtain(false); stepping = 2.8; stepTimer = 0; await tween(1.8, (k) => { if (!reduced()) scene.state.push = 0.9 * k; scene.state.fadeTo = 1; scene.state.fade = Math.max(0, (k - 0.55) / 0.45); }, ease.inOut); stepping = 0; }
   return run;
 }
@@ -534,22 +498,21 @@ async function playBoard(run, d, plan) {
   setStatus('announcer'); sound.chime(); await wait(1.2);
   const heard = await say(d.line_);
   ex.heard(heard); run.hearingDone(heard); setKeys(true);
-  const i = await choose(d.options, AUTO ? autoAnswer(d) : null);
+  const i = await choose(d.options, AUTO ? autoAnswer(d) : null, 'board');
   setKeys(false); $('notice').hidden = true;
   const chosen = d.options[i].id, result = run.choose(chosen);
   ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}` }));
-  noteMissed(result, d); scene.hideDecals();
-  if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); if (d.answer === 'wait') { led.flash('다음 열차를 기다려요', 2.2, 'green'); await wait(2.2); } }
+  noteMissed(result, d); await wait(0.45); endChoice();
+  if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); if (d.answer === 'wait') { hud.flash('다음 열차를 기다려요', 2.2, 'green'); await wait(2.2); } }
   else await afterWrong(run, d, result);
   stepping = 2.4; stepTimer = 0; sound.sfx.whoosh();
   await scene.prepareNext(carScene(plan.cars[1]));
   await pass([0.3, 0.55], { push: 0.9, seconds: 1.0, blur: 0.08 });
   scene.settleNext(); stepping = 0; sound.hallStop(); music.stop();
-  scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); led.setStatus(''); await wait(0.4);
+  scene.state.streak = 1; sound.railStart(); sound.railSpeed(1); hud.setStatus(''); await wait(0.4);
 }
-const EXIT_PANELS = [[0.0449, 0.3724, 0.2959, 0.4062], [0.3643, 0.3717, 0.6406, 0.4049], [0.7109, 0.3711, 0.96, 0.4043]];   // 출구 갈림 사진의 빈 표지 자리(실측)
 async function goOutOfTrain(d, next) {
-  scene.hideDecals(); sound.hallStart(); music.play('run');
+  endChoice(); sound.hallStart(); music.play('run');
   await scene.prepareNext(next);
   await pass(DOOR[d.side].target, { pan: DOOR[d.side].pan, push: 1.25, seconds: 1.25, blur: 0.13 });
   scene.settleNext();
@@ -575,7 +538,7 @@ function drawStamp(station, seed) {
 async function showResult(run, plan) {
   const s = run.summary(), album = readAlbum();
   sound.stopVoice(); sound.railStop(); sound.hallStop(); music.play('arrive');
-  $('board').hidden = true; $('hang').hidden = true; $('zones').hidden = true;
+  $('board').hidden = true; scene.state.top = 0; endChoice(); $('zones').hidden = true;
   $('result-photo').style.backgroundImage = `url('${WORLD_BASE}${has('bus-stop') ? 'bus-stop' : 'platform'}.webp')`;
   const rled = createLed($('result-led'), { rows: 24 });
   $('result').hidden = false; $('result').scrollTop = 0;
@@ -677,6 +640,6 @@ async function start() {
   const run = await playJourney(journey, plan);
   await showResult(run, plan);
 }
-if (query.has('qa')) window.__subway = { scene, led, sound, music, assets, tween };
+if (query.has('qa')) window.__subway = { scene, hud, map, sound, music, assets, tween };
 start().catch((e) => { console.error(e); document.body.dataset.error = String(e); });
 export { loadImage };

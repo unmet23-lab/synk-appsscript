@@ -7,6 +7,8 @@
 <meta name="description" content="서울 지하철 안내방송을 듣고 문 · 통로 · 출구를 고르는 한국어 듣기 게임.">
 <script src="world-host.js"></script>
 <link rel="preload" href="assets/fonts/sign.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ui.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/num-500.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 <script src="./atlas-learning.js"></script>
 <script src="./collection.js"></script>
@@ -36,19 +38,27 @@
     </div>
   </section>
 
-  <!-- LED 전광판 -->
+  <!-- 위 노선 줄: 노선 배지 · 목소리에 물결치는 노선 선 · 시계, 아래에 상태 글과 도움 단추 -->
   <header class="board" id="board" hidden>
-    <span class="board-rod" aria-hidden="true"></span><span class="board-rod" aria-hidden="true"></span>
-    <canvas id="led" aria-label="지금 시각과 안내 상태"></canvas>
-    <div class="board-keys">
-      <button class="key" id="key-pause" aria-label="멈춤"><i class="ico-pause" aria-hidden="true"></i></button>
-      <button class="key" id="key-replay"><i class="ico-replay" aria-hidden="true"></i>다시 듣기</button>
-      <button class="key" id="key-text"><i class="ico-text" aria-hidden="true"></i>글로 보기</button>
+    <div class="hud-row">
+      <button class="key-pause" id="key-pause" aria-label="멈춤"><i class="ico-pause" aria-hidden="true"></i></button>
+      <span class="hud-badge" id="hud-badge" aria-hidden="true">2</span>
+      <svg class="hud-route" id="hud-route" aria-hidden="true"></svg>
+      <span class="hud-clock" id="hud-clock" role="timer" aria-label="지금 시각">8:41</span>
+    </div>
+    <div class="hud-row2">
+      <p class="hud-status" id="hud-status" aria-live="polite" hidden><i aria-hidden="true"></i><span></span></p>
+      <div class="board-keys">
+        <button class="key" id="key-replay"><i class="ico-replay" aria-hidden="true"></i>다시 듣기</button>
+        <button class="key" id="key-text"><i class="ico-text" aria-hidden="true"></i>글로 보기</button>
+      </div>
     </div>
   </header>
 
-  <!-- 걸이 표지: 세 칸이 아래 누름 칸과 나란하다 -->
-  <div class="hang" id="hang" hidden aria-hidden="true"><canvas id="hang-canvas"></canvas></div>
+  <!-- 아래 역 지도: 고를 차례에 누름 칸 위로 노선도를 그린다(글은 역 이름 자리) -->
+  <div class="map-shade" id="map-shade" aria-hidden="true"></div>
+  <svg class="route-map" id="route-map" hidden aria-hidden="true"></svg>
+  <div class="route-labels" id="route-labels" hidden aria-hidden="true"></div>
 
   <!-- 누르는 칸: 화면 아래 28%, 폭 ⅓씩 -->
   <div class="zones" id="zones" hidden>
@@ -65,7 +75,8 @@
   <!-- 휴대폰 알림 -->
   <div class="phone-banner" id="banner" hidden><span class="banner-icon" aria-hidden="true"></span><span class="banner-text"><b>학과 단톡방</b><span id="banner-text"></span></span><time>지금</time></div>
 
-  <div class="curtain" id="curtain" aria-hidden="true"></div>
+  <!-- 장면이 바뀔 때: 노선 색 지하철 문이 닫혔다 열린다 -->
+  <div class="curtain" id="curtain" aria-hidden="true"><div class="door door-l"><b class="door-no" id="door-no">2</b></div><div class="door door-r"><span class="door-tag" id="door-tag">LINE 2</span></div></div>
 
   <!-- 결과 -->
   <section class="result" id="result" hidden>
@@ -93,9 +104,6 @@
       <div class="met-row" id="album-people"></div>
     </div>
   </section>
-
-  <!-- 처음 두 판의 손짓 안내 -->
-  <p class="gesture-hint" id="gesture-hint" hidden>끝까지 듣고, 아래를 누르거나 밀어요</p>
 
   <!-- 멈춤 · 목소리 실패 -->
   <dialog class="pause-dialog" id="pause-dialog"><h2>잠깐 멈췄어요</h2><p>이어 하면 같은 곳부터 다시 들어요.</p><button class="paper-btn primary" id="btn-resume">이어 하기</button><button class="paper-btn" id="btn-quit">처음으로</button></dialog>

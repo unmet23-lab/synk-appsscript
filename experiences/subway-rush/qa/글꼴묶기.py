@@ -1,6 +1,7 @@
 """환승 러시 글꼴 묶기(2026-11-04): 게임에 나오는 글자만 추려 assets/fonts에 낸다. 원본은 저장소 밖 Documents/synk-vendor/fonts.
 
-표지 · 안내문 · 스티커 = Noto Sans KR(가변 · 본고딕 계열 · OFL), LED 전광판 = Neo둥근모(16도트 비트맵 · OFL, 도트로 찍어 씀).
+표지 · 안내문 = Noto Sans KR(가변 · 본고딕 계열 · OFL), 결과 정류장 LED = Neo둥근모(16도트 비트맵 · OFL, 도트로 찍어 씀),
+달리는 화면의 위 노선 줄 · 역 지도(11-10 A 「노선도」) = SUIT 가변(ui) · Inter Tight 500 · 600 · 700(num, 영문 · 숫자만) — 둘 다 OFL, 원본은 저장소 docs/브랜드_폰트.
 OFL 예약 이름을 지키려고 이름 표를 비우고 파일도 sign · led로 부른다(라이선스 전문은 assets/fonts/ 안에 함께 둔다).
 글을 고치면 다시 돌린다.
   python -I -X utf8 experiences/subway-rush/qa/글꼴묶기.py
@@ -18,7 +19,7 @@ OUT = GAME / 'assets' / 'fonts'
 OUT.mkdir(parents=True, exist_ok=True)
 
 text = set(' !?…·,.:;()[]/-+「」『』~%0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ←→↑↓')
-for name in ['app.mjs', 'journeys.mjs', 'people.mjs', 'lines.mjs', 'index.html', 'core.mjs']:
+for name in ['app.mjs', 'journeys.mjs', 'people.mjs', 'lines.mjs', 'index.html', 'core.mjs', 'hud.mjs', 'routemap.mjs']:
     text |= set(re.findall(r'[가-힣]', (GAME / name).read_text(encoding='utf-8')))
 
 
@@ -32,3 +33,12 @@ run(VENDOR / 'NotoSansKR.ttf', OUT / 'sign.woff2')
 run(VENDOR / 'neodgm.ttf', OUT / 'led.woff2')
 shutil.copy(VENDOR / 'OFL-notosanskr.txt', OUT / 'OFL-sign.txt')
 shutil.copy(VENDOR / 'OFL-neodgm.txt', OUT / 'OFL-led.txt')
+BRAND = GAME.parent.parent / 'docs' / '브랜드_폰트'
+run(BRAND / 'SUIT' / 'SUIT-Variable.woff2', OUT / 'ui.woff2')
+shutil.copy(BRAND / 'SUIT' / 'LICENSE_OFL.txt', OUT / 'OFL-ui.txt')
+latin = set(' !?…·,.:;()[]/-+→←↑↓%0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+for w, name in [(500, 'Medium'), (600, 'SemiBold'), (700, 'Bold')]:
+    args = [str(BRAND / 'InterTight' / f'InterTight-{name}.ttf'), f'--text={"".join(sorted(latin))}', f'--output-file={OUT / f"num-{w}.woff2"}', '--flavor=woff2', '--layout-features=tnum,kern', '--name-IDs=', '--notdef-outline']
+    subset.main(args)
+    print(f'num-{w}.woff2', (OUT / f'num-{w}.woff2').stat().st_size // 1024, 'KB')
+shutil.copy(BRAND / 'InterTight' / 'OFL.txt', OUT / 'OFL-num.txt')

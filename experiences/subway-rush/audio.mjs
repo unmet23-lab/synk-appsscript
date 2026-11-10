@@ -128,6 +128,7 @@ export function createSound() {
     whoosh() { hiss(now(), 0.4, { from: 400, toF: 2400, gain: 0.08, q: 0.4 }); },
     stamp() { const t = now(); tone(146.83, t, 0.1, { gain: 0.22, attack: 0.002 }); hiss(t, 0.05, { from: 1600, toF: 700, gain: 0.1, q: 0.6 }); },
     tap() { tone(1174.66, now(), 0.06, { gain: 0.05 }); },
+    lanes() { const t = now(); [1046.5, 1174.66, 1318.51].forEach((f, i) => tone(f, t + i * 0.06, 0.2, { gain: 0.035 })); },   // 바닥 길이 켜짐: 가깝게 올라가는 세 음(C 펜타토닉, 0.32초)
     gift() { const t = now(); [1046.5, 1318.51].forEach((f, i) => tone(f, t + i * 0.09, 0.22, { type: 'triangle', gain: 0.08 })); },
   };
 

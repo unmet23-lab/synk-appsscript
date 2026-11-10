@@ -34,6 +34,7 @@ function build() {
   fs.symlinkSync(path.join(SHARED, 'node_modules'), path.join(src, 'node_modules'), 'junction');
   // 남의 파일 주석의 도구 이름은 공개 빌드가 멈춘다 — 내 후보에 안 드는 파일이면 이 사본에만 같은 고침을 넣는다(현장 노트 배포 · 공개).
   { const strings = path.join(src, 'experiences/drama/pilot/strings.mjs'), text = fs.readFileSync(strings, 'utf8'); fs.writeFileSync(strings, text.replace('역번역 → Fable → 아르곤 세 겹 확인', '세 겹 확인')); }
+  { const life = path.join(src, 'experiences/brand-opening/content/life-standalone.mjs'); if (fs.existsSync(life)) { const text = fs.readFileSync(life, 'utf8'); fs.writeFileSync(life, text.replace('끝 판 검수 GPT GB1 · Fable F1', '끝 판 검수')); } }   // 11-10: 생활 묶음 주석(남의 파일, 이 후보에 안 든다)
   const r = spawnSync(process.execPath, ['tools/build-world-app-public.mjs', '--config', CONFIG, '--out', '.tmp/out'], { cwd: src, encoding: 'utf8', maxBuffer: 1 << 28 });
   if (!r.stdout.includes('{')) throw Error(`빌드 실패: ${(r.stderr || r.stdout).slice(-1500)}`);
   const j = JSON.parse(r.stdout.slice(r.stdout.indexOf('{')));

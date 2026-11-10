@@ -3,9 +3,9 @@
 const VERT = 'attribute vec2 p;varying vec2 v;void main(){v=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}';
 const FRAG = `precision highp float;
 varying vec2 v;
-uniform sampler2D uImg,uDep,uNext,uNextDep,uOpen,uDecal;
+uniform sampler2D uImg,uDep,uNext,uNextDep,uOpen;
 uniform vec2 uRes,uC,uNextC,uPan,uLamp;
-uniform float uAspect,uFit,uDrop,uPush,uShift,uNextPush,uMix,uBlur,uFade,uFadeTo,uDoorOpen,uHasOpen,uPhase,uStreak,uDecalA,uLampOn;
+uniform float uAspect,uFit,uDrop,uPush,uShift,uNextPush,uMix,uBlur,uFade,uFadeTo,uDoorOpen,uHasOpen,uPhase,uStreak,uLampOn,uFocus,uTop;
 uniform vec4 uDoor;
 vec2 toImg(vec2 uv){float a=uRes.x/uRes.y;vec2 q=uv-.5;q.x*=a;float w=a*uFit,h=w/uAspect;return vec2(q.x/w+.5,(q.y-uDrop)/h+.5);}
 vec2 mir(vec2 p){return abs(mod(p+1.,2.)-1.);}
@@ -13,11 +13,6 @@ float near(float d){return .05+1.15*d*d;}
 vec2 inv(vec2 q,sampler2D dep,vec2 c,float push,float shift){vec2 p=q;for(int i=0;i<5;i++){float d=texture2D(dep,mir(p)).r;float s=1.+push*near(d);vec2 o=vec2(shift*(.012+.11*d),0.);p=c+(q-o-c)/s;}return p;}
 float glassMask(vec2 p){float m=0.;m+=step(.0,p.x)*step(p.x,.06)*step(.31,p.y)*step(p.y,.55);m+=step(.105,p.x)*step(p.x,.145)*step(.33,p.y)*step(p.y,.52);m+=step(.86,p.x)*step(p.x,.92)*step(.33,p.y)*step(p.y,.52);m+=step(.945,p.x)*step(p.x,1.)*step(.31,p.y)*step(p.y,.55);return clamp(m,0.,1.);}
 vec3 shade(sampler2D img,vec2 p,vec2 c,float blur){if(blur<.002)return texture2D(img,mir(p)).rgb;vec3 sum=vec3(0.);for(int i=0;i<7;i++){float k=float(i)/6.;sum+=texture2D(img,mir(c+(p-c)*(1.-blur*k))).rgb;}return sum/7.;}
-vec3 sticker(vec3 col,vec2 p){
-  // 바닥 유도선: 바닥 밝기를 곱해 인쇄된 것처럼(바닥 결이 비쳐 보임). 켜진 스티커는 알파 위쪽 값으로 빛을 더한다.
-  if(uDecalA<=0.||p.y<.5||p.y>1.||p.x<0.||p.x>1.)return col;vec4 d=texture2D(uDecal,vec2(p.x,(p.y-.5)*2.));if(d.a<=.001)return col;
-  float lum=dot(col,vec3(.3,.59,.11));vec3 printed=d.rgb*(.88+.2*lum);return mix(col,printed,d.a*uDecalA);
-}
 void main(){
   vec2 q=toImg(v)+uPan;
   vec2 p=inv(q,uDep,uC,uPush,uShift);
@@ -26,7 +21,6 @@ void main(){
     vec2 dc=uDoor.xy;float hw=uDoor.z*uDoorOpen;float inside=step(abs(p.x-dc.x),hw)*step(abs(p.y-dc.y),uDoor.w);
     vec3 o=shade(uOpen,p,uC,uBlur);col=mix(col,o,max(inside,smoothstep(.55,1.,uDoorOpen)));
   }
-  col=sticker(col,toImg(v));
   if(uLampOn>0.){float dl=distance(mir(p)*vec2(uAspect,1.),uLamp*vec2(uAspect,1.));col+=vec3(.25,1.,.55)*smoothstep(.05,.0,dl)*.9*uLampOn+vec3(.2,.8,.45)*smoothstep(.2,.0,dl)*.14*uLampOn;}
   if(uStreak>0.){
     vec2 mp=mir(p);float m=glassMask(mp);float d=texture2D(uDep,mp).r;
@@ -35,6 +29,10 @@ void main(){
     float g=fract(mp.y*5.+uPhase*2.4);float band=smoothstep(.0,.05,g)*smoothstep(.16,.05,g);col+=m*band*vec3(.9,.86,.72)*.55*uStreak;
   }
   if(uMix>0.){vec2 pn=inv(q,uNextDep,uNextC,uNextPush,0.);vec3 cn=shade(uNext,pn,uNextC,uBlur*.6);col=mix(col,cn,uMix);}
+  // 고를 차례: 사진이 가라앉고(채도 · 밝기) 위 그래픽만 또렷해진다(11-10 A 「노선도」)
+  if(uFocus>0.){float g=dot(col,vec3(.3,.59,.11));col=mix(col,vec3(g),.62*uFocus)*(1.-.26*uFocus);col=(col-.5)*(1.+.06*uFocus)+.5;}
+  // 위 노선 줄이 떠 있는 동안: 화면 맨 위(사진 위를 거울로 이은 자리)를 어둡게 내린다
+  if(uTop>0.)col*=1.-uTop*.9*(1.-smoothstep(.03,.2,v.y));
   col=mix(col,vec3(uFadeTo),uFade);
   gl_FragColor=vec4(col,1.);
 }`;
@@ -92,53 +90,6 @@ export function paintSign(ctx, rect, sign) {
   ctx.restore();
 }
 
-// ── 바닥 유도선 ──
-const DECAL_W = 1024, DECAL_H = 768;
-function drawTrapezoid(target, source, cx, topY, botY, topW, botW) {
-  // 원근: 위로 갈수록 좁아지게 가로줄을 잘라 그린다(바닥 평면)
-  const rows = Math.round(botY - topY);
-  for (let i = 0; i < rows; i++) {
-    const k = i / rows, w = topW + (botW - topW) * k, x = cx(k) - w / 2, y = topY + i;
-    // 먼 쪽은 원본을 더 많이 눌러 담는다
-    const sy = Math.pow(k, 0.82) * source.height;
-    target.drawImage(source, 0, sy, source.width, source.height / rows + 1, x, y, w, 1.2);
-  }
-}
-// 긴 스티커 글(승강장 결정)은 줄여 쓰지 않고 두 줄로 나눈다 — 바닥 원근에 눌려도 답이 되는 글자가 읽히게.
-function stickerLines(text) {
-  if (text.length <= 6) return [text];
-  const cuts = [...text.matchAll(/ /g)].map((m) => m.index);
-  const at = cuts.reduce((best, i) => (Math.max(i, text.length - i - 1) < Math.max(best, text.length - best - 1) ? i : best), cuts[0] ?? -1);
-  return at < 0 ? [text] : [text.slice(0, at), text.slice(at + 1)];
-}
-function stickerCanvas(option, state, lane) {
-  const c = document.createElement('canvas'); c.width = 460; c.height = 260; const x = c.getContext('2d');
-  const door = !!option.arrow;
-  const fill = state === 'on' ? '#fff7c9' : door ? '#f7c800' : option.line ? option.color || '#0052A4' : '#f7c800';
-  const ink = state === 'on' || door || !option.line ? '#15130c' : '#ffffff';
-  x.fillStyle = fill; x.beginPath(); x.roundRect(6, 6, c.width - 12, c.height - 12, 24); x.fill();
-  x.strokeStyle = ink; x.globalAlpha = 0.85; x.lineWidth = 7; x.beginPath(); x.roundRect(20, 20, c.width - 40, c.height - 40, 14); x.stroke(); x.globalAlpha = 1;
-  x.fillStyle = ink; x.strokeStyle = ink; x.textBaseline = 'middle'; x.textAlign = 'center';
-  const midX = c.width / 2;
-  if (door) {
-    const a = { left: Math.PI, right: 0, stay: -Math.PI / 2 }[option.arrow];
-    const lines = stickerLines(option.text);
-    if (lines.length === 1) {
-      arrowPath(x, midX, 84, 48, a);
-      x.font = `800 ${fitFont(x, option.text, 800, 76, c.width - 60)}px ${SIGN_FONT}`; x.fillText(option.text, midX, 184);
-    } else {
-      arrowPath(x, midX, 56, 28, a);
-      const size = Math.min(...lines.map((l) => fitFont(x, l, 800, 72, c.width - 60)));
-      x.font = `800 ${size}px ${SIGN_FONT}`; x.fillText(lines[0], midX, 126); x.fillText(lines[1], midX, 200);
-    }
-  } else {
-    // 갈림: 화살표만 크게(답이 되는 글자는 위 걸이 표지에)
-    const a = [-Math.PI * 0.72, -Math.PI / 2, -Math.PI * 0.28][lane];
-    arrowPath(x, midX, c.height / 2, 82, a);
-  }
-  return c;
-}
-
 export async function createScene(canvas, { base, tween, ease, files, calm = () => false }) {
   const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
   if (!gl) throw Error('WebGL을 쓸 수 없어요');
@@ -147,17 +98,15 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
   const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   const uniforms = new Map(); const U = (n) => { if (!uniforms.has(n)) uniforms.set(n, gl.getUniformLocation(prog, n)); return uniforms.get(n); };
   const set = (name, ...v) => { const l = U(name); if (v.length === 1) gl.uniform1f(l, v[0]); else if (v.length === 2) gl.uniform2f(l, v[0], v[1]); else gl.uniform4f(l, ...v); };
-  ['uImg', 'uDep', 'uNext', 'uNextDep', 'uOpen', 'uDecal'].forEach((n, i) => gl.uniform1i(U(n), i));
+  ['uImg', 'uDep', 'uNext', 'uNextDep', 'uOpen'].forEach((n, i) => gl.uniform1i(U(n), i));
   const makeTex = (source) => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE7); gl.bindTexture(gl.TEXTURE_2D, t); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source); return t; };
   const bind = (unit, t) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); };
 
   const images = {}, textures = {};
   async function need(name) { if (textures[name]) return textures[name]; const img = images[name] || (images[name] = await loadImage(base + files[name])); textures[name] = makeTex(img); return textures[name]; }
   const blank = (() => { const c = document.createElement('canvas'); c.width = c.height = 2; return makeTex(c); })();
-  const decalCanvas = document.createElement('canvas'); decalCanvas.width = DECAL_W; decalCanvas.height = DECAL_H; const decalCtx = decalCanvas.getContext('2d');
-  let decalTex = makeTex(decalCanvas);
 
-  const state = { img: null, dep: null, open: null, nextImg: null, nextDep: null, c: [0.5, 0.42], nextC: [0.5, 0.5], push: 0, shift: 0, pan: [0, 0], nextPush: 0, mix: 0, blur: 0, fade: 0, fadeTo: 0, doorOpen: 0, door: [0.926, 0.54, 0.085, 0.3], hasOpen: 0, streak: 0, fit: 1.15, drop: 0.03, phase: 0, decalA: 0, lamp: [0.92, 0.27], lampOn: 0 };
+  const state = { img: null, dep: null, open: null, nextImg: null, nextDep: null, c: [0.5, 0.42], nextC: [0.5, 0.5], push: 0, shift: 0, pan: [0, 0], nextPush: 0, mix: 0, blur: 0, fade: 0, fadeTo: 0, doorOpen: 0, door: [0.926, 0.54, 0.085, 0.3], hasOpen: 0, streak: 0, fit: 1.15, drop: 0.03, phase: 0, lamp: [0.92, 0.27], lampOn: 0, focus: 0, top: 0 };
 
   function composeSigns(imgName, panels, signs) {
     const img = images[imgName], c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
@@ -180,7 +129,7 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
     async show({ img, dep, open = null, c = [0.5, 0.42], panels = null, signs = null, draw = null, streak = 0, push = 0 }) {
       await need(img); await need(dep); if (open) await need(open);
       state.img = panels ? composeSigns(img, panels, signs) : draw ? composeDraw(img, draw) : textures[img]; state.dep = textures[dep]; state.open = open ? textures[open] : null;
-      Object.assign(state, { nextImg: null, nextDep: null, mix: 0, c: [...c], push, shift: 0, pan: [0, 0], blur: 0, doorOpen: 0, hasOpen: 0, fade: 0, streak, decalA: 0, lampOn: 0 });
+      Object.assign(state, { nextImg: null, nextDep: null, mix: 0, c: [...c], push, shift: 0, pan: [0, 0], blur: 0, doorOpen: 0, hasOpen: 0, fade: 0, streak, lampOn: 0 });
     },
     /** 다음 판을 미리 받아 둔다(문을 지나갈 때 겹쳐 보이는 판). */
     async prepareNext({ img, dep, c = [0.5, 0.5], panels = null, signs = null }) {
@@ -200,36 +149,20 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
         if (fadeWhite) { state.fadeTo = 1; state.fade = Math.max(0, (k - 0.62) / 0.38); }
       }, ease.inOut);
     },
-    settleNext() { if (!state.nextImg) return; Object.assign(state, { img: state.nextImg, dep: state.nextDep, c: [...state.nextC], nextImg: null, nextDep: null, mix: 0, push: 0, pan: [0, 0], shift: 0, blur: 0, doorOpen: 0, hasOpen: 0, lampOn: 0, streak: 0, decalA: 0 }); },
+    settleNext() { if (!state.nextImg) return; Object.assign(state, { img: state.nextImg, dep: state.nextDep, c: [...state.nextC], nextImg: null, nextDep: null, mix: 0, push: 0, pan: [0, 0], shift: 0, blur: 0, doorOpen: 0, hasOpen: 0, lampOn: 0, streak: 0 }); },
     runTo(p, reach = 0.62) { state.push = p * reach; state.blur = p < 1 ? 0.02 : 0; },
     async peek(lane) { const c0 = [...state.c], p0 = state.push; await tween(0.5, (k) => { state.c = [c0[0] + (0.5 + lane * 0.3 - c0[0]) * k, c0[1]]; state.push = p0 + 0.14 * k; }, ease.out); },
-    /** 바닥 유도선 세 칸. pressed: 눌린 칸 번호. */
-    paintDecals(options, pressed = null) {
-      decalCtx.clearRect(0, 0, DECAL_W, DECAL_H);
-      const lanes = [0.205, 0.5, 0.795], vanish = 0.5;   // 화면 ⅓ 칸의 가운데(가장자리는 잘려 보이는 폭 기준)
-      options.forEach((opt, i) => {
-        const dim = pressed != null && pressed !== i;
-        if (dim) return;
-        const src = stickerCanvas(opt, pressed === i ? 'on' : 'off', i);
-        const botX = lanes[i] * DECAL_W, topX = botX + (vanish * DECAL_W - botX) * 0.13;
-        const cx = (k) => topX + (botX - topX) * k;
-        drawTrapezoid(decalCtx, src, cx, DECAL_H * 0.54, DECAL_H * 0.93, DECAL_W * 0.232, DECAL_W * 0.272);
-      });
-      gl.activeTexture(gl.TEXTURE7); gl.bindTexture(gl.TEXTURE_2D, decalTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, decalCanvas);
-    },
-    async showDecals() { await tween(0.42, (k) => { state.decalA = k; }, ease.out); },
-    hideDecals() { state.decalA = 0; },
     resize() { const dpr = Math.min(window.devicePixelRatio || 1, 2); const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); state.fit = Math.max(1, Math.min(1.15, 0.93 * (1024 / 1536) / (w / h))); } },   // 넓은 창에서도 바닥 스티커가 화면 안에 들도록 그림을 덜 키운다
     render(dt) {
       const streak = calm() ? 0 : state.streak;   // 움직임 줄이기면 창밖 터널 빛이 흐르지 않는다
       state.phase += dt * streak * 0.95;
       if (!state.img) return;
-      bind(0, state.img); bind(1, state.dep); bind(2, state.nextImg || state.img); bind(3, state.nextDep || state.dep); bind(4, state.open || blank); bind(5, decalTex);
+      bind(0, state.img); bind(1, state.dep); bind(2, state.nextImg || state.img); bind(3, state.nextDep || state.dep); bind(4, state.open || blank);
       set('uRes', canvas.width, canvas.height); set('uAspect', 1024 / 1536); set('uFit', state.fit); set('uDrop', state.drop);
       set('uC', ...state.c); set('uPan', ...state.pan); set('uPush', state.push); set('uShift', state.shift);
       set('uNextC', ...state.nextC); set('uNextPush', state.nextPush); set('uMix', state.mix); set('uBlur', state.blur);
       set('uFade', state.fade); set('uFadeTo', state.fadeTo); set('uDoorOpen', state.doorOpen); set('uHasOpen', state.hasOpen);
-      set('uDoor', ...state.door); set('uPhase', state.phase); set('uStreak', streak); set('uDecalA', state.decalA);
+      set('uDoor', ...state.door); set('uPhase', state.phase); set('uStreak', streak); set('uFocus', state.focus); set('uTop', state.top);
       set('uLamp', ...state.lamp); set('uLampOn', state.lampOn);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     },
