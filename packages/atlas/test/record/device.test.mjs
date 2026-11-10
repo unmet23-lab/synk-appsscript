@@ -463,3 +463,36 @@ test('옮겨 온 장부 — 거둔 장부는 옮긴 것으로 세지 않고, 다
     [{ skillId: 'ko.reading', difficulty: 3, independent: 2, correct: 1, helped: 0, lastAt: null }],
   );
 });
+
+test('판 단위 사건은 판 번호(setId)를 실을 수 있고, 손님은 판 끝에 요약을 바로 접어 방금 푼 답이 칸에 든다(단계 4 요청 11-11)', async () => {
+  const record = await openRecord({
+    port: memoryPort(),
+    revision: 0,
+    guest: true,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  const decided = record.add('decision.made', {
+    experienceId: 'world-practice',
+    variant: 'v1',
+    setId: 'set1',
+  });
+  record.add('experience.completed', {
+    decisionId: decided.event.id,
+    experienceId: 'world-practice',
+    variant: 'v1',
+    setId: 'set1',
+  });
+  assert.throws(() =>
+    record.add('decision.made', { experienceId: 'x', variant: 'v', setId: 'bad id!' }),
+  );
+  const shown = record.add('practice.presented', presented());
+  record.add('practice.attempted', answer(shown.event.id));
+  await Promise.all([decided.stored, shown.stored]);
+  const before = record.summary?.lineSeq ?? 0;
+  await record.refold();
+  assert.ok(record.summary.lineSeq > before, '판 끝에 바로 접는다');
+  assert.ok(record.summary.lines.unit.has('u0'), '방금 푼 답이 요약에 든다');
+});

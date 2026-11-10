@@ -229,15 +229,22 @@ const SHAPES = {
     event => isKey(event.unit) && STATED_SAYS.includes(event.say),
   ],
   [EVENT_TYPES.carried]: [['families', 'items', 'after'], ['cells'], carriedOk],
+  // 판 단위 사건은 그 판의 번호(setId — 제시의 setId와 같은 값)를 실을 수 있다: 단계 5 판 비교가 끝까지 함 · 판 끝 응답을 그 판의
+  // 제시들과 잇는다(단계 4 Fable 설계 검토 P2-1 라, 11-11).
   [EVENT_TYPES.setDecided]: [
     ['experienceId', 'variant'],
-    [],
-    event => isId(event.experienceId) && isId(event.variant),
+    ['setId'],
+    event =>
+      isId(event.experienceId) &&
+      isId(event.variant) &&
+      (event.setId === undefined || isId(event.setId)),
   ],
   [EVENT_TYPES.setCompleted]: [
     ['decisionId', 'experienceId', 'variant'],
-    [],
-    event => [event.decisionId, event.experienceId, event.variant].every(isId),
+    ['setId'],
+    event =>
+      [event.decisionId, event.experienceId, event.variant].every(isId) &&
+      (event.setId === undefined || isId(event.setId)),
   ],
   [EVENT_TYPES.feedback]: [
     ['completionId', 'value'],

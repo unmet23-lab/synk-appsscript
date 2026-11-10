@@ -318,6 +318,8 @@ export function createRecord({
         .map(({ at, review, units }) => ({ at, review, units }));
     },
 
+    // 손님: 판 끝처럼 지금 든 사건까지 요약을 바로 접어 둔다(새 사건이 없으면 그대로 — 단계 4 판 끝 칸 견주기, 11-11). 계정은 서버가 접는다.
+    refold: () => (guest ? refoldGuest() : Promise.resolve()),
     pending: () => pendingIds(state),
     has: id => state.held.has(id),
     heldEvent: id => state.held.get(id)?.event ?? null,
