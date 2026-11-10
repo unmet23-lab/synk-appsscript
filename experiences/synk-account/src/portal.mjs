@@ -6,6 +6,10 @@ import { createSignupConversion } from './social-signup-conversion.mjs';
 import { createPortalSecurity, passwordProblem, signInMethods } from './portal-security.mjs';
 import { readRecentLogin, writeRecentLogin, forgetRecentLogin, recentMethodName } from './recent-login.mjs';
 const $ = id => document.getElementById(id);
+// PATH's fixed public entrance: a plain page link that starts a new connection there, never a callback.
+const PATH_ENTRY = 'https://synk.im/path/app/', PATH_HINT_WINDOW = 7200000;
+// Only the observed "app request is gone" answer gets the restart card; every other failure keeps its own notice.
+const staleAuthorization = error => error?.status === 404 && error?.code === 'oauth_authorization_not_found';
 const AUTH_LABELS = { login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장', 'email-change': '이메일 변경 확인하기' };
 // After a mail went out, the same button sends it again for the same address.
 const RESEND_LABELS = { recover: '메일 다시 보내기' };
@@ -113,6 +117,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const recoveryGrace = userId => { try { const value = JSON.parse(recoveryStorage?.getItem(RECOVERY_KEY) || 'null');return !!userId && value?.userId === userId && Number.isFinite(value.until) && value.until > Date.now(); } catch { return false; } };
   const cooldowns = new Map(), feedbacks = new Map();let cooldownTimer = null, logoutPending = null, signedOutSubject = null;
   let automaticAuthorizationAttempted = false;
+  // The verified account whose app request was gone, and whether that request was PATH's.
+  let staleRecovery = null;
   let google = null;
   // This copy keeps the instruction beside its button without another live region.
   const feedback = target => { const node = document.createElement('p');node.className = 'notice error';node.hidden = true;target.before(node);return node; };
@@ -250,6 +256,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const guarded = token => () => { if (token !== generation || !session) throw Object.assign(new Error('로그인 상태가 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
   async function loadConsent(check) {
     const result = await bounded(sdk.auth.oauth.getAuthorizationDetails(authorizationId));check();
+    // The account is verified but this app's request is gone: offer a restart, not the sign-in form.
+    if (result.error && staleAuthorization(result.error)) { showStaleAuthorization(pathEntryHint());return; }
     if (result.error) throw result.error;
     if (result.data?.redirect_url) { location.assign(trustedConsentRedirect(result.data.redirect_url, config));return; }
     details = result.data;
@@ -267,19 +275,52 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       await respondToAuthorization('approveAuthorization', check);
     }
   }
+  // Before the details arrive, only this tab's own recent PATH start whose client ID and fixed entrance are registered counts.
+  // Only product, client, entrance and start time are read; the link itself is always the fixed public entrance.
+  function pathEntryHint() {
+    try {
+      const { product, clientId, redirectUri, createdAt } = JSON.parse(recoveryStorage?.getItem('synk.oauth.pending.path-app') || 'null') || {}, now = Date.now();
+      if (product !== 'path-app' || typeof clientId !== 'string' || !clientId || redirectUri !== PATH_ENTRY
+        || !Number.isFinite(createdAt) || createdAt <= 0 || createdAt > now || now - createdAt > PATH_HINT_WINDOW) return false;
+      return (config.authorizationClients || []).some(entry => entry.clientId === clientId && Array.isArray(entry.redirectUris) && entry.redirectUris.includes(PATH_ENTRY))
+        || Object.values(config.clients || {}).some(client => client.clientId === clientId && client.redirectUri === PATH_ENTRY);
+    } catch { return false; }
+  }
+  // Signed in, only the app connection must start again: no form, no old connect card, no new sign-up.
+  function showStaleAuthorization(path) {
+    staleRecovery = { subject: session?.user?.id || null, path: path === true };details = null;
+    $('consent').hidden = true;$('auth-panel').hidden = true;if ($('account-next')) $('account-next').hidden = true;
+    setText($('consent-name'), '');setText($('consent-destination'), '');$('scopes').replaceChildren();
+    cooldowns.delete('consent');feedbacks.delete('consent');renderControls();
+    const next = staleRecovery.path ? '아래 「PATH로 돌아가기」를 누른 뒤 PATH에서 「가입·로그인」을 다시 눌러 주세요.' : '사용하던 앱으로 돌아가 거기서 로그인을 다시 시작해 주세요. 계정은 아래 「내 SYNK 계정 보기」에서 볼 수 있어요.';
+    const en = staleRecovery.path ? 'You are signed in. The app request expired or was already used. No new sign-up needed: tap Back to PATH, then sign in again there.' : 'You are signed in. The app request expired or was already used. No new sign-up needed: go back to your app and sign in again there.';
+    const card = $('connection-restart');
+    if (!card) { notice('앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', false, true);return; }
+    setText($('connection-restart-next'), next);setText($('connection-restart-en'), en);
+    const pathLink = $('connection-restart-path');pathLink.hidden = !staleRecovery.path;if (pathLink.style) pathLink.style.display = staleRecovery.path ? '' : 'none';
+    $('connection-restart-home').classList?.toggle('soft', staleRecovery.path);
+    card.hidden = false;notice('', false, false, 'idle');
+    const heading = $('connection-restart-heading');heading?.focus?.({ preventScroll: true });heading?.scrollIntoView?.({ block: 'center' });
+  }
   async function respondToAuthorization(method, check = () => {}) {
-    if (closed || consentOperation || remaining('consent') > 0) return;
+    // After the restart card nothing answers the gone request again, not a duplicate auth event nor an old button.
+    if (closed || staleRecovery || consentOperation || remaining('consent') > 0) return;
     check();
     const authorization = firstPartyAuthorization(details, config);
-    const operation = { redirecting: false }, token = generation;
+    const operation = { redirecting: false }, token = generation, entry = entryId;
+    // Only the answer for this screen, account and press may redirect, report or show the restart card.
+    const current = () => !closed && token === generation && entry === entryId && consentOperation === operation;
     consentOperation = operation;cooldowns.delete('consent');renderControls();
     try {
       const result = await bounded(sdk.auth.oauth[method](authorizationId, { skipBrowserRedirect: true }));
-      guarded(token)();check();if (closed || consentOperation !== operation) return;
+      guarded(token)();check();if (!current()) return;
       if (result.error) throw result.error;
       const target = trustedConsentRedirect(result.data.redirect_url, config, authorization.clientId);
       operation.redirecting = true;location.assign(target);
-    } catch (error) { operation.redirecting = false;if (!closed && token === generation) report(error, 'consent'); }
+    } catch (error) {
+      operation.redirecting = false;
+      if (current()) { if (session && staleAuthorization(error)) showStaleAuthorization(authorization.destination === PATH_ENTRY);else report(error, 'consent'); }
+    }
     finally { if (consentOperation === operation && !operation.redirecting) { consentOperation = null;renderControls(); } }
   }
   // The hero names what the page is for: signing in, or this browser's own account once it is open.
@@ -291,6 +332,9 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   async function enter() {
     if (closed) return;
     view?.stop();view = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;hero(false);
+    // The restart card belongs to one signed-in account; sign-out or another account starts clean.
+    if (staleRecovery && staleRecovery.subject !== (session?.user?.id || null)) staleRecovery = null;
+    const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true;
     google?.showAccount(false);security?.hide();
     if ($('account-next')) $('account-next').hidden = true;
     const token = generation, entry = ++entryId;
@@ -326,7 +370,11 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       // Only local pending-owner validation is awaited. Tracking never adds an authentication request.
       const conversionHeaders=await signupConversion?.confirmedHeaders(checked.data.user)||{};check();
       void signupConversion?.confirmedUser(checked.data.user);
-      if (authorizationId && !callbackBlocked) { await loadConsent(check);return; }
+      if (authorizationId && !callbackBlocked) {
+        // A repeated auth event for the same account shows the restart card again; the gone request is never retried.
+        if (staleRecovery?.subject === verified.id) { showStaleAuthorization(staleRecovery.path);return; }
+        await loadConsent(check);return;
+      }
       const client = accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: 'platform', guard: check,
         getAccessToken: () => session?.access_token, refresh: async () => { const result = await bounded(sdk.auth.refreshSession());check();session = result.data?.session;return session?.access_token; },
         fetch: (url,options) => {
@@ -537,7 +585,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // A successful new sign-in request can authorize this account again.
     if (signedOutSubject && value?.user?.id === signedOutSubject) return;
     authVersion++;const next = value?.user?.id || null, changed = next !== subject;
-    if (changed) { generation++;subject = next;google?.reset();security.hide();view?.stop();consentOperation = null;clearCooldowns(); }session = value;
+    if (changed) { generation++;subject = next;google?.reset();security.hide();view?.stop();consentOperation = null;clearCooldowns();staleRecovery = null;const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true; }session = value;
     if (event === 'PASSWORD_RECOVERY') { mode = 'reset';recoveryReady = true;rememberRecovery(next); }
     const version = authVersion, token = generation, awaitingCallback = hadCallback && !initializationFinished;
     // SIGNED_IN may precede the SDK's URL cleanup. Judge only its final initialize result.

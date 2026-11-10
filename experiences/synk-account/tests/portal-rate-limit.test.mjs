@@ -4,7 +4,7 @@ import { authErrorMessage, authRateLimit, cleanAuthCallbackUrl, mountPortal } fr
 
 // Synthetic DOM and SDK only: no network, real credentials, storage or bundled output.
 class Element {
-  constructor(tag = 'div') { this.tagName = tag;this.children = [];this.beforeNodes = [];this.dataset = {};this.hidden = false;this.disabled = false;this.value = '';this.textContent = '';this.checked = false;this.focusCount = 0;this.scrollCount = 0;this.classList = { add() {}, remove() {} }; }
+  constructor(tag = 'div') { this.tagName = tag;this.children = [];this.beforeNodes = [];this.dataset = {};this.hidden = false;this.disabled = false;this.value = '';this.textContent = '';this.checked = false;this.focusCount = 0;this.scrollCount = 0;this.classList = { add() {}, remove() {}, toggle() {} }; }
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this.children = nodes; }
   setAttribute(key, value) { this[key] = value; }
@@ -28,7 +28,7 @@ function clock() {
 const waitError = seconds => ({ code: 'over_email_send_rate_limit', status: 429, message: `For security purposes, you can only request this after ${seconds} seconds.` });
 const settled = async () => { for (let n = 0; n < 4; n++) await new Promise(resolve => setImmediate(resolve)); };
 function deferred() { let resolve;const promise = new Promise(done => { resolve = done; });return { promise, resolve }; }
-async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined } = {}) {
+async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined } = {}) {
   // Older manual-consent/rate-limit cases use the retained synthetic preview.
   // Automatic first-party login cases below explicitly exercise production mode.
   const ids = new Map(), events = new Map(), calls = [], replies = { ...initialReplies }, modes = ['login', 'signup', 'recover'].map(value => Object.assign(new Element('button'), { dataset: { view: value } })), time = clock();
@@ -60,11 +60,11 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
     onAuthStateChange: fn => { listener = fn;return {}; },
     signUp: args => invoke('signUp', args), signInWithPassword: args => invoke('signInWithPassword', args),
     resetPasswordForEmail: (...args) => invoke('resetPasswordForEmail', args), updateUser: (attributes, options) => invoke('updateUser', options === undefined ? attributes : [attributes, options]), verifyOtp: args => invoke('verifyOtp', args),
-    oauth: { getAuthorizationDetails: async () => { metrics.consentLoads++;return { data: consentDetails || { client: { id: 'synthetic-client', name: '합성 앱' }, redirect_uri: redirectUri, scope: 'openid email profile' } }; },
+    oauth: { getAuthorizationDetails: async () => { metrics.consentLoads++;if (consentError) return { error: consentError };return { data: consentDetails || { client: { id: 'synthetic-client', name: '합성 앱' }, redirect_uri: redirectUri, scope: 'openid email profile' } }; },
       approveAuthorization: (...args) => invoke('approveAuthorization', args), denyAuthorization: (...args) => invoke('denyAuthorization', args) },
   } };
   const mounting = mountPortal({ config: { configured: true, learningUrl: '/', portalUrl: 'https://id.example.test/', supabaseUrl: 'https://auth.example.test', supabasePublishableKey: 'synthetic-public-only',
-    clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients: [] }, sdk, preview, ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
+    clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients }, sdk, preview, ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
   await beforeMountComplete?.({ time, get, metrics, historyUrls, mounting, calls, events, replies, emit: (event, value) => { saved = value;listener(event, value); } });await mounting;
   return { get, calls, replies, time, receivers, events, destinations, historyUrls, metrics, notice: get('notice'), feedback: get('auth-submit').beforeNodes[0], consentFeedback: get('approve').beforeNodes[0],
     buttons: modes, mode: name => modes.find(button => button.dataset.view === name).onclick(), submit: () => get('auth-form').onsubmit({ preventDefault() {} }),
@@ -650,6 +650,65 @@ test('automatic login waits for central credentials then uses the same first-par
   assert.equal(page.calls.length, 0);assert.equal(page.get('auth-panel').hidden, false);
   await page.emit('SIGNED_IN', syntheticSession('owner-a'));
   assert.equal(page.calls.length, 1);assert.deepEqual(page.destinations, [automaticRedirect]);
+});
+
+const expiredAppRequest = { status: 404, code: 'oauth_authorization_not_found', message: 'authorization not found' };
+const pathPublicEntry = 'https://synk.im/path/app/';
+const pathAuthorizationClients = [{ product: 'platform', clientId: 'synthetic-path-app', redirectUris: ['http://127.0.0.1:4326/', pathPublicEntry] }];
+const pathEntryStorage = (overrides = {}) => ({ getItem: key => key === 'synk.oauth.pending.path-app' ? JSON.stringify({ product: 'path-app', clientId: 'synthetic-path-app', redirectUri: pathPublicEntry, createdAt: Date.now() - 15 * 60000, ...overrides }) : null });
+
+test('a successful email confirmation with a gone PATH request offers a fresh app entry without repeating signup or approval', async t => {
+  const session = syntheticSession('owner-a');
+  const page = await fixture(t, { consent: true, preview: false, consentError: expiredAppRequest, callbackQuery: '&code=fixture-signup-code',
+    authorizationClients: pathAuthorizationClients, sessionStorage: pathEntryStorage(),
+    onInitialize: ({ emit, setUrl }) => { setUrl('https://id.example.test/?authorization_id=synthetic-authorization');emit('SIGNED_IN', session); } });
+  assert.equal(page.metrics.userChecks, 1);
+  assert.equal(page.get('connection-restart').hidden, false);
+  assert.equal(page.get('auth-panel').hidden, true);
+  assert.equal(page.get('connection-restart-path').hidden, false);
+  assert.equal(page.get('connection-restart-heading').focusCount, 1);
+  assert.match(page.get('connection-restart-next').textContent, /PATH.*가입·로그인/);
+  assert.equal(page.get('consent').hidden, true);
+  await page.emit('SIGNED_IN', session);
+  await page.get('approve').onclick();
+  assert.deepEqual(page.calls, []);
+  assert.deepEqual(page.destinations, []);
+  assert.equal(page.metrics.consentLoads, 1);
+  await page.emit('SIGNED_OUT', null);
+  assert.equal(page.get('connection-restart').hidden, true);
+  assert.equal(page.get('auth-panel').hidden, false);
+});
+
+for (const [caseName, storage] of [
+  ['no same-tab request', undefined],
+  ['unregistered client', pathEntryStorage({ clientId: 'unexpected-client' })],
+  ['local callback', pathEntryStorage({ redirectUri: 'http://127.0.0.1:4326/' })],
+  ['old request', pathEntryStorage({ createdAt: 1 })],
+]) test('the signed-in app restart remains generic with ' + caseName, async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), consentError: expiredAppRequest, authorizationClients: pathAuthorizationClients, sessionStorage: storage });
+  assert.equal(page.get('connection-restart').hidden, false);
+  assert.equal(page.get('connection-restart-path').hidden, true);
+  assert.match(page.get('connection-restart-next').textContent, /사용하던 앱/);
+  assert.deepEqual(page.calls, []);
+  assert.deepEqual(page.destinations, []);
+});
+
+test('an app request expiring after its verified details were loaded hides consent and keeps a safe PATH return', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), redirectUri: pathPublicEntry, initialReplies: { approveAuthorization: { error: expiredAppRequest } } });
+  assert.equal(page.get('connection-restart').hidden, false);
+  assert.equal(page.get('connection-restart-path').hidden, false);
+  assert.equal(page.get('consent').hidden, true);
+  await page.get('deny').onclick();
+  assert.deepEqual(page.calls.map(call => call.method), ['approveAuthorization']);
+  assert.deepEqual(page.destinations, []);
+});
+
+test('an unrelated consent 404 does not masquerade as a successful sign-in and app restart', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), consentError: { status: 404, code: 'unrelated_missing_resource' } });
+  assert.equal(page.get('connection-restart').hidden, true);
+  assert.equal(page.get('auth-panel').hidden, false);
+  assert.equal(page.notice['data-kind'], 'error');
+  assert.deepEqual(page.destinations, []);
 });
 
 test('password recovery waits for the new password before automatically continuing its registered request', async t => {
