@@ -6,12 +6,12 @@ import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from './lib/fonts';
 import { Search } from './Search';
-import { S, CUTS, LINES, VO, SOUNDS, AD_AUDIO, TOTAL_S, type Crop } from './timeline';
+import { S, CUTS, LINES, VO, SOUNDS, AD_AUDIO, TOTAL_S, FPS, type Crop } from './timeline';
 
-export const TOTAL = Math.round(TOTAL_S * 30);
+export const TOTAL = Math.round(TOTAL_S * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
-const sec = (s: number) => Math.round(s * 30);
+const sec = (s: number) => Math.round(s * FPS);
 const GREY = '#C4C4C4';
 const X = 74;
 const TOP = 284;
@@ -19,7 +19,7 @@ const TOP = 284;
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
 const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number }> = ({ src, start, crop, rate = 1, drift = 0.012 }) => {
   const f = useCurrentFrame();
-  const s = crop.s * (1 + (f / 30) * drift);
+  const s = crop.s * (1 + (f / FPS) * drift);
   const ay = crop.ay ?? 880;
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
   const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
@@ -38,7 +38,7 @@ const Lowered: React.FC<{ d?: number; children: React.ReactNode }> = ({ d = 260,
   const z = interpolate(f, [0, 8], [1.035, 1], { ...clamp, easing: EASE_OUT });
   return (
     <AbsoluteFill style={{ overflow: 'hidden', background: '#0b0b0b' }}>
-      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(26px) brightness(0.55)' }}>{children}</div>
+      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(26px) brightness(0.78)' }}>{children}</div>
       <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scale(${z})`, transformOrigin: '50% 30%' }}>{children}</div>
     </AbsoluteFill>
   );
@@ -63,39 +63,52 @@ const Shade: React.FC = () => {
   const f = useCurrentFrame();
   const on = LINES.reduce((m, l) => Math.max(m, interpolate(f, [sec(l.from) - 6, sec(l.from), sec(l.to), sec(l.to) + 8], [0, 1, 1, 0], clamp)), 0);
   const k = 0.42 + 0.58 * on;
-  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.92) 0px, rgba(10,10,10,0.8) 470px, rgba(10,10,10,0.34) 760px, rgba(10,10,10,0) 940px)' }} />;
+  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.66) 0px, rgba(10,10,10,0.52) 470px, rgba(10,10,10,0.2) 760px, rgba(10,10,10,0) 940px)' }} />;
 };
 
 // 큰 글자가 곧 말 — 다음 줄까지 0.6초 넘게 비면 끝에서 8프레임에 걸쳐 12px 올라가며 사라진다(맞받는 말은 3프레임)
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; fade?: number }> = ({ lines, from, to, grey, size = 92, meta, instant, fade = 3 }) => {
+// at = 줄마다 뜨는 초(말하는 때 · 원본 박자 자리). 없으면 첫 줄부터 3프레임씩.
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; fade?: number; at?: number[] }> = ({ lines, from, to, grey, size = 92, meta, instant, fade = 3, at }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
   const out = interpolate(f, [b - fade, b], [1, 0], clamp);
   const lift = interpolate(f, [b - fade, b], [0, fade > 3 ? -12 : 0], { ...clamp, easing: Easing.in(Easing.quad) });
-  const up = (k: number) => {
-    const p = instant ? 1 : interpolate(f, [a + k * 3, a + k * 3 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
+  const up = (k: number, lineIdx?: number) => {
+    const s0 = at && lineIdx != null && at[lineIdx] != null ? sec(at[lineIdx]) : a + k * 3;
+    const p = instant && (!at || lineIdx === 0 || lineIdx == null) ? (f >= s0 ? 1 : 0) : interpolate(f, [s0, s0 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
   };
   return (
-    <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: '0 2px 14px rgba(0,0,0,0.55)' }}>
-      {meta ? <div style={{ ...up(0), fontWeight: 600, fontSize: 34, letterSpacing: -0.5, color: '#BDBDBD', marginBottom: 18 }}>{meta}</div> : null}
+    <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: '0 2px 16px rgba(0,0,0,0.75), 0 0 3px rgba(0,0,0,0.5)' }}>
+      {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: 34, letterSpacing: -0.5, color: '#BDBDBD', marginBottom: 18 }}>{meta}</div> : null}
       {lines.map((l, i) => (
-        <div key={i} style={{ ...up(i + (meta ? 1 : 0)), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color: grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
+        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color: grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
     </div>
   );
 };
 
-// 「재연 · …」 · 「SYNK 브리핑」 — 위 그늘 안 큰 글자 바로 위 고정 자리
-const Small: React.FC<{ text: string; from: number; to: number }> = ({ text, from, to }) => {
+// 「재연 · …」 · 「SYNK 브리핑」 — 위 그늘 안 큰 글자 바로 위 고정 자리. 칸마다 하나만: 광고 칸 → 가상 인물, 검색 화면 → 없음, 끝 → SYNK 브리핑, 나머지 → 재연
+// v6(11-10 미학 맹검 01 「컷에서 표시가 깜박」): 글이 바뀌면 6프레임에 걸쳐 새 글이 떠오른다
+const labelAt = (t: number): string | null => {
+  if (t >= S.end) return 'SYNK 브리핑';
+  if (t >= S.search && t < S.searchEnd) return null;
+  if (CUTS.some((c) => c.ad && t >= c.from && t < c.to)) return '재연 · AI로 만든 가상 인물';
+  return '재연 · 상황은 각색';
+};
+const Label: React.FC = () => {
   const f = useCurrentFrame();
-  if (f < sec(from) || f >= sec(to)) return null;
-  return <div style={{ position: 'absolute', left: X, top: 206, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.72)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.7)' }}>{text}</div>;
+  const text = labelAt(f / FPS);
+  if (!text) return null;
+  let since = 0;
+  while (since < 6 && f - since - 1 >= 0 && labelAt((f - since - 1) / FPS) === text) since++;
+  const o = f === 0 ? 1 : interpolate(since, [0, 6], [0, 1], clamp);
+  return <div style={{ position: 'absolute', left: X, top: 206, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{text}</div>;
 };
 
 export const Film: React.FC = () => {
-  const adCuts = CUTS.filter((c) => c.ad);
+
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       {CUTS.map((c, i) => (
@@ -113,18 +126,13 @@ export const Film: React.FC = () => {
       {LINES.map((l, i) => {
         const next = LINES[i + 1];
         const fade = !next || next.from - l.to > 0.6 ? 8 : 3;
-        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} fade={fade} />;
+        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} fade={fade} at={l.at} />;
       })}
 
-      {/* 표시: 광고 칸은 「재연 · AI로 만든 가상 인물」, 검색 화면 동안은 쉰다, 나머지는 「재연 · 상황은 각색」, 끝 2.4초는 「SYNK 브리핑」 */}
-      {adCuts.map((c, i) => <Small key={`ad${i}`} text="재연 · AI로 만든 가상 인물" from={c.from} to={c.to} />)}
-      <Small text="재연 · 상황은 각색" from={1.4} to={S.search} />
-      <Small text="재연 · 상황은 각색" from={S.searchEnd} to={48.0} />
-      <Small text="재연 · 상황은 각색" from={49.4} to={S.end} />
-      <Small text="SYNK 브리핑" from={S.end} to={TOTAL_S} />
+      <Label />
 
-      {/* 잔잔한 피아노(따뜻_118 · 0~58초, 빈 마디 없음). 다음 광고에서 1초 −6dB 안으로 내려앉았다 웃음에서 돌아온다(음악층 ⑲) */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(1.4), sec(46.4), sec(46.8), sec(49.4), sec(50.6), sec(TOTAL_S - 0.6), sec(TOTAL_S)], [0.05, 0.11, 0.11, 0.06, 0.06, 0.12, 0.12, 0.06], clamp)} />
+      {/* 잔잔한 피아노(따뜻_118 · 0~58초, 빈 마디 없음). 끝 광고 소리 동안 −6dB 안으로 내려앉았다 폰을 엎은 뒤 웃음에서 돌아온다(음악층 ⑲) */}
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(1.4), sec(44.7), sec(45.2), sec(S.flip), sec(S.flip + 0.6), sec(TOTAL_S - 0.6), sec(TOTAL_S)], [0.05, 0.11, 0.11, 0.06, 0.06, 0.12, 0.12, 0.06], clamp)} />
       {AD_AUDIO.map((a, i) => (
         <Sequence key={`aa${i}`} from={sec(a.from)} durationInFrames={sec(a.to) - sec(a.from)}>
           <Audio src={staticFile(a.src.replace('.mp4', '_phone.wav'))} trimBefore={sec(a.start)} volume={a.vol} />
