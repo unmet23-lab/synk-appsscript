@@ -68,6 +68,10 @@ test('상대 날짜 — 나라 판본의 말(21개 언어)과 꼬리 붙은 언�
   assert.deepEqual(hit('¿El vecino pone música a las 3 de la mañana? Un hoyo en la calle', 'es'), [], 'mañana(아침) · hoyo 속 hoy');
   assert.deepEqual(hit('आज़ादी और आजकल', 'hi'), [], '낱말 속 आज');
   assert.deepEqual(hit('Bukas ang tindahan ngayon', 'fil'), [], 'bukas(열린) · ngayon(지금)은 넣지 않았다');
+  assert.deepEqual(hit('かんこくごを べんきょうしよう · きょうしつで', 'ja'), [], '가나 꼴은 넣지 않았다(べんきょう · きょうしつ 속 きょう)');
+  assert.deepEqual(hit('Xayrli kecha! 안녕히 주무세요', 'uz'), [], 'kecha(밤)는 넣지 않았다');
+  assert.deepEqual(hit('Эртең менен эмне дейсиң? Завтрак', 'ky'), [], 'эртең менен(아침에)');
+  assert.deepEqual(hit('Завтрак в 8 · таңертең', 'ru'), [], '낱말 속(завтрак 속 завтра)');
   assert.deepEqual(hit('today is fine · 오늘 날씨가 좋아요', 'es'), [], '그 판의 언어만 본다');
   assert.deepEqual(hit('¿Cuál de las cuatro usarías más?', 'es'), []);
 });

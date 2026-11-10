@@ -32,7 +32,9 @@ const RELATIVE = {
   my: /(ယနေ့|မနေ့က|မနက်ဖြန်|ဒီနေ့)/g,
   // 11-11 LAB 나라 판본(언어 21개) — 「화날때」 판본 열여섯의 고정 댓글 · 본문에 「이번 주 · 오늘」이 있었는데 규칙이 그 말들을 몰랐다(Fable 검수 P2).
   // 띄어 쓰지 않는 글자(태국 · 크메르 · 가나 · 한자)는 그대로 찾는다. 다른 뜻으로 잘못 잡힐 낱말(스페인어 mañana = 아침,
-  // 필리핀어 bukas = 열린 · ngayon = 지금)은 넣지 않았다. 열쇠는 언어 코드의 앞 토막이다(pt-BR → pt, zh-Hans · zh-Hant → zh).
+  // 필리핀어 bukas = 열린 · ngayon = 지금, 우즈베크어 kecha = 밤 — xayrli kecha는 밤 인사, 키르기스어 эртең — эртең менен은 「아침에」)은 넣지 않았다. 일본어는 띄어 쓰지 않아 가나 꼴
+  // (きょう · あした · きのう)을 넣으면 べんきょう(공부) · きょうしつ(교실) 속에서 잡힌다 — 한자 꼴만 본다.
+  // 열쇠는 언어 코드의 앞 토막이다(pt-BR → pt, zh-Hans · zh-Hant → zh).
   es: 낱말('hoy|ayer|anoche|esta noche|esta semana|la semana pasada|la pr[oó]xima semana|la semana que viene|este mes|el mes pasado'),
   pt: 낱말('hoje|ontem|amanh[ãa]|esta semana|essa semana|semana passada|semana que vem|pr[oó]xima semana|este m[eê]s|esse m[eê]s'),
   fil: 낱말('ngayong araw|ngayong linggo|ngayong buwan|ngayong gabi|kahapon|kagabi|noong nakaraang linggo|sa susunod na linggo'),
@@ -40,15 +42,15 @@ const RELATIVE = {
   id: 낱말('hari ini|kemarin|besok|minggu ini|minggu lalu|minggu depan|bulan ini|malam ini'),
   ru: 낱말('сегодня|вчера|завтра|на этой неделе|на прошлой неделе|на следующей неделе|в этом месяце'),
   kk: 낱말('бүгін|кеше|ертең|осы аптада|өткен аптада|келесі аптада|осы айда'),
-  ky: 낱말('бүгүн|кечээ|эртең|ушул жумада|бул жумада|өткөн жумада|кийинки жумада'),
-  uz: 낱말("bugun|kecha|ertaga|shu hafta|bu hafta|o[‘ʻ']tgan hafta|keyingi hafta|shu oyda"),
+  ky: 낱말('бүгүн|кечээ|ушул жумада|бул жумада|өткөн жумада|кийинки жумада'),
+  uz: 낱말("bugun|ertaga|shu hafta|bu hafta|o[‘ʻ']tgan hafta|keyingi hafta|shu oyda"),
   vi: 낱말('hôm nay|hôm qua|ngày mai|tối nay|tuần này|tuần trước|tuần sau|tháng này'),
   hi: 낱말('आज|कल|परसों|इस हफ्ते|इस हफ़्ते|इस सप्ताह|पिछले हफ्ते|पिछले हफ़्ते|अगले हफ्ते|अगले हफ़्ते|इस महीने'),
   ne: 낱말('आज|हिजो|भोलि|यो हप्ता|गएको हप्ता|अर्को हप्ता|यो महिना'),
   si: 낱말('අද|ඊයේ|හෙට|මේ සතියේ|පසුගිය සතියේ|ලබන සතියේ|මේ මාසයේ'),
   th: /(?:วันนี้|เมื่อวาน|พรุ่งนี้|คืนนี้|สัปดาห์นี้|อาทิตย์นี้|สัปดาห์ที่แล้ว|อาทิตย์ที่แล้ว|สัปดาห์หน้า|อาทิตย์หน้า|เดือนนี้)/gu,
   km: /(?:ថ្ងៃនេះ|ម្សិលមិញ|ថ្ងៃស្អែក|យប់នេះ|សប្តាហ៍នេះ|សប្ដាហ៍នេះ|អាទិត្យនេះ|សប្តាហ៍មុន|សប្តាហ៍ក្រោយ|ខែនេះ)/gu,
-  ja: /(?:今日|昨日|明日|今夜|今週|先週|来週|今月|きょう|あした|きのう)/gu,
+  ja: /(?:今日|昨日|明日|今夜|今週|先週|来週|今月)/gu,
 };
 
 // 내부 번호: 판 번호(v6·v4b), 자료 번호(D0008), 저장소 경로, 내부 용어. 장부 사례(S17)·검수 등급(P1)·코드 파일 이름은
