@@ -3,10 +3,10 @@
 // 버터는 검색 화면 「없습니다」 한 곳 · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
 // B37 미학 맹검에서 배운 것: 표시는 위 그늘 안 고정 자리(소매 위에 띄우지 않음) · 글자 없을 땐 그늘을 옅게 · 글자는 끝에서 천천히 사라짐.
 import React from 'react';
-import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Audio, Easing, Freeze, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from './lib/fonts';
 import { Search } from './Search';
-import { S, CUTS, LINES, VO, SOUNDS, AD_AUDIO, TOTAL_S, FPS, type Crop } from './timeline';
+import { S, CUTS, LINES, VO, SOUNDS, AD_AUDIO, TOTAL_S, FPS, type Crop, type CutT } from './timeline';
 
 export const TOTAL = Math.round(TOTAL_S * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -54,6 +54,40 @@ const AdChrome: React.FC<{ len: number }> = ({ len }) => {
       <div style={{ position: 'absolute', left: X, top: 1700, fontFamily: KO, fontWeight: 700, fontSize: 30, color: 'rgba(255,255,255,0.92)', background: 'rgba(0,0,0,0.42)', borderRadius: 8, padding: '6px 14px', letterSpacing: -0.3 }}>광고</div>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 1772, height: 6, background: 'rgba(255,255,255,0.22)' }}>
         <div style={{ width: `${p * 100}%`, height: '100%', background: 'rgba(255,255,255,0.85)' }} />
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// v10(11-10 15시 회차 — 아르곤 v9 05 · 06 기각): 광고를 「폰 화면 안의 광고」로 보인다 — 어두운 바탕 위 둥근 폰 화면, 그 안에 광고 영상과 광고 표시.
+// lockAt이 있으면 그 초에 영상이 멈추고 흑백으로 빠지며 얼굴 둘레에 모서리 표식 넷과 훑는 줄 하나(검색 화면의 표식과 같은 꼴) — 「사람이 아니었어요」를 그림으로.
+const PW = 700, PH = 1244, PL = 190, PT = 500;
+const PhoneAd: React.FC<{ c: CutT; len: number }> = ({ c, len }) => {
+  const f = useCurrentFrame();
+  const z = interpolate(f, [0, 10], [1.045, 1], { ...clamp, easing: EASE_OUT });
+  const lock = c.lockAt != null ? sec(c.lockAt - c.from) : null;
+  const k = lock != null ? interpolate(f, [lock, lock + 8], [0, 1], clamp) : 0;
+  const b = lock != null ? interpolate(f, [lock, lock + 7], [1.16, 1], { ...clamp, easing: EASE_OUT }) : 1;
+  const scan = lock != null ? interpolate(f, [lock + 2, lock + 20], [0, 1], clamp) : 0;
+  const BX = 150, BY = 250, BW = 400, BH = 520, CL = 54;
+  const corner = (x: number, y: number, sx: number, sy: number) => (
+    <div style={{ position: 'absolute', left: x, top: y, width: CL, height: CL, borderLeft: sx > 0 ? '5px solid #fff' : undefined, borderRight: sx < 0 ? '5px solid #fff' : undefined, borderTop: sy > 0 ? '5px solid #fff' : undefined, borderBottom: sy < 0 ? '5px solid #fff' : undefined }} />
+  );
+  return (
+    <AbsoluteFill style={{ background: '#0b0b0b' }}>
+      <div style={{ position: 'absolute', left: PL, top: PT, width: PW, height: PH, borderRadius: 60, overflow: 'hidden', transform: `scale(${z})`, transformOrigin: '50% 40%', boxShadow: '0 0 0 9px #161616, 0 0 0 11px #2c2c2c, 0 36px 110px rgba(0,0,0,0.7)' }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `scale(${PW / 1080})`, filter: `grayscale(${k * 0.9}) brightness(${1 - k * 0.12})` }}>
+          <Freeze frame={lock ?? 0} active={lock != null && f >= lock}>
+            <Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift ?? 0} />
+          </Freeze>
+          <AdChrome len={len} />
+        </div>
+        {lock != null && f >= lock ? (
+          <div style={{ position: 'absolute', left: BX, top: BY, width: BW, height: BH, opacity: k, transform: `scale(${b})` }}>
+            {corner(0, 0, 1, 1)}{corner(BW - CL, 0, -1, 1)}{corner(0, BH - CL, 1, -1)}{corner(BW - CL, BH - CL, -1, -1)}
+            {scan > 0 && scan < 1 ? <div style={{ position: 'absolute', left: 0, width: BW, top: scan * BH, height: 3, background: 'rgba(255,255,255,0.85)', boxShadow: '0 0 18px rgba(255,255,255,0.6)' }} /> : null}
+          </div>
+        ) : null}
       </div>
     </AbsoluteFill>
   );
@@ -120,8 +154,8 @@ export const Film: React.FC = () => {
     <AbsoluteFill style={{ background: '#000' }}>
       {CUTS.map((c, i) => (
         <Sequence key={i} from={sec(c.from)} durationInFrames={sec(c.to) - sec(c.from)}>
-          <Lowered><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} /></Lowered>
-          {c.ad && c.chrome !== false ? <AdChrome len={sec(c.to) - sec(c.from)} /> : null}
+          {c.phone ? <PhoneAd c={c} len={sec(c.to) - sec(c.from)} /> : <Lowered d={c.low ?? 210}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} /></Lowered>}
+          {c.ad && c.chrome !== false && !c.phone ? <AdChrome len={sec(c.to) - sec(c.from)} /> : null}
           {c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
