@@ -41,13 +41,35 @@ test('daily post and follower records persist, reject unconfirmed channels, and 
   const { child, base } = await start(port, dataPath);
   try {
     const catalog = await (await fetch(base + '/api/catalog')).json();
-    // 2026-10-02 브라질·멕시코 4자리 추가, 10-19 인도네시아 TikTok 확보: 74행, 공개 발행 기존 22곳 + 확장 확보 27곳 = 49곳.
-    assert.equal(catalog.channels.length, 74);
-    assert.equal(catalog.channels.filter(row => row.ready).length, 49);
+    // 행 수는 원장이 자라면 바뀐다(10-19 74행 → 11-09 88행) — 숫자를 박지 않고 지도 자료의 채널 행과 같은지 본다(11-11).
+    const mapRows = JSON.parse(await readFile(new URL('../dashboard/src/data.json', import.meta.url), 'utf8')).queries.channels.rows;
+    assert.equal(catalog.channels.length, mapRows.length);
+    const readyRows = mapRows.filter(row => (row.channelScope === '기존 운영' && row.publishable === true) || row.channelScope === '확장 확보');
+    assert.ok(readyRows.length > 0);
+    assert.equal(catalog.channels.filter(row => row.ready).length, readyRows.length);
     assert.equal(catalog.staleSources.length, 0);
     const mapPage = await fetch(base + '/map/');
     assert.equal(mapPage.status, 200);
-    assert.match(await mapPage.text(), /SYNK 온라인 마케팅 지도/);
+    const mapHtml = await mapPage.text();
+    assert.match(mapHtml, /SYNK 온라인 마케팅 지도/);
+    // 11-11: 첫 화면은 세계 지도, 예전 표 화면은 /map/detail/에서 그대로 열린다.
+    assert.match(mapHtml, /aria-label="세계 지도"/);
+    const detail = await fetch(base + '/map/detail/');
+    assert.equal(detail.status, 200);
+    assert.match(await detail.text(), /data-app-local-snapshot/);
+    for (const [route, type] of [['/map/geo.json', /json/], ['/map/data.json', /json/], ['/map/pulse-targets.json', /json/],
+      ['/map/world.js', /javascript/], ['/map/model.mjs', /javascript/], ['/map/world.css', /css/], ['/map/fonts/SUIT.woff2', /woff2/]]) {
+      const response = await fetch(base + route);
+      assert.equal(response.status, 200, route);
+      assert.match(response.headers.get('content-type'), type, route);
+      // 몸을 다 읽어야 연결이 닫힌다(안 읽으면 시험 프로세스가 끝나지 않는다).
+      if (/json/.test(type.source)) assert.ok(typeof (await response.json()) === 'object', route);
+      else assert.ok((await response.arrayBuffer()).byteLength > 0, route);
+    }
+    const build = await (await fetch(base + '/map/detail/data-app-build.json')).json();
+    const snapshot = await fetch(base + '/map/detail/' + build.snapshot.path);
+    assert.equal(snapshot.status, 200);
+    assert.ok(typeof (await snapshot.json()) === 'object');
     for (const module of ['calendar.mjs', 'calendar-ui.mjs']) {
       const response = await fetch(base + '/' + module);
       assert.equal(response.status, 200);

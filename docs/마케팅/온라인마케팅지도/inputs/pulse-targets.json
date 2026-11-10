@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-11",
+  "source": "유호님 11-11 후보(한국 + 필리핀 · 말레이시아 · 호주 · 미국 · 캐나다 · 일본). 계정 계획은 제안이며 가입 전 — 근거는 docs/마케팅/PULSE_해외타깃_20261111/README.md",
+  "statusGuide": {
+    "active": "운영 중 — 그 나라 사람에게 실제로 보이는 PULSE 계정이 있고 게시를 한다",
+    "target": "준비 중 — 타깃으로 정했지만 그 나라용 계정 · 게시가 아직 없다"
+  },
+  "countries": [
+    {
+      "code": "KR",
+      "status": "active",
+      "role": "본거지 · 지금 손님이 있는 곳",
+      "language": "한국어",
+      "plan": ["YouTube", "Instagram", "Facebook", "Naver Blog"],
+      "why": "지금 의뢰가 들어오는 곳. 아래 공통 계정 셋과 네이버 블로그가 모두 여기서 운영된다."
+    },
+    {
+      "code": "US",
+      "status": "target",
+      "role": "의뢰 시장",
+      "language": "영어",
+      "plan": ["TikTok", "Instagram", "LinkedIn"],
+      "why": "광고비 · AI 영상 도구 사용 · 프리랜서 의뢰가 모두 가장 큰 곳. 경쟁도 가장 세다."
+    },
+    {
+      "code": "CA",
+      "status": "target",
+      "role": "의뢰 시장",
+      "language": "영어",
+      "plan": ["Instagram", "LinkedIn"],
+      "why": "미국과 같은 영어 계정을 함께 쓰는 쪽을 권한다 — 따로 열 근거(현지 AI 광고 사례)를 아직 못 찾았다."
+    },
+    {
+      "code": "AU",
+      "status": "target",
+      "role": "의뢰 시장",
+      "language": "영어",
+      "plan": ["Instagram", "LinkedIn"],
+      "why": "AI로만 만든 TV 광고와 브랜드 숏드라마가 둘 다 이미 나온 곳, 시차 +2시간. 틱톡보다 인스타 · 링크드인이 넓다."
+    },
+    {
+      "code": "JP",
+      "status": "target",
+      "role": "의뢰 시장",
+      "language": "일본어",
+      "plan": ["TikTok", "X", "Instagram"],
+      "why": "시차 0, 인터넷 광고가 전체의 절반을 넘었고 AI로만 만든 TV 광고도 나왔다. 일본어 자막 · 목소리와 일본어 응대가 들어야 한다."
+    },
+    {
+      "code": "PH",
+      "status": "target",
+      "role": "알리는 곳(드라마가 퍼질 곳)",
+      "language": "영어",
+      "plan": ["Facebook", "TikTok"],
+      "why": "한류 호감도가 조사국 가운데 가장 높다(87%). 다만 광고비를 낼 손님보다 보는 사람이 많은 시장이다."
+    },
+    {
+      "code": "MY",
+      "status": "target",
+      "role": "알리는 곳(드라마가 퍼질 곳)",
+      "language": "영어",
+      "plan": ["TikTok", "Facebook"],
+      "why": "틱톡이 성인 거의 전부에게 닿는다. 의뢰 시장으로 볼 근거는 여섯 나라 가운데 가장 얇다."
+    }
+  ],
+  "shared": "YouTube · Instagram은 나라마다 새 계정을 열지 않고 @synkpulse 하나에 언어별 목소리(유튜브 다국어 오디오) · 번역 자막을 붙이는 쪽을 권한다."
+}

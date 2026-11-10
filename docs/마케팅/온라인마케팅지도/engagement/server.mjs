@@ -11,6 +11,18 @@ const backupDir = join(dirname(dataPath), 'backups');
 const mapPath = join(mapRoot, 'dashboard', 'src', 'data.json');
 const mapDist = join(mapRoot, 'dashboard', 'dist');
 const verificationPath = join(mapRoot, 'verification-data.json');
+const worldDir = join(mapRoot, 'world');
+const fontDir = resolve(mapRoot, '..', '..', '..', 'desktop', 'assets', 'launcher');
+const worldFiles = {
+  '/map/world.css': [join(worldDir, 'world.css'), 'text/css; charset=utf-8'],
+  '/map/world.js': [join(worldDir, 'world.js'), 'text/javascript; charset=utf-8'],
+  '/map/model.mjs': [join(worldDir, 'model.mjs'), 'text/javascript; charset=utf-8'],
+  '/map/geo.json': [join(worldDir, 'geo.json'), 'application/json; charset=utf-8'],
+  '/map/data.json': [mapPath, 'application/json; charset=utf-8'],
+  '/map/pulse-targets.json': [join(mapRoot, 'inputs', 'pulse-targets.json'), 'application/json; charset=utf-8'],
+  '/map/fonts/SUIT.woff2': [join(fontDir, 'SUIT.woff2'), 'font/woff2'],
+  '/map/fonts/InterTight.woff2': [join(fontDir, 'InterTight.woff2'), 'font/woff2']
+};
 const port = Number(process.env.SYNK_RECORD_PORT || 4188);
 const metricKeys = ['views', 'reach', 'likes', 'comments', 'shares', 'saves'];
 let writeQueue = Promise.resolve();
@@ -213,11 +225,26 @@ createServer(async (req, res) => {
       res.writeHead(302, { Location: '/map/' });
       return res.end();
     }
+    // 첫 화면은 세계 지도(world/), 예전 표 화면(Codex Data 대시보드)은 /map/detail/로 옮겼다(2026-11-11).
+    if (req.method === 'GET' && url.pathname === '/map/detail') {
+      res.writeHead(302, { Location: '/map/detail/' });
+      return res.end();
+    }
     if (req.method === 'GET' && url.pathname === '/map/') {
+      return send(res, 200, await readFile(join(worldDir, 'index.html'), 'utf8'), 'text/html; charset=utf-8');
+    }
+    if (req.method === 'GET' && url.pathname === '/map/detail/') {
       return send(res, 200, await readFile(join(mapDist, 'index.html'), 'utf8'), 'text/html; charset=utf-8');
     }
-    const mapAsset = url.pathname.slice('/map/'.length);
-    if (req.method === 'GET' && url.pathname.startsWith('/map/') &&
+    if (req.method === 'GET' && worldFiles[url.pathname]) {
+      // 파일 바이트 그대로 보낸다(send는 JSON 종류를 다시 직렬화하므로 쓰지 않는다).
+      const [file, type] = worldFiles[url.pathname];
+      const bytes = await readFile(file);
+      res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+      return res.end(bytes);
+    }
+    const mapAsset = url.pathname.replace(/^\/map\/(detail\/)?/, '');
+    if (req.method === 'GET' && /^\/map\/(detail\/)?[^/]+$/.test(url.pathname) &&
         (mapAsset === 'data-app-build.json' || /^snapshot\.[a-f0-9]{64}\.json$/.test(mapAsset))) {
       return send(res, 200, JSON.parse(await readFile(join(mapDist, mapAsset), 'utf8')));
     }
