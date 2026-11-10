@@ -18,9 +18,11 @@ function uploadWithProgress(path,file,{csrf,slot,onProgress}){
   });
 }
 // 맞춤 인물 스위치(판 3): 서버 응답의 features만 믿는다. 실제 인물은 인물 접수가 켜져 있을 때만이다.
-const personaFlagsOf=features=>({request:features?.personaRequest===true,real:features?.personaRequest===true&&features?.personaReal===true});
+// models(판 4): 내 모델 다시 쓰기 스위치(myModels) — 꺼져 있으면 공개 초안의 「내 모델」 고름을 비운다.
+const personaFlagsOf=features=>({request:features?.personaRequest===true,real:features?.personaRequest===true&&features?.personaReal===true,models:features?.myModels===true});
 // 공개 의뢰서: 처음 저장할 때 초안을 만들어 그냥 둘러보기만 한 사람은 서버에 아무것도 남기지 않는다.
-export async function publicBackend(){
+// personaPick(판 4): 「내 모델」에서 「이 모델로 의뢰」로 열 때 그 인물의 이름 · 그림(화면에만 쓴다 — 붙임은 서버가 이미 초안에 적었다).
+export async function publicBackend({personaPick=null}={}){
   // features: 서버가 허락한 공개 메뉴 언어 · 전용 인물 스위치(판 1). 화면은 이 값만 믿는다.
   let {draft,features=null}=await send('/pulse/api/request'),starting=null;
   // 저장과 파일 올리기가 동시에 시작해도 초안은 하나만 만든다.
@@ -33,7 +35,7 @@ export async function publicBackend(){
   const backend={
     answers,step:draft?.step||'',alreadySent:draft?.status==='submitted',onExpired:null,features,
     // 인물 사진은 초안 길로만 받는다(접수 뒤에는 고객 방의 인물 카드에서).
-    personaPhotos:true,personaFlags:()=>personaFlagsOf(features),
+    personaPhotos:true,personaFlags:()=>personaFlagsOf(features),personaPick,
     save(values,step){return again(async()=>{const current=await ensure(),result=await send('/pulse/api/request/save',{csrf:current.csrf,body:{answers:answersForServer(values),step}});draft={...result.draft,csrf:current.csrf};});},
     upload(slot,file,onProgress){return again(async()=>{const current=await ensure(),result=await uploadWithProgress('/pulse/api/request/media',file,{csrf:current.csrf,slot,onProgress});return {...result.file,preview:draftPreview(result.file)};});},
     // 지우려던 파일이 초안과 함께 이미 사라졌으면 더 할 일이 없다.

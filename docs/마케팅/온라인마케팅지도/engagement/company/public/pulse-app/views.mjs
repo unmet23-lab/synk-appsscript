@@ -65,11 +65,11 @@ const assetFields=(s,item={})=>`${field('새 이미지 올리기','file','','fil
 const visibility=value=>`<label class="field">공개 범위<select name="visibility"><option value="internal" ${value!=='customer'?'selected':''}>제작자만 보기 · 준비 중</option><option value="customer" ${value==='customer'?'selected':''}>고객에게 보이기</option></select></label>`;
 // 체험 머리 · 직원 이름표 — 체험은 영어에서 숨기고 직원 화면은 한국어다.
 const demoHeader=()=>'<span class="tag berry demo-tag">고객 체험</span>'+btn('처음부터','demo-reset','','quiet')+'<a class="button quiet" href="./">체험 나가기</a>';
-const STAFF_HEAD={space:'제작자 공간',projects:'프로젝트',logout:'로그아웃'};
+const STAFF_HEAD={space:'제작자 공간',projects:'프로젝트',brands:'고객 브랜드',logout:'로그아웃'};
 // i18n-skip-end
 // PC 앱의 PULSE 창(s.desktopApp)은 앱 설치·기기 알림을 쓸 수 없어 설치 안내 단추를 두지 않는다. 새 소식은 「알림」(앱 안 알림)으로 본다.
 // 언어 메뉴는 손님 머리 끝에 — 첫 화면과 의뢰 흐름 손님만(옛 흐름 프로젝트 · 직원 화면은 한국어). 허락 언어가 하나면 빈 글자다.
-export function header(s){if(s.demo)return demoHeader();return `${s.project&&isCustomerRoom(s)?headAsk(s):''}${s.desktopApp?'':btn(t('앱 설치'),'install','','install-button')}${s.mode==='staff'?`<span class="user-label small">${esc(s.user?.name||STAFF_HEAD.space)}</span>${s.user?btn(STAFF_HEAD.projects,'projects','','quiet'):''}`:!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">${esc(t('제작자 공간 ↗'))}</a>`:''}${s.project||s.user?btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button')+(s.mode==='staff'?btn(STAFF_HEAD.logout,'logout','','quiet'):''):''}${s.mode==='staff'||s.project&&!isCustomerRoom(s)?'':localeMenu()}`;}
+export function header(s){if(s.demo)return demoHeader();return `${s.project&&isCustomerRoom(s)?headAsk(s):''}${s.desktopApp?'':btn(t('앱 설치'),'install','','install-button')}${s.mode==='staff'?`<span class="user-label small">${esc(s.user?.name||STAFF_HEAD.space)}</span>${s.user?btn(STAFF_HEAD.projects,'projects','','quiet')+btn(STAFF_HEAD.brands,'brands',s.brands?'aria-current="page"':'','quiet'):''}`:!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">${esc(t('제작자 공간 ↗'))}</a>`:''}${s.project||s.user?btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button')+(s.mode==='staff'?btn(STAFF_HEAD.logout,'logout','','quiet'):''):''}${s.mode==='staff'||s.project&&!isCustomerRoom(s)?'':localeMenu()}`;}
 // 머리 막대 가운데: 열린 프로젝트의 이름·지금 단계·전달 예정일(app.mjs가 #header-crumb에 넣는다).
 // 의뢰 흐름 손님(판 3, 11-08): 머리 하나 — 프로젝트 이름(고객 방으로) · 접수 번호 · 단계 다섯. 화면 안에는 단계 줄을 두지 않는다.
 // 오른쪽 「나눈 말」(판 3b): 새 말 숫자(이 기기에서 일지를 본 뒤 온 담당자 줄) · 답할 되묻기가 있으면 점. 누르면 그 화면의 일지로.
@@ -241,7 +241,8 @@ const ieyo=word=>isYi(word)?'이에요':'예요'; // i18n-skip
 const eulOf=word=>isYi(word)?'을':'를'; // i18n-skip
 // 오류 글(s.error)은 app.mjs가 언어를 입혀 넘긴다 — 여기서 한 번 더 t()로 감싸도 이미 옮긴 글은 그대로다.
 const alertBox=s=>s.error?`<div class="sx-alert" role="alert"><strong>${esc(s.conflict?t('처리하지 못했어요.'):s.reloadFailed?t('화면을 새로 고치지 못했어요.'):t('저장하지 못했어요.'))}</strong><div>${esc(t(s.error))}</div>${s.conflict?lnk(t('최신 내용 불러오기'),'refresh'):''}</div>`:'';
-const roomInfo=s=>({...roomModel(s.project),films:hasFinishedFilms()});
+// keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
+const roomInfo=s=>({...roomModel(s.project),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{})});
 // 담당자 이름은 서버가 언어에 맞게 내려준다. 이름이 없을 때의 「담당자」만 화면 글이다.
 const journalOf=(s,place,here,extra={})=>journalView(journalModel(s.project),{place,here,open:!!s.journalOpen,all:!!s.journalAll,owner:s.project.ownerName||t('담당자'),...extra});
 // 옛 흐름 단계 줄 · 「지금 할 일」 · 체험 안내(legacySteps부터 demoCredit까지)는 옛 흐름과 체험만 쓴다 — 한국어 그대로.

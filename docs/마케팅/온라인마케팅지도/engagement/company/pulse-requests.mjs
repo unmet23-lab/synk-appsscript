@@ -129,7 +129,8 @@ export function requestSummaryRows(a,files=[],personaFiles=null){
 }
 
 // personas: 인물 서비스(pulse-personas.mjs createPersonaService — 스위치 확인 · 인물 만들기). 없으면 맞춤 인물 요청을 받지 않는다.
-export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null}){
+// workspaces: 고객 브랜드 서비스(pulse-workspaces.mjs — 판 4 내 모델 다시 쓰기의 붙임 검사 · 담당자). 없으면 다시 쓰기 의뢰를 받지 않는다.
+export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null,workspaces=null}){
   const directory=()=>resolve(store.directory,'pulse-request-media'),media=()=>resolve(store.directory,'studio-media');
   const inDraft=name=>{if(!/^[a-f0-9-]{36}\.(?:part|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(directory(),name);if(dirname(path)!==directory())throw fail('파일 경로를 확인해 주세요.',404);return path;};
   const inMedia=name=>{if(!/^[a-f0-9-]{36}\.(?:upload|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(media(),name);if(dirname(path)!==media())throw fail('파일 경로를 확인해 주세요.',404);return path;};
@@ -181,7 +182,14 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
       const {auth,row}=draftOf(raw,csrf,{write:true});
       if(row.status!=='draft')throw fail('이미 보낸 의뢰서예요.',409);
       if(!object(input)||Object.keys(input).some(key=>!['answers','step'].includes(key)))throw fail('의뢰서 입력 항목을 확인해 주세요.');
-      const updated={...row,answers:normalizeRequestAnswers(input.answers),step:text(input.step,20),updatedAt:clock()};
+      const answers=normalizeRequestAnswers(input.answers);
+      // 내 모델 다시 쓰기(판 4, 설계 5-4 · 5판 D8): persona는 붙이기(/api/customer/pulse/draft-persona)로만 생긴다 — 붙임이 있을 때만 그대로 두고(카탈로그 모델 · 헤어는 비운다),
+      // 다른 선택으로 바꿔 저장하면 붙임을 지운다. 스위치가 꺼졌으면 붙임이 남아 있어도 persona를 받지 않는다.
+      let personaAttach=row.personaAttach||null;
+      if(answers.modelChoice==='persona'){if(!personaAttach||!workspaces?.enabled())throw fail('내 모델에서 다시 골라 주세요.',409);answers.models=[];answers.hair='';}
+      else personaAttach=null;
+      const {personaAttach:dropped,...rest}=row;
+      const updated={...rest,answers,step:text(input.step,20),updatedAt:clock(),...(personaAttach?{personaAttach}:{})};
       store.put(KIND,row.id,updated);
       return {draft:view(updated,auth)};
     });
@@ -260,6 +268,10 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
     const custom=answers.modelChoice==='custom',flags=personas?.flags()||{personaRequest:false,personaReal:false};
     if(custom&&!flags.personaRequest)throw fail('맞춤 인물 요청은 아직 받지 않아요. 다른 모델 선택으로 보내 주세요.',409);
     if(custom&&answers.personaRequest.kind==='real'&&!flags.personaReal)throw fail('실제 인물 출연 요청은 아직 받지 않아요. 새 가상 인물로 요청해 주세요.',409);
+    // 내 모델 다시 쓰기(판 4, 설계 5-4): 몸통이 persona면 붙임이 꼭 있어야 하고(24시간 안 · 붙인 사람이 그 브랜드의 지금 회원 · 브랜드 활성 · 다시 쓸 수 있음),
+    // 아니면 「내 모델에서 다시 골라 주세요」 409. 몸통이 다른 선택이면 붙임을 보지 않는다(보낸 뒤 초안 줄이 바뀌며 사라진다). 잠근 뒤 같은 검사를 한 번 더 한다.
+    const reuse=answers.modelChoice==='persona';
+    if(reuse){if(!workspaces)throw fail('내 모델에서 다시 골라 주세요.',409);workspaces.attachedRequest(peek);answers.models=[];answers.hair='';}
     count('submit:'+digest(client),1,10,3600000);
     if(store.all(KIND).filter(row=>row.status==='submitted'&&now()-Date.parse(row.submittedAt)<86400000).length>=REQUEST_LIMITS.submitsPerDay)throw busy();
     // 보내는 동안에는 새 파일 · 저장을 받지 않는다. 기록하는 파일 목록이 잠근 때의 목록과 같아야 한다.
@@ -286,14 +298,16 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
         // 옮기는 일이 2분을 넘기면 잠금이 풀린다. 그 사이 손님이 저장하거나 파일을 더했거나 다른 보내기가 잠금을 가져갔으면 잠근 때의 목록을 기록하면 안 되니 여기서 멈춘다.
         if(held?.status!=='sending'||held.sendingId!==sending.sendingId)throw fail('보내는 동안 내용이 바뀌었어요. 다시 보내 주세요.',409);
         // 인물 사진 칸은 프로젝트 자료로 가지 않는다: 맞춤 인물이면 인물 문서의 출처로, 아니면 접수 뒤 지운다(손님이 마음을 바꾼 얼굴 사진).
-        const at=clock(),no=newNumber(at),personaFiles=sending.files.filter(file=>PERSONA_SLOTS.includes(file.slot)),files=sending.files.filter(file=>!PERSONA_SLOTS.includes(file.slot));
+        const at=clock(),attached=reuse?workspaces.attachedRequest(held,at):null;
+        const no=newNumber(at),personaFiles=sending.files.filter(file=>PERSONA_SLOTS.includes(file.slot)),files=sending.files.filter(file=>!PERSONA_SLOTS.includes(file.slot));
         const assets=files.filter(file=>file.inline).map(file=>({id:file.id,diskName:file.diskName,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,slot:file.slot,author:'customer',authorId:'customer',authorName:answers.contactName,at:file.at}));
         const attachments=files.filter(file=>!file.inline).map(file=>({id:file.id,diskName:file.diskName,fileName:file.fileName,byteSize:file.byteSize,mimeType:file.mimeType,sha256:file.sha256,kind:'attachment',slot:file.slot}));
         const {consent,rights,...kept}=answers;
         const request={schemaVersion:1,number:no,status:'submitted',submittedAt:at,consentAt:at,answers:kept,files:files.map(fileView),asks:[],notes:[],rounds:[]};
         const studio={...emptyPulseStudio(),assets,request};
         const contact=[answers.contactName,answers.email,answers.phone].filter(Boolean).join(' · ').slice(0,300);
-        const {project,invite,expiresAt}=clientProjects.createFromRequest({title:answers.name,customerName:answers.company||answers.contactName,contact,summary:requestSummaryRows(answers,files,custom?personaFiles:null),studio,attachments});
+        // 다시 쓰기 의뢰는 붙임을 workspaceRequest로 옮겨 적고(직원이 접수 때 확인한다 — 설계 3-3), 담당자는 그 브랜드 담당(일하는 직원이면).
+        const {project,invite,expiresAt}=clientProjects.createFromRequest({title:answers.name,customerName:answers.company||answers.contactName,contact,summary:requestSummaryRows(answers,files,custom?personaFiles:null),studio,attachments,...(attached?{ownerId:attached.ownerId,workspaceRequest:attached.workspaceRequest}:{})});
         if(custom)personas.create({projectId:project.id,request:{...answers.personaRequest,kind:answers.personaRequest.kind||'virtual'},files:personaFiles,at});
         const opened=clientProjects.open(invite);
         store.put(KIND,row.id,{id:row.id,status:'submitted',createdAt:row.createdAt,submittedAt:at,updatedAt:at,files:[],bytes:0,projectId:project.id,number:no});
@@ -453,6 +467,8 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     if(request.status==='confirmed'||request.confirmedAt)throw fail('확인이 끝난 의뢰서예요. 바꿀 내용은 담당자에게 알려 주세요.',409);
     const strict=action==='request_submit',answers=normalizeRequestAnswers(input.answers,{strict}),{consent,rights,...kept}=answers;
     if(strict&&!(consent&&rights))throw fail('동의 칸을 확인해 주세요.');
+    // 판 4(설계 4-5 · 5판 D8): 방 안 의뢰서는 내 모델 다시 쓰기를 시작하지 않는다(스위치와 상관없이) — 다시 쓰기 의뢰로 생긴 프로젝트가 이미 고른 persona만 그대로 두고 카탈로그 모델 · 헤어를 비운다.
+    if(kept.modelChoice==='persona'){if(!(object(row?.workspaceRequest)&&request.answers?.modelChoice==='persona'))throw fail('내 모델 다시 쓰기는 「내 모델」에서 시작해 주세요.',409);kept.models=[];kept.hair='';}
     studio.request={...request,answers:kept,...(strict?{status:'submitted',number:request.number||requestNumber(now),submittedAt:request.submittedAt||now,consentAt:now}:{}),updatedAt:now};
     return;
   }

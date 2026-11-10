@@ -46,7 +46,7 @@ function translationBlock(tr,canEdit){
 // 고객 전용 인물(판 3, 설계 docs/마케팅/PULSE_의뢰흐름_20261104/인물판3_설계_20261110.md): 다음 행동 한 줄 → 손님 글 · 사진 → 견적 → 판(파일 올리기 · 보내기) → 승인 기록 → 사용 범위 → 상태 바꾸기.
 // 전이 단추는 서버가 지금 상태에서 허락한 것(actions)만 그린다. 손님에게 보이는 글(왜 · 견적 범위 · 판 설명 · 이름 · 사용 범위)은 영어 프로젝트면 영어 칸을 함께 채워야 보내진다(서버 409).
 // 폼마다 data-id를 작업 단위로 나눈다(쓰던 글 되살리기가 칸 이름이 같은 다른 폼으로 번지지 않게). 쓰기는 모두 인물 문서 판(revision)이 맞아야 한다.
-const P_STATUS={submitted:'접수 · 검토 전',needs_materials:'손님 자료 보완 기다림',rights_pending:'당사자 동의 확인 중',reviewing:'검토 중',quote_review:'손님 견적 확인 기다림',reference_making:'기준 얼굴 만드는 중',reference_review:'손님 기준 얼굴 확인 기다림',building:'학습 · 검증 · 동작 시안 준비',motion_review:'손님 동작 시안 확인 기다림',ready:'준비 끝',withdrawn:'거둠',retired:'사용 마침'};
+const P_STATUS={submitted:'접수 · 검토 전',needs_materials:'손님 자료 보완 기다림',rights_pending:'당사자 동의 확인 중',reviewing:'검토 중',quote_review:'손님 견적 확인 기다림',reference_making:'기준 얼굴 만드는 중',reference_review:'손님 기준 얼굴 확인 기다림',building:'학습 · 검증 · 동작 시안 준비',motion_review:'손님 동작 시안 확인 기다림',ready:'준비 끝',withdrawn:'거둠',retired:'사용 마침',paused:'사용 중지(고객 브랜드에서 다뤄요)',deleting:'지우는 중(고객 브랜드에서 이어 해요)',deleted:'지움'};
 const P_KIND={scope:'견적 · 범위',reference:'기준 얼굴',motion:'동작 시안',usage:'이번 광고 사용'},P_PURPOSE={identity:'출연하실 분',mood:'분위기 참고'};
 const P_KEEP={once:'이번 광고만',reuse:'다음 광고에도'},P_RELATION={self:'본인',agency:'소속 모델',other:'그 밖의 분'},P_CONSENT={link:'확인 링크',document:'서류'};
 const P_USAGE=[['brand','브랜드',80],['product','제품',120],['purpose','광고 목적',200,true],['media','매체',200,true],['regions','지역',120],['period','기간',120,true],['fee','비용',120],['schedule','일정',120],['note','메모',600]];

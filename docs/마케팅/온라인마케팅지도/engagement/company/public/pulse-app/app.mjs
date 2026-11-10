@@ -47,6 +47,11 @@ let pendingInitialScene='';
 const linkLang=String(new URLSearchParams(location.search).get('lang')||'').toLowerCase().slice(0,8);
 // 메일의 「?open=mail」(판 4)도 지우기 전에 읽는다 — 첫 화면에서 다시 열기 판을 열어 둔다(applyMailOpen).
 const OPEN_MAIL=typeof location!=='undefined'&&new URLSearchParams(location.search).get('open')==='mail';
+// 「내 모델」(PULSE 인물 판 4)의 SYNK ID 로그인에서 돌아온 길: 실패면 서버가 /pulse-app/?login=failed로 보낸다 — 주소를 지우기 전에 읽는다(설계 4-2 · 5판 D1).
+// 어디로 돌아갈지(내 모델 · 그 고객 방의 모아 두기)는 떠나기 전에 이 창의 sessionStorage에 적어 두고 여기서 한 번 읽고 지운다(30분 안 · 저장소를 못 쓰면 없음).
+const LOGIN_FAILED=typeof location!=='undefined'&&new URLSearchParams(location.search).get('login')==='failed';
+const MEMBER_RETURN_KEY='synk-pulse-member-return';
+let memberReturn=(()=>{try{const raw=sessionStorage.getItem(MEMBER_RETURN_KEY);sessionStorage.removeItem(MEMBER_RETURN_KEY);const value=raw?JSON.parse(raw):null;return value&&['models','keep'].includes(value.to)&&Date.now()-Number(value.at)<1800000?value:null;}catch{return null;}})();
 history.replaceState({},'',location.pathname+(demoMode?(/\bElectron\//.test(navigator.userAgent||'')?'?demo=coffee':'?demo=gift'):staffMode?'?mode=staff':filmDemo?'?demo=film'+(/^#[a-z]{2,12}$/.test(location.hash)?location.hash:''):''));
 const s={demo:demoMode,demoGuide:null,demoPersistent:true,mode:staffMode?'staff':'customer',user:null,workspace:null,project:null,canEdit:false,csrf:'',tab:'strategy',editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',newProject:false,installPrompt:null,error:'',conflict:false,workflow:[],castingCode:null,castingCodeOpen:null};
 // PC 앱은 PULSE를 자기 창(Electron)으로 연다. 그 창에서는 설치 안내 단추와 기기 알림 켜기를 두지 않고(views.mjs header·liveView), 기억하기·체험 글은 「이 브라우저」 대신 「이 PC 앱」이라 쓴다.
@@ -99,7 +104,7 @@ function clearDraft(key,revision){if(drafts.get(key)?.revision===revision)drafts
 function setBusy(value){busy=value;document.documentElement.classList.toggle('is-busy',value);for(const button of document.querySelectorAll('button[type=submit],[data-mutate]')){if(value){if(button.dataset.wasDisabled===undefined)button.dataset.wasDisabled=String(button.disabled);button.disabled=true;}else if(button.dataset.wasDisabled!==undefined){button.disabled=button.dataset.wasDisabled==='true';delete button.dataset.wasDisabled;}}main.setAttribute('aria-busy',String(value));if(!value){scheduleApply();scheduleInviteNavigation();}}
 // 첫 화면이 길어 입장 칸이 화면 밖일 수 있다 — 어느 길로 왔든 새 알림이 나면 그 자리를 보인다. 같은 알림으로 다시 그릴 때는 읽던 자리를 두고 움직이지 않는다.
 let shownEntryError=null;
-function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}followLocale();loadDesk();syncJournalSeen();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const headBox=document.querySelector('.app-header'),previousFocus=remote&&(main.contains(document.activeElement)||headBox?.contains(document.activeElement))?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||previousFocus.dataset.journalDo||previousFocus.dataset.journalGo||''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,journalTop=main.querySelector('[data-journal]')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null;document.querySelector('#header-actions').innerHTML=header(s);document.documentElement.classList.toggle('has-room-head',roomCustomer());const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?loadingView():s.mode==='staff'?(s.user?picker(s):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;const journalNode=main.querySelector('[data-journal]');if(journalNode&&journalTop)journalNode.scrollTop=journalTop;restore(main);mountScreens();placeTimeline();wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=[...main.querySelectorAll('button,a'),...(headBox?.querySelectorAll('button,a')||[])].find(node=>node.offsetParent!==null&&(focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo,node.dataset.journalDo,node.dataset.journalGo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
+function render({remote=false}={}){if((s.mode==='staff'||s.project)&&!legacyCssReady){void ensureLegacyCss().then(()=>render({remote}));return;}followLocale();loadDesk();syncJournalSeen();s.feedbackDraftVersion=drafts.get([identity(),'feedback',''].join(':'))?.versionId||'';s.feedbackDraftAction=drafts.get([identity(),'feedback',''].join(':'))?.values.action||'';if(demo){s.demoGuide=demo.guide();s.demoPersistent=demo.snapshot().demo.persistent;}const files=remote?Array.from(main.querySelectorAll('input[type=file]')).filter(node=>node.files?.length).map(node=>({node,key:draftKey(node.form),name:node.name})):[];const headBox=document.querySelector('.app-header'),previousFocus=remote&&(main.contains(document.activeElement)||headBox?.contains(document.activeElement))?document.activeElement:null,focusKey=previousFocus?{action:previousFocus.dataset.action,id:previousFocus.dataset.id,tab:previousFocus.dataset.tab,href:previousFocus.getAttribute('href'),room:previousFocus.dataset.roomGo||previousFocus.dataset.roomDo||previousFocus.dataset.draftDo||previousFocus.dataset.journalDo||previousFocus.dataset.journalGo||''}:null;const media=remote||main.querySelector('#review-video')?Array.from(main.querySelectorAll('video,audio')).map(node=>({node,playing:!node.paused,time:node.currentTime})):[],pillarTop=main.querySelector('.sx-dr-right')?.scrollTop||0,journalTop=main.querySelector('[data-journal]')?.scrollTop||0,details=remote?Array.from(main.querySelectorAll('details')).map((node,index)=>node.open?index:-1):[],scroll=remote?{x:scrollX,y:scrollY}:null;document.querySelector('#header-actions').innerHTML=header(s);document.documentElement.classList.toggle('has-room-head',roomCustomer());const crumb=document.querySelector('#header-crumb');if(crumb)crumb.innerHTML=headerCrumb(s);const keepEntry=!!entryHandle&&!s.project&&s.mode!=='staff';if(keepEntry)entryHandle.update({resume:!!s.requestResume,entryError:s.entryError||null,busy:booting});else{entryHandle?.unmount();entryHandle=null;main.innerHTML=s.project?projectView(s):booting?loadingView():s.mode==='staff'?(s.user?(s.brands?brandsView():picker(s)):login()):welcome(s);}if(s.project||!s.entryError)shownEntryError=null;else if(s.entryError!==shownEntryError){shownEntryError=s.entryError;main.querySelector('.sx-invite-alert')?.scrollIntoView?.({block:'nearest'});}for(const fresh of media.length?main.querySelectorAll('video,audio'):[]){const index=media.findIndex(old=>old.node.dataset.version===fresh.dataset.version&&old.node.getAttribute('src')===fresh.getAttribute('src')&&old.node.id===fresh.id);if(index!==-1){const old=media.splice(index,1)[0];fresh.replaceWith(old.node);if(old.playing&&old.node.paused)old.node.play().catch(()=>{});}}const pillar=main.querySelector('.sx-dr-right');if(pillar&&pillarTop)pillar.scrollTop=pillarTop;const journalNode=main.querySelector('[data-journal]');if(journalNode&&journalTop)journalNode.scrollTop=journalTop;restore(main);mountScreens();placeTimeline();wireCompare();const strategyForm=main.querySelector('[data-form=strategy]');if(strategyForm)syncCastingChoices(strategyForm,drafts.get(draftKey(strategyForm))?.values);refreshCasting(strategyForm);if(remote){for(const old of files){const form=Array.from(main.querySelectorAll('form[data-form]')).find(node=>draftKey(node)===old.key);const input=form&&Array.from(form.elements).find(node=>node.type==='file'&&node.name===old.name);if(input)input.replaceWith(old.node);}for(const [index,node] of Array.from(main.querySelectorAll('details')).entries())if(details.includes(index))node.open=true;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else if(focusKey){const replacement=[...main.querySelectorAll('button,a'),...(headBox?.querySelectorAll('button,a')||[])].find(node=>node.offsetParent!==null&&(focusKey.room?[node.dataset.roomGo,node.dataset.roomDo,node.dataset.draftDo,node.dataset.journalDo,node.dataset.journalGo].includes(focusKey.room):focusKey.action?node.dataset.action===focusKey.action&&node.dataset.id===focusKey.id&&node.dataset.tab===focusKey.tab:focusKey.href&&node.getAttribute('href')===focusKey.href));replacement?.focus({preventScroll:true});}if(scroll)window.scrollTo(scroll.x,scroll.y);}const inviteField=document.querySelector('[name="invite-url"]');if(inviteField)inviteField.readOnly=true;wireMedia();production.render();if(busy)setBusy(true);syncLive();renderLive();focusInitialStaffScene();focusInitialStaffHistory();}
 // 슬레이트 판 화면(첫 화면 · 고객 방 · 1차안): 움직임과 듣개는 새로 그린 칸에 붙인다. 같은 화면을 다시 그릴 때는 다시 움직이지 않는다.
 let screenKey='',draftHandle=null,entryHandle=null,reviewHandle=null,finalHandle=null,directionHandle=null,resumeChecked=false,entryLocale='';
 function mountScreens(){
@@ -110,7 +115,7 @@ function mountScreens(){
   if(animate&&s.journalOpen){s.journalOpen=false;journalOpener=null;}
   // PC 앱 창은 예시 주소로 옮겨 가지 못한다(desktop/src/pulse-app.cjs 허용 목록) — 그 창에서는 제자리에서 연다.
   // 예시 · 의뢰서가 곧바로 위에 열리는 주소(?demo=film · ?start=request)에서는 쇼릴을 받지 않고 기다린다(덮개를 닫으면 그때 붙는다).
-  if(entry){if(!entryHandle){entryHandle=mountEntry(main,{animate,onStart:openPublicRequest,onDemo:s.desktopApp?openFilmDemo:null,held:!!(filmDemo||startRequest)});entryLocale=locale();mailOpenCheck();}checkResume();}
+  if(entry){if(!entryHandle){entryHandle=mountEntry(main,{animate,onStart:openPublicRequest,onDemo:s.desktopApp?openFilmDemo:null,onModels:()=>openMyModels(),held:!!(filmDemo||startRequest)});entryLocale=locale();mailOpenCheck();modelsEntry();}checkResume();}
   if(model)mountDraftScreen(model,animate);
   if(review){const previews=(s.project.versions||[]).filter(v=>v.kind==='preview'),at=previews.findIndex(v=>v.id===(s.versionId||previews.at(-1)?.id)),prior=at>0?previews[at-1]:null;reviewHandle=mountReview(main,{previous:prior?.media?.url?{id:prior.id,src:prior.media.url}:null,onError:()=>{const box=document.querySelector('#video-error');if(box)box.hidden=false;}});}
   if(main.querySelector('[data-final]'))finalHandle=mountFinal(main);
@@ -118,9 +123,13 @@ function mountScreens(){
   // 방향 제안: 비교 중인 안 · 모델 · 펼친 칸은 s.directionUi에 두어 실시간 다시 그리기에도 남긴다(제안이 바뀌면 새로).
   if(main.querySelector('[data-dp]')){const info=directionModel(s.project);if(info){const key=info.options.map(o=>o.id).join(',');if(s.directionUi?.key!==key)s.directionUi={key};directionHandle=mountDirection(main,info,{ui:s.directionUi,animate});}}
   const headRun=document.querySelector('.app-header .sx-steps-run'),headNow=headRun?.querySelector('.is-now');if(headNow&&headRun.scrollWidth>headRun.clientWidth)headRun.scrollLeft=headNow.offsetLeft-headRun.offsetLeft-(headRun.clientWidth-headNow.offsetWidth)/2;
-  if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>openJournal(),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper,onPersona:({decision})=>personaDecide({decision}),onPersonaFiles:sendPersonaFiles});
+  if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>openJournal(),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper,onPersona:({decision})=>personaDecide({decision}),onPersonaFiles:sendPersonaFiles,onKeep:()=>keepProject(),onMyModels:()=>openMyModels()});
+  // 판 4: 이 방의 「내 모델로 모아 두기」 회원 상태는 프로젝트마다 한 번 읽는다(스위치 · 인물이 없으면 읽지 않는다).
+  if(room&&s.keep?.projectId!==s.project?.id&&keepWanted())void loadKeep();
   watchJournal();setJournalOpen(!!s.journalOpen);
 }
+// 첫 화면의 「내 모델」 입구(판 4): 공개 스위치(myModels)가 켜져 있을 때만 붙인다. 못 읽으면 붙이지 않는다.
+function modelsEntry(){if(s.mode!=='customer'||demo||filmDemo)return;const handle=entryHandle;void publicFeatures().then(features=>{if(features?.myModels===true&&handle===entryHandle)handle?.showModels?.();});}
 // 쓰던 의뢰서가 있으면 첫 화면 단추가 「이어 쓰기」로 바뀐다. 한 번만 물어본다.
 async function checkResume(){if(resumeChecked||s.mode!=='customer'||demo||filmDemo)return;resumeChecked=true;try{const {draft}=await networkRequest('/pulse/api/request'),resume=!!(draft?.status==='draft'&&(draft.step||draft.answers?.name||draft.files?.length));if(resume!==!!s.requestResume){s.requestResume=resume;if(!s.project&&canApplyRemote())render();}}catch{}}
 // 의뢰 흐름 손님(고객 방). 머리 하나 · 묻기 하나 · 영상과 납품 한 화면은 이 손님에게만 — 옛 프로젝트 · 체험 · 직원은 옛 길 그대로.
@@ -362,7 +371,7 @@ function noteFeatures(features){if(s.mode!=='customer'||!features)return;project
 // 앞 화면의 영어가 남지 않게), 언어가 바뀐 뒤의 첫 화면은 붙인 칸을 떼어 새 언어로 다시 붙인다(update는 글을 다시 그리지 않는다). 의뢰서 · 예시 덮개가 열린 동안은 그대로 둔다.
 function followLocale(){
   localizeEntryError();
-  if(flow||flowOpening||filmDemo)return;
+  if(flow||flowOpening||filmDemo||models)return;
   if(entryHandle&&entryLocale!==locale()){entryHandle.unmount();entryHandle=null;}
   if(s.mode==='customer'&&!demo&&!booting&&(s.project?.id||'')!==localeScreen)void screenLocale().then(changed=>{if(changed)render();},()=>{});
 }
@@ -373,7 +382,82 @@ function localizeEntryError(){
   const source=error.source||{title:error.title,text:error.text};
   s.entryError={title:t(source.title),text:t(source.text),source,locale:locale()};
 }
-function openPublicRequest(){return openFlow(publicBackend,async()=>{resetContext();s.user=null;s.workspace=null;s.csrf='';booting=true;render();await start('');});}
+function openPublicRequest(settings){return openFlow(()=>publicBackend(settings),async()=>{resetContext();s.user=null;s.workspace=null;s.csrf='';booting=true;render();await start('');});}
+// ── 「내 모델」(PULSE 인물 판 4, 설계 판4_설계_20261110.md 5-1 ~ 5-4) ──
+// 회원 경로(/api/customer/pulse/*)는 초대 세션과 따로 돈다: 여기의 401은 「SYNK ID로 로그인」이라 mutate(401 → 프로젝트 닫기)를 거치지 않고, 데모 · 직원 화면에서는 부르지 않는다.
+// 화면 모듈(my-models.mjs)은 스위치 myModels가 켜진 뒤 처음 열 때 읽는다 — 꺼져 있으면 손님 앱이 판 4 전과 같은 파일만 받는다.
+let models=null,modelsOpening=false;
+const memberApi=()=>import('./my-models.mjs');
+function rememberMemberReturn(value){try{sessionStorage.setItem(MEMBER_RETURN_KEY,JSON.stringify({...value,at:Date.now()}));}catch{}}
+function closeMyModels(){if(!models)return;models.unmount();models=null;overlayState(false);main.focus?.({preventScroll:true});}
+async function openMyModels({loginFailed=false}={}){
+  if(s.mode!=='customer'||demo||models||modelsOpening||flow||flowOpening)return;modelsOpening=true;if(s.journalOpen){s.journalOpen=false;setJournalOpen(false);}
+  try{
+    const {mountMyModels}=await memberApi();
+    models=mountMyModels(overlayState(true),{loginFailed,onExit:()=>{closeMyModels();render();},onNotice:notice,onLogin:()=>rememberMemberReturn({to:'models'}),onRequest:requestWithModel});
+  }catch(error){notice(error.message);}finally{modelsOpening=false;}
+}
+// 「이 모델로 의뢰」: 공개 의뢰서 초안(없으면 만든다)에 그 인물을 붙인 뒤 의뢰서를 그 초안으로 연다. 붙이지 못하면 내 모델 화면에 까닭을 보인다.
+async function requestWithModel({workspace,card,csrf,fail}){
+  try{
+    const {attachToDraft}=await memberApi();
+    await attachToDraft({workspaceId:workspace.id,personaId:card.id,revisionId:card.revisionId,csrf});
+    closeMyModels();await openPublicRequest({personaPick:{name:card.name||'',image:card.image||''}});
+  }catch(error){fail?.(error.message||t('지금은 이 모델로 의뢰할 수 없어요. 잠시 뒤 다시 시도해 주세요.'));}
+}
+// 고객 방의 「내 모델로 모아 두기」(설계 5-1): 이 방에서 만드는 인물이 있고 스위치가 켜져 있을 때만. 증표(workspace-state)로 이 프로젝트의 브랜드 · 내 회원 여부 · 기다리는 요청을 읽는다.
+// 다시 쓰기 방(persona.mode 'reuse')은 서버에 묻지 않고 「내 모델 열기」 한 줄만 둔다(기억한 기기는 첫 화면 대신 방이 열려 입구가 없다).
+const keepWanted=()=>s.mode==='customer'&&!demo&&!!s.project&&projectFeatures?.myModels===true&&usesRoom(s.project)&&!!s.project.persona;
+const reuseRoom=()=>s.project?.persona?.mode==='reuse';
+const keepOf=state=>state.member?{state:'member',name:state.workspace?.name||''}:state.pending?{state:'pending'}:{state:'ask'};
+function setKeep(projectId,next){if(s.project?.id!==projectId)return;s.keep={projectId,...next};if(canApplyRemote())render({remote:true});}
+async function memberSession(){return networkRequest('/api/customer/pulse/session');}
+async function projectKeepState(session){
+  const {proof}=await request('/pulse/api/project/workspace-proof',{...options(),body:{purpose:'workspace-state'}});
+  return networkRequest('/api/customer/pulse/project-state',{member:true,csrf:session.csrfToken,body:{proof}});
+}
+// 읽기 차례표: 나중에 시작한 일(다시 읽기 · 모아 두기 요청)이 있으면 앞서 읽던 결과는 버린다 — 로그인에서 돌아온 직후 방이 여는 읽기가 요청 중(busy) 상태를 덮지 않게(판 4 화면 검수 A2).
+let keepTicket=0;
+async function loadKeep(){
+  if(!keepWanted())return;const projectId=s.project.id,ticket=++keepTicket;s.keep={projectId,state:null};
+  const put=next=>{if(ticket===keepTicket)setKeep(projectId,next);};
+  if(reuseRoom()){await null;put({state:'reuse'});return;}
+  try{
+    const session=await memberSession();
+    if(s.project?.id!==projectId)return;
+    if(!session.authenticated){put(session.loginAvailable===false?{state:null}:{state:'login'});return;}
+    put(keepOf(await projectKeepState(session)));
+  }catch{put({state:null});/* 회원 상태를 못 읽으면 단추를 두지 않는다(다음에 방을 열 때 다시 읽는다) */}
+}
+// 누르면: 로그인 전이면 돌아올 곳을 적고 SYNK ID 로그인으로, 로그인했으면 증표(workspace-claim)로 연결 · 합류 요청. 로그인에서 돌아오면(auto) 같은 일을 이어 한다.
+async function keepProject({auto=false}={}){
+  if(!keepWanted()||reuseRoom()||s.keep?.state==='busy')return;
+  const projectId=s.project.id;keepTicket++;
+  setKeep(projectId,{state:'busy'});
+  try{
+    const session=await memberSession();
+    if(!session.authenticated){
+      if(auto||session.loginAvailable===false){setKeep(projectId,{state:'login'});if(session.loginAvailable===false)notice(t('지금은 SYNK ID 로그인을 쓸 수 없어요. 잠시 뒤 다시 열어 주세요.'));return;}
+      rememberMemberReturn({to:'keep',projectId});
+      const {authorizationUrl}=await networkRequest('/api/customer/pulse/login',{body:{}}),url=new URL(authorizationUrl);
+      if(url.protocol!=='https:'||url.username||url.password)throw new PulseError(t('로그인을 시작하지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+      location.assign(url.href);return;
+    }
+    const state=await projectKeepState(session);
+    if(state.member||state.pending){setKeep(projectId,keepOf(state));return;}
+    const {proof}=await request('/pulse/api/project/workspace-proof',{...options(),body:{purpose:'workspace-claim'}});
+    await networkRequest('/api/customer/pulse/claim',{member:true,csrf:session.csrfToken,body:{proof}});
+    setKeep(projectId,{state:'pending'});notice(t('모아 두기를 요청했어요. 담당자가 확인하면 내 모델에서 브랜드를 보실 수 있어요.'));
+  }catch(error){notice(error.message||t('지금은 요청하지 못했어요. 잠시 뒤 다시 시도해 주세요.'));void loadKeep();/* 앞 상태로 되돌리지 않고 지금 상태를 다시 읽는다 */}
+}
+// 로그인에서 돌아온 뒤(첫 연결이 끝난 다음 한 번): 내 모델이면 그 화면을, 모아 두기면 같은 고객 방에서 요청을 이어 한다. 실패로 돌아왔으면 그 자리에서 알린다.
+async function resumeMemberReturn(){
+  const back=memberReturn;memberReturn=null;
+  if(!back&&!LOGIN_FAILED||s.mode!=='customer'||demo)return;
+  if(back?.to==='keep'&&s.project?.id===back.projectId){if(LOGIN_FAILED){notice(t('SYNK ID 로그인을 마치지 못했어요. 다시 시도해 주세요.'));void loadKeep();return;}await keepProject({auto:true});return;}
+  const features=s.project?projectFeatures:await publicFeatures();
+  if(features?.myModels===true)await openMyModels({loginFailed:LOGIN_FAILED});
+}
 function openProjectRequest(step=''){return openFlow(async()=>projectBackend({project:()=>s.project,csrf:()=>s.csrf,accept,step,features:()=>projectFeatures}),async()=>{s.tab='overview';s.error='';render();if(typeof window.scrollTo==='function')window.scrollTo(0,0);});}
 // 예시(?demo=film)는 한국어로만 연다(다국어 판 2 — 예시는 번역하지 않는다). 화면 언어가 한국어가 아니면 주소로 와도 첫 화면으로 간다.
 // 한국어 말고는 고를 수 없는 손님(고른 것 · 링크 · 브라우저가 모두 한국어)은 서버 답을 기다리지 않고 바로 연다.
@@ -386,6 +470,57 @@ function leaveFilmDemo(){filmDemo=false;history.replaceState({},'',location.path
 // 내부 확인 화면은 직원이 그 탭을 열 때만 불러온다(손님 묶음에 넣지 않는다). 직원 화면이라 번역하지 않는다.
 let deskLoading=null;
 function loadDesk(){if(s.mode!=='staff'||s.tab!=='desk'||s.deskView||deskLoading)return;deskLoading=import('./desk-view.mjs').then(module=>{s.deskView=module.deskView;deskLoading=null;render();}).catch(()=>{deskLoading=null;notice('내부 확인 화면을 불러오지 못했어요. 새로 고쳐 주세요.');});} // i18n-skip
+// i18n-skip-start
+// 직원 「고객 브랜드」 데스크(PULSE 인물 판 4, brand-desk-view.mjs): 머리의 「고객 브랜드」에서 연다. 화면 모듈은 처음 열 때 읽는다(직원 화면이라 한국어).
+// 직원 경로(/api/customer-workspaces/*)는 스위치와 상관없이 열린다(끈 동안에도 중지 · 삭제 · 정리 — 설계 5판 D15). 쓰기는 근거 한 줄을 꼭 받는다.
+let brandViewLoading=null;
+const brandsView=()=>s.brandView?s.brandView(s.brands,{top:s.error?`<div class="sx-alert" role="alert"><strong>처리하지 못했어요.</strong><div>${esc(s.error)}</div></div>`:'',projects:s.workspace?.projects||[]}):'<div class="loading" role="status"><span class="loading-mark"></span>고객 브랜드를 불러오고 있어요.</div>';
+async function loadBrands(){
+  if(!s.brands)return;
+  brandViewLoading||=import('./brand-desk-view.mjs').then(module=>{s.brandView=module.brandDesk;});
+  await brandViewLoading;
+  const list=await request('/api/customer-workspaces',options());if(!s.brands)return;s.brands.list=list;
+  const pick=s.brands.pick;
+  if(pick?.kind==='workspace'){const detail=await request(`/api/customer-workspaces/${encodeURIComponent(pick.id)}`,options());if(s.brands?.pick===pick)s.brands.detail=detail;}
+}
+async function openBrands(pick=null){
+  s.brands={list:s.brands?.list||null,pick,detail:null};s.error='';render();
+  try{await loadBrands();}catch(error){if(error.status===401){connectionExpired();return;}notice(error.message);}
+  if(s.brands)render();
+}
+// 보내고 나면 목록(과 고른 브랜드)을 다시 읽는다. 실패해도 다시 읽어 지금 상태를 보인다(쓰던 근거는 남는다).
+// failed는 실패 때 더 읽을 것 — 프로젝트 잇기는 직원 프로젝트 목록의 판을 쓰므로 그 목록도 다시 읽는다(판 4 화면 최종 검수 F2: 낡은 판으로 409가 되풀이되지 않게).
+async function brandAct(path,body,{form,message,after,failed}={}){
+  if(busy||loading||!s.brands)return;
+  const key=form?draftKey(form):'',revision=drafts.get(key)?.revision;setBusy(true);
+  try{const result=await request(path,{...options(),body});if(key)clearDraft(key,revision);after?.(result);s.error='';try{await loadBrands();}catch{}render();notice(typeof message==='function'?message(result):message);}
+  catch(error){if(error.status===401){connectionExpired();return;}s.error=error.message;try{await loadBrands();}catch{}try{await failed?.();}catch{}render();notice(error.message);}
+  finally{setBusy(false);}
+}
+// 이번 광고 사용 범위 칸과 그 영어 칸(영어 프로젝트만 — 빈 영어 칸은 보내지 않는다).
+const BRAND_USAGE=['brand','product','purpose','media','regions','period','fee','schedule','note'];
+// 사용 범위 「메모」의 폼 칸 이름은 usageNote다(근거 한 줄 note와 겹치지 않게 — brand-desk-view.mjs usageField).
+const usageFieldOf=key=>key==='note'?'usageNote':key;
+function brandUsage(values){
+  const usage=Object.fromEntries(BRAND_USAGE.map(key=>[key,String(values[usageFieldOf(key)]??'').trim()]));
+  const said=BRAND_USAGE.filter(key=>String(values[usageFieldOf(key)+'Tr']??'').trim());
+  return {usage,...(said.length?{translation:Object.fromEntries(said.map(key=>[key,String(values[usageFieldOf(key)+'Tr']).trim()]))}:{})};
+}
+const BRAND_DONE={approve:'연결 요청을 승인했어요.',reject:'연결 요청을 거절했어요.',set_role:'회원 역할을 바꿨어요.',remove_member:'회원에서 뺐어요.',close:'브랜드를 닫았어요.',reopen:'브랜드를 다시 열었어요.',link:'프로젝트를 이 브랜드에 이었어요.',unlink:'프로젝트 연결을 끊었어요.',confirm_request:'연결을 확인하고 이번 광고 사용 범위를 손님에게 보냈어요.',set_usage:'사용 범위를 고쳐 손님에게 다시 보냈어요.',pause:'사용을 멈췄어요.',unpause:'사용 중지를 풀었어요. 다시 쓰려면 브랜드 관리자가 보관 동의를 새로 해야 해요.',unassign:'인물 귀속을 취소했어요.',delete:'인물을 지웠어요.',delete_continue:'삭제를 마쳤어요.'};
+function brandSubmit(type,form,values){
+  const note=String(values.note||'').trim();
+  if(type==='brand-claim'){const decision=form.dataset.decision,body={action:decision,note};if(decision==='approve'){if(values.mode)body.mode=values.mode;if(values.mode==='new')body.name=String(values.name||'').trim();if(values.mode==='existing'&&values.workspaceId)body.workspaceId=values.workspaceId;if(values.role)body.role=values.role;}
+    return brandAct(`/api/customer-workspaces/claims/${encodeURIComponent(form.dataset.claim)}`,body,{form,message:BRAND_DONE[decision],after:result=>{if(decision==='approve'&&result.workspace?.id){s.brands.pick={kind:'workspace',id:result.workspace.id};s.brands.detail=null;}}});}
+  if(type==='brand-workspace'){const action=form.dataset.actionName;return brandAct(`/api/customer-workspaces/${encodeURIComponent(form.dataset.workspace)}`,{action,revision:Number(form.dataset.revision),...(form.dataset.member?{memberId:form.dataset.member}:{}),...(action==='set_role'?{role:values.role}:{}),note},{form,message:BRAND_DONE[action]});}
+  if(type==='brand-project'){
+    const action=form.dataset.actionName,projectId=action==='link'?values.projectId:form.dataset.project;
+    const revision=action==='link'?(s.workspace?.projects||[]).find(row=>row.id===projectId)?.revision:Number(form.dataset.revision);
+    const body={action,revision,note,...(action==='link'?{workspaceId:s.brands.pick?.id}:{}),...(['confirm_request','set_usage'].includes(action)?brandUsage(values):{})};
+    return brandAct(`/api/customer-workspaces/projects/${encodeURIComponent(projectId||'')}`,body,{form,message:BRAND_DONE[action],after:()=>{if(action==='link'||action==='unlink')void loadWorkspace().catch(()=>{});},failed:action==='link'?loadWorkspace:null});
+  }
+  if(type==='brand-persona'){const action=form.dataset.actionName;return brandAct(`/api/customer-workspaces/personas/${encodeURIComponent(form.dataset.persona)}`,{action,revision:Number(form.dataset.revision),note},{form,message:result=>result.retry?`기록은 지웠고 파일 ${result.pendingUnlink||0}개가 남았어요. 잠시 뒤 「삭제 이어 하기」를 눌러 주세요.`:BRAND_DONE[action]});}
+}
+// i18n-skip-end
 // 05 영상 확인: 의견 점을 영상 길이에 맞춰 타임라인에 놓고, 재생 위치 선이 따라간다(위치는 CSSOM으로만 — 페이지 CSP가 style 속성을 막는다).
 function placeTimeline(){const video=main.querySelector('#review-video'),track=main.querySelector('[data-timeline] .timeline-track');if(!video||!track)return;const head=track.querySelector('.timeline-head'),pct=t=>Math.min(100,Math.max(0,t/video.duration*100))+'%';
   // 시간 글자가 40px 안으로 붙으면 앞 점의 글자만 보인다(10-19 검수: 「0:020:03」).
@@ -436,7 +571,7 @@ function scheduleInviteNavigation(){
   });
 }
 function withLeave(action){if(busy||loading){notice(t('처리 중이에요. 끝난 뒤 이동해 주세요.'));return;}if(drafts.size){leaveAction=action;openDialog('leave');}else action();}
-function resetContext({preserveInvite=false}={}){loading=false;s.journalOpen=false;s.journalAll=false;s.journalSeenFor='';journalOpener=null;production.reset();pendingInitialScene='';if(!preserveInvite)cancelInviteNavigation();live?.stop();live=null;liveIdentity='';liveSnapshot=null;deviceState=null;deviceOperation++;deviceRefresh++;deviceBusy=false;s.live.deviceBusy=false;setBusy(false);epoch++;drafts.clear();pendingRemote=null;closeDialog();Object.assign(s,{project:null,canEdit:false,editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',error:'',conflict:false,workflow:[],historyTarget:null,notificationCommentId:null,tab:'strategy',castingCode:null,castingCodeOpen:null});castingCodeSave=null;}
+function resetContext({preserveInvite=false}={}){loading=false;s.journalOpen=false;s.journalAll=false;s.journalSeenFor='';journalOpener=null;production.reset();pendingInitialScene='';if(!preserveInvite)cancelInviteNavigation();live?.stop();live=null;liveIdentity='';liveSnapshot=null;deviceState=null;deviceOperation++;deviceRefresh++;deviceBusy=false;s.live.deviceBusy=false;setBusy(false);epoch++;drafts.clear();pendingRemote=null;closeDialog();Object.assign(s,{project:null,canEdit:false,editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',error:'',conflict:false,workflow:[],historyTarget:null,notificationCommentId:null,tab:'strategy',castingCode:null,castingCodeOpen:null});castingCodeSave=null;s.brands=null;}
 function accept(result){noteFeatures(result.features);if(!result.project&&result.id&&Number.isFinite(result.revision))result={...result,project:result};if(result.project&&!result.project.studio&&result.project.id===s.project?.id)result.project.studio=s.project.studio;if(result.csrf)s.csrf=result.csrf;if(result.csrfToken)s.csrf=result.csrfToken;if(result.project){if(!s.project&&s.mode==='customer'&&!demo)s.tab='overview';else if(!s.project&&s.mode==='staff'&&result.project.studio?.request&&['received','planning'].includes(result.project.stage))s.tab='desk';else if(!s.project&&!result.project.studio?.strategy?.revision){const versions=result.project.versions||[];if(versions.some(v=>v.kind==='final')&&result.project.stage==='delivered')s.tab='history';else if(versions.some(v=>v.kind==='preview'))s.tab='review';}s.project=result.project;if(!s.project.studio)s.project.studio={preferences:{},assets:[],references:[],concepts:[],scenes:[],sceneReviews:[],comments:[]};if(result.canEdit!==undefined)s.canEdit=!!result.canEdit;}}
 function renderLive(){const box=document.querySelector('#pulse-live');if(!box)return;box.hidden=!!demo||!(s.project||s.user);if(box.hidden)return;const active=box.contains(document.activeElement)?document.activeElement.dataset?.id:null;box.innerHTML=liveView(s);if(active)Array.from(box.querySelectorAll('[data-action=open-notification]')).find(node=>node.dataset.id===active)?.focus({preventScroll:true});const badge=document.querySelector('[data-action=notifications]');if(badge){badge.textContent=s.live.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림');badge.setAttribute('aria-expanded',String(s.live.open));}}
 function syncLive(){if(demo)return;const key=s.mode==='staff'?(s.user?`staff:${s.user.id}`:''):(s.project?`customer:${s.project.id}`:'');if(key===liveIdentity)return;live?.stop();live=null;liveIdentity=key;liveSnapshot=null;pendingRemote=null;deviceState=null;s.live={...s.live,deviceEnabled:false,deviceReady:false,deviceNote:t('기기 알림 상태를 확인하고 있어요.'),deviceIssue:'',deviceProgress:'',deviceUncertain:false,notifications:[],unreadCount:0,open:openNotificationsOnStart,pending:false,status:'connecting'};if(!key)return;refreshDevice();live=createLiveConnection({mode:s.mode,request,options,onSnapshot:snapshot=>{if(key!==liveIdentity)return;if((s.mode==='staff'&&snapshot.userId&&snapshot.userId!==s.user?.id)||(s.mode==='customer'&&snapshot.projectId&&snapshot.projectId!==s.project?.id)){connectionExpired();return;}liveSnapshot=snapshot;s.live.notifications=snapshot.notifications||[];s.live.unreadCount=snapshot.unreadCount||0;renderLive();fetchRemote();},onFresh:items=>{if(key!==liveIdentity)return;notice(items.length===1?items[0].title:t('새 알림 {count}개가 도착했어요.',{count:items.length}));},onStatus:status=>{s.live.status=status;renderLive();},onExpired:connectionExpired});}
@@ -590,6 +725,7 @@ document.addEventListener('play',event=>{if(event.target.matches('audio,video'))
 document.addEventListener('submit',async event=>{
   const form=event.target.closest('form[data-form]');if(!form)return;event.preventDefault();if(busy||loading)return;const type=form.dataset.form,values=Object.fromEntries(new FormData(form));
   if(type==='mail-open'){await mailOpenStep(form,values);return;}
+  if(s.mode==='staff'&&type.startsWith('brand-')){await brandSubmit(type,form,values);return;}
   if(type==='invite'){const invite=parseInvite(values.invite);if(!invite){s.entryError={title:k('초대 링크를 읽지 못했어요'),text:k('담당자에게 받은 링크 전체(https://… #invite=…)를 붙여 넣어 주세요.')};render();return;}const kept=keptDrafts;resetContext();keptDrafts=kept;booting=true;render();await start(invite);return;}
   if(type==='login'){setBusy(true);try{const result=await request('/api/login',{body:values});resetContext();s.user=result.user;s.csrf=result.csrfToken||'';await loadWorkspace();await openInitialStaffProject();render();}catch(error){notice(error.message);}finally{setBusy(false);}return;}
   if(type==='new-project'){await mutate(()=>request('/api/client-projects',{...options(),body:{...values,ownerId:s.user.id}}),{form,message:'프로젝트를 만들었어요.',after:async result=>{s.newProject=false;accept(result);if(!s.project&&result.id)await loadProject(result.id);if(s.project)await loadProject(s.project.id);s.tab='strategy';}});return;} // i18n-skip
@@ -697,6 +833,8 @@ document.addEventListener('click',async event=>{
   // 기억했다는 알림: 한국어는 PC 앱 창 · 브라우저를 나눠 쓰는 원문 그대로(pulse-install-client 시험이 그 꼴을 본다), 다른 언어는 같은 문장을 자리표로 옮긴다.
   if(action==='remember-device'){if(busy||loading||s.mode!=='customer'||demo||!s.project)return;button.disabled=true;try{const result=await deviceRequest('/pulse/api/remember-device',{csrf:s.csrf,body:{}});s.live.rememberKnown=true;s.live.remembered=!!result?.deviceConnection?.remembered;s.rememberOffer=false;render();renderLive();notice(locale()==='ko'?`이 기기를 기억했어요. 30일 동안 초대 링크 없이 ${s.desktopApp?'이 PC 앱':'이 브라우저'}에서 열려요.`:t('이 기기를 기억했어요. 30일 동안 초대 링크 없이 {where}에서 열려요.',{where:s.desktopApp?t('이 PC 앱'):t('이 브라우저')}));}catch(error){notice(error.message);}finally{button.disabled=false;}return;} // i18n-skip
   if(action==='remember-dismiss'){s.rememberOffer=false;try{localStorage.setItem(rememberDismissKey(),'1');}catch{}render();return;}
+  if(action==='brands'&&s.mode==='staff'){withLeave(async()=>{resetContext();await openBrands();});return;}
+  if(action==='brand-pick'&&s.brands){const pick={kind:button.dataset.kind,id};withLeave(async()=>{drafts.clear();s.brands.detail=null;await openBrands(pick);});return;}
   if(action==='projects'){withLeave(async()=>{resetContext();try{await loadWorkspace();render();}catch(error){render();notice(error.message);}});return;}
   if(action==='open-project'){withLeave(async()=>{resetContext();loading=true;try{await loadProject(id);render();}catch(error){notice(error.message);}finally{loading=false;scheduleInviteNavigation();}});return;}
   if(action==='new-project'){s.newProject=true;render();main.querySelector('[data-form=new-project] input')?.focus();return;}
@@ -759,7 +897,7 @@ document.addEventListener('click',event=>{const details=event.target?.closest?.(
 // 언어 메뉴(다국어 판 2): 고르는 단추(data-set-locale)는 첫 화면 · 머리 · 의뢰서 어디에 있든 여기 한 곳에서 받는다. locale-menu가 고른 언어를 기억하고 소식(LOCALE_EVENT)을 보낸다.
 document.addEventListener('click',event=>{const choice=event.target?.closest?.('[data-set-locale]');if(!choice||choice.disabled)return;event.preventDefault();void chooseLocale(choice.dataset.setLocale);});
 // 소식을 받으면 지금 화면을 새 언어로 다시 그린다(읽던 자리 · 쓰던 글은 그대로). 의뢰서는 스스로 다시 그리고 그 뒤 화면은 의뢰서를 닫을 때, 예시는 한국어로만 돈다. 직원 화면은 늘 한국어다.
-window.addEventListener(LOCALE_EVENT,()=>{if(s.mode!=='customer'||demo)return;paintShell();if(flow||flowOpening||filmDemo)return;const pressed=!!document.activeElement?.closest?.('[data-set-locale]');render(s.project?{remote:true}:{});if(pressed)document.querySelector(`[data-set-locale="${locale()}"]`)?.focus({preventScroll:true});});
+window.addEventListener(LOCALE_EVENT,()=>{if(s.mode!=='customer'||demo)return;paintShell();if(flow||flowOpening||filmDemo||models)return;const pressed=!!document.activeElement?.closest?.('[data-set-locale]');render(s.project?{remote:true}:{});if(pressed)document.querySelector(`[data-set-locale="${locale()}"]`)?.focus({preventScroll:true});});
 // 머리 하나(판 3): 앱 머리의 프로젝트 이름 · 단계 줄 · 「담당자에게 묻기」는 main 밖이라 여기서 받는다.
 document.querySelector('.app-header')?.addEventListener('click',event=>{if(!roomCustomer())return;const go=event.target.closest('[data-room-go]');if(go){if(!go.disabled)goRoom(go.dataset.roomGo);return;}const ask=event.target.closest('[data-room-do="journal"]');if(ask){if(s.journalOpen&&journalOverlay(journalBox()))closeJournal();else openJournal({opener:ask});}});
 // 일지(판 3b): 1차안 화면에는 mountRoom이 붙지 않으므로 일지 안 누르기 · 글 · 파일은 여기 한 곳에서 받는다.
@@ -791,7 +929,7 @@ window.addEventListener('appinstalled',()=>{s.installPrompt=null;s.installed=tru
 const connectivity=()=>{document.querySelector('#connection-banner').hidden=navigator.onLine;};
 window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();
 if(filmDemo)void openFilmDemo();if(startRequest)void openPublicRequest();
-if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();await start(parseInvite(initialInvite));}initialInvite='';
+if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();await start(parseInvite(initialInvite));if(memberReturn||LOGIN_FAILED)void resumeMemberReturn();}initialInvite='';
 if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('./sw.js',{scope:'/pulse-app/'}).catch(()=>{});
 
 

@@ -97,10 +97,11 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   // 공개 의뢰서를 보냈을 때 서버가 스스로 만드는 프로젝트(2026-11-04). 직원 계정 없이 도는 유일한 생성 길이라 입력은 pulse-requests.mjs에서 검사한 값만 받는다.
   // 담당자는 설정값(pulseRequestSettings), 없으면 가장 먼저 만든 활성 관리자다. 담당자가 있어야 새 의뢰 알림이 간다.
   function requestOwner(){const settings=store.get('pulseRequestSettings','main'),picked=settings?.ownerId&&store.get('users',settings.ownerId);if(picked?.active&&picked.role!=='viewer')return picked;const admin=store.all('users').filter(user=>user.active&&user.role==='admin').sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)))[0];if(!admin)throw fail('지금은 의뢰를 받을 수 없어요. hello@synk.im으로 알려 주세요.',409);return admin;}
+  // 내 모델 다시 쓰기 의뢰(판 4, 설계 3-3): ownerId는 그 브랜드 담당(일하는 직원일 때만 — 아니면 지금처럼 requestOwner), workspaceRequest는 붙임을 옮겨 적은 것(직원이 접수 때 확인한다).
   function createFromRequest(input){
-    const owner=requestOwner(),at=clock(),raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(at)+INVITE_DAYS*86400000).toISOString();
+    const chosen=input.ownerId?store.get('users',input.ownerId):null,owner=chosen?.active&&chosen.role!=='viewer'?chosen:requestOwner(),at=clock(),raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(at)+INVITE_DAYS*86400000).toISOString();
     const base={id:randomUUID(),createdAt:at,revision:0,versions:[],messages:[],history:[],inviteRevision:1,inviteHash:digest(raw),inviteExpiresAt:expiresAt,receiptId:''};
-    const row={...append(base,'의뢰서 접수','customer'),ownerId:owner.id,reviewerId:null,teamId:owner.teamId||null,title:clean(input.title,160,'프로젝트 이름',true),customerName:clean(input.customerName,100,'고객 이름',true),contact:clean(input.contact||'',300,'연락처'),summary:clean(input.summary||'',3000,'고객이 부탁한 일'),terms:'',nextStep:'',internalNotes:'',dueDate:date(input.dueDate),nextContactDate:'',stage:'received',studio:input.studio,...(input.attachments?.length?{intake:{receivedAt:at,files:input.attachments}}:{})};
+    const row={...append(base,'의뢰서 접수','customer'),ownerId:owner.id,reviewerId:null,teamId:owner.teamId||null,title:clean(input.title,160,'프로젝트 이름',true),customerName:clean(input.customerName,100,'고객 이름',true),contact:clean(input.contact||'',300,'연락처'),summary:clean(input.summary||'',3000,'고객이 부탁한 일'),terms:'',nextStep:'',internalNotes:'',dueDate:date(input.dueDate),nextContactDate:'',stage:'received',studio:input.studio,...(input.attachments?.length?{intake:{receivedAt:at,files:input.attachments}}:{}),...(input.workspaceRequest?{workspaceRequest:input.workspaceRequest}:{})};
     return {...storeRow(row),invite:raw,expiresAt};
   }
   function reissueRequestInvite(id){const row=store.get('clientProjects',id);if(!row||row.stage==='archived')throw fail('의뢰를 찾지 못했어요. hello@synk.im으로 알려 주세요.',404);const raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(clock())+INVITE_DAYS*86400000).toISOString();storeRow({...append(row,'의뢰서 링크 다시 만듦','customer'),inviteHash:digest(raw),inviteRevision:row.inviteRevision+1,inviteExpiresAt:expiresAt});return {invite:raw,expiresAt};}
@@ -219,8 +220,15 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     });
     return changed?messages:null;
   }
-  function session(raw){
-    const auth=store.readToken(raw,'pulse-session'),row=auth&&store.get('clientProjects',auth.body.projectId);
+  function session(raw){return sessionOf(store.readToken(raw,'pulse-session'));}
+  // 판 4 증표(설계 5판 D11): 증표를 발급한 초대 세션이 아직 살아 있는지 토큰 해시로 본다 — 아래 세션 검사와 같은 규칙.
+  function sessionByHash(hash){
+    const stored=typeof hash==='string'&&/^[a-f0-9]{64}$/.test(hash)?store.db.prepare("SELECT * FROM tokens WHERE hash=? AND purpose='pulse-session' AND expiresAt>?").get(hash,new Date().toISOString()):null;
+    let auth=null;if(stored){try{auth={...stored,body:JSON.parse(stored.body)};}catch{auth=null;}}
+    return sessionOf(auth);
+  }
+  function sessionOf(auth){
+    const row=auth&&store.get('clientProjects',auth.body?.projectId);
     const device=auth?.body.deviceHash?devices.current(auth.body.deviceHash):null;
     const activeAccess=auth?.body.deviceHash?device&&device.row.id===row?.id:auth?.body.acceptedInvite===true||Date.parse(row?.inviteExpiresAt)>Date.parse(clock());
     // openedAt이 없는 토큰(이 줄 전에 연 세션 · 기억한 기기로 이어 연 세션)은 저장소 기한만 본다.
@@ -261,5 +269,5 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     const next=append(row,'자동 안내','pulse-auto-reply');next.history=[...next.history.slice(0,-1),{...next.history.at(-1),actorName:'자동 안내'}];
     storeRow({...next,messages:[...row.messages,message]});return {posted:true,messageId:message.id};
   });}
-  return {workspace,readableSources,searchSources,save,createFromRequest,reissueRequestInvite,retireRequest,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,openVerified,read,session,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
+  return {workspace,readableSources,searchSources,save,createFromRequest,reissueRequestInvite,retireRequest,project,subscribeChanges,commitWorkflow:storeRow,closeout,kickoff,changes,sceneRequests,sceneRequestContext,schedule,completeFollowUp,invite,revoke,open,openVerified,read,session,sessionByHash,devices,addVersion,message,resolveMessage,customerAction,mediaFor,customerMedia,findImportedReceipt,importReceipt,customerSnapshot,postAutoReply};
 }

@@ -34,7 +34,7 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // 프로젝트 길 의뢰서를 보낼 때(request_submit) 같은 트랜잭션에서 인물을 만들거나 거둔다. 인물 문서가 없으면 두 보기 모두 키가 없다(판 3 전과 같은 모양).
 export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko',personaService=null}){
   // 의뢰서 액션이 전용 인물로 가는 프로젝트의 인물 판을 다시 볼 때 쓴다(방향 제안 · 제작 시작, pulse-requests.mjs).
-  const personas=createPersonaGuard(store);
+  const personas=createPersonaGuard(store,{clock});
   function customer(token){return clientProjects.session(token);}
   function customerWrite(token,csrf){const context=customer(token);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw fail('고객 화면을 다시 열어 주세요.',403);return context;}
   function revision(row,value){if(!Number.isSafeInteger(value)||value!==row.revision)throw fail('그사이 프로젝트가 바뀌었어요. 최신 내용을 불러온 뒤 다시 저장해 주세요.',409);}

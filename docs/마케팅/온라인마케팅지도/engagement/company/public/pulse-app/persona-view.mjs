@@ -11,7 +11,8 @@ import {arrow} from './film-home.mjs';
 // 승인 카드의 차례 번호(자료 보완은 승인이 아니라 번호가 없다).
 export const PERSONA_CONFIRM_OF=Object.freeze({scope:'1/4',reference:'2/4',motion:'3/4',usage:'4/4'});
 // 저희 차례 · 끝난 상태에서 보이는 한 줄(설계 1절 표). 손님 차례 상태는 카드가 대신한다.
-export const STATUS_LINE=Object.freeze({submitted:k('보내 주신 자료를 보고 있어요'),needs_materials:k('자료를 조금 더 보내 주세요'),rights_pending:k('출연하실 분의 동의를 확인하고 있어요'),reviewing:k('만들 수 있는지 검토하고 있어요'),quote_review:k('견적과 범위를 확인해 주세요'),reference_making:k('기준 얼굴을 만들고 있어요'),reference_review:k('기준 얼굴을 확인해 주세요'),building:k('인물을 준비하고 있어요'),motion_review:k('움직이는 모습을 확인해 주세요'),withdrawn:k('요청을 거뒀어요'),retired:k('사용을 마쳤어요')});
+// 판 4: 사용 중지(paused) · 삭제 진행(deleting) · 묘비(deleted)와 읽을 때 계산하는 보관 기간 끝(expired).
+export const STATUS_LINE=Object.freeze({submitted:k('보내 주신 자료를 보고 있어요'),needs_materials:k('자료를 조금 더 보내 주세요'),rights_pending:k('출연하실 분의 동의를 확인하고 있어요'),reviewing:k('만들 수 있는지 검토하고 있어요'),quote_review:k('견적과 범위를 확인해 주세요'),reference_making:k('기준 얼굴을 만들고 있어요'),reference_review:k('기준 얼굴을 확인해 주세요'),building:k('인물을 준비하고 있어요'),motion_review:k('움직이는 모습을 확인해 주세요'),withdrawn:k('요청을 거뒀어요'),retired:k('사용을 마쳤어요'),paused:k('사용을 멈춘 인물이에요'),deleting:k('인물을 지우고 있어요'),deleted:k('지운 인물이에요'),expired:k('다시 쓰기 기한이 지났어요')});
 const CARD=Object.freeze({
   materials:{title:k('인물 사진을 조금 더 보내 주세요'),text:k('만들 수 있는지 보려면 사진이 조금 더 필요해요.')},
   scope:{title:k('맞춤 인물 견적을 확인해 주세요'),text:k('만들 범위와 값 · 기간을 보시고, 맞으면 이대로 진행해 주세요. 확인하시기 전에는 비용이 생기지 않아요.'),confirm:k('승인하시면 이 값 · 기간 · 범위로 기준 얼굴을 만들기 시작해요.'),approve:k('이 견적으로 진행'),hint:k('예) 기간을 5일 안으로 줄일 수 있을까요?')},
@@ -28,20 +29,23 @@ const PURPOSE=Object.freeze({identity:k('출연하실 분의 사진 보내기'),
 const ACCEPT='image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif';
 // 값: 한국어는 만 원으로 떨어지면 「30만원」, 아니면 「395,500원」. 다른 언어는 원화 그대로 「KRW 300,000」(결제 통화를 바꾸지 않는다). 한국어 꼴은 값 포맷터다.
 const won=value=>!Number.isSafeInteger(value)?'':locale()!=='ko'?`KRW ${value.toLocaleString('en-US')}`:value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`; // i18n-skip
-const nameLine=m=>m.name?t('맞춤 인물 「{name}」',{name:m.name}):t('맞춤 인물');
+// 다시 쓰기 방(판 4 — 서버 mode 'reuse')의 인물은 브랜드가 보관한 「내 모델」이다.
+const nameLine=m=>m.mode==='reuse'?(m.name?t('내 모델 「{name}」',{name:m.name}):t('내 모델의 모델')):m.name?t('맞춤 인물 「{name}」',{name:m.name}):t('맞춤 인물');
 
 // 서버 손님 보기 → 화면 자료. card: 지금 손님 차례 카드(없으면 '').
 export function personaModel(p){
   const v=p?.persona;if(!v||typeof v!=='object'||!v.id)return null;
   const card=v.turn==='customer'?(CARD[v.awaiting?.kind]?v.awaiting.kind:v.status==='needs_materials'?'materials':''):'';
   const sources=v.sources&&typeof v.sources==='object'?v.sources:{identity:0,mood:0,files:[]};
-  return {id:v.id,kind:v.kind==='real'?'real':'virtual',status:String(v.status||''),step:Number.isFinite(v.step)?v.step:null,turn:String(v.turn||''),card,name:v.name||'',why:v.why||'',
+  // 다시 쓰기 방은 이번 광고 사용 확인 하나뿐이라 일곱 걸음 번호를 쓰지 않는다.
+  const reuse=v.mode==='reuse';
+  return {id:v.id,mode:reuse?'reuse':'origin',kind:v.kind==='real'?'real':'virtual',status:String(v.status||''),step:!reuse&&Number.isFinite(v.step)?v.step:null,turn:String(v.turn||''),card,name:v.name||'',why:v.why||'',
     quote:v.quote?{price:won(v.quote.price),days:v.quote.days,revisions:v.quote.revisions,scope:v.quote.scope||''}:null,
     number:v.revision?.number||null,reference:v.revision?.reference||null,motion:v.revision?.motion||null,usage:v.usage||null,awaiting:v.awaiting||null,
     canAddSources:!!v.canAddSources,sources:{identity:Number(sources.identity)||0,mood:Number(sources.mood)||0,count:Array.isArray(sources.files)?sources.files.length:0}};
 }
 // 왼쪽 단의 「지금 차례」 글: 인물 카드가 있고 영상 쪽이 손님 차례가 아닐 때 이 글이 방의 글을 대신한다(film-views roomView). 제목은 그리는 자리에서 옮긴다.
-export function personaCopy(m){const c=CARD[m?.card];if(!c)return null;return {turn:'you',title:c.title,text:m.card==='materials'&&m.why?m.why:t(c.text),confirm:PERSONA_CONFIRM_OF[m.card]||''};}
+export function personaCopy(m){const c=CARD[m?.card];if(!c)return null;return {turn:'you',title:c.title,text:m.card==='materials'&&m.why?m.why:t(c.text),confirm:m.mode==='reuse'?'':PERSONA_CONFIRM_OF[m.card]||''};}
 
 const sourcesLine=m=>m.sources.count?`<p class="sx-small sx-persona-got">${esc(t('보내 주신 사진 {count}장',{count:m.sources.count}))}</p>`:'';
 const uploads=m=>`<div class="sx-persona-files">${(m.kind==='real'?['identity','mood']:['mood']).map(purpose=>`<label class="sx-quiet sx-persona-file"><input type="file" class="sr" multiple accept="${ACCEPT}" data-persona-file="${purpose}">${esc(t(PURPOSE[purpose]))}</label>`).join('')}</div><p class="sx-small sx-persona-use">${esc(t('사진은 PULSE 제작팀만 보고, 이 인물을 검토하고 만드는 데만 써요.'))} ${esc(t('JPG · PNG로 보내 주세요. 휴대폰 사진(HEIC · WebP)도 받아요.'))}</p>`;
@@ -64,9 +68,16 @@ function act(m){
   return `<p class="sx-small sx-persona-confirm">${esc(t(c.confirm))}</p><p class="sx-small sx-persona-hold" data-persona-hold role="status" hidden>${esc(t('적으신 고칠 점을 먼저 보내 주세요. 보내지 않으려면 글을 지워 주세요.'))}</p><div class="sx-persona-act"><button type="button" class="sx-go is-solid" data-room-do="persona-approve"><span>${esc(t(c.approve))}</span>${arrow}</button></div>${say}`;
 }
 // 손님 차례 카드. main이면 제목 · 글은 방 머리가 그리고(영상 쪽이 저희 차례), 아니면(영상 쪽도 손님 차례) 카드가 제 머리를 단다.
+// 머리 줄: 이름이 있으면 「맞춤 인물 「이름」 · 맞춤 인물 확인 1/4」, 이름이 없으면 「맞춤 인물 확인 1/4」 하나(판 3 화면 검수 F1 — 「맞춤 인물」이 두 번 서지 않게). 다시 쓰기 방은 번호 없이 이름만.
+function kicker(m){
+  const no=m.mode==='reuse'?'':PERSONA_CONFIRM_OF[m.card];
+  if(!no)return esc(nameLine(m));
+  const step=`${esc(t('맞춤 인물 확인'))} <b class="sx-no">${no}</b>`;
+  return m.name?`${esc(nameLine(m))} · ${step}`:step;
+}
 export function personaCard(m,{main=false}={}){
   const c=CARD[m?.card];if(!c)return '';
-  const head=main?'':`<p class="sx-small sx-persona-kicker">${esc(nameLine(m))}${PERSONA_CONFIRM_OF[m.card]?` · ${esc(t('맞춤 인물 확인'))} <b class="sx-no">${PERSONA_CONFIRM_OF[m.card]}</b>`:''}</p><h2 class="sx-serif">${esc(t(c.title))}</h2><p class="sx-body">${esc(m.card==='materials'&&m.why?m.why:t(c.text))}</p>`;
+  const head=main?'':`<p class="sx-small sx-persona-kicker">${kicker(m)}</p><h2 class="sx-serif">${esc(t(c.title))}</h2><p class="sx-body">${esc(m.card==='materials'&&m.why?m.why:t(c.text))}</p>`;
   return `<section class="sx-persona" data-room-in data-persona-card="${esc(m.card)}" aria-label="${esc(nameLine(m))}">${head}${body(m)}${act(m)}</section>`;
 }
 // 저희 차례 · 끝난 인물의 작은 한 줄. 사진을 더 받는 동안(접수 · 검토)에는 사진 보내기를 함께 둔다(프로젝트 길 의뢰서는 사진을 여기서 처음 보낸다).
@@ -74,6 +85,21 @@ export function personaLine(m){
   if(!m)return '';
   const text=m.turn==='done'?t('이번 광고에 쓰기로 하셨어요'):m.status==='ready'?t('이번 광고에 쓸 범위를 정리하고 있어요'):t(STATUS_LINE[m.status]||STATUS_LINE.reviewing);
   return `<section class="sx-persona is-line" data-room-in aria-label="${esc(nameLine(m))}"><p class="sx-small"><b>${esc(nameLine(m))}</b> · ${esc(text)}${m.step&&m.turn!=='end'?` <span class="sx-no">${m.step}/7</span>`:''}</p>${m.turn==='end'&&m.why?`<p class="sx-small sx-persona-why">${esc(m.why)}</p>`:''}${m.canAddSources?`${sourcesLine(m)}${uploads(m)}`:''}</section>`;
+}
+// 「내 모델로 모아 두기」(판 4, 설계 4-3 · 5-1): 이 방에서 만드는 인물(원 프로젝트)일 때만, 앱이 회원 상태를 읽어 넘긴 keep이 있을 때만 그린다(스위치가 꺼져 있으면 keep이 없다 — 판 4 전과 바이트가 같다).
+// keep.state: login(SYNK ID 로그인 전) · ask(연결 · 합류 요청 전) · busy · pending(담당자 확인 중) · member(이 프로젝트의 브랜드 회원 — keep.name).
+// 누가 보게 되는지를 먼저 한 줄로 말한다 — 보관은 브랜드 관리자가 내 모델에서 정하고, 정하면 그 브랜드 회원들이 다음 광고에 쓸 수 있다.
+// 다시 쓰기 방(keep.state 'reuse')은 그 모델이 온 「내 모델」로 가는 한 줄만 둔다 — 기억한 기기는 첫 화면 대신 방이 열려 입구가 없기 때문이다.
+export function personaKeep(m,keep){
+  if(!m||!keep?.state||m.turn==='end')return '';
+  if(m.mode==='reuse')return keep.state==='reuse'?`<div class="sx-persona-keep" data-room-in><p class="sx-small sx-persona-kept">${esc(t('브랜드의 내 모델에 보관한 모델이에요.'))} <button type="button" class="sx-quiet" data-room-do="my-models">${esc(t('내 모델 열기'))}</button></p></div>`:'';
+  if(keep.state==='reuse')return '';
+  // 실제 인물은 출연하실 분의 동의가 다시 쓰기를 허락할 때만 보관할 수 있다(서버 consentAllowsReuse).
+  const line=`<p class="sx-small">${esc(t('이 인물은 브랜드 관리자가 내 모델에서 보관을 정할 수 있고, 정하면 그 브랜드 회원들이 다음 광고에 쓸 수 있어요.'))}${m.kind==='real'?` ${esc(t('이 인물은 실제 인물이라, 출연하실 분이 다시 쓰기에 동의한 경우에만 보관할 수 있어요.'))}`:''}</p>`;
+  const now=keep.state==='member'?`<p class="sx-small sx-persona-kept"><i class="sx-led is-ok" aria-hidden="true"></i>${esc(t('이 프로젝트는 브랜드 「{name}」에 연결돼 있어요.',{name:keep.name||''}))} <button type="button" class="sx-quiet" data-room-do="my-models">${esc(t('내 모델 열기'))}</button></p>`
+    :keep.state==='pending'?`<p class="sx-small sx-persona-kept"><i class="sx-led is-wait" aria-hidden="true"></i>${esc(t('모아 두기를 요청했어요. 담당자가 확인하면 내 모델에서 브랜드를 보실 수 있어요.'))}</p>`
+    :`<p class="sx-small sx-persona-kept"><button type="button" class="sx-quiet" data-room-do="keep" ${keep.state==='busy'?'disabled':''}>${esc(t('내 모델로 모아 두기'))}</button>${keep.state==='login'?` <span>${esc(t('SYNK ID로 로그인한 뒤 담당자가 확인해요.'))}</span>`:''}</p>`;
+  return `<div class="sx-persona-keep" data-room-in>${line}${now}</div>`;
 }
 // 오른쪽 스크린(인물이 「지금 차례」일 때): 기준 얼굴 · 동작 시안 · 사용 확인의 기준 얼굴. 그릴 것이 없으면 ''(방의 스크린을 그대로 쓴다).
 export function personaScreen(m){
@@ -93,5 +119,5 @@ export function personaJournal(p,{me,owner}){
 // 1차안 화면의 인물 칸: 제작 설계에 붙은 인물 판이 손님 보기의 지금 판과 같을 때 그 기준 얼굴.
 export function personaFace(p,ref){
   const v=p?.persona;if(!v||!ref||v.revision?.id!==ref.revisionId)return null;
-  return {name:v.name||t('맞춤 인물'),image:v.revision.reference?.assets?.[0]?.url||''};
+  return {name:v.name||(v.mode==='reuse'?t('내 모델의 모델'):t('맞춤 인물')),image:v.revision.reference?.assets?.[0]?.url||''};
 }

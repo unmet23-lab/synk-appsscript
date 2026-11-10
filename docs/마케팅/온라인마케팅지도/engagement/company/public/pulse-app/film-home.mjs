@@ -185,7 +185,8 @@ export function entryView({demoHref='?demo=film',entryError=null,resume=false}={
 }
 
 // 듣개는 화면과 함께 사라지는 래퍼에 걸고, 창에 건 것은 unmount에서 뗀다. 앱은 첫 화면을 다시 그리지 않고 update로 글만 바꾼다(쇼릴이 처음으로 돌아가지 않게).
-export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='?demo=film',held=false}={}){
+// onModels(판 4): 「내 모델」 입구. 단추는 앱이 스위치 myModels를 확인한 뒤 showModels()로 붙인다(꺼져 있으면 첫 화면이 판 4 전과 같다).
+export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,demoHref='?demo=film',held=false}={}){
   const host=root.querySelector('.sx-home');if(!host)return {unmount(){},update(){}};
   const list=pages({start:'',demoHref});
   const $=selector=>host.querySelector(selector),$$=selector=>[...host.querySelectorAll(selector)];
@@ -269,6 +270,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
     if(event.target.closest('[data-watch-now]')){watch(reelApi.current());return;}
     const what=event.target.closest('[data-entry]')?.dataset.entry;
     if(what==='start'){onStart?.();return;}
+    if(what==='models'){onModels?.();return;}
     if(what==='open'){setInvite(invite.hidden,event.target.closest('[data-entry]'));return;}
     if(what==='close'){setInvite(false);return;}
     // 쇼릴 위 빈 곳을 누르면 그 작품을 소리와 함께.
@@ -290,6 +292,14 @@ export function mountEntry(root,{onStart,onInvite,onDemo,animate=true,demoHref='
   return {
     // 메일의 「?open=mail」로 왔을 때 앱이 다시 열기 판을 열어 둔다(판 4).
     openInvite(){if(invite.hidden)setInvite(true);},
+    // 「내 모델」 입구(PULSE 인물 판 4): 넓은 화면 머리(다시 열기 옆)와 휴대폰 1쪽(다시 열기 아래)에 한 번만 붙인다.
+    showModels(){
+      if($('[data-entry="models"]'))return;
+      const top=document.createElement('button');top.type='button';top.dataset.entry='models';top.textContent=t('내 모델');
+      $('.sx-top-nav [data-entry="open"]')?.after(top);
+      const phone=document.createElement('button');phone.type='button';phone.className='sx-open-m sx-small sx-models-m';phone.dataset.entry='models';phone.textContent=t('내 모델');
+      $('.sx-hero-act .sx-open-m')?.after(phone);
+    },
     // 받은 링크 오류 · 이어 쓰기는 쇼릴을 끊지 않고 글만 바꾼다.
     // 예시 · 의뢰서 덮개가 열리고 닫힐 때(app.mjs overlayState).
     pause(){hold=true;reelApi.suspend();},

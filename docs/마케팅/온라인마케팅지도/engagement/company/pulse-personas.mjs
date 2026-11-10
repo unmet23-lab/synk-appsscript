@@ -14,16 +14,19 @@ export const PERSONA_KINDS=Object.freeze({
 });
 const K=PERSONA_KINDS;
 // 더 검토 · 승인할 것이 없는 인물. 그 밖의 상태(모르는 값 포함)는 열린 요청으로 보고, 90일 정리가 그 프로젝트를 건너뛴다(자료를 남기는 쪽).
-export const PERSONA_SETTLED=Object.freeze(['ready','retired','expired','withdrawn']);
+// 판 4: 사용 중지(paused) · 묘비(deleted)도 끝난 것으로 본다. 삭제 진행(deleting)은 열린 것으로 둔다(삭제 도중 원 프로젝트를 정리하지 않는다).
+export const PERSONA_SETTLED=Object.freeze(['ready','retired','expired','withdrawn','paused','deleted']);
 // 의뢰서 초안의 인물 사진 칸(같은 사람 재현용 · 분위기 참고용). 이 칸의 파일은 프로젝트 자료(studio.assets · intake)로 가지 않는다 — 초대 링크로 열리면 안 된다.
 export const PERSONA_SLOTS=Object.freeze(['persona-identity','persona-mood']);
 export const PERSONA_PURPOSE=Object.freeze({'persona-identity':'identity','persona-mood':'mood'});
 
 // ── 상태와 전이(순수 함수 표 하나) ──
 // 일곱 걸음: 자료 제출 → 권한 · 제작 가능성 검토 → 견적 · 범위 확인 → 기준 얼굴 승인 → 제작 준비 → 동작 시안 승인 → 이번 광고 사용 확인.
-export const PERSONA_STATES=Object.freeze(['submitted','needs_materials','rights_pending','reviewing','quote_review','reference_making','reference_review','building','motion_review','ready','withdrawn','retired']);
+export const PERSONA_STATES=Object.freeze(['submitted','needs_materials','rights_pending','reviewing','quote_review','reference_making','reference_review','building','motion_review','ready','withdrawn','retired','paused','deleting','deleted']);
 export const PERSONA_FINAL=Object.freeze(['withdrawn','retired']);
-const OPEN=PERSONA_STATES.filter(state=>!PERSONA_FINAL.includes(state));
+// 판 4 브랜드 화면이 다루는 상태(사용 중지 · 삭제 진행 · 묘비). 판 3 직원 전이 · 판 · 파일 · 손님 승인은 이 상태에서 하지 않는다(설계 5판 D12).
+export const PERSONA_HELD=Object.freeze(['paused','deleting','deleted']);
+const OPEN=PERSONA_STATES.filter(state=>!PERSONA_FINAL.includes(state)&&!PERSONA_HELD.includes(state));
 export const PERSONA_STEPS=Object.freeze({submitted:1,needs_materials:1,rights_pending:2,reviewing:2,quote_review:3,reference_making:4,reference_review:4,building:5,motion_review:6,ready:7});
 // 직원 전이. real: 실제 인물만.
 export const PERSONA_FLOW=Object.freeze({
@@ -76,15 +79,82 @@ function usageApproval(store,row,persona,revisionId){
   const usage=row?.studio?.request?.personaUsage,approval=usage?.personaId===persona.id&&usage.approvalId?store.get(K.approvals,usage.approvalId):null;
   return approval&&approval.kind==='usage'&&approval.decision==='approve'&&approval.personaId===persona.id&&approval.projectId===row.id&&approval.revisionId===revisionId?approval:null;
 }
-// 방향 제안 · 제작 시작 때 붙은 전용 인물을 다시 본다: 그 인물이 이 프로젝트에서 시작됐고(고객 브랜드로 넓히는 것은 판 4), 쓸 수 있는 상태(ready)이며,
-// 참조한 판이 그 인물의 지금 공개 판이고, 이 프로젝트의 그 판 사용 승인이 사용 범위의 승인과 같은지. 하나라도 어긋나면 409로 최신 내용을 읽게 한다.
-export function createPersonaGuard(store){
+
+// ── 판 4: 브랜드 보관(다시 쓰기) — 설계 판4_설계_20261110.md 3-4 · 5판 D4 · D13 ──
+// 만료는 저장하지 않고 읽을 때 계산한다. 계산은 이 파일의 함수 몇 개로만 하고, 회원 경로 · 붙이기 · 보내기 · 초대 경로 · 연결 확인 · 가드가 모두 이것을 부른다.
+export const REUSE_MONTHS=12;
+const DAY=/^\d{4}-\d{2}-\d{2}$/;
+// 한국 날짜 하나의 끝 순간: 「2027-11-10」 → 2027-11-10T14:59:59.999Z(그날 한국 시각 23:59:59.999).
+export function kstDayEnd(day){
+  const at=typeof day==='string'&&DAY.test(day)?Date.parse(day+'T00:00:00Z'):NaN;
+  if(!Number.isFinite(at)||new Date(at).toISOString().slice(0,10)!==day)throw fail('날짜를 확인해 주세요.');
+  return new Date(at+15*3600000-1).toISOString();
+}
+export const kstToday=now=>new Date(Date.parse(now)+9*3600000).toISOString().slice(0,10);
+// 승인 순간의 한국 날짜 + months개월(그 달에 없는 날은 그 달 끝)의 끝. 마지막 사용이 늘어도 저절로 늘지 않는다(연장은 새 동의).
+export function reuseUntil(now,months=REUSE_MONTHS){
+  const [year,month,day]=kstToday(now).split('-').map(Number),total=month-1+months,y=year+Math.floor(total/12),m=total%12,last=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  return kstDayEnd(`${y}-${String(m+1).padStart(2,'0')}-${String(Math.min(day,last)).padStart(2,'0')}`);
+}
+// 보이는 상태: ready인 다시 쓰기 인물만 시계가 지나면 expired. paused · retired · withdrawn · deleting은 시계가 지나도 그대로 보인다. 기한을 읽을 수 없으면 끝난 것으로 본다.
+export function effectivePersonaStatus(persona,now){
+  if(!persona)return null;
+  if(persona.deletedAt)return 'deleted';
+  if(persona.status==='ready'&&persona.retention?.scope==='reuse'){const until=Date.parse(persona.retention.until);if(!Number.isFinite(until)||until<=Date.parse(now))return 'expired';}
+  return persona.status;
+}
+// 「다시 쓸 수 있음」(설계 3-4): 브랜드 W에 귀속 · W 활성 · 보관 범위 reuse · 인물이 가리키는 W에 묶인 유효한 reuse 동의 · 계산한 상태 ready · 묘비 없음 · 쓰려는 판이 published이고 묘비 없음.
+// reason: 화면이 까닭 한 줄로 쓰는 값(deleted · workspace · closed · expired · paused · retired · withdrawn · deleting · reuse_off · revision · status).
+export function personaUsability({persona,workspace,approval,revision,now}){
+  const status=effectivePersonaStatus(persona,now),no=reason=>({usable:false,status,reason});
+  if(!persona||persona.deletedAt)return no('deleted');
+  if(!workspace||!persona.workspaceId||persona.workspaceId!==workspace.id)return no('workspace');
+  if(workspace.status!=='active')return no('closed');
+  if(status!=='ready')return no(['expired','paused','retired','withdrawn','deleting'].includes(status)?status:'status');
+  const retention=persona.retention;
+  if(retention?.scope!=='reuse'||!retention.reuseApprovalId)return no('reuse_off');
+  if(!approval||approval.id!==retention.reuseApprovalId||approval.kind!=='reuse'||approval.decision!=='approve'||approval.personaId!==persona.id||approval.workspaceId!==workspace.id)return no('reuse_off');
+  if(!revision||revision.personaId!==persona.id||revision.status!=='published'||revision.deletedAt)return no('revision');
+  return {usable:true,status,reason:null};
+}
+// 저장소에서 브랜드 · 동의 · 판을 읽어 판단한다. revisionId를 주지 않으면 지금 공개 판.
+export function reuseStateOf(store,persona,{workspaceId=persona?.workspaceId,revisionId=persona?.currentRevisionId,now}){
+  const workspace=typeof workspaceId==='string'&&workspaceId?store.get(K.workspaces,workspaceId):null;
+  const approval=persona?.retention?.reuseApprovalId?store.get(K.approvals,persona.retention.reuseApprovalId):null;
+  const revision=typeof revisionId==='string'&&revisionId?store.get(K.revisions,revisionId):null;
+  return {...personaUsability({persona,workspace,approval,revision,now}),workspace,approval,revision};
+}
+// 다시 쓰기 의뢰 프로젝트가 참조한 인물 · 판(설계 4-3): personaRef가 있으면 그 판, 없으면 의뢰 때 붙인 판.
+export function reuseRefOf(row){
+  const request=row?.workspaceRequest;
+  if(!object(request)||typeof request.personaId!=='string'||typeof request.revisionId!=='string')return null;
+  const ref=personaRefOf(row?.studio?.strategy?.data?.castingSelection?.personaRef);
+  return {personaId:request.personaId,revisionId:ref&&ref.personaId===request.personaId?ref.revisionId:request.revisionId,workspaceId:request.workspaceId,confirmed:!!request.confirmedAt};
+}
+// 실제 인물의 당사자 동의가 다시 쓰기를 허락하는지(설계 5판 D7): 가장 최근 동의 기록의 기계 칸 ads · reuse가 둘 다 참. 기록이 없거나 읽지 못하면 아니다.
+export function consentAllowsReuse(store,persona){
+  if(persona?.kind!=='real')return true;
+  const row=store.get(K.consents,persona.id);if(!row?.ciphertext)return false;
+  try{const body=store.decrypt(row.ciphertext),last=Array.isArray(body?.records)?body.records.at(-1):null;return body?.personaId===persona.id&&last?.scope?.ads===true&&last?.scope?.reuse===true;}catch{return false;}
+}
+
+// 방향 제안 · 제작 시작 때 붙은 전용 인물을 다시 본다(설계 5-4 · 5판 D4). 두 길 중 하나라도 맞아야 하고, 어긋나면 409로 최신 내용을 읽게 한다.
+// ① 원 프로젝트(판 3 그대로): 저장된 상태 ready · 지금 공개 판 · 이 프로젝트의 그 판 사용 승인. 만료(브랜드 보관 기한)와 브랜드 상태는 보지 않는다 — 원 프로젝트는 처음 동의(프로젝트 사용) 안이다.
+// ② 다시 쓰기 프로젝트(판 4): 직원이 연결을 확인했고(workspaceRequest.confirmedAt) 프로젝트가 인물과 같은 브랜드에 연결돼 있으며 「다시 쓸 수 있음」이고,
+//    참조한 판이 의뢰 때 붙인 판이며 이 프로젝트의 그 판 사용 승인이 있다. 이미 제작 중인 프로젝트는 이 가드가 다시 돌지 않아 그대로 간다.
+export function createPersonaGuard(store,{clock=()=>new Date().toISOString()}={}){
   return function assertPersonaUsable(ref,row){
     const valid=personaRefOf(ref),changed=()=>fail('전용 인물 판이 바뀌었어요. 최신 내용을 불러와 주세요.',409);
     if(!valid)throw changed();
     const persona=store.get(K.personas,valid.personaId),revision=store.get(K.revisions,valid.revisionId);
-    if(!persona||persona.status!=='ready'||persona.deletedAt||persona.originProjectId!==row?.id)throw changed();
-    if(!revision||revision.personaId!==persona.id||revision.status!=='published'||revision.deletedAt||persona.currentRevisionId!==revision.id)throw changed();
+    if(!persona||persona.deletedAt||!revision||revision.personaId!==persona.id||revision.status!=='published'||revision.deletedAt)throw changed();
+    if(persona.originProjectId===row?.id){
+      if(persona.status!=='ready'||persona.currentRevisionId!==revision.id)throw changed();
+    }else{
+      const request=row?.workspaceRequest;
+      if(!object(request)||request.personaId!==persona.id||!request.confirmedAt||request.revisionId!==revision.id||typeof row.customerWorkspaceId!=='string'||row.customerWorkspaceId!==persona.workspaceId)throw changed();
+      if(!reuseStateOf(store,persona,{workspaceId:row.customerWorkspaceId,revisionId:revision.id,now:clock()}).usable)throw changed();
+    }
     if(!usageApproval(store,row,persona,revision.id))throw changed();
     return {persona,revision};
   };
@@ -102,11 +172,13 @@ const STAFF_FIELDS={
   set_usage:['brand','product','purpose','media','regions','period','fee','schedule','note','translation'],
 };
 const USAGE_TEXT={brand:80,product:120,purpose:200,media:200,regions:120,period:120,fee:120,schedule:120,note:600};
-const NEXT_LINE={submitted:'손님 사진과 글을 보고 검토를 시작하거나 자료를 더 요청해요',needs_materials:'손님이 자료를 더 보내기를 기다려요',rights_pending:'당사자 동의를 확인해요(실제 인물)',reviewing:'만들 수 있는지 보고 견적 · 범위를 보내요',quote_review:'손님이 견적 · 범위를 확인하기를 기다려요',reference_making:'기준 얼굴 판을 올려 손님에게 보내요',reference_review:'손님이 기준 얼굴을 확인하기를 기다려요',building:'학습 · 검증을 하고 동작 시안을 올려 보내요',motion_review:'손님이 동작 시안을 확인하기를 기다려요',withdrawn:'거둔 요청이에요',retired:'사용을 마친 인물이에요'};
+const NEXT_LINE={submitted:'손님 사진과 글을 보고 검토를 시작하거나 자료를 더 요청해요',needs_materials:'손님이 자료를 더 보내기를 기다려요',rights_pending:'당사자 동의를 확인해요(실제 인물)',reviewing:'만들 수 있는지 보고 견적 · 범위를 보내요',quote_review:'손님이 견적 · 범위를 확인하기를 기다려요',reference_making:'기준 얼굴 판을 올려 손님에게 보내요',reference_review:'손님이 기준 얼굴을 확인하기를 기다려요',building:'학습 · 검증을 하고 동작 시안을 올려 보내요',motion_review:'손님이 동작 시안을 확인하기를 기다려요',withdrawn:'거둔 요청이에요',retired:'사용을 마친 인물이에요',paused:'사용 중지된 인물이에요 — 브랜드 화면에서 풀거나 지워요',deleting:'지우는 중이에요 — 브랜드 화면에서 삭제 이어 하기를 눌러요'};
 
 // features: pulseFeatures 서비스(read). localeOf(row): 프로젝트 소통 언어. 이 서비스는 고객 세션 · 직원 권한을 clientProjects로만 확인한다.
 export function createPersonaService({store,clientProjects,features=null,localeOf=()=>DEFAULT_LOCALE,clock=()=>new Date().toISOString()}){
-  const flags=()=>{try{const f=features?.read?.();return {personaRequest:f?.personaRequest===true,personaReal:f?.personaRequest===true&&f?.personaReal===true};}catch{return {personaRequest:false,personaReal:false};}};
+  const flags=()=>{try{const f=features?.read?.();return {personaRequest:f?.personaRequest===true,personaReal:f?.personaRequest===true&&f?.personaReal===true,myModels:f?.myModels===true};}catch{return {personaRequest:false,personaReal:false,myModels:false};}};
+  const held=persona=>PERSONA_HELD.includes(persona?.status);
+  const heldFail=()=>fail('사용 중지됐거나 지우는 중인 인물이에요. 브랜드 화면에서 다뤄 주세요.',409);
   const personasOf=projectId=>store.all(K.personas).filter(persona=>live(persona)&&persona.originProjectId===projectId).sort(byTime);
   const latestOf=projectId=>personasOf(projectId).at(-1)||null;
   const openOf=projectId=>personasOf(projectId).filter(persona=>!PERSONA_FINAL.includes(persona.status)).at(-1)||null;
@@ -152,34 +224,54 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   const quoteTerms=quote=>({price:quote.price,days:quote.days,revisions:quote.revisions,scope:quote.scope,at:quote.at});
   const usageTerms=usage=>Object.fromEntries([...Object.keys(USAGE_TEXT),'setAt'].map(key=>[key,usage[key]||'']));
   const hashOf=(kind,persona,revision,assetIds,terms)=>sha({v:1,kind,personaId:persona.id,revisionId:revision?.id||null,assets:[...assetIds].sort(),terms});
-  // 지금 손님 차례인 승인 하나와 그 viewedHash(서버가 계산한다 — 화면이 만든 해시를 믿지 않는다).
-  function awaiting(persona,row){
-    const current=currentOf(persona),want=(kind,revision,assetIds,terms)=>({kind,revision,assetIds,viewedHash:hashOf(kind,persona,revision,assetIds,terms)});
+  // 고객 방의 인물(설계 4-3 · 5판 D5) — 손님 보기 · 그림 · 승인이 모두 이 함수만 부른다.
+  // 원 프로젝트면 판 3 그대로(이 프로젝트에서 시작한 가장 최근 인물 · 지금 공개 판 · 보낸 기준 얼굴 · 동작 시안 묶음).
+  // 아니면 「내 모델」이 켜져 있고 직원이 연결을 확인한 다시 쓰기 프로젝트일 때만, 같은 브랜드에서 「다시 쓸 수 있는」 인물의 참조한 판 하나(mode 'reuse').
+  // 출처 사진 · 동의 · 다른 판 · 브랜드 목록은 어느 모드로도 열리지 않는다.
+  function roomPersona(row,now=clock()){
+    const origin=latestOf(row.id);
+    if(origin){const current=origin.status==='withdrawn'?null:currentOf(origin);return {persona:origin,revision:current,mode:'origin',shown:new Set([...(current?.reference?.assetIds||[]),...(current?.motion?.assetIds||[])])};}
+    if(!flags().myModels)return null;
+    const ref=reuseRefOf(row);
+    if(!ref||!ref.confirmed||typeof row.customerWorkspaceId!=='string'||row.workspaceRequest.revisionId!==ref.revisionId)return null;
+    const persona=store.get(K.personas,ref.personaId);
+    if(!live(persona)||persona.workspaceId!==row.customerWorkspaceId)return null;
+    const state=reuseStateOf(store,persona,{workspaceId:row.customerWorkspaceId,revisionId:ref.revisionId,now});
+    if(!state.usable)return null;
+    return {persona,revision:state.revision,mode:'reuse',shown:new Set([...(state.revision.reference?.assetIds||[]),...(state.revision.motion?.assetIds||[])])};
+  }
+  // 지금 손님 차례인 승인 하나와 그 viewedHash(서버가 계산한다 — 화면이 만든 해시를 믿지 않는다). 다시 쓰기 모드는 이번 광고 사용(usage)만 받는다.
+  function awaiting(room,row){
+    const {persona,revision:current,mode}=room,want=(kind,revision,assetIds,terms)=>({kind,revision,assetIds,viewedHash:hashOf(kind,persona,revision,assetIds,terms)});
+    const usageWant=()=>{const usage=usageOf(row,persona);return usage&&!usageApproval(store,row,persona,current.id)?want('usage',current,current.reference?.assetIds||[],{...usageTerms(usage),number:current.number}):null;};
+    if(mode==='reuse')return current?usageWant():null;
     if(persona.status==='quote_review'&&persona.quote)return want('scope',null,[],quoteTerms(persona.quote));
     if(persona.status==='reference_review'&&current?.reference)return want('reference',current,current.reference.assetIds,{note:current.reference.note||'',at:current.reference.publishedAt});
     if(persona.status==='motion_review'&&current?.motion)return want('motion',current,current.motion.assetIds,{note:current.motion.note||'',at:current.motion.publishedAt});
-    if(persona.status==='ready'&&current){const usage=usageOf(row,persona);if(usage&&!usageApproval(store,row,persona,current.id))return want('usage',current,current.reference?.assetIds||[],{...usageTerms(usage),number:current.number});}
+    if(persona.status==='ready'&&current)return usageWant();
     return null;
   }
   function customerView(row,locale=localeOf(row)){
-    const persona=latestOf(row.id);if(!persona)return null;
+    const room=roomPersona(row);if(!room)return null;
+    const {persona,revision:current,mode}=room,reuse=mode==='reuse';
     const map=row.studio?.translations,tr=(key,value)=>locale!==DEFAULT_LOCALE&&typeof value==='string'&&value?freshTranslation(map,key,value,locale)??value:value||'';
-    const current=persona.status==='withdrawn'?null:currentOf(persona),want=awaiting(persona,row),usage=usageOf(row,persona),sources=sourcesOf(persona.id);
+    const want=awaiting(room,row),usage=usageOf(row,persona),sources=reuse?[]:sourcesOf(persona.id);
     const asset=id=>{const found=current.assets.find(item=>item.id===id);return found?{id:found.id,mimeType:found.mimeType,url:`/pulse/api/persona/media/${found.id}`}:null;};
     const set=(part,key)=>current?.[part]?{assets:current[part].assetIds.map(asset).filter(Boolean),note:tr(`persona:${current.id}:${key}`,current[part].note),at:current[part].publishedAt}:null;
     const usageDone=!!(current&&usage&&usageApproval(store,row,persona,current.id));
     const turn=PERSONA_FINAL.includes(persona.status)?'end':want||persona.status==='needs_materials'?'customer':persona.status==='ready'&&usageDone?'done':'staff';
     const numbers=new Map(revisionsOf(persona.id).map(revision=>[revision.id,revision.number]));
-    return {id:persona.id,kind:persona.kind,status:persona.status,step:PERSONA_STEPS[persona.status]||null,turn,
-      name:tr(`persona:${persona.id}:name`,persona.displayName),why:tr(`persona:${persona.id}:why`,persona.why),
-      request:{look:persona.request?.look||'',use:persona.request?.use||'',keep:persona.request?.keep||''},
+    // 다시 쓰기 모드: 원 프로젝트의 손님 글 · 사진 수 · 견적 · 일지는 싣지 않는다(판 3 화면이 그대로 그리도록 칸은 비워 둔다).
+    return {id:persona.id,kind:persona.kind,status:persona.status,step:PERSONA_STEPS[persona.status]||null,turn,...(reuse?{mode:'reuse'}:{}),
+      name:tr(`persona:${persona.id}:name`,persona.displayName),why:reuse?'':tr(`persona:${persona.id}:why`,persona.why),
+      request:reuse?{look:'',use:'',keep:''}:{look:persona.request?.look||'',use:persona.request?.use||'',keep:persona.request?.keep||''},
       sources:{identity:sources.filter(source=>source.purpose==='identity').length,mood:sources.filter(source=>source.purpose==='mood').length,files:sources.map(source=>({id:source.id,fileName:source.fileName,purpose:source.purpose,at:source.at}))},
-      canAddSources:SOURCE_OPEN.includes(persona.status),
-      quote:persona.quote?{price:persona.quote.price,days:persona.quote.days,revisions:persona.quote.revisions,scope:tr(`persona:${persona.id}:scope`,persona.quote.scope),at:persona.quote.at}:null,
+      canAddSources:!reuse&&SOURCE_OPEN.includes(persona.status),
+      quote:!reuse&&persona.quote?{price:persona.quote.price,days:persona.quote.days,revisions:persona.quote.revisions,scope:tr(`persona:${persona.id}:scope`,persona.quote.scope),at:persona.quote.at}:null,
       revision:current?{id:current.id,number:current.number,reference:set('reference','referenceNote'),motion:set('motion','motionNote')}:null,
       usage:usage?{...Object.fromEntries(Object.keys(USAGE_TEXT).map(key=>[key,tr(`usage:${persona.id}:${key}`,usage[key])])),setAt:usage.setAt||'',approved:usageDone,approvedAt:usageDone?usage.approvedAt||'':''}:null,
       awaiting:want?{kind:want.kind,revisionId:want.revision?.id||null,viewedHash:want.viewedHash}:null,
-      events:(persona.history||[]).map(entry=>({entry,code:EVENT[entry.action]})).filter(item=>item.code).map(({entry,code})=>({id:entry.id,at:entry.at,code,who:entry.actorKind==='customer'?'me':'staff'})),
+      events:reuse?[]:(persona.history||[]).map(entry=>({entry,code:EVENT[entry.action]})).filter(item=>item.code).map(({entry,code})=>({id:entry.id,at:entry.at,code,who:entry.actorKind==='customer'?'me':'staff'})),
       approvals:approvalsOf(persona.id).filter(approval=>approval.projectId===row.id).map(approval=>({kind:approval.kind,decision:approval.decision,at:approval.at,number:numbers.get(approval.revisionId)||null}))};
   }
 
@@ -228,22 +320,24 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   function session(token,csrf){const context=clientProjects.session(token);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw fail('고객 화면을 다시 열어 주세요.',403);return context;}
   const stale=(persona,row)=>Object.assign(fail('새 판이 도착했어요. 새 판을 보고 다시 확인해 주세요.',409,'SYNK_PULSE_PERSONA_STALE'),{persona:customerView(row)});
   function approve(token,csrf,input){
-    if(!object(input)||Object.keys(input).some(key=>!['personaId','kind','revisionId','viewedHash','idempotencyKey','decision','note'].includes(key)))throw fail('확인 요청을 확인해 주세요.');
-    if(!Object.hasOwn(PERSONA_APPROVAL_FLOW,input.kind)||!['approve','changes'].includes(input.decision))throw fail('확인 요청을 확인해 주세요.');
+    if(!object(input)||Object.keys(input).some(key=>!['personaId','kind','revisionId','viewedHash','idempotencyKey','decision','note'].includes(key)))throw fail('요청이 맞지 않아요. 화면을 새로 고친 뒤 다시 시도해 주세요.');
+    if(!Object.hasOwn(PERSONA_APPROVAL_FLOW,input.kind)||!['approve','changes'].includes(input.decision))throw fail('요청이 맞지 않아요. 화면을 새로 고친 뒤 다시 시도해 주세요.');
     if(typeof input.idempotencyKey!=='string'||!KEY.test(input.idempotencyKey)||typeof input.viewedHash!=='string'||!/^[a-f0-9]{64}$/.test(input.viewedHash))throw fail('화면을 새로 고친 뒤 다시 시도해 주세요.');
     const revisionId=input.revisionId===undefined||input.revisionId===null?null:input.revisionId;
-    if(revisionId!==null&&(typeof revisionId!=='string'||!UUID.test(revisionId)))throw fail('확인 요청을 확인해 주세요.');
+    if(revisionId!==null&&(typeof revisionId!=='string'||!UUID.test(revisionId)))throw fail('요청이 맞지 않아요. 화면을 새로 고친 뒤 다시 시도해 주세요.');
     const note=text(input.note,1000);
     return store.transaction(()=>{
       const {row}=session(token,csrf);
       if(row.stage==='archived')throw fail('보관된 프로젝트예요.',409);
-      const persona=typeof input.personaId==='string'&&UUID.test(input.personaId)?store.get(K.personas,input.personaId):null;
-      if(!live(persona)||persona.originProjectId!==row.id)throw fail('그 인물을 찾지 못했어요.',404);
+      const personaId=typeof input.personaId==='string'&&UUID.test(input.personaId)?input.personaId:null;
       // 같은 요청 키는 한 번만: 이미 남은 승인이면 새로 쓰지 않고 지금 상태를 돌려준다(본문이 다르면 409).
-      const prior=approvalsOf(persona.id).find(approval=>approval.idempotencyKey===input.idempotencyKey&&approval.projectId===row.id);
+      const prior=personaId?approvalsOf(personaId).find(approval=>approval.idempotencyKey===input.idempotencyKey&&approval.projectId===row.id):null;
       // 본문은 종류 · 결정 · 판 · 고칠 점 글 · 본 화면(viewedHash)까지 견준다 — 하나라도 다르면 새 확인을 버리고 성공으로 돌려주지 않는다(GPT GA3).
-      if(prior){if(prior.kind!==input.kind||prior.decision!==input.decision||prior.revisionId!==revisionId||prior.viewedHash!==input.viewedHash||(prior.note||'')!==note)throw fail('같은 요청으로 다른 확인이 왔어요. 화면을 새로 고쳐 주세요.',409);return {duplicate:true};}
-      const want=awaiting(persona,row);
+      if(prior){if(prior.kind!==input.kind||prior.decision!==input.decision||prior.revisionId!==revisionId||prior.viewedHash!==input.viewedHash||(prior.note||'')!==note)throw fail('이미 다른 답이 기록됐어요. 화면을 새로 고쳐 주세요.',409);return {duplicate:true};}
+      // 이 방에 보이는 인물만(원 프로젝트 · 연결 확인된 다시 쓰기 프로젝트 — roomPersona 하나로 정한다).
+      const room=roomPersona(row),persona=room?.persona;
+      if(!persona||persona.id!==personaId)throw fail('그 인물을 찾지 못했어요.',404);
+      const want=awaiting(room,row);
       if(!want||want.kind!==input.kind||(want.revision?.id||null)!==revisionId||want.viewedHash!==input.viewedHash)throw stale(persona,row);
       if(input.decision==='changes'&&!PERSONA_APPROVAL_FLOW[input.kind].changes)throw fail('이 확인은 고칠 점을 받지 않아요. 물으실 것은 담당자에게 남겨 주세요.');
       if(input.decision==='changes'&&!note)throw fail('고칠 점을 한 줄 적어 주세요.');
@@ -281,11 +375,10 @@ export function createPersonaService({store,clientProjects,features=null,localeO
       return {source:file.id};
     });
   }
-  // 손님이 볼 수 있는 자산: 이 프로젝트가 원 프로젝트인 인물의 지금 공개 판에서 보여 준 묶음(기준 얼굴 · 동작 시안)만. 원본 사진 · 동의 · 다른 판은 열리지 않는다.
+  // 손님이 볼 수 있는 자산: 이 방의 인물(roomPersona)의 판에서 보여 준 묶음(기준 얼굴 · 동작 시안)만. 원본 사진 · 동의 · 다른 판은 열리지 않는다.
   function customerMedia(token,assetId){
-    const {row}=clientProjects.session(token),persona=latestOf(row.id),current=persona&&persona.status!=='withdrawn'?currentOf(persona):null;
-    const shown=new Set([...(current?.reference?.assetIds||[]),...(current?.motion?.assetIds||[])]);
-    const found=typeof assetId==='string'&&shown.has(assetId)?current.assets.find(item=>item.id===assetId):null;
+    const {row}=clientProjects.session(token),room=roomPersona(row),current=room?.revision;
+    const found=typeof assetId==='string'&&current&&room.shown.has(assetId)?current.assets.find(item=>item.id===assetId):null;
     if(!found)throw fail('자료를 찾지 못했어요.',404);
     return found;
   }
@@ -296,6 +389,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     const usageDone=!!(current&&usage&&usageApproval(store,row,persona,current.id));
     const next=persona.status==='ready'?(usage?(usageDone?'이번 광고에 쓸 준비가 끝났어요':'손님이 이번 광고 사용을 확인하기를 기다려요'):'이번 광고의 사용 범위를 적어 손님에게 보내요'):NEXT_LINE[persona.status]||'상태를 확인해 주세요';
     return {id:persona.id,kind:persona.kind,status:persona.status,step:PERSONA_STEPS[persona.status]||null,revision:persona.revision,workspaceId:persona.workspaceId??null,originProjectId:persona.originProjectId,
+      effective:effectivePersonaStatus(persona,clock()),retention:persona.retention||null,deletionRequest:persona.deletionRequest||null,
       request:persona.request||{},displayName:persona.displayName||'',why:persona.why||'',quote:persona.quote||null,staffNote:persona.staffNote||'',currentRevisionId:persona.currentRevisionId||null,createdAt:persona.createdAt,updatedAt:persona.updatedAt,history:persona.history||[],
       next,usageDone,locale:localeOf(row),canEdit,
       actions:canEdit?Object.keys(PERSONA_FLOW).filter(action=>personaNext(persona,{by:'staff',action})):[],
@@ -318,6 +412,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     const action=input.action;
     return store.transaction(()=>{
       const persona=getPersona(personaId),row=clientProjects.project(user,persona.originProjectId,true);
+      if(held(persona))throw heldFail();
       if(input.revision!==persona.revision)throw fail('그사이 인물 내용이 바뀌었어요. 새로 불러온 뒤 다시 해 주세요.',409);
       const at=clock(),locale=localeOf(row),stamp={by:user.id,at},studio=structuredClone(row.studio||{}),discard=[];
       let next={...persona},studioChanged=false,label='';
@@ -408,6 +503,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   // 판 파일 올리기: 새 판(draft)에는 기준 얼굴 그림, 손님이 기준 얼굴을 확인한 지금 판에는 동작 시안(영상). 두 번 본다(받기 전 · 받은 뒤).
   function assertAssetUpload(user,personaId,revisionId,docRevision,role,mimeType){
     const persona=getPersona(personaId);clientProjects.project(user,persona.originProjectId,true);
+    if(held(persona))throw heldFail();
     if(docRevision!==persona.revision)throw fail('그사이 인물 내용이 바뀌었어요. 새로 불러온 뒤 다시 해 주세요.',409);
     const revision=typeof revisionId==='string'&&UUID.test(revisionId)?store.get(K.revisions,revisionId):null;
     if(!live(revision)||revision.personaId!==persona.id)throw fail('그 판을 찾지 못했어요.',404);
@@ -450,6 +546,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     const evidence=text(input.evidence,2000,true),termsVersion=text(input.termsVersion,40,true);
     return store.transaction(()=>{
       const saved=consentRead(user,personaId);
+      if(held(store.get(K.personas,saved.personaId)))throw heldFail();
       if(input.expectedRevision!==saved.revision)throw fail('그사이 동의 기록이 바뀌었어요. 새로 불러와 주세요.',409);
       if(saved.records.length>=200)throw fail('동의 기록이 가득 찼어요.',409);
       let revisionId=null;
@@ -462,7 +559,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   }
   // 당사자 확인 토큰: 목적이 하나뿐이고 인물 id만 담는다 — 이 토큰으로 프로젝트 · 고객의 인물 목록을 열 수 없다.
   const CONSENT_PURPOSE='pulse-persona-consent';
-  function mintConsentToken(personaId,{minutes=4320}={}){const persona=getPersona(personaId);if(persona.kind!=='real'||PERSONA_FINAL.includes(persona.status))throw fail('실제 인물 요청에만 당사자 확인을 보낼 수 있어요.',409);return store.mint(CONSENT_PURPOSE,null,{purpose:'persona-consent',personaId:persona.id,personaRevision:persona.revision},minutes);}
+  function mintConsentToken(personaId,{minutes=4320}={}){const persona=getPersona(personaId);if(persona.kind!=='real'||PERSONA_FINAL.includes(persona.status)||held(persona))throw fail('실제 인물 요청에만 당사자 확인을 보낼 수 있어요.',409);return store.mint(CONSENT_PURPOSE,null,{purpose:'persona-consent',personaId:persona.id,personaRevision:persona.revision},minutes);}
   function readConsentToken(raw){const token=store.readToken(raw,CONSENT_PURPOSE);if(!token||token.body?.purpose!=='persona-consent')return null;const persona=store.get(K.personas,token.body.personaId);if(!live(persona)||persona.kind!=='real'||PERSONA_FINAL.includes(persona.status))return null;return {personaId:persona.id};}
 
   return {customerView,create,afterProjectSubmit,approve,addSource,customerMedia,staffList,staffRead,staffAction,assertAssetUpload,addAsset,staffMedia,consentRead,consentRecord,mintConsentToken,readConsentToken,openOf,flags};

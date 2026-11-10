@@ -13,7 +13,7 @@ import en from './public/pulse-app/i18n/en.mjs';
 const APP=new URL('./public/pulse-app/',import.meta.url),ROOT=new URL('./',import.meta.url);
 const SCREEN=readdirSync(APP).filter(name=>name.endsWith('.mjs')&&readFileSync(new URL(name,APP),'utf8').includes("from './i18n.mjs'"));
 // 고객 방(usesRoom) 손님 길에서 그려지는 모듈 — 판 2에서 통째로 번역 틀을 지난다. 손님 길에 새 모듈이 생기면 여기에 더한다.
-const CUSTOMER=['request-flow.mjs','request-data.mjs','request-backend.mjs','casting-catalog.mjs','film-home.mjs','film-views.mjs','film-review.mjs','room-view.mjs','films-view.mjs','views.mjs','production-context.mjs','feedback-rounds-view.mjs','deliverables-view.mjs','kickoff-view.mjs','changes-view.mjs','app.mjs','install.mjs','push.mjs','api.mjs','locale-menu.mjs','persona-view.mjs'];
+const CUSTOMER=['request-flow.mjs','request-data.mjs','request-backend.mjs','casting-catalog.mjs','film-home.mjs','film-views.mjs','film-review.mjs','room-view.mjs','films-view.mjs','views.mjs','production-context.mjs','feedback-rounds-view.mjs','deliverables-view.mjs','kickoff-view.mjs','changes-view.mjs','app.mjs','install.mjs','push.mjs','api.mjs','locale-menu.mjs','persona-view.mjs','my-models.mjs'];
 test('영어 사전: 손님 화면의 t() · k() 문장은 빠짐없이 있고, 손님 길에 틀 밖 한글이 없고, 쓰이지 않는 키는 없다',()=>{
   assert.ok(SCREEN.length>=5,SCREEN.join(','));
   const calls=new Map(),scans=new Map();

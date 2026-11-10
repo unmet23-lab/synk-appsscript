@@ -7,7 +7,7 @@ import {FINISHED_FILMS,filmNote,filmTitle} from './films-view.mjs';
 import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
 import {arrow} from './film-home.mjs';
 import {holdPoster} from './film-review.mjs';
-import {personaCopy,personaCard,personaLine,personaScreen} from './persona-view.mjs';
+import {personaCopy,personaCard,personaLine,personaScreen,personaKeep} from './persona-view.mjs';
 export {entryView,mountEntry} from './film-home.mjs';
 
 // 시사실 판의 고객 화면(2026-11-05): 고객 방, 1차안. 자료 모양은 room-view.mjs가 프로젝트에서 옮겨 준다. 판단은 거기 있고 여기는 그리기만 한다.
@@ -216,7 +216,9 @@ const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item
 // 되묻기 차례는 답할 칸이 일지 맨 위에 있어(「아래 칸만 채워 주시면」) 인물 칸을 일지 뒤로 보낸다 — 되묻기 글과 답 칸 사이에 끼지 않게.
 export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail=''}={}){
   const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main?'':CONFIRM_OF[p.state];
-  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona)):'',late=p.state==='ask'&&!!journal;
+  // 판 4: 인물 칸 바로 아래 「내 모델로 모아 두기」(앱이 회원 상태를 읽어 넘긴 p.keep이 있을 때만 — 없으면 판 4 전과 같다).
+  const keep=p.persona&&p.keep?personaKeep(p.persona,p.keep):'';
+  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:'',late=p.state==='ask'&&!!journal;
   return `<div class="sx-room" data-state="${esc(p.state)}">
     ${bar?exampleHead(p):''}
     <section class="sx-room-hero">
@@ -225,7 +227,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
         <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
         <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
         <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>
-        ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true}):''}
+        ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true})+keep:''}
         ${p.state==='pay'?payCard(p):''}
         ${p.state==='done'?doneCard(p):''}
         ${p.state==='model'&&p.proposal?proposeCard(p.proposal):''}
@@ -324,7 +326,8 @@ function proposeCard(m){
 }
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
 // onPersona({decision,button}) · onPersonaFiles(purpose,files): 고객 전용 인물 카드(판 3)의 승인 단추와 사진 보내기 — 부른 쪽(app.mjs)이 서버에 보낸다.
-export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles}={}){
+// onKeep() · onMyModels(): 판 4 「내 모델로 모아 두기」와 「내 모델 열기」(persona-view personaKeep).
+export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles,onKeep,onMyModels}={}){
   const host=root.querySelector('.sx-room,.sx-shell,.sx-draft');if(!host)return {unmount(){}};
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
   const steps=host.querySelector('.sx-steps-run'),current=steps?.querySelector('.is-now');
@@ -341,6 +344,8 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
     const model=event.target.closest('[data-room-model]')?.dataset.roomModel;if(model){onModel?.({modelId:model});return;}
     const button=event.target.closest('[data-room-do]'),what=button?.dataset.roomDo;if(!what)return;
     if(what==='persona-approve'){onPersona?.({decision:'approve',button});return;}
+    if(what==='keep'){if(!button.disabled)onKeep?.();return;}
+    if(what==='my-models'){onMyModels?.();return;}
     if(what==='edit')onEdit?.();
     // 결제 안내 카드의 접수 번호 복사(판 4) — 크몽 「문의하기」에 붙여 넣는다.
     if(what==='copy-number'){const number=button.dataset.number||'';const done=()=>{button.textContent=t('복사했어요');};navigator.clipboard?.writeText(number).then(done,()=>{});return;}

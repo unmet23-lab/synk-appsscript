@@ -10,9 +10,11 @@ export function createCustomerRoutes({ identity, interpretation, drafts, origin,
     if (!path.startsWith('/api/customer/')) return false;
     if (stopping()) throw fail('서버가 다시 시작되고 있어요. 잠시 후 접속해 주세요.', 503);
     if (path === '/api/customer/synk-id/callback' && method === 'GET') {
+      // 흐름에 저장된 돌아갈 곳(서버 허용 목록의 문자열)만 쓴다. 흐름을 못 찾은 실패(서버가 로그인 도중 다시 뜬 경우 포함)는 상담 화면으로.
+      const returns = ['/ai-market/', '/pulse-app/'];
       let location = '/consultation/';
-      try { const result = await identity.callback(req, res, url); if(result.returnTo === '/ai-market/') location = result.returnTo; }
-      catch (error) { if(error.returnTo === '/ai-market/') location = error.returnTo; location += '?login=failed'; }
+      try { const result = await identity.callback(req, res, url); if(returns.includes(result.returnTo)) location = result.returnTo; }
+      catch (error) { if(returns.includes(error.returnTo)) location = error.returnTo; location += '?login=failed'; }
       res.writeHead(302, { Location: location, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }); res.end(); return true;
     }
     if (!known.has(path)) throw fail('상담 요청 주소를 확인해 주세요.', 404);

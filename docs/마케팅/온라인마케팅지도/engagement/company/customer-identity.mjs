@@ -128,7 +128,8 @@ export function createCustomerIdentity({store,origin,config=null,fetch:fetcher=g
   }
   function start(req,res,{returnTo='/consultation/'}={}){
     requireEnabled();requireOrigin(req);rate(req);
-    if(!['/consultation/','/ai-market/'].includes(returnTo))throw fail(400,'RETURN_PATH','로그인 후 돌아갈 주소를 확인해 주세요.');
+    // 돌아갈 곳은 서버가 고른 허용 목록의 문자열 자체만 흐름에 저장한다(열린 이동 없음). /pulse-app/은 PULSE 「내 모델」(판 4 — /api/customer/pulse/login).
+    if(!['/consultation/','/ai-market/','/pulse-app/'].includes(returnTo))throw fail(400,'RETURN_PATH','로그인 후 돌아갈 주소를 확인해 주세요.');
     if(flows.size>=MAX_ENTRIES)throw fail(429,'BUSY','로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
     const state=random(),browser=random(),verifier=random(),key=digest(state),previousHash=sessionHash(req);
     flows.set(key,{key,browserHash:digest(browser),verifier,previousHash,previousEntry:sessions.get(previousHash)||null,expiresAt:now()+FLOW_MS,consumed:false,returnTo});

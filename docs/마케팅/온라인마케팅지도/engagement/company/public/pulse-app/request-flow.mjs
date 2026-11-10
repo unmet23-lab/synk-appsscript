@@ -58,9 +58,13 @@ const picksOf=a=>(MODEL_PICKS[a.kind]||MODEL_PICKS.brand).map(modelOf).filter(Bo
 // 모델 칸에서 「추천해 주세요」 · 「사람 없이 제품만」을 골랐을 때 이름 칸 · 큰 사진 밑줄에 쓰는 말(판 4 B6).
 // 「맞춤 인물 요청하기」(판 3)는 인물 칸 사진이 있으면 그 사진을, 없으면 업종 작품 그림을 크게 둔다 — 밑줄은 어떤 사진인지에 맞춘다.
 const personaCaption=a=>{const photo=personaPhoto(a);return photo?.identity?t('보내 주신 사진 · 이 분의 기준 얼굴을 먼저 만들어 보여 드려요'):photo?t('보내 주신 참고 사진 · 이 분위기로 새 얼굴을 만들어 보여 드려요'):t('맞춤 인물 · 기준 얼굴과 움직이는 모습을 먼저 보여 드려요');};
-const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t('방향 두 안과 함께 어울리는 모델을 골라 보내 드려요.'),caption:t('어울리는 모델 후보 · 담당자가 방향과 함께 추천해요')}:a.modelChoice==='none'?{name:t('사람 없이 제품만'),line:t('제품 · 손 · 공간만으로 만들어요.'),caption:t('모델 없이 만드는 광고예요')}:a.modelChoice==='custom'?{name:t('맞춤 인물'),line:t('이 광고에 맞는 인물을 새로 만들어요.'),caption:personaCaption(a)}:null;
-// 그때 큰 사진 자리에는 한 사람 대신 고른 업종의 작품 그림을 둔다(B7과 같은 그림, 판 4 화면 검수 F4).
-const choiceShot=a=>a.modelChoice==='custom'&&personaPhoto(a)?.src||kindOf(a)?.shot||still('w-gift-sphere');
+// 「내 모델」(PULSE 인물 판 4)에서 고른 인물: 이름 · 그림은 내 모델 화면이 넘긴 a.personaPick(화면에만 — 서버로 보내지 않는다). 이어 쓰는 초안이면 이름이 없을 수 있다.
+const pickedName=a=>a.personaPick?.name||'';
+// 칩 · 큰 사진 밑줄 · 적은 내용 · 접수증 한 줄: 이름을 알면 「내 모델 · 이름」, 모르면(화면 메모리가 없는 이어 쓰는 초안) 「내 모델」 — 「내 모델 · 내 모델」로 겹치지 않게.
+const pickedLabel=a=>pickedName(a)?t('내 모델 · {name}',{name:pickedName(a)}):t('내 모델');
+const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t('방향 두 안과 함께 어울리는 모델을 골라 보내 드려요.'),caption:t('어울리는 모델 후보 · 담당자가 방향과 함께 추천해요')}:a.modelChoice==='none'?{name:t('사람 없이 제품만'),line:t('제품 · 손 · 공간만으로 만들어요.'),caption:t('모델 없이 만드는 광고예요')}:a.modelChoice==='custom'?{name:t('맞춤 인물'),line:t('이 광고에 맞는 인물을 새로 만들어요.'),caption:personaCaption(a)}:a.modelChoice==='persona'?{name:pickedName(a)||t('내 모델의 모델'),line:t('내 모델에서 고른 모델로 만들어요. 사진을 다시 보내지 않아도 돼요.'),caption:pickedLabel(a)}:null;
+// 그때 큰 사진 자리에는 한 사람 대신 고른 업종의 작품 그림을 둔다(B7과 같은 그림, 판 4 화면 검수 F4). 내 모델은 그 인물의 기준 얼굴.
+const choiceShot=a=>a.modelChoice==='custom'&&personaPhoto(a)?.src||a.modelChoice==='persona'&&a.personaPick?.image||kindOf(a)?.shot||still('w-gift-sphere');
 const wall=a=>{
   const chosen=a.models.map(modelOf).filter(Boolean),picks=[...new Set([...chosen,...picksOf(a)])].slice(0,4),lead=chosen[0]||picks[0];
   return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" role="presentation"><img data-portrait src="${esc(choiceText(a)?choiceShot(a):bigScene(lead))}" alt="" decoding="async"><video data-portrait-film muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true"></video><figcaption class="sx-small" data-portrait-name aria-hidden="true">${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption><button type="button" class="sx-film-hold sx-small" data-do="filmhold">${esc(t('멈춤'))}</button></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
@@ -122,7 +126,7 @@ const views={
   // ctx(판 3): {flags:{request,real} — 서버가 허락한 맞춤 인물 스위치, photos — 인물 사진을 받는 길(공개 의뢰서)}. 스위치가 꺼져 있으면 판 3 전과 같은 화면이다.
   model(a,step,i,n,ctx={}){
     return ask(step,i,n,t('누가 나올까요?'),t('이름과 얼굴이 정해진 AI 모델 {count}명이에요. 다음 편도 같은 모델로 이어 가요. 두 명까지 고르실 수 있어요.',{count:CASTING_MODELS.length}),
-      `<div class="sx-chips" data-in role="group" aria-label="${esc(t('모델을 어떻게 정할지'))}">${chip(t('추천해 주세요'),a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip(t('사람 없이 제품만'),a.modelChoice==='none','data-do="modelchoice" data-id="none"')}${ctx.flags?.request?chip(t('맞춤 인물 요청하기'),a.modelChoice==='custom','data-do="modelchoice" data-id="custom"'):''}</div>`+
+      `<div class="sx-chips" data-in role="group" aria-label="${esc(t('모델을 어떻게 정할지'))}">${a.modelChoice==='persona'?chip(pickedLabel(a),true,'data-do="modelchoice" data-id="persona"'):''}${chip(t('추천해 주세요'),a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip(t('사람 없이 제품만'),a.modelChoice==='none','data-do="modelchoice" data-id="none"')}${ctx.flags?.request?chip(t('맞춤 인물 요청하기'),a.modelChoice==='custom','data-do="modelchoice" data-id="custom"'):''}</div>`+
       modelDetail(a,ctx));
   },
   contact(a,step,i,n){
@@ -137,7 +141,7 @@ const views={
     const rows=withPersonaRow(a,[...briefRows(a),...contactLocaleRow(a)],ctx);
     return ask(step,i,n,t('이대로 보낼까요?'),pkgOf(a)?.photo?t('보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요. 첫 장으로 방향을 맞춘 뒤 나머지 사진을 만들어요.'):t('보내 주시면 저희가 내용을 확인하고 방향 두 안과 값 · 받으실 날을 보내 드려요. 영상을 만들기 전에 방향 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.'),
       `<div class="sx-brief" data-in>${rows.map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(t(item.key))}</span><span class="sx-brief-val"${item.lang?` lang="${item.lang}"`:''}>${item.missing?`<em>${esc(t(item.missing))}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(t('{label} 고치기',{label:t(item.key)}))}">${esc(t('고치기'))}</button></div>`).join('')}</div>`+
-      `${dueLine(a)}${a.modelChoice==='custom'?`<p class="sx-small sx-q-due" data-in>${esc(t('맞춤 인물 값은 검토한 뒤 따로 견적을 보내 드려요. 견적을 확인하시기 전에는 비용이 생기지 않아요.'))}</p>`:''}`+
+      `${dueLine(a)}${a.modelChoice==='custom'?`<p class="sx-small sx-q-due" data-in>${esc(t('맞춤 인물 값은 검토한 뒤 따로 견적을 보내 드려요. 견적을 확인하시기 전에는 비용이 생기지 않아요.'))}</p>`:a.modelChoice==='persona'?`<p class="sx-small sx-q-due" data-in>${esc(t('내 모델로 의뢰하면 사진을 다시 보내지 않아도 돼요. 이번 광고에 쓸 범위는 담당자가 정리해 따로 확인받아요.'))}</p>`:''}`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="consent" ${a.consent?'checked':''}><span>${esc(t('이 내용과 연락처를 의뢰 확인과 제작에 쓰는 데 동의해요'))}</span><small class="sx-small">${esc(t('제작으로 이어지지 않으면 90일 뒤 지워요.'))}</small></label>`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="rights" ${a.rights?'checked':''}><span>${esc(t('보내는 사진 · 로고 · 문구를 쓸 권리가 있어요'))}</span><small class="sx-small">${esc(ctx.flags?.real?t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실제 인물은 출연하실 분의 동의를 확인한 뒤에만 만들어요.'):t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.'))}</small></label><p class="sx-small sx-q-terms" data-in>${esc(t('결제는 글 콘티를 보신 뒤 크몽에서 해요. 결제 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드리고, 제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 수정 횟수 안에서 고쳐 드려요. 완성한 광고는 공개하신 뒤에 SYNK PULSE 작품으로 소개할 수 있어요 — 원하지 않으시면 담당자에게 알려 주세요.'))}</p>`);
   },
@@ -207,7 +211,7 @@ function slateRows(a){
   if(a.oneThing)rows.push([k('남길 것'),a.oneThing]);
   if(a.screenText)rows.push([k('화면 글자'),a.screenText.split('\n')[0]]);
   if(a.win)rows.push([k('무엇으로'),t(WIN.find(item=>item.id===a.win)?.label||k('맡길게요'))]);
-  if(a.models.length||a.modelChoice)rows.push([k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물'):a.models.map(modelOf).filter(Boolean).map(nameOf).join(', ')]);
+  if(a.models.length||a.modelChoice)rows.push([k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물'):a.modelChoice==='persona'?pickedLabel(a):a.models.map(modelOf).filter(Boolean).map(nameOf).join(', ')]);
   if(a.date||a.dateFree)rows.push([k('받고 싶은 날'),a.dateFree?t('미정'):a.date]);
   return rows;
 }
@@ -216,9 +220,13 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const a=backend.answers||emptyAnswers();if(!a.refs?.length)a.refs=[{url:'',points:[],why:''}];
   // 맞춤 인물 스위치(판 3, 서버가 허락한 값 — request-backend). 꺼져 있으면 저장돼 있던 「맞춤 인물」 고름은 비운다(서버가 보내기를 409로 막는다).
   // 실제 인물 출연은 그 스위치가 켜져 있을 때만 — 꺼져 있으면 새 가상 인물로 돌린다. photos: 인물 사진을 받는 길(공개 의뢰서)인가.
-  const ctx={flags:backend.personaFlags?.()||{request:false,real:false},photos:!!backend.personaPhotos};
+  const ctx={flags:backend.personaFlags?.()||{request:false,real:false,models:false},photos:!!backend.personaPhotos};
   if(!a.personaRequest||typeof a.personaRequest!=='object')a.personaRequest=emptyAnswers().personaRequest;
-  if(a.modelChoice==='custom'&&!ctx.flags.request)a.modelChoice='';
+  // 꺼진 스위치로 비우는 것은 공개 초안 길(photos)뿐이다 — 프로젝트 길 의뢰서는 진행 중인 인물 요청 · 내 모델 다시 쓰기를 그대로 둔다(판 3 화면 검수 F3, 판 4 D8).
+  if(ctx.photos&&a.modelChoice==='custom'&&!ctx.flags.request)a.modelChoice='';
+  if(ctx.photos&&a.modelChoice==='persona'&&!ctx.flags.models)a.modelChoice='';
+  // 내 모델에서 붙인 인물의 이름 · 그림(화면에만). 붙임이 없으면 비운다.
+  a.personaPick=a.modelChoice==='persona'?backend.personaPick||null:null;
   if(ctx.flags.request&&a.personaRequest.kind==='real'&&!ctx.flags.real)a.personaRequest.kind='virtual';
   let index=Math.max(0,STEPS.findIndex(step=>step.id===backend.step));
   let busy=false,saveTimer=0,saving=null,saveAgain=false,sent=null,closed=false;
@@ -379,8 +387,9 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     win(el){a.win=el.dataset.id;setRows('win',a.win);const pick=WIN.find(item=>item.id===a.win);if(pick){const film=$('[data-win-film]');if(film&&film.getAttribute('src')!==pick.film){film.poster=pick.poster;film.src=pick.film;film.closest('[data-frame]').dataset.ratio=pick.ratio;if(!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));else syncHold(film);play(film,[{opacity:.3},{opacity:1}],{duration:320});}$('[data-win-cap]').textContent=winCap(pick);$('[data-win-kind]').textContent=t(pick.kind);}renderSlate();saved();},
     refpoint(el){const ref=a.refs[0];toggleIn(ref.points,el.dataset.id);setChip(el,ref.points.includes(el.dataset.id));saved();},
     allmodels(){allModels=!allModels;renderMonitor('model');$('.sx-cast')?.focus({preventScroll:true});},
-    model(el){toggleIn(a.models,el.dataset.id,2);a.modelChoice='';swapDetail();host.querySelectorAll('[data-do="model"]').forEach(item=>{const on=a.models.includes(item.dataset.id);item.classList.toggle('is-on',on);item.setAttribute('aria-pressed',on?'true':'false');const mark=item.querySelector('.sx-cast-mark');if(mark)mark.textContent=on?String(a.models.indexOf(item.dataset.id)+1):'';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,false));showModel(el.dataset.id);renderSlate();saved();},
-    modelchoice(el){a.modelChoice=a.modelChoice===el.dataset.id?'':el.dataset.id;a.models=[];host.querySelectorAll('[data-do="model"]').forEach(item=>{item.classList.remove('is-on');item.setAttribute('aria-pressed','false');item.querySelector('.sx-cast-mark').textContent='';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,item.dataset.id===a.modelChoice));swapDetail();showChoice();renderSlate();saved();},
+    model(el){toggleIn(a.models,el.dataset.id,2);a.modelChoice='';dropPick();swapDetail();host.querySelectorAll('[data-do="model"]').forEach(item=>{const on=a.models.includes(item.dataset.id);item.classList.toggle('is-on',on);item.setAttribute('aria-pressed',on?'true':'false');const mark=item.querySelector('.sx-cast-mark');if(mark)mark.textContent=on?String(a.models.indexOf(item.dataset.id)+1):'';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,false));showModel(el.dataset.id);renderSlate();saved();},
+    // 붙인 「내 모델」 칩은 다시 눌러도 꺼지지 않는다 — 끄면 붙임이 풀려 의뢰서 안에서는 되돌릴 길이 없다(판 4 화면 최종 검수 F1). 다른 칩 · 모델을 고를 때만 푼다.
+    modelchoice(el){if(el.dataset.id==='persona'&&a.modelChoice==='persona')return;a.modelChoice=a.modelChoice===el.dataset.id?'':el.dataset.id;a.models=[];if(a.modelChoice!=='persona')dropPick();host.querySelectorAll('[data-do="model"]').forEach(item=>{item.classList.remove('is-on');item.setAttribute('aria-pressed','false');item.querySelector('.sx-cast-mark').textContent='';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,item.dataset.id===a.modelChoice));swapDetail();showChoice();renderSlate();saved();},
     // 맞춤 인물 요청 칸(판 3). 종류를 바꾸면 묻는 칸이 달라져 그 칸만 다시 그리고 누른 단추에 초점을 둔다.
     personakind(el){a.personaRequest.kind=el.dataset.id;redrawPersona(`[data-do="personakind"][data-id="${el.dataset.id}"]`);showChoice();saved();},
     personarelation(el){pickPersona('relation','personarelation',el);},
@@ -401,6 +410,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   };
   // 칸 찾기: 업종 준비물 칸, 또는 맞춤 인물 사진 칸(판 3).
   const slotOf=id=>slotsFor(a.kind).find(item=>item.id===id)||PERSONA_SLOTS.find(item=>item.id===id);
+  // 내 모델 인물을 풀면(다른 모델 · 다른 길을 고르면) 그 칩을 뺀다 — 저장하면 서버가 붙임을 지우므로 이 화면에서 다시 고를 수 없다. 다시 쓰려면 내 모델에서 다시 고른다(설계 5-4).
+  function dropPick(){if(!a.personaPick&&!form.querySelector('[data-do="modelchoice"][data-id="persona"]'))return;a.personaPick=null;form.querySelector('[data-do="modelchoice"][data-id="persona"]')?.remove();}
   // 모델 칸 아래 설명 ↔ 맞춤 인물 요청 칸을 그 자리에서 바꾼다(단계를 다시 그리지 않아 읽던 자리 · 초점이 그대로다). 같은 종류면 그대로 둔다.
   function swapDetail(){
     const old=form.querySelector('.sx-q-who,.sx-q-persona');if(!old)return;
@@ -475,10 +486,12 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function receiptHtml(receipt){
     const pkg=pkgOf(a),when=sentAt||new Date(receipt.at||Date.now());
     const stamp=locale()==='ko'?`${when.getFullYear()}.${String(when.getMonth()+1).padStart(2,'0')}.${String(when.getDate()).padStart(2,'0')} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}`:Number.isFinite(when.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(when):'';
-    const rows=[[k('광고할 것'),a.name],[k('길이'),pkg?t('{label} · {price}부터',{label:t(pkg.label),price:price(pkg.price)}):t('추천해 주세요')],[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):pkg?t('구성에 맞춰 함께 정해요'):''],[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)],[k('올릴 곳'),channelText(a)||t('제안해 주세요')],[k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):modelList(a)||t('추천해 주세요')],[k('받은 자료'),t('{count}개',{count:slotCount(a)})],[k('연락받을 곳'),a.email||a.phone||'']].filter(([,value])=>value);
+    // 맞춤 인물이면 「모델」 다음에 보낸 인물 사진 장수(판 3 화면 검수 F2 — 확인 단계 요약과 같은 줄).
+    const personaCount=a.modelChoice==='custom'?PERSONA_SLOTS.reduce((sum,slot)=>sum+filesOf(a,slot.id).length,0):0;
+    const rows=[[k('광고할 것'),a.name],[k('길이'),pkg?t('{label} · {price}부터',{label:t(pkg.label),price:price(pkg.price)}):t('추천해 주세요')],[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):pkg?t('구성에 맞춰 함께 정해요'):''],[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)],[k('올릴 곳'),channelText(a)||t('제안해 주세요')],[k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?pickedLabel(a):modelList(a)||t('추천해 주세요')],[k('인물 사진'),personaCount?t('{count}장',{count:personaCount}):''],[k('받은 자료'),t('{count}개',{count:slotCount(a)})],[k('연락받을 곳'),a.email||a.phone||'']].filter(([,value])=>value);
     // 다음에 일어날 일: 사진 상품은 첫 장 → 나머지, 영상은 방향 두 안 → 제작.
     // 맞춤 인물(판 3)은 확인 다음에 인물 검토 한 걸음 — 견적 전에는 비용이 생기지 않고, 기준 얼굴 · 움직이는 모습을 확인받은 인물만 광고에 쓴다.
-    const next=[[k('저희가 내용을 확인해요'),k('평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.')],...(a.modelChoice==='custom'?[[k('맞춤 인물을 검토해요'),k('보내 주신 글과 사진으로 만들 수 있는지 보고 견적을 보내 드려요. 기준 얼굴과 움직이는 모습을 확인하신 인물만 광고에 써요.')]]:[]),...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')],[k('나머지 사진을 보내 드려요'),k('사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.')]]:[[k('방향 두 안을 보내 드려요'),k('무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')],[k('의견을 반영한 뒤 제작해요'),k('확인하시기 전에는 영상을 만들지 않아요.')]])];
+    const next=[[k('저희가 내용을 확인해요'),k('평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.')],...(a.modelChoice==='custom'?[[k('맞춤 인물을 검토해요'),k('보내 주신 글과 사진으로 만들 수 있는지 보고 견적을 보내 드려요. 기준 얼굴과 움직이는 모습을 확인하신 인물만 광고에 써요.')]]:a.modelChoice==='persona'?[[k('내 모델 연결을 확인해요'),k('브랜드와 고르신 모델을 확인하고, 이번 광고에 쓸 범위를 정리해 보내 드려요. 그 범위를 확인하신 뒤에 만들어요.')]]:[]),...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')],[k('나머지 사진을 보내 드려요'),k('사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.')]]:[[k('방향 두 안을 보내 드려요'),k('무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')],[k('의견을 반영한 뒤 제작해요'),k('확인하시기 전에는 영상을 만들지 않아요.')]])];
     return `<div class="sx-rc-wrap"><article class="sx-rc-paper" tabindex="-1" aria-label="${esc(t('의뢰 접수증'))}"><header><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="120" height="32"><h2 class="sx-serif">${esc(t('의뢰 접수증'))}</h2></header><dl class="sx-rc-rows"><div><dt>${esc(t('접수 번호'))}</dt><dd class="sx-no">${esc(receipt.number)}</dd></div><div><dt>${esc(t('접수 시각'))}</dt><dd class="sx-no">${esc(stamp)}</dd></div>${rows.map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><ol class="sx-rc-next">${next.map(([title,text])=>`<li><b>${esc(t(title))}</b><span>${esc(t(text))}</span></li>`).join('')}</ol></article></div><div class="sx-rc-actions"><button type="button" class="sx-go is-solid" data-rc="room"><span>${esc(t('내 의뢰 보기'))}</span>${arrow}</button>${receipt.link?`<button type="button" class="sx-small sx-link" data-rc="copy">${esc(t('이 의뢰로 돌아올 링크 복사'))}</button><p class="sx-small" data-rc-note>${esc(t('이 링크로 30일 안에 어느 기기에서든 돌아올 수 있어요. 메일을 적으셨다면 첫 화면 「메일로 다시 열기」로도 여실 수 있어요.'))}</p>`:''}</div>`;
   }
   function showReceipt(receipt){

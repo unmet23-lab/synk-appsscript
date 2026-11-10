@@ -49,6 +49,8 @@ import { createPulseRequests, streamDraftFile, REQUEST_LIMITS } from './pulse-re
 import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
 import { createPulseFeatures } from './pulse-features.mjs';
 import { createPersonaService } from './pulse-personas.mjs';
+import { createWorkspaceService } from './pulse-workspaces.mjs';
+import { createPulseMemberRoutes } from './pulse-workspace-routes.mjs';
 import { createProjectLocale } from './pulse-locale.mjs';
 import { createPulseMailService } from './pulse-mail.mjs';
 import { createPulseMailOpen } from './pulse-mail-open.mjs';
@@ -231,6 +233,8 @@ export function createCompanyApp(options={}) {
   const resetIp=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
   const RESET_LINK_MINUTES=60,RESET_LINK_EXPIRED='이 재설정 링크는 만료됐거나 이미 썼어요. 관리자에게 새 링크를 부탁해 주세요.';
   const pulseAttempts=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
+  // 내 모델 증표(판 4): 주소(IP)마다 분당 30번.
+  const pulseProofIp=createAttemptLimiter({limit:30,windowMs:60000,now:loginNow});
   // 메일 코드로 다시 열기(판 4): 주소(IP)마다 한 시간에 코드 요청 10번 · 틀린 확인 20번.
   const mailOpenIp=createAttemptLimiter({limit:10,windowMs:60*60000,now:loginNow}),mailVerifyIp=createAttemptLimiter({limit:20,windowMs:60*60000,now:loginNow});
   const clock=()=>options.clock?.()||now();
@@ -251,6 +255,8 @@ export function createCompanyApp(options={}) {
   const clientProjects=automationReadScope.service(createClientProjectsService({store,clock,localeOf:projectLocale}),['workspace']);
   // 고객 전용 인물(판 3): 접수 · 직원 검토 · 승인. 스위치(personaRequest · personaReal)를 서버가 강제하고, 인물 문서가 없으면 손님 응답은 판 3 전과 같다.
   const pulsePersonas=createPersonaService({store,clientProjects,features:pulseFeatures,localeOf:projectLocale,clock});
+  // 고객 브랜드 · 내 모델 · 다시 쓰기 · 만료 · 사용 중지 · 삭제(판 4). 손님 쪽 새 길은 스위치 myModels가 켜졌을 때만 열고, 직원 경로는 늘 열린다(설계 5판 D15).
+  const pulseWorkspaces=createWorkspaceService({store,clientProjects,features:pulseFeatures,localeOf:projectLocale,clock});
   const deliveryFileInspector=options.deliveryFileInspector??createDeliveryFileInspector({directory:store.directory,ffprobe:options.deliveryFfprobe});
   const clientDelivery=automationReadScope.service(createClientDeliveryService({store,clientProjects,clock,fileInspector:deliveryFileInspector,localeOf:projectLocale}),['get']);
   let deliveryCheckTick=null;
@@ -273,7 +279,7 @@ export function createCompanyApp(options={}) {
   // 판 2 메일 알림: 서비스는 고객 알림 투영(pulseLive)이 생긴 뒤 만든다 — 그 전에는 손님 · 직원 보기에 메일 칸이 없다.
   let pulseMail=null;
   const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
-  const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas});
+  const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
   const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,localeOf:projectLocale,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
@@ -509,6 +515,8 @@ export function createCompanyApp(options={}) {
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
   const aiMarket=createAiMarketStore({store,now:clock});
   const aiMarketRoutes=createAiMarketRoutes({identity:customerIdentity,market:aiMarket,origin,send,body,stopping:()=>stopRequested,clientAddress});
+  // PULSE 내 모델 회원 경로(판 4, /api/customer/pulse/*): 고객 SYNK ID 세션만, 스위치 myModels가 꺼져 있으면 모두 404.
+  const pulseMemberRoutes=createPulseMemberRoutes({identity:customerIdentity,workspaces:pulseWorkspaces,origin,send,body,stopping:()=>stopRequested,clientAddress,enabled:()=>pulseFeatures.read().myModels,serveMedia:(req,res,media,authorize)=>serveStudioMedia(req,res,store.directory,media,authorize)});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
   const assistant=createAssistantService({clock,today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user),publicationWorkday:user=>readPublicationWorkday(user),weeklySummary:user=>readWeeklySummary(user),automationHealth:user=>readAutomationHealth(user)});
   const migrationAt=clock();
@@ -878,6 +886,8 @@ export function createCompanyApp(options={}) {
       if(method==='POST'&&path==='/pulse/api/request/media')return send(res,201,await pulseRequests.receive(req,requestToken,csrf,{client:clientAddress(req)}));
       if(method!=='POST')throw httpError('의뢰서 요청을 확인해 주세요.',405);
       const input=await body(req,{maxBytes:40000,maxChars:20000});
+      // 내 모델 다시 쓰기 붙이기의 증표(판 4, 설계 4-1): 초안 쿠키 + 초안 CSRF, 아직 보내지 않은 초안만. 스위치가 꺼져 있으면 없는 주소.
+      if(path==='/pulse/api/request/persona-proof'){if(!pulseFeatures.read().myModels)throw httpError('의뢰서 요청을 확인해 주세요.',404);pulseProofIp.reserve(clientAddress(req));return send(res,200,pulseWorkspaces.draftProof(requestToken,csrf,input));}
       if(path==='/pulse/api/request/start'){const {token,draft}=pulseRequests.start(input,{client:clientAddress(req)});setPulseCookie(res,'synk_pulse_request',token,REQUEST_LIMITS.tokenDays*86400);return send(res,201,{draft});}
       if(path==='/pulse/api/request/save')return send(res,200,pulseRequests.save(requestToken,csrf,input,{client:clientAddress(req)}));
       if(path==='/pulse/api/request/submit'){
@@ -1002,6 +1012,8 @@ export function createCompanyApp(options={}) {
           pulseDeviceCookie(res,remembered.raw,currentDevice);
           return send(res,201,{deviceConnection:clientProjects.devices.describe(currentDevice)});
         }
+        // 고객 방이 「내 모델로 모아 두기」에 쓰는 증표(판 4, 설계 4-1): 초대 세션 + 고객 화면 CSRF. 스위치가 꺼져 있으면 없는 주소.
+        if(path==='/pulse/api/project/workspace-proof'){if(!pulseFeatures.read().myModels)throw httpError('고객 요청을 찾을 수 없습니다.',404);pulseProofIp.reserve(clientAddress(req));return send(res,200,pulseWorkspaces.projectProof(customerToken,req.headers['x-pulse-csrf'],input));}
         if(path==='/pulse/api/persona/approve'){
           let result;try{result=pulsePersonas.approve(customerToken,req.headers['x-pulse-csrf'],input);}catch(error){if(error.code==='SYNK_PULSE_PERSONA_STALE')return send(res,409,{error:error.message,code:error.code,persona:error.persona});throw error;}
           renewCustomerDevice();return send(res,200,{...customerStateWithFeatures(customerToken),...(result.duplicate?{duplicate:true}:{})});
@@ -1036,6 +1048,7 @@ export function createCompanyApp(options={}) {
     // Keep unrelated requests on their existing shutdown admission order.
     if(path.startsWith('/trial-feedback/')&&await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
     if((path==='/api/customer/ai-market'||path.startsWith('/api/customer/ai-market/'))&&await aiMarketRoutes(req,res,url))return;
+    if((path==='/api/customer/pulse'||path.startsWith('/api/customer/pulse/'))&&await pulseMemberRoutes(req,res,url))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
@@ -1398,6 +1411,15 @@ export function createCompanyApp(options={}) {
       const pulseStudioRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio$/);
       if(pulseStudioRoute)return send(res,200,pulseStudio.staffMutate(user,pulseStudioRoute[1],input));
       // 고객 전용 인물(판 3): 직원 전이 · 판 · 견적 · 사용 범위. 지운 판 파일은 기록이 바뀐 뒤 지운다.
+      // 고객 브랜드(판 4, 설계 4-4 · 5판 D15): 연결 요청 결정 · 브랜드 · 프로젝트 · 인물 일. 결정마다 감사 기록을 남기고, 삭제는 기록을 바꾼 뒤 파일을 지운다(서비스 안 — 문서 먼저 · 파일 나중).
+      const workspaceClaimRoute=path.match(/^\/api\/customer-workspaces\/claims\/([a-f0-9-]{36})$/);
+      if(workspaceClaimRoute){const result=pulseWorkspaces.decideClaim(user,workspaceClaimRoute[1],input);audit(user,'pulse-workspace-claim',workspaceClaimRoute[1],{decision:input.action,workspaceId:result.workspace?.id||null});return send(res,200,result);}
+      const workspaceProjectRoute=path.match(/^\/api\/customer-workspaces\/projects\/([a-f0-9-]{36})$/);
+      if(workspaceProjectRoute){const result=pulseWorkspaces.projectAction(user,workspaceProjectRoute[1],input);audit(user,'pulse-workspace-project',workspaceProjectRoute[1],{step:input.action});return send(res,200,result);}
+      const workspacePersonaRoute=path.match(/^\/api\/customer-workspaces\/personas\/([a-f0-9-]{36})$/);
+      if(workspacePersonaRoute){let result;try{result=await pulseWorkspaces.personaAction(user,workspacePersonaRoute[1],input);}catch(error){if(error.references)return send(res,error.status,{error:error.message,code:error.code,references:error.references});throw error;}audit(user,'pulse-workspace-persona',workspacePersonaRoute[1],{step:input.action});return send(res,200,result);}
+      const workspaceRoute=path.match(/^\/api\/customer-workspaces\/([a-f0-9-]{36})$/);
+      if(workspaceRoute){const result=pulseWorkspaces.workspaceAction(user,workspaceRoute[1],input);audit(user,'pulse-workspace',workspaceRoute[1],{step:input.action});return send(res,200,result);}
       const personaAction=path.match(/^\/api\/personas\/([a-f0-9-]{36})$/);
       if(personaAction){const {persona,discard}=pulsePersonas.staffAction(user,personaAction[1],input);for(const diskName of discard)await discardStudioMedia({committed:true,metadata:{diskName}},store.directory).catch(()=>{});return send(res,200,{persona});}
       const personaConsentWrite=path.match(/^\/api\/personas\/([a-f0-9-]{36})\/consent$/);
@@ -1803,6 +1825,9 @@ export function createCompanyApp(options={}) {
       if(materialsRoute)return send(res,200,clientMaterials.workspace(user,materialsRoute[1]));
       const pulseStudioRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio$/);
       if(pulseStudioRoute)return send(res,200,pulseStudio.staffState(user,pulseStudioRoute[1]));
+      if(path==='/api/customer-workspaces')return send(res,200,pulseWorkspaces.staffList(user));
+      const workspaceReadRoute=path.match(/^\/api\/customer-workspaces\/([a-f0-9-]{36})$/);
+      if(workspaceReadRoute)return send(res,200,pulseWorkspaces.staffRead(user,workspaceReadRoute[1]));
       const personaProjectRoute=path.match(/^\/api\/personas\/project\/([a-f0-9-]{36})$/);
       if(personaProjectRoute)return send(res,200,pulsePersonas.staffList(user,personaProjectRoute[1]));
       const personaReadRoute=path.match(/^\/api\/personas\/([a-f0-9-]{36})$/);
@@ -1940,7 +1965,7 @@ export function createCompanyApp(options={}) {
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
-    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','persona-view.mjs'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','persona-view.mjs','my-models.mjs','brand-desk-view.mjs'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     // 시사실 판(2026-11-05) 그림 · 영상. 쇼릴 mp4 둘은 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
@@ -2039,6 +2064,8 @@ export function createCompanyApp(options={}) {
       try{
         await messenger.startMounted();
         synkIdentity.startChecks();
+        // 판 4 삭제 이어 하기(설계 5-6): 도중에 멈춘 인물 삭제(deleting + pendingUnlink)를 파일 지우기부터 묘비까지 끝낸다(멱등).
+        await pulseWorkspaces.resumeDeletions();
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}

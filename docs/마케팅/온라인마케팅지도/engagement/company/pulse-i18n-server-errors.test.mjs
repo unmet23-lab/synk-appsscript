@@ -51,6 +51,9 @@ const MODULES=[
     exclude:{'시안이 마음에 들면 승인해 주세요. 이 시안으로 최종본을 만들어요.':'승인할 수 있을 때의 안내 — 오류로 나가지 않는다'}},
   // 판 3: 의뢰서 보내기 · 고객 방 인물 카드(승인 · 사진 더 보내기)가 부르는 함수. 직원 경로(staffAction · addAsset · 동의)는 직원 화면이라 세지 않는다.
   {file:'pulse-personas.mjs',scope:['createPersonaGuard','text','assertRequest','create','afterProjectSubmit','session','stale','approve','addSource']},
+  // 판 4(설계 5판 D19): 내 모델 회원 경로 · 증표 · 다시 쓰기 붙이기와 보내기 검사(attachedRequest). 직원 경로(decideClaim · workspaceAction · projectAction · personaAction · 삭제)는 직원 화면이라 세지 않는다.
+  {file:'pulse-workspaces.mjs',scope:['keys','text','notFound','synkIdOf','personaOf','projectProof','draftProof','proofFail','takeProof','withProof','projectOfProof','draftOfProof','projectState','claim','withdrawClaim','models','model','asset','attach','adminMember','reuse','withdrawReuse','stop','deleteRequest','attachedRequest']},
+  {file:'pulse-workspace-routes.mjs',scope:'*',sites:{failure:{message:2,status:0,code:1}}},
   {file:'pulse-devices.mjs',scope:'*'},
   // 메일 코드로 다시 열기(판 4): 세션 없는 손님 길이라 모든 문장이 손님에게 간다.
   {file:'pulse-mail-open.mjs',scope:'*'},

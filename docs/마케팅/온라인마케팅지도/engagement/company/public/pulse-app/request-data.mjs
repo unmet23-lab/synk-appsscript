@@ -214,7 +214,8 @@ export function briefRows(a){
     {key:k('자랑할 사실'),step:'words',value:a.facts,missing:a.facts?'':k('없음')},
     {key:k('무엇으로'),step:'feel',value:win&&t(win),missing:win?'':k('저희가 제안해요')},
     {key:k('참고 광고'),step:'feel',value:refs,missing:refs?'':k('없음')},
-    {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
+    // 내 모델 다시 쓰기(판 4): 내 모델 화면에서 붙인 인물이면 그 이름(화면에만 있는 a.personaPick), 서버 답만 있으면(고객 방 · 직원 확인) 「내 모델 다시 쓰기」.
+    {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
     {key:k('받고 싶은 날'),step:'contact',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
     {key:k('최종 확인'),step:'contact',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
     {key:k('연락처'),step:'contact',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},

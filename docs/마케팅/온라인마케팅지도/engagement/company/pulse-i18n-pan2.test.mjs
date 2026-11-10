@@ -162,7 +162,7 @@ test('서버: 영어 시험 프로젝트는 손님 보기 · 알림이 영어이
   const send=async extra=>{jar.clear();const started=await call('/pulse/api/request/start',{body:{}});assert.equal(started.status,201);const draft=started.data.draft;await call('/pulse/api/request/media',{raw:png,csrf:draft.csrf,headers:{'Content-Type':'image/png','X-File-Name':'front.png','X-Request-Slot':'front'}});const sent=await call('/pulse/api/request/submit',{body:{answers:{name:'합성 탄산수',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝난 20대',oneThing:'한 캔에 맛이 다섯 번',action:'buy',contactName:'김합성',email:'buyer@pulse-synthetic.test',consent:true,rights:true,...extra}},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));return (await call('/pulse/api/project')).data;};
   // 공개 첫 화면 언어: 스위치가 꺼져 있으면 한국어 하나
   const features=await call('/pulse/api/features');
-  assert.equal(features.status,200);assert.deepEqual(features.data,{features:{locales:['ko'],personaRequest:false,personaReal:false}});
+  assert.equal(features.status,200);assert.deepEqual(features.data,{features:{locales:['ko'],personaRequest:false,personaReal:false,myModels:false}});
   assert.equal((await call('/pulse/api/features?x=1')).status,400);
   assert.equal((await staff('/api/settings/pulse-features',{projectLocales:['ko','en']})).status,200);
   const ko=await send({});

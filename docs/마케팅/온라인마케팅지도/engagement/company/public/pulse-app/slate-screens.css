@@ -326,6 +326,25 @@
 .desk-actions{display:flex;flex-direction:column;gap:10px}
 .desk-actions .btn-line{justify-content:center}
 .desk-actions .btn-main{justify-content:space-between}
+/* 직원 「고객 브랜드」 데스크(PULSE 인물 판 4, brand-desk-view.mjs): 왼쪽 목록(연결 요청 · 다시 쓰기 확인 · 브랜드) + 가운데 하나. 폼은 인물 칸(desk-persona-form) 결 그대로. */
+.desk-grid.is-brands{grid-template-columns:280px minmax(0,1fr);min-height:calc(100dvh - 120px)}
+.desk.is-brands{min-height:0}
+.desk.is-brands .desk-list h2:not(:first-child){margin-top:22px}
+.desk.is-brands .desk-list .desk-at{margin:4px 0 0;font-size:13px;color:var(--ink-3)}
+.desk.is-brands .desk-brief{max-width:980px}
+.desk.is-brands .checks li>div{display:grid;gap:4px;min-width:0}
+.desk.is-brands .checks small{overflow-wrap:anywhere}
+.desk.is-brands .kv{margin-top:14px}
+.desk.is-brands .desk-persona-form select{min-width:0}
+/* 접어 둔 일(사용 중지 · 삭제 · 역할 바꾸기 · 영어 칸)은 눌러 여는 글로 보이게(앱 공통 details는 표시를 숨긴다), 폼 안에서는 한 줄을 다 쓴다. */
+.desk.is-brands .desk-persona-more summary{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;color:var(--ink-2)}
+.desk.is-brands .desk-persona-more summary::before{content:'+ ';text-decoration:none;display:inline-block;margin-right:2px}
+.desk.is-brands .desk-persona-more[open]>summary::before{content:'– '}
+.desk.is-brands .desk-persona-form>details{flex:1 1 100%}
+.desk.is-brands .desk-persona-form>details>summary{font-size:13px}
+.desk.is-brands .desk-persona-form>details[open]{display:flex;flex-wrap:wrap;gap:8px 12px}
+.desk.is-brands .desk-persona-form>details[open]>summary{flex:1 1 100%}
+@media (max-width:980px){.desk-grid.is-brands{grid-template-columns:minmax(0,1fr)}.desk.is-brands .desk-list{border-right:0;border-bottom:1px solid var(--hair-p)}}
 
 @media (max-width:980px){
   .entry-wall{width:100%;grid-template-columns:repeat(3,1fr);opacity:.5}

@@ -1186,6 +1186,80 @@ html[lang="en"] .sx-q-line{grid-template-columns:100px minmax(0,1fr)}
 .sx-persona-say .sx-go{justify-self:start}
 /* 의뢰서 모델 단계의 맞춤 인물 칸(판 3) — 고른 모델 설명(.sx-q-who)과 같은 위 줄. */
 .sx-q-persona{display:grid;gap:16px;padding-top:14px;border-top:1px solid var(--sx-rule)}
+/* 고객 방 「내 모델로 모아 두기」(판 4, persona-view personaKeep): 인물 칸 바로 아래 작은 두 줄 — 누가 보게 되는지 · 지금 상태와 단추. */
+.sx-persona-keep{display:grid;gap:6px;max-width:34em;margin-top:-4px}
+.sx-persona-keep>p{margin:0;color:var(--sx-dim)}
+.sx-persona-keep .sx-persona-kept{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;color:var(--sx-ink)}
+.sx-persona-keep .sx-persona-kept span{color:var(--sx-dim)}
+.sx-persona-keep .sx-quiet:disabled{opacity:.5;cursor:default}
+/* 「내 모델」(판 4, my-models.mjs): 의뢰서와 같은 덮개(#request-root) 위의 캐스팅 장부 — 브랜드마다 위 줄, 모델마다 세로 사진 · 이름 · 상태 한 줄 · 날짜 · 「이 모델로 의뢰」.
+   쓸 수 없는 모델은 사진을 흐리게(회색) 두고 까닭 한 줄을 그대로 보인다. 동의 · 확인 화면은 같은 덮개 안 종이 한 장. */
+.sx-mm{position:absolute;inset:0;display:flex;flex-direction:column}
+.sx-mm-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:calc(var(--sx-m) - 6px) var(--sx-m) 12px;background:linear-gradient(180deg,#000 72%,rgba(0,0,0,0))}
+.sx-mm-top-right{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 18px;align-items:center;color:var(--sx-ink)}
+/* 밑줄은 내 모델 자기 단추(로그아웃 · 닫기)에만 — 언어 메뉴는 의뢰서 · 고객 방 머리처럼 밑줄 없이(판 4 화면 최종 검수 F4). */
+.sx-mm-top-right [data-mm-do]{padding:6px 0;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.sx-mm-who{color:var(--sx-dim)}
+.sx-mm-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(244,241,234,.28) transparent;padding:clamp(18px,4vh,44px) var(--sx-m) calc(var(--sx-m) + 40px)}
+.sx-mm-body:focus{outline:none}
+.sx-mm-body [data-mm-title]:focus{outline:none}
+.sx-mm-loading{padding-top:12vh}
+.sx-mm-gate{max-width:38em;display:grid;gap:18px;padding-top:clamp(12px,8vh,96px)}
+.sx-mm-gate .sx-display{max-width:12em}
+.sx-mm-gate .sx-body{max-width:36em;color:var(--sx-ink)}
+.sx-mm-gate-act{margin-top:4px}
+.sx-mm-gate .sx-invite-alert,.sx-mm-alert{padding:12px 14px;box-shadow:inset 0 0 0 1px var(--sx-rule);max-width:36em}
+.sx-mm-alert p{margin:0;color:var(--sx-ink)}
+.sx-mm-head{display:grid;gap:14px;max-width:44em;margin-bottom:clamp(28px,6vh,64px)}
+.sx-mm-head .sx-display{max-width:12em}
+.sx-mm-brand{border-top:1px solid var(--sx-rule);padding-top:14px;margin-bottom:clamp(36px,7vh,72px)}
+.sx-mm-brand-head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin-bottom:22px}
+.sx-mm-brand-head h2{font-size:var(--sx-t2);line-height:1.25}
+.sx-mm-none{color:var(--sx-dim)}
+.sx-mm-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(236px,100%),1fr));gap:32px 22px}
+.sx-mm-card{display:grid;align-content:start;gap:14px;min-width:0}
+.sx-mm-face{margin:0;position:relative;aspect-ratio:3/4;background:#111;overflow:hidden}
+.sx-mm-face img{display:block;width:100%;height:100%;object-fit:cover;transition:filter .4s,opacity .4s}
+.sx-mm-face.is-empty{box-shadow:inset 0 0 0 1px var(--sx-rule);background:repeating-linear-gradient(135deg,#0d0d0d 0 10px,#111 10px 20px)}
+.sx-mm-card.is-off .sx-mm-face img{filter:grayscale(1);opacity:.45}
+.sx-mm-card.is-off h3{color:var(--sx-dim)}
+.sx-mm-info{display:grid;gap:8px;min-width:0}
+.sx-mm-info h3{font-size:clamp(20px,1.7vw,24px);line-height:1.25;overflow-wrap:anywhere}
+.sx-mm-state{margin:0;color:var(--sx-ink)}
+.sx-mm-card.is-off .sx-mm-state{color:var(--sx-dim)}
+.sx-mm-meta{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:2px 14px;margin:0}
+.sx-mm-meta div{display:contents}
+.sx-mm-meta dt{color:var(--sx-faint)}
+.sx-mm-meta dd{margin:0;color:var(--sx-ink)}
+.sx-mm-info>.sx-go{justify-self:start;padding:8px 0}
+.sx-mm-manage{display:flex;flex-wrap:wrap;gap:4px 16px;padding-top:8px;border-top:1px solid var(--sx-rule)}
+.sx-mm-pending{margin-top:clamp(28px,5vh,48px);padding-top:14px;border-top:1px dashed var(--sx-rule)}
+.sx-mm-pending h3{margin-bottom:18px;color:var(--sx-ink);font-weight:600}
+.sx-mm-card.is-pending .sx-mm-state{color:var(--sx-dim)}
+.sx-mm-paper{display:grid;gap:18px;max-width:1040px;padding-top:clamp(6px,3vh,32px)}
+.sx-mm-paper .sx-display{max-width:14em}
+.sx-mm-paper.is-ask{max-width:40em}
+.sx-mm-paper.is-ask .sx-body{color:var(--sx-ink)}
+.sx-mm-paper-main{display:grid;grid-template-columns:minmax(180px,300px) minmax(0,1fr);gap:clamp(22px,4vw,56px);align-items:start;margin-top:8px}
+.sx-mm-paper-main figcaption{margin-top:10px;color:var(--sx-ink)}
+.sx-mm-terms{margin:0;border-bottom:1px solid var(--sx-rule)}
+.sx-mm-terms div{display:grid;grid-template-columns:minmax(6em,9em) minmax(0,1fr);gap:16px;padding:12px 0;border-top:1px solid var(--sx-rule)}
+.sx-mm-terms dt{color:var(--sx-faint);padding-top:2px}
+.sx-mm-terms dd{margin:0;color:var(--sx-ink);font-size:15px;line-height:1.6}
+.sx-mm-paper-act{display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;margin-top:6px}
+.sx-mm-paper .sx-field{max-width:36em}
+.sx-mm-paper textarea{background:none;border:0;border-bottom:1px solid var(--sx-dim);padding:8px 0;font:inherit;font-size:15px;color:var(--sx-ink);resize:vertical;width:100%}
+@media (max-width:820px),(max-aspect-ratio:1/1){
+  .sx-mm-top{padding:10px var(--sx-m) 8px}
+  .sx-mm-who{display:none}
+  /* 휴대폰: 카드 한 줄에 하나 — 왼쪽 세로 사진, 오른쪽 이름 · 상태 · 날짜 · 단추(둘씩 세우면 「이 모델로 의뢰」가 두 줄로 접혔다). */
+  .sx-mm-cards{grid-template-columns:minmax(0,1fr);gap:24px}
+  .sx-mm-card{grid-template-columns:min(38%,148px) minmax(0,1fr);gap:16px;align-items:start}
+  .sx-mm-paper-main{grid-template-columns:minmax(0,1fr)}
+  .sx-mm-paper-main .sx-mm-face{width:min(64%,260px)}
+  .sx-mm-terms div{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+@media (max-width:359.98px){.sx-mm-card{grid-template-columns:minmax(0,1fr)}.sx-mm-card .sx-mm-face{width:min(70%,220px)}}
 @media (prefers-reduced-motion:no-preference){.sx-turn i.is-done{animation:none}}
 @media (max-width:519.98px){.sx-pay-terms dd{font-size:17px}}
 .sx-invite-form{display:grid;gap:10px}

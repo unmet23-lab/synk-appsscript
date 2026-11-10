@@ -53,7 +53,8 @@ test('의뢰서: 맞춤 인물 칩 · 요청 칸 · 확인 줄 · 권리 문장�
   const flow=read('request-flow.mjs');
   assert.match(flow,/\$\{ctx\.flags\?\.request\?chip\(t\('맞춤 인물 요청하기'\),a\.modelChoice==='custom','data-do="modelchoice" data-id="custom"'\):''\}/,'칩은 personaRequest일 때만');
   assert.match(flow,/if\(a\.modelChoice==='custom'&&ctx\.flags\?\.request\)return personaBlock\(a,ctx\);/,'요청 칸은 맞춤 인물을 골랐고 스위치가 켜졌을 때만');
-  assert.match(flow,/if\(a\.modelChoice==='custom'&&!ctx\.flags\.request\)a\.modelChoice='';/,'꺼진 스위치에서 저장돼 있던 맞춤 인물 고름은 비운다');
+  // 판 3 Fable F3(판 4에서 고침): 비우는 것은 공개 초안 길(photos)뿐 — 프로젝트 길 의뢰서는 스위치를 끈 뒤에도 진행 중인 인물 요청을 비우지 않는다.
+  assert.match(flow,/if\(ctx\.photos&&a\.modelChoice==='custom'&&!ctx\.flags\.request\)a\.modelChoice='';/,'꺼진 스위치에서 공개 초안에 저장돼 있던 맞춤 인물 고름은 비운다');
   assert.match(flow,/if\(ctx\.flags\.request&&a\.personaRequest\.kind==='real'&&!ctx\.flags\.real\)a\.personaRequest\.kind='virtual';/,'실제 인물은 personaReal일 때만');
   assert.match(flow,/ctx\.flags\?\.real\?t\('영상 속 사람과 목소리는 모두 AI로 만들어요\. 실제 인물은 출연하실 분의 동의를 확인한 뒤에만 만들어요\.'\):t\('영상 속 사람과 목소리는 모두 AI로 만들어요\. 실존 인물을 닮게 만드는 요청은 받지 않아요\.'\)/,'권리 칸 문장은 personaReal일 때만 바뀐다');
   assert.match(flow,/slot\.id!=='persona-identity'\|\|real\|\|filesOf\(a,slot\.id\)\.length/,'출연하실 분의 사진 칸은 실제 인물일 때(또는 지울 사진이 있을 때)만');
@@ -72,13 +73,14 @@ test('의뢰서 백엔드: 공개 의뢰서는 응답 features로 스위치를 �
   try{
     globalThis.fetch=async()=>new Response(JSON.stringify({draft:null,features:{locales:['ko'],personaRequest:true,personaReal:false}}),{status:200,headers:{'Content-Type':'application/json'}});
     const open=await publicBackend();
-    assert.deepEqual(open.personaFlags(),{request:true,real:false});assert.equal(open.personaPhotos,true);
-    globalThis.fetch=async()=>new Response(JSON.stringify({draft:null,features:{locales:['ko'],personaRequest:false,personaReal:true}}),{status:200,headers:{'Content-Type':'application/json'}});
-    assert.deepEqual((await publicBackend()).personaFlags(),{request:false,real:false},'실제 인물은 인물 접수가 켜져 있을 때만');
+    // models(판 4): 내 모델 다시 쓰기 스위치(myModels).
+    assert.deepEqual(open.personaFlags(),{request:true,real:false,models:false});assert.equal(open.personaPhotos,true);
+    globalThis.fetch=async()=>new Response(JSON.stringify({draft:null,features:{locales:['ko'],personaRequest:false,personaReal:true,myModels:true}}),{status:200,headers:{'Content-Type':'application/json'}});
+    assert.deepEqual((await publicBackend()).personaFlags(),{request:false,real:false,models:true},'실제 인물은 인물 접수가 켜져 있을 때만');
   }finally{globalThis.fetch=original;}
   const room=projectBackend({project:()=>({revision:1,studio:{request:{answers:emptyAnswers()}}}),csrf:()=>'c',accept(){},features:()=>({personaRequest:true,personaReal:true})});
-  assert.deepEqual(room.personaFlags(),{request:true,real:true});assert.equal(room.personaPhotos,false);
-  assert.deepEqual(projectBackend({project:()=>({revision:1,studio:{}}),csrf:()=>'c',accept(){}}).personaFlags(),{request:false,real:false},'features가 없으면 꺼진 쪽');
+  assert.deepEqual(room.personaFlags(),{request:true,real:true,models:false});assert.equal(room.personaPhotos,false);
+  assert.deepEqual(projectBackend({project:()=>({revision:1,studio:{}}),csrf:()=>'c',accept(){}}).personaFlags(),{request:false,real:false,models:false},'features가 없으면 꺼진 쪽');
   assert.match(read('app.mjs'),/projectBackend\(\{project:\(\)=>s\.project,csrf:\(\)=>s\.csrf,accept,step,features:\(\)=>projectFeatures\}\)/);
 });
 
@@ -125,7 +127,9 @@ test('자료 보완 카드 · 상태 줄: 사진은 가상 인물이면 분위�
   assert.ok(!virtual.includes('persona-approve'),'자료 보완은 승인이 아니다');
   const real=personaCard(personaModel({persona:view('needs_materials',{kind:'real'})}));
   assert.ok(real.includes('data-persona-file="identity"')&&real.includes('data-persona-file="mood"'));
-  for(const state of PERSONA_STATES.filter(state=>state!=='ready'))assert.ok(STATUS_LINE[state],state+' 상태 한 줄');
+  // 판 4 상태(paused · deleting · deleted)와 읽을 때 계산하는 expired까지 모두 한 줄이 있다(판 4 화면 단계에서 거름을 지웠다).
+  for(const state of [...PERSONA_STATES.filter(state=>state!=='ready'),'expired'])assert.ok(STATUS_LINE[state],state+' 상태 한 줄');
+  assert.ok(personaLine(personaModel({persona:view('paused')})).includes('사용을 멈춘 인물이에요'),'사용 중지 인물의 한 줄');
   const line=personaLine(personaModel({persona:view('reviewing')}));
   assert.ok(line.includes('만들 수 있는지 검토하고 있어요')&&line.includes('2/7'),'저희 차례 줄');
   assert.ok(line.includes('data-persona-file="mood"'),'검토 중에도 사진을 더 보낼 수 있다(프로젝트 길 의뢰서는 여기서 처음 보낸다)');

@@ -37,7 +37,7 @@ async function fixture(t){
 test('스위치는 기본이 끔이고, 손님 응답은 그 값을 싣는다(공개 의뢰서 · 프로젝트)',async t=>{
   const f=await fixture(t);
   const open=await f.call('/pulse/api/request');
-  assert.equal(open.status,200);assert.deepEqual(open.data.features,{locales:['ko'],personaRequest:false,personaReal:false});
+  assert.equal(open.status,200);assert.deepEqual(open.data.features,{locales:['ko'],personaRequest:false,personaReal:false,myModels:false});
   const sent=await f.send({contactLocale:'en'});
   const room=await f.call('/pulse/api/project');
   assert.equal(room.status,200);
@@ -70,13 +70,13 @@ test('관리자만 스위치를 바꾸고, 바꿀 때마다 감사 기록이 남
   assert.deepEqual(room.data.features,{locales:['ko','en'],locale:'en',personaRequest:false,personaReal:false,myModels:false});
   assert.deepEqual((await f.call('/pulse/api/request')).data.features.locales,['ko']);
   assert.equal((await f.staff('/api/settings/pulse-features',{body:{publicLocales:['ko','en'],personaRequest:true,personaReal:true}})).status,200);
-  assert.deepEqual((await f.call('/pulse/api/request')).data.features,{locales:['ko','en'],personaRequest:true,personaReal:true});
+  assert.deepEqual((await f.call('/pulse/api/request')).data.features,{locales:['ko','en'],personaRequest:true,personaReal:true,myModels:false});
 });
 
 test('저장된 스위치 문서가 이상하면 끈 쪽으로 읽는다',async t=>{
   const f=await fixture(t);
   f.app.store.put('pulseFeatureSettings','main',{publicLocales:['ko','en'],projectLocales:['ko'],personaRequest:'true',personaReal:true,myModels:1});
-  assert.deepEqual((await f.call('/pulse/api/request')).data.features,{locales:['ko'],personaRequest:false,personaReal:false},'공개 메뉴가 프로젝트 언어 밖이면 한국어만, 참 · 거짓이 아니면 끔');
+  assert.deepEqual((await f.call('/pulse/api/request')).data.features,{locales:['ko'],personaRequest:false,personaReal:false,myModels:false},'공개 메뉴가 프로젝트 언어 밖이면 한국어만, 참 · 거짓이 아니면 끔');
   f.app.store.put('pulseFeatureSettings','main',{projectLocales:['ja','ko']});
   assert.deepEqual((await f.staff('/api/settings/pulse-features')).data.projectLocales,['ko']);
 });
@@ -95,7 +95,9 @@ test('새 답 칸: 옛 화면은 안 보내도 되고, 새 화면의 값은 접�
     const result=await f.call('/pulse/api/request/save',{body:{answers:{...old,...bad},step:'model'},csrf:draft.csrf});
     assert.equal(result.status,400,JSON.stringify(bad));
   }
-  for(const modelChoice of ['custom','persona'])assert.equal((await f.call('/pulse/api/request/save',{body:{answers:{...old,modelChoice},step:'model'},csrf:draft.csrf})).status,200,modelChoice);
+  assert.equal((await f.call('/pulse/api/request/save',{body:{answers:{...old,modelChoice:'custom'},step:'model'},csrf:draft.csrf})).status,200,'custom');
+  // 판 4(설계 5-4 · 5판 D8): persona는 내 모델 붙이기로만 생긴다 — 붙임 없이 저장하면 409.
+  assert.equal((await f.call('/pulse/api/request/save',{body:{answers:{...old,modelChoice:'persona'},step:'model'},csrf:draft.csrf})).status,409,'persona');
   const sent=await f.call('/pulse/api/request/submit',{body:{answers:{...old,models:['F02'],hair:'look-2',contactLocale:'en',targetMarket:['US']}},csrf:draft.csrf});
   assert.equal(sent.status,201,JSON.stringify(sent.data));
   const request=f.app.store.get('clientProjects',sent.data.projectId).studio.request;
