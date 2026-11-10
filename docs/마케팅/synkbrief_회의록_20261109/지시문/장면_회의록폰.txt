@@ -1,0 +1,12 @@
+Create one new vertical 9:16 photorealistic film still from the same premium Korean office comedy drama as the reference image — the same meeting room, the same warm pendant lamp light, the same dusk color and film look, shallow depth of field.
+
+A close shot looking down at an angle onto the wooden meeting table: a black smartphone lies on the table in the middle of the frame, screen up and lit, filling most of the frame width (the phone occupies roughly 25% to 85% of the frame height). A soft warm reflection of the pendant lamp glides across the glass of the screen. Beside it, out of focus: the edge of a white paper cup and a pen. No hands, no people in the frame.
+
+On the phone screen: a dark-mode mail app, clean and realistic like a real phone, with only these Korean lines, large and clearly legible, top to bottom, exactly these characters:
+
+AI 회의록
+받는 사람: 참석자 전원 14명
+결정 사항
+부장님께는 비밀로 한다
+
+The last line is the biggest and boldest on the screen. White and light grey text on a near-black screen, normal phone status bar at the very top. No other words, no brand name, no logo, no app name, no English, no watermark anywhere.

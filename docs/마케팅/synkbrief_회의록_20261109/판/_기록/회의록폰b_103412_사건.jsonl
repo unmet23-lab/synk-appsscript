@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c317-682c-76d2-8af2-a26245a01629"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 참고 이미지의 따뜻한 조명과 해 질 무렵의 영화 색감을 이어가고, 휴대폰 화면의 네 줄을 선명하게 담겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":124728,"cached_input_tokens":106752,"cache_write_input_tokens":0,"output_tokens":1293,"reasoning_output_tokens":153}}
