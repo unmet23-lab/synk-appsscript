@@ -10,6 +10,18 @@ const $ = id => document.getElementById(id);
 const PATH_ENTRY = 'https://synk.im/path/app/', PATH_HINT_WINDOW = 7200000;
 // Only the observed "app request is gone" answer gets the restart card; every other failure keeps its own notice.
 const staleAuthorization = error => error?.status === 404 && error?.code === 'oauth_authorization_not_found';
+// RFC 8252 §8.6: an app's address on this device (loopback or any non-web scheme) could be answered by another
+// program on the device, so a sign-in that ends there is handed over only after the person's click.
+// An address that cannot be read counts as one of these.
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+function deviceDestination(value) {
+  try { const url = new URL(value);return !['http:', 'https:'].includes(url.protocol) || LOOPBACK_HOSTS.has(url.hostname); } catch { return true; }
+}
+// The registered product whose arrival address this is (an earlier-approved request carries only that address).
+function destinationProduct(value, config) {
+  const clients = [...Object.entries(config.clients).map(([product, client]) => ({ product, clientId: client.clientId })), ...config.authorizationClients.map(client => ({ product: client.product, clientId: client.clientId }))];
+  return clients.find(({ clientId }) => { if (!clientId) return false;try { trustedConsentRedirect(value, config, clientId);return true; } catch { return false; } })?.product || null;
+}
 const AUTH_LABELS = { login: '로그인', signup: '이메일로 가입', recover: '재설정 메일 보내기', reset: '새 비밀번호 저장', 'email-change': '이메일 변경 확인하기' };
 // After a mail went out, the same button sends it again for the same address.
 const RESEND_LABELS = { recover: '메일 다시 보내기' };
@@ -117,6 +129,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const recoveryGrace = userId => { try { const value = JSON.parse(recoveryStorage?.getItem(RECOVERY_KEY) || 'null');return !!userId && value?.userId === userId && Number.isFinite(value.until) && value.until > Date.now(); } catch { return false; } };
   const cooldowns = new Map(), feedbacks = new Map();let cooldownTimer = null, logoutPending = null, signedOutSubject = null;
   let automaticAuthorizationAttempted = false;
+  // An app on this device that was approved before: its arrival address, opened only by 「연결하기」.
+  let consentTarget = null;
   // The verified account whose app request was gone, and whether that request was PATH's.
   let staleRecovery = null;
   let google = null;
@@ -254,23 +268,42 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       || ['recover', 'reset'].includes(mode) && button.dataset.view === 'signup'; });
   };
   const guarded = token => () => { if (token !== generation || !session) throw Object.assign(new Error('로그인 상태가 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
+  // One card for every connect request. An app on this device also names the signed-in account and says when to press.
+  function showConsent({ product, destination, scopes, native }) {
+    let address = null;try { address = new URL(destination); } catch { /* shown as text only */ }
+    // The production Care client was registered under the shared platform product.
+    $('consent-name').textContent = address?.origin === 'https://synk.im' && address.pathname === '/care/' ? 'SYNK 플레저' : PRODUCTS[product] || 'SYNK 서비스';
+    $('consent-destination').textContent = destination;
+    $('scopes').replaceChildren(...scopes.map(scope => { const li = document.createElement('li');li.textContent = ({ openid: '계정을 구분하는 정보', email: '이메일 주소', profile: '기본 프로필' })[scope] || scope;return li; }));
+    const account = $('consent-account'), email = session?.user?.email;
+    if (account) { account.hidden = !native || !email;setText(account, native && email ? `로그인한 계정: ${email}` : ''); }
+    const deviceNote = $('consent-native');if (deviceNote) deviceNote.hidden = !native;
+    $('consent').hidden = false;
+    // The device line comes first so the synthetic preview shows the very notice people will see.
+    notice(native ? '이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했다면, 계정을 확인하고 「연결하기」를 눌러 주세요.' : preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.'
+      : automaticAuthorizationAttempted ? '연결할 앱을 보고 「연결하기」나 「취소」를 눌러 주세요.' : '로그인한 계정으로 앱에 연결하고 있어요…');
+  }
   async function loadConsent(check) {
     const result = await bounded(sdk.auth.oauth.getAuthorizationDetails(authorizationId));check();
     // The account is verified but this app's request is gone: offer a restart, not the sign-in form.
     if (result.error && staleAuthorization(result.error)) { showStaleAuthorization(pathEntryHint());return; }
     if (result.error) throw result.error;
-    if (result.data?.redirect_url) { location.assign(trustedConsentRedirect(result.data.redirect_url, config));return; }
-    details = result.data;
-    const authorization = firstPartyAuthorization(details, config), product = authorization.product;
-    const destination = new URL(authorization.destination);
-    // The production Care client was registered under the shared platform product.
-    $('consent-name').textContent = destination.origin === 'https://synk.im' && destination.pathname === '/care/' ? 'SYNK 플레저' : PRODUCTS[product] || 'SYNK 서비스';
-    $('consent-destination').textContent = details.redirect_uri;
-    $('scopes').replaceChildren(...(details.scope || '').split(' ').filter(Boolean).map(scope => { const li = document.createElement('li');li.textContent = ({ openid: '계정을 구분하는 정보', email: '이메일 주소', profile: '기본 프로필' })[scope] || scope;return li; }));
-    $('consent').hidden = false;notice(preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.' : automaticAuthorizationAttempted ? '연결할 앱을 보고 「연결하기」나 「취소」를 눌러 주세요.' : '로그인한 계정으로 앱에 연결하고 있어요…');
-    // Only the registered first-party request may proceed without a second click.
-    // A failure, account change or duplicate SDK event never starts an auto-retry.
-    if (!preview && !automaticAuthorizationAttempted) {
+    if (result.data?.redirect_url) {
+      const target = trustedConsentRedirect(result.data.redirect_url, config);
+      if (!deviceDestination(target)) { location.assign(target);return; }
+      // Approved before, but its address is on this device: it still waits for this click.
+      details = null;consentTarget = target;
+      // Shown without the one-time code and state the address carries.
+      const shown = new URL(target);shown.search = '';shown.hash = '';
+      showConsent({ product: destinationProduct(target, config), destination: shown.href, scopes: ['openid', 'email', 'profile'], native: true });
+      return;
+    }
+    details = result.data;consentTarget = null;
+    const authorization = firstPartyAuthorization(details, config), native = deviceDestination(authorization.destination);
+    showConsent({ product: authorization.product, destination: details.redirect_uri, scopes: (details.scope || '').split(' ').filter(Boolean), native });
+    // Only a registered first-party request that returns to a web address may proceed without a second click.
+    // An app on this device always waits for 「연결하기」. A failure, account change or duplicate SDK event never starts an auto-retry.
+    if (!preview && !native && !automaticAuthorizationAttempted) {
       automaticAuthorizationAttempted = true;
       await respondToAuthorization('approveAuthorization', check);
     }
@@ -288,7 +321,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   }
   // Signed in, only the app connection must start again: no form, no old connect card, no new sign-up.
   function showStaleAuthorization(path) {
-    staleRecovery = { subject: session?.user?.id || null, path: path === true };details = null;
+    staleRecovery = { subject: session?.user?.id || null, path: path === true };details = null;consentTarget = null;
     $('consent').hidden = true;$('auth-panel').hidden = true;if ($('account-next')) $('account-next').hidden = true;
     setText($('consent-name'), '');setText($('consent-destination'), '');$('scopes').replaceChildren();
     cooldowns.delete('consent');feedbacks.delete('consent');renderControls();
@@ -306,6 +339,16 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // After the restart card nothing answers the gone request again, not a duplicate auth event nor an old button.
     if (closed || staleRecovery || consentOperation || remaining('consent') > 0) return;
     check();
+    if (consentTarget) {
+      // Approved before: 「연결하기」 opens the app's address with its one-time code; 「취소」 sends the app only
+      // the standard refusal with its own state (never the code), so the app stops waiting at once.
+      const target = consentTarget;consentTarget = null;consentOperation = { redirecting: true };renderControls();
+      if (method === 'approveAuthorization') { location.assign(target);return; }
+      const cancel = new URL(target), state = cancel.searchParams.get('state');cancel.search = '';cancel.searchParams.set('error', 'access_denied');if (state) cancel.searchParams.set('state', state);
+      location.assign(cancel.href);return;
+    }
+    // Nothing is waiting once a card was answered or closed (a stray press does nothing).
+    if (!details) return;
     const authorization = firstPartyAuthorization(details, config);
     const operation = { redirecting: false }, token = generation, entry = entryId;
     // Only the answer for this screen, account and press may redirect, report or show the restart card.
@@ -331,7 +374,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   }
   async function enter() {
     if (closed) return;
-    view?.stop();view = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;hero(false);
+    view?.stop();view = null;consentTarget = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;hero(false);
     // The restart card belongs to one signed-in account; sign-out or another account starts clean.
     if (staleRecovery && staleRecovery.subject !== (session?.user?.id || null)) staleRecovery = null;
     const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true;
@@ -585,7 +628,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // A successful new sign-in request can authorize this account again.
     if (signedOutSubject && value?.user?.id === signedOutSubject) return;
     authVersion++;const next = value?.user?.id || null, changed = next !== subject;
-    if (changed) { generation++;subject = next;google?.reset();security.hide();view?.stop();consentOperation = null;clearCooldowns();staleRecovery = null;const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true; }session = value;
+    if (changed) { generation++;subject = next;google?.reset();security.hide();view?.stop();consentOperation = null;consentTarget = null;clearCooldowns();staleRecovery = null;const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true; }session = value;
     if (event === 'PASSWORD_RECOVERY') { mode = 'reset';recoveryReady = true;rememberRecovery(next); }
     const version = authVersion, token = generation, awaitingCallback = hadCallback && !initializationFinished;
     // SIGNED_IN may precede the SDK's URL cleanup. Judge only its final initialize result.

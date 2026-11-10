@@ -1,13 +1,16 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),fsp=fs.promises,os=require('node:os'),path=require('node:path'),vm=require('node:vm');
 const {Readable}=require('node:stream'),{createHash}=require('node:crypto');
-const {MANIFEST_URL,MAX_MANIFEST_BYTES,MAX_INSTALLER_BYTES,compareVersion,validateManifest,createPlatformUpdater}=require('../src/platform-update.cjs');
+const {MANIFEST_URL,MAX_MANIFEST_BYTES,MAX_INSTALLER_BYTES,UPDATE_SIGNING_KEYS,compareVersion,validateManifest,verifyManifestSignature,trustedSigningKeys,createPlatformUpdater}=require('../src/platform-update.cjs');
+const {signManifest,keyEntry}=require('../tools/update-signing.cjs');
+// Synthetic feed key: every served feed is signed the way the publisher signs it.
+const testKey=require('node:crypto').generateKeyPairSync('ed25519'),otherKey=require('node:crypto').generateKeyPairSync('ed25519'),trustedKeys=trustedSigningKeys([keyEntry(testKey.publicKey)]);
 const {createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
 const payload=Buffer.from('synthetic public Signal installer'),sha=value=>createHash('sha256').update(value).digest('hex');
 const now=Date.parse('2026-10-14T12:00:00.000Z');
-function manifest({version='0.4.5',buildId='20261015.1',platform='win32',arch='x64',bytes=payload.length,hash=sha(payload)}={}){
+function manifest({version='0.4.5',buildId='20261015.1',platform='win32',arch='x64',bytes=payload.length,hash=sha(payload),key=testKey.privateKey}={}){
   const releaseId=`platform-preview-${version}`;
-  return {schemaVersion:1,product:'platform',channel:'preview',version,buildId,releaseId,publishedAt:'2026-10-14T11:00:00.000Z',artifacts:[{platform,arch,url:`https://github.com/unmet23-lab/synk-policy/releases/download/${releaseId}/SYNK-Platform-Preview-${version}.${platform==='win32'?'exe':'dmg'}`,bytes,sha256:hash,asarSHA256:'a'.repeat(64)}]};
+  return signManifest({schemaVersion:1,product:'platform',channel:'preview',version,buildId,releaseId,publishedAt:'2026-10-14T11:00:00.000Z',artifacts:[{platform,arch,url:`https://github.com/unmet23-lab/synk-policy/releases/download/${releaseId}/SYNK-Platform-Preview-${version}.${platform==='win32'?'exe':'dmg'}`,bytes,sha256:hash,asarSHA256:'a'.repeat(64)}]},key);
 }
 const options={platform:'win32',arch:'x64',currentVersion:'0.4.4',currentBuildId:'20261014.1',now};
 function response(data,{status=200,headers={}}={}){return {status,headers,body:Readable.from(Array.isArray(data)?data:[Buffer.isBuffer(data)?data:Buffer.from(typeof data==='string'?data:JSON.stringify(data))])};}
@@ -17,7 +20,7 @@ async function fixture(t,{platform='win32',arch='x64',enabled=true,document=mani
   const directory=await fsp.mkdtemp(path.join(os.tmpdir(),'synk-platform-update-')),cacheRoot=path.join(directory,'updates'),requests=[],changes=[],installed=[],opened=[];let quits=0;
   const config=customConfig||{manifestUrl:MANIFEST_URL,channel:'preview',releaseId:'platform-preview-0.4.4',buildId:'20261014.1'};
   const request=async(url,requestOptions)=>{requests.push(url);return customRequest?customRequest(url,requestOptions):url===MANIFEST_URL?response(document):response(payload,{headers:{'content-length':String(payload.length)}});};
-  const updater=createPlatformUpdater({enabled,config,currentVersion:'0.4.4',platform,arch,cacheRoot,request,now:()=>now,onChange:value=>changes.push(value),requestQuit:()=>{quits++;},openInstaller:async file=>{installed.push(file);},openDiskImage:async file=>{opened.push(file);return '';},...overrides});
+  const updater=createPlatformUpdater({enabled,config,currentVersion:'0.4.4',platform,arch,cacheRoot,request,now:()=>now,onChange:value=>changes.push(value),requestQuit:()=>{quits++;},openInstaller:async file=>{installed.push(file);},openDiskImage:async file=>{opened.push(file);return '';},trustedKeys,...overrides});
   t.after(async()=>{updater.dispose();await fsp.rm(directory,{recursive:true,force:true});});
   return {updater,cacheRoot,directory,requests,changes,installed,opened,quits:()=>quits,document};
 }
@@ -31,6 +34,34 @@ test('manifest requires the matching product, channel, release, platform and can
   const invalid=[{schemaVersion:2},{product:'world'},{channel:'stable'},{releaseId:'platform-preview-0.4.3'},{version:['0.4.5']},{buildId:['20261015.1']},{buildId:'../elsewhere'},{publishedAt:'tomorrow'},{publishedAt:'2026-10-20T00:00:00.000Z'},{artifacts:[]},{artifacts:Array(5).fill(manifest().artifacts[0])}];
   for(const patch of invalid)assert.throws(()=>validateManifest({...manifest(),...patch},options));
   assert.throws(()=>validateManifest(manifest({arch:'arm64'}),options),{updateCode:'UPDATE_PLATFORM_UNAVAILABLE'});
+});
+test('a feed is believed only when a pinned Ed25519 key signed exactly these members',()=>{
+  const signed=manifest();assert.equal(verifyManifestSignature(signed,{trustedKeys}),signed.signature.keyId);
+  const {signature,...unsigned}=signed;
+  const rejected=[unsigned,{...signed,signature:null},{...signed,signature:{...signature,alg:'rsa'}},{...signed,signature:{...signature,extra:1}},{...signed,signature:{...signature,value:signature.value.slice(0,10)+(signature.value[10]==='A'?'B':'A')+signature.value.slice(11)}},{...signed,signature:{...signature,value:signature.value.slice(0,-3)+(signature.value.at(-3)==='A'?'B':'A')+'=='}},
+    {...signed,version:'0.4.9'},{...signed,artifacts:[{...signed.artifacts[0],sha256:'b'.repeat(64)}]},{...signed,artifacts:[{...signed.artifacts[0],url:signed.artifacts[0].url.replace('.exe','-x.exe')}]},{...signed,added:true},manifest({key:otherKey.privateKey}),[],null,'feed'];
+  for(const value of rejected)assert.throws(()=>verifyManifestSignature(value,{trustedKeys}),{updateCode:'UPDATE_SIGNATURE_INVALID'},JSON.stringify(value)?.slice(0,80));
+  assert.throws(()=>verifyManifestSignature(signed,{trustedKeys:[]}),{updateCode:'UPDATE_SIGNATURE_INVALID'});
+  // Member order is part of the signed text, and the signature member may sit anywhere in the file.
+  const reordered={signature,...unsigned};assert.equal(verifyManifestSignature(reordered,{trustedKeys}),signature.keyId);
+  const {schemaVersion,...rest}=unsigned;assert.throws(()=>verifyManifestSignature({...rest,schemaVersion,signature},{trustedKeys}),{updateCode:'UPDATE_SIGNATURE_INVALID'});
+  // A feed parsed from its published text verifies the same way, and re-signing gives the same bytes.
+  assert.equal(verifyManifestSignature(JSON.parse(JSON.stringify(signed,null,2)),{trustedKeys}),signature.keyId);
+  assert.deepEqual(signManifest(signed,testKey.privateKey),signed);
+});
+test('pinned signing keys are well-formed Ed25519 public keys named by their own hash',()=>{
+  assert.ok(Array.isArray(UPDATE_SIGNING_KEYS));assert.doesNotThrow(()=>trustedSigningKeys(UPDATE_SIGNING_KEYS));
+  for(const bad of [[{keyId:'0'.repeat(16),spki:keyEntry(testKey.publicKey).spki}],[keyEntry(testKey.publicKey),keyEntry(testKey.publicKey)],[{...keyEntry(require('node:crypto').generateKeyPairSync('ec',{namedCurve:'P-256'}).publicKey)}],'keys'])assert.throws(()=>trustedSigningKeys(bad));
+});
+test('unsigned, foreign-key or altered feeds stop before any installer download',async t=>{
+  const {signature,...unsigned}=manifest();
+  for(const document of [unsigned,manifest({key:otherKey.privateKey}),{...manifest(),artifacts:[{...manifest().artifacts[0],sha256:'c'.repeat(64)}]}]){
+    const f=await fixture(t,{document});const result=await f.updater.checkForUpdate();
+    assert.equal(result.state,'error');assert.equal(result.code,'UPDATE_SIGNATURE_INVALID');
+    assert.equal((await f.updater.downloadUpdate()).code,'UPDATE_NOT_AVAILABLE');
+    await f.updater.checkInBackground();assert.deepEqual(f.requests,[MANIFEST_URL,MANIFEST_URL]);assert.equal(f.quits(),0);assert.deepEqual(f.installed,[]);
+  }
+  const none=await fixture(t,{trustedKeys:[]});none.updater.start();assert.equal((await none.updater.checkForUpdate()).state,'disabled');assert.equal(none.requests.length,0);
 });
 test('downgrades and same-version different builds cannot become install candidates',()=>{
   assert.throws(()=>validateManifest(manifest({version:'0.4.3'}),options),{updateCode:'UPDATE_DOWNGRADE_REJECTED'});

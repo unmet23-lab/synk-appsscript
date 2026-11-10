@@ -68,7 +68,9 @@ namespace Synk.SignalInstaller
                                             return engine.InstallAutomaticUpdate(request, delegate(InstallProgress progress) { window.Dispatcher.Invoke(delegate { window.ShowProgress(progress); }); });
                                         }
                                     });
-                                    if (result.Updated) { window.ShowComplete(); window.Close(); }
+                                    // Updated but not reopened: keep the finished window so its
+                                    // open button can start the new version.
+                                    if (result.Updated) { window.ShowComplete(); if (result.Relaunched) window.Close(); }
                                     else
                                     {
                                         // Not updated. Unless restored and relaunched (closed

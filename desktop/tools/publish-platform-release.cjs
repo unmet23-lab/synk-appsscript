@@ -3,6 +3,8 @@
 // Build first. This command never rebuilds or replaces a published release asset.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process');
 const {validateManifest,compareVersion}=require(fs.existsSync(path.join(__dirname,'../src/platform-update.cjs'))?'../src/platform-update.cjs':'../source/src/platform-update.cjs');
+// The feed is signed here, on the publisher's PC, with a key pinned in the app (update-signing.cjs).
+const {signForPublication}=require('./update-signing.cjs');
 const REPO='unmet23-lab/synk-policy', FEED='desktop/releases/preview.json';
 const assert=(ok,message)=>{if(!ok)throw Error(message);};
 const json=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');};
@@ -106,7 +108,8 @@ async function verifyLocalFiles(manifest,directory,{remoteArtifacts=[]}={}){
 async function main(){
   const get=name=>process.argv.find(a=>a.startsWith('--'+name+'='))?.slice(name.length+3);
   for(const name of ['manifest','artifacts','public','client'])assert(get(name),'Missing --'+name+'=<path>');
-  const manifest=JSON.parse(fs.readFileSync(get('manifest'),'utf8')),publicDir=path.resolve(get('public')),artifactDir=path.resolve(get('artifacts'));
+  // Signing is deterministic, so a resumed --apply rebuilds the very feed it staged before.
+  const manifest=signForPublication(JSON.parse(fs.readFileSync(get('manifest'),'utf8')),{keyFile:get('signing-key')}),publicDir=path.resolve(get('public')),artifactDir=path.resolve(get('artifacts'));
   const feed=path.join(publicDir,FEED);
   const previous=fs.existsSync(feed)?JSON.parse(fs.readFileSync(feed,'utf8')):run('git',['ls-tree','--name-only','HEAD','--',FEED],publicDir)?JSON.parse(run('git',['show','HEAD:'+FEED],publicDir)):null;
   const names=validateRelease(manifest,previous);

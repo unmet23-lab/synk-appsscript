@@ -652,6 +652,61 @@ test('automatic login waits for central credentials then uses the same first-par
   assert.equal(page.calls.length, 1);assert.deepEqual(page.destinations, [automaticRedirect]);
 });
 
+// An app on this device (loopback or private-use scheme) gets the sign-in only after the person's click (RFC 8252 §8.6).
+const deviceApp = 'http://127.0.0.1:43821/synk/oauth/platform/callback';
+const deviceRedirect = `${deviceApp}?code=synthetic-device-code&state=synthetic-device-state`;
+const deviceSession = id => ({ user: { id, email: `${id}@example.test` }, access_token: `synthetic-access-${id}` });
+test('an app on this device waits for 「연결하기」 and names the signed-in account', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), initialReplies: { approveAuthorization: { data: { redirect_url: deviceRedirect } } } });
+  assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
+  assert.equal(page.get('consent').hidden, false);assert.equal(page.get('consent-native').hidden, false);
+  assert.equal(page.get('consent-account').hidden, false);assert.equal(page.get('consent-account').textContent, '로그인한 계정: owner-a@example.test');
+  assert.match(page.notice.textContent, /이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했다면/);
+  await page.emit('TOKEN_REFRESHED', deviceSession('owner-a'));await page.emit('SIGNED_IN', deviceSession('owner-a'));
+  assert.deepEqual(page.calls, [], 'a repeated auth event never approves an app on this device');
+  await page.get('approve').onclick();
+  assert.deepEqual(page.calls, [{ method: 'approveAuthorization', args: ['synthetic-authorization', { skipBrowserRedirect: true }] }]);
+  assert.deepEqual(page.destinations, [deviceRedirect]);
+});
+test('an app on this device approved before opens only after 「연결하기」', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), consentDetails: { redirect_url: deviceRedirect } });
+  assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);assert.equal(page.get('consent').hidden, false);
+  assert.equal(page.get('consent-destination').textContent, deviceApp, 'the one-time code is never shown');
+  assert.equal(page.get('consent-name').textContent, 'SYNK 플랫폼');assert.equal(page.get('consent-account').textContent, '로그인한 계정: owner-a@example.test');
+  await page.get('approve').onclick();
+  assert.deepEqual(page.calls, [], 'the earlier approval is not asked again');
+  assert.deepEqual(page.destinations, [deviceRedirect]);
+});
+test('an app on this device approved before gets only the refusal after 「취소」', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), consentDetails: { redirect_url: deviceRedirect } });
+  assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);assert.equal(page.get('consent').hidden, false);
+  assert.equal(page.get('consent-destination').textContent, deviceApp, 'the one-time code is never shown');
+  assert.equal(page.get('consent-name').textContent, 'SYNK 플랫폼');assert.equal(page.get('consent-account').textContent, '로그인한 계정: owner-a@example.test');
+  await page.get('deny').onclick();
+  assert.deepEqual(page.calls, [], 'the earlier approval is not asked again');
+  assert.deepEqual(page.destinations, [`${deviceApp}?error=access_denied&state=synthetic-device-state`], 'only the refusal reaches the app, never the code');
+  await page.get('approve').onclick();assert.equal(page.destinations.length, 1);assert.deepEqual(page.calls, []);
+});
+test('a web destination approved before still returns at once without a card', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: deviceSession('owner-a'), consentDetails: { redirect_url: automaticRedirect } });
+  assert.deepEqual(page.destinations, [automaticRedirect]);assert.deepEqual(page.calls, []);
+});
+test('an account change asks again for the account now signed in and never opens the address of the earlier account', async t => {
+  const answer = { redirect_url: deviceRedirect }, ownerB = `${deviceApp}?code=synthetic-owner-b-code&state=synthetic-device-state`;
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), consentDetails: answer });
+  answer.redirect_url = ownerB;await page.emit('SIGNED_IN', deviceSession('owner-b'));
+  assert.deepEqual(page.destinations, []);assert.equal(page.get('consent-account').textContent, '로그인한 계정: owner-b@example.test');
+  await page.get('approve').onclick();assert.deepEqual(page.destinations, [ownerB]);
+});
+test('an account change to one not approved before goes through the click and the approval call', async t => {
+  const answer = { redirect_url: deviceRedirect };
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), consentDetails: answer, initialReplies: { approveAuthorization: { data: { redirect_url: `${deviceApp}?code=synthetic-owner-b-code&state=s` } } } });
+  delete answer.redirect_url;Object.assign(answer, { client: { id: 'synthetic-client', name: '합성 앱' }, redirect_uri: deviceApp, scope: 'openid email profile' });
+  await page.emit('SIGNED_IN', deviceSession('owner-b'));
+  assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
+  await page.get('approve').onclick();
+  assert.deepEqual(page.calls.map(call => call.method), ['approveAuthorization']);assert.deepEqual(page.destinations, [`${deviceApp}?code=synthetic-owner-b-code&state=s`]);
+});
 const expiredAppRequest = { status: 404, code: 'oauth_authorization_not_found', message: 'authorization not found' };
 const pathPublicEntry = 'https://synk.im/path/app/';
 const pathAuthorizationClients = [{ product: 'platform', clientId: 'synthetic-path-app', redirectUris: ['http://127.0.0.1:4326/', pathPublicEntry] }];

@@ -161,6 +161,18 @@ internal static class SignalInstallerTests
                 ExpectFailure(delegate { InstallOnWorker(engine); });
                 Assert(!held.HasExited, "Engine stopped the fixture process.");
             });
+            Check("only this Windows session's copies count as running", delegate
+            {
+                int own = InstallerEngine.CurrentSessionId();
+                var mine = engine.ApplicationProcessesInSession(own);
+                try { Assert(mine.Any(process => process.Id == held.Id), "The running fixture in this session was not counted."); }
+                finally { foreach (Process process in mine) process.Dispose(); }
+                // A session no process here can be in stands for another Windows account's session.
+                var other = engine.ApplicationProcessesInSession(own + 4096);
+                try { Assert(other.Count == 0, "A copy outside the inspected session was counted."); }
+                finally { foreach (Process process in other) process.Dispose(); }
+                Assert(engine.ApplicationProcessCount() >= 1 && !held.HasExited, "Session count missed or stopped the fixture.");
+            });
             Check("automatic update rejects the same installed version while preserving its live process", delegate
             {
                 ExpectFailure(delegate { engine.PrepareAutomaticUpdate(held.Id,new string('a',64),new string('b',64)); });
@@ -306,6 +318,21 @@ internal static class SignalInstallerTests
                         Assert(!holder.HasExited,"The installer stopped a running app process.");
                         File.WriteAllText(Path.Combine(Root,"linger-long","stop"),"stop");Assert(holder.WaitForExit(5000),"Held fixture did not stop.");
                         File.Delete(failureRecord);File.Delete(result.RecoveryFile);
+                    }
+                });
+                Check("a verified update whose relaunch fails stays updated and leaves no rollback barrier",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        var committed=Engine(ReadSpec());
+                        var result=Task.Run(delegate { return committed.InstallAutomaticUpdateCore(sessionFor(exited),Progress,delegate(Action<InstallProgress> progress){return committed.InstallPayload(progress,BackendProcess.DeadlineMilliseconds);},delegate(string executable,string arguments){throw new IOException("Synthetic relaunch failure");}); }).GetAwaiter().GetResult();
+                        Assert(result.Updated&&!result.Relaunched&&!result.Restored,"Relaunch failure undid a verified update: "+result.Message);
+                        string pending=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt");
+                        Assert(!File.Exists(pending),"A committed update left the recovery barrier.");
+                        string record=File.ReadAllText(failureRecord);
+                        Assert(record.Contains("\"stage\":\"relaunch\"")&&record.Contains("\"outcome\":\"updated\"")&&record.Contains("Synthetic relaunch failure"),"Relaunch failure was not recorded: "+record);
+                        File.Delete(failureRecord);
+                        engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
                     }
                 });
                 Check("an unwritable failure record never changes the update outcome",delegate

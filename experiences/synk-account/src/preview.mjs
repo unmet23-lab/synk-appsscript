@@ -3,9 +3,12 @@ import { createAccountView } from './account-view.mjs';
 import { readConfig } from './core.mjs';
 // Explicit, separately built fixture. Real entry points never import this module.
 const params = new URL(location.href).searchParams;
+// ?device: the connect card for an app on this PC (a loopback arrival address) with the signed-in account named.
+const device = params.has('device'), deviceArrival = 'http://127.0.0.1:43822/synk/oauth/world/callback';
 const config = readConfig({ version: 1, supabaseUrl: 'https://preview.invalid', supabasePublishableKey: 'sb_publishable_preview_only', portalUrl: location.href,
-  clients: { platform: { clientId: 'preview-platform', redirectUri: new URL('./client.html?product=platform', location.href).href }, world: { clientId: 'preview-world', redirectUri: new URL('./client.html?product=world', location.href).href } } }, location.href);
-const session = { access_token: 'synthetic-not-a-token', user: { id: 'synthetic-user' } };
+  clients: { platform: { clientId: 'preview-platform', redirectUri: new URL('./client.html?product=platform', location.href).href }, // Without ?device the arrival is a web address even when this page itself is served from 127.0.0.1.
+  world: { clientId: 'preview-world', redirectUri: device ? deviceArrival : 'https://preview.invalid/client.html?product=world' } } }, location.href);
+const session = { access_token: 'synthetic-not-a-token', user: { id: 'synthetic-user', ...(device ? { email: 'learner@example.invalid' } : {}) } };
 let signedIn = params.has('account') || params.has('authorization_id'), enabled = !params.has('disabled'), revision = 1, deleting = params.has('deleting'), deletion = deleting ? { request_id: '00000000-0000-4000-8000-000000000001', requested_at: new Date(Date.now() - 86400000).toISOString() } : null, authListener;
 // 계정 지우기 요청 줄(합성). 기한은 talk 계정 서비스처럼 요청 + 7일.
 const deletionRow = status => deletion && { ...deletion, kind: 'delete', status, completed_at: null, due_at: new Date(Date.parse(deletion.requested_at) + 7 * 86400000).toISOString() };

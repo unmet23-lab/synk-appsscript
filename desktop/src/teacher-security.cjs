@@ -1,9 +1,10 @@
 'use strict';
 const {teacherNavigation,teacherResource,teacherFrame,teacherPolicy,TEACHER}=require('./teacher-preview.cjs');
-function secureTeacherSession(ownSession,entry=TEACHER.entry){
+// gate: local-server-owner.cjs — requests to the fixed local port wait until this OS user's program is found there.
+function secureTeacherSession(ownSession,entry=TEACHER.entry,gate=null){
   ownSession.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
   ownSession.setPermissionCheckHandler(()=>false);
-  ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*','file://*/*']},(details,callback)=>callback({cancel:!teacherResource(details.url,entry)}));
+  ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*','file://*/*']},(details,callback)=>{if(!teacherResource(details.url,entry)){callback({cancel:true});return;}if(gate)gate.decide(details.url,callback);else callback({});});
   ownSession.webRequest.onHeadersReceived((details,callback)=>callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[teacherPolicy(details.resourceType)]}}));
   ownSession.removeAllListeners('will-download');ownSession.on('will-download',event=>event.preventDefault());
 }

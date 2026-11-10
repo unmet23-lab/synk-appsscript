@@ -18,7 +18,7 @@ for(const leaf of ['profile/Roaming','profile/Local','profile/Temp','programs'])
 const input={out,archive,version:release.version,buildId:release.buildId,appData:path.join(out,'profile/Roaming'),programs:path.join(out,'programs'),prefix:'SYNK_STARTUP_QA '};
 function observe(config){
   process.stderr.write('SYNK_QA_TRACE observer-installed\n');
-  const {app,shell,BrowserWindow}=require('electron'),fs=require('node:fs'),path=require('node:path');
+  const {app,shell,BrowserWindow}=require('electron'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
   app.setPath('appData',config.appData);
   const checks=[],errors=[],requests=[],providerRequests=[],opened=[],forbidden=[],pageErrors=[],states=[],screenshots=[];
   let startupWindow,mainWindow,mainCount=0,startupCount=0,feedRequests=0,finished=false,startupReadyResolve,startupReadyReject,quitObserved=false;
@@ -40,13 +40,21 @@ function observe(config){
   const updates=require(app.getAppPath()+'/src/platform-update.cjs'),original=updates.createPlatformUpdater;
   const runtime=JSON.parse(fs.readFileSync(app.getAppPath()+'/runtime.json','utf8'));
   check('candidate runtime identity',runtime.update.buildId===config.buildId&&runtime.update.releaseId==='platform-preview-'+config.version);
-  updates.createPlatformUpdater=options=>original({...options,request:async url=>{
+  // The candidate must pin real signing keys and refuse an unsigned feed; the QA feed below is signed by a
+  // throwaway key handed only to this isolated updater, never by the publisher's key.
+  check('packaged updater pins update signing keys',Array.isArray(updates.UPDATE_SIGNING_KEYS)&&updates.UPDATE_SIGNING_KEYS.length>=1&&updates.trustedSigningKeys(updates.UPDATE_SIGNING_KEYS).length===updates.UPDATE_SIGNING_KEYS.length);
+  const qaKey=crypto.generateKeyPairSync('ed25519'),qaSpki=qaKey.publicKey.export({type:'spki',format:'der'});
+  const qaKeys=updates.trustedSigningKeys([{keyId:crypto.createHash('sha256').update(qaSpki).digest('hex').slice(0,16),spki:qaSpki.toString('base64')}]);
+  const signQa=value=>({...value,signature:{alg:'ed25519',keyId:qaKeys[0].keyId,value:crypto.sign(null,updates.signedManifestPayload(value),qaKey.privateKey).toString('base64')}});
+  let unsignedRejected=false;try{updates.verifyManifestSignature({schemaVersion:1});}catch(error){unsignedRejected=error.updateCode==='UPDATE_SIGNATURE_INVALID';}
+  check('packaged updater rejects an unsigned feed',unsignedRejected);
+  updates.createPlatformUpdater=options=>original({...options,trustedKeys:qaKeys,request:async url=>{
     check('updater requests only the fixed manifest URL',url===updates.MANIFEST_URL);
     feedRequests++;
     if(feedRequests===1){await startupReady;check('main remains absent while startup check is pending',mainCount===0);}
     else await sleep(220);
     const manifest={schemaVersion:1,product:'platform',channel:'preview',version:config.version,releaseId:runtime.update.releaseId,buildId:config.buildId,publishedAt:new Date().toISOString(),artifacts:[{platform:'win32',arch:'x64',url:'https://github.com/unmet23-lab/synk-policy/releases/download/'+runtime.update.releaseId+'/qa-never-downloaded.exe',bytes:1,sha256:'a'.repeat(64),asarSHA256:'b'.repeat(64)}]};
-    return {status:200,headers:{},body:require('node:stream').Readable.from([Buffer.from(JSON.stringify(manifest))])};
+    return {status:200,headers:{},body:require('node:stream').Readable.from([Buffer.from(JSON.stringify(signQa(manifest)))])};
   },onChange:value=>{states.push(value.state);options.onChange?.(value);}});
   function blockNetwork(contents){contents.session.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>{requests.push({url:details.url,method:details.method,resourceType:details.resourceType});callback({cancel:true});});contents.on('console-message',event=>{if(event.level==='error')pageErrors.push({message:event.message.slice(0,400),source:event.sourceId.split('?')[0],line:event.lineNumber});});}
   app.on('will-quit',()=>{quitObserved=true;process.stdout.write('SYNK_STARTUP_QA_QUIT '+JSON.stringify({normalQuit:true,mainCount,startupCount})+'\n');});

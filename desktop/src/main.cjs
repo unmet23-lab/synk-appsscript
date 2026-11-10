@@ -39,6 +39,7 @@ const {launchWindowsUpdate}=require('./platform-update-handoff.cjs');
 const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
+const {createLocalServerGate}=require('./local-server-owner.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -55,6 +56,7 @@ else {
 if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode,runtime)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
 const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
 const current=identity(runtime.clientId,runtime.mode,{packaged}),entry=messengerViewEntry(runtime.entry,runtime.clientId,process.argv);
+const localServer=createLocalServerGate({entry:runtime.entry});
 const publicApps=createPublicApps({clientId:runtime.clientId,mode:runtime.mode,openExternal:url=>shell.openExternal(url),accountStatus:()=>accountStatus()});
 const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath});
 const smokeArtifacts=smoke?(packaged?path.join(app.getPath('temp'),'SYNK Desktop Smoke',current.sessionScope):path.join(__dirname,'..','artifacts')):null;
@@ -251,6 +253,8 @@ function createWindow(){
   ownSession.setPermissionRequestHandler((contents,permission,callback,details)=>callback(worldNotification(contents,permission,details?.requestingUrl,details?.isMainFrame)));
   ownSession.setPermissionCheckHandler((contents,permission,_origin,details)=>worldNotification(contents,permission,details?.requestingUrl||contents?.getURL?.(),details?.isMainFrame));
   if(smoke&&runtime.clientId==='platform')ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>{smokeNetworkRequests.push(details.url);callback({cancel:true});});
+  // A development entry on a fixed local port is loaded only while this OS user's own program answers it.
+  else if(localServer.required)ownSession.webRequest.onBeforeRequest({urls:['http://*/*','ws://*/*']},(details,callback)=>localServer.decide(details.url,callback));
   ownSession.webRequest.onHeadersReceived((details,callback)=>callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[details.url.startsWith('synk-desktop://platform/')?nativeContentSecurityPolicy():details.url.startsWith('synk-desktop://status/')?connectionContentSecurityPolicy():contentSecurityPolicy(details.resourceType)]}}));
   ownSession.removeAllListeners('will-download');
   ownSession.on('will-download',createDownloadHandler({getWindow:()=>window,session:ownSession,entry,clientId:runtime.clientId,

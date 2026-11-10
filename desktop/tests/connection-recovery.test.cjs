@@ -31,7 +31,7 @@ async function mainFixture(runtime={clientId:'world',mode:'development',entry:EN
     focus(){}
     loadURL(url){return contents.loadURL(url);}
   }
-  const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onHeadersReceived(handler){headersHandler=handler;}},removeAllListeners(){},on(){},protocol:{handle(_scheme,handler){protocolHandler=handler;}}};
+  const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onBeforeRequest(){},onHeadersReceived(handler){headersHandler=handler;}},removeAllListeners(){},on(){},protocol:{handle(_scheme,handler){protocolHandler=handler;}}};
   const noop=()=>({});
   const stubs={
     electron:{app,BrowserWindow:Window,ipcMain:{removeHandler(){},handle(){}},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{},dialog:{},safeStorage:{}},

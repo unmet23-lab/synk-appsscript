@@ -108,16 +108,39 @@ namespace Synk.SignalInstaller
             return directory;
         }
 
+        // The app is installed per Windows account, so only copies running in this
+        // installer's own Windows session can hold this account's files. Another
+        // account's SYNK (or any process it names alike) must neither refuse this
+        // account's install nor wedge its update. A process whose session cannot be
+        // read is counted as ours: refusing is always safer than replacing files
+        // under an open app.
+        internal static int CurrentSessionId()
+        {
+            using (Process self = Process.GetCurrentProcess()) return self.SessionId;
+        }
+        internal List<Process> ApplicationProcessesInSession(int sessionId)
+        {
+            var mine = new List<Process>();
+            foreach (Process process in Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(spec.ExecutableName)))
+            {
+                bool ours;
+                try { ours = process.SessionId == sessionId; } catch (Exception) { ours = true; }
+                if (ours) mine.Add(process); else process.Dispose();
+            }
+            return mine;
+        }
+        internal int ApplicationProcessCount()
+        {
+            List<Process> running = ApplicationProcessesInSession(CurrentSessionId());
+            foreach (Process process in running) process.Dispose();
+            return running.Count;
+        }
+
         public string Preflight()
         {
             CheckPendingTransaction();
             if (!Environment.Is64BitOperatingSystem) throw new InvalidOperationException("64비트 Windows에서만 설치할 수 있어요.");
-            Process[] running = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(spec.ExecutableName));
-            try
-            {
-                if (running.Length != 0) throw new InvalidOperationException(Short + "가 켜져 있어요.\n작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
-            }
-            finally { foreach (Process p in running) p.Dispose(); }
+            if (ApplicationProcessCount() != 0) throw new InvalidOperationException(Short + "가 켜져 있어요.\n작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
             if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey, "InstallLocation")) ||
                 !String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, UninstallKey, "UninstallString")))
                 throw new InvalidOperationException("모든 Windows 계정용 " + Short + "가 이미 설치돼 있어요. 그 설치를 지운 뒤 지금 계정용으로 설치해 주세요.");

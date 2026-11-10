@@ -75,7 +75,7 @@ async function mainFixture({argv=['--view=teaching'],authConfig=raw,dialog={}}={
   Object.assign(app,{isPackaged:true,enableSandbox(){},setName(){},setPath(){},getPath:name=>name==='home'?'C:\\Users\\synthetic':'C:\\synthetic\\messenger',getAppPath:()=>'/synthetic/app',getVersion:()=> '0.4.0',setAppUserModelId(){},requestSingleInstanceLock:()=>true,whenReady:()=>Promise.resolve()});
   const contents=new EventEmitter();Object.assign(contents,{mainFrame:frame,getURL:()=>frame.url,setWindowOpenHandler(){},send:(...args)=>sent.push(args)});
   class Window extends EventEmitter{constructor(){super();this.webContents=contents;window=this;}isDestroyed(){return false;}isMinimized(){return false;}show(){}focus(){}}
-  const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onHeadersReceived(){}},removeAllListeners(){},on(){},protocol:{handle(){}}};
+  const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onBeforeRequest(){},onHeadersReceived(){}},removeAllListeners(){},on(){},protocol:{handle(){}}};
   const noop=()=>({});
   const stubs={
     electron:{app,BrowserWindow:Window,ipcMain:{removeHandler:k=>handlers.delete(k),handle:(k,v)=>handlers.set(k,v)},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{openExternal:()=>{throw Error('No external navigation allowed');}},dialog,safeStorage:{}},

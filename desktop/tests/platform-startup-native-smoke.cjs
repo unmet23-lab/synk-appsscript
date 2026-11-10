@@ -4,7 +4,7 @@
 // is opened or modified. No network and no native confirmation UI are used.
 const {app,BrowserWindow}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{spawn}=require('node:child_process'),{Readable}=require('node:stream'),{createHash}=require('node:crypto');
-const {createPlatformUpdater,MANIFEST_URL}=require('../src/platform-update.cjs');
+const {createPlatformUpdater,MANIFEST_URL}=require('../src/platform-update.cjs'),smokeSigning=(()=>{const {signManifest,keyEntry}=require('../tools/update-signing.cjs'),{trustedSigningKeys}=require('../src/platform-update.cjs'),pair=require('node:crypto').generateKeyPairSync('ed25519');return {trustedKeys:trustedSigningKeys([keyEntry(pair.publicKey)]),sign:value=>signManifest(value,pair.privateKey)};})();
 const {createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
 const {launchWindowsUpdate}=require('../src/platform-update-handoff.cjs');
 const {installDraftExitGuard}=require('../src/draft-exit.cjs');
@@ -29,7 +29,7 @@ app.whenReady().then(async()=>{
   const childScript=path.join(output,'synthetic-wait-parent.cjs');
   fs.writeFileSync(childScript,"const fs=require('node:fs');const pid=Number(process.argv.find(v=>v.startsWith('--wait-pid=')).slice(11));const nonce=process.argv.find(v=>v.startsWith('--handoff-token=')).slice(16);process.stdout.write('SYNK_UPDATE_READY '+nonce+'\\n');let count=0;const timer=setInterval(()=>{try{process.kill(pid,0);}catch{clearInterval(timer);fs.writeFileSync(process.env.SYNK_UPDATE_TEST_RESULT,JSON.stringify({ok:true,parentExited:true}));return;}if(++count>300){clearInterval(timer);process.exitCode=1;}},50);");
   updater=createPlatformUpdater({enabled:true,config:{manifestUrl:MANIFEST_URL,channel:'preview',releaseId:'platform-preview-0.4.4',buildId:'20261014.1'},currentVersion:'0.4.4',platform:'win32',arch:'x64',cacheRoot:path.join(output,'synthetic-cache'),now:()=>Date.parse('2026-10-14T12:00:00Z'),onChange:value=>gate?.observe(value),
-    request:async url=>({status:200,headers:{},body:Readable.from([url===MANIFEST_URL?Buffer.from(JSON.stringify(document)):bytes])}),requestQuit:()=>setImmediate(()=>app.quit()),
+    trustedKeys:smokeSigning.trustedKeys,request:async url=>({status:200,headers:{},body:Readable.from([url===MANIFEST_URL?Buffer.from(JSON.stringify(smokeSigning.sign(document))):bytes])}),requestQuit:()=>setImmediate(()=>app.quit()),
     openInstaller:async(_file,options)=>{assert.equal(options.automatic,true);assert.equal(window.isDestroyed(),true);await launchWindowsUpdate({file:'synthetic-only',pid:process.pid,automatic:true,nonce,spawn:(_file,args,settings)=>spawn(process.execPath,[childScript,...args],{...settings,env:{...process.env,ELECTRON_RUN_AS_NODE:'1',SYNK_UPDATE_TEST_RESULT:path.join(output,'child-result.json')}})});handshakes++;}});
   window=new BrowserWindow({show:false,width:400,height:300,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
   installDraftExitGuard({window,contents:window.webContents,dialog:{showMessageBoxSync(){prompts++;return answer;}}});

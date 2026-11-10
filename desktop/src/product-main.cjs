@@ -12,10 +12,13 @@ const {sourceScope}=require('./catalog.cjs');
 const {bindCareIPC,sendCareAuth}=require('./care-account.cjs');
 const {bindPersonalIPC,sendPersonalAuth}=require('./personal-account.cjs');
 const {RESOURCES:PERSONAL_RESOURCES}=require('./personal-requests.cjs');
+const {createLocalServerGate}=require('./local-server-owner.cjs');
 const ids=process.argv.filter(arg=>arg.startsWith('--synk-product-preview='));
 const current=ids.length===1?product(ids[0].slice('--synk-product-preview='.length)):null;
 if(app.isPackaged||!current)throw Error('Product preview requires a fixed local development entry.');
 const smoke=process.argv.includes('--synk-smoke'),sessionScope=current.sessionScope+(smoke?'.smoke':'');
+// The fixed local port is believed only while a program of this OS user answers it (local-server-owner.cjs).
+const localServer=createLocalServerGate({entry:current.entry});
 const authConfigPath=resolveAuthConfigPath();
 const personalProduct=PERSONAL_RESOURCES.includes(current.id),accountProduct=['fortune','care'].includes(current.id)||personalProduct;
 const rawAuth=accountProduct&&authConfigPath?JSON.parse(fs.readFileSync(path.resolve(authConfigPath),'utf8')):null;
@@ -42,7 +45,7 @@ function createWindow(){
   // Recording and immersive VR stay explicit browser actions; native permissions remain denied.
   ownSession.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
   ownSession.setPermissionCheckHandler(()=>false);
-  ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*','file://*/*']},(details,callback)=>callback({cancel:!productResource(current.id,details.url)}));
+  ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*','file://*/*']},(details,callback)=>{if(!productResource(current.id,details.url)){callback({cancel:true});return;}localServer.decide(details.url,callback);});
   ownSession.webRequest.onHeadersReceived((details,callback)=>callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[productPolicy()]}}));
   ownSession.removeAllListeners('will-download');ownSession.on('will-download',createProductDownloadHandler({id:current.id,getWindow:()=>window,onDenied(reason){
     if(!smoke&&window&&!window.isDestroyed())void dialog.showMessageBox(window,productDownloadNotice(reason));

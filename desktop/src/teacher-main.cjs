@@ -4,6 +4,7 @@ const path=require('node:path'),fs=require('node:fs');
 const {preferences}=require('./security.cjs');
 const {TEACHER}=require('./teacher-preview.cjs');
 const {secureTeacherSession,secureTeacherWindow}=require('./teacher-security.cjs');
+const {createLocalServerGate}=require('./local-server-owner.cjs');
 const {configuration}=require('./auth-config.cjs');
 const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
@@ -33,7 +34,7 @@ else{
 }
 function createWindow(){
   const partition='persist:'+sessionScope,ownSession=session.fromPartition(partition);
-  secureTeacherSession(ownSession);
+  secureTeacherSession(ownSession,TEACHER.entry,createLocalServerGate({entry:TEACHER.entry}));
   if(!registered)ownSession.protocol.handle('synk-teacher',()=>new Response('<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>WORLD · 교사</title><h1>WORLD · 교사</h1><p>교사 앱의 로컬 연결을 준비하고 있어요.</p><p>미리보기 서버를 시작한 뒤 앱을 다시 열어 주세요.</p></html>',{headers:{'content-type':'text/html; charset=utf-8','content-security-policy':"default-src 'none'; frame-ancestors 'none'"}}));
   registered=true;
   window=new BrowserWindow({width:1320,height:900,minWidth:360,minHeight:500,title:TEACHER.name+' Preview',icon:path.join(__dirname,'..','assets','world.png'),show:false,autoHideMenuBar:true,backgroundColor:'#ffffff',webPreferences:preferences(path.join(__dirname,'teacher-preload.cjs'),partition)});
