@@ -1,6 +1,7 @@
 # 블프 두 편 — 소리를 Gemini에 직접 들려 묻는다(2026-11-07). 현장노트 AI_CLI 「소리를 들려 맹검할 때 … gemini-3.6-flash가 mp3를 직접 들었다」와 같은 길(무료 키, inlineData).
-#   python -X utf8 블프_소리듣기.py <질문 파일(.txt)> <소리 파일…> [--모델 gemini-3.6-flash] [-o 답.md]
+#   python -X utf8 블프_소리듣기.py <질문 파일(.txt)> <소리 파일…> [--모델 gemini-3.6-flash] [-o 답.md] [--영상]
 # 아르곤 웹은 영상의 소리를 못 듣는다(같은 절). 키 값은 찍지 않는다. 목소리 결(나이 · 성별) 판단은 반만 믿는다(같은 절).
+# --영상(11-10 블프 글자 다시): 휴대폰 판 mp4(20MB 아래)를 소리째 video/mp4로 보내 「화면의 박과 소리의 박이 맞나」를 묻는다 — 소리 켠 전체 확인.
 import base64
 import json
 import os
@@ -25,6 +26,9 @@ def mp3(path):
 def main():
     a = sys.argv[1:]
     model, out = "gemini-3.6-flash", None
+    video = "--영상" in a
+    if video:
+        a.remove("--영상")
     if "--모델" in a:
         i = a.index("--모델"); model = a[i + 1]; del a[i:i + 2]
     if "-o" in a:
@@ -33,6 +37,10 @@ def main():
     key = open(os.path.expanduser("~/SYNK_보안/제미나이_무료.txt"), encoding="utf-8").read().strip().split()[-1]
     parts = [{"text": q}]
     for k, f in enumerate(files, 1):
+        if video:
+            parts.append({"text": f"[영상 {k}]"})
+            parts.append({"inlineData": {"mimeType": "video/mp4", "data": base64.b64encode(open(f, "rb").read()).decode()}})
+            continue
         parts.append({"text": f"[소리 {k}]"})
         parts.append({"inlineData": {"mimeType": "audio/mp3", "data": base64.b64encode(mp3(f)).decode()}})
     body = {"contents": [{"role": "user", "parts": parts}]}

@@ -20,7 +20,10 @@ const T15 = TT([0, 0.96, 2.28, 3.04, 3.64, 3.76, 4.48, 5.16, 6.16, 7.68, 8.6, 11
 const T6 = TT([0, 0.9, 2.2, 3.7, 4.6, 6.0]);
 
 type Len = 15 | 6;
-type Props = { len: Len; end?: 'scene' | 'card' };
+// glyph(11-10 슬롭 점검표 55번 훑기 — 폰트 정본 §10): 'now' 11-07 완성본 그대로 · 'A' 전광판(벽 화면 · ② 카드 · 끝을 LED 점 화면으로)
+//   · 'B' 그린 숫자(벽 화면은 LED, ②는 플라이휠 원판 「70%」, 끝은 「힘껏 | 70%」 묶음). 로고는 A · B 모두 11-10 판(빛 번짐 없음).
+type Glyph = 'now' | 'A' | 'B';
+type Props = { len: Len; end?: 'scene' | 'card'; glyph?: Glyph };
 
 // 남은 초(자정까지) — 15초는 실제 초대로(콘티: 0초 59:59 · 0.5초 58 · 6.5초 52 …), 6초는 컷마다 콘티 값(59 → 57 → 55)
 const remain = (len: Len, t: number) => {
@@ -35,16 +38,19 @@ const clock = (s: number) => `00:${String(Math.floor(s / 60)).padStart(2, '0')}:
 
 // ---------- 벽 화면(전광판 · 간판 · 끝 시계) — 벽화면자리.py가 장마다 잰 자리에 붙인다 ----------
 type Track = { from: number; rect: number[]; m: number[][] };
-const WallScreen: React.FC<{ track: Track; frame: number; children: React.ReactNode; out?: number }> = ({ track, frame, children, out = 0 }) => {
+// blend: LED 점 층(LED.py — 꺼진 점은 검정)을 화면에 screen으로 얹는다. 겉 div가 transform으로 쌓임 맥락을 만들어 안쪽 섞기는 영상과 안 섞이므로 겉에 건다
+const WallScreen: React.FC<{ track: Track; frame: number; children: React.ReactNode; out?: number; blend?: boolean }> = ({ track, frame, children, out = 0, blend = false }) => {
   const k = Math.max(0, Math.min(track.m.length - 1, frame - track.from));
   const [s, , tx, ty] = track.m[k];
   const [x0, y0, x1, y1] = track.rect;
   return (
-    <div style={{ position: 'absolute', left: 0, top: 0, transformOrigin: '0 0', transform: `matrix(${s},0,0,${s},${tx - out},${ty})`, zIndex: 3 }}>
+    <div style={{ position: 'absolute', left: 0, top: 0, transformOrigin: '0 0', transform: `matrix(${s},0,0,${s},${tx - out},${ty})`, zIndex: 3, mixBlendMode: blend ? 'screen' : undefined }}>
       <div style={{ position: 'absolute', left: x0, top: y0, width: x1 - x0, height: y1 - y0, overflow: 'hidden' }}>
         {/* 화면이 켜진 빛 — 검은 화면 안쪽만 아주 옅게 */}
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 42%, rgba(255,150,70,0.16), rgba(255,90,30,0.04) 62%, rgba(0,0,0,0) 80%)' }} />
-        {children}
+        {/* LED 층(blend)은 영상의 벽 화면처럼 살짝 초점 밖으로 흐리고, 유리 덮개의 옅은 사선 반사를 얹는다(11-10 맹검 3차) */}
+        {blend ? <div style={{ position: 'absolute', inset: 0, filter: 'blur(1.4px)' }}>{children}</div> : children}
+        {blend ? <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(255,255,255,0) 30%, rgba(210,200,255,0.05) 44%, rgba(255,255,255,0) 58%)' }} /> : null}
       </div>
     </div>
   );
@@ -92,6 +98,91 @@ const FlapSign: React.FC<{ w: number; h: number; t: number; land: number }> = ({
         );
       })}
     </div>
+  );
+};
+
+// ---------- 11-10 LED 점 화면(블프_작품글자_20261110/LED.py → public/s3/led) ----------
+const LedImg: React.FC<{ name: string; opacity?: number; style?: React.CSSProperties }> = ({ name, opacity = 1, style }) => (
+  <Img src={staticFile(`s3/led/${name}.png`)} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', opacity, ...style }} />
+);
+const clockKey = (sec: number) => `clock_${clock(sec).replace(/:/g, '')}`;
+
+// ⑥ LED 간판 — 남은 초(59 → 57 → 54 → 51)를 점으로 넘기다 4.24에 그린 「힘껏」이 점으로 켜진다(깜빡 두 번)
+const LedSign: React.FC<{ t: number; land: number }> = ({ t, land }) => {
+  if (t >= land) {
+    const q = t - land;
+    const flick = q < 0.12 && Math.floor(q * 48) % 3 === 1 ? 0.35 : 1;
+    return <LedImg name="sign_logo" opacity={flick} />;
+  }
+  const seq = ['59', '57', '54', '51'];
+  const step = 0.085;
+  const idx = Math.max(0, Math.min(seq.length - 1, Math.floor((t - (land - seq.length * step)) / step)));
+  return <LedImg name={`sign_${seq[idx]}`} />;
+};
+
+// ② 시안 A — 화면 가득한 LED 판 가까이. 판 움직임은 옛 카드와 같은 박(살금 → 「팡」 앞 두 장에 1.16배 + 오른쪽 5%),
+// 「오늘 자정까지 · 전 품목」은 위에서 아래로 줄이 켜지고, 「70%」는 「팡」에 켜지며 판 전체가 한 번 번쩍(조각 대신 — LED가 내는 「팡」).
+const LedCard: React.FC<{ t: number; a: number; b: number; hit: number }> = ({ t, a, b, hit }) => {
+  if (t < a || t >= b) return null;
+  const punchA = hit - 0.12, punchB = hit - 0.04;
+  const s0 = 1 + 0.02 * ramp(t, a, punchA - a, (x) => x);
+  const sc = t < punchA ? s0 : t < punchB ? 1.02 + 0.14 * ramp(t, punchA, punchB - punchA, (x) => x) : 1.16 + 0.02 * ramp(t, punchB, b - punchB, (x) => x);
+  const dx = t < punchA ? 0 : 40 * Math.min(1, (t - punchA) / (punchB - punchA));
+  // 「자정까지」 — 전광판 자막처럼 오른쪽에서 점 단위(10px)로 흘러 들어와 0.26초에 선다. 「전 품목」은 0.2초에 켜짐,
+  // 「70%」는 「팡」에 켜졌다 한 장 꺼졌다 다시(전광판 깜빡) + 한 장 과하게 밝았다 내려앉는다(11-10 1차: 판 전체 번쩍은 회색 덩어리로 읽힘)
+  const slide = 1 - ramp(t, a, 0.26, EXPO);
+  const dx1 = Math.round((slide * 760) / 10) * 10;
+  const on2 = t >= a + 0.2 ? 1 : 0;
+  const f70 = Math.floor((t - hit) * 24);
+  const on70 = t < hit ? 0 : f70 === 1 ? 0 : 1;
+  const boost = t >= hit ? 1 + 1.1 * Math.max(0, 1 - (t - hit) / 0.2) : 1;
+  const full: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' };
+  const board = (
+    <>
+      <Img src={staticFile('s3/led/card_base.png')} style={full} />
+      <Img src={staticFile('s3/led/card_l1.png')} style={{ ...full, mixBlendMode: 'screen', transform: `translateX(${dx1}px)` }} />
+      <Img src={staticFile('s3/led/card_l2.png')} style={{ ...full, mixBlendMode: 'screen', opacity: on2 }} />
+      <Img src={staticFile('s3/led/card_70.png')} style={{ ...full, mixBlendMode: 'screen', opacity: on70, filter: boost > 1 ? `brightness(${boost})` : undefined }} />
+    </>
+  );
+  return (
+    <AbsoluteFill style={{ zIndex: 20, overflow: 'hidden', background: '#050407' }}>
+      <AbsoluteFill style={{ transform: `translateX(${dx}px) scale(${sc})`, isolation: 'isolate' }}>
+        {board}
+        {/* 가까이 찍은 판 — 초점은 글자 줄, 위아래 끝은 살짝 흐림(같은 판을 흐려 위아래에만) */}
+        <AbsoluteFill style={{ filter: 'blur(3px)', WebkitMaskImage: 'linear-gradient(#000 0%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 80%, #000 100%)', maskImage: 'linear-gradient(#000 0%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 80%, #000 100%)', isolation: 'isolate' }}>
+          {board}
+        </AbsoluteFill>
+        {/* 판 겉 덮개에 비친 스튜디오 — 옅은 사선 띠 하나와 왼쪽 붉은 네온 번짐(11-10 맹검 2차 「테 · 조명 반사 없는 평면 배경」) */}
+        <AbsoluteFill style={{ background: 'linear-gradient(118deg, rgba(255,120,70,0) 38%, rgba(255,140,90,0.06) 47%, rgba(255,120,70,0) 56%)', mixBlendMode: 'screen' }} />
+        <AbsoluteFill style={{ background: 'radial-gradient(ellipse at -8% 46%, rgba(255,50,40,0.22), rgba(255,50,40,0) 46%)', mixBlendMode: 'screen' }} />
+      </AbsoluteFill>
+      <AbsoluteFill style={{ background: 'radial-gradient(ellipse at 52% 46%, rgba(0,0,0,0) 46%, rgba(0,0,0,0.55) 100%)' }} />
+    </AbsoluteFill>
+  );
+};
+
+// ② 시안 B — 흐린 스튜디오 위에 그린 「70%」(%의 두 동그라미가 힘껏 로고와 같은 플라이휠 원판) 하나. 판 · 빛살 · 조각 · 빛 번짐 없음.
+// 「전 품목」은 같은 무거운 기운 글자로 처음부터, 「70%」는 작게 먼저 서 있다가 「팡」에 꽉 차게 박힌다(두 장 넘침 + 화면 흔들림).
+const DrawnCard: React.FC<{ t: number; a: number; b: number; hit: number }> = ({ t, a, b, hit }) => {
+  if (t < a || t >= b) return null;
+  const pre = ramp(t, a, 0.14, EXPO);
+  const q = t - hit;
+  const s70 = t < hit ? 0.5 + 0.06 * ramp(t, a, hit - a, (x) => x) : q < 1 / 24 ? 1.12 : q < 2 / 24 ? 0.97 : 1.0;
+  const shake = q >= 0 && q < 0.2 ? Math.sin(q * 140) * 10 * (1 - q / 0.2) : 0;
+  const lift = t < hit ? 0 : -18 * ramp(t, hit, 0.18, EXPO);
+  return (
+    <AbsoluteFill style={{ zIndex: 20, overflow: 'hidden' }}>
+      <AbsoluteFill style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(20,10,40,0.25), rgba(8,4,20,0.72) 80%)' }} />
+      <AbsoluteFill style={{ transform: `translate(${shake}px, ${shake * 0.4}px)`, alignItems: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ opacity: pre, transform: `translateY(${(1 - pre) * 20 + lift}px)`, marginBottom: 46 }}>
+          <Logo name="jeonpummok" width={430} color={CREAM} />
+        </div>
+        <div style={{ transform: `scale(${s70})`, transformOrigin: '50% 40%' }}>
+          <Logo name="seventy" width={900} color={DAHONG} />
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
   );
 };
 
@@ -267,7 +358,7 @@ const Cell: React.FC<{ t: number; spins: Spin[]; y: number; tag: boolean; enter:
   );
 };
 
-const Grid: React.FC<{ t: number; a: number; b: number; cells: Spin[][]; tag: boolean; sec: number; note?: string }> = ({ t, a, b, cells, tag, sec, note }) => {
+const Grid: React.FC<{ t: number; a: number; b: number; cells: Spin[][]; tag: boolean; sec: number; note?: string; glyph?: Glyph }> = ({ t, a, b, cells, tag, sec, note, glyph = 'now' }) => {
   if (t < a || t >= b) return null;
   const head = ramp(t, a, 0.2, EXPO);
   return (
@@ -275,7 +366,9 @@ const Grid: React.FC<{ t: number; a: number; b: number; cells: Spin[][]; tag: bo
       <AbsoluteFill style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(27,20,70,0.25), rgba(12,8,32,0.72) 75%)' }} />
       <div style={{ position: 'absolute', left: 0, right: 0, top: 80, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: head, transform: `translateY(${(1 - head) * -30}px)` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 26 }}>
-          <Logo name="himkkeot" width={176} color={DAHONG} glow={6} glowColor="rgba(255,74,28,0.7)" />
+          {glyph === 'now'
+            ? <Logo name="himkkeot" width={176} color={DAHONG} glow={6} glowColor="rgba(255,74,28,0.7)" />
+            : <Logo name="himkkeot2" width={150} color={DAHONG} />}
           <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 50, color: CREAM, letterSpacing: '-0.02em' }}>운동복 블랙프라이데이</div>
         </div>
         <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14, padding: '8px 26px 10px', borderRadius: 999, background: DAHONG, boxShadow: '0 0 24px rgba(255,74,28,0.6)' }}>
@@ -340,6 +433,32 @@ const EndScene: React.FC<{ t: number; a: number; whip: number; wall: Track; fram
   );
 };
 
+// 11-10 끝 — 앞에 그린 로고(빛 번짐 · 조각 · 알약 없음). 아래 20%(릴스 · 쇼츠 글 자리)는 비운다.
+//   A: 「힘껏」 하나 — 맹검 2차 「허벅지 높이 어정쩡」 → 무릎 띠에 작게(화면 폭 27%) → 맹검 3차 「사타구니 · 허벅지 위에 작은 로고만 붕 떠 있음」.
+//      작아서 「얹힌」 것으로 읽혔다 → 11-06 유호님이 고르신 끝 로고 크기(화면 폭 55~60%)로 아래 20% 위에 크게, 어두운 띠를 짙게.
+//   B: 「힘껏 | 70%」 한 줄 묶음(같은 기운 · %는 같은 플라이휠 원판) — 같은 규칙으로 크게.
+//   벽 화면은 비운다(꺼진 화면) — 끝 컷은 강사 머리 · 주먹이 벽 가운데를 덮어 벽 글자가 「전 품」 · 「0:5」 조각으로만 삐져나와 어지러웠다(맹검 2차).
+const EndSceneNew: React.FC<{ t: number; a: number; glyph: Glyph }> = ({ t, a, glyph }) => {
+  if (t < a) return null;
+  const groupIn = ramp(t, a + 0.1, 0.22, EXPO);
+  return (
+    <>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 880, height: 1040, zIndex: 8, background: 'linear-gradient(rgba(10,6,30,0), rgba(10,6,30,0.52) 26%, rgba(10,6,30,0.74) 52%, rgba(10,6,30,0.7))', opacity: groupIn }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: glyph === 'A' ? 1150 : 1290, zIndex: 9, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 40, opacity: groupIn, transform: `translateY(${(1 - groupIn) * 18}px)` }}>
+        {glyph === 'A' ? (
+          <Logo name="himkkeot2" width={610} color="#FFF4EC" />
+        ) : (
+          <>
+            <Logo name="himkkeot2" width={360} color="#FFF4EC" />
+            <div style={{ width: 5, height: 180, background: 'rgba(255,244,236,0.55)', transform: 'skewX(-10deg)' }} />
+            <Logo name="seventy" width={470} color={DAHONG} />
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
 const EndCard: React.FC<{ t: number; a: number; len: Len }> = ({ t, a, len }) => {
   if (t < a) return null;
   const rays = ramp(t, a + 0.28, 0.2) * (1 - ramp(t, a + 0.9, 0.5));
@@ -361,7 +480,7 @@ const EndCard: React.FC<{ t: number; a: number; len: Len }> = ({ t, a, len }) =>
 };
 
 // ---------- 합성 ----------
-export const S3: React.FC<Props> = ({ len, end = 'scene' }) => {
+export const S3: React.FC<Props> = ({ len, end = 'scene', glyph = 'now' }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
   const T = len === 15 ? T15 : T6;
@@ -384,26 +503,42 @@ export const S3: React.FC<Props> = ({ len, end = 'scene' }) => {
       <AbsoluteFill style={{ transform: card ? 'translateY(550px)' : undefined, filter: blurBg ? 'blur(26px) brightness(0.5) saturate(1.25)' : undefined }}>
         <OffthreadVideo src={staticFile(`s3/picture_${len}.mp4`)} muted style={{ width: '100%', height: '100%' }} />
       </AbsoluteFill>
-      {/* ① 전광판 */}
+      {/* ① 전광판 — 'now'는 글꼴 글자 + 빛, A · B는 LED 점(11-10) */}
       {t < C.board[1] ? (
-        <WallScreen track={W.c01} frame={frame}>
-          <Led w={W.c01.rect[2] - W.c01.rect[0]} h={W.c01.rect[3] - W.c01.rect[1]} sec={remain(len, t)} />
-        </WallScreen>
+        glyph === 'now' ? (
+          <WallScreen track={W.c01} frame={frame}>
+            <Led w={W.c01.rect[2] - W.c01.rect[0]} h={W.c01.rect[3] - W.c01.rect[1]} sec={remain(len, t)} />
+          </WallScreen>
+        ) : (
+          <WallScreen track={W.c01} frame={frame} blend>
+            <LedImg name={clockKey(remain(len, t))} />
+          </WallScreen>
+        )
       ) : null}
-      {/* ⑥ 넘김판 간판 */}
+      {/* ⑥ 간판 — 'now'는 넘김판, A · B는 LED 점 */}
       {C.sign && t >= C.sign[0] && t < C.sign[1] ? (
-        <WallScreen track={W.c06} frame={frame}>
-          <FlapSign w={W.c06.rect[2] - W.c06.rect[0]} h={W.c06.rect[3] - W.c06.rect[1]} t={t} land={4.24} />
-        </WallScreen>
+        glyph === 'now' ? (
+          <WallScreen track={W.c06} frame={frame}>
+            <FlapSign w={W.c06.rect[2] - W.c06.rect[0]} h={W.c06.rect[3] - W.c06.rect[1]} t={t} land={4.24} />
+          </WallScreen>
+        ) : (
+          <WallScreen track={W.c06} frame={frame} blend>
+            <LedSign t={t} land={4.24} />
+          </WallScreen>
+        )
       ) : null}
       {/* 끝 — 판 없음(기본) · 원본 짜임(견줄 판) */}
-      {!card ? <EndScene t={t} a={C.end} whip={C.whip} wall={W[endCut]} frame={frame} len={len} /> : <EndCard t={t} a={C.end} len={len} />}
+      {card ? <EndCard t={t} a={C.end} len={len} /> : glyph === 'now'
+        ? <EndScene t={t} a={C.end} whip={C.whip} wall={W[endCut]} frame={frame} len={len} />
+        : <EndSceneNew t={t} a={C.end} glyph={glyph} />}
       {/* 사람 다시 얹기 — 벽 화면 글자가 머리 뒤로(①, 끝 휙 전) */}
       {!card ? <Subject film={film} cuts={cutsMask} t={t} /> : null}
       {C.fly ? <FlyCards t={t} a={C.fly[0]} b={C.fly[1]} /> : null}
-      <TextCard t={t} a={C.card[0]} b={C.card[1]} hit={C.hit} />
-      <Grid t={t} a={C.g1[0]} b={C.g1[1]} cells={g1} tag={false} sec={remain(len, t)} />
-      {C.g2 ? <Grid t={t} a={C.g2[0]} b={C.g2[1]} cells={g2} tag sec={remain(len, t)} /> : null}
+      {glyph === 'A' ? <LedCard t={t} a={C.card[0]} b={C.card[1]} hit={C.hit} />
+        : glyph === 'B' ? <DrawnCard t={t} a={C.card[0]} b={C.card[1]} hit={C.hit} />
+          : <TextCard t={t} a={C.card[0]} b={C.card[1]} hit={C.hit} />}
+      <Grid t={t} a={C.g1[0]} b={C.g1[1]} cells={g1} tag={false} sec={remain(len, t)} glyph={glyph} />
+      {C.g2 ? <Grid t={t} a={C.g2[0]} b={C.g2[1]} cells={g2} tag sec={remain(len, t)} glyph={glyph} /> : null}
       <Audio src={staticFile(`s3/sound_${len}.wav`)} />
     </AbsoluteFill>
   );

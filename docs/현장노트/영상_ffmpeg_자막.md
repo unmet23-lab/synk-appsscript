@@ -794,6 +794,20 @@
 - 고침: 첫 2초의 컷은 밝기 · 색이 확 바뀌는 끼움(켜진 폰과 손 쪽 0.5초)으로 둔다 → 「우리 1(1.4초)」.
 - 다시 확인: `node tools/오마주.js 나란히 <편> --영상 <최종.mp4>` 첫 2초 ✓.
 
+### 한글을 LED 점 화면으로 찍을 때 크게 그려 줄이면 획이 뭉개져 「자정까지」가 「자쩡마지」로 읽힌다 — 그 크기 그대로 1비트로 그린다 (2026-11-10 Claude)
+
+- 증상: 블프 세일 LED 전광판 시안(`video/블프_작품글자_20261110/LED.py`)에서 Noto Sans KR 700을 14줄 높이의 4배로 그려 BOX로 줄이고 문턱 0.5로 점을 켜자, 받침 · 겹자음이 이웃 획과 붙어 「자정까지」가 「자쩡마지」처럼 읽혔다(11~14줄 모두).
+- 원인: 줄일 때 가는 획 사이 틈이 회색으로 메워져 문턱을 넘는다. 실제 한글 전광판은 그 크기에 맞춘 비트맵 글꼴이라 획 사이가 늘 한 점 이상 비어 있다.
+- 고침: 목표 크기 그대로 `Image.new("1", …)` + `ImageDraw.fontmode = "1"`(안티에일리어싱 없음)로 그린다. 크기 · 굵기 비교판에서 가장 또렷한 값은 크기 16 · 굵기 500(15줄), 18 · 500(17줄), 작은 줄은 13~15 · 500. 굵기 700은 받침이 붙기 시작한다.
+- 다시 확인: 같은 비교판(크기 13~18 × 굵기 400 · 500 · 700)에서 「오늘 자정까지 전 품목」이 모두 바로 읽히고, 360px로 줄인 카드에서도 같다.
+
+### 워크트리 사본의 `자막시안_20261103/remotion`에는 `public` · `node_modules`가 없다 — 공용 작업본과 같은 두 연결을 걸고 렌더한다 (2026-11-10 Claude)
+
+- 증상: 워크트리(`D:\SYNK-worktrees\…`)의 자막시안 Remotion 폴더에 `public` · `node_modules`가 없어 그대로는 정지 장 · 렌더를 못 한다(서체 등록 · 화면 파일이 public에 있다).
+- 원인: 둘 다 git 밖이다. 공용 작업본에서는 `public` → `synk-vendor/pulse-portfolio12-20261024/최종/자막시안_public`, `node_modules` → `docs/마케팅/LAB_처음쓰는ㄹ_20261024/remotion/node_modules`로 가는 junction이다.
+- 고침: 워크트리에서 PowerShell `New-Item -ItemType Junction -Path <remotion>\public -Target <위 public>` · 같은 꼴로 `node_modules`. 장을 여럿 찍을 때는 `npx remotion still`(장마다 다시 묶음) 대신 `@remotion/renderer`로 한 번 묶고 여러 장을 찍는다(`video/블프_작품글자_20261110/스틸.mjs`). 사본을 지우기 전에는 junction부터 끊는다(git 노트 「junction이 든 워크트리를 통째로 지우면」).
+- 다시 확인: `node 스틸.mjs <작업.json>`이 s3 · s4 정지 장 29장을 한 번 묶어 찍었고 `git status`에 두 연결이 안 잡힌다(`.gitignore`의 `public` · `node_modules`).
+
 ## 목소리·받아쓰기
 
 ### Gemini TTS가 영어 지시문을 소리로 읽거나 없는 말을 지어낸다
