@@ -377,3 +377,7 @@ body .section#contact{padding-block:clamp(56px,8.4vh,88px)}
 .k-sv-sum{margin:12px 0 0;font-size:var(--k1);line-height:1.6;color:rgba(233,231,225,.78)}
 .k-sv-sum b{font-weight:500;color:#f3c34a}
 .k-sv-hero .sv-always{margin-top:12px;padding-top:0}
+/* 맹검 3회: 꼬리 글과 카드가 따로 떠 단청과 겹친다 → 꼬리 글을 품은 불투명한 판 하나로 */
+.k-gate-piece{gap:10px;padding:13px 12px 12px;border-radius:24px;background:#0b0c10;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 30px 60px -24px rgba(0,0,0,.85);text-shadow:none}
+.k-gate-piece span{padding:0 6px;border-radius:0;background:none;color:rgba(250,250,249,.72)}
+.k-gate-piece img{border-radius:14px;box-shadow:none}
