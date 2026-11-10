@@ -694,3 +694,168 @@ test('나라별 계정(11-10) — 퀴즈 칸을 닫아 두면 그 줄은 쉼이�
   // 확인해 true로 바꾸면 이야기 칸의 빈 날이 보인다(퀴즈 칸은 그대로 쉼)
   assert.deepEqual(cells(true), { reserve: 0, days: ['빔/쉼', '채움/쉼', '빔/쉼'] });
 });
+
+// ── 11-11 Fable 5.2 끝 판 검수 P2-9 · P3-9 — 돌림 판 · 나라별 계정 표기 ──
+const 나라계정 = (tz, extra = {}) => ({ brand: 'LAB', platform: 'youtube', dailyLine: 'LAB 나라별', timeZone: tz, dailyTimes: ['13:00', '21:00'],
+  dailyFormats: ['이야기', '노래'], dailyFrom: '2026-11-12', dailyFormatsFrom: { 노래: '미정' }, postRouteVerified: true, publicProfileComplete: true, ...extra });
+
+// 돌림 원본 한 편이 든 임시 저장소(docs/마케팅) — 씨앗은 11-02에 나갔고, 멕시코(현지 11-12) · 파라과이(현지 11-13) 돌림 판이 달렸다.
+// 검사 기록에는 recorded(판본 키 → 그 영상을 쓴 판 계정)의 영상만 적는다 — 크기 · 수정 · 지문 · 오디오 실측까지 지금 파일과 맞는 기록.
+function 돌림원본(t, { recorded = { MX: ['lab-mx-youtube'], PY: ['lab-py-youtube'] }, 맹검 = 통과맹검 } = {}) {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-돌림판-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const base = path.join(repo, 'docs', '마케팅');
+  const dir = path.join(base, 'LAB_원본', '게시');
+  for (const rel of ['seed/video.mp4', '판본/MX/video.mp4', '판본/PY/video.mp4']) {
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(dir, rel), rel);
+  }
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'lab-instagram': { brand: 'LAB', platform: 'instagram', dailyLine: 'LAB 몽골', timeZone: 'Asia/Ulaanbaatar', rotationSeed: true },
+    'lab-mx-youtube': 나라계정('America/Mexico_City'), 'lab-py-youtube': 나라계정('America/Asuncion') } }));
+  const entry = (key, 판) => {
+    const rel = `docs/마케팅/LAB_원본/게시/판본/${key}/video.mp4`;
+    const st = fs.statSync(path.join(repo, rel));
+    return { 경로: rel, 판, 바이트: st.size, 수정: new Date(st.mtimeMs).toISOString(), sha256: '1'.repeat(64), 오디오비트레이트: [{ channels: 2, actualBps: 333421 }] };
+  };
+  편('LAB_원본', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '돌림 원본',
+    돌림: { 판본: { MX: { 파일: '게시/판본/MX/video.mp4' }, PY: { 파일: '게시/판본/PY/video.mp4' } } },
+    판: [{ 계정: 'lab-instagram', 시각: '2026-11-02T20:00:00+08:00', 파일: 'seed/video.mp4' },
+      { 계정: 'lab-mx-youtube', 시각: '2026-11-12T13:00:00-06:00', 파일: '판본/MX/video.mp4', 돌림: true },
+      { 계정: 'lab-py-youtube', 시각: '2026-11-13T13:00:00-03:00', 파일: '판본/PY/video.mp4', 돌림: true }],
+    검사: { 결과: '확인할 것', 파일: Object.entries(recorded).map(([k, 판]) => entry(k, 판)) } },
+  { 판: [{ 계정: 'lab-instagram', 상태: '게시됨' }] }, base, 맹검);
+  return base;
+}
+function 돌림큐(base, args) {
+  const sentFile = path.join(base, '보낸글.txt');
+  const r = spawnSync(process.execPath, [tool, '--폴더', base, ...args],
+    { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(base, '상태'), SYNK_HERMES_EXE: 'file:' + sentFile } });
+  assert.equal(r.status, 0, r.stderr);
+  return { out: r.stdout, sent: fs.existsSync(sentFile) ? fs.readFileSync(sentFile, 'utf8') : '' };
+}
+
+test('P2-9 ⓐ 돌림 원본(슬롯 = 씨앗이 나간 옛 날)의 돌림 판이 「고칠 것」이면 판이 든 날(계정 현지 날짜)에 편 줄 · 까닭이 찍히고 fix · 알림에 든다 — 브랜드 표는 그대로 슬롯으로', (t) => {
+  const base = 돌림원본(t, { 맹검: null });
+  const j = JSON.parse(돌림큐(base, ['--오늘', '2026-11-11', '--일수', '5', '--json']).out);
+  // fix: 슬롯(11-02)은 지났어도 아직 걸 판이 11-12 · 11-13(현지)에 있다
+  assert.deepEqual(j.fix.map((x) => [x.folder, x.check, x.checkWhy, x.days]), [['LAB_원본', '고칠 것', '미학 맹검 없음', ['2026-11-12', '2026-11-13']]]);
+  // 판 날: 그날 판만 추려 그 판들의 상태로 — 브랜드 표(byDay)는 슬롯으로 세니 비어 있다
+  assert.deepEqual(j.brands.LAB.byDay['2026-11-12'], []);
+  const day = j.brands.LAB.plateDays['2026-11-12'];
+  assert.deepEqual(day.map((x) => [x.folder, x.state, x.plateDay, x.plates.map((p) => [p.account, p.rotation])]), [['LAB_원본', '승인 대기', true, [['lab-mx-youtube', true]]]]);
+  assert.deepEqual(j.brands.LAB.plateDays['2026-11-11'], [], '씨앗 판(11-02)은 범위 밖');
+  const { out } = 돌림큐(base, ['--오늘', '2026-11-11', '--일수', '5']);
+  assert.match(out, /^ {2}2026-11-12 LAB 승인 대기 · 돌림 원본 · 상시 · LAB_원본 · 검사 고칠 것\(미학 맹검 없음\) · 이날 판\(슬롯 2026-11-02\): lab-mx-youtube\(돌림\) —$/m);
+  assert.match(out, /^ {2}2026-11-13 LAB 승인 대기 · 돌림 원본 · 상시 · LAB_원본 · 검사 고칠 것\(미학 맹검 없음\) · 이날 판\(슬롯 2026-11-02\): lab-py-youtube\(돌림\) —$/m);
+  assert.match(out, /^LAB {9}· {6}· {6}· {6}· {6}· {6}0일$/m, '브랜드 표는 슬롯으로 센다');
+  // 알림: 어느 편 · 무슨 까닭 · 판 날
+  const { sent } = 돌림큐(base, ['--오늘', '2026-11-11', '--json', '--알림']);
+  assert.match(sent, /^검사 「고칠 것」 편: LAB_원본\(미학 맹검 없음 · 판 11-12, 11-13\)$/m);
+  // 다 걸린 돌림 원본은 고칠 것 목록에 들지 않는다(편 줄은 채움으로 남는다)
+  fs.writeFileSync(path.join(base, 'LAB_원본', '게시', '게시결과.json'), JSON.stringify({ 판: [{ 계정: 'lab-instagram', 상태: '게시됨' },
+    { 계정: 'lab-mx-youtube', 상태: '예약됨' }, { 계정: 'lab-py-youtube', 상태: '예약됨' }] }));
+  const done = JSON.parse(돌림큐(base, ['--오늘', '2026-11-11', '--일수', '5', '--json']).out);
+  assert.deepEqual([done.fix, done.brands.LAB.plateDays['2026-11-12'][0].state], [[], '채움']);
+});
+
+test('P2-9 ⓑ 검사 기록에 없는 판 영상(또는 기록 줄 「판」에 없는 계정)이 아직 걸 판이면 「검사 뒤 판이 더해짐 — 다시 검사」, 다시 검사한 기록 · 이미 나간 씨앗 판은 아니다', (t) => {
+  const fixOf = (base) => JSON.parse(돌림큐(base, ['--오늘', '2026-11-11', '--일수', '5', '--json']).out).fix.map((x) => [x.folder, x.check, x.checkWhy, x.added]);
+  // 파라과이 판을 단 뒤 다시 검사하지 않았다 — 씨앗 영상은 이미 나가 기록에 없어도 된다
+  const added = 돌림원본(t, { recorded: { MX: ['lab-mx-youtube'] } });
+  assert.deepEqual(fixOf(added), [['LAB_원본', '다시 검사', '검사 뒤 판이 더해짐(lab-py-youtube)', ['lab-py-youtube']]]);
+  const { out, sent } = 돌림큐(added, ['--오늘', '2026-11-11', '--일수', '5']);
+  assert.match(out, /^ {2}2026-11-13 LAB 승인 대기 · 돌림 원본 · 상시 · LAB_원본 · 검사 뒤 판이 더해짐\(lab-py-youtube\) — 다시 검사 · 이날 판\(슬롯 2026-11-02\): lab-py-youtube\(돌림\) —$/m);
+  assert.equal(sent, '');
+  assert.match(돌림큐(added, ['--오늘', '2026-11-11', '--json', '--알림']).sent, /^검사 「고칠 것」 편: LAB_원본\(검사 뒤 판이 더해짐\(lab-py-youtube\) — 다시 검사 · 판 11-12, 11-13\)$/m);
+  // 같은 영상 파일이 기록에 있어도 그 줄의 「판」에 이 계정이 없으면 이 판의 글 · 언어는 검사 밖이다
+  assert.deepEqual(fixOf(돌림원본(t, { recorded: { MX: ['lab-mx-youtube'], PY: ['lab-cl-youtube'] } })), [['LAB_원본', '다시 검사', '검사 뒤 판이 더해짐(lab-py-youtube)', ['lab-py-youtube']]]);
+  // 판을 단 뒤 다시 검사한 기록(두 판본 다)은 통과 — 옛 기록(「판」 목록 없음)도 영상만 맞으면 통과
+  assert.deepEqual(fixOf(돌림원본(t)), []);
+  assert.deepEqual(fixOf(돌림원본(t, { recorded: { MX: undefined, PY: undefined } })), []);
+  // 판본 파일을 아직 안 만든 채 판만 단 원본도 판 「파일」로 맞춰 본다 — 기록에 있으면 「판이 더해짐」이 아니다(영상이 없으니 다시 검사)
+  const missing = 돌림원본(t);
+  fs.rmSync(path.join(missing, 'LAB_원본', '게시', '판본', 'PY', 'video.mp4'));
+  assert.deepEqual(fixOf(missing), [['LAB_원본', '다시 검사', null, undefined]]);
+});
+
+test('P2-9 ⓒ 첫 판 시험 계정(원장 「첫판」) — 한 줄(판 없음 · 걸림 · 나감)로 보이고, 그 계정만 있는 줄 · 계정 줄 비축은 세지 않으며, 첫 판이 나갔는데 원장이 그대로면 경고', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-첫판-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'lab-youtube': { brand: 'LAB', platform: 'youtube', dailyLine: 'LAB 영어' },
+    'lab-mx-youtube': 나라계정('America/Mexico_City', { postRouteVerified: '첫판' }),
+    'lab-us-youtube': 나라계정('America/New_York', { postRouteVerified: '첫판' }),
+    'lab-ca-youtube': 나라계정('America/Toronto', { postRouteVerified: '첫판', dailyFrom: '2026-11-09' }) } }));
+  편('원본가', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '원본 가', 판: [
+    { 계정: 'lab-us-youtube', 시각: '2026-11-12T13:00:00-05:00', 돌림: true }, { 계정: 'lab-ca-youtube', 시각: '2026-11-10T13:00:00-05:00', 돌림: true }] },
+  결과([['lab-us-youtube', '예약됨'], ['lab-ca-youtube', '게시됨']]), base);
+  const { out: json, sent } = 돌림큐(base, ['--지금', '2026-11-11T21:30+09:00', '--json', '--알림']);
+  const j = JSON.parse(json);
+  assert.deepEqual(j.trial.map((x) => [x.account, x.state, x.day || null, x.folder || null]), [
+    ['lab-ca-youtube', '나감', '2026-11-10', '원본가'], ['lab-mx-youtube', '판 없음', null, null], ['lab-us-youtube', '걸림', '2026-11-12', '원본가']]);
+  const 나라별 = j.lines.find((l) => l.line === 'LAB 나라별');
+  assert.deepEqual([나라별.trial, 나라별.reserve, 나라별.made], [true, null, null]);
+  assert.equal(j.reserve, j.lines.find((l) => l.line === 'LAB 영어').reserve, '맨 위 비축은 셈하는 줄로만');
+  assert.ok(j.accounts.filter((r) => r.base === 'lab-mx-youtube' || r.account === 'lab-mx-youtube').every((r) => r.trial && r.reserve === null));
+  assert.equal(j.lines.find((l) => l.line === 'LAB 영어').reserve, 0);
+  assert.equal(j.reserveAlert.sent, true);
+  assert.doesNotMatch(j.reserveAlert.text, /LAB 나라별/, '첫 판 시험 줄은 비축 알림 밖');
+  const warning = '첫 판이 나갔는데 원장이 아직 「첫판」: lab-ca-youtube · 2026-11-10 · 원본가 — 공개 글을 로그인 없이 확인하고 sns-계정.json postRouteVerified를 true로';
+  assert.ok(j.warnings.includes(warning), j.warnings.join('\n'));
+  assert.ok(sent.includes(`! ${warning}`), '게시 큐 알림에도');
+  const { out } = 돌림큐(base, ['--지금', '2026-11-11T21:30+09:00']);
+  assert.match(out, /^LAB 나라별 {5}–.* {2}첫 판 시험\(비축 셈 밖\)$/m);
+  assert.match(out, /^lab-mx-youtube\s.*\s{2}첫판$/m);
+  assert.match(out, /^ {2}첫 판 시험 3곳\(원장 postRouteVerified 「첫판」 — 판 하나만 걸고, 나간 판을 확인하면 true로\) — 판 없음 1 · 걸림\(예약됨\) 1 · 나감\(게시됨 — 확인하고 원장을 true로\) 1 — 판 없음: lab-mx-youtube · 걸림: lab-us-youtube\(11-12 원본가\) · 나감: lab-ca-youtube\(11-10 원본가\)$/m);
+  // 걸린 첫 판의 시각이 지나면 공개를 확인하라고 덧붙이고, 판만 달리고 안 걸린 계정은 「판 달림(걸기 전)」
+  편('원본나', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '원본 나', 판: [{ 계정: 'lab-mx-youtube', 시각: '2026-11-14T13:00:00-06:00', 돌림: true }] }, null, base);
+  assert.match(돌림큐(base, ['--지금', '2026-11-13T06:00+09:00']).out,
+    /— 판 없음 0 · 판 달림\(걸기 전\) 1 · 걸림\(예약됨\) 1 · 나감\(게시됨 — 확인하고 원장을 true로\) 1 — 걸기 전: lab-mx-youtube\(11-14 원본나\) · 걸림: lab-us-youtube\(11-12 원본가 · 시각 지남 — 공개 확인\) · 나감: /);
+});
+
+test('P3-9 ⓐ 보류 칸(버린 편 — 새 편 칸)이 낀 날은 ○가 아니라 ◐, 나갈 편만 있는 날은 그대로 ○', () => {
+  const base = 매일판('보류낀날', [
+    ['mn-22', 한편('LAB', '2026-10-22', ['lab-instagram', 'lab-tiktok']), 결과([['lab-instagram', '예약됨'], ['lab-tiktok', '보류']])],
+    ['mn-23', 한편('LAB', '2026-10-23', ['lab-instagram', 'lab-tiktok']), 결과([['lab-instagram', '예약됨']])]]);
+  const mn = 매일큐(base, ['--오늘', '2026-10-21']).lines.find((l) => l.line === 'LAB 몽골');
+  assert.deepEqual(mn.byDay['2026-10-22'].cells, { 'lab-instagram': '채움', 'lab-tiktok': '보류' });
+  assert.deepEqual([mn.byDay['2026-10-22'].mark, mn.byDay['2026-10-23'].mark], ['◐', '○']);
+  const out = spawnSync(process.execPath, [tool, '--폴더', base, '--오늘', '2026-10-21'], { encoding: 'utf8' }).stdout;
+  assert.match(out, /^LAB 몽골 {6}· {6}◐ {6}○/m);
+  assert.match(out, /LAB 몽골 빈 칸: 10-22 lab-tiktok 보류 — 나가지 않아 새 편 칸 · 10-23 lab-tiktok 승인·예약 전/);
+});
+
+test('P3-9 ⓑ · ⓒ 경고 날짜는 그 계정 현지 날짜(한국 날짜와 다르면 한국 시각 덧붙임), 오늘 칸 가운데 그 계정 현지 시각으로 이미 지난 칸은 「오늘 빈 계정」이 아니라 「오늘 지난 빈 칸」', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-현지오늘-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'lab-youtube': { brand: 'LAB', platform: 'youtube', dailyLine: 'LAB 영어' },
+    'lab-instagram': { brand: 'LAB', platform: 'instagram', dailyLine: 'LAB 몽골', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['12:00', '20:00'],
+      dailyFormats: ['이야기', '노래'], dailyTimesFrom: '2026-11-01', rotationSeed: true },
+    'lab-nz-youtube': 나라계정('Pacific/Auckland'), 'lab-mx-youtube': 나라계정('America/Mexico_City') } }));
+  // 멕시코 현지 11-11 13:00(= 한국 11-12 04:00) 판이 안 걸린 채 지났다 · 한국 시각 판(lab-youtube 11-11 21:00)도 안 걸린 채 지났다
+  편('놓친판', { 브랜드: 'LAB', 슬롯: '2026-11-05', 성격: '상시', 제목: '놓친 판', 판: [{ 계정: 'lab-mx-youtube', 시각: '2026-11-11T13:00:00-06:00', 돌림: true }] }, null, base);
+  편('놓친한국', 한편('LAB', '2026-11-11', ['lab-youtube']), null, base);
+  // 한국 14:00 — 뉴질랜드는 18:00이라 현지 13:00 이야기 칸이 지났다(17:00부터는 판이 21:00 칸에 든다). 멕시코는 아직 11-11 밤, 몽골은 13:00
+  const at14 = JSON.parse(돌림큐(base, ['--지금', '2026-11-12T14:00+09:00', '--json']).out);
+  assert.ok(at14.warnings.includes('슬롯이 지났는데 예약도 게시도 안 됨: lab-mx-youtube · 2026-11-11(현지 날짜, 한국 11-12 04:00) · 놓친판'), at14.warnings.join('\n'));
+  assert.ok(at14.warnings.includes('슬롯이 지났는데 예약도 게시도 안 됨: lab-youtube · 2026-11-11 · 놓친한국'), '한국 시각 계정은 예전 글 그대로');
+  assert.deepEqual(at14.todayGaps.map((g) => g.account), ['lab-youtube', 'lab-instagram 이야기', 'lab-instagram', 'lab-mx-youtube 이야기']);
+  assert.deepEqual(at14.todayPassed.map((g) => [g.line, g.account, g.why]), [['LAB 나라별', 'lab-nz-youtube 이야기', '만든 편 없음']]);
+  const out = 돌림큐(base, ['--지금', '2026-11-12T14:00+09:00']).out;
+  assert.match(out, /^ {2}오늘\(11-12\) 빈 계정: LAB 영어 — lab-youtube 만든 편 없음 · LAB 몽골 — lab-instagram 이야기 만든 편 없음, lab-instagram 만든 편 없음 · LAB 나라별 — lab-mx-youtube 이야기 만든 편 없음$/m);
+  assert.match(out, /^ {2}오늘\(11-12\) 지난 빈 칸\(그 계정 현지 시각으로 칸이 지나 채울 수 없음\): LAB 나라별 — lab-nz-youtube 이야기 만든 편 없음$/m);
+  // 한국 17:30 — 몽골 16:30이라 12:00 이야기 칸도 지났다(가운데 16:00부터는 판이 20:00 칸에 든다). 알림은 채울 칸과 놓친 칸을 나눠 적는다
+  const at1730 = JSON.parse(돌림큐(base, ['--지금', '2026-11-12T17:30+09:00', '--json', '--알림']).out);
+  assert.equal(at1730.todayAlert.text, [
+    '[오늘 빈 계정] 2026-11-12 · 3곳이 아직 예약·게시 전 · 현지 시각이 지난 빈 칸 2곳',
+    'LAB 영어 — lab-youtube 만든 편 없음',
+    'LAB 몽골 — lab-instagram 만든 편 없음',
+    'LAB 나라별 — lab-mx-youtube 이야기 만든 편 없음',
+    '현지 시각이 지나 채울 수 없는 칸(놓침): LAB 몽골 — lab-instagram 이야기 만든 편 없음 · LAB 나라별 — lab-nz-youtube 이야기 만든 편 없음',
+    '오늘 안에 채워요 — 관문을 못 넘은 칸은 가장 나은 판으로(제작 절차 「매일 한 편」), 「승인·예약 전」은 검토 링크 승인이나 「올려」로'].join('\n'));
+  // 한국 23:30 — 한국 시각 · 몽골(22:30) 끝 칸은 자정까지 채울 수 있다. 뉴질랜드는 현지 11-13 03:30이라 11-12 칸이 모두 지났다
+  const late = JSON.parse(돌림큐(base, ['--지금', '2026-11-12T23:30+09:00', '--json']).out);
+  assert.deepEqual(late.todayGaps.map((g) => g.account), ['lab-youtube', 'lab-instagram', 'lab-mx-youtube 이야기']);
+});

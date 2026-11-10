@@ -36,6 +36,14 @@
  * 11-10 LAB 줄은 비축 목표 5일(유호님 「5일치 영상을 미리 만들어서」 — LAB 하루 두 편 설계 20). 다른 줄은 4일 그대로.
  * --알림은 21시 뒤 하루 한 번 비축이 그 줄 목표(LAB 5일 · 그 밖 4일)보다 모자라면 빈 칸을 한 통으로 보내고(10-23 「비축 모자람 알리지 않음」을 되돌림),
  * 같은 날 같은 계정에 두 편 · 작업실 검토 링크가 승인 전에 만료되거나 24시간 안에 만료되면 경고에 넣는다(링크 자체는 읽지도 적지도 않는다).
+ * 11-11 Fable 5.2 끝 판 검수 P2-9 · P3-9(돌림 판 · 나라별 계정 표기):
+ *   · 편 줄 · 검사 「고칠 것」 목록(--json fix · --알림)은 준비.json 「슬롯」만이 아니라 판이 든 날(그 계정 현지 날짜)로도 뽑는다 — 돌림 원본은
+ *     슬롯이 씨앗이 나간 옛 날이라, 판 날 줄(「이날 판(슬롯 …)」)이 없으면 돌림 판이 「고칠 것」이어도 어느 편 · 무슨 까닭인지 안 보였다.
+ *   · 검사 기록(「검사」.파일)에 없는 판 영상(또는 기록 줄의 「판」에 없는 계정)이 아직 걸 판이면 「검사 뒤 판이 더해짐 — 다시 검사」.
+ *   · 첫 판 시험 계정(원장 postRouteVerified 「첫판」)은 한 줄(판 없음 · 걸림 · 나감)로 보이고, 그 계정만 있는 줄 · 그 계정 줄의 비축은 세지
+ *     않는다(「첫 판 시험」). 첫 판이 나갔는데 원장이 그대로면 경고.
+ *   · 보류 칸이 낀 날은 ◐(○ 아님), 경고 글의 날짜는 그 계정 현지 날짜(한국 날짜와 다르면 한국 시각을 덧붙임), 오늘 칸 가운데 그 계정 현지
+ *     시각으로 이미 지나 채울 수 없는 칸은 「오늘 빈 계정」이 아니라 「오늘 지난 빈 칸」으로 따로 보인다.
  *   node tools/예약큐.js --계정표   계정 전수 표(계정 · 매일 무엇이 · 올리는 길 · 며칠 앞서 · 막힌 것)를 마크다운으로
  *   시험용: --지금 <YYYY-MM-DDTHH:MM+09:00>(지금 시각과 오늘을 함께 정한다)
  */
@@ -47,7 +55,7 @@ const { 공용작업본 } = require('./lib/공용작업본.js');
 const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const { aestheticBlock } = require('./lib/미학관문.js');
 const T = require('./lib/계정시간.js');
-const { rowOf } = require('./게시장부.js');
+const { rowOf, TRIAL } = require('./게시장부.js');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -103,6 +111,29 @@ const extraSlots = (key, a) => {
 };
 const slotOpen = (a, day, time) => T.slotsOn(a, day).some((s) => s.time === time);
 const lastSlot = (a) => { const slots = T.allSlots(a); return slots[slots.length - 1].time; };
+// 첫 판 시험 계정(원장 postRouteVerified 「첫판」 — tools/게시장부.js가 판 하나만 걸게 막는다). 씨앗 계정은 아니다.
+const isTrial = (a) => Boolean(a) && !a.rotationSeed && a.postRouteVerified === TRIAL;
+
+// 그 칸에 판이 아직 들 수 있는 마지막 순간(11-11 Fable 5.2 검수 P3-9) — 판은 현지 시각이 가장 가까운 칸에 들고(T.slotFor) 늦게 손으로
+// 올린 판은 실제 시각 날로 세니, 앞 칸은 다음 칸과의 가운데까지, 맨 끝 칸(칸 시각이 없는 하루 한 칸 계정도)은 그 계정의 현지 자정까지다.
+// 한국보다 앞선 시간대(뉴질랜드 · 호주)는 한국 14시에 현지 13:00 칸이 이미 지나 있다.
+function cellUntil(a, day, time) {
+  const tz = T.tzOf(a);
+  const end = T.zonedMs(addDays(day, 1), '00:00', tz);
+  const times = T.allSlots(a).map((s) => s.time).filter(Boolean);
+  const next = time ? times[times.indexOf(time) + 1] : null;
+  if (!next || !times.includes(time)) return end;
+  const at = T.zonedMs(day, time, tz);
+  return at + (T.zonedMs(day, next, tz) - at) / 2;
+}
+
+// 경고 글의 날짜(11-11 Fable 5.2 검수 P3-9) — 그 계정의 현지 날짜(계정별 줄 · 칸과 같은 날). 한국 날짜와 다르면 한국 시각을 덧붙인다
+// (멕시코 현지 11-12 13:00은 한국 11-13 04:00). 한국 시각 계정은 예전 글 그대로다.
+function whenText(at, account) {
+  const local = T.localDate(at, T.tzOf(account));
+  const korea = kstDate(at);
+  return local === korea ? local : `${local}(현지 날짜, 한국 ${korea.slice(5)} ${T.localTime(at, T.DEFAULT_TZ)})`;
+}
 
 function readJson(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')); } catch { return null; }
@@ -156,6 +187,33 @@ function videosOf(prep, pieceDir) {
   });
 }
 
+// 검사 뒤 더해진 판(11-11 Fable 5.2 검수 P2-9) — 아직 걸 판(pending: 준비.json 「판」 번호)의 영상이 검사 기록(「검사」.파일)에 없거나, 기록 줄에
+// 「판」(그 영상을 쓴 계정) 목록이 있는데 그 계정이 없으면 그 판은 검사 뒤에 달린 것이다(돌림표 --쓰기가 판을 단 뒤 올리기 전 검사를 다시
+// 안 돌림 — 그 판의 글 · 언어 · 판본 검수는 아무도 안 봤다). 기록 경로는 checkOf처럼 이 저장소 · 공용 작업본(그리고 묶음이 본 뿌리) 기준의
+// 절대 경로로 풀어 판 영상과 맞춘다. 판 영상이 없으면(판만 달고 판본을 아직 안 만듦) 판 「원본」 · 「파일」을 묶음과 같은 세 자리로 풀어 본다.
+// 이미 나간 판은 검사가 다시 재지 않으니(올리기전검사.js outAlready) 보지 않는다. 블로그 · 영상 없는 판은 영상 기록이 없어 보지 않는다.
+function addedAfterCheck(prep, pieceDir, pending) {
+  if (!prep.검사 || !pending.size) return [];
+  let bundle, list;
+  try { bundle = 묶음읽기(pieceDir); list = 묶음판(bundle); } catch { return []; }
+  const repo = path.resolve(ROOT, '..', '..');
+  const bases = [...new Set([repo, 공용작업본(repo), bundle.repo, bundle.mediaRoot].filter(Boolean))];
+  const norm = (f) => { const r = path.resolve(f); return process.platform === 'win32' ? r.toLowerCase() : r; };
+  const recorded = new Map();
+  for (const f of prep.검사.파일 || []) if (f && f.경로) for (const b of bases) recorded.set(norm(path.join(b, f.경로)), f);
+  const piece = path.relative(bundle.repo, bundle.dir);
+  const out = [];
+  for (const p of list) {
+    if (!pending.has(p.index) || p.blog || !p.video) continue;
+    const raw = p.raw?.원본 || p.raw?.파일;
+    const tries = p.video.exists || typeof raw !== 'string' || path.isAbsolute(raw) ? [p.video.path]
+      : bases.flatMap((b) => [path.join(b, raw), path.join(b, piece, raw), path.join(b, piece, '게시', raw)]);
+    const f = tries.map((t) => recorded.get(norm(t))).find(Boolean);
+    if (!f || (Array.isArray(f.판) && !f.판.includes(p.account))) out.push(p.account);
+  }
+  return [...new Set(out)];
+}
+
 // 돌림 원본의 나라 판본 영상(「돌림」.판본) — ⑱이 맹검한 영상으로 받는다(tools/lib/미학관문.js 바뀐영상, 11-10 지마 저녁 그림 고침)
 function 판본영상of(prep, pieceDir) {
   const repo = path.resolve(ROOT, '..', '..');
@@ -198,9 +256,12 @@ function collect(server, accounts, now) {
     // 마지막 줄만 보면 「예약됨 · (다른 작업의) 취소됨」 꼴이 빈 칸으로 읽혀 한 번 더 걸게 된다.
     const done = new Map();
     for (const account of new Set((result.판 || []).map((p) => p && p.계정).filter(Boolean))) done.set(account, rowOf(result.판, account));
-    const needsBooking = (prep.판 || []).some(p => !DONE.has(done.get(p.계정)?.상태) && done.get(p.계정)?.상태 !== '보류'
-      && !(Date.parse(p.시각) < now));
+    // 아직 걸 판(준비.json 「판」 번호) — 예약 · 게시 · 보류가 아니고 시각이 안 지난 판
+    const pending = new Set((prep.판 || []).flatMap((p, i) => (p && !DONE.has(done.get(p.계정)?.상태) && done.get(p.계정)?.상태 !== '보류'
+      && !(Date.parse(p.시각) < now) ? [i] : [])));
+    const needsBooking = pending.size > 0;
     const check = checkOf(prep, needsBooking);
+    const added = addedAfterCheck(prep, path.join(ROOT, dir.name), pending);
     // ⑱ 미학 맹검(11-08 유호님 「그냥 지금부터 걸어」) — 준비.json 「검사」가 ⑱ 전에 남은 기록이어도, 아직 걸 판이 남은 편은
     // 지금의 게시/미학맹검.json으로 다시 본다(11-08 14시 회차가 옛 검사 기록만 보고 맹검 없는 비축 편을 건 뒤).
     const aesthetic = needsBooking ? aestheticBlock({ dir: path.join(ROOT, dir.name), prep }, videosOf(prep, path.join(ROOT, dir.name)), { 판본영상: 판본영상of(prep, path.join(ROOT, dir.name)) }) : null;
@@ -229,28 +290,30 @@ function collect(server, accounts, now) {
         } else if (server && state === '예약됨' && Number.isFinite(at) && at + GRACE_MS < now) {
           const ids = channelsFor(p.계정, accounts, server);
           const seen = ids.length ? server.posts.find((post) => ids.includes(post.channelId) && Math.abs(Date.parse(post.publishedAt) - at) <= WINDOW_MS) : null;
-          if (seen) { state = '게시됨'; url = url || seen.url; } else if (ids.length) { unseen = true; warnings.push(`슬롯이 지났는데 나가지 않음: ${p.계정} · ${kstDate(at)} · ${dir.name}`); }
+          if (seen) { state = '게시됨'; url = url || seen.url; } else if (ids.length) { unseen = true; warnings.push(`슬롯이 지났는데 나가지 않음: ${p.계정} · ${whenText(at, accounts[p.계정])} · ${dir.name}`); }
         }
         // 게시 장부 잠금(11-10, tools/게시장부.js) — 2시간 넘은 「거는 중」은 끊긴 회차다: 그 플랫폼 예약 목록부터 읽고 닫는다
         if (local.상태 === '거는 중' && now - Date.parse(local.거는중 || 0) > GRACE_MS) {
           warnings.push(`거는 중이 2시간 넘음: ${p.계정} · ${dir.name} — 그 플랫폼 예약 목록부터 읽고 node tools/게시장부.js 끝 · 풀기`);
         }
         if (Number.isFinite(at) && at + GRACE_MS < now && at > now - LOOKBACK_DAYS * 86400000 && !DONE.has(state) && state !== '보류') {
-          warnings.push(`슬롯이 지났는데 예약도 게시도 안 됨: ${p.계정} · ${kstDate(at)} · ${dir.name}`);
+          warnings.push(`슬롯이 지났는데 예약도 게시도 안 됨: ${p.계정} · ${whenText(at, accounts[p.계정])} · ${dir.name}`);
         }
         // 슬롯을 놓쳐 다른 날 손으로 올린 판은 게시결과의 실제 시각으로 센다(10-27 — 10-26 22:00 간체 판이 10-27 01:14에 나갔는데 10-26 칸에 잡혀 10-27 칸이 비어 보였다).
         const posted = DONE.has(state) && !local.방법?.startsWith?.('작업실') && Number.isFinite(Date.parse(local.시각 || '')) ? local.시각 : null;
-        return { account: p.계정, platform: accounts[p.계정]?.platform || null, time: posted || p.시각 || null, state: state || null, method: local.방법 || null, url, unseen };
+        return { account: p.계정, platform: accounts[p.계정]?.platform || null, time: posted || p.시각 || null, state: state || null, method: local.방법 || null, url, unseen,
+          ...(p.돌림 ? { rotation: true } : {}) };
       });
-      const filled = states.filter((s) => DONE.has(s.state)).length;
-      const held = states.filter((s) => s.state === '보류').length;
+      // 검사 뒤 판이 더해진 편은 「다시 검사」 — 까닭에 그 판 계정을 적는다(검사 뒤 영상이 바뀐 것과 함께면 둘 다)
+      const plus = added.filter((a) => plates.some((p) => p.계정 === a));
       items.push({
         brand, folder: dir.name, title: prep.제목 || dir.name, slot: slotOf(prep),
         kind: prep.성격 || null, role: prep.역할 || null, deadline: prep.시한 || null,
-        state: filled === plates.length ? '채움' : filled ? '일부' : held === plates.length ? '보류' : '승인 대기',
+        state: pieceState(states),
         failed: states.filter((s) => s.state === '실패').length,
-        check: check.stale ? '다시 검사' : aesthetic ? '고칠 것' : check.result,
-        checkWhy: !check.stale && aesthetic ? aesthetic : null,
+        check: check.stale || plus.length ? '다시 검사' : aesthetic ? '고칠 것' : check.result,
+        checkWhy: plus.length ? `검사 뒤 ${check.stale ? '영상 바뀜 · ' : ''}판이 더해짐(${plus.join(', ')})` : !check.stale && aesthetic ? aesthetic : null,
+        ...(plus.length ? { added: plus } : {}),
         plates: states, warnings,
       });
     }
@@ -258,9 +321,18 @@ function collect(server, accounts, now) {
   return items;
 }
 
+// 판들의 상태로 본 편(또는 그날 판들)의 상태 — 모두 예약 · 게시면 채움, 일부면 일부, 모두 보류면 보류, 아니면 승인 대기
+function pieceState(states) {
+  const filled = states.filter((s) => DONE.has(s.state)).length;
+  const held = states.filter((s) => s.state === '보류').length;
+  return filled === states.length ? '채움' : filled ? '일부' : held === states.length ? '보류' : '승인 대기';
+}
+
 const fixNeeded = (x) => x.state !== '채움' && ['고칠 것', '다시 검사'].includes(x.check);
 // 판이 든 날 — 그 계정의 현지 날짜(timeZone, 없으면 한국 시각).
 const dayOf = (plate, item, accounts = {}) => (plate.time && Number.isFinite(Date.parse(plate.time)) ? T.localDate(Date.parse(plate.time), T.tzOf(accounts[plate.account])) : item.slot);
+// 아직 걸 판(예약 · 게시 · 보류 아님)이 든 날들(그 계정 현지 날짜, 겹침 없이 차례대로)
+const pendingDays = (item, accounts) => [...new Set(item.plates.filter((p) => !DONE.has(p.state) && p.state !== '보류').map((p) => dayOf(p, item, accounts)).filter(Boolean))].sort();
 
 // 매일 판의 줄(sns-계정.json dailyLine). 막힌 계정(dailyBlocked)은 줄에 적되 셈에서 뺀다. dailyFrom이 「미정」인 계정(11-10 LAB 나라별 —
 // 5일치 비축을 건 날 연다)은 「시작 전」으로 따로 보이고 셈에서 뺀다.
@@ -339,7 +411,8 @@ function accountRows(items, range, accounts = {}) {
     const a = accounts[row.base || row.account];
     if (!a?.dailyLine) continue;
     const slot = row.base ? row.slot : lastSlot(a);
-    const trial = !a.rotationSeed && a.postRouteVerified === '첫판';
+    const trial = isTrial(a);
+    if (trial) row.trial = true;
     row.closed = [...new Set([...(row.closed || []), ...range.filter((d) => !slotOpen(a, d, slot) || (trial && !row.byDay[d].length))])];
   }
   for (const row of rows.values()) {
@@ -348,6 +421,8 @@ function accountRows(items, range, accounts = {}) {
     for (const d of range.slice(1)) {
       if (row.byDay[d].some((p) => p.done) || row.off.includes(d)) row.reserve += 1; else break;
     }
+    // 첫 판 시험 계정은 판이 달린 날 말고는 모두 쉼이라 위 셈이 「다 찼다」로 나온다 — 비축으로 세지 않는다(11-11 Fable 5.2 검수 P2-9)
+    if (row.trial) row.reserve = null;
   }
   const order = (r) => (r.line ? LINE_ORDER.indexOf(r.line) + 1 || LINE_ORDER.length + 1 : LINE_ORDER.length + 2);
   return [...rows.values()].sort((a, b) => order(a) - order(b) || BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand) || a.account.localeCompare(b.account));
@@ -379,11 +454,15 @@ function lineRows(accountList, range, accounts) {
       }));
       const all = Object.values(cells);
       const states = all.filter((s) => s !== '쉼');
+      // ○은 모든 칸에 나갈 편이 있을 때만 — 보류 칸(버린 편, 새 편 칸)이 끼면 빈 칸이 있는 날이라 ◐(11-11 Fable 5.2 검수 P3-9)
       const mark = !all.length ? '·' : !states.length ? '–' : states.every((s) => s === '채움') ? '●' : states.some((s) => s === '고칠 것') ? '✗'
-        : states.every((s) => s === '빔') ? '·' : states.every((s) => s === '보류') ? '×' : states.every((s) => s !== '빔') ? '○' : '◐';
+        : states.every((s) => s === '빔') ? '·' : states.every((s) => s === '보류') ? '×' : states.every((s) => s === '채움' || s === '만듦') ? '○' : '◐';
       byDay[d] = { mark, cells };
     }
     const run = (ok) => { let n = 0; for (const d of range.slice(1)) { if (ok(byDay[d])) n += 1; else break; } return n; };
+    // 첫 판 시험 계정만 있는 줄은 판이 달린 날 말고 모두 쉼(–)이라 비축 · 만듦이 「다 찼다」로 나온다 — 세지 않는다(null, 맨 위 비축 · 비축 알림 밖).
+    // 그 계정들은 「첫 판 시험」 한 줄로 따로 보인다(11-11 Fable 5.2 검수 P2-9 — 판 0인 15곳이 「LAB 나라별 – – – – – 5일」로 보였다)
+    const trial = l.accounts.every((a) => isTrial(accounts[a]));
     // 하루 두 칸 계정의 칸 이름(빈 칸 글이 「이야기 · 21:00 칸마다 한 편」, 형식이 없으면 「12:00 · 21:00 칸마다 한 편」을 쓰게) — 한 칸 계정은 넣지 않는다.
     // 「노래」 칸은 형식 이름 대신 시각으로 적는다 — 노래는 제작 회차가 만드는 칸이 아니다(씨앗의 21:00 칸은 노래 칸을 열기 전까지 지금 줄 편이
     // 채우고, 연 뒤에는 돌림표가 노래를 단다). 「노래 칸마다 한 편」이라고 쓰면 몽골 21:00에 노래를 만들라는 말로 읽힌다(11-11 Fable 검수).
@@ -393,8 +472,25 @@ function lineRows(accountList, range, accounts) {
       const name = (s) => (s.format && s.format !== '노래' ? s.format : s.time);
       return [...extraSlots(a, accounts[a]).map((x, i) => [x.key, name(slots[i])]), [a, name(slots[slots.length - 1])]];
     }));
-    return { line: l.line, accounts: l.accounts, byDay, times, lead: leadOf(l.line),
-      reserve: run((x) => x.mark === '●' || x.mark === '–'), made: run((x) => Object.values(x.cells).every((s) => s === '채움' || s === '만듦' || s === '쉼')) };
+    return { line: l.line, accounts: l.accounts, byDay, times, lead: leadOf(l.line), ...(trial ? { trial: true } : {}),
+      reserve: trial ? null : run((x) => x.mark === '●' || x.mark === '–'),
+      made: trial ? null : run((x) => Object.values(x.cells).every((s) => s === '채움' || s === '만듦' || s === '쉼')) };
+  });
+}
+
+// 첫 판 시험 계정(원장 postRouteVerified 「첫판」)마다 첫 판이 어디까지 왔나 — 판 없음 · 걸기 전(판은 달렸는데 안 걸림) · 걸림(예약됨 · 거는 중) ·
+// 나감(게시됨 — 공개 글을 확인하고 원장을 true로). 범위와 상관없이 모든 편에서 그 계정 판을 찾고(보류 판은 뺀다), 가장 앞선 판 하나를 보인다.
+const TRIAL_RANK = { '판 없음': 0, '걸기 전': 1, 걸림: 2, 나감: 3 };
+function trialAccounts(items, accounts, now) {
+  const stage = (s) => (s === '게시됨' ? '나감' : s === '예약됨' || s === '거는 중' ? '걸림' : '걸기 전');
+  return Object.entries(accounts).filter(([, a]) => a.dailyLine && isTrial(a)).sort(([x], [y]) => x.localeCompare(y)).map(([key, a]) => {
+    const found = items.flatMap((x) => x.plates.filter((p) => p.account === key && p.state !== '보류').map((p) => ({
+      state: stage(p.state), plate: p.state || null, folder: x.folder, day: dayOf(p, x, accounts), time: p.time || null })));
+    found.sort((x, y) => TRIAL_RANK[y.state] - TRIAL_RANK[x.state] || String(x.day).localeCompare(String(y.day)));
+    const best = found[0];
+    if (!best) return { account: key, line: a.dailyLine, state: '판 없음' };
+    const at = Date.parse(best.time || '');
+    return { account: key, line: a.dailyLine, ...best, passed: Number.isFinite(at) && at < now };
   });
 }
 
@@ -459,18 +555,34 @@ function build(today, days, server, accounts, now) {
       if (byDay[d].some((x) => x.state === '채움') || off.includes(d)) reserve += 1; else break;
     }
     const late = mine.filter((x) => x.deadline && x.state !== '채움' && x.deadline < (x.slot || today));
-    report.brands[brand] = { reserve, byDay, late, off };
+    // 판 날(11-11 Fable 5.2 검수 P2-9): 슬롯은 그날이 아닌데(돌림 원본은 씨앗이 나간 옛 날, 슬롯 없는 편 포함) 판이 그날(그 계정 현지 날짜) 든 편 —
+    // 그날 판만 추려 그 판들의 상태로 편 줄을 하나 더 낸다. 브랜드 표 · 브랜드 비축(byDay)은 그대로 슬롯으로 센다.
+    const plateDays = Object.fromEntries(range.map((d) => [d, items.filter((x) => x.brand === brand && x.slot !== d).flatMap((x) => {
+      const plates = x.plates.filter((p) => dayOf(p, x, accounts) === d);
+      return plates.length ? [{ ...x, plates, state: pieceState(plates), failed: plates.filter((p) => p.state === '실패').length, plateDay: true }] : [];
+    })]));
+    report.brands[brand] = { reserve, byDay, late, off, plateDays };
   }
   report.accounts = accountRows(items, range, accounts);
   report.lead = LEAD;
   report.lines = lineRows(report.accounts, range, accounts);
   report.blocked = blockedAccounts(accounts);
   report.pending = pendingAccounts(accounts);
-  report.reserve = report.lines.length ? Math.min(...report.lines.map((l) => l.reserve)) : null;
-  report.todayGaps = todayGaps(report);
+  report.trial = trialAccounts(items, accounts, now);
+  // 첫 판 시험 계정만 있는 줄(비축 null)은 맨 위 비축에 넣지 않는다
+  const counted = report.lines.filter((l) => l.reserve !== null);
+  report.reserve = counted.length ? Math.min(...counted.map((l) => l.reserve)) : null;
+  const today0 = todayCells(report, accounts, now);
+  report.todayGaps = today0.open;
+  report.todayPassed = today0.passed;
   // 보류 편은 나가지 않으니 검사가 「고칠 것」이어도 세지 않는다(10-23 — 알림이 고칠 것 하나만으로도 나가게 되면서).
-  report.fix = items.filter((x) => fixNeeded(x) && x.state !== '보류' && x.slot && x.slot >= today);
-  report.warnings = [...new Set([...items.flatMap((x) => x.warnings), ...doubleBookings(report.accounts), ...linkWarnings(items, now)])];
+  // 슬롯이 지났어도(돌림 원본 · 옮긴 판) 아직 걸 판이 오늘부터 든 편은 든다(11-11 Fable 5.2 검수 P2-9) — days는 그 판들의 날.
+  report.fix = items.map((x) => ({ x, days: pendingDays(x, accounts).filter((d) => d >= today) }))
+    .filter(({ x, days }) => fixNeeded(x) && x.state !== '보류' && ((x.slot && x.slot >= today) || days.length))
+    .map(({ x, days }) => ({ ...x, days }));
+  // 첫 판이 나갔는데 원장이 그대로 「첫판」이면 다음 판이 안 걸린다(게시 장부가 판 하나만 잡게 막는다)
+  const trialOut = report.trial.filter((t) => t.state === '나감').map((t) => `첫 판이 나갔는데 원장이 아직 「${TRIAL}」: ${t.account} · ${t.day} · ${t.folder} — 공개 글을 로그인 없이 확인하고 sns-계정.json postRouteVerified를 true로`);
+  report.warnings = [...new Set([...items.flatMap((x) => x.warnings), ...doubleBookings(report.accounts), ...linkWarnings(items, now), ...trialOut])];
   report.server = server ? { checkedAt: server.checkedAt, ageHours: server.checkedAt ? Math.round((now - Date.parse(server.checkedAt)) / 360000) / 10 : null } : null;
   return report;
 }
@@ -512,11 +624,22 @@ function gapsOf(line, range) {
 }
 
 // 오늘 칸이 채움(예약·게시)도 쉼도 아닌 계정 — 줄 순서대로 [{line, account, state, why}]. 막힌 계정은 줄에 없으니 여기도 없다.
-function todayGaps(report) {
+// open은 아직 채울 수 있는 칸(「오늘 빈 계정」), passed는 그 계정 현지 시각으로 칸이 이미 지나 판이 더는 그 칸에 들 수 없는 칸이다
+// (cellUntil — 11-11 Fable 5.2 검수 P3-9: 한국보다 앞선 시간대는 14시에 현지 13:00 칸이 지나 있는데 「오늘 빈 계정」으로 떠 채우라고 했다).
+function todayCells(report, accounts = {}, now = Date.now()) {
   const d = report.range[0];
-  return report.lines.flatMap((l) => Object.entries(l.byDay[d]?.cells || {})
-    .filter(([, s]) => s !== '채움' && s !== '쉼')
-    .map(([account, state]) => ({ line: l.line, account, state, why: WHY[state] })));
+  const rows = new Map(report.accounts.map((r) => [r.account, r]));
+  const open = [], passed = [];
+  for (const l of report.lines) {
+    for (const [account, state] of Object.entries(l.byDay[d]?.cells || {})) {
+      if (state === '채움' || state === '쉼') continue;
+      const row = rows.get(account);
+      const a = accounts[row?.base || account];
+      const gone = Boolean(a) && now >= cellUntil(a, d, row?.base ? row.slot : lastSlot(a));
+      (gone ? passed : open).push({ line: l.line, account, state, why: WHY[state] });
+    }
+  }
+  return { open, passed };
 }
 // 「LAB 두 채널 — lab-cn-xiaohongshu 만든 편 없음, lab-mm-tiktok 만든 편 없음 · yuhobuilds — …」
 function todayGapText(gaps) {
@@ -524,13 +647,31 @@ function todayGapText(gaps) {
   return lines.map((line) => `${line} — ${gaps.filter((g) => g.line === line).map((g) => `${g.account} ${g.why}`).join(', ')}`);
 }
 
+// 편 줄의 검사 글 — 「검사 뒤 영상 바뀜(다시 검사)」 · 「검사 뒤 판이 더해짐(계정) — 다시 검사」 · 「검사 고칠 것(까닭)」
+function checkText(x) {
+  if (x.check === '다시 검사') return x.checkWhy ? ` · ${x.checkWhy} — 다시 검사` : ' · 검사 뒤 영상 바뀜(다시 검사)';
+  return { 통과: '', '검사 전': ' · 검사 전' }[x.check] ?? ` · 검사 ${x.check}${x.checkWhy ? `(${x.checkWhy})` : ''}`;
+}
+
+// 「첫 판 시험 15곳 — 판 없음 13 · 걸림(예약됨) 1 · 나감(게시됨 — 확인하고 원장을 true로) 1 — 판 없음: … · 걸림: lab-mx-youtube(11-12 편) · 나감: …」
+function trialText(trial) {
+  const by = (s) => trial.filter((t) => t.state === s);
+  const counts = [`판 없음 ${by('판 없음').length}`, ...(by('걸기 전').length ? [`판 달림(걸기 전) ${by('걸기 전').length}`] : []),
+    `걸림(예약됨) ${by('걸림').length}`, `나감(게시됨 — 확인하고 원장을 true로) ${by('나감').length}`];
+  const where = (t) => `${t.account}(${String(t.day || '').slice(5)} ${t.folder}${t.plate && !['예약됨', '게시됨'].includes(t.plate) ? ` ${t.plate}` : ''}${t.state === '걸림' && t.passed ? ' · 시각 지남 — 공개 확인' : ''})`;
+  const names = [['판 없음', (t) => t.account], ['걸기 전', where], ['걸림', where], ['나감', where]]
+    .filter(([s]) => by(s).length).map(([s, f]) => `${s}: ${by(s).map(f).join(', ')}`);
+  return `첫 판 시험 ${trial.length}곳(원장 postRouteVerified 「${TRIAL}」 — 판 하나만 걸고, 나간 판을 확인하면 true로) — ${counts.join(' · ')} — ${names.join(' · ')}`;
+}
+
 function print(report) {
   const { range } = report;
   if (report.lines.length) {
-    console.log(`비축 ${report.reserve}일 / 목표 ${report.lead}일(LAB 줄 ${LAB_LEAD}일) · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔  – 쉬는 요일`);
+    console.log(`비축 ${report.reserve === null ? '– (셈할 줄 없음 — 첫 판 시험 줄뿐)' : `${report.reserve}일`} / 목표 ${report.lead}일(LAB 줄 ${LAB_LEAD}일) · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔  – 쉬는 요일`);
     console.log('줄'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축  만듦');
-    for (const l of report.lines) console.log(l.line.padEnd(12) + range.map((d) => l.byDay[d].mark.padEnd(5)).join('  ') + `  ${l.reserve}일   ${l.made}일`);
+    for (const l of report.lines) console.log(l.line.padEnd(12) + range.map((d) => l.byDay[d].mark.padEnd(5)).join('  ') + (l.reserve === null ? '  첫 판 시험(비축 셈 밖)' : `  ${l.reserve}일   ${l.made}일`));
     if (report.todayGaps.length) console.log(`  오늘(${report.today.slice(5)}) 빈 계정: ${todayGapText(report.todayGaps).join(' · ')}`);
+    if (report.todayPassed?.length) console.log(`  오늘(${report.today.slice(5)}) 지난 빈 칸(그 계정 현지 시각으로 칸이 지나 채울 수 없음): ${todayGapText(report.todayPassed).join(' · ')}`);
     for (const l of report.lines) { const gaps = gapsOf(l, range); if (gaps.length) console.log(`  ${l.line} 빈 칸: ${gaps.join(' · ')}`); }
   }
   if (report.blocked.length) console.log(`  막혀 셈에서 뺀 계정: ${report.blocked.map((b) => `${b.account}(${b.reason})`).join(' · ')}`);
@@ -540,6 +681,7 @@ function print(report) {
     console.log(`  시작 전(dailyFrom 「미정」 — 5일치 비축을 건 날 연다) ${report.pending.length}곳: ${count(report.pending, (p) => `${p.line} ${p.platform}`)}`
       + (waiting.length ? ` · 아직 못 엶: ${count(waiting.flatMap((p) => p.why.map((w) => ({ w }))), (x) => `${x.w} 확인 전`)}(node tools/돌림표.js가 계정마다 보인다)` : ''));
   }
+  if (report.trial?.length) console.log(`  ${trialText(report.trial)}`);
   console.log(`예약 큐 · 오늘 ${report.today} · ● 채움  ◐ 일부  ○ 승인 대기  ✗ 고칠 것(검사)  × 보류(게시결과 「보류」)  · 빔`);
   console.log('브랜드'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축');
   for (const brand of BRANDS) {
@@ -548,13 +690,19 @@ function print(report) {
   }
   if (report.accounts.length) {
     console.log(`계정별 · ● 예약·게시  ○ 승인 대기·준비  ✗ 고칠 것  · 빔  – 쉬는 요일`);
-    for (const row of report.accounts) console.log(row.account.slice(0, 22).padEnd(23) + range.map((d) => (row.off.includes(d) ? '–' : accountMark(row.byDay[d])).padEnd(5)).join('  ') + `  ${row.reserve}일`);
+    for (const row of report.accounts) console.log(row.account.slice(0, 22).padEnd(23) + range.map((d) => (row.off.includes(d) ? '–' : accountMark(row.byDay[d])).padEnd(5)).join('  ') + (row.reserve === null ? '  첫판' : `  ${row.reserve}일`));
   }
+  const head = (d, brand, x) => `  ${d} ${brand} ${x.state}${x.failed ? ` (실패 ${x.failed})` : ''} · ${x.title} · ${x.kind || '성격 없음'}${x.role ? ` · 역할 ${x.role}` : ''}${x.deadline ? ` · 시한 ${x.deadline}` : ''} · ${x.folder}`;
   for (const brand of BRANDS) {
-    for (const d of range) for (const x of report.brands[brand].byDay[d]) {
-      const plates = x.plates.filter((p) => p.method === '작업실' || p.state === '승인 대기' || p.state === '서버에 없음');
-      console.log(`  ${d} ${brand} ${x.state}${x.failed ? ` (실패 ${x.failed})` : ''} · ${x.title} · ${x.kind || '성격 없음'}${x.role ? ` · 역할 ${x.role}` : ''}${x.deadline ? ` · 시한 ${x.deadline}` : ''} · ${x.folder}`
-        + `${{ 통과: '', '검사 전': ' · 검사 전', '다시 검사': ' · 검사 뒤 영상 바뀜(다시 검사)' }[x.check] ?? ` · 검사 ${x.check}${x.checkWhy ? `(${x.checkWhy})` : ''}`}${plates.length ? ` · ${plates.map((p) => `${p.account} ${p.state || '—'}`).join(', ')}` : ''}`);
+    for (const d of range) {
+      for (const x of report.brands[brand].byDay[d]) {
+        const plates = x.plates.filter((p) => p.method === '작업실' || p.state === '승인 대기' || p.state === '서버에 없음');
+        console.log(head(d, brand, x) + `${checkText(x)}${plates.length ? ` · ${plates.map((p) => `${p.account} ${p.state || '—'}`).join(', ')}` : ''}`);
+      }
+      // 판 날 줄 — 상태는 그날 판들로, 끝에 그날 판을 모두(돌림 판은 「돌림」) 적는다
+      for (const x of report.brands[brand].plateDays?.[d] || []) {
+        console.log(head(d, brand, x) + `${checkText(x)} · 이날 판(슬롯 ${x.slot || '없음'}): ${x.plates.map((p) => `${p.account}${p.rotation ? '(돌림)' : ''} ${p.state || '—'}`).join(', ')}`);
+      }
     }
     for (const x of report.brands[brand].late) console.log(`  ! ${brand} 시한 넘김: ${x.title}(시한 ${x.deadline}, 슬롯 ${x.slot})`);
   }
@@ -574,7 +722,8 @@ function send(text) {
 // 비축이 목표(4일)보다 모자라면 21시 뒤 하루 한 번 빈 칸을 한 통으로(10-26 — 10-23 「비축 모자람 알리지 않음」을 되돌림).
 function reserveAlert(report, now) {
   if (!report.lines.length) return { sent: false, reason: 'no-lines' };
-  const short = report.lines.filter((l) => l.reserve < (l.lead || report.lead));
+  // 첫 판 시험 계정만 있는 줄(비축 null)은 셈 밖이다 — null < 5가 참이 되지 않게 따로 뺀다
+  const short = report.lines.filter((l) => l.reserve !== null && l.reserve < (l.lead || report.lead));
   if (!short.length) return { sent: false, reason: 'enough' };
   if (Number(new Date(now + 9 * 3600000).toISOString().slice(11, 13)) < RESERVE_ALERT_HOUR) return { sent: false, reason: 'before-hour' };
   const stateFile = path.join(STATE_DIR, '비축알림.json');
@@ -591,17 +740,20 @@ function reserveAlert(report, now) {
 // 오늘 빈 계정이 남으면 17시(채울 시간이 남을 때) · 21시(슬롯 시각) 뒤 한 번씩 한 통으로(10-29).
 const TODAY_ALERT_HOURS = [17, 21];
 function todayAlert(report, now) {
-  if (!report.todayGaps.length) return { sent: false, reason: 'filled' };
+  // 그 계정 현지 시각으로 이미 지난 칸(todayPassed — 11-11 P3-9)은 채우라고 하지 않고 「놓침」 한 줄로만 적는다
+  const passed = report.todayPassed || [];
+  if (!report.todayGaps.length && !passed.length) return { sent: false, reason: 'filled' };
   const hour = Number(new Date(now + 9 * 3600000).toISOString().slice(11, 13));
   const window = [...TODAY_ALERT_HOURS].reverse().find((h) => hour >= h);
   if (window === undefined) return { sent: false, reason: 'before-hour' };
   const stateFile = path.join(STATE_DIR, '오늘빈계정알림.json');
   const last = readJson(stateFile) || {};
   if (last.day === report.today && last.window === window) return { sent: false, reason: 'same-window' };
-  const text = [`[오늘 빈 계정] ${report.today} · ${report.todayGaps.length}곳이 아직 예약·게시 전`,
+  const text = [`[오늘 빈 계정] ${report.today} · ${report.todayGaps.length}곳이 아직 예약·게시 전${passed.length ? ` · 현지 시각이 지난 빈 칸 ${passed.length}곳` : ''}`,
     ...todayGapText(report.todayGaps),
+    ...(passed.length ? [`현지 시각이 지나 채울 수 없는 칸(놓침): ${todayGapText(passed).join(' · ')}`] : []),
     ...(report.blocked.length ? [`막혀 못 올리는 계정: ${report.blocked.map((b) => `${b.account}(${b.reason})`).join(' · ')}`] : []),
-    '오늘 안에 채워요 — 관문을 못 넘은 칸은 가장 나은 판으로(제작 절차 「매일 한 편」), 「승인·예약 전」은 검토 링크 승인이나 「올려」로'].join('\n');
+    ...(report.todayGaps.length ? ['오늘 안에 채워요 — 관문을 못 넘은 칸은 가장 나은 판으로(제작 절차 「매일 한 편」), 「승인·예약 전」은 검토 링크 승인이나 「올려」로'] : [])].join('\n');
   send(text);
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(stateFile, JSON.stringify({ day: report.today, window, sentAt: new Date(now).toISOString() }));
@@ -615,8 +767,14 @@ function todayAlert(report, now) {
 const APPROVAL_WARNING = /^검토 링크가 /;
 function alert(report) {
   const warnings = report.warnings.filter((w) => !APPROVAL_WARNING.test(w));
-  // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다.
-  const fix = [...new Set(report.fix.map((x) => x.folder))];
+  // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다. 까닭(맹검 · 검사 뒤 바뀜 · 판 더해짐)이 있으면 괄호에,
+  // 슬롯이 지난 편(돌림 원본 · 옮긴 판)은 아직 걸 판의 날도 괄호에 적는다(11-11 Fable 5.2 검수 P2-9 — 어느 편 · 무슨 까닭인지).
+  const fix = [...new Map(report.fix.map((x) => [x.folder, x])).values()].map((x) => {
+    const why = x.check === '다시 검사' ? `${x.checkWhy || '검사 뒤 영상 바뀜'} — 다시 검사` : x.checkWhy;
+    const days = !x.slot || x.slot < report.today ? (x.days || []).map((d) => d.slice(5)) : [];
+    const extra = [why, days.length ? `판 ${days.join(', ')}` : null].filter(Boolean);
+    return extra.length ? `${x.folder}(${extra.join(' · ')})` : x.folder;
+  });
   if (!warnings.length && !fix.length) return { sent: false, reason: 'nothing' };
   const lines = [
     `[게시 큐] ${report.today}`,
