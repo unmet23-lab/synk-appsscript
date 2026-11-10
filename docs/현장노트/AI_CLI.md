@@ -217,6 +217,12 @@
 - 고침: 실패 로그와 미완료 답을 보존하고, 공식 CLI가 안내한 `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`을 해당 실행에만 주어 같은 부모 세션을 이었다. 검수자는 실제 완료 뒤 공식 도구로 접수하고 입력 해시·끝 표식·coverage·확인 통과를 대조했다. 계정과 전역 설정은 바꾸지 않았다.
 - 다시 확인: `atlas-transit-racing-return-1105`는 중단 영수증을 유지한 뒤 Fable 완독 답(complete=true, missing=[])과 공식 확인 통과·실제 CLI 종료 0을 얻었다. 미완료 첫 실행은 통과 횟수에서 뺐다.
 
+### Fable 주간 몫이 100%면 검수 키 통로(`크레딧실행.js 중계 --model claude-fable-5-1`)도 429 `model_requires_usage_credits`다 — Fable 최종은 초기화를 기다린다 (2026-11-10 Claude)
+- 증상: Atlas 결함 다섯 끝 판의 Fable 최종을 Agent(model: fable)로 보내자 「You've reached your Fable limit」로 바로 끝났다(계정 주간 Fable 100%, 전체 70%). `SYNK_CLAUDE_KEYS=~/SYNK_보안/클로드_키목록_검수.json node tools/크레딧실행.js 중계 -- -p … --model claude-fable-5-1`로 한 낱말 시험을 보내도 같은 429 · `api_error: model_requires_usage_credits`였다.
+- 원인: 이 PC의 Fable은 구독 주간 몫 아니면 추가 사용 크레딧(유료)으로만 돈다. 검수 키 목록의 프로모 · 한도 크레딧은 Fable을 열지 않았다.
+- 고침: 추가 사용 크레딧은 켜지 않는다(돈). 운영 원칙대로 학생 · 교사 · 고객 화면의 Fable 최종은 초기화 뒤에 마치고 그 전에는 공개하지 않는다 — `get_usage`의 「Weekly · Fable」 resetsAt을 트랙 · 설계에 적는다. 엔진 생성물이 master에 들어가면 다른 세션의 게임 공개에 섞여 나갈 수 있어 push도 그때까지 미뤘다(가지에 로컬 커밋 + 공용 `.tmp` 패치 사본).
+- 다시 확인: `mcp__ccd_session_mgmt__get_usage`의 「Weekly · Fable」이 100% 아래로 내려간 뒤 Agent(model: fable)가 답을 쓴다.
+
 ### 검수 캡처를 다시 가져오면 옛 그림도 남는다 (2026-10-31 Claude·GPT)
 - 증상: 시범판 최종 캡처를 12장으로 바꿨는데 Fable 입력의 `캡처-가져옴`에 이전 `intro.png`·`transfer.png` 두 장도 섞였다.
 - 원인: `검수묶음.mjs`의 가져오기는 기존 폴더에 `cpSync`로 합친다. 이번 원천에서 빠진 옛 파일은 지우지 않는다.

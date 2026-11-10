@@ -706,6 +706,18 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
 - 추가 실측(2026-11-01 GPT): 드라마 시범의 새 워크트리도 node_modules가 없어 `바로올리기` 관련 시험의 `공개.test.js`에서 `Cannot find module 'parse5'`가 났다(첫 회502/511, push 안 됨). 오류 뒤 해당 시험 프로세스만 남아 끝나지 않아 PID·부모 PID·시험 경로를 대조해 그 프로세스만 끝내고 실패 요약 로그를 보존했다(임시 TAP 전문은 도구가 종료 시 지워 보존하지 못함). 이 작업본에서는 junction 대신 기존 lock의 `npm ci --no-fund --no-audit`로9개를 설치했다. package.json·lock은 바뀌지 않았다. `require('parse5').parse`와 `esbuild.transformSync`가 정상임을 확인한 뒤 같은 반영 명령으로 관련 시험을 다시 돌린다(시험을 빼거나 실패를 통과로 바꾸지 않음).
 
+### Atlas 원천과 계정 호스트를 함께 고친 뒤 `sync-atlas`를 먼저 돌리면 드라마 시범 묶음에 옛 호스트가 남는다 — `check-account-bundles --build` 뒤 `sync-atlas`를 한 번 더 (2026-11-10 Claude)
+- 증상: Atlas 결함 다섯 고침에서 `node tools/sync-atlas.js --all --local` → `node tools/check-account-bundles.js --build` 순서로 돌렸더니 `--check`는 둘 다 통과했는데, 공개 재료 도구가 `world/drama/atlas-learning.js`(생성기 그대로 옮기는 묶음)에서 「호스트가 열거를 넘기지 않는다」로 멈췄다.
+- 원인: 드라마 시범 묶음은 `experiences/synk-account/src/generated/world-learning-host.cjs`를 품는데, 그 파일은 `check-account-bundles --build`가 `account/world-learning-host.js`에서 만든다. 먼저 돈 `sync-atlas`는 옛 생성 호스트를 묶었고, 뒤의 `--check`는 묶음 하나하나가 그때 원천과 맞는지만 봐 두 단계의 순서를 못 잡는다.
+- 고침: 호스트를 고친 일은 `check-account-bundles --build` → `sync-atlas --all --local` → (계정 묶음이 엔진을 품으면) `check-account-bundles --build`를 한 번 더 돌리고, 둘 다 `--check`로 끝낸다.
+- 다시 확인: `grep -c enumerated experiences/drama/pilot/atlas-learning.js`가 0이 아니다.
+
+### 워크트리에서 rebase 뒤 `reset --mixed origin/master`를 했더니 남의 파일 다섯이 옛 판으로 「바뀜」에 떴다 — 다른 세션이 그 사이 fetch해 origin/master가 움직였다 (2026-11-10 Claude)
+- 증상: 미커밋 고침을 임시 커밋 → `git rebase origin/master` → `git reset --mixed origin/master`로 미커밋 상태로 되돌렸더니, 내가 손대지 않은 `tools/복원/*` · `tests/암호묶음.test.py` 등 다섯이 수정됨으로 보였다(내용은 한 커밋 전 판 — 남의 고침을 되돌리는 꼴).
+- 원인: 워크트리는 원격 추적 가지를 공용 저장소와 함께 쓴다. rebase와 reset 사이에 다른 세션이 fetch해 `origin/master`가 한 커밋 앞으로 갔고, reset은 그 새 커밋을 HEAD로 잡았는데 작업 폴더는 rebase 때의 바탕 그대로였다.
+- 고침: `git diff --name-only <rebase 바탕> origin/master`로 그 사이 커밋의 파일을 보고 `git restore --source=HEAD --worktree --staged -- <그 파일들>`로 되돌렸다. 처음부터 rebase 바탕 해시를 적어 두고 `reset --mixed <그 해시>`로 하면 생기지 않는다.
+- 다시 확인: `git status --short`에 내 파일만 남는다.
+
 ### `바로올리기 --모두`가 「바뀐 것을 올리지 못했다 — warning: … LF will be replaced by CRLF」로 멈춘다 — 경고가 아니라 바깥 시간 제한이 git을 죽인 것이다 (2026-11-05 Claude)
 - 증상: `timeout 170 node tools/바로올리기.js --모두 …`가 줄끝 경고 한 줄만 보이며 멈췄다. 올라간 것은 없다.
 - 원인: 이 저장소의 임시 인덱스 `git add -A`는 PC가 바쁘면 2분 넘게 걸린다(실측 1분 57초). `timeout`이 git까지 끊어 종료 코드가 비고, 도구는 그때까지 나온 stderr(경고)만 보인다.
