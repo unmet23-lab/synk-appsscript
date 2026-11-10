@@ -4,6 +4,8 @@
 //
 //   node tools/드라마시범집계.mjs --참가 <목록 파일> [--기준 <ISO 시각>] [--json]        운영 DB 읽기(유호님 승인 뒤에만 — 설계 §8 ⑦)
 //   node tools/드라마시범집계.mjs --참가 <목록 파일> --관리 [--기준 …] [--json]            운영 읽기를 관리 API의 read_only 질의로(11-04 유호님 승인 · 접속 주소 불필요)
+//     --관리는 늘 운영 프로젝트를 읽는다(11-11). talk `.env`의 SUPABASE_PROJECT_REF는 리허설 기본값이라 쓰지 않는다 — 그 값을 따라가
+//     실제 계정을 「없음」으로 낸 적이 있다. 다른 프로젝트는 환경 변수 DRAMA_PILOT_PROJECT_REF(또는 SUPABASE_PROJECT_REF)를 직접 줄 때만.
 //   node tools/드라마시범집계.mjs --참가 <목록 파일> --사건 <사건 JSON> [--기준 …] [--json]  내려받은 사건 · 합성 자료로(DB 없음)
 //
 // · 목록 파일: CSV(`참가번호,이메일`, 머리줄은 있어도 없어도) 또는 JSON 배열 [{"번호": "M01", "이메일": "…"}].
@@ -199,11 +201,20 @@ export async function readManagement(query, participants) {
     where synk_user_id in (${ids.map((id) => `${text(id)}::uuid`).join(',')}) and payload->>'type' in (${TYPES.map(text).join(',')}) order by synk_user_id, server_seq`) : [];
   return assemble(participants, accounts, events);
 }
+// 운영 프로젝트(SYNK ID 로그인 · 학습 기록). `tools/me2-face-worker/설치.mjs`의 live 과녁과 같은 값이다.
+export const LIVE_PROJECT_REF = 'qiwxeddwwnzkwalpsuty';
+// 관리 API 과녁: 토큰은 환경 변수 → talk `.env`, 프로젝트는 환경 변수로 직접 준 값 → 운영. talk `.env`의 REF(리허설 기본값)는 읽지 않는다.
+export function managementTarget(env = process.env, talkEnvText = '') {
+  const fromFile = (name) => (String(talkEnvText).match(new RegExp(`^${name}=(.*)$`, 'm'))?.[1] || '').trim().replace(/^["']|["']$/g, '');
+  const token = env.SUPABASE_ACCESS_TOKEN || fromFile('SUPABASE_ACCESS_TOKEN');
+  const ref = env.DRAMA_PILOT_PROJECT_REF || env.SUPABASE_PROJECT_REF || LIVE_PROJECT_REF;
+  return { token, ref, live: ref === LIVE_PROJECT_REF };
+}
 function managementQuery() {
-  const fromTalk = () => { try { return fs.readFileSync(path.join(ROOT, '..', 'SYNK-talk', '.env'), 'utf8'); } catch { return ''; } };
-  const value = (name) => process.env[name] || (fromTalk().match(new RegExp(`^${name}=(.*)$`, 'm'))?.[1] || '').trim().replace(/^["']|["']$/g, '');
-  const token = value('SUPABASE_ACCESS_TOKEN'), ref = value('SUPABASE_PROJECT_REF');
-  if (!token || !ref) throw new Error('SUPABASE_ACCESS_TOKEN · SUPABASE_PROJECT_REF가 없다');
+  let talkEnv = ''; try { talkEnv = fs.readFileSync(path.join(ROOT, '..', 'SYNK-talk', '.env'), 'utf8'); } catch {}
+  const { token, ref, live } = managementTarget(process.env, talkEnv);
+  if (!token) throw new Error('SUPABASE_ACCESS_TOKEN이 없다');
+  console.error(live ? '읽는 곳: 운영 프로젝트(관리 API · 읽기 전용)' : `읽는 곳: 운영이 아닌 프로젝트 ${ref} — 환경 변수로 준 값이다(관리 API · 읽기 전용)`);
   return async (sqlText) => {
     const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: JSON.stringify({ query: sqlText, read_only: true }) });
     if (!res.ok) throw new Error(`관리 API 읽기 실패 ${res.status}`);
@@ -242,6 +253,8 @@ async function main(argv) {
     try { people = await readDatabase(sql, participants); } finally { await sql.end({ timeout: 5 }); }
   }
   const result = aggregate(people, asOf);
+  // 목록에 사람이 있는데 계정을 하나도 못 찾으면 숫자가 아니라 읽기가 틀렸을 수 있다(11-11: 리허설을 읽어 전원 none).
+  if (!opt('--사건') && result.participants > 0 && result.accounts.found === 0) console.error('주의: 참가 목록의 계정을 하나도 찾지 못했다 — 이메일 표기와 읽는 프로젝트부터 확인한다(신청만 하고 아직 가입 전이면 정상).');
   console.log(argv.includes('--json') ? JSON.stringify(result, null, 1) : report(result));
 }
 

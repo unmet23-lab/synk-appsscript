@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import PILOT from '../experiences/drama/pilot/content.mjs';
-import { aggregate, report, readParticipants, readDatabase, readManagement, dramaOnly, personOf } from '../tools/드라마시범집계.mjs';
+import { aggregate, report, readParticipants, readDatabase, readManagement, dramaOnly, personOf, managementTarget, LIVE_PROJECT_REF } from '../tools/드라마시범집계.mjs';
 
 const require = createRequire(import.meta.url);
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -151,6 +151,16 @@ test('관리 API 읽기: SELECT 한 문장씩, 연결표의 계정만, 작은따
   assert.ok(texts[0].includes("'x''y@example.com'"));
   assert.deepEqual(out.map((p) => [p.no, p.account.found]), [['M01', true], ['M02', false]]);
   assert.ok(!JSON.stringify(out).includes('@'));
+});
+
+test('관리 API 과녁: talk .env의 리허설 REF를 따라가지 않고 운영을 읽는다, 직접 준 환경 변수만 바꾼다', () => {
+  // 11-11 실제 계정 왕복: .env의 REF(리허설)를 읽어 방금 기록을 남긴 계정을 「없음」으로 냈다.
+  const talkEnv = ['SUPABASE_ACCESS_TOKEN="tok-file"', 'SUPABASE_PROJECT_REF=rehearsalrefrehearsal', ''].join('\n');
+  assert.deepEqual(managementTarget({}, talkEnv), { token: 'tok-file', ref: LIVE_PROJECT_REF, live: true });
+  assert.deepEqual(managementTarget({ SUPABASE_ACCESS_TOKEN: 'tok-env' }, talkEnv), { token: 'tok-env', ref: LIVE_PROJECT_REF, live: true });
+  assert.deepEqual(managementTarget({ SUPABASE_PROJECT_REF: 'otherref' }, talkEnv), { token: 'tok-file', ref: 'otherref', live: false });
+  assert.deepEqual(managementTarget({ DRAMA_PILOT_PROJECT_REF: 'pilotref', SUPABASE_PROJECT_REF: 'otherref' }, talkEnv), { token: 'tok-file', ref: 'pilotref', live: false });
+  assert.equal(managementTarget({}, '').token, '');
 });
 
 test('명령: --사건 파일로 돌리면 숫자만 찍고, 모르는 인자 · DB 주소 없음은 멈춘다(운영 DB는 읽지 않는다)', async (t) => {
