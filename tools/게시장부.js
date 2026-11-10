@@ -248,6 +248,23 @@ function sameCell(root, dir, account, time, accounts) {
 
 const READ_LIST = '그 플랫폼 예약 목록을 읽고 걸려 있으면 「끝 --상태 예약됨 --확인 …」, 없으면 「풀기 --까닭 …」 뒤에 다시 건다';
 
+// 닫힌 계정 · 닫힌 칸(11-11 Fable 5.2 끝 판 검수 P2-8) — 하루 칸(dailyTimes)이 있는 계정에서: 아직 안 연 계정(dailyFrom 「미정」이거나 그 날짜 전)이면
+// 어느 판이든, 돌림 판이면 그 현지 날짜에 그 칸이 안 열렸을 때(dailyTimesFrom · dailyFormatsFrom)도 까닭 글을 준다. 열려 있으면 null.
+// 손으로 단 판의 칸은 「가장 가까운 칸」으로 세는 것이라(새벽에 올리는 판 등) 닫힌 칸까지는 가리지 않는다 — 칸 시각은 올리기 전 검사 ⑩-2가 본다.
+// 걸기(claim)와 올리기 전 검사 ⑩이 같이 쓴다: 닫힌 계정에 손으로 단 판 · 계정을 닫은 뒤 남은 돌림 판을 아무 관문도 막지 않았다.
+function closedCell(a, timeIso, { rotation = false } = {}) {
+  if (!a || !Array.isArray(a.dailyTimes) || !a.dailyTimes.length) return null;
+  const at = Date.parse(timeIso || '');
+  if (!Number.isFinite(at)) return null;
+  if (T.notStarted(a)) return '아직 안 연 계정이다(원장 dailyFrom 「미정」)';
+  const day = T.localDate(at, T.tzOf(a));
+  if (a.dailyFrom && day < a.dailyFrom) return `이 계정은 현지 ${a.dailyFrom}부터 연다(이 판은 현지 ${day})`;
+  if (!rotation) return null;
+  const slot = T.slotFor(timeIso, a);
+  if (!T.slotsOn(a, day).some((s) => s.time === slot.time)) return `현지 ${day}에 이 계정의 ${slot.time}${slot.format ? ` ${slot.format}` : ''} 칸은 닫혀 있다(원장 dailyTimesFrom · dailyFormatsFrom)`;
+  return null;
+}
+
 function claim({ dir, account, method = null, root = path.dirname(dir), repo = REPO, accounts, now = Date.now(), registry = null }) {
   const place = placeOf(root, registry);
   return withLock(place.file, () => {
@@ -260,6 +277,8 @@ function claim({ dir, account, method = null, root = path.dirname(dir), repo = R
     if (!file) return { ok: false, why: `판 파일이 없다: ${plate.파일}` };
     const sha = sha256(file);
     if (plate.지문 && plate.지문 !== sha) return { ok: false, why: `판 파일이 돌림표가 적은 지문과 다르다(검수 뒤 바뀜) — node tools/돌림표.js --다시 · 판본 검수부터` };
+    const closed = closedCell(accounts[account], plate.시각, { rotation: Boolean(plate.돌림) });
+    if (closed) return { ok: false, why: `${closed} — 닫힌 계정 · 칸에는 걸지 않는다(돌림 판이면 node tools/돌림표.js --다시 --쓰기로 다시 짜고, 손으로 단 판이면 뺀다. 계정 · 칸을 여는 것은 조율 세션 몫)` };
     const clash = sameCell(root, dir, account, plate.시각, accounts);
     if (clash) return { ok: false, why: `같은 칸에 이미 ${clash.piece}(${clash.state})가 있다` };
     const reg = readRegistry(place.file);
@@ -423,5 +442,5 @@ function main(argv) {
   } catch (error) { console.error(error.message); return 1; }
 }
 
-module.exports = { claim, finish, release, pendingClaims, sameCell, held, rowOf, registryHolds, CLAIM, TRIAL };
+module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, held, rowOf, registryHolds, CLAIM, TRIAL };
 if (require.main === module) process.exitCode = main(process.argv.slice(2));

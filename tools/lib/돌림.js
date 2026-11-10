@@ -31,8 +31,9 @@
  *      같은 날 같은 원본을 둘이 못 받는 플랫폼(①)에서는 이 규칙만으로 계정마다 시작 날이 하루씩 어긋난다(첫 곡을 하루에 한 계정씩).
  *      차례가 어긋나는 예외 둘 — 전환할 때뿐이다(11-11 Fable 검수): ⓐ 취소 · 지움 · 보류로 닫혔거나 걸리지 않은 채 지나간 앞 곡은 그 계정이
  *      받은 것으로 세어(③ — 같은 원본을 다시 주지 않는다) 그 곡 없이 다음 차례로 넘어간다. ⓑ 멈춘 차례를 건너뛴 계정은 그 차례가
- *      되살아나면(멈춤을 풂 · 예비를 켬 · 같은 차례 번호의 새 원본) 그 곡을 뒤늦게 받아 1 → 3 → 2가 된다. 그래서 멈춤은 되돌리지 않고,
+ *      되살아나면(멈춤을 풂 · 예비를 켬) 그 곡을 뒤늦게 받아 1 → 3 → 2가 된다. 그래서 멈춤은 되돌리지 않고,
  *      고친 곡은 옛 곡을 멈춤 · 예비로 둔 채 새 원본을 같은 차례 번호로 넣는다(그 차례에 아직 안 온 계정은 차례대로 받는다).
+ *      같은 차례 번호의 다른 원본(옛 곡)을 이미 받은 계정은 그 번호의 새 원본을 받지 않는다 — 같은 노래를 두 번 올리지 않는다(11-11 P3-4).
  *   형식은 FORMATS(이야기 · 노래 · 퀴즈) — 21:00 칸은 11-10 밤부터 「노래」다(퀴즈는 예비 형식으로 남는다).
  */
 const crypto = require('node:crypto');
@@ -144,14 +145,14 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
   const occupied = new Set(); // `${account}|${day}|${slot time}`
   const seeds = {};
   const trialUsed = new Set(); // 첫 판 확인 전 계정 가운데 이미 판이 있는 계정
-  const note = (originalId, key, ms, file = null) => {
+  const note = (originalId, key, ms, file = null, { seedOk = true } = {}) => {
     const a = accounts[key];
     if (!a || !platesOf.has(originalId)) return;
     platesOf.get(originalId).push({ account: key, platform: a.platform, language: a.language || null, group: groupOf(a), ms, file: file || fileOf(byId.get(originalId), a) });
     posted.get(key)?.add(originalId);
     const at = postedAt.get(key);
     if (at && !(at.get(originalId) < ms)) at.set(originalId, ms);
-    if (a.seed && (seeds[originalId] === undefined || ms < seeds[originalId])) seeds[originalId] = ms;
+    if (a.seed && seedOk && (seeds[originalId] === undefined || ms < seeds[originalId])) seeds[originalId] = ms;
   };
   for (const p of existing) {
     const a = accounts[p.account];
@@ -181,7 +182,9 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
     // 첫 판이 영영 「있는」 것으로 남아 다음 칸을 못 받는다(11-11 Fable 검수). 그 원본은 받은 것으로 남는다(다시 주지 않는다) — 새 칸은 다른 원본이 받는다.
     const missed = p.booked === false && ms < T.zonedMs(from, '00:00', T.tzOf(a));
     if (a.trial && !missed) trialUsed.add(p.account);
-    if (p.original) note(p.original, p.account, ms, p.file || null);
+    // 씨앗 판도 같다(11-11 P3-1) — 걸리지 않은 채 지나간 씨앗 판은 씨앗 첫 판으로 세지 않는다(나가지 않은 판의 24시간 뒤를 다른 계정의 문으로 삼지 않게.
+    // 그 씨앗 계정이 그 원본을 받은 것으로는 남는다). 다른 씨앗 판이 있으면 그 판이, 없으면 씨앗이 다시 올릴 때까지 다른 계정은 기다린다.
+    if (p.original) note(p.original, p.account, ms, p.file || null, { seedOk: !missed });
   }
   // 원본마다 기다린 순서(씨앗 첫 판 · 쓸 수 있게 된 날 · 이름) — 오래 기다린 것부터 창에 든다.
   const ageOf = (o) => seeds[o.id] ?? (o.readyFrom ? Date.parse(o.readyFrom + 'T00:00:00Z') : Infinity);
@@ -198,11 +201,22 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
   const waitsFor = (o, key, ms) => {
     if (!o.series?.id || !Number.isFinite(o.series.order)) return null;
     const mine = postedAt.get(key);
-    for (const [order, ids] of [...(seriesOrders.get(o.series.id) || [])].sort((x, y) => x[0] - y[0])) {
+    // 살아 있는 원본이 있는 앞 차례마다, 그 차례 번호의 원본 하나(멈춘 옛 곡이어도 된다 — 고친 곡을 같은 번호로 넣었을 때 옛 곡을 받은 계정이
+    // 새 곡을 기다리며 서지 않게, 11-11 P3-4)를 이 칸보다 먼저 받았어야 한다
+    for (const [order] of [...(seriesOrders.get(o.series.id) || [])].sort((x, y) => x[0] - y[0])) {
       if (order >= o.series.order) break;
-      if (!ids.some((id) => mine.has(id) && mine.get(id) < ms)) return order;
+      const took = originals.some((x) => x.series?.id === o.series.id && x.series.order === order && mine.has(x.id) && mine.get(x.id) < ms);
+      if (!took) return order;
     }
     return null;
+  };
+
+  // 같은 연재 · 같은 차례 번호의 다른 원본을 이미 받은 계정은 그 번호를 다시 받지 않는다(11-11 P3-4) — 고친 곡은 옛 곡을 멈춤 · 예비로 둔 채 같은 차례
+  // 번호의 새 원본으로 넣는데(머리말 ⑦), 옛 곡을 이미 받은 계정이 새 곡(같은 노래)을 또 받았다. 멈춘 · 예비 원본도 「받은 번호」로 센다.
+  const tookOrder = (o, key) => {
+    if (!o.series?.id || !Number.isFinite(o.series.order)) return false;
+    const mine = postedAt.get(key);
+    return originals.some((x) => x.id !== o.id && x.series?.id === o.series.id && x.series.order === o.series.order && mine.has(x.id));
   };
 
   const cells = [];
@@ -246,6 +260,7 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
             const seed = seeds[o.id];
             if (seed === undefined || cell.ms < checkpointOf(seed, cfg)) return false;
           }
+          if (tookOrder(o, cell.account)) return false;
           if (waitsFor(o, cell.account, cell.ms) !== null) return false;
           if (sameFile(platesOf.get(o.id), cell.account, a, fileOf(o, a))) return false;
           return !clashes(platesOf.get(o.id), a, cell.ms, cfg);
@@ -253,7 +268,7 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
         ok.sort((x, y) => ageOf(x) - ageOf(y) || x.id.localeCompare(y.id));
         const win = ok.slice(0, cfg.window).sort((x, y) => hashOf(`${cell.account}|${x.id}`).localeCompare(hashOf(`${cell.account}|${y.id}`)));
         cand.set(cell, [...win, ...ok.slice(cfg.window)].map((o) => o.id));
-        if (!ok.length) cell.why = whyEmpty(cell, a, originals, posted.get(cell.account), seeds, cfg, useSpares, platesOf, waitsFor);
+        if (!ok.length) cell.why = whyEmpty(cell, a, originals, posted.get(cell.account), seeds, cfg, useSpares, platesOf, waitsFor, tookOrder);
       }
       // 유튜브는 이 무리 밖(앞 날 · 이미 있는 판)의 같은 원본 판 시각도 넘겨 흐른 24시간 창으로 다섯을 센다
       const prior = new Map();
@@ -306,14 +321,14 @@ function match(list, cand, cap, accounts, platform, { prior = new Map(), span = 
   for (const cell of list) augment(cell, new Set());
 }
 
-function whyEmpty(cell, a, originals, mine, seeds, cfg, useSpares, platesOf = new Map(), waitsFor = () => null) {
+function whyEmpty(cell, a, originals, mine, seeds, cfg, useSpares, platesOf = new Map(), waitsFor = () => null, tookOrder = () => false) {
   const same = originals.filter((o) => o.format === cell.format && !(o.spare && !useSpares));
   if (!same.length) return `${cell.format} 원본 없음`;
   const live = same.filter((o) => !o.stopped);
   if (!live.length) return `${cell.format} 원본이 모두 멈춤`;
   // 안 받은 원본부터 센다 — 판본 준비를 먼저 거르면, 받을 원본이 남았는데 그 판본이 검수 전인 계정이 「다 올림」으로 잘못 나온다
   // (11-11 Fable 검수: 지마를 받은 채널 가운데 화날때 판본이 검수 전인 곳). 「다 올림」은 정말 안 받은 원본이 없을 때만이다.
-  const unseen = live.filter((o) => !mine.has(o.id));
+  const unseen = live.filter((o) => !mine.has(o.id) && !tookOrder(o, cell.account));
   if (!unseen.length) return `이 계정이 ${cell.format} 원본을 다 올림`;
   const notReady = unseen.filter((o) => !o.versions?.[a.versionKey]?.ready);
   const early = unseen.filter((o) => o.versions?.[a.versionKey]?.ready && o.readyFrom && cell.day < o.readyFrom);

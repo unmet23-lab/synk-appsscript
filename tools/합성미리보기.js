@@ -12,16 +12,37 @@
  *   · 구간마다 첫 · 가운데 · 끝 프레임(그 구간 안, 끝은 끝 초 바로 앞 프레임)을 굽고 한 줄 세 칸 시트로(칸 이름 「A1 6.85s」), 모든 구간은 한 장에 더.
  *   · fps는 `npx remotion compositions`에서 읽는다(--fps로 건너뜀). 프로젝트 폴더에는 아무것도 쓰지 않는다 — 결과는 <밖>.
  *   · --검사: 구간 시트마다 tools/그림검사.js(--종류 합성)로 다섯 실수를 본다 — 프레임 사이 움직임을 무엇이 일으키는지(손 · 몸)까지.
- *   결과: <밖>/합성미리보기.json(구간 · 프레임 · 시트) · 구간_<글자>.jpg · 합성미리보기.jpg. 끝 코드: 0 · 1(검사에서 다시 굽기) · 2(실패).
+ *   결과: <밖>/합성미리보기.json(구간 · 프레임 · 시트) · 구간_<글자>.jpg · 합성미리보기.jpg. 끝 코드: 0 · 1(검사에서 다시 굽기) · 2(실패 · 검사 답 없음 · 답 빠짐).
+ *   · 지문(11-11 끝 판 검수 P2-11): 본 프레임(프레임파일) · 시트(시트지문 · 모두지문) · 입력 그림(프로젝트 public · src의 그림 — 바탕 · 소품 · 마스코트)마다
+ *     SHA-256 · 크기를 적고, --검사면 그 결과 자리 · 끝 코드(검사)도 적는다. 프레임은 돌릴 때마다 새로 굽는다 — 같은 --밖에 남은 옛 프레임을
+ *     쓰면 기록의 입력 그림과 프레임이 안 맞는다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const 그림눈 = require('./lib/그림눈.js');
+const { 지문 } = require('./그림검사.js');
 
 const 뿌리 = path.resolve(__dirname, '..');
 const 글자들 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const 그림확장 = /\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i;
+
+/** 입력 그림 — Remotion 프로젝트가 얹는 그림(public · src 아래, node_modules 빼고)마다 { 파일(프로젝트 상대), 지문, 크기 }. 읽기만 한다. */
+function 입력그림(폴더) {
+  const 나온 = [];
+  const 걷기 = (d) => {
+    let 칸들 = [];
+    try { 칸들 = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of 칸들.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (e.name !== 'node_modules' && !e.name.startsWith('.')) 걷기(p); }
+      else if (e.isFile() && 그림확장.test(e.name)) 나온.push({ 파일: path.relative(폴더, p).split(path.sep).join('/'), ...지문(p) });
+    }
+  };
+  for (const 아래 of ['public', 'src']) 걷기(path.join(폴더, 아래));
+  return 나온;
+}
 
 function 인자(argv) {
   const o = { 폴더: null, 구성: null, 구간: [], fps: null, 입구: null, 밖: null, 이름: null, 검사: false, 의도: '', 마스코트: '몽글', 눈: 'gpt' };
@@ -102,11 +123,14 @@ async function main(argv, 손 = {}) {
   const 정보 = o.fps ? { fps: o.fps, 프레임: Infinity } : 구성읽기(돌리기(['compositions', 입구], 폴더), o.구성);
   if (!정보) throw new Error(`구성 ${o.구성}을 못 찾았다 — npx remotion compositions ${입구}로 이름을 본다`);
   const 구간들 = o.구간.map((g, k) => ({ ...g, 글자: 글자들[k], 프레임: 세프레임(g, 정보.fps, 정보.프레임) }));
+  const 입력 = 입력그림(폴더);
   const 칸파일 = new Map();
   for (const g of 구간들) for (const n of g.프레임) {
     if (칸파일.has(n)) continue;
     const f = path.join(밖, `f${String(n).padStart(5, '0')}.png`);
-    if (!fs.existsSync(f)) { process.stdout.write(`  프레임 ${n}(${(n / 정보.fps).toFixed(2)}s) 굽는 중…\n`); 돌리기(still인자(입구, o.구성, f, n), 폴더); }
+    fs.rmSync(f, { force: true }); // 앞 돌림이 같은 --밖에 남긴 프레임은 안 쓴다 — 기록의 입력 그림 지문과 프레임이 같은 때 것이게
+    process.stdout.write(`  프레임 ${n}(${(n / 정보.fps).toFixed(2)}s) 굽는 중…\n`);
+    돌리기(still인자(입구, o.구성, f, n), 폴더);
     if (!fs.existsSync(f)) throw new Error(`still이 그림을 안 남겼다: ${f}`);
     칸파일.set(n, f);
   }
@@ -119,18 +143,27 @@ async function main(argv, 손 = {}) {
   const 모두 = path.join(밖, '합성미리보기.jpg');
   const 칸들 = 구간들.flatMap((g) => [0, 1, 2].map((i) => g.프레임[Math.min(i, g.프레임.length - 1)]).map((n) => ({ g, n })));
   그림눈.띠만들기(칸들.map((x) => 칸파일.get(x.n)), 모두, { 열: 3, 이름들: 칸들.map((x) => 이름표(x.g, x.g.프레임.indexOf(x.n), x.n)), 실행 });
-  const 기록 = { 판: 1, 만든때: new Date().toISOString(), 폴더: path.relative(공용작업본(뿌리), 폴더).split(path.sep).join('/'), 구성: o.구성, fps: 정보.fps,
-    구간: 구간들.map((g) => ({ 글자: g.글자, 이름: g.이름, 시작: g.시작, 끝: g.끝, 프레임: g.프레임, 시트: path.basename(g.시트) })), 모두: path.basename(모두) };
-  fs.writeFileSync(path.join(밖, '합성미리보기.json'), `${JSON.stringify(기록, null, 1)}\n`);
-  console.log(`합성 미리보기: 구간 ${구간들.length}개 · 프레임 ${칸파일.size}장 → ${모두}`);
+  const 모두지 = 지문(모두);
+  const 기록 = { 판: 2, 만든때: new Date().toISOString(), 폴더: path.relative(공용작업본(뿌리), 폴더).split(path.sep).join('/'), 구성: o.구성, fps: 정보.fps, 지문꼴: 'sha256',
+    구간: 구간들.map((g) => { const s = 지문(g.시트); return { 글자: g.글자, 이름: g.이름, 시작: g.시작, 끝: g.끝, 프레임: g.프레임, 시트: path.basename(g.시트), 시트지문: s.지문, 시트크기: s.크기 }; }),
+    모두: path.basename(모두), 모두지문: 모두지.지문, 모두크기: 모두지.크기,
+    프레임파일: [...칸파일.entries()].sort((a, b) => a[0] - b[0]).map(([n, f]) => ({ 프레임: n, 파일: path.basename(f), ...지문(f) })),
+    입력그림: 입력 };
+  const 기록파일 = path.join(밖, '합성미리보기.json');
+  fs.writeFileSync(기록파일, `${JSON.stringify(기록, null, 1)}\n`);
+  console.log(`합성 미리보기: 구간 ${구간들.length}개 · 프레임 ${칸파일.size}장 · 입력 그림 ${입력.length}장 지문 → ${모두}`);
   for (const g of 구간들) console.log(`  ${g.글자} ${g.이름 || ''} ${g.시작}~${g.끝}s → 프레임 ${g.프레임.join(' · ')} · ${g.시트}`);
   if (!o.검사) return 0;
   const 검사 = 손.그림검사 || require('./그림검사.js').main;
-  const 검사인자 = [...구간들.map((g) => `${g.시트}${g.이름 ? `::${g.이름}` : ''}`), '--의도', o.의도, '--종류', '합성', '--마스코트', o.마스코트, '--눈', o.눈, '--밖', path.join(밖, '그림검사')];
+  const 검사밖 = path.join(밖, '그림검사');
+  const 검사인자 = [...구간들.map((g) => `${g.시트}${g.이름 ? `::${g.이름}` : ''}`), '--의도', o.의도, '--종류', '합성', '--마스코트', o.마스코트, '--눈', o.눈, '--밖', 검사밖];
   console.log(`  그림검사(합성): node tools/그림검사.js ${검사인자.map((a) => (/\s/.test(a) ? `"${a}"` : a)).join(' ')}`);
-  return 검사(검사인자);
+  const 코드 = await 검사(검사인자);
+  // 검사 결과(그림검사.json — 시트마다 지문)와 이 기록을 잇는다. 4는 haiku 재료만(세션 차례 — 받은 뒤 그 폴더의 그림검사.json)
+  fs.writeFileSync(기록파일, `${JSON.stringify({ ...기록, 검사: { 기록: path.relative(밖, path.join(검사밖, '그림검사.json')).split(path.sep).join('/'), 끝코드: 코드 } }, null, 1)}\n`);
+  return 코드;
 }
 
 if (require.main === module) { main(process.argv.slice(2)).then((c) => { process.exitCode = c; }, (e) => { console.error(e.message); process.exitCode = 2; }); }
 
-module.exports = { 인자, 구간풀기, 세프레임, 구성읽기, still인자, main };
+module.exports = { 인자, 구간풀기, 세프레임, 구성읽기, still인자, 입력그림, main };

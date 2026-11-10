@@ -156,6 +156,33 @@ test('작업실 길이 서버에 등록한 줄(승인 대기 · 확인 필요 + 
   }
 });
 
+test('닫힌 계정 · 닫힌 칸에는 걸지 않는다 — 안 연 계정(dailyFrom 미정 · 그 날짜 전)은 어느 판이든, 돌림 판은 그날 그 칸이 열려 있어야(11-11 P2-8)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const now = Date.parse('2026-11-15T14:00:00+09:00');
+  const acc = m.accounts['lab-th-youtube'];
+  const 걸기 = (dir) => 장부.claim({ dir, account: 'lab-th-youtube', root: m.root, accounts: m.accounts, now });
+  const 손판 = (dir) => { const f = path.join(dir, '게시', '준비.json'); const p = JSON.parse(fs.readFileSync(f, 'utf8')); delete p.판[0].돌림; delete p.판[0].지문; fs.writeFileSync(f, JSON.stringify(p)); return dir; };
+  // 아직 안 연 계정 — 돌림 판도 손으로 단 판도 못 건다
+  acc.dailyFrom = '미정';
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  assert.match(걸기(a).why, /아직 안 연 계정이다\(원장 dailyFrom 「미정」\) — 닫힌 계정 · 칸에는 걸지 않는다/);
+  assert.match(걸기(손판(m.편('LAB_손', '2026-11-20T13:00:00+07:00'))).why, /아직 안 연 계정/);
+  assert.equal(fs.existsSync(path.join(a, '게시', '게시결과.json')), false, '거절된 걸기는 줄을 남기지 않는다');
+  // 여는 날 전의 판
+  acc.dailyFrom = '2026-11-21';
+  assert.match(걸기(a).why, /이 계정은 현지 2026-11-21부터 연다\(이 판은 현지 2026-11-20\)/);
+  // 열린 계정의 닫힌 칸(21:00 칸을 dailyFormatsFrom으로 닫아 둠) — 돌림 판은 못 걸고, 13:00 칸은 걸린다
+  acc.dailyFrom = '2026-11-20';
+  acc.dailyFormatsFrom = { 퀴즈: '미정' };
+  const night = m.편('LAB_밤', '2026-11-20T21:00:00+07:00');
+  assert.match(걸기(night).why, /현지 2026-11-20에 이 계정의 21:00 퀴즈 칸은 닫혀 있다/);
+  assert.equal(걸기(a).ok, true);
+  // 손으로 단 판은 닫힌 칸까지는 가리지 않는다(가장 가까운 칸으로 세는 판 — 칸 시각은 올리기 전 검사 ⑩-2가 본다)
+  assert.equal(걸기(손판(m.편('LAB_손밤', '2026-11-21T21:00:00+07:00'))).ok, true);
+  assert.equal(장부.closedCell({ platform: 'youtube' }, '2026-11-20T13:00:00+07:00', { rotation: true }), null, '칸이 없는 계정은 보지 않는다');
+});
+
 test('원장에 없는 계정은 칸을 셀 수 없어 걸지 않는다', (t) => {
   const m = 마당();
   t.after(m.cleanup);

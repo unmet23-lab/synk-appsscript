@@ -74,6 +74,16 @@ test('상대 날짜 — 나라 판본의 말(21개 언어)과 꼬리 붙은 언�
   assert.deepEqual(hit('Завтрак в 8 · таңертең', 'ru'), [], '낱말 속(завтрак 속 завтра)');
   assert.deepEqual(hit('today is fine · 오늘 날씨가 좋아요', 'es'), [], '그 판의 언어만 본다');
   assert.deepEqual(hit('¿Cuál de las cuatro usarías más?', 'es'), []);
+  // 둘째 무늬(11-11 P3-2) — 다른 뜻도 흔한 낱말은 「확인할 것」으로만 보인다(고칠 것이 아니라 판본을 돌림에서 빼지 않는다). hoy en día(요즘)는 날짜가 아니다
+  const maybe = (text, language) => 규칙.checkText(text, { where: '고정 댓글', brand: 'LAB', language, platform: 'youtube' }).map((f) => `${f.level}:${f.code}:${f.message.match(/「(.+?)」/)[1]}`);
+  assert.deepEqual(maybe('Mañana subimos otro', 'es'), ['확인할 것:relative-date-maybe:mañana']);
+  assert.deepEqual(maybe('¿Música a todo volumen a las 3 de la mañana? Por la mañana no.', 'es'), [], '아침(de la · por la mañana)은 날짜가 아니다');
+  assert.deepEqual(maybe('Nos vemos mañana por la mañana', 'es'), ['확인할 것:relative-date-maybe:mañana'], '앞의 mañana(내일)는 남는다');
+  assert.deepEqual(maybe('Bukas ulit! Ngayon na', 'fil'), ['확인할 것:relative-date-maybe:bukas·ngayon']);
+  assert.deepEqual(maybe('きょうも いっしょに べんきょう', 'ja'), ['확인할 것:relative-date-maybe:きょう']);
+  assert.deepEqual(maybe('Hoy en día todos dicen 대박', 'es'), [], 'hoy en día(요즘)');
+  assert.deepEqual(maybe('¿Qué dijiste hoy?', 'es'), ['고칠 것:relative-date:hoy']);
+  assert.deepEqual(maybe('Xayrli kecha', 'uz'), ['확인할 것:relative-date-maybe:kecha']);
 });
 
 test('내부 번호·만든 도구 이름·LAB의 AI 이름', () => {
@@ -288,6 +298,20 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00', { 파일: '게시/다른.mp4' })]), ['rotation-version-file:lab-th-youtube']);
     fs.writeFileSync(text, '{"줄":["고친 글"]}');
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), ['rotation-version-check:lab-th-youtube'], '글을 고치면 뜻 검수 무효');
+    // 닫힌 계정 · 닫힌 칸(11-11 P2-8): 안 연 계정의 판은 손으로 단 판도 고칠 것, 닫힌 칸의 돌림 판도 고칠 것. 이미 걸린 판은 확인할 것, 게시된 판은 안 본다
+    fs.writeFileSync(text, '{"줄":["th"]}');
+    const closed = (list, posted = null) => 검사.closedFindings(bundle, list, { posted }).map((f) => `${f.level}:${f.code}:${f.where}`);
+    const hand = (account, time) => ({ account, platform: known[account].platform, time, raw: { 계정: account, 파일: 'x.mp4', 시각: time } });
+    assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00'), hand('lab-instagram', '2026-11-20T12:00:00+08:00')]), []);
+    assert.deepEqual(closed([plate('lab-vn-tiktok', '2026-11-20T13:00:00+07:00'), hand('lab-vn-tiktok', '2026-11-21T13:00:00+07:00')]), ['고칠 것:closed-cell:lab-vn-tiktok', '고칠 것:closed-cell:lab-vn-tiktok']);
+    known['lab-th-youtube'].dailyFormatsFrom = { 퀴즈: '미정' };
+    assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['고칠 것:closed-cell:lab-th-youtube'], '닫아 둔 21:00 칸의 돌림 판');
+    assert.deepEqual(closed([hand('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), [], '손으로 단 판은 닫힌 칸까지는 안 가린다');
+    assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '예약됨']])), ['확인할 것:closed-cell-booked:lab-th-youtube']);
+    assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '게시됨']])), []);
+    assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '취소됨']])), ['고칠 것:closed-cell:lab-th-youtube']);
+    delete known['lab-th-youtube'].dailyFormatsFrom;
+    fs.writeFileSync(text, '{"줄":["고친 글"]}');
     // ⑩ 줄 셈: 이야기 편은 텔레그램(퀴즈뿐)을 요구하지 않고, 「LAB 나라별」 · 시작 전 계정도 요구하지 않는다
     const own = [{ account: 'lab-instagram', video: { path: 'v.mp4' }, texts: {} }];
     assert.deepEqual(검사.dailyFindings(own, prep, known).map((f) => f.code), []);
@@ -594,8 +618,9 @@ test('⑫-2 같은 언어 묶음의 같은 파일 — 같은 영상 지문 · �
       'lab-th-youtube': { platform: 'youtube', countryCode: 'TH', language: 'th', timeZone: 'Asia/Bangkok' },
     };
     const 줄 = (key, over = {}) => ({ 꼴: '판본글/1', 언어: 'en', 줄: [
-      { id: 'h', 칸: '머리', 글: over.머리 || `Hello ${key}!` }, { id: 'q', 칸: '질문', 글: 'What does it mean?' },
-      { id: 'e', 칸: '예문', 글: over.예문 || `An example in ${key}` }, { id: 'z', 칸: '끝질문', 글: over.끝질문 || `How do you say it in ${key}?` }, { id: 'p', 칸: '게시글', 글: over.게시글 || `Caption ${key}` }] });
+      // 나라마다 낱말이 다른 글(11-11: 「Hello US!」 · 「Hello CA!」처럼 한 낱말만 바꾼 꼴은 이제 「바꿔 말한 꼴」 확인할 것이다)
+      { id: 'h', 칸: '머리', 글: over.머리 || `${key}one ${key}two opening!` }, { id: 'q', 칸: '질문', 글: 'What does it mean?' },
+      { id: 'e', 칸: '예문', 글: over.예문 || `An example in ${key}` }, { id: 'z', 칸: '끝질문', 글: over.끝질문 || `${key}three ${key}four ending?` }, { id: 'p', 칸: '게시글', 글: over.게시글 || `Caption ${key}` }] });
     const put = (key, { video = `${key}-video`, cover = `${key}-cover`, text = 줄(key), caption = `${key} caption` } = {}) => {
       const base = path.join(dir, '게시', '판본', key);
       fs.mkdirSync(base, { recursive: true });
@@ -622,10 +647,23 @@ test('⑫-2 같은 언어 묶음의 같은 파일 — 같은 영상 지문 · �
     판본.CA = put('CA'); 판본.PH = put('PH', { video: 'US-video' }); 판본.TH = put('TH', { video: 'US-video' });
     assert.deepEqual(codes([us(), plate('lab-ph-youtube', 'PH', '2026-11-24T13:00:00+08:00'), plate('lab-th-youtube', 'TH', '2026-11-20T13:00:00+07:00')]), ['고칠 것:same-language-same-file:lab-us-youtube · lab-ph-youtube']);
     // 영상은 다른데 첫 카드 · 끝 질문 · 표지가 같다(지문만 다르게 만든 판)
-    판본.CA = put('CA', { cover: 'US-cover', text: 줄('CA', { 머리: 'Hello US!', 끝질문: 'How do you say it in US?' }) });
+    판본.CA = put('CA', { cover: 'US-cover', text: 줄('CA', { 머리: 'USone UStwo opening!', 끝질문: 'USthree USfour ending?' }) });
     const lines = 검사.sameLanguageFindings(bundle, [us(), ca()]);
     assert.deepEqual(lines.map((f) => `${f.level}:${f.code}`), ['고칠 것:same-language-same-lines']);
     assert.match(lines[0].message, /표지 · 첫 카드 · 끝 질문이\(가\) 같다/);
+    // 표기만 다른 꼴(대소문자 · 문장부호 · 이모지 · 띄어쓰기)도 같은 글이다(11-11 P3-3)
+    판본.CA = put('CA', { text: 줄('CA', { 머리: 'usone  ustwo — OPENING 😤' }) });
+    const plain = 검사.sameLanguageFindings(bundle, [us(), ca()]);
+    assert.deepEqual(plain.map((f) => `${f.level}:${f.code}`), ['고칠 것:same-language-same-lines']);
+    assert.match(plain[0].message, /첫 카드이\(가\) 같다/);
+    // 바꿔 말한 꼴(낱말 겹침이 절반 넘음)은 확인할 것 — 첫 카드 · 끝 질문만 보고, 가르치는 줄이 같은 예문 · 게시글은 겹침으로 가르지 않는다
+    판본.US = put('US', { text: 줄('US', { 머리: 'He always told me “don’t”…', 예문: 'Last slice of pizza? 먹지 마! means do not eat', 끝질문: 'Who says this to you?' }) });
+    판본.CA = put('CA', { text: 줄('CA', { 머리: 'He only ever told me “don’t”…', 예문: 'Last slice of poutine? 먹지 마! means do not eat', 끝질문: 'Tag a friend who never listens' }) });
+    const para = 검사.sameLanguageFindings(bundle, [us(), ca()]);
+    assert.deepEqual(para.map((f) => `${f.level}:${f.code}`), ['확인할 것:same-language-similar']);
+    assert.match(para[0].message, /첫 카드\(낱말 겹침 \d+% — 「He always told me/);
+    assert.doesNotMatch(para[0].message, /예문|끝 질문/);
+    판본.US = put('US');
     // 판본 글에 견줄 칸이 없으면 눈으로 본다
     판본.CA = put('CA', { text: { 줄: ['캐나다'] } });
     assert.deepEqual(codes([us(), ca()]), ['확인할 것:same-language-unchecked:lab-us-youtube · lab-ca-youtube']);

@@ -180,7 +180,10 @@ function screenEndings(files, work) {
 }
 
 // ── 지난 편 ──
-// docs/마케팅 아래 편마다 { name, dir, prep, 판: [{ account, video, time, state }] } — 영상이 있는 판만
+// docs/마케팅 아래 편마다 { name, dir, prep, 판: [{ account, video, time, state }] } — 영상이 있는 판만.
+// 뿌리가 여럿이면(회차 사본 + 공용 작업본) 편의 머리(prep · dir)는 앞 뿌리의 것이고, 판은 뿌리마다 읽어 합친다(계정 · 시각이 같으면 한 번).
+// 11-11 Fable 5.2 끝 판 검수 P2-10: 「먼저 읽은 뿌리가 이긴다」로 공용 작업본을 먼저 읽어, 14시 회차가 제 사본의 준비.json에 방금 단 돌림 판을
+// 「지난 두 편」에서 못 봤다(한 계정이 한 회차에 원본 둘을 받는 날부터 밟는다). 공용 작업본에만 있는 판(다른 세션의 새 편)도 그대로 든다.
 function episodes(roots = [공용작업본(ROOT)]) {
   const found = new Map();
   for (const root of [...new Set(roots.map((r) => path.resolve(r)))]) {
@@ -188,7 +191,7 @@ function episodes(roots = [공용작업본(ROOT)]) {
     let names = [];
     try { names = fs.readdirSync(base); } catch { continue; }
     for (const name of names) {
-      if (found.has(name) || !fs.existsSync(path.join(base, name, '게시', '준비.json'))) continue;
+      if (!fs.existsSync(path.join(base, name, '게시', '준비.json'))) continue;
       let bundle, plates;
       try { bundle = 묶음.load(path.join(base, name)); plates = 묶음.plates(bundle); } catch { continue; }
       const states = {};
@@ -199,7 +202,14 @@ function episodes(roots = [공용작업본(ROOT)]) {
       } catch { /* 아직 없다 */ }
       const 판 = plates.filter((p) => p.video?.exists && Number.isFinite(Date.parse(p.time || '')))
         .map((p) => ({ account: p.account, video: p.video.path, time: Date.parse(p.time), state: states[p.account] || '' }));
-      if (판.length) found.set(name, { name, dir: bundle.dir, prep: bundle.prep, 판 });
+      const 있던 = found.get(name);
+      if (!있던) { if (판.length) found.set(name, { name, dir: bundle.dir, prep: bundle.prep, 판 }); continue; }
+      // 뒤 뿌리 — 앞 뿌리에 없는 판만 더하고, 앞 뿌리가 상태를 모르는 판은 뒤 뿌리의 상태를 쓴다
+      for (const p of 판) {
+        const same = 있던.판.find((x) => x.account === p.account && x.time === p.time);
+        if (!same) 있던.판.push(p);
+        else if (!same.state && p.state) same.state = p.state;
+      }
     }
   }
   return [...found.values()];
@@ -260,7 +270,7 @@ function quizStageFindings(bundle, plates, all) {
 function repeatFindings(bundle, plates, { list = null, stage = stageOf, screen = null, narration = narrationEnding, skipOcr = false, work = null } = {}) {
   const findings = [];
   const pairs = new Map(); // `${우리 영상}\t${지난 편}` → { ours, prev, accounts }
-  const all = list || episodes([공용작업본(bundle.repo), bundle.repo]);
+  const all = list || episodes([bundle.repo, 공용작업본(bundle.repo)]);
   if (formatOf(bundle.prep) === '퀴즈') return quizStageFindings(bundle, plates, all);
   if (formatOf(bundle.prep) === '노래') return { findings, summary: { 지난편: [], 셈밖: '21:00 노래 칸(설계 23 — 11-10 밤 퀴즈에서 노래로)' } };
   const notQuiz = (e) => !['퀴즈', '노래'].includes(formatOf(e.prep));

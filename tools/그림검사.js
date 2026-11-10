@@ -8,6 +8,9 @@
  *   node tools/그림검사.js <그림>[::<그 그림 의도>] … --의도 "<장면 의도 한 줄>" [--나라 <코드,…>] [--금기 "<문장>"]… [--마스코트 몽글|없음]
  *        [--종류 그림|합성] [--눈 gpt|haiku] [--밖 <폴더>] [--이름 <작업 이름>] [--편 <편 폴더>] [--준비만]
  *   node tools/그림검사.js --받기 <작업 폴더> [--편 <편 폴더>]      haiku 하위 에이전트 답(답_haiku.json)을 받는다
+ *   node tools/그림검사.js --편 <편 폴더> [--밖 <작업 폴더>] --판단 "<그림 이름 또는 번호>=<그대로 쓰는 까닭>" [--판단 …]
+ *        「다시 굽기」로 나온 그림을 그대로 쓰기로 했을 때 그 판단을 기록의 그 그림에 단다(글 · 때). 그림을 다시 묻지 않는다 — 결과를 본 뒤 따로 준다.
+ *        검사 뒤 그림이 바뀌었으면(지문이 다르면) 달지 않는다. 판단이 없는 「다시 굽기」는 그대로 「다시 굽기」다(11-11 끝 판 검수 P2-11).
  *
  *   다섯: ① 떠 있는 물건 ② 손 없는 움직임 ③ 실사 섞임(펠트 장면 속 실사 물건) ④ 그림 속 글자 ⑤ 마스코트 정본과 다른 곳 — 그리고 나라 금기 소품.
  *   · 장면 의도를 늘 붙인다: 관용구를 글자 그대로 그린 엉뚱함(「발이 넓다」를 발이 커다란 그림)은 일부러다 — 검사기가 실수로 적지 않게.
@@ -18,11 +21,16 @@
  *         haiku — 하위 에이전트 재료(질문.md + 그림 경로)만 만든다(하위 에이전트는 세션만 띄운다). 세션이 Agent(model: haiku)에게
  *         질문.md를 주고 답을 답_haiku.json에 쓰게 한 뒤 --받기.
  *   · --종류 합성: tools/합성미리보기.js가 만든 첫 · 가운데 · 끝 프레임 시트 — 프레임 사이 움직임을 무엇이 일으키는지(손 · 몸)까지 본다.
- *   결과: <밖>/그림검사.json(그림마다 판정 「통과」 · 「다시 굽기」 · 「답 없음」, 걸린 칸 · 어디) — --편이면 그 편 게시/그림검사.json에도(저장소 상대 경로만).
- *   끝 코드: 0 모두 통과 · 1 다시 굽기 있음 · 2 답 없음 있음 · 4 재료만(haiku — 세션 차례).
+ *   결과: <밖>/그림검사.json(그림마다 판정 「통과」 · 「다시 굽기」 · 「답 빠짐」 · 「답 없음」, 걸린 칸 · 어디, 본 그림의 지문(SHA-256) · 크기)
+ *     — --편이면 그 편 게시/그림검사.json에도(저장소 상대 경로만, 돌릴 때마다 그 편 기록을 이번 검사로 갈아 쓴다).
+ *   · 답 빠짐: 다섯 · 나라 금기(목록이 있을 때) 가운데 걸림 true · false가 없는 칸이 있다 — 「통과」로 치지 않고 다시 묻는다.
+ *     걸린 칸이 있으면 빠진 칸이 있어도 「다시 굽기」이고 빠진 칸은 「빠진칸」에 남는다.
+ *   · 읽기: 상태(편 폴더) — 그림마다 판정 · 판단 · 지문맞음과 문제(다시 굽기인데 판단 없음 · 검사 뒤 그림이 바뀜 · 답 빠짐 · 답 없음 · 지문 없음(옛 기록)).
+ *   끝 코드: 0 모두 통과(판단을 단 다시 굽기 포함) · 1 다시 굽기 있음 · 2 답 없음 · 답 빠짐 있음 · 4 재료만(haiku — 세션 차례). --판단은 0(달았다).
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const { 마지막JSON } = require('./lib/그록호출.js');
 const 그림눈 = require('./lib/그림눈.js');
@@ -35,12 +43,30 @@ const 다섯 = [
   ['글자', '그림 속 글자', '그림 안의 글자 · 숫자 · 기호(간판 · 책 표지 · 라벨 · 화면 포함) — 화면 글은 나중에 따로 얹으니 그림 속에는 없어야 한다. 뭉개진 가짜 글자도'],
   ['정본다름', '마스코트 정본과 다른 곳', '몽글(코랄색 펠트 · 검은 구슬 눈 둘 · 물결 밑단 · 크림색 바느질 선)이 정본 시트와 다른 곳 — 색 · 털결 · 눈 수 · 크기 비율 · 입 · 팔다리가 생김. 몽글이 없으면 false'],
 ];
-const 판정들 = ['통과', '다시 굽기', '답 없음'];
+const 판정들 = ['통과', '다시 굽기', '답 빠짐', '답 없음'];
 const 맨글 = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 const 자르기 = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+const 슬래시 = (s) => String(s || '').replace(/\\/g, '/');
+const 그림이름 = (파일) => path.posix.basename(슬래시(파일));
+
+/** 파일 지문 — SHA-256(hex) · 크기(바이트). 검사 기록을 본 그림과 묶는다(11-11 끝 판 검수 P2-11). */
+function 지문(파일) {
+  const b = fs.readFileSync(파일);
+  return { 지문: crypto.createHash('sha256').update(b).digest('hex'), 크기: b.length };
+}
+
+/** 「<그림 이름 또는 번호>=<그대로 쓰는 까닭>」 → { 키, 글 } */
+function 판단풀기(글) {
+  const s = String(글 ?? '');
+  const i = s.indexOf('=');
+  const 키 = i < 0 ? '' : s.slice(0, i).trim();
+  const 까닭 = i < 0 ? '' : 맨글(s.slice(i + 1));
+  if (!키 || !까닭) throw new Error(`--판단은 "<그림 이름 또는 번호>=<그대로 쓰는 까닭>": ${s}`);
+  return { 키, 글: 까닭 };
+}
 
 function 인자(argv) {
-  const o = { 그림: [], 의도: '', 나라: [], 금기: [], 마스코트: '몽글', 종류: '그림', 눈: 'gpt', 밖: null, 이름: null, 편: null, 준비만: false, 받기: null };
+  const o = { 그림: [], 의도: '', 나라: [], 금기: [], 마스코트: '몽글', 종류: '그림', 눈: 'gpt', 밖: null, 이름: null, 편: null, 준비만: false, 받기: null, 판단: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === '--의도') o.의도 = 맨글(argv[++i]);
@@ -54,8 +80,15 @@ function 인자(argv) {
     else if (a === '--편') o.편 = argv[++i] || null;
     else if (a === '--준비만') o.준비만 = true;
     else if (a === '--받기') o.받기 = argv[++i] || null;
+    else if (a === '--판단') o.판단.push(판단풀기(argv[++i]));
     else if (a.startsWith('--')) throw new Error(`모르는 인자: ${a}`);
     else { const [파일, ...의도] = a.split('::'); o.그림.push({ 파일, 의도: 맨글(의도.join('::')) }); }
+  }
+  if (o.판단.length) {
+    // 판단은 결과를 본 뒤 따로 — 검사와 같이 주면 아직 못 본 걸림까지 판단이 덮는다
+    if (o.그림.length || o.받기) throw new Error('--판단은 검사 결과를 본 뒤 따로 단다(그림을 다시 묻지 않는다) — node tools/그림검사.js --편 <편 폴더> --판단 "<그림 이름 또는 번호>=<그대로 쓰는 까닭>"');
+    if (!o.편 && !o.밖) throw new Error('--판단은 기록이 있는 --편 <편 폴더>(게시/그림검사.json)나 --밖 <작업 폴더>(그림검사.json)와 같이 준다');
+    return o;
   }
   if (o.받기) return o;
   if (!o.그림.length) throw new Error('그림이 없다 — node tools/그림검사.js <그림>[::<그 그림 의도>] … --의도 "<장면 의도 한 줄>"');
@@ -119,6 +152,7 @@ function 질문(o, { 그림의도 = '', 금기 = [], 여럿 = null } = {}) {
     `6. 나라 금기 — ${금기.length ? `아래 목록의 것이 그림에 보이면 true: ${금기.join(' · ')}` : '이번에는 목록이 없다(false로 둔다)'}`,
     '',
     '걸림은 확실할 때만 true — 애매하면 false로 두고 어디에 그 까닭을 적는다. 의도한 엉뚱함으로 본 것은 「의도한엉뚱함」에 적는다.',
+    '여섯 칸(다섯 + 금기) 모두 「걸림」을 true · false로 꼭 적는다 — 빠진 칸이 있으면 그 그림은 통과가 아니라 다시 묻는다.',
     '',
     여럿
       ? `그림이 여럿이다. 답은 JSON 한 덩이만, 그림마다 한 칸: {"그림들":[${한칸('01')}]}`
@@ -129,20 +163,38 @@ function 한칸(번호) {
   return `{"그림":"${번호}","몽글있음":false,"다섯":{${다섯.map(([k]) => `"${k}":{"걸림":false,"어디":""}`).join(',')}},"금기":{"걸림":false,"어디":"","까닭":""},"의도한엉뚱함":"","한줄":""}`;
 }
 
-/** 답 한 칸 → 판정. 다섯 · 금기 가운데 걸림이 하나라도 있으면 다시 굽기. */
-function 판정하기(답, 번호) {
+/** 걸림 값 → true · false · null(답 없음). 「예」 · 1도 걸림, 칸이 없거나 알 수 없는 값은 null — 빠진 칸을 「안 걸림」으로 읽지 않는다(P2-11). */
+const 참값 = new Set(['true', '1', 'yes', 'y', '예', '네', '걸림']);
+const 거짓값 = new Set(['false', '0', 'no', 'n', '아니오', '아니요', '아니', '없음', '안 걸림', '안걸림']);
+function 걸림값(v) {
+  if (v === true || v === false) return v;
+  if (typeof v === 'number') return v === 1 ? true : v === 0 ? false : null;
+  if (typeof v === 'string') { const s = v.trim().toLowerCase(); if (참값.has(s)) return true; if (거짓값.has(s)) return false; }
+  return null;
+}
+const 칸값 = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? { 걸: 걸림값(x.걸림), 어디: x.어디, 까닭: x.까닭 } : { 걸: 걸림값(x), 어디: '', 까닭: '' });
+
+/**
+ * 답 한 칸 → 판정. 다섯 · 금기 가운데 걸림이 하나라도 있으면 다시 굽기, 걸림 없이 답이 빠진 칸이 있으면 답 빠짐(통과 아님).
+ * 금기있음: 나라 금기 목록을 물었나 — 목록이 없으면(「false로 둔다」) 금기 칸이 빠져도 답 빠짐으로 치지 않는다.
+ */
+function 판정하기(답, 번호, { 금기있음 = true } = {}) {
   if (!답 || typeof 답 !== 'object' || !답.다섯 || typeof 답.다섯 !== 'object') return { 번호, 판정: '답 없음', 걸림: [] };
   const 걸림 = [];
+  const 빠진칸 = [];
   const 다섯칸 = {};
   for (const [k, 이름] of 다섯) {
-    const x = 답.다섯[k] || {};
-    const 걸 = x.걸림 === true || x.걸림 === 'true';
-    다섯칸[k] = { 걸림: 걸, 어디: 자르기(맨글(x.어디), 160) };
-    if (걸) 걸림.push(`${이름}: ${다섯칸[k].어디 || '(자리 안 적음)'}`);
+    const x = 칸값(답.다섯[k]);
+    다섯칸[k] = { 걸림: x.걸 === true, 어디: 자르기(맨글(x.어디), 160), ...(x.걸 === null ? { 빠짐: true } : {}) };
+    if (x.걸 === null) 빠진칸.push(이름);
+    if (x.걸) 걸림.push(`${이름}: ${다섯칸[k].어디 || '(자리 안 적음)'}`);
   }
-  const 금기 = { 걸림: 답.금기?.걸림 === true || 답.금기?.걸림 === 'true', 어디: 자르기(맨글(답.금기?.어디), 160), 까닭: 자르기(맨글(답.금기?.까닭), 160) };
+  const g = 칸값(답.금기);
+  if (g.걸 === null && 금기있음) 빠진칸.push('나라 금기');
+  const 금기 = { 걸림: g.걸 === true, 어디: 자르기(맨글(g.어디), 160), 까닭: 자르기(맨글(g.까닭), 160), ...(g.걸 === null && 금기있음 ? { 빠짐: true } : {}) };
   if (금기.걸림) 걸림.push(`나라 금기: ${금기.어디 || ''}${금기.까닭 ? ` — ${금기.까닭}` : ''}`);
-  return { 번호, 판정: 걸림.length ? '다시 굽기' : '통과', 걸림, 몽글있음: 답.몽글있음 === true, 다섯: 다섯칸, 금기, 의도한엉뚱함: 자르기(맨글(답.의도한엉뚱함), 160), 한줄: 자르기(맨글(답.한줄), 200) };
+  const 판정 = 걸림.length ? '다시 굽기' : 빠진칸.length ? '답 빠짐' : '통과';
+  return { 번호, 판정, 걸림, ...(빠진칸.length ? { 빠진칸 } : {}), 몽글있음: 답.몽글있음 === true, 다섯: 다섯칸, 금기, 의도한엉뚱함: 자르기(맨글(답.의도한엉뚱함), 160), 한줄: 자르기(맨글(답.한줄), 200) };
 }
 
 function 저장소경로(p) {
@@ -154,22 +206,164 @@ function 저장소경로(p) {
   return path.basename(절대);
 }
 
-const 끝코드 = (그림들) => (그림들.some((g) => g.판정 === '답 없음') ? 2 : 그림들.some((g) => g.판정 === '다시 굽기') ? 1 : 0);
+const 판단글 = (g) => (g?.판단 && typeof g.판단 === 'object' ? 맨글(g.판단.글) : typeof g?.판단 === 'string' ? 맨글(g.판단) : '');
+// 2 = 다시 묻는다(답 없음 · 답 빠짐), 1 = 다시 굽는다(판단 없는 다시 굽기), 0 = 그대로 쓴다
+const 끝코드 = (그림들) => (그림들.some((g) => g.판정 === '답 없음' || g.판정 === '답 빠짐') ? 2 : 그림들.some((g) => g.판정 === '다시 굽기' && !판단글(g)) ? 1 : 0);
+
+function 기록읽기(파일) { return JSON.parse(fs.readFileSync(파일, 'utf8')); }
+const 기록글 = (기록) => `${JSON.stringify(기록, null, 1)}\n`;
 
 function 결과쓰기(밖, o, 그림들, { 눈, 금기, 편 }) {
-  const 기록 = { 판: 1, 만든때: new Date().toISOString(), 눈, 종류: o.종류, 의도: o.의도, 마스코트: o.마스코트, 금기,
+  const 기록 = { 판: 2, 만든때: new Date().toISOString(), 눈, 종류: o.종류, 의도: o.의도, 마스코트: o.마스코트, 금기, 지문꼴: 'sha256',
     그림: 그림들.map((g) => ({ ...g, 파일: 저장소경로(g.파일) })),
-    다시굽기: 그림들.filter((g) => g.판정 === '다시 굽기').length, 답없음: 그림들.filter((g) => g.판정 === '답 없음').length };
-  fs.writeFileSync(path.join(밖, '그림검사.json'), `${JSON.stringify({ ...기록, 그림: 그림들 }, null, 1)}\n`);
-  if (편) { const 게시 = path.join(path.resolve(편), '게시'); fs.mkdirSync(게시, { recursive: true }); fs.writeFileSync(path.join(게시, '그림검사.json'), `${JSON.stringify(기록, null, 1)}\n`); }
-  for (const g of 그림들) console.log(`  ${g.번호} ${g.판정}${g.걸림?.length ? ` — ${g.걸림.join(' · ')}` : ''}  ${path.basename(g.파일)}`);
+    다시굽기: 그림들.filter((g) => g.판정 === '다시 굽기').length, 답빠짐: 그림들.filter((g) => g.판정 === '답 빠짐').length, 답없음: 그림들.filter((g) => g.판정 === '답 없음').length };
+  fs.writeFileSync(path.join(밖, '그림검사.json'), 기록글({ ...기록, 그림: 그림들 }));
+  if (편) {
+    const 게시 = path.join(path.resolve(편), '게시');
+    const 기록파일 = path.join(게시, '그림검사.json');
+    let 옛 = null; try { 옛 = 기록읽기(기록파일); } catch { /* 처음이거나 못 읽음 */ }
+    const 옛그림 = Array.isArray(옛?.그림) ? 옛.그림.filter((g) => g && typeof g === 'object') : [];
+    const 새파일 = new Set(기록.그림.map((g) => g.파일));
+    const 빠지는 = 옛그림.filter((g) => !새파일.has(g.파일));
+    if (빠지는.length) console.log(`  (편 기록을 이번 검사로 갈아 쓴다 — 앞 기록의 ${빠지는.map((g) => `${그림이름(g.파일)}(${g.판정 || '?'})`).join(', ')}는 기록에서 빠진다. 그 그림을 아직 쓰면 이번 그림과 함께 다시 검사한다)`);
+    for (const g of 기록.그림) {
+      const 앞판단 = 옛그림.find((x) => 판단글(x) && x.지문 && x.지문 === g.지문);
+      if (앞판단 && g.판정 === '다시 굽기') console.log(`  (${그림이름(g.파일)}: 앞 기록의 판단 「${판단글(앞판단)}」은 옮기지 않았다 — 이번 걸림을 보고 그대로 쓰면 --판단을 다시 준다)`);
+    }
+    fs.mkdirSync(게시, { recursive: true });
+    fs.writeFileSync(기록파일, 기록글(기록));
+  }
+  for (const g of 그림들) console.log(`  ${g.번호} ${g.판정}${g.걸림?.length ? ` — ${g.걸림.join(' · ')}` : ''}${g.빠진칸?.length ? ` (빠진 칸: ${g.빠진칸.join(' · ')})` : ''}  ${path.basename(g.파일)}`);
   const 셈 = 판정들.map((p) => `${p} ${그림들.filter((g) => g.판정 === p).length}`).join(' · ');
   console.log(`그림 검사(${눈}): ${셈} → ${path.join(밖, '그림검사.json')}`);
   return 끝코드(그림들);
 }
 
+/**
+ * 기록 속 상대 경로를 풀 바탕들 — 편 폴더가 든 작업본(위로 .git을 찾아) · 이 도구의 작업본 · 공용 작업본 · 편 폴더 순서.
+ * 편이 든 작업본이 먼저다: 운영 사본에서 도는 검사가 공용 작업본의 편을 읽을 때 운영 사본의 같은 경로(옛 판일 수 있다)와 견주지 않게.
+ */
+function 풀바탕(폴더, 바탕들) {
+  let 위 = null;
+  for (let d = path.resolve(폴더); ; d = path.dirname(d)) {
+    if (fs.existsSync(path.join(d, '.git'))) { 위 = d; break; }
+    if (path.dirname(d) === d) break;
+  }
+  return [...new Set([...(위 ? [위] : []), ...바탕들, path.resolve(폴더)])];
+}
+
+/** 기록 속 그림 경로 → 지금 파일(없으면 null). 편 기록은 저장소 상대 경로(밖에 있던 그림은 파일 이름만)다. */
+function 그림경로(파일, 바탕들) {
+  const p = String(파일 || '');
+  if (!p) return null;
+  if (path.isAbsolute(p)) return fs.existsSync(p) ? p : null;
+  for (const b of 바탕들) { const f = path.resolve(b, p); if (fs.existsSync(f)) return f; }
+  return null;
+}
+
+/** 기록의 그림 가운데 키(번호 · 파일 이름 · 확장자 뺀 이름 · 기록 경로)에 맞는 것. */
+function 그림찾기(그림들, 키) {
+  const k = String(키 || '').trim();
+  const 번호 = /^\d+$/.test(k) ? k.padStart(2, '0') : null;
+  return 그림들.filter((g) => {
+    if (!g || typeof g !== 'object') return false;
+    if (번호) return String(g.번호 ?? '') === 번호;
+    const 이름 = 그림이름(g.파일);
+    return 슬래시(g.파일) === 슬래시(k) || 이름 === k || 이름.replace(/\.[^.]+$/, '') === k;
+  });
+}
+
+/**
+ * --판단: 「다시 굽기」 그림을 그대로 쓰는 판단을 기록(편 게시/그림검사.json · 작업 폴더 그림검사.json)의 그 그림에 단다(글 · 때).
+ * 모두 맞을 때만 쓴다 — 기록에 없는 이름 · 여럿에 맞는 이름 · 다시 굽기가 아닌 그림 · 검사 뒤 바뀐 그림이면 아무것도 안 쓰고 멈춘다.
+ */
+function 판단달기(o, { 때 = new Date().toISOString(), 바탕들 = [뿌리, 공용작업본(뿌리)] } = {}) {
+  const 대상 = [];
+  if (o.편) 대상.push({ 파일: path.join(path.resolve(o.편), '게시', '그림검사.json'), 바탕: 풀바탕(o.편, 바탕들) });
+  if (o.밖) 대상.push({ 파일: path.join(path.resolve(o.밖), '그림검사.json'), 바탕: 풀바탕(o.밖, 바탕들) });
+  const 고칠 = 대상.map((d) => {
+    if (!fs.existsSync(d.파일)) throw new Error(`그림 검사 기록이 없다: ${d.파일} — 먼저 검사한다`);
+    const 기록 = 기록읽기(d.파일);
+    const 그림들 = Array.isArray(기록?.그림) ? 기록.그림 : [];
+    const 목록 = () => 그림들.filter((g) => g && typeof g === 'object').map((g) => `${g.번호} ${그림이름(g.파일)}(${g.판정})`).join(', ') || '없음';
+    const 변경 = [];
+    for (const p of o.판단) {
+      const 짝 = 그림찾기(그림들, p.키);
+      if (!짝.length) throw new Error(`기록에 「${p.키}」 그림이 없다(${d.파일}) — 있는 그림: ${목록()}`);
+      if (짝.length > 1) throw new Error(`「${p.키}」가 그림 여럿에 맞는다 — 번호로 준다: ${목록()}`);
+      const g = 짝[0];
+      const 이름 = `${g.번호} ${그림이름(g.파일)}`;
+      if (g.판정 !== '다시 굽기') throw new Error(`${이름}은 「${g.판정}」이다 — 판단은 「다시 굽기」로 나온 그림을 그대로 쓸 때만 단다${['답 빠짐', '답 없음'].includes(g.판정) ? '(답이 모자라면 다시 검사한다)' : ''}`);
+      const 지금 = 그림경로(g.파일, d.바탕);
+      const 알림 = [];
+      if (!g.지문) 알림.push('옛 기록 — 지문이 없어 검사한 그림과 지금 그림이 같은지 모른다');
+      else if (!지금) 알림.push(`그림 파일을 못 찾아(${g.파일}) 지문을 못 견줬다`);
+      else if (지문(지금).지문 !== g.지문) throw new Error(`${이름}은 검사 뒤 바뀌었다(지문이 다름) — 바뀐 그림을 다시 검사한 뒤 판단한다`);
+      if (Array.isArray(g.빠진칸) && g.빠진칸.length) 알림.push(`빠진 칸(${g.빠진칸.join(' · ')})은 판단으로 덮이지 않는다 — 다시 검사한다`);
+      변경.push({ g, p, 이름, 알림 });
+    }
+    return { d, 기록, 변경 };
+  });
+  for (const { d, 기록, 변경 } of 고칠) {
+    for (const { g, p, 이름, 알림 } of 변경) {
+      const 옛글 = 판단글(g);
+      g.판단 = { 글: p.글, 때 };
+      console.log(`  ${이름}: 판단 ${옛글 ? `바꿈(옛: ${옛글}) → ` : ''}「${p.글}」 — 걸림 ${(g.걸림 || []).join(' · ') || '(안 적힘)'}${알림.length ? `\n    (${알림.join(' · ')})` : ''}`);
+    }
+    fs.writeFileSync(d.파일, 기록글(기록));
+    console.log(`판단 ${변경.length}개 → ${d.파일}`);
+  }
+  if (o.편) {
+    const s = 상태(o.편, { 바탕들 });
+    console.log(s.문제.length ? `남은 문제 ${s.문제.length}:\n${s.문제.map((t) => `  - ${t}`).join('\n')}` : '남은 문제 없음');
+  }
+  return 0;
+}
+
+/**
+ * 상태(편 폴더) — 그 편 게시/그림검사.json을 읽기만 한다(올리기 전 검사가 보이게 쓴다). 던지지 않는다.
+ * → { 있음, 기록파일, 만든때, 그림: [{ 번호, 이름, 파일, 판정, 판단({글, 때} | null), 지문맞음(true · false · 파일이 없거나 지문이 없으면 null), 걸림, 빠진칸 }],
+ *     문제: [글…] } — 문제: 다시 굽기인데 판단 없음 · 검사 뒤 그림이 바뀜 · 답 빠짐 · 답 없음 · 지문 없음(옛 기록) · 그림 파일을 못 찾음.
+ */
+function 상태(편폴더, { 바탕들 = [뿌리, 공용작업본(뿌리)] } = {}) {
+  const 편 = path.resolve(String(편폴더 || '.'));
+  const 기록파일 = path.join(편, '게시', '그림검사.json');
+  if (!fs.existsSync(기록파일)) return { 있음: false, 기록파일, 만든때: null, 그림: [], 문제: [] };
+  let 기록;
+  try { 기록 = 기록읽기(기록파일); } catch (e) { return { 있음: true, 기록파일, 만든때: null, 그림: [], 문제: [`그림 검사 기록을 못 읽음: ${e.message}`] }; }
+  const 칸들 = Array.isArray(기록?.그림) ? 기록.그림.filter((g) => g && typeof g === 'object') : [];
+  const 그림 = [];
+  const 문제 = [];
+  const 바탕 = 풀바탕(편, 바탕들);
+  if (!칸들.length) 문제.push('그림 검사 기록에 그림이 없음');
+  for (const g of 칸들) {
+    const 파일 = String(g.파일 || '');
+    const 이름 = 그림이름(파일) || String(g.번호 ?? '?');
+    const 판정 = String(g.판정 || '(없음)');
+    const 글 = 판단글(g);
+    const 판단 = 글 ? { 글, 때: (typeof g.판단 === 'object' && g.판단.때) || null } : null;
+    const 기록지문 = /^[0-9a-f]{64}$/i.test(String(g.지문 || '')) ? String(g.지문).toLowerCase() : null;
+    const 지금 = 그림경로(파일, 바탕);
+    let 지문맞음 = null;
+    if (지금 && 기록지문) { try { 지문맞음 = 지문(지금).지문 === 기록지문; } catch { 지문맞음 = null; } }
+    const 걸림 = Array.isArray(g.걸림) ? g.걸림.map(String) : [];
+    const 빠진칸 = Array.isArray(g.빠진칸) ? g.빠진칸.map(String) : [];
+    그림.push({ 번호: g.번호 ?? null, 이름, 파일, 판정, 판단, 지문맞음, 걸림, 빠진칸 });
+    const 앞 = `그림 검사 ${g.번호 ? `${g.번호} ` : ''}${이름}`;
+    if (판정 === '다시 굽기' && !판단) 문제.push(`${앞}: 다시 굽기인데 판단 없음 — ${걸림.join(' · ') || '(걸린 칸 안 적힘)'}`);
+    if (판정 === '답 빠짐' || 빠진칸.length) 문제.push(`${앞}: 답 빠짐(${빠진칸.join(' · ') || '빠진 칸 안 적힘'}) — 다시 검사한다`);
+    if (판정 === '답 없음') 문제.push(`${앞}: 답 없음 — 검사가 안 됐다, 다시 검사한다`);
+    if (!판정들.includes(판정)) 문제.push(`${앞}: 판정을 모름(${판정})`);
+    if (!기록지문) 문제.push(`${앞}: 지문 없음(옛 기록) — 검사한 그림과 지금 그림이 같은지 모른다, 다시 검사하면 묶인다`);
+    else if (지문맞음 === false) 문제.push(`${앞}: 검사 뒤 그림이 바뀜 — 바뀐 그림을 다시 검사한다`);
+    else if (!지금) 문제.push(`${앞}: 그림 파일을 못 찾음(${파일}) — 지문을 못 견줬다`);
+  }
+  return { 있음: true, 기록파일, 만든때: 기록?.만든때 || null, 그림, 문제 };
+}
+
 async function main(argv, 손 = {}) {
   const o = 인자(argv);
+  if (o.판단.length) return 판단달기(o, 손.바탕들 ? { 바탕들: 손.바탕들 } : {});
   if (o.받기) return 받기(o);
   const 이름 = o.이름 || `검사-${new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 16).replace(/[-:T]/g, '')}`;
   const 밖 = path.resolve(o.밖 || path.join(공용작업본(뿌리), '.tmp', '그림검사', 이름));
@@ -179,7 +373,7 @@ async function main(argv, 손 = {}) {
   const 정본 = o.마스코트 === '몽글' ? (손.정본시트 || 그림눈.정본시트)(path.join(밖, '정본시트.jpg')) : null;
   const 그림들 = o.그림.map((g, i) => {
     const 파일 = path.resolve(g.파일); if (!fs.existsSync(파일)) throw new Error(`그림이 없다: ${g.파일}`);
-    return { 번호: String(i + 1).padStart(2, '0'), 파일, 의도: g.의도 };
+    return { 번호: String(i + 1).padStart(2, '0'), 파일, 의도: g.의도, ...지문(파일) };
   });
   fs.writeFileSync(path.join(밖, '그림목록.json'), `${JSON.stringify({ 의도: o.의도, 마스코트: o.마스코트, 종류: o.종류, 금기, 정본, 편: o.편 ? path.resolve(o.편) : null, 그림: 그림들 }, null, 1)}\n`);
   console.log(`그림 검사 ${이름}: ${그림들.length}장 · 눈 ${o.눈} · 정본 시트 ${정본 ? '붙임' : '없음'} · 나라 금기 ${금기.length}줄 → ${밖}`);
@@ -201,12 +395,13 @@ async function main(argv, 손 = {}) {
   if (o.준비만) { fs.writeFileSync(path.join(밖, '질문_보기.md'), `${질문(o, { 그림의도: 그림들[0]?.의도, 금기 })}\n`); return 0; }
   const 묻기 = 손.GPT묻기 || 그림눈.GPT묻기;
   const 결과 = [];
+  const 묶음 = (g) => ({ 파일: g.파일, 지문: g.지문, 크기: g.크기 });
   for (const g of 그림들) {
     const r = await 묻기({ 그림들: [...(정본 ? [정본] : []), g.파일], 글: 질문(o, { 그림의도: g.의도, 금기 }), 답파일: path.join(밖, `답_gpt_${g.번호}.md`) });
     const 답 = r.결과 === '받음' ? 마지막JSON(r.답) : null;
-    const 판 = 판정하기(답, g.번호);
-    결과.push({ ...판, 파일: g.파일, ...(r.결과 === '막힘' ? { 막힘: { 꼴: r.꼴, 첫줄: r.첫줄 } } : {}) });
-    if (r.결과 === '막힘' && r.꼴 === '계정 없음') { for (const h of 그림들.slice(그림들.indexOf(g) + 1)) 결과.push({ 번호: h.번호, 파일: h.파일, 판정: '답 없음', 걸림: [], 막힘: { 꼴: r.꼴, 첫줄: r.첫줄 } }); console.error(`  GPT 굽기 계정이 모두 막혔다(${r.첫줄}) — 남은 그림은 --눈 haiku로`); break; }
+    const 판 = 판정하기(답, g.번호, { 금기있음: 금기.length > 0 });
+    결과.push({ ...판, ...묶음(g), ...(r.결과 === '막힘' ? { 막힘: { 꼴: r.꼴, 첫줄: r.첫줄 } } : {}) });
+    if (r.결과 === '막힘' && r.꼴 === '계정 없음') { for (const h of 그림들.slice(그림들.indexOf(g) + 1)) 결과.push({ 번호: h.번호, 판정: '답 없음', 걸림: [], ...묶음(h), 막힘: { 꼴: r.꼴, 첫줄: r.첫줄 } }); console.error(`  GPT 굽기 계정이 모두 막혔다(${r.첫줄}) — 남은 그림은 --눈 haiku로`); break; }
   }
   return 결과쓰기(밖, o, 결과, { 눈: 'gpt', 금기, 편: o.편 });
 }
@@ -217,10 +412,17 @@ function 받기(o) {
   const 목록 = JSON.parse(fs.readFileSync(path.join(밖, '그림목록.json'), 'utf8'));
   let 답 = null; try { 답 = 마지막JSON(fs.readFileSync(path.join(밖, '답_haiku.json'), 'utf8')); } catch { /* 없다 */ }
   const 칸들 = Array.isArray(답?.그림들) ? 답.그림들 : Array.isArray(답) ? 답 : [];
-  const 그림들 = 목록.그림.map((g) => ({ ...판정하기(칸들.find((x) => String(x?.그림 ?? '').padStart(2, '0') === g.번호), g.번호), 파일: g.파일 }));
+  const 금기있음 = (목록.금기 || []).length > 0;
+  const 그림들 = 목록.그림.map((g) => {
+    // 지문은 재료를 만들 때 잰 것(haiku가 본 그림). 옛 재료(지문 없음)만 지금 잰다. 재료 뒤 바뀌었으면 기록은 옛 지문 그대로 — 상태()가 「검사 뒤 바뀜」으로 짚는다
+    let 지금 = null; try { 지금 = 지문(g.파일); } catch { /* 그림이 없어졌다 */ }
+    const 지 = g.지문 ? { 지문: g.지문, 크기: g.크기 } : 지금 || {};
+    if (g.지문 && 지금 && 지금.지문 !== g.지문) console.log(`  ${g.번호} 재료를 만든 뒤 그림이 바뀌었다 — haiku가 어느 판을 봤는지 모른다, 다시 검사한다: ${path.basename(g.파일)}`);
+    return { ...판정하기(칸들.find((x) => String(x?.그림 ?? '').padStart(2, '0') === g.번호), g.번호, { 금기있음 }), 파일: g.파일, ...지 };
+  });
   return 결과쓰기(밖, { 종류: 목록.종류, 의도: 목록.의도, 마스코트: 목록.마스코트 }, 그림들, { 눈: 'haiku', 금기: 목록.금기 || [], 편: o.편 || 목록.편 });
 }
 
 if (require.main === module) { main(process.argv.slice(2)).then((c) => { process.exitCode = c; }, (e) => { console.error(e.message); process.exitCode = 2; }); }
 
-module.exports = { 인자, 나라금기, 질문, 한칸, 판정하기, 끝코드, 다섯, main, 받기 };
+module.exports = { 인자, 나라금기, 질문, 한칸, 판정하기, 걸림값, 끝코드, 다섯, 판정들, 지문, 판단풀기, 판단달기, 상태, main, 받기 };

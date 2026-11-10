@@ -49,6 +49,105 @@ function 같은글(지문, file) {
   return h(Buffer.from(lf, 'utf8')) === 지문 || h(Buffer.from(lf.replace(/\n/g, '\r\n'), 'utf8')) === 지문;
 }
 
+// ── 렌더 자산 지문(11-11 Fable 5.2 끝 판 검수 P1-3) ────────────────────────────────────────────────
+// 판본 영상은 판본 글(글sha256)만이 아니라 원본의 그림 · 소리 · 틀(remotion public · src)로 굽는다. 원본 그림을 고친 뒤 다시 렌더하지 않은
+// 판본은 영상 지문이 그대로라 글자 검수 「통과」가 옛 그림 영상에 붙은 채 돌림에 들 수 있었다(11-10 「지마」 저녁 그림을 18:09에 고쳤는데
+// 그 전에 구운 일곱 판본 — 태국 · 캄보디아판 11.5초에 몽글이 의자 없이 떠 있다). 렌더할 때 그 자산들의 지문을 렌더.json 「자산sha256」에 적고,
+// 돌림 관문(tools/돌림표.js versionState)이 지금 자산과 견준다. 판본 글(<판본폴더>/<KEY>.json)은 글sha256이 따로 지키니 뺀다.
+// 글 파일은 줄끝(CRLF · LF)을 맞춘 뒤 센다 — 작업본은 올리기 · 따라가기 때 줄끝을 다시 쓴다(위 같은글과 같은 까닭). 그림 · 소리는 바이트 그대로.
+// 글인지는 git과 같은 셈(앞 8000바이트에 NUL이 없으면 글)으로 가른다 — 확장자로 가르면 git이 글로 보고 줄끝을 바꾸는 파일을 놓친다.
+const 자산건너뜀 = new Set(['node_modules', 'out', 'dist', '.remotion', '.git']);
+const 해시 = (b) => crypto.createHash('sha256').update(b).digest('hex');
+function 자산파일지문(raw) {
+  if (raw.subarray(0, 8000).includes(0) || !raw.includes(13)) return 해시(raw);
+  const out = Buffer.allocUnsafe(raw.length);
+  let n = 0;
+  for (let i = 0; i < raw.length; i += 1) { if (raw[i] === 13 && raw[i + 1] === 10) continue; out[n] = raw[i]; n += 1; }
+  return 해시(out.subarray(0, n));
+}
+
+/** 판본 영상이 읽는 원본 자산 자리(편 폴더 기준) — 지도 「자산」(폴더 · 파일 목록)이 있으면 그것, 없으면 판본폴더가 든 remotion 뿌리의 public · src */
+function 자산자리(지도) {
+  if (Array.isArray(지도.자산) && 지도.자산.length) return 지도.자산.map((p) => String(p).split('\\').join('/'));
+  const 조각 = String(지도.판본폴더 || '').split('\\').join('/').split('/').filter(Boolean);
+  const i = 조각.indexOf('src');
+  if (i < 0) return [조각.slice(0, -1).join('/') || '.'];
+  const 뿌리 = 조각.slice(0, i).join('/');
+  return [뿌리 ? `${뿌리}/public` : 'public', 뿌리 ? `${뿌리}/src` : 'src'];
+}
+
+/** 자산 파일 목록 — [{ 이름(편 폴더 기준 · 빗금), 파일 }] 이름 순. 판본 글 · 숨김 파일 · node_modules · out은 뺀다. */
+function 자산파일들(편, 지도) {
+  const 뿌리 = path.resolve(편);
+  const 판본자리 = String(지도.판본폴더 || '').split('\\').join('/').replace(/\/+$/, '');
+  const out = [];
+  const 걷기 = (abs) => {
+    let st;
+    try { st = fs.statSync(abs); } catch { return; }
+    const 이름 = path.relative(뿌리, abs).split(path.sep).join('/');
+    if (st.isDirectory()) {
+      for (const f of fs.readdirSync(abs).sort()) {
+        if (f.startsWith('.') || 자산건너뜀.has(f)) continue;
+        걷기(path.join(abs, f));
+      }
+      return;
+    }
+    if (판본자리 && 이름.startsWith(`${판본자리}/`) && /^[A-Z]{2}\.json$/.test(path.basename(abs))) return; // 판본 글 — 글sha256이 지킨다
+    out.push({ 이름, 파일: abs, 크기: st.size, 때: st.mtimeMs });
+  };
+  for (const 자리 of 자산자리(지도)) 걷기(path.join(뿌리, 자리));
+  return out.sort((a, b) => (a.이름 < b.이름 ? -1 : a.이름 > b.이름 ? 1 : 0));
+}
+
+const 자산기억 = new Map(); // 편 폴더 → { 서명(이름 · 크기 · 수정 시각), 결과 } — 돌림표가 판본마다 불러도 파일은 한 번만 읽는다
+/** 지금 자산의 지문 → { 지문, 수 }. 지도는 판본 지도(없으면 { 판본폴더 }만 줘도 된다 — 판본렌더.mjs). */
+function 자산지문(편, 지도 = null) {
+  const 쓸지도 = 지도 || 지도읽기(편).지도;
+  const 목록 = 자산파일들(편, 쓸지도);
+  const 서명 = 목록.map((f) => `${f.이름}|${f.크기}|${f.때}`).join('\n');
+  const 열쇠 = `${path.resolve(편)}|${자산자리(쓸지도).join(',')}`;
+  const 있던 = 자산기억.get(열쇠);
+  if (있던 && 있던.서명 === 서명) return 있던.결과;
+  const h = crypto.createHash('sha256');
+  for (const f of 목록) {
+    h.update(`${f.이름}\0${자산파일지문(fs.readFileSync(f.파일))}\n`);
+  }
+  const 결과 = { 지문: h.digest('hex'), 수: 목록.length };
+  자산기억.set(열쇠, { 서명, 결과 });
+  return 결과;
+}
+
+/**
+ * 판본 영상이 지금 원천(판본 글 · 자산)으로 구운 것인가 — 렌더.json과 견준다. 문제가 없으면 null, 있으면 그 까닭 한 줄.
+ * 영상지문을 주면 렌더 기록의 영상 지문과도 견준다(다른 영상에 붙은 렌더 기록을 믿지 않게).
+ */
+function 렌더문제(편, 키, { 지도: 준지도 = null, 영상지문 = null } = {}) {
+  const 지도 = 준지도 || 지도읽기(편).지도;
+  const 다시 = `node 판본렌더.mjs ${키} → 글자 검사 다시`;
+  const 렌더 = path.join(편폴더(편), 낼곳(지도), 키, '렌더.json');
+  if (!fs.existsSync(렌더)) return `렌더 기록(렌더.json)이 없다 — 영상이 지금 판본 글 · 그림으로 구운 것인지 알 수 없다(${다시})`;
+  let j;
+  try { j = 판본글.readJson(렌더); } catch { return `렌더 기록(렌더.json)을 못 읽는다 — ${다시}`; }
+  if (!j || !j.글sha256 || !j.영상sha256) return `렌더 기록에 글 · 영상 지문이 없다(표지만 뜬 기록) — ${다시}`;
+  const 팩 = 팩경로(편, 지도, 키);
+  if (!fs.existsSync(팩) || !같은글(j.글sha256, 팩)) return `영상이 지금 판본 글로 구운 것이 아니다(렌더 뒤 글이 바뀜) — ${다시}`;
+  if (영상지문 && j.영상sha256 !== 영상지문) return `영상이 렌더 기록(렌더.json)과 다르다 — ${다시}`;
+  if (!j.자산sha256) return `렌더 기록에 자산 지문이 없다 — 원본 그림 · 소리 · 틀이 렌더 뒤 바뀌었는지 알 수 없다(${다시})`;
+  if (j.자산sha256 !== 자산지문(편, 지도).지문) return `렌더 뒤 원본 그림 · 소리 · 틀(${자산자리(지도).join(' · ')})이 바뀌었다 — ${다시}`;
+  return null;
+}
+
+/**
+ * 돌림표 · 올리기 전 검사가 부른다(tools/돌림표.js versionState) — 글낡음과 같은 조건(판본 지도가 있고 준비.json 판본의 「글」이 지도의 글.json)일 때
+ * 렌더문제를 본다. 지도가 없는 편 · 지도와 이어지지 않은 판본이면 null(볼 것이 없다), 문제가 없으면 false, 있으면 까닭.
+ */
+function 렌더낡음(편, 키, 준비판본, 옵션 = {}) {
+  if (!있나(편)) return null;
+  const { 지도 } = 지도읽기(편);
+  if (슬래시((준비판본 && 준비판본.글) || '') !== 글상대(지도, 키)) return null;
+  return 렌더문제(편, 키, { ...옵션, 지도 }) || false;
+}
+
 const REPO = path.resolve(__dirname, '..', '..');
 const 지도이름 = '판본지도.json';
 const 플랫폼들 = ['youtube', 'tiktok', 'instagram', 'facebook', 'telegram', 'xiaohongshu', 'douyin', 'vk', 'rutube'];
@@ -301,14 +400,15 @@ function 맞추기(편, 키, 옵션 = {}) {
 
 /**
  * 검사 도구(글자검사 · 뜻검사 「판본」 명령)가 검사 전에 부른다 — 준비.json 판본의 「글」이 지도가 뽑는 글.json이면 원천에 맞추고,
- * 영상이 지금 판본 글로 구운 것인지(렌더.json 글 지문)를 본다. → { 이음(글이 지도의 글.json인가), 바뀜, 경고, 영상낡음(true · false · null = 못 봄) }
+ * 영상이 지금 판본 글로 구운 것인지(렌더.json 글 지문)를 본다. → { 이음(글이 지도의 글.json인가), 바뀜, 경고, 영상낡음(true · false · null = 못 봄),
+ * 렌더문제(null = 문제 없음, 글 — 렌더 기록 없음 · 글 · 자산이 렌더 뒤 바뀜: 이 판본은 다시 렌더해야 돌림에 든다) }
  * 판본 지도가 없는 편이면 null.
  */
 function 검사전(편, 키, 준비판본 = null) {
   if (!있나(편)) return null;
   const { 지도 } = 지도읽기(편);
   const v = 준비판본 || 판본글.판본찾기(편, 키).판본;
-  if (슬래시(v.글 || '') !== 글상대(지도, 키)) return { 이음: false, 바뀜: false, 경고: [], 영상낡음: null, 바른글: 글상대(지도, 키) };
+  if (슬래시(v.글 || '') !== 글상대(지도, 키)) return { 이음: false, 바뀜: false, 경고: [], 영상낡음: null, 렌더문제: null, 바른글: 글상대(지도, 키) };
   const r = 맞추기(편, 키, { 지도 });
   const 렌더 = path.join(편폴더(편), 낼곳(지도), 키, '렌더.json');
   let 영상낡음 = null;
@@ -316,7 +416,7 @@ function 검사전(편, 키, 준비판본 = null) {
     const j = 판본글.readJson(렌더);
     if (j.글sha256) 영상낡음 = !같은글(j.글sha256, 팩경로(편, 지도, 키));
   }
-  return { 이음: true, 바뀜: r.바뀜, 경고: r.경고, 영상낡음, 바른글: 글상대(지도, 키) };
+  return { 이음: true, 바뀜: r.바뀜, 경고: r.경고, 영상낡음, 렌더문제: 렌더문제(편, 키, { 지도 }), 바른글: 글상대(지도, 키) };
 }
 
 /** 준비.json 「돌림」.판본[KEY]에 넣을 꼴(편 폴더 기준 경로 — tools/돌림표.js 머리말). 검수는 넣지 않는다. */
@@ -353,7 +453,8 @@ function 준비에넣기(편, 넣을키들, { 형식 = null, 쓸날 = null } = {
 
 /**
  * 한 판본의 사슬 확인 — 글 → 글.json → 영상(렌더 기록) → 준비.json 「돌림」 → 검수 지문. → { 키, 문제: [글…], 알림: [글…] }
- * 문제가 없으면 이 판본은 돌림에 든다(tools/돌림표.js가 보는 것 + 돌림표가 안 보는 「영상이 지금 글로 구운 것인가」 · 「글자 검사 뒤 글이 바뀌었나」).
+ * 문제가 없으면 이 판본은 돌림에 든다(tools/돌림표.js가 보는 것 — 11-11부터 「영상이 지금 글 · 자산으로 구운 것인가」도 돌림표가 본다 —
+ * 에 더해 「글자 검사 뒤 글이 바뀌었나」 알림).
  */
 function 확인(편, 키, { 원장 = null, 검수 = ['뜻', '글자'] } = {}) {
   const 문제 = [];
@@ -371,18 +472,14 @@ function 확인(편, 키, { 원장 = null, 검수 = ['뜻', '글자'] } = {}) {
   // 영상 · 렌더 기록
   const 폴더 = path.join(편폴더(편), 낼곳(지도), 키);
   const 영상 = path.join(폴더, 'video.mp4');
-  const 렌더 = path.join(폴더, '렌더.json');
   let 영상지문 = null;
   if (!fs.existsSync(영상)) 문제.push(`영상이 없다(${낼곳(지도)}/${키}/video.mp4) — node 판본렌더.mjs ${키}`);
   else {
     영상지문 = 판본글.sha256(영상);
     if (!fs.existsSync(path.join(폴더, 'cover.png'))) 문제.push('표지(cover.png)가 없다');
-    if (!fs.existsSync(렌더)) 알림.push('렌더.json이 없어 영상이 지금 글로 구운 것인지 못 봤다');
-    else {
-      const j = 판본글.readJson(렌더);
-      if (j.글sha256 && !같은글(j.글sha256, r.팩파일)) 문제.push(`영상이 지금 판본 글로 구운 것이 아니다(렌더 뒤 글이 바뀜) — node 판본렌더.mjs ${키}`);
-      if (j.영상sha256 && j.영상sha256 !== 영상지문) 문제.push('영상이 렌더 기록(렌더.json)과 다르다 — 다시 렌더한다');
-    }
+    // 렌더 기록 — 없거나, 글 · 자산이 렌더 뒤 바뀌었거나, 다른 영상의 기록이면 돌림표(versionState)도 이 판본을 뺀다
+    const 렌더까닭 = 렌더문제(편, 키, { 지도, 영상지문 });
+    if (렌더까닭) 문제.push(렌더까닭);
   }
   // 준비.json 「돌림」
   let v = null;
@@ -449,4 +546,4 @@ function 채우기(편, 입력) {
   return out;
 }
 
-module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 글낡음, 원고고칠것, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };
+module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 글낡음, 자산자리, 자산파일들, 자산지문, 렌더문제, 렌더낡음, 원고고칠것, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };

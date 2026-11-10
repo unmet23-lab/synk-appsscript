@@ -64,6 +64,41 @@ test('지난 편 — 이 판보다 이른 그 계정 두 편, 보류 · 취소�
   assert.deepEqual(반복.previousOf(list, 'lab-instagram', KST('2026-10-25T21:00')), []);
 });
 
+test('편 읽기 — 뿌리가 둘이면(회차 사본 + 공용 작업본) 판을 합친다: 회차가 방금 단 판도, 공용 작업본에만 있는 편 · 판도 보인다(11-11 P2-10)', () => {
+  const 뿌리 = (이름) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), `무대반복-${이름}-`));
+    fs.mkdirSync(path.join(root, 'tools'), { recursive: true });
+    return root;
+  };
+  const 편쓰기 = (root, name, 판, 결과 = null) => {
+    const dir = path.join(root, 'docs', '마케팅', name, '게시');
+    fs.mkdirSync(dir, { recursive: true });
+    for (const p of 판) fs.writeFileSync(path.join(dir, p.파일), 'v');
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: '2026-11-01', 판 }));
+    if (결과) fs.writeFileSync(path.join(dir, '게시결과.json'), JSON.stringify({ 판: 결과 }));
+  };
+  const 사본 = 뿌리('사본'), 공용 = 뿌리('공용');
+  try {
+    const 씨앗 = { 계정: 'lab-instagram', 파일: 'seed.mp4', 시각: '2026-11-01T21:00:00+09:00' };
+    const 새판 = { 계정: 'lab-th-youtube', 파일: 'th.mp4', 시각: '2026-11-20T13:00:00+07:00', 돌림: true };
+    const 공용판 = { 계정: 'lab-jp-youtube', 파일: 'jp.mp4', 시각: '2026-11-20T13:00:00+09:00', 돌림: true };
+    // 가 편: 회차 사본에는 방금 단 태국 판이, 공용 작업본에는 다른 세션이 단 일본 판이 있다
+    편쓰기(사본, 'LAB_가', [씨앗, 새판]);
+    편쓰기(공용, 'LAB_가', [씨앗, 공용판], [{ 계정: 'lab-instagram', 상태: '게시됨' }]);
+    // 나 편: 공용 작업본에만 있다
+    편쓰기(공용, 'LAB_나', [{ 계정: 'lab-instagram', 파일: 'n.mp4', 시각: '2026-11-02T21:00:00+09:00' }]);
+    const list = 반복.episodes([사본, 공용]);
+    const 가 = list.find((e) => e.name === 'LAB_가');
+    assert.deepEqual(가.판.map((p) => p.account).sort(), ['lab-instagram', 'lab-jp-youtube', 'lab-th-youtube']);
+    assert.equal(가.판.find((p) => p.account === 'lab-instagram').state, '게시됨', '앞 뿌리가 상태를 모르면 뒤 뿌리의 상태');
+    assert.ok(가.dir.startsWith(사본), '편의 머리는 앞 뿌리(회차 사본)');
+    assert.ok(list.some((e) => e.name === 'LAB_나'));
+    // 회차가 방금 단 판이 그 계정의 「지난 편」으로 잡힌다
+    assert.deepEqual(반복.previousOf(list, 'lab-th-youtube', Date.parse('2026-11-21T13:00:00+07:00')).map((p) => p.name), ['LAB_가']);
+    assert.deepEqual(반복.episodes([공용]).find((e) => e.name === 'LAB_가').판.map((p) => p.account).sort(), ['lab-instagram', 'lab-jp-youtube'], '공용 작업본만 읽으면 회차의 새 판은 없다');
+  } finally { for (const r of [사본, 공용]) fs.rmSync(r, { recursive: true, force: true }); }
+});
+
 test('나레이션 마지막 줄 — place.json 판마다 가장 늦게 놓인 줄의 show(없으면 text)', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), '무대반복-'));
   try {

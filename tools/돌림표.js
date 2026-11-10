@@ -11,7 +11,7 @@
  *   node tools/돌림표.js --묶음 [--부터 …] [--일수 …] [--json]
  *       같은 언어 묶음표(같은 플랫폼에서 같은 말로 올리는 계정들 — 돌림 ⑥)와 겹침 확인: 이미 있는 판 + 이번 셈에서 같은 원본이 24시간 안에
  *       두 계정에 가거나 같은 파일이 두 계정에 가는 짝, 나라별판이 같은 파일인 원본, 같은 판본 키를 둘이 쓰는 묶음. 하나라도 있으면 종료 1.
- *   node tools/돌림표.js --점검 [--json]   비상 정지 점검(14시 회차가 걸기 전) — 씨앗이 사흘 안에 올린 원본(과 사흘이 지났어도 안 나간 돌림 판이 남은 원본)의 씨앗 24시간 평소 대비 배수, 숫자가 있는 씨앗의 과반이 0.3배 밑이면 「급락」(종료 1) · 숫자를 볼 씨앗이 없으면 「판정 불가」
+ *   node tools/돌림표.js --점검 [--json]   비상 정지 점검(14시 회차가 걸기 전) — 씨앗이 사흘 안에 올린 원본(과 사흘이 지났어도 안 나간 돌림 판이 남았거나 이번 셈 — 같은 범위의 --쓰기 — 에서 판을 받을 원본)의 씨앗 24시간 평소 대비 배수, 숫자가 있는 씨앗의 과반이 0.3배 밑이면 「급락」(종료 1) · 숫자를 볼 씨앗이 없으면 「판정 불가」
  *   node tools/돌림표.js --멈춤 <편 폴더 이름> --까닭 "<까닭>"
  *       비상 정지(설계 3) — 그 원본의 준비.json 「돌림」.멈춤을 적고 아직 안 건 돌림 판을 뺀다. 이미 예약된 판은 목록으로 보인다
  *       (공개 전 예약을 다른 매일 판 편으로 바꿔 거는 것은 상시 승인 안, 공개된 글을 지우거나 비공개로 돌리는 것은 여쭌다).
@@ -94,6 +94,13 @@ function saveShaCache() {
 const resolveIn = (dir, p) => (p ? 미디어경로(path.isAbsolute(p) ? p : path.join(dir, p)) : null);
 const relIn = (dir, file) => path.relative(dir, file).split(path.sep).join('/');
 
+// 원장의 칸 · 여는 날 꼴(11-11 Fable 5.2 끝 판 검수 P2-13) — 여는 날 · 형식 열쇠는 글자 그대로 견주므로 꼴이 틀리면(「2026-11-3」 · 열쇠 「노래 」)
+// 종료 0으로 조용히 칸이 닫히거나 열린다. 틀린 원장으로는 셈하지 않는다(tools/lib/계정시간.js checkLedger).
+function checkLedgerShape(accounts) {
+  const problems = T.checkLedger(accounts);
+  if (problems.length) throw new Error(`계정 원장(sns-계정.json)의 칸 · 여는 날 꼴이 틀렸다 — 고친 뒤 다시 돌린다:\n  - ${problems.join('\n  - ')}`);
+}
+
 function loadLedger() {
   const ledger = readJson(path.join(ROOT, 'sns-계정.json')) || {};
   return { ledger, accounts: ledger.accounts || {}, cfg: ledger.labRotation || {} };
@@ -138,6 +145,7 @@ function rotationAccounts(accounts, { ignoreReady = false } = {}) {
 //    지문이 그대로라 고친 글이 뜻 검수 「통과」를 달고 나간다. accounts(원장 계정들)는 글.json 「나라」 칸을 같은 원장으로 뽑으려고 받는다.
 //  · 원고의 게시글 「고칠 것」(상대 날짜 · 첫 125자 …) — 원고 하나의 고칠 것이 올리기 전 검사에서 그 원본 편 전체(다른 계정 판까지)를 막으니
 //    그 판본만 돌림에서 뺀다.
+//  · key를 주면, 판본 지도가 있는 편의 영상이 지금 원천으로 구운 것인가(렌더.json — 글 · 영상 · 자산 지문). 아래 본문.
 function versionState(dir, v, required, key = null, { accounts = null } = {}) {
   if (!v) return { ready: false, why: '판본 없음' };
   const file = resolveIn(dir, v.파일);
@@ -158,6 +166,14 @@ function versionState(dir, v, required, key = null, { accounts = null } = {}) {
       return { ready: false, why: `판본 글을 뽑지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
     }
     if (stale) return { ready: false, why: '원고 · 판본 글을 고친 뒤 글.json을 다시 뽑지 않음(node tools/판본글잇기.js 뽑기 → 뜻 검사 다시)', sha };
+    // 영상이 지금 원천(판본 글 · 원본 그림 · 소리 · 틀)으로 구운 것인가(11-11 Fable 5.2 끝 판 검수 P1-3) — 렌더 기록(렌더.json)의 글 · 영상 · 자산
+    // 지문을 지금 것과 견준다. 화면 글을 고치고 뜻 검사만 다시 받은 판본(옛 글 영상), 원본 그림을 고친 뒤 다시 굽지 않은 판본(옛 그림 영상 —
+    // 11-10 「지마」 일곱 판본)은 글자 검수 지문이 그대로여도 돌림에 못 든다. 렌더 기록이 없어도 못 든다.
+    let render;
+    try { render = 잇기.렌더낡음(dir, key, v, { 영상지문: sha }); } catch (e) {
+      return { ready: false, why: `렌더 기록을 못 읽음(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+    }
+    if (render) return { ready: false, why: render, sha };
   }
   const fixes = 잇기.원고고칠것(dir, v);
   if (fixes.length) return { ready: false, why: `원고 고칠 것 — ${fixes[0]}${fixes.length > 1 ? ` 밖 ${fixes.length - 1}` : ''}`, sha };
@@ -335,6 +351,7 @@ function todayKst(now) { return T.localDate(now, 'Asia/Seoul'); }
 
 function runPlan(opts) {
   const { accounts, cfg } = loadLedger();
+  checkLedgerShape(accounts);
   const { rotation, notReady, closedStory } = rotationAccounts(accounts, { ignoreReady: opts.ignoreReady });
   const pieces = loadPieces(accounts, cfg);
   const originals = originalsOf(pieces);
@@ -414,9 +431,13 @@ function ledgerRows(run, opts) {
     if (seen.has(k) && seen.get(k) !== r.원본) doubles.push(`${k} — ${seen.get(k)} · ${r.원본}`);
     else seen.set(k, r.원본);
   }
-  // 같은 언어 묶음 겹침(돌림 ⑥) — 이 기간의 나가는 판 가운데 같은 원본이 24시간 안에, 또는 같은 파일로 같은 묶음 두 계정에 걸린 짝
+  // 같은 언어 묶음 겹침(돌림 ⑥) — 이 기간의 나가는 판 가운데 같은 원본이 24시간 안에, 또는 같은 파일로 같은 묶음 두 계정에 걸린 짝.
+  // 같은 이야기를 다른 편 폴더로 낸 판(「돌림」.같은이야기 — @synkkorean의 영어판 등)은 그 원본의 판으로 짝을 짓는다(11-11 P3-5: 폴더 이름으로만
+  // 짝을 지어 다른 폴더로 나간 판과는 못 맞췄다 — 셈과 --묶음은 봤다).
+  const alias = new Map();
+  for (const piece of run.pieces) if (piece.original && !piece.dead) for (const sib of [].concat(piece.original.같은이야기 || [])) alias.set(sib, piece.name);
   const live = rows.filter((r) => !GONE.has(r.상태) && r.상태 !== '버린 편');
-  const sameLanguage = 돌림.overlaps(live.map((r) => ({ original: r.원본, account: r.계정, ms: Date.parse(r.시각), file: r.지문 })), run.rotation, run.cfg.셈 || {});
+  const sameLanguage = 돌림.overlaps(live.map((r) => ({ original: alias.get(r.원본) || r.원본, account: r.계정, ms: Date.parse(r.시각), file: r.지문 })), run.rotation, run.cfg.셈 || {});
   return { rows, doubles, sameLanguage };
 }
 
@@ -453,9 +474,12 @@ function checkStops(run, now, { days = 3, low = 0.3, waitHours = 40 } = {}) {
     const outPlates = seedPlates.filter(isOut);
     const first = Math.min(...(outPlates.length ? outPlates : seedPlates).map((pl) => Date.parse(pl.시각)));
     const pending = (piece.prep.판 || []).filter((pl) => pl.돌림 && Date.parse(pl.시각 || '') > now).length;
-    // 사흘 창 — 씨앗이 사흘 안에 올린 원본. 사흘이 지났어도 아직 안 나간 돌림 판이 있으면 본다(11-11 Fable 검수: 오래된 원본을 뒤늦게 나라별로
-    // 돌릴 때 그 원본이 점검에서 통째로 빠졌다 — 씨앗 숫자가 급락이던 원본이면 걸기 전에 멈출 수 있어야 한다)
-    if (first > now || (now - first > days * 86400000 && !pending)) continue;
+    // 이번 셈에서 이 원본이 새로 받을 판(같은 회차의 --쓰기가 달 판) — 14시 회차는 --점검 → --쓰기 차례라, 이것을 안 보면 옛 원본에 판을 처음
+    // 다는 날은 점검이 「원본 0」으로 지나가고 가장 이른 판은 다음 날 점검 전에 공개된다(11-11 Fable 5.2 끝 판 검수 P2-1 — 11-11 첫 판 15개)
+    const planned = (run.result?.cells || []).filter((c) => c.original === piece.name).length;
+    // 사흘 창 — 씨앗이 사흘 안에 올린 원본. 사흘이 지났어도 아직 안 나간 돌림 판이 있거나 이번 셈에서 판을 받으면 본다(11-11 Fable 검수: 오래된
+    // 원본을 뒤늦게 나라별로 돌릴 때 그 원본이 점검에서 통째로 빠졌다 — 씨앗 숫자가 급락이던 원본이면 걸기 전에 멈출 수 있어야 한다)
+    if (first > now || (now - first > days * 86400000 && !pending && !planned)) continue;
     const perf = readJson(path.join(piece.dir, '게시', '성과.json'))?.자동판정?.판 || [];
     const rows = seedPlates.map((pl) => {
       const out1 = isOut(pl);
@@ -468,7 +492,7 @@ function checkStops(run, now, { days = 3, low = 0.3, waitHours = 40 } = {}) {
     const lows = known.filter((r) => r.low);
     const waiting = rows.filter((r) => r.out && r.multiple === null && !r.late);
     const verdict = known.length ? (lows.length * 2 > known.length ? '급락' : '괜찮음') : waiting.length ? '판정 전' : '판정 불가';
-    out.push({ piece: piece.name, format: piece.original.형식, seededAt: T.isoAt(first, 'Asia/Seoul'), pending, verdict, known: known.length, seeds: rows.length, rows });
+    out.push({ piece: piece.name, format: piece.original.형식, seededAt: T.isoAt(first, 'Asia/Seoul'), pending, planned, verdict, known: known.length, seeds: rows.length, rows });
   }
   return out;
 }
@@ -527,9 +551,9 @@ function main() {
   if (has('--점검')) {
     const list = checkStops(run, now);
     if (has('--json')) { console.log(JSON.stringify(list, null, 2)); } else {
-      console.log(`비상 정지 점검(설계 3) · ${T.isoAt(now, 'Asia/Seoul').slice(0, 16)} · 씨앗이 사흘 안에 올렸거나 안 나간 돌림 판이 남은 원본 ${list.length}`);
+      console.log(`비상 정지 점검(설계 3) · ${T.isoAt(now, 'Asia/Seoul').slice(0, 16)} · 씨앗이 사흘 안에 올렸거나 돌림 판이 남았거나 이번 셈에서 판을 받을 원본 ${list.length}`);
       const seedCell = (r) => `${r.account} ${!r.out ? `안 나감(${r.state})` : r.multiple !== null ? `${r.multiple}배${r.low ? '↓' : ''}` : r.late ? `24시간 숫자 없음(${r.ageH}시간)` : `24시간 숫자 전(${r.ageH}시간)`}`;
-      for (const x of list) console.log(`  ${x.verdict === '급락' || x.verdict === '판정 불가' ? '!' : '·'} ${x.verdict} · ${x.piece}(${x.format}) · 씨앗 ${x.seededAt.slice(5, 16)} · 판정할 수 있는 씨앗 ${x.known}/${x.seeds} · 남은 돌림 판 ${x.pending} · `
+      for (const x of list) console.log(`  ${x.verdict === '급락' || x.verdict === '판정 불가' ? '!' : '·'} ${x.verdict} · ${x.piece}(${x.format}) · 씨앗 ${x.seededAt.slice(5, 16)} · 판정할 수 있는 씨앗 ${x.known}/${x.seeds} · 남은 돌림 판 ${x.pending} · 이번 셈에서 달 판 ${x.planned} · `
         + x.rows.map(seedCell).join(', '));
       if (list.some((x) => x.verdict === '급락')) console.log('  급락 원본은 node tools/돌림표.js --멈춤 <편> --까닭 "씨앗 24시간 평소의 0.3배 밑" 뒤 --예비씀 --쓰기(판정할 수 있는 씨앗이 하나뿐이면 그 씨앗 글을 먼저 눈으로 본다)');
       if (list.some((x) => x.verdict === '판정 불가')) console.log('  판정 불가 원본은 씨앗 판에 24시간 숫자가 없다(숫자를 못 읽는 플랫폼이거나 씨앗 판이 안 나갔다) — 씨앗 글의 조회 · 댓글을 눈으로 보고 나쁘면 --멈춤, 괜찮으면 그대로 간다. 씨앗 판이 안 나갔으면 씨앗부터 다시 건다');

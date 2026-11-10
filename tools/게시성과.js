@@ -418,6 +418,11 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
   try { 관문절 = 관문.요약절(관문.표({ judgments: latest, index, now })); } catch { 관문절 = []; }
   let 새방향 = [];
   try { 새방향 = 관문.새방향절(관문.새방향표({ judgments: latest })); } catch { 새방향 = []; }
+  // LAB 칸별 표의 편 형식(11-11 Fable 5.2 P2-12) — 판정 줄의 편(색인 → 줄에 적힌 폴더)의 준비.json 「돌림」.형식, 편을 못 찾으면 null
+  const 편형식 = index ? (l) => {
+    const info = index.resolve?.(l.post)?.info || (l.folder ? index.folders?.get(l.folder) : null);
+    return info ? 나라.형식Of(info.prep) : null;
+  } : null;
 
   const lines = [
     '# 게시 성과 판정',
@@ -437,7 +442,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     ...시험절(test),
     ...관문절,
     ...새방향,
-    ...나라.절({ ledger: usableLedger, accounts: labAccounts, now }),
+    ...나라.절({ ledger: usableLedger, accounts: labAccounts, now, 편형식 }),
     '## 훅 이름표별',
     '',
     '| 이름표 | 판 | 72시간 배수 중앙값 | 7일 배수 중앙값 | 상위·보통·하위·그 밖 | 브랜드 |',

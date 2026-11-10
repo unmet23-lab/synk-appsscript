@@ -35,7 +35,7 @@ const RELATIVE = {
   // 필리핀어 bukas = 열린 · ngayon = 지금, 우즈베크어 kecha = 밤 — xayrli kecha는 밤 인사, 키르기스어 эртең — эртең менен은 「아침에」)은 넣지 않았다. 일본어는 띄어 쓰지 않아 가나 꼴
   // (きょう · あした · きのう)을 넣으면 べんきょう(공부) · きょうしつ(교실) 속에서 잡힌다 — 한자 꼴만 본다.
   // 열쇠는 언어 코드의 앞 토막이다(pt-BR → pt, zh-Hans · zh-Hant → zh).
-  es: 낱말('hoy|ayer|anoche|esta noche|esta semana|la semana pasada|la pr[oó]xima semana|la semana que viene|este mes|el mes pasado'),
+  es: 낱말('hoy(?! en d[ií]a)|ayer|anoche|esta noche|esta semana|la semana pasada|la pr[oó]xima semana|la semana que viene|este mes|el mes pasado'),
   pt: 낱말('hoje|ontem|amanh[ãa]|esta semana|essa semana|semana passada|semana que vem|pr[oó]xima semana|este m[eê]s|esse m[eê]s'),
   fil: 낱말('ngayong araw|ngayong linggo|ngayong buwan|ngayong gabi|kahapon|kagabi|noong nakaraang linggo|sa susunod na linggo'),
   ms: 낱말('hari ini|semalam|esok|minggu ini|minggu lepas|minggu depan|bulan ini|malam ini'),
@@ -97,6 +97,17 @@ function xWeight(text) {
 }
 
 // 글 하나(where = '캡션' 등)에 대한 공통 검사. 블로그·링크드인 원고(article)는 만든 과정을 풀어 쓰는 글이라 도구 이름을 확인만 한다.
+// 둘째 무늬(11-11 Fable 5.2 끝 판 검수 P3-2) — 상대 날짜일 수도 있고 다른 뜻일 수도 있는 낱말. 「고칠 것」으로 잡으면 헛짚음 하나가 판본을 돌림에서
+// 빼니(원고 고칠 것) 위 무늬에서 뺐는데, 그대로 두면 진짜 상대 날짜(「mañana subimos otro」 · 「bukas ulit」)가 지나간다. 「확인할 것」으로만 보인다.
+const RELATIVE_MAYBE = {
+  // 「a las 3 de la mañana」 · 「por la mañana」(아침에)는 날짜가 아니라 뺀다 — 실물 「화날때」 멕시코판 설명이 날마다 걸렸다
+  es: [낱말('(?<!\\b(?:de|por|en) la )mañana'), '내일 · 아침'],
+  fil: [낱말('bukas|ngayon'), '내일 · 열린 / 오늘 · 지금'],
+  uz: [낱말('kecha'), '어제 · 밤'],
+  ky: [낱말('эртең'), '내일 · 「эртең менен」은 아침에'],
+  ja: [/(?:きょう|あした|きのう)/gu, '오늘 · 내일 · 어제 — 다른 낱말 속 글자일 수 있다(べんきょう)'],
+};
+
 function checkText(text, { where, brand, language, platform, article = false }) {
   const out = [];
   const add = (level, code, message) => out.push({ level, code, where, message });
@@ -109,6 +120,11 @@ function checkText(text, { where, brand, language, platform, article = false }) 
     if (lang !== 'ko' && language && lang !== base && !(lang === 'en' && brand !== 'LAB')) continue;
     const hit = [...new Set(list(re, t).map((x) => x.toLowerCase()))];
     if (hit.length) add(FIX, 'relative-date', `상대 날짜 「${hit.join('·')}」 — 게시일은 승인 뒤에 정해지니 날짜나 날짜와 상관없는 말로`);
+  }
+  const maybe = RELATIVE_MAYBE[language ? String(language).toLowerCase().split('-')[0] : ''];
+  if (maybe) {
+    const hit = [...new Set(list(maybe[0], t).map((x) => x.toLowerCase()))];
+    if (hit.length) add(LOOK, 'relative-date-maybe', `상대 날짜일 수 있는 말 「${hit.join('·')}」(${maybe[1]}) — 날짜 뜻으로 썼으면 날짜와 상관없는 말로 바꾼다`);
   }
   for (const [re, name] of INTERNAL_STRONG) {
     const hit = [...new Set(list(re, t))];

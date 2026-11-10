@@ -236,12 +236,15 @@ test('준비에넣기 — 「돌림」을 만들고 판본을 넣는다, 검수�
 });
 
 // 영상 · 렌더 기록을 흉내 낸다(판본렌더.mjs가 남기는 꼴)
-function 가짜렌더(편, 판본폴더, 키, 내용 = '영상') {
+function 가짜렌더(편, 판본폴더, 키, 내용 = '영상', 자산 = true) {
   const 폴더 = path.join(편, '게시', '판본', 키);
   fs.mkdirSync(폴더, { recursive: true });
   fs.writeFileSync(path.join(폴더, 'video.mp4'), 내용);
   fs.writeFileSync(path.join(폴더, 'cover.png'), '표지');
-  fs.writeFileSync(path.join(폴더, '렌더.json'), JSON.stringify({ 판본: 키, 글sha256: sha(path.join(판본폴더, `${키}.json`)), 영상sha256: sha(path.join(폴더, 'video.mp4')) }));
+  // 자산sha256 — 판본렌더.mjs가 번들 때 잰 원본 그림 · 소리 · 틀의 지문(11-11). 「자산」을 false로 주면 옛 렌더 기록(지문 없음) 꼴
+  const 기록 = { 판본: 키, 글sha256: sha(path.join(판본폴더, `${키}.json`)), 영상sha256: sha(path.join(폴더, 'video.mp4')) };
+  if (자산 !== false) 기록.자산sha256 = 잇기.자산지문(편).지문;
+  fs.writeFileSync(path.join(폴더, '렌더.json'), JSON.stringify(기록));
   return path.join(폴더, 'video.mp4');
 }
 
@@ -320,6 +323,9 @@ test('지문 조건 — 판본 글을 고쳐 다시 뽑으면 돌림표가 뜻 �
   assert.equal(뒤.ready, false);
   assert.match(뒤.why, /뜻 검수 뒤 글이 바뀜/);
   뜻통과();
+  // 화면 글(판본 글)을 고쳤으니 뜻 검사만 다시 받아서는 안 든다 — 영상이 옛 글이다(11-11 P1-3). 다시 구워야 든다
+  assert.match(상태('US').why, /영상이 지금 판본 글로 구운 것이 아니다/);
+  가짜렌더(편, 판본폴더, 'US');
   assert.equal(상태('US').ready, true);
 
   // 원고(게시글)만 고친 것도 같다 — 뽑기 전에는 「다시 뽑지 않음」, 뽑은 뒤에는 「뜻 검수 뒤 글이 바뀜」
@@ -360,13 +366,115 @@ test('지문 조건 — 판본 글을 고쳐 다시 뽑으면 돌림표가 뜻 �
   assert.equal(잇기.글낡음(편, 'US', { 글: '게시/판본/US/글.json' }), null);
 });
 
+test('렌더 자산 지문 — 원본 그림 · 소리 · 틀이 바뀌면 달라지고, 줄끝 · 판본 글 · 숨김 파일 · node_modules는 세지 않는다(11-11)', () => {
+  const { 편, 판본폴더 } = 편만들기();
+  잇기.채우기(편, 미국글);
+  const 리모션 = path.join(편, 'remotion');
+  fs.mkdirSync(path.join(리모션, 'public', 'img'), { recursive: true });
+  fs.mkdirSync(path.join(리모션, 'node_modules', 'x'), { recursive: true });
+  const 그림 = path.join(리모션, 'public', 'img', 'dusk.jpg');
+  const 틀파일 = path.join(리모션, 'src', 'm99', 'Film.tsx');
+  fs.writeFileSync(그림, Buffer.from([0xff, 0xd8, 0x00, 0x0d, 0x0a, 0x01])); // 바이너리(NUL) — 안의 CR LF는 그대로 센다
+  fs.writeFileSync(틀파일, 'export const a = 1;\nexport const b = 2;\n');
+  fs.writeFileSync(path.join(리모션, 'node_modules', 'x', 'index.js'), 'x');
+  const 지도 = 잇기.지도읽기(편).지도;
+  assert.deepEqual(잇기.자산자리(지도), ['remotion/public', 'remotion/src']);
+  assert.deepEqual(잇기.자산파일들(편, 지도).map((f) => f.이름), ['remotion/public/img/dusk.jpg', 'remotion/src/m99/Film.tsx'], '판본 글(US · MX · EN.json) · node_modules는 뺀다');
+  const 처음 = 잇기.자산지문(편).지문;
+  // 줄끝만 CRLF로(올리기 · 따라가기가 작업본 글 파일을 다시 쓴다) → 같은 지문
+  fs.writeFileSync(틀파일, 'export const a = 1;\r\nexport const b = 2;\r\n');
+  assert.equal(잇기.자산지문(편).지문, 처음, '글 파일의 줄끝은 세지 않는다');
+  // 판본 글을 고쳐도 자산 지문은 그대로(글sha256이 따로 지킨다), 숨김 파일도 안 센다
+  잇기.채우기(편, { US: { hook: 'He always said this…' } });
+  fs.writeFileSync(path.join(리모션, 'public', '.DS_Store'), 'x');
+  assert.equal(잇기.자산지문(편).지문, 처음);
+  // 틀 글자 하나 · 그림 바이트 하나 · 새 파일은 다른 지문
+  fs.writeFileSync(틀파일, 'export const a = 1;\r\nexport const b = 3;\r\n');
+  const 틀바뀜 = 잇기.자산지문(편).지문;
+  assert.notEqual(틀바뀜, 처음);
+  fs.writeFileSync(그림, Buffer.from([0xff, 0xd8, 0x00, 0x0a, 0x01, 0x02]));
+  const 그림바뀜 = 잇기.자산지문(편).지문;
+  assert.notEqual(그림바뀜, 틀바뀜);
+  fs.writeFileSync(path.join(리모션, 'public', 'img', 'new.jpg'), Buffer.from([0, 1]));
+  assert.notEqual(잇기.자산지문(편).지문, 그림바뀜);
+  // 지도 「자산」으로 자리를 정하면 그 자리만 센다
+  assert.deepEqual(잇기.자산파일들(편, { ...지도, 자산: ['remotion/public/img/dusk.jpg'] }).map((f) => f.이름), ['remotion/public/img/dusk.jpg']);
+});
+
+test('렌더 관문 — 렌더 기록이 없거나, 화면 글 · 원본 그림을 고친 뒤 다시 굽지 않은 판본은 돌림에 못 든다(11-11 P1-3: 지마 일곱 판본)', () => {
+  const { 편, 판본폴더 } = 편만들기();
+  잇기.채우기(편, 미국글);
+  const 리모션 = path.join(편, 'remotion');
+  fs.mkdirSync(path.join(리모션, 'public', 'img'), { recursive: true });
+  const 그림 = path.join(리모션, 'public', 'img', 'dusk.jpg');
+  fs.writeFileSync(그림, Buffer.from([0xff, 0xd8, 0x00, 0x01]));
+  잇기.맞추기(편, 'US', { 원장 });
+  const 영상 = 가짜렌더(편, 판본폴더, 'US');
+  잇기.준비에넣기(편, ['US']);
+  const 글파일 = path.join(편, '게시', '판본', 'US', '글.json');
+  const 검수 = () => {
+    판본글.검수쓰기(편, 'US', '뜻', { 결과: '통과', 지문: sha(글파일) });
+    판본글.검수쓰기(편, 'US', '글자', { 결과: '통과', 지문: sha(영상), 글지문: sha(글파일) });
+  };
+  검수();
+  const 캐시 = fs.mkdtempSync(path.join(os.tmpdir(), '판본잇기-렌더-'));
+  const 상태 = () => {
+    const 코드 = `process.env.SYNK_ROTATION_DIR=${JSON.stringify(캐시)};const d=require(${JSON.stringify(path.join(REPO, 'tools', '돌림표.js'))});const p=require(${JSON.stringify(path.join(REPO, 'tools', 'lib', '판본글.js'))});`
+      + `const v=p.readJson(${JSON.stringify(판본글.준비경로(편))}).돌림.판본.US;console.log(JSON.stringify(d.versionState(${JSON.stringify(편)},v,['뜻','글자'],'US',{accounts:${JSON.stringify(원장.accounts)}})));`;
+    const r = spawnSync(process.execPath, ['-e', 코드], { encoding: 'utf8', windowsHide: true });
+    assert.equal(r.status, 0, r.stderr);
+    return JSON.parse(r.stdout.trim().split('\n').pop());
+  };
+  const 문제들 = () => 잇기.확인(편, 'US', { 원장 }).문제.join('\n');
+  assert.equal(상태().ready, true);
+  assert.equal(잇기.렌더낡음(편, 'US', { 글: '게시/판본/US/글.json' }), false);
+
+  // ⓐ 화면 글을 고침 → 뽑기 → 뜻 검사만 다시(렌더 · 글자 검사는 안 함): 뜻 · 글자 지문은 다 맞지만 영상은 옛 글이다
+  잇기.채우기(편, { US: { hook: 'He always said this…' } });
+  잇기.맞추기(편, 'US', { 원장 });
+  판본글.검수쓰기(편, 'US', '뜻', { 결과: '통과', 지문: sha(글파일) });
+  let s = 상태();
+  assert.equal(s.ready, false, '새 글로 뜻 통과를 달고 옛 글 영상이 나가지 않는다');
+  assert.match(s.why, /영상이 지금 판본 글로 구운 것이 아니다/);
+  assert.match(잇기.검사전(편, 'US').렌더문제, /영상이 지금 판본 글로 구운 것이 아니다/);
+  가짜렌더(편, 판본폴더, 'US');
+  assert.equal(상태().ready, true, '다시 구우면(같은 영상 바이트 — 글자 지문 그대로) 든다');
+
+  // ⓑ 원본 그림을 고친 뒤 다시 굽지 않음: 영상 지문 · 글자 검수는 그대로인데 영상은 옛 그림이다
+  fs.writeFileSync(그림, Buffer.from([0xff, 0xd8, 0x00, 0x02]));
+  s = 상태();
+  assert.equal(s.ready, false);
+  assert.match(s.why, /렌더 뒤 원본 그림 · 소리 · 틀\(remotion\/public · remotion\/src\)이 바뀌었다 — node 판본렌더\.mjs US → 글자 검사 다시/);
+  assert.match(문제들(), /렌더 뒤 원본 그림 · 소리 · 틀/);
+  가짜렌더(편, 판본폴더, 'US');
+  assert.equal(상태().ready, true);
+
+  // ⓒ 자산 지문이 없는 옛 렌더 기록 · 렌더 기록이 없는 영상 · 다른 영상의 기록
+  가짜렌더(편, 판본폴더, 'US', '영상', false);
+  assert.match(상태().why, /렌더 기록에 자산 지문이 없다/);
+  fs.rmSync(path.join(편, '게시', '판본', 'US', '렌더.json'));
+  s = 상태();
+  assert.equal(s.ready, false);
+  assert.match(s.why, /렌더 기록\(렌더\.json\)이 없다/);
+  assert.match(문제들(), /렌더 기록\(렌더\.json\)이 없다/, '확인도 알림이 아니라 문제로 짚는다');
+  가짜렌더(편, 판본폴더, 'US');
+  fs.writeFileSync(영상, '손으로 바꾼 영상');
+  판본글.검수쓰기(편, 'US', '글자', { 결과: '통과', 지문: sha(영상), 글지문: sha(글파일) });
+  assert.match(상태().why, /영상이 렌더 기록\(렌더\.json\)과 다르다/);
+  // 표지만 뜬 기록(글 · 영상 지문 없음)
+  fs.writeFileSync(path.join(편, '게시', '판본', 'US', '렌더.json'), JSON.stringify({ 판본: 'US', 표지만: '렌더 기록 없이 표지만 떴다' }));
+  assert.match(상태().why, /렌더 기록에 글 · 영상 지문이 없다/);
+  // 지도가 없는 편 · 지도의 글.json이 아닌 판본은 보지 않는다(null)
+  assert.equal(잇기.렌더낡음(편, 'US', { 글: 'remotion/src/m99/판본/US.json' }), null);
+});
+
 test('검사전 — 지도가 없는 편은 null, 「글」이 지도의 글.json이 아니면 이음 아님, 맞으면 맞추고 영상 낡음을 본다', () => {
   const { 편, 판본폴더 } = 편만들기();
   잇기.채우기(편, 미국글);
   잇기.맞추기(편, 'US', { 원장 });
   가짜렌더(편, 판본폴더, 'US');
   잇기.준비에넣기(편, ['US']);
-  assert.deepEqual(잇기.검사전(편, 'US'), { 이음: true, 바뀜: false, 경고: [], 영상낡음: false, 바른글: '게시/판본/US/글.json' });
+  assert.deepEqual(잇기.검사전(편, 'US'), { 이음: true, 바뀜: false, 경고: [], 영상낡음: false, 렌더문제: null, 바른글: '게시/판본/US/글.json' });
   // 11-10 화날때: 올리기 · 따라가기가 원천의 줄끝만 CRLF로 바꿔도 「렌더 뒤 글이 바뀜」이 아니다(글이 한 자라도 다르면 그때는 낡음)
   const 원천 = 잇기.팩경로(편, 잇기.지도읽기(편).지도, 'US');
   const 원래 = fs.readFileSync(원천, 'utf8');

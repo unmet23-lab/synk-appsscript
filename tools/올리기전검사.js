@@ -72,6 +72,9 @@ const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
+const 장부 = require('./게시장부.js');
+const 뜻검사 = require('./뜻검사.js');
+const 그림검사 = require('./그림검사.js');
 const { FORMATS } = require('./lib/돌림.js'); // 이야기 · 노래 · 퀴즈(21:00 칸은 11-10 밤부터 노래)
 const { 미디어경로 } = require('./lib/공용작업본.js');
 
@@ -743,6 +746,26 @@ function dailyFindings(plates, prep, known = {}) {
 // ⑩ 돌림 판(11-10, 설계 1 · 4 · 5 · 22) — 판마다: 돌림 계정인지, 현지 시각이 이 편 형식의 칸인지, 씨앗이 아니면 프로필 · 예약 경로가
 // 확인됐는지, 판 파일이 그 계정 판본(rotationVersion 또는 countryCode)의 파일인지, 그 판본의 검수(sns-계정.json labRotation.판본검수 —
 // 기본 뜻 · 글자)가 지금 파일 · 글의 지문과 맞는지(내용을 고치면 뜻 검수가, 다시 렌더하면 글자 검수가 무효 — tools/돌림표.js versionState).
+// 닫힌 계정 · 닫힌 칸(11-11 P2-8): 아직 안 연 계정(dailyFrom 「미정」 · 그 날짜 전)의 판은 손으로 단 판도, 계정을 닫거나 칸을 닫은 뒤 남은 돌림 판도
+// 고칠 것이다(tools/게시장부.js closedCell — 걸기도 같은 셈으로 막는다). 이미 걸린 판(예약됨 · 거는 중 …)은 확인할 것 — 플랫폼 예약을 거둘지 본다.
+// 게시된 판은 보지 않는다. posted = 계정 → 게시결과 상태(없으면 안 건 판으로 본다).
+function closedFindings(bundle, plates, { posted = null } = {}) {
+  const out = [];
+  for (const p of plates) {
+    const a = bundle.accounts?.[p.account];
+    const why = 장부.closedCell(a, p.time, { rotation: Boolean(p.raw?.돌림) });
+    if (!why) continue;
+    const state = posted ? posted.get(p.account) || null : null;
+    if (state === '게시됨') continue;
+    if (state && state !== '실패' && !['보류', '취소됨', '지움'].includes(state)) {
+      out.push({ level: LOOK, code: 'closed-cell-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 ${state}다. 플랫폼 예약을 거둘지 본다(공개 전 예약을 다른 편으로 바꿔 거는 것은 상시 승인 안)` });
+    } else {
+      out.push({ level: FIX, code: 'closed-cell', where: p.account, message: `${why} — 닫힌 계정 · 칸의 판이다. ${p.raw?.돌림 ? 'node tools/돌림표.js --다시 --쓰기로 다시 짠다' : '판에서 뺀다'}(계정 · 칸을 여는 것은 조율 세션 몫)` });
+    }
+  }
+  return out;
+}
+
 function rotationFindings(bundle, plates, { ledger = null } = {}) {
   const out = [];
   const gen = plates.filter((p) => p.raw?.돌림);
@@ -753,6 +776,7 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
   const cfg = (ledger || 묶음.readJson(path.join(bundle.repo, 'docs', '마케팅', 'sns-계정.json')) || {}).labRotation || {};
   const required = Array.isArray(cfg.판본검수) && cfg.판본검수.length ? cfg.판본검수 : ['뜻', '글자'];
   const states = new Map();
+  let 뜻기록 = null; // 뜻 검사 지난 기록(편 폴더들의 준비.json) — 시험관 수 확인에 쓸 때만 읽는다
   for (const p of gen) {
     const a = bundle.accounts[p.account];
     if (!a || !Array.isArray(a.dailyFormats)) { add(FIX, 'rotation-account', p.account, '돌림 계정이 아니다(sns-계정.json dailyFormats 없음) — 판을 빼고 node tools/돌림표.js로 다시 셈한다'); continue; }
@@ -777,6 +801,15 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
     // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).
     const verdicts = Array.isArray(v.검수?.뜻?.판정줄) ? v.검수.뜻.판정줄 : [];
     if (st.ready && verdicts.length) add(LOOK, 'rotation-verdict', p.account, `판본 ${key}: 뜻 검사에서 둘 이상이 짚은 줄 ${verdicts.length}개를 판정으로 내렸다 — ${verdicts.map((z) => `${z.줄}(${z.갈래})`).join(' · ')}. 판본 글로 못 고치는 줄인지 까닭을 본다(준비.json 돌림.판본.${key}.검수.뜻.판정줄)`);
+    // 시험관 수(11-11 P2-7) — 문자 체계마다 첫 3편은 언어판 전부 시험관 넷인데(설계), 셈을 고치기 전에 시험관 둘로 통과한 기록이 있다(「화날때」
+    // 영어 · 스페인어 판본). 지금 셈으로 넷이어야 하는 판본이 넷보다 적은 시험관으로 통과했으면 보이게 한다(막지는 않는다 — 넷으로 다시 받는다).
+    const exam = v.검수?.뜻;
+    if (st.ready && exam && Array.isArray(exam.시험관) && exam.시험관.length < 4) {
+      const 편이름 = bundle.name || path.basename(bundle.dir);
+      if (!뜻기록) { try { 뜻기록 = 뜻검사.지난기록(path.dirname(bundle.dir)); } catch { 뜻기록 = []; } }
+      const need = 뜻검사.넷판단({ 언어: v.언어, 틀: exam.틀 || format, 편: 편이름, 기록: 뜻기록.filter((r) => !(r.편 === 편이름 && r.판본 === key)) });
+      if (need.넷) add(LOOK, 'rotation-examiners', p.account, `판본 ${key}: 뜻 검사를 시험관 ${exam.시험관.length}명(${exam.시험관.join(' · ')})으로 통과했는데 지금 셈으로는 시험관 넷이다(${need.까닭.join(' · ')}) — node tools/뜻검사.js 판본 … ${key}로 넷에게 다시 받는다`);
+    }
     // 시험관의 요약 · 웃음을 사람이 바꾼 판본도 같다(11-11) — 「다름 · 안 웃김」을 「같음」으로 바꾸면 고칠 것이 통과가 된다. 까닭이 보이게 한다.
     const overrides = Array.isArray(v.검수?.뜻?.사람판정) ? v.검수.뜻.사람판정 : [];
     if (st.ready && overrides.length) add(LOOK, 'rotation-verdict-human', p.account, `판본 ${key}: 뜻 검사에서 시험관 판정 ${overrides.length}개를 사람이 바꿨다 — ${overrides.map((o) => `${o.시험관} ${o.칸}(${o.앞} → ${o.뒤})`).join(' · ')}. 까닭을 본다(준비.json 돌림.판본.${key}.검수.뜻.사람판정)`);
@@ -863,6 +896,21 @@ function slotTimeFindings(bundle, plates, { posted = null } = {}) {
 // 판본 글에서 첫 카드(칸 「머리」) · 그 나라 예문(「예문」 · 「상황」) · 끝 질문(「끝질문」) · 게시글(「게시글」)이 같으면 고칠 것. 판본 글에 그 칸이
 // 하나도 없어 견줄 수 없으면 확인할 것(눈으로 본다). 배속 · 색만 바꿔 지문을 다르게 하는 길은 쓰지 않는다 — 그래서 글 · 표지까지 본다.
 const COUNTRY_SLOTS = [['첫 카드', ['머리']], ['그 나라 예문', ['예문', '상황']], ['끝 질문', ['끝질문']], ['게시글', ['게시글']]];
+// 11-11 Fable 5.2 끝 판 검수 P3-3 — 글자 그대로 같을 때만 잡으면 대소문자 · 문장부호 · 이모지만 다른 꼴이 지나가고, 「바꿔 말한 꼴」(「He always told me…」 /
+// 「He only ever told me…」)은 아예 안 보인다. 같음은 표기(대소문자 · 띄어쓰기 · 문장부호 · 기호)를 뺀 글로 견주고, 짧은 칸(첫 카드 · 끝 질문)은
+// 낱말 겹침이 절반을 넘으면 확인할 것으로 보인다(막지는 않는다 — 나라마다 다르게 썼는지 사람이 본다). 예문 · 게시글은 가르치는 한국어 줄이 같아
+// 겹침이 늘 높으니 같음만 본다.
+const SIMILAR_SLOTS = new Set(['첫 카드', '끝 질문']);
+const SIMILAR_AT = 0.5;
+const plainOf = (s) => String(s || '').normalize('NFC').toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
+const wordsOf = (s) => new Set(String(s || '').normalize('NFC').toLowerCase().split(/[^\p{L}\p{M}\p{N}]+/u).filter((w) => w.length > 1));
+function overlapOf(a, b) {
+  const [x, y] = [wordsOf(a), wordsOf(b)];
+  if (x.size < 2 || y.size < 2) return 0; // 띄어 쓰지 않는 글 · 한 낱말 칸은 겹침으로 가르지 않는다
+  let n = 0;
+  for (const w of x) if (y.has(w)) n += 1;
+  return n / (x.size + y.size - n);
+}
 function sameLanguageFindings(bundle, plates) {
   const out = [];
   if (bundle.prep?.브랜드 !== 'LAB') return out;
@@ -903,14 +951,18 @@ function sameLanguageFindings(bundle, plates) {
       if (mx && mx === my) same.push('게시글(원고 파일)');
       const [lx, ly] = [linesOf1(vx), linesOf1(vy)];
       let compared = 0;
+      const similar = [];
       if (lx && ly) for (const [label, names] of COUNTRY_SLOTS) {
         const [tx, ty] = [textOf(lx, names), textOf(ly, names)];
         if (!tx || !ty) continue;
         compared += 1;
-        if (tx === ty && !same.includes(label)) same.push(label);
+        if (plainOf(tx) === plainOf(ty)) { if (!same.includes(label)) same.push(label); continue; }
+        const overlap = SIMILAR_SLOTS.has(label) ? overlapOf(tx, ty) : 0;
+        if (overlap >= SIMILAR_AT) similar.push(`${label}(낱말 겹침 ${Math.round(overlap * 100)}% — 「${tx.replace(/\s+/g, ' ').slice(0, 40)}」 / 「${ty.replace(/\s+/g, ' ').slice(0, 40)}」)`);
       }
       if (same.length) out.push({ level: FIX, code: 'same-language-same-lines', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판에서 ${same.join(' · ')}이(가) 같다 — 나라마다 다르게 쓴다(첫 카드 · 그 나라 예문 · 끝 질문 · 표지 · 게시글)` });
-      else if (!compared) out.push({ level: LOOK, code: 'same-language-unchecked', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판 차이를 판본 글로 견주지 못했다(「글」 파일에 머리 · 예문 · 끝질문 칸이 없다) — 첫 카드 · 그 나라 예문 · 끝 질문이 나라마다 다른지 눈으로 본다` });
+      if (similar.length) out.push({ level: LOOK, code: 'same-language-similar', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판에서 ${similar.join(' · ')}이(가) 바꿔 말한 꼴로 닮았다 — 그 나라 말투 · 상황으로 다르게 썼는지 본다(다음에 고칠 때 더 벌린다)` });
+      if (!same.length && !compared) out.push({ level: LOOK, code: 'same-language-unchecked', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판 차이를 판본 글로 견주지 못했다(「글」 파일에 머리 · 예문 · 끝질문 칸이 없다) — 첫 카드 · 그 나라 예문 · 끝 질문이 나라마다 다른지 눈으로 본다` });
     }
   }
   return out;
@@ -984,6 +1036,13 @@ async function run(dir, opts = {}) {
   findings.push(...tiktokFindings(plates, prep, bundle.accounts));
   findings.push(...dailyFindings(plates, prep, bundle.accounts));
   findings.push(...rotationFindings(bundle, plates));
+  findings.push(...closedFindings(bundle, plates, { posted }));
+  // 그림 검사 기록(11-11 Fable 5.2 끝 판 검수 P2-11) — 게시/그림검사.json이 있는 편만 본다: 「다시 굽기」로 나온 그림을 판단 없이 썼거나, 검사 뒤 그림이
+  // 바뀌었거나, 답이 빠진 기록이면 확인할 것으로 보인다(막지는 않는다 — 결과가 문서에만 있고 도구 · 관문이 모르던 것을 보이게 한다).
+  try {
+    const 그림상태 = 그림검사.상태(bundle.dir);
+    if (그림상태.있음) for (const m of 그림상태.문제) add(LOOK, 'image-check', '게시/그림검사.json', m);
+  } catch (error) { add(LOOK, 'image-check', '게시/그림검사.json', `그림 검사 기록을 못 읽었다(${String(error.message).slice(0, 120)})`); }
   findings.push(...samePlatformFindings(plates, { accounts: bundle.accounts }));
   findings.push(...sameLanguageFindings(bundle, plates));
   findings.push(...slotTimeFindings(bundle, plates, { posted: new Set([...posted].filter(([, state]) => DONE.has(state)).map(([account]) => account)) }));
@@ -1124,5 +1183,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, rotationFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, rotationFindings, closedFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

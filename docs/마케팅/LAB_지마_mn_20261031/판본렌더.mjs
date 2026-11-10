@@ -16,7 +16,8 @@
 //      끝내 「통과」가 아니면 그 키는 실패로 남기고 옛 video.mp4를 덮지 않는다.
 //   ④ 영상 비트레이트가 8.5Mbps 아래면 고정 10Mbps로 다시 담는다(현장 노트 「videoBitrate 12M으로 렌더해도 단순한 화면은 4~7Mbps…」).
 //   ⑤ 마감한 video.mp4에서 round(coverAt × 30)번째 프레임을 뽑아 cover.png(손실 없는 PNG — 11-05 영어판 게시 표지와 같은 방법).
-//   ⑥ 렌더.json — 글 파일 · 글 SHA-256(돌림 「글」 뜻 검수 지문과 같은 셈) · 영상 SHA-256 · 컴포지션 · 음량 · 비트레이트 · 시각.
+//   ⑥ 렌더.json — 글 파일 · 글 SHA-256(돌림 「글」 뜻 검수 지문과 같은 셈) · 영상 SHA-256 · 자산 SHA-256(번들에 든 그림 · 소리 · 틀) · 컴포지션 · 음량 · 비트레이트 · 시각.
+//      --표지만은 영상을 다시 굽지 않으니 글 · 영상 · 자산 지문은 옛 기록 그대로 둔다(옛 기록이 없으면 지문 없는 기록 — 돌림에 못 든다).
 // 그림 · 목소리 · 소리 · 박자는 정본 하나라 판본마다 바뀌지 않는다(원본 동결). 판본은 글 자리와 글꼴만 바꾼다.
 // 이 파일은 다섯 편(화날때 · 미안죄송합니다 · 사층F · 물고기 · 지마)이 같은 몸통을 쓴다 — 편마다 다른 것은 아래 「편」 한 줄뿐.
 import fs from 'node:fs';
@@ -25,6 +26,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
 
 const 편 = { 접두: 'm22', 판본폴더: 'remotion/src/m22/판본' };
 
@@ -33,6 +35,11 @@ const 뿌리 = path.resolve(여기, '..', '..', '..');
 const 리모션 = path.join(여기, 'remotion');
 const 판본폴더 = path.join(여기, 편.판본폴더);
 const 낼곳 = path.join(여기, '게시', '판본');
+// 자산 지문(11-11) — 이 렌더가 읽은 원본 그림 · 소리 · 틀(remotion public · src, 판본 글 빼고)의 지문을 렌더.json 「자산sha256」에 적는다.
+// 돌림표가 지금 자산과 견줘, 원본 그림을 고친 뒤 다시 굽지 않은 판본을 돌림에서 뺀다(tools/lib/판본잇기.js 자산지문 · 렌더문제).
+const 잇기 = createRequire(import.meta.url)(path.join(뿌리, 'tools', 'lib', '판본잇기.js'));
+// 판본 지도가 있으면 그 지도의 자산 자리(「자산」 칸 — 없으면 판본폴더가 든 remotion의 public · src)로 센다 — 돌림표와 같은 셈이어야 한다
+const 자산재기 = () => 잇기.자산지문(여기, 잇기.있나(여기) ? 잇기.지도읽기(여기).지도 : { 판본폴더: 편.판본폴더 });
 const CLI = path.join(리모션, 'node_modules', '@remotion', 'cli', 'remotion-cli.js');
 const FPS = 30;
 const 낮은비트 = 8.5e6;
@@ -137,8 +144,12 @@ const 번들 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-판본번들-'));
 let 실패 = 0;
 try {
   console.log(`[판본] ${path.basename(여기)} — 번들 만드는 중…`);
+  const 자산앞 = 자산재기();
   const b = await 리모션실행(['bundle', 'src/index.ts', '--out-dir', 번들]);
   if (b.code !== 0) throw Error(`번들 실패(종료 ${b.code})\n${b.out.slice(-2000)}`);
+  // 번들은 이때의 public · src를 담는다 — 번들을 만드는 사이 자산이 바뀌었으면 어느 그림으로 굽는지 알 수 없으니 멈춘다
+  const 자산 = 자산재기();
+  if (자산.지문 !== 자산앞.지문) throw Error('번들을 만드는 사이 원본 자산(remotion public · src)이 바뀌었다 — 다시 돌린다');
   const c = await 리모션실행(['compositions', 번들, '--quiet']);
   if (c.code !== 0) throw Error(`컴포지션 목록 실패(종료 ${c.code})\n${c.out.slice(-2000)}`);
   const 등록 = new Set(c.out.split(/\s+/).filter((x) => x.startsWith(`${편.접두}-`)));
@@ -197,9 +208,14 @@ try {
         기록.고정비트 = '10M(렌더가 8.5Mbps 아래)';
         p = await ffprobe(영상);
       }
-      Object.assign(기록, { 길이초: p.길이, 프레임: p.프레임, 영상Mbps: +(p.영상bps / 1e6).toFixed(2), 소리kbps: Math.round(p.소리bps / 1000), 영상sha256: sha(영상) });
+      Object.assign(기록, { 길이초: p.길이, 프레임: p.프레임, 영상Mbps: +(p.영상bps / 1e6).toFixed(2), 소리kbps: Math.round(p.소리bps / 1000), 영상sha256: sha(영상),
+        자산sha256: 자산.지문, 자산수: 자산.수, 구운때: new Date().toISOString() });
     } else if (fs.existsSync(path.join(폴더, '렌더.json'))) {
       Object.assign(기록, JSON.parse(fs.readFileSync(path.join(폴더, '렌더.json'), 'utf8')), { 표지: rel(표지), 표지초: pack.coverAt });
+    } else {
+      // 렌더 기록 없이 표지만 뜬다 — 있는 영상이 어느 글 · 자산으로 구운 것인지 모르니 글 지문을 지금 글로 적지 않는다(돌림에 못 든다 — 다시 렌더)
+      delete 기록.글sha256;
+      기록.표지만 = '렌더 기록 없이 표지만 떴다 — 영상의 글 · 자산 지문 없음';
     }
 
     // 표지 — 마감한 video.mp4에서 그 프레임을 그대로 뽑는다(11-05 영어판 표지와 같은 방법 · -ss 대신 프레임 번호 — 현장 노트 「-ss로 뽑은 확인 프레임은 한두 장 밀린다」)

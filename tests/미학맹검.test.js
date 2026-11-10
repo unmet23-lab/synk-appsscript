@@ -299,7 +299,8 @@ test('흐름(가짜 눈): 아르곤 줄 꺼짐 → 막힘 기록 → ⑱ 고칠 
   const 질문글 = fs.readFileSync(path.join(폴더, 질문), 'utf8');
   assert.match(질문글, /Read 도구로 순서대로/);
   const 답파일 = /Write 도구로 (.+?)에 그대로/.exec(질문글)[1];
-  fs.writeFileSync(답파일, JSON.stringify({ 낱장: [{ 번호: '01', 판정: '기각', 점수: 3, 약점: ['떠 있는 잎'] }], 쌍: [] }));
+  const 표식 = /"재료": "([^"]+)"을 그대로 넣는다/.exec(질문글)[1];
+  fs.writeFileSync(답파일, JSON.stringify({ 재료: 표식, 낱장: [{ 번호: '01', 판정: '기각', 점수: 3, 약점: ['떠 있는 잎'] }], 쌍: [] }));
   assert.equal(await 맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 편], 손), 1);
   const S3 = JSON.parse(fs.readFileSync(path.join(편, '게시', 관문.대체이름), 'utf8'));
   assert.equal(S3.눈, 'opus');
@@ -328,4 +329,295 @@ test('GPT 적중 기록이 없으면 --눈 gpt를 안 받는다(지난 기각 �
   const f = path.join(d, 'a.jpg'); fs.writeFileSync(f, 'x');
   const 적중파일 = path.join(d, '적중.json'); fs.writeFileSync(적중파일, JSON.stringify({ 눈: { 아르곤: { 기각잡음: 7 } } }));
   await assert.rejects(맹검.main([f, '--눈', 'gpt'], { 작업뿌리: path.join(d, 'tmp'), 적중파일 }), /--적중시험/);
+});
+
+// ── 11-11 Fable 5.2 끝 판 검수 P1-4: 맹검 기록이 실제로 본 것과 다르게 적히던 길 ⓐ~ⓖ(가짜 눈 · 가짜 ffmpeg — 모델 · 영상 도구를 부르지 않는다) ──
+const crypto = require('node:crypto');
+function 시험판(t, 이름) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), `맹검P14-${이름}-`)); t.after(() => fs.rmSync(d, { recursive: true, force: true }));
+  const 편 = path.join(d, `편_${이름}`); fs.mkdirSync(편, { recursive: true });
+  const 적중파일 = path.join(d, '적중.json');
+  fs.writeFileSync(적중파일, JSON.stringify({ 시험: { 기각: 8, 채택: 4, 쌍: 4, 이름: '11-08' }, 눈: { 아르곤: { 기각잡음: 7, 채택맞음: 1, 쌍맞음: 3 }, gpt: { 잰날: '2026-11-10', 기각잡음: 5, 채택맞음: 2, 쌍맞음: 3 } } }));
+  const 상태 = { 영상내용: 'V1', 띠훅: null };
+  const 손 = { 작업뿌리: path.join(d, 'tmp'), 적중파일, 줄꺼짐: () => null,
+    // 가짜 격자 — 파일 바이트의 sha256을 4,096칸에 펼친다(같은 바이트 = 같은 격자, 다른 바이트 = 아주 다른 격자)
+    격자: (f) => { const h = crypto.createHash('sha256').update(fs.readFileSync(f)).digest(); const g = Buffer.alloc(4096); for (let i = 0; i < 4096; i += 1) g[i] = h[i % 32]; return g.toString('base64'); },
+    영상정보: () => ({ fps: 30, 길이: 20, 너비: 1080, 높이: 1920 }),
+    // 가짜 ffmpeg — 띠 그림 내용은 영상 내용 + 칸 이름표(순간 초)로 정해진다(같은 영상 · 같은 순간 = 같은 바이트)
+    ffmpeg: (args) => { const 밖 = args[args.length - 1]; if (/\.(jpg|png)$/.test(밖) && !/%/.test(밖)) { fs.writeFileSync(밖, `띠:${상태.영상내용}:${(String(args[args.indexOf('-filter_complex') + 1]).match(/text='[^']*'/g) || []).join(',')}`); if (상태.띠훅) 상태.띠훅(밖); } return ''; } };
+  const 그림 = (n, 내용 = `그림-${n}`) => { const f = path.join(d, n); fs.writeFileSync(f, 내용); return f; };
+  const 영상 = (내용 = 'V1') => { const v = path.join(편, 'video.mp4'); fs.writeFileSync(v, 내용.repeat(100)); 상태.영상내용 = 내용; return v; };
+  const 기록 = (파일 = 관문.기록이름) => JSON.parse(fs.readFileSync(path.join(편, '게시', 파일), 'utf8'));
+  const 있나 = (파일 = 관문.기록이름) => fs.existsSync(path.join(편, '게시', 파일));
+  const 판정 = () => aestheticFindingsOf(편).map((f) => `${f.level}:${f.code}`);
+  return { d, 편, 손, 상태, 그림, 영상, 기록, 있나, 판정 };
+}
+// 가짜 아르곤 — 화면마다 정하기(h)로 판정을 정해 답 파일을 쓴다. 부른 묶음을 적어 둔다
+const 가짜아르곤 = (정하기, 부름 = []) => async (작업들) => {
+  부름.push(작업들.map((w) => w.번호들));
+  for (const w of 작업들) fs.writeFileSync(w.답, JSON.stringify({ 낱장: w.이.map((h) => ({ 번호: h.번호, 판정: 정하기(h), 점수: 5, 약점: [`${h.번호} 약점`] })), 쌍: [] }));
+  return '';
+};
+
+test('P1-4 ⓐ 기각 컷을 빼고 다시 맹검해도 옛 기각은 「이번에 안 봄」으로 남는다 — --뺌 까닭이 있어야 빠지고, 뺀 컷 · 옛 판정 · 까닭이 기록에 남는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'a1');
+  const [첫, 가운데, 끝] = ['첫.png', '가운데.png', '끝.png'].map((n) => 판.그림(n));
+  const 손 = { ...판.손, 아르곤부르기: 가짜아르곤((h) => (/나쁨/.test(h.설명) ? '기각' : '그대로 냄')) };
+  assert.equal(await 맹검.main([`${첫}::첫 장면`, `${가운데}::가운데 나쁨`, `${끝}::끝 장면`, '--편', 판.편, '--이름', 'c1'], 손), 1);
+  // 설계 17 「고친 컷만 다시 본다」를 글자 그대로 — 기각 컷을 빼고 나머지만 다시 넣는다(탐침 p2 C: 전에는 끝 코드 0 · ⑱ 지적 없음)
+  assert.equal(await 맹검.main([`${첫}::첫 장면`, `${끝}::끝 장면`, '--편', 판.편, '--이름', 'c2'], 손), 1, '이번 목록에 없는 기각도 기록에 남아 끝 코드 1');
+  const P = 판.기록();
+  assert.deepEqual(P.화면.map((h) => `${h.번호}:${h.컷}${h.안봄 ? '(안봄)' : ''}`), ['01:첫', '02:끝', '03:가운데(안봄)']);
+  const 옛 = P.낱장.find((x) => x.번호 === '03');
+  assert.deepEqual([옛.판정, 옛.눈, 옛.안봄.이름], ['기각', '아르곤', 'c1'], '어디서 마지막으로 봤는지 함께');
+  assert.deepEqual(판.판정(), ['고칠 것:aesthetic-reject']);
+  assert.match(aestheticFindingsOf(판.편)[0].message, /03\(5점 · 이번에 안 봄\)/);
+  // 한 번 더 빼도 안 봄 출처는 처음 그대로
+  await 맹검.main([`${첫}::첫 장면`, `${끝}::끝 장면`, '--편', 판.편, '--이름', 'c3'], 손);
+  assert.equal(판.기록().낱장.find((x) => x.안봄).안봄.이름, 'c1');
+  // 정말 뺀다 — 까닭과 함께
+  assert.equal(await 맹검.main([`${첫}::첫 장면`, `${끝}::끝 장면`, '--편', 판.편, '--이름', 'c4', '--뺌', '가운데=가운데 장면을 렌더에서 뺐다(편집 판 2)'], 손), 0);
+  const P2 = 판.기록();
+  assert.deepEqual(P2.화면.map((h) => h.컷), ['첫', '끝']);
+  assert.deepEqual(P2.뺌.map((x) => [x.컷, x.판정, x.눈, x.까닭]), [['가운데', '기각', '아르곤', '가운데 장면을 렌더에서 뺐다(편집 판 2)']]);
+  assert.deepEqual(판.판정(), ['확인할 것:aesthetic-history'], '뺀 기각은 ⑱이 내력으로 보인다');
+  assert.match(aestheticFindingsOf(판.편)[0].message, /뺀 컷 1 — 가운데\(옛 기각\) 「가운데 장면을 렌더에서 뺐다/);
+  assert.throws(() => 맹검.인자(['a.png', '--편', 'x', '--뺌', '가운데']), /--뺌은 "<옛 번호 또는 컷>=<까닭>"/);
+  assert.throws(() => 맹검.인자(['a.png', '--뺌', '가운데=까닭']), /--편/);
+});
+
+test('P1-4 ⓐ 같은 그림을 이름만 바꿔 넣으면 지난 판정(기각)을 이어받고 다시 묻지 않는다 — 옛 컷은 「안 봄」으로 겹쳐 남지 않는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'a2');
+  const p = 판.그림('끝.png', 'same-bytes'), q = 판.그림('끝_v2.png', 'same-bytes');
+  const 부름 = [];
+  const 손 = { ...판.손, 아르곤부르기: 가짜아르곤(() => (부름.length === 1 ? '기각' : '그대로 냄'), 부름) };
+  assert.equal(await 맹검.main([`${p}::끝 장면`, '--편', 판.편, '--이름', 'd1'], 손), 1);
+  assert.equal(await 맹검.main([`${q}::끝 장면`, '--편', 판.편, '--이름', 'd2'], 손), 1, '탐침 p2 D: 전에는 새로 물어 「그대로 냄」이 옛 기각을 덮었다');
+  assert.equal(부름.length, 1, '다시 부르지 않는다');
+  const P = 판.기록();
+  assert.deepEqual(P.화면.map((h) => h.컷), ['끝_v2']);
+  assert.deepEqual([P.낱장[0].판정, P.낱장[0].이어받음.이름, P.낱장[0].이어받음.컷], ['기각', 'd1', '끝']);
+  assert.deepEqual(판.판정(), ['고칠 것:aesthetic-reject']);
+});
+
+test('P1-4 ⓐ 다시 물어 지난 판정을 덮으면 「앞판정」이 남는다 — 같은 그림의 기각이 바뀌면 ⑱ 확인할 것, 고친 그림은 조용', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'a3');
+  const p = 판.그림('끝.png', '처음 그림');
+  const 부름 = [];
+  const 손 = { ...판.손, 아르곤부르기: 가짜아르곤(() => (부름.length === 1 ? '기각' : '그대로 냄'), 부름) };
+  await 맹검.main([`${p}::끝 장면`, '--편', 판.편, '--이름', 'r1'], 손);
+  assert.equal(await 맹검.main([`${p}::끝 장면`, '--편', 판.편, '--이름', 'r2', '--다시모두'], 손), 0);
+  const x = 판.기록().낱장[0];
+  assert.deepEqual([x.판정, x.눈, x.앞판정.판정, x.앞판정.이름, x.앞판정.같은그림], ['그대로 냄', '아르곤', '기각', 'r1', true]);
+  assert.deepEqual(판.판정(), ['확인할 것:aesthetic-history']);
+  assert.match(aestheticFindingsOf(판.편)[0].message, /같은 그림을 다시 물어 「기각」이 바뀐 컷 1 — 끝\(아르곤 기각 → 그대로 냄\)/);
+  // 고친 그림(같은 컷 이름 · 다른 그림)이면 앞판정은 남되 같은그림 false — ⑱은 조용
+  fs.writeFileSync(p, '고친 그림');
+  await 맹검.main([`${p}::끝 장면`, '--편', 판.편, '--이름', 'r3'], 손);
+  assert.equal(판.기록().낱장[0].앞판정.같은그림, false);
+  assert.deepEqual(판.판정(), []);
+});
+
+test('P1-4 ⓐ 아르곤이 답 못 준 화면을 목록에서 빼도 「답 없음」과 막힌 증거가 「이번에 안 봄」으로 남는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'a4');
+  const f = ['첫.png', '가운데.png', '끝.png'].map((n) => 판.그림(n));
+  const 인자 = f.map((x, i) => `${x}::장면 ${i + 1}`);
+  await 맹검.main([...인자, '--편', 판.편, '--이름', 'm1'], { ...판.손, 줄꺼짐: () => ({ 꼴: '줄 꺼짐', 끈때: '2026-11-11 03:00:00', 첫줄: 'a 줄 끔(시험)' }) });
+  assert.equal(await 맹검.main([인자[0], 인자[2], '--편', 판.편, '--이름', 'm2'], { ...판.손, 아르곤부르기: 가짜아르곤(() => '그대로 냄') }), 2, '지난 답 없음이 남아 끝 코드 2');
+  const P = 판.기록();
+  assert.deepEqual(P.빠짐, ['03']);
+  assert.equal(P.화면[2].컷, '가운데');
+  assert.deepEqual(P.막힘.map((m) => [m.화면, m.꼴, m.안봄]), [[['03'], '줄 꺼짐', true]]);
+  assert.deepEqual(판.판정(), ['고칠 것:aesthetic-unverified'], '못 본 화면은 대체 눈이 덮어야 한다 — 빼서 통과하지 않는다');
+});
+
+test('P1-4 ⓐ ⓔ 지난정리: 다른 눈의 판정은 옮기지 않고, 대체 기록은 지금 아르곤 기록에 같은 컷이 다른 그림이면 옮기지 않으며, 못 찾은 --뺌은 무시(더 엄하다)', () => {
+  const 지난 = { 기록: { 눈: 'gpt', 이름: 's1', 만든때: '2026-11-11T00:00:00Z', 화면: [{ 번호: '01', 컷: 'A', 지문: 'a' }, { 번호: '02', 컷: 'B', 지문: 'b' }, { 번호: '03', 컷: 'X', 지문: 'x1' }, { 번호: '04', 컷: 'Y', 지문: 'y' }],
+    낱장: [{ 번호: '01', 판정: '그대로 냄' }, { 번호: '02', 판정: '기각', 눈: 'opus' }, { 번호: '03', 판정: '그대로 냄' }, { 번호: '04', 판정: '기각' }], 빠짐: [] }, 격자: new Map() };
+  const 새 = [{ 번호: '01', 컷: 'A', 지문: 'a' }];
+  const 아르곤 = { 기록: { 화면: [{ 번호: '01', 컷: 'X', 지문: 'x2' }, { 번호: '02', 컷: 'Y', 지문: 'y' }] }, 격자: new Map() };
+  const r = 맹검.지난정리(새, 지난, { 눈: 'gpt', 뺌: [{ 대상: '없는컷', 까닭: '오타' }], 아르곤 });
+  assert.deepEqual(r.남김화면.map((h) => [h.번호, h.컷]), [['02', 'Y']], 'B는 Opus 판정 — 안 옮김, X는 아르곤 기록에서 다시 그린 컷 — 안 옮김, Y는 같은 그림이라 옮김');
+  assert.deepEqual(r.남김낱장.map((x) => [x.번호, x.판정, x.눈]), [['02', '기각', 'gpt']]);
+  assert.deepEqual(r.안옮김, ['X']);
+  assert.deepEqual(r.뺌못찾음, ['없는컷']);
+  assert.equal(r.앞판정.get('01').판정, '그대로 냄');
+  assert.deepEqual(맹검.지난정리(새, 지난, { 눈: 'gpt' }).남김화면.map((h) => h.컷), ['X', 'Y'], '아르곤 기록을 안 주면(아르곤 기록 파일) 대조 없이 옮긴다');
+  assert.deepEqual(맹검.지난정리(새, 지난, { 눈: 'gpt', 뺌: [{ 대상: '04', 까닭: '옛 번호로도 뺀다' }] }).뺌.map((x) => [x.컷, x.번호, x.판정]), [['Y', '04', '기각']]);
+  // 11-10 전 기록(판 없음 — 컷 이름 · 지문 없음)은 새 화면과 맞출 수 없어 모두 남긴다 — 옛 번호로 까닭과 함께 뺀다
+  const 옛판 = { 기록: { 만든때: '2026-11-08T00:00:00Z', 이름: 'v1', 화면: [{ 번호: '01', 파일: 'LAB_x_1.jpg' }, { 번호: '02', 파일: 'LAB_x_2.jpg' }], 낱장: [{ 번호: '01', 판정: '기각' }, { 번호: '02', 판정: '그대로 냄' }], 빠짐: [] }, 격자: new Map() };
+  const 옛r = 맹검.지난정리([{ 번호: '01', 컷: '순간@1.00', 지문: 'n1' }], 옛판, { 눈: '아르곤', 뺌: [{ 대상: '1', 까닭: '11-08 대표 프레임 판 — 띠 맹검으로 대신' }] });
+  assert.deepEqual(옛r.뺌.map((x) => [x.번호, x.판정]), [['01', '기각']]);
+  assert.deepEqual(옛r.남김화면.map((h) => [h.번호, h.옛번호, h.파일]), [['02', '02', 'LAB_x_2.jpg']]);
+});
+
+test('P1-4 ⓑ --영상 맹검은 순간 셋 · 첫 장면(앞 3초) · 끝 장면(끝 4초) — 못 채우면 멈추고, --순간예외 까닭은 기록에 남는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'b');
+  const v = 판.영상();
+  const 손 = { ...판.손, 아르곤부르기: 가짜아르곤(() => '그대로 냄') };
+  const 기본 = ['--영상', v, '--마스코트', '없음', '--편', 판.편];
+  await assert.rejects(맹검.main([...기본, '--순간', '1', '--순간', '18'], 손), /순간 2개\(3개 이상\)/);
+  await assert.rejects(맹검.main([...기본, '--순간', '5', '--순간', '10', '--순간', '18'], 손), /첫 장면 순간 없음/);
+  await assert.rejects(맹검.main([...기본, '--순간', '1', '--순간', '10', '--순간', '15.9'], 손), /끝 장면 순간 없음\(끝 4초 안 — 16\.00초 뒤\)/, '실물 「화날때」 24.50초(28.6초 편)가 이 꼴');
+  await assert.rejects(맹검.main([...기본, '--순간', '1', '--순간', '10', '--순간', '9999', '--순간예외', '까닭'], 손), /영상 길이 20\.00초 밖/, '영상 밖 순간은 까닭으로도 못 넘는다(끝 장면처럼 보이게)');
+  assert.equal(판.있나(), false, '멈춘 실행은 기록을 쓰지 않는다');
+  assert.equal(await 맹검.main([...기본, '--순간', '1', '--순간', '10', '--순간', '16', '--이름', 'b1'], 손), 0);
+  assert.equal(판.기록().순간예외, undefined);
+  assert.equal(await 맹검.main([...기본, '--순간', '0.5', '--순간', '10', '--순간예외', '끝 4초는 검은 화면뿐이다', '--이름', 'b2'], 손), 0);
+  assert.deepEqual(판.기록().순간예외, { 까닭: '끝 4초는 검은 화면뿐이다', 모자람: ['순간 2개(3개 이상)', '끝 장면 순간 없음(끝 4초 안 — 16.00초 뒤)'] });
+  assert.throws(() => 맹검.인자(['--영상', 'a.mp4', '--순간', '1', '--순간', '1.001']), /--순간이 겹친다/);
+  assert.throws(() => 맹검.인자(['a.png', '--순간예외', 'x']), /--영상과 함께/);
+  assert.deepEqual(맹검.순간모자람([{ 초: 1 }, { 초: 9 }, { 초: 17 }], 20.6), []);
+  assert.throws(() => 맹검.순간모자람([{ 초: 1 }], 0), /길이를 못 읽었다/);
+});
+
+test('P1-4 ⓒ --영상을 줘도 그 영상의 띠를 다루지 않은 실행은 「영상」을 적지 않고, 띠를 본 실행은 띠를 뽑을 때 잰 크기 · 해시를 적는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'c');
+  const v = 판.영상('V1');
+  const 표지 = 판.그림('표지.png');
+  const 손 = { ...판.손, 아르곤부르기: 가짜아르곤(() => '그대로 냄') };
+  assert.equal(await 맹검.main(['--영상', v, `${표지}::표지 한 장`, '--순간예외', '표지만 본다', '--편', 판.편, '--이름', 'c1'], 손), 0);
+  assert.equal(판.기록().영상, undefined, '탐침 p2 A: 전에는 띠 없이도 「영상」이 적혀 ⑱이 그 영상만 봤다');
+  assert.equal(await 맹검.main(['--영상', v, '--순간', '1', '--순간', '10', '--순간', '17', '--마스코트', '없음', '--편', 판.편, '--이름', 'c2'], 손), 0);
+  const 영상칸 = 판.기록().영상;
+  assert.deepEqual(영상칸.map((x) => [x.이름, x.크기, x.해시]), [['video.mp4', 200, crypto.createHash('sha256').update(fs.readFileSync(v)).digest('hex')]]);
+  assert.ok(!JSON.stringify(영상칸).includes(판.d.replace(/\\/g, '\\\\')), '공개 기록에 이 PC 경로가 없다');
+});
+
+test('P1-4 ⓓ 띠를 뽑은 뒤(눈을 기다리는 사이) 영상이 다시 렌더되면 기록하지 않고 멈춘다 — 띠를 뽑는 사이 바뀌어도 멈춘다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  t.mock.method(console, 'error', () => {});
+  const 판 = 시험판(t, 'd');
+  const v = 판.영상('OLD');
+  const 순간 = ['--영상', v, '--순간', '1', '--순간', '10', '--순간', '17', '--마스코트', '없음', '--편', 판.편];
+  const 다시렌더 = () => { fs.writeFileSync(v, 'NEWRENDER'.repeat(100)); 판.상태.영상내용 = 'NEW'; };
+  const 손 = { ...판.손, 아르곤부르기: async (작업들) => { 다시렌더(); return 가짜아르곤(() => '그대로 냄')(작업들); } };
+  assert.equal(await 맹검.main([...순간, '--이름', 'd1'], 손), 2, '탐침 p2 B: 전에는 새 판 크기를 적고 끝 코드 0 · ⑱ 통과');
+  assert.equal(판.있나(), false, '편 기록을 쓰지 않는다');
+  // 띠를 뽑는 사이에 바뀜
+  판.영상('OLD');
+  판.상태.띠훅 = (밖) => { if (/띠_2\.jpg$/.test(밖)) 다시렌더(); };
+  await assert.rejects(맹검.main([...순간, '--이름', 'd2'], { ...판.손, 아르곤부르기: 가짜아르곤(() => '그대로 냄') }), /띠를 뽑는 사이 영상이 바뀌었다/);
+  판.상태.띠훅 = null;
+  // 안 바뀌면 띠를 뽑을 때 잰 값으로 기록
+  판.영상('OLD');
+  assert.equal(await 맹검.main([...순간, '--이름', 'd3'], { ...판.손, 아르곤부르기: 가짜아르곤(() => '그대로 냄') }), 0);
+  assert.equal(판.기록().영상[0].크기, 300);
+});
+
+test('P1-4 ⓔ 대체 눈끼리 판정을 이어받지 않는다 — Opus 판정 뒤 --눈 gpt는 GPT를 실제로 부르고, 낱장마다 판정한 눈 · 실제 부른 시도만 적는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'e');
+  const f = ['첫.png', '끝.png'].map((n) => 판.그림(n));
+  const 인자 = [`${f[0]}::첫 장면`, `${f[1]}::끝 장면`, '--편', 판.편];
+  let gpt부름 = 0;
+  const 손 = { ...판.손, 줄꺼짐: () => ({ 꼴: '줄 꺼짐', 끈때: '2026-11-11 03:00:00', 첫줄: 'a 줄 끔(시험)' }),
+    GPT묻기: async ({ 글, 답파일 }) => { gpt부름 += 1; const 번호 = [...글.matchAll(/^- (\d\d): /gm)].map((m) => m[1]); const 답 = JSON.stringify({ 낱장: 번호.map((n) => ({ 번호: n, 판정: '기각', 점수: 3 })), 쌍: [] }); fs.writeFileSync(답파일, 답); return { 결과: '받음', 답, 초: 1 }; } };
+  await 맹검.main([...인자, '--이름', 'p'], 손);
+  assert.equal(await 맹검.main([...인자, '--이름', 'o', '--눈', 'opus'], 손), 4);
+  const 폴더 = path.join(손.작업뿌리, 'o');
+  const 묶음 = JSON.parse(fs.readFileSync(path.join(폴더, '묶음.json'), 'utf8'));
+  for (const w of 묶음.묶음) fs.writeFileSync(path.join(폴더, w.답), JSON.stringify({ 재료: w.꼬리, 낱장: w.번호들.map((n) => ({ 번호: n, 판정: '그대로 냄', 점수: 9 })), 쌍: [] }));
+  assert.equal(await 맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 판.편], 손), 0);
+  assert.deepEqual(판.기록(관문.대체이름).낱장.map((x) => x.눈), ['opus', 'opus']);
+  assert.equal(await 맹검.main([...인자, '--이름', 'g', '--눈', 'gpt'], 손), 1);
+  assert.equal(gpt부름, 1, '탐침 p4 X1: 전에는 Opus 판정을 이어받아 GPT를 한 번도 안 부르고 「눈 gpt · 적중 5/8」로 적었다');
+  const S = 판.기록(관문.대체이름);
+  assert.equal(S.눈, 'gpt');
+  assert.deepEqual(S.낱장.map((x) => [x.판정, x.눈, x.이어받음, x.앞판정?.눈]), [['기각', 'gpt', undefined, 'opus'], ['기각', 'gpt', undefined, 'opus']], 'Opus 판정은 흔적(앞판정)으로만');
+  assert.deepEqual(S.시도.map((x) => [x.눈, x.결과]), [['opus', '받음'], ['gpt', '받음']]);
+  // 같은 눈으로 다시 — 다 이어받으면 부르지 않고, 지어낸 시도도 없다
+  assert.equal(await 맹검.main([...인자, '--이름', 'g2', '--눈', 'gpt'], 손), 1);
+  assert.equal(gpt부름, 1);
+  const S2 = 판.기록(관문.대체이름);
+  assert.deepEqual(S2.시도.map((x) => [x.눈, x.결과]), [['opus', '받음'], ['gpt', '받음']], '부르지 않은 실행은 시도를 덧붙이지 않는다');
+  assert.ok(S2.낱장.every((x) => x.눈 === 'gpt' && x.이어받음?.눈 === 'gpt'));
+  // 탐침 p4 X2: 판정이 든 대체 기록 위에 --눈 opus --막힘 — 판정의 눈 · 만든때는 그대로, 시도만 덧붙는다
+  t.mock.method(console, 'error', () => {});
+  assert.equal(await 맹검.main(['--눈', 'opus', '--막힘', '하위 에이전트 한도', '--편', 판.편], 손), 2);
+  const S3 = 판.기록(관문.대체이름);
+  assert.deepEqual([S3.눈, S3.만든때, S3.낱장.length, S3.시도.at(-1).눈, S3.시도.at(-1).결과], ['gpt', S2.만든때, 2, 'opus', '막힘']);
+});
+
+test('P1-4 ⓔ GPT가 막힌 대체 기록에 Opus 막힘을 적으면 눈은 opus, GPT 적중은 남기지 않는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'e2');
+  const f = 판.그림('첫.png');
+  const 손 = { ...판.손, 줄꺼짐: () => ({ 꼴: '줄 꺼짐', 끈때: '2026-11-11 03:00:00', 첫줄: 'a 줄 끔' }), GPT묻기: async () => ({ 결과: '막힘', 꼴: '계정 없음', 첫줄: '쓸 수 있는 굽기 계정이 없다', 초: 1 }) };
+  await 맹검.main([f, '--편', 판.편, '--이름', 'a'], 손);
+  await 맹검.main([f, '--편', 판.편, '--이름', 'g', '--눈', 'gpt'], 손);
+  assert.ok(판.기록(관문.대체이름).적중);
+  await 맹검.main(['--눈', 'opus', '--막힘', '하위 에이전트 한도', '--편', 판.편], 손);
+  const S = 판.기록(관문.대체이름);
+  assert.deepEqual([S.눈, S.적중], ['opus', undefined]);
+  assert.deepEqual(판.판정(), ['고칠 것:aesthetic-swap']);
+});
+
+test('P1-4 ⓕ --눈 opus --받기는 재료의 편 · 화면 지문 · 답의 재료 표식을 대조하고 어긋나면 기록하지 않는다 — 답 파일 지문을 남긴다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'f');
+  const 편2 = path.join(판.d, '편_다른'); fs.mkdirSync(편2);
+  const f = ['첫.png', '끝.png'].map((n) => 판.그림(n));
+  const 손 = { ...판.손, 줄꺼짐: () => ({ 꼴: '줄 꺼짐', 끈때: '2026-11-11 03:00:00', 첫줄: 'a 줄 끔' }) };
+  const 인자 = [`${f[0]}::첫 장면`, `${f[1]}::끝 장면`];
+  for (const e of [판.편, 편2]) await 맹검.main([...인자, '--편', e, '--이름', `p-${path.basename(e)}`], 손);
+  assert.equal(await 맹검.main([...인자, '--편', 판.편, '--이름', 'o1', '--눈', 'opus'], 손), 4);
+  const 폴더 = path.join(손.작업뿌리, 'o1');
+  const 묶음 = JSON.parse(fs.readFileSync(path.join(폴더, '묶음.json'), 'utf8'));
+  const 답쓰기 = (재료) => { for (const w of 묶음.묶음) fs.writeFileSync(path.join(폴더, w.답), JSON.stringify({ ...(재료 === undefined ? {} : { 재료 }), 낱장: w.번호들.map((n) => ({ 번호: n, 판정: '그대로 냄', 점수: 9 })), 쌍: [] })); };
+  답쓰기(묶음.묶음[0].꼬리);
+  await assert.rejects(맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 편2], 손), /다른 편/, '탐침 p2 E2: 전에는 다른 편 재료를 받아 그 편 ⑱이 확인할 것이 됐다');
+  assert.equal(fs.existsSync(path.join(편2, '게시', 관문.대체이름)), false);
+  답쓰기('엉뚱한표식');
+  await assert.rejects(맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 판.편], 손), /재료」 엉뚱한표식/);
+  답쓰기(undefined);
+  await assert.rejects(맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 판.편], 손), /「재료」 없음/);
+  const 화면01 = path.join(폴더, '화면01.png'), 원래 = fs.readFileSync(화면01);
+  fs.writeFileSync(화면01, '바꿔치기');
+  답쓰기(묶음.묶음[0].꼬리);
+  await assert.rejects(맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 판.편], 손), /재료 그림이 만든 뒤 바뀌었거나 없다\(화면 01\)/);
+  fs.writeFileSync(화면01, 원래);
+  assert.equal(판.있나(관문.대체이름), false, '어긋난 받기는 하나도 기록하지 않았다');
+  assert.equal(await 맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 판.편], 손), 0);
+  const S = 판.기록(관문.대체이름);
+  const 답파일 = path.join(폴더, 묶음.묶음[0].답);
+  assert.deepEqual(S.답파일, [{ 묶음: 1, 파일: path.basename(답파일), 지문: crypto.createHash('sha1').update(fs.readFileSync(답파일)).digest('hex') }]);
+  // 재료를 만든 뒤 아르곤 기록이 다른 그림으로 다시 적히면(다시 렌더 · 다시 맹검) 옛 재료의 답은 받지 않는다
+  fs.writeFileSync(f[0], '다시 그린 첫 장면');
+  await 맹검.main([...인자, '--편', 판.편, '--이름', 'p-다시'], 손);
+  await assert.rejects(맹검.main(['--눈', 'opus', '--받기', 폴더, '--편', 판.편], 손), /지금 아르곤 기록의 같은 컷과 다른 그림이다\(첫\)/);
+});
+
+test('P1-4 ⓖ 답모으기는 묶음(한 대화 4장) 경계를 본다 — 묶음 밖 번호 · 다시 매긴 번호 · 묶음을 건넌 쌍은 버린다', async (t) => {
+  const 번호들 = ['01', '02', '03', '04', '05', '06'], 묶음 = [['01', '02', '03', '04'], ['05', '06']];
+  const 다 = (판정, ns) => ({ 낱장: ns.map((n) => ({ 번호: n, 판정, 점수: 5 })) });
+  const g1 = 맹검.답모으기([다('그대로 냄', 번호들), null], 번호들, 묶음);
+  assert.deepEqual([g1.낱장.map((x) => x.번호), g1.빠짐], [['01', '02', '03', '04'], ['05', '06']], '탐침 p3 G1: 묶음 1 답에 낀 05 · 06은 묶음 2 답이 아니다');
+  assert.deepEqual(g1.묶음밖, [{ 묶음: 1, 번호: '05' }, { 묶음: 1, 번호: '06' }]);
+  const g2 = 맹검.답모으기([다('기각', ['01', '02', '03', '04']), 다('그대로 냄', ['1', '2'])], 번호들, 묶음);
+  assert.deepEqual(g2.낱장.map((x) => `${x.번호}:${x.판정}`), ['01:기각', '02:기각', '03:기각', '04:기각'], '탐침 p3 G2: 묶음 2가 01부터 다시 매긴 번호가 묶음 1 기각을 덮지 않는다');
+  assert.deepEqual(g2.빠짐, ['05', '06']);
+  const g3 = 맹검.답모으기([{ ...다('그대로 냄', ['01', '02', '03', '04']), 쌍: [{ 쌍: '04-05', 고름: '04' }, { 쌍: '01-02', 고름: '02' }] }, 다('그대로 냄', ['05', '06'])], 번호들, 묶음);
+  assert.deepEqual(g3.쌍.map((p) => p.쌍), ['01-02']);
+  assert.deepEqual(맹검.답모으기([다('그대로 냄', 번호들)], 번호들).빠짐, [], '묶음을 안 주면 예전처럼(적중시험 밖 옛 부름)');
+  // 실행 흐름 — 다섯 장(대화 둘): 묶음 1 답이 05를 적고 묶음 2 눈이 번호를 01로 매기면 05는 답 못 받음(끝 코드 2)
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, 'g');
+  const f = ['가', '나', '다', '라', '마'].map((n) => 판.그림(`${n}.png`));
+  const 엉킨눈 = async (작업들) => {
+    for (const w of 작업들) {
+      const 낱장 = w.k === 1 ? ['01', '02', '03', '04', '05'].map((n) => ({ 번호: n, 판정: '그대로 냄', 점수: 8 })) : [{ 번호: '01', 판정: '기각', 점수: 2 }];
+      fs.writeFileSync(w.답, JSON.stringify({ 낱장, 쌍: [] }));
+    }
+    return '';
+  };
+  assert.equal(await 맹검.main([...f, '--편', 판.편, '--이름', 'g1'], { ...판.손, 아르곤부르기: 엉킨눈 }), 2);
+  const P = 판.기록();
+  assert.deepEqual([P.낱장.map((x) => `${x.번호}:${x.판정}`), P.빠짐], [['01:그대로 냄', '02:그대로 냄', '03:그대로 냄', '04:그대로 냄'], ['05']]);
 });
