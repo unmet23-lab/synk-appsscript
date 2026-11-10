@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {emptyAnswers} from './public/pulse-app/request-data.mjs';
-import {roomState,roomStage,roomModel,directionModel,deskModel,CONFIRM_OF} from './public/pulse-app/room-view.mjs';
+import {roomState,roomStage,roomModel,directionModel,payModel,deskModel,CONFIRM_OF} from './public/pulse-app/room-view.mjs';
 import {directionView,roomView} from './public/pulse-app/film-views.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
 
@@ -31,6 +31,7 @@ test('the direction model carries the real price, the one agreed day and the pic
   assert.equal(d.model.id,'M06');assert.equal(d.canPick,true);assert.equal(d.last,false);
   assert.equal(directionModel(project({direction:open({price:290000})})).price,'29만원','a launch price shows as it is paid');
   assert.equal(directionModel(project({direction:open({price:395500})})).price,'395,500원');
+  assert.equal(directionModel(project({direction:open({price:395000})})).price,'395,000원','over 100,000 and not whole 만 원: the won amount, not rounded to 40만원');
   assert.equal(directionModel(project({direction:open({modelId:undefined}),answers:{modelChoice:'none'}})).noModel,true);
   assert.equal(directionModel(project()),null);
   const brief=roomModel(project({direction:open()})).brief;
@@ -114,4 +115,13 @@ test('Fable final 1b: a photo order is not promised directions; three options sa
   const settled=roomView(roomModel(project({direction:open({status:'settled',chosenId:'b',answer:'통화로 정했어요'})})));
   assert.match(settled,/담당자와 정한 내용: 통화로 정했어요/);assert.doesNotMatch(settled,/덧붙이신 말: 통화로/);
   const film=read('film-views.mjs');assert.ok(film.includes('note:filmNote(film)'));assert.ok(!film.includes('가상 브랜드로 만든 자체 작품`'));
+});
+test('money the customer pays is never rounded: whole 만 원 → 「39만원」, a whole 천 원 under 100,000 → 「1.5만원」, anything else in won (395,000원 showed as 40만원)',async()=>{
+  const at=price=>directionModel(project({direction:open({price})})).price;
+  assert.equal(at(395000),'395,000원');assert.equal(at(105000),'105,000원');assert.equal(at(1234000),'1,234,000원');assert.equal(at(12345),'12,345원');assert.equal(at(5000),'5,000원');
+  assert.equal(at(390000),'39만원');assert.equal(at(100000),'10만원');assert.equal(at(1000000),'100만원');assert.equal(at(15000),'1.5만원');assert.equal(at(99000),'9.9만원');
+  assert.equal(payModel(project({direction:open({price:395000})})).price,'395,000원','the payment card uses the same rule');
+  const {setLocale}=await import('./public/pulse-app/i18n.mjs');
+  await setLocale('en');
+  try{assert.equal(at(395000),'KRW 395,000');assert.equal(at(390000),'KRW 390,000');assert.equal(at(15000),'KRW 15,000');}finally{await setLocale('ko');}
 });

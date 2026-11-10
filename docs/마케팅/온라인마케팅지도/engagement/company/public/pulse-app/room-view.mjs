@@ -131,9 +131,10 @@ export function payModel(p){
 }
 // 방향 제안(영상 전 확인 1/3)을 화면 자료로. 그림 · 견본은 손님 보기의 자산 주소, 값 · 기간은 제안에 적힌 것(손님이 실제로 내는 값 · 정한 날).
 const assetById=(p,id)=>(p?.studio?.assets||[]).find(asset=>asset.id===id);
-// 값: 한국어는 만 원으로 떨어지면 「39만원」, 아니면 「395,500원」. 다른 언어는 늘 원화 그대로(request-data price — 「KRW 395,500」).
+// 값: 한국어는 만 원으로 떨어지면 「39만원」, 10만 원 아래의 천 원 단위는 「1.5만원」, 그 밖은 원 단위 그대로 「395,000원」 · 「395,500원」
+// (만 원으로 반올림하지 않는다 — 395,000원이 「40만원」으로 보였다). 다른 언어는 늘 원화 그대로(request-data price — 「KRW 395,500」).
 // 「원」이 붙는 갈래는 한국어 화면에서만 돈다(번역하지 않는다).
-const won=value=>locale()!=='ko'||value>=10000&&value%1000===0?price(value/10000):`${Number(value).toLocaleString('ko-KR')}원`; // i18n-skip
+const won=value=>locale()!=='ko'||value>=10000&&(value%10000===0||value<100000&&value%1000===0)?price(value/10000):`${Number(value).toLocaleString('ko-KR')}원`; // i18n-skip
 // 「11월 17일」 · 영어 「Nov 17」(사전이 {mon}을 쓴다).
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const longDay=day=>{const [y,m,d]=String(day||'').split('-').map(Number);return y?t('{m}월 {d}일',{m,d,mon:MONTHS[m-1]||''}):'';};
