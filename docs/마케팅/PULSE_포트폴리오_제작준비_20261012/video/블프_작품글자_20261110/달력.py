@@ -86,9 +86,16 @@ def 절기(y0=2026):
 
 
 # ── 인쇄면(HTML → 크롬) ──────────────────────────────────────────────────
+# 공휴일(2026) — 개천절 10-03(토) · 대체공휴일 10-05(월) · 한글날 10-09 · 성탄절 12-25. 11월은 없다.
+# 11-11 Opus 맹검: 작은 달력에서 개천절이 파랑 · 나머지가 검정이라 음력 · 절기까지 챙긴 판에서 오히려 튄다.
+쉬는날 = {(2026, 10, 3), (2026, 10, 5), (2026, 10, 9), (2026, 12, 25)}
+
+
 def mini(y, m):
     calendar.setfirstweekday(calendar.SUNDAY)
-    rows = "".join("<tr>" + "".join(f"<td class='{'s' if i == 0 else 't' if i == 6 else ''}'>{d or ''}</td>" for i, d in enumerate(w)) + "</tr>"
+    def cls(i, d):
+        return "s" if (i == 0 or (y, m, d) in 쉬는날) else "t" if i == 6 else ""
+    rows = "".join("<tr>" + "".join(f"<td class='{cls(i, d)}'>{d or ''}</td>" for i, d in enumerate(w)) + "</tr>"
                    for w in calendar.monthcalendar(y, m))
     head = "".join(f"<th class='{'s' if i == 0 else 't' if i == 6 else ''}'>{c}</th>" for i, c in enumerate("SMTWTFS"))
     return f"<div class='mini'><div class='mm'>{m}<span>{calendar.month_name[m].upper()}</span></div><table><tr>{head}</tr>{rows}</table></div>"
@@ -205,12 +212,14 @@ def 마커획(ink, p0, p1, w, bend=0.0, taper=0.25, hook=None):
 
 
 def X표(ink, day, strokes=2):
+    """11-11 Opus 맹검 「X 열아홉 개가 날마다 비슷하게 단정해 집착이 쌓이지 않는다」 → 날이 갈수록(1 → 26일) 크고 굵고 기울게."""
     x, y = box(day)
+    k = (day - 1) / 25
     cx = x + CW * RNG.uniform(0.42, 0.58)
     cy = y + CH * RNG.uniform(0.5, 0.6)
-    sx, sy = CW * RNG.uniform(0.23, 0.31), CH * RNG.uniform(0.22, 0.3)
-    rot = math.radians(RNG.uniform(-9, 9))
-    w = RNG.uniform(19, 25)
+    sx, sy = CW * RNG.uniform(0.23, 0.31) * (0.82 + 0.4 * k), CH * RNG.uniform(0.22, 0.3) * (0.82 + 0.4 * k)
+    rot = math.radians(RNG.uniform(-9, 9) * (1 + k))
+    w = RNG.uniform(19, 25) * (0.9 + 0.35 * k)
 
     def R(px, py):
         qx, qy = cx + px * math.cos(rot) - py * math.sin(rot), cy + px * math.sin(rot) + py * math.cos(rot)
@@ -224,19 +233,22 @@ def X표(ink, day, strokes=2):
         마커획(ink, a0, a1, w, bend=RNG.uniform(-14, 14), hook=(RNG.uniform(4, 12), RNG.uniform(-14, -4)) if RNG.random() < 0.3 else None)
     if strokes >= 2:
         마커획(ink, b0, b1, w * RNG.uniform(0.9, 1.05), bend=RNG.uniform(-16, 16), hook=(RNG.uniform(-12, -4), RNG.uniform(2, 10)) if RNG.random() < 0.35 else None)
+    if strokes >= 2 and day >= 21:   # 마지막 주는 한 번 더 덧긋는다 — 같은 길을 조금 비껴
+        dx, dy = RNG.uniform(-10, 10), RNG.uniform(-8, 8)
+        마커획(ink, (a0[0] + dx, a0[1] + dy), (a1[0] + dx, a1[1] + dy), w * 0.8, bend=RNG.uniform(-12, 12))
 
 
 def 손글씨_0(ink, cx, cy, h, w):
-    """마커로 쓴 0 — 위에서 시작해 반시계로 돌고 시작점을 조금 지나 끝난다(살짝 기운 타원)."""
-    rx, ry = h * 0.25, h * 0.48
-    sl = math.radians(10)
-    a0 = math.radians(RNG.uniform(75, 100))
-    sweep = math.radians(RNG.uniform(366, 380))
+    """마커로 쓴 0 — 위에서 시작해 반시계로 돌고 시작점을 지나거나 못 미쳐 끝난다(0마다 폭 · 기울기 · 닫힘이 다르다 — 11-11 Opus 「0 넷이 같은 꼴이라 글꼴로 읽힘」)."""
+    rx, ry = h * RNG.uniform(0.21, 0.3), h * RNG.uniform(0.44, 0.52)
+    sl = math.radians(RNG.uniform(4, 18))
+    a0 = math.radians(RNG.uniform(60, 115))
+    sweep = math.radians(RNG.uniform(345, 398))
     ph = RNG.uniform(0, 1)
     pts = []
     for i in range(49):
         a = a0 + i / 48 * sweep
-        r = 1 + 0.02 * math.sin(a * 2 + ph)
+        r = 1 + 0.05 * math.sin(a * 2 + ph) + 0.03 * math.sin(a * 3 + ph * 2)
         px, py = rx * r * math.cos(a), -ry * r * math.sin(a)
         pts.append((cx + px - py * math.tan(sl), cy + py))
     m, d = ink.획()
@@ -246,17 +258,19 @@ def 손글씨_0(ink, cx, cy, h, w):
     ink.더함(m)
 
 
-def 손글씨_시각(ink, cx, cy, h=110, w=15):
+def 손글씨_시각(ink, cx, cy, h=110, w=19):
     """「00:00」을 글꼴 없이 마커 획으로 — 글자 사이 · 크기가 조금씩 다르다."""
     xs = [-1.06, -0.44, 0.0, 0.44, 1.06]
     for i, k in enumerate(xs):
         x = cx + k * h + RNG.uniform(-4, 4)
         y = cy + RNG.uniform(-5, 5) + (i - 2) * -3
         if i == 2:
-            for dy in (-0.2, 0.22):
-                r = w * 0.62
+            for dy in (-0.2, 0.22):   # 콜론은 점이 아니라 펜 끝을 찍어 살짝 끈 자국
+                r = w * 0.55
+                ox, oy = x + RNG.uniform(-3, 3), y + dy * h
                 m, d = ink.획()
-                d.ellipse((x - r, y + dy * h - r, x + r, y + dy * h + r), fill=255)
+                d.line((ox - 2, oy - 3, ox + 3, oy + 4), fill=255, width=int(r * 2))
+                d.ellipse((ox - r, oy - r, ox + r, oy + r), fill=255)
                 ink.더함(m)
         else:
             손글씨_0(ink, x, y, h * RNG.uniform(0.92, 1.05), w)
@@ -298,6 +312,23 @@ def 달(sheet, crossed, partial=None, ring=0):
     return Image.alpha_composite(img, ink.층()).convert("RGB")
 
 
+def 사진결(im):
+    """11-11 Opus 맹검 「종이 결 · 빛 · 초점 깊이 없이 칼같이 선명해 렌더로 읽힘」 — 창 쪽(왼쪽 위)에서 오는 부드러운 빛,
+    종이 결(흐린 낟알), 가장자리로 갈수록 얕아지는 초점. 손 · 펜은 굽기에서 얹는다."""
+    a = np.asarray(im).astype(np.float32)
+    h, w = a.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    light = 1.04 - 0.12 * ((xx / w) * 0.7 + (yy / h) * 0.3)
+    rng = np.random.default_rng(11)
+    fiber = np.asarray(Image.fromarray((rng.normal(128, 40, (h // 2, w // 2))).clip(0, 255).astype(np.uint8)).resize((w, h), Image.BILINEAR).filter(ImageFilter.GaussianBlur(1.2))).astype(np.float32)
+    a = a * light[..., None] * (1 + (fiber[..., None] - 128) / 128 * 0.025)
+    sharp = Image.fromarray(a.clip(0, 255).astype(np.uint8))
+    blur = sharp.filter(ImageFilter.GaussianBlur(2.6))
+    r = np.sqrt(((xx - w * 0.5) / (w * 0.5)) ** 2 + ((yy - h * 0.5) / (h * 0.5)) ** 2)
+    m = Image.fromarray((np.clip((r - 0.55) / 0.6, 0, 1) * 255).astype(np.uint8))
+    return Image.composite(blur, sharp, m)
+
+
 def main():
     sheet = 인쇄면()
     full = (0, 0, W, H)
@@ -316,7 +347,7 @@ def main():
         "C18": (달(sheet, range(1, 27), None, 1), r_cols(26, 28, box(27)[1] + CH * 0.55, 0.3), 0.02, 0.03),
     }
     for k, (img, rect, sk, tl) in jobs.items():
-        shot(img, rect, sk, tl).save(os.path.join(OUT, f"{k}.png"))
+        사진결(shot(img, rect, sk, tl)).save(os.path.join(OUT, f"{k}.png"))
         print(k)
     return jobs
 
