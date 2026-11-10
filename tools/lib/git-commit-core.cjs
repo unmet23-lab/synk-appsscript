@@ -200,8 +200,11 @@ function 바로올리기안내(경로들, 조각, 옵션) {
   return 칸.join(' ');
 }
 
+/** `git --version` 글 — 한 프로세스 안에서는 한 번만 묻는다(바로올리기 시험은 도구를 시험마다 여러 번 불러 git을 그만큼 더 띄웠다, 11-10). */
+let git판글 = null;
 function git버전확인(git, 최소, 까닭) {
-  const m = /(\d+)\.(\d+)/.exec(git.글(['--version']));
+  if (git판글 === null) git판글 = git.글(['--version']);
+  const m = /(\d+)\.(\d+)/.exec(git판글);
   const 판 = m ? [Number(m[1]), Number(m[2])] : [0, 0];
   if (판[0] < 최소[0] || (판[0] === 최소[0] && 판[1] < 최소[1])) throw new 멈춤(`git ${최소.join('.')} 이상이 필요하다(${까닭}) — 지금 ${판.join('.')}`);
 }

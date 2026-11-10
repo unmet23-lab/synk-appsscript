@@ -269,9 +269,65 @@ function 줄수세기(버퍼) {
   return n;
 }
 
-/** 작업본에 쓸 바이트(체크아웃과 같은 변환) */
+/** 작업본에 쓸 바이트(체크아웃과 같은 변환). 이 단계에서 꺼낸바이트미리로 묶어 읽어 둔 판이 있으면 그것을 쓴다. */
 function 꺼낸바이트(c, sha, 경로) {
+  const 미리 = c.꺼냄 ? c.꺼냄.get(`${sha} ${경로}`) : undefined;
+  if (미리) return 미리;
   return c.git(['cat-file', `--path=${경로}`, '--filters', sha]);
+}
+
+/** 미리 묶어 읽는 blob 크기 한도(하나 · 한 번에) — 넘는 것은 전처럼 꺼낼 때 하나씩 읽는다(큰 미디어를 한꺼번에 메모리에 올리지 않는다). */
+const 꺼냄하나한도 = 8 * 1024 * 1024, 꺼냄묶음한도 = 64 * 1024 * 1024;
+/** 묶음 입력 한 줄(「<sha> <경로>」)로 그대로 넘길 수 있는 경로 — git이 앞뒤 공백을 다르게 볼 수 있는 경로 · 제어 문자 경로는 하나씩 읽는다. */
+const 묶을경로 = (p) => typeof p === 'string' && p.length > 0 && p === p.trim() && !/[\u0000-\u001f]/.test(p);
+
+/**
+ * (sha, 경로) 쌍의 꺼낸 판을 `cat-file --batch --filters` 한 번으로 읽어 c.꺼냄에 둔다 — 경로마다 git을 띄우면 받은 새 경로 300개에 600번 · 4분이
+ * 걸렸다(11-10 실측, 시험 「새 경로 목록이 Windows 명령 길이를 넘어도」). 필터는 그 순간 작업본 · 인덱스의 .gitattributes를 따르므로, 작업본을 바꾸는
+ * 단계마다 그 단계 앞에서 새로 읽고(여기서 먼저 비운다) 단계가 끝나면 호출자가 비운다(c.꺼냄 = null). 묶음에 .gitattributes가 끼면 쓰는 차례에 따라
+ * 뒤 파일의 변환이 달라질 수 있어 묶지 않는다. 큰 blob · 이상한 경로도 묶지 않는다. 무엇이든 어긋나면 묶음을 버린다 — 꺼낼 때 하나씩 읽는다(전과 같다).
+ * 묶음 출력의 머리 크기는 필터 **전** 크기라(git 2.56 실측 — 「x\ny\n」 머리 4 · 내용 「x\r\ny\r\n」 6바이트) 크기로 내용 끝을 못 찾는다.
+ * 그래서 쌍마다 없는 sha(이번 묶음의 무작위 값) 한 줄을 끼워, 그 「<값> missing」 줄을 끝 표시로 쓴다.
+ */
+function 꺼낸바이트미리(c, 쌍들) {
+  c.꺼냄 = null;
+  const 고유 = new Map();
+  for (const [sha, p] of 쌍들) if (sha && 묶을경로(p)) 고유.set(`${sha} ${p}`, [sha, p]);
+  if (고유.size < 2 || [...고유.values()].some(([, p]) => /(^|\/)\.gitattributes$/.test(p))) return;
+  try {
+    const 크기 = new Map();
+    const shas = [...new Set([...고유.values()].map(([sha]) => sha))];
+    for (const 줄 of c.git(['cat-file', '--batch-check=%(objectname) %(objecttype) %(objectsize)'], { input: `${shas.join('\n')}\n` }).toString('utf8').split('\n')) {
+      const m = /^([0-9a-f]+) blob (\d+)$/.exec(줄);
+      if (m) 크기.set(m[1], Number(m[2]));
+    }
+    const 묶음들 = [];
+    let 지금 = [], 합 = 0;
+    for (const [sha, p] of 고유.values()) {
+      const n = 크기.get(sha);
+      if (n === undefined || n > 꺼냄하나한도) continue;
+      if (지금.length && 합 + n > 꺼냄묶음한도) { 묶음들.push(지금); 지금 = []; 합 = 0; }
+      지금.push([sha, p]); 합 += n;
+    }
+    if (지금.length) 묶음들.push(지금);
+    const 맵 = new Map();
+    for (const 묶음 of 묶음들) {
+      const 표 = crypto.randomBytes(20).toString('hex');
+      const 끝표 = Buffer.from(`\n${표} missing\n`, 'utf8');
+      const 출력 = c.git(['cat-file', '--batch', '--filters'], { input: Buffer.from(`${묶음.map(([sha, p]) => `${sha} ${p}\n${표} 끝\n`).join('')}`, 'utf8') });
+      let q = 0;
+      for (const [sha, p] of 묶음) {
+        const 줄끝 = 출력.indexOf(0x0a, q);
+        if (줄끝 < 0 || !new RegExp(`^${sha} blob \\d+$`).test(출력.subarray(q, 줄끝).toString('utf8'))) return;
+        const 끝 = 출력.indexOf(끝표, 줄끝 + 1);
+        if (끝 < 0) return;
+        맵.set(`${sha} ${p}`, 출력.subarray(줄끝 + 1, 끝));
+        q = 끝 + 끝표.length;
+      }
+      if (q !== 출력.length) return;
+    }
+    if (맵.size) c.꺼냄 = 맵;
+  } catch (_) { c.꺼냄 = null; }
 }
 
 /** 이 경로로 git add 하면 생길 blob의 sha(줄끝 정규화 같은 clean 필터를 거친다). 객체는 쓰지 않는다. */
@@ -458,22 +514,32 @@ function 따라가기계획(c, B, T, { 바탕들 = new Map() } = {}) {
   const B항 = 트리항목들(git, B, 경로), T항 = 트리항목들(git, T, 경로);
   const 글아님 = 글아닌경로(git, 경로);
   const 새판 = [], 고침 = [], 걸림 = [], 비킬 = [];
-  for (const p of 경로) {
-    const 옛 = 남긴.get(p) || null;   // 앞서 남긴 경로면 그때의 바탕에서 다시 본다(방금 올렸으면 바탕은 올린 판, 이력은 그때부터)
-    const bh = B항.get(p) || null, th = T항.get(p) || null;
+  // 작업본 파일을 origin 판과 바이트로 견줄 경로(따라가기한경로의 「바탕에 없던 파일」 · 「origin이 지운 파일」)는 꺼낸 판을 미리 한 번에 읽는다
+  꺼낸바이트미리(c, 경로.flatMap((p) => {
+    const bh = B항.get(p), th = T항.get(p), 옛 = 남긴.get(p);
     const 바탕sha = 바탕들.has(p) ? 바탕들.get(p) : (옛 ? 옛.바탕 : (bh ? bh.sha : null));
-    const 바탕커밋 = 옛 ? 옛.커밋 : B;
-    const 걸림표 = 걸림.length;
-    try {
-      따라가기한경로(c, { p, B, T, 상태, bh, th, 옛, 바탕sha, 바탕커밋, 바탕들, 글아님, 새판, 고침, 걸림, 비킬, 합침끝, 저장중ms });
-    } catch (e) {
-      if (!c.공용) throw e;
-      걸림.length = 걸림표;
-      걸림.push({ 경로: p, 이유: `합쳐 보지 못했다 — ${e.이유 || e.message}` });
+    if (Boolean(th) === Boolean(바탕sha) || (!상태.has(p) && bh)) return [];
+    try { if (!fs.lstatSync(path.join(c.저장소, p)).isFile()) return []; } catch (_) { return []; }
+    return [[th ? th.sha : 바탕sha, p]];
+  }));
+  try {
+    for (const p of 경로) {
+      const 옛 = 남긴.get(p) || null;   // 앞서 남긴 경로면 그때의 바탕에서 다시 본다(방금 올렸으면 바탕은 올린 판, 이력은 그때부터)
+      const bh = B항.get(p) || null, th = T항.get(p) || null;
+      const 바탕sha = 바탕들.has(p) ? 바탕들.get(p) : (옛 ? 옛.바탕 : (bh ? bh.sha : null));
+      const 바탕커밋 = 옛 ? 옛.커밋 : B;
+      const 걸림표 = 걸림.length;
+      try {
+        따라가기한경로(c, { p, B, T, 상태, bh, th, 옛, 바탕sha, 바탕커밋, 바탕들, 글아님, 새판, 고침, 걸림, 비킬, 합침끝, 저장중ms });
+      } catch (e) {
+        if (!c.공용) throw e;
+        걸림.length = 걸림표;
+        걸림.push({ 경로: p, 이유: `합쳐 보지 못했다 — ${e.이유 || e.message}` });
+      }
+      // 공용 작업본은 이 경로만 남긴다. 바탕 · 커밋을 적어 두어야 다음 따라가기와 올리기가 이 파일을 제 바탕에서 본다
+      if (걸림.length > 걸림표) Object.assign(걸림[걸림표], { 바탕: 바탕sha, 커밋: 바탕커밋, ...(th || bh ? { 모드: (th || bh).모드 } : {}) });
     }
-    // 공용 작업본은 이 경로만 남긴다. 바탕 · 커밋을 적어 두어야 다음 따라가기와 올리기가 이 파일을 제 바탕에서 본다
-    if (걸림.length > 걸림표) Object.assign(걸림[걸림표], { 바탕: 바탕sha, 커밋: 바탕커밋, ...(th || bh ? { 모드: (th || bh).모드 } : {}) });
-  }
+  } finally { c.꺼냄 = null; }
   if (!c.공용 && 걸림.length) return { 결과: '멈춤', B, T, 이유: '작업본에서 아직 고치는 파일이 origin의 변경과 겹친다 — 아무것도 옮기지 않았다', 걸림 };
   return { 결과: '계획', B, T, 경로, 새판, 고침, 비킬, 남김: 걸림 };
 }
@@ -1147,21 +1213,25 @@ function 따라가기실행(c, 계획) {
   // 3방향 결과·지움 쓰기. read-tree가 쓴 T 판이 그대로일 때만 덮는다.
   const 주의 = ur.status === 0 ? [] : ['같은 판으로 다른 프로세스가 먼저 옮겼다'];
   const T항 = 트리항목들(git, T, 계획.고침.map((x) => x.경로));
-  for (const [차례, x] of 계획.고침.entries()) {
-    const 파일 = path.join(c.저장소, x.경로);
-    const th = T항.get(x.경로) || null;
-    if (x.sha === (th ? th.sha : null)) continue;              // T 판 그대로가 결과다
-    const 기대 = th ? 꺼낸바이트(c, th.sha, x.경로) : null;
-    // 쓰기 전과, 잠긴 파일을 다시 쓰기 전마다 본다 — 그사이 남이 쓴 판은 덮지 않는다(다시 하기를 기다리는 동안 저장된 편집기 판 포함).
-    const 그대로인가 = () => { const 지금 = 파일읽기(파일); return 기대 === null ? Boolean(지금.없음) : Boolean(지금.바이트 && 지금.바이트.equals(기대)); };
-    let 결과 = null;
-    try {
-      if (x.sha !== null) 결과 = 꺼낸바이트(c, x.sha, x.경로);
-      if (!그대로인가()) throw Object.assign(new Error('그사이 바뀜'), { code: 'REPLACE_TARGET_CHANGED' });
-      if (x.sha === null) fs.rmSync(파일, { force: true });
-      else 바꿔쓰기(파일, 결과, 그대로인가);
-    } catch (e) { 주의.push(결과못씀(백업, 차례, x, e, 결과)); }
-  }
+  // 견줄 T 판과 쓸 결과의 꺼낸 판을 한 번에 읽는다(꺼낸바이트미리) — read-tree 뒤라 지금 .gitattributes를 따른다
+  꺼낸바이트미리(c, 계획.고침.flatMap((x) => { const th = T항.get(x.경로); return x.sha === (th ? th.sha : null) ? [] : [...(th ? [[th.sha, x.경로]] : []), ...(x.sha !== null ? [[x.sha, x.경로]] : [])]; }));
+  try {
+    for (const [차례, x] of 계획.고침.entries()) {
+      const 파일 = path.join(c.저장소, x.경로);
+      const th = T항.get(x.경로) || null;
+      if (x.sha === (th ? th.sha : null)) continue;              // T 판 그대로가 결과다
+      const 기대 = th ? 꺼낸바이트(c, th.sha, x.경로) : null;
+      // 쓰기 전과, 잠긴 파일을 다시 쓰기 전마다 본다 — 그사이 남이 쓴 판은 덮지 않는다(다시 하기를 기다리는 동안 저장된 편집기 판 포함).
+      const 그대로인가 = () => { const 지금 = 파일읽기(파일); return 기대 === null ? Boolean(지금.없음) : Boolean(지금.바이트 && 지금.바이트.equals(기대)); };
+      let 결과 = null;
+      try {
+        if (x.sha !== null) 결과 = 꺼낸바이트(c, x.sha, x.경로);
+        if (!그대로인가()) throw Object.assign(new Error('그사이 바뀜'), { code: 'REPLACE_TARGET_CHANGED' });
+        if (x.sha === null) fs.rmSync(파일, { force: true });
+        else 바꿔쓰기(파일, 결과, 그대로인가);
+      } catch (e) { 주의.push(결과못씀(백업, 차례, x, e, 결과)); }
+    }
+  } finally { c.꺼냄 = null; }
   // 비켜 둔 파일(인덱스에서 지운 채 작업본에 남긴 판)을 제자리에 — 백업 목록에서 계획.고침 뒤 차례다
   for (const [j, v] of 비킬파일.entries()) {
     const 파일 = path.join(c.저장소, v.경로);
@@ -1296,26 +1366,30 @@ function 공용실행(c, 계획) {
     if (못함) 주의.push(`세션 경로의 인덱스를 맞추지 못했다 — 그 경로가 스테이징으로 보인다. \`git reset -q HEAD -- <경로>\`로 푼다(${못함})`);
   }
   if (c.고리.따라가기쓰기직전) c.고리.따라가기쓰기직전();
-  for (const x of [...고침들]) {
-    const 파일 = path.join(c.저장소, x.경로);
-    const 그대로인가 = () => 그대로파일(x.경로, x.전);
-    try {
-      const 결과 = x.sha === null ? null : 꺼낸바이트(c, x.sha, x.경로);
-      if (결과 === null ? x.전 === null : Boolean(x.전 && 결과.equals(x.전))) continue;     // 이미 그 바이트다
-      if (!그대로인가()) throw Object.assign(new Error('그사이 바뀜'), { code: 'REPLACE_TARGET_CHANGED' });
-      if (결과 === null) fs.rmSync(파일, { force: true });
-      else {
-        바꿔쓰기(파일, 결과, 그대로인가);
-        if (x.모드 === '100755') { try { fs.chmodSync(파일, 0o755); } catch (_) {} }
-      }
-    } catch (e) {
-      if (e.code === 'REPLACE_TARGET_CHANGED') 고침남기기(x, `합친 결과를 쓰기 직전에 작업본에서 바뀌었다 — ${틈}`);
-      else {
-        고침남기기(x, `합친 결과를 쓰지 못했다(${e.code || e.message}) — ${틈}`);
-        주의.push(`${x.경로}: 합친 결과를 쓰지 못해 작업본 그대로 남겼다(${e.code || e.message})`);
+  // 쓸 결과의 꺼낸 판을 한 번에 읽는다(꺼낸바이트미리) — 나무를 옮기고 인덱스를 맞춘 뒤라 지금 .gitattributes를 따른다
+  꺼낸바이트미리(c, 고침들.filter((x) => x.sha !== null).map((x) => [x.sha, x.경로]));
+  try {
+    for (const x of [...고침들]) {
+      const 파일 = path.join(c.저장소, x.경로);
+      const 그대로인가 = () => 그대로파일(x.경로, x.전);
+      try {
+        const 결과 = x.sha === null ? null : 꺼낸바이트(c, x.sha, x.경로);
+        if (결과 === null ? x.전 === null : Boolean(x.전 && 결과.equals(x.전))) continue;     // 이미 그 바이트다
+        if (!그대로인가()) throw Object.assign(new Error('그사이 바뀜'), { code: 'REPLACE_TARGET_CHANGED' });
+        if (결과 === null) fs.rmSync(파일, { force: true });
+        else {
+          바꿔쓰기(파일, 결과, 그대로인가);
+          if (x.모드 === '100755') { try { fs.chmodSync(파일, 0o755); } catch (_) {} }
+        }
+      } catch (e) {
+        if (e.code === 'REPLACE_TARGET_CHANGED') 고침남기기(x, `합친 결과를 쓰기 직전에 작업본에서 바뀌었다 — ${틈}`);
+        else {
+          고침남기기(x, `합친 결과를 쓰지 못했다(${e.code || e.message}) — ${틈}`);
+          주의.push(`${x.경로}: 합친 결과를 쓰지 못해 작업본 그대로 남겼다(${e.code || e.message})`);
+        }
       }
     }
-  }
+  } finally { c.꺼냄 = null; }
   // 비켜 둔 파일은 없다 — 스테이징된 지움은 나무에서 빠져 인덱스 · 작업본이 그대로다
   try { 남김쓰기(c, 남김표()); } catch (e) { 주의.push(`남긴 경로 기록을 정리하지 못했다(${e.code || e.message})`); }
   const r = {
@@ -1760,4 +1834,4 @@ async function 가볍게(옵션 = {}) {
 // ── 명령줄 ──────────────────────────────────────────────────────────────────
 
 
-module.exports = { 따라가기잠금, 올리기, 따라가기, 가볍게, D세션사본인가, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 };
+module.exports = { 따라가기잠금, 올리기, 따라가기, 가볍게, D세션사본인가, 가볍게뺄, 가볍게미디어, 가볍게가린자리, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕, 꺼낸바이트, 꺼낸바이트미리 };

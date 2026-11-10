@@ -60,7 +60,7 @@
 const 공개검사 = require('./공개검사.js');
 const { 저장소찾기, 고름읽기, 사용법오류 } = require('./lib/git-commit-core.cjs');
 const core = require('./lib/git-publish-core.cjs');
-const { 따라가기잠금, 가볍게, 가볍게뺄, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕 } = core;
+const { 따라가기잠금, 가볍게, 가볍게뺄, 좋은결과, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, origin판들, 가까운바탕, 받은것만바탕, 꺼낸바이트, 꺼낸바이트미리 } = core;
 const 있으면 = (이름) => { try { return require(이름); } catch (e) { if (e && e.code === 'MODULE_NOT_FOUND' && String(e.message).includes(이름.slice(2))) return null; throw e; } };
 const 짝검사 = 있으면('./짝검사.js'), 관련시험 = 있으면('./관련시험.js'), 운영사본 = 있으면('./운영사본.js');
 
@@ -265,4 +265,4 @@ async function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) main().then((code) => { process.exitCode = code; });
 
-module.exports = { 올리기, 따라가기, 가볍게, 인자읽기, main, 가볍게뺄, _시험: { 따라가기잠금, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, 올리기글, origin판들, 가까운바탕, 받은것만바탕 } };
+module.exports = { 올리기, 따라가기, 가볍게, 인자읽기, main, 가볍게뺄, _시험: { 따라가기잠금, 따라가기계획, 따라가기실행, 공용따라가기, 상태읽기, 맥락, 올리기글, origin판들, 가까운바탕, 받은것만바탕, 꺼낸바이트, 꺼낸바이트미리 } };

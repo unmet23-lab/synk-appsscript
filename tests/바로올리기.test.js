@@ -19,8 +19,13 @@ const 잠금도구 = require(path.join(REPO, 'tools', 'git잠금.js'));
 const 정책 = JSON.parse(fs.readFileSync(path.join(REPO, 'tools', 'git-storage-policy.json'), 'utf8'));
 
 for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
+/* 시험만 쓰는 전역 git 설정 — 자동 정리(maintenance · gc --auto)만 끈다. commit · fetch · push마다 git이 정리 프로세스를 하나씩 더 띄우는데
+ * (receive-pack 안에서도 하나) 시험 저장소는 작아 정리할 것이 없고, 시험이 재는 동작과도 무관하다(11-10 실측 — docs/현장노트/시험_화면확인.md). */
+const 시험전역설정 = path.join(os.tmpdir(), `synk-baro-test-gitconfig-${process.pid}`);
+fs.writeFileSync(시험전역설정, '[maintenance]\n\tauto = false\n[gc]\n\tauto = 0\n[receive]\n\tautogc = false\n');
+process.on('exit', () => { try { fs.rmSync(시험전역설정, { force: true }); } catch (_) {} });
 Object.assign(process.env, {
-  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: path.join(os.tmpdir(), 'synk-baro-test-no-global-config'),
+  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: 시험전역설정,
   GIT_TERMINAL_PROMPT: '0', GIT_AUTHOR_NAME: '시험', GIT_AUTHOR_EMAIL: 'test@example.invalid',
   GIT_COMMITTER_NAME: '시험', GIT_COMMITTER_EMAIL: 'test@example.invalid',
 });
@@ -60,7 +65,18 @@ function 작업본(폴더) {
   };
 }
 
-/** origin(bare) · 공용 작업본(master) · 워크트리 · 남의 push. */
+/** git 설정 파일에 적을 값(따옴표 · 역슬래시를 git 규칙대로 막는다 — 윈도우 경로의 `\`를 그대로 두면 설정을 못 읽는다). */
+const 설정값 = (v) => `"${String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+/** .gitattributes · .gitignore인가 — 시험 저장소에 끼면 add가 바이트를 바꾸거나(변환) 새 파일을 빼서(무시) 아래 남push 지름길(fast-import)이 같은 커밋을 못 만든다. 그때는 옛 길(복제 · add · push)로 간다. */
+const 규칙파일 = (p) => /(^|\/)\.git(attributes|ignore)$/.test(p);
+/** git이 이 바이트로 만들 blob의 sha(필터 없이) — 남push가 「바뀐 것 없음」을 git commit처럼 막는 데 쓴다. */
+const blobsha = (v) => { const b = Buffer.isBuffer(v) ? v : Buffer.from(String(v), 'utf8'); return crypto.createHash('sha1').update(`blob ${b.length}\0`).update(b).digest('hex'); };
+
+/**
+ * origin(bare) · 공용 작업본(master) · 워크트리 · 남의 push.
+ * 만드는 상태는 예전(설정 다섯 번 · push · fetch)과 같다 — git 프로세스 수만 줄였다(11-10: 판 하나에 git 20개 → 9개, 시험 136곳).
+ * 설정은 .git/config에 한 번에 적고, origin에는 push 대신 바탕 커밋의 객체를 복사해 가지를 세운다. 공용 작업본은 전처럼 fetch로 받는다.
+ */
 function 새판(t, { 파일 = {}, autocrlf = 'false', 정책고침 = null } = {}) {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-baro-test-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
@@ -70,15 +86,16 @@ function 새판(t, { 파일 = {}, autocrlf = 'false', 정책고침 = null } = {}
   fs.mkdirSync(공용폴더);
   const 공용 = 작업본(공용폴더);
   공용.g('init', '-q', '-b', 'master');
-  공용.g('config', 'core.autocrlf', 'false');            // 바탕 커밋은 준 바이트 그대로(CRLF가 든 blob도 만든다)
-  공용.g('config', 'extensions.worktreeConfig', 'true');
+  fs.appendFileSync(path.join(공용폴더, '.git', 'config'), [
+    '[core]', `\tautocrlf = ${autocrlf}`, '[extensions]', '\tworktreeConfig = true',
+    '[remote "origin"]', `\turl = ${설정값(원격)}`, '\tfetch = +refs/heads/*:refs/remotes/origin/*', '',
+  ].join('\n'));
   쓰기(공용폴더, 'tools/git-storage-policy.json', `${JSON.stringify({ ...정책, ...(정책고침 || {}) }, null, 2)}\n`);
   for (const [p, v] of Object.entries(파일)) 쓰기(공용폴더, p, v);
-  공용.g('add', '-A');
-  공용.g('commit', '-q', '-m', '바탕');
-  공용.g('config', 'core.autocrlf', autocrlf);
-  공용.g('remote', 'add', 'origin', 원격);
-  공용.g('push', '-q', 'origin', 'master');
+  공용.g('-c', 'core.autocrlf=false', 'add', '-A');            // 바탕 커밋은 준 바이트 그대로(CRLF가 든 blob도 만든다)
+  공용.g('-c', 'core.autocrlf=false', 'commit', '-q', '-m', '바탕');
+  fs.cpSync(path.join(공용폴더, '.git', 'objects'), path.join(원격, 'objects'), { recursive: true });
+  execFileSync('git', ['--git-dir', 원격, 'update-ref', 'refs/heads/master', 공용.머리()], { stdio: 'pipe' });
   공용.g('fetch', '-q', 'origin');
   const 판 = { 뿌리, 원격, 공용 };
   판.워크트리 = (이름, 바탕 = 'master') => {
@@ -86,8 +103,40 @@ function 새판(t, { 파일 = {}, autocrlf = 'false', 정책고침 = null } = {}
     공용.g('worktree', 'add', '-q', '-b', `claude/${이름}`, 폴더, 바탕);
     return 작업본(폴더);
   };
-  /** 다른 곳에서 origin에 커밋을 올린다(남의 push). 값이 null이면 지운다. */
+  /**
+   * 다른 곳에서 origin에 커밋을 올린다(남의 push). 값이 null이면 지운다.
+   * 복제 · add · commit · push(git 13개, 약 3초 — 시험 180곳)와 같은 커밋(나무 · 부모 · 작성자 · 메시지)을 origin에 fast-import 한 번으로 만든다(11-10).
+   * 같은 커밋이 되는 조건만 지름길로 간다 — .gitattributes · .gitignore가 끼거나 파일 · 폴더 자리가 바뀌거나 폴더를 지우면 옛 길로 간다.
+   * 바뀐 것이 없으면 git commit처럼 던진다.
+   */
   판.남push = (파일들, 메시지 = '남의 push') => {
+    const 있던 = new Map(execFileSync('git', ['--git-dir', 원격, '-c', 'core.quotepath=false', 'ls-tree', '-r', '-z', 'master'], { stdio: 'pipe' })
+      .toString('utf8').split('\0').filter(Boolean).map((줄) => { const 탭 = 줄.indexOf('\t'); const [모드, , sha] = 줄.slice(0, 탭).split(' '); return [줄.slice(탭 + 1), { 모드, sha }]; }));
+    const 경로들 = Object.keys(파일들);
+    const 자리겹침 = (p) => [...있던.keys()].some((q) => q.startsWith(`${p}/`)) || p.split('/').slice(0, -1).some((_, i, 앞) => 있던.has(앞.slice(0, i + 1).join('/')));
+    const 지름길 = !경로들.some(규칙파일) && ![...있던.keys()].some(규칙파일) && !경로들.some(자리겹침)
+      && !경로들.some((p, i) => 경로들.some((q, j) => i !== j && q.startsWith(`${p}/`)))
+      && !경로들.some((p) => p.startsWith('"') || /[\u0000-\u001f]/.test(p));   // fast-import가 따옴표로 읽을 경로는 옛 길로
+    if (!지름길) return 판.남push복제(파일들, 메시지);
+    const 바뀜 = 경로들.filter((p) => (파일들[p] === null ? 있던.has(p) : !있던.has(p) || 있던.get(p).sha !== blobsha(파일들[p])));
+    if (!바뀜.length) throw new Error('남push: 바뀐 것이 없다(git commit이면 「nothing to commit」)');
+    const 초 = Math.floor(Date.now() / 1000), 분 = -new Date().getTimezoneOffset();
+    const 때 = `${초} ${분 < 0 ? '-' : '+'}${String(Math.floor(Math.abs(분) / 60)).padStart(2, '0')}${String(Math.abs(분) % 60).padStart(2, '0')}`;
+    const 조각 = [];
+    const 글 = (s) => 조각.push(Buffer.from(s, 'utf8'));
+    const 데이터 = (v) => { const b = Buffer.isBuffer(v) ? v : Buffer.from(String(v), 'utf8'); 글(`data ${b.length}\n`); 조각.push(b); 글('\n'); };
+    글(`commit refs/heads/master\nmark :1\nauthor ${process.env.GIT_AUTHOR_NAME} <${process.env.GIT_AUTHOR_EMAIL}> ${때}\ncommitter ${process.env.GIT_COMMITTER_NAME} <${process.env.GIT_COMMITTER_EMAIL}> ${때}\n`);
+    데이터(`${메시지}\n`);
+    글('from refs/heads/master^0\n');
+    for (const p of 바뀜) {
+      if (파일들[p] === null) 글(`D ${p}\n`);
+      else { 글(`M ${있던.has(p) ? 있던.get(p).모드 : '100644'} inline ${p}\n`); 데이터(파일들[p]); }
+    }
+    글('\nget-mark :1\n');
+    return execFileSync('git', ['--git-dir', 원격, 'fast-import', '--quiet'], { input: Buffer.concat(조각), stdio: ['pipe', 'pipe', 'pipe'] }).toString('utf8').trim();
+  };
+  /** 남push의 옛 길 — 복제해 커밋하고 push한다(지름길이 같은 커밋을 못 만드는 경우). */
+  판.남push복제 = (파일들, 메시지 = '남의 push') => {
     const 다른 = path.join(뿌리, `다른-${crypto.randomBytes(3).toString('hex')}`);
     execFileSync('git', ['clone', '-q', '-c', 'core.autocrlf=false', 원격, 다른], { stdio: 'pipe' });
     const g = 깃(다른);
@@ -155,6 +204,33 @@ test('공용 작업본: 새 경로 목록이 Windows 명령 길이를 넘어도 
   assert.equal(판.공용.읽기('남의-미추적.txt'), '다른 작업의 새 파일\r\n');
   assert.equal(판.공용.g('diff', '--cached', '--name-only').trim(), '');
   assert.match(판.공용.g('ls-files', '--', '남의-작업.txt'), /남의-작업/);
+});
+
+test('따라가기 묶어 읽기: cat-file --batch --filters로 미리 읽은 판이 경로마다 꺼낸 판과 같다(autocrlf · eol · ident · 이진 · 빈 파일) · .gitattributes가 끼거나 출력이 어긋나면 묶지 않는다', (t) => {
+  const 판 = 새판(t, {
+    autocrlf: 'true',
+    파일: { '.gitattributes': '*.crlf text eol=crlf\n*.lf text eol=lf\n*.bin -text\n*.id ident\n', 'a.txt': '가\n나\n', 'b.crlf': 'x\ny\n', 'c.lf': 'x\r\ny\r\n', 'd.bin': Buffer.from([0, 10, 13, 10, 65]), 'f.id': '$Id$\n', '빈.txt': '', '하위/공백 든 [이름].md': 'z\n' },
+  });
+  const { 맥락, 꺼낸바이트, 꺼낸바이트미리 } = 도구._시험;
+  const c = 맥락({ 저장소: 판.공용.폴더 });
+  const 항 = 판.공용.g('ls-tree', '-r', '-z', 'HEAD').split('\0').filter(Boolean).map((줄) => [줄.split('\t')[0].split(' ')[2], 줄.split('\t')[1]])
+    .filter(([, p]) => p !== '.gitattributes' && !p.startsWith('tools/'));
+  const a = 항.find(([, p]) => p === 'a.txt')[0];
+  항.push([a, '다른.crlf'], [a, '없는/폴더.bin']);   // 같은 blob도 경로의 규칙대로 꺼낸다
+  const 하나씩 = 항.map(([s, p]) => 꺼낸바이트(c, s, p));
+  assert.equal(하나씩[항.findIndex(([, p]) => p === 'a.txt')].toString('utf8'), '가\r\n나\r\n', '필터로 크기가 바뀐 판이 있다 — 묶음 머리의 크기(필터 전)로 끝을 찾으면 틀리는 경우');
+  꺼낸바이트미리(c, 항);
+  assert.ok(c.꺼냄, '묶어 읽었다');
+  assert.equal(c.꺼냄.size, 항.length);
+  for (const [i, [s, p]] of 항.entries()) assert.ok(c.꺼냄.get(`${s} ${p}`).equals(하나씩[i]), `${p}: 묶어 읽은 판이 하나씩 꺼낸 판과 같다`);
+  for (const [i, [s, p]] of 항.entries()) assert.ok(꺼낸바이트(c, s, p).equals(하나씩[i]), `${p}: 꺼낸바이트가 미리 읽은 판을 쓴다`);
+
+  꺼낸바이트미리(c, [...항, [a, '하위/.gitattributes']]);
+  assert.equal(c.꺼냄, null, '.gitattributes가 끼면 묶지 않는다(쓰는 차례에 따라 뒤 파일의 변환이 달라진다)');
+  const 잘린 = Object.assign((args, o) => { const b = c.git(args, o); return args.includes('--batch') ? b.subarray(0, b.length - 3) : b; }, c.git);
+  const c2 = { ...c, git: 잘린 };
+  꺼낸바이트미리(c2, 항);
+  assert.equal(c2.꺼냄, null, '출력이 어긋나면 묶음을 버린다 — 꺼낼 때 하나씩 읽는다');
 });
 
 test('워크트리: 받은 새 경로를 이미 올렸어도 비슷한 다른 경로의 인덱스를 보존한다', async (t) => {
