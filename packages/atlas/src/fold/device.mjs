@@ -4,7 +4,8 @@
 //   단위 줄: 그 줄의 마지막 사건보다 뒤인 답 · 본인 말만.
 //   능력 줄: 그 줄의 마지막 사건보다 뒤이고, 그 답이 그 계열의 첫 만남인지 알 수 있을 때만. 만난 적 없는 계열이면 첫 만남이고,
 //            만난 표의 첫 만남 시각이 내 답보다 앞이면 첫 만남이 아니다. 내 답이 그 시각보다 앞이면(다른 기기의 뒤 답이 먼저 접혔다)
-//            첫 만남이 내 쪽으로 바뀌므로 그 계열의 문항이 속한 능력은 기다린다.
+//            첫 만남이 내 쪽으로 바뀌므로 그 계열의 문항이 속한 능력은 기다린다. 다만 이번 얹기에서 내 앞 사건이 이미 첫 만남을
+//            정한 계열은 같은 시각이어도 기다리지 않는다(같은 (시각, 차례)로 서버도 그 앞 사건을 첫 만남으로 둔다 — 단계 3 장부 만남).
 //   기다리기 시작한 줄은 요약 값으로 돌려놓고 요약이 올 때까지 기다린다(앞 사건을 건너뛰고 뒤 사건만 얹지 않는다).
 // 보기(view)는 요약에서 받은 줄(memory · ability · met) 위에 얹은 값과 기다리는 줄뿐이다. 판 상태(shown · log · day · session)는
 // src/select/session.mjs의 createLearner가 이 보기를 감싸 더한다.
@@ -23,6 +24,8 @@ export function createView(summary = null) {
     waitUnits: new Set(),
     waitSkills: new Set(),
     waitAll: false,
+    // 이번 얹기에서 내 사건이 첫 만남을 정한 계열 — 같은 시각 · 차례가 뒤인 내 사건은 그것을 바꾸지 못한다(장부 만남과 그 답 · 단계 3 priorOf).
+    mine: new Set(),
   };
 }
 
@@ -59,8 +62,12 @@ export function touchedBy(event) {
 function meet(view, family, at, skills) {
   const known = view.met.get(family);
   const lead = known === undefined;
+  // 이번 얹기에서 차례가 앞선 내 사건이 같은 시각에 이미 첫 만남을 정했다(장부 만남과 그 답 — 단계 3 priorOf) — 이 사건은 그것을
+  // 바꾸지 못하므로 기다리지 않는다. 더 이른 만남(옮겨 온 장부의 after 등)은 아래에서 그대로 기다린다.
+  if (!lead && at === known && view.mine.has(family)) return lead;
   if (!lead && at <= known) for (const id of skills) waitSkill(view, id); // 첫 만남이 내 쪽으로 바뀐다
   if (lead || at < known) view.met.set(family, at);
+  if (lead || at < known) view.mine.add(family);
   return lead;
 }
 

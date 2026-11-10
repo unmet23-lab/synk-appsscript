@@ -10,6 +10,39 @@ const ROWS = 'src/record/rows.mjs';
 const EVENTS = 'src/record/events.mjs';
 
 export const RECORD_MUTANTS = [
+  // ── 어댑터 — 2판 제시의 firstExposure false(제품만 아는 앞선 노출)는 장부 만남, null은 읽지 않음(계획 §14-8) ──
+  [
+    R,
+    '어댑터',
+    '2판 제시의 firstExposure false를 읽지 않는다(이미 본 지문의 답을 처음 본 답으로 센다)',
+    ADAPT,
+    'isCurrent(presented) ? presented.firstExposure === false : presented.firstExposure !== true;',
+    'isCurrent(presented) ? false : presented.firstExposure !== true;',
+  ],
+  [
+    R,
+    '어댑터',
+    '2판 제시의 firstExposure null(모름)도 앞선 만남으로 센다',
+    ADAPT,
+    'isCurrent(presented) ? presented.firstExposure === false : presented.firstExposure !== true;',
+    'isCurrent(presented) ? presented.firstExposure !== true : presented.firstExposure !== true;',
+  ],
+  [
+    R,
+    '어댑터',
+    '장부 만남의 차례 열쇠를 그 첫 만남 사건이 아니라 제시 열쇠로 둔다(눌린 같은 시각에서 다른 제시의 먼저 낸 답을 앞지른다)',
+    ADAPT,
+    'id: justBefore(first.key),',
+    'id: `${state.presentationKey}.prior`,',
+  ],
+  [
+    R,
+    '기기',
+    '2판 제시의 장부 만남을 얹지 않는다(이미 본 지문의 답을 처음 본 답으로 얹는다)',
+    OWN,
+    'return isPrior(fold) && firstMeetingPending(folds, pending);',
+    'return false;',
+  ],
   // ── 서버 접기 — 닿은 것만 다시 접은 줄 = 처음부터 전부, 표지는 접은 데까지(§5-3 · 4차 「접기 표지」) ──
   [
     R,
@@ -81,8 +114,8 @@ export const RECORD_MUTANTS = [
     '측정 계약',
     '옛 꼴 제시의 firstExposure(앞선 만남 · 이력 모름)를 버린다',
     ADAPT,
-    '!isCurrent(presented) && presented.firstExposure !== true ? priorOf(source, item, state) : null;',
-    'null;',
+    'isCurrent(presented) ? presented.firstExposure === false : presented.firstExposure !== true;',
+    'isCurrent(presented) ? presented.firstExposure === false : false;',
   ],
   [
     R,

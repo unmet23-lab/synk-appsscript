@@ -96,6 +96,8 @@ function sameAsBrain(lines, server, index, seed) {
 
 // 비우기(계획 §14) — 사건 몇은 다른 표(교실 연결 · 첫걸음 점수)가 물고 있어 남는다. 남은 사건은 바닥 아래라
 // 뒤에 그것을 가리키는 답 · 제외가 와도 접기에 들지 않는다 — 기준(oracle)은 바닥 위 사건만으로 처음부터 접은 줄이다.
+let buildingSeen = 0;
+
 function maybeClear(server, random, seed) {
   if (random() >= 0.06) return false;
   const held = new Set(
@@ -168,7 +170,13 @@ async function run(seed) {
       cap: 1 + Math.floor(random() * 4),
     });
     if (result.building) {
+      buildingSeen += 1;
       assert.equal(result.served, editionA);
+      assert.equal(
+        (await server.account.active()).edition,
+        editionA,
+        `씨앗 ${seed}: 짓는 동안 활성 판은 앞 판`,
+      );
       assert.deepEqual(
         plain(await served(server, editionA)),
         plain(before),
@@ -187,5 +195,7 @@ async function run(seed) {
 }
 
 test('서버 접기 — 닿은 것만 다시 접은 줄이 처음부터 전부 접은 줄 · 단계 2 foldServer와 같다(차례 · 지연 · 상한 · 태그 고침)', async () => {
+  buildingSeen = 0;
   for (const seed of seedRange({ count: 60 })) await run(seed);
+  assert.ok(buildingSeen > 0, '옆에 짓는 동안(상한으로 나눠 접기)이 실제로 돌았다');
 });

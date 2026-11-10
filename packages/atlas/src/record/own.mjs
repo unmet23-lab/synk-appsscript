@@ -3,7 +3,7 @@
 // 얹을 수 없으면 기다리는 꼴(닿는 줄을 실은 제외 · 줄을 모르면 WAIT)을 낸다 — 기기는 서버와 다른 값을 지어내지 않는다.
 //   pending = 아직 안 접힌 사건의 차례 열쇠(2판 = 사건 id, 옛 꼴 = l.<적힌 시각>.<순번>)
 import { touchedBy } from '../fold/device.mjs';
-import { foldEventsOf, groupsOf, isSource } from './adapt.mjs';
+import { foldEventsOf, groupsOf, isPrior, isSource } from './adapt.mjs';
 import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 
 // 닿는 줄을 모르는 제외 꼴 — overlay가 이것을 만나면 요약 그대로 둔다(번호는 어떤 사건과도 겹치지 않는다).
@@ -80,12 +80,26 @@ const carryPulled = (group, pending) =>
   !pending.has(group.source.key) &&
   group.exclusions.some(entry => pending.has(entry.key));
 
+// 2판 제시의 장부 만남(어댑터 priorOf — 제품이 적은 앞선 노출)은 그 제시의 첫 만남(첫 도움 또는 첫 답)에
+// 딸려 선다 — 그 사건이 아직 요약에 안 들었으면 함께 얹는다(번호가 사건 열쇠가 아니라 pending에 없다).
+function firstMeetingPending(folds, pending) {
+  const meetings = folds.filter(fold => fold.kind === 'help' || fold.kind === 'answer');
+  const first = meetings.sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1))[0];
+  return Boolean(first && pending.has(first.id));
+}
+
+function ownFold(fold, folds, pending) {
+  if (fold.kind === 'exclude') return false;
+  if (pending.has(fold.id)) return true;
+  return isPrior(fold) && firstMeetingPending(folds, pending);
+}
+
 function ownOfGroup(group, pending, index) {
   if (carryPulled(group, pending)) return [WAIT];
   const folds = foldEventsOf(group, index);
   const touches = touchesByAnswer(group, folds, pending, index);
   return [
-    ...folds.filter(fold => fold.kind !== 'exclude' && pending.has(fold.id)),
+    ...folds.filter(fold => ownFold(fold, folds, pending)),
     ...exclusionsOf(folds, pending, touches),
     ...deliveryWaits(group, pending, touches),
   ];

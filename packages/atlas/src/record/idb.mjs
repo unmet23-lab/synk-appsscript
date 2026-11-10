@@ -13,7 +13,11 @@ const finished = transaction =>
     transaction.oncomplete = () => resolve();
     transaction.onabort = () =>
       reject(transaction.error ?? new Error('Atlas record: 저장이 취소됐다'));
-    transaction.onerror = () => reject(transaction.error);
+    // 요청 하나의 오류가 트랜잭션으로 올라오는 동안에는 transaction.error가 아직 비어 있다 — 요청의 오류를 쓴다(아르곤 끝 판 C4).
+    transaction.onerror = event =>
+      reject(
+        transaction.error ?? event?.target?.error ?? new Error('Atlas record: 저장에 실패했다'),
+      );
   });
 
 export async function idbPort(name, { indexedDB = globalThis.indexedDB, channel = null } = {}) {

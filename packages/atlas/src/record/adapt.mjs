@@ -14,7 +14,10 @@ export const EMPTY_INDEX = Object.freeze({ edition: 'index-0', lookup: () => nul
 
 // 옛 꼴의 차례 열쇠 — 적힌 시각을 앞에 둔다(설계 §5-3 「차례는 (접는 시각, 사건에 적힌 시각, 셋째 열쇠)」): 서버가 한 묶음을
 // 같은 시각으로 눌러도 적힌 시각 순, 그것도 같으면 받은 차례(server_seq) · 로그 순서. 2판 번호(a.<만든 시각>.…)도 같은 순서다.
-const written = event => String(Math.max(0, Date.parse(event.at))).padStart(13, '0');
+const written = event => {
+  const parsed = Date.parse(event.at);
+  return String(Number.isFinite(parsed) ? Math.max(0, parsed) : 0).padStart(13, '0');
+};
 export const serverKey = (seq, event) => `s.${written(event)}.${String(seq).padStart(15, '0')}`;
 export const deviceKey = (position, event) =>
   `l.${written(event)}.${String(position).padStart(9, '0')}`;
@@ -28,7 +31,8 @@ export function itemOf(presented, index = EMPTY_INDEX) {
   const measure = isCurrent(presented) ? presented : presented.measure;
   const base = indexed ?? measure;
   if (!base?.familyKey || !base.skillId) return null;
-  const units = indexed?.units ?? (isCurrent(presented) ? presented.units : undefined);
+  // 색인에 문항이 있으면 단위도 색인 것이다 — 색인이 단위를 비웠으면 사건에 적힌 옛 단위로 돌아가지 않는다(아르곤 끝 판 B4).
+  const units = indexed ? indexed.units : isCurrent(presented) ? presented.units : undefined;
   return {
     itemKey: presented.itemKey,
     familyKey: base.familyKey,
@@ -98,7 +102,7 @@ function stepChild(entry, state, context) {
     return;
   }
   if (event.type !== EVENT_TYPES.attempted) return;
-  if (!state.answered) state.firstAnswerAt = entry.atMs;
+  if (!state.answered) state.firstAnswer = entry;
   state.answered = true;
   const answer = answerOf(entry, context.item, state, context.presented, context.view);
   state.out.push(answer);
@@ -108,19 +112,35 @@ function stepChild(entry, state, context) {
 
 // 옛 꼴 제시의 firstExposure가 true가 아니면(기기가 앞선 만남을 알았거나 · 이력을 몰랐다) 지금 judge는 그 제시의 답을
 // 독립 근거로 세지 않는다(다른 제시의 답에는 그 표시가 닿지 않는다). 같게 하려고, 그 제시의 첫 만남(첫 답 앞의 도움 또는 첫 답)과
-// 같은 시각에 장부 만남 하나를 둔다 — 번호(<제시 열쇠>.prior)가 그 제시의 자식들보다 작아 같은 시각에서 먼저 선다.
+// 같은 시각에 장부 만남 하나를 둔다 — 같은 시각에서 그 첫 만남 사건보다 먼저 선다.
 // 그 계열의 더 이른 만남은 그대로이고, 장부 만남은 능력 줄 · 칸에 서지 않는다(단계 2 skillRowsOf).
-function priorOf(source, item, state) {
-  const first = Math.min(state.firstHelp?.atMs ?? Infinity, state.firstAnswerAt ?? Infinity);
-  if (first === Infinity) return null;
+// 차례 열쇠는 그 첫 만남 사건의 열쇠 바로 앞(justBefore)이다 — 제시 열쇠를 쓰면 서버가 눌러 같은 시각이 된 묶음에서 같은 계열의
+// 다른 제시에 먼저 낸 답보다 앞에 서서 그 답의 첫 만남 자격을 빼앗는다(아르곤 끝 판 B1). 기기 얹기(단계 2 overlay)는 이번 얹기에서
+// 내 사건이 정한 첫 만남 뒤의 내 사건을 기다리지 않는다(view.mine).
+// 차례 열쇠는 꼴마다 자리 수가 같아(2판 a.<13>.<4>.<8> · 옛 꼴 s.<13>.<15> · l.<13>.<9>) 마지막 글자를 하나 내리고 열쇠에 없는
+// 글자 '~'(어떤 열쇠 글자보다 큼)를 붙이면 그 열쇠 바로 앞, 그보다 작은 열쇠들보다는 뒤에 선다.
+export const PRIOR_MARK = '~';
+const justBefore = key =>
+  `${key.slice(0, -1)}${String.fromCharCode(key.charCodeAt(key.length - 1) - 1)}${PRIOR_MARK}`;
+export const isPrior = fold => fold.kind === 'carry' && fold.id.endsWith(PRIOR_MARK);
+
+function priorOf(item, state) {
+  const { firstHelp, firstAnswer } = state;
+  const first = [firstHelp, firstAnswer].filter(Boolean).sort(orderOf)[0];
+  if (!first) return null;
   return {
     kind: 'carry',
-    id: `${source.key}.prior`,
-    at: first,
+    id: justBefore(first.key),
+    at: first.atMs,
     families: [item.familyKey],
-    after: first,
+    after: first.atMs,
   };
 }
+
+// 2판은 서버가 그 계정 이력을 다 알아 null(모름)은 읽지 않는다. 제품이 서버가 모르는 앞선 노출(같은 지문 세트를 다른 문항으로
+// 이미 봄 — WORLD freshBySet)을 false로 적었을 때만 옛 꼴처럼 장부 만남을 세운다(단계 4 요청 11-11, 계획 §14-8 — §11 P2-5를 좁힘).
+const priorNeeded = presented =>
+  isCurrent(presented) ? presented.firstExposure === false : presented.firstExposure !== true;
 
 function presentedGroup({ source, children = [], exclusions = [] }, index) {
   const presented = source.event;
@@ -133,17 +153,17 @@ function presentedGroup({ source, children = [], exclusions = [] }, index) {
     ...exclusionsOf(presented, exclusions),
   };
   const state = {
+    presentationKey: source.key,
     audio: 'pending',
     helps: [],
     answered: false,
     firstHelp: null,
-    firstAnswerAt: null,
+    firstAnswer: null,
     out: [],
   };
   for (const entry of [...children].sort(orderOf)) stepChild(entry, state, context);
   const out = [];
-  const prior =
-    !isCurrent(presented) && presented.firstExposure !== true ? priorOf(source, item, state) : null;
+  const prior = priorNeeded(presented) ? priorOf(item, state) : null;
   if (prior) out.push(prior);
   if (state.firstHelp)
     out.push({ kind: 'help', id: state.firstHelp.key, at: state.firstHelp.atMs, item });

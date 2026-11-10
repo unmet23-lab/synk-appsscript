@@ -36,7 +36,7 @@ export const FOLD_CAP = 2000;
 export const ISSUED_KEEP_MS = 2 * 86_400_000;
 
 // 기록 · 어댑터 · 근거 줄 규칙의 판 — 이 폴더의 접기 규칙을 고치면 올린다(옛 줄이 새 규칙으로 다시 접히게).
-export const RECORD_EDITION = 'record-1';
+export const RECORD_EDITION = 'record-2'; // 2: 2판 제시의 firstExposure false를 장부 만남으로(11-11)
 
 // 판 묶음 — 접기에 드는 판(매개변수 · 기억 · 난도 · 문항 색인의 태그 판 · 기록 규칙). 이것이 바뀌면 그 계정을 옆에 다시 접는다(§4-5).
 export const foldEdition = (params, index = EMPTY_INDEX) =>
@@ -180,7 +180,7 @@ function issuedAfter(issued, records, nowMs) {
     if (event.type !== EVENT_TYPES.presented || event.schema !== EVENT_FORM.current) continue;
     byId.set(event.id, {
       id: event.id,
-      at: Date.parse(event.at),
+      at: entryOf(record).atMs, // 접는 시각과 같게 받은 시각으로 누른다(시계가 앞선 기기의 제시가 한도에 오래 남지 않게 — 아르곤 끝 판 E3)
       review: event.reason.tier === 1,
       units: [...event.reason.introduced],
     });
@@ -248,7 +248,8 @@ export async function summaryOf(store, { edition, since = null }) {
   return {
     edition,
     full: !partial,
-    foldedUntil: head.foldedUntil,
+    // 바닥 아래(비우기가 남긴 사건)는 셈을 마친 것이다 — 비운 뒤 새 사건이 아직 없어도 표지가 바닥보다 뒤로 가지 않는다(아르곤 끝 판 E1).
+    foldedUntil: Math.max(head.foldedUntil, head.floorSeq ?? 0),
     lineSeq: head.lineSeq,
     issued: head.issued,
     lines: partial ? lines : lines.filter(line => line.value != null),

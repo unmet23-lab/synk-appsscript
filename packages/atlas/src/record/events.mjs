@@ -34,7 +34,8 @@ export const PRESENTED_FIELDS_V2 = Object.freeze({
   // 예상 성공 확률 — 찍기 바닥 · 기억 항 · 능력 항을 따로(§3-4)
   expected: Object.freeze(['floor', 'memory', 'skill']),
   // 회차 구분 — 맞춤 / 기본 / 채우기
-  arm: Object.freeze(['adaptive', 'baseline', 'filler']),
+  // host — 제품이 순서를 정한 제시(시험 형식 · 진단 · 레슨 안 문항, reason.code 'host.order'). 단계 5 판 비교에서 adaptive와 가른다(단계 4 요청 11-11).
+  arm: Object.freeze(['adaptive', 'baseline', 'filler', 'host']),
   // 보여 준 이유 — 종류와 근거 칸, 겨눈 단위 · 층 · 이 제시로 처음 낸 단위들(실패를 적을 단위와 하루 한도를 사건만 보고 안다)
   reason: Object.freeze(['code', 'slots', 'evidence', 'target', 'tier', 'introduced']),
   // 연습 한 판 번호
@@ -313,8 +314,11 @@ export function createEvent(type, fields, { id, atMs, revision }) {
 }
 
 // 부모를 가리키는 칸 — 서버와 기기가 같은 「묶음」을 짓는 데 쓴다.
+// 응답(feedback.given)의 부모는 마침(completionId)이다 — 결정(decisionId)을 함께 실어도 그것은 부모가 아니다(아르곤 끝 판 C1).
 export const parentOf = event =>
-  event.presentationId ?? event.targetId ?? event.decisionId ?? event.completionId ?? null;
+  event.type === EVENT_TYPES.feedback
+    ? (event.completionId ?? null)
+    : (event.presentationId ?? event.targetId ?? event.decisionId ?? event.completionId ?? null);
 
 const PARENT_TYPES = {
   [EVENT_TYPES.delivery]: [EVENT_TYPES.presented],
@@ -335,6 +339,9 @@ function linkOk(event, find, attempts) {
   if (!parent || parent.schema !== EVENT_FORM.current || !wanted.includes(parent.type))
     return false;
   if (Date.parse(parent.at) > Date.parse(event.at)) return false;
+  // 응답이 결정도 실었다면 그 마침의 결정과 같아야 한다.
+  if (event.type === EVENT_TYPES.feedback && event.decisionId !== undefined)
+    return event.decisionId === parent.decisionId;
   if (event.type !== EVENT_TYPES.attempted) return true;
   const count = attempts.get(event.presentationId) ?? 0;
   attempts.set(event.presentationId, count + 1);
@@ -350,6 +357,9 @@ export function checkLinks(events, { find, attemptCount = () => 0 }) {
   const lookup = id => batch.get(id) ?? find(id);
   for (const event of events) {
     checkEvent(event);
+    // 같은 번호는 한 묶음에 한 번 — 묶음 안의 뒤 사건이 앞 사건을 가리지 못한다(아르곤 끝 판 C3). 이미 저장된 번호와의 충돌은
+    // 받는 쪽(서버)이 저장된 사건과 맞대어 먼저 거른다(같으면 다시 받지 않고, 다르면 409).
+    if (batch.has(event.id)) fail('같은 번호의 사건이 한 묶음에 둘이다', event);
     if (event.type === EVENT_TYPES.attempted && !attempts.has(event.presentationId))
       attempts.set(event.presentationId, attemptCount(event.presentationId));
     if (!linkOk(event, lookup, attempts)) fail('부모가 없거나 차례가 맞지 않는다', event);

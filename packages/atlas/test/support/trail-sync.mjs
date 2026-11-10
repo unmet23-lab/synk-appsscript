@@ -45,8 +45,14 @@ export function createServer({ random, index = EMPTY_INDEX, foldChance = 1 }) {
     // 2판 올리기(view=trail). 같은 번호는 한 번만 넣는다. 접기는 foldChance로 일부러 건너뛴다(접기 실패).
     async post(events, since) {
       now += Math.floor(random() * 3 * 60_000);
-      const known = new Map(server.log().map(r => [r.event.id, r]));
-      const fresh = events.filter(event => !known.has(event.id));
+      // 사건 번호는 표 전체에서 하나(SQL 고유 열쇠) — 비우기가 남긴 바닥 아래 사건도, 같은 요청 안의 겹친 번호도 다시 넣지 않는다.
+      const known = new Map(server.rawLog().map(r => [r.event.id, r]));
+      const seen = new Set();
+      const fresh = events.filter(event => {
+        if (known.has(event.id) || seen.has(event.id)) return false;
+        seen.add(event.id);
+        return true;
+      });
       const records = server.append(fresh, now);
       for (const record of records) known.set(record.event.id, record);
       if (random() < foldChance) await self.fold();

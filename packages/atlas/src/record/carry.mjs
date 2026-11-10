@@ -5,7 +5,7 @@
 //      앞서 사건으로 옮긴 답은 그보다 이르므로 첫 만남 자격을 잃지 않고, 다녀온 사이 처음 만난 계열은 그 뒤 답이 첫 만남이 되지 않는다.
 //      같은 장부가 두 번 와도 새로 든 것이 없으면 사건을 만들지 않는다(합치는 것은 「있다」를 더하는 일).
 // 계정 기기는 옮기지 않는다 — 옛 판의 계정 장부는 서버가 이미 받은 사건만 접었다(learning-ledger.js 머리 주석).
-import { EVENT_TYPES } from './events.mjs';
+import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 
 const prefixed = (keys, prefix) =>
   Object.fromEntries(
@@ -27,17 +27,25 @@ function addCell(row, cell) {
   const answers = cell.ind ?? [];
   const helped = cell.helped ?? [];
   row.independent += answers.length;
-  row.correct += answers.filter(answer => answer[2] === 'correct').length;
+  row.correct += answers.filter(answer => Array.isArray(answer) && answer[2] === 'correct').length;
   row.helped += helped.length;
-  const times = [...answers.map(answer => answer[1]), ...helped.map(helpTime)].filter(
-    Number.isFinite,
-  );
+  const times = [
+    ...answers.map(answer => (Array.isArray(answer) ? answer[1] : null)),
+    ...helped.map(helpTime),
+  ].filter(time => Number.isFinite(time) && Math.abs(time) <= MAX_TIME);
   row.last = Math.max(row.last, ...times);
 }
 
+const isPlain = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const MAX_TIME = 8.64e15;
+
+// 브라우저 저장소에서 읽은 옛 장부 — 망가진 칸만 건너뛴다(아르곤 끝 판 B7).
 export function cellsOf(ledgerCells = {}) {
   const out = new Map();
+  if (!isPlain(ledgerCells)) return [];
   for (const [key, cell] of Object.entries(ledgerCells)) {
+    if (!isPlain(cell) || !Array.isArray(cell.ind ?? []) || !Array.isArray(cell.helped ?? []))
+      continue;
     const [skillId, difficulty] = key.split('|');
     const level = Number(difficulty);
     if (![1, 2, 3].includes(level) || !VALID.test(skillId)) continue;
@@ -53,18 +61,28 @@ export function cellsOf(ledgerCells = {}) {
     );
 }
 
-// 이미 옮긴 장부들(기록부가 든 record.carried 사건) → 옮긴 계열 · 문항, 마지막으로 옮긴 때.
+// 이미 옮긴 장부들(기록부가 든 record.carried 사건 — 거둔 장부는 없던 것) → 옮긴 계열 · 문항, 마지막으로 옮긴 때, 그리고 이 기기가
+// 새 판에서 낸 마지막 사건의 때(lastOwn). 옛 판 화면은 그 뒤에만 열릴 수 있으므로(같은 기기 · 같은 저장소) 다녀온 사이 든 장부의
+// 만남은 그 뒤다 — 새 판에서 먼저 낸 답의 첫 만남 자격을 빼앗지 않는다(아르곤 끝 판 B3). 옛 로그에서 옮긴 옛 꼴 사건은 세지 않는다
+// (장부가 그 로그를 접은 것이라 앞뒤를 모른다).
+const later = (a, b) => (!a ? (b ?? null) : !b ? a : a > b ? a : b);
+
 export function carriedSoFar(events) {
-  const families = new Set();
-  const items = new Set();
-  let last = null;
-  for (const event of events) {
-    if (event.type !== EVENT_TYPES.carried) continue;
-    for (const key of Object.keys(event.families)) families.add(key);
-    for (const key of Object.keys(event.items)) items.add(key);
-    if (!last || event.at > last) last = event.at;
-  }
-  return { families, items, last };
+  const withdrawn = new Set(
+    events.filter(event => event.type === EVENT_TYPES.excluded).map(event => event.targetId),
+  );
+  const ledgers = events.filter(
+    event => event.type === EVENT_TYPES.carried && !withdrawn.has(event.id),
+  );
+  const own = events.filter(
+    event => event.schema === EVENT_FORM.current && event.type !== EVENT_TYPES.carried,
+  );
+  return {
+    families: new Set(ledgers.flatMap(event => Object.keys(event.families))),
+    items: new Set(ledgers.flatMap(event => Object.keys(event.items))),
+    last: ledgers.reduce((at, event) => later(at, event.at), null),
+    lastOwn: own.reduce((at, event) => later(at, event.at), null),
+  };
 }
 
 // 장부 하나 → record.carried의 칸(새로 든 것이 없으면 null).
@@ -82,7 +100,7 @@ export function carriedFields(
   return {
     families: newFamilies,
     items: newItems,
-    after: soFar.last,
+    after: later(soFar.last, soFar.lastOwn),
     ...(soFar.last ? {} : { cells: cellsOf(ledger.cells) }),
   };
 }

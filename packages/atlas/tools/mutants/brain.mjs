@@ -200,6 +200,22 @@ export const BRAIN_MUTANTS = [
   [
     P,
     '얹기',
+    '같은 시각이면 요약의 첫 만남이어도 기다리지 않는다(이번 얹기의 내 앞 사건인지 보지 않음)',
+    DEVICE,
+    'if (!lead && at === known && view.mine.has(family)) return lead;',
+    'if (!lead && at === known) return lead;',
+  ],
+  [
+    P,
+    '얹기',
+    '첫 만남을 바꾸지 않은 내 사건도 「내가 정한 첫 만남」으로 친다',
+    DEVICE,
+    'if (lead || at < known) view.mine.add(family);',
+    'view.mine.add(family);',
+  ],
+  [
+    P,
+    '얹기',
     '내 답이 더 이른데 첫 만남 시각을 고치지 않는다',
     DEVICE,
     'if (lead || at < known) view.met.set(family, at);',

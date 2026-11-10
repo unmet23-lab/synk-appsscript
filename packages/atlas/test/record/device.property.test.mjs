@@ -39,16 +39,17 @@ function expectedFor(client, server, index) {
   return linesOfGroups(groupsOf(entries), { memory, params: PARAMS, index });
 }
 
+// 기다리지 않는 줄은 서버 값과 같고, 서버에 없는 줄이 남아 있지 않다(단위 · 능력 — 아르곤 끝 판 E4).
+function sameMap(got, want, waiting, label) {
+  for (const [key, line] of want)
+    if (!waiting.has(key)) assert.deepEqual(got.get(key) ?? null, line, `${label} ${key}`);
+  for (const key of got.keys())
+    if (!waiting.has(key) && !want.has(key)) assert.fail(`${label}: 없어야 할 줄 ${key}`);
+}
+
 function sameLines(view, want, label) {
-  for (const [unit, line] of want.unit)
-    if (!view.waitUnits.has(unit))
-      assert.deepEqual(view.memory.get(unit) ?? null, line, `${label}: 단위 ${unit}`);
-  for (const unit of view.memory.keys())
-    if (!view.waitUnits.has(unit) && !want.unit.has(unit))
-      assert.fail(`${label}: 없어야 할 단위 ${unit}`);
-  for (const [skill, line] of want.skill)
-    if (!view.waitSkills.has(skill))
-      assert.deepEqual(view.ability.get(skill) ?? null, line, `${label}: 능력 ${skill}`);
+  sameMap(view.memory, want.unit, view.waitUnits, `${label}: 단위`);
+  sameMap(view.ability, want.skill, view.waitSkills, `${label}: 능력`);
   for (const [family, line] of want.family)
     assert.equal(
       view.met.get(family),

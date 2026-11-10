@@ -281,6 +281,7 @@ test('옛 꼴 — measure로 읽고, firstExposure가 true가 아닌 제시의 �
   assert.equal(prior.kind, 'carry');
   assert.equal(prior.after, T + 60_000, '그 제시의 첫 만남과 같은 시각');
   assert.ok(prior.id < answer.id, '같은 시각에서 먼저 선다');
+  assert.ok(A.isPrior(prior));
   assert.equal(answer.item.responseFormat, 'unknown', '꼴이 없으면 unknown');
   assert.equal(A.serverKey(7, a), `s.${String(T + 60_000).padStart(13, '0')}.000000000000007`);
 });
@@ -303,4 +304,124 @@ test('문항 색인이 먼저다 — 색인의 단위 · 계열, 없으면 사�
   assert.deepEqual(A.itemOf(p, index).units, ['w9']);
   assert.deepEqual(A.itemOf(p).units, ['u1', 'u2']);
   assert.equal(A.itemOf({ schema: 1, itemKey: 'x', firstExposure: true }), null);
+});
+
+test('2판 — firstExposure false(제품만 아는 앞선 노출)는 그 제시의 첫 만남 앞의 장부 만남이라 측정에 안 들고, null · true는 읽지 않는다', () => {
+  const memory = createMemory(PARAMS);
+  const skillOf = firstExposure => {
+    const p = make(
+      'practice.presented',
+      presentedFields({ itemKey: 'x', familyKey: 'fx', firstExposure }),
+      0,
+    );
+    const a = make(
+      'practice.attempted',
+      { presentationId: p.id, attemptNo: 1, verdict: 'correct', errorTags: [] },
+      1,
+    );
+    const folded = fold([p, a]);
+    return {
+      folded,
+      a,
+      skill: foldServer(folded, memory, PARAMS).ability.get('ko.listening.detail'),
+    };
+  };
+  const seen = skillOf(false);
+  const [prior, answer] = seen.folded;
+  assert.equal(prior.kind, 'carry');
+  assert.deepEqual(prior.families, ['fx']);
+  assert.equal(prior.after, Date.parse(seen.a.at), '그 제시의 첫 만남(첫 답)과 같은 시각');
+  assert.equal(prior.at, prior.after);
+  assert.ok(
+    prior.id < answer.id && prior.id.endsWith('~'),
+    '같은 시각에서 그 첫 만남 바로 앞에 선다',
+  );
+  assert.equal(seen.skill?.n ?? 0, 0, '이미 본 지문의 답은 측정이 아니다');
+  for (const firstExposure of [true, null]) {
+    const fresh = skillOf(firstExposure);
+    assert.deepEqual(
+      fresh.folded.map(e => e.kind),
+      ['answer'],
+      `${firstExposure}: 장부 만남 없음`,
+    );
+    assert.equal(fresh.skill.n, 1, `${firstExposure}: 첫 만남의 혼자 맞힌 답은 측정`);
+  }
+});
+
+test('2판 arm — 제품이 순서를 정한 제시는 host(시험 형식 · 진단 · 레슨 안 문항)', () => {
+  const p = make(
+    'practice.presented',
+    presentedFields({
+      arm: 'host',
+      reason: {
+        code: 'host.order',
+        slots: {},
+        evidence: {},
+        target: null,
+        tier: 2,
+        introduced: [],
+      },
+    }),
+    0,
+  );
+  assert.doesNotThrow(() => R.checkEvent(p));
+  assert.throws(() => R.checkEvent({ ...p, arm: 'manual' }));
+});
+
+test('장부 만남은 그 제시의 첫 만남 바로 앞에 선다 — 서버가 같은 시각으로 누른 묶음에서 다른 제시에 먼저 낸 답의 첫 만남을 빼앗지 않는다(아르곤 끝 판 B1)', () => {
+  const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
+  const at = m => new Date(T + m * 60_000).toISOString();
+  const measure = {
+    skillId: 'ko.reading.detail',
+    modality: 'reading',
+    difficulty: 1,
+    familyKey: 'fz',
+    audioRequired: false,
+    confounded: false,
+  };
+  const shown = (id, n, firstExposure) => ({
+    schema: 1,
+    id,
+    scope,
+    at: at(n),
+    recordedAt: at(n),
+    type: 'practice.presented',
+    decisionId: `d${id}`,
+    taskId: 't',
+    taskVersion: 'v',
+    itemKey: `i${id}`,
+    conceptIds: ['ko.reading.detail'],
+    firstExposure,
+    measure,
+  });
+  const answered = (id, n, presentationId) => ({
+    schema: 1,
+    id,
+    scope,
+    at: at(n),
+    recordedAt: at(n),
+    type: 'practice.attempted',
+    presentationId,
+    attemptNo: 1,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  // P1(앞선 노출 있음)과 P2(처음)가 같은 계열 — P2에 먼저 답했고(A2), 그 뒤 P1에 답했다(A1). 서버가 둘을 같은 받은 시각으로 눌렀다.
+  const events = [
+    shown('p1', 0, false),
+    shown('p2', 1, true),
+    answered('a2', 2, 'p2'),
+    answered('a1', 3, 'p1'),
+  ];
+  const pressed = T + 10 * 60_000;
+  const entries = events.map((event, i) => ({
+    event,
+    key: A.serverKey(i + 1, event),
+    atMs: pressed,
+  }));
+  const folded = A.foldEventsOfAll(entries);
+  const summary = foldServer(folded, createMemory(PARAMS), PARAMS);
+  assert.equal(summary.ability.get('ko.reading.detail').n, 1, 'P2의 혼자 맞힌 첫 답은 측정이다');
+  const order = [...folded].sort((x, y) => x.at - y.at || (x.id < y.id ? -1 : 1)).map(e => e.kind);
+  assert.deepEqual(order, ['answer', 'carry', 'answer'], '장부 만남은 A2 뒤 · A1 바로 앞');
 });

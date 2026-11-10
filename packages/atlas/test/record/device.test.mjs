@@ -13,6 +13,7 @@ const { carriedFields, carriedSoFar, legacyToImport } = await subject('record/ca
 const { linesOfGroups } = await subject('record/rows.mjs');
 const { groupsOf } = await subject('record/adapt.mjs');
 const { entryOf } = await subject('record/server.mjs');
+const { viewOf } = await subject('record/summary.mjs');
 
 const random = rng(7);
 const items = bank(random);
@@ -129,6 +130,7 @@ test('서버가 시각을 누른 묶음은 요약이 올 때까지 얹지 않는
   assert.equal(reply.clamped.length, 2);
   assert.ok(ahead.record.summary, '요약은 왔지만 그 사건들은 아직 안 접혔다');
   assert.equal(ahead.record.view().waitAll, true, '누른 묶음은 얹지 않는다');
+  assert.equal(ahead.record.view().memory.has('u0'), false, '누른 묶음의 답은 보기에 없다');
   await ahead.pull();
   assert.equal(ahead.record.view().waitAll, false, '요약이 오면 맞춰진다');
   assert.ok(ahead.record.view().memory.has('u0'));
@@ -143,13 +145,21 @@ test('서버가 시각을 누른 묶음은 요약이 올 때까지 얹지 않는
     '서버 시각을 받으면 시계 차이를 고친다',
   );
   const otherIndex = await createClient(server, { name: 'bbbb', index: indexOf(items, 'index-b') });
-  assert.equal(otherIndex.record.view().waitAll, true, '두뇌 · 색인 판이 다른 기기는 요약 값만');
+  const other = otherIndex.record.add('practice.presented', presented({ units: ['u7'] }));
+  otherIndex.record.add('practice.attempted', answer(other.event.id, 'incorrect'));
+  await otherIndex.settle();
+  const view = otherIndex.record.view();
+  const base = viewOf(otherIndex.record.summary);
+  assert.equal(view.waitAll, true, '두뇌 · 색인 판이 다른 기기는 요약 값만');
+  assert.deepEqual(view.memory, base.memory, '내 안 접힌 답을 얹지 않는다');
+  assert.deepEqual(view.ability, base.ability);
 });
 
 test('서버가 받지 않은 사건(옛 동의 판)은 버리고 나머지는 보낸다 — 계기에 EVENT_REVISION', async () => {
   const health = createHealth();
+  const port = memoryPort();
   const record = await openRecord({
-    port: memoryPort(),
+    port,
     revision: 2,
     memory,
     params: PARAMS,
@@ -159,10 +169,32 @@ test('서버가 받지 않은 사건(옛 동의 판)은 버리고 나머지는 �
   });
   const a = record.add('practice.presented', presented());
   const b = record.add('practice.presented', presented());
-  await Promise.all([a.stored, b.stored]);
+  const c = record.add('practice.presented', presented());
+  await Promise.all([a.stored, b.stored, c.stored]);
+  assert.equal(record.issued().length, 3);
   await record.receive({ accepted: [{ id: b.event.id, seq: 1 }], rejected: [a.event.id] });
-  assert.deepEqual(record.unsent(), []);
+  assert.deepEqual(
+    record.unsent().map(e => e.id),
+    [c.event.id],
+    '받은 것 · 버린 것만 빠지고 나머지는 다시 보낸다',
+  );
+  assert.equal(record.issued().length, 2, '버린 제시는 하루 한도에도 세지 않는다');
+  assert.equal(record.pending().has(a.event.id), false);
   assert.deepEqual(health.snapshot().save.codes, { EVENT_REVISION: 1 });
+  const reopened = await openRecord({
+    port,
+    revision: 2,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  assert.deepEqual(
+    reopened.unsent().map(e => e.id),
+    [c.event.id],
+    '다시 열어도 버린 것은 버린 채',
+  );
+  assert.equal(reopened.issued().length, 2);
 });
 
 test('두 탭 — 다른 탭이 덧붙인 꼬리만 읽고, 같은 판 묶음이면 갱신 차례가 큰 요약만 쓴다', async () => {
@@ -179,10 +211,14 @@ test('두 탭 — 다른 탭이 덧붙인 꼬리만 읽고, 같은 판 묶음이
   });
   const shown = one.record.add('practice.presented', presented());
   one.record.add('practice.attempted', answer(shown.event.id));
+  await one.settle();
+  await two.refresh();
+  assert.equal(two.has(shown.event.id), true, '다른 탭이 덧붙인 꼬리를 읽는다');
+  assert.ok(two.view().memory.has('u0'), '요약 없이 꼬리만으로 얹는다');
   await one.push();
   await two.refresh();
-  assert.ok(two.view().memory.has('u0'));
   const newer = one.record.summary;
+  assert.ok(newer.lineSeq > 0, '서버가 접은 요약');
   const older = {
     edition: newer.edition,
     foldedUntil: 0,
@@ -204,11 +240,25 @@ test('치우기 — 이틀 지난 · 서버가 접은 사건만 치우고, 다�
   await client.push();
   const open = client.record.add('practice.presented', presented());
   await client.push();
+  assert.equal(await client.record.compact(), 0, '이틀이 안 지났으면 치우지 않는다');
+  const unsentOld = client.record.add('practice.presented', presented());
+  client.record.add('practice.attempted', answer(unsentOld.event.id));
+  await client.settle();
   server.tick(3 * 86_400_000);
+  const young = client.record.add('practice.presented', presented());
+  client.record.add('practice.attempted', answer(young.event.id));
+  await client.settle();
   const before = client.record.view();
   const removed = await client.record.compact();
   assert.equal(removed, 2, '답이 달린 제시와 그 답만 치운다(답이 안 달린 제시는 둔다)');
+  assert.equal(client.record.has(shown.event.id), false);
   assert.equal(client.record.has(open.event.id), true);
+  assert.equal(
+    client.record.has(unsentOld.event.id),
+    true,
+    '서버가 아직 안 접은 묶음은 이틀이 지나도 둔다',
+  );
+  assert.equal(client.record.has(young.event.id), true, '이틀이 안 지난 묶음은 둔다');
   const reopened = await openRecord({
     port,
     revision: 1,
@@ -366,5 +416,50 @@ test('이미 접힌 답의 전달을 거두면 그 답이 적힌 줄을 기다�
     client.record.view().memory.has('u0'),
     false,
     '서버가 다시 접은 요약: 소리 확인이 없는 답은 근거가 아니다',
+  );
+});
+
+test('옮겨 온 장부 — 거둔 장부는 옮긴 것으로 세지 않고, 다시 옮기는 장부는 새 판의 마지막 내 사건 뒤에 서고, 망가진 칸은 건너뛴다(아르곤 끝 판 B3 · B7)', () => {
+  const t = n => new Date(T0 + n * 60_000).toISOString();
+  const carried = {
+    schema: 2,
+    id: 'a.c1',
+    type: 'record.carried',
+    at: t(1),
+    revision: 0,
+    families: { f1: 1 },
+    items: {},
+    after: null,
+  };
+  const mine = { schema: 2, id: 'a.p1', type: 'practice.presented', at: t(5), revision: 0 };
+  const withdrawn = {
+    schema: 2,
+    id: 'a.x1',
+    type: 'record.excluded',
+    at: t(6),
+    revision: 0,
+    targetId: 'a.c1',
+  };
+  const legacy = { schema: 1, id: 'old', type: 'practice.presented', at: t(9) };
+  const ledger = { keys: { 'family:f1': 1, 'family:f2': 1 }, cells: null };
+  // 앞 장부가 있고 그 뒤 새 판에서 낸 사건이 있으면, 다시 옮기는 장부는 그 사건 뒤(옛 로그에서 옮긴 옛 꼴은 세지 않는다).
+  const again = carriedFields(ledger, carriedSoFar([carried, mine, legacy]));
+  assert.deepEqual(again.families, { f2: 1 });
+  assert.equal(again.after, t(5));
+  // 거둔 장부는 없던 것 — 처음 옮기는 장부로(칸 요약도), 그래도 새 판 사건 뒤.
+  const first = carriedFields(ledger, carriedSoFar([carried, mine, withdrawn]));
+  assert.deepEqual(first.families, { f1: 1, f2: 1 });
+  assert.equal(first.after, t(6));
+  assert.deepEqual(first.cells, [], '망가진 칸 표(null)는 건너뛴다');
+  // 새 판 사건이 없는 처음 장부는 어떤 만남보다 먼저.
+  assert.equal(carriedFields(ledger, carriedSoFar([legacy])).after, null);
+  const broken = {
+    'ko.reading|1': null,
+    'ko.reading|2': { ind: 'x' },
+    'ko.reading|3': { ind: [[1, 9e20, 'correct'], null], helped: [] },
+  };
+  assert.deepEqual(
+    carriedFields({ keys: { 'family:f3': 1 }, cells: broken }, carriedSoFar([])).cells,
+    [{ skillId: 'ko.reading', difficulty: 3, independent: 2, correct: 1, helped: 0, lastAt: null }],
   );
 });

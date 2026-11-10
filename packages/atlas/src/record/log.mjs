@@ -51,6 +51,7 @@ function createState(guest, now) {
     clamped: new Set(),
     dropped: new Set(),
     failed: new Map(), // 저장 실패한 답의 계열 → 시각(이 판의 메모리에만)
+    families: new Map(), // 이 기록부가 만든 제시 번호 → 계열(제시 저장이 실패 · 진행 중이어도 계열을 안다)
     summary: null,
     local: null,
     lastKey: 0,
@@ -116,9 +117,10 @@ function nextId(state, atMs, tag) {
 
 function remember(state, event) {
   if (event.type !== EVENT_TYPES.attempted && event.type !== EVENT_TYPES.helped) return;
-  const presented = state.held.get(event.presentationId)?.event;
-  if (presented && !state.failed.has(presented.familyKey))
-    state.failed.set(presented.familyKey, Date.parse(event.at));
+  const family =
+    state.held.get(event.presentationId)?.event.familyKey ??
+    state.families.get(event.presentationId);
+  if (family && !state.failed.has(family)) state.failed.set(family, Date.parse(event.at));
 }
 
 // 아직 요약에 안 든 내 사건 → overlay의 입력. 누른 사건이 아직 요약에 안 들었으면 요약 값만.
@@ -130,26 +132,29 @@ function ownOf(state, index) {
   return ownFoldEvents(entries, keys, { index, memo: id => state.held.get(id)?.touches ?? null });
 }
 
-// 치울 사건 — 이틀 지났고 서버가 접었고, 얹을 사건의 부모도 답이 안 달린 제시도 아닌 것.
-function staleIds(state, floor) {
-  const pending = pendingIds(state);
-  const parents = new Set();
+// 치울 사건 — 이틀 지났고 서버가 접었고, 남길 묶음에 들지 않은 것. 기기는 묶음 통째로 다시 지어 얹으므로(어댑터) 남길 것은 묶음
+// 단위다: 답이 안 달린 제시의 묶음, 아직 안 접힌 사건이 하나라도 든 묶음은 전부 남긴다(아르곤 끝 판 D1). 묶음 밖 사건(머리가
+// 기기에 없는 자식 · 제외)은 얹을 사건의 부모만 남긴다.
+function keptIds(state, pending) {
+  const keep = new Set();
+  for (const group of groupsOf([...state.held.values()].map(entryOf)).values()) {
+    const members = [group.source, ...group.children, ...group.exclusions].map(e => e.event.id);
+    const open =
+      group.source.event.type === EVENT_TYPES.presented &&
+      !group.children.some(child => child.event.type === EVENT_TYPES.attempted);
+    if (open || members.some(id => pending.has(id))) for (const id of members) keep.add(id);
+  }
   for (const id of pending) {
     const event = state.held.get(id).event;
-    parents.add(event.presentationId ?? event.targetId);
+    keep.add(event.presentationId ?? event.targetId);
   }
-  const answered = new Set(
-    [...state.held.values()]
-      .filter(item => item.event.type === EVENT_TYPES.attempted)
-      .map(item => item.event.presentationId),
-  );
-  const open = id => state.held.get(id).event.type === EVENT_TYPES.presented && !answered.has(id);
+  return keep;
+}
+
+function staleIds(state, floor) {
+  const keep = keptIds(state, pendingIds(state));
   return [...state.held.keys()].filter(
-    id =>
-      folded(state, id) &&
-      Date.parse(state.held.get(id).event.at) < floor &&
-      !parents.has(id) &&
-      !open(id),
+    id => folded(state, id) && Date.parse(state.held.get(id).event.at) < floor && !keep.has(id),
   );
 }
 
@@ -178,7 +183,9 @@ export function createRecord({
   async function refoldGuest() {
     const items = [...state.held.values()];
     const until = items.reduce((max, item) => Math.max(max, item.key), 0);
-    if (state.local && state.local.until >= until) return;
+    // 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌었으면 든 사건으로 다시 접는다(아르곤 끝 판 D2).
+    if (state.local && state.local.until >= until && state.local.summary?.edition === edition())
+      return;
     const lines = linesOfGroups(groupsOf(items.map(entryOf)), { memory, params, index });
     const floor = now() - ISSUED_KEEP_MS;
     const issued = items
@@ -201,7 +208,12 @@ export function createRecord({
       async ([key]) => {
         accept({ key, value });
         noteSave(health, true);
-        await refoldAfter(type);
+        // 손님의 로컬 요약 저장이 실패해도 사건은 이미 저장됐다 — 근거(stored true)를 뒤집지 않고 계기에만 남긴다(아르곤 끝 판 D5).
+        try {
+          await refoldAfter(type);
+        } catch {
+          noteSave(health, false, 'LOCAL_SUMMARY');
+        }
         return true;
       },
       () => {
@@ -212,6 +224,10 @@ export function createRecord({
     );
   }
 
+  async function refresh() {
+    for (const row of await port.range(state.lastKey)) accept(row);
+  }
+
   return {
     async load() {
       for (const row of await port.read()) accept(row);
@@ -219,9 +235,7 @@ export function createRecord({
       return this;
     },
     // 다른 탭 · 게임 틀이 덧붙인 꼬리만 읽는다.
-    async refresh() {
-      for (const row of await port.range(state.lastKey)) accept(row);
-    },
+    refresh,
     get revision() {
       return revision;
     },
@@ -236,6 +250,7 @@ export function createRecord({
       const atMs = state.clock.next();
       const id = nextId(state, atMs, tag);
       const event = createEvent(type, fields, { id, atMs, revision: guest ? 0 : revision });
+      if (type === EVENT_TYPES.presented) state.families.set(id, event.familyKey);
       const entries = [...state.held.values()].map(entryOf);
       const touches =
         type === EVENT_TYPES.excluded ? touchesOf(entries, event.targetId, index) : null;
@@ -312,8 +327,11 @@ export function createRecord({
 
     // 오래되고 서버가 접은 사건 · 지난 표지 기록을 치운다. 답이 아직 안 달린 제시와 얹을 사건의 부모는 둔다.
     // 먼저 남길 표지 · 요약을 한 기록으로 덧붙이고 나서 앞 기록을 지운다(그 사이 끊겨도 겹친 표지는 해가 없다).
+    // 지우는 것은 이 스냅숏에 담은 차례(seen)까지다 — 다른 탭이 그 뒤에 덧붙인 표지 · 사건은 남긴다(아르곤 끝 판 D3).
     async compact() {
       if (guest) return 0;
+      await refresh();
+      const seen = state.lastKey;
       const gone = new Set(staleIds(state, now() + state.clock.offsetMs - KEEP_MS));
       const kept = id => state.held.has(id) && !gone.has(id);
       const value = {
@@ -327,7 +345,7 @@ export function createRecord({
       const [keepKey] = await port.append([value]);
       accept({ key: keepKey, value });
       const isStale = row =>
-        row.key < keepKey &&
+        row.key <= seen &&
         (row.value.kind === 'ack' || (row.value.kind === 'event' && gone.has(row.value.event.id)));
       await port.remove((await port.read()).filter(isStale).map(row => row.key));
       for (const id of gone) state.held.delete(id);

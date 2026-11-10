@@ -13,6 +13,7 @@ const { openMap } = await subject('map/index.mjs');
 const { foldEdition } = await subject('record/server.mjs');
 const { groupsOf } = await subject('record/adapt.mjs');
 const { linesOfGroups } = await subject('record/rows.mjs');
+const { viewOf } = await subject('record/summary.mjs');
 const { entryOf } = await subject('record/server.mjs');
 
 const raw = JSON.parse(fs.readFileSync(new URL('../../map/index.json', import.meta.url), 'utf8'));
@@ -112,8 +113,15 @@ test('서버 접기는 색인의 단위를 읽는다 — 사건에 적힌 단위
   // 앞 판 색인을 든 기기는 새 판 요약에 얹지 않는다(요약 값만 — 판이 섞이지 않게).
   await phone.pull();
   assert.equal(phone.record.summary.edition, foldEdition(PARAMS, bumped));
+  // 아직 안 접힌 내 답(다른 문항)을 둔다 — 얹을 것이 있어야 「얹지 않는다」를 잴 수 있다(아르곤 끝 판 F2).
+  const next = phone.device.make('practice.presented', presented(b));
+  phone.device.make('practice.attempted', answer(next.id));
+  await phone.settle();
   const view = phone.record.view();
+  const base = viewOf(phone.record.summary);
   assert.equal(view.waitAll, true, '판 묶음이 다른 요약에는 내 사건을 얹지 않는다');
+  assert.deepEqual(view.memory, base.memory, '요약 값만 — 안 접힌 답의 단위가 얹히지 않는다');
+  assert.deepEqual(view.ability, base.ability);
   assert.ok(view.memory.has('ko.word.new9999'), '요약 값(새 판의 단위)은 그대로 보인다');
 });
 

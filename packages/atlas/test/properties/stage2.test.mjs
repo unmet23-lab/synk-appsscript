@@ -14,6 +14,7 @@ const {
   createLearner,
   createMemory,
   filterCandidates,
+  foldServer,
   overlay,
   planActivities,
   present,
@@ -308,5 +309,48 @@ test('⑳ 기기 얹기 — 요약 met의 null(JSON으로 내려온 −∞)을 �
   assert.equal(
     overlay(summary, [carry], memory, PARAMS, { familySkills: new Map() }).waitAll,
     false,
+  );
+});
+
+test('⑳ 기기 얹기 — 이번 얹기에서 내 앞 사건이 첫 만남을 정한 계열은 같은 시각의 내 답도 얹고(서버와 같은 값), 요약의 첫 만남과 같은 시각이면 기다린다', () => {
+  const item = level(1, 60);
+  const answer = (id, at, extra = {}) => ({
+    kind: 'answer',
+    id,
+    at,
+    item: { ...item, ...extra },
+    answer: {
+      correct: true,
+      assisted: false,
+      answerShown: false,
+      unknown: false,
+      assessable: true,
+    },
+  });
+  const empty = { memory: new Map(), ability: new Map(), met: new Map() };
+  const index = { familySkills: new Map([[item.familyKey, [SKILL]]]) };
+  // 같은 시각의 내 장부 만남(단계 3 priorOf — 앞선 노출) 뒤 내 답.
+  const prior = { kind: 'carry', id: 'q1~', at: T0, families: [item.familyKey], after: T0 };
+  const own = [prior, answer('q1', T0)];
+  const view = overlay(empty, own, memory, PARAMS, index);
+  assert.deepEqual([...view.waitSkills], [], '기다리지 않는다');
+  assert.deepEqual(view.ability.get(SKILL), foldServer(own, memory, PARAMS).ability.get(SKILL));
+  // 같은 시각의 내 앞 답(같은 계열 · 다른 능력 — 같은 능력이면 「그 줄의 마지막 사건보다 뒤」 규칙이 따로 기다린다) 뒤 내 답.
+  const other = 'ko.reading.detail';
+  const both = { familySkills: new Map([[item.familyKey, [SKILL, other]]]) };
+  const twice = [answer('q1', T0), answer('q2', T0, { itemKey: 'other', skillId: other })];
+  const second = overlay(empty, twice, memory, PARAMS, both);
+  const server = foldServer(twice, memory, PARAMS);
+  assert.deepEqual([...second.waitSkills], []);
+  for (const skill of [SKILL, other])
+    assert.deepEqual(second.ability.get(skill), server.ability.get(skill), skill);
+  // 반대 — 요약의 첫 만남(다른 기기)과 같은 시각이면 내 답은 첫 만남을 바꿀 수 있어 기다린다. 색인이 없으면 답마다 그 능력을.
+  const summary = { memory: new Map(), ability: new Map(), met: new Map([[item.familyKey, T0]]) };
+  const pair = [answer('q1', T0), answer('q2', T0, { itemKey: 'other', skillId: other })];
+  const waited = overlay(summary, pair, memory, PARAMS, { familySkills: new Map() });
+  assert.deepEqual(
+    [...waited.waitSkills].sort(),
+    [other, SKILL].sort(),
+    '두 답의 능력 모두 기다린다',
   );
 });
