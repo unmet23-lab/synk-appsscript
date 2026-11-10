@@ -25,7 +25,7 @@ const document={version:1,text:source,answers:{'current.ram':'16'}};
 const config={accountApiUrl:issuer+'/functions/v1/synk-account',publishableKey:'sb_publishable_synthetic_fixture',issuer,clientId:'customer-browser-fixture',redirectUri:origin+'/api/customer/synk-id/callback'};
 const defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
 const providerResponse=()=>Response.json({model:'gpt-6-luna',status:'completed',usage:{input_tokens:1000,output_tokens:100,total_tokens:1100},output:[{type:'message',role:'assistant',status:'completed',content:[{type:'output_text',text:JSON.stringify({proposals:[{field:'current.ram',value:'16',subject:'self',stance:'current',evidence:[{quote:source,occurrence:1}]}],held:[]})}]}]});
-async function fixture(t,{configured=true,ai=true,provider=async()=>providerResponse()}={}){
+async function fixture(t,{configured=true,ai=true,provider=async()=>providerResponse(),aiMarket=true}={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-customer-api-'));
   const env=ai?{SYNK_COMPUTER_AI_ENABLED:'1',SYNK_COMPUTER_AI_MODEL:'gpt-6-luna',SYNK_COMPUTER_AI_MAX_OUTPUT_TOKENS:'3000',SYNK_COMPUTER_AI_INPUT_PER_MILLION_MICRO_USD:'125000',SYNK_COMPUTER_AI_OUTPUT_PER_MILLION_MICRO_USD:'500000',SYNK_COMPUTER_AI_REQUEST_LIMIT_MICRO_USD:'10000',SYNK_COMPUTER_AI_TOTAL_LIMIT_MICRO_USD:'250000',SYNK_COMPUTER_AI_CUSTOMER_ENABLED:'1',SYNK_COMPUTER_AI_CUSTOMER_DAILY_REQUESTS:'2',SYNK_COMPUTER_AI_CUSTOMER_DAILY_MICRO_USD:'20000',OPENAI_API_KEY:'synthetic-provider-key-never-sent'}:{};
   const f={directory,env,stamp:Date.parse('2026-10-08T12:00:00Z'),centralStatus:200,active:true,centralCalls:[],providerCalls:[],nextCentral:null,nextRefresh:null,refreshCount:0};
@@ -46,7 +46,7 @@ async function fixture(t,{configured=true,ai=true,provider=async()=>providerResp
     const claims=JSON.parse(Buffer.from(init.headers.Authorization.split('.')[1],'base64url'));
     return Response.json({ok:true,account:{synk_user_id:claims.sub,status:f.active?'active':'suspended',profile:{display_name:claims.sub===firstId?'첫 고객':'다른 고객'}},sessions:[{id:sessionId,current:true,revoked:false,product:'platform'}]});
   }
-  const options={dataDir:directory,port:0,origin,allowTestHost:true,schedule:false,synkIdentityConfig:null,
+  const options={dataDir:directory,port:0,origin,allowTestHost:true,schedule:false,synkIdentityConfig:null,aiMarketEnabled:aiMarket===null?undefined:aiMarket,
     synkCustomerIdentityConfig:configured?config:null,synkCustomerIdentityFetch:identityFetch,synkCustomerIdentityNow:()=>f.stamp,
     clock:()=>new Date(f.stamp).toISOString(),computerAIEnv:name=>env[name],computerAIFetch:async(...args)=>{f.providerCalls.push(args);return provider(...args);},
     messengerDriveStorage:{active:async()=>null,status:async()=>({provider:'local'})}};
@@ -167,6 +167,21 @@ test('AI market rejects foreign query input and preserves public browsing during
   assert.equal((await client.request(base+'/posts?userId='+firstId)).status,400);
   assert.equal((await client.request(base+'/posts?saved=maybe')).status,400);
   assert.equal((await client.request(base+'/posts?limit=1000')).status,400);
+});
+
+test('AI market stays closed by default: no page, no API and no ai_market_ tables (2026-11-11 frozen)',async t=>{
+  assert.equal(process.env.SYNK_AI_MARKET_ENABLED,undefined);
+  const f=await fixture(t,{aiMarket:null}),client=f.client();
+  const tables=()=>f.app.store.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'ai_market_%'").all();
+  assert.deepEqual(tables(),[]);
+  assert.equal((await client.request('/ai-market')).status,404);
+  for(const file of ['/ai-market/','/ai-market/app.mjs','/ai-market/style.css','/ai-market/assets/SUIT-Variable.woff2'])assert.equal((await client.request(file)).status,404,file);
+  for(const path of ['/api/customer/ai-market/session','/api/customer/ai-market/posts']){
+    const res=await client.request(path);assert.equal(res.status,404,path);assert.equal(res.data.error,'상담 요청 주소를 확인해 주세요.');
+  }
+  assert.equal((await client.request('/api/customer/ai-market/login',{body:{}})).status,404);
+  assert.deepEqual(tables(),[]);
+  const me=await client.login();assert.equal(me.data.authenticated,true);
 });
 
 test('incomplete cloud preparation is rejected before Store or messenger files are created and originals remain intact',async t=>{

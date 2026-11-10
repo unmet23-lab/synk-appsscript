@@ -177,6 +177,10 @@ export function createCompanyApp(options={}) {
   if(![true,false,'0','1'].includes(webPushSetting))throw new Error('SYNK_COMPANY_WEB_PUSH_ENABLED는 0 또는 1이어야 합니다.');
   const webPushEnabled=webPushSetting===true||webPushSetting==='1';
   if(webPushEnabled&&originUrl.protocol!=='https:')throw new Error('기기 알림에는 HTTPS 회사 주소가 필요합니다.');
+  // AI 마켓은 2026-11-11 기각·얼림(결정 표). 기본은 꺼짐 — 끄면 화면·API를 열지 않고 ai_market_ 표도 만들지 않는다. 코드와 이미 있는 자료는 지우지 않는다.
+  const aiMarketSetting=options.aiMarketEnabled??process.env.SYNK_AI_MARKET_ENABLED??'0';
+  if(![true,false,'0','1'].includes(aiMarketSetting))throw new Error('SYNK_AI_MARKET_ENABLED는 0 또는 1이어야 합니다.');
+  const aiMarketEnabled=aiMarketSetting===true||aiMarketSetting==='1';
   if(!isLocalHost(host)&&originUrl.protocol!=='https:')throw new Error('크루용 서버에는 HTTPS 회사 주소가 필요합니다.');
   if(originUrl.pathname!=='/'||originUrl.search||originUrl.hash||originUrl.username)throw new Error('회사 주소에는 경로를 넣지 마세요.');
   const platformUrl=resolvePlatformUrl(options.platformUrl===undefined?process.env.SYNK_PLATFORM_URL:options.platformUrl,{origin});
@@ -513,8 +517,7 @@ export function createCompanyApp(options={}) {
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
   const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
-  const aiMarket=createAiMarketStore({store,now:clock});
-  const aiMarketRoutes=createAiMarketRoutes({identity:customerIdentity,market:aiMarket,origin,send,body,stopping:()=>stopRequested,clientAddress});
+  const aiMarketRoutes=aiMarketEnabled?createAiMarketRoutes({identity:customerIdentity,market:createAiMarketStore({store,now:clock}),origin,send,body,stopping:()=>stopRequested,clientAddress}):null;
   // PULSE 내 모델 회원 경로(판 4, /api/customer/pulse/*): 고객 SYNK ID 세션만, 스위치 myModels가 꺼져 있으면 모두 404.
   const pulseMemberRoutes=createPulseMemberRoutes({identity:customerIdentity,workspaces:pulseWorkspaces,origin,send,body,stopping:()=>stopRequested,clientAddress,enabled:()=>pulseFeatures.read().myModels,serveMedia:(req,res,media,authorize)=>serveStudioMedia(req,res,store.directory,media,authorize)});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
@@ -1047,7 +1050,7 @@ export function createCompanyApp(options={}) {
     if(await socialPublicRoutes(req,res,{url}))return;
     // Keep unrelated requests on their existing shutdown admission order.
     if(path.startsWith('/trial-feedback/')&&await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
-    if((path==='/api/customer/ai-market'||path.startsWith('/api/customer/ai-market/'))&&await aiMarketRoutes(req,res,url))return;
+    if(aiMarketRoutes&&(path==='/api/customer/ai-market'||path.startsWith('/api/customer/ai-market/'))&&await aiMarketRoutes(req,res,url))return;
     if((path==='/api/customer/pulse'||path.startsWith('/api/customer/pulse/'))&&await pulseMemberRoutes(req,res,url))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
@@ -1943,10 +1946,12 @@ export function createCompanyApp(options={}) {
     // Existing teacher CSS has these fixed absolute image paths. No directory
     // traversal, model, data file or wider assets directory is exposed.
     for(const file of ['wide-coral.webp','slab-cream-long.webp','chip-blush-long.webp','badge-cream.webp'])files['/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,'image/webp'];
-    if(path==='/ai-market'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/ai-market/'});return res.end();}
-    files['/ai-market/']=['../../../../../experiences/ai-market/index.html','text/html; charset=utf-8'];
-    for(const file of ['app.mjs','style.css'])files['/ai-market/'+file]=['../../../../../experiences/ai-market/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
-    files['/ai-market/assets/SUIT-Variable.woff2']=['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'];
+    if(aiMarketEnabled){
+      if(path==='/ai-market'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/ai-market/'});return res.end();}
+      files['/ai-market/']=['../../../../../experiences/ai-market/index.html','text/html; charset=utf-8'];
+      for(const file of ['app.mjs','style.css'])files['/ai-market/'+file]=['../../../../../experiences/ai-market/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+      files['/ai-market/assets/SUIT-Variable.woff2']=['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'];
+    }
     if(path==='/consultation'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/consultation/'});return res.end();}
     files['/consultation/']=['public/customer-computer.html','text/html; charset=utf-8'];
     for(const file of ['customer-computer.js','customer-computer-state.mjs','customer-computer-view.mjs','customer-computer.css'])files['/consultation/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
