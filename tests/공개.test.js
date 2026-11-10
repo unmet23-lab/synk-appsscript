@@ -31,10 +31,13 @@ const 도구 = { ...원도구, 올리기: o => 증거있는실행('올리기', o
 const 속 = 도구._시험;
 const 엇 = require(path.join(REPO, 'tools', 'lib', 'import엇갈림.js'));
 
+const 빠른 = require('./lib/git빠른픽스처.js');
+
 // 시험 git은 이 PC·CI의 시스템·전역 설정을 읽지 않는다. curl은 프록시를 타지 않는다.
+// 전역 자리에는 자동 정리(maintenance · gc --auto)만 끈 시험 전용 설정을 둔다(11-11 — 픽스처 git 수 줄이기, tests/lib/git빠른픽스처.js).
 for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
 Object.assign(process.env, {
-  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: path.join(os.tmpdir(), 'synk-publish-test-no-global-config'),
+  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: 빠른.시험전역설정('synk-publish-test'),
   GIT_TERMINAL_PROMPT: '0', GIT_AUTHOR_NAME: '시험', GIT_AUTHOR_EMAIL: 'test@example.invalid',
   GIT_COMMITTER_NAME: '시험', GIT_COMMITTER_EMAIL: 'test@example.invalid',
   NO_PROXY: '127.0.0.1,localhost', no_proxy: '127.0.0.1,localhost',
@@ -67,21 +70,34 @@ const 점검원문 = (낱말, 태그 = 'suno|\\budio\\b') => [
 /** 공개 전 점검의 측정 자리에 끼우는 빈 측정(오류 · 위반 없음) */
 const 빈쪽재기 = async (일) => ({ 주소: 일.주소, 실림: true, 오류: [], 콘솔: [], axe: { 좁은: { 어긴것: [] }, 넓은: { 어긴것: [] } }, 문제: null });
 
-/** 임시 공개 저장소: bare origin(main) + 남이 올리는 작업본. 도구 사본(bare 부분 클론)은 도구가 따로 받는다. */
+/**
+ * 임시 공개 저장소: bare origin(main) + 남이 올리는 작업본. 도구 사본(bare 부분 클론)은 도구가 따로 받는다.
+ * 만드는 상태는 예전(설정 · remote add · fetch · reset · add · commit · push)과 같다 — git 프로세스 수만 줄였다(11-11, tests/lib/git빠른픽스처.js):
+ * 설정은 config 파일에 한 번에 적고, 바탕은 작업본에서 커밋한 뒤 push 대신 객체를 복사해 origin 가지 · 작업본의 origin/main을 세운다.
+ * 남의 공개(올림)는 origin에 fast-import로 같은 커밋을 만들고 작업본은 fetch · reset으로 따라간다(옛 판과 다른 것은 작업본 FETCH_HEAD 하나 — 읽는 곳 없음).
+ */
 function 새공개본(t, 파일 = {}) {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-publish-test-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
   const origin = path.join(뿌리, 'origin.git');
   execFileSync('git', ['init', '-q', '--bare', '-b', 'main', origin]);
-  for (const [k, v] of [['uploadpack.allowFilter', 'true'], ['uploadpack.allowAnySHA1InWant', 'true']]) execFileSync('git', ['--git-dir', origin, 'config', k, v]);
+  빠른.설정붙이기(origin, [['uploadpack', { allowFilter: true, allowAnySHA1InWant: true }]]);
   const 작업 = path.join(뿌리, '남');
   execFileSync('git', ['init', '-q', '-b', 'main', 작업]);
+  빠른.설정붙이기(path.join(작업, '.git'), [빠른.원격설정(origin)]);
   const g = (...a) => execFileSync('git', ['-C', 작업, '-c', 'core.autocrlf=false', '-c', 'core.quotepath=false', ...a], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
-  g('remote', 'add', 'origin', origin);
-  /** 남의 공개(다른 세션이 synk-policy에 직접 올림) */
+  /** 남의 공개(다른 세션이 synk-policy에 직접 올림) — 도구가 그사이 올린 커밋 위에 */
   const 올림 = (바꿀 = {}, 지울 = [], 메시지 = '남의 공개') => {
-    // 도구가 그사이 올린 커밋 위에서 고친다
-    try { g('fetch', '-q', 'origin'); g('reset', '-q', '--hard', 'origin/main'); } catch (_) { /* 첫 커밋 */ }
+    const 새것 = 빠른.원격에빠른커밋(origin, 'main', { ...바꿀, ...Object.fromEntries(지울.map((p) => [p, null])) }, `${메시지}\n`);
+    if (새것 === null) return 올림복제(바꿀, 지울, 메시지);
+    g('fetch', '-q', 'origin');
+    g('reset', '-q', '--hard', 'origin/main');
+    return 새것;
+  };
+  /** 올림의 옛 길 — 작업본에서 받아 고치고 커밋해 push한다(fast-import가 같은 커밋을 못 만드는 경우) */
+  const 올림복제 = (바꿀 = {}, 지울 = [], 메시지 = '남의 공개') => {
+    g('fetch', '-q', 'origin');
+    g('reset', '-q', '--hard', 'origin/main');
     for (const [p, v] of Object.entries(바꿀)) 쓰기(작업, p, v);
     for (const p of 지울) fs.rmSync(path.join(작업, ...p.split('/')));
     g('add', '-A');
@@ -89,7 +105,13 @@ function 새공개본(t, 파일 = {}) {
     g('push', '-q', 'origin', 'main');
     return g('rev-parse', 'HEAD').trim();
   };
-  const 바탕 = 올림({ '.github/site-check/check.mjs': 점검원문('suno|금지낱말'), ...파일 }, [], '바탕');
+  // 바탕(첫 커밋): 작업본에서 커밋하고, push 대신 객체를 복사해 origin 가지와 작업본의 origin/main(push가 세우는 추적 ref)을 세운다
+  for (const [p, v] of Object.entries({ '.github/site-check/check.mjs': 점검원문('suno|금지낱말'), ...파일 })) 쓰기(작업, p, v);
+  g('add', '-A');
+  g('commit', '-q', '-m', '바탕');
+  const 바탕 = g('rev-parse', 'HEAD').trim();
+  빠른.객체복사로세우기(path.join(작업, '.git'), origin, 'main', 바탕);
+  g('update-ref', 'refs/remotes/origin/main', 바탕, '');
   const 사본 = path.join(뿌리, '사본.git');
   const 원격주소 = `file:///${origin.replace(/\\/g, '/')}`;
   const og = (...a) => execFileSync('git', ['--git-dir', origin, '-c', 'core.quotepath=false', ...a], { stdio: ['pipe', 'pipe', 'pipe'] });

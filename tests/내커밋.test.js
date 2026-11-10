@@ -16,11 +16,13 @@ const 도구경로 = path.join(REPO, 'tools', '내커밋.js');
 const 도구 = require(도구경로);
 const 잠금도구 = require(path.join(REPO, 'tools', 'git잠금.js'));
 const 정책 = JSON.parse(fs.readFileSync(path.join(REPO, 'tools', 'git-storage-policy.json'), 'utf8'));
+const 빠른 = require('./lib/git빠른픽스처.js');
 
 // 시험 git은 이 PC·CI의 시스템·전역 설정을 읽지 않는다(core.autocrlf는 저장소마다 정한다).
+// 전역 자리에는 자동 정리(maintenance · gc --auto)만 끈 시험 전용 설정을 둔다(11-11 — 픽스처 git 수 줄이기, tests/lib/git빠른픽스처.js).
 for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
 Object.assign(process.env, {
-  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: path.join(os.tmpdir(), 'synk-mycommit-test-no-global-config'),
+  GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: 빠른.시험전역설정('synk-mycommit-test'),
   GIT_TERMINAL_PROMPT: '0', GIT_AUTHOR_NAME: '시험', GIT_AUTHOR_EMAIL: 'test@example.invalid',
   GIT_COMMITTER_NAME: '시험', GIT_COMMITTER_EMAIL: 'test@example.invalid',
 });
@@ -37,15 +39,20 @@ function 쓰기(폴더, 경로, 내용) {
   fs.writeFileSync(파일, 내용);
 }
 
-/** 임시 작업본. 원격: true면 bare 원격(origin)을 만들고 바탕 커밋을 올려 둔다. */
+/**
+ * 임시 작업본. 원격: true면 bare 원격(origin)을 만들고 바탕 커밋을 올려 둔다.
+ * 만드는 상태는 예전(설정 · remote add · push · fetch)과 같다 — git 프로세스 수만 줄였다(11-11): 설정은 .git/config에 한 번에 적고,
+ * origin에는 push 대신 바탕 커밋의 객체를 복사해 가지를 세운다. 작업본은 전처럼 fetch로 받는다(origin/master · origin/HEAD · FETCH_HEAD).
+ */
 function 새저장소(t, { 파일 = {}, 정책고침 = null, autocrlf = 'false', 원격 = false } = {}) {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-mycommit-test-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
   const 작업본 = path.join(뿌리, '공용');
   fs.mkdirSync(작업본);
   const git = 깃(작업본);
+  const 원격폴더 = 원격 ? path.join(뿌리, 'origin.git') : null;
   git('init', '-q', '-b', 'master');
-  git('config', 'core.autocrlf', autocrlf);
+  빠른.설정붙이기(path.join(작업본, '.git'), [['core', { autocrlf }], ...(원격 ? [빠른.원격설정(원격폴더)] : [])]);
   쓰기(작업본, 'tools/git-storage-policy.json', `${JSON.stringify({ ...정책, ...(정책고침 || {}) }, null, 2)}\n`);
   for (const [p, v] of Object.entries(파일)) 쓰기(작업본, p, v);
   git('add', '-A');
@@ -58,13 +65,24 @@ function 새저장소(t, { 파일 = {}, 정책고침 = null, autocrlf = 'false',
     인덱스지문: () => crypto.createHash('sha256').update(fs.readFileSync(path.join(작업본, '.git', 'index'))).digest('hex'),
   };
   if (원격) {
-    저장.원격 = path.join(뿌리, 'origin.git');
+    저장.원격 = 원격폴더;
     execFileSync('git', ['init', '-q', '--bare', '-b', 'master', 저장.원격], { stdio: 'pipe' });
-    git('remote', 'add', 'origin', 저장.원격);
-    git('push', '-q', 'origin', 'master');
+    빠른.객체복사로세우기(path.join(작업본, '.git'), 저장.원격, 'master', 저장.머리());
     git('fetch', '-q', 'origin');
-    /** 다른 곳에서 origin에 커밋을 올린다(남의 push). 짝: 작업본 커밋을 주면 그 작성자·작성 시각·메시지로 커밋한다(남이 내 커밋을 다시 쌓아 올림). */
+    /**
+     * 다른 곳에서 origin에 커밋을 올린다(남의 push). 짝: 작업본 커밋을 주면 그 작성자·작성 시각·메시지로 커밋한다(남이 내 커밋을 다시 쌓아 올림).
+     * 복제 · add · commit · push와 같은 커밋을 fast-import로 만든다(git 5~6개 → 2~3개, 11-11). 같은 커밋이 못 되는 경우는 옛 길(원격에올림복제)로 간다.
+     */
     저장.원격에올림 = (파일들, 메시지 = '남의 push', { 짝 = null } = {}) => {
+      if (!짝) return 빠른.원격에빠른커밋(저장.원격, 'master', 파일들, `${메시지}\n`) ?? 저장.원격에올림복제(파일들, 메시지);
+      // 짝의 작성자 줄과 메시지를 커밋 객체에서 그대로 옮긴다(옛 길: --date=raw 작성 시각 · %B 메시지를 git commit -F -로 — 같은 바이트가 된다)
+      const 몸 = git.바이트('cat-file', 'commit', 짝).toString('utf8');
+      const 머리끝 = 몸.indexOf('\n\n');
+      const 작성자 = /^author (.*)$/m.exec(몸.slice(0, 머리끝))[1];
+      return 빠른.원격에빠른커밋(저장.원격, 'master', 파일들, 몸.slice(머리끝 + 2), { 작성자 }) ?? 저장.원격에올림복제(파일들, 메시지, { 짝 });
+    };
+    /** 원격에올림의 옛 길 — 복제해 커밋하고 push한다(fast-import가 같은 커밋을 못 만드는 경우). */
+    저장.원격에올림복제 = (파일들, 메시지 = '남의 push', { 짝 = null } = {}) => {
       const 다른 = path.join(뿌리, `다른-${crypto.randomBytes(3).toString('hex')}`);
       execFileSync('git', ['clone', '-q', '-c', 'core.autocrlf=false', 저장.원격, 다른], { stdio: 'pipe' });
       const g = 깃(다른);
@@ -364,7 +382,8 @@ test('커밋: 커밋 직전에 남이 커밋해 CAS가 실패하면 새 HEAD 위
 test('커밋: index.lock — 잠깐 생긴 잠금은 기다리고, 주인 없는 잠금은 한 번 치우고, 안 풀리는 잠금이면 커밋하지 않는다', async (t) => {
   const 저장 = 새저장소(t, { 파일: { 'a.txt': '1\n' } });
   const 잠금 = path.join(저장.작업본, '.git', 'index.lock');
-  const 짧은잠 = (ms) => spawnSync(process.execPath, ['-e', `setTimeout(()=>{},${Math.min(ms, 50)})`]);
+  // 도구의 잠깐(200ms)보다 짧게 잔다 — node를 띄워 재우던 것(한 번에 0.1~2초)을 프로세스 없이(11-11)
+  const 짧은잠 = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Math.min(ms, 100));
 
   // ① 잠깐 쓰는 잠금: 세 번째 기다림에 풀린다
   fs.writeFileSync(잠금, '');
