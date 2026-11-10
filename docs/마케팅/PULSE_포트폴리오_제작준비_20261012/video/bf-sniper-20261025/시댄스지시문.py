@@ -31,15 +31,19 @@ IMG = "C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/콘티/bf-sni
                  "He never speaks, never smiles, never grimaces.",
         "HAND": "his hands — a man's hands in the heather-grey sweatshirt sleeves, exactly as in the first frame: short clean nails, no ring, "
                 "no watch. Only the hands and a little of the forearms are in the frame; his face never appears.",
-        "CALENDAR": "the big white paper wall calendar exactly as in the first frame — large black printed day numbers in a thin blue-grey "
-                    "grid, the red marker X's already drawn on the earlier days, and '00:00' handwritten in red in the box for the 27th. "
+        # 11-11 새 벽 달력 원고(블프_작품글자_20261110/달력.py) · 새 전단 A2(전단.py flyer_a2)로 다시 굽는 판은 다시_1111_꾸러미.py가 이 두 줄을 바꿔 낸다
+        "CALENDAR": "the paper wall calendar exactly as in the first frame — a big '11' and NOVEMBER at the top, black printed day numbers "
+                    "(Sundays red, Saturdays blue) with small lunar dates in a thin grey grid, small October and December calendars in the empty "
+                    "boxes at the bottom, the hand-drawn red marker X's already on the earlier days (each one a little different), and '00:00' "
+                    "handwritten in red in the box for the 27th. "
                     "Every number and every mark already on it stays exactly as it is — never redrawn, moved or rewritten; the only new red "
                     "line is the one the marker draws now; no other writing, numbers or letters appear.",
         "RING": "the big LED ring light standing right in front of the camera, out of focus — its thin glowing white ring frames him in the "
                 "middle of the picture and stays exactly where it is.",
         "ROBOT": "the small round white robot vacuum from the first frame — a plain white disc with no markings that moves by itself.",
-        "FLYER": "the glossy sale flyer he holds open, exactly as printed in the first frame — the big TV photo, the amber-orange price "
-                 "blocks and every printed Korean letter and number stay exactly as they are and are never redrawn.",
+        "FLYER": "the matte cream sale flyer he holds open, exactly as printed in the first frame — the small black wordmark at the top, the "
+                 "big headline, the TV photo, the big price and the round orange stamp, and every printed Korean letter and number stay exactly "
+                 "as they are and are never redrawn.",
         "DESK": "the low light-oak 'operation desk' and the light wooden phone stands on it, exactly as in the first frame.",
         "CLOAK": "the grey fleece blanket draped over his head and back like a sniper's camouflage cloak, exactly as in the first frame.",
         "NIGHTDESK": "the operation desk at midnight, exactly as in the first frame — its screens glowing bright blue-white, and at its right "

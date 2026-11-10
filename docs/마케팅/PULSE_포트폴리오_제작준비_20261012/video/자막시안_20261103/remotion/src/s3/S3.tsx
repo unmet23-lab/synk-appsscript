@@ -480,7 +480,8 @@ const EndCard: React.FC<{ t: number; a: number; len: Len }> = ({ t, a, len }) =>
 };
 
 // ---------- 합성 ----------
-export const S3: React.FC<Props> = ({ len, end = 'scene', glyph = 'now' }) => {
+// 11-11 유호님 「추천대로」 — 본편은 A(전광판). 'now'는 11-07 판을 다시 볼 때만.
+export const S3: React.FC<Props> = ({ len, end = 'scene', glyph = 'A' }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
   const T = len === 15 ? T15 : T6;

@@ -294,7 +294,8 @@ const EndCard: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-export const S4: React.FC<{ end?: 'scene' | 'card'; glyph?: Glyph }> = ({ end = 'scene', glyph = 'now' }) => {
+// 11-11 유호님 「추천대로」 — 본편은 A(명조 묶음 끝 · 명조 「느」 알림 · 브랜드 웹페이지). 'now'는 11-07 판을 다시 볼 때만.
+export const S4: React.FC<{ end?: 'scene' | 'card'; glyph?: Glyph }> = ({ end = 'scene', glyph = 'A' }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
   const cut = cutAt(t);
