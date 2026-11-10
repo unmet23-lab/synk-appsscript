@@ -26,12 +26,9 @@ j = {
   '판': [
     공통('yuhobuilds-instagram', '01-yuhobuilds-instagram'),
     공통('yuhobuilds-youtube', '02-yuhobuilds-youtube'),
-    공통('yuhobuilds-x', '04-yuhobuilds-x'),
-    공통('yuho-linkedin-primary', '05-yuho-linkedin'),
     {'계정': 'yuhobuilds-threads', '파일': f'{폴더}/최종.mp4', '시각': 시각, '게시글': f'{폴더}/게시/06-yuhobuilds-threads/원고.txt', 'AI표시': True},
-    {'계정': 'shift-tistory', '파일': f'{폴더}/게시/티스토리.md', '시각': '2026-11-11T21:30+09:00', '게시글': f'{폴더}/게시/티스토리.md'},
   ],
-  '빠진판': {'yuhobuilds-tiktok': '쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)'},
+  '빠진판': {'yuhobuilds-tiktok': '쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)', 'yuhobuilds-x': '11-11 칸에 yuhobuilds_검수다섯_20261103이 이미 예약됨(계정마다 하루 한 편) — 글 원고(04-yuhobuilds-x)는 남겨 둠', 'yuho-linkedin-primary': '11-11 칸에 yuhobuilds_검수다섯_20261103이 이미 예약됨 — 글 원고(05-yuho-linkedin)는 남겨 둠', 'shift-tistory': '11-11 칸에 yuhobuilds_검수다섯_20261103 적용기가 이미 걸림 — 티스토리.md는 영상이 나간 뒤 빈 날에'},
   '틱톡없음': None,
   '표지': f'{폴더}/게시/표지_1080x1920.jpg',
   'AI 표시': '켬(진행자 얼굴 · 목소리가 AI — 진행자 형식 S42)',

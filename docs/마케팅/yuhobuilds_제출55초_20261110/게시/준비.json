@@ -54,43 +54,18 @@
       "AI표시": true
     },
     {
-      "계정": "yuhobuilds-x",
-      "파일": "docs/마케팅/yuhobuilds_제출55초_20261110/최종.mp4",
-      "시각": "2026-11-11T21:00+09:00",
-      "게시글": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/게시글.md",
-      "훅": "A",
-      "원고": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/04-yuhobuilds-x/원고.json",
-      "표지": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/표지_1080x1920.jpg",
-      "표지시각": 1,
-      "AI표시": true
-    },
-    {
-      "계정": "yuho-linkedin-primary",
-      "파일": "docs/마케팅/yuhobuilds_제출55초_20261110/최종.mp4",
-      "시각": "2026-11-11T21:00+09:00",
-      "게시글": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/게시글.md",
-      "훅": "A",
-      "원고": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/05-yuho-linkedin/원고.json",
-      "표지": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/표지_1080x1920.jpg",
-      "표지시각": 1,
-      "AI표시": true
-    },
-    {
       "계정": "yuhobuilds-threads",
       "파일": "docs/마케팅/yuhobuilds_제출55초_20261110/최종.mp4",
       "시각": "2026-11-11T21:00+09:00",
       "게시글": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/06-yuhobuilds-threads/원고.txt",
       "AI표시": true
-    },
-    {
-      "계정": "shift-tistory",
-      "파일": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/티스토리.md",
-      "시각": "2026-11-11T21:30+09:00",
-      "게시글": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/티스토리.md"
     }
   ],
   "빠진판": {
-    "yuhobuilds-tiktok": "쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)"
+    "yuhobuilds-tiktok": "쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)",
+    "yuhobuilds-x": "11-11 칸에 yuhobuilds_검수다섯_20261103이 이미 예약됨(계정마다 하루 한 편) — 글 원고(04-yuhobuilds-x)는 남겨 둠",
+    "yuho-linkedin-primary": "11-11 칸에 yuhobuilds_검수다섯_20261103이 이미 예약됨 — 글 원고(05-yuho-linkedin)는 남겨 둠",
+    "shift-tistory": "11-11 칸에 yuhobuilds_검수다섯_20261103 적용기가 이미 걸림 — 티스토리.md는 영상이 나간 뒤 빈 날에"
   },
   "틱톡없음": null,
   "표지": "docs/마케팅/yuhobuilds_제출55초_20261110/게시/표지_1080x1920.jpg",
@@ -128,7 +103,7 @@
   ],
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-11-11T02:40:55+09:00",
+    "시각": "2026-11-11T02:46:13+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
@@ -143,8 +118,6 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
-          "yuhobuilds-x",
-          "yuho-linkedin-primary",
           "yuhobuilds-threads"
         ],
         "바이트": 49333220,
@@ -170,7 +143,7 @@
           "최장": 0,
           "자리": 0
         },
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_제출55초_20261110/영상사전검사_최종/inspection-47de148b-5c91-4851-83a5-cb2e88391314/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_제출55초_20261110/영상사전검사_최종/inspection-59c8997d-f428-4c53-aad8-26507ebf4ad3/검사.json"
       }
     ],
     "목소리": {
@@ -185,8 +158,6 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
-          "yuhobuilds-x",
-          "yuho-linkedin-primary",
           "yuhobuilds-threads"
         ],
         "첫장면": 0.254,
@@ -206,8 +177,6 @@
       {
         "편": "yuhobuilds_터진영상19회_20261109",
         "판": [
-          "yuhobuilds-x",
-          "yuho-linkedin-primary",
           "yuhobuilds-threads"
         ],
         "첫장면": 0.243,
