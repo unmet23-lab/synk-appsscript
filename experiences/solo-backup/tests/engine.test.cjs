@@ -17,7 +17,7 @@ const secretStore = {
 async function files(root) { const result = []; for (const entry of await fs.readdir(root, { withFileTypes: true })) { const p = path.join(root, entry.name); if (entry.isDirectory()) result.push(...await files(p)); else result.push(p); } return result; }
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-test('real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention', { skip: !resticPath, timeout: 300000 }, async t => {
+test('real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention', { skip: !resticPath, timeout: process.env.SOLO_BACKUP_SLOW_TEST === '1' ? 900000 : 300000 }, async t => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-backup-functional-'));
   const source = path.join(root, '작업 자료'); const target = path.join(root, '백업'); const keys = path.join(root, '별도 복구키'); const restore = path.join(root, '복구 결과');
   await Promise.all([source, target, keys, restore].map(p => fs.mkdir(p)));

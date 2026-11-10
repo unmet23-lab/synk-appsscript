@@ -4,6 +4,7 @@
 (function () {
   const SAFE_ERROR = '앱 내부 연결에 문제가 생겼습니다. 앱을 다시 실행해 주세요.';
   const METHODS = [
+    'previewRecommended', 'startRecommended', 'backupRecommended', 'restoreRecommended',
     'connectRecovery', 'disconnectRecovery', 'syncRecovery',
     'findRecoveryBackups', 'importAccountRecovery',
     'selectProfile', 'reuseLocalSources', 'setupCloud',

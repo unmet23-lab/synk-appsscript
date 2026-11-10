@@ -513,6 +513,10 @@ class BackupEngine extends EventEmitter {
       if ([...this.forbidden(), ...this.config.sources].some(p => overlap(base, p))) throw new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.');
       const latest = (await this.snapshots([VERIFIED]))[0];
       if (!latest) throw new Error('완료된 백업이 없습니다.');
+      if (latest.tags?.includes('recommended-verified-v1')) {
+        await require('./recommended.cjs').restoreWhole(this, base, latest);
+        return this.getState();
+      }
       if (!Array.isArray(latest.paths) || !latest.paths.length || latest.paths.length > 30 || latest.paths.some(p => typeof p !== 'string' || !/^[A-Za-z]:[\\/]/.test(p) || p.split(/[\\/]/).some(part => part === '..' || part === '.'))) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
       let target;
       try {

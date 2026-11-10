@@ -1001,6 +1001,24 @@ const 다시답하기 = (지적 = [], 풀림 = {}) => async ({ prompt }) => {
     coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }) };
 };
 
+test('추가 검수자의 유효한 재확인도 집계하되 필수 검수와 입력 대조는 유지한다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const first = await api.준비하기({ 이름:'extra-first', 폴더:path.join(r.뿌리,'first'), 저장소:r.저장소, 종류:'백엔드', 작성자:'GPT', 바탕:r.바탕 });
+  await api.GPT보내기(first.폴더,first.목록,{call:답하기(),몫:몫충분});
+  const send = async (p,who,answer) => api.검수받기(p.폴더,who,'A',(await answer({prompt:fs.readFileSync(path.join(p.폴더,'묶음-A.txt'),'utf8')})).text);
+  await send(first,'Claude',답하기()); await api.아르곤보내기(first.폴더,first.목록,{call:답하기([지적하나('a.js:1')]),몫:몫충분});
+  api.지적표고치기(first.폴더,s=>api.처리하기(s,['A1=반영']));r.쓰기('a.js','a=3\n');
+  const final=await api.다시하기({이름:'extra-final',폴더:path.join(r.뿌리,'final'),앞:first.폴더,끝판:true});
+  await api.GPT보내기(final.폴더,final.목록,{call:다시답하기(),몫:몫충분});await send(final,'Claude',다시답하기());
+  assert.equal(api.검수확인(final.폴더).통과,false,'원래 추가 검수자의 응답 없이 통과하지 않는다');
+  await send(final,'아르곤',다시답하기([], {Q1:false}));assert.equal(api.검수확인(final.폴더).통과,false,'미해결 답도 막는다');
+  await send(final,'아르곤',다시답하기());assert.equal(api.검수확인(final.폴더).통과,true,'같은 입력에 대한 실제 추가 검수자의 재확인으로 해결');
+  const file=path.join(final.폴더,'아르곤-A.json'),valid=fs.readFileSync(file);const bad=JSON.parse(valid);bad.입력sha256='0'.repeat(64);fs.writeFileSync(file,JSON.stringify(bad));
+  assert.equal(api.검수확인(final.폴더).통과,false,'다른 입력의 답은 인정하지 않는다');fs.writeFileSync(file,valid);
+  const required=path.join(final.폴더,'GPT-A.json');fs.renameSync(required,required+'.preserved');
+  assert.equal(api.검수확인(final.폴더).통과,false,'아르곤의 답으로 필수 GPT 검수를 대신하지 않는다');
+});
+
 test('다시(백엔드): 고친 diff와 그 지적만 GPT가 다시 보고, 해시로 이어진 사슬이면 끝 후보로 통과', async t => {
   const api = await tool(), r = 임시저장소(t, { 'src/a.js': 'export const a = 1;\n', 'src/b.js': 'export const b = 1;\n' });
   r.쓰기('src/a.js', 'export const a = 2;\n'); r.쓰기('src/b.js', 'export const b = 2;\n');

@@ -1,4 +1,8 @@
 {
+  "previewRecommended": {"mutating":true,"timeoutMs":1800000,"dialog":false,"allowedReadOnly":true},
+  "backupRecommended": {"mutating":true,"timeoutMs":1800000,"dialog":false,"allowedReadOnly":true},
+  "startRecommended": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
+  "restoreRecommended": {"mutating":true,"timeoutMs":0,"dialog":true,"allowedReadOnly":true},
   "connectRecovery": {
     "mutating": true,
     "timeoutMs": 0,

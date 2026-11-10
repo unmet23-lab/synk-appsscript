@@ -594,7 +594,7 @@
     const rb = !!(s && s.recovery && s.recovery.busy);
     const act = lock || !!(s && s.job) || rb;
     $('app').setAttribute('aria-busy', act ? 'true' : 'false');
-    document.querySelectorAll('button, input').forEach((el) => { el.disabled = act; });
+    document.querySelectorAll('button, input').forEach((el) => { if (el.closest('#rpCard')) return; el.disabled = act; });
     SECRETS.forEach((id) => { $(id).disabled = lock; });
     renderTab('tabLocal', 'sumLocal', 'local', s, lock || rb);
     renderTab('tabB2', 'sumB2', 'b2', s, lock || rb);
@@ -926,4 +926,141 @@
   if (!api) { showError('앱 기능에 연결할 수 없습니다. 앱을 다시 시작해 주세요.'); return; }
   subscribe();
   refresh();
+})();
+
+
+(function(){
+'use strict';
+var api=window.backup;
+if(!api||typeof api.previewRecommended!=='function')return;
+function $(id){return document.getElementById(id)}
+var card=$('rpCard');if(!card)return;
+card.hidden=false;
+var st=null,pending=false,localErr='',seeded=null,usdTouched=false,unsub=null,poll=0,dead=false;
+var nf=new Intl.NumberFormat('ko-KR');
+function txt(e){if(e==null||e==='')return '';var s=typeof e==='string'?e:(e.message||e.reason||e.code||'');if(!s){try{s=JSON.stringify(e)}catch(_){s='알 수 없는 오류'}}return String(s).slice(0,600)}
+function num(n){return nf.format(Number(n)||0)}
+function size(n){n=Number(n)||0;return num(n)+'바이트(약 '+(n/1e9).toFixed(2)+' GB)'}
+function when(t){var d=new Date(t);return isNaN(d)?txt(t):d.toLocaleString('ko-KR')}
+function money(x){return x==null||!isFinite(Number(x))?'-':'$'+Number(x).toFixed(2)}
+function set(id,s){var el=$(id);if(el)el.textContent=s==null?'':String(s)}
+function show(id,on){var el=$(id);if(el)el.hidden=!on}
+function list(id,items,fmt){
+  var ul=$(id);if(!ul)return;
+  while(ul.firstChild)ul.removeChild(ul.firstChild);
+  (items||[]).forEach(function(it){var li=document.createElement('li');fmt(li,it);ul.appendChild(li)});
+}
+var WHY={cache:'캐시',temp:'임시 파일',tmp:'임시 파일',system:'시스템 파일',os:'시스템 파일',node_modules:'개발 도구 파일',build:'빌드 결과물',vcs:'버전 관리 폴더',git:'버전 관리 폴더',recycle:'휴지통','recycle-bin':'휴지통',symlink:'바로가기 링크',reparse:'바로가기 링크',junction:'바로가기 링크',placeholder:'클라우드 전용 파일','cloud-placeholder':'클라우드 전용 파일','too-large':'너무 큰 파일',large:'너무 큰 파일',media:'미디어 파일',video:'동영상',duplicate:'중복 파일',synced:'이미 동기화됨',app:'프로그램 파일',program:'프로그램 파일',hidden:'숨김 파일',locked:'사용 중이라 읽지 못함',ebusy:'사용 중이라 읽지 못함',eperm:'권한 없음',eacces:'권한 없음',permission:'권한 없음',enoent:'파일이 사라짐',missing:'파일이 사라짐',eloop:'링크 반복',enametoolong:'경로가 너무 김','path-too-long':'경로가 너무 김',eio:'디스크 읽기 오류'};
+Object.assign(WHY,{explicit_exclusion:'보호 규칙에 따라 제외',existing_restic_repository:'기존 암호화 백업 저장소',reparse_or_cloud_placeholder:'연결 지점(reparse) 또는 클라우드 자리표시자 파일',node_modules_with_package_json:'package.json이 있는 node_modules (재설치 가능)',target_with_cargo_toml:'Cargo.toml이 있는 target 빌드 폴더 (재생성 가능)',venv_with_pyvenv_cfg:'pyvenv.cfg가 있는 Python 가상환경 (재생성 가능)',not_found:'경로를 찾을 수 없음',access_denied:'접근 권한 없음',scan_limit:'검사 한도 도달',time_limit:'검사 시간 한도 도달',entry_limit:'항목 수 한도 도달',exclusion_limit:'제외 항목 수 한도 도달',depth_limit:'폴더 깊이 한도 도달',ambiguous_path:'모호한 경로'});
+function why(x){var k=txt(x),l=k.toLowerCase();return Object.prototype.hasOwnProperty.call(WHY,l)?WHY[l]:k}
+var VER={'all-file-sha256-against-authenticated-stream':1,'sha-256':1};
+function ver(x){var k=txt(x);return Object.prototype.hasOwnProperty.call(VER,k.toLowerCase())?'파일 내용 검증 완료':k}
+function lockDest(r){var cfg=!!(r&&r.configured),d=cfg?r.destination:'',rs=document.querySelectorAll('input[name=rpDest]'),has=false,i;for(i=0;i<rs.length;i++)if(rs[i].value===d)has=true;for(i=0;i<rs.length;i++){if(has)rs[i].checked=rs[i].value===d;rs[i].disabled=cfg||(!!(r&&r.cloudDeferred)&&rs[i].value==='b2')}}
+function pathItem(li,it){
+  if(it==null||typeof it!=='object'){li.textContent=txt(it);return}
+  var p=document.createElement('span');p.textContent=txt(it.path);li.appendChild(p);
+  if(it.reason){var r=document.createElement('span');r.className='rpWhy';r.textContent=' · '+why(it.reason);li.appendChild(r)}
+}
+function dest(){var r=document.querySelector('input[name=rpDest]:checked');return r?r.value:'local'}
+function cap(){var v=Number($('rpCap').value);return Number.isSafeInteger(v)&&v>=1&&v<=1000000?v:0}
+function usd(){var s=$('rpUsd').value,v=Number(s);return s!==''&&isFinite(v)&&v>=0?v:-1}
+function rate(p){return (p&&p.price&&Number(p.price.rate))||6.95}
+function defUsd(p){return Math.ceil(cap()*1e9/1e12*rate(p)*100)/100}
+function seed(p){
+  if(!p||!p.hash||p.hash===seeded)return;
+  seeded=p.hash;usdTouched=false;
+  $('rpCap').value=Math.max(1,Math.ceil((Number(p.bytes)||0)*1.3/1e9));
+  $('rpUsd').value=defUsd(p);$('rpOk').checked=false;
+}
+function render(){
+  var r=st||{},p=r.preview||null,busy=!!r.busy||pending,cfg=!!r.configured,lb=r.lastBackup||null,na=cfg&&!!r.needsApproval,canSet=!cfg||na;
+  card.setAttribute('aria-busy',busy?'true':'false');
+  set('rpStatus',busy?(r.stage?'진행 중: '+txt(r.stage):'진행 중입니다…'):na?'목록이 바뀌었습니다. 확인 후 다시 시작해 주세요.':(p?'자료 찾기가 끝났습니다. 아래 내용을 확인하세요.':(cfg?'':'‘자료 찾기’를 누르면 이 PC에서 추천 자료를 찾습니다.')));
+  show('rpBar',busy);
+  var err=localErr||txt(r.error);set('rpErr',err);show('rpErr',!!err);
+  $('rpPreview').disabled=busy;
+  show('rpResult',!!p);
+  if(p){
+    seed(p);
+    var db=Array.isArray(p.databases)?p.databases.length:Number(p.databases)||0;
+    set('rpTotal','파일 '+num(p.files)+'개 · '+size(p.bytes)+(db?' · 데이터베이스 '+num(db)+'개':''));
+    show('rpScope',p.discoveryComplete===false);
+    show('rpIncomplete',p.complete!==true);
+    var src=p.sources||[];set('rpSrcN',num(src.length)+'곳');list('rpSrc',src,pathItem);
+    var ex=(p.exclusions||[]).slice(0,100),exN=Math.max(Number(p.exclusionCount)||0,ex.length);
+    set('rpExcN',num(exN)+'개');list('rpExc',ex,pathItem);
+    set('rpExcMore',exN>ex.length?'총 '+num(exN)+'개 중 처음 '+num(ex.length)+'개만 표시합니다. 화면 목록은 일부입니다. 전체 목록 열기는 준비 중입니다.':'');
+    var man=p.manual||[];show('rpManBox',man.length>0);list('rpMan',man,pathItem);
+    var errs=p.errors||[];show('rpErrsBox',errs.length>0);set('rpErrsN',num(errs.length)+'개');list('rpErrs',errs,pathItem);
+    var pr=p.price||{};set('rpM1',money(pr.month1USD));set('rpM12',money(pr.month12USD));
+    set('rpRate',(r.cloudDeferred?'향후 클라우드 확장 시 참고용 추정이며 현재 청구 금액이 아닙니다. ':'')+'B2 단가 $'+rate(p)+'/TB·월'+(pr.date?' ('+txt(pr.date)+' 기준)':'')+(pr.changeRate!=null?' · 월 변경률 '+Math.round(Number(pr.changeRate)*100)+'% 가정':'')+(pr.assumption?' · '+txt(pr.assumption):''));
+  }
+  lockDest(r);
+  var b2=dest()==='b2';
+  show('rpSetup',!!p&&canSet);
+  var def=!!r.cloudDeferred;show('rpDeferred',def);
+  show('rpCloudNote',b2&&!def);show('rpCloudMissing',b2&&!r.cloudReady&&!def);show('rpGoCloud',!def);
+  $('rpStart').disabled=!(p&&canSet&&p.hash&&p.complete===true&&$('rpOk').checked&&!busy&&(!b2||(r.cloudReady&&!def))&&cap()>0&&usd()>=0);
+  show('rpSaved',cfg);
+  if(cfg){
+    set('rpWhere',r.destination==='b2'?(lb&&lb.verifiedAt?'클라우드 사본 · 업로드 확인됨':'클라우드 · 업로드 확인과 복구 키 외부 보관이 끝나야 보호가 완료됩니다'):'로컬 사본 · 노트북 분실 보호 아님');
+    set('rpAuto','자동 백업: '+(r.automatic?'켜짐':'꺼짐')+(r.storedBytes!=null?' · 백업 데이터 용량(참조 데이터) '+size(r.storedBytes):''));
+    set('rpLast',lb?'마지막 백업 '+when(lb.at)+' · 파일 '+num(lb.files)+'개 · '+size(lb.bytes)+(lb.verifiedAt?' · 확인 '+when(lb.verifiedAt):' · 확인 전'):'아직 완료된 백업이 없습니다.');
+    var lr=r.lastRestore;show('rpRestBox',!!lr);
+    if(lr){
+      set('rpRest','최근 복구 확인 '+when(lr.at)+' · 파일 '+num(lr.files)+'개 · '+size(lr.bytes)+(lr.verification?' · '+ver(lr.verification):''));
+      set('rpRestPath',txt(lr.path));
+    }
+  }
+  $('rpNow').disabled=busy||!cfg||na;
+  $('rpRestore').disabled=busy||!cfg||!lb;
+}
+function accept(s){
+  if(dead||!s||typeof s!=='object')return;
+  var v=('ok' in s)?(s.ok?s.value:null):s;
+  if(v&&typeof v==='object'){st=v.recommended||null;render()}
+}
+function refresh(){
+  if(dead||typeof api.getState!=='function')return;
+  try{Promise.resolve(api.getState()).then(accept,function(){})}catch(_){}
+}
+function safe(f){try{var x=f();if(x&&typeof x.catch==='function')x.catch(function(){})}catch(_){}}
+function startPoll(){if(!poll&&!dead)poll=setInterval(refresh,2000)}
+function act(name,args){
+  if(pending)return;
+  var f=api[name];
+  if(typeof f!=='function'){localErr='이 버전에서는 이 기능을 쓸 수 없습니다.';render();return}
+  pending=true;localErr='';render();
+  var pr;
+  try{pr=Promise.resolve(args?f.call(api,args):f.call(api))}catch(e){pr=Promise.reject(e)}
+  pr.then(function(env){if(!env||env.ok!==true)localErr=txt(env&&env.error)||'작업을 시작하지 못했습니다.'},
+    function(e){localErr=txt(e)||'작업을 시작하지 못했습니다.'})
+  .then(function(){pending=false;render();refresh()});
+}
+$('rpPreview').addEventListener('click',function(){act('previewRecommended')});
+$('rpStart').addEventListener('click',function(){
+  var p=st&&st.preview;
+  if(!p||$('rpStart').disabled||(st.configured&&!st.needsApproval)||!$('rpOk')||!$('rpOk').checked||p.complete!==true||st.busy||((st.configured&&st.destination?st.destination:dest())==='b2'&&(st.cloudReady!==true||st.cloudDeferred)))return;
+  act('startRecommended',{planHash:p.hash,destination:st.configured&&st.destination?st.destination:dest(),maxBytes:cap()*1e9,monthlyUSD:usd()});
+});
+$('rpNow').addEventListener('click',function(){if(!st||!st.configured||st.needsApproval)return;act('backupRecommended')});
+$('rpRestore').addEventListener('click',function(){act('restoreRecommended')});
+$('rpGoCloud').addEventListener('click',function(){if(st&&st.cloudDeferred)return;var t=$('tabB2');if(t&&!t.disabled)t.click()});
+$('rpCap').addEventListener('input',function(){if(!usdTouched)$('rpUsd').value=cap()?defUsd(st&&st.preview):'';render()});
+$('rpUsd').addEventListener('input',function(){usdTouched=true;render()});
+card.addEventListener('change',render);
+if(typeof api.onState==='function'){
+  try{
+    Promise.resolve(api.onState(accept)).then(function(u){
+      if(typeof u!=='function')return;
+      if(dead)safe(u);else unsub=u;
+    },function(){startPoll()});
+  }catch(_){startPoll()}
+}else startPoll();
+window.addEventListener('pagehide',function(){
+  dead=true;
+  if(poll){clearInterval(poll);poll=0}
+  if(unsub){var u=unsub;unsub=null;safe(u)}
+});
+render();refresh();
 })();

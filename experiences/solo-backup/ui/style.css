@@ -130,3 +130,24 @@ select:focus-visible{outline:3px solid #8cc7c1;outline-offset:2px}
 .pickPath,.pickSize{font-size:.82rem;color:var(--muted);overflow-wrap:anywhere;word-break:break-all}
 .pager{justify-content:space-between}
 @media (max-width:420px){.pickEntry .btn,.pickForm .btn{width:100%}.pager .btn.sm{width:auto}}
+
+
+.rpCard{border:2px solid var(--teal);margin:0 0 24px}
+.rpCard h3{margin-top:16px}
+.rpStatus{margin:8px 0 12px;font-weight:600;color:var(--teal-d)}
+.rpStatus:empty{display:none}
+.rpCard progress{margin:0 0 12px}
+.rpDet{border-top:1px solid var(--line);padding:10px 0}
+.rpDet[open]>summary{margin-bottom:8px}
+.rpList{max-height:260px;overflow:auto;margin:8px 0 0}
+.rpList li{word-break:break-all}
+.rpWhy{color:var(--muted);font-size:.82rem}
+.rpSetup{border-top:1px solid var(--line);margin-top:12px;padding-top:16px}
+.rpSetup fieldset{margin:0 0 16px}
+.rpFields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.rpFields .field{margin:0}
+.rpTight{margin:0 0 8px}
+#rpCloudMissing{margin:8px 0 0}
+.rpSaved{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}
+.rpSaved .big{overflow-wrap:anywhere}
+@media (max-width:420px){.rpFields{grid-template-columns:1fr}.rpCard .btn{width:100%}}
