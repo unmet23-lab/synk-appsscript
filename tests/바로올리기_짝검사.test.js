@@ -1,7 +1,7 @@
 /* 바로올리기 — push 전 짝 검사(tools/짝검사.js)와 이번 push의 새 파일 넘기기(SYNK_새파일).
- * 임시 bare 원격(origin) · 공용 작업본 · 세션 워크트리로 잰다(tests/바로올리기.test.js와 같은 꼴). 실제 저장소·원격·전역 설정은 안 건드린다.
- * 따로 둔 까닭: 바로올리기.test.js는 시험이 차례로 돌아 파일 하나가 12분 남짓이고, 바로올리기를 고친 push의 관련 시험(15분 한도)이
- *   그 파일 하나를 기다린다. 파일을 나누면 node --test가 함께 돌린다. 올리기가 필요 없는 곳은 미리 보기로 잰다(미리 보기도 짝 검사를 돈다). */
+ * 임시 bare 원격(origin) · 공용 작업본 · 세션 워크트리로 잰다(tests/바로올리기_*.test.js와 같은 꼴). 실제 저장소·원격·전역 설정은 안 건드린다.
+ * 따로 둔 까닭: 한 파일 안 시험은 차례로 돌아, 옛 바로올리기.test.js(11-11에 다섯으로 나눔)는 파일 하나가 12분 남짓이고 바로올리기를 고친 push의 관련 시험(15분 한도)이
+ *   그 파일 하나를 기다렸다. 파일을 나누면 node --test가 함께 돌린다. 올리기가 필요 없는 곳은 미리 보기로 잰다(미리 보기도 짝 검사를 돈다). */
 'use strict';
 
 const { test } = require('node:test');
@@ -12,7 +12,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const REPO = path.resolve(__dirname, '..');
-// SYNK_BARO_TOOL: 뮤테이션 시험이 일부러 망가뜨린 사본(tools/ 안)을 넣는다(바로올리기.test.js와 같다)
+// SYNK_BARO_TOOL: 뮤테이션 시험이 일부러 망가뜨린 사본(tools/ 안)을 넣는다(tests/lib/바로올리기판.js와 같다)
 const 도구경로 = process.env.SYNK_BARO_TOOL ? path.resolve(process.env.SYNK_BARO_TOOL) : path.join(REPO, 'tools', '바로올리기.js');
 const 도구 = require(도구경로);
 const 올리기글 = 도구._시험.올리기글;

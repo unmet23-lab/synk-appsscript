@@ -34,7 +34,7 @@
  *   허용 목록   tools/공개검사_허용.json의 {경로(glob), 규칙[], 까닭} — 경로·규칙만 적는다.
  * 출력과 결과는 값을 가린다(앞 세 자·길이·끝 두 자리, 메일은 도메인만 그대로).
  *
- * 함정과 재생 기록: docs/현장노트/git_줄끝_잠금.md. 시험: node --test tests/바로올리기.test.js tests/내커밋.test.js
+ * 함정과 재생 기록: docs/현장노트/git_줄끝_잠금.md. 시험: node --test tests/바로올리기_관문.test.js tests/내커밋.test.js
  */
 const fs = require('fs');
 const os = require('os');

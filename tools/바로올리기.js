@@ -55,7 +55,7 @@
  * 가볍게 — 워크트리에서만. git sparse-checkout(cone 아님)으로 docs/캐릭터·docs/홍보물·docs/라디오를 작업본에서 뺀다(약 2.1GB).
  *   extensions.worktreeConfig가 켜져 있어 그 워크트리에만 걸린다. 필요한 폴더만 `가볍게 --되살림 docs/캐릭터/정본_4K --실행`, 전부는 `--되살림`.
  *
- * 함정과 고친 기록: docs/현장노트/git_줄끝_잠금.md. 시험: node --test tests/바로올리기.test.js
+ * 함정과 고친 기록: docs/현장노트/git_줄끝_잠금.md. 시험: node --test "tests/바로올리기*.test.js"(나눈 다섯 + 시간넘김 · 짝검사, 공용 판은 tests/lib/바로올리기판.js)
  */
 const 공개검사 = require('./공개검사.js');
 const { 저장소찾기, 고름읽기, 사용법오류 } = require('./lib/git-commit-core.cjs');

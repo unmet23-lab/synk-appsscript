@@ -1,7 +1,7 @@
 /* 바로올리기 — push 전 관련 시험이 한도(15분)만 넘겼을 때(2026-10-22).
- * 임시 bare 원격(origin) · 공용 작업본 · 세션 워크트리 · 남의 클론으로 잰다(tests/바로올리기.test.js와 같은 꼴). 실제 저장소·원격·전역 설정은 안 건드린다.
+ * 임시 bare 원격(origin) · 공용 작업본 · 세션 워크트리 · 남의 클론으로 잰다(tests/바로올리기_*.test.js와 같은 꼴). 실제 저장소·원격·전역 설정은 안 건드린다.
  * 관련 시험 돌리기는 옵션.관련시험돌리기로 바꿔 끼워 15분을 실제로 기다리지 않고 끊긴 결과만 준다(실제 끊김은 tests/관련시험.test.js가 잰다).
- * 따로 둔 까닭: 바로올리기.test.js는 시험이 차례로 돌아 파일 하나가 12분 남짓이다(tests/바로올리기_짝검사.test.js와 같다). */
+ * 따로 둔 까닭: 한 파일 안 시험은 차례로 돈다 — 파일을 나눠야 node --test가 나란히 돌린다(tests/바로올리기_짝검사.test.js와 같다, 11-11에는 옛 바로올리기.test.js도 다섯으로 나눴다). */
 'use strict';
 
 const { test } = require('node:test');
@@ -13,7 +13,7 @@ const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const REPO = path.resolve(__dirname, '..');
-// SYNK_BARO_TOOL: 뮤테이션 시험이 일부러 망가뜨린 사본(tools/ 안)을 넣는다(바로올리기.test.js와 같다)
+// SYNK_BARO_TOOL: 뮤테이션 시험이 일부러 망가뜨린 사본(tools/ 안)을 넣는다(tests/lib/바로올리기판.js와 같다)
 const 도구경로 = process.env.SYNK_BARO_TOOL ? path.resolve(process.env.SYNK_BARO_TOOL) : path.join(REPO, 'tools', '바로올리기.js');
 const 도구 = require(도구경로);
 const 정책 = JSON.parse(fs.readFileSync(path.join(REPO, 'tools', 'git-storage-policy.json'), 'utf8'));
