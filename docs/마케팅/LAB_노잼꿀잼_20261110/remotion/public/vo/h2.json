@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h2",
+ "text": "우와! 꿀잼!",
+ "dur": 0.952,
+ "words": [
+  {
+   "text": "우와!",
+   "start": 0.02,
+   "end": 0.161
+  },
+  {
+   "text": "꿀잼!",
+   "start": 0.242,
+   "end": 0.952
+  }
+ ],
+ "source": {
+  "key": "e8a8657f13d764143afd43281983f2de",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 30,
+   "lufs": -17,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 479
+ }
+}

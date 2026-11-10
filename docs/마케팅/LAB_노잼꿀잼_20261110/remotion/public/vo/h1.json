@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "하아암… 노잼…",
+ "dur": 1.314,
+ "words": [
+  {
+   "text": "하아암…",
+   "start": 0.04,
+   "end": 0.442
+  },
+  {
+   "text": "노잼…",
+   "start": 0.764,
+   "end": 1.314
+  }
+ ],
+ "source": {
+  "key": "05e4de533b90c5d51e0d63ecfc993ed2",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "tonedown",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 423
+ }
+}

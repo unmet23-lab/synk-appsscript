@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_62e8f21e979b3860fe2f6a24",
+  "name": "혜리"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "tonedown",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1110,
+  "lufs": -17
+ },
+ "made": "2026-11-10T06:32:57.139Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "하아암… 노잼…",
+   "dur": 1.314,
+   "syllablesPerSec": 3.81,
+   "src": "h1.wav",
+   "key": "05e4de533b90c5d51e0d63ecfc993ed2",
+   "words": 2
+  },
+  {
+   "id": "h2",
+   "text": "우와! 꿀잼!",
+   "dur": 0.952,
+   "syllablesPerSec": 4.2,
+   "src": "h2.wav",
+   "key": "e8a8657f13d764143afd43281983f2de",
+   "words": 2
+  },
+  {
+   "id": "h3",
+   "text": "어…? 내 소파…",
+   "dur": 1.435,
+   "syllablesPerSec": 2.79,
+   "src": "h3.wav",
+   "key": "9878958ed55731d1a683b5b19873a10d",
+   "words": 3
+  },
+  {
+   "id": "n1",
+   "text": "잼은, 재미.",
+   "dur": 1.049,
+   "syllablesPerSec": 3.81,
+   "src": "n1.wav",
+   "key": "2d64bb77e3ac78cd399c2b1fbc6a8b24",
+   "words": 2
+  }
+ ]
+}

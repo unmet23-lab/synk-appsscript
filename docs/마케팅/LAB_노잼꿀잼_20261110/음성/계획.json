@@ -1,0 +1,13 @@
+{
+  "note": "LAB 영어 E30 「노잼 · 꿀잼」 — 영어 목소리 없음(영어는 화면 글). 친구 = 혜리(E34에서 엉킴 0.0%), 해설 한 줄 = 소진. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_노잼꿀잼_20261110/음성/계획.json --굽기",
+  "voice": { "id": "tc_666a9871abcf27a5169850d0", "name": "소진" },
+  "defaults": { "model": "ssfm-v30", "lang": "ko", "emotion": "normal", "intensity": 1, "tempo": 1, "seed": 1110, "lufs": -17 },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    { "id": "h1", "text": "하아암… 노잼…", "voice": { "id": "tc_62e8f21e979b3860fe2f6a24", "name": "혜리" }, "emotion": "tonedown" },
+    { "id": "h2", "text": "우와! 꿀잼!", "voice": { "id": "tc_62e8f21e979b3860fe2f6a24", "name": "혜리" }, "emotion": "normal", "seed": 30 },
+    { "id": "h3", "text": "어…? 내 소파…", "voice": { "id": "tc_62e8f21e979b3860fe2f6a24", "name": "혜리" }, "emotion": "sad" },
+    { "id": "n1", "text": "잼은, 재미.", "emotion": "normal" }
+  ]
+}

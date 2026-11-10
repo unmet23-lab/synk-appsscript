@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h3",
+ "text": "어…? 내 소파…",
+ "dur": 1.435,
+ "words": [
+  {
+   "text": "어…?",
+   "start": 0.02,
+   "end": 0.141
+  },
+  {
+   "text": "내",
+   "start": 0.765,
+   "end": 0.845
+  },
+  {
+   "text": "소파…",
+   "start": 0.926,
+   "end": 1.435
+  }
+ ],
+ "source": {
+  "key": "9878958ed55731d1a683b5b19873a10d",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "sad",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1110,
+   "lufs": -17,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 406
+ }
+}
