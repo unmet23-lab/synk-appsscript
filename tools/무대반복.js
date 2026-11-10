@@ -23,6 +23,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const 묶음 = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
+const { rowOf } = require('./게시장부.js');
 
 const FIX = '고칠 것';
 const LOOK = '확인할 것';
@@ -191,7 +192,11 @@ function episodes(roots = [공용작업본(ROOT)]) {
       let bundle, plates;
       try { bundle = 묶음.load(path.join(base, name)); plates = 묶음.plates(bundle); } catch { continue; }
       const states = {};
-      try { for (const p of 묶음.readJson(path.join(bundle.dir, '게시', '게시결과.json')).판 || []) if (p.계정) states[p.계정] = p.상태; } catch { /* 아직 없다 */ }
+      // 한 계정에 줄이 여럿이면 게시 장부 · 돌림표 · 예약큐와 같은 읽기(rowOf — 11-11 Fable 5.2 검수 P1-2)
+      try {
+        const rows = 묶음.readJson(path.join(bundle.dir, '게시', '게시결과.json')).판 || [];
+        for (const account of new Set(rows.map((p) => p && p.계정).filter(Boolean))) states[account] = rowOf(rows, account)?.상태 || '';
+      } catch { /* 아직 없다 */ }
       const 판 = plates.filter((p) => p.video?.exists && Number.isFinite(Date.parse(p.time || '')))
         .map((p) => ({ account: p.account, video: p.video.path, time: Date.parse(p.time), state: states[p.account] || '' }));
       if (판.length) found.set(name, { name, dir: bundle.dir, prep: bundle.prep, 판 });

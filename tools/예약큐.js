@@ -42,7 +42,7 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { handleOf, VIDEO } = require('./lib/게시묶음.js');
+const { handleOf, VIDEO, load: 묶음읽기, plates: 묶음판 } = require('./lib/게시묶음.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const { aestheticBlock } = require('./lib/미학관문.js');
@@ -138,8 +138,16 @@ function checkOf(prep, needsBooking) {
   return { result, stale: false };
 }
 
-// 검사 기록에 적힌 영상 판 — 저장소에 없으면(git 밖 영상) 공용 작업본에서. ⑱이 맹검 뒤 다시 렌더했는지 본다.
-function videosOf(prep) {
+// ⑱이 맹검과 견줄 판 영상 — 올리기 전 검사(tools/올리기전검사.js의 videos)와 같은 묶음: 돌림 아닌 판의 있는 영상. 검사 기록(「검사」.파일)은
+// 이미 나간 씨앗 판을 다시 재지 않아 빠지므로, 돌림 원본에 판을 단 뒤 다시 검사하면 판본 영상만 남는다 — 그 기록으로 보면 씨앗 영상을
+// 맹검한 기록이 「판 영상이 아니다」로 헛막힌다(11-11 Fable 5.2 검수 P1-1, 「화날때」). 묶음을 못 읽으면 예전처럼 검사 기록의 영상(저장소에
+// 없으면 공용 작업본)으로 본다.
+function videosOf(prep, pieceDir) {
+  if (pieceDir) {
+    try {
+      return [...new Set(묶음판(묶음읽기(pieceDir)).filter((p) => p.video && p.video.exists && !p.raw?.돌림).map((p) => p.video.path))];
+    } catch { /* 아래 검사 기록 */ }
+  }
   const repo = path.resolve(ROOT, '..', '..');
   const shared = 공용작업본(repo);
   return (prep.검사?.파일 || []).filter((f) => VIDEO.test(f.경로 || '')).map((f) => {
@@ -195,7 +203,7 @@ function collect(server, accounts, now) {
     const check = checkOf(prep, needsBooking);
     // ⑱ 미학 맹검(11-08 유호님 「그냥 지금부터 걸어」) — 준비.json 「검사」가 ⑱ 전에 남은 기록이어도, 아직 걸 판이 남은 편은
     // 지금의 게시/미학맹검.json으로 다시 본다(11-08 14시 회차가 옛 검사 기록만 보고 맹검 없는 비축 편을 건 뒤).
-    const aesthetic = needsBooking ? aestheticBlock({ dir: path.join(ROOT, dir.name), prep }, videosOf(prep), { 판본영상: 판본영상of(prep, path.join(ROOT, dir.name)) }) : null;
+    const aesthetic = needsBooking ? aestheticBlock({ dir: path.join(ROOT, dir.name), prep }, videosOf(prep, path.join(ROOT, dir.name)), { 판본영상: 판본영상of(prep, path.join(ROOT, dir.name)) }) : null;
     const groups = { [prep.브랜드]: [], SHIFT: [] };
     for (const p of prep.판 || []) (String(p.계정 || '').startsWith('shift-') ? groups.SHIFT : groups[prep.브랜드]).push(p);
     for (const [brand, plates] of Object.entries(groups)) {

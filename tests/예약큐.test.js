@@ -357,6 +357,43 @@ test('보류 판(버린 편)의 옛 검사 「고칠 것」은 같은 날 다른
     fs.rmSync(base, { recursive: true, force: true });
   }
 });
+
+test('걸린 줄 뒤에 보류를 덧붙인 판(취소됨 → 예약됨 → 보류 — 11-09 「11월 14일까지 전부 삭제」)은 거둔 칸이다 — 채움(●)이 아니라 새 편 칸(11-11 Fable 5.2 검수 P1-2)', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-거둔칸-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  편('pulled', 판('synkbrief', '2026-11-11'), { 판: [
+    { 계정: 'synkbrief-youtube', 상태: '취소됨', 작업: 'job-1' },
+    { 계정: 'synkbrief-youtube', 상태: '예약됨', 시각: '2026-11-11T21:00+09:00' },
+    { 계정: 'synkbrief-youtube', 상태: '보류', 보류: '예약을 거뒀다' }] }, base);
+  const r = 돌리기(base, '--오늘', '2026-11-11');
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^synkbrief-youtube +×/m, '거둔 칸은 새 편 칸 — 「예약됨」으로 읽으면 그날 새 편이 안 걸린다');
+  assert.doesNotMatch(r.stdout, /^synkbrief-youtube +●/m);
+});
+
+test('⑱ 돌림 원본 — 씨앗 판이 나간 뒤 다시 검사해 기록에 판본 영상만 남아도, 씨앗 영상을 맹검한 기록은 「맹검 뒤 영상 바뀜」으로 헛막지 않는다(11-11 Fable 5.2 검수 P1-1 「화날때」)', (t) => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-돌림맹검-'));
+  t.after(() => fs.rmSync(base, { recursive: true, force: true }));
+  const dir = path.join(base, 'LAB_원본', '게시');
+  fs.mkdirSync(path.join(dir, 'seed'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '판본', 'MX'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'seed', 'video.mp4'), 'seed');
+  fs.writeFileSync(path.join(dir, '판본', 'MX', 'video.mp4'), 'mx');
+  // 맹검은 씨앗 영상으로 받았다(「영상」 칸) — 영상보다 뒤에 만든 기록
+  const 맹검 = { 만든때: new Date(Date.now() + 5000).toISOString(), 영상: [{ 이름: 'video.mp4', 파일: '게시/seed/video.mp4' }],
+    낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] };
+  const prep = { 브랜드: 'LAB', 슬롯: '2026-11-12', 성격: '상시', 제목: '돌림 원본',
+    판: [{ 계정: 'lab-instagram', 시각: '2026-11-05T21:00+09:00', 파일: 'seed/video.mp4' },
+      { 계정: 'lab-mx-youtube', 시각: '2026-11-12T13:00:00-06:00', 파일: '판본/MX/video.mp4', 돌림: true }],
+    돌림: { 판본: { MX: { 파일: '게시/판본/MX/video.mp4' } } },
+    // 돌림 판을 단 뒤 다시 검사한 기록 — 이미 나간 씨앗 판은 다시 재지 않아 판본 영상만 남는다
+    검사: { 결과: '확인할 것', 파일: [{ 경로: 'LAB_원본/게시/판본/MX/video.mp4' }] } };
+  편('LAB_원본', prep, { 판: [{ 계정: 'lab-instagram', 상태: '게시됨' }] }, base, 맹검);
+  const r = 돌리기(base, '--오늘', '2026-11-11', '--일수', '7', '--json');
+  assert.equal(r.status, 0, r.stderr);
+  const fix = JSON.parse(r.stdout).fix.find((x) => x.folder === 'LAB_원본');
+  assert.ok(!fix || !/맹검 뒤 영상 바뀜/.test(String(fix.checkWhy || '')), `헛막음: ${JSON.stringify(fix)}`);
+});
 test('오늘 빈 계정 — 오늘 칸이 예약·게시 전인 계정을 줄로 보이고, 알림은 17시 · 21시 뒤 한 번씩, 다 차면 보내지 않는다', () => {
   // 10-23: LAB 영어 예약됨(채움) · LAB 몽골 인스타만 예약됨(틱톡 빔) · synkbrief 영상 승인 대기(블로그도 영상을 따라 승인·예약 전)
   const base = 매일판('오늘빈계정', 기본편);

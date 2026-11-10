@@ -46,10 +46,22 @@ const argValue = (args, name) => { const i = args.indexOf(name); return i > -1 ?
 const held = (row) => Boolean(row) && (DONE.has(row.상태) || row.상태 === CLAIM || (WAITING.has(row.상태) && Boolean(row.작업)));
 // 「첫 판 시험」 — 원장 postRouteVerified가 이 값인 계정은 판 하나만 걸 수 있다(그 판을 플랫폼 예약 목록에서 확인하고 true로 바꾸면 풀린다)
 const TRIAL = '첫판';
-// 한 계정에 줄이 여럿일 수 있다(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨). 걸려 있는 줄이 있으면 그 줄, 없으면 마지막 줄.
+// 거둔 줄 — 걸린 줄 뒤에 오면 그 예약을 거둔 것이다(11-09 유호님 「11월 14일까지 전부 삭제하고 다시 제작」 때 예약됨 뒤에 보류를 덧붙였다)
+const WITHDRAWN = new Set(['보류', '지움']);
+// 한 계정에 줄이 여럿일 수 있다(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨). 뒤에서부터 읽어 걸려 있는 줄이나
+// 거둔 줄(보류 · 지움)을 먼저 만나면 그 줄, 없으면 마지막 줄. 다른 작업의 「취소됨」은 앞의 걸린 줄을 덮지 않지만, 바로 앞 걸린 줄과 같은
+// 작업의 「취소됨」은 그 예약이 취소된 것이라 덮는다(11-11 Fable 5.2 검수 P1-2 — 예약됨 → 보류 20줄이 「예약됨」으로 읽혀 그 칸이 채움으로 보였다).
 function rowOf(rows, account) {
   const mine = (rows || []).filter((p) => p && p.계정 === account);
-  return [...mine].reverse().find(held) || mine[mine.length - 1] || null;
+  for (let i = mine.length - 1; i >= 0; i -= 1) {
+    const row = mine[i];
+    if (held(row) || WITHDRAWN.has(row.상태)) return row;
+    if (row.상태 === '취소됨' && row.작업) {
+      const before = mine.slice(0, i).reverse().find(held);
+      if (before && before.작업 === row.작업) return row;
+    }
+  }
+  return mine[mine.length - 1] || null;
 }
 const norm = (p) => { const r = path.resolve(String(p || '')); return process.platform === 'win32' ? r.toLowerCase() : r; };
 const samePath = (a, b) => Boolean(a) && Boolean(b) && norm(a) === norm(b);
