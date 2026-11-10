@@ -11,7 +11,7 @@ import {FINISHED_FILMS,filmLine,filmNote} from './public/pulse-app/films-view.mj
 globalThis.location??=new URL('http://localhost/pulse-app/');
 const appDir=new URL('./public/pulse-app/',import.meta.url);
 const read=name=>readFileSync(new URL(name,appDir),'utf8');
-const SCREEN_FILES=['film-home.mjs','film-views.mjs','film-review.mjs','request-flow.mjs','demo-film.mjs','films-view.mjs','feedback-rounds-view.mjs','room-view.mjs'];
+const SCREEN_FILES=['film-home.mjs','film-views.mjs','film-review.mjs','request-flow.mjs','demo-film.mjs','films-view.mjs','feedback-rounds-view.mjs','room-view.mjs','persona-view.mjs'];
 // 손님 화면과 공개 파일에 쓰지 않는 도구 이름은 이 한 줄에서만 늘린다(검수 r2 FA1 — 시험마다 따로 두면 한쪽만 빠진다).
 const TOOL_NAMES='Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|Veo|Omni|Suno|아르곤|Argon|페이블|시댄스|힉스필드';
 
@@ -34,7 +34,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v38-scale-20261110';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v39-persona-20261110';/);
 });
 test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
   // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.

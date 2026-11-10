@@ -10,7 +10,7 @@ import {CASTING_MODELS} from './public/pulse-app/casting-catalog.mjs';
 import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from './public/pulse-app/casting-choice.mjs';
 import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
-import {openPersonaProjectIds} from './pulse-personas.mjs';
+import {openPersonaProjectIds,PERSONA_SLOTS} from './pulse-personas.mjs';
 import {applyInlineTranslations,missingTranslations,inlineObject} from './pulse-translations.mjs';
 
 // 초대 없이 시작하는 공개 의뢰서(2026-11-04, 설계 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 5절).
@@ -51,14 +51,25 @@ export const REQUEST_PACKAGES=['s15','s30','s60','corp','photo','ask'];
 const ACTIONS=['buy','install','visit','ask','remember'],WINS=['story','impact','ask'],APPROVERS=['one','many'],MODEL_CHOICES=MODEL_CHOICE_KINDS;
 const POINTS=['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악'];
 export const REQUEST_SLOTS=['front','side','logo','label','use','detail','screens','space','menu','guide','scene','etc'];
+// 초안만 받는 인물 사진 칸(판 3): 접수 뒤 프로젝트 길(receiveProjectFile)은 이 칸을 받지 않는다 — 인물 사진이 프로젝트 자료(초대 링크로 열림)로 가면 안 된다.
+const DRAFT_SLOTS=[...REQUEST_SLOTS,...PERSONA_SLOTS];
 // 다국어 · 전용 인물 판 1(2026-11-09, 기획 12-2 「답 구조」 — 더하기만): 고른 모델의 헤어(캐스팅북 헤어 1 · 2 · 3), 소통 언어,
 // 납품 언어, 대상 나라(ISO 두 글자), 견적을 보일 통화(표시만 — 값과 결제는 원화 그대로). 옛 화면이 안 보내면 빈 값으로 채운다.
-const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','hair','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency'];
+const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','hair','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
 const MODEL_IDS=CASTING_MODELS.map(model=>model.id);
 const HAIRS=['original','look-2','look-3'],CURRENCIES=['KRW','USD','JPY','EUR'];
+// 맞춤 인물 요청(판 3, modelChoice custom일 때만 쓰인다): 인물 종류, 원하는 인상 · 나이대 · 헤어와 참고할 점, 원하는 쓰임, 이번만 / 다음 광고에도,
+// 실제 인물이면 관계(본인 · 소속 모델 · 그 밖)와 당사자 동의 확인 방법(확인 링크 · 서류). 국적 · 신체 치수 · 학습 설정은 묻지 않는다.
+const PERSONA_REQUEST_KEYS=['kind','look','use','keep','relation','consentWay'];
+export const emptyPersonaRequest=()=>({kind:'',look:'',use:'',keep:'',relation:'',consentWay:''});
+function personaRequestOf(value){
+  if(value===undefined||value===null)return emptyPersonaRequest();
+  if(!object(value)||Object.keys(value).some(key=>!PERSONA_REQUEST_KEYS.includes(key)))throw fail('맞춤 인물 요청 항목을 확인해 주세요.');
+  return {kind:one(value.kind,['virtual','real']),look:text(value.look,600),use:text(value.use,300),keep:one(value.keep,['once','reuse']),relation:one(value.relation,['self','agency','other']),consentWay:one(value.consentWay,['link','document'])};
+}
 const markets=value=>{const out=many(value,null,8,2);if(out.some(code=>!/^[A-Z]{2}$/.test(code)))throw fail('고른 값을 확인해 주세요.');return out;};
 
-export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:''};}
+export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest()};}
 // 저장(strict 아님)은 길이 · 제어문자 · 고르는 값만 본다. 칸을 쓰는 중에 형식 때문에 자동 저장이 끊기면 안 된다.
 // 형식(메일 · 번호 · 주소 · 날짜)은 보낼 때 본다. 파일 목록은 서버가 쥐고, 답에서는 「지금 없어요」 표시만 받는다.
 export function normalizeRequestAnswers(input,{strict=false}={}){
@@ -75,7 +86,7 @@ export function normalizeRequestAnswers(input,{strict=false}={}){
     screenText:text(input.screenText,300),avoid:many(input.avoid,null,12,40),avoidNote:text(input.avoidNote,300),facts:text(input.facts,300),
     win:one(input.win,WINS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice:one(input.modelChoice,MODEL_CHOICES),hair:one(input.hair,HAIRS),
     date,dateFree:input.dateFree===true,approver:one(input.approver,APPROVERS),approverName:text(input.approverName,80),contactName:text(input.contactName,80),company:text(input.company,100),email,phone,consent:input.consent===true,rights:input.rights===true,
-    contactLocale:one(input.contactLocale,LOCALES),outputLocales:many(input.outputLocales,LOCALES,LOCALES.length,8),targetMarket:markets(input.targetMarket),quoteCurrency:one(input.quoteCurrency,CURRENCIES),
+    contactLocale:one(input.contactLocale,LOCALES),outputLocales:many(input.outputLocales,LOCALES,LOCALES.length,8),targetMarket:markets(input.targetMarket),quoteCurrency:one(input.quoteCurrency,CURRENCIES),personaRequest:personaRequestOf(input.personaRequest),
   };
 }
 // 업로드 형식. 화면에 바로 띄우는 것은 서명을 재서 확인한 PNG · JPEG · MP4 · WebM뿐이고, 나머지는 내려받기 전용으로만 둔다.
@@ -98,6 +109,12 @@ export function requestFileKind(mimeType,fileName){
   const attachment=ATTACHMENT.exec(name);if(attachment)return {inline:false,extension:'intake',type:attachment[1].toLowerCase()};
   throw fail('이 형식은 받을 수 없어요. 사진(JPG · PNG), 영상(MP4), 로고(AI · SVG · PDF) 같은 파일로 보내 주시거나 드라이브 링크를 적어 주세요.',415);
 }
+// 인물 사진: 화면에 띄우는 JPG · PNG, 또는 휴대폰 사진 HEIC · WebP(내려받기 전용 — 직원이 바꿔 판으로 올린다). 영상 · 문서는 받지 않는다.
+export function personaFileKind(mimeType,fileName){
+  let kind;try{kind=requestFileKind(mimeType,fileName);}catch{kind=null;}
+  if(kind&&(kind.inline&&String(mimeType).startsWith('image/')||!kind.inline&&['webp','heic','heif'].includes(kind.type)))return kind;
+  throw fail('인물 사진은 JPG · PNG로 보내 주세요. 휴대폰 사진(HEIC · WebP)도 받지만 담당자가 바꿔서 봐요.',415);
+}
 export const validRequestFile=(kind,mimeType,head)=>kind.inline?validMediaSignature(mimeType,head):!!SIGNATURES[kind.type]?.(head);
 // 새 고객 방을 쓸 프로젝트: 의뢰서가 있거나, 담당자가 막 만들어 아직 아무 자료도 쌓이지 않은 프로젝트. 옛 자료가 쌓인 프로젝트는 옛 탭을 그대로 쓴다.
 export function usesRequestFlow(row,studio){
@@ -107,11 +124,12 @@ export function usesRequestFlow(row,studio){
 // 접수 번호의 날짜는 한국 날짜다(서버 시계는 UTC — 11-10 03:34 KST 접수가 P-1109로 찍혔다).
 const kstMonthDay=at=>{const date=new Date(new Date(at).getTime()+9*3600000);return `${String(date.getUTCMonth()+1).padStart(2,'0')}${String(date.getUTCDate()).padStart(2,'0')}`;};
 const requestNumber=at=>`P-${kstMonthDay(at)}-${randomBytes(2).toString('hex').toUpperCase()}`;
-export function requestSummaryRows(a,files=[]){
-  return [a.oneThing&&`남길 것: ${a.oneThing}`,a.audience&&`보는 사람: ${a.audience}`,a.channels?.length&&`올릴 곳: ${a.channels.join(', ')}`,a.package&&`구성: ${a.package}`,`받은 자료: ${files.length}개`].filter(Boolean).join('\n');
+export function requestSummaryRows(a,files=[],personaFiles=null){
+  return [a.oneThing&&`남길 것: ${a.oneThing}`,a.audience&&`보는 사람: ${a.audience}`,a.channels?.length&&`올릴 곳: ${a.channels.join(', ')}`,a.package&&`구성: ${a.package}`,`받은 자료: ${files.length}개`,personaFiles&&`맞춤 인물: ${a.personaRequest?.kind==='real'?'실제 인물':'새 가상 인물'} · 사진 ${personaFiles.length}장`].filter(Boolean).join('\n');
 }
 
-export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes}){
+// personas: 인물 서비스(pulse-personas.mjs createPersonaService — 스위치 확인 · 인물 만들기). 없으면 맞춤 인물 요청을 받지 않는다.
+export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null}){
   const directory=()=>resolve(store.directory,'pulse-request-media'),media=()=>resolve(store.directory,'studio-media');
   const inDraft=name=>{if(!/^[a-f0-9-]{36}\.(?:part|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(directory(),name);if(dirname(path)!==directory())throw fail('파일 경로를 확인해 주세요.',404);return path;};
   const inMedia=name=>{if(!/^[a-f0-9-]{36}\.(?:upload|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(media(),name);if(dirname(path)!==media())throw fail('파일 경로를 확인해 주세요.',404);return path;};
@@ -176,9 +194,11 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
     count('upload:'+digest(client),1,REQUEST_LIMITS.uploadsPerHourByClient,3600000);
     await assertDisk();
     const header=key=>{const value=req.headers[key];if(value==null)return '';try{return decodeURIComponent(value);}catch{throw fail('파일 이름을 확인해 주세요.');}};
-    const fileName=text(header('x-file-name'),200),slot=one(header('x-request-slot'),REQUEST_SLOTS),mimeType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase();
+    const fileName=text(header('x-file-name'),200),slot=one(header('x-request-slot'),DRAFT_SLOTS),mimeType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase();
     if(!fileName||!slot)throw fail('파일 정보를 확인해 주세요.');
-    const kind=requestFileKind(mimeType,fileName),limit=kind.inline?REQUEST_LIMITS.fileBytes:REQUEST_LIMITS.attachmentBytes,tooBig=()=>fail(kind.inline?'파일은 100MB까지 받을 수 있어요. 더 크면 드라이브 링크로 적어 주세요.':'이 형식은 30MB까지 받을 수 있어요. 더 크면 드라이브 링크로 적어 주세요.',413);
+    const personaSlot=PERSONA_SLOTS.includes(slot);
+    if(personaSlot&&!personas?.flags().personaRequest)throw fail('맞춤 인물 요청은 아직 받지 않아요. 다른 모델 선택으로 보내 주세요.',409);
+    const kind=personaSlot?personaFileKind(mimeType,fileName):requestFileKind(mimeType,fileName),limit=kind.inline?REQUEST_LIMITS.fileBytes:REQUEST_LIMITS.attachmentBytes,tooBig=()=>fail(kind.inline?'파일은 100MB까지 받을 수 있어요. 더 크면 드라이브 링크로 적어 주세요.':'이 형식은 30MB까지 받을 수 있어요. 더 크면 드라이브 링크로 적어 주세요.',413);
     const declared=Number(req.headers['content-length']);if(declared>limit)throw tooBig();
     if(before.bytes+(declared||0)>REQUEST_LIMITS.bytesPerDraft)throw fail('파일이 많아요. 나머지는 드라이브 링크로 적어 주세요.',413);
     if(declared){count('bytes:'+digest(client),declared,REQUEST_LIMITS.uploadBytesPerDayByClient,86400000);count('bytes:all',declared,REQUEST_LIMITS.uploadBytesPerDay,86400000);}
@@ -237,6 +257,9 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
     if(!answers.name)throw fail('제품이나 브랜드 이름을 알려 주세요.');
     if(!answers.contactName||!(answers.email||answers.phone))throw fail('성함과 연락받을 곳(이메일이나 휴대폰)을 알려 주세요.');
     if(!answers.consent||!answers.rights)throw fail('동의 칸을 확인해 주세요.');
+    const custom=answers.modelChoice==='custom',flags=personas?.flags()||{personaRequest:false,personaReal:false};
+    if(custom&&!flags.personaRequest)throw fail('맞춤 인물 요청은 아직 받지 않아요. 다른 모델 선택으로 보내 주세요.',409);
+    if(custom&&answers.personaRequest.kind==='real'&&!flags.personaReal)throw fail('실제 인물 출연 요청은 아직 받지 않아요. 새 가상 인물로 요청해 주세요.',409);
     count('submit:'+digest(client),1,10,3600000);
     if(store.all(KIND).filter(row=>row.status==='submitted'&&now()-Date.parse(row.submittedAt)<86400000).length>=REQUEST_LIMITS.submitsPerDay)throw busy();
     // 보내는 동안에는 새 파일 · 저장을 받지 않는다. 기록하는 파일 목록이 잠근 때의 목록과 같아야 한다.
@@ -256,24 +279,28 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
         const source=inDraft(file.diskName),target=inMedia(file.diskName);
         try{await rename(source,target);}catch(error){if(error.code!=='ENOENT')throw error;if(!await stat(target).catch(()=>null))throw fail(`「${file.fileName}」 파일을 찾지 못했어요. 지우고 다시 올려 주세요.`,409,'SYNK_PULSE_FILE_MISSING');}
       }
-      return store.transaction(()=>{
+      const done=store.transaction(()=>{
         const {row}=draftOf(raw,csrf,{write:true}),held=store.get(KIND,sending.id);
         // 늦게 끝난 보내기: 다른 보내기가 이미 접수했다. 여기서 새 초대를 만들면 손님이 쓰고 있는 세션이 끊긴다.
         if(held?.status==='submitted')throw fail('이미 보낸 의뢰서예요. 받은 링크로 열어 주세요.',409);
         // 옮기는 일이 2분을 넘기면 잠금이 풀린다. 그 사이 손님이 저장하거나 파일을 더했거나 다른 보내기가 잠금을 가져갔으면 잠근 때의 목록을 기록하면 안 되니 여기서 멈춘다.
         if(held?.status!=='sending'||held.sendingId!==sending.sendingId)throw fail('보내는 동안 내용이 바뀌었어요. 다시 보내 주세요.',409);
-        const at=clock(),no=newNumber(at),files=sending.files;
+        // 인물 사진 칸은 프로젝트 자료로 가지 않는다: 맞춤 인물이면 인물 문서의 출처로, 아니면 접수 뒤 지운다(손님이 마음을 바꾼 얼굴 사진).
+        const at=clock(),no=newNumber(at),personaFiles=sending.files.filter(file=>PERSONA_SLOTS.includes(file.slot)),files=sending.files.filter(file=>!PERSONA_SLOTS.includes(file.slot));
         const assets=files.filter(file=>file.inline).map(file=>({id:file.id,diskName:file.diskName,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,slot:file.slot,author:'customer',authorId:'customer',authorName:answers.contactName,at:file.at}));
         const attachments=files.filter(file=>!file.inline).map(file=>({id:file.id,diskName:file.diskName,fileName:file.fileName,byteSize:file.byteSize,mimeType:file.mimeType,sha256:file.sha256,kind:'attachment',slot:file.slot}));
         const {consent,rights,...kept}=answers;
         const request={schemaVersion:1,number:no,status:'submitted',submittedAt:at,consentAt:at,answers:kept,files:files.map(fileView),asks:[],notes:[],rounds:[]};
         const studio={...emptyPulseStudio(),assets,request};
         const contact=[answers.contactName,answers.email,answers.phone].filter(Boolean).join(' · ').slice(0,300);
-        const {project,invite,expiresAt}=clientProjects.createFromRequest({title:answers.name,customerName:answers.company||answers.contactName,contact,summary:requestSummaryRows(answers,files),studio,attachments});
+        const {project,invite,expiresAt}=clientProjects.createFromRequest({title:answers.name,customerName:answers.company||answers.contactName,contact,summary:requestSummaryRows(answers,files,custom?personaFiles:null),studio,attachments});
+        if(custom)personas.create({projectId:project.id,request:{...answers.personaRequest,kind:answers.personaRequest.kind||'virtual'},files:personaFiles,at});
         const opened=clientProjects.open(invite);
         store.put(KIND,row.id,{id:row.id,status:'submitted',createdAt:row.createdAt,submittedAt:at,updatedAt:at,files:[],bytes:0,projectId:project.id,number:no});
-        return {number:no,at,projectId:project.id,invite,expiresAt,session:opened.session,csrf:opened.csrf};
+        return {receipt:{number:no,at,projectId:project.id,invite,expiresAt,session:opened.session,csrf:opened.csrf},discard:custom?[]:personaFiles};
       });
+      for(const file of done.discard)await unlink(inMedia(file.diskName)).catch(()=>{});
+      return done.receipt;
     }catch(error){
       store.transaction(()=>{const current=store.get(KIND,sending.id);if(current?.status==='sending'&&current.sendingId===sending.sendingId){const {sendingAt,sendingId,...rest}=current;store.put(KIND,sending.id,{...rest,status:'draft'});}});
       throw error;
@@ -347,8 +374,37 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
       return {id,slot,diskName,fileName,mimeType:kind.inline?mimeType:'application/octet-stream',byteSize:size,sha256:sha.digest('hex'),inline:kind.inline,at:clock()};
     }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
   }
+  // 고객 방에서 더 보내는 인물 사진(판 3). 같은 문턱 · 디스크 검사를 지나 처음부터 백업되는 폴더에 쓰고, 인물 출처 문서는 부른 쪽(pulse-personas addSource)이 남긴다.
+  async function receivePersonaFile(req,{session,client=''}){
+    const before=session();
+    if(before.row.stage==='archived')throw fail('보관된 프로젝트예요.',409);
+    count('upload:'+digest(client),1,REQUEST_LIMITS.uploadsPerHourByClient,3600000);
+    await assertDisk();
+    const header=key=>{const value=req.headers[key];if(value==null)return '';try{return decodeURIComponent(value);}catch{throw fail('파일 이름을 확인해 주세요.');}};
+    const fileName=text(header('x-file-name'),200),purpose=one(header('x-persona-purpose'),['identity','mood']),mimeType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase();
+    if(!fileName||!purpose)throw fail('파일 정보를 확인해 주세요.');
+    const kind=personaFileKind(mimeType,fileName),limit=kind.inline?REQUEST_LIMITS.fileBytes:REQUEST_LIMITS.attachmentBytes,tooBig=()=>fail(kind.inline?'파일은 100MB까지 받을 수 있어요. 더 크면 드라이브 링크로 알려 주세요.':'이 형식은 30MB까지 받을 수 있어요. 더 크면 드라이브 링크로 알려 주세요.',413);
+    const declared=Number(req.headers['content-length']);if(declared>limit)throw tooBig();
+    if(declared){count('bytes:'+digest(client),declared,REQUEST_LIMITS.uploadBytesPerDayByClient,86400000);count('bytes:all',declared,REQUEST_LIMITS.uploadBytesPerDay,86400000);}
+    const id=randomUUID(),temporary=inMedia(id+'.upload');
+    await mkdir(media(),{recursive:true,mode:0o700});
+    const handle=await open(temporary,'wx',0o600),sha=createHash('sha256');let size=0,head=Buffer.alloc(0);
+    try{
+      for await(const chunk of req.iterator({destroyOnReturn:false})){
+        size+=chunk.length;if(size>limit){req.resume();throw tooBig();}
+        if(head.length<4096)head=Buffer.concat([head,chunk.subarray(0,4096-head.length)]);
+        sha.update(chunk);let offset=0;while(offset<chunk.length){const {bytesWritten}=await handle.write(chunk,offset,chunk.length-offset);offset+=bytesWritten;}
+      }
+      await handle.close();
+      if(!size||!validRequestFile(kind,mimeType,head))throw fail('파일 내용이 형식과 달라요. 다른 파일을 골라 주세요.',415);
+      if(!declared){count('bytes:'+digest(client),size,REQUEST_LIMITS.uploadBytesPerDayByClient,86400000);count('bytes:all',size,REQUEST_LIMITS.uploadBytesPerDay,86400000);}
+      const diskName=`${id}.${kind.extension}`;
+      await rename(temporary,inMedia(diskName));
+      return {id,purpose,diskName,fileName,mimeType:kind.inline?mimeType:'application/octet-stream',byteSize:size,sha256:sha.digest('hex'),inline:kind.inline,at:clock()};
+    }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
+  }
   const discardProjectFile=async file=>{await unlink(inMedia(file.diskName)).catch(()=>{});};
-  return {start,read,save,receive,removeFile,draftFilePath,submit,pruneDrafts,retireUnconfirmed,receiveProjectFile,discardProjectFile,limits:REQUEST_LIMITS};
+  return {start,read,save,receive,removeFile,draftFilePath,submit,pruneDrafts,retireUnconfirmed,receiveProjectFile,receivePersonaFile,discardProjectFile,limits:REQUEST_LIMITS};
 }
 export async function streamDraftFile(res,{paths,file},req){
   let path,info;
@@ -638,7 +694,7 @@ function kstDay(value,now){
 function chooseDirection(studio,request,proposal,{option,modelId,note,status,now,stamp,extra={}}){
   studio.request={...request,answers:{...request.answers,...(modelId?{models:[modelId],modelChoice:''}:{})},directionProposal:{...proposal,status,chosenId:option.id,...(modelId?{modelId}:{}),answer:note,answeredAt:now,...extra}};
   // 카탈로그 모델을 고르면 전용 인물 참조를 뗀다. 모델 없이 고른 방향(사람 없이 · 전용 인물)은 붙은 인물을 그대로 둔다.
-  if(modelId&&request.confirmedAt)studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
+  if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
 }
 // 확인이 끝나면 답을 제작 설계 칸으로 옮겨 담는다(직원 도구가 그대로 쓰게). 이미 저장한 칸은 덮지 않는다.
 // 제작 설계에 칸이 없는 것(무엇으로 이길지 · 참고 광고 · 드라이브 · 쓰는 법 등)은 메모 칸에 줄로 남겨 옮겨 적는 일이 없게 한다.

@@ -298,6 +298,23 @@
 .desk-side h3{margin:14px 0 4px;font-size:13px;font-weight:600;color:var(--ink-3)}
 .desk-side p{margin:0;font-size:14.5px;line-height:1.55}
 .desk-sum{font-weight:550}
+/* 고객 전용 인물(판 3, desk-view.mjs personaDesk): 내부 확인의 인물 칸. 폼은 작업마다 하나, 손님에게 보이는 칸 옆에 영어 칸(영어 프로젝트). */
+.desk-persona{margin-top:30px}
+.desk-persona>.desk-h:first-child{border-bottom-width:2px}
+.desk-persona h3.desk-h{font-size:14px;border-bottom-color:var(--hair-p,#ddd)}
+.desk-persona .desk-sum{margin-top:10px}
+.desk-persona-media video{display:block;width:100%;aspect-ratio:1;background:#000}
+.desk-persona-media figcaption form{margin-top:4px}
+.desk-persona-revisions li>div{display:grid;gap:6px;min-width:0}
+.desk-persona-form{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;margin-top:10px}
+.desk-persona-form label{display:grid;gap:4px;font-size:13px;color:var(--ink-2);flex:1 1 220px;min-width:0}
+.desk-persona-form :is(input,textarea,select){padding:8px 10px;border:1px solid var(--line,#ccc);border-radius:8px;font:inherit;font-size:14px;color:var(--ink);background:var(--paper,#fff);box-sizing:border-box;width:100%}
+.desk-persona-form input[type=file]{border:0;padding:4px 0}
+.desk-persona-form textarea{min-height:56px}
+.desk-persona-form button{flex:none}
+.desk-persona-actions{display:grid;gap:4px}
+.desk-persona-more{margin-top:10px}
+.desk-persona-more summary{cursor:pointer;width:max-content;font-size:14px}
 .checks{margin:0;padding:0;list-style:none}
 .checks li{display:flex;gap:9px;padding:6px 0;font-size:14px}
 .checks .led{margin-top:6px}

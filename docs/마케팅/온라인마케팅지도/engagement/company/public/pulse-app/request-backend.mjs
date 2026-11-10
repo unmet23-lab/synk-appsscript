@@ -17,6 +17,8 @@ function uploadWithProgress(path,file,{csrf,slot,onProgress}){
     xhr.send(file);
   });
 }
+// 맞춤 인물 스위치(판 3): 서버 응답의 features만 믿는다. 실제 인물은 인물 접수가 켜져 있을 때만이다.
+const personaFlagsOf=features=>({request:features?.personaRequest===true,real:features?.personaRequest===true&&features?.personaReal===true});
 // 공개 의뢰서: 처음 저장할 때 초안을 만들어 그냥 둘러보기만 한 사람은 서버에 아무것도 남기지 않는다.
 export async function publicBackend(){
   // features: 서버가 허락한 공개 메뉴 언어 · 전용 인물 스위치(판 1). 화면은 이 값만 믿는다.
@@ -30,6 +32,8 @@ export async function publicBackend(){
   const again=async write=>{const used=draft;try{return await write();}catch(error){if(error.status!==401)throw error;expired(used);return write();}};
   const backend={
     answers,step:draft?.step||'',alreadySent:draft?.status==='submitted',onExpired:null,features,
+    // 인물 사진은 초안 길로만 받는다(접수 뒤에는 고객 방의 인물 카드에서).
+    personaPhotos:true,personaFlags:()=>personaFlagsOf(features),
     save(values,step){return again(async()=>{const current=await ensure(),result=await send('/pulse/api/request/save',{csrf:current.csrf,body:{answers:answersForServer(values),step}});draft={...result.draft,csrf:current.csrf};});},
     upload(slot,file,onProgress){return again(async()=>{const current=await ensure(),result=await uploadWithProgress('/pulse/api/request/media',file,{csrf:current.csrf,slot,onProgress});return {...result.file,preview:draftPreview(result.file)};});},
     // 지우려던 파일이 초안과 함께 이미 사라졌으면 더 할 일이 없다.
@@ -51,7 +55,8 @@ export async function publicBackend(){
 }
 // 이미 프로젝트가 있는 손님(담당자가 만든 프로젝트 · 보낸 의뢰서 고치기): 답은 프로젝트에, 파일은 접수 뒤 파일 길로 간다.
 // 판 번호는 앱이 쥔 최신 값을 쓴다. 그사이 담당자가 고쳐 판이 어긋나면 새로 읽어 한 번 더 시도한다.
-export function projectBackend({project,csrf,accept,step=''}){
+// features(판 3): 앱이 쥔 그 프로젝트 응답의 features(맞춤 인물 스위치). 이 길에서는 인물 사진 칸을 두지 않는다 — 프로젝트 자료 길(request-file)은 인물 칸을 받지 않는다.
+export function projectBackend({project,csrf,accept,step='',features=()=>null}){
   const current=project(),request=current.studio?.request;
   const answers=answersFromServer(request?.answers,request?.files,assetPreview);
   answers.consent=answers.rights=!!request?.consentAt;
@@ -61,7 +66,7 @@ export function projectBackend({project,csrf,accept,step=''}){
     catch(error){if(error.status!==409)throw error;accept(await send('/pulse/api/project'));const result=await call();accept(result);return result;}
   };
   return {
-    answers,step,
+    answers,step,personaPhotos:false,personaFlags:()=>personaFlagsOf(features()),
     async save(values){await act('request_save',{answers:answersForServer(values)});},
     async upload(slot,file,onProgress){const result=await uploadWithProgress('/pulse/api/studio/request-file',file,{csrf:csrf(),slot,onProgress});accept(result);return {...result.file,preview:assetPreview(result.file)};},
     async remove(id){accept(await send(`/pulse/api/studio/request-file/${encodeURIComponent(id)}`,{method:'DELETE',csrf:csrf()}));},

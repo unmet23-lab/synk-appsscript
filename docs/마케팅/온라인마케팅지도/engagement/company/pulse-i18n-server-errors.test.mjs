@@ -28,12 +28,12 @@ const {parse}=createRequire(import.meta.url)('acorn');
 const MODULES=[
   {file:'server.mjs',scope:['body'],blocks:["'/pulse/api/"]},
   {file:'pulse-requests.mjs',
-    scope:['busy','text','link','one','many','markets','normalizeRequestAnswers','requestFileKind','inDraft','inMedia','count','assertDisk','draftOf','start','read','save','receive','removeFile','newNumber','submit','receiveProjectFile','assertCasting','applyRequestAction'],
+    scope:['busy','text','link','one','many','markets','normalizeRequestAnswers','requestFileKind','inDraft','inMedia','count','assertDisk','draftOf','start','read','save','receive','removeFile','newNumber','submit','receiveProjectFile','assertCasting','applyRequestAction','personaRequestOf','personaFileKind','receivePersonaFile'],
     actions:{customer:['request_save','request_submit','request_answer','answer_model','answer_direction','submit_draft_review','approve_draft'],staff:['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','request_contact','settle_direction','payment_request','payment_confirm','payment_cancel']},
     staffFlags:['staff'],messageArgs:{link:2}},
   {file:'pulse-studio.mjs',
     scope:['customer','customerWrite','revision','studioOf','keys','capacity','commit','mutate','customerMutate','customerState','addRequestFile','removeRequestFile','customerAction'],
-    actions:{customer:['approve','confirm_delivery','submit_kickoff_source'],staff:['save_translation','request_strategy_review','save_concept','save_scene','reorder_scenes'],legacy:['save_strategy','confirm_strategy','save_preferences','save_reference','remove_reference','select_concept','review_scene','comment']},
+    actions:{customer:['approve','confirm_delivery','submit_kickoff_source','request_submit'],staff:['save_translation','request_strategy_review','save_concept','save_scene','reorder_scenes'],legacy:['save_strategy','confirm_strategy','save_preferences','save_reference','remove_reference','select_concept','review_scene','comment']},
     staffFlags:['user'],indirect:{'approval.reason':'client-preview-approval.mjs'}},
   {file:'client-projects.mjs',
     scope:['object','revision','messageCapacity','requestOwner','reissueRequestInvite','open','session','read','customerAction','confirmDelivery','submitKickoffSource'],
@@ -49,7 +49,8 @@ const MODULES=[
     actions:{customer:['submit_kickoff_source'],staff:['configure','link','review','waive','reset']}},
   {file:'client-preview-approval.mjs',scope:['buildCustomerPreviewApproval'],messageArgs:{decision:1},
     exclude:{'시안이 마음에 들면 승인해 주세요. 이 시안으로 최종본을 만들어요.':'승인할 수 있을 때의 안내 — 오류로 나가지 않는다'}},
-  {file:'pulse-personas.mjs',scope:['createPersonaGuard']},
+  // 판 3: 의뢰서 보내기 · 고객 방 인물 카드(승인 · 사진 더 보내기)가 부르는 함수. 직원 경로(staffAction · addAsset · 동의)는 직원 화면이라 세지 않는다.
+  {file:'pulse-personas.mjs',scope:['createPersonaGuard','text','assertRequest','create','afterProjectSubmit','session','stale','approve','addSource']},
   {file:'pulse-devices.mjs',scope:'*'},
   // 메일 코드로 다시 열기(판 4): 세션 없는 손님 길이라 모든 문장이 손님에게 간다.
   {file:'pulse-mail-open.mjs',scope:'*'},

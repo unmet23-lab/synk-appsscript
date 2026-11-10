@@ -40,7 +40,7 @@ test('F3: the staff list names the payment wait by its state',()=>{
 
 test('F4: picking “recommend” or “no model” swaps the big portrait for the business picture, on first paint and on change',()=>{
   const flow=read('request-flow.mjs');
-  assert.match(flow,/const choiceShot=a=>kindOf\(a\)\?\.shot\|\|still\('w-gift-sphere'\);/);
+  assert.match(flow,/const choiceShot=a=>a\.modelChoice==='custom'&&personaPhoto\(a\)\?\.src\|\|kindOf\(a\)\?\.shot\|\|still\('w-gift-sphere'\);/,'추천 · 사람 없이는 업종 그림 그대로(맞춤 인물만 판 3에서 인물 칸 사진이 먼저)');
   assert.match(flow,/<img data-portrait src="\$\{esc\(choiceText\(a\)\?choiceShot\(a\):bigScene\(lead\)\)\}"/);
   assert.match(flow,/if\(lead\)lead\.textContent=text\.caption;crossfade\(\$\('\[data-portrait\]'\),choiceShot\(a\)\);\}/);
 });

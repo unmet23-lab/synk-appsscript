@@ -1,7 +1,8 @@
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {KINDS,MODEL_LINES,briefRows,slotsFor,emptyAnswers,ratioOf,pkgOf,PACKAGES,price,channelText} from './request-data.mjs';
 import {t,k,locale,intlLocale} from './i18n.mjs';
-import {castingOf} from './casting-choice.mjs';
+import {castingOf,MODEL_OPTIONAL_CHOICES} from './casting-choice.mjs';
+import {personaModel,personaJournal,personaFace} from './persona-view.mjs';
 
 // 실제 프로젝트를 슬레이트 판 화면(film-views.mjs)의 자료로 옮긴다. 판단은 여기 한 곳에서 한다.
 // 흐름: 의뢰서 → 확인(되묻기) → 1차안(모델 → 글 콘티 판 → 장면 이미지 판) → 제작 → 영상 확인 → 납품. 공개 약속 「영상 전에 세 번 확인」과 같은 순서다.
@@ -119,6 +120,8 @@ export function roomModel(p){
     // 메일이 나가는 순간(서버가 알림 — 판 4의 여덟 순간). 옛 서버는 목록이 없어 11-07의 네 순간으로 본다.
     moments:Array.isArray(p?.mail?.moments)?p.mail.moments:['direction_proposed','draft_ready','preview_ready','final_ready'],
     pay:['pay','prepare-images'].includes(state)?payModel(p):null,
+    // 고객 전용 인물(판 3): 서버 손님 보기 project.persona가 있을 때만(없으면 null — 고객 방은 판 3 전 그대로).
+    persona:personaModel(p),
   };
 }
 // 결제 안내 카드(판 4): 값 · 받으실 날 · 수정 · 접수 번호 · 결제 상태. 값은 결제 요청에 적힌 값, 없으면 고른 방향의 값, 없으면 패키지 값.
@@ -152,9 +155,11 @@ export function draftModel(p){
   if(!round)return null;
   const scenes=round.scenes.map(ref=>(st.scenes||[]).find(scene=>scene.id===ref.id)).filter(Boolean);
   if(!scenes.length)return null;
-  const modelId=castingOf(r,st.strategy?.data?.castingSelection).modelId;
+  const casting=castingOf(r,st.strategy?.data?.castingSelection),modelId=casting.modelId;
   const assetSrc=scene=>scene.assetId?assetUrl((st.assets||[]).find(asset=>asset.id===scene.assetId)):'';
-  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),ratio:ratioOf({channels:r.answers?.channels||[]}),
+  // 전용 인물이 붙은 프로젝트(판 3 — 이번 광고 사용을 확인한 뒤)는 모델 칸 대신 그 인물의 기준 얼굴. 없으면 키가 없다(판 3 전 모양).
+  const persona=casting.kind==='persona'?personaFace(p,casting.personaRef):null;
+  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),...(persona?{persona}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
 }
 // ── 일지(판 3b) ──
@@ -222,6 +227,8 @@ export function journalModel(p){
   // 앞선 수령 확인(판 3c — 최종본을 더 올려 묶음이 바뀌어도 남는다). 옛 서버는 이 목록을 안 내려 지금 묶음 확인만 보인다.
   for(const earlier of p?.closeout?.earlierReceipts||[])if(timeOf(earlier?.confirmedAt)!==null)add({id:'k:at:'+earlier.confirmedAt,at:earlier.confirmedAt,who:'me',name:me,kind:'event',what:t('파일과 안내를 확인했어요')});
   if(receipt?.confirmedAt)add({id:'k:'+(p.closeout.deliveryKey||'now'),at:receipt.confirmedAt,who:'me',name:me,kind:'event',what:t('파일과 안내를 확인했어요')});
+  // 고객 전용 인물(판 3)의 일 — 요청 · 사진 · 견적 · 기준 얼굴 · 동작 시안 · 사용 범위와 그 확인. 인물이 없으면 줄이 없다.
+  for(const item of personaJournal(p,{me,owner}))add(item);
   // 새 것이 위. 시각이 같으면 받은 것 → 내 것 차례, 시각을 못 읽는 줄은 맨 아래.
   items.sort((a,b)=>(b.t??-Infinity)-(a.t??-Infinity)||(a.who==='me')-(b.who==='me'));
   const asks=(r?.asks||[]).filter(ask=>ask.status==='open').map(ask=>({id:ask.id,label:ask.label,why:ask.why||'',at:ask.at,t:timeOf(ask.at)}));
@@ -251,9 +258,12 @@ export function deskChecks(p){
     checks.push(got.length?{ok:true,label:`${slot.label} ${got.length}개를 받았어요`}:{ok:false,label:`${slot.label}이 없어요`,note:none?'손님이 지금 없다고 표시했어요.':'비워 두고 보냈어요.'});
   }
   checks.push(a.channels?.length?{ok:true,label:'올릴 곳을 알려 주셨어요'}:{ok:false,label:'올릴 곳이 비어 있어요',note:'저희가 제안해요.'});
-  const direction=r.directionProposal;
+  const direction=r.directionProposal,casting=castingOf({...r,answers:a},p.studio?.strategy?.data?.castingSelection);
   if(direction)checks.push(['chosen','settled'].includes(direction.status)?{ok:true,label:`손님이 방향 「${direction.options.find(option=>option.id===direction.chosenId)?.name||''}」${direction.status==='settled'?'으로 정리했어요':'을 골랐어요'}`,note:direction.answer?`손님 말: ${direction.answer}`:''}:direction.status==='declined'?{ok:false,label:direction.round>=2?'두 번째 방향도 아니래요 — 손님과 이야기해 정리해 주세요':'손님이 두 방향 다 아니래요',note:direction.answer?`손님 말: ${direction.answer}`:''}:{ok:false,label:'방향 제안을 보냈어요',note:'손님 답을 기다려요.'});
-  else if(!castingOf({...r,answers:a},p.studio?.strategy?.data?.castingSelection).agreed)checks.push({ok:false,label:'모델을 제안해 확인받아야 해요',note:r.modelProposal?.status==='open'?'제안을 보냈어요. 답을 기다려요.':r.modelProposal?.answer?`손님 답: ${r.modelProposal.answer}`:'글 콘티를 보내기 전에 먼저 정해요.'});
+  else if(!['custom','persona'].includes(casting.kind)&&!casting.agreed)checks.push({ok:false,label:'모델을 제안해 확인받아야 해요',note:r.modelProposal?.status==='open'?'제안을 보냈어요. 답을 기다려요.':r.modelProposal?.answer?`손님 답: ${r.modelProposal.answer}`:'글 콘티를 보내기 전에 먼저 정해요.'});
+  // 맞춤 인물(판 3): 손님이 이번 광고 사용까지 확인해야 제작 설계에 인물이 붙고, 그 전에는 제작 시작(이미지 판 확인)을 서버가 막는다.
+  if(casting.kind==='custom')checks.push({ok:false,label:'맞춤 인물 의뢰예요 — 아래 맞춤 인물 칸에서 검토 · 확인을 받아요',note:'손님이 이번 광고 사용까지 확인하면 제작 설계에 인물이 붙어요. 그 전에는 제작을 시작할 수 없어요.'});
+  if(casting.kind==='persona')checks.push({ok:true,label:'전용 인물이 붙었어요',note:'손님이 이번 광고 사용을 확인했어요.'});
   const claim=(a.screenText||'').split('\n').find(line=>/\d|출시|할인|무료|한정/.test(line))?.trim();
   if(claim){const answered=(r.asks||[]).find(ask=>ask.status==='answered'&&ask.label.includes(claim));checks.push(answered?{ok:true,label:'화면 글자 사실을 확인받았어요',note:`손님 답: ${answered.answer||answered.fileName||'파일로 답했어요'}`}:{ok:false,label:'화면 글자에 사실 확인이 필요해요',note:`「${claim}」이 확정인지 물어봐요.`});}
   const words=[...(a.avoid||[])].filter(word=>a.screenText?.includes(word)||a.oneThing?.includes(word));
@@ -267,7 +277,7 @@ export function deskModel(p){
   const r=requestOf(p);if(!r)return null;
   const note=(r.notes||[]).at(-1)||null,assets=p?.studio?.assets||[],a=r.answers||{},proposal=r.modelProposal,direction=r.directionProposal;
   const canDirect=r.status==='confirmed'&&!(r.rounds||[]).length&&a.package!=='photo'&&(!direction||direction.status==='open'||direction.status==='declined'&&direction.round<2);
-  return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,paymentFlow:!!r.paymentFlow,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&a.modelChoice!=='none'&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
+  return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,paymentFlow:!!r.paymentFlow,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&!MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
     direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name}))}:null,
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};

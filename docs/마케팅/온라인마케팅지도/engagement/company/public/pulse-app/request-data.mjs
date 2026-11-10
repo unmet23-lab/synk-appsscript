@@ -79,6 +79,22 @@ export const SLOTS=Object.freeze({
   ],
 });
 export const slotsFor=kind=>SLOTS[KINDS.find(item=>item.id===kind)?.group||'product'];
+// 맞춤 인물 사진 칸(판 3 — 스위치 personaRequest가 켜진 공개 의뢰서에서만 그린다). id는 서버 pulse-personas.mjs PERSONA_SLOTS와 같다.
+// 이 칸의 사진은 프로젝트 자료가 아니라 인물 검토 자료라 받은 자료 수 · 스크린의 「보내 주신 사진」에 넣지 않는다.
+// 「같은 사람」 칸은 실제 인물 출연일 때만 연다(가상 인물에 남의 얼굴을 재현하는 길이 되지 않게 — 의뢰서 권리 칸 「실존 인물을 닮게 만드는 요청은 받지 않아요」와 같은 약속).
+const PERSONA_ACCEPT='image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif';
+export const PERSONA_SLOTS=Object.freeze([
+  {id:'persona-identity',label:k('출연하실 분의 사진'),accept:PERSONA_ACCEPT,why:k('얼굴이 또렷한 사진 1~3장이면 상담을 시작할 수 있어요. 같은 얼굴로 만들려면 사진이 더 필요할 수 있어요. 검토한 뒤 어떤 사진이 필요한지 알려 드려요.'),multiple:true,persona:true},
+  {id:'persona-mood',label:k('분위기 참고 사진'),accept:PERSONA_ACCEPT,why:k('이런 느낌이면 좋겠다 싶은 사진이에요. 사진 속 사람을 닮게 만들지는 않아요.'),multiple:true,persona:true},
+]);
+export const isPersonaSlot=id=>PERSONA_SLOTS.some(slot=>slot.id===id);
+// 맞춤 인물 요청의 고르는 값(서버 pulse-requests.mjs personaRequestOf의 허용 목록과 같은 저장값 — 보일 때만 번역한다).
+export const PERSONA_KINDS=Object.freeze([{id:'virtual',label:k('새 가상 인물')},{id:'real',label:k('실제 인물 출연')}]);
+export const PERSONA_KEEPS=Object.freeze([{id:'once',label:k('이번 광고만')},{id:'reuse',label:k('다음 광고에도')}]);
+export const PERSONA_RELATIONS=Object.freeze([{id:'self',label:k('본인')},{id:'agency',label:k('소속 모델')},{id:'other',label:k('그 밖의 분')}]);
+export const PERSONA_CONSENTS=Object.freeze([{id:'link',label:k('확인 링크로')},{id:'document',label:k('서류로')}]);
+// 종류를 고르지 않았으면 새 가상 인물이다(서버도 보낼 때 그렇게 채운다).
+export const personaKindLabel=a=>t(a?.personaRequest?.kind==='real'?PERSONA_KINDS[1].label:PERSONA_KINDS[0].label);
 // 자주 걸리는 말. 법률 판단이 아니라 「한 번 더 볼 말」을 먼저 꺼내 놓는 것이다.
 // 고른 말은 한국어 그대로 저장한다(피할 말 칩 — 저장값이라 i18n-skip). 보일 때는 문맥 claim으로 번역한다: 「재생」은 영상 재생 단추와 낱말이 같다.
 export const WATCH_WORDS=Object.freeze({
@@ -152,11 +168,13 @@ export const emptyAnswers=()=>({
   models:[],modelChoice:'',hair:'',
   date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,
   contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',
+  personaRequest:{kind:'',look:'',use:'',keep:'',relation:'',consentWay:''},
 });
 // 다국어 · 전용 인물 판 1(11-09)에 더한 칸(서버 pulse-requests.mjs ANSWER_FIELDS와 같은 이름). 비어 있으면 보내지 않는다 —
 // 이 칸을 모르는 옛 서버도 자동 저장을 거절하지 않게. 서버는 빠진 칸을 빈 값으로 채우므로 지운 값도 그대로 전해진다.
-const LATER_FIELDS=['hair','contactLocale','outputLocales','targetMarket','quoteCurrency'];
-const blank=value=>value===''||value==null||Array.isArray(value)&&!value.length;
+// 판 3의 맞춤 인물 요청(personaRequest)도 같다 — 칸이 모두 비어 있으면 보내지 않는다.
+const LATER_FIELDS=['hair','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+const blank=value=>value===''||value==null||Array.isArray(value)&&!value.length||typeof value==='object'&&!Array.isArray(value)&&Object.values(value).every(item=>item===''||item==null);
 // 이미지 원본 점검(브라우저에서 바로). 막지 않고, 어느 컷에 어떤 영향이 있는지만 말한다. 글은 부를 때의 언어다(화면은 그릴 때마다 다시 부른다).
 export function photoAdvice(width,height,kind){
   const long=Math.max(width,height),size={width,height};
@@ -175,7 +193,7 @@ export const modelOf=id=>CASTING_MODELS.find(item=>item.id===id);
 export const modelList=a=>a.models.map(id=>modelOf(id)?.name).filter(Boolean).map(name=>t(name,null,'model')).join(', ');
 export const filesOf=(a,id)=>a.slots[id]?.files||[];
 export const ratioOf=a=>[...new Set((a.channels||[]).map(id=>CHANNELS.find(item=>item.id===id)?.ratio).filter(Boolean))][0]||'9:16';
-export const slotCount=a=>Object.values(a.slots).reduce((sum,slot)=>sum+(slot.files?.length||0),0);
+export const slotCount=a=>Object.entries(a.slots).reduce((sum,[id,slot])=>isPersonaSlot(id)?sum:sum+(slot.files?.length||0),0);
 // 의뢰서 한 장. 비어 있으면 막지 않고, 없으면 어떻게 하는지를 그 자리에 쓴다.
 export function briefRows(a){
   // 줄 이름(key)과 빈칸 안내(missing)는 한국어 키 그대로 두고 그리는 자리에서 번역한다(내부 확인이 그 글로 견준다). 값의 고정 낱말은 여기서 번역한다.
@@ -196,7 +214,7 @@ export function briefRows(a){
     {key:k('자랑할 사실'),step:'words',value:a.facts,missing:a.facts?'':k('없음')},
     {key:k('무엇으로'),step:'feel',value:win&&t(win),missing:win?'':k('저희가 제안해요')},
     {key:k('참고 광고'),step:'feel',value:refs,missing:refs?'':k('없음')},
-    {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
+    {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
     {key:k('받고 싶은 날'),step:'contact',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
     {key:k('최종 확인'),step:'contact',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
     {key:k('연락처'),step:'contact',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},

@@ -7,6 +7,7 @@ import {FINISHED_FILMS,filmNote,filmTitle} from './films-view.mjs';
 import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
 import {arrow} from './film-home.mjs';
 import {holdPoster} from './film-review.mjs';
+import {personaCopy,personaCard,personaLine,personaScreen} from './persona-view.mjs';
 export {entryView,mountEntry} from './film-home.mjs';
 
 // 시사실 판의 고객 화면(2026-11-05): 고객 방, 1차안. 자료 모양은 room-view.mjs가 프로젝트에서 옮겨 준다. 판단은 거기 있고 여기는 그리기만 한다.
@@ -210,26 +211,30 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   return {unmount(){stopFilm();}};
 }
 const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item=>item.id!==m.id).map(item=>`<button type="button" class="sx-cast" data-room-model="${item.id}" aria-label="${esc([nameOf(item.name),t(MODEL_LINES[item.id]?.line||item.description),t('이 모델로 정하기')].join(' · '))}"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(nameOf(item.name))}</span></button>`).join('')}</div>`;
+// 고객 전용 인물(판 3, persona-view.mjs): 인물이 손님 차례이고 영상 쪽이 손님 차례가 아니면 인물이 「지금 차례」(머리 글 · 카드 · 스크린)가 되고,
+// 영상 쪽도 손님 차례면 인물 카드는 그 아래 제 머리를 단 카드로, 인물이 저희 차례 · 끝이면 작은 한 줄로 선다. 인물이 없으면 판 3 전과 바이트가 같다(기존 줄 안에만 이어 붙인다).
+// 되묻기 차례는 답할 칸이 일지 맨 위에 있어(「아래 칸만 채워 주시면」) 인물 칸을 일지 뒤로 보낸다 — 되묻기 글과 답 칸 사이에 끼지 않게.
 export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail=''}={}){
-  const copy=copyOf(p),confirm=CONFIRM_OF[p.state];
+  const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main?'':CONFIRM_OF[p.state];
+  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona)):'',late=p.state==='ask'&&!!journal;
   return `<div class="sx-room" data-state="${esc(p.state)}">
     ${bar?exampleHead(p):''}
     <section class="sx-room-hero">
       <div class="sx-room-left">
         ${top}
-        <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}</p>
+        <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
         <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
         <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>
-        ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}
+        ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true}):''}
         ${p.state==='pay'?payCard(p):''}
         ${p.state==='done'?doneCard(p):''}
         ${p.state==='model'&&p.proposal?proposeCard(p.proposal):''}
         ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
-        ${p.state==='ask'&&!journal?askList(p):''}
+        ${p.state==='ask'&&!journal?askList(p):''}${late?'':below}
         ${after}
-        ${journal}
+        ${journal}${late?below:''}
       </div>
-      <div class="sx-room-screen">${roomScreen(p)}</div>
+      <div class="sx-room-screen">${main&&personaScreen(p.persona)||roomScreen(p)}</div>
     </section>
     ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
     ${roomPaper(p)}
@@ -318,7 +323,8 @@ function proposeCard(m){
     <form class="sx-propose-say" data-form="model-say" data-model-say hidden><label class="sx-field"><span class="sx-small">${esc(t('딱 맞는 모델이 없으면 말로 알려 주세요'))}</span><textarea name="note" rows="2" maxlength="300" required placeholder="${esc(t('예) 조금 더 어린 느낌이면 좋겠어요'))}"></textarea></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('이대로 보내기'))}</span>${arrow}</button></form></section>`;
 }
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
-export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper}={}){
+// onPersona({decision,button}) · onPersonaFiles(purpose,files): 고객 전용 인물 카드(판 3)의 승인 단추와 사진 보내기 — 부른 쪽(app.mjs)이 서버에 보낸다.
+export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles}={}){
   const host=root.querySelector('.sx-room,.sx-shell,.sx-draft');if(!host)return {unmount(){}};
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
   const steps=host.querySelector('.sx-steps-run'),current=steps?.querySelector('.is-now');
@@ -334,6 +340,7 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
     const go=event.target.closest('[data-room-go]');if(go){if(!go.disabled)onGo?.(go.dataset.roomGo);return;}
     const model=event.target.closest('[data-room-model]')?.dataset.roomModel;if(model){onModel?.({modelId:model});return;}
     const button=event.target.closest('[data-room-do]'),what=button?.dataset.roomDo;if(!what)return;
+    if(what==='persona-approve'){onPersona?.({decision:'approve',button});return;}
     if(what==='edit')onEdit?.();
     // 결제 안내 카드의 접수 번호 복사(판 4) — 크몽 「문의하기」에 붙여 넣는다.
     if(what==='copy-number'){const number=button.dataset.number||'';const done=()=>{button.textContent=t('복사했어요');};navigator.clipboard?.writeText(number).then(done,()=>{});return;}
@@ -350,7 +357,12 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
   host.addEventListener('change',event=>{
     if(event.target.matches('[data-ask-file]'))fileName(event.target);
     if(event.target.matches('[data-room-file]')&&event.target.files.length){const list=[...event.target.files];event.target.value='';onFiles?.(list);}
+    if(event.target.matches('[data-persona-file]')&&event.target.files.length){const list=[...event.target.files],purpose=event.target.dataset.personaFile;event.target.value='';onPersonaFiles?.(purpose,list);}
   });
+  // 인물 카드의 고칠 점 칸에 글이 있으면 승인 단추 위에 「먼저 보내 주세요」를 보인다(다시 그린 뒤 되살린 글에도 — app.mjs restore가 그린 뒤 채운다).
+  // 막힌 동안 승인 단추는 흐리게(aria-disabled) 두되 누를 수는 있다 — 누르면 왜 막혔는지 알리고 그 칸으로 데려간다(app.mjs personaDecide).
+  const holdSync=()=>{const area=host.querySelector('form[data-form="persona-changes"] textarea'),hold=host.querySelector('[data-persona-hold]'),held=!!area?.value.trim(),go=host.querySelector('[data-room-do="persona-approve"]');if(hold)hold.hidden=!held;if(go){go.classList.toggle('is-held',held);if(held)go.setAttribute('aria-disabled','true');else go.removeAttribute('aria-disabled');}};
+  holdSync();host.addEventListener('input',event=>{if(event.target.closest?.('form[data-form="persona-changes"]'))holdSync();});
   return {unmount(){}};
 }
 
@@ -378,7 +390,7 @@ export function draftView(d,{top='',head='',journal=''}={}){
       ${top}
       <div class="sx-dr-credit"><p class="sx-small">${credit}</p><p class="sx-small sx-dr-oneline-label">${esc(t('광고가 남길 한 문장'))}</p><h1 class="sx-serif" data-draft-title>${esc(d.oneLine)}</h1>${d.note?`<p class="sx-small sx-draft-note">${esc(d.note)}</p>`:''}</div>
       ${journal}
-      ${d.model?`<div class="sx-draft-cast"><img src="${esc(modelScene(d.model.id))}" alt=""><span class="sx-small"><b>${esc(nameOf(d.model.name))}</b> ${esc(t(d.model.line))}${script&&!locked?` <button type="button" class="sx-quiet" data-draft-do="recast">${esc(t('다른 모델로 바꾸기'))}</button>`:''}</span></div>`:''}
+      ${d.model?`<div class="sx-draft-cast"><img src="${esc(modelScene(d.model.id))}" alt=""><span class="sx-small"><b>${esc(nameOf(d.model.name))}</b> ${esc(t(d.model.line))}${script&&!locked?` <button type="button" class="sx-quiet" data-draft-do="recast">${esc(t('다른 모델로 바꾸기'))}</button>`:''}</span></div>`:d.persona?`<div class="sx-draft-cast">${d.persona.image?`<img src="${esc(d.persona.image)}" alt="">`:''}<span class="sx-small"><b>${esc(d.persona.name)}</b> ${esc(t('이번 광고에 쓰기로 하신 맞춤 인물'))}</span></div>`:''}
     </header>
     <aside class="sx-dr-right">
       <p class="sx-no sx-draft-cut"><b data-cut-no>01</b> / ${pad(d.cuts.length)} <span class="sx-small" data-cut-sec>${esc(secs(d.cuts[0].seconds))}</span></p>

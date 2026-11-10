@@ -15,6 +15,8 @@ import {mountFilmList} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
 import {draftModel,deskModel,roomState,directionModel,usesRoom,roomTab,roomRoute,journalModel} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
+import {MODEL_OPTIONAL_CHOICES,personaRefOf} from './casting-choice.mjs';
+import {PERSONA_DONE} from './persona-view.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {withDeviceDeadline,deviceAvailability,deviceConnectionNote,deviceKey,canMigrateDevice,foregroundProjectOptions,rejectedDeviceRegistration,deviceFailureText} from './push.mjs';
 import {installationEnvironment,installationGuide,devicePermissionTimeout} from './install.mjs';
@@ -116,7 +118,7 @@ function mountScreens(){
   // 방향 제안: 비교 중인 안 · 모델 · 펼친 칸은 s.directionUi에 두어 실시간 다시 그리기에도 남긴다(제안이 바뀌면 새로).
   if(main.querySelector('[data-dp]')){const info=directionModel(s.project);if(info){const key=info.options.map(o=>o.id).join(',');if(s.directionUi?.key!==key)s.directionUi={key};directionHandle=mountDirection(main,info,{ui:s.directionUi,animate});}}
   const headRun=document.querySelector('.app-header .sx-steps-run'),headNow=headRun?.querySelector('.is-now');if(headNow&&headRun.scrollWidth>headRun.clientWidth)headRun.scrollLeft=headNow.offsetLeft-headRun.offsetLeft-(headRun.clientWidth-headNow.offsetWidth)/2;
-  if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>openJournal(),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper});
+  if(room)mountRoom(main,{animate,onGo:goRoom,onEdit:()=>openProjectRequest('review'),onContact:()=>openJournal(),onModel:answerModel,onFiles:sendMoreFiles,onPaper:showRoomPaper,onPersona:({decision})=>personaDecide({decision}),onPersonaFiles:sendPersonaFiles});
   watchJournal();setJournalOpen(!!s.journalOpen);
 }
 // 쓰던 의뢰서가 있으면 첫 화면 단추가 「이어 쓰기」로 바뀐다. 한 번만 물어본다.
@@ -275,6 +277,38 @@ async function directionBody(form,values){
 const requestFileUpload=(file,slot)=>request('/pulse/api/studio/request-file',{...options(),file,headers:{'Content-Type':file.type||'application/octet-stream','X-File-Name':encodeURIComponent(file.name),'X-Request-Slot':slot}});
 function answerModel(values){return mutate(()=>studioAction('answer_model',values),{message:values.accept||values.modelId?t('모델을 정했어요. 글 콘티를 준비해 보내 드릴게요.'):t('담당자에게 전했어요. 다시 제안해 드릴게요.')});}
 function sendMoreFiles(list){return mutate(async()=>{let last=null;for(const file of list){last=await requestFileUpload(file,'etc');accept(last);}return last||{};},{message:list.length>1?t('자료 {count}개를 보냈어요.',{count:list.length}):t('자료를 보냈어요.')});}
+// 고객 전용 인물(판 3) — 승인 · 고칠 점: 서버가 계산한 지금 차례(awaiting의 종류 · 판 · viewedHash)와 화면이 만든 요청 키를 보낸다.
+// 같은 차례 · 같은 결정은 같은 키(두 번 눌러도 한 번 남는다). 그사이 새 판이 왔으면 서버가 409 SYNK_PULSE_PERSONA_STALE — 최신을 다시 읽어 그리고 알린다(쓰던 고칠 점은 남는다).
+// 고칠 점 칸에 글이 있으면 승인을 보내지 않는다(그 글을 먼저 보내거나 지우게) — 승인마다 무엇을 확인하는지는 카드의 한 문장이 말한다.
+const personaKeys=new Map();
+const freshKey=()=>globalThis.crypto?.randomUUID?.()||Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)),value=>value.toString(16).padStart(2,'0')).join('');
+const personaKey=(hash,decision)=>{const key=hash+':'+decision;if(!personaKeys.has(key))personaKeys.set(key,freshKey());return personaKeys.get(key);};
+async function personaDecide({decision,note='',form=null}){
+  if(busy||loading)return false;
+  const view=s.project?.persona,want=view?.awaiting;
+  // 화면이 아직 옛 차례를 그리고 있으면(입력 중에는 실시간 갱신을 미룬다) 먼저 새로 읽는다.
+  if(!want||form&&form.dataset.id!==want.kind){await refresh();return false;}
+  if(decision==='approve'){const area=main.querySelector('form[data-form="persona-changes"] textarea');if(area?.value.trim()){notice(t('적으신 고칠 점을 먼저 보내 주세요. 보내지 않으려면 글을 지워 주세요.'));const details=area.closest('details');if(details)details.open=true;area.focus();return false;}}
+  const key=form?draftKey(form):'',revision=key?drafts.get(key)?.revision:undefined;let stale=false;
+  return mutate(async()=>{
+    try{return await request('/pulse/api/persona/approve',{...options(),body:{personaId:view.id,kind:want.kind,revisionId:want.revisionId,viewedHash:want.viewedHash,idempotencyKey:personaKey(want.viewedHash,decision),decision,...(note?{note}:{})}});}
+    catch(error){if(error.code!=='SYNK_PULSE_PERSONA_STALE')throw error;stale=true;return request('/pulse/api/project');}
+  },{message:()=>stale?t('새 판이 도착했어요. 새 판을 보고 다시 확인해 주세요.'):decision==='changes'?t('고칠 점을 보냈어요. 반영해서 다시 보내 드릴게요.'):t(PERSONA_DONE[want.kind]||PERSONA_DONE.scope),after:()=>{if(!stale&&key)clearDraft(key,revision);}});
+}
+// 인물 사진 더 보내기(판 3): 프로젝트 자료가 아니라 인물 출처로 간다(초대 링크로 원본이 열리지 않는다). 한 장씩 보내고 응답(손님 보기)을 받는다.
+function sendPersonaFiles(purpose,list){return mutate(async()=>{let last=null;for(const file of list){last=await request('/pulse/api/persona/source',{...options(),file,headers:{'Content-Type':file.type||'application/octet-stream','X-File-Name':encodeURIComponent(file.name),'X-Persona-Purpose':purpose}});accept(last);}return last||{};},{message:list.length>1?t('사진 {count}장을 보냈어요.',{count:list.length}):t('사진을 보냈어요.')});}
+// 직원 데스크의 맞춤 인물 칸(판 3) — 보낼 칸을 작업마다 고른다. 손님에게 보이는 글은 영어 프로젝트면 같은 이름 + Tr 칸(번역)을 함께 보낸다(빈 영어는 서버가 409로 막는다). 직원 화면이라 한국어다.
+const PERSONA_STAFF_TEXT={request_materials:['why'],ask_rights:['why'],withdraw:['why'],send_quote:['scope'],publish_reference:['note'],publish_motion:['note'],set_name:['displayName'],set_usage:['brand','product','purpose','media','regions','period','fee','schedule','note']};
+const PERSONA_STAFF_DONE={request_materials:'손님에게 자료를 더 요청했어요.',ask_rights:'동의 확인으로 옮겼어요.',start_review:'검토를 시작했어요.',send_quote:'손님에게 견적을 보냈어요.',publish_reference:'손님에게 기준 얼굴을 보냈어요.',publish_motion:'손님에게 동작 시안을 보냈어요.',withdraw:'요청을 거뒀어요.',retire:'사용을 마쳤어요.',open_revision:'새 판을 열었어요.',remove_asset:'판 파일을 지웠어요.',set_method:'만드는 방식을 적었어요.',set_name:'이름을 적었어요.',note:'내부 메모를 남겼어요.',set_usage:'손님에게 이번 광고 사용 범위를 보냈어요.'}; // i18n-skip
+// 직원 방향 대화상자(판 1 후속): 사람 없이 · 맞춤 인물 · 전용 인물이 붙은 의뢰는 카탈로그 모델 없이 보낸다(서버 propose_direction과 같은 판단). 안내 글은 종류마다 다르다.
+const deskNoModel=(a,selection)=>personaRefOf(selection?.personaRef)?{noModel:true,noModelKind:'persona'}:MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)?{noModel:true,noModelKind:a.modelChoice}:{noModel:false};
+function personaStaffBody(action,values){
+  const pick=keys=>Object.fromEntries(keys.map(key=>[key,String(values[key]??'').trim()]));
+  const body=action==='send_quote'?{price:Number(String(values.price||'').replace(/[^0-9]/g,'')),days:Number(values.days),revisions:Number(values.revisions),...pick(['scope'])}:action==='publish_reference'||action==='publish_motion'?{revisionId:values.revisionId,...pick(['note'])}:action==='remove_asset'?{revisionId:values.revisionId,assetId:values.assetId}:action==='set_method'?{revisionId:values.revisionId,kind:values.kind,...pick(['base','note'])}:action==='note'?pick(['text']):PERSONA_STAFF_TEXT[action]?pick(PERSONA_STAFF_TEXT[action]):{};
+  const said=(PERSONA_STAFF_TEXT[action]||[]).filter(key=>values[key+'Tr']!==undefined);
+  if(said.length)body.translation=Object.fromEntries(said.map(key=>[key,String(values[key+'Tr']).trim()]));
+  return body;
+}
 // 의뢰서는 render()가 건드리지 않는 전용 칸에서 돈다. 쓰는 동안 실시간 갱신이 화면을 다시 그리지 않게 하고, 뒤의 화면은 잠근다.
 let flow=null,flowOpening=false;
 function overlayState(open){if(open)entryHandle?.pause();else entryHandle?.resume();const overlay=document.querySelector('#request-root');overlay.hidden=!open;if(!open)overlay.innerHTML='';for(const node of document.querySelectorAll('.app-header,#main,.skip-link'))node.inert=open;return overlay;}
@@ -340,7 +374,7 @@ function localizeEntryError(){
   s.entryError={title:t(source.title),text:t(source.text),source,locale:locale()};
 }
 function openPublicRequest(){return openFlow(publicBackend,async()=>{resetContext();s.user=null;s.workspace=null;s.csrf='';booting=true;render();await start('');});}
-function openProjectRequest(step=''){return openFlow(async()=>projectBackend({project:()=>s.project,csrf:()=>s.csrf,accept,step}),async()=>{s.tab='overview';s.error='';render();if(typeof window.scrollTo==='function')window.scrollTo(0,0);});}
+function openProjectRequest(step=''){return openFlow(async()=>projectBackend({project:()=>s.project,csrf:()=>s.csrf,accept,step,features:()=>projectFeatures}),async()=>{s.tab='overview';s.error='';render();if(typeof window.scrollTo==='function')window.scrollTo(0,0);});}
 // 예시(?demo=film)는 한국어로만 연다(다국어 판 2 — 예시는 번역하지 않는다). 화면 언어가 한국어가 아니면 주소로 와도 첫 화면으로 간다.
 // 한국어 말고는 고를 수 없는 손님(고른 것 · 링크 · 브라우저가 모두 한국어)은 서버 답을 기다리지 않고 바로 연다.
 async function openFilmDemo(){
@@ -566,6 +600,9 @@ document.addEventListener('submit',async event=>{
   if(type==='strategy'){const fromCode=castingCodeSave;castingCodeSave=null;values.castingSelection=takeCastingValues(values);values.channels=new FormData(form).getAll('channels');for(const key of ['durationSeconds','budgetProduction','budgetMedia'])values[key]=values[key]===''||values[key]===undefined?null:Number(values[key]);const before=s.project.studio?.strategy;await mutate(()=>studioAction('save_strategy',{strategy:values}),{form,message:()=>fromCode?castingCodeSaveMessage(fromCode.item,before,s.project?.studio?.strategy,{otherEdits:fromCode.otherEdits}):strategySaveMessage(before,s.mode,s.project?.studio?.strategy),after:()=>{if(fromCode)s.castingCode=fromCode.text;}});return;}
   if(type==='ask'){const text=String(values.text||'').trim(),file=values.file?.size?values.file:null;if(!text&&!file){notice(t('글을 적거나 파일을 골라 주세요.'));form.elements.text.focus();return;}await mutate(async()=>{let fileId='';if(file){const uploaded=await requestFileUpload(file,'etc');accept(uploaded);fileId=uploaded.file.id;}return studioAction('request_answer',{askId:form.dataset.id,text,fileId});},{form,message:t('답을 보냈어요. 확인해 볼게요.')});return;}
   if(type==='model-say'){const note=String(values.note||'').trim();if(!note){form.elements.note.focus();return;}await mutate(()=>studioAction('answer_model',{note}),{form,message:t('담당자에게 전했어요. 다시 제안해 드릴게요.')});return;}
+  if(type==='persona-changes'){const note=String(values.note||'').trim();if(!note){form.elements.note.focus();return;}await personaDecide({decision:'changes',note,form});return;}
+  if(type==='desk-persona'){await mutate(()=>request('/api/personas/'+encodeURIComponent(form.dataset.persona),{...options(),body:{action:form.dataset.personaAction,revision:Number(form.dataset.revision),...personaStaffBody(form.dataset.personaAction,values)}}),{form,message:PERSONA_STAFF_DONE[form.dataset.personaAction]||'저장했어요.'});return;} // i18n-skip
+  if(type==='desk-persona-asset'){const file=values.file;if(!file?.size){notice('올릴 파일을 골라 주세요.');return;}await mutate(()=>request(`/api/personas/${encodeURIComponent(form.dataset.persona)}/revisions/${encodeURIComponent(form.dataset.revisionId)}/media`,{...options(),file,headers:{'Content-Type':file.type||'application/octet-stream','X-File-Name':encodeURIComponent(file.name),'X-Persona-Role':values.role,'X-Persona-Revision':String(form.dataset.revision)}}),{form,message:'판에 파일을 올렸어요. 다 올렸으면 손님에게 보내 주세요.'});return;} // i18n-skip
   if(type==='recast'){if(!values.modelId&&!values.note?.trim()){notice(t('모델을 고르거나 바라는 점을 적어 주세요.'));return;}await mutate(()=>studioAction('answer_model',values.modelId?{modelId:values.modelId,note:values.note||''}:{note:values.note}),{form,message:t('담당자에게 전했어요. 반영해서 다시 보내 드릴게요.'),after:closeDialog});return;}
   if(type==='desk-ask'){const items=String(values.items||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{const [label,...why]=line.split(' — ');return {label:label.trim().slice(0,120),why:why.join(' — ').trim().slice(0,300)};});if(!items.length||items.length>8){notice('물어볼 것을 한 줄에 하나씩, 8개까지 적어 주세요.');return;}const askTr=staffLocale()?askTranslations(items,values.itemsTr):null;if(askTr?.error){notice(askTr.error);return;}await mutate(()=>studioAction('request_ask',{items:askTr?askTr.items:items}),{form,message:'고객에게 물어봤어요.',after:closeDialog});return;} // i18n-skip
   if(type==='desk-pay-request'){const amount=Number(String(values.amount||'').replace(/[^0-9]/g,''));await mutate(()=>studioAction('payment_request',{amount}),{form,message:'결제 요청을 적었어요. 손님에게 크몽 결제 안내가 가요.',after:closeDialog});return;} // i18n-skip
@@ -668,7 +705,7 @@ document.addEventListener('click',async event=>{
   if(action==='desk-confirm'){confirmAction=()=>mutate(()=>studioAction('request_confirm'),{message:'확인을 마쳤어요. 답을 제작 설계로 옮겼어요.',after:closeDialog});openDialog('confirm',{title:'의뢰서 확인을 끝낼까요?',text:'답을 제작 설계로 옮기고, 고객 화면은 「1차안을 만들고 있어요」로 바뀌어요.',button:'확인 끝'});return;} // i18n-skip
   if(action==='desk-pay-request'||action==='desk-pay-confirm'||action==='desk-pay-cancel'){const model=deskModel(s.project)||{},kst=new Date(Date.now()+9*3600000);if(model.payDays)kst.setUTCDate(kst.getUTCDate()+model.payDays);openDialog(action,{number:model.number,amount:model.payAmount,dueDate:model.payDays?kst.toISOString().slice(0,10):''});return;} // i18n-skip
   if(action==='desk-ask'){const model=deskModel(s.project);openDialog('desk-ask',{...trOf(),suggested:(model?.checks||[]).filter(item=>!item.ok&&/없어요$/.test(item.label)).map(item=>item.label.replace(/[이가]? ?없어요$/,'').trim()).join('\n')});return;}
-  if(action==='desk-direction'){const r=s.project.studio?.request||{},d=r.directionProposal,a=r.answers||{},pkg=PACKAGES.find(item=>item.id===a.package),today=new Date(Date.now()+9*3600000);today.setUTCDate(today.getUTCDate()+(pkg?.days||14));const models=[...CASTING_MODELS].sort((x,y)=>Number(MODEL_LINES[y.id]?.fits?.includes(a.kind)||0)-Number(MODEL_LINES[x.id]?.fits?.includes(a.kind)||0));openDialog('desk-direction',{...trOf(),...(d?.status==='open'?{lead:d.lead,options:d.options,modelId:d.modelId,price:d.price,dueDate:d.dueDate,revisions:d.revisions,round:d.round}:{round:d?.status==='declined'?d.round+1:1,prior:d?.status==='declined'?{names:d.options.map(o=>o.name),answer:d.answer}:null,modelId:a.models?.[0]||r.modelProposal?.modelId||'',price:(pkg?.price||0)*10000||'',dueDate:today.toISOString().slice(0,10),revisions:pkg?.revisions??3}),noModel:a.modelChoice==='none',models,assets:s.project.studio?.assets||[]});return;}
+  if(action==='desk-direction'){const r=s.project.studio?.request||{},d=r.directionProposal,a=r.answers||{},pkg=PACKAGES.find(item=>item.id===a.package),today=new Date(Date.now()+9*3600000);today.setUTCDate(today.getUTCDate()+(pkg?.days||14));const models=[...CASTING_MODELS].sort((x,y)=>Number(MODEL_LINES[y.id]?.fits?.includes(a.kind)||0)-Number(MODEL_LINES[x.id]?.fits?.includes(a.kind)||0));openDialog('desk-direction',{...trOf(),...(d?.status==='open'?{lead:d.lead,options:d.options,modelId:d.modelId,price:d.price,dueDate:d.dueDate,revisions:d.revisions,round:d.round}:{round:d?.status==='declined'?d.round+1:1,prior:d?.status==='declined'?{names:d.options.map(o=>o.name),answer:d.answer}:null,modelId:a.models?.[0]||r.modelProposal?.modelId||'',price:(pkg?.price||0)*10000||'',dueDate:today.toISOString().slice(0,10),revisions:pkg?.revisions??3}),...deskNoModel(a,s.project.studio?.strategy?.data?.castingSelection),models,assets:s.project.studio?.assets||[]});return;}
   if(action==='desk-settle'){const d=s.project.studio?.request?.directionProposal;openDialog('desk-settle',{options:d?.options||[]});return;}
   if(action==='desk-propose'){openDialog('desk-propose',{...trOf(),kind:s.project.studio?.request?.answers?.kind||'',modelId:s.project.studio?.request?.modelProposal?.modelId||''});return;}
   if(action==='desk-send'){const st=s.project.studio||{},scenes=(st.scenes||[]).filter(scene=>scene.visibility==='customer'),round=st.request?.rounds?.at(-1);openDialog('desk-send',{...trOf(),flow:!!st.request?.paymentFlow,paid:!st.request?.paymentFlow||st.request?.payment?.status==='confirmed'||st.request?.answers?.package==='photo'&&!(st.request?.rounds||[]).some(item=>item.kind==='images'&&item.approvedAt),trMissing:sceneTrMissing(scenes),count:scenes.length,kind:scenes.length&&scenes.every(scene=>scene.assetId||scene.imageUrl)?'images':'script',oneLine:round?.oneLine||st.strategy?.data?.primaryPromise||deskModel(s.project)?.note?.lines?.[0]||''});return;}

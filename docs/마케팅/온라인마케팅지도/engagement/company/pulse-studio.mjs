@@ -30,7 +30,9 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // Existing project revisions, invite revocation, ACL and backup transactions
 // therefore remain authoritative; this module creates no second customer login.
 // localeOf(row): 프로젝트의 소통 언어(pulse-locale.mjs createProjectLocale). 손님 보기에 언어를 입히고, 영어 프로젝트의 직원 글은 번역을 함께 받는다.
-export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko'}){
+// personaService(판 3): 고객 전용 인물 서비스(pulse-personas.mjs createPersonaService). 손님 보기에 인물 카드(project.persona), 직원 보기에 인물 목록(project.personas)을 싣고,
+// 프로젝트 길 의뢰서를 보낼 때(request_submit) 같은 트랜잭션에서 인물을 만들거나 거둔다. 인물 문서가 없으면 두 보기 모두 키가 없다(판 3 전과 같은 모양).
+export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko',personaService=null}){
   // 의뢰서 액션이 전용 인물로 가는 프로젝트의 인물 판을 다시 볼 때 쓴다(방향 제안 · 제작 시작, pulse-requests.mjs).
   const personas=createPersonaGuard(store);
   function customer(token){return clientProjects.session(token);}
@@ -61,15 +63,15 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   // 손님 보기의 언어(판 2): 단계 이름 · 직원 글 번역 · 담당자 영문 표시 이름을 보기 때 입힌다(저장값은 그대로).
   // 담당자 이름(머리)은 지금 담당자의 표시 이름, 직원 글의 작성자는 글마다 그 직원의 표시 이름(createStaffNames — GPT GA1).
   function localized(row,project){const locale=localeOf(row);if(locale==='ko')return project;const owner=store.get('users',row.ownerId);return localizeCustomerProject(project,{map:row.studio?.translations,locale,text:value=>serverText(locale,value),producer:staffDisplayName(locale,owner,project.ownerName),staffName:createStaffNames(locale,{owner,users:store.all?.('users')||[]})});}
-  function customerState(token){const {row}=customer(token),result=clientProjects.read(token),mail=customerMail(row);return {...result,project:localized(row,{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{})})};}
+  function customerState(token){const {row}=customer(token),result=clientProjects.read(token),mail=customerMail(row),persona=personaService?.customerView(row,localeOf(row));return {...result,project:{...localized(row,{...result.project,studio:view(row),requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{})}),...(persona?{persona}:{})}};}
   function staffState(user,projectId){
     const row=clientProjects.project(user,projectId),{inviteHash,inviteRevision,notificationEvents,studio,...safe}=row;
     let canEdit=true;try{clientProjects.project(user,projectId,true);}catch{canEdit=false;}
     // Staff media must use staff routes. A staff session cannot impersonate
     // a customer's capability merely to render an image or video.
     const versions=row.versions.map(version=>({...version,...(version.media?{media:{...media(row,version.media,true),url:'/api/client-media/'+version.media.id}}:{})}));
-    const mail=staffMail(row),translation=translationStaffView(studioOf(row),row,localeOf(row));
-    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),...(translation?{translation}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
+    const mail=staffMail(row),translation=translationStaffView(studioOf(row),row,localeOf(row)),personaList=personaService?personaService.staffList(user,projectId).personas:[];
+    return {project:{...safe,requestFlow:usesRequestFlow(row,studioOf(row)),...(mail?{mail}:{}),...(translation?{translation}:{}),...(personaList.length?{personas:personaList}:{}),versions,kickoff:buildClientKickoff(row,{now:clock(),canEdit}),changes:buildClientChanges(row,{now:clock(),canEdit}),sceneRequests:buildSceneRequests(row,clientProjects.sceneRequestContext(row,user)),schedule:buildClientSchedule(row,{now:clock(),canEdit,reviewerId:clientProjects.sceneRequestContext(row,user).reviewerId}),ownerName:store.get('users',row.ownerId)?.name||'담당자',reviewerName:store.get('users',row.reviewerId)?.name||'',inviteActive:!!inviteHash&&Date.parse(row.inviteExpiresAt)>Date.parse(clock()),studio:view(row,true)},canEdit};
   }
   function asset(studio,assetId,{image=false}={}){if(!assetId)return null;const found=studio.assets.find(value=>value.id===id(assetId));if(!found||image&&!found.mimeType.startsWith('image/'))throw fail(image?'프로젝트의 이미지 자료를 선택해 주세요.':'이 프로젝트의 자료를 선택해 주세요.',404);return found;}
   function pointer(studio,input,{image=false}={}){const found=asset(studio,input.assetId,{image});return {assetId:found?.id||null,imageUrl:image?url(input.imageUrl):undefined};}
@@ -85,7 +87,7 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
-    if(extension){extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row)});commit(row,studio,'PULSE 제작 '+action,who);return;}
+    if(extension){extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row)});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);return;}
     // 담당자 글 번역 하나 넣기 · 고치기(다국어 판 2). 키는 지금 손님에게 보이는 직원 글 칸이어야 하고, 빈 글자면 그 번역을 지운다.
     if(action==='save_translation'){
       if(!user)throw fail('담당자 화면에서만 할 수 있어요.',403);

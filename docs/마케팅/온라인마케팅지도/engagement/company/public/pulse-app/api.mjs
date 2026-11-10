@@ -4,7 +4,7 @@ export class PulseError extends Error {
 // 서버 오류 문장(다국어 판 1 · 11-09, 기획 12-2 「서버 오류」): 한국어 화면은 받은 문장 그대로다. 다른 언어는 손님 글이 끼는 동적 문장을
 // 코드로(서버 pulse-requests.mjs의 SYNK_PULSE_…), 고정 문장은 그 한국어 문장을 키로 번역한다. 사전에 없으면 한국어 원문이 나온다.
 // 의견 · 문의 글(client-projects customerAction — 칸 이름이 끼는 서버 문장)은 손님이 보낸 글 하나를 가리키는 고정 문장으로 옮긴다(판 2).
-export const ERROR_CODE_TEXT=Object.freeze({SYNK_PULSE_FILE_MISSING:k('올린 파일 하나를 찾지 못했어요. 지우고 다시 올려 주세요.'),SYNK_PULSE_INVALID_MESSAGE:k('보내실 글을 확인해 주세요. 3,000자까지 보낼 수 있어요.'),SYNK_PULSE_REQUIRED_MESSAGE:k('보내실 글을 적어 주세요.')});
+export const ERROR_CODE_TEXT=Object.freeze({SYNK_PULSE_FILE_MISSING:k('올린 파일 하나를 찾지 못했어요. 지우고 다시 올려 주세요.'),SYNK_PULSE_INVALID_MESSAGE:k('보내실 글을 확인해 주세요. 3,000자까지 보낼 수 있어요.'),SYNK_PULSE_REQUIRED_MESSAGE:k('보내실 글을 적어 주세요.'),SYNK_PULSE_PERSONA_STALE:k('새 판이 도착했어요. 새 판을 보고 다시 확인해 주세요.')});
 export const errorText=(message,code='')=>locale()==='ko'?message:Object.hasOwn(ERROR_CODE_TEXT,code)?t(ERROR_CODE_TEXT[code]):t(message);
 export const serverError=(result,status,fallback)=>{const message=typeof result?.error==='string'?result.error:result?.error?.message||fallback,code=typeof result?.code==='string'?result.code:'';return new PulseError(errorText(message,code),status,code);};
 export async function request(path,{body,csrf='',staff=false,file,headers={},signal,method}={}){

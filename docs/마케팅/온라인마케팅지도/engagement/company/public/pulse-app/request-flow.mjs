@@ -2,7 +2,7 @@ import {esc} from './api.mjs';
 import {t,k,locale,intlLocale,htmlLang} from './i18n.mjs';
 import {localeMenu,offeredLocales,LOCALE_EVENT} from './locale-menu.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
-import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,claimText,ACTIONS,WIN,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote} from './request-data.mjs';
+import {KINDS,CHANNELS,PACKAGES,slotsFor,WATCH_WORDS,claimText,ACTIONS,WIN,REFERENCE_POINTS,MODEL_LINES,MODEL_PICKS,STEPS,emptyAnswers,photoAdvice,price,DRAFT_FILES_GONE,pkgOf,kindOf,channelText,modelOf,modelList,filesOf,slotCount,briefRows,ratioOf,termsOf,dueDay,revisionNote,PERSONA_SLOTS,isPersonaSlot,PERSONA_KINDS,PERSONA_KEEPS,PERSONA_RELATIONS,PERSONA_CONSENTS,personaKindLabel} from './request-data.mjs';
 import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './motion.mjs';
 
 // 고객이 초대 없이 직접 시작하는 의뢰서(2026-11-04 — 의뢰 → 준비할 것 작성 → 함께 확인 → 1차 전달 뒤 수정 → 제작).
@@ -22,7 +22,10 @@ const boldAt=(text,value)=>esc(text).replace(MARK,()=>`<b>${esc(value)}</b>`);
 // 값 칸의 「부터」: 한국어는 값 뒤(39만원 부터), 영어는 값 앞(from KRW 390,000).
 const fromBefore=()=>locale()==='en';
 // 손님이 올린 첫 사진. 있으면 스크린에 남의 작품 대신 이 사진을 놓는다.
-const ownPhoto=a=>Object.values(a.slots).flatMap(slot=>slot.files||[]).find(file=>file.preview&&!file.error)?.preview||'';
+// 맞춤 인물 사진 칸(판 3)은 제품 자료가 아니라 이 자리에 쓰지 않는다.
+const ownPhoto=a=>Object.entries(a.slots).filter(([id])=>!isPersonaSlot(id)).flatMap(([,slot])=>slot.files||[]).find(file=>file.preview&&!file.error)?.preview||'';
+// 맞춤 인물 칸에 올린 첫 사진: 출연하실 분의 사진이 먼저, 없으면 분위기 참고 사진. 어느 칸 사진인지도 돌려준다(스크린 밑줄이 다르다).
+const personaPhoto=a=>{for(const slot of PERSONA_SLOTS){const file=(a.slots[slot.id]?.files||[]).find(item=>item.preview&&!item.error);if(file)return {src:file.preview,identity:slot.id==='persona-identity'};}return null;};
 const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.image;
 const bigScene=item=>`${ASSET}model-scene-${String(item.id).toLowerCase()}.webp`;
 // 예시 작품 한 줄: 「작품」 · 무엇으로 이기는지 · 출처.
@@ -44,9 +47,11 @@ const castLabel=(item,fit)=>[nameOf(item),castLine(item),fit&&t('이 업종에 �
 const castTile=(a,item,fit)=>`<button type="button" class="sx-cast ${a.models.includes(item.id)?'is-on':''}" aria-pressed="${a.models.includes(item.id)?'true':'false'}" aria-label="${esc(castLabel(item,fit))}" data-do="model" data-id="${item.id}"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(nameOf(item))}</span><i class="sx-cast-mark sx-no" aria-hidden="true">${a.models.indexOf(item.id)+1||''}</i></button>`;
 const picksOf=a=>(MODEL_PICKS[a.kind]||MODEL_PICKS.brand).map(modelOf).filter(Boolean);
 // 모델 칸에서 「추천해 주세요」 · 「사람 없이 제품만」을 골랐을 때 이름 칸 · 큰 사진 밑줄에 쓰는 말(판 4 B6).
-const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t('방향 두 안과 함께 어울리는 모델을 골라 보내 드려요.'),caption:t('어울리는 모델 후보 · 담당자가 방향과 함께 추천해요')}:a.modelChoice==='none'?{name:t('사람 없이 제품만'),line:t('제품 · 손 · 공간만으로 만들어요.'),caption:t('모델 없이 만드는 광고예요')}:null;
+// 「맞춤 인물 요청하기」(판 3)는 인물 칸 사진이 있으면 그 사진을, 없으면 업종 작품 그림을 크게 둔다 — 밑줄은 어떤 사진인지에 맞춘다.
+const personaCaption=a=>{const photo=personaPhoto(a);return photo?.identity?t('보내 주신 사진 · 이 분의 기준 얼굴을 먼저 만들어 보여 드려요'):photo?t('보내 주신 참고 사진 · 이 분위기로 새 얼굴을 만들어 보여 드려요'):t('맞춤 인물 · 기준 얼굴과 움직이는 모습을 먼저 보여 드려요');};
+const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t('방향 두 안과 함께 어울리는 모델을 골라 보내 드려요.'),caption:t('어울리는 모델 후보 · 담당자가 방향과 함께 추천해요')}:a.modelChoice==='none'?{name:t('사람 없이 제품만'),line:t('제품 · 손 · 공간만으로 만들어요.'),caption:t('모델 없이 만드는 광고예요')}:a.modelChoice==='custom'?{name:t('맞춤 인물'),line:t('이 광고에 맞는 인물을 새로 만들어요.'),caption:personaCaption(a)}:null;
 // 그때 큰 사진 자리에는 한 사람 대신 고른 업종의 작품 그림을 둔다(B7과 같은 그림, 판 4 화면 검수 F4).
-const choiceShot=a=>kindOf(a)?.shot||still('w-gift-sphere');
+const choiceShot=a=>a.modelChoice==='custom'&&personaPhoto(a)?.src||kindOf(a)?.shot||still('w-gift-sphere');
 const wall=a=>{
   const chosen=a.models.map(modelOf).filter(Boolean),picks=[...new Set([...chosen,...picksOf(a)])].slice(0,4),lead=chosen[0]||picks[0];
   return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" aria-hidden="true"><img data-portrait src="${esc(choiceText(a)?choiceShot(a):bigScene(lead))}" alt="" decoding="async"><figcaption class="sx-small" data-portrait-name>${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
@@ -105,11 +110,11 @@ const views={
       `<div class="sx-sub" data-in><span class="sx-small">${esc(t('그 광고의 어디가 좋았나요?'))}</span><div class="sx-chips">${REFERENCE_POINTS.map(point=>chip(t(point),ref.points.includes(point),`data-do="refpoint" data-id="${esc(point)}"`)).join('')}</div></div>`+
       field({bind:'avoidFeel',label:t('이런 느낌은 피해 주세요 · 선택'),value:a.avoidFeel,placeholder:t('예) 홈쇼핑 같은 느낌'),max:200}));
   },
-  model(a,step,i,n){
-    const first=modelOf(a.models[0])||picksOf(a)[0]||CASTING_MODELS[2];
+  // ctx(판 3): {flags:{request,real} — 서버가 허락한 맞춤 인물 스위치, photos — 인물 사진을 받는 길(공개 의뢰서)}. 스위치가 꺼져 있으면 판 3 전과 같은 화면이다.
+  model(a,step,i,n,ctx={}){
     return ask(step,i,n,t('누가 나올까요?'),t('이름과 얼굴이 정해진 AI 모델 {count}명이에요. 다음 편도 같은 모델로 이어 가요. 두 명까지 고르실 수 있어요.',{count:CASTING_MODELS.length}),
-      `<div class="sx-chips" data-in role="group" aria-label="${esc(t('모델을 어떻게 정할지'))}">${chip(t('추천해 주세요'),a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip(t('사람 없이 제품만'),a.modelChoice==='none','data-do="modelchoice" data-id="none"')}</div>`+
-      (choiceText(a)?`<div class="sx-q-who" data-in><b class="sx-serif" data-cast-name>${esc(choiceText(a).name)}</b><span class="sx-body" data-cast-line>${esc(choiceText(a).line)}</span><small class="sx-small" data-cast-desc></small></div>`:`<div class="sx-q-who" data-in><b class="sx-serif" data-cast-name>${esc(nameOf(first))}</b><span class="sx-body" data-cast-line>${esc(MODEL_LINES[first.id]?.line?t(MODEL_LINES[first.id].line):'')}</span><small class="sx-small" data-cast-desc>${esc(t(first.description))}</small></div>`));
+      `<div class="sx-chips" data-in role="group" aria-label="${esc(t('모델을 어떻게 정할지'))}">${chip(t('추천해 주세요'),a.modelChoice==='ask','data-do="modelchoice" data-id="ask"')}${chip(t('사람 없이 제품만'),a.modelChoice==='none','data-do="modelchoice" data-id="none"')}${ctx.flags?.request?chip(t('맞춤 인물 요청하기'),a.modelChoice==='custom','data-do="modelchoice" data-id="custom"'):''}</div>`+
+      modelDetail(a,ctx));
   },
   contact(a,step,i,n){
     return ask(step,i,n,t('언제까지, 누구에게 연락드릴까요?'),'',
@@ -119,15 +124,44 @@ const views={
       `<div class="sx-duo">${field({bind:'email',label:t('이메일'),value:a.email,type:'email',auto:'email',max:254})}${field({bind:'phone',label:t('휴대폰 · 선택'),value:a.phone,type:'tel',auto:'tel',max:30})}</div>`+
       contactLocaleView(a));
   },
-  review(a,step,i,n){
-    const rows=[...briefRows(a),...contactLocaleRow(a)];
+  review(a,step,i,n,ctx={}){
+    const rows=withPersonaRow(a,[...briefRows(a),...contactLocaleRow(a)],ctx);
     return ask(step,i,n,t('이대로 보낼까요?'),pkgOf(a)?.photo?t('보내 주시면 저희가 내용을 확인하고 첫 장을 먼저 보내 드려요. 첫 장으로 방향을 맞춘 뒤 나머지 사진을 만들어요.'):t('보내 주시면 저희가 내용을 확인하고 방향 두 안과 값 · 받으실 날을 보내 드려요. 영상을 만들기 전에 방향 · 글 콘티 · 컷마다 장면 이미지를 먼저 보여 드리고, 확인하시기 전에는 영상을 만들지 않아요.'),
       `<div class="sx-brief" data-in>${rows.map(item=>`<div class="sx-brief-row ${item.missing?'is-missing':''}"><span class="sx-small">${esc(t(item.key))}</span><span class="sx-brief-val"${item.lang?` lang="${item.lang}"`:''}>${item.missing?`<em>${esc(t(item.missing))}</em>`:esc(item.value)}</span><button type="button" class="sx-small sx-brief-edit" data-do="goto" data-id="${item.step}" aria-label="${esc(t('{label} 고치기',{label:t(item.key)}))}">${esc(t('고치기'))}</button></div>`).join('')}</div>`+
-      `${dueLine(a)}`+
+      `${dueLine(a)}${a.modelChoice==='custom'?`<p class="sx-small sx-q-due" data-in>${esc(t('맞춤 인물 값은 검토한 뒤 따로 견적을 보내 드려요. 견적을 확인하시기 전에는 비용이 생기지 않아요.'))}</p>`:''}`+
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="consent" ${a.consent?'checked':''}><span>${esc(t('이 내용과 연락처를 의뢰 확인과 제작에 쓰는 데 동의해요'))}</span><small class="sx-small">${esc(t('제작으로 이어지지 않으면 90일 뒤 지워요.'))}</small></label>`+
-      `<label class="sx-tick" data-in><input type="checkbox" data-bind="rights" ${a.rights?'checked':''}><span>${esc(t('보내는 사진 · 로고 · 문구를 쓸 권리가 있어요'))}</span><small class="sx-small">${esc(t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.'))}</small></label><p class="sx-small sx-q-terms" data-in>${esc(t('결제는 글 콘티를 보신 뒤 크몽에서 해요. 결제 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드리고, 제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 수정 횟수 안에서 고쳐 드려요. 완성한 광고는 공개하신 뒤에 SYNK PULSE 작품으로 소개할 수 있어요 — 원하지 않으시면 담당자에게 알려 주세요.'))}</p>`);
+      `<label class="sx-tick" data-in><input type="checkbox" data-bind="rights" ${a.rights?'checked':''}><span>${esc(t('보내는 사진 · 로고 · 문구를 쓸 권리가 있어요'))}</span><small class="sx-small">${esc(ctx.flags?.real?t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실제 인물은 출연하실 분의 동의를 확인한 뒤에만 만들어요.'):t('영상 속 사람과 목소리는 모두 AI로 만들어요. 실존 인물을 닮게 만드는 요청은 받지 않아요.'))}</small></label><p class="sx-small sx-q-terms" data-in>${esc(t('결제는 글 콘티를 보신 뒤 크몽에서 해요. 결제 뒤 장면 이미지를 확정하시기 전에 그만두시면 전액 돌려드리고, 제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 수정 횟수 안에서 고쳐 드려요. 완성한 광고는 공개하신 뒤에 SYNK PULSE 작품으로 소개할 수 있어요 — 원하지 않으시면 담당자에게 알려 주세요.'))}</p>`);
   },
 };
+// 모델 칸 아래: 고른 사람 · 고른 길(추천 · 사람 없이)의 설명. 맞춤 인물을 고르면 그 자리가 요청 칸으로 바뀐다(판 3).
+function modelDetail(a,ctx={}){
+  if(a.modelChoice==='custom'&&ctx.flags?.request)return personaBlock(a,ctx);
+  const first=modelOf(a.models[0])||picksOf(a)[0]||CASTING_MODELS[2];
+  return choiceText(a)?`<div class="sx-q-who" data-in><b class="sx-serif" data-cast-name>${esc(choiceText(a).name)}</b><span class="sx-body" data-cast-line>${esc(choiceText(a).line)}</span><small class="sx-small" data-cast-desc></small></div>`:`<div class="sx-q-who" data-in><b class="sx-serif" data-cast-name>${esc(nameOf(first))}</b><span class="sx-body" data-cast-line>${esc(MODEL_LINES[first.id]?.line?t(MODEL_LINES[first.id].line):'')}</span><small class="sx-small" data-cast-desc>${esc(t(first.description))}</small></div>`;
+}
+// 맞춤 인물 요청(판 3): 인물 종류(실제 인물은 personaReal일 때만) · 원하는 인상 · 쓰임 · 이번만/다음에도 · 사진 칸(공개 의뢰서만) · 사진 쓰임 · 비용이 생기는 때.
+// 국적 · 신체 치수 · 학습 설정은 묻지 않는다(기획 4절). 사진 몇 장으로 같은 얼굴을 약속하지 않는다(칸 설명). 출연하실 분의 사진 칸은 실제 인물일 때만(또는 이미 올린 사진이 있을 때 — 지울 수 있게) 연다.
+function personaBlock(a,ctx){
+  const p=a.personaRequest,real=p.kind==='real'&&!!ctx.flags.real;
+  const group=(label,name,list,value)=>`<div class="sx-sub" data-in><span class="sx-small">${esc(label)}</span><div class="sx-chips" role="group" aria-label="${esc(label)}">${list.map(item=>chip(t(item.label),value===item.id,`data-do="${name}" data-id="${item.id}"`)).join('')}</div></div>`;
+  const slots=PERSONA_SLOTS.filter(slot=>slot.id!=='persona-identity'||real||filesOf(a,slot.id).length);
+  return `<div class="sx-q-persona">`+
+    (ctx.flags.real?group(t('어떤 인물인가요?'),'personakind',PERSONA_KINDS,real?'real':'virtual'):'')+
+    field({bind:'persona.look',label:real?t('출연하실 분과 참고할 점'):t('원하는 인상 · 나이대 · 헤어'),value:p.look,placeholder:real?t('예) 대표님 본인, 매장에서 일하시는 모습 그대로'):t('예) 20대 후반, 단정한 단발, 웃으면 눈이 접히는 인상'),rows:2,max:600})+
+    (real?group(t('출연하실 분과는 어떤 사이인가요?'),'personarelation',PERSONA_RELATIONS,p.relation)+group(t('출연하실 분의 동의는 어떻게 확인할까요?'),'personaconsent',PERSONA_CONSENTS,p.consentWay)+`<p class="sx-small sx-q-hint" data-in>${esc(t('출연하실 분께 따로 확인을 받아요. 여기서 고르시는 것만으로 동의가 끝나지는 않아요.'))}</p>`:'')+
+    field({bind:'persona.use',label:t('어디에 쓰고 싶으세요?'),value:p.use,placeholder:t('예) 이번 광고와 매장 화면'),max:300})+
+    group(t('다음 광고에도 쓰실 건가요?'),'personakeep',PERSONA_KEEPS,p.keep)+
+    (ctx.photos?`<div class="sx-slots">${slots.map(slotView.bind(null,a)).join('')}</div>`:`<p class="sx-small sx-q-hint" data-in>${esc(t('사진은 의뢰서를 보내신 뒤 고객 방에서 올려 주세요.'))}</p>`)+
+    `<p class="sx-small sx-q-hint" data-in>${esc(t('사진은 PULSE 제작팀만 보고, 이 인물을 검토하고 만드는 데만 써요.'))} ${esc(t('견적을 확인하시기 전에는 비용이 생기지 않아요.'))}</p>`+
+  `</div>`;
+}
+// 확인 단계: 맞춤 인물이면 「모델」 줄 다음에 인물 사진 줄(공개 의뢰서는 올린 장수, 프로젝트 길은 고객 방에서 올린다는 말).
+function withPersonaRow(a,rows,ctx){
+  if(a.modelChoice!=='custom')return rows;
+  const count=PERSONA_SLOTS.reduce((sum,slot)=>sum+filesOf(a,slot.id).length,0),at=rows.findIndex(row=>row.key===k('모델'))+1||rows.length;
+  const row={key:k('인물 사진'),step:'model',value:count?t('{count}장',{count}):'',missing:count?'':ctx.photos?k('보내신 뒤 고객 방에서도 보내실 수 있어요'):k('보내신 뒤 고객 방에서 올려 주세요')};
+  return [...rows.slice(0,at),row,...rows.slice(at)];
+}
 const approverMore=a=>a.approver==='many'?`<small class="sx-small sx-q-hint">${esc(t('의견을 모아 한 번에 보내 주시면 수정이 크게 줄어요. 컷마다 의견을 모아 보낼 수 있어요.'))}</small>${field({bind:'approverName',label:t('최종 결정하시는 분 · 선택'),value:a.approverName,max:80})}`:'';
 function slotView(a,slot){
   const files=filesOf(a,slot.id),none=a.slots[slot.id]?.none,label=t(slot.label);
@@ -164,13 +198,19 @@ function slateRows(a){
   if(a.oneThing)rows.push([k('남길 것'),a.oneThing]);
   if(a.screenText)rows.push([k('화면 글자'),a.screenText.split('\n')[0]]);
   if(a.win)rows.push([k('무엇으로'),t(WIN.find(item=>item.id===a.win)?.label||k('맡길게요'))]);
-  if(a.models.length||a.modelChoice)rows.push([k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.models.map(modelOf).filter(Boolean).map(nameOf).join(', ')]);
+  if(a.models.length||a.modelChoice)rows.push([k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물'):a.models.map(modelOf).filter(Boolean).map(nameOf).join(', ')]);
   if(a.date||a.dateFree)rows.push([k('받고 싶은 날'),a.dateFree?t('미정'):a.date]);
   return rows;
 }
 
 export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const a=backend.answers||emptyAnswers();if(!a.refs?.length)a.refs=[{url:'',points:[],why:''}];
+  // 맞춤 인물 스위치(판 3, 서버가 허락한 값 — request-backend). 꺼져 있으면 저장돼 있던 「맞춤 인물」 고름은 비운다(서버가 보내기를 409로 막는다).
+  // 실제 인물 출연은 그 스위치가 켜져 있을 때만 — 꺼져 있으면 새 가상 인물로 돌린다. photos: 인물 사진을 받는 길(공개 의뢰서)인가.
+  const ctx={flags:backend.personaFlags?.()||{request:false,real:false},photos:!!backend.personaPhotos};
+  if(!a.personaRequest||typeof a.personaRequest!=='object')a.personaRequest=emptyAnswers().personaRequest;
+  if(a.modelChoice==='custom'&&!ctx.flags.request)a.modelChoice='';
+  if(ctx.flags.request&&a.personaRequest.kind==='real'&&!ctx.flags.real)a.personaRequest.kind='virtual';
   let index=Math.max(0,STEPS.findIndex(step=>step.id===backend.step));
   let busy=false,saveTimer=0,saving=null,saveAgain=false,sent=null,closed=false;
   root.innerHTML=`<div class="sx-q" data-step="">
@@ -204,7 +244,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     let gone=0;
     for(const slot of Object.values(a.slots)){const files=slot.files||[],kept=files.filter(file=>!file.id);gone+=files.length-kept.length;slot.files=kept;}
     if(!gone)return 0;
-    if(['files','review'].includes(step().id))render(1);else renderSlate();
+    if(['files','review'].includes(step().id)||step().id==='model'&&a.modelChoice==='custom')render(1);else renderSlate();
     showError(t(DRAFT_FILES_GONE));
     return gone;
   };
@@ -231,7 +271,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     $('.sx-q-screen').setAttribute('aria-label',s.id==='model'?t('모델 고르기'):t('미리 보기'));
     showError('');
     if(s.id==='contact'||s.id==='review')defaultContactLocale();
-    form.innerHTML=views[s.id](a,s,index,STEPS.length);
+    form.innerHTML=views[s.id](a,s,index,STEPS.length,ctx);
     // 휴대폰은 질문 칸이 아니라 바깥 칸(.sx-q-stage)이 스크롤된다 — 단계를 바꾸면 그것도 처음으로(모델 단계에서 내린 채 「이전」을 누르면 제목이 위 막대 밑에 있었다).
     form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;
     const title=form.querySelector('[data-title]');
@@ -328,36 +368,56 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     win(el){a.win=el.dataset.id;setRows('win',a.win);const pick=WIN.find(item=>item.id===a.win);if(pick){const film=$('[data-win-film]');if(film&&film.getAttribute('src')!==pick.film){film.poster=pick.poster;film.src=pick.film;film.closest('[data-frame]').dataset.ratio=pick.ratio;if(!reduced())film.play().catch(()=>{});play(film,[{opacity:.3},{opacity:1}],{duration:320});}$('[data-win-cap]').textContent=winCap(pick);$('[data-win-kind]').textContent=t(pick.kind);}renderSlate();saved();},
     refpoint(el){const ref=a.refs[0];toggleIn(ref.points,el.dataset.id);setChip(el,ref.points.includes(el.dataset.id));saved();},
     allmodels(){allModels=!allModels;renderMonitor('model');$('.sx-cast')?.focus({preventScroll:true});},
-    model(el){toggleIn(a.models,el.dataset.id,2);a.modelChoice='';host.querySelectorAll('[data-do="model"]').forEach(item=>{const on=a.models.includes(item.dataset.id);item.classList.toggle('is-on',on);item.setAttribute('aria-pressed',on?'true':'false');const mark=item.querySelector('.sx-cast-mark');if(mark)mark.textContent=on?String(a.models.indexOf(item.dataset.id)+1):'';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,false));showModel(el.dataset.id);renderSlate();saved();},
-    modelchoice(el){a.modelChoice=a.modelChoice===el.dataset.id?'':el.dataset.id;a.models=[];host.querySelectorAll('[data-do="model"]').forEach(item=>{item.classList.remove('is-on');item.setAttribute('aria-pressed','false');item.querySelector('.sx-cast-mark').textContent='';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,item.dataset.id===a.modelChoice));showChoice();renderSlate();saved();},
+    model(el){toggleIn(a.models,el.dataset.id,2);a.modelChoice='';swapDetail();host.querySelectorAll('[data-do="model"]').forEach(item=>{const on=a.models.includes(item.dataset.id);item.classList.toggle('is-on',on);item.setAttribute('aria-pressed',on?'true':'false');const mark=item.querySelector('.sx-cast-mark');if(mark)mark.textContent=on?String(a.models.indexOf(item.dataset.id)+1):'';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,false));showModel(el.dataset.id);renderSlate();saved();},
+    modelchoice(el){a.modelChoice=a.modelChoice===el.dataset.id?'':el.dataset.id;a.models=[];host.querySelectorAll('[data-do="model"]').forEach(item=>{item.classList.remove('is-on');item.setAttribute('aria-pressed','false');item.querySelector('.sx-cast-mark').textContent='';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,item.dataset.id===a.modelChoice));swapDetail();showChoice();renderSlate();saved();},
+    // 맞춤 인물 요청 칸(판 3). 종류를 바꾸면 묻는 칸이 달라져 그 칸만 다시 그리고 누른 단추에 초점을 둔다.
+    personakind(el){a.personaRequest.kind=el.dataset.id;redrawPersona(`[data-do="personakind"][data-id="${el.dataset.id}"]`);showChoice();saved();},
+    personarelation(el){pickPersona('relation','personarelation',el);},
+    personaconsent(el){pickPersona('consentWay','personaconsent',el);},
+    personakeep(el){pickPersona('keep','personakeep',el);},
     datefree(el){a.dateFree=!a.dateFree;if(a.dateFree){a.date='';const input=form.querySelector('[data-bind="date"]');if(input)input.value='';}setChip(el,a.dateFree);updateDateAdvice();renderSlate();saved();},
     approver(el){a.approver=el.dataset.id;form.querySelectorAll('[data-do="approver"]').forEach(item=>setChip(item,item.dataset.id===a.approver));const sub=el.closest('.sx-sub');const more=sub.querySelector('[data-approver-more]');more.innerHTML=approverMore(a);if(more.firstElementChild)rise(more,{y:6});saved();},
     contactlocale(el){a.contactLocale=el.dataset.id;contactPicked=true;form.querySelectorAll('[data-do="contactlocale"]').forEach(item=>setChip(item,item.dataset.id===a.contactLocale));saved();},
     none(el){const id=el.dataset.id,slot=a.slots[id]||(a.slots[id]={files:[]});slot.none=!slot.none;setChip(el,slot.none);el.closest('.sx-slot').classList.toggle('is-none',slot.none);updateSlotStatus(id);saved();},
     async removefile(el){
-      const id=el.dataset.slotId,state=a.slots[id],file=state?.files?.[Number(el.dataset.at)],slot=slotsFor(a.kind).find(item=>item.id===id);if(!file||!slot)return;
+      const id=el.dataset.slotId,state=a.slots[id],file=state?.files?.[Number(el.dataset.at)],slot=slotOf(id);if(!file||!slot)return;
       el.disabled=true;
       try{if(file.id&&!file.error)await backend.remove?.(file.id);}
       catch(error){el.disabled=false;showError(error.message||t('지우지 못했어요. 다시 시도해 주세요.'));return;}
       const at=state.files.indexOf(file);if(at>=0)state.files.splice(at,1);if(file.preview?.startsWith('blob:')){URL.revokeObjectURL(file.preview);blobs.delete(file.preview);}
-      redrawSlot(slot);renderSlate();saved();if(step().id==='files')renderMonitor('files');
+      redrawSlot(slot);renderSlate();saved();if(step().id==='files')renderMonitor('files');if(slot.persona)showChoice();
     },
   };
+  // 칸 찾기: 업종 준비물 칸, 또는 맞춤 인물 사진 칸(판 3).
+  const slotOf=id=>slotsFor(a.kind).find(item=>item.id===id)||PERSONA_SLOTS.find(item=>item.id===id);
+  // 모델 칸 아래 설명 ↔ 맞춤 인물 요청 칸을 그 자리에서 바꾼다(단계를 다시 그리지 않아 읽던 자리 · 초점이 그대로다). 같은 종류면 그대로 둔다.
+  function swapDetail(){
+    const old=form.querySelector('.sx-q-who,.sx-q-persona');if(!old)return;
+    if((a.modelChoice==='custom'&&ctx.flags.request)===old.classList.contains('sx-q-persona'))return;
+    const box=document.createElement('div');box.innerHTML=modelDetail(a,ctx);const next=box.firstElementChild;old.replaceWith(next);rise(next,{y:6});
+  }
+  function redrawPersona(focus=''){
+    const old=form.querySelector('.sx-q-persona');if(!old)return;
+    const box=document.createElement('div');box.innerHTML=modelDetail(a,ctx);const next=box.firstElementChild;old.replaceWith(next);
+    if(focus)next.querySelector(focus)?.focus({preventScroll:true});
+  }
+  function pickPersona(key,group,el){const p=a.personaRequest;p[key]=p[key]===el.dataset.id?'':el.dataset.id;form.querySelectorAll(`[data-do="${group}"]`).forEach(item=>setChip(item,item.dataset.id===p[key]));saved();}
   // 판 4 B6: 「추천해 주세요」 · 「사람 없이」를 고르면 하린 같은 한 사람의 이름 · 큰 사진을 남기지 않는다. 고른 것을 풀면 첫 후보로 돌아간다.
   function showChoice(){const text=choiceText(a);if(!text){const first=a.models[0]||picksOf(a)[0]?.id;if(first)showModel(first);return;}const name=$('[data-cast-name]');if(name){name.textContent=text.name;$('[data-cast-line]').textContent=text.line;$('[data-cast-desc]').textContent='';}const lead=$('[data-portrait-name]');if(lead)lead.textContent=text.caption;crossfade($('[data-portrait]'),choiceShot(a));}
   function showModel(id){const item=modelOf(id);if(!item)return;crossfade($('[data-portrait]'),bigScene(item));const lead=$('[data-portrait-name]');if(lead)lead.textContent=`${nameOf(item)} · ${castLine(item)}`;const name=$('[data-cast-name]');if(name){name.textContent=nameOf(item);$('[data-cast-line]').textContent=MODEL_LINES[id]?.line?t(MODEL_LINES[id].line):'';$('[data-cast-desc]').textContent=t(item.description);}}
-  function updateSlotStatus(id){const box=form.querySelector(`[data-status="${id}"]`),slot=slotsFor(a.kind).find(item=>item.id===id);if(box&&slot)box.innerHTML=slotStatus(a,slot);}
+  function updateSlotStatus(id){const box=form.querySelector(`[data-status="${id}"]`),slot=slotOf(id);if(box&&slot)box.innerHTML=slotStatus(a,slot);}
   async function addFiles(id,list){
-    const slot=slotsFor(a.kind).find(item=>item.id===id),state=a.slots[id]||(a.slots[id]={files:[]});state.none=false;
+    const slot=slotOf(id);if(!slot)return;const state=a.slots[id]||(a.slots[id]={files:[]});state.none=false;
     for(const file of list){
       const entry={fileName:file.name,byteSize:file.size,mimeType:file.type,uploading:true,progress:0};
-      if(file.type.startsWith('image/')&&file.type!=='image/heic'&&file.type!=='image/heif'){try{const url=URL.createObjectURL(file),image=await loadImage(url);blobs.add(url);entry.preview=url;entry.width=image.naturalWidth;entry.height=image.naturalHeight;entry.advice=photoAdvice(entry.width,entry.height,slot.kind);}catch{}}
+      if(file.type.startsWith('image/')&&file.type!=='image/heic'&&file.type!=='image/heif'){try{const url=URL.createObjectURL(file),image=await loadImage(url);blobs.add(url);entry.preview=url;entry.width=image.naturalWidth;entry.height=image.naturalHeight;if(!slot.persona)entry.advice=photoAdvice(entry.width,entry.height,slot.kind);}catch{}}
       state.files.push(entry);redrawSlot(slot);
       try{const {preview,...stored}=await backend.upload(id,file,progress=>{entry.progress=progress;updateSlotStatus(id);});Object.assign(entry,stored,{uploading:false});if(preview&&!entry.preview)entry.preview=preview;}
       catch(error){entry.uploading=false;entry.error=error.message||t('올리지 못했어요. 다시 시도해 주세요.');}
       updateSlotStatus(id);redrawSlot(slot);renderSlate();saved();
     }
     if(step().id==='files')renderMonitor('files');
+    if(slot.persona)showChoice();
   }
   function redrawSlot(slot){
     const old=form.querySelector(`[data-slot="${slot.id}"]`);if(!old)return;
@@ -376,9 +436,10 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function receiptHtml(receipt){
     const pkg=pkgOf(a),when=sentAt||new Date(receipt.at||Date.now());
     const stamp=locale()==='ko'?`${when.getFullYear()}.${String(when.getMonth()+1).padStart(2,'0')}.${String(when.getDate()).padStart(2,'0')} ${String(when.getHours()).padStart(2,'0')}:${String(when.getMinutes()).padStart(2,'0')}`:Number.isFinite(when.getTime())?new Intl.DateTimeFormat(intlLocale(locale()),{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(when):'';
-    const rows=[[k('광고할 것'),a.name],[k('길이'),pkg?t('{label} · {price}부터',{label:t(pkg.label),price:price(pkg.price)}):t('추천해 주세요')],[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):pkg?t('구성에 맞춰 함께 정해요'):''],[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)],[k('올릴 곳'),channelText(a)||t('제안해 주세요')],[k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):modelList(a)||t('추천해 주세요')],[k('받은 자료'),t('{count}개',{count:slotCount(a)})],[k('연락받을 곳'),a.email||a.phone||'']].filter(([,value])=>value);
+    const rows=[[k('광고할 것'),a.name],[k('길이'),pkg?t('{label} · {price}부터',{label:t(pkg.label),price:price(pkg.price)}):t('추천해 주세요')],[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):pkg?t('구성에 맞춰 함께 정해요'):''],[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)],[k('올릴 곳'),channelText(a)||t('제안해 주세요')],[k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):modelList(a)||t('추천해 주세요')],[k('받은 자료'),t('{count}개',{count:slotCount(a)})],[k('연락받을 곳'),a.email||a.phone||'']].filter(([,value])=>value);
     // 다음에 일어날 일: 사진 상품은 첫 장 → 나머지, 영상은 방향 두 안 → 제작.
-    const next=[[k('저희가 내용을 확인해요'),k('평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.')],...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')],[k('나머지 사진을 보내 드려요'),k('사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.')]]:[[k('방향 두 안을 보내 드려요'),k('무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')],[k('의견을 반영한 뒤 제작해요'),k('확인하시기 전에는 영상을 만들지 않아요.')]])];
+    // 맞춤 인물(판 3)은 확인 다음에 인물 검토 한 걸음 — 견적 전에는 비용이 생기지 않고, 기준 얼굴 · 움직이는 모습을 확인받은 인물만 광고에 쓴다.
+    const next=[[k('저희가 내용을 확인해요'),k('평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.')],...(a.modelChoice==='custom'?[[k('맞춤 인물을 검토해요'),k('보내 주신 글과 사진으로 만들 수 있는지 보고 견적을 보내 드려요. 기준 얼굴과 움직이는 모습을 확인하신 인물만 광고에 써요.')]]:[]),...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')],[k('나머지 사진을 보내 드려요'),k('사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.')]]:[[k('방향 두 안을 보내 드려요'),k('무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')],[k('의견을 반영한 뒤 제작해요'),k('확인하시기 전에는 영상을 만들지 않아요.')]])];
     return `<div class="sx-rc-wrap"><article class="sx-rc-paper" tabindex="-1" aria-label="${esc(t('의뢰 접수증'))}"><header><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="120" height="32"><h2 class="sx-serif">${esc(t('의뢰 접수증'))}</h2></header><dl class="sx-rc-rows"><div><dt>${esc(t('접수 번호'))}</dt><dd class="sx-no">${esc(receipt.number)}</dd></div><div><dt>${esc(t('접수 시각'))}</dt><dd class="sx-no">${esc(stamp)}</dd></div>${rows.map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><ol class="sx-rc-next">${next.map(([title,text])=>`<li><b>${esc(t(title))}</b><span>${esc(t(text))}</span></li>`).join('')}</ol></article></div><div class="sx-rc-actions"><button type="button" class="sx-go is-solid" data-rc="room"><span>${esc(t('내 의뢰 보기'))}</span>${arrow}</button>${receipt.link?`<button type="button" class="sx-small sx-link" data-rc="copy">${esc(t('이 의뢰로 돌아올 링크 복사'))}</button><p class="sx-small" data-rc-note>${esc(t('이 링크로 30일 안에 어느 기기에서든 돌아올 수 있어요. 메일을 적으셨다면 첫 화면 「메일로 다시 열기」로도 여실 수 있어요.'))}</p>`:''}</div>`;
   }
   function showReceipt(receipt){
@@ -423,6 +484,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   host.addEventListener('input',event=>{
     const el=event.target;const bind=el.dataset?.bind;if(!bind)return;
     if(bind==='refUrl')a.refs[0].url=el.value;
+    else if(bind.startsWith('persona.'))a.personaRequest[bind.slice(8)]=el.value;
     else if(el.type==='checkbox')a[bind]=el.checked;
     else a[bind]=el.value;
     if(bind==='date'){a.dateFree=false;const free=form.querySelector('[data-do="datefree"]');free?.classList.remove('is-on');free?.setAttribute('aria-pressed','false');updateDateAdvice();}

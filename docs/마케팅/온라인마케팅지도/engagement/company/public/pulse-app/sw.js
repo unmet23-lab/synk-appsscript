@@ -16,7 +16,8 @@
 // v36(11-10): 「만드는 사람」 이력 맨 앞에 서울로 당선 줄, 세로 창에서 그 글 묶음을 아래 그늘 위로. 목록은 그대로이고 바뀐 film-home.mjs · i18n/en.mjs · film.css를 새로 받게 판만 올린다.
 // v37(11-10): 판매 전 고침 판 4 — 결제 차례 카드 · 메일 코드로 다시 열기 · 끝 상태 · 예시 프로젝트의 「방향 고르기」 · 「결제」 장면. 목록은 그대로이고 바뀐 화면 모듈 · film.css · app.css · slate-screens.css · i18n/en.mjs를 새로 받게 판만 올린다.
 // v38(11-10): 큰 모니터(창 폭 약 2414 넘음)에서 첫 화면 3쪽 「이렇게 만들어요」 인물 그림 칸을 1400px로 묶었다(2560×1440 화면배율 1.55 → 1.46). 목록은 그대로이고 바뀐 film.css를 새로 받게 판만 올린다.
-const CACHE = 'synk-pulse-shell-v38-scale-20261110';
+// v39(11-10): 고객 전용 인물 판 3 — 고객 방 인물 카드 모듈 persona-view.mjs를 더했다. 의뢰서 · 고객 방 · 내부 확인 모듈과 film.css · slate-screens.css · i18n/en.mjs도 바뀌었다. 스위치가 꺼져 있으면 화면은 그대로다.
+const CACHE = 'synk-pulse-shell-v39-persona-20261110';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/SUIT.woff2','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');
@@ -27,6 +28,7 @@ for(const id of ['f08','f09','f10','f11','m07','m08','m09','m10'])FILES.push(BAS
 FILES.push(BASE+'motion.mjs',BASE+'request-data.mjs',BASE+'request-flow.mjs',BASE+'request-backend.mjs',BASE+'film-views.mjs',BASE+'room-view.mjs',BASE+'demo-film.mjs',BASE+'slate.css',BASE+'slate-screens.css',BASE+'slate-legacy.css',BASE+'assets/request/logo-paper.webp');
 FILES.push(BASE+'film.css',BASE+'film-legacy.css',BASE+'film-home.mjs',BASE+'film-review.mjs',BASE+'assets/NotoSerifKR-300.woff2',BASE+'assets/request/reel-wide-poster.webp',BASE+'assets/request/reel-tall-poster.webp');
 FILES.push(BASE+'i18n.mjs',BASE+'i18n/en.mjs',BASE+'casting-choice.mjs',BASE+'locale-menu.mjs');
+FILES.push(BASE+'persona-view.mjs');
 const ALLOWED = new Set(FILES);
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('synk-pulse-shell-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
