@@ -22,8 +22,12 @@ function compare(before, after) {
     fs.writeFileSync(file, JSON.stringify(record));
     return file;
   };
-  const run = spawnSync(process.execPath, [TOOL, '견줌', write('a.json', before), write('b.json', after)], { encoding: 'utf8' });
-  return { status: run.status, verdict: JSON.parse(run.stdout) };
+  try {
+    const run = spawnSync(process.execPath, [TOOL, '견줌', write('a.json', before), write('b.json', after)], { encoding: 'utf8' });
+    return { status: run.status, verdict: JSON.parse(run.stdout) };
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 test('산출물과 판정이 모두 같으면 같다', () => {

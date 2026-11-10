@@ -2,16 +2,16 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { checkPublish } from '../../tools/publish.mjs';
+import { tempDir } from '../support/temp.mjs';
 
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
 // tools/build.mjs가 내는 나무와 같은 꼴을 손으로 만든다(이 묶음은 esbuild 없이 돈다).
 function tree(edition, { release = true, loaderEdition = edition } = {}) {
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-publish-'));
+  const out = tempDir('atlas-publish-');
   const dir = path.join(out, 'atlas', edition);
   fs.mkdirSync(dir, { recursive: true });
   const code = Buffer.from('export const EDITION="x";');

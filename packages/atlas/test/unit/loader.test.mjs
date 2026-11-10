@@ -2,12 +2,12 @@
 // 같은 문서와 같은 출처의 위 창에 먼저 실린 판 따르기. 클래식 꼴은 문서마다 vm 문맥 하나로 흉내 내고, 판 묶음 자리에는 가짜 atlas.mjs를 둔다.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 import { loaderSource, subject } from '../support/subject.mjs';
+import { tempDir } from '../support/temp.mjs';
 
 const plain = value => JSON.parse(JSON.stringify(value));
 const withEdition = edition => loaderSource().replace("'__ATLAS_EDITION__'", `'${edition}'`);
@@ -19,7 +19,7 @@ export function createCoach(options = {}) {
 `;
 
 function editionFolder(edition, body) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-loader-'));
+  const root = tempDir('atlas-loader-');
   const folder = path.join(root, edition);
   fs.mkdirSync(folder);
   if (body != null) fs.writeFileSync(path.join(folder, 'atlas.mjs'), body);
@@ -208,6 +208,37 @@ export function createCoach(options = {}) {
   );
 });
 
+test('코치의 ready가 거절되면 입구가 그 코치를 닫고 거절을 넘긴다 — 닫은 화면이면 거절도 남기지 않는다', async () => {
+  const failingCoach = `export const EDITION = "4.3.0";
+export function createCoach(options = {}) {
+  options.created = true;
+  const error = Object.assign(new Error('저장소를 열지 못했다'), { code: 'STORAGE_ERROR' });
+  return { ready: new Promise((_, reject) => setTimeout(() => reject(error), 30)), recommend: () => 'picked', dispose: () => { options.disposed = true; } };
+}
+`;
+  const { loaderUrl } = editionFolder('4.3.0', failingCoach);
+  const atlas = runClassic(documentContext({ scriptSrc: loaderUrl }), withEdition('4.3.0'));
+  const open = {};
+  const coach = atlas.coach(open);
+  await assert.rejects(
+    coach.ready,
+    error => error.code === 'STORAGE_ERROR',
+    '코치의 거절은 그대로 알린다',
+  );
+  assert.equal(open.disposed, true, '거절된 코치는 입구가 닫는다(잠금 · 구독이 새지 않게)');
+  assert.throws(
+    () => coach.recommend(),
+    error => error.code === 'NOT_READY',
+  );
+  const left = {};
+  const leaving = atlas.coach(left);
+  await atlas.load();
+  assert.equal(left.created, true);
+  leaving.dispose();
+  assert.equal(await leaving.ready, undefined, '닫은 화면에는 거절을 남기지 않는다');
+  assert.equal(left.disposed, true, '닫은 화면의 코치도 닫는다');
+});
+
 test('판 주소를 정할 수 없으면(문서도 주소도 없음) LOAD_FAILED(NO_BASE)', async () => {
   const atlas = runClassic(documentContext(), withEdition('5.0.0'));
   assert.equal(atlas.base, null);
@@ -218,7 +249,7 @@ test('판 주소를 정할 수 없으면(문서도 주소도 없음) LOAD_FAILED
 });
 
 test('ES 모듈 꼴: loader.mjs가 loader.js를 모듈로 실어 SynkAtlas와 coach를 내보낸다 — 판 폴더는 같은 출처의 /atlas/', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-loader-module-'));
+  const dir = tempDir('atlas-loader-module-');
   // 브라우저는 import한 .js를 늘 모듈로 읽는다 — Node도 모듈(엄격 모드 · 모듈 범위)로 읽게 한다.
   fs.writeFileSync(path.join(dir, 'package.json'), '{"type":"module"}\n');
   fs.writeFileSync(path.join(dir, 'loader.js'), withEdition('6.0.0'));

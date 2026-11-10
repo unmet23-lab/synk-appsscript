@@ -1,13 +1,11 @@
 // 시험 묶음 실행기(tools/test.mjs): 꼭 도는 묶음(unit · build)에 시험이 없으면 실패다 — check가 시험 없이 「통과」하지 않게.
 // 아직 채우지 않은 묶음(properties · learners)은 「단계 N이 채운다」로 끝난다.
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import test from 'node:test';
 import { runGroup, testEnv } from '../../tools/test.mjs';
+import { tempDir } from '../support/temp.mjs';
 
-const empty = () => fs.mkdtempSync(path.join(os.tmpdir(), 'atlas-runner-'));
+const empty = () => tempDir('atlas-runner-');
 
 test('꼭 도는 묶음(unit · build)에 시험이 하나도 없으면 실패다', () => {
   for (const name of ['unit', 'build']) {

@@ -1,7 +1,8 @@
 // 계기 — 저장 실패 · 추천 실패를 센다(설계 §1 표 5행 「저장 실패는 화면과 집계에 보임」 · §11 단계 0).
 // 코호트 첫 주에 「엔진이 꺼진 학습자」가 몇 명인지 보려는 것이다. 새 코치(단계 3의 저장 포트 · 단계 4의 recommend)와
 // 지금 판 코치(./legacy.mjs)가 같은 계기에 알린다. 엔진 묶음을 못 받은 것은 묶음 안의 이 모듈이 알 수 없으므로
-// 호스트가 입구의 coach.ready 결과를 note('load', …)로 넘긴다(loader/loader.js의 LOAD_FAILED).
+// 호스트가 입구의 coach.ready 결과를 note('load', …)로 넘긴다 — 코드는 원인까지 담는다(loader/loader.js의 LOAD_FAILED · reason에서
+// LOAD_IMPORT · LOAD_TIMEOUT · LOAD_EDITION_MISMATCH · LOAD_NO_BASE, 코치 자신의 ready 거절이면 그 코드).
 //
 // note(kind, outcome) — kind는 'load' · 'save' · 'recommend'.
 //   { ok: true }                          됐다

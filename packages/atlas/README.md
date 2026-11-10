@@ -40,7 +40,7 @@ node packages/atlas/tools/build.mjs --out <폴더>
   - `unit` — 의존 없이 돈다. 패키지 의존(ts-fsrs · esbuild …)을 부르면 훅(`test/support/leaf-only.mjs`)이 멈춘다. 루트 `tests/atlas-package.test.js`가 이 묶음을 부르므로, 패키지 의존을 깔지 않은 작업본의 전체 시험도 깨지지 않는다. `src/index.mjs`가 ts-fsrs를 부르게 되면 index를 거치는 unit 시험은 잎 모듈(`src/<모듈>/`)만 부르게 고치거나 `test/build/`로 옮긴다.
   - `build` — 빌드 · ts-fsrs · 변형 실행기.
   - `properties` · `learners` — 시제품 시험이 옮겨 올 자리(단계 2 · 3). [옮길 표](test/properties/README.md).
-- 시험은 `src` · `loader`를 `test/support/subject.mjs`로만 부른다(`ATLAS_SUBJECT_ROOT`가 있으면 그 사본을 시험한다 — 변형 실행기가 쓴다). 씨앗은 `test/support/seeds.mjs`(`ATLAS_SEEDS` · `ATLAS_FIRST_SEED`).
+- 시험은 `src` · `loader`를 `test/support/subject.mjs`로만 부른다(`ATLAS_SUBJECT_ROOT`가 있으면 그 사본을 시험한다 — 변형 실행기가 쓴다). 씨앗은 `test/support/seeds.mjs`(`ATLAS_SEEDS` · `ATLAS_FIRST_SEED`), 임시 폴더는 `test/support/temp.mjs`의 `tempDir`(그 시험 파일이 끝나면 지운다).
 - `test:mutants` — 변형 시험(`tools/mutants.mjs`). 규칙을 더하거나 고칠 때 그 규칙을 깬 변형을 목록에 함께 더한다. 사본은 `.mutants/`(git 밖)에 만들고, 바꾸지 않은 사본에서 시험이 먼저 통과해야 변형을 본다. `--self`는 실행기 자체 시험이다.
 
 ## 검사 셋 — 줄 수 상한 대신(설계 §14-3)
@@ -81,7 +81,7 @@ const { coach: open } = await import('/atlas/loader.mjs');
 ```
 
 - `loader.js`에는 정적 `import` · `export`가 없어 클래식 스크립트로도 모듈로도 실린다. 판 묶음은 동적 `import()`로 받는다(드라마 CSP `script-src 'self'` · PC 앱 `synk-desktop://` 모두 같은 출처라 통한다).
-- **`ready`는 한 번만 정해진다.** 판 묶음을 못 받으면(404 · 오프라인 · 시간 상한 20초) `code: 'LOAD_FAILED'`(`reason`: `IMPORT` · `TIMEOUT` · `EDITION_MISMATCH` · `NO_BASE`)로 거절한다. 제품은 이때 지금처럼 원고 순서로 가고, 호스트는 계기에 `note('load', { ok: false, code })`로 넘긴다.
+- **`ready`는 한 번만 정해진다.** 판 묶음을 못 받으면(404 · 오프라인 · 시간 상한 20초) `code: 'LOAD_FAILED'`(`reason`: `IMPORT` · `TIMEOUT` · `EDITION_MISMATCH` · `NO_BASE`)로 거절한다. 제품은 이때 지금처럼 원고 순서로 가고, 호스트는 계기에 원인까지 담은 코드로 넘긴다 — `note('load', { ok: false, code: error.reason ? 'LOAD_' + error.reason : error.code })`(`LOAD_IMPORT` · `LOAD_TIMEOUT` · `LOAD_EDITION_MISMATCH` · `LOAD_NO_BASE` — 404인지 느린 망인지 판 엇갈림인지 가르려고). 판 묶음이 낸 코치의 `ready`가 거절되면 입구가 그 코치를 닫고 같은 거절을 넘긴다(그 코치가 쥔 잠금 · 구독이 새지 않게).
 - `ready` 전에 부른 메서드는 `NOT_READY`로 던진다. 떠나는 화면은 `ready` 전에도 `dispose()`할 수 있다 — 그 뒤 도착한 코치는 붙이지 않고 닫고, 메서드는 `DISPOSED`로 던진다.
 - 같은 문서에 입구가 두 번 실리면 먼저 실린 판 하나만 돈다. **같은 출처의 위 창에 입구가 있으면 그 판을 따른다**(WORLD 틀 안 게임과 위 창이 다른 판을 받지 않게). 엇갈린 판은 `SynkAtlas.conflicts`에 남는다.
 - 제품은 입구를 `/atlas/loader.js` · `/atlas/loader.mjs` 절대 주소로, `?v=` 없이 부른다 — 토큰을 붙이면 엔진을 올릴 때마다 `tools/공개.js`가 제품 HTML의 토큰까지 바꿔 「엔진을 고쳐도 제품 묶음을 건드리지 않는다」가 깨진다. 판 폴더(`/atlas/<판>/…`)를 제품이 바로 부르지 않는다. WORLD 공개 빌드(`tools/build-world-app-public.mjs`)가 이것을 막는다.

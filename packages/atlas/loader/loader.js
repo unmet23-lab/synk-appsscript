@@ -129,18 +129,23 @@
       .then(module => {
         if (disposed) return undefined;
         const made = module.createCoach(options);
-        return Promise.resolve(made.ready).then(() => {
-          if (!disposed) {
-            real = made;
-            return undefined;
-          }
+        const drop = () => {
           try {
             made.dispose();
           } catch {
             // 아무도 쓰지 않는 코치의 정리다.
           }
-          return undefined;
-        });
+        };
+        return Promise.resolve(made.ready).then(
+          () => {
+            if (disposed) drop();
+            else real = made;
+          },
+          error => {
+            drop();
+            throw error;
+          },
+        );
       })
       .catch(error => {
         // 닫은 뒤의 실패는 알릴 곳이 없다 — 떠난 화면에 처리되지 않은 거절을 남기지 않는다.

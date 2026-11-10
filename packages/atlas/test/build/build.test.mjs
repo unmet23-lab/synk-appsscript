@@ -2,16 +2,15 @@
 // 마지막에 진짜 묶음과 진짜 입구로 await coach.ready까지 돌린다.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 import { build, EDITION_FORM, editionFor, PACKAGE_ROOT } from '../../tools/build.mjs';
+import { tempDir } from '../support/temp.mjs';
 
 const STATE = { commit: 'a'.repeat(40), dirty: false };
 const EDITION = '0.0.0-dev.aaaaaaa';
-const tempDir = prefix => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 const listFiles = dir =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
     const full = path.join(dir, entry.name);
