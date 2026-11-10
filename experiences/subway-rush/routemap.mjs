@@ -3,7 +3,7 @@
 //   문(열차 안): 가로 노선 — 왼쪽 · 오른쪽은 화면 밖(문)으로, 가운데는 위로(그대로)
 //   통로 · 출구(갈림 앞): 세 갈래 모두 앞으로 — 왼쪽 · 가운데 · 오른쪽
 //   승강장: 왼쪽은 열차(타기), 가운데는 멈춤 막대(기다리기), 오른쪽은 화면 밖(반대편)
-// 바닥에 칠하지 않는다(11-10 맹검 · 점검표 46 · 58) — 사진 위에 설계된 그래픽 층으로 둔다.
+// 바닥에 칠하지 않는다(11-10 맹검 · 점검표 46 · 59) — 사진 위에 설계된 그래픽 층으로 둔다.
 const NS = 'http://www.w3.org/2000/svg';
 export const MAP = Object.freeze({ track: 0.878, top: 0.806, cols: Object.freeze([1 / 6, 1 / 2, 5 / 6]) });
 const EN = Object.freeze({ left: 'Left door', stay: 'Stay', right: 'Right door', board: 'Board', wait: 'Wait', opposite: 'Other side' });
