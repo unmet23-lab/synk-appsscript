@@ -3,16 +3,18 @@
 #  ① 사진 두 연작: 홈 · 아틀라스의 창가 다섯 장(window-*)과 LAB의 교실 창가 넉 장(class-*). 구운 원본(GPT 이미지 2.6 구독,
 #     지시문은 창가사진_지시문.md)을 연작의 첫 판에 맞춰 옮겨(칸이 바뀔 때 창틀 · 칠판 · 책상이 떨지 않게) webp로.
 #  ② 실제 화면 부품: 장면 캡처(experiences/synk-world-app/qa/site-learner-scene.mjs 출력 — 한국어 --폭 390, 영어 --폭 430)에서 물음에 답하는 자리만 언어마다 webp로.
-#     튜터 카드는 단추까지(아래 링크 셋은 뺀다), 다시 확인은 그 항목 카드만(위 설명문은 뺀다) — 11-09 맹검 「위젯처럼 보인다」.
-#  ③ LAB 문제 카드의 펠트 그림(앱의 첫 레슨 장면 그림, experiences/brand-opening/assets/world-felt/greetings.webp)을 작게.
-# 쓰기: python -I -X utf8 그림.py <구운 사진 폴더> <캡처 폴더(ko · en이 든)> <나갈 폴더> [SYNK-appsscript 뿌리]
+#     다시 확인은 그 항목 카드만(위 설명문은 뺀다) — 11-09 맹검 「위젯처럼 보인다」.
+#     조각 속 앱의 단추 · 링크 줄은 잘라 낸다(11-10): 튜터 카드의 흰 단추, 다시 확인의 「다음 레슨에서 확인하기」, 근거의 「이 항목 연습하기」.
+#     사이트에서 누를 곳은 사이트 단추 하나다 — 조각 속 흰 알약과 사이트 단추가 한 화면에 둘이면 어디를 누를지 갈린다(맹검 K36 · C018, 세 회차 연속).
+#     돌아올 표현은 앞 두 줄(1분 뒤 · 내일)만 — 셋째 줄이 둘째 줄과 시각까지 같아 「대충 채운 목록」으로 읽혔다(11-10 맹검 C024).
+#  (11-10까지 ③ LAB 문제 카드의 펠트 그림도 만들었다 — 흰 바탕째 붙은 그림이 맹검 네 회차 연속 「스티커」(C023)라 카드에서 뺐다.)
+# 쓰기: python -I -X utf8 그림.py <구운 사진 폴더 | - (사진은 건너뜀)> <캡처 폴더(ko · en이 든)> <나갈 폴더>
 import os, sys
 import numpy as np
 import cv2
 from PIL import Image, ImageDraw
 
 사진폴더, 캡처뿌리, 나갈 = sys.argv[1], sys.argv[2], sys.argv[3]
-뿌리 = sys.argv[4] if len(sys.argv) > 4 else os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
 os.makedirs(나갈, exist_ok=True)
 
 # ── ① 사진 ──
@@ -47,8 +49,9 @@ def 교실가림(m, W, H):  # 칠판 틀 · 창틀 · 턱 · 벽 · 책상 먼 �
     m[0:700, :] = 255; m[760:815, 0:480] = 255
     m[50:618, 1027:1335] = 0; m[50:618, 1362:1612] = 0; m[75:652, 5:930] = 0
 # 창가 연작은 옮기기만 한다. 원본 구도가 2~3px 안으로 같은데, 방 전체 빛을 바꾼 판에서는 아핀 맞춤이 빛에 속아 사진을 비튼다(11-09 오후 판: 창틀 안쪽 호박빛 때문에 세로선 38px 기울임, 비 판: 세로 배율 16px)
-연작('window', [('evening', 'a1'), ('morning', 'w-morning'), ('golden', 'w-golden'), ('rain', 'w-rain'), ('snow', 'w-snow')], 창가가림, cv2.MOTION_TRANSLATION)
-연작('class', [('now', 'e1'), ('morning', 'e-morning'), ('rain', 'e-rain'), ('snow', 'e-snow')], 교실가림)
+if 사진폴더 != '-':
+    연작('window', [('evening', 'a1'), ('morning', 'w-morning'), ('golden', 'w-golden'), ('rain', 'w-rain'), ('snow', 'w-snow')], 창가가림, cv2.MOTION_TRANSLATION)
+    연작('class', [('now', 'e1'), ('morning', 'e-morning'), ('rain', 'e-rain'), ('snow', 'e-snow')], 교실가림)
 
 # ── ② 실제 화면 부품 ──
 def 둥글게(im, r):
@@ -56,8 +59,8 @@ def 둥글게(im, r):
     ImageDraw.Draw(m).rounded_rectangle((0, 0, m.width - 1, m.height - 1), r * 4, fill=255)
     m = m.resize(im.size, Image.LANCZOS); im = im.convert('RGBA'); im.putalpha(m)
     return im
-def 단추아래(im):
-    # 튜터 카드의 흰 단추 맨 아래 줄(채움 + 아래 안쪽 그림자 2px까지). 11-09까지는 홈이 스크립트로 준 초점의 고리(2px + 3px 틈)가
+def 단추자리(im):
+    # 튜터 카드의 흰 단추가 차지하는 줄(위 · 아래). 11-09까지는 홈이 스크립트로 준 초점의 고리(2px + 3px 틈)가
     # 단추 둘레에 함께 찍혀 「바깥 고리 · 채움 · 바깥 고리」 세 덩어리였다 — 앱이 키보드를 쓰기 전에는 그 고리를 그리지 않게 고친 뒤로는 한 덩어리다.
     a = np.array(im.convert('RGB')).astype(int); h, w, _ = a.shape
     bright = (a[:, int(w * .15):int(w * .85)].min(axis=2) > 200).mean(axis=1)
@@ -66,7 +69,20 @@ def 단추아래(im):
     단추 = max(blocks, key=len)
     assert len(단추) > 60, '튜터 카드 단추를 못 찾음'
     assert len(blocks) == 1, f'단추 둘레에 고리가 또 찍혔다(덩어리 {len(blocks)}) — 초점 고리가 보이는 판이다'
-    return int(단추[-1])
+    return int(단추[0]), int(단추[-1])
+def 덩어리(im, 틈=20, 가=40):
+    # 바탕과 다른 화소가 있는 줄을 이어 글 · 그림 덩어리로 묶는다(줄 사이 틈 20px(@2x) 안은 한 덩어리 — 한 문단 · 한 근거 줄).
+    # 가장자리 40px은 보지 않는다(둥근 모서리 밖 쪽 바탕 · 카드 옆 테두리).
+    a = np.array(im.convert('RGB')).astype(int); h, w, _ = a.shape
+    bg = np.median(a[:, w // 2].reshape(-1, 3), axis=0)
+    줄 = np.where((np.abs(a[:, 가:w - 가] - bg).sum(axis=2) > 60).any(axis=1))[0]
+    줄 = 줄[줄 > 3]  # 맨 위 테두리 1px(@2x 2줄)는 덩어리가 아니다
+    if not len(줄): return []
+    묶음 = np.split(줄, np.where(np.diff(줄) > 틈)[0] + 1)
+    return [(int(b[0]), int(b[-1])) for b in 묶음]
+def 아래로자름(im, 끝, 여백):
+    # 끝 줄 아래 여백만 남기고 자른다 — 여백은 조각 위쪽 여백과 같게(카드가 한 장으로 끝나 보이게)
+    return im.crop((0, 0, im.width, min(im.height, 끝 + 여백)))
 def 아래줄지움(im, 몇=46):
     # 조각 맨 아래에 걸린 구분선(카드 밑 테두리 · 목록 줄)을 바탕색으로 지운다 — 가로로 고르게 이어진 줄만(글자 · 밑줄 링크는 고르지 않다).
     # 둥근 틀 안에서 바닥에 곧은 줄이 비치면 캡처를 오린 자국으로 보인다(11-09 마감 점검).
@@ -105,13 +121,21 @@ for 언어 in ('ko', 'en'):
     놓친날 = next((n for n in ('30-day8-home', '20-day2-home', '40-day31-home') if 찾을글 in open(os.path.join(캡처, n + '.txt'), encoding='utf-8').read()), None)
     assert 놓친날, f'{언어}: 「{찾을글}」 이유가 나온 날이 없다 — 장면을 다시 돌린다'
     print(언어, 'piece-tutor 원본', 놓친날)
+    # 튜터 카드는 이유 문장까지 — 흰 단추 줄부터 잘라 내고, 아래 여백은 카드 위 여백(테두리에서 첫 글 · 얼굴까지)과 같게
     for 이름, 원본 in (('piece-tutor', 놓친날 + '.crop'), ('piece-tutor-review', '63-day2-home-review.crop')):
-        im = 열기(원본); 아래 = 단추아래(im) + 34
-        쓰기(이름, 둥글게(im.crop((0, 0, im.width, min(im.height, 아래))), 58))
-    # 같은 표현, 다른 장면 · 돌아올 표현 · 게임 — 자리를 재서 찍은 띠 그대로(영어는 430 폭으로 찍어 튜터 줄이 말줄임 없이 다 보인다)
+        im = 열기(원본); 단추위, _ = 단추자리(im)
+        글 = [b for b in 덩어리(im.crop((0, 0, im.width, 단추위 - 2)))]
+        assert len(글) >= 2, f'{이름}: 단추 위 글 덩어리를 못 찾음'
+        쓰기(이름, 둥글게(아래로자름(im, 글[-1][1], 글[0][0]), 58))
+    # 같은 표현, 다른 장면 · 게임 — 자리를 재서 찍은 띠 그대로(영어는 430 폭으로 찍어 튜터 줄이 말줄임 없이 다 보인다)
     쓰기('piece-scene', 열기('05-review-new-scene.band'))
-    쓰기('piece-back', 아래줄지움(열기('04-review-summary.band')))
     쓰기('piece-game', 열기('13-game-pick.band'))
+    # 돌아올 표현 — 머리 + 앞 두 줄(틀린 말 1분 뒤 · 맞힌 말 내일). 줄마다 산호색 때 글이 끝이다
+    band = 열기('04-review-summary.band'); a = np.array(band).astype(int)
+    산호 = np.where(((a[:, :, 0] > 200) & (a[:, :, 1] > 110) & (a[:, :, 1] < 200) & (a[:, :, 2] > 90) & (a[:, :, 2] < 190) & (a[:, :, 0] - a[:, :, 2] > 50)).sum(axis=1) > 3)[0]
+    산호 = np.split(산호, np.where(np.diff(산호) > 20)[0] + 1)
+    assert len(산호) >= 2, '돌아올 표현의 때 글을 못 찾음'
+    쓰기('piece-back', 아래줄지움(아래로자름(band, int(산호[1][-1]), 34)))
     # 다시 확인 — 그 항목 카드만(위 「시간을 두고 다시 확인」 제목 · 설명은 뺀다). 띠에서 카드 자리를 찾아 위 30px 여백부터.
     for 이름, 띠, 카드 in (('piece-check-d7', '30-day8-followups-open.band', '30-day8-card-open.crop'), ('piece-check-d30', '40-day31-followups-open.band', '40-day31-card-open.crop')):
         band = 열기(띠); x, y = 찾기(band, 열기(카드))
@@ -123,21 +147,20 @@ for 언어 in ('ko', 'en'):
         여백 = y - 위  # 잘라 낸 띠에서 카드가 시작하는 줄
         if 여백 > 2:
             a = np.array(band); a[:여백 - 2] = np.median(a[여백:여백 + 20, 20:-20].reshape(-1, 3), axis=0); band = Image.fromarray(a)
+        # 맨 아래 덩어리는 「다음 레슨에서 확인하기」 링크다 — 그 위(때 · 상태 줄)까지 남긴다
+        글 = 덩어리(band)
+        assert len(글) >= 3 and 글[-1][1] - 글[-1][0] < 90 and 글[-1][0] > band.height * .55, f'{이름}: 맨 아래 링크 줄을 못 찾음 {글}'
+        # 위 · 아래 여백을 같게: 상태 줄과 링크 사이 틈보다 넓으면 링크 머리가 비친다 — 그 틈 안에서 맞추고 위도 같은 만큼만 남긴다
+        여 = min(글[0][0], 글[-1][0] - 글[-2][1] - 10)
+        band = band.crop((0, 글[0][0] - 여, band.width, 글[-2][1] + 여))
         쓰기(이름, 둥글게(band, 32))
-    # 근거 줄: 부품 조각의 자리를 찾아 양옆 여백까지
+    # 근거 줄: 부품 조각의 자리를 찾아 양옆 여백까지. 「맞음」 근거 줄(초록 점)까지만 — 아래 「세지 않은 답」 설명과 「이 항목 연습하기」 링크는 뺀다
     전체 = 열기('17-evidence-ko.reading.vocabulary'); 조각 = 열기('17-evidence-ko.reading.vocabulary.crop')
     x, y = 찾기(전체, 조각)
     # 그 줄의 위 · 아래 구분선(목록 테두리)은 지운다
-    쓰기('piece-evidence', 아래줄지움(위줄지움(전체.crop((0, max(0, y - 6), 전체.width, min(전체.height, y + 조각.height + 12))))))
-
-# ── ③ 펠트 그림 ──
-# 물건 둘레를 좁게 잘라(여백 8%) 정사각형으로 — 원본은 흰 여백이 넓어 68px에서 물건이 40px 남짓 「파란 얼룩」으로 읽혔다(11-09 맹검)
-f = os.path.join(뿌리, 'experiences', 'brand-opening', 'assets', 'world-felt', 'greetings.webp')
-im = Image.open(f).convert('RGB'); a = np.array(im).astype(int)
-ys, xs = np.where((255 - a).max(axis=2) > 28)  # 흰 바탕이 아닌 화소
-x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max(); 변 = max(x1 - x0, y1 - y0) * 1.16
-cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-상자 = [round(cx - 변 / 2), round(cy - 변 / 2), round(cx + 변 / 2), round(cy + 변 / 2)]
-판 = Image.new('RGB', (상자[2] - 상자[0], 상자[3] - 상자[1]), (255, 255, 255)); 판.paste(im, (-상자[0], -상자[1]))
-판.resize((192, 192), Image.LANCZOS).save(os.path.join(나갈, 'felt-greetings.webp'), 'WEBP', quality=86, method=6)
-print('felt-greetings', os.path.getsize(os.path.join(나갈, 'felt-greetings.webp')) // 1024, 'KB')
+    ev = 위줄지움(전체.crop((0, max(0, y - 6), 전체.width, min(전체.height, y + 조각.height + 12))))
+    a = np.array(ev).astype(int)
+    초록 = np.where(((a[:, :120, 1] > 150) & (a[:, :120, 0] < 150) & (a[:, :120, 2] < 130) & (a[:, :120, 1] - a[:, :120, 0] > 40)).sum(axis=1) > 2)[0]
+    assert len(초록), '근거 줄의 초록 점을 못 찾음'
+    끝 = next(b for b in 덩어리(ev) if b[0] <= 초록[-1] <= b[1])[1]
+    쓰기('piece-evidence', 아래줄지움(아래로자름(ev, 끝, 34)))
