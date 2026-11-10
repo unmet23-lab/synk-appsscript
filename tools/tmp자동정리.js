@@ -679,9 +679,11 @@ function 글로(결과) {
 
 function 추이글(줄들) {
   if (!줄들.length) return '장부가 비어 있다.';
-  const 머리 = '날짜        .tmp   0~2일  3~6일  7~13일  14일+  옮김   대기C  대기D  여유C';
+  const 머리 = '날짜 시각    .tmp   0~2일  3~6일  7~13일  14일+  옮김   대기C  대기D  여유C';
   const 칸 = (v, n = 6) => String(v ?? '?').padStart(n);
-  return [머리, ...줄들.map((r) => { const j = r.재기 || { 나이GB: {} }; return `${String(r.at).slice(0, 10)} ${칸(j.임시GB)} ${칸(j.나이GB['0-2'])} ${칸(j.나이GB['3-6'])} ${칸(j.나이GB['7-13'], 7)} ${칸(j.나이GB['14+'])} ${칸(r.옮김GB)} ${칸(j.대기GB)} ${칸(j.먼대기GB)} ${칸(j.여유GB)}`; })].join('\n');
+  // 장부의 at은 UTC다 — 자정 뒤 회차가 전날로 보이지 않게 이 PC의 날짜 · 시각으로 보인다
+  const 그때 = (at) => { const d = new Date(at); if (Number.isNaN(d.getTime())) return String(at).slice(0, 11).padEnd(11); const p = (n) => String(n).padStart(2, '0'); return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+  return [머리, ...줄들.map((r) => { const j = r.재기 || { 나이GB: {} }; return `${그때(r.at)} ${칸(j.임시GB)} ${칸(j.나이GB['0-2'])} ${칸(j.나이GB['3-6'])} ${칸(j.나이GB['7-13'], 7)} ${칸(j.나이GB['14+'])} ${칸(r.옮김GB)} ${칸(j.대기GB)} ${칸(j.먼대기GB)} ${칸(j.여유GB)}`; })].join('\n');
 }
 
 /** 인자를 읽는다 — { 도움 } · { 오류 } · { 실행, 일수, 되돌리기, 추이, json }. 모르는 인자 · 값 없는 선택지는 오류다(기본 길로 흘리지 않는다). */

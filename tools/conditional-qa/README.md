@@ -4,10 +4,10 @@
 
 | 실행 위치 | 등록 항목 | 실행 조건 |
 |---|---:|---|
-| GitHub Windows | 29 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic |
+| GitHub Windows | 34 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic, 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더 |
 | GitHub Linux | 11 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화, 컷 연속성 검사의 그림 · 영상(파이썬 그림 라이브러리) |
 | Windows 로컬 | 82 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA·Windows 글꼴과 OCR |
-| 합계 | 122 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다 |
+| 합계 | 127 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다 |
 
 `conditional-qa.yml`은 master의 각 push에 세 관문을 건다. 파일과 시험 이름이 일치하는 실제 Node 시험 이벤트가 정확히 한 번 통과해야 한다. skip/todo, 이름 변경, 누락, 중복, 프로세스 실패·시간 초과는 실패다. 기존 syntax/wide CI에 처음 생긴 조건부 제외도 등록되지 않았으면 실패한다. 새 제외를 추가할 때에는 재현 입력과 자동 실행 경로를 함께 등록한다. 등록된 이름을 바꿀 때에는 같은 ID의 이름과 시험을 함께 바꾼다.
 

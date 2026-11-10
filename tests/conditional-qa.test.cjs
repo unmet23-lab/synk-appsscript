@@ -17,8 +17,38 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 122);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 29, linux: 11, local: 82 });
+  assert.equal(check(root), 127);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 34, linux: 11, local: 82 });
+});
+test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
+  // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
+  const rows = ['S123', 'S124', 'S125', 'S126', 'S127'].map(id => manifest.cases.find(row => row.id === id));
+  const source = fs.readFileSync(path.join(root, 'tests/tmp자동정리.test.js'), 'utf8');
+  const skipping = [...source.matchAll(/^test\('([^']+)', \{ skip:/gm)].map(match => match[1]);
+  assert.deepEqual(rows.map(row => row.name).sort(), skipping.sort());
+  for (const row of rows) assert.deepEqual([row.route, row.profile, row.file], ['windows', 'default', 'tests/tmp자동정리.test.js']);
+});
+test('every root test that skips off Windows is registered — on the Windows PC nothing skips, so only this static scan sees it before the push', () => {
+  // The Linux guard (`guard.cjs --skips`) reports the skip only after the push, outside TAP (`# fail 0` and a red step). Trodden 11-09 (twice) and 11-10.
+  const registered = new Set(manifest.cases.map(row => `${row.file}\n${row.name}`));
+  const declaration = /^\s*(?:test|it)\((['"`])((?:\\.|(?!\1).)*)\1\s*,\s*\{\s*skip\s*:\s*([^}]*)\}/;
+  const offWindows = /!==?\s*['"]win32['"]|!\s*윈도우|!\s*(?:isWindows|onWindows|WINDOWS|windows)\b/;
+  const missing = [], unreadable = [];
+  let seen = 0;
+  for (const file of fs.readdirSync(path.join(root, 'tests')).filter(name => /\.test\.(?:js|cjs|mjs)$/.test(name))) {
+    fs.readFileSync(path.join(root, 'tests', file), 'utf8').split(/\r?\n/).forEach((line, index) => {
+      if (!/skip\s*:/.test(line) || !/^\s*(?:test|it)\(/.test(line) || !offWindows.test(line)) return;
+      const match = declaration.exec(line);
+      if (!match) { unreadable.push(`tests/${file}:${index + 1}`); return; }
+      if (!offWindows.test(match[3])) return;
+      seen += 1;
+      const name = match[2].replace(/\\(.)/g, '$1');
+      if (!registered.has(`tests/${file}\n${name}`)) missing.push(`tests/${file}:${index + 1} ${name}`);
+    });
+  }
+  assert.ok(seen >= 21, `the scan found only ${seen} Windows-only tests — the pattern no longer matches how they are written`);
+  assert.deepEqual(unreadable, [], 'write the test name as one plain string literal on the test( line so it can be matched against cases.json');
+  assert.deepEqual(missing, [], 'register these in tools/conditional-qa/cases.json with a route that really runs them (README table), or make them run on Linux too');
 });
 test('the text checker conditional cases keep their localization inputs and have real local routes', () => {
   const rows = ['S120', 'S121', 'S122'].map(id => manifest.cases.find(row => row.id === id));
