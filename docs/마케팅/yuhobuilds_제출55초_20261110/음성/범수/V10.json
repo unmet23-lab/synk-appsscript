@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V10",
+ "text": "그래서 이제 마감 있는 일은, 미리 이렇게 시켜요.",
+ "dur": 2.431,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.216
+  },
+  {
+   "text": "이제",
+   "start": 0.258,
+   "end": 0.383
+  },
+  {
+   "text": "마감",
+   "start": 0.468,
+   "end": 0.704
+  },
+  {
+   "text": "있는",
+   "start": 0.746,
+   "end": 0.914
+  },
+  {
+   "text": "일은,",
+   "start": 0.956,
+   "end": 1.166
+  },
+  {
+   "text": "미리",
+   "start": 1.515,
+   "end": 1.697
+  },
+  {
+   "text": "이렇게",
+   "start": 1.738,
+   "end": 1.948
+  },
+  {
+   "text": "시켜요.",
+   "start": 1.99,
+   "end": 2.431
+  }
+ ],
+ "source": {
+  "key": "1246d237c82ca992fe0cc1892bd7e8cf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

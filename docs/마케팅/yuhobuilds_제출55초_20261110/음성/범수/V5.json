@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "준비 안 한 칸은 물어보고, 마지막 동의 칸에서 또 한참.",
+ "dur": 2.896,
+ "words": [
+  {
+   "text": "준비",
+   "start": 0.02,
+   "end": 0.233
+  },
+  {
+   "text": "안",
+   "start": 0.29,
+   "end": 0.333
+  },
+  {
+   "text": "한",
+   "start": 0.376,
+   "end": 0.433
+  },
+  {
+   "text": "칸은",
+   "start": 0.475,
+   "end": 0.661
+  },
+  {
+   "text": "물어보고,",
+   "start": 0.704,
+   "end": 1.046
+  },
+  {
+   "text": "마지막",
+   "start": 1.515,
+   "end": 1.814
+  },
+  {
+   "text": "동의",
+   "start": 1.871,
+   "end": 1.999
+  },
+  {
+   "text": "칸에서",
+   "start": 2.042,
+   "end": 2.27
+  },
+  {
+   "text": "또",
+   "start": 2.327,
+   "end": 2.398
+  },
+  {
+   "text": "한참.",
+   "start": 2.455,
+   "end": 2.896
+  }
+ ],
+ "source": {
+  "key": "b7d95c61990baa447a95401e31005c83",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

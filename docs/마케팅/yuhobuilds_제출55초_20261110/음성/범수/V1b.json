@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1b",
+ "text": "제출 폼은 이미 닫혔고요.",
+ "dur": 1.32,
+ "words": [
+  {
+   "text": "제출",
+   "start": 0.02,
+   "end": 0.256
+  },
+  {
+   "text": "폼은",
+   "start": 0.301,
+   "end": 0.537
+  },
+  {
+   "text": "이미",
+   "start": 0.581,
+   "end": 0.684
+  },
+  {
+   "text": "닫혔고요.",
+   "start": 0.758,
+   "end": 1.32
+  }
+ ],
+ "source": {
+  "key": "182bc92be405e100eb5cd60c0be7b66a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

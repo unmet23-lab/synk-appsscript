@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "근데 에이아이가 폼을 처음 연 게, 마감 십삼 분 전.",
+ "dur": 2.818,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.02,
+   "end": 0.189
+  },
+  {
+   "text": "에이아이가",
+   "start": 0.297,
+   "end": 0.65
+  },
+  {
+   "text": "폼을",
+   "start": 0.728,
+   "end": 0.973
+  },
+  {
+   "text": "처음",
+   "start": 1.02,
+   "end": 1.235
+  },
+  {
+   "text": "연",
+   "start": 1.281,
+   "end": 1.404
+  },
+  {
+   "text": "게,",
+   "start": 1.45,
+   "end": 1.527
+  },
+  {
+   "text": "마감",
+   "start": 1.789,
+   "end": 2.035
+  },
+  {
+   "text": "십삼",
+   "start": 2.081,
+   "end": 2.28
+  },
+  {
+   "text": "분",
+   "start": 2.342,
+   "end": 2.45
+  },
+  {
+   "text": "전.",
+   "start": 2.511,
+   "end": 2.818
+  }
+ ],
+ "source": {
+  "key": "efb0ea14a816e37626137fb22fb32594",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

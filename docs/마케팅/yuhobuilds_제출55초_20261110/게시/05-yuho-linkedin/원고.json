@@ -1,0 +1,13 @@
+{
+ "id": "05-yuho-linkedin",
+ "brand": "yuhobuilds",
+ "language": "ko",
+ "audioLanguage": "ko",
+ "alteredContent": true,
+ "madeForKids": false,
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 키워드 DM · 첫 댓글 약속 없음. 영상은 판 모두 최종.mp4 하나.",
+ "platform": "linkedin",
+ "account": "양유호",
+ "format": "video-post",
+ "caption": "마감 있는 제출을 AI에게 맡길 때는, 만드는 일과 내는 일을 따로 점검해야 합니다.\n\n공모전 영상을 저녁에 다 만들어 두고 제출까지 AI에게 맡겼습니다. AI가 20쪽짜리 제출 폼을 처음 연 것은 마감 13분 전이었고, 화면이 멈춰 다시 입력하고 준비 자료에 없는 칸을 묻느라 마감을 55초 넘겼습니다.\n\n낼 수 있는 판은 그날 저녁에 이미 있었습니다. 제출 길을 미리 열어 보라고 시키지 않은 것이 원인이었습니다. 그 뒤로는 마감 2시간 전에 폼을 끝 쪽까지 열어 빠진 정보 · 파일 조건 · 걸릴 시간을 표로 먼저 받습니다.\n\n빈칸만 채우면 되는 요청문: https://synk.im/prompts/#deadline-submit-check\n진행자 얼굴과 목소리는 AI로 만들었어요."
+}

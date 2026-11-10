@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "입력하다 화면이 멈춰서, 처음부터 다시 치고,",
+ "dur": 2.573,
+ "words": [
+  {
+   "text": "입력하다",
+   "start": 0.02,
+   "end": 0.398
+  },
+  {
+   "text": "화면이",
+   "start": 0.444,
+   "end": 0.696
+  },
+  {
+   "text": "멈춰서,",
+   "start": 0.743,
+   "end": 1.104
+  },
+  {
+   "text": "처음부터",
+   "start": 1.481,
+   "end": 1.828
+  },
+  {
+   "text": "다시",
+   "start": 1.874,
+   "end": 2.047
+  },
+  {
+   "text": "치고,",
+   "start": 2.095,
+   "end": 2.573
+  }
+ ],
+ "source": {
+  "key": "03ed1543b7ab0fb95136712f313ecb4b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "자정을 넘겨서, 제출을 눌렀더니,",
+ "dur": 2.152,
+ "words": [
+  {
+   "text": "자정을",
+   "start": 0.02,
+   "end": 0.349
+  },
+  {
+   "text": "넘겨서,",
+   "start": 0.398,
+   "end": 0.759
+  },
+  {
+   "text": "제출을",
+   "start": 1.12,
+   "end": 1.465
+  },
+  {
+   "text": "눌렀더니,",
+   "start": 1.514,
+   "end": 2.152
+  }
+ ],
+ "source": {
+  "key": "d61437b2cddc569d2193b95af7da7d16",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

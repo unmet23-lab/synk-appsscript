@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "낼 수 있는 영상은, 저녁에 이미 있었어요.",
+ "dur": 2.215,
+ "words": [
+  {
+   "text": "낼",
+   "start": 0.02,
+   "end": 0.129
+  },
+  {
+   "text": "수",
+   "start": 0.17,
+   "end": 0.225
+  },
+  {
+   "text": "있는",
+   "start": 0.266,
+   "end": 0.43
+  },
+  {
+   "text": "영상은,",
+   "start": 0.471,
+   "end": 0.909
+  },
+  {
+   "text": "저녁에",
+   "start": 1.155,
+   "end": 1.442
+  },
+  {
+   "text": "이미",
+   "start": 1.497,
+   "end": 1.579
+  },
+  {
+   "text": "있었어요.",
+   "start": 1.62,
+   "end": 2.215
+  }
+ ],
+ "source": {
+  "key": "670d17525cf5025594f082c772b158bc",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

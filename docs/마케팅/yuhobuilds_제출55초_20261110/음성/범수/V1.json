@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "공모전 영상, 오십오 초 늦어서 못 냈어요.",
+ "dur": 2.509,
+ "words": [
+  {
+   "text": "공모전",
+   "start": 0.02,
+   "end": 0.376
+  },
+  {
+   "text": "영상,",
+   "start": 0.423,
+   "end": 0.733
+  },
+  {
+   "text": "오십오",
+   "start": 1.151,
+   "end": 1.399
+  },
+  {
+   "text": "초",
+   "start": 1.446,
+   "end": 1.539
+  },
+  {
+   "text": "늦어서",
+   "start": 1.585,
+   "end": 1.849
+  },
+  {
+   "text": "못",
+   "start": 1.911,
+   "end": 2.02
+  },
+  {
+   "text": "냈어요.",
+   "start": 2.066,
+   "end": 2.509
+  }
+ ],
+ "source": {
+  "key": "ee04408a9390796153b161fc7cf18066",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

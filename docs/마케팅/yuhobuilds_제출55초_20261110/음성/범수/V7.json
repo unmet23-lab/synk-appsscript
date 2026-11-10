@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "근데 사실은,",
+ "dur": 0.763,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.02,
+   "end": 0.183
+  },
+  {
+   "text": "사실은,",
+   "start": 0.244,
+   "end": 0.763
+  }
+ ],
+ "source": {
+  "key": "43fbab5d58e637ad06972de559bc4fb7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 134
+ }
+}

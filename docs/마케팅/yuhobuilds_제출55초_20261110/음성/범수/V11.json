@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V11",
+ "text": "제출 폼을 끝 쪽까지 열어 보고, 빠진 정보, 파일 조건, 걸릴 시간을 표로 먼저 보여 줘.",
+ "dur": 4.44,
+ "words": [
+  {
+   "text": "제출",
+   "start": 0.03,
+   "end": 0.289
+  },
+  {
+   "text": "폼을",
+   "start": 0.34,
+   "end": 0.521
+  },
+  {
+   "text": "끝",
+   "start": 0.56,
+   "end": 0.663
+  },
+  {
+   "text": "쪽까지",
+   "start": 0.702,
+   "end": 0.974
+  },
+  {
+   "text": "열어",
+   "start": 1.013,
+   "end": 1.129
+  },
+  {
+   "text": "보고,",
+   "start": 1.167,
+   "end": 1.336
+  },
+  {
+   "text": "빠진",
+   "start": 1.62,
+   "end": 1.865
+  },
+  {
+   "text": "정보,",
+   "start": 1.904,
+   "end": 2.111
+  },
+  {
+   "text": "파일",
+   "start": 2.357,
+   "end": 2.524
+  },
+  {
+   "text": "조건,",
+   "start": 2.563,
+   "end": 2.835
+  },
+  {
+   "text": "걸릴",
+   "start": 3.055,
+   "end": 3.274
+  },
+  {
+   "text": "시간을",
+   "start": 3.326,
+   "end": 3.584
+  },
+  {
+   "text": "표로",
+   "start": 3.623,
+   "end": 3.779
+  },
+  {
+   "text": "먼저",
+   "start": 3.817,
+   "end": 3.998
+  },
+  {
+   "text": "보여",
+   "start": 4.05,
+   "end": 4.192
+  },
+  {
+   "text": "줘.",
+   "start": 4.231,
+   "end": 4.44
+  }
+ ],
+ "source": {
+  "key": "1f941a5431e77c4916773927da784760",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

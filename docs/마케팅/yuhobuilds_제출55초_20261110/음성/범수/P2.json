@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2",
+ "text": "에이아이 탓 아니에요. 미리 열어 보라고 안 시킨, 제 탓이에요.",
+ "dur": 3.463,
+ "words": [
+  {
+   "text": "에이아이",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "탓",
+   "start": 0.341,
+   "end": 0.422
+  },
+  {
+   "text": "아니에요.",
+   "start": 0.482,
+   "end": 0.803
+  },
+  {
+   "text": "미리",
+   "start": 1.405,
+   "end": 1.585
+  },
+  {
+   "text": "열어",
+   "start": 1.645,
+   "end": 1.826
+  },
+  {
+   "text": "보라고",
+   "start": 1.886,
+   "end": 2.107
+  },
+  {
+   "text": "안",
+   "start": 2.167,
+   "end": 2.227
+  },
+  {
+   "text": "시킨,",
+   "start": 2.288,
+   "end": 2.548
+  },
+  {
+   "text": "제",
+   "start": 2.669,
+   "end": 2.749
+  },
+  {
+   "text": "탓이에요.",
+   "start": 2.809,
+   "end": 3.463
+  }
+ ],
+ "source": {
+  "key": "4d91cda2839e9676492fdbb9439388db",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

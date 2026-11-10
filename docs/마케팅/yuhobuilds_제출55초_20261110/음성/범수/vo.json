@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1111,
+  "lufs": -17
+ },
+ "made": "2026-11-10T16:24:39.840Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "공모전 영상, 오십오 초 늦어서 못 냈어요.",
+   "dur": 2.509,
+   "syllablesPerSec": 6.38,
+   "src": "V1.wav",
+   "key": "ee04408a9390796153b161fc7cf18066",
+   "words": 7
+  },
+  {
+   "id": "V1b",
+   "text": "제출 폼은 이미 닫혔고요.",
+   "dur": 1.32,
+   "syllablesPerSec": 7.58,
+   "src": "V1b.wav",
+   "key": "182bc92be405e100eb5cd60c0be7b66a",
+   "words": 4
+  },
+  {
+   "id": "P1",
+   "text": "영상 제출까지, 에이아이한테 맡겼거든요.",
+   "dur": 2.34,
+   "syllablesPerSec": 7.26,
+   "src": "P1.wav",
+   "key": "cb6e45675d027efb1685c110605f4d74",
+   "words": 4
+  },
+  {
+   "id": "V2",
+   "text": "근데 에이아이가 폼을 처음 연 게, 마감 십삼 분 전.",
+   "dur": 2.818,
+   "syllablesPerSec": 6.74,
+   "src": "V2.wav",
+   "key": "efb0ea14a816e37626137fb22fb32594",
+   "words": 10
+  },
+  {
+   "id": "V4",
+   "text": "입력하다 화면이 멈춰서, 처음부터 다시 치고,",
+   "dur": 2.573,
+   "syllablesPerSec": 7,
+   "src": "V4.wav",
+   "key": "03ed1543b7ab0fb95136712f313ecb4b",
+   "words": 6
+  },
+  {
+   "id": "V5",
+   "text": "준비 안 한 칸은 물어보고, 마지막 동의 칸에서 또 한참.",
+   "dur": 2.896,
+   "syllablesPerSec": 7.25,
+   "src": "V5.wav",
+   "key": "b7d95c61990baa447a95401e31005c83",
+   "words": 10
+  },
+  {
+   "id": "V6",
+   "text": "자정을 넘겨서, 제출을 눌렀더니,",
+   "dur": 2.152,
+   "syllablesPerSec": 6.04,
+   "src": "V6.wav",
+   "key": "d61437b2cddc569d2193b95af7da7d16",
+   "words": 4
+  },
+  {
+   "id": "V7",
+   "text": "근데 사실은,",
+   "dur": 0.763,
+   "syllablesPerSec": 6.55,
+   "src": "V7.wav",
+   "key": "43fbab5d58e637ad06972de559bc4fb7",
+   "words": 2
+  },
+  {
+   "id": "V8",
+   "text": "낼 수 있는 영상은, 저녁에 이미 있었어요.",
+   "dur": 2.215,
+   "syllablesPerSec": 7.22,
+   "src": "V8.wav",
+   "key": "670d17525cf5025594f082c772b158bc",
+   "words": 7
+  },
+  {
+   "id": "P2",
+   "text": "에이아이 탓 아니에요. 미리 열어 보라고 안 시킨, 제 탓이에요.",
+   "dur": 3.463,
+   "syllablesPerSec": 6.93,
+   "src": "P2.wav",
+   "key": "4d91cda2839e9676492fdbb9439388db",
+   "words": 10
+  },
+  {
+   "id": "V10",
+   "text": "그래서 이제 마감 있는 일은, 미리 이렇게 시켜요.",
+   "dur": 2.431,
+   "syllablesPerSec": 7.82,
+   "src": "V10.wav",
+   "key": "1246d237c82ca992fe0cc1892bd7e8cf",
+   "words": 8
+  },
+  {
+   "id": "V11",
+   "text": "제출 폼을 끝 쪽까지 열어 보고, 빠진 정보, 파일 조건, 걸릴 시간을 표로 먼저 보여 줘.",
+   "dur": 4.44,
+   "syllablesPerSec": 7.21,
+   "src": "V11.wav",
+   "key": "1f941a5431e77c4916773927da784760",
+   "words": 16
+  }
+ ]
+}
