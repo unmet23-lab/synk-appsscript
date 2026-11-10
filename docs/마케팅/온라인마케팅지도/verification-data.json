@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T05:06:12.474Z",
+  "generatedAt": "2026-11-10T07:31:15.880Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -33,7 +33,7 @@
     },
     {
       "file": "inputs/upload-plan.json",
-      "sha256": "5b91d24fc6554ee39ad60d0a4a709fe3b464a769044e4e550f930ef47f0f93dc"
+      "sha256": "187ef110b0e11f8549909169939ff0ecbb07816925a55e9e0cdba0efb582e0aa"
     },
     {
       "file": "../로그인경로_점검_20261109.md",
@@ -65,7 +65,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "9dc47c7ebcaf60c919979b2f22d56e0e1ee92b01444089a0f27caae7a3fb0cf4"
+      "sha256": "34010406eed544d5d0867e095d25dbda800c7ca19d111c3d28cd65bb3dcba309"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",
