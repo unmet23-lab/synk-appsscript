@@ -19,6 +19,7 @@
 - 승인을 번호나 오래된 말로 받으면 자동 모드가 공개 push를 막는다 → 단추 문장에 대상과 행동을 적는다 ([자세히](#번호나-오래된-말로-승인하면-공개-push가-막힌다-2026-10-19-claude))
 - Argon 예약이 허용 밖 도구를 고르면 `SUCCESS`여도 회차가 실패한다 → `run-status/<ROLE>.json`의 `denied_actions`를 보고, 새 역할은 허용 줄부터 더한다 ([자세히](#조사-예약이-작업-파일-읽기명령-실행-거절로-회차마다-들쭉날쭉-실패한다-2026-10-19))
 - 긴 검수를 `제미나이구독호출.js`로 맡기면 agy가 안 끝나 다 쓴 답을 버린다 → result 사건에서 저장·종료하는 실행기로 돌린다 ([자세히](#긴-검수를-제미나이구독호출js로-맡기면-argon이-답을-다-쓰고도-시간-제한으로-끝난다--agy가-끝나지-않아서-2026-10-19-claude))
+- Agent `model: "fable"`은 5.1로 돈다 → 「Fable 5.2로」면 세션 모델이 5.2인 세션에서 model 없이 하위 에이전트를 띄우고, 하위 에이전트 기록의 model 칸으로 확인한다 ([자세히](#agent-model-fable은-claude-fable-5-1로-돈다--fable-52로면-세션-모델이-52인-세션에서-model-없이-띄운다-2026-11-11-claude))
 - 몽골어 검문은 `--파일 <경로> --구독` 순서로 → 거꾸로 두면 쓰는 법만 찍는다(10-29부터 이 PC에도 무료 키가 있어 `--구독`은 무료 문이 막힐 때만) ([자세히](#몽골어-검문에서---구독을---파일-앞에-두면-쓰는-법만-찍고-끝난다-2026-10-19))
 - 공개할 몽골어는 10~15줄 묶음으로 검문한다 → 큰 묶음의 「정상」은 문장 지적을 놓쳤다 ([자세히](#큰-묶음에서-정상을-받은-몽골어-문장이-10줄-묶음으로-다시-돌리면-어색으로-걸린다-2026-10-21-claude))
 - 헤르메스 게이트웨이를 켠 뒤 깐 패키지는 게이트웨이가 못 쓴다 → `hermes gateway restart` 뒤 폰 대화로 확인한다 ([자세히](#게이트웨이를-켠-뒤에-깔린-패키지는-게이트웨이가-못-쓴다--claude로-바꾼-뒤-텔레그램-공유가-모두-실패했다-2026-10-19-claude))
@@ -224,6 +225,7 @@
 - 다시 확인: `mcp__ccd_session_mgmt__get_usage`의 「Weekly · Fable」이 100% 아래로 내려간 뒤 Agent(model: fable)가 답을 쓴다.
 - 11-10 덧붙임(Claude, 다른 계정의 Fable 몫으로 받는 길): 앱 계정(synk.yuh)의 주간 Fable이 100%면 Agent(model: fable)는 같은 계정이라 막힌다. 유호님이 다른 Ultra 계정을 **별도 CLI 설정 폴더**에 로그인해 두면(`CLAUDE_CONFIG_DIR='C:Usersq1212.claude-unmet29' claude auth login --claudeai` — 링크는 Claude가 터미널 탭에 띄우고 로그인 · 코드 붙여 넣기는 유호님, 이번엔 unmet29 계정) 앱과 다른 세션은 그대로 두고 그 계정 몫으로 헤드리스 Fable을 부를 수 있다: `cd <작업본> && CLAUDE_CONFIG_DIR=… CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p --model fable --effort xhigh --output-format json --add-dir <검수 폴더> --add-dir <후보 폴더> --add-dir <탐침 폴더> --allowedTools "Read" "Grep" "Glob" "Bash(node:*)" "Bash(git diff:*)" "Bash(git show:*)" "Bash(git log:*)" < 지시문 > out.json`(Bash `run_in_background`). 지시문에 「fable.md를 그대로 · 답 JSON은 파일로 쓰지 말고 마지막 메시지 끝 ```json 블록 하나로 · 탐침은 node로 탐침 폴더에만 · 백그라운드 금지 · 한국어」(새 설정 폴더는 `~/.claude` 지침 · 훅을 안 읽는다)를 적고, 끝나면 `result`에서 그 블록을 꺼내 `페이블받기 <이름> <파일>`. 작업본 밖 폴더는 `--add-dir` 없이는 안 읽히고, git 쓰기 · Write는 일부러 안 준다(검수 대상이 바뀌면 검수가 무효). 그 계정 몫은 `get_usage`로 안 보이니 짧은 호출(`claude -p --model fable "한 낱말로만 답하라: 확인"`)로 열렸는지 보고, 여러 세션이 나눠 쓰니 큰 검수는 하나씩 · 429면 멈춘다. 끝 보고에는 「Fable(unmet29 CLI)」. 실측: Atlas 정본 P1 끝 판(묶음 넷 + synk.im 후보 45파일) 37분 · 83턴 · `claude-fable-5-1` · `페이블받기` 통과(`atlas-handover-latehelp-final-20261110`). 같은 길을 Fable을 기다리던 세션 열한 곳에 알렸다(쓰는 법 전문은 그 세션들의 곁 메모 `Fable_unmet29_CLI_쓰는법.md`).
 - 11-10 덧붙임(Claude): 15:50 인계 메모는 「이 계정 주간 Fable 41%」였는데 17:50 끝 판 Fable 최종이 같은 429로 끝났다(`get_usage` 「Weekly · Fable」 100%, 전체 90%) — 같은 계정을 여러 세션이 나눠 써서 몇 시간 만에 찬다. Fable 단계가 남은 일을 넘겨받으면 인계의 숫자를 믿지 말고 GPT · 아르곤을 보내기 전에 `get_usage`부터 본다.
+- 11-11 덧붙임(Claude, LAB 마무리 세션): ① 자동 모드에서는 이 길의 짧은 확인(`CLAUDE_CONFIG_DIR=…claude-unmet29 claude -p --model claude-fable-5-2 …`)을 판정기가 「위험」으로 막았다(까닭 없음). 우회하지 않고 유호님께 앱 계정을 바꿀지 여쭈었고, 바꾼 뒤 Agent 길로 받았다. ② 이 길의 `--model fable`도 Agent의 「fable」처럼 `claude-fable-5-1`로 간다(위 실측). 「Fable 5.2로」면 「Claude 서브에이전트」 절의 「Agent `model: fable`은 5.1」을 본다.
 
 ### 검수 캡처를 다시 가져오면 옛 그림도 남는다 (2026-10-31 Claude·GPT)
 - 증상: 시범판 최종 캡처를 12장으로 바꿨는데 Fable 입력의 `캡처-가져옴`에 이전 `intro.png`·`transfer.png` 두 장도 섞였다.
@@ -1167,6 +1169,12 @@
 - 원인: gemini 줄을 다른 세션이 쥐고 있으면 차례가 늦게 온다. `timeout`은 차례 기다리기까지 끊는다. `ps … | grep "아르곤웹 "`은 줄 끝 공백 때문에 살아 있는 프로세스를 놓쳤다.
 - 고침: Bash의 `run_in_background`로 `timeout` 없이 한 번만 건다. 진행은 작업 폴더의 `답_*.md` · `*.보냄.json`으로 보고, 표시가 있으면 다시 보내지 않는다(도구가 「읽기」로 간다).
 - 다시 확인: 첫 판의 답 넷(11-09 20:49 ~ 22:13)이 그대로 남았다.
+
+### Agent `model: fable`은 `claude-fable-5-1`로 돈다 — 「Fable 5.2로」면 세션 모델이 5.2인 세션에서 model 없이 띄운다 (2026-11-11 Claude)
+- 증상: 11-10 밤 유호님 「이 작업은 fable 5.2로 검수해줘」대로 LAB 마무리 세션(Opus 5.5)이 Agent(`model: "fable"`, effort xhigh)로 검수 둘을 띄웠다. 둘 다 답 첫 줄이 「Fable 5.1 (claude-fable-5-1)」이었다. 하위 에이전트 기록의 model 칸도 모두 `claude-fable-5-1`이었다(130줄 · 60줄).
+- 원인: Agent 도구의 model은 별칭(fable · opus …)만 받고, 「fable」은 `claude-fable-5-1`로 간다. 같은 날 세션 모델이 `claude-fable-5-2`인 조율 세션이 model 없이 띄운 하위 에이전트 기록은 `claude-fable-5-2`(1,527줄)였다. 하위 에이전트는 model을 비우면 세션 모델을 물려받는다.
+- 고침: 「Fable 5.2로」 검수는 세션 모델이 `claude-fable-5-2`인 세션에서 model 없이 하위 에이전트를 띄운다. 다른 세션의 모델은 `set_session_model`(앱 모델 목록 id `claude-fable-5-2`)로 바꿀 수 있다. 자기 세션은 못 바꾸고, `start_session`의 model은 같은 등급 이하만 받는다. 검수자에게 답 첫 줄에 모델을 적게 하고, 기록으로도 확인한다: `grep -o '"model":"claude-[^"]*"' ~/.claude/projects/<프로젝트>/<세션 id>/subagents/agent-<id>.jsonl | sort | uniq -c`.
+- 다시 확인: 같은 grep이 `claude-fable-5-2`만 센다.
 
 ## Hermes(텔레그램 팁 봇)
 
