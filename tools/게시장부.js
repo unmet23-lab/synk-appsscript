@@ -10,7 +10,7 @@
  *       남아 있는 「거는 중」은 몇 시간이 지났든 덮지 않는다 — 끊긴 회차가 플랫폼에 이미 걸었을 수 있다. 그 플랫폼 예약 목록을 읽고
  *       걸려 있으면 「끝 --상태 예약됨 --확인 …」, 없으면 「풀기 --까닭 …」 뒤에 다시 건다.
  *       원장 postRouteVerified가 「첫판」인 계정(첫 판 시험)은 판 하나만 잡을 수 있다 — 그 판을 플랫폼 예약 목록에서 확인하고 true로 바꾼 뒤 다음 판.
- *   node tools/게시장부.js 끝 <편 폴더> <계정> --상태 예약됨|게시됨|실패 [--게시물ID <id>] [--주소 <url>] [--확인 "<예약 목록에서 읽은 것>"]
+ *   node tools/게시장부.js 끝 <편 폴더> <계정> --상태 예약됨|게시됨|실패 [--게시물ID <id>] [--주소 <url>] [--확인 "<예약 목록에서 읽은 것>"] [--승인 "<승인 근거>"]
  *       「예약됨」 · 「게시됨」은 앞선 「걸기」(또는 예약됨 → 게시됨)와 이번에 읽은 증거(게시물 ID · 주소 · 확인 가운데 하나)가 있어야 한다.
  *       「게시됨」은 다른 상태로 바꾸지 않는다. 「예약됨」을 「실패」로 내리려면 --확인이 있어야 한다. 걸지 않은 판은 실패로도 적지 않는다.
  *   node tools/게시장부.js 풀기 <편 폴더> <계정> --까닭 "<플랫폼 예약 목록에 없음을 확인함 등>"   「거는 중」을 거둔다
@@ -30,7 +30,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const T = require('./lib/계정시간.js');
-const { 공용작업본 } = require('./lib/공용작업본.js');
+const { 공용작업본, 미디어경로 } = require('./lib/공용작업본.js');
 
 const REPO = path.resolve(__dirname, '..');
 const DONE = new Set(['예약됨', '게시됨']);
@@ -65,10 +65,11 @@ function pieceDir(given, root) {
   return dir;
 }
 
-// 판 파일 경로 — 판 「파일」이 편 폴더 기준(게시/…)이거나 저장소 기준(docs/…)일 수 있다.
+// 판 파일 경로 — 판 「파일」이 편 폴더 기준(게시/…)이거나 저장소 기준(docs/…)일 수 있다. 14시 회차의 워크트리에는 git 밖 영상이 없으니
+// 이 작업본에 없으면 공용 작업본의 같은 경로에서 찾는다(미디어경로).
 function plateFile(dir, plate, repo) {
   const p = plate.파일 || '';
-  for (const base of [dir, repo]) { const f = path.isAbsolute(p) ? p : path.join(base, p); if (p && fs.existsSync(f)) return f; }
+  for (const base of [dir, repo]) { const f = p ? 미디어경로(path.isAbsolute(p) ? p : path.join(base, p)) : null; if (f && fs.existsSync(f)) return f; }
   return null;
 }
 
@@ -310,7 +311,7 @@ function refuseFinish(cur, state, proof) {
   return null;
 }
 
-function finish({ dir, account, state, id = null, url = null, seen = null, root = path.dirname(dir), accounts = null, now = Date.now(), registry = null }) {
+function finish({ dir, account, state, id = null, url = null, seen = null, approval = null, root = path.dirname(dir), accounts = null, now = Date.now(), registry = null }) {
   if (!['예약됨', '게시됨', '실패'].includes(state)) return { ok: false, why: '--상태는 예약됨 · 게시됨 · 실패' };
   const place = placeOf(root, registry);
   return withLock(place.file, () => {
@@ -321,7 +322,7 @@ function finish({ dir, account, state, id = null, url = null, seen = null, root 
       if (why) return undefined;
       const base = { ...cur };
       delete base.거는중;
-      return { ...base, 상태: state, ...(id ? { 게시물ID: id } : {}), ...(url ? { 주소: url } : {}), ...(seen ? { 확인: seen } : {}), 기록시각: new Date(now).toISOString() };
+      return { ...base, 상태: state, ...(id ? { 게시물ID: id } : {}), ...(url ? { 주소: url } : {}), ...(seen ? { 확인: seen } : {}), ...(approval ? { 승인: approval } : {}), 기록시각: new Date(now).toISOString() };
     });
     if (!next) return { ok: false, why };
     const reg = readRegistry(place.file);
@@ -402,7 +403,7 @@ function main(argv) {
     const dir = pieceDir(pos[0], root);
     const account = pos[1];
     const r = cmd === '걸기' ? claim({ dir, account, method: argValue(rest, '--방법'), root, accounts })
-      : cmd === '끝' ? finish({ dir, account, state: argValue(rest, '--상태'), id: argValue(rest, '--게시물ID'), url: argValue(rest, '--주소'), seen: argValue(rest, '--확인'), root, accounts })
+      : cmd === '끝' ? finish({ dir, account, state: argValue(rest, '--상태'), id: argValue(rest, '--게시물ID'), url: argValue(rest, '--주소'), seen: argValue(rest, '--확인'), approval: argValue(rest, '--승인'), root, accounts })
         : release({ dir, account, why: argValue(rest, '--까닭') || '까닭 없음', root });
     if (!r.ok) { console.error(`${cmd} 못 함 — ${account} · ${path.basename(dir)}: ${r.why}`); return 1; }
     console.log(`${cmd} · ${account} · ${path.basename(dir)}${r.entry ? ` → ${r.entry.상태}` : ''}${r.note ? ` (${r.note})` : ''}`);

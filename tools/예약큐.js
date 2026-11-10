@@ -33,7 +33,8 @@
  * 10-29 오늘 빈 계정(유호님 「오늘 올라간것처럼 전부 1일 1 업로드 지켜줘야해」): 빈 칸 · 비축 알림은 내일부터만 봐서 두 채널 줄이
  * 며칠째 오늘 칸을 비운 채 지나가도 아무 데도 안 떴다. 오늘 칸이 채움(예약·게시)이 아닌 계정을 「오늘 빈 계정」 줄로 보이고,
  * --알림은 17시 · 21시 뒤 한 번씩 남은 계정을 「[오늘 빈 계정]」 한 통으로 보낸다(막혀 셈에서 뺀 계정도 같이 적는다).
- * --알림은 21시 뒤 하루 한 번 비축이 4일보다 모자라면 빈 칸을 한 통으로 보내고(10-23 「비축 모자람 알리지 않음」을 되돌림),
+ * 11-10 LAB 줄은 비축 목표 5일(유호님 「5일치 영상을 미리 만들어서」 — LAB 하루 두 편 설계 20). 다른 줄은 4일 그대로.
+ * --알림은 21시 뒤 하루 한 번 비축이 그 줄 목표(LAB 5일 · 그 밖 4일)보다 모자라면 빈 칸을 한 통으로 보내고(10-23 「비축 모자람 알리지 않음」을 되돌림),
  * 같은 날 같은 계정에 두 편 · 작업실 검토 링크가 승인 전에 만료되거나 24시간 안에 만료되면 경고에 넣는다(링크 자체는 읽지도 적지도 않는다).
  *   node tools/예약큐.js --계정표   계정 전수 표(계정 · 매일 무엇이 · 올리는 길 · 며칠 앞서 · 막힌 것)를 마크다운으로
  *   시험용: --지금 <YYYY-MM-DDTHH:MM+09:00>(지금 시각과 오늘을 함께 정한다)
@@ -60,6 +61,8 @@ const GRACE_MS = 2 * 3600000;
 const WINDOW_MS = 6 * 3600000;
 const LOOKBACK_DAYS = 3;
 const LEAD = 4; // 비축 목표(일) — 07시가 D+4 편을 만든다(제작 절차 0)
+const LAB_LEAD = 5; // LAB 줄의 비축 목표(11-10 — 하루 두 편 · 39계정 설계 20: 원본 5일 · 판본 5일)
+const leadOf = (line) => (String(line || '').startsWith('LAB') ? LAB_LEAD : LEAD);
 const RESERVE_ALERT_HOUR = 21; // 비축 알림은 그날 슬롯이 나간 뒤 한 번
 const BLOG = new Set(['naver-blog', 'tistory']);
 const LINE_ORDER = ['LAB 영어', 'LAB 몽골', 'LAB 두 채널', 'LAB 나라별', 'synkbrief', 'yuhobuilds'];
@@ -360,7 +363,7 @@ function lineRows(accountList, range, accounts) {
       const name = (s) => s.format || s.time;
       return [...extraSlots(a, accounts[a]).map((x, i) => [x.key, name(slots[i])]), [a, name(slots[slots.length - 1])]];
     }));
-    return { line: l.line, accounts: l.accounts, byDay, times,
+    return { line: l.line, accounts: l.accounts, byDay, times, lead: leadOf(l.line),
       reserve: run((x) => x.mark === '●' || x.mark === '–'), made: run((x) => Object.values(x.cells).every((s) => s === '채움' || s === '만듦' || s === '쉼')) };
   });
 }
@@ -464,7 +467,7 @@ const WHY = { 빔: '만든 편 없음', 만듦: '승인·예약 전', '고칠 �
 // 줄마다 내일~D+4에서 채움이 아닌 칸 — 「10-29 만든 편 없음 · 10-30 lab-tiktok 승인·예약 전」
 function gapsOf(line, range) {
   const out = [];
-  for (const d of range.slice(1, LEAD + 1)) {
+  for (const d of range.slice(1, (line.lead || LEAD) + 1)) {
     const live = Object.entries(line.byDay[d]?.cells || {}).filter(([, s]) => s !== '쉼');
     const notDone = live.filter(([, s]) => s !== '채움');
     if (!notDone.length) continue;
@@ -494,7 +497,7 @@ function todayGapText(gaps) {
 function print(report) {
   const { range } = report;
   if (report.lines.length) {
-    console.log(`비축 ${report.reserve}일 / 목표 ${report.lead}일 · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔  – 쉬는 요일`);
+    console.log(`비축 ${report.reserve}일 / 목표 ${report.lead}일(LAB 줄 ${LAB_LEAD}일) · 매일 판 줄 · ● 모든 계정 예약·게시  ○ 모든 계정에 편(승인·예약 전 있음)  ◐ 빈 계정 있음  ✗ 고칠 것  · 빔  – 쉬는 요일`);
     console.log('줄'.padEnd(12) + range.map((d) => d.slice(5)).join('  ') + '  비축  만듦');
     for (const l of report.lines) console.log(l.line.padEnd(12) + range.map((d) => l.byDay[d].mark.padEnd(5)).join('  ') + `  ${l.reserve}일   ${l.made}일`);
     if (report.todayGaps.length) console.log(`  오늘(${report.today.slice(5)}) 빈 계정: ${todayGapText(report.todayGaps).join(' · ')}`);
@@ -541,12 +544,13 @@ function send(text) {
 // 비축이 목표(4일)보다 모자라면 21시 뒤 하루 한 번 빈 칸을 한 통으로(10-26 — 10-23 「비축 모자람 알리지 않음」을 되돌림).
 function reserveAlert(report, now) {
   if (!report.lines.length) return { sent: false, reason: 'no-lines' };
-  if (report.reserve >= report.lead) return { sent: false, reason: 'enough' };
+  const short = report.lines.filter((l) => l.reserve < (l.lead || report.lead));
+  if (!short.length) return { sent: false, reason: 'enough' };
   if (Number(new Date(now + 9 * 3600000).toISOString().slice(11, 13)) < RESERVE_ALERT_HOUR) return { sent: false, reason: 'before-hour' };
   const stateFile = path.join(STATE_DIR, '비축알림.json');
   if ((readJson(stateFile) || {}).day === report.today) return { sent: false, reason: 'same-today' };
-  const text = [`[비축] ${report.today} · 목표 ${report.lead}일 · 지금 ${report.reserve}일`,
-    ...report.lines.filter((l) => l.reserve < report.lead).map((l) => `${l.line} ${l.reserve}일 — ${gapsOf(l, report.range).join(' · ') || '--일수가 짧아 내일부터 칸을 못 봄'}`),
+  const text = [`[비축] ${report.today} · 목표 ${report.lead}일(LAB 줄 ${LAB_LEAD}일) · 지금 ${report.reserve}일`,
+    ...short.map((l) => `${l.line} ${l.reserve}일 — ${gapsOf(l, report.range).join(' · ') || '--일수가 짧아 내일부터 칸을 못 봄'}`),
     '「만든 편 없음」은 19:30 후보에서 번호를 골라 주시면 07시가 만들고, 「승인·예약 전」은 검토 링크 승인이나 14시 「올려」로 채워져요'].join('\n');
   send(text);
   fs.mkdirSync(STATE_DIR, { recursive: true });
@@ -671,7 +675,8 @@ function accountTable(accounts) {
 }
 
 async function main() {
-  const days = Math.max(1, Number(argValue('--일수') || 5) || 5);
+  // 기본은 5일(오늘 + 4일). --알림은 LAB 줄 비축 목표(5일)를 다 봐야 하니 --일수를 안 주면 오늘 + 5일을 본다(11-10)
+  const days = Math.max(1, Number(argValue('--일수')) || (process.argv.includes('--알림') ? LAB_LEAD + 1 : 5));
   const accounts = (readJson(path.join(ROOT, 'sns-계정.json')) || {}).accounts || {};
   // 요일 글자가 아닌 dailyDays(「MWF」 등)는 모든 날을 쉼으로 만들어 그 줄이 조용히 멈추니 막는다.
   const badDays = Object.entries(accounts).filter(([, a]) => a.dailyDays !== undefined && !/^[일월화수목금토]+$/.test(String(a.dailyDays)));

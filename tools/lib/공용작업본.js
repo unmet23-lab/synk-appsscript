@@ -26,4 +26,22 @@ function 공용작업본(뿌리) {
   } catch { return 시작; }
 }
 
-module.exports = { 공용작업본 };
+/**
+ * 미디어경로(p) — p가 이 작업본에 없으면 공용 작업본의 같은 경로를 준다(둘 다 없으면 p 그대로).
+ * 예약 회차 · 세션 워크트리에는 git 밖 영상(게시/…/video.mp4 · remotion/out)이 없어 공용 작업본에서 읽는다(docs/_ops/예약작업_작업자리.md 「시작」 4).
+ * 게시 장부 · 돌림표 · 올리기 전 검사가 판 파일 · 판본 영상을 찾을 때 쓴다(11-10).
+ */
+function 미디어경로(p) {
+  const abs = path.resolve(p);
+  if (fs.existsSync(abs)) return abs;
+  for (let d = path.dirname(abs); ; d = path.dirname(d)) {
+    if (fs.existsSync(path.join(d, '.git'))) {
+      const main = 공용작업본(d);
+      if (path.resolve(main) !== path.resolve(d)) { const alt = path.join(main, path.relative(d, abs)); if (fs.existsSync(alt)) return alt; }
+      return abs;
+    }
+    if (path.dirname(d) === d) return abs;
+  }
+}
+
+module.exports = { 공용작업본, 미디어경로 };

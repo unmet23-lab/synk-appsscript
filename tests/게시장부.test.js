@@ -370,3 +370,58 @@ test('표에 걸린 판 읽기(registryHolds): 걸린 줄 · 읽을 수 없는 �
   const lost = 장부.registryHolds(w.two.root, { registry }).sort((x, y) => x.key.localeCompare(y.key));
   assert.deepEqual(lost.map((h) => [h.piece, h.state, h.lost]), [['LAB_가', '거는 중', true], ['LAB_나', '예약됨', true]]);
 });
+test('끝 --승인: 승인 근거를 그 줄에 남긴다(14시 회차가 게시결과를 손으로 고치지 않게)', async (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  assert.equal((await 명령(m.root, '걸기', a, A, '--방법', 'ego')).code, 0);
+  const done = await 명령(m.root, '끝', a, A, '--상태', '예약됨', '--확인', '스튜디오 예약 목록 11-20 13:00', '--승인', '유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과');
+  assert.equal(done.code, 0, done.out);
+  const row = 결과(a).판[0];
+  assert.deepEqual([row.상태, row.방법, row.승인], ['예약됨', 'ego', '유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과']);
+});
+
+// ── 회차 사본(워크트리)에는 git 밖 영상이 없다 — 판 파일은 공용 작업본에서 찾고, 칸 장부는 공용 작업본의 .tmp/게시장부에 적는다(11-10 F) ──
+function 사본마당() {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '게시장부-사본-'));
+  const main = path.join(base, 'main');
+  const wt = path.join(base, 'wt');
+  // 공용 작업본(.git 폴더) + 워크트리(.git 파일 → gitdir, commondir)
+  fs.mkdirSync(path.join(main, '.git', 'worktrees', 'wt'), { recursive: true });
+  fs.writeFileSync(path.join(main, '.git', 'worktrees', 'wt', 'commondir'), '../..\n');
+  fs.mkdirSync(wt, { recursive: true });
+  fs.writeFileSync(path.join(wt, '.git'), `gitdir: ${path.join(main, '.git', 'worktrees', 'wt')}\n`);
+  const accounts = { [A]: { brand: 'LAB', platform: 'youtube', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'] } };
+  const rel = path.join('docs', '마케팅', 'LAB_가');
+  const body = 'th-video';
+  const sha = crypto.createHash('sha256').update(body).digest('hex');
+  const prep = { 브랜드: 'LAB', 판: [{ 계정: A, 파일: '게시/판본/TH/video.mp4', 시각: '2026-11-20T13:00:00+07:00', 돌림: true, 지문: sha }] };
+  for (const root of [main, wt]) {
+    fs.mkdirSync(path.join(root, rel, '게시'), { recursive: true });
+    fs.writeFileSync(path.join(root, rel, '게시', '준비.json'), JSON.stringify(prep));
+  }
+  // 영상은 공용 작업본에만 있다(git 밖)
+  fs.mkdirSync(path.join(main, rel, '게시', '판본', 'TH'), { recursive: true });
+  fs.writeFileSync(path.join(main, rel, '게시', '판본', 'TH', 'video.mp4'), body);
+  return { main, wt, rel, accounts, cleanup: () => fs.rmSync(base, { recursive: true, force: true }) };
+}
+
+test('회차 사본에서 걸기: 판 영상은 공용 작업본에서 찾아 지문을 대고, 칸 장부는 공용 작업본에 적혀 다른 사본이 본다', (t) => {
+  const m = 사본마당();
+  t.after(m.cleanup);
+  const dir = path.join(m.wt, m.rel);
+  const root = path.join(m.wt, 'docs', '마케팅');
+  const got = 장부.claim({ dir, account: A, method: 'ego', root, repo: m.wt, accounts: m.accounts, now: NOW });
+  assert.equal(got.ok, true, got.why);
+  assert.match(got.entry.지문, /^[0-9a-f]{64}$/);
+  const registry = path.join(m.main, '.tmp', '게시장부', '칸.json');
+  assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(registry, 'utf8')).칸), [`${A}|2026-11-20|13:00`]);
+  // 공용 작업본에서 같은 판을 걸려 하면 표를 보고 막힌다
+  const other = 장부.claim({ dir: path.join(m.main, m.rel), account: A, root: path.join(m.main, 'docs', '마케팅'), repo: m.main, accounts: m.accounts, now: NOW });
+  assert.equal(other.ok, false);
+  assert.match(other.why, /다른 작업본에서 거는 중/);
+  // 공용 작업본의 영상이 검수 뒤 바뀌었으면 사본에서도 지문으로 막힌다
+  assert.equal(장부.release({ dir, account: A, why: '시험', root }).ok, true);
+  fs.writeFileSync(path.join(m.main, m.rel, '게시', '판본', 'TH', 'video.mp4'), '다시 구움');
+  assert.match(장부.claim({ dir, account: A, root, repo: m.wt, accounts: m.accounts, now: NOW }).why, /지문과 다르다/);
+});

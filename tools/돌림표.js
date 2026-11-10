@@ -40,6 +40,7 @@ const crypto = require('node:crypto');
 const T = require('./lib/계정시간.js');
 const 돌림 = require('./lib/돌림.js');
 const 장부 = require('./게시장부.js');
+const { 미디어경로 } = require('./lib/공용작업본.js');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -78,7 +79,8 @@ function saveShaCache() {
   try { fs.mkdirSync(CACHE_DIR, { recursive: true }); writeJson(path.join(CACHE_DIR, '지문.json'), shaCache); } catch { /* 캐시는 없어도 된다 */ }
 }
 
-const resolveIn = (dir, p) => (p ? (path.isAbsolute(p) ? p : path.join(dir, p)) : null);
+// 편 폴더 기준 경로 — 이 작업본에 없으면 공용 작업본의 같은 경로(워크트리에는 git 밖 판본 영상이 없다 — 미디어경로)
+const resolveIn = (dir, p) => (p ? 미디어경로(path.isAbsolute(p) ? p : path.join(dir, p)) : null);
 const relIn = (dir, file) => path.relative(dir, file).split(path.sep).join('/');
 
 function loadLedger() {

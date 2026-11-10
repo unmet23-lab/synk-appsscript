@@ -72,7 +72,7 @@ const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
-const 돌림셈 = require('./lib/돌림.js');
+const { 미디어경로 } = require('./lib/공용작업본.js');
 
 const { FIX, LOOK } = 규칙;
 const SAFE = { left: 65, right: 920, top: 269, bottom: 1428 };
@@ -831,7 +831,8 @@ function sameLanguageFindings(bundle, plates) {
   if (bundle.prep?.브랜드 !== 'LAB') return out;
   const crypto = require('node:crypto');
   const shaMemo = new Map();
-  const fileIn = (p) => { if (!p) return null; for (const f of path.isAbsolute(p) ? [p] : [path.join(bundle.dir, p), path.join(bundle.repo || bundle.dir, p)]) { try { if (fs.statSync(f).isFile()) return f; } catch { /* 다음 자리 */ } } return null; };
+  // 이 작업본에 없으면 공용 작업본의 같은 경로(워크트리에는 git 밖 영상이 없다 — tools/lib/공용작업본.js 미디어경로)
+  const fileIn = (p) => { if (!p) return null; for (const g of path.isAbsolute(p) ? [p] : [path.join(bundle.dir, p), path.join(bundle.repo || bundle.dir, p)]) { const f = 미디어경로(g); try { if (fs.statSync(f).isFile()) return f; } catch { /* 다음 자리 */ } } return null; };
   const shaOf = (p) => { const f = fileIn(p); if (!f) return null; if (!shaMemo.has(f)) shaMemo.set(f, crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')); return shaMemo.get(f); };
   const groups = new Map();
   for (const p of plates) {
@@ -947,7 +948,7 @@ async function run(dir, opts = {}) {
   findings.push(...samePlatformFindings(plates, { accounts: bundle.accounts }));
   findings.push(...sameLanguageFindings(bundle, plates));
   if (slotOk && prep.슬롯 === kst().slice(0, 10) && ![...posted.values()].some((v) => DONE.has(v))) {
-    add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — 4일 앞(D+4)에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
+    add(LOOK, 'slot-today', '준비.json', `슬롯이 오늘(${prep.슬롯})이다 — ${prep.브랜드 === 'LAB' ? '5일 앞(D+5 — 11-10 LAB 하루 두 편)' : '4일 앞(D+4)'}에 만들어 승인을 미리 받는 것이 기본(제작 절차 0)`);
   }
 
   const homage = homageFindings(bundle, [...videos.keys()]);

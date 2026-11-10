@@ -302,34 +302,41 @@ test('매일 판 줄 표 — 줄 비축은 그 줄의 모든 계정이 예약·�
   const accounts = r.accounts.map((x) => x.account);
   assert.ok(accounts.includes('lab-tiktok') && !accounts.includes('lab-us-youtube') && !accounts.includes('yuhobuilds-x'));
   const out = spawnSync(process.execPath, [tool, '--폴더', path.join(매일, '줄'), '--오늘', '2026-10-21'], { encoding: 'utf8' }).stdout;
-  assert.match(out, /^비축 1일 \/ 목표 4일 · 매일 판 줄/m);
+  assert.match(out, /^비축 1일 \/ 목표 4일\(LAB 줄 5일\) · 매일 판 줄/m);
   assert.match(out, /^ {2}LAB 몽골 빈 칸: 10-23 lab-tiktok 만든 편 없음 · 10-24 만든 편 없음 · 10-25 만든 편 없음$/m);
   assert.match(out, /^ {2}막혀 셈에서 뺀 계정: yuhobuilds-x\(ego 로그아웃 — 유호님 로그인\)$/m);
 });
 
-test('비축 알림은 21시 뒤 하루 한 번, 목표 4일보다 모자랄 때만 줄마다 빈 칸을 보낸다', () => {
+test('비축 알림은 21시 뒤 하루 한 번, 그 줄 목표(LAB 5일 · 그 밖 4일)보다 모자랄 때만 줄마다 빈 칸을 보낸다', () => {
   const base = 매일판('알림', 기본편);
   const sent = () => (fs.existsSync(path.join(base, '보낸글.txt')) ? fs.readFileSync(path.join(base, '보낸글.txt'), 'utf8') : '');
   assert.deepEqual(매일큐(base, ['--지금', '2026-10-21T20:59+09:00', '--알림']).reserveAlert, { sent: false, reason: 'before-hour' });
   const first = 매일큐(base, ['--지금', '2026-10-21T21:30+09:00', '--알림']).reserveAlert;
   assert.equal(first.sent, true);
   assert.equal(first.text, [
-    '[비축] 2026-10-21 · 목표 4일 · 지금 1일',
-    'LAB 영어 2일 — 10-24 승인·예약 전 · 10-25 만든 편 없음',
-    'LAB 몽골 1일 — 10-23 lab-tiktok 만든 편 없음 · 10-24 만든 편 없음 · 10-25 만든 편 없음',
+    '[비축] 2026-10-21 · 목표 4일(LAB 줄 5일) · 지금 1일',
+    'LAB 영어 2일 — 10-24 승인·예약 전 · 10-25 만든 편 없음 · 10-26 만든 편 없음',
+    'LAB 몽골 1일 — 10-23 lab-tiktok 만든 편 없음 · 10-24 만든 편 없음 · 10-25 만든 편 없음 · 10-26 만든 편 없음',
     'synkbrief 1일 — 10-23 승인·예약 전 · 10-24 만든 편 없음 · 10-25 만든 편 없음',
     '「만든 편 없음」은 19:30 후보에서 번호를 골라 주시면 07시가 만들고, 「승인·예약 전」은 검토 링크 승인이나 14시 「올려」로 채워져요'].join('\n'));
   assert.ok(sent().includes('[비축] 2026-10-21'));
   assert.deepEqual(매일큐(base, ['--지금', '2026-10-21T23:00+09:00', '--알림']).reserveAlert, { sent: false, reason: 'same-today' });
   // 다음 날 21시 뒤에는 다시 본다
   assert.equal(매일큐(base, ['--지금', '2026-10-22T21:10+09:00', '--알림']).reserveAlert.sent, true);
-  // 비축이 4일 넘게 찼으면 보내지 않는다
-  const full = 매일판('가득', ['22', '23', '24', '25'].flatMap((d) => [
+  // 나흘이 찼으면 4일 목표 줄(synkbrief)은 조용하고, LAB 줄(11-10부터 5일 목표)만 닷새째 빈 칸을 보낸다
+  const days = (list) => list.flatMap((d) => [
     [`en-${d}`, 한편('LAB', `2026-10-${d}`, ['lab-youtube']), 결과([['lab-youtube', '게시됨']])],
     [`mn-${d}`, 한편('LAB', `2026-10-${d}`, ['lab-instagram', 'lab-tiktok']), 결과([['lab-instagram', '예약됨'], ['lab-tiktok', '예약됨']])],
-    [`brief-${d}`, 한편('synkbrief', `2026-10-${d}`, ['synkbrief-youtube', 'shift-naverblog']), 결과([['synkbrief-youtube', '예약됨']])]]));
-  const r = 매일큐(full, ['--지금', '2026-10-21T21:30+09:00', '--알림']);
-  assert.equal(r.reserve, 4);
+    [`brief-${d}`, 한편('synkbrief', `2026-10-${d}`, ['synkbrief-youtube', 'shift-naverblog']), 결과([['synkbrief-youtube', '예약됨']])]]);
+  const four = 매일큐(매일판('나흘', days(['22', '23', '24', '25'])), ['--지금', '2026-10-21T21:30+09:00', '--알림']);
+  assert.equal(four.reserve, 4);
+  assert.equal(four.reserveAlert.sent, true);
+  assert.equal(four.reserveAlert.text.split('\n').slice(0, 3).join('\n'), ['[비축] 2026-10-21 · 목표 4일(LAB 줄 5일) · 지금 4일', 'LAB 영어 4일 — 10-26 만든 편 없음', 'LAB 몽골 4일 — 10-26 만든 편 없음'].join('\n'));
+  assert.equal(four.reserveAlert.text.includes('synkbrief'), false);
+  // 닷새가 찼으면 보내지 않는다(--알림은 --일수를 안 줘도 오늘 + 5일을 본다)
+  const r = 매일큐(매일판('가득', days(['22', '23', '24', '25', '26'])), ['--지금', '2026-10-21T21:30+09:00', '--알림']);
+  assert.equal(r.reserve, 5);
+  assert.equal(r.range.length, 6);
   assert.deepEqual(r.reserveAlert, { sent: false, reason: 'enough' });
 });
 
