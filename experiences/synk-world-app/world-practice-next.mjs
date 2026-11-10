@@ -145,7 +145,8 @@ export function createPracticeNextSession({
   function pickFresh() {
     const fresh = pool.filter(item => seen(item) === false);
     if (!fresh.length) return null;
-    const again = coach.recommend(fresh, { audio: audioAvailable, lang });
+    // pool: 'unseen' — 그 제시의 근거 칸에 「제품이 처음 보는 문항으로 좁힘」을 남긴다(단계 5가 측정 문항과 보통 채우기를 가른다).
+    const again = coach.recommend(fresh, { audio: audioAvailable, lang, pool: 'unseen' });
     return again.status !== 'none' && seen(again.selected) === false ? again : { ...again, fresh: false };
   }
   // 판을 닫는다(판 기록은 셸이 응답과 함께 — 여기서는 닫기만).

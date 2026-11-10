@@ -45,6 +45,13 @@ const setSign = set =>
     set?.level?.min ?? null,
     set?.level?.max ?? null,
   ]);
+// 제품이 후보를 좁힌 까닭(recommend의 pool — 예: 'unseen' 처음 보는 문항만). 고른 줄의 근거 칸에 그대로 실려 단계 5가 제품이 좁힌
+// 측정 문항과 엔진의 보통 채우기를 가른다(조율 11-11). 회차(arm)는 바꾸지 않는다 — 좁힌 묶음 안에서는 엔진이 골랐다.
+const POOL = /^[a-z][a-z0-9-]{0,23}$/;
+const pooled = (row, pool) =>
+  row && POOL.test(pool ?? '')
+    ? { ...row, why: { ...row.why, evidence: { ...row.why.evidence, pool } } }
+    : row;
 // 본인 말이 그 줄에 남긴 때 — 「다시 배울래요」는 빈 줄, 「이미 알아요」는 열린 자리가 known이다.
 const saidAt = line =>
   line?.empty ? line.latestAt : line?.open?.grade === 'known' ? line.open.at : null;
@@ -255,6 +262,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         host.now(),
         { params, seed },
       );
+      if (rows[0]) rows[0] = pooled(rows[0], options.pool);
       s.chosen.clear();
       if (rows[0]) s.chosen.set(rows[0].item.itemKey, rows[0]);
       return { rows, products, facts: factsOf(rows) };

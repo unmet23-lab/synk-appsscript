@@ -121,6 +121,14 @@ export const COACH_MUTANTS = [
   ],
   [
     C,
+    '제시 칸',
+    '제품이 좁힌 까닭(pool)을 근거 칸에 싣지 않는다(조율 11-11)',
+    SESSION,
+    'if (rows[0]) rows[0] = pooled(rows[0], options.pool);',
+    '',
+  ],
+  [
+    C,
     '호스트',
     '손님 호스트가 옛 기기 기록을 옮기지 않는다(Fable P1-5 ①)',
     HOST,

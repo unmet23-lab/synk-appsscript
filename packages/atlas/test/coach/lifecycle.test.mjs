@@ -448,3 +448,20 @@ test('판을 닫으면 마침 사건에 그 판의 번호가 실리고, 손님�
   await quiet.folded;
   coach.dispose();
 });
+
+test('제품이 후보를 좁힌 까닭(pool)은 고른 줄의 근거 칸에 실리고 회차는 그대로다(조율 11-11 — 처음 보는 문항으로 좁혀 다시 묻기)', async () => {
+  const items = bankOf(rng(11));
+  const port = memoryPort();
+  const time = clock();
+  const coach = coachOn({ items, time, port, key: keyOf('pool') });
+  await coach.ready;
+  const picked = coach.recommend(items, { set: { length: 4 }, pool: 'unseen' });
+  assert.equal(picked.why.evidence.pool, 'unseen');
+  const pid = coach.present(picked.selected);
+  const event = (await eventsOf(port)).find(e => e.id === pid);
+  assert.equal(event.reason.evidence.pool, 'unseen');
+  assert.equal(event.arm, picked.tier >= 3 ? 'filler' : 'adaptive', '회차는 엔진의 것 그대로');
+  const plain = coach.recommend(items, { pool: 'Not A Key!' });
+  assert.equal(plain.why.evidence.pool, undefined, '꼴이 아닌 값은 싣지 않는다');
+  coach.dispose();
+});
