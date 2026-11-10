@@ -101,7 +101,7 @@ git fetch <복원.bundle의-절대경로> refs/heads/<원래-가지>:refs/heads/
 # detached는 sourceMappings의 bundleRef를 원래 ref 대신 쓴다.
 ```
 
-복호화 결과의 SHA256을 manifest의 `plaintext.sha256`과 비교하고, 복원 가지의 SHA가 `heads`의 원래 SHA와 일치하는지 확인한다. 실제 자료는 개인키를 열지 않고 스트림의 bundle 헤더·선행 객체·PACK 체크섬을 검사했다. Git 선행 객체 검증은 ref·커밋 헤더만 0600 임시 파일로 읽히고 성공·실패 모두 지운다(11-10 Linux 표준입력 처리 차이). 팩 본문은 평문 파일로 쓰지 않는다. 임시 열쇠와 가상 저장소로 암호화→복호화→별도 clone에서 원래 파일과 커밋 복원까지 시험했다.
+복호화 결과의 SHA256을 manifest의 `plaintext.sha256`과 비교하고, 복원 가지의 SHA가 `heads`의 원래 SHA와 일치하는지 확인한다. 실제 자료는 개인키를 열지 않고 스트림의 bundle 헤더·선행 객체·PACK 체크섬을 검사했다. Git 선행 객체 검증은 ref·커밋 헤더만 TEMP 아래 별도 짧은 임시 폴더의 0600 파일로 읽히고 성공·실패 모두 그 파일·폴더를 지운다(11-10 Linux 표준입력·Windows 긴 경로 차이). 팩 본문은 평문 파일로 쓰지 않는다. 임시 열쇠와 가상 저장소로 암호화→복호화→별도 clone에서 원래 파일과 커밋 복원까지 시험했다.
 
 공개 저장소의 미게시 이력 보관본은 공개 원격에 이미 있는 커밋을 선행 커밋으로 둔다(`selfContained: false`, `prerequisites`의 각 행은 `public: true`와 그 커밋에 닿는 공개 ref). 복원은 공개 저장소를 별도 폴더에 clone한 뒤 그 안에서 bundle을 검증하고 원하는 ref를 가져온다. 공개 원격에 ref가 하나도 없을 때만 `selfContained: true`, `prerequisites: []`라 새 `git init` 저장소에서 복원한다. 10-19 SYNK-appsscript를 당분간 공개로 바꾸기 전에 이렇게 고쳤다 — 예전처럼 완전 bundle을 만들면 실행마다 약 6.9GB(master 전체 이력)였고, 증분은 약 145MB다. 공개 원격 쓰기 0회, 공개 clone에서 가지·stash·detached 원문 복원(빈 저장소에서는 검증 실패), 원격에서 닿지 않는 선행 커밋 거절, 원격 검증 전 대기와 검증 후 완료 전환을 가상 저장소로 시험했다. 10-18 현재 공개 3개 저장소는 미게시 이력이 없어 불필요한 bundle을 생성하지 않았다.
 

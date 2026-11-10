@@ -108,21 +108,29 @@ function fixture(t, { baseOnly = false } = {}) {
   const head = git(['rev-parse', 'HEAD']).toString().trim();
   return { root, source, restore, git, base, head };
 }
-test('bundle prerequisite verification removes its temporary header when the header callback rejects', async t => {
-  const f = fixture(t), staging = path.join(f.root, 'synthetic.enc');
+test('bundle verification keeps headers short and absolute and removes them on callback rejection', async t => {
+  const f = fixture(t), longDir = path.join(f.root, 'nested-' + 'x'.repeat(120));
+  fs.mkdirSync(longDir);
+  const longStaging = path.join(longDir, 'synthetic-' + 'x'.repeat(100) + '.enc');
+  assert.ok(longStaging.length > 260);
+  const headerPrefix = `synk-git-header-${process.pid}-`;
+  const headers = () => fs.readdirSync(os.tmpdir()).filter(name => name.startsWith(headerPrefix)).sort();
+  const before = headers();
   const heads = [{ ref: 'refs/heads/archive-source', sha: f.head }];
-  let verified = false;
-  await assert.rejects(createBundle({ repo: f.source, heads, exclusions: [f.base], staging,
-    pubPem: 'synthetic fixture', encryptStream: async (_pub, input) => {
-      let bytes = 0; const sha = crypto.createHash('sha256');
-      for await (const chunk of input) { bytes += chunk.length; sha.update(chunk); }
-      return { bytes, sha256: sha.digest('hex') };
-    }, onHeader(inspector) {
-      assert.deepEqual(inspector.prerequisites, [f.base]); verified = true;
-      throw new Error('SYNTHETIC_HEADER_CALLBACK_REJECTED');
-    } }), /SYNTHETIC_HEADER_CALLBACK_REJECTED/);
-  assert.equal(verified, true);
-  assert.equal(fs.readdirSync(f.root).some(name => name.startsWith('synthetic.enc.header-')), false);
+  for (const staging of [longStaging, path.relative(process.cwd(), path.join(f.root, 'relative.enc'))]) {
+    let verified = false;
+    await assert.rejects(createBundle({ repo: f.source, heads, exclusions: [f.base], staging,
+      pubPem: 'synthetic fixture', encryptStream: async (_pub, input) => {
+        let bytes = 0; const sha = crypto.createHash('sha256');
+        for await (const chunk of input) { bytes += chunk.length; sha.update(chunk); }
+        return { bytes, sha256: sha.digest('hex') };
+      }, onHeader(inspector) {
+        assert.deepEqual(inspector.prerequisites, [f.base]); verified = true;
+        throw new Error('SYNTHETIC_HEADER_CALLBACK_REJECTED');
+      } }), /SYNTHETIC_HEADER_CALLBACK_REJECTED/);
+    assert.equal(verified, true);
+    assert.deepEqual(headers(), before);
+  }
 });
 test('stdout bundle is encrypted, header and pack validated, and fixture history restores exactly', { skip: !crypt && 'local archive encryption module unavailable' }, async t => {
   const f = fixture(t), keys = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });

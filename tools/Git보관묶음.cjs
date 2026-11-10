@@ -422,12 +422,14 @@ async function createBundle({ repo, heads, exclusions, pubPem, encryptStream, st
     // Git 2.56 on POSIX closes stdin before spawning the prerequisite connectivity check.
     // Verify the exact header through a private temporary file instead. Only ref/commit
     // metadata is written here; the pack payload remains encrypted throughout.
-    const headerFile = staging + '.header-' + crypto.randomUUID();
-    const headerFd = fs.openSync(headerFile, 'wx', 0o600);
+    // Keep this independent of the ciphertext basename: SHA-named archives under
+    // the QA TEMP directory can exceed Windows Git's path limit after a suffix.
+    const headerDir = fs.mkdtempSync(path.join(os.tmpdir(), `synk-git-header-${process.pid}-`));
+    const headerFile = path.join(headerDir, 'header');
     try {
-      try { fs.writeFileSync(headerFd, inspector.header); } finally { fs.closeSync(headerFd); }
+      fs.writeFileSync(headerFile, inspector.header, { flag: 'wx', mode: 0o600 });
       gitReader(repo)(['bundle', 'verify', headerFile]);
-    } finally { fs.rmSync(headerFile, { force: true }); }
+    } finally { fs.rmSync(headerFile, { force: true }); fs.rmdirSync(headerDir); }
     if (onHeader) await onHeader(inspector);
     return { plaintext: plain, pack: { bytes: inspector.packBytes, version: inspector.packVersion,
       objects: inspector.objectCount, sha1: inspector.packSha1 }, heads: inspector.heads,
