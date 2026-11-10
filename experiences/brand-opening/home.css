@@ -343,7 +343,7 @@ noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:va
 @media(max-height:700px){
  :root:not([data-layout=landscape]) .place-heading{top:calc(74px + var(--safe-top))}
  :root:not([data-layout=landscape]) .place-heading h1{font-size:23px;margin-top:4px}
- :root:not([data-layout=landscape]) .place-heading>p:last-child{display:none}
+ /* 세로 화면의 장소 제목은 통째로 화면 읽기 전용(위 .place-heading)이라 진도 수가 든 끝 줄을 여기서 지우지 않는다(11-10 화면 검수 F3). */
  #home-tutor .game-tutor-line{font-size:14px}
 }
 

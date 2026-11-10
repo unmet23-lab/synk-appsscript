@@ -230,7 +230,7 @@ test('칸을 열면 세지 않은 답이 까닭 하나씩 줄로 보인다',()=>
  const html=view.renderPositionBoard({map,catalog,assessable});
  const body=html.slice(html.indexOf('data-skill="ko.reading.detail"'));
  assert.match(body,/내 위치에 반영하지 않은 답/);assert.equal(count(body,/data-why="/g),4,'답마다 한 줄');
- assert.match(body,/data-why="draft"[\s\S]*?틀림 · 반영 안 함[\s\S]*?<span lang="ko">&lt;안녕&gt;<\/span>[\s\S]*?연습용 문항이라 내 위치에 반영하지 않았어요\./);
+ assert.match(body,/data-why="draft"[\s\S]*?틀림 · 반영 안 함[\s\S]*?<span lang="ko">&lt;안녕&gt;<\/span>[\s\S]*?아직 내 위치에 반영하지 않는 문항이에요\./);
  assert.match(body,/data-why="met"[\s\S]*?맞음 · 반영 안 함[\s\S]*?전에 만난 문항이라 반영하지 않았어요\./);
  assert.match(body,/data-why="unanswered"[\s\S]*?답하지 않음 · 반영 안 함[\s\S]*?답을 고르지 않아 반영하지 않았어요\./);
  assert.match(body,/data-why="visual"[\s\S]*?화면을 보고 풀 수 있는 문항이라 반영하지 않았어요\./);
@@ -240,7 +240,7 @@ test('칸을 열면 세지 않은 답이 까닭 하나씩 줄로 보인다',()=>
  assert.match(view.renderPositionBoard({map}),/data-why="other"/);
  // 세 언어.
  const en=english.renderPositionBoard({map,catalog,assessable}),mn=mongolian.renderPositionBoard({map,catalog,assessable});
- assert.match(en,/Answers not counted/);assert.match(en,/Wrong · Not counted/);assert.match(en,/This is a practice question, so it wasn’t counted here./);
+ assert.match(en,/Answers not counted/);assert.match(en,/Wrong · Not counted/);assert.match(en,/This question isn’t counted here yet./);
  assert.match(mn,/Тооцоонд ороогүй хариултууд/);assert.match(mn,/Буруу · Тооцоонд ороогүй/);
  for(const key of ['title','tag','noAnswer','more',...['draft','met','visual','audio','unanswered','motor','storage','other'].map(why=>`why.${why}`)]){
   const row=STRINGS[`position.uncounted.${key}`];assert.ok(row?.ko&&row?.en&&row?.mn,key);

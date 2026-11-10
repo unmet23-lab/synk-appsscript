@@ -9486,8 +9486,8 @@
   {
    "source": "world-strings",
    "key": "position.progress",
-   "mnHash": "122901ea5c",
-   "batch": "mn-check-20261109-copy/screen-01.txt",
+   "mnHash": "ea67cbb91f",
+   "batch": "mn-check-20261109-copy/screen-02-r3.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"
@@ -11108,8 +11108,8 @@
   {
    "source": "world-strings",
    "key": "position.uncounted.why.draft",
-   "mnHash": "6e0441c427",
-   "batch": "mn-check-20261109-copy/screen-01.txt",
+   "mnHash": "97131415c7",
+   "batch": "mn-check-20261109-copy/position-01.txt",
    "grammar": "정상",
    "spelling": [],
    "status": "세 겹 깨끗 · 표시 꼴로 검문, 뜻 대조는 한국어 원문 ↔ 역번역으로 Claude"

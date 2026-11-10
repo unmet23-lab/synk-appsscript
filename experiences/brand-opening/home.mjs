@@ -301,7 +301,7 @@ function updateLearning(summary,details){
 function renderHeading(tutor=tutorUI?.choice()){
  const line=$('.place-heading>p:last-child'),summary=learningData.summary;if(!line)return;
  line.textContent=[tutor?t('home.heading.with',{name:t(`tutor.name.${tutor.id}`)}):t('home.heading.friends'),summary?t('home.heading.progress'):''].filter(Boolean).join(' · ');
- // 진도 수는 넓은 화면에선 카드에 있다. 세로 화면은 이 줄이 화면 읽기 전용이고 카드의 진도 줄도 숨어 있어 여기서 읽어 준다(home.css).
+ // 진도 수는 넓은 화면에선 카드에 있다. 세로 화면은 이 줄이 화면 읽기 전용이고 카드의 진도 줄도 숨어 있어 여기서 읽어 준다(home.css — 낮은 세로 화면도 이 줄을 지우지 않는다).
  if(summary){const count=document.createElement('span');count.className='place-heading-count';count.textContent=` · ${t('home.caption',{done:summary.completed||0,total:summary.total||22})}`;line.append(count);}
 }
 // 맞춤 학습 후보의 이름: 레슨 제목은 학습 내용이라 한국어 그대로 두고, 붙는 말(이어 하기·새 상황 복습·놀이 이름)만 화면 언어로.

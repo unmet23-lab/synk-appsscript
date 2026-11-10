@@ -448,7 +448,7 @@ test('내 위치: 듣기 게임으로 가는 단추는 게임 이름으로, 읽�
  // 아르곤 C 반영: TOPIK II 학생의 계획에서 TOPIK I로 세는 항목·영역은 「TOPIK I」을 붙여, 같은 이름의 TOPIK II 항목(내 위치 TOPIK II 판)과 가른다.
  const bridgedPlan=view.renderExamPlan({plan:{...mixed,homework:[{skillId:'ko.listening.detail',domain:'listening',status:'checking',fresh:3,activities:[]}]}});
  assert.match(bridgedPlan,/<strong>TOPIK I · 듣고 세부 정보 찾기<\/strong>/);
- assert.match(bridgedPlan,/data-plan-progress="listening"><span>듣기 · TOPIK I · 기록이 있는 항목 0 \/ 8/);assert.match(bridgedPlan,/data-plan-progress="reading"><span>읽기 · 기록이 있는 항목 0 \/ 7/);
+ assert.match(bridgedPlan,/data-plan-progress="listening"><span>듣기 · TOPIK I · 내 위치에 반영된 항목 0 \/ 8/);assert.match(bridgedPlan,/data-plan-progress="reading"><span>읽기 · 내 위치에 반영된 항목 0 \/ 7/);
  assert.doesNotMatch(view.renderExamPlan({plan:{...closed,homework:[{skillId:'ko.listening.detail',domain:'listening',status:'checking',fresh:3,activities:[]}]}}),/<strong>TOPIK I · |듣기 · TOPIK I · /,'TOPIK I 학생에게는 붙이지 않는다');
  // 내 위치 TOPIK II 판: 그 영역에 한 줄로 알린다(판은 TOPIK II 항목, 계획은 TOPIK I 항목이라 수가 다르다).
  const board2=view.renderPositionBoard({map:position.buildPositionMap({summary:s.coach.summary(),events:s.coach.events(),exam:'topik2'}),bridged:['listening']});
