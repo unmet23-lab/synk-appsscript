@@ -10,6 +10,73 @@ const { reconcileEncryptedArchives, onlyArchiveTransferPending, deferNewSinceApp
 const cryptoPath = process.env.SYNK_QA_CRYPTO_MODULE || path.join(os.homedir(), 'Documents/SYNK_원본창고/암호.js');
 const crypt = fs.existsSync(cryptoPath) ? require(cryptoPath) : null;
 
+test('local-only history restores from a standalone encrypted bundle and needs exact Drive evidence', async t => {
+  const f = fixture(t), calls = [];
+  const git = (args, input) => { calls.push(args); return f.git(args, f.source, input); };
+  const record = require('../tools/GitHub백업.cjs').inspectRepository(f.source, { git });
+  const beforeRefs = f.git(['show-ref']).toString(), beforeIndex = fs.readFileSync(path.join(f.source, '.git', 'index'));
+  const pub = path.join(f.root, 'fixture-public.pem'); fs.writeFileSync(pub, 'synthetic encryption fixture');
+  // Built-in encryption keeps this routing/restore regression runnable in hosted CI.
+  // Production still injects the existing archive encryption module and public key.
+  const key = crypto.randomBytes(32);
+  const { pipeline } = require('node:stream/promises');
+  const encryptStream = async (_pub, input, destination) => {
+    const sha = crypto.createHash('sha256'); let bytes = 0;
+    input.on('data', chunk => { bytes += chunk.length; sha.update(chunk); });
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    fs.writeFileSync(destination, iv, { flag: 'wx' });
+    await pipeline(input, cipher, fs.createWriteStream(destination, { flags: 'a' }));
+    fs.appendFileSync(destination, cipher.getAuthTag());
+    return { bytes, sha256: sha.digest('hex') };
+  };
+  const receipt = await preserveRecord(record, f.root, { PUB: () => pub, encryptStream }, () => {}, { git });
+  assert.equal(receipt.originVisibility, 'local-only'); assert.equal(receipt.selfContained, true);
+  assert.deepEqual(receipt.prerequisites, []); assert.deepEqual(receipt.requiredCommits, []);
+  assert.equal(receipt.remoteWrites, false);
+  assert.equal((await verifyDriveCoverage(receipt, f.root)).code, 'GIT_ARCHIVE_AWAITING_DRIVE');
+  const decrypt = file => {
+    const body = fs.readFileSync(file), decipher = crypto.createDecipheriv('aes-256-gcm', key, body.subarray(0, 12));
+    decipher.setAuthTag(body.subarray(-16));
+    return Buffer.concat([decipher.update(body.subarray(12, -16)), decipher.final()]);
+  };
+  const plain = decrypt(receipt.filePath);
+  const restored = path.join(f.root, 'fixture.bundle'), empty = path.join(f.root, 'empty');
+  fs.writeFileSync(restored, plain); f.git(['init', '--bare', empty], f.root);
+  f.git(['bundle', 'verify', restored], empty);
+  for (const head of receipt.heads) f.git(['fetch', restored, head.ref + ':' + head.ref], empty);
+  assert.deepEqual(f.git(['show', 'refs/heads/archive-source:history.bin'], empty), fs.readFileSync(path.join(f.source, 'history.bin')));
+  const state = path.join(f.root, 'github-backup-status.json'), report = { repositories: [record] };
+  await reconcileEncryptedArchives(report, state, false);
+  assert.equal(record.status, 'attention');
+  const verifiedFiles = [];
+  for (const relative of [receipt.relativePath, receipt.manifestRelativePath]) {
+    const digest = await fileDigest(path.join(f.root, 'Git-보관', relative));
+    verifiedFiles.push({ path: relative, id: 'synthetic-' + verifiedFiles.length, ...digest, ownedByMe: true,
+      trashed: false, remoteMd5: digest.md5, remoteSha256: digest.sha256 });
+  }
+  const verification = path.join(f.root, '상태', 'Git-보관', 'verify-status.json'); fs.mkdirSync(path.dirname(verification), { recursive: true });
+  fs.writeFileSync(verification, JSON.stringify({ status: 'success', group: 'Git-보관', account: '77yuhbs@gmail.com',
+    checkedAt: new Date().toISOString(), missing_or_bad: 0, historicalBad: 0, verifiedFiles }));
+  await reconcileEncryptedArchives(report, state, false);
+  assert.equal(record.status, 'success'); assert.ok(record.refs.every(row => row.status === 'encrypted-drive-verified'));
+  assert.equal(calls.some(args => ['push', 'ls-remote'].includes(args[0]) || args.includes('get-url')), false);
+  assert.equal(f.git(['show-ref']).toString(), beforeRefs); assert.deepEqual(fs.readFileSync(path.join(f.source, '.git', 'index')), beforeIndex);
+  fs.writeFileSync(path.join(f.source, 'later.md'), '# next local-only commit\n');
+  f.git(['add', 'later.md']); f.git(['commit', '-m', 'later local-only history']);
+  const later = require('../tools/GitHub백업.cjs').inspectRepository(f.source, { git });
+  const incremental = await preserveRecord(later, f.root, { PUB: () => pub, encryptStream }, () => {}, { git });
+  assert.deepEqual(incremental.chain, [receipt.manifestRelativePath]);
+  assert.ok(incremental.prerequisites.every(row => row.bundle === receipt.manifestRelativePath));
+  assert.equal(incremental.restore.instruction.includes('Clone the public GitHub'), false);
+  fs.writeFileSync(restored, decrypt(incremental.filePath)); f.git(['bundle', 'verify', restored], empty);
+  f.git(['fetch', restored, 'refs/heads/archive-source:refs/heads/archive-source'], empty);
+  assert.equal(f.git(['show', 'refs/heads/archive-source:later.md'], empty).toString(), '# next local-only commit\n');
+  assert.equal(calls.some(args => ['push', 'ls-remote'].includes(args[0])), false);
+  f.git(['remote', 'add', 'origin', f.restore]);
+  await assert.rejects(preserveRecord(record, f.root, { PUB: () => pub, encryptStream }, () => {}, { git }), /BUNDLE_ORIGIN_MISMATCH/);
+});
+
 // Git for Windows' cmd launcher starts another process for every fixture command.
 // Use the same installation's executable for the local synthetic repositories.
 let fixtureExecutable;

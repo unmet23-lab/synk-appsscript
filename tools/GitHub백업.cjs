@@ -10,7 +10,7 @@ const { execFileSync } = require('node:child_process');
 const { textPolicy, MAX_TEXT_BYTES } = require('./이어하기꾸러미.js');
 const { generatedKind, validatePolicy } = require('./git-storage-check.cjs');
 const OID = /^[0-9a-f]{40}$/;
-const { remoteIdentity, parseRefs, replaceFile, atomicJson, acquireLock, abandonedLock, PREFIX } = require('./lib/backup-primitives.cjs');
+const { remoteIdentity, localRepositoryIdentity, parseRefs, replaceFile, atomicJson, acquireLock, abandonedLock, PREFIX } = require('./lib/backup-primitives.cjs');
 const MAX_TOTAL = 50 * 1024 * 1024;
 const reviewedLiterals = require('./github-backup-reviewed-literals.json').entries;
 const SECRET_SIGNATURE = /-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\bAKIA[0-9A-Z]{16}\b|\bAIza[\w-]{30,}|\b(?:gh[pousr]_|github_pat_|xox[baprs]-|sk-(?:proj-)?)\w[\w-]{18,}|\beyJ[\w-]{12,}\.[\w-]{12,}\.[\w-]{12,}/;
@@ -155,17 +155,17 @@ function inspectNewObjects(git, sha, known, policy = storagePolicy()) {
 }
 function inspectRepository(repo, { apply = false, github = null, git = reader(repo), onProgress = () => {} } = {}) {
   const result = { name: path.basename(repo), path: repo, status: 'checking', checkedAt: new Date().toISOString(), refs: [] };
-  const fetchUrl = git(['remote', 'get-url', 'origin']).toString('utf8').trim();
-  const pushUrl = git(['remote', 'get-url', '--push', 'origin']).toString('utf8').trim();
-  const identity = remoteIdentity(fetchUrl);
-  if (!identity || remoteIdentity(pushUrl)?.toLowerCase() !== identity.toLowerCase()) throw new Error('UNAPPROVED_GITHUB_ORIGIN');
+  const localIdentity = localRepositoryIdentity(git);
+  const identity = localIdentity || remoteIdentity(git(['remote', 'get-url', 'origin']).toString('utf8').trim());
+  if (!identity || (!localIdentity && remoteIdentity(git(['remote', 'get-url', '--push', 'origin']).toString('utf8').trim())?.toLowerCase() !== identity.toLowerCase())) throw new Error('UNAPPROVED_GITHUB_ORIGIN');
   result.repository = identity;
-  const info = github || JSON.parse(run('gh', ['api', `repos/${identity}`, '--jq',
+  const info = localIdentity ? { private: false, default_branch: null, full_name: identity } : github || JSON.parse(run('gh', ['api', `repos/${identity}`, '--jq',
     '{private: .private, default_branch: .default_branch, full_name: .full_name}']).toString('utf8'));
   if (info.full_name.toLowerCase() !== identity.toLowerCase() || typeof info.private !== 'boolean') throw new Error('GITHUB_IDENTITY_MISMATCH');
-  result.private = info.private;
+  result.private = localIdentity ? null : info.private;
+  if (localIdentity) result.localOnly = true;
   result.defaultBranch = info.default_branch;
-  const remoteRefs = parseRefs(git(['ls-remote', '--refs', 'origin']));
+  const remoteRefs = localIdentity ? [] : parseRefs(git(['ls-remote', '--refs', 'origin']));
   const localRefs = parseRefs(git(['for-each-ref', '--format=%(objectname) %(refname)', 'refs/heads', 'refs/stash']));
   const current = git(['rev-parse', 'HEAD']).toString('utf8').trim();
   if (!OID.test(current)) throw new Error('INVALID_HEAD');
@@ -184,6 +184,7 @@ function inspectRepository(repo, { apply = false, github = null, git = reader(re
     onProgress();
     const row = { sha, sourceRefs: localRefs.filter(value => value.sha === sha).map(value => value.ref), targetRef: PREFIX + sha };
     result.refs.push(row);
+    if (localIdentity) { row.status = 'local-only-unpublished'; continue; }
     if (!info.private) { row.status = 'public-origin-unpublished'; continue; }
     row.check = inspectNewObjects(git, sha, known);
     if (!row.check.ok) { row.status = 'blocked-by-content-policy'; continue; }
@@ -201,7 +202,7 @@ function inspectRepository(repo, { apply = false, github = null, git = reader(re
     } catch (error) { row.status = 'failed'; row.code = error.message; }
     onProgress();
   }
-  result.status = result.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'failed'].includes(row.status))
+  result.status = result.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'local-only-unpublished', 'failed'].includes(row.status))
     ? 'attention' : result.refs.some(row => row.status === 'ready') ? 'pending' : 'success';
   result.finishedAt = new Date().toISOString();
   return result;
@@ -233,7 +234,7 @@ async function reconcileEncryptedArchives(report, state, apply) {
         if (found.ok) { row.status = 'encrypted-drive-verified'; row.fallback = found; }
         else row.fallback = { ...found, ok: false };
       }
-      repo.status = repo.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'failed'].includes(row.status))
+      repo.status = repo.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'local-only-unpublished', 'failed'].includes(row.status))
         ? 'attention' : repo.refs.some(row => row.status === 'ready') ? 'pending' : 'success';
       progress();
     }
@@ -275,11 +276,11 @@ function deferNewSinceApply(report, lastApply) {
     if (!Array.isArray(repo.refs) || repo.status === 'failed') continue;
     const seen = new Set(Array.isArray(lastApply.heads[repo.name]) ? lastApply.heads[repo.name] : []);
     for (const row of repo.refs) {
-      if (['blocked-by-content-policy', 'public-origin-unpublished', 'ready'].includes(row.status) && !seen.has(row.sha)) {
+      if (['blocked-by-content-policy', 'public-origin-unpublished', 'local-only-unpublished', 'ready'].includes(row.status) && !seen.has(row.sha)) {
         row.status = 'awaiting-next-apply'; deferred++;
       }
     }
-    repo.status = repo.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'failed'].includes(row.status))
+    repo.status = repo.refs.some(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'local-only-unpublished', 'failed'].includes(row.status))
       ? 'attention' : repo.refs.some(row => row.status === 'ready') ? 'pending' : 'success';
   }
   return deferred;
@@ -333,7 +334,7 @@ async function main(argv = process.argv.slice(2)) {
   if (report.protectedSources.status !== 'success') report.status = 'attention';
   report.issues = report.repositories.flatMap(repo => repo.status === 'failed'
     ? [{ repository: repo.name, code: repo.code }]
-    : (repo.refs || []).filter(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'ready', 'failed'].includes(row.status))
+    : (repo.refs || []).filter(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'local-only-unpublished', 'ready', 'failed'].includes(row.status))
       .map(row => ({ repository: repo.name, code: row.code || row.fallback?.code || row.status.replaceAll('-', '_').toUpperCase(), sha: row.sha,
         paths: row.check?.violations || [] })));
   report.issues.push(...report.protectedSources.issues.map(row => ({ ...row, component: 'protected-sources' })));

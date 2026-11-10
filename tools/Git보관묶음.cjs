@@ -5,7 +5,7 @@
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
 const { spawn, execFileSync } = require('node:child_process');
 const { Transform } = require('node:stream');
-const { acquireLock, parseRefs, remoteIdentity, replaceFile, PREFIX } = require('./lib/backup-primitives.cjs');
+const { acquireLock, parseRefs, remoteIdentity, localRepositoryIdentity, replaceFile, PREFIX } = require('./lib/backup-primitives.cjs');
 const OID = /^[0-9a-f]{40}$/;
 function gitReader(repo) {
   return (args, input) => {
@@ -31,7 +31,7 @@ async function fileDigest(file) {
   return { bytes, sha256: sha.digest('hex'), md5: md5.digest('hex') };
 }
 function archiveRefs(record) {
-  return (record.refs || []).filter(row => ['blocked-by-content-policy', 'public-origin-unpublished'].includes(row.status));
+  return (record.refs || []).filter(row => ['blocked-by-content-policy', 'public-origin-unpublished', 'local-only-unpublished'].includes(row.status));
 }
 function selection(record, vault) {
   const identity = record.repository;
@@ -262,6 +262,7 @@ function verifyPrerequisites(record, receipt) {
     }
   }
   if (!receipt.prerequisites.some(row => !row.bundle)) return;
+  if (record.localOnly) throw new Error('BUNDLE_LOCAL_REMOTE_PREREQUISITE');
   const git = gitReader(record.path);
   const pinned = receipt.prerequisites.filter(row => pinnedRow(row, row.sha));
   if (pinned.length) {
@@ -308,7 +309,8 @@ async function verifyDriveCoverage(receipt, vault, { now = Date.now(), verificat
 // 담은 묶음이든, 이름만 새로 붙은 가지가 가리키는 이미 묶은 커밋이든. 아니면 그 머리를 담은 가장 새 묶음의 Drive 상태를 낸다
 // (막 만들어 아직 올리지 않은 묶음은 GIT_ARCHIVE_AWAITING_DRIVE). 어느 묶음에도 없으면 GIT_ARCHIVE_NOT_CREATED.
 async function archiveCoverage(record, vault, { git = gitReader(record.path), now = Date.now(), verification = null } = {}) {
-  const remoteRefs = parseRefs(git(['ls-remote', '--refs', 'origin'])), remoteTips = presentCommits(git, remoteRefs);
+  if (record.localOnly && localRepositoryIdentity(git) !== record.repository) throw new Error('BUNDLE_LOCAL_IDENTITY_CHANGED');
+  const remoteRefs = record.localOnly ? [] : parseRefs(git(['ls-remote', '--refs', 'origin'])), remoteTips = presentCommits(git, remoteRefs);
   const chain = await verifiedBundles(record, vault, { now, verification, git, remoteRefs, remoteTips });
   const rows = archiveRefs(record), result = new Map(), checked = [], cached = new Map();
   const notCovered = chain.length ? uncoveredShas(git, rows.map(row => row.sha), chainHeads(git, chain)) : new Set(rows.map(row => row.sha));
@@ -427,10 +429,11 @@ async function createBundle({ repo, heads, exclusions, pubPem, encryptStream, st
 }
 async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, { git: suppliedGit, github } = {}) {
   const git = suppliedGit || gitReader(record.path);
-  const identity = remoteIdentity(git(['remote', 'get-url', 'origin']).toString().trim());
-  if (!identity || identity !== record.repository || remoteIdentity(git(['remote', 'get-url', '--push', 'origin']).toString().trim()) !== identity)
+  const localOnly = record.localOnly === true;
+  const identity = localOnly ? localRepositoryIdentity(git) : remoteIdentity(git(['remote', 'get-url', 'origin']).toString().trim());
+  if (!identity || identity !== record.repository || (!localOnly && remoteIdentity(git(['remote', 'get-url', '--push', 'origin']).toString().trim()) !== identity))
     throw new Error('BUNDLE_ORIGIN_MISMATCH');
-  let info = github;
+  let info = localOnly ? { private: false, full_name: identity } : github;
   if (!info) {
     try {
       info = JSON.parse(execFileSync('gh', ['api', `repos/${identity}`, '--jq', '{private: .private, full_name: .full_name}'],
@@ -438,7 +441,7 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
     } catch (error) { throw new Error(error.code === 'ETIMEDOUT' ? 'GITHUB_API_TIMEOUT' : 'GITHUB_API_FAILED'); }
   }
   if (typeof info.private !== 'boolean' || info.full_name.toLowerCase() !== identity.toLowerCase()) throw new Error('BUNDLE_ORIGIN_IDENTITY_INVALID');
-  if (info.private !== record.private) throw new Error('BUNDLE_ORIGIN_VISIBILITY_CHANGED');
+  if (localOnly ? record.private !== null : info.private !== record.private) throw new Error('BUNDLE_ORIGIN_VISIBILITY_CHANGED');
   const full = selection(record, vault);
   if (!full.heads.length) return null;
   // 훑은 뒤 묶기 전에 다른 세션이 가지를 옮겨도(공용 master에는 1~2분마다 커밋이 쌓인다) 훑은 그 커밋을 묶는다.
@@ -446,7 +449,7 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
   for (const row of full.heads) git(['cat-file', '-e', row.sha + '^{commit}']);
   const prior = await existingReceipt(record, vault);
   if (prior) { verifyPrerequisites(record, prior); return prior; }
-  const remoteRefs = parseRefs(git(['ls-remote', '--refs', 'origin']));
+  const remoteRefs = localOnly ? [] : parseRefs(git(['ls-remote', '--refs', 'origin']));
   // 원격에 이미 있는 커밋은 공개 여부와 상관없이 뺀다. 비공개 원격은 경계 커밋을 refs/synk-backup에 고정하고,
   // 공개 원격은 쓰지 않으므로 경계 커밋에 닿는 공개 ref만 적는다. 공개 원격도 전체 이력을 담으면 SYNK-appsscript는
   // 실행마다 6.9GB 묶음이 됐다(10-19). 공개 원격의 끝이 이 저장소에 하나도 없을 때만 예전처럼 전체 이력을 담는다.
@@ -530,15 +533,17 @@ async function preserveRecord(record, vault, cryptoTool, onProgress = () => {}, 
     relativePath: relative, manifestRelativePath: path.relative(path.join(vault, 'Git-보관'), manifestFile).replaceAll('\\', '/'),
     encrypted, ...detail, ...(sourceMappingsHere.length ? { sourceMappings: sourceMappingsHere } : {}), prerequisites: pinned,
     ...(ordered.length ? { chain: ordered } : {}), ...(coveredHeads.length ? { coveredHeads } : {}),
-    ...(info.private ? {} : { originVisibility: 'public', selfContained: !pinned.length, remoteWrites: false }),
+    ...(info.private ? {} : { originVisibility: localOnly ? 'local-only' : 'public', selfContained: !pinned.length, remoteWrites: false }),
     restore: { encryptedWithExistingUserKey: true, noPlaintextFileWritten: true,
       instruction: (ordered.length
         ? 'Restore the bundles listed in chain first, in that order, each the same way (their manifests sit in this folder and on Drive); coveredHeads name refs whose commits are already inside those bundles. Then: '
-        : '') + (info.private
+        : '') + (localOnly
+        ? 'Decrypt with the existing locked key and password. Verify and fetch into a separate repository containing the preceding bundles, or an empty repository when chain is absent.'
+        : info.private
         ? 'Decrypt with the existing locked key and password. Fetch each prerequisite ref from the original private GitHub repository, then run git bundle verify and fetch this bundle in a separate clone.'
         : pinned.length
           ? 'Decrypt with the existing locked key and password. Clone the public GitHub repository, which holds every public prerequisite commit, then run git bundle verify and fetch this bundle in that clone.'
-          : 'Decrypt with the existing locked key and password. This public-origin archive has no prerequisites; verify and fetch it into a separate empty repository.') } };
+          : 'Decrypt with the existing locked key and password. This archive has no remote prerequisites; verify and fetch it into a separate empty repository.') } };
   atomicJson(manifestFile, receipt);
   // Only this invocation's encrypted staging file is removed after two byte checks.
   if (path.dirname(staging) === stageDir && fs.existsSync(staging)) fs.unlinkSync(staging);

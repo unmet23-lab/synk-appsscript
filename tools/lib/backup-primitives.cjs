@@ -1,6 +1,6 @@
 'use strict';
 // Shared file/lock/ref primitives. Importing this module starts no backup.
-const fs = require('node:fs'), path = require('node:path');
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const OID = /^[0-9a-f]{40}$/;
 const PREFIX = 'refs/synk-backup/';
 
@@ -74,4 +74,12 @@ function acquireLock(file) {
   return null;
 }
 
-module.exports = { remoteIdentity, parseRefs, replaceFile, atomicJson, acquireLock, abandonedLock, PREFIX };
+// A repository with no remote still owns local commits. Bind encrypted archives to
+// its canonical common directory; an invalid or non-GitHub remote is never local-only.
+function localRepositoryIdentity(git) {
+  if (git(['remote']).toString('utf8').trim()) return null;
+  let common = fs.realpathSync(git(['rev-parse', '--path-format=absolute', '--git-common-dir']).toString('utf8').trim()).replaceAll('\\', '/');
+  if (process.platform === 'win32') common = common.toLowerCase();
+  return 'local/' + crypto.createHash('sha256').update(common).digest('hex');
+}
+module.exports = { remoteIdentity, localRepositoryIdentity, parseRefs, replaceFile, atomicJson, acquireLock, abandonedLock, PREFIX };

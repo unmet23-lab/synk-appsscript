@@ -73,6 +73,21 @@ test('origin allowlist rejects credential URLs, another owner, and ambiguous hos
   for (const value of ['https://user:secret@github.com/unmet23-lab/source.git', 'https://github.com.evil/unmet23-lab/source',
     'https://github.com/another/source.git']) assert.equal(remoteIdentity(value), null);
 });
+test('a repository without any remote preserves all local history through the encrypted archive route', t => {
+  const f = fixture(t); f.g(['remote', 'remove', 'origin']);
+  const head = f.commit('draft.md', '# only stored locally\n');
+  f.g(['update-ref', 'refs/stash', f.base]); f.g(['switch', '--detach', head]);
+  const calls = [], git = (args, input) => { calls.push(args); return f.g(args, input); };
+  const result = inspectRepository(f.repo, { apply: true, git });
+  assert.equal(result.localOnly, true); assert.equal(result.private, null);
+  assert.match(result.repository, /^local\/[a-f0-9]{64}$/);
+  assert.equal(result.status, 'attention'); assert.equal(result.unpublishedCommits, 2);
+  assert.deepEqual(new Set(result.refs.map(row => row.sha)), new Set([head, f.base]));
+  assert.ok(result.refs.every(row => row.status === 'local-only-unpublished'));
+  assert.equal(calls.some(args => ['push', 'ls-remote'].includes(args[0]) || args.includes('get-url')), false);
+  f.g(['remote', 'add', 'upstream', f.remote]);
+  assert.throws(() => inspectRepository(f.repo, { git }), 'an unsupported remote must not be treated as a local-only repository');
+});
 test('blank env templates and source maps are allowed but a later real value is blocked', () => {
   assert.equal(codeContentReason('.env.example', Buffer.from('# template\nAPI_KEY=\nENABLED=false\n')), null);
   assert.equal(codeContentReason('.env.example', Buffer.from('API_KEY=synthetic-private-value\n')), 'credential-path');
