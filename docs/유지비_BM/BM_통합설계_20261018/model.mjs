@@ -988,13 +988,17 @@ const sens = [
   ['메인만 + 대표 생활비를 2028년 말까지 받지 않음', { scOverride: { subVolume: 0 }, leadPlanned: null }, (inp) => { inp.shift.voucher.perYear['기본'] = {}; inp.online.topik4Cohort.size['기본'] = 0; inp.online.worldB2C.m12.base = 0; inp.online.worldB2C.m36.base = 0; inp.online.worldCorporateMN.companies['기본'] = []; inp.online.textbookLicense.academies['기본'] = 0; inp.company.founderPayKRW = [ { from: '2029-01', v: 3_000_000 } ]; }],
   ['한국 담당자를 2027-07에 뽑았는데 PULSE·SHIFT가 계획의 25%만 옴', { scOverride: { subVolume: 0.25 }, leadPlanned: '2027-07' }, null],
   ['AI바우처 2028년 한 건(2027년 등록 뒤 첫 과제를 따면)', {}, (inp) => { inp.shift.voucher.perYear['기본'] = { 2028: 1 }; }],
-  ['TOPIK 4급 온라인 반·SHIFT 반나절 진단을 둘 다 열지 않음', {}, (inp) => { inp.online.topik4Cohort.size['기본'] = 0; inp.shift.entry.orders = [ { from: '2027-02', v: 0 } ]; }],
   ['다시 열기 ① TOPIK 4급 온라인 반만 열지 않음', {}, (inp) => { inp.online.topik4Cohort.size['기본'] = 0; }],
-  ['SHIFT 반나절 진단(둘째 BM의 입구)을 팔지 않음', {}, (inp) => { inp.shift.entry.orders = [ { from: '2027-02', v: 0 } ]; }],
+  // [11-10] 자동화(진단 → 구축 → 월 유지)는 11-09부터 기본 계산 밖(선택사항)이라 「진단을 팔지 않음」 두 줄을 거두고 거꾸로 「계획대로 판다면」을 비교 줄로 둔다
+  ['SHIFT 자동화(반나절 진단 → 구축 → 월 유지)를 계획대로 판다면(11-09 전 계획 — 진단 달 2건 → 2028년부터 3건)', {}, (inp) => { inp.shift.entry.orders = clone(inp.shift.entry.ordersIfSold); }],
+  ['SHIFT 강의가 대표 수업 값이면(1회 = 학교 2차시 20만원, 에이전시 강의료도 같은 값)', {}, (inp) => { const L = inp.shift.lecture; for (const k of Object.keys(L.mix)) L.mix[k].share = k === '진로' ? 1 : 0; L.avgPrice = L.mix['진로'].price; inp.shift.agency.avgFee = L.avgPrice; }],
+  ['11-08~10에 정해진 일을 무겁게 보면(출강 준비 주 8시간 · 기업 과정 60시간 따로 · SNS 확인 달 15시간 2027-12까지 · 앱 둘 달 13시간씩 2027-06까지)', {}, (inp) => { inp.company.oneOffHours = clone(inp.company.oneOffHoursHeavy); }],
+  ['두 위험 줄을 함께 — SHIFT 강의가 대표 수업 값이고 11-08~10에 정해진 일도 무겁게 보면', {}, (inp) => { const L = inp.shift.lecture; for (const k of Object.keys(L.mix)) L.mix[k].share = k === '진로' ? 1 : 0; L.avgPrice = L.mix['진로'].price; inp.shift.agency.avgFee = L.avgPrice; inp.company.oneOffHours = clone(inp.company.oneOffHoursHeavy); }],
+  ['PULSE 기업 필름이 한 건도 없으면(담당자 조건을 받치는 줄 셋 가운데 하나)', {}, (inp) => { inp.pulse.projects.perQuarter = inp.pulse.projects.perQuarter.map((x) => ({ ...x, v: 0 })); }],
   ['SHIFT 온라인 유료 강의를 2028-07에 열면(디지털 판매 계획 달 20건 더, 어림)', {}, (inp) => { inp.shift.digital.online.from = '2028-07'; }],
   ['PULSE 광고만 0원(SHIFT·WORLD는 그대로, 담당자는 같은 조건)', {}, (inp) => { const z = (a) => a.map((x) => ({ ...x, v: 0 })); inp.pulse.entry.orders = z(inp.pulse.entry.orders); inp.pulse.adRetainer.clients = z(inp.pulse.adRetainer.clients); inp.pulse.projects.perQuarter = z(inp.pulse.projects.perQuarter); inp.pulse.mongoliaContent.clients = z(inp.pulse.mongoliaContent.clients); }],
   ['SHIFT만 0원(PULSE는 그대로, 담당자는 같은 조건)', {}, (inp) => { const z = (a) => a.map((x) => ({ ...x, v: 0 })); inp.shift.entry.orders = z(inp.shift.entry.orders); inp.shift.voucher.perYear['기본'] = {}; inp.shift.digital.sales = 0; noLectures(inp); }],
-  ['SHIFT 강의·강사 에이전시를 빼면(둘째 BM·진단·디지털만 남김)', {}, (inp) => { noLectures(inp); }],
+  ['SHIFT 강의·강사 에이전시를 빼면(디지털만 남김 — 자동화는 11-09부터 기본 계산 밖)', {}, (inp) => { noLectures(inp); }],
   ['SHIFT 강의가 학교·공공 위주(기업 20 · 교원 연수 15 · AI 진로 35 · 공공 30%)', {}, (inp) => { const L = inp.shift.lecture; L.avgPrice = lectureMixPrice(L.mix, { 기업: 0.2, 교원연수: 0.15, 진로: 0.35, 공공: 0.3 }); inp.shift.agency.avgFee = L.avgPrice; }],
   ['SHIFT 에이전시 수수료가 아래쪽(25% → 20%)', {}, (inp) => { inp.shift.agency.commission = 0.2; }],
   ['SHIFT 디지털 상품이 한 건도 안 팔림(따르는 사람이 아직 거의 없음)', {}, (inp) => { inp.shift.digital.sales = 0; }],
@@ -1003,7 +1007,7 @@ const sens = [
   ['2027-06 점검에 걸린 대응(생활비 150만원에 묶음 — 담당자는 조건이 채워질 때까지 이미 미룸)', { freezePay: true }, null],
   ['PATH만 0원(유학 상품을 열지 않음)', {}, (inp) => { const P = inp.path; P.labToKorea['기본'] = 0; P.extShare['기본'] = [ { from: '2028-03', v: 0 } ]; P.externalPlansPerMonth = [ { from: '2027-10', v: 0 } ]; P.singles.perMonth = { 보수: 0, 기본: 0, 상방: 0 }; P.careerUptake['기본'] = [ { from: '2028-03', v: 0 } ]; P.online.share['기본'] = 0; P.univMarketingContracts['기본'] = []; P.camp.participants = { 보수: 0, 기본: 0, 상방: 0 }; P.travelAffiliateKRW.v = 0; P.koreaTripKRW = 0; }],
   ['PULSE 정기 묶음·전속 없이(입구 상품·프로젝트만)', {}, (inp) => { inp.pulse.adRetainer.clients = inp.pulse.adRetainer.clients.map((x) => ({ ...x, v: 0 })); }],
-  ['PULSE·SHIFT 영업을 개원 뒤(2027-09)부터(10-03 결정대로)', { leadPlanned: null }, (inp) => { const f = '2027-09'; inp.pulse.entry.from = f; inp.pulse.entry.orders = [ { from: f, v: 3 }, { from: '2028-01', v: 6 } ]; inp.pulse.adRetainer.from = f; inp.pulse.adRetainer.clients = [ { from: f, v: 1 }, { from: '2028-03', v: 4 }, { from: '2029-03', v: 6 } ]; inp.pulse.projects.from = f; inp.pulse.projects.perQuarter = [ { from: f, v: 1 }, { from: '2028-01', v: 1.5 } ]; inp.shift.entry.from = f; inp.shift.entry.orders = [ { from: f, v: 2 }, { from: '2028-01', v: 3 } ]; inp.shift.digital.from = f; inp.shift.lecture.from = f; inp.shift.lecture.perMonth = inp.shift.lecture.perMonth.map((x) => ({ ...x, from: x.from < f ? f : x.from })); }],
+  ['PULSE·SHIFT 영업을 개원 뒤(2027-09)부터(10-03 결정대로)', { leadPlanned: null }, (inp) => { const f = '2027-09'; inp.pulse.entry.from = f; inp.pulse.entry.orders = [ { from: f, v: 3 }, { from: '2028-01', v: 6 } ]; inp.pulse.adRetainer.from = f; inp.pulse.adRetainer.clients = [ { from: f, v: 1 }, { from: '2028-03', v: 4 }, { from: '2029-03', v: 6 } ]; inp.pulse.projects.from = f; inp.pulse.projects.perQuarter = [ { from: f, v: 1 }, { from: '2028-01', v: 1.5 } ]; inp.shift.entry.from = f; inp.shift.entry.orders = inp.shift.entry.orders.map((x) => ({ ...x, from: x.from < f ? f : x.from })); /* [11-10] 건수는 기본 그대로(자동화는 기본 계산 밖이라 0) — 시작 달만 옮긴다 */ inp.shift.digital.from = f; inp.shift.lecture.from = f; inp.shift.lecture.perMonth = inp.shift.lecture.perMonth.map((x) => ({ ...x, from: x.from < f ? f : x.from })); }],
   ['AI 도구비 월 100만 → 200만원', {}, (inp) => { inp.company.toolsKRW = 2_000_000; }],
   ['대표 생활비 처음부터 월 300만원', {}, (inp) => { inp.company.founderPayKRW = [ { from: '2027-07', v: 3_000_000 } ]; }],
   ['D안 변형 · 기관 몫을 계단 없이 30%로(기관이 고집할 때)', { ...DPLAN }, (inp) => { delete inp.lab.hosted.shareTiers; inp.lab.hosted.hostShare = 0.3; }],
@@ -1027,7 +1031,9 @@ const sensRows = sens.map(([label, opts, patch]) => {
   const inp = clone(base); if (patch) patch(inp);
   const r = run(inp, '기본', { ...MAIN, ...opts }); const s = summarize(r);
   return { label, leadFrom: r.leadFrom, need: needFor(r, s), needMonth: r.fdi && r.fdi.month,roomsFull: r.v23AddMonths && r.v23AddMonths.length >= 2 ? r.v23AddMonths[1] : null, ebitda2027: s.years[2027].ebitda, ebitda2028: s.years[2028].ebitda, ebitda2029: s.years[2029].ebitda, cum: s.years[2027].ebitda + s.years[2028].ebitda + s.years[2029].ebitda, minCash: s.minCash, minCashMonth: s.minCashMonth, endCash2029: s.years[2029].endCash, bep1: r.bep1, bep2: r.bep2, bepHost: r.bepHost, fdi: r.fdi, s2Start: r.s2Start, leadFrom: r.leadFrom,
-    shiftY: Object.fromEntries([2027, 2028, 2029].map((y) => [y, { ...s.years[y].shift, pulseAdsProfit: s.years[y].pulseAds.profit }])) }; // [10-22] 강의·에이전시 전후를 견줄 때 쓴다
+    shiftY: Object.fromEntries([2027, 2028, 2029].map((y) => [y, { ...s.years[y].shift, pulseAdsProfit: s.years[y].pulseAds.profit }])), // [10-22] 강의·에이전시 전후를 견줄 때 쓴다
+    gate0911: r.rows.filter((x) => x.m >= '2027-09' && x.m <= '2027-11').reduce((a, x) => a + x.pulse.ads + x.shift.revenue, 0) / 3, // [11-10] 담당자 조건의 2027-09~11 석 달 월평균(PULSE 광고 + SHIFT 매출)
+    lectures2027: r.rows.filter((x) => x.m.startsWith('2027')).reduce((a, x) => a + x.shift.lectures, 0) };
 });
 // 시장 손잡이: LAB이 시장에서 잡는 몫이 바뀌면(4실 직영)
 const adRows = [
@@ -1314,7 +1320,7 @@ const n1 = (x) => (Number.isFinite(x) ? (Math.round(x * 10) / 10).toLocaleString
 const pct = (x) => `${Math.round(x * 100)}%`;
 let md = `# 계산 결과 (model.mjs가 만든 파일 — 손으로 고치지 않는다)\n\n기준일 ${base.asOf} · 환율 1원 = ${base.fx.mntPerKrw}₮, 1달러 = ${base.fx.krwPerUsd}원 · 금액은 원(₩) 기준, 「만」은 만 원\n\n`;
 md += `**본 결과는 4실 16반 직영(10-28 시간표)**(공간 ${n1(base.lab.stages.v23.areaM2 / 3.3058)}평을 처음부터 빌려 2실 8반으로 열고 정원 85%를 두 달 넘기면 한 실씩 더 열어 4실 16반 · 평일 코어 11:00·13:45·15:30·18:15 · 토요일 정규 없음 · 댄스는 16명 전용 스튜디오)이다. 08-01 4실 24반(토요일반 포함)과의 비교는 시간표안_비교.md에 있다. 모자라는 돈은 투자·차입으로 채운다고 보고 계산을 이어 갔다(2절 「필요 자금」). D안(첫해 기존 기관 안 SYNK반)과 A안(직영 교실 2개)은 2-2절에 비교로 둔다. 표의 「현금」은 정부 지원금 전용 통장을 뺀 **가용 현금**이다.\n\n`;
-md += `검산: ${checks.length ? checks.join(' / ') : '이상 없음(매출 합·정원·반 수·이익 나눔·지원금 통장·연 합계 대조, 4실·D·A안 세 가정 모두)'}\n\n`;
+md += '검산: ⟪검산⟫\n\n'; // [11-10] 뒤에서 더하는 검산(recalc1110의 글 전제)까지 끝난 다음 맨 아래에서 채운다 — 앞에서 채우면 뒤 검산이 실패해도 「이상 없음」으로 남는다
 const K = base.market; const fmt = (x) => Math.round(x).toLocaleString('ko-KR');
 const cname = (c) => base.countries[c].name;
 md += `## 진출 나라 세 지표 — ${planHz.years.join(' · ')}\n\n유호님 10-19: 보수적 = 몽골 1개 나라, 평균적 = 몽골 외 1개 나라, 성공적 = 몽골 외 2개 나라에서 학원 + 유학 + WORLD 앱이 성공적으로 돌 때. 1년에 한 나라씩 연다(${planNames.map((p) => `${p} ${base.plans[p].countries.map((c) => `${cname(c)} ${base.countries[c].open}`).join(' · ')}`).join(' / ')}). 나라마다 학원은 4실 정원의 ${pct(base.targets.labFill)}, 유학은 그 나라 한 해 새 한국 유학생의 ${pct(base.targets.pathShare)}를 가져간다고 셌다. PULSE 광고·SHIFT·LAB 온라인은 세 지표 모두 같은 값(기본)이다.\n\n| 지표 | 연도 | 매출 | 영업이익 | LAB 이익 | PATH 이익 | WORLD 이익 | PULSE 광고 이익 | SHIFT 이익 | 회사 공통비 | 연말 현금 |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n`;
@@ -1394,7 +1400,7 @@ for (const s of scenarioNames) for (const y of [2027, 2028, 2029]) {
   const rs = results[s].rows.filter((r) => yearOf(r.m) === y); const S = (f) => rs.reduce((a, r) => a + (f(r) || 0), 0);
   md += `| ${s} | ${y} | ${won(S((r) => r.shift.buildFee))}(${n1(S((r) => r.shift.builds))}건) | ${won(S((r) => r.shift.maintFee))} | ${won(S((r) => r.shift.entry))} | ${won(S((r) => r.shift.voucher))} | ${won(S((r) => r.shift.digital))} | ${won(S((r) => r.shift.lecture))}(${n1(S((r) => r.shift.lectures))} / ${n1(S((r) => r.shift.lecturesWanted))}회) | ${won(S((r) => r.shift.agency))}(${n1(S((r) => r.shift.agencyN))}건) | ${won(S((r) => r.shift.revenue))} | ${won(S((r) => r.shift.direct))} | ${won(S((r) => r.shift.people))} | ${won(S((r) => r.shift.profit))} | ${Math.round(S((r) => r.shift.lectureHoursL))}h |\n`;
 }
-md += `\n강의는 가르칠 사람이 있는 회수만 셌다(이주 전에는 유호님의 남는 시간, 2027-07부터는 한국 담당자 시간의 ${pct(base.shift.lecture.leadMaxShare)}까지). 에이전시는 SYNK가 강의료 전부를 받으므로 강의료 전체(부가세 뺀 값)를 매출로, 강사에게 주는 ${pct(1 - base.shift.agency.commission)}를 직접비로 셌다(수수료 ${pct(base.shift.agency.commission)}가 남는다). 반나절 진단은 강의를 들은 회사에 무료라 돈 낸 진단만 매출이다. 사람 몫은 담당자가 강의에 쓴 시간의 인건비와, 남은 담당자·제작 인력 비용 가운데 PULSE와 일 시간으로 나눈 SHIFT 몫이다.\n`;
+md += `\n강의는 가르칠 사람이 있는 회수만 셌다(이주 전에는 유호님의 남는 시간, 이주 뒤에는 한국 담당자가 온 달부터 — 조건이 찬 다음 달, 기본 가정 ${results['기본'].leadFrom || '기간 안에 없음'} — 담당자 시간의 ${pct(base.shift.lecture.leadMaxShare)}까지. 그 사이 달에는 강의가 없다). 에이전시는 SYNK가 강의료 전부를 받으므로 강의료 전체(부가세 뺀 값)를 매출로, 강사에게 주는 ${pct(1 - base.shift.agency.commission)}를 직접비로 셌다(수수료 ${pct(base.shift.agency.commission)}가 남는다). 반나절 진단은 강의를 들은 회사에 무료라 돈 낸 진단만 매출이다. [11-10] 반나절 진단 → 자동화 구축 → 월 유지는 11-09 방향으로 선택사항이 되어 기본 계산의 계획 건수가 0이다(값은 그대로 — 10-22 계획 건수대로 판다면은 민감도 「SHIFT 자동화」 줄), 대표 직접 출강은 2027-01부터다. 사람 몫은 담당자가 강의에 쓴 시간의 인건비와, 남은 담당자·제작 인력 비용 가운데 PULSE와 일 시간으로 나눈 SHIFT 몫이다.\n`;
 md += `\n## 2. 현금과 손익분기 — 4실 직영\n\n| 가정 | 가장 낮은 현금 | 그 달 | 필요 자금(투자·차입) | 계속 흑자가 되는 첫 달 | LAB 교실 첫 흑자 달 | 3실을 연 달 | 4실을 연 달 | 한국 담당자 채용 |\n|---|---:|---|---:|---|---|---|---|---|\n`;
 for (const s of scenarioNames) {
   const sm = summaries[s]; const r = results[s];
@@ -1466,7 +1472,86 @@ const leadGate = Object.fromEntries(scenarioNames.map((s) => { const rs = result
 const withLead = Object.fromEntries(scenarioNames.map((s) => { const r = run(base, s, { ...MAIN, leadPlanned: '2027-07' }); const sm = summarize(r);
   return [s, { leadFrom: r.leadFrom, minCash: sm.minCash, minCashMonth: sm.minCashMonth, years: Object.fromEntries([2027, 2028, 2029].map((y) => [y, { revenue: sm.years[y].revenue, ebitda: sm.years[y].ebitda, shift: sm.years[y].shift, pulseAdsProfit: sm.years[y].pulseAds.profit }])),
     rows: r.rows.map((x) => ({ m: x.m, shift: x.shift, pulse: { ads: x.pulse.ads, people: x.pulse.people, direct: x.pulse.direct }, capacity: { lead: x.capacity.lead } })) }]; }));
-const out = { asOf: base.asOf, main: '4실 직영', checks, leadGate, withLead,
+// [11-10 유호님 「고쳐」] 11-09 방향(대표 직접 출강 2027-01부터 · 자동화는 선택사항)으로 고친 뒤의 비교 값 — README 12절 위험 줄 · 13절 4번 「볼 것 셋」 · 06 1 · 8절이 읽는다.
+//   계산 규칙(run)은 그대로이고 운영 계획(학원 80% · 몽골 한 나라)을 입력 하나씩만 바꿔 다시 돌린다. light = 기본 계산(새 일을 가볍게), heavy = 새 일을 무겁게(company.oneOffHoursHeavy).
+//   2027년의 PULSE 광고 · SHIFT 매출과 담당자 조건(뽑는 달 · 조건을 넘긴 석 달 평균)은 시장 몫 방식(scenarios.기본)과 같다 — 아래 검산이 본다. 다른 것은 2027-10부터의 PATH 점검 시간(2027-10~12에는 운영 계획 쪽이 달 9시간 크고 2028년부터는 달마다 다르다)이라
+//   필요 자금(need) · 2027-10부터의 남는 시간(freeLate) · 강사에게 맡길 수 있는 건(subsN) · 줄 하나를 뺀 판(gateIf)은 운영 계획(학원 80%) 기준 값이다.
+//   missedBefore는 강사가 선다고 본 달(subsFrom)부터 이주 전까지 놓친 강의다 — 그 전에 놓친 강의(무겁게 본 판의 1 · 3월)는 강사가 서기 전이라 세지 않는다.
+//   「강사에게 맡길 수 있는 건」(subs)은 계산 규칙 밖의 비교 값이다(run에 넣지 않았다) — 대신 가르칠 강사 2명이 subsFrom까지 샘플 수업을 통과했다고 보고, 담당자가 오기 전 대표가 못 가르친 강의를
+//   대표의 남는 시간(상한 − 정해진 일 − 이미 쓴 PULSE · SHIFT · 출강 시간) 안에서 배정 · 확인(건당 lecture.coordHours)할 수 있는 만큼만 센다 — 대표 몫 시간이 없으면 그 일은 돌지 않는다는 규칙 그대로
+const recalc1110 = (() => {
+  const C = base.company; const LE = base.shift.lecture; const PU = base.pulse; const cap = C.founderHoursCap; const subsFrom = '2027-04'; const moveMonth = (C.oneOff.find((x) => x.move) || {}).month || '2027-07';
+  const onePlan = planNames.find((p) => base.plans[p].countries.length === 1);
+  const mk = (patch) => { const inp = withHz(clone(base)); if (patch) patch(inp); const res = run(inp, '기본', { ...FILL, countryOnly: false, plan: base.plans[onePlan] }); return { res, rows: res.rows, leadFrom: res.leadFrom, sm: summarize(res) }; };
+  const S = (rs, f) => rs.reduce((a, r) => a + f(r), 0);
+  const win = (v, a, b) => v.rows.filter((r) => r.m >= a && r.m <= b);
+  const fixed = (r) => r.hours.total + r.hours.fixedOver - r.hours.pulse - r.hours.shift - (r.hours.lecture || 0); // 정해진 일(상한으로 자르기 전)
+  const runsText = (ms) => { const out = []; let a = null; let b = null; for (const m of ms) { if (a && addMonths(b, 1) === m) { b = m; continue; } if (a) out.push(a === b ? a : `${a}~${b}`); a = m; b = m; } if (a) out.push(a === b ? a : `${a}~${b}`); return out.join(' · '); };
+  const light = mk(); const heavy = mk((inp) => { inp.company.oneOffHours = clone(inp.company.oneOffHoursHeavy); });
+  const gw = light.leadFrom ? [addMonths(light.leadFrom, -C.krLead.gate.months), addMonths(light.leadFrom, -1)] : ['2027-09', '2027-11']; // 조건을 넘긴 석 달
+  const gateAvg = (v) => S(win(v, gw[0], gw[1]), (r) => r.pulse.ads + r.shift.revenue) / C.krLead.gate.months;
+  const side = (v) => {
+    const y = win(v, '2026-11', '2027-12'); const over = y.filter((r) => fixed(r) > cap + 1e-9); const peak = y.reduce((a, r) => (fixed(r) > fixed(a) ? r : a));
+    const sb = y.map((r) => { const missed = !r.capacity.leadOn && r.m >= subsFrom ? Math.max(0, r.shift.lecturesWanted - r.shift.lectures) : 0; const free = Math.max(0, r.capacity.availF - r.hours.pulse - r.hours.shift - (r.hours.lecture || 0)); return { m: r.m, missed, n: Math.min(missed, free / LE.coordHours) }; });
+    const h1 = win(v, '2027-01', '2027-06'); const y27 = win(v, '2027-01', '2027-12'); const late = win(v, addMonths(gw[1], -1), gw[1]);
+    return { hours: y.map((r) => ({ m: r.m, fixed: fixed(r), over: r.hours.fixedOver, free: r.capacity.availF, direct: r.capacity.leadOn ? 0 : r.shift.lectures })),
+      overMonths: over.map((r) => r.m), overText: runsText(over.map((r) => r.m)), overSum: S(over, (r) => r.hours.fixedOver), peakMonth: peak.m, peakHours: fixed(peak),
+      directH1: S(h1, (r) => r.shift.lectures), directH1Text: runsText(h1.filter((r) => r.shift.lectures > 1e-9).map((r) => r.m)),
+      shift2027: S(y27, (r) => r.shift.revenue), korea2027: S(y27, (r) => r.shift.revenue + r.pulse.ads + r.pulse.world + r.online.revenue), koreaH1: S(h1, (r) => r.shift.revenue + r.pulse.ads + r.pulse.world + r.online.revenue),
+      leadFrom: v.leadFrom, gateAvg: gateAvg(v), need: needFor(v.res, v.sm),
+      entryToApr: S(win(v, '2027-01', '2027-04'), (r) => r.pulse.entry) / PU.entry.avgPrice, // 2027-04 관문까지의 유료 단건 수
+      missedBefore: S(sb.filter((x) => x.m < moveMonth), (x) => x.missed), missedAfter: S(sb.filter((x) => x.m >= moveMonth), (x) => x.missed),
+      subsN: S(sb, (x) => x.n), subsText: runsText(sb.filter((x) => x.n > 1e-9).map((x) => x.m)),
+      freeLate: Math.min(...late.map((r) => r.capacity.availF)), usedLate: S(late, (r) => r.hours.pulse + r.hours.shift) / late.length };
+  };
+  const L = side(light); const H = side(heavy);
+  const g = win(light, gw[0], gw[1]); const avg = (f) => S(g, f) / g.length;
+  const gv = (patch) => { const v = mk(patch); return { leadFrom: v.leadFrom, avg: gateAvg(v) }; };
+  const zero = (a) => a.map((x) => ({ ...x, v: 0 }));
+  const gateIf = { digital0: gv((inp) => { inp.shift.digital.sales = 0; }), film0: gv((inp) => { inp.pulse.projects.perQuarter = zero(inp.pulse.projects.perQuarter); }), retainer0: gv((inp) => { inp.pulse.adRetainer.clients = zero(inp.pulse.adRetainer.clients); }),
+    automation: gv((inp) => { inp.shift.entry.orders = clone(inp.shift.entry.ordersIfSold); }) };
+  // 무겁게 본 값에서 기업 과정 · 바우처 시간을 빼면(뺄 후보 첫 둘) 넘는 달의 정해진 일
+  const dropKeys = ['과정', '바우처']; const dropped = (m) => (C.oneOffHoursHeavy || []).filter((x) => x.month === m && dropKeys.includes(x.key)).reduce((a, x) => a + x.hours, 0);
+  const heavyDrop = H.hours.filter((x) => x.fixed > cap + 1e-9 && x.m < '2027-04').map((x) => ({ m: x.m, fixed: x.fixed - dropped(x.m) }));
+  // 과정 · 바우처를 뺀 무겁게 본 판에서 새 일 하나만 가볍게 보면 첫 직접 출강 달(강의 시작 달)이 서는가 — keepVoucher는 바우처 준비 시간을 그대로 둘 때
+  const oneLight = (key, keepVoucher) => { const drop = keepVoucher ? ['과정'] : dropKeys;
+    const v = mk((inp) => { inp.company.oneOffHours = [ ...clone(inp.company.oneOffHoursHeavy).filter((x) => !drop.includes(x.key) && x.key !== key), ...clone(inp.company.oneOffHours).filter((x) => x.key === key) ]; });
+    const r = v.rows.find((x) => x.m === LE.from); return { fixed: fixed(r), free: r.capacity.availF, direct: r.shift.lectures }; };
+  // 기본 계산(가볍게)에 기업 · 기관 과정 만들기(10-22 계획 60시간)만 따로 더하면 — 11-05 「2027 첫 실험은 과정 둘 90시간」을 그대로 둘 때의 값
+  const courseOnly = (() => { const v = mk((inp) => { inp.company.oneOffHours = [ ...clone(inp.company.oneOffHours), ...clone(inp.company.oneOffHoursHeavy).filter((x) => x.key === '과정') ]; });
+    const r = v.rows.find((x) => x.m === LE.from); return { fixed: fixed(r), direct: r.shift.lectures, directH1: S(win(v, '2027-01', '2027-06'), (x) => x.shift.lectures), shift2027: S(win(v, '2027-01', '2027-12'), (x) => x.shift.revenue) }; })();
+  const lightKeys = ['SNS', 'PATH앱', '예비앱'];
+  const janIfOneLight = Object.fromEntries(lightKeys.map((k) => [k, oneLight(k, false)])); const janIfOneLightKeepVoucher = Object.fromEntries(lightKeys.map((k) => [k, oneLight(k, true)]));
+  return { plan: onePlan, cap, subsFrom, moveMonth, gateWindow: `${gw[0]}~${gw[1]}`, lateWindow: `${addMonths(gw[1], -1)}~${gw[1]}`, light: L, heavy: H, heavyDrop, firstLectureMonth: LE.from, janIfOneLight, janIfOneLightKeepVoucher, courseOnly,
+    gateParts: { ads: avg((r) => r.pulse.ads), entry: avg((r) => r.pulse.entry), retainer: avg((r) => r.pulse.retainer + r.pulse.exclusive), projects: avg((r) => r.pulse.projects), digital: avg((r) => r.shift.digital), shift: avg((r) => r.shift.revenue) },
+    gateIf, filmOneAvg: gateIf.film0.avg + PU.projects.avgPrice / C.krLead.gate.months, // 필름은 실제로 0건 아니면 1건 — 한 건이 그 석 달에 들어올 때의 평균
+    leadCostKRW: C.krLead.costKRW + C.krLead.officeKRW, founderHoursPer: { entry: PU.entry.hours * PU.founderShare, retainer: PU.adRetainer.hours * PU.founderShare, project: PU.projects.hours * PU.founderShare } };
+})();
+if (recalc1110.light.leadFrom !== results['기본'].leadFrom) checks.push(`recalc1110: 운영 계획 기본(${recalc1110.light.leadFrom})과 시장 몫 방식 기본(${results['기본'].leadFrom})의 담당자 달이 다르다 — 06 · README의 글이 두 값을 같은 것으로 읽는다`);
+{ // 글이 「2027년의 SHIFT · PULSE 광고와 조건 석 달 평균은 두 계산이 같다」고 읽으므로 그 전제를 검산한다
+  const m27 = results['기본'].rows.filter((r) => r.m.startsWith('2027')); const sumM = (f) => m27.reduce((a, r) => a + f(r), 0);
+  if (Math.abs(recalc1110.light.shift2027 - sumM((r) => r.shift.revenue)) > 1) checks.push('recalc1110: 운영 계획과 시장 몫 방식의 SHIFT 2027 매출이 다르다');
+  if (leadGate['기본'].hitAvg != null && Math.abs(recalc1110.light.gateAvg - leadGate['기본'].hitAvg) > 1) checks.push('recalc1110: 운영 계획과 시장 몫 방식의 조건 석 달 평균이 다르다');
+  const first9 = results['기본'].rows.filter((r) => r.m >= '2026-11' && r.m <= '2027-09'); const fx = (r) => r.hours.total + r.hours.fixedOver - r.hours.pulse - r.hours.shift - (r.hours.lecture || 0);
+  for (const r of first9) { const h = recalc1110.light.hours.find((x) => x.m === r.m); if (!h || Math.abs(h.fixed - fx(r)) > 1e-6) checks.push(`recalc1110: ${r.m}의 정해진 일이 두 계산에서 다르다 — README 12절 표 머리의 「2027-09까지는 같다」가 틀린다`); }
+  // 틀의 글(06 0 · 8절 · 05 · README 12 · 13절)이 기대는 사실 — 바뀌면 글을 다시 써야 하므로 검산 실패로 멈춘다(시험이 저장된 결과의 검산 실패 0을 본다)
+  const X = recalc1110; const G = base.company.krLead.gate; const margin = X.light.gateAvg - G.avgKRW; const say = (t) => checks.push(`recalc1110 글의 전제: ${t} — 06 8절 · 05 · README 12 · 13절의 글을 다시 쓴다`);
+  if (!X.light.leadFrom || !X.heavy.leadFrom) say('기본 가정(가볍게 · 무겁게)에서 담당자를 뽑는 달이 없다');
+  else if (X.light.leadFrom !== X.heavy.leadFrom) say('무겁게 본 판의 담당자 달이 기본과 다르다');
+  if (margin <= 0) say('조건을 넘긴 석 달 평균이 문턱 아래다');
+  for (const [k, t] of [['retainer', '월 묶음'], ['projects', '기업 필름'], ['digital', '템플릿']]) if (X.gateParts[k] <= margin) say(`${t} 줄이 여유보다 작다(「셋 가운데 하나만 빠져도 미달」이 틀린다)`);
+  for (const [k, t] of [['retainer0', '월 묶음 0'], ['film0', '기업 필름 0'], ['digital0', '템플릿 0']]) if (X.gateIf[k].leadFrom && X.light.leadFrom && X.gateIf[k].leadFrom <= X.light.leadFrom) say(`${t}인 판의 담당자 달이 기본보다 늦지 않다`);
+  if (X.heavyDrop.some((x) => x.fixed <= X.cap + 1e-9)) say('과정 · 바우처를 뺀 무겁게 본 판에 상한 아래로 들어오는 달이 있다(「넘는 데 그친다」가 틀린다)');
+  if (!(X.heavy.directH1 < X.light.directH1) || X.heavy.hours.find((x) => x.m === base.shift.lecture.from).direct > 1e-9) say('무겁게 본 판에서 첫 직접 출강 달이 선다(「1월 직접 출강이 서지 않는다」가 틀린다)');
+  if (!(summaries['기본'].years[2028].pulseAds.profit < 7_320_000) || !(summaries['기본'].years[2029].pulseAds.profit < 24_800_000)) say('PULSE 광고 이익 2028 · 2029년이 고치기 전(732만 · 2,480만원)보다 작지 않다(05의 「작아 보인다」가 틀린다)');
+  if (X.gateParts.entry > margin) say('단건 줄도 여유보다 크다(여유보다 큰 줄이 「셋」이 아니다)');
+  if (Math.abs(X.janIfOneLight['PATH앱'].direct - X.janIfOneLight['예비앱'].direct) > 1e-9 || Math.abs(X.janIfOneLight['PATH앱'].free - X.janIfOneLight['예비앱'].free) > 1e-9) say('PATH 통합 앱과 예비 앱 하나만 가볍게 본 값이 서로 다르다(README 12절이 한 값으로 둘을 말한다)');
+  { const a = sensRows.find((x) => x.label.startsWith('A안')); if (a && a.leadFrom !== dPlan['기본'].res.leadFrom) say('A안과 D안의 담당자 달이 다르다(06 0절이 D안 값으로 둘을 말한다)'); }
+  const afterLead = results['기본'].leadFrom ? results['기본'].rows.filter((r) => r.m >= results['기본'].leadFrom).slice(0, 3) : [];
+  if (afterLead.length === 3 && !afterLead.every((r) => r.capacity.demandKRW < base.company.krLead.triggerKRW)) say('담당자를 뽑은 첫 석 달의 PULSE·SHIFT 수요가 모두 시간제 선 아래가 아니다(06 8절 「뽑은 뒤의 시간제 선」 글)');
+}
+
+const out = { asOf: base.asOf, main: '4실 직영', checks, leadGate, withLead, recalc1110,
   planUnits, countryFacts, widest, planChecks, planHorizon: planHz, opPlan: base.opPlan || null,
   opPlans: opPlans && Object.fromEntries(planNames.map((p) => [p, { countries: base.plans[p].countries, years: opPlans[p].years, minCash: opPlans[p].minCash, minCashMonth: opPlans[p].minCashMonth, need: opPlans[p].need, needMonth: opPlans[p].needMonth }])),
   plans: Object.fromEntries(planNames.map((p) => [p, { countries: base.plans[p].countries, years: plans[p].years, minCash: plans[p].minCash, minCashMonth: plans[p].minCashMonth, need: plans[p].need, needFloor: plans[p].needFloor, needAtOpen: plans[p].needAtOpen, needMonth: plans[p].needMonth, monthly: plans[p].rows.map((r) => ({ m: r.m, revenue: r.revenue, ebitda: r.ebitda, cash: r.cash, byC: Object.fromEntries(r.parts.map((q) => [q.c, { students: q.r.lab.students, labProfit: q.r.labKRW.profit, pathProfit: q.r.pathKRW.profit, contracts: q.r.path.admissions }])) })) }])),
@@ -1474,8 +1559,9 @@ const out = { asOf: base.asOf, main: '4실 직영', checks, leadGate, withLead,
   funding: Object.fromEntries(scenarioNames.map((s) => [s, { need: needFor(results[s], summaries[s]), needCashFloor: needFunding(summaries[s]), needAtOpen: results[s].fdi && results[s].fdi.gap, needMonth: results[s].fdi && results[s].fdi.month, minCash: summaries[s].minCash, minCashMonth: summaries[s].minCashMonth, v23AddMonths: results[s].v23AddMonths }])), leadCheck, noStop: Object.fromEntries(scenarioNames.map((s) => [s, { minCash: noStop[s].minCash, minCashMonth: noStop[s].minCashMonth, endCash2029: noStop[s].years[2029].endCash }])), bep: bepDetail, capacity: capDetail, ltv: ltvBase, units, market: marketRows, pathYears: pathRows, subShare, summaries, sensitivity: sensRows, adLever: adRows, dealCompare, gateCheck, hostIncomeTable, juneCheck, opGate,
   aPlan: Object.fromEntries(scenarioNames.map((s) => [s, { summary: aPlan[s].sum, fdi: aPlan[s].res.fdi, s2Start: aPlan[s].res.s2Start }])),
   scenarios: Object.fromEntries(scenarioNames.map((s) => [s, { s2Start: results[s].s2Start, leadFrom: results[s].leadFrom, fdi: results[s].fdi, hostAddFrom: results[s].hostAddFrom, directSwitch: results[s].directSwitch, rows: results[s].rows }])) };
+md = md.replace('⟪검산⟫', () => (checks.length ? checks.join(' / ') : '이상 없음(매출 합·정원·반 수·이익 나눔·지원금 통장·연 합계 대조, 4실·D·A안 세 가정 모두 · 11-10 비교 값 덩이의 글 전제)'));
 writeFileSync(path.join(here, 'results.json'), JSON.stringify(out, null, 1));
 writeFileSync(path.join(here, 'results.md'), md);
 console.log(md);
-if (checks.length) { console.error('검산 실패:', checks.length); process.exitCode = 1; }
+if (checks.length) { console.error(`검산 실패: ${checks.length}\n${checks.map((c) => `  - ${c}`).join('\n')}`); process.exitCode = 1; }
 }

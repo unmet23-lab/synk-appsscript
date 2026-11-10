@@ -270,6 +270,12 @@
 - 고침: 계산 코드 검수는 medium으로 먼저 보내고(결과표를 쓰는 출력 부분은 묶음에서 빼서 줄임), high는 시간 여유가 있을 때 따로 한 번만 보낸다. 제한 시간은 `--timeout`(ms)이 agy `--print-timeout`과 함께 정해지므로 답이 없을 때 끝까지 기다리게 된다.
 - 다시 확인: 같은 묶음을 high로 혼자 보냈을 때 끝나는지, 끝나는 데 몇 분 걸리는지 잰다. 기록은 세션 임시 폴더의 `argon_review_code2_medium.json`(SUCCESS)과 작업 출력의 오류 줄이다.
 
+### 아르곤 medium에 코드 diff와 틀의 식을 한 묶음(128KB)으로 보내면 11분 뒤 「exceeded the output token limit」로 답 없이 끝난다 — 답 길이를 정해 주고 묶음을 줄인다 (2026-11-10 Claude)
+- 증상: 11-10 BM 통합설계 고침 검수에서 `제미나이구독호출.js --model gemini-4-argon --thinking medium`으로 입력 · 계산 diff + 틀의 `{{식}}` 더한 줄 + 결과 JSON을 한 묶음(128KB)으로 보내자 약 11분 뒤 `확인 불가: … agy 상태 ERROR: Your previous response was cut off because it exceeded the output token limit … Retries remaining: 3`(종료 2)으로 끝나고 답 파일이 없었다. 같은 날 문서 묶음(105KB, high)은 7분에 SUCCESS였다.
+- 원인: 답이 출력 한도를 넘겼다. 식이 긴 줄(한 줄 1,000자 넘는 틀)을 인용하며 지적을 길게 쓰는 묶음에서 났고, 한도에 걸린 답은 이어 쓰기 재시도 끝에 버려진다. 입력 크기(128KB)가 원인인지 답 길이가 원인인지는 따로 가르지 않았다.
+- 고침: 묶음에서 인용이 길어지는 자료(틀의 식)를 빼 48KB로 줄이고, 요청문에 「답 전체 3,500자 안 · 지적은 무거운 것부터 여덟 건 안 · 지적 하나는 다섯 줄 안 · 머리말과 요약은 쓰지 않는다」를 적어 다시 보냈다. 빼낸 자료는 다른 검수자(Fable)에게 맡겼다.
+- 다시 확인: 줄인 묶음은 약 6분에 SUCCESS · 4,115자(지적 5건, 끝 표식 있음). 다음에 같은 오류가 나면 답 길이 제한을 먼저 넣고, 그래도 나면 묶음을 나눈다.
+
 ### Vertex `gemini-3.8-flash`가 429·시간 초과로 자주 막힌다 — 같은 값의 3.7·3.6 Flash는 되고, 3.8 Flash·3.5 Flash-Lite는 전역 주소에만 있다 (2026-10-21 Claude)
 - 증상: 10-21 WORLD 말하기 측정(`tools/말하기피드백_측정.mjs`, 프로젝트 synk-bake-unmet27)에서 `gemini-3.8-flash` 전역 호출이 `429 Resource exhausted`와 45초 시간 초과로 거의 다 실패했다(소리 11건 중 2건만 성공, 2·4·8초 쉬고 다시 보내도 같음). 같은 시각 `gemini-3.7-flash`·`gemini-3.6-flash`(가격 같음)와 `gemini-3.5-flash-lite`는 정상이었다. `asia-northeast3`(서울)·`us-central1` 주소로 3.8 Flash·3.5 Flash-Lite를 부르면 404 「Publisher model … was not found」였다.
 - 원인: 확인하지 못했다. 새 모델의 공용 몫(동적 공유 몫)이 붐빈 것으로 보인다. 지역 404는 그 모델이 전역에만 열려 있어서다.

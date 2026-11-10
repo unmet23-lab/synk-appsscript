@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import base from '../docs/유지비_BM/BM_통합설계_20261018/inputs.mjs';
 import { labBep, labPremium, labSaturdaySeats, labClasses, setPremiumClasses, run } from '../docs/유지비_BM/BM_통합설계_20261018/model.mjs';
 
@@ -156,4 +157,48 @@ test('break-even pays the one-times bonus tier and revenue-linked field bonus be
   assert.ok(profit(result.students-0.1,1)<0,'search includes the tier that will actually be paid');
   assert.ok(profit(result.students*1.6,1.6)>0,'the next bonus tier remains affordable in the fixture');
   close(result.marginAtBep,profit(result.students,1));
+});
+
+// [11-10] 11-09 방향을 넣은 운영 계획 정본을 지킨다 — 자동화(진단 → 구축 → 월 유지)는 선택사항이라 기본 계산에서 0이고 값은 비교 줄로 남는다,
+// 대표 직접 출강은 2027-01부터다, 무겁게 본 대표 시간은 기본 계산에 섞이지 않는다. 저장된 results.json이 지금 입력과 같은 값인지도 본다(입력만 고치고 다시 돌리지 않은 것을 잡는다).
+test('11-09 direction base: automation stays out of the base run but its prices remain for comparison, direct lectures start 2027-01, stored results match the inputs', () => {
+  const MAIN = { labMode: 'full4', stopRule: false };
+  const sum = (rows, y, f) => rows.filter((r) => r.m.startsWith(String(y))).reduce((a, r) => a + f(r), 0);
+  const r = run(structuredClone(base), '기본', MAIN);
+  for (const y of [2027, 2028, 2029]) close(sum(r.rows, y, (x) => x.shift.entry + x.shift.buildFee + x.shift.maintFee + x.shift.diagnoses), 0);
+  assert.equal(base.shift.lecture.from, '2027-01');
+  assert.ok(r.rows.find((x) => x.m === '2027-01').shift.lectures > 0, '2027-01 직접 출강이 서야 한다');
+  assert.equal(r.rows.find((x) => x.m === '2026-12').shift.lectures, 0);
+  // 값은 지우지도 새로 정하지도 않았다 — 10-22 계획 건수대로 팔면 자동화 매출이 다시 생긴다
+  assert.equal(base.shift.lecture.avgPrice, 623_000);
+  assert.equal(base.shift.entry.avgPrice, 400_000);
+  assert.equal(base.shift.automation.buildPrice, 2_000_000);
+  assert.equal(base.shift.automation.monthly, 200_000);
+  const sold = structuredClone(base); sold.shift.entry.orders = structuredClone(sold.shift.entry.ordersIfSold);
+  assert.ok(sum(run(sold, '기본', MAIN).rows, 2028, (x) => x.shift.buildFee + x.shift.maintFee) > 0);
+  // 대표 시간: 가볍게 본 값이 기본, 무겁게 본 값은 위험 줄에만
+  const hours = (list, m) => list.filter((x) => x.month === m).reduce((a, x) => a + x.hours, 0);
+  assert.equal(hours(base.company.oneOffHours, '2027-01'), 26 + 8 + 4 + 4 + 20);
+  assert.equal(hours(base.company.oneOffHoursHeavy, '2027-01'), 35 + 8 + 15 + 13 + 13 + 60 + 20);
+  assert.equal(hours(base.company.oneOffHours, '2026-12'), 26 + 4 + 4, '바우처 준비 20시간은 12월 보고 뒤(2027-01)');
+  // 저장된 결과가 지금 입력과 같은가
+  const R = JSON.parse(readFileSync(new URL('../docs/유지비_BM/BM_통합설계_20261018/results.json', import.meta.url), 'utf8'));
+  for (const y of [2027, 2028, 2029]) close(sum(R.scenarios['기본'].rows, y, (x) => x.shift.revenue), sum(r.rows, y, (x) => x.shift.revenue));
+  assert.equal(R.scenarios['기본'].leadFrom, r.leadFrom);
+  assert.equal(R.recalc1110.light.leadFrom, r.leadFrom);
+  // 비교 값 덩이(운영 계획으로 돌린 값)의 2027년 SHIFT 매출 · 조건 석 달 평균은 이 기본 계산(시장 몫 방식)과 같아야 한다 — 문서가 두 값을 같은 것으로 읽는다
+  close(R.recalc1110.light.shift2027, sum(r.rows, 2027, (x) => x.shift.revenue));
+  close(R.recalc1110.light.gateAvg, r.rows.filter((x) => x.m >= '2027-09' && x.m <= '2027-11').reduce((a, x) => a + x.pulse.ads + x.shift.revenue, 0) / 3);
+  assert.equal(R.checks.length, 0, '저장된 결과에 검산 실패가 남아 있다');
+  // 회사 전체 값과 무겁게 본 판도 저장된 결과와 같은가(LAB · PATH 입력이나 무겁게 본 시간만 고치고 다시 돌리지 않은 것을 잡는다)
+  for (const y of [2027, 2028, 2029]) {
+    close(sum(R.scenarios['기본'].rows, y, (x) => x.revenueKRW), sum(r.rows, y, (x) => x.revenueKRW));
+    close(sum(R.scenarios['기본'].rows, y, (x) => x.ebitdaKRW), sum(r.rows, y, (x) => x.ebitdaKRW));
+  }
+  const heavyInp = structuredClone(base); heavyInp.company.oneOffHours = structuredClone(heavyInp.company.oneOffHoursHeavy);
+  const heavy = run(heavyInp, '기본', MAIN);
+  // 넘는 달은 모두 2027-08 전이라 운영 계획으로 돌린 비교 값과 이 계산(시장 몫 방식)의 넘친 시간 합이 같다
+  close(R.recalc1110.heavy.overSum, heavy.rows.filter((x) => x.m >= '2026-11' && x.m <= '2027-12').reduce((a, x) => a + x.hours.fixedOver, 0));
+  assert.equal(heavy.rows.find((x) => x.m === '2027-01').shift.lectures, 0, '무겁게 보면 2027-01 직접 출강이 서지 않는다');
+  assert.deepEqual(R.recalc1110.heavyDrop.map((x) => x.m), ['2027-01', '2027-03']);
 });
