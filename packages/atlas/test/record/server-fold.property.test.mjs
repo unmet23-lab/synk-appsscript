@@ -94,6 +94,24 @@ function sameAsBrain(lines, server, index, seed) {
     );
 }
 
+// 비우기(계획 §14) — 사건 몇은 다른 표(교실 연결 · 첫걸음 점수)가 물고 있어 남는다. 남은 사건은 바닥 아래라
+// 뒤에 그것을 가리키는 답 · 제외가 와도 접기에 들지 않는다 — 기준(oracle)은 바닥 위 사건만으로 처음부터 접은 줄이다.
+function maybeClear(server, random, seed) {
+  if (random() >= 0.06) return false;
+  const held = new Set(
+    server
+      .rawLog()
+      .filter(() => random() < 0.4)
+      .map(record => record.event.id),
+  );
+  server.pin(record => held.has(record.event.id));
+  const before = server.rawLog().length;
+  const { kept, floor } = server.clear();
+  assert.ok(kept <= before && floor >= 0);
+  assert.equal(server.heads.size, 0, `씨앗 ${seed}: 비우면 Trail 머리가 없다`);
+  return true;
+}
+
 async function run(seed) {
   const random = rng(seed);
   const items = bank(random);
@@ -119,7 +137,8 @@ async function run(seed) {
       serverNow += Math.floor(random() * 4 * MINUTE);
       if (n) server.append(queue.splice(0, n), serverNow);
     }
-    if (random() < 0.3) {
+    const clearing = maybeClear(server, random, seed);
+    if (clearing || random() < 0.3) {
       await foldAll(server, indexA, random);
       assert.deepEqual(
         plain(await served(server, foldEdition(PARAMS, indexA))),

@@ -3,7 +3,7 @@
 // 닿은 묶음의 근거 줄을 통째로 다시 짓고, 닿은 단위 · 계열 · 능력을 그 근거 줄에서 처음부터 다시 접는다.
 //
 // 저장소(store)는 한 계정 · 한 판 묶음의 작은 비동기 포트다 — 패키지 시험은 메모리로, SYNK-talk은 SQL로 꽂는다.
-//   head()                         { foldedUntil, floorSeq, lineSeq, issued } (없으면 null)
+//   head()                         { foldedUntil, floorSeq, lineSeq, issued } (없으면 null) — floorSeq는 계정의 비운 바닥(판 묶음과 무관)
 //   writeHead(patch)
 //   entriesAfter(seq, limit)       [{ seq, receivedMs, event }] — server_seq 순, seq보다 뒤
 //   maxSeq()
@@ -16,7 +16,9 @@
 //   unitRows(unit)  familyRows(family)  familiesOfSkill(skill)
 //   lines(kind, keys)              Map<key, value>
 //   writeLines(changes)            [{ kind, key, value }] — 저장소가 줄 갱신 차례를 하나씩 올려 붙인다
-// floorSeq(비운 차례) 이하의 사건은 저장소가 어디서도 돌려주지 않는다(비우기 — 계획 §4-6).
+// floorSeq(비운 바닥 — 비우기 전 그 계정의 마지막 차례) 이하의 사건은 저장소가 어디서도 돌려주지 않는다(비우기 — 계획 §14).
+// 비우기는 교실 연결 · 첫걸음 점수가 문 사건을 남기고(선생님 쪽 기록), 접기는 바닥 위만 읽는다. 바닥은 Trail 머리(파생 값)가 아니라
+// 계정 기록(SQL engine.synk_practice_floors)이라 머리를 지우거나 옆에 다시 지어도 그대로다.
 import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
 import { EMPTY_INDEX, serverKey, sourcesOf } from './adapt.mjs';
 import {
@@ -214,9 +216,9 @@ export async function foldPending(
 }
 
 // 한 계정의 접기 — 판 묶음이 바뀌었으면 옆에 짓고 따라잡으면 바꿔 끼운다(설계 §5-3 「전부 다시 접기는 옆에 짓는다」).
-//   account.active()                       { edition, floorSeq } | null — 활성 머리
+//   account.active()                       { edition } | null — 활성 머리
 //   account.head(edition)                  그 판 묶음의 머리 | null
-//   account.create(edition, state, floor)  머리를 만든다(state: 'active' | 'building')
+//   account.create(edition, state)         머리를 만든다(state: 'active' | 'building')
 //   account.store(edition)                 위 store 포트
 //   account.activate(edition)              그 판 묶음을 활성으로, 나머지 판 묶음의 머리 · 근거 줄 · 줄을 지운다(파생 값)
 // 돌려주는 served = 지금 내려 줄 요약의 판 묶음(짓는 동안은 앞 판 — 판이 섞인 요약은 내려가지 않는다).
@@ -224,12 +226,12 @@ export async function foldAccount(account, context) {
   const edition = foldEdition(context.params, context.index);
   const active = await account.active();
   if (!active) {
-    await account.create(edition, 'active', 0);
+    await account.create(edition, 'active');
     return { served: edition, ...(await foldPending(account.store(edition), context)) };
   }
   if (active.edition === edition)
     return { served: edition, ...(await foldPending(account.store(edition), context)) };
-  if (!(await account.head(edition))) await account.create(edition, 'building', active.floorSeq);
+  if (!(await account.head(edition))) await account.create(edition, 'building');
   const result = await foldPending(account.store(edition), context);
   if (!result.done) return { served: active.edition, building: edition, ...result };
   await account.activate(edition);

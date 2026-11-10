@@ -33,14 +33,14 @@ export function createMemoryAccount() {
     return {
       head: async () => ({
         foldedUntil: head.foldedUntil,
-        floorSeq: head.floorSeq,
+        floorSeq: floor,
         lineSeq: head.lineSeq,
         issued: structuredClone(head.issued),
       }),
       writeHead: async patch => Object.assign(head, structuredClone(patch)),
       entriesAfter: async (after, limit) =>
         visible()
-          .filter(record => record.seq > after && record.seq > head.floorSeq)
+          .filter(record => record.seq > after)
           .slice(0, limit),
       maxSeq: async () => seq,
       eventById: async (id, until = Infinity) =>
@@ -112,15 +112,14 @@ export function createMemoryAccount() {
   const account = {
     active: async () => {
       const head = [...heads.values()].find(h => h.state === 'active');
-      return head ? { edition: head.edition, floorSeq: head.floorSeq } : null;
+      return head ? { edition: head.edition } : null;
     },
     head: async edition => (heads.has(edition) ? { ...heads.get(edition) } : null),
-    create: async (edition, state, floorSeq) => {
+    create: async (edition, state) => {
       heads.set(edition, {
         edition,
         state,
         foldedUntil: 0,
-        floorSeq,
         lineSeq: 0,
         issued: [],
         rows: new Map(),
@@ -140,27 +139,17 @@ export function createMemoryAccount() {
     log: () => visible(),
     rawLog: () => log,
     heads,
-    // 비우기 — 다른 표가 문 사건(pinned)만 남기고 지우고, 남은 것은 접기 바닥(floor) 아래로(계획 §4-6).
+    // 비우기(계획 §14 — SQL engine.clear_synk_practice와 같은 뜻): 다른 표(교실 연결 · 첫걸음 점수)가 문 사건(pinned)만 남기고 지우고,
+    // Trail 머리를 모두 지우고(파생 값), 바닥 = 지우기 전 마지막 차례(큰 값으로만)를 계정에 적는다. 저장소는 바닥 아래를 어디서도 돌려주지 않는다.
     clear() {
       const keep = log.filter(record => pinned(record));
       log.length = 0;
       log.push(...keep);
-      floor = seq;
-      for (const head of heads.values())
-        Object.assign(head, {
-          foldedUntil: seq,
-          floorSeq: seq,
-          lineSeq: head.lineSeq,
-          issued: [],
-          rows: new Map(),
-        });
-      for (const head of heads.values())
-        for (const line of head.lines.values())
-          if (line.value != null) {
-            head.lineSeq += 1;
-            Object.assign(line, { value: null, seq: head.lineSeq });
-          }
+      floor = Math.max(floor, seq);
+      heads.clear();
+      return { kept: keep.length, floor };
     },
+    floor: () => floor,
     pin(test) {
       pinned = test;
     },
