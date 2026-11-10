@@ -5,11 +5,11 @@
 // 대사 초는 받은 영상의 소리 크기 곡선 + 받아쓰기(허깅페이스 whisper)로 잰 값. V2 4.40~5.15초의 지어낸 아들 목소리 「어떤 선생님이요?」는 쓰지 않는다.
 // 광고 속 의사의 말(A1 · A3)은 그 광고 동영상의 소리를 폰 스피커 결로 깐다(public/img/*_phone.wav). V6에 든 폰 소리(「지금 바로 주문하세요」)는 쓰지 않는다.
 export type Crop = { s: number; cx: number; cy: number; ay?: number };
-export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; ad?: boolean; chrome?: boolean; shade?: number; phone?: boolean; lockAt?: number; low?: number };
+export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; ad?: boolean; chrome?: boolean; shade?: number; phone?: boolean; lockAt?: number; low?: number; bg?: { src: string; start: number } };
 
 export const S = {
   search: 23.7, searchResult: 24.7, searchEnd: 26.0,
-  flip: 49.65, end: 49.85,
+  flip: 50.66, end: 50.9,
 };
 export const TOTAL_S = 53.0;
 // 원본(제미나이 앱 · Flow Omni)이 모두 24fps라 편집도 24fps로 굽는다 — 30fps 시간선에 넣으면 5프레임마다 한 장이 겹쳐 떨린다(현장 노트 영상 · 24fps 원본).
@@ -20,43 +20,38 @@ export const FPS = 24;
 export const CUTS: CutT[] = [
   // 기 — 광고 속 의사 → 넓게(식탁의 아버지 · 상자 일곱 · 뒤의 아들) → 아들 가까이(뒷목) → 아버지 근접 「선생님이 드시래」 → 상자
   // v6(11-10 미학 맹검 01 기각 「청진기 줄이 ∩ 고리로 뭉개짐」): 얼굴 · 상자까지만 당겨 가슴 아래 청진기를 뺀다
-  { from: 0, to: 1.15, src: 'img/A1.mp4', start: 1.2, crop: { s: 1.9, cx: 390, cy: 790, ay: 990 }, ad: true },
+  { from: 0, to: 1.15, src: 'img/A1.mp4', start: 1.2, crop: { s: 1.9, cx: 390, cy: 790, ay: 1060 }, ad: true },
   { from: 1.15, to: 4.45, src: 'img/V1f.mp4', start: 0.1, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.5, drift: 0.015 },
   { from: 4.45, to: 7.0, src: 'img/V1f.mp4', start: 3.4, crop: { s: 1.8, cx: 950, cy: 680 }, audio: 0.5 },
   { from: 7.0, to: 8.2, src: 'img/V2.mp4', start: 1.9, crop: { s: 1.05, cx: 540, cy: 960 }, audio: 1.0 },
   { from: 8.2, to: 9.3, src: 'img/V2.mp4', start: 3.1, crop: { s: 1.35, cx: 560, cy: 900 }, audio: 1.0 },
-  { from: 9.3, to: 10.5, src: 'img/V2.mp4', start: 4.2, crop: { s: 2.4, cx: 560, cy: 1750, ay: 1350 } },
+  { from: 9.3, to: 10.5, src: 'img/V2.mp4', start: 4.2, crop: { s: 2.4, cx: 560, cy: 1750, ay: 1420 } },
   // 승 — 「이거 몇 개째예요?」 → 「유명한 선생님이야」 → 「이 선생님, 어느 병원이에요?」 → 「…어디더라」
   { from: 10.5, to: 12.05, src: 'img/V3.mp4', start: 1.6, crop: { s: 1.1, cx: 600, cy: 1000 }, audio: 1.0 },
   { from: 12.05, to: 13.0, src: 'img/V3.mp4', start: 3.15, crop: { s: 1.4, cx: 640, cy: 950 }, audio: 1.0 },
-  { from: 13.0, to: 15.1, src: 'img/V2.mp4', start: 5.25, crop: { s: 1.3, cx: 560, cy: 900 }, audio: 1.0 },
-  { from: 15.1, to: 16.9, src: 'img/V3.mp4', start: 6.1, crop: { s: 1.45, cx: 640, cy: 900 }, audio: 1.0 },
-  { from: 16.9, to: 18.6, src: 'img/V3.mp4', start: 7.9, crop: { s: 1.6, cx: 640, cy: 820, ay: 1000 }, audio: 1.0 },
+  { from: 13.0, to: 15.1, src: 'img/V2.mp4', start: 5.25, crop: { s: 1.9, cx: 404, cy: 900, ay: 1080 }, audio: 1.0, drift: 0 }, // v11(컷 전수 검수 1): 뒤 문가에 선 아들(원본 x 720~)이 들면 앞뒤 컷(식탁 건너의 아들)과 자리가 튄다 — 아버지 얼굴만
+  { from: 15.1, to: 18.6, src: 'img/V3.mp4', start: 6.1, crop: { s: 1.45, cx: 640, cy: 880, ay: 1150 }, audio: 1.0, drift: 0.03 }, // v13(컷 전수 검수 · 대체 눈 03 「같은 각도 당겨 붙임」): 질문을 한 판으로, 천천히 다가간다
   { from: 18.6, to: 22.5, src: 'img/V4a.mp4', start: 1.45, crop: { s: 1.05, cx: 540, cy: 980 }, audio: 1.0 },
   // 전 — 찾아봄 → 재연용 검색 화면 「일치하는 결과가 없습니다」 → 「이 얼굴, 아무 데도 없는데요」 → 아버지 얼굴 위 해설 → 광고 속 그 얼굴 → 폰을 내려놓음(느리게) → 상자
   { from: 22.5, to: 23.7, src: 'img/V4a.mp4', start: 5.6, crop: { s: 1.7, cx: 820, cy: 1200 }, audio: 0.8 },
   { from: 26.0, to: 28.2, src: 'img/V4b.mp4', start: 1.45, crop: { s: 1.05, cx: 540, cy: 980 }, audio: 1.0 },
   { from: 28.2, to: 29.6, src: 'img/V4b.mp4', start: 3.6, crop: { s: 1.5, cx: 367, cy: 950 }, rate: 0.6 },
   // v7(11-10 맹검 GPT 05 기각 「웃은 채 굳음 · 광고 표시가 입 · 볼에 걸림」): 말하며 끄덕이는 구간(3.0~6.1초)을 소리 없이, 얼굴 당김 칸엔 광고 표시를 얹지 않는다
-  { from: 29.6, to: 32.7, src: 'img/A1.mp4', start: 3.0, crop: { s: 1.25, cx: 600, cy: 760, ay: 830 }, drift: 0, ad: true, chrome: false, phone: true, lockAt: 30.25, shade: 0.35 }, // v10(아르곤 v9 05 기각 「반전 줄이 연출 없이 툭 · 입만 움직이는 토킹헤드 · 밝은 장면 위 그늘」): 광고를 폰 화면 안에 두고, 「AI로 만든 가상 인물」에서 얼굴을 멈추고 흑백으로 · 모서리 표식 // v9(아르곤 05 [C083] 「정중앙 대칭 · 귀가 잘림」): 덜 당기고 얼굴을 조금 왼쪽에
+  { from: 29.6, to: 32.7, src: 'img/A1.mp4', start: 3.0, crop: { s: 1.25, cx: 600, cy: 760, ay: 900 }, drift: 0, ad: true, chrome: false, phone: true, lockAt: 30.25, shade: 0.35, bg: { src: 'img/V4b.mp4', start: 4.4 } }, // v10(아르곤 v9 05 기각 「반전 줄이 연출 없이 툭 · 입만 움직이는 토킹헤드 · 밝은 장면 위 그늘」): 광고를 폰 화면 안에 두고, 「AI로 만든 가상 인물」에서 얼굴을 멈추고 흑백으로 · 모서리 표식 // v9(아르곤 05 [C083] 「정중앙 대칭 · 귀가 잘림」): 덜 당기고 얼굴을 조금 왼쪽에
   { from: 32.7, to: 35.05, src: 'img/V4b.mp4', start: 4.4, crop: { s: 1.35, cx: 380, cy: 1050 }, rate: 0.6 },
-  { from: 35.05, to: 37.3, src: 'img/V4b.mp4', start: 6.1, crop: { s: 1.8, cx: 560, cy: 1560, ay: 1150 }, rate: 0.8, drift: 0.01 },
+  { from: 35.05, to: 37.3, src: 'img/V4b.mp4', start: 6.1, crop: { s: 1.8, cx: 560, cy: 1560, ay: 1220 }, rate: 0.8, drift: 0.01 },
   // 결 — 머쓱한 웃음 → 끝 줄(V5 · Flow, 반전 자리 40.9초에 아들 가까이) → 폰이 저절로 켜짐 → 같은 얼굴 · 약사 → 마주 봄 → 엎음 → 웃음 → 웃음 당김(끝 자리)
   { from: 37.3, to: 40.9, src: 'img/V5.mp4', start: 0.0, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 40.9, to: 42.4, src: 'img/V5.mp4', start: 3.6, crop: { s: 1.4, cx: 860, cy: 900 }, audio: 1.0 },
-  { from: 42.4, to: 43.5, src: 'img/V5.mp4', start: 5.1, crop: { s: 1.75, cx: 880, cy: 860 }, audio: 1.0 },
+  { from: 40.9, to: 42.4, src: 'img/V5.mp4', start: 3.6, crop: { s: 1.15, cx: 660, cy: 960 }, audio: 1.0, drift: 0.02 }, // v13: 두 사람이 함께 들게(듣는 아버지) → 말하는 아들 가까이 — 같은 크기 당겨 붙임 대신 넓게 → 가까이
+  { from: 42.4, to: 43.5, src: 'img/V5.mp4', start: 5.1, crop: { s: 1.7, cx: 880, cy: 880 }, audio: 1.0 },
   { from: 43.5, to: 44.9, src: 'img/V5.mp4', start: 6.2, crop: { s: 1.6, cx: 300, cy: 900 }, audio: 1.0 },
   { from: 44.9, to: 45.8, src: 'img/V6f.mp4', start: 0.35, crop: { s: 1.0, cx: 540, cy: 1000 }, low: 0 }, // 식탁 위 폰이 켜지는 것이 보여야 한다 — 이 칸은 장면을 내리지 않는다
   // 이해 시험(넷 중 넷): 약사 광고를 못 보거나 같은 얼굴을 늦게 알아챔 → 2.3초로 늘리고 첫 광고 얼굴(c13)과 같은 크기로 당긴다
   // v7(맹검 GPT 06 「상자가 오른쪽에서 잘림」): 덜 당기고 상자 쪽으로
   // v9(아르곤 06 기각 「엄지 없이 네 손끝으로 붙은 상자 · 몸이 굳은 립싱크」 · GPT 06 「상자가 목업 같음」): 손 · 상자를 빼고 얼굴과 약사 가운만, 밝은 칸이라 위 그늘은 옅게
-  { from: 45.8, to: 48.1, src: 'img/A3.mp4', start: 1.7, crop: { s: 1.3, cx: 470, cy: 760, ay: 830 }, drift: 0, ad: true, phone: true, shade: 0.35 }, // v10(아르곤 v9 06 기각 「밝은 약국 위 그늘 · 광고 화면다운 그래픽 없음」): 폰 화면 안의 광고로
-  { from: 48.1, to: 49.0, src: 'img/V6f.mp4', start: 3.5, crop: { s: 1.25, cx: 540, cy: 1050 } },
-  { from: 49.0, to: 49.85, src: 'img/V6f.mp4', start: 5.05, crop: { s: 1.7, cx: 560, cy: 1560, ay: 1150 }, audio: 1.0 }, // v10(아르곤 v9 07 「같은 각도 점프컷 · 엎은 폰이 안 보임」): 엎는 손은 행동 클로즈로
-  // v7: 두 얼굴이 원본 가장자리(x 195 · 960)에 있어 둘을 함께 당기면 잘린다 → 웃는 아버지 가까이 → 끝은 넓게 두 사람과 상자 탑
-  { from: 49.85, to: 51.5, src: 'img/V6f.mp4', start: 5.9, crop: { s: 1.25, cx: 540, cy: 1050 }, rate: 0.65, audio: 1.0 }, // v9(아르곤 07 [K32] 「허공의 손이 다음 컷에 이미 어깨 위」): 아들 어깨까지 들게 해 손이 가는 길을 보인다
-  // v7(맹검 GPT 07 「웃는 두 얼굴이 가장자리에서 잘림」): 두 얼굴이 다 들게
-  { from: 51.5, to: 53.0, src: 'img/V6f.mp4', start: 6.97, crop: { s: 1.0, cx: 540, cy: 960 }, rate: 0.7, audio: 1.0, drift: 0.01, low: 0 }, // 끝 그림: 엎어 둔 폰 · 상자 탑 · 웃는 두 사람
+  { from: 45.8, to: 48.1, src: 'img/A3.mp4', start: 1.7, crop: { s: 1.3, cx: 470, cy: 760, ay: 900 }, drift: 0, ad: true, phone: true, shade: 0.35, bg: { src: 'img/V5.mp4', start: 6.5 } }, // v10(아르곤 v9 06 기각 「밝은 약국 위 그늘 · 광고 화면다운 그래픽 없음」): 폰 화면 안의 광고로
+  // v11(컷 전수 검수 2 · 아르곤 v9 07 「같은 각도 점프컷」): 마주 봄 → 엎기 → 웃음을 원래 속도의 한 판으로(천천히 다가감). 엎는 순간은 원본 5.7초 = 50.66초
+  { from: 48.1, to: 53.0, src: 'img/V6f.mp4', start: 3.14, crop: { s: 1.0, cx: 540, cy: 1050 }, audio: 1.0, drift: 0.022, low: 0 },
 ];
 
 // 큰 글자 = 말. grey = 아들(두 사람 말은 흰 · 회색으로만 가른다). 광고 속 말은 위 작은 「광고 속 의사」 · 「다음 광고」. at = 줄마다 뜨는 초(말하는 때).
@@ -93,5 +88,5 @@ export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [
 // A3(같은 얼굴 · 약사)는 폰이 켜지는 c18부터 아버지가 폰을 엎는 순간까지 — 「안녕하세요」(45.1초)가 광고 그림(46.4초)보다 먼저 온다.
 export const AD_AUDIO: { src: string; from: number; to: number; start: number; vol: number }[] = [
   { src: 'img/A1.mp4', from: 0, to: 6.6, start: 1.2, vol: 0.9 },
-  { src: 'img/A3.mp4', from: 44.9, to: 49.65, start: 0.8, vol: 0.85 },
+  { src: 'img/A3.mp4', from: 44.9, to: 50.66, start: 0.8, vol: 0.85 },
 ];

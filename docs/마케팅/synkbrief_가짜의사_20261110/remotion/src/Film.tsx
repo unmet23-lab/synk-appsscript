@@ -14,13 +14,13 @@ const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const sec = (s: number) => Math.round(s * FPS);
 const GREY = '#C4C4C4';
 const X = 74;
-const TOP = 270;
+const TOP = 340; // v11(컷 전수 검수 3): 고지 글 · 큰 글자를 안전선(269px) 안으로 70px 내림
 
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
 const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number }> = ({ src, start, crop, rate = 1, drift = 0.012 }) => {
   const f = useCurrentFrame();
   const s = crop.s * (1 + (f / FPS) * drift);
-  const ay = crop.ay ?? 930; // v8: 내린 폭을 260 → 210으로 줄인 50px만큼 당긴 컷의 기준을 내린다
+  const ay = crop.ay ?? 1000; // v8: 내린 폭을 260 → 210으로 줄인 50px만큼 당긴 컷의 기준을 내린다
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
   const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
   const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})` };
@@ -61,33 +61,25 @@ const AdChrome: React.FC<{ len: number }> = ({ len }) => {
 
 // v10(11-10 15시 회차 — 아르곤 v9 05 · 06 기각): 광고를 「폰 화면 안의 광고」로 보인다 — 어두운 바탕 위 둥근 폰 화면, 그 안에 광고 영상과 광고 표시.
 // lockAt이 있으면 그 초에 영상이 멈추고 흑백으로 빠지며 얼굴 둘레에 모서리 표식 넷과 훑는 줄 하나(검색 화면의 표식과 같은 꼴) — 「사람이 아니었어요」를 그림으로.
-const PW = 700, PH = 1244, PL = 190, PT = 500;
+const PW = 664, PH = 1180, PL = 208, PT = 580;
 const PhoneAd: React.FC<{ c: CutT; len: number }> = ({ c, len }) => {
   const f = useCurrentFrame();
-  const z = interpolate(f, [0, 10], [1.045, 1], { ...clamp, easing: EASE_OUT });
+  // v14(Opus 맹검 05 「반전 자리에 그림이 하는 일이 흑백뿐 · 폰이 혼자 줄어듦」): 들어올 때 줄어드는 움직임을 빼고, 멈춘 뒤에는 그 얼굴로 천천히 다가간다
+  const lock0 = c.lockAt != null ? sec(c.lockAt - c.from) : null;
+  const z = lock0 != null ? interpolate(f, [lock0, len], [1, 1.16], { ...clamp, easing: Easing.out(Easing.quad) }) : 1;
   const lock = c.lockAt != null ? sec(c.lockAt - c.from) : null;
   const k = lock != null ? interpolate(f, [lock, lock + 8], [0, 1], clamp) : 0;
-  const b = lock != null ? interpolate(f, [lock, lock + 7], [1.16, 1], { ...clamp, easing: EASE_OUT }) : 1;
-  const scan = lock != null ? interpolate(f, [lock + 2, lock + 20], [0, 1], clamp) : 0;
-  const BX = 150, BY = 250, BW = 400, BH = 520, CL = 54;
-  const corner = (x: number, y: number, sx: number, sy: number) => (
-    <div style={{ position: 'absolute', left: x, top: y, width: CL, height: CL, borderLeft: sx > 0 ? '5px solid #fff' : undefined, borderRight: sx < 0 ? '5px solid #fff' : undefined, borderTop: sy > 0 ? '5px solid #fff' : undefined, borderBottom: sy < 0 ? '5px solid #fff' : undefined }} />
-  );
   return (
     <AbsoluteFill style={{ background: '#0b0b0b' }}>
-      <div style={{ position: 'absolute', left: PL, top: PT, width: PW, height: PH, borderRadius: 60, overflow: 'hidden', transform: `scale(${z})`, transformOrigin: '50% 40%', boxShadow: '0 0 0 9px #161616, 0 0 0 11px #2c2c2c, 0 36px 110px rgba(0,0,0,0.7)' }}>
+      {/* v12(Opus 맹검 05 기각 「검은 빈 판 위 설명 카드 · 얼굴 인식 괄호 프리셋」): 뒤에 그 순간의 부엌을 흐리게 깔아 드라마 안에 두고, 괄호 · 훑는 줄은 뺀다 — 멈춤 + 흑백만 */}
+      {c.bg ? <div style={{ position: 'absolute', inset: 0, filter: 'blur(26px) brightness(0.42) saturate(0.85)', transform: 'scale(1.08)' }}><Shot src={c.bg.src} start={c.bg.start} crop={{ s: 1.0, cx: 540, cy: 960 }} drift={0} /></div> : null}
+      <div style={{ position: 'absolute', left: PL, top: PT, width: PW, height: PH, borderRadius: 60, overflow: 'hidden', transform: `scale(${z})`, transformOrigin: '50% 34%', boxShadow: '0 0 0 9px #161616, 0 0 0 11px #2c2c2c, 0 36px 110px rgba(0,0,0,0.7)' }}>
         <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `scale(${PW / 1080})`, filter: `grayscale(${k * 0.9}) brightness(${1 - k * 0.12})` }}>
           <Freeze frame={lock ?? 0} active={lock != null && f >= lock}>
             <Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift ?? 0} />
           </Freeze>
           <AdChrome len={len} />
         </div>
-        {lock != null && f >= lock ? (
-          <div style={{ position: 'absolute', left: BX, top: BY, width: BW, height: BH, opacity: k, transform: `scale(${b})` }}>
-            {corner(0, 0, 1, 1)}{corner(BW - CL, 0, -1, 1)}{corner(0, BH - CL, 1, -1)}{corner(BW - CL, BH - CL, -1, -1)}
-            {scan > 0 && scan < 1 ? <div style={{ position: 'absolute', left: 0, width: BW, top: scan * BH, height: 3, background: 'rgba(255,255,255,0.85)', boxShadow: '0 0 18px rgba(255,255,255,0.6)' }} /> : null}
-          </div>
-        ) : null}
       </div>
     </AbsoluteFill>
   );
@@ -145,7 +137,7 @@ const Label: React.FC = () => {
   while (since < 6 && f - since - 1 >= 0 && labelAt((f - since - 1) / FPS) === text) since++;
   // 첫 프레임부터 같은 글이면 바뀐 게 아니다(v7 — 맹검 GPT 01 「처음에 표시가 흐려졌다 돌아옴」)
   const o = f - since <= 0 ? 1 : interpolate(since, [0, 6], [0, 1], clamp);
-  return <div style={{ position: 'absolute', left: X, top: 206, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{text}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 276, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{text}</div>;
 };
 
 export const Film: React.FC = () => {
