@@ -505,14 +505,27 @@ function 여백(b, SAFE) {
 }
 const 덮음 = (b, 상자들, 덤 = 32) => 상자들.some((o) => b.x0 >= o.x0 - 덤 && b.x1 <= o.x1 + 덤 && b.y0 >= o.y0 - 덤 && b.y1 <= o.y1 + 덤);
 
-/** 넘은 자리 하나가 기준 판 OCR 글 상자 안에 들어가나(그 자리의 넘은 띠만 본다) */
+/** 넘은 자리 하나가 기준 판 글 자리로 설명되나 —
+ *  ① 그 자리의 넘은 띠가 기준 판 OCR 글 상자 안에 들어가거나(덤 32px),
+ *  ② 기준 판 글 상자도 같은 안전선을 같은 자리(선을 따라 겹치는 구간)에서 넘고, 이 판이 그보다 원본덤(40px) 넘게 더 나가지 않을 때.
+ *     11-10 화날때: 판본마다 글 길이가 달라, 원본부터 안전선 밖에 있던 화 게이지 이름표 · 말풍선 끝 · 끝 카드를 ①로는 못 덮어
+ *     미국판과 같은 자리에서 같이 넘는 판본 여덟이 「단추가림」 고칠 것으로 남았다. 40px 넘게 더 나간 판은 그대로 고칠 것이다. */
+const 원본덤 = 40;
 function 기준글자리(b, 자리, SAFE, 기준상자) {
   const 띠 = { ...b };
   if (자리 === 'right') 띠.x0 = SAFE.right;
   if (자리 === 'left') 띠.x1 = SAFE.left;
   if (자리 === 'top') 띠.y1 = SAFE.top;
   if (자리 === 'bottom') 띠.y0 = SAFE.bottom;
-  return 덮음(띠, 기준상자);
+  if (덮음(띠, 기준상자)) return true;
+  const 내넘음 = 넘은자리(b, SAFE).find((n) => n.자리 === 자리)?.넘음 || 0;
+  const 선따라겹침 = (o) => (자리 === 'right' || 자리 === 'left')
+    ? Math.min(b.y1, o.y1) > Math.max(b.y0, o.y0)
+    : Math.min(b.x1, o.x1) > Math.max(b.x0, o.x0);
+  return 기준상자.some((o) => {
+    const 그넘음 = 넘은자리(o, SAFE).find((n) => n.자리 === 자리);
+    return Boolean(그넘음) && 선따라겹침(o) && 내넘음 <= 그넘음.넘음 + 원본덤;
+  });
 }
 
 const 겹침 = (a, b) => Math.min(a.x1, b.x1) > Math.max(a.x0, b.x0) && Math.min(a.y1, b.y1) > Math.max(a.y0, b.y0);

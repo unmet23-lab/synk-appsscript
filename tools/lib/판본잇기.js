@@ -32,7 +32,19 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const 판본글 = require('./판본글.js');
+
+// 렌더.json 「글sha256」은 렌더할 때 판본 글 원천 파일(remotion/src/<틀>/판본/<키>.json)의 바이트 지문이다. 작업본은 올리기 · 따라가기 때
+// 줄끝을 CRLF로 다시 쓸 수 있어(11-10 화날때 — LF로 쓰고 렌더한 원천이 올리기 뒤 CRLF로 내려와 26판본이 「렌더 뒤 글이 바뀜」으로 보였다)
+// 줄끝만 다른 판은 같은 글로 본다. 글 한 자라도 다르면 다른 글이다.
+function 같은글(지문, file) {
+  const raw = fs.readFileSync(file);
+  const h = (b) => crypto.createHash('sha256').update(b).digest('hex');
+  if (h(raw) === 지문) return true;
+  const lf = raw.toString('utf8').replace(/\r\n/g, '\n');
+  return h(Buffer.from(lf, 'utf8')) === 지문 || h(Buffer.from(lf.replace(/\n/g, '\r\n'), 'utf8')) === 지문;
+}
 
 const REPO = path.resolve(__dirname, '..', '..');
 const 지도이름 = '판본지도.json';
@@ -258,7 +270,7 @@ function 검사전(편, 키, 준비판본 = null) {
   let 영상낡음 = null;
   if (fs.existsSync(렌더)) {
     const j = 판본글.readJson(렌더);
-    if (j.글sha256) 영상낡음 = j.글sha256 !== 판본글.sha256(팩경로(편, 지도, 키));
+    if (j.글sha256) 영상낡음 = !같은글(j.글sha256, 팩경로(편, 지도, 키));
   }
   return { 이음: true, 바뀜: r.바뀜, 경고: r.경고, 영상낡음, 바른글: 글상대(지도, 키) };
 }
@@ -324,7 +336,7 @@ function 확인(편, 키, { 원장 = null, 검수 = ['뜻', '글자'] } = {}) {
     if (!fs.existsSync(렌더)) 알림.push('렌더.json이 없어 영상이 지금 글로 구운 것인지 못 봤다');
     else {
       const j = 판본글.readJson(렌더);
-      if (j.글sha256 && j.글sha256 !== 판본글.sha256(r.팩파일)) 문제.push(`영상이 지금 판본 글로 구운 것이 아니다(렌더 뒤 글이 바뀜) — node 판본렌더.mjs ${키}`);
+      if (j.글sha256 && !같은글(j.글sha256, r.팩파일)) 문제.push(`영상이 지금 판본 글로 구운 것이 아니다(렌더 뒤 글이 바뀜) — node 판본렌더.mjs ${키}`);
       if (j.영상sha256 && j.영상sha256 !== 영상지문) 문제.push('영상이 렌더 기록(렌더.json)과 다르다 — 다시 렌더한다');
     }
   }
@@ -390,4 +402,4 @@ function 채우기(편, 입력) {
   return out;
 }
 
-module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로 };
+module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };

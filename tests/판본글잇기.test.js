@@ -320,6 +320,15 @@ test('검사전 — 지도가 없는 편은 null, 「글」이 지도의 글.jso
   가짜렌더(편, 판본폴더, 'US');
   잇기.준비에넣기(편, ['US']);
   assert.deepEqual(잇기.검사전(편, 'US'), { 이음: true, 바뀜: false, 경고: [], 영상낡음: false, 바른글: '게시/판본/US/글.json' });
+  // 11-10 화날때: 올리기 · 따라가기가 원천의 줄끝만 CRLF로 바꿔도 「렌더 뒤 글이 바뀜」이 아니다(글이 한 자라도 다르면 그때는 낡음)
+  const 원천 = 잇기.팩경로(편, 잇기.지도읽기(편).지도, 'US');
+  const 원래 = fs.readFileSync(원천, 'utf8');
+  fs.writeFileSync(원천, 원래.replace(/\r?\n/g, '\r\n'));
+  assert.equal(잇기.검사전(편, 'US').영상낡음, false, '줄끝만 CRLF로 바뀐 원천');
+  assert.equal(잇기.확인(편, 'US', { 원장 }).문제.some((x) => /렌더 뒤 글이 바뀜/.test(x)), false);
+  assert.equal(잇기.같은글(crypto.createHash('sha256').update(원래).digest('hex'), 원천), true);
+  assert.equal(잇기.같은글(crypto.createHash('sha256').update(`${원래} `).digest('hex'), 원천), false, '글이 한 자라도 다르면 다른 글');
+  fs.writeFileSync(원천, 원래);
   잇기.채우기(편, { US: { hook: 'He always said this…' } });
   const r = 잇기.검사전(편, 'US');
   assert.equal(r.바뀜, true, '검사 전에 글.json을 다시 뽑는다');
