@@ -182,16 +182,16 @@ function countRows(list, grouped = false) {
     const head = grouped && region !== last ? `<p class="region">${esc(region)}</p>` : '';
     last = region;
     const full = c.planned > 0 && c.secured === c.planned;
-    const sub = c.accounts.map(a => a.platform).join(' · ');
+    const sub = c.verdict && c.status !== 'active' ? `검토 · ${c.verdict}` : c.accounts.map(a => a.platform).join(' · ');
     return head + `<button class="row" type="button" data-code="${esc(c.code)}">
       <span><span class="row-name">${esc(c.name)}</span><span class="row-sub">${esc(c.role ? c.role + ' · ' + sub : sub)}</span></span>
-      <span class="row-num${full ? ' full' : ''}">${c.secured}/${c.planned}</span>
+      <span class="row-num${full ? ' full' : ''}">${c.planned ? `${c.secured}/${c.planned}` : '—'}</span>
     </button>`;
   }).join('');
 }
 
-function accRows(accounts) {
-  if (!accounts.length) return '<p class="empty">아직 계정이 없어요.</p>';
+function accRows(accounts, empty = '아직 계정이 없어요.') {
+  if (!accounts.length) return `<p class="empty">${esc(empty)}</p>`;
   return accounts.map(a => {
     const sub = a.secured
       ? (a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.handle || a.url)}</a>` : esc(a.handle || '확보'))
@@ -224,9 +224,10 @@ function renderDetail(c) {
   const view = current();
   const pills = [
     `<span class="pill"><span class="led${c.status === 'active' ? '' : ' off'}"></span>${c.status === 'active' ? '운영 중' : '준비 중'}</span>`,
-    `<span class="pill num">계정 ${c.secured}/${c.planned}</span>`,
+    c.planned ? `<span class="pill num">계정 ${c.secured}/${c.planned}</span>` : '',
     c.role ? `<span class="pill">${esc(c.role)}</span>` : '',
-    c.language ? `<span class="pill">${esc(c.language)} 자막 · 목소리</span>` : ''
+    c.verdict ? `<span class="pill pill-verdict" data-verdict="${esc(c.verdict)}">검토 · ${esc(c.verdict)}</span>` : '',
+    c.language ? `<span class="pill">${esc(c.language)}</span>` : ''
   ].join('');
   let html = `<section class="pane-sec">
     <button class="back" type="button" data-back>${ARROW_LEFT}전체 나라</button>
@@ -234,7 +235,7 @@ function renderDetail(c) {
     <div class="pills">${pills}</div>
     ${c.why ? `<p class="why">${esc(c.why)}</p>` : ''}
   </section>`;
-  html += `<section class="pane-sec"><h3 class="sec-title">${view.brand === 'PULSE' && c.status !== 'active' ? '만들 계정(제안)' : '계정'}</h3><div class="rows">${accRows(c.accounts)}</div></section>`;
+  html += `<section class="pane-sec"><h3 class="sec-title">${view.brand === 'PULSE' && c.status !== 'active' ? '만들 계정(제안)' : '계정'}</h3><div class="rows">${accRows(c.accounts, view.brand === 'PULSE' ? '이 나라용 계정은 새로 만들지 않아요 — 공통 계정이 닿아요.' : '아직 계정이 없어요.')}</div></section>`;
   if (c.sharedHere && view.shared.length) {
     html += `<section class="pane-sec"><h3 class="sec-title">여기서 운영하는 공통 계정</h3><div class="rows">${accRows(view.shared)}</div></section>`;
   }
@@ -292,7 +293,7 @@ function showTip(code, event) {
   if (!c) return hideTip();
   const box = $('.map-box').getBoundingClientRect();
   const el = tip();
-  el.innerHTML = `<b>${esc(c.name)}</b>${c.status === 'active' ? '운영 중' : '준비 중'} · 계정 ${c.secured}/${c.planned}`;
+  el.innerHTML = `<b>${esc(c.name)}</b>${c.status === 'active' ? '운영 중' : '준비 중'} · ${c.planned ? `계정 ${c.secured}/${c.planned}` : esc(c.verdict ? '검토 · ' + c.verdict : '새 계정 없음')}`;
   el.hidden = false;
   let x, y;
   if (event && 'clientX' in event && event.clientX) { x = event.clientX - box.left; y = event.clientY - box.top; }

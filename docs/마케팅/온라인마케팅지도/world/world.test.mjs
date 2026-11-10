@@ -55,7 +55,9 @@ test('PULSE는 타깃 파일의 나라를 그대로 칠하고 한국에 공통 �
   assert.equal(world.pulse.countries.length, targets.countries.length);
   for (const entry of targets.countries) {
     assert.ok(['active', 'target'].includes(entry.status), entry.code + ' 상태 값');
-    assert.ok(entry.language && entry.plan?.length && entry.why, entry.code + ' 언어 · 계정 계획 · 근거');
+    assert.ok(entry.language && Array.isArray(entry.plan) && entry.why, entry.code + ' 언어 · 계정 계획 · 근거');
+    assert.ok(['유지', '조건부', '빼기 권함'].includes(entry.verdict), entry.code + ' 검토 판정 값');
+    if (!entry.plan.length) assert.match(entry.verdict, /빼기/, entry.code + ' 계정 계획이 비면 빼기 권함일 때뿐');
     const c = world.pulse.countries.find(x => x.code === entry.code);
     assert.ok(c?.onMap, entry.code + ' 지도에 있음');
     assert.equal(c.status, entry.status);

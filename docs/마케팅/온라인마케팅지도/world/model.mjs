@@ -86,6 +86,7 @@ export function buildPulse(data, targets, nameOf = () => null) {
       name,
       status: entry.status === 'active' ? 'active' : 'target',
       role: entry.role || null,
+      verdict: entry.verdict || null,
       language: entry.language || null,
       secured,
       planned: accounts.length + planned.length + (entry.status === 'active' ? shared.length : 0),
