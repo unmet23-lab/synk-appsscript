@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes with no whites, pink felt cheeks). Mongle has NO arms and NO legs, ever, and it is small (about the size of a coffee cup). Keep Mongle's eyes plain glossy black beads with no whites.
+
+Barista: a needle-felted young Korean man doll, curly dark-brown wool hair, small black bead eyes, rosy cheeks, cream long-sleeve shirt, sage-green felt apron, felt hands.
+Rina: a needle-felted young woman doll, about 22, shoulder-length wavy chestnut-brown wool hair, lavender chunky knit sweater, a small white felt name sticker on her chest that reads exactly "Rina".
+Lina: a needle-felted young woman doll, about 22, long black wool hair in a high ponytail, mustard-yellow chunky knit sweater, a small white felt name sticker on her chest that reads exactly "Lina".
+
+Place: a cozy needle-felted neighborhood cafe in the morning — a light oak pickup counter runs across the middle of the picture, behind it a felt espresso machine, open shelves with cream cups, two warm wool pendant lamps, a green trailing plant, soft morning window light from the left. The cups are white felt takeaway cups with a kraft-brown felt sleeve; the Hangul name on a sleeve is stitched in dark brown thread, big and clear.
+
+Layout: keep the TOP 22% of the image calm and uncluttered (softly out-of-focus cafe wall and lamps) — text will be added there later. All the action sits in the middle and lower part.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field, cute but not babyish (for university students and young workers). Apart from the names written below, absolutely no text, letters, numbers, logos or symbols anywhere (no menu text, no speech bubbles, no hearts, no sparkles drawn as symbols — they will be added later).
+
+Use Image 1 as the base picture: keep exactly the same cafe, same counter, same camera, same framing, same light, same barista, same Mongle size and position. (Images 2 and 3 are only Mongle references.) Only change what is written below.
+
+Change: the same cup is now tilted a little toward the RIGHT because Lina is winning for a moment — Lina leans in, Rina leans back pulling, and Mongle is squished the other way, eyes still wide, frozen. The sleeve still reads exactly "리나". Everything else identical.

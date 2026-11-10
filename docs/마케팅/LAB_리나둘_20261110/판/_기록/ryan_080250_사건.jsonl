@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c28c-d1a3-71a3-b70e-2fc0d21f7226"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬로 원본 카페 구도를 유지하고, Ryan과 책을 보는 사자가 등장하는 세로 이미지 한 장을 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Ryan raises his hand beside Mongle while a fluffy lion reads beneath the barista’s “라이언” cup."}}
+{"type":"turn.completed","usage":{"input_tokens":116940,"cached_input_tokens":96256,"cache_write_input_tokens":0,"output_tokens":1600,"reasoning_output_tokens":292}}

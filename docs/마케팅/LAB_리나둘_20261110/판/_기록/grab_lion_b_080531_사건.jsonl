@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c28f-4580-7e01-828f-62065f9292cd"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해, 원본 구도와 카페를 유지하고 컵이 오른쪽으로 기울며 서로 더 세게 당기는 장면 한 장을 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The lion pulls the “라이언” cup right as Ryan leans back and Mongle freezes in surprise."}}
+{"type":"turn.completed","usage":{"input_tokens":110780,"cached_input_tokens":82432,"cache_write_input_tokens":0,"output_tokens":1528,"reasoning_output_tokens":239}}
