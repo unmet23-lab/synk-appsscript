@@ -4,11 +4,13 @@
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { fr, T, TEXT, TOTAL_FRAMES, FPS, SCENE } from './data';
+import { fr, T, TEXTS, FONTS, TOTAL_FRAMES, FPS, SCENE } from './data';
+import type { Lang } from './data';
 import { GLINTS } from './glints';
 
 export { TOTAL_FRAMES, FPS, SCENE };
-const FONT = "'Inter Tight', 'SUIT', sans-serif";
+const LangCtx = React.createContext<Lang>('mn');
+const useFont = () => FONTS[React.useContext(LangCtx)];
 const INK = '#2F2420';
 const COLD = '#2C6F9E';
 const WARM = '#C8551B';
@@ -297,12 +299,14 @@ const Snow: React.FC<{ t: number }> = ({ t }) => {
 };
 
 // 머리 글 — 쪽빛 펠트 + 바늘땀(지난 두 편의 카페 천 이름표 · 채팅 띠와 다르게)
-const Sign: React.FC<{ t: number; at: number; until: number; top?: number; size?: number; children: React.ReactNode }> = ({ t, at, until, top = 262, size = 60, children }) => {
+const Sign: React.FC<{ t: number; at: number; until: number; top?: number; size?: number; mmScale?: number; children: React.ReactNode }> = ({ t, at, until, top = 262, size = 60, mmScale = 0.82, children }) => {
+  const FONT = useFont();
+  const lang = React.useContext(LangCtx);
   if (t < at || t >= until) return null;
   const a = interpolate(t, [at, at + 0.16], [0, 1], { ...clamp, easing: EASE_OUT });
   return (
     <div style={{ position: 'absolute', left: 60, width: 960, top, transform: `translateY(${(1 - a) * 14}px)`, opacity: a, filter: 'drop-shadow(0 10px 14px rgba(20,12,4,0.42))' }}>
-      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 30, padding: '24px 30px 28px', boxSizing: 'border-box', fontFamily: FONT, fontWeight: 800, fontSize: size, lineHeight: 1.18, color: '#FFF6E4', textAlign: 'center', whiteSpace: 'pre-line', textShadow: '0 2px 2px rgba(10,10,20,0.5)' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 30, padding: '24px 30px 28px', boxSizing: 'border-box', fontFamily: FONT, fontWeight: 800, fontSize: lang === 'mm' ? size * mmScale : size, lineHeight: lang === 'mm' ? 1.5 : 1.18, color: '#FFF6E4', textAlign: 'center', whiteSpace: 'pre-line', textShadow: '0 2px 2px rgba(10,10,20,0.5)' }}>
         <Img src={staticFile('img/clothBlue.jpg')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 10, borderRadius: 22, border: '3px dashed rgba(255,240,215,0.5)' }} />
         <div style={{ position: 'relative' }}>{children}</div>
@@ -313,6 +317,8 @@ const Sign: React.FC<{ t: number; at: number; until: number; top?: number; size?
 
 // 말풍선 — 크림 펠트 + 바늘땀. 한글 크게 · 키릴 읽기 · 몽골 뜻. shout면 기울어 튀어나온다
 const Bubble: React.FC<{ t: number; from: number; until: number; left: number; top: number; w: number; h: number; tip: [number, number]; color?: string; size?: number; ko: React.ReactNode; read?: string; mn?: string; shout?: number }> = ({ t, from, until, left, top, w, h, tip, color = INK, size = 76, ko, read, mn, shout = 0 }) => {
+  const FONT = useFont();
+  const lang = React.useContext(LangCtx);
   if (t < from || t >= until) return null;
   const a = shout ? interpolate(t, [from, from + 0.07, from + 0.2, from + 0.4], [0.3, 1.18, 0.97, 1], clamp) : interpolate(t, [from, from + 0.16], [0.82, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const rx = Math.min(50, h / 2);
@@ -331,7 +337,7 @@ const Bubble: React.FC<{ t: number; from: number; until: number; left: number; t
       <div style={{ position: 'absolute', left, top, width: w, height: h, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 4, boxSizing: 'border-box', textAlign: 'center' }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.1, color, whiteSpace: 'nowrap' }}>{ko}</div>
         {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.18, color: '#5F4E42', whiteSpace: 'nowrap' }}>{read}</div> : null}
-        {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 44, lineHeight: 1.16, color: MEAN, whiteSpace: 'nowrap' }}>{mn}</div> : null}
+        {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 44, lineHeight: lang === 'mm' ? 1.5 : 1.16, color: MEAN, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
     </div>
   );
@@ -411,10 +417,12 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
+export const Film: React.FC<{ scene?: boolean; lang?: Lang }> = ({ scene, lang = 'mn' }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
+  const TEXT = TEXTS[lang];
   return (
+    <LangCtx.Provider value={lang}>
     <AbsoluteFill style={{ background: '#20262e' }}>
       <Plate t={t} />
       <Breath t={t} />
@@ -438,7 +446,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
           {t >= T.rule && t < T.gag ? (
             <>
               {/* 규칙 팻말은 두 판 사이 이음매에, ✕ · ✓는 글 없는 작은 표로 — 위 팻말 + 이름표 둘, 글 상자 셋이 「카드뉴스 틀 · 교수 머리와 인형 몸을 가림」(아르곤 맹검 v12 [K8] [K5] [C017]) */}
-              <Sign t={t} at={T.rule} until={T.gag} size={46} top={872}>
+              <Sign t={t} at={T.rule} until={T.gag} size={46} top={lang === 'mm' ? 850 : 872} mmScale={0.94}>
                 {TEXT.ruleFriend}
                 {': '}
                 <span style={{ fontFamily: KO, fontWeight: 900 }}>수고하세요</span>
@@ -452,7 +460,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
             </>
           ) : null}
           <Sign t={t} at={T.gag + 0.1} until={T.a3} size={54}>{TEXT.gagMn}</Sign>
-          <Bubble t={t} from={T.gag + 0.12} until={T.a3 + 0.1} left={430} top={560} w={560} h={210} tip={[810, 860]} color={WARM} size={84} ko={TEXT.b2Ko} read={TEXT.b2Read} />
+          <Bubble t={t} from={T.gag + 0.12} until={T.a3 + 0.1} left={TEXT.b2Mn ? 330 : 430} top={TEXT.b2Mn ? 520 : 560} w={TEXT.b2Mn ? 690 : 560} h={TEXT.b2Mn ? 260 : 210} tip={[810, 860]} color={WARM} size={84} ko={TEXT.b2Ko} read={TEXT.b2Read} mn={TEXT.b2Mn || undefined} />
           <Bubble t={t} from={T.a3} until={T.a4} left={70} top={760} w={560} h={210} tip={[320, 1112]} color={CORAL} size={84} ko={TEXT.a3Ko} read={TEXT.a3Read} />
           <Bubble t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={272} tip={[330, 1112]} color={INK} size={84} ko={TEXT.a4Ko} read={TEXT.a4Read} mn={TEXT.a2Mn} shout={-3} />
           <Sign t={t} at={T.end} until={T.total + 1} size={62}>
@@ -463,6 +471,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       ) : null}
       <Sound />
     </AbsoluteFill>
+    </LangCtx.Provider>
   );
 };
 

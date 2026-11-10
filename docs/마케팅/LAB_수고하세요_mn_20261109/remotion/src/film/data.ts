@@ -25,7 +25,15 @@ export const fr = (sec: number) => Math.round(sec * FPS);
 export const TOTAL_FRAMES = fr(T.total);
 export const SCENE = { from: 0.0, to: 5.5 } as const; // 장면 심사(인사 → 번지는 서리 → 얼어붙은 교수님)
 
-export const TEXT = {
+// 11-10 두 채널 판(샤오훙수 간체 · 틱톡 버마어) — 같은 정본에서 렌더한다(판끼리 따로 고치지 않는다). 한국어 말풍선 · 한국어 목소리는 그대로,
+// 머리 글 · 뜻 줄만 그 나라 말, 읽는 법은 로마자(장부 머리말 「두 채널 판」). 현지어는 세 겹 검수(../../../게시/검문/zhs.txt · my.txt)를 거친 글만 둔다.
+export type Lang = 'mn' | 'cn' | 'mm';
+export const FONTS: Record<Lang, string> = {
+  mn: "'Inter Tight', 'SUIT', sans-serif",
+  cn: "'Microsoft YaHei', 'Inter Tight', 'SUIT', sans-serif",
+  mm: "'Inter Tight', 'SUIT', 'Myanmar Text', sans-serif",
+};
+const MN = {
   hook: 'Багшдаа «수고하세요» гэвэл…',
   a1Ko: '교수님, 수고하세요!',
   a1Read: 'гёсуним, сугохасэё!',
@@ -45,6 +53,7 @@ export const TEXT = {
   yes: '교수님, 안녕히 계세요',
   b2Ko: '수고해요',
   b2Read: 'сугохэё',
+  b2Mn: '', // 두 채널 판만 — 시험관 셋(간체 s · h · K, 버마어 h)이 「수고해요와 수고하세요의 차이」를 같이 짚음
   gagMn: 'Ахмад хүн танд хэлж болно',
   a3Ko: '네! 수고하…',
   a3Read: 'нэ! сугоха…',
@@ -52,4 +61,66 @@ export const TEXT = {
   a4Read: 'аннёнхи гэсэё!!',
   end: 'Багшдаа:',
   endKo: '안녕히 계세요!',
+};
+export type Pack = typeof MN;
+export const TEXTS: Record<Lang, Pack> = {
+  mn: MN,
+  cn: {
+    b2Mn: "「수고하세요」的随意说法",
+    hook: "对教授说「수고하세요」的话…",
+    a1Mn: "教授，好好工作哦！",
+    whyKo: "수고하세요 =「好好工作哦！」",
+    whyMn: "对长辈、上级说，有时不太合适",
+    again: "那换成「안녕히 계세요」呢…",
+    a2Mn: "教授再见！",
+    b1Mn: "好，慢走",
+    ruleFriend: "对朋友、同事",
+    ruleElder: "对教授、上司",
+    gagMn: "长辈、上级可以对你说",
+    end: "对教授：",
+    a1Ko: "교수님, 수고하세요!",
+    a2Ko: "안녕히 계세요!",
+    b1Ko: "그래요, 잘 가요",
+    no: "교수님, 수고하세요",
+    yes: "교수님, 안녕히 계세요",
+    b2Ko: "수고해요",
+    a3Ko: "네! 수고하…",
+    a4Ko: "안녕히 계세요!!",
+    endKo: "안녕히 계세요!",
+    a1Read: "gyosunim, sugohaseyo!",
+    a2Read: "annyeonghi gyeseyo!",
+    b1Read: "geuraeyo, jal gayo",
+    b2Read: "sugohaeyo",
+    a3Read: "ne! sugoha…",
+    a4Read: "annyeonghi gyeseyo!!",
+  },
+  mm: {
+    b2Mn: "«수고하세요» ရဲ့ ရင်းနှီးတဲ့ ပုံစံ",
+    hook: "ဆရာ့ကို «수고하세요» လို့ ပြောရင်…",
+    a1Mn: "ဆရာ၊ အလုပ်ကောင်းကောင်းလုပ်နော်!",
+    whyKo: "수고하세요 = «အလုပ်ကောင်းကောင်းလုပ်နော်!»",
+    whyMn: "လူကြီးကို ပြောရင် တစ်ခါတလေ\nမသင့်တော်သလို ဖြစ်တတ်တယ်",
+    again: "«안녕히 계세요» လို့ ပြောရင်တော့…",
+    a2Mn: "ကောင်းကောင်းနေခဲ့ပါနော်!",
+    b1Mn: "အေးပါ၊ ကောင်းကောင်းသွားနော်",
+    ruleFriend: "သူငယ်ချင်း၊ လုပ်ဖော်ကိုင်ဖက်ကို",
+    ruleElder: "ဆရာ၊ အထက်လူကြီးကို",
+    gagMn: "လူကြီးက ကိုယ့်ကို ပြောလို့ရတယ်",
+    end: "ဆရာ့ကို:",
+    a1Ko: "교수님, 수고하세요!",
+    a2Ko: "안녕히 계세요!",
+    b1Ko: "그래요, 잘 가요",
+    no: "교수님, 수고하세요",
+    yes: "교수님, 안녕히 계세요",
+    b2Ko: "수고해요",
+    a3Ko: "네! 수고하…",
+    a4Ko: "안녕히 계세요!!",
+    endKo: "안녕히 계세요!",
+    a1Read: "gyosunim, sugohaseyo!",
+    a2Read: "annyeonghi gyeseyo!",
+    b1Read: "geuraeyo, jal gayo",
+    b2Read: "sugohaeyo",
+    a3Read: "ne! sugoha…",
+    a4Read: "annyeonghi gyeseyo!!",
+  },
 };
