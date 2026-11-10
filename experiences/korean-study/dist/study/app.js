@@ -1574,7 +1574,7 @@ function chooseLang({ search = globalThis.location?.search || "", storage = glob
 }
 
 // experiences/synk-account/src/core.mjs
-var PRODUCTS = Object.freeze({ platform: "SYNK 플랫폼", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK 플레저", path: "SYNK PATH", "path-travel": "SYNK PATH 여행" });
+var PRODUCTS = Object.freeze({ platform: "SYNK 플랫폼", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK 플레저", path: "SYNK PATH", "path-travel": "SYNK PATH 여행", "path-app": "SYNK PATH" });
 var nativeSchemes = /* @__PURE__ */ new Set(["synktalk:", "im.synk.platform:", "im.synk.world:", "im.synk.messenger:", "im.synk.care:"]);
 function callbackUrl(value) {
   const url = new URL(value);

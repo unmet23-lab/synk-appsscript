@@ -491,6 +491,107 @@ test('위 어림: 한국어도 바이트로 넉넉히 세고, 캐시 쓰기 할�
   }
 });
 
+// 실제 1×1 RGBA PNG를 독립적으로 만든다. 청크 변형도 CRC를 다시 써 구조 경계를 시험한다.
+function 시험PNG({ width = 1, height = 1, ihdrLength = 13, interlace = 0, extra = null, textBytes = 0 } = {}) {
+  const 청크 = (type, data) => {
+    const typeData = Buffer.concat([Buffer.from(type, 'latin1'), data]);
+    let crc = 0xffffffff;
+    for (const byte of typeData) {
+      crc ^= byte;
+      for (let i = 0; i < 8; i++) crc = (crc & 1) ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+    }
+    const out = Buffer.alloc(data.length + 12);
+    out.writeUInt32BE(data.length); typeData.copy(out, 4); out.writeUInt32BE((crc ^ 0xffffffff) >>> 0, out.length - 4);
+    return out;
+  };
+  const header = Buffer.alloc(Math.max(13, ihdrLength));
+  header.writeUInt32BE(width, 0); header.writeUInt32BE(height, 4); header[8] = 8; header[9] = 6; header[12] = interlace;
+  const chunks = [청크('IHDR', header.subarray(0, ihdrLength))];
+  if (extra) chunks.push(청크(extra, Buffer.alloc(8)));
+  if (textBytes) chunks.push(청크('tEXt', Buffer.concat([Buffer.from('note\0'), Buffer.alloc(textBytes, 65)])));
+  chunks.push(청크('IDAT', require('node:zlib').deflateSync(Buffer.from([0, 0, 0, 0, 255]))), 청크('IEND', Buffer.alloc(0)));
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), ...chunks]);
+}
+function 그림요청(data = 시험PNG().toString('base64')) {
+  return { model: 'claude-fable-5-1', max_tokens: 16, messages: [{ role: 'user', content: [
+    { type: 'image', source: { type: 'base64', media_type: 'image/png', data } },
+    { type: 'text', text: '이 화면을 검수해 주세요.' },
+  ] }] };
+}
+
+test('Fable PNG는 원문을 바꾸지 않고 장당 8192토큰·UTF-8 전체 글·출력 최대량·캐시 할증을 예약한다', () => {
+  const 요청 = 그림요청(), 원문 = JSON.stringify(요청);
+  const 비용 = 클로드.요청어림USD(요청);
+  assert.ok(Number.isFinite(비용));
+  assert.ok(비용 > (8192 * 10 + 16 * 50) / 1e6);
+  assert.equal(JSON.stringify(요청), 원문);
+  const 추가 = structuredClone(요청); 추가.messages[0].content[1].extra = '가'.repeat(1000);
+  assert.ok(클로드.요청어림USD(추가) - 비용 >= 3000 * 10 / 1e6);
+  const 캐시 = structuredClone(요청); 캐시.messages[0].content[0].cache_control = { type: 'ephemeral', ttl: '1h' };
+  assert.ok(클로드.요청어림USD(캐시) >= 8192 * 2 * 10 / 1e6 + 16 * 50 / 1e6);
+  const 기본캐시 = structuredClone(요청); 기본캐시.cache_control = { type: 'ephemeral' };
+  assert.ok(클로드.요청어림USD(기본캐시) >= 8192 * 1.25 * 10 / 1e6 + 16 * 50 / 1e6);
+  const 스무장 = 그림요청(); 스무장.messages[0].content = Array(20).fill(스무장.messages[0].content[0]);
+  assert.ok(Number.isFinite(클로드.요청어림USD(스무장)));
+  스무장.messages[0].content.push(스무장.messages[0].content[0]);
+  assert.equal(클로드.요청어림USD(스무장), Infinity);
+});
+
+test('PNG의 깨진 base64·BOM·서명·CRC·청크·IHDR·크기·APNG·초과 바이트는 닫는다', () => {
+  const png = 시험PNG(), data = png.toString('base64');
+  const badCrc = Buffer.from(png); badCrc[30] ^= 1;
+  for (const [이름, 입력] of [
+    ['빈 입력', ''], ['공백', data + '\n'], ['BOM 문자열', '\ufeff' + data],
+    ['base64 문자', '*' + data.slice(1)], ['base64 패딩', data + '='],
+    ['BOM 파일', Buffer.concat([Buffer.from([239,187,191]), png]).toString('base64')],
+    ['다른 형식', Buffer.from('GIF89a').toString('base64')], ['깨진 CRC', badCrc.toString('base64')],
+    ['잘린 파일', png.subarray(0, -1).toString('base64')], ['후행 바이트', Buffer.concat([png, Buffer.from([0])]).toString('base64')],
+    ['IHDR 길이', 시험PNG({ ihdrLength: 12 }).toString('base64')], ['영 너비', 시험PNG({ width: 0 }).toString('base64')],
+    ['너비 초과', 시험PNG({ width: 8001 }).toString('base64')], ['높이 초과', 시험PNG({ height: 8001 }).toString('base64')],
+    ['인터레이스', 시험PNG({ interlace: 1 }).toString('base64')], ['APNG', 시험PNG({ extra: 'acTL' }).toString('base64')],
+    ['미확인 청크', 시험PNG({ extra: 'abcd' }).toString('base64')],
+    ['높은 비트 청크', 시험PNG({ extra: '\xc9DAT' }).toString('base64')], ['장당 바이트 초과', 'A'.repeat(5 * 1024 * 1024 + 4)],
+  ]) assert.equal(클로드.요청어림USD(그림요청(입력)), Infinity, 이름);
+  const 큰그림 = 그림요청(시험PNG({ textBytes: 3 * 1024 * 1024 }).toString('base64'));
+  assert.ok(Number.isFinite(클로드.요청어림USD(큰그림)));
+  큰그림.messages[0].content = Array(5).fill(큰그림.messages[0].content[0]);
+  assert.equal(클로드.요청어림USD(큰그림), Infinity, '합계 20MiB 초과');
+});
+
+test('그림은 exact Fable 모델과 직접 user PNG 외 URL·file·PDF·도구·추가 비용 옵션을 계속 거절한다', () => {
+  const 바꾸기 = [
+    q => { q.model = 'claude-opus-5-5'; }, q => { q.model = 'claude-fable-5-1-latest'; },
+    q => { q.model = 'unknown'; }, q => { q.max_tokens = 128001; }, q => { q.max_tokens = 1.5; },
+    q => { q.messages[0].role = 'assistant'; }, q => { q.messages[0].content[0].source.type = 'url'; },
+    q => { q.messages[0].content[0].source = { type: 'file', file_id: 'file_test' }; },
+    q => { q.messages[0].content[0].source.media_type = 'image/jpeg'; },
+    q => { q.messages[0].content[0].source.unknown = 'extra'; }, q => { q.messages[0].content[0].unknown = 'extra'; },
+    q => { q.messages[0].content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: 'JVBERi0=' } }); },
+    q => { q.tools = [{ type: 'web_search_20260209', name: 'web_search' }]; },
+    q => { q.tools = [{ name: 'custom', input_schema: { type: 'object' } }]; },
+    q => { q.mcp_servers = []; }, q => { q.container = {}; }, q => { q.speed = 'fast'; }, q => { q.inference_geo = 'us'; },
+    q => { q.messages[0].content = [{ type: 'tool_result', tool_use_id: 'test', content: [q.messages[0].content[0]] }]; },
+  ];
+  for (const 바꿈 of 바꾸기) { const 요청 = 그림요청(); 바꿈(요청); assert.equal(클로드.요청어림USD(요청), Infinity, String(바꿈)); }
+});
+
+test('PNG도 잔액 예약을 거치며 원본을 보내고 결과 모름의 상한 비용을 보존한다', async () => {
+  const 요청 = 그림요청(), 어림 = 클로드.요청어림USD(요청);
+  const 부족 = 방만들기([['프로모', null, 'sk-ant-test-low', { 한도USD: 어림 / 2 }]]);
+  try {
+    const 서버 = 가짜서버(() => 성공(요청.model));
+    await assert.rejects(클로드.보내기(요청, { ...부족.옵션, fetch: 서버.fetch, 지금 }));
+    assert.equal(서버.받은키.length, 0);
+  } finally { 부족.지우기(); }
+  const 충분 = 방만들기([['프로모', null, 'sk-ant-test-enough', { 한도USD: 1 }]]);
+  try {
+    const 서버 = 가짜서버((_키, 받은본문) => { assert.deepEqual(받은본문, 요청); return ['throw', null]; });
+    await assert.rejects(클로드.보내기(요청, { ...충분.옵션, fetch: 서버.fetch, 지금 }));
+    assert.equal(서버.받은키.length, 1);
+    assert.ok(Math.abs(누적(충분, '프로모') - 어림) < 1e-9);
+  } finally { 충분.지우기(); }
+});
+
 test('한도 키의 누적: 같은 일괄을 다시 받을 때 빈 결과·일부 결과가 와도 앞서 센 비용을 지우지 않는다', async () => {
   const t = 방만들기([['프로모', null, 'sk-ant-test-pppp', { 한도USD: 1 }]]);
   try {

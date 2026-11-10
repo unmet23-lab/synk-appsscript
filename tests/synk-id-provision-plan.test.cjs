@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {buildProvisionPlan,canonicalMap,digest}=require('../tools/synk-id/provision-plan.cjs');
-const {CLIENTS}=require('../tools/synk-id/registry.cjs');
+const {CLIENTS,PRESERVED_CLIENT_BINDINGS}=require('../tools/synk-id/registry.cjs');
 const legacy=CLIENTS.filter(c=>c.knownIds?.production).map(c=>({client_id:c.knownIds.production,client_type:'public',redirect_uris:c.redirectUris}));
 const make=(extra={})=>{const mapping=canonicalMap('production');return buildProvisionPlan({environment:'production',clients:legacy,secretDigest:digest(mapping),...extra});};
 test('read-only plan preserves verified legacy mapping and distinguishes unfinished adapters',()=>{const p=make();assert.equal(p.readOnly,true);assert.equal(p.mapping.preservedCount,2);assert.ok(p.actions.some(a=>a.registration==='care-native'));assert.ok(!p.actions.some(a=>a.registration==='teacher-browser'));assert.equal(p.registrations.find(x=>x.id==='world-legacy').status,'registered-and-mapped');});
@@ -34,4 +34,35 @@ test('travel-only plans target one new browser and never merge an unrelated unma
   assert.equal(plan.registrations.find(row => row.id === 'care-browser').status, 'mapping-needed');
   for (const only of ['', null, [], 'path-travel', 'PATH-TRAVEL-browser', 'teacher-browser']) assert.throws(() => make({ only }), /--only/);
   assert.deepEqual(make({ only: undefined }), make());
+});
+
+test('PATH app gets one dedicated browser registration while historical exact bindings and the full map are preserved', () => {
+  const bindings = Object.fromEntries(PRESERVED_CLIENT_BINDINGS.map(row => [row.id, row.knownIds.production]));
+  const existingMapping = { ...canonicalMap('production'), unrelated: 'messenger', ...Object.fromEntries(PRESERVED_CLIENT_BINDINGS.map(row => [row.knownIds.production, row.product])) };
+  const before = structuredClone({ bindings, existingMapping });
+  const plan = make({ only: 'path-app-browser', bindings, existingMapping, secretDigest: digest(existingMapping) });
+  assert.deepEqual(plan.actions.map(row => row.registration), ['path-app-browser']);
+  assert.equal(plan.actions[0].product, 'platform');
+  assert.deepEqual(plan.actions[0].body.redirect_uris, ['http://127.0.0.1:4326/']);
+  assert.equal(plan.mapping.preservedCount, 7); assert.equal(plan.mapping.mergedCount, 7);
+  assert.deepEqual({ bindings, existingMapping }, before);
+  assert.equal(CLIENTS.some(row => PRESERVED_CLIENT_BINDINGS.some(old => old.id === row.id)), false);
+  for (const row of PRESERVED_CLIENT_BINDINGS) assert.throws(() => make({ only: row.id }), /--only/);
+});
+
+test('historical preservation rejects unknown names, replaced identities, changed products and active aliases', () => {
+  const originalBindings = Object.fromEntries(PRESERVED_CLIENT_BINDINGS.map(row => [row.id, row.knownIds.production]));
+  const originalMapping = { ...canonicalMap('production'), ...Object.fromEntries(PRESERVED_CLIENT_BINDINGS.map(row => [row.knownIds.production, row.product])) };
+  for (const change of [
+    data => { data.bindings['unreviewed-retired-browser'] = 'unknown'; },
+    data => { data.bindings['rehearsal-browser'] = 'replacement'; data.mapping.replacement = 'platform'; },
+    data => { data.mapping[data.bindings['rehearsal-browser']] = 'world'; },
+    data => { data.bindings['path-app-browser'] = data.bindings['rehearsal-browser']; },
+    data => { data.bindings['rehearsal-native'] = data.bindings['rehearsal-browser']; },
+  ]) {
+    const data = { bindings: structuredClone(originalBindings), mapping: structuredClone(originalMapping) }; change(data);
+    assert.throws(() => make({ only: 'path-app-browser', bindings: data.bindings, existingMapping: data.mapping, secretDigest: digest(data.mapping) }));
+  }
+  assert.throws(() => make({ bindings: originalBindings, existingMapping: originalMapping }), /지문/);
+  assert.throws(() => buildProvisionPlan({ environment: 'rehearsal', clients: [], bindings: originalBindings, existingMapping: originalMapping, secretDigest: digest(originalMapping), only: 'path-app-browser' }), /등록 연결/);
 });

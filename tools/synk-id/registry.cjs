@@ -13,6 +13,7 @@ const SERVICES = freeze([
   { id: 'path', name: 'SYNK PATH', product: 'platform', connection: 'implemented' },
   { id: 'dating', name: 'SYNK 소개팅', product: 'platform', connection: 'implemented' },
   { id: 'path-travel', name: 'SYNK PATH 여행', product: 'platform', connection: 'implemented' },
+  { id: 'path-app', name: 'SYNK PATH 유학·취업', product: 'platform', connection: 'implemented' },
 ]);
 const native = [['platform',43821], ['world',43822], ['messenger',43823], ['teacher',43824], ['fortune',43825], ['care',43826], ['path',43829]].map(([service, port]) => ({
   id: `${service}-native`, service, product: SERVICES.find(item => item.id === service).product, runtime: 'native', connection: SERVICES.find(item => item.id === service).connection === 'pending-adapter' ? 'pending-adapter' : 'implemented', configKey: service,
@@ -26,6 +27,7 @@ const browserRedirects = {
   path: 'http://127.0.0.1:4292/',
   dating: 'http://127.0.0.1:4300/atlas-lab/dating.html',
   'path-travel': 'http://127.0.0.1:4303/',
+  'path-app': 'http://127.0.0.1:4326/',
 };
 const browser = Object.entries(browserRedirects).map(([service, callback]) => ({
   id: `${service}-browser`, service, product: SERVICES.find(item => item.id === service).product, runtime: 'browser',
@@ -39,6 +41,16 @@ const CLIENTS = freeze([
 const LEGACY_CLIENT_IDS = freeze(Object.fromEntries(['production', 'rehearsal'].map(environment => [environment,
   Object.fromEntries(CLIENTS.filter(client => client.knownIds?.[environment]).map(client => [client.service, client.knownIds[environment]])),
 ])));
+// Historical public identities retained in the completed production journal.
+// These are preservation-only: never register them, select them with --only,
+// or regenerate their runtime configs. The full remote mapping digest must
+// still match before a provisioner can accept any of these exact bindings.
+const PRESERVED_CLIENT_BINDINGS = freeze([
+  { id: 'rehearsal-native', product: 'platform', knownIds: { production: '17e1fbfb-8899-4186-8cf7-a40b1732b84e' } },
+  { id: 'family-album-native', product: 'platform', knownIds: { production: '4f1c015d-0523-4b61-9b10-6c3faa09217a' } },
+  { id: 'rehearsal-browser', product: 'platform', knownIds: { production: 'd578f783-64a0-4a97-b780-04246d669f43' } },
+  { id: 'family-album-browser', product: 'platform', knownIds: { production: '0f9f91d5-4032-4ff3-bb8d-2af1c646633a' } },
+]);
 // Public-site registrations do not enter the local config generators.
 // The dedicated provisioner preserves the existing loopback/native bindings.
 const PUBLIC_CARE_CLIENT = freeze({ id: 'care-public-browser', service: 'care', product: 'platform', runtime: 'browser', environment: 'production', redirectUris: ['https://synk.im/care/'] });
@@ -48,4 +60,4 @@ const COMPANY_CLOUD = freeze({
   staff: { registration: 'messenger-browser', product: 'messenger', redirectUri: 'https://workspace.synk.im/api/synk-id/callback' },
   customer: { id: 'company-customer-public-browser', service: 'company-customer', product: 'platform', runtime: 'browser', redirectUris: ['https://workspace.synk.im/api/customer/synk-id/callback'] },
 });
-module.exports = { SERVICES, CLIENTS, PUBLIC_CARE_CLIENT, WORKSPACE_TEACHER_CLIENT, COMPANY_CLOUD, LEGACY_CLIENT_IDS, TOOL_REDIRECTS: CLIENTS.find(client => client.id === 'tools-legacy').redirectUris };
+module.exports = { SERVICES, CLIENTS, PRESERVED_CLIENT_BINDINGS, PUBLIC_CARE_CLIENT, WORKSPACE_TEACHER_CLIENT, COMPANY_CLOUD, LEGACY_CLIENT_IDS, TOOL_REDIRECTS: CLIENTS.find(client => client.id === 'tools-legacy').redirectUris };

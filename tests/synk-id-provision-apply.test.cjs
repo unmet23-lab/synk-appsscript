@@ -3,7 +3,7 @@ const { test } = require('node:test'), assert = require('node:assert/strict');
 const { provision } = require('../tools/synk-id/provision.cjs');
 const { createProvider } = require('../tools/synk-id/provision-apply.cjs');
 const { canonicalMap, digest, clientName } = require('../tools/synk-id/provision-plan.cjs');
-const { CLIENTS } = require('../tools/synk-id/registry.cjs');
+const { CLIENTS, PRESERVED_CLIENT_BINDINGS } = require('../tools/synk-id/registry.cjs');
 const clone = value => JSON.parse(JSON.stringify(value));
 const publicSettings = { version: 1, supabaseUrl: 'https://synthetic.supabase.co', supabasePublishableKey: 'sb_publishable_synthetic', portalUrl: 'https://synk.im/id/' };
 function fixture({ failCreate, afterCreate, beforeWrite, failAfterWrite, beforeRead } = {}) {
@@ -47,6 +47,27 @@ test('travel-only dry-run mutates nothing, and explicit synthetic apply creates 
   assert.equal(done.liveLoginVerified, false);
   await provision({ ...f.options(), only: 'path-travel-browser', apply: true });
   assert.equal(f.calls.create.length, 1); assert.equal(f.calls.write.length, 1);
+});
+
+test('PATH scoped synthetic provisioning preserves completed historical journal fields and never writes shared configs', async () => {
+  const f = fixture(), bindings = Object.fromEntries(PRESERVED_CLIENT_BINDINGS.map(row => [row.id, row.knownIds.production]));
+  const mapping = { ...f.mapping, ...Object.fromEntries(PRESERVED_CLIENT_BINDINGS.map(row => [row.knownIds.production, row.product])), unrelated: 'messenger' };
+  f.setMapping(mapping);
+  const journal = { version: 1, environment: 'production', mapping: clone(mapping), bindings, attempted: Object.keys(bindings),
+    completedAt: '2026-10-08T21:44:36.156Z', publicPersonal: { version: 1, targets: { rehearsal: { untouched: true } } }, unrelatedHistory: { preserved: true } };
+  const before = clone(journal), options = { ...f.options(), journal, only: 'path-app-browser' };
+  const plan = await provision(options);
+  assert.deepEqual(plan.registrationsNeeded, ['path-app-browser']);
+  assert.equal(f.journal, null); assert.deepEqual(f.calls, { create: [], write: [], configs: [] });
+  const result = await provision({ ...options, apply: true });
+  assert.equal(f.calls.create.length, 1); assert.equal(f.calls.write.length, 1); assert.equal(f.calls.configs.length, 0);
+  assert.equal(f.calls.create[0].client_name, clientName('path-app-browser', 'production'));
+  assert.deepEqual(f.calls.create[0].redirect_uris, ['http://127.0.0.1:4326/']);
+  assert.deepEqual(f.mapping, { ...mapping, [f.journal.bindings['path-app-browser']]: 'platform' });
+  for (const [name, id] of Object.entries(bindings)) assert.equal(f.journal.bindings[name], id);
+  assert.deepEqual(f.journal.publicPersonal, before.publicPersonal); assert.deepEqual(f.journal.unrelatedHistory, before.unrelatedHistory);
+  assert.deepEqual(f.journal.attempted, [...before.attempted, 'path-app-browser']);
+  assert.ok(f.journal.completedAt); assert.deepEqual(journal, before); assert.deepEqual(result.files, []);
 });
 
 test('invalid scope and an unrelated in-flight mapping are rejected before provider access', async () => {

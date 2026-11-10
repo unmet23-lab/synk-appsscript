@@ -219,7 +219,7 @@ function scopedStorage(storage, accountKey, revision, guard) {
 var PRODUCTS, nativeSchemes, isLoopback, base64url;
 var init_core = __esm({
   "experiences/synk-account/src/core.mjs"() {
-    PRODUCTS = Object.freeze({ platform: "SYNK 플랫폼", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK 플레저", path: "SYNK PATH", "path-travel": "SYNK PATH 여행" });
+    PRODUCTS = Object.freeze({ platform: "SYNK 플랫폼", world: "SYNK WORLD", messenger: "SYNK Workspace", care: "SYNK 플레저", path: "SYNK PATH", "path-travel": "SYNK PATH 여행", "path-app": "SYNK PATH" });
     nativeSchemes = /* @__PURE__ */ new Set(["synktalk:", "im.synk.platform:", "im.synk.world:", "im.synk.messenger:", "im.synk.care:"]);
     isLoopback = (hostname) => ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
     base64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -374,7 +374,8 @@ function createProductAccount({
   now = Date.now,
   cryptoAPI
 } = {}) {
-  if (!["care", "path", "path-travel"].includes(clientKey) || !["synk-care", "synk-personal"].includes(endpoint) || typeof validateState !== "function") throw new TypeError("앱 계정 설정 형식이 맞지 않아요.");
+  const pathApp = clientKey === "path-app" || endpoint === "synk-path";
+  if (typeof validateState !== "function" || (pathApp ? clientKey !== "path-app" || endpoint !== "synk-path" || scope !== "synk-path" || resource !== "path-app" : !["care", "path", "path-travel"].includes(clientKey) || !["synk-care", "synk-personal"].includes(endpoint))) throw new TypeError("앱 계정 설정 형식이 맞지 않아요.");
   const LIMIT = 4 * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations2));

@@ -2,7 +2,7 @@
 // Read-only, digest-guarded plan. It never registers a client or writes a secret.
 const crypto = require('node:crypto');
 const fs = require('node:fs');
-const { CLIENTS, SERVICES, LEGACY_CLIENT_IDS } = require('./registry.cjs');
+const { CLIENTS, SERVICES, LEGACY_CLIENT_IDS, PRESERVED_CLIENT_BINDINGS } = require('./registry.cjs');
 const digest = value => crypto.createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
 const canonicalMap = environment => Object.fromEntries(Object.entries(LEGACY_CLIENT_IDS[environment] || {}).map(([service,id])=>[id,service==='world'?'world':'platform']));
 const clientName = (registration, environment) => `SYNK ${registration} (${environment})`;
@@ -25,7 +25,13 @@ function buildProvisionPlan({environment,clients,secretDigest,existingMapping,bi
   const source = existingMapping === undefined ? canonicalMap(environment) : existingMapping;
   if (!source || Array.isArray(source) || typeof source!=='object' || Object.entries(source).some(([id,p])=>!id||!['world','platform','messenger'].includes(p))) throw Error('기존 제품 매핑 형식이 잘못되었습니다.');
   if (digest(source)!==secretDigest) throw Error('원격 제품 매핑 지문이 원본과 다릅니다. 기존값을 확인하기 전에는 변경할 수 없습니다.');
-  if (!bindings || typeof bindings !== 'object' || Array.isArray(bindings) || Object.entries(bindings).some(([id, value]) => !CLIENTS.some(client => client.id === id) || typeof value !== 'string' || !value)) throw Error('등록 연결 이름과 실제 client ID를 확인해 주세요.');
+  if (!bindings || typeof bindings !== 'object' || Array.isArray(bindings) || Object.entries(bindings).some(([id, value]) => {
+    if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,256}$/.test(value)) return true;
+    if (CLIENTS.some(client => client.id === id)) return false;
+    const preserved = PRESERVED_CLIENT_BINDINGS.find(client => client.id === id);
+    return !preserved || preserved.knownIds[environment] !== value || source[value] !== preserved.product;
+  })) throw Error('등록 연결 이름과 실제 client ID를 확인해 주세요.');
+  if (new Set(Object.values(bindings)).size !== Object.keys(bindings).length) throw Error('실행 환경 사이에서 동일 OAuth client ID를 공유할 수 없습니다.');
   if (new Set(clients.map(client => client.client_id)).size !== clients.length || clients.some(client => typeof client.client_id !== 'string' || !/^[A-Za-z0-9_-]{1,256}$/.test(client.client_id))) throw Error('원격 클라이언트 목록이 중복되거나 잘못됐습니다.');
   const assigned = new Set();
   const mergedMapping={...source},actions=[],registrations=[];

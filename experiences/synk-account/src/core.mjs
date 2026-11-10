@@ -1,4 +1,4 @@
-export const PRODUCTS = Object.freeze({ platform: 'SYNK 플랫폼', world: 'SYNK WORLD', messenger: 'SYNK Workspace', care: 'SYNK 플레저', path: 'SYNK PATH', 'path-travel': 'SYNK PATH 여행' });
+export const PRODUCTS = Object.freeze({ platform: 'SYNK 플랫폼', world: 'SYNK WORLD', messenger: 'SYNK Workspace', care: 'SYNK 플레저', path: 'SYNK PATH', 'path-travel': 'SYNK PATH 여행', 'path-app': 'SYNK PATH' });
 const nativeSchemes = new Set(['synktalk:', 'im.synk.platform:', 'im.synk.world:', 'im.synk.messenger:', 'im.synk.care:']);
 function callbackUrl(value) {
   const url = new URL(value);

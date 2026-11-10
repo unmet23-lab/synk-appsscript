@@ -20,7 +20,8 @@ export function createProductAccount({
   navigate = url => globalThis.location.assign(url),
   loadCore = () => import('./core.mjs'), now = Date.now, cryptoAPI,
 } = {}) {
-  if (!['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('앱 계정 설정 형식이 맞지 않아요.');
+  const pathApp = clientKey === 'path-app' || endpoint === 'synk-path';
+  if (typeof validateState !== 'function' || (pathApp ? clientKey !== 'path-app' || endpoint !== 'synk-path' || scope !== 'synk-path' || resource !== 'path-app' : !['care', 'path', 'path-travel'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint))) throw new TypeError('앱 계정 설정 형식이 맞지 않아요.');
   const LIMIT = 4 * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations));

@@ -35,6 +35,21 @@ test('travel uses a separate browser-only client and observed config without cha
   assert.throws(() => buildConfigPlan(shared), /중복/);
 });
 
+test('PATH app config uses its observed browser identity and leaves PATH VR, travel and native callbacks unchanged', () => {
+  const wanted = CLIENTS.filter(row => row.service === 'path-app');
+  assert.equal(wanted.length, 1); assert.equal(wanted[0].id, 'path-app-browser');
+  assert.deepEqual(wanted[0].redirectUris, ['http://127.0.0.1:4326/']);
+  const plan = buildConfigPlan(input(['path-browser', 'path-travel-browser', 'path-app-browser']));
+  assert.deepEqual(data(plan, 'browser').clients, {
+    path: { clientId: 'synthetic-path-browser', redirectUri: 'http://127.0.0.1:4292/' },
+    'path-travel': { clientId: 'synthetic-path-travel-browser', redirectUri: 'http://127.0.0.1:4303/' },
+    'path-app': { clientId: 'synthetic-path-app-browser', redirectUri: 'http://127.0.0.1:4326/' },
+  });
+  assert.equal(plan.products['synthetic-path-app-browser'], 'platform');
+  assert.deepEqual(data(plan, 'desktop').clients, {});
+  assert.equal(CLIENTS.filter(row => row.runtime === 'native').length, 7);
+});
+
 test('actual registrations produce all six isolated desktop clients and canonical browser configs', async () => {
   const plan = buildConfigPlan(input()), desktop = data(plan, 'desktop'), browser = data(plan, 'browser'), fortune = data(plan, 'fortune');
   assert.deepEqual(Object.keys(desktop.clients), ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care']);

@@ -198,19 +198,94 @@ function 누적USD(키, 기록) {
   return 합;
 }
 
+// 2026-11-10 공식 Vision: 28px patch, 고해상도 장당 최대 4,784 visual tokens.
+// https://platform.claude.com/docs/en/build-with-claude/vision
+// https://platform.claude.com/docs/en/models/fable-5-1/overview (입력 $10/MTok, 출력 $50/MTok)
+// Fable 5.1의 정적 PNG base64만 8,192토큰/장으로 더 넉넉히 예약한다. 다른 모델·입력은 기존대로 닫는다.
+// API보다 좁은 자체 입력 경계: 20장, 각 base64 5MiB, 합 20MiB, 한 변 1..8000px, 비인터레이스 PNG.
+const PNG상한 = Object.freeze({ 장수: 20, base64: 5 * 1024 * 1024, 합: 20 * 1024 * 1024, 변: 8000, 토큰: 8192 });
+const CRC표 = Array.from({ length: 256 }, (_, n) => {
+  for (let i = 0; i < 8; i++) n = (n & 1) ? 0xedb88320 ^ (n >>> 1) : n >>> 1;
+  return n >>> 0;
+});
+function PNG맞음(data) {
+  if (typeof data !== 'string' || !data.length || data.length > PNG상한.base64 || data.length % 4
+    || !/^[A-Za-z0-9+/]*={0,2}$/.test(data)) return false;
+  const bytes = Buffer.from(data, 'base64');
+  if (bytes.toString('base64') !== data || bytes.length < 57 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return false;
+  const 허용청크 = new Set(['IHDR', 'PLTE', 'IDAT', 'IEND', 'cHRM', 'gAMA', 'iCCP', 'sBIT', 'sRGB', 'bKGD', 'hIST', 'tRNS', 'pHYs', 'tEXt', 'zTXt', 'iTXt', 'tIME', 'eXIf']);
+  let offset = 8, idat = false, idat끝 = false, palette = false, color;
+  while (offset + 12 <= bytes.length) {
+    const length = bytes.readUInt32BE(offset), end = offset + 12 + length;
+    if (end > bytes.length) return false;
+    const type = bytes.toString('latin1', offset + 4, offset + 8);
+    if (!허용청크.has(type)) return false; // APNG acTL/fcTL/fdAT·미확인 청크도 거절.
+    let crc = 0xffffffff;
+    for (let i = offset + 4; i < end - 4; i++) crc = CRC표[(crc ^ bytes[i]) & 255] ^ (crc >>> 8);
+    if (((crc ^ 0xffffffff) >>> 0) !== bytes.readUInt32BE(end - 4)) return false;
+    if (offset === 8) {
+      if (type !== 'IHDR' || length !== 13) return false;
+      const width = bytes.readUInt32BE(offset + 8), height = bytes.readUInt32BE(offset + 12), depth = bytes[offset + 16];
+      color = bytes[offset + 17];
+      const depths = { 0: [1, 2, 4, 8, 16], 2: [8, 16], 3: [1, 2, 4, 8], 4: [8, 16], 6: [8, 16] };
+      if (!width || !height || width > PNG상한.변 || height > PNG상한.변 || !depths[color]?.includes(depth)
+        || bytes[offset + 18] !== 0 || bytes[offset + 19] !== 0 || bytes[offset + 20] !== 0) return false;
+    } else if (type === 'IHDR') return false;
+    if (type === 'PLTE') {
+      if (palette || idat || !length || length > 768 || length % 3) return false;
+      palette = true;
+    }
+    if (type === 'IDAT') { if (idat끝 || !length) return false; idat = true; }
+    else if (idat) idat끝 = true;
+    if (type === 'IEND') return length === 0 && idat && (color !== 3 || palette) && end === bytes.length;
+    offset = end;
+  }
+  return false;
+}
+
+function PNG입력어림(params, 글) {
+  const 허용요청 = new Set(['model', 'max_tokens', 'messages', 'system', 'thinking', 'output_config', 'temperature', 'top_k', 'top_p', 'metadata', 'stop_sequences', 'stream', 'cache_control']);
+  if (params.model !== 'claude-fable-5-1' || !Number.isInteger(params.max_tokens) || params.max_tokens > 128000
+    || Object.keys(params).some(key => !허용요청.has(key))) return null;
+  const 복사 = JSON.parse(글);
+  let 장수 = 0, 합 = 0;
+  for (const message of 복사.messages || []) {
+    if (message?.role !== 'user' || !Array.isArray(message.content)) continue;
+    for (const block of message.content) {
+      if (block?.type !== 'image') continue;
+      const source = block.source;
+      if (Object.keys(block).some(key => !['type', 'source', 'cache_control'].includes(key)) || !source
+        || Object.keys(source).some(key => !['type', 'media_type', 'data'].includes(key))
+        || source.type !== 'base64' || source.media_type !== 'image/png' || !PNG맞음(source.data)) return null;
+      if (++장수 > PNG상한.장수 || (합 += source.data.length) > PNG상한.합) return null;
+      // 비용 어림 사본에서 검증된 픽셀 운반 문자열만 뺀다. 원문·추가 필드·cache_control은 그대로 바이트로 센다.
+      // 보내기()는 원래 본문을 보내므로 이미지 변형·도구 우회가 아니다.
+      block.type = 'validated_static_png'; source.type = 'validated_png_base64'; source.data = '';
+    }
+  }
+  return 장수 ? { 글: JSON.stringify(복사), 토큰: 장수 * PNG상한.토큰 } : null;
+}
+
 // 보내기 전의 위 어림. 토큰은 1바이트 이상이므로 요청 JSON의 UTF-8 바이트 수를 입력 토큰의 위 한계로 삼고(도구 정의가 있으면
 // API가 덧붙이는 지시 몫 1,000토큰을 더한다), 캐시 쓰기 할증(1시간 2배·5분 1.25배)을 모두 쓰기로 보고, 출력은 max_tokens까지다.
-// 단가를 모르는 모델, max_tokens가 수가 아닌 요청, 바이트로 가늠할 수 없는 요청 — 그림·문서(base64라도 해상도·쪽으로 매겨진다)·
+// 단가를 모르는 모델, max_tokens가 수가 아닌 요청, 바이트로 가늠할 수 없는 요청 — 위 PNG 예외 밖 그림·문서·
 // 서버 도구(검색·코드 실행 결과가 다시 입력이 된다)·MCP·컨테이너 — 은 Infinity라 한도 키로 보내지 않는다.
 function 요청어림USD(params) {
   const 표 = 단가[params?.model];
   const 출력 = params?.max_tokens;
   if (!표 || typeof 출력 !== 'number' || !Number.isFinite(출력) || 출력 < 0) return Infinity;
-  const 글 = JSON.stringify(params);
-  if (/"type"\s*:\s*"(url|file|image|document|base64)"/.test(글) || params.mcp_servers != null || params.container != null
+  let 글 = JSON.stringify(params), 그림토큰 = 0;
+  if (params.mcp_servers != null || params.container != null
     || (Array.isArray(params.tools) && params.tools.some((도구) => 도구?.type != null && 도구.type !== 'custom'))) return Infinity;
+  if (/"type"\s*:\s*"image"/.test(글)) {
+    let 그림;
+    try { 그림 = PNG입력어림(params, 글); } catch { return Infinity; }
+    if (!그림) return Infinity;
+    글 = 그림.글; 그림토큰 = 그림.토큰;
+  }
+  if (/"type"\s*:\s*"(url|file|image|document|base64)"/.test(글)) return Infinity;
   const 배수 = /"ttl"\s*:\s*"1h"/.test(글) ? 2 : /"cache_control"/.test(글) ? 1.25 : 1;
-  const 입력 = Buffer.byteLength(글, 'utf8') * 배수 + (Array.isArray(params.tools) && params.tools.length ? 1000 : 0);
+  const 입력 = (Buffer.byteLength(글, 'utf8') + 그림토큰) * 배수 + (Array.isArray(params.tools) && params.tools.length ? 1000 : 0);
   return (입력 * 표[0] + 출력 * 표[1]) / 1e6;
 }
 
