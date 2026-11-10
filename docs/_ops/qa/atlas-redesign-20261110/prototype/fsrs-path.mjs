@@ -4,7 +4,8 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-export function loadFsrs() {
+// 찾은 자리(require에 넘길 이름이나 폴더)를 돌려준다. 다른 폴더에서 돌릴 때 TS_FSRS로 넘겨 줄 수 있다.
+export function findFsrs() {
   const require = createRequire(import.meta.url);
   const here = path.dirname(fileURLToPath(import.meta.url));
   const tried = [];
@@ -15,7 +16,8 @@ export function loadFsrs() {
     tried.push(path.join(dir, '..', 'SYNK-talk', 'node_modules', 'ts-fsrs'));
   }
   for (const candidate of tried) {
-    try { if (candidate === 'ts-fsrs' || existsSync(candidate)) return require(candidate); } catch { /* 다음 후보 */ }
+    try { if (candidate === 'ts-fsrs' || existsSync(candidate)) { require(candidate); return candidate; } } catch { /* 다음 후보 */ }
   }
   throw new Error('ts-fsrs를 찾지 못했다. TS_FSRS=<ts-fsrs 폴더> 로 알려 주거나 SYNK-talk에서 npm install을 한다.');
 }
+export function loadFsrs() { return createRequire(import.meta.url)(findFsrs()); }
