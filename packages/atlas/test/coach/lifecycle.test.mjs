@@ -465,3 +465,48 @@ test('제품이 후보를 좁힌 까닭(pool)은 고른 줄의 근거 칸에 실
   assert.equal(plain.why.evidence.pool, undefined, '꼴이 아닌 값은 싣지 않는다');
   coach.dispose();
 });
+
+test('코치는 조각이 낱말 이름(words)을 실었으면 낱말 표 전체를 받지 않는다 — 실리지 않은 조각이 있을 때만 받는다(atlas-1b 11-11)', async () => {
+  const fs = await import('node:fs');
+  const { PACKAGE_ROOT } = await import('../support/subject.mjs');
+  const read = name => JSON.parse(fs.readFileSync(`${PACKAGE_ROOT}/map/${name}`, 'utf8'));
+  const slice = read('index.json');
+  const units = read('units.json');
+  const words = read('words.json');
+  const fetched = [];
+  const real = globalThis.fetch;
+  const open = async withWords => {
+    fetched.length = 0;
+    globalThis.fetch = async url => {
+      const name = String(url).split('/map/')[1];
+      fetched.push(name);
+      const body =
+        name === 'units.json'
+          ? units
+          : name === 'words.json'
+            ? words
+            : withWords
+              ? { ...slice, words: { prefix: 'ko.word.', fields: words.fields, units: [] } }
+              : slice;
+      return { ok: true, status: 200, json: async () => body };
+    };
+    const coach = createCoach({
+      gameId: 'words',
+      banks: ['topik-items'],
+      words: true,
+      host: { guest: true, port: memoryPort(), key: keyOf('words'), now: clock().now },
+    });
+    await coach.ready;
+    coach.dispose();
+    return [...fetched];
+  };
+  try {
+    assert.ok(
+      (await open(false)).includes('words.json'),
+      '조각에 낱말 이름이 없으면 낱말 표를 받는다',
+    );
+    assert.ok(!(await open(true)).includes('words.json'), '조각이 실었으면 받지 않는다');
+  } finally {
+    globalThis.fetch = real;
+  }
+});

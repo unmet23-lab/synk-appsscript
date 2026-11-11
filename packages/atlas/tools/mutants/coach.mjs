@@ -129,6 +129,14 @@ export const COACH_MUTANTS = [
   ],
   [
     C,
+    '지도',
+    '조각이 낱말 이름을 실어도 낱말 표 전체를 받는다(atlas-1b 11-11)',
+    'src/coach/index.mjs',
+    'options.words && slices.some(slice => !slice?.words)',
+    'options.words',
+  ],
+  [
+    C,
     '호스트',
     '손님 호스트가 옛 기기 기록을 옮기지 않는다(Fable P1-5 ①)',
     HOST,

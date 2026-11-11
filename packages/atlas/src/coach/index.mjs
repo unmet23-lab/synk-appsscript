@@ -35,11 +35,14 @@ async function loadMap(options) {
     if (!response.ok) throw fail('MAP_FAILED', `${name}을 받지 못했다(${response.status})`);
     return response.json();
   };
-  const [slices, units, words] = await Promise.all([
+  const [slices, units] = await Promise.all([
     Promise.all(options.banks.map(bank => get(`items/${bank}.json`))),
     get('units.json'),
-    options.words ? get('words.json') : null,
   ]);
+  // 조각이 그 조각의 낱말 이름(words)을 실으면 낱말 표 전체(words.json, 70KB)는 받지 않는다 — 실리지 않은 조각이 있을 때만(atlas-1b 11-11:
+  // 쓰는 낱말이 1~400개인 조각만 싣고, 레이싱처럼 큰 조각은 싣지 않는다). openMap의 unit(id)이 조각의 낱말 줄을 읽는다.
+  const words =
+    options.words && slices.some(slice => !slice?.words) ? await get('words.json') : null;
   return openMap({ index: slices, units, words });
 }
 
