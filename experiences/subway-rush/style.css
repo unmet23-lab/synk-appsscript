@@ -145,7 +145,8 @@ html[data-picking] .hud-row2{justify-content:flex-end}
 .pick[data-kind=exit] .pk-small{font-size:21px;font-size:clamp(16px,2.5vh,21px);font-size:clamp(16px,2.5cqh,21px)}
 /* 아주 낮은 무대: 영문 꼬리표부터 빼고, 더 낮으면 화살도 뺀다(색 띠 · 글이 남는다) */
 @media (max-height:560px){.pk-en{display:none}}   /* 무대 높이 = 창 높이(게임 틀 iframe 안에서도) — @container가 아니라 @media라 cq를 모르는 브라우저에서도 듣는다 */
-@media (max-height:450px){.pk-arrow{display:none}.pk-line{position:static}}   /* 화살이 빠지면 노선 동그라미가 글 줄로 내려와 겹치므로 흐름에 넣는다(검수 A3) */
+@media (max-height:450px){.pk-arrow{display:none}.pk-line{position:static;width:18px;height:18px;font-size:11px;line-height:18px}}
+@media (max-height:400px){.pk-opt{gap:4px}.pick[data-kind=fork] .pk-small,.pick[data-kind=board] .pk-small{display:none}}   /* 가로로 눕힌 폰(높이 360~390): 통로 · 승강장의 가는 말(방면 · 타는 곳)이 칸 밖으로 밀려 잘렸다 — 굵은 말 · 노선 동그라미만 남긴다(검수) */   /* 화살이 빠지면 노선 동그라미가 글 줄로 내려와 겹치므로 흐름에 넣는다(검수 A3) */
 @media (max-height:490px),(max-width:305px){.pk-hint{display:none}}   /* 무대 폭(= min(창 폭, 창 높이 × .62))이 305 아래일 때만 손짓 안내가 질문을 「…」로 잘랐다 — 그때만 뺀다(360 · 320 폰은 한 줄에 든다, 검수). 창 크기로 재서 cq를 모르는 브라우저에서도 듣는다 */
 .pk-opt[data-mine] .pk-num{color:var(--t)}
 @keyframes pk-in{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}

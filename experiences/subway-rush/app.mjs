@@ -58,7 +58,11 @@ sound.onVoice = (on) => music.voice(on);
 await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED'), document.fonts.load('700 19px SubwayUI'), document.fonts.load('500 30px SubwayNum')]).catch(() => {});
 const hud = createHud({ route: $('hud-route'), clock: $('hud-clock'), status: $('hud-status'), badge: $('hud-badge'), stage: $('stage'), calm: reduced });
 // 옛 index.html(캐시 10분)이 새 app.mjs를 부르면 #pick이 없다 — 그때는 판 자리를 만들어 붙인다(검수: root null로 모듈이 죽어 입구도 안 떴다)
-const pickRoot = $('pick') || $('stage').appendChild(Object.assign(document.createElement('section'), { id: 'pick', className: 'pick', hidden: true }));
+// 그때는 옛 style.css(판 규칙 없음)도 캐시에 있기 쉬워 판이 안 보이므로, 새 주소로 style.css를 한 번 더 붙인다(새 style.css는 옛 index.html과도 맞는다)
+const pickRoot = $('pick') || (() => {
+  document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: `style.css?v=pick-${Date.now()}` }));
+  return $('stage').appendChild(Object.assign(document.createElement('section'), { id: 'pick', className: 'pick', hidden: true }));
+})();
 const panel = createPickPanel({ root: pickRoot });
 const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced, look: query.get('look') === 'b' ? 'b' : 'a' }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
 const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();

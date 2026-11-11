@@ -4,7 +4,7 @@
 //   ② 노선 동그라미가 굵은 말과 겹치는지(검수 -b A3) ③ 질문이 「…」로 잘리는지 ④ 누름 칸(#zones)이 판의 칸 자리를 덮는지(높이 0이면 못 고른다)
 //   ⑤ 손짓 안내가 보이는지(무대 폭 306 이상이면 보여야 한다 — 360 · 320 폰, Fable 5.2 P2)
 //   node experiences/subway-rush/qa/판넘침.cjs [폭,높이 …] [--cq없음]
-//     기본 크기 390×844 · 390×740 · 375×667 · 390×600 · 360×800 · 360×560 · 320×568 · 390×480 · 390×420 · 1366×650
+//     기본 크기 390×844 · 390×740 · 375×667 · 390×600 · 360×800 · 360×560 · 320×568 · 390×480 · 390×420 · 1366×650 · 가로 폰 932×430 · 844×390 · 667×375 · 740×360
 //     --cq없음: style.css의 cqh · cqw를 모르는 단위로 바꾸고 @supports(cq) · @container 묶음을 걷어 cq 단위를 모르는 브라우저(iOS Safari 15.4~15.8)를 흉내 낸다
 //   끝 코드 0 문제 없음 · 1 문제 있음(넘침 · 겹침 · 질문 잘림 · 누름 칸 어긋남 · 안내 빠짐 · 페이지 오류)
 const path = require('node:path'), fs = require('node:fs'), http = require('node:http');
@@ -15,7 +15,7 @@ const EXP = path.join(ROOT, 'experiences');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.mjs': 'text/javascript', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.json': 'application/json' };
 const args = process.argv.slice(2), NO_CQ = args.includes('--cq없음');
 const given = args.filter((a) => /^\d+,\d+$/.test(a));
-const SIZES = (given.length ? given : ['390,844', '390,740', '375,667', '390,600', '360,800', '360,560', '320,568', '390,480', '390,420', '1366,650']).map((s) => s.split(',').map(Number));
+const SIZES = (given.length ? given : ['390,844', '390,740', '375,667', '390,600', '360,800', '360,560', '320,568', '390,480', '390,420', '1366,650', '932,430', '844,390', '667,375', '740,360']).map((s) => s.split(',').map(Number));   // 끝 넷은 가로로 눕힌 폰
 const srv = http.createServer((req, res) => {
   let file = path.join(EXP, decodeURIComponent(new URL(req.url, 'http://x').pathname));
   if (!file.startsWith(EXP) || !fs.existsSync(file)) { res.writeHead(404); res.end(); return; }
@@ -50,6 +50,9 @@ srv.listen(0, '127.0.0.1', async () => {
   for (const [w, h] of SIZES) {
     await page.setViewportSize({ width: w, height: h });
     await page.waitForTimeout(250);
+    // 입구가 떠 있는 동안 낮은 창은 무대를 옆 배치로 넓힌다(data-lobby-fit) — 게임 중 무대로 재려고 그 표시를 걷는다
+    await page.evaluate(() => { document.documentElement.removeAttribute('data-lobby-fit'); document.getElementById('lobby').hidden = true; });
+    await page.waitForTimeout(80);
     for (const s of sets) {
       await page.evaluate((s) => { const p = window.__subway.panel; document.getElementById('zones').hidden = false; p.show(s.kind, s.options, { line: s.line, hint: '누르거나 밀어요' }); }, s);
       await page.waitForTimeout(950);
