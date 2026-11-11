@@ -4,7 +4,7 @@
 // 이어 부르면 뜻(소리 뒤) → 반주만 흐르는 네 차례)은 한글 노래 「첫 인사」 틀(가이드 §3 「낱말 노래 틀」) 그대로다.
 // v1(흰 둥근 판 · 테두리 칸 · 검정 알약)은 맹검에서 「범용 학습 앱 템플릿」으로 기각 — 칸 · 판 · 그림자를 걷고 글자 자체로 보인다.
 // v2(그림 카드 + 글 자리)는 「그림을 끼운 템플릿」(카드 모서리 · 그림자가 둘을 가름)으로 기각 — v3는 그림이 아래로 바탕에 스며들어 한 장이 된다.
-// 위: 그림(stage.img = 장면 속 몽글 · stage.pic = 낱말 그림만 — 진행자는 유호님이 고르신다). 아래: 글자 자리. 맨 아래: 박 막대
+// 위: 그림(stage.img = 장면 속 몽글 · stage.pic = 낱말 그림만 — 11-11 유호님이 mongle을 고르셨다). 아래: 글자 자리. 맨 아래: 박 막대
 // (네 차례 때 손뼉 칠 박을 켠다). 안전 영역(S16): 글은 y ≤ 1536 · x ≤ 930. 화면에 AI 도구 이름 · 계정 이름을 쓰지 않는다.
 // 언어판 장치는 퀴즈 은행 틀(언어 프로필 · fitBox · LOC 글꼴)을 그대로 쓴다. 0프레임에 이미 다 보인다(되풀이 재생 · 표지).
 import { Audio } from '@remotion/media';
@@ -68,6 +68,9 @@ function glyphStates(doc: SongDoc, f: number, fps: number): { glyphs: Glyph[]; p
   const glyphs: Glyph[] = Array.from({ length: n }, () => ({ mode: sung ? 'done' : 'ghost', scale: 1 }));
   const at = (sec: number) => Math.round(sec * fps);
   if (part.kind === 'chop') {
+    // 처음 한 바퀴의 끊어 부르기에서는 아직 안 부른 음절을 흐린 글자로(노래방처럼 부른 데까지 짙어진다)
+    const firstPass = !doc.parts.some((p) => (p.kind === 'chop' || p.kind === 'whole' || p.kind === 'real') && p.t < part.t);
+    if (firstPass) part.at.forEach((a, i) => { if (i < n && t < a) glyphs[i] = { mode: 'ghost', scale: 1 }; });
     part.at.forEach((a, i) => {
       if (i >= n || t < a) return;
       glyphs[i] = { mode: 'on', scale: slam(f, at(a), fps, 1.14) };
@@ -104,7 +107,12 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
   const count = doc.parts.find((p) => p.kind === 'count');
   const firstWhole = doc.parts.find((p) => p.kind === 'whole');
   const endPart = doc.parts.find((p) => p.kind === 'end');
-  const inCount = !!count && t < count.end;
+  // 카운트인 → 음절 이음: 끝 0.3초 동안 다리 글은 위로 빠지고 음절 줄은 아래에서 올라와 겹친다(v5 맹검 — 통째로 바뀌는 「슬라이드 넘김」)
+  const swapEase = { ...clamp, easing: Easing.bezier(0.65, 0, 0.35, 1) };
+  const swapOut = count ? interpolate(t, [count.end - 0.3, count.end - 0.12], [0, 1], swapEase) : 1; // 다리 글이 먼저 빠지고
+  const swap = count ? interpolate(t, [count.end - 0.2, count.end], [0, 1], swapEase) : 1; // 음절 줄이 뒤따른다
+  const showBridge = !!count && t < count.end + 0.02;
+  const showGlyphs = !count || t >= count.end - 0.3;
   const inEnd = !!endPart && t >= endPart.t;
   const meanAt = firstWhole ? firstWhole.at[0] + 0.25 : Infinity; // 뜻은 소리 뒤
   const leave = inEnd ? interpolate(f, [fr(endPart!.t), fr(endPart!.t) + 8], [0, 1], { ...clamp, easing: EASE_OUT }) : 0;
@@ -143,7 +151,7 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
       ) : null}
 
       {/* 카운트인 — 이 낱말을 쓰는 상황 한 줄(0프레임에 이미 보인다) */}
-      {inCount ? (() => {
+      {showBridge ? (() => {
         const box = fitBox(loc.bridge, prof, TEXT_W, 100, 56, 4);
         // 읽는 빠르기로 낱말마다 짙어진다 — 첫 박부터 카운트인 끝 0.7초 전까지(0프레임에는 흐리게 다 보인다 · 표지)
         const words = box.lines.map((l) => l.split(/(\s+)/).filter((x) => x !== ''));
@@ -152,7 +160,7 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
         let k2 = -1;
         return (
           <div style={{ position: 'absolute', left: PAD, top: Y.label + 8, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: box.size, lineHeight: 1.12,
-            letterSpacing: '-0.025em' }}>
+            letterSpacing: '-0.025em', opacity: 1 - swapOut, translate: `0 ${-36 * swapOut}px` }}>
             {words.map((ws, i) => (
               <div key={i}>
                 {ws.map((w, j) => {
@@ -179,8 +187,8 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
       ) : null}
 
       {/* 음절 — 상자 없이 글자 그대로. 흐림 → 부를 때 코랄로 쾅 → 검정. 네 차례엔 속이 빈 글자가 박마다 뛴다 */}
-      {!inCount ? (
-        <div style={{ position: 'absolute', left: PAD, top: Y.glyph, display: 'flex', gap, opacity: 1 - leave, translate: `0 ${-24 * leave}px` }}>
+      {showGlyphs ? (
+        <div style={{ position: 'absolute', left: PAD, top: Y.glyph, display: 'flex', gap, opacity: (1 - leave) * swap, translate: `0 ${36 * (1 - swap) - 24 * leave}px` }}>
           {glyphs.map((g, i) => {
             // 네 차례(ask): 검정 글자가 박마다 코랄로 번쩍 — 손뼉 · 말할 자리(속 빈 테두리는 가변 글꼴의 겹친 획이 드러났고, 회색은 「꺼진 화면」으로 읽혔다)
             const color = g.mode === 'on' ? C.accent : g.mode === 'ghost' ? C.ghost : g.mode === 'ask' ? (flash > 0.3 ? C.accent : C.ink) : C.ink; // 사이 색(적갈색) 없이 켜고 끈다
@@ -218,12 +226,13 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
         let qk = -1;
         return (
           <>
-            <div style={{ position: 'absolute', left: PAD, top: Y.label, display: 'flex', alignItems: 'baseline', gap: 18, whiteSpace: 'nowrap', ...blurIn(f, at0, fps, 18, 10) }}>
+            {/* 낱말 아래 줄에 뜻(v6 맹검 — 옆에 작게 붙인 뜻이 「매달린 주석」으로 읽혔다) */}
+            <div style={{ position: 'absolute', left: PAD, top: Y.label - 10, display: 'flex', flexDirection: 'column', gap: 10, whiteSpace: 'nowrap', ...blurIn(f, at0, fps, 18, 10) }}>
               <span style={{ fontFamily: KO, fontWeight: 900, fontSize: Math.min(168, G * 0.68), lineHeight: 1, letterSpacing: '-0.04em', color: C.accent }}>{doc.word}</span>
-              <span style={{ fontFamily: LOC, fontWeight: 500, fontSize: Math.min(56, meanSize), color: C.muted }}>{loc.mean}</span>
+              <span style={{ fontFamily: LOC, fontWeight: 500, fontSize: Math.min(52, meanSize), lineHeight: 1.1, color: C.muted }}>{loc.mean}</span>
             </div>
             {/* 줄은 균형 있게(「in」이 홀로 남지 않게 — text-wrap: balance), 낱말마다 차례로 */}
-            <div style={{ position: 'absolute', left: PAD, top: Y.label + Math.min(168, G * 0.68) + 56, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: box.size, lineHeight: 1.12,
+            <div style={{ position: 'absolute', left: PAD, top: Y.label - 10 + Math.min(168, G * 0.68) + 10 + Math.min(52, meanSize) * 1.1 + 58, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: box.size, lineHeight: 1.12,
               letterSpacing: '-0.025em', color: C.ink, textWrap: 'balance' } as React.CSSProperties}>
               {(() => {
                 // 따옴표 안 말(그 낱말의 뜻)만 코랄 — 끝 물음의 강약, 박마다 살짝 뛴다(멈춘 끝 화면이 되지 않게)
