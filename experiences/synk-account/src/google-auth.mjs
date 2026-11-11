@@ -81,9 +81,12 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
   };
   function render() {
     // The same words as the e-mail button beside it: 「Google로 로그인」 / 「Google로 가입」.
-    if (button) { button.disabled = !enabled || busy || hostBusy();text('google-login-label', busy ? 'Google 연결을 확인하고 있어요…' : mode === 'signup' ? 'Google로 가입' : 'Google로 로그인'); }
-    // The line under the pair speaks only while Google is being looked up or cannot be used.
+    // data-off tells 「cannot be used」 from 「still being looked up」: both are disabled, but only the first is drawn faded,
+    // so the button does not flash grey → colour every time the page opens (A 한 칸, 2026-11-11).
+    if (button) { button.disabled = !enabled || busy || hostBusy();button.setAttribute('data-off', String(settled && !enabled));text('google-login-label', busy ? 'Google 연결을 확인하고 있어요…' : mode === 'signup' ? 'Google로 가입' : 'Google로 로그인'); }
+    // The line under the pair speaks only while Google is being looked up (read out, not drawn) or cannot be used.
     text('google-availability', !settled ? 'Google 로그인을 확인하고 있어요.' : enabled ? '' : mode === 'signup' ? '지금은 Google로 가입할 수 없어요. 이메일로 가입해 주세요.' : '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.');
+    node('google-availability')?.setAttribute('data-state', !settled ? 'checking' : enabled ? 'on' : 'off');
     if (node('google-privacy-note')) node('google-privacy-note').hidden = !['login', 'signup'].includes(mode) || settled && !enabled;
     if (node('google-linking')) node('google-linking').hidden = !enabled || !accountVisible || required;
     if (link) link.disabled = !enabled || busy || hostBusy() || !user;

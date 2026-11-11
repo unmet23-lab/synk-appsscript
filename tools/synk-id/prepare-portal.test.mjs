@@ -18,7 +18,7 @@ function fixture(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-portal-prepare-')), root = path.join(directory, 'repository');
   t.after(() => { assert.equal(fs.realpathSync(directory), directory);assert.equal(path.dirname(directory), fs.realpathSync(os.tmpdir()));fs.rmSync(directory, { recursive: true, force: true }); });
   fs.mkdirSync(path.join(root, 'experiences/synk-account'), { recursive: true });
-  for (const file of ['index.html', 'style.css', 'src/core.mjs', 'dist/app.js', 'assets/scrapbook.css', 'assets/InterTight-700.woff2', 'assets/SUIT-Variable.woff2', 'assets/badge-check.webp', 'assets/badge-cream.webp', 'assets/slab-coral-long.webp', 'assets/slab-cream-long.webp', 'assets/sticker-book.webp', 'assets/thread-shift.webp']) {
+  for (const file of ['index.html', 'id.css', 'src/core.mjs', 'dist/app.js', 'assets/SYNKSans-rest.woff2', 'assets/SYNKSans-ui.woff2']) {
     const destination = path.join(root, 'experiences/synk-account', file);fs.mkdirSync(path.dirname(destination), { recursive: true });fs.copyFileSync(path.join(sourceRoot, 'experiences/synk-account', file), destination);
   }
   fs.mkdirSync(path.join(root, 'experiences/learning-hub'), { recursive: true });
@@ -54,7 +54,7 @@ test('explicit generated configuration preserves Fortune browser/native and lega
   assert.equal(learningScript.pathname, '/id/vendor/atlas-learning.js');
   assert.ok(learningScript.searchParams.get('v'));
   assert.doesNotMatch(html, /href="\.\/platform.html"/);
-  assert.equal(result.files.length, 14);assert.equal(result.clients, 4);
+  assert.equal(result.files.length, 7);assert.equal(result.clients, 4);
   assert.deepEqual(fs.readFileSync(path.join(result.output, 'dist/app.js')), fs.readFileSync(path.join(options.root, 'experiences/synk-account/dist/app.js')));
 });
 

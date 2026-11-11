@@ -2,7 +2,7 @@
 // (dist/app.js with the real supabase-js) against a synthetic Auth + account server on 127.0.0.1, in the installed Chrome.
 // No production project, real account, mail or password is involved.
 //   node experiences/synk-account/qa/login-ux-20261027/run.mjs <playwright module dir> <out dir>
-// SYNK_QA_FILES=<dir> serves a publishing candidate (id__index.html, id__style.css, id__dist__app.js) instead of this checkout.
+// SYNK_QA_FILES=<dir> serves a publishing candidate (id__index.html, id__style.css or id__id.css, id__dist__app.js) instead of this checkout.
 // Prints one JSON line per check and writes screenshots (1440 and 390 wide) to <out dir>.
 // 2026-11-11: the sign-in form became one pair of buttons (../login-one-form-20261111/run.mjs checks that form itself).
 // This run keeps its own checks; it opens the e-mail fields before it uses them, and reads the new words on the first screen.
@@ -86,8 +86,8 @@ let config = null;
 const portal = http.createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
   if (pathname === '/config.json') { res.writeHead(200, { 'Content-Type': 'application/json' });res.end(JSON.stringify(config));return; }
-  const candidate = process.env.SYNK_QA_FILES && { '/': 'id__index.html', '/index.html': 'id__index.html', '/style.css': 'id__style.css', '/dist/app.js': 'id__dist__app.js' }[pathname];
-  if (candidate) { res.writeHead(200, { 'Content-Type': types[candidate === 'id__dist__app.js' ? '.js' : candidate === 'id__style.css' ? '.css' : '.html'] });res.end(fs.readFileSync(path.join(process.env.SYNK_QA_FILES, candidate)));return; }
+  const candidate = process.env.SYNK_QA_FILES && { '/': 'id__index.html', '/index.html': 'id__index.html', '/style.css': 'id__style.css', '/id.css': 'id__id.css', '/dist/app.js': 'id__dist__app.js' }[pathname];
+  if (candidate) { res.writeHead(200, { 'Content-Type': types[candidate === 'id__dist__app.js' ? '.js' : /.css$/.test(candidate) ? '.css' : '.html'] });res.end(fs.readFileSync(path.join(process.env.SYNK_QA_FILES, candidate)));return; }
   const file = path.join(portalRoot, pathname === '/' ? 'index.html' : pathname);
   if (!file.startsWith(portalRoot) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404);res.end('missing');return; }
   res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });res.end(fs.readFileSync(file));
@@ -140,8 +140,8 @@ try {
     const rows = await tab.locator('.session-list .session-row').count(), pageHeight = await height(tab);
     const order = await tab.evaluate(() => [...document.querySelectorAll('main > section')].filter(node => !node.hidden).map(node => node.id || node.className));
     check(`the account opens with who and sign-out first (${width})`, order.indexOf('account-profile') >= 0 && order.indexOf('account-profile') < order.indexOf('account-security') && order.indexOf('account-security') < order.indexOf('account')
-      && /합성 회원 A/.test(await textOf(tab, '#account-profile-heading')) && /member-a@synthetic\.test/.test(await textOf(tab, '.profile-email')) && await visible(tab, '[data-action="sign-out"]')
-      && /내 SYNK 계정/.test(await textOf(tab, '#hero-title')) && /강사/.test(await textOf(tab, '.profile-facts')) && /2026년 10월 1일/.test(await textOf(tab, '.profile-facts')),
+      && /합성 회원 A/.test(await textOf(tab, '.profile-name')) && /member-a@synthetic\.test/.test(await textOf(tab, '.profile-email')) && await visible(tab, '[data-action="sign-out"]')
+      && /내 SYNK 계정/.test(await textOf(tab, '#account-profile-heading')) && /강사/.test(await textOf(tab, '.profile-facts')) && /2026년 10월 1일/.test(await textOf(tab, '.profile-facts')),
       { order, screenshot: await shot(tab, `3-account-${width}`) });
     check(`「로그인한 곳」 shows six live places first and drops ended ones (${width})`, rows === 6 && /이미 끝난 로그인 10곳/.test(await textOf(tab, '.session-ended')) && /25곳 더 보기/.test(await tab.locator('.account-block').first().textContent())
       && !/종료됨/.test(await tab.locator('.session-list').textContent()) && pageHeight < (width > 500 ? 3600 : 6400), { rows, pageHeight });
@@ -153,10 +153,10 @@ try {
     check(`password and e-mail forms stay folded until asked (${width})`, !await visible(tab, '#password-change-form') && !await visible(tab, '#email-change-form') && await textOf(tab, '#password-form-toggle') === '비밀번호 바꾸기');
     const stored = await recentStored(tab);
     check(`the e-mail sign-in is remembered on this browser only (${width})`, stored?.v === 2 && stored.method === 'email' && stored.email === 'member-a@synthetic.test' && stored.masked === 'me***@synthetic.test');
-    // 4. Back again after a sign-out: the way and the address are there.
+    // 4. Back again after a sign-out: the way and the address are there (the address in the field, not repeated in the line — A 한 칸 11-11).
     await tab.click('[data-action="sign-out"]');await tab.waitForSelector('#auth-panel:not([hidden])');await tab.waitForFunction(() => /로그아웃했어요/.test(document.getElementById('notice').textContent));
-    check(`after a sign-out the page says how this browser signed in (${width})`, await textOf(tab, '#auth-heading') === '다시 오셨네요.' && /지난번에 이메일로 로그인했어요 · me\*\*\*@synthetic\.test/.test(await textOf(tab, '#recent-login-text'))
-      && await visible(tab, '#email-recent') && !await visible(tab, '#google-recent') && await tab.inputValue('#email') === 'member-a@synthetic.test' && /SYNK 계정/.test(await textOf(tab, '#hero-title')) && !/내 SYNK 계정/.test(await textOf(tab, '#hero-title')),
+    check(`after a sign-out the page says how this browser signed in (${width})`, await textOf(tab, '#auth-heading') === '다시 오셨네요.' && /지난번에 이메일로 로그인했어요/.test(await textOf(tab, '#recent-login-text')) && !/me\*\*\*/.test(await textOf(tab, '#recent-login-text'))
+      && await visible(tab, '#email-recent') && !await visible(tab, '#google-recent') && await tab.inputValue('#email') === 'member-a@synthetic.test' && !await visible(tab, '#account-profile'),
       { overflow: await overflow(tab), screenshot: await shot(tab, `4-returning-${width}`) });
     // 5. Forgetting the hint empties the address too.
     await tab.click('#recent-login-forget');
@@ -178,8 +178,8 @@ try {
     check('after the mail the same button sends it again for that address', await textOf(tab, '#auth-submit') === '메일 다시 보내기' && !/member-a/.test(await textOf(tab, '#notice')));
     await tab.goto(base, { waitUntil: 'networkidle' });await signIn(tab, 'a');
     // 8. Name, and 「이 브라우저만 남기고 로그아웃」.
-    await tab.click('.profile-facts .link-button');await tab.fill('#profile-name-input', '새 이름 A');await tab.click('.profile-name-form button[type=submit]');
-    await tab.waitForFunction(() => /새 이름 A/.test(document.getElementById('account-profile-heading').textContent));
+    await tab.click('[data-key="name-edit"]');await tab.fill('#profile-name-input', '새 이름 A');await tab.click('.profile-name-form button[type=submit]');
+    await tab.waitForFunction(() => /새 이름 A/.test(document.querySelector('.profile-name')?.textContent || ''));
     check('the name is changed right from the profile', users.get('a').name === '새 이름 A' && log.some(row => row.body?.action === 'profile-update' && row.body.expected_profile_revision === 1 && row.body.profile.display_name === '새 이름 A'));
     await tab.waitForLoadState('networkidle');const beforeOthers = log.length, others = await tab.locator('.account-block .actions .sb-btn').first().textContent();await tab.locator('.account-block .actions .sb-btn').first().click();
     await tab.waitForFunction(() => /다른 \d+곳의 로그인을 끝냈어요/.test(document.getElementById('notice').textContent));
@@ -208,7 +208,7 @@ try {
     await context.close(); }
   // 10. A Google-only account and an unconfirmed sign-up.
   { const { context, tab, errors } = await page();await tab.goto(base, { waitUntil: 'networkidle' });await signIn(tab, 'g');
-    check('a Google-only account: no name yet, Google as the way, a mail that sets a password', /SYNK 회원/.test(await textOf(tab, '#account-profile-heading')) && /정하기/.test(await textOf(tab, '.profile-facts'))
+    check('a Google-only account: no name yet, Google as the way, a mail that sets a password', /SYNK 회원/.test(await textOf(tab, '.profile-name')) && /정하기/.test(await textOf(tab, '.profile-facts'))
       && await textOf(tab, '#security-methods') === 'Google' && await textOf(tab, '#password-mail-heading') === 'Google로 가입한 계정이에요' && await textOf(tab, '#password-form-toggle') === '이미 만든 비밀번호 바꾸기', { screenshot: await shot(tab, '10-google-only') });
     await tab.click('[data-action="sign-out"]');await tab.waitForSelector('#auth-panel:not([hidden])');
     await tab.fill('#email', users.get('u').email);await tab.fill('#password', users.get('u').password);await tab.click('#auth-submit');await tab.waitForSelector('#resend-confirm:not([hidden])');

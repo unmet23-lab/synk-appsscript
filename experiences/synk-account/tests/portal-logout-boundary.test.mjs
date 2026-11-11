@@ -66,7 +66,7 @@ async function fixture(t) {
 test('logout immediately closes the account and fences a pending export while SDK and revocation wait', async t => {
   const page = await fixture(t), exporting = deferred(), cleanup = deferred(), revoking = deferred();
   page.replies.export = () => exporting.promise;page.replies.cleanup = () => cleanup.promise;page.replies.revoke = () => revoking.promise;
-  const exportButton = page.button('연습 기록 내려받기'), deleteButton = page.button('계정 삭제 요청');
+  const exportButton = page.button('내려받기'), deleteButton = page.button('계정 삭제 요청');
   exportButton.onclick();await settled();page.button('로그아웃').onclick();
   assert.equal(page.get('account').hidden, true);assert.equal(page.get('account').children.length, 0);
   await settled();assert.equal(page.calls.filter(call => call.method === 'signOut').length, 0);

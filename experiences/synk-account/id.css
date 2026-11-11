@@ -1,0 +1,300 @@
+/* SYNK ID (synk.im/id) — A 한 칸(2026-11-11 유호님 고름). 설계: docs/디자인/SYNK_ID_로그인/README.md (3절 문법 · 5절 구현 계약).
+   index.html · preview.html만 부른다(style.css · assets/scrapbook.css는 client · local-world · teacher가 같이 쓴다). 모든 규칙은 .sid 아래.
+   글자: 플랫폼(platform.css)과 같은 SYNK Sans 두 조각 한 벌 — 라틴도 같은 글꼴이라 문장 속 영문이 굵어지지 않는다. 크기 13 · 15 · 17 · 22 · 34, 굵기 400 · 600.
+   누르는 칸은 모두 44px 이상. 밤 테마는 이번 범위 밖(색은 모두 변수). */
+@font-face{font-family:'SYNK Sans';src:url('./assets/SYNKSans-rest.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+2074,U+2081-2084,U+20A9,U+20AC,U+2103,U+2109,U+2122,U+2194-2196,U+2198-2199,U+2219,U+2248,U+2295-2297,U+2460-246E,U+24C3,U+24D8,U+25A0-25A1,U+25A3,U+25B2-25B3,U+25B6-25B7,U+25BC-25BD,U+25C0-25C1,U+25C6-25C8,U+25CE-25D1,U+260E-260F,U+261C-261F,U+2660-2661,U+2663,U+2665,U+2669-266A,U+266C,U+26A0,U+2713,U+3131-3138,U+313A-314A,U+314C-3163,U+321C,U+327C,U+33A1,U+33A5,U+AC02-AC03,U+AC05-AC07,U+AC09-AC0F,U+AC11,U+AC13-AC14,U+AC17-AC18,U+AC1A-AC1B,U+AC1E-AC30,U+AC32-AC6F,U+AC71-AC73,U+AC75-AC76,U+AC79-AC7F,U+AC82,U+AC84-AC8B,U+AC8D-AC8F,U+AC91-AC9F,U+ACA1-ACA7,U+ACAB,U+ACAD-ACAF,U+ACB1-ACB8,U+ACBA-ACBB,U+ACBE-ACC3,U+ACC5-ACDF,U+ACE2-ACE3,U+ACE5-ACE7,U+ACE9-ACEF,U+ACF2,U+ACF4,U+ACF6-ACFB,U+ACFE-ACFF,U+AD01-AD10,U+AD12-AD1B,U+AD1D-AD48,U+AD4A-AD4F,U+AD51-AD6B,U+AD6E-AD6F,U+AD71-AD73,U+AD76-AD7C,U+AD7E-AD80,U+AD82-AD8B,U+AD8D-ADBF,U+ADC1-ADDB,U+ADDD-ADDF,U+ADE1-ADF7,U+ADF9-ADFB,U+ADFD-ADFF,U+AE01-AE07,U+AE0A,U+AE0C-AE2F,U+AE31-AE33,U+AE35-AE37,U+AE39-AE3F,U+AE42-AE44,U+AE46-AE49,U+AE4B,U+AE4D-AE4F,U+AE51-AE53,U+AE55-AE64,U+AE66-AEBB,U+AEBD,U+AEBF-AECE,U+AED1-AED7,U+AED9-AEF3,U+AEF5-AF2B,U+AF2E-AF33,U+AF35-AF3B,U+AF3E-AF41,U+AF44-AF48,U+AF4A-AF63,U+AF65-AFB7,U+AFB9-AFBB,U+AFBD-AFBF,U+AFC1-AFC7,U+AFC9-AFD3,U+AFD5-AFE7,U+AFE9-B00B,U+B00D-B00F,U+B011-B043,U+B045-B049,U+B04B,U+B04D-B053,U+B056-B05C,U+B05E-B07B,U+B07D-B083,U+B085-B097,U+B099-B09B,U+B09D-B09F,U+B0A2-B0A7,U+B0AA,U+B0AD,U+B0B0,U+B0B2-B0B3,U+B0B5-B0B7,U+B0B9-B0BB,U+B0BD-B0C3,U+B0C6-B0C7,U+B0C9-B107,U+B109-B10F,U+B111-B112,U+B114-B117,U+B119-B122,U+B125-B136,U+B138-B13F,U+B141-B143,U+B145-B14F,U+B151-B154,U+B156-B177,U+B179-B17B,U+B17D-B191,U+B195-B203,U+B205-B207,U+B209-B20B,U+B20D-B21F,U+B221-B273,U+B275-B28F,U+B291-B293,U+B295-B297,U+B299-B2A4,U+B2A7-B2C7,U+B2C9-B2CB,U+B2CD-B2CF,U+B2D1-B2D7,U+B2DA-B2DC,U+B2DE-B2E3,U+B2E6-B2E7,U+B2E9-B2EA,U+B2EE-B2F3,U+B2F6,U+B2F8,U+B2FA-B2FE,U+B301-B353,U+B355-B357,U+B359-B35B,U+B35D-B35E,U+B360-B366,U+B368-B36D,U+B36F,U+B371-B377,U+B379-B3C3,U+B3C6-B3C7,U+B3C9-B3CA,U+B3CD-B3D4,U+B3D6-B3D8,U+B3DA-B3FB,U+B3FD-B40F,U+B411-B417,U+B419-B41B,U+B41D-B41F,U+B421-B427,U+B42A-B44F,U+B451-B453,U+B455-B457,U+B459-B45F,U+B461-B464,U+B466-B46B,U+B46D-B47F,U+B481-B4A3,U+B4A5-B4B6,U+B4B8-B4DB,U+B4DE-B4DF,U+B4E1-B4E2,U+B4E5-B4EB,U+B4ED-B4EE,U+B4F0,U+B4F2-B513,U+B515-B529,U+B52B-B52F,U+B532-B53F,U+B541-B54B,U+B54D-B54F,U+B551-B59F,U+B5A1-B5A3,U+B5A5-B5BA,U+B5BC-B60F,U+B612-B6EF,U+B6F1-B6F7,U+B6F9-B727,U+B729-B73A,U+B73C-B743,U+B745-B75F,U+B761-B77B,U+B77E-B77F,U+B781-B783,U+B785-B78B,U+B78D-B78E,U+B792-B797,U+B79A-B79F,U+B7A1-B7A7,U+B7A9-B7AA,U+B7AD-B7B4,U+B7B6-B7C8,U+B7CA-B7EB,U+B7ED-B7EF,U+B7F1-B7FB,U+B7FE,U+B801-B806,U+B80A-B823,U+B826-B827,U+B829-B82B,U+B82D-B834,U+B836-B837,U+B83A-B83F,U+B841-B85B,U+B85E-B85F,U+B861-B863,U+B865-B86B,U+B86E-B8CB,U+B8CD-B8E7,U+B8E9-B8EB,U+B8ED-B8F8,U+B8FA-B903,U+B905-B917,U+B919-B957,U+B95A-B973,U+B975-B977,U+B979-B97B,U+B97D-B983,U+B985-B9AB,U+B9AE-B9AF,U+B9B1-B9B3,U+B9B5-B9BB,U+B9BE-B9C0,U+B9C2-B9C7,U+B9CA-B9CB,U+B9CD,U+B9CF,U+B9D2-B9D8,U+B9DA,U+B9DC,U+B9DF-B9E0,U+B9E2,U+B9E5-B9E7,U+B9E9-B9F9,U+B9FB-BA37,U+BA3A-BA3B,U+BA3D-BA47,U+BA49-BA53,U+BA55-BA6F,U+BA71-BA73,U+BA75-BA84,U+BA86,U+BA88-BAA7,U+BAAA-BAAF,U+BAB1-BAB7,U+BAB9-BABA,U+BABC,U+BABE-BB33,U+BB37,U+BB39-BB3A,U+BB3D-BB46,U+BB48-BB4F,U+BB51-BB53,U+BB55-BB57,U+BB59-BBBF,U+BBC1-BBF7,U+BBF9-BBFB,U+BBFD-BBFE,U+BC01-BC0E,U+BC10,U+BC12-BC13,U+BC17,U+BC19-BC1A,U+BC1E-BC23,U+BC25-BC28,U+BC2A-BC2F,U+BC32-BC83,U+BC85-BC87,U+BC89-BC8B,U+BC8D-BC93,U+BC96,U+BC98-BC99,U+BC9B-BC9F,U+BCA1-BCA7,U+BCA9-BCBC,U+BCBE-BCBF,U+BCC1-BCC3,U+BCC5-BCCC,U+BCCE-BCD0,U+BCD2-BCF3,U+BCF6-BCF7,U+BCF9-BCFB,U+BCFD-BD04,U+BD06-BD08,U+BD0A-BD0F,U+BD11-BD23,U+BD25-BD7F,U+BD81-BD83,U+BD85-BD87,U+BD89-BD94,U+BD96-BD98,U+BD9A-BDD3,U+BDD5-BE0B,U+BE0D-BE13,U+BE15-BE43,U+BE45-BE47,U+BE49-BE5A,U+BE5C-BE5F,U+BE61-BE67,U+BE69-BE7B,U+BE7D-BE7F,U+BE81-BE8F,U+BE91-BF07,U+BF09-BFCF,U+BFD1-C057,U+C059-C05B,U+C05D-C05F,U+C061-C0AB,U+C0AE-C0AF,U+C0B1-C0B3,U+C0B5-C0BB,U+C0BD-C0C0,U+C0C2-C0C7,U+C0CA-C0D7,U+C0D9-C0DC,U+C0DE-C0F3,U+C0F5-C11B,U+C11F,U+C121-C123,U+C125-C12E,U+C130,U+C132-C137,U+C139-C13B,U+C13D-C14A,U+C14C-C153,U+C155-C157,U+C159-C167,U+C169-C18B,U+C18E-C18F,U+C191-C1DF,U+C1E1-C1FB,U+C1FD-C217,U+C21A-C21B,U+C21D-C227,U+C229-C22A,U+C22C-C26B,U+C26D-C273,U+C275-C27C,U+C27E-C28F,U+C291-C2A3,U+C2A5-C2A7,U+C2A9-C2B4,U+C2B6-C2B8,U+C2BA-C2DB,U+C2DE-C2DF,U+C2E1-C2E3,U+C2E5-C2EA,U+C2EE-C2F0,U+C2F2-C2F5,U+C2F7-C312,U+C314-C367,U+C369-C378,U+C37A-C37B,U+C37D-C383,U+C385-C4EF,U+C4F1-C4F3,U+C4F5-C4F7,U+C4F9-C4FF,U+C502-C527,U+C52A-C52B,U+C52D-C543,U+C546-C547,U+C54B,U+C54D-C553,U+C556-C557,U+C55A-C55D,U+C55F,U+C562-C567,U+C569-C570,U+C572-C57B,U+C57E-C57F,U+C581-C590,U+C592-C597,U+C599-C5B3,U+C5B6-C5B7,U+C5B9-C5BB,U+C5BD-C5C3,U+C5C9-C5CF,U+C5D1-C5D3,U+C5D5-C5D7,U+C5D9-C5EB,U+C5EE-C5EF,U+C5F1-C5F3,U+C5F5-C5FE,U+C602-C605,U+C607,U+C609-C61A,U+C61C-C623,U+C625-C627,U+C629-C62B,U+C62D,U+C62F-C636,U+C638-C63F,U+C641-C643,U+C645-C653,U+C655-C65B,U+C65D-C677,U+C679-C67B,U+C67D-C693,U+C695-C6A8,U+C6AA-C6AF,U+C6B2-C6B3,U+C6B5-C6B7,U+C6B9-C6BF,U+C6C2,U+C6C4-C6CB,U+C6CD-C6CF,U+C6D1-C6D3,U+C6D5-C6DF,U+C6E1-C6F8,U+C6FA-C703,U+C705-C71F,U+C721-C723,U+C725-C73B,U+C73D-C73F,U+C741-C743,U+C745-C74B,U+C74D-C750,U+C752-C757,U+C759-C773,U+C776-C777,U+C779-C77B,U+C77E-C783,U+C786,U+C789,U+C78B-C78D,U+C78F,U+C792-C793,U+C795,U+C797,U+C799-C79F,U+C7A2-C7A4,U+C7A6-C7AB,U+C7AD-C7C0,U+C7C2-C7C7,U+C7C9-C7FF,U+C802-C803,U+C805-C807,U+C809-C80F,U+C812-C814,U+C816-C81B,U+C81D-C837,U+C839-C84B,U+C84D-C86F,U+C872-C873,U+C875-C87F,U+C882-C884,U+C886-C88A,U+C88D-C8DF,U+C8E1-C8FB,U+C8FE-C8FF,U+C901-C903,U+C905-C90B,U+C90D-C910,U+C912-C917,U+C919-C92B,U+C92D-C987,U+C989-C98F,U+C991-C997,U+C999-C99C,U+C99E-C9BF,U+C9C2-C9C3,U+C9C5-C9C7,U+C9C9-C9CF,U+C9D2,U+C9D4-C9D8,U+C9DB,U+C9DE-C9DF,U+C9E1-C9E6,U+C9E8-C9EC,U+C9EE-C9F7,U+C9F9-CA4B,U+CA4D-CABC,U+CABE-CAD2,U+CAD4-CB48,U+CB4A-CB63,U+CB65-CC0C,U+CC0E-CC27,U+CC2A-CC2D,U+CC2F,U+CC31-CC37,U+CC39-CC3A,U+CC3F-CC43,U+CC46-CC53,U+CC56-CC58,U+CC5A-CC97,U+CC9A-CC9B,U+CC9D-CC9F,U+CCA1-CCA7,U+CCAA,U+CCAC,U+CCAE-CCB3,U+CCB5-CCCF,U+CCD1-CCE3,U+CCE5-CD07,U+CD0A-CD2B,U+CD2D-CD5B,U+CD5D-CD93,U+CD96-CD97,U+CD99-CD9B,U+CD9D-CDA3,U+CDA5-CDA8,U+CDAA-CDAF,U+CDB1-CDC3,U+CDC5-CDE7,U+CDE9-CE1F,U+CE22-CE34,U+CE36-CE57,U+CE5A-CE5B,U+CE5D-CE5F,U+CE61-CE67,U+CE6A-CE6C,U+CE6E-CE73,U+CE75-CE77,U+CE79-CE7B,U+CE7D-CE8F,U+CE91-CE9F,U+CEA2-CEE3,U+CEE5-CEE7,U+CEE9-CEEB,U+CEED-CEF3,U+CEF6-CEFF,U+CF01-CF12,U+CF14-CF1B,U+CF1D-CF23,U+CF25-CF2F,U+CF31-CF53,U+CF55-CF57,U+CF59-CF5B,U+CF5D-CF63,U+CF65-D06B,U+D06D-D06F,U+D071-D073,U+D075-D07B,U+D07D-D0A3,U+D0A5-D0A7,U+D0A9-D0AB,U+D0AD-D0B8,U+D0BA-D0BF,U+D0C2-D0C7,U+D0C9-D0CF,U+D0D1-D0D4,U+D0D6-D0DB,U+D0DE-D0EC,U+D0EE-D12F,U+D131-D137,U+D139-D14B,U+D14E-D14F,U+D151-D15B,U+D15D-D19F,U+D1A1-D1B0,U+D1B2-D1B4,U+D1B6-D1F3,U+D1F5-D22B,U+D22D-D22F,U+D231-D29B,U+D29D-D2B7,U+D2BA-D2BB,U+D2BD-D2BF,U+D2C1-D2C7,U+D2C9-D2EF,U+D2F1-D2FF,U+D301-D304,U+D306-D30B,U+D30D-D30F,U+D311-D327,U+D329-D337,U+D339-D37B,U+D37D-D397,U+D399-D39B,U+D39D-D39F,U+D3A1-D3B3,U+D3B5-D3B7,U+D3B9-D3BB,U+D3BD-D3C8,U+D3CA-D3CF,U+D3D1-D3EB,U+D3EE-D3EF,U+D3F1-D3F3,U+D3F5-D3FB,U+D3FD-D45B,U+D45D-D477,U+D47A-D47B,U+D47D-D47F,U+D481-D487,U+D489-D48C,U+D48E-D4E7,U+D4E9-D503,U+D505-D50B,U+D50D-D53B,U+D53E-D543,U+D545-D550,U+D552-D557,U+D55A-D55B,U+D55D-D55F,U+D561-D567,U+D56A-D56C,U+D56E-D573,U+D576-D587,U+D58A-D5A4,U+D5A6-D5C7,U+D5C9-D5D7,U+D5D9-D5E3,U+D5E5-D5EB,U+D5ED-D5F6,U+D5F8-D5FF,U+D601-D603,U+D605-D607,U+D609-D610,U+D612-D613,U+D616-D61B,U+D61D-D637,U+D639-D63B,U+D63D-D647,U+D64A-D64C,U+D64E-D653,U+D656-D657,U+D659-D65B,U+D65D-D668,U+D66A-D68B,U+D68E-D69E,U+D6A0-D6A7,U+D6A9-D6C3,U+D6C5-D6E7,U+D6E9-D71F,U+D721-D733,U+D735-D74F,U+D751-D757,U+D759-D764,U+D766-D76B,U+D76D-D76F,U+D771-D787,U+D789-D78B,U+D78D-D78F,U+D791-D797,U+D799-D7A2,U+FFE6}
+@font-face{font-family:'SYNK Sans';src:url('./assets/SYNKSans-ui.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+20-7E,U+A0,U+A5,U+A9,U+AD-AE,U+B0-B3,U+B6-B7,U+B9,U+D7,U+F7,U+2015,U+2018-2019,U+201C-201D,U+2025-2026,U+2032-2033,U+203B,U+2190-2193,U+2197,U+25CB,U+2605-2606,U+3008-3011,U+3014-3015,U+3139,U+314B,U+AC00-D7A3}
+.sid{
+  --paper:#fff;--ink:#0b0b0c;--ink-2:#4f4f55;--ink-3:#6c6c72;--line:#e7e7ea;--line-2:#cfcfd4;--edge:#8a8a90;--g-edge:#747775;--g-ink:#1f1f1f;--surface:#f3f3f4;--hover:#2a2a2e;--under:#b9b9be;
+  --err:#b3261e;--ok:#1f7a4d;--alert:#c4321f;
+  --t13:13px;--t15:15px;--t17:17px;--t22:22px;--t34:34px;
+  --sans:'SYNK Sans',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  color-scheme:light;
+  box-sizing:border-box;display:flex;justify-content:center;min-height:100vh;min-height:100dvh;margin:0;
+  padding:clamp(32px,10vh,112px) max(20px,env(safe-area-inset-right,0px)) 16px max(20px,env(safe-area-inset-left,0px));
+  font-family:var(--sans);font-size:var(--t15);line-height:1.6;font-synthesis:none;color:var(--ink);background:var(--paper);
+  word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%
+}
+.sid *,.sid *::before,.sid *::after{box-sizing:border-box}
+.sid [hidden]{display:none!important}
+.sid button,.sid input,.sid select{font:inherit;color:inherit}
+.sid h1,.sid h2,.sid h3,.sid p,.sid ul,.sid dl,.sid dd,.sid fieldset,.sid figure{margin:0}
+.sid ul{padding:0;list-style:none}
+.sid a{color:inherit}
+.sid :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sid [tabindex="-1"]:focus{outline:none}
+.sid .visually-hidden,.sid #notice[data-folded="true"]{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.sid .nw{white-space:nowrap}
+.sid strong,.sid b{font-weight:600}
+
+/* 쪽: 한 칸. 로그인 400 · 가입 마무리와 앱 연결 440(PC 앱 로그인 창 폭) · 내 계정 640. */
+.sid .sid-main{display:flex;flex-direction:column;width:100%;max-width:400px}
+.sid .sid-main:has(>#google-onboarding:not([hidden])),.sid .sid-main:has(>#consent:not([hidden])),.sid .sid-main:has(>#connection-restart:not([hidden])){max-width:440px}
+.sid .sid-main:has(>#account-profile:not([hidden])){max-width:640px}
+.sid .brand{display:inline-flex;align-items:center;align-self:flex-start;min-width:44px;min-height:44px;color:var(--ink);text-decoration:none}
+.sid .wordmark{display:block;width:64px;height:auto;fill:currentColor}
+/* 「SYNK ID」 회색 머리 — 모든 장면에서 같은 자리(장면마다 머리가 생겼다 사라지면 제목과 단추가 오르내린다) */
+.sid .id-kicker{margin-top:16px;font-size:var(--t17);font-weight:600;line-height:1.4;color:var(--ink-3)}
+.sid .sid-preview{align-self:flex-start;margin-top:12px;padding:4px 12px;border:1px solid var(--line-2);border-radius:999px;font-size:var(--t13);font-weight:600;color:var(--ink-2)}
+
+/* 머리 글 */
+.sid .intro-copy{display:grid;gap:8px;margin-bottom:32px}
+.sid h1{font-size:var(--t34);font-weight:600;line-height:1.25;letter-spacing:0;text-wrap:balance}
+.sid .intro-copy>p,.sid #consent-account{font-size:var(--t17);line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+.sid .intro-copy>p:empty{display:none}
+.sid .small{font-size:var(--t13);line-height:1.7;font-weight:400;color:var(--ink-3);text-wrap:pretty}
+.sid .muted{font-weight:400;color:var(--ink-3)}
+.sid .small a,.sid .intro-copy a{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--under)}
+.sid .small a:hover,.sid .intro-copy a:hover{text-decoration-color:currentColor}
+.sid main>section{margin-top:8px}
+
+/* 단추: 알약 하나 — 채운 검정(그 화면의 한 행동) · 선 알약(그다음) · 밑줄 글자. 테두리는 진짜 선(강제 색 모드에서도 남는다). */
+.sid .sb-btn{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0 8px;min-height:48px;padding:8px 24px;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:#fff;font-size:var(--t15);font-weight:600;line-height:1.3;text-decoration:none;text-align:center;cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .2s var(--ease)}
+.sid .sb-btn:hover:not(:disabled){background:var(--hover);border-color:var(--hover)}
+.sid .sb-btn:active:not(:disabled){transform:scale(.98)}
+.sid .sb-btn.soft{background:var(--paper);color:var(--ink);border-color:var(--g-edge)}
+.sid .sb-btn.soft:hover:not(:disabled){background:var(--paper);border-color:var(--ink)}
+.sid .sb-btn.compact{min-height:44px;padding:6px 20px}
+.sid .sb-btn:disabled{background:var(--surface);border-color:var(--surface);color:var(--ink-3);cursor:not-allowed}
+.sid .sb-btn.soft:disabled{background:var(--paper);border-color:var(--line-2)}
+.sid .link-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0;border:0;background:none;font-size:var(--t15);font-weight:600;color:var(--ink);text-align:left;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--under);cursor:pointer}
+.sid .link-button:hover:not(:disabled){text-decoration-color:currentColor}
+.sid .link-button:disabled{color:var(--ink-3);cursor:not-allowed}
+
+/* 로그인 방법 한 쌍 — 두 단추는 같은 꼴(11-11 결정). 표식 · 글 · 「최근 사용」 세 칸 격자: 글은 머리 글과 같은 왼쪽 축,
+   「최근 사용」이 붙어도 글과 겹치지 않는다(글이 길면 줄을 바꾼다). */
+.sid .method-choices{display:grid;gap:12px}
+.sid .method-btn{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;width:100%;min-height:52px;padding:8px 14px 8px 20px;border:1px solid var(--g-edge);border-radius:999px;background:var(--paper);color:var(--g-ink);font-size:var(--t15);font-weight:600;line-height:1.3;cursor:pointer;transition:border-color .2s,background .2s}
+.sid .method-btn:hover:enabled{border-color:var(--ink)}
+/* 고른 방법: 굵은 테두리 대신 옅은 바탕 — 아래 검정 「로그인」 알약과 무게가 겹치지 않게 */
+.sid .method-btn[aria-expanded="true"]{border-color:var(--ink);background:var(--surface)}
+.sid .method-btn[aria-expanded="true"] .recent-badge{background:var(--paper)}
+/* Google 설정을 확인하는 동안(쪽을 열 때마다 잠깐): 꼴은 그대로, 누르기만 기다린다 — 회색 → 색으로 번쩍이지 않게.
+   못 쓸 때(data-off="true")만 흐리게. G 표 색은 바꾸지 않는다(Google 단추 지침). */
+.sid .method-btn:disabled{cursor:progress}
+.sid .method-btn[data-off="true"]{color:#686b70;border-color:#aeb0b5;cursor:not-allowed}
+.sid .method-mark{justify-self:start;width:20px;height:20px;background:center/20px 20px no-repeat}
+.sid .google-mark{display:inline-block;flex:none;width:20px;height:20px;background:center/20px 20px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E")}
+.sid .email-mark{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%231f1f1f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.3' y='4.3' width='15.4' height='11.4' rx='2.2'/%3E%3Cpath d='m3.4 6.2 6.6 5 6.6-5'/%3E%3C/svg%3E")}
+.sid .method-label{min-width:0;text-align:left;overflow-wrap:anywhere}
+.sid .recent-badge{justify-self:end;display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:var(--t13);font-weight:600;white-space:nowrap}
+.sid .method-status:empty{display:none}
+/* Google을 확인하는 동안: 0.6초 안에 끝나면(거의 늘) 그리지 않아 번쩍이지 않고, 그보다 늦으면 안내 줄이 보인다 — 눌러도 아무 일 없어 보이지 않게(11-12) */
+.sid .method-status[data-state="checking"]{animation:sid-late-line .01s .6s both}
+@keyframes sid-late-line{from{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}to{position:static;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal}}
+.sid .google-privacy-note{margin-top:-8px}
+
+/* 폼 — 상자 없이 한 칸 */
+.sid .auth-card{display:grid;gap:24px}
+/* 지난번 로그인: 첫 줄은 한 문장, 둘째 줄은 남은 주소(Google일 때)와 「이 기기에서 지우기」 */
+.sid .recent-login{display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;margin-top:-20px;font-size:var(--t17);line-height:1.6;color:var(--ink-2)}
+.sid #recent-login-text{display:contents}
+.sid .rl-say{flex:0 0 100%}
+.sid .rl-who{font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+.sid .email-fields{display:grid;gap:20px}
+.sid label{display:block;font-size:var(--t15);font-weight:600}
+.sid label>input:not([type="checkbox"]),.sid label>select{display:block;margin-top:8px}
+.sid input:not([type="checkbox"]),.sid select{width:100%;height:52px;padding:0 16px;border:1px solid var(--edge);border-radius:8px;background:var(--paper);font-size:var(--t17);font-weight:400;color:var(--ink);appearance:none}
+.sid input:not([type="checkbox"]):focus-visible,.sid select:focus-visible{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+.sid input:disabled,.sid select:disabled{background-color:var(--surface);color:var(--ink-3)}
+.sid input::placeholder{color:var(--ink-3)}
+.sid input[aria-invalid="true"]{border-color:var(--err);box-shadow:inset 0 0 0 1px var(--err)}
+.sid select{padding-right:44px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%230b0b0c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E") right 14px center/20px no-repeat}
+.sid .field-row{display:grid;gap:8px}
+.sid .password-field{position:relative;display:block}
+.sid .password-field input{padding-right:76px}
+.sid .password-toggle{position:absolute;right:4px;top:4px;height:44px;min-width:60px;padding:0 12px;border:0;border-radius:6px;background:transparent;font-size:var(--t13);font-weight:600;color:var(--ink-2);cursor:pointer}
+.sid .password-toggle:hover{background:var(--surface)}
+.sid .password-toggle[aria-pressed="true"]{color:var(--ink)}
+.sid .caps-warning{margin-top:-12px;color:var(--ink-2);font-weight:600}
+.sid .forgot-row{display:flex;justify-content:flex-end;margin-top:-16px}
+.sid .field-help{margin-top:-12px}
+.sid .signup-choices{display:grid;gap:10px}
+.sid .toggle{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:center;min-height:44px;font-weight:400;line-height:1.5;cursor:pointer}
+.sid input[type="checkbox"]{appearance:none;width:22px;height:22px;margin:0;border:1.5px solid var(--edge);border-radius:6px;background:var(--paper);cursor:pointer}
+.sid input[type="checkbox"]:checked{border-color:var(--ink);background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 10.5 3.2 3.2L15 7'/%3E%3C/svg%3E") center/16px no-repeat}
+.sid input[type="checkbox"]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sid input[type="checkbox"]:disabled{background-color:var(--surface);border-color:var(--line-2);cursor:not-allowed}
+.sid input[type="checkbox"]:checked:disabled{background-color:var(--ink-3);border-color:var(--ink-3)}
+.sid .signup-details summary{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:var(--t13);font-weight:600;color:var(--ink-2);list-style:none;cursor:pointer}
+.sid .signup-details summary::-webkit-details-marker{display:none}
+.sid .signup-details summary::before{content:"";width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234f4f55' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 5 5 5-5 5'/%3E%3C/svg%3E") center/16px no-repeat;transition:transform .2s var(--ease)}
+.sid .signup-details[open] summary::before{transform:rotate(90deg)}
+.sid .email-fields>.sb-btn,.sid .auth-card>.sb-btn,.sid .text-actions>.sb-btn{width:100%}
+/* 로그인 ↔ 가입을 오가는 하나뿐인 길 — 잔글 아래 묻히지 않게 선 하나로 갈라 제 줄을 준다 */
+.sid .switch-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;padding-top:12px;border-top:1px solid var(--line);font-size:var(--t17);color:var(--ink-2)}
+.sid .switch-row .link-button{font-size:var(--t17)}
+
+/* 알림 — 상자를 칠하지 않고 한 줄. JS가 class 를 `notice` / `notice error` 로 통째로 덮어쓰므로 꾸밈은 그 클래스와 data-kind 에만 건다.
+   #notice 는 쪽 단위 알림(폼이 숨은 화면의 상태 · 초점)이라 「SYNK ID」 머리 아래 한 자리, 같은 말을 단추 옆 사본이 보이고 있으면
+   JS가 data-folded="true"를 붙여 읽기 프로그램에만 남긴다(같은 말 두 번 없음). */
+.sid .notice{position:relative;min-width:0;font-size:var(--t15);line-height:1.6;color:var(--ink);text-wrap:pretty;overflow-wrap:anywhere}
+.sid .row-error{flex:1 1 100%;margin:0}
+.sid .notice:empty{display:none}
+.sid #notice{margin-top:16px}
+.sid .notice[data-kind="error"],.sid .notice[data-kind="success"]{padding-left:30px}
+.sid .notice[data-kind="error"]::before,.sid .notice[data-kind="success"]::before{content:"";position:absolute;left:0;top:2px;width:20px;height:20px;background:center/20px no-repeat}
+.sid .notice[data-kind="error"]{color:var(--err);font-weight:600}
+.sid .notice[data-kind="error"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23b3261e' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='M10 6.2v4.6M10 13.6v.1'/%3E%3C/svg%3E")}
+.sid .notice[data-kind="success"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%231f7a4d' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='m6.6 10.3 2.3 2.3 4.5-4.8'/%3E%3C/svg%3E")}
+.sid .notice[data-kind="pending"]{color:var(--ink-2)}
+/* 이 PC 앱 연결: 「이 PC에서 방금 …했을 때만」은 단추 바로 위 검은 글 한 번 — 머리 아래 같은 뜻의 줄은 읽기 프로그램에만.
+   가입 마무리도 같다: 그 화면의 안내 줄(「휴대폰 인증과 가입 정보를…」 · 인증번호 상태)은 칸 옆 #google-phone-status가 말한다(오류는 그대로 보인다). */
+.sid .sid-main:has(>#consent:not([hidden]) #consent-native:not([hidden])) #notice[data-kind="info"],.sid .sid-main:has(>#google-onboarding:not([hidden])) #notice[data-kind="info"]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* 설정 없음 */
+.sid .setup{display:grid;gap:16px;justify-items:start}
+.sid .setup>p{font-size:var(--t17);color:var(--ink-2)}
+
+/* Google 첫 가입 마무리 */
+.sid .google-onboarding-card{gap:20px}
+.sid .google-phone-fields{display:grid;gap:8px;min-width:0;padding:0;border:0}
+.sid .google-phone-fields legend{padding:0;margin-bottom:4px;font-size:var(--t17);font-weight:600}
+.sid .google-field-label{margin-top:8px}
+.sid .google-phone-fields .field-help{margin-top:0}
+.sid .google-phone-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.sid .google-phone-row .sb-btn{min-height:52px}
+.sid #google-phone-status{color:var(--ink-2)}
+.sid .text-actions{display:grid}
+
+/* 앱 연결 · 다시 시작 */
+.sid .consent{display:grid;gap:20px}
+.sid .consent>*,.sid #consent-account{min-width:0;overflow-wrap:anywhere}
+.sid .consent>h1{margin-bottom:-8px}
+.sid .consent-give{display:grid;gap:10px}
+.sid .consent-lead{font-weight:600}
+.sid #scopes{border-top:1px solid var(--ink)}
+.sid #scopes li{display:flex;align-items:center;min-height:48px;border-bottom:1px solid var(--line)}
+.sid #consent-destination{overflow-wrap:anywhere}
+.sid .restart-lead{font-size:var(--t17);color:var(--ink-2)}
+.sid .consent-native{font-size:var(--t15);font-weight:600;line-height:1.6;color:var(--ink)}
+.sid .actions{display:grid;gap:12px}
+.sid .consent .actions>.sb-btn{width:100%}
+
+/* 내 SYNK 계정 — PC 앱 「내 계정」(desktop/renderer/account-page.css)과 같은 문법: 제목 34 · 사람 한 줄 · 구역 제목 22 + 검은 1px 선 아래 줄 목록.
+   줄은 왼쪽에 이름(17)과 설명(15), 오른쪽에 값과 선 알약. 좁으면 단추가 아랫줄로. */
+.sid #account-profile,.sid #account-security,.sid #account,.sid #account-next{margin-top:0}
+.sid .account-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:8px}
+.sid .account-head .intro-copy{margin-bottom:0;min-width:0}
+.sid .account-head>.sb-btn{flex:none;margin-top:2px}
+.sid .account-hero{display:flex;align-items:center;gap:20px;margin-top:32px}
+.sid .account-avatar{display:grid;place-items:center;flex:none;width:56px;height:56px;border-radius:50%;background:var(--ink);color:#fff;font-size:var(--t22);font-weight:600}
+.sid .account-who{display:grid;gap:2px;min-width:0}
+.sid .profile-name{font-size:var(--t22);font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.sid .profile-email{font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.sid .profile-status{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:var(--t13);font-weight:600;color:var(--err)}
+.sid .profile-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.sid .section-head{display:grid;gap:4px;margin-top:56px}
+.sid .section-head h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sid .rows{margin-top:16px;border-top:1px solid var(--ink)}
+.sid .row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;min-height:72px;padding:16px 0;border-bottom:1px solid var(--line)}
+.sid .row-main{flex:1 1 240px;display:grid;gap:2px;min-width:0}
+.sid .row-main h3{font-size:var(--t17);font-weight:600;line-height:1.45;overflow-wrap:anywhere}
+.sid .row-main p{font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.sid .row-side{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 16px;min-width:0}
+.sid .row-value{font-size:var(--t15);font-weight:600;overflow-wrap:anywhere;text-align:right}
+.sid .row-value.plain{font-weight:400;color:var(--ink-2)}
+.sid .row>.sb-btn{flex:none}
+.sid .row-wide{display:grid;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+.sid .here{display:inline-flex;align-items:center;height:22px;margin-left:4px;padding:0 9px;border-radius:999px;background:var(--ink);color:#fff;font-size:var(--t13);font-weight:600;vertical-align:2px}
+.sid .row-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-top:16px}
+.sid .session-ended{padding-top:12px}
+/* 줄 안에서 열리는 폼(이름 · 이메일 · 비밀번호) */
+.sid .profile-name-form{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.sid .profile-name-form input{flex:1 1 220px;width:auto;min-width:0;height:48px}
+.sid .security-form{flex:1 1 100%;display:grid;gap:16px;padding:8px 0 4px}
+.sid .security-form>.sb-btn{justify-self:start}
+.sid .security-mail{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;padding-top:12px;border-top:1px dashed var(--line-2)}
+.sid .security-mail p{flex:1 1 260px;min-width:0;font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.sid .security-mail strong{display:block;font-weight:600;color:var(--ink)}
+.sid .security-mail .small{display:block}
+.sid .row-main .security-value{font-weight:600;color:var(--ink)}
+.sid .security-pending{margin-top:12px;font-size:var(--t15);font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+.sid .security-status{margin-top:12px;font-size:var(--t15);color:var(--ink);overflow-wrap:anywhere}
+.sid .row>.security-status{flex:1 1 100%;margin-top:0}
+.sid .security-status:empty{display:none}
+.sid .security-status[data-kind="error"]{color:var(--err);font-weight:600}
+.sid .security-status[data-kind="success"]{color:var(--ok);font-weight:600}
+.sid .security-status[data-kind="pending"]{color:var(--ink-2)}
+.sid .google-linking{display:grid;justify-items:end;gap:4px;min-width:0}
+.sid .google-linking .small{text-align:right}
+/* 학습 기록 연결: 켜면 검은 알약(PC 앱 「내 계정」과 같다) */
+.sid .switch[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sid .switch[aria-checked="true"]:hover:not(:disabled){background:var(--hover);border-color:var(--hover)}
+.sid .switch[aria-checked="true"]:disabled{background:var(--surface);border-color:var(--surface);color:var(--ink-3)}
+.sid .learning-summary{display:grid;gap:8px}
+.sid .learning-summary strong{font-size:var(--t15);font-weight:600}
+.sid .details{display:grid;gap:4px}
+.sid .details li{position:relative;padding-left:14px;font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.sid .details li::before{content:"";position:absolute;left:0;top:.75em;width:5px;height:1px;background:var(--ink-3)}
+/* 마을 기록(desktop/renderer/town-records-card.mjs — PC와 같은 원천, 마크업은 그대로 두고 여기서만 입힌다) */
+.sid .town-block .town-records{display:grid;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--ink)}
+.sid .town-block .town-records>.small{font-size:var(--t15);color:var(--ink-2)}
+.sid .town-block .town-records>.town-records-lead{color:var(--ink-3)}
+.sid .town-block .town-records>.town-records-message{padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t15);color:var(--ink)}
+.sid .town-block .town-records>.town-records-message.is-error{color:var(--err);font-weight:600}
+.sid .town-block .town-records-section{display:grid;gap:8px;padding-top:16px;border-top:1px solid var(--line)}
+.sid .town-block .town-records-section h3{font-size:var(--t17);font-weight:600}
+.sid .town-block .town-records-rows{display:grid;gap:4px}
+.sid .town-block .town-records-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;min-height:44px}
+.sid .town-block .town-records-text{flex:1 1 220px;min-width:0;font-size:var(--t15);overflow-wrap:anywhere}
+.sid .town-block .town-records-row .sb-btn,.sid .town-block .town-records-actions .sb-btn{flex:none}
+.sid .town-block .town-records-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sid .town-block .town-records-detail{display:grid;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.sid .town-block .link-button,.sid .town-block .town-records>.sb-btn{justify-self:start}
+.sid .town-block .sb-btn{min-height:44px;padding:6px 20px}
+/* 지우는 일: 붉은 글 · 붉은 선 알약(누르면 한 번 더 묻는다) */
+.sid .sb-btn.danger{color:var(--alert);border-color:color-mix(in srgb,var(--alert) 55%,var(--line-2))}
+.sid .sb-btn.danger:hover:not(:disabled){border-color:var(--alert)}
+.sid .support-id{margin-top:32px;font-size:var(--t13);color:var(--ink-3)}
+.sid .support-id summary{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-weight:600;color:var(--ink-2);list-style:none;cursor:pointer}
+.sid .support-id summary::-webkit-details-marker{display:none}
+.sid .support-id summary::before,.sid .signup-details summary::before{content:"";width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234f4f55' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 5 5 5-5 5'/%3E%3C/svg%3E") center/16px no-repeat;transition:transform .2s var(--ease)}
+.sid .support-id[open] summary::before{transform:rotate(90deg)}
+.sid .support-id p{margin:4px 0 8px}
+.sid .support-id code{display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface);color:var(--ink);font-family:var(--mono);font-size:var(--t13);overflow-wrap:anywhere}
+/* SYNK 앱으로 */
+.sid .next-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--ink)}
+/* 확인 창 — 되돌릴 수 없는 일 앞에서 한 번 더(「취소」가 기본) */
+.sid dialog.portal-confirm{width:min(440px,calc(100vw - 32px));max-width:none;padding:28px;border:1px solid var(--line-2);border-radius:16px;background:var(--paper);color:var(--ink);box-shadow:0 24px 64px rgba(11,11,12,.18)}
+.sid dialog.portal-confirm::backdrop{background:rgba(11,11,12,.42)}
+.sid dialog.portal-confirm h2{margin-bottom:12px;font-size:var(--t22);font-weight:600;line-height:1.35}
+.sid dialog.portal-confirm p{font-size:var(--t15);color:var(--ink-2)}
+.sid dialog.portal-confirm p+p{margin-top:8px}
+.sid dialog.portal-confirm .actions{margin-top:24px}
+.sid dialog.portal-confirm .sb-btn{width:100%}
+.sid .sb-btn.danger-fill{background:var(--alert);border-color:var(--alert);color:#fff}
+.sid .sb-btn.danger-fill:hover:not(:disabled){background:#a72a1a;border-color:#a72a1a}
+.sid .sb-btn.danger:disabled,.sid .sb-btn.danger-fill:disabled{background:var(--surface);border-color:var(--surface);color:var(--ink-3)}
+
+/* 바닥 */
+.sid .sid-foot{margin-top:auto;padding-top:48px}
+.sid .footer-links{display:flex;flex-wrap:wrap;gap:0 20px;font-size:var(--t13);color:var(--ink-3)}
+.sid .footer-links a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:none}
+.sid .footer-links a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+@media (max-width:520px){
+  .sid{padding-top:20px}
+  .sid .intro-copy{margin-bottom:28px}
+  .sid .google-phone-row{grid-template-columns:minmax(0,1fr)}
+  .sid .account-hero{margin-top:24px}
+  .sid .section-head{margin-top:44px}
+  .sid .row{gap:8px 24px}
+  .sid .row-side{justify-content:flex-start}
+  .sid .row-value{text-align:left}
+  .sid .google-linking{justify-items:start}
+  .sid .google-linking .small{text-align:left}
+}
+@media (max-width:340px){
+  .sid .method-btn{padding-left:16px;padding-right:10px;column-gap:10px}
+  .sid .account-head{flex-direction:column}
+}
+@media (forced-colors:active){
+  .sid .method-btn[aria-expanded="true"]:not(:focus-visible),.sid .switch[aria-checked="true"]:not(:focus-visible){outline:2px solid CanvasText;outline-offset:1px}
+  .sid input[type="checkbox"]{appearance:auto;width:22px;height:22px;background:none}
+  .sid select{appearance:auto;background-image:none;padding-right:16px}
+}
+@media (prefers-reduced-motion:reduce){.sid *,.sid *::before,.sid *::after{transition:none!important;animation:none!important}
+  .sid .method-status[data-state="checking"]{animation:sid-late-line .01s .6s both!important}}

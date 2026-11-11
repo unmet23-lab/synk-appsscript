@@ -1,19 +1,23 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>합성 화면 예시 · SYNK ID</title><link rel="stylesheet" href="./assets/scrapbook.css"><link rel="stylesheet" href="./style.css?v=google-only-20261009"></head>
-<body class="sb-page"><main><header><a class="brand" href="./platform.html">synk</a><nav><a href="./platform.html">플랫폼</a><a href="./client.html?product=world">WORLD</a></nav></header>
-<div id="preview-banner" class="notice" hidden>예시 화면이에요. 실제 계정에 연결되지 않아요.</div>
-<section class="hero"><div><p class="sb-eyebrow">SYNK ID</p><h1 id="hero-title"><span class="sb-mark">SYNK 계정</span> 하나로 로그인해요.</h1><p id="hero-copy">WORLD와 회원 혜택, PC 앱을 같은 계정으로 써요.</p></div><img src="./assets/sticker-book.webp" alt="" class="book"></section>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>합성 화면 예시 · SYNK ID</title><link rel="stylesheet" href="./id.css?v=sid-a-20261111"></head>
+<body class="sid"><main class="sid-main">
+<!-- A 한 칸(2026-11-11): 싱ㅋ 표 → 「SYNK ID」 회색 머리 → 장면마다 제목 하나 · 짧은 안내 하나 → 폼 → 바닥 링크. 첫머리 · 카드 상자 · 영문 꼬리표 없음.
+     요소 id · 부모 관계는 portal.mjs · google-auth.mjs · portal-security.mjs가 기대는 그대로다(설계 README 5절의 계약 다섯). preview.html은 id가 한 벌이다. -->
+<a class="brand" href="./" aria-label="SYNK ID 처음 화면"><svg class="wordmark" viewBox="0 0 560 328" aria-hidden="true" focusable="false"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg></a>
+<p class="id-kicker">SYNK ID</p>
+<p id="preview-banner" class="sid-preview" hidden>예시 화면이에요. 실제 계정에 연결되지 않아요.</p>
 <p id="notice" class="notice" data-kind="pending" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">로그인 화면을 준비하고 있어요.</p>
-<section id="setup" hidden class="sb-card setup"><h2>지금은 로그인할 수 없어요</h2><p>이 화면에 계정 서비스 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.</p><a id="learning-link" class="sb-btn" href="../learning-hub/">기본 학습 열기</a></section>
-<section id="auth-panel" class="auth-layout" aria-labelledby="auth-heading" hidden>
-  <div class="intro-copy"><h2 id="auth-heading">로그인 방법을 골라 주세요.</h2><p id="auth-copy">가입할 때 쓴 방법 그대로 로그인해요.</p></div>
-  <form id="auth-form" class="sb-card auth-card" aria-labelledby="auth-heading">
+<section id="setup" class="setup" aria-labelledby="setup-heading" hidden><h1 id="setup-heading">지금은 로그인할 수 없어요</h1><p>이 화면에 계정 서비스 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.</p><a id="learning-link" class="sb-btn" href="../learning-hub/">기본 학습 열기</a></section>
+<section id="auth-panel" aria-labelledby="auth-heading" hidden>
+  <div class="intro-copy"><h1 id="auth-heading">로그인 방법을 골라 주세요.</h1><p id="auth-copy">가입할 때 쓴 방법 그대로 로그인해요.</p></div>
+  <form id="auth-form" class="auth-card" aria-labelledby="auth-heading">
     <div id="recent-login" class="recent-login" hidden><p id="recent-login-text"></p><button id="recent-login-forget" class="link-button" type="button">이 기기에서 지우기</button></div>
-    <!-- 두 방법은 같은 단추 한 쌍이다: 같은 크기 · 같은 자리 · 같은 말(「○○로 로그인」 / 「○○로 가입」). -->
+    <!-- 두 방법은 같은 단추 한 쌍이다: 같은 크기 · 같은 자리 · 같은 말(「○○로 로그인」 / 「○○로 가입」). Google 안내는 그 바로 아래, 이메일 칸은 그 형제. -->
     <div id="method-choices" class="method-choices" role="group" aria-label="로그인 방법">
       <button id="google-login" class="method-btn" type="button" aria-describedby="google-availability" disabled><span class="method-mark google-mark" aria-hidden="true"></span><span id="google-login-label" class="method-label">Google로 로그인</span><span id="google-recent" class="recent-badge" hidden>최근 사용</span></button>
       <button id="email-method" class="method-btn" type="button" aria-expanded="false" aria-controls="email-fields"><span class="method-mark email-mark" aria-hidden="true"></span><span id="email-method-label" class="method-label">이메일로 로그인</span><span id="email-recent" class="recent-badge" hidden>최근 사용</span></button>
-      <p id="google-availability" class="small method-status" role="status" aria-live="polite">Google 로그인을 확인하고 있어요.</p>
+      <p id="google-availability" class="small method-status" role="status" aria-live="polite" data-state="checking">Google 로그인을 확인하고 있어요.</p>
     </div>
+    <p id="google-privacy-note" class="small google-privacy-note">Google로 하면 이메일과 기본 프로필만 받고, Google 비밀번호는 받지 않아요. <a href="https://synk.im/privacy/#synk-id" target="_blank" rel="noopener noreferrer">Google 가입 정보 안내<span class="visually-hidden"> (새 창)</span></a></p>
     <div id="email-fields" class="email-fields" hidden>
     <label>이메일<input id="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
     <div id="password-label" class="field-row"><label id="password-label-text" for="password">비밀번호</label><span class="password-field"><input id="password" type="password" autocomplete="current-password" minlength="8" required><button id="password-toggle" class="password-toggle" type="button" aria-pressed="false" aria-label="비밀번호 보기" aria-controls="password">보기</button></span></div>
@@ -30,13 +34,12 @@
     <button id="auth-submit" class="sb-btn" type="submit">로그인</button>
     <button id="resend-confirm" class="sb-btn soft resend-confirm" type="button" hidden>확인 메일 다시 받기</button>
     </div>
-    <p id="google-privacy-note" class="small google-privacy-note">Google로 하면 이메일과 기본 프로필만 받고, Google 비밀번호는 받지 않아요. <a href="https://synk.im/privacy/#synk-id" target="_blank" rel="noopener noreferrer">Google 가입 정보 안내<span class="visually-hidden"> (새 창)</span></a></p>
     <p id="switch-row" class="switch-row"><span id="switch-copy">처음이세요?</span><button class="link-button" type="button" data-view="signup">가입하기</button><button class="link-button" type="button" data-view="login" hidden>로그인하기</button></p>
   </form>
 </section>
-<section id="google-onboarding" class="auth-layout google-onboarding" aria-labelledby="google-onboarding-heading" hidden>
-  <div class="intro-copy"><p class="sb-eyebrow">SIGN UP</p><h2 id="google-onboarding-heading" tabindex="-1">가입을 마무리해요.</h2><p id="google-onboarding-copy">휴대폰을 인증하고 기본 정보를 입력해 주세요. 아이디와 비밀번호는 따로 만들지 않아요.</p></div>
-  <form id="google-onboarding-form" class="sb-card auth-card google-onboarding-card" aria-labelledby="google-onboarding-heading">
+<section id="google-onboarding" class="google-onboarding" aria-labelledby="google-onboarding-heading" hidden>
+  <div class="intro-copy"><h1 id="google-onboarding-heading" tabindex="-1">가입을 마무리해요.</h1><p id="google-onboarding-copy">휴대폰을 인증하고 기본 정보를 입력해 주세요. 아이디와 비밀번호는 따로 만들지 않아요.</p></div>
+  <form id="google-onboarding-form" class="auth-card google-onboarding-card" aria-labelledby="google-onboarding-heading">
     <div class="signup-choices google-signup-choices">
       <label class="toggle"><input id="google-privacy" type="checkbox" aria-describedby="google-privacy-summary" required><span>개인정보 수집·이용 안내를 확인했어요 <span class="muted">(필수)</span></span></label>
       <p id="google-privacy-summary" class="small signup-privacy"><span id="google-privacy-fields">휴대폰 번호·국가·나이·성별</span>을 계정 관리와 SYNK 서비스 제공을 위해 보관하며, 계정 삭제 요청을 처리할 때까지 유지해요. 성별은 응답하지 않아도 돼요. <span id="google-privacy-action-note">번호를 보내기 전에</span> <a href="https://synk.im/privacy/#synk-id" target="_blank" rel="noopener noreferrer">개인정보 처리 안내<span class="visually-hidden"> (새 창)</span></a>를 확인해 주세요.</p>
@@ -64,30 +67,33 @@
     <p id="google-cancel-note" class="small">나중에 하기를 누르면 이 브라우저에서 로그아웃해요. Google 인증 계정은 가입을 이어갈 수 있도록 남아 있어요. <span id="google-cancel-phone-note">입력·인증한 휴대폰 번호도 함께 남아 있어요. </span>삭제하려면 <a href="mailto:hello@synk.im?subject=SYNK%20%EA%B0%80%EC%9E%85%20%EB%8C%80%EA%B8%B0%20%EC%A0%95%EB%B3%B4%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">가입 대기 정보 삭제 요청</a>을 보내 주세요.</p>
   </form>
 </section>
-<section id="consent" hidden class="sb-card consent"><p class="sb-eyebrow">CONNECT</p><h2><span id="consent-name"></span>에 연결할까요?</h2><p id="consent-account" hidden></p><p id="consent-native" class="small" hidden>이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했을 때만 「연결하기」를 눌러 주세요. 그런 적이 없다면 「취소」를 눌러 주세요.</p><p>아래 정보를 이 앱에 넘겨요. 「학습 기록 연결」은 계정 화면에서 따로 정해요.</p><ul id="scopes"></ul><p class="small">돌아갈 곳: <span id="consent-destination"></span></p><div class="actions"><button id="approve" class="sb-btn">연결하기</button><button id="deny" class="sb-btn soft">취소</button></div></section>
-<section id="connection-restart" hidden class="sb-card consent" aria-labelledby="connection-restart-heading"><p class="sb-eyebrow">RECONNECT</p><h2 id="connection-restart-heading" tabindex="-1">로그인은 돼 있어요. 앱 연결만 다시 시작해 주세요.</h2><p>앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요.</p><p id="connection-restart-next">사용하던 앱으로 돌아가 거기서 로그인을 다시 시작해 주세요. 계정은 아래 「내 SYNK 계정 보기」에서 볼 수 있어요.</p><p id="connection-restart-en" class="small" lang="en">You are signed in. The app request expired or was already used. No new sign-up needed: go back to your app and sign in again there.</p><div class="actions"><a id="connection-restart-path" class="sb-btn" href="https://synk.im/path/app/" hidden>PATH로 돌아가기 <span lang="en">· Back to PATH</span></a><a id="connection-restart-home" class="sb-btn" href="./">내 SYNK 계정 보기 <span lang="en">· My SYNK account</span></a></div></section>
-<section id="account-profile" class="sb-card account-profile" aria-labelledby="account-profile-heading" hidden></section>
-<section id="account-security" class="sb-card account-security" aria-labelledby="account-security-heading" hidden>
-  <div class="security-head"><h2 id="account-security-heading" tabindex="-1">로그인과 보안</h2><p>로그인 이메일·로그인 방법·비밀번호를 여기서 보고 바꿔요.</p></div>
+<!-- 앱 연결: 「이 PC에서 방금 …했을 때만」은 이 화면에서 가장 무거운 한 줄이라 검은 글로 단추 바로 위에 한 번. -->
+<section id="consent" class="consent" aria-labelledby="consent-heading" hidden><h1 id="consent-heading"><span id="consent-name"></span>에 연결할까요?</h1><p id="consent-account" hidden></p><div class="consent-give"><p class="consent-lead">아래 정보를 이 앱에 넘겨요.</p><ul id="scopes"></ul><p class="small">「학습 기록 연결」은 계정 화면에서 따로 정해요. 돌아갈 곳: <span id="consent-destination"></span></p></div><p id="consent-native" class="consent-native" hidden>이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했을 때만 「연결하기」를 눌러 주세요. 그런 적이 없다면 「취소」를 눌러 주세요.</p><div class="actions"><button id="approve" class="sb-btn" type="button">연결하기</button><button id="deny" class="sb-btn soft" type="button">취소</button></div></section>
+<!-- 연결 다시 시작: 할 일은 앱으로 돌아가는 것이라 「내 SYNK 계정 보기」는 곁길(선 알약). PATH 판에서만 「PATH로 돌아가기」가 검은 알약. -->
+<section id="connection-restart" class="consent" aria-labelledby="connection-restart-heading" hidden><h1 id="connection-restart-heading" tabindex="-1">로그인은 돼 있어요.</h1><p class="restart-lead">앱 연결만 다시 시작해 주세요. 앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. 새로 가입하지 않아도 돼요.</p><p id="connection-restart-next" class="consent-native">사용하던 앱으로 돌아가 거기서 로그인을 다시 시작해 주세요. 계정은 아래 「내 SYNK 계정 보기」에서 볼 수 있어요.</p><p id="connection-restart-en" class="small" lang="en">You are signed in. The app request expired or was already used. No new sign-up needed: go back to your app and sign in again there.</p><div class="actions"><a id="connection-restart-path" class="sb-btn" href="https://synk.im/path/app/" hidden>PATH로 돌아가기 <span lang="en">· Back to PATH</span></a><a id="connection-restart-home" class="sb-btn soft" href="./">내 SYNK 계정 보기 <span lang="en">· My SYNK account</span></a></div></section>
+<!-- 내 SYNK 계정: PC 앱 「내 계정」과 같은 문법(제목 34 · 사람 한 줄 · 구역 제목 22 + 1px 줄 목록). 프로필과 아래 구역은 portal-account.mjs가 그린다. -->
+<section id="account-profile" class="account-profile" aria-labelledby="account-profile-heading" hidden></section>
+<section id="account-security" class="account-security" aria-labelledby="account-security-heading" hidden>
+  <div class="section-head"><h2 id="account-security-heading" tabindex="-1">로그인과 보안</h2><p class="small">로그인 이메일·로그인 방법·비밀번호를 여기서 보고 바꿔요.</p></div>
   <p id="security-pending-email" class="small security-pending" hidden></p>
   <p id="security-status" class="small security-status" role="status" aria-live="polite" aria-atomic="true"></p>
-  <div class="security-rows">
-    <div class="security-row">
-      <div class="security-row-main"><h3>로그인 이메일</h3><p id="security-email" class="security-value"></p></div>
-      <button id="email-form-toggle" class="sb-btn soft" type="button" aria-expanded="false" aria-controls="email-change-form">이메일 바꾸기</button>
+  <ul class="rows security-rows">
+    <li class="row security-row">
+      <div class="row-main"><h3>로그인 이메일</h3><p id="security-email" class="security-value"></p></div>
+      <button id="email-form-toggle" class="sb-btn soft compact" type="button" aria-expanded="false" aria-controls="email-change-form">이메일 바꾸기</button>
       <form id="email-change-form" class="security-form" hidden>
         <label>새 이메일<input id="new-email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
         <p class="small">지금 주소와 새 주소 두 곳에 확인 메일을 보내요. 두 메일의 단추를 모두 눌러야 바뀌고, 그때까지는 지금 이메일로 로그인해요.</p>
         <button id="email-change-submit" class="sb-btn" type="submit">확인 메일 보내기</button>
       </form>
-    </div>
-    <div class="security-row">
-      <div class="security-row-main"><h3>로그인 방법</h3><p id="security-methods" class="security-value"></p></div>
-      <div id="google-linking" class="google-linking" hidden><button id="google-link" class="google-btn" type="button" aria-describedby="google-link-status"><span class="google-mark" aria-hidden="true"></span><span>Google 계정 연결</span></button><p id="google-link-status" class="small" role="status" aria-live="polite" aria-atomic="true"></p></div>
-    </div>
-    <div class="security-row">
-      <div class="security-row-main"><h3>비밀번호</h3><p class="small">바꾸면 이 브라우저를 뺀 다른 기기와 앱(PC 앱·WORLD 포함)에서는 로그아웃돼요.</p></div>
-      <button id="password-form-toggle" class="sb-btn soft" type="button" aria-expanded="false" aria-controls="password-change-form">비밀번호 바꾸기</button>
+    </li>
+    <li class="row security-row">
+      <div class="row-main"><h3>로그인 방법</h3><p id="security-methods" class="security-value"></p></div>
+      <div id="google-linking" class="google-linking" hidden><button id="google-link" class="sb-btn soft compact google-btn" type="button" aria-describedby="google-link-status"><span class="google-mark" aria-hidden="true"></span><span>Google 계정 연결</span></button><p id="google-link-status" class="small" role="status" aria-live="polite" aria-atomic="true"></p></div>
+    </li>
+    <li class="row security-row">
+      <div class="row-main"><h3>비밀번호</h3><p>바꾸면 이 브라우저를 뺀 다른 기기와 앱(PC 앱·WORLD 포함)에서는 로그아웃돼요.</p></div>
+      <button id="password-form-toggle" class="sb-btn soft compact" type="button" aria-expanded="false" aria-controls="password-change-form">비밀번호 바꾸기</button>
       <form id="password-change-form" class="security-form" hidden>
         <label>현재 비밀번호<input id="current-password" type="password" autocomplete="current-password" required></label>
         <label>새 비밀번호 <span class="muted">(8자 이상)</span><input id="new-password" type="password" autocomplete="new-password" minlength="8" required></label>
@@ -97,9 +103,9 @@
         <button id="password-change-submit" class="sb-btn" type="submit">비밀번호 바꾸기</button>
       </form>
       <div class="security-mail"><p><strong id="password-mail-heading">현재 비밀번호를 모르겠어요</strong> <span id="password-mail-copy" class="small"></span></p><button id="password-mail" class="link-button" type="button">재설정 메일 보내기</button></div>
-    </div>
-  </div>
+    </li>
+  </ul>
 </section>
-<section id="account" hidden></section><section id="world-games" hidden></section>
-<section id="account-next" class="account-next" aria-labelledby="account-next-heading" hidden><h2 id="account-next-heading">SYNK 앱으로</h2><div class="next-links"><a href="https://synk.im/account/platform.html#home">SYNK 플랫폼</a><a href="https://synk.im/world/">SYNK WORLD</a><a href="https://synk.im/care/">플레저</a><a href="https://synk.im/">SYNK 홈</a></div></section>
-<footer class="sb-stitch"><p class="footer-links"><a href="../learning-hub/">SYNK 홈</a><a href="https://synk.im/privacy/#synk-id">개인정보 처리 안내</a><a href="mailto:hello@synk.im">문의 hello@synk.im</a></p></footer></main><script src="../learning-hub/atlas-learning.js?v=atlas-learning"></script><script type="module" src="./dist/preview.js?v=google-only-20261009"></script></body></html>
+<section id="account" class="account" hidden></section><section id="world-games" hidden></section>
+<section id="account-next" class="account-next" aria-labelledby="account-next-heading" hidden><div class="section-head"><h2 id="account-next-heading">SYNK 앱으로</h2></div><div class="next-links"><a class="sb-btn soft compact" href="https://synk.im/account/platform.html#home">SYNK 플랫폼</a><a class="sb-btn soft compact" href="https://synk.im/world/">SYNK WORLD</a><a class="sb-btn soft compact" href="https://synk.im/care/">플레저</a><a class="sb-btn soft compact" href="https://synk.im/">SYNK 홈</a></div></section>
+<footer class="sid-foot"><p class="footer-links"><a href="../learning-hub/">SYNK 홈</a><a href="https://synk.im/privacy/#synk-id">개인정보 처리 안내</a><a href="mailto:hello@synk.im">문의 hello@synk.im</a></p></footer></main><script src="../learning-hub/atlas-learning.js?v=atlas-learning"></script><script type="module" src="./dist/preview.js?v=sid-a-20261111"></script></body></html>

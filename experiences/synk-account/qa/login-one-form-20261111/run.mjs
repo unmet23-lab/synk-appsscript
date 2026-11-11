@@ -2,7 +2,7 @@
 // bundle (dist/app.js with the real supabase-js) against a synthetic Auth + account server on 127.0.0.1, in the
 // installed Chrome. No production project, real account, mail or password is involved.
 //   node experiences/synk-account/qa/login-one-form-20261111/run.mjs <playwright module dir> <out dir>
-// SYNK_QA_FILES=<dir> serves a publishing candidate (id__index.html, id__style.css, id__dist__app.js) instead of this checkout.
+// SYNK_QA_FILES=<dir> serves a publishing candidate (id__index.html, id__style.css or id__id.css, id__dist__app.js) instead of this checkout.
 // SYNK_QA_GOOGLE=off answers the settings request without Google (the e-mail-only state).
 // Prints one JSON line per check and writes screenshots (1440 and 390 wide) to <out dir>.
 // It also walks the sign-in that ends in an app (authorization_id): a web app, an app on this PC, one approved before, a gone request.
@@ -97,8 +97,8 @@ let config = null;
 const portal = http.createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
   if (pathname === '/config.json') { res.writeHead(200, { 'Content-Type': 'application/json' });res.end(JSON.stringify(config));return; }
-  const candidate = process.env.SYNK_QA_FILES && { '/': 'id__index.html', '/index.html': 'id__index.html', '/style.css': 'id__style.css', '/dist/app.js': 'id__dist__app.js' }[pathname];
-  if (candidate) { res.writeHead(200, { 'Content-Type': types[candidate === 'id__dist__app.js' ? '.js' : candidate === 'id__style.css' ? '.css' : '.html'] });res.end(fs.readFileSync(path.join(process.env.SYNK_QA_FILES, candidate)));return; }
+  const candidate = process.env.SYNK_QA_FILES && { '/': 'id__index.html', '/index.html': 'id__index.html', '/style.css': 'id__style.css', '/id.css': 'id__id.css', '/dist/app.js': 'id__dist__app.js' }[pathname];
+  if (candidate) { res.writeHead(200, { 'Content-Type': types[candidate === 'id__dist__app.js' ? '.js' : /.css$/.test(candidate) ? '.css' : '.html'] });res.end(fs.readFileSync(path.join(process.env.SYNK_QA_FILES, candidate)));return; }
   const file = path.join(portalRoot, pathname === '/' ? 'index.html' : pathname);
   if (!file.startsWith(portalRoot) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404);res.end('missing');return; }
   res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });res.end(fs.readFileSync(file));

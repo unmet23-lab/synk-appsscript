@@ -113,10 +113,12 @@ export async function preparePortal({ targetName, out, configPath, currentPath, 
   // Assemble and validate all inputs before creating any output.
   const files = new Map();
   if (!configOnly) {
-  for (const file of ['scrapbook.css', 'InterTight-700.woff2', 'SUIT-Variable.woff2', 'badge-check.webp', 'badge-cream.webp', 'slab-coral-long.webp', 'slab-cream-long.webp', 'sticker-book.webp', 'thread-shift.webp']) files.set(`assets/${file}`, fs.readFileSync(path.join(source, 'assets', file)));
-  const style = fs.readFileSync(path.join(source, 'style.css'), 'utf8');
-  if (!style.includes(".sb-stitch{border-image-source:url('./assets/thread-shift.webp')}")) fail('style.css lacks the thread path fix.');
-  files.set('style.css', style);files.set('dist/app.js', fs.readFileSync(path.join(source, 'dist/app.js')));
+  // A 한 칸 (2026-11-11): the page has one stylesheet (id.css) and the platform's two SYNK Sans pieces. style.css and the
+  // scrapbook assets belong to the other account pages (client · local-world · teacher), not to this one.
+  for (const file of ['SYNKSans-rest.woff2', 'SYNKSans-ui.woff2']) files.set(`assets/${file}`, fs.readFileSync(path.join(source, 'assets', file)));
+  const style = fs.readFileSync(path.join(source, 'id.css'), 'utf8');
+  if (!style.includes("url('./assets/SYNKSans-ui.woff2')") || !style.includes('.sid .method-btn{')) fail('id.css lacks its font or the sign-in pair.');
+  files.set('id.css', style);files.set('dist/app.js', fs.readFileSync(path.join(source, 'dist/app.js')));
   files.set('vendor/atlas-learning.js', fs.readFileSync(path.join(workspace, 'experiences/learning-hub/atlas-learning.js')));
   let html = fs.readFileSync(path.join(source, 'index.html'), 'utf8');
   const swap = (from, to, count) => { const actual = html.split(from).length - 1;if (actual !== count) fail(`expected ${count}x ${from}, found ${actual}`);html = html.split(from).join(to); };
@@ -124,8 +126,6 @@ export async function preparePortal({ targetName, out, configPath, currentPath, 
     + '\n<link rel="icon" type="image/svg+xml" sizes="any" media="(prefers-color-scheme: dark)" href="/assets/favicon-synk-dark-20260919.svg">';
   swap('<meta name="referrer" content="no-referrer">', `<meta name="referrer" content="no-referrer">\n<meta name="robots" content="noindex,nofollow">\n${icons}`, 1);
   swap('src="../learning-hub/atlas-learning.js?v=atlas-learning"', 'src="./vendor/atlas-learning.js?v=atlas-learning"', 1);
-  swap('<nav><a href="./platform.html">플랫폼</a><a href="./client.html?product=world">WORLD</a></nav>', '<nav><a href="https://synk.im/">synk.im</a></nav>', 1);
-  swap('<a class="brand" href="./platform.html">', '<a class="brand" href="./">', 1);
   swap('href="../learning-hub/"', 'href="https://synk.im/"', html.split('href="../learning-hub/"').length - 1);
   if (target.title) html = html.replace(/<title>([^<]*)<\/title>/, (_, title) => `<title>${title}${target.title}</title>`);
   if (!html.includes('id="signup-choices"') || !html.includes('https://synk.im/privacy/#synk-id')) fail('The sign-up choices are missing from this build.');

@@ -45,7 +45,12 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   setBusy = () => {}, hostBusy = () => false, onPasswordChanged = () => {}, fetcher = (...args) => globalThis.fetch(...args) }) {
   // Both forms start folded under their buttons (10-27): the card reads as three lines — e-mail, ways, password.
   let user = null, generation = 0, busy = false, formOpen = false, emailOpen = false, closed = false;
-  const status = (text, kind = 'info') => { const node = $('security-status');node.textContent = text;node.setAttribute('data-kind', kind);node.className = `small security-status${kind === 'error' ? ' error' : ''}`; };
+  const status = (text, kind = 'info') => { const node = $('security-status');node.textContent = text;node.setAttribute('data-kind', kind);node.className = `small security-status${kind === 'error' ? ' error' : ''}`;if (text && kind !== 'pending') node.scrollIntoView?.({ block: 'nearest' }); };
+  // The line's seat: after the open form, else at the end of the row of the last change (11-12 — not at the top of the card, off screen
+  // on a phone). It moves only in render (a form opening or closing), so words written for a press land in a live region already in place.
+  let lastRow = 'reset';
+  const seat = () => { const node = $('security-status'), anchor = lastRow === 'email' ? $('email-change-form') : lastRow === 'password' && formOpen ? $('password-change-form') : $('password-mail')?.parentElement;
+    if (node && anchor && anchor !== node && anchor.nextElementSibling !== node) anchor.after?.(node); };
   const message = error => {
     const code = error?.code || error?.error_code;
     if (SECURITY_MESSAGES[code]) return SECURITY_MESSAGES[code];
@@ -88,9 +93,10 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     $('email-form-toggle').setAttribute('aria-expanded', String(emailOpen));
     $('password-mail-heading').textContent = methods.email ? '현재 비밀번호를 모르겠어요' : 'Google로 가입한 계정이에요';
     $('password-mail-copy').textContent = methods.email
-      ? `${user.email || '가입한 이메일'}로 재설정 메일을 보내요.`
-      : `이메일과 비밀번호로도 로그인하려면 ${user.email || '가입한 이메일'}로 메일을 받아 비밀번호를 정해 주세요.`;
+      ? `재설정 메일을 ${user.email ? `${user.email} 주소로` : '가입한 이메일로'} 보내요.`
+      : `이메일과 비밀번호로도 로그인하려면 ${user.email ? `${user.email} 주소로` : '가입한 이메일로'} 메일을 받아 비밀번호를 정해 주세요.`;
     $('password-mail').textContent = methods.email ? '재설정 메일 보내기' : '비밀번호 정하는 메일 받기';
+    seat();
   }
   // The current password is checked with a separate, immediately ended Auth session, so this browser's own
   // session (with its PKCE and refresh state) stays untouched until the change itself. Nothing from that
@@ -113,7 +119,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     if (!token || data?.user?.id !== user.id) throw fault('ACCOUNT_CHANGED');
   }
   async function changePassword(event) {
-    event?.preventDefault?.();
+    event?.preventDefault?.();lastRow = 'password';seat();
     const values = { current: $('current-password').value, next: $('new-password').value, confirm: $('new-password-confirm').value };
     const problem = !closed && user ? passwordProblem(values) : null;
     if (problem) { status(problem, 'error');return; }
@@ -134,18 +140,19 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     finally { lock(false);if (collapsed && !closed) $('password-form-toggle').focus?.(); }
   }
   async function sendReset() {
+    lastRow = 'reset';seat();
     if (user && !user.email) { status('이 계정에는 로그인 이메일이 없어 메일을 보낼 수 없어요. hello@synk.im으로 알려 주세요.', 'error');return; }
     const check = begin('메일을 보내고 있어요…');if (!check) return;
     const callback = new URL(config.portalUrl);callback.search = '';callback.hash = '';callback.searchParams.set('view', 'reset');
     try {
       const result = await bounded(sdk.auth.resetPasswordForEmail(user.email, { redirectTo: callback.href }));check();
       if (result.error) throw result.error;
-      status(`${user.email}로 메일을 보냈어요. 메일의 「새 비밀번호 정하기」 단추를 누르면 새 비밀번호를 정할 수 있어요. 안 보이면 스팸함도 봐 주세요.`, 'success');
+      status(`${user.email} 주소로 메일을 보냈어요. 메일의 「새 비밀번호 정하기」 단추를 누르면 새 비밀번호를 정할 수 있어요. 안 보이면 스팸함도 봐 주세요.`, 'success');
     } catch (error) { if (!closed) status(message(error), 'error'); }
     finally { lock(false); }
   }
   async function changeEmail(event) {
-    event?.preventDefault?.();
+    event?.preventDefault?.();lastRow = 'email';seat();
     const next = $('new-email').value.trim(), problem = !closed && user ? emailProblem(next, user.email) : null;
     if (problem) { status(problem, 'error');return; }
     const check = begin('확인 메일을 보내고 있어요…');if (!check) return;
@@ -164,8 +171,8 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   $('password-change-form').onsubmit = event => { void changePassword(event); };
   $('email-change-form').onsubmit = event => { void changeEmail(event); };
   $('password-mail').onclick = () => { void sendReset(); };
-  $('password-form-toggle').onclick = () => { formOpen = !formOpen;if (!formOpen) for (const id of PASSWORD_FIELDS) $(id).value = '';render();if (formOpen) $('current-password').focus?.(); };
-  $('email-form-toggle').onclick = () => { emailOpen = !emailOpen;if (!emailOpen) $('new-email').value = '';render();if (emailOpen) $('new-email').focus?.(); };
+  $('password-form-toggle').onclick = () => { formOpen = !formOpen;lastRow = 'password';status('');if (!formOpen) for (const id of PASSWORD_FIELDS) $(id).value = '';render();if (formOpen) $('current-password').focus?.(); };
+  $('email-form-toggle').onclick = () => { emailOpen = !emailOpen;lastRow = 'email';status('');if (!emailOpen) $('new-email').value = '';render();if (emailOpen) $('new-email').focus?.(); };
   $('password-visible').onchange = () => { for (const id of PASSWORD_FIELDS) $(id).type = $('password-visible').checked ? 'text' : 'password'; };
   return Object.freeze({
     // `value` is the Auth user this page verified (sdk.auth.getUser), never one read from storage alone. `section`
@@ -174,8 +181,8 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
       if (closed) return;
       if (user?.id !== value?.id) { generation++;formOpen = false;emailOpen = false;status('');clearFields(); }
       user = value?.id ? value : null;
-      if (focus && user && section === 'password') formOpen = true;
-      if (focus && user && section === 'email') emailOpen = true;
+      if (focus && user && section === 'password') { formOpen = true;lastRow = 'password'; }
+      if (focus && user && section === 'email') { emailOpen = true;lastRow = 'email'; }
       render();
       if (focus && user) {
         $('account-security').scrollIntoView?.({ block: 'start' });

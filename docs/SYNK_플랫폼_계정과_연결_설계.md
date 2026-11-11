@@ -1,5 +1,17 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="sid-a-redesign-20261112"></a>
+## 2026-11-12 SYNK ID 로그인 · 「내 SYNK 계정」 — A 한 칸
+
+유호님(11-11): 「로그인하는 프론트가 진짜 너무 슬롭같아 … 디자인사이트 참고해서 아예 리디자인」 → 시안 세 갈래 가운데 **A 한 칸**(11-11) → 계정 화면까지 끝까지 그린 구현판을 보시고 「좋다, 이어가」(11-12). 설계 · 시안 · 실측은 [SYNK ID 로그인 설계](디자인/SYNK_ID_로그인/README.md)(3절 문법 · 5절 구현 계약 · 8절 구현).
+
+- **쪽:** synk.im/id 한 쪽이 PC 앱 로그인 창을 그대로 편 한 칸이 됐다 — 싱ㅋ 표 → 「SYNK ID」 회색 머리 → 제목 하나 · 안내 한 줄 → 같은 꼴 방법 단추 한 쌍(11-11 결정 그대로) → Google 안내 → 이메일 칸 → 가입 줄 → 바닥. 첫머리 · 카드 상자 · 펠트 · 실땀 · 영문 꼬리표는 없다. 「내 SYNK 계정」은 PC 앱 「내 계정」(`desktop/renderer/account-page.mjs`) 문법 — 제목 34 + 로그아웃 → 사람 한 줄 → 구역 제목 22 + 1px 줄 목록, 줄마다 이름 · 설명과 값 · 선 알약.
+- **스타일:** 새 `experiences/synk-account/id.css` 하나를 `index.html`(과 빌드가 그것으로 만드는 `preview.html`)만 부른다. `style.css` · `assets/scrapbook.css`는 `client` · `local-world` · `teacher` 쪽이 계속 쓴다. 글꼴은 플랫폼과 같은 SYNK Sans 두 조각 한 벌(문장 속 라틴이 굵던 결함 없음), 크기 13 · 15 · 17 · 22 · 34 · 굵기 400 · 600, 누르는 칸 44px 이상.
+- **동작(그리는 층 밖에서 조금):** 같은 알림이 위 줄과 단추 옆에 두 번 보이지 않게 위 줄을 접는다(`#notice[data-folded]`, 읽기 프로그램에는 남김) · Google 단추는 「확인 중」과 「못 씀」을 가른다(`data-off` · 확인 줄은 0.6초 넘으면 보임) · 「지난번 로그인」은 문장과 (Google일 때만) 가린 주소 · 이메일 칸이 열리면 Google 안내는 칸 아래로 · 계정 줄의 실패는 그 줄 안에, 「로그인과 보안」 상태 줄은 마지막으로 요청한 줄에 · 재설정 · 이메일 변경 단계의 겹친 안내 없앰.
+- **공개:** 공개본 포털 구간을 통째로 갈아 끼우고 `id/index.html`을 새 짜임으로, `id/id.css` · `id/assets/SYNKSans-*.woff2`를 새로 올렸다([갈아 끼우기 도구](../experiences/synk-account/qa/sid-a-20261111/patch-live.mjs) — 앞 판 포털 `02ac206336`) · synk-policy `6d09898e`(11-12 06:43 KST). `id/style.css` · 옛 스크랩북 자산은 공개본에 그대로 둔다(옛 캐시 쪽이 찾을 수 있게). 공개 준비 도구(`tools/synk-id/prepare-portal.mjs`)도 새 파일들을 싣는다.
+- **검수:** 카본 다섯 회차(모두 P2 · P3 — 반영하거나 다음 판으로) · Fable 5.2 최종 세 회차(P0 · P1 0). 검수 사이에 다른 공개(5분 대기 카드 `d5fdcbf2` · Atlas `09c8d25c`)가 같은 `id/` 파일을 바꿔 공개 도구가 두 번 멈췄고, 그때마다 지금 공개본 위에서 사슬을 새로 열었다(마지막 사슬 `synk-id-a-redesign-20261112-r5`). 그 사슬의 P2 · P3 여섯은 다음 판으로(트랙).
+- **다음 판이 쓸 것:** 앞 판 원천은 이 공개를 담은 master 커밋(포털 모듈 바이트가 같은 판). 확인은 [장면 도구](../experiences/synk-account/qa/sid-a-20261111/scenes.mjs)(`--live https://synk.im/id/`이면 공개본 그대로 · 계정 프로젝트 요청만 합성) · `qa/login-one-form-20261111/run.mjs` · `qa/login-ux-20261027/run.mjs`(SYNK_QA_FILES가 `id__id.css`도 내준다).
+
 <a id="world-phone-only-20261111"></a>
 ## 2026-11-11 WORLD는 휴대폰에서 — 플랫폼 앱 목록에서 빼고 휴대폰 칸 하나로
 

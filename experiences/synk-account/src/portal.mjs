@@ -33,11 +33,12 @@ const AUTH_LABELS = { login: '로그인', signup: '가입하기', recover: '재�
 // After a mail went out, the same button sends it again for the same address.
 const RESEND_LABELS = { recover: '메일 다시 보내기' };
 const RATE_ACTIONS = { login: '로그인', signup: '가입 메일', recover: '비밀번호 재설정 메일', reset: '비밀번호 변경', 'email-change': '이메일 변경 확인', consent: '계정 연결', resend: '확인 메일' };
-// The words above the card for each step; the login step greets a returning browser differently.
+// The words above the form for each step; the login step greets a returning browser differently. A returning browser
+// gets the heading only: the line under it already says which way it was (A 한 칸, 2026-11-11 — one sentence, not four layers).
 const MODE_COPY = {
-  login: ['로그인 방법을 골라 주세요.', '가입할 때 쓴 방법 그대로 로그인해요. Google로 가입했으면 Google, 이메일과 비밀번호로 가입했으면 이메일이에요.'],
+  login: ['로그인 방법을 골라 주세요.', '가입할 때 쓴 방법 그대로 로그인해요.'],
   'login-no-google': ['이메일로 로그인해요.', '이메일과 비밀번호로 로그인해요. 처음이면 아래 「가입하기」를 눌러 주세요.'],
-  recent: ['다시 오셨네요.', '지난번에 쓴 방법에 「최근 사용」을 붙여 뒀어요.'],
+  recent: ['다시 오셨네요.', ''],
   signup: ['가입 방법을 골라 주세요.', 'Google로 가입하면 비밀번호를 따로 만들지 않아요. 이메일로 가입하면 비밀번호(8자 이상)를 직접 정해요.'],
   'signup-no-google': ['이메일로 가입해요.', '이메일과 비밀번호로 가입해요. 비밀번호는 8자 이상이에요.'],
   recover: ['비밀번호를 다시 정해요.', '가입한 이메일로 새 비밀번호를 정하는 링크를 보내 드려요. Google로 가입했다면 비밀번호가 필요 없어요 — 아래 「로그인하기」로 돌아가 「Google로 로그인」을 눌러 주세요.'],
@@ -94,9 +95,13 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   let noticeScope = null;
   const signupConversion = preview ? null : createSignupConversion();
   const setText = (node, text) => { if (node.textContent !== text) node.textContent = text; };
+  // The page line (#notice) and the copy beside a button (feedback) may say the same thing. While that copy shows, the page
+  // line is folded (data-folded="true": kept for screen readers, not drawn) and the keyboard goes to the copy — one message, once.
+  let renderCopies = () => null;
   const notice = (text, error = false, reveal = false, kind = error ? 'error' : 'info') => {
     noticeScope = null;const node = $('notice');setText(node, text);node.className = `notice${error ? ' error' : ''}`;node.setAttribute('data-kind', kind);
-    if (reveal) { node.setAttribute('tabindex', '-1');node.focus?.({ preventScroll: true });node.scrollIntoView?.({ block: 'center' }); }
+    const copy = renderCopies(), target = copy || node;
+    if (reveal) { target.setAttribute('tabindex', '-1');target.focus?.({ preventScroll: true });target.scrollIntoView?.({ block: 'center' }); }
   };
   if (preview) $('preview-banner').hidden = false;
   $('learning-link').href = config.learningUrl;
@@ -147,8 +152,20 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   let staleRecovery = null;
   let google = null;
   // This copy keeps the instruction beside its button without another live region.
-  const feedback = target => { const node = document.createElement('p');node.className = 'notice error';node.hidden = true;target.before(node);return node; };
+  const feedback = target => { const node = document.createElement('p');node.className = 'notice error';node.hidden = true;node.setAttribute('tabindex', '-1');target.before(node);return node; };
   const authFeedback = feedback($('auth-submit')), consentFeedback = feedback($('approve').closest('.actions'));
+  // Draws the copies beside the buttons, then folds the page line while a shown copy says the same words; returns that copy.
+  renderCopies = () => {
+    for (const [scope, node] of [[mode, authFeedback], ['consent', consentFeedback]]) {
+      const record = cooldowns.get(scope), feedback = feedbacks.get(scope);node.hidden = !(record || feedback) || !scopeVisible(scope);
+      if (record || feedback) { setText(node, record ? cooldownMessage(scope) : feedback.text);node.setAttribute('data-kind', record ? 'error' : feedback.kind);node.className = `notice${record || feedback.kind === 'error' ? ' error' : ''}`; }
+    }
+    const page = $('notice'), text = page.textContent;
+    // A copy inside a folded part of the page (the e-mail fields while Google is the way) is not seen, so it does not count.
+    const copy = text ? [authFeedback, consentFeedback].find(node => !node.hidden && !node.parentElement?.closest?.('[hidden]') && node.textContent === text) || null : null;
+    page.setAttribute('data-folded', String(!!copy));
+    return copy;
+  };
   const remaining = scope => Math.max(0, Math.ceil(((cooldowns.get(scope)?.until || 0) - cooldownClock.now()) / 1000));
   const scopeVisible = scope => scope === 'consent' ? !$('consent').hidden : scope === 'resend' ? !$('auth-panel').hidden && ['login', 'signup'].includes(mode) : !$('auth-panel').hidden && scope === mode;
   const cooldownText = (scope, waiting) => waiting
@@ -166,16 +183,13 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if ($('resend-confirm')) { $('resend-confirm').disabled = authOperation || resendSeconds > 0;setText($('resend-confirm'), resendSeconds ? `${resendSeconds}초 뒤 다시 요청` : '확인 메일 다시 받기'); }
     $('approve').disabled = $('deny').disabled = !!consentOperation || consentSeconds > 0;
     setText($('approve'), consentSeconds ? `${consentSeconds}초 뒤 다시 요청` : '연결하기');
-    for (const [scope, node] of [[mode, authFeedback], ['consent', consentFeedback]]) {
-      const record = cooldowns.get(scope), feedback = feedbacks.get(scope);node.hidden = !(record || feedback) || !scopeVisible(scope);
-      if (record || feedback) { setText(node, record ? cooldownMessage(scope) : feedback.text);node.setAttribute('data-kind', record ? 'error' : feedback.kind);node.className = `notice${record || feedback.kind === 'error' ? ' error' : ''}`; }
-    }
+    renderCopies();
     google?.refreshControls();
   }
   function tickCooldowns() {
     if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);cooldownTimer = null;if (closed) return;
     renderControls();
-    if (noticeScope && scopeVisible(noticeScope) && cooldowns.has(noticeScope)) setText($('notice'), cooldownMessage(noticeScope));
+    if (noticeScope && scopeVisible(noticeScope) && cooldowns.has(noticeScope)) { setText($('notice'), cooldownMessage(noticeScope));renderCopies(); }
     if ([...cooldowns.keys()].some(scope => remaining(scope) > 0)) cooldownTimer = cooldownClock.setTimeout(tickCooldowns, 1000);
   }
   function clearCooldowns() { if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);cooldownTimer = null;cooldowns.clear();feedbacks.clear();noticeScope = null;authFeedback.hidden = consentFeedback.hidden = true;renderControls(); }
@@ -183,10 +197,11 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const report = (error, scope = mode) => {
     if (closed || error?.code === 'ACCOUNT_CHANGED') return;
     const limited = authRateLimit(error);
-    if (!limited) { const text = authErrorMessage(error);feedbacks.set(scope, { text, kind: 'error' });notice(text, true, true);renderControls();return; }
+    // The copy beside the button is drawn first, so the page line folds into it and the keyboard lands there.
+    if (!limited) { const text = authErrorMessage(error);feedbacks.set(scope, { text, kind: 'error' });renderControls();notice(text, true, true);return; }
     const message = `${RATE_ACTIONS[scope]} 요청이 잠시 제한됐어요. 서버가 대기 시간을 알려 주지 않았어요. 잠시 후 직접 다시 시도해 주세요.`;
     cooldowns.set(scope, { until: limited.waitSeconds ? cooldownClock.now() + limited.waitSeconds * 1000 : null, message });
-    feedbacks.delete(scope);notice(cooldownMessage(scope), true, true);noticeScope = scope;
+    feedbacks.delete(scope);renderControls();notice(cooldownMessage(scope), true, true);noticeScope = scope;
     if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);tickCooldowns();
   };
   const authorizationId = new URL(location.href).searchParams.get('authorization_id');
@@ -269,10 +284,17 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     return `${email ? `${email} 계정의 새 비밀번호예요. ` : ''}${recoveredOver ? `이 브라우저에 로그인돼 있던 ${recoveredOver} 계정은 로그아웃했어요. ` : ''}저장하면 이 브라우저를 뺀 다른 기기와 앱에서는 로그아웃돼요.`;
   };
   // The last way this browser signed in: a line above the buttons, 「최근 사용」 on that way, the address filled in for e-mail.
+  // The line is a sentence and, for Google, the masked address on its own (an e-mail sign-in shows its address in the field below).
   function renderRecent() {
     const last = mode === 'login' ? recent() : null;
     $('recent-login').hidden = !last;
-    setText($('recent-login-text'), last ? `이 기기에서 지난번에 ${recentMethodName(last.method)}로 로그인했어요 · ${last.masked}` : '');
+    const say = last ? `이 기기에서 지난번에 ${recentMethodName(last.method)}로 로그인했어요` : '', who = last && !(last.method === 'email' && last.email) ? last.masked || '' : '';
+    const line = $('recent-login-text');
+    if (line.dataset.say !== say || line.dataset.who !== who) {
+      line.dataset.say = say;line.dataset.who = who;
+      const part = (className, text) => Object.assign(document.createElement('span'), { className, textContent: text });
+      line.replaceChildren(...(say ? [part('rl-say', say)] : []), ...(who ? [' ', part('rl-who', who)] : []));
+    }
     $('google-recent').hidden = last?.method !== 'google';$('email-recent').hidden = last?.method !== 'email';
     if (last?.email && !$('email').value) $('email').value = last.email;
   }
@@ -289,11 +311,16 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   function renderMethods() {
     const choosing = CHOICE_MODES.has(mode), open = emailOpen();
     if ($('email-fields')) $('email-fields').hidden = !open;
+    // The Google note follows the pair while the pair is the choice; with the e-mail fields open it goes below them, so it does
+    // not cut between the e-mail button and its fields (blind review 11-11, round 2). Moved in the document: Tab follows the eye.
+    const note = $('google-privacy-note'), anchor = open ? $('email-fields') : $('method-choices');
+    if (note && anchor && anchor.nextElementSibling !== note) anchor.after?.(note);
     // The pair is named for what it chooses (the card's heading already names the card and the form).
     $('method-choices')?.setAttribute('aria-label', mode === 'signup' ? '가입 방법' : '로그인 방법');
     if (!$('email-method')) return;
     $('email-method').setAttribute('aria-expanded', String(choosing && open));
     setText($('email-method-label'), mode === 'signup' ? '이메일로 가입' : '이메일로 로그인');
+    renderCopies();
   }
   const setMode = value => {
     mode = value;renderCopy();
@@ -404,7 +431,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if (!card) { notice(staleRecovery.device ? 'SYNK 앱이 연결을 기다리는 5분이 지났어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. SYNK 앱에서 로그인을 다시 시작해 주세요.' : '앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', false, true);return; }
     setText($('connection-restart-next'), next);setText($('connection-restart-en'), en);
     const pathLink = $('connection-restart-path');pathLink.hidden = !staleRecovery.path;if (pathLink.style) pathLink.style.display = staleRecovery.path ? '' : 'none';
-    $('connection-restart-home').classList?.toggle('soft', staleRecovery.path);
+    // 「내 SYNK 계정 보기」 is a side way on every version of this card (a line pill): what to do is go back to the app.
+    $('connection-restart-home').classList?.add('soft');
     card.hidden = false;notice('', false, false, 'idle');
     const heading = $('connection-restart-heading');heading?.focus?.({ preventScroll: true });heading?.scrollIntoView?.({ block: 'center' });
   }
@@ -439,15 +467,9 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     }
     finally { if (consentOperation === operation && !operation.redirecting) { consentOperation = null;renderControls(); } }
   }
-  // The hero names what the page is for: signing in, or this browser's own account once it is open.
-  function hero(signedIn) {
-    const mark = document.createElement('span');mark.className = 'sb-mark';mark.textContent = signedIn ? '내 SYNK 계정' : 'SYNK 계정';
-    if ($('hero-title')) $('hero-title').replaceChildren(...(signedIn ? [mark] : [mark, ' 하나로 로그인해요.']));
-    if ($('hero-copy')) setText($('hero-copy'), signedIn ? '이름·로그인 방법·로그인한 곳을 여기서 보고 바꿔요.' : 'WORLD와 회원 혜택, PC 앱을 같은 계정으로 써요.');
-  }
   async function enter() {
     if (closed) return;
-    view?.stop();view = null;consentTarget = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;hero(false);
+    view?.stop();view = null;consentTarget = null;$('consent').hidden = true;$('account').hidden = true;$('account-profile').hidden = true;
     // The restart card belongs to one signed-in account; sign-out or another account starts clean.
     if (staleRecovery && staleRecovery.subject !== (session?.user?.id || null)) staleRecovery = null;
     const restartCard = $('connection-restart');if (restartCard) restartCard.hidden = true;
@@ -464,11 +486,10 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     }
     if (!session || mode === 'reset' || mode === 'email-change') {
       $('auth-panel').hidden = false;setMode(mode);
-      if (mode === 'email-change') { notice('메일의 이메일 변경 확인 링크를 열었어요. 「이메일 변경 확인하기」를 눌러 주세요.');return; }
-      if (mode !== 'reset' && landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(error ? text : text + ' 이 기기에서 로그인하지 않아도 돼요.', error, true, error ? 'error' : 'success');return; }
-      // The sign-in form says what to do itself; the status line stays quiet until there is news.
-      if (mode !== 'reset') notice('', false, false, 'idle');
-      else notice(resetLinkStep() ? '메일의 재설정 링크를 열었어요. 「링크 확인하고 계속」을 눌러 주세요.' : '두 칸에 같은 비밀번호를 넣고 새 비밀번호를 저장해 주세요.');
+      if (mode !== 'reset' && mode !== 'email-change' && landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(error ? text : text + ' 이 기기에서 로그인하지 않아도 돼요.', error, true, error ? 'error' : 'success');return; }
+      // Every step's form says what to do itself (the heading and the line under it — for the mail-link steps, the one tap and
+      // the two new-password fields too): the status line stays quiet until there is news, so nothing is said twice (A 한 칸).
+      notice('', false, false, 'idle');
       return;
     }
     $('auth-panel').hidden = true;
@@ -498,7 +519,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
           const accountGet=target.origin===expected.origin&&target.pathname==='/functions/v1/synk-account'&&!target.search&&(!options.method||options.method==='GET');
           return fetch(url,accountGet?{...options,headers:{...options.headers,...conversionHeaders}}:options);
         } });
-      view = createPortalAccount({ client, user: verified, guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();hero(true);
+      view = createPortalAccount({ client, user: verified, guard: check, notice, preview, logout: (note, request) => logout(note, request, check) });await view.load();check();
       notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 보고 바꿀 수 있어요.', false, false, 'success');
       if ($('account-next')) $('account-next').hidden = preview || callbackBlocked;
       google.showAccount(!preview);
@@ -703,7 +724,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       : hadCallback && retained
       ? '확인 링크가 만료되었거나 이 브라우저에서 처리할 수 없어요. 현재 로그인된 계정을 확인해 주세요. 다른 계정으로 로그인하려면 아래에서 먼저 로그아웃해 주세요.'
       : authErrorMessage(error) + (retained ? ' 현재 로그인된 계정은 유지했어요.' : '');
-    feedbacks.set(mode, { text, kind: 'error' });notice(text, true, true);renderControls();
+    if (error?.code !== 'GOOGLE_CALLBACK_INCOMPLETE') feedbacks.set(mode, { text, kind: 'error' });
+    notice(text, true, true);renderControls();
   };
   async function applyAuthEvent(event, value) {
     if (closed) return;

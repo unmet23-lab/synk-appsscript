@@ -98,7 +98,7 @@ test('signup visibly counts down, blocks duplicate requests, retains choices and
   page.replies.signUp = { data: { session: null } };await page.submit();
   assert.equal(page.calls.length, 2);assert.deepEqual(page.calls[1].args.options.data.synk_signup, { version: 'synk-signup-1', learning: true, age14: true });
   assert.match(page.notice.textContent, /^가입 확인 메일을 요청했어요/);assert.doesNotMatch(page.notice.textContent, /보냈어요|synthetic@example/);
-  assert.equal(page.notice.focusCount, 2);assert.equal(page.notice.scrollCount, 2);assert.equal(page.notice.tabindex, '-1');assert.equal(page.feedback.hidden, false);assert.equal(page.feedback['data-kind'], 'success');
+  assert.equal(page.feedback.focusCount, 2);assert.equal(page.feedback.scrollCount, 2);assert.equal(page.feedback.tabindex, '-1');assert.equal(page.notice.focusCount, 0);assert.equal(page.notice['data-folded'], 'true');assert.equal(page.feedback.hidden, false);assert.equal(page.feedback['data-kind'], 'success');
 });
 
 test('mode-specific cooldowns do not block other actions or multiply timers', async t => {
@@ -139,7 +139,7 @@ test('an in-flight request cannot be sent twice or reassigned to another form mo
 test('successful recovery reveals the mailbox instruction without claiming whether an email account exists', async t => {
   const page = await fixture(t);page.mode('recover');await page.submit();
   assert.match(page.notice.textContent, /^비밀번호 재설정 메일을 요청했어요/);assert.match(page.notice.textContent, /메일함.*스팸함/);
-  assert.equal(page.notice.focusCount, 1);assert.equal(page.notice.scrollCount, 1);assert.doesNotMatch(page.notice.textContent, /synthetic@example/);
+  assert.equal(page.feedback.focusCount, 1);assert.equal(page.feedback.scrollCount, 1);assert.equal(page.notice['data-folded'], 'true');assert.doesNotMatch(page.notice.textContent, /synthetic@example/);
 });
 
 test('consent retries share a cooldown, preserve the authorization and never automatically approve or deny', async t => {
@@ -319,7 +319,7 @@ test('getSession failure is visible on the login form and never looks like succe
   assert.match(page.notice.textContent, /계정 서버가 잠시 응답하지/);assert.equal(page.notice['data-kind'], 'error');
   assert.equal(page.feedback.hidden, false);assert.equal(page.feedback['data-kind'], 'error');assert.equal(page.get('auth-panel').hidden, false);
   assert.equal(page.get('account').hidden, true);assert.equal(page.get('account-next').hidden, true);assert.equal(page.metrics.userChecks, 0);
-  assert.equal(page.get('auth-submit').disabled, false);assert.equal(page.notice.focusCount, 1);
+  assert.equal(page.get('auth-submit').disabled, false);assert.equal(page.feedback.focusCount, 1);assert.equal(page.notice['data-folded'], 'true');
 });
 
 test('same-user SIGNED_IN and TOKEN_REFRESHED preserve the account screen and its notice', async t => {
@@ -377,7 +377,7 @@ test('PASSWORD_RECOVERY from callback opens password reset before any account or
     onInitialize: ({ emit, setUrl }) => { setUrl('https://id.example.test/?view=reset&keep=one');emit('PASSWORD_RECOVERY', syntheticSession('recovery-owner')); } });
   assert.equal(page.get('auth-panel').hidden, false);assert.equal(page.get('auth-submit').textContent, '새 비밀번호 저장');
   assert.equal(page.get('email').required, false);assert.equal(page.get('password').required, true);assert.equal(page.metrics.accountLoads, 0);assert.equal(page.metrics.consentLoads, 0);
-  assert.match(page.notice.textContent, /새 비밀번호를 저장/);assert.equal(page.get('account-next').hidden, true);
+  assert.match(page.get('auth-copy').textContent, /저장하면/);assert.equal(page.notice['data-kind'], 'idle');assert.equal(page.get('account-next').hidden, true);
   page.get('password').value = page.get('password-confirm').value = 'synthetic-new-password';page.replies.updateUser = { data: { user: { id: 'recovery-owner' } } };await page.submit();
   assert.equal(page.calls[0].method, 'updateUser');assert.equal(page.get('password').value, '');assert.equal(page.metrics.accountLoads, 1);
   assert.equal(page.get('account').hidden, false);assert.equal(page.get('account-next').hidden, false);
@@ -615,7 +615,7 @@ for (const [code, expected] of [['invalid_credentials', /이메일 또는 비밀
     assert.equal(page.feedback.hidden, false);assert.equal(page.feedback['data-kind'], 'error');assert.match(page.feedback.textContent, expected);
     assert.equal(page.notice.textContent, page.feedback.textContent);assert.equal(page.notice['data-kind'], 'error');assert.doesNotMatch(page.notice.textContent, /Synthetic raw/);
     assert.equal(page.get('email').value, 'synthetic@example.test');assert.equal(page.get('password').value, 'synthetic-password');assert.equal(page.get('auth-submit').disabled, false);
-    assert.equal(page.notice.focusCount, 1);assert.equal(page.feedback.role, undefined);assert.equal(page.feedback['aria-live'], undefined);
+    assert.equal(page.feedback.focusCount, 1);assert.equal(page.notice.focusCount, 0);assert.equal(page.notice['data-folded'], 'true');assert.equal(page.feedback.role, undefined);assert.equal(page.feedback['aria-live'], undefined);
     assert.equal(page.get('account-next').hidden, true);
   });
 }
@@ -1157,7 +1157,7 @@ test('a Google-only account starts from a mail that sets a password, with the cu
   assert.equal(page.get('password-mail-heading').textContent, 'Google로 가입한 계정이에요');assert.equal(page.get('password-mail').textContent, '비밀번호 정하는 메일 받기');
   page.replies.resetPasswordForEmail = { data: {}, error: null };await page.get('password-mail').onclick();await settled();
   assert.deepEqual(page.calls.at(-1), { method: 'resetPasswordForEmail', args: ['google@example.test', { redirectTo: 'https://id.example.test/?view=reset' }] });
-  assert.match(page.get('security-status').textContent, /google@example\.test로 메일을 보냈어요/);
+  assert.match(page.get('security-status').textContent, /google@example\.test 주소로 메일을 보냈어요/);
   // The form folds under its button for every account (10-27); the button folds it back.
   page.get('password-form-toggle').onclick();assert.equal(page.get('password-change-form').hidden, false);assert.equal(page.get('password-form-toggle').textContent, '접기');
   page.get('password-form-toggle').onclick();assert.equal(page.get('password-change-form').hidden, true);
@@ -1230,7 +1230,7 @@ test('an e-mail-change link leaves the address at once and is used only after a 
   assert.equal(address.searchParams.has('token_hash'), false);assert.equal(address.searchParams.has('type'), false);assert.equal(address.searchParams.get('view'), 'security');
   assert.equal(page.get('auth-panel').hidden, false);assert.equal(page.get('auth-submit').textContent, '이메일 변경 확인하기');assert.equal(page.get('auth-heading').textContent, '이메일 변경을 확인해요.');
   assert.equal(page.get('password-label').hidden, true);assert.equal(page.get('password').required, false);assert.equal(page.get('email').hidden, true);assert.equal(page.get('email').required, false);
-  assert.equal(page.calls.length, 0);assert.match(page.notice.textContent, /「이메일 변경 확인하기」를 눌러 주세요/);
+  assert.equal(page.calls.length, 0);assert.match(page.get('auth-copy').textContent, /아래 단추를 누르면 이 주소를 확인해요/);assert.equal(page.notice.textContent, '');
   page.replies.verifyOtp = halfDone;await page.submit();await settled();
   assert.deepEqual(page.calls[0], { method: 'verifyOtp', args: { type: 'email_change', token_hash: TOKEN_HASH } });
   assert.equal(page.get('auth-submit').textContent, '로그인');assert.match(page.notice.textContent, /이 주소를 확인했어요\. 다른 주소로 간 메일/);assert.match(page.notice.textContent, /이 기기에서 로그인하지 않아도 돼요/);

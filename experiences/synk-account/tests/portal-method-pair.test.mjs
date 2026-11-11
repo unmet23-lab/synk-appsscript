@@ -154,3 +154,46 @@ test('a Google return does not open the e-mail fields', async t => {
   const google = await fixture(t, { query: '?google_flow=' + 'n'.repeat(24) });
   assert.equal(google.state().fields, false);
 });
+
+// 2026-11-11 A 한 칸: the returning line is a sentence and a separate address (only when the field below does not already show it),
+// Google 「still looked up」 is told apart from 「cannot be used」, and a message beside the button is not repeated at the top.
+const parts = node => node.children.filter(child => typeof child !== 'string').map(child => [child.className, child.textContent]);
+test('after an e-mail sign-in the line about last time is one sentence, with no masked address over the filled field', async t => {
+  const page = await fixture(t, { stored: recentEmail });
+  assert.deepEqual(parts(page.get('recent-login-text')), [['rl-say', '이 기기에서 지난번에 이메일로 로그인했어요']]);
+  assert.equal(page.get('auth-copy').textContent, '');assert.equal(page.get('email').value, 'member@synthetic.test');
+});
+
+test('after a Google sign-in the line about last time carries the masked address on its own', async t => {
+  const page = await fixture(t, { stored: recentGoogle });
+  assert.deepEqual(parts(page.get('recent-login-text')), [['rl-say', '이 기기에서 지난번에 Google로 로그인했어요'], ['rl-who', 'me***@synthetic.test']]);
+  // The two parts are two words for a screen reader and for copied text, not one run.
+  assert.deepEqual(page.get('recent-login-text').children.filter(child => typeof child === 'string'), [' ']);
+});
+
+test('a first visit has a one-sentence lead and no line about last time', async t => {
+  const page = await fixture(t);
+  assert.equal(page.get('auth-copy').textContent, '가입할 때 쓴 방법 그대로 로그인해요.');assert.equal(page.get('recent-login').hidden, true);assert.deepEqual(parts(page.get('recent-login-text')), []);
+});
+
+test('Google still being looked up is not drawn as Google that cannot be used', async t => {
+  let answer;const page = await fixture(t, { loginSettings: new Promise(resolve => { answer = resolve; }) });
+  assert.equal(page.get('google-login').disabled, true);assert.equal(page.get('google-login')['data-off'], 'false');assert.equal(page.get('google-availability')['data-state'], 'checking');
+  answer({ google: false, phone: false });await settled();
+  assert.equal(page.get('google-login')['data-off'], 'true');assert.equal(page.get('google-availability')['data-state'], 'off');
+});
+
+test('Google found on: neither faded nor waiting', async t => {
+  const page = await fixture(t);
+  assert.equal(page.get('google-login')['data-off'], 'false');assert.equal(page.get('google-availability')['data-state'], 'on');
+});
+
+test('a wrong password is said once, beside the button, and the keyboard goes there', async t => {
+  const page = await fixture(t, { replies: { signInWithPassword: { data: { session: null }, error: { code: 'invalid_credentials', status: 400, message: 'Invalid login credentials' } } } });
+  page.press();page.get('email').value = 'member@synthetic.test';page.get('password').value = 'synthetic-wrong';await page.submit();
+  const copy = page.get('auth-submit').beforeNodes[0];
+  assert.equal(copy.hidden, false);assert.equal(copy.textContent, page.get('notice').textContent);
+  assert.equal(page.get('notice')['data-folded'], 'true');assert.equal(copy.focusCount, 1);assert.equal(page.get('notice').focusCount, 0);
+  // Back to the first step the copy goes and the page line is drawn again.
+  page.mode('signup');assert.equal(copy.hidden, true);assert.notEqual(page.get('notice')['data-folded'], 'true');
+});

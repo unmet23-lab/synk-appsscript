@@ -11,8 +11,8 @@ import { SETTING_WORDS, REASON_WORDS } from './atlas-summary-words.mjs';
 import { createTownRecords, attachTownRecords, townExport } from '../../../desktop/renderer/town-records-card.mjs';
 
 const SESSIONS_SHOWN = 6;
-// The town card in this page's own controls.
-const TOWN_CLASSES = Object.freeze({ button: 'sb-btn soft', note: 'small', link: 'link-button', retry: 'sb-btn soft' });
+// The town card in this page's own controls (line pills, as in every row here).
+const TOWN_CLASSES = Object.freeze({ button: 'sb-btn soft compact', note: 'small', link: 'link-button', retry: 'sb-btn soft compact' });
 const MESSAGES = Object.freeze({
   PROFILE_CONFLICT: '다른 곳에서 먼저 이름을 바꿨어요. 지금 이름을 확인한 뒤 다시 저장해 주세요.',
   REVISION_CONFLICT: '다른 곳에서 학습 기록 연결을 먼저 바꿨어요. 지금 상태를 다시 불러왔어요.',
@@ -30,6 +30,8 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
   const doc = document, profileRoot = doc.getElementById('account-profile'), root = doc.getElementById('account');
   let data = null, ended = false, epoch = 0, pendingFocus = null, editingName = false, nameDraft = '', allSessions = false, deleteRequestId = null, summary = null, summaryState = 'idle';
   const busy = new Set();
+  // The last failed change: its control's key and words, drawn under that row until the next change starts (11-12, Fable F3).
+  let rowError = null;
   // The town card is read once per signed-in account and redrawn in place (drawTown — the block is rebuilt on every render).
   let drawTown = null, townFor = null;
   const town = createTownRecords({
@@ -51,48 +53,57 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
   async function act(key, run, { reload = true } = {}) {
     if (busy.has(key) || ended) return;
     // The pressed control is disabled while it works; its key brings the keyboard back to it afterwards.
-    const token = epoch;pendingFocus = doc.activeElement?.dataset?.key || pendingFocus;busy.add(key);render();
+    const token = epoch;pendingFocus = doc.activeElement?.dataset?.key || pendingFocus;busy.add(key);rowError = null;render();
     try { await run();live();if (token !== epoch) return;if (reload) await load(); }
     catch (error) {
       if (ended || error?.code === 'ACCOUNT_CHANGED' || token !== epoch) return;
       if (['PROFILE_CONFLICT', 'REQUEST_NOT_FOUND', 'SESSION_NOT_FOUND', 'REVISION_CONFLICT', 'PARTIAL'].includes(error?.code)) { try { await load(); } catch { /* the message below still applies */ } }
-      notice(errorText(error), true);
+      rowError = { key, text: errorText(error), said: false };
     } finally { busy.delete(key);if (!ended) render(); }
   }
   // The portal owns sign-out; a second press while one is running finds the screen already changed and does nothing.
   const signOut = (scope = 'current') => Promise.resolve(logout(undefined, { scope, sessionId: (data?.sessions || []).find(row => row.current && !row.revoked)?.id || null }))
     .catch(error => { if (!ended && error?.code !== 'ACCOUNT_CHANGED') notice(errorText(error), true); });
 
+  // A 한 칸(2026-11-11) — the PC app's 「내 계정」 grammar (desktop/renderer/account-page.mjs): the page title with the sign-out,
+  // who is signed in, then each section as a 22px heading over 1px rows (name and description left, value and line pill right).
+  const sectionHead = (id, title, note) => h('div', { className: 'section-head' }, h('h2', { id }, title), note ? h('p', { className: 'small' }, note) : null);
+  const rowMain = (title, note, titleProps = {}) => h('div', { className: 'row-main' }, h('h3', titleProps, title), note ? h('p', {}, note) : null);
   function profile() {
     const account = data?.account || {}, name = account.profile?.display_name || '', deleting = account.status === 'deletion-requested';
     const memberships = membershipLines(data), joined = dayText(user?.created_at), email = user?.email || '';
+    const NAME_NOTE = 'WORLD·Workspace 같은 SYNK 앱에서 보이는 이름이에요.';
     const nameRow = editingName
-      ? h('form', { className: 'profile-name-form', onsubmit: event => { event.preventDefault();saveName(); } },
-        h('label', { className: 'visually-hidden', for: 'profile-name-input' }, '새 이름'),
-        h('input', { id: 'profile-name-input', value: nameDraft, maxlength: 60, autocomplete: 'nickname', required: true, oninput: event => { nameDraft = event.target.value; } }),
-        h('button', { className: 'sb-btn', type: 'submit', 'data-key': 'name-save', disabled: busy.has('name') }, busy.has('name') ? '저장 중…' : '저장'),
-        h('button', { className: 'link-button', type: 'button', 'data-key': 'name-cancel', onclick: () => { editingName = false;nameDraft = '';pendingFocus = 'name-edit';render(); } }, '취소'))
-      : h('span', { className: 'profile-value' }, name || '아직 정하지 않았어요',
-        h('button', { className: 'link-button', type: 'button', 'data-key': 'name-edit', disabled: deleting || preview, onclick: () => { editingName = true;nameDraft = name;render();doc.getElementById('profile-name-input')?.focus(); } }, name ? '바꾸기' : '정하기'));
-    return h('div', { className: 'profile-card' },
-      h('div', { className: 'profile-head' },
-        h('span', { className: 'profile-avatar', 'aria-hidden': 'true' }, [...(name || email || 'S')][0].toUpperCase()),
-        h('div', { className: 'profile-copy' },
-          h('p', { className: 'sb-eyebrow' }, 'MY SYNK ID'),
-          h('h2', { id: 'account-profile-heading', tabindex: '-1' }, name || 'SYNK 회원'),
-          h('p', { className: 'profile-email' }, email || '로그인 이메일을 확인하고 있어요'),
-          deleting ? h('p', { className: 'profile-status', 'data-tone': 'alert' }, pendingDeletion(data) ? '삭제 요청됨 · 아래에서 취소할 수 있어요' : '삭제를 처리하고 있어요') : null),
-        h('div', { className: 'profile-actions' },
-          h('button', { className: 'sb-btn soft', type: 'button', 'data-action': 'sign-out', 'data-key': 'sign-out', onclick: () => void signOut() }, '로그아웃'),
-          h('p', { className: 'small' }, '이 브라우저에서만 로그아웃돼요.'))),
-      h('dl', { className: 'profile-facts' },
-        h('dt', {}, '이름'), h('dd', {}, nameRow),
-        joined ? [h('dt', {}, '가입한 날'), h('dd', {}, joined)] : null,
-        h('dt', {}, '소속'), h('dd', {}, memberships.length ? memberships.join(' / ') : '학교·회사와 연결된 소속이 없어요.')));
+      ? h('li', { className: 'row' }, rowMain('이름', NAME_NOTE),
+        h('form', { className: 'profile-name-form', onsubmit: event => { event.preventDefault();saveName(); } },
+          h('label', { className: 'visually-hidden', for: 'profile-name-input' }, '새 이름'),
+          h('input', { id: 'profile-name-input', value: nameDraft, maxlength: 60, autocomplete: 'nickname', required: true, oninput: event => { nameDraft = event.target.value; } }),
+          h('button', { className: 'sb-btn compact', type: 'submit', 'data-key': 'name-save', disabled: busy.has('name') }, busy.has('name') ? '저장 중…' : '저장'),
+          h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'name-cancel', onclick: () => { editingName = false;nameDraft = '';pendingFocus = 'name-edit';if (rowError?.key === 'name') rowError = null;render(); } }, '취소')))
+      : h('li', { className: 'row' }, rowMain('이름', NAME_NOTE),
+        h('div', { className: 'row-side' }, h('strong', { className: 'row-value' }, name || '아직 정하지 않았어요'),
+          h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'name-edit', 'aria-label': name ? '이름 바꾸기' : '이름 정하기', disabled: deleting || preview, onclick: () => { editingName = true;nameDraft = name;if (rowError?.key === 'name') rowError = null;render();doc.getElementById('profile-name-input')?.focus(); } }, name ? '바꾸기' : '정하기')));
+    return [
+      h('div', { className: 'account-head' },
+        h('div', { className: 'intro-copy' }, h('h1', { id: 'account-profile-heading', tabindex: '-1' }, '내 SYNK 계정'), h('p', {}, '이름·로그인 방법·로그인한 곳을 여기서 보고 바꿔요.')),
+        h('button', { className: 'sb-btn soft compact', type: 'button', 'data-action': 'sign-out', 'data-key': 'sign-out', 'aria-describedby': 'sign-out-note', onclick: () => void signOut() }, '로그아웃'),
+        h('span', { id: 'sign-out-note', className: 'visually-hidden' }, '이 브라우저에서만 로그아웃돼요.')),
+      h('div', { className: 'account-hero' },
+        h('span', { className: 'account-avatar', 'aria-hidden': 'true' }, [...(name || email || 'S')][0].toUpperCase()),
+        h('div', { className: 'account-who' },
+          h('strong', { className: 'profile-name' }, name || 'SYNK 회원'),
+          h('span', { className: 'profile-email' }, email || '로그인 이메일을 확인하고 있어요'),
+          deleting ? h('span', { className: 'profile-status' }, pendingDeletion(data) ? '삭제 요청됨 · 아래에서 취소할 수 있어요' : '삭제를 처리하고 있어요') : null)),
+      sectionHead('profile-section-heading', '프로필'),
+      h('ul', { className: 'rows profile-facts', 'aria-labelledby': 'profile-section-heading' },
+        nameRow,
+        joined ? h('li', { className: 'row' }, rowMain('가입한 날'), h('span', { className: 'row-value plain' }, joined)) : null,
+        h('li', { className: 'row' }, rowMain('소속', memberships.length ? memberships.join(' / ') : '학교·회사와 연결된 소속이 없어요.'))),
+    ];
   }
   function saveName() {
     const value = doc.getElementById('profile-name-input')?.value ?? nameDraft, problem = nameProblem(value);
-    if (problem) { nameDraft = value;notice(problem, true);return; }
+    if (problem) { nameDraft = value;rowError = { key: 'name', text: problem, said: false };render();return; }
     void act('name', async () => {
       if (value.trim() === (data?.account?.profile?.display_name || '')) { editingName = false;return; }
       const change = profileChange(data?.account, value);await client.updateProfile(change.profile, change.expected_profile_revision);live();
@@ -103,40 +114,43 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     const rows = sessionRows(data), shown = allSessions ? rows : rows.slice(0, SESSIONS_SHOWN), endedRows = (data?.sessions || []).filter(row => row?.revoked).length;
     const others = rows.filter(row => !row.current);
     return h('section', { className: 'account-block', 'aria-labelledby': 'sessions-heading' },
-      h('h3', { id: 'sessions-heading' }, '로그인한 곳'),
-      h('p', { className: 'small' }, '이 계정으로 로그인해 있는 SYNK 앱이에요. 모르는 곳이 있으면 로그아웃시키고 비밀번호를 바꿔 주세요.'),
-      h('ul', { className: 'session-list' }, shown.length ? shown.map(row => h('li', { className: 'session-row' },
-        h('div', {}, h('strong', {}, row.name, row.current ? h('span', { className: 'session-current' }, '이 브라우저') : null),
-          h('p', { className: 'small' }, [row.label, row.seen ? `${row.seen}에 사용` : ''].filter(Boolean).join(' · ') || '사용 기록 없음')),
-        h('button', { className: 'link-button', type: 'button', 'data-key': 'session:' + row.id, disabled: busy.has('session:' + row.id) || preview, onclick: () => row.current ? void signOut() : void act('session:' + row.id, async () => { await client.revokeSession(row.id);live();notice('그곳의 로그인을 끝냈어요.', false, false, 'success'); }) },
-          row.current ? '로그아웃' : '로그아웃시키기'))) : h('li', { className: 'small' }, '표시할 로그인 기록이 없어요.')),
-      rows.length > SESSIONS_SHOWN ? h('button', { className: 'link-button', type: 'button', 'data-key': 'sessions-more', 'aria-expanded': String(allSessions), onclick: () => { allSessions = !allSessions;render(); } }, allSessions ? '줄여 보기' : `${rows.length - SESSIONS_SHOWN}곳 더 보기`) : null,
+      sectionHead('sessions-heading', '로그인한 곳', '이 계정으로 로그인해 있는 SYNK 앱이에요. 모르는 곳이 있으면 로그아웃시키고 비밀번호를 바꿔 주세요.'),
+      h('ul', { className: 'rows session-list' }, shown.length ? shown.map(row => h('li', { className: 'row session-row' },
+        h('div', { className: 'row-main' }, h('h3', {}, row.name, row.current ? ' ' : null, row.current ? h('span', { className: 'here' }, '이 브라우저') : null),
+          h('p', {}, [row.label, row.seen ? `${row.seen}에 사용` : ''].filter(Boolean).join(' · ') || '사용 기록 없음')),
+        h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'session:' + row.id, disabled: busy.has('session:' + row.id) || preview, onclick: () => row.current ? void signOut() : void act('session:' + row.id, async () => { await client.revokeSession(row.id);live();notice('그곳의 로그인을 끝냈어요.', false, false, 'success'); }) },
+          row.current ? '로그아웃' : '로그아웃시키기'))) : h('li', { className: 'row' }, h('p', { className: 'small' }, '표시할 로그인 기록이 없어요.'))),
+      rows.length > SESSIONS_SHOWN ? h('p', {}, h('button', { className: 'link-button', type: 'button', 'data-key': 'sessions-more', 'aria-expanded': String(allSessions), onclick: () => { allSessions = !allSessions;render(); } }, allSessions ? '줄여 보기' : `${rows.length - SESSIONS_SHOWN}곳 더 보기`)) : null,
       endedRows ? h('p', { className: 'small session-ended' }, `이미 끝난 로그인 ${endedRows}곳은 목록에서 뺐어요.`) : null,
       // Both are undone by signing in again, so neither asks first (a confirmation is for what cannot be undone).
-      h('div', { className: 'actions' },
-        others.length ? h('button', { className: 'sb-btn soft', type: 'button', 'data-key': 'others', disabled: busy.has('others') || preview, onclick: () => void signOutOthers(others) }, busy.has('others') ? '로그아웃시키는 중…' : `이 브라우저만 남기고 로그아웃 (${others.length}곳)`) : null,
+      h('div', { className: 'actions row-actions' },
+        others.length ? h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'others', disabled: busy.has('others') || preview, onclick: () => void signOutOthers(others) }, busy.has('others') ? '로그아웃시키는 중…' : `이 브라우저만 남기고 로그아웃 (${others.length}곳)`) : null,
         h('button', { className: 'link-button', type: 'button', 'data-key': 'all', onclick: () => { if (!ended) void signOut('all'); } }, '모든 SYNK 앱에서 로그아웃')));
   }
   async function signOutOthers(rows) {
     if (ended) return;
     await act('others', async () => {
       let done = 0;
-      for (const row of rows) { try { await client.revokeSession(row.id);done++; } catch (error) { if (error?.code === 'ACCOUNT_CHANGED') throw error;if (error?.code !== 'SESSION_NOT_FOUND') throw Object.assign(new Error(`${done}곳은 로그아웃시켰지만 나머지는 하지 못했어요. 다시 눌러 주세요.`), { code: 'PARTIAL' }); }live(); }
+      for (const row of rows) { try { await client.revokeSession(row.id);done++; } catch (error) { if (error?.code === 'ACCOUNT_CHANGED') throw error;if (error?.code !== 'SESSION_NOT_FOUND') throw Object.assign(new Error(done ? `${done}곳은 로그아웃시켰지만 나머지는 하지 못했어요. 다시 눌러 주세요.` : '로그아웃시키지 못했어요. 다시 눌러 주세요.'), { code: 'PARTIAL' }); }live(); }
       notice(`다른 ${done}곳의 로그인을 끝냈어요. 이 브라우저는 그대로예요.`, false, false, 'success');
     });
   }
+  // 「학습 기록과 내 데이터」 as in the PC app: the link switch, what the account keeps (summary), the records download.
   function learningBlock() {
     const account = data?.account || {}, deleting = account.status === 'deletion-requested', on = data?.learning?.enabled === true, canEnable = data?.capabilities?.learningSync === true && !deleting;
     const usable = !preview && (on || canEnable);
     return h('section', { className: 'account-block', 'aria-labelledby': 'learning-heading' },
-      h('h3', { id: 'learning-heading' }, '학습 기록'),
-      h('div', { className: 'switch-row-line' },
-        h('div', {}, h('strong', {}, '학습 기록 연결'),
-          h('p', { className: 'small' }, on ? '켜져 있어요. 연습 기록을 계정에 저장해 다른 기기와 SYNK 앱에서 이어 가요.' : canEnable ? '꺼져 있어요. 켜면 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요. 로그인 전에 한 기록은 옮기지 않아요.' : deleting ? '계정 삭제를 요청해서 켤 수 없어요. 요청을 취소하면 다시 켤 수 있어요.' : '지금은 켤 수 없어요. 이 기기에서 하는 연습은 그대로 할 수 있어요.')),
-        h('button', { className: 'switch', type: 'button', 'data-key': 'learning', role: 'switch', 'aria-checked': String(on), 'aria-labelledby': 'learning-heading', disabled: !usable || busy.has('learning'), onclick: () => void act('learning', async () => {
-          await client.setLearning(!on, data.learning.revision);live();notice(!on ? '학습 기록 연결을 켰어요.' : '학습 기록 연결을 껐어요.', false, false, 'success');
-        }) }, h('span', { className: 'switch-knob', 'aria-hidden': 'true' }), on ? '켜짐' : '꺼짐')),
-      summaryList());
+      sectionHead('learning-heading', '학습 기록과 내 데이터'),
+      h('ul', { className: 'rows' },
+        h('li', { className: 'row' },
+          rowMain('학습 기록 연결', on ? '켜져 있어요. 연습 기록을 계정에 저장해 다른 기기와 SYNK 앱에서 이어 가요.' : canEnable ? '꺼져 있어요. 켜면 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요. 로그인 전에 한 기록은 옮기지 않아요.' : deleting ? '계정 삭제를 요청해서 켤 수 없어요. 요청을 취소하면 다시 켤 수 있어요.' : '지금은 켤 수 없어요. 이 기기에서 하는 연습은 그대로 할 수 있어요.', { id: 'learning-link-heading' }),
+          h('button', { className: 'sb-btn soft compact switch', type: 'button', 'data-key': 'learning', role: 'switch', 'aria-checked': String(on), 'aria-labelledby': 'learning-link-heading', disabled: !usable || busy.has('learning'), onclick: () => void act('learning', async () => {
+            await client.setLearning(!on, data.learning.revision);live();notice(!on ? '학습 기록 연결을 켰어요.' : '학습 기록 연결을 껐어요.', false, false, 'success');
+          }) }, on ? '켜짐' : '꺼짐')),
+        h('li', { className: 'row-wide' }, summaryList()),
+        h('li', { className: 'row' },
+          rowMain('연습 기록 내려받기', '계정에 저장한 연습 기록과 내 정보, 마을 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.'),
+          h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'export', disabled: busy.has('export') || preview, onclick: () => void act('export', download, { reload: false }) }, busy.has('export') ? '준비 중…' : '내려받기'))));
   }
   function summaryList() {
     if (summaryState === 'loading') return h('p', { className: 'small' }, '학습 요약을 불러오고 있어요.');
@@ -156,33 +170,30 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
   function townBlock() {
     if (typeof client.townRecords !== 'function') return null;
     const body = h('div', {});
-    const block = h('section', { className: 'account-block town-block', 'aria-labelledby': 'town-heading' }, h('h3', { id: 'town-heading' }, '마을 기록'), body);
-    drawTown = attachTownRecords(town, body, { classes: TOWN_CLASSES, headingLevel: 4 });
+    const block = h('section', { className: 'account-block town-block', 'aria-labelledby': 'town-heading' }, sectionHead('town-heading', '마을 기록'), body);
+    drawTown = attachTownRecords(town, body, { classes: TOWN_CLASSES, headingLevel: 3 });
     return block;
   }
   function rightsBlock() {
     const rows = (data?.entitlements || []).filter(Boolean);
     if (!rows.length) return null;
     const product = value => ({ platform: 'SYNK 플랫폼', world: 'SYNK WORLD', messenger: 'SYNK Workspace' })[value] || 'SYNK';
-    return h('section', { className: 'account-block', 'aria-labelledby': 'rights-heading' }, h('h3', { id: 'rights-heading' }, '이용 권한'),
-      h('ul', { className: 'details' }, rows.map(row => h('li', {}, `${product(row.product)}${dayText(row.valid_until) ? ` · ${dayText(row.valid_until)}까지` : ''}`))));
+    return h('section', { className: 'account-block', 'aria-labelledby': 'rights-heading' }, sectionHead('rights-heading', '이용 권한'),
+      h('ul', { className: 'rows' }, rows.map(row => h('li', { className: 'row' }, rowMain(product(row.product)), dayText(row.valid_until) ? h('span', { className: 'row-value plain' }, `${dayText(row.valid_until)}까지`) : null))));
   }
   function dataBlock() {
     const account = data?.account || {}, deleting = account.status === 'deletion-requested', deletion = pendingDeletion(data);
     return h('section', { className: 'account-block account-danger', 'aria-labelledby': 'data-heading' },
-      h('h3', { id: 'data-heading' }, '내 데이터와 계정 삭제'),
-      h('div', { className: 'switch-row-line' },
-        h('div', {}, h('strong', {}, '연습 기록 내려받기'), h('p', { className: 'small' }, '계정에 저장한 연습 기록과 내 정보, 마을 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.')),
-        h('button', { className: 'sb-btn soft', type: 'button', 'data-key': 'export', disabled: busy.has('export') || preview, onclick: () => void act('export', download, { reload: false }) }, busy.has('export') ? '준비 중…' : '연습 기록 내려받기')),
-      h('div', { className: 'switch-row-line' },
-        h('div', {}, h('strong', {}, deletion ? '삭제 요청을 받았어요' : deleting ? '삭제를 처리하고 있어요' : '계정 삭제'),
-          h('p', { className: 'small' }, deletion ? `${momentText(deletion.due_at) ? `${momentText(deletion.due_at)}까지는` : '7일 동안은'} 여기서 취소할 수 있고, 그 뒤에 계정과 기록을 지워요(늦어도 요청 후 30일 안).`
-            : deleting ? '늦어도 요청 후 30일 안에 계정과 기록을 지워요.' : '요청하면 7일 동안은 취소할 수 있고, 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요.')),
-        deletion ? h('button', { className: 'sb-btn', type: 'button', 'data-key': 'delete', disabled: busy.has('delete') || preview, onclick: () => void act('delete', async () => {
-          await client.cancelDeletion(deletion.request_id);live();deleteRequestId = null;notice('삭제 요청을 취소했어요. 학습 기록 연결은 꺼 둔 채예요. 다시 쓰려면 위에서 켜 주세요.', false, false, 'success');
-        }) }, '삭제 요청 취소')
-          : deleting ? null : h('button', { className: 'link-button danger', type: 'button', 'data-key': 'delete', disabled: busy.has('delete') || preview, onclick: () => void requestDeletion() }, '계정 삭제 요청')),
-      data?.account?.synk_user_id ? h('details', { className: 'support-id' }, h('summary', {}, '문의할 때 쓰는 계정 번호'), h('p', { className: 'small' }, 'hello@synk.im에 문의할 때 이 번호를 같이 적어 주세요.'), h('code', {}, data.account.synk_user_id)) : null);
+      sectionHead('data-heading', '계정 삭제'),
+      h('ul', { className: 'rows' },
+        h('li', { className: 'row' },
+          rowMain(deletion ? '삭제 요청을 받았어요' : deleting ? '삭제를 처리하고 있어요' : '계정 삭제 요청', deletion ? `${momentText(deletion.due_at) ? `${momentText(deletion.due_at)}까지는` : '7일 동안은'} 여기서 취소할 수 있고, 그 뒤에 계정과 기록을 지워요(늦어도 요청 후 30일 안).`
+            : deleting ? '늦어도 요청 후 30일 안에 계정과 기록을 지워요.' : '요청하면 7일 동안은 취소할 수 있고, 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요.'),
+          deletion ? h('button', { className: 'sb-btn compact', type: 'button', 'data-key': 'delete', disabled: busy.has('delete') || preview, onclick: () => void act('delete', async () => {
+            await client.cancelDeletion(deletion.request_id);live();deleteRequestId = null;notice('삭제 요청을 취소했어요. 학습 기록 연결은 꺼 둔 채예요. 다시 쓰려면 위에서 켜 주세요.', false, false, 'success');
+          }) }, '삭제 요청 취소')
+            : deleting ? null : h('button', { className: 'sb-btn soft compact danger', type: 'button', 'data-key': 'delete', disabled: busy.has('delete') || preview, onclick: () => void requestDeletion() }, '계정 삭제 요청'))),
+      data?.account?.synk_user_id ? h('details', { className: 'support-id' }, h('summary', {}, '문의할 때 쓰는 계정 번호'), h('p', {}, 'hello@synk.im에 문의할 때 이 번호를 같이 적어 주세요.'), h('code', {}, data.account.synk_user_id)) : null);
   }
   async function requestDeletion() {
     if (ended || busy.has('delete')) return;
@@ -216,8 +227,9 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     doc.body.classList.add('account-open');
     const active = doc.activeElement, inside = !!active && (!!root.contains?.(active) || !!profileRoot?.contains?.(active));
     const key = inside ? active.dataset?.key : null, typing = inside && active.id === 'profile-name-input' ? [active.selectionStart, active.selectionEnd] : null;
-    if (scope !== 'main') { profileRoot.hidden = false;profileRoot.replaceChildren(profile()); }
+    if (scope !== 'main') { profileRoot.hidden = false;profileRoot.replaceChildren(...profile()); }
     root.hidden = false;root.replaceChildren(h('div', { className: 'account-blocks' }, sessionsBlock(), learningBlock(), townBlock(), rightsBlock(), dataBlock()));
+    rowNote();
     // The keyboard stays where it was, found by a control's key (its words may change), or comes back to the control
     // that started a change once it is enabled again.
     if (typing && editingName) { const input = doc.getElementById('profile-name-input');if (input && doc.activeElement !== input) { input.focus?.({ preventScroll: true });input.setSelectionRange?.(...typing); }return; }
@@ -225,6 +237,17 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     if (!want) return;
     const target = [...(profileRoot.querySelectorAll?.('[data-key]') || []), ...(root.querySelectorAll?.('[data-key]') || [])].find(node => node.dataset?.key === want);
     if (target && !target.disabled) { if (doc.activeElement !== target) target.focus?.({ preventScroll: true });if (want === pendingFocus) pendingFocus = null; }
+  }
+  // The failed change's line goes in its own row (the row of the control with its key — for the name, the open form or its button);
+  // only the first drawing is an alert, so redrawing the blocks does not read it out again. Without such a row it is the page line.
+  function rowNote() {
+    for (const old of [...(profileRoot.querySelectorAll?.('.row-error') || []), ...(root.querySelectorAll?.('.row-error') || [])]) old.remove?.();
+    if (!rowError) return;
+    const keys = rowError.key === 'name' ? ['name-save', 'name-edit'] : [rowError.key];
+    const controls = [...(profileRoot.querySelectorAll?.('[data-key]') || []), ...(root.querySelectorAll?.('[data-key]') || [])];
+    const place = controls.find(node => keys.includes(node.dataset?.key))?.closest?.('li, .row-actions');
+    if (!place) { const { text, said } = rowError;rowError = null;if (!said) notice(text, true);return; }
+    place.append(h('p', { className: 'notice error row-error', 'data-kind': 'error', role: rowError.said ? undefined : 'alert' }, rowError.text));rowError.said = true;
   }
   async function loadSummary(token) {
     if (typeof client.atlasSummary !== 'function') { summaryState = 'idle';return; }
