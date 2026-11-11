@@ -364,3 +364,40 @@ test('판 4 GPT GA3: 접수 확인은 넣을 때의 주소로만 — 그사이 �
   f.advance(1);await f.service.tick();
   assert.equal(f.relay.sent.length,0);assert.equal(f.outbox()[0].state,'skipped');assert.equal(f.outbox()[0].reason,'changed');
 });
+
+// 2026-11-11 운영 설계 조각 1: 새 메일 순간을 더한 판을 한 판 되돌리면, 함에 남은 그 순간의 줄을 옛 조립기가 모른다.
+// 그 줄이 던져도 failed로 닫고 뒤의 줄은 그대로 나가야 한다(닫지 않으면 그 줄이 만료되는 48시간 동안 모든 손님 메일이 선다).
+test('함에 이 서버가 모르는 순간의 줄이 남아 있어도 그 줄만 failed(compose)로 닫고 뒤의 메일은 나간다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const a=f.project(),b=f.project({studio:{request:{answers:{name:'둘째',contactName:'이손님',email:'second@example.com',package:'standard'},rounds:[],directionProposal:{status:'open'}}}});
+  const stray=f.event(a,'reply_from_a_newer_server'),at=f.now,id=`${a.id}:staff_reply:000000000000`;
+  f.event(b,'direction_proposed');
+  await f.service.tick();f.advance(3);
+  // 둘째 프로젝트의 줄보다 먼저 집히게(보낼 때가 1초 이르게) 모르는 순간의 줄을 함에 넣는다.
+  const early=new Date(Date.parse(f.outbox()[0].dueAt)-1000).toISOString();
+  f.store.put(PULSE_MAIL_OUTBOX,id,{id,projectId:a.id,moment:'staff_reply',eventIds:[stray.id],firstEventAt:at,lastEventAt:at,dueAt:early,nextAttemptAt:early,state:'pending',reason:null,attempts:0,sendingAt:null,sentAt:null,recipientHash:null,createdAt:at,updatedAt:at});
+  const result=await f.service.tick();
+  assert.equal(result.sent,2,'두 줄을 모두 집는다(앞 줄이 던져 회차가 끝나지 않는다)');
+  const rows=Object.fromEntries(f.outbox().map(item=>[item.projectId,item]));
+  assert.equal(rows[a.id].state,'failed');assert.equal(rows[a.id].reason,'compose');assert.equal(rows[a.id].attempts,0,'보내 보지 않았다');
+  assert.equal(rows[b.id].state,'sent');
+  assert.deepEqual(f.relay.sent.map(mail=>mail.to),['second@example.com']);
+  f.advance(5);await f.service.tick();assert.equal(f.relay.sent.length,1,'닫힌 줄은 다시 집지 않는다');
+});
+
+test('한 줄을 다루다 뜻밖에 던져도 그 줄만 failed(error)로 닫고 다음 줄로 간다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const a=f.project(),b=f.project({studio:{request:{answers:{name:'둘째',contactName:'이손님',email:'second@example.com',package:'standard'},rounds:[],directionProposal:{status:'open'}}}});
+  const items=new Map([[a.id,[{id:`client:${a.id}:1:direction_proposed:r`,type:'direction_proposed',createdAt:f.now,readAt:null}]]]);
+  f.advance(1);items.set(b.id,[{id:`client:${b.id}:1:direction_proposed:r`,type:'direction_proposed',createdAt:f.now,readAt:null}]);
+  // 같은 저장소 · 같은 중계를 쓰는 둘째 서비스: a의 줄을 「보내는 중」으로 적는 순간에만 기록 함수가 던진다.
+  const second=createPulseMailService({store:f.store,clock:()=>f.now,fetchImpl:f.relay.fetch,notificationsFor:row=>items.get(row.id)||[],emergencyStop:()=>false,log:entry=>{if(entry.projectId===a.id&&entry.state==='sending')throw new Error('boom');}});
+  t.after(()=>second.stop());
+  await second.tick();f.advance(3);
+  const result=await second.tick();
+  assert.equal(result.sent,2);
+  const rows=Object.fromEntries(f.outbox().map(item=>[item.projectId,item]));
+  assert.equal(rows[a.id].state,'failed');assert.equal(rows[a.id].reason,'error');assert.equal(rows[a.id].sendingAt,null);
+  assert.equal(rows[b.id].state,'sent');
+  assert.deepEqual(f.relay.sent.map(mail=>mail.to),['second@example.com']);
+});

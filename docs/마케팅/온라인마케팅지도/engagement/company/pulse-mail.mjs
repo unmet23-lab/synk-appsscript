@@ -202,7 +202,10 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
       if(latest.readAt)return put({state:'skipped',reason:'read'});
       if(pulseMailActed(row,item.moment,latest))return put({state:'skipped',reason:'acted'});
     }
-    const {subject,body}=pulseMailCompose(row,item.moment,localeOf(row),latest),ts=now().ms;
+    // 조립이 던지면(이 서버가 모르는 순간 — 새 순간이 함에 남은 채 서버를 한 판 되돌렸을 때 등) 그 줄만 failed로 닫는다.
+    // 닫지 않으면 같은 줄이 회차마다 맨 먼저 집혀 던지고, 그 줄이 만료될 때까지(48시간) 뒤의 모든 손님 메일이 선다.
+    let mail;try{mail=pulseMailCompose(row,item.moment,localeOf(row),latest);}catch{return put({state:'failed',reason:'compose'});}
+    const {subject,body}=mail,ts=now().ms;
     item=put({state:'sending',sendingAt:at,attempts:item.attempts+1,recipientHash:recipientHash(email,key.salt),reason:null});
     let result=null;
     try{result=await relayCall(c.relayUrl,signedRequest({op:'send',key:pulseMailRelayKey(item.id),ts,to:email,subject,body},key));}catch{result=null;}
@@ -230,7 +233,11 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     for(const item of due){
       c=config();if(!active(c))break;
       const fresh=store.get(PULSE_MAIL_OUTBOX,item.id);if(fresh?.state!=='pending')continue;
-      await deliver(fresh,c,key,now().iso);count++;
+      // 한 줄이 뜻밖에 던져도 그 줄만 failed로 닫고 다음 줄로 간다(한 줄이 함 전체를 세우지 않게). 닫는 쓰기마저 던지면 이 회차만 넘긴다.
+      try{await deliver(fresh,c,key,now().iso);}catch{
+        try{const held=store.get(PULSE_MAIL_OUTBOX,fresh.id);if(held&&!FINAL.has(held.state)){store.put(PULSE_MAIL_OUTBOX,held.id,{...held,state:'failed',reason:'error',sendingAt:null,updatedAt:now().iso});log({projectId:held.projectId,moment:held.moment,state:'failed',reason:'error'});}}catch{}
+      }
+      count++;
     }
     return count;
   }

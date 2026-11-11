@@ -265,3 +265,66 @@ test('판 4 GPT GA1 · GA2: 고르기 표는 고를 때 초대 판 · 받는 주
   current=await version('v2');
   assert.equal(current.messages.find(message=>message.author==='customer'&&message.action==='feedback').workflow?.status||'open','open');
 });
+
+// 2026-11-11 운영 설계 조각 1(S4 결제 원장): 결제 칸은 지금 상태 하나라 취소 뒤 다시 요청하면 앞 기록이 지워졌다 — 이력은 덮지 않고 쌓고, 손님에게는 내려가지 않는다.
+test('결제 이력: 요청 → 취소 → 다시 요청 → 확인이 덮이지 않고 쌓이고, 손님 응답에는 paymentLog가 없다',async t=>{
+  const f=await fixture(t),o=await f.order();
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  await o.act({action:'payment_cancel',note:'크몽 요청이 24시간 지나 닫힘 SECRET-CANCEL-NOTE'});
+  await o.act({action:'payment_request',amount:300000});
+  // 확인 때 담당자가 실제 결제액 · 받은 곳 · 실수령을 적는다(없으면 요청한 값 · 크몽).
+  await o.act({action:'payment_confirm',ref:'KM-SECRET-REF',amount:1},400);
+  await o.act({action:'payment_confirm',ref:'KM-SECRET-REF',channel:'paypal'},400);
+  await o.act({action:'payment_confirm',ref:'KM-SECRET-REF',net:300001},400);
+  await o.act({action:'payment_confirm',ref:'KM-SECRET-REF',net:240000});
+  const staffRequest=o.row.studio.request,log=staffRequest.paymentLog;
+  assert.equal(staffRequest.paymentLedger,true,'직원 화면은 이 표시가 있을 때만 새 칸을 보낸다');
+  assert.deepEqual(log.map(entry=>[entry.kind,entry.amount,entry.was||'']),[['requested',290000,''],['cancelled',290000,'requested'],['requested',300000,''],['confirmed',300000,'']]);
+  assert.match(log[1].note,/SECRET-CANCEL-NOTE/);assert.equal(log[3].ref,'KM-SECRET-REF');assert.equal(log[3].channel,'kmong');assert.equal(log[3].net,240000);
+  assert.ok(log.every(entry=>entry.by==='관리자'&&!Number.isNaN(Date.parse(entry.at))));
+  assert.equal(staffRequest.payment.status,'confirmed');assert.equal(staffRequest.payment.amount,300000);assert.equal(staffRequest.payment.net,240000);
+  // 손님: 결제 칸은 상태 · 때 · 값 · 받으실 날뿐이고, 이력 · 주문 번호 · 취소 까닭 · 실수령 · 담당자 이름은 어디에도 없다.
+  const room=await o.room(),text=JSON.stringify(room);
+  assert.equal(room.project.studio.request.paymentLog,undefined);
+  const leak=text.match(/paymentLog|paymentLedger|KM-SECRET-REF|SECRET-CANCEL-NOTE|"net"|"channel"|requestedBy|cancelledBy/);   // confirmedBy는 의뢰서 확인(request.confirmedBy)에도 있어 결제 칸의 열쇠 목록으로 본다(아래)
+  assert.equal(leak,null,leak?text.slice(Math.max(0,leak.index-120),leak.index+120):"");
+  assert.deepEqual(Object.keys(room.project.studio.request.payment).sort(),['amount','confirmedAt','dueDate','requestedAt','status']);
+  // 환불: 확인한 결제를 취소하면 was가 confirmed로 남는다(운영판이 환불로 센다).
+  await o.act({action:'payment_cancel',note:'전액 환불'});
+  const after=(await o.refresh()).studio.request.paymentLog;
+  assert.equal(after.length,5);assert.equal(after.at(-1).was,'confirmed');assert.equal(after.at(-1).amount,300000);
+});
+
+test('결제 이력: 이력 없이 결제가 적힌 옛 프로젝트는 그때의 결제 칸에서 한 번 만들어 잇는다',async t=>{
+  const f=await fixture(t),o=await f.order();
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  // 옛 서버가 쓴 꼴로 되돌린다: paymentLog 없음.
+  const stored=f.app.store.get('clientProjects',o.id),{paymentLog,...request}=stored.studio.request;
+  f.app.store.put('clientProjects',o.id,{...stored,studio:{...stored.studio,request}});
+  assert.deepEqual((await o.refresh()).studio.request.paymentLog.map(entry=>[entry.kind,entry.amount,entry.seeded]),[['requested',290000,true]],'직원 보기는 저장 전에도 지금 결제 칸에서 읽어 보인다');
+  await o.act({action:'payment_confirm'});
+  assert.deepEqual(o.row.studio.request.paymentLog.map(entry=>[entry.kind,entry.amount,!!entry.seeded]),[['requested',290000,true],['confirmed',290000,false]]);
+  assert.equal(JSON.stringify(await o.room()).includes('paymentLog'),false);
+});
+
+// GPT GA1 · 결제 이력 상한: 가득 찼다고 취소(환불)까지 막으면 환불한 결제가 「확인함」으로 남아 제작 문턱이 열린 채가 된다.
+test('결제 이력이 가득 차도 열린 결제의 확인 · 취소(환불)는 적힌다 — 새 결제를 여는 줄만 막는다',async t=>{
+  const f=await fixture(t),o=await f.order();
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  // 이력을 상한(100)까지 채운다 — 지금 열린 요청 한 줄이 맨 끝.
+  const stored=f.app.store.get('clientProjects',o.id),log=stored.studio.request.paymentLog;
+  const filler=Array.from({length:100-log.length},(_,index)=>({kind:index%2?'cancelled':'requested',at:'2026-11-01T00:00:00.000Z',by:'관리자',amount:290000,...(index%2?{was:'requested',note:'채움'}:{})}));
+  f.app.store.put('clientProjects',o.id,{...stored,studio:{...stored.studio,request:{...stored.studio.request,paymentLog:[...filler,...log]}}});
+  assert.equal((await o.refresh()).studio.request.paymentLog.length,100);
+  await o.act({action:'payment_confirm'});                       // 요청한 결제의 확인
+  await o.act({action:'payment_cancel',note:'전액 환불'});        // 환불
+  const after=(await o.refresh()).studio.request;
+  assert.equal(after.payment.status,'cancelled','환불이 적혀야 제작 문턱이 닫힌다');
+  assert.equal(after.paymentLog.length,102);assert.deepEqual(after.paymentLog.slice(-2).map(entry=>[entry.kind,entry.was||'']),[['confirmed',''],['cancelled','confirmed']]);
+  await o.act({action:'payment_request',amount:290000},409);     // 새 결제를 여는 줄만 막는다
+  await o.act({action:'payment_confirm'},409);                   // 요청 없이 바로 하는 확인도 새 결제를 여는 줄이다
+  assert.equal((await o.refresh()).studio.request.paymentLog.length,102);
+});

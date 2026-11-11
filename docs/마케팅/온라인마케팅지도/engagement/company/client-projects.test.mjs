@@ -18,13 +18,13 @@ test('assignment cannot elevate a member or cross a manager team',async t=>{cons
 
 test('invite is stored hashed; customer view omits contacts, internal notes, private messages and history',async t=>{const {users,service,create,store}=await fixture(t);let row=create();row=service.message(users.owner,row.id,{revision:row.revision,text:'PRIVATE-MESSAGE',visibility:'internal'}).project;row=service.message(users.owner,row.id,{revision:row.revision,text:'PUBLIC-MESSAGE',visibility:'customer'}).project;const invited=service.invite(users.owner,row.id,{revision:row.revision}),opened=service.open(invited.invite),serialized=JSON.stringify(opened.project);assert.doesNotMatch(serialized,/INTERNAL-SECRET|PRIVATE-MESSAGE|비공개 연락처|inviteHash|inviteRevision|nextContactDate|history|teamId|ownerId/);assert.match(serialized,/PUBLIC-MESSAGE/);assert.notEqual(store.get('clientProjects',row.id).inviteHash,invited.invite);assert.equal(invited.project.inviteHash,undefined);assert.equal(service.read(opened.session).csrf,opened.csrf);throwsStatus(()=>service.read(invited.invite),401);});
 
-test('customer session stays bound to one project and CSRF; stale revision cannot overwrite newer staff data',async t=>{const {users,service,create}=await fixture(t);let a=create(),b=create('other');const ia=service.invite(users.owner,a.id,{revision:a.revision}),ib=service.invite(users.other,b.id,{revision:b.revision}),sa=service.open(ia.invite),sb=service.open(ib.invite);throwsStatus(()=>service.customerAction(sa.session,sb.csrf,{revision:sa.project.revision,action:'support',text:'bad'}),403);const changed=service.message(users.owner,a.id,{revision:sa.project.revision,text:'새 답변'}).project;throwsStatus(()=>service.customerAction(sa.session,sa.csrf,{revision:sa.project.revision,action:'support',text:'stale'}),409);const result=service.customerAction(sa.session,sa.csrf,{projectId:b.id,revision:changed.revision,action:'support',text:'내 문의'});assert.equal(result.project.id,a.id);assert.equal(service.read(sb.session).project.messages.length,0);});
+test('customer session stays bound to one project and CSRF; a support message sent with a stale revision appends without overwriting newer staff data',async t=>{const {users,service,create}=await fixture(t);let a=create(),b=create('other');const ia=service.invite(users.owner,a.id,{revision:a.revision}),ib=service.invite(users.other,b.id,{revision:b.revision}),sa=service.open(ia.invite),sb=service.open(ib.invite);throwsStatus(()=>service.customerAction(sa.session,sb.csrf,{revision:sa.project.revision,action:'support',text:'bad'}),403);const changed=service.message(users.owner,a.id,{revision:sa.project.revision,text:'새 답변'}).project;const stale=service.customerAction(sa.session,sa.csrf,{revision:sa.project.revision,action:'support',text:'옛 판 번호로 보낸 문의'}).project;assert.deepEqual(stale.messages.map(m=>m.text),['새 답변','옛 판 번호로 보낸 문의'],'문의는 줄을 더하기만 한다 — 옛 판 번호로도 받고 그사이 직원 답을 덮지 않는다');const result=service.customerAction(sa.session,sa.csrf,{projectId:b.id,revision:changed.revision,action:'support',text:'내 문의'});assert.equal(result.project.id,a.id);assert.equal(service.read(sb.session).project.messages.length,0);});
 
 test('invite rotation, explicit revoke, archive and expiration each invalidate existing customer sessions',async t=>{const {users,service,create,setClock}=await fixture(t);let row=create(),invite=service.invite(users.owner,row.id,{revision:row.revision}),opened=service.open(invite.invite);let next=service.invite(users.owner,row.id,{revision:invite.project.revision});throwsStatus(()=>service.open(invite.invite),401);throwsStatus(()=>service.read(opened.session),401);opened=service.open(next.invite);row=service.revoke(users.owner,row.id,{revision:next.project.revision}).project;throwsStatus(()=>service.read(opened.session),401);invite=service.invite(users.owner,row.id,{revision:row.revision});opened=service.open(invite.invite);setClock('2026-11-07T02:59:59.000Z');throwsStatus(()=>service.read(opened.session),401);assert.ok(service.open(invite.invite).session,'invite links stay usable for 30 days');setClock('2026-11-07T03:00:01.000Z');throwsStatus(()=>service.open(invite.invite),401);invite=service.invite(users.owner,row.id,{revision:invite.project.revision});opened=service.open(invite.invite);row=service.save(users.owner,{...draft,revision:invite.project.revision,stage:'archived'},row.id).project;throwsStatus(()=>service.read(opened.session),401);throwsStatus(()=>service.message(users.owner,row.id,{revision:row.revision,text:'after archive'}),409);});
 
 test('only the newest preview can be approved; final requires current approval and use guide',async t=>{const {users,service,create}=await fixture(t);let row=create();throwsStatus(()=>service.addVersion(users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final',guide:'사용 안내'}),409);for(const label of ['v1','v2'])row=service.addVersion(users.owner,row.id,{revision:row.revision,kind:'preview',label,url:'https://files.example/'+label}).project;const invite=service.invite(users.owner,row.id,{revision:row.revision}),opened=service.open(invite.invite);throwsStatus(()=>service.customerAction(opened.session,opened.csrf,{revision:opened.project.revision,action:'approve',versionId:row.versions[0].id}),409);row=service.customerAction(opened.session,opened.csrf,{revision:opened.project.revision,action:'approve',versionId:row.versions[1].id}).project;throwsStatus(()=>service.customerAction(opened.session,opened.csrf,{revision:row.revision,action:'feedback',versionId:row.versions[1].id,text:'after approval'}),409);throwsStatus(()=>service.addVersion(users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final'}),400);row=service.addVersion(users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final',guide:'사용 안내'}).project;assert.equal(row.stage,'delivered');});
 
-test('revision conflict rejects concurrent staff update and preserves first committed content',async t=>{const {users,service,create}=await fixture(t),row=create(),first=service.message(users.owner,row.id,{revision:row.revision,text:'first'}).project;throwsStatus(()=>service.message(users.owner,row.id,{revision:row.revision,text:'second'}),409);assert.equal(service.project(users.owner,row.id).revision,first.revision);assert.deepEqual(service.project(users.owner,row.id).messages.map(m=>m.text),['first']);});
+test('revision conflict rejects concurrent staff update and preserves first committed content',async t=>{const {users,service,create}=await fixture(t),row=create(),first=service.save(users.owner,{...draft,revision:row.revision,summary:'first'},row.id).project;throwsStatus(()=>service.save(users.owner,{...draft,revision:row.revision,summary:'second'},row.id),409);assert.equal(service.project(users.owner,row.id).revision,first.revision);assert.equal(service.project(users.owner,row.id).summary,'first');});
 
 test('media capability never crosses projects and customer media omits filesystem names',async t=>{const {users,service,create}=await fixture(t);let a=create(),b=create('other');const media={id:'11111111-1111-4111-8111-111111111111',diskName:'secret.png',mimeType:'image/png',fileName:'시안.png',byteSize:100};a=service.addVersion(users.owner,a.id,{revision:a.revision,kind:'preview',label:'v1'},media).project;const sa=service.open(service.invite(users.owner,a.id,{revision:a.revision}).invite),sb=service.open(service.invite(users.other,b.id,{revision:b.revision}).invite);assert.equal(sa.project.versions[0].media.diskName,undefined);assert.equal(service.customerMedia(sa.session,media.id).id,media.id);throwsStatus(()=>service.customerMedia(sb.session,media.id),404);throwsStatus(()=>service.mediaFor(users.other,media.id),404);});
 
@@ -83,4 +83,42 @@ test('verified receipt lookup returns the existing import only to a current admi
   store.put('users',users.admin.id,{...users.admin,role:'member'});
   throwsStatus(()=>service.findImportedReceipt(users.admin,receipt.id),403);
   assert.deepEqual(store.get('clientProjects',imported.project.id),before);
+});
+
+// 2026-11-11 소통 설계 S3(운영 설계 조각 1): 문의와 담당자 글은 대화에 줄을 더하기만 하므로 판 번호를 견주지 않는다. 두 번 보내기는 따로 막는다.
+test('담당자 글 · 손님 문의는 옛 판 번호로도 줄을 더하고, 같은 글을 2분 안에 다시 보내면 한 줄만 남는다',async t=>{
+  const {users,service,create,setClock}=await fixture(t);let row=create();
+  const invite=service.invite(users.owner,row.id,{revision:row.revision}),opened=service.open(invite.invite),old=opened.project.revision;
+  // 담당자: 옛 판 번호 · 판 번호 없이도 받는다.
+  service.message(users.owner,row.id,{revision:0,text:'첫 답'});service.message(users.owner,row.id,{text:'둘째 답'});
+  // 응답을 못 받고 다시 누른 같은 글은 더하지 않는다(판도 그대로).
+  const before=service.project(users.owner,row.id).revision;
+  assert.equal(service.message(users.owner,row.id,{text:'둘째 답'}).project.revision,before);
+  // 공개 범위가 다르면 다른 글이다.
+  service.message(users.owner,row.id,{text:'둘째 답',visibility:'internal'});
+  // 손님: 옛 판 번호로 문의 → 받음, 같은 문의 다시 → 한 줄.
+  const ask=()=>service.customerAction(opened.session,opened.csrf,{revision:old,action:'support',text:' 언제 받을 수 있나요? '}).project.messages.filter(m=>m.author==='customer');
+  assert.deepEqual(ask().map(m=>m.text),['언제 받을 수 있나요?']);
+  assert.equal(ask().length,1);
+  // 자동 안내가 그사이 끼어도 다시 보낸 문의로 본다.
+  const question=service.project(users.owner,row.id).messages.at(-1);
+  assert.equal(service.postAutoReply(row.id,{messageId:question.id,text:'담당자가 확인하고 답해 드려요.',kind:'fallback'}).posted,true);
+  assert.equal(ask().length,1);
+  // 사람이 쓴 다른 글이 끼면 같은 글도 새 줄이다.
+  service.message(users.owner,row.id,{text:'내일 오전에 알려 드릴게요.'});
+  assert.equal(ask().length,2);
+  // 2분이 지나면 같은 글도 새 줄이다.
+  setClock('2026-10-08T03:02:01.000Z');
+  assert.equal(ask().length,3);
+  assert.deepEqual(service.project(users.owner,row.id).messages.filter(m=>m.author==='staff'&&!m.automated).map(m=>[m.text,m.visibility]),[['첫 답','customer'],['둘째 답','customer'],['둘째 답','internal'],['내일 오전에 알려 드릴게요.','customer']]);
+});
+
+test('줄을 더하지 않는 손님 동작(의견 · 승인)과 다른 직원 저장은 여전히 옛 판 번호를 거절한다',async t=>{
+  const {users,service,create}=await fixture(t);let row=create();
+  row=service.addVersion(users.owner,row.id,{revision:row.revision,kind:'preview',label:'v1',url:'https://files.example/v1'}).project;
+  const invite=service.invite(users.owner,row.id,{revision:row.revision}),opened=service.open(invite.invite),old=opened.project.revision,versionId=row.versions[0].id;
+  service.message(users.owner,row.id,{text:'시안을 올렸어요.'});
+  for(const action of ['feedback','approve'])throwsStatus(()=>service.customerAction(opened.session,opened.csrf,{revision:old,action,versionId,text:'옛 화면에서 보낸 것'}),409);
+  throwsStatus(()=>service.invite(users.owner,row.id,{revision:old}),409);
+  throwsStatus(()=>service.message(users.owner,row.id,undefined),400);
 });

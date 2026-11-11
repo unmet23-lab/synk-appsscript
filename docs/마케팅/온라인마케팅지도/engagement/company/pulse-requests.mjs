@@ -436,7 +436,7 @@ const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation','kind'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
   propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither','outfit','hair'],
-  payment_request:['amount'],payment_confirm:['ref','dueDate'],payment_cancel:['note'],
+  payment_request:['amount'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
 const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
@@ -483,6 +483,27 @@ function assertCasting(casting,personas,row,{start=false}={}){
 // 장면 이미지 판 보내기 · 제작 시작 승인 · 의뢰 흐름 시안 올리기는 확인함만 통과한다. 사진 상품은 첫 장을 승인하기 전의 판은 결제 없이 오간다(첫 장이 방향 확인 몫).
 const PACKAGE_DAYS={s15:10,s30:14,s60:21,photo:3};
 export const requestPaid=request=>request?.payment?.status==='confirmed';
+// 결제 이력(2026-11-11 운영판 설계 S4): payment는 지금 상태 하나라, 취소한 뒤 다시 요청하면 앞 기록(취소 까닭 · 때)이 지워진다.
+// 요청 · 확인 · 취소를 덮지 않고 paymentLog에 쌓는다 — 쓰는 자리는 logPayment 하나다(추가만, 고치거나 지우지 않는다).
+// 이력 없이 결제가 적힌 옛 건은 그때의 payment에서 한 번 만들어 잇는다(seeded). 직원만 본다 — requestView가 손님 보기에서 뺀다.
+const PAYMENT_LOG_LIMIT=100;
+const paymentAmount=value=>Number.isSafeInteger(value)&&value>=10000&&value<=100000000;
+function seedPaymentLog(payment){
+  if(!payment||typeof payment!=='object')return [];
+  const log=[],amount=paymentAmount(payment.amount)?{amount:payment.amount}:{};
+  if(payment.requestedAt)log.push({kind:'requested',at:payment.requestedAt,by:payment.requestedBy||'',...amount,seeded:true});
+  if(payment.confirmedAt)log.push({kind:'confirmed',at:payment.confirmedAt,by:payment.confirmedBy||'',...amount,...(payment.ref?{ref:payment.ref}:{}),...(payment.dueDate?{dueDate:payment.dueDate}:{}),seeded:true});
+  if(payment.cancelledAt)log.push({kind:'cancelled',at:payment.cancelledAt,by:payment.cancelledBy||'',was:payment.confirmedAt?'confirmed':'requested',...amount,...(payment.note?{note:payment.note}:{}),seeded:true});
+  return log;
+}
+export const paymentLogOf=request=>Array.isArray(request?.paymentLog)?request.paymentLog:seedPaymentLog(request?.payment);
+// opens: 새 결제를 여는 줄(요청, 또는 요청 없이 바로 하는 확인)만 상한에 걸린다. 이미 열린 결제를 닫는 줄(요청한 결제의 확인 · 취소 · 환불)은
+// 가득 차도 적는다 — 막으면 환불한 결제가 「확인함」으로 남아 제작 문턱이 열린 채가 된다(GPT 검수 GA1). 그래서 길이는 상한을 둘까지 넘을 수 있다.
+function logPayment(request,entry,{opens=false}={}){
+  const log=paymentLogOf(request);
+  if(opens&&log.length>=PAYMENT_LOG_LIMIT)throw fail('결제 기록이 가득 찼어요. 새 결제는 관리자에게 알려 주세요.',409);
+  return [...log,entry];
+}
 const photoPackage=request=>request?.answers?.package==='photo';
 const photoSheetApproved=request=>photoPackage(request)&&(request.rounds||[]).some(round=>round.kind==='images'&&round.approvedAt);
 // locale: 이 프로젝트의 소통 언어(pulse-locale.mjs). 한국어가 아니면 손님에게 보일 직원 글은 번역을 함께 받아야 보낸다(pulse-translations.mjs).
@@ -621,8 +642,8 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     if(request.status!=='confirmed')throw fail('의뢰서 확인을 먼저 끝내 주세요.',409);
     if(requestPaid(request))throw fail('결제를 이미 확인했어요.',409);
     const amount=input.amount;
-    if(!Number.isSafeInteger(amount)||amount<10000||amount>100000000)throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
-    studio.request={...request,payment:{status:'requested',requestedAt:now,requestedBy:stamp.authorName,amount}};
+    if(!paymentAmount(amount))throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
+    studio.request={...request,payment:{status:'requested',requestedAt:now,requestedBy:stamp.authorName,amount},paymentLog:logPayment(request,{kind:'requested',at:now,by:stamp.authorName,amount},{opens:true})};
     return;
   }
   if(action==='payment_confirm'){
@@ -634,8 +655,15 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     const days=PACKAGE_DAYS[request.answers?.package],today=new Date(Date.parse(now)+9*3600000);
     const fallback=days?new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()+days)).toISOString().slice(0,10):request.directionProposal?.dueDate||'';
     const dueDate=input.dueDate===undefined||input.dueDate===''?fallback:kstDay(input.dueDate,now);
-    const amount=request.payment?.status==='requested'?request.payment.amount:undefined;
-    studio.request={...request,payment:{status:'confirmed',...(request.payment?.status==='requested'?{requestedAt:request.payment.requestedAt,requestedBy:request.payment.requestedBy}:{}),...(amount?{amount}:{}),confirmedAt:now,confirmedBy:stamp.authorName,...(ref?{ref}:{}),...(dueDate?{dueDate}:{})}};
+    // 금액: 담당자가 적으면 그 값(실제 결제액), 아니면 요청한 값. 둘 다 없으면 금액 없이 확인한다(이 칸을 모르는 옛 직원 화면 — 운영판은 「금액 없음」으로 따로 센다).
+    // channel: 받은 곳(크몽 · 직접), net: 수수료를 뺀 실수령(선택). 둘 다 직원만 본다.
+    if(input.amount!==undefined&&!paymentAmount(input.amount))throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
+    const amount=input.amount??(request.payment?.status==='requested'?request.payment.amount:undefined);
+    if(input.channel!==undefined&&!['kmong','direct'].includes(input.channel))throw fail('결제를 받은 곳을 골라 주세요.');
+    const channel=input.channel||'kmong',net=input.net;
+    if(net!==undefined&&(!amount||!Number.isSafeInteger(net)||net<0||net>amount))throw fail('실수령 금액은 결제 금액 안에서 원 단위로 적어 주세요.');
+    const paid={...(amount?{amount}:{}),...(ref?{ref}:{}),...(dueDate?{dueDate}:{}),channel,...(net!==undefined?{net}:{})};
+    studio.request={...request,payment:{status:'confirmed',...(request.payment?.status==='requested'?{requestedAt:request.payment.requestedAt,requestedBy:request.payment.requestedBy}:{}),confirmedAt:now,confirmedBy:stamp.authorName,...paid},paymentLog:logPayment(request,{kind:'confirmed',at:now,by:stamp.authorName,...paid},{opens:request.payment?.status!=='requested'})};
     // 사진 상품이 첫 장을 이미 승인했으면 결제를 확인하는 이때 제작을 시작한다.
     const sheet=photoPackage(request)&&!request.approvedRound?[...(request.rounds||[])].reverse().find(round=>round.kind==='images'&&round.approvedAt):null;
     if(sheet){
@@ -649,7 +677,9 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
   if(action==='payment_cancel'){
     if(!request.payment||request.payment.status==='cancelled')throw fail('취소할 결제가 없어요.',409);
     const note=text(input.note,300);if(!note)throw fail('취소한 까닭을 한 줄 적어 주세요.');
-    studio.request={...request,payment:{...request.payment,status:'cancelled',cancelledAt:now,cancelledBy:stamp.authorName,note}};
+    // was: 무엇을 취소했나 — 확인한 결제(confirmed)면 환불이고, 요청만 한 결제(requested)면 받은 돈이 없다. 운영판이 이 값으로 환불을 센다.
+    const was=request.payment.status,cancelled={kind:'cancelled',at:now,by:stamp.authorName,was,...(paymentAmount(request.payment.amount)?{amount:request.payment.amount}:{}),note};
+    studio.request={...request,payment:{...request.payment,status:'cancelled',cancelledAt:now,cancelledBy:stamp.authorName,note},paymentLog:logPayment(request,cancelled)};
     return;
   }
   if(action==='send_draft'){
@@ -776,11 +806,13 @@ function strategyWith(strategy,data,stamp){
 }
 export function requestView(studio,{staff=false}={}){
   const request=studio.request;if(!request)return null;
-  const {notes,contact,...safe}=request;
+  // paymentLog(결제 이력 — 취소 까닭 · 담당자 이름 · 크몽 주문 번호 · 실수령)는 직원만 본다. 여기서 빼지 않으면 request가 통째로 손님에게 내려간다.
+  const {notes,contact,paymentLog,...safe}=request;
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
   // paymentFlow는 직원 보기에도 둔다 — 직원 화면의 결제 줄 · 글 콘티 판 고르기 · 의견 다시 묶기는 이 서버에서만 켠다(화면 묶음이 서버보다 먼저 나가도 옛 서버에 모르는 칸을 보내지 않게).
   // castingLooks(2026-11-10 옷 · 머리 고르기): 이 서버가 방향 고르기의 옷 · 머리(answer_direction outfit · hair)를 안다 — 화면은 이것이 있을 때만 그 줄을 그리고 칸을 보낸다.
-  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentFlow:true,castingLooks:true};
+  // paymentLedger: 이 서버가 결제 이력을 쌓고 payment_confirm의 amount · channel · net을 안다 — 직원 화면은 이것이 있을 때만 그 칸을 보낸다.
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),paymentFlow:true,castingLooks:true,paymentLedger:true};
   // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
