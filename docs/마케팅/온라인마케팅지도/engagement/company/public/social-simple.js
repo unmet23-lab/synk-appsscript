@@ -3,7 +3,7 @@
 // 서버가 작업실 예약·수집 게시물·게시 성과와 저장소 편 요약(30분마다 올라옴)을 합쳐 준다. 게시·예약은 화면 밖(제작 세션 → 작업실 예약·
 // Meta 예약 → 검토 링크 승인)에서 돌아서 이 화면은 읽기만 한다. 위 절반은 그리기 도우미(순수 함수)이고, 시험은 아래 「상태와 불러오기」
 // 표시줄 앞까지만 잘라 읽는다. 글은 ssEsc로 넣는다(「·」 앞 줄바꿈을 막으려고 앞 칸을 NBSP로 바꾼다).
-const SNS_SIMPLE_VIEWS=[['today','오늘'],['results','성과'],['accounts','계정']];
+const SNS_SIMPLE_VIEWS=[['today','오늘'],['results','성과'],['accounts','계정'],['map','지도']];
 const ssEsc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])).replace(/ · /g,'\u00a0· ');
 const ssN=value=>value===null||value===undefined||value===''||!Number.isFinite(Number(value))?'—':Number(value).toLocaleString('ko-KR');
 const SS_WD=['일','월','화','수','목','금','토'];
@@ -217,6 +217,8 @@ async function snsSimpleLoad(){
 function snsSimpleEnsure(){if(!state.user)return;snsSimpleIdentity();if(snsSimple.loading)return;if(!snsSimple.attempted||Date.now()-snsSimple.attemptedAt>SS_STALE_MS)void snsSimpleLoad();}
 function snsSimpleRender(view){
   snsSimpleIdentity();const D=snsSimple.data;
+  // 나라 지도(11-11)는 자기 자료(/marketing-map.json)로 그린다 — 간편판 자료가 없거나 늦어도 지도는 그대로 연다.
+  if(view==='map')return `<section class="sw-simple" data-sw-view="map" aria-label="SNS·마케팅 · 나라 지도">${ssTabs(view,D)}${typeof marketingMapRender==='function'?marketingMapRender():''}</section>`;
   const error=snsSimple.error?`<div class="ss-alert" role="alert">${ssEsc(snsSimple.error)}<button class="ss-link" type="button" data-ss-action="reload"${snsSimple.loading?' disabled':''}>다시 불러오기</button></div>`:'';
   const body=D?ssPage(view,D,{brand:snsSimple.brand,sort:snsSimple.sort,open:snsSimple.open}):`<div class="ss-empty" role="status"><h2>${snsSimple.error?'불러오지 못했어요':'불러오고 있어요'}</h2><p>${snsSimple.error?'잠시 뒤 다시 불러와 주세요.':'예약·수집·성과를 모으고 있어요.'}</p></div>`;
   ssWideSoon();

@@ -21,7 +21,7 @@ function workspaceContextMenu(){
   }else if(view==='social'){
     title='SNS·마케팅';
     const turn=typeof snsSimple!=='undefined'&&snsSimple.data&&typeof ssMyTurn==='function'?ssMyTurn(snsSimple.data):0;
-    items=[['today','오늘','clock'],['results','성과','chart'],['accounts','계정','users']].map(([id,label,glyph])=>link(id,label,glyph,'social-view',`data-view="${id}"`,state.tab==='social'&&typeof socialWorkspaceSection==='function'&&socialWorkspaceSection()===id).replace('</span></button>',`</span>${id==='today'&&turn?`<b class="nav-count social-turn" aria-label="내 차례 ${turn}">${turn}</b>`:''}</button>`)).join('');
+    items=[['today','오늘','clock'],['results','성과','chart'],['accounts','계정','users'],['map','나라 지도','globe']].map(([id,label,glyph])=>link(id,label,glyph,'social-view',`data-view="${id}"`,state.tab==='social'&&typeof socialWorkspaceSection==='function'&&socialWorkspaceSection()===id).replace('</span></button>',`</span>${id==='today'&&turn?`<b class="nav-count social-turn" aria-label="내 차례 ${turn}">${turn}</b>`:''}</button>`)).join('');
 
   }
   return `<div class="context-menu-scroll"><nav class="nav-list" aria-label="${title} 세부 메뉴">${items}</nav>${extra?`<p class="context-section-label">${view==='social'?'상세 분석·기획':'개인 업무'}</p><nav class="nav-list" aria-label="${title} 바로가기">${extra}</nav>`:''}</div>`;

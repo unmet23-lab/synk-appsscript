@@ -979,6 +979,16 @@ node docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup
 
 통합 검증 결과와 실제 적용 상태는 [WORKSPACE_QA.md](WORKSPACE_QA.md)에 기록합니다.
 
+<a id="sns-map-20261111"></a>
+
+## SNS · 나라 지도 — 넷째 장 · 2026-11-11
+
+유호님 11-11 「작업실에 넣어」(로컬 마케팅 지도를 세계 지도로 바꾼 뒤 「이 기능이 앱에 어디에 있는거야?」). SNS 칸 세부 메뉴에 **나라 지도**를 오늘 · 성과 · 계정 다음에 더했다(폰은 위 탭 「지도」). LAB · PULSE 알약으로 고르고, 계정을 운영하는 나라는 사업 색(LAB 코랄 · PULSE 베리), 타깃이지만 계정이 없는 나라는 흑백 빗금이다. 나라를 누르면 오른쪽 칸에 계정 · 게시 시간 · PULSE 검토 판정이 나온다. 로컬 판은 [마케팅 지도 README](../../README.md#world-map-20261111).
+
+- **파일:** `public/marketing-map.js` · `marketing-map.css`(그리기 — 간편판 머리 · 계기판 도우미를 그대로 씀, style 속성 없음) · `marketing-map.json`(자료). 서버는 정적 목록에 세 줄만 더했다 — 새 API · 저장 · 권한 없음. 간편판 `snsSimpleRender`가 `map` 장이면 `marketingMapRender()`로 넘긴다.
+- **자료:** `docs/마케팅/온라인마케팅지도/world/workspace-data.mjs`가 계정 원장 · PULSE 타깃 · 나라 경계로 만든다. 로그인 정보는 읽지 않는다(계정은 플랫폼 · 공개 핸들 · 공개 주소 · 확보 여부). 원장을 `build-map.mjs --complete`로 다시 만들면 끝에서 같이 다시 쓰이고, PULSE 타깃만 바꿨으면 `node docs/마케팅/온라인마케팅지도/world/workspace-data.mjs`. 운영에는 화면 묶음 바꿔 끼우기(`deploy/static/swap.mjs`)로 싣는다 — 처음 한 번만 새 주소 셋 때문에 이미지 판.
+- **시험:** `marketing-map.test.mjs` 4(자료 = 원장에서 다시 만든 것 · 로그인 정보 없음 · 원장 숫자대로 칠함 · 서버가 세 파일을 냄). 합성 작업실(`verify-workspace-fixture.mjs`)에서 1440 · 390 클릭 · Esc · 고른 사업 기억 26개, 넘침 · 콘솔 오류 · 실패 요청 0.
+
 <a id="sns-simple-20261024"></a>
 
 ## SNS·마케팅 간편판 — 오늘 · 성과 · 계정 세 장 · 2026-10-24

@@ -43,8 +43,8 @@ async function snswFollowupSubmit(form){
 
 // This workspace keeps server-owned publication state separate from the unsaved editor.
 // 10-24 간편판(유호님 승인): 메뉴는 오늘·성과·계정 셋(public/social-simple.js). 댓글·문의와 손이 필요한 예약(fix)은 메뉴 밖 한 장으로 남긴다.
-const SOCIAL_VIEWS=[['today','오늘'],['results','성과'],['accounts','계정'],['inbox','댓글·문의'],['fix','손이 필요한 예약']];
-const SOCIAL_SIMPLE_VIEWS=['today','results','accounts'];
+const SOCIAL_VIEWS=[['today','오늘'],['results','성과'],['accounts','계정'],['map','나라 지도'],['inbox','댓글·문의'],['fix','손이 필요한 예약']];
+const SOCIAL_SIMPLE_VIEWS=['today','results','accounts','map'];
 // 옛 메뉴 이름 → 새 자리. 홈·오늘 할 일·메신저·옛 즐겨찾기 주소가 아직 이 이름을 쓴다.
 const SOCIAL_VIEW_ALIASES={overview:'today',compose:'today',calendar:'today',queue:'today',bulk:'today',settings:'accounts'};
 const snswViewName=view=>SOCIAL_VIEW_ALIASES[view]||view;
