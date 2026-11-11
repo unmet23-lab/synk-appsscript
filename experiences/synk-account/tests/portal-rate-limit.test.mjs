@@ -19,7 +19,7 @@ class Element {
 }
 function clock() {
   let now = 0, id = 0;const timers = new Map();
-  return { now: () => now, setTimeout: (fn, ms) => { timers.set(++id, { at: now + ms, fn });return id; }, clearTimeout: id => timers.delete(id),
+  return { now: () => now, setTimeout: (fn, ms) => { timers.set(++id, { at: now + (Number.isFinite(ms) && ms <= 2147483647 ? ms : 0), fn });return id; } /* like a browser: a delay no timer can hold fires at once */, clearTimeout: id => timers.delete(id),
     pending: () => timers.size, advance(ms) { const end = now + ms;let next;
       while ((next = [...timers].sort((a, b) => a[1].at - b[1].at)[0]) && next[1].at <= end) { now = next[1].at;timers.delete(next[0]);next[1].fn(); }
       now = end;
@@ -800,35 +800,74 @@ test('leaving the page clears the pending wait', async t => {
   const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a') });
   const before = page.time.pending();page.events.get('pagehide')({});assert.equal(page.time.pending(), before - 1);
 });
-// The first-seen time is kept where the browser's other tabs read it: a mail link that returns in a new tab keeps the clock.
+// The first-seen time: this tab keeps its own record, and the browser's other tabs read a short list of the last requests —
+// a reload and the Google round trip keep the clock in this tab, a mail link keeps it in a new tab. The earliest time counts.
 test('a mail link opened in a new tab keeps the clock of the tab that first saw the request', async t => {
-  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -280000 }) });
-  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: seenStore(), consentDetails: { redirect_url: deviceRedirect } });
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'synthetic-authorization', at: -280000 }]) }), tab = seenStore();
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab, consentDetails: { redirect_url: deviceRedirect } });
   assert.ok(restartShown(page));await page.get('approve').onclick();assert.deepEqual(page.destinations, []);
+  assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: -280000 }, 'the new tab takes the earlier time as its own');
 });
-test('the first-seen time is written where other tabs read it, as the request ID and the time only', async t => {
+test('the first-seen time is written to this tab and to the list other tabs read, as request IDs and times only', async t => {
   const shared = seenStore(), tab = seenStore();
   const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
-  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });assert.equal(tab.data.has('synk.id.connect-seen.v1'), false);
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'synthetic-authorization', at: 0 }]);assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });
   assert.equal(page.get('consent').hidden, false);page.time.advance(270000);assert.ok(restartShown(page));
 });
-test('a visit without an app request drops a record once it is an hour old', async t => {
-  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'earlier-request', at: -3600000 }) });
+test('another request seen by this browser in between does not restart the clock of this tab', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'other-request', at: -100000 }]) }), tab = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -280000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab, consentDetails: { redirect_url: deviceRedirect } });
+  assert.ok(restartShown(page));await page.get('approve').onclick();assert.deepEqual(page.destinations, []);
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'other-request', at: -100000 }, { id: 'synthetic-authorization', at: -280000 }], 'the other request keeps its own time');
+});
+test('the earliest time known for the request counts, in this tab or in the list', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'synthetic-authorization', at: -200000 }]) }), tab = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -100000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  page.time.advance(69999);assert.equal(page.get('consent').hidden, false);page.time.advance(1);assert.ok(restartShown(page));
+  assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: -200000 });
+});
+test('when the list other tabs read cannot be written, this tab still keeps its record', async t => {
+  const tab = seenStore(), shared = { getItem: () => null, setItem() { throw new Error('synthetic quota'); }, removeItem() { throw new Error('synthetic quota'); } };
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  assert.equal(page.get('consent').hidden, false);assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });
+});
+test('when no storage can be read at all, this page start counts', async t => {
+  const broken = { getItem() { throw new Error('synthetic denial'); }, setItem() { throw new Error('synthetic denial'); }, removeItem() { throw new Error('synthetic denial'); } };
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: broken, sessionStorage: broken });
+  page.time.advance(269999);assert.equal(page.get('consent').hidden, false);page.time.advance(1);assert.ok(restartShown(page));
+});
+test('a record that cannot be read is replaced by this request', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': '{bad' }), tab = seenStore({ 'synk.id.connect-seen.v1': '{bad' });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  assert.equal(page.get('consent').hidden, false);
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'synthetic-authorization', at: 0 }]);assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });
+});
+test('a visit without an app request drops a record that cannot be read', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': '{bad' });
   await fixture(t, { localStorage: shared });assert.equal(shared.data.has('synk.id.connect-seen.v1'), false);
 });
-test('a visit without an app request keeps a record still inside the hour (its mail link may yet come back)', async t => {
-  const record = JSON.stringify({ id: 'earlier-request', at: -3599999 }), shared = seenStore({ 'synk.id.connect-seen.v1': record });
-  await fixture(t, { localStorage: shared });assert.equal(shared.data.get('synk.id.connect-seen.v1'), record);
-});
-test('a visit without an app request drops a record it cannot read as a time', async t => {
-  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'earlier-request', at: 'soon' }) });
+test('a visit without an app request drops entries once they are an hour old', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'earlier-request', at: -3600000 }]) });
   await fixture(t, { localStorage: shared });assert.equal(shared.data.has('synk.id.connect-seen.v1'), false);
+});
+test('a visit without an app request leaves entries still inside the hour as they are (a mail link may yet come back)', async t => {
+  const record = JSON.stringify([{ id: 'earlier-request', at: -3599999 }]), shared = seenStore({ 'synk.id.connect-seen.v1': record }), tab = seenStore();
+  await fixture(t, { localStorage: shared, sessionStorage: tab });assert.equal(shared.data.get('synk.id.connect-seen.v1'), record);assert.equal(tab.data.has('synk.id.connect-seen.v1'), false);
+});
+test('a visit without an app request drops an entry whose time cannot be read', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'earlier-request', at: 'soon' }, { id: 'kept-request', at: -1000 }]) });
+  await fixture(t, { localStorage: shared });assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'kept-request', at: -1000 }]);
+});
+test('the list keeps the last four requests and nothing but IDs and times', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'r1', at: -3700000 }, { id: 'r2', at: -4000 }, { id: 'r3', at: -3000, extra: 'dropped' }, { id: 'r4', at: -2000 }, { id: 'r5', at: -1000 }]) });
+  await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: seenStore() });
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'r3', at: -3000 }, { id: 'r4', at: -2000 }, { id: 'r5', at: -1000 }, { id: 'synthetic-authorization', at: 0 }]);
 });
 test('the synthetic preview keeps no first-seen time and an old record does not turn its card', async t => {
-  const record = JSON.stringify({ id: 'synthetic-authorization', at: -300000 }), tab = seenStore({ 'synk.id.connect-seen.v1': record }), shared = seenStore({ 'synk.id.connect-seen.v1': record });
+  const record = JSON.stringify({ id: 'synthetic-authorization', at: -300000 }), list = JSON.stringify([{ id: 'synthetic-authorization', at: -300000 }]), tab = seenStore({ 'synk.id.connect-seen.v1': record }), shared = seenStore({ 'synk.id.connect-seen.v1': list });
   const page = await fixture(t, { consent: true, preview: true, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: tab, localStorage: shared });
   assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
-  assert.equal(tab.data.get('synk.id.connect-seen.v1'), record);assert.equal(shared.data.get('synk.id.connect-seen.v1'), record);
+  assert.equal(tab.data.get('synk.id.connect-seen.v1'), record);assert.equal(shared.data.get('synk.id.connect-seen.v1'), list);
 });
 test('a wait longer than a timer can hold never fires early (the synthetic preview card stays)', async t => {
   const page = await fixture(t, { consent: true, preview: true, redirectUri: deviceApp, initial: deviceSession('owner-a'), deviceWait: Infinity });

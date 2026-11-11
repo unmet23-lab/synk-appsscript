@@ -17,7 +17,7 @@ const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 // A SYNK PC app's own sign-in address (desktop/src/auth-config.cjs) closes five minutes after the app opened this
 // sign-in (auth-service.cjs loginTimeoutMs). 30 seconds before that its card gives way to the restart card, so no press lands on a closed address.
 // Other addresses on this device (local preview pages) keep no such clock.
-const DEVICE_WAIT = 270000, CONNECT_SEEN_KEY = 'synk.id.connect-seen.v1';
+const DEVICE_WAIT = 270000, CONNECT_SEEN_KEY = 'synk.id.connect-seen.v1', CONNECT_SEEN_KEPT = 4, CONNECT_SEEN_AGE = 3600000;
 const pcAppCallback = value => {
   try { const url = new URL(value), [, synk, oauth, app, callback, ...rest] = url.pathname.split('/');return url.protocol === 'http:' && url.hostname === '127.0.0.1' && synk === 'synk' && oauth === 'oauth' && /^[a-z][a-z0-9-]*$/.test(app || '') && callback === 'callback' && !rest.length; } catch { return false; }
 };
@@ -191,19 +191,26 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   };
   const authorizationId = new URL(location.href).searchParams.get('authorization_id');
   // When this browser first saw this app request: the closest known moment the app on this PC started waiting.
-  // It is kept where the browser's other tabs read it too, so a mail link that returns in a new tab keeps the same
-  // clock (the Google round trip returns to this tab). Only the request ID and that time are kept, one record at a
-  // time; a visit without an app request drops a record once it is an hour old. The synthetic preview keeps none.
-  const seenStore = preview ? null : recentStore || recoveryStorage;
+  // This tab keeps its own record (a reload and the Google round trip come back to it), and the browser's other tabs
+  // read a short list of the last few requests, so a mail link that returns in a new tab keeps the same clock. The
+  // earliest time known for this request counts. Only request IDs and times are kept; the list holds four requests
+  // and drops the others once they are an hour old. The synthetic preview keeps none.
   const requestSeen = (() => {
-    const now = cooldownClock.now();if (!seenStore) return now;
-    try {
-      const value = JSON.parse(seenStore.getItem(CONNECT_SEEN_KEY) || 'null'), known = Number.isFinite(value?.at) && value.at <= now;
-      if (authorizationId && value?.id === authorizationId && known) return value.at;
-      if (authorizationId) seenStore.setItem(CONNECT_SEEN_KEY, JSON.stringify({ id: authorizationId, at: now }));
-      else if (value && !(known && now - value.at < 3600000)) seenStore.removeItem(CONNECT_SEEN_KEY);
-    } catch { /* this page's start then counts */ }
-    return now;
+    const now = cooldownClock.now();if (preview) return now;
+    const known = entry => !!entry && typeof entry.id === 'string' && Number.isFinite(entry.at) && entry.at <= now;
+    // A storage holds one record (this tab) or a list (other tabs); what cannot be read counts as nothing and is replaced.
+    const load = store => { let raw = null, list = [];try { raw = store.getItem(CONNECT_SEEN_KEY);const value = JSON.parse(raw || 'null');list = (Array.isArray(value) ? value : [value]).filter(known); } catch { /* nothing known */ }return { raw, list }; };
+    const save = (store, text) => { try { if (text) store.setItem(CONNECT_SEEN_KEY, text);else store.removeItem(CONNECT_SEEN_KEY); } catch { /* the other record still counts */ } };
+    const tab = recoveryStorage ? load(recoveryStorage) : { raw: null, list: [] }, shared = recentStore ? load(recentStore) : { raw: null, list: [] };
+    const seen = authorizationId ? Math.min(now, ...[...tab.list, ...shared.list].filter(entry => entry.id === authorizationId).map(entry => entry.at)) : now;
+    if (authorizationId && recoveryStorage) save(recoveryStorage, JSON.stringify({ id: authorizationId, at: seen }));
+    if (recentStore) {
+      const kept = shared.list.filter(entry => entry.id !== authorizationId && now - entry.at < CONNECT_SEEN_AGE).map(({ id, at }) => ({ id, at }));
+      if (authorizationId) kept.push({ id: authorizationId, at: seen });
+      // Written only when it changes: a visit with nothing to add or drop leaves the storage alone.
+      const next = kept.length ? JSON.stringify(kept.slice(-CONNECT_SEEN_KEPT)) : null;if (next !== shared.raw) save(recentStore, next);
+    }
+    return seen;
   })();
   const initialUrl = new URL(location.href), initialFragment = new URLSearchParams(initialUrl.hash.slice(1));
   const recoveryRequested = initialUrl.searchParams.get('view') === 'reset';
