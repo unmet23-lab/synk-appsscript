@@ -4,7 +4,7 @@
 
 **카메라 앞에서 10년, 배우가 AI 모델을 연출합니다**
 
-영문: **Ten years on set, an actor directs AI models**.
+영문: **AI models can look real. We make them act.** — 11-11 유호님 「추천대로」([결정 표](../../_ops/결정.md) 11-11 「켜기 전 결정 여덟」 ⑧: 고객 앱 영어 첫 화면과 같은 문장, 맹검 35/40 대 옛 줄 22/40). synk.im 영어 PULSE 쪽 · 영어 홈 칸 · 공유 그림 · 질문창에 공개(synk-policy `f932a1e`, 첫 화면은 앱과 같은 세 줄). 옛 영문 「Ten years on set, an actor directs AI models」.
 
 [결정 표](../../_ops/결정.md)의 11-07 「홈 네 무대 · PULSE 제목」에서 유호님이 A안·홈과 PULSE 둘 다 적용으로 확정했다. 11-08 현재 [PULSE 홈페이지](https://synk.im/pulse/)의 제목과 첫 화면에서 확인했다. YouTube @synkpulse 소개 첫 줄도 이 문구로 정정했다([적용 기록](../프로필설정_20261108/README.md#pulse-슬로건-정정--11-08)). 11-10 고객 앱(workspace.synk.im/pulse-app/)과 PC 앱도 이 문구로 바꿨다 — 고객 앱 제목은 사이트와 같은 세 줄, 소개 줄은 사이트 첫 화면의 공개 이력 줄(해요체)이다(0절, [결정 표](../../_ops/결정.md) 11-10).
 

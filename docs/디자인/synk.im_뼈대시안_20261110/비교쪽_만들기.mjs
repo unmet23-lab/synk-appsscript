@@ -48,6 +48,9 @@ html = html.replace('{{추천입구}}', 맹.추천입구 || '');
 const 칸 = v => Array.isArray(v) ? `<td class="${v[1] || ''}">${v[0]}</td>` : `<td>${v}</td>`;
 const 맹표 = (머리, 행) => `<div class="tablebox"><table><thead><tr>${머리.map((h, i) => `<th${i === 1 ? ' class="ref"' : ''}>${h}</th>`).join('')}</tr></thead><tbody>${행.map(r => `<tr><th>${r[0]}</th><td class="ref">${r[1]}</td>${r.slice(2).map(칸).join('')}</tr>`).join('')}</tbody></table></div>`;
 html = html.replace('{{요약표}}', 맹.요약 ? 맹표(맹.요약.머리, 맹.요약.행) : '');
+// 2단계(11-10 밤): 일곱 쪽의 길이 표 · 「다음」 목록도 맹검 파일에서 읽는다
+html = html.replace('{{쪽길이}}', 맹.쪽길이 ? 맹표(맹.쪽길이.머리, 맹.쪽길이.행) : '');
+html = html.replace('{{다음}}', (맹.다음 || []).map(x => `<li>${x}</li>`).join('\n'));
 // 표들: [{ 제목?, 글?, 머리, 행 }] — 회차마다 한 묶음. (옛 꼴 홈 · 사업 두 표도 읽는다)
 const 표들 = 맹.표들 || [맹.홈, 맹.사업].filter(Boolean);
 html = html.replace('{{맹검}}', [...표들.map(t => (t.제목 ? `<div class="col"><h3>${t.제목}</h3>${t.글 ? `<p class="mid">${t.글}</p>` : ''}</div>\n` : '') + 맹표(t.머리, t.행)), `<div class="col">${(맹.읽은것 || []).map(p => `<p>${p}</p>`).join('')}${(맹.인용 || []).map(q => `<blockquote>${q}</blockquote>`).join('')}<p class="small">${맹.주 || ''}</p></div>`].join('\n'));

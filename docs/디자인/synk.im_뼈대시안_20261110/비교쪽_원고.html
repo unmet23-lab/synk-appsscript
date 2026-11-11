@@ -44,6 +44,7 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:var(
 .flip-tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .flip-stage{background:var(--stage);border:1px solid var(--line)}
 .flip-stage img{display:block;width:100%;height:auto}
+.flip-stage img[hidden],.flip p[hidden]{display:none}
 .flip-stage.phone{display:flex;justify-content:center;padding:20px 0}
 .flip-stage.phone img{width:min(390px,100%)}
 .flip p{font-size:var(--s2);line-height:1.65;color:var(--mute);max-width:760px;min-height:3.3em}
@@ -81,11 +82,7 @@ blockquote{margin:0;padding:2px 0 2px 16px;border-left:2px solid var(--line);col
 </header>
 
 <section id="pick">
-<div class="col"><h2>고르실 것 둘</h2><p>아래 표는 공개본과 시안을 한 대화에 나란히 놓고 물은 맹검입니다. 자세한 것은 <a href="#blind">맹검</a> 절에 있습니다.</p></div>
-<div class="ask">
-<div><p class="n">하나</p><h3>입구는 어느 판인가요</h3><p class="mid"><b>가</b>는 지금 짜임 그대로(물음 + 문 넷)에 한 줄만 새 문장입니다. <b>나</b>는 문 넷을 아래 구역으로 내리고 그 자리에 회사 문장 하나를 둡니다. <b>나 + 조각</b>은 나의 오른쪽 아래에 실제 화면 조각 한 장을 더한 판입니다. 처마 · 싱ㅋ · 견본선은 모두 그대로입니다.</p><p class="mid">{{추천입구}}</p></div>
-<div><p class="n">둘</p><h3>회사 한 줄은 어느 문장인가요</h3><p class="mid">추천안 「사람마다 막히는 곳이 다릅니다 / 그 한 곳부터 풀어 주는 AI를 만듭니다」와 다른 두 안을 실제 화면에 얹어 아래에 두었습니다. 문장만 바꾼 판이라 고르시면 바로 갈아 끼웁니다.</p></div>
-</div>
+<div class="col"><h2>고르신 것 · 지은 것</h2><p>11-10 16시에 입구는 <b>나 + 조각</b>으로 고르셨고, 회사 한 줄은 추천안(「사람마다 막히는 곳이 다릅니다 / 그 한 곳부터 풀어 주는 AI를 만듭니다」)으로 지었습니다. 그 판으로 한국어 일곱 쪽(홈 · LAB · SHIFT · PATH · 아틀라스 · 창업자 · PULSE)을 원고에 같은 뼈대로 지었습니다 — 아래 <a href="#pages">다섯 쪽</a>. 영어 · 몽골어 쪽은 공개 뒤에 옮깁니다.</p><p>아래 표는 공개본과 새 판을 한 대화에 나란히 놓고 물은 맹검입니다. 자세한 것은 <a href="#blind">맹검</a> 절에 있습니다.</p></div>
 {{요약표}}
 </section>
 
@@ -147,6 +144,66 @@ blockquote{margin:0;padding:2px 0 2px 16px;border-left:2px solid var(--line);col
 </div>
 </section>
 
+<section id="pages">
+<div class="col"><h2>다섯 쪽 — LAB · PATH · 아틀라스 · 창업자 · PULSE</h2><p>홈 · SHIFT와 같은 뼈대(글자 일곱 단계 · 굵기 넷 · 구역 머리 줄 · 쪽 주장은 끝까지 가는 선 사이 · 첫 화면은 밤 바탕에 그 쪽의 실물 · 안 열린 것은 맨 아래 「다음에 여는 것」)를 입혔습니다. 실물(상황극 재생기 · 면접 방 · 30일 체험 · 쇼릴)은 그대로입니다. 단추를 눌러 공개본과 넘겨 보세요.</p></div>
+{{쪽길이}}
+<div class="col"><h3>LAB</h3></div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="LAB 첫 화면"><button type="button" aria-pressed="false" data-src="{{img:publab-d-00.jpg}}" data-note="<b>공개본.</b> 공개본은 「K드라마 속 유학생이 되어, 한국어로 말합니다」 제목 아래 상황극 재생기와 여러 구역.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:sklab-d-00.jpg}}" data-note="<b>새 뼈대.</b> 상황극 무대가 첫 화면입니다 — 「말해야 / 장면이 넘어갑니다」와 「내가 말해 보기」까지. 대본은 지금 줄까지만 밝게(맹검 반영).">새 뼈대</button></div>
+<div class="flip-stage"><img src="{{img:sklab-d-00.jpg}}" alt="LAB 첫 화면 — 컴퓨터 1440×900" data-flip-img></div>
+<p data-flip-note><b>새 뼈대.</b> 상황극 무대가 첫 화면입니다 — 「말해야 / 장면이 넘어갑니다」와 「내가 말해 보기」까지. 대본은 지금 줄까지만 밝게(맹검 반영).</p>
+</div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="LAB 첫 화면 · 휴대폰"><button type="button" aria-pressed="false" data-src="{{img:publab-m-00.jpg}}" data-note="<b>공개본 · 휴대폰.</b> 공개본은 「K드라마 속 유학생이 되어, 한국어로 말합니다」 제목 아래 상황극 재생기와 여러 구역.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:sklab-m-00.jpg}}" data-note="<b>새 뼈대 · 휴대폰.</b> 상황극 무대가 첫 화면입니다 — 「말해야 / 장면이 넘어갑니다」와 「내가 말해 보기」까지. 대본은 지금 줄까지만 밝게(맹검 반영).">새 뼈대</button></div>
+<div class="flip-stage phone"><img src="{{img:sklab-m-00.jpg}}" alt="LAB 첫 화면 — 휴대폰 390×844" data-flip-img></div>
+<p data-flip-note><b>새 뼈대 · 휴대폰.</b> 상황극 무대가 첫 화면입니다 — 「말해야 / 장면이 넘어갑니다」와 「내가 말해 보기」까지. 대본은 지금 줄까지만 밝게(맹검 반영).</p>
+</div>
+<div class="col"><h3>PATH</h3></div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="PATH 첫 화면"><button type="button" aria-pressed="false" data-src="{{img:pubpath-d-00.jpg}}" data-note="<b>공개본.</b> 공개본은 「한국에서 공부하고 일하며 사는 길을, 함께 준비합니다」와 서울 하루 지도.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skpath-d-00.jpg}}" data-note="<b>새 뼈대.</b> 면접관 셋이 기다리는 방이 첫 화면입니다 — 「한국에 오기 전에, / 먼저 해 봅니다」와 「60~90초 면접 시작」. 하는 일을 먼저, 직종 · 기기는 뒤에(맹검 반영).">새 뼈대</button></div>
+<div class="flip-stage"><img src="{{img:skpath-d-00.jpg}}" alt="PATH 첫 화면 — 컴퓨터 1440×900" data-flip-img></div>
+<p data-flip-note><b>새 뼈대.</b> 면접관 셋이 기다리는 방이 첫 화면입니다 — 「한국에 오기 전에, / 먼저 해 봅니다」와 「60~90초 면접 시작」. 하는 일을 먼저, 직종 · 기기는 뒤에(맹검 반영).</p>
+</div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="PATH 첫 화면 · 휴대폰"><button type="button" aria-pressed="false" data-src="{{img:pubpath-m-00.jpg}}" data-note="<b>공개본 · 휴대폰.</b> 공개본은 「한국에서 공부하고 일하며 사는 길을, 함께 준비합니다」와 서울 하루 지도.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skpath-m-00.jpg}}" data-note="<b>새 뼈대 · 휴대폰.</b> 면접관 셋이 기다리는 방이 첫 화면입니다 — 「한국에 오기 전에, / 먼저 해 봅니다」와 「60~90초 면접 시작」. 하는 일을 먼저, 직종 · 기기는 뒤에(맹검 반영).">새 뼈대</button></div>
+<div class="flip-stage phone"><img src="{{img:skpath-m-00.jpg}}" alt="PATH 첫 화면 — 휴대폰 390×844" data-flip-img></div>
+<p data-flip-note><b>새 뼈대 · 휴대폰.</b> 면접관 셋이 기다리는 방이 첫 화면입니다 — 「한국에 오기 전에, / 먼저 해 봅니다」와 「60~90초 면접 시작」. 하는 일을 먼저, 직종 · 기기는 뒤에(맹검 반영).</p>
+</div>
+<div class="col"><h3>아틀라스</h3></div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="아틀라스 첫 화면"><button type="button" aria-pressed="false" data-src="{{img:pubatlas-d-00.jpg}}" data-note="<b>공개본.</b> 공개본은 「쓸수록 나에게 맞춰지는 엔진, 아틀라스」와 궤도 그림.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skatlas-d-00.jpg}}" data-note="<b>새 뼈대.</b> 「한 사람을 읽는 엔진, / 아틀라스」와 바로 직접 풀어 보는 30일. 엔진 표 여덟 줄은 아래로.">새 뼈대</button></div>
+<div class="flip-stage"><img src="{{img:skatlas-d-00.jpg}}" alt="아틀라스 첫 화면 — 컴퓨터 1440×900" data-flip-img></div>
+<p data-flip-note><b>새 뼈대.</b> 「한 사람을 읽는 엔진, / 아틀라스」와 바로 직접 풀어 보는 30일. 엔진 표 여덟 줄은 아래로.</p>
+</div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="아틀라스 첫 화면 · 휴대폰"><button type="button" aria-pressed="false" data-src="{{img:pubatlas-m-00.jpg}}" data-note="<b>공개본 · 휴대폰.</b> 공개본은 「쓸수록 나에게 맞춰지는 엔진, 아틀라스」와 궤도 그림.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skatlas-m-00.jpg}}" data-note="<b>새 뼈대 · 휴대폰.</b> 「한 사람을 읽는 엔진, / 아틀라스」와 바로 직접 풀어 보는 30일. 엔진 표 여덟 줄은 아래로.">새 뼈대</button></div>
+<div class="flip-stage phone"><img src="{{img:skatlas-m-00.jpg}}" alt="아틀라스 첫 화면 — 휴대폰 390×844" data-flip-img></div>
+<p data-flip-note><b>새 뼈대 · 휴대폰.</b> 「한 사람을 읽는 엔진, / 아틀라스」와 바로 직접 풀어 보는 30일. 엔진 표 여덟 줄은 아래로.</p>
+</div>
+<div class="col"><h3>창업자</h3></div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="창업자 첫 화면"><button type="button" aria-pressed="false" data-src="{{img:pubfounder-d-00.jpg}}" data-note="<b>공개본.</b> 공개본은 흰 바탕에 같은 제목 · 소개 · 사진.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skfounder-d-00.jpg}}" data-note="<b>새 뼈대.</b> 주장 + 본인 소개 + 사진(밤 바탕). 맹검 뒤 이중선을 없애고, 사진의 검정을 바탕에 녹이고, 「지금 만드는 것」 한 줄을 더했습니다.">새 뼈대</button></div>
+<div class="flip-stage"><img src="{{img:skfounder-d-00.jpg}}" alt="창업자 첫 화면 — 컴퓨터 1440×900" data-flip-img></div>
+<p data-flip-note><b>새 뼈대.</b> 주장 + 본인 소개 + 사진(밤 바탕). 맹검 뒤 이중선을 없애고, 사진의 검정을 바탕에 녹이고, 「지금 만드는 것」 한 줄을 더했습니다.</p>
+</div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="창업자 첫 화면 · 휴대폰"><button type="button" aria-pressed="false" data-src="{{img:pubfounder-m-00.jpg}}" data-note="<b>공개본 · 휴대폰.</b> 공개본은 흰 바탕에 같은 제목 · 소개 · 사진.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skfounder-m-00.jpg}}" data-note="<b>새 뼈대 · 휴대폰.</b> 주장 + 본인 소개 + 사진(밤 바탕). 맹검 뒤 이중선을 없애고, 사진의 검정을 바탕에 녹이고, 「지금 만드는 것」 한 줄을 더했습니다.">새 뼈대</button></div>
+<div class="flip-stage phone"><img src="{{img:skfounder-m-00.jpg}}" alt="창업자 첫 화면 — 휴대폰 390×844" data-flip-img></div>
+<p data-flip-note><b>새 뼈대 · 휴대폰.</b> 주장 + 본인 소개 + 사진(밤 바탕). 맹검 뒤 이중선을 없애고, 사진의 검정을 바탕에 녹이고, 「지금 만드는 것」 한 줄을 더했습니다.</p>
+</div>
+<div class="col"><h3>PULSE</h3></div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="PULSE 첫 화면"><button type="button" aria-pressed="false" data-src="{{img:pubpulse-d-00.jpg}}" data-note="<b>공개본.</b> 공개본 첫 화면과 거의 같습니다.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skpulse-d-00.jpg}}" data-note="<b>새 뼈대.</b> 시사실은 그대로 두고 덜어내기만 했습니다(값 문장 한 줄 · 알약 단추).">새 뼈대</button></div>
+<div class="flip-stage"><img src="{{img:skpulse-d-00.jpg}}" alt="PULSE 첫 화면 — 컴퓨터 1440×900" data-flip-img></div>
+<p data-flip-note><b>새 뼈대.</b> 시사실은 그대로 두고 덜어내기만 했습니다(값 문장 한 줄 · 알약 단추).</p>
+</div>
+<div class="flip" data-flip>
+<div class="flip-tabs" role="group" aria-label="PULSE 첫 화면 · 휴대폰"><button type="button" aria-pressed="false" data-src="{{img:pubpulse-m-00.jpg}}" data-note="<b>공개본 · 휴대폰.</b> 공개본 첫 화면과 거의 같습니다.">공개본</button><button type="button" aria-pressed="true" data-src="{{img:skpulse-m-00.jpg}}" data-note="<b>새 뼈대 · 휴대폰.</b> 시사실은 그대로 두고 덜어내기만 했습니다(값 문장 한 줄 · 알약 단추).">새 뼈대</button></div>
+<div class="flip-stage phone"><img src="{{img:skpulse-m-00.jpg}}" alt="PULSE 첫 화면 — 휴대폰 390×844" data-flip-img></div>
+<p data-flip-note><b>새 뼈대 · 휴대폰.</b> 시사실은 그대로 두고 덜어내기만 했습니다(값 문장 한 줄 · 알약 단추).</p>
+</div>
+</section>
+
 <section id="measure">
 <div class="col"><h2>잰 값</h2><p>판단 때와 같은 도구로 공개본과 시안을 쟀습니다(컴퓨터 1440×900 · 휴대폰 390×844). 관문은 「새 뼈대가 지킬 것」 표의 값입니다.</p></div>
 {{잰값}}
@@ -172,9 +229,7 @@ blockquote{margin:0;padding:2px 0 2px 16px;border-left:2px solid var(--line);col
 <section id="next">
 <div class="col"><h2>다음</h2>
 <ul class="list">
-<li>고르시면 그 판으로 LAB · PATH · 아틀라스 · 창업자 · PULSE에 같은 뼈대를 입히고, 일곱 쪽을 같은 날 공개합니다(영어 · 몽골어는 그 뒤).</li>
-<li>원고(SYNK-website)에 지을 때 입구 글자를 단계에 맞추려면 입구 스타일 잠금을 갱신해야 합니다. 그림과 자리는 바뀌지 않습니다.</li>
-<li>시안에서 못 본 것: 낮 · 밤 하늘, 영어 · 몽골어 판, 움직임의 느낌(정지 화면으로만 맹검).</li>
+{{다음}}
 </ul></div>
 </section>
 
