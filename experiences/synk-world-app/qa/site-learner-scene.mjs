@@ -252,7 +252,8 @@ async function 장면(page,길='틀린길'){
     if(st.err){안됨('환승 러시',st.err);break;}
     if(st.done)break;
     if(st.replies){await f.locator('#replies button').first().click();await page.waitForTimeout(400);continue;}
-    if(st.zones){await page.waitForTimeout(500);if(고름===0){await 찍기('13-game-pick');await 띠찍기('13-game-pick',440,820);}await f.locator('#zones button').nth(고름%3).click();고름++;await page.waitForTimeout(600);}
+    // 고를 차례에는 길 안내 표지판(#pick)이 아래에서 0.9초에 걸쳐 올라온다(11-12 「B 표지판」) — 첫 고르기는 판이 다 올라온 뒤 찍는다
+    if(st.zones){if(고름===0){await f.locator('#pick[data-on]').waitFor({timeout:5000}).catch(()=>{});await page.waitForTimeout(950);await 찍기('13-game-pick');await 띠찍기('13-game-pick',464,844);}else await page.waitForTimeout(500);await f.locator('#zones button').nth(고름%3).click();고름++;await page.waitForTimeout(600);}
    }
    기록.환승={고름,초:Math.round((Date.now()-시작)/1000)};말('환승 러시',기록.환승);
    await page.waitForTimeout(2500);await 찍기('14-game-result');

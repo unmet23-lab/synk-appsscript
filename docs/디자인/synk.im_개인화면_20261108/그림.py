@@ -129,7 +129,13 @@ for 언어 in ('ko', 'en'):
         쓰기(이름, 둥글게(아래로자름(im, 글[-1][1], 글[0][0]), 58))
     # 같은 표현, 다른 장면 · 게임 — 자리를 재서 찍은 띠 그대로(영어는 430 폭으로 찍어 튜터 줄이 말줄임 없이 다 보인다)
     쓰기('piece-scene', 열기('05-review-new-scene.band'))
-    쓰기('piece-game', 열기('13-game-pick.band'))
+    # 게임 — 고를 차례에 아래에서 올라오는 길 안내 표지판(11-12 「B 표지판」)만. 띠 위쪽 객실 사진은 승객이 허리 아래로만 잘려 들어와
+    # (사이트 맹검 「잘린 승객」) 판 바탕색이 한 줄을 다 채우는 첫 줄부터 자른다 — 질문 한 줄 · 세 칸 · 꼬리표가 남는다
+    band = 열기('13-game-pick.band'); a = np.array(band).astype(int)
+    판 = (np.abs(a - a[-10, 6]).max(axis=2) < 7).mean(axis=1)
+    위 = next((y for y in range(len(판)) if 판[y] > .95), None)
+    assert 위 is not None and 위 < len(판) * .8, f'{언어}: 게임 표지판 판의 위 끝을 못 찾음'
+    쓰기('piece-game', band.crop((0, 위, band.width, band.height)))
     # 돌아올 표현 — 머리 + 앞 두 줄(틀린 말 1분 뒤 · 맞힌 말 내일). 줄마다 산호색 때 글이 끝이다
     band = 열기('04-review-summary.band'); a = np.array(band).astype(int)
     산호 = np.where(((a[:, :, 0] > 200) & (a[:, :, 1] > 110) & (a[:, :, 1] < 200) & (a[:, :, 2] > 90) & (a[:, :, 2] < 190) & (a[:, :, 0] - a[:, :, 2] > 50)).sum(axis=1) > 3)[0]
