@@ -935,10 +935,14 @@ if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();
 // 첫 방문에 셸을 바로 받으면 느린 연결에서 의뢰서 · 첫 화면과 대역을 나눈다(판 6 점검 E). 다음 방문부터는 셸이 그대로 돈다.
 const afterLoadIdle=fn=>{const go=()=>setTimeout(()=>typeof requestIdleCallback==='function'?requestIdleCallback(fn,{timeout:5000}):fn(),1500);if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});};
 afterLoadIdle(()=>{if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('./sw.js',{scope:'/pulse-app/'}).catch(()=>{});});
-// 한국어 화면에서 손님이 글 칸에 들어오면 SYNK Sans의 남은 조각(화면 원문에 없는 음절, tools/build-pulse-fonts.py)을 받아 둔다 —
-// 손님이 쓰는 글자가 기기 글꼴로 잠깐 바뀌지 않게. 쓰지 않고 보기만 하는 손님은 받지 않는다. 데이터 절약 · 2G에서는 그 글자가 나올 때 받는다.
-// 끊긴 동안에는 받지 않는다(받기가 실패하면 그 면이 오류로 굳어 다시 이어져도 새로고침 전까지 안 받는다 — 검수 A1). 명조 나머지는 손님 글이 제목에 나올 때만 받는다.
+// 한국어 손님 화면에서 손님이 한글을 쓸 수 있는 글 칸에 들어오면 SYNK Sans의 남은 조각(화면 원문에 없는 음절 — 저장소의 글꼴 조각 도구가 나눈다)을
+// 받아 둔다 — 손님이 쓰는 글자가 기기 글꼴로 잠깐 바뀌지 않게. 쓰지 않고 보기만 하는 손님은 받지 않는다. 데이터 절약 · 2G에서는 그 글자가 나올 때 받는다.
+// 한글을 칠 일이 없는 칸(메일 · 여섯 자리 코드 · 링크 · 전화번호 — 「내 프로젝트 다시 열기」 판은 열릴 때 저절로 초점이 간다)과
+// 직원 화면(이 글꼴을 쓰지 않는다)에서는 받지 않는다. 끊긴 동안에도 받지 않는다(받기가 실패하면 그 면이 오류로 굳어 다시 이어져도
+// 새로고침 전까지 안 받는다). 명조 나머지는 손님 글이 제목에 나올 때만 받는다.
+const HANGUL_FIELD='textarea,input:not([type]),input[type=text],input[type=search]';
+const NOT_HANGUL_FIELD='[inputmode=numeric],[inputmode=decimal],[inputmode=url],[inputmode=email],[inputmode=tel],[autocomplete=one-time-code]';
 let restFontAsked=false;
-document.addEventListener('focusin',event=>{if(restFontAsked||locale()!=='ko'||leanData()||!navigator.onLine||!document.fonts||!event.target?.matches?.('textarea,input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden])'))return;restFontAsked=true;for(const face of document.fonts)if(face.family.replace(/["']/g,'')==='SYNK Sans'&&face.status==='unloaded')face.load().catch(()=>{});});
+document.addEventListener('focusin',event=>{const field=event.target;if(restFontAsked||s.mode!=='customer'||locale()!=='ko'||leanData()||!navigator.onLine||!document.fonts||!field?.matches?.(HANGUL_FIELD)||field.matches(NOT_HANGUL_FIELD))return;restFontAsked=true;for(const face of document.fonts)if(face.family.replace(/["']/g,'')==='SYNK Sans'&&face.status==='unloaded')face.load().catch(()=>{});});
 
 

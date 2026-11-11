@@ -85,7 +85,12 @@ export function mountReel(video,{onCut,held=false}={}){
   if(!held)video.poster=reelPoster();
   let only=null,index=0,wanted=!held,want=!held,asked=false,raf=0,frame=0,attached=false,keep=0,onMeta=null,waiting=null;
   const dropMeta=()=>{if(onMeta)video.removeEventListener('loadedmetadata',onMeta);onMeta=null;};
-  const attach=()=>{if(attached)return;attached=true;video.src=reelSrc();if(keep>0){const at=keep;onMeta=()=>{onMeta=null;try{video.currentTime=at;}catch{}};video.addEventListener('loadedmetadata',onMeta,{once:true});}};
+  // 파일이 안 붙은 동안 화면에 보이는 것은 포스터(쇼릴 첫 장면)다 — 작품 이름 줄과 「지금 작품」도 그 작품을 가리킨다.
+  // 데이터 절약 · 2G에서 6쪽 「만드는 사람」(그 작품 컷만 돌리는 쪽)을 다녀오면 컷 번호만 옮겨 가 1쪽 이름이 포스터와 어긋났다.
+  const shown=()=>attached?index:0;
+  const report=()=>onCut?.(filmOf(REEL[shown()].work));
+  // 붙이는 순간부터 영상이 컷 번호를 따르므로 이름도 그때 다시 알린다.
+  const attach=()=>{if(attached)return;attached=true;video.src=reelSrc();if(keep>0){const at=keep;onMeta=()=>{onMeta=null;try{video.currentTime=at;}catch{}};video.addEventListener('loadedmetadata',onMeta,{once:true});}report();};
   const dropWait=()=>{if(waiting)removeEventListener('load',waiting);waiting=null;};
   // 파일을 붙일 때가 됐으면 붙이고, 재생을 바라면 튼다. 아직 문서를 불러오는 중이면 load에서 다시 본다.
   const sync=()=>{
@@ -93,11 +98,9 @@ export function mountReel(video,{onCut,held=false}={}){
     if(!pageLoaded()){if(!waiting){waiting=()=>{waiting=null;sync();};addEventListener('load',waiting,{once:true});}return;}
     attach();if(wanted&&!reduced())video.play().catch(()=>{});
   };
-  sync();
   const cutAt=time=>{let at=0;for(let i=0;i<REEL.length;i++)if(time>=REEL[i].at)at=i;return at;};
   const endOf=at=>at+1<REEL.length?REEL[at+1].at:REEL_TOTAL;
   const cutsOf=id=>REEL.map((cut,i)=>[cut,i]).filter(([cut])=>cut.work===id).map(([,i])=>i);
-  const report=()=>onCut?.(filmOf(REEL[index].work));
   const go=at=>{index=at;video.currentTime=REEL[at].at+.02;report();};
   // 고른 작품만 돌 때는 다음 컷이 한 프레임도 비치지 않도록 매 프레임 본다.
   const watch=()=>{raf=requestAnimationFrame(watch);if(!only||video.seeking)return;const time=video.currentTime;if(time>=endOf(index)-.07||time<REEL[index].at){const list=cutsOf(only);go(list[(list.indexOf(index)+1)%list.length]);}};
@@ -114,11 +117,11 @@ export function mountReel(video,{onCut,held=false}={}){
   // 다시 붙인 뒤 메타데이터가 오기 전(readyState 0)이면 currentTime은 아직 0이라 떼던 자리(keep)를 그대로 둔다(검수 A1).
   // 아직 붙이지 않았으면(load를 기다리는 중) 기다림도 거둔다.
   const suspend=()=>{pause();if(!attached){want=false;dropWait();return;}if(whole())return;want=false;if(video.readyState>=1)keep=video.currentTime||0;dropMeta();attached=false;video.removeAttribute('src');video.load?.();};
-  report();
+  sync();report();
   return {play,pause,suspend,video,
     // ask: 손님이 작품 이름을 골랐다(데이터 절약이어도 이때는 받는다).
     focus(id,{ask=false}={}){if(ask&&id)asked=true;if(id===only){if(wanted)play();return;}only=id;cancelAnimationFrame(raf);raf=0;if(id&&cutsOf(id).length){go(cutsOf(id)[0]);raf=requestAnimationFrame(watch);}else{only=null;report();}if(wanted)play();},
-    current:()=>filmOf(REEL[index].work),
+    current:()=>filmOf(REEL[shown()].work),
     stop(){pause();want=false;dropWait();if(frame)video.cancelVideoFrameCallback?.(frame);frame=0;dropMeta();video.removeEventListener('timeupdate',onTime);attached=false;video.removeAttribute('src');video.load?.();}};
 }
 

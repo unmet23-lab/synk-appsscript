@@ -19,12 +19,12 @@
 // v39(11-10): 고객 전용 인물 판 3 — 고객 방 인물 카드 모듈 persona-view.mjs를 더했다. 의뢰서 · 고객 방 · 내부 확인 모듈과 film.css · slate-screens.css · i18n/en.mjs도 바뀌었다. 스위치가 꺼져 있으면 화면은 그대로다.
 // v40(11-10): PULSE 인물 판 4 — 손님 「내 모델」 화면 모듈 my-models.mjs를 더했다(스위치 myModels가 켜진 뒤 처음 열 때 읽는다). 고객 방 「내 모델로 모아 두기」 · 의뢰서 내 모델 고름 · 상태 줄 판 4 몫으로
 // app.mjs · api.mjs · film-home.mjs · film-views.mjs · persona-view.mjs · request-*.mjs · room-view.mjs · views.mjs · film.css · slate-screens.css · i18n/en.mjs도 바뀌었다. 직원 「고객 브랜드」 화면 모듈은 직원 화면이라 목록에 넣지 않는다.
-// v41(11-11): 첫 방문 무게 — 고객 앱 글꼴을 글자 조각으로 나눴다(tools/build-pulse-fonts.py, SUIT → SYNK Sans 조각 넷 · 명조 조각 셋).
+// v41(11-11): 첫 방문 무게 — 고객 앱 글꼴을 글자 조각으로 나눴다(저장소의 글꼴 조각 도구가 만든다 — SUIT → SYNK Sans 조각 넷 · 명조 조각 셋).
 // 미리 받는 목록에는 첫 화면이 쓰는 조각(라틴 · 첫 글자 · 화면 글자, 명조 기호 · 화면 글자)만 두고, 통째 글꼴 둘(직원 화면 app.css의 SUIT ·
 // 옛 명조)과 나머지 조각은 받을 때 담는 목록(RUNTIME)으로 옮겼다. 등록도 문서 load 뒤 쉴 때로 늦췄다(app.mjs) — 첫 방문의 셸 받기가
 // 의뢰서 · 첫 화면과 대역을 나누지 않게. film.css · film-home.mjs · app.mjs · index.html도 바뀌었다.
 // v42(11-11): PULSE 고객 인물 보관 규칙 — 보관 동의 칸(12개월 · 지우는 날 · 백업 13개월 · 오래 두는 별도 보관 사본 제외) · 다시 쓰기 꺼진 카드의 「지우는 날」 ·
-// 의뢰서 맞춤 인물 안내로 my-models.mjs · request-flow.mjs · brand-desk-view.mjs · i18n/en.mjs가 바뀌었다(판 4 설계 11-4).
+// 의뢰서 맞춤 인물 안내로 my-models.mjs · request-flow.mjs · 직원 「고객 브랜드」 화면 모듈 · i18n/en.mjs가 바뀌었다(판 4 설계 11-4).
 const CACHE = 'synk-pulse-shell-v42-retention-20261111';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);

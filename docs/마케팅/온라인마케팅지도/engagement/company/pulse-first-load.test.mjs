@@ -78,7 +78,7 @@ test('the server serves every slice and the shell precaches only what the first 
   assert.match(sw,/cache\.addAll\(FILES\)/);
 });
 
-test('the shell worker waits until the page has loaded and gone idle, and the rest of the font waits for a visitor who types',()=>{
+test('the shell worker waits until the page has loaded and gone idle, and the rest of the font waits for a visitor who types',async()=>{
   const app=read('app.mjs');
   // 등록은 한 곳뿐이고, 그 한 곳이 load 뒤 쉴 때 부르는 콜백의 몸 그대로다(검수 pulse-first-load-backend A1 — 앞뒤 위치만 보면 콜백 밖 등록도 통과했다).
   assert.equal(app.match(/navigator\.serviceWorker\.register\('\.\/sw\.js'/g).length,1);
@@ -86,8 +86,18 @@ test('the shell worker waits until the page has loaded and gone idle, and the re
   assert.ok(app.includes("\nafterLoadIdle(()=>{if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('./sw.js',{scope:'/pulse-app/'}).catch(()=>{});});"),'서비스 워커 등록은 load 뒤 쉴 때 — 콜백 안에만');
   assert.doesNotMatch(app,/afterLoadIdle\(\(\)=>\{[^\n]*face\.load/,'쉴 때 글꼴을 미리 받지는 않는다');
   assert.ok(app.includes("const afterLoadIdle=fn=>{const go=()=>setTimeout(()=>typeof requestIdleCallback==='function'?requestIdleCallback(fn,{timeout:5000}):fn(),1500);if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});};"));
-  // 나머지 조각(461KB)은 보기만 하는 손님에게 보내지 않는다 — 한국어 화면에서 글 칸에 들어올 때만(데이터 절약 · 2G 빼고).
-  assert.ok(app.includes(`document.addEventListener('focusin',event=>{if(restFontAsked||locale()!=='ko'||leanData()||!navigator.onLine||!document.fonts||!event.target?.matches?.('textarea,input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden])'))return;restFontAsked=true;for(const face of document.fonts)if(face.family.replace(/["']/g,'')==='SYNK Sans'&&face.status==='unloaded')face.load().catch(()=>{});});`));
+  // 나머지 조각(461KB)은 보기만 하는 손님에게 보내지 않는다 — 한국어 손님 화면에서, 한글을 쓸 수 있는 글 칸에 들어올 때만(데이터 절약 · 2G · 끊김 빼고).
+  // Fable 최종(pulse-first-load-20261111-c): 직원 화면과 한글을 칠 일 없는 칸(메일 · 코드 · 링크 · 전화)에서는 받지 않는다 — 「다시 열기」 판은 열릴 때 저절로 초점이 간다.
+  assert.ok(app.includes(`const HANGUL_FIELD='textarea,input:not([type]),input[type=text],input[type=search]';`));
+  assert.ok(app.includes(`const NOT_HANGUL_FIELD='[inputmode=numeric],[inputmode=decimal],[inputmode=url],[inputmode=email],[inputmode=tel],[autocomplete=one-time-code]';`));
+  assert.ok(app.includes(`document.addEventListener('focusin',event=>{const field=event.target;if(restFontAsked||s.mode!=='customer'||locale()!=='ko'||leanData()||!navigator.onLine||!document.fonts||!field?.matches?.(HANGUL_FIELD)||field.matches(NOT_HANGUL_FIELD))return;restFontAsked=true;for(const face of document.fonts)if(face.family.replace(/["']/g,'')==='SYNK Sans'&&face.status==='unloaded')face.load().catch(()=>{});});`));
+  // 「내 프로젝트 다시 열기」 판의 칸(메일 · 여섯 자리 코드 · 링크)은 그 규칙으로 모두 걸러진다. 숨은 칸(tabindex -1)은 초점을 받지 않는다.
+  const {entryView}=await import('./public/pulse-app/film-home.mjs');
+  const attr=(tag,name)=>tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1]??null;
+  const takesHangul=tag=>[null,'text','search'].includes(attr(tag,'type'))&&!['numeric','decimal','url','email','tel'].includes(attr(tag,'inputmode'))&&attr(tag,'autocomplete')!=='one-time-code';
+  const inviteInputs=[...entryView({}).match(/<div class="sx-invite"[\s\S]*$/)[0].matchAll(/<input\b[^>]*>/g)].map(m=>m[0]).filter(tag=>attr(tag,'tabindex')!=='-1');
+  assert.ok(inviteInputs.length>=3,`다시 열기 판의 칸 ${inviteInputs.length}개`);
+  for(const tag of inviteInputs)assert.equal(takesHangul(tag),false,`다시 열기 판의 칸이 나머지 글꼴을 부른다: ${tag.slice(0,90)}`);
   assert.equal(app.match(/face\.load\(\)/g).length,1,'글꼴을 미리 받는 곳은 글 칸 focusin 하나');
 });
 
@@ -144,9 +154,13 @@ test('the reel file waits for the page load, a held reel fetches not even its po
     heldApi.play();assert.match(held.poster,/-poster\.webp$/);assert.match(held.getAttribute('src'),/\.mp4$/);heldApi.stop();
     // 데이터 절약: 저절로는 받지 않고, 작품 이름을 고르면(ask) 그때 받는다. 쪽이 넘어가며 부르는 focus는 고름이 아니다.
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:true,effectiveType:'4g'}});
-    const lean=fakeVideo(),leanApi=mountReel(lean,{});leanApi.play();leanApi.focus('maejin-imbak');
+    const names=[],lean=fakeVideo(),leanApi=mountReel(lean,{onCut:film=>names.push(film?.id)});leanApi.play();leanApi.focus('maejin-imbak');
     assert.equal(lean.getAttribute('src'),null,'데이터 절약이면 포스터로 둔다');assert.match(lean.poster,/-poster\.webp$/);
-    leanApi.focus('omitok-court',{ask:true});assert.match(lean.getAttribute('src'),/\.mp4$/,'손님이 작품을 고르면 받는다');leanApi.stop();
+    // Fable 최종: 6쪽 「만드는 사람」(그 작품 컷만 도는 쪽)을 다녀와 1쪽으로 돌아와도, 파일이 안 붙은 동안 이름 줄 · 「지금 작품」은 포스터의 작품이다.
+    leanApi.focus(null);assert.equal(names.at(-1),'dodam-heavy','이름 줄은 포스터(쇼릴 첫 장면)의 작품');assert.equal(leanApi.current().id,'dodam-heavy','누르면 열리는 작품도 보이는 것과 같다');
+    assert.ok(!names.includes('maejin-imbak'),'안 붙은 동안에는 컷 번호만 옮겨 간 작품 이름을 알리지 않는다');
+    leanApi.focus('omitok-court',{ask:true});assert.match(lean.getAttribute('src'),/\.mp4$/,'손님이 작품을 고르면 받는다');
+    assert.equal(names.at(-1),'omitok-court','붙는 순간부터 고른 작품 이름');assert.equal(leanApi.current().id,'omitok-court');leanApi.stop();
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:false,effectiveType:'2g'}});
     const slow=fakeVideo(),slowApi=mountReel(slow,{});slowApi.play();assert.equal(slow.getAttribute('src'),null,'2G도 포스터로');slowApi.stop();
     w.restore();w=fakeWindow({readyState:'complete',connection:{saveData:false,effectiveType:'3g'}});
