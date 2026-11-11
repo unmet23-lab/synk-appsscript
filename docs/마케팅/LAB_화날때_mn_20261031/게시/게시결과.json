@@ -87,6 +87,42 @@
       "주소": "https://www.youtube.com/watch?v=unqTCDvSamI",
       "플랫폼": "youtube",
       "게시물ID": "unqTCDvSamI"
+    },
+    {
+      "계정": "lab-ca-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-12T13:00:00-05:00",
+      "지문": "3825c190604d1295dae344f162a6e3387959a94e68d81e117cebfc998020d0e8",
+      "방법": "ego",
+      "게시물ID": "A1tOS4eSZwc",
+      "주소": "https://youtube.com/shorts/A1tOS4eSZwc",
+      "확인": "예약 한국 시각 2026-11-13 03:00 = 현지 13:00(2026-11-12) · 스튜디오 예약 창 「2026. 11. 13. 오전 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Canada | Korean Made Fun」 목록 「예약됨 2026. 11. 13.」 · 글 첫 줄 「Rough day? Vent in Korean with these 4 words 😤 #learnkorean」 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-11T05:22:53.323Z"
+    },
+    {
+      "계정": "lab-mx-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-12T13:00:00-06:00",
+      "지문": "c5adfecbeeb55d0f8156f3dba7873fc28d0be640370fa40cc35b8bdaaf9662d0",
+      "방법": "ego",
+      "게시물ID": "f5O3PcmDcis",
+      "주소": "https://youtube.com/shorts/f5O3PcmDcis",
+      "확인": "예약 한국 시각 2026-11-13 04:00 = 현지 13:00(2026-11-12) · 스튜디오 예약 창 「2026. 11. 13. 오전 4:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB México | Coreano divertido」 목록 「예약됨 2026. 11. 13.」 · 글 첫 줄 「4 palabras en coreano para cuando te enojas 😤 (pero no frente a tu jefe) #aprendecoreano」 · 동영상 언어 스페인어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-11T05:24:23.651Z"
+    },
+    {
+      "계정": "lab-us-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-13T13:00:00-05:00",
+      "지문": "0cc881d8eed730ece0bff0ea15253abb6e788d273b2b92987975f0bab97d8b8f",
+      "방법": "ego",
+      "게시물ID": "pfL9pf6qUNc",
+      "주소": "https://youtube.com/shorts/pfL9pf6qUNc",
+      "확인": "예약 한국 시각 2026-11-14 03:00 = 현지 13:00(2026-11-13) · 스튜디오 예약 창 「2026. 11. 14. 오전 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB USA | Korean Made Fun」 목록 「예약됨 2026. 11. 14.」 · 글 첫 줄 「Mad? Say it in Korean — 4 words you’ll actually use 😤 #learnkorean」 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-11T05:29:00.242Z"
     }
   ]
 }
