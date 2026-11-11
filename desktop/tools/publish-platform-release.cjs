@@ -8,11 +8,17 @@ const {signForPublication}=require('./update-signing.cjs');
 const REPO='unmet23-lab/synk-policy', FEED='desktop/releases/preview.json';
 const assert=(ok,message)=>{if(!ok)throw Error(message);};
 const json=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');};
-const run=(exe,args,cwd)=>cp.execFileSync(exe,args,{cwd,encoding:'utf8',windowsHide:true,stdio:['ignore','pipe','pipe'],maxBuffer:16e6}).trim();
+// The public checkout holds site-repository content, and Windows looks for a bare program name in the working
+// folder before PATH. So no tool runs there: children start in this folder with that lookup off, git gets -C,
+// and gh always names its repository.
+const childEnv={...process.env,NoDefaultCurrentDirectoryInExePath:'1'};
+const run=(exe,args,cwd)=>cp.execFileSync(exe,exe==='git'&&cwd?['-C',cwd,...args]:args,{cwd:__dirname,env:childEnv,encoding:'utf8',windowsHide:true,stdio:['ignore','pipe','pipe'],maxBuffer:16e6}).trim();
+// Site files are read and written only as plain files inside the checkout, never through a link.
+function safeTarget(root,relative){let at=root;for(const part of relative.split('/')){at=path.join(at,part);let stat=null;try{stat=fs.lstatSync(at);}catch(error){if(error.code!=='ENOENT')throw error;}if(stat?.isSymbolicLink())throw Error('Refusing a link in the public checkout: '+relative);}return at;}
 async function sha(file){const h=crypto.createHash('sha256');for await(const c of fs.createReadStream(file))h.update(c);return h.digest('hex');}
 async function verifyPublicArtifact(artifact){
   const result=await new Promise((resolve,reject)=>{
-    const child=cp.spawn(process.platform==='win32'?'curl.exe':'curl',['--fail','--location','--silent','--show-error',artifact.url],{windowsHide:true,stdio:['ignore','pipe','pipe']});
+    const child=cp.spawn(process.platform==='win32'?'curl.exe':'curl',['--fail','--location','--silent','--show-error',artifact.url],{cwd:__dirname,env:childEnv,windowsHide:true,stdio:['ignore','pipe','pipe']});
     const hash=crypto.createHash('sha256');let bytes=0,errors='';
     child.stdout.on('data',chunk=>{bytes+=chunk.length;hash.update(chunk);if(bytes>artifact.bytes)child.kill();});
     child.stderr.on('data',chunk=>{errors=(errors+chunk.toString()).slice(-2000);});child.on('error',reject);
@@ -70,7 +76,7 @@ function updateFooterDate(source,manifest){
 // 공개본에 쓸 파일을 쓰지 않고 만든다. 공개(release를 공개로 돌림) 전에 한 번 돌려 쪽 모양이 안 맞으면 release를 만들기 전에 멈춘다.
 function planSite({publicDir,manifest,clientFile}){
   const writes=[];
-  const read=relative=>{const file=path.join(publicDir,relative);if(fs.existsSync(file))return fs.readFileSync(file,'utf8');if(!fs.existsSync(path.join(publicDir,'.git')))return null;try{return run('git',['show','HEAD:'+relative],publicDir)+'\n';}catch{return null;}};
+  const read=relative=>{const file=safeTarget(publicDir,relative);if(fs.existsSync(file))return fs.readFileSync(file,'utf8');if(!fs.existsSync(path.join(publicDir,'.git')))return null;try{return run('git',['show','HEAD:'+relative],publicDir)+'\n';}catch{return null;}};
   const put=(relative,value)=>writes.push({relative,value});
   put(FEED,JSON.stringify(manifest,null,2)+'\n');
   const client=fs.readFileSync(clientFile,'utf8'),hash=crypto.createHash('sha256').update(client).digest('hex').slice(0,12);
@@ -97,7 +103,7 @@ function planSite({publicDir,manifest,clientFile}){
 }
 function stageSite({publicDir,manifest,clientFile}){
   const changed=[];
-  for(const {relative,value} of planSite({publicDir,manifest,clientFile})){const file=path.join(publicDir,relative);if(fs.existsSync(file)&&fs.readFileSync(file,'utf8')===value)continue;fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,value);changed.push(relative);}
+  for(const {relative,value} of planSite({publicDir,manifest,clientFile})){const file=safeTarget(publicDir,relative);if(fs.existsSync(file)&&fs.readFileSync(file,'utf8')===value)continue;fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,value);changed.push(relative);}
   return changed;
 }
 async function verifyLocalFiles(manifest,directory,{remoteArtifacts=[]}={}){
@@ -110,7 +116,9 @@ async function main(){
   for(const name of ['manifest','artifacts','public','client'])assert(get(name),'Missing --'+name+'=<path>');
   // Signing is deterministic, so a resumed --apply rebuilds the very feed it staged before.
   const manifest=signForPublication(JSON.parse(fs.readFileSync(get('manifest'),'utf8')),{keyFile:get('signing-key')}),publicDir=path.resolve(get('public')),artifactDir=path.resolve(get('artifacts'));
-  const feed=path.join(publicDir,FEED);
+  // A program-like file at the checkout root would only matter to a bare-name lookup; refuse it anyway.
+  const planted=fs.readdirSync(publicDir).filter(name=>/^(git|gh|curl)(\.(exe|com|bat|cmd|ps1))?$/i.test(name));assert(!planted.length,'Executable-looking file in the public checkout root: '+planted.join(','));
+  const feed=safeTarget(publicDir,FEED);
   const previous=fs.existsSync(feed)?JSON.parse(fs.readFileSync(feed,'utf8')):run('git',['ls-tree','--name-only','HEAD','--',FEED],publicDir)?JSON.parse(run('git',['show','HEAD:'+FEED],publicDir)):null;
   const names=validateRelease(manifest,previous);
   const remoteArtifacts=process.argv.includes('--remote-artifacts')?JSON.parse(run('gh',['release','view',manifest.releaseId,'--repo',REPO,'--json','assets'],publicDir)).assets:[];

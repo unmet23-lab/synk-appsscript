@@ -30,3 +30,18 @@ test('the publisher signs before every feed comparison and never ships a signing
   const signer=fs.readFileSync(path.join(__dirname,'../tools/update-signing.cjs'),'utf8');assert.doesNotMatch(signer,/BEGIN [A-Z ]*PRIVATE KEY/);
   const signedFeed=signManifest(feed,crypto.generateKeyPairSync('ed25519').privateKey);assert.doesNotMatch(JSON.stringify(signedFeed),/PRIVATE/);
 });
+
+test('the publisher never looks a program up in the public checkout and never follows a link there',()=>{
+  assert.ok(publisher.includes("const childEnv={...process.env,NoDefaultCurrentDirectoryInExePath:'1'};"));
+  assert.ok(publisher.includes("cp.execFileSync(exe,exe==='git'&&cwd?['-C',cwd,...args]:args,{cwd:__dirname,env:childEnv,"));
+  assert.ok(/cp\.spawn\(process\.platform==='win32'\?'curl\.exe':'curl',\[[^\]]*\],\{cwd:__dirname,env:childEnv,/.test(publisher));
+  assert.equal((publisher.match(/execFileSync\(|cp\.spawn\(/g)||[]).length,2,'only the two guarded child starts');
+  assert.ok(publisher.includes('const planted=fs.readdirSync(publicDir)'));
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-public-link-'));
+  try{
+    const {planSite}=require('../tools/publish-platform-release.cjs'),client=path.join(dir,'client.js');fs.writeFileSync(client,'// client');
+    const publicDir=path.join(dir,'public');fs.mkdirSync(path.join(publicDir,'desktop','releases'),{recursive:true});
+    let linked=true;try{fs.symlinkSync(client,path.join(publicDir,'index.html'));}catch{linked=false;}
+    if(linked)assert.throws(()=>planSite({publicDir,manifest:feed,clientFile:client}),/Refusing a link in the public checkout: index\.html/);
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

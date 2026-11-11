@@ -335,6 +335,21 @@ internal static class SignalInstallerTests
                         engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
                     }
                 });
+                Check("a verified rollback whose relaunch fails stays restored and leaves no rollback barrier",delegate
+                {
+                    using(Process exited=exitedParent())
+                    {
+                        var restoring=Engine(ReadSpec());
+                        var result=Task.Run(delegate { return restoring.InstallAutomaticUpdateCore(sessionFor(exited),Progress,delegate(Action<InstallProgress> progress) { throw new IOException("Synthetic payload failure"); },delegate(string executable,string arguments){throw new IOException("Synthetic recovery launch failure");}); }).GetAwaiter().GetResult();
+                        Assert(result.Restored&&!result.Relaunched&&!result.Updated,"Recovery launch failure was not reported as a settled restore: "+result.Message);
+                        string pending=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Pending",Spec.Guid+".txt");
+                        Assert(!File.Exists(pending),"A verified restore left the recovery barrier.");
+                        string record=File.ReadAllText(failureRecord);
+                        Assert(record.Contains("\"stage\":\"relaunch\"")&&record.Contains("\"outcome\":\"rolled-back\"")&&record.Contains("Synthetic recovery launch failure"),"Recovery launch failure was not recorded: "+record);
+                        File.Delete(failureRecord);if(result.RecoveryFile!=null&&File.Exists(result.RecoveryFile))File.Delete(result.RecoveryFile);
+                        engine.VerifyInstalled();VerifyRegistrationAndShortcuts();
+                    }
+                });
                 Check("an unwritable failure record never changes the update outcome",delegate
                 {
                     Directory.CreateDirectory(failureRecord);

@@ -126,7 +126,7 @@ node desktop/tools/publish-platform-release.cjs "--manifest=$releaseWork/preview
 # 승인된 공개 범위에서 위와 같은 인자에 --apply를 추가해 게시한다.
 ```
 
-게시 도구는 먼저 `--manifest`를 운영 키(기본 `~/SYNK_보안/pc-update-signing/operating-private.pem`, 다른 키는 `--signing-key=<pem>`)로 서명하고 앱에 박힌 키로 다시 검증한다. 서명은 결정적이라 `--apply` 재개 때 같은 feed가 나온다. draft의 기존 자산을 덮어쓰지 않고 일치 여부를 확인한다. 세 공개 다운로드의 실제 바이트를 검증한 뒤 홈페이지 링크·버전 문구·질문 데이터의 캐시 해시·feed·클라이언트 스크립트를 함께 커밋하고 push한다. 업로드 실패 시 기존 feed를 유지한다. 커밋 뒤 push 실패 시에는 산출물 폴더의 `publication.json`과 동일한 manifest·checkout을 보존하고 같은 명령으로 재개한다. 다른 사람이 공개 원문을 바꿨으면 먼저 대조하며 그 변경을 덮어쓰지 않는다. push 성공 후에도 Pages 배포와 공개 homepage/feed/파일 대조를 별도로 확인하고, 현재 PC는 같은 설치파일로 갱신한 뒤 버전·설치 바이트를 확인한다.
+게시 도구는 먼저 `--manifest`를 운영 키(기본 `~/SYNK_보안/pc-update-signing/operating-private.pem`, 다른 키는 `--signing-key=<pem>`)로 서명하고 앱에 박힌 키로 다시 검증한다. 공개 checkout은 사이트 경로만 꺼낸 희소 checkout으로 만들고, 게시 도구는 그 폴더에서 프로그램을 찾지 않으며(git은 `-C`, 하위 프로세스는 도구 폴더에서 · `NoDefaultCurrentDirectoryInExePath`) 그 안의 링크를 따라 읽거나 쓰지 않는다. 서명은 결정적이라 `--apply` 재개 때 같은 feed가 나온다. draft의 기존 자산을 덮어쓰지 않고 일치 여부를 확인한다. 세 공개 다운로드의 실제 바이트를 검증한 뒤 홈페이지 링크·버전 문구·질문 데이터의 캐시 해시·feed·클라이언트 스크립트를 함께 커밋하고 push한다. 업로드 실패 시 기존 feed를 유지한다. 커밋 뒤 push 실패 시에는 산출물 폴더의 `publication.json`과 동일한 manifest·checkout을 보존하고 같은 명령으로 재개한다. 다른 사람이 공개 원문을 바꿨으면 먼저 대조하며 그 변경을 덮어쓰지 않는다. push 성공 후에도 Pages 배포와 공개 homepage/feed/파일 대조를 별도로 확인하고, 현재 PC는 같은 설치파일로 갱신한 뒤 버전·설치 바이트를 확인한다.
 
 ## 2026-10-02 이력 · 자식 앱의 로컬 설치파일 준비
 

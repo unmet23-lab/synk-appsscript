@@ -28,7 +28,7 @@ function clock() {
 const waitError = seconds => ({ code: 'over_email_send_rate_limit', status: 429, message: `For security purposes, you can only request this after ${seconds} seconds.` });
 const settled = async () => { for (let n = 0; n < 4; n++) await new Promise(resolve => setImmediate(resolve)); };
 function deferred() { let resolve;const promise = new Promise(done => { resolve = done; });return { promise, resolve }; }
-async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined } = {}) {
+async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined, framed = false } = {}) {
   // Older manual-consent/rate-limit cases use the retained synthetic preview.
   // Automatic first-party login cases below explicitly exercise production mode.
   const ids = new Map(), events = new Map(), calls = [], replies = { ...initialReplies }, modes = ['login', 'signup', 'recover'].map(value => Object.assign(new Element('button'), { dataset: { view: value } })), time = clock();
@@ -47,7 +47,7 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
       return time[method](...args);
     };
   }
-  Object.assign(globalThis, { document, window: { addEventListener: (type, fn) => events.set(type, fn), ...(sessionStorage ? { sessionStorage } : {}), history: { state: null, replaceState(_state, _title, url) { historyUrls.push(url);location.href = url; } } }, location: {
+  Object.assign(globalThis, { document, window: { addEventListener: (type, fn) => events.set(type, fn), ...(sessionStorage ? { sessionStorage } : {}), ...(framed ? { top: {}, self: {} } : {}), history: { state: null, replaceState(_state, _title, url) { historyUrls.push(url);location.href = url; } } }, location: {
     href: `https://id.example.test/?${reset ? 'view=reset' : consent ? 'authorization_id=synthetic-authorization' : ''}${callbackQuery}`,
     assign: value => destinations.push(value), reload() {},
   } });
@@ -686,6 +686,21 @@ test('an app on this device approved before gets only the refusal after 「취�
   assert.deepEqual(page.calls, [], 'the earlier approval is not asked again');
   assert.deepEqual(page.destinations, [`${deviceApp}?error=access_denied&state=synthetic-device-state`], 'only the refusal reaches the app, never the code');
   await page.get('approve').onclick();assert.equal(page.destinations.length, 1);assert.deepEqual(page.calls, []);
+});
+test('a connect request opened inside a frame of another page shows no card and answers nothing (device approved before)', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: deviceSession('owner-a'), framed: true, initialReplies: { approveAuthorization: automaticResult }, redirectUri: deviceApp, consentDetails: { redirect_url: deviceRedirect } });
+  assert.equal(page.metrics.consentLoads, 0);assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);assert.equal(page.get('consent').hidden, true);
+  assert.match(page.notice.textContent, /새 창에서/);await page.get('approve').onclick();assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
+});
+test('a connect request opened inside a frame of another page shows no card and answers nothing (device)', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: deviceSession('owner-a'), framed: true, initialReplies: { approveAuthorization: automaticResult }, redirectUri: deviceApp });
+  assert.equal(page.metrics.consentLoads, 0);assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);assert.equal(page.get('consent').hidden, true);
+  assert.match(page.notice.textContent, /새 창에서/);await page.get('approve').onclick();assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
+});
+test('a connect request opened inside a frame of another page shows no card and answers nothing (web)', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: deviceSession('owner-a'), framed: true, initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.metrics.consentLoads, 0);assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);assert.equal(page.get('consent').hidden, true);
+  assert.match(page.notice.textContent, /새 창에서/);await page.get('approve').onclick();assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
 });
 test('a web destination approved before still returns at once without a card', async t => {
   const page = await fixture(t, { consent: true, preview: false, initial: deviceSession('owner-a'), consentDetails: { redirect_url: automaticRedirect } });

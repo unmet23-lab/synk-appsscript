@@ -291,7 +291,15 @@ namespace Synk.SignalInstaller
                     VerifyPrevious(session);
                     string marker = WriteRecoveryMarker(session, mutationStarted ? "rolled-back" : "unchanged");
                     if (backup != null&&mutationStarted) EndTransaction(backup,"restored");
-                    launch(Path.Combine(session.Directory,spec.ExecutableName),"--synk-update-recovery="+session.Nonce);
+                    // The verified previous version is settled here: failing only to open
+                    // it must not turn into a recovery barrier that blocks later updates.
+                    try { launch(Path.Combine(session.Directory,spec.ExecutableName),"--synk-update-recovery="+session.Nonce); }
+                    catch (Exception launchFailure)
+                    {
+                        RecordUpdateFailure(session.Version,"relaunch",mutationStarted?"rolled-back":"unchanged",launchFailure,failure);
+                        if (backup != null) TryCleanupBackupPayload(backup);
+                        return new AutomaticUpdateResult { Restored=true, Relaunched=false, RecoveryFile=marker, Message="업데이트를 마치지 못해 이전 버전으로 두었어요. 앱을 다시 열어 주세요.\n"+failure.Message };
+                    }
                     if (backup != null) TryCleanupBackupPayload(backup);
                     return new AutomaticUpdateResult { Restored=true, Relaunched=true, RecoveryFile=marker, Message="업데이트를 마치지 못해 이전 버전을 다시 열었어요. 앱에서 다시 해 볼 수 있어요.\n"+failure.Message };
                 }

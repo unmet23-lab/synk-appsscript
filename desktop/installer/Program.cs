@@ -76,7 +76,8 @@ namespace Synk.SignalInstaller
                                         // Not updated. Unless restored and relaunched (closed
                                         // below), the files may have changed, so the window
                                         // must not promise a retry.
-                                        window.ShowAutomaticFailure(result.Message, false);
+                                        // Restored: the previous version is in place, so the window says the app is unchanged.
+                                        window.ShowAutomaticFailure(result.Message, result.Restored);
                                         // The restored app owns the failure/retry
                                         // gate. Release this installer's mutex so
                                         // retry does not require closing two UIs.

@@ -284,6 +284,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       : automaticAuthorizationAttempted ? '연결할 앱을 보고 「연결하기」나 「취소」를 눌러 주세요.' : '로그인한 계정으로 앱에 연결하고 있어요…');
   }
   async function loadConsent(check) {
+    // An app connection is answered only in a top-level window — no other page can frame this card and borrow the click.
+    if (window.top !== window.self) { details = null;consentTarget = null;$('consent').hidden = true;notice('앱 연결은 SYNK ID를 새 창에서 연 상태에서만 할 수 있어요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', true);return; }
     const result = await bounded(sdk.auth.oauth.getAuthorizationDetails(authorizationId));check();
     // The account is verified but this app's request is gone: offer a restart, not the sign-in form.
     if (result.error && staleAuthorization(result.error)) { showStaleAuthorization(pathEntryHint());return; }
