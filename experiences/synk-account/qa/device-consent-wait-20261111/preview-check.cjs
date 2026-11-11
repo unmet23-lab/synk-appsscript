@@ -14,9 +14,10 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.mjs':'
     res.writeHead(200,{'content-type':types[path.extname(file)]||'application/octet-stream','cache-control':'no-store'}).end(body);
   }).listen(0,'127.0.0.1',()=>resolve(s));});
   const origin='http://127.0.0.1:'+server.address().port+'/';
-  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe'});
-  const out={};
+  const out={};let browser=null;
+  // 크롬을 못 띄워도 서버는 닫는다(안 닫으면 열린 소켓 때문에 프로세스가 끝나지 않는다).
   try{
+    browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe'});
     const context=await browser.newContext({viewport:{width:1280,height:900}});
     const page=await context.newPage();await page.clock.install();
     const state=()=>page.evaluate(()=>({consent:!document.getElementById('consent').hidden,restart:document.getElementById('connection-restart')?.hidden===false,
@@ -37,7 +38,7 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.mjs':'
     // ?device=expired
     await page.goto(origin+'preview.html?authorization_id=preview&device=expired',{waitUntil:'networkidle'});await shown();
     out.expired=await state();
-  }finally{await browser.close();server.close();}
+  }finally{await browser?.close().catch(()=>{});server.close();}
   const ok=out.first.consent&&!out.first.restart&&out.first.tab===null&&out.first.shared===null&&out.afterOldRecord.consent&&!out.afterOldRecord.restart&&out.recordUntouched
     &&out.afterSixMinutes.consent&&!out.afterSixMinutes.restart&&out.afterOneDay.consent&&!out.afterOneDay.restart&&out.expired.restart&&!out.expired.consent;
   console.log(JSON.stringify({ok,...out},null,1));process.exitCode=ok?0:1;

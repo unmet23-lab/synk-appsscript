@@ -893,6 +893,12 @@ test('the synthetic preview keeps no first-seen time and an old record does not 
 test('a wait longer than a timer can hold never fires early (the synthetic preview card stays)', async t => {
   const page = await fixture(t, { consent: true, preview: true, redirectUri: deviceApp, initial: deviceSession('owner-a'), deviceWait: Infinity });
   page.time.advance(86400000);assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
+  // Past the longest delay a timer holds (about 24.9 days) what is left is measured again, twice over here.
+  page.time.advance(5000000000);assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
+});
+test('a wait a little longer than a timer can hold still ends when it is over', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), deviceWait: 2147483647 + 60000 });
+  page.time.advance(2147483647 + 59999);assert.equal(page.get('consent').hidden, false);page.time.advance(1);assert.ok(restartShown(page));
 });
 const expiredAppRequest = { status: 404, code: 'oauth_authorization_not_found', message: 'authorization not found' };
 const pathPublicEntry = 'https://synk.im/path/app/';

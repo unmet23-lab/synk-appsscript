@@ -339,8 +339,9 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   function disarmDeviceWait() { if (deviceTimer !== null) cooldownClock.clearTimeout(deviceTimer);deviceTimer = null; }
   function armDeviceWait() {
     disarmDeviceWait();const left = requestSeen + deviceWait - cooldownClock.now();
-    // A timer's delay tops out below 2^31 ms; a longer wait (the synthetic preview's) would fire at once.
-    if (left <= 0) expireDeviceWait();else deviceTimer = cooldownClock.setTimeout(expireDeviceWait, Math.min(left, 2147483647));
+    // A timer's delay tops out below 2^31 ms (a longer one would fire at once): a longer wait (the synthetic
+    // preview's) is taken in steps, and each step measures what is left again.
+    if (left <= 0) expireDeviceWait();else deviceTimer = cooldownClock.setTimeout(left > 2147483647 ? armDeviceWait : expireDeviceWait, Math.min(left, 2147483647));
   }
   function expireDeviceWait() {
     deviceTimer = null;if (closed || $('consent').hidden) return;
