@@ -621,3 +621,112 @@ test('P1-4 ⓖ 답모으기는 묶음(한 대화 4장) 경계를 본다 — 묶�
   const P = 판.기록();
   assert.deepEqual([P.낱장.map((x) => `${x.번호}:${x.판정}`), P.빠짐], [['01:그대로 냄', '02:그대로 냄', '03:그대로 냄', '04:그대로 냄'], ['05']]);
 });
+
+// ── 11-11 밤 Fable 5.2 다시 검수 P1-미1 · 미2 ──
+// 작업 폴더를 저장소 .tmp/미학맹검 아래에 둔다 — 편 기록의 「결과」가 저장소 안 경로가 되어, 지난 격자를 작업 폴더에서 읽는 길(실제 쓰임)을 그대로 탄다.
+// 임시 폴더에 두면 「결과」에 파일 이름만 남아 고치기 전 도구는 격자를 못 찾는다 — 격자 길이 시험 밖이던 까닭이고, 그 길에 P1-미1이 있었다.
+function 저장소작업뿌리(t) {
+  const 뿌리 = path.join(__dirname, '..', '.tmp', '미학맹검', `_시험-${process.pid}-${crypto.randomBytes(4).toString('hex')}`);
+  fs.mkdirSync(뿌리, { recursive: true });
+  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true }));
+  return 뿌리;
+}
+// 띠 그림을 「띠 파일 이름 : 영상 내용」으로 만드는 가짜 ffmpeg와, 바뀌지 않은 컷(안바뀐 — 다시 렌더해도 같은 장면)은 영상 내용을 빼고 재는 가짜 격자
+const 띠손 = (판, 안바뀐 = []) => ({
+  ffmpeg: (args) => { const 밖 = args[args.length - 1]; if (/\.(jpg|png)$/.test(밖) && !/%/.test(밖)) fs.writeFileSync(밖, `${path.basename(밖)}:${판.상태.영상내용}`); return ''; },
+  격자: (f) => {
+    const 글 = fs.readFileSync(f, 'utf8');
+    const 열쇠 = 안바뀐.some((n) => 글.startsWith(`${n}:`)) ? 글.split(':')[0] : 글;
+    const h = crypto.createHash('sha256').update(열쇠).digest(); const g = Buffer.alloc(4096); for (let i = 0; i < 4096; i += 1) g[i] = h[i % 32]; return g.toString('base64');
+  },
+});
+const 막힌줄 = () => ({ 꼴: '줄 꺼짐', 끈때: '2026-11-11 03:00:00', 첫줄: 'a 줄 끔(시험)' });
+
+test('P1-미1 두 눈이 같은 --이름을 써도, 다시 렌더한 뒤 대체 눈은 새 영상의 바뀐 컷을 실제로 본다 — 카본이 덮은 새 격자로 옛 판정을 이어받지 않는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  t.mock.method(console, 'error', () => {});
+  const 판 = 시험판(t, '미1');
+  const 작업뿌리 = 저장소작업뿌리(t);
+  const 본 = []; // GPT에게 보낸 화면 번호들
+  const 손 = { ...판.손, ...띠손(판, ['띠_1.jpg']), 작업뿌리, 줄꺼짐: 막힌줄,
+    GPT묻기: async ({ 글, 답파일 }) => { const 번호 = [...글.matchAll(/^- (\d\d): /gm)].map((m) => m[1]); 본.push(번호); const 답 = JSON.stringify({ 낱장: 번호.map((n) => ({ 번호: n, 판정: 본.length === 1 ? '그대로 냄' : '기각', 점수: 5 })), 쌍: [] }); fs.writeFileSync(답파일, 답); return { 결과: '받음', 답, 초: 1 }; } };
+  const v = 판.영상('V1');
+  const 인자 = ['--영상', v, '--순간', '1', '--순간', '10', '--순간', '17', '--마스코트', '없음', '--편', 판.편, '--이름', '같은이름'];
+  // 옛 영상: 카본 막힘 → GPT 대체(같은 이름)
+  assert.equal(await 맹검.main(인자, 손), 2);
+  assert.equal(await 맹검.main([...인자, '--눈', 'gpt'], 손), 0);
+  assert.deepEqual(본, [['01', '02', '03']]);
+  // 다시 렌더(첫 장면 띠는 그대로, 뒤 두 장면이 바뀜) → 카본 또 막힘(같은 이름 — 그 폴더의 카본 결과를 새 영상의 격자로 덮는다) → GPT 대체(같은 이름)
+  판.영상('V2');
+  assert.equal(await 맹검.main(인자, 손), 2);
+  assert.equal(await 맹검.main([...인자, '--눈', 'gpt'], 손), 1, '바뀐 두 컷을 GPT가 실제로 봤다(이번 가짜 답은 기각)');
+  assert.deepEqual(본, [['01', '02', '03'], ['02', '03']], '고치기 전: 카본이 덮은 새 격자를 제 옛 격자로 읽어 세 컷을 다 같은 컷으로 보고 GPT를 부르지 않았다 — 옛 판정이 새 영상 기록으로 적혔다');
+  const S = 판.기록(관문.대체이름);
+  assert.equal(S.영상[0].해시, crypto.createHash('sha256').update(fs.readFileSync(v)).digest('hex'), '기록의 영상은 새 영상');
+  assert.deepEqual(S.낱장.map((x) => [x.번호, x.판정, Boolean(x.이어받음)]), [['01', '그대로 냄', true], ['02', '기각', false], ['03', '기각', false]], '안 바뀐 컷만 제 옛 판정을 이어받는다(제 기록이 본 그림의 격자로)');
+  assert.deepEqual(판.판정(), ['확인할 것:aesthetic-substitute', '고칠 것:aesthetic-reject']);
+  // 눈마다 결과 파일이 따로다 — 카본의 결과.json · GPT의 결과_gpt.json, 편 기록의 「결과」도 제 눈의 글을 가리킨다
+  const 폴더 = path.join(작업뿌리, '같은이름');
+  assert.deepEqual([JSON.parse(fs.readFileSync(path.join(폴더, '결과.json'), 'utf8')).눈, JSON.parse(fs.readFileSync(path.join(폴더, '결과_gpt.json'), 'utf8')).눈], ['아르곤', 'gpt']);
+  assert.match(S.결과, /같은이름\/결과_gpt\.md$/);
+  assert.match(판.기록().결과, /같은이름\/결과\.md$/);
+});
+
+test('P1-미1 격자는 그 기록이 판정한 바로 그 그림의 것일 때만 쓴다 — 작업 폴더의 결과가 다른 그림으로 덮였으면 버리고 다시 묻는다', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  const 판 = 시험판(t, '미1b');
+  const 작업뿌리 = 저장소작업뿌리(t);
+  const 부름 = [];
+  const 손 = { ...판.손, ...띠손(판, ['띠_1.jpg', '띠_2.jpg', '띠_3.jpg']), 작업뿌리, 아르곤부르기: 가짜아르곤(() => '그대로 냄', 부름) };
+  const v = 판.영상('V1');
+  const 인자 = ['--영상', v, '--순간', '1', '--순간', '10', '--순간', '17', '--마스코트', '없음', '--편', 판.편, '--이름', '한이름'];
+  assert.equal(await 맹검.main(인자, 손), 0);
+  assert.equal(부름.length, 1);
+  // 다시 렌더해도 장면이 그대로면(격자 같음) 지난 판정을 이어받는다 — 격자 길이 살아 있다
+  판.영상('V2');
+  assert.equal(await 맹검.main(인자, 손), 0);
+  assert.equal(부름.length, 1, '세 컷 다 격자가 같아 다시 묻지 않는다');
+  const 지난 = 맹검.지난기록읽기(판.편, 관문.기록이름, { 작업: 작업뿌리 });
+  assert.equal(지난.격자.size, 3, '기록의 화면과 컷 이름 · 파일 해시가 같은 격자');
+  // 그 폴더의 결과 JSON이 다른 그림의 것으로 덮였다(다른 편 · 다른 실행이 같은 이름을 씀) — 컷 이름은 같아도 파일 해시가 달라 격자를 버린다
+  const 결과파일 = path.join(작업뿌리, '한이름', '결과.json');
+  const j = JSON.parse(fs.readFileSync(결과파일, 'utf8'));
+  fs.writeFileSync(결과파일, JSON.stringify({ ...j, 화면: j.화면.map((h) => ({ ...h, 지문: 'f'.repeat(40) })) }));
+  assert.equal(맹검.지난기록읽기(판.편, 관문.기록이름, { 작업: 작업뿌리 }).격자.size, 0);
+  판.영상('V3');
+  assert.equal(await 맹검.main(인자, 손), 0);
+  assert.equal(부름.length, 2, '격자를 못 믿으면 파일 해시가 같을 때만 이어받는다 — 다시 렌더한 띠는 다시 묻는다');
+});
+
+test('P1-미2 대체 눈이 카본 기록과 다른 영상을 보면 부르지 않고 기록하지 않는다 — 컷 이름(순간@초)만 같은 다른 판 영상, 기다리는 사이 카본 기록이 바뀐 때도', async (t) => {
+  t.mock.method(console, 'log', () => {});
+  t.mock.method(console, 'error', () => {});
+  const 판 = 시험판(t, '미2');
+  let gpt부름 = 0, 사이 = null;
+  const 손 = { ...판.손, ...띠손(판), 줄꺼짐: 막힌줄,
+    GPT묻기: async ({ 글, 답파일 }) => { gpt부름 += 1; if (사이) 사이(); const 번호 = [...글.matchAll(/^- (\d\d): /gm)].map((m) => m[1]); const 답 = JSON.stringify({ 낱장: 번호.map((n) => ({ 번호: n, 판정: '그대로 냄', 점수: 8 })), 쌍: [] }); fs.writeFileSync(답파일, 답); return { 결과: '받음', 답, 초: 1 }; } };
+  const v = 판.영상('V1'); // 카본에게 보인 영상(판본 영상)
+  const 다른 = path.join(판.편, '게시', '01-ig', 'video.mp4'); // 같은 편의 다른 판 영상 — 한 편에 video.mp4가 판마다 있다
+  fs.mkdirSync(path.dirname(다른), { recursive: true }); fs.writeFileSync(다른, 'OTHER'.repeat(100));
+  const 순간 = ['--순간', '1', '--순간', '10', '--순간', '17', '--마스코트', '없음', '--편', 판.편];
+  assert.equal(await 맹검.main(['--영상', v, ...순간, '--이름', 'p'], 손), 2, '카본 막힘');
+  // GPT에게 다른 영상을 — 컷 이름은 셋 다 같다
+  판.상태.영상내용 = 'OTHER';
+  await assert.rejects(맹검.main(['--영상', 다른, ...순간, '--이름', 'g', '--눈', 'gpt'], 손), /대체 눈에게 보일 화면이 지금 카본 기록의 같은 컷과 다른 그림이다\(순간@1\.00, 순간@10\.00, 순간@17\.00\)/);
+  assert.equal(gpt부름, 0, '고치기 전: GPT를 부르고 그 판정을 대체 기록으로 적어 ⑱이 「확인할 것」으로 받았다');
+  assert.equal(판.있나(관문.대체이름), false);
+  assert.deepEqual(판.판정(), ['고칠 것:aesthetic-unverified']);
+  // Opus 재료도 만들 때 멈춘다(받을 때까지 가지 않는다)
+  await assert.rejects(맹검.main(['--영상', 다른, ...순간, '--이름', 'o', '--눈', 'opus'], 손), /같은 컷과 다른 그림이다/);
+  // 대체 눈의 답을 기다리는 사이 카본 기록이 다른 그림으로 다시 적혔다 — 답은 받았어도 기록하지 않는다
+  판.상태.영상내용 = 'V1';
+  사이 = () => { const f = path.join(판.편, '게시', 관문.기록이름); const P = JSON.parse(fs.readFileSync(f, 'utf8')); P.화면[0].지문 = '0'.repeat(40); fs.writeFileSync(f, JSON.stringify(P)); };
+  assert.equal(await 맹검.main(['--영상', v, ...순간, '--이름', 'g2', '--눈', 'gpt'], 손), 2);
+  assert.equal(gpt부름, 1);
+  assert.equal(판.있나(관문.대체이름), false, '지금 카본 기록의 화면 것이 아닌 답은 적지 않는다');
+  // 카본이 본 영상 그대로면 받는다
+  사이 = null;
+  assert.equal(await 맹검.main(['--영상', v, ...순간, '--이름', 'p2'], 손), 2, '카본 다시(막힘)');
+  assert.equal(await 맹검.main(['--영상', v, ...순간, '--이름', 'g3', '--눈', 'gpt'], 손), 0);
+  assert.deepEqual(판.판정(), ['확인할 것:aesthetic-substitute']);
+});

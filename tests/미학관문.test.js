@@ -197,3 +197,41 @@ test('막힘됨 · 막힘증거: 꼴이 알려진 것이고 보낸 시각 · 첫
   assert.deepEqual(관문.막힘증거({ 막힘: [] }, ['01']), { ok: false, 글: '' });
   assert.deepEqual(관문.대체눈, ['gpt', 'opus']);
 });
+
+test('대체 눈이 본 것 = 카본이 못 본 바로 그것 — 컷 이름이 같아도 다른 영상 · 다른 그림을 본 대체 기록은 받지 않는다(11-11 밤 P1-미2)', (t) => {
+  const 편 = 판(t);
+  const 영상칸 = (파일, 크기, 해시) => [{ 파일, 이름: path.basename(파일), 크기, ...(해시 ? { 해시 } : {}) }];
+  const 판본영상 = 'docs/마케팅/LAB_시험/게시/판본/MN/video.mp4', 다른판 = 'docs/마케팅/LAB_시험/게시/01-ig-fb-mn/video.mp4';
+  const 낸 = (name, P영상, S영상, 더P = {}, 더S = {}) => {
+    const b = 편(name);
+    쓰기(b, 관문.기록이름, { ...막힌P(), 영상: P영상, ...더P });
+    쓰기(b, 관문.대체이름, 대체S(다냄, { 영상: S영상, ...더S }));
+    return aestheticFindings(b, []);
+  };
+  // 해시가 있는 기록(판 3): 같은 영상이면 받고, 해시가 다르면 이름 · 컷 이름이 같아도 받지 않는다
+  assert.deepEqual(레벨(낸('같은해시', 영상칸(판본영상, 100, 'a'.repeat(64)), 영상칸(판본영상, 100, 'a'.repeat(64)))), ['확인할 것:aesthetic-substitute']);
+  const 다름 = 낸('다른해시', 영상칸(판본영상, 100, 'a'.repeat(64)), 영상칸(다른판, 100, 'b'.repeat(64)));
+  assert.deepEqual(레벨(다름), ['고칠 것:aesthetic-stale'], '고치기 전: 컷 이름만 견줘 확인할 것(aesthetic-substitute)으로 받았다');
+  assert.match(다름[0].message, /대체 맹검이 카본 기록과 다른 영상을 봤다\(docs\/마케팅\/LAB_시험\/게시\/01-ig-fb-mn\/video\.mp4\)/);
+  assert.equal(aestheticBlock(편('다른해시'), []), '맹검 뒤 영상 바뀜', '예약 큐 · 14시 게시도 막는다');
+  assert.deepEqual(레벨(낸('같은자리다른해시', 영상칸(판본영상, 100, 'a'.repeat(64)), 영상칸(판본영상, 100, 'c'.repeat(64)))), ['고칠 것:aesthetic-stale'], '같은 자리라도 해시가 다르면 다른 영상(다시 렌더)');
+  // 해시가 없는 옛 기록(11-11 전 — 지금 걸려 있는 두 원본의 기록 꼴): 저장소 경로 · 크기로 견준다
+  assert.deepEqual(레벨(낸('옛같음', 영상칸(판본영상, 100), 영상칸(판본영상, 100))), ['확인할 것:aesthetic-substitute']);
+  assert.deepEqual(레벨(낸('옛다른판', 영상칸(판본영상, 100), 영상칸(다른판, 100))), ['고칠 것:aesthetic-stale']);
+  assert.deepEqual(레벨(낸('옛크기다름', 영상칸(판본영상, 100), 영상칸(판본영상, 101))), ['고칠 것:aesthetic-stale']);
+  // 한쪽에 「영상」이 없으면(그림 방식) 영상으로는 견주지 않는다
+  assert.deepEqual(레벨(낸('영상없음', undefined, undefined)), ['확인할 것:aesthetic-substitute']);
+  // 그림 방식: 덮은 컷의 그림 파일 해시가 카본 기록의 그 컷과 같아야 한다 — 띠 · 마스코트 대조(종류가 적힌 화면)는 파일 해시로 견주지 않는다
+  const 그림화면 = (지문들, 종류) => 화면셋.map((h, i) => ({ ...h, 지문: 지문들[i], ...(종류 ? { 종류 } : {}) }));
+  const 그림 = (name, P지문, S지문, 종류) => {
+    const b = 편(name);
+    쓰기(b, 관문.기록이름, { ...막힌P(), 화면: 그림화면(P지문, 종류) });
+    쓰기(b, 관문.대체이름, 대체S(다냄, { 화면: 그림화면(S지문, 종류) }));
+    return aestheticFindings(b, []);
+  };
+  assert.deepEqual(레벨(그림('그림같음', ['x1', 'x2', 'x3'], ['x1', 'x2', 'x3'])), ['확인할 것:aesthetic-substitute']);
+  const 엇 = 그림('그림다름', ['x1', 'x2', 'x3'], ['x1', 'y2', 'x3']);
+  assert.deepEqual(레벨(엇), ['고칠 것:aesthetic-stale']);
+  assert.match(엇[0].message, /대체 맹검이 카본 기록과 다른 그림을 봤다\(순간@4\.29 — 컷 이름은 같고 파일이 다르다\)/);
+  assert.deepEqual(레벨(그림('띠는해시안봄', ['x1', 'x2', 'x3'], ['x1', 'y2', 'x3'], '띠')), ['확인할 것:aesthetic-substitute'], '띠 그림의 바이트는 영상 해시가 지킨다');
+});
