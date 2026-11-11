@@ -104,8 +104,10 @@ const writeMark = (url, more = {}) => {
 
 // 답 기다리기 — 글이 30초 동안 안 늘고 멈춤 단추가 없으면 끝(200자 아래 짧은 답은 60초). 대화 주소가 늦게 붙으면 붙는 대로 표시에 적는다.
 // 보낸 글이 사라지고 새 채팅 주소(대화 번호 없음)로 15초 넘게 있으면 대화가 안 남은 것이다. 빈답마감을 주면 그동안 답 글이 없을 때 끝낸다(사이드바로 연 대화).
+// 멈춤 단추가 남아도 200자 넘는 글이 3분 동안 한 글자도 안 바뀌면 끝으로 본다(11-11 — 다 쓴 답을 「중지」 단추가 남아 「늦음」으로 놓친 것이
+// 05시 1만 5천 자 한 번, 17시 카본 듣기 다섯 번. 모두 늦음 때 글자 수와 나중에 받은 답 길이가 같았다 — 현장노트 gemini_사진).
 const waitAnswer = async (url, 빈답마감 = 0) => {
-  let last = "", same = 0, text = "", busy = true, 사라짐 = 0;
+  let last = "", same = 0, 고정 = 0, text = "", busy = true, 사라짐 = 0;
   const t0 = Date.now();
   while (Date.now() - t0 < answerMs) {
     await page.waitForTimeout(5000);
@@ -113,7 +115,9 @@ const waitAnswer = async (url, 빈답마감 = 0) => {
     text = r.text;
     busy = r.busy;
     same = text && text === last && !busy ? same + 1 : 0;
+    고정 = text && text === last ? 고정 + 1 : 0;
     last = text;
+    if (busy && 고정 >= 36 && text.length > 200) { log({ step: "answer-still", 초: 고정 * 5, chars: text.length, why: "멈춤 단추는 남았는데 글이 3분째 그대로 — 끝으로 본다" }); return { text, url }; }
     사라짐 = r.uqN === 0 && !busy && !text && /^\/u\/\d+\/app\/?$/.test(r.path) ? 사라짐 + 1 : 0;
     if (사라짐 >= 3) await fail("보낸 글이 화면에서 사라지고 새 채팅으로 돌아갔다 — 대화가 안 남았을 수 있다. 다시 보내지 말고 보낸 지 20분 뒤 「읽기」(사이드바를 보고 없으면 표시를 푼다)", "사라짐");
     if (!/\/app\/[0-9a-f]+/.test(url)) {

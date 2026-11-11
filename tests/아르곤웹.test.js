@@ -278,6 +278,8 @@ test('페이지 스크립트 — 사이드바 찾기: 대화 링크는 정확한
   const 기다림 = 덩이(s, 'const waitAnswer = async');
   assert.match(기다림, /if \(사라짐 >= 3\) await fail\(.*, "사라짐"\);/, '보낸 글이 사라지고 새 채팅으로 돌아가면 12분을 기다리지 않는다(11-07 그림 8장)');
   assert.match(기다림, /사라짐 = r\.uqN === 0 && !busy && !text && /, '사라짐은 보낸 글 0 · 멈춤 단추 없음 · 답 글 없음이 함께일 때만');
+  assert.match(기다림, /고정 = text && text === last \? 고정 \+ 1 : 0;\s*last = text;/, '글이 그대로인 횟수는 멈춤 단추와 상관없이 세고, last를 바꾸기 전에 센다');
+  assert.match(기다림, /if \(busy && 고정 >= 36 && text\.length > 200\) \{ log\(\{ step: "answer-still"/, '멈춤 단추가 남아도 200자 넘는 글이 3분(5초 × 36) 그대로면 끝 — 다 쓴 답을 「늦음」으로 놓치지 않는다(11-11 여섯 번)');
   assert.match(s, /const norm = 글정규화;/, '보낸 글 견주기는 아르곤웹.js와 같은 함수');
   assert.match(s, /const promptHead = norm\(prompt\)\.slice\(0, 40\);/, '표시의 지시문앞은 그대로 정규화 앞 40자');
 });
