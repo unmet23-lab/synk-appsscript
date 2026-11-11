@@ -8,6 +8,13 @@ import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './mot
 // 고객이 초대 없이 직접 시작하는 의뢰서(2026-11-04 — 의뢰 → 준비할 것 작성 → 함께 확인 → 1차 전달 뒤 수정 → 제작).
 // 시사실 판(2026-11-05): 왼쪽은 묻는 말 하나, 오른쪽은 온 화면 스크린이다. 고른 답이 스크린에서 바로 어떻게 되는지 보이고, 답은 크레딧처럼 스크린 아래에 쌓인다. 어떤 칸도 보내기를 막지 않고, 없으면 무엇이 달라지는지만 말한다.
 // 다국어 판 2(11-09): 글은 모두 t()를 지난다(한국어 화면은 글자 그대로다). 의뢰서가 열려 있는 동안 언어를 바꾸면(LOCALE_EVENT) 지금 단계를 그 자리에서 다시 그린다 — 답 · 단계 · 고른 모델 · 사진은 그대로다.
+// 올리기에 실패한 파일 줄 → 그 파일(켜기 전 후속 · 판 6 D, 11-11). 연결이 끊김 · 서버 오류 · 시간 초과처럼 같은 파일을 다시 보내면 될 수 있는 실패만 담는다 —
+// 형식 · 크기가 맞지 않는 파일(415 · 413 · 400)은 「지우기」 뒤 다른 파일을 고른다. 항목 객체에는 칸을 더하지 않는다(답은 서버 허용 목록 그대로 저장된다).
+const retryable=new WeakMap();
+// 파일 줄마다 바뀌지 않는 표(data-key) — 다시 그린 뒤 초점을 줄 번호가 아니라 그 파일로 되찾는다(최종 검수 -c P1: 위 줄이 지워져 번호가 당겨지면 초점이 다른 파일의 「지우기」로 옮겨져 이어 누른 Enter가 고르지 않은 파일을 지우던 길).
+const fileKeys=new WeakMap();let fileSeq=0;
+const fileKey=file=>{if(!fileKeys.has(file))fileKeys.set(file,'f'+(++fileSeq));return fileKeys.get(file);};
+const canRetry=error=>{const status=Number(error?.status)||0;return !status||status>=500||status===408||status===429;};
 const ASSET='./assets/request/';
 const still=name=>`${ASSET}${name}.webp`;
 const RATIO_STILL={'9:16':'shard','16:9':'w-maejin','1:1':'shard'};
@@ -60,7 +67,7 @@ const castTile=(a,item,fit)=>`<button type="button" class="sx-cast ${a.models.in
 const picksOf=a=>(MODEL_PICKS[a.kind]||MODEL_PICKS.brand).map(modelOf).filter(Boolean);
 // 모델 칸에서 「추천해 주세요」 · 「사람 없이 제품만」을 골랐을 때 이름 칸 · 큰 사진 밑줄에 쓰는 말(판 4 B6).
 // 「맞춤 인물 요청하기」(판 3)는 인물 칸 사진이 있으면 그 사진을, 없으면 업종 작품 그림을 크게 둔다 — 밑줄은 어떤 사진인지에 맞춘다.
-const personaCaption=a=>{const photo=personaPhoto(a);return photo?.identity?t('보내 주신 사진 · 이 분의 기준 얼굴을 먼저 만들어 보여 드려요'):photo?t('보내 주신 참고 사진 · 이 분위기로 새 얼굴을 만들어 보여 드려요'):t('맞춤 인물 · 기준 얼굴과 움직이는 모습을 먼저 보여 드려요');};
+const personaCaption=a=>{const photo=personaPhoto(a);return photo?.identity?t('보내 주신 사진 · 이 분의 기준 얼굴을 먼저 만들어 보여 드려요'):photo?t('보내 주신 참고 사진 · 이 분위기로 새 얼굴을 만들어 보여 드려요'):t('맞춤 인물 · 기준 얼굴과 동작 시안을 먼저 보여 드려요');};
 // 「내 모델」(PULSE 인물 판 4)에서 고른 인물: 이름 · 그림은 내 모델 화면이 넘긴 a.personaPick(화면에만 — 서버로 보내지 않는다). 이어 쓰는 초안이면 이름이 없을 수 있다.
 const pickedName=a=>a.personaPick?.name||'';
 // 칩 · 큰 사진 밑줄 · 적은 내용 · 접수증 한 줄: 이름을 알면 「내 모델 · 이름」, 모르면(화면 메모리가 없는 이어 쓰는 초안) 「내 모델」 — 「내 모델 · 내 모델」로 겹치지 않게.
@@ -189,7 +196,7 @@ function slotView(a,slot){
     <label class="sx-slot-frame"><input type="file" class="sr" data-file="${slot.id}" accept="${esc(slot.accept)}" aria-label="${esc(t('{label} 파일 고르기',{label}))}" ${slot.multiple?'multiple':''}>${files.length?files.slice(0,3).map(fileThumb).join(''):'<span class="sx-slot-plus" aria-hidden="true">+</span>'}</label>
     <div class="sx-slot-text"><h3>${esc(label)}<span class="sx-small">${esc(slot.need?t('꼭'):t('있으면'))}</span></h3><p class="sx-small">${esc(t(slot.why))}</p>
       <div class="sx-small sx-slot-status" data-status="${slot.id}">${slotStatus(a,slot)}</div>
-      ${files.length?`<ul class="sx-slot-files">${files.map((file,i)=>`<li class="sx-small"><span>${esc(file.fileName)}</span>${file.uploading?'':`<button type="button" class="sx-link" data-do="removefile" data-slot-id="${slot.id}" data-at="${i}" aria-label="${esc(t('{name} 지우기',{name:file.fileName}))}">${esc(t('지우기',null,'file'))}</button>`}</li>`).join('')}</ul>`:''}
+      ${files.length?`<ul class="sx-slot-files">${files.map((file,i)=>`<li class="sx-small"><span>${esc(file.fileName)}</span>${file.uploading?'':retryable.has(file)?`<span class="sx-slot-file-act"><button type="button" class="sx-link" data-do="retryfile" data-slot-id="${slot.id}" data-at="${i}" data-key="${fileKey(file)}" aria-label="${esc(t('{name} 다시 올리기',{name:file.fileName}))}">${esc(t('다시 올리기'))}</button>${`<button type="button" class="sx-link" data-do="removefile" data-slot-id="${slot.id}" data-at="${i}" data-key="${fileKey(file)}" aria-label="${esc(t('{name} 지우기',{name:file.fileName}))}">${esc(t('지우기',null,'file'))}</button>`}</span>`:`<button type="button" class="sx-link" data-do="removefile" data-slot-id="${slot.id}" data-at="${i}" data-key="${fileKey(file)}" aria-label="${esc(t('{name} 지우기',{name:file.fileName}))}">${esc(t('지우기',null,'file'))}</button>`}</li>`).join('')}</ul>`:''}
       ${slot.note?`<input class="sx-slot-note" data-bind="useNote" value="${esc(a.useNote)}" maxlength="200" placeholder="${esc(t(slot.note))}" aria-label="${esc(t('{label} 한 줄로 적기',{label}))}">`:''}
       ${slot.need?`<button type="button" class="sx-chip is-small ${none?'is-on':''}" data-do="none" data-id="${slot.id}" aria-pressed="${none?'true':'false'}">${esc(t('지금 없어요'))}</button>`:''}
     </div></article>`;
@@ -199,7 +206,8 @@ function slotStatus(a,slot){
   const files=filesOf(a,slot.id);
   if(a.slots[slot.id]?.none)return `<i class="sx-led is-wait"></i>${esc(t('나중에 보내 주세요. 1차안에는 자리만 잡아 둘게요.'))}`;
   if(!files.length)return '';
-  const last=files[files.length-1];
+  // 올리는 중인 줄 → 실패한 줄 → 마지막 줄 차례로 말한다(최종 검수 F5 — 실패한 앞 줄을 다시 올릴 때도 진행 · 실패 까닭이 보이게).
+  const last=files.find(file=>file.uploading)||[...files].reverse().find(file=>file.error)||files[files.length-1];
   if(last.uploading)return `<i class="sx-led is-busy"></i>${esc(t('올리는 중 {percent}%',{percent:Math.round((last.progress||0)*100)}))}`;
   if(last.error)return `<i class="sx-led is-wait"></i>${esc(last.error)}`;
   // 사진 점검 글은 그릴 때마다 지금 언어로 다시 만든다(크기는 올릴 때 잰 값).
@@ -406,6 +414,18 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     approver(el){a.approver=el.dataset.id;form.querySelectorAll('[data-do="approver"]').forEach(item=>setChip(item,item.dataset.id===a.approver));const sub=el.closest('.sx-sub');const more=sub.querySelector('[data-approver-more]');more.innerHTML=approverMore(a);if(more.firstElementChild)rise(more,{y:6});saved();},
     contactlocale(el){a.contactLocale=el.dataset.id;contactPicked=true;form.querySelectorAll('[data-do="contactlocale"]').forEach(item=>setChip(item,item.dataset.id===a.contactLocale));saved();},
     none(el){const id=el.dataset.id,slot=a.slots[id]||(a.slots[id]={files:[]});slot.none=!slot.none;setChip(el,slot.none);el.closest('.sx-slot').classList.toggle('is-none',slot.none);updateSlotStatus(id);saved();},
+    async retryfile(el){
+      const id=el.dataset.slotId,state=a.slots[id],file=state?.files?.[Number(el.dataset.at)],slot=slotOf(id),held=file&&retryable.get(file);if(!held||!slot||file.uploading)return;
+      delete file.error;file.uploading=true;file.progress=0;redrawSlot(slot);updateSlotStatus(id);
+      await uploadEntry(id,file,held);
+      if(!state.files.includes(file))return;
+      updateSlotStatus(id);redrawSlot(slot);renderSlate();saved();if(step().id==='files')renderMonitor('files');if(slot.persona)showChoice();
+      // 초점은 잃었을 때만(누른 단추가 다시 그려져 사라진 경우 — body) 되돌린다. 손님이 둔 자리는 redrawSlot이 지킨다(최종 검수 F1 · Q1).
+      // 올리기에 성공했으면 상태 줄로 — 지우는 단추로 저절로 옮기지 않는다(반응이 없어 다시 누른 Enter · Space가 「지우기」가 되어 방금 올린 파일이 지워지던 키보드 길). 실패해 다시 올리기가 남았을 때만 그 단추로.
+      // 코드가 둔 자리(body, 또는 누른 단추가 사라질 때 redrawSlot이 옮긴 그 칸의 상태 줄)에 그대로 있으면 잃은 것으로 본다 — 또 실패했을 때 「다시 올리기」로 돌아오게(최종 검수 -d P2).
+      const box=host.querySelector(`[data-slot="${slot.id}"]`),now=document.activeElement,lost=!now||now===document.body||!!box&&box.contains(now)&&now.dataset?.status===slot.id;
+      if(lost&&box){if(retryable.has(file))box.querySelector(`[data-do="retryfile"][data-key="${fileKey(file)}"]`)?.focus({preventScroll:true});else{const status=box.querySelector(`[data-status="${slot.id}"]`);if(status){status.setAttribute('tabindex','-1');status.focus({preventScroll:true});}}}
+    },
     async removefile(el){
       const id=el.dataset.slotId,state=a.slots[id],file=state?.files?.[Number(el.dataset.at)],slot=slotOf(id);if(!file||!slot)return;
       el.disabled=true;
@@ -469,16 +489,25 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       const entry={fileName:file.name,byteSize:file.size,mimeType:file.type,uploading:true,progress:0};
       if(file.type.startsWith('image/')&&file.type!=='image/heic'&&file.type!=='image/heif'){try{const url=URL.createObjectURL(file),image=await loadImage(url);blobs.add(url);entry.preview=url;entry.width=image.naturalWidth;entry.height=image.naturalHeight;if(!slot.persona)entry.advice=photoAdvice(entry.width,entry.height,slot.kind);}catch{}}
       state.files.push(entry);redrawSlot(slot);
-      try{const {preview,...stored}=await backend.upload(id,file,progress=>{entry.progress=progress;updateSlotStatus(id);});Object.assign(entry,stored,{uploading:false});if(preview&&!entry.preview)entry.preview=preview;}
-      catch(error){entry.uploading=false;entry.error=error.message||t('올리지 못했어요. 다시 시도해 주세요.');}
+      await uploadEntry(id,entry,file);
       updateSlotStatus(id);redrawSlot(slot);renderSlate();saved();
     }
     if(step().id==='files')renderMonitor('files');
     if(slot.persona)showChoice();
   }
+  async function uploadEntry(id,entry,file){
+    retryable.delete(entry);
+    try{const {preview,...stored}=await backend.upload(id,file,progress=>{entry.progress=progress;updateSlotStatus(id);});Object.assign(entry,stored,{uploading:false});if(preview&&!entry.preview)entry.preview=preview;}
+    catch(error){entry.uploading=false;entry.error=error.message||t('올리지 못했어요. 다시 시도해 주세요.');if(canRetry(error))retryable.set(entry,file);}
+  }
   function redrawSlot(slot){
     const old=form.querySelector(`[data-slot="${slot.id}"]`);if(!old)return;
+    // 그 칸 안에서 손님 초점이 있던 자리(글 칸 data-bind · 파일 고르기 data-file · 칩 · 줄 단추 data-do)는 새 칸의 같은 자리로 옮긴다 — 글 칸은 커서까지(최종 검수 F1 · Q1, 다시 그리기가 손님 초점을 없애지 않게).
+    const active=old.contains(document.activeElement)?document.activeElement:null,ds=active?.dataset||{},caret=ds.bind&&typeof active.selectionStart==='number'?[active.selectionStart,active.selectionEnd]:null;
+    // 줄 단추는 줄 번호가 아니라 그 파일의 표(data-key)로 찾는다 — 그 파일이 없어졌으면(지움) 지우는 단추가 아니라 상태 줄로 둔다. 상태 줄에 있던 초점도 새 상태 줄로(최종 검수 -c P1 · P3).
+    const spot=ds.bind?`[data-bind="${ds.bind}"]`:ds.file?`[data-file="${ds.file}"]`:ds.key?`[data-do="${ds.do}"][data-key="${ds.key}"]`:ds.status!==undefined?`[data-status="${ds.status}"]`:ds.do?`[data-do="${ds.do}"]${ds.id?`[data-id="${ds.id}"]`:''}`:'';
     const box=document.createElement('div');box.innerHTML=slotView(a,slot);const next=box.firstElementChild;old.replaceWith(next);
+    if(active){const again=spot?next.querySelector(spot):null,target=again||next.querySelector(`[data-status="${slot.id}"]`);if(target){if(target.dataset.status!==undefined)target.setAttribute('tabindex','-1');target.focus({preventScroll:true});if(again&&caret)try{again.setSelectionRange(caret[0],caret[1]);}catch{}}}
     const last=next.querySelector('.sx-slot-frame img:last-of-type');if(last)play(last,[{opacity:0,transform:'scale(1.06)'},{opacity:1,transform:'scale(1)'}],{duration:560});
   }
   const loadImage=url=>new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=url;});
@@ -497,8 +526,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     const personaCount=a.modelChoice==='custom'?PERSONA_SLOTS.reduce((sum,slot)=>sum+filesOf(a,slot.id).length,0):0;
     const rows=[[k('광고할 것'),a.name],[k('길이'),pkg?t('{label} · {price}부터',{label:t(pkg.label),price:price(pkg.price)}):t('추천해 주세요')],[k('받으실 날'),pkg?.days?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):pkg?t('구성에 맞춰 함께 정해요'):''],[k('수정'),pkg&&!pkg.days?t('구성에 맞춰 함께 정해요'):revisionNote(pkg)],[k('올릴 곳'),channelText(a)||t('제안해 주세요')],[k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?pickedLabel(a):modelList(a)||t('추천해 주세요')],[k('인물 사진'),personaCount?t('{count}장',{count:personaCount}):''],[k('받은 자료'),t('{count}개',{count:slotCount(a)})],[k('연락받을 곳'),a.email||a.phone||'']].filter(([,value])=>value);
     // 다음에 일어날 일: 사진 상품은 첫 장 → 나머지, 영상은 방향 두 안 → 제작.
-    // 맞춤 인물(판 3)은 확인 다음에 인물 검토 한 걸음 — 견적 전에는 비용이 생기지 않고, 기준 얼굴 · 움직이는 모습을 확인받은 인물만 광고에 쓴다.
-    const next=[[k('저희가 내용을 확인해요'),k('평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.')],...(a.modelChoice==='custom'?[[k('맞춤 인물을 검토해요'),k('보내 주신 글과 사진으로 만들 수 있는지 보고 견적을 보내 드려요. 기준 얼굴과 움직이는 모습을 확인하신 인물만 광고에 써요.')]]:a.modelChoice==='persona'?[[k('내 모델 연결을 확인해요'),k('브랜드와 고르신 모델을 확인하고, 이번 광고에 쓸 범위를 정리해 보내 드려요. 그 범위를 확인하신 뒤에 만들어요.')]]:[]),...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')],[k('나머지 사진을 보내 드려요'),k('사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.')]]:[[k('방향 두 안을 보내 드려요'),k('무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')],[k('의견을 반영한 뒤 제작해요'),k('확인하시기 전에는 영상을 만들지 않아요.')]])];
+    // 맞춤 인물(판 3)은 확인 다음에 인물 검토 한 걸음 — 견적 전에는 비용이 생기지 않고, 기준 얼굴 · 동작 시안을 확인받은 인물만 광고에 쓴다.
+    const next=[[k('저희가 내용을 확인해요'),k('평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요.')],...(a.modelChoice==='custom'?[[k('맞춤 인물을 검토해요'),k('보내 주신 글과 사진으로 만들 수 있는지 보고 견적을 보내 드려요. 기준 얼굴과 동작 시안을 확인하신 인물만 광고에 써요.')]]:a.modelChoice==='persona'?[[k('내 모델 연결을 확인해요'),k('브랜드와 고르신 모델을 확인하고, 이번 광고에 쓸 범위를 정리해 보내 드려요. 그 범위를 확인하신 뒤에 만들어요.')]]:[]),...(pkg?.photo?[[k('첫 장을 먼저 보내 드려요'),a.modelChoice==='none'?k('제품만 담은 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.'):k('모델이 제품을 든 첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지를 만들어요.')],[k('나머지 사진을 보내 드려요'),k('사진이 나온 뒤에도 정해진 횟수만큼 고칠 수 있어요.')]]:[[k('방향 두 안을 보내 드려요'),k('무엇으로 기억에 남길지 두 방향과 모델, 값 · 받으실 날 · 수정 횟수예요. 고르시면 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 보내 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')],[k('의견을 반영한 뒤 제작해요'),k('확인하시기 전에는 영상을 만들지 않아요.')]])];
     return `<div class="sx-rc-wrap"><article class="sx-rc-paper" tabindex="-1" aria-label="${esc(t('의뢰 접수증'))}"><header><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="120" height="32"><h2 class="sx-serif">${esc(t('의뢰 접수증'))}</h2></header><dl class="sx-rc-rows"><div><dt>${esc(t('접수 번호'))}</dt><dd class="sx-no">${esc(receipt.number)}</dd></div><div><dt>${esc(t('접수 시각'))}</dt><dd class="sx-no">${esc(stamp)}</dd></div>${rows.map(([key,value])=>`<div><dt>${esc(t(key))}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl><ol class="sx-rc-next">${next.map(([title,text])=>`<li><b>${esc(t(title))}</b><span>${esc(t(text))}</span></li>`).join('')}</ol></article></div><div class="sx-rc-actions"><button type="button" class="sx-go is-solid" data-rc="room"><span>${esc(t('내 의뢰 보기'))}</span>${arrow}</button>${receipt.link?`<button type="button" class="sx-small sx-link" data-rc="copy">${esc(t('이 의뢰로 돌아올 링크 복사'))}</button><p class="sx-small" data-rc-note>${esc(t('이 링크로 30일 안에 어느 기기에서든 돌아올 수 있어요. 메일을 적으셨다면 첫 화면 「메일로 다시 열기」로도 여실 수 있어요.'))}</p>`:''}</div>`;
   }
   function showReceipt(receipt){
@@ -573,7 +602,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     const items=[...event.target.closest('[role=radiogroup]').querySelectorAll('[role=radio]')],next=items[(items.indexOf(event.target)+(event.key==='ArrowDown'?1:-1)+items.length)%items.length];
     event.preventDefault();next.focus();next.click();
   });
-  host.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!['TEXTAREA','BUTTON','A'].includes(event.target.tagName)&&!['file','checkbox'].includes(event.target.type)&&step().id!=='review'){event.preventDefault();actions.next();}});
+  // 다시 올리기가 끝나 초점을 둔 상태 줄(data-status)에서 누른 Enter는 다음 단계로 넘기지 않는다 — 반응을 기다리다 다시 누른 키보드 손님이 단계를 건너뛰지 않게(최종 검수 Q1).
+  host.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!['TEXTAREA','BUTTON','A'].includes(event.target.tagName)&&!['file','checkbox'].includes(event.target.type)&&event.target.dataset?.status===undefined&&step().id!=='review'){event.preventDefault();actions.next();}});
   // 휴대폰 뒤로 가기는 앞 질문으로 간다. 기록에는 한 칸만 더 쌓아 두고 누를 때마다 다시 채운다.
   // 이미 그 칸 위면 더 쌓지 않는다 — 의뢰서를 다시 열어도 덫이 두 겹이 되지 않게(예시에서 의뢰서 장면을 거듭 누를 때).
   const trap=()=>{try{if(!history.state?.requestFlow)history.pushState({requestFlow:true},'');}catch{}};

@@ -423,6 +423,8 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-slot-files{display:grid;gap:2px;width:100%}
 .sx-slot-files li{display:flex;justify-content:space-between;gap:12px}
 .sx-slot-files span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 실패한 파일 줄의 「다시 올리기 · 지우기」 묶음(켜기 전 후속 11-11) — 위 span 규칙의 말줄임 · 숨김을 받지 않는다(초점 테두리가 잘리지 않게). */
+.sx-slot-files .sx-slot-file-act{display:flex;flex:none;gap:12px;overflow:visible}
 .sx-slot-note{width:100%;background:none;border:0;border-bottom:1px solid var(--sx-faint);padding:6px 0;font-size:15px;outline:0;border-radius:0}
 .sx-slot-note:focus{border-bottom-color:var(--sx-ink)}
 /* 의뢰서 확인 */
@@ -1221,15 +1223,18 @@ html.sx:not(.is-staff) .header-actions .locale-option,.sx-q-top-right .locale-op
   /* 의뢰서 휴대폰 머리(로고 · 적은 내용 · 나중에 이어서)는 한 줄이 꽉 차 지금 언어는 빼고 바꿀 언어 하나만 둔다. */
   .sx-q-top-right .locale-option[aria-pressed="true"]{display:none}
 }
-/* 영어 화면(다국어 판 2 · A안 — 제목은 SUIT Light 그대로): 큰 영어 제목은 한국어처럼 좁히면 빽빽해 자간을 거의 푼다.
-   둥근 따옴표 · 줄임표 · 가운뎃점 · 낱말 사이도 같은 라틴 조각(SYNKSans-pulse-latin — SUIT 원본, 11-11부터)에서 범위만 넓힌 이름으로 그린다 — 명조로 떨어져 글꼴이 섞이지 않게.
-   그 조각(= SUIT 원본)에 없는 줄표(– —) · 악센트 글자 · 글머리표는 기기의 가는 고딕을 빌린다(SX Name과 같은 방식 — 파일을 새로 싣지 않는다). 한국어 화면은 그대로다. */
+/* 영어 화면 제목(11-11 글꼴 B — Noto Serif Display Light 300, OFL · Google Fonts 라틴 묶음 15KB, 원본 · 지문은 docs/브랜드_폰트/NotoSerifDisplay):
+   첫 화면 · 의뢰서 · 고객 방의 영어 제목(.sx-serif · .sx-display)을 이 라틴 명조로 그린다. 둥근 따옴표 · 줄표 · 줄임표 · 가운뎃점도 같은 파일에 있다.
+   이 파일에 없는 악센트 글자(라틴 확장) · 글머리표는 기기의 가는 고딕을 빌리고, 한글(손님 글)은 Noto Serif KR로 떨어진다. 영어 화면에서만 불러온다 — 한국어 화면은 그대로다.
+   글꼴 B를 받는 동안 · 못 받으면 앞 판처럼 본문 라틴 조각(SX Latin Wide — SYNK Sans 라틴, 이미 받은 파일)으로 그린다.
+   큰 영어 제목은 한국어처럼 좁히면 빽빽해 자간을 거의 푼다(−.005em). */
+@font-face{font-family:'SX Display';src:url('./assets/NotoSerifDisplay-Light-latin.woff2') format('woff2');font-weight:300;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:'SX Latin Wide';src:url('./assets/SYNKSans-pulse-latin.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+0020-00FF,U+2010-2027,U+2030-203A,U+20A9,U+20AC,U+2122,U+2190-2193}
 @font-face{font-family:'SX Latin Local';src:local('Segoe UI Light'),local('SegoeUI-Light'),local('Malgun Gothic Semilight'),local('MalgunGothic-Semilight'),local('Helvetica Neue Light'),local('HelveticaNeue-Light'),local('Apple SD Gothic Neo Light'),local('AppleSDGothicNeo-Light'),local('Roboto Light'),local('Roboto-Light');font-weight:300;unicode-range:U+00A1-024F,U+2010-2014,U+2020-2022}
-html[lang="en"]{--sx-serif:'SX Latin Wide','SX Latin Local','Noto Serif KR','SX Name',serif}
+html[lang="en"]{--sx-serif:'SX Display','SX Latin Wide','SX Latin Local','Noto Serif KR','SX Name',serif}
 /* 설치 단추의 고정 폭(좁은 화면 40px — 한국어 「앱 설치」에 맞음)을 영어에서는 글자에 맞춘다(「Install app」이 알림 단추로 삐져나가지 않게). */
 html.sx[lang="en"]:not(.is-staff) .header-actions .install-button{width:auto}
-html[lang="en"] :is(.sx-serif,.sx-display){letter-spacing:-.01em}
+html[lang="en"] :is(.sx-serif,.sx-display){letter-spacing:-.005em}
 html[lang="en"] .sx-sheet-what .sx-serif{letter-spacing:0}
 html.sx[lang="en"] #app-dialog h2,html.sx[lang="en"]:not(.is-staff) .notification-panel h2{letter-spacing:-.01em}
 /* 영어 의뢰서: 미리 보기의 큰 값(「from KRW 890,000」)이 길어 틀 선에 닿지 않게 한 단계 작게, 크레딧 줄 이름 칸(「Key message」 · 「On-screen text」)이 두 줄로 꺾이지 않게 넓게. */

@@ -36,7 +36,7 @@ function gate(st){
     <p class="sx-body">${esc(t('SYNK ID로 로그인하면 브랜드에 보관한 모델을 보고, 사진을 다시 보내지 않고 다음 광고를 맡길 수 있어요.'))}</p>
     ${st.failed?`<div class="sx-invite-alert" role="alert"><strong>${esc(t('로그인을 마치지 못했어요'))}</strong><p>${esc(t('다시 시도해 주세요. 계속 안 되면 담당자에게 알려 주세요.'))}</p></div>`:''}${alertOf(st)}
     <div class="sx-mm-gate-act"><button type="button" class="sx-go is-solid" data-mm-do="login" ${off||st.busy?'disabled':''}><span>${esc(t('SYNK ID로 로그인'))}</span>${arrow}</button></div>
-    <p class="sx-small">${esc(off?t('지금은 SYNK ID 로그인을 쓸 수 없어요. 잠시 뒤 다시 열어 주세요.'):t('브랜드 회원만 볼 수 있어요. 진행 중인 의뢰의 고객 방에서 「내 모델로 모아 두기」를 누르면 담당자가 확인한 뒤 브랜드에 연결해 드려요.'))}</p></section>`;
+    <p class="sx-small">${esc(off?t('지금은 SYNK ID 로그인을 쓸 수 없어요. 잠시 뒤 다시 열어 주세요.'):t('브랜드 회원만 볼 수 있어요. 이미 회원이면 위에서 로그인해 주세요. 아직이면 맞춤 인물이 있는 의뢰의 고객 방에서 「내 모델로 모아 두기」를 눌러 주세요 — 담당자가 확인하고 브랜드에 연결해 드려요.'))}</p></section>`;
 }
 function stateLine(card){
   const ok=card.usable,text=ok?t('새 광고에 쓸 수 있어요'):t(MODEL_REASON[card.reason]||MODEL_REASON[card.status]||MODEL_REASON.status);
@@ -67,7 +67,7 @@ function pendingCard(ws,card){
 }
 function list(st){
   const brands=st.data?.workspaces||[];
-  if(!brands.length)return `<section class="sx-mm-gate"><p class="sx-kicker">${esc(t('내 모델'))}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t('아직 연결된 브랜드가 없어요'))}</h1>${alertOf(st)}<p class="sx-body">${esc(t('진행 중인 의뢰의 고객 방에서 「내 모델로 모아 두기」를 누르면, 담당자가 확인한 뒤 브랜드에 연결해 드려요. 연결되면 여기에서 그 브랜드의 모델을 볼 수 있어요.'))}</p></section>`;
+  if(!brands.length)return `<section class="sx-mm-gate"><p class="sx-kicker">${esc(t('내 모델'))}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t('아직 연결된 브랜드가 없어요'))}</h1>${alertOf(st)}<p class="sx-body">${esc(t('맞춤 인물이 있는 의뢰의 고객 방에서 「내 모델로 모아 두기」를 누르면, 담당자가 확인하고 브랜드에 연결해 드려요. 연결되면 여기에서 그 브랜드의 모델을 볼 수 있어요.'))}</p></section>`;
   return `<header class="sx-mm-head"><p class="sx-kicker">${esc(t('내 모델'))}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t('브랜드에 보관한 모델'))}</h1><p class="sx-body">${esc(t('고르면 사진을 다시 보내지 않고 다음 광고를 맡길 수 있어요. 광고마다 쓸 범위는 담당자가 정리해 따로 확인받아요.'))}</p>${alertOf(st)}</header>
     ${brands.map(ws=>`<section class="sx-mm-brand" aria-label="${esc(ws.name)}"><header class="sx-mm-brand-head"><h2 class="sx-serif">${esc(ws.name)}</h2><span class="sx-small">${esc(ws.role==='admin'?t('브랜드 관리자'):t('브랜드 회원'))}</span></header>
       ${ws.models.length?`<ol class="sx-mm-cards">${ws.models.map(card=>modelCard(ws,card)).join('')}</ol>`:`<p class="sx-small sx-mm-none">${esc(t('아직 보관한 모델이 없어요.'))}</p>`}
@@ -144,11 +144,16 @@ export function mountMyModels(root,{onExit,onRequest,onLogin,onNotice,loginFaile
       st.data=await send(BASE+'/models');st.failed=false;st.view='list';paint();
     }catch(err){if(err.status===401)signedOut();else{st.error=err.message;st.view=st.data?'list':'login';}paint();}
   }
+  // 다른 탭에서 다시 로그인하면 이 화면이 쥔 보안 값(csrfToken)이 낡아 쓰기마다 403이 된다(같은 기기의 로그인 쿠키는 하나다).
+  // 403이면 세션을 다시 읽어 새 값 · 지금 이름으로 바꾸고 서버 글을 보인다 — 다음 누름이 통한다. 다시 읽은 세션이 로그인 전이면 로그인 화면으로(판 4 다시 검수 P3).
+  // 403은 다시 로그인한 때다 — 다시 읽은 세션이 로그인 상태면 이름과 상관없이 목록도 다시 읽는다(이름 없는 계정은 모두 「고객」이라 이름으로는 계정이 바뀐 줄 모른다, 최종 검수 F6 · 다시 검수 P3).
+  // 계정이 바뀐 듯하면(보안 값이 달라짐) 고르던 카드를 놓고 목록으로. 목록을 못 읽으면 앞 목록을 비우지 않는다(「브랜드가 없어요」로 섞이지 않게) — 까닭은 부른 쪽이 보이는 서버 글.
+  async function resync(){try{const before=st.session?.csrfToken||'',next=await send(BASE+'/session');st.session=next;if(next.authenticated){if(next.csrfToken!==before){st.pick=null;st.view='list';}try{st.data=await send(BASE+'/models');}catch{}}return !!next.authenticated;}catch{return true;}}
   async function act(run,{done=''}={}){
     if(st.busy)return;st.busy=true;st.error='';
     body.querySelectorAll('button[data-mm-do$="-go"]').forEach(button=>{button.disabled=true;});
     try{await run();st.busy=false;st.pick=null;st.view='list';await load();if(done){say(done);onNotice?.(done);}}
-    catch(err){st.busy=false;if(err.status===401){signedOut();st.error='';}else st.error=err.message;paint({focus:false});}
+    catch(err){if(err.status===403&&!(await resync()))err={status:401};st.busy=false;if(err.status===401){signedOut();st.error='';}else st.error=err.message;paint({focus:false});}
   }
   const handlers={
     exit(event){event?.preventDefault?.();onExit?.();},
@@ -158,7 +163,8 @@ export function mountMyModels(root,{onExit,onRequest,onLogin,onNotice,loginFaile
       catch(err){st.busy=false;st.error=err.message||t('로그인을 시작하지 못했어요. 잠시 뒤 다시 시도해 주세요.');paint({focus:false});}
     },
     // 로그아웃이 실패하면 로그아웃된 척하지 않는다 — 세션이 살아 있으니 지금 화면에 까닭을 보인다(401은 이미 나간 것). 판 4 화면 최종 검수 F3.
-    async logout(){if(st.busy)return;st.busy=true;st.error='';try{await send('/api/customer/logout',{member:true,csrf:memberCsrf(),body:{}});}catch(err){if(err.status!==401){st.busy=false;st.error=t('로그아웃하지 못했어요. 다시 시도해 주세요.');paint({focus:false});return;}}st.busy=false;st.session={authenticated:false,loginAvailable:st.session?.loginAvailable};st.data=null;st.view='login';paint();},
+    // 403(다른 탭에서 다시 로그인해 보안 값이 낡음)은 세션을 다시 읽고 서버 글을 보인다 — 다음 누름은 새 값으로 간다. 다시 읽은 세션이 이미 나간 상태면 나간 것으로 본다.
+    async logout(){if(st.busy)return;st.busy=true;st.error='';try{await send('/api/customer/logout',{member:true,csrf:memberCsrf(),body:{}});}catch(err){const gone=err.status===401||err.status===403&&!(await resync());if(!gone){st.busy=false;st.error=err.status===403?err.message:t('로그아웃하지 못했어요. 다시 시도해 주세요.');paint({focus:false});return;}}st.busy=false;st.session={authenticated:false,loginAvailable:st.session?.loginAvailable};st.data=null;st.view='login';paint();},
     request(el){const ws=brandOf(el.dataset.ws),card=cardOf(ws,el.dataset.id);if(!ws||!card)return;onRequest?.({workspace:ws,card,csrf:memberCsrf(),fail:message=>{st.error=message;paint({focus:false});}});},
     consent(el){const ws=brandOf(el.dataset.ws),card=cardOf(ws,el.dataset.id,!!el.dataset.pending);if(!ws||!card?.consent)return;st.pick={ws,card,key:freshKey()};st.error='';st.view='consent';paint();},
     ask(el){const ws=brandOf(el.dataset.ws),card=cardOf(ws,el.dataset.id);if(!ws||!card||!MODEL_ASK[el.dataset.ask])return;st.pick={ws,card,kind:el.dataset.ask};st.note='';st.error='';st.view='ask';paint();},

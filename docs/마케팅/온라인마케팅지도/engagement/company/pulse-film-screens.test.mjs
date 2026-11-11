@@ -17,7 +17,9 @@ const TOOL_NAMES='Claude|Fable|Seedance|Higgsfield|Gemini|GPT|Kling|Sora|Veo|Omn
 
 test('every new screen stays inside the content security policy: no style attributes in markup, no inline scripts',()=>{
   for(const name of SCREEN_FILES)assert.doesNotMatch(read(name),/\bstyle=["']|<style|setAttribute\('style'|\son[a-z]+=["']|javascript:/,name);
-  const index=read('index.html');assert.doesNotMatch(index,/<style|\bstyle="|<script(?![^>]*type="module" src=)/);
+  // 스크립트는 같은 곳의 파일만(CSP script-src 'self'): 화면 모듈 app.mjs와, 11-11부터 첫 기다림 글의 언어를 먼저 바꾸는 고전 스크립트 boot-locale.js 하나. 인라인은 없다.
+  const index=read('index.html');assert.doesNotMatch(index,/<style|\bstyle="|<script(?![^>]*\bsrc="\.\/[a-z-]+\.m?js")/);
+  assert.deepEqual(index.match(/<script[^>]*>[^<]*<\/script>/g),['<script type="module" src="./app.mjs"></script>','<script src="./boot-locale.js"></script>'],'스크립트 몸에는 글이 없다');
 });
 test('the first screen reads only the new stylesheet; the old sheets stay served for staff and project screens',()=>{
   const index=read('index.html');
@@ -34,7 +36,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v44-payment-journal-20261111';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v45-before-switch-20261112';/);
 });
 test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
   // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.

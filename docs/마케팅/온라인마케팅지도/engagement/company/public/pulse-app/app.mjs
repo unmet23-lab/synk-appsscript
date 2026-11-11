@@ -80,7 +80,11 @@ let keptDrafts=null;
 // 담당자가 「캐스팅북 코드로 채우기」에서 저장을 누른 조합. 저장 알림을 그 조합으로 말하고, 저장 뒤에도 그 글을 칸에 남겨 「지금 저장된 조합」을 그 자리에서 보인다.
 let castingCodeSave=null;
 // 확인 중 표시는 그릴 때마다 지금 언어로 만든다(언어는 서버 답을 받은 뒤에 정해진다 — 그 전에는 한국어).
-const loadingView=()=>'<div class="loading" role="status"><span class="loading-mark"></span>'+esc(t('프로젝트를 확인하고 있어요.'))+'</div>';
+// 화면 언어를 정하기 전(서버 답 · 사전을 받기 전)의 첫 그리기는 boot-locale.js가 이 기기의 언어로 바꿔 둔 글을 그대로 쓴다 — 느린 연결의 영어 손님에게 영어 → 한국어 → 영어로 바뀌지 않게(최종 검수 F2).
+// 바꾸지 않았으면(한국어) 빈 글자라 지금처럼 t()다. 맨 위에서 가져온 함수를 부르지 않는다(vm 시험).
+const bootLoading=(()=>{try{const node=document.querySelector('#main .loading');return document.documentElement?.lang&&document.documentElement.lang!=='ko'&&node?String(node.textContent||'').trim():'';}catch{return '';}})();
+let localeChosen=false;
+const loadingView=()=>'<div class="loading" role="status"><span class="loading-mark"></span>'+esc(!localeChosen&&bootLoading&&locale()==='ko'?bootLoading:t('프로젝트를 확인하고 있어요.'))+'</div>';
 let deviceState=null,deviceBusy=false,deviceOperation=0,deviceRefresh=0;
 const deviceMigrations=new Set();
 let live=null,liveIdentity='',liveSnapshot=null,pendingRemote=null,autoFetching=false,autoAgain=false,composing=false,applyTimer;
@@ -354,12 +358,22 @@ async function openFlow(load,after){
 }
 // 화면 언어(다국어 판 1 · 2, 기획 12-2 「언어 결정」): 손님 화면만, 서버 응답의 features.locales 안에서 고른다. 직원 화면은 늘 한국어다.
 // 맨 위에서 await하지 않는다(app.mjs를 vm으로 읽는 시험) — 시작 흐름이 응답을 받은 뒤 첫 그리기 전에 부른다. 사전을 못 읽으면 한국어로 둔다.
-// 허락 언어는 받을 때마다 언어 메뉴에도 넣는다. 허락 밖이거나 응답이 없으면 한국어 · html lang · 메뉴(한국어 하나라 숨김)까지 되돌린다.
+// 허락 언어는 받을 때마다 언어 메뉴에도 넣는다. 허락 밖이면 한국어 · html lang · 메뉴(한국어 하나라 숨김)까지 되돌린다.
+// 서버 답을 받지 못했으면(끊긴 채 다시 연 앱 · 프로젝트와 스위치를 못 읽음) 이 기기가 마지막으로 정한 언어와 그때의 허락 목록으로 고른다(켜기 전 후속 · 판 6 F).
+// 고른 것 → 마지막으로 정한 언어(그때의 프로젝트 · 링크 · 브라우저 판단) → 링크 → 브라우저 차례이고, 적어 둔 것이 없으면 지금처럼 한국어다. 서버 답으로 정한 언어만 적어 둔다.
+// 마지막으로 정한 언어는 이 기기에(localStorage 'pulse-locale-last' — 언어와 허락 목록만, 못 쓰면 없음). 첫 기다림 글(boot-locale.js)도 같은 칸을 읽는다.
+// 이 두 함수는 import하지 않고 여기에 둔다 — app.mjs를 import 없이 읽어 돌리는 vm 시험(git 밖 운영 후보 포함)이 맥락에 없는 이름으로 멈추지 않게.
+const LAST_LOCALE='pulse-locale-last';
+function lastDecision(){try{const value=JSON.parse(localStorage.getItem(LAST_LOCALE)||'null'),allowed=Array.isArray(value?.allowed)?value.allowed.filter(item=>DICTIONARY_LOCALES.includes(item)):[];return DICTIONARY_LOCALES.includes(value?.locale)&&allowed.includes(value.locale)?{locale:value.locale,allowed}:null;}catch{return null;}}
+function rememberDecision(loc,allowed){try{const list=(Array.isArray(allowed)?allowed:[]).filter(item=>DICTIONARY_LOCALES.includes(item));if(!list.includes(loc))return;const value=JSON.stringify({locale:loc,allowed:list});if(localStorage.getItem(LAST_LOCALE)!==value)localStorage.setItem(LAST_LOCALE,value);}catch{}}
 async function applyLocale(features){
   if(s.mode!=='customer')return;
-  setOfferedLocales(features?.locales);
-  const next=pickLocale({chosen:storedLocale(),project:features?.locale||'',link:linkLang,browser:navigator.languages||[],allowed:features?.locales});
+  const known=!!features&&typeof features==='object',last=known?null:lastDecision();
+  const allowed=setOfferedLocales(known?features.locales:last?.allowed);
+  const next=pickLocale({chosen:storedLocale(),project:known?features.locale||'':last?.locale||'',link:linkLang,browser:navigator.languages||[],allowed});
   if(next!==locale())await setLocale(next);
+  localeChosen=true;
+  if(known&&locale()===next)rememberDecision(next,allowed);
   document.documentElement.lang=htmlLang(locale());
   paintShell();
 }
@@ -384,7 +398,7 @@ async function screenLocale(){
   return locale()!==before;
 }
 // 프로젝트 응답(accept)에 실린 허락 언어는 받을 때마다 언어 메뉴에 넣는다. 지금 언어가 허락 밖이 되면 다음 그리기에서 다시 고른다(한국어로).
-function noteFeatures(features){if(s.mode!=='customer'||!features)return;projectFeatures=features;if(!setOfferedLocales(features.locales).includes(locale()))localeScreen=null;}
+function noteFeatures(features){if(s.mode!=='customer'||!features)return;projectFeatures=features;s.myModelsOn=features.myModels===true;if(!setOfferedLocales(features.locales).includes(locale()))localeScreen=null;}
 // 그릴 때마다(render 맨 앞): 화면이 프로젝트 ↔ 첫 화면으로 바뀌었으면 그 화면의 허락 언어로 다시 고르고(판 1 검수 F4 — 연결이 끝나거나 의뢰서를 닫고 돌아온 첫 화면에
 // 앞 화면의 영어가 남지 않게), 언어가 바뀐 뒤의 첫 화면은 붙인 칸을 떼어 새 언어로 다시 붙인다(update는 글을 다시 그리지 않는다). 의뢰서 · 예시 덮개가 열린 동안은 그대로 둔다.
 function followLocale(){
@@ -432,8 +446,11 @@ async function requestWithModel({workspace,card,csrf,fail}){
 }
 // 고객 방의 「내 모델로 모아 두기」(설계 5-1): 이 방에서 만드는 인물이 있고 스위치가 켜져 있을 때만. 증표(workspace-state)로 이 프로젝트의 브랜드 · 내 회원 여부 · 기다리는 요청을 읽는다.
 // 다시 쓰기 방(persona.mode 'reuse')은 서버에 묻지 않고 「내 모델 열기」 한 줄만 둔다(기억한 기기는 첫 화면 대신 방이 열려 입구가 없다).
-const keepWanted=()=>s.mode==='customer'&&!demo&&!!s.project&&projectFeatures?.myModels===true&&usesRoom(s.project)&&!!s.project.persona;
-const reuseRoom=()=>s.project?.persona?.mode==='reuse';
+// 내 모델로 맡긴 의뢰(answers.modelChoice 'persona')인데 서버가 인물을 싣지 않은 방 — 연결 확인 전이거나, 사용 중지 · 기한이 지나 그 모델을 지금 쓸 수 없을 때 —
+// 도 그 한 줄을 둔다. 인물 그림 · 확인은 서버 판단대로 보이지 않고(초대 링크는 브랜드 회원 확인이 아니다), 까닭은 내 모델의 회색 카드가 말한다(켜기 전 후속 11-11).
+const reuseAsked=()=>s.project?.studio?.request?.answers?.modelChoice==='persona';
+const keepWanted=()=>s.mode==='customer'&&!demo&&!!s.project&&projectFeatures?.myModels===true&&usesRoom(s.project)&&(!!s.project.persona||reuseAsked());
+const reuseRoom=()=>s.project?.persona?.mode==='reuse'||!s.project?.persona&&reuseAsked();
 const keepOf=state=>state.member?{state:'member',name:state.workspace?.name||''}:state.pending?{state:'pending'}:{state:'ask'};
 function setKeep(projectId,next){if(s.project?.id!==projectId)return;s.keep={projectId,...next};if(canApplyRemote())render({remote:true});}
 async function memberSession(){return networkRequest('/api/customer/pulse/session');}

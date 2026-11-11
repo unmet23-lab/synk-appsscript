@@ -19,6 +19,9 @@ const fail=(message,status=400,code='')=>Object.assign(new Error(message),{statu
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const SYNK_ID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+// 직원 화면에만 내는 SYNK ID 끝 네 자리(판 4 운영 시험 P2): 프로필에 표시 이름이 없는 계정은 이름이 「고객」뿐이라 담당자가 맞춰 볼 단서가 없었다.
+// 손님 쪽 응답(claimView · 회원 경로)에는 싣지 않는다. 고객 신원에는 이메일이 없어 가린 이메일 대신 ID 끝자리다.
+const idHint=id=>typeof id==='string'&&SYNK_ID.test(id)?id.slice(-4).toLowerCase():'';
 const KEY=/^[A-Za-z0-9_-]{8,80}$/;
 const HASH=/^[a-f0-9]{64}$/;
 const CONTROL=/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
@@ -361,7 +364,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   // ── 직원 경로(/api/customer-workspaces/*, 설계 4-4 · 5판 D15) ──
   function claimStaffView(found,staff){
     const row=store.get(PROJECTS,found.projectId),linked=row?.customerWorkspaceId?store.get(K.workspaces,row.customerWorkspaceId):null;
-    return {id:found.id,projectId:found.projectId,projectTitle:row?.title||'',displayName:found.displayName||'',status:found.status,createdAt:found.createdAt,decidedAt:found.decidedAt||null,decidedBy:found.decidedBy?store.get('users',found.decidedBy)?.name||found.decidedBy:null,note:found.note||'',
+    return {id:found.id,projectId:found.projectId,projectTitle:row?.title||'',displayName:found.displayName||'',idHint:idHint(found.synkUserId),status:found.status,createdAt:found.createdAt,decidedAt:found.decidedAt||null,decidedBy:found.decidedBy?store.get('users',found.decidedBy)?.name||found.decidedBy:null,note:found.note||'',
       workspaceId:found.workspaceId||null,mode:linked?'join':'link',linkedWorkspace:linked?{id:linked.id,name:linked.name,status:linked.status,canManage:canManage(staff,linked)}:null,
       stale:!row||row.stage==='archived'||!row.inviteHash||row.inviteRevision!==found.inviteRevision};
   }
@@ -412,7 +415,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       const projects=store.all(PROJECTS).filter(row=>(row.customerWorkspaceId===workspace.id||row.workspaceRequest?.workspaceId===workspace.id)&&readable(staff,row.id)).map(row=>({id:row.id,revision:row.revision,title:row.title,stage:row.stage,linked:row.customerWorkspaceId===workspace.id,
         workspaceRequest:object(row.workspaceRequest)?{personaId:row.workspaceRequest.personaId,confirmedAt:row.workspaceRequest.confirmedAt||null}:null}));
       return {workspace:{id:workspace.id,name:workspace.name,status:workspace.status,revision:workspace.revision,staffOwnerId:workspace.staffOwnerId,staffOwnerName:store.get('users',workspace.staffOwnerId)?.name||'',createdAt:workspace.createdAt,closedAt:workspace.closedAt||null,
-        members:(workspace.members||[]).map(member=>({id:member.id,displayName:member.displayName||'',role:member.role,addedAt:member.addedAt,via:member.via?.claimId?'claim':'staff'})),
+        members:(workspace.members||[]).map(member=>({id:member.id,displayName:member.displayName||'',idHint:idHint(member.synkUserId),role:member.role,addedAt:member.addedAt,via:member.via?.claimId?'claim':'staff'})),
         personas,pending:pendingPersonas(workspace).map(persona=>({id:persona.id,name:persona.displayName||'',originProjectId:persona.originProjectId})),projects,todos:todosOf(workspace,now,staff),
         history:(workspace.history||[]).slice(-50),canManage:canManage(staff,workspace)&&staff.role!=='viewer',isAdmin:staff.role==='admin'}};
     });

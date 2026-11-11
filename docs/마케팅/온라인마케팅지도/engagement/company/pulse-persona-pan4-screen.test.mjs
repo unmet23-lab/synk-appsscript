@@ -67,7 +67,8 @@ test('첫 화면 「내 모델」 입구: 첫 화면 글자에는 없고, 앱이
   assert.match(home,/showModels\(\)\{/);
   assert.match(app,/function modelsEntry\(\)\{[^\n]*publicFeatures\(\)\.then\(features=>\{if\(features\?\.myModels===true&&handle===entryHandle\)handle\?\.showModels\?\.\(\);\}\);\}/);
   // 고객 방 모아 두기도 그 프로젝트 응답의 스위치(projectFeatures.myModels) · 이 방의 인물이 있을 때만 읽는다.
-  assert.match(app,/const keepWanted=\(\)=>s\.mode==='customer'&&!demo&&!!s\.project&&projectFeatures\?\.myModels===true&&usesRoom\(s\.project\)&&!!s\.project\.persona;/);
+  // 11-11 켜기 전 후속: 내 모델로 맡긴 의뢰(answers.modelChoice 'persona')는 인물이 실리지 않은 방에서도 읽는다 — 「내 모델 열기」 한 줄(pulse-before-switch 시험).
+  assert.match(app,/const keepWanted=\(\)=>s\.mode==='customer'&&!demo&&!!s\.project&&projectFeatures\?\.myModels===true&&usesRoom\(s\.project\)&&\(!!s\.project\.persona\|\|reuseAsked\(\)\);/);
   // 내 모델 화면 모듈은 처음 열 때 읽는다(꺼져 있으면 손님 앱이 판 4 전과 같은 파일만 받는다).
   assert.match(app,/const memberApi=\(\)=>import\('\.\/my-models\.mjs'\);/);assert.doesNotMatch(app,/^import .*my-models/m);
 });
@@ -192,7 +193,9 @@ test('판 4 화면 최종 검수 F1 ~ F5: 붙인 칩은 다시 눌러도 그대�
   assert.match(app,/failed:action==='link'\?loadWorkspace:null\}\);/);
   // F3: 로그아웃 실패(401이 아닌)는 화면을 그대로 두고 까닭을 보인다.
   const mine=read('my-models.mjs');
-  assert.match(mine,/catch\(err\)\{if\(err\.status!==401\)\{st\.busy=false;st\.error=t\('로그아웃하지 못했어요\. 다시 시도해 주세요\.'\);paint\(\{focus:false\}\);return;\}\}/);
+  // 11-11: 403(다른 탭의 다시 로그인)은 세션을 다시 읽고 서버 글 — 그 밖의 실패는 지금처럼 이 문장. 여기와 pulse-before-switch 시험은 갈래만 잠그고,
+  // 403 동작(첫 누름은 서버 글 · 세션 다시 읽음, 둘째는 새 보안 값으로 나감)은 실제 브라우저 캡처(.tmp/pulse-before-switch-20261111 G)가 돌린다.
+  assert.match(mine,/catch\(err\)\{const gone=err\.status===401\|\|err\.status===403&&!\(await resync\(\)\);if\(!gone\)\{st\.busy=false;st\.error=err\.status===403\?err\.message:t\('로그아웃하지 못했어요\. 다시 시도해 주세요\.'\);paint\(\{focus:false\}\);return;\}\}/);
   assert.doesNotMatch(mine,/\/api\/customer\/logout'[^\n]*\}catch\{\}/,'로그아웃 실패를 삼키지 않는다');
   // F4: 밑줄은 내 모델 자기 단추에만 — 언어 메뉴 단추(.locale-option)에는 걸리지 않는다.
   const css=readFileSync(new URL('./film.css',appDir),'utf8');
@@ -231,7 +234,7 @@ test('보관 규칙 화면 최종 검수 F1 ~ F3(11-11): 의뢰서 인물 안내
 test('묶음: 손님 오프라인 목록에 내 모델 모듈(직원 브랜드 데스크는 빼고), 서버가 두 모듈을 내준다',()=>{
   const sw=read('sw.js');
   assert.match(sw,/FILES\.push\(BASE\+'my-models\.mjs'\);/);assert.doesNotMatch(sw,/'brand-desk-view\.mjs'/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v44-payment-journal-20261111';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v45-before-switch-20261112';/);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
-  assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs'\]\)files\['\/pulse-app\/'\+file\]/);
+  assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs','boot-locale\.js'\]\)files\['\/pulse-app\/'\+file\]/);
 });

@@ -7,7 +7,7 @@ import {FINISHED_FILMS,filmNote,filmTitle} from './films-view.mjs';
 import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
 import {arrow} from './film-home.mjs';
 import {holdPoster} from './film-review.mjs';
-import {personaCopy,personaCard,personaLine,personaScreen,personaKeep} from './persona-view.mjs';
+import {personaCopy,personaCard,personaLine,personaScreen,personaKeep,personaReuseLine} from './persona-view.mjs';
 export {entryView,mountEntry} from './film-home.mjs';
 
 // 시사실 판의 고객 화면(2026-11-05): 고객 방, 1차안. 자료 모양은 room-view.mjs가 프로젝트에서 옮겨 준다. 판단은 거기 있고 여기는 그리기만 한다.
@@ -291,7 +291,8 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
   const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main?'':CONFIRM_OF[p.state];
   // 판 4: 인물 칸 바로 아래 「내 모델로 모아 두기」(앱이 회원 상태를 읽어 넘긴 p.keep이 있을 때만 — 없으면 판 4 전과 같다).
   const keep=p.persona&&p.keep?personaKeep(p.persona,p.keep):'';
-  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:'',late=p.state==='ask'&&!!journal;
+  // 내 모델로 맡긴 의뢰인데 서버가 인물을 싣지 않은 다시 쓰기 방(연결 확인 전 · 지금 쓸 수 없는 모델 — 켜기 전 후속 11-11)은 내 모델로 가는 한 줄만 둔다.
+  const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:!p.persona&&p.keep?.state==='reuse'?personaReuseLine():'',late=p.state==='ask'&&!!journal;
   return `<div class="sx-room" data-state="${esc(p.state)}">
     ${bar?exampleHead(p):''}
     <section class="sx-room-hero">

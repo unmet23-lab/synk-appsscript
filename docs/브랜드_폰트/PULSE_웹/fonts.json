@@ -8,6 +8,7 @@
   "animatic-player.mjs",
   "api.mjs",
   "app.mjs",
+  "boot-locale.js",
   "brand-desk-view.mjs",
   "casting-catalog.mjs",
   "casting-choice.mjs",

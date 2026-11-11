@@ -12,23 +12,23 @@ import {arrow} from './film-home.mjs';
 export const PERSONA_CONFIRM_OF=Object.freeze({scope:'1/4',reference:'2/4',motion:'3/4',usage:'4/4'});
 // 저희 차례 · 끝난 상태에서 보이는 한 줄(설계 1절 표). 손님 차례 상태는 카드가 대신한다.
 // 판 4: 사용 중지(paused) · 삭제 진행(deleting) · 묘비(deleted)와 읽을 때 계산하는 보관 기간 끝(expired).
-export const STATUS_LINE=Object.freeze({submitted:k('보내 주신 자료를 보고 있어요'),needs_materials:k('자료를 조금 더 보내 주세요'),rights_pending:k('출연하실 분의 동의를 확인하고 있어요'),reviewing:k('만들 수 있는지 검토하고 있어요'),quote_review:k('견적과 범위를 확인해 주세요'),reference_making:k('기준 얼굴을 만들고 있어요'),reference_review:k('기준 얼굴을 확인해 주세요'),building:k('인물을 준비하고 있어요'),motion_review:k('움직이는 모습을 확인해 주세요'),withdrawn:k('요청을 거뒀어요'),retired:k('사용을 마쳤어요'),paused:k('사용을 멈춘 인물이에요'),deleting:k('인물을 지우고 있어요'),deleted:k('지운 인물이에요'),expired:k('다시 쓰기 기한이 지났어요')});
+export const STATUS_LINE=Object.freeze({submitted:k('보내 주신 자료를 보고 있어요'),needs_materials:k('자료를 조금 더 보내 주세요'),rights_pending:k('출연하실 분의 동의를 확인하고 있어요'),reviewing:k('만들 수 있는지 검토하고 있어요'),quote_review:k('견적과 범위를 확인해 주세요'),reference_making:k('기준 얼굴을 만들고 있어요'),reference_review:k('기준 얼굴을 확인해 주세요'),building:k('인물을 준비하고 있어요'),motion_review:k('동작 시안을 확인해 주세요'),withdrawn:k('요청을 거뒀어요'),retired:k('사용을 마쳤어요'),paused:k('사용을 멈춘 인물이에요'),deleting:k('인물을 지우고 있어요'),deleted:k('지운 인물이에요'),expired:k('다시 쓰기 기한이 지났어요')});
 const CARD=Object.freeze({
   materials:{title:k('인물 사진을 조금 더 보내 주세요'),text:k('만들 수 있는지 보려면 사진이 조금 더 필요해요.')},
   scope:{title:k('맞춤 인물 견적을 확인해 주세요'),text:k('만들 범위와 값 · 기간을 보시고, 맞으면 이대로 진행해 주세요. 확인하시기 전에는 비용이 생기지 않아요.'),confirm:k('승인하시면 이 값 · 기간 · 범위로 기준 얼굴을 만들기 시작해요.'),approve:k('이 견적으로 진행'),hint:k('예) 기간을 5일 안으로 줄일 수 있을까요?')},
-  reference:{title:k('기준 얼굴을 확인해 주세요'),text:k('이 인물의 기준이 될 얼굴이에요. 이 얼굴로 움직이는 모습과 광고 장면을 만들어요.'),confirm:k('승인하시면 이 얼굴을 기준으로 인물을 만들어요. 광고 영상은 따로 확인받아요.'),approve:k('이 얼굴로 진행'),hint:k('예) 눈매를 조금 더 부드럽게, 머리는 더 짧게')},
-  motion:{title:k('움직이는 모습을 확인해 주세요'),text:k('기준 얼굴로 만든 짧은 동작 시안이에요. 표정과 움직임이 어디까지 되는지 봐 주세요.'),confirm:k('승인하시면 이 인물로 광고 장면을 준비해요. 광고 영상은 따로 확인받아요.'),approve:k('이 인물로 진행'),hint:k('예) 웃을 때 입 모양이 어색해요')},
+  reference:{title:k('기준 얼굴을 확인해 주세요'),text:k('이 인물의 기준이 될 얼굴이에요. 이 얼굴로 동작 시안과 광고 장면을 만들어요.'),confirm:k('승인하시면 이 얼굴을 기준으로 인물을 만들어요. 광고 영상은 따로 확인받아요.'),approve:k('이 얼굴로 진행'),hint:k('예) 눈매를 조금 더 부드럽게, 머리는 더 짧게')},
+  motion:{title:k('동작 시안을 확인해 주세요'),text:k('기준 얼굴로 만든 짧은 동작 시안이에요. 표정과 움직임이 어디까지 되는지 봐 주세요.'),confirm:k('승인하시면 이 인물로 광고 장면을 준비해요. 광고 영상은 따로 확인받아요.'),approve:k('이 인물로 진행'),hint:k('예) 웃을 때 입 모양이 어색해요')},
   usage:{title:k('이번 광고에 쓸지 확인해 주세요'),text:k('이 인물을 아래 범위로 이번 광고에 써요.'),confirm:k('승인하시면 이 범위 안에서만 이번 광고에 이 인물을 써요. 다른 광고에 쓰실 때는 다시 여쭤요.'),approve:k('이번 광고에 사용')},
 });
 // 승인 뒤 알림 한 줄(app.mjs personaDecide — 앱 맨 위에서 번역 표시를 부르지 않게 여기 둔다).
-export const PERSONA_DONE=Object.freeze({scope:k('견적을 확인했어요. 기준 얼굴을 만들어 보여 드릴게요.'),reference:k('이 얼굴로 정했어요. 움직이는 모습을 만들어 보여 드릴게요.'),motion:k('이 인물로 정했어요.'),usage:k('이번 광고에 이 인물을 쓰기로 했어요.')});
+export const PERSONA_DONE=Object.freeze({scope:k('견적을 확인했어요. 기준 얼굴을 만들어 보여 드릴게요.'),reference:k('이 얼굴로 정했어요. 동작 시안을 만들어 보여 드릴게요.'),motion:k('이 인물로 정했어요.'),usage:k('이번 광고에 이 인물을 쓰기로 했어요.')});
 // 이번 광고 사용 범위의 칸 이름(서버 USAGE_TEXT와 같은 칸, 비어 있는 칸은 그리지 않는다).
 const USAGE_ROWS=Object.freeze([['brand',k('브랜드')],['product',k('제품')],['purpose',k('광고 목적')],['media',k('매체')],['regions',k('지역')],['period',k('사용 기간')],['fee',k('비용')],['schedule',k('일정')],['note',k('메모')]]);
 // 사진 보내기: 실제 인물은 출연하실 분의 사진과 분위기 참고 사진, 가상 인물은 분위기 참고 사진만(의뢰서와 같은 약속 — 가상 인물에 남의 얼굴을 재현하지 않는다).
 const PURPOSE=Object.freeze({identity:k('출연하실 분의 사진 보내기'),mood:k('분위기 참고 사진 보내기')});
 const ACCEPT='image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif';
 // 값: 한국어는 만 원으로 떨어지면 「30만원」, 아니면 「395,500원」. 다른 언어는 원화 그대로 「KRW 300,000」(결제 통화를 바꾸지 않는다). 한국어 꼴은 값 포맷터다.
-const won=value=>!Number.isSafeInteger(value)?'':locale()!=='ko'?`KRW ${value.toLocaleString('en-US')}`:value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`; // i18n-skip
+const won=value=>!Number.isSafeInteger(value)?'':locale()!=='ko'?`KRW ${value.toLocaleString('en-US')}`:value&&value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`; // i18n-skip
 // 다시 쓰기 방(판 4 — 서버 mode 'reuse')의 인물은 브랜드가 보관한 「내 모델」이다.
 const nameLine=m=>m.mode==='reuse'?(m.name?t('내 모델 「{name}」',{name:m.name}):t('내 모델의 모델')):m.name?t('맞춤 인물 「{name}」',{name:m.name}):t('맞춤 인물');
 
@@ -90,6 +90,13 @@ export function personaLine(m){
 // keep.state: login(SYNK ID 로그인 전) · ask(연결 · 합류 요청 전) · busy · pending(담당자 확인 중) · member(이 프로젝트의 브랜드 회원 — keep.name).
 // 누가 보게 되는지를 먼저 한 줄로 말한다 — 보관은 브랜드 관리자가 내 모델에서 정하고, 정하면 그 브랜드 회원들이 다음 광고에 쓸 수 있다.
 // 다시 쓰기 방(keep.state 'reuse')은 그 모델이 온 「내 모델」로 가는 한 줄만 둔다 — 기억한 기기는 첫 화면 대신 방이 열려 입구가 없기 때문이다.
+// 내 모델로 맡긴 의뢰인데 서버가 인물을 싣지 않은 다시 쓰기 방(켜기 전 후속 11-11): 직원이 연결을 확인하기 전이거나, 사용 중지 · 기한이 지나 그 모델을 지금 쓸 수 없을 때다.
+// 인물 그림 · 확인은 서버 판단대로 보이지 않는다(초대 링크는 브랜드 회원 확인이 아니고, 쓸 수 없는 모델은 새 사용을 막는다). 기억한 기기는 첫 화면 대신 이 방이 열려 입구가 없으므로
+// 내 모델로 가는 한 줄은 남긴다 — 까닭(회색 카드)과 기한 연장은 내 모델에서 본다.
+// 보통 프로젝트 방(인물 없음)의 「내 모델」 입구(판 4 운영 시험 P3, 11-11): 이 브라우저에 프로젝트 방이 열려 있으면 첫 화면 입구가 붙지 않아
+// 같은 브랜드 회원이 다른 광고 방을 쓰는 중이면 내 모델에 닿을 길이 없었다. 방 아래 띠에 한 줄 — 스위치 myModels가 꺼지면 앱이 그리지 않는다.
+export const personaModelsLine=()=>`<p class="sx-small sx-room-models">${esc(t('브랜드에 모델을 보관해 두면 다음 광고에 다시 쓸 수 있어요.'))} <button type="button" class="sx-quiet" data-room-do="my-models">${esc(t('내 모델 열기'))}</button></p>`;
+export const personaReuseLine=()=>`<div class="sx-persona-keep" data-room-in><p class="sx-small sx-persona-kept">${esc(t('내 모델로 맡긴 의뢰인데, 지금은 이 방에서 그 모델을 보여 드릴 수 없어요. 모델 상태는 내 모델에서 확인해 주세요.'))} <button type="button" class="sx-quiet" data-room-do="my-models">${esc(t('내 모델 열기'))}</button></p></div>`;
 export function personaKeep(m,keep){
   if(!m||!keep?.state||m.turn==='end')return '';
   if(m.mode==='reuse')return keep.state==='reuse'?`<div class="sx-persona-keep" data-room-in><p class="sx-small sx-persona-kept">${esc(t('브랜드의 내 모델에 보관한 모델이에요.'))} <button type="button" class="sx-quiet" data-room-do="my-models">${esc(t('내 모델 열기'))}</button></p></div>`:'';
@@ -109,7 +116,7 @@ export function personaScreen(m){
   return '';
 }
 // 일지 줄(판 3b 줄기에 인물 일을 한 줄씩). 서버가 내려 주는 code만 쓴다 — 손님 글 · 직원 메모 · 판 파일은 싣지 않는다. 지금 손님 차례를 연 줄에만 「열기」(고객 방)를 단다.
-const EVENT_TEXT=Object.freeze({sent:k('맞춤 인물을 요청했어요'),files:k('인물 사진을 보냈어요'),materials:k('인물 사진을 더 부탁드렸어요'),rights:k('출연하실 분의 동의 확인을 시작했어요'),review:k('맞춤 인물 검토를 시작했어요'),quote:k('맞춤 인물 견적을 보냈어요'),reference:k('기준 얼굴을 보냈어요'),motion:k('움직이는 모습을 보냈어요'),usage:k('이번 광고에 쓸 범위를 보냈어요'),withdrawn:k('맞춤 인물 요청을 거뒀어요'),retired:k('맞춤 인물 사용을 마쳤어요'),scope_ok:k('맞춤 인물 견적을 확인했어요'),scope_changes:k('견적에 고칠 점을 보냈어요'),reference_ok:k('기준 얼굴을 확인했어요'),reference_changes:k('기준 얼굴에 고칠 점을 보냈어요'),motion_ok:k('움직이는 모습을 확인했어요'),motion_changes:k('움직이는 모습에 고칠 점을 보냈어요'),usage_ok:k('이번 광고 사용을 확인했어요')});
+const EVENT_TEXT=Object.freeze({sent:k('맞춤 인물을 요청했어요'),files:k('인물 사진을 보냈어요'),materials:k('인물 사진을 더 부탁드렸어요'),rights:k('출연하실 분의 동의 확인을 시작했어요'),review:k('맞춤 인물 검토를 시작했어요'),quote:k('맞춤 인물 견적을 보냈어요'),reference:k('기준 얼굴을 보냈어요'),motion:k('동작 시안을 보냈어요'),usage:k('이번 광고에 쓸 범위를 보냈어요'),withdrawn:k('맞춤 인물 요청을 거뒀어요'),retired:k('맞춤 인물 사용을 마쳤어요'),scope_ok:k('맞춤 인물 견적을 확인했어요'),scope_changes:k('견적에 고칠 점을 보냈어요'),reference_ok:k('기준 얼굴을 확인했어요'),reference_changes:k('기준 얼굴에 고칠 점을 보냈어요'),motion_ok:k('동작 시안을 확인했어요'),motion_changes:k('동작 시안에 고칠 점을 보냈어요'),usage_ok:k('이번 광고 사용을 확인했어요')});
 const OPENS=Object.freeze({materials:'materials',quote:'scope',reference:'reference',motion:'motion',usage:'usage'});
 export function personaJournal(p,{me,owner}){
   const m=personaModel(p),events=Array.isArray(p?.persona?.events)?p.persona.events:[];if(!m)return [];

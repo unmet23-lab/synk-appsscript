@@ -72,14 +72,16 @@ function personaOne(p,canEdit){
   const transition=action=>{
     const [label,fields]=P_ACTION[action]||[action,[]],main=ahead[action]===p.status,again=!!ahead[action]&&!main;
     if(action==='send_quote')return form(action,`${input('price','인물 제작 값(원)',12,{required:true,type:'number',value:p.quote?.price??'',attrs:'min="0" max="100000000" step="1000"'})}${input('days','기간(일)',3,{required:true,type:'number',value:p.quote?.days??'',attrs:'min="1" max="120" step="1"'})}${input('revisions','수정 횟수',1,{required:true,type:'number',value:p.quote?.revisions??2,attrs:'min="0" max="9" step="1"'})}${input('scope','만들 범위(손님에게 보여요)',600,{area:true,required:true,value:p.quote?.scope||''})}`,p.quote?'견적 고쳐 다시 보내기':label,{main});
-    if(action==='publish_reference'){if(!sendable.length)return `<p class="desk-at">기준 얼굴 그림을 판에 먼저 올려 주세요.</p>`;return form(action,`<label><span>보낼 판</span><select name="revisionId">${sendable.map(revision=>`<option value="${esc(revision.id)}">${revision.number}판</option>`).join('')}</select></label>${input('note','손님에게 보일 설명',600,{area:true})}`,again?'기준 얼굴 다시 보내기':label,{main});}
+    if(action==='publish_reference'){if(!sendable.length)return current?.referenceApproved?'':`<p class="desk-at">기준 얼굴 그림을 판에 먼저 올려 주세요.</p>`;return form(action,`<label><span>보낼 판</span><select name="revisionId">${sendable.map(revision=>`<option value="${esc(revision.id)}">${revision.number}판</option>`).join('')}</select></label>${input('note','손님에게 보일 설명',600,{area:true})}`,again?'기준 얼굴 다시 보내기':label,{main});}
     if(action==='publish_motion'){if(!current?.assets.some(item=>item.role==='motion'))return `<p class="desk-at">동작 시안 영상을 지금 판에 먼저 올려 주세요.</p>`;return form(action,`<input type="hidden" name="revisionId" value="${esc(current.id)}">${input('note','되는 표현과 한계(손님에게 보여요)',600,{area:true})}`,again?'동작 시안 다시 보내기':label,{main});}
     return form(action,fields.map(([name,text,max,required])=>input(name,text,max,{required})).join(''),label);
   };
   const usage=p.usage;
+  // 이름 없는 인물(판 4 운영 시험 P3): 기준 얼굴 단계(4/7)부터는 손님 화면 제목이 이름이라, 정하지 않았으면 한 줄로 알리고 이름 칸을 펼쳐 둔다(직원 화면).
+  const unnamed=canEdit&&!p.displayName&&Number(p.step)>=4&&!['withdrawn','retired','deleting','deleted'].includes(p.status);
   return `<section class="desk-persona" data-persona-id="${esc(p.id)}"><h2 class="desk-h">맞춤 인물 · ${p.kind==='real'?'실제 인물':'새 가상 인물'}${p.displayName?` · ${esc(p.displayName)}`:''} · ${esc(P_STATUS[p.status]||p.status)}${p.step?` <span class="mono">${p.step}/7</span>`:''}</h2>
     <p class="desk-sum"><i class="led ${['quote_review','reference_review','motion_review','needs_materials'].includes(p.status)||p.status==='ready'&&usage&&!p.usageDone?'is-wait':p.usageDone||p.status==='retired'?'is-ok':'is-wait'}"></i> ${esc(p.next)}</p>
-    ${p.why?`<p class="desk-at">손님에게 보이는 이유: ${esc(p.why)}</p>`:''}
+    ${p.why?`<p class="desk-at">손님에게 보이는 이유: ${esc(p.why)}</p>`:''}${unnamed?'<p class="desk-at">손님에게 보일 이름을 아직 정하지 않았어요 — 손님 화면에는 「이름 없는 모델」 · 「내 모델의 모델」로 보여요. 아래 「이름 · 내부 메모」에서 정해 주세요.</p>':''}
     ${asked.length?`<dl class="kv">${asked.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`:''}
     <h3 class="desk-h">손님 사진 <span class="mono">${p.sources.length}</span></h3>${p.sources.length?`<div class="contact is-wide desk-persona-media">${p.sources.map(item=>`<figure>${media(item)}<figcaption>${esc(P_PURPOSE[item.purpose]||item.purpose)} · ${esc(item.fileName)}</figcaption></figure>`).join('')}</div>`:'<p class="desk-at">아직 없어요. 손님은 고객 방 인물 칸에서 보낼 수 있어요.</p>'}
     ${p.quote?`<h3 class="desk-h">견적</h3><p class="desk-sum">${esc(won(p.quote.price))} · ${p.quote.days}일 · 수정 ${p.quote.revisions}회 · ${esc(mailAt(p.quote.at))}</p><p>${esc(p.quote.scope)}</p>`:''}
@@ -88,14 +90,14 @@ function personaOne(p,canEdit){
     <h3 class="desk-h">이번 광고 사용 범위</h3>${usage?`<dl class="kv">${P_USAGE.filter(([key])=>usage[key]).map(([key,label])=>`<div><dt>${esc(label)}</dt><dd>${esc(usage[key])}</dd></div>`).join('')}</dl><p class="desk-at">${p.usageDone?'손님이 이번 광고 사용을 확인했어요 — 제작 설계에 인물이 붙었어요.':'손님 확인을 기다려요. 범위를 고치면 다시 확인받아요.'}</p>`:`<p class="desk-at">${p.step>=3&&!['withdrawn','retired'].includes(p.status)?'아직 정하지 않았어요. 아래에서 적어 손님에게 보내요(손님이 확인해야 제작 설계에 인물이 붙어요).':'아직 정하지 않았어요. 견적을 보낸 뒤 적을 수 있어요.'}</p>`}
     ${canEdit&&p.step>=3&&!['withdrawn','retired'].includes(p.status)?`<details class="desk-persona-more"><summary>${usage?'사용 범위 고쳐 보내기':'사용 범위 적어 보내기'}</summary>${form('set_usage',P_USAGE.map(([name,label,max,required])=>input(name,label+(required?' · 꼭':''),max,{area:name==='note',required,value:usage?.[name]||''})).join(''),'손님에게 보내기')}</details>`:''}
     ${canEdit&&p.actions.length?`<h3 class="desk-h">다음 단계</h3><div class="desk-persona-actions">${p.actions.map(transition).join('')}</div>`:''}
-    ${canEdit?`<details class="desk-persona-more"><summary>이름 · 내부 메모</summary>${form('set_name',input('displayName','손님에게 보일 인물 이름',40,{value:p.displayName}),'이름 저장')}${form('note',input('text','내부 메모(손님에게 안 보여요)',1000,{area:true,value:p.staffNote}),'메모 저장')}</details>`:''}
+    ${canEdit?`<details class="desk-persona-more"${unnamed?' open':''}><summary>이름 · 내부 메모</summary>${form('set_name',input('displayName','손님에게 보일 인물 이름',40,{value:p.displayName}),'이름 저장')}${form('note',input('text','내부 메모(손님에게 안 보여요)',1000,{area:true,value:p.staffNote}),'메모 저장')}</details>`:''}
     ${p.kind==='real'?'<p class="desk-at">실제 인물 — 당사자 확인 쪽은 실제 인물 출연을 켤 때 열어요. 동의 증빙은 서버의 암호문 기록(편집 권한)으로만 남겨요.</p>':''}
     ${p.history?.length?`<details class="desk-persona-more"><summary>기록 ${p.history.length}줄</summary><ul class="desk-files">${p.history.slice(-30).reverse().map(entry=>`<li>${esc(mailAt(entry.at))} · ${esc(entry.action)} · ${esc(entry.actorKind==='customer'?'손님':entry.actorKind==='staff'?'직원':'서버')}${entry.from!==entry.to?` · ${esc(P_STATUS[entry.from]||entry.from||'—')} → ${esc(P_STATUS[entry.to]||entry.to)}`:''}</li>`).join('')}</ul></details>`:''}
   </section>`;
 }
 const ROUND_STATE=round=>round.approvedAt?'확인 끝':round.feedbackAt?`의견 ${round.changes||0}개`:'고객이 보는 중';
 // 결제 · 크몽(판 4): 손님이 크몽에서 접수 번호로 문의 → 담당자가 안전결제요청 → 결제 확인. 장면 이미지 판 · 시안은 결제 확인 뒤에만 보낸다(서버 문턱).
-const won=value=>Number.isSafeInteger(value)?(value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`):'';
+const won=value=>Number.isSafeInteger(value)?(value&&value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`):'';
 function paymentBlock(r){
   // 결제 상태를 아는 서버(paymentFlow)에서만 — 옛 서버에는 결제 동작이 없다.
   if(!r.paymentFlow||!r.confirmed&&r.status!=='confirmed')return '';

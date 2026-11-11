@@ -209,6 +209,10 @@ test('연결 요청과 증표(설계 4-1 · 3-2 · 5판 D11): 한 번 · 목적 
   const fresh=await a.member('/claim',{proof:await a.proof('workspace-claim')});assert.equal(fresh.status,200);
   assert.equal(fresh.data.claim.id,claimId,'새 링크로 다시 요청하면 같은 줄을 지금 초대 판으로 다시 적는다(줄은 하나)');assert.equal(fresh.data.renewed,true);
   assert.equal((await f.staff('/api/customer-workspaces')).data.claims.find(item=>item.id===claimId).stale,false);
+  // 판 4 운영 시험 P2(11-11): 직원 목록에는 SYNK ID 끝 네 자리(idHint — 프로필 이름이 없으면 「고객」뿐이라 맞춰 볼 단서), 손님이 받는 claim 응답에는 없다.
+  const staffClaim=(await f.staff('/api/customer-workspaces')).data.claims.find(item=>item.id===claimId),ownClaim=f.store().get('pulseWorkspaceClaims',claimId);
+  assert.equal(staffClaim.idHint,ownClaim.synkUserId.slice(-4).toLowerCase());assert.equal(staffClaim.idHint.length,4);
+  assert.ok(!('idHint' in fresh.data.claim)&&!('synkUserId' in fresh.data.claim),'손님 응답에는 ID 단서가 없다');
   assert.equal(f.store().all('pulseWorkspaceClaims').filter(item=>item.status==='pending').length,1);
   const approved=await f.staff('/api/customer-workspaces/claims/'+fresh.data.claim.id,{body:{action:'approve',mode:'new',name:'가 브랜드',note:'지정 승인자 본인이 메일 회신으로 확인'}});
   assert.equal(approved.status,200,JSON.stringify(approved.data));
@@ -251,6 +255,7 @@ test('시나리오 5 · 동의 주체 · 경합: 보관 대기는 그 브랜드 
   assert.equal((await b.member('/reuse',{workspaceId:wb,personaId:x.personaId,revisionId:consent.revisionId,viewedHash:consent.viewedHash,idempotencyKey:randomUUID()})).status,404,'다른 브랜드 admin');
   assert.equal((await b.member('/reuse',{workspaceId:wa,personaId:x.personaId,revisionId:consent.revisionId,viewedHash:consent.viewedHash,idempotencyKey:randomUUID()})).status,404,'회원이 아닌 브랜드');
   const workspace=f.store().get('customerWorkspaces',wa),member=workspace.members[0];
+  assert.equal((await f.staff('/api/customer-workspaces/'+wa)).data.workspace.members[0].idHint,member.synkUserId.slice(-4).toLowerCase(),'브랜드 회원 줄에도 ID 끝 네 자리(직원 화면)');
   assert.equal((await f.staff('/api/customer-workspaces/'+wa,{body:{action:'set_role',revision:workspace.revision,memberId:member.id,role:'member',note:'역할 시험'}})).status,200);
   assert.equal((await a.member('/reuse',{workspaceId:wa,personaId:x.personaId,revisionId:consent.revisionId,viewedHash:consent.viewedHash,idempotencyKey:randomUUID()})).status,403,'member는 보관을 정하지 못한다');
   assert.equal((await a.member('/models')).data.workspaces[0].pending.length,0,'member에게는 보관 대기가 없다');
