@@ -963,10 +963,15 @@ test('돌림표 명령 — 노래 원본의 연재 · 이미받음을 읽고, �
   prep.판[0].시각 = '2026-11-01T21:00:00+09:00';
   적기(m, G, '준비.json', prep);
   const run = () => m.run('--부터', '2026-11-20', '--일수', '3', '--json');
-  // 쓸날 없는 노래 원본은 셈을 멈춘다(11-11 — 씨앗의 빈 21:00 칸에 바로 달려 그날 줄 편과 같은 칸에 두 번 걸린다), 날짜 꼴이 아니어도 멈춘다
+  // 쓸날 없는 노래 원본은 셈에서 빠진다(판을 받지 않는다 — 11-11: 씨앗의 빈 21:00 칸에 바로 달려 그날 줄 편과 같은 칸에 두 번 걸린다) · 셈은 멈추지 않고
+  // 알린다(11-12 — 던지면 만들던 노래 원본 하나가 돌림표의 모든 명령을 세운다). 날짜 꼴이 아닌 쓸날은 전처럼 멈춘다
   const noDay = run();
-  assert.notEqual(noDay.status, 0);
-  assert.match(noDay.stderr, /노래 원본에 「돌림」\.쓸날이 없다/);
+  assert.equal(noDay.status, 0, noDay.stderr);
+  assert.match(noDay.stderr, /^! 쓸날 없는 노래 원본 1 — 셈에서 뺐다/);
+  const noDayJson = JSON.parse(noDay.stdout);
+  assert.deepEqual(noDayJson.waiting, [{ piece: G, why: '노래 원본에 「돌림」.쓸날이 없다' }]);
+  assert.deepEqual(noDayJson.cells.filter((c) => c.original === G), [], '쓸날 없는 노래 원본은 칸을 받지 않는다');
+  assert.ok(noDayJson.cells.some((c) => c.original === N), '다른 원본(이야기)의 셈은 그대로 돈다');
   prep.돌림.쓸날 = '11-20';
   적기(m, G, '준비.json', prep);
   assert.match(run().stderr, /쓸날은 YYYY-MM-DD 꼴이다/);
@@ -1224,4 +1229,56 @@ test('돌림표 --다시 — 「같은 칸 두 번」의 안 건 돌림 판도 �
   assert.notEqual(again[0].split('|')[2].slice(0, 10), '2026-11-21');
   assert.deepEqual(읽기(m, hand).판.map((p) => p.시각), ['2026-11-21T13:00:00+07:00'], '손으로 단 판은 건드리지 않는다');
   assert.doesNotMatch(장부().stdout, /같은 칸 두 번/);
+});
+
+test('돌림표 명령 — 쓸날 없는 노래 원본은 셈에서 빠져 씨앗 계정의 빈 노래 칸에도 달리지 않고, 다른 원본의 셈 · 쓰기 · 장부 · 점검 · 묶음은 그대로 돈다(11-12 — 노래 세 편이 돌림 전체를 세움)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  원장고침(m, (acc) => { for (const k of ['lab-instagram', 'lab-th-youtube', 'lab-jp-youtube']) acc[k].dailyFormats = ['이야기', '노래']; });
+  // 새 노래 원본(만드는 중 — 판본은 검수까지 섰지만 여는 날이 미정이라 쓸날이 없다 · 아직 어느 계정에도 판이 없다)
+  const 노래 = 'LAB_노래_다_20261111';
+  fs.cpSync(path.join(m.root, G), path.join(m.root, 노래), { recursive: true });
+  const prep = 읽기(m, 노래);
+  prep.돌림.형식 = '노래';
+  delete prep.돌림.쓸날;
+  prep.판 = [];
+  // 씨앗 계정(몽골)의 판본도 서 있다 — 쓸날만 있으면 씨앗의 빈 노래 칸에 바로 달릴 수 있는 원본이다(11-11 P3-4가 막으려던 꼴)
+  fs.cpSync(path.join(m.root, 노래, '게시', '판본', 'TH'), path.join(m.root, 노래, '게시', '판본', 'MN'), { recursive: true });
+  prep.돌림.판본.MN = JSON.parse(JSON.stringify(prep.돌림.판본.TH).split('/판본/TH/').join('/판본/MN/'));
+  적기(m, 노래, '준비.json', prep);
+  적기(m, 노래, '게시결과.json', { 판: [] });
+  const 판수 = () => 읽기(m, 노래).판.length;
+
+  // 사람 읽는 출력 — 맨 위 줄이 알림이고 셈은 종료 0이다. --쓰기는 다른 원본의 판만 단다
+  const w = m.run('--부터', '2026-11-20', '--일수', '3', '--쓰기');
+  assert.equal(w.status, 0, w.stderr);
+  assert.match(w.stdout, /^! 쓸날 없는 노래 원본 1 — 셈에서 뺐다\(이 원본들은 판을 받지 않는다\): LAB_노래_다_20261111 — /);
+  assert.equal(판수(), 0, '쓸날 없는 노래 원본에는 판이 써지지 않는다(씨앗의 빈 노래 칸 포함)');
+  assert.ok(돌림판들(m).length > 0, '이야기 원본의 판은 달린다');
+  // 장부 · 점검 · 묶음도 멈추지 않는다
+  for (const mode of ['--장부', '--점검', '--묶음']) {
+    const r = m.run('--부터', '2026-11-20', '--일수', '3', mode);
+    assert.doesNotMatch(r.stderr, /쓸날이 없다 — 21:00/, mode);
+    assert.match(r.stdout, /^! 쓸날 없는 노래 원본 1/, mode);
+  }
+  // 쓸날을 적으면 그날부터 판을 받는다 — 씨앗 계정의 노래 칸부터(위에서 칸을 못 받은 것이 쓸날 때문이었다)
+  prep.돌림.쓸날 = '2026-11-20';
+  적기(m, 노래, '준비.json', prep);
+  const ok = m.run('--부터', '2026-11-20', '--일수', '3', '--json');
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.equal(ok.stderr, '');
+  const j = JSON.parse(ok.stdout);
+  assert.deepEqual(j.waiting, []);
+  const cells = j.cells.filter((c) => c.original === 노래);
+  assert.ok(cells.some((c) => c.account === 'lab-instagram' && c.format === '노래'), `쓸날이 있으면 씨앗의 노래 칸에 달린다\n${JSON.stringify(cells)}`);
+  // 판을 받은 뒤 쓸날이 지워지면 그 안 건 돌림 판은 무효다 — --다시가 뺀다
+  assert.equal(m.run('--부터', '2026-11-20', '--일수', '3', '--쓰기').status, 0);
+  assert.ok(판수() > 0);
+  const again = 읽기(m, 노래);
+  delete again.돌림.쓸날;
+  적기(m, 노래, '준비.json', again);
+  const re = m.run('--부터', '2026-11-20', '--일수', '3', '--다시', '--쓰기');
+  assert.equal(re.status, 0, re.stderr);
+  assert.ok(re.stdout.includes('(노래 원본에 「돌림」.쓸날이 없다)'), re.stdout);
+  assert.equal(읽기(m, 노래).판.filter((p) => p.돌림).length, 0, '쓸날이 없어진 노래 원본의 안 건 돌림 판은 빠진다');
 });

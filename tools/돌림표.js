@@ -22,7 +22,9 @@
  *   공통: --폴더 <편 폴더들이 있는 곳, 기본 docs/마케팅>(시험용) · --지금 <ISO>(시험용)
  *
  * 원본 편의 준비.json 「돌림」:
- *   {"형식": "이야기"|"노래"|"퀴즈"(21:00 칸은 11-10 밤부터 노래 — 퀴즈는 예비 형식), "쓸날": "YYYY-MM-DD"(그날부터 · 동결 뒤 — 설계 20), "멈춤": null|{"날","까닭"}, "예비": false,
+ *   {"형식": "이야기"|"노래"|"퀴즈"(21:00 칸은 11-10 밤부터 노래 — 퀴즈는 예비 형식), "쓸날": "YYYY-MM-DD"(그날부터 · 동결 뒤 — 설계 20.
+ *    노래 원본은 쓸날 = 21:00 노래 칸을 여는 날이 있어야 판을 받는다 — 없으면 셈에서 빼고 모든 명령의 맨 위에 「! 쓸날 없는 노래 원본 N」으로 알린다,
+ *    11-12: 셈 전체를 멈추던 것), "멈춤": null|{"날","까닭"}, "예비": false,
  *    "연재"?: {"이름": "<연재 이름>", "차례": <숫자>}(차례 고정 — 한 계정은 그 연재의 앞 차례를 받은 뒤에만 다음 차례를 받는다. 돌림 ⑦ —
  *    한글 노래 여섯 곡처럼 앞 곡의 글자를 안다고 보고 만든 것. 앞 차례의 그 계정 판본이 검수 전이면 건너뛰지 않고 기다린다),
  *    "이미받음"?: ["<계정>" | {"계정": "<계정>", "때": "<ISO 시각>"}…](그 원본을 편 폴더 기록 없이 다른 길로 이미 올린 계정 — 다시 받지 않는다.
@@ -296,23 +298,24 @@ function loadPieces(accounts, cfg) {
     // 버린 편은 꼴 검사 · 판본 상태를 보지 않는다 — 원장에서 빠진 계정이 버린 편의 이미받음에 남아 있어도 돌림표 전체가 죽지 않게(11-11 Fable 검수)
     const dead = /^버림/.test(String(prep.상태 || ''));
     if (original && !dead) checkOriginal(d.name, original, accounts);
+    // 쓸날 없는 노래 원본은 셈에서 뺀다(waiting — originalsOf가 거른다: 판을 받지 않는다). 11-12: 던져서 돌림표의 모든 명령을 세우던 것 —
+    // 여는 날이 아직 미정인 노래 원본(만드는 중 · 검수 중) 하나가 그날 나라별 돌림 전체를 세웠다. main이 맨 위에 알린다(waitingLine).
+    const waiting = original && !dead && original.형식 === '노래' && !original.쓸날 ? '노래 원본에 「돌림」.쓸날이 없다' : null;
     const versions = {};
     if (original && !dead) for (const [k, v] of Object.entries(original.판본 || {})) versions[k] = versionState(dir, v, required, k, { accounts });
-    pieces.push({ name: d.name, dir, prep, result, stateOf, original, versions, dead });
+    pieces.push({ name: d.name, dir, prep, result, stateOf, original, versions, dead, waiting });
   }
   return pieces;
 }
 
 // 「돌림」.연재 · 이미받음 · 쓸날의 꼴 — 틀리면 조용히 넘기지 않는다(이름 하나 틀리면 차례가 풀리거나 이미 올린 계정에 또 나간다).
 function checkOriginal(name, original, accounts) {
-  // 쓸날 — 날짜 꼴이 아니면 「그날부터」 셈(글자 비교)이 틀어진다. 노래 원본은 쓸날이 꼭 있어야 한다: 씨앗 계정의 21:00 칸은 닫혀 있지 않아,
-  // 쓸날 없는 노래 원본이 생기면 --쓰기가 씨앗의 빈 21:00 칸(D+4 · D+5)에 바로 달고, 그 뒤 07 · 15시 제작 회차가 그날 줄 편을 만들면
-  // 같은 칸에 두 번 걸린다(11-11 Fable 검수 — 제작 절차 「LAB 하루 두 편」 10 ⑤: 쓸날 = 21:00 노래 칸을 여는 날).
+  // 쓸날 — 날짜 꼴이 아니면 「그날부터」 셈(글자 비교)이 틀어진다. 노래 원본은 쓸날이 있어야 판을 받는다: 씨앗 계정의 21:00 칸은 닫혀 있지 않아,
+  // 쓸날 없는 노래 원본을 그대로 셈에 넣으면 --쓰기가 씨앗의 빈 21:00 칸(D+4 · D+5)에 바로 달고, 그 뒤 07 · 15시 제작 회차가 그날 줄 편을 만들면
+  // 같은 칸에 두 번 걸린다(11-11 Fable 검수 — 제작 절차 「LAB 하루 두 편」 10 ⑤: 쓸날 = 21:00 노래 칸을 여는 날). 그런 원본은 여기서 던지지 않고
+  // loadPieces가 「기다림」으로 적어 셈에서 뺀다(11-12 — 던지면 만들던 노래 원본 하나가 돌림표의 모든 명령을 세운다).
   const day = original.쓸날;
   if (day !== undefined && day !== null && !/^\d{4}-\d{2}-\d{2}$/.test(String(day))) throw new Error(`${name}: 「돌림」.쓸날은 YYYY-MM-DD 꼴이다(${day})`);
-  if (original.형식 === '노래' && !day) {
-    throw new Error(`${name}: 노래 원본에 「돌림」.쓸날이 없다 — 21:00 노래 칸을 여는 날(YYYY-MM-DD)을 적는다(쓸날이 없으면 씨앗 계정의 빈 21:00 칸에 바로 달려 그날 줄 편과 같은 칸에 두 번 걸린다 — 제작 절차 「LAB 하루 두 편」 10 ⑤)`);
-  }
   const s = original.연재;
   if (s !== undefined && s !== null && !(typeof s === 'object' && typeof s.이름 === 'string' && s.이름.trim() && Number.isFinite(s.차례))) {
     throw new Error(`${name}: 「돌림」.연재는 {"이름": "<연재 이름>", "차례": <숫자>} 꼴이다`);
@@ -326,7 +329,7 @@ function checkOriginal(name, original, accounts) {
 }
 
 function originalsOf(pieces) {
-  return pieces.filter((p) => p.original && !p.dead).map((p) => ({
+  return pieces.filter((p) => p.original && !p.dead && !p.waiting).map((p) => ({
     id: p.name, format: p.original.형식, stopped: Boolean(p.original.멈춤), spare: Boolean(p.original.예비),
     readyFrom: p.original.쓸날 || null, versions: p.versions,
     series: p.original.연재 ? { id: p.original.연재.이름.trim(), order: p.original.연재.차례 } : null,
@@ -351,6 +354,7 @@ function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map(), 
   if (!Number.isFinite(at)) return '판 시각을 읽을 수 없다';
   if (Number.isFinite(now) && at <= now) return '판 시각이 지났다';
   if (!piece.original || piece.dead) return '돌림 원본이 아니다';
+  if (piece.waiting) return piece.waiting;
   const a = rotation[plate.계정];
   if (!a || a.blocked) return `칸을 받는 돌림 계정이 아니다${a && a.blocked ? `(${a.blocked})` : '(준비 전 · 원장에 없음)'}`;
   const day = T.localDate(at, T.tzOf(a));
@@ -509,7 +513,15 @@ function runPlan(opts) {
   const existing = existingPlates(pieces, { replan: opts.replan, stopped, holds: holds.byPlate, stale });
   const result = 돌림.plan({ accounts: rotation, originals, existing, from: opts.from, days: opts.days, cfg: cfg.셈 || {}, useSpares: opts.useSpares, now: opts.now });
   saveShaCache();
-  return { accounts, rotation, notReady, closedStory, holds, pieces, originals, existing, result, cfg, shared };
+  const waiting = pieces.filter((p) => p.waiting).map((p) => ({ piece: p.name, why: p.waiting }));
+  return { accounts, rotation, notReady, closedStory, holds, pieces, originals, existing, result, cfg, shared, waiting };
+}
+
+// 셈에서 뺀 원본(쓸날 없는 노래 원본)을 알리는 줄 — 모든 명령의 맨 위에 찍는다(--json이면 표준 오류로: 표준 출력은 JSON만).
+function waitingLine(run) {
+  if (!run.waiting.length) return null;
+  return `! 쓸날 없는 노래 원본 ${run.waiting.length} — 셈에서 뺐다(이 원본들은 판을 받지 않는다): ${run.waiting.map((w) => w.piece).join(' · ')} — `
+    + '21:00 노래 칸을 여는 날을 「돌림」.쓸날(YYYY-MM-DD)에 적는다(node tools/판본글잇기.js 돌림 <편 폴더> 전부 --형식 노래 --쓸날 <날짜> · 제작 절차 「LAB 하루 두 편」 10 ⑤)';
 }
 
 function writePlates(run, opts) {
@@ -710,6 +722,8 @@ function main() {
     return;
   }
   const run = runPlan(opts);
+  const held = waitingLine(run);
+  if (held) (has('--json') ? console.error : console.log)(held);
   if (has('--점검')) {
     const list = checkStops(run, now);
     if (has('--json')) { console.log(JSON.stringify(list, null, 2)); } else {
@@ -750,7 +764,7 @@ function main() {
     return;
   }
   if (has('--json')) {
-    console.log(JSON.stringify({ from, days, cells: run.result.cells.map(({ ms, ...c }) => c), notReady: run.notReady, closedStory: run.closedStory, sameLanguage: sameLanguageReport(run),
+    console.log(JSON.stringify({ from, days, cells: run.result.cells.map(({ ms, ...c }) => c), notReady: run.notReady, closedStory: run.closedStory, waiting: run.waiting, sameLanguage: sameLanguageReport(run),
       versions: Object.fromEntries(run.originals.map((o) => [o.id, Object.fromEntries(Object.entries(o.versions).map(([k, v]) => [k, { ready: v.ready, why: v.why || null }]))])) }, null, 2));
   } else printPlan(run, opts);
   if (has('--쓰기')) {
