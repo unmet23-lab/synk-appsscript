@@ -20,8 +20,12 @@ class Element {
 function clock() {
   let now = 0, id = 0;const timers = new Map();
   return { now: () => now, setTimeout: (fn, ms) => { timers.set(++id, { at: now + (Number.isFinite(ms) && ms <= 2147483647 ? ms : 0), fn });return id; } /* like a browser: a delay no timer can hold fires at once */, clearTimeout: id => timers.delete(id),
-    pending: () => timers.size, advance(ms) { const end = now + ms;let next;
-      while ((next = [...timers].sort((a, b) => a[1].at - b[1].at)[0]) && next[1].at <= end) { now = next[1].at;timers.delete(next[0]);next[1].fn(); }
+    pending: () => timers.size, advance(ms) { const end = now + ms;let next, same = 0;
+      while ((next = [...timers].sort((a, b) => a[1].at - b[1].at)[0]) && next[1].at <= end) {
+        // A timer that keeps re-arming itself with no delay fails here instead of hanging the run.
+        same = next[1].at === now ? same + 1 : 0;if (same > 1000) throw new Error('the fake clock fired over 1000 timers at one instant: a timer keeps re-arming itself with no delay');
+        now = next[1].at;timers.delete(next[0]);next[1].fn();
+      }
       now = end;
     } };
 }
@@ -883,6 +887,25 @@ test('reopening the same request with the same times writes the list no second t
   const shared = { getItem: store.getItem, setItem: (key, value) => { if (key === 'synk.id.connect-seen.v1') writes++;store.setItem(key, value); }, removeItem: key => { if (key === 'synk.id.connect-seen.v1') writes++;store.removeItem(key); } };
   await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -5000 }) }) });
   assert.equal(writes, 0);assert.deepEqual(JSON.parse(store.data.get('synk.id.connect-seen.v1')), [{ id: 'synthetic-authorization', at: -5000 }]);
+});
+// What cannot be read as a request ID and a time counts as nothing: it never pulls the clock and leaves the list.
+const unreadable = [null, { id: 'other-null', at: null }, { id: 7, at: -1000 }, { at: -1000 }, { id: 'synthetic-authorization', at: '-300000' }, { id: 'kept-request', at: -1000 }];
+test('entries that are not a request ID and a time never pull the clock and leave the list', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify(unreadable) }), tab = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: '-300000' }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  assert.equal(page.get('consent').hidden, false, 'a time written as text is not a time');assert.equal(page.get('connection-restart').hidden, true);
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'kept-request', at: -1000 }, { id: 'synthetic-authorization', at: 0 }]);
+  assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });
+  page.time.advance(269999);assert.equal(page.get('consent').hidden, false);page.time.advance(1);assert.ok(restartShown(page));
+});
+test('a visit without an app request drops entries that are not a request ID and a time', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify(unreadable) });
+  await fixture(t, { localStorage: shared });assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'kept-request', at: -1000 }]);
+});
+test('a tab record whose ID is not text is not this request', async t => {
+  const tab = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 7, at: -300000 }) }), shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: null, at: -300000 }]) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  assert.equal(page.get('consent').hidden, false);assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'synthetic-authorization', at: 0 }]);
 });
 test('the synthetic preview keeps no first-seen time and an old record does not turn its card', async t => {
   const record = JSON.stringify({ id: 'synthetic-authorization', at: -300000 }), list = JSON.stringify([{ id: 'synthetic-authorization', at: -300000 }]), tab = seenStore({ 'synk.id.connect-seen.v1': record }), shared = seenStore({ 'synk.id.connect-seen.v1': list });
