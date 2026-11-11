@@ -38,6 +38,7 @@
 
 - 일레븐 v4 새 배역은 공식 API가 힉스필드 경유보다 약 5배 싸다 → 공유 목소리를 더해 굽고 값은 머리글로 읽는다 (아래 「목소리·받아쓰기」 끝)
 - Remotion에서 CSS `mask-image: url()`을 쓰면 렌더마다 몇 프레임씩 가면이 빠진다(11-09 M32 여섯 장) → 기다리는 `<Img>`에 `crossOrigin="anonymous"`, 낼 판은 번지는 구간을 낱프레임으로 잰다 (아래 「렌더(Remotion·Playwright)」 끝)
+- 새 편의 Remotion 틀과 부품 폴더는 `node tools/새편.js <편 폴더> --실행`으로 세운다(11-11, synkbrief 줄부터) — 앞 편의 `remotion/`을 복사하거나 `node_modules`를 편끼리 잇지 않는다. 옛 편 · 연결이 끊긴 편도 같은 명령이고 그때는 부품만 잇는다 ([자세히](#remotion-parts))
 
 ## 목차
 
@@ -603,6 +604,25 @@
 - 원인: Git Bash(MSYS)의 기본 `ln -s`는 윈도우 심볼릭 링크를 만들지 않고 대상을 복사한다.
 - 고침: PowerShell `New-Item -ItemType Junction`에 `-Path`(내 편의 node_modules)와 `-Target`(실제 편의 node_modules)을 준다. 잘못 만든 복사본은 `(Get-Item … -Force).LinkType`이 비었는지 확인하고 지운다.
 - 다시 확인: 내 편의 `LinkType`이 `Junction`이고 `.bin/remotion.cmd`가 있다.
+
+<a id="remotion-parts"></a>
+### 편끼리 이은 `node_modules` 사슬은 머리가 지워지면 뒤 편이 다 죽는다 — 부품 폴더는 `새편.js`가 저장소 밖 한 곳에 잇는다 (2026-11-11 Claude)
+- 증상: 11-11 공용 작업본의 편 78곳이 옛 편 하나(`LAB_처음쓰는ㄹ_20261024`)의 실폴더에 매달려 있었다. 44곳만 바로 가리키고 나머지는 편에서 편으로 이어져, synkbrief 줄은 아홉 편이 줄줄이였다. 틀 파일도 앞 편을 복사하며 갈라졌다(11월 35편에 `fonts.ts` 세 판 · `tsconfig.json` 두 판).
+- 원인: 예약 회차 절차가 「가장 최근 같은 브랜드 편으로 junction」이었다. 그리고 사슬 머리는 공간 지킴이가 지우는 꼴이다 — 편 폴더 안의 실폴더이고 `package-lock.json`이 있으면, 48시간 조용하고 C: 여유가 320GB 아래일 때 지운다(바로 위 10-24 · 10-27 절이 그렇게 비워진 머리다). 지금까지는 날마다 누가 렌더해 살아 있었을 뿐이다.
+- 고침: `node tools/새편.js <편 폴더> --실행`(처음 깔 때만 몇 분). 틀 파일(설정 · `src/index.ts` · `src/lib/fonts.ts` · 글꼴 다섯)을 원천 `tools/편틀`에서 찍고 `remotion/node_modules`를 `%LOCALAPPDATA%\synk\remotion-parts\<열쇠>\node_modules`에 잇는다. 이미 있는 옛 편에 돌리면 틀은 건드리지 않고 부품만 잇는다. 편만의 서체 · 설정은 틀 파일을 고치지 않고 편 파일(`src/lib/편서체.ts`)에 둔다 — 고친 틀 파일은 `tests/편틀.test.js`가 올리기 전에 알린다(synkbrief 11-15부터). 부품 자리가 비었거나 없으면 같은 명령이 같은 자리에 다시 깐다(`node tools/새편.js 부품 --실행`).
+- 다시 확인: `node tools/새편.js <편 폴더>`(미리 보기)가 「부품: 이어져 있음 → …remotion-parts…」와 「할 일 없다」를 보인다. 사본을 지우기 전에는 지금처럼 연결부터 끊는다(예약 회차는 `예약사본.js 끝`). 재기 · 대조 숫자는 [편 틀 설계](../_ops/qa/작업방식정리_20261110/3단계_편틀_설계.md).
+
+### 같은 Remotion 프로젝트를 두 번 렌더해도 프레임이 바이트로 같지 않다 — 두 길을 견줄 때는 같은 길 두 번의 차이를 바탕값으로 잡는다 (2026-11-11 Claude)
+- 증상: 편 틀의 옛 길 · 새 길 렌더를 `framemd5`로 견주니 수백 프레임이 달랐다. 틀을 바꾼 탓으로 읽힐 뻔했다.
+- 원인: 같은 폴더를 한 번 더 구워도 그만큼 다르다 — synkbrief 「가짜의사」는 1,272프레임 가운데 563(PSNR 평균 55.7dB · 최저 50.0 · SSIM 0.9984), LAB 「리나둘」은 738프레임 모두(49.7dB · 46.5 · 0.9954). 영상 클립이나 움직이는 결이 든 프레임이 구울 때마다 조금 다르게 나온다(어느 단계에서 갈리는지는 파지 않았다). 소리는 압축된 묶음(AAC)까지 같다.
+- 고침: 견주기 전에 옛 길을 두 번 구워 바탕값(다른 프레임 수 · PSNR 평균 · 최저 · SSIM)을 잡고, 새 길과의 차이가 그 안인지 본다. 11-11 대조에서 새 길은 바탕값과 같은 크기였고 소리는 바이트로 같았다.
+- 다시 확인: 프레임은 `ffmpeg -i <영상> -map 0:v:0 -f framemd5 -` 두 벌의 줄 대조와 `-lavfi "[0:v][1:v]psnr;[0:v][1:v]ssim"`, 소리는 `-map 0:a:0 -c copy -f md5 -`(묶음)와 `-c:a pcm_s16le -f md5 -`(푼 소리).
+
+### npm 12의 `npm ci`가 esbuild 설치 스크립트를 안 돌렸다고 경고한다 — Remotion 렌더에는 지장이 없었다 (2026-11-11 Claude)
+- 증상: Remotion 부품을 새로 깔 때 `npm warn install-scripts 1 package has install scripts not yet covered by allowScripts: esbuild@0.28.1 (postinstall: node install.js)`가 나온다.
+- 원인: npm 12는 허용 목록에 없는 패키지의 설치 스크립트를 돌리지 않는다.
+- 고침: 그대로 둔다. esbuild 실행 파일(`@esbuild/win32-x64/esbuild.exe`) · Remotion 합성기 · 렌더용 브라우저가 10-24에 깐 옛 부품 폴더의 것과 같은 sha256이었고, 그 자리로 두 편을 끝까지 렌더했다.
+- 다시 확인: `node tools/새편.js 부품`이 「부품 있음」이고, 그 자리에 이은 편에서 `npx remotion render`가 종료 0으로 끝난다.
 
 ### Remotion 편 폴더에서 `npx tsc`가 타입 검사 대신 엉뚱한 `tsc` 패키지를 받는다 (2026-10-24 Claude)
 - 증상: `npx tsc --noEmit -p .`가 「This is not the tsc command you are looking for」를 띄우고 끝났다(npm이 `tsc@2.0.4`를 받아 왔다).

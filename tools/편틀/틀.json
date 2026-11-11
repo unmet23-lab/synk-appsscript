@@ -1,0 +1,29 @@
+{
+  "꼴": "편틀/1",
+  "설명": "SNS 편의 Remotion 틀 원천. node tools/새편.js <편 폴더> --실행 이 이 목록대로 <편>/remotion/에 찍는다. 대조는 tests/편틀.test.js, 설계는 docs/_ops/qa/작업방식정리_20261110/3단계_편틀_설계.md.",
+  "같아야": [
+    "package.json",
+    "remotion.config.ts",
+    "tsconfig.json",
+    "eslint.config.mjs",
+    "src/index.ts",
+    "src/lib/fonts.ts"
+  ],
+  "글꼴": {
+    "public/fonts/SUIT-Variable.woff2": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+    "public/fonts/InterTight-Medium.ttf": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+    "public/fonts/InterTight-SemiBold.ttf": "docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf",
+    "public/fonts/InterTight-Bold.ttf": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+    "public/fonts/DMMono-Medium.ttf": "docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf"
+  },
+  "처음만": {
+    ".gitignore": { "기본": "gitignore.기본", "synkbrief": "gitignore.synkbrief" }
+  },
+  "있으면같아야": {
+    "package-lock.json": "package-lock.json"
+  },
+  "적용": {
+    "synkbrief": "20261115"
+  },
+  "예외": {}
+}
