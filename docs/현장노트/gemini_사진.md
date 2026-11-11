@@ -568,6 +568,13 @@
 - 다시 확인: 다시 로그인한 뒤 `node tools/아르곤웹.js 확인`의 실행기 기록에서 `levels` 줄의 단계 목록과 `mode` 줄의 `rank`(3이면 max)를 본다. rank 2면 웹에 max 단계가 없는 판이다 — 그 판의 가장 높은 단계로 돌고, 단계 이름을 여기 적는다. 모델 항목을 못 찾으면(`카본` · `Carbon`이 아닌 이름) 「모드가 카본 · … 아님」으로 멈추니 메뉴 글을 보고 정규식을 고친다.
 - 11-11 03:2x 덧붙임(실물, Claude): 유호님이 다시 로그인하신 뒤 ego 프로필은 `Profile 7`(유호, 기본)과 `Profile 5`(로그아웃)뿐이고 `Profile 2`와 이름 붙은 공간이 모두 사라졌다(`taskSpace(…, { profileId: "Profile 2" })` → 「Profile not found」). Profile 7 순번은 /u/0 unmet23 · /u/1 yuhobuilds · /u/2 77yuhbs · /u/3 77unmet · /u/4 synk.yuh · /u/5 unmet29 · /u/6 founder · /u/7 unmet27이고 unmet25는 로그인이 없다 — 공용 차례 a 줄을 `/u/2`로 고쳤고(`차례.py.bak_20261111`) b 줄은 꺼 둔 채다. 아르곤웹 기본 공간 · 프로필은 `synk-argon-web-p7` · `Profile 7`, 오마주는 `synk-homage-argon-p7`. 모드 메뉴 실물은 항목 글이 설명 다음 모델 이름이다 — 「Quick answers 3.5 Flash-Lite」 · 「무엇이든 도움을 받으세요 3.8 Flash」 · 「Code & analysis 4 Argon」 · 「Most complex work 4 카본」 · 「사고 수준」(그래서 옛 `^4 Argon`도, 첫 판 `^(숫자)?(Carbon|카본)`도 못 잡았다 → 낱말 경계로 고침). 카본을 고른 뒤 사고 수준 하위 메뉴는 「낮음 Fast and efficient · 보통 균형 잡힌 깊이 · 높음 매우 철저함」뿐이라 **max 단계는 없고 높음이 가장 높다**(아르곤도 같은 셋). `node tools/아르곤웹.js 확인 --차례없이 --u 2 --계정 77yuhbs`이 `levels` 낮음 · 보통 · 높음 → `mode` 「현재 카본 높음 모드 사용 중」 rank 2로 통과했다. 모델을 고르지 않은 첫 화면의 모드 칸은 「현재 Argon 모드 사용 중」처럼 단계 없이 보일 때가 있다 — 단계를 누른 뒤에 「… 높음 모드」가 된다.
 
+### ego에서 Gemini 원본 받기가 gg → rd-gg 두 번 넘어가고, 마지막 주소는 `credentials: "include"`로 받아야 한다 · 무료 계정 그림 한도는 약 7~8장 (2026-11-12 Claude · SHIFT 워크숍 견본)
+- 증상: 무료 계정(yuhobuilds `/u/1`)에서 「원본 크기 이미지 다운로드」 뒤 자원 기록에 처음 잡힌 `lh3.googleusercontent.com/gg/…`을 받으니 이미지가 아니라 주소 한 줄(610바이트)이었고, 그 주소(`lh3.google.com/rd-gg/…`)도 다시 주소 한 줄이었다. 마지막 `lh3.googleusercontent.com/rd-gg/…`를 `page.fetch`로 받자 CORS로 「Failed to fetch」, curl과 그 주소를 연 탭에서는 403. 오른쪽 위 「주의 사항」 카드가 그림의 받기 단추를 덮어 실제 클릭도 카드에 걸렸다.
+- 원인: 원본은 두 번 넘겨주는 주소를 거쳐 오고, 마지막 주소는 Gemini 페이지가 쿠키를 실어 받는다(우리 fetch는 기본 credentials라 쿠키가 없었다).
+- 고침: 받기 단추에 `focus()` → 실제 `Enter`(카드가 덮어도 됨) → 자원 기록에서 `googleusercontent.com/rd-gg/` 항목이 생길 때까지 기다려 그 주소를 `page.fetch(url, { credentials: "include", saveAs })`. 원본은 PNG(RGBA)일 때가 있어 확장자를 머리 바이트로 정한다. 「주의 사항」의 「확인」은 누르지 않았다(입력은 막지 않음).
+- 함께 잰 것: 무료 「자동 모드」로 한 장 8~40초, 지시문의 「화면 비율: 세로 9:16」을 따라 768×1376(안 쓰면 1408×768). **약 7~8장 만에 「한도가 재설정되는 대로 이미지를 더 생성할 수 있습니다」** — 다시 차는 시각은 못 봤다. 모든 그림 오른쪽 아래에 반짝이(✦), 반짝이가 있는 그림을 참고로 붙이면 둘로 늘기도 했다. 무료 계정 대화가 사이드바에 늦게 뜨고 대화 주소로 다시 열면 새 채팅으로 갈 때가 있어, 만들기와 받기를 같은 탭에서 끝냈다.
+- 다시 확인: 인물 · 제품 · 시작 그림 넷을 이 길로 받아 머리 바이트 `89504e47`(PNG) · `ffd8ffe0`(JPEG), 크기 1408×768 · 768×1376.
+
 ## 결과물
 
 ### 프로가 참조 얼굴에서 더 멀어진다
