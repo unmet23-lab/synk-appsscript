@@ -208,9 +208,10 @@ export function createCoach(options = {}) {
       const fold = out.fold;
       const evidence = out.stored.then(ok => {
         if (!ok) return { stored: false, independent: false, assisted: null, exposure: null };
-        // 그 계열의 첫 만남이 이 제시 안에서 났는가(답보다 앞선 도움 · 답 보기도 이 제시의 만남이다 — 아르곤 끝 판 C2).
+        // 그 계열의 첫 만남이 이 제시의 사건(도움 · 답 · 답 보기)이었나 — 시각만으로 가르면 다른 제시가 먼저 답한 순서에서 틀린다
+        // (아르곤 끝 판 C2 · GPT 다시 GA1). 같은 계열을 둘이 띄워도 첫 만남은 먼저 만난 제시 하나의 것이다.
         const firstAt = state.host.view().met.get(fold.item.familyKey);
-        const first = firstAt != null && firstAt >= Date.parse(presented.at);
+        const first = out.group.children.some(entry => entry.atMs === firstAt);
         const exposure =
           !first || presented.firstExposure === false
             ? 'repeat'

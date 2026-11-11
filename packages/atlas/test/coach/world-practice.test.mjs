@@ -381,7 +381,7 @@ test('「모르겠어요」는 지도 문항의 표지로 둔다 — 제품 문�
   assert.equal(session.unknown().verdict, 'unknown');
 });
 
-test('WORLD 입구 — 후보에 연 코치가 받지 않은 은행이 있으면 새로 연다(아르곤 끝 판)', async () => {
+test('WORLD 입구 — 후보에 연 코치가 받지 않은 은행이 있으면 그 은행의 코치를 따로 연다(아르곤 끝 판 B5 · 다시 A4)', async () => {
   const { createAtlasNext } = await load('world-atlas-next.mjs');
   const opened = [];
   let disposed = 0;
@@ -400,5 +400,14 @@ test('WORLD 입구 — 후보에 연 코치가 받지 않은 은행이 있으면
   assert.equal(await next.practiceCoach(topik), first, '같은 은행이면 다시 쓴다');
   await next.practiceCoach([...topik, { itemKey: 'entry-check.x1' }]);
   assert.deepEqual(opened, ['topik-items', 'entry-check,topik-items']);
-  assert.equal(disposed, 1, '앞 코치는 닫는다');
+  assert.equal(disposed, 0, '앞 코치는 그대로 둔다 — 은행 조합마다 코치 하나');
+  // 준비 중에 다른 은행으로 불러도 각자 제 코치를 받는다(아르곤 다시 A4)
+  const [x, y] = await Promise.all([
+    next.practiceCoach([{ itemKey: 'snap-words.x1' }]),
+    next.practiceCoach([{ itemKey: 'talk-rally.x1' }]),
+  ]);
+  assert.notEqual(x, y);
+  next.dispose();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(disposed, 4, '닫을 때 모두 닫는다');
 });

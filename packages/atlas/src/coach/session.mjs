@@ -132,7 +132,15 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     const opts = { ...options, dayOffset };
     startSession(learner, now, params, opts);
     s.learner = learner;
-    s.open = { now, opts, log: learner.log.slice(), base, fallback, sign: setSign(options) };
+    s.open = {
+      now,
+      opts,
+      log: learner.log.slice(),
+      seen: host.issuedIds(), // 이 판을 열 때 「낸 것」에 이미 든 제시 — 뒤에 다른 코치 · 탭이 낸 것만 따로 센다(GA6)
+      base,
+      fallback,
+      sign: setSign(options),
+    };
     s.journal = [];
     s.failed.clear();
     s.chosen.clear();
@@ -183,14 +191,23 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         s.failed.add(event.targetId);
   }
 
-  // 이 판이 열린 뒤 다른 코치 · 탭이 낸 「낸 것」 줄 — 하루 한도 · 새것 몫에 함께 센다(GPT GC1). 이 판 열 때의 줄과 내 제시는 뺀다
-  // (기록의 시계가 한 호스트에 하나라 사건 시각이 겹치지 않는다).
+  // 이 판이 열린 뒤 다른 코치 · 탭이 낸 「낸 것」 줄 — 하루 한도 · 새것 몫에 함께 센다(GPT GC1). 사건 번호로 가른다 — 탭마다 시계가
+  // 달라 시각으로는 겹칠 수 있다(GPT 다시 GA6). 기록부가 든 2판 제시 가운데 이 코치가 쓰지 않았고 판을 열 때 없던 것.
   function othersIssued() {
-    const known = new Set([
-      ...s.open.log.map(row => row.at),
-      ...s.journal.filter(op => op.kind === 'present').map(op => op.row.at),
-    ]);
-    return host.issued().filter(row => row.at >= s.open.now && !known.has(row.at));
+    return host.trail
+      .heldEvents()
+      .filter(
+        event =>
+          event.type === EVENT_TYPES.presented &&
+          event.reason &&
+          !s.own.has(event.id) &&
+          !s.open.seen.has(event.id),
+      )
+      .map(event => ({
+        at: Date.parse(event.at),
+        review: event.reason.tier === 1,
+        units: [...event.reason.introduced],
+      }));
   }
 
   // 놓친 답 — 틀림 · 「모르겠어요」(건너뜀 · 판정 못 한 답은 「다시」를 만들지 않는다 — 아르곤 끝 판 C8 ②).

@@ -22,7 +22,7 @@ import {
   startSession,
 } from './support.mjs';
 
-const { installHostMaker } = await subject('coach/host.mjs');
+const { acquireHost, installHostMaker, releaseHost } = await subject('coach/host.mjs');
 const { emptySummary, packSummary } = await subject('record/summary.mjs');
 
 const HOUR = 3_600_000;
@@ -959,4 +959,120 @@ test('태그 없는 문항(계열이 곧 단위)을 놓친 판에서도 다른 �
   );
   coach.dispose();
   other.dispose();
+});
+
+test('같은 계열을 둘이 띄워도 첫 만남은 먼저 만난 제시 하나의 것이다 — 시각만으로 가르지 않는다(GPT 다시 GA1)', async () => {
+  const items = bankOf(rng(22)); // items[0] · items[1]은 같은 계열(t.f0)
+  const time = clock();
+  const coach = coachOn({ items, time, port: memoryPort(), key: keyOf('two-shows') });
+  await coach.ready;
+  const a = coach.present(items[0]);
+  time.advance(1000);
+  const b = coach.present(items[1]);
+  time.advance(1000);
+  const first = await coach.answer(a, { correct: true, assessable: true }).evidence;
+  time.advance(1000);
+  const second = await coach.answer(b, { correct: true, assessable: true }).evidence;
+  assert.equal(first.exposure, 'new');
+  assert.equal(second.exposure, 'repeat', '먼저 띄운 제시가 먼저 답했어도 뒤 제시는 처음이 아니다');
+  assert.equal(second.independent, false);
+  coach.dispose();
+});
+
+test('틀이 먼저 연 손님 저장소를 셸이 받으면 셸의 읽개로 옛 기록을 옮긴다(GPT 다시 GA2 · GA5)', async () => {
+  const items = bankOf(rng(23));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  installHostMaker(top, { openPort: () => memoryPort() });
+  const frame = { location: origin, parent: top, addEventListener() {}, removeEventListener() {} };
+  const key = keyOf('adopt-legacy');
+  const base = { map: fakeMap(items), seed: 's', dayOffset: 0 };
+  const game = createCoach({
+    ...base,
+    gameId: 'game',
+    host: { guest: true, key, now: time.now },
+    scope: frame,
+  });
+  await game.ready;
+  const legacy = async () => ({
+    log: [],
+    ledger: { keys: { [`family:${items[0].familyKey}`]: 1 }, cells: {} },
+  });
+  const shell = createCoach({
+    ...base,
+    gameId: 'shell',
+    host: { guest: true, key, now: time.now, legacy },
+    scope: top,
+  });
+  await shell.ready;
+  const pid = shell.present(items[0]);
+  await settle();
+  assert.equal(shell.exposure(items[0]).met, true, '옛 판에서 만난 계열이 옮겨 왔다');
+  game.dispose();
+  shell.dispose();
+  assert.ok(pid);
+});
+
+test('문서 호스트를 기다리던 틀은 그 호스트가 서는 순간 쓰는 사람으로 센다 — 깨어나기 전에 셸이 놓아도 남는다(GPT 다시 GA4)', async () => {
+  const items = bankOf(rng(24));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  installHostMaker(top, { openPort: () => memoryPort() });
+  const frame = { location: origin, parent: top };
+  const key = keyOf('doc-race');
+  const common = { params: PARAMS, now: time.now, map: fakeMap(items), revision: 0, guest: true };
+  const waiting = acquireHost({ ...common, document: true, wait: 2000 }, frame);
+  const shellHost = await acquireHost({ ...common, key, port: memoryPort() }, top);
+  releaseHost(shellHost); // 틀이 깨어나기 전에 셸이 놓는다
+  const frameHost = await waiting;
+  assert.equal(frameHost, shellHost);
+  assert.equal(top.__synkAtlasHosts.has(key), true, '틀이 쓰는 동안 호스트가 남는다');
+  releaseHost(frameHost);
+  assert.equal(top.__synkAtlasHosts.has(key), false);
+});
+
+test('셸이 틀이 연 호스트를 받으면 그 뒤 저장 계기도 셸의 계기에 남는다(아르곤 다시 A2)', async () => {
+  const { createHealth } = await subject('health/index.mjs');
+  const items = bankOf(rng(25));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  let port = null;
+  installHostMaker(top, {
+    openPort: () => {
+      port = memoryPort();
+      return port;
+    },
+  });
+  const frame = { location: origin, parent: top, addEventListener() {}, removeEventListener() {} };
+  const key = keyOf('adopt-health');
+  const base = { map: fakeMap(items), seed: 's', dayOffset: 0 };
+  const frameHealth = createHealth();
+  const shellHealth = createHealth();
+  const game = createCoach({
+    ...base,
+    gameId: 'game',
+    host: { guest: true, key, now: time.now, health: frameHealth },
+    scope: frame,
+  });
+  await game.ready;
+  const shell = createCoach({
+    ...base,
+    gameId: 'shell',
+    host: { guest: true, key, now: time.now, health: shellHealth },
+    scope: top,
+  });
+  await shell.ready;
+  port.failNext(new Error('quota'));
+  shell.present(items[0]);
+  await settle();
+  assert.equal(shellHealth.snapshot().save.failures, 1, '셸의 계기에 남는다');
+  assert.equal(frameHealth.snapshot().save.failures, 0);
+  game.dispose();
+  shell.dispose();
 });

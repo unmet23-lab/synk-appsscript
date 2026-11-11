@@ -57,9 +57,9 @@ export function createAtlasNext({
   health = null,
   storage = globalThis.localStorage,
 } = {}) {
-  let practice = null;
-  let practiceBanks = '';
-  let opening = null;
+  // 은행 조합마다 코치 하나(준비 중인 약속째) — 후보에 다른 은행이 섞이면 그 은행을 받는 코치를 따로 연다(아르곤 끝 판 B5 · 다시 A4).
+  // 같은 저장소의 호스트를 나눠 쓰므로 기록은 하나다.
+  const coaches = new Map();
   let disposed = false;
   // 입구 받기 · 코치 만들기 · 준비 — 어디서 실패해도 계기에 원인을 남기고 null(셸은 지금 판으로 간다).
   async function open(pool) {
@@ -92,29 +92,22 @@ export function createAtlasNext({
     // 짧은 연습의 코치 — 손님만(4-1). 한 번 연 코치는 다시 쓴다.
     async practiceCoach(pool) {
       if (owner !== 'guest' || disposed) return null;
-      // 연 코치는 다시 쓰되, 후보에 그 코치가 받지 않은 은행이 있으면 새로 연다(그 은행 문항이 계약 밖으로 빠지지 않게 — 아르곤 끝 판).
       const banks = banksOf(pool).join(',');
-      if (practice && practiceBanks === banks) return practice;
-      if (practice) {
-        practice.dispose();
-        practice = null;
+      if (!coaches.has(banks)) {
+        const opening = open(pool).then(made => {
+          if (!made && coaches.get(banks) === opening) coaches.delete(banks); // 못 열었으면 다음에 다시
+          return made;
+        });
+        coaches.set(banks, opening);
       }
-      opening ??= open(pool);
-      const made = await opening;
-      opening = null;
-      // 준비되는 사이에 닫혔으면 그 코치를 닫고 돌려주지 않는다 — 떠난 화면의 코치 · 호스트가 남지 않게.
-      if (disposed) {
-        made?.dispose();
-        return null;
-      }
-      practice = made;
-      practiceBanks = banks;
-      return practice;
+      const made = await coaches.get(banks);
+      // 준비되는 사이에 닫혔으면 돌려주지 않는다 — 그 코치는 dispose()가 닫는다(떠난 화면의 코치 · 호스트가 남지 않게).
+      return disposed ? null : made;
     },
     dispose() {
       disposed = true;
-      practice?.dispose();
-      practice = null;
+      for (const opening of coaches.values()) void opening.then(made => made?.dispose());
+      coaches.clear();
     },
   };
 }
