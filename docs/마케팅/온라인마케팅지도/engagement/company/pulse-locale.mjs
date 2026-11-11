@@ -123,6 +123,11 @@ const EN=Object.freeze({
   '다음 할 일: 영상을 보시고 「이 시안 최종 승인」을 누르시거나 바꿀 장면에 의견을 남겨 주세요.':'Next: watch the film and press “Approve this preview”, or leave notes on the scenes to change.',
   '다음 할 일: 파일을 받아 보시고 「수령 확인 남기기」를 눌러 주세요.':'Next: download the files and press “Confirm receipt”.',
   '받으실 날({date})은 확인을 기다리는 날만큼 늦어져요.':'Your delivery date ({date}) moves by the days we wait for your reply.',
+  // 운영 조각 2-B(11-11): 담당자 답 메일(staff_reply) — 꼬리는 「앱에서 답해 주세요」(메일 답장은 앱 대화로 들어가지 않는다)
+  '{title}, 담당자가 답을 남겼어요':'{title}: your producer replied',
+  '보내 주신 말씀에 담당자가 답을 남겼어요. 앱의 「담당자와 나눈 말」에서 보실 수 있어요.':'Your producer has replied to your message. You’ll find the reply in the app under “Messages with your producer”.',
+  '다음 할 일: 답을 읽어 보시고, 더 궁금한 점이 있으면 앱에서 답해 주세요.':'Next: read the reply, and if you have more questions, reply in the app.',
+  '이 메일은 담당자 답 알림이에요. 대화가 한곳에 남도록 답은 앱에서 해 주세요.':'This is a notification that your producer has replied. Please reply in the app so the whole conversation stays in one place.',
 });
 export const SERVER_DICTIONARIES=Object.freeze({en:EN});
 // 서버 문구를 그 언어로. 사전에 없거나 한국어면 원문.

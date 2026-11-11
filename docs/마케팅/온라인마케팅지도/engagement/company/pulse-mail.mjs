@@ -5,7 +5,13 @@ import {serverText} from './pulse-locale.mjs';
 // 손님 차례가 오는 여덟 순간(접수 확인 · 되묻기 · 방향 제안 · 글 콘티 · 결제 안내 · 장면 이미지 · 영상 확인 · 납품)에만, 고객 알림 투영을 끌어와 함을 채우고
 // founder@synk.im 소유 Apps Script 중계(pulse-mail-relay/relay.gs)로 보낸다. 중계가 같은 열쇠는 한 번만 보내므로
 // 응답을 못 받은 요청은 같은 열쇠로 다시 보내도 안전하다. 함 · 기록에는 주소 · 제목 · 본문을 두지 않는다.
-export const PULSE_MAIL_MOMENTS=Object.freeze(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready']);
+// 담당자 답(staff_reply — 운영 조각 2-B · 11-11 설계 S1 ③): 손님 차례는 아니지만 손님이 물은 것에 담당자가 답한 순간 하나만 더한다.
+// 자동 안내(auto_reply)는 메일을 보내지 않는다. 앱에서 이미 읽었거나 그 뒤 손님이 앱에서 글을 남겼으면 보내지 않고(pulseMailActed), 3분 안의 답은 한 통으로 묶는다(fill).
+// 이 순간이 함에 남은 채 서버를 조각 1 전 판으로 되돌리면 옛 조립기가 던진다 — 조각 1(조립 실패는 그 줄만 failed)이 운영에 오른 다음 판부터 싣는다.
+export const PULSE_MAIL_MOMENTS=Object.freeze(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply']);
+// 처음 여덟 순간 뒤에 더한 순간은, 메일이 켜진 서버에 그 판이 오를 때 지난 사건(켠 뒤 ~ 그 판 전 — 옛 판은 순간이 아니라 함에 넣지 않았다)이
+// 한꺼번에 함에 들어 오래된 답 메일이 몰려 나가지 않게, 이 서버가 그 순간을 처음 알게 된 때(서비스가 뜬 때) 뒤의 사건만 받는다(카본 끝판 검수 A1).
+const FIRST_MOMENTS=new Set(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready']);
 // 접수 확인은 손님 대상 알림 사건이 없어 접수 때 함에 바로 넣는다(receipt). 묶지 않고, 읽음 · 이미 함으로 거르지 않는다(주소 확인 몫).
 const DIRECT_MOMENTS=new Set(['request_received']);
 const RECEIPT_DAILY=20,RECEIPT_PER_ADDRESS_MS=24*3600000,RECEIPT_DELAY_MS=30000;
@@ -64,10 +70,40 @@ export function pulseMailActed(row,moment,latest){
   if(moment==='direction_proposed')return request.directionProposal?.status!=='open';
   if(moment==='payment_requested')return request.payment?.status!=='requested';
   if(moment==='draft_ready'||moment==='images_ready'){const round=Number(String(latest?.id).split(':').at(-1)),entry=request.rounds?.[round-1];return !!(entry?.feedbackAt||entry?.approvedAt);}
+  if(moment==='staff_reply')return staffReplySeen(row,latest);
   const versionId=latest?.versionId;if(!versionId)return false;
   if(moment==='preview_ready')return !!(row.versions||[]).find(version=>version.id===versionId)?.approvedAt||(row.messages||[]).some(message=>message.author==='customer'&&message.versionId===versionId);
   if(moment==='final_ready')return (row.deliveryReceipts||[]).some(entry=>entry.versionIds?.includes(versionId));
   return false;
+}
+// 담당자 답: 그 답이 손님 보기에서 사라졌거나(지움 · 손님에게 안 보이게 바꿈 · 댓글이 달린 카드를 숨김), 답 뒤에 손님이 앱에서 글(문의 · 의견 · 승인 · 댓글)을 남겼으면 이미 본 것으로 본다.
+// 직원끼리의 메모 · 자동 안내는 처음부터 이 순간이 아니다. 묶인 답 여럿은 deliver가 staffReplyPick으로 하나씩 본다.
+const list=value=>Array.isArray(value)?value:[];
+function staffReplyLive(row,event){
+  if(event?.messageId)return list(row?.messages).some(message=>message?.id===event.messageId&&message.author==='staff'&&message.visibility==='customer'&&!message.automated);
+  if(!event?.commentId)return false;
+  const comment=list(row?.studio?.comments).find(item=>item?.id===event.commentId);
+  if(!comment||comment.visibility!=='customer')return false;
+  // 카드에 단 댓글은 그 카드도 손님에게 보여야 한다(손님 알림 투영 pulse-live.mjs와 같은 거름).
+  // 카드 목록이 아예 없어도(빈 배열과 같이) 산 답이 아니다(카본 끝판 검수 A2).
+  if(comment.targetType!=='concept'&&comment.targetType!=='scene')return true;
+  return list(comment.targetType==='concept'?row?.studio?.concepts:row?.studio?.scenes).some(item=>item?.id===comment.targetId&&item.visibility==='customer');
+}
+const customerWroteAfter=(row,at)=>list(row?.messages).some(message=>message?.author==='customer'&&String(message.at||'')>at)||list(row?.studio?.comments).some(comment=>comment?.author==='customer'&&String(comment.at||'')>at);
+function staffReplySeen(row,latest){
+  if(!staffReplyLive(row,latest))return true;
+  return customerWroteAfter(row,String(latest?.createdAt||''));
+}
+// 3분 묶음에 든 답 사건 여럿에서 보낼 근거 하나를 고른다(카본 끝판 검수 A1 — 마지막 사건 하나만 보면, 마지막 답만 지우거나 그 알림만 읽어도
+// 앞의 못 본 답의 메일이 영영 빠진다). 손님에게 아직 보이고 · 읽지 않았고 · 그 뒤 손님 글이 없는 답이 하나라도 있으면 그중 마지막을 근거로 보낸다.
+// 없으면 까닭: 보이는 답이 하나도 없음 stale · 보이는 답을 모두 읽음 read · 그 밖(답 뒤 손님이 앱에서 글을 남김) acted.
+export function staffReplyPick(row,events){
+  const live=list(events).filter(event=>staffReplyLive(row,event));
+  if(!live.length)return {latest:null,reason:'stale'};
+  const unread=live.filter(event=>!event.readAt);
+  if(!unread.length)return {latest:null,reason:'read'};
+  const fresh=unread.filter(event=>!customerWroteAfter(row,String(event.createdAt||'')));
+  return fresh.length?{latest:fresh.at(-1),reason:null}:{latest:null,reason:'acted'};
 }
 export const pulseMailRelayKey=id=>createHash('sha256').update(String(id)).digest('hex').slice(0,24);
 const mask=email=>{const [local,domain]=email.split('@');return `${local.slice(0,1)}***@${domain}`;};
@@ -102,10 +138,14 @@ export function pulseMailCompose(row,moment,loc='ko',latest=null){
     images_ready:photo?[tx(revised?'{title} 고친 첫 장이 왔어요':'{title} 첫 장이 왔어요',{title}),tx(revised?'보내 주신 의견을 반영해 첫 장을 고쳤어요. 이 결이 맞는지 봐 주세요.':'나머지 장을 같은 결로 만들기 전에 첫 장을 먼저 보내 드렸어요.'),tx('다음 할 일: 첫 장을 보시고 괜찮으면 승인을, 고칠 곳이 있으면 의견을 보내 주세요.')]:[tx(revised?'{title} 고친 장면 이미지가 왔어요':'{title} 장면 이미지가 왔어요',{title}),tx(revised?'보내 주신 의견을 반영해 장면 이미지를 고쳤어요. 컷마다 다시 봐 주세요.':'영상에 들어갈 컷마다 첫 화면을 완성 화질로 보내 드렸어요. 확인하신 컷으로만 영상을 만들어요.'),tx('다음 할 일: 컷마다 보시고 「이대로 제작 시작」이나 「의견 보내기」를 눌러 주세요.')],
     preview_ready:[tx(photo?'{title} 사진을 확인해 주세요':'{title} 영상을 확인해 주세요',{title}),tx(photo?'사진을 보시고, 바꾸고 싶은 곳에 의견을 남기시거나 승인해 주세요.':'영상을 재생해 보시고, 바꾸고 싶은 장면에 의견을 남기시거나 승인해 주세요.'),tx(photo?'다음 할 일: 사진을 보시고 「이 시안 최종 승인」을 누르시거나 바꿀 곳에 의견을 남겨 주세요.':'다음 할 일: 영상을 보시고 「이 시안 최종 승인」을 누르시거나 바꿀 장면에 의견을 남겨 주세요.')],
     final_ready:[tx('{title} 최종 파일이 준비됐어요',{title}),tx('최종 파일을 받아 보시고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.'),tx('다음 할 일: 파일을 받아 보시고 「수령 확인 남기기」를 눌러 주세요.')],
+    // 담당자 답(운영 조각 2-B): 답 글은 메일에 넣지 않는다(다른 순간처럼 앱으로 부른다 — 번역 · 고친 글이 앱 한곳에 있다).
+    staff_reply:[tx('{title}, 담당자가 답을 남겼어요',{title}),tx('보내 주신 말씀에 담당자가 답을 남겼어요. 앱의 「담당자와 나눈 말」에서 보실 수 있어요.'),tx('다음 할 일: 답을 읽어 보시고, 더 궁금한 점이 있으면 앱에서 답해 주세요.')],
   }[moment];
   if(!copy)throw fail('메일 순간을 확인해 주세요.',500);
   const due=WAITING.has(moment)?dueOf(request):'';
-  return {subject:tx('〔SYNK PULSE〕 {subject}',{subject:copy[0]}),body:[who?tx('{who}님, SYNK PULSE입니다.',{who}):tx('안녕하세요, SYNK PULSE입니다.'),'',copy[1],copy[2],...(due?[tx('받으실 날({date})은 확인을 기다리는 날만큼 늦어져요.',{date:dayText(due,loc)})]:[]),'',...links,'',tx('이 메일은 보내 주신 의뢰의 진행 알림이에요. 궁금한 점은 이 메일에 답장해 주세요.')].join('\n')};
+  // 꼬리: 담당자 답 메일은 「앱에서 답해 주세요」 — 메일 답장은 앱 대화로 들어가지 않는다(설계 S1 ③).
+  const tail=moment==='staff_reply'?tx('이 메일은 담당자 답 알림이에요. 대화가 한곳에 남도록 답은 앱에서 해 주세요.'):tx('이 메일은 보내 주신 의뢰의 진행 알림이에요. 궁금한 점은 이 메일에 답장해 주세요.');
+  return {subject:tx('〔SYNK PULSE〕 {subject}',{subject:copy[0]}),body:[who?tx('{who}님, SYNK PULSE입니다.',{who}):tx('안녕하세요, SYNK PULSE입니다.'),'',copy[1],copy[2],...(due?[tx('받으실 날({date})은 확인을 기다리는 날만큼 늦어져요.',{date:dayText(due,loc)})]:[]),'',...links,'',tail].join('\n')};
 }
 
 export function createPulseMailService({store,notificationsFor,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,emergencyStop=()=>process.env.SYNK_PULSE_MAIL_STOP==='1',log=()=>{},localeOf=()=>'ko'}={}){
@@ -115,6 +155,15 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
   const config=()=>({enabled:false,enabledAt:null,relayUrl:'',connection:{state:'unknown',checkedAt:null,code:null,version:null},...(store.get(PULSE_MAIL_SETTINGS,'main')||{})});
   const saveConfig=(next,at)=>store.put(PULSE_MAIL_SETTINGS,'main',{...next,updatedAt:at});
   const active=c=>!stopped&&!emergencyStop()&&c.enabled===true&&!!c.enabledAt&&RELAY_URL.test(c.relayUrl||'')&&c.connection?.state==='ok';
+  // 뒤에 더한 순간(FIRST_MOMENTS 밖)마다 이 서버가 그 순간을 처음 알게 된 때 — 이 서비스가 뜬 때를 처음 한 번 설정 문서에 적고, 그 뒤로는 적힌 값을 쓴다.
+  // 메일을 이 판이 뜬 뒤에 켰으면 켠 때(enabledAt)가 더 늦어 이 값은 걸리지 않는다. 시계를 못 읽은 채 떴으면 처음 채우는 때로.
+  const bootAt=(()=>{try{return now().iso;}catch{return null;}})();
+  function momentSince(c,at){
+    const since=c.momentSince&&typeof c.momentSince==='object'&&!Array.isArray(c.momentSince)?{...c.momentSince}:{};let added=false;
+    for(const moment of PULSE_MAIL_MOMENTS)if(!FIRST_MOMENTS.has(moment)&&typeof since[moment]!=='string'){since[moment]=bootAt||at;added=true;}
+    if(added)saveConfig({...c,momentSince:since},at);
+    return since;
+  }
   function keys(at){
     let value=store.secret(PULSE_MAIL_SECRET);
     if(!value?.privateKeyPem||!/^[0-9a-f]{512}$/.test(value.n||'')){
@@ -162,6 +211,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
 
   function fill(at){
     const c=config();if(!active(c))return 0;
+    const since=momentSince(c,at);
     const outbox=store.all(PULSE_MAIL_OUTBOX),known=new Set(outbox.flatMap(item=>item.eventIds||[]));
     const open=new Map(outbox.filter(item=>item.state==='pending'&&!item.attempts&&item.lastEventAt>c.enabledAt).map(item=>[`${item.projectId}|${item.moment}`,item]));
     let added=0;
@@ -170,6 +220,7 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
       const items=notificationsFor(row).filter(item=>item.createdAt>c.enabledAt&&item.createdAt<=at&&!known.has(item.id)).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||a.id.localeCompare(b.id));
       for(const item of items){
         const moment=pulseMailMoment(row,item);if(!moment)continue;
+        if(since[moment]&&item.createdAt<=since[moment])continue;   // 이 서버가 그 순간을 알기 전 사건(새 판이 오르기 전)
         known.add(item.id);
         const slot=`${row.id}|${moment}`,eventAt=Date.parse(item.createdAt),held=open.get(slot),current=held&&eventAt<=Date.parse(held.firstEventAt)+MERGE_CAP_MS?held:null;
         if(current){
@@ -197,10 +248,18 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     if(Date.parse(at)-Date.parse(item.lastEventAt)>EXPIRE_MS)return put({state:'skipped',reason:'expired'});
     let latest=null;
     if(!DIRECT_MOMENTS.has(item.moment)){
-      latest=notificationsFor(row).find(entry=>entry.id===item.eventIds.at(-1));
-      if(!latest)return put({state:'skipped',reason:'stale'});
-      if(latest.readAt)return put({state:'skipped',reason:'read'});
-      if(pulseMailActed(row,item.moment,latest))return put({state:'skipped',reason:'acted'});
+      const known=notificationsFor(row);
+      if(item.moment==='staff_reply'){
+        // 담당자 답은 묶인 사건 모두를 본다(staffReplyPick). 투영에서 빠진 사건(지운 · 숨긴 답)은 없는 것으로 친다.
+        const pick=staffReplyPick(row,item.eventIds.map(id=>known.find(entry=>entry.id===id)).filter(Boolean));
+        if(!pick.latest)return put({state:'skipped',reason:pick.reason});
+        latest=pick.latest;
+      }else{
+        latest=known.find(entry=>entry.id===item.eventIds.at(-1));
+        if(!latest)return put({state:'skipped',reason:'stale'});
+        if(latest.readAt)return put({state:'skipped',reason:'read'});
+        if(pulseMailActed(row,item.moment,latest))return put({state:'skipped',reason:'acted'});
+      }
     }
     // 조립이 던지면(이 서버가 모르는 순간 — 새 순간이 함에 남은 채 서버를 한 판 되돌렸을 때 등) 그 줄만 failed로 닫는다.
     // 닫지 않으면 같은 줄이 회차마다 맨 먼저 집혀 던지고, 그 줄이 만료될 때까지(48시간) 뒤의 모든 손님 메일이 선다.

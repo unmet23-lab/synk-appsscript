@@ -46,3 +46,10 @@ test('담당자 화면: 연결 · 받는 곳 · 순간마다 마지막 상태, �
   assert.match(desk(project({mail:{...mail,customerChanged:true,override:false}})),/손님이 의뢰서 주소를 고쳐서 그 주소로 보내요/);
   assert.doesNotMatch(desk(project()),/desk-mail/,'메일 상태가 없으면 줄도 없다');
 });
+
+// 운영 조각 2-B: 담당자 답 메일(staff_reply)의 직원 화면 이름 — 열쇠 그대로(staff_reply)가 보이지 않게.
+test('담당자 화면: 담당자 답 메일 줄은 「담당자 답」으로 선다',()=>{
+  const html=desk(project({mail:{connection:'on',recipient:'set',email:'b@example.com',override:false,mailOff:false,customerChanged:false,moments:{staff_reply:{state:'sent',reason:null,at:'2026-11-12T01:04:00.000Z'}}}}));
+  assert.match(html,/<li>담당자 답 · Gmail에 넘김 11\/12 10:04<\/li>/);assert.doesNotMatch(html,/staff_reply/);
+  assert.match(desk(project({mail:{connection:'on',recipient:'set',email:'b@example.com',override:false,mailOff:false,customerChanged:false,moments:{staff_reply:{state:'skipped',reason:'read',at:'x'}}}})),/담당자 답 · 안 보냄 · 앱에서 먼저 보셨어요/);
+});

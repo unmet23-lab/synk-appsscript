@@ -6,7 +6,7 @@ import {join,dirname,resolve} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
 import vm from 'node:vm';
 import {Store} from './store.mjs';
-import {createPulseMailService,pulseMailActed,pulseMailCompose,pulseMailMoment,pulseMailRecipient,pulseMailRelayKey,PULSE_MAIL_MOMENTS,PULSE_MAIL_OUTBOX,PULSE_MAIL_SECRET} from './pulse-mail.mjs';
+import {createPulseMailService,pulseMailActed,pulseMailCompose,pulseMailMoment,pulseMailRecipient,pulseMailRelayKey,staffReplyPick,PULSE_MAIL_MOMENTS,PULSE_MAIL_OUTBOX,PULSE_MAIL_SECRET,PULSE_MAIL_SETTINGS} from './pulse-mail.mjs';
 
 const RELAY='https://script.google.com/macros/s/AKfycbTESTrelay0123456789abcdef/exec';
 const relaySource=await readFile(new URL('./pulse-mail-relay/relay.gs',import.meta.url),'utf8');
@@ -41,13 +41,16 @@ async function fixture(t,{stop=false}={}){
   const admin=store.createUser({name:'관리자',email:'founder@synk.im',role:'admin'}),member=store.createUser({name:'담당',email:'staff@pulse-mail.example',role:'member'});
   const fetchImpl=async(url,init)=>{calls.push({url:String(url),method:init.method,body:init.body?JSON.parse(init.body):null});if(override){const next=override(url,init,calls.length);if(next)return next;}return relay.fetch(url,init);};
   const logs=[];
-  service=createPulseMailService({store,clock,fetchImpl,notificationsFor:row=>(events.get(row.id)||[]).filter(item=>!item.hidden).map(({hidden,...item})=>item),emergencyStop:()=>stop,log:entry=>logs.push(entry)});
+  const make=()=>createPulseMailService({store,clock,fetchImpl,notificationsFor:row=>(events.get(row.id)||[]).filter(item=>!item.hidden).map(({hidden,...item})=>item),emergencyStop:()=>stop,log:entry=>logs.push(entry)});
+  service=make();
   const project=(patch={})=>{const id=randomUUID(),row={id,title:'합성 프로젝트',stage:'planning',inviteHash:'hash',inviteRevision:1,updatedAt:now,studio:{request:{answers:{name:'오미톡',contactName:'김손님',email:'client@example.com',package:'standard'},rounds:[],directionProposal:{status:'open'}}},...patch};store.put('clientProjects',id,row);events.set(id,[]);return row;};
   const event=(row,type,extra={})=>{const item={id:`client:${row.id}:${events.get(row.id).length+1}:${type}:${extra.resource??'r'}`,type,createdAt:now,readAt:null,...extra};delete item.resource;events.get(row.id).push(item);return item;};
   const advance=minutes=>{now=new Date(ms()+minutes*60000).toISOString();};
   const connect=async()=>{service.configure(admin,{relayUrl:RELAY});relay.props.set('SERVER_KEY_N',store.secret(PULSE_MAIL_SECRET).n);await service.ping(admin);return service.configure(admin,{enabled:true});};
   const outbox=()=>store.all(PULSE_MAIL_OUTBOX).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||a.id.localeCompare(b.id));
-  return {store,admin,member,relay,calls,logs,project,event,advance,connect,outbox,get service(){return service},set override(fn){override=fn;},get now(){return now;}};
+  // redeploy: 같은 저장소에 서비스를 새로 띄운다(새 판이 오른 서버 — 메일 설정 · 함 · 알림 사건은 그대로).
+  const redeploy=async()=>{await service.stop();service=make();return service;};
+  return {store,admin,member,relay,calls,logs,project,event,advance,connect,outbox,redeploy,get service(){return service},set override(fn){override=fn;},get now(){return now;}};
 }
 
 test('메일 글: 제목 · 본문에 프로젝트 이름과 순간 줄, 줄바꿈 · 제어 문자 걷기, 열쇠 · 내부 번호 · 도구 이름 없음',()=>{
@@ -85,7 +88,8 @@ test('메일 순간 · 받는 사람: 판은 글 콘티 · 장면 이미지 순�
   const row={studio:{request:{answers:{email:'a@example.com'},rounds:[{round:1,kind:'images'},{round:2,kind:'images'},{round:3,kind:'script'}]}}};
   const draft=round=>pulseMailMoment(row,{type:'draft_ready',id:`client:p:9:draft_ready:${round}`});
   assert.deepEqual([draft(1),draft(2),draft(3),draft(4)],['images_ready','images_ready','draft_ready',null]);
-  assert.equal(pulseMailMoment(row,{type:'staff_reply',id:'x'}),null);
+  // 운영 조각 2-B: 담당자 답은 메일 순간이고, 자동 안내는 아니다.
+  assert.equal(pulseMailMoment(row,{type:'staff_reply',id:'x'}),'staff_reply');assert.equal(pulseMailMoment(row,{type:'auto_reply',id:'x'}),null);
   assert.equal(pulseMailMoment(row,{type:'request_asked',id:'x'}),'request_asked');assert.equal(pulseMailMoment(row,{type:'payment_requested',id:'x'}),'payment_requested');
   assert.equal(pulseMailMoment(row,{type:'request_received',id:'x'}),null,'접수 확인은 알림 사건으로 넣지 않는다(접수 때 함에 바로)');
   assert.equal(pulseMailMoment(row,{type:'payment_confirmed',id:'x'}),null,'결제 확인은 앱 안 알림만');
@@ -118,8 +122,8 @@ test('보내기: 중계까지 서명 · 302 · 한 번만, 함에는 주소 · �
   const f=await fixture(t),row=f.project();
   f.event(row,'direction_proposed');                 // 켜기 전 사건은 보내지 않는다(물금)
   f.advance(1);await f.connect();f.advance(1);
-  f.event(row,'direction_proposed');f.event(row,'staff_reply');
-  assert.deepEqual(await f.service.tick(),{added:1,sent:0,removed:0});   // 3분 묶기 전
+  f.event(row,'direction_proposed');f.event(row,'auto_reply');
+  assert.deepEqual(await f.service.tick(),{added:1,sent:0,removed:0});   // 3분 묶기 전 · 자동 안내는 순간이 아니다
   f.advance(3);
   assert.equal((await f.service.tick()).sent,1);
   assert.equal(f.relay.sent.length,1);
@@ -370,12 +374,12 @@ test('판 4 GPT GA3: 접수 확인은 넣을 때의 주소로만 — 그사이 �
 test('함에 이 서버가 모르는 순간의 줄이 남아 있어도 그 줄만 failed(compose)로 닫고 뒤의 메일은 나간다',async t=>{
   const f=await fixture(t);await f.connect();f.advance(1);
   const a=f.project(),b=f.project({studio:{request:{answers:{name:'둘째',contactName:'이손님',email:'second@example.com',package:'standard'},rounds:[],directionProposal:{status:'open'}}}});
-  const stray=f.event(a,'reply_from_a_newer_server'),at=f.now,id=`${a.id}:staff_reply:000000000000`;
+  const stray=f.event(a,'reply_from_a_newer_server'),at=f.now,id=`${a.id}:moment_from_a_newer_server:000000000000`;
   f.event(b,'direction_proposed');
   await f.service.tick();f.advance(3);
   // 둘째 프로젝트의 줄보다 먼저 집히게(보낼 때가 1초 이르게) 모르는 순간의 줄을 함에 넣는다.
   const early=new Date(Date.parse(f.outbox()[0].dueAt)-1000).toISOString();
-  f.store.put(PULSE_MAIL_OUTBOX,id,{id,projectId:a.id,moment:'staff_reply',eventIds:[stray.id],firstEventAt:at,lastEventAt:at,dueAt:early,nextAttemptAt:early,state:'pending',reason:null,attempts:0,sendingAt:null,sentAt:null,recipientHash:null,createdAt:at,updatedAt:at});
+  f.store.put(PULSE_MAIL_OUTBOX,id,{id,projectId:a.id,moment:'moment_from_a_newer_server',eventIds:[stray.id],firstEventAt:at,lastEventAt:at,dueAt:early,nextAttemptAt:early,state:'pending',reason:null,attempts:0,sendingAt:null,sentAt:null,recipientHash:null,createdAt:at,updatedAt:at});
   const result=await f.service.tick();
   assert.equal(result.sent,2,'두 줄을 모두 집는다(앞 줄이 던져 회차가 끝나지 않는다)');
   const rows=Object.fromEntries(f.outbox().map(item=>[item.projectId,item]));
@@ -400,4 +404,133 @@ test('한 줄을 다루다 뜻밖에 던져도 그 줄만 failed(error)로 닫�
   assert.equal(rows[a.id].state,'failed');assert.equal(rows[a.id].reason,'error');assert.equal(rows[a.id].sendingAt,null);
   assert.equal(rows[b.id].state,'sent');
   assert.deepEqual(f.relay.sent.map(mail=>mail.to),['second@example.com']);
+});
+
+// ── 운영 조각 2-B(2026-11-11 설계 S1 「함께 메우는 빈칸」 ③): 담당자 답이 오면 메일 한 통 ──
+// 지금 메일 규칙 그대로 — 3분 묶음, 앱에서 이미 읽었으면 안 보냄, 꼬리는 「앱에서 답해 주세요」. 자동 안내(auto_reply)에는 안 나간다.
+test('담당자 답 메일: 앱으로 부르고 답 글 · 받으실 날 줄은 넣지 않으며, 꼬리는 「앱에서 답해 주세요」(한국어 · 영어)',()=>{
+  const row={id:'p',inviteHash:'secret-hash',messages:[{id:'m1',author:'staff',visibility:'customer',text:'SECRET-REPLY-TEXT',at:'2026-11-12T01:00:00.000Z'}],
+    studio:{request:{answers:{name:'오미톡',contactName:'김손님',package:'s15'},directionProposal:{status:'chosen',dueDate:'2026-11-22'},payment:{status:'confirmed',dueDate:'2026-11-22'}}}};
+  const latest={id:'client:p:1:staff_reply:m1',type:'staff_reply',messageId:'m1',createdAt:'2026-11-12T01:00:00.000Z'};
+  const ko=pulseMailCompose(row,'staff_reply','ko',latest);
+  assert.equal(ko.subject,'〔SYNK PULSE〕 오미톡 광고, 담당자가 답을 남겼어요');
+  assert.match(ko.body,/^김손님님, SYNK PULSE입니다\.\n\n보내 주신 말씀에 담당자가 답을 남겼어요\. 앱의 「담당자와 나눈 말」에서 보실 수 있어요\.\n다음 할 일: 답을 읽어 보시고, 더 궁금한 점이 있으면 앱에서 답해 주세요\.\n\n/);
+  assert.match(ko.body,/https:\/\/workspace\.synk\.im\/pulse-app\/\?open=mail\n/);
+  assert.match(ko.body,/\n이 메일은 담당자 답 알림이에요\. 대화가 한곳에 남도록 답은 앱에서 해 주세요\.$/);
+  assert.doesNotMatch(ko.body,/이 메일에 답장|SECRET-REPLY-TEXT|secret-hash|받으실 날|client:/,'메일 답장 안내 · 답 글 · 기다림 줄 · 내부 번호 없음');
+  const en=pulseMailCompose(row,'staff_reply','en',latest);
+  assert.equal(en.subject,'[SYNK PULSE] Your 오미톡 ad: your producer replied');
+  assert.match(en.body,/^Hi 김손님, this is SYNK PULSE\.\n\nYour producer has replied to your message\./);
+  assert.match(en.body,/You’ll find the reply in the app under “Messages with your producer”\./);
+  assert.match(en.body,/\nThis is a notification that your producer has replied\. Please reply in the app so the whole conversation stays in one place\.$/);
+  assert.doesNotMatch(en.body.replaceAll('오미톡','').replaceAll('김손님',''),/[가-힣]|reply to this email/i);
+  // 다른 순간의 꼬리는 그대로(메일 답장 안내).
+  assert.match(pulseMailCompose(row,'final_ready').body,/궁금한 점은 이 메일에 답장해 주세요\.$/);
+});
+
+test('담당자 답 메일: 답이 사라졌거나 손님에게 안 보이게 바뀌었거나, 답 뒤 손님이 앱에서 글을 남겼으면 이미 본 것으로 본다',()=>{
+  const at='2026-11-12T01:00:00.000Z',before='2026-11-12T00:55:00.000Z',after='2026-11-12T01:05:00.000Z';
+  const row=()=>({messages:[{id:'m0',author:'customer',action:'support',text:'물음',at:before},{id:'m1',author:'staff',visibility:'customer',text:'답',at}],studio:{request:{},comments:[{id:'c1',author:'staff',visibility:'customer',text:'댓글 답',at,targetType:'project'}]}});
+  const seen=(r,extra)=>pulseMailActed(r,'staff_reply',{id:'e',type:'staff_reply',createdAt:at,...extra});
+  assert.equal(seen(row(),{messageId:'m1'}),false,'물음 뒤에 온 답 — 보낸다');
+  assert.equal(seen(row(),{commentId:'c1'}),false,'프로젝트 댓글로 단 답');
+  const asked=row();asked.messages.push({id:'m2',author:'customer',action:'support',text:'고마워요',at:after});assert.equal(seen(asked,{messageId:'m1'}),true,'답 뒤 손님 문의');
+  const noted=row();noted.messages.push({id:'m3',author:'customer',action:'feedback',text:'0:03 더 밝게',at:after});assert.equal(seen(noted,{messageId:'m1'}),true,'답 뒤 영상 의견');
+  const commented=row();commented.studio.comments.push({id:'c2',author:'customer',text:'네',at:after});assert.equal(seen(commented,{commentId:'c1'}),true,'답 뒤 손님 댓글');
+  const hidden=row();hidden.messages[1].visibility='internal';assert.equal(seen(hidden,{messageId:'m1'}),true,'손님에게 안 보이게 바꿈');
+  const gone=row();gone.messages.splice(1,1);assert.equal(seen(gone,{messageId:'m1'}),true,'지움');
+  const automated=row();automated.messages[1].automated=true;assert.equal(seen(automated,{messageId:'m1'}),true,'자동 안내 글');
+  const internal=row();internal.studio.comments[0].visibility='internal';assert.equal(seen(internal,{commentId:'c1'}),true);
+  // 카드에 단 댓글은 그 카드가 손님에게 보일 때만 산 답이다(손님 알림 투영과 같은 거름 — 카본 끝판 A2).
+  const card=row();card.studio.scenes=[{id:'s1',visibility:'internal'}];card.studio.comments.push({id:'c3',author:'staff',visibility:'customer',targetType:'scene',targetId:'s1',at});
+  assert.equal(seen(card,{commentId:'c3'}),true);card.studio.scenes[0].visibility='customer';assert.equal(seen(card,{commentId:'c3'}),false);
+  const bare=row();bare.studio.comments.push({id:'c4',author:'staff',visibility:'customer',targetType:'scene',targetId:'s9',at});assert.equal(seen(bare,{commentId:'c4'}),true,'카드 목록이 아예 없어도 산 답이 아니다(카본 끝판 A2)');
+  assert.equal(seen(row(),{}),true,'가리키는 글이 없는 사건은 보내지 않는다');
+  assert.equal(seen({studio:{}},{messageId:'m1'}),true,'메시지 목록이 없는 꼴');
+});
+
+// 답을 하나 단다: 프로젝트 글에 담당자 답을 넣고 그 답의 손님 알림 사건을 만든다(회사 서버의 client-notifications가 하는 일).
+const replyOn=(f,row,id,extra={})=>{const live=f.store.get('clientProjects',row.id),message={id,author:'staff',visibility:'customer',authorName:'김하늘',text:'답이에요',at:f.now,...extra};f.store.put('clientProjects',row.id,{...live,messages:[...(live.messages||[]),message]});return f.event(row,message.automated?'auto_reply':'staff_reply',{messageId:id,resource:id});};
+
+test('담당자 답 메일: 3분 안에 이어 단 답은 한 통으로 묶고, 직원 화면에 「담당자 답」 줄이 선다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const row=f.project();
+  replyOn(f,row,'m1');f.advance(1);replyOn(f,row,'m2');
+  assert.equal((await f.service.tick()).added,1,'둘째 답은 첫 줄에 묶인다');
+  f.advance(2);await f.service.tick();assert.equal(f.relay.sent.length,0,'마지막 답 뒤 3분이 지나기 전');
+  f.advance(1);await f.service.tick();
+  assert.equal(f.relay.sent.length,1);assert.equal(f.relay.sent[0].subject,'〔SYNK PULSE〕 오미톡 광고, 담당자가 답을 남겼어요');assert.equal(f.relay.sent[0].to,'client@example.com');
+  const [item]=f.outbox();assert.equal(item.moment,'staff_reply');assert.equal(item.eventIds.length,2);assert.equal(item.state,'sent');
+  assert.equal(f.service.staffState(row).moments.staff_reply.state,'sent');
+  assert.ok(f.service.customerState(row).moments.includes('staff_reply'));
+  // 그 뒤 새 답은 새 줄(앞 줄은 닫혔다).
+  f.advance(10);replyOn(f,row,'m3');await f.service.tick();f.advance(3);await f.service.tick();
+  assert.equal(f.relay.sent.length,2);
+});
+
+test('담당자 답 메일: 앱에서 읽었으면 · 답 뒤 손님이 앱에서 글을 남겼으면 · 자동 안내면 메일이 나가지 않는다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const read=f.project(),wrote=f.project(),auto=f.project();
+  const seenItem=replyOn(f,read,'r1');
+  replyOn(f,wrote,'w1');
+  replyOn(f,auto,'a1',{automated:true,authorName:'자동 안내'});
+  await f.service.tick();
+  assert.deepEqual(f.outbox().map(item=>item.projectId).sort(),[read.id,wrote.id].sort(),'자동 안내는 함에 넣지도 않는다');
+  f.advance(1);
+  seenItem.readAt=f.now;   // 손님이 앱 알림을 읽었다
+  const live=f.store.get('clientProjects',wrote.id);f.store.put('clientProjects',wrote.id,{...live,messages:[...live.messages,{id:'w2',author:'customer',action:'support',text:'확인했어요',at:f.now}]});
+  f.advance(3);await f.service.tick();
+  assert.equal(f.relay.sent.length,0);
+  const by=Object.fromEntries(f.outbox().map(item=>[item.projectId,item]));
+  assert.deepEqual([by[read.id].state,by[read.id].reason],['skipped','read']);
+  assert.deepEqual([by[wrote.id].state,by[wrote.id].reason],['skipped','acted']);
+});
+
+// 카본 끝판 검수 A1(P1): 3분 묶음에 든 답 여럿 가운데 마지막 하나만 보면, 마지막 답만 지우거나 그 알림만 읽어도 앞의 못 본 답 메일이 영영 빠진다.
+test('담당자 답 메일: 묶인 답 여럿은 하나씩 본다 — 보이고 · 안 읽었고 · 그 뒤 손님 글이 없는 답이 하나라도 있으면 보내고, 까닭은 stale · read · acted로 가른다',()=>{
+  const at1='2026-11-12T01:00:00.000Z',at2='2026-11-12T01:01:00.000Z',later='2026-11-12T01:02:00.000Z';
+  const row=()=>({messages:[{id:'m1',author:'staff',visibility:'customer',at:at1},{id:'m2',author:'staff',visibility:'customer',at:at2}],studio:{comments:[]}});
+  const e1={id:'e1',type:'staff_reply',messageId:'m1',createdAt:at1,readAt:null},e2={id:'e2',type:'staff_reply',messageId:'m2',createdAt:at2,readAt:null};
+  assert.equal(staffReplyPick(row(),[e1,e2]).latest,e2,'둘 다 살아 있으면 마지막 답이 근거');
+  const gone=row();gone.messages.pop();assert.equal(staffReplyPick(gone,[e1,e2]).latest,e1,'마지막 답만 지워도 앞 답으로 보낸다');
+  assert.equal(staffReplyPick(row(),[e1,{...e2,readAt:later}]).latest,e1,'마지막 알림만 읽어도 앞 답으로 보낸다');
+  const between=row();between.messages.splice(1,0,{id:'q',author:'customer',action:'support',at:'2026-11-12T01:00:30.000Z'});
+  assert.equal(staffReplyPick(between,[e1,e2]).latest,e2,'두 답 사이에 손님 글 — 뒤 답은 아직 못 봤다');
+  const after=row();after.messages.push({id:'q',author:'customer',action:'support',at:later});
+  assert.deepEqual(staffReplyPick(after,[e1,e2]),{latest:null,reason:'acted'});
+  assert.deepEqual(staffReplyPick(row(),[{...e1,readAt:later},{...e2,readAt:later}]),{latest:null,reason:'read'});
+  const none=row();none.messages=[];assert.deepEqual(staffReplyPick(none,[e1,e2]),{latest:null,reason:'stale'},'지운 · 숨긴 답은 「앱에서 먼저 보셨어요」(acted)가 아니다');
+  assert.deepEqual(staffReplyPick(row(),[]),{latest:null,reason:'stale'});
+});
+
+test('담당자 답 메일 · 함: 묶인 두 답 가운데 마지막을 지워도 한 통이 나가고, 둘 다 지우면 stale로 닫힌다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const kept=f.project(),wiped=f.project();
+  replyOn(f,kept,'k1');replyOn(f,wiped,'w1');f.advance(1);replyOn(f,kept,'k2');replyOn(f,wiped,'w2');
+  await f.service.tick();
+  const drop=(row,ids)=>{const live=f.store.get('clientProjects',row.id);f.store.put('clientProjects',row.id,{...live,messages:live.messages.filter(message=>!ids.includes(message.id))});};
+  drop(kept,['k2']);drop(wiped,['w1','w2']);
+  f.advance(3);await f.service.tick();
+  const by=Object.fromEntries(f.outbox().map(item=>[item.projectId,item]));
+  assert.deepEqual([by[kept.id].state,by[kept.id].eventIds.length],['sent',2]);
+  assert.deepEqual([by[wiped.id].state,by[wiped.id].reason],['skipped','stale']);
+  assert.equal(f.relay.sent.length,1);
+});
+
+// 카본 끝판 검수 A1(P1): 메일이 켜진 서버에 이 판이 오르면, 옛 판이 순간이 아니라 함에 안 넣던 지난 답(켠 뒤 ~ 이 판 전)이 한꺼번에 들어 몰려 나가면 안 된다.
+test('담당자 답 메일 · 새 판이 오를 때: 그 전에 단 답은 함에 들지 않고(처음 여덟 순간은 그대로), 뒤에 단 답만 나가며, 처음 안 때는 한 번만 적힌다',async t=>{
+  const f=await fixture(t);await f.connect();f.advance(1);
+  const row=f.project();
+  replyOn(f,row,'old1');f.event(row,'direction_proposed');          // 옛 판이 돌던 때의 사건 — 옛 판은 담당자 답을 함에 넣지 않았다
+  f.advance(5);const deployedAt=f.now;await f.redeploy();             // 새 판이 오른다
+  await f.service.tick();
+  assert.deepEqual(f.outbox().map(item=>item.moment),['direction_proposed'],'지난 답은 함에 들지 않는다');
+  assert.equal(f.store.get(PULSE_MAIL_SETTINGS,'main').momentSince.staff_reply,deployedAt);
+  assert.equal(f.store.get(PULSE_MAIL_SETTINGS,'main').momentSince.direction_proposed,undefined,'처음 여덟 순간에는 적지 않는다');
+  f.advance(1);replyOn(f,row,'new1');await f.service.tick();f.advance(3);await f.service.tick();
+  assert.deepEqual(f.relay.sent.map(mail=>mail.subject),['〔SYNK PULSE〕 오미톡 광고, 방향을 골라 주세요','〔SYNK PULSE〕 오미톡 광고, 담당자가 답을 남겼어요']);
+  // 다시 띄워도(재시작 · 다음 판) 처음 안 때는 그대로다 — 그사이 답이 빠지지 않는다.
+  f.advance(1);replyOn(f,row,'new2');f.advance(1);await f.redeploy();await f.service.tick();
+  assert.equal(f.store.get(PULSE_MAIL_SETTINGS,'main').momentSince.staff_reply,deployedAt);
+  assert.equal(f.outbox().filter(item=>item.moment==='staff_reply').length,2,'재시작 전에 단 답도 함에 든다');
 });

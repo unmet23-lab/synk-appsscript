@@ -81,7 +81,7 @@ test('메일 알림 · 회사 서버 길: 관리자만 켜고, 방향 제안 한
 
   // 손님 보기: 켜짐 · 가린 주소, 담당자 연락 칸 없음
   let room=(await f.call('/pulse/api/project')).data;
-  assert.deepEqual(room.project.mail,{mailOn:true,mailTo:'b***@pulse-synthetic.test',moments:['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready']});
+  assert.deepEqual(room.project.mail,{mailOn:true,mailTo:'b***@pulse-synthetic.test',moments:['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply']});
   // 담당자 주소 고치기: 직원만 · 주소 꼴 · 연락처 줄 함께, 손님 보기에는 contact 없음
   assert.equal((await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,action:'request_contact',email:'not-mail'}})).status,400);
   assert.equal((await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'request_contact',email:'x@pulse-synthetic.test'},csrf:room.csrf})).status,403);
@@ -96,4 +96,46 @@ test('메일 알림 · 회사 서버 길: 관리자만 켜고, 방향 제안 한
   // 담당자 주소 고치기는 손님 알림 사건을 만들지 않는다
   const events=f.app.store.get('clientProjects',id).notificationEvents.filter(event=>event.audiences?.includes('customer'));
   assert.deepEqual(events.map(event=>event.type),['direction_proposed']);
+});
+
+// 운영 조각 2-B(2026-11-11 설계 S1 ③): 담당자 답이 오면 메일 한 통 — 실제 회사 서버 길(손님 문의 → 담당자 답 → 알림 사건 → 함 → 중계).
+test('담당자 답 메일 · 회사 서버 길: 손님 문의에 담당자가 답하면 3분 뒤 한 통, 내부 메모 · 앱에서 읽은 답은 메일이 없다',async t=>{
+  const f=await fixture(t);
+  assert.equal((await f.staff('/api/settings/pulse-mail',{body:{relayUrl:RELAY}})).status,200);
+  f.fake.props.set('SERVER_KEY_N',f.app.store.secret(PULSE_MAIL_SECRET).n);
+  assert.equal((await f.staff('/api/settings/pulse-mail/ping',{body:{}})).data.connection.state,'ok');
+  assert.equal((await f.staff('/api/settings/pulse-mail',{body:{enabled:true}})).status,200);
+  f.advance(1);
+  const draft=(await f.call('/pulse/api/request/start',{body:{}})).data.draft;
+  const sent=await f.call('/pulse/api/request/submit',{body:{answers},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));
+  const id=sent.data.projectId;
+  f.advance(1);await f.app.pulseMail.tick();const receipts=f.fake.sent.length;   // 접수 확인
+  const ask=async text=>{const room=(await f.call('/pulse/api/project')).data;const result=await f.call('/pulse/api/action',{body:{action:'support',revision:room.project.revision,text},csrf:room.csrf});assert.equal(result.status,200,JSON.stringify(result.data));};
+  const reply=async(text,visibility='customer')=>{const result=await f.staff(`/api/client-projects/${id}/messages`,{body:{text,visibility}});assert.equal(result.status,200,JSON.stringify(result.data));};
+  await ask('로고 원본은 언제까지 보내면 돼요?');f.advance(1);
+  await reply('내일까지 보내 주시면 돼요. SECRET-REPLY-BODY');await reply('담당자끼리 메모 SECRET-MEMO','internal');
+  f.advance(1);await f.app.pulseMail.tick();
+  const replies=()=>f.app.store.all('pulseMailOutbox').filter(item=>item.moment==='staff_reply');
+  assert.equal(replies().length,1,'내부 메모는 손님 알림이 아니라 함에 들지 않는다');assert.equal(replies()[0].eventIds.length,1);
+  f.advance(1);await f.app.pulseMail.tick();assert.equal(f.fake.sent.length,receipts,'답 뒤 3분 전(2분)');
+  f.advance(1);await f.app.pulseMail.tick();
+  const mails=f.fake.sent.slice(receipts);
+  assert.equal(mails.length,1);assert.equal(mails[0].to,'buyer@pulse-synthetic.test');
+  assert.equal(mails[0].subject,'〔SYNK PULSE〕 오미톡 오미자 스파클링 광고, 담당자가 답을 남겼어요');
+  assert.doesNotMatch(mails[0].body,/SECRET-REPLY-BODY|SECRET-MEMO|이 메일에 답장/);assert.match(mails[0].body,/답은 앱에서 해 주세요\.$/);
+  assert.equal((await f.staff('/api/client-projects/'+id+'/studio')).data.project.mail.moments.staff_reply.state,'sent');
+  // 앱에서 읽은 답은 메일이 없다.
+  await ask('하나만 더요. 세로 판도 되나요?');f.advance(1);await reply('네, 세로 판도 함께 드려요.');
+  const room=(await f.call('/pulse/api/project')).data;
+  assert.equal((await f.call('/pulse/api/notifications/read',{body:{all:true},csrf:room.csrf})).status,200);
+  f.advance(1);await f.app.pulseMail.tick();f.advance(3);await f.app.pulseMail.tick();
+  assert.equal(f.fake.sent.length,receipts+1,'읽은 답은 보내지 않는다');
+  const last=f.app.store.all('pulseMailOutbox').filter(item=>item.moment==='staff_reply').sort((a,b)=>a.createdAt.localeCompare(b.createdAt)).at(-1);
+  assert.deepEqual([last.state,last.reason],['skipped','read']);
+  // 답 뒤 손님이 앱에서 글을 남기면 메일이 없다 — 실제 서버가 쓰는 글 꼴(author · at)과 사건 때(createdAt)로 가른다(카본 끝판 A3).
+  await reply('파일은 이 대화에 올려 주셔도 돼요.');f.advance(1);await ask('네, 방금 올렸어요.');
+  f.advance(1);await f.app.pulseMail.tick();f.advance(3);await f.app.pulseMail.tick();
+  assert.equal(f.fake.sent.length,receipts+1,'답 뒤 손님이 앱에서 글을 남겼으면 보내지 않는다');
+  const acted=f.app.store.all('pulseMailOutbox').filter(item=>item.moment==='staff_reply').sort((a,b)=>a.createdAt.localeCompare(b.createdAt)).at(-1);
+  assert.deepEqual([acted.state,acted.reason],['skipped','acted']);
 });
