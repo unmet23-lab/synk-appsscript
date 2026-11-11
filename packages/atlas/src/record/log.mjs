@@ -375,8 +375,10 @@ export function createRecord({
     },
 
     // 고르기가 세는 「낸 것」 기록(설계 §5-4 한도 세기) — 요약의 최근 이틀 표 + 아직 요약에 안 든 내 2판 제시.
+    // 줄마다 사건 번호(id)를 남긴다 — 코치가 판을 다시 세울 때 「낸 것 전부 − 이 판 일지에서 다시 돌릴 내 제시 번호」로 센다
+    // (시각으로 가르면 탭 · 기기 시계 차이와 같은 밀리초로 어긋났다, 단계 4 §16). 번호가 없는 요약 줄은 겹치지 않게 따로 두고 그대로 낸다.
     issued() {
-      const rows = new Map((baseOf(state)?.issued ?? []).map(row => [row.id, row]));
+      const rows = new Map((baseOf(state)?.issued ?? []).map((row, i) => [row.id ?? `#${i}`, row]));
       for (const id of pendingIds(state)) {
         const event = state.held.get(id).event;
         if (isIssued(event)) rows.set(id, issuedRow(event));
@@ -384,7 +386,9 @@ export function createRecord({
       const floor = now() + state.clock.offsetMs - ISSUED_KEEP_MS;
       return [...rows.values()]
         .filter(row => row.at >= floor)
-        .map(({ at, review, units }) => ({ at, review, units }));
+        .map(({ id, at, review, units }) =>
+          id === undefined ? { at, review, units } : { id, at, review, units },
+        );
     },
 
     // 손님: 판 끝처럼 지금 든 사건까지 요약을 바로 접어 둔다(새 사건이 없으면 그대로 — 단계 4 판 끝 칸 견주기, 11-11). 계정은 서버가 접는다.

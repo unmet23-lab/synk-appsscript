@@ -651,6 +651,55 @@ test('같은 판 묶음 · 같은 갱신 차례의 요약 가운데 덜 접힌 �
     rec.summary.issued.map(row => row.id),
     [shown.id],
   );
-  const again = await open();
-  assert.equal(again.summary.foldedUntil, 11, '다시 열어도 앞선 요약');
+  // 저장소 다시 읽기 길 — 두 탭이 같은 차례의 요약을 각각 저장하되 덜 접힌 것(10)이 뒤에 붙는다(GPT 다시 검수 GA1).
+  const tabPort = memoryPort();
+  const openTab = () =>
+    openRecord({ port: tabPort, revision: 1, memory, params: PARAMS, index, now: () => T0 });
+  const ahead = await openTab();
+  const behind = await openTab();
+  await ahead.receive({ summary: { ...base, foldedUntil: 11, issued: [shown] } });
+  await behind.receive({ summary: { ...base, foldedUntil: 10, issued: [] } });
+  const kinds = (await tabPort.read()).filter(row => row.value.kind === 'summary');
+  assert.equal(kinds.length, 2, '두 요약 기록이 차례대로 붙었다');
+  const reopened = await openTab();
+  assert.equal(reopened.summary.foldedUntil, 11, '다시 열면 덜 접힌 늦은 기록을 쓰지 않는다');
+  assert.deepEqual(
+    reopened.summary.issued.map(row => row.id),
+    [shown.id],
+  );
+});
+
+test('「낸 것」 줄은 사건 번호(id)를 싣는다 — 내 제시는 그 번호, 번호 없는 요약 줄은 그대로 · 겹치지 않게(단계 4 §16)', async () => {
+  const port = memoryPort();
+  const record = await openRecord({
+    port,
+    revision: 1,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  const fromServer = { id: 'a.0000000000002.0001.bbbbbbbb', at: T0, review: false, units: ['u1'] };
+  const legacyA = { at: T0, review: true, units: ['u2'] };
+  const legacyB = { at: T0, review: false, units: ['u3'] };
+  await record.receive({
+    summary: {
+      edition: record.edition(),
+      full: true,
+      lineSeq: 1,
+      foldedUntil: 1,
+      lines: [],
+      issued: [fromServer, legacyA, legacyB],
+    },
+  });
+  const shown = record.add('practice.presented', presented());
+  await shown.stored;
+  const rows = record.issued();
+  assert.deepEqual(
+    rows.map(row => row.id),
+    [fromServer.id, undefined, undefined, shown.event.id],
+    '서버 줄 · 내 제시는 번호를 싣고 번호 없는 줄 둘은 따로 남는다',
+  );
+  assert.equal(Object.hasOwn(rows[1], 'id'), false, '번호 없는 줄에 id 칸을 만들지 않는다');
+  assert.deepEqual(rows[3].units, ['u0']);
 });

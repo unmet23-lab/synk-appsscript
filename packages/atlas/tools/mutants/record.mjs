@@ -10,6 +10,15 @@ const ROWS = 'src/record/rows.mjs';
 const EVENTS = 'src/record/events.mjs';
 
 export const RECORD_MUTANTS = [
+  // ── 「낸 것」 줄의 사건 번호 — 코치가 번호로 내 제시를 뺀다(단계 4 §16) ──
+  [
+    R,
+    '기기',
+    '「낸 것」 줄에서 사건 번호를 뺀다(코치가 판을 다시 세울 때 내 제시를 번호로 못 뺀다)',
+    LOG,
+    '          id === undefined ? { at, review, units } : { id, at, review, units },',
+    '          ({ at, review, units }),',
+  ],
   // ── 기기 요약 받기 — 기준 없는 부분 답은 얹지 않음 · 늦은 옛 답은 되돌리지 않음(GPT 끝 판 GD1 · GD2) ──
   [
     R,
