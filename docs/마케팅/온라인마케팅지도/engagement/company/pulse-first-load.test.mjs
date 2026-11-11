@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync,existsSync} from 'node:fs';
-import {parse} from 'acorn';
+import {literalSyllables,SKIP_DIRS} from './pulse-ui-text.mjs';
 
 // PULSE 첫 방문 무게(2026-11-11): 판 6 점검 E(지연 400ms · 50KB/s, 서비스 워커 없는 첫 방문)에서 의뢰서가 34초 뒤에 떴다.
 // 통째 글꼴 미리 받기(902KB)와 의뢰서 밑 첫 화면 그림(1.4MB) · 쇼릴이 화면 모듈과 대역을 나눴다. 글자 모양 · 그림 · 영상은 그대로 두고 받는 때만 바꾼 약속을 지킨다.
@@ -15,12 +15,12 @@ const SYLLABLE=c=>c>=0xAC00&&c<=0xD7A3;
 const SANS=['SYNKSans-pulse-rest.woff2','SYNKSans-pulse-ui.woff2','SYNKSans-pulse-first.woff2','SYNKSans-pulse-latin.woff2'];
 const SERIF=['NotoSerifKR-300-rest.woff2','NotoSerifKR-300-ui.woff2','NotoSerifKR-300-sym.woff2'];
 
-// 화면 원문: pulse-app 모듈의 문자열 · 템플릿 글(주석 제외) — 도구가 ui 조각을 만들 때 읽는 것과 같은 자리.
+// 화면 원문: pulse-app 모듈의 문자열 · 템플릿 글(주석 제외) + index.html — 도구가 ui 조각을 만들 때와 같은 훑개(pulse-ui-text.mjs)로 센다.
+// 회사 이미지는 npm 패키지 없이 company/*.mjs만 싣는다 — 이 시험은 node 기본 모듈과 같은 폴더 도우미만 import한다(조율 11-11, acorn을 쓰면 이미지 시험이 ERR_MODULE_NOT_FOUND).
 function uiSyllables(){
-  const out=new Set(),walk=dir=>{for(const e of readdirSync(dir,{withFileTypes:true})){const p=new URL(e.name+(e.isDirectory()?'/':''),dir);if(e.isDirectory()){if(!['assets','demo-assets','production-library','icons'].includes(e.name))walk(p);}else if(/\.(mjs|js)$/.test(e.name)){
-    const visit=n=>{if(!n||typeof n.type!=='string')return;const text=n.type==='Literal'&&typeof n.value==='string'?n.value:n.type==='TemplateElement'?(n.value.cooked??n.value.raw):'';for(const ch of text){const c=ch.codePointAt(0);if(SYLLABLE(c))out.add(c);}for(const k of Object.keys(n)){const v=n[k];if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v.type==='string')visit(v);}};
-    visit(parse(readFileSync(p,'utf8'),{ecmaVersion:'latest',sourceType:'module',allowHashBang:true}));}}};
+  const sources=[],walk=dir=>{for(const e of readdirSync(dir,{withFileTypes:true})){const p=new URL(e.name+(e.isDirectory()?'/':''),dir);if(e.isDirectory()){if(!SKIP_DIRS.includes(e.name))walk(p);}else if(/\.(mjs|js)$/.test(e.name))sources.push(readFileSync(p,'utf8'));}};
   walk(appDir);
+  const out=literalSyllables(sources);
   for(const ch of read('index.html')){const c=ch.codePointAt(0);if(SYLLABLE(c))out.add(c);}
   return out;
 }
@@ -48,6 +48,14 @@ test('slices never overlap where a page would fetch two files for one glyph, and
   assert.ok(sFirst.range.size>0&&sFirst.range.size<120,`첫 글자 조각은 작게(${sFirst.range.size}자)`);
   // 언어를 정하기 전 첫 render()의 머리 단추 · 불러오는 글도 — 영어 화면이 이 글자 때문에 ui 조각(148KB)을 받았다(11-11 실측).
   for(const word of ['한국어','본문으로 건너뛰기','프로젝트를 확인하고 있어요','앱 설치','제작자 공간'])for(const ch of word.replace(/\s/g,''))assert.ok(sFirst.range.has(ch.codePointAt(0)),`첫 글자 조각에 「${ch}」`);
+  // 회사 이미지 안에서도 돈다 — 이 시험과 훑개는 node 기본 모듈과 같은 폴더 파일만 import한다(npm 패키지 없음).
+  // 따옴표 둘 다 · from 있는 import와 다시 내보내기 · 이름 없는 import · 동적 import를 다 센다(검수 -c B2 — 작은따옴표 꼴만 보면 큰따옴표 import가 지나갔다).
+  for(const file of ['pulse-first-load.test.mjs','pulse-ui-text.mjs']){
+    const src=readFileSync(new URL('./'+file,import.meta.url),'utf8');
+    const specs=[...src.matchAll(/^\s*(?:import|export)\b[^'"`;]*?\bfrom\s*(['"])([^'"]+)\1/gm),...src.matchAll(/^\s*import\s*(['"])([^'"]+)\1/gm),...src.matchAll(/\bimport\s*\(\s*(['"])([^'"]+)\1\s*\)/g)].map(m=>m[2]);
+    assert.ok(specs.length>=(file==='pulse-first-load.test.mjs'?4:0),`${file}의 import를 못 셌다(${specs.length})`);
+    for(const from of specs)assert.match(from,/^(node:|\.\/)/,`${file}가 ${from}을 import한다`);
+  }
   const ui=uiSyllables();assert.ok(ui.size>400,`화면 원문 음절 ${ui.size}자`);
   const strayRest=[...ui].filter(c=>sRest.range.has(c)).map(c=>String.fromCodePoint(c));
   assert.deepEqual(strayRest,[],'화면 글이 바뀌었다 — python -X utf8 tools/build-pulse-fonts.py를 다시 돌린다(안 돌리면 첫 화면에서 나머지 조각 461KB까지 받는다)');

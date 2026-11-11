@@ -53,17 +53,19 @@ def ranges(points):
     return ','.join(f'U+{a:X}' if a == b else f'U+{a:X}-{b:X}' for a, b in out)
 
 
-# 화면 원문: pulse-app의 모듈 · 서비스 워커의 문자열과 템플릿 글(주석은 빼고 구문 트리로 읽는다) + 첫 HTML의 글.
+# 화면 원문: pulse-app의 모듈 · 서비스 워커의 문자열과 템플릿 글(주석은 빼고) + 첫 HTML의 글.
+# 훑개는 회사 폴더의 pulse-ui-text.mjs 하나다 — 회사 시험(pulse-first-load.test.mjs)이 같은 훑개로 같은 글자를 센다.
+# 회사 이미지에는 npm 패키지가 없어 그 훑개는 node 기본만 쓴다. acorn과 같은 글을 내는지는 tests/pulse-ui-text.test.mjs가 대조한다.
 probe = r"""
-const fs=require('node:fs'),path=require('node:path');const dir=process.argv[1];
-const {parse}=require(require.resolve('acorn',{paths:[dir]}));
-const files=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory()){if(!['assets','demo-assets','production-library','icons'].includes(e.name))walk(p);}else if(/\.(mjs|js)$/.test(e.name))files.push(p);}};walk(dir);
-let text='';
-for(const file of files.sort()){const src=fs.readFileSync(file,'utf8');const ast=parse(src,{ecmaVersion:'latest',sourceType:'module',allowHashBang:true});
-  const visit=n=>{if(!n||typeof n.type!=='string')return;if(n.type==='Literal'&&typeof n.value==='string')text+=n.value+'\n';if(n.type==='TemplateElement')text+=(n.value.cooked??n.value.raw)+'\n';for(const k of Object.keys(n)){if(k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v.type==='string')visit(v);}};visit(ast);}
-process.stdout.write(JSON.stringify({files:files.map(f=>path.relative(dir,f).split(path.sep).join('/')),text}));
+const fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('node:url');const [dir,helper]=process.argv.slice(1);
+import(pathToFileURL(helper).href).then(({literalTexts,SKIP_DIRS})=>{
+  const files=[];const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=path.join(d,e.name);if(e.isDirectory()){if(!SKIP_DIRS.includes(e.name))walk(p);}else if(/\.(mjs|js)$/.test(e.name))files.push(p);}};walk(dir);
+  let text='';for(const file of files.sort())for(const t of literalTexts(fs.readFileSync(file,'utf8')))text+=t+'\n';
+  process.stdout.write(JSON.stringify({files:files.map(f=>path.relative(dir,f).split(path.sep).join('/')),text}));
+});
 """
-probed = json.loads(subprocess.run(['node', '-e', probe, str(APP)], capture_output=True, check=True).stdout.decode('utf-8'))
+HELPER = APP.parents[1] / 'pulse-ui-text.mjs'
+probed = json.loads(subprocess.run(['node', '-e', probe, str(APP), str(HELPER)], capture_output=True, check=True).stdout.decode('utf-8'))
 assert 'request-flow.mjs' in probed['files'] and 'film-home.mjs' in probed['files'] and 'i18n/en.mjs' in probed['files'], 'pulse-app 모듈 목록이 이상하다'
 html = (APP / 'index.html').read_text(encoding='utf-8')
 body = re.sub(r'<[^>]+>', ' ', html.split('<body>', 1)[1])

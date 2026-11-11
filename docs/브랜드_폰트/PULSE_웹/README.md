@@ -2,7 +2,7 @@
 
 `python -X utf8 tools/build-pulse-fonts.py`가 만든다(2026-11-11, 첫 방문 무게 줄이기). 결과는 고객 앱 폴더 `docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/assets/`에 바로 쓰고, 이 폴더에는 범위 · 크기 기록 `fonts.json`만 둔다. 고객 앱 `film.css`의 글꼴 선언(「글꼴 조각 시작 — 끝」 사이)과 범위도 도구가 맞춘다. 같은 입력이면 같은 바이트다.
 
-**고객 앱 화면 글(pulse-app 모듈의 문자열 · 템플릿 글, index.html)을 바꾸면 다시 돌린다.** 안 돌리면 새 글자 때문에 첫 화면에서 나머지 조각(약 450KB)까지 받는다(글자는 그대로 같은 글꼴로 나온다). 회사 폴더 시험 `pulse-first-load.test.mjs`가 화면 원문 음절이 나머지 범위에 들어가면 알린다.
+**고객 앱 화면 글(pulse-app 모듈의 문자열 · 템플릿 글, index.html)을 바꾸면 다시 돌린다.** 안 돌리면 새 글자 때문에 첫 화면에서 나머지 조각(약 450KB)까지 받는다(글자는 그대로 같은 글꼴로 나온다). 회사 폴더 시험 `pulse-first-load.test.mjs`가 화면 원문 음절이 나머지 범위에 들어가면 알린다. 「화면 원문」(주석을 뺀 문자열 · 템플릿 글)은 도구와 시험이 같은 훑개 `company/pulse-ui-text.mjs`로 센다 — 회사 이미지는 npm 패키지 없이 `company/*.mjs`만 싣어 구문 분석 패키지를 쓰지 않고, acorn과 같은 글을 내는지는 저장소 바닥 `tests/pulse-ui-text.test.mjs`가 실제 파일로 대조한다.
 
 | 파일 | 원본 | 내용 | 크기 |
 |---|---|---|---|
