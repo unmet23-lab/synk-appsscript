@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "go2",
+ "text": "불꽃놀이 보러 가자!",
+ "dur": 1.277,
+ "words": [
+  {
+   "text": "불꽃놀이",
+   "start": 0.02,
+   "end": 0.503
+  },
+  {
+   "text": "보러",
+   "start": 0.564,
+   "end": 0.745
+  },
+  {
+   "text": "가자!",
+   "start": 0.805,
+   "end": 1.277
+  }
+ ],
+ "source": {
+  "key": "9c1cbfa686d0041591b4f176116c263d",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 30,
+   "lufs": -17,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 455
+ }
+}

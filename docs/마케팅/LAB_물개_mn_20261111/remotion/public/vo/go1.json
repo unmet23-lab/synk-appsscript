@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "go1",
+ "text": "물개 보러 가자!",
+ "dur": 0.919,
+ "words": [
+  {
+   "text": "물개",
+   "start": 0.02,
+   "end": 0.262
+  },
+  {
+   "text": "보러",
+   "start": 0.323,
+   "end": 0.484
+  },
+  {
+   "text": "가자!",
+   "start": 0.545,
+   "end": 0.919
+  }
+ ],
+ "source": {
+  "key": "349e4cd9125a7d944655a6013cc4cb3f",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 30,
+   "lufs": -17,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 416
+ }
+}

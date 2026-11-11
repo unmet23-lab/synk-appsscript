@@ -1,0 +1,3 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Change: Mongle has sagged with disappointment: its body is squashed low and wide like a deflated dumpling on the sofa seat, eyes turned into two small sad downward arcs, and the strawberry jam jar (gingham cloth lid) has slid off its head and now lies on its side on the sofa cushion right next to it. The Friend has dropped her hand from her cheek and gently pats the top of Mongle's head with one felt hand, looking down at it with a small amused smile. The TV still shows the same dull gray snail picture.

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c958-b3cb-78b1-99f1-356ac91db19d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해, 원본 구도는 유지하고 TV의 추격전과 두 캐릭터의 놀란 반응을 담은 한 장을 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle and her friend watch a fiery car chase, startled in their cozy felt living room."}}
+{"type":"turn.completed","usage":{"input_tokens":121826,"cached_input_tokens":100736,"cache_write_input_tokens":0,"output_tokens":1681,"reasoning_output_tokens":245}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c956-d4f2-7771-934e-724f6d651b7b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 적용해, 원본 구도와 거실을 유지하면서 몽글이 머리에 딸기잼 병을 올려 보여주는 한 장을 만들겠습니다."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle balances strawberry jam on its head while its friend gives the jar a puzzled, deadpan stare."}}
+{"type":"turn.completed","usage":{"input_tokens":149335,"cached_input_tokens":118784,"cache_write_input_tokens":0,"output_tokens":1453,"reasoning_output_tokens":139}}

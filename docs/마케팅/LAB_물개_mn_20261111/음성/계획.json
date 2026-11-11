@@ -1,0 +1,72 @@
+{
+  "note": "LAB 몽골 M34 「물개」 — 말은 한국어만(몽골어는 화면 글). 낱말 = 해설 소진(세기 1.0), 친구 = 혜리. 물 · 개 · 물개 줄은 E22 · M24와 같은 설정이라 캐시에서 온다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_물개_mn_20261111/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1101,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "go1",
+      "text": "물개 보러 가자!",
+      "voice": {
+        "id": "tc_62e8f21e979b3860fe2f6a24",
+        "name": "혜리"
+      },
+      "seed": 30
+    },
+    {
+      "id": "w",
+      "text": "물."
+    },
+    {
+      "id": "d",
+      "text": "개."
+    },
+    {
+      "id": "sq",
+      "text": "물개?",
+      "emotion": "toneup"
+    },
+    {
+      "id": "s",
+      "text": "물개!"
+    },
+    {
+      "id": "go2",
+      "text": "불꽃놀이 보러 가자!",
+      "voice": {
+        "id": "tc_62e8f21e979b3860fe2f6a24",
+        "name": "혜리"
+      },
+      "seed": 30
+    },
+    {
+      "id": "b",
+      "text": "불."
+    },
+    {
+      "id": "k",
+      "text": "꽃."
+    },
+    {
+      "id": "bq",
+      "text": "불꽃?",
+      "emotion": "toneup"
+    },
+    {
+      "id": "bk",
+      "text": "불꽃놀이!"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1c95c-a26c-7d42-bff6-f610ade1a659"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 원본 구도를 유지하고, 몽글이 꿀단지와 잼병을 머리에 이고 친구에게 다가가는 장면 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle hurries toward her cheering friend, balancing overflowing honey and strawberry jam on a tray atop its head."}}
+{"type":"turn.completed","usage":{"input_tokens":182245,"cached_input_tokens":160384,"cache_write_input_tokens":0,"output_tokens":1895,"reasoning_output_tokens":461}}

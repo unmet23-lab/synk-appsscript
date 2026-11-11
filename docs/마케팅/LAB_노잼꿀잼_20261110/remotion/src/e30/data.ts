@@ -17,6 +17,6 @@ export const TEXT = {
   sweet: 'sweet + fun',
   superFun: 'super fun',
   sofaSub: 'my… sofa…',
-  ask: 'Your last 노잼 movie?',
-  ask2: 'Tell me below',
+  ask: 'The movie: 꿀잼',
+  ask2: 'The sofa: 노잼…',
 };

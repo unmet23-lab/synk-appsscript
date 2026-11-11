@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_62e8f21e979b3860fe2f6a24",
+  "name": "혜리"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 30,
+  "lufs": -17
+ },
+ "made": "2026-11-11T07:23:47.322Z",
+ "lines": [
+  {
+   "id": "go1",
+   "text": "물개 보러 가자!",
+   "dur": 0.919,
+   "syllablesPerSec": 6.53,
+   "src": "go1.wav",
+   "key": "349e4cd9125a7d944655a6013cc4cb3f",
+   "words": 3
+  },
+  {
+   "id": "w",
+   "text": "물.",
+   "dur": 0.415,
+   "syllablesPerSec": 2.41,
+   "src": "w.wav",
+   "key": "183282078581bd0dbe4b1013272f2980",
+   "words": 1
+  },
+  {
+   "id": "d",
+   "text": "개.",
+   "dur": 0.444,
+   "syllablesPerSec": 2.25,
+   "src": "d.wav",
+   "key": "6fecdaa0a3b16d03ac687027ee38c61f",
+   "words": 1
+  },
+  {
+   "id": "sq",
+   "text": "물개?",
+   "dur": 0.594,
+   "syllablesPerSec": 3.37,
+   "src": "sq.wav",
+   "key": "e46caccfe1c1c7d793e377e9408a05cf",
+   "words": 1
+  },
+  {
+   "id": "s",
+   "text": "물개!",
+   "dur": 0.792,
+   "syllablesPerSec": 2.53,
+   "src": "s.wav",
+   "key": "481ea51c1896dadf61e8041646465bf7",
+   "words": 1
+  },
+  {
+   "id": "go2",
+   "text": "불꽃놀이 보러 가자!",
+   "dur": 1.277,
+   "syllablesPerSec": 6.26,
+   "src": "go2.wav",
+   "key": "9c1cbfa686d0041591b4f176116c263d",
+   "words": 3
+  },
+  {
+   "id": "b",
+   "text": "불.",
+   "dur": 0.45,
+   "syllablesPerSec": 2.22,
+   "src": "b.wav",
+   "key": "27033706af51b116f48a4f7b292da356",
+   "words": 1
+  },
+  {
+   "id": "k",
+   "text": "꽃.",
+   "dur": 0.287,
+   "syllablesPerSec": 3.48,
+   "src": "k.wav",
+   "key": "4f2f3a4045882b32789acf18d9b10eea",
+   "words": 1
+  },
+  {
+   "id": "bq",
+   "text": "불꽃?",
+   "dur": 0.55,
+   "syllablesPerSec": 3.64,
+   "src": "bq.wav",
+   "key": "af7d230233161c541d23a27c8254549a",
+   "words": 1
+  },
+  {
+   "id": "bk",
+   "text": "불꽃놀이!",
+   "dur": 0.765,
+   "syllablesPerSec": 5.23,
+   "src": "bk.wav",
+   "key": "c686b609e17e0b5fefbea78f8bcb32ce",
+   "words": 1
+  }
+ ]
+}
