@@ -1,0 +1,91 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "없는 판결 다섯 개가 법정에 나온 건, 우리나라에서 실제로 있었던 일이에요.",
+ "show": "없는 판결 다섯 개가 법정에 나온 건, 우리나라에서 실제로 있었던 일이에요.",
+ "dur": 3.985,
+ "words": [
+  {
+   "text": "없는",
+   "start": 0.02,
+   "end": 0.255
+  },
+  {
+   "text": "판결",
+   "start": 0.311,
+   "end": 0.588
+  },
+  {
+   "text": "다섯",
+   "start": 0.629,
+   "end": 0.837
+  },
+  {
+   "text": "개가",
+   "start": 0.879,
+   "end": 1.017
+  },
+  {
+   "text": "법정에",
+   "start": 1.073,
+   "end": 1.405
+  },
+  {
+   "text": "나온",
+   "start": 1.447,
+   "end": 1.613
+  },
+  {
+   "text": "건,",
+   "start": 1.654,
+   "end": 1.821
+  },
+  {
+   "text": "우리나라에서",
+   "start": 2.292,
+   "end": 2.749
+  },
+  {
+   "text": "실제로",
+   "start": 2.791,
+   "end": 3.081
+  },
+  {
+   "text": "있었던",
+   "start": 3.123,
+   "end": 3.414
+  },
+  {
+   "text": "일이에요.",
+   "start": 3.469,
+   "end": 3.985
+  }
+ ],
+ "source": {
+  "key": "60c22aebfce952af0e65544ab161e05f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 196
+ }
+}

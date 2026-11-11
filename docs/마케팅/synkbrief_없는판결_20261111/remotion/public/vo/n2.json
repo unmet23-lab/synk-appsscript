@@ -1,0 +1,96 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "설문에 답한 판사 셋 중 둘이, 가짜 판례가 적힌 서류를 받아 봤대요.",
+ "show": "설문에 답한 판사 셋 중 둘이, 가짜 판례가 적힌 서류를 받아 봤대요.",
+ "dur": 3.816,
+ "words": [
+  {
+   "text": "설문에",
+   "start": 0.02,
+   "end": 0.323
+  },
+  {
+   "text": "답한",
+   "start": 0.366,
+   "end": 0.641
+  },
+  {
+   "text": "판사",
+   "start": 0.684,
+   "end": 0.901
+  },
+  {
+   "text": "셋",
+   "start": 0.944,
+   "end": 1.045
+  },
+  {
+   "text": "중",
+   "start": 1.088,
+   "end": 1.218
+  },
+  {
+   "text": "둘이,",
+   "start": 1.262,
+   "end": 1.45
+  },
+  {
+   "text": "가짜",
+   "start": 1.897,
+   "end": 2.114
+  },
+  {
+   "text": "판례가",
+   "start": 2.172,
+   "end": 2.461
+  },
+  {
+   "text": "적힌",
+   "start": 2.504,
+   "end": 2.749
+  },
+  {
+   "text": "서류를",
+   "start": 2.822,
+   "end": 3.053
+  },
+  {
+   "text": "받아",
+   "start": 3.096,
+   "end": 3.255
+  },
+  {
+   "text": "봤대요.",
+   "start": 3.298,
+   "end": 3.816
+  }
+ ],
+ "source": {
+  "key": "aa9874bc5f7eab2a070aba1c8e8aa938",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1111,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}
