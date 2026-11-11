@@ -65,6 +65,27 @@ def fit_plate(img):
     return fit23(img)
 
 
+# 사진 속 표지 칸(그림 좌표 x0, y0, x1, y1): 깊이를 둘레 배경과 같게 편다 — 표지가 배경과 함께 다가와 테두리가 휘지 않는다
+# (11-11 맹검 「간판 테두리가 녹은 플라스틱처럼 울퉁불퉁」 · 「노선 배지 · 한글 획 가장자리 일그러짐」 — 고르는 순간 카메라가 다가가며 가까운 표지와 먼 천장을 다르게 밀었다)
+# 칸은 간판 · 매단 막대에 꼭 맞게 잡는다(넓게 잡으면 천장 기울기가 끊겨 그 둘레가 휜다). 11-11 판(9:16)을 잰 값.
+SIGN_FLAT = {
+    'exit-fork': [(0.235, 0.228, 0.78, 0.305), (0.32, 0.02, 0.35, 0.235), (0.655, 0.02, 0.685, 0.235)],
+    'fork': [(0.04, 0.372, 0.965, 0.437)],
+}
+
+
+def flatten_signs(dep, boxes):
+    """깊이 지도(L, 절반 크기)의 표지 칸을 둘레 깊이로 메운다(cv2.inpaint) — 칸 둘레와 이어져 기울기가 끊기지 않는다."""
+    import cv2
+    d = np.asarray(dep, dtype=np.uint8).copy()
+    h, w = d.shape
+    mask = np.zeros_like(d)
+    for x0, y0, x1, y1 in boxes:
+        mask[int(y0 * h):int(y1 * h) + 1, int(x0 * w):int(x1 * w) + 1] = 255
+    mask = cv2.dilate(mask, np.ones((5, 5), np.uint8))
+    return Image.fromarray(cv2.inpaint(d, mask, 9, cv2.INPAINT_TELEA), 'L')
+
+
 def depth_map(session, img, soft=False):
     w, h = img.size
     scale = 518 / min(w, h)
@@ -92,7 +113,8 @@ def main():
         if want_depth:
             dp = OUT / f'{name}.depth.png'
             if not dp.exists() or dp.stat().st_mtime < f.stat().st_mtime:
-                depth_map(session, img, soft=name in SOFT_DEPTH).save(dp, optimize=True)
+                dm = depth_map(session, img, soft=name in SOFT_DEPTH)
+                (flatten_signs(dm, SIGN_FLAT[name]) if name in SIGN_FLAT else dm).save(dp, optimize=True)
         have[name] = True
     (GAME / 'assets' / 'assets.json').write_text(json.dumps(sorted(have), ensure_ascii=False) + '\n', encoding='utf-8')
     print(len(have), '장', sum(p.stat().st_size for p in OUT.iterdir()) // 1024 // 1024, 'MB')
