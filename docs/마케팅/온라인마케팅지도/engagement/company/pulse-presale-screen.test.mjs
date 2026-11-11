@@ -48,6 +48,8 @@ test('F4: picking “recommend” or “no model” swaps the big portrait for t
 test('F5 · F6: the refund notice and its tick ride with the consent the server records; past the agreed revisions the line says so',()=>{
   assert.match(read('app.mjs'),/\.\.\.\(terms\.terms\?\{note:t\('제작을 시작한 뒤에는[^']*'\),check:t\('이 안내를 확인했어요'\)\}:\{\}\)/);
   const rounds=read('feedback-rounds-view.mjs');
-  assert.match(rounds,/data\.nextNumber>total\?t\('정한 수정 \{total\}회를 다 썼어요\. 이번 의견은 담당자와 범위를 정한 뒤 반영해요\.',\{total\}\):t\('수정 \{total\}회 중 \{used\}회째를 써요\.',\{total,used:data\.nextNumber\}\)/);
+  // 운영 조각 2-A: 다 쓴 문장 끝에 제작 시작 때 약속 한 문장(FIX_PROMISE)을 잇고, 영어 단수형을 고르게 count를 넘긴다.
+  assert.match(rounds,/data\.nextNumber>total\?`\$\{t\('정한 수정 \{total\}회를 다 썼어요\. 이번 의견은 담당자와 범위를 정한 뒤 반영해요\.',\{total,count:total\}\)\} \$\{t\(FIX_PROMISE\)\}`:t\('수정 \{total\}회 중 \{used\}회째를 써요\.',\{total,used:data\.nextNumber\}\)/);
+  assert.match(rounds,/const FIX_PROMISE=k\('합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요\.'\);/);
   assert.doesNotMatch(rounds,/Math\.min\(data\.nextNumber,total\)/);
 });

@@ -77,7 +77,7 @@ test('일지 결제 줄 · 영어: 담당자 이름 뒤에 서는 동사 문장,
   await setLocale('en');
   try{
     const lines=pay(journalModel(project({payment:{status:'confirmed',requestedAt:T(4),confirmedAt:T(5),amount:300000,dueDate:'2026-11-22'},paymentTrail:TRAIL})));
-    assert.deepEqual(lines.map(line=>line.what),['confirmed your payment · delivery on Nov 22','sent a payment request on Kmong · KRW 300,000','cancelled the payment request','sent a payment request on Kmong · KRW 290,000']);
+    assert.deepEqual(lines.map(line=>line.what),['confirmed your payment · delivery on Nov 22','sent a payment request on Kmong · KRW 300,000','cancelled the payment request','sent a payment request on Kmong · KRW 290,000']);
     assert.equal(pay(journalModel(project({payment:{status:'confirmed',confirmedAt:T(5)},paymentTrail:[{kind:'confirmed',at:T(5)}]})))[0].what,'confirmed your payment','일지 문맥 — 결제 카드의 「Payment confirmed」와 다르다');
     assert.ok(lines.every(line=>!/[가-힣]/.test(line.what)));
     assert.equal(pay(journalModel(project({payment:{status:'cancelled',requestedAt:T(4),confirmedAt:T(5),cancelledAt:T(6),amount:300000},paymentTrail:[...TRAIL,{kind:'cancelled',at:T(6),amount:300000}]})))[0].what,'cancelled the payment','확인한 결제의 취소(환불)');
@@ -97,7 +97,7 @@ test('남은 수정: 시안을 보는 동안 「수정 n회 중 k회 남았어�
   assert.equal(leftLine(review({rounds:1})),'수정 2회 중 1회 남았어요.');
   assert.equal(leftLine(review({revisions:3,rounds:1})),'수정 3회 중 2회 남았어요.');
   // 다 썼으면(넘겨 보냈어도) 0회 남음 대신 범위를 정한다는 말 — 확인 창의 「정한 수정 n회를 다 썼어요」와 같은 셈.
-  for(const rounds of [2,3])assert.equal(leftLine(review({rounds})),'정한 수정 2회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.');
+  for(const rounds of [2,3])assert.equal(leftLine(review({rounds})),'정한 수정 2회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요. 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.','셈은 그대로 — 다 쓴 자리에 제작 시작 때 약속을 잇는다(Fable 5.2 F1)');
   // 맨 위 한 줄 — 의견 칸보다 먼저.
   const html=review({rounds:1});assert.ok(html.indexOf('data-rounds-left')<html.indexOf('data-form="round-draft"'));
 });
@@ -124,9 +124,30 @@ test('남은 수정: 확인 창의 횟수와 같은 정한 횟수를 쓴다(사�
 test('남은 수정 · 영어',async()=>{
   await setLocale('en');
   try{
-    assert.equal(leftLine(review({rounds:1})),'1 of your 2 revisions left.');
-    assert.equal(leftLine(review({revisions:1,rounds:0})),'Your 1 revision is still available.','정한 횟수 1회 — 단수(카본 검수 A1)');
-    assert.equal(leftLine(review({rounds:2})),'You have used all 2 agreed revisions. We will agree the scope with you before making further changes.');
-    assert.equal(leftLine(review({revisions:1,rounds:1})),'You have used your 1 agreed revision. We will agree the scope with you before making further changes.');
+    assert.equal(leftLine(review({rounds:1})),'You have 1 of 2 revisions left.');
+    assert.equal(leftLine(review({revisions:1,rounds:0})),'Your one revision is still available.','정한 횟수 1회 — 단수(카본 검수 A1)');
+    assert.equal(leftLine(review({rounds:2})),'You have used up your 2 agreed revisions. We will agree on the scope with you before making further changes. Anything that differs from what we agreed is corrected no matter how many revisions are left.');
+    assert.equal(leftLine(review({revisions:1,rounds:1})),'You have used your one agreed revision. We will agree on the scope with you before making further changes. Anything that differs from what we agreed is corrected no matter how many revisions are left.');
   }finally{await setLocale('ko');}
+});
+
+// Fable 5.2 화면 최종(pulse-ops-s2a-screen-20261112): F3 확인 창의 짝 문장도 단수 · F4 결제 카드가 없는 방에는 「열기」 없음 · F5 값은 한 덩어리 · F1 확인 창에도 약속 문장.
+test('확인 창: 다 쓴 뒤 보내는 의견에는 약속 문장이 잇고, 영어는 정한 횟수 1회면 단수',async()=>{
+  const sheet=(revisions,rounds)=>{const p=project({directionProposal:{round:1,status:'chosen',revisions,options:[]},answers:{...emptyAnswers(),package:'s15',contactName:'김합성'}},{stage:'review'});
+    p.studio.feedbackRounds={drafts:[{id:'d1',versionId:'v9',versionLabel:'3차',current:true,canSubmit:true,items:[{id:'i1',text:'더 밝게',seconds:2}]}],rounds:Array.from({length:rounds},(_,i)=>({id:'r'+i,number:i+1,versionId:'v'+i,versionLabel:(i+1)+'차',representativeName:'김합성',submittedAt:T(6+i),items:[]})),latestVersionId:'v9',latestVersionLabel:'3차',canDraft:true,maxItems:20,nextNumber:rounds+1};
+    return feedbackRoundsColumn({project:p,versionId:''});};
+  assert.match(sheet(2,2),/정한 수정 2회를 다 썼어요. 이번 의견은 담당자와 범위를 정한 뒤 반영해요. 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요./);
+  assert.match(sheet(2,1),/수정 2회 중 2회째를 써요./);assert.doesNotMatch(sheet(2,1),/round-terms[^<]*바로잡아요/);
+  await setLocale('en');
+  try{
+    assert.match(sheet(1,1),/You have used your one agreed revision. We will agree on the scope with you before working these notes in. Anything that differs/);
+    assert.match(sheet(3,3),/You have used up your 3 agreed revisions./);assert.doesNotMatch(sheet(1,1)+sheet(3,3),/all 1|agree the scope/);
+  }finally{await setLocale('ko');}
+});
+
+test('결제 줄의 「열기」는 고객 방에 결제 카드가 설 때만 — 되묻기가 열렸거나 시안이 온 방에는 없다',()=>{
+  const requested={payment:{status:'requested',requestedAt:T(4),amount:300000},paymentTrail:TRAIL.slice(0,3)};
+  assert.deepEqual(pay(journalModel(project(requested)))[0].go,{tab:'overview'});
+  assert.equal(pay(journalModel(project({...requested,asks:[{id:'q1',label:'로고',status:'open',at:T(4)}]})))[0].go,null,'되묻기 차례(state ask)');
+  assert.equal(pay(journalModel(project(requested,{versions:[{id:'v1',kind:'preview',label:'1차',createdAt:T(5)}]})))[0].go,null,'시안이 온 방(state review)');
 });

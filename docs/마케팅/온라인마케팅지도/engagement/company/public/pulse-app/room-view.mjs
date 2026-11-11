@@ -199,12 +199,13 @@ function paymentLines(r){
     ...(pay?.status==='cancelled'&&pay.cancelledAt?[{kind:'cancelled',at:pay.cancelledAt}]:[])];
   const lines=trail.filter(entry=>entry&&PAY_KINDS.includes(entry.kind)&&timeOf(entry.at)!==null);
   const last=lines.at(-1);
-  // 취소 줄이 무엇을 취소했는지는 바로 앞 줄로 안다 — 확인한 결제면 결제 취소(환불), 요청뿐이면 결제 요청 취소(낸 돈이 없다 — 카본 검수 A2).
+  // 취소 줄이 무엇을 취소했는지는 바로 앞 줄로 안다 — 확인한 결제면 결제 취소(환불), 요청뿐이면 결제 요청 취소(낸 돈이 없다 — 조각 2-A 화면 검수 A2).
   return lines.map((entry,i)=>[entry.kind==='cancelled'?{...entry,paid:lines[i-1]?.kind==='confirmed'}:entry,entry===last&&entry.kind==='requested'&&pay?.status==='requested']);
 }
 // 줄 글: 값 · 받으실 날이 있으면 붙인다. 이름(담당자)이 앞에 서는 줄이라 영어는 동사로 시작한다(journal 문맥).
 const paymentWhat=entry=>{
-  const amount=Number.isSafeInteger(entry.amount)&&entry.amount>0?won(entry.amount):'';
+  // 값은 한 덩어리로 — 휴대폰 영어에서 「KRW」와 숫자 사이가 갈리지 않게 붙는 빈칸(조각 2-A 화면 검수 F5).
+  const amount=Number.isSafeInteger(entry.amount)&&entry.amount>0?won(entry.amount).replace(/ /g,' '):'';
   if(entry.kind==='requested')return amount?t('크몽 결제 요청을 보냈어요 · {amount}',{amount}):t('크몽 결제 요청을 보냈어요');
   if(entry.kind==='confirmed')return entry.dueDate&&longDay(entry.dueDate)?t('결제를 확인했어요 · 받으실 날 {date}',{date:longDay(entry.dueDate)}):t('결제를 확인했어요',null,'journal');
   return entry.paid?t('결제를 취소했어요'):t('결제 요청을 취소했어요');
@@ -255,7 +256,9 @@ export function journalModel(p){
   }
   // 결제(운영 조각 2 · 11-11): 요청 · 확인 · 취소를 일지 줄로 — 결제 요청이 언제 왔고 언제 확인됐는지를 나눈 말 사이에서 본다.
   // 서버가 내린 결제 줄(paymentTrail — 종류 · 때 · 값 · 받으실 날뿐)을 쓰고, 옛 서버면 지금 결제 상태의 때로 대신 그린다. 열린 요청 줄만 결제 카드로 간다.
-  for(const [entry,open] of paymentLines(r))add({id:'p:'+entry.kind+':'+entry.at,at:entry.at,who:'staff',name:owner,kind:'event',what:paymentWhat(entry),go:open?{tab:'overview'}:null});
+  // 「열기」는 고객 방에 결제 카드가 실제로 설 때만(되묻기가 열렸거나 시안이 온 방에는 카드가 없다 — 조각 2-A 화면 검수 F4).
+  const payCardShown=['pay','prepare-images'].includes(roomState(p));
+  for(const [entry,open] of paymentLines(r))add({id:'p:'+entry.kind+':'+entry.at,at:entry.at,who:'staff',name:owner,kind:'event',what:paymentWhat(entry),go:open&&payCardShown?{tab:'overview'}:null});
   // 시안 · 최종본 이름은 서버가 준 판 이름(label). 최종본은 사진 상품이면 다른 말이라 문맥을 나눈다.
   for(const v of p?.versions||[]){
     if(!['preview','final'].includes(v.kind))continue;
