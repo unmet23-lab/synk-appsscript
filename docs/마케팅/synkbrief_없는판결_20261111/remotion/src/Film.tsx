@@ -8,6 +8,8 @@ import { KO } from './lib/fonts';
 import { S, CUTS, LINES, VO, SOUNDS, TOTAL_S, FPS, type Crop } from './timeline';
 
 export const TOTAL = Math.round(TOTAL_S * FPS);
+// 마감 판: REMOTION_MASTER=1이면 컷 · 음악 · 해설 소리를 끄고 마감한 한 줄(public/master.wav — scripts/마감.sh)만 깐다. 조용한 편은 AAC를 다시 담으면 320kbps 아래로 떨어져, 섞은 소리(PCM)에서 바로 담는다(현장 노트 영상 11-04).
+const MASTER = process.env.REMOTION_MASTER === '1';
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const sec = (s: number) => Math.round(s * FPS);
@@ -52,7 +54,7 @@ const Shade: React.FC = () => {
   const base = interpolate(f, [sec(S.end), sec(S.end) + 8], [0.42, 0.2], clamp);
   const cut = CUTS.find((c) => f >= sec(c.from) && f < sec(c.to));
   const k = (base + (1 - base) * on) * (cut?.shade ?? 1);
-  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.62) 0px, rgba(10,10,10,0.46) 420px, rgba(10,10,10,0.16) 700px, rgba(10,10,10,0) 880px)' }} />;
+  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.8) 0px, rgba(10,10,10,0.66) 440px, rgba(10,10,10,0.22) 720px, rgba(10,10,10,0) 880px)' }} />;
 };
 
 // 큰 글자가 곧 말 — at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄만).
@@ -69,7 +71,7 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
   };
   return (
     <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: '0 1px 10px rgba(0,0,0,0.45)' }}>
-      {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: 34, letterSpacing: -0.5, color: '#BDBDBD', marginBottom: 18 }}>{meta}</div> : null}
+      {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: 40, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18 }}>{meta}</div> : null}
       {lines.map((l, i) => (
         <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === 0 ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
@@ -82,7 +84,7 @@ const Label: React.FC = () => {
   const f = useCurrentFrame();
   const end = f >= sec(S.end);
   const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : 1;
-  return <div style={{ position: 'absolute', left: X, top: 276, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · AI 때문에 실제로 벌어진 일' : '재연 · 상황은 각색'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 288, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · AI 때문에 실제로 벌어진 일' : '재연 · 상황은 각색'}</div>;
 };
 
 export const Film: React.FC = () => {
@@ -91,7 +93,7 @@ export const Film: React.FC = () => {
       {CUTS.map((c, i) => (
         <Sequence key={i} from={sec(c.from)} durationInFrames={sec(c.to) - sec(c.from)}>
           <Lowered d={c.low ?? 210}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} /></Lowered>
-          {c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
+          {!MASTER && c.a ? <Audio src={staticFile(c.a.src)} trimBefore={sec(c.a.start)} volume={c.a.vol ?? 1} /> : !MASTER && c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
       <Shade />
@@ -104,10 +106,14 @@ export const Film: React.FC = () => {
 
       <Label />
 
+      {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
       {/* 낮은 현(보유곡에서 고른다 — bgm.mp3). 침묵 한 판과 고백(S.hold~S.look)에서 −6dB 안으로 내려앉았다 의뢰인이 보는 순간 돌아오고, 해설이 끝나는 S.quiet에 끊긴다 — 끝 두 컷은 의자 끄는 소리와 방 소리만(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
       <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(1.4), sec(S.hold - 0.4), sec(S.hold + 0.3), sec(S.look - 0.2), sec(S.look + 0.6), sec(S.quiet - 0.5), sec(S.quiet)], [0.05, 0.11, 0.11, 0.06, 0.06, 0.12, 0.12, 0], clamp)} />
+      {/* 법정 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악을 낮추는 자리의 바탕 소리) */}
+      <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
       {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
+      </>}
     </AbsoluteFill>
   );
 };

@@ -4,66 +4,73 @@
 // v0.2: 판사의 지어낸 끝 줄을 빼고 해설로 · 가운데 16초를 줄임(「변호사님…?」 3초 · 기다림 2.6초 · 손 3.4초 · 버팀은 침묵 한 판만) · 끝을 바닥 접사 → 두 사람 두 컷으로(해설 뒤 음악을 끊고).
 // 컷마다 그 영상에 든 소리(대사 · 방 소리)를 그대로 깐다(audio). 동영상은 public/img/*.mp4(git 밖 — 제미나이 앱 동영상 · 막히면 Flow Omni).
 export type Crop = { s: number; cx: number; cy: number; ay?: number };
-export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number };
+export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; a?: { src: string; start: number; vol?: number } };
 
-export const S = { hook: 5.0, hold: 32.4, confess: 39.9, look: 44.2, quiet: 55.7, end: 55.9 };
+export const S = { hook: 5.0, hold: 33.8, confess: 36.5, look: 41.0, quiet: 56.8, end: 57.0 };
 export const TOTAL_S = 59.7;
 // 원본(제미나이 앱 동영상)이 24fps라 편집도 24fps로 굽는다 — 30fps 시간선에 넣으면 5프레임마다 한 장이 겹쳐 떨린다(현장 노트 영상 · 24fps 원본).
 export const FPS = 24;
 
-// v1(11-11 15시 회차 — 받은 영상의 소리 크기 곡선 · 받아쓰기로 다시 잼). 침묵 한 판은 한 앵글로 끌지 않고 변호인 → 기다리는 판사 → 느려지는 손 → 변호인(고백)으로 쪼갰다.
+// v3(11-11 15시 회차): 컷 자리를 원본 박자 × 0.835에 맞췄다(나란히 v2 — 박자 35% · 반전 · 끝 자리 어긋남). 말은 듣는 사람 위에도 깐다(a = 그 컷 밑에 까는 다른 영상의 소리).
+const F: Crop = { s: 1.0, cx: 540, cy: 960 };
 export const CUTS: CutT[] = [
   // 기
-  { from: 0, to: 0.5, src: 'img/VW2.mp4', start: 0.2, crop: { s: 1.0, cx: 540, cy: 960 }, drift: 0 },
+  { from: 0, to: 0.5, src: 'img/VW2.mp4', start: 0.2, crop: F, drift: 0 },
   { from: 0.5, to: 1.3, src: 'img/VJ1.mp4', start: 1.1, crop: { s: 1.7, cx: 600, cy: 800 }, audio: 1.0, drift: 0 },
-  { from: 1.3, to: 5.0, src: 'img/VJ1.mp4', start: 1.9, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 5.0, to: 10.0, src: 'img/VL1.mp4', start: 0.4, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
+  { from: 1.3, to: 2.9, src: 'img/VJ1.mp4', start: 1.9, crop: F, audio: 1.0 },
+  { from: 2.9, to: 4.4, src: 'img/VC.mp4', start: 0.0, crop: F, a: { src: 'img/VJ1.mp4', start: 3.5 } },
+  { from: 4.4, to: 5.5, src: 'img/VL1.mp4', start: 0.0, crop: F, audio: 1.0 },
+  { from: 5.5, to: 7.4, src: 'img/VL1.mp4', start: 1.1, crop: { s: 1.35, cx: 400, cy: 760 }, audio: 1.0, drift: 0 },
+  { from: 7.4, to: 9.7, src: 'img/VL1.mp4', start: 3.0, crop: { s: 1.35, cx: 800, cy: 1000 }, audio: 1.0, drift: 0 },
   // 승
-  { from: 10.0, to: 10.9, src: 'img/VJ1.mp4', start: 5.75, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.8 },
-  { from: 10.9, to: 14.2, src: 'img/VJ1.mp4', start: 6.65, crop: { s: 1.3, cx: 640, cy: 900 }, audio: 1.0 },
-  { from: 14.2, to: 16.8, src: 'img/VH.mp4', start: 0.2, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.8 },
-  { from: 16.8, to: 19.5, src: 'img/VL1.mp4', start: 7.2, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 19.5, to: 23.7, src: 'img/VW2.mp4', start: 0.7, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.4, drift: 0.015 },
+  { from: 9.7, to: 11.0, src: 'img/VJ1.mp4', start: 5.8, crop: F, audio: 0.8 },
+  { from: 11.0, to: 12.3, src: 'img/VJ1.mp4', start: 7.1, crop: { s: 1.3, cx: 640, cy: 900 }, audio: 1.0, drift: 0 },
+  { from: 12.3, to: 14.0, src: 'img/VL1.mp4', start: 5.4, crop: F, a: { src: 'img/VJ1.mp4', start: 8.4 } },
+  { from: 14.0, to: 15.9, src: 'img/VH.mp4', start: 0.2, crop: F, audio: 0.8 },
+  { from: 15.9, to: 18.4, src: 'img/VL1.mp4', start: 7.2, crop: F, audio: 1.0 },
+  { from: 18.4, to: 21.4, src: 'img/VW2.mp4', start: 0.7, crop: F, audio: 0.4, drift: 0.015 },
+  { from: 21.4, to: 23.4, src: 'img/VC.mp4', start: 2.5, crop: { s: 1.3, cx: 760, cy: 1000 }, drift: 0 },
   // 전
-  { from: 23.7, to: 27.2, src: 'img/VJ2.mp4', start: 0.7, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 27.2, to: 28.1, src: 'img/VL2.mp4', start: 0.3, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.6 },
-  { from: 28.1, to: 29.4, src: 'img/VJ2.mp4', start: 4.75, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 29.4, to: 32.4, src: 'img/VCa.mp4', start: 0.2, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 32.4, to: 34.4, src: 'img/VL2.mp4', start: 1.2, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.8 },
-  { from: 34.4, to: 36.3, src: 'img/VJ2.mp4', start: 6.1, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.6 },
-  { from: 36.3, to: 38.9, src: 'img/VH.mp4', start: 4.0, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.8 },
-  { from: 38.9, to: 43.4, src: 'img/VL2.mp4', start: 3.4, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0 },
-  { from: 43.4, to: 44.2, src: 'img/VJ2.mp4', start: 8.0, crop: { s: 1.0, cx: 540, cy: 960 } },
-  { from: 44.2, to: 47, src: 'img/VCa.mp4', start: 5.6, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.6 },
+  { from: 23.4, to: 25.8, src: 'img/VJ2.mp4', start: 0.6, crop: F, audio: 1.0 },
+  { from: 25.8, to: 27.2, src: 'img/VL2.mp4', start: 0.0, crop: F, a: { src: 'img/VJ2.mp4', start: 3.0 } },
+  { from: 27.2, to: 29.6, src: 'img/VJ2.mp4', start: 4.4, crop: F, audio: 1.0 },
+  { from: 29.6, to: 31.9, src: 'img/VL2.mp4', start: 1.4, crop: F, audio: 0.8 },
+  { from: 31.9, to: 34.0, src: 'img/VCa.mp4', start: 0.9, crop: F, audio: 1.0 },
+  { from: 34.0, to: 35.5, src: 'img/VW2.mp4', start: 5.0, crop: F, audio: 0.4, drift: 0.015 },
+  { from: 35.5, to: 39.2, src: 'img/VL2.mp4', start: 3.4, crop: F, audio: 1.0 },
+  { from: 39.2, to: 41.0, src: 'img/VJ2.mp4', start: 6.8, crop: F, a: { src: 'img/VL2.mp4', start: 7.1 } },
+  { from: 41.0, to: 45.8, src: 'img/VCa.mp4', start: 5.2, crop: { s: 1.08, cx: 500, cy: 960 }, audio: 0.6 },
+  { from: 45.8, to: 47.6, src: 'img/VL2.mp4', start: 8.0, crop: F, audio: 0.4 },
   // 결
-  { from: 47, to: 48.3, src: 'img/VJ2.mp4', start: 8.7, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.5 },
-  { from: 48.3, to: 50.8, src: 'img/VW2.mp4', start: 6.0, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.4, drift: 0.015 },
-  { from: 50.8, to: 53, src: 'img/VL2.mp4', start: 7.8, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.4 },
-  { from: 53, to: 55.9, src: 'img/VCb.mp4', start: 0.0, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.4 },
-  { from: 55.9, to: 57.3, src: 'img/VF2.mp4', start: 1.2, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0, low: 0 },
-  { from: 57.3, to: 59.7, src: 'img/VCb.mp4', start: 6.0, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.0, low: 0 },
+  { from: 47.6, to: 48.9, src: 'img/VJ2.mp4', start: 8.6, crop: F, audio: 0.5 },
+  { from: 48.9, to: 50.4, src: 'img/VW2.mp4', start: 7.4, crop: F, audio: 0.4, drift: 0.015 },
+  { from: 50.4, to: 52.6, src: 'img/VCb.mp4', start: 0.0, crop: F, audio: 0.4 },
+  { from: 52.6, to: 54.4, src: 'img/VH.mp4', start: 8.2, crop: F, audio: 0.4 },
+  { from: 54.4, to: 57.0, src: 'img/VCb.mp4', start: 2.4, crop: F, audio: 0.7 },
+  { from: 57.0, to: 58.5, src: 'img/VF2.mp4', start: 2.9, crop: F, audio: 1.0, low: 0 },
+  { from: 58.5, to: 59.7, src: 'img/VCb.mp4', start: 8.3, crop: F, audio: 1.0, low: 0 },
 ];
 
 // 큰 글자 = 말. grey = 변호인 · 의뢰인(판사와 해설은 흰). at = 줄마다 뜨는 초(말하는 때).
 export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; at?: number[]; lead?: boolean }[] = [
   { lines: ['변호인'], from: 0.6, to: 1.3, size: 85, instant: true },
-  { lines: ['의견서에 쓰신 판결들,', '어디서 찾으셨습니까?'], from: 1.6, to: 4.9, size: 80, at: [1.6, 3.1] },
-  { lines: ['네?', '제가 정리한 판결들입니다만'], from: 5.1, to: 7.7, grey: true, size: 76, at: [5.1, 6.0] },
-  { lines: ['우리 변호사님이', '다 찾아오셨어요'], from: 7.85, to: 9.95, grey: true, size: 82 },
-  { lines: ['제가 다 찾아봤습니다', '다섯 개가, 하나도 없어요'], from: 11.4, to: 14.15, size: 80, at: [11.4, 12.8] },
-  { lines: ['그럴 리가요…', '사건번호까지 다 있는데요'], from: 17.0, to: 19.45, grey: true, size: 78, at: [17.0, 18.1] },
-  { lines: ['없는 판결 다섯 개가 법정에 나온 건,', '우리나라에서 실제로 있었던 일이에요'], from: 19.6, to: 23.6, size: 60, meta: '법률신문 2025년 9월 보도', at: [19.6, 21.5] },
-  { lines: ['그 번호가, 없는 번호입니다'], from: 23.9, to: 27.1, size: 76 },
-  { lines: ['출처가 어딥니까?'], from: 28.2, to: 29.35, size: 85 },
-  { lines: ['변호사님…?'], from: 29.8, to: 32.3, grey: true, size: 85 },
-  { lines: ['…AI가,', '찾아 줬습니다'], from: 39.9, to: 43.3, grey: true, size: 96, at: [39.9, 42.5] },
-  { lines: ['설문에 답한 판사 셋 중 둘이,', '가짜 판례가 적힌 서류를 받아 봤대요'], from: 47, to: 50.7, size: 62, meta: '법원행정처 설문 · 법관 360명 응답 · 2026년 11월 발표', at: [47, 48.5] },
-  { lines: ['AI는 없는 판결에도', '번호까지 붙여 줘요'], from: 50.8, to: 52.9, size: 82, at: [50.8, 51.7] },
-  { lines: ['근거를 대면,', '그 번호부터 직접 찾아보세요'], from: 53, to: 55.7, size: 76, at: [53, 53.8] },
+  { lines: ['의견서에 쓰신 판결들,', '어디서 찾으셨습니까?'], from: 1.6, to: 4.35, size: 80, at: [1.6, 3.1] },
+  { lines: ['네?', '제가 정리한 판결들입니다만'], from: 4.8, to: 7.35, grey: true, size: 76, at: [4.8, 5.8] },
+  { lines: ['우리 변호사님이', '다 찾아오셨어요'], from: 7.6, to: 9.65, grey: true, size: 82 },
+  { lines: ['제가 다 찾아봤습니다', '다섯 개가, 하나도 없어요'], from: 11.1, to: 13.95, size: 80, at: [11.1, 12.4] },
+  { lines: ['그럴 리가요…', '사건번호까지 다 있는데요'], from: 16.0, to: 18.35, grey: true, size: 78, at: [16.0, 17.1] },
+  { lines: ['없는 판결 다섯 개가 법정에 나온 건,', '우리나라에서 실제로 있었던 일이에요'], from: 18.5, to: 22.6, size: 60, meta: '법률신문 2025년 9월 보도', at: [18.5, 20.4] },
+  { lines: ['그 번호가,', '없는 번호입니다'], from: 23.7, to: 27.15, size: 80, at: [23.7, 25.8] },
+  { lines: ['출처가 어딥니까?'], from: 27.7, to: 29.5, size: 85 },
+  { lines: ['변호사님…?'], from: 32.6, to: 33.9, grey: true, size: 85 },
+  { lines: ['…AI가,', '찾아 줬습니다'], from: 36.5, to: 40.9, grey: true, size: 96, at: [36.5, 39.1] },
+  { lines: ['설문에 답한 판사 셋 중 둘이,', '가짜 판례가 적힌 서류를 받아 봤대요'], from: 47.7, to: 51.5, size: 62, meta: '법원행정처 설문 · 법관 360명 응답 · 2026년 11월', at: [47.7, 49.2] },
+  { lines: ['AI는 없는 판결에도', '번호까지 붙여 줘요'], from: 51.6, to: 53.9, size: 82, at: [51.6, 52.5] },
+  { lines: ['근거를 대면,', '그 번호부터 직접 찾아보세요'], from: 54.0, to: 56.8, size: 76, meta: '판결은 대법원 사법정보공개포털 「허위 사건번호 확인」', at: [54.0, 54.8] },
 ];
 
 export const VO: { id: string; t: number }[] = [
-  { id: 'n1', t: 19.6 }, { id: 'n2', t: 47 }, { id: 'n3', t: 50.8 },
+  { id: 'n1', t: 18.5 }, { id: 'n2', t: 47.7 }, { id: 'n3', t: 51.6 },
 ];
 
 export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [];

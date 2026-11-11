@@ -16,6 +16,8 @@ Config.setX264Preset("slow");
 Config.setPixelFormat("yuv420p");
 Config.setColorSpace("bt709");
 Config.setOverwriteOutput(true);
+// 조용한 법정 편이라 AAC가 242kbps에 멈춘다 — 섞은 소리에서 바로 384k로 담는다(현장 노트 영상 · 11-04).
+Config.setAudioBitrate("384k");
 Config.setDefaultPremountInSeconds(2);
 
 Config.setChromiumOpenGlRenderer("angle");
