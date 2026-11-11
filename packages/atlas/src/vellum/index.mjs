@@ -7,13 +7,14 @@
 import { EN } from './en.mjs';
 import { josa } from './josa.mjs';
 import { KO } from './ko.mjs';
+import { MN } from './mn.mjs';
 
 export const LANGS = Object.freeze(['ko', 'en', 'mn']);
 export const LEVELS = Object.freeze(['word', 'easy', 'standard']);
 export const SPEAKERS = Object.freeze(['default', 'marin', 'kkamong', 'mongle']);
 
 // 언어마다 줄 묶음. 영어 · 몽골어는 그 화면이 열릴 때 세 겹 대조를 거쳐 들어온다(단계 4 계획 §4) — 영어는 WORLD 짧은 연습(4-1)의 종류부터.
-const TABLE = Object.freeze({ ko: KO, en: EN });
+const TABLE = Object.freeze({ ko: KO, en: EN, mn: MN });
 
 // 문장이 가리키는 것의 id가 든 근거 칸.
 const SUBJECT_SLOT = Object.freeze({

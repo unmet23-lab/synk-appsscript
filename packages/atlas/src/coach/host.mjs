@@ -105,6 +105,7 @@ function createHost({
   now,
   map,
   onClose,
+  claims = { users: 0 },
 }) {
   const index = compositeIndex();
   // 지도를 기록부를 열기 전에 넣는다 — 기록부가 처음 접는 요약의 판 묶음(색인 판)이 그 뒤의 보기와 같아야 한다.
@@ -159,9 +160,15 @@ function createHost({
         tell('receive');
       } catch {
         tell('offline');
+        return;
       } finally {
         state.uploading = null;
       }
+      // 한 묶음(256) 넘게 남았거나 올리는 사이에 쓴 것이 있으면 이어서 올린다 — 새 쓰기 · online · 다시 열기를 기다리지 않게(GPT GC3).
+      // 이번에 보낸 것만 남았으면(서버가 받았다고 안 한 것) 곧바로 다시 보내지 않는다 — 다음 쓰기 · online에(헛돌지 않게).
+      const sent = new Set(events.map(event => event.id));
+      if (!state.closed && state.trail.unsent(UPLOAD_LIMIT).some(event => !sent.has(event.id)))
+        schedule();
     })();
     return state.uploading;
   }
@@ -246,12 +253,12 @@ function createHost({
     // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이).
     settled: () => Promise.allSettled([...inflight]).then(() => undefined),
     retain() {
-      state.users += 1;
+      claims.users += 1;
     },
     // 동기로 닫는다 — 사라지는 틀의 pagehide에서 불려도 등록부에서 바로 빠진다.
     release() {
-      state.users -= 1;
-      if (state.users > 0) return false;
+      claims.users -= 1;
+      if (claims.users > 0) return false;
       state.closed = true;
       clearTimeout(state.timer);
       if (globalThis.removeEventListener) globalThis.removeEventListener('online', schedule);
@@ -322,6 +329,7 @@ async function acquireHere(scope, options, openPort) {
       if (registry.get(key) === entry) registry.delete(key);
       if (registry.document === key) setDocument(registry, nextDocument(registry));
     };
+    const claims = { users: 0 };
     // 등록부에 먼저 넣고 연다 — 같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게.
     entry = {
       opening: (async () => {
@@ -340,16 +348,26 @@ async function acquireHere(scope, options, openPort) {
           port,
           memory,
           onClose,
+          claims,
           // 틀이 넘긴 올리기 · 옛 기록 읽개는 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(adopt).
           ...(frame ? { transport: null, legacy: null } : {}),
         }).open();
       })(),
       shell: options.fromFrame !== true,
+      claims,
     };
     registry.set(key, entry);
     entry.opening.catch(onClose);
   }
-  const host = await entry.opening;
+  // 쓰는 사람 수는 기다리기 전에 센다 — 여는 사이에 다른 코치가 닫아도(동기 release) 이 코치가 받을 호스트가 닫히지 않게(아르곤 끝 판 C3).
+  entry.claims.users += 1;
+  let host;
+  try {
+    host = await entry.opening;
+  } catch (error) {
+    entry.claims.users -= 1;
+    throw error;
+  }
   if (options.fromFrame !== true) {
     // 셸이 같은 저장소를 받으면 그 호스트는 셸의 것이다 — 올리기 · 계기를 셸의 것으로 건다.
     if (!entry.shell) host.adopt({ transport: options.transport, health: options.health });
@@ -357,7 +375,6 @@ async function acquireHere(scope, options, openPort) {
     if (registry.document == null) setDocument(registry, key);
   }
   if (options.map) host.index.add(options.map);
-  host.retain();
   return host;
 }
 

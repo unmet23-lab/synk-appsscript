@@ -5,6 +5,26 @@
 import { createPracticeNextSession } from './world-practice-next.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
+// 지금 판 코치(atlas/game-learning.js)가 손님 기록을 두는 자리 — { version, epoch, events, ledger, … }.
+export const LEGACY_KEY = 'synk.atlas.learning.v1.device';
+
+// 옛 기기 기록 읽개(계획 §1 #22 — 손님 호스트가 열 때마다 부른다). 옛 로그(events)와 접힌 장부(ledger)를 그대로 넘기고, 옮길 것을
+// 고르는 일(아직 안 옮긴 옛 꼴 사건 · 새로 든 장부)은 엔진(record/carry.mjs)이 한다. 못 읽으면 null — 새 길은 그대로 연다.
+export function legacyReader(storage) {
+  return () => {
+    try {
+      const raw = storage?.getItem?.(LEGACY_KEY);
+      if (!raw) return null;
+      const value = JSON.parse(raw);
+      return {
+        log: Array.isArray(value?.events) ? value.events : [],
+        ledger: value?.ledger ?? null,
+      };
+    } catch {
+      return null;
+    }
+  };
+}
 // 연습 문항의 열쇠 앞마디가 지도의 은행 이름이다(TOPIK 은행 topik-items, 진단이 빌려 쓰는 게임 문항은 그 게임 이름).
 const BANKS = new Set([
   'topik-items',
@@ -29,25 +49,39 @@ export function banksOf(pool) {
 }
 
 // owner: 'guest' 또는 계정 id. lang(): 지금 화면 언어. label(id): 능력 이름(단위 이름은 엔진의 지도가 안다).
-export function createAtlasNext({ owner, lang = () => 'ko', label = () => null, load = () => import(ENTRY), health = null } = {}) {
+export function createAtlasNext({
+  owner,
+  lang = () => 'ko',
+  label = () => null,
+  load = () => import(ENTRY),
+  health = null,
+  storage = globalThis.localStorage,
+} = {}) {
   let practice = null;
+  let practiceBanks = '';
   let opening = null;
+  let disposed = false;
+  // 입구 받기 · 코치 만들기 · 준비 — 어디서 실패해도 계기에 원인을 남기고 null(셸은 지금 판으로 간다).
   async function open(pool) {
-    const { coach } = await load();
-    const made = coach({
-      gameId: 'world-practice',
-      banks: banksOf(pool),
-      // TOPIK 문항의 단위는 낱말이 많다 — 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 표(words.json)도 받는다.
-      words: true,
-      host: { guest: true, health },
-      lang: lang(),
-      label,
-    });
+    let made = null;
     try {
+      const { coach } = await load();
+      made = coach({
+        gameId: 'world-practice',
+        banks: banksOf(pool),
+        // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
+        words: true,
+        host: { guest: true, health, legacy: legacyReader(storage) },
+        lang: lang(),
+        label,
+      });
       await made.ready;
     } catch (error) {
-      health?.note('load', { ok: false, code: error?.reason ? `LOAD_${error.reason}` : (error?.code ?? 'LOAD_FAILED') });
-      made.dispose();
+      health?.note('load', {
+        ok: false,
+        code: error?.reason ? `LOAD_${error.reason}` : (error?.code ?? 'LOAD_FAILED'),
+      });
+      made?.dispose();
       return null;
     }
     health?.note('load', { ok: true });
@@ -57,14 +91,28 @@ export function createAtlasNext({ owner, lang = () => 'ko', label = () => null, 
     createPracticeNextSession,
     // 짧은 연습의 코치 — 손님만(4-1). 한 번 연 코치는 다시 쓴다.
     async practiceCoach(pool) {
-      if (owner !== 'guest') return null;
-      if (practice) return practice;
-      opening ??= open(pool).catch(() => null);
-      practice = await opening;
+      if (owner !== 'guest' || disposed) return null;
+      // 연 코치는 다시 쓰되, 후보에 그 코치가 받지 않은 은행이 있으면 새로 연다(그 은행 문항이 계약 밖으로 빠지지 않게 — 아르곤 끝 판).
+      const banks = banksOf(pool).join(',');
+      if (practice && practiceBanks === banks) return practice;
+      if (practice) {
+        practice.dispose();
+        practice = null;
+      }
+      opening ??= open(pool);
+      const made = await opening;
       opening = null;
+      // 준비되는 사이에 닫혔으면 그 코치를 닫고 돌려주지 않는다 — 떠난 화면의 코치 · 호스트가 남지 않게.
+      if (disposed) {
+        made?.dispose();
+        return null;
+      }
+      practice = made;
+      practiceBanks = banks;
       return practice;
     },
     dispose() {
+      disposed = true;
       practice?.dispose();
       practice = null;
     },

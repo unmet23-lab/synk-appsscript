@@ -239,3 +239,166 @@ test('듣기 문항은 끝까지 들은 뒤에만 답을 받고, 건너뛰면 �
   assert.equal(skipped.verdict, 'unassessed');
   coach.dispose();
 });
+
+test('WORLD 입구 — 손님 코치에 옛 기록 읽개를 넘기고, 준비 중에 닫으면 그 코치를 닫으며, 입구 받기 실패도 계기에 남긴다(GPT GB1 · GB2 · GB3)', async () => {
+  const { createAtlasNext, LEGACY_KEY } = await load('world-atlas-next.mjs');
+  const stored = new Map([
+    [
+      LEGACY_KEY,
+      JSON.stringify({ version: 1, events: [{ schema: 1, id: 'old' }], ledger: { keys: {} } }),
+    ],
+  ]);
+  const storage = { getItem: key => stored.get(key) ?? null };
+  const notes = [];
+  const health = { note: (kind, outcome) => notes.push([kind, outcome]) };
+  let captured = null;
+  let release = null;
+  let disposed = 0;
+  const fake = {
+    ready: new Promise(resolve => {
+      release = resolve;
+    }),
+    dispose: () => {
+      disposed += 1;
+    },
+  };
+  const next = createAtlasNext({
+    owner: 'guest',
+    health,
+    storage,
+    load: async () => ({
+      coach: options => {
+        captured = options;
+        return fake;
+      },
+    }),
+  });
+  const pending = next.practiceCoach(BANK.slice(0, 3));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(captured.host.legacy(), {
+    log: [{ schema: 1, id: 'old' }],
+    ledger: { keys: {} },
+  });
+  next.dispose();
+  release();
+  assert.equal(await pending, null, '닫힌 뒤 준비된 코치는 돌려주지 않는다');
+  assert.equal(disposed, 1, '그 코치를 닫는다');
+  const failing = createAtlasNext({
+    owner: 'guest',
+    health,
+    storage,
+    load: async () => {
+      throw Object.assign(new Error('offline'), { reason: 'IMPORT' });
+    },
+  });
+  assert.equal(await failing.practiceCoach(BANK.slice(0, 3)), null);
+  assert.deepEqual(notes.at(-1), ['load', { ok: false, code: 'LOAD_IMPORT' }]);
+});
+
+// 아르곤 끝 판(11-11): 측정 자격을 가르는 제품 규칙은 화면용 seen이 아니라 측정용 met을 쓰고, 좁혀 다시 묻기는 같은 지문 세트를 이미
+// 만난 문항을 거르고, 「모르겠어요」는 지도 문항의 표지(코치가 실어 줌)로 둔다.
+test('같은 지문 세트의 다른 문항을 띄우기만 하고 닫았으면 이 문항은 아직 처음이다 — 측정 자격은 만남으로 가른다(아르곤 끝 판)', async () => {
+  const sets = new Map();
+  for (const item of BANK.filter(item => item.setId && item.modality === 'reading')) {
+    if (!sets.has(item.setId)) sets.set(item.setId, []);
+    sets.get(item.setId).push(item);
+  }
+  const pair = [...sets.values()].find(list => list.length >= 2);
+  const { coach, time } = await guestCoach();
+  coach.recommend([pair[0]], { set: { length: 1 } });
+  coach.present(pair[0]); // 띄우기만 하고 닫힘
+  await coach.finishSet({ record: false }).folded; // 그 제시의 저장까지 끝난 뒤
+  time.advance();
+  assert.equal(coach.exposure(pair[0]).seen, true);
+  assert.equal(coach.exposure(pair[0]).met, false);
+  const session = createPracticeNextSession({
+    plays,
+    coach,
+    pool: [pair[1]],
+    setPool: BANK,
+    length: 1,
+  });
+  session.next();
+  session.answer(session.current.item.correctId);
+  const [row] = await session.settled();
+  assert.equal(row.independent, true, '세트를 읽기만 하고 답하지 않았으면 측정 근거다');
+  coach.dispose();
+});
+
+// 겉만 흉내 낸 코치 — 엔진은 늘 할 것이 없고(idle), 맨 앞 채우기는 이미 만난 문항이다.
+function fakeCoach({ met, unknown = new Set() }) {
+  const calls = [];
+  return {
+    calls,
+    recommend(pool, options = {}) {
+      calls.push({ keys: pool.map(item => item.itemKey), pool: options.pool ?? null });
+      const top = options.pool ? pool[0] : pool.find(item => met.has(item.itemKey));
+      if (!top) return { status: 'none', selected: null, facts: {}, why: null };
+      return {
+        status: 'idle',
+        selected: top,
+        tier: 3,
+        facts: {},
+        why: { code: 'idle', line: '오늘 돌아온 것은 다 만났어요.' },
+        unknownOption: unknown.has(top.itemKey),
+      };
+    },
+    exposure: item => ({ seen: met.has(item.itemKey), met: met.has(item.itemKey) }),
+    present: () => 'pid',
+    answer: () => ({ verdict: 'unknown', evidence: Promise.resolve({ independent: false }) }),
+    help() {},
+    delivery() {},
+    finishSet() {},
+  };
+}
+const fakeItem = (key, setId = null) => ({
+  id: key,
+  itemKey: key,
+  setId,
+  skillId: 'ko.reading.x',
+  modality: 'reading',
+  choices: [{ id: 'a' }, { id: 'b' }],
+  correctId: 'a',
+});
+
+test('좁혀 다시 묻기는 같은 지문 세트를 이미 만난 문항을 거른다 — 그 문항은 측정 기회가 아니다(아르곤 끝 판)', () => {
+  const pool = [fakeItem('q1', 's1'), fakeItem('q2', 's1'), fakeItem('q3')];
+  const coach = fakeCoach({ met: new Set(['q1']) });
+  const session = createPracticeNextSession({ plays, coach, pool, length: 1 });
+  session.next();
+  const narrowed = coach.calls.find(call => call.pool === 'unseen');
+  assert.deepEqual(narrowed.keys, ['q3'], '세트를 만난 q2는 처음 보는 문항으로 좁힌 후보에 없다');
+  assert.equal(session.current.item.itemKey, 'q3');
+});
+
+test('「모르겠어요」는 지도 문항의 표지로 둔다 — 제품 문항 객체에 칸이 없어도(아르곤 끝 판)', () => {
+  const pool = [fakeItem('q1'), fakeItem('q2')];
+  const coach = fakeCoach({ met: new Set(['q1']), unknown: new Set(['q2']) });
+  const session = createPracticeNextSession({ plays, coach, pool, length: 1 });
+  const now = session.next();
+  assert.equal(now.item.unknownOption, undefined, '제품 문항에는 표지가 없다');
+  assert.equal(now.unknown, true);
+  assert.equal(session.unknown().verdict, 'unknown');
+});
+
+test('WORLD 입구 — 후보에 연 코치가 받지 않은 은행이 있으면 새로 연다(아르곤 끝 판)', async () => {
+  const { createAtlasNext } = await load('world-atlas-next.mjs');
+  const opened = [];
+  let disposed = 0;
+  const next = createAtlasNext({
+    owner: 'guest',
+    storage: { getItem: () => null },
+    load: async () => ({
+      coach: options => {
+        opened.push(options.banks.join(','));
+        return { ready: Promise.resolve(), dispose: () => (disposed += 1) };
+      },
+    }),
+  });
+  const topik = BANK.slice(0, 2);
+  const first = await next.practiceCoach(topik);
+  assert.equal(await next.practiceCoach(topik), first, '같은 은행이면 다시 쓴다');
+  await next.practiceCoach([...topik, { itemKey: 'entry-check.x1' }]);
+  assert.deepEqual(opened, ['topik-items', 'entry-check,topik-items']);
+  assert.equal(disposed, 1, '앞 코치는 닫는다');
+});

@@ -96,8 +96,9 @@ function attemptFields(pid, attemptNo, verdict, result) {
 }
 
 // 그 제시의 묶음(제시 + 전달 · 도움 · 답)을 어댑터로 접어 이 사건의 접기 사건을 꺼낸다.
-function foldOf(group, event, index) {
-  const children = [...group.children, entryOf(event)];
+// skip: 저장이 실패했거나 제외된 사건 번호 — 기록부 · 서버 접기처럼 그 사건(도움 등)이 없던 것으로 접는다(아르곤 끝 판 C6).
+function foldOf(group, event, index, skip = new Set()) {
+  const children = [...group.children.filter(entry => !skip.has(entry.event.id)), entryOf(event)];
   const folds = foldEventsOf({ source: group.source, children, exclusions: [] }, index);
   return folds.find(fold => fold.id === event.id) ?? null;
 }
@@ -115,6 +116,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     chosen: new Map(),
     groups: new Map(),
     own: new Set(), // 이 코치가 쓴 사건 번호 — 같은 문서 다른 코치의 쓰기만 다시 세우기를 부른다
+    closed: null, // 닫았지만 판 기록을 아직 안 남긴 판 { setId, recorded }
     lastAt: 0,
   };
 
@@ -131,6 +133,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     s.journal = [];
     s.failed.clear();
     s.chosen.clear();
+    s.groups.clear(); // 앞 판의 제시 번호는 이 판에서 받지 않는다(GPT GC4)
     s.lastAt = now;
     s.setSeq += 1;
     s.setId = `set.${gameId}.${now}.${s.setSeq}`;
@@ -170,6 +173,36 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
 
   const kept = op => !s.failed.has(op.eventId) && !s.failed.has(op.parent);
 
+  // 제외된 사건 — 어느 코치 · 탭이 제외했든(기록부가 든 제외 사건의 대상). 일지에서 빼서 판 상태에서도 없던 것으로(GPT GC2).
+  function markExcluded() {
+    for (const event of host.trail.heldEvents())
+      if (event.type === EVENT_TYPES.excluded && s.own.has(event.targetId))
+        s.failed.add(event.targetId);
+  }
+
+  // 이 판이 열린 뒤 다른 코치 · 탭이 낸 「낸 것」 줄 — 하루 한도 · 새것 몫에 함께 센다(GPT GC1). 이 판 열 때의 줄과 내 제시는 뺀다
+  // (기록의 시계가 한 호스트에 하나라 사건 시각이 겹치지 않는다).
+  function othersIssued() {
+    const known = new Set([
+      ...s.open.log.map(row => row.at),
+      ...s.journal.filter(op => op.kind === 'present').map(op => op.row.at),
+    ]);
+    return host.issued().filter(row => row.at >= s.open.now && !known.has(row.at));
+  }
+
+  // 놓친 답 — 틀림 · 「모르겠어요」(건너뜀 · 판정 못 한 답은 「다시」를 만들지 않는다 — 아르곤 끝 판 C8 ②).
+  const missed = op => op.answer.correct === false || op.answer.unknown === true;
+
+  // 고른 줄을 지금 학습자 상태로 새로 잰다 — recommend 뒤 present 전에 판이 다시 서면(다른 코치의 쓰기 · 본인 말) 낡은 처음 낸 단위 ·
+  // 층으로 제시를 적지 않게(C8 ③). 층이 같으면 이유 · 회차(좁힌 까닭 포함)는 그대로 둔다.
+  function refreshChosen() {
+    for (const [key, row] of s.chosen) {
+      const now = choose([row.item], s.learner, memory, host.now(), { params, seed })[0];
+      if (!now) s.chosen.delete(key);
+      else s.chosen.set(key, now.tier === row.tier ? { ...now, why: row.why, arm: row.arm } : now);
+    }
+  }
+
   // 다른 탭 · 다른 코치 · 다른 기기의 본인 말이 이 판에서 놓친 뒤에 왔으면 그 단위의 「다시」를 거둔다(설계 §3-2 — 본인 말은 다시를 거둔다).
   function dropStated(session, fresh) {
     for (const unit of [...session.retries.keys()]) {
@@ -177,7 +210,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       if (at == null) continue;
       const missedAt = Math.max(
         ...s.journal
-          .filter(op => op.kind === 'answer' && kept(op) && unitsOf(op.item).includes(unit))
+          .filter(
+            op => op.kind === 'answer' && kept(op) && missed(op) && unitsOf(op.item).includes(unit),
+          )
           .map(op => op.at),
       );
       if (at > missedAt) session.retries.delete(unit);
@@ -189,8 +224,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     const fresh = host.view();
     // 보기가 아무것도 얹지 못하는 동안은 판을 열 때의 사본 위에 일지를 통째로(기억까지) 다시 돌린다.
     const waiting = fresh.waitAll === true;
+    markExcluded();
     const tmp = learnerOf(copyView(waiting ? s.open.base : fresh));
-    tmp.log = s.open.log.slice();
+    tmp.log = [...s.open.log, ...othersIssued()];
     startSession(tmp, s.open.now, params, s.open.opts);
     for (const op of s.journal) if (kept(op)) replay(tmp, op);
     dropStated(tmp.session, fresh);
@@ -203,6 +239,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       seq: tmp.seq,
       dayOffset: tmp.dayOffset,
     };
+    refreshChosen();
   }
 
   // 다시 세우기가 던지면 앞 상태를 두고 계기에 남긴다 — 듣는 함수가 던져 그 판이 뒤의 소식(저장 실패 등)을 못 듣는 일이 없게(N2).
@@ -328,9 +365,10 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         level: HELP_LEVELS[kind] ?? 'cue',
         contentRef: `${gameId}.${kind}`,
       };
-      const fold = first ? event => foldOf(group, event, host.index) : null;
+      const fold = first ? event => foldOf(group, event, host.index, s.failed) : null;
       const { event, stored } = write(EVENT_TYPES.helped, fields, { fold });
-      if (first) applyOwn(s.learner, foldOf(group, event, host.index), memory, params, host.index);
+      if (first)
+        applyOwn(s.learner, foldOf(group, event, host.index, s.failed), memory, params, host.index);
       group.children.push(entryOf(event));
       return { event, stored };
     },
@@ -352,7 +390,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       let fold = null;
       const made = write(EVENT_TYPES.attempted, fields, {
         fold: event => {
-          fold = foldOf(group, event, host.index);
+          fold = foldOf(group, event, host.index, s.failed);
           return fold;
         },
       });
@@ -387,25 +425,38 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       if (s.learner?.session) {
         say(s.learner, memory, unit, kind, fold.at, params);
         s.journal.push({ kind: 'say', eventId: made.event.id, unit, say: kind, at: fold.at });
+        refreshChosen();
       }
       return made;
     },
 
-    // 제외 — 저장되면 그 사건(제시면 그 제시의 답까지)은 판 상태에서도 없던 것이다.
+    // 제외 — 저장되면 그 사건(제시면 그 제시의 답까지)은 판 상태에서도 없던 것이다(다시 세우기가 기록부의 제외 사건을 읽는다).
     exclude(targetId) {
       const made = write(EVENT_TYPES.excluded, { targetId });
       made.stored.then(ok => {
-        if (!ok) return;
-        s.failed.add(targetId);
-        rebuild();
+        if (ok) rebuild();
       });
       return made;
     },
 
     close() {
+      // 닫은 판 — 판 기록(finishSet)은 그 판 번호로 한 번만 남는다(아르곤 끝 판 C7).
+      if (s.open) s.closed = { setId: s.setId, recorded: false };
       s.open = null;
       if (s.learner) s.learner.session = null;
       s.chosen.clear();
+      s.groups.clear(); // 닫은 판의 제시에는 답을 받지 않는다(GPT GC4)
+    },
+    get isOpen() {
+      return Boolean(s.open && s.learner?.session);
+    },
+    // 판 기록을 남길 판 — 열린 판, 아니면 닫혔지만 아직 기록하지 않은 판. 없으면 null.
+    recordable() {
+      if (s.open && s.learner?.session) return s.setId;
+      return s.closed && !s.closed.recorded ? s.closed.setId : null;
+    },
+    markRecorded() {
+      if (s.closed) s.closed.recorded = true;
     },
     dispose() {
       unsubscribe();

@@ -158,6 +158,8 @@ export function createCoach(options = {}) {
       stubborn: Boolean(top.stubborn),
       breather: Boolean(top.breather),
       expected: top.expected,
+      // 「모르겠어요」 표지는 지도 문항의 칸이다 — 제품 문항 객체가 아니라 이 값으로 보기를 둔다(아르곤 끝 판).
+      unknownOption: top.item.unknownOption === true,
       idle: Boolean(top.idle),
       none: false,
       facts,
@@ -206,7 +208,9 @@ export function createCoach(options = {}) {
       const fold = out.fold;
       const evidence = out.stored.then(ok => {
         if (!ok) return { stored: false, independent: false, assisted: null, exposure: null };
-        const first = state.host.view().met.get(fold.item.familyKey) === fold.at;
+        // 그 계열의 첫 만남이 이 제시 안에서 났는가(답보다 앞선 도움 · 답 보기도 이 제시의 만남이다 — 아르곤 끝 판 C2).
+        const firstAt = state.host.view().met.get(fold.item.familyKey);
+        const first = firstAt != null && firstAt >= Date.parse(presented.at);
         const exposure =
           !first || presented.firstExposure === false
             ? 'repeat'
@@ -282,7 +286,8 @@ export function createCoach(options = {}) {
       };
     },
 
-    // 화면용 「봤나」 — 띄우기만 한 제시도 본 것이다(지금 판 exposure와 같은 뜻). 측정에는 쓰지 않는다(metBefore).
+    // 화면용 「봤나」(seen) — 띄우기만 한 제시도 본 것이다(지금 판 exposure와 같은 뜻). 측정용 「앞서 만났나」(met)를 함께 낸다 —
+    // 처음 보는 문항 고르기 · 같은 지문 세트 판정처럼 측정 자격을 가르는 제품 규칙은 met을 쓴다(아르곤 끝 판).
     exposure(item) {
       live();
       const product = item ?? {};
@@ -297,9 +302,10 @@ export function createCoach(options = {}) {
             event.type === EVENT_TYPES.presented &&
             (event.itemKey === itemKey || event.familyKey === familyKey),
         );
+      const met = metBefore(product);
       if (state.host.view().met.has(familyKey) || base?.lines.item.has(itemKey) || shown)
-        return { seen: true };
-      return { seen: state.host.guest || base != null ? false : null };
+        return { seen: true, met };
+      return { seen: state.host.guest || base != null ? false : null, met };
     },
 
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).
@@ -310,9 +316,10 @@ export function createCoach(options = {}) {
       // 판 기록을 남길 때만 종류를 묻는다 — 닫기만 하는 길(record: false)은 어떤 제품(게임 포함)이든 부른다(N1).
       if (record !== false && !SET_KINDS.includes(kind))
         throw new TypeError('Atlas coach: 판의 종류가 아니다');
-      const setId = session.setId;
+      // 기록할 판 — 열린 판, 아니면 닫혔지만(record: false) 아직 기록하지 않은 판. 같은 판을 두 번 기록하지 않는다(아르곤 끝 판 C7).
+      const setId = session.recordable();
       let ids = { decisionId: null, completionId: null };
-      if (record !== false) {
+      if (record !== false && setId) {
         const experienceId = `${gameId}.set`;
         const tag = setId ? { setId } : {};
         const decided = state.host.write(EVENT_TYPES.setDecided, {
@@ -329,6 +336,7 @@ export function createCoach(options = {}) {
         ids = { decisionId: decided.event.id, completionId: done.event.id };
       }
       session.close();
+      if (record !== false && setId) session.markRecorded();
       const folded = state.host.settled().then(() => state.host.trail.refold());
       folded.catch(() => {});
       return { ...ids, setId, folded };
@@ -355,6 +363,7 @@ export function createCoach(options = {}) {
       live();
       const view = learnerOf(state.host.view());
       view.log = state.host.issued();
+      view.dayOffset = dayOffset; // 하루 경계(현지 새벽 4시)를 고르기와 같게 — 두뇌는 판 없는 보기에 이 값으로 판을 연다(아르곤 끝 판 C1)
       const mapped = (activities ?? []).map(activity => ({
         ...activity,
         candidates: (activity.candidates ?? []).map(mapItem).filter(Boolean),

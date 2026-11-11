@@ -164,7 +164,7 @@ test('조사 규칙은 제품의 kit/josa.mjs와 같다', async () => {
 });
 
 // 4-1 WORLD 짧은 연습에 보이는 종류(문항 위 이유 · 판 끝 문장)는 영어 줄이 있다 — 세 겹 대조를 지난 문장(단계 4 계획 §4).
-test('영어 줄 — 짧은 연습에 보이는 종류마다 있고, 한국어는 「」 안 이름에만', () => {
+test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고, 한국어는 「」 안 이름에만', () => {
   const PRACTICE = [
     ['unit.retry', { unit: 'u', other: true }],
     ['unit.retry', { unit: 'u', other: false }],
@@ -180,15 +180,16 @@ test('영어 줄 — 짧은 연습에 보이는 종류마다 있고, 한국어�
     ['pace.stubborn', {}],
   ];
   const names = { u: '은행', s: '읽고 세부 정보 찾기' };
-  for (const [code, slots] of PRACTICE) {
-    const line = render({ code, slots }, { lang: 'en', label: id => names[id] });
-    assert.equal(typeof line, 'string', code);
-    assert.doesNotMatch(
-      line.replace(/「[^」]*」/g, ''),
-      /[가-힣]/,
-      `${code}: 이름 밖에 한국어가 없다`,
-    );
-  }
+  for (const lang of ['en', 'mn'])
+    for (const [code, slots] of PRACTICE) {
+      const line = render({ code, slots }, { lang, label: id => names[id] });
+      assert.equal(typeof line, 'string', `${lang} ${code}`);
+      assert.doesNotMatch(
+        line.replace(/「[^」]*」/g, ''),
+        /[가-힣]/,
+        `${lang} ${code}: 이름 밖에 한국어가 없다`,
+      );
+    }
   assert.equal(
     render(
       { code: 'unit.shaky', slots: { unit: 'u', reviews: 1, misses: 1, days: 1 } },

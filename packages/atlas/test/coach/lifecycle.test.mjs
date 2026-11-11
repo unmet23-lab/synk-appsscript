@@ -633,3 +633,271 @@ test('셸의 첫 코치가 지도를 받는 동안 연 틀은 문서 호스트�
   game.dispose();
   shell.dispose();
 });
+
+test('다른 코치가 낸 새 단위도 이 판의 하루 한도에 든다 — 판이 열린 뒤 낸 것까지(GPT GC1)', async () => {
+  const words = Array.from({ length: 40 }, (_, i) =>
+    Object.freeze({
+      itemKey: `d.i${i}`,
+      familyKey: `d.f${i}`,
+      skillId: 'ko.reading.d',
+      difficulty: 1,
+      responseFormat: 'single-choice',
+      units: Object.freeze([`ko.word.d${i}`]),
+      order: i,
+      modality: 'reading',
+    }),
+  );
+  const port = memoryPort();
+  const time = clock();
+  const key = keyOf('day-share');
+  const a = coachOn({ items: words, time, port, key, gameId: 'a' });
+  const b = coachOn({ items: words, time, port, key, gameId: 'b' });
+  await Promise.all([a.ready, b.ready]);
+  a.recommend(words, { set: { length: 30, newLimit: 50 } }); // A가 먼저 판을 연다
+  for (const item of words.slice(20, 38)) {
+    await b.answer(b.present(item), { correct: true, assessable: true }).stored; // B가 새 단위 18개
+    time.advance(STEP);
+  }
+  await settle();
+  let fresh = 0;
+  for (let step = 0; step < 10; step += 1) {
+    const picked = a.recommend(words.slice(0, 20));
+    if (picked.status !== 'ready') break;
+    const pid = a.present(picked.selected);
+    fresh += (await eventsOf(port)).find(e => e.id === pid).reason.introduced.length;
+    await a.answer(pid, { correct: true, assessable: true }).stored;
+    time.advance(STEP);
+  }
+  assert.ok(fresh <= 2, `A가 낸 새 단위 ${fresh} — 하루 20 가운데 B가 18`);
+  a.dispose();
+  b.dispose();
+});
+
+test('다른 코치가 제외한 내 답도 이 판에서 없던 것이다(GPT GC2)', async () => {
+  const excluded = await retryAfter(async ({ other, miss }) => {
+    other.exclude(miss.eventId);
+    await settle();
+    await settle();
+  });
+  assert.notEqual(excluded.why.code, 'unit.retry');
+});
+
+test('닫은 판의 제시 번호에는 답을 받지 않는다(GPT GC4)', async () => {
+  const items = bankOf(rng(14));
+  const time = clock();
+  const coach = coachOn({ items, time, port: memoryPort(), key: keyOf('stale-pid') });
+  await coach.ready;
+  const first = coach.recommend(items, { set: { length: 2 } });
+  const pid = coach.present(first.selected);
+  coach.finishSet({ record: false });
+  assert.throws(
+    () => coach.answer(pid, { correct: true, assessable: true }),
+    /끝났거나 모르는 제시/,
+    '닫은 직후',
+  );
+  coach.recommend(items, { set: { length: 2 } });
+  assert.throws(
+    () => coach.answer(pid, { correct: true, assessable: true }),
+    /끝났거나 모르는 제시/,
+  );
+  // 닫지 않고 새 판을 열어도(더 배우기) 앞 판의 제시는 받지 않는다
+  const again = coach.recommend(items, { set: { length: 2 } });
+  const old = coach.present(again.selected);
+  coach.recommend(items, { set: { length: 2, more: true } });
+  assert.throws(
+    () => coach.answer(old, { correct: true, assessable: true }),
+    /끝났거나 모르는 제시/,
+  );
+  coach.dispose();
+});
+
+test('계정 호스트는 한 묶음(256) 넘게 남은 사건을 이어서 올린다(GPT GC3)', async () => {
+  const items = bankOf(rng(15), { items: 140, units: 60 });
+  const time = clock();
+  let seq = 0;
+  const batches = [];
+  const transport = async events => {
+    batches.push(events.length);
+    return {
+      accepted: events.map(event => ({ id: event.id, seq: (seq += 1) })),
+      clamped: [],
+      rejected: [],
+    };
+  };
+  const coach = coachOn({
+    items,
+    time,
+    port: memoryPort(),
+    key: keyOf('upload'),
+    guest: false,
+    account: 'acct-upload',
+    revision: 1,
+    transport,
+  });
+  await coach.ready;
+  for (const item of items.slice(0, 130)) {
+    await coach.answer(coach.present(item), { correct: true, assessable: true }).stored;
+    time.advance(STEP);
+  }
+  for (let wait = 0; wait < 40 && coach.summary().storage.unsent > 0; wait += 1)
+    await new Promise(resolve => setTimeout(resolve, 200));
+  assert.equal(coach.summary().storage.unsent, 0, `남은 사건 — 묶음 ${batches.join(' · ')}`);
+  assert.ok(batches.length >= 2 && batches[0] === 256);
+  coach.dispose();
+});
+
+test('「모르겠어요」 표지는 지도 문항에서 실어 준다 — 제품 문항 객체에 칸이 없어도(아르곤 끝 판)', async () => {
+  const items = bankOf(rng(16)).map((item, i) =>
+    i === 0 ? { ...item, unknownOption: true } : item,
+  );
+  const time = clock();
+  const coach = coachOn({ items, time, port: memoryPort(), key: keyOf('unknown') });
+  await coach.ready;
+  const picked = coach.recommend([items[0]], { set: { length: 3, newLimit: 10 } });
+  assert.equal(picked.status, 'ready');
+  assert.equal(picked.unknownOption, true);
+  const plain = coach.recommend([items[1]]);
+  assert.equal(plain.unknownOption, false);
+  coach.dispose();
+});
+
+test('plan()은 코치의 하루 경계(현지 새벽 4시)로 하루 한도를 센다(아르곤 끝 판 C1)', async () => {
+  const words = Array.from({ length: 30 }, (_, i) =>
+    Object.freeze({
+      itemKey: `k.i${i}`,
+      familyKey: `k.f${i}`,
+      skillId: 'ko.reading.k',
+      difficulty: 1,
+      responseFormat: 'single-choice',
+      units: Object.freeze([`ko.word.k${i}`]),
+      order: i,
+      modality: 'reading',
+    }),
+  );
+  const time = clock(Date.UTC(2026, 10, 10, 18, 0, 0)); // 서울 11-11 03:00 — 서울로는 11-10의 하루
+  const coach = createCoach({
+    gameId: 'day',
+    map: fakeMap(words),
+    seed: 's',
+    dayOffset: 540,
+    host: { guest: true, port: memoryPort(), key: keyOf('plan-day'), now: time.now },
+  });
+  await coach.ready;
+  coach.recommend(words, { set: { length: 30, newLimit: 30 } });
+  for (const item of words.slice(0, 20)) {
+    await coach.answer(coach.present(item), { correct: true, assessable: true }).stored;
+    time.advance(1000);
+  }
+  time.advance(7 * HOUR); // 서울 11-11 10:00 — 새 하루(UTC로는 아직 같은 하루)
+  const [top] = coach.plan([{ id: 'lesson', candidates: words.slice(20) }]);
+  assert.equal(top.tier, 2, '서울의 새 하루라 새것을 다시 낸다');
+  coach.dispose();
+});
+
+test('답보다 앞선 도움도 그 제시의 만남이다 — 첫 만남 판정은 그 제시 안에서(아르곤 끝 판 C2)', async () => {
+  const items = bankOf(rng(17));
+  const time = clock();
+  const coach = coachOn({ items, time, port: memoryPort(), key: keyOf('help-first') });
+  await coach.ready;
+  coach.recommend([items[0]], { set: { length: 3, newLimit: 10 } });
+  const pid = coach.present(items[0]);
+  coach.help(pid, 'hint');
+  time.advance(1000);
+  const evidence = await coach.answer(pid, { correct: true, assessable: true }).evidence;
+  assert.equal(evidence.exposure, 'new', '처음 보는 문항의 답이다');
+  assert.equal(evidence.independent, false, '힌트를 본 답은 혼자 낸 답이 아니다');
+  coach.dispose();
+});
+
+test('저장이 실패한 도움은 그 답을 도움받은 답으로 만들지 않는다 — 기록부 · 서버 접기와 같게(아르곤 끝 판 C6)', async () => {
+  const items = bankOf(rng(18));
+  const time = clock();
+  const port = memoryPort();
+  const coach = coachOn({ items, time, port, key: keyOf('help-failed') });
+  await coach.ready;
+  coach.recommend([items[0]], { set: { length: 3, newLimit: 10 } });
+  const pid = coach.present(items[0]);
+  await settle();
+  port.failNext(new Error('quota'));
+  coach.help(pid, 'hint');
+  await settle();
+  port.heal();
+  time.advance(1000);
+  const evidence = await coach.answer(pid, { correct: true, assessable: true }).evidence;
+  assert.equal(evidence.assisted, false);
+  coach.dispose();
+});
+
+test('같은 판을 두 번 기록하지 않는다 — 닫기만 한 판은 뒤의 기록이 그 판 번호로 한 번 남긴다(아르곤 끝 판 C7)', async () => {
+  const items = bankOf(rng(19));
+  const time = clock();
+  const port = memoryPort();
+  const coach = coachOn({ items, time, port, key: keyOf('record-once') });
+  await coach.ready;
+  const picked = coach.recommend(items, { set: { length: 3 } });
+  const pid = coach.present(picked.selected);
+  await coach.answer(pid, { correct: true, assessable: true }).stored;
+  coach.finishSet({ record: false }); // 판을 끝낸 제품 모듈이 닫기만
+  const set = coach.finishSet({ kind: 'short' }); // 셸이 응답과 함께 기록
+  const again = coach.finishSet({ kind: 'short' });
+  await set.folded;
+  const events = await eventsOf(port);
+  const setId = events.find(e => e.id === pid).setId;
+  assert.equal(events.find(e => e.id === set.completionId).setId, setId);
+  assert.equal(again.completionId, null, '두 번째는 남기지 않는다');
+  assert.equal(events.filter(e => e.type === 'experience.completed').length, 1);
+  coach.dispose();
+});
+
+test('셸이 호스트를 받는 사이 다른 코치가 닫아도 그 호스트는 닫히지 않는다(아르곤 끝 판 C3)', async () => {
+  const items = bankOf(rng(20));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  installHostMaker(top, { openPort: () => memoryPort() });
+  const key = keyOf('claim');
+  const base = { map: fakeMap(items), seed: 's', dayOffset: 0, scope: top };
+  const first = createCoach({ ...base, gameId: 'a', host: { guest: true, key, now: time.now } });
+  await first.ready;
+  const second = createCoach({ ...base, gameId: 'b', host: { guest: true, key, now: time.now } });
+  await Promise.resolve();
+  first.dispose(); // 둘째가 받기를 기다리는 사이
+  await second.ready;
+  assert.equal(top.__synkAtlasHosts.has(key), true, '둘째가 쓰는 호스트가 등록부에 남는다');
+  second.dispose();
+  assert.equal(top.__synkAtlasHosts.has(key), false);
+});
+
+test('본인 말로 거둔 「다시」는 그 뒤에 건너뛴 답으로 되살아나지 않는다(아르곤 끝 판 C8 ②)', async () => {
+  const revived = await retryAfter(async ({ coach, other, time }) => {
+    other.tell(U, 'known');
+    await settle();
+    // U가 든 다른 문항을 건너뛴다(판정 못 한 답) — 놓친 것이 아니다
+    const pid = coach.present(handBank()[1]);
+    await coach.answer(pid, { correct: null, assessable: false, reason: 'unanswered' }).stored;
+    time.advance(STEP);
+    other.tell('ko.word.zz', 'known'); // 판을 다시 세우게
+    await settle();
+  });
+  assert.notEqual(revived.why.code, 'unit.retry');
+});
+
+test('recommend 뒤 present 전에 판이 다시 서면 고른 줄을 지금 상태로 새로 잰다 — 처음 낸 단위를 두 번 세지 않는다(아르곤 끝 판 C8 ③)', async () => {
+  const items = handBank();
+  const port = memoryPort();
+  const time = clock();
+  const key = keyOf('rechoose');
+  const a = coachOn({ items, time, port, key, gameId: 'a' });
+  const b = coachOn({ items, time, port, key, gameId: 'b' });
+  await Promise.all([a.ready, b.ready]);
+  const picked = a.recommend([items[0]], { set: { length: 4, newLimit: 10 } }); // U가 처음 나갈 문항
+  assert.ok(picked.selected);
+  await b.answer(b.present(items[1]), { correct: true, assessable: true }).stored; // B가 먼저 U를 낸다
+  await settle();
+  const pid = a.present(picked.selected);
+  const event = (await eventsOf(port)).find(e => e.id === pid);
+  assert.deepEqual(event.reason.introduced, [], 'U는 오늘 이미 나갔다');
+  a.dispose();
+  b.dispose();
+});

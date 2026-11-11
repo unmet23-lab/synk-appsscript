@@ -74,7 +74,13 @@ export function createPracticeNextSession({
     throw TypeError('WORLD practice next needs the play counters (allowedPlays · nextPlay)');
   if (!Array.isArray(pool) || !pool.length || !Number.isInteger(length) || length < 1)
     throw TypeError('WORLD practice next needs its pool and a length');
-  const seen = item => coach.exposure(item).seen;
+  // 측정용 「앞서 만났나」 — 처음 보는 문항 고르기와 같은 지문 세트 판정은 측정 자격의 일이라 화면용 seen이 아니라 met을 쓴다
+  // (띄우기만 하고 닫힌 문항은 아직 측정 기회다 — 아르곤 끝 판). 모르면(null) 만난 것으로 친다(측정을 부풀리지 않게).
+  const met = item => {
+    const exposure = coach.exposure(item);
+    return exposure.met ?? exposure.seen ?? true;
+  };
+  const fresh = item => met(item) === false && !setSeen(setPool, item, met);
   const results = [];
   const pending = [];
   const served = { due: false };
@@ -98,7 +104,7 @@ export function createPracticeNextSession({
       stubborn: current.stubborn,
       targetLabel: current.targetLabel,
       preHelped: current.preHelped,
-      unknown: current.item.unknownOption === true,
+      unknown: current.unknown,
     };
   const close = (out, choiceId, skipped) => {
     current.answered = true;
@@ -142,12 +148,13 @@ export function createPracticeNextSession({
     return coach.recommend(pool, options);
   }
   // 할 것이 없을 때(idle) 처음 보는 문항으로 좁혀 한 번 더 묻는다. 없으면 null.
+  // 처음 보는 문항 — 만난 적 없고 같은 지문 세트의 다른 문항도 만나지 않은 것(그래야 그 답이 측정 근거가 된다 — 아르곤 끝 판).
   function pickFresh() {
-    const fresh = pool.filter(item => seen(item) === false);
-    if (!fresh.length) return null;
+    const candidates = pool.filter(fresh);
+    if (!candidates.length) return null;
     // pool: 'unseen' — 그 제시의 근거 칸에 「제품이 처음 보는 문항으로 좁힘」을 남긴다(단계 5가 측정 문항과 보통 채우기를 가른다).
-    const again = coach.recommend(fresh, { audio: audioAvailable, lang, pool: 'unseen' });
-    return again.status !== 'none' && seen(again.selected) === false ? again : { ...again, fresh: false };
+    const again = coach.recommend(candidates, { audio: audioAvailable, lang, pool: 'unseen' });
+    return again.status !== 'none' && fresh(again.selected) ? again : { ...again, fresh: false };
   }
   // 판을 닫는다(판 기록은 셸이 응답과 함께 — 여기서는 닫기만).
   function closeSet() {
@@ -201,7 +208,7 @@ export function createPracticeNextSession({
       if (picked.status !== 'ready' && !freshFill) return end(picked);
       const item = picked.selected;
       if (picked.tier === 1) served.due = true;
-      const pid = coach.present(item, setSeen(setPool, item, seen) ? { firstExposure: false } : {});
+      const pid = coach.present(item, setSeen(setPool, item, met) ? { firstExposure: false } : {});
       const listening = listeningOf(item);
       current = {
         item,
@@ -217,6 +224,8 @@ export function createPracticeNextSession({
         stubborn: picked.stubborn === true,
         targetLabel: picked.targetLabel ?? null,
         preHelped: false,
+        // 「모르겠어요」는 지도 문항에 그 표지가 있을 때만(코치가 실어 준다 — 제품 문항 객체의 칸이 아니다).
+        unknown: picked.unknownOption === true,
       };
       return view();
     },
@@ -283,8 +292,7 @@ export function createPracticeNextSession({
     },
     // 「모르겠어요」 — 그 선택지를 둔 문항(지도의 unknownOption)에서만. 놓침으로 적힌다.
     unknown() {
-      if (!current || current.answered || !current.heard || current.item.unknownOption !== true)
-        return null;
+      if (!current || current.answered || !current.heard || !current.unknown) return null;
       const out = coach.answer(current.pid, {
         correct: null,
         unknown: true,
