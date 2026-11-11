@@ -3,7 +3,7 @@
 //   위 창의 것이라, 틀(게임)이 먼저 열어도 · 틀이 닫혀도 저장 · 올리기는 위 창에서 끝난다(Fable 설계 P1-3, 아르곤 A6). 엔진 묶음은
 //   불러올 때 자기 창에 「호스트를 만드는 길」(MAKER)을 걸고, 틀의 코치는 위 창의 그 길로 호스트를 받는다. 위 창에 엔진이 없는(혼자 뜬)
 //   페이지만 자기 창에 등록부를 둔다. 틀의 코치는 저장소 열쇠를 스스로 짓지 않고 셸이 연 문서 호스트를 받는다(host.document).
-//   다른 탭은 같은 IndexedDB 저장소에 덧붙이고 BroadcastChannel로 알린다 — 받은 탭은 꼬리만 다시 읽는다(record.refresh()).
+//   다른 탭은 같은 IndexedDB 저장소에 덧붙이고 BroadcastChannel로 알린다(쓰기 · 서버의 답을 받았을 때) — 받은 탭은 꼬리만 다시 읽는다(record.refresh()).
 //   올리기는 계정만: 대기열(unsent) → 제품이 준 transport → 서버의 답(receive). 같은 사건을 두 탭이 올려도 서버가 번호로 거른다.
 // 코치가 쓰는 보기 = 기록부 보기(record.view() — 저장이 끝난 사건) + 아직 저장이 안 끝난 내 답 · 본인 말(pending).
 import { EDITION } from '../edition.mjs';
@@ -168,6 +168,9 @@ function createHost({
         if (!events.length) return;
         const answer = await transport(events);
         await state.trail.receive(answer);
+        // 받은 표지 · 누른 것 · 버린 것 · 서버 요약도 저장소에 덧붙었다 — 다른 탭에도 알려 꼬리를 읽고 판을 다시 세우게 한다(쓰기와 같은
+        // 길). 안 알리면 다른 탭은 다음 쓰기 소식까지 서버 반영 전 상태(다른 기기의 낸 것 · 버린 사건 없이)로 고른다(GPT 최종 GC1).
+        announce();
         tell('receive');
       } catch {
         tell('offline');

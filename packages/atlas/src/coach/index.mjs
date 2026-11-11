@@ -338,33 +338,48 @@ export function createCoach(options = {}) {
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).
     // 마침 사건에는 그 판의 번호(setId — 제시의 setId와 같은 값)를 싣는다(단계 5 판 비교, Fable 설계 P2-1 라 · 기록 1c412a995).
     // folded: 그 판의 쓰기가 다 저장된 뒤 손님 요약을 다시 접고 풀린다 — 그 뒤의 summary() 칸에 방금 푼 답이 든다(P2-3, 계정은 서버가 접는다).
+    // 풀린 값은 이번에 쓴 판 기록의 저장 결과다 — true, false(저장 실패 — 다음 finishSet이 다시 쓴다), 쓴 것이 없으면 null(GPT 최종 GC2).
     finishSet({ kind, record = true } = {}) {
       const session = live();
       // 판 기록을 남길 때만 종류를 묻는다 — 닫기만 하는 길(record: false)은 어떤 제품(게임 포함)이든 부른다(N1).
       if (record !== false && !SET_KINDS.includes(kind))
         throw new TypeError('Atlas coach: 판의 종류가 아니다');
-      // 기록할 판 — 열린 판, 아니면 닫혔지만(record: false) 아직 기록하지 않은 판. 같은 판을 두 번 기록하지 않는다(아르곤 끝 판 C7).
+      // 기록할 판 — 열린 판, 아니면 닫혔지만(record: false) 아직 기록하지 않은 판. 같은 판을 두 번 기록하지 않는다(아르곤 끝 판 C7) —
+      // 쓰는 동안은 자리를 잡아 두고, 저장이 실패하면 풀어 다음 finishSet이 다시 쓴다(GPT 최종 GC2).
       const setId = session.recordable();
-      let ids = { decisionId: null, completionId: null };
-      if (record !== false && setId) {
-        const experienceId = `${gameId}.set`;
-        const tag = setId ? { setId } : {};
-        const decided = state.host.write(EVENT_TYPES.setDecided, {
-          experienceId,
-          variant: kind,
-          ...tag,
-        });
-        const done = state.host.write(EVENT_TYPES.setCompleted, {
-          decisionId: decided.event.id,
-          experienceId,
-          variant: kind,
-          ...tag,
-        });
-        ids = { decisionId: decided.event.id, completionId: done.event.id };
-      }
       session.close();
-      if (record !== false && setId) session.markRecorded();
-      const folded = state.host.settled().then(() => state.host.trail.refold());
+      const slot = record !== false && setId ? session.claimRecord(setId) : null;
+      let ids = { decisionId: null, completionId: null };
+      let saved = Promise.resolve(null);
+      if (slot) {
+        const experienceId = `${gameId}.set`;
+        // 앞 시도에서 결정이 저장됐으면 그 결정(종류째)에 마침만 단다 — 같은 판의 결정을 둘 남기지 않는다.
+        const kept = slot.decision;
+        const variant = kept?.variant ?? kind;
+        const decided = kept
+          ? null
+          : state.host.write(EVENT_TYPES.setDecided, { experienceId, variant, setId });
+        const decisionId = kept?.id ?? decided.event.id;
+        const done = state.host.write(EVENT_TYPES.setCompleted, {
+          decisionId,
+          experienceId,
+          variant,
+          setId,
+        });
+        ids = { decisionId, completionId: done.event.id };
+        saved = Promise.all([decided?.stored ?? true, done.stored]).then(
+          ([made, finished]) =>
+            session.settleRecord(slot, {
+              decision: decided && made ? { id: decisionId, variant } : null,
+              ok: made && finished,
+            }),
+          () => session.settleRecord(slot, { decision: null, ok: false }),
+        );
+      }
+      const folded = state.host
+        .settled()
+        .then(() => state.host.trail.refold())
+        .then(() => saved);
       folded.catch(() => {});
       return { ...ids, setId, folded };
     },

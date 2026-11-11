@@ -114,6 +114,9 @@ function foldOf(group, event, index, skip = new Set()) {
   return folds.find(fold => fold.id === event.id) ?? null;
 }
 
+// 닫은 판의 기록 자리가 아직 기록하지 않았고 지금 쓰는 중도 아닌가 — 같은 판을 두 번 기록하지 않는다(아르곤 끝 판 C7 · GPT 최종 GC2).
+const unrecorded = slot => Boolean(slot) && !slot.recorded && !slot.writing;
+
 export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   const params = host.params;
   const memory = host.memory;
@@ -127,7 +130,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     chosen: new Map(),
     groups: new Map(),
     own: new Set(), // 이 코치가 쓴 사건 번호 — 같은 문서 다른 코치의 쓰기만 다시 세우기를 부른다
-    closed: null, // 닫았지만 판 기록을 아직 안 남긴 판 { setId, recorded }
+    closed: null, // 닫은 판의 기록 자리 { setId, recorded, writing, decision }
     lastAt: 0,
     tag: coachTag(),
   };
@@ -461,7 +464,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
 
     close() {
       // 닫은 판 — 판 기록(finishSet)은 그 판 번호로 한 번만 남는다(아르곤 끝 판 C7).
-      if (s.open) s.closed = { setId: s.setId, recorded: false };
+      if (s.open) s.closed = { setId: s.setId, recorded: false, writing: false, decision: null };
       s.open = null;
       if (s.learner) s.learner.session = null;
       s.chosen.clear();
@@ -470,13 +473,24 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     get isOpen() {
       return Boolean(s.open && s.learner?.session);
     },
-    // 판 기록을 남길 판 — 열린 판, 아니면 닫혔지만 아직 기록하지 않은 판. 없으면 null.
+    // 판 기록을 남길 판 — 열린 판, 아니면 닫혔지만 아직 기록하지 않은(쓰는 중도 아닌) 판. 없으면 null.
     recordable() {
       if (s.open && s.learner?.session) return s.setId;
-      return s.closed && !s.closed.recorded ? s.closed.setId : null;
+      return unrecorded(s.closed) ? s.closed.setId : null;
     },
-    markRecorded() {
-      if (s.closed) s.closed.recorded = true;
+    // 닫은 판의 기록 자리를 잡는다(finishSet이 판을 닫은 뒤) — 저장이 끝날 때까지 「쓰는 중」이라 같은 판을 또 쓰지 않는다. 앞 시도에서
+    // 저장된 결정이 있으면 자리에 남아 있다(decision — 다시 쓸 때 마침만 단다, GPT 최종 GC2). 그 판(setId)의 자리가 아니면 null.
+    claimRecord(setId) {
+      if (!unrecorded(s.closed) || s.closed.setId !== setId) return null;
+      s.closed.writing = true;
+      return s.closed;
+    },
+    // 판 기록의 저장 결과 — 결정 · 마침이 다 저장됐으면 기록 끝, 아니면 자리를 풀어 다음 finishSet이 다시 쓴다(저장된 결정은 남긴다).
+    settleRecord(slot, { decision, ok }) {
+      slot.writing = false;
+      if (decision) slot.decision = decision;
+      slot.recorded = ok;
+      return ok;
     },
     dispose() {
       unsubscribe();

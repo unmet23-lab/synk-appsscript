@@ -51,14 +51,26 @@ export function banksOf(pool) {
   return [...banks].sort();
 }
 
+// 이 기기의 localStorage — 브라우저가 사이트 저장소를 막으면 속성을 읽기만 해도 SecurityError를 던진다. 그때는 null(옛 기록 읽개 없이 연다 —
+// 옮기기는 저장소가 다시 열린 뒤에 연 판에서)이고 계기에 남긴다(GPT 최종 GB1: 기본 인수에서 던지면 입구가 load 전에 멈춰 지금 판으로 넘어갔다).
+function deviceStorage(health) {
+  try {
+    return globalThis.localStorage ?? null;
+  } catch {
+    health?.note('save', { ok: false, code: 'LEGACY_STORAGE' });
+    return null;
+  }
+}
+
 // owner: 'guest' 또는 계정 id. lang(): 지금 화면 언어. label(id): 능력 이름(단위 이름은 엔진의 지도가 안다).
+// storage: 옛 기록을 읽을 저장소(시험만 준다 — 주지 않으면 이 기기의 localStorage, null이면 읽개 없이).
 export function createAtlasNext({
   owner,
   lang = () => 'ko',
   label = () => null,
   load = () => import(ENTRY),
   health = null,
-  storage = globalThis.localStorage,
+  storage = deviceStorage(health),
 } = {}) {
   // 은행 조합마다 코치 하나(준비 중인 약속째) — 후보에 다른 은행이 섞이면 그 은행을 받는 코치를 따로 연다(아르곤 끝 판 B5 · 다시 A4).
   // 같은 저장소의 호스트를 나눠 쓰므로 기록은 하나다.
@@ -74,7 +86,7 @@ export function createAtlasNext({
         banks: banksOf(pool),
         // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
         words: true,
-        host: { guest: true, health, legacy: legacyReader(storage) },
+        host: { guest: true, health, legacy: storage ? legacyReader(storage) : null },
         lang: lang(),
         label,
       });

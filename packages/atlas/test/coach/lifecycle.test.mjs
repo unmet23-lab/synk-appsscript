@@ -849,6 +849,65 @@ test('같은 판을 두 번 기록하지 않는다 — 닫기만 한 판은 뒤�
   coach.dispose();
 });
 
+test('판 기록의 저장이 실패하면 folded가 알리고 다음 finishSet이 다시 쓴다 — 저장된 결정에는 마침만 달아 같은 판은 한 번만 기록된다(GPT 최종 GC2)', async () => {
+  const items = bankOf(rng(23));
+  const time = clock();
+  const base = memoryPort();
+  const failing = new Set();
+  // 고른 종류의 사건을 덧붙일 때만 던지는 그릇 — 나머지(답 · 손님 요약)는 그대로 저장된다.
+  const port = {
+    ...base,
+    async append(values) {
+      if (values.some(value => failing.has(value?.event?.type))) throw new Error('disk full');
+      return base.append(values);
+    },
+  };
+  const coach = coachOn({ items, time, port, key: keyOf('record-retry') });
+  await coach.ready;
+  async function playSet(more) {
+    const picked = coach.recommend(items, { set: { length: 3, more } });
+    const pid = coach.present(picked.selected);
+    await coach.answer(pid, { correct: true, assessable: true }).stored;
+    time.advance(STEP);
+    return (await eventsOf(port)).find(event => event.id === pid).setId;
+  }
+  const ofSet = async (setId, type) =>
+    (await eventsOf(port)).filter(event => event.setId === setId && event.type === type);
+
+  // ㉠ 결정은 저장되고 마침만 실패한 판 — 다시 쓸 때 그 결정에 마침만 단다
+  const first = await playSet(false);
+  failing.add('experience.completed');
+  const tried = coach.finishSet({ kind: 'short' });
+  assert.equal(await tried.folded, false, '마침 저장 실패를 알린다');
+  failing.clear();
+  const retried = coach.finishSet({ kind: 'short' });
+  assert.notEqual(retried.completionId, null, '다음 finishSet이 다시 쓴다');
+  assert.equal(retried.decisionId, tried.decisionId, '저장된 결정에 마침만 단다');
+  assert.equal(await retried.folded, true);
+  const after = coach.finishSet({ kind: 'short' });
+  assert.equal(after.completionId, null, '기록이 끝난 판은 다시 쓰지 않는다');
+  assert.equal(await after.folded, null, '쓴 것이 없다');
+  assert.equal((await ofSet(first, 'decision.made')).length, 1, '결정 하나');
+  const done = await ofSet(first, 'experience.completed');
+  assert.deepEqual(
+    done.map(event => event.decisionId),
+    [tried.decisionId],
+  );
+
+  // ㉡ 결정부터 실패한 판 — 둘 다 다시 쓴다
+  const second = await playSet(true);
+  failing.add('decision.made');
+  const lost = coach.finishSet({ kind: 'short' });
+  assert.equal(await lost.folded, false);
+  failing.clear();
+  const again = coach.finishSet({ kind: 'short' });
+  assert.notEqual(again.decisionId, lost.decisionId, '저장되지 않은 결정은 새로 쓴다');
+  assert.equal(await again.folded, true);
+  assert.equal((await ofSet(second, 'decision.made')).length, 1);
+  assert.equal((await ofSet(second, 'experience.completed')).length, 1);
+  coach.dispose();
+});
+
 test('셸이 호스트를 받는 사이 다른 코치가 닫아도 그 호스트는 닫히지 않는다(아르곤 끝 판 C3)', async () => {
   const items = bankOf(rng(20));
   const time = clock();

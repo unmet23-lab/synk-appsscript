@@ -189,6 +189,67 @@ test('판 도중 서버 요약으로 온 다른 기기의 낸 것도 이 판의 
   coach.dispose();
 });
 
+test('탭 A가 받은 서버 요약 · 표지(버린 사건 포함)가 같은 저장소의 탭 B 고르기에 든다 — 서버의 답을 받은 탭도 다른 탭에 알린다(GPT 최종 GC1)', async () => {
+  const items = words(40, 'g');
+  const time = clock();
+  const port = memoryPort(); // 두 탭이 같은 저장소를 본다
+  const edition = foldEdition(PARAMS, { edition: 'index-t' });
+  // 계정 기기 — 받아 둔 요약(빈 줄)의 판 묶음이 지금 엔진과 같아 보기가 얹는다.
+  await port.append([
+    {
+      kind: 'ack',
+      acks: [],
+      clamped: [],
+      dropped: [],
+      summary: packSummary(emptySummary(edition)),
+    },
+  ]);
+  let seq = 0;
+  const others = Array.from({ length: 18 }, (_, i) => ({
+    id: `a.${time.t - 1000}.${String(i).padStart(4, '0')}.otherdev`,
+    at: time.t - 1000,
+    review: false,
+    units: [`ko.word.g${20 + i}`],
+  }));
+  const sent = [];
+  // 서버의 답 — 맨 끝 사건 하나는 버리고(rejected) 나머지는 받으며, 다른 기기가 오늘 낸 새 단위 18개가 요약의 「낸 것」으로 온다.
+  const transport = async events => {
+    sent.push(...events.map(event => event.id));
+    return {
+      accepted: events.slice(0, -1).map(event => ({ id: event.id, seq: (seq += 1) })),
+      clamped: [],
+      rejected: [events.at(-1).id],
+      summary: { edition, full: true, foldedUntil: 0, lineSeq: 1, issued: others, lines: [] },
+      serverTime: time.t,
+    };
+  };
+  const key = keyOf('tab-receive');
+  const account = { guest: false, account: 'acct-tabs', revision: 1, key };
+  const [topA, topB] = [topWindow(() => port), topWindow(() => port)];
+  const a = coachOn({ items, time, gameId: 'a', scope: topA, ...account, transport }); // 올리는 탭
+  await a.ready;
+  const b = coachOn({ items, time, gameId: 'b', scope: topB, ...account }); // 올리지 않는 탭
+  await b.ready;
+  b.recommend(items, { set: { length: 30, newLimit: 50 } });
+  assert.equal(
+    await freshServed(b, port, items.slice(0, 20), time, 2),
+    2,
+    'B가 판을 열고 새 단위 둘',
+  );
+  time.advance(60_000);
+  const hostA = await acquireHost({ key, params: PARAMS, now: time.now, guest: false }, topA);
+  await hostA.refresh(); // B의 쓰기를 읽는다(BroadcastChannel 소식과 같은 길)
+  await hostA.upload();
+  releaseHost(hostA);
+  assert.ok(sent.length > 0, 'A가 B의 사건을 올렸다');
+  for (let wait = 0; wait < 20 && b.summary().storage.unsent > 0; wait += 1) await settle();
+  assert.equal(b.summary().storage.unsent, 0, 'A가 받은 표지 · 버린 사건을 B도 읽었다');
+  const fresh = await freshServed(b, port, items.slice(0, 20), time);
+  assert.equal(fresh, 0, `오늘 새 단위 20(B 2 + 다른 기기 18) — B가 더 낸 새 단위 ${fresh}`);
+  a.dispose();
+  b.dispose();
+});
+
 // 돌아온 것(층 1)으로 낸 문항 수 — 하루 복습 상한(reviewsPerDay 3)까지. between은 걸음마다 판을 다시 세우게 하는 바깥 일.
 async function reviewRun({ coach, port, time, items, between }) {
   coach.recommend(items, { set: { length: 8, newLimit: 8 } });

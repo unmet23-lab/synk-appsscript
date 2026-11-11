@@ -416,6 +416,43 @@ test('WORLD 입구 — 손님 코치에 옛 기록 읽개를 넘기고, 준비 �
   assert.deepEqual(notes.at(-1), ['load', { ok: false, code: 'LOAD_IMPORT' }]);
 });
 
+test('WORLD 입구 — 브라우저가 저장소를 막아 localStorage를 읽기만 해도 던지면 옛 기록 읽개 없이 새 길 코치를 연다(지금 판으로 넘어가지 않는다, GPT 최종 GB1)', async () => {
+  const { createAtlasNext } = await load('world-atlas-next.mjs');
+  const before = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    get() {
+      throw Object.assign(new Error('The operation is insecure.'), { name: 'SecurityError' });
+    },
+  });
+  try {
+    const notes = [];
+    const health = { note: (kind, outcome) => notes.push([kind, outcome]) };
+    let captured = null;
+    const made = { ready: Promise.resolve(), dispose() {} };
+    const next = createAtlasNext({
+      owner: 'guest', // 셸(app-shell.mjs lazyAtlasNext)처럼 storage를 주지 않는다
+      health,
+      load: async () => ({
+        coach: options => {
+          captured = options;
+          return made;
+        },
+      }),
+    });
+    assert.equal(await next.practiceCoach(BANK.slice(0, 3)), made, '새 길 코치를 돌려준다');
+    assert.equal(captured.host.legacy, null, '옛 기록 읽개 없이 연다');
+    assert.deepEqual(notes, [
+      ['save', { ok: false, code: 'LEGACY_STORAGE' }],
+      ['load', { ok: true }],
+    ]);
+    next.dispose();
+  } finally {
+    if (before) Object.defineProperty(globalThis, 'localStorage', before);
+    else delete globalThis.localStorage;
+  }
+});
+
 // 아르곤 끝 판(11-11): 측정 자격을 가르는 제품 규칙은 화면용 seen이 아니라 측정용 met을 쓰고, 좁혀 다시 묻기는 같은 지문 세트를 이미
 // 만난 문항을 거르고, 「모르겠어요」는 지도 문항의 표지(코치가 실어 줌)로 둔다.
 test('같은 지문 세트의 다른 문항을 띄우기만 하고 닫았으면 이 문항은 아직 처음이다 — 측정 자격은 만남으로 가른다(아르곤 끝 판)', async () => {
