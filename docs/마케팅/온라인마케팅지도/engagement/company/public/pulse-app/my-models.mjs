@@ -42,7 +42,8 @@ function stateLine(card){
   return `<p class="sx-small sx-mm-state"><i class="sx-led ${ok?'is-ok':'is-wait'}" aria-hidden="true"></i>${esc(text)}</p>${card.deletionRequested?`<p class="sx-small sx-mm-state">${esc(t('삭제 요청을 받았어요. 담당자가 확인하고 있어요.'))}</p>`:''}`;
 }
 function meta(card){
-  const rows=[card.until&&[t('다시 쓰기 기한'),dateOf(card.until)],card.lastUsedAt&&[t('마지막 사용'),dateOf(card.lastUsedAt)]].filter(row=>row&&row[1]);
+  // 지우는 날(11-11 판 4 설계 11-3)은 지금 새 광고에 쓸 수 없는 모델(기한 지남 · 다시 쓰기 꺼짐 · 사용 멈춤)에만 — 그날 전에 다시 동의하면 계속 쓴다.
+  const rows=[card.until&&[t('다시 쓰기 기한'),dateOf(card.until)],!card.usable&&card.deleteAt&&[t('지우는 날'),dateOf(card.deleteAt)],card.lastUsedAt&&[t('마지막 사용'),dateOf(card.lastUsedAt)]].filter(row=>row&&row[1]);
   return rows.length?`<dl class="sx-mm-meta sx-small">${rows.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`:'';
 }
 // 관리자 일: 보관(연장 · 다시 켜기 — 서버가 지금 동의를 받을 수 있을 때만 consent를 준다) · 다시 쓰기 끄기 · 사용 멈추기(저장 상태가 ready일 때 — 기간이 끝난 모델도) · 삭제 요청.
@@ -75,7 +76,12 @@ function list(st){
 function consent(st){
   const {ws,card}=st.pick,terms=card.consent?.terms||{},first=!card.reuse;
   const materials=(terms.materials||[]).map(id=>MATERIAL[id]?t(MATERIAL[id]):'').filter(Boolean).join(' · ');
-  const rows=[[t('쓰는 곳'),t('브랜드 「{brand}」의 다음 광고예요. 광고마다 쓸 범위를 따로 확인받아요.',{brand:terms.workspaceName||ws.name})],[t('보관하는 것'),materials],[t('쓸 수 있는 사람'),t('이 브랜드의 회원 모두 — 내 모델에서 이 모델로 의뢰할 수 있어요.')],[t('다시 쓰기 기한'),t('{date}까지예요. 그 뒤에 새 광고에 쓰려면 보관 동의를 새로 해 주세요.',{date:dateOf(terms.until)})],[t('그만두는 법'),t('내 모델에서 언제든 다시 쓰기를 끄거나 삭제를 요청할 수 있어요.')],[t('백업'),t('지운 뒤에도 백업 사본은 최대 {days}일 남았다가 사라져요.',{days:Number(terms.backupDays)||30})]].filter(([,value])=>value);
+  // 11-11 결정 표 ① · ④ · ⑥(판 4 설계 11-4): 12개월 · 기한 뒤 30일에 지움 · 지운 뒤 백업 최대 13개월 · 오래 두는 보관 사본(금고) 제외 — 서버 terms v2 값 그대로.
+  const rows=[[t('쓰는 곳'),t('브랜드 「{brand}」의 다음 광고예요. 광고마다 쓸 범위를 따로 확인받아요.',{brand:terms.workspaceName||ws.name})],[t('보관하는 것'),materials],[t('쓸 수 있는 사람'),t('이 브랜드의 회원 모두 — 내 모델에서 이 모델로 의뢰할 수 있어요.')],
+    [t('다시 쓰기 기한'),t('오늘부터 {months}개월, {date}까지예요. 그 뒤에 새 광고에 쓰려면 보관 동의를 새로 해 주세요.',{date:dateOf(terms.until),months:Number(terms.months)||12})],
+    [t('기한이 끝나면'),terms.deleteAt?t('기한 30일 뒤인 {date}에 보내 주신 사진을 포함해 이 모델의 그림과 파일을 지워요. 그날 전에 다시 동의하면 계속 쓸 수 있어요. 그날 이 모델로 만들고 있는 광고가 있으면 그 광고를 다 만든 뒤에 지워요. 이미 받으신 광고 영상은 지우지 않아요.',{date:dateOf(terms.deleteAt)}):''],
+    [t('그만두는 법'),t('내 모델에서 언제든 다시 쓰기를 끄거나 삭제를 요청할 수 있어요.')],
+    [t('백업'),t('지운 뒤에도 서버 백업 사본에는 최대 {months}개월 남았다가 차례로 지워져요. 오래 두는 별도 보관 사본에는 처음부터 넣지 않아요.',{months:Number(terms.backup?.maxMonths)||13})]].filter(([,value])=>value);
   return `<article class="sx-mm-paper"><p class="sx-kicker">${esc(first?t('보관 동의'):t('기한 연장'))} · ${esc(ws.name)}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t('다음 광고에도 이 모델을 쓸까요?'))}</h1>
     <div class="sx-mm-paper-main"><figure class="sx-mm-face ${card.image?'':'is-empty'}">${face(card)}<figcaption class="sx-small">${esc(nameOf(card))}</figcaption></figure>
     <dl class="sx-mm-terms">${rows.map(([key,value])=>`<div><dt class="sx-small">${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></div>${alertOf(st)}

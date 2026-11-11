@@ -5,17 +5,16 @@
 // 5분 · 한 번 · 목적 하나짜리 증표(pulse-proof)뿐이다.
 // 이 모듈은 저장소 문서와 studio-media 파일 지우기만 다룬다 — 네트워크 · 생성 · 학습을 부르지 않는다(시험이 import 목록을 지킨다).
 import {randomUUID,createHash} from 'node:crypto';
-import {unlink} from 'node:fs/promises';
+import {unlink,open} from 'node:fs/promises';
 import {join} from 'node:path';
-import {PERSONA_KINDS,withPersonaRef,reuseStateOf,reuseUntil,consentAllowsReuse} from './pulse-personas.mjs';
+import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse} from './pulse-personas.mjs';
 import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 import {withTranslation} from './pulse-translations.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
 
 const K=PERSONA_KINDS,CLAIMS='pulseWorkspaceClaims',DRAFTS='pulseRequests',PROJECTS='clientProjects',PROOF='pulse-proof';
 export const WORKSPACE_KINDS=Object.freeze({workspaces:K.workspaces,claims:CLAIMS});
-// backupDays: 동의 문안의 백업 잔존 초안 값(외부 백업 30일 — 서버 드라이브 사본 · 재해 복구 묶음 기간은 확인 전, 설계 5판 D13 · 9절).
-export const WORKSPACE_LIMITS=Object.freeze({proofMinutes:5,attachHours:24,history:200,members:50,pendingClaims:20,backupDays:30});
+export const WORKSPACE_LIMITS=Object.freeze({proofMinutes:5,attachHours:24,history:200,members:50,pendingClaims:20});
 const fail=(message,status=400,code='')=>Object.assign(new Error(message),{status,...(code?{code}:{})});
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -27,6 +26,14 @@ const HANGUL=/[가-힣]/;
 const MEDIA_NAME=/^[0-9a-f-]{36}\.(?:mp4|webm|png|jpg|intake)$/;
 const USAGE_TEXT={brand:80,product:120,purpose:200,media:200,regions:120,period:120,fee:120,schedule:120,note:600};
 const sha=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const SHA256=/^[0-9a-f]{64}$/;
+// 파일 본문의 sha256(없는 파일은 null). 인물을 지울 때 이름을 떼기 전에 잰다 — 같은 바이트의 다른 파일이 금고로 가지 않게(판 4 설계 11-2, 11-11 GPT GA1).
+async function fileSha(path){
+  let handle;try{handle=await open(path,'r');}catch(error){if(['ENOENT','EISDIR'].includes(error?.code))return null;throw error;}
+  try{const hash=createHash('sha256'),buffer=Buffer.alloc(1<<20);for(;;){const {bytesRead}=await handle.read(buffer,0,buffer.length,null);if(!bytesRead)break;hash.update(buffer.subarray(0,bytesRead));}return hash.digest('hex');}
+  catch(error){if(error?.code==='EISDIR')return null;throw error;}finally{await handle.close();}
+}
+
 const live=doc=>!!doc&&!doc.deletedAt;
 const keys=(input,allowed)=>{if(!object(input)||Object.keys(input).some(key=>!allowed.includes(key)))throw fail('요청 내용을 확인해 주세요.');};
 function text(value,max,required=false){
@@ -136,9 +143,11 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   }
 
   // ── 다시 쓰기 동의의 조건(설계 3-4 · 5-2) ──
-  // 승인 카드에 보인 조건 그대로를 해시에 묶는다(브랜드 이름 · 보관 자료 · 목적 · 끝 날짜 · 철회 방법 · 백업 잔존 기간).
+  // 승인 카드에 보인 조건 그대로를 해시에 묶는다(브랜드 이름 · 보관 자료 · 목적 · 다시 쓰기 기한 · 지우는 날 · 철회 방법 · 백업 잔존 · 금고 제외).
+  // v2(11-11 결정 표 ① · ④ · ⑥, 판 4 설계 11-4): 기한(12개월) 뒤 30일에 지우고, 지운 뒤 백업 사본은 최대 13개월, 오래 두는 보관 사본(금고)에는 넣지 않는다.
   function reuseTerms(revision,workspace,now){
-    return {v:1,workspaceId:workspace.id,workspaceName:workspace.name,materials:['reference',...(revision.motion?.assetIds?.length?['motion']:[]),'model-files'],purpose:'next-ads',until:reuseUntil(now),withdraw:'my-models',backupDays:WORKSPACE_LIMITS.backupDays};
+    const until=reuseUntil(now);
+    return {v:2,workspaceId:workspace.id,workspaceName:workspace.name,materials:['reference',...(revision.motion?.assetIds?.length?['motion']:[]),'model-files'],purpose:'next-ads',until,deleteAt:reuseDeleteAt(until),months:REUSE_MONTHS,withdraw:'my-models',backup:{maxMonths:BACKUP_MAX_MONTHS,vault:false}};
   }
   const reuseHash=(persona,revision,workspace,terms)=>sha({v:1,kind:'reuse',personaId:persona.id,revisionId:revision.id,workspaceId:workspace.id,workspaceName:workspace.name,assets:[...(revision.reference?.assetIds||[])].sort(),termsHash:sha(terms)});
   // 지금 이 브랜드 admin이 새 다시 쓰기 동의(처음 · 연장 · 재개)를 할 수 있으면 그 조건 · 해시. 처음이면 원 프로젝트가 이 브랜드에 연결된 보관 대기 인물만.
@@ -156,7 +165,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const state=reuseStateOf(store,persona,{workspaceId:workspace.id,now}),revision=currentRevision(persona),image=revision?.reference?.assetIds?.[0];
     return {id:persona.id,name:persona.displayName||'',kind:persona.kind,status:state.status,usable:state.usable,reason:state.reason,
       revisionId:revision?.id||null,image:image?assetUrl(image):null,reuse:persona.retention?.scope==='reuse',until:persona.retention?.scope==='reuse'?persona.retention.until:null,
-      lastUsedAt:lastUsedAt(persona,workspace),deletionRequested:!!persona.deletionRequest,...(admin?{consent:consentOffer(persona,workspace,now)}:{})};
+      deleteAt:brandDeleteAt(persona),lastUsedAt:lastUsedAt(persona,workspace),deletionRequested:!!persona.deletionRequest,...(admin?{consent:consentOffer(persona,workspace,now)}:{})};
   }
   // 보관 대기(설계 4-2): 원 프로젝트가 이 브랜드에 연결됐고 ready인데 아직 브랜드에 귀속되지 않은 인물. 실제 인물은 당사자 동의가 다시 쓰기를 허락할 때만.
   const pendingPersonas=workspace=>store.all(K.personas).filter(persona=>live(persona)&&!persona.workspaceId&&persona.status==='ready'&&store.get(PROJECTS,persona.originProjectId)?.customerWorkspaceId===workspace.id&&currentRevision(persona)&&consentAllowsReuse(store,persona)).sort(byTime);
@@ -362,9 +371,10 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const out=[];
     for(const persona of store.all(K.personas).filter(item=>live(item)&&item.workspaceId===workspace.id)){
       const status=reuseStateOf(store,persona,{workspaceId:workspace.id,now});
-      const why=persona.deletionRequest?'deletion_requested':persona.status==='deleting'?'deleting':workspace.status!=='active'?'closed':!status.usable&&['expired','paused','reuse_off'].includes(status.reason)?status.reason:null;
+      // 보관 기간이 끝났는데 참조가 남아 지우지 못한 인물이 먼저다(참조를 정리하면 다음 쓸기가 지운다).
+      const why=persona.deletionRequest?'deletion_requested':persona.status==='deleting'?'deleting':retentionDue(persona,now)?'retention_due':workspace.status!=='active'?'closed':!status.usable&&['expired','paused','reuse_off'].includes(status.reason)?status.reason:null;
       if(!why)continue;
-      const refs=staffReferences(staff,personaReferences(persona,now,{reuseOnly:why!=='deletion_requested'&&why!=='deleting'}));
+      const whole=['deletion_requested','deleting','retention_due'].includes(why),refs=staffReferences(staff,personaReferences(persona,now,{reuseOnly:!whole}));
       if(why==='deletion_requested'||why==='deleting'||refs.projects.length||refs.hidden)out.push({personaId:persona.id,name:persona.displayName||'',why,projects:refs.projects,hidden:refs.hidden});
     }
     return out;
@@ -396,7 +406,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       const workspace=workspaceOf(id);if(!visibleWorkspace(staff,workspace))throw fail('그 브랜드를 찾지 못했어요.',404);
       const personas=store.all(K.personas).filter(persona=>persona.workspaceId===workspace.id&&(live(persona)||persona.status==='deleting')).sort(byTime).map(persona=>{
         const state=reuseStateOf(store,persona,{workspaceId:workspace.id,now});
-        return {id:persona.id,revision:persona.revision,name:persona.displayName||'',kind:persona.kind,status:persona.status,effective:state.status,usable:state.usable,reason:state.reason,retention:persona.retention||null,
+        return {id:persona.id,revision:persona.revision,name:persona.displayName||'',kind:persona.kind,status:persona.status,effective:state.status,usable:state.usable,reason:state.reason,retention:persona.retention||null,deleteAt:brandDeleteAt(persona),
           deletionRequest:persona.deletionRequest||null,paused:persona.paused||null,originProjectId:persona.originProjectId,references:staffReferences(staff,personaReferences(persona,now))};
       });
       const projects=store.all(PROJECTS).filter(row=>(row.customerWorkspaceId===workspace.id||row.workspaceRequest?.workspaceId===workspace.id)&&readable(staff,row.id)).map(row=>({id:row.id,revision:row.revision,title:row.title,stage:row.stage,linked:row.customerWorkspaceId===workspace.id,
@@ -557,20 +567,75 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   // 도중에 멈추면 deleting + pendingUnlink가 남고, 서버 시작 때(resumeDeletions) · 직원의 「삭제 이어 하기」가 같은 일을 이어 한다.
   async function deletePersona(user,personaId,input){
     const staff=adminOf(user),note=text(input.note,300,true);
+    const hashes=await personaHashes(personaOf(personaId));
     store.transaction(()=>{
       const now=clock(),persona=personaOf(personaId);
       if(input.revision!==persona.revision)throw fail('그사이 인물 내용이 바뀌었어요. 새로 불러온 뒤 다시 해 주세요.',409);
       if(persona.status==='deleting')throw fail('이미 지우는 중이에요. 삭제 이어 하기를 눌러 주세요.',409);
       const refs=personaReferences(persona,now);
       if(referenced(refs))throw Object.assign(fail('이 인물을 쓰는 끝나지 않은 프로젝트나 의뢰가 있어요. 그 일을 먼저 끝내거나 정리해 주세요.',409,'SYNK_PULSE_PERSONA_REFERENCED'),{references:refs});
-      const names=[];
-      for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item))){if(typeof source.diskName==='string')names.push(source.diskName);store.put(K.sources,source.id,{id:source.id,personaId:source.personaId,projectId:source.projectId,purpose:source.purpose,diskName:null,deletedAt:now});}
-      for(const revision of store.all(K.revisions).filter(item=>item.personaId===persona.id&&live(item))){for(const entry of revision.assets||[])if(typeof entry?.diskName==='string')names.push(entry.diskName);store.put(K.revisions,revision.id,{...revision,assets:[],reference:null,motion:null,method:null,deletedAt:now});}
-      store.remove(K.consents,persona.id);
-      putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:staff.id,note,requested:persona.deletionRequest||null}},{action:'deleting',actorKind:'staff',actor:staff.id});
-      const workspace=persona.workspaceId?store.get(K.workspaces,persona.workspaceId):null;if(workspace)putWorkspace(workspace,{action:'model_deleting',actorKind:'staff',actor:staff.id,note,subject:persona.id});
+      beginDeletion(persona,{actorKind:'staff',actor:staff.id,note,now,hashes});
     });
     return settleDeletion(personaId);
+  }
+  // 지울 인물 파일(살아 있는 출처 · 판 자산)의 이름 → 본문 sha256. 출처는 받을 때 잰 값, 판 자산은 지금 잰다(없는 파일은 null — 지킬 바이트가 없다).
+  async function personaHashes(persona){
+    const out=new Map();
+    for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item)&&typeof item.diskName==='string'))
+      out.set(source.diskName,SHA256.test(source.sha256||'')?source.sha256:await fileSha(join(store.directory,'studio-media',source.diskName)));
+    for(const revision of store.all(K.revisions).filter(item=>item.personaId===persona.id&&live(item)))
+      for(const entry of revision.assets||[])if(typeof entry?.diskName==='string'&&!out.has(entry.diskName))out.set(entry.diskName,SHA256.test(entry.sha256||'')?entry.sha256:await fileSha(join(store.directory,'studio-media',entry.diskName)));
+    return out;
+  }
+  // ① 트랜잭션의 몸통(부르는 쪽 트랜잭션 안 · 참조 확인 뒤): 관리자 삭제와 보관 기간 뒤 지우기(sweepRetention)가 함께 쓴다.
+  // 출처 · 판을 묘비로, 동의 암호문 지움, 지울 이름은 pendingUnlink에. 판 3 승인 기록(보낸 파일 id · shown · viewedHash)은 지우지 않는다(5판 D10).
+  // hashes: personaHashes의 결과(트랜잭션 밖에서 미리 잰 것). 그사이 새로 붙은 파일이 있으면 멈춘다(다시 하면 그 파일도 잰다) — 이름을 떼는 이 트랜잭션에서
+  // 모든 본문 sha256을 묘비 기록(deletion.noVault)에 함께 남겨, 백업이 어느 순간에 찍혀도 「인물이 가진 이름」이나 「묘비 해시」 둘 중 하나로 그 바이트를 뺀다.
+  function beginDeletion(persona,{actorKind,actor,note,reason='',now,hashes}){
+    const names=[];
+    for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item))){if(typeof source.diskName==='string')names.push(source.diskName);store.put(K.sources,source.id,{id:source.id,personaId:source.personaId,projectId:source.projectId,purpose:source.purpose,diskName:null,deletedAt:now});}
+    for(const revision of store.all(K.revisions).filter(item=>item.personaId===persona.id&&live(item))){for(const entry of revision.assets||[])if(typeof entry?.diskName==='string')names.push(entry.diskName);store.put(K.revisions,revision.id,{...revision,assets:[],reference:null,motion:null,method:null,deletedAt:now});}
+    if(names.some(name=>!hashes?.has(name)))throw fail('그사이 인물 파일이 바뀌었어요. 다시 해 주세요.',409);
+    const noVault=[...new Set([...(persona.deletion?.noVault||[]),...names.map(name=>hashes.get(name))])].filter(hash=>typeof hash==='string'&&SHA256.test(hash)).sort();
+    store.remove(K.consents,persona.id);
+    const system=actorKind==='system';
+    putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:system?'system':actor,note,requested:persona.deletionRequest||null,...(reason?{reason}:{}),noVault}},{action:system?'retention_deleting':'deleting',actorKind,actor:system?'':actor});
+    const workspace=persona.workspaceId?store.get(K.workspaces,persona.workspaceId):null;if(workspace)putWorkspace(workspace,{action:system?'model_retention_deleting':'model_deleting',actorKind,actor:system?'':actor,note,subject:persona.id});
+  }
+
+  // ── 보관 기간 뒤 지우기(11-11 결정 표 ① · ④ · ⑤, 판 4 설계 11-3) ── 시계 하나: 브랜드 인물은 그 브랜드에 묶인 가장 최근 reuse 동의의 지우는 날
+  // (다시 쓰기 기한 + 30일 — 쓰는 중 · 기한 지남 · 철회 · 중지 모두 같다, 연장이 옮긴다), 브랜드 없는 인물은 원 프로젝트가 90일 정리로 「지운 의뢰」가 된 때.
+  // 끝나지 않은 참조가 있으면 그 일이 끝날 때까지 미룬다. 브랜드 인물은 원 프로젝트 정리와 상관없다(시나리오 10).
+  function brandDeleteAt(persona){
+    if(!persona?.workspaceId)return null;
+    const last=store.all(K.approvals).filter(approval=>approval.kind==='reuse'&&approval.decision==='approve'&&approval.personaId===persona.id&&approval.workspaceId===persona.workspaceId).sort(byTime).at(-1);
+    return last?last.terms?.deleteAt||reuseDeleteAt(last.terms?.until):null;
+  }
+  const originRetired=persona=>store.get(PROJECTS,persona.originProjectId)?.studio?.request?.status==='retired';
+  function retentionDue(persona,now){
+    if(!live(persona)||persona.status==='deleting')return null;
+    if(persona.workspaceId){const at=brandDeleteAt(persona);return at&&Date.parse(at)<=Date.parse(now)?{reason:'reuse_ended',deleteAt:at}:null;}
+    return PERSONA_SETTLED.includes(persona.status)&&originRetired(persona)?{reason:'origin_retired',deleteAt:null}:null;
+  }
+  // 6시간마다 · 서버 시작 때(pulse-requests retireUnconfirmed 끝). 인물마다 트랜잭션 하나로 다시 읽어 판정하고, 커밋 뒤 파일을 지운다(멈추면 resumeDeletions가 잇는다).
+  async function sweepRetention(){
+    const result={deleted:0,held:0,failed:0};
+    for(const {id} of store.all(K.personas).filter(persona=>retentionDue(persona,clock()))){
+      let started=false,hashes;
+      try{hashes=await personaHashes(store.get(K.personas,id));}catch{result.failed++;continue;}
+      try{
+        store.transaction(()=>{
+          const now=clock(),persona=store.get(K.personas,id),due=retentionDue(persona,now);
+          if(!due)return;
+          if(referenced(personaReferences(persona,now))){result.held++;return;}
+          beginDeletion(persona,{actorKind:'system',actor:'',note:due.reason==='origin_retired'?'원 프로젝트를 정리해 함께 지움':'다시 쓰기 기한이 끝나 지움',reason:due.reason,now,hashes});
+          started=true;
+        });
+      }catch{result.failed++;continue;}
+      if(!started)continue;
+      try{await finishDeletion(id);result.deleted++;}catch{result.failed++;}
+    }
+    return result;
   }
   // 문서는 이미 지웠다: 파일 지우기가 막히면(Windows에서 읽는 중인 파일의 EPERM · EBUSY 등) 오류 대신 「지우는 중」과 남은 파일 수를 돌려준다(Fable P2-2).
   async function settleDeletion(personaId){
@@ -599,5 +664,6 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   }
 
   return {enabled,projectProof,draftProof,projectState,claim,withdrawClaim,models,model,asset,attach,reuse,withdrawReuse,stop,deleteRequest,
-    attachedRequest,ownerFor,personaReferences,staffList,staffRead,decideClaim,workspaceAction,projectAction,personaAction,deletePersona,finishDeletion,resumeDeletions};
+    attachedRequest,ownerFor,personaReferences,staffList,staffRead,decideClaim,workspaceAction,projectAction,personaAction,deletePersona,finishDeletion,resumeDeletions,
+    retentionDue,sweepRetention};
 }

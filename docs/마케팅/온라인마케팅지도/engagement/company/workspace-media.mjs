@@ -19,6 +19,24 @@ export function personaMediaOf(kind,doc){
   }
   throw new Error('전용 인물 파일 기록을 확인해 주세요.');
 }
+// 금고 제외(2026-11-11 결정 표 ①, 판 4 설계 11-2): 인물 문서가 가진 이름. 백업은 이 이름들의 본문(sha256)을 「금고에 넣지 않음」으로 적는다.
+// 지운(지우는 중인) 인물은 이름을 떼는 트랜잭션에서 본문 sha256을 묘비 기록 deletion.noVault에 남긴다 — 백업은 그 해시와 같은 본문도 늘 뺀다
+// (인물을 지운 뒤 같은 바이트로 남은 다른 파일이 금고로 가지 않게, 판 4 설계 11-2 · 11-11 GPT GA1).
+export function personaMediaNameSet(database){
+  const names=new Set();
+  for(const kind of PERSONA_MEDIA_KINDS)for(const row of database.prepare('SELECT body FROM documents WHERE kind=?').all(kind))for(const name of personaMediaOf(kind,JSON.parse(row.body)))names.add(name);
+  return names;
+}
+// legacy: 해시 기록 없이 지운(지우는 중인) 인물 수 — 이 판 전에 지운 인물이다. 하나라도 있으면 그 바이트를 가릴 수 없어 서버 직접 백업이 분류를 미완으로 내보낸다.
+export function personaRetainedSha(database){
+  const sha=new Set();let legacy=0;
+  for(const row of database.prepare("SELECT body FROM documents WHERE kind='pulsePersonas'").all()){
+    const doc=JSON.parse(row.body),kept=doc?.deletion?.noVault;
+    if((doc?.deletedAt||doc?.status==='deleting')&&!Array.isArray(kept))legacy++;
+    for(const hash of Array.isArray(kept)?kept:[])if(typeof hash==='string'&&/^[0-9a-f]{64}$/.test(hash))sha.add(hash);
+  }
+  return {sha,legacy};
+}
 export function workspaceMediaNames(database){
   const names=database.prepare("SELECT body FROM documents WHERE kind IN ('studioMedia','socialMedia')").all().map(row=>JSON.parse(row.body).diskName);
   for(const row of database.prepare("SELECT body FROM documents WHERE kind='studioPublicationPackages'").all()){

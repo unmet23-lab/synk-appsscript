@@ -26,3 +26,19 @@ test('제2의 나 사진 버킷은 서버 사본에 0건이다 — 목록 SQL ·
  const source=fs.readFileSync(path.join(__dirname,'backup.cjs'),'utf8');assert.equal((source.match(/FROM storage\.objects/g)||[]).length,1,'Storage 목록 SQL은 제외가 든 한 곳뿐이어야 한다');
  assert.equal((source.match(/storageToBackup\(await commandJson/g)||[]).length,2,'전후 목록 모두 제외를 거쳐야 한다');
 });
+test('금고 제외 표시(2026-11-11 결정 표 ①): 분류된 인물 본문과 인물 바이트를 품은 DR 묶음만 vault:false, 분류 없는 옛 판은 표시 없음',()=>{const {retentionPlan}=require('./backup.cjs'),a='a'.repeat(64),b='b'.repeat(64);
+ const none=retentionPlan(undefined);assert.equal(none.classified,false);assert.equal(none.noVault.size,0);assert.equal(none.archiveNoVault,false);
+ assert.equal(retentionPlan({classified:false,noVault:[],bytesIncluded:null}).archiveNoVault,false);
+ const listed=retentionPlan({classified:true,noVault:[a],bytesIncluded:false});assert.deepEqual([...listed.noVault],[a]);assert.equal(listed.archiveNoVault,false);
+ assert.equal(retentionPlan({classified:true,noVault:[a,b],bytesIncluded:true}).archiveNoVault,true);
+ assert.equal(retentionPlan({classified:true,noVault:[],bytesIncluded:true}).archiveNoVault,false);
+ const legacy=retentionPlan({classified:false,noVault:[a],bytesIncluded:true,legacyDeleted:2});assert.equal(legacy.classified,false);assert.equal(legacy.archiveNoVault,false);assert.equal(legacy.legacyDeleted,2);
+ assert.throws(()=>retentionPlan({classified:true,noVault:[a],bytesIncluded:false,legacyDeleted:1}),/MEDIA_RETENTION_INVALID/,'옛 판 묘비가 있는데 분류 완료라고 하면 받지 않는다');
+ assert.throws(()=>retentionPlan({classified:false,noVault:[],bytesIncluded:false,legacyDeleted:-1}),/MEDIA_RETENTION_INVALID/);
+ for(const bad of [{classified:'yes',noVault:[],bytesIncluded:false},{classified:true,noVault:'all',bytesIncluded:false},{classified:true,noVault:['x'],bytesIncluded:false},{classified:true,noVault:[a,a],bytesIncluded:false},{classified:false,noVault:[a],bytesIncluded:false},{classified:true,noVault:[a],bytesIncluded:'no'}])
+  assert.throws(()=>retentionPlan(bad),/MEDIA_RETENTION_INVALID/);
+ const source=fs.readFileSync(path.join(__dirname,'backup.cjs'),'utf8');
+ assert.match(source,/gcsReceipt:item,\.\.\.\(retention\.archiveNoVault\?\{vault:false\}:\{\}\)/,'DR 묶음 줄이 압축본 안 인물 바이트를 따라 표시돼야 한다');
+ assert.match(source,/mediaSha256:o\.sha256,\.\.\.noVault\(o\)/,'영상 본문 줄이 분류를 따라 표시돼야 한다');
+ assert.match(source,/kind:'media-retention',classified:retention\.classified/,'영수증에 분류 여부가 남아야 PC가 닫힌 쪽 규칙을 고른다');
+});

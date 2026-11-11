@@ -134,3 +134,59 @@ test('backup CLI accepts only --media=both or --media=manifest after the folder'
     assert.equal(failure?.code,2);assert.match(failure.stderr,/WORKSPACE_BACKUP_FAILED/);
   }
 });
+
+// 금고 제외(2026-11-11 결정 표 ①, 판 4 설계 11-2): 목록 백업은 인물 문서가 가진 본문의 sha256을 media-retention.json에 적는다.
+test('listed backups name the persona-owned bodies for the vault filter; copy backups write no retention file', async t => {
+  const f=await mediaFixture(t),company=new Store(f.companyDir);
+  const photo='91234567-1234-4234-8234-123456789abc.jpg',face='a1234567-1234-4234-8234-123456789abc.png',shared='b1234567-1234-4234-8234-123456789abc.mp4';
+  try{
+    company.put('pulsePersonaSources','s1',{id:'s1',personaId:'p1',diskName:photo});
+    company.put('pulsePersonaSources','s0',{id:'s0',personaId:'p0',diskName:null,deletedAt:'2026-11-11T00:00:00.000Z'});
+    company.put('pulsePersonaRevisions','r1',{id:'r1',personaId:'p1',assets:[{id:'a1',diskName:face},{id:'a2',diskName:shared}]});
+  }finally{company.close();}
+  await writeFile(join(f.companyDir,'studio-media',photo),'synthetic persona photo');await writeFile(join(f.companyDir,'studio-media',face),'synthetic persona face');
+  // 인물 판의 영상이 작업실 영상과 같은 바이트면(내용 기준) 그 본문도 금고에 넣지 않는다.
+  await writeFile(join(f.companyDir,'studio-media',shared),'synthetic video body');
+  const sha=value=>createHash('sha256').update(value).digest('hex');
+  for(const mode of ['both','manifest']){
+    const target=await backupWorkspace({destination:join(f.root,'retention-'+mode),companyDataDir:f.companyDir,media:mode});
+    const raw=await readFile(join(target,'media-manifest.json')),list=JSON.parse(raw),retention=JSON.parse(await readFile(join(target,'media-retention.json'),'utf8')),manifest=JSON.parse(await readFile(join(target,'integration-manifest.json'),'utf8'));
+    assert.equal(retention.schema,'synk-workspace-media-retention/v1');assert.equal(retention.createdAt,list.createdAt);assert.equal(retention.manifestSha256,sha(raw));
+    assert.deepEqual(retention.noVault,[sha('synthetic persona photo'),sha('synthetic persona face'),sha('synthetic video body')].sort());
+    assert.ok(retention.noVault.every(hash=>list.files.some(file=>file.sha256===hash)));
+    assert.equal(manifest.mediaRetention,'media-retention.json');assert.equal(manifest.mediaCount,list.files.length);assert.equal(list.files.length,6);
+    assert.match(await readFile(join(target,'RESTORE.txt'),'utf8'),/media-retention\.json은 금고 사본을 고를 때만/);
+  }
+  const copy=await backupWorkspace({destination:join(f.root,'retention-copy'),companyDataDir:f.companyDir});
+  await assert.rejects(access(join(copy,'media-retention.json')),{code:'ENOENT'});
+  assert.equal('mediaRetention' in JSON.parse(await readFile(join(copy,'integration-manifest.json'),'utf8')),false);
+});
+
+// 11-11 GPT GA1: 지운 인물의 묘비 해시(deletion.noVault)와 같은 바이트의 작업실 파일도 금고 제외 — 목록 안의 본문만 싣는다.
+test('a deleted persona keeps its bodies out of the vault through same-byte project files', async t => {
+  const f=await mediaFixture(t),company=new Store(f.companyDir);
+  const sha=value=>createHash('sha256').update(value).digest('hex');
+  try{company.put('pulsePersonas','gone',{id:'gone',status:'deleted',deletedAt:'2026-11-11T00:00:00.000Z',deletion:{reason:'origin_retired',noVault:[sha('synthetic image body'),'f'.repeat(64),'not-a-hash']},pendingUnlink:[]});
+    company.put('pulsePersonaSources','s-gone',{id:'s-gone',personaId:'gone',diskName:null,deletedAt:'2026-11-11T00:00:00.000Z'});}finally{company.close();}
+  const target=await backupWorkspace({destination:join(f.root,'retention-gone'),companyDataDir:f.companyDir,media:'manifest'});
+  const list=JSON.parse(await readFile(join(target,'media-manifest.json'),'utf8')),retention=JSON.parse(await readFile(join(target,'media-retention.json'),'utf8'));
+  assert.deepEqual(retention.noVault,[sha('synthetic image body')],'묘비 해시와 같은 작업실 본문 — 목록에 없는 해시는 싣지 않는다');
+  assert.equal(retention.legacyDeleted,0,'해시 기록이 있는 묘비는 옛 판 묘비가 아니다');
+  assert.ok(retention.noVault.every(hash=>list.files.some(file=>file.sha256===hash)));
+});
+
+test('listed backups without persona documents write an empty vault filter', async t => {
+  const f=await mediaFixture(t),target=await backupWorkspace({destination:join(f.root,'retention-none'),companyDataDir:f.companyDir,media:'manifest'});
+  const retention=JSON.parse(await readFile(join(target,'media-retention.json'),'utf8'));
+  assert.deepEqual(retention.noVault,[]);assert.equal(retention.schema,'synk-workspace-media-retention/v1');assert.equal(retention.legacyDeleted,0);
+});
+
+test('a persona deleted before the retention rule (no hash record) is counted so the Drive copy reports the split as incomplete', async t => {
+  const f=await mediaFixture(t),company=new Store(f.companyDir);
+  try{company.put('pulsePersonas','old',{id:'old',status:'deleted',deletedAt:'2026-11-11T00:00:00.000Z',deletion:{confirmedAt:'2026-11-11T00:00:00.000Z'}});
+    company.put('pulsePersonas','stuck',{id:'stuck',status:'deleting',pendingUnlink:[]});
+    company.put('pulsePersonas','new',{id:'new',status:'deleted',deletedAt:'2026-11-12T00:00:00.000Z',deletion:{noVault:[]}});
+    company.put('pulsePersonas','live',{id:'live',status:'ready'});}finally{company.close();}
+  const target=await backupWorkspace({destination:join(f.root,'retention-legacy'),companyDataDir:f.companyDir,media:'both'});
+  assert.equal(JSON.parse(await readFile(join(target,'media-retention.json'),'utf8')).legacyDeleted,2);
+});

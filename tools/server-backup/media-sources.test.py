@@ -29,7 +29,7 @@ def md5(b):
     return base64.b64encode(hashlib.md5(b).digest()).decode()
 
 
-class Receipts(unittest.TestCase):
+class Capsules(unittest.TestCase):
     BACKUP = 'synk-workspace-2026-11-06T18-30-00-000Z'
     CREATED = '2026-11-06T18:30:41.000Z'
 
@@ -42,15 +42,20 @@ class Receipts(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def capsule(self, included=False, listed=True, created=CREATED, backup=BACKUP):
-        """A DR archive whose data/workspace.tar.gz holds the data backup's two manifests."""
+    def capsule(self, included=False, listed=True, created=CREATED, backup=BACKUP, retention=None, declare=None):
+        """A DR archive whose data/workspace.tar.gz holds the data backup's manifests. retention: a callable that gets the list bytes and
+        returns the media-retention.json body (dict) or None for a backup from before the 2026-11 retention rule. declare: integration's mediaRetention."""
         media = json.dumps({'schema': 'synk-workspace-media/v1', 'createdAt': created, 'bytesIncluded': included, 'files': self.files}).encode()
         integration = {'version': 1, 'createdAt': created, 'mediaCount': 3}
         if listed:
             integration.update(mediaManifest='media-manifest.json', mediaBytesIncluded=included)
+        kept = retention(media) if retention else None
+        if declare if declare is not None else kept is not None:
+            integration['mediaRetention'] = 'media-retention.json'
         inner = io.BytesIO()
         with tarfile.open(fileobj=inner, mode='w:gz') as data:
-            for name, body in (('integration-manifest.json', json.dumps(integration).encode()), ('media-manifest.json', media if listed else None)):
+            for name, body in (('integration-manifest.json', json.dumps(integration).encode()), ('media-manifest.json', media if listed else None),
+                               ('media-retention.json', json.dumps(kept).encode() if kept is not None else None)):
                 if body is None:
                     continue
                 info = tarfile.TarInfo(backup + '/' + name)
@@ -81,6 +86,8 @@ class Receipts(unittest.TestCase):
     def media(self, capsule, created=CREATED, bucket=BUCKET):
         return sources.media_for(capsule, created, bucket, self.data, self.archives, OWNER)
 
+
+class Receipts(Capsules):
     def test_an_archive_from_before_media_lists_or_with_bytes_inside_carries_nothing(self):
         old, _ = self.capsule(listed=False)
         self.assertIsNone(self.media(old))
@@ -116,6 +123,63 @@ class Receipts(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, 'MEDIA_RECEIPT_INVALID'):
             self.media(capsule, bucket='another-bucket')
         good.unlink()
+
+
+class Retention(Capsules):
+    """2026-11-11 결정 표 ① · 판 4 설계 11-2: the data backup names the persona-owned bodies; the Drive copy marks them vault:false."""
+    def kept(self, *names, **change):
+        def body(media):
+            value = {'schema': 'synk-workspace-media-retention/v1', 'createdAt': self.CREATED, 'manifestSha256': hashlib.sha256(media).hexdigest(),
+                     'noVault': sorted({sha(BODIES[n]) for n in names}), 'legacyDeleted': 0}
+            value.update(change)
+            return value
+        return body
+
+    def both(self, capsule):
+        return sources.sources_for(capsule, self.CREATED, BUCKET, self.data, self.archives, OWNER)
+
+    def test_a_backup_from_before_the_rule_is_unclassified(self):
+        for listed, included in ((False, False), (True, True)):
+            capsule, _ = self.capsule(listed=listed, included=included)
+            media, retention = self.both(capsule)
+            self.assertIsNone(media)
+            self.assertEqual(retention, {'classified': False, 'noVault': [], 'bytesIncluded': None if not listed else True, 'legacyDeleted': None})
+        capsule, digest = self.capsule()
+        self.receipt(digest)
+        media, retention = self.both(capsule)
+        self.assertEqual((len(media['objects']), retention['classified'], retention['bytesIncluded']), (2, False, False))
+
+    def test_a_listed_backup_passes_its_persona_bodies_on(self):
+        capsule, digest = self.capsule(retention=self.kept(B))
+        self.receipt(digest)
+        media, retention = self.both(capsule)
+        self.assertEqual(retention, {'classified': True, 'noVault': [sha(BODIES[B])], 'bytesIncluded': False, 'legacyDeleted': 0})
+        self.assertIn(sha(BODIES[B]), {o['sha256'] for o in media['objects']})
+        inside, _ = self.capsule(included=True, retention=self.kept(A, B))
+        media, retention = self.both(inside)
+        self.assertIsNone(media)
+        self.assertEqual((retention['classified'], retention['bytesIncluded'], len(retention['noVault'])), (True, True, 2))
+        empty, digest = self.capsule(retention=self.kept())
+        self.receipt(digest)
+        self.assertEqual(self.both(empty)[1]['noVault'], [])
+        # 해시 기록 없이 지운 인물이 있으면 분류를 미완으로 — PC가 영상 본문을 모두 금고에서 뺀다.
+        legacy, _ = self.capsule(included=True, retention=self.kept(B, legacyDeleted=2))
+        self.assertEqual(self.both(legacy)[1], {'classified': False, 'noVault': [sha(BODIES[B])], 'bytesIncluded': True, 'legacyDeleted': 2})
+
+    def test_a_retention_file_that_disagrees_with_its_backup_stops_the_run(self):
+        bad = (self.kept(B, manifestSha256='0' * 64), self.kept(B, createdAt='2026-11-06T18:30:42.000Z'), self.kept(B, schema='other'),
+               self.kept(B, noVault=['f' * 64]), self.kept(B, noVault=[sha(BODIES[B]), sha(BODIES[B])]), self.kept(A, B, noVault=sorted({sha(BODIES[A]), sha(BODIES[B])}, reverse=True)),
+               self.kept(B, noVault='all'), self.kept(B, legacyDeleted=-1), self.kept(B, legacyDeleted='0'), self.kept(B, legacyDeleted=None))
+        for body in bad:
+            capsule, _ = self.capsule(included=True, retention=body)
+            with self.assertRaisesRegex(AssertionError, 'MEDIA_RETENTION_INVALID'):
+                self.both(capsule)
+        named_but_missing, _ = self.capsule(included=True, declare=True)
+        with self.assertRaisesRegex(AssertionError, 'MEDIA_RETENTION_INVALID'):
+            self.both(named_but_missing)
+        unnamed_but_present, _ = self.capsule(included=True, retention=self.kept(B), declare=False)
+        with self.assertRaisesRegex(AssertionError, 'MEDIA_RETENTION_INVALID'):
+            self.both(unnamed_but_present)
 
 
 class LiveReader(unittest.TestCase):

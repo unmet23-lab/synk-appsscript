@@ -547,12 +547,17 @@ test('화면(판 4): 서버 응답 그대로 — 모아 두기 · 보관 대기 
   assert.ok(html.includes('보관 동의를 기다리는 모델')&&html.includes('data-pending="1"')&&!html.includes('data-mm-do="request"'));
   const ws=models.workspaces[0],pending=ws.pending[0];
   html=myModelsView({view:'consent',pick:{ws,card:pending}});
-  assert.ok(html.includes('브랜드 「가 브랜드」의 다음 광고예요')&&html.includes('2027년 11월 10일')&&html.includes('최대 30일')&&html.includes('기준 얼굴 · 동작 시안 · 이 모델을 다시 만드는 데 필요한 파일'),'서버 terms를 문장으로');
+  assert.ok(html.includes('브랜드 「가 브랜드」의 다음 광고예요')&&html.includes('2027년 11월 10일')&&html.includes('기준 얼굴 · 동작 시안 · 이 모델을 다시 만드는 데 필요한 파일'),'서버 terms를 문장으로');
+  // 11-11 결정 표 ① · ④ · ⑥(설계 11-4): 12개월 · 기한 뒤 30일에 지우는 날 · 백업 최대 13개월 · 오래 두는 보관용 사본 제외가 동의 칸에 보인다.
+  assert.ok(html.includes('오늘부터 12개월, 2027년 11월 10일')&&/기한 30일 뒤인 2027년 12월 10일[^에]*에 보내 주신 사진을 포함해 이 모델의 그림과 파일을 지워요/.test(html)&&html.includes('이미 받으신 광고 영상은 지우지 않아요')&&html.includes('최대 13개월')&&html.includes('오래 두는 별도 보관 사본에는 처음부터 넣지 않아요')&&!html.includes('최대 30일'),'보관 기간 · 지우는 날 · 백업 · 금고 제외');
   assert.ok(html.includes('동의하고 보관'));
   await f.keep(a,wa,x.personaId);
   models=(await a.member('/models')).data;html=myModelsView({view:'list',session:{authenticated:true},data:models});
   assert.ok(html.includes('data-mm-do="request"')&&html.includes('새 광고에 쓸 수 있어요')&&html.includes('다시 쓰기 기한'),'보관한 모델은 의뢰 단추 · 상태 · 다시 쓰기 기한');
   for(const word of ['기한 연장','다시 쓰기 끄기','사용 멈추기','삭제 요청'])assert.ok(html.includes(word),'관리자 일: '+word);
+  assert.ok(!html.includes('지우는 날'),'쓸 수 있는 모델에는 지우는 날을 따로 보이지 않는다');
+  const offCard={...models.workspaces[0].models[0],usable:false,reason:'expired',status:'expired'};
+  assert.ok(myModelsView({view:'list',session:{authenticated:true},data:{workspaces:[{...models.workspaces[0],models:[offCard]}]}}).includes('지우는 날'),'기한이 지난 모델에는 지우는 날');
   // 고객 방은 회원이 된 뒤 「내 모델 열기」.
   const state=(await a.member('/project-state',{proof:await a.proof('workspace-state')})).data;assert.equal(state.member,true);
   room=await a.room();assert.ok(roomView({...roomModel(room.project),keep:{state:'member',name:state.workspace.name}}).includes('data-room-do="my-models"'));
@@ -575,8 +580,136 @@ test('화면(판 4): 서버 응답 그대로 — 모아 두기 · 보관 대기 
   try{
     const card=models.workspaces[0].models[0];
     assert.deepEqual(hangulLeft(myModelsView({view:'list',session:{authenticated:true},data:models})),[]);
+    assert.deepEqual(hangulLeft(myModelsView({view:'list',session:{authenticated:true},data:{workspaces:[{...models.workspaces[0],models:[{...models.workspaces[0].models[0],usable:false,reason:'expired',status:'expired'}]}]}})),[]);
     assert.deepEqual(hangulLeft(myModelsView({view:'consent',pick:{ws:models.workspaces[0],card}})),[]);
     assert.deepEqual(hangulLeft(myModelsView({view:'ask',pick:{ws:models.workspaces[0],card,kind:'stop'}})),[]);
     assert.deepEqual(hangulLeft(personaCard(personaModel(room.project))),[]);
   }finally{await setLocale('ko');}
+});
+
+// ── 보관 기간 뒤 지우기(11-11 유호님 「추천대로」 — 결정 표 11-11 ① · ④ · ⑤, 판 4 설계 11-3) ──
+const filesOf=(f,personaId)=>[...f.store().all('pulsePersonaSources').filter(item=>item.personaId===personaId).map(item=>item.diskName),
+  ...f.store().all('pulsePersonaRevisions').filter(item=>item.personaId===personaId).flatMap(item=>(item.assets||[]).map(asset=>asset.diskName))].filter(Boolean);
+const mediaPath=(f,name)=>join(f.store().directory,'studio-media',name);
+const touch=(f,projectId)=>{const row=f.store().get('clientProjects',projectId);f.store().put('clientProjects',projectId,{...row,updatedAt:new Date(f.stamp).toISOString()});};
+
+test('시나리오 10 · 프로젝트 정리 때 삭제(결정 표 11-11 ⑤): 원 프로젝트 90일 정리는 브랜드 없는 인물만 함께 지우고, 브랜드 인물 · 다시 쓰기 프로젝트 · 다른 프로젝트 인물 · 초대 폐기는 그대로',async t=>{
+  const f=await fixture(t);await f.features({personaRequest:true,myModels:true});
+  const a=f.browser(),x=await f.readyPersona(a);                                   // 브랜드 없는 인물 — 원 프로젝트가 정리된다
+  const b=f.browser(),y=await f.readyPersona(b);await b.login(ids.b);const wb=await f.linkNewBrand(b,'나 브랜드');await f.keep(b,wb,y.personaId);
+  const reuse=await f.reuseRequest(b,wb,y.personaId,y.revisionId);assert.equal((await f.confirm(reuse.projectId)).status,200);
+  const c=f.browser(),z=await f.readyPersona(c);                                   // 다른 프로젝트의 브랜드 없는 인물 — 그 프로젝트는 살아 있다
+  // 초대 폐기: 브랜드 인물의 원 프로젝트 초대를 닫아도 인물 · 다시 쓰기 · 내 모델은 그대로다.
+  f.app.clientProjects.revoke(f.owner,y.projectId,{revision:f.store().get('clientProjects',y.projectId).revision});
+  assert.equal(f.store().get('pulsePersonas',y.personaId).status,'ready');
+  assert.equal((await b.member('/models')).data.workspaces[0].models[0].usable,true,'초대를 닫아도 내 모델에서 쓸 수 있다');
+  const [xf,yf,zf]=[filesOf(f,x.personaId),filesOf(f,y.personaId),filesOf(f,z.personaId)];
+  assert.ok(xf.length>=3&&yf.length>=3&&zf.length>=3,'사진 · 기준 얼굴 · 동작 시안');
+  const {createHash}=await import('node:crypto');
+  const xsha=[...new Set(await Promise.all(xf.map(async name=>createHash('sha256').update(await readFile(mediaPath(f,name))).digest('hex'))))].sort();
+  advance(f,91*86400000);
+  for(const id of [z.projectId,reuse.projectId])touch(f,id);                        // 이 둘은 방금 움직였다
+  const result=await f.app.pulseRequests.retireUnconfirmed();
+  assert.deepEqual(result,{retired:2,retention:{deleted:1,held:0,failed:0}},'x · y의 원 프로젝트를 정리하고, 지운 인물은 x 하나');
+  assert.equal(f.store().get('clientProjects',x.projectId).studio.request.status,'retired');
+  const tomb=f.store().get('pulsePersonas',x.personaId);
+  assert.equal(tomb.status,'deleted');assert.ok(tomb.deletedAt);assert.equal(tomb.deletion.reason,'origin_retired');assert.equal(tomb.deletion.confirmedBy,'system');
+  assert.ok(tomb.history.some(row=>row.action==='retention_deleting'&&row.actorKind==='system'));
+  assert.deepEqual(tomb.deletion.noVault,xsha,'이름을 떼는 트랜잭션에서 지운 본문의 sha256을 묘비에 남긴다(GPT GA1)');
+  for(const name of xf)await assert.rejects(stat(mediaPath(f,name)),'브랜드 없는 인물의 사진 · 판 파일을 지웠다');
+  assert.ok(f.store().all('pulsePersonaApprovals').some(item=>item.personaId===x.personaId&&item.kind==='reference'&&item.shown.assetIds.length),'판 3 승인 기록(무엇을 언제 확인했는지)은 남긴다');
+  assert.ok(f.store().all('pulsePersonaRevisions').filter(item=>item.personaId===x.personaId).every(item=>item.deletedAt&&item.sent.length),'보낸 id 목록도 남긴다(D10)');
+  // 브랜드 인물 · 다른 프로젝트 인물 · 다시 쓰기 프로젝트는 그대로.
+  assert.equal(f.store().get('clientProjects',y.projectId).studio.request.status,'retired','브랜드 인물의 원 프로젝트도 정리됐지만');
+  assert.equal(f.store().get('pulsePersonas',y.personaId).status,'ready','브랜드 인물은 원 프로젝트 정리와 상관없다');
+  assert.equal(f.store().get('pulsePersonas',z.personaId).status,'ready');
+  for(const name of [...yf,...zf])assert.ok(await stat(mediaPath(f,name)),'다른 인물의 파일은 그대로');
+  for(const name of workspaceMediaNames(f.store().db))assert.ok(await stat(mediaPath(f,name)),'백업 목록의 파일은 모두 있다');
+  assert.ok(!workspaceMediaNames(f.store().db).some(name=>xf.includes(name)),'지운 인물의 파일은 백업 목록에서 빠진다');
+  await b.login(ids.b);
+  const card=(await b.member('/models')).data.workspaces[0].models[0];assert.equal(card.id,y.personaId);assert.equal(card.usable,true,'내 모델에 남는다');
+  assert.equal(f.store().get('clientProjects',reuse.projectId).workspaceRequest.personaId,y.personaId,'다시 쓰기 프로젝트의 참조도 그대로');
+  // 같은 쓸기를 다시 돌려도 더 지우는 것이 없다(멱등).
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:0});
+});
+
+test('다시 쓰기 보관 12개월 뒤 지우기(결정 표 11-11 ④ · ①): 기한 + 30일에 지우고, 철회한 인물도 같은 시계 · 연장은 시계를 옮기고 · 쓰는 중인 의뢰가 있으면 그 일이 끝날 때까지 미룬다',async t=>{
+  const f=await fixture(t);await f.features({personaRequest:true,myModels:true});
+  const make=async(id,name)=>{const b=f.browser(),p=await f.readyPersona(b);await b.login(id);const w=await f.linkNewBrand(b,name);await f.keep(b,w,p.personaId);return {b,p,w};};
+  const kept=await make(ids.a,'가 브랜드'),off=await make(ids.a,'나 브랜드'),renew=await make(ids.a,'다 브랜드'),busy=await make(ids.b,'라 브랜드');
+  // 동의 조건(v2)에 기한 · 지우는 날 · 12개월 · 백업 13개월 · 금고 제외가 묶인다.
+  const approval=f.store().all('pulsePersonaApprovals').find(item=>item.kind==='reuse'&&item.personaId===kept.p.personaId);
+  const until=approval.terms.until,deleteAt=approval.terms.deleteAt;
+  assert.equal(approval.terms.v,2);assert.equal(until,reuseUntil(new Date(f.stamp).toISOString()));assert.equal(Date.parse(deleteAt)-Date.parse(until),30*86400000);
+  assert.equal(approval.terms.months,12);assert.deepEqual(approval.terms.backup,{maxMonths:13,vault:false});assert.equal('backupDays' in approval.terms,false);
+  assert.equal(f.store().get('pulsePersonas',kept.p.personaId).retention.until,until);
+  // 철회해도 내 모델에 「다시 쓰기 꺼짐」으로 남고, 지우는 날은 그대로 보인다.
+  assert.equal((await off.b.member('/reuse/withdraw',{workspaceId:off.w,personaId:off.p.personaId,note:''})).status,200);
+  let card=(await off.b.member('/models')).data.workspaces.find(item=>item.id===off.w).models[0];
+  assert.equal(card.reason,'reuse_off');assert.equal(card.deleteAt,deleteAt,'철회해도 동의한 보관 기간 뒤에 지운다');
+  // 쓰는 중인 다시 쓰기 의뢰(연결 확인 뒤 · 끝나지 않음).
+  const running=await f.reuseRequest(busy.b,busy.w,busy.p.personaId,busy.p.revisionId);assert.equal((await f.confirm(running.projectId)).status,200);
+  // 반년 뒤 연장 → 지우는 날이 그 연장의 기한 + 30일로 옮겨 간다.
+  advance(f,183*86400000);await renew.b.login(ids.a);await f.keep(renew.b,renew.w,renew.p.personaId);
+  const renewed=f.store().all('pulsePersonaApprovals').filter(item=>item.kind==='reuse'&&item.personaId===renew.p.personaId&&item.decision==='approve').at(-1).terms.deleteAt;
+  assert.ok(Date.parse(renewed)>Date.parse(deleteAt)+150*86400000);
+  // 지우는 날 1분 전: 아무것도 지우지 않는다(원 프로젝트들은 90일 정리로 이미 「지운 의뢰」 — 브랜드 인물과 상관없다).
+  f.stamp=Date.parse(deleteAt)-60000;
+  for(const id of [running.projectId])touch(f,id);
+  const before=await f.app.pulseRequests.retireUnconfirmed();
+  assert.equal(before.retention,undefined,'지우는 날 전에는 쓸기가 할 일이 없다');
+  for(const x of [kept,off,renew,busy])assert.equal(f.store().get('pulsePersonas',x.p.personaId).deletedAt,undefined);
+  await kept.b.login(ids.a);card=(await kept.b.member('/models')).data.workspaces.find(item=>item.id===kept.w).models[0];
+  assert.equal(card.status,'expired');assert.equal(card.deleteAt,deleteAt,'기한이 지나도 30일 안에는 지우는 날과 함께 보인다');assert.ok(card.consent,'그 사이에는 연장할 수 있다');
+  // 지우는 날이 지나면: 그냥 둔 인물 · 철회한 인물은 지우고, 연장한 인물은 두고, 쓰는 중인 의뢰가 있는 인물은 미룬다(직원 할 일).
+  f.stamp=Date.parse(deleteAt)+60000;touch(f,running.projectId);
+  const kf=filesOf(f,kept.p.personaId),of=filesOf(f,off.p.personaId);
+  const swept=await f.app.pulseRequests.retireUnconfirmed();
+  assert.deepEqual(swept.retention,{deleted:2,held:1,failed:0});
+  for(const x of [kept,off]){const tomb=f.store().get('pulsePersonas',x.p.personaId);assert.equal(tomb.status,'deleted');assert.equal(tomb.deletion.reason,'reuse_ended');assert.equal(tomb.workspaceId,x.w,'묘비는 브랜드를 기록으로 남긴다');}
+  for(const name of [...kf,...of])await assert.rejects(stat(mediaPath(f,name)));
+  assert.ok(f.store().get('customerWorkspaces',kept.w).history.some(row=>row.action==='model_retention_deleting'&&row.subject===kept.p.personaId));
+  assert.equal(f.store().get('pulsePersonas',renew.p.personaId).status,'ready','연장한 인물은 그대로');
+  assert.equal(f.store().get('pulsePersonas',busy.p.personaId).status,'ready','쓰는 중인 의뢰가 있으면 미룬다');
+  const desk=await f.staff('/api/customer-workspaces/'+busy.w);
+  assert.ok(desk.data.workspace.todos.some(item=>item.why==='retention_due'&&item.projects.some(project=>project.id===running.projectId)),'직원 할 일: 보관 기한이 끝났어요');
+  assert.equal(desk.data.workspace.personas[0].deleteAt,f.store().all('pulsePersonaApprovals').find(item=>item.kind==='reuse'&&item.personaId===busy.p.personaId).terms.deleteAt);
+  // 그 의뢰가 끝나면(보관) 다음 쓸기가 지운다.
+  const row=f.store().get('clientProjects',running.projectId);f.store().put('clientProjects',row.id,{...row,stage:'archived'});
+  assert.deepEqual((await f.app.pulseRequests.retireUnconfirmed()).retention,{deleted:1,held:0,failed:0});
+  assert.equal(f.store().get('pulsePersonas',busy.p.personaId).status,'deleted');
+  for(const name of workspaceMediaNames(f.store().db))assert.ok(await stat(mediaPath(f,name)),'백업 목록의 파일은 모두 있다');
+});
+
+test('지우는 시계의 경계: 지우는 중 · 열린 인물 · 브랜드 없는 인물의 살아 있는 원 프로젝트는 건드리지 않고, 도중에 멈춘 시스템 삭제는 서버 시작 때 끝난다',async t=>{
+  const f=await fixture(t);await f.features({personaRequest:true,myModels:true});
+  const service=f.app.pulseRequests;
+  const a=f.browser(),x=await f.readyPersona(a),xf=filesOf(f,x.personaId);
+  // 열린 인물(검토 중) — 원 프로젝트가 정리되지 않으니 지우지 않는다(정리 자체가 건너뛴다).
+  const b=f.browser();b.jar.delete('synk_pulse_request');
+  const draft=(await b.call('/pulse/api/request/start',{body:{}})).data.draft;
+  const sent=await b.call('/pulse/api/request/submit',{body:{answers:answers(custom)},csrf:draft.csrf});assert.equal(sent.status,201);
+  const open=f.store().all('pulsePersonas').find(item=>item.originProjectId===sent.data.projectId);
+  // 도중에 멈춘 시스템 삭제: 문서는 deleting + pendingUnlink, 파일은 그대로.
+  const c=f.browser(),y=await f.readyPersona(c),yf=filesOf(f,y.personaId);
+  const row=f.store().get('clientProjects',y.projectId);
+  f.store().put('clientProjects',row.id,{...row,stage:'archived',studio:{...row.studio,request:{...row.studio.request,status:'retired'}}});
+  const persona=f.store().get('pulsePersonas',y.personaId),at=new Date(f.stamp).toISOString();
+  f.store().transaction(()=>{
+    for(const item of f.store().all('pulsePersonaSources').filter(entry=>entry.personaId===y.personaId))f.store().put('pulsePersonaSources',item.id,{id:item.id,personaId:item.personaId,projectId:item.projectId,purpose:item.purpose,diskName:null,deletedAt:at});
+    const rev=f.store().get('pulsePersonaRevisions',y.revisionId);f.store().put('pulsePersonaRevisions',rev.id,{...rev,assets:[],reference:null,motion:null,method:null,deletedAt:at});
+    f.store().put('pulsePersonas',persona.id,{...persona,status:'deleting',pendingUnlink:yf,deletion:{confirmedAt:at,confirmedBy:'system',reason:'origin_retired',note:''}});
+  });
+  assert.deepEqual(await service.retireUnconfirmed(),{retired:0},'원 프로젝트가 살아 있으면 브랜드 없는 인물도 두고, 지우는 중인 인물은 쓸기가 다시 시작하지 않는다');
+  for(const name of [...xf,...yf])assert.ok(await stat(mediaPath(f,name)));
+  advance(f,91*86400000);
+  const result=await service.retireUnconfirmed();
+  assert.equal(result.retired,1,'인물이 ready인 x의 원 프로젝트만 정리');assert.deepEqual(result.retention,{deleted:1,held:0,failed:0});
+  assert.equal(f.store().get('pulsePersonas',x.personaId).status,'deleted');
+  assert.equal(f.store().get('clientProjects',sent.data.projectId).stage,'received','열린 인물이 있는 프로젝트는 그대로');
+  assert.equal(f.store().get('pulsePersonas',open.id).status,'submitted');
+  assert.equal(f.store().get('pulsePersonas',y.personaId).status,'deleting','지우는 중인 인물은 쓸기 몫이 아니다(서버 시작 · 이어 하기 몫)');
+  await f.restart();
+  assert.equal(f.store().get('pulsePersonas',y.personaId).status,'deleted');for(const name of yf)await assert.rejects(stat(mediaPath(f,name)));
+  assert.equal(f.store().get('pulsePersonas',y.personaId).deletion.reason,'origin_retired','묘비에 까닭이 남는다');
 });

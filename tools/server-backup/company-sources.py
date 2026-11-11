@@ -7,6 +7,12 @@ is read from the DR archive itself (its data backup's media-manifest.json); for 
 list-only backup the node's host-only receipt `<snapshot>.tar.gz.media.json`
 (each sidecar's generation and md5, bound to the same list bytes) must exist, and
 `media` below names the bodies the server-only Drive copy carries with it.
+
+Since the 2026-11 retention rule (PULSE persona files never go to the unmet23
+vault, 판 4 설계 11-2) a listed backup also holds media-retention.json: the
+sha256 of every body a persona document owns. `retention` below passes that set
+on, checked against the same list bytes, so backup.cjs can mark those receipt
+items vault:false; the PC retention job keeps them out of the vault copy.
 """
 import datetime,hashlib,json,pathlib,re,sqlite3,subprocess,tarfile
 ARCHIVES=pathlib.Path('/srv/synk/backup-archives')
@@ -15,8 +21,11 @@ NAME=re.compile(r'[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)',re.I
 B64MD5=re.compile(r'[A-Za-z0-9+/]{22}==')
 def need(v,c):
  if not v:raise AssertionError(c)
+LISTS=('media-manifest.json','integration-manifest.json','media-retention.json')
+RETENTION_SCHEMA='synk-workspace-media-retention/v1'
+SHA=re.compile('[0-9a-f]{64}')
 def capsule_lists(capsule):
- """(media-manifest.json bytes or None, integration-manifest) of the data backup inside a DR archive, streamed."""
+ """{name: bytes} of the data backup's top-level lists inside a DR archive (integration-manifest always), and its root, streamed."""
  with tarfile.open(capsule,'r:gz') as outer:
   for member in outer:
    if member.name!='data/workspace.tar.gz':continue
@@ -24,17 +33,42 @@ def capsule_lists(capsule):
    with tarfile.open(fileobj=outer.extractfile(member),mode='r|gz') as data:
     for inner in data:
      parts=inner.name.split('/');roots.add(parts[0])
-     if len(parts)==2 and parts[1] in ('media-manifest.json','integration-manifest.json'):
+     if len(parts)==2 and parts[1] in LISTS:
       need(inner.isfile() and inner.size<=16<<20 and parts[1] not in found,'DATA_ARCHIVE_LIST_INVALID')
       found[parts[1]]=data.extractfile(inner).read()
    need('integration-manifest.json' in found and len(roots)==1,'DATA_ARCHIVE_INCOMPLETE')
-   return found.get('media-manifest.json'),json.loads(found['integration-manifest.json']),roots.pop()
+   return found,roots.pop()
  raise AssertionError('DATA_ARCHIVE_MISSING')
+def retention_from(found):
+ """Which bodies stay out of the vault. classified=False only for a backup that names no retention file
+ (made before the 2026-11 rule); a named file must exist and agree with the same list bytes."""
+ integration=json.loads(found['integration-manifest.json']);raw=found.get('media-manifest.json')
+ listed=json.loads(raw) if raw is not None else None
+ included=listed.get('bytesIncluded') if isinstance(listed,dict) else None
+ if integration.get('mediaRetention') is None:
+  need('media-retention.json' not in found,'MEDIA_RETENTION_INVALID')
+  return {'classified':False,'noVault':[],'bytesIncluded':included,'legacyDeleted':None}
+ need(integration.get('mediaRetention')=='media-retention.json' and raw is not None and 'media-retention.json' in found and isinstance(listed,dict) and isinstance(listed.get('files'),list),'MEDIA_RETENTION_INVALID')
+ kept=json.loads(found['media-retention.json'])
+ need(isinstance(kept,dict) and kept.get('schema')==RETENTION_SCHEMA and kept.get('createdAt')==integration.get('createdAt')==listed.get('createdAt')
+      and kept.get('manifestSha256')==hashlib.sha256(raw).hexdigest() and isinstance(kept.get('noVault'),list)
+      and type(kept.get('legacyDeleted')) is int and kept['legacyDeleted']>=0,'MEDIA_RETENTION_INVALID')
+ contents={f.get('sha256') for f in listed['files'] if isinstance(f,dict)}
+ no=kept['noVault']
+ need(all(isinstance(h,str) and SHA.fullmatch(h) and h in contents for h in no) and no==sorted(set(no)),'MEDIA_RETENTION_INVALID')
+ # 해시 기록 없이 지운 인물이 있으면 그 바이트를 가릴 수 없다 — 분류를 미완(classified False)으로 내보내 PC가 영상 본문을 모두 금고에서 뺀다.
+ return {'classified':kept['legacyDeleted']==0,'noVault':no,'bytesIncluded':included,'legacyDeleted':kept['legacyDeleted']}
 def media_for(capsule,created_at,bucket,data,archives=ARCHIVES,owner=0):
  """None when the DR archive's own data backup keeps its media bytes (the archive itself says so); else its sidecars.
  owner=None skips the root-only file check (tests on a PC)."""
- raw,integration,backup=capsule_lists(capsule)
+ return sources_for(capsule,created_at,bucket,data,archives,owner)[0]
+def sources_for(capsule,created_at,bucket,data,archives=ARCHIVES,owner=0):
+ """(media as media_for, retention as retention_from) from one pass over the DR archive."""
+ found,backup=capsule_lists(capsule)
+ integration=json.loads(found['integration-manifest.json'])
  need(integration.get('createdAt')==created_at,'DATA_BACKUP_TIME_MISMATCH')
+ return media_from(found.get('media-manifest.json'),integration,backup,created_at,bucket,data,archives,owner),retention_from(found)
+def media_from(raw,integration,backup,created_at,bucket,data,archives,owner):
  if raw is None:
   need(integration.get('mediaManifest') is None and integration.get('mediaBytesIncluded') is None,'MEDIA_LIST_MISSING')
   return None  # a backup from before media lists: the bytes are inside
@@ -94,7 +128,7 @@ def main():
  latest=max(candidates,key=lambda x:x['createdAt'])
  age=(datetime.datetime.now(datetime.timezone.utc)-datetime.datetime.fromisoformat(latest['createdAt'].replace('Z','+00:00'))).total_seconds()
  assert 0<=age<=36*3600,'SERVER_ARCHIVE_STALE'
- media=media_for(latest['path'],latest.get('dataBackupCreatedAt'),latest.get('bucket'),data)
+ media,retention=sources_for(latest['path'],latest.get('dataBackupCreatedAt'),latest.get('bucket'),data)
  node=json.loads(pathlib.Path('/etc/synk/ha/node.json').read_text())
- print(json.dumps({'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'nodeId':node['nodeId'],'registryPath':str(rp),'activeConnectionId':reg['activeConnectionId'],'files':files,'archives':[latest],'media':media}))
+ print(json.dumps({'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'nodeId':node['nodeId'],'registryPath':str(rp),'activeConnectionId':reg['activeConnectionId'],'files':files,'archives':[latest],'media':media,'retention':retention}))
 if __name__=='__main__':main()

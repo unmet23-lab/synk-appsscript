@@ -358,7 +358,10 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
       for(const file of files)await unlink(inMedia(file.diskName)).catch(()=>{});
       store.remove(KIND,row.id);retired++;
     }
-    return {retired};
+    // 보관 기간 뒤 지우기(11-11 결정 표 ① · ④ · ⑤, 판 4 설계 11-3): 방금 정리한 원 프로젝트의 브랜드 없는 인물과 지우는 날이 지난 브랜드 인물.
+    // 같은 예약(6시간마다 · 서버 시작 때)에서 정리 다음에 돈다. 한 일이 있을 때만 결과에 싣는다.
+    const retention=workspaces?.sweepRetention?await workspaces.sweepRetention():null;
+    return {retired,...(retention&&(retention.deleted||retention.held||retention.failed)?{retention}:{})};
   }
   // 접수 뒤 손님이 더 보내는 파일(되묻기 답 · 자료 더 보내기 · 담당자가 만든 프로젝트의 의뢰서). 받는 형식과 문턱은 초안과 같고, 자리는 처음부터 백업되는 폴더다.
   async function receiveProjectFile(req,{session,client=''}){

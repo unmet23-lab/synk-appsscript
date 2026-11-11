@@ -1,6 +1,6 @@
 # 회사 노드 로컬 백업 사본 보존 상한 (2026-10-31)
 
-회사 백업의 본체는 원격 사본이다 — GCS `company/production/`(30일, 모든 회차), 77yuhbs Drive `SYNK_원본창고/server-independent/company`(재해 복구 묶음, 30일 하루 · 90일 주 · 1년 달), unmet23 `SYNK_금고`(끝난 주·달의 마지막 판). 노드의 `/srv/synk/backup-archives`·`/srv/synk/backups`는 빠른 복원용 캐시일 뿐인데 줄이는 장치가 없어, 작업실 영상이 매 백업에 통째로 들기 시작하자(10-23 0.11GB → 10-30 0.98GB) 디스크가 차서 10-31 03:36 KST부터 재해 복구 캡처가 `DISASTER_DISK_SPACE_LOW`로 실패했다.
+회사 백업의 본체는 원격 사본이다 — GCS `company/production/`(30일, 모든 회차), 77yuhbs Drive `SYNK_원본창고/server-independent/company`(재해 복구 묶음, 30일 하루 · 90일 주 · 1년 달), unmet23 `SYNK_금고`(끝난 주·달의 마지막 판 — 주 판 90일 · 달 판 1년이 지나면 빠진다. PULSE 고객 전용 인물 본문은 넣지 않는다(11-11 — 데이터 백업의 `media-retention.json` → 서버 직접 백업 영수증 `vault:false` → PC `보존규칙.py`, [판 4 설계 11-2](../../../../../PULSE_의뢰흐름_20261104/판4_설계_20261110.md#retention-rules-20261111))). 노드의 `/srv/synk/backup-archives`·`/srv/synk/backups`는 빠른 복원용 캐시일 뿐인데 줄이는 장치가 없어, 작업실 영상이 매 백업에 통째로 들기 시작하자(10-23 0.11GB → 10-30 0.98GB) 디스크가 차서 10-31 03:36 KST부터 재해 복구 캡처가 `DISASTER_DISK_SPACE_LOW`로 실패했다.
 
 ## 규칙
 

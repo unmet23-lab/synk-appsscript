@@ -82,7 +82,9 @@ function usageApproval(store,row,persona,revisionId){
 
 // ── 판 4: 브랜드 보관(다시 쓰기) — 설계 판4_설계_20261110.md 3-4 · 5판 D4 · D13 ──
 // 만료는 저장하지 않고 읽을 때 계산한다. 계산은 이 파일의 함수 몇 개로만 하고, 회원 경로 · 붙이기 · 보내기 · 초대 경로 · 연결 확인 · 가드가 모두 이것을 부른다.
-export const REUSE_MONTHS=12;
+// 11-11 유호님 「추천대로」(결정 표 11-11 ④ · ①, 판 4 설계 11-3): 다시 쓰기 보관은 12개월(확정). 기한이 지나고 30일 안에 연장하지 않으면 지운다 —
+// 30일은 기한을 넘긴 브랜드가 연장할 수 있게 둔 유예다(동의 문안에 날짜로 보인다). 지운 뒤 백업 사본은 최대 13개월(달 판 1년 + 휴지통 30일) 남는다.
+export const REUSE_MONTHS=12,REUSE_GRACE_DAYS=30,BACKUP_MAX_MONTHS=13;
 const DAY=/^\d{4}-\d{2}-\d{2}$/;
 // 한국 날짜 하나의 끝 순간: 「2027-11-10」 → 2027-11-10T14:59:59.999Z(그날 한국 시각 23:59:59.999).
 export function kstDayEnd(day){
@@ -96,6 +98,8 @@ export function reuseUntil(now,months=REUSE_MONTHS){
   const [year,month,day]=kstToday(now).split('-').map(Number),total=month-1+months,y=year+Math.floor(total/12),m=total%12,last=new Date(Date.UTC(y,m+1,0)).getUTCDate();
   return kstDayEnd(`${y}-${String(m+1).padStart(2,'0')}-${String(Math.min(day,last)).padStart(2,'0')}`);
 }
+// 지우는 날: 다시 쓰기 기한(ISO 순간) + 30일. 기한을 읽을 수 없으면 null(지우는 시계가 서지 않는다 — 기한이 없는 동의는 받지 않는다).
+export function reuseDeleteAt(until){const at=Date.parse(until);return Number.isFinite(at)?new Date(at+REUSE_GRACE_DAYS*86400000).toISOString():null;}
 // 보이는 상태: ready인 다시 쓰기 인물만 시계가 지나면 expired. paused · retired · withdrawn · deleting은 시계가 지나도 그대로 보인다. 기한을 읽을 수 없으면 끝난 것으로 본다.
 export function effectivePersonaStatus(persona,now){
   if(!persona)return null;

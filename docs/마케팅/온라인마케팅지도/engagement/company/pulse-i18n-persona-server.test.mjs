@@ -119,7 +119,8 @@ test('주소 오류는 칸마다 고정 문장이고, 손님 파일 이름이 �
   assert.equal(missing.status,409);assert.equal(missing.data.error,'「front.png」 파일을 찾지 못했어요. 지우고 다시 올려 주세요.');assert.equal(missing.data.code,'SYNK_PULSE_FILE_MISSING');
 });
 
-test('90일 정리는 전용 인물 검토가 열린 프로젝트를 건너뛰고, 인물 문서가 가진 파일은 지우지 않는다',async t=>{
+// 11-11 결정 표 ⑤(판 4 설계 11-3): 정리한 원 프로젝트의 브랜드 없는 인물은 함께 지운다 — 예전에는 인물 판의 파일이 정리 뒤에도 남았다.
+test('90일 정리는 전용 인물 검토가 열린 프로젝트를 건너뛰고, 정리한 원 프로젝트의 브랜드 없는 인물은 파일까지 함께 지운다',async t=>{
   const f=await fixture(t),{store}=f.app,old=new Date(Date.now()-91*86400000).toISOString();
   const open=(await f.send()).projectId,done=(await f.send()).projectId;
   for(const id of [open,done])store.put('clientProjects',id,{...store.get('clientProjects',id),updatedAt:old});
@@ -131,10 +132,11 @@ test('90일 정리는 전용 인물 검토가 열린 프로젝트를 건너뛰�
   store.put('pulsePersonaRevisions',revision,{id:revision,personaId:personaDone,revision:1,status:'published',assets:[{id:randomUUID(),diskName:shared,mimeType:'image/png'}]});
   const before=(await readdir(join(f.options.dataDir,'studio-media'))).length;
   f.jar.clear();await f.start();
-  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1});
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1,retention:{deleted:1,held:0,failed:0}});
   assert.equal(store.get('clientProjects',open).stage,'received','열린 인물 검토가 있는 프로젝트는 그대로');
+  assert.equal(store.get('pulsePersonas',personaOpen).status,'reviewing');assert.equal(store.get('pulsePersonas',personaDone).status,'deleted');
   const gone=store.get('clientProjects',done);
   assert.equal(gone.stage,'archived');assert.equal(gone.studio.request.status,'retired');
   const after=await readdir(join(f.options.dataDir,'studio-media'));
-  assert.equal(after.length,before,'인물 판이 가진 파일은 프로젝트가 정리돼도 남는다');assert.ok(after.includes(shared));
+  assert.equal(after.length,before-1,'정리 때 함께 지운 인물 판의 파일만 빠진다');assert.ok(!after.includes(shared));
 });
