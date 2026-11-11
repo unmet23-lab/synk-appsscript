@@ -262,7 +262,7 @@ export const Film: React.FC<{ scene?: boolean }> = ({ scene }) => {
       {/* 위쪽을 살짝 어둡게 — 글자가 놓일 자리(상자가 아니라 빛). 밝은 상상 장면에는 두지 않는다 */}
       <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: bright ? 900 : k === 'fireworks' ? 860 : 780, background: bright ? 'linear-gradient(to bottom, rgba(8,16,40,0.86) 0%, rgba(8,16,40,0.74) 62%, rgba(8,16,40,0) 100%)' : 'linear-gradient(to bottom, rgba(5,10,28,0.84) 0%, rgba(5,10,28,0.68) 68%, rgba(5,10,28,0) 100%)', opacity: k === 'fireworks' ? interpolate(t, [T.fireT - 0.1, T.fireT + 0.25], [0, 1], clamp) : 1 }} />
       <Say t={t} from={T.go1} until={T.w1} x={SAY.go1[0]} y={SAY.go1[1]} text="물개 보러 가자!" ko size={92} rot={-5} sub={TEXT.go} />
-      <Say t={t} from={T.cloud + 0.25} until={T.night} x={330} y={820} text={TEXT.notDog} size={76} rot={-4} />
+      <Say t={t} from={T.cloud + 0.25} until={T.night} x={420} y={830} text={TEXT.notDog} size={68} rot={-3} />
       <Say t={t} from={T.night + 0.05} until={T.b1} x={SAY.go2[0]} y={SAY.go2[1]} text="불꽃놀이 보러 가자!" ko size={84} rot={-5} sub={TEXT.go} />
       {!scene ? (
         <>
