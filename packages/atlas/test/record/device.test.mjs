@@ -496,3 +496,107 @@ test('판 단위 사건은 판 번호(setId)를 실을 수 있고, 손님은 판
   assert.ok(record.summary.lineSeq > before, '판 끝에 바로 접는다');
   assert.ok(record.summary.lines.unit.has('u0'), '방금 푼 답이 요약에 든다');
 });
+
+test('부모 저장이 실패하면 자식은 쓰지 않고(올리기가 막히지 않게), 요약 · 로컬 요약은 늘 한 기록만 남고, 다른 탭이 먼저 쓴 기록을 건너뛰지 않는다(Fable 끝 판 P1 둘 · P2)', async () => {
+  // ① 부모 저장 실패 → 자식은 저장하지 않는다(stored false) · 대기열에 없다 · 계기에 PARENT_UNSAVED.
+  const health = createHealth();
+  const port = memoryPort();
+  const record = await openRecord({
+    port,
+    revision: 1,
+    memory,
+    params: PARAMS,
+    index,
+    health,
+    now: () => T0,
+  });
+  port.failNext(Object.assign(new Error('quota'), { name: 'QuotaExceededError' }));
+  const lostParent = record.add('practice.presented', presented());
+  const orphan = record.add('practice.attempted', answer(lostParent.event.id));
+  assert.equal(await lostParent.stored, false);
+  assert.equal(await orphan.stored, false, '부모가 저장되지 못한 답은 쓰지 않는다');
+  assert.deepEqual(record.unsent(), []);
+  assert.deepEqual(health.snapshot().save.codes, { STORAGE_ERROR: 1, PARENT_UNSAVED: 1 });
+  // ② 요약은 받을 때마다 새 기록 하나 — 앞 요약 기록은 지운다(저장소가 요약 수만큼 커지지 않게).
+  const server = createServer({ random: rng(31), index });
+  const client = await createClient(server, { name: 'aaaa', port: memoryPort() });
+  for (let i = 0; i < 12; i += 1) {
+    const shown = client.device.make('practice.presented', presented());
+    client.device.make('practice.attempted', answer(shown.id, i % 3 ? 'correct' : 'incorrect'));
+    await client.push();
+  }
+  const kinds = (await client.port.read()).map(row => row.value.kind);
+  assert.equal(kinds.filter(kind => kind === 'summary').length, 1, '요약 기록은 하나');
+  assert.ok(client.record.view().memory.has('u0'));
+  // 손님 로컬 요약도 하나.
+  const guestPort = memoryPort();
+  const guest = await openRecord({
+    port: guestPort,
+    revision: 0,
+    guest: true,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  for (let i = 0; i < 3; i += 1) {
+    const shown = guest.add('practice.presented', presented());
+    guest.add('practice.attempted', answer(shown.event.id));
+    await guest.saved();
+    await guest.refold();
+  }
+  assert.equal((await guestPort.read()).filter(row => row.value.kind === 'local').length, 1);
+  // ③ 두 탭 — 다른 탭이 먼저 쓴(열쇠가 더 앞인) 기록을 내 덧붙이기가 지나쳐도 꼬리 읽기가 건너뛰지 않는다.
+  const shared = memoryPort();
+  const tabA = await openRecord({
+    port: shared,
+    revision: 1,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  const tabB = await openRecord({
+    port: shared,
+    revision: 1,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  const fromA = tabA.add('practice.presented', presented());
+  await fromA.stored;
+  const fromB = tabB.add('practice.presented', presented());
+  await fromB.stored;
+  await tabB.refresh();
+  assert.equal(tabB.has(fromA.event.id), true, 'A가 먼저 쓴 사건을 읽는다');
+});
+
+test('손님 요약은 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌면 다시 열 때 든 사건으로 다시 접는다(아르곤 끝 판 D2)', async () => {
+  const port = memoryPort();
+  const first = await openRecord({
+    port,
+    revision: 0,
+    guest: true,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+  });
+  const shown = first.add('practice.presented', presented());
+  first.add('practice.attempted', answer(shown.event.id));
+  await first.saved();
+  await first.refold();
+  const other = indexOf(items, 'index-b');
+  const reopened = await openRecord({
+    port,
+    revision: 0,
+    guest: true,
+    memory,
+    params: PARAMS,
+    index: other,
+    now: () => T0,
+  });
+  assert.equal(reopened.summary.edition, reopened.edition(), '새 판 묶음으로 다시 접었다');
+  assert.equal(reopened.view().waitAll, false);
+});

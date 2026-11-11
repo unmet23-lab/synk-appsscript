@@ -358,19 +358,41 @@ function linkOk(event, find, attempts) {
 // 2판 사건 묶음의 부모를 본다(설계 §5-3 「받을 때 같은 Trail 코드로 검증」). 묶음은 보낸 차례(만든 차례)대로 본다.
 //   find(id) = 이미 저장된 사건(옛 꼴 · 2판 모두)에서 찾는다. attemptCount(presentationId) = 저장된 그 제시의 답 수.
 // 2판의 부모는 2판이다(제외만 옛 꼴 사건도 겨눌 수 있다 — 옛 기록의 답을 거두는 길).
-export function checkLinks(events, { find, attemptCount = () => 0 }) {
+export function checkLinks(events, context) {
+  const { rejected } = partitionLinks(events, context);
+  if (rejected.length)
+    fail(
+      '부모가 없거나 차례가 맞지 않는다',
+      events.find(event => event.id === rejected[0]),
+    );
+  return events;
+}
+
+// 묶음을 받을 사건과 받지 못할 사건으로 가른다. 부모가 없거나 답 차례가 어긋난 사건(기기가 부모 저장에 실패한 뒤 쓴 자식, 저장에
+// 실패한 답 뒤의 다음 답 …)은 그것과 그 자손만 빼고 나머지를 받는다 — 사건 하나 때문에 그 기기의 올리기가 영영 막히지 않게
+// (Fable 끝 판 P1, 11-11). 받는 쪽은 뺀 번호를 rejected로 돌려주고 기기는 그것을 버린다. 꼴이 틀린 사건과 묶음 안 같은 번호는
+// 기기 잘못이라 그대로 던진다(아르곤 끝 판 C3 — 이미 저장된 번호와의 충돌은 서버가 먼저 거른다).
+export function partitionLinks(events, { find, attemptCount = () => 0 }) {
   const batch = new Map();
   const attempts = new Map();
+  const bad = new Set();
+  const ok = [];
   const lookup = id => batch.get(id) ?? find(id);
   for (const event of events) {
     checkEvent(event);
-    // 같은 번호는 한 묶음에 한 번 — 묶음 안의 뒤 사건이 앞 사건을 가리지 못한다(아르곤 끝 판 C3). 이미 저장된 번호와의 충돌은
-    // 받는 쪽(서버)이 저장된 사건과 맞대어 먼저 거른다(같으면 다시 받지 않고, 다르면 409).
-    if (batch.has(event.id)) fail('같은 번호의 사건이 한 묶음에 둘이다', event);
-    if (event.type === EVENT_TYPES.attempted && !attempts.has(event.presentationId))
+    if (batch.has(event.id) || bad.has(event.id))
+      fail('같은 번호의 사건이 한 묶음에 둘이다', event);
+    const attempt = event.type === EVENT_TYPES.attempted;
+    if (attempt && !attempts.has(event.presentationId))
       attempts.set(event.presentationId, attemptCount(event.presentationId));
-    if (!linkOk(event, lookup, attempts)) fail('부모가 없거나 차례가 맞지 않는다', event);
+    const before = attempt ? attempts.get(event.presentationId) : 0;
+    if (bad.has(parentOf(event)) || !linkOk(event, lookup, attempts)) {
+      if (attempt) attempts.set(event.presentationId, before);
+      bad.add(event.id);
+      continue;
+    }
     batch.set(event.id, event);
+    ok.push(event);
   }
-  return events;
+  return { ok, rejected: [...bad] };
 }

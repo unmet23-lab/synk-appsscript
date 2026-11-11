@@ -108,6 +108,7 @@ export async function createClient(
     },
     async settle() {
       await Promise.all(client.stores.splice(0));
+      await record.saved();
     },
     since() {
       const summary = record.summary;

@@ -52,6 +52,7 @@ export {
   linesOfGroups,
   memoryPort,
   openRecord,
+  partitionLinks,
   RECORD_EDITION,
   storeName,
   summaryOf,

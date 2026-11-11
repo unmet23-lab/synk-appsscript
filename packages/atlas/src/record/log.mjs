@@ -11,7 +11,7 @@
 import { overlay } from '../fold/device.mjs';
 import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
 import { createClock } from './clock.mjs';
-import { createEvent, EVENT_FORM, EVENT_TYPES, eventId } from './events.mjs';
+import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, parentOf } from './events.mjs';
 import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
 import { linesOfGroups } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
@@ -53,8 +53,14 @@ function createState(guest, now) {
     failed: new Map(), // 저장 실패한 답의 계열 → 시각(이 판의 메모리에만)
     families: new Map(), // 이 기록부가 만든 제시 번호 → 계열(제시 저장이 실패 · 진행 중이어도 계열을 안다)
     summary: null,
+    summaryKey: 0, // 지금 요약을 담은 기록의 열쇠
+    summaryRows: new Set(), // 요약만 담은 기록(kind 'summary') — 새 요약이 서면 앞 것은 지운다(Fable 끝 판 P1)
     local: null,
+    localRows: new Set(), // 손님의 로컬 요약 기록 — 새 것이 서면 앞 것은 지운다
     lastKey: 0,
+    readKey: 0, // 포트에서 읽은 데까지(내 덧붙이기로는 오르지 않는다 — 다른 탭이 먼저 쓴 기록을 건너뛰지 않게, Fable 끝 판 P2)
+    unsaved: new Set(), // 이 기록부에서 저장에 실패한(또는 부모가 없어 쓰지 않은) 사건 번호
+    inflight: new Map(), // 저장 중인 사건 번호 → 그 저장 약속(자식은 부모의 저장이 끝난 뒤 결과를 보고 쓴다)
     positions: 0,
     seqInMs: 0,
     lastMs: -1,
@@ -84,12 +90,26 @@ function takeAck(state, value, now) {
   if (state.summary) state.clock.know(state.summary.latestAt);
 }
 
+function takeSummary(state, value, key) {
+  state.summaryRows.add(key);
+  const next = unpackSummary(value.summary);
+  if (newer(state.summary, next)) {
+    state.summary = next;
+    state.summaryKey = key;
+  }
+  if (state.summary) state.clock.know(state.summary.latestAt);
+}
+
 function take(state, { key, value }, now) {
   state.lastKey = Math.max(state.lastKey, key);
   if (value.kind === 'event') takeEvent(state, value, key);
   else if (value.kind === 'ack') takeAck(state, value, now);
-  else if (value.kind === 'local' && (!state.local || value.until >= state.local.until))
-    state.local = { summary: unpackSummary(value.summary), until: value.until };
+  else if (value.kind === 'summary') takeSummary(state, value, key);
+  else if (value.kind === 'local') {
+    state.localRows.add(key);
+    if (!state.local || value.until >= state.local.until)
+      state.local = { summary: unpackSummary(value.summary), until: value.until, key };
+  }
 }
 
 const entryOf = item => ({
@@ -196,6 +216,16 @@ export function createRecord({
     const value = { kind: 'local', summary: packSummary(next), until };
     const [key] = await port.append([value]);
     accept({ key, value });
+    await dropRows(state.localRows, state.local?.key ?? key);
+  }
+
+  // 새 요약이 선 뒤 앞 요약 기록을 지운다 — 요약을 기록마다 통째로 쌓으면 문항 수백 개 뒤 저장소가 수십 MB가 된다(Fable 끝 판 P1).
+  // 지우는 것은 지금 쓰는 요약(keep)보다 앞이고 이 기록부가 읽은 데까지인 것만(다른 탭이 그 뒤에 쓴 것은 남긴다).
+  async function dropRows(rows, keep) {
+    const stale = [...rows].filter(key => key < keep && key <= Math.max(state.readKey, keep));
+    if (!stale.length) return;
+    await port.remove(stale);
+    for (const key of stale) rows.delete(key);
   }
 
   // 손님은 스스로 접는다 — 첫 만남을 넓게 바꾸는 사건(옮겨 온 장부 · 제외)이나 쌓인 사건이 많으면 바로 다시 접는다.
@@ -203,34 +233,58 @@ export function createRecord({
   const refoldAfter = type =>
     guest && (broad(type) || pendingIds(state).size >= GUEST_REFOLD) ? refoldGuest() : null;
 
+  // 부모(제시 · 겨눈 사건 · 판)가 이 기록부에서 저장되지 못했으면 자식도 쓰지 않는다 — 부모가 아직 저장 중이면 그 뒤에. 부모 없는
+  // 자식이 저장되면 서버가 그 사건을 받지 못해 올리기가 막혔다(Fable 끝 판 P1 — 이제 서버도 그런 사건만 빼고 받는다).
+  async function append(type, event, value) {
+    if (state.unsaved.has(parentOf(event))) {
+      state.unsaved.add(event.id);
+      remember(state, event);
+      noteSave(health, false, 'PARENT_UNSAVED');
+      return false;
+    }
+    try {
+      const [key] = await port.append([value]);
+      accept({ key, value });
+    } catch {
+      state.unsaved.add(event.id);
+      remember(state, event);
+      noteSave(health, false, 'STORAGE_ERROR');
+      return false;
+    }
+    noteSave(health, true);
+    // 손님의 로컬 요약 저장이 실패해도 사건은 이미 저장됐다 — 근거(stored true)를 뒤집지 않고 계기에만 남긴다(아르곤 끝 판 D5).
+    try {
+      await refoldAfter(type);
+    } catch {
+      noteSave(health, false, 'LOCAL_SUMMARY');
+    }
+    return true;
+  }
+
   function store(type, event, value) {
-    return port.append([value]).then(
-      async ([key]) => {
-        accept({ key, value });
-        noteSave(health, true);
-        // 손님의 로컬 요약 저장이 실패해도 사건은 이미 저장됐다 — 근거(stored true)를 뒤집지 않고 계기에만 남긴다(아르곤 끝 판 D5).
-        try {
-          await refoldAfter(type);
-        } catch {
-          noteSave(health, false, 'LOCAL_SUMMARY');
-        }
-        return true;
-      },
-      () => {
-        remember(state, event);
-        noteSave(health, false, 'STORAGE_ERROR');
-        return false;
-      },
-    );
+    const run = () => append(type, event, value);
+    const parent = state.inflight.get(parentOf(event));
+    const result = parent ? parent.then(run, run) : run();
+    state.inflight.set(event.id, result);
+    result.finally(() => {
+      if (state.inflight.get(event.id) === result) state.inflight.delete(event.id);
+    });
+    return result;
   }
 
   async function refresh() {
-    for (const row of await port.range(state.lastKey)) accept(row);
+    for (const row of await port.range(state.readKey)) {
+      accept(row);
+      state.readKey = Math.max(state.readKey, row.key);
+    }
   }
 
   return {
     async load() {
-      for (const row of await port.read()) accept(row);
+      for (const row of await port.read()) {
+        accept(row);
+        state.readKey = Math.max(state.readKey, row.key);
+      }
       if (guest) await refoldGuest();
       return this;
     },
@@ -273,21 +327,26 @@ export function createRecord({
       accepted = [],
       clamped = [],
       rejected = [],
+      rejectedCode = 'EVENT_REVISION', // 서버가 뺀 까닭 — 옛 동의 판(409) 또는 부모 · 차례가 맞지 않음(EVENT_LINK)
       summary = null,
       serverTime = null,
     }) {
       const next = summary ? applyDelta(state.summary, summary) : null;
-      const value = {
-        kind: 'ack',
-        acks: accepted.map(row => [row.id, row.seq]),
-        clamped: [...clamped],
-        dropped: [...rejected],
-        ...(next ? { summary: packSummary(next) } : {}),
-        ...(Number.isFinite(serverTime) ? { offsetMs: serverTime - now() } : {}),
-      };
-      const [key] = await port.append([value]);
-      accept({ key, value });
-      if (rejected.length) noteSave(health, false, 'EVENT_REVISION');
+      const values = [
+        {
+          kind: 'ack',
+          acks: accepted.map(row => [row.id, row.seq]),
+          clamped: [...clamped],
+          dropped: [...rejected],
+          ...(Number.isFinite(serverTime) ? { offsetMs: serverTime - now() } : {}),
+        },
+        // 받은 표지와 요약은 한 번의 덧붙이기로(설계 §5-4) — 요약은 따로 한 기록이라 다음 요약이 서면 지운다.
+        ...(next ? [{ kind: 'summary', summary: packSummary(next) }] : []),
+      ];
+      const keys = await port.append(values);
+      values.forEach((value, i) => accept({ key: keys[i], value }));
+      if (next) await dropRows(state.summaryRows, state.summaryKey);
+      if (rejected.length) noteSave(health, false, rejectedCode);
       return baseOf(state);
     },
 
@@ -320,6 +379,10 @@ export function createRecord({
 
     // 손님: 판 끝처럼 지금 든 사건까지 요약을 바로 접어 둔다(새 사건이 없으면 그대로 — 단계 4 판 끝 칸 견주기, 11-11). 계정은 서버가 접는다.
     refold: () => (guest ? refoldGuest() : Promise.resolve()),
+    // 지금 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝날 때까지 — 올리기 · 다른 탭에 알리기 전에 부른다.
+    async saved() {
+      while (state.inflight.size) await Promise.allSettled([...state.inflight.values()]);
+    },
     pending: () => pendingIds(state),
     has: id => state.held.has(id),
     heldEvent: id => state.held.get(id)?.event ?? null,
@@ -333,7 +396,7 @@ export function createRecord({
     async compact() {
       if (guest) return 0;
       await refresh();
-      const seen = state.lastKey;
+      const seen = state.readKey;
       const gone = new Set(staleIds(state, now() + state.clock.offsetMs - KEEP_MS));
       const kept = id => state.held.has(id) && !gone.has(id);
       const value = {
@@ -341,7 +404,6 @@ export function createRecord({
         acks: [...state.acks].filter(([id]) => kept(id)),
         clamped: [...state.clamped].filter(kept),
         dropped: [...state.dropped].filter(kept),
-        ...(state.summary ? { summary: packSummary(state.summary) } : {}),
         offsetMs: state.clock.offsetMs,
       };
       const [keepKey] = await port.append([value]);

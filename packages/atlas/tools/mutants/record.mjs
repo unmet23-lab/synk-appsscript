@@ -10,6 +10,39 @@ const ROWS = 'src/record/rows.mjs';
 const EVENTS = 'src/record/events.mjs';
 
 export const RECORD_MUTANTS = [
+  // ── 저장 · 올리기 — 부모 없는 자식이 올리기를 막지 않게, 저장소가 요약 수만큼 커지지 않게(Fable 끝 판 P1 둘 · P2) ──
+  [
+    R,
+    '기기',
+    '부모 저장이 실패해도 자식을 쓴다(서버가 받지 못할 사건이 대기열 맨 앞에 남는다)',
+    LOG,
+    'if (state.unsaved.has(parentOf(event))) {',
+    'if (false) {',
+  ],
+  [
+    R,
+    '사건 꼴',
+    '받지 못한 답의 차례를 되돌리지 않는다(건너뛴 차례 뒤의 맞는 답까지 뺀다)',
+    EVENTS,
+    'if (attempt) attempts.set(event.presentationId, before);',
+    'void before;',
+  ],
+  [
+    R,
+    '기기',
+    '새 요약이 서도 앞 요약 기록을 지우지 않는다(받을 때마다 요약이 쌓인다)',
+    LOG,
+    'if (next) await dropRows(state.summaryRows, state.summaryKey);',
+    'void next;',
+  ],
+  [
+    R,
+    '기기',
+    '꼬리 읽기를 내 덧붙이기 자리부터 한다(다른 탭이 먼저 쓴 기록을 건너뛴다)',
+    LOG,
+    'for (const row of await port.range(state.readKey)) {',
+    'for (const row of await port.range(state.lastKey)) {',
+  ],
   // ── 어댑터 — 2판 제시의 firstExposure false(제품만 아는 앞선 노출)는 장부 만남, null은 읽지 않음(계획 §14-8) ──
   [
     R,

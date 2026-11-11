@@ -425,3 +425,69 @@ test('장부 만남은 그 제시의 첫 만남 바로 앞에 선다 — 서버�
   const order = [...folded].sort((x, y) => x.at - y.at || (x.id < y.id ? -1 : 1)).map(e => e.kind);
   assert.deepEqual(order, ['answer', 'carry', 'answer'], '장부 만남은 A2 뒤 · A1 바로 앞');
 });
+
+test('묶음 나누기 — 부모가 없거나 답 차례가 어긋난 사건은 그것과 자손만 빼고 나머지를 받는다(Fable 끝 판 P1)', () => {
+  const p = make('practice.presented', presentedFields(), 0);
+  const ghost = 'a.1793491200000.0000.ghost000';
+  const orphan = make(
+    'practice.attempted',
+    { presentationId: ghost, attemptNo: 1, verdict: 'correct', errorTags: [] },
+    1,
+  );
+  const pulled = make('record.excluded', { targetId: orphan.id }, 2);
+  const skipped = make(
+    'practice.attempted',
+    { presentationId: p.id, attemptNo: 2, verdict: 'correct', errorTags: [] },
+    3,
+  );
+  const first = make(
+    'practice.attempted',
+    { presentationId: p.id, attemptNo: 1, verdict: 'correct', errorTags: [] },
+    4,
+  );
+  const { ok, rejected } = R.partitionLinks([p, orphan, pulled, skipped, first], {
+    find: () => null,
+  });
+  assert.deepEqual(
+    ok.map(e => e.id),
+    [p.id, first.id],
+    '건너뛴 차례 뒤에도 맞는 차례의 답은 받는다',
+  );
+  assert.deepEqual(rejected.sort(), [orphan.id, pulled.id, skipped.id].sort());
+  assert.throws(() => R.checkLinks([p, orphan], { find: () => null }), /부모/);
+  assert.throws(() => R.partitionLinks([p, p], { find: () => null }), /같은 번호/);
+});
+
+test('응답(feedback.given)의 부모는 마침이다 — 결정을 함께 실으면 그 마침의 결정과 같아야 한다(아르곤 끝 판 C1)', () => {
+  const decided = make('decision.made', { experienceId: 'world-practice', variant: 'v1' }, 0);
+  const completed = make(
+    'experience.completed',
+    { decisionId: decided.id, experienceId: 'world-practice', variant: 'v1' },
+    1,
+  );
+  const ok = make(
+    'feedback.given',
+    { completionId: completed.id, decisionId: decided.id, value: 'helpful' },
+    2,
+  );
+  assert.doesNotThrow(() => R.checkLinks([decided, completed, ok], { find: () => null }));
+  const wrongDecision = make(
+    'feedback.given',
+    { completionId: completed.id, decisionId: 'a.1793491200000.0000.other000', value: 'helpful' },
+    3,
+  );
+  assert.throws(
+    () => R.checkLinks([decided, completed, wrongDecision], { find: () => null }),
+    /부모/,
+  );
+  const ghost = make(
+    'feedback.given',
+    { completionId: 'a.1793491200000.0000.ghost000', decisionId: completed.id, value: 'helpful' },
+    4,
+  );
+  assert.throws(
+    () => R.checkLinks([decided, completed, ghost], { find: () => null }),
+    /부모/,
+    '결정 칸에 마침 번호를 넣어도 유령 마침은 못 지난다',
+  );
+});

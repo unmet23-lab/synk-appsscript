@@ -25,6 +25,7 @@ export {
   EVENT_FORM,
   EVENT_TYPES,
   eventId,
+  partitionLinks,
 } from './events.mjs';
 export { idbPort } from './idb.mjs';
 export { judge } from './judge.mjs';
