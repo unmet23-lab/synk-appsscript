@@ -1,4 +1,4 @@
-/* 환승 러시 겉(2026-11-04, 설계 5절 · 11-10 A 「노선도」): 입구 · 결과는 실제 물건(교통카드 단말기 · 종이 안내문 · 스탬프 카드), 달리는 화면은 노선도 그래픽(위 노선 줄 · 아래 역 지도 · 노선 색 문 전환).
+/* 환승 러시 겉(2026-11-04, 설계 5절 · 11-10 A 「노선도」): 입구 · 결과는 실제 물건(교통카드 단말기 · 종이 안내문 · 스탬프 카드), 달리는 화면은 노선도 그래픽(위 노선 줄 · 노선 색 문 전환), 고르는 순간은 아래에서 올라오는 길 안내 표지판(11-11 B).
    움직임 토큰은 주문 폭주 2판과 같다. 글자는 SubwaySign(본고딕 계열) · LED는 비트맵을 점으로(led.mjs) · 휴대폰 알림만 기기 글꼴. */
 @font-face{font-family:SubwaySign;src:url('assets/fonts/sign.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:SubwayLED;src:url('assets/fonts/led.woff2') format('woff2');font-display:block}
@@ -98,31 +98,54 @@ html[data-lobby-fit=side] .ticket-route{flex-wrap:wrap;row-gap:2px;white-space:n
 .ico-text{width:11px;height:11px;border-top:2px solid currentColor;border-bottom:2px solid currentColor;position:relative}
 .ico-text::after{content:'';position:absolute;left:0;right:0;top:2.5px;height:2px;background:currentColor}
 
-/* ── 아래 역 지도(routemap.mjs) ── 노선 7px · 역 흰 점 · 내 자리 점과 박자 고리, 이름은 역 이름처럼 한글 + 작은 영문 */
-.map-shade{position:absolute;left:0;right:0;bottom:0;height:44%;background:linear-gradient(#0000,#0000008c 52%,#000000d6);opacity:var(--focus,0);pointer-events:none;z-index:1}
-.route-map{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:2;filter:drop-shadow(0 2px 7px #000000b3)}
-.rm-seg{fill:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
-.rm-seg.on{stroke-width:8;filter:brightness(1.3) saturate(1.1)}
-.rm-head{fill:none;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
-.rm-head.on{stroke-width:8;filter:brightness(1.3) saturate(1.1)}
-.rm-me{fill:#fff;stroke:var(--line);stroke-width:4}
-.rm-ring{fill:none;stroke:#ffffffcc;stroke-width:1.2}
-.route-labels{position:absolute;inset:0;pointer-events:none;z-index:2}
-.rm-label{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;text-align:center;opacity:0}
-.rm-name{display:flex;align-items:center;justify-content:center;gap:7px;font:800 25px/1.1 var(--ui);letter-spacing:-.045em;color:#fff;text-shadow:0 2px 14px #000c;white-space:nowrap;transition:color var(--e-fast)}
-.route-labels[data-kind=fork] .rm-name,.route-labels[data-kind=exit] .rm-name{font-size:19px;white-space:normal;word-break:keep-all;width:max-content;max-width:31cqw}
-.rm-mark{margin-bottom:7px}
-.rm-out{width:22px;height:22px;border-radius:4px;background:#f4f6f8;position:relative}
-.rm-out::after{content:'';position:absolute;left:50%;top:5px;width:2.5px;height:11px;margin-left:-1.25px;background:#111}
-.rm-out::before{content:'';position:absolute;left:50%;top:4px;width:7px;height:7px;margin-left:-4.5px;border-left:2.5px solid #111;border-top:2.5px solid #111;transform:rotate(45deg)}
-.route-labels[data-kind=board] .rm-name{font-size:18px;white-space:normal;word-break:keep-all;width:max-content;max-width:31cqw}
-.rm-en{display:block;margin-top:7px;font:600 10px/1 var(--num);letter-spacing:.18em;text-transform:uppercase;color:#ffffffa8;white-space:nowrap}
-.rm-line{width:22px;height:22px;border-radius:50%;background:var(--c);display:grid;place-items:center;flex:none;font:700 12px/1 var(--num);color:#fff;letter-spacing:0}
-.rm-exit{min-width:24px;height:24px;padding:0 5px;border-radius:4px;background:#ffd400;color:#111;display:grid;place-items:center;flex:none;font:700 15px/1 var(--num);letter-spacing:0}
-.rm-label.on .rm-name{color:var(--line-hi)}
+/* ── 고르는 판(pickpanel.mjs, 11-11 유호님 「B 표지판으로」) ── 사진 위에 글 · 화살을 띄우지 않고, 고를 차례에 아래에서 어두운 길 안내 표지판 하나가 올라온다.
+   판 머리는 질문 한 줄(보기가 주인공이라 한 단계 낮게), 위 노선 줄에는 노선 · 시계 · 도움 단추만 남는다(지시문과 단추가 같은 흰 글이던 맹검 지적).
+   세 칸은 1px 세로줄로 나눈 한 판 — 칸마다 위에 갈 곳의 색 띠 · 속이 찬 길 안내 화살(사진 속 「↑ 나가는 곳」 표지와 같은 꼴) · 굵은 말 + 가는 말.
+   고르면 그 칸이 갈 곳의 색으로 위에서부터 찬다. 판이 덮는 동안 사진은 판 위로 올라와 승객 · 갈래가 보인다(app.mjs FRAME_Y) */
+.stage{--pick-h:33%;--pick-head:58px}
+html[data-picking] .hud-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+html[data-picking] .hud-row2{justify-content:flex-end}
+.pick{position:absolute;left:0;right:0;bottom:0;height:var(--pick-h);z-index:3;pointer-events:none;background:#101114;color:#fff;box-shadow:0 -18px 46px #0000007a;transform:translateY(104%);transition:transform 540ms cubic-bezier(.22,1,.36,1)}
+.pick[data-on]{transform:none}
+.pick[data-out]{transform:translateY(104%);transition:transform 380ms cubic-bezier(.55,0,.75,.3)}
+.pk-head{position:absolute;left:0;right:0;top:0;height:var(--pick-head);padding:22px 22px 0}
+.pk-q{margin:0;font:600 19px/1.2 var(--ui);letter-spacing:-.035em;word-break:keep-all;color:#ffffffb8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-hint{margin-left:10px;font-size:14px;font-weight:500;letter-spacing:-.01em;color:#ffffff73}
+.pk-opts{position:absolute;left:0;right:0;top:var(--pick-head);bottom:0;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #ffffff1a;padding-bottom:env(safe-area-inset-bottom)}
+.pk-opt{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:13px;padding:22px 14px 14px;color:#fff;border-left:1px solid #ffffff1a;animation:pk-in 520ms cubic-bezier(.22,1,.36,1) calc(120ms + var(--d) * 70ms) both;transition:filter 300ms ease,scale 160ms ease,color 200ms ease 80ms}
+.pk-opt:first-child{border-left:0}
+.pk-opt::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--a);z-index:-1;transition:height 340ms cubic-bezier(.22,1,.36,1),background 200ms ease}
+.pk-opt[data-press]{scale:.95}
+.pick[data-picked] .pk-opt:not([data-mine]){filter:opacity(.22) saturate(.4)}
+.pk-opt[data-mine]{color:var(--t)}
+.pk-opt[data-mine]::before{height:100%;background:var(--c)}
+.pk-arrow{display:block;width:44px;height:44px;flex:none;background:var(--a);-webkit-mask:var(--pk-arrow) center/contain no-repeat;mask:var(--pk-arrow) center/contain no-repeat;rotate:var(--pk-rot,0deg);transition:background 200ms ease 80ms}
+.pk-opt[data-mine] .pk-arrow{background:var(--t)}
+.pick{--pk-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5 23 12.5h-6.6V22.5H7.6V12.5H1z'/%3E%3C/svg%3E")}
+.pk-opt[data-dir=l]{--pk-rot:-90deg}
+.pk-opt[data-dir=r]{--pk-rot:90deg}
+.pk-opt[data-dir=ul]{--pk-rot:-45deg}
+.pk-opt[data-dir=ur]{--pk-rot:45deg}
+.pk-opt[data-dir=wait]{--pk-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 3h5v18H5zM14 3h5v18h-5z'/%3E%3C/svg%3E")}
+.pk-words{display:flex;flex-direction:column;gap:3px;word-break:keep-all}
+.pk-big{font:800 32px/1 var(--ui);letter-spacing:-.05em;animation:pk-weight 620ms cubic-bezier(.22,1,.36,1) calc(200ms + var(--d) * 70ms) both}
+.pk-small{font:300 23px/1.05 var(--ui);letter-spacing:-.04em;opacity:.82}
+.pk-words[data-size=m] .pk-big{font-size:25px;line-height:1.04}
+.pk-words[data-size=m] .pk-small{font-size:20px}
+.pk-words[data-size=s] .pk-big{font-size:20px;line-height:1.08}
+.pk-words[data-size=s] .pk-small{font-size:18px}
+.pk-en{margin-top:auto;font:600 10px/1 var(--num);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;opacity:.6}
+.pk-line{position:absolute;right:12px;top:22px;width:24px;height:24px;border-radius:50%;background:#fff;color:var(--c);font:700 13px/24px var(--num);text-align:center}
+.pk-num{font:700 66px/.86 var(--num);letter-spacing:-.05em;color:var(--a);transition:color 200ms ease 80ms}
+.pick[data-kind=exit] .pk-small{font-size:21px}
+.pk-opt[data-mine] .pk-num{color:var(--t)}
+@keyframes pk-in{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
+@keyframes pk-weight{from{font-weight:260}to{font-weight:800}}
+html[data-reduce-motion] .pick,html[data-reduce-motion] .pick *,html[data-reduce-motion] .pick *::before{transition:none!important;animation:none!important}
+@media (prefers-reduced-motion:reduce){.pick,.pick *,.pick *::before{transition:none!important;animation:none!important}}
 
 /* ── 누르는 칸 ── */
-.zones{position:absolute;left:0;right:0;bottom:0;height:28%;display:grid;grid-template-columns:1fr 1fr 1fr;z-index:2}
+.zones{position:absolute;left:0;right:0;bottom:0;height:calc(var(--pick-h) - var(--pick-head));display:grid;grid-template-columns:1fr 1fr 1fr;z-index:2}
 .zones button{height:100%;position:relative}
 .zones button:focus-visible{outline:2px solid #ffe34d;outline-offset:-4px}
 

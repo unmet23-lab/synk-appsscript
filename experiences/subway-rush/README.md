@@ -13,7 +13,7 @@ SYNK WORLD 「놀이」의 듣기 게임. 1인칭으로 서울 지하철을 타�
 | `plan-items.mjs` | 「이번 주 계획」 · 튜터 후보가 겨누는 문항 표(`synk-world-app/world-learning-plan.mjs`가 읽는다). `reviewDecisions`는 판 12,000개를 돌려 화면에서 못 불러 표로 둔다. 시험이 대조하고 게임 공개 폴더에는 안 싣는다 |
 | `scene.mjs` | 깊이 셰이더 한 장(다가감 · 문 틈 · 터널 빛 · 먼 표지 · 고를 차례의 사진 가라앉힘 · 위 노선 줄 뒤 어둡게) |
 | `hud.mjs` | 위 노선 줄(11-10 A 「노선도」): 노선 배지 · 목소리에 물결치는 노선 선 · 시계, 아래 상태 글. led.mjs와 같은 꼴(setClock · setStatus · setLevels · flash) |
-| `routemap.mjs` | 아래 역 지도(11-10 A): 고를 차례에 누름 칸 위로 노선도를 그린다 — 문은 가로 노선(양옆은 문 · 가운데는 위), 통로 · 출구는 세 갈래 앞으로, 승강장은 열차 · 멈춤 막대 · 반대편. 고른 갈래만 밝아지고 내 자리 점이 달린다. 배치 `layoutMap`은 시험이 잰다 |
+| `pickpanel.mjs` | 고르는 판(11-11 B 「길 안내 표지판」, 유호님 고르심): 고를 차례에 아래에서 어두운 판이 올라온다 — 질문 한 줄 · 세 칸(갈 곳 색 띠 · 길 안내 화살 · 굵은 말 + 가는 말, 출구는 노란 큰 번호), 고르면 칸이 갈 곳의 색으로 찬다. 누르기는 같은 자리의 `#zones`. 칸 글 · 색 · 화살은 시험이 잰다 |
 | `led.mjs` | 도트 LED 전광판 — 이제 결과 화면의 버스 정류장 판에만 쓴다(달리는 화면은 hud.mjs) |
 | `audio.mjs` · `music.mjs` | 목소리 · 효과음 · 레일 · 대합실 · 앱 설정 · 아이폰 무음 스위치 / 달리는 구간 · 결과 음악(고리 · 덕킹) |
 | `app.mjs` | 차례만 잇는다: 입구 → 승강장 → 열차 · 만남 → 통로 → 열차 → 출구 → 개찰구 → 지상 → 결과 |
@@ -24,7 +24,7 @@ SYNK WORLD 「놀이」의 듣기 게임. 1인칭으로 서울 지하철을 타�
 ## 시험과 도구
 
 ```bash
-node --test experiences/subway-rush/core.test.mjs experiences/subway-rush/routemap.test.mjs experiences/subway-rush/people.test.mjs experiences/subway-rush/learning.test.mjs
+node --test experiences/subway-rush/core.test.mjs experiences/subway-rush/pickpanel.test.mjs experiences/subway-rush/people.test.mjs experiences/subway-rush/learning.test.mjs
 ```
 
 ```bash

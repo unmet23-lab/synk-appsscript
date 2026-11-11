@@ -1,5 +1,5 @@
 // 환승 러시 흐름(설계 v0.3): 개찰구 → 승강장 → 2호선 → 시청 환승 통로 → 1호선 → 출구 → 개찰구 → 지상 → 결과.
-// 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 위 노선 줄은 hud.mjs, 아래 역 지도는 routemap.mjs(11-10 A 「노선도」), 결과 정류장 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
+// 규칙은 core.mjs, 원고는 journeys.mjs · people.mjs, 그림은 scene.mjs, 위 노선 줄은 hud.mjs, 고르는 판은 pickpanel.mjs(11-11 B 「길 안내 표지판」), 결과 정류장 전광판은 led.mjs, 소리는 audio.mjs가 맡고 여기서는 차례만 잇는다.
 import { SubwayRun, clockText, highlightFor, SCHOOL_MINUTES } from './core.mjs';
 import { startLevel } from './level.mjs';
 import { buildJourney, explainDecision } from './journeys.mjs';
@@ -8,7 +8,7 @@ import { PEOPLE, CARS, planDay } from './people.mjs';
 import { createScene, loadImage } from './scene.mjs?v=photo20261111';
 import { createLed } from './led.mjs';
 import { createHud } from './hud.mjs?v=map20261110';
-import { createRouteMap } from './routemap.mjs?v=map20261110';
+import { createPickPanel } from './pickpanel.mjs?v=sign20261111';
 import { createSound, haptic } from './audio.mjs?v=map20261110';
 import { createMusic } from './music.mjs';
 import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney, missedPractice, entryNote } from './learning.mjs?v=return-20261105';
@@ -57,7 +57,7 @@ const music = createMusic(sound.ctx, { destination: sound.output });
 sound.onVoice = (on) => music.voice(on);
 await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED'), document.fonts.load('700 19px SubwayUI'), document.fonts.load('500 30px SubwayNum')]).catch(() => {});
 const hud = createHud({ route: $('hud-route'), clock: $('hud-clock'), status: $('hud-status'), badge: $('hud-badge'), stage: $('stage'), calm: reduced });
-const map = createRouteMap({ svg: $('route-map'), labels: $('route-labels'), stage: $('stage'), calm: reduced });
+const panel = createPickPanel({ root: $('pick') });
 const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced, look: query.get('look') === 'b' ? 'b' : 'a' }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
 const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();
 
@@ -74,7 +74,7 @@ function frame(now) {
     if (stepping > 0) { stepTimer -= dt; if (stepTimer <= 0) { stepTimer += 1 / stepping; stepSide = -stepSide; sound.sfx.step(stepSide); } }
     sound.railTick();
     if (voiceLive) hud.setLevels(sound.voiceLevels());
-    hud.render(dt); map.render(dt);
+    hud.render(dt);
     scene.resize(); scene.render(dt);
   }
   requestAnimationFrame(frame);
@@ -133,31 +133,38 @@ let chooseResolve = null, hintShown = false;
 function pick(i) { const r = chooseResolve; if (!r) return; chooseResolve = null; r(i); }
 $('zones').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) pick(Number(b.dataset.i)); });
 let touchX = null;
-$('zones').addEventListener('pointerdown', (e) => { touchX = e.clientX; });
+$('zones').addEventListener('pointerdown', (e) => { touchX = e.clientX; const b = e.target.closest('button'); if (b) panel.press(Number(b.dataset.i), true); });
+for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) $('zones').addEventListener(ev, () => { for (let i = 0; i < 3; i++) panel.press(i, false); });
 window.addEventListener('pointerup', (e) => { if (touchX === null || !chooseResolve) { touchX = null; return; } const dx = e.clientX - touchX; touchX = null; if (Math.abs(dx) > 44) { e.preventDefault(); pick(dx < 0 ? 0 : 2); } });
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { if (!$('board').hidden && !$('voice-dialog').open) togglePause(); return; }
   const i = { ArrowLeft: 0, a: 0, ArrowUp: 1, w: 1, ArrowRight: 2, d: 2, 1: 0, 2: 1, 3: 2 }[e.key]; if (i !== undefined) pick(i);
 });
-/** 고를 차례의 사진 가라앉힘(0~1): 셰이더 uFocus와 아래 그늘(--focus)을 같이 움직인다. */
+/** 고를 차례의 사진 가라앉힘(0~1): 셰이더 uFocus. */
 function setFocus(to, seconds = 0.5) {
   const from = scene.state.focus;
-  return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.focus = from + (to - from) * k; $('stage').style.setProperty('--focus', scene.state.focus.toFixed(3)); }, ease.out);
+  return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.focus = from + (to - from) * k; }, ease.out);
 }
 // 고를 차례의 상태 글 · 처음 두 판의 손짓 안내 — 고를 것마다 그 말로(문 화면에도 「길」, 그 밖에는 「고르세요」 한마디라 맹검 3차가 짚음)
 const PICK = { door: '내릴 문을', fork: '갈 길을', exit: '나갈 출구를', board: '할 일을' };
-function endChoice() { map.hide(); if (scene.state.focus > 0) setFocus(0, 0.3); }
-/** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. kind: door · fork · exit · board(아래 역 지도의 갈래 모양). */
+// 판이 아래 38%를 덮으면 사진은 위 천장만 남는다(맹검 「위 절반이 빈 천장 · 정작 문 · 승객 · 갈래가 판에 잘린다」) — 고를 차례에 사진을 판 위로 올려 비춘다
+const FRAME_Y = { door: 0.11, fork: 0.12, exit: 0.1, board: 0.1 };
+function panY(to, seconds) { const from = scene.state.pan[1] || 0; return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.pan = [scene.state.pan[0], from + (to - from) * k]; }, ease.out); }
+function endChoice() { panel.hide(); document.documentElement.removeAttribute('data-picking'); if (scene.state.focus > 0) setFocus(0, 0.3); }
+/** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. kind: door · fork · exit · board(고르는 판의 화살 방향). */
 function choose(options, autoId, kind) {
   const zones = $('zones'); zones.hidden = false;
   [...zones.children].forEach((b, i) => { b.setAttribute('aria-label', options[i].text || (options[i].exit != null ? `${options[i].exit}번 출구` : '')); });
-  $('route-labels').dataset.kind = kind; map.show(kind, options); setFocus(1); sound.sfx.lanes();
-  // 고를 차례는 위 노선 줄이 알린다(사진 위에 글을 띄우지 않는다 — 11-10 맹검). 처음 두 판만 손짓을 한 번 흘려 보인다.
+  // 고를 차례: 아래에서 표지판이 올라오고(질문은 판 머리), 사진은 판 위로 올라와 승객 · 갈래가 보인다. 처음 두 판은 질문 뒤에 손짓 안내를 흐리게 붙인다.
+  // 위 노선 줄의 상태 글은 화면에서 숨고(html[data-picking]) 화면 읽기에만 남는다.
+  const hint = (readAlbum().plays || 0) < 2 && !hintShown ? '누르거나 밀어요' : '';
+  panel.show(kind, options, { line: LINES[hud.state.line]?.color, hint }); document.documentElement.setAttribute('data-picking', '');
+  setFocus(0.35); panY(FRAME_Y[kind] ?? 0.1, 0.55);
+  sound.sfx.lanes();
   hud.setStatus(`${PICK[kind] || PICK.door} 고르세요`, 'green');
-  if ((readAlbum().plays || 0) < 2 && !hintShown) hud.flash(`${PICK[kind] || PICK.door} 누르거나 밀어요`, 4.8, 'green');
   hintShown = true;
   return new Promise((resolve) => {
-    chooseResolve = (i) => { zones.hidden = true; hud.clearFlash(); hud.setStatus(''); map.pick(i); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
+    chooseResolve = (i) => { zones.hidden = true; hud.clearFlash(); hud.setStatus(''); panel.pick(i); panY(0, 0.4); document.documentElement.removeAttribute('data-picking'); setFocus(0, 0.6); sound.sfx.swish(i === 0 ? -1 : 1); haptic('tap'); resolve(i); };
     if (AUTO) { const i = options.findIndex((o) => o.id === autoId); wait(1.1).then(() => pick(i < 0 ? 0 : i)); }
   });
 }
@@ -409,7 +416,7 @@ async function playSignDecision(run, d, { img, dep, keyLine, auto, note = null }
   noteMissed(result, d);
   const way = d.options.findIndex((o) => o.id === d.answer);
   if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
-  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); map.show(kind, d.options); map.pick(way); await wait(0.7); }   // 맞는 길을 지도에서 짚고 그리로 달린다
+  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); panel.show(kind, d.options, { line: LINES[hud.state.line]?.color }); panel.pick(way); await wait(0.7); }   // 맞는 길을 판에서 채워 짚고 그리로 달린다
   return { way, result };
 }
 async function dashThrough(way, next) {
@@ -658,6 +665,6 @@ async function start() {
   const run = await playJourney(journey, plan);
   await showResult(run, plan);
 }
-if (query.has('qa')) window.__subway = { scene, hud, map, sound, music, assets, tween };
+if (query.has('qa')) window.__subway = { scene, hud, panel, sound, music, assets, tween };
 start().catch((e) => { console.error(e); document.body.dataset.error = String(e); });
 export { loadImage };

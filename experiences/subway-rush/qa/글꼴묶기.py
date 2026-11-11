@@ -1,7 +1,7 @@
 """환승 러시 글꼴 묶기(2026-11-04): 게임에 나오는 글자만 추려 assets/fonts에 낸다. 원본은 저장소 밖 Documents/synk-vendor/fonts.
 
 표지 · 안내문 = Noto Sans KR(가변 · 본고딕 계열 · OFL), 결과 정류장 LED = Neo둥근모(16도트 비트맵 · OFL, 도트로 찍어 씀),
-달리는 화면의 위 노선 줄 · 역 지도(11-10 A 「노선도」) = SUIT 가변(ui) · Inter Tight 500 · 600 · 700(num, 영문 · 숫자만) — 둘 다 OFL, 원본은 저장소 docs/브랜드_폰트.
+달리는 화면의 위 노선 줄(11-10 A 「노선도」) · 고르는 판(11-11 B 「길 안내 표지판」) = SUIT 가변(ui) · Inter Tight 500 · 600 · 700(num, 영문 · 숫자만) — 둘 다 OFL, 원본은 저장소 docs/브랜드_폰트.
 OFL 예약 이름을 지키려고 이름 표를 비우고 파일도 sign · led로 부른다(라이선스 전문은 assets/fonts/ 안에 함께 둔다).
 글을 고치면 다시 돌린다.
   python -I -X utf8 experiences/subway-rush/qa/글꼴묶기.py
@@ -19,7 +19,7 @@ OUT = GAME / 'assets' / 'fonts'
 OUT.mkdir(parents=True, exist_ok=True)
 
 text = set(' !?…·,.:;()[]/-+「」『』~%0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ←→↑↓')
-for name in ['app.mjs', 'journeys.mjs', 'people.mjs', 'lines.mjs', 'index.html', 'core.mjs', 'hud.mjs', 'routemap.mjs']:
+for name in ['app.mjs', 'journeys.mjs', 'people.mjs', 'lines.mjs', 'index.html', 'core.mjs', 'hud.mjs', 'pickpanel.mjs']:
     text |= set(re.findall(r'[가-힣]', (GAME / name).read_text(encoding='utf-8')))
 
 

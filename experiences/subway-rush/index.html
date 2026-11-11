@@ -38,7 +38,7 @@
     </div>
   </section>
 
-  <!-- 위 노선 줄: 노선 배지 · 목소리에 물결치는 노선 선 · 시계, 아래에 상태 글과 도움 단추 -->
+  <!-- 위 노선 줄: 노선 배지 · 목소리에 물결치는 노선 선 · 시계, 아래에 상태 글(고를 차례엔 화면 읽기에만)과 도움 단추 -->
   <header class="board" id="board" hidden>
     <div class="hud-row">
       <button class="key-pause" id="key-pause" aria-label="멈춤"><i class="ico-pause" aria-hidden="true"></i></button>
@@ -55,12 +55,9 @@
     </div>
   </header>
 
-  <!-- 아래 역 지도: 고를 차례에 누름 칸 위로 노선도를 그린다(글은 역 이름 자리) -->
-  <div class="map-shade" id="map-shade" aria-hidden="true"></div>
-  <svg class="route-map" id="route-map" hidden aria-hidden="true"></svg>
-  <div class="route-labels" id="route-labels" hidden aria-hidden="true"></div>
-
-  <!-- 누르는 칸: 화면 아래 28%, 폭 ⅓씩 -->
+  <!-- 고르는 판(pickpanel.mjs, 11-11 B 「길 안내 표지판」): 고를 차례에 아래에서 올라온다. 누르기는 같은 자리의 #zones가 받는다 -->
+  <section class="pick" id="pick" hidden aria-label="고르기"></section>
+  <!-- 누르는 칸: 고르는 판의 세 칸과 같은 자리(아래 33%에서 판 머리를 뺀 곳), 폭 ⅓씩 -->
   <div class="zones" id="zones" hidden>
     <button data-i="0"></button><button data-i="1"></button><button data-i="2"></button>
   </div>

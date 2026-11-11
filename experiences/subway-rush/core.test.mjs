@@ -237,7 +237,7 @@ test('첫 화면 틀: 제목이 하나 있고 안내문 역할이 그 태그에 
 });
 
 test('시험이 읽지 않는 화면 코드도 문법이 맞다(한 줄 고침이 줄 뒤를 잘라먹지 않게)', () => {
-  for (const name of ['app.mjs', 'audio.mjs', 'music.mjs', 'scene.mjs', 'hud.mjs', 'routemap.mjs', 'led.mjs']) {
+  for (const name of ['app.mjs', 'audio.mjs', 'music.mjs', 'scene.mjs', 'hud.mjs', 'pickpanel.mjs', 'led.mjs']) {
     const r = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(name, import.meta.url))], { encoding: 'utf8' });
     assert.equal(r.status, 0, `${name}: ${r.stderr.slice(0, 300)}`);
   }
