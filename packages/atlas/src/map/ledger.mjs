@@ -87,9 +87,15 @@ export function extendRows(rows, keys, renames = {}) {
   if (problems.length) fail(problems.join(' · '));
   const live = new Set(keys);
   const back = backOf(renames);
+  // 한 사슬(같은 장부 줄)에서 나온 이름은 하나만 살아 있어야 한다 — 옛 이름과 새 이름뿐 아니라 사슬 중간 이름과 끝 이름(a → a2 →
+  // a3에서 a2 · a3)도(GPT 보충 검수 GA1: 둘 다 a의 번호를 받았다).
+  const byRoot = new Map();
   for (const key of live) {
     const root = rootOf(key, back);
     if (root !== key && live.has(root)) fail(`옛 이름 ${root}와 새 이름 ${key}가 함께 있다`);
+    if (byRoot.has(root))
+      fail(`이름 사슬 ${root}의 두 이름 ${byRoot.get(root)} · ${key}가 함께 있다`);
+    byRoot.set(root, key);
   }
   const number = numberer(rows, renames);
   const next = rows.map(row => [...row]);

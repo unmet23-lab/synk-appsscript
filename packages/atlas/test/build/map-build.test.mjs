@@ -14,10 +14,12 @@ import {
   driftOf,
   familyRenameCandidates,
   foldHash,
+  loadTags,
   nextEdition,
 } from '../../tools/map-build.mjs';
-import { agreementOf } from '../../tools/map-tags.mjs';
-import { banksOf, MAP_DIR, sliceOf } from '../../tools/map-ship.mjs';
+import { agreementOf, argonGroup, lineFor, packetDrift } from '../../tools/map-tags.mjs';
+import { openMap } from '../../src/map/index.mjs';
+import { banksOf, MAP_DIR, SLICE_WORDS_MAX, sliceOf } from '../../tools/map-ship.mjs';
 import { HANGUL_TYPES, REPO_ROOT } from '../../tools/map-sources.mjs';
 import { tempDir } from '../support/temp.mjs';
 
@@ -58,6 +60,33 @@ test('은행 조각은 그 은행 줄과 그 줄의 계열만 — 조각을 모�
     }
   }
   assert.equal(seen.size, index.items.length);
+});
+
+test('은행 조각의 낱말 줄은 그 조각이 쓰는 낱말 전부 — 낱말 표와 같은 줄, 상한을 넘는 은행(레이싱)은 싣지 않는다', () => {
+  const words = JSON.parse(fs.readFileSync(path.join(MAP_DIR, 'words.json'), 'utf8'));
+  const rows = new Map(words.units.map(row => [`${words.prefix}${row[0]}`, row]));
+  const [uAt, tAt] = [index.fields.indexOf('units'), index.templateFields.indexOf('units')];
+  for (const bank of banksOf(index)) {
+    const slice = sliceOf(index, bank, words);
+    const used = new Set(
+      [...slice.items.flatMap(row => row[uAt]), ...slice.templates.flatMap(row => row[tAt])].filter(
+        unit => unit.startsWith(words.prefix),
+      ),
+    );
+    if (!used.size || used.size > SLICE_WORDS_MAX) {
+      assert.equal(slice.words, undefined, bank);
+      continue;
+    }
+    assert.deepEqual(
+      slice.words.units,
+      words.units.filter(([suffix]) => used.has(`${words.prefix}${suffix}`)),
+      bank,
+    );
+    const map = openMap({ index: [slice] });
+    for (const unit of used)
+      assert.equal(map.unit(unit)?.label, rows.get(unit)[1], `${bank} ${unit}`);
+  }
+  assert.equal(sliceOf(index, 'korean-racing', words).words, undefined);
 });
 
 test('한글 계열 줄의 꼴은 제품 원문(core.mjs TYPES)과 같다', () => {
@@ -125,6 +154,74 @@ test('태그 판정 — 둘이 일치해도 지도 밖 단위면 판정으로 �
   };
   assert.equal(agreementOf(fixed, known).verdict, 'fixed');
   assert.equal(agreementOf({ ...fixed, second: { verdict: 'pass', units: [] } }, known), null);
+});
+
+test('태그 검수 관문 — 끝 표식 없는 답은 저장하지 않고, 1차 · 2차 없이 판정만으로 줄을 쓰지 않고, 준비 뒤 바뀐 기준 글 · 단위 목록은 멈춘다(GPT 보충 검수 GB1~GB3)', async () => {
+  const outFile = path.join(tempDir('atlas-map-tags-'), 'argon.json');
+  const group = [{ key: 'a', bank: 'g', skillId: 's', show: '', hints: [] }];
+  const context = verdicts => ({
+    call: async () => ({ text: JSON.stringify({ verdicts, end: false }) }),
+    rubric: '',
+    drafts: { a: [] },
+    grammar: '',
+    labels: new Map(),
+    state: { model: 'x', calls: [], results: {} },
+    outFile,
+  });
+  const ctx = context([{ key: 'a', verdict: 'pass', units: [], why: '' }]);
+  await argonGroup(group, ctx);
+  assert.deepEqual(ctx.state.results, {});
+  assert.match(ctx.state.calls[0].error, /끝 표식/);
+  // 끝 표식이 있어도 묶음의 문항 가운데 판정이 빠졌으면 묶음을 통째로 저장하지 않는다(다시 검수).
+  const two = [...group, { ...group[0], key: 'b' }];
+  const partial = {
+    ...context([]),
+    drafts: { a: [], b: [] },
+    call: async () => ({
+      text: JSON.stringify({
+        verdicts: [{ key: 'a', verdict: 'pass', units: [], why: '' }],
+        end: true,
+      }),
+    }),
+  };
+  await argonGroup(two, partial);
+  assert.deepEqual(partial.state.results, {});
+  assert.match(partial.state.calls[0].error, /빠진 문항 1/);
+
+  const v = {
+    row: { key: 'a', bank: 'g', draft: { units: [] } },
+    draft: [],
+    first: null,
+    second: null,
+  };
+  const judge = { a: { units: [], why: '빈 목록' } };
+  const opts = { name: 'p', at: '2026-11-11', rubric: 'atlas-tags-r2' };
+  assert.throws(() => lineFor(v, judge, new Set(), opts), /1차 · 2차/);
+  const reviewed = { ...v, first: { verdict: 'fix', units: [] }, second: { verdict: 'pass' } };
+  assert.equal(lineFor(reviewed, judge, new Set(), opts).review.rubric, 'atlas-tags-r2');
+
+  assert.throws(() => packetDrift({ rubric: { id: 'atlas-tags-r2', sha: '0' } }), /기준 글/);
+  const rubric = fs
+    .readFileSync(path.join(MAP_DIR, 'tags', 'rubric-r2.md'), 'utf8')
+    .replace(/\r\n/g, '\n');
+  const ok = {
+    id: 'atlas-tags-r2',
+    sha: crypto.createHash('sha256').update(rubric).digest('hex').slice(0, 16),
+  };
+  assert.doesNotThrow(() => packetDrift({ rubric: ok }));
+  assert.throws(() => packetDrift({ rubric: ok, catalog: { sha: '0' } }, '목록'), /단위 목록/);
+});
+
+test('빌드는 1차 · 2차 검수가 다 있지 않은 태그 줄에서 멈춘다(GPT 보충 검수 GB2)', () => {
+  const dir = tempDir('atlas-map-tagdir-');
+  fs.mkdirSync(path.join(dir, 'tags'));
+  const line = review => ({ a: { units: [], by: 'draft:opus', review } });
+  const write = review =>
+    fs.writeFileSync(path.join(dir, 'tags', 'g.json'), JSON.stringify({ tags: line(review) }));
+  write({ verdict: 'fixed', first: 'fix', second: 'pass' });
+  assert.equal(loadTags(dir).size, 1);
+  write({ verdict: 'fixed', first: null, second: null });
+  assert.throws(() => loadTags(dir), /1차 · 2차/);
 });
 
 test('색인 판(edition)은 태그 판 — 단위가 바뀌면 오르고, 접기 칸이 같으면 그대로다(단계 3 판 묶음)', () => {

@@ -1,0 +1,293 @@
+{
+  "rubric": "atlas-tags-r2",
+  "tags": {
+    "writing.w51-book": {
+      "units": [
+        "ko.grammar.G205",
+        "ko.grammar.G208"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 규칙 점검(친구에게 보내는 글 polite)과 accept가 두 빈칸 모두 해요체를 요구하고 watch의 첫 실수도 「돌려드리겠습니다」처럼 「-습니다」를 섞는 것이라 해요체 단위 G205가 주 단위다(같은 꼴 w51-study도 해요체를 G205로 둠). ㉠은 「어제 … 공부하다가」 뒤라 받는 답(쏟았어요 · 엎질렀어요 · 떨어뜨렸어요)이 모두 「-았/었어요」로 맺어 1차의 G208을 둔다. 1차 주 단위 G612는 accept가 「-ㄹ게요 · -ㄹ 거예요 · -겠어요」를 모두 받아 꼭 필요하지 않고, 2차의 빈 목록은 규칙 점검이 실제로 보는 문체를 놓친다.",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w51-graduation": {
+      "units": [
+        "ko.grammar.S110",
+        "ko.grammar.S111"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w51-recycle": {
+      "units": [
+        "ko.grammar.S111",
+        "ko.grammar.G304"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 앞선 판정과 같다. 규칙 점검(안내문 formal)과 accept가 두 빈칸 모두 「-습니다」로 맺게 하고 「-아요」면 「조금 고쳐 봐요」로 보므로 S111이 주 단위다(두 의견 같음). ㉡은 accept가 받는 꼴(수거하지 않는다 · 가져가지 않는다 · 치우지 않는다 …)이 모두 「-지 않다」라 1차의 G304를 둔다. 1차의 G402는 모범답 「내놓으실 수 있습니다」에만 쓰이고, 만은 accept가 「일주일에 하루로 줄어든다는 뜻이면 된다」고 해 꼭 필요하지 않다(2차).",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w51-repair": {
+      "units": [
+        "ko.grammar.S111",
+        "ko.grammar.S108"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w51-study": {
+      "units": [
+        "ko.grammar.S219",
+        "ko.grammar.G205",
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w52-card": {
+      "units": [
+        "ko.grammar.S330",
+        "ko.grammar.G307"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 규칙 점검(plain)과 accept가 「-다」체로 맺게 하고 watch가 「현금을 쓰세요」 같은 「-아요」 · 명령을 짚어 S330이 주 단위다. ㉠은 accept가 「앞의 「눈에 보이지만」과 대조돼야 한다」고 해, 지문의 -지만(G307)을 알아봐야 빈칸이 반대 내용임을 안다. 초안의 -지 않다 · -는 것은 accept가 「보거나 느끼기 어렵다」 · 「-아야 한다」도 받아 꼭 필요하지 않다.",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w52-crowd": {
+      "units": [
+        "ko.grammar.S330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 규칙 점검(plain)과 accept가 두 빈칸 모두 「-다」체를 요구하고 watch의 첫 실수가 「맛있기 때문이에요」처럼 「-아요」로 끝내는 것이라 S330만 둔다. ㉠의 S219는 accept가 「-기 때문이다」와 함께 「-아서/-어서이다 · -기 위해서이다」도 받고, ㉡의 G403은 「-는 것이 좋다」도 받아 다른 꼴로 써도 된다. 지문 낱말(식당 · 손님)은 맥락이라 빈칸의 뜻을 가르지 않는다. 2차의 빈 목록은 규칙 점검이 실제로 보는 문체를 놓친다.",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w52-hibernation": {
+      "units": [
+        "ko.grammar.S330",
+        "ko.grammar.S219"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 1차 단위에서 G401만 빼고 S330을 주 단위로 앞세운다. 규칙 점검(plain)과 accept가 두 빈칸 모두 「-다」체를 요구하고 watch의 첫 실수가 「겨울을 보낼 수 있어요」다. ㉡은 accept가 「「-기 때문에」 뒤라 앞 내용의 결과를 말하는 자리」라 하고 「에너지를 아낄 수 있다」처럼 앞말을 되풀이하면 받지 않아, 지문의 -기 때문에(S219)를 알아봐야 빈칸의 뜻이 정해진다. ㉠은 accept가 뒤 문장 「그래서 …」로 결과 자리임을 받쳐 -(으)면(G401)은 꼭 필요하지 않다.",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w52-refusal": {
+      "units": [
+        "ko.grammar.S330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 1차의 주 단위 S330만 남긴다. 규칙 점검(plain)과 accept가 두 빈칸 모두 「-다」체로 맺게 하고 「-아요」나 「거절하세요」 같은 명령이면 「조금 고쳐 봐요」로 본다. ㉠의 S224(-ㄹ까 봐)는 accept가 「-ㄹ 것이라고 생각한다 · 나빠진다고 여긴다 · 미안해서 마음이 불편하다」도 받고, ㉡의 G407(-는 것이 좋다)은 「-아야 한다」도 받아 다른 꼴로 써도 된다. 부탁은 지문 전체의 화제어라 빈칸의 뜻을 따로 가르지 않는다(거절하다는 지도 밖).",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w52-trees": {
+      "units": [
+        "ko.grammar.S330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 규칙 점검(설명문 plain)과 accept가 두 빈칸 모두 「-다」체를 요구하고 watch의 첫 실수가 「심고 있어요」처럼 「-아요」로 끝내는 것이라 「-다」체 단위 S330만 둔다. 1차의 S219는 accept가 「주변의 온도를 낮춘다」처럼 「-ㄴ다」로 맺어도 된다고 하고, 심다 · G409는 모범답에만 쓰여 「늘린다 · 도시 숲을 만든다 · 심는다」로도 된다. 2차의 빈 목록은 규칙 점검이 실제로 보는 문체를 놓친다.",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w53-clinic": {
+      "units": [],
+      "why": "쓰기 산출 과제라 고를 정답이 없어 정답과 오답을 가르는 단위가 없다. 빈 목록을 두면 계열이 단위가 된다. 후보 가운데 대(차를 세는 말) · 자(감) · 단(관)은 「에 대한」 · 「200~300자」 · 「단,」을 다른 뜻으로 잘못 찾은 것이라 붙이지 않는다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w53-exchange": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없는 까닭: 53형 자료 설명 글은 정답 비교 없이 규칙 점검(글자 수 · 제목 · 「-다」체 · 개조식 · 베끼기 · 자료 숫자)과 AI 참고 의견만 받는다. 늘다 · 늘어나다 · 증가하다, 「늘릴 계획이다 · 늘릴 예정이다 · 늘리기로 했다」처럼 어느 낱말 · 문형으로 써도 되어 1차의 늘어나다 · 계획 · 늘리다 · G501 가운데 피할 수 없는 것이 없다. 숫자 점검은 표의 80명 · 240명 · 520명 · 10개를 그대로 옮기면 통과해 숫자 표현도 따로 요구하지 않는다. 「-다」체는 53형 모두에 같은 요구라 계열이 맡는다(같은 꼴 w53-clinic · w53-resale도 빈 목록).",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없는 까닭: 53형 자료 설명 글은 정답 비교 없이 규칙 점검(글자 수 · 제목 · 「-다」체 · 개조식 · 베끼기 · 자료 숫자)과 AI 참고 의견만 받는다. 늘다 · 늘어나다 · 증가하다, 「늘릴 계획이다 · 늘릴 예정이다 · 늘리기로 했다」처럼 어느 낱말 · 문형으로 써도 되어 1차의 늘어나다 · 계획 · 늘리다 · G501 가운데 피할 수 없는 것이 없다. 숫자 점검은 표의 80명 · 240명 · 520명 · 10개를 그대로 옮기면 통과해 숫자 표현도 따로 요구하지 않는다. 「-다」체는 53형 모두에 같은 요구라 계열이 맡는다(같은 꼴 w53-clinic · w53-resale도 빈 목록).",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w53-living-cost": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없는 까닭: 53형 자료 설명 글은 정답 비교 없이 규칙 점검과 AI 참고 의견만 받고, 어느 낱말 · 문형으로 써도 된다. 1차의 G212 · 만 · 원은 표에 적힌 「90만 원 · 117만 원」을 그대로 옮겨 쓰면 숫자 점검(90만 · 117만)을 통과해 글쓰기에서 따로 알아야 할 단위가 아니고, watch의 「30% 증가」는 셈이지 낱말 · 문형이 아니다. 「-다」체는 53형 모두에 같은 요구라 계열이 맡는다(숫자를 옮기는 같은 꼴 w53-resale도 빈 목록).",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없는 까닭: 53형 자료 설명 글은 정답 비교 없이 규칙 점검과 AI 참고 의견만 받고, 어느 낱말 · 문형으로 써도 된다. 1차의 G212 · 만 · 원은 표에 적힌 「90만 원 · 117만 원」을 그대로 옮겨 쓰면 숫자 점검(90만 · 117만)을 통과해 글쓰기에서 따로 알아야 할 단위가 아니고, watch의 「30% 증가」는 셈이지 낱말 · 문형이 아니다. 「-다」체는 53형 모두에 같은 요구라 계열이 맡는다(숫자를 옮기는 같은 꼴 w53-resale도 빈 목록).",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w53-resale": {
+      "units": [],
+      "why": "This is an open writing task with no right or wrong answer to compare. Its success depends on the writing as a whole (rule checks plus AI comments), so no single word or grammar pattern decides it. Tagging instruction or data words like 이용, 변화 or 자료 would only be forced units, and the standard prefers an empty list (the item then uses its own group).",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w53-study-ways": {
+      "units": [],
+      "why": "쓰기 산출 과제라 정답과 오답을 가르는 단위가 없다. 지시문의 낱말(외국인 · 한국어 · 공부 · 방법 · 제목)이나 「-지 말다」를 억지로 붙이기보다 빈 목록으로 두어 계열 단위를 따르는 편이 맞다(기준 1).",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w54-advice": {
+      "units": [],
+      "why": "This is a writing task with no answer to compare, so no unit separates a right answer from a wrong one. The candidates (주제, 생각, 글, 가족, 친구 and so on) are words in the instructions. The learner can write without knowing them, so none is essential (criterion 1). An empty list is right, and the item falls back to its own item group as its unit.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w54-all-night": {
+      "units": [],
+      "why": "정답과 견주어 고르는 문항이 아닌 산출 과제라 정답과 오답을 가르는 단위가 없다(기준 1). 빈 목록을 두어 계열을 단위로 삼는 것이 맞다. 후보 「자(감)」는 「600~700자」의 글자를 세는 말과 뜻이 다른 동음이의어라 어느 경우에도 붙이지 않는다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w54-car-free": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없는 까닭: 54형 600~700자 논술은 정답 비교 없이 규칙 점검(글자 수 · 「-다」체 · 문제 베끼기 등)과 AI 참고 의견만 받고, 이유 · 문제 · 입장을 어떤 말로 써도 된다. 1차의 차 · 거리 · 없다 · 반대하다는 주제를 알아듣는 데 쓰이지만 주제는 지시문 전체(자동차가 다니지 못하게 하고 사람만 걸을 수 있도록 …)와 세 물음으로 풀려 있어 낱말 하나가 해냄을 가르지 않고, 입장은 찬성하다(지도 밖)로도 밝힐 수 있다. 같은 꼴 54형 넷(w54-shared-rules · all-night · advice · translation)도 빈 목록이다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없는 까닭: 54형 600~700자 논술은 정답 비교 없이 규칙 점검(글자 수 · 「-다」체 · 문제 베끼기 등)과 AI 참고 의견만 받고, 이유 · 문제 · 입장을 어떤 말로 써도 된다. 1차의 차 · 거리 · 없다 · 반대하다는 주제를 알아듣는 데 쓰이지만 주제는 지시문 전체(자동차가 다니지 못하게 하고 사람만 걸을 수 있도록 …)와 세 물음으로 풀려 있어 낱말 하나가 해냄을 가르지 않고, 입장은 찬성하다(지도 밖)로도 밝힐 수 있다. 같은 꼴 54형 넷(w54-shared-rules · all-night · advice · translation)도 빈 목록이다.",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w54-shared-rules": {
+      "units": [],
+      "why": "자유 쓰기 산출 과제라 정답과 오답을 가르는 단위가 없다. 빈 목록이 맞다(1). 후보 가운데 「자(감)」은 글자 수를 뜻하는 「자」를, 「단(관)」은 부사 「단」을 잘못 짚은 것이다. 나머지 후보도 과제를 해내는 데 꼭 필요한 단위가 아니다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "writing.w54-translation": {
+      "units": [],
+      "why": "This is an open writing task with no answer to compare against, so no unit separates a right answer from a wrong one (criteria 1 and 2). An empty list is better than forced tags, and the item can use its own series as its unit. Several candidates are false matches: 자(감) comes from the 자 in 600~700자, and 번(의) comes from the 번 in 번역.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    }
+  }
+}

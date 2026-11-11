@@ -160,18 +160,18 @@
     },
     "korean-rhythm.rhythm-transfer-ti-l-d-013.v1": {
       "units": [
-        "ko.grammar.G404",
+        "ko.word.w0212",
         "ko.word.w0965"
       ],
       "by": "product",
       "review": {
-        "rubric": "atlas-tags-r1",
-        "packet": "tags-a",
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
         "first": "fix",
         "second": "fix",
         "verdict": "fixed",
-        "judge": "합쳐 씀 — 여자의 부탁 「문 앞에 놓아 주세요」의 -아/어 주세요(둘 다) 주 단위, 설명의 두다(2차). 지도의 놓다 w0212는 보조 동사 「놓다(보)」라 본동사로 쓰지 않고, -(으)ㄹ게요(1차)는 몰라도 됨",
-        "at": "2026-11-10"
+        "judge": "2차 — O를 가르는 것은 여자가 말한 「문 앞에 놓아 주세요」와 남자가 답한 「놓고」의 놓다(본용언)를 설명문의 「두고 갈 겁니다」 두다와 같은 일로 알아듣는 것이다. 놓다를 주 단위로, 두다를 둘째로 둔다. -아/어 주세요(1차)는 몰라도 남자가 「네, 놓고」라고 답해 문 앞에 둔다는 것이 드러나므로 뺀다(기준 r2의 「물 주세요」 예와 같다). 문 앞은 들은 말과 설명문에 같은 꼴로 있다.",
+        "at": "2026-11-11"
       }
     },
     "korean-rhythm.rhythm-transfer-ti-l-d-014.v1": {
@@ -435,6 +435,21 @@
         "at": "2026-11-10"
       }
     },
+    "korean-rhythm:t0q0:v1:recall": {
+      "units": [
+        "ko.word.w0069"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 들은 말 「오늘 도서관에 가요」에서 도서관에 가는 날인 오늘만 알아들으면 O가 나온다. 내일(1차)은 앞절 「내일은 바빠서」의 까닭 쪽 말이라 몰라도 오늘이 「도서관에 가요」에 붙은 것만으로 답이 나오므로 뺀다(t0q1 recall이 들은 곳 도서관 하나만 둔 것과 같은 기준). 도서관은 들은 말과 질문에 같은 소리로 있어 필요 없다.",
+        "at": "2026-11-11"
+      }
+    },
     "korean-rhythm:t0q1:v1:recall": {
       "units": [
         "ko.word.w0600"
@@ -544,6 +559,38 @@
         "verdict": "fixed",
         "judge": "합쳐 씀 — 「예약하지 않아도」의 -어도·-지 않다(둘 다)를 질문의 「예약 없이」의 없이(2차)와 이어야 O. -(으)ㄹ 수 있다(2차)는 지문과 질문에 똑같아 뺌",
         "at": "2026-11-10"
+      }
+    },
+    "korean-rhythm:t2q3:v1:claim0:v2": {
+      "units": [
+        "ko.word.w0252",
+        "ko.word.w0344",
+        "ko.word.w0330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-rhythm:t2q3:v1:claim1:v2": {
+      "units": [
+        "ko.word.w0252",
+        "ko.word.w0330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 앞선 판정과 같다. 주 단위는 두 의견이 함께 둔 어렵다다. 「변경하기 어려워요」를 '아직 못 바꿈'으로 알아들어야 「이미 일정을 바꿨나요?」에 X가 나온다. 묻는 「바꿨나요」가 들은 「변경하기」와 같은 일임을 알아들어야 하므로 바꾸다(2차)를 둔다(claim0과 같은 기준, 변경하다는 지도 밖). -기(1차)는 어렵다만으로 '바꾸기 힘듦'이 잡혀 몰라도 되고, 이미(2차)는 「바꿨나요」의 지난 일만으로도 X가 나와 뺀다.",
+        "at": "2026-11-11"
       }
     }
   }

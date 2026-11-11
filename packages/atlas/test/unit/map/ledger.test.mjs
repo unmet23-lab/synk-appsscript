@@ -37,6 +37,11 @@ test('이름이 바뀐 열쇠는 옛 줄의 번호를 잇는다(사슬도) — �
   assert.deepEqual(next.added, []);
   assert.equal(numberer(next.rows, renames)('a3'), 1);
   assert.throws(() => extendRows(rows, ['a', 'a3'], renames), /함께 있다/);
+  // 사슬 중간 이름과 끝 이름이 함께 살아 있어도 멈춘다 — 둘 다 a의 번호를 받는다(GPT 보충 검수 GA1).
+  assert.throws(
+    () => extendRows([[1, 'a']], ['a2', 'a3'], { a: 'a2', a2: 'a3' }),
+    /두 이름 a2 · a3가 함께 있다/,
+  );
   assert.throws(() => extendRows(rows, ['x'], { x: 'y', y: 'x' }), /고리/);
   assert.throws(() => extendRows(rows, ['z'], { a: 'z', b: 'z' }), /두 옛 이름/);
 });

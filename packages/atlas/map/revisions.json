@@ -12755,6 +12755,4304 @@
         "added": [],
         "retired": []
       }
+    },
+    {
+      "edition": 3,
+      "hash": "12f917304b96adea",
+      "items": {
+        "changed": [
+          {
+            "n": 2,
+            "from": {
+              "f": 2,
+              "skillId": "ko.listening.response",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2,
+              "skillId": "ko.listening.response",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0144",
+                "ko.word.w0302"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 3,
+            "from": {
+              "f": 3,
+              "skillId": "ko.listening.response",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 3,
+              "skillId": "ko.listening.response",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0123",
+                "ko.word.w0302"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 19,
+            "from": {
+              "f": 19,
+              "skillId": "ko.listening.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 19,
+              "skillId": "ko.listening.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0681",
+                "ko.word.w0303",
+                "ko.word.w0332"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 20,
+            "from": {
+              "f": 20,
+              "skillId": "ko.listening.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 20,
+              "skillId": "ko.listening.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0526",
+                "ko.word.w0034",
+                "ko.word.w0271"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 21,
+            "from": {
+              "f": 21,
+              "skillId": "ko.listening.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 21,
+              "skillId": "ko.listening.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0318",
+                "ko.word.w0854"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 54,
+            "from": {
+              "f": 54,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 54,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0279",
+                "ko.word.w0037"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 163,
+            "from": {
+              "f": 163,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 163,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0666",
+                "ko.word.w0472",
+                "ko.word.w0530"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 164,
+            "from": {
+              "f": 164,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 164,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0429",
+                "ko.word.w0165"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 165,
+            "from": {
+              "f": 165,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 165,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0255"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 172,
+            "from": {
+              "f": 172,
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 172,
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0227",
+                "ko.word.w0189",
+                "ko.grammar.G304"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 199,
+            "from": {
+              "f": 199,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 199,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0339",
+                "ko.word.w0623",
+                "ko.word.w0282"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 201,
+            "from": {
+              "f": 201,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 201,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0201",
+                "ko.word.w0344"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 203,
+            "from": {
+              "f": 203,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 203,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0386",
+                "ko.grammar.S113"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 205,
+            "from": {
+              "f": 205,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 205,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0428",
+                "ko.word.w0637"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 206,
+            "from": {
+              "f": 206,
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 206,
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G402",
+                "ko.word.w0100",
+                "ko.word.w0395"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 209,
+            "from": {
+              "f": 209,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 209,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1484"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 213,
+            "from": {
+              "f": 213,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 213,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1433",
+                "ko.word.w0007"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 215,
+            "from": {
+              "f": 215,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 215,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1355",
+                "ko.word.w0257",
+                "ko.word.w0182"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 217,
+            "from": {
+              "f": 217,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 217,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1088",
+                "ko.word.w0053",
+                "ko.word.w0628",
+                "ko.grammar.G304"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 219,
+            "from": {
+              "f": 219,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 219,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1457",
+                "ko.word.w0051"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 221,
+            "from": {
+              "f": 221,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 221,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1475",
+                "ko.word.w0344"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 223,
+            "from": {
+              "f": 223,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 223,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0762",
+                "ko.word.w0021",
+                "ko.word.w1612"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 224,
+            "from": {
+              "f": 224,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 224,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0511",
+                "ko.word.w0162"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 225,
+            "from": {
+              "f": 225,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 225,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0115",
+                "ko.word.w1130"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 229,
+            "from": {
+              "f": 229,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 229,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1452",
+                "ko.word.w0264"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 231,
+            "from": {
+              "f": 231,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 231,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1901",
+                "ko.word.w0080"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 233,
+            "from": {
+              "f": 233,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 233,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1212",
+                "ko.word.w1785",
+                "ko.word.w0182"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 241,
+            "from": {
+              "f": 241,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 241,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0544",
+                "ko.word.w1163",
+                "ko.word.w0330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 243,
+            "from": {
+              "f": 243,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 243,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1483",
+                "ko.word.w1247"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 245,
+            "from": {
+              "f": 245,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 245,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1116",
+                "ko.word.w0257",
+                "ko.grammar.G401"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 248,
+            "from": {
+              "f": 248,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 248,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0965",
+                "ko.word.w0476"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 251,
+            "from": {
+              "f": 251,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 251,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0450",
+                "ko.word.w1442",
+                "ko.word.w0330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 252,
+            "from": {
+              "f": 252,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 252,
+              "skillId": "ko.reading.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1442",
+                "ko.word.w0330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 255,
+            "from": {
+              "f": 255,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 255,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0384",
+                "ko.word.w0448"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 257,
+            "from": {
+              "f": 257,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 257,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1130",
+                "ko.word.w0206"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 260,
+            "from": {
+              "f": 260,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 260,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1011",
+                "ko.grammar.S105"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 275,
+            "from": {
+              "f": 275,
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 275,
+              "skillId": "ko.reading.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S115",
+                "ko.word.w1163",
+                "ko.word.w0224"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 277,
+            "from": {
+              "f": 277,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 277,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G405",
+                "ko.grammar.S220"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 281,
+            "from": {
+              "f": 281,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 281,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0540",
+                "ko.word.w1011"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 285,
+            "from": {
+              "f": 285,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 285,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G313",
+                "ko.word.w0636",
+                "ko.word.w0367",
+                "ko.grammar.G304"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 289,
+            "from": {
+              "f": 289,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 289,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1211",
+                "ko.word.w0190",
+                "ko.word.w1247"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 290,
+            "from": {
+              "f": 290,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 290,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0190",
+                "ko.word.w0445",
+                "ko.word.w1506"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 340,
+            "from": {
+              "f": 340,
+              "skillId": "ko2.listening.inference",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1821",
+                "ko.word.w0043",
+                "ko.grammar.G208"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 340,
+              "skillId": "ko2.listening.inference",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1821",
+                "ko.word.w2002",
+                "ko.grammar.G208"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 424,
+            "from": {
+              "f": 424,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0041"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 424,
+              "skillId": "ko.reading.vocabulary",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w2001",
+                "ko.word.w0001"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 434,
+            "from": {
+              "f": 434,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 434,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0201",
+                "ko.grammar.G209",
+                "ko.word.w0771",
+                "ko.word.w0083"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 435,
+            "from": {
+              "f": 435,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 435,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0339",
+                "ko.word.w0252",
+                "ko.word.w0409"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 450,
+            "from": {
+              "f": 450,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 450,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0152",
+                "ko.word.w0648",
+                "ko.word.w0487"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 528,
+            "from": {
+              "f": 528,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 528,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0008"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 529,
+            "from": {
+              "f": 529,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 529,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0011"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 530,
+            "from": {
+              "f": 530,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 530,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0001"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 531,
+            "from": {
+              "f": 531,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 531,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0011"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 532,
+            "from": {
+              "f": 532,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 532,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0008"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 533,
+            "from": {
+              "f": 533,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 533,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0001",
+                "ko.word.w0139"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 534,
+            "from": {
+              "f": 534,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 534,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0008",
+                "ko.word.w0161"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 535,
+            "from": {
+              "f": 535,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 535,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0001",
+                "ko.word.w0161"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 536,
+            "from": {
+              "f": 536,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 536,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0008",
+                "ko.word.w0326"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 537,
+            "from": {
+              "f": 537,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 537,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0001",
+                "ko.word.w0326"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 538,
+            "from": {
+              "f": 538,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 538,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0008",
+                "ko.word.w0139"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 541,
+            "from": {
+              "f": 539,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "binary-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 539,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "binary-choice",
+              "units": [
+                "ko.word.w0069"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 578,
+            "from": {
+              "f": 552,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "binary-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 552,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "binary-choice",
+              "units": [
+                "ko.word.w0252",
+                "ko.word.w0344",
+                "ko.word.w0330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 579,
+            "from": {
+              "f": 552,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "binary-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 552,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "binary-choice",
+              "units": [
+                "ko.word.w0252",
+                "ko.word.w0330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 596,
+            "from": {
+              "f": 107,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "binary-choice",
+              "units": [
+                "ko.grammar.G404",
+                "ko.word.w0965"
+              ],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 107,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "binary-choice",
+              "units": [
+                "ko.word.w0212",
+                "ko.word.w0965"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 703,
+            "from": {
+              "f": 625,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 625,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0609"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 705,
+            "from": {
+              "f": 627,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 627,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0618",
+                "ko.life.directions-right"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 706,
+            "from": {
+              "f": 628,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 628,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w1882",
+                "ko.word.w0336"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 707,
+            "from": {
+              "f": 629,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 629,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0273"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 708,
+            "from": {
+              "f": 630,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 630,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.grammar.S226"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 709,
+            "from": {
+              "f": 631,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 631,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0609"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 710,
+            "from": {
+              "f": 632,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 632,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0273",
+                "ko.word.w1882"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 711,
+            "from": {
+              "f": 633,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 633,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.grammar.S226",
+                "ko.word.w0609"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 712,
+            "from": {
+              "f": 634,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 634,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0618",
+                "ko.life.directions-right"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 713,
+            "from": {
+              "f": 635,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 635,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0609",
+                "ko.word.w1882"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 714,
+            "from": {
+              "f": 636,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 636,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.grammar.S226",
+                "ko.word.w0273"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 715,
+            "from": {
+              "f": 637,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 637,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0618",
+                "ko.word.w0336"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 716,
+            "from": {
+              "f": 638,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 638,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.grammar.S226"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 717,
+            "from": {
+              "f": 639,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 639,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 2,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0618",
+                "ko.word.w0273"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 718,
+            "from": {
+              "f": 640,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 640,
+              "skillId": "ko.listening.negation",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.grammar.S226"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 719,
+            "from": {
+              "f": 641,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 641,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0008"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 720,
+            "from": {
+              "f": 642,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 642,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0037"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 721,
+            "from": {
+              "f": 643,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 643,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0194"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 722,
+            "from": {
+              "f": 644,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 644,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0051"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 723,
+            "from": {
+              "f": 645,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 645,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0031"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 724,
+            "from": {
+              "f": 646,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 646,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0013"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 725,
+            "from": {
+              "f": 647,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 647,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0297"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 726,
+            "from": {
+              "f": 648,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 648,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0590"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 727,
+            "from": {
+              "f": 649,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 649,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0036"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 728,
+            "from": {
+              "f": 650,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 650,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0068"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 734,
+            "from": {
+              "f": 656,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 656,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0201",
+                "ko.word.w0051",
+                "ko.word.w0025"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 735,
+            "from": {
+              "f": 657,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 657,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0339",
+                "ko.word.w0608"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 736,
+            "from": {
+              "f": 658,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 658,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0962"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 737,
+            "from": {
+              "f": 659,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 659,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0152"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 738,
+            "from": {
+              "f": 660,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 660,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0201",
+                "ko.word.w0367",
+                "ko.word.w0038"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 739,
+            "from": {
+              "f": 661,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 661,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0066",
+                "ko.word.w0851",
+                "ko.word.w0521"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 740,
+            "from": {
+              "f": 662,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 662,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0070",
+                "ko.word.w0813",
+                "ko.word.w0858",
+                "ko.word.w0069"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 741,
+            "from": {
+              "f": 663,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 663,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G212",
+                "ko.word.w0867",
+                "ko.word.w0805",
+                "ko.word.w0139"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 742,
+            "from": {
+              "f": 664,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 664,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0442",
+                "ko.word.w0161",
+                "ko.grammar.G212"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 743,
+            "from": {
+              "f": 665,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 665,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0479",
+                "ko.word.w0607"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 744,
+            "from": {
+              "f": 666,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 666,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0334"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 745,
+            "from": {
+              "f": 667,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 667,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0034"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 746,
+            "from": {
+              "f": 668,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 668,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S115",
+                "ko.grammar.G212"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 747,
+            "from": {
+              "f": 669,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 669,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0609"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 748,
+            "from": {
+              "f": 670,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 670,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0228"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 749,
+            "from": {
+              "f": 671,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 671,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0021",
+                "ko.word.w0244"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 750,
+            "from": {
+              "f": 672,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 672,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0660",
+                "ko.word.w0011"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 751,
+            "from": {
+              "f": 673,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 673,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0111",
+                "ko.word.w0240",
+                "ko.word.w0180"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 752,
+            "from": {
+              "f": 674,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 674,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0524"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 753,
+            "from": {
+              "f": 675,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 675,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0155"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 754,
+            "from": {
+              "f": 676,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 676,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0801",
+                "ko.word.w0632"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 755,
+            "from": {
+              "f": 677,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 677,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0109"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 756,
+            "from": {
+              "f": 678,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 678,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1116"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 757,
+            "from": {
+              "f": 679,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 679,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0070",
+                "ko.word.w0600",
+                "ko.grammar.G212"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 758,
+            "from": {
+              "f": 680,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 680,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0492"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 759,
+            "from": {
+              "f": 681,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 681,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G402"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 760,
+            "from": {
+              "f": 682,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 682,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G212"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 765,
+            "from": {
+              "f": 687,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 687,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0544",
+                "ko.word.w1163"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 766,
+            "from": {
+              "f": 688,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 688,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G402"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 767,
+            "from": {
+              "f": 689,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 689,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0025",
+                "ko.word.w1517"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 768,
+            "from": {
+              "f": 690,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 690,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0098",
+                "ko.grammar.G304",
+                "ko.word.w0221",
+                "ko.word.w0128"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 769,
+            "from": {
+              "f": 691,
+              "skillId": "ko.listening.reason",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 691,
+              "skillId": "ko.listening.reason",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0111",
+                "ko.word.w0534"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 772,
+            "from": {
+              "f": 694,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 694,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0279",
+                "ko.word.w0039"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 774,
+            "from": {
+              "f": 696,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 696,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0091",
+                "ko.word.w0746",
+                "ko.word.w0858"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 775,
+            "from": {
+              "f": 697,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 697,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S202",
+                "ko.grammar.G212",
+                "ko.word.w0540",
+                "ko.word.w0187"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 776,
+            "from": {
+              "f": 698,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 698,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S105",
+                "ko.word.w0309",
+                "ko.grammar.G402"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 777,
+            "from": {
+              "f": 699,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 699,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G401"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 778,
+            "from": {
+              "f": 700,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 700,
+              "skillId": "ko.reading.detail",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0813"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 779,
+            "from": {
+              "f": 701,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 701,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0160",
+                "ko.word.w0068"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 780,
+            "from": {
+              "f": 702,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 702,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0042"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 781,
+            "from": {
+              "f": 703,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 703,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0086",
+                "ko.word.w0116"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 782,
+            "from": {
+              "f": 704,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 704,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0836"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 783,
+            "from": {
+              "f": 705,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 705,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0276",
+                "ko.word.w0085"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 786,
+            "from": {
+              "f": 708,
+              "skillId": "ko.listening.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 708,
+              "skillId": "ko.listening.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0115"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 787,
+            "from": {
+              "f": 709,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 709,
+              "skillId": "ko.reading.grammar",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0339",
+                "ko.word.w0414",
+                "ko.word.w0487"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 788,
+            "from": {
+              "f": 710,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 710,
+              "skillId": "ko.listening.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S107",
+                "ko.grammar.G210",
+                "ko.word.w0040"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 789,
+            "from": {
+              "f": 711,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 711,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0521",
+                "ko.word.w0811"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 790,
+            "from": {
+              "f": 712,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 712,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0774"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 792,
+            "from": {
+              "f": 714,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 714,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0173"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 793,
+            "from": {
+              "f": 715,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 715,
+              "skillId": "ko.reading.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0217"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 794,
+            "from": {
+              "f": 716,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 716,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0326",
+                "ko.word.w0001"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 795,
+            "from": {
+              "f": 717,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 717,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0070"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 796,
+            "from": {
+              "f": 718,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 718,
+              "skillId": "ko.listening.main",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0600",
+                "ko.word.w0021"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 797,
+            "from": {
+              "f": 719,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 719,
+              "skillId": "ko.listening.detail",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0623"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 798,
+            "from": {
+              "f": 720,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 720,
+              "skillId": "ko.listening.negation",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0338",
+                "ko.word.w0660"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 799,
+            "from": {
+              "f": 721,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 721,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0623",
+                "ko.grammar.G402"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 804,
+            "from": {
+              "f": 726,
+              "skillId": "ko.listening.reason",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 726,
+              "skillId": "ko.listening.reason",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0225"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 805,
+            "from": {
+              "f": 727,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 727,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S105",
+                "ko.word.w0844",
+                "ko.word.w0811"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 807,
+            "from": {
+              "f": 729,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 729,
+              "skillId": "ko.reading.condition",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S107",
+                "ko.grammar.G304",
+                "ko.grammar.G402"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 808,
+            "from": {
+              "f": 730,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 730,
+              "skillId": "ko.listening.sequence",
+              "difficulty": 3,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0279",
+                "ko.word.w0039"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2869,
+            "from": {
+              "f": 2774,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2774,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w1481"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2870,
+            "from": {
+              "f": 2775,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2775,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0087"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2871,
+            "from": {
+              "f": 2776,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2776,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0282"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2872,
+            "from": {
+              "f": 2777,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2777,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0623"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2873,
+            "from": {
+              "f": 2778,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2778,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0194"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2874,
+            "from": {
+              "f": 2779,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2779,
+              "skillId": "ko.listening.word",
+              "difficulty": 1,
+              "responseFormat": "action",
+              "units": [
+                "ko.word.w0336"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2875,
+            "from": {
+              "f": 2780,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2780,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0070",
+                "ko.word.w0069"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2876,
+            "from": {
+              "f": 2781,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2781,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S226",
+                "ko.grammar.G506"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2877,
+            "from": {
+              "f": 2782,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2782,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0279"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2882,
+            "from": {
+              "f": 2787,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2787,
+              "skillId": "ko.reading.detail",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0375"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2883,
+            "from": {
+              "f": 2788,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2788,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S226",
+                "ko.grammar.G506"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2884,
+            "from": {
+              "f": 2789,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2789,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S226",
+                "ko.grammar.G506"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2885,
+            "from": {
+              "f": 2790,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2790,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S226"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2886,
+            "from": {
+              "f": 2791,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2791,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S226",
+                "ko.grammar.G506"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2887,
+            "from": {
+              "f": 2792,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2792,
+              "skillId": "ko.reading.negation",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S226",
+                "ko.grammar.G506"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2888,
+            "from": {
+              "f": 2793,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2793,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G406"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2889,
+            "from": {
+              "f": 2794,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2794,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S336",
+                "ko.grammar.S340"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2890,
+            "from": {
+              "f": 2795,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2795,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0384"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2891,
+            "from": {
+              "f": 2796,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2796,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G406"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2892,
+            "from": {
+              "f": 2797,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2797,
+              "skillId": "ko.reading.sequence",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1715"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2893,
+            "from": {
+              "f": 2798,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2798,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S219",
+                "ko.word.w0663"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2894,
+            "from": {
+              "f": 2799,
+              "skillId": "ko.reading.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2799,
+              "skillId": "ko.reading.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G308"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2895,
+            "from": {
+              "f": 2800,
+              "skillId": "ko.reading.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2800,
+              "skillId": "ko.reading.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G308"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2896,
+            "from": {
+              "f": 2801,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2801,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S219",
+                "ko.word.w1917"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2897,
+            "from": {
+              "f": 2802,
+              "skillId": "ko.reading.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2802,
+              "skillId": "ko.reading.reason",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.G308"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2898,
+            "from": {
+              "f": 2803,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2803,
+              "skillId": "ko.reading.reason",
+              "difficulty": 2,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.grammar.S219",
+                "ko.word.w0093"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2899,
+            "from": {
+              "f": 2804,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2804,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0457"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2900,
+            "from": {
+              "f": 2805,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2805,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1711",
+                "ko.word.w0648",
+                "ko.word.w0179"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2901,
+            "from": {
+              "f": 2806,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2806,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w1649",
+                "ko.word.w0040"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2902,
+            "from": {
+              "f": 2807,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2807,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0234",
+                "ko.word.w0042"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2903,
+            "from": {
+              "f": 2808,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2808,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0330",
+                "ko.word.w0097"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2904,
+            "from": {
+              "f": 2809,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2809,
+              "skillId": "ko.reading.main",
+              "difficulty": 1,
+              "responseFormat": "single-choice",
+              "units": [
+                "ko.word.w0717",
+                "ko.word.w0447"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2905,
+            "from": {
+              "f": 2810,
+              "skillId": "ko.speaking.answer",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2810,
+              "skillId": "ko.speaking.answer",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [
+                "ko.word.w0620",
+                "ko.grammar.G208",
+                "ko.word.w0922",
+                "ko.word.w0552"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2906,
+            "from": {
+              "f": 2811,
+              "skillId": "ko.speaking.roleplay",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2811,
+              "skillId": "ko.speaking.roleplay",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [
+                "ko.life.cafe-compose",
+                "ko.life.cafe-here"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2907,
+            "from": {
+              "f": 2812,
+              "skillId": "ko.speaking.narrate",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2812,
+              "skillId": "ko.speaking.narrate",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [
+                "ko.grammar.G208",
+                "ko.word.w0467",
+                "ko.word.w0601",
+                "ko.word.w0049"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2908,
+            "from": {
+              "f": 2813,
+              "skillId": "ko.speaking.respond",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2813,
+              "skillId": "ko.speaking.respond",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [
+                "ko.word.w0578",
+                "ko.word.w0368",
+                "ko.word.w0095",
+                "ko.word.w1917"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2909,
+            "from": {
+              "f": 2814,
+              "skillId": "ko.speaking.interpret",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2814,
+              "skillId": "ko.speaking.interpret",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [
+                "ko.grammar.G212",
+                "ko.word.w0961"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2911,
+            "from": {
+              "f": 2816,
+              "skillId": "ko.speaking.roleplay",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2816,
+              "skillId": "ko.speaking.roleplay",
+              "difficulty": 1,
+              "responseFormat": "spoken",
+              "units": [
+                "ko.life.cafe-compose",
+                "ko.life.cafe-here"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2912,
+            "from": {
+              "f": 2817,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2817,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S111",
+                "ko.grammar.G304"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2913,
+            "from": {
+              "f": 2818,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2818,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S219",
+                "ko.grammar.G205",
+                "ko.grammar.G308"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2914,
+            "from": {
+              "f": 2819,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2819,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S111",
+                "ko.grammar.S108"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2915,
+            "from": {
+              "f": 2820,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2820,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S110",
+                "ko.grammar.S111"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2916,
+            "from": {
+              "f": 2821,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2821,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.G205",
+                "ko.grammar.G208"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2917,
+            "from": {
+              "f": 2822,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2822,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2918,
+            "from": {
+              "f": 2823,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2823,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S330"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2919,
+            "from": {
+              "f": 2824,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2824,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S330",
+                "ko.grammar.G307"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2920,
+            "from": {
+              "f": 2825,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2825,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S330",
+                "ko.grammar.S219"
+              ],
+              "unknownOption": false
+            }
+          },
+          {
+            "n": 2921,
+            "from": {
+              "f": 2826,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [],
+              "unknownOption": false
+            },
+            "to": {
+              "f": 2826,
+              "skillId": "ko2.writing.sentence",
+              "difficulty": 2,
+              "responseFormat": "unknown",
+              "units": [
+                "ko.grammar.S330"
+              ],
+              "unknownOption": false
+            }
+          }
+        ],
+        "added": [],
+        "retired": []
+      },
+      "templates": {
+        "changed": [],
+        "added": [],
+        "retired": []
+      }
     }
   ]
 }

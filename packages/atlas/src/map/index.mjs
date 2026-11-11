@@ -37,17 +37,23 @@ function brainItem(row, itemKey = row.itemKey) {
   return Object.freeze(item);
 }
 
-function unitTable(units, words) {
+function unitTable(units, wordTables) {
   const table = new Map();
   for (const [id, kind, label, level] of units?.units ?? [])
     table.set(id, Object.freeze({ id, kind, label, level: level ?? null }));
-  const prefix = words?.prefix ?? 'ko.word.';
-  for (const [suffix, label, pos, band] of words?.units ?? []) {
-    const id = `${prefix}${suffix}`;
-    table.set(id, Object.freeze({ id, kind: 'word', label, level: null, pos, band }));
+  // sense: 같은 글 낱말 단위가 둘 이상일 때 가르는 뜻 풀이(없으면 null — map/senses.json).
+  for (const words of wordTables) {
+    const prefix = words?.prefix ?? 'ko.word.';
+    for (const [suffix, label, pos, band, sense] of words?.units ?? []) {
+      const id = `${prefix}${suffix}`;
+      const unit = { id, kind: 'word', label, level: null, pos, band, sense: sense ?? null };
+      table.set(id, Object.freeze(unit));
+    }
   }
   return table;
 }
+
+const slicesOf = given => (Array.isArray(given) ? given : [given]).filter(Boolean);
 
 function lookups(index) {
   const fields = index.fields;
@@ -193,7 +199,11 @@ export function openMap({ index: given, units = null, words = null } = {}) {
       byKey.get(itemName(itemKey))?.n ?? retiredNumbers.get(itemName(itemKey)) ?? null,
     itemKeyOf: n => byNumber.get(n)?.itemKey ?? retiredKeys.get(n) ?? null,
     familyNumber: familyKey => families.get(familyName(familyKey)) ?? null,
-    unit: unitLookup(unitTable(units, words), renames),
+    // 낱말 이름: 받은 낱말 표 + 은행 조각에 실린 그 조각의 낱말 줄(11-11 — 낱말 표 없이 이유 문장의 이름을 세움).
+    unit: unitLookup(
+      unitTable(units, [words, ...slicesOf(given).map(slice => slice.words)]),
+      renames,
+    ),
     renamedUnit: follower(renames.units),
   };
   // 단계 3이 한 색인으로 두 곳에 넘기는 꼴 — 접기 어댑터(src/record/adapt.mjs itemOf)가 edition · lookup(itemKey)을, 기기 얹기 직전

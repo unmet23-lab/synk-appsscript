@@ -1,6 +1,78 @@
 {
   "rubric": "atlas-tags-r1",
   "tags": {
+    "korean-runner.jump-right.v4": {
+      "units": [
+        "ko.word.w0618",
+        "ko.life.directions-right"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 2차대로 G406(-은 뒤)은 뺀다: 세 길을 모두 막는 울타리가 먼저 오고, 오른쪽 길로는 둘째 표시선 전에 언제 옮겨도 맞게 쳐져 순서를 알아듣지 않아도 답이 같다. 주 단위는 화면에 드러나지 않는 방향 「오른쪽」이다. 뒷말 「오른쪽으로 가세요」가 생활 표현 directions-right와 똑같아 1차대로 표현도 둔다(right.v4와 같은 판정). 뛰어넘다는 지도 밖이고 울타리가 보여 동작이 드러난다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.jump-stay.v4": {
+      "units": [
+        "ko.grammar.S226"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 둘째 표시선에서 뛰지 않고 그대로 달리게 가르는 것은 「뛰지 마세요」의 -지 말다다(no-jump와 같은 판정). 다음(명)은 뺀다: 첫 울타리는 세 길을 막아 반드시 뛰어야 하므로 「뛰지 말라」가 걸릴 곳은 장애물 없는 둘째 표시선뿐이다. -고(G306)는 들은 차례가 화면 차례와 같아 몰라도 된다. 지도의 뛰다는 「빨리 달리다」 뜻뿐이라 여기의 뛰다(뛰어오르다)로 쓰지 않는다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.jump.v4": {
+      "units": [],
+      "why": "정답과 오답을 가르는 말은 들려준 말 속 「뛰어넘다」인데, 이 말은 지도에 없다. 후보 낮(명)은 '낮 시간'의 뜻이고, 여기 「낮은」은 형용사 낮다라서 그 단위가 아니다. 「-(으)세요」는 몰라도 동작을 고를 수 있다. 그래서 빈 목록이 맞다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.left-jump.v4": {
+      "units": [
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.left.v4": {
+      "units": [
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
     "korean-runner.listening-check.check-high-sign.v2": {
       "units": [
         "ko.grammar.G304",
@@ -110,6 +182,174 @@
         "verdict": "fixed",
         "judge": "1차 — 「뛰어넘기 전에」의 순서가 거꾸로 된 보기를 가름. 오른쪽(2차)은 모든 보기에 있어 가르지 않음",
         "at": "2026-11-10"
+      }
+    },
+    "korean-runner.middle-slide.v4": {
+      "units": [
+        "ko.word.w0273",
+        "ko.word.w1882"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — G406(-ㄴ 뒤)은 뺀다: 첫 표시선(가운데) 다음에 표지판이 오는 화면 차례가 들은 말의 차례와 같아 순서 표지를 몰라도 차례대로 움직이면 된다(right-middle도 같은 까닭으로 순서 문형을 두지 않았다). 가르는 말은 갈 길을 고르는 가운데(주 단위)와 할 동작인 숙이다다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.middle.v4": {
+      "units": [
+        "ko.word.w0273"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.no-jump.v4": {
+      "units": [
+        "ko.grammar.S226"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.not-left.v4": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0273"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.not-right.v4": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.not-slide.v4": {
+      "units": [
+        "ko.grammar.S226"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 함정은 들린 「숙이」를 듣고 숙이는 것이라 「-지 말고」를 알아들어야 가른다. 그대로(2차)는 뺀다: 이 지시에는 장애물이 없고, 판정(core.mjs의 stay)은 뛰기 · 숙이기를 누르지 않았는지만 보고 길은 보지 않아 아무것도 하지 않으면 그대로 달린 것이 된다. no-jump · jump-stay(-지 말다 하나)와 같은 판정이다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.right-middle.v4": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0273"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.right-slide.v4": {
+      "units": [
+        "ko.word.w0618",
+        "ko.word.w0336"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — S340(-은 다음에)은 뺀다: 첫 표시선(오른쪽) 다음에 표지판이 오는 화면 차례가 들은 말의 차례와 같아 순서 표지를 몰라도 된다. 가르는 말은 갈 길의 오른쪽(주 단위)과, 뛰어넘지 않고 밑으로 지나가라는 아래다(slide.v4와 같은 판정).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.right.v4": {
+      "units": [
+        "ko.word.w0618",
+        "ko.life.directions-right"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 세 길 가운데 갈 길을 가르는 말은 「오른쪽」뿐이라 주 단위다(표시선은 길 가운데 하나로 서서 방향을 드러내지 않는다). 들은 말 「오른쪽 길로 가세요」는 레슨 표현 「오른쪽으로 가세요」의 같은 틀 변형이고, 그 레슨 문항도 이 안내를 알아듣고 방향을 고르게 해 같은 알아듣기를 본다(world-life directions-apply-turn도 같은 판정). 길 · -(으)세요는 몰라도 움직일 수 있어 넣지 않는다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.slide-left.v4": {
+      "units": [
+        "ko.word.w0609",
+        "ko.word.w1882"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — S340(-은 다음에)은 뺀다: 세 길을 모두 막는 표지판이 먼저 오고, 왼쪽 길로는 둘째 표시선 전에 언제 옮겨도 맞게 쳐져 들은 차례대로 움직이면 순서 표지를 몰라도 답이 같다. 남는 둘 가운데 주 단위는 왼쪽으로 앞세운다 — 표시선은 방향을 드러내지 않지만 표지판은 보여 숙이기는 화면이 일부 알려 준다(middle-slide · right-slide도 방향이 첫째).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-runner.slide.v4": {
+      "units": [
+        "ko.word.w1882",
+        "ko.word.w0336"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 할 동작 숙이다가 주 단위이고, 뛰어넘지 말고 밑으로 지나가라는 아래도 둔다. 표지판(아치)은 숙여야만 통과하고 뛰면 실패하는데(core.mjs) 화면은 동작을 일부만 드러내므로, 들은 「표지판 아래로」가 넘기와 가르는 말이다. 이미 정한 right-slide.v4가 「slide.v4와 같은 판정」으로 아래를 둔 것과 맞춘다. 몸 · 지나가다 · -(으)세요는 몰라도 움직일 수 있다.",
+        "at": "2026-11-11"
       }
     }
   }

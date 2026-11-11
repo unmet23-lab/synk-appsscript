@@ -1,0 +1,117 @@
+{
+  "rubric": "atlas-tags-r2",
+  "tags": {
+    "speaking.rp-cafe-tea": {
+      "units": [
+        "ko.life.cafe-compose",
+        "ko.life.cafe-here"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "speaking.s1-weekend": {
+      "units": [
+        "ko.word.w0620",
+        "ko.grammar.G208",
+        "ko.word.w0922",
+        "ko.word.w0552"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "speaking.s2-cafe": {
+      "units": [
+        "ko.life.cafe-compose",
+        "ko.life.cafe-here"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "speaking.s3-birthday": {
+      "units": [
+        "ko.grammar.G208",
+        "ko.word.w0467",
+        "ko.word.w0601",
+        "ko.word.w0049"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 의견 같음 — 일어난 일을 순서대로 말하는 과제라 -았/었어요가 주 단위이고, covers의 편지 · 선물 · 꽃 그림을 말하는 데 이 낱말들을 피하기 어렵다(이미 합의된 짝 문항 기준). 2차는 같은 목록에 케이크를 지도 밖으로 적은 고침이라 단위는 같다.",
+        "at": "2026-11-11"
+      }
+    },
+    "speaking.s4-festival": {
+      "units": [
+        "ko.word.w0578",
+        "ko.word.w0368",
+        "ko.word.w0095",
+        "ko.word.w1917"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 두 의견이 함께 둔 방학 · 적다 · 축제에 2차의 시험을 더하고 1차의 고향을 뺀다. 대답할 여자의 걱정은 covers가 「방학 · 사람 수」로 짚어 방학(주 단위, 1차) · 적다(양이 적다)를 알아들어야 하고, 설득할 입장 「시험이 끝난 뒤」와 covers 둘째 「시험 뒤에 하는 것이 좋은 이유」는 시험을 모르면 잡히지 않는다. 고향은 학생이 빠지는 까닭을 풀어 주지만 「방학이라 오는 사람이 적다」만 알아들어도 걱정에 답할 수 있어 꼭 필요하지 않다. 축제는 옮기려는 행사라 두 의견대로 둔다.",
+        "at": "2026-11-11"
+      }
+    },
+    "speaking.s5-bike": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0961"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 앞선 판정과 같다. 열린 말하기라 기본은 빈 목록이지만, covers 첫째 「대여 건수의 변화(숫자)」는 120만 · 210만 · 340만 건과 연도를 소리 내어 말해야 해 1차의 G212가 주 단위다. 지시와 covers 둘째 「변화의 이유」를 알아들어야 이유를 말하므로 2차의 이유를 둔다. 자전거 · 자료는 화면의 제목과 그래프로 드러나고, 변하다(2차)는 세 해의 숫자 그래프와 「(숫자)」 표시만으로 할 일이 드러나 뺀다. 전망 · 대여 · 건수는 지도 밖이다.",
+        "at": "2026-11-11"
+      }
+    },
+    "speaking.s6-phone": {
+      "units": [],
+      "why": "Open speaking task with no score and no correct answer, so no unit separates right from wrong. An empty list (the item uses its series as the unit) is better than a forced one. Several candidates are also the wrong sense: 일 in 일부, 대 in 에 대해, and 아니 in 뿐 아니라.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    }
+  }
+}

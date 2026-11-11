@@ -32,8 +32,10 @@ test('장부는 1부터 빈틈없고, 색인의 번호 · 은퇴는 장부와 �
   assert.deepEqual(checkRows(numbers.items, 'items'), []);
   assert.deepEqual(checkRows(numbers.families, 'families'), []);
   const ledger = new Map(numbers.items);
-  for (const row of rowsOf(index.items, index.fields)) assert.equal(ledger.get(row.n), row.itemKey);
-  for (const [n, key] of index.retired.items) assert.equal(ledger.get(n), key);
+  // 장부는 옛 이름 그대로, 색인의 살아 있는 · 은퇴 문항은 이름 표를 따라간 지금 이름이다(GPT 보충 검수 GA2).
+  const now = n => currentName(ledger.get(n), index.renames.items);
+  for (const row of rowsOf(index.items, index.fields)) assert.equal(now(row.n), row.itemKey);
+  for (const [n, key] of index.retired.items) assert.equal(now(n), key);
   // 색인의 계열 표는 장부의 번호 그대로, 이름은 이름 표를 따라간 지금 이름이다(아르곤 A1).
   assert.deepEqual(
     index.families.map(([n]) => n),

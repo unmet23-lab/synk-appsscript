@@ -274,6 +274,23 @@ test('이름 표는 끝까지 따라간다 — 단위 · 문항 · 계열 · fam
   assert.equal(map.unit('family:a.f').id, 'family:f3');
 });
 
+test('은행 조각에 실린 낱말 줄로 낱말 표 없이 이름이 선다 — 받은 낱말 표와 함께 쓴다(11-11 단계 4 요청)', () => {
+  const out = compose([{ bank: 'g', items: [meta('a', { conceptIds: ['ko.word.w0002'] })] }]);
+  const slice = {
+    ...indexOf(out),
+    words: { prefix: 'ko.word.', units: [['w0002', '개', '명', 'A', '동물 개']] },
+  };
+  const alone = openMap({ index: [slice] });
+  assert.deepEqual(
+    [alone.unit('ko.word.w0002').label, alone.unit('ko.word.w0002').sense],
+    ['개', '동물 개'],
+  );
+  assert.equal(alone.unit('ko.word.w0001'), null);
+  const both = openMap({ index: [slice], words: { units: [['w0001', '사과', '명', 'A']] } });
+  assert.equal(both.unit('ko.word.w0001').label, '사과');
+  assert.equal(both.unit('ko.word.w0002').label, '개');
+});
+
 test('빈 태그 줄은 제품 conceptIds를 덮는다 — 검수가 「꼭 필요한 단위 없음」으로 정한 문항은 계열 단위로 돈다', () => {
   const tags = new Map([['a', { units: [] }]]);
   const out = compose(

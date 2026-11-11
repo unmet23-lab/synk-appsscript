@@ -292,6 +292,7 @@
     },
     "life.cafe-story-here-transfer": {
       "units": [],
+      "why": "The answer '카페 창가' is a fact (a seat) from the story card, not the expression ko.life.cafe-here. Telling it apart from the distractors needs only '카페' and '창가', and neither is in the map. -(으)ㄹ게요 (G612) and 에서 are not needed to pick the answer. The candidates 장소, 강 and 집 only appear in the instruction or distractors, so they are not needed either. An empty list is correct.",
       "by": "draft:opus",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -1108,6 +1109,7 @@
     },
     "life.greetings-story-name": {
       "units": [],
+      "why": "정답은 사람 이름이라는 이야기 카드의 사실 답이므로 생활 표현을 단위로 삼지 않는다. 정답 「몽글」은 지시문에 인용된 글에서 그대로 찾을 수 있어, 후보로 나온 처음 · 저 · 친구 · 누구 · -이에요/예요는 몰라도 답이 나온다(1). 그래서 빈 목록이 맞다.",
       "by": "draft:opus",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -1120,6 +1122,7 @@
     },
     "life.greetings-story-name-transfer": {
       "units": [],
+      "why": "The answer is a person's name (까몽) on a story card, which counts as a fact answer, not an expression. The name appears in the quoted sentence, so it can be matched to the choice by sight alone. No word or grammar pattern is needed, so the empty list is correct.",
       "by": "draft:opus",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -1211,13 +1214,12 @@
       ],
       "by": "draft:opus",
       "review": {
-        "rubric": "atlas-tags-r1",
-        "packet": "tags-a",
-        "first": "fix",
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
         "second": "pass",
-        "verdict": "fixed",
-        "judge": "1차 — 「안이 아니라」를 알아야 「학교 안」을 걸러 내고, 「학교 앞」은 지문 글자와 맞춰 고를 수 있어 「앞」은 몰라도 된다",
-        "at": "2026-11-10"
+        "verdict": "pass",
+        "at": "2026-11-11"
       }
     },
     "life.plans-apply-time": {
@@ -1947,6 +1949,7 @@
     },
     "life.transit-story-route": {
       "units": [],
+      "why": "This is a factual answer from the story card: the place on the sign. The learner picks it by matching the sign text '꽃길 공원행'. No listed word or grammar unit is what separates the right choice from the wrong ones, so the empty list stands. '목적지' in the question is not in the map, and '목적' is a different word.",
       "by": "draft:opus",
       "review": {
         "rubric": "atlas-tags-r1",

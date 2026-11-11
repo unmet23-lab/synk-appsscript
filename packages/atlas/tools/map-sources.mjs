@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { applySenses } from '../src/map/senses.mjs';
 
 export const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
@@ -52,13 +53,13 @@ async function lifeUnits(root) {
   return [...units.values()];
 }
 
-function wordUnits(root) {
-  return readJson(root, 'strata/topik-i.words.json').words.map(([id, word, pos, band]) => [
-    id,
-    word,
-    pos,
-    band,
-  ]);
+// 낱말 = 원천 2,000 + 뜻 고르기(map/senses.json — 표제어 · 보조 용언 고침과 자리를 빼앗긴 뜻의 덧붙임, src/map/senses.mjs).
+function wordUnits(root, mapDir) {
+  const file = path.join(mapDir, 'senses.json');
+  const senses = fs.existsSync(file)
+    ? JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''))
+    : null;
+  return applySenses(readJson(root, 'strata/topik-i.words.json').words, senses);
 }
 
 // 능력 = strata 지도들의 skill 마디 전부(TOPIK I · II · 한글 · 말하기 층).
@@ -75,10 +76,13 @@ function skillIds(root) {
   return skills;
 }
 
-export async function readUnits(root = REPO_ROOT) {
+export async function readUnits(
+  root = REPO_ROOT,
+  { mapDir = path.join(PACKAGE_ROOT, 'map') } = {},
+) {
   return {
     units: [...grammarUnits(root), ...(await lifeUnits(root)), ...hangulUnits(root)],
-    words: wordUnits(root),
+    words: wordUnits(root, mapDir),
     skills: skillIds(root),
   };
 }

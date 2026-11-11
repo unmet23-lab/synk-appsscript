@@ -1,0 +1,456 @@
+{
+  "rubric": "atlas-tags-r2",
+  "tags": {
+    "synk-town.reading-check.town-detail-festival.v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문과 지문에 「음악 공연」이 같은 글자로 있어 그 문장이 찾아지고, 정답 「무대 왼쪽」은 그 문장 글자 그대로다. 오답 「무대 오른쪽」은 다른 문장(음식 판매)의 자리라 공연 문장을 찾으면 걸러지고(정답 문장을 한 낱말 바꾼 함정이 아니다), 「공원 밖」은 지문에 없다. 그래서 왼쪽 · 공연(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문과 지문에 「음악 공연」이 같은 글자로 있어 그 문장이 찾아지고, 정답 「무대 왼쪽」은 그 문장 글자 그대로다. 오답 「무대 오른쪽」은 다른 문장(음식 판매)의 자리라 공연 문장을 찾으면 걸러지고(정답 문장을 한 낱말 바꾼 함정이 아니다), 「공원 밖」은 지문에 없다. 그래서 왼쪽 · 공연(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-detail-library.v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문과 지문에 「한국어 책」이 같은 글자로 있어 그 뒤의 「2층」이 바로 찾아지고, 정답 보기도 그 글자 그대로다. 오답 「1층」은 다른 문장(어린이 책)의 층, 「3층」은 지문에 없는 말이라 글자를 맞대면 걸러지고, 몇 · 층은 보기가 모두 층이라 가르지 않는다. 그래서 한국어(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문과 지문에 「한국어 책」이 같은 글자로 있어 그 뒤의 「2층」이 바로 찾아지고, 정답 보기도 그 글자 그대로다. 오답 「1층」은 다른 문장(어린이 책)의 층, 「3층」은 지문에 없는 말이라 글자를 맞대면 걸러지고, 몇 · 층은 보기가 모두 층이라 가르지 않는다. 그래서 한국어(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-detail-lost.v2": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문과 지문에 「우산」이 같은 글자로 있어 「우산은 관리실에」가 바로 찾아지고, 정답 「관리실」은 그 글자 그대로다(지도에는 관리실이 없고 관리만 있다). 오답 「안내 데스크」는 다른 문장(가방)의 자리, 「사무실」은 지문에 없는 말이라 글자를 맞대면 걸러진다. 그래서 우산(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문과 지문에 「우산」이 같은 글자로 있어 「우산은 관리실에」가 바로 찾아지고, 정답 「관리실」은 그 글자 그대로다(지도에는 관리실이 없고 관리만 있다). 오답 「안내 데스크」는 다른 문장(가방)의 자리, 「사무실」은 지문에 없는 말이라 글자를 맞대면 걸러진다. 그래서 우산(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-detail-market.v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문 「꽃을 사려면」과 지문 「꽃 시장은 빵집 옆에서」에 꽃이 같은 글자로 있어 글자만 맞대어도 그 문장이 찾아지고, 정답 「빵집 옆」은 그 문장 글자 그대로다. 오답 「공원 입구」는 다른 문장(과일 시장)의 자리, 「찻집 안」은 지문에 없는 말이라 정답을 한 낱말만 바꾼 함정이 없고, 어디는 보기가 모두 장소라 가르지 않는다. 그래서 꽃(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문 「꽃을 사려면」과 지문 「꽃 시장은 빵집 옆에서」에 꽃이 같은 글자로 있어 글자만 맞대어도 그 문장이 찾아지고, 정답 「빵집 옆」은 그 문장 글자 그대로다. 오답 「공원 입구」는 다른 문장(과일 시장)의 자리, 「찻집 안」은 지문에 없는 말이라 정답을 한 낱말만 바꾼 함정이 없고, 어디는 보기가 모두 장소라 가르지 않는다. 그래서 꽃(1차)의 뜻을 몰라도 답이 나온다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-detail-workshop.v1": {
+      "units": [
+        "ko.word.w0375"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 오답 「오전 2시」는 지문 「오후 2시」에서 한 낱말만 바꾼 함정이라(힌트 「오전·오후를 확인해요」, 고른 답 피드백 「숫자 2뿐 아니라 오후도 확인해요」) 이를 거르는 오후가 주 단위다(1차, 2차의 빈 목록은 받지 않음). 오전(1차 둘째)은 오답 보기와 다른 문장(그림 수업)에만 나오는 함정 쪽 말이라 오후를 알면 몰라도 답이 나온다 — town-main-cup이 함정의 더가 아니라 지문의 덜을 둔 것과 맞춘다. 「컵 만들기」는 질문과 지문에 같은 글자로 있어 두지 않는다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-main-cat.v1": {
+      "units": [
+        "ko.word.w0234",
+        "ko.word.w0042"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 찾다가 정답 「찾는 글」을 ② 「파는 글」 · ③ 「소개하는 글」과 가르는 주 단위이고, 고양이는 글의 중심 대상이다(두 의견 같음). 잃어버리다(1차)는 정답 보기에 붙은 꾸밈말로 오답 둘과 가르는 일을 찾다가 이미 해 몰라도 답이 나온다 — 짝 town-main-swap(바꾸다 · 시장, 꾸밈말 「쓰지 않는」은 두지 않음)과 맞춘다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-main-cup.v2": {
+      "units": [
+        "ko.word.w1711",
+        "ko.word.w0648",
+        "ko.word.w0179"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 단위는 2차대로 컵을 빼고 주 단위는 1차대로 덜이다. ③ 「종이컵을 더 쓰고 싶어요」는 지문 「종이컵을 덜 쓰고 싶습니다」와 한 낱말만 다른 함정이라 덜이 정답과 오답을 가르는 주 단위이고(앞선 판정과 같음), 싸다는 「500원 싸게 드립니다」로 ② 「커피 값이 올랐어요」를 거르며, 가지다는 정답이 부탁하는 일이다(셋 다 두 의견 같음). 가지다를 주 단위로 올린 2차는 글의 중심을 본 것이지만, 이 문항을 놓친 학습자는 ③ · ②로 가므로 가르는 말은 덜이다. 컵은 정답 「자기 컵」과 함정 「종이컵」에 함께 있어 어느 보기도 가르지 않는다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-main-post.v1": {
+      "units": [
+        "ko.word.w1649",
+        "ko.word.w0040"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 두 의견의 단위는 같고 차례만 다르다. 오답 ② 「우체국이 여는 시간이 바뀌어요」는 정답과 우체국을 함께 써 우체국으로는 갈리지 않고, 「이사합니다」를 알아봐야 ②를 버리고 중심 사건을 고르므로 이사가 주 단위, ①(은행이 새 건물로 이사)과 가르는 우체국이 둘째.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-main-swap.v2": {
+      "units": [
+        "ko.word.w0330",
+        "ko.word.w0097"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-main-swim.v1": {
+      "units": [
+        "ko.word.w0457"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-main-thanks.v2": {
+      "units": [
+        "ko.word.w0717",
+        "ko.word.w0447"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문 「그분에게 정말 감사합니다」를 정답 「도와주신 분께 고마워요」와 잇는 감사하다(주 단위) · 고맙다로 중심 생각이 바로 나온다(두 의견 같음). -고 싶다(1차)는 ③(그분과 차를 마셨어요)이 사실과 다름을 확인할 뿐, ③은 잘못 읽어도 이 글에서 가장 하고 싶은 말이 되지 않아 몰라도 답이 나온다(①의 빨리를 두지 않는 것과 같은 까닭).",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-negation-bike.v1": {
+      "units": [
+        "ko.grammar.S226"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-negation-books.v2": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G506"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-negation-bus.v2": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G506"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-negation-desk.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G506"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문 「가져가지 말고」의 -지 말다(주 단위)와 질문 「하면 안 되는 행동」의 -(으)면 안 되다만으로 금지된 「가위를 집으로 가져가기」가 바로 나온다(두 의견 같음). -(으)ㄹ 수 있다(1차)는 오답 「가위를 사용하기」가 허용임을 확인할 뿐, 금지를 찾으면 몰라도 답이 나온다 — 같은 꼴의 town-negation-flowers(「찍어도 됩니다」를 두지 않음)와 맞춘다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-negation-flowers.v1": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G506"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reading-negation.v2": {
+      "units": [
+        "ko.grammar.S226",
+        "ko.grammar.G506"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reading-place.v2": {
+      "units": [
+        "ko.word.w0070",
+        "ko.word.w0069"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 2차의 두 단위를 쓰되 내일을 주 단위로 둔다: 오답 「찻집 밖」 · 「찻집 안과 밖」은 둘 다 「밖의 자리는 내일부터」를 놓친 것이라(고른 답 피드백도 둘 다 이 말) 내일이 정답과 오답을 가르고, 질문 · 첫 문장의 오늘과 맞대야 밖 자리가 오늘은 안 됨을 안다. 안 · 밖(1차)은 보기가 지문의 「찻집 안」 · 「밖」을 같은 꼴로 써 몰라도 짝지어진다(안은 「찻집 안」의 안(명) 뜻이 맞고, 안 부정은 이 글에 없다).",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reading-sequence.v1": {
+      "units": [
+        "ko.word.w0279"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reason-bakery.v1": {
+      "units": [
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문의 까닭 절 「오븐이 고장 나서」를 짚는 -아/어서가 주 단위로, 다른 사실을 까닭 꼴로 바꾼 ① 「쿠키와 우유만 팔고 싶어서」 · ③ 「내일 오븐을 고쳐서」를 거른다(두 의견 같음). 이유(1차)는 보기가 모두 -아/어서 까닭 꼴이라 가르지 않고(town-reason-bus와 맞춤), 내일은 몰라도 ③이 걸러진다(두 의견 같음). 정답의 고장(기계가 탈 남)은 지도의 고장(사는 고장 · 지역)과 다른 뜻이라 지도 밖이다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reason-bus.v2": {
+      "units": [
+        "ko.grammar.S219",
+        "ko.word.w1917"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reason-florist.v1": {
+      "units": [
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 지문의 까닭 절 「꽃 시장에 꽃을 사러 가서」를 짚는 -아/어서가 주 단위로 ① 「저녁 6시에 다시 열어서」(다시 여는 때)를 거른다(두 의견 같음). 이유(1차)는 2차대로 뺀다(보기가 모두 -아/어서 까닭 꼴, town-reason-bus와 맞춤). 사다(2차)는 1차대로 두지 않는다 — ② 「꽃이 다 팔려서」는 지문에 없는 말로 된 오답이라(고른 답 피드백 「꽃이 다 팔렸다는 말은 안내에 없어요」) 오답 보기에만 나오는 말이고, 정답의 「사러 가서」는 지문 글자 그대로라 몰라도 답이 나온다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reason-library.v2": {
+      "units": [
+        "ko.grammar.S219",
+        "ko.word.w0663"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문 「저녁에 도서관 청소를 하기 때문입니다」의 -기 때문에가 주 단위로 다른 문장의 사실 ② 「내일 아침에 문을 열어서」를 거르고, 그 까닭 내용인 청소를 둔다(두 의견 같음). 이유(1차)는 세 보기가 모두 -아/어서 까닭 꼴이라 질문이 까닭을 묻는 것을 몰라도 답이 나온다 — 같은 꼴의 짝 town-reason-bus(-기 때문에 · 축제, 이유 없음, 두 검수 같음)와 맞춘다. ③의 「아침 9시」는 지문의 다른 문장 말이라 지문과 맞대면 걸러진다(두 의견 같음).",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reason-quiet.v1": {
+      "units": [
+        "ko.grammar.S219",
+        "ko.word.w0093"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 지문 「시험 공부를 하는 학생이 많기 때문입니다」의 -기 때문에가 주 단위로 ② 「1층에 카페가 있어서」를 거르고, ③ 「2층에서 시험을 봐서」는 그 절에서 공부를 빼고 바꾼 함정이라 공부가 가른다(두 의견 같음). 이유(1차)는 보기가 모두 -아/어서 까닭 꼴이라 가르지 않는다 — town-reason-bus(이유 없음)와 맞춘다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-reason-walk.v2": {
+      "units": [
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 지문의 까닭 절 「비가 많이 와서」를 짚는 -아/어서가 주 단위로 ① 「토요일 아침에 모여서」(다음 모임 때)를 거른다(두 의견 같음). 이유(1차)는 보기가 모두 -아/어서 까닭 꼴이라 가르지 않는다(2차, town-reason-bus와 맞춤). 오늘(두 의견)은 질문 「오늘 … 쉬는」과 지문 「오늘은 비가 많이 와서」에 같은 글자로 있고 정답이 지문 꼴 그대로(「비가 많이 와서」)라, ② 「토요일에 비가 와서」는 지문과 맞대면 걸러져 몰라도 답이 나온다 — 이 문항의 앞선 판정과 같고, 질문에 있는 자리 말(시장 앞)을 바꾼 함정에 그 말을 두지 않은 town-reason-bus와 맞춘다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-sequence-borrow.v2": {
+      "units": [
+        "ko.grammar.G406"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 질문 「고르기 전에」의 -기 전에/-(으)ㄴ 후에가 주 단위로, 고르는 일 바로 뒤의 「밖으로 나가기」와 맨 뒤의 「우산 돌려주기」를 거른다(두 의견 같음). 먼저(1차)는 지문의 문장 차례와 「그다음」이 이미 앞의 일을 보여 주어 몰라도 답이 나오고, 고르다는 질문과 지문에 같은 꼴로 있다 — 지문에 먼저가 같은 자리에 있는 짝 town-sequence-garden(-기 전에 하나, 두 검수 같음)과 맞춘다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-sequence-class.v2": {
+      "units": [
+        "ko.grammar.S336",
+        "ko.grammar.S340"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-sequence-garden.v2": {
+      "units": [
+        "ko.grammar.G406"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-sequence-parcel.v1": {
+      "units": [
+        "ko.word.w0384"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 세 보기(선물 넣기 · 상자 닫기 · 이름 쓰기)가 모두 지문의 실제 단계라 질문이 묻는 차례 말 「가장 마지막에」의 마지막만이 정답과 오답을 가른다. 지문에도 같은 글자로 있지만 문장을 찾는 이름 말이 아니라 질문이 묻는 차례 자체라, 같은 꼴의 짝 town-reading-sequence(「가장 먼저」의 먼저, 두 검수 같음)와 맞춰 둔다(2차의 빈 목록은 받지 않음). 선물 · 이름 · 먼저 · 다음 · 가장은 몰라도 답이 나온다.",
+        "at": "2026-11-11"
+      }
+    },
+    "synk-town.reading-check.town-sequence-ticket.v2": {
+      "units": [
+        "ko.word.w1715"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 세 보기가 모두 들어가기 전의 일로 꾸며져 있어 「들어가기 전에」의 -기 전에(1차 주 단위)는 어느 보기도 가르지 않는다(2차). ③ 「매표소에서 표 보여 주기」는 지문 「입구에서 보여 주세요」에서 입구만 바꾼 함정이라 입구가 주 단위다(2차). ② 「안에서 표 사기」는 지문 「매표소에서 표를 사세요」의 자리를 바꾼 꼴로 지문과 맞대면 걸러지고(고른 답 피드백도 자리를 짚고, 가르는 매표소는 지도 밖), 사다(두 의견)는 질문 「표를 산 다음」과 지문 「산 표를」에 같은 글자로 있어 그 문장을 짚는 데 뜻을 몰라도 된다 — 질문 · 지문에 같은 꼴로 있는 동사를 두지 않은 town-sequence-borrow(고르다) · garden(심다)과 맞춘다. 질문의 「산 다음」은 따로 있는 -은 다음에(S340)인데, ②가 자리로 이미 갈려 두지 않는다.",
+        "at": "2026-11-11"
+      }
+    }
+  }
+}

@@ -1,0 +1,1154 @@
+{
+  "rubric": "atlas-tags-r2",
+  "tags": {
+    "korean-racing:c01q1:v1": {
+      "units": [
+        "ko.word.w0008"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c01q2:v1": {
+      "units": [
+        "ko.word.w0037"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c01q3:v1": {
+      "units": [
+        "ko.word.w0194"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c01q4:v1": {
+      "units": [
+        "ko.word.w0051"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c01q5:v1": {
+      "units": [
+        "ko.word.w0031"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c02q1:v1": {
+      "units": [
+        "ko.word.w0013"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c02q2:v1": {
+      "units": [
+        "ko.word.w0297"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c02q3:v1": {
+      "units": [
+        "ko.word.w0590"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c02q4:v1": {
+      "units": [
+        "ko.word.w0036"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c02q5:v1": {
+      "units": [
+        "ko.word.w0068"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c04q1:v1": {
+      "units": [
+        "ko.word.w0201",
+        "ko.word.w0051",
+        "ko.word.w0025"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c04q2:v1": {
+      "units": [
+        "ko.word.w0339",
+        "ko.word.w0608"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 반대를 잇는 하지만이 주 단위이고, 앞말이 아쉬운 점(비싸다)이어야 뒷말 「아주 튼튼해요」와 맞서 그래서를 버리므로 비싸다를 둔다. 2차가 더한 튼튼하다는 지도 목록에 없어 단위로 쓸 수 없다(같은 꼴 f02q4가 멀다 · 맛있다를 둘 다 둔 것과 같은 기준이지만 튼튼하다는 id가 없다).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c04q3:v1": {
+      "units": [
+        "ko.word.w0962"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c04q4:v1": {
+      "units": [
+        "ko.word.w0152"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c04q5:v1": {
+      "units": [
+        "ko.word.w0201",
+        "ko.word.w0367",
+        "ko.word.w0038"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c05q1:v1": {
+      "units": [
+        "ko.word.w0066",
+        "ko.word.w0851",
+        "ko.word.w0521"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 단위는 2차대로 오후를 빼고, 주 단위는 1차대로 아침을 둔다(앞선 판정과 같다). 들은 아침을 정답 보기의 오전으로 알아보는 것이 오후 9시와 가르고, 아홉은 오전 8시와 가른다. 오후는 오답 보기에만 있는 말이라 아침 = 오전을 알면 몰라도 답이 나온다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c05q2:v1": {
+      "units": [
+        "ko.word.w0070",
+        "ko.word.w0813",
+        "ko.word.w0858",
+        "ko.word.w0069"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c05q3:v1": {
+      "units": [
+        "ko.grammar.G212",
+        "ko.word.w0867",
+        "ko.word.w0805",
+        "ko.word.w0139"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c05q4:v1": {
+      "units": [
+        "ko.word.w0442",
+        "ko.word.w0161",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c05q5:v1": {
+      "units": [
+        "ko.word.w0479",
+        "ko.word.w0607"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「일요일에는 쉬어요」에서 쉬다와 거기 붙은 일요일만 알아들으면 정답이 나온다. 쉬다가 주 단위다. 토요일(1차)은 오답 보기 쪽 말이라 몰라도 답이 나오므로 뺀다. 일하다 · 언제 · 금요일도 필요 없다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c06q1:v1": {
+      "units": [
+        "ko.word.w0334"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c06q2:v1": {
+      "units": [
+        "ko.word.w0034"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "1차 — 들은 곳은 지하철역 하나뿐이고 우체국 · 공원은 들려주지 않았다. 「지하철」만 알아들으면 그 보기를 고른다. 역(2차)은 지하철을 알면 몰라도 답이 나오므로 뺀다. 학교 · 앞 · 무엇은 가르는 데 쓰이지 않는다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c06q3:v1": {
+      "units": [
+        "ko.grammar.S115",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c06q4:v1": {
+      "units": [
+        "ko.word.w0609"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c06q5:v1": {
+      "units": [
+        "ko.word.w0228"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c07q1:v1": {
+      "units": [
+        "ko.word.w0021",
+        "ko.word.w0244"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 의견 같음 — 「집에서 책을 읽었어요」의 책 · 읽다를 알아들어야 정답 독서와 잇고 등산 · 쇼핑을 버린다. 책이 주 단위다. 1차는 통과, 2차는 같은 목록에 독서를 지도 밖으로 적은 고침이라 단위는 같다(독서는 지도 밖이라 단위로 쓰지 않는다).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c07q2:v1": {
+      "units": [
+        "ko.word.w0660",
+        "ko.word.w0011"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c07q3:v1": {
+      "units": [
+        "ko.word.w0111",
+        "ko.word.w0240",
+        "ko.word.w0180"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c07q4:v1": {
+      "units": [
+        "ko.word.w0524"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c07q5:v1": {
+      "units": [
+        "ko.word.w0155"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c08q1:v1": {
+      "units": [
+        "ko.word.w0801",
+        "ko.word.w0632"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c08q2:v1": {
+      "units": [
+        "ko.word.w0109"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c08q3:v1": {
+      "units": [
+        "ko.word.w1116"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c08q4:v1": {
+      "units": [
+        "ko.word.w0070",
+        "ko.word.w0600",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c08q5:v1": {
+      "units": [
+        "ko.word.w0492"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c09q1:v1": {
+      "units": [
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 질문 「갈 수 없는 날」의 -(으)ㄹ 수 없다를 알아야 시간이 적힌 「화~일」과 가른다. 월요일(1차)은 지문과 정답 보기에 같은 글자로 있고, 「화~일」에만 여는 시간이 적혀 남는 날로도 찾아지므로 뜻을 몰라도 답이 나온다(f05q1 · c10q3에서 요일을 뺀 것과 같은 기준). 휴관은 지도 밖이다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c09q2:v1": {
+      "units": [
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c09q3:v1": {
+      "units": [],
+      "why": "새로(빈 목록) — 태그를 붙일 수 없다. 질문 「공원 안에서」가 지문 「공원 안에서는 걸어 주세요」와 같은 글자라 그 문장이 바로 찾아지고, 정답 「걸어야 해요」도 그 문장의 「걸어」와 같은 꼴이라 걷다 · 안의 뜻을 몰라도 글자 맞추기로 답이 나온다(f05q2 · town-sequence-borrow의 같은 꼴 기준). 안(1차)은 2차대로 질문과 지문에 같은 글자로 있어 빼고, 두 의견이 둔 걷다도 같은 까닭으로 꼭 필요하지 않다. -아/어야 하다는 질문과 보기 셋에 모두 있어 가르지 않는다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로(빈 목록) — 태그를 붙일 수 없다. 질문 「공원 안에서」가 지문 「공원 안에서는 걸어 주세요」와 같은 글자라 그 문장이 바로 찾아지고, 정답 「걸어야 해요」도 그 문장의 「걸어」와 같은 꼴이라 걷다 · 안의 뜻을 몰라도 글자 맞추기로 답이 나온다(f05q2 · town-sequence-borrow의 같은 꼴 기준). 안(1차)은 2차대로 질문과 지문에 같은 글자로 있어 빼고, 두 의견이 둔 걷다도 같은 까닭으로 꼭 필요하지 않다. -아/어야 하다는 질문과 보기 셋에 모두 있어 가르지 않는다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c09q4:v1": {
+      "units": [],
+      "why": "정답은 「주문」이 들어간 문장을 찾아 「계산대」와 맞추면 나온다. 「주문 · 계산대」는 지도 밖 말이다(후보의 계산(명)은 계산대가 아니다). 보기 셋이 모두 자리라서 어디(대)는 정답과 오답을 가르지 않는다. -아/어 주세요 · 에서도 몰라도 답이 나온다(기준 1, 3). 빈 목록이 맞다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c10q1:v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문 「돌려줘야」가 지문 「내일 돌려주세요」와 같은 꼴이라 그 문장이 찾아지고, 그 문장의 내일이 정답 보기 글자 그대로다. 오답 오늘 · 다음 주는 지문에 없다. 그래서 내일 · 언제 · 돌려주다의 뜻을 몰라도 글자 맞추기만으로 답이 나온다(f05q5와 같은 기준). 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문 「돌려줘야」가 지문 「내일 돌려주세요」와 같은 꼴이라 그 문장이 찾아지고, 그 문장의 내일이 정답 보기 글자 그대로다. 오답 오늘 · 다음 주는 지문에 없다. 그래서 내일 · 언제 · 돌려주다의 뜻을 몰라도 글자 맞추기만으로 답이 나온다(f05q5와 같은 기준). 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c10q2:v1": {
+      "units": [
+        "ko.word.w0544",
+        "ko.word.w1163"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c10q3:v1": {
+      "units": [
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "새로 — 두 검수는 같은 넷을 적고 첫째만 달랐다. 그런데 토요일은 질문과 지문에 같은 글자로 있어서 뜻을 몰라도 글자를 맞춰 「10:00~15:00」 칸을 찾는다(f05q1 수요일과 같은 기준). 「4시」는 오전으로 읽든 오후로 읽든 10:00~15:00 밖이라 오후 · 시를 몰라도 답이 나온다. 남는 것은 「이용할 수 없어요」를 「가능해요」 보기 둘과 가르는 -(으)ㄹ 수 없다뿐이라 이것만 둔다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c10q4:v1": {
+      "units": [
+        "ko.word.w0025",
+        "ko.word.w1517"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c10q5:v1": {
+      "units": [
+        "ko.word.w0098",
+        "ko.grammar.G304",
+        "ko.word.w0221",
+        "ko.word.w0128"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 의견 같음 — 지문 「참가비 없음」을 정답 「돈을 내지 않아요」로 알아보려면 돈 · -지 않다 · 내다와 「없음」의 없다가 든다. 돈이 주 단위다. 2차는 같은 목록에 참가비를 지도 밖으로 적은 고침이라 단위는 같다(후보 내지(부)는 다른 말이다).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c11q1:v1": {
+      "units": [
+        "ko.word.w0111",
+        "ko.word.w0534"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 정답 「날씨가 좋아서」는 들은 「날씨가 좋아서 학교까지 걸었어요」와 같은 말이라, 그 좋다 · 날씨를 알아들어야 들린 버스를 붙잡은 함정 「버스가 고장 나서」를 버린다. -아/어서(1차)는 보기 셋이 모두 「-아서」 까닭이라 가르지 않고, 왜(1차)도 보기가 모두 까닭이라 몰라도 된다(f06q1에서 그래서 · 왜를 두지 않은 것과 같은 기준).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c11q4:v1": {
+      "units": [
+        "ko.word.w0279",
+        "ko.word.w0039"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c12q1:v1": {
+      "units": [
+        "ko.word.w0091",
+        "ko.word.w0746",
+        "ko.word.w0858"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c12q2:v1": {
+      "units": [
+        "ko.grammar.S202",
+        "ko.grammar.G212",
+        "ko.word.w0540",
+        "ko.word.w0187"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c12q3:v1": {
+      "units": [
+        "ko.grammar.S105",
+        "ko.word.w0309",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c12q4:v1": {
+      "units": [
+        "ko.grammar.G401"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:c12q5:v1": {
+      "units": [
+        "ko.word.w0813"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f01q1:v1": {
+      "units": [
+        "ko.word.w0160",
+        "ko.word.w0068"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f01q2:v1": {
+      "units": [
+        "ko.word.w0042"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f01q3:v1": {
+      "units": [
+        "ko.word.w0086",
+        "ko.word.w0116"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f01q4:v1": {
+      "units": [
+        "ko.word.w0836"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f01q5:v1": {
+      "units": [
+        "ko.word.w0276",
+        "ko.word.w0085"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f02q3:v1": {
+      "units": [
+        "ko.word.w0115"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f02q4:v1": {
+      "units": [
+        "ko.word.w0339",
+        "ko.word.w0414",
+        "ko.word.w0487"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f02q5:v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.grammar.G210",
+        "ko.word.w0040"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "합쳐 씀 — 앞선 판정과 같다. 보기 셋은 「과」(두 곳 다)와 「만」(한 곳만)으로 갈려 1차의 만(오답 둘이 모두 「만」 꼴이라 주 단위) · 과를 두고, 2차의 우체국은 「꽃집만」과 가르려면 들은 우체국을 알아들어야 해 남긴다. 그리고(1차)는 「…에 가요」를 따로 두 번 들어 몰라도 둘 다 간다는 것이 드러나 뺀다. 꽃집은 지도 밖이다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f03q1:v1": {
+      "units": [
+        "ko.word.w0521",
+        "ko.word.w0811"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f03q2:v1": {
+      "units": [
+        "ko.word.w0774"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f03q3:v1": {
+      "units": [],
+      "why": "두 의견 같음 — 태그를 붙일 수 없다. 정답은 질문 「장을 보는」을 일정표의 「장보기」와 맞추면 나오는데, 두 말은 글자로도 맞춰지고 이 장(시장 · 장보기)은 지도에 없다. 후보 장(w0460)은 종이를 세는 말이라 다른 표제어다. 요일은 일정표에서 글자로 바로 읽히고 보기가 모두 요일이라 언제 · 날도 가르지 않는다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 의견 같음 — 태그를 붙일 수 없다. 정답은 질문 「장을 보는」을 일정표의 「장보기」와 맞추면 나오는데, 두 말은 글자로도 맞춰지고 이 장(시장 · 장보기)은 지도에 없다. 후보 장(w0460)은 종이를 세는 말이라 다른 표제어다. 요일은 일정표에서 글자로 바로 읽히고 보기가 모두 요일이라 언제 · 날도 가르지 않는다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f03q4:v1": {
+      "units": [
+        "ko.word.w0173"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「빵집은 꽃집 뒤에 있어요」의 뒤만 알아들으면 정답 「꽃집 뒤」가 나온다. 앞(1차)은 오답 「꽃집 앞」(주차장) 쪽 말이라 몰라도 답이 나오므로 뺀다. 「주차장 안」의 안(명)도 필요 없다(G209 후보는 안 부정으로 잘못 잡힌 것이다).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f03q5:v1": {
+      "units": [
+        "ko.word.w0217"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 의견 같음 — 질문의 들어가다를 지문의 「입장 시작」과 이어야 「공연 시작(오후 7시 30분)」과 갈라 오후 7시를 고른다. 2차는 같은 목록에 입장을 지도 밖으로 적은 고침이라 단위는 같다. 공연 · 시 · 분 · -(으)ㄹ 수 있다는 가르지 않고, 후보 입(명)은 입장의 입이 아니다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f04q1:v1": {
+      "units": [
+        "ko.word.w0326",
+        "ko.word.w0001"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f04q2:v1": {
+      "units": [
+        "ko.word.w0070"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f04q3:v1": {
+      "units": [
+        "ko.word.w0600",
+        "ko.word.w0021"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f04q4:v1": {
+      "units": [
+        "ko.word.w0623"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f04q5:v1": {
+      "units": [
+        "ko.word.w0338",
+        "ko.word.w0660"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "1차 — 정답을 가르는 배가 주 단위다. 오답 「비행기로 갔어요」는 가의 물음 「비행기로 갔어요?」와 소리가 그대로 같아, 들은 말과 맞추기만 하면 이 오답으로 끌린다. 나의 「아니요」로 그 짐작을 버려야 하므로 아니요를 둔다(같은 꼴 c07q2 「아니요, 물 주세요」도 아니요를 둠). 비행기 · 버스 · -고 · -았/었어요는 몰라도 된다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f05q1:v1": {
+      "units": [
+        "ko.word.w0623",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 수요일은 질문과 지문에 같은 글자로 있어 뜻을 몰라도 「수요일에는 오후 5시에 닫고」를 찾는다. 오후 5시 · 6시도 글자와 숫자로 맞춰 본다. 그래서 수요일(1차)은 뺀다. 5시가 닫는 시각임을 알아야 「오후 6시에 문을 열어요」를 버리므로 닫다가 주 단위다. 「살 수 없어요」와 「살 수 있어요」를 가르는 -(으)ㄹ 수 없다를 둔다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f05q2:v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문의 「과일은 …에 있어요」가 지문 「과일은 식탁 위에 있어요」와 같은 글자이고, 정답 「식탁 위」도 그 문장의 글자 그대로라서 과일 · 식탁 · 위 · 어디의 뜻을 몰라도 글자 맞추기만으로 답이 나온다. 과일(1차)도 질문과 지문에 같은 글자로 있어 오답 「냉장고 안」(주스 문장)과 가르는 데 뜻이 필요 없다. 정답과 오답을 가르는 낱말 · 문형이 없으므로 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문의 「과일은 …에 있어요」가 지문 「과일은 식탁 위에 있어요」와 같은 글자이고, 정답 「식탁 위」도 그 문장의 글자 그대로라서 과일 · 식탁 · 위 · 어디의 뜻을 몰라도 글자 맞추기만으로 답이 나온다. 과일(1차)도 질문과 지문에 같은 글자로 있어 오답 「냉장고 안」(주스 문장)과 가르는 데 뜻이 필요 없다. 정답과 오답을 가르는 낱말 · 문형이 없으므로 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f05q4:v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문 「어디에서 찾아요?」가 지문 「경비실에서 찾아가 주세요」와 「…에서 찾아」까지 같은 글자라 그 앞의 경비실이 바로 찾아지고, 정답 보기도 그 글자 그대로다. 그래서 찾아가다(1차)의 뜻을 몰라도 글자 맞추기로 답이 나온다(f05q2 · f05q5와 같은 기준). 맡기다는 같은 답을 주는 둘째 단서라 꼭 필요하지 않고, 오답 「집 안」의 집 · 안도 가르는 데 쓰이지 않는다. 경비실 · 택배는 지도 밖이다. 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문 「어디에서 찾아요?」가 지문 「경비실에서 찾아가 주세요」와 「…에서 찾아」까지 같은 글자라 그 앞의 경비실이 바로 찾아지고, 정답 보기도 그 글자 그대로다. 그래서 찾아가다(1차)의 뜻을 몰라도 글자 맞추기로 답이 나온다(f05q2 · f05q5와 같은 기준). 맡기다는 같은 답을 주는 둘째 단서라 꼭 필요하지 않고, 오답 「집 안」의 집 · 안도 가르는 데 쓰이지 않는다. 경비실 · 택배는 지도 밖이다. 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f05q5:v1": {
+      "units": [],
+      "why": "2차 — 태그를 붙일 수 없다. 질문의 「이번 주」가 지문 첫 문장 「이번 주 모임만 토요일 오전 11시에 합니다」와 같은 글자이고, 그 문장의 「토요일 오전 11시」가 정답 보기 글자 그대로라서 뜻을 몰라도 글자 맞추기만으로 답이 나온다. 이번(1차)도 같은 글자로 찾아지므로 꼭 필요하지 않다. 다음은 오답 문장 쪽 말이다. 요일 · 시각은 1차도 글자 맞추기로 보았다. 답을 가르는 낱말 · 문형이 없으므로 계열 단위로 돈다.",
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 태그를 붙일 수 없다. 질문의 「이번 주」가 지문 첫 문장 「이번 주 모임만 토요일 오전 11시에 합니다」와 같은 글자이고, 그 문장의 「토요일 오전 11시」가 정답 보기 글자 그대로라서 뜻을 몰라도 글자 맞추기만으로 답이 나온다. 이번(1차)도 같은 글자로 찾아지므로 꼭 필요하지 않다. 다음은 오답 문장 쪽 말이다. 요일 · 시각은 1차도 글자 맞추기로 보았다. 답을 가르는 낱말 · 문형이 없으므로 계열 단위로 돈다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f06q1:v1": {
+      "units": [
+        "ko.word.w0225"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "새로 — 앞선 판정과 같다. 정답 「길이 미끄러워서」는 들은 「길이 미끄러웠어요」와 같은 말이고, 오답의 「무료라서 · 잃어버려서」는 들려준 적이 없다. 그 문장의 길(명 — 길이(w1370) 아님)을 알아듣고 고르면 된다. 그래서(1차)는 정답 절을 그대로 들어 몰라도 까닭이 잡혀 뺀다. 2차는 길만으로는 들린 지하철 · 자전거 보기와 안 갈린다고 보았지만, 듣기에서는 정답이 되는 말 「길이 미끄러워서」를 들은 말에서 알아들어야 하고 그 가운데 지도 안의 말이 길이다(미끄럽다는 지도 밖).",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f06q2:v1": {
+      "units": [
+        "ko.grammar.S105",
+        "ko.word.w0844",
+        "ko.word.w0811"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 「금요일까지」의 까지와 목요일이 금요일 앞이라는 것을 알아야 무료가 나온다. 까지가 주 단위이고 목요일 · 금요일을 둔다. -(으)면(1차)은 두 조건 문장(무료 · 5,000원)에 똑같이 있어 둘을 가르지 않으므로 뺀다. 「무료예요」는 지문 「무료입니다」와 글자로 맞춰진다.",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f06q4:v1": {
+      "units": [
+        "ko.grammar.S107",
+        "ko.grammar.G304",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "korean-racing:f06q5:v1": {
+      "units": [
+        "ko.word.w0279",
+        "ko.word.w0039"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "2차 — 질문 「가장 먼저」에 맞는 것은 들려준 「먼저 은행에 갔다가」의 먼저와 은행이다. 먼저가 주 단위다. 처음 약속(동생 만나기)을 고르는 오답은 「먼저」가 은행에 붙은 것을 알아들으면 버려진다. -다가(1차)는 몰라도 답이 나오므로 뺀다. -(으)ㄴ 후에 · 그래서 · 그런데도 꼭 필요하지 않다.",
+        "at": "2026-11-11"
+      }
+    }
+  }
+}

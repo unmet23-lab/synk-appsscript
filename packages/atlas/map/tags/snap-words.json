@@ -75,6 +75,7 @@
     },
     "snap-words.meaning.exit.v1": {
       "units": [],
+      "why": "정답과 오답을 가르는 말은 「출구」인데, 이 말은 지도에 없다. 지시문의 「나가다」·「밖」·「어디」·「-고 싶다」는 정답을 가르는 단위가 아니므로, 억지로 붙이기보다 빈 목록이 낫다(기준 1·2).",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -101,6 +102,7 @@
     },
     "snap-words.meaning.lift.v1": {
       "units": [],
+      "why": "정답을 가르는 말은 「엘리베이터」인데 지도에 없다. 후보(올라가다·기계·짐·어디·어)는 문맥을 돕는 말일 뿐, 몰라도 보기에서 엘리베이터를 알아볼 수 있어 꼭 필요하지 않다(기준 1·3). 억지로 붙이기보다 빈 목록이 낫다.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -315,6 +317,7 @@
     },
     "snap-words.recall-meaning.exit.v1": {
       "units": [],
+      "why": "The answer hinges on the target word 출구 (exit), which is not in the map, so it cannot be a unit. The candidates (-고 싶다, 나가다, 곳, 어디) only make up the prompt sentence and do not separate the right answer from the wrong ones. Making 나가다 the main unit would reset that word whenever the learner misses 출구, so an empty list, letting the item fall back to its series, is better.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -342,6 +345,7 @@
     },
     "snap-words.recall-meaning.lift.v1": {
       "units": [],
+      "why": "The answer is 엘리베이터, which is not in the map, so the item has no unit that can serve as its main unit. Candidates like 올라가다, 기계 and 짐 are only clues in the question. Pinning the item to them would be a forced tag, so the empty list stays.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -413,6 +417,7 @@
     },
     "snap-words.recall-meaning.n-fresh.v1": {
       "units": [],
+      "why": "정답을 가르는 말은 「신입생」·「안내」인데 둘 다 지도 밖이다. 「학생」은 낱말 안에 들어 있을 뿐이고 다른 안내판과 갈리는지 알 수 없다. 「새로」·「설명」·「어디」는 지시에만 나오고 답을 가르지 않는다. 억지로 붙일 단위가 없으니 빈 목록이 맞다.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -496,6 +501,7 @@
     },
     "snap-words.recall-meaning.pull.v1": {
       "units": [],
+      "why": "The answer hinges on 당기다 (pull), which is not in the map. -(으)세요 and the 문 and 몸 in the meaning text are not what separates the right answer from the wrong ones (criterion 1), so the empty list stands and the item falls back to its series.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -566,6 +572,7 @@
     },
     "snap-words.recall-meaning.store.v1": {
       "units": [],
+      "why": "이 문항에서 정답과 오답을 가르는 것은 낱말 「편의점」 하나다. 이 낱말은 지도에 없다. 후보 「음식 · 필요 · 물건 · 곳」은 뜻풀이에만 나오고 정답을 가르지 않으므로 넣지 않는다(기준 1). 비어 있는 목록이 맞다.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -606,6 +613,7 @@
     },
     "snap-words.recall-word.bench.v1": {
       "units": [],
+      "why": "정답을 가르는 말은 「벤치」인데 지도에 없다. 「밖」과 「의자」는 뜻풀이에만 나오고, 영어·몽골어 뜻도 함께 주어지므로 몰라도 답을 고를 수 있다(기준 1). 억지로 단위를 붙이기보다 빈 목록이 낫다.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -660,6 +668,7 @@
     },
     "snap-words.recall-word.copier.v1": {
       "units": [],
+      "why": "The answer depends on recognizing 복사기 itself, which is not in the map. The candidates 종이, 그림, 똑같이, and 기계 come only from the definition, and the meaning is also given in en/mn, so none of them is needed to pick the answer (criterion 1). The empty list stands, and the item falls back to its own set as its unit.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -686,6 +695,7 @@
     },
     "snap-words.recall-word.tray.v1": {
       "units": [],
+      "why": "The target word 식판 is not in the map, so it cannot be a unit (criterion 3). The candidate 식(의) is a different word from the 식 in 식판. 밥 appears only in the meaning gloss, and the answer does not depend on it (criterion 1). An empty list is correct.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -726,6 +736,7 @@
     },
     "snap-words.recall-word.vending.v1": {
       "units": [],
+      "why": "The unit that separates the right answer from the wrong ones is 자판기 itself, and it is not in the map. 돈, 음료 and 기계 appear only in the definition, and the en/mn translation is also shown, so the answer can be chosen without them (criterion 1). An empty list is right.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -738,6 +749,7 @@
     },
     "snap-words.recall-word.water.v1": {
       "units": [],
+      "why": "The answer depends on recognizing 정수기, which is not in the map. The candidates 물, 마시다, 나오다 and 기계 come only from the meaning gloss. Since English and Mongolian glosses are also given, the learner does not need to recognize these words to answer (rule 1). So the item has no required unit, and an empty list is correct (rule 3).",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -905,6 +917,7 @@
     },
     "snap-words.word.bench.v1": {
       "units": [],
+      "why": "The answer hinges on recognising 벤치 itself, and 벤치 is not in the map. The candidates 밖 and 의자 appear only in the meaning gloss, so the item can be answered without them (criterion 1). An empty list, which falls back to the item group, is correct.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -959,6 +972,7 @@
     },
     "snap-words.word.copier.v1": {
       "units": [],
+      "why": "Criterion 3: the item tests the word 복사기 itself, and 복사기 is not in the map. 종이, 그림, 똑같이 and 기계 appear only in the definition and are not what separates the right answer from the wrong ones, so none of them should be added. An empty list is correct.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -985,6 +999,7 @@
     },
     "snap-words.word.tray.v1": {
       "units": [],
+      "why": "정답을 가르는 말은 '식판' 하나인데 지도에 없다. 후보 '식'(의존명사)과 '밥'(뜻풀이 속 낱말)은 몰라도 답을 고를 수 있으므로 단위가 아니다. 빈 목록이 맞다.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -1025,6 +1040,7 @@
     },
     "snap-words.word.vending.v1": {
       "units": [],
+      "why": "This card tests 자판기 itself, and 자판기 is not in the map. 돈, 음료 and 기계 only appear in the definition and do not separate the right answer from the wrong ones (criterion 1), so leaving the list empty and letting the item fall back to its own series is correct.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",
@@ -1037,6 +1053,7 @@
     },
     "snap-words.word.water.v1": {
       "units": [],
+      "why": "The answer depends on recognizing 정수기, which is not in the map. 마시다, 물, 나오다 and 기계 appear only in the gloss and are not what separates the right choice from the wrong ones (criteria 1 and 3). An empty list is better than forcing a unit.",
       "by": "rule:snap-word",
       "review": {
         "rubric": "atlas-tags-r1",

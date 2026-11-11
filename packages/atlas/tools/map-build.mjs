@@ -34,6 +34,7 @@ export const GENERATED = Object.freeze([
   'revisions.json',
 ]);
 export const REVIEWED = new Set(['pass', 'fixed']);
+const TWO_REVIEWS = new Set(['pass', 'fix']);
 
 const sha = text => crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
 const readIf = (dir, name, fallback) => {
@@ -75,6 +76,9 @@ export function loadTags(dir = MAP_DIR) {
     for (const [key, line] of Object.entries(data.tags ?? {})) {
       if (!REVIEWED.has(line.review?.verdict))
         throw new Error(`Atlas map: 검수 판정이 없는 태그(${name} ${key})`);
+      // 판정(fixed)도 1차 · 2차 검수를 거친 줄이어야 한다(GPT 보충 검수 GB2).
+      if (!TWO_REVIEWS.has(line.review?.first) || !TWO_REVIEWS.has(line.review?.second))
+        throw new Error(`Atlas map: 1차 · 2차 검수가 다 있지 않은 태그(${name} ${key})`);
       if (tags.has(key)) throw new Error(`Atlas map: 태그가 두 파일에 있다(${key})`);
       tags.set(key, { units: line.units });
     }
@@ -164,7 +168,8 @@ function unitFiles(units, words) {
   const wordsBody = {
     format: WORDS_FORMAT,
     prefix: 'ko.word.',
-    fields: ['id', 'label', 'pos', 'band'],
+    // sense(뜻 풀이)는 같은 글의 다른 표제어가 흔한 낱말 · 덧붙인 낱말에만 있다(map/senses.json).
+    fields: ['id', 'label', 'pos', 'band', 'sense'],
     units: words,
   };
   return {
@@ -175,7 +180,7 @@ function unitFiles(units, words) {
 
 // 원천에서 지도 생성물 전부를 만든다(쓰지 않는다). dir의 장부 · 판 목록 · 앞 색인을 읽는다.
 export async function buildMap({ root = REPO_ROOT, dir = MAP_DIR } = {}) {
-  const { units, words, skills } = await readUnits(root);
+  const { units, words, skills } = await readUnits(root, { mapDir: dir });
   const banks = await readBanks(root);
   const ledger = readIf(dir, 'numbers.json', { items: [], families: [] });
   const renames = readIf(dir, 'renames.json', { units: {}, items: {}, families: {} });

@@ -1,0 +1,69 @@
+{
+  "rubric": "atlas-tags-r2",
+  "tags": {
+    "blank-slice.g01.v1": {
+      "units": [
+        "ko.word.w0201",
+        "ko.grammar.G209",
+        "ko.word.w0771",
+        "ko.word.w0083"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "blank-slice.g02.v1": {
+      "units": [
+        "ko.word.w0339",
+        "ko.word.w0252",
+        "ko.word.w0409"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "blank-slice.g03.v1": {
+      "units": [
+        "ko.word.w0152",
+        "ko.word.w0648",
+        "ko.word.w0487"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-11"
+      }
+    },
+    "blank-slice.v03.v1": {
+      "units": [
+        "ko.word.w2001",
+        "ko.word.w0001"
+      ],
+      "by": "product",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "tags-b",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-11"
+      }
+    }
+  }
+}

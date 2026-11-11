@@ -6,6 +6,7 @@ const LEDGER = 'src/map/ledger.mjs';
 const COMPOSE = 'src/map/compose.mjs';
 const READ = 'src/map/index.mjs';
 const AUDIT = 'src/map/audit.mjs';
+const SENSES = 'src/map/senses.mjs';
 
 export const MAP_MUTANTS = [
   [
@@ -95,5 +96,45 @@ export const MAP_MUTANTS = [
     COMPOSE,
     'difficulty: row.difficulty ?? null,',
     'difficulty: row.difficulty,',
+  ],
+  [
+    U,
+    '장부',
+    '이름 사슬의 중간 이름과 끝 이름이 함께 살아 있어도 지나간다 — 둘이 한 번호(GPT 보충 검수 GA1)',
+    LEDGER,
+    'byRoot.set(root, key);',
+    'void key;',
+  ],
+  [
+    U,
+    '읽기',
+    '은행 조각에 실린 낱말 줄을 읽지 않는다(낱말 표 없이 이름이 안 선다)',
+    READ,
+    'unitTable(units, [words, ...slicesOf(given).map(slice => slice.words)]),',
+    'unitTable(units, [words]),',
+  ],
+  [
+    U,
+    '뜻 고르기',
+    '원천이 바뀌어 낡은 고르기(from이 원천과 다름)도 지나간다',
+    SENSES,
+    'if (pick.from.pos !== pos || pick.from.entry !== entry)',
+    'if (false)',
+  ],
+  [
+    U,
+    '뜻 고르기',
+    '덧붙인 낱말 번호에 빈틈이 있어도 지나간다',
+    SENSES,
+    'else if (numberOf(word.id) !== next)',
+    'else if (false)',
+  ],
+  [
+    U,
+    '뜻 고르기',
+    '같은 글 낱말 단위 둘을 뜻 없이 둔다(검수가 뜻을 못 가른다)',
+    SENSES,
+    'if (same.some(row => !row[4]))',
+    'if (false)',
   ],
 ];
