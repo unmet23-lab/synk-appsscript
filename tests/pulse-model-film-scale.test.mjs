@@ -48,24 +48,33 @@ test('the model clip in the request form never stretches past the limit on the t
 
 test('the clip never stretches past the limit on its height either — tall boxes on high-density screens letterbox it on its own black padding',()=>{
   const css=read('film.css');
-  const caps=[...css.matchAll(/@media ([^{]*)\{@container \(min-height:(\d+)px\)\{\.sx-casting-lead video\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([,query,min,cap])=>({
-    query,min:Number(min),cap:Number(cap),lo:Number(query.match(/min-resolution:([\d.]+)dppx/)?.[1]||0),hi:Number(query.match(/max-resolution:([\d.]+)dppx/)?.[1]),
+  // 범위 문법 「(앞 위 끝dppx < resolution <= 이 위 끝dppx)」 · 「(height > 상한px)」 — 첫 띠만 아래 끝이 없다.
+  const caps=[...css.matchAll(/@media \((?:([\d.]+)dppx < )?resolution <= ([\d.]+)dppx\)\{@container \(height > (\d+)px\)\{\.sx-casting-lead video\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([query,lo,hi,over,cap])=>({
+    query,lo:lo===undefined?null:Number(lo),hi:Number(hi),over:Number(over),cap:Number(cap),
   })).sort((x,y)=>x.hi-y.hi);
   assert.equal(caps.length,7,'seven height bands, up to a pixel ratio of 4');
-  // 띠 사이 틈이 없다 — 다음 띠는 앞 띠 위 끝 + 0.001dppx에서 시작한다(화소비 1.005 같은 표시 배율 · 확대 조합도 어느 띠에 든다).
-  for(let i=1;i<caps.length;i++)assert.ok(Math.abs(caps[i].lo-(caps[i-1].hi+0.001))<1e-9,`${caps[i].query} starts right after ${caps[i-1].query}`);
+  // 띠 사이 틈이 없다(11-12 GPT 검수 — 0.001dppx 틈의 화소비 1.2505가 어느 띠에도 안 들어 1.56배였다): 첫 띠는 아래가 열리고, 다음 띠의 (배타) 아래 끝은 앞 띠의 위 끝과 같다.
+  assert.equal(caps[0].lo,null,`${caps[0].query} covers every pixel ratio up to its top`);
+  for(let i=1;i<caps.length;i++)assert.equal(caps[i].lo,caps[i-1].hi,`${caps[i].query} starts exactly where ${caps[i-1].query} ends`);
+  assert.equal(caps.at(-1).hi,4);
   for(const band of caps){
-    assert.ok(Number.isFinite(band.hi),`${band.query} has an upper pixel ratio`);
-    assert.equal(band.min,band.cap+1,`${band.query}: the padding starts one pixel above the cap`);
+    assert.equal(band.over,band.cap,`${band.query}: the padding starts right above the cap`);
     const scale=늘어난배율({칸폭:band.cap*9/16,칸높이:band.cap,원본폭:720,원본높이:1280,맞춤:'cover',화소비:band.hi});
     assert.ok(scale<기본기준,`${band.query}: a ${band.cap}px tall clip at ${band.hi}x stretches ${scale}×`);
   }
   // 화소비가 높은 큰 화면(11-11 · 11-12 크롬 실측과 같은 창). 넓은 창의 큰 칸은 창 높이를 꽉 채우고, 세로 창은 62dvh다.
   const tall=Number(css.match(/\.sx-casting-lead\{grid-row:auto;grid-column:1\/-1;height:(\d+)vh;height:\1dvh\}/)?.[1])/100;
   for(const [이름,w,h,ratio] of [['맥북 프로 16형',1728,1117,2],['맥북 프로 16형 창',1728,1000,2],['4K 150%',2560,1440,1.5],['4K 200%',1920,1080,2],['5K',2560,1320,2],['4K 100%',3840,2000,1],['3008 · 125%',3008,1600,1.25],['화소비 4 휴대폰',360,780,4]]){
-    const 칸높이=w<=820||w<=h?tall*h:h,band=caps.find(b=>ratio>=b.lo&&ratio<=b.hi);
-    const 높이=band&&칸높이>=band.min?band.cap:칸높이;
+    const 칸높이=w<=820||w<=h?tall*h:h,band=caps.find(b=>(b.lo===null||ratio>b.lo)&&ratio<=b.hi);
+    const 높이=band&&칸높이>band.cap?band.cap:칸높이;
     const scale=늘어난배율({칸폭:높이*9/16,칸높이:높이,원본폭:720,원본높이:1280,맞춤:'cover',화소비:ratio});
     assert.ok(scale<기본기준,`${이름} ${w}×${h} at ${ratio}x: a ${Math.round(높이)}px tall clip stretches ${scale}×`);
+  }
+  // 경계 바로 위 · 위 끝의 화소비(표시 배율 × 확대 조합)도 어느 띠에 들고, 2,000px 높이 칸에서 1.5배를 넘지 않는다.
+  for(const ratio of [1,1.0005,1.25,1.2505,1.5,1.5005,2,2.0005,2.5,2.5005,3,3.0005,4]){
+    const band=caps.find(b=>(b.lo===null||ratio>b.lo)&&ratio<=b.hi);
+    assert.ok(band,`a ${ratio}x screen falls in a height band`);
+    const scale=늘어난배율({칸폭:band.cap*9/16,칸높이:band.cap,원본폭:720,원본높이:1280,맞춤:'cover',화소비:ratio});
+    assert.ok(scale<기본기준,`a 2000px tall box at ${ratio}x: ${scale}×`);
   }
 });
