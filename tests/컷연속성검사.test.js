@@ -367,7 +367,35 @@ const 깨뜨림 = [
   ['T16 「evenly lit」도 앞에서 고르게 비추는 말이다', (s) => { s.장면.부엌밤.빛 = 'Night. The kitchen is evenly lit by the lamp above the stove at the left edge of the frame.'; }, /앞에서 고르게 비추는 말 「evenly lit」.*\(60\)/],
   ['T16 옆빛 이름인데 키 빛의 쪽이 없다', (s) => { s.장면.부엌밤.빛이름 = ['Rembrandt']; s.장면.부엌밤.빛 = 'Night. One warm lamp is the only light source; shadows fall off softly.'; }, /빛 이름 「Rembrandt」은 키 빛의 쪽이 있어야 한다.*\(60\)/],
   ['T16 사람 없는 컷도 쓰는 장면의 빛 줄에 사람 낱말', (s) => { s.장면.부엌밤.빛 += ' The side of her face toward the stove is lit.'; }, /빛 문장에 사람 낱말 「her」 — 사람 없는 컷\(C4\)도 이 줄을 그대로 쓴다.*\(60\)/],
+  // T17 같은 시작 그림 · 같은 받은 영상을 두 컷이 쓴다(11-12 서울로 애니 「똑같은 장면이 반복되는부분이 몇장면 있어」 · 점검표 50)
+  ['T17 두 컷이 같은 시작 그림을 쓴다', (s) => { 컷(s, 'C2').시작그림 = '정지/C1.png'; }, /C2: 같은 시작 그림을 두 컷이 쓴다\(50\) — C1 컷과 같은 시작 그림 「정지\/C1\.png」.*같은판: "<까닭>"/],
+  ['T17 역슬래시 · 앞의 ./ · 대소문자만 다른 이름도 같은 그림이다', (s) => { 컷(s, 'C3').시작그림 = '.\\정지\\c1.PNG'; }, /C3: 같은 시작 그림을 두 컷이 쓴다\(50\) — C1 컷과 같은 시작 그림/],
+  ['T17 두 컷이 같은 받은 영상(판)을 쓴다', (s) => { 컷(s, 'C2').판 = 'C1'; }, /C2: 같은 시작 그림을 두 컷이 쓴다\(50\) — C1 컷과 같은 받은 영상\(판\) 「C1」/],
+  ['T17 같은판에 true만 적으면 밝힌 것이 아니다(까닭을 글로)', (s) => { 컷(s, 'C2').시작그림 = '정지/C1.png'; 컷(s, 'C2').같은판 = true; }, /C2: 같은 시작 그림을 두 컷이 쓴다\(50\).*같은판은 true가 아니라 까닭을 글로 적는다/],
+  ['T17 셋이 같은 그림이면 밝히지 않은 둘째부터 걸린다', (s) => { 컷(s, 'C2').시작그림 = '정지/C1.png'; 컷(s, 'C2').같은판 = '한 방을 둘로 자른 컷'; 컷(s, 'C4').시작그림 = '정지/C1.png'; }, /C4: 같은 시작 그림을 두 컷이 쓴다\(50\) — C1 컷과 같은 시작 그림/],
+  // T18 되풀이해 나오는 탈것 · 소품 한 줄(11-12 서울로 애니 「16초 18초 버스 색이 달라」 · 점검표 51)
+  ['T18 소품 줄의 생김새가 비었다', (s) => { s.소품.빈그릇.생김새 = ''; }, /소품 빈그릇: 소품 「빈그릇」의 생김새 칸이 비었다.*\(51\)/],
+  ['T18 소품 줄에 지시문에서 부르는 낱말이 없다', (s) => { delete s.소품.빈그릇.낱말; }, /소품 빈그릇: 소품 「빈그릇」의 낱말 칸이 비었다.*\(51\)/],
+  ['T18 소품 줄에 색 · 기준 그림이 없다', (s) => { s.소품.빈그릇.색 = ' '; delete s.소품.빈그릇.기준그림; }, /소품 「빈그릇」의 색 · 기준그림 칸이 비었다/],
+  ['T18 세 컷에 나오는 소품인데 표에 줄이 없다', (s) => { delete s.소품; 컷(s, 'C2').소품.빈그릇 = '문틈에'; }, /소품 빈그릇: 소품 「빈그릇」 — 3컷\(C2 · C3 · C4\)에 나오는데 맨 위 「소품」 표에 줄이 없다.*51\)/],
+  ['T18 두 컷에 나오는 탈것인데 표에 줄이 없다', (s) => { for (const d of s.detail) d.소품.버스 = '화면밖'; 컷(s, 'C1').소품.버스 = '창밖을 지남'; 컷(s, 'C2').소품.버스 = '창밖을 지남'; }, /소품 버스: 탈것 「버스」 — 2컷\(C1 · C2\)에 나오는데 맨 위 「소품」 표에 줄이 없다.*51\)/],
 ];
+const 버스줄 = { 종류: '탈것', 낱말: ['bus'], 색: 'cream and cobalt-blue', 생김새: 'One rounded 1970s Seoul city bus: a cream roof and window band over a cobalt-blue lower body.', 기준그림: 'ref/소품_버스.jpg' };
+// 버스가 C1 · C2의 창밖을 지나는 표 — 줄: 맨 위 「소품」 표에 버스 줄을 넣는다
+const 버스넣기 = (s, { 줄 = true } = {}) => {
+  if (줄) s.소품.버스 = { ...버스줄 };
+  for (const d of s.detail) d.소품.버스 = ['C1', 'C2'].includes(d.cut) ? '창밖을 지남' : '화면밖';
+};
+// 표의 줄을 그대로 옮긴 이미지 지시문(지시문 틀 순서) — 그 컷에 나오는 소품은 맨 위 「소품」 표의 생김새 문장을 PROPS에 그대로 쓴다. 더: 끝에 붙일 줄
+const 표대로그림글 = (표, d, { 옷 = true, 소품 = true, 더 = [] } = {}) => [
+  `SETTING: ${표.장면[d.장면].장소}`,
+  `LIGHT: ${표.장면[d.장면].빛}`,
+  ...d.인물.map((n) => `WHO: ${표.인물[n].묘사}${옷 ? ` ${표.인물[n].옷}` : ' A grey hoodie.'}`),
+  `MOMENT: ${d.line}`,
+  `FRAME: ${d.구도}`,
+  ...(소품 ? Object.entries(표.소품 || {}).filter(([n]) => !['화면밖', '없음', undefined].includes((d.소품 || {})[n])).map(([, p]) => `PROPS: ${p.생김새}`) : []),
+  ...더,
+].join('\n');
 
 // 표 사본이 수십 벌이라 여덟 벌씩 함께 돌린다(한 벌에 파이썬 한 번 — 차례로 돌리면 이 시험만 20초가 넘는다)
 function 돌리기_함께(args) {
@@ -393,7 +421,7 @@ async function 틀돌리기_여럿(고침들) {
   return out;
 }
 
-test(`틀 2 — 한 칸씩 깨뜨린 ${깨뜨림.length}가지는 저마다 그 걸림이 난다(장면 · 인물 · 연기 · 구도 · 시간대 · 기승전결 · 끝 · 글자 · 볼 이유 · 소리 · 엔진 · 빛 이름)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
+test(`틀 2 — 한 칸씩 깨뜨린 ${깨뜨림.length}가지는 저마다 그 걸림이 난다(장면 · 인물 · 연기 · 구도 · 시간대 · 기승전결 · 끝 · 글자 · 볼 이유 · 소리 · 엔진 · 빛 이름 · 같은 시작 그림 · 소품 한 줄)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
   const 틀림 = [];
   const 결과들 = await 틀돌리기_여럿(깨뜨림.map(([, 고침]) => 고침));
   깨뜨림.forEach(([이름, , 원함], i) => {
@@ -437,9 +465,17 @@ const 지나감 = [
   ['사람 없는 컷만 쓰는 장면은 빛이름이 비어도 걸리지 않는다(주의)', (s) => { s.장면.식탁밤 = { ...s.장면.부엌밤 }; delete s.장면.식탁밤.빛이름; 컷(s, 'C4').장면 = '식탁밤'; }],
   ['비스듬한 앞옆 빛(from the front-left)은 앞빛이 아니고 키 빛의 쪽이다', (s) => { s.장면.부엌밤.빛이름 = ['Soft light']; s.장면.부엌밤.빛 = 'Night. A warm soft key from the front-left of the frame is the only light source; the far sides of everything fall into shadow.'; }],
   ['뒤 · 위에서 오는 빛도 키 빛의 쪽이다', (s) => { s.장면.부엌밤.빛이름 = ['Window light']; s.장면.부엌밤.빛 = 'Night. Cold light from the window behind the table is the only source; everything in front of it reads as a soft dark shape.'; }],
+  // 같은 시작 그림(50) · 소품 한 줄(51) — 일부러 그런 것과 줄이 필요 없는 것은 막지 않는다
+  ['한 판을 일부러 이어 쓰는 컷은 같은판에 까닭을 적으면 된다(같은 시작 그림 · 같은 판)', (s) => { 컷(s, 'C2').시작그림 = '정지/C1.png'; 컷(s, 'C2').판 = 'C1'; 컷(s, 'C2').같은판 = '한 방을 둘로 자른 컷 — C1의 뒤 3초'; }],
+  ['같은 컷 이름의 토막은 한 컷이라 같은 시작 그림이어도 된다', (s) => { s.detail.push({ ...컷(s, 'C1'), t: 15.0 }); }],
+  ['시작그림을 목록으로 적어도 받는다(첫 장 · 끝 장)', (s) => { 컷(s, 'C1').시작그림 = ['정지/C1.png', '정지/C1_끝.png']; }],
+  ['두 컷에만 나오는 소품은 맨 위 표에 줄이 없어도 된다', (s) => { delete s.소품; }],
+  ['세 컷에 나오는 소품도 표에 줄이 있으면 된다', (s) => { 컷(s, 'C2').소품.빈그릇 = '문틈에'; }],
+  ['두 컷에 나오는 탈것도 표에 줄이 있으면 된다', (s) => { 버스넣기(s); }],
+  ['한 컷에만 나오는 탈것은 줄이 없어도 된다', (s) => { for (const d of s.detail) d.소품.버스 = d.cut === 'C1' ? '창밖을 지남' : '화면밖'; }],
 ];
 
-test(`틀 2 — 걸면 안 되는 ${지나감.length}가지는 통과한다(이어찍기 · 시간건너뜀 · 브랜드보임 · 동작인 「멈춘다」 · 물건 정지 · 글꼴 부정문)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
+test(`틀 2 — 걸면 안 되는 ${지나감.length}가지는 통과한다(이어찍기 · 시간건너뜀 · 브랜드보임 · 동작인 「멈춘다」 · 물건 정지 · 글꼴 부정문 · 같은판 · 줄이 필요 없는 소품)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
   const 틀림 = [];
   const 결과들 = await 틀돌리기_여럿(지나감.map(([, 고침]) => 고침));
   지나감.forEach(([이름], i) => {
@@ -779,13 +815,7 @@ test('빛 이름 — 얼굴 빛 값(가짜 그림): 좌우 · 위아래 · 색 �
 test('틀 2 + --그림지시문 — 장소 · 빛 · 인물 줄이 표 그대로면 통과, 인물 옷 문장이 빠지면 걸림, 파일 없는 컷은 주의', { skip: !파이썬 && '파이썬 없음' }, () => {
   const dir = 임시();
   const 틀 = 틀읽기();
-  const 그림글 = (d, { 옷 = true } = {}) => [
-    `SETTING: ${틀.장면[d.장면].장소}`,
-    `LIGHT: ${틀.장면[d.장면].빛}`,
-    ...d.인물.map((n) => `WHO: ${틀.인물[n].묘사}${옷 ? ` ${틀.인물[n].옷}` : ' A grey hoodie.'}`),
-    `MOMENT: ${d.line}`,
-    `FRAME: ${d.구도}`,
-  ].join('\n');
+  const 그림글 = (d, { 옷 = true } = {}) => 표대로그림글(틀, d, { 옷 });
   const 좋은 = path.join(dir, '좋은그림'); fs.mkdirSync(좋은);
   for (const d of 틀.detail) 쓰기(좋은, `${d.cut}.txt`, 그림글(d));
   const r = 틀돌리기(null, ['--그림지시문', 좋은], dir);
@@ -801,7 +831,7 @@ test('틀 2 + --그림지시문 — 장소 · 빛 · 인물 줄이 표 그대로
   const 그림 = (이름) => r2.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 이름).map((x) => `${x.등급}: ${x.글}`);
   assert.deepEqual(그림('C1'), ['통과: 장소 · 빛 · 인물 줄이 표 그대로']);
   assert.equal(그림('C2').length, 1);
-  assert.match(그림('C2')[0], /^걸림: 인물 「수아」의 옷 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 줄을 그대로 쓴다\(G11 · 51\)/);
+  assert.match(그림('C2')[0], /^걸림: 인물 「수아」의 옷 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 · 소품 줄을 그대로 쓴다\(G11 · 51\)/);
   assert.match(그림('C3')[0], /^주의: 이미지 지시문 파일이 없다: C3\.txt/);
   assert.match(그림('C4')[0], /^걸림: 장면 「부엌밤」의 빛 문장/);
   assert.match(그림('메모')[0], /^주의: 컷표에 없는 컷 이름/);
@@ -1753,4 +1783,147 @@ test('내기 도구 — 굽기전(): 검사기를 못 부르면 「모두:」일
   assert.match(g5.stdout, /· pv5-08-1: 프리비즈 판/);
   assert.match(g5.stdout, /✗ pvc-01: \(연기\) 사람 정지 낱말/);
   assert.ok(!/✗ pv5-08-1: /.test(g5.stdout), g5.stdout);
+});
+
+// ───────── 2026-11-12: 같은 시작 그림(50) · 되풀이 탈것 · 소품 한 줄(51) — 서울로 애니 보완 판 ─────────
+// 왜: 전 컷을 다시 구운 판에서 같은 시작 그림으로 영상을 두 번 뽑은 컷이 두 군데(0:25 = 0:29 · 1:02 = 1:09) 있었고, 1970 버스가 컷마다 파랑 · 빨강이었다
+//   (유호님 「버스 색이 달라 … 똑같은 장면이 반복되는부분이 몇장면 있어」). 컷표 검사는 통과했다 — 이 둘을 보는 칸이 없었다.
+//   걸려야 할 옛 판 = 같은 시작 그림을 두 컷이 쓰는 표 · 버스 색이 지시문마다 다른 표, 지나가야 할 새 판 = 고친 표.
+const 가짜그림 = (파일, 속) => fs.writeFileSync(파일, Buffer.from(`가짜 그림 ${속}`));
+
+test('같은 시작 그림 — 옛 판(같은 그림에서 두 컷을 뽑음 · 이웃 컷의 그림을 이름만 바꿔 메움)은 걸리고 새 판(컷마다 다른 그림)은 지나간다, 칸이 비면 --그림 폴더의 컷 그림으로 견준다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const dir = 임시();
+  const 정지 = path.join(dir, '정지'); fs.mkdirSync(정지);
+  for (const c of ['C1', 'C2', 'C3', 'C4']) 가짜그림(path.join(정지, `${c}.png`), c);
+  가짜그림(path.join(정지, 'C4_메움.png'), 'C3');   // 이웃 컷 C3의 그림을 이름만 바꿔 둔 것
+  // 옛 판: C2는 C1의 시작 그림에서 카메라만 달리 뽑았고, C4는 C3과 같은 파일(이름만 다름)
+  const 옛 = 틀돌리기((s) => { 컷(s, 'C2').시작그림 = '정지/C1.png'; 컷(s, 'C4').시작그림 = '정지/C4_메움.png'; }, [], dir);
+  assert.equal(옛.코드, 1);
+  const 걸림 = 걸림글(옛);
+  assert.equal(걸림.length, 2, JSON.stringify(걸림));
+  assert.match(걸림[0], /^C2: 같은 시작 그림을 두 컷이 쓴다\(50\) — C1 컷과 같은 시작 그림 「정지\/C1\.png」\. 관객에겐 같은 장면이 되풀이된다/);
+  assert.match(걸림[1], /^C4: 같은 시작 그림을 두 컷이 쓴다\(50\) — C3 컷과 같은 시작 그림 「정지\/C4_메움\.png」 = 「정지\/C3\.png」\(이름만 다른 같은 파일\)/);
+  // 새 판: 컷마다 다른 그림(예시 틀 그대로)
+  const 새 = 틀돌리기(null, [], dir);
+  assert.equal(새.코드, 0, JSON.stringify(새.항목들.filter((x) => x.등급 !== '통과')));
+  // 내기 도구의 굽기전처럼 편 폴더를 모르면(파일을 못 읽으면) 칸에 적힌 이름으로만 견준다 — 이름이 같은 C2는 걸리고, 이름만 다른 C4는 못 본다
+  const 다른곳 = 임시();
+  const 이름만 = 틀돌리기((s) => { 컷(s, 'C2').시작그림 = '정지/C1.png'; 컷(s, 'C4').시작그림 = '정지/C4_메움.png'; }, [], 다른곳);
+  assert.deepEqual(걸림글(이름만).map((g) => g.slice(0, 3)), ['C2:']);
+  // 표의 칸이 비어도 --그림 폴더의 <컷>.png로 견준다 — C3.png가 C2.png와 같은 파일이다
+  fs.copyFileSync(path.join(정지, 'C2.png'), path.join(정지, 'C3.png'));
+  const 칸없음 = (s) => { for (const d of s.detail) delete d.시작그림; };
+  const 그림만 = 틀돌리기(칸없음, ['--그림', 정지, '--항목', '틀'], dir);
+  assert.equal(그림만.코드, 1);
+  assert.deepEqual(걸림글(그림만).length, 1, JSON.stringify(걸림글(그림만)));
+  assert.match(걸림글(그림만)[0], /^C3: 같은 시작 그림을 두 컷이 쓴다\(50\) — C2 컷과 같은 시작 그림 「C3\.png」 = 「C2\.png」\(이름만 다른 같은 파일\)/);
+  // 칸도 비고 그림 폴더도 없으면 못 본 것이다 — 주의 한 줄로 알리고 끝 코드는 그대로(콘티 단계에는 시작 그림이 아직 없다)
+  const 빈 = 틀돌리기(칸없음);
+  assert.equal(빈.코드, 0, JSON.stringify(걸림글(빈)));
+  const 주의 = 빈.항목들.filter((x) => x.항목 === '틀' && x.등급 === '주의').map((x) => `${x.컷}: ${x.글}`);
+  assert.equal(주의.length, 1, JSON.stringify(주의));
+  assert.match(주의[0], /^표: 「시작그림」 칸이 빈 컷 4개\(C1 · C2 · C3 · C4\).*· 50\)/);
+});
+
+test('같은 시작 그림 — 꾸러미(--지시문): 서로 다른 컷의 판이 같은 시작 그림 파일(1_시작.*)을 쓰면 걸림, 같은 컷의 대안 판 · 같은판을 밝힌 컷 · 다른 그림은 지나간다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const dir = 임시();
+  const 만들기 = (이름, 속들) => {
+    const pack = 꾸러미만들기(dir, [{ id: 'C1', 글: 지시문글() }, { id: 'C1b', 글: 지시문글() }, { id: 'C2', 글: 지시문글() }], 이름);
+    const 순서 = JSON.parse(fs.readFileSync(path.join(pack, '_순서.json'), 'utf8'));
+    순서[1].컷 = ['C1'];   // C1b는 C1의 대안 판
+    순서.forEach((x, i) => 가짜그림(path.join(pack, x.폴더, '1_시작.png'), 속들[i]));
+    fs.writeFileSync(path.join(pack, '_순서.json'), JSON.stringify(순서), 'utf8');
+    return pack;
+  };
+  const 시작줄 = (r) => r.항목들.filter((x) => x.항목 === '지시문' && x.글.startsWith('(시작 그림)')).map((x) => `${x.컷} ${x.등급}: ${x.글}`);
+  // 옛 판: C2의 판이 C1과 같은 시작 그림에서 나간다(C1b는 C1의 대안 판이라 같은 그림이 맞다)
+  const 옛 = 만들기('옛꾸러미', ['가', '가', '가']);
+  const r = 틀돌리기(null, ['--지시문', 옛], dir);
+  assert.equal(r.코드, 1);
+  assert.equal(시작줄(r).length, 1, JSON.stringify(시작줄(r)));
+  assert.match(시작줄(r)[0], /^C2 걸림: \(시작 그림\) 판 C1\(컷 C1\)와 시작 그림 파일이 같다\(1_시작\.png\).*\(50\)/);
+  // 같은판을 밝힌 컷은 지나간다
+  const r2 = 틀돌리기((s) => { 컷(s, 'C2').같은판 = '한 방을 둘로 자른 컷 — C1의 뒤 3초'; }, ['--지시문', 옛], dir);
+  assert.deepEqual(시작줄(r2), []);
+  assert.equal(r2.코드, 0, JSON.stringify(r2.항목들.filter((x) => !['통과', '주의', '알림'].includes(x.등급))));
+  // 새 판: 컷마다 다른 시작 그림
+  const r3 = 틀돌리기(null, ['--지시문', 만들기('새꾸러미', ['가', '가', '나'])], dir);
+  assert.deepEqual(시작줄(r3), []);
+  assert.equal(r3.코드, 0, JSON.stringify(r3.항목들.filter((x) => !['통과', '주의', '알림'].includes(x.등급))));
+});
+
+test('되풀이 탈것 — 옛 판(버스 색을 그림 지시문마다 따로 적음)은 확인, 새 판(소품 한 줄 + 생김새 문장 그대로)은 통과, 표와 다른 색(vermilion bus)은 확인, 나온다고 적은 컷에 생김새 문장이 없으면 걸림', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const dir = 임시();
+  const 지시문들 = (이름, 표, 더 = {}, 소품뺄컷 = null) => {
+    const p = path.join(dir, 이름); fs.mkdirSync(p);
+    for (const d of 표.detail) 쓰기(p, `${d.cut}.txt`, 표대로그림글(표, d, { 소품: d.cut !== 소품뺄컷, 더: 더[d.cut] || [] }));
+    return p;
+  };
+  const 그림줄 = (r, 컷이름) => r.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 컷이름).map((x) => `${x.등급}: ${x.글}`);
+  // 옛 판 — 표에 버스 줄이 없고 그림 지시문마다 색을 따로 적었다(서울로 11-12 지시문의 꼴 그대로)
+  const 옛 = 지시문들('옛', 틀읽기(), {
+    C1: ['Outside the window, one 1970s city bus (cream and cobalt blue, rounded roof, a row of square windows) drives past.'],
+    C2: ['Outside the window, a cream-and-vermilion rounded 1970s felt city bus drives past under a saffron-yellow sky.'],
+  });
+  const r = 틀돌리기(null, ['--그림지시문', 옛], dir);
+  assert.equal(r.코드, 2, JSON.stringify(r.항목들.filter((x) => x.등급 !== '통과')));
+  assert.equal(그림줄(r, '표').length, 1, JSON.stringify(그림줄(r, '표')));
+  assert.match(그림줄(r, '표')[0], /^확인: 탈것 「bus」의 색이 그림 지시문마다 다르다\(51\) — C1 blue · cobalt · cream \/ C2 cream · vermilion\. 같은 탈것이면 맨 위 「소품」 표에 한 줄/);
+  // 새 판 — 버스를 소품 표에 한 줄로 적고, 나오는 컷(C1 · C2)의 지시문에 생김새 문장을 그대로 썼다. 색 없이 부르는 「the bus」는 얼마든지 써도 된다
+  const 새표 = 틀읽기(); 버스넣기(새표);
+  const 새 = 지시문들('새', 새표, { C1: ['The bus is passing from left to right outside the window, under a saffron-yellow sky.'] });
+  const r2 = 틀돌리기((s) => 버스넣기(s), ['--그림지시문', 새], dir);
+  assert.equal(r2.코드, 0, JSON.stringify(r2.항목들.filter((x) => x.등급 !== '통과')));
+  assert.deepEqual(r2.항목들.filter((x) => x.항목 === '그림지시문').map((x) => `${x.컷} ${x.등급}`), ['C1 통과', 'C2 통과', 'C3 통과', 'C4 통과']);
+  // 표는 cream and cobalt-blue인데 지시문에 vermilion bus — 확인(끝 코드 2)
+  const r3 = 틀돌리기((s) => 버스넣기(s), ['--그림지시문', 지시문들('다른색', 새표, { C2: ['The vermilion bus slows down outside the window.'] })], dir);
+  assert.equal(r3.코드, 2, JSON.stringify(r3.항목들.filter((x) => x.등급 !== '통과')));
+  assert.equal(그림줄(r3, 'C2').length, 2, JSON.stringify(그림줄(r3, 'C2')));
+  assert.match(그림줄(r3, 'C2')[1], /^확인: 소품 「버스」에 표에 없는 색 「vermilion」 — 「vermilion bus」\(표의 색: blue · cobalt · cream\)\. 같은 버스이면 색을 따로 적지 않고 표의 생김새 줄만 쓴다\(51\)/);
+  // 표에 나온다고 적은 컷(C2)의 지시문에 생김새 문장이 없다 — 인물 옷과 같은 대조(걸림). 표의 색 안에서 달리 쓴 것(cream and blue)은 색으로는 걸지 않는다
+  const r4 = 틀돌리기((s) => 버스넣기(s), ['--그림지시문', 지시문들('빠짐', 새표, { C2: ['A cream and blue bus passes outside the window.'] }, 'C2')], dir);
+  assert.equal(r4.코드, 1);
+  assert.deepEqual(그림줄(r4, 'C2').length, 1, JSON.stringify(그림줄(r4, 'C2')));
+  assert.match(그림줄(r4, 'C2')[0], /^걸림: 소품 「버스」의 생김새 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 · 소품 줄을 그대로 쓴다\(G11 · 51\)/);
+  // 표에는 화면밖인 컷(C3)의 지시문에 bus가 나온다 — 표와 지시문이 어긋났으니 확인
+  const r5 = 틀돌리기((s) => 버스넣기(s), ['--그림지시문', 지시문들('화면밖', 새표, { C3: ['Through the door gap, a bus waits at the kerb.'] })], dir);
+  assert.equal(r5.코드, 2);
+  assert.match(그림줄(r5, 'C3')[1], /^확인: 지시문에 「bus」이\(가\) 나오는데 소품 「버스」의 생김새 문장이 없다/);
+  // 표에 줄이 없는 탈것이 색 다툼 없이 두 컷에 나오면 주의만(끝 코드 0), 「bus stop」 · 「no buses」는 버스가 나온 것이 아니다
+  const r6 = 틀돌리기(null, ['--그림지시문', 지시문들('주의만', 틀읽기(), {
+    C1: ['A tram passes outside the window. A bus stop sign stands at the kerb.'], C2: ['The tram bell rings as the tram passes; there are no buses in this picture.'],
+  })], dir);
+  assert.equal(r6.코드, 0, JSON.stringify(r6.항목들.filter((x) => x.등급 !== '통과')));
+  assert.deepEqual(그림줄(r6, '표').length, 1, JSON.stringify(그림줄(r6, '표')));
+  assert.match(그림줄(r6, '표')[0], /^주의: 탈것 「tram」이\(가\) 그림 지시문 2컷\(C1 · C2\)에 나오는데 소품 표에 줄이 없다/);
+});
+
+test('되풀이 탈것 — 색은 그 이름씨에 붙은 것만 센다: 서울로 지시문 꼴의 버스 문장 아홉은 색이 읽히고, 같은 문장의 하늘 · 벽 · 택시 색과 「no … bus」 · 「bus stop」 · minibus는 세지 않는다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const 문장 = [
+    // 색이 읽혀야 하는 꼴(서울로 11-11~12 그림 지시문에서)
+    ['One 1970s city bus (cream and cobalt blue, rounded roof, a row of square windows) fills the frame', ['blue', 'cobalt', 'cream']],
+    ['a cream-and-vermilion rounded 1970s felt city bus drives past', ['cream', 'vermilion']],
+    ['rounded 1970s felt buses (cream-and-blue, cream-and-vermilion) cross the overpass', ['blue', 'cream', 'vermilion']],
+    ['a rounded 1970s felt city bus with a cream roof and cream window band and a cobalt-blue lower body with one thin cream stripe', ['blue', 'cobalt', 'cream']],
+    ['A boxy 1990s felt city bus — vermilion red with one cream band, the same model as before', ['cream', 'red', 'vermilion']],
+    ['(solid blue, solid red and solid green flat-fronted buses, small cars) with their tail lights on', ['blue', 'green', 'red']],
+    ['one bus, cream and cobalt blue, rounded roof', ['blue', 'cobalt', 'cream']],
+    ['the bus is painted green', ['green']],
+    ['a bus in cream and blue livery', ['blue', 'cream']],
+    // 세면 안 되는 꼴
+    ['A warm saffron-yellow and orange morning sky above (no blue sky), the plain concrete side wall of the bridge below the bus.', []],
+    ['there is no red or vermilion bus anywhere', []],
+    ['the bus, red brick warehouses behind it', []],
+    ['the bus in red light', []],
+    ['the bus with a red-coated conductor leaning out', []],
+    ['The bus is passing a yellow taxi.', []],
+    ['two yellow taxis and the bus', []],
+    ['A bus stop sign in yellow', []],
+    ['a minibus in red', []],
+  ];
+  const 스크립트 = 'import sys, json\nsys.path.insert(0, sys.argv[1])\nimport 컷연속성검사 as k\npat = k.낱말정규식(["bus"])\nprint(json.dumps([sorted(k.붙은색들(t, pat)[0]) for t in json.load(sys.stdin)]))';
+  const r = spawnSync('python', ['-I', '-X', 'utf8', '-c', 스크립트, path.dirname(도구)], { input: JSON.stringify(문장.map((x) => x[0])), encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  const 답 = JSON.parse(r.stdout);
+  assert.deepEqual(문장.map(([글], i) => [글, 답[i]]).filter(([, 색], i) => JSON.stringify(색) !== JSON.stringify(문장[i][1])), []);
 });

@@ -18,6 +18,8 @@
 #               틀 2면 판마다 그 컷 장면의 빛 문장이 글자 그대로 들었는지도 본다(51). 판을 컷에 잇는 법: 판 id = 컷 이름 · <편>-<컷> · 컷의 「판」 · 판 폴더 이름 · _순서.json 판의 "컷": ["C2"](대안 판).
 #               소리만 쓰는 판(_순서.json "방식": "목소리 판" · "소리만": true)과 프리비즈 판(id pv…)은 사람 연기 · 컷표 대조를 건너뛴다. 내기 도구의 굽기전()과 같은 판정 · 같은 등급이고, 걸림은 판 id로 적는다.
 #   --그림지시문: 이미지 콘티 지시문(<폴더>/<컷>.txt) — 틀 2일 때 그 컷 장면의 장소 · 빛, 인물의 묘사 · 옷 문장이 글자 그대로 들었는지(G11 · 51).
+#               맨 위 「소품」 표의 줄은 그 소품이 나오는 컷에 생김새 문장이 글자 그대로 들었는지(걸림), 그 낱말에 표에 없는 색이 붙었는지(확인 — 「vermilion bus」),
+#               표에 줄이 없는 탈것 낱말(bus · tram · taxi …)의 색이 컷마다 다른지(확인)도 본다(51 — 11-12 서울로 애니).
 #   굽기전검사(글, 실내, 인물, 소리만, 박자최소)는 내기 도구(크레딧내기.py · 드리미나내기.py)가 내기 전에 부른다 — 걸림이면 내지 않는다.
 #   --그림: 이미지 콘티 단계 — 상태가 적힌 컷의 정지 그림(<폴더>/<컷>.png|jpg)을 소품 지도와 대조하고, 실내 컷의 떠다니는 점 후보 시트를 만든다.
 #   --받음 · --영상: 편집 단계 — 받은 판(쓰는 구간)이나 최종 판(그 컷의 자리)에서 소품 자리 · 소품 고요 · 큰 물건 고요 · 소리 사건 · 점을 잰다.
@@ -43,6 +45,10 @@
 #          "끝": {"컷"(마지막 컷), "가장센그림", "제품보임"|"브랜드보임", "로고멈춤초"(2 이상 · 로고 없는 편은 null + "로고없음": 까닭), "소리한방"} · "seq"의 띠에 기 · 승 · 전 · 결
 #   detail[] 항목: "장면" · "인물": [이름…](사람 없는 컷은 []) · "구도" · "카메라" · "연기": [{"t": 초, "무엇"}](사람 컷은 둘 이상) · "움직임"(사람 없는 컷) · "넘어옴" · "소리"
 #                  "이어찍기": true — 앞 컷과 장면 · 인물 · 구도가 같아도 되는 컷 · "시간건너뜀": true — 앞 컷과 시간대가 달라도 되는 컷
+#                  "시작그림": "정지/C1.png" — 그 컷의 영상을 뽑을 시작 그림(편 폴더 기준). 서로 다른 두 컷이 같은 시작 그림 · 같은 「판」을 쓰면 걸림(50) —
+#                  "같은판": "<까닭>" — 한 판을 일부러 이어 쓰는 컷(한 방을 둘로 자른 컷 · 한 판에 두 샷)
+#   맨 위 "소품": {이름: {"종류": 탈것|소품, "낱말": ["bus"](지시문에서 부르는 영어 이름씨), "색", "생김새"(이미지 지시문에 글자 그대로 들어가는 영어 문장), "기준그림"}} —
+#          컷의 「소품」 칸에서 두 컷(탈것) · 세 컷(그 밖의 소품) 넘게 나오는 것은 이 줄이 있어야 한다(51). 이어 볼 소품이 없는 편은 전처럼 "소품": []
 # 소품 지도.json: {"src", "size": [w, h], "notes": [{"id", "color", "box": [x0, y0, x1, y1], "cx", "cy"}], "상태": {"이름": ["Y1", …]},
 #                  "영역": [0.40, 0.20, 0.84, 0.60](선택 — 소품이 붙는 면, 비율), "따뜻한색": "노랑"(선택 — 두 색일 때 R−B가 큰 쪽)}
 #   .tmp/contests-20261019/siryc/쪽지지도.py가 만든 꼴 그대로다(색은 둘까지 — 밤 · 햇빛 컷은 검출이 흔들려 「확인」으로 남기고 시트를 본다).
@@ -1322,8 +1328,229 @@ def 빛판정(이름들, 문장, 값, 표):
     return "알림", f"빛 이름({' · '.join(이름들) or '없음'}) — 값만 적는다: {요약}"
 
 
-def 틀검사(seq, r):
-    """컷표 틀 2의 칸 검사(T1~T16) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약)."""
+# ───────── 같은 시작 그림(50) · 되풀이 탈것 · 소품 한 줄(51) — 2026-11-12 서울로 애니 보완 판 ─────────
+# 왜 있나: 전 컷을 다시 구운 판에서 1970 버스가 컷마다 파랑 · 빨강으로 바뀌고(그림 지시문마다 버스 색을 따로 적었다), 같은 시작 그림에서 영상을 두 번 뽑은 컷이 두 군데 있었다
+#   (잘 안 나온 컷을 이웃 컷의 다른 판으로 메웠다). 컷표 검사는 통과했다 — 이 둘을 보는 칸이 없었다(유호님 「버스 색이 달라 … 똑같은 장면이 반복되는부분이 몇장면 있어」).
+#   ① T17: 컷마다 「시작그림」을 적는다. 서로 다른 두 컷이 같은 시작 그림(이름이 달라도 같은 파일) · 같은 받은 영상(「판」)을 쓰면 걸린다 — 한 판을 일부러 이어 쓰는 컷은 같은판: "<까닭>".
+#      같은 컷 이름의 토막(A11 · A11#2)은 한 컷이라 보지 않는다. --그림 <폴더>를 주면 칸이 빈 컷은 <폴더>/<컷>.png로 견주고, --지시문 <꾸러미>를 주면 판 폴더의 시작 그림 파일(1_시작.*)도
+#      견준다(같은 컷의 대안 판끼리는 지나간다).
+#   ② T18: 되풀이해 나오는 탈것(두 컷부터) · 소품(세 컷부터)은 맨 위 「소품」 표에 한 줄(낱말 · 색 · 생김새 · 기준그림) — 없으면 걸린다. --그림지시문을 주면 그 소품이 나오는 컷의 지시문에
+#      생김새 문장이 글자 그대로 들었는지(인물 옷과 같은 대조 · 걸림), 그 이름씨에 표에 없는 색이 붙었는지(확인 — 표는 cream and cobalt-blue인데 「vermilion bus」), 표에 줄이 없는 탈것 낱말의
+#      색이 컷마다 다른지(확인) 본다. 색은 그 이름씨에 붙은 것만 센다(앞의 꾸밈말 · 바로 뒤 괄호 · 「painted …」 · 「with a … band」) — 같은 문장의 하늘 · 벽 색은 세지 않는다.
+#   풀어 주는 갈래는 늘리지 않는다 — 실물 지시문이 잘못 걸릴 때만 시험(걸려야 할 옛 판 · 지나가야 할 새 판)과 함께 고친다.
+_색목록 = ("red crimson scarlet vermilion vermillion maroon burgundy orange amber yellow gold golden mustard saffron lemon green olive lime emerald teal turquoise cyan aqua mint "
+          "blue cobalt navy azure indigo purple violet lilac lavender magenta pink rose coral salmon peach brown tan beige khaki cream ivory white black grey gray silver charcoal bronze copper rust").split()
+_색같음 = {"vermillion": "vermilion", "gray": "grey", "golden": "gold"}
+_색한 = r"(?<![A-Za-z])(?:" + "|".join(sorted(_색목록, key=len, reverse=True)) + r")(?![A-Za-z])"
+_색낱말 = re.compile(_색한, re.I)
+_색꾸밈 = r"(?:(?:bright|dark|pale|light|deep|soft|faded|dull|glossy|matte|warm|cool|two-tone|solid|off)[\s-]+)*"
+_색줄 = rf"{_색꾸밈}{_색한}(?:(?:\s*(?:,|/|&|-|and)\s*|\s+){_색꾸밈}{_색한})*"
+# 이름씨 바로 뒤에 붙은 색 — 괄호(「bus (cream and cobalt blue, rounded roof)」) · 이은 말(「bus, cream and blue,」 · 「bus — vermilion red with one cream band」 · 「bus is red」 · 「bus painted cream」 ·
+#   「bus in cream and blue livery」) · 그 뒤의 「with …」 줄에서 몸의 부분 앞에 놓인 색(「bus with a cream roof and cream window band and a cobalt-blue lower body」).
+# 색 줄 뒤가 끊기는 자리일 때만 받는다 — 「the bus, red brick warehouses behind it」 · 「the bus in red light」 · 「the bus with a red-coated conductor」의 색은 버스의 색이 아니다
+_뒤괄호 = re.compile(r"\s*\(([^)\n]{0,160})\)")
+_뒤색 = re.compile(rf"(?:\s*,\s*|\s+[—–-]\s+|\s+(?:is|are|was|were)\s+(?:(?:painted|colou?red|sprayed)\s+)?(?:in\s+)?|\s+(?:painted|colou?red|sprayed)\s+(?:in\s+)?|\s+in\s+)({_색줄})(?=\s*(?:[,.;:)\n—–]|$|(?:with|and|livery|paint(?:work)?|colou?rs?)\b))", re.I)
+_뒤와 = re.compile(r"\s*,?\s*with\s+([^,.;:()\n—–]{0,160})", re.I)
+_몸색 = re.compile(rf"({_색줄})\s+(?:[\w-]+\s+){{0,2}}?(?:bands?|stripes?|body|bodywork|roof|livery|paint(?:work)?|panels?|trim|sides?|front|half|top|bottom|skirt|doors?|hood|fenders?|bumpers?)\b", re.I)
+_색만 = re.compile(rf"\s*(?:(?:and|or)\s+)?{_색줄}\s*$", re.I)
+_구멈춤 = set(("a an the one this that these those each every another its his her their our your my two three four five six several some many any both all no "
+               "of on in at by with from to into onto under over behind beside below above near past through across toward towards along around between as like than while when where which who").split())
+_없다앞 = re.compile(r"(?:\bno|\bwithout(?:\s+(?:any|a|an|the))?|\bnot\s+(?:a|an|any)|\bnever\s+(?:a|an|any))\s+(?:[\w'’-]+\s+){0,5}$", re.I)   # 「there is no red or vermilion bus anywhere」
+_소품없음 = (None, "화면밖", "없음")
+_탈것이름 = re.compile(r"버스|택시|기차|열차|전철|지하철|전차|트램|자동차|승용차|트럭|자전거|오토바이|스쿠터|킥보드|보트|비행기|마차|수레")
+# 표에 줄이 없어도 그림 지시문에서 찾아보는 탈것 낱말 — 좁게(plane · ship · van · cab · cart처럼 다른 뜻이 흔한 낱말은 넣지 않는다)
+_탈것낱말 = ("bus", "minibus", "tram", "streetcar", "trolleybus", "taxi", "car", "truck", "lorry", "jeep", "bicycle", "bike", "motorcycle", "motorbike", "scooter", "train", "boat", "ferry", "rickshaw")
+
+
+def 낱말정규식(낱말들):
+    """소품 줄의 「낱말」(지시문에서 그것을 부르는 영어 이름씨) → 정규식. 복수형(-s · -es)까지 읽고, 「bus stop」 · 「train station」 같은 시설 이름과 「minibus」 같은 다른 낱말은 뺀다."""
+    alts = "|".join(re.escape(w) for w in sorted(낱말들, key=len, reverse=True))
+    return re.compile(rf"(?<![A-Za-z-])(?:{alts})(?:e?s)?(?![A-Za-z])(?![ -](?:stops?|stations?|shelters?|lanes?|routes?|terminals?|depots?|tickets?|signs?|stands?|ranks?|parks?|racks?|tracks?|platforms?)\b)", re.I)
+
+
+def _앞구(글, s):
+    """이름씨 자리 s 앞의 꾸밈말 — 구두점을 넘지 않고 한정사 · 전치사에서 멈춘다(많아야 일곱 낱말): 「a vermilion and cream city bus」 → 「vermilion and cream city」.
+    쉼표로 늘어놓은 색(「solid blue, solid red and solid green flat-fronted buses」)은 앞 토막이 색뿐일 때만 거슬러 올라가 받는다."""
+    토막 = re.split(r"[.;:()\n—–!?\"“”「」]", 글[max(0, s - 120):s])[-1].split(",")
+    out, 멈춤 = [], False
+    for t in reversed(토막[-1].split()[-7:]):
+        if t.lower().strip("'’") in _구멈춤: 멈춤 = True; break
+        out.append(t)
+    구 = " ".join(reversed(out))
+    if not 멈춤:
+        for 앞토막 in reversed(토막[:-1]):
+            if not _색만.match(앞토막): break
+            구 = f"{앞토막.strip()}, {구}"
+    return 구
+
+
+def 붙은색들(글, 정규식):
+    """글에서 그 이름씨에 붙은 색 낱말 → (색 집합, [색이 붙은 구절], 그 이름씨가 나온 수). 「no bus」처럼 없다고 한 자리는 세지 않는다."""
+    색, 구절, n = set(), [], 0
+    for m in 정규식.finditer(글):
+        if _없다앞.search(글[max(0, m.start() - 40):m.start()]): continue
+        n += 1
+        앞 = _앞구(글, m.start()); 뒤 = 글[m.end():m.end() + 240]; 조각 = [앞]; 뒤끝 = 0
+        g = _뒤괄호.match(뒤) or _뒤색.match(뒤)
+        if g: 조각.append(g.group(1)); 뒤끝 = g.end()
+        w = _뒤와.match(뒤[뒤끝:])
+        if w:
+            몸 = [x.group(1) for x in _몸색.finditer(w.group(1))]
+            if 몸: 조각 += 몸; 뒤끝 += w.end()
+        찾음 = [_색같음.get(c.lower(), c.lower()) for 조 in 조각 for c in _색낱말.findall(조)]
+        if 찾음:
+            색.update(찾음); 구절.append(한칸(f"{앞} {m.group(0)}{뒤[:뒤끝]}")[:90])
+    return 색, 구절, n
+
+
+def 소품표줄(seq):
+    """맨 위 「소품」 표 → {이름: 줄}. 「소품: []」(이어 볼 소품이 없다고 밝힌 편)와 표가 없는 편은 {}."""
+    v = seq.get("소품") if isinstance(seq, dict) else None
+    return {k: x for k, x in v.items() if isinstance(k, str)} if isinstance(v, dict) else {}
+
+
+def 소품낱말(줄):
+    """소품 줄의 「낱말」 → 목록(글 하나에 쉼표 · 가운뎃점으로 적어도 받는다)"""
+    v = 줄.get("낱말") if isinstance(줄, dict) else None
+    if isinstance(v, str): v = re.split(r"[,·/]+", v)
+    return [x.strip() for x in v if isinstance(x, str) and x.strip()] if isinstance(v, list) else []
+
+
+def 색낱말들(글):
+    return {_색같음.get(c.lower(), c.lower()) for c in _색낱말.findall(str(글 or ""))}
+
+
+def 소품나오는컷(seq):
+    """컷마다의 「소품」 칸 → {소품 이름: [그 소품이 화면에 나오는 컷 이름(차례대로 · 한 번씩)]}. 「화면밖」 · 「없음」은 나오지 않는 것이다."""
+    out = {}
+    for d in seq.get("detail") or []:
+        for k, v in (d.get("소품").items() if isinstance(d.get("소품"), dict) else []):
+            out.setdefault(k, [])
+            if v not in _소품없음 and d.get("cut") not in out[k]: out[k].append(d.get("cut"))
+    return out
+
+
+def 소품줄검사(seq):
+    """T18 — 맨 위 「소품」 표: 되풀이해 나오는 탈것 · 소품은 인물처럼 한 줄(51) → [(등급, 어디, 글)]."""
+    out = []; 표 = 소품표줄(seq); 나옴 = 소품나오는컷(seq)
+    for 이름, 줄 in 표.items():
+        if not isinstance(줄, dict):
+            out.append(("걸림", f"소품 {이름}", f"소품 「{이름}」 줄이 표 꼴({{종류, 낱말, 색, 생김새, 기준그림}})이 아니다(51)")); continue
+        빠짐 = ([] if 소품낱말(줄) else ["낱말"]) + [k for k in ("색", "생김새", "기준그림") if 빈칸(줄.get(k))]
+        if 빠짐: out.append(("걸림", f"소품 {이름}", f"소품 「{이름}」의 {' · '.join(빠짐)} 칸이 비었다 — 되풀이해 나오는 탈것 · 소품은 인물처럼 한 줄(지시문에서 부르는 영어 낱말 · 색 · 생김새 문장 · 기준 그림)로 적고 모든 컷이 그 줄을 쓴다(51)"))
+        if not 빈칸(줄.get("색")) and not 빈칸(줄.get("생김새")):
+            표색 = 색낱말들(줄.get("색")); 문장색 = 색낱말들(줄.get("생김새"))
+            if not (표색 | 문장색): out.append(("주의", f"소품 {이름}", f"소품 「{이름}」 줄에 아는 색 이름이 없다 — 색을 영어 색 이름(cream · cobalt-blue …)으로 적어야 지시문의 색과 견준다(51)"))
+            elif 표색 - 문장색: out.append(("주의", f"소품 {이름}", f"소품 「{이름}」의 색 「{' · '.join(sorted(표색 - 문장색))}」이 생김새 문장에 없다 — 지시문에 글자 그대로 들어가는 것은 생김새 문장이다(51)"))
+        if 이름 not in 나옴: out.append(("주의", f"소품 {이름}", f"소품 「{이름}」이 어느 컷의 「소품」 칸에도 없다 — 컷마다 상태를 적는다(안 나오는 컷은 화면밖)"))
+    for 이름, 컷들 in 나옴.items():
+        탈것 = bool(_탈것이름.search(이름))
+        if 이름 in 표 or len(컷들) < (2 if 탈것 else 3): continue
+        out.append(("걸림", f"소품 {이름}", f"{'탈것' if 탈것 else '소품'} 「{이름}」 — {len(컷들)}컷({' · '.join(str(c) for c in 컷들[:6])}{' …' if len(컷들) > 6 else ''})에 나오는데 맨 위 「소품」 표에 줄이 없다. "
+                    f"낱말 · 색 · 생김새 · 기준그림을 한 줄로 적고 모든 컷이 그 줄을 쓴다(컷마다 색을 따로 적으면 같은 {'탈것' if 탈것 else '소품'}이 컷마다 달라진다 · 51)"))
+    return out
+
+
+def _파일지문(p):
+    """파일 내용의 sha1(못 읽으면 None) — 이름이 달라도 같은 그림인지 본다"""
+    import hashlib
+    try:
+        h = hashlib.sha1()
+        with open(p, "rb") as f:
+            for 덩이 in iter(lambda: f.read(1 << 20), b""): h.update(덩이)
+        return h.hexdigest()
+    except OSError:
+        return None
+
+
+def _그림열쇠(v):
+    """「시작그림」 칸의 글 → 견줄 열쇠(역슬래시 · 앞의 ./ · 대소문자만 맞춘다)"""
+    return re.sub(r"^(?:\./)+", "", str(v).strip().replace("\\", "/")).lower()
+
+
+def 시작그림들(d):
+    """컷 한 줄의 「시작그림」 → 목록(글 하나 · 목록 모두 받는다)"""
+    v = d.get("시작그림") if isinstance(d, dict) else None
+    if isinstance(v, str): v = [v]
+    return [x.strip() for x in v if isinstance(x, str) and x.strip()] if isinstance(v, list) else []
+
+
+def 같은판밝힘(d):
+    """같은판: "<까닭>" — 한 판을 일부러 이어 쓰는 컷(한 방을 둘로 자른 컷 · 한 판에 두 샷). 까닭이 글이어야 밝힌 것이다(true · 빈 글은 아니다)."""
+    v = d.get("같은판") if isinstance(d, dict) else None
+    return isinstance(v, str) and bool(v.strip())
+
+
+def 시작그림검사(seq, 폴더=None, 그림폴더=None):
+    """T17 — 서로 다른 두 컷이 같은 시작 그림 · 같은 받은 영상(판)을 쓰나(50) → [(등급, 컷, 글)].
+    폴더(컷표가 있는 편 폴더)를 알면 칸에 적힌 파일을 읽어 이름이 달라도 같은 파일인지까지 보고, 그림폴더(--그림)를 주면 칸이 빈 컷은 <그림폴더>/<컷>.png로 견준다.
+    같은 묶음에서 같은판으로 밝히지 않은 컷이 둘 이상이면 둘째부터 걸린다(누가 원래 컷인지는 묻지 않는다)."""
+    det = [d for d in seq.get("detail") or [] if isinstance(d, dict)]
+    컷들 = list(dict.fromkeys(d.get("cut") for d in det if isinstance(d.get("cut"), str) and d.get("cut")))
+    줄 = {c: [d for d in det if d.get("cut") == c] for c in 컷들}
+    밝힘 = {c: any(같은판밝힘(d) for d in 줄[c]) for c in 컷들}
+    그림묶음, 판묶음, 빈 = {}, {}, []
+    for c in 컷들:
+        값 = list(dict.fromkeys(v for d in 줄[c] for v in 시작그림들(d)))
+        후보 = []
+        for v in 값:
+            p = Path(v); p = p if p.is_absolute() or not 폴더 else Path(폴더) / p
+            후보.append((p if (폴더 or p.is_absolute()) and p.is_file() else None, v))
+        if not 값:
+            if not 밝힘[c]: 빈.append(c)
+            f = 정지그림(그림폴더, c) if 그림폴더 else None
+            if f: 후보.append((f, f.name))
+        for f, 이름 in 후보:
+            지문 = _파일지문(f) if f else None
+            그림묶음.setdefault(("지문", 지문) if 지문 else ("이름", _그림열쇠(이름)), []).append((c, 이름))
+        판 = next((d["판"].strip() for d in 줄[c] if isinstance(d.get("판"), str) and d["판"].strip()), c)
+        판묶음.setdefault(판, []).append((c, 판))
+    까닭 = {}
+    for 묶음, 무엇 in ((그림묶음, "시작 그림"), (판묶음, "받은 영상(판)")):
+        for 쓴 in 묶음.values():
+            안밝힘 = [(c, 이름) for c, 이름 in 쓴 if not 밝힘[c]]
+            if len({c for c, _ in 쓴}) < 2 or len(안밝힘) < 2: continue
+            첫컷, 첫이름 = 안밝힘[0]
+            for c, 이름 in 안밝힘[1:]:
+                같음 = f"「{이름}」" if _그림열쇠(이름) == _그림열쇠(첫이름) else f"「{이름}」 = 「{첫이름}」(이름만 다른 같은 파일)"
+                까닭.setdefault(c, []).append(f"{첫컷} 컷과 같은 {무엇} {같음}")
+    out = []
+    for c in 컷들:
+        if c not in 까닭: continue
+        글꼴 = "(같은판은 true가 아니라 까닭을 글로 적는다) " if any(d.get("같은판") is True for d in 줄[c]) else ""
+        out.append(("걸림", c, f"같은 시작 그림을 두 컷이 쓴다(50) — {' · '.join(dict.fromkeys(까닭[c]))}. 관객에겐 같은 장면이 되풀이된다: 뜻이 다른 새 구도의 그림으로 굽거나, "
+                    f"한 판을 일부러 이어 쓰는 컷(한 방을 둘로 자른 컷)이면 {글꼴}같은판: \"<까닭>\"을 적는다"))
+    if 빈:
+        out.append(("주의", "표", f"「시작그림」 칸이 빈 컷 {len(빈)}개({' · '.join(빈[:6])}{' …' if len(빈) > 6 else ''}) — 이미지 콘티를 고른 뒤 컷마다 시작 그림 파일을 적는다(같은 시작 그림을 두 컷이 쓰는지 이 칸으로 본다 · 50)"))
+    return out
+
+
+def 꾸러미시작그림(seq, 판들):
+    """--지시문 <꾸러미> — 판 폴더의 시작 그림 파일(1_시작.png처럼 이름에 「시작」이 든 그림)이 서로 다른 컷의 판 사이에 같은가(50) → [(등급, 판 id, 글)].
+    같은 컷의 대안 판(C2 · C2b)끼리는 같은 시작 그림이 맞다. 컷표 그 컷에 같은판을 밝혔으면 지나간다. 소리만 쓰는 판 · 프리비즈 판 · 컷표에 없는 판은 보지 않는다."""
+    밝힘 = {d.get("cut") for d in seq.get("detail") or [] if 같은판밝힘(d)}
+    본, out = {}, []
+    for 판 in 판들:
+        f = Path(판["파일"])
+        if f.name != "지시문.txt" or not f.parent.is_dir(): continue   # 판 폴더가 따로 없는 글 파일
+        정보 = 판정보(판["판"], seq)
+        if 정보["소리만"] or 정보["프리비즈"] or not 정보["컷들"]: continue
+        for g in sorted(f.parent.iterdir()):
+            if not (g.is_file() and "시작" in g.stem and g.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")): continue
+            지문 = _파일지문(g)
+            if not 지문: continue
+            for 앞id, 앞컷 in 본.get(지문, []):
+                if set(앞컷) & set(정보["컷들"]) or 밝힘 & (set(앞컷) | set(정보["컷들"])): continue
+                out.append(("걸림", 판["id"], f"(시작 그림) 판 {앞id}(컷 {' · '.join(앞컷)})와 시작 그림 파일이 같다({g.name}) — 같은 시작 그림에서 서로 다른 두 컷을 뽑으면 관객에겐 같은 장면이다(50). "
+                            f"뜻이 다른 새 구도의 그림으로 굽거나, 한 판을 일부러 이어 쓰는 컷이면 컷표 그 컷에 같은판: \"<까닭>\""))
+                break
+            본.setdefault(지문, []).append((판["id"], 정보["컷들"]))
+    return out
+
+
+def 틀검사(seq, r, 폴더=None, 그림폴더=None):
+    """컷표 틀 2의 칸 검사(T1~T18) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약).
+    폴더: 컷표가 있는 편 폴더(시작 그림 파일을 읽어 견줄 때) · 그림폴더: --그림 폴더 — 둘 다 없어도 돈다(내기 도구의 굽기전은 표만 넘긴다)."""
     def 걸림(컷, 글): r.더함("틀", 컷, "걸림", 글)
     def 주의(컷, 글): r.더함("틀", 컷, "주의", 글)
     전 = len(r.항목들)
@@ -1408,6 +1635,8 @@ def 틀검사(seq, r):
             걸림(cut, f"컷 사이 낮 · 밤이 바뀜(51) — 앞 컷 {p.get('cut')} 「{a}」 → 이 컷 「{b}」(날 · 때가 바뀌는 컷이면 시간건너뜀: true)")
         # T6
         if 빈칸(d.get("넘어옴")): 주의(cut, "「넘어옴」 칸이 비었다 — 앞 컷에서 넘어올 까닭(29)")
+    # T17 같은 시작 그림 · 같은 받은 영상을 두 컷이 쓴다(50) / T18 되풀이해 나오는 탈것 · 소품 한 줄(51)
+    for 등급, 어디, 글 in 시작그림검사(seq, 폴더, 그림폴더) + 소품줄검사(seq): (걸림 if 등급 == "걸림" else 주의)(어디, 글)
     # T7 기승전결
     rows = [row for row in (seq.get("seq") or []) if isinstance(row, (list, tuple)) and row]
     띠 = {str(row[2]).strip() for row in rows if len(row) > 2}
@@ -1448,11 +1677,12 @@ def 틀검사(seq, r):
         r.더함("틀", "표", "통과", f"틀 2 — 컷 {len(det)} · 장면 {len(쓰는장면)} · 인물 {len(쓰는인물)} · 빈 칸 없음")
 
 
-def 표검사(seq, r, 항목=기본항목, 간격=(0.6, 1.0), 영상=None):
-    """표만으로 도는 검사(콘티 단계) — main과 내기 도구(크레딧내기.py의 굽기전)가 같은 함수를 쓴다."""
+def 표검사(seq, r, 항목=기본항목, 간격=(0.6, 1.0), 영상=None, 폴더=None, 그림폴더=None):
+    """표만으로 도는 검사(콘티 단계) — main과 내기 도구(크레딧내기.py의 굽기전)가 같은 함수를 쓴다.
+    폴더(컷표가 있는 편 폴더) · 그림폴더(--그림)는 시작 그림 파일을 읽어 견줄 때만 쓴다(T17) — 없으면 칸에 적힌 이름으로만 견준다."""
     표빈칸(seq, r)
     if "틀" in 항목:
-        if 틀둘(seq): 틀검사(seq, r)
+        if 틀둘(seq): 틀검사(seq, r, 폴더, 그림폴더)
         # 알림은 끝 코드를 바꾸지 않는다. 항목 이름은 표빈칸과 같은 자리(소품 · 표)에 둔다 — 표가 빈 컷순서의 항목 묶음(소품 · 사건 · 소리)을 고정한 기존 시험을 깨지 않으려고
         else: r.더함("소품", "표", "알림", "옛 틀 — 장면 · 구도 · 연기 · 끝 칸 검사 없음(틀 2로 옮기면 돈다)")
     if "소품" in 항목: 소품표검사(seq, r)
@@ -1524,6 +1754,8 @@ def 지시문항목(seq, r, 경로들, 실내목록=None):
         elif 틀2:
             for 등급, 말 in 빛대조(seq, 컷들, 글): r.더함("지시문", 이름, 등급, f"(빛) {말}")
         if not hits: r.더함("지시문", 이름, "통과", "물건 · 실내 낱말 없음")
+    if 틀2:   # (50) 서로 다른 컷의 판이 같은 시작 그림 파일을 쓴다
+        for 등급, 이름, 말 in 꾸러미시작그림(seq, 판들): r.더함("지시문", 이름, 등급, 말)
     if seq:
         for d in seq.get("detail", []):
             for 등급, 항목, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항목}) {말}")
@@ -1545,11 +1777,20 @@ def 그림지시문항목(seq, r, 경로들):
     인물표 = seq.get("인물") if isinstance(seq.get("인물"), dict) else {}
     컷들 = list(dict.fromkeys(d["cut"] for d in det))
     쓴파일 = set()
+    # (51) 되풀이해 나오는 탈것 · 소품 — 맨 위 「소품」 표의 줄(낱말이 적힌 줄)과 표에 줄이 없는 탈것 낱말
+    나옴 = 소품나오는컷(seq)
+    소품줄 = {이름: dict(낱말={w.lower() for w in 소품낱말(줄)}, 정규식=낱말정규식(소품낱말(줄)), 색=색낱말들(줄.get("색")) | 색낱말들(줄.get("생김새")), 생김새=줄.get("생김새"))
+              for 이름, 줄 in 소품표줄(seq).items() if isinstance(줄, dict) and 소품낱말(줄)}
+    생김새걷기 = [re.compile(r"\s+".join(re.escape(w) for w in 한칸(x["생김새"]).split())) for x in 소품줄.values() if not 빈칸(x["생김새"])]
+    덮인낱말 = {w for x in 소품줄.values() for w in x["낱말"]}
+    줄없는탈것 = {w: 낱말정규식([w]) for w in _탈것낱말 if w not in 덮인낱말}
+    탈것색 = {}   # 표에 줄이 없는 탈것 낱말 → {컷: 그 컷의 지시문에서 그 낱말에 붙은 색}
     for cut in 컷들:
         d = next(x for x in det if x["cut"] == cut); f = 파일.get(cut)
         if f is None or not f.exists():
             r.더함("그림지시문", cut, "주의", f"이미지 지시문 파일이 없다: {cut}.txt"); continue
-        쓴파일.add(f); 글 = 한칸(f.read_text(encoding="utf-8")); 빠짐 = []
+        원문 = f.read_text(encoding="utf-8")
+        쓴파일.add(f); 글 = 한칸(원문); 빠짐 = []
         장면 = 장면표.get(d.get("장면")) if isinstance(d.get("장면"), str) else None
         for k in ("장소", "빛"):
             v = (장면 or {}).get(k) if isinstance(장면, dict) else None
@@ -1559,8 +1800,36 @@ def 그림지시문항목(seq, r, 경로들):
             for k in ("묘사", "옷"):
                 v = p.get(k) if isinstance(p, dict) else None
                 if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"인물 「{누구}」의 {k}")
-        if 빠짐: r.더함("그림지시문", cut, "걸림", f"{' · '.join(빠짐)} 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 줄을 그대로 쓴다(G11 · 51)")
+        # 소품: 표에 그 컷에 나온다고 적은 소품은 생김새 문장이 글자 그대로(인물 옷과 같은 대조). 색은 표의 생김새 줄을 걷어 낸 나머지 글에서 그 이름씨에 붙은 것만 본다
+        나머지 = 원문
+        for pat in 생김새걷기: 나머지 = pat.sub(" ", 나머지)
+        그대로 = {이름: not 빈칸(x["생김새"]) and 한칸(x["생김새"]) in 글 for 이름, x in 소품줄.items()}
+        확인들 = []
+        for 이름, x in 소품줄.items():
+            짝 = [n for n, y in 소품줄.items() if y["낱말"] & x["낱말"]]   # 같은 낱말로 부르는 줄(빨간 차 · 파란 차)은 색을 함께 받아 준다
+            색, 구절, n = 붙은색들(나머지, x["정규식"])
+            if cut in 나옴.get(이름, []):
+                if not 그대로[이름] and not 빈칸(x["생김새"]): 빠짐.append(f"소품 「{이름}」의 생김새")
+            elif n and not any(그대로[k] for k in 짝):
+                확인들.append(f"지시문에 「{x['정규식'].search(나머지).group(0)}」이(가) 나오는데 소품 「{이름}」의 생김새 문장이 없다 — 이 컷에 나오면 표의 생김새 줄을 그대로 쓰고 컷의 「소품」 칸에도 적는다(51)")
+            허용 = set().union(*(소품줄[k]["색"] for k in 짝))
+            if 색 - 허용:
+                확인들.append(f"소품 「{이름}」에 표에 없는 색 「{' · '.join(sorted(색 - 허용))}」 — 「{구절[0]}」(표의 색: {' · '.join(sorted(허용)) or '없음'}). 같은 {이름}이면 색을 따로 적지 않고 표의 생김새 줄만 쓴다(51)")
+        for w, pat in 줄없는탈것.items():
+            색, _, n = 붙은색들(원문, pat)
+            if n: 탈것색.setdefault(w, {})[cut] = 색
+        if 빠짐: r.더함("그림지시문", cut, "걸림", f"{' · '.join(빠짐)} 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 · 소품 줄을 그대로 쓴다(G11 · 51)")
         else: r.더함("그림지시문", cut, "통과", "장소 · 빛 · 인물 줄이 표 그대로")
+        for 말 in dict.fromkeys(확인들): r.더함("그림지시문", cut, "확인", 말)
+    for w, 컷색 in 탈것색.items():
+        if len(컷색) < 2: continue
+        색있는 = [s for s in 컷색.values() if s]
+        한줄 = "맨 위 「소품」 표에 한 줄(낱말 · 색 · 생김새 · 기준그림)로 적고 그 생김새 문장을 모든 컷에 쓴다"
+        if any(not (a <= b or b <= a) for a in 색있는 for b in 색있는):   # 한쪽이 다른 쪽에 다 들면(cream · blue ⊂ cream · cobalt · blue) 같은 색을 덜 적은 것이다
+            컷별 = " / ".join(c + " " + " · ".join(sorted(s)) for c, s in 컷색.items() if s)
+            r.더함("그림지시문", "표", "확인", f"탈것 「{w}」의 색이 그림 지시문마다 다르다(51) — {컷별}. 같은 탈것이면 {한줄}")
+        else:
+            r.더함("그림지시문", "표", "주의", f"탈것 「{w}」이(가) 그림 지시문 {len(컷색)}컷({' · '.join(list(컷색)[:6])}{' …' if len(컷색) > 6 else ''})에 나오는데 소품 표에 줄이 없다 — 같은 탈것이면 {한줄}(색을 안 적은 컷은 모델이 색을 지어낸다 · 51)")
     for f in dict.fromkeys(파일.values()):
         if f not in 쓴파일 and f.exists(): r.더함("그림지시문", f.stem, "주의", f"컷표에 없는 컷 이름의 지시문 파일: {f.name}")
 
@@ -2039,7 +2308,7 @@ def main(argv):
         지도 = json.loads(p.read_text(encoding="utf-8"))
     항목 = set(o["항목"] or 기본항목)
     영상 = o.get("영상"); 받음 = o.get("받음"); 그림 = o.get("그림")
-    표검사(seq, r, 항목, o["간격"], 영상)
+    표검사(seq, r, 항목, o["간격"], 영상, 폴더=seq_path.parent, 그림폴더=그림)
     if "지시문" in 항목 and o.get("지시문"): 지시문항목(seq, r, o["지시문"], o["실내"])
     elif "지시문" in 항목:
         for d in seq.get("detail", []):
