@@ -102,6 +102,8 @@ function applySkill(view, item, mark, lead, params) {
 
 // 아무것도 얹지 못하는 동안(waitAll)의 사건: 줄(기억 · 능력 · 만남)은 요약 값 그대로 두고, 판 상태가 쓸 판정 · 첫 만남 · 적힐 단위만
 // 돌려준다 — 줄마다 기다림과 같은 규칙이다(앞 사건을 건너뛰고 뒤 사건만 얹지 않는다, GPT 끝 판 GA1).
+// waitAll 보기로는 판을 돌리지 않는다(코치는 판 안 사본에서 waitAll을 끈다). lead는 그 보기가 아는 만큼이라 같은 계열의 잡힌 사건이
+// 둘이면 둘 다 true이고, record가 first로 돌려줄 뿐 판 상태에는 쓰지 않는다(조율 11-11 P3).
 function heldOwn(view, event) {
   if (event.kind !== 'answer' && event.kind !== 'help') return {};
   const grade = gradeOfEvent(event, Boolean(event.gone));
