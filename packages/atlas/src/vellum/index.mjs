@@ -4,6 +4,7 @@
 //            (제품은 이유 줄을 비운다. 한국어를 못 읽는 사람에게 한국어 문장을 보이지 않는다).
 //   이름: 문장이 가리키는 단위 · 능력 · 주제의 화면 이름은 제품이 label(id)로 준다. 이름이 있어야 하는 문장에 이름이 없으면 null.
 //   고르기: 틀이 여럿이면 (날짜 열쇠, 가리키는 id)로 정한다 — 같은 날 같은 것에는 같은 말, 기기 언어 · 시각 순서를 타지 않는다.
+import { EN } from './en.mjs';
 import { josa } from './josa.mjs';
 import { KO } from './ko.mjs';
 
@@ -11,8 +12,8 @@ export const LANGS = Object.freeze(['ko', 'en', 'mn']);
 export const LEVELS = Object.freeze(['word', 'easy', 'standard']);
 export const SPEAKERS = Object.freeze(['default', 'marin', 'kkamong', 'mongle']);
 
-// 언어마다 줄 묶음. 영어 · 몽골어는 그 화면이 열릴 때 세 겹 대조를 거쳐 들어온다(단계 4 계획 §4).
-const TABLE = Object.freeze({ ko: KO });
+// 언어마다 줄 묶음. 영어 · 몽골어는 그 화면이 열릴 때 세 겹 대조를 거쳐 들어온다(단계 4 계획 §4) — 영어는 WORLD 짧은 연습(4-1)의 종류부터.
+const TABLE = Object.freeze({ ko: KO, en: EN });
 
 // 문장이 가리키는 것의 id가 든 근거 칸.
 const SUBJECT_SLOT = Object.freeze({

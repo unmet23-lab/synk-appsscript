@@ -188,9 +188,11 @@ export function createPracticeNextSession({
         closeSet();
         return null;
       }
+      // idle이면 늘 처음 보는 문항으로 좁혀 다시 묻는다 — 맨 앞 채우기가 우연히 처음 보는 문항이어도 같은 길로(그 제시의 근거 칸에
+      // pool: 'unseen'이 늘 붙게 — Fable 다시 확인 N5).
       let picked = pick();
-      let freshFill = picked.status === 'idle' && seen(picked.selected) === false;
-      if (picked.status === 'idle' && !freshFill) {
+      let freshFill = false;
+      if (picked.status === 'idle') {
         const narrowed = pickFresh();
         if (!narrowed || narrowed.fresh === false) return end(picked, narrowed);
         picked = narrowed;

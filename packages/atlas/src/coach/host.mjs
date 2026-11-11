@@ -7,6 +7,7 @@
 //   올리기는 계정만: 대기열(unsent) → 제품이 준 transport → 서버의 답(receive). 같은 사건을 두 탭이 올려도 서버가 번호로 거른다.
 // 코치가 쓰는 보기 = 기록부 보기(record.view() — 저장이 끝난 사건) + 아직 저장이 안 끝난 내 답 · 본인 말(pending).
 import { EDITION } from '../edition.mjs';
+import { createMemory } from '../memory/index.mjs';
 import { applyOwn } from '../fold/device.mjs';
 import { byTime } from '../fold/order.mjs';
 import { carriedFields, carriedSoFar, legacyToImport } from '../record/carry.mjs';
@@ -121,12 +122,13 @@ function createHost({
     closed: false,
   };
   // 듣는 함수마다 감싼다 — 하나(사라진 틀의 판 등)가 던져도 쓰기의 stored가 거절로 바뀌거나 뒤 판들이 소식을 놓치지 않는다.
+  // 던진 듣는 함수를 지우지 않는다 — 일시적인 오류 하나가 그 판을 영영 귀먹게 하지 않게(N2). 듣는 함수는 그 판이 닫힐 때 빠진다.
   const tell = (kind, detail = {}) => {
     for (const listener of [...listeners]) {
       try {
         listener({ kind, ...detail });
       } catch {
-        listeners.delete(listener);
+        // 판 쪽이 스스로 계기에 남긴다(session.mjs).
       }
     }
   };
@@ -202,7 +204,15 @@ function createHost({
     index,
     memory,
     params,
-    health,
+    get health() {
+      return health;
+    },
+    // 셸이 틀이 먼저 연 저장소를 받을 때 — 올리기 고리와 계기를 셸의 것으로 건다.
+    adopt({ transport: nextTransport = null, health: nextHealth = null } = {}) {
+      if (nextTransport) transport = nextTransport;
+      if (nextHealth) health = nextHealth;
+      schedule();
+    },
     async open() {
       state.trail = await openTrail({ port, revision, guest, memory, params, index, health, now });
       if (guest && legacy) await carryLegacy(state.trail.record, legacy, health);
@@ -268,18 +278,49 @@ async function carryLegacy(record, legacy, health) {
   }
 }
 
+// 문서 호스트를 기다린다 — 셸의 첫 코치는 지도 조각을 받은 뒤에 호스트를 여므로, 그 사이에 연 틀이 곧바로 HOST_MISSING이 되지
+// 않게 잠깐 기다린다(N5). 열리면 바로 풀린다.
+export const DOCUMENT_WAIT_MS = 8000;
+function documentOf(registry, wait) {
+  if (registry.document != null) return Promise.resolve(registry.document);
+  if (!(wait > 0)) return Promise.resolve(null);
+  registry.waiters ??= new Set();
+  return new Promise(resolve => {
+    const done = key => {
+      clearTimeout(timer);
+      registry.waiters.delete(done);
+      resolve(key);
+    };
+    const timer = setTimeout(() => done(null), wait);
+    timer.unref?.();
+    registry.waiters.add(done);
+  });
+}
+// 문서 호스트를 정한다 — 셸(위 창 자기 코치)이 연 호스트만 될 수 있고, 닫히면 남은 셸 호스트로 넘긴다(N3).
+function setDocument(registry, key) {
+  registry.document = key;
+  if (key != null) for (const done of [...(registry.waiters ?? [])]) done(key);
+}
+function nextDocument(registry) {
+  for (const [key, entry] of registry) if (entry.shell) return key;
+  return null;
+}
+
 // 이 창에서 호스트를 연다(저장소 이름마다 하나 — 처음 부른 코치가 열고, 뒤의 코치는 같은 것을 받는다).
-// document: 셸이 연 문서 호스트를 받는다(틀의 코치) — 열린 것이 없으면 HOST_MISSING.
+// document: 셸이 연 문서 호스트를 받는다(틀의 코치) — 기다려도 열린 것이 없으면 HOST_MISSING.
+// fromFrame: 아래 창(틀)이 이 창의 길로 부른 것 — 틀이 연 호스트는 문서 호스트가 되지 않는다.
 async function acquireHere(scope, options, openPort) {
   const registry = registryOf(scope);
-  const key = options.document ? registry.document : options.key;
+  const key = options.document
+    ? await documentOf(registry, options.wait ?? DOCUMENT_WAIT_MS)
+    : options.key;
   if (key == null) throw hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
   let entry = registry.get(key);
   if (!entry) {
     if (options.document) throw hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
     const onClose = () => {
       if (registry.get(key) === entry) registry.delete(key);
-      if (registry.document === key && !registry.has(key)) registry.document = null;
+      if (registry.document === key) setDocument(registry, nextDocument(registry));
     };
     // 등록부에 먼저 넣고 연다 — 같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게.
     entry = {
@@ -290,14 +331,31 @@ async function acquireHere(scope, options, openPort) {
         } catch (error) {
           throw hostError('STORAGE_FAILED', '저장소를 열지 못했다', error);
         }
-        return createHost({ ...options, key, port, onClose }).open();
+        // 기억(memory)은 호스트를 만드는 창이 스스로 만든다 — 사라질 수 있는 틀의 객체를 위 창의 호스트가 들지 않게(N3).
+        const memory = createMemory(options.params);
+        const frame = options.fromFrame === true;
+        return createHost({
+          ...options,
+          key,
+          port,
+          memory,
+          onClose,
+          // 틀이 넘긴 올리기 · 옛 기록 읽개는 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(adopt).
+          ...(frame ? { transport: null, legacy: null } : {}),
+        }).open();
       })(),
+      shell: options.fromFrame !== true,
     };
     registry.set(key, entry);
-    registry.document ??= key;
     entry.opening.catch(onClose);
   }
   const host = await entry.opening;
+  if (options.fromFrame !== true) {
+    // 셸이 같은 저장소를 받으면 그 호스트는 셸의 것이다 — 올리기 · 계기를 셸의 것으로 건다.
+    if (!entry.shell) host.adopt({ transport: options.transport, health: options.health });
+    entry.shell = true;
+    if (registry.document == null) setDocument(registry, key);
+  }
   if (options.map) host.index.add(options.map);
   host.retain();
   return host;
@@ -319,8 +377,9 @@ installHostMaker(globalThis);
 // 호스트를 받는다 — 같은 출처의 위 창에 엔진이 있으면 그 창이 만들고, 없으면 이 창에서.
 export function acquireHost(options, scope = globalThis) {
   const top = hostScope(scope);
-  const maker = (top !== scope && makerOf(top)) || makerOf(scope) || installHostMaker(scope);
-  return maker(options);
+  const up = top !== scope && makerOf(top);
+  const maker = up || makerOf(scope) || installHostMaker(scope);
+  return maker(up ? { ...options, fromFrame: true } : options);
 }
 
 export function releaseHost(host) {

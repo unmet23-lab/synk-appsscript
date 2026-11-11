@@ -9,6 +9,7 @@
 //   판 수명(Fable 설계 P2-1): set은 한 판에 한 번 — 문항이 나간 판에 같은 뜻의 set이 또 오면 무시한다(「더 배우기」는 more로 새 판).
 //         판 없이 연 기본 판은 날이 바뀌거나 오래 쉬면 새로 연다. 본인 말(tell)은 판을 열지 않는다.
 import { applyOwn } from '../fold/device.mjs';
+import { unitsOf } from '../fold/units.mjs';
 import { foldEventsOf } from '../record/adapt.mjs';
 import { EVENT_TYPES } from '../record/events.mjs';
 import { choose } from '../select/choose.mjs';
@@ -136,10 +137,12 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     return s.learner;
   }
 
-  // 기본 판이 낡았나 — 날이 바뀌었거나 오래 쉬었다(제품이 판을 닫지 않는 길에서 어제의 한도를 들지 않게).
-  const stale = now =>
-    Boolean(s.open?.fallback) &&
-    (dayKey(now, params, dayOffset) !== s.learner.day.key || now - s.lastAt >= DEFAULT_SET_IDLE_MS);
+  // 판이 낡았나 — 날이 바뀌었거나 오래 쉬었다. 기본 판은 이때 새로 열고(제품이 판을 닫지 않는 길에서 어제의 한도를 들지 않게),
+  // 같은 뜻의 set도 이때는 새 판이다.
+  const aged = now =>
+    dayKey(now, params, dayOffset) !== s.learner.day.key || now - s.lastAt >= DEFAULT_SET_IDLE_MS;
+  const stale = now => Boolean(s.open?.fallback) && aged(now);
+  const served = () => s.journal.filter(op => op.kind === 'present').length;
 
   const ensure = () => {
     const now = host.now();
@@ -147,13 +150,16 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     s.lastAt = now;
     return learner;
   };
-  // 문항이 나간 판에 같은 뜻의 set이 또 왔다 — 판을 다시 열지 않는다(문항마다 set을 넘기는 제품이 「다시」 · 한도 · 판 번호를 잃지 않게).
-  const repeated = set =>
-    Boolean(s.learner?.session) &&
-    !s.open.fallback &&
-    !set.more &&
-    s.open.sign === setSign(set) &&
-    s.journal.some(op => op.kind === 'present');
+  // 문항이 나간 판에 같은 뜻의 set이 또 왔다 — 그 판이 아직 안 끝났으면 다시 열지 않는다(문항마다 set을 넘기는 제품이 「다시」 · 한도 ·
+  // 판 번호를 잃지 않게). 판의 끝은 코치가 스스로 안다 — 판 길이만큼 문항이 나갔거나, 오래 쉬었거나 날이 바뀌었으면 새 판이다
+  // (판을 닫지 않는 제품의 다음 판이 앞 판에 이어 붙어 새것이 굶지 않게 — Fable 다시 확인 N1).
+  const repeated = set => {
+    if (!s.learner?.session || s.open.fallback || set.more || s.open.sign !== setSign(set))
+      return false;
+    const count = served();
+    const length = Number.isInteger(set.length) && set.length > 0 ? set.length : Infinity;
+    return count > 0 && count < length && !aged(host.now());
+  };
 
   // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다).
   function replay(tmp, op) {
@@ -171,7 +177,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       if (at == null) continue;
       const missedAt = Math.max(
         ...s.journal
-          .filter(op => op.kind === 'answer' && kept(op) && op.item.units.includes(unit))
+          .filter(op => op.kind === 'answer' && kept(op) && unitsOf(op.item).includes(unit))
           .map(op => op.at),
       );
       if (at > missedAt) session.retries.delete(unit);
@@ -199,11 +205,17 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     };
   }
 
+  // 다시 세우기가 던지면 앞 상태를 두고 계기에 남긴다 — 듣는 함수가 던져 그 판이 뒤의 소식(저장 실패 등)을 못 듣는 일이 없게(N2).
   const unsubscribe = host.subscribe(note => {
     if (note.kind === 'failed') s.failed.add(note.id);
     // 같은 문서 다른 코치의 쓰기만 — 내 쓰기는 이미 판에 들었다.
     if (note.kind === 'written' && s.own.has(note.id)) return;
-    if (note.kind !== 'offline') rebuild();
+    if (note.kind === 'offline') return;
+    try {
+      rebuild();
+    } catch {
+      host.health?.note('recommend', { ok: false, code: 'REBUILD_FAILED' });
+    }
   });
   // 이 코치의 쓰기(호스트에 넘기고 번호를 적어 둔다).
   const write = (type, fields, extra) => {

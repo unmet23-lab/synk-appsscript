@@ -4,7 +4,6 @@
 //   await coach.ready;   // 엔진 묶음 + 지도 조각 + 기록부 읽기
 // 아직 짓지 않은 것(코드 NOT_IMPLEMENTED로 분명히 던진다 — 조용히 빈 값을 주면 제품이 엔진이 돈다고 믿는다):
 //   live · today · presentation(순간 맞춤 · 오늘 컨디션 · 표시 설정 — 게임을 잇는 4-6), reset(비우기 — 「나」 4-5).
-import { createMemory } from '../memory/index.mjs';
 import { openMap } from '../map/index.mjs';
 import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
@@ -95,10 +94,10 @@ export function createCoach(options = {}) {
       {
         key,
         document: host.document === true,
+        wait: host.wait,
         port: host.port ?? null,
         revision: host.revision ?? 0,
         guest,
-        memory: createMemory(params),
         params,
         health: host.health ?? null,
         transport: host.transport ?? null,
@@ -308,7 +307,9 @@ export function createCoach(options = {}) {
     // folded: 그 판의 쓰기가 다 저장된 뒤 손님 요약을 다시 접고 풀린다 — 그 뒤의 summary() 칸에 방금 푼 답이 든다(P2-3, 계정은 서버가 접는다).
     finishSet({ kind, record = true } = {}) {
       const session = live();
-      if (!SET_KINDS.includes(kind)) throw new TypeError('Atlas coach: 판의 종류가 아니다');
+      // 판 기록을 남길 때만 종류를 묻는다 — 닫기만 하는 길(record: false)은 어떤 제품(게임 포함)이든 부른다(N1).
+      if (record !== false && !SET_KINDS.includes(kind))
+        throw new TypeError('Atlas coach: 판의 종류가 아니다');
       const setId = session.setId;
       let ids = { decisionId: null, completionId: null };
       if (record !== false) {

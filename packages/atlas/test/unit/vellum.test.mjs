@@ -83,9 +83,13 @@ test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
 test('언어는 물러서지 않는다 — 그 언어 줄이 없으면 null, 눈높이 · 말하는 사람은 물러선다', () => {
   const why = { code: 'unit.new', slots: { unit: 'u1' } };
   assert.equal(render(why, { lang: 'ko', label }), '「이름:u1」 처음 만나요.');
-  assert.equal(render(why, { lang: 'en', label }), null);
-  assert.equal(render(why, { lang: 'mn', label }), null);
+  assert.equal(render(why, { lang: 'en', label }), 'Seeing 「이름:u1」 for the first time.');
   assert.equal(render(why, { lang: 'fr', label }), null);
+  // 영어 · 몽골어 줄은 화면이 열린 종류만 있다 — 없는 종류(홈의 host.*)는 한국어로 물러서지 않는다
+  const home = { code: 'host.next', slots: {} };
+  assert.equal(typeof render(home, { lang: 'ko', label }), 'string');
+  assert.equal(render(home, { lang: 'en', label }), null);
+  assert.equal(render(home, { lang: 'mn', label }), null);
   assert.equal(
     render(why, { lang: 'ko', level: 'easy', speaker: 'marin', label }),
     '「이름:u1」 처음 만나요.',
@@ -157,4 +161,40 @@ test('조사 규칙은 제품의 kit/josa.mjs와 같다', async () => {
     ])
       assert.equal(josa(word, a, b), product.josa(word, a, b), `${word} ${a}/${b}`);
   }
+});
+
+// 4-1 WORLD 짧은 연습에 보이는 종류(문항 위 이유 · 판 끝 문장)는 영어 줄이 있다 — 세 겹 대조를 지난 문장(단계 4 계획 §4).
+test('영어 줄 — 짧은 연습에 보이는 종류마다 있고, 한국어는 「」 안 이름에만', () => {
+  const PRACTICE = [
+    ['unit.retry', { unit: 'u', other: true }],
+    ['unit.retry', { unit: 'u', other: false }],
+    ['unit.shaky', { unit: 'u', reviews: 1, misses: 1, days: 1 }],
+    ['unit.shaky', { unit: 'u', reviews: 4, misses: 2, days: 3 }],
+    ['unit.due', { unit: 'u', days: 5 }],
+    ['unit.new', { unit: 'u' }],
+    ['skill.up', { skill: 's', streak: 3 }],
+    ['skill.ease', { skill: 's' }],
+    ['pace.breather', { unit: 'u', misses: 2 }],
+    ['idle', {}],
+    ['day.capped', {}],
+    ['pace.stubborn', {}],
+  ];
+  const names = { u: '은행', s: '읽고 세부 정보 찾기' };
+  for (const [code, slots] of PRACTICE) {
+    const line = render({ code, slots }, { lang: 'en', label: id => names[id] });
+    assert.equal(typeof line, 'string', code);
+    assert.doesNotMatch(
+      line.replace(/「[^」]*」/g, ''),
+      /[가-힣]/,
+      `${code}: 이름 밖에 한국어가 없다`,
+    );
+  }
+  assert.equal(
+    render(
+      { code: 'unit.shaky', slots: { unit: 'u', reviews: 1, misses: 1, days: 1 } },
+      { lang: 'en', label: () => '은행' },
+    ),
+    'You missed 「은행」 last time — it’s back after 1 day.',
+    '하루는 단수',
+  );
 });

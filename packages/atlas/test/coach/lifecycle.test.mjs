@@ -55,6 +55,15 @@ function handBank() {
       order: i,
       modality: 'reading',
     });
+  const untagged = Object.freeze({
+    itemKey: 'h.i6',
+    familyKey: 'h.f6',
+    skillId: 'ko.reading.h',
+    difficulty: 1,
+    responseFormat: 'single-choice',
+    order: 6,
+    modality: 'reading',
+  });
   return [
     row(0, [U]),
     row(1, [U]),
@@ -62,6 +71,7 @@ function handBank() {
     row(3, ['ko.word.v2']),
     row(4, ['ko.word.v3']),
     row(5, ['ko.word.v4']),
+    untagged,
   ];
 }
 
@@ -275,7 +285,11 @@ test('다른 코치 · 다른 탭의 본인 말은 이 판의 「다시」를 �
   const control = await retryAfter(async () => {});
   assert.equal(control.why.code, 'unit.retry', '대조: 놓친 단위는 다시 나온다');
   assert.equal(control.target, U);
-  const stated = await retryAfter(async ({ other, port }) => {
+  const stated = await retryAfter(async ({ coach, other, port, time }) => {
+    // 태그 없는 문항(계열이 곧 단위)의 답이 판에 있어도 다시 세우기가 던지지 않는다(Fable 다시 확인 N2)
+    const untagged = handBank()[6];
+    await coach.answer(coach.present(untagged), { correct: true, assessable: true }).stored;
+    time.advance(STEP);
     const said = other.tell(U, 'known');
     await settle();
     assert.ok(
@@ -334,7 +348,12 @@ test('틀의 코치는 위 창의 엔진이 만든 호스트를 쓴다 — 저�
   const key = keyOf('frame');
   const base = { map: fakeMap(items), seed: 's', dayOffset: 0 };
   // 틀이 셸보다 먼저 문서 호스트를 달라고 하면 없다(HOST_MISSING) — 틀은 저장소 열쇠를 스스로 짓지 않는다.
-  const early = createCoach({ ...base, gameId: 'early', host: { document: true }, scope: frame });
+  const early = createCoach({
+    ...base,
+    gameId: 'early',
+    host: { document: true, wait: 0 },
+    scope: frame,
+  });
   await assert.rejects(early.ready, { code: 'HOST_MISSING' });
   early.dispose();
   const shell = createCoach({
@@ -509,4 +528,108 @@ test('코치는 조각이 낱말 이름(words)을 실었으면 낱말 표 전체
   } finally {
     globalThis.fetch = real;
   }
+});
+
+test('판을 닫지 않는 제품도 판 길이만큼 나가면 다음 set은 새 판이다 — 새것이 둘째 판부터 굶지 않는다, 닫기만 하는 finishSet은 종류를 묻지 않는다(Fable 다시 확인 N1)', async () => {
+  const words = Array.from({ length: 40 }, (_, i) =>
+    Object.freeze({
+      itemKey: `w.i${i}`,
+      familyKey: `w.f${i}`,
+      skillId: 'ko.reading.w',
+      difficulty: 1,
+      responseFormat: 'single-choice',
+      units: Object.freeze([`ko.word.n${i}`]),
+      order: i,
+      modality: 'reading',
+    }),
+  );
+  const port = memoryPort();
+  const time = clock();
+  const coach = coachOn({ items: words, time, port, key: keyOf('unclosed') });
+  await coach.ready;
+  const fresh = [];
+  for (let run = 0; run < 4; run += 1) {
+    let introduced = 0;
+    for (let step = 0; step < 6; step += 1) {
+      const picked = coach.recommend(words, { set: { length: 6, newLimit: 6 } }); // 판마다 · 문항마다 같은 set, 닫지 않는다
+      if (picked.status === 'none') break;
+      const pid = coach.present(picked.selected);
+      const event = (await eventsOf(port)).find(e => e.id === pid);
+      introduced += event.reason.introduced.length;
+      await coach.answer(pid, { correct: true, assessable: true }).stored;
+      time.advance(STEP);
+    }
+    fresh.push(introduced);
+  }
+  assert.deepEqual(fresh, [6, 6, 6, 2], `판마다 새 단위 — 하루 한도 20(${fresh.join(' · ')})`);
+  assert.doesNotThrow(
+    () => coach.finishSet({ record: false }),
+    '게임처럼 종류가 없는 제품도 닫을 수 있다',
+  );
+  assert.throws(() => coach.finishSet({ kind: 'round' }), TypeError, '판 기록은 정한 종류만');
+  coach.dispose();
+});
+
+test('문서 호스트는 셸이 연 호스트만 — 틀이 먼저 연 저장소는 문서 호스트가 아니고, 첫 셸 호스트가 닫히면 남은 셸 호스트로 넘어간다(Fable 다시 확인 N3)', async () => {
+  const items = bankOf(rng(12));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  installHostMaker(top, { openPort: () => memoryPort() });
+  const frame = { location: origin, parent: top, addEventListener() {}, removeEventListener() {} };
+  const base = { map: fakeMap(items), seed: 's', dayOffset: 0 };
+  const open = (gameId, host, scope) => {
+    const coach = createCoach({ ...base, gameId, host: { now: time.now, ...host }, scope });
+    return coach.ready.then(() => coach);
+  };
+  // 틀이 자기 열쇠로 먼저 연다 → 문서 호스트가 아니다
+  const early = await open('early', { guest: true, key: keyOf('frame-own') }, frame);
+  assert.equal(
+    top.__synkAtlasHosts.document ?? null,
+    null,
+    '틀이 연 저장소는 문서 호스트가 아니다',
+  );
+  // 셸이 손님 저장소, 이어서 계정 저장소를 연다(로그인 — 새 주인을 먼저 열고 옛 주인을 닫는 차례)
+  const guestKey = keyOf('shell-guest');
+  const guest = await open('shell-guest', { guest: true, key: guestKey }, top);
+  assert.equal(top.__synkAtlasHosts.document, guestKey);
+  const accountKey = keyOf('shell-account');
+  const account = await open('shell-account', { guest: true, key: accountKey }, top);
+  guest.dispose();
+  assert.equal(top.__synkAtlasHosts.document, accountKey, '남은 셸 호스트로 넘어간다');
+  const game = await open('game', { document: true, wait: 0 }, frame);
+  const pid = game.present(items[0]);
+  await game.answer(pid, { correct: true, assessable: true }).stored;
+  assert.equal(account.exposure(items[0]).seen, true, '틀이 셸의 계정 기록부에 쓴다');
+  for (const coach of [early, account, game]) coach.dispose();
+});
+
+test('셸의 첫 코치가 지도를 받는 동안 연 틀은 문서 호스트를 잠깐 기다린다(Fable 다시 확인 N5)', async () => {
+  const items = bankOf(rng(13));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  installHostMaker(top, { openPort: () => memoryPort() });
+  const frame = { location: origin, parent: top, addEventListener() {}, removeEventListener() {} };
+  const base = { map: fakeMap(items), seed: 's', dayOffset: 0 };
+  const game = createCoach({
+    ...base,
+    gameId: 'game',
+    host: { document: true, wait: 2000 },
+    scope: frame,
+  });
+  const shell = createCoach({
+    ...base,
+    gameId: 'shell',
+    host: { guest: true, key: keyOf('race'), now: time.now },
+    scope: top,
+  });
+  await Promise.all([game.ready, shell.ready]);
+  assert.equal(shell.exposure(items[0]).seen, false);
+  await game.answer(game.present(items[0]), { correct: true, assessable: true }).stored;
+  assert.equal(shell.exposure(items[0]).seen, true, '기다린 틀이 셸의 기록부를 받았다');
+  game.dispose();
+  shell.dispose();
 });
