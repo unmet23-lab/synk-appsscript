@@ -23,8 +23,19 @@ export const emptySummary = edition => ({
 });
 
 // 서버의 답(summaryOf의 꼴)을 지금 요약에 얹는다. 지금 요약을 바꾸지 않고 새 요약을 돌려준다.
+//   부분 답(full false)은 그 답을 부른 기준 요약 위에서만 뜻이 있다 — 기준이 없거나 판 묶음이 다르면 얹지 않고 null(다음 요청이
+//   통째로 받는다). 기준 없이 얹으면 앞 줄 없이 갱신 차례만 확정돼 그 뒤 부분 답도 계속 비었다(GPT 끝 판 GD1).
+//   같은 판 묶음의 늦게 온 옛 답(갱신 차례가 작거나, 같은데 덜 접힘)은 지금 요약을 그대로 돌려준다 — 줄 · 차례가 되돌아가지 않게(GD2).
 export function applyDelta(current, delta) {
-  const whole = delta.full || !current || current.edition !== delta.edition;
+  const sameBase = Boolean(current) && current.edition === delta.edition;
+  if (!delta.full && !sameBase) return null;
+  if (
+    sameBase &&
+    (delta.lineSeq < current.lineSeq ||
+      (delta.lineSeq === current.lineSeq && delta.foldedUntil < current.foldedUntil))
+  )
+    return current;
+  const whole = delta.full;
   const lines = whole
     ? emptyLines()
     : Object.fromEntries(LINE_KINDS.map(kind => [kind, new Map(current.lines[kind])]));

@@ -39,9 +39,14 @@ function noteSave(health, ok, code) {
   if (health) health.note('save', ok ? { ok: true } : { ok: false, code });
 }
 
-// 같은 판 묶음이면 갱신 차례가 크거나 같은 요약만, 판 묶음이 바뀌면 새 요약.
+// 같은 판 묶음이면 갱신 차례가 큰 요약, 차례가 같으면 접은 자리가 같거나 앞선 요약만 — 늦게 붙은 옛 요약(같은 차례 · 덜 접힘)이
+// 새 요약을 덮어 접은 자리 · 「낸 것」이 뒤로 가지 않게(GPT 끝 판 GC2). 판 묶음이 바뀌면 새 요약.
 const newer = (current, next) =>
-  next && (!current || current.edition !== next.edition || next.lineSeq >= current.lineSeq);
+  next &&
+  (!current ||
+    current.edition !== next.edition ||
+    next.lineSeq > current.lineSeq ||
+    (next.lineSeq === current.lineSeq && next.foldedUntil >= current.foldedUntil));
 
 function createState(guest, now) {
   return {
@@ -201,6 +206,9 @@ export function createRecord({
 
   // 손님: 든 사건 전부로 요약을 스스로 접는다(서버와 같은 어댑터 · 근거 줄 · 접기).
   async function refoldGuest() {
+    // 다른 탭이 먼저 쓴 기록까지 읽고 접는다 — 든 사건의 열쇠만 보면 아직 안 읽은 다른 탭 사건(더 앞 열쇠)까지 접었다고 적어,
+    // 그 사건이 요약에도 얹기에도 빠졌다(GPT 끝 판 GC1). 꼬리를 읽은 뒤에는 든 열쇠 가운데 가장 큰 것까지 모두 읽었다.
+    await refresh();
     const items = [...state.held.values()];
     const until = items.reduce((max, item) => Math.max(max, item.key), 0);
     // 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌었으면 든 사건으로 다시 접는다(아르곤 끝 판 D2).
@@ -331,7 +339,9 @@ export function createRecord({
       summary = null,
       serverTime = null,
     }) {
-      const next = summary ? applyDelta(state.summary, summary) : null;
+      // 얹을 수 없는 부분 답(null) · 늦은 옛 답(지금 요약 그대로)은 요약 기록을 새로 쓰지 않는다(GPT 끝 판 GD1 · GD2).
+      const delta = summary ? applyDelta(state.summary, summary) : null;
+      const next = delta && delta !== state.summary ? delta : null;
       const values = [
         {
           kind: 'ack',

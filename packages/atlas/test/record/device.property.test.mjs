@@ -56,6 +56,9 @@ function sameLines(view, want, label) {
       line.at ?? Number.NEGATIVE_INFINITY,
       `${label}: 첫 만남 ${family}`,
     );
+  // 첫 만남 표도 양방향 — 서버가 접지 않은 계열이 남아 있지 않다(GPT 끝 판 GE2).
+  for (const family of view.met.keys())
+    if (!want.family.has(family)) assert.fail(`${label}: 없어야 할 첫 만남 ${family}`);
 }
 
 function checkView(client, server, index, label) {
@@ -130,6 +133,15 @@ async function run(seed, { solo = false } = {}) {
       Object.fromEntries([...view.ability].sort()),
       Object.fromEntries([...all.skill].sort()),
       `씨앗 ${seed}: 끝 능력`,
+    );
+    assert.deepEqual(
+      Object.fromEntries([...view.met].sort()),
+      Object.fromEntries(
+        [...all.family]
+          .map(([family, line]) => [family, line.at ?? Number.NEGATIVE_INFINITY])
+          .sort(),
+      ),
+      `씨앗 ${seed}: 끝 첫 만남`,
     );
   }
   return tally;

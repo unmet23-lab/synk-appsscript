@@ -587,7 +587,15 @@ test('손님 요약은 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌�
   first.add('practice.attempted', answer(shown.event.id));
   await first.saved();
   await first.refold();
-  const other = indexOf(items, 'index-b');
+  const before = [...first.summary.lines.unit.keys()];
+  // 새 색인은 같은 문항의 단위를 바꾼다(태그 고침) — 판 이름만 바꾸지 않고 든 사건으로 다시 접었는지 값으로 본다(GPT 끝 판 GE1).
+  const other = {
+    edition: 'index-b',
+    lookup: key => {
+      const hit = index.lookup(key);
+      return hit && key === item.itemKey ? { ...hit, units: ['uz'] } : hit;
+    },
+  };
   const reopened = await openRecord({
     port,
     revision: 0,
@@ -599,4 +607,50 @@ test('손님 요약은 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌�
   });
   assert.equal(reopened.summary.edition, reopened.edition(), '새 판 묶음으로 다시 접었다');
   assert.equal(reopened.view().waitAll, false);
+  assert.ok(before.length > 0 && !before.includes('uz'));
+  assert.deepEqual(
+    [...reopened.summary.lines.unit.keys()],
+    ['uz'],
+    '옛 단위는 없고 새 단위로 접었다',
+  );
+});
+
+test('손님 두 탭 — 꼬리를 안 읽은 탭이 다시 접어도 다른 탭이 먼저 쓴 답은 요약 · 얹기에서 빠지지 않는다, 다시 열어도(GPT 끝 판 GC1)', async () => {
+  const port = memoryPort();
+  const open = () =>
+    openRecord({ port, revision: 0, guest: true, memory, params: PARAMS, index, now: () => T0 });
+  const tabA = await open();
+  const tabB = await open();
+  const mine = unit =>
+    presented({ itemKey: `tab-${unit}`, familyKey: `fam-${unit}`, units: [unit] });
+  const fromA = tabA.add('practice.presented', mine('uA'));
+  await fromA.stored;
+  await tabA.add('practice.attempted', answer(fromA.event.id)).stored;
+  const fromB = tabB.add('practice.presented', mine('uB'));
+  await fromB.stored;
+  await tabB.add('practice.attempted', answer(fromB.event.id)).stored;
+  await tabB.refold();
+  await tabB.refresh();
+  assert.ok(tabB.view().memory.has('uA'), 'B가 접은 뒤 읽은 A의 답도 보기에 든다');
+  assert.ok(tabB.view().memory.has('uB'));
+  const reopened = await open();
+  assert.ok(reopened.view().memory.has('uA'), '다시 열어도 A의 답이 있다');
+});
+
+test('같은 판 묶음 · 같은 갱신 차례의 요약 가운데 덜 접힌 늦은 요약은 쓰지 않는다 — 「낸 것」이 뒤로 가지 않게, 다시 열어도(GPT 끝 판 GC2)', async () => {
+  const port = memoryPort();
+  const open = () =>
+    openRecord({ port, revision: 1, memory, params: PARAMS, index, now: () => T0 });
+  const rec = await open();
+  const base = { edition: rec.edition(), lineSeq: 5, lines: [], full: true };
+  const shown = { id: 'a.0000000000001.0001.aaaaaaaa', at: T0, review: false, units: ['u0'] };
+  await rec.receive({ summary: { ...base, foldedUntil: 11, issued: [shown] } });
+  await rec.receive({ summary: { ...base, foldedUntil: 10, issued: [] } });
+  assert.equal(rec.summary.foldedUntil, 11);
+  assert.deepEqual(
+    rec.summary.issued.map(row => row.id),
+    [shown.id],
+  );
+  const again = await open();
+  assert.equal(again.summary.foldedUntil, 11, '다시 열어도 앞선 요약');
 });

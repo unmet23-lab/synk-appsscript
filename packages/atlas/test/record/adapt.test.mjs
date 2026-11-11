@@ -283,7 +283,7 @@ test('옛 꼴 — measure로 읽고, firstExposure가 true가 아닌 제시의 �
   assert.ok(prior.id < answer.id, '같은 시각에서 먼저 선다');
   assert.ok(A.isPrior(prior));
   assert.equal(answer.item.responseFormat, 'unknown', '꼴이 없으면 unknown');
-  assert.equal(A.serverKey(7, a), `s.${String(T + 60_000).padStart(13, '0')}.000000000000007`);
+  assert.equal(A.serverKey(7, a), `a.${String(T + 60_000).padStart(13, '0')}.s000000000000007`);
 });
 
 test('문항 색인이 먼저다 — 색인의 단위 · 계열, 없으면 사건에 적힌 단위, 색인에도 measure에도 없는 옛 제시는 접지 않는다', () => {
@@ -490,4 +490,77 @@ test('응답(feedback.given)의 부모는 마침이다 — 결정을 함께 실�
     /부모/,
     '결정 칸에 마침 번호를 넣어도 유령 마침은 못 지난다',
   );
+});
+
+test('옛 꼴과 2판이 같은 받은 시각으로 눌려도 적힌 시각 순이다 — 차례 열쇠의 꼴 글자보다 적힌 시각이 먼저(GPT 끝 판 GA1)', async () => {
+  const { entryOf } = await subject('record/server.mjs');
+  const { sortByTime } = await subject('fold/order.mjs');
+  const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
+  const at = m => new Date(T + m * 60_000).toISOString();
+  const measure = {
+    skillId: 'ko.listening.detail',
+    modality: 'listening',
+    difficulty: 1,
+    familyKey: 'f1',
+    audioRequired: false,
+    confounded: false,
+  };
+  // 시계가 앞선 기기 — 옛 답은 1분, 2판 답은 2분에 적혔고 둘 다 받은 시각(T)으로 눌린다.
+  const oldShown = {
+    schema: 1,
+    id: 'op',
+    scope,
+    at: at(1),
+    recordedAt: at(1),
+    type: 'practice.presented',
+    decisionId: 'od',
+    taskId: 't',
+    taskVersion: 'v',
+    itemKey: 'old',
+    conceptIds: ['ko.listening.detail'],
+    firstExposure: true,
+    measure,
+  };
+  const oldAnswer = {
+    schema: 1,
+    id: 'oa',
+    scope,
+    at: at(1),
+    recordedAt: at(1),
+    type: 'practice.attempted',
+    presentationId: 'op',
+    attemptNo: 1,
+    verdict: 'correct',
+    errorTags: [],
+  };
+  const shown = make('practice.presented', presentedFields({ itemKey: 'i2' }), 2);
+  const answer = make(
+    'practice.attempted',
+    { presentationId: shown.id, attemptNo: 1, verdict: 'incorrect', errorTags: [] },
+    2,
+  );
+  const records = [oldShown, oldAnswer, shown, answer].map((event, i) => ({
+    seq: i + 1,
+    receivedMs: T,
+    event,
+  }));
+  const entries = records.map(entryOf);
+  assert.ok(
+    entries.every(e => e.atMs === T && e.clamped),
+    '넷 다 받은 시각으로 눌렸다',
+  );
+  assert.ok(A.orderOf(entries[1], entries[3]) < 0, '먼저 적힌 옛 답이 앞');
+  const answers = sortByTime(A.foldEventsOfAll(entries)).filter(e => e.kind === 'answer');
+  assert.deepEqual(
+    answers.map(e => e.answer.correct),
+    [true, false],
+    '접기 차례도 적힌 시각 순 — 같은 계열의 첫 만남은 먼저 낸 옛 답',
+  );
+});
+
+test('사건 종류는 표의 제 열쇠인 글자만 — 배열 type · 물려받은 이름은 꼴 검사에서 거른다(GPT 끝 판 GB3)', () => {
+  const p = make('practice.presented', presentedFields(), 0);
+  assert.throws(() => R.checkEvent({ ...p, type: ['practice.presented'] }), TypeError);
+  assert.throws(() => R.checkEvent({ ...p, type: 'constructor' }), TypeError);
+  assert.equal(R.checkEvent(p), p);
 });

@@ -10,6 +10,66 @@ const ROWS = 'src/record/rows.mjs';
 const EVENTS = 'src/record/events.mjs';
 
 export const RECORD_MUTANTS = [
+  // ── 기기 요약 받기 — 기준 없는 부분 답은 얹지 않음 · 늦은 옛 답은 되돌리지 않음(GPT 끝 판 GD1 · GD2) ──
+  [
+    R,
+    '기기',
+    '기준 요약이 없거나 판 묶음이 다른 부분 답도 통째로 얹는다(앞 줄 없이 차례만 확정된다)',
+    'src/record/summary.mjs',
+    '  if (!delta.full && !sameBase) return null;',
+    '  if (false) return null;',
+  ],
+  [
+    R,
+    '기기',
+    '같은 판 묶음의 늦게 온 옛 답도 얹는다(줄 · 차례가 되돌아간다)',
+    'src/record/summary.mjs',
+    '    (delta.lineSeq < current.lineSeq ||',
+    '    false && (delta.lineSeq < current.lineSeq ||',
+  ],
+  // ── 기기 기록부의 여러 탭 — 손님 다시 접기는 꼬리부터 · 같은 차례 요약은 덜 접힌 것을 쓰지 않음(GPT 끝 판 GC1 · GC2) ──
+  [
+    R,
+    '기기',
+    '손님이 꼬리를 읽지 않고 다시 접는다(다른 탭이 먼저 쓴 답까지 접었다고 적는다)',
+    LOG,
+    '    await refresh();\n    const items = [...state.held.values()];',
+    '    const items = [...state.held.values()];',
+  ],
+  [
+    R,
+    '기기',
+    '같은 갱신 차례면 덜 접힌 늦은 요약도 쓴다(접은 자리 · 「낸 것」이 뒤로 간다)',
+    LOG,
+    '(next.lineSeq === current.lineSeq && next.foldedUntil >= current.foldedUntil)',
+    'next.lineSeq === current.lineSeq',
+  ],
+  // ── 기기 저장 · 사건 꼴 — 동기 예외는 트랜잭션째 되돌림 · 종류는 표의 제 열쇠만(GPT 끝 판 GB1 · GB3) ──
+  [
+    R,
+    '기기',
+    '요청을 만드는 도중 동기 예외가 나도 트랜잭션을 되돌리지 않는다(앞의 덧붙이기만 저절로 커밋된다)',
+    'src/record/idb.mjs',
+    '      transaction.abort();',
+    '      void transaction;',
+  ],
+  [
+    R,
+    '사건 꼴',
+    '사건 종류를 글자인지 보지 않고 표에서 찾는다(배열 type이 지나간다)',
+    EVENTS,
+    "typeof event.type === 'string' && Object.hasOwn(SHAPES, event.type)",
+    'event.type in SHAPES',
+  ],
+  // ── 차례 열쇠 — 옛 꼴과 2판이 같은 시각으로 눌려도 적힌 시각 먼저(GPT 끝 판 GA1) ──
+  [
+    R,
+    '어댑터',
+    '옛 꼴 서버 차례 열쇠의 머리를 꼴 글자로 둔다(같은 받은 시각에서 2판이 먼저 적힌 옛 답보다 앞선다)',
+    ADAPT,
+    "export const serverKey = (seq, event) => `a.${written(event)}.s${String(seq).padStart(15, '0')}`;",
+    "export const serverKey = (seq, event) => `s.${written(event)}.${String(seq).padStart(15, '0')}`;",
+  ],
   // ── 서버 줄 — 값이 같은 줄은 갱신 차례를 올리지 않는다(jsonb 열쇠 차례, Fable 5.2 Talk 끝 판 P2-2) ──
   [
     R,
@@ -189,8 +249,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '두 탭이 덧붙인 요약 가운데 갱신 차례가 작은 것도 쓴다',
     LOG,
-    'next.lineSeq >= current.lineSeq',
-    'true',
+    '    next.lineSeq > current.lineSeq ||',
+    '    true ||',
   ],
   [
     R,

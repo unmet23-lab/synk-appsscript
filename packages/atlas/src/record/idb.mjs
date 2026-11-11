@@ -20,6 +20,28 @@ const finished = transaction =>
       );
   });
 
+// 쓰기 트랜잭션 하나에 요청들을 낸다. 요청을 만드는 도중 동기 예외(값을 복제할 수 없음 · 잘못된 열쇠)가 나면 이미 낸 요청까지
+// 트랜잭션째 되돌리고 그 예외를 던진다 — 그대로 두면 앞의 요청은 저절로 커밋되고 호출자는 실패를 받아 다시 쓰며 겹친다(GPT 끝 판 GB1).
+async function atomically(transaction, issue) {
+  const settled = finished(transaction);
+  const requests = [];
+  const track = request => requests.push(done(request));
+  try {
+    issue(transaction.objectStore(STORE), track);
+  } catch (error) {
+    for (const request of requests) request.catch(() => {});
+    try {
+      transaction.abort();
+    } catch {
+      // 이미 끝난 트랜잭션 — 되돌릴 것이 없다.
+    }
+    await settled.catch(() => {});
+    throw error;
+  }
+  const [results] = await Promise.all([Promise.all(requests), settled]);
+  return results;
+}
+
 export async function idbPort(name, { indexedDB = globalThis.indexedDB, channel = null } = {}) {
   if (!indexedDB)
     throw Object.assign(new Error('Atlas record: IndexedDB가 없다'), {
@@ -44,18 +66,21 @@ export async function idbPort(name, { indexedDB = globalThis.indexedDB, channel 
     read: () => each(),
     range: afterKey => each(globalThis.IDBKeyRange.lowerBound(afterKey, true)),
     async append(values) {
-      const transaction = db.transaction(STORE, 'readwrite');
-      const store = transaction.objectStore(STORE);
-      const requests = values.map(value => done(store.add(value)));
-      const [keys] = await Promise.all([Promise.all(requests), finished(transaction)]);
-      channel?.postMessage({ appended: keys.at(-1) });
+      const keys = await atomically(db.transaction(STORE, 'readwrite'), (store, track) => {
+        for (const value of values) track(store.add(value));
+      });
+      // 알림은 저장과 따로 — 커밋한 뒤 채널이 닫혀 던져도 저장된 열쇠를 돌려준다(실패로 돌리면 다시 써서 겹친다, GPT 끝 판 GB2).
+      try {
+        channel?.postMessage({ appended: keys.at(-1) });
+      } catch {
+        // 다른 탭은 다음 읽기에서 꼬리를 본다.
+      }
       return keys;
     },
     async remove(keys) {
-      const transaction = db.transaction(STORE, 'readwrite');
-      const store = transaction.objectStore(STORE);
-      for (const key of keys) store.delete(key);
-      await finished(transaction);
+      await atomically(db.transaction(STORE, 'readwrite'), (store, track) => {
+        for (const key of keys) track(store.delete(key));
+      });
     },
     async close() {
       db.close();

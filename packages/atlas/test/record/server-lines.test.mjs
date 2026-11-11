@@ -75,3 +75,24 @@ test('접기에 닿았지만 값이 같은 줄은 갱신 차례가 오르지 않
   assert.equal(after.lineSeq, first.lineSeq, '갱신 차례가 오르지 않는다');
   assert.deepEqual(after.lines, [], '값이 그대로인 줄은 다시 내려가지 않는다');
 });
+
+test('모의 올리기도 부모가 없는 자식은 받지 않고 rejected로 돌려준다(SYNK-talk 올리기와 같은 partitionLinks — GPT 끝 판 GF1)', async () => {
+  const { createServer } = await import('../support/trail-sync.mjs');
+  const { rng } = await import('../support/trail-world.mjs');
+  const mock = createServer({ random: rng(3), foldChance: 0 });
+  const atMs = T0 + 60_000;
+  const orphan = createEvent(
+    'practice.attempted',
+    {
+      presentationId: eventId(atMs, 9, 'gone0000'),
+      attemptNo: 1,
+      verdict: 'correct',
+      errorTags: [],
+    },
+    { id: eventId(atMs, 1, 'orph0000'), atMs, revision: 1 },
+  );
+  const reply = await mock.post([orphan], null);
+  assert.deepEqual(reply.accepted, []);
+  assert.deepEqual(reply.rejected, [orphan.id]);
+  assert.equal(reply.rejectedCode, 'EVENT_LINK');
+});

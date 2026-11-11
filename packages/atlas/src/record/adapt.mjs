@@ -3,7 +3,7 @@
 // 묶음 = 제시 + 그 제시의 전달 · 도움 · 답 + 그 가운데 어느 것을(옛 꼴은 그 제시의 결정도) 겨눈 제외. 본인 말 · 옮겨 온 장부는 혼자 한 묶음이다.
 //
 // 기록 하나(entry) = { event, key, atMs }
-//   key   같은 시각의 차례 열쇠(글자). 2판 = 사건 id(a.…), 옛 꼴 = 서버 차례 s.<15자리> · 기기 로그 순서 l.<9자리>
+//   key   같은 시각의 차례 열쇠(글자). 2판 = 사건 id(a.<만든 시각>.…), 옛 꼴 = a.<적힌 시각>.s<서버 차례 15자리> · a.<적힌 시각>.l<기기 로그 순서 9자리>
 //   atMs  접는 시각. 서버는 min(사건 at, 받은 시각), 기기는 사건 at
 // index.lookup(itemKey) → { familyKey, skillId, difficulty, responseFormat, units, unknownOption? } | null  (단계 1의 문항 색인)
 import { BITS, EVENT_FORM, EVENT_TYPES } from './events.mjs';
@@ -12,15 +12,17 @@ import { assessable } from './judge.mjs';
 const SHOWN = new Set(['explanation', 'answer']);
 export const EMPTY_INDEX = Object.freeze({ edition: 'index-0', lookup: () => null });
 
-// 옛 꼴의 차례 열쇠 — 적힌 시각을 앞에 둔다(설계 §5-3 「차례는 (접는 시각, 사건에 적힌 시각, 셋째 열쇠)」): 서버가 한 묶음을
-// 같은 시각으로 눌러도 적힌 시각 순, 그것도 같으면 받은 차례(server_seq) · 로그 순서. 2판 번호(a.<만든 시각>.…)도 같은 순서다.
+// 옛 꼴의 차례 열쇠 — 2판 번호(a.<만든 시각 13>.<순번 4>.<꼬리 8>)와 같은 머리 a.<적힌 시각 13>.를 쓴다(설계 §5-3 「차례는
+// (접는 시각, 사건에 적힌 시각, 셋째 열쇠)」): 서버가 옛 꼴과 2판을 같은 시각으로 눌러도 적힌 시각이 꼴 글자보다 먼저 비교된다
+// (머리가 s. · l.이던 판은 같은 시각에서 2판이 늘 앞서, 먼저 적힌 옛 답이 첫 만남 자격을 잃었다 — GPT 끝 판 GA1).
+// 적힌 시각도 같으면 2판(순번 숫자) → 기기 로그(l) → 서버 차례(s), 그 안에서는 받은 차례 · 로그 순서.
 const written = event => {
   const parsed = Date.parse(event.at);
   return String(Number.isFinite(parsed) ? Math.max(0, parsed) : 0).padStart(13, '0');
 };
-export const serverKey = (seq, event) => `s.${written(event)}.${String(seq).padStart(15, '0')}`;
+export const serverKey = (seq, event) => `a.${written(event)}.s${String(seq).padStart(15, '0')}`;
 export const deviceKey = (position, event) =>
-  `l.${written(event)}.${String(position).padStart(9, '0')}`;
+  `a.${written(event)}.l${String(position).padStart(9, '0')}`;
 export const orderOf = (a, b) => a.atMs - b.atMs || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
 
 const isCurrent = event => event.schema === EVENT_FORM.current;
@@ -117,7 +119,7 @@ function stepChild(entry, state, context) {
 // 차례 열쇠는 그 첫 만남 사건의 열쇠 바로 앞(justBefore)이다 — 제시 열쇠를 쓰면 서버가 눌러 같은 시각이 된 묶음에서 같은 계열의
 // 다른 제시에 먼저 낸 답보다 앞에 서서 그 답의 첫 만남 자격을 빼앗는다(아르곤 끝 판 B1). 기기 얹기(단계 2 overlay)는 이번 얹기에서
 // 내 사건이 정한 첫 만남 뒤의 내 사건을 기다리지 않는다(view.mine).
-// 차례 열쇠는 꼴마다 자리 수가 같아(2판 a.<13>.<4>.<8> · 옛 꼴 s.<13>.<15> · l.<13>.<9>) 마지막 글자를 하나 내리고 열쇠에 없는
+// 차례 열쇠는 꼴마다 자리 수가 같아(2판 a.<13>.<4>.<8> · 옛 꼴 a.<13>.s<15> · a.<13>.l<9>) 마지막 글자를 하나 내리고 열쇠에 없는
 // 글자 '~'(어떤 열쇠 글자보다 큼)를 붙이면 그 열쇠 바로 앞, 그보다 작은 열쇠들보다는 뒤에 선다.
 export const PRIOR_MARK = '~';
 const justBefore = key =>

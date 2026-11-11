@@ -295,7 +295,9 @@ function fieldsOk(event, required, optional) {
 export function checkEvent(event) {
   if (!isPlain(event) || event.schema !== EVENT_FORM.current || !isId(event.id))
     fail('2판 사건이 아니다', event);
-  const shape = SHAPES[event.type];
+  // 종류는 표의 제 열쇠인 글자만 — 배열(['decision.made'])이 글자로 바뀌어 표를 지나가지 않게(GPT 끝 판 GB3).
+  const shape =
+    typeof event.type === 'string' && Object.hasOwn(SHAPES, event.type) ? SHAPES[event.type] : null;
   if (!shape) fail('모르는 사건 종류다', event);
   if (!isTime(event.at)) fail('시각(at)이 ISO 밀리초가 아니다', event);
   // 손님(동의 판 없음)은 0 — 계정으로 옮길 때 그 계정의 지금 판으로 도장을 찍는다(서버는 지금 판과 같은 것만 받는다).

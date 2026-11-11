@@ -8,6 +8,7 @@ const { memoryPort } = await subject('record/port.mjs');
 const { createMemory } = await subject('memory/index.mjs');
 const { PARAMS } = await subject('params.mjs');
 const { EMPTY_INDEX } = await subject('record/adapt.mjs');
+const { partitionLinks, EVENT_TYPES } = await subject('record/events.mjs');
 
 export const memory = createMemory(PARAMS);
 export { PARAMS };
@@ -53,12 +54,29 @@ export function createServer({ random, index = EMPTY_INDEX, foldChance = 1 }) {
         seen.add(event.id);
         return true;
       });
-      const records = server.append(fresh, now);
+      // 부모 · 답 차례가 맞지 않는 사건(과 그 자손)은 빼고 받는다 — SYNK-talk 올리기와 같은 partitionLinks(GPT 끝 판 GF1).
+      // 부모는 비운 바닥 위 저장된 사건과 이 묶음에서 찾는다.
+      const visible = new Map(server.log().map(r => [r.event.id, r.event]));
+      const parts = partitionLinks(fresh, {
+        find: id => visible.get(id) ?? null,
+        attemptCount: id =>
+          [...visible.values()].filter(
+            event => event.type === EVENT_TYPES.attempted && event.presentationId === id,
+          ).length,
+      });
+      const records = server.append(parts.ok, now);
       for (const record of records) known.set(record.event.id, record);
       if (random() < foldChance) await self.fold();
-      const accepted = events.map(event => ({ id: event.id, seq: known.get(event.id).seq }));
-      const clamped = S.clampedOf(events.map(event => known.get(event.id)));
-      return { accepted, clamped, summary: await self.summary(since), serverTime: now };
+      const stored = events.filter(event => known.has(event.id));
+      const accepted = stored.map(event => ({ id: event.id, seq: known.get(event.id).seq }));
+      const clamped = S.clampedOf(stored.map(event => known.get(event.id)));
+      return {
+        accepted,
+        clamped,
+        ...(parts.rejected.length ? { rejected: parts.rejected, rejectedCode: 'EVENT_LINK' } : {}),
+        summary: await self.summary(since),
+        serverTime: now,
+      };
     },
     // 옛 판 기기(옛 POST) — 접기는 다음 읽기에서.
     legacy(events) {
