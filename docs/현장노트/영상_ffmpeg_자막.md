@@ -1607,3 +1607,15 @@
 - 원인: 흐린 거울 판과 또렷한 장면이 260px에서 칼로 자른 듯 만난다. 그 위에 위 그늘까지 얹혀 경계가 더 짙게 읽힌다 — 정지 화면 한 장으로 보면 눈에 덜 띄지만 띠(±1초 8칸)로 보면 모든 컷에 같은 수평선이 선다.
 - 고침: 내린 폭을 210px로 줄이고, 또렷한 장면 판에 `maskImage: linear-gradient(to bottom, transparent 0px, black 150px)`을 걸어 윗단을 거울 쪽으로 녹인다(거울은 `blur(34px) brightness(0.9)`). 줄인 50px만큼 당긴 컷의 기준 자리(`ay`)를 내려 머리 위 여백을 지키고, 위 그늘은 0.62 → 0으로 옅게(`docs/마케팅/synkbrief_가짜의사_20261110/remotion/src/Film.tsx` `Lowered` · `Shade`).
 - 다시 확인: 같은 일곱 순간으로 다시 맹검 — 「머리판 · 수평 경계」 지적이 사라지는지(아래 결과는 그 편 기획.md 「미학 맹검」).
+
+### Remotion 글자에 `WebkitTextStroke`로 속 빈 글자를 만들면 SUIT 가변 글꼴의 겹친 획이 선으로 드러난다 (2026-11-11 Claude)
+- 증상: LAB 노래 틀 v2에서 「네 차례」 음절(배 · 고 · 파)을 `color: transparent` + `WebkitTextStroke: 5px`로 속을 비우자 획이 겹치는 자리마다 안쪽 테두리가 그대로 그어져 「배」 · 「파」 속에 선이 엇갈려 보였다.
+- 원인: 가변 글꼴(SUIT-Variable.woff2)은 획 윤곽을 합치지 않고 겹쳐 둔다 — 채움에서는 안 보이지만 테두리만 그리면 겹친 윤곽이 다 드러난다.
+- 고침: 가변 글꼴 큰 글자에는 테두리 글자를 쓰지 않는다. 「비운 자리」는 채움 색(흐린 회색 · 박마다 코랄로 켜고 끄기)으로 보인다(`docs/마케팅/LAB_노래틀/틀/src/Song.tsx` ask). 꼭 테두리 글자가 필요하면 윤곽을 합친 고정 굵기 글꼴(static) 파일로.
+- 다시 확인: `npx remotion still song out/x.png --frame=<네 차례 프레임>`을 원래 크기로 열어 글자 속에 선이 없는지.
+
+### 글을 `split(/(\s+)/)`로 낱말마다 나누면 붙여 둔 NBSP(\u00A0)에서도 갈라져 「in / your language?」 · 줄 앞 빈칸이 생긴다 (2026-11-11 Claude)
+- 증상: 끝 물음의 두 글자 이하 낱말을 다음 낱말과 NBSP로 붙였는데(`in\u00A0your`) 렌더하면 여전히 「in」이 줄 끝에 남고 다음 줄이 빈칸으로 시작했다. 낱말마다 블러 인을 주려고 `split(/(\s+)/)`로 나눈 뒤였다.
+- 원인: 자바스크립트 정규식 `\s`는 NBSP(U+00A0)까지 잡는다 — 붙여 둔 자리에서 다시 나뉘고, NBSP 조각이 따로 `<span>`이 되어 줄을 넘긴다.
+- 고침: 보통 띄어쓰기로만 나눈다 — `split(/( +)/)` · 빈칸 판정도 `/^ +$/`. 줄 균형은 `textWrap: 'balance'`, 붙임은 따옴표 안 띄어쓰기와 두 글자 이하 낱말 뒤(`glueShort` · `keepQuoted`, 같은 Song.tsx).
+- 다시 확인: 「How do you say “I'm hungry” in your language?」가 「… / “I'm hungry” / in your language?」로 갈리는지 정지 화면으로.
