@@ -34,6 +34,9 @@
  *   (원고를 고치고 「node tools/판본글잇기.js 뽑기」를 안 돌린 판본은 빠진다 — 고친 글이 뜻 검수 통과를 달고 나가지 않게), 원고에 게시글
  *   「고칠 것」(상대 날짜 · 첫 125자 해시태그 · 유튜브 동영상 언어가 그 판 말이 아님 …)이나 빠진 원고 파일이 없어야 한다 — 원고 하나의
  *   고칠 것이 올리기 전 검사에서 그 원본 편 전체를 막기 때문에 그 판본만 뺀다(tools/lib/판본잇기.js 글낡음 · 원고고칠것).
+ *   판본검수에 「현지어」를 넣으면(11-11 Fable 5.2 끝 판 검수 P2-4) 현지어 대조 기록(tools/현지어대조.js --판본 … --기록 — 지문 = 「글」 파일)도
+ *   조건이 된다: 게시글 줄(제목 · 본문 · 고정 댓글)은 뜻 검사 시험지에 안 실려 현지어 대조만 본다. 넣기 전에는 올리기 전 검사 ⑩이 기록이
+ *   없거나 낡은 판본을 확인할 것(rotation-local)으로 보인다(localCheckState).
  * 계정(sns-계정.json): LAB이고 dailyLine · dailyFormats가 있는 계정. rotationSeed는 씨앗(먼저 올림). 씨앗이 아닌 계정은
  * publicProfileComplete가 true이고 postRouteVerified가 true여야 칸을 받는다(설계 4 · 5). postRouteVerified 「첫판」은 첫 판 시험 —
  * 판 하나만 받고, 그 판을 플랫폼 예약 목록에서 확인해 true로 바꾸면 나머지 칸이 열린다. dailyFrom 「미정」은 아직 안 연 계정(칸 없음),
@@ -146,6 +149,37 @@ function rotationAccounts(accounts, { ignoreReady = false } = {}) {
 //  · 원고의 게시글 「고칠 것」(상대 날짜 · 첫 125자 …) — 원고 하나의 고칠 것이 올리기 전 검사에서 그 원본 편 전체(다른 계정 판까지)를 막으니
 //    그 판본만 돌림에서 뺀다.
 //  · key를 주면, 판본 지도가 있는 편의 영상이 지금 원천으로 구운 것인가(렌더.json — 글 · 영상 · 자산 지문). 아래 본문.
+// 「글」 파일 지문으로 묶는 검수 — 글을 고치면 저절로 무효가 된다. 나머지(글자 …)는 영상 지문으로 묶는다.
+const 글지문검수 = new Set(['뜻', '현지어']);
+
+// 판본의 현지어 대조 기록 상태(11-11 P2-4) — 판본검수에 「현지어」가 아직 없는 동안 올리기 전 검사 ⑩이 확인할 것으로 보이는 데 쓴다.
+function localCheckState(dir, v) {
+  const r = v?.검수?.현지어;
+  if (!r) return { ok: false, why: '현지어 대조 기록이 없다' };
+  if (r.결과 !== '통과') return { ok: false, why: `현지어 대조 「${r.결과 || '결과 없음'}」` };
+  const text = resolveIn(dir, v.글);
+  if (!text || !fs.existsSync(text)) return { ok: false, why: '현지어 대조한 글 파일이 없다(판본 「글」)' };
+  if (r.지문 !== sha256(text)) return { ok: false, why: '현지어 대조 뒤 글이 바뀌었다' };
+  return { ok: true, why: null, 판정줄: Array.isArray(r.판정줄) ? r.판정줄 : [] };
+}
+
+// 이미 걸린(공개 전) 돌림 판의 판본이 걸린 뒤 무효가 됐거나 다시 구워졌는가(11-11 — 시험관 넷으로 다시 받은 뜻 검사에서 걸린 판 셋이 떨어졌는데
+// 아무 도구도 알리지 않았다: 올리기 전 검사 ⑩의 고칠 것은 다 걸린 편이라 예약큐가 안 보고, 걸기의 지문 대조는 걸 때 한 번뿐이다).
+// 그대로 두면 검수 안 된 영상이 예약대로 공개된다. row = 그 계정의 게시결과 줄(「지문」 = 걸 때의 판 영상 SHA-256).
+// → null(문제 없음 · 판본을 모름) 또는 { key, why, changed(걸린 영상이 지금 판본 영상과 다름) }. 예약큐 경고 · 올리기 전 검사 ⑩이 쓴다.
+function bookedVersionProblem(dir, prep, plate, row, { required = ['뜻', '글자'], accounts = null } = {}) {
+  if (!plate || !plate.돌림 || !row) return null;
+  const a = accounts?.[plate.계정];
+  const key = a ? a.rotationVersion || a.countryCode : null;
+  const v = key ? prep?.돌림?.판본?.[key] : null;
+  if (!v) return null;
+  const st = versionState(dir, v, required, key, { accounts });
+  const changed = Boolean(row.지문 && st.sha && row.지문 !== st.sha);
+  if (!st.ready) return { key, why: st.why, changed };
+  if (changed) return { key, why: '건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판)', changed };
+  return null;
+}
+
 function versionState(dir, v, required, key = null, { accounts = null } = {}) {
   if (!v) return { ready: false, why: '판본 없음' };
   const file = resolveIn(dir, v.파일);
@@ -154,10 +188,10 @@ function versionState(dir, v, required, key = null, { accounts = null } = {}) {
   for (const name of required) {
     const r = v.검수?.[name];
     if (!r || r.결과 !== '통과') return { ready: false, why: `${name} 검수 ${r?.결과 || '전'}`, sha };
-    if (name === '뜻') {
+    if (글지문검수.has(name)) {
       const text = resolveIn(dir, v.글);
-      if (!text || !fs.existsSync(text)) return { ready: false, why: '뜻 검수할 글 파일 없음(판본 「글」)', sha };
-      if (r.지문 !== sha256(text)) return { ready: false, why: '뜻 검수 뒤 글이 바뀜', sha };
+      if (!text || !fs.existsSync(text)) return { ready: false, why: `${name} 검수할 글 파일 없음(판본 「글」)`, sha };
+      if (r.지문 !== sha256(text)) return { ready: false, why: `${name} 검수 뒤 글이 바뀜`, sha };
     } else if (r.지문 !== sha) return { ready: false, why: `${name} 검수 뒤 영상이 바뀜`, sha };
   }
   if (key) {
@@ -191,7 +225,8 @@ function loadPieces(accounts, cfg) {
     if (!prep || prep.브랜드 !== 'LAB') continue;
     const result = readJson(path.join(dir, '게시', '게시결과.json')) || {};
     // 한 편은 한 계정에 한 번만 나가니(돌림 ③) 게시결과는 계정으로 맞춘다 — 게시결과 「시각」은 실제로 나간 때라 판 시각과 다를 수 있다.
-    // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨) 걸려 있는 줄, 없으면 마지막 줄(게시 장부 rowOf).
+    // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨) 뒤에서부터 읽어 걸려 있는 줄이나 거둔 줄
+    // (보류 · 지움)을 먼저 만나면 그 줄, 없으면 마지막 줄(게시 장부 rowOf) — 거둔 예약(예약됨 → 보류)은 나가지 않는 판이다.
     const stateOf = (plate) => 장부.rowOf(result.판, plate.계정);
     const original = prep.돌림 && 돌림.FORMATS.includes(prep.돌림.형식) ? prep.돌림 : null;
     // 버린 편은 꼴 검사 · 판본 상태를 보지 않는다 — 원장에서 빠진 계정이 버린 편의 이미받음에 남아 있어도 돌림표 전체가 죽지 않게(11-11 Fable 검수)
@@ -598,5 +633,5 @@ function main() {
   }
 }
 
-module.exports = { rotationAccounts, versionState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport };
+module.exports = { rotationAccounts, versionState, bookedVersionProblem, localCheckState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport };
 if (require.main === module) main();

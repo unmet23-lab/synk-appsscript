@@ -23,8 +23,11 @@
  * 시험)는 그 폴더의 .게시장부/칸.json을 쓴다. 세 명령은 표 옆 잠금 파일 하나로 차례를 선다(같은 판을 여럿이 한꺼번에 걸어도 하나만).
  * 작업실 길(tools/작업실예약.js)은 이 표에 적지 않는다 — 등록하자마자 올려서 git으로 보인다.
  * 게시결과.json은 그 계정 줄만 바꾸고, 읽은 뒤 그새 파일이 바뀌었으면 쓰지 않고 멈춘다(tools/작업실예약.js와 같은 셈). 장부 표는
- * node tools/돌림표.js --장부. 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨) 걸려 있는 줄,
- * 없으면 마지막 줄이 그 계정의 줄이다(rowOf).
+ * node tools/돌림표.js --장부. 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨) 뒤에서부터 읽어
+ * 걸려 있는 줄이나 거둔 줄(보류 · 지움)을 먼저 만나면 그 줄, 없으면 마지막 줄이 그 계정의 줄이다(rowOf). 이 파일 안의 읽기(같은 칸 ·
+ * 첫 판 · 표의 참)도 모두 rowOf다 — 걸린 줄 뒤에 보류를 덧붙인 판을 예약큐는 빈 칸으로, 걸기는 찬 칸으로 보던 것(11-11 Fable 5.2 다시 검수 P2-1).
+ * 쓰기(걸기 · 끝 · 풀기)가 고칠 줄은 그 계정의 「거는 중」 줄이 있으면 그 줄(뒤에 보류가 붙어 있어도 끊긴 걸기부터 닫는다), 없으면 rowOf다.
+ * 걸기는 거둔 줄 · 작업 ID가 적힌 죽은 줄을 덮지 않고 새 줄을 더하고, 걸린 줄로 적은 줄은 늘 그 계정의 줄(rowOf)이 되게 맨 뒤에 둔다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -92,11 +95,18 @@ function updateResult(dir, account, change) {
   const result = raw ? JSON.parse(raw.replace(/^﻿/, '')) : { 판: [] };
   if (!result || typeof result !== 'object' || Array.isArray(result) || (result.판 != null && !Array.isArray(result.판))) throw new Error('게시결과.json 모양이 달라 건드리지 않았다');
   result.판 = result.판 || [];
-  const i = result.판.indexOf(rowOf(result.판, account));
+  // 고칠 줄 — 그 계정의 「거는 중」 줄이 있으면 그 줄(뒤에 보류를 덧붙였어도 끊긴 걸기는 끝 · 풀기로 닫을 수 있어야 한다 — 11-11 P3-1), 없으면 rowOf
+  const claimed = result.판.filter((p) => p && p.계정 === account && p.상태 === CLAIM).pop();
+  const i = result.판.indexOf(claimed || rowOf(result.판, account));
   let add = false;
   const next = change(i > -1 ? { ...result.판[i] } : null, () => { add = true; });
   if (next === undefined) return null;
-  if (next === null) { if (i > -1) result.판.splice(i, 1); } else if (i > -1 && !add) result.판[i] = next; else result.판.push(next);
+  if (next === null) { if (i > -1) result.판.splice(i, 1); } else if (i > -1 && !add) {
+    result.판[i] = next;
+    // 걸린 줄로 적었는데 뒤에 거둔 줄이 남아 그 계정의 줄(rowOf)이 못 되면 맨 뒤로 옮긴다 — [거는 중, 보류]를 「끝 예약됨」으로 닫았는데
+    // 장부가 보류로 읽으면 플랫폼에는 걸려 있고 칸은 비어 보여 한 번 더 걸린다
+    if (held(next) && rowOf(result.판, account) !== next) { result.판.splice(i, 1); result.판.push(next); }
+  } else result.판.push(next);
   if ((fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null) !== raw) throw new Error('게시결과가 그새 바뀌어 쓰기를 멈췄다 — 다시 돌린다');
   const tmp = `${file}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(result, null, 2) + '\n');
@@ -174,8 +184,8 @@ function truthOf(entry, account, here, shared, read = readJson) {
   for (const r of [entry.자리, shared, here]) {
     if (!r || seen.some((s) => samePath(s, r))) continue;
     seen.push(r);
-    const row = (read(path.join(r, entry.편, '게시', '게시결과.json'))?.판 || []).find((p) => p.계정 === account && held(p));
-    if (row) return { kind: 'held', state: row.상태, at: r };
+    const row = rowOf(read(path.join(r, entry.편, '게시', '게시결과.json'))?.판, account);
+    if (held(row)) return { kind: 'held', state: row.상태, at: r };
   }
   return { kind: entry.자리 && fs.existsSync(path.join(entry.자리, entry.편, '게시', '준비.json')) ? 'gone' : 'lost' };
 }
@@ -213,8 +223,8 @@ function registryHolds(root, { registry = null } = {}) {
 function firstPlateHeld(root, dir, name, account, reg, shared) {
   for (const d of fs.readdirSync(root, { withFileTypes: true })) {
     if (!d.isDirectory() || samePath(path.join(root, d.name), dir)) continue;
-    const r = (readJson(path.join(root, d.name, '게시', '게시결과.json'))?.판 || []).find((p) => p.계정 === account && held(p));
-    if (r) return { piece: d.name, state: r.상태 };
+    const r = rowOf(readJson(path.join(root, d.name, '게시', '게시결과.json'))?.판, account);
+    if (held(r)) return { piece: d.name, state: r.상태 };
   }
   for (const [k, e] of Object.entries(reg.칸)) {
     if (!k.startsWith(`${account}|`) || !e || typeof e !== 'object' || !e.편 || e.편 === name) continue;
@@ -237,10 +247,10 @@ function sameCell(root, dir, account, time, accounts) {
     const prep = readJson(path.join(root, d.name, '게시', '준비.json'));
     const result = readJson(path.join(root, d.name, '게시', '게시결과.json'));
     if (!prep || !result) continue;
-    const r = (result.판 || []).find((p) => p.계정 === account && held(p));
+    const r = rowOf(result.판, account);
     const plate = (prep.판 || []).find((p) => p.계정 === account);
     const t = plate?.시각 || r?.시각;
-    if (!r || !Number.isFinite(Date.parse(t || ''))) continue;
+    if (!held(r) || !Number.isFinite(Date.parse(t || ''))) continue;
     if (`${T.localDate(Date.parse(t), tz)}|${T.slotFor(t, a).time}` === want) return { piece: d.name, state: r.상태 };
   }
   return null;
@@ -315,7 +325,9 @@ function claim({ dir, account, method = null, root = path.dirname(dir), repo = R
         }
         // 작업 ID가 적힌 죽은 줄(작업실 길의 취소됨 · 놓침)은 그 작업의 기록이다 — 덮거나 물려받지 않고 새 줄을 더한다.
         // 물려받으면 작업실예약 「상태」가 그 작업 ID로 이 줄을 다시 찾아 「취소됨」으로 내린다.
-        if (cur && cur.작업) { addRow(); cur = null; }
+        // 거둔 줄(보류 · 지움)도 같다(11-11 P3-2) — 덮으면 「보류」 글 칸이 새 줄에 딸려 가고, 그 판을 풀면 상태 없는 줄이 남아
+        // 앞의 「예약됨」이 그 계정의 줄로 되살아난다.
+        if (cur && (cur.작업 || WITHDRAWN.has(cur.상태))) { addRow(); cur = null; }
         return { ...(cur || {}), 계정: account, 상태: CLAIM, 거는중: stamp, 시각: plate.시각, 지문: sha, ...(method ? { 방법: method } : {}) };
       });
     } finally {
@@ -442,5 +454,5 @@ function main(argv) {
   } catch (error) { console.error(error.message); return 1; }
 }
 
-module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, held, rowOf, registryHolds, CLAIM, TRIAL };
+module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, held, rowOf, registryHolds, CLAIM, TRIAL, WITHDRAWN };
 if (require.main === module) process.exitCode = main(process.argv.slice(2));

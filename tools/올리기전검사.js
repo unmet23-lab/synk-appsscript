@@ -758,7 +758,7 @@ function closedFindings(bundle, plates, { posted = null } = {}) {
     const state = posted ? posted.get(p.account) || null : null;
     if (state === '게시됨') continue;
     if (state && state !== '실패' && !['보류', '취소됨', '지움'].includes(state)) {
-      out.push({ level: LOOK, code: 'closed-cell-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 ${state}다. 플랫폼 예약을 거둘지 본다(공개 전 예약을 다른 편으로 바꿔 거는 것은 상시 승인 안)` });
+      out.push({ level: LOOK, code: 'closed-cell-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 「${state}」 상태다. 플랫폼 예약을 거둘지 본다(공개 전 예약을 다른 편으로 바꿔 거는 것은 상시 승인 안)` });
     } else {
       out.push({ level: FIX, code: 'closed-cell', where: p.account, message: `${why} — 닫힌 계정 · 칸의 판이다. ${p.raw?.돌림 ? 'node tools/돌림표.js --다시 --쓰기로 다시 짠다' : '판에서 뺀다'}(계정 · 칸을 여는 것은 조율 세션 몫)` });
     }
@@ -766,7 +766,10 @@ function closedFindings(bundle, plates, { posted = null } = {}) {
   return out;
 }
 
-function rotationFindings(bundle, plates, { ledger = null } = {}) {
+// results = 게시결과 줄(「판」 — 안 주면 그 편 게시결과.json을 읽는다): 이미 나간 판은 보지 않고, 이미 걸린 판(예약됨 · 거는 중 …)의 판본이
+// 걸린 뒤 무효가 됐으면 고칠 것이 아니라 확인할 것(rotation-version-booked)이다(11-11) — 고칠 것은 그 편의 다른 계정 판까지 막는데 걸린 판은
+// 다시 걸 수 없고(플랫폼 예약부터 내려야 한다), 알리는 일은 예약큐 경고 「걸린 돌림 판의 판본이 걸린 뒤 바뀜」이 맡는다.
+function rotationFindings(bundle, plates, { ledger = null, results = undefined } = {}) {
   const out = [];
   const gen = plates.filter((p) => p.raw?.돌림);
   if (!gen.length) return out;
@@ -777,7 +780,12 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
   const required = Array.isArray(cfg.판본검수) && cfg.판본검수.length ? cfg.판본검수 : ['뜻', '글자'];
   const states = new Map();
   let 뜻기록 = null; // 뜻 검사 지난 기록(편 폴더들의 준비.json) — 시험관 수 확인에 쓸 때만 읽는다
+  let rows = results;
+  if (rows === undefined) { try { rows = 묶음.readJson(path.join(bundle.dir, '게시', '게시결과.json')).판 || []; } catch { rows = []; } }
   for (const p of gen) {
+    const row = 장부.rowOf(rows || [], p.account);
+    if (row && row.상태 === '게시됨') continue; // 이미 나간 판 — 그 뒤에 판본을 고쳐도 이 판이 걸 일을 막지 않는다
+    const booked = 장부.held(row);
     const a = bundle.accounts[p.account];
     if (!a || !Array.isArray(a.dailyFormats)) { add(FIX, 'rotation-account', p.account, '돌림 계정이 아니다(sns-계정.json dailyFormats 없음) — 판을 빼고 node tools/돌림표.js로 다시 셈한다'); continue; }
     const at = Date.parse(p.time || '');
@@ -796,7 +804,12 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
     if (String(v.파일 || '').replace(/\\/g, '/') !== String(p.raw.파일 || '').replace(/\\/g, '/')) add(FIX, 'rotation-version-file', p.account, `판 파일(${p.raw.파일})이 판본 ${key}의 파일(${v.파일})과 다르다`);
     if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required, key, { accounts: bundle.accounts }));
     const st = states.get(key);
-    if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
+    if (!st.ready && booked) {
+      add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: ${st.why} — 그런데 이 판은 이미 「${row.상태}」 상태다(걸린 뒤 판본 검수가 무효가 됐다). 그대로 두면 검수 안 된 영상이 예약대로 공개된다 — 공개 전이면 그 플랫폼 예약을 내리고(node tools/게시장부.js 끝 … --상태 실패 --확인 …) node tools/돌림표.js --다시 --쓰기 뒤 고친 판으로 다시 건다`);
+    } else if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
+    else if (booked && row.지문 && st.sha && row.지문 !== st.sha) {
+      add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: 건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판) — 공개 전이면 그 플랫폼 예약을 내리고 새 판으로 다시 건다(node tools/게시장부.js 끝 … --상태 실패 --확인 … → node tools/돌림표.js --다시 --쓰기)`);
+    }
     // 뜻 검사에서 둘 이상이 같이 짚은 줄을 판정(원본 박자 · 한국어를 못 읽는 시험 전제)으로 내린 판본은 그 줄을 보이게 한다 — 판본에서 못 고치는
     // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).
     const verdicts = Array.isArray(v.검수?.뜻?.판정줄) ? v.검수.뜻.판정줄 : [];
@@ -809,6 +822,14 @@ function rotationFindings(bundle, plates, { ledger = null } = {}) {
       if (!뜻기록) { try { 뜻기록 = 뜻검사.지난기록(path.dirname(bundle.dir)); } catch { 뜻기록 = []; } }
       const need = 뜻검사.넷판단({ 언어: v.언어, 틀: exam.틀 || format, 편: 편이름, 기록: 뜻기록.filter((r) => !(r.편 === 편이름 && r.판본 === key)) });
       if (need.넷) add(LOOK, 'rotation-examiners', p.account, `판본 ${key}: 뜻 검사를 시험관 ${exam.시험관.length}명(${exam.시험관.join(' · ')})으로 통과했는데 지금 셈으로는 시험관 넷이다(${need.까닭.join(' · ')}) — node tools/뜻검사.js 판본 … ${key}로 넷에게 다시 받는다`);
+    }
+    // 현지어 대조 기록(11-11 P2-4) — 게시글 줄(제목 · 본문 · 고정 댓글)은 뜻 검사 시험지에 안 실려 현지어 대조만 본다. 판본검수에 「현지어」가 아직
+    // 없는 동안(기록을 채우는 중)에는 기록이 없거나 글이 바뀐 판본을 확인할 것으로 보인다 — 판본검수에 들면 versionState가 고칠 것으로 막는다.
+    // 대조에서 검수 필요로 나온 줄을 사람 판정으로 넘긴 판본은 그 줄이 보이게 한다(뜻 검사 판정줄과 같은 까닭).
+    if (st.ready) {
+      const local = 돌림표.localCheckState(bundle.dir, v);
+      if (!local.ok && !required.includes('현지어')) add(LOOK, 'rotation-local', p.account, `판본 ${key}: ${local.why} — 게시글 줄(제목 · 본문 · 고정 댓글)은 뜻 검사가 안 본다. node tools/현지어대조.js --판본 <편 폴더> --키 ${key} --기록 --뜻대조 "<직역을 원문과 견준 것>"`);
+      if (local.ok && local.판정줄.length) add(LOOK, 'rotation-verdict-local', p.account, `판본 ${key}: 현지어 대조에서 검수 필요로 나온 줄 ${local.판정줄.length}개를 사람 판정으로 넘겼다 — ${local.판정줄.map((z) => `${z.줄}(${String(z.까닭 || '').slice(0, 60)})`).join(' · ')}. 까닭이 맞는지 본다(준비.json 돌림.판본.${key}.검수.현지어.판정줄)`);
     }
     // 시험관의 요약 · 웃음을 사람이 바꾼 판본도 같다(11-11) — 「다름 · 안 웃김」을 「같음」으로 바꾸면 고칠 것이 통과가 된다. 까닭이 보이게 한다.
     const overrides = Array.isArray(v.검수?.뜻?.사람판정) ? v.검수.뜻.사람판정 : [];
@@ -978,7 +999,12 @@ async function run(dir, opts = {}) {
   const findings = [];
   const add = (level, code, where, message) => findings.push({ level, code, where, message });
   const posted = new Map();
-  try { for (const p of 묶음.readJson(path.join(bundle.dir, '게시', '게시결과.json')).판 || []) if (p.계정) posted.set(p.계정, p.상태); } catch { /* 아직 없다 */ }
+  // 한 계정에 줄이 여럿이면 게시 장부 · 예약큐 · 돌림표와 같은 읽기(rowOf — 11-11 Fable 5.2 다시 검수 P3-5). 마지막 줄만 보면
+  // [예약됨#a, (다른 작업의) 취소됨#b]가 안 건 판으로 읽혀 이미 건 판을 다시 재고, 닫힌 칸 · 칸 시각 검사가 건 판을 안 건 판으로 본다.
+  try {
+    const rows = 묶음.readJson(path.join(bundle.dir, '게시', '게시결과.json')).판 || [];
+    for (const account of new Set(rows.map((p) => p && p.계정).filter(Boolean))) posted.set(account, 장부.rowOf(rows, account)?.상태);
+  } catch { /* 아직 없다 */ }
 
   if (!prep.브랜드) add(FIX, 'brand', '준비.json', '「브랜드」가 없다');
   const slotOk = /^\d{4}-\d{2}-\d{2}$/.test(prep.슬롯 || '');

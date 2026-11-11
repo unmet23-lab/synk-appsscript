@@ -55,7 +55,8 @@ const { 공용작업본 } = require('./lib/공용작업본.js');
 const { uploadBitrateProblem, probeUploadProblemSync, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const { aestheticBlock } = require('./lib/미학관문.js');
 const T = require('./lib/계정시간.js');
-const { rowOf, TRIAL } = require('./게시장부.js');
+const { rowOf, TRIAL, WITHDRAWN } = require('./게시장부.js');
+const { bookedVersionProblem } = require('./돌림표.js');
 
 const REPO = path.resolve(__dirname, '..');
 const argValue = (name) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : null; };
@@ -176,7 +177,10 @@ function checkOf(prep, needsBooking) {
 function videosOf(prep, pieceDir) {
   if (pieceDir) {
     try {
-      return [...new Set(묶음판(묶음읽기(pieceDir)).filter((p) => p.video && p.video.exists && !p.raw?.돌림).map((p) => p.video.path))];
+      const list = [...new Set(묶음판(묶음읽기(pieceDir)).filter((p) => p.video && p.video.exists && !p.raw?.돌림).map((p) => p.video.path))];
+      // 빈 목록이면 못 읽은 것과 같이 본다(11-11 Fable 5.2 다시 검수 P3-6) — --폴더가 저장소 꼴이 아니면 묶음이 판 경로를 못 찾아 빈 목록이 되고,
+      // 그대로 쓰면 맹검한 영상이 「판 영상이 아니다」로 헛막힌다
+      if (list.length) return list;
     } catch { /* 아래 검사 기록 */ }
   }
   const repo = path.resolve(ROOT, '..', '..');
@@ -246,18 +250,23 @@ function serverState(job) {
 
 function collect(server, accounts, now) {
   const items = [];
+  // 판본이 돌림에 드는 조건(검수 갈래) — 걸린 판의 판본이 걸린 뒤 무효가 됐는지 볼 때 쓴다(tools/돌림표.js bookedVersionProblem)
+  const rotationCfg = (readJson(path.join(ROOT, 'sns-계정.json')) || {}).labRotation || {};
+  const required = Array.isArray(rotationCfg.판본검수) && rotationCfg.판본검수.length ? rotationCfg.판본검수 : ['뜻', '글자'];
   for (const dir of fs.readdirSync(ROOT, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
     const base = path.join(ROOT, dir.name, '게시');
     const prep = readJson(path.join(base, '준비.json'));
     if (!prep || !prep.브랜드) continue;
     const result = readJson(path.join(base, '게시결과.json')) || {};
-    // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다) 걸려 있는 줄, 없으면 마지막 줄 — 게시 장부 · 돌림표와 같은 읽기(rowOf).
-    // 마지막 줄만 보면 「예약됨 · (다른 작업의) 취소됨」 꼴이 빈 칸으로 읽혀 한 번 더 걸게 된다.
+    // 한 계정에 줄이 여럿이면(작업실 길은 다시 걸 때마다 줄을 더한다) 뒤에서부터 읽어 걸려 있는 줄이나 거둔 줄(보류 · 지움)을 먼저 만나면
+    // 그 줄, 없으면 마지막 줄 — 게시 장부 · 돌림표와 같은 읽기(rowOf). 마지막 줄만 보면 「예약됨 · (다른 작업의) 취소됨」 꼴이 빈 칸으로 읽혀
+    // 한 번 더 걸게 되고, 첫 걸린 줄만 보면 거둔 예약(예약됨 → 보류)이 채움으로 읽힌다.
     const done = new Map();
     for (const account of new Set((result.판 || []).map((p) => p && p.계정).filter(Boolean))) done.set(account, rowOf(result.판, account));
-    // 아직 걸 판(준비.json 「판」 번호) — 예약 · 게시 · 보류가 아니고 시각이 안 지난 판
-    const pending = new Set((prep.판 || []).flatMap((p, i) => (p && !DONE.has(done.get(p.계정)?.상태) && done.get(p.계정)?.상태 !== '보류'
+    // 아직 걸 판(준비.json 「판」 번호) — 예약 · 게시 · 거둔 판(보류 · 지움)이 아니고 시각이 안 지난 판.
+    // 「지움」(공개한 판을 지움)도 거둔 판이다(11-11 P3-3) — rowOf는 거둔 줄로 읽는데 여기서만 걸 판으로 세어 「슬롯이 지났는데 예약도 게시도 안 됨」이 났다
+    const pending = new Set((prep.판 || []).flatMap((p, i) => (p && !DONE.has(done.get(p.계정)?.상태) && !WITHDRAWN.has(done.get(p.계정)?.상태)
       && !(Date.parse(p.시각) < now) ? [i] : [])));
     const needsBooking = pending.size > 0;
     const check = checkOf(prep, needsBooking);
@@ -273,7 +282,8 @@ function collect(server, accounts, now) {
       const states = plates.map((p) => {
         const local = done.get(p.계정) || {};
         const at = Date.parse(p.시각 || local.시각 || '');
-        let state = local.상태;
+        // 거둔 판(보류 · 지움)은 이 표에서 모두 「보류」다 — 걸 판 · 빈 칸 · 지난 슬롯 셈이 한 가지로 본다
+        let state = WITHDRAWN.has(local.상태) ? '보류' : local.상태;
         let url = local.주소 || null;
         let unseen = false; // 서버 수집기가 그 채널을 보는데 슬롯 뒤 공개 게시물이 없다(업로드표 「!」)
         if (server && local.방법 === '작업실') {
@@ -291,6 +301,25 @@ function collect(server, accounts, now) {
           const ids = channelsFor(p.계정, accounts, server);
           const seen = ids.length ? server.posts.find((post) => ids.includes(post.channelId) && Math.abs(Date.parse(post.publishedAt) - at) <= WINDOW_MS) : null;
           if (seen) { state = '게시됨'; url = url || seen.url; } else if (ids.length) { unseen = true; warnings.push(`슬롯이 지났는데 나가지 않음: ${p.계정} · ${whenText(at, accounts[p.계정])} · ${dir.name}`); }
+        }
+        // 작업실 줄 뒤에 거둔 줄을 덧붙인 판(11-11 P3-4) — 거둔 줄에는 「방법: 작업실」이 없어 위 서버 대조를 건너뛴다. 그 계정의 앞선 작업실
+        // 줄의 작업이 서버에 살아 있으면(예약 · 승인 대기 · 게시됨) 장부는 거뒀는데 글은 나간다 — 서버 상태로 보이고 알린다.
+        if (server && WITHDRAWN.has(local.상태)) {
+          const before = (result.판 || []).filter((r) => r && r.계정 === p.계정 && r !== local && r.방법 === '작업실' && r.작업).pop();
+          const job = before ? server.jobs.find((j) => j.id === before.작업) : null;
+          const alive = job ? serverState(job) : null;
+          if (alive && ['승인 대기', '예약됨', '게시됨'].includes(alive)) {
+            warnings.push(`거둔 판(${local.상태})인데 작업실 서버에는 ${alive}: ${p.계정} · ${dir.name} — 작업실에서 그 작업을 취소하거나(node tools/작업실예약.js 상태), 걸어 둘 판이면 게시결과의 ${local.상태} 줄을 뺀다`);
+            state = alive;
+            url = job.publicationUrl || url;
+          }
+        }
+        // 걸린(공개 전) 돌림 판의 판본이 걸린 뒤 무효가 됐거나 다시 구워졌으면 알린다(11-11) — 걸 때는 통과였어도 그 뒤 판본 글 · 영상을 고쳤거나
+        // 다시 받은 검수에서 떨어지면, 그대로 둔 예약이 검수 안 된 영상을 공개한다. 다 걸린 편은 「검사 고칠 것」에 안 잡혀 이 줄이 유일한 알림이다.
+        if (p.돌림 && ['예약됨', '거는 중'].includes(local.상태) && Number.isFinite(at) && at > now) {
+          let stale = null;
+          try { stale = bookedVersionProblem(path.join(ROOT, dir.name), prep, p, local, { required, accounts }); } catch { /* 판본을 못 읽으면 넘긴다 */ }
+          if (stale) warnings.push(`걸린 돌림 판의 판본이 걸린 뒤 바뀜: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 공개 전에 그 플랫폼 예약을 내리고 「게시장부 끝 --상태 실패 --확인」 → 「돌림표 --다시 --쓰기」 → 고친 판으로 다시 건다`);
         }
         // 게시 장부 잠금(11-10, tools/게시장부.js) — 2시간 넘은 「거는 중」은 끊긴 회차다: 그 플랫폼 예약 목록부터 읽고 닫는다
         if (local.상태 === '거는 중' && now - Date.parse(local.거는중 || 0) > GRACE_MS) {
@@ -764,7 +793,8 @@ function todayAlert(report, now) {
 // 비축 모자람은 reserveAlert가 따로 하루 한 번 보낸다.
 // 10-30 유호님 「당분간은 텔레그램으로 검수승인(게시물관련)안해도 돼」 — 승인 대기 계정 · 검토 링크 만료 줄은 텔레그램에 넣지 않는다
 // (승인은 노트북 앱 세션에서 받는다). 두 줄은 예약 큐 출력 · report.warnings에는 그대로 남아 세션이 본다.
-const APPROVAL_WARNING = /^검토 링크가 /;
+// 「걸린 돌림 판의 판본이 걸린 뒤 바뀜」(11-11)도 텔레그램에 넣지 않는다 — 판본을 고치는 세션 · 14시 게시 회차가 예약 큐 출력에서 보고 바꿔 거는 일이다.
+const APPROVAL_WARNING = /^(검토 링크가 |걸린 돌림 판의 판본이 )/;
 function alert(report) {
   const warnings = report.warnings.filter((w) => !APPROVAL_WARNING.test(w));
   // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다. 까닭(맹검 · 검사 뒤 바뀜 · 판 더해짐)이 있으면 괄호에,

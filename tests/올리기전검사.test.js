@@ -266,7 +266,7 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
       'lab-telegram': { platform: 'telegram', dailyLine: 'LAB 몽골', countryCode: 'MN', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['20:00'], dailyFormats: ['퀴즈'], rotationSeed: true },
       'lab-instagram': { platform: 'instagram', dailyLine: 'LAB 몽골', countryCode: 'MN', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['12:00', '20:00'], dailyFormats: ['이야기', '퀴즈'], rotationSeed: true },
     };
-    const 판본 = { TH: { 언어: 'th', 파일: '게시/판본/TH/video.mp4', 글: '게시/판본/TH/글.json', 검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } } };
+    const 판본 = { TH: { 언어: 'th', 파일: '게시/판본/TH/video.mp4', 글: '게시/판본/TH/글.json', 검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) }, 현지어: { 결과: '통과', 지문: sha(text) } } } };
     const prep = { 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본 } };
     const bundle = { dir, repo: root, prep, accounts: known };
     const plate = (account, time, raw = {}) => ({ account, platform: known[account].platform, time, raw: { 계정: account, 파일: '게시/판본/TH/video.mp4', 시각: time, 돌림: true, ...raw } });
@@ -294,6 +294,34 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     assert.deepEqual(verdict.map((f) => f.level + ':' + f.code), ['확인할 것:rotation-verdict']);
     assert.ok(verdict[0].message.includes('rule(원본)'));
     delete 판본.TH.검수.뜻.판정줄;
+    // 현지어 대조 기록(11-11 P2-4): 판본검수에 「현지어」가 없는 동안에는 기록이 없거나 · 통과가 아니거나 · 글이 바뀐 판본을 확인할 것으로 보인다.
+    // 판본검수에 들면 versionState가 고칠 것으로 막는다(확인할 것과 겹치지 않는다). 사람 판정으로 넘긴 줄은 어느 쪽이든 보인다
+    const 현지어 = 판본.TH.검수.현지어;
+    const lv = (cfg = ['뜻', '글자']) => 검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')], { ledger: { labRotation: { 판본검수: cfg } } }).map((f) => `${f.level}:${f.code}`);
+    delete 판본.TH.검수.현지어;
+    assert.deepEqual(lv(), ['확인할 것:rotation-local']);
+    assert.deepEqual(lv(['뜻', '글자', '현지어']), ['고칠 것:rotation-version-check'], '판본검수에 들면 막는다');
+    판본.TH.검수.현지어 = { 결과: '검수 필요', 지문: sha(text) };
+    assert.deepEqual(lv(), ['확인할 것:rotation-local']);
+    판본.TH.검수.현지어 = { 결과: '통과', 지문: 'old' };
+    assert.deepEqual(lv(), ['확인할 것:rotation-local'], '대조 뒤 글이 바뀜');
+    assert.deepEqual(lv(['뜻', '글자', '현지어']), ['고칠 것:rotation-version-check']);
+    판본.TH.검수.현지어 = { ...현지어, 판정줄: [{ 줄: '게시글.youtube.본문.2', 까닭: '현지 구어에서 흔한 어순이라 그대로 둔다' }] };
+    assert.deepEqual(lv(), ['확인할 것:rotation-verdict-local']);
+    assert.deepEqual(lv(['뜻', '글자', '현지어']), ['확인할 것:rotation-verdict-local']);
+    판본.TH.검수.현지어 = 현지어;
+    // 이미 걸린 판(11-11): 걸린 뒤 판본 검수가 무효가 되면 고칠 것이 아니라 확인할 것(rotation-version-booked) — 고칠 것은 그 편의 다른 계정 판까지 막는데
+    // 걸린 판은 다시 걸 수 없다(플랫폼 예약부터 내린다 — 예약큐 경고가 알린다). 이미 나간 판은 안 보고, 거둔 예약은 안 걸린 판이다.
+    const booked = (rows) => 검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')], { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } }, results: rows }).map((f) => f.level + ':' + f.code);
+    const 뜻 = 판본.TH.검수.뜻;
+    판본.TH.검수.뜻 = { 결과: '고칠 것', 지문: sha(text) };
+    assert.deepEqual(booked([]), ['고칠 것:rotation-version-check'], '안 걸린 판은 고칠 것');
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), ['확인할 것:rotation-version-booked']);
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '게시됨', 지문: sha(video) }]), [], '이미 나간 판');
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨' }, { 계정: 'lab-th-youtube', 상태: '보류' }]), ['고칠 것:rotation-version-check'], '거둔 예약은 안 걸린 판');
+    판본.TH.검수.뜻 = 뜻;
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: 'old-sha' }]), ['확인할 것:rotation-version-booked'], '건 뒤 다시 구운 판');
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), []);
     assert.deepEqual(codes([plate('lab-th-tiktok', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-tiktok'], '프로필 빈 계정은 채운 뒤에만');
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00', { 파일: '게시/다른.mp4' })]), ['rotation-version-file:lab-th-youtube']);
     fs.writeFileSync(text, '{"줄":["고친 글"]}');

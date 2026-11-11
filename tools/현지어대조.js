@@ -22,6 +22,8 @@
 //          --맥락 "<어떤 글인지>" 학습 쇼츠가 아닌 글(앱 화면 글 등)의 채점 전제를 바꾼다. --문법만 역번역을 이미 따로 했을 때 직역을 건너뛴다(11-09 PULSE 영어 앱 글).
 //          --이전 <앞 판 파일> 바뀐 줄만 다시. --밖 <결과.json> 결과 자리(기본 <첫 파일>.대조.json).
 //          node tools/현지어대조.js --대조표 <결과.json> --역번역답 <Opus 답 파일>   ← 호출 없이 Opus 직역을 붙여 줄마다 나란히 보인다
+//          node tools/현지어대조.js --판본 <편 폴더> --키 <판본 키> [--기록 --뜻대조 "<본 것>"] [--판정 "<줄 id>=<까닭>"]… [--다시 <id,…> | --다시모두]
+//            ← 11-11 판본 기록(Fable 5.2 끝 판 검수 P2-4, 아래 「판본 기록」): 그 판본의 글.json을 통째로 대조해 준비.json 「돌림」.판본[키].검수.현지어에 적는다
 //          모델: 문법 = GEMINI_GRAMMAR_MODEL || gemini-4-carbon(high — 11-11 「제미나이 검수는 전부 카본」, agy에는 max가 없다), 역번역 = 모델정책 기본(flash high —
 //          판정이 아니라 곧이곧대로 옮기는 층이라 그대로, 몽골어대조.js 주석). 통로는 Google AI 구독(agy 로그인 계정)뿐이다.
 // 종료코드: 0 = 모든 줄 문법 「정상」 · 불편 없음 + 역번역 받음 · 2 = 검수 필요한 줄이 있음(어색·파손·불편·판정불능·역번역 실패) · 1 = 실행 오류
@@ -289,8 +291,157 @@ function 대조표(argv) {
   return j.줄.some((r) => r.판정 !== '거름망 통과') ? 2 : 0;
 }
 
+// ── 판본 기록(11-11 Fable 5.2 끝 판 검수 P2-4) ──
+// 게시글(제목 · 본문 · 고정 댓글)은 뜻 검사 시험지에 안 실린다(화면 줄만) — 현지어를 보는 것은 이 도구뿐인데 결과가 --밖 파일에만 남아 판본 지문과
+// 안 묶였다. 게시글만 고친 판본은 「뜻 검사 다시」가 고친 줄을 안 본 채 통과를 다시 적었다(11-11 「화날때」 멕시코판).
+// `--판본 <편 폴더> --키 <키>`는 그 판본의 글.json을 통째로 대조한다. 앞서 받은 결과(<키>.판본.대조.json · <키>.앞.대조.json)와 줄 id · 글이 같은
+// 줄은 그 결과를 잇고 바뀐 줄만 다시 묻는다. `--기록`이면 「돌림」.판본[키].검수.현지어 = { 결과, 지문: <글.json SHA-256>, … }을 쓴다 — 글을 고치면
+// 지문이 달라져 저절로 무효가 된다(tools/돌림표.js versionState — sns-계정.json labRotation.판본검수에 「현지어」가 있으면 돌림에 드는 조건).
+//   통과 = 모든 줄이 「거름망 통과」이거나 사람 판정(--판정 "<줄 id>=<까닭>")이 있고 · 호출 오류가 없고 · 역번역 직역을 원문과 견줬다는 메모
+//   (--뜻대조 "<어느 줄을 어떻게 봤는지>")가 있다. 뜻 대조는 이 도구가 하지 않는다(머리말 ②) — 메모 없이는 통과를 적지 않는다.
+//   사람 판정은 결과 파일의 그 줄에 남아 다음 실행이 잇고(글이 그대로일 때만), 기록의 「판정줄」로 보인다.
+const 저장소 = path.resolve(__dirname, '..');
+const 메모최소 = 10;
+
+function 판본결과자리(편폴더, 키) {
+  const 뿌리 = process.env.SYNK_LOCALCHECK_DIR
+    ? path.resolve(process.env.SYNK_LOCALCHECK_DIR)
+    : path.join(require('./lib/공용작업본.js').공용작업본(저장소), '.tmp', '현지어대조');
+  return path.join(뿌리, path.basename(path.resolve(편폴더)), `${키}.판본.대조.json`);
+}
+
+/** 앞서 받은 결과 파일들(앞의 것이 먼저) → Map(열쇠 → 줄 결과). 줄 id와 옮긴 글이 둘 다 같은 줄만 잇는다. */
+function 앞결과모으기(파일들, 줄들) {
+  const 앞 = new Map();
+  for (const f of 파일들) {
+    if (!f || !fs.existsSync(f)) continue;
+    let j;
+    try { j = JSON.parse(fs.readFileSync(f, 'utf8')); } catch { continue; }
+    for (const r of j.줄 || []) {
+      const k = `${r && r.id}\n${r && r.번역}`;
+      if (r && r.id !== undefined && r.판정 && !앞.has(k)) 앞.set(k, r);
+    }
+  }
+  const out = new Map();
+  for (const z of 줄들) { const r = 앞.get(`${z.id}\n${z.글}`); if (r) out.set(열쇠(z), r); }
+  return out;
+}
+
+/** 판본 기록의 판정(순수) — 통과가 아니면 무엇이 모자란지 */
+function 판본판정(줄결과, { 호출오류 = [], 뜻대조 = '' } = {}) {
+  const 문제 = [];
+  const 필요 = 줄결과.filter((r) => r.판정 !== '거름망 통과' && !r.사람판정);
+  if (필요.length) 문제.push(`검수 필요한 줄 ${필요.length} — ${필요.map((r) => `${r.id}(${(r.까닭 || []).join(' · ') || '까닭 없음'})`).join(', ')}: 글을 고치거나(판본글잇기 뽑기 → 다시 대조) --판정 "<줄 id>=<까닭>"`);
+  if (호출오류.length) 문제.push(`호출 오류 ${호출오류.length} — ${호출오류[0]}`);
+  if (String(뜻대조 || '').trim().length < 메모최소) 문제.push('역번역 직역을 원문과 견줬다는 메모가 없다 — --뜻대조 "<어느 줄을 어떻게 봤는지>"(뜻 대조는 이 도구가 하지 않는다)');
+  const 판정줄 = 줄결과.filter((r) => r.사람판정).map((r) => ({ 줄: r.id, 칸: r.칸 || null, 까닭: r.사람판정.까닭, 문법: r.문법 || null, 문제: r.문제 || '', 불편: r.불편 || '' }));
+  return { 결과: 문제.length ? '검수 필요' : '통과', 문제, 판정줄 };
+}
+
+function 호출준비() {
+  const 정책 = require('./모델정책.js');
+  const 기본 = 정책.제미나이설정();
+  const 역모델 = process.env.GEMINI_MODEL || 기본.model;
+  const 역사고 = 기본.thinking_level || 'high';
+  const 문법모델 = process.env.GEMINI_GRAMMAR_MODEL || 'gemini-4-carbon';
+  // 시험 이음매: SYNK_LOCALCHECK_CALLER = { 부르기 }를 내보내는 모듈(가짜 응답). 평소엔 Google AI 구독 통로.
+  const { 부르기 } = require(process.env.SYNK_LOCALCHECK_CALLER ? path.resolve(process.env.SYNK_LOCALCHECK_CALLER) : './lib/제미나이구독호출.js');
+  const 부름 = async (model, prompt, 옵션 = {}) => String(((await 부르기({ model, prompt, thinking: 옵션.thinking || 'high', schema: 옵션.schema || null })) || {}).text || '');
+  return { 부름, 문법모델, 역모델, 역사고 };
+}
+
+async function 판본검사(argv) {
+  const 편 = 인자(argv, '--판본');
+  const 키 = 인자(argv, '--키');
+  if (!편 || !키 || 편.startsWith('--') || 키.startsWith('--')) {
+    console.error('쓰는 법: node tools/현지어대조.js --판본 <편 폴더> --키 <판본 키> [--기록 --뜻대조 "<본 것>"] [--판정 "<줄 id>=<까닭>"]… [--다시 <id,…> | --다시모두]');
+    return 1;
+  }
+  const 판본글 = require('./lib/판본글.js');
+  const 프로필 = require('./lib/현지화프로필.js');
+  let 찾음, 자료, 지문;
+  try {
+    찾음 = 판본글.판본찾기(편, 키);
+    if (!찾음.글 || !fs.existsSync(찾음.글)) throw new Error(`판본 「${키}」의 글 파일이 없다(준비.json 「돌림」.판본.${키}.글)`);
+    const buf = fs.readFileSync(찾음.글);
+    지문 = crypto.createHash('sha256').update(buf).digest('hex');
+    자료 = JSON.parse(buf.toString('utf8').replace(/^﻿/, ''));
+    if (자료.꼴 !== '판본글/1') throw new Error(`${path.basename(찾음.글)}: 판본 글(꼴 「판본글/1」)이 아니다`);
+  } catch (e) { console.error(`실행 오류: ${e.message}`); return 1; }
+  const 줄들 = 판본글줄(자료, path.basename(path.resolve(편)));
+  if (!줄들.length) { console.error('실행 오류: 볼 줄이 없다'); return 1; }
+  const L = 프로필.언어(자료.언어 || 찾음.판본.언어);
+  if (!L) { console.error(`실행 오류: 판본 글의 언어(${자료.언어 || 찾음.판본.언어 || '없음'})를 모른다`); return 1; }
+  const 나라들 = [].concat(자료.나라 || []).length ? [].concat(자료.나라) : (L.나라 || []);
+  const 나라말 = 나라들.map((cc) => 프로필.나라(cc)?.이름 || cc).join(' · ') || '이 나라';
+  const 금기 = 프로필.금기요약(나라들);
+
+  // 사람 판정 인자 — 꼴부터 본다(호출 뒤에 틀린 것을 알면 호출이 아깝다)
+  const 사람 = new Map();
+  for (const raw of 인자들(argv, '--판정')) {
+    const i = String(raw).indexOf('=');
+    const id = i > 0 ? raw.slice(0, i).trim() : '';
+    const 까닭 = i > 0 ? raw.slice(i + 1).trim() : '';
+    if (!id || 까닭.length < 메모최소) { console.error(`실행 오류: --판정은 "<줄 id>=<까닭 ${메모최소}자 이상>" 꼴이다(${raw})`); return 1; }
+    if (!줄들.some((z) => String(z.id) === id)) { console.error(`실행 오류: --판정의 줄 「${id}」가 이 판본 글에 없다(${줄들.map((z) => z.id).join(' · ')})`); return 1; }
+    사람.set(id, 까닭);
+  }
+
+  const 밖 = path.resolve(인자(argv, '--밖') || 판본결과자리(편, 키));
+  fs.mkdirSync(path.dirname(밖), { recursive: true });
+  const 다시 = new Set((인자(argv, '--다시') || '').split(',').map((x) => x.trim()).filter(Boolean));
+  const 앞파일 = [밖, 밖.replace(/\.판본\.대조\.json$/i, '.앞.대조.json')];
+  const 이전결과 = argv.includes('--다시모두') ? new Map() : 앞결과모으기(앞파일, 줄들.filter((z) => !다시.has(String(z.id))));
+  const 호출 = 호출준비();
+  const 결과 = await 대조하기({ 줄들, 언어이름: L.이름, 부름: 호출.부름, 문법모델: 호출.문법모델, 역모델: 호출.역모델, 역사고: 호출.역사고, 나라말, 금기, 이전결과 });
+  결과.줄.forEach((r, i) => { r.편 = 줄들[i].편; r.판본 = 키; });
+  for (const [id, 까닭] of 사람) {
+    const r = 결과.줄.find((x) => String(x.id) === id);
+    if (r.판정 === '거름망 통과') { console.error(`실행 오류: 줄 「${id}」는 거름망을 통과했다 — 통과한 줄에는 판정을 달지 않는다`); return 1; }
+    r.사람판정 = { 까닭, 때: new Date().toISOString() };
+  }
+  const 뜻대조 = String(인자(argv, '--뜻대조') || '').trim();
+  const 판 = 판본판정(결과.줄, { 호출오류: 결과.호출오류, 뜻대조 });
+  const 기록 = {
+    도구: 'tools/현지어대조.js', 시각: new Date().toISOString(), 편: path.basename(path.resolve(편)), 판본: 키, 글지문: 지문, 언어: L.이름, 언어코드: L.코드, 나라: 나라들,
+    문법모델: 호출.문법모델, 역모델: 호출.역모델, 묶음수: 결과.묶음수, 다시본줄: 결과.다시본줄, 이은줄: 결과.이은줄, 호출오류: 결과.호출오류, 줄: 결과.줄,
+  };
+  fs.writeFileSync(밖, JSON.stringify(기록, null, 2) + '\n');
+  const 다시본 = 결과.줄.filter((r) => !r.이음);
+  const opus = 밖.replace(/\.json$/i, '') + '.역번역_질문.md';
+  if (다시본.length) fs.writeFileSync(opus, Opus질문(L.이름, 섞기(줄들.filter((z) => 다시본.some((r) => r.id === z.id)), 다시본.map((r) => `${r.id}|${r.번역}`).join('\n'))));
+  보이기(결과, {
+    언어이름: L.이름,
+    머리: `판본 ${기록.편} / ${키} · 언어: ${L.이름}(${L.코드}) · 나라 ${나라들.join(' · ') || '모름'} · 문법 채점 ${호출.문법모델}(high) · 직역 역번역 ${호출.역모델}(${호출.역사고})\n줄 ${줄들.length} · 다시 본 줄 ${결과.다시본줄} · 앞 결과에서 이은 줄 ${결과.이은줄} · 글 지문 ${지문.slice(0, 12)}`,
+  });
+  for (const r of 결과.줄.filter((x) => x.사람판정)) console.log(`  사람 판정 [${r.id}] ${r.사람판정.까닭}`);
+  console.log(`기록: ${밖}`);
+  if (다시본.length) console.log(`Opus 직역 역번역 질문(다시 본 ${다시본.length}줄): ${opus}`);
+  if (!argv.includes('--기록')) {
+    if (판.문제.length) console.log(`준비.json에 적으려면(--기록):\n${판.문제.map((m) => `  - ${m}`).join('\n')}`);
+    return 결과.줄.every((r) => r.판정 === '거름망 통과' || r.사람판정) && !결과.호출오류.length ? 0 : 2;
+  }
+  // 대조하는 사이 글이 바뀌었으면 적지 않는다 — 지문이 본 글과 다른 글에 붙는다
+  if (crypto.createHash('sha256').update(fs.readFileSync(찾음.글)).digest('hex') !== 지문) {
+    console.error('실행 오류: 대조하는 사이 글.json이 바뀌었다 — 적지 않았다(다시 돌린다)');
+    return 1;
+  }
+  const 상대 = path.relative(저장소, 밖).split(path.sep).join('/');
+  const 값 = {
+    결과: 판.결과, 지문, 시각: 기록.시각, 도구: 'tools/현지어대조.js', 줄: 결과.줄.length, 다시본줄: 결과.다시본줄, 이은줄: 결과.이은줄,
+    문법모델: 호출.문법모델, 역모델: 호출.역모델, 기록: 상대.startsWith('..') ? 밖 : 상대,
+    ...(판.결과 === '통과' ? { 뜻대조 } : { 문제: 판.문제 }),
+    ...(판.판정줄.length ? { 판정줄: 판.판정줄 } : {}),
+  };
+  const 준비 = 판본글.검수쓰기(편, 키, '현지어', 값);
+  console.log(`준비.json 「돌림」.판본[${키}].검수.현지어 = ${판.결과} (${path.relative(저장소, 준비).split(path.sep).join('/')})`);
+  for (const m of 판.문제) console.log(`  ✗ ${m}`);
+  return 판.결과 === '통과' ? 0 : 2;
+}
+
 async function main(argv = process.argv.slice(2)) {
   if (argv.includes('--대조표')) return 대조표(argv);
+  if (argv.includes('--판본')) return 판본검사(argv);
   const 파일들 = 인자들(argv, '--파일');
   const 언어인자 = 인자(argv, '--언어');
   if (!파일들.length) {
@@ -319,14 +470,7 @@ async function main(argv = process.argv.slice(2)) {
   for (const x of 읽은) for (const w of x.경고) console.error(`⚠ ${path.basename(x.파일)}: ${w}`);
   if (!줄들.length) { console.error('실행 오류: 볼 줄이 없다'); return 1; }
 
-  const 정책 = require('./모델정책.js');
-  const 기본 = 정책.제미나이설정();
-  const 역모델 = process.env.GEMINI_MODEL || 기본.model;
-  const 역사고 = 기본.thinking_level || 'high';
-  const 문법모델 = process.env.GEMINI_GRAMMAR_MODEL || 'gemini-4-carbon';
-  // 시험 이음매: SYNK_LOCALCHECK_CALLER = { 부르기 }를 내보내는 모듈(가짜 응답). 평소엔 Google AI 구독 통로.
-  const { 부르기 } = require(process.env.SYNK_LOCALCHECK_CALLER ? path.resolve(process.env.SYNK_LOCALCHECK_CALLER) : './lib/제미나이구독호출.js');
-  const 부름 = async (model, prompt, 옵션 = {}) => String(((await 부르기({ model, prompt, thinking: 옵션.thinking || 'high', schema: 옵션.schema || null })) || {}).text || '');
+  const { 부름, 문법모델, 역모델, 역사고 } = 호출준비();
   const 맥락 = 인자(argv, '--맥락') || null;
   const 문법만 = argv.includes('--문법만');
   const 이전 = 인자(argv, '--이전');
@@ -358,4 +502,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { 파일분해, 블록줄, 예전꼴줄, 판본글줄, 파일읽기, 섞기, 묶기, 문법질문, 역번역질문, Opus질문, JSON꺼내기, 줄판정, 대조하기, main };
+module.exports = { 파일분해, 블록줄, 예전꼴줄, 판본글줄, 파일읽기, 섞기, 묶기, 문법질문, 역번역질문, Opus질문, JSON꺼내기, 줄판정, 대조하기, 앞결과모으기, 판본판정, 판본결과자리, 판본검사, main };

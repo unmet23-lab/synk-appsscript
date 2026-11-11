@@ -859,3 +859,102 @@ test('P3-9 ⓑ · ⓒ 경고 날짜는 그 계정 현지 날짜(한국 날짜와
   const late = JSON.parse(돌림큐(base, ['--지금', '2026-11-12T23:30+09:00', '--json']).out);
   assert.deepEqual(late.todayGaps.map((g) => g.account), ['lab-youtube', 'lab-instagram', 'lab-mx-youtube 이야기']);
 });
+
+// ── 11-11 Fable 5.2 다시 검수(9074b14e7) P3-3 · P3-4 · P3-6 ──
+
+test('「지움」(공개한 판을 지움)도 거둔 판이다 — 걸 판 · 「슬롯이 지났는데 예약도 게시도 안 됨」에 들지 않고 보류 칸으로 보인다(P3-3)', () => {
+  const base = 매일판('지움', [
+    ['gone', 한편('LAB', '2026-10-20', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '게시됨', 시각: '2026-10-20T21:00:00+09:00' }, { 계정: 'lab-youtube', 상태: '지움' }] }],
+    ['missed', 한편('LAB', '2026-10-19', ['lab-youtube']), { 판: [] }],
+    ['gone2', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨' }, { 계정: 'lab-youtube', 상태: '지움' }] }],
+  ]);
+  const r = 매일큐(base, ['--오늘', '2026-10-21']);
+  assert.ok(r.warnings.some((w) => /슬롯이 지났는데 예약도 게시도 안 됨/.test(w) && w.includes('missed')), '대조 — 걸지 않고 지나간 판은 알린다');
+  assert.ok(!r.warnings.some((w) => w.includes('gone')), r.warnings.join('\n'));
+  assert.equal(r.accounts.find((x) => x.account === 'lab-youtube').byDay['2026-10-22'][0].state, '보류', '칸에서는 보류와 같이 새 편 칸');
+});
+
+test('작업실 줄 뒤에 보류를 덧붙였는데 그 작업이 서버에 살아 있으면 서버 상태로 보이고 알린다 — 죽은 작업이면 보류 그대로(P3-4)', () => {
+  const base = 매일판('거둠서버', [
+    ['alive', 한편('LAB', '2026-10-22', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-a' }, { 계정: 'lab-youtube', 상태: '보류', 보류: '거둠' }] }],
+    ['dead', 한편('LAB', '2026-10-23', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-b' }, { 계정: 'lab-youtube', 상태: '보류', 보류: '거둠' }] }],
+    ['nojob', 한편('LAB', '2026-10-24', ['lab-youtube']), { 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 방법: '작업실', 작업: 'job-x' }, { 계정: 'lab-youtube', 상태: '보류', 보류: '거둠' }] }],
+  ]);
+  const cache = path.join(base, '서버.json');
+  fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-10-21T02:00:00Z', channels: [{ id: 'x', platform: 'youtube' }], posts: [],
+    jobs: [{ id: 'job-a', channelId: 'x', status: 'scheduled', scheduledAt: '2026-10-22T12:00:00Z' }, { id: 'job-b', channelId: 'x', status: 'cancelled', scheduledAt: '2026-10-23T12:00:00Z' }] }));
+  const r = 매일큐(base, ['--오늘', '2026-10-21', '--서버캐시', cache]);
+  const row = r.accounts.find((x) => x.account === 'lab-youtube');
+  assert.equal(row.byDay['2026-10-22'][0].state, '예약됨', '장부는 거뒀는데 서버에는 걸려 있다 — 글이 나간다');
+  assert.ok(r.warnings.some((w) => /거둔 판\(보류\)인데 작업실 서버에는 예약됨/.test(w) && w.includes('alive')), r.warnings.join('\n'));
+  assert.equal(row.byDay['2026-10-23'][0].state, '보류');
+  assert.equal(row.byDay['2026-10-24'][0].state, '보류');
+  assert.ok(!r.warnings.some((w) => w.includes('dead') || w.includes('nojob')), r.warnings.join('\n'));
+  // 서버를 안 읽으면(캐시 없음) 보류 그대로
+  assert.equal(매일큐(base, ['--오늘', '2026-10-21']).accounts.find((x) => x.account === 'lab-youtube').byDay['2026-10-22'][0].state, '보류');
+});
+
+test('⑱ --폴더가 저장소 꼴이 아니어서(옆에 tools 폴더 없음) 묶음이 판 영상을 못 찾으면 검사 기록의 영상으로 본다 — 맹검한 영상을 헛막지 않는다(P3-6)', (t) => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-꼴아님-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const base = path.join(repo, 'docs', '마케팅'); // tools 폴더를 두지 않는다 — 게시묶음.repoOf가 도구의 저장소로 떨어진다
+  const 원본 = (name, 맹검영상) => {
+    const dir = path.join(base, name, '게시');
+    fs.mkdirSync(path.join(dir, 'seed'), { recursive: true });
+    const seed = path.join(dir, 'seed', 'video.mp4');
+    fs.writeFileSync(seed, 'seed');
+    const st = fs.statSync(seed);
+    const 경로 = `docs/마케팅/${name}/게시/seed/video.mp4`;
+    const prep = { 브랜드: 'LAB', 슬롯: '2026-11-12', 성격: '상시', 제목: name,
+      판: [{ 계정: 'lab-instagram', 시각: '2026-11-12T21:00+09:00', 파일: 경로 }], // 판 경로가 저장소 기준(docs/마케팅/…)이다
+      검사: { 결과: '확인할 것', 파일: [{ 경로, 바이트: st.size, 수정: new Date(st.mtimeMs).toISOString(), sha256: '1'.repeat(64), 오디오비트레이트: [{ channels: 2, actualBps: 333421 }] }] } };
+    편(name, prep, null, base, { 만든때: new Date(Date.now() + 5000).toISOString(), 영상: [맹검영상], 낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] });
+  };
+  원본('LAB_씨앗맹검', { 이름: 'video.mp4', 파일: '게시/seed/video.mp4' });
+  원본('LAB_다른영상', { 이름: 'other.mp4', 파일: '게시/other.mp4' }); // 견줌 — 이쪽은 막혀야 ⑱이 실제로 돈 것이다
+  const r = 돌리기(base, '--오늘', '2026-11-11', '--일수', '7', '--json');
+  assert.equal(r.status, 0, r.stderr);
+  const fix = Object.fromEntries(JSON.parse(r.stdout).fix.map((x) => [x.folder, `${x.check}:${x.checkWhy}`]));
+  assert.deepEqual(fix, { LAB_다른영상: '고칠 것:맹검 뒤 영상 바뀜' });
+});
+
+// ── 걸린 판의 판본이 걸린 뒤 무효가 됨(11-11 — 시험관 넷으로 다시 받은 뜻 검사에서 걸린 판 셋이 떨어졌는데 아무 도구도 알리지 않았다) ──
+
+test('걸린(공개 전) 돌림 판의 판본이 걸린 뒤 검수 무효가 되거나 다시 구워지면 경고로 알린다 — 나간 판 · 그대로인 판은 조용하고, 텔레그램에는 넣지 않는다', (t) => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-걸린판-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const base = path.join(repo, 'docs', '마케팅');
+  const dir = path.join(base, 'LAB_걸린', '게시');
+  fs.mkdirSync(path.join(dir, '판본', 'MX'), { recursive: true });
+  fs.mkdirSync(path.join(repo, 'tools'), { recursive: true });
+  const video = path.join(dir, '판본', 'MX', 'video.mp4'), text = path.join(dir, '판본', 'MX', '글.json');
+  fs.writeFileSync(video, 'mx-1');
+  fs.writeFileSync(text, '{"줄":[]}');
+  const sha = (f) => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'lab-mx-youtube': 나라계정('America/Mexico_City', { countryCode: 'MX' }) } }));
+  const booked = sha(video);
+  const 통과 = () => ({ 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } });
+  const 쓰기 = (검수, 상태 = '예약됨') => 편('LAB_걸린', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '걸린 판',
+    돌림: { 형식: '이야기', 판본: { MX: { 언어: 'es', 파일: '게시/판본/MX/video.mp4', 글: '게시/판본/MX/글.json', 검수 } } },
+    판: [{ 계정: 'lab-mx-youtube', 시각: '2026-11-12T13:00:00-06:00', 파일: '판본/MX/video.mp4', 돌림: true, 지문: booked }] },
+  { 판: [{ 계정: 'lab-mx-youtube', 상태, 시각: '2026-11-12T13:00:00-06:00', 지문: booked }] }, base);
+  const 큐 = () => 돌림큐(base, ['--오늘', '2026-11-11', '--일수', '6', '--알림']);
+  // 가) 검수가 그대로 맞으면 조용하다
+  쓰기(통과());
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+  // 나) 건 뒤 다시 받은 뜻 검사에서 떨어졌다 — 다 걸린 편이라 「검사 고칠 것」에는 안 잡히고 이 경고가 알린다
+  쓰기({ ...통과(), 뜻: { 결과: '고칠 것', 지문: sha(text) } });
+  const b = 큐();
+  assert.match(b.out, /! 걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube · LAB_걸린 · 공개 2026-11-12\(현지 날짜, 한국 11-13 04:00\) — 판본 MX: 뜻 검수 고칠 것/);
+  assert.doesNotMatch(b.sent, /걸린 돌림 판/, '텔레그램에는 넣지 않는다(세션 · 14시 회차가 예약 큐에서 본다)');
+  // 다) 이미 나간 판은 알리지 않는다
+  쓰기({ ...통과(), 뜻: { 결과: '고칠 것', 지문: sha(text) } }, '게시됨');
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+  // 라) 건 뒤 판본 영상을 다시 굽고 검수까지 다시 받았다 — 걸린 영상은 옛 판이다
+  fs.writeFileSync(video, 'mx-2');
+  쓰기(통과());
+  assert.match(큐().out, /걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube .* 판본 MX: 건 뒤에 판본 영상을 다시 구웠다/);
+  // 마) 글자 검수를 다시 안 받았으면 까닭이 그것이다
+  쓰기({ 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: booked } });
+  assert.match(큐().out, /판본 MX: 글자 검수 뒤 영상이 바뀜/);
+});

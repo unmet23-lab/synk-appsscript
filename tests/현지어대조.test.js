@@ -146,3 +146,125 @@ module.exports.부르기 = async ({ prompt }) => {
   assert.equal(bad.status, 1);
   fs.rmSync(방, { recursive: true, force: true });
 });
+
+// ── 판본 기록(11-11 Fable 5.2 끝 판 검수 P2-4) ──
+
+test('앞 결과 모으기 — 줄 id와 옮긴 글이 둘 다 같은 줄만 잇고, 앞의 파일이 먼저다. 판정 없는 줄 · 깨진 파일은 넘긴다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '현지어앞-'));
+  const a = path.join(방, 'a.json'), b = path.join(방, 'b.json'), bad = path.join(방, 'bad.json');
+  fs.writeFileSync(a, JSON.stringify({ 줄: [{ id: 's1', 번역: '가', 판정: '거름망 통과', 문법: '정상' }, { id: 's2', 번역: '나(새 글)', 판정: '검수 필요' }, { id: 's4', 번역: '라' }] }));
+  fs.writeFileSync(b, JSON.stringify({ 줄: [{ id: 's1', 번역: '가', 판정: '검수 필요' }, { id: 's2', 번역: '나', 판정: '거름망 통과' }, { id: 's3', 번역: '다(옛 글)', 판정: '거름망 통과' }] }));
+  fs.writeFileSync(bad, '{깨짐');
+  const 줄들 = [{ id: 's1', 편: '편', 글: '가' }, { id: 's2', 편: '편', 글: '나' }, { id: 's3', 편: '편', 글: '다' }, { id: 's4', 편: '편', 글: '라' }];
+  const m = C.앞결과모으기([bad, a, path.join(방, '없음.json'), b], 줄들);
+  assert.deepEqual([...m.keys()], ['편#s1', '편#s2']);
+  assert.equal(m.get('편#s1').판정, '거름망 통과', '앞의 파일(a)이 먼저');
+  assert.equal(m.get('편#s2').번역, '나', '글이 같은 b의 줄 — a의 줄은 글이 달라 안 잇는다');
+  fs.rmSync(방, { recursive: true, force: true });
+});
+
+test('판본 판정 — 검수 필요한 줄은 사람 판정이 있어야 하고, 호출 오류가 없고, 뜻 대조 메모가 있어야 통과', () => {
+  const 통과줄 = { id: 'a', 판정: '거름망 통과' };
+  const 필요줄 = { id: 'b', 칸: '게시글', 판정: '검수 필요', 까닭: ['문법 어색'], 문법: '어색', 문제: '어순' };
+  const 메모 = '게시글 넉 줄의 직역을 원문과 줄마다 견줌';
+  assert.equal(C.판본판정([통과줄], { 뜻대조: 메모 }).결과, '통과');
+  const 메모없음 = C.판본판정([통과줄], { 뜻대조: '봄' });
+  assert.equal(메모없음.결과, '검수 필요');
+  assert.match(메모없음.문제[0], /뜻대조/);
+  const 필요 = C.판본판정([통과줄, 필요줄], { 뜻대조: 메모 });
+  assert.equal(필요.결과, '검수 필요');
+  assert.match(필요.문제[0], /검수 필요한 줄 1 — b\(문법 어색\)/);
+  const 판정함 = C.판본판정([통과줄, { ...필요줄, 사람판정: { 까닭: '현지 구어에서 흔한 어순이라 그대로 둔다' } }], { 뜻대조: 메모 });
+  assert.equal(판정함.결과, '통과');
+  assert.deepEqual(판정함.판정줄, [{ 줄: 'b', 칸: '게시글', 까닭: '현지 구어에서 흔한 어순이라 그대로 둔다', 문법: '어색', 문제: '어순', 불편: '' }]);
+  assert.match(C.판본판정([통과줄], { 뜻대조: 메모, 호출오류: ['문법 채점 실패: 한도'] }).문제[0], /호출 오류 1/);
+});
+
+test('명령줄 --판본 — 글.json을 통째로 대조해 검수.현지어에 글 지문과 함께 적는다. 글이 같은 줄은 앞 결과를 잇고, 메모 · 판정 없이는 통과를 적지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '현지어판본-'));
+  const 편 = path.join(방, 'LAB_시험편');
+  const 글 = path.join(편, '게시', '판본', 'TH', '글.json');
+  fs.mkdirSync(path.dirname(글), { recursive: true });
+  const 판본글 = (셋째) => JSON.stringify({
+    꼴: '판본글/1', 편: 'LAB_시험편', 판본: 'TH', 언어: 'th', 나라: ['TH'], 틀: '이야기',
+    줄: [
+      { id: 's1', 칸: '머리', 글: 'อย่าไป', 원문: '가지 마' },
+      { id: 'k1', 칸: '한국어', 글: '가지 마' },
+      { id: 'p3', 칸: '게시글', 글: 셋째, 원문: '누구에게 말할래?' },
+      { id: 'p4', 칸: '게시글', 글: 'พิมพ์ในคอมเมนต์', 원문: '댓글에 적어 줘' },
+    ],
+  }, null, 2) + '\n';
+  fs.writeFileSync(글, 판본글('จะพูดกับใคร'));
+  const 준비 = path.join(편, '게시', '준비.json');
+  fs.writeFileSync(준비, JSON.stringify({ 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본: { TH: { 언어: 'th', 파일: '게시/판본/TH/video.mp4', 글: '게시/판본/TH/글.json', 검수: { 뜻: { 결과: '통과', 지문: 'x' } } } } } }, null, 2) + '\n');
+  const 부른 = path.join(방, '부른.log');
+  const 가짜파일 = path.join(방, '가짜호출.js');
+  // 문법 채점: id가 3으로 끝나면 어색. 부른 줄 id를 파일에 남긴다.
+  fs.writeFileSync(가짜파일, [
+    "'use strict';",
+    "const fs = require('fs');",
+    'module.exports.부르기 = async ({ prompt }) => {',
+    '  const 줄 = [...String(prompt).matchAll(/^\\[([^\\]]+)\\] /gm)].map((m) => m[1]);',
+    '  const 문법 = /문법·맞춤법/.test(prompt);',
+    `  fs.appendFileSync(${JSON.stringify(부른)}, (문법 ? '문법 ' : '역 ') + 줄.join(',') + '\\n');`,
+    "  if (문법) return { text: JSON.stringify({ 줄: 줄.map((id) => ({ id, 판정: id.endsWith('3') ? '어색' : '정상', ...(id.endsWith('3') ? { 문제: '어순' } : {}) })) }) };",
+    "  return { text: JSON.stringify({ 줄: 줄.map((id) => ({ id, 직역: '직역 ' + id })) }) };",
+    '};',
+    '',
+  ].join('\n'));
+  const env = { ...process.env, SYNK_LOCALCHECK_CALLER: 가짜파일, SYNK_LOCALCHECK_DIR: path.join(방, '결과') };
+  const 도구 = path.join(__dirname, '..', 'tools', '현지어대조.js');
+  const run = (...args) => spawnSync(process.execPath, [도구, '--판본', 편, '--키', 'TH', ...args], { env, encoding: 'utf8' });
+  const 현지어 = () => JSON.parse(fs.readFileSync(준비, 'utf8')).돌림.판본.TH.검수.현지어;
+  const 지문 = () => require('node:crypto').createHash('sha256').update(fs.readFileSync(글)).digest('hex');
+
+  // ① 기록 없이 — 한국어 줄은 안 보내고, 검수 필요한 줄이 있어 2. 준비.json은 그대로
+  const 첫 = run();
+  assert.equal(첫.status, 2, 첫.stdout + 첫.stderr);
+  assert.match(첫.stdout, /줄 3 · 다시 본 줄 3 · 앞 결과에서 이은 줄 0/);
+  assert.match(첫.stdout, /준비\.json에 적으려면/);
+  assert.equal(현지어(), undefined);
+  assert.ok(!/k1/.test(fs.readFileSync(부른, 'utf8')), '한국어 줄은 대조하지 않는다');
+  // ② --기록인데 판정 · 메모가 없으면 「검수 필요」로 적고 2. 앞 결과를 이어 다시 부르지 않는다
+  fs.writeFileSync(부른, '');
+  const 둘 = run('--기록');
+  assert.equal(둘.status, 2, 둘.stdout + 둘.stderr);
+  assert.equal(fs.readFileSync(부른, 'utf8'), '', '글이 같은 줄은 다시 묻지 않는다');
+  assert.equal(현지어().결과, '검수 필요');
+  assert.equal(현지어().문제.length, 2);
+  assert.equal(JSON.parse(fs.readFileSync(준비, 'utf8')).돌림.판본.TH.검수.뜻.결과, '통과', '다른 검수 칸은 그대로');
+  // ③ 판정 꼴 — 없는 줄 · 짧은 까닭 · 통과한 줄에 단 판정은 실행 오류(적지 않는다)
+  assert.equal(run('--기록', '--판정', '없는줄=까닭을 충분히 길게 적는다').status, 1);
+  assert.equal(run('--기록', '--판정', 'p3=짧음').status, 1);
+  assert.equal(run('--기록', '--판정', 's1=통과한 줄에 판정을 달아 본다').status, 1);
+  assert.equal(현지어().결과, '검수 필요');
+  // ④ 판정 + 뜻 대조 메모 → 통과, 지문 = 글.json
+  const 셋 = run('--기록', '--판정', 'p3=태국어 구어에서 흔한 어순이라 그대로 둔다', '--뜻대조', '게시글 두 줄과 머리 줄의 직역을 원문과 견줌');
+  assert.equal(셋.status, 0, 셋.stdout + 셋.stderr);
+  assert.equal(현지어().결과, '통과');
+  assert.equal(현지어().지문, 지문());
+  assert.equal(현지어().줄, 3);
+  assert.deepEqual(현지어().판정줄.map((z) => z.줄), ['p3']);
+  assert.match(현지어().뜻대조, /원문과 견줌/);
+  // ⑤ 사람 판정은 결과 파일에 남아 다음 실행이 잇는다(글이 그대로일 때) — 판정 인자 없이도 통과
+  const 넷 = run('--기록', '--뜻대조', '바뀐 줄 없음 — 앞 판정을 이음(직역 대조는 앞에서 함)');
+  assert.equal(넷.status, 0, 넷.stdout + 넷.stderr);
+  assert.deepEqual(현지어().판정줄.map((z) => z.줄), ['p3']);
+  // ⑥ 그 줄의 글을 고치면 그 줄만 다시 묻고(판정도 사라진다) 지문이 바뀐다
+  const 옛지문 = 현지어().지문;
+  fs.writeFileSync(글, 판본글('จะบอกใครดี'));
+  fs.writeFileSync(부른, '');
+  const 다섯 = run('--기록', '--뜻대조', '고친 게시글 줄의 직역을 원문과 견줌');
+  assert.equal(다섯.status, 2, '고친 줄은 다시 어색(가짜) — 옛 판정은 잇지 않는다');
+  assert.deepEqual(fs.readFileSync(부른, 'utf8').trim().split('\n'), ['문법 LAB_시험편#p3', '역 LAB_시험편#p3']);
+  assert.equal(현지어().결과, '검수 필요');
+  assert.notEqual(현지어().지문, 옛지문);
+  // ⑦ --다시모두는 앞 결과를 안 잇는다
+  fs.writeFileSync(부른, '');
+  run('--다시모두');
+  assert.match(fs.readFileSync(부른, 'utf8'), /문법 .*s1/);
+  // 없는 판본 키 · 인자 빠짐
+  assert.equal(spawnSync(process.execPath, [도구, '--판본', 편, '--키', 'XX'], { env, encoding: 'utf8' }).status, 1);
+  assert.equal(spawnSync(process.execPath, [도구, '--판본', 편], { env, encoding: 'utf8' }).status, 1);
+  fs.rmSync(방, { recursive: true, force: true });
+});

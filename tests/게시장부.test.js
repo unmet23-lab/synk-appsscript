@@ -457,3 +457,126 @@ test('회차 사본에서 걸기: 판 영상은 공용 작업본에서 찾아 �
   fs.writeFileSync(path.join(m.main, m.rel, '게시', '판본', 'TH', 'video.mp4'), '다시 구움');
   assert.match(장부.claim({ dir, account: A, root, repo: m.wt, accounts: m.accounts, now: NOW }).why, /지문과 다르다/);
 });
+
+// ── 걸린 줄 뒤에 거둔 줄(보류)이 붙은 판(11-11 Fable 5.2 다시 검수 P2-1 · P3-1 · P3-2) ──
+// 11-09 「전부 삭제하고 다시 제작」 때 예약됨 뒤에 보류를 손으로 덧붙였다. rowOf는 그 계정을 「보류」로 읽는데 장부 안쪽 세 곳(같은 칸 · 첫 판 ·
+// 표의 참)은 첫 걸린 줄을 읽어, 예약큐는 빈 칸으로 보이고 걸기는 막았다.
+function 줄마당() {
+  const m = 마당();
+  m.accounts['lab-jp-youtube'] = { brand: 'LAB', platform: 'youtube', timeZone: 'Asia/Tokyo', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'], postRouteVerified: '첫판', publicProfileComplete: true };
+  fs.writeFileSync(path.join(m.root, 'sns-계정.json'), JSON.stringify({ accounts: m.accounts }));
+  const 판바꿈 = (dir, account, time) => {
+    const f = path.join(dir, '게시', '준비.json');
+    const prep = JSON.parse(fs.readFileSync(f, 'utf8'));
+    prep.판[0] = { ...prep.판[0], 계정: account, 시각: time };
+    fs.writeFileSync(f, JSON.stringify(prep));
+  };
+  const 줄쓰기 = (dir, list) => fs.writeFileSync(path.join(dir, '게시', '게시결과.json'), JSON.stringify({ 판: list }, null, 2) + '\n');
+  const 상태들 = (dir) => 결과(dir).판.map((r) => r.상태 || '(상태 없음)');
+  return { ...m, 판바꿈, 줄쓰기, 상태들, reg: path.join(m.root, '.게시장부', '칸.json') };
+}
+
+test('거둔 예약([예약됨, 보류])은 그 칸 · 첫 판 한도 · 칸 장부를 잡고 있지 않다 — 같은 칸의 다른 편 · 첫 판 시험 계정의 다른 판이 걸린다', (t) => {
+  const m = 줄마당();
+  t.after(m.cleanup);
+  const A = 'lab-th-youtube', J = 'lab-jp-youtube';
+  const now = Date.parse('2026-11-15T14:00:00+09:00');
+  // 가) 같은 칸
+  const x = m.편('LAB_X', '2026-11-20T13:00:00+07:00');
+  const y = m.편('LAB_Y', '2026-11-20T13:00:00+07:00', 'other');
+  m.줄쓰기(x, [{ 계정: A, 상태: '예약됨', 시각: '2026-11-20T13:00:00+07:00' }]);
+  assert.match(장부.claim({ dir: y, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg }).why, /같은 칸에 이미 LAB_X\(예약됨\)/, '대조 — 걸려 있으면 막는다');
+  m.줄쓰기(x, [{ 계정: A, 상태: '예약됨', 시각: '2026-11-20T13:00:00+07:00' }, { 계정: A, 상태: '보류', 보류: '예약을 거뒀다' }]);
+  assert.equal(장부.rowOf(결과(x).판, A).상태, '보류');
+  assert.equal(장부.sameCell(m.root, y, A, '2026-11-20T13:00:00+07:00', m.accounts), null);
+  const c = 장부.claim({ dir: y, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg });
+  assert.equal(c.ok, true, c.why);
+  // 나) 첫 판 한도 — 첫 판이 거둔 예약이면 다른 판으로 다시 시험할 수 있다
+  const p = m.편('LAB_P', '2026-11-20T13:00:00+09:00');
+  const q = m.편('LAB_Q', '2026-11-21T13:00:00+09:00', 'q');
+  m.판바꿈(p, J, '2026-11-20T13:00:00+09:00');
+  m.판바꿈(q, J, '2026-11-21T13:00:00+09:00');
+  m.줄쓰기(p, [{ 계정: J, 상태: '예약됨', 시각: '2026-11-20T13:00:00+09:00' }]);
+  assert.match(장부.claim({ dir: q, account: J, root: m.root, accounts: m.accounts, now, registry: m.reg }).why, /첫 판 확인 전 계정/, '대조 — 첫 판이 걸려 있으면 막는다');
+  m.줄쓰기(p, [{ 계정: J, 상태: '예약됨', 시각: '2026-11-20T13:00:00+09:00' }, { 계정: J, 상태: '보류', 보류: '예약을 거뒀다' }]);
+  const first = 장부.claim({ dir: q, account: J, root: m.root, accounts: m.accounts, now, registry: m.reg });
+  assert.equal(first.ok, true, first.why);
+});
+
+test('도구로 건 판에 보류를 덧붙이면 칸 장부의 그 줄은 풀린 줄이다(표에 걸린 판 · 다른 작업본의 막음에서 빠진다)', (t) => {
+  const m = 줄마당();
+  t.after(m.cleanup);
+  const A = 'lab-th-youtube';
+  const now = Date.parse('2026-11-15T14:00:00+09:00');
+  const x = m.편('LAB_X', '2026-11-20T13:00:00+07:00');
+  assert.equal(장부.claim({ dir: x, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
+  assert.equal(장부.finish({ dir: x, account: A, state: '예약됨', seen: '목록에서 읽음', root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
+  assert.deepEqual(장부.registryHolds(m.root, { registry: m.reg }).map((h) => [h.piece, h.state]), [['LAB_X', '예약됨']]);
+  m.줄쓰기(x, [...결과(x).판, { 계정: A, 상태: '보류', 보류: '예약을 거뒀다' }]);
+  assert.deepEqual(장부.registryHolds(m.root, { registry: m.reg }), []);
+});
+
+test('[거는 중, 보류] — 끊긴 걸기는 뒤에 보류가 붙어 있어도 끝 · 풀기로 닫힌다. 예약됨으로 닫으면 그 줄이 그 계정의 줄이 된다', (t) => {
+  const A = 'lab-th-youtube';
+  const now = Date.parse('2026-11-15T14:00:00+09:00');
+  const 준비 = () => {
+    const m = 줄마당();
+    t.after(m.cleanup);
+    const x = m.편('LAB_X', '2026-11-20T13:00:00+07:00');
+    assert.equal(장부.claim({ dir: x, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
+    m.줄쓰기(x, [...결과(x).판, { 계정: A, 상태: '보류', 보류: '거둠' }]);
+    assert.deepEqual(m.상태들(x), ['거는 중', '보류']);
+    assert.equal(장부.pendingClaims(m.root, { registry: m.reg }).length, 1, '끊긴 걸기는 걸던것에 남는다 — 플랫폼 예약 목록부터 읽는다');
+    return { m, x };
+  };
+  // 다시 걸기는 막힌다 — 끊긴 「거는 중」부터 닫는다(보류 줄을 덮어 두 번째 「거는 중」을 만들지 않는다)
+  const a = 준비();
+  const again = 장부.claim({ dir: a.x, account: A, root: a.m.root, accounts: a.m.accounts, now: now + 60000, registry: a.m.reg });
+  assert.equal(again.ok, false);
+  assert.match(again.why, /거는 중/);
+  assert.deepEqual(a.m.상태들(a.x), ['거는 중', '보류']);
+  // 풀기 — 플랫폼 예약 목록에 없었다
+  const rl = 장부.release({ dir: a.x, account: A, why: '목록에 없음', root: a.m.root, now, registry: a.m.reg });
+  assert.equal(rl.ok, true, rl.why);
+  assert.equal(장부.rowOf(결과(a.x).판, A).상태, '보류');
+  assert.equal(장부.pendingClaims(a.m.root, { registry: a.m.reg }).length, 0);
+  // 끝 예약됨 — 플랫폼에 걸려 있었다: 그 줄이 맨 뒤로 가서 그 계정의 줄이 된다(보류로 읽히면 칸이 비어 보여 한 번 더 걸린다)
+  const b = 준비();
+  const fin = 장부.finish({ dir: b.x, account: A, state: '예약됨', seen: '스튜디오 예약 목록에서 읽음', root: b.m.root, accounts: b.m.accounts, now, registry: b.m.reg });
+  assert.equal(fin.ok, true, fin.why);
+  assert.deepEqual(b.m.상태들(b.x), ['보류', '예약됨']);
+  assert.equal(장부.rowOf(결과(b.x).판, A).상태, '예약됨');
+  assert.equal(장부.pendingClaims(b.m.root, { registry: b.m.reg }).length, 0);
+  assert.deepEqual(장부.registryHolds(b.m.root, { registry: b.m.reg }).map((h) => h.state), ['예약됨']);
+  // 끝 실패 — 그 줄만 실패로 닫히고 그 계정의 줄은 보류 그대로
+  const c = 준비();
+  assert.equal(장부.finish({ dir: c.x, account: A, state: '실패', root: c.m.root, accounts: c.m.accounts, now, registry: c.m.reg }).ok, true);
+  assert.deepEqual(c.m.상태들(c.x), ['실패', '보류']);
+});
+
+test('[예약됨, 보류]인 판을 다시 걸면 거둔 줄을 덮지 않고 새 줄을 더한다 — 풀어도 거둔 예약이 되살아나지 않는다', (t) => {
+  const m = 줄마당();
+  t.after(m.cleanup);
+  const A = 'lab-th-youtube';
+  const now = Date.parse('2026-11-15T14:00:00+09:00');
+  const x = m.편('LAB_X', '2026-11-20T13:00:00+07:00');
+  m.줄쓰기(x, [{ 계정: A, 상태: '예약됨', 시각: '2026-11-20T13:00:00+07:00', 게시물ID: 'old' }, { 계정: A, 상태: '보류', 보류: '예약을 거뒀다' }]);
+  const c = 장부.claim({ dir: x, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg });
+  assert.equal(c.ok, true, c.why);
+  assert.deepEqual(m.상태들(x), ['예약됨', '보류', '거는 중']);
+  assert.equal(c.entry.보류, undefined, '거둔 줄의 글 칸이 새 줄에 딸려 가지 않는다');
+  assert.equal(결과(x).판[1].보류, '예약을 거뒀다', '거둔 줄은 기록으로 남는다');
+  const rl = 장부.release({ dir: x, account: A, why: '걸다 실패', root: m.root, now, registry: m.reg });
+  assert.equal(rl.ok, true, rl.why);
+  const after = 결과(x).판;
+  assert.equal(장부.held(장부.rowOf(after, A)), false, '앞의 예약됨이 그 계정의 줄로 되살아나지 않는다');
+  assert.equal(장부.rowOf(after, A).상태, '보류');
+  // 다시 걸어 예약됨으로 닫으면 새 줄이 그 계정의 줄
+  assert.equal(장부.claim({ dir: x, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
+  assert.equal(장부.finish({ dir: x, account: A, state: '예약됨', id: 'new', root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
+  assert.equal(장부.rowOf(결과(x).판, A).게시물ID, 'new');
+  // 「지움」도 거둔 줄이다
+  m.줄쓰기(x, [{ 계정: A, 상태: '게시됨', 시각: '2026-11-20T13:00:00+07:00' }, { 계정: A, 상태: '지움' }]);
+  assert.equal(장부.claim({ dir: x, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
+  assert.deepEqual(m.상태들(x), ['게시됨', '지움', '거는 중']);
+});

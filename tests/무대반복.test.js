@@ -99,6 +99,29 @@ test('편 읽기 — 뿌리가 둘이면(회차 사본 + 공용 작업본) 판�
   } finally { for (const r of [사본, 공용]) fs.rmSync(r, { recursive: true, force: true }); }
 });
 
+test('편 읽기 — 한 계정에 줄이 여럿이면 게시 장부와 같은 읽기(rowOf): 거둔 예약 · 같은 작업의 취소는 지난 편에서 빠지고, 다른 작업의 취소 줄은 걸린 판을 덮지 않는다(11-11 P1-2 · P3-7)', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '무대반복-줄-'));
+  fs.mkdirSync(path.join(root, 'tools'), { recursive: true });
+  const 편쓰기 = (name, time, 결과) => {
+    const dir = path.join(root, 'docs', '마케팅', name, '게시');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'v.mp4'), 'v');
+    fs.writeFileSync(path.join(dir, '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: time.slice(0, 10), 판: [{ 계정: 'lab-instagram', 파일: 'v.mp4', 시각: time }] }));
+    fs.writeFileSync(path.join(dir, '게시결과.json'), JSON.stringify({ 판: 결과.map((r) => ({ 계정: 'lab-instagram', ...r })) }));
+  };
+  try {
+    편쓰기('LAB_거둠', '2026-11-01T21:00:00+09:00', [{ 상태: '예약됨', 작업: 'a' }, { 상태: '보류', 보류: '예약을 거뒀다' }]);
+    편쓰기('LAB_걸림', '2026-11-02T21:00:00+09:00', [{ 상태: '예약됨', 작업: 'a', 방법: '작업실' }, { 상태: '취소됨', 작업: 'b' }]);
+    편쓰기('LAB_취소', '2026-11-03T21:00:00+09:00', [{ 상태: '예약됨', 작업: 'a', 방법: '작업실' }, { 상태: '취소됨', 작업: 'a' }]);
+    const list = 반복.episodes([root]);
+    const 상태 = (name) => list.find((e) => e.name === name).판[0].state;
+    assert.equal(상태('LAB_거둠'), '보류', '첫 걸린 줄(예약됨)이 아니라 거둔 줄');
+    assert.equal(상태('LAB_걸림'), '예약됨', '마지막 줄(다른 작업의 취소됨)이 아니라 걸린 줄');
+    assert.equal(상태('LAB_취소'), '취소됨', '같은 작업의 취소는 그 예약이 취소된 것');
+    assert.deepEqual(반복.previousOf(list, 'lab-instagram', Date.parse('2026-11-05T21:00:00+09:00')).map((p) => p.name), ['LAB_걸림']);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
 test('나레이션 마지막 줄 — place.json 판마다 가장 늦게 놓인 줄의 show(없으면 text)', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), '무대반복-'));
   try {

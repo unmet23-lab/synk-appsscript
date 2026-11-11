@@ -998,3 +998,33 @@ test('돌림표 명령 — 노래 원본의 연재 · 이미받음을 읽고, �
   assert.notEqual(bad2.status, 0);
   assert.match(bad2.stderr, /연재/);
 });
+
+test('판본검수 「현지어」(11-11 P2-4) — 현지어 대조 기록은 「글」 파일 지문으로 묶인다: 없거나 · 통과가 아니거나 · 글이 바뀌면 못 든다', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '돌림표-현지어-'));
+  try {
+    fs.mkdirSync(path.join(dir, '게시', '판본', 'TH'), { recursive: true });
+    const video = path.join(dir, '게시', '판본', 'TH', 'video.mp4');
+    const text = path.join(dir, '게시', '판본', 'TH', '글.json');
+    fs.writeFileSync(video, 'v');
+    fs.writeFileSync(text, '{"줄":[]}');
+    const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+    const v = { 파일: '게시/판본/TH/video.mp4', 글: '게시/판본/TH/글.json', 검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } };
+    const { versionState, localCheckState } = require('../tools/돌림표.js');
+    const need = ['뜻', '글자', '현지어'];
+    assert.equal(versionState(dir, v, ['뜻', '글자']).ready, true, '판본검수에 없으면 조건이 아니다');
+    assert.match(versionState(dir, v, need).why, /현지어 검수 전/);
+    assert.deepEqual(localCheckState(dir, v), { ok: false, why: '현지어 대조 기록이 없다' });
+    v.검수.현지어 = { 결과: '검수 필요', 지문: sha(text) };
+    assert.match(versionState(dir, v, need).why, /현지어 검수 검수 필요/);
+    assert.equal(localCheckState(dir, v).ok, false);
+    v.검수.현지어 = { 결과: '통과', 지문: sha(video) }; // 영상 지문으로 적힌 기록은 안 맞는다 — 글 지문으로 본다
+    assert.match(versionState(dir, v, need).why, /현지어 검수 뒤 글이 바뀜/);
+    v.검수.현지어 = { 결과: '통과', 지문: sha(text), 판정줄: [{ 줄: 'p1', 까닭: '현지 구어에서 흔한 어순' }] };
+    assert.equal(versionState(dir, v, need).ready, true);
+    assert.equal(localCheckState(dir, v).ok, true);
+    assert.equal(localCheckState(dir, v).판정줄.length, 1);
+    fs.writeFileSync(text, '{"줄":["고침"]}');
+    assert.match(versionState(dir, v, ['글자', '현지어']).why, /현지어 검수 뒤 글이 바뀜/);
+    assert.equal(localCheckState(dir, v).why, '현지어 대조 뒤 글이 바뀌었다');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
