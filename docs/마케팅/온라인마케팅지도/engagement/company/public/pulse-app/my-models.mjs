@@ -39,6 +39,8 @@ function gate(st){
     <p class="sx-small">${esc(off?t('지금은 SYNK ID 로그인을 쓸 수 없어요. 잠시 뒤 다시 열어 주세요.'):t('브랜드 회원만 볼 수 있어요. 이미 회원이면 위에서 로그인해 주세요. 아직이면 맞춤 인물이 있는 의뢰의 고객 방에서 「내 모델로 모아 두기」를 눌러 주세요 — 담당자가 확인하고 브랜드에 연결해 드려요.'))}</p></section>`;
 }
 function stateLine(card){
+  // 삭제 요청은 쓰기를 막지 않는다(서버가 쓸 수 있는지를 따로 정하고, 담당자가 지우기 시작하면 그때 막힌다) — 쓸 수 있는 동안은 「쓸 수 있어요」와 요청 줄을 따로 두지 않고 상태 한 줄로.
+  if(card.deletionRequested&&card.usable)return `<p class="sx-small sx-mm-state"><i class="sx-led is-wait" aria-hidden="true"></i>${esc(t('삭제 요청됨 — 담당자가 지우기 전까지는 새 광고에 쓸 수 있어요'))}</p>`;
   const ok=card.usable,text=ok?t('새 광고에 쓸 수 있어요'):t(MODEL_REASON[card.reason]||MODEL_REASON[card.status]||MODEL_REASON.status);
   return `<p class="sx-small sx-mm-state"><i class="sx-led ${ok?'is-ok':'is-wait'}" aria-hidden="true"></i>${esc(text)}</p>${card.deletionRequested?`<p class="sx-small sx-mm-state">${esc(t('삭제 요청을 받았어요. 담당자가 확인하고 있어요.'))}</p>`:''}`;
 }

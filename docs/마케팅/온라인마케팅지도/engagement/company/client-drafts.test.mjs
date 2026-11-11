@@ -59,6 +59,23 @@ test('archiving stops editable draft access and disabled users cannot restore ev
   const f=await fixture(t);f.save();const row=f.row();f.store.put('clientProjects',row.id,{...row,stage:'archived'});assert.deepEqual(f.list().drafts.map(row=>row.kind),['progress']);status(()=>f.save('project',{internalNotes:'blocked'}),403);f.store.put('users',f.users.owner.id,{...f.users.owner,active:false});status(()=>f.list(),401);
 });
 
+test('a project saved as archived can still clear the saver’s own stored draft, but nothing new is written there',async t=>{
+  // 만료 · 삭제 운영 시험 P3: 진행 상태를 「보관」으로 저장한 뒤 화면이 그 양식의 초안을 지우면 403이라 「초안을 쓸 권한이 없어요」가 뜨고 프로젝트가 목록에서 빠졌다.
+  const f=await fixture(t);f.save('project',{internalNotes:'ARCHIVE-THEN-CLEAR'});const row=f.row();f.store.put('clientProjects',row.id,{...row,stage:'archived'});
+  status(()=>f.save('project',{internalNotes:'blocked'},1),403);
+  // 다른 창이 보관 전에 초안을 한 번 더 고쳐 판이 올랐어도(여기서는 판 2) 낡은 판 1로 지운다 — 보관된 프로젝트엔 새로 쓸 길이 없어 막을 충돌이 없고, 409로 본문을 돌려주지 않는다(카본 A1).
+  const r0=f.row();f.store.put('clientProjects',r0.id,{...r0,stage:'received'});f.save('project',{internalNotes:'SECOND-WINDOW-TEXT'},1);f.store.put('clientProjects',r0.id,{...r0,stage:'archived'});
+  const cleared=f.service.mutate(f.users.owner,f.id,'project',{action:'delete',expectedRevision:1});assert.equal(cleared.draft.status,'deleted');assert.equal(cleared.draft.revision,3);assert.equal(cleared.draft.fields,null);assert.ok(!JSON.stringify(cleared).includes('SECOND-WINDOW-TEXT'));
+  // 이미 지운 줄에 다시 온 지우기(다른 창 · 다시 보낸 요청)는 새로 쓰지 않고 그대로 돌려준다 — 403으로 화면이 프로젝트를 잃지 않게(카본 A2).
+  const again=f.service.mutate(f.users.owner,f.id,'project',{action:'delete',expectedRevision:1});assert.equal(again.draft.status,'deleted');assert.equal(again.draft.revision,3);
+  for(const expectedRevision of [0,2,99])assert.equal(f.service.mutate(f.users.owner,f.id,'project',{action:'delete',expectedRevision}).draft.revision,3);
+  const stored=f.store.get('clientDrafts',f.users.owner.id+'|'+f.id+'|project');assert.equal(stored.status,'deleted');assert.equal(stored.ciphertext,undefined);
+  status(()=>f.service.mutate(f.users.owner,f.id,'message',{action:'delete',expectedRevision:0}),403);assert.equal(f.store.get('clientDrafts',f.users.owner.id+'|'+f.id+'|message'),null);
+  status(()=>f.service.mutate(f.users.viewer,f.id,'project',{action:'delete',expectedRevision:0}),403);
+  status(()=>f.service.mutate(f.users.other,f.id,'project',{action:'delete',expectedRevision:1}),404);
+  assert.equal(JSON.stringify(f.row()),JSON.stringify({...row,stage:'archived'}));
+});
+
 test('whitelist excludes files, nested payloads, user IDs, stage and assignment controls while preserving literal text',async t=>{
   const f=await fixture(t);for(const [kind,fields]of [['message',{text:{file:'data:abc'}}],['message',{text:'ok',file:'data:abc'}],['project',{ownerId:f.users.other.id}],['project',{stage:'delivered'}],['project',{reviewerId:f.users.other.id}],['project',{internalNotes:'x'.repeat(3001)}],['message',{visibility:'public'}],['follow-up',{disposition:'finish'}],['follow-up',{nextContactDate:'2026-02-30'}],['progress',{text:'x'.repeat(30001)}]])status(()=>f.save(kind,fields),400);
   status(()=>f.service.mutate(f.users.owner,f.id,'message',{action:'save',expectedRevision:0,sourceRevision:1,fields:{text:'ok'},userId:f.users.other.id}),400);

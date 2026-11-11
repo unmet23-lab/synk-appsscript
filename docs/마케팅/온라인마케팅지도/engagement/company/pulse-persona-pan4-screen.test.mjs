@@ -116,7 +116,10 @@ test('내 모델 화면: 쓸 수 없는 모델은 회색 카드 · 까닭 한 �
   assert.ok(member.includes('data-mm-do="request"')&&member.includes('브랜드 회원'));
   assert.ok(!/data-mm-do="(consent|ask)"/.test(member),'회원은 보관 · 멈추기 · 삭제 요청이 없다');
   const asked=myModelsView({view:'list',data:data('admin',[card({deletionRequested:true})])});
-  assert.ok(asked.includes('삭제 요청을 받았어요')&&!asked.includes('data-ask="delete"'));
+  // 삭제 요청은 쓰기를 막지 않는다(서버 personaUsability) — 쓸 수 있는 동안은 상태 한 줄 「삭제 요청됨 — …」과 의뢰 단추, 「쓸 수 있어요」 줄은 없다(만료 · 삭제 운영 시험 P3).
+  assert.ok(asked.includes('삭제 요청됨 — 담당자가 지우기 전까지는 새 광고에 쓸 수 있어요')&&!asked.includes('</i>새 광고에 쓸 수 있어요</p>')&&asked.includes('data-mm-do="request"')&&!asked.includes('data-ask="delete"'));
+  const askedOff=myModelsView({view:'list',data:data('admin',[card({deletionRequested:true,usable:false,reason:'paused'})])});
+  assert.ok(askedOff.includes('삭제 요청을 받았어요. 담당자가 확인하고 있어요.')&&!askedOff.includes('삭제 요청됨 —')&&!askedOff.includes('data-mm-do="request"'));
   for(const kind of Object.keys(MODEL_ASK))assert.ok(myModelsView({view:'ask',pick:{ws:{id:'w1',name:'가 브랜드'},card:card(),kind}}).includes('data-mm-do="ask-go"'));
   assert.ok(myModelsView({view:'login',session:{authenticated:false,loginAvailable:false}}).includes('disabled'),'로그인을 쓸 수 없으면 단추를 막는다');
 });
@@ -234,7 +237,19 @@ test('보관 규칙 화면 최종 검수 F1 ~ F3(11-11): 의뢰서 인물 안내
 test('묶음: 손님 오프라인 목록에 내 모델 모듈(직원 브랜드 데스크는 빼고), 서버가 두 모듈을 내준다',()=>{
   const sw=read('sw.js');
   assert.match(sw,/FILES\.push\(BASE\+'my-models\.mjs'\);/);assert.doesNotMatch(sw,/'brand-desk-view\.mjs'/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v46-progress-feed-20261112';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v47-expiry-p3-20261112';/);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
   assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs','boot-locale\.js'\]\)files\['\/pulse-app\/'\+file\]/);
+});
+
+test('직원 브랜드 데스크 할 일: 삭제 요청인데 남은 참조가 없으면 「정리한 뒤」가 아니라 「정리 끝」 글(만료 · 삭제 운영 시험 P3)',async()=>{
+  const desk=readFileSync(new URL('./public/pulse-app/brand-desk-view.mjs',import.meta.url),'utf8');
+  const todo=desk.match(/^const TODO=\{[^\n]*\};$/m)?.[0],why=desk.match(/^const todoWhy=[^\n]*;$/m)?.[0];assert.ok(todo&&why);
+  const {TODO,todoWhy}=(await import('node:vm')).runInNewContext(`${todo}\n${why}\n({TODO,todoWhy})`);
+  const line=item=>TODO[todoWhy(item)]||item.why;
+  assert.equal(line({why:'deletion_requested',projects:[{id:'p1',title:'탄산수'}],hidden:0}),'손님이 삭제를 요청했어요 — 아래 참조를 정리한 뒤 관리자가 지워요');
+  assert.equal(line({why:'deletion_requested',projects:[],hidden:1}),'손님이 삭제를 요청했어요 — 아래 참조를 정리한 뒤 관리자가 지워요','볼 수 없는 프로젝트가 남아도 정리 전');
+  assert.equal(line({why:'deletion_requested',projects:[],hidden:0}),'손님이 삭제를 요청했어요 — 참조 정리가 끝났어요. 관리자가 지우면 돼요');
+  assert.equal(line({why:'retention_due',projects:[],hidden:0}),TODO.retention_due,'다른 할 일은 그대로');
+  assert.match(desk,/\$\{esc\(TODO\[todoWhy\(item\)\]\|\|item\.why\)\}<\/b>/);
 });

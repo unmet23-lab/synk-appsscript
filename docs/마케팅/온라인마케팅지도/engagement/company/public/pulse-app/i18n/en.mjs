@@ -1727,6 +1727,7 @@ export default {
   "새 판을 준비하고 있어요":"A new version is being prepared",
   "지금은 쓸 수 없어요":"Not available right now",
   "삭제 요청을 받았어요. 담당자가 확인하고 있어요.":"Deletion requested. Your producer is reviewing it.",
+  "삭제 요청됨 — 담당자가 지우기 전까지는 새 광고에 쓸 수 있어요":"Deletion requested — you can still use this model in new ads until your producer deletes it",
   "다시 쓰기 기한":"Reusable until",
   "마지막 사용":"Last used",
   "지우는 날":"Deletion date",

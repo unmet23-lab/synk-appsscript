@@ -7,8 +7,10 @@ const fail=(message,status=400,code)=>Object.assign(new Error(message),{status,.
 export function createClientDraftsService({store,clientProjects,clock=()=>new Date().toISOString()}){
   function current(user){const live=typeof user?.id==='string'&&store.get('users',user.id);if(!live?.active||!['admin','manager','member','viewer'].includes(live.role))throw fail('로그인이 풀렸어요. 다시 로그인해 주세요.',401);return live;}
   function kind(value){if(!TYPES.includes(value))throw fail('초안 종류가 이상해요.');return value;}
+  // 초안 보관(save)은 고칠 수 있는 프로젝트에서만. 자기 초안 지우기(delete)는 읽을 수 있는 프로젝트면 된다 — 지우는 것은 이 사람 열쇠의 암호문 한 줄뿐이고, 저장한 뒤 「보관」이 된 프로젝트에서도
+  // 저장한 양식의 초안을 치워야 한다(전에는 403으로 막혀 화면이 프로젝트를 잃은 것으로 읽고 「초안을 쓸 권한이 없어요」를 띄웠다 — 만료 · 삭제 운영 시험 P3).
   const editable=(user,project)=>project.stage!=='archived'&&user.role!=='viewer'&&(user.role==='admin'||project.ownerId===user.id||user.role==='manager'&&user.teamId&&user.teamId===project.teamId);
-  function authorize(user,projectId,type){user=current(user);const project=clientProjects.project(user,projectId);if(type!=='progress'&&!editable(user,project))throw fail('이 프로젝트에서 초안을 쓸 권한이 없어요.',403);return {user,project};}
+  function authorize(user,projectId,type,action){user=current(user);const project=clientProjects.project(user,projectId);if(type!=='progress'&&action!=='delete'&&!editable(user,project))throw fail('이 프로젝트에서 초안을 쓸 권한이 없어요.',403);return {user,project};}
   const key=(user,projectId,type)=>user.id+'|'+projectId+'|'+type;
   function validateFields(type,value){
     if(!object(value)||!Object.keys(value).length||Object.keys(value).some(field=>!Object.hasOwn(FIELDS[type],field)))throw fail('보관할 내용이 이상해요.');
@@ -37,13 +39,18 @@ export function createClientDraftsService({store,clientProjects,clock=()=>new Da
   }
   function list(user,projectId){user=current(user);const project=clientProjects.project(user,projectId);return {projectId,projectRevision:project.revision,drafts:TYPES.filter(type=>type==='progress'||editable(user,project)).map(type=>envelope(user,project,rowFor(user,projectId,type)))};}
   function mutate(user,projectId,type,input){
-    kind(type);const initial=authorize(user,projectId,type);user=initial.user;
+    kind(type);const initial=authorize(user,projectId,type,input?.action);user=initial.user;
     if(!object(input)||!['save','delete'].includes(input.action)||Object.keys(input).some(field=>!(input.action==='save'?['action','expectedRevision','sourceRevision','fields']:['action','expectedRevision']).includes(field))||!Number.isSafeInteger(input.expectedRevision)||input.expectedRevision<0)throw fail('요청 내용이 비어 있어요.');
     const fields=input.action==='save'?validateFields(type,input.fields):null;
     if(input.action==='save'&&(!Number.isSafeInteger(input.sourceRevision)||input.sourceRevision<1||input.sourceRevision>initial.project.revision))throw fail('초안의 프로젝트 버전이 이상해요.');
     return store.transaction(()=>{
-      const scope=authorize(user,projectId,type),row=rowFor(scope.user,projectId,type);
-      if(row.revision!==input.expectedRevision)throw Object.assign(fail('다른 창에서 초안을 바꿨어요. 지금 글과 보관한 초안을 비교한 뒤 골라 주세요.',409,'CLIENT_DRAFT_CONFLICT'),{current:envelope(scope.user,scope.project,row)});
+      const scope=authorize(user,projectId,type,input.action),row=rowFor(scope.user,projectId,type);
+      // 고칠 수 없는 프로젝트(보관 · 권한을 잃음)에서는 지우기만 받는다 — 빈 자리는 막고(새 줄을 만들지 않음), 이미 지운 줄은 쓰지 않고 그대로 돌려주며(다른 창 · 다시 보낸 요청),
+      // 보관한 초안은 판 번호와 상관없이 지운다. 여기서는 새로 쓸 수 없으니 막을 충돌이 없고, 409로 초안 본문(current)을 풀어 돌려주는 길도 열지 않는다(목록은 이 초안을 복원하지 않는다).
+      const locked=input.action==='delete'&&type!=='progress'&&!editable(scope.user,scope.project);
+      if(locked&&row.revision===0)throw fail('이 프로젝트에서 초안을 쓸 권한이 없어요.',403);
+      if(locked&&row.status==='deleted')return {projectId,projectRevision:scope.project.revision,draft:envelope(scope.user,scope.project,row)};
+      if(!locked&&row.revision!==input.expectedRevision)throw Object.assign(fail('다른 창에서 초안을 바꿨어요. 지금 글과 보관한 초안을 비교한 뒤 골라 주세요.',409,'CLIENT_DRAFT_CONFLICT'),{current:envelope(scope.user,scope.project,row)});
       if(row.revision>=Number.MAX_SAFE_INTEGER)throw fail('초안을 새로 보관하지 못했어요.',503);
       const next={schema:1,ownerId:scope.user.id,projectId,kind:type,revision:row.revision+1,status:input.action==='save'?'active':'deleted',updatedAt:clock()};
       if(fields)next.ciphertext=store.encrypt({ownerId:scope.user.id,projectId,kind:type,sourceRevision:input.sourceRevision,fields});
