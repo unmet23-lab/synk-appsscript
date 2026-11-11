@@ -692,6 +692,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 그 폴더를 쓰는 일이면 `가볍게 --되살림 <폴더> --실행`, 무관한 qa · 문서면 `--시험건너뜀 "<까닭>"`. 큰 폴더를 되살리면 뒤 검사가 더 느려진다.
 - 다시 확인: `CI=1 node --test tests/계정컬렉션.test.js 2>&1 | grep -E "Cannot find|^ℹ fail"`
 
+### `바로올리기 --실행`을 `timeout 900`으로 감싸면 PC가 바쁠 때 올리지 못하고 처음부터 되풀이한다 — 관련 시험의 15분 한도(902초)보다 래퍼가 먼저 끊는다 (2026-11-11 Claude)
+- 증상: PULSE 고객 앱(`app.mjs` 등)을 올리는 `timeout 900 node tools/바로올리기.js --모두 … --실행`을 「[올림]이 나올 때까지 세 번」 반복문으로 돌렸는데 20분이 넘도록 커밋이 안 올라갔다. 출력 파일은 비어 있었고, 프로세스 시작 시각이 15분마다 새로였다.
+- 원인: 다른 세션들의 올리기 · 시험이 겹쳐 PC가 바쁘면 관련 시험이 15분을 채운다. 도구는 그때 「시간 넘김 — 막지 않음」으로 넘어가 올리는데(902초), 래퍼의 900초가 바로 그 앞에서 프로세스를 죽인다. 반복문은 시험을 처음부터 다시 돌린다. 출력은 끝나야 파일에 쓰여 진행이 안 보인다.
+- 고침: 래퍼 한도를 도구의 한도보다 넉넉히(`timeout 2700`) 주고 한 번만 백그라운드로 돌린다. 거절(origin이 그새 움직임)은 도구가 스스로 한 번 다시 한다(「그새 origin이 움직여 1번 다시」). 이미 도는 것이 끊긴 반복이면 내 프로세스만 골라 멈춘다(`Get-CimInstance Win32_Process`로 명령줄 · 시작 시각 확인 — 다른 세션의 바로올리기를 죽이지 않는다).
+- 다시 확인: 출력 첫 줄이 `[올림]`이고 `관련 시험 통과 — N/N · <초>` 줄이 있다(11-11 밤 183/183 · 606초).
+
 ### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
 - 증상: 11-04 19시대에 `git fetch` · `ls-remote` · `바로올리기 따라가기`가 `git@github.com: Permission denied (publickey).`로 끝났다. 같은 키로 `ssh -T git@github.com`이 몇 초 간격으로 「Hi unmet23-lab!」와 실패를 번갈아 냈고, `ssh -v`에는 `Offering public key` 뒤 `Authentications that can continue`만 남았다. 바로 앞 시각까지 같은 명령이 됐다.
 - 원인: 이 PC의 키 · 권한 · 설정은 그대로였고(키 ACL은 본인 `(R)` 하나), 그 시각 githubstatus.com의 Git Operations · Actions가 `degraded_performance`였다. GitHub이 까닭을 따로 밝힌 것은 아니어서, 확인한 것은 「같은 키가 번갈아 받아들여지고 그때 GitHub이 성능 저하였다」까지다.
