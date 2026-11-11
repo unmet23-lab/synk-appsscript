@@ -12,7 +12,7 @@ import os, re, shutil, subprocess, sys, tempfile
 여기 = os.path.join(tempfile.gettempdir(), "synk-컷검사-변이")
 미러 = os.path.join(여기, "사본" + 묶음이름)
 os.makedirs(여기, exist_ok=True)
-담을것 = ["tools/컷연속성검사.py", "tests/컷연속성검사.test.js", "docs/마케팅/제작양식/영상양식/컷표_틀.json"]
+담을것 = ["tools/컷연속성검사.py", "tests/컷연속성검사.test.js", "docs/마케팅/제작양식/영상양식/컷표_틀.json", "docs/마케팅/제작양식/영상양식/빛이름.json"]
 for 폴더 in ("tests/fixtures/컷연속성검사", "docs/마케팅/PULSE_포트폴리오_제작준비_20261012/시댄스무제한"):
     for f in os.listdir(os.path.join(저장소, 폴더)):
         if f.endswith((".py", ".json")): 담을것.append(f"{폴더}/{f}")
@@ -132,6 +132,41 @@ for 길 in 담을것:
     ("V67 her 바로 뒤의 still을 뒤를 안 보고 잡음", 도구,
      r'''r"\s+her\s+still(?=\s*(?:[.,;:!?—–)\n]|$|(?:for|until|throughout|to|the whole|while|as|and|or|but|in|on|at|by|so|then|with)\b))",''', r'''r"\s+her\s+still\b",'''),
     ("V68 herself · everyone이 든 말을 주어 판정에 맡김", 도구, r'''|her|him|his|herself|himself|themselves|everyone|everybody)\b", re.I)''', r'''|her|him|his)\b", re.I)'''),
+    # 빛 이름(11-11 · 점검표 60)
+    ("V69 앞빛 이름을 고른 장면도 앞빛 낱말을 걺", 도구, r'''        if 앞 and not 허용:''', r'''        if 앞:'''),
+    ("V70 표의 빛 문장에 든 앞빛 낱말을 넘김", 도구, r'''        if 앞 and not 허용:''', r'''        if False:'''),
+    ("V71 옆빛 이름인데 쪽이 없는 빛 문장을 넘김", 도구,
+     r'''        if 방향 and not 허용 and not (_빛쪽.search(문장) or _빛뒤위.search(문장)):''', r'''        if False:'''),
+    ("V72 뒤 · 위에서 오는 빛을 쪽으로 안 침", 도구,
+     r'''        if 방향 and not 허용 and not (_빛쪽.search(문장) or _빛뒤위.search(문장)):''', r'''        if 방향 and not 허용 and not _빛쪽.search(문장):'''),
+    ("V73 사람이 나오는 장면의 빈 빛이름을 주의로", 도구, r'''        out.append(("걸림" if 사람있음 else "주의", f"장면 「{이름}」의 「빛이름」 칸이 비었다''', r'''        out.append(("주의", f"장면 「{이름}」의 「빛이름」 칸이 비었다'''),
+    ("V74 사람 없는 장면의 빈 빛이름도 걸림으로", 도구, r'''        out.append(("걸림" if 사람있음 else "주의", f"장면 「{이름}」의 「빛이름」 칸이 비었다''', r'''        out.append(("걸림", f"장면 「{이름}」의 「빛이름」 칸이 비었다'''),
+    ("V75 사람 없는 컷이 쓰는 빛 줄의 사람 낱말을 넘김", 도구, r'''    if 사람없는컷:
+        m = _빛사람말.search(문장)''', r'''    if False:
+        m = _빛사람말.search(문장)'''),
+    ("V76 쓰지 않는 이름(Day for night)을 받음", 도구, r'''        elif 줄.get("대신"):''', r'''        elif False:'''),
+    ("V77 지시문의 표 밖 앞빛을 안 봄", 도구,
+     r'''        if 표 and 사람 and 이름들 and not any(n.lower() in 표["앞빛허용"] for n in 이름들):''', r'''        if False:'''),
+    ("V78 사람 없는 판에도 표 밖 앞빛을 걺", 도구,
+     r'''        if 표 and 사람 and 이름들 and not any(n.lower() in 표["앞빛허용"] for n in 이름들):''', r'''        if 표 and 이름들 and not any(n.lower() in 표["앞빛허용"] for n in 이름들):'''),
+    ("V79 앞빛 이름 장면의 지시문에도 표 밖 앞빛을 걺", 도구,
+     r'''        if 표 and 사람 and 이름들 and not any(n.lower() in 표["앞빛허용"] for n in 이름들):''', r'''        if 표 and 사람 and 이름들:'''),
+    ("V80 초록 판(chroma-green)의 evenly lit을 걺", 도구,
+     r'''            m = next((x for x in _앞빛_글.finditer(나머지) if not _크로마뒤.match(나머지[x.end():])), None)''', r'''            m = _앞빛_글.search(나머지)'''),
+    ("V81 초록 판 예외가 아무 앞빛이나 넘김", 도구, r'''_크로마뒤 = re.compile(r"[^.;:\n]{0,30}?\b(?:chroma|green[- ]?screen)", re.I)''', r'''_크로마뒤 = re.compile(r"", re.I)'''),
+    ("V82 앞옆 빛(from the front-left)을 정면 빛으로 걺(지시문)", 도구,
+     r'''(?:in\s+)?front\b(?![- ](?:left|right))", re.I)
+# 다시 얹을''', r'''(?:in\s+)?front\b", re.I)
+# 다시 얹을'''),
+    ("V83 앞옆 빛(from the front-left)을 정면 빛으로 걺(표)", 도구,
+     r'''(?:in\s+)?front\b(?![- ](?:left|right))|\bfront(?:al)?[- ]?(?:light(?:ing|s)?|lit|fill|key)\b''', r'''(?:in\s+)?front\b|\bfront(?:al)?[- ]?(?:light(?:ing|s)?|lit|fill|key)\b'''),
+    ("V84 카메라 자리 「seen from the front」를 앞빛으로 걺", 도구,
+     r'''r"|\b(?:lights?|lighting|lit)\b[^.;:\n]{0,40}?\bfrom\s+''', r'''r"|\bfrom\s+'''),
+    ("V85 얼굴 빛 판정 — 문턱 아래도 통과", 도구, r'''        if 값["좌우"] < 표["좌우문턱"]:''', r'''        if False:'''),
+    ("V86 얼굴 빛 판정 — 앞빛 이름 장면도 좌우로 판정", 도구,
+     r'''    if 옆 and not 허용 and _빛쪽.search(str(문장 or "")):''', r'''    if 옆 and _빛쪽.search(str(문장 or "")):'''),
+    ("V87 얼굴 빛 판정 — 뒤에서 오는 빛도 좌우로 판정", 도구,
+     r'''    if 옆 and not 허용 and _빛쪽.search(str(문장 or "")):''', r'''    if 옆 and not 허용:'''),
 ]
 찾기만 = "--찾기만" in sys.argv
 고른 = [a for a in sys.argv[1:] if not a.startswith("--")]
@@ -147,7 +182,7 @@ for 번호, (이름, 파일, 옛, 새) in enumerate(변이, 1):
     try:
         open(파일, "w", encoding="utf-8", newline="").write(글.replace(옛2, 새2))
         tap = os.path.join(여기, f"변이5_tap{묶음이름}.txt")
-        subprocess.run(["node", "--test", "--test-name-pattern=지시문 — |내기 도구 — |컷표 없는 편|틀 2 — 사람이|틀 2 — 대안|깨뜨린|걸면 안 되는|--지시문 — ", "--test-reporter=tap", f"--test-reporter-destination={tap}", "tests/컷연속성검사.test.js"],
+        subprocess.run(["node", "--test", "--test-name-pattern=지시문 — |내기 도구 — |컷표 없는 편|틀 2 — 사람이|틀 2 — 대안|깨뜨린|걸면 안 되는|--지시문 — |빛 이름 — ", "--test-reporter=tap", f"--test-reporter-destination={tap}", "tests/컷연속성검사.test.js"],
                        cwd=미러, capture_output=True, text=True, encoding="utf-8")
         t = open(tap, encoding="utf-8").read()
         실패 = re.findall(r"^not ok \d+ - (.*)$", t, re.M)

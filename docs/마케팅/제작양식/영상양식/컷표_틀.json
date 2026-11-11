@@ -1,6 +1,6 @@
 {
   "틀": 2,
-  "읽는법": "복사해 <편>/컷표.json으로 쓴다. 장면의 장소 · 빛과 인물의 묘사 · 옷 · 점은 지시문에 글자 그대로 들어가는 영어 문장이다(좌우는 「of the frame」이나 「her left」로). 연기의 t는 그 판(받을 영상) 안의 초 — 지시문 ACTION에 그대로 쓰고, 모델이 0.7~1.5초 늦게 하니 편집에서 쓸 구간(in~out)을 그만큼 뒤로 잡는다. 검사: python -I -X utf8 tools/컷연속성검사.py <편>/컷표.json",
+  "읽는법": "복사해 <편>/컷표.json으로 쓴다. 장면의 장소 · 빛과 인물의 묘사 · 옷 · 점은 지시문에 글자 그대로 들어가는 영어 문장이다(좌우는 「of the frame」이나 「her left」로). 장면의 「빛이름」은 영상양식/빛이름.json에서 한둘 — 옆빛 이름이면 빛 문장에 키 빛이 오는 쪽을 적고, 사람 없는 컷도 쓰는 장면은 쪽을 화면 기준으로 쓴다(her · face 없이). 연기의 t는 그 판(받을 영상) 안의 초 — 지시문 ACTION에 그대로 쓰고, 모델이 0.7~1.5초 늦게 하니 편집에서 쓸 구간(in~out)을 그만큼 뒤로 잡는다. 검사: python -I -X utf8 tools/컷연속성검사.py <편>/컷표.json",
   "편": { "이름": "예시 — 늦은 밤 라면 15초", "비율": "9:16", "길이": 15 },
   "이기는것": "여운 — 혼자 끓이던 라면이 끝에서 두 그릇이 된다",
   "한문장": "늦은 밤 라면 한 그릇이 옆집을 식구로 만든다",
@@ -9,7 +9,8 @@
   "장면": {
     "부엌밤": {
       "장소": "A small Korean studio apartment kitchen: a white tile wall, a single gas stove at the left edge of the frame, a narrow window above the sink at the right edge of the frame, a round wooden table in the foreground, the front door at the back.",
-      "빛": "Night. One warm pendant lamp above the stove is the only light source; the window is dark blue; shadows fall off softly toward the frame edges.",
+      "빛": "Night. One warm pendant lamp above the stove at the left edge of the frame is the only light source: surfaces turned toward it glow warm and their far sides fall into soft shadow; the window is dark blue; shadows fall off softly toward the frame edges.",
+      "빛이름": ["Practical light", "Low key"],
       "시간대": "밤",
       "실내": true,
       "기준그림": "ref/장면_부엌밤.jpg"

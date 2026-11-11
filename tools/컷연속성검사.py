@@ -7,7 +7,7 @@
 #
 #   python -I -X utf8 tools/컷연속성검사.py <컷순서.json> [--영상 <최종.mp4>] [--받음 <판 폴더> [--앞 <파일 앞머리, 예: siryc->]]
 #                                           [--그림 <정지 그림 폴더>] [--지시문 <꾸러미 폴더 | 지시문.txt …>] [--그림지시문 <폴더 | <컷>.txt …>] [--지도 <소품 지도.json>]
-#                                           [--항목 틀,소품,사건,소리,지시문,그림지시문,점,고요,지도] [--출력 <폴더>] [--json] [--간격 0.6,1.0]
+#                                           [--항목 틀,소품,사건,소리,지시문,그림지시문,점,고요,지도,빛] [--출력 <폴더>] [--json] [--간격 0.6,1.0]
 #   python -I -X utf8 tools/컷연속성검사.py 지시문 <꾸러미 폴더 | 지시문.txt …> [--실내 <컷,…>] [--json]
 #
 #   표만 주면(영상 · 그림 없이) 콘티 단계 검사 — 소품 상태 표 · 사건 네 박 표 · 소리 사건 ↔ 반응 간격 · 표의 물건 반응 메모 · (틀 2) 장면 · 인물 · 연기 · 구도 · 끝 · 글자 칸.
@@ -21,6 +21,8 @@
 #   굽기전검사(글, 실내, 인물, 소리만, 박자최소)는 내기 도구(크레딧내기.py · 드리미나내기.py)가 내기 전에 부른다 — 걸림이면 내지 않는다.
 #   --그림: 이미지 콘티 단계 — 상태가 적힌 컷의 정지 그림(<폴더>/<컷>.png|jpg)을 소품 지도와 대조하고, 실내 컷의 떠다니는 점 후보 시트를 만든다.
 #   --받음 · --영상: 편집 단계 — 받은 판(쓰는 구간)이나 최종 판(그 컷의 자리)에서 소품 자리 · 소품 고요 · 큰 물건 고요 · 소리 사건 · 점을 잰다.
+#   (틀 2) --그림 · --받음 · --영상에서는 사람 컷마다 얼굴 빛(좌우 · 위아래 · 색 · 역광)도 재어 그 장면의 빛 이름과 견준다(항목 「빛」 · 60) —
+#          옆빛 이름이고 빛 문장에 왼쪽 · 오른쪽이 적혔는데 좌우빛이 문턱(빛이름.json 0.2) 아래면 「확인」, 그 밖의 값은 알림으로만 적는다.
 #
 # 컷순서.json에 더 적는 칸(모두 선택 — 없으면 그 검사는 「표 없음 · 확인」으로만 남는다):
 #   detail[] 항목: "실내": true                      — 실내 컷(공중에 떨어지는 점이 있으면 안 된다 — 점 시트를 만든다)
@@ -36,7 +38,7 @@
 #          "점제외": [[x0, y0, x1, y1], …] · "점위까지": 0.72 · "공중": [x0, y0, x1, y1]  — 점 세기에서 뺄 곳(창문 · 표시등) · 바닥 시작 · 공중으로 볼 곳(비율)
 #          "지도": "쪽지지도.json"                     — --지도 대신
 # 컷표 「틀 2」(맨 위 "틀": 2 — 예시 docs/마케팅/제작양식/영상양식/컷표_틀.json, 틀이 없거나 1이면 아래 검사는 돌지 않고 알림 한 줄만 남는다):
-#   맨 위: "이기는것" · "한문장" · "가까운사례" · "엔진": {"그림", "영상"}(하나씩) · "장면": {이름: {"장소", "빛", "시간대", "실내", "기준그림"}} · "인물": {이름: {"묘사", "옷", "기준그림"}}
+#   맨 위: "이기는것" · "한문장" · "가까운사례" · "엔진": {"그림", "영상"}(하나씩) · "장면": {이름: {"장소", "빛", "빛이름": [빛이름.json의 이름 한둘], "시간대", "실내", "기준그림"}} · "인물": {이름: {"묘사", "옷", "기준그림"}}
 #          "글자": [{"글", "종류": 말자막|강조|이름|끝로고|장면속|정보, "어디", "만드는법"}](없는 편은 []) · "소리": {"목소리", "첫말초", "초반을끄는것", …}
 #          "끝": {"컷"(마지막 컷), "가장센그림", "제품보임"|"브랜드보임", "로고멈춤초"(2 이상 · 로고 없는 편은 null + "로고없음": 까닭), "소리한방"} · "seq"의 띠에 기 · 승 · 전 · 결
 #   detail[] 항목: "장면" · "인물": [이름…](사람 없는 컷은 []) · "구도" · "카메라" · "연기": [{"t": 초, "무엇"}](사람 컷은 둘 이상) · "움직임"(사람 없는 컷) · "넘어옴" · "소리"
@@ -1017,8 +1019,8 @@ def 지시문파일들(경로들):
 
 
 # ───────── 결과 모으기 ─────────
-항목순서 = ("틀", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "점", "고요", "지도")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다)
-기본항목 = ("틀", "소품", "사건", "소리", "지시문", "그림지시문", "점", "고요", "지도")
+항목순서 = ("틀", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "점", "고요", "지도", "빛")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다)
+기본항목 = ("틀", "소품", "사건", "소리", "지시문", "그림지시문", "점", "고요", "지도", "빛")
 
 
 class 결과:
@@ -1228,8 +1230,100 @@ def 장면실내채움(seq):
     return seq
 
 
+# ───────── 빛 이름(2026-11-11 — 팁 장부 47행 「조명효과 기억해」 · 점검표 60) ─────────
+# 왜 있나: 장면의 「빛」 칸이 자유 글이라 「a large soft light falls on his face from the front」 같은 평평한 앞빛이 그대로 나갔다(로맨스 옛 시작 그림의 얼굴 좌우빛 0.131 · 원본 0.289).
+#   장면마다 빛을 이름(docs/마케팅/제작양식/영상양식/빛이름.json의 34개 가운데 한둘)으로 부르고, 옆빛 이름이면 키 빛이 오는 쪽을 문장에 적게 한다.
+#   앞에서 고르게 비추는 말은 앞빛 이름(High key · Butterfly · Flat light)을 고른 장면에서만 지나간다 — 부정문(「no fill from the front」)도 걸리니 그늘 쪽을 긍정문으로 쓴다.
+#   사람 없는 컷도 장면의 빛 줄을 그대로 쓰니, 그런 컷이 있는 장면의 빛 줄에 사람 낱말(her · face)이 있으면 건다(몸이 들어온다 — 지시문 틀 이미지 7).
+#   풀어 주는 갈래는 늘리지 않는다(영상작업_진단_20261110.md의 교훈 — 실물이 잘못 걸릴 때만, 시험 · 변이 시험과 함께).
+빛이름표경로 = Path(__file__).resolve().parent.parent / "docs" / "마케팅" / "제작양식" / "영상양식" / "빛이름.json"
+_빛표캐시 = None
+# 키 빛이 오는 쪽을 적은 말 — 옆(왼쪽 · 오른쪽)과 뒤 · 위 · 아래
+_빛쪽 = re.compile(r"\b(?:her|his|their|its|camera|frame|screen|stage|viewer(?:['’]s)?)[- ]+(?:left|right)\b|\b(?:left|right)(?:[- ]hand)?[- ]+(?:side|edge|half|of|window|wall|corner|third)\b"
+                  r"|\b(?:from|to|on|at)\s+(?:the\s+|her\s+|his\s+|their\s+)?(?:far\s+|near\s+)?(?:left|right)\b|\b(?:front|back|rear|upper|lower|top|bottom)[- ](?:left|right)\b"
+                  r"|\bfrom (?:the|one) side\b|\bto one side\b|\bside[- ]?lit\b|\b\d{2,3}\s*(?:degrees?|°)|왼쪽|오른쪽", re.I)
+_빛뒤위 = re.compile(r"\bbehind\b|\bback[- ]?lit\b|\bbacklight(?:ing)?\b|\babove\b|\boverhead\b|\bbelow\b|\bbeneath\b|\bunderneath\b|뒤에서|위에서|아래에서|역광", re.I)
+# 앞에서 고르게 비추는 말 — 표의 빛 문장은 통째로 빛 이야기라 「from the front」만으로 건다. 「from the front-left」는 비스듬한 옆빛이라 걸지 않는다(실물 3판 — 가쁨 p5-15 · 결채 p4-33)
+_앞빛_표 = re.compile(r"\bfrom\s+(?:the\s+|directly\s+|straight\s+)?(?:in\s+)?front\b(?![- ](?:left|right))|\bfront(?:al)?[- ]?(?:light(?:ing|s)?|lit|fill|key)\b|\bfrontlit\b|\bevenly[- ]lit\b"
+                     r"|\beven(?:ly)?\s+(?:light(?:ing|ed)?|illuminat(?:ed|ion))\b|\bflat,?\s+(?:even\s+)?light(?:ing)?\b|\bflatly[- ]lit\b", re.I)
+# 지시문의 다른 줄(표의 빛 줄 밖) — 「from the front」는 카메라 자리로도 쓰이니 빛 낱말과 한 절에 있을 때만 건다
+_앞빛_글 = re.compile(r"\bfront(?:al)?[- ]?(?:light(?:ing|s)?|lit|fill)\b|\bfrontlit\b|\bevenly[- ]lit\b|\beven(?:ly)?\s+(?:light(?:ing|ed)?|illuminat(?:ed|ion))\b|\bflat,?\s+(?:even\s+)?light(?:ing)?\b|\bflatly[- ]lit\b"
+                     r"|\b(?:lights?|lighting|lit)\b[^.;:\n]{0,40}?\bfrom\s+(?:the\s+|directly\s+|straight\s+)?(?:in\s+)?front\b(?![- ](?:left|right))", re.I)
+# 다시 얹을 화면 · 간판 자리를 고르게 칠한 초록 판(「a flat, evenly lit chroma-green panel」 — 점검표 27 · 39의 방법)은 얼굴 빛이 아니다(실물 12판 — 캐스팅북 p8 · 가쁨 p5-16)
+_크로마뒤 = re.compile(r"[^.;:\n]{0,30}?\b(?:chroma|green[- ]?screen)", re.I)
+_빛사람말 = re.compile(r"\b(?:she|he|her|hers|his|him)\b|\b(?:faces?|cheeks?|nose|chin|forehead)\b", re.I)
+
+
+def 빛이름표():
+    """빛 이름 표 → ({"이름": {소문자 이름: 줄}, "앞빛허용": {소문자 이름}, "좌우문턱": 0.2}, None). 못 읽으면 (None, 까닭)."""
+    global _빛표캐시
+    if _빛표캐시 is None:
+        try:
+            raw = json.loads(빛이름표경로.read_text(encoding="utf-8"))
+            줄들 = {str(x["이름"]).strip().lower(): x for x in raw["이름"] if isinstance(x, dict) and not 빈칸(x.get("이름"))}
+            if not 줄들: raise ValueError("이름이 하나도 없다")
+            _빛표캐시 = ({"이름": 줄들, "앞빛허용": {str(n).strip().lower() for n in raw.get("앞빛허용") or []}, "좌우문턱": 숫자(raw.get("좌우문턱")) or 0.2}, None)
+        except Exception as e:
+            _빛표캐시 = (None, f"{빛이름표경로.name}: {e}")
+    return _빛표캐시
+
+
+def 빛이름들(장면):
+    """장면 표 한 줄의 「빛이름」 → 이름 목록(글 하나로 적어도 받는다)."""
+    v = 장면.get("빛이름") if isinstance(장면, dict) else None
+    if isinstance(v, str): v = [v]
+    return [x.strip() for x in v if isinstance(x, str) and x.strip()] if isinstance(v, list) else []
+
+
+def 빛이름검사(이름, 장면, 사람있음, 사람없는컷, 표):
+    """T16 — 장면 한 줄의 빛 이름 · 빛 문장 → [(등급, 글)]. 빈 빛 문장은 T1이 건다."""
+    import difflib
+    out = []; 문장 = 장면.get("빛"); 이름들 = 빛이름들(장면); 줄들 = []
+    if not 이름들:
+        out.append(("걸림" if 사람있음 else "주의", f"장면 「{이름}」의 「빛이름」 칸이 비었다 — 빛 이름 표(영상양식/빛이름.json)에서 한둘을 골라 적는다(60)"))
+    for n in 이름들:
+        줄 = 표["이름"].get(n.lower())
+        if 줄 is None:
+            가까운 = difflib.get_close_matches(n.lower(), list(표["이름"]), n=2, cutoff=0.6)
+            out.append(("걸림", f"장면 「{이름}」의 빛 이름 「{n}」이 빛 이름 표에 없다" + (f"(「{' · '.join(표['이름'][k]['이름'] for k in 가까운)}」?)" if 가까운 else "") + " — 영상양식/빛이름.json의 이름으로 적는다(60)"))
+        elif 줄.get("대신"):
+            out.append(("걸림", f"장면 「{이름}」의 빛 이름 「{줄['이름']}」은 지시문에 쓰지 않는다 — {' · '.join(줄['대신'])}로 적는다(60)"))
+        else: 줄들.append(줄)
+    if len(이름들) > 3: out.append(("주의", f"장면 「{이름}」의 빛 이름이 {len(이름들)}개다 — 한둘만 고른다(60)"))
+    if 빈칸(문장) or not 줄들: return out
+    문장 = str(문장)
+    if 사람있음:
+        허용 = any(줄["이름"].lower() in 표["앞빛허용"] for 줄 in 줄들)
+        앞 = _앞빛_표.search(문장)
+        if 앞 and not 허용:
+            out.append(("걸림", f"장면 「{이름}」의 빛 문장에 앞에서 고르게 비추는 말 「{앞.group(0)}」 — 얼굴이 평평해진다(60). 키 빛을 옆 · 뒤에 두고, 일부러 고른 앞빛이면 빛이름에 High key · Butterfly · Flat light 가운데 하나를 적는다"))
+        방향 = [줄["이름"] for 줄 in 줄들 if 줄.get("방향") is True]
+        if 방향 and not 허용 and not (_빛쪽.search(문장) or _빛뒤위.search(문장)):
+            out.append(("걸림", f"장면 「{이름}」의 빛 이름 「{' · '.join(방향)}」은 키 빛의 쪽이 있어야 한다 — 빛 문장에 어느 쪽에서 오는지(from the left of the frame · behind · above …) 적는다(60)"))
+        if any(줄["이름"] == "Flat light" for 줄 in 줄들):
+            out.append(("주의", f"장면 「{이름}」의 빛 이름이 Flat light다 — 일부러 고른 컷(정보 · 제품 기록 · 패러디)인지 본다(60)"))
+    if 사람없는컷:
+        m = _빛사람말.search(문장)
+        if m: out.append(("걸림", f"장면 「{이름}」의 빛 문장에 사람 낱말 「{m.group(0)}」 — 사람 없는 컷({' · '.join(str(c) for c in 사람없는컷)})도 이 줄을 그대로 쓴다(몸이 들어온다). 쪽을 화면 기준(from the left of the frame)으로 쓰거나 장면을 나눈다(60)"))
+    return out
+
+
+def 빛판정(이름들, 문장, 값, 표):
+    """잰 얼굴 빛 값과 장면의 빛 이름 · 문장 → (등급, 글). 옆빛 이름이고 문장에 옆쪽(왼쪽 · 오른쪽)이 적혔는데 좌우빛이 문턱 아래면 「확인」 — 평평한 앞빛으로 나왔는지 사람이 본다.
+    위아래 · 색 · 역광은 값만 적는다(문턱은 받은 판 세 편으로 값을 모은 뒤 정한다 — 참고 카드 2026-11-07_조명34_빛이름)."""
+    줄들 = [표["이름"][n.lower()] for n in 이름들 if n.lower() in 표["이름"]]
+    허용 = any(줄["이름"].lower() in 표["앞빛허용"] for 줄 in 줄들)
+    옆 = [줄["이름"] for 줄 in 줄들 if "좌우" in (줄.get("잣대") or [])]
+    요약 = f"좌우 {값['좌우']:.3f} · 위아래 {값['위아래']:+.3f} · 색 {값['색']:.1f}" + (f" · 역광 {값['역광']:.2f}" if 값.get("역광") is not None else "")
+    if 옆 and not 허용 and _빛쪽.search(str(문장 or "")):
+        if 값["좌우"] < 표["좌우문턱"]:
+            return "확인", f"얼굴 좌우빛 {값['좌우']:.3f} — 옆빛 이름({' · '.join(옆)})인데 문턱 {표['좌우문턱']:g} 아래다, 평평한 앞빛으로 나왔는지 본다(60 — 로맨스 옛 판 0.131 · 원본 0.289). {요약}"
+        return "통과", f"옆빛 이름({' · '.join(옆)}) · {요약}"
+    return "알림", f"빛 이름({' · '.join(이름들) or '없음'}) — 값만 적는다: {요약}"
+
+
 def 틀검사(seq, r):
-    """컷표 틀 2의 칸 검사(T1~T15) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약)."""
+    """컷표 틀 2의 칸 검사(T1~T16) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약)."""
     def 걸림(컷, 글): r.더함("틀", 컷, "걸림", 글)
     def 주의(컷, 글): r.더함("틀", 컷, "주의", 글)
     전 = len(r.항목들)
@@ -1253,7 +1347,19 @@ def 틀검사(seq, r):
         빠짐 = [k for k in ("장소", "빛", "기준그림") if 빈칸(s.get(k))]
         if 빠짐: 걸림(f"장면 {이름}", f"장면 「{이름}」의 {' · '.join(빠짐)} 칸이 비었다 — 장면 · 빛을 표에 한 번 적는다(51)")
         if 빈칸(s.get("시간대")): 주의(f"장면 {이름}", f"장면 「{이름}」의 「시간대」 칸이 비었다 — 컷 사이 낮 · 밤이 바뀌는지 못 본다(51)")
-    쓰는인물 = list(dict.fromkeys(n for d in det if isinstance(d.get("인물"), list) for n in d["인물"] if isinstance(n, str)))
+    # T16 빛 이름(60) — 장면마다 빛을 이름으로 부르고, 사람이 나오는 장면의 옆빛은 키 빛의 쪽을 적는다
+    빛표, 빛표까닭 = 빛이름표()
+    if 빛표 is None:
+        if 쓰는장면: 걸림("표", f"빛 이름 표를 못 읽었다 — {빛표까닭}(60)")
+    else:
+        for 이름 in 쓰는장면:
+            s = 장면표.get(이름)
+            if not isinstance(s, dict): continue
+            쓰는컷 = [d for d in det if d.get("장면") == 이름]
+            사람있음 = any(isinstance(d.get("인물"), list) and d["인물"] for d in 쓰는컷)
+            사람없는컷 = list(dict.fromkeys(d.get("cut", "?") for d in 쓰는컷 if d.get("인물") == []))
+            for 등급, 글 in 빛이름검사(이름, s, 사람있음, 사람없는컷, 빛표): (걸림 if 등급 == "걸림" else 주의)(f"장면 {이름}", 글)
+    쓰는인물 =list(dict.fromkeys(n for d in det if isinstance(d.get("인물"), list) for n in d["인물"] if isinstance(n, str)))
     for 이름 in 쓰는인물:
         p = 인물표.get(이름)
         if not isinstance(p, dict): continue
@@ -1374,16 +1480,25 @@ def 판의컷(seq, 판id, 판컷=None):
 
 
 def 빛대조(seq, 컷들, 글):
-    """틀 2 — 판의 지시문에 그 컷 장면의 「빛」 문장이 글자 그대로(공백 · 줄바꿈만 한 칸으로) 들었나 → [(등급, 글)]. 표의 빛 칸이 빈 것은 틀 검사(T1)가 건다."""
-    out = []; 장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}; 본 = set(); 정리글 = 한칸(글)
-    for d in seq.get("detail") or []:
+    """틀 2 — 판의 지시문에 그 컷 장면의 「빛」 문장이 글자 그대로(공백 · 줄바꿈만 한 칸으로) 들었나, 표의 빛 줄 밖에 앞빛을 따로 적지 않았나(60) → [(등급, 글)].
+    표의 빛 칸이 빈 것은 틀 검사(T1)가, 빛 이름이 빈 것은 틀 검사(T16)가 건다."""
+    out = []; 장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}; 본 = set(); 정리글 = 한칸(글); det = seq.get("detail") or []
+    for d in det:
         이름 = d.get("장면")
         if d.get("cut") not in 컷들 or not isinstance(이름, str) or 이름 in 본: continue
         본.add(이름)
-        빛 = (장면표.get(이름) or {}).get("빛") if isinstance(장면표.get(이름), dict) else None
+        장면 = 장면표.get(이름) if isinstance(장면표.get(이름), dict) else None
+        빛 = (장면 or {}).get("빛")
         if 빈칸(빛): continue
         if 한칸(빛) not in 정리글:
             out.append(("걸림", f"장면의 빛 문장이 표와 다르다 — 표의 빛 줄을 그대로 쓴다(51): 장면 「{이름}」 「{한칸(빛)[:70]}」"))
+        # (60) 사람이 나오는 판 · 앞빛 이름을 고르지 않은 장면 — 표의 빛 줄 밖에 앞에서 고르게 비추는 빛을 따로 적으면 표의 빛 이름과 어긋난다
+        표, _ = 빛이름표(); 이름들 = 빛이름들(장면)
+        사람 = any(isinstance(x.get("인물"), list) and x["인물"] for x in det if x.get("cut") in 컷들 and x.get("장면") == 이름)
+        if 표 and 사람 and 이름들 and not any(n.lower() in 표["앞빛허용"] for n in 이름들):
+            나머지 = re.sub(r"\s+".join(re.escape(w) for w in 한칸(빛).split()), " ", str(글))   # 표의 빛 줄(공백 · 줄바꿈만 다른 꼴까지)을 걷고 본다
+            m = next((x for x in _앞빛_글.finditer(나머지) if not _크로마뒤.match(나머지[x.end():])), None)
+            if m: out.append(("걸림", f"지시문에 앞에서 고르게 비추는 빛 「{한칸(m.group(0))[:60]}」 — 장면 「{이름}」의 빛 이름({' · '.join(이름들)})과 어긋난다(60). 빛은 표의 빛 줄만 쓴다"))
     return out
 
 
@@ -1771,6 +1886,86 @@ def 점항목(seq, r, 출력, 그림폴더=None, 영상=None, 받음=None, 앞="
     elif 시트수: r.더함("점", "시트", "확인", f"실내 컷 {본것}개 · 점 시트 {시트수}장({출력}) — 사람이 눈으로 본 뒤에 넘긴다(수로는 판정하지 않는다 · 점검표 37)")   # 사람 확인이 필요한 결과는 끝 코드에 남긴다(11-09 Astra)
 
 
+# ───────── 얼굴 빛 재기(60) — 편집전점검.py의 face()와 같은 검출기(YuNet) · 같은 크기(긴 변 720) · 같은 좌우 셈 ─────────
+_검출기 = None
+
+
+def _얼굴검출기():
+    global _검출기
+    if _검출기 is None:
+        import cv2
+        모델 = Path.home() / ".rembg" / "models" / "yunet" / "face_detection_yunet_2023mar.onnx"
+        if not 모델.exists(): raise RuntimeError(f"얼굴 검출 모델(YuNet)이 없다: {모델}")
+        _검출기 = cv2.FaceDetectorYN.create(str(모델), "", (320, 320), 0.7, 0.3, 5000)
+    return _검출기
+
+
+def 얼굴상자(rgb, 긴변=720):
+    """가장 큰 얼굴의 상자 (x0, y0, x1, y1)와 긴 변을 720으로 맞춘 그림(RGB) — 얼굴이 없으면 (None, 그림)."""
+    import cv2
+    np = _np(); h, w = rgb.shape[:2]; s = 긴변 / max(h, w)
+    W, H = int(round(w * s / 2) * 2), int(round(h * s / 2) * 2)
+    if (W, H) != (w, h): rgb = cv2.resize(rgb, (W, H), interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_LINEAR)
+    검출 = _얼굴검출기(); 검출.setInputSize((W, H))
+    _, 얼굴들 = 검출.detect(np.ascontiguousarray(rgb[:, :, ::-1]))
+    if 얼굴들 is None or not len(얼굴들): return None, rgb
+    x, y, fw, fh = max(얼굴들, key=lambda f: f[2] * f[3])[:4]
+    return (int(max(0, x)), int(max(0, y)), int(min(W, x + fw)), int(min(H, y + fh))), rgb
+
+
+def 얼굴빛값(rgb, 상자):
+    """얼굴 상자 안팎의 빛 값(빛이름.json 「잣대뜻」) — 좌우: 왼쪽 반 · 오른쪽 반 밝기 차 ÷ 얼굴 밝기(편집전점검.py face()의 lr과 같은 셈),
+    위아래: 위 1/3 − 아래 1/3(÷ 얼굴 밝기, 위가 밝으면 +), 색: 왼쪽 반 · 오른쪽 반의 Lab a · b 거리, 역광: 얼굴 밝기 ÷ 얼굴 둘레(옆 · 위) 밝기. 상자가 너무 작으면 None."""
+    import cv2
+    np = _np(); x0, y0, x1, y1 = 상자; 조각 = np.ascontiguousarray(rgb[y0:y1, x0:x1])
+    g = cv2.cvtColor(조각, cv2.COLOR_RGB2GRAY).astype(np.float32)
+    if g.size < 64: return None
+    평균 = max(1.0, float(g.mean())); 반 = g.shape[1] // 2; 셋 = max(1, g.shape[0] // 3)
+    좌우 = abs(float(g[:, :반].mean()) - float(g[:, 반:].mean())) / 평균
+    위아래 = (float(g[:셋].mean()) - float(g[-셋:].mean())) / 평균
+    lab = cv2.cvtColor(조각, cv2.COLOR_RGB2LAB).astype(np.float32)
+    색 = float(np.hypot(float(lab[:, :반, 1].mean()) - float(lab[:, 반:, 1].mean()), float(lab[:, :반, 2].mean()) - float(lab[:, 반:, 2].mean())))
+    H, W = rgb.shape[:2]; fw, fh = x1 - x0, y1 - y0
+    X0, X1, Y0 = max(0, x0 - fw), min(W, x1 + fw), max(0, int(y0 - 0.6 * fh))   # 둘레: 옆으로 얼굴 폭만큼 · 위로 얼굴 높이의 0.6배(턱 아래 몸은 넣지 않는다)
+    둘레 = cv2.cvtColor(np.ascontiguousarray(rgb[Y0:y1, X0:X1]), cv2.COLOR_RGB2GRAY).astype(np.float32)
+    수 = 둘레.size - g.size
+    역광 = round(float(g.mean()) / max(1.0, (float(둘레.sum()) - float(g.sum())) / 수), 2) if 수 > 0 else None
+    return {"좌우": round(좌우, 3), "위아래": round(위아래, 3), "색": round(색, 1), "역광": 역광}
+
+
+def 빛항목(seq, r, 그림폴더=None, 영상=None, 받음=None, 앞=""):
+    """틀 2 — 사람 컷의 정지 그림 · 받은 판 · 최종 판에서 가장 큰 얼굴의 빛을 재어 그 장면의 빛 이름과 견준다(60). 판정은 빛판정()."""
+    if not 틀둘(seq): return
+    det = seq.get("detail", []); 장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
+    대상 = [d for d in det if isinstance(d.get("인물"), list) and d["인물"] and isinstance(d.get("장면"), str) and 빛이름들(장면표.get(d["장면"]))]
+    if not 대상: return
+    표, 까닭 = 빛이름표()
+    if 표 is None: r.더함("빛", "표", "확인", f"빛 이름 표를 못 읽어 얼굴 빛을 못 쟀다 — {까닭}"); return
+    try: _얼굴검출기()
+    except Exception as e: r.더함("빛", "표", "확인", f"얼굴 검출기를 못 불러 사람 컷 {len(대상)}개의 얼굴 빛을 못 쟀다 — {e}"); return
+    for d in 대상:
+        cut = d["cut"]; 장면 = 장면표[d["장면"]]
+        try:
+            if 영상 is not None:
+                t = d["t"] + d["dur"] / 2; rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
+            elif 받음 is not None:
+                clip = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
+                if not clip.exists(): r.더함("빛", cut, "확인", f"받은 판 없음: {clip.name}"); continue
+                a = float(d.get("in", 0)); b = float(d.get("out", a + d["dur"])); t = (a + b) / 2; rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
+            else:
+                p = 정지그림(그림폴더, cut)
+                if not p: r.더함("빛", cut, "확인", f"정지 그림 없음: {그림폴더}/{cut}.png"); continue
+                rgb = 그림읽기(p); 어디 = p.name
+            상자, 줄인 = 얼굴상자(rgb)
+        except Exception as e:
+            r.더함("빛", cut, "확인", f"얼굴 빛을 못 쟀다 — {e}"); continue
+        if 상자 is None: r.더함("빛", cut, "알림", f"얼굴을 못 찾음 — 손 · 뒷모습 · 먼 컷이면 넘긴다 · {어디}"); continue
+        높이 = (상자[3] - 상자[1]) / 줄인.shape[0]; 값 = 얼굴빛값(줄인, 상자)
+        if 값 is None or 높이 < 0.05: r.더함("빛", cut, "알림", f"얼굴이 작아(화면 높이의 {높이:.0%}) 빛을 재지 않았다 · {어디}"); continue
+        등급, 글 = 빛판정(빛이름들(장면), 장면.get("빛"), 값, 표)
+        r.더함("빛", cut, 등급, f"{글} · {어디}", **값)
+
+
 _소리캐시 = {}
 
 
@@ -1857,6 +2052,7 @@ def main(argv):
             if 지도: 지도항목(seq, r, 지도, 출력, 그림, 영상, 받음, o["앞"])
             else: r.더함("지도", "표", "확인", "소품 지도가 없다(--지도 · 컷순서 「지도」) — 쌓이는 소품이 있는 편이면 첫 콘티에서 지도를 만든다(점검표 39)")
         if "고요" in 항목 and (영상 or 받음): 고요항목(seq, r, 지도, 영상, 받음, o["앞"])
+        if "빛" in 항목: 빛항목(seq, r, 그림, 영상, 받음, o["앞"])
     (출력 / "결과.json").write_text(json.dumps(dict(컷순서=str(seq_path), 영상=영상, 받음=받음, 그림=그림, 항목=r.항목들, 코드=r.코드()), ensure_ascii=False, indent=1), encoding="utf-8")
     if o["json"]: print(json.dumps(r.항목들, ensure_ascii=False, indent=1)); return r.코드()
     코드 = r.보고(); print(f"결과 {출력 / '결과.json'}"); return 코드

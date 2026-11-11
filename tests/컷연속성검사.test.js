@@ -359,6 +359,14 @@ const 깨뜨림 = [
   ['T11 누구 목소리인지 없다', (s) => { s.소리.목소리 = ''; }, /「소리\.목소리」 칸이 비었다.*\(52\)/],
   ['T12 그림 엔진이 둘', (s) => { s.엔진.그림 = '나노바나나 + GPT'; }, /「엔진\.그림」에 둘 이상.*「나노바나나 \+ GPT」.*\(G11\)/],
   ['T12 영상 모델이 비었다', (s) => { s.엔진.영상 = ''; }, /「엔진\.영상」 칸이 비었다.*\(G11\)/],
+  // T16 빛 이름(11-11 — 팁 장부 47행 · 점검표 60)
+  ['T16 사람이 나오는 장면의 빛이름 칸이 없다', (s) => { delete s.장면.부엌밤.빛이름; }, /장면 「부엌밤」의 「빛이름」 칸이 비었다.*\(60\)/],
+  ['T16 표에 없는 빛 이름(오타)', (s) => { s.장면.부엌밤.빛이름 = ['Rembrant']; }, /빛 이름 「Rembrant」이 빛 이름 표에 없다\(「Rembrandt[^」]*」\?\).*\(60\)/],
+  ['T16 Day for night은 지시문에 쓰지 않는다', (s) => { s.장면.부엌밤.빛이름 = ['Day for night']; }, /빛 이름 「Day for night」은 지시문에 쓰지 않는다 — Moonlight · Blue hour/],
+  ['T16 옆빛 이름인데 빛 문장이 앞에서 비춘다', (s) => { s.장면.부엌밤.빛이름 = ['Soft light']; s.장면.부엌밤.빛 = 'Night. A large soft light falls on the table from the front; the wall behind is one stop darker.'; }, /빛 문장에 앞에서 고르게 비추는 말 「from the front」.*\(60\)/],
+  ['T16 「evenly lit」도 앞에서 고르게 비추는 말이다', (s) => { s.장면.부엌밤.빛 = 'Night. The kitchen is evenly lit by the lamp above the stove at the left edge of the frame.'; }, /앞에서 고르게 비추는 말 「evenly lit」.*\(60\)/],
+  ['T16 옆빛 이름인데 키 빛의 쪽이 없다', (s) => { s.장면.부엌밤.빛이름 = ['Rembrandt']; s.장면.부엌밤.빛 = 'Night. One warm lamp is the only light source; shadows fall off softly.'; }, /빛 이름 「Rembrandt」은 키 빛의 쪽이 있어야 한다.*\(60\)/],
+  ['T16 사람 없는 컷도 쓰는 장면의 빛 줄에 사람 낱말', (s) => { s.장면.부엌밤.빛 += ' The side of her face toward the stove is lit.'; }, /빛 문장에 사람 낱말 「her」 — 사람 없는 컷\(C4\)도 이 줄을 그대로 쓴다.*\(60\)/],
 ];
 
 // 표 사본이 수십 벌이라 여덟 벌씩 함께 돌린다(한 벌에 파이썬 한 번 — 차례로 돌리면 이 시험만 20초가 넘는다)
@@ -385,7 +393,7 @@ async function 틀돌리기_여럿(고침들) {
   return out;
 }
 
-test(`틀 2 — 한 칸씩 깨뜨린 ${깨뜨림.length}가지는 저마다 그 걸림이 난다(장면 · 인물 · 연기 · 구도 · 시간대 · 기승전결 · 끝 · 글자 · 볼 이유 · 소리 · 엔진)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
+test(`틀 2 — 한 칸씩 깨뜨린 ${깨뜨림.length}가지는 저마다 그 걸림이 난다(장면 · 인물 · 연기 · 구도 · 시간대 · 기승전결 · 끝 · 글자 · 볼 이유 · 소리 · 엔진 · 빛 이름)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
   const 틀림 = [];
   const 결과들 = await 틀돌리기_여럿(깨뜨림.map(([, 고침]) => 고침));
   깨뜨림.forEach(([이름, , 원함], i) => {
@@ -422,6 +430,13 @@ const 지나감 = [
   ['글자 없는 편은 []', (s) => { s.글자 = []; }],
   ['초를 글로 적은 박자(「0.8」)도 받는다', (s) => { 컷(s, 'C2').연기.forEach((b) => { b.t = String(b.t); }); }],
   ['띠에 번호를 붙여도 된다(승1 · 승2)', (s) => { s.seq[1][2] = '승1'; }],
+  // 빛 이름(60) — 앞빛이 맞는 자리(만족 사례 S41 아이돌 · 유호님 얼굴 시안 B)는 막지 않는다
+  ['앞빛 이름(High key)을 고른 장면은 앞에서 비추는 말을 써도 된다', (s) => { s.장면.부엌밤.빛이름 = ['High key', 'Rim light']; s.장면.부엌밤.빛 = 'Bright, airy high-key light from the front and above; a thin rim of light from behind separates every outline from the wall.'; }],
+  ['Butterfly도 앞빛 이름이다(사람만 나오는 장면은 얼굴 낱말을 써도 된다)', (s) => { s.장면.부엌얼굴 = { ...s.장면.부엌밤, 빛이름: ['Butterfly'], 빛: 'Night. One soft key from the front and above her face casts a small butterfly-shaped shadow under the nose.' }; 컷(s, 'C2').장면 = '부엌얼굴'; }],
+  ['빛 이름의 대소문자는 가리지 않고, 글 하나로 적어도 받는다', (s) => { s.장면.부엌밤.빛이름 = 'practical LIGHT'; }],
+  ['사람 없는 컷만 쓰는 장면은 빛이름이 비어도 걸리지 않는다(주의)', (s) => { s.장면.식탁밤 = { ...s.장면.부엌밤 }; delete s.장면.식탁밤.빛이름; 컷(s, 'C4').장면 = '식탁밤'; }],
+  ['비스듬한 앞옆 빛(from the front-left)은 앞빛이 아니고 키 빛의 쪽이다', (s) => { s.장면.부엌밤.빛이름 = ['Soft light']; s.장면.부엌밤.빛 = 'Night. A warm soft key from the front-left of the frame is the only light source; the far sides of everything fall into shadow.'; }],
+  ['뒤 · 위에서 오는 빛도 키 빛의 쪽이다', (s) => { s.장면.부엌밤.빛이름 = ['Window light']; s.장면.부엌밤.빛 = 'Night. Cold light from the window behind the table is the only source; everything in front of it reads as a soft dark shape.'; }],
 ];
 
 test(`틀 2 — 걸면 안 되는 ${지나감.length}가지는 통과한다(이어찍기 · 시간건너뜀 · 브랜드보임 · 동작인 「멈춘다」 · 물건 정지 · 글꼴 부정문)`, { skip: !파이썬 && '파이썬 없음' }, async () => {
@@ -629,6 +644,136 @@ test('틀 2 + --지시문 — 판(id = 컷 이름 · <편>-<컷> · 컷의 「�
   assert.equal(g5.status, 1, g5.stdout + g5.stderr);
   assert.match(g5.stdout, /✗ X1: \(빛\) 장면의 빛 문장이 표와 다르다/);
   assert.ok(!/컷표에 없는 판/.test(g5.stdout), g5.stdout);
+});
+
+// ───────── 빛 이름(11-11 — 팁 장부 47행 「조명효과 기억해」 · 점검표 60) ─────────
+test('빛 이름 — 로맨스 10-31 옛 빛 줄(「a large soft light falls on his face from the front」)은 옆빛 이름과 함께면 걸리고, 앞빛 이름(High key · Butterfly)을 고른 장면에서는 지나간다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const 옛 = 'A large soft light falls on his face from the front.';
+  const 얼굴장면 = (이름들) => (s) => { s.장면.얼굴 = { ...s.장면.부엌밤, 빛: 옛, 빛이름: 이름들 }; for (const c of ['C1', 'C2', 'C3']) 컷(s, c).장면 = '얼굴'; };
+  const r = 틀돌리기(얼굴장면(['Soft light']));
+  assert.equal(r.코드, 1);
+  const 걸림 = 걸림글(r);
+  assert.ok(걸림.some((g) => /장면 얼굴: 장면 「얼굴」의 빛 문장에 앞에서 고르게 비추는 말 「from the front」.*\(60\)/.test(g)), JSON.stringify(걸림));
+  assert.ok(걸림.some((g) => /빛 이름 「Soft light」은 키 빛의 쪽이 있어야 한다/.test(g)), JSON.stringify(걸림));
+  assert.equal(걸림.length, 2, JSON.stringify(걸림));
+  for (const 이름들 of [['High key', 'Rim light'], ['Butterfly'], ['butterfly', 'Rim light']]) {
+    const r2 = 틀돌리기(얼굴장면(이름들));
+    assert.equal(r2.코드, 0, `${이름들.join(' · ')}: ${JSON.stringify(r2.항목들.filter((x) => x.등급 !== '통과'))}`);
+  }
+  // Flat light는 지나가되 일부러 고른 컷인지 주의로 묻는다
+  const r3 = 틀돌리기(얼굴장면(['Flat light']));
+  assert.equal(r3.코드, 0);
+  assert.ok(r3.항목들.some((x) => x.항목 === '틀' && x.등급 === '주의' && /Flat light다 — 일부러 고른 컷/.test(x.글)));
+});
+
+test('틀 2 + --지시문 — 빛 이름: 표의 빛 줄 밖에 앞에서 고르게 비추는 빛을 따로 적으면 걸림(--지시문 · 굽기전 같은 판정), 카메라 자리 「from the front」와 앞빛 이름 장면은 통과', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const dir = 임시();
+  const 판들 = [
+    { id: 'C1', 글: 지시문글().replace('WHO:', 'LIGHTING: her face is evenly lit.\nWHO:') },
+    { id: 'C2', 글: 지시문글().replace('WHO:', 'NOTE: a large soft light falls on her face from the front.\nWHO:') },
+    { id: 'C3', 글: 지시문글().replace('3.5 s.', '3.5 s, the two of them seen from the front.') },   // 카메라 자리 — 빛 낱말과 한 절이 아니다
+  ];
+  const pack = 꾸러미만들기(dir, 판들, '앞빛');
+  const r = 틀돌리기(null, ['--지시문', pack], dir);
+  const 빛걸림 = 걸림글(r, '지시문').filter((g) => /\(빛\)/.test(g));
+  assert.equal(빛걸림.length, 2, JSON.stringify(걸림글(r, '지시문')));
+  assert.match(빛걸림.find((g) => g.startsWith('C1')), /^C1: \(빛\) 지시문에 앞에서 고르게 비추는 빛 「evenly lit」 — 장면 「부엌밤」의 빛 이름\(Practical light · Low key\)과 어긋난다\(60\)/);
+  assert.match(빛걸림.find((g) => g.startsWith('C2')), /^C2: \(빛\) 지시문에 앞에서 고르게 비추는 빛 「light falls on her face from the front」/);
+  assert.ok(!r.항목들.some((x) => x.컷 === 'C3' && /\(빛\)/.test(x.글)), JSON.stringify(r.항목들.filter((x) => x.컷 === 'C3')));
+  const g = 굽기전('함수', pack, '--컷표', path.join(dir, '컷표.json'));
+  assert.equal(g.status, 1, g.stdout + g.stderr);
+  assert.match(g.stdout, /✗ C1: \(빛\) 지시문에 앞에서 고르게 비추는 빛 「evenly lit」/);
+  assert.match(g.stdout, /✗ C2: \(빛\) 지시문에 앞에서 고르게 비추는 빛/);
+  assert.ok(!/✗ C3: \(빛\)/.test(g.stdout), g.stdout);
+  // 실물 지시문 775판에서 나온 꼴(11-11): 다시 얹을 자리를 고르게 칠한 초록 판 · 비스듬한 앞옆 빛은 걸지 않고, 정면 빛(「a hard frontal light」)은 건다
+  const 실물 = 꾸러미만들기(dir, [
+    { id: 'C1', 글: 지시문글().replace('WHO:', 'PROPS: the phone screen is a flat, plain, evenly lit chroma-green panel that stays exactly as in the first frame.\nWHO:') },
+    { id: 'C2', 글: 지시문글().replace('WHO:', 'NOTE: a warm light from the front-left catches her profile.\nWHO:') },
+    { id: 'C3', 글: 지시문글().replace('WHO:', 'NOTE: against a near-black background under a hard frontal light, her face fills the frame.\nWHO:') },
+  ], '실물꼴');
+  const r1 = 틀돌리기(null, ['--지시문', 실물], dir);
+  const 빛걸림1 = 걸림글(r1, '지시문').filter((x) => /\(빛\)/.test(x));
+  assert.equal(빛걸림1.length, 1, JSON.stringify(걸림글(r1, '지시문')));
+  assert.match(빛걸림1[0], /^C3: \(빛\) 지시문에 앞에서 고르게 비추는 빛 「frontal light」/);
+  // 앞빛 이름을 고른 장면이면 같은 말이 지나간다
+  const 새빛 ='Bright, airy high-key light from the front and above; a thin rim of light from behind separates every outline from the wall.';
+  const pack2 = 꾸러미만들기(dir, 판들.slice(0, 2).map((p) => ({ id: p.id, 글: p.글.replace(빛문장, 새빛) })), '하이키');
+  const r2 = 틀돌리기((s) => { s.장면.부엌밤.빛이름 = ['High key', 'Rim light']; s.장면.부엌밤.빛 = 새빛; }, ['--지시문', pack2], dir);
+  assert.deepEqual(걸림글(r2, '지시문'), [], JSON.stringify(r2.항목들.filter((x) => x.등급 === '걸림')));
+});
+
+const 빛단위 = String.raw`
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import 컷연속성검사 as k
+표, 까닭 = k.빛이름표()
+out = {"까닭": 까닭, "수": len(표["이름"]), "앞빛허용": sorted(표["앞빛허용"]), "문턱": 표["좌우문턱"]}
+seq = json.load(open(sys.argv[2], encoding="utf-8")); 빛 = seq["장면"]["부엌밤"]["빛"]
+글 = "LOOK: " + 빛 + " The table is evenly lit."
+out["사람판"] = k.빛대조(seq, ["C1"], 글); out["사람없는판"] = k.빛대조(seq, ["C4"], 글)
+줄들 = list(표["이름"].values())
+out["뼈대_쪽없음"] = [x["이름"] for x in 줄들 if x.get("방향") is True and not (k._빛쪽.search(x["뼈대"]) or k._빛뒤위.search(x["뼈대"]))]
+out["뼈대_앞빛"] = [x["이름"] for x in 줄들 if x["이름"].lower() not in 표["앞빛허용"] and k._앞빛_표.search(x["뼈대"])]
+out["칸빠짐"] = [x["이름"] for x in 줄들 if not x.get("뜻") or not isinstance(x.get("잣대"), list) or (not x.get("뼈대") and not x.get("대신"))]
+out["옆빛인데_방향아님"] = [x["이름"] for x in 줄들 if ("좌우" in x["잣대"]) != (x.get("방향") is True)]
+값 = {"좌우": 0.131, "위아래": 0.02, "색": 3.0, "역광": 0.99}
+옆 = "Soft daylight from a window at the left of the frame."
+out["판정"] = {
+    "옆빛_낮음": k.빛판정(["Window light"], 옆, 값, 표),
+    "옆빛_넘음": k.빛판정(["Window light"], 옆, dict(값, 좌우=0.289), 표),
+    "뒤에서": k.빛판정(["Window light"], "Daylight from the window behind the table.", 값, 표),
+    "앞빛이름": k.빛판정(["Butterfly", "Soft light"], "A soft key from the front and above, slightly toward the left of the frame.", 값, 표),
+    "색이름": k.빛판정(["Neon light"], "Pink neon at the left of the frame, blue at the right.", 값, 표),
+}
+if len(sys.argv) > 3:
+    import numpy as np
+    a = np.full((300, 300, 3), 60, np.uint8); a[100:200, 100:150] = 200; a[100:200, 150:200] = 100
+    b = np.full((300, 300, 3), 60, np.uint8); b[100:133, 100:200] = 220; b[133:200, 100:200] = 110
+    c = np.full((300, 300, 3), 60, np.uint8); c[100:200, 100:150] = (220, 60, 60); c[100:200, 150:200] = (60, 60, 220)
+    out["값"] = {"좌우": k.얼굴빛값(a, (100, 100, 200, 200)), "위아래": k.얼굴빛값(b, (100, 100, 200, 200)), "색": k.얼굴빛값(c, (100, 100, 200, 200)), "작음": k.얼굴빛값(a, (100, 100, 104, 104))}
+print(json.dumps(out, ensure_ascii=False))
+`;
+const 빛단위돌리기 = (그림도) => {
+  const dir = 임시();
+  const r = spawnSync('python', ['-I', '-X', 'utf8', '-c', 빛단위, path.join(__dirname, '..', 'tools'), 틀경로, ...(그림도 ? ['그림'] : [])], { encoding: 'utf8', maxBuffer: 1 << 24, cwd: dir });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout);
+};
+
+test('빛 이름 — 표(빛이름.json)는 34줄이고 스스로 규칙을 어기지 않는다, 사람 없는 판은 앞빛 낱말을 걸지 않고, 얼굴 빛 판정은 옆빛 이름 + 옆쪽 문장 + 문턱 아래일 때만 「확인」이다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const o = 빛단위돌리기(false);
+  assert.equal(o.까닭, null);
+  assert.equal(o.수, 34);
+  assert.deepEqual(o.앞빛허용, ['butterfly', 'flat light', 'high key']);
+  assert.equal(o.문턱, 0.2);
+  assert.deepEqual([o.뼈대_쪽없음, o.뼈대_앞빛, o.칸빠짐, o.옆빛인데_방향아님], [[], [], [], []]);
+  assert.equal(o.사람판.length, 1, JSON.stringify(o.사람판));
+  assert.match(o.사람판[0][1], /앞에서 고르게 비추는 빛 「evenly lit」/);
+  assert.deepEqual(o.사람없는판, [], '사람 없는 컷의 판은 걸지 않는다');
+  assert.equal(o.판정.옆빛_낮음[0], '확인');
+  assert.match(o.판정.옆빛_낮음[1], /얼굴 좌우빛 0\.131 — 옆빛 이름\(Window light\)인데 문턱 0\.2 아래다/);
+  assert.equal(o.판정.옆빛_넘음[0], '통과');
+  assert.equal(o.판정.뒤에서[0], '알림', '문장에 왼쪽 · 오른쪽이 없으면(뒤에서 오는 빛) 좌우로 판정하지 않는다');
+  assert.equal(o.판정.앞빛이름[0], '알림', '앞빛 이름을 고른 장면은 좌우로 판정하지 않는다');
+  assert.equal(o.판정.색이름[0], '알림');
+});
+
+test('빛 이름 — 얼굴 빛 값(가짜 그림): 좌우 · 위아래 · 색 · 역광 셈, 너무 작은 상자는 재지 않는다 · 얼굴 없는 그림은 알림(검출기가 없는 곳은 확인)', { skip: !그림라이브러리 && '파이썬 그림 라이브러리 없음' }, () => {
+  const o = 빛단위돌리기(true);
+  assert.ok(Math.abs(o.값.좌우.좌우 - 0.667) < 0.005 && Math.abs(o.값.좌우.위아래) < 0.005 && o.값.좌우.색 < 1, JSON.stringify(o.값.좌우));
+  assert.ok(Math.abs(o.값.좌우.역광 - 2.5) < 0.01, `얼굴 150 ÷ 둘레 60: ${o.값.좌우.역광}`);
+  assert.ok(o.값.위아래.위아래 > 0.7 && o.값.위아래.좌우 < 0.005, JSON.stringify(o.값.위아래));
+  assert.ok(o.값.색.색 > 60, JSON.stringify(o.값.색));
+  assert.equal(o.값.작음, null);
+  // 사람 컷의 정지 그림에 얼굴이 없으면 알림으로만 남는다(검출 모델이 없는 곳에서는 못 쟀다는 「확인」 한 줄)
+  const dir = 임시(); const 그림 = path.join(dir, '정지'); fs.mkdirSync(그림);
+  const 만들기 = spawnSync('python', ['-I', '-X', 'utf8', '-c', 'import sys\nfrom PIL import Image\nfor c in ("C1", "C2", "C3"): Image.new("RGB", (360, 640), (70, 70, 70)).save(sys.argv[1] + "/" + c + ".png")', 그림], { encoding: 'utf8' });
+  assert.equal(만들기.status, 0, 만들기.stderr);
+  const r = 틀돌리기(null, ['--그림', 그림, '--항목', '틀,빛'], dir);
+  const 빛줄 = r.항목들.filter((x) => x.항목 === '빛');
+  assert.ok(빛줄.length >= 1, JSON.stringify(r.항목들));
+  const 검출기없음 = 빛줄.some((x) => x.등급 === '확인' && /얼굴 검출기를 못 불러/.test(x.글));
+  if (!검출기없음) assert.deepEqual(빛줄.map((x) => `${x.컷}:${x.등급}`), ['C1:알림', 'C2:알림', 'C3:알림'], JSON.stringify(빛줄));
 });
 
 test('틀 2 + --그림지시문 — 장소 · 빛 · 인물 줄이 표 그대로면 통과, 인물 옷 문장이 빠지면 걸림, 파일 없는 컷은 주의', { skip: !파이썬 && '파이썬 없음' }, () => {
