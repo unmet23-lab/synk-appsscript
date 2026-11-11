@@ -57,7 +57,7 @@ const music = createMusic(sound.ctx, { destination: sound.output });
 sound.onVoice = (on) => music.voice(on);
 await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED'), document.fonts.load('700 19px SubwayUI'), document.fonts.load('500 30px SubwayNum')]).catch(() => {});
 const hud = createHud({ route: $('hud-route'), clock: $('hud-clock'), status: $('hud-status'), badge: $('hud-badge'), stage: $('stage'), calm: reduced });
-// 옛 index.html(캐시 10분)이 새 app.mjs를 부르면 #pick이 없다 — 그때는 판 자리를 만들어 붙인다(Fable 5.2 P1: root null로 모듈이 죽어 입구도 안 떴다)
+// 옛 index.html(캐시 10분)이 새 app.mjs를 부르면 #pick이 없다 — 그때는 판 자리를 만들어 붙인다(검수: root null로 모듈이 죽어 입구도 안 떴다)
 const pickRoot = $('pick') || $('stage').appendChild(Object.assign(document.createElement('section'), { id: 'pick', className: 'pick', hidden: true }));
 const panel = createPickPanel({ root: pickRoot });
 const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced, look: query.get('look') === 'b' ? 'b' : 'a' }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
@@ -420,7 +420,7 @@ async function playSignDecision(run, d, { img, dep, keyLine, auto, note = null }
   ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}` }));
   noteMissed(result, d);
   const way = d.options.findIndex((o) => o.id === d.answer);
-  // 맞게 고르면 채운 칸을 잠깐 보이고 판이 내려가기 시작한 뒤 달려 나간다(Fable 5.2 P3 — 판이 달려 나감 · 만남의 앞을 덮었다)
+  // 맞게 고르면 채운 칸을 잠깐 보이고 판이 내려가기 시작한 뒤 달려 나간다(검수 — 판이 달려 나감 · 만남의 앞을 덮었다)
   if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); await wait(reduced() ? 0.1 : 0.45); }
   else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); panel.show(kind, d.options, { line: LINES[hud.state.line]?.color }); await wait(0.6); panel.pick(way); await wait(0.7); }   // 맞는 길을 판에서 채워 짚고 그리로 달린다 — 판이 다 올라온 뒤에 채운다(검수 A3)
   return { way, result };

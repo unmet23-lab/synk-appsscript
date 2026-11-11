@@ -104,7 +104,7 @@ html[data-lobby-fit=side] .ticket-route{flex-wrap:wrap;row-gap:2px;white-space:n
    세 칸은 1px 세로줄로 나눈 한 판 — 칸마다 위에 갈 곳의 색 띠 · 속이 찬 길 안내 화살(사진 속 「↑ 나가는 곳」 표지와 같은 꼴) · 굵은 말 + 가는 말.
    고르면 그 칸이 갈 곳의 색으로 위에서부터 찬다. 판이 덮는 동안 사진은 판 위로 올라와 승객 · 갈래가 보인다(app.mjs FRAME_Y) */
 /* 크기는 무대 높이(cqh)를 따라 줄어든다 — 낮은 화면(iPhone SE 667 · 주소창이 열린 폰 · 1366×768 창)에서 칸 글이 잘리던 것(검수 A1). 844 높이에서 처음 값과 같다.
-   cq 단위를 모르는 브라우저(iOS Safari 15.4~15.8 · Firefox 109 아래)에서는 var()에 든 cqh가 계산 때 무효가 되어 누름 칸 높이가 0이 됐다(Fable 5.2 P2) —
+   cq 단위를 모르는 브라우저(iOS Safari 15.4~15.8 · Firefox 109 아래)에서는 var()에 든 cqh가 계산 때 무효가 되어 누름 칸 높이가 0이 됐다(검수) —
    화면 높이(vh) 판을 먼저 두고 — 무대는 보통 화면 높이 그대로라 거의 같다 — cq 판은 @supports 안에서만, var() 없는 글자 크기는 vh 판 뒤에 같은 속성을 한 번 더(모르는 단위면 그 줄만 버려진다) */
 .stage{--pick-h:33%;--pick-head:clamp(44px,6.9vh,58px);--pk-pad:clamp(10px,2.6vh,22px);--pk-padb:clamp(8px,1.7vh,14px);--pk-gap:clamp(6px,1.55vh,13px);--pk-arrow-s:clamp(26px,5.2vh,44px)}
 @supports (height:1cqh){.stage{--pick-head:clamp(44px,6.9cqh,58px);--pk-pad:clamp(10px,2.6cqh,22px);--pk-padb:clamp(8px,1.7cqh,14px);--pk-gap:clamp(6px,1.55cqh,13px);--pk-arrow-s:clamp(26px,5.2cqh,44px)}}
@@ -146,7 +146,7 @@ html[data-picking] .hud-row2{justify-content:flex-end}
 /* 아주 낮은 무대: 영문 꼬리표부터 빼고, 더 낮으면 화살도 뺀다(색 띠 · 글이 남는다) */
 @media (max-height:560px){.pk-en{display:none}}   /* 무대 높이 = 창 높이(게임 틀 iframe 안에서도) — @container가 아니라 @media라 cq를 모르는 브라우저에서도 듣는다 */
 @media (max-height:450px){.pk-arrow{display:none}.pk-line{position:static}}   /* 화살이 빠지면 노선 동그라미가 글 줄로 내려와 겹치므로 흐름에 넣는다(검수 A3) */
-@media (max-height:490px),(max-width:305px){.pk-hint{display:none}}   /* 무대 폭(= min(창 폭, 창 높이 × .62))이 305 아래일 때만 손짓 안내가 질문을 「…」로 잘랐다 — 그때만 뺀다(360 · 320 폰은 한 줄에 든다, Fable 5.2 P2). 창 크기로 재서 cq를 모르는 브라우저에서도 듣는다 */
+@media (max-height:490px),(max-width:305px){.pk-hint{display:none}}   /* 무대 폭(= min(창 폭, 창 높이 × .62))이 305 아래일 때만 손짓 안내가 질문을 「…」로 잘랐다 — 그때만 뺀다(360 · 320 폰은 한 줄에 든다, 검수). 창 크기로 재서 cq를 모르는 브라우저에서도 듣는다 */
 .pk-opt[data-mine] .pk-num{color:var(--t)}
 @keyframes pk-in{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
 @keyframes pk-weight{from{font-weight:260}to{font-weight:800}}
