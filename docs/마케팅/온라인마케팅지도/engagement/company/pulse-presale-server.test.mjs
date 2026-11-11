@@ -328,3 +328,55 @@ test('결제 이력이 가득 차도 열린 결제의 확인 · 취소(환불)�
   await o.act({action:'payment_confirm'},409);                   // 요청 없이 바로 하는 확인도 새 결제를 여는 줄이다
   assert.equal((await o.refresh()).studio.request.paymentLog.length,102);
 });
+
+// 2026-11-11 운영 조각 2-A(설계 S1 「함께 메우는 빈칸」 ①): 손님 일지의 결제 줄은 서버가 이력에서 만든 paymentTrail로 그린다 —
+// 다시 요청해도 앞 줄이 남고, 허용 목록(종류 · 때 · 값 · 받으실 날)이라 담당자 이름 · 주문 번호 · 취소 까닭 · 받은 곳 · 실수령은 내려가지 않는다.
+test('결제 줄: 손님 보기 paymentTrail은 요청 → 취소 → 다시 요청 → 확인 → 환불이 모두 남고, 종류 · 때 · 값 · 받으실 날만 담는다',async t=>{
+  const f=await fixture(t),o=await f.order();
+  assert.equal(Object.hasOwn((await o.room()).project.studio.request,'paymentTrail'),false,'결제가 한 번도 없으면 칸이 없다');
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  await o.act({action:'payment_cancel',note:'크몽 요청이 24시간 지나 닫힘 SECRET-CANCEL-NOTE'});
+  await o.act({action:'payment_request',amount:300000});
+  await o.act({action:'payment_confirm',ref:'KM-SECRET-REF',channel:'direct',net:240000});
+  const log=o.row.studio.request.paymentLog;
+  let trail=(await o.room()).project.studio.request.paymentTrail;
+  assert.deepEqual(trail.map(entry=>[entry.kind,entry.amount]),[['requested',290000],['cancelled',290000],['requested',300000],['confirmed',300000]]);
+  assert.deepEqual(trail.map(entry=>entry.at),log.map(entry=>entry.at),'때는 이력 그대로');
+  assert.equal(trail[3].dueDate,o.row.studio.request.payment.dueDate);assert.match(trail[3].dueDate,/^\d{4}-\d{2}-\d{2}$/);
+  assert.ok(trail.slice(0,3).every(entry=>!Object.hasOwn(entry,'dueDate')),'받으실 날은 확인 줄에만');
+  for(const entry of trail)assert.deepEqual(Object.keys(entry).filter(key=>!['kind','at','amount','dueDate'].includes(key)),[],JSON.stringify(entry));
+  assert.doesNotMatch(JSON.stringify(trail),/KM-SECRET-REF|SECRET-CANCEL-NOTE|관리자|240000|direct|kmong|seeded/);
+  // 환불(확인한 결제의 취소)도 한 줄 더 — 까닭 · 무엇을 취소했는지(was)는 내려가지 않는다.
+  await o.act({action:'payment_cancel',note:'전액 환불 SECRET-REFUND-NOTE'});
+  trail=(await o.room()).project.studio.request.paymentTrail;
+  assert.equal(trail.length,5);assert.deepEqual([trail[4].kind,trail[4].amount],['cancelled',300000]);
+  assert.doesNotMatch(JSON.stringify(trail),/SECRET-REFUND-NOTE|"was"|"by"|"note"|"ref"|"net"|"channel"/);
+  // 손님 결제 칸(지금 상태)은 전과 같은 열쇠뿐이다.
+  assert.deepEqual(Object.keys((await o.room()).project.studio.request.payment).sort(),['amount','cancelledAt','confirmedAt','dueDate','requestedAt','status']);
+});
+
+test('결제 줄: 이력 없이 결제가 적힌 옛 프로젝트도 그 결제 칸에서 만든 줄이 같은 꼴로 내려가고, 직원 보기에는 paymentTrail이 없다',async t=>{
+  const f=await fixture(t),o=await f.order();
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  const stored=f.app.store.get('clientProjects',o.id),{paymentLog,...request}=stored.studio.request;
+  f.app.store.put('clientProjects',o.id,{...stored,studio:{...stored.studio,request}});
+  const trail=(await o.room()).project.studio.request.paymentTrail;
+  assert.deepEqual(trail,[{kind:'requested',at:request.payment.requestedAt,amount:290000}],'seeded 표시 · 담당자 이름 없이');
+  assert.equal(Object.hasOwn((await o.refresh()).studio.request,'paymentTrail'),false,'직원은 paymentLog 전체를 본다');
+});
+
+// 카본 끝판 검수 A2: 깨진 이력(옛 데이터 · 손으로 고친 문서)에서도 허용 목록만 — 모르는 종류 · 때 없는 줄 · 범위 밖 값은 빼고, 다 빠지면 칸이 없다.
+test('결제 줄: 깨진 이력은 줄마다 걸러 내리고(종류 · 때 · 값 · 확인 줄의 받으실 날만), 다 걸러지면 paymentTrail이 없다',async t=>{
+  const f=await fixture(t),o=await f.order();
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  const at=new Date().toISOString(),put=log=>{const stored=f.app.store.get('clientProjects',o.id);f.app.store.put('clientProjects',o.id,{...stored,studio:{...stored.studio,request:{...stored.studio.request,paymentLog:log}}});};
+  put([null,'x',{kind:'refunded',at},{kind:'requested',at:''},{kind:'requested',at:'  '},{kind:'requested'},{kind:'requested',at:'어제'},
+    {kind:'requested',at,amount:5,by:'SECRET-BY'},{kind:'cancelled',at,amount:290000,dueDate:'2026-12-01',note:'SECRET-NOTE',was:'requested'},{kind:'confirmed',at,amount:'290000',dueDate:'',ref:'SECRET-REF'}]);
+  const trail=(await o.room()).project.studio.request.paymentTrail;
+  assert.deepEqual(trail,[{kind:'requested',at},{kind:'cancelled',at,amount:290000},{kind:'confirmed',at}],'범위 밖 값 · 글자 값 · 빈 받으실 날 · 취소 줄의 받으실 날은 빼고, 담당자 이름 · 까닭 · 주문 번호도 없다');
+  put([null,{kind:'refunded',at},{kind:'requested',at:''}]);
+  assert.equal(Object.hasOwn((await o.room()).project.studio.request,'paymentTrail'),false);
+});

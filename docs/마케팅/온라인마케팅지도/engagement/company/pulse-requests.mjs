@@ -502,6 +502,8 @@ function seedPaymentLog(payment){
   return log;
 }
 export const paymentLogOf=request=>Array.isArray(request?.paymentLog)?request.paymentLog:seedPaymentLog(request?.payment);
+// 손님 일지에 오르는 결제 줄의 종류(requestView paymentTrail). 환불 · 받으실 날 고침처럼 뒤에 더할 종류는 화면이 그 문장을 가진 뒤에 여기 넣는다.
+const PAYMENT_TRAIL_KINDS=['requested','confirmed','cancelled'];
 // opens: 새 결제를 여는 줄(요청, 또는 요청 없이 바로 하는 확인)만 상한에 걸린다. 이미 열린 결제를 닫는 줄(요청한 결제의 확인 · 취소 · 환불)은
 // 가득 차도 적는다 — 막으면 환불한 결제가 「확인함」으로 남아 제작 문턱이 열린 채가 된다(GPT 검수 GA1). 그래서 길이는 상한을 둘까지 넘을 수 있다.
 function logPayment(request,entry,{opens=false}={}){
@@ -820,6 +822,11 @@ export function requestView(studio,{staff=false}={}){
   if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),paymentFlow:true,castingLooks:true,paymentLedger:true};
   // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
+  // paymentTrail(운영 조각 2 · 11-11): 일지의 결제 줄 — 다시 요청해도 앞 요청 · 취소 줄이 남게 이력에서 만든다.
+  // 허용 목록으로 종류 · 때 · 값 · (확인 줄의) 받으실 날만 담는다. 담당자 이름 · 크몽 주문 번호 · 취소 까닭 · 받은 곳 · 실수령은 내리지 않는다.
+  // 결제가 한 번도 없었으면 싣지 않는다. 옛 서버에는 이 칸이 없어 화면이 payment의 때로 대신 그린다(room-view.mjs journalModel).
+  // 때를 읽을 수 없는 줄(빈 값 · 깨진 값)은 내리지 않는다(카본 끝판 검수 A1).
+  const trail=paymentLogOf(request).filter(entry=>PAYMENT_TRAIL_KINDS.includes(entry?.kind)&&typeof entry.at==='string'&&Number.isFinite(Date.parse(entry.at))).map(entry=>({kind:entry.kind,at:entry.at,...(paymentAmount(entry.amount)?{amount:entry.amount}:{}),...(entry.kind==='confirmed'&&typeof entry.dueDate==='string'&&entry.dueDate?{dueDate:entry.dueDate}:{})}));
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
-  return {...safe,paymentFlow:true,castingLooks:true};
+  return {...safe,...(trail.length?{paymentTrail:trail}:{}),paymentFlow:true,castingLooks:true};
 }

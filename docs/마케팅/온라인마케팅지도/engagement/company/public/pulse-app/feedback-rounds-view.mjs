@@ -1,5 +1,6 @@
 import {esc,stamp,clock} from './api.mjs';
 import {t,k} from './i18n.mjs';
+import {pkgOf} from './request-data.mjs';
 const clockOf=value=>value===null||value===undefined||value===''?'':clock(value);
 
 // 의견 분류 이름 — 서버(pulse-feedback-rounds.mjs)와 같은 한국어 값. 손님 기둥(feedbackRoundsColumn)은 서버가 내린 이름을 그리는 자리에서 옮긴다.
@@ -35,8 +36,12 @@ export function feedbackRoundsColumn(s){
   const project=s.project,data=project?.studio?.feedbackRounds;if(!data)return '';
   const canEdit=project.stage!=='archived',drafts=data.drafts||[],current=drafts.find(draft=>draft.current),viewingLatest=!s.versionId||s.versionId===data.latestVersionId;
   // 판 4 B8: 보내는 분 이름은 의뢰서 성함으로 채우고, 이번에 쓰는 수정 횟수를 체크 옆에 보인다(정한 횟수가 있을 때만).
-  const request=project.studio?.request,sender=request?.answers?.contactName||'',total=Number.isFinite(request?.directionProposal?.revisions)?request.directionProposal.revisions:null;
-  let html='';
+  // 정한 횟수: 방향 제안에 적힌 것, 없으면(방향 제안 없이 온 사진 상품 등) 패키지 것 — 결제 카드(room-view.mjs payModel)와 같은 값.
+  const request=project.studio?.request,sender=request?.answers?.contactName||'',proposed=request?.directionProposal?.revisions,total=Number.isSafeInteger(proposed)?proposed:request?pkgOf(request.answers||{})?.revisions??null:null;
+  // 운영 조각 2(11-11): 남은 수정 횟수를 시안을 보는 동안 늘 보인다(정한 횟수가 있을 때만) — 전에는 의견을 보내는 확인 창에서만 보였다.
+  // 세는 법은 그 창과 같다 — 보낸 의견 묶음 하나가 한 회(data.rounds — 서버 pulse-feedback-rounds.mjs의 nextNumber와 같은 수).
+  const left=total?Math.max(0,total-(data.rounds||[]).length):0;
+  let html=total&&data.canDraft&&canEdit?`<p class="sx-small sx-rounds-left" data-rounds-left>${esc(left?t('수정 {total}회 중 {left}회 남았어요.',{total,left,count:total}):t('정한 수정 {total}회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.',{total,count:total}))}</p>`:'';
   if(data.canDraft&&canEdit&&viewingLatest){
     if((current?.items.length||0)<data.maxItems)html+=`<form class="sx-say" data-form="round-draft" data-id="${esc('new:'+data.latestVersionId)}" data-item-id="" data-draft-id="${esc(current?.id||'')}" data-version-id="${esc(data.latestVersionId)}"><input type="hidden" name="seconds" value=""><div class="sx-say-row"><output class="sx-no sx-say-clock round-clock" data-live-clock>0:00</output><textarea name="text" rows="1" required maxlength="3000" placeholder="${esc(t('이 순간에 남길 의견'))}" aria-label="${esc(t('이 순간에 남길 의견'))}" data-grow></textarea><button type="submit" class="sx-small sx-say-send" data-mutate>${esc(t('남기기'))}</button></div></form>`;
     if(current?.items.length)html+=`<div class="sx-notes">${current.items.map(item=>`<article class="sx-note-row is-draft" ${item.seconds===null?'':`data-note-at="${esc(item.seconds)}"`}>${item.seconds===null?`<span class="sx-no sx-ko">${esc(t('전체',null,'whole'))}</span>`:`<button type="button" class="sx-no" data-action="seek" data-version="${esc(data.latestVersionId)}" data-seconds="${esc(item.seconds)}">${esc(clock(item.seconds))}</button>`}<div><p class="sx-body">${esc(item.text)}</p><details class="sx-note-edit"><summary class="sx-small sx-link">${esc(t('고치기'))}</summary><form data-form="round-draft" data-id="${esc(item.id)}" data-item-id="${esc(item.id)}" data-draft-id="${esc(current.id)}" data-version-id="${esc(data.latestVersionId)}"><input type="hidden" name="seconds" value="${esc(item.seconds??'')}"><textarea name="text" rows="2" required maxlength="3000" aria-label="${esc(t('의견 초안'))}">${esc(item.text)}</textarea><button type="submit" class="sx-small sx-link" data-mutate>${esc(t('저장'))}</button></form></details><button type="button" class="sx-small sx-link" data-action="round-remove-item" data-draft-id="${esc(current.id)}" data-id="${esc(item.id)}" data-mutate>${esc(t('빼기'))}</button></div></article>`).join('')}</div>`;

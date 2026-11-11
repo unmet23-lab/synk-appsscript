@@ -1809,4 +1809,13 @@ export default {
   "다시 열리면 이 화면에서 바로 시작하실 수 있어요.":"Once we resume, you can start right here.",
   "완성 광고 보기":"See finished ads",
   "지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.":"We’ve paused new briefs for now. Once we resume, you can start right here.",
+  // 일지 결제 줄 · 남은 수정(운영 조각 2 · 11-11): 담당자 이름 뒤에 서는 줄이라 동사로 시작한다(room-view.mjs paymentWhat · feedback-rounds-view.mjs)
+  "크몽 결제 요청을 보냈어요":"sent a payment request on Kmong",
+  "크몽 결제 요청을 보냈어요 · {amount}":"sent a payment request on Kmong · {amount}",
+  [`journal${C}결제를 확인했어요`]:"confirmed your payment",
+  "결제를 확인했어요 · 받으실 날 {date}":"confirmed your payment · delivery on {date}",
+  "결제를 취소했어요":"cancelled the payment",
+  "결제 요청을 취소했어요":"cancelled the payment request",
+  "수정 {total}회 중 {left}회 남았어요.":{"one":"Your {total} revision is still available.","other":"{left} of your {total} revisions left."},
+  "정한 수정 {total}회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your {total} agreed revision. We will agree the scope with you before making further changes.","other":"You have used all {total} agreed revisions. We will agree the scope with you before making further changes."},
 };
