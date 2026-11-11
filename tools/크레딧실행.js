@@ -204,6 +204,17 @@ function 잠그기(파일, 오래됨ms) {
   return () => { try { if (JSON읽기(파일)?.pid === process.pid) fs.rmSync(파일, { force: true }); } catch { /* 다음 실행이 주인 없는 잠금을 넘는다 */ } };
 }
 
+/** 구독으로 띄울 때 쓰이는 이 PC Claude CLI 로그인 계정(이메일, 소문자). 못 읽으면 null.
+ *  구독 한도는 그때 로그인한 계정의 것이다 — 11-11 CLI 로그인을 yuhobuilds로 바꾼 뒤에도 옛 계정의 한도(11-16까지)로
+ *  팁 적용안이 쉬었다. 그래서 한도 기록에 계정을 적고, 지금 계정이 다르면 그 기록으로 쉬지 않는다. */
+function 구독계정읽기() {
+  try {
+    const r = spawnSync(claude실행파일(), ['auth', 'status'], { encoding: 'utf8', windowsHide: true, timeout: 60 * 1000, env: 환경만들기(null) });
+    const j = JSON.parse(String(r.stdout || '').trim());
+    return j && j.loggedIn && typeof j.email === 'string' && j.email ? j.email.toLowerCase() : null;
+  } catch { return null; }
+}
+
 function 명령실행(명령, 인자 = [], { cwd = 루트, 입력 } = {}) {
   const r = spawnSync(명령, 인자, { cwd, encoding: 'utf8', windowsHide: true, input: 입력, maxBuffer: 64 * 1024 * 1024, timeout: 10 * 60 * 1000 });
   return { code: r.status ?? (r.error ? 127 : 1), stdout: r.stdout || '', stderr: r.stderr || String(r.error?.message || '') };
@@ -294,8 +305,20 @@ async function 작업돌리기(이름, 옵션 = {}) {
       마지막확인('할일없음', 자료?.이유 ?? null);
       return { 상태: '할일없음', 이유: 자료?.이유 ?? null };
     }
-    const 쉼 = JSON읽기(한도파일);
-    const 쉬는중 = Date.parse(쉼?.풀림) > +지금은();
+    let 쉼 = JSON읽기(한도파일);
+    let 쉬는중 = Date.parse(쉼?.풀림) > +지금은();
+    // 지금 CLI 계정은 쉬는 기록이 있거나 한도를 새로 적을 때만 읽는다(claude auth status 한 번). 가짜 실행파일을 준 시험은
+    // 진짜 CLI를 부르지 않게 옵션.구독계정이 없으면 모름(null)으로 둔다 — 모르면 기록대로 쉰다.
+    const 계정알기 = 옵션.구독계정 || (옵션.실행파일 ? null : 구독계정읽기);
+    let 지금계정;
+    const 계정 = async () => {
+      if (지금계정 === undefined) { try { 지금계정 = 계정알기 ? (await 계정알기()) || null : null; } catch { 지금계정 = null; } }
+      return 지금계정;
+    };
+    if (쉬는중 && 작업.구독대체) {
+      const 누구 = await 계정();
+      if (누구 && 쉼.계정 !== 누구) { 쉼 = null; 쉬는중 = false; } // 다른 계정(또는 계정 칸 없는 옛 기록)의 한도 — 한 번 띄워 본다
+    }
     단계 = '모델 실행';
     const 돈 = await 크레딧으로띄우기({
       이름, 입력: 작업.지시문(자료, ctx), cwd: 작업.작업폴더 || 루트, 시간제한: 작업.시간제한,
@@ -337,12 +360,13 @@ async function 작업돌리기(이름, 옵션 = {}) {
       const 때 = 지금은();
       const 풀림 = 걸린한도.풀림 && +걸린한도.풀림 > +때 ? 걸린한도.풀림 : new Date(+때 + 기본쉼ms);
       const 알릴까 = !(Date.parse(쉼?.알림) > +때 - 한도알림간격ms);
+      const 누구 = await 계정();
       fs.writeFileSync(한도파일, JSON.stringify({ 풀림: 풀림.toISOString(), 글: 가리기(돈.결과.글), 작업: 이름,
-        알림: 알릴까 ? 때.toISOString() : 쉼.알림 }, null, 2) + '\n');
+        알림: 알릴까 ? 때.toISOString() : 쉼.알림, 계정: 누구 }, null, 2) + '\n');
       directNotificationAttempted = 알릴까;
       마지막확인('한도쉼', '구독 사용 한도 대기', { 경로: 돈.경로, 풀림: 풀림.toISOString() });
       if (알릴까) {
-        알림(`[크레딧 실행] ${이름}: 이 PC Claude CLI 구독이 사용 한도에 걸려 ${시각글(풀림)}까지 쉬어요. 풀린 뒤 다음 확인에서 저절로 다시 돌고, 그동안 이 알림은 다시 보내지 않아요.\n원문: ${가리기(돈.결과.글).slice(0, 200)}`);
+        알림(`[크레딧 실행] ${이름}: 이 PC Claude CLI 구독${누구 ? `(${누구})` : ''}이 사용 한도에 걸려 ${시각글(풀림)}까지 쉬어요. 풀린 뒤 다음 확인에서 저절로 다시 돌고, 그동안 이 알림은 다시 보내지 않아요. PC CLI 로그인을 다른 계정으로 바꾸면 다음 확인에서 바로 다시 돌아요.\n원문: ${가리기(돈.결과.글).slice(0, 200)}`);
       }
       return { 상태: '한도쉼', 경로: 돈.경로, 풀림: 풀림.toISOString(), 기록파일 };
     }
@@ -385,7 +409,7 @@ async function 중계(인자들, 옵션 = {}) {
   return r.code;
 }
 
-module.exports = { 환경만들기, 설정폴더준비, 결과읽기, 한도읽기, 띄우기, 잠그기, 크레딧으로띄우기, 작업돌리기, 중계, 텔레그램보내기, 명령실행 };
+module.exports = { 환경만들기, 설정폴더준비, 결과읽기, 한도읽기, 구독계정읽기, 띄우기, 잠그기, 크레딧으로띄우기, 작업돌리기, 중계, 텔레그램보내기, 명령실행 };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);

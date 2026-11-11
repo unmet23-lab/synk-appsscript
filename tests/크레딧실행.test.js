@@ -252,6 +252,37 @@ test('구독이 쉬는 동안에도 크레딧 키가 있으면 그 키로 돈다
   } finally { t.지우기(); }
 });
 
+test('PC CLI 로그인 계정이 바뀌면 옛 계정의 구독 한도로 쉬지 않는다(11-11 yuhobuilds로 바꾼 뒤 팁 적용안이 11-16까지 쉼)', async () => {
+  const t = 방만들기([['A', 20, 'sk-ant-test-aaaa']]);
+  try {
+    const { 작업, 받은 } = 가짜작업();
+    const out = path.join(t.방, 'out');
+    const 한도파일 = path.join(t.방, '구독한도.json');
+    const 때 = new Date('2026-11-11T17:01:00Z');
+    const 돌기 = (누구) => 실행기.작업돌리기('시험작업', { ...t.실행옵션, 작업, 방: out, fetch: 확인소진, 알림: () => {}, 지금: 때,
+      구독계정: async () => 누구 });
+    const 옛기록 = { 풀림: '2026-11-16T03:00:00.000Z', 알림: '2026-11-10T13:26:24.010Z' };
+
+    fs.writeFileSync(한도파일, JSON.stringify({ ...옛기록, 계정: 'old@example.com' }));
+    assert.equal((await 돌기('old@example.com')).상태, '한도쉼', '같은 계정이면 기록대로 쉰다');
+    assert.equal((await 돌기(null)).상태, '한도쉼', '지금 계정을 못 읽으면 기록대로 쉰다');
+    assert.equal(t.실행들().length, 0);
+
+    const r = await 돌기('new@example.com');
+    assert.deepEqual([r.상태, r.경로], ['끝', '구독'], '다른 계정이면 띄운다');
+    assert.equal(받은.사후.length, 1);
+    assert.equal(fs.existsSync(한도파일), false, '구독이 돌았으니 한도 기록을 지운다');
+
+    // 계정 칸이 없는 옛 기록 — 지금 계정을 알면 한 번 띄워 보고, 그 계정도 한도면 계정을 적고 쉰다
+    fs.writeFileSync(한도파일, JSON.stringify(옛기록));
+    process.env.FAKE_LIMIT = "You've hit your weekly limit · resets Nov 18, 6pm (Asia/Seoul)";
+    assert.equal((await 돌기('new@example.com')).상태, '한도쉼');
+    assert.equal(JSON.parse(fs.readFileSync(한도파일, 'utf8')).계정, 'new@example.com');
+    assert.equal((await 돌기('new@example.com')).상태, '한도쉼');
+    assert.equal(t.실행들().length, 2, '같은 계정의 새 한도에서는 다시 띄우지 않는다');
+  } finally { delete process.env.FAKE_LIMIT; t.지우기(); }
+});
+
 test('같은 작업이 겹쳐 돌지 않는다(최근 잠금이 있으면 멈춤)', async () => {
   const t = 방만들기([['B', 25, 'sk-ant-test-bbbb']]);
   try {
