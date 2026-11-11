@@ -1,52 +1,52 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "V7",
- "text": "지난 편이랑 같다고 떨어진 편은, 열에 여섯이 터졌고요.",
- "dur": 2.892,
+ "text": "제일 크게 터진 영상들은, 전부 떨어뜨린 쪽에 있었어요.",
+ "dur": 3.012,
  "words": [
   {
-   "text": "지난",
-   "start": 0.04,
-   "end": 0.223
+   "text": "제일",
+   "start": 0.02,
+   "end": 0.228
   },
   {
-   "text": "편이랑",
-   "start": 0.29,
-   "end": 0.59
+   "text": "크게",
+   "start": 0.28,
+   "end": 0.436
   },
   {
-   "text": "같다고",
-   "start": 0.63,
-   "end": 0.906
+   "text": "터진",
+   "start": 0.488,
+   "end": 0.708
   },
   {
-   "text": "떨어진",
-   "start": 0.958,
-   "end": 1.259
+   "text": "영상들은,",
+   "start": 0.747,
+   "end": 1.267
   },
   {
-   "text": "편은,",
-   "start": 1.299,
-   "end": 1.535
+   "text": "전부",
+   "start": 1.618,
+   "end": 1.851
   },
   {
-   "text": "열에",
-   "start": 1.811,
-   "end": 1.982
+   "text": "떨어뜨린",
+   "start": 1.903,
+   "end": 2.228
   },
   {
-   "text": "여섯이",
-   "start": 2.034,
-   "end": 2.309
+   "text": "쪽에",
+   "start": 2.267,
+   "end": 2.448
   },
   {
-   "text": "터졌고요.",
-   "start": 2.349,
-   "end": 2.892
+   "text": "있었어요.",
+   "start": 2.488,
+   "end": 3.012
   }
  ],
  "source": {
-  "key": "d019fe11b35b38110b2b89f632789eb3",
+  "key": "2f71ba15baa0c99918c785031528be59",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -70,6 +70,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 140
+  "topPitchHz": 151
  }
 }
