@@ -97,6 +97,19 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-credit em{display:block;font-style:normal}
 @media (hover:hover){.sx-credit:hover{color:var(--sx-ink)}}
 .sx-open-m{display:none;color:var(--sx-ink);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;text-align:left}
+/* 접수를 쉬는 동안(운영 조각 3): 「광고 의뢰하기」 자리의 안내. 쇼릴 위에서는 받은 링크 판(.sx-invite)처럼 검은 판에 얹어 밝은 컷에서도 읽히고,
+   머리 한 줄 아래 가는 줄을 긋고 다시 여는 날 · 담당자가 적은 안내를 둔다. 끝 쪽은 바탕이 이미 검어 판 없이 글만 선다.
+   쉬는 동안 단추는 숨긴다(.sx-go의 display가 hidden을 이기지 않게 따로 적는다). */
+.sx-home [data-entry="start"][hidden]{display:none}
+.sx-paused{display:grid;gap:6px;width:100%;text-align:left;background:#000;padding:16px 18px 14px}
+.sx-paused[hidden]{display:none}
+.sx-paused:focus{outline:none}
+.sx-paused-head{font-weight:600;font-size:15px;line-height:1.3;letter-spacing:-.02em;color:var(--sx-ink);padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--sx-rule)}
+.sx-paused .sx-small{color:var(--sx-ink)}
+.sx-paused .sx-paused-note{color:var(--sx-dim)}
+.sx-paused-works{justify-self:start;padding:8px 0 0}
+.sx-end .sx-paused{max-width:520px;padding:0;background:none}
+.sx-end .sx-paused-head{font-size:var(--sx-t2);padding-bottom:14px;margin-bottom:6px}
 /* 작품 목록 */
 .sx-p.is-works{flex-direction:column;align-items:stretch;justify-content:flex-end;gap:18px}
 .sx-works-head{max-width:520px}
@@ -234,6 +247,14 @@ html.sx.view-entry .app-header{display:none!important}
      글 묶음이 다시 턱 자리로 올라가고 끝 쪽 그림 칸(세 줄 기준)에도 닿는다. 첫 화면 큰 제목만 한 단계 줄인다(32px — 첫 줄 약 256px). */
   @media (max-width:359.98px) and (max-aspect-ratio:1/1){.sx-home .sx-display{font-size:32px}}
   .sx-hero-act{align-items:stretch;text-align:left;max-width:100%;width:100%}
+  /* 좁은 화면(휴대폰 · 세로 창): 글 묶음 아래는 이미 검게 가려져 있어 판 없이 왼쪽 줄에 맞추고, 높이는 굵은 단추(52px)와 같게 두 줄만 둔다 — 머리 한 줄 + 다시 여는 날.
+     안내가 단추보다 높으면 글 묶음이 그만큼 올라가 세로 쇼릴 컷의 입 · 턱을 덮는다(위 소개 줄을 뺀 까닭과 같다). 담당자 안내와 「완성 광고 보기」는 끝 쪽 안내 · 위 작품 줄이 맡는다.
+     폭 380 미만에서는 날짜가 잘리지 않게 줄을 바꾸게 둔다 — 영어 날짜 줄은 내년 날짜(연도가 붙는다)면 335px까지라 콘텐츠 폭 320px(폭 360)에 안 든다. 한 줄에 드는 글은 높이가 그대로다. */
+  .sx-hero-act .sx-paused{padding:0;background:none;gap:4px;height:52px;align-content:center;overflow:hidden}
+  .sx-hero-act .sx-paused-head{padding:0;margin:0;border:0}
+  .sx-hero-act .sx-paused-note,.sx-hero-act .sx-paused-works{display:none}
+  .sx-hero-act .sx-paused .sx-small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media (max-width:379.98px){.sx-hero-act .sx-paused{height:auto;min-height:52px}.sx-hero-act .sx-paused .sx-small{white-space:normal}}
   .sx-credit{text-align:left;margin:0 0 4px;min-height:0}
   .sx-credit em{display:inline;margin-left:6px}
   .sx-go.is-solid{justify-content:space-between}

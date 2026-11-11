@@ -1803,4 +1803,10 @@ export default {
   "브랜드의 내 모델에 보관한 모델이에요.":"This model is kept for your brand in My models.",
   "이 인물은 실제 인물이라, 출연하실 분이 다시 쓰기에 동의한 경우에만 보관할 수 있어요.":"This persona is based on a real person, so it can be kept only if that person has agreed to reuse.",
   "내 모델의 모델":"Model from My models",
+  // 접수 멈춤(운영 조각 3 · 11-11): 첫 화면 「광고 의뢰하기」 자리의 안내와 새 초안 시작 409(pulse-capacity.mjs INTAKE_PAUSED_MESSAGE)
+  "지금은 잠시 접수를 쉬어요":"We’ve paused new briefs for now",
+  "{date}부터 다시 받아요.":"We’ll be taking new briefs again starting {date}.",
+  "다시 열리면 이 화면에서 바로 시작하실 수 있어요.":"Once we resume, you can start right here.",
+  "완성 광고 보기":"See finished ads",
+  "지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.":"We’ve paused new briefs for now. Once we resume, you can start right here.",
 };

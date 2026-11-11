@@ -8,7 +8,9 @@ export const ERROR_CODE_TEXT=Object.freeze({SYNK_PULSE_FILE_MISSING:k('올린 �
   // 판 4 내 모델 · 다시 쓰기(pulse-workspaces.mjs). 직원 길 code(연결 요청 · 동의 범위 · 참조)도 표에 둔다 — 서버가 SYNK_ code를 그대로 내리기 때문이다(직원 화면은 한국어 문장 그대로).
   SYNK_PULSE_PROOF:k('확인 시간이 지났거나 맞지 않아요. 화면에서 다시 시도해 주세요.'),SYNK_PULSE_ATTACH_STALE:k('내 모델에서 다시 골라 주세요. 로그인이 필요할 수 있어요.'),SYNK_PULSE_MODEL_UNUSABLE:k('지금은 이 모델로 의뢰할 수 없어요. 내 모델에서 상태를 확인해 주세요.'),
   SYNK_PULSE_MODEL_PAUSED:k('사용 중지된 모델이에요. 담당자가 중지를 먼저 풀고, 그 뒤 보관 동의를 새로 하셔야 다시 써요.'),SYNK_PULSE_REUSE_UNAVAILABLE:k('지금은 이 모델의 보관을 정할 수 없어요. 내 모델을 새로 불러와 주세요.'),SYNK_PULSE_REUSE_STALE:k('보관 조건이 바뀌었어요. 새 조건을 보고 다시 확인해 주세요.'),
-  SYNK_PULSE_CLAIM_STALE:k('손님이 다시 요청해야 해요. 초대 링크가 바뀌었거나 닫힌 프로젝트예요.'),SYNK_PULSE_CONSENT_SCOPE:k('당사자 동의 범위 밖이에요. 새 당사자 동의를 받은 뒤 확인해 주세요.'),SYNK_PULSE_PERSONA_REFERENCED:k('이 인물을 쓰는 끝나지 않은 프로젝트나 의뢰가 있어요. 그 일을 먼저 끝내거나 정리해 주세요.')});
+  SYNK_PULSE_CLAIM_STALE:k('손님이 다시 요청해야 해요. 초대 링크가 바뀌었거나 닫힌 프로젝트예요.'),SYNK_PULSE_CONSENT_SCOPE:k('당사자 동의 범위 밖이에요. 새 당사자 동의를 받은 뒤 확인해 주세요.'),SYNK_PULSE_PERSONA_REFERENCED:k('이 인물을 쓰는 끝나지 않은 프로젝트나 의뢰가 있어요. 그 일을 먼저 끝내거나 정리해 주세요.'),
+  // 접수를 쉬는 동안의 새 의뢰서 시작(pulse-requests.mjs start).
+  SYNK_PULSE_INTAKE_PAUSED:k('지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.')});
 export const errorText=(message,code='')=>locale()==='ko'?message:Object.hasOwn(ERROR_CODE_TEXT,code)?t(ERROR_CODE_TEXT[code]):t(message);
 export const serverError=(result,status,fallback)=>{const message=typeof result?.error==='string'?result.error:result?.error?.message||fallback,code=typeof result?.code==='string'?result.code:'';return new PulseError(errorText(message,code),status,code);};
 // member(판 4): 고객 SYNK ID 회원 경로(/api/customer/*)는 직원 경로처럼 X-CSRF-Token을 쓴다. 보관 조건이 바뀐 409(SYNK_PULSE_REUSE_STALE)는 새 조건(offer)을 오류에 싣는다.

@@ -132,7 +132,7 @@ export function requestSummaryRows(a,files=[],personaFiles=null){
 
 // personas: 인물 서비스(pulse-personas.mjs createPersonaService — 스위치 확인 · 인물 만들기). 없으면 맞춤 인물 요청을 받지 않는다.
 // workspaces: 고객 브랜드 서비스(pulse-workspaces.mjs — 판 4 내 모델 다시 쓰기의 붙임 검사 · 담당자). 없으면 다시 쓰기 의뢰를 받지 않는다.
-export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null,workspaces=null}){
+export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null,workspaces=null,intakePaused=null}){
   const directory=()=>resolve(store.directory,'pulse-request-media'),media=()=>resolve(store.directory,'studio-media');
   const inDraft=name=>{if(!/^[a-f0-9-]{36}\.(?:part|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(directory(),name);if(dirname(path)!==directory())throw fail('파일 경로를 확인해 주세요.',404);return path;};
   const inMedia=name=>{if(!/^[a-f0-9-]{36}\.(?:upload|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(media(),name);if(dirname(path)!==media())throw fail('파일 경로를 확인해 주세요.',404);return path;};
@@ -168,6 +168,8 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
   function start(input={},{client=''}={}){
     pruneDrafts().catch(()=>{});
     if(!object(input)||input.website)throw fail('의뢰서 요청을 확인해 주세요.');
+    // 접수를 쉬는 동안(운영 조각 3, pulse-capacity.mjs): 막는 자리는 새 초안을 여는 여기 하나뿐이다. 쓰던 초안의 저장 · 보내기 · 10분 재전송은 이 길을 지나지 않는다.
+    if(intakePaused?.())throw fail('지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.',409,'SYNK_PULSE_INTAKE_PAUSED');
     count('start:'+digest(client),1,REQUEST_LIMITS.startsPerHourByClient,3600000);
     if(recent(24).length>=REQUEST_LIMITS.startsPerDay)throw busy();
     const at=clock(),id=randomUUID(),csrf=randomBytes(24).toString('base64url');

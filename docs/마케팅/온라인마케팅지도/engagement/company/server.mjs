@@ -48,6 +48,7 @@ import { createPulseStudioService } from './pulse-studio.mjs';
 import { createPulseRequests, streamDraftFile, REQUEST_LIMITS } from './pulse-requests.mjs';
 import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
 import { createPulseFeatures } from './pulse-features.mjs';
+import { createPulseCapacity } from './pulse-capacity.mjs';
 import { createPersonaService } from './pulse-personas.mjs';
 import { createWorkspaceService } from './pulse-workspaces.mjs';
 import { createPulseMemberRoutes } from './pulse-workspace-routes.mjs';
@@ -283,7 +284,9 @@ export function createCompanyApp(options={}) {
   // 판 2 메일 알림: 서비스는 고객 알림 투영(pulseLive)이 생긴 뒤 만든다 — 그 전에는 손님 · 직원 보기에 메일 칸이 없다.
   let pulseMail=null;
   const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
-  const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces});
+  // 접수 멈춤 스위치(운영 조각 3): 쉬는 동안에는 새 의뢰서 시작만 막는다(pulse-capacity.mjs).
+  const pulseCapacity=createPulseCapacity({store,clock});
+  const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces,intakePaused:()=>pulseCapacity.paused()});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
   const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,localeOf:projectLocale,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
@@ -879,6 +882,8 @@ export function createCompanyApp(options={}) {
     // 공개 의뢰서(2026-11-04): 초대 없는 손님의 초안 경로. 고객 세션과 따로 돌고, 쓰기는 같은 출처 · 초안 csrf · 문턱을 지나야 한다(pulse-requests.mjs).
     // 공개 첫 화면의 언어(다국어 판 2): 초대 · 의뢰 초안 없이 읽는다. 공개 메뉴 언어만 싣는다(스위치가 꺼져 있으면 한국어 하나).
     if(method==='GET'&&path==='/pulse/api/features'){if(url.search)throw httpError('주소를 확인해 주세요.');return send(res,200,{features:pulseFeatures.publicView()});}
+    // 접수 상태(운영 조각 3): 누구나 읽는다 — 상태 · 다시 여는 날 · 담당자가 손님에게 적은 안내뿐이고 건수 · 이름은 없다. 손님마다 다르지 않아 잠깐 캐시해도 된다.
+    if(method==='GET'&&path==='/pulse/api/availability'){if(url.search)throw httpError('주소를 확인해 주세요.');res.writeHead(200,{...responseHeaders('application/json; charset=utf-8'),'Cache-Control':'public, max-age=30'});return res.end(JSON.stringify(pulseCapacity.publicView()));}
     if(path==='/pulse/api/request'||path.startsWith('/pulse/api/request/')){
       const requestToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_request=([A-Za-z0-9_-]+)/)?.[1];
       const csrf=req.headers['x-pulse-csrf'],draftFile=path.match(/^\/pulse\/api\/request\/media\/([a-f0-9-]{36})$/);
@@ -1684,6 +1689,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/settings/pulse-mail/ping'){const result=await pulseMail.ping(user);audit(user,'pulse-mail-ping','pulse-mail',{state:result.connection?.state||null,code:result.connection?.code||null});return send(res,200,result);}
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
       if(path==='/api/settings/pulse-features'){const result=pulseFeatures.configure(user,input);audit(user,'pulse-features-settings','pulse-features',{publicLocales:result.publicLocales,projectLocales:result.projectLocales,personaRequest:result.personaRequest,personaReal:result.personaReal,myModels:result.myModels});return send(res,200,result);}
+      if(path==='/api/settings/pulse-capacity'){const result=pulseCapacity.configure(user,input);audit(user,'pulse-capacity-settings','pulse-capacity',{open:result.open,pausedUntil:result.pausedUntil,pauseNote:result.pauseNote,pauseNoteEn:result.pauseNoteEn});return send(res,200,result);}
       if(path==='/api/settings/provider'){admin(user);if(!['youtube','instagram','facebook','tiktok'].includes(input.platform))throw httpError('지원하지 않는 플랫폼이에요.');const cfg=store.secret('provider:'+input.platform)||{};for(const key of ['clientId','clientSecret','apiKey'])if(input[key])cfg[key]=text(input[key],16000);store.setSecret('provider:'+input.platform,cfg);audit(user,'provider-config',input.platform);return send(res,200,{ok:true});}
       if(path==='/api/import-legacy')return send(res,200,await importLegacy(user));
       throw httpError('요청을 찾을 수 없습니다.',404);
@@ -1920,6 +1926,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/settings/pulse-mail')return send(res,200,pulseMail.settings(user));
       if(path==='/api/settings/pulse-auto-reply')return send(res,200,pulseAutoReply.settings(user));
       if(path==='/api/settings/pulse-features')return send(res,200,pulseFeatures.settings(user));
+      if(path==='/api/settings/pulse-capacity')return send(res,200,pulseCapacity.settings(user));
       if(path==='/api/state'){
         const channels=visibleChannels(user),ids=new Set(channels.map(c=>c.id)),members=visibleMembers(store,user),teamIds=new Set([...channels.map(c=>c.teamId),user.teamId]),schedule=store.get('settings','company');
         const teams=store.all('teams').filter(t=>user.role==='admin'||teamIds.has(t.id)).map(t=>({...t,memberCount:members.filter(u=>u.teamId===t.id&&u.active).length,channelCount:channels.filter(c=>c.teamId===t.id&&c.active).length}));
