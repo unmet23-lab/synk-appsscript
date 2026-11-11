@@ -917,13 +917,19 @@ const 퍼 = v => (v == null ? '?' : `${(v * 100).toFixed(1)}%`);
 const 몫글 = m => (m?.앞 || m?.뒤 ? ` · 주간 몫 ${퍼(m.앞?.주간)} → ${퍼(m.뒤?.주간)}` : '');
 
 // ── GPT ────────────────────────────────────────────────────────────
-// 백엔드 2차 검수는 GPT 하나다(2026-10-24 유호님 다섯 가지 ① — 막히면 아르곤 → Fable, 정책 판 6(11-08)부터 아르곤 → 그록 → Fable, 10-22~24는 아르곤과 함께). 모델·추론은 GPT 앱 본 설정(~/.codex/config.toml) 그대로이고,
+// 백엔드 2차 검수는 GPT 하나다(2026-10-24 유호님 다섯 가지 ① — 막히면 아르곤 → Fable, 정책 판 6(11-08)부터 아르곤 → 그록 → Fable, 10-22~24는 아르곤과 함께). 모델·추론은 아래 GPT검수로 고정이고,
 // 계정은 Pro 계정(본 계정 + 굽기 장부 ~/.codex-bake) 가운데 주간 몫이 가장 넉넉한 것이다 — 10-22 본 계정은 GPT 앱 백엔드 작업으로 주간 90%였고
 // 크레딧이 있어 한도를 넘기면 크레딧이 나갈 수 있었다. 그래서 주간 90% 넘게 쓴 계정은 고르지 않는다.
 // 묶음은 표준입력으로만 준다 — Windows 읽기 전용 실행은 파일 읽기도 거절해서(현장 노트 AI_CLI) -C는 빈 폴더다. 그래서 GPT도 아르곤과 같은 바이트만 본다.
 const require코덱스 = () => require('./codex계정.js');
-const 추론들 = ['minimal', 'low', 'medium', 'high', 'xhigh', 'ultra'];
-const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초 — xhigh 큰 묶음의 여유
+// GPT 검수의 모델·추론(2026-11-11 유호님 「응, sol max로」). 10-24부터는 GPT 앱 본 설정을 그대로 따랐는데, 앱 기본값이 바뀔 때마다
+// 검수 강도가 아무도 정하지 않은 채 바뀌었다(11-04~07 sol xhigh·max → 11-08~10 astra max·ultra → 11-10부터 astra medium 32건).
+// 기록 380여 건을 견주니 sol·max가 반영된 P0·P1을 100KB당 가장 많이 잡았고(1.42 · astra xhigh 1.25 · astra medium 0.47),
+// 굽기 장부 Pro의 주간 몫은 1회 0.08% 안팎으로 astra xhigh(0.1~0.3%)보다 적었다 — Pro 하나로 주 500회를 감당하는 쪽(결정 표 11-11).
+// 앱 설정과 떼어 두었으니 앱 기본값을 바꿔도 검수는 그대로다. --수준은 이 추론만 바꾼다.
+export const GPT검수 = Object.freeze({ 모델: 'gpt-6.1-sol', 추론: 'max' });
+const 추론들 = ['minimal', 'low', 'medium', 'high', 'xhigh', 'ultra', 'max'];
+const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초, 11-04~11 max 회차 가운데 가장 긴 것이 26분(astra 1,573초 · sol 1,097초) — 큰 묶음의 여유
 const GPT주간한계 = 90;  // 주간 이만큼(%) 넘게 쓴 계정은 검수에 쓰지 않는다
 const 굽기뿌리 = () => process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake');
 /** 후보 계정마다 요금제·주간 사용(app-server, 토큰 0). 이름 null = 본 계정(~/.codex). 메일은 남기지 않는다. */
@@ -954,21 +960,6 @@ function codex명령(args) {
   if (!파일) throw new Error('codex를 찾지 못했다 — Codex CLI 설치를 확인한다');
   return commandFor(파일, args, { platform: process.platform, env: process.env });
 }
-/** GPT 앱 본 설정의 모델·추론 — 맨 위(표 머리 전) 칸에서 읽고, 맨 위 `profile`이 고른 [profiles.<이름>] 칸이 있으면 그 값이 앞선다.
- *  문자열은 큰따옴표·작은따옴표 둘 다(3차 검수 GA4). 시험은 SYNK_CODEX_CONFIG로 다른 파일을 준다. */
-export function GPT설정(글 = null) {
-  if (글 == null) { const f = process.env.SYNK_CODEX_CONFIG || path.join(os.homedir(), '.codex', 'config.toml'); 글 = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : ''; }
-  const 칸들 = { '': {} };
-  let 지금 = '';
-  for (const 줄 of 글.split(/\r?\n/)) {
-    const 머리 = /^\s*\[([^\]]+)\]\s*(?:#.*)?$/.exec(줄);
-    if (머리) { 지금 = 머리[1].trim().replace(/\s*\.\s*/g, '.').replace(/"/g, ''); 칸들[지금] ||= {}; continue; }
-    const m = /^\s*([A-Za-z0-9_]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/.exec(줄);
-    if (m) 칸들[지금][m[1]] = m[2] ?? m[3];
-  }
-  const 맨위 = 칸들[''], 고른 = 맨위.profile ? 칸들[`profiles.${맨위.profile}`] || {} : {};
-  return { 모델: 고른.model || 맨위.model || null, 추론: 고른.model_reasoning_effort || 맨위.model_reasoning_effort || null };
-}
 /** codex exec 한 번(home null = 본 계정). 표준출력(--json 사건)·표준오류는 끝부분만 모으고, 시간 제한이면 나무째 끈다. */
 function codex실행(args, 입력, timeoutMs, home = null) {
   return new Promise(resolve => {
@@ -993,19 +984,18 @@ function codex실행(args, 입력, timeoutMs, home = null) {
   });
 }
 /** 아르곤 부르기와 같은 꼴: { prompt, schema, thinking, timeoutMs, 계정 } → { text, selectedModel, usage }. 한도·로그인은 막힘으로 읽히는 오류로 던진다.
- *  모델·추론은 본 설정 값을 -m·-c로 넘긴다 — 굽기 장부 폴더의 config.toml은 만들 때 옮긴 옛 값이라서. */
+ *  모델·추론은 GPT검수 값을 늘 -m·-c로 넘긴다 — 본 계정·굽기 장부 폴더의 config.toml(만들 때 옮긴 옛 값)이 무엇이든 같은 모델로 본다. */
 export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs = GPT제한분 * 60_000, 계정 = { 이름: null, home: null } }) {
   const { 코덱스오류, 한도문구, 로그인문구 } = require코덱스();
   if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
-  const 설정 = GPT설정();
-  const 추론 = thinking || 설정.추론;
+  const 모델 = GPT검수.모델, 추론 = thinking || GPT검수.추론;
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gpt-review-'));
   try {
     const 빈 = path.join(임시, 'empty'), 꼴파일 = path.join(임시, 'schema.json'), 답파일 = path.join(임시, 'answer.json');
     fs.mkdirSync(빈);
     fs.writeFileSync(꼴파일, JSON.stringify(schema));
     const r = await codex실행(['exec', '--ephemeral', '--skip-git-repo-check', '-s', 'read-only', '-C', 빈, '--output-schema', 꼴파일, '-o', 답파일, '--json',
-      ...(설정.모델 ? ['-m', 설정.모델] : []), ...(추론 ? ['-c', `model_reasoning_effort="${추론}"`] : []), '-'], prompt, timeoutMs, 계정.home);
+      '-m', 모델, '-c', `model_reasoning_effort="${추론}"`, '-'], prompt, timeoutMs, 계정.home);
     if (r.시간초과) throw new Error(`codex exec 시간 초과(${Math.round(timeoutMs / 60_000)}분)`);
     const 오류 = 코덱스오류(r).pop();
     if (r.code !== 0) {
@@ -1016,7 +1006,7 @@ export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs 
     if (!fs.existsSync(답파일)) throw new Error('codex exec가 답 파일을 남기지 않았다');
     let usage = null;
     for (const 줄 of r.출력.split(/\r?\n/)) { if (!줄.startsWith('{')) continue; try { const e = JSON.parse(줄); if (e?.type === 'turn.completed' && e.usage) usage = e.usage; } catch { /* 사건 아님 */ } }
-    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel: `${설정.모델 || 'codex'}-${추론 || '기본'} · ${계정말(계정)}`, usage };
+    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel: `${모델}-${추론} · ${계정말(계정)}`, usage };
   } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
 }
 /** 그 계정의 주간·5시간 몫(app-server, 토큰 0). 남은 몫으로 아르곤과 같은 꼴. 못 읽으면 null. */
@@ -1044,8 +1034,8 @@ export const 검수자들 = {
         // 다시 검수에서 아르곤이 낸 지적을 다시 볼 때는 아직 안 본 GPT가 먼저다 — 그록은 GPT·아르곤이 둘 다 막힌 뒤에만(대신할검수자)
         ? `아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. GPT가 이 다시 검수를 아직 안 봤으면 GPT ${목록.이름}로, GPT도 막혔으면 그록 ${목록.이름}로, 그록도 막히면 ${페이블할것(목록)}로 대신하고, 끝 보고에 그렇게 적는다`
         : `아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않는다 — 백엔드(GPT가 막혀 대신한 검수)는 그록으로 대신하고(그록 ${목록.이름}, 그록도 막히면 ${페이블할것(목록)}), 끝 보고에 그렇게 적는다`) },
-  GPT: { 출처: 'GPT', 번호앞: 'G', 모델: null, 기본수준: () => null, 제한분: () => GPT제한분, 몫: GPT몫읽기,
-    수준검사: 수준 => { if (수준 != null && !추론들.includes(수준)) throw new Error(`--수준은 ${추론들.join('·')} 가운데 하나(받음 ${수준}) — 빼면 본 계정 설정 그대로`); },
+  GPT: { 출처: 'GPT', 번호앞: 'G', 모델: GPT검수.모델, 기본수준: () => GPT검수.추론, 제한분: () => GPT제한분, 몫: GPT몫읽기,
+    수준검사: 수준 => { if (수준 != null && !추론들.includes(수준)) throw new Error(`--수준은 ${추론들.join('·')} 가운데 하나(받음 ${수준}) — 빼면 ${GPT검수.추론}`); },
     막힘말: 목록 => (그록대체정책(목록?.정책)
       ? `GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 아르곤으로 대신하고(아르곤 ${목록.이름}, 아르곤도 막히면 그록 ${목록.이름}, 그록도 막히면 ${페이블할것(목록)}), 끝 보고에 그렇게 적는다`
       : 'GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 아르곤으로 대신하고(아르곤 <이름>, 아르곤도 막히면 Fable), 끝 보고에 그렇게 적는다') },

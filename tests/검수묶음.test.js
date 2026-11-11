@@ -822,7 +822,8 @@ test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 
   const gpt = async a => { 받은.push(a); return 답하기([지적하나('src/app.js:1'), 지적하나('src/app.js:1', 'P2')])(a); };
   // 둘을 함께 띄워도 지적표에 두 검수자 지적이 다 남는다
   await Promise.all([아르곤보내기(폴더, 목록, { call: 답하기([지적하나('src/app.js:1')]), 몫 }), GPT보내기(폴더, 목록, { call: gpt, 몫 })]);
-  assert.equal(받은[0].thinking, null, '수준을 안 주면 본 계정 설정 그대로');
+  assert.equal(받은[0].thinking, 'max', '수준을 안 주면 GPT검수의 추론(max) — 앱 설정을 따르지 않는다');
+  assert.equal(받은[0].model, 'gpt-6.1-sol');
   assert.equal(받은[0].prompt, fs.readFileSync(path.join(폴더, 목록.묶음[0].파일), 'utf8'), 'GPT도 아르곤과 같은 바이트');
   assert.ok(fs.existsSync(path.join(폴더, `GPT-${목록.묶음[0].이름}.json`)));
   const 표 = 지적표읽기(폴더);
@@ -836,7 +837,7 @@ test('GPT 보내기: 아르곤과 같은 묶음·대조로 GPT-<묶음>.json과 
   const s = 집계하기(목록, [결과], 지적표읽기(폴더), [G결과]);
   assert.equal(s.한줄, '아르곤 1건(반영 1) · GPT 2건(반영 1)');
   assert.equal(s.배포조건충족, true);
-  await assert.rejects(GPT보내기(폴더, 목록, { call: gpt, 몫, 수준: 'max', 다시: true }), /--수준은/);
+  await assert.rejects(GPT보내기(폴더, 목록, { call: gpt, 몫, 수준: 'huge', 다시: true }), /--수준은[^]*빼면 max/);
   // fable.md 2단계는 두 검수자의 지적표를 다 가리킨다
   const { 페이블하기 } = await tool();
   const 페 = fs.readFileSync(await 페이블하기(폴더, { 시험: false, 캡처: false }), 'utf8');
@@ -865,7 +866,10 @@ test('집계(백엔드): 아르곤이 막혀도 GPT가 끝까지 읽었으면 �
 });
 
 test('GPT 부르기: codex exec를 본 계정·읽기 전용·빈 폴더·답 꼴로 한 번 부르고, 한도·로그인 오류는 막힘으로 읽힌다', async t => {
-  const { GPT부르기, 답꼴 } = await tool();
+  const { GPT부르기, GPT검수, 답꼴 } = await tool();
+  // 11-11 유호님 「응, sol max로」: 모델·추론은 검수 도구에 고정 — 앱 기본값이 바뀌어도 검수 강도가 따라 바뀌지 않는다
+  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' });
+  assert.ok(Object.isFrozen(GPT검수));
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fake-codex-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
   const 가짜 = path.join(뿌리, 'codex.js'), 기록 = path.join(뿌리, 'args.json');
@@ -881,29 +885,29 @@ process.stdin.on('end', () => {
   fs.writeFileSync(a[a.indexOf('-o') + 1], JSON.stringify({ findings: [], seen: ['D01-aaaa'], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 'END_X' }));
   process.stdout.write(JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 12, output_tokens: 3 } }) + '\\n');
 });`);
-  const 옛 = { bin: process.env.CODEX_BIN, home: process.env.CODEX_HOME, mode: process.env.FAKE_CODEX, conf: process.env.SYNK_CODEX_CONFIG };
-  t.after(() => { for (const [k, v] of [['CODEX_BIN', 옛.bin], ['CODEX_HOME', 옛.home], ['FAKE_CODEX', 옛.mode], ['SYNK_CODEX_CONFIG', 옛.conf]]) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } });
-  const 본설정 = path.join(뿌리, 'config.toml');
-  fs.writeFileSync(본설정, 'model = "test-model"\nmodel_reasoning_effort = "xhigh"\n');
-  Object.assign(process.env, { CODEX_BIN: 가짜, CODEX_HOME: path.join(뿌리, '다른계정'), SYNK_CODEX_CONFIG: 본설정 });
+  const 옛 = { bin: process.env.CODEX_BIN, home: process.env.CODEX_HOME, mode: process.env.FAKE_CODEX };
+  t.after(() => { for (const [k, v] of [['CODEX_BIN', 옛.bin], ['CODEX_HOME', 옛.home], ['FAKE_CODEX', 옛.mode]]) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } });
+  Object.assign(process.env, { CODEX_BIN: 가짜, CODEX_HOME: path.join(뿌리, '다른계정') });
   delete process.env.FAKE_CODEX;
   const 굽기계정 = { 이름: 'bake3', home: path.join(뿌리, 'bake3') };
   const r = await GPT부르기({ prompt: '묶음 글\n자료 끝 표식: END_X\n', schema: 답꼴, thinking: 'high', timeoutMs: 60_000, 계정: 굽기계정 });
   assert.equal(JSON.parse(r.text).endMarker, 'END_X');
   assert.deepEqual(r.usage, { input_tokens: 12, output_tokens: 3 });
-  assert.equal(r.selectedModel, 'test-model-high · 굽기 장부 bake3');
+  assert.equal(r.selectedModel, 'gpt-6.1-sol-high · 굽기 장부 bake3');
   const 본 = JSON.parse(fs.readFileSync(기록, 'utf8'));
   assert.equal(본.home, 굽기계정.home, '고른 계정의 CODEX_HOME으로');
   assert.equal(본.입력, '묶음 글\n자료 끝 표식: END_X\n', '묶음은 표준입력으로');
   assert.deepEqual(본.꼴.required, 답꼴.required);
-  for (const 칸 of ['exec', '--ephemeral', '--skip-git-repo-check', 'read-only', '--json', 'test-model', 'model_reasoning_effort="high"']) assert.ok(본.a.includes(칸), 칸);
+  for (const 칸 of ['exec', '--ephemeral', '--skip-git-repo-check', 'read-only', '--json', 'model_reasoning_effort="high"']) assert.ok(본.a.includes(칸), 칸);
+  assert.equal(본.a[본.a.indexOf('-m') + 1], 'gpt-6.1-sol', '모델은 늘 -m으로 — 계정 폴더 config.toml의 옛 값을 타지 않게');
   const 빈 = 본.a[본.a.indexOf('-C') + 1];
   assert.match(빈, /synk-gpt-review-[^\\/]+[\\/]empty$/, '-C는 저장소가 아니라 빈 임시 폴더(읽기 전용 실행은 파일 읽기도 거절한다)');
   assert.ok(!fs.existsSync(빈), '끝나면 임시 폴더를 지운다');
   await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
   const 기본 = JSON.parse(fs.readFileSync(기록, 'utf8'));
   assert.equal(기본.home, null, '계정을 안 주면 본 계정(~/.codex) — 밖의 CODEX_HOME을 따르지 않는다');
-  assert.ok(기본.a.includes('model_reasoning_effort="xhigh"'), '수준을 안 주면 본 설정의 추론 그대로');
+  assert.ok(기본.a.includes('model_reasoning_effort="max"'), '수준을 안 주면 GPT검수의 추론(max)');
+  assert.equal(기본.a[기본.a.indexOf('-m') + 1], 'gpt-6.1-sol');
   process.env.FAKE_CODEX = 'limit';
   await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /quota/);
   process.env.FAKE_CODEX = 'login';
@@ -952,7 +956,7 @@ test('보내는 중 표시·지적표 잠금: 답을 기다리는 묶음은 관�
 });
 
 test('2차 검수 고침: 표시는 결과·지적표를 다 쓴 뒤 지우고, 살아 있는 남의 표시 묶음은 겹쳐 보내지 않고, 보내는 중이면 앞 막힘과 상관없이 미충족, 낡은 잠금 걷기는 한쪽만', async t => {
-  const { 준비하기, GPT보내기, 결과들읽기, 집계하기, 지적표읽기, 풀기, GPT설정 } = await tool();
+  const { 준비하기, GPT보내기, 결과들읽기, 집계하기, 지적표읽기, 풀기 } = await tool();
   const r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
   r.쓰기('a.js', 'export const a = 2;\n');
   const { 폴더, 목록 } = await 준비하기({ 이름: '고침', 폴더: r.출력, 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
@@ -986,10 +990,6 @@ test('2차 검수 고침: 표시는 결과·지적표를 다 쓴 뒤 지우고, 
   fs.writeFileSync(잠금, '새로-잡은-표');
   풀기(잠금, '내-표');
   assert.equal(fs.readFileSync(잠금, 'utf8'), '새로-잡은-표', '남이 잡은 잠금은 풀지 않는다');
-  // GA4(3차): 본 설정은 맨 위 칸과 고른 프로필에서, 작은따옴표도
-  assert.deepEqual(GPT설정("model = 'main-model'\nmodel_reasoning_effort = \"xhigh\"\n[profiles.old]\nmodel = \"old-model\"\n"), { 모델: 'main-model', 추론: 'xhigh' });
-  assert.deepEqual(GPT설정('profile = "fast"\nmodel = "main"\n[profiles.fast]\nmodel = "fast-model"\nmodel_reasoning_effort = \'low\'\n[plugins."x"]\nmodel = "nope"\n'), { 모델: 'fast-model', 추론: 'low' });
-  assert.deepEqual(GPT설정(''), { 모델: null, 추론: null });
 });
 
 // ── 다시 검수(2026-10-24 다섯 가지 ②·⑤): 고친 diff와 그 지적만, 사슬은 해시로 처음 검수까지 ──
