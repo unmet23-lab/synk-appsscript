@@ -1441,8 +1441,8 @@ def 소품줄검사(seq):
         if not 빈칸(줄.get("색")) and not 빈칸(줄.get("생김새")):
             표색 = 색낱말들(줄.get("색")); 문장색 = 색낱말들(줄.get("생김새"))
             if not (표색 | 문장색): out.append(("주의", f"소품 {이름}", f"소품 「{이름}」 줄에 아는 색 이름이 없다 — 색을 영어 색 이름(cream · cobalt-blue …)으로 적어야 지시문의 색과 견준다(51)"))
-            elif 표색 - 문장색: out.append(("주의", f"소품 {이름}", f"소품 「{이름}」의 색 「{' · '.join(sorted(표색 - 문장색))}」이 생김새 문장에 없다 — 지시문에 글자 그대로 들어가는 것은 생김새 문장이다(51)"))
-        if 이름 not in 나옴: out.append(("주의", f"소품 {이름}", f"소품 「{이름}」이 어느 컷의 「소품」 칸에도 없다 — 컷마다 상태를 적는다(안 나오는 컷은 화면밖)"))
+            elif 표색 - 문장색: out.append(("주의", f"소품 {이름}", f"소품 「{이름}」의 색 「{' · '.join(sorted(표색 - 문장색))}」 — 생김새 문장에 없는 색이다. 지시문에 글자 그대로 들어가는 것은 생김새 문장이다(51)"))
+        if 이름 not in 나옴: out.append(("주의", f"소품 {이름}", f"소품 「{이름}」 — 어느 컷의 「소품」 칸에도 없다. 컷마다 상태를 적는다(안 나오는 컷은 화면밖)"))
     for 이름, 컷들 in 나옴.items():
         탈것 = bool(_탈것이름.search(이름))
         if 이름 in 표 or len(컷들) < (2 if 탈것 else 3): continue
@@ -1502,7 +1502,8 @@ def 시작그림검사(seq, 폴더=None, 그림폴더=None):
             if f: 후보.append((f, f.name))
         for f, 이름 in 후보:
             지문 = _파일지문(f) if f else None
-            그림묶음.setdefault(("지문", 지문) if 지문 else ("이름", _그림열쇠(이름)), []).append((c, 이름))
+            쓴 = 그림묶음.setdefault(("지문", 지문) if 지문 else ("이름", _그림열쇠(이름)), [])
+            if not any(x[0] == c for x in 쓴): 쓴.append((c, 이름))   # 한 컷이 같은 그림을 두 번 적어도(첫 장 · 끝 장) 제 자신과 겹치는 것은 아니다
         판 = next((d["판"].strip() for d in 줄[c] if isinstance(d.get("판"), str) and d["판"].strip()), c)
         판묶음.setdefault(판, []).append((c, 판))
     까닭 = {}
