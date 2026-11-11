@@ -901,3 +901,62 @@ test('recommend 뒤 present 전에 판이 다시 서면 고른 줄을 지금 상
   a.dispose();
   b.dispose();
 });
+
+test('서버가 뺀 사건의 까닭(rejectedCode)은 계기 코드로 그대로 간다 — 부모 · 차례가 안 맞음(EVENT_LINK)(단계 3 bed650c2f)', async () => {
+  const { createHealth } = await subject('health/index.mjs');
+  const health = createHealth();
+  const items = bankOf(rng(21));
+  const time = clock();
+  let first = true;
+  const transport = async events => {
+    if (!first) return { accepted: events.map((event, i) => ({ id: event.id, seq: 100 + i })) };
+    first = false;
+    return { accepted: [], rejected: [events[0].id], rejectedCode: 'EVENT_LINK' };
+  };
+  const coach = coachOn({
+    items,
+    time,
+    port: memoryPort(),
+    key: keyOf('rejected'),
+    guest: false,
+    account: 'acct-rejected',
+    revision: 1,
+    transport,
+    health,
+  });
+  await coach.ready;
+  await coach.answer(coach.present(items[0]), { correct: true, assessable: true }).stored;
+  for (let wait = 0; wait < 30 && !health.snapshot().save.codes.EVENT_LINK; wait += 1)
+    await new Promise(resolve => setTimeout(resolve, 200));
+  assert.equal(health.snapshot().save.codes.EVENT_LINK, 1);
+  coach.dispose();
+});
+
+test('태그 없는 문항(계열이 곧 단위)을 놓친 판에서도 다른 코치의 본인 말이 「다시」를 거둔다 — 다시 세우기가 던지지 않는다(Fable 다시 확인 N2)', async () => {
+  const items = handBank();
+  const port = memoryPort();
+  const time = clock();
+  const key = keyOf('untagged-miss');
+  const coach = coachOn({ items, time, port, key });
+  const other = coachOn({ items, time, port, key, gameId: 'other' });
+  await Promise.all([coach.ready, other.ready]);
+  coach.recommend(items, { set: { length: 8, newLimit: 50 } });
+  await coach.answer(coach.present(items[0]), { correct: false, assessable: true }).stored; // U를 놓침
+  time.advance(STEP);
+  await coach.answer(coach.present(items[6]), { correct: false, assessable: true }).stored; // 태그 없는 문항도 놓침
+  time.advance(STEP);
+  other.tell(U, 'known');
+  await settle();
+  for (const item of [items[2], items[3]]) {
+    await coach.answer(coach.present(item), { correct: true, assessable: true }).stored;
+    time.advance(STEP);
+  }
+  const picked = coach.recommend(items.slice(0, 6)); // 태그 없는 문항은 빼고 — U의 「다시」만 본다
+  assert.notEqual(
+    picked.why.code,
+    'unit.retry',
+    `U의 다시가 거둬졌다(${picked.why.code} · ${picked.target})`,
+  );
+  coach.dispose();
+  other.dispose();
+});

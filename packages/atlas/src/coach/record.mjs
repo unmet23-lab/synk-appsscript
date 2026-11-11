@@ -21,6 +21,8 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     view: () => record.view(),
     issued: () => record.issued(),
     refresh: () => record.refresh(),
+    // 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝날 때까지 — 올리기 전에(단계 3 bed650c2f).
+    saved: () => record.saved?.() ?? Promise.resolve(),
     // 손님: 지금 든 사건까지 요약을 바로 접는다(판 끝 — 칸에 방금 푼 답이 들게). 계정은 서버가 접으므로 아무것도 안 한다.
     refold: () => record.refold?.() ?? Promise.resolve(),
     unsent: limit => record.unsent(limit),
@@ -29,6 +31,8 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
         accepted: answer?.accepted ?? [],
         clamped: answer?.clamped ?? [],
         rejected: answer?.rejected ?? [],
+        // 서버가 뺀 까닭(200 답의 rejectedCode — EVENT_LINK 등) — 계기 코드가 맞게 그대로 넘긴다. 없으면 기록부의 기본(옛 동의 판).
+        ...(answer?.rejectedCode ? { rejectedCode: answer.rejectedCode } : {}),
         summary: answer?.summary ?? null,
         serverTime: answer?.serverTime ?? null,
       }),

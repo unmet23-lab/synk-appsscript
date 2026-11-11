@@ -290,6 +290,14 @@ export const COACH_MUTANTS = [
   [
     C,
     '호스트',
+    '서버가 뺀 까닭(rejectedCode)을 기록부에 넘기지 않는다(계기 코드가 틀린다 — 단계 3 bed650c2f)',
+    'src/coach/record.mjs',
+    '...(answer?.rejectedCode ? { rejectedCode: answer.rejectedCode } : {}),',
+    '',
+  ],
+  [
+    C,
+    '호스트',
     '손님 호스트가 옛 기기 기록을 옮기지 않는다(Fable P1-5 ①)',
     HOST,
     'if (guest && legacy) await carryLegacy(state.trail.record, legacy, health);',

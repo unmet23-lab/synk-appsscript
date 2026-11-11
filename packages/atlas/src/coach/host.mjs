@@ -151,10 +151,15 @@ function createHost({
 
   async function upload() {
     if (guest || !transport || state.uploading || state.closed) return state.uploading;
-    const events = state.trail.unsent(UPLOAD_LIMIT);
-    if (!events.length) return null;
+    if (!state.trail.unsent(1).length) return null;
     state.uploading = (async () => {
+      let events = [];
       try {
+        // 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝난 뒤에 보낸다 — 자식만 먼저 가서 서버가 부모 · 차례가 안 맞는다고 빼지 않게
+        // (단계 3 bed650c2f record.saved()).
+        await state.trail.saved();
+        events = state.trail.unsent(UPLOAD_LIMIT);
+        if (!events.length) return;
         const answer = await transport(events);
         await state.trail.receive(answer);
         tell('receive');
@@ -250,8 +255,8 @@ function createHost({
       return [...state.trail.issued(), ...issuing.values()];
     },
     pendingCount: () => pending.size + issuing.size,
-    // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이).
-    settled: () => Promise.allSettled([...inflight]).then(() => undefined),
+    // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이 — 기록부가 부모를 기다리는 자식까지).
+    settled: () => Promise.allSettled([...inflight]).then(() => state.trail.saved()),
     retain() {
       claims.users += 1;
     },
