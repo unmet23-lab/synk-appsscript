@@ -73,6 +73,34 @@ test('고르기 — 바꾼 시험 · 시험 글의 경로·이름 · 기록 전�
   assert.equal(고름(['docs/_ops/트랙.md', 'tools/가나다라.js']).기록전용, false, '하나라도 기록 밖이면 고른다');
 });
 
+test('고르기 — 조건부 등록부에 적힌 시험 파일 · 등록부 폴더 · 그 워크플로를 바꾸면 등록 시험(.cjs)을 같이 고른다(11-12)', (t) => {
+  const 등록시험 = 'tests/conditional-qa.test.cjs';
+  const 파일 = {
+    'tests/등록된.test.js': "require('node:test').test('PC에만 있는 도구로 도는 시험', { skip: false }, () => {});\n",
+    'tests/무관.test.js': "require('node:assert');\n",
+    [등록시험]: "require('node:test').test('등록부 대조', () => {});\n",
+    'tools/conditional-qa/cases.json': JSON.stringify({ cases: [{ id: 'S1', file: 'tests/등록된.test.js', name: 'PC에만 있는 도구로 도는 시험' }] }),
+    'tools/conditional-qa/guard.cjs': '',
+    '.github/workflows/conditional-qa.yml': 'name: conditional-qa\n',
+    'tools/다른.js': '',
+  };
+  const root = 저장소(t, 파일);
+  const 고름 = (바뀐, 뿌리 = root) => 관련.고르기({ root: 뿌리, 바뀐, 지도: null });
+  assert.deepEqual(고름(['tests/등록된.test.js']).시험, [등록시험, 'tests/등록된.test.js'], '등록부에 적힌 시험 파일을 바꾸면 등록 시험도 돈다');
+  assert.equal(고름(['tests/등록된.test.js']).까닭[등록시험], '조건부 등록부가 보는 파일: tests/등록된.test.js');
+  for (const p of ['tools/conditional-qa/cases.json', 'tools/conditional-qa/guard.cjs', '.github/workflows/conditional-qa.yml', 등록시험]) {
+    assert.deepEqual(고름([p]).시험, [등록시험], p);
+  }
+  assert.deepEqual(고름(['tests/무관.test.js']).시험, ['tests/무관.test.js'], '등록부에 없는 시험 파일로는 고르지 않는다');
+  assert.deepEqual(고름(['tools/다른.js']).시험, []);
+  // 등록부가 깨져 있으면 그 파일 목록으로는 못 고르지만 넘어지지 않고, 등록 시험이 없는 저장소에서는 고를 것이 없다
+  const 깨진 = 저장소(t, { ...파일, 'tools/conditional-qa/cases.json': '{' });
+  assert.deepEqual(고름(['tests/등록된.test.js'], 깨진).시험, ['tests/등록된.test.js']);
+  assert.deepEqual(고름(['tools/conditional-qa/cases.json'], 깨진).시험, [등록시험]);
+  const { [등록시험]: _뺀, ...없는 } = 파일;
+  assert.deepEqual(고름(['tests/등록된.test.js', 'tools/conditional-qa/guard.cjs'], 저장소(t, 없는)).시험, ['tests/등록된.test.js']);
+});
+
 test('고르기 — 지도: 읽은 파일 · 나열한 폴더(새 파일) · git ls-files 무늬로 고른다', (t) => {
   const root = 저장소(t, { 'tests/자.test.js': '// 이름을 안 부르는 자\n', 'tests/딴.test.js': '//\n' });
   const 지도 = { run: 42, 시험: {

@@ -20,6 +20,9 @@
  *      (현장노트 시험_화면확인).
  *      그 경로는 ② 지도의 「읽음」과, 지도가 모르는 시험(지도를 못 받았거나 지도 뒤에 생긴 시험)이면 records-check.yml이 도는
  *      시험으로 고른다 — 기록 전용 경로를 실제로 읽는 시험은 그 목록에 있어야 CI가 초록이다(읽기 대조 ②, tools/ci읽기대조.cjs).
+ *   ④ 조건부 등록부(11-12): tools/conditional-qa/cases.json에 적힌 시험 파일 · 그 폴더 · conditional-qa.yml을 바꾸면 등록을 보는
+ *      tests/conditional-qa.test.cjs를 같이 고른다. 그 시험은 .cjs라 wide-tests에서만 돌아 ①~③의 후보(syntax-check의 tests/*.test.js)에
+ *      없다 — PC에만 있는 도구로 도는 시험을 등록 없이 넣은 push가 세 번(11-09 · 11-10 · 11-11) syntax-check를 20 · 31 · 33회 빨갛게 했다.
  *   기록 전용 경로만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
  * 돌리기: node --test --test-reporter=tap. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
  *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
@@ -38,6 +41,9 @@ const { tap실패 } = require('./lib/tap실패.js');
 
 const 무거운 = '.github/workflows/syntax-check.yml';
 const 기록흐름 = '.github/workflows/records-check.yml';
+const 등록부 = 'tools/conditional-qa/cases.json';
+const 등록시험 = 'tests/conditional-qa.test.cjs';
+const 등록흐름 = '.github/workflows/conditional-qa.yml';
 const 지도이름 = 'test-read-map';
 const 지도파일이름 = 'test-read-map.json';
 const 받기간격ms = 6 * 3600e3;
@@ -72,6 +78,11 @@ function CI시험목록(root) {
   const 식들 = CI시험무늬(root).map(무늬식);
   const 목록 = git(root, ['-c', 'core.quotepath=false', 'ls-files', '-z', '--', 'tests']);
   return (목록 || '').split('\0').filter((p) => p && 식들.some((식) => 식.test(p)) && fs.existsSync(path.join(root, p)));
+}
+
+/** 조건부 등록부에 적힌 시험 파일들 — 등록부를 못 읽으면 null(그 파일로는 고르지 않는다). */
+function 등록부파일들(root) {
+  try { return new Set(JSON.parse(fs.readFileSync(path.join(root, 등록부), 'utf8')).cases.map((row) => row.file)); } catch { return null; }
 }
 
 /** 경로 하나가 기록 전용인가를 가르는 함수 — 그 경로만 바꾼 push가 무거운 검사를 안 띄우면(syntax-check.yml paths-ignore)
@@ -246,6 +257,12 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
   const 까닭 = {};
   const 고름 = (t, 왜) => { if (!까닭[t]) 까닭[t] = 왜; };
   for (const p of 경로들) if (시험들.includes(p)) 고름(p, '바꾼 시험');
+  // ④ 조건부 등록부가 보는 파일(머리 주석) — 등록 시험은 CI 시험 무늬 밖이라 여기서 따로 고른다.
+  if (fs.existsSync(path.join(root, 등록시험))) {
+    const 등록 = 등록부파일들(root);
+    const 걸린 = 경로들.find((p) => p === 등록시험 || p === 등록흐름 || p.startsWith('tools/conditional-qa/') || (등록 && 등록.has(p)));
+    if (걸린) 고름(등록시험, `조건부 등록부가 보는 파일: ${걸린}`);
+  }
   if (쓸지도) {
     for (const t of 시험들) {
       const 칸 = 쓸지도.시험[t];
