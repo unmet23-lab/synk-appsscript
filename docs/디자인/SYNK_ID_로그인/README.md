@@ -2,7 +2,7 @@
 
 > 유호님 11-11: 「그리고 로그인하는 프론트가 진짜 너무 슬롭같아. 이거 디자인사이트 참고해서 아예 리디자인해야할것같아」(로그인 방법 한 쌍 공개 직후). [결정](../../_ops/결정.md) 11-11 「SYNK ID 로그인 화면 리디자인 · 유호님」 행, [트랙](../../_ops/트랙.md) §3 같은 줄.
 
-**상태(11-11 밤 · 2판):** 뼈대가 다른 시안 세 갈래(A 한 칸 · B 선반 · C 두 줄 인사)를 [시안_20261111/](시안_20261111/)에 지었다. 1판(A · B 카드 · C 줄 목록)을 아르곤 미학 맹검과 Fable 5.2 시안 검수에 보였고, 두 검수가 같이 짚은 대로 B · C를 다시 지었다(6절). 공개본 · 원천(`experiences/synk-account/`)은 건드리지 않았다. 유호님이 고르시면 그 판으로 구현 → 시험 · 끝단 확인 · 캡처 → 아르곤 → Fable 5.2 → synk.im/id 공개.
+**상태(11-11 밤):** 유호님이 **A 한 칸**을 고르셨다(「A 한 칸」, 비교 쪽에서). 다음은 A 판으로 로그인과 「내 SYNK 계정」을 원천에 구현하고(공개 전), 계정 화면을 한 번 더 보여 드린 뒤 검수 · 공개 — 이어받는 세션은 7절부터. 뼈대가 다른 시안 세 갈래(A 한 칸 · B 선반 · C 두 줄 인사)는 [시안_20261111/](시안_20261111/)에 있다. 1판(A · B 카드 · C 줄 목록)을 아르곤 미학 맹검과 Fable 5.2 시안 검수에 보였고, 두 검수가 같이 짚은 대로 B · C를 다시 지었다(6절). 공개본 · 원천(`experiences/synk-account/`)은 아직 건드리지 않았다.
 
 - 비교 쪽(지금 공개본 · A · B · C를 열다섯 장면 × 컴퓨터 · 휴대폰으로 나란히, 시안은 「눌러 보기」): https://claude.ai/artifact/VeRpH3n5h6dRFxHQLEw2nA (비공개). 1판 때 올린 https://claude.ai/artifact/AMjJzZSd98Zi32ygwbTupc 는 그 전 앱 계정의 것이다.
 - 시안 여는 법: `시안_20261111/a-한칸.html#first` 처럼 장면 이름을 `#` 뒤에 붙인다 — `first` 첫 방문 · `email` 이메일을 고름 · `wrong` 틀린 비밀번호 · `back-email` · `back-google` 다시 온 사람 · `signup` · `signup-email` 가입 · `sent` 가입 메일 보냄 · `recover` 비밀번호를 잊었어요 · `reset` 새 비밀번호 · `no-google` Google을 못 쓸 때 · `onboarding` Google 첫 가입 마무리 · `consent` 앱 연결(이 PC 앱) · `restart` 앱 연결 다시 시작 · `account` 내 SYNK 계정(위쪽 세 묶음 미리 보기).
@@ -82,3 +82,21 @@ synk-policy `799918fd`, 원천 master `cfc84b152`. 같은 합성 서버(`experie
 - **아르곤 미학 맹검 1회차(1판 그림, `.tmp/미학맹검/synk-id-login-redesign-20261111`):** 컴퓨터 첫 방문 — 공개본 기각 2 · A 고쳐서 냄 6 · C 줄 목록 고쳐서 냄 5 · B 카드 기각 4. 휴대폰 다시 온 사람 — 공개본 기각 2 · A 6 · C 줄 목록 7 · B 카드 기각 4. 쌍 여섯은 모두 시안 쪽. 반영: B · C 다시 지음, 머리 글과 단추 글의 축, 묻힌 「가입하기」, 가린 주소 · 온 주소 겹침, 고른 방법과 「로그인」 알약의 무게. 반영하지 않은 것: 「두 방법 단추의 주 · 부 위계가 없다」(11-11에 같은 꼴 한 쌍으로 정함).
 - **Fable 5.2 시안 검수(1판, 공유 노트 `login-redesign-review/fable-review.md`):** P0 0 · P1 3 · P2 15 · P3 7 · 추천 A. P1-1(Tab 차례) 고침, P1-2 · P1-3은 5절에 구현 계약으로. P2는 B · C 다시 지음(P2-1~7), 머리 높이 · 다시 온 사람(P2-8), Google 안내 자리(P2-9), 44px(P2-10), 가입 메일 보냄 장면 추가 · 나머지 상태는 5절 목록(P2-11), 앱 연결 · 다시 시작의 글 무게(P2-12), 표 겹침(P2-13), 이름표(P2-14) 반영. P2-15(계정 장면이 반만)는 4절대로 고르신 뒤. P3: 진짜 테두리 · Google 단추 지침(테두리 #747775 · 글 #1f1f1f · G 표 색 유지) · 제목 말투 한 벌 반영, 밤 테마 · 글꼴 조각 · 캐시 열쇠는 구현 때.
 - **아르곤 미학 맹검 2회차(2판 그림 — A · B 선반 · C 두 줄 인사 · 공개본, `…-2`):** 진행 중.
+
+## 7. 구현 인계 (11-11 밤 — 유호님 「A 한 칸」 뒤)
+
+앞 세션은 문맥 76만 토큰에서 넘겼다(유호님 기준 70만 · 「시안 고르기 → 구현」으로 단계가 바뀌는 자리).
+
+**끝의 모습:** synk.im/id의 로그인과 「내 SYNK 계정」이 A 한 칸 문법으로 공개되고 실제 주소에서 확인된다. 공개 전에 계정 화면(끝까지 그린 판)을 유호님께 한 번 더 보인다.
+
+**차례:**
+1. origin/master를 따라간다. `src/portal.mjs`를 다루는 다른 세션(「PC 앱 보안 확정 4건 고치기」 — 동의 카드 · PC 0.4.87)이 있으니 포털 JS를 고치기 전에 겹치는지 보고 겹치면 그 세션에 알린다.
+2. **새 스타일 파일**(예: `experiences/synk-account/id.css`)을 [shared.css](시안_20261111/shared.css) + [a-한칸.html](시안_20261111/a-한칸.html)의 쪽 짜임에서 만든다. `style.css` · `assets/scrapbook.css`는 고치지 않고(다른 계정 쪽 화면이 같이 쓴다) `index.html` · `preview.html`만 새 파일을 부르게 한다. 모든 규칙은 `.sid` 아래, `?v=` 열쇠도 바꾼다.
+3. `index.html` · `preview.html`의 짜임을 A로: 첫머리(`.hero` — `#hero-title` · `#hero-copy`는 JS가 있을 때만 쓰므로 빼도 된다) 걷기, 싱ㅋ 표 + 「SYNK ID」 회색 머리, 영문 꼬리표(SIGN UP · CONNECT · RECONNECT) 빼기, `#google-privacy-note`를 `#method-choices` 바로 아래로, 앱 연결의 `#consent-native`를 단추 바로 위로, 바닥 링크. 5절의 계약 다섯(`closest('label')` · `.actions` · JS가 덮어쓰는 클래스 · `.soft` · `#method-choices`의 형제 `#email-fields`)을 지킨다 — 시안 [scenes.js](시안_20261111/scenes.js)의 마크업이 그 짜임이다.
+4. JS(그리는 층 밖에서 조금): 5절 「그리는 층 밖에서 조금 바뀌는 JS」 · `#notice`와 칸 옆 사본이 같은 말을 두 번 보이지 않게(`report()` · `renderControls()`), 시험 같이. 트랙 §3 「SYNK ID 로그인 방법 한 쌍」 줄의 남은 일 ①(다른 탭에서 로그인하면 「로그인 상태를 확인하지 못했어요」)도 같이 고쳐도 된다.
+5. **「내 SYNK 계정」을 끝까지:** 계정 화면의 DOM은 `src/portal-account.mjs` · `portal-security.mjs`가 클래스 이름을 박아 그린다(마을 기록은 PC와 같은 원천 `desktop/renderer/town-records-card.mjs` — 마크업을 바꾸면 PC와 생성 묶음까지 간다, 되도록 CSS로만). 합성 서버로 실제 계정 화면을 띄워 그 DOM에 A 문법(제목 34 → 1px 줄 목록 · 검정 알약 하나 · 선 알약 · 밑줄 글자)을 입힌다 — 학습 기록 켬 · 끔 · 요약, 마을 기록, 연습 기록 내려받기, 계정 삭제(위험 행동 · 확인 창 `dialog.portal-confirm`), 계정 번호, 줄 안에서 열리는 폼(이름 · 이메일 · 비밀번호), 대기 중인 이메일 변경, 로그인한 곳 여럿, 「SYNK 앱으로」. PC 앱 「내 계정」(`desktop/renderer/account-page.mjs` — 이미 진열대 문법)과 맞춘다.
+6. `node tools/check-account-bundles.js --build`(생성물 같은 커밋) · 계정 시험(`experiences/synk-account/tests`) · 끝단 `qa/login-one-form-20261111/run.mjs`(26) · `qa/login-ux-20261027/run.mjs`(39) · 1440 · 390 캡처(`capture.mjs` — 넘침 · 쪽 오류) + 320 ~ 1920 일곱 폭 · Tab 차례 · 44px(`시안_20261111/재기.mjs`의 재는 법을 실제 쪽에).
+7. 계정 화면(끝까지 그린 판)과 로그인 실제 화면을 비교 쪽에 올려 유호님께 한 번 더 보인다(앱 계정이 바뀌면 아티팩트 주소도 새로).
+8. 검수: `node tools/검수묶음.mjs`로 아르곤 → Fable 5.2 최종(Opus 세션이면 곁 세션을 `claude-fable-5-2`로 — Fable 주간 몫이 11-11 밤 92%라 걸리면 「초기화해 주세요」 한 줄). P0 · P1 0건 뒤 `tools/공개.js`로 synk.im/id 공개 — 공개본 포털 구간 갈아 끼우기는 `qa/login-one-form-20261111/patch-live.mjs` · `patch-style.mjs`와 현장노트 배포_공개 「공개 SYNK ID(`id/dist/app.js`)에 새 모듈을 얹을 때」(앞 판 원천 `cfc84b152`, 공개본 synk-policy `799918fd`). 실제 주소 확인 → 결정 · 트랙 · 설계(`docs/SYNK_플랫폼_계정과_연결_설계.md`) 기록.
+
+**받아 둘 것:** 2판 아르곤 맹검 답은 공용 작업본 `.tmp/미학맹검/synk-id-login-redesign-20261111-2/`에 떨어진다(A의 고친 판 점수 — 지적이 있으면 구현에 반영). 1판 셋째 묶음(이메일 가입)은 `…-20261111/답_3_*.md`. Fable 1판 검수 전문은 공유 노트 `login-redesign-review/fable-review.md`. 지금 공개본 열다섯 장면 캡처 도구: `qa/login-one-form-20261111/capture.mjs`(+ 앞 세션 스크래치의 `cap-extra` · `cap-forced` · `cap-sent`는 같은 합성 서버로 계정 · 다시 시작 · 새 비밀번호 · 가입 마무리 · 메일 보냄을 찍은 것 — 필요하면 capture.mjs에 장면을 더한다).
