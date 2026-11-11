@@ -89,6 +89,7 @@ code{font-size:16px}footer{margin-top:40px;padding-top:24px;font-size:16px;line-
 .method-status{margin:2px 0 0}.method-status:empty{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%)}
 .email-fields{margin:0 0 4px}.email-fields>.sb-btn{width:100%}
 @media(max-width:340px){.method-btn{gap:8px;padding:12px;font-size:16px}.method-btn .recent-badge{height:22px;padding:0 8px;font-size:11px}}
+@media(max-width:300px){.method-btn{position:relative}.method-btn .recent-badge{position:absolute;top:-11px;right:10px;margin:0}.method-choices{row-gap:14px}}
 @media(prefers-reduced-motion:reduce){.method-btn{transition:none}}
 .google-privacy-note{margin:16px 0 0;font-size:14px;line-height:1.65}.google-privacy-note a{font-weight:700}
 .field-row{margin-bottom:20px}.field-row>label{margin-bottom:0}.password-field{display:flex;align-items:stretch;gap:8px;margin-top:8px}.password-field input{flex:1 1 auto;min-width:0;margin-top:0}

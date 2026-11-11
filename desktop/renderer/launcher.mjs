@@ -227,8 +227,8 @@ function renderAuth(){
   $('account-label').textContent=signedIn?name:phase==='signing-out'?'로그아웃 중':phase==='restoring'?'로그인 확인 중':signing?'로그인 중':'로그인';
   const avatar=$('account-button').querySelector?.('.avatar'),initial=signedIn?[...name][0]||'S':'S';if(avatar&&avatar.textContent!==initial)avatar.textContent=initial;
   $('account-title').textContent=signedIn?`${name} 님`:phase==='signing-in'?'브라우저에서 로그인 중':phase==='restoring'?'로그인 확인 중':phase==='signing-out'?'로그아웃 중':'SYNK 시작하기';
-  $('account-description').textContent=signedIn?'앱마다 쓸 수 있는 범위는 따로 정해져 있어요.':phase==='signing-in'?'기본 브라우저에 SYNK ID 로그인 화면을 열었어요. Google과 이메일 중 하나를 골라 로그인하면 이 앱으로 돌아와요.':retryable?'저장된 로그인을 다시 불러오거나 새로 로그인해 주세요.':'SYNK ID 하나로 WORLD·회원 혜택·Workspace를 써요.';
-  let message=signedIn?'로그인돼 있어요.':!bridge?'회원가입과 로그인은 SYNK Platform PC 앱에서 해요.':!auth.configured?'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.':phase==='signing-in'?'브라우저 창에서 로그인을 마쳐 주세요. 창이 안 보이면 「로그인 취소」를 누른 뒤 다시 로그인해 주세요.':phase==='restoring'?'저장된 로그인을 확인하고 있어요.':phase==='signing-out'?'로그아웃하고 있어요.':signUpOpened?'회원가입 페이지를 열었어요. 가입을 마쳤다면 「로그인」을 눌러 주세요.':'아직 로그인하지 않았어요.';
+  $('account-description').textContent=signedIn?'앱마다 쓸 수 있는 범위는 따로 정해져 있어요.':phase==='signing-in'?'기본 브라우저에 SYNK ID 화면을 열었어요. Google과 이메일 중 하나로 로그인한 뒤 「연결하기」를 누르면 이 앱으로 돌아와요.':retryable?'저장된 로그인을 다시 불러오거나 새로 로그인해 주세요.':'SYNK ID 하나로 WORLD·회원 혜택·Workspace를 써요.';
+  let message=signedIn?'로그인돼 있어요.':!bridge?'회원가입과 로그인은 SYNK Platform PC 앱에서 해요.':!auth.configured?'로그인 설정을 찾지 못해 로그인할 수 없어요. synk.im에서 PC 앱을 다시 받아 설치해 주세요.':phase==='signing-in'?'브라우저 창에서 로그인하고 「연결하기」를 눌러 주세요. 창이 안 보이면 「로그인 취소」를 누른 뒤 다시 로그인해 주세요.':phase==='restoring'?'저장된 로그인을 확인하고 있어요.':phase==='signing-out'?'로그아웃하고 있어요.':signUpOpened?'회원가입 페이지를 열었어요. 가입을 마쳤다면 「로그인」을 눌러 주세요.':'아직 로그인하지 않았어요.';
   if(auth.error)message+='\n'+(auth.error.message||'로그인을 완료하지 못했어요. 다시 시도해 주세요.');
   // A password changed in the browser's SYNK ID ends this app's session too.
   if(!signedIn&&auth.error?.code==='AUTH_REQUIRED'&&accountPage.securityVisitedRecently())message+='\n비밀번호를 바꿨다면 새 비밀번호로 다시 로그인해 주세요.';$('account-state').textContent=message;
