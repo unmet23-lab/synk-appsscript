@@ -19,6 +19,9 @@ const REGISTRY = '__synkAtlasHosts';
 const MAKER = '__synkAtlasHostMaker';
 const UPLOAD_DELAY_MS = 1500;
 const UPLOAD_LIMIT = 256;
+// 옛 기록 읽개의 시간 한도(아래 carryLegacy). 시험만 host.legacyWait로 바꾼다.
+export const LEGACY_WAIT_MS = 4000;
+const DONE = Promise.resolve();
 
 // 같은 출처의 가장 위 창(지금 판의 쓰기 임대 주인 __synkAtlasHistoryLease와 같은 자리).
 export function hostScope(scope = globalThis) {
@@ -101,7 +104,7 @@ function createHost({
   params,
   health,
   transport,
-  legacy,
+  legacyWait = LEGACY_WAIT_MS,
   now,
   map,
   onClose,
@@ -121,6 +124,7 @@ function createHost({
     timer: null,
     uploading: null,
     closed: false,
+    carry: null, // 옛 기록 옮기기의 약속 — 호스트당 하나(계획 §16 ③)
   };
   // 듣는 함수마다 감싼다 — 하나(사라진 틀의 판 등)가 던져도 쓰기의 stored가 거절로 바뀌거나 뒤 판들이 소식을 놓치지 않는다.
   // 던진 듣는 함수를 지우지 않는다 — 일시적인 오류 하나가 그 판을 영영 귀먹게 하지 않게(N2). 듣는 함수는 그 판이 닫힐 때 빠진다.
@@ -133,6 +137,8 @@ function createHost({
       }
     }
   };
+  // 지금 호스트의 계기에 — 셸이 받으면 계기가 셸의 것으로 바뀐다(take).
+  const note = (kind, outcome) => health?.note(kind, outcome);
 
   // 다른 탭에 덧붙였다고 알린다. 닫은 뒤 늦게 끝난 쓰기는 알리지 않는다.
   function announce() {
@@ -219,23 +225,27 @@ function createHost({
     get health() {
       return health;
     },
-    // 셸이 틀이 먼저 연 저장소를 받을 때 — 올리기 고리와 계기를 셸의 것으로 건다.
-    // 틀이 먼저 연 손님 저장소면 틀은 옛 기록 읽개를 넘기지 않았으므로 셸의 읽개로 여기서 옮긴다(GPT 다시 GA2 · GA5).
-    async adopt({
+    // 셸이 받을 때마다(여는 셸 · 틀이 연 것을 받는 셸 · 이미 셸 호스트인 것을 또 받는 셸) — 올리기 고리와 계기를 그 셸의 것으로 걸고
+    // (같은 값이면 그대로), 호스트가 아직 옛 기록 읽개를 받은 적이 없으면 그 읽개로 옮기기 약속을 건다(계획 §16 ③, Fable 5.2 D3 —
+    // 읽개 없는 셸 코치가 먼저 받았어도 뒤 셸 코치의 읽개가 걸린다). 틀이 넘긴 올리기 · 읽개는 들지 않는다(acquireHere가 셸만 부른다).
+    take({
       transport: nextTransport = null,
       health: nextHealth = null,
-      legacy: next = null,
+      legacy: reader = null,
     } = {}) {
       if (nextTransport) transport = nextTransport;
       if (nextHealth) health = nextHealth;
-      if (guest && next && !state.carried) {
-        state.carried = true;
-        await carryLegacy(state.trail.record, next, health);
-      }
+      if (guest && reader && !state.carry)
+        state.carry = carryLegacy(state.trail.record, reader, note, legacyWait).then(() =>
+          // 옮기기가 끝나면 듣는 판 모두에 알린다 — 약속보다 먼저 준비를 끝낸 코치의 판도 옮겨 온 만남 · 기억으로 다시 선다(D4 ㉠).
+          tell('refresh'),
+        );
       schedule();
     },
+    // 옛 기록 옮기기의 약속 — 받는 모든 코치(셸 · 틀)가 이것을 기다린 뒤 준비를 끝낸다(D4 ㉡). 읽개를 받은 적이 없으면 곧 풀린다.
+    carried: () => state.carry ?? DONE,
     async open() {
-      // 기록부의 계기는 지금 호스트의 계기로 넘겨 준다 — 셸이 틀이 연 호스트를 받으면(adopt) 그 뒤 저장 계기도 셸의 것으로(아르곤 다시 A2).
+      // 기록부의 계기는 지금 호스트의 계기로 넘겨 준다 — 셸이 틀이 연 호스트를 받으면(take) 그 뒤 저장 계기도 셸의 것으로(아르곤 다시 A2).
       const healthNow = { note: (kind, outcome) => health?.note(kind, outcome) };
       state.trail = await openTrail({
         port,
@@ -247,10 +257,6 @@ function createHost({
         health: healthNow,
         now,
       });
-      if (guest && legacy) {
-        state.carried = true;
-        await carryLegacy(state.trail.record, legacy, health);
-      }
       state.channel = channelOf(key, () => void refresh());
       if (globalThis.addEventListener) globalThis.addEventListener('online', schedule);
       schedule();
@@ -274,19 +280,15 @@ function createHost({
         applyOwn(view, event, memory, params, index);
       return view;
     },
+    // 「낸 것」 — 기록부의 줄(서버 요약의 다른 기기 줄 · 다른 탭 · 다른 코치 · 내 줄) 위에 저장 중인 내 제시를 같은 번호로 덮는다.
+    // 제시가 기록부에 든 뒤 저장 끝을 듣기 전에도 한 줄이다(Fable 5.2 D8 — 이어 붙이면 돌아온 것을 하나 더 센다). 번호 없는 서버 요약 줄은
+    // 겹치지 않게 따로 두고 그대로 센다(기록부와 같은 규칙).
     issued() {
-      return [...state.trail.issued(), ...issuing.values()];
+      const rows = new Map(state.trail.issued().map((row, i) => [row.id ?? `#${i}`, row]));
+      for (const [id, row] of issuing) rows.set(id, row);
+      return [...rows.values()];
     },
     pendingCount: () => pending.size + issuing.size,
-    // 지금 「낸 것」에 든 제시의 사건 번호 — 저장된 2판 제시와 저장 중인 제시(판을 열 때 적어 두고 그 뒤의 것만 센다).
-    issuedIds: () =>
-      new Set([
-        ...state.trail
-          .heldEvents()
-          .filter(event => event.type === EVENT_TYPES.presented)
-          .map(event => event.id),
-        ...issuing.keys(),
-      ]),
     // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이 — 기록부가 부모를 기다리는 자식까지).
     settled: () => Promise.allSettled([...inflight]).then(() => state.trail.saved()),
     retain() {
@@ -309,16 +311,27 @@ function createHost({
 // 옛 기기 기록 옮기기(설계 §5-6 · 단계 3 carry.mjs, Fable 설계 P1-5 ①) — 손님 호스트가 열 때마다 옛 저장소(지금 판 코치의 로그 ·
 // 접힌 장부)에서 아직 옮기지 않은 사건 · 새로 든 장부만 옮긴다. 옛 판에 다녀온 기록(되돌리기 2주)도 다음에 열 때 들어온다.
 // legacy()는 제품이 준다 → { log: 옛 꼴 사건들, ledger: 접힌 장부 } | null. 못 읽어도 새 길은 연다(계기에만 남긴다).
-async function carryLegacy(record, legacy, health) {
+// 그 저장소의 코치가 모두 이 옮기기를 기다리므로 읽개에 시간 한도(LEGACY_WAIT_MS)를 둔다 — 넘으면 계기(LEGACY_CARRY)에 남기고 연다
+// (Fable 5.2 D4, 늦게 온 값은 버린다 — 다음에 열 때 다시 옮긴다). WORLD 읽개는 localStorage라 바로 끝난다.
+function withinTime(promise, wait) {
+  let timer = null;
+  const late = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('legacy reader timed out')), wait);
+    timer.unref?.();
+  });
+  return Promise.race([promise, late]).finally(() => clearTimeout(timer));
+}
+
+async function carryLegacy(record, legacy, note, wait) {
   try {
-    const old = await legacy();
+    const old = await withinTime(Promise.resolve().then(legacy), wait);
     if (!old) return;
     await record.importLegacy(legacyToImport(old.log, id => record.has(id)));
     const fields = carriedFields(old.ledger, carriedSoFar(record.heldEvents()));
     if (fields && !(await record.add(EVENT_TYPES.carried, fields).stored))
       throw new Error('carried');
   } catch {
-    health?.note('save', { ok: false, code: 'LEGACY_CARRY' });
+    note('save', { ok: false, code: 'LEGACY_CARRY' });
   }
 }
 
@@ -352,18 +365,10 @@ function nextDocument(registry) {
   return null;
 }
 
-// 받을 저장소 이름 — 문서 호스트가 이미 섰으면 기다리지 않고 곧바로(같은 틱에) 정하고, 아직이면 서는 순간 documentOf가 센다(claimed).
-async function keyOf(registry, options) {
-  if (!options.document) return { key: options.key, claimed: false };
-  if (registry.document != null) return { key: registry.document, claimed: false };
-  const key = await documentOf(registry, options.wait ?? DOCUMENT_WAIT_MS);
-  return { key, claimed: key != null };
-}
-
-// 새 등록부 자리 — 등록부에 먼저 넣고 연다(같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게).
+// 새 등록부 자리 — 등록부에 먼저 넣고 연다(같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게). shell은 셸이 받은 뒤에 선다(shellTakes).
 function newEntry(registry, key, options, openPort) {
   const claims = { users: 0 };
-  const entry = { shell: options.fromFrame !== true, claims };
+  const entry = { key, shell: false, claims };
   const onClose = () => {
     if (registry.get(key) === entry) registry.delete(key);
     if (registry.document === key) setDocument(registry, nextDocument(registry));
@@ -384,8 +389,8 @@ function newEntry(registry, key, options, openPort) {
       memory,
       onClose,
       claims,
-      // 틀이 넘긴 올리기 · 옛 기록 읽개는 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(adopt).
-      ...(options.fromFrame === true ? { transport: null, legacy: null } : {}),
+      // 틀이 넘긴 올리기는 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(take). 옛 기록 읽개도 셸의 것만(take).
+      ...(options.fromFrame === true ? { transport: null } : {}),
     }).open();
   })();
   registry.set(key, entry);
@@ -393,42 +398,61 @@ function newEntry(registry, key, options, openPort) {
   return entry;
 }
 
-// 셸이 같은 저장소를 받으면 그 호스트는 셸의 것이다 — 올리기 · 계기 · 옛 기록 읽개를 셸의 것으로 걸고 문서 호스트로 세운다.
-async function shellTakes(registry, entry, host, key, options) {
-  if (!entry.shell)
-    await host.adopt({
-      transport: options.transport,
-      health: options.health,
-      legacy: options.legacy,
-    });
+// 셸이 같은 저장소를 받으면 그 호스트는 셸의 것이다 — 받을 때마다 올리기 · 계기 · 옛 기록 읽개를 그 셸의 것으로 걸고(D3) 문서 호스트로 세운다.
+function shellTakes(registry, entry, host, options) {
+  host.take({
+    transport: options.transport,
+    health: options.health,
+    legacy: options.legacy,
+  });
   entry.shell = true;
-  if (registry.document == null) setDocument(registry, key);
+  if (registry.document == null) setDocument(registry, entry.key);
+}
+
+const missing = () => hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
+
+// 기다림 없이 받을 자리를 정하고 같은 틱에 쓰는 사람으로 센다(계획 §16 ④) — 이미 선 문서 호스트 · 열린 저장소 · 여는 중인 저장소.
+// 아직 안 선 문서 호스트면 null — 서는 순간(동기) documentOf가 센다. 받기의 첫 기다림 전에 세므로, 받는 사이에 다른 코치가 놓아도
+// (동기 release) 이 코치가 받을 호스트가 닫히지 않는다(아르곤 끝 판 C3 · GPT r3 GA8).
+function takeNow(registry, options, openPort) {
+  if (options.document) {
+    if (registry.document == null) return null;
+    const entry = registry.get(registry.document);
+    if (!entry) throw missing();
+    entry.claims.users += 1; // 이미 선 문서 호스트 — 같은 틱에 센다
+    return entry;
+  }
+  const entry = registry.get(options.key) ?? newEntry(registry, options.key, options, openPort);
+  entry.claims.users += 1; // 열린 · 여는 중인 저장소 — 같은 틱에 센다
+  return entry;
+}
+
+async function takeLater(registry, options) {
+  const key = await documentOf(registry, options.wait ?? DOCUMENT_WAIT_MS);
+  if (key == null) throw missing();
+  return registry.get(key);
 }
 
 // 이 창에서 호스트를 연다(저장소 이름마다 하나 — 처음 부른 코치가 열고, 뒤의 코치는 같은 것을 받는다).
 // document: 셸이 연 문서 호스트를 받는다(틀의 코치) — 기다려도 열린 것이 없으면 HOST_MISSING.
 // fromFrame: 아래 창(틀)이 이 창의 길로 부른 것 — 틀이 연 호스트는 문서 호스트가 되지 않는다.
+// 센 뒤에는 어떤 실패에서도(저장소를 못 엶 · 색인 판이 다른 지도) 셈을 되돌린다 — 센 곳도 되돌리는 곳도 하나다(Fable 5.2 D5).
 async function acquireHere(scope, options, openPort) {
   const registry = registryOf(scope);
-  const { key, claimed } = await keyOf(registry, options);
-  if (key == null) throw hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
-  let entry = registry.get(key);
-  if (!entry) {
-    if (options.document) throw hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
-    entry = newEntry(registry, key, options, openPort);
-  }
-  // 쓰는 사람 수는 기다리기 전에 센다 — 여는 사이에 다른 코치가 닫아도(동기 release) 이 코치가 받을 호스트가 닫히지 않게(아르곤 끝 판 C3).
-  if (!claimed) entry.claims.users += 1;
-  let host;
+  const entry = takeNow(registry, options, openPort) ?? (await takeLater(registry, options));
+  let host = null;
   try {
     host = await entry.opening;
+    if (options.map) host.index.add(options.map);
+    if (options.fromFrame !== true) shellTakes(registry, entry, host, options);
+    // 옛 기록 옮기기의 약속 — 셸이든 틀이든 받는 코치는 모두 그 끝을 기다린다(계획 §16 ③ · D4 ㉡).
+    await host.carried();
+    return host;
   } catch (error) {
-    entry.claims.users -= 1;
+    if (host) host.release();
+    else entry.claims.users -= 1;
     throw error;
   }
-  if (options.fromFrame !== true) await shellTakes(registry, entry, host, key, options);
-  if (options.map) host.index.add(options.map);
-  return host;
 }
 
 // 이 창의 엔진이 호스트를 만드는 길을 건다(묶음을 불러올 때 한 번). openPort는 시험만 바꾼다.

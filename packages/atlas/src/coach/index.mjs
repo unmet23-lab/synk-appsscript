@@ -102,6 +102,7 @@ export function createCoach(options = {}) {
         health: host.health ?? null,
         transport: host.transport ?? null,
         legacy: host.legacy ?? null,
+        ...(host.legacyWait > 0 ? { legacyWait: host.legacyWait } : {}),
         now: host.now,
         map,
       },
@@ -142,6 +143,32 @@ export function createCoach(options = {}) {
     const base = state.host.trail.summary();
     if (state.host.view().met.has(familyKey) || base?.lines.item.has(itemKey)) return true;
     return state.host.guest || base != null ? false : null;
+  }
+
+  // 답의 측정용 근거(계획 §16 ② — Fable 5.2 D1 · D2 · D6). 「누가 처음 만났나」는 시각이 아니라 접기의 차례(시각 → 사건 번호)로 가른다.
+  //   먼저 꼬리를 한 번 읽는다 — 먼저 저장된 다른 탭의 답(같은 밀리초여도)이 들어와 그 차례에 선다.
+  //   그 계열의 만난 표 시각에 선 만남 가운데 맨 앞 하나(어댑터가 짓는 만남 — 도움 · 장부 만남 · 옛 꼴 사건까지 접기와 같은 차례):
+  //   exposure는 그 만남의 제시가 이 제시인가, independent는 그 만남이 이 답인가(혼자 낸 판정된 답 — 같은 제시의 둘째 답 · 도움 뒤 답은
+  //   아니다). 손님 접기 · 서버 접기의 lead와 같은 규칙이다. 보기가 아무것도 얹지 못하거나 만난 표에 그 계열이 없으면 「모름」(unknown) —
+  //   지어내지 않는다(설계 §5-2). 둘 다 기록부에 든 뒤에는 기기와 서버가 같은 차례이고, 아직 읽지 못한 다른 탭 · 다른 기기의 만남 ·
+  //   서버가 시각을 누른 사건은 기기가 가를 수 없어 기기 판정이 임시다(설계 §5-2).
+  async function measured(out) {
+    const presented = out.group.source.event;
+    const fold = out.fold;
+    const assisted = fold.answer.assisted;
+    try {
+      await state.host.trail.refresh();
+    } catch {
+      // 꼬리를 못 읽어도 든 사건으로 가른다.
+    }
+    const view = state.host.view();
+    const family = fold.item.familyKey;
+    if (view.waitAll === true || !view.met.has(family))
+      return { stored: true, independent: false, assisted, exposure: 'unknown' };
+    const lead = state.host.trail.leadAt(family, view.met.get(family));
+    const exposure = lead && !lead.carried && lead.source === presented.id ? 'new' : 'repeat';
+    const independent = exposure === 'new' && lead.id === fold.id && lead.solo;
+    return { stored: true, independent, assisted, exposure };
   }
 
   // 고른 줄 → recommend의 결과. none이면 낼 문항이 없다(제품은 판을 끝낸다), idle이면 할 것이 없다(채우기 문항이 selected).
@@ -204,27 +231,9 @@ export function createCoach(options = {}) {
     answer(pid, result) {
       const session = live();
       const out = session.answer(pid, result);
-      const presented = out.group.source.event;
-      const fold = out.fold;
-      const evidence = out.stored.then(ok => {
-        if (!ok) return { stored: false, independent: false, assisted: null, exposure: null };
-        // 그 계열의 첫 만남이 이 제시의 사건(도움 · 답 · 답 보기)이었나 — 시각만으로 가르면 다른 제시가 먼저 답한 순서에서 틀린다
-        // (아르곤 끝 판 C2 · GPT 다시 GA1). 같은 계열을 둘이 띄워도 첫 만남은 먼저 만난 제시 하나의 것이다.
-        const firstAt = state.host.view().met.get(fold.item.familyKey);
-        const first = out.group.children.some(entry => entry.atMs === firstAt);
-        const exposure =
-          !first || presented.firstExposure === false
-            ? 'repeat'
-            : presented.firstExposure === true
-              ? 'new'
-              : 'unknown';
-        const independent =
-          exposure === 'new' &&
-          fold.answer.assessable &&
-          !fold.answer.assisted &&
-          !fold.answer.answerShown;
-        return { stored: true, independent, assisted: fold.answer.assisted, exposure };
-      });
+      const evidence = out.stored.then(ok =>
+        ok ? measured(out) : { stored: false, independent: false, assisted: null, exposure: null },
+      );
       return {
         eventId: out.event.id,
         verdict: out.verdict,

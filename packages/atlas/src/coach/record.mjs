@@ -1,7 +1,61 @@
 // 코치가 기록(단계 3 src/record)을 부르는 한 자리(단계 4 계획 §3-2 「기록에 기대는 얇은 겹」). 단계 3 끝 판 검수로 기록 API가
 // 바뀌면 이 파일만 고친다. 기록부는 저장이 끝난 사건만 근거로 보이고(add의 stored), 서버의 답을 받고(receive), 꼬리를 읽는다(refresh).
 // 서버의 답 꼴(learning?view=trail POST)은 단계 3 서버 반영 뒤 굳힌다 — 지금은 { accepted, clamped, rejected, summary, serverTime }.
+import { evidenceOf } from '../fold/evidence.mjs';
+import { deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
+import { EVENT_FORM, EVENT_TYPES } from '../record/events.mjs';
 import { openRecord } from '../record/log.mjs';
+
+const isCurrent = event => event.schema === EVENT_FORM.current;
+
+// 기록부가 든 사건 → 어댑터의 기록(log.mjs와 같은 열쇠 — 2판은 사건 번호, 옛 꼴은 a.<적힌 시각>.l<든 차례>). 든 차례는 기록부가 든 차례 그대로다.
+const entriesOf = events =>
+  events.map((event, i) => ({
+    event,
+    key: isCurrent(event) ? event.id : deviceKey(i + 1, event),
+    atMs: Date.parse(event.at),
+  }));
+
+// 그 계열의 만남(답 · 도움 · 장부 만남)이 드는 묶음만 — 그 계열의 제시와 그 자식 · 제외, 옮겨 온 장부.
+function familyEntries(entries, family, index) {
+  const shows = new Set(
+    entries
+      .filter(({ event }) => event.type === EVENT_TYPES.presented)
+      .filter(({ event }) => itemOf(event, index)?.familyKey === family)
+      .map(({ event }) => event.id),
+  );
+  const kept = new Set(shows);
+  for (const { event } of entries) if (shows.has(event.presentationId)) kept.add(event.id);
+  return entries.filter(
+    ({ event }) =>
+      kept.has(event.id) ||
+      event.type === EVENT_TYPES.carried ||
+      (event.type === EVENT_TYPES.excluded && kept.has(event.targetId)),
+  );
+}
+
+// 측정용 첫 만남(계획 §16 ② — Fable 5.2 D1 · D6). 그 계열의 만난 표 시각(at)에 선 만남 가운데 접기의 차례(시각 → 사건 번호, fold/order.mjs
+// byTime)로 맨 앞 하나 — { id(그 만남의 접기 번호 = 답이면 답 사건 번호), source(그 만남이 든 묶음의 머리 — 제시 번호), carried, solo }.
+// 만남의 차례는 어댑터(groupsOf · foldEventsOf)가 짓는 만남으로 짠다 — 도움 · 장부 만남 · 옛 꼴 사건의 차례가 접기와 같다.
+// 그 시각의 만남이 기록부에 없으면 null(요약으로 접힌 옛 만남 — 이 제시의 것이 아니다).
+function leadAt(record, family, at, index) {
+  const entries = familyEntries(entriesOf(record.heldEvents()), family, index);
+  const folds = [];
+  const sourceOf = new Map();
+  for (const [source, group] of groupsOf(entries))
+    for (const fold of foldEventsOf(group, index)) {
+      folds.push(fold);
+      sourceOf.set(fold.id, source);
+    }
+  const lead = (evidenceOf(folds).marks.get(family) ?? []).find(mark => mark.at === at);
+  if (!lead) return null;
+  return {
+    id: lead.id,
+    source: sourceOf.get(lead.id) ?? null,
+    carried: lead.carried === true,
+    solo: lead.unaided === true && lead.grade != null,
+  };
+}
 
 export async function openTrail({ port, revision, guest, memory, params, index, health, now }) {
   const record = await openRecord({
@@ -15,11 +69,14 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     ...(now ? { now } : {}),
   });
   const clockNow = now ?? (() => Date.now());
+  const nowMs = () => Math.round(clockNow() + record.clock.offsetMs);
   return {
     record,
     add: (type, fields) => record.add(type, fields),
     view: () => record.view(),
+    // 「낸 것」 — 줄마다 사건 번호(id)가 실린다(단계 3 49935bb51, 계획 §16 ①). 번호 없는 서버 요약 줄은 id 칸 없이 그대로 온다.
     issued: () => record.issued(),
+    leadAt: (family, at) => leadAt(record, family, at, index),
     refresh: () => record.refresh(),
     // 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝날 때까지 — 올리기 전에(단계 3 bed650c2f).
     saved: () => record.saved?.() ?? Promise.resolve(),
@@ -41,6 +98,6 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     summary: () => record.summary,
     pending: () => record.pending(),
     // 고르기의 지금 시각 — 서버 시각과의 차이를 고친 기기 시각(사건 시각과 같은 시계).
-    now: () => Math.round(clockNow() + record.clock.offsetMs),
+    now: nowMs,
   };
 }

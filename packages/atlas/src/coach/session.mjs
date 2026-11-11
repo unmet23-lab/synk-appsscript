@@ -2,10 +2,11 @@
 //   평소: present · answer · tell이 두뇌의 present · record · say로 학습자를 바로 고친다 — 저장이 다 되는 동안 결정은
 //         두뇌만 돌린 것과 한 글자도 다르지 않다.
 //   두뇌에 넘기는 답 · 문항은 그 제시의 사건 묶음을 기록의 어댑터(foldEventsOf)로 바꾼 접기 사건에서 꺼낸다(기기 얹기 · 서버 접기와 같은 값).
-//   판 일지: 판을 열 때의 「낸 것」 · 옵션 · 시각 · 보기 사본과, 그 뒤의 present · answer · tell. 바깥이 바뀌면(저장 실패 · 제외 · 다른 탭 ·
-//         같은 문서 다른 코치의 쓰기 · 서버 요약) 기억 · 능력 · 만남은 호스트 보기로 바꿔 끼우고, 판 상태(shown · session · day · log)는
-//         실패 · 제외한 사건을 뺀 일지를 다시 돌려 세운다. 보기가 아무것도 얹지 못하는 동안(waitAll — 판 묶음이 다른 요약 등)은 판을 열 때의
-//         보기 사본 위에 일지를 통째로 다시 돌린다 — 이 판의 내 답은 판 안의 고르기에서 늘 본 것이다(Fable 설계 P2-2 가).
+//   판 일지: 판을 열 때의 옵션 · 시각 · 보기 사본과, 그 뒤의 present · answer · tell. 바깥이 바뀌면(저장 실패 · 제외 · 다른 탭 ·
+//         같은 문서 다른 코치의 쓰기 · 서버 요약 · 옛 기록 옮기기) 기억 · 능력 · 만남은 호스트 보기로 바꿔 끼우고, 판 상태(shown · session ·
+//         day · log)는 실패 · 제외한 사건을 뺀 일지를 다시 돌려 세운다. 「낸 것」(log)은 그때마다 호스트의 것 전부를 다시 받고 다시 돌릴 내
+//         제시만 사건 번호로 뺀다(계획 §16 ①). 판 열기는 일지가 빈 다시 세우기다. 보기가 아무것도 얹지 못하는 동안(waitAll — 판 묶음이 다른
+//         요약 등)은 판을 열 때의 보기 사본 위에 일지를 통째로 다시 돌린다 — 이 판의 내 답은 판 안의 고르기에서 늘 본 것이다(Fable 설계 P2-2 가).
 //   판 수명(Fable 설계 P2-1): set은 한 판에 한 번 — 문항이 나간 판에 같은 뜻의 set이 또 오면 무시한다(「더 배우기」는 more로 새 판).
 //         판 없이 연 기본 판은 날이 바뀌거나 오래 쉬면 새로 연다. 본인 말(tell)은 판을 열지 않는다.
 import { applyOwn } from '../fold/device.mjs';
@@ -60,10 +61,17 @@ const pooled = (row, pool) =>
 const saidAt = line =>
   line?.empty ? line.latestAt : line?.open?.grade === 'known' ? line.open.at : null;
 const issuedOf = row => event => ({
+  id: event.id,
   at: Date.parse(event.at),
   review: row.tier === 1,
   units: [...row.brandNew],
 });
+// 판 번호의 코치 꼬리 — 같은 경험 이름의 코치 둘이 같은 밀리초에 판을 열어도 번호가 갈린다(Fable 5.2 D9).
+const coachTag = () =>
+  Array.from(
+    { length: 6 },
+    () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)],
+  ).join('');
 
 const HELP_LEVELS = { answer: 'answer', explanation: 'explanation' };
 const HELP_KINDS = ['text', 'hint', 'answer', 'replay', 'explanation'];
@@ -121,23 +129,17 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     own: new Set(), // 이 코치가 쓴 사건 번호 — 같은 문서 다른 코치의 쓰기만 다시 세우기를 부른다
     closed: null, // 닫았지만 판 기록을 아직 안 남긴 판 { setId, recorded }
     lastAt: 0,
+    tag: coachTag(),
   };
 
-  // 판을 연다. fallback: 판 없이 부른 메서드가 연 기본 판(판 옵션 없음).
+  // 판을 연다. fallback: 판 없이 부른 메서드가 연 기본 판(판 옵션 없음). 판 열기는 일지가 빈 다시 세우기다(Fable 5.2 권고 — 두 길이
+  // 갈릴 자리를 없앤다). 판을 열 때 남기는 것은 시각 · 옵션과, 보기가 아무것도 얹지 못할 때 일지를 다시 돌릴 바탕(base)뿐이다.
   function openSet(options = {}, { fallback = false } = {}) {
     const now = host.now();
-    const base = host.view();
-    const learner = learnerOf(copyView(base));
-    learner.log = host.issued();
-    const opts = { ...options, dayOffset };
-    startSession(learner, now, params, opts);
-    s.learner = learner;
     s.open = {
       now,
-      opts,
-      log: learner.log.slice(),
-      seen: host.issuedIds(), // 이 판을 열 때 「낸 것」에 이미 든 제시 — 뒤에 다른 코치 · 탭이 낸 것만 따로 센다(GA6)
-      base,
+      opts: { ...options, dayOffset },
+      base: host.view(),
       fallback,
       sign: setSign(options),
     };
@@ -147,7 +149,8 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     s.groups.clear(); // 앞 판의 제시 번호는 이 판에서 받지 않는다(GPT GC4)
     s.lastAt = now;
     s.setSeq += 1;
-    s.setId = `set.${gameId}.${now}.${s.setSeq}`;
+    s.setId = `set.${gameId}.${now}.${s.tag}.${s.setSeq}`;
+    build();
     return s.learner;
   }
 
@@ -191,23 +194,15 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         s.failed.add(event.targetId);
   }
 
-  // 이 판이 열린 뒤 다른 코치 · 탭이 낸 「낸 것」 줄 — 하루 한도 · 새것 몫에 함께 센다(GPT GC1). 사건 번호로 가른다 — 탭마다 시계가
-  // 달라 시각으로는 겹칠 수 있다(GPT 다시 GA6). 기록부가 든 2판 제시 가운데 이 코치가 쓰지 않았고 판을 열 때 없던 것.
-  function othersIssued() {
-    return host.trail
-      .heldEvents()
-      .filter(
-        event =>
-          event.type === EVENT_TYPES.presented &&
-          event.reason &&
-          !s.own.has(event.id) &&
-          !s.open.seen.has(event.id),
-      )
-      .map(event => ({
-        at: Date.parse(event.at),
-        review: event.reason.tier === 1,
-        units: [...event.reason.introduced],
-      }));
+  // 판의 「낸 것」(하루 한도 · 새것 몫 — 계획 §16 ①). 다시 세울 때마다 지금 호스트의 것 전부를 다시 받고(서버 요약으로 온 다른 기기 줄 ·
+  // 다른 탭 · 다른 코치 · 판 열기 전의 내 줄이 한 규칙으로 든다), 이 판 일지에서 다시 돌릴 내 제시만 사건 번호로 뺀다 — 그 줄은 일지를
+  // 다시 돌리며 더한다. 시각을 견주지 않는다(탭 · 기기마다 시계가 다르고 서버는 시각을 누른다). 빼는 것은 실패도 제외도 아닌 내 제시뿐이다
+  // (Fable 5.2 D7) — 저장에 실패한 제시는 기록부에 줄이 없어 빠지고, 제외된 제시는 기록부 · 서버의 「낸 것」에 남으므로 여기서도 센다.
+  function issuedLog() {
+    const replayed = new Set(
+      s.journal.filter(op => op.kind === 'present' && kept(op)).map(op => op.eventId),
+    );
+    return host.issued().filter(row => !replayed.has(row.id));
   }
 
   // 놓친 답 — 틀림 · 「모르겠어요」(건너뜀 · 판정 못 한 답은 「다시」를 만들지 않는다 — 아르곤 끝 판 C8 ②).
@@ -239,14 +234,14 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     }
   }
 
-  function rebuild() {
-    if (!s.open || !s.learner?.session) return;
+  // 판 상태를 세운다 — 판을 열 때(일지가 빈) · 바깥이 바뀔 때 같은 길이다.
+  function build() {
     const fresh = host.view();
     // 보기가 아무것도 얹지 못하는 동안은 판을 열 때의 사본 위에 일지를 통째로(기억까지) 다시 돌린다.
     const waiting = fresh.waitAll === true;
     markExcluded();
     const tmp = learnerOf(copyView(waiting ? s.open.base : fresh));
-    tmp.log = [...s.open.log, ...othersIssued()];
+    tmp.log = issuedLog();
     startSession(tmp, s.open.now, params, s.open.opts);
     for (const op of s.journal) if (kept(op)) replay(tmp, op);
     dropStated(tmp.session, fresh);
@@ -260,6 +255,10 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       dayOffset: tmp.dayOffset,
     };
     refreshChosen();
+  }
+  // 열린 판을 다시 세운다(저장 실패 · 제외 · 다른 탭 · 같은 문서 다른 코치의 쓰기 · 서버 요약 · 옛 기록 옮기기).
+  function rebuild() {
+    if (s.open && s.learner?.session) build();
   }
 
   // 다시 세우기가 던지면 앞 상태를 두고 계기에 남긴다 — 듣는 함수가 던져 그 판이 뒤의 소식(저장 실패 등)을 못 듣는 일이 없게(N2).
