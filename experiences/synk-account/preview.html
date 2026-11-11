@@ -5,15 +5,16 @@
 <p id="notice" class="notice" data-kind="pending" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">로그인 화면을 준비하고 있어요.</p>
 <section id="setup" hidden class="sb-card setup"><h2>지금은 로그인할 수 없어요</h2><p>이 화면에 계정 서비스 설정이 아직 없어요. 기본 학습은 로그인 없이 할 수 있어요.</p><a id="learning-link" class="sb-btn" href="../learning-hub/">기본 학습 열기</a></section>
 <section id="auth-panel" class="auth-layout" aria-labelledby="auth-heading" hidden>
-  <div class="intro-copy"><h2 id="auth-heading">SYNK 계정으로 시작해요.</h2><p id="auth-copy">Google 계정이나 이메일로 로그인해요.</p></div>
+  <div class="intro-copy"><h2 id="auth-heading">로그인 방법을 골라 주세요.</h2><p id="auth-copy">가입할 때 쓴 방법 그대로 로그인해요.</p></div>
   <form id="auth-form" class="sb-card auth-card" aria-labelledby="auth-heading">
     <div id="recent-login" class="recent-login" hidden><p id="recent-login-text"></p><button id="recent-login-forget" class="link-button" type="button">이 기기에서 지우기</button></div>
-    <div id="google-signin" class="google-signin">
-      <button id="google-login" class="google-btn" type="button" aria-describedby="google-availability" disabled><span class="google-mark" aria-hidden="true"></span><span id="google-login-label">Google로 계속하기</span><span id="google-recent" class="recent-badge" hidden>최근 사용</span></button>
-      <p id="google-availability" class="small" role="status" aria-live="polite">Google 로그인을 확인하고 있어요.</p>
-      <p id="google-privacy-note" class="small google-privacy-note">Google에서는 이메일과 기본 프로필만 받고, Google 비밀번호는 받지 않아요. <a href="https://synk.im/privacy/#synk-id" target="_blank" rel="noopener noreferrer">Google 가입 정보 안내<span class="visually-hidden"> (새 창)</span></a></p>
+    <!-- 두 방법은 같은 단추 한 쌍이다: 같은 크기 · 같은 자리 · 같은 말(「○○로 로그인」 / 「○○로 가입」). -->
+    <div id="method-choices" class="method-choices" role="group" aria-label="로그인 방법">
+      <button id="google-login" class="method-btn" type="button" aria-describedby="google-availability" disabled><span class="method-mark google-mark" aria-hidden="true"></span><span id="google-login-label" class="method-label">Google로 로그인</span><span id="google-recent" class="recent-badge" hidden>최근 사용</span></button>
+      <button id="email-method" class="method-btn" type="button" aria-expanded="false" aria-controls="email-fields"><span class="method-mark email-mark" aria-hidden="true"></span><span id="email-method-label" class="method-label">이메일로 로그인</span><span id="email-recent" class="recent-badge" hidden>최근 사용</span></button>
+      <p id="google-availability" class="small method-status" role="status" aria-live="polite">Google 로그인을 확인하고 있어요.</p>
     </div>
-    <p id="email-divider" class="email-divider"><span>또는 이메일로</span><span id="email-recent" class="recent-badge" hidden>최근 사용</span></p>
+    <div id="email-fields" class="email-fields" hidden>
     <label>이메일<input id="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
     <div id="password-label" class="field-row"><label id="password-label-text" for="password">비밀번호</label><span class="password-field"><input id="password" type="password" autocomplete="current-password" minlength="8" required><button id="password-toggle" class="password-toggle" type="button" aria-pressed="false" aria-label="비밀번호 보기" aria-controls="password">보기</button></span></div>
     <p id="caps-warning" class="small caps-warning" role="status" hidden>Caps Lock이 켜져 있어요.</p>
@@ -28,7 +29,9 @@
     </div>
     <button id="auth-submit" class="sb-btn" type="submit">로그인</button>
     <button id="resend-confirm" class="sb-btn soft resend-confirm" type="button" hidden>확인 메일 다시 받기</button>
-    <p id="switch-row" class="switch-row"><span id="switch-copy">처음이세요?</span><button class="link-button" type="button" data-view="signup">이메일로 가입하기</button><button class="link-button" type="button" data-view="login" hidden>로그인하기</button></p>
+    </div>
+    <p id="google-privacy-note" class="small google-privacy-note">Google로 하면 이메일과 기본 프로필만 받고, Google 비밀번호는 받지 않아요. <a href="https://synk.im/privacy/#synk-id" target="_blank" rel="noopener noreferrer">Google 가입 정보 안내<span class="visually-hidden"> (새 창)</span></a></p>
+    <p id="switch-row" class="switch-row"><span id="switch-copy">처음이세요?</span><button class="link-button" type="button" data-view="signup">가입하기</button><button class="link-button" type="button" data-view="login" hidden>로그인하기</button></p>
   </form>
 </section>
 <section id="google-onboarding" class="auth-layout google-onboarding" aria-labelledby="google-onboarding-heading" hidden>

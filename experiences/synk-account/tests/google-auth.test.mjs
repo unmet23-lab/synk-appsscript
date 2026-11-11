@@ -36,7 +36,7 @@ function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequ
   for (const id of ['google-login', 'google-link', 'google-availability', 'google-onboarding', 'google-onboarding-form',
     'google-phone', 'google-phone-send', 'google-phone-code', 'google-phone-verify', 'google-phone-status', 'google-country',
     'google-age', 'google-gender', 'google-gender-text', 'google-gender-text-label', 'google-privacy', 'google-learning',
-    'google-complete', 'google-cancel', 'google-linking', 'google-link-status', 'google-signin', 'email-divider',
+    'google-complete', 'google-cancel', 'google-linking', 'google-link-status', 'method-choices', 'google-privacy-note',
     'google-phone-fields', 'google-onboarding-copy', 'google-privacy-fields', 'google-privacy-action-note', 'google-cancel-phone-note'])
     nodes.set(id, new Element('div', id, writes));
   for (const id of ['google-onboarding', 'google-linking', 'google-gender-text-label']) nodes.get(id).hidden = true;
@@ -328,4 +328,26 @@ for (const [action, expected] of [['login', true], ['link', false]]) test(`a ver
 });
 test('a page without a returning Google flow never reports a Google sign-in', async t => {
   const f = fixture(t);await f.check();assert.equal(f.access.takeSignedIn(), false);
+});
+
+// 2026-11-11: the Google button is one of a pair with the e-mail one, so it says the same thing in each step.
+test('the Google button says 「Google로 로그인」 or 「Google로 가입」 with its step, and the line under the pair stays quiet', t => {
+  const f = fixture(t);
+  f.access.authMode('login');
+  assert.equal(f.get('google-login-label').textContent, 'Google로 로그인');assert.equal(f.get('google-availability').textContent, '');
+  assert.equal(f.get('method-choices').hidden, false);assert.equal(f.get('google-privacy-note').hidden, false);
+  f.access.authMode('signup');
+  assert.equal(f.get('google-login-label').textContent, 'Google로 가입');assert.equal(f.get('google-availability').textContent, '');assert.equal(f.get('method-choices').hidden, false);
+  // The password steps are e-mail steps: no pair, no Google note.
+  f.access.authMode('recover');
+  assert.equal(f.get('method-choices').hidden, true);assert.equal(f.get('google-privacy-note').hidden, true);
+});
+test('without Google the line under the pair names the e-mail way for that step', t => {
+  const f = fixture(t, { enabled: false });
+  f.access.authMode('login');
+  assert.equal(f.get('google-availability').textContent, '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.');assert.equal(f.get('google-privacy-note').hidden, true);
+  f.access.authMode('signup');
+  assert.equal(f.get('google-availability').textContent, '지금은 Google로 가입할 수 없어요. 이메일로 가입해 주세요.');assert.equal(f.get('google-login').disabled, true);
+  f.access.settings({ google: true, phone: false });
+  assert.equal(f.get('google-availability').textContent, '');assert.equal(f.get('google-login').disabled, false);assert.equal(f.get('google-privacy-note').hidden, false);
 });

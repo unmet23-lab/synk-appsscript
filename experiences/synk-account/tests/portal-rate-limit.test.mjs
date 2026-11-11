@@ -88,7 +88,7 @@ test('signup visibly counts down, blocks duplicate requests, retains choices and
   assert.match(page.feedback.textContent, /가입 메일 요청이 잠시 제한/);assert.equal(page.feedback.hidden, false);assert.doesNotMatch(page.notice.textContent, /For security/);
   await page.submit();assert.equal(page.calls.length, 1);
   page.time.advance(40000);assert.match(page.get('auth-submit').textContent, /1초/);assert.equal(page.get('auth-submit').disabled, true);
-  page.time.advance(1000);assert.equal(page.get('auth-submit').disabled, false);assert.equal(page.get('auth-submit').textContent, '이메일로 가입');
+  page.time.advance(1000);assert.equal(page.get('auth-submit').disabled, false);assert.equal(page.get('auth-submit').textContent, '가입하기');
   assert.equal(page.calls.length, 1);assert.equal(page.time.pending(), 0);assert.match(page.feedback.textContent, /자동으로 다시 보내지 않아요/);
   assert.equal(page.get('signup-age').checked, true);assert.equal(page.get('signup-learning').checked, true);assert.equal(page.get('password').value, 'synthetic-password');
   page.replies.signUp = { data: { session: null } };await page.submit();
@@ -126,7 +126,7 @@ test('signup age validation still prevents sending and preserves optional learni
 test('an in-flight request cannot be sent twice or reassigned to another form mode', async t => {
   const page = await fixture(t), pending = deferred();page.mode('signup');page.replies.signUp = () => pending.promise;
   const first = page.submit();await page.submit();page.mode('recover');
-  assert.equal(page.get('auth-heading').textContent, 'SYNK 계정을 만들어요.');assert.equal(page.calls.length, 1);assert.equal(page.get('auth-submit').disabled, true);
+  assert.equal(page.get('auth-heading').textContent, '이메일로 가입해요.');assert.equal(page.calls.length, 1);assert.equal(page.get('auth-submit').disabled, true);
   assert.equal(page.notice['data-kind'], 'pending');assert.equal(page.feedback['data-kind'], 'pending');assert.equal(page.feedback.hidden, false);
   assert.match(page.feedback.textContent, /요청을 보내고 있어요/);
   pending.resolve({ data: { session: null } });await first;assert.match(page.notice.textContent, /^가입 확인 메일/);assert.equal(page.get('auth-submit').disabled, false);
@@ -982,7 +982,7 @@ test('a login e-mail change sends two confirmations, shows the wait and explains
 
 test('?view=signup opens the sign-up form, as the PC app button asks', async t => {
   const page = await fixture(t, { callbackQuery: 'view=signup' });
-  assert.equal(page.get('auth-heading').textContent, 'SYNK 계정을 만들어요.');assert.equal(page.get('signup-choices').hidden, false);assert.equal(page.get('auth-submit').textContent, '이메일로 가입');
+  assert.equal(page.get('auth-heading').textContent, '이메일로 가입해요.');assert.equal(page.get('signup-choices').hidden, false);assert.equal(page.get('auth-submit').textContent, '가입하기');
 });
 
 test('the first e-mail-change confirmation asks for the other one', async t => {
@@ -1087,10 +1087,10 @@ test('a recovery token on the security view does not start the e-mail-change ste
   assert.equal(other.get('auth-submit').textContent, '로그인');assert.equal(other.calls.length, 0);
 });
 
-// 10-27 (Fable F4): after a sign-up mail the submit button stays 「이메일로 가입」 (its password field was just
+// 10-27 (Fable F4): after a sign-up mail the submit button stays 「가입하기」 (its password field was just
 // emptied), and the mail is sent again by address through 「확인 메일 다시 받기」 (sdk.auth.resend, type signup).
 test('after a sign-up mail the resend control appears and the submit button keeps its own job', async t => {
   const page = await fixture(t);page.mode('signup');page.replies.signUp = { data: { session: null } };await page.submit();
-  assert.equal(page.get('resend-confirm').hidden, false);assert.equal(page.get('password').value, '');assert.equal(page.get('auth-submit').textContent, '이메일로 가입');
+  assert.equal(page.get('resend-confirm').hidden, false);assert.equal(page.get('password').value, '');assert.equal(page.get('auth-submit').textContent, '가입하기');
   page.mode('recover');assert.equal(page.get('resend-confirm').hidden, true);
 });

@@ -4,6 +4,8 @@
 //   node experiences/synk-account/qa/login-ux-20261027/run.mjs <playwright module dir> <out dir>
 // SYNK_QA_FILES=<dir> serves a publishing candidate (id__index.html, id__style.css, id__dist__app.js) instead of this checkout.
 // Prints one JSON line per check and writes screenshots (1440 and 390 wide) to <out dir>.
+// 2026-11-11: the sign-in form became one pair of buttons (../login-one-form-20261111/run.mjs checks that form itself).
+// This run keeps its own checks; it opens the e-mail fields before it uses them, and reads the new words on the first screen.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -101,6 +103,10 @@ async function page(width = 1440, context = null) {
   const own = context || await browser.newContext({ viewport: { width, height: width > 500 ? 1000 : 844 } }), tab = await own.newPage(), errors = [];
   tab.on('pageerror', error => errors.push(String(error).slice(0, 200)));tab.on('console', message => {
     if (message.type() === 'error' && !/atlas-learning|404|status of (?:400|401|403|422)/.test(message.text())) errors.push(message.text().slice(0, 200)); });
+  // The e-mail fields open under 「이메일로 로그인」 (11-11): anything this run does inside them opens them first.
+  const inside = /^#(?:email|password|auth-submit|password-toggle|forgot-row|resend-confirm|signup-age|signup-learning|signup-choices)(?![\w-])/;
+  const emailWay = async selector => { if (typeof selector === 'string' && inside.test(selector) && await tab.isVisible('#email-method') && !await tab.isVisible('#email-fields')) await tab.click('#email-method'); };
+  for (const method of ['fill', 'click', 'inputValue', 'getAttribute']) { const original = tab[method].bind(tab);tab[method] = async (selector, ...rest) => { await emailWay(selector);return original(selector, ...rest); }; }
   return { context: own, tab, errors };
 }
 const shot = async (tab, name, fullPage = true) => { await tab.screenshot({ path: path.join(outDir, name + '.png'), fullPage });return name + '.png'; };
@@ -121,7 +127,7 @@ try {
     await tab.goto(base, { waitUntil: 'networkidle' });await tab.waitForSelector('#auth-panel:not([hidden])');
     const passwordName = await tab.evaluate(() => { const input = document.getElementById('password');return [...input.labels].map(label => label.textContent.trim()).join('|'); });
     check(`the password field is named by its own label only (${width})`, passwordName === '비밀번호', { passwordName });
-    check(`first visit names the start, not a return (${width})`, await textOf(tab, '#auth-heading') === 'SYNK 계정으로 시작해요.' && !await visible(tab, '#recent-login') && !await visible(tab, '#google-recent')
+    check(`first visit names the start, not a return (${width})`, await textOf(tab, '#auth-heading') === '로그인 방법을 골라 주세요.' && !await visible(tab, '#recent-login') && !await visible(tab, '#google-recent') && await tab.getAttribute('#email', 'autocomplete') === 'username'
       && await visible(tab, '#forgot-row') && await textOf(tab, '#switch-copy') === '처음이세요?' && await tab.getAttribute('#notice', 'data-kind') === 'idle' && await tab.getAttribute('#email', 'autocomplete') === 'username',
       { overflow: await overflow(tab), screenshot: await shot(tab, `1-first-visit-${width}`) });
     // 2. The password field shows what was typed; a wrong password names the Google way without saying the account exists.
@@ -154,11 +160,11 @@ try {
       { overflow: await overflow(tab), screenshot: await shot(tab, `4-returning-${width}`) });
     // 5. Forgetting the hint empties the address too.
     await tab.click('#recent-login-forget');
-    check(`「이 기기에서 지우기」 removes the hint and the filled address (${width})`, !await visible(tab, '#recent-login') && await tab.inputValue('#email') === '' && await recentStored(tab) === null && await textOf(tab, '#auth-heading') === 'SYNK 계정으로 시작해요.');
+    check(`「이 기기에서 지우기」 removes the hint and the filled address (${width})`, !await visible(tab, '#recent-login') && await tab.inputValue('#email') === '' && await recentStored(tab) === null && await textOf(tab, '#auth-heading') === '로그인 방법을 골라 주세요.');
     // 6. Sign-up and password steps keep only what belongs to them.
     await tab.click('[data-view="signup"]');
-    check(`sign-up: own heading, no 「비밀번호를 잊었어요」, e-mail autocomplete (${width})`, await textOf(tab, '#auth-heading') === 'SYNK 계정을 만들어요.' && !await visible(tab, '#forgot-row') && await textOf(tab, '#switch-copy') === '이미 계정이 있나요?'
-      && await tab.getAttribute('#email', 'autocomplete') === 'email' && await visible(tab, '#signup-choices') && await textOf(tab, '#google-availability') === 'Google로 가입하면 비밀번호를 따로 만들지 않아요.', { screenshot: await shot(tab, `6-signup-${width}`) });
+    check(`sign-up: own heading, no 「비밀번호를 잊었어요」, e-mail autocomplete (${width})`, await textOf(tab, '#auth-heading') === '가입 방법을 골라 주세요.' && !await visible(tab, '#forgot-row') && await textOf(tab, '#switch-copy') === '이미 계정이 있나요?'
+      && await tab.getAttribute('#email', 'autocomplete') === 'email' && await visible(tab, '#signup-choices') && await textOf(tab, '#google-login-label') === 'Google로 가입' && await textOf(tab, '#email-method-label') === '이메일로 가입', { screenshot: await shot(tab, `6-signup-${width}`) });
     await tab.click('[data-view="login"]');await tab.click('#forgot-row button');
     check(`「비밀번호를 잊었어요」 opens the mail step without sign-up beside it (${width})`, await textOf(tab, '#auth-heading') === '비밀번호를 다시 정해요.' && !await visible(tab, '#password-label') && !await visible(tab, 'button[data-view="signup"]') && await visible(tab, 'button[data-view="login"]'),
       { screenshot: await shot(tab, `6-recover-${width}`, false) });

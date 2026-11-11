@@ -66,7 +66,7 @@ export async function publicLoginSettings(config, fetcher = fetch) {
   } catch { return { google: false, phone: false }; }
 }
 export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled = false, storage, getSession, generation, setBusy, hostBusy = () => false,
-  notice, bounded = promise => promise, continuePortal, endSession, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
+  notice, bounded = promise => promise, continuePortal, endSession, settled = true, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
   const node = id => document.getElementById(id), button = node('google-login'), link = node('google-link'), section = node('google-onboarding');
   let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null, signedIn = false, mode = 'login';
   try { flow = consumeGoogleFlow({ storage, url: initialUrl, now: now() }); } catch (error) { flowError = error; }
@@ -80,8 +80,11 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     try { return normalizePhone('+' + String(owner.phone || '').replace(/^\+/, '')); } catch { return null; }
   };
   function render() {
-    if (button) { button.disabled = !enabled || busy || hostBusy();text('google-login-label', busy ? 'Google 연결을 확인하고 있어요…' : 'Google로 계속하기'); }
-    text('google-availability', !enabled ? '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.' : mode === 'signup' ? 'Google로 가입하면 비밀번호를 따로 만들지 않아요.' : '처음이어도 이 단추로 몇 가지만 적고 바로 가입해요.');
+    // The same words as the e-mail button beside it: 「Google로 로그인」 / 「Google로 가입」.
+    if (button) { button.disabled = !enabled || busy || hostBusy();text('google-login-label', busy ? 'Google 연결을 확인하고 있어요…' : mode === 'signup' ? 'Google로 가입' : 'Google로 로그인'); }
+    // The line under the pair speaks only while Google is being looked up or cannot be used.
+    text('google-availability', !settled ? 'Google 로그인을 확인하고 있어요.' : enabled ? '' : mode === 'signup' ? '지금은 Google로 가입할 수 없어요. 이메일로 가입해 주세요.' : '지금은 Google 로그인을 쓸 수 없어요. 이메일로 로그인해 주세요.');
+    if (node('google-privacy-note')) node('google-privacy-note').hidden = !['login', 'signup'].includes(mode) || settled && !enabled;
     if (node('google-linking')) node('google-linking').hidden = !enabled || !accountVisible || required;
     if (link) link.disabled = !enabled || busy || hostBusy() || !user;
     for (const id of ['google-phone-send', 'google-phone-verify']) if (node(id)) node(id).disabled = busy || hostBusy() || !phoneRequired || !phoneEnabled;
@@ -199,7 +202,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     },
     showAccount(show) { accountVisible = show;render(); },
     refreshControls: render,
-    settings(value) { enabled = value?.google === true;phoneEnabled = value?.phone === true;render(); },
+    settings(value) { settled = true;enabled = value?.google === true;phoneEnabled = value?.phone === true;render(); },
     clearCallback() { flow = null;flowError = null;signedIn = false; },
     // Once: whether the page's own Google sign-in (not a link to an account already signed in) just came back verified.
     takeSignedIn() { const value = signedIn;signedIn = false;return value; },
@@ -208,7 +211,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
       for (const id of ['google-country', 'google-gender']) if (node(id)) node(id).value = '';
       for (const id of ['google-privacy', 'google-learning']) if (node(id)) node(id).checked = false;
       if (node('google-gender-text-label')) node('google-gender-text-label').hidden = true;render(); },
-    authMode(next) { mode = next;if (node('google-signin')) node('google-signin').hidden = !['login', 'signup'].includes(mode);if (node('email-divider')) node('email-divider').hidden = !['login', 'signup'].includes(mode);render(); },
+    authMode(next) { mode = next;if (node('method-choices')) node('method-choices').hidden = !['login', 'signup'].includes(mode);render(); },
     stop() { closed = true;operationSequence++;user = null;confirmedPhone = sentPhone = null;for (const id of ['google-phone-code', 'google-phone', 'google-gender-text']) if (node(id)) node(id).value = ''; },
   };
 }
