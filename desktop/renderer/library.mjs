@@ -66,7 +66,7 @@ export function projectLibraryPreferences(prefs,library){
 export function libraryCopy(library){
   if(library.developmentCatalog===true)return {caption:'모든 앱',note:'앱 '+displayLibraryAppIds(library).length+'개 · 바로 열 수 있는 앱과 준비 중인 앱이 함께 보여요.',title:'SYNK 앱',description:'앱을 고르면 하는 일과 여는 방법이 나와요.'};
   if(library.status==='guest')return {caption:'WORLD 둘러보기',note:'로그인하면 내 계정에서 쓸 수 있는 앱이 나와요.',title:'SYNK에 로그인',description:'SYNK ID 하나로 WORLD, Workspace, 회원 혜택을 써요.'};
-  if(library.status==='loading'&&library.phase==='signing-in')return {caption:'브라우저에서 로그인 중',note:'열린 SYNK ID 창에서 로그인하면 이 계정의 앱이 나와요.',title:'브라우저에서 로그인을 마쳐 주세요',description:'Google이나 이메일로 로그인하면 이 앱으로 돌아와요.'};
+  if(library.status==='loading'&&library.phase==='signing-in')return {caption:'브라우저에서 로그인 중',note:'열린 SYNK ID 창에서 로그인하고 「연결하기」를 누르면 이 계정의 앱이 나와요.',title:'브라우저에서 로그인을 마쳐 주세요',description:'Google이나 이메일로 로그인한 뒤 「연결하기」를 누르면 이 앱으로 돌아와요.'};
   if(library.status==='loading')return {caption:'불러오는 중',note:'이 계정에서 쓸 수 있는 앱을 불러오고 있어요.',title:'내 앱을 불러오고 있어요',description:'잠시만 기다려 주세요.'};
   if(library.status==='unavailable')return {caption:'불러오기 실패',note:'인터넷 연결을 확인한 뒤 다시 불러와 주세요.',title:'앱 목록을 불러오지 못했어요',description:'인터넷 연결을 보고 「다시 불러오기」를 눌러 주세요.'};
   return {caption:'내 라이브러리',note:'이 계정의 앱 '+displayLibraryAppIds(library).length+'개',title:'아직 쓸 수 있는 앱이 없어요',description:'학교나 회사에서 이 계정에 앱을 열어 주면 여기에 나와요.'};

@@ -722,6 +722,84 @@ test('an account change to one not approved before goes through the click and th
   await page.get('approve').onclick();
   assert.deepEqual(page.calls.map(call => call.method), ['approveAuthorization']);assert.deepEqual(page.destinations, [`${deviceApp}?code=synthetic-owner-b-code&state=s`]);
 });
+// A PC app stops waiting five minutes after it opened the sign-in (desktop auth-service): 30 seconds before that, its card
+// gives way to the restart card, which names the five minutes.
+const seenStore = (entries = {}) => { const data = new Map(Object.entries(entries));return { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, String(value)), removeItem: key => data.delete(key), data }; };
+const restartShown = page => !page.get('connection-restart').hidden && page.get('consent').hidden && /5분 동안만/.test(page.get('connection-restart-next').textContent);
+test('a PC app card gives way to the restart card 30 seconds before the app stops waiting', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), initialReplies: { approveAuthorization: { data: { redirect_url: deviceRedirect } } } });
+  page.time.advance(269999);
+  assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
+  page.time.advance(1);
+  assert.ok(restartShown(page));assert.match(page.get('connection-restart-en').textContent, /five minutes/);
+  assert.equal(page.get('connection-restart-path').hidden, true);assert.equal(page.get('connection-restart-heading').focusCount, 1);
+  await page.get('approve').onclick();await page.get('deny').onclick();
+  assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
+  await page.emit('TOKEN_REFRESHED', deviceSession('owner-a'));assert.ok(restartShown(page), 'a same-account event keeps the five-minute words');
+});
+test('an earlier-approved PC app card past the wait opens nothing, not even the refusal', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), consentDetails: { redirect_url: deviceRedirect } });
+  page.time.advance(270000);assert.ok(restartShown(page));
+  await page.get('approve').onclick();await page.get('deny').onclick();
+  assert.deepEqual(page.destinations, []);assert.deepEqual(page.calls, []);
+});
+test('the wait counts from when this tab first saw the request, across the Google round trip', async t => {
+  const storage = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -200000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: storage });
+  page.time.advance(69999);assert.equal(page.get('consent').hidden, false);
+  page.time.advance(1);assert.ok(restartShown(page));
+});
+test('a request first seen long ago opens straight on the restart card', async t => {
+  const storage = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -600000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: storage, consentDetails: { redirect_url: deviceRedirect } });
+  assert.ok(restartShown(page));await page.get('approve').onclick();assert.deepEqual(page.destinations, []);
+});
+test('a record of another request is replaced and never shortens this request', async t => {
+  const storage = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'other-request', at: -400000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: storage });
+  assert.equal(page.get('consent').hidden, false);
+  assert.deepEqual(JSON.parse(storage.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });
+  page.time.advance(269999);assert.equal(page.get('consent').hidden, false);
+});
+test('a future record of this request is replaced too', async t => {
+  const storage = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: 900000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: storage });
+  assert.deepEqual(JSON.parse(storage.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });
+  page.time.advance(269999);assert.equal(page.get('consent').hidden, false);page.time.advance(1);assert.ok(restartShown(page));
+});
+test('a press made just before the change still reaches the app', async t => {
+  const answer = deferred();
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), initialReplies: { approveAuthorization: () => answer.promise } });
+  page.time.advance(269000);const pressing = page.get('approve').onclick();
+  page.time.advance(2000);assert.equal(page.get('connection-restart').hidden, true, 'the restart card waits for the press');
+  answer.resolve({ data: { redirect_url: deviceRedirect } });await pressing;
+  assert.deepEqual(page.destinations, [deviceRedirect]);
+});
+test('a press that fails after the wait ends on the restart card', async t => {
+  const answer = deferred();
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), initialReplies: { approveAuthorization: () => answer.promise } });
+  page.time.advance(269000);const pressing = page.get('approve').onclick();
+  page.time.advance(2000);
+  answer.resolve({ error: { status: 500, message: 'synthetic failure' } });await pressing;await settled();
+  page.time.advance(1000);assert.ok(restartShown(page));
+  await page.get('approve').onclick();assert.equal(page.calls.length, 1);assert.deepEqual(page.destinations, []);
+});
+test('a preview page on this PC keeps no five-minute wait (only the PC app address closes)', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: 'http://127.0.0.1:4292/', initial: deviceSession('owner-a'), initialReplies: { approveAuthorization: { data: { redirect_url: 'http://127.0.0.1:4292/?code=synthetic-preview-code' } } } });
+  assert.equal(page.get('consent').hidden, false);page.time.advance(400000);
+  assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
+  await page.get('approve').onclick();assert.deepEqual(page.destinations, ['http://127.0.0.1:4292/?code=synthetic-preview-code']);
+});
+test('an account change after the wait still ends on the restart card', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a') });
+  page.time.advance(270000);await page.emit('SIGNED_IN', deviceSession('owner-b'));
+  assert.ok(restartShown(page));
+  await page.get('approve').onclick();assert.deepEqual(page.calls, []);assert.deepEqual(page.destinations, []);
+});
+test('leaving the page clears the pending wait', async t => {
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a') });
+  const before = page.time.pending();page.events.get('pagehide')({});assert.equal(page.time.pending(), before - 1);
+});
 const expiredAppRequest = { status: 404, code: 'oauth_authorization_not_found', message: 'authorization not found' };
 const pathPublicEntry = 'https://synk.im/path/app/';
 const pathAuthorizationClients = [{ product: 'platform', clientId: 'synthetic-path-app', redirectUris: ['http://127.0.0.1:4326/', pathPublicEntry] }];

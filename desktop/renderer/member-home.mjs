@@ -188,7 +188,7 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
     const name=app?spoken(model.first):'',direct=!!app&&homeLaunchTarget(actions[model.firstEntry])&&!!onLaunch;
     const matchesPurpose=active&&personal.selected===model.first;
     let who=snapshot.who?snapshot.who+' 님':guest?'반가워요':'내 홈',title,second,lead='',busy=false,extra='';
-    if(loading&&snapshot.library.phase==='signing-in'){busy=true;title='브라우저에서 로그인을';second='마쳐 주세요.';lead='<p class="hello-lead" role="status">기본 브라우저에 열린 SYNK ID 창에서 Google이나 이메일로 로그인하면 여기로 돌아와요. 창이 안 보이면 오른쪽 위 「로그인 중」을 눌러 취소한 뒤 다시 해 주세요.</p>';}
+    if(loading&&snapshot.library.phase==='signing-in'){busy=true;title='브라우저에서 로그인을';second='마쳐 주세요.';lead='<p class="hello-lead" role="status">기본 브라우저에 열린 SYNK ID 창에서 Google이나 이메일로 로그인한 뒤 「연결하기」를 누르면 여기로 돌아와요. 창이 안 보이면 오른쪽 위 「로그인 중」을 눌러 취소한 뒤 다시 해 주세요.</p>';}
     else if(loading){busy=true;title='내 앱을 불러오고 있어요.';second='잠시만 기다려 주세요.';lead='<p class="hello-lead" role="status">로그인 상태와 쓸 수 있는 앱을 불러오는 중이에요.</p>';}
     else if(unavailable){title='앱 목록을';second='불러오지 못했어요.';lead='<p class="hello-lead">인터넷 연결을 확인하고 다시 불러와 주세요. 다시 불러와도 이 PC에 남긴 메모는 그대로예요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-retry>다시 불러오기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
     else if(!app){title='아직 쓸 수 있는 앱이 없어요.';second='회원 혜택은 지금 바로 써요.';lead='<p class="hello-lead">학교나 회사에서 이 계정에 앱을 열어 주면 여기에 나와요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}

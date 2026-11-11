@@ -14,6 +14,13 @@ const staleAuthorization = error => error?.status === 404 && error?.code === 'oa
 // program on the device, so a sign-in that ends there is handed over only after the person's click.
 // An address that cannot be read counts as one of these.
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+// A SYNK PC app's own sign-in address (desktop/src/auth-config.cjs) closes five minutes after the app opened this
+// sign-in (auth-service.cjs loginTimeoutMs). 30 seconds before that its card gives way to the restart card, so no press lands on a closed address.
+// Other addresses on this device (local preview pages) keep no such clock.
+const DEVICE_WAIT = 270000, CONNECT_SEEN_KEY = 'synk.id.connect-seen.v1';
+const pcAppCallback = value => {
+  try { const url = new URL(value), [, synk, oauth, app, callback, ...rest] = url.pathname.split('/');return url.protocol === 'http:' && url.hostname === '127.0.0.1' && synk === 'synk' && oauth === 'oauth' && /^[a-z][a-z0-9-]*$/.test(app || '') && callback === 'callback' && !rest.length; } catch { return false; }
+};
 function deviceDestination(value) {
   try { const url = new URL(value);return !['http:', 'https:'].includes(url.protocol) || LOOPBACK_HOSTS.has(url.hostname); } catch { return true; }
 }
@@ -82,7 +89,7 @@ export function authRateLimit(error) {
   const wait = typeof value === 'number' || typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : NaN;
   return { waitSeconds: Number.isSafeInteger(wait) && wait > 0 && wait <= 86400 ? wait : null };
 }
-export async function mountPortal({ config, sdk, accountFactory = createAccountClient, preview = false, loginSettings = { google: false, phone: false }, googleStorage,
+export async function mountPortal({ config, sdk, accountFactory = createAccountClient, preview = false, loginSettings = { google: false, phone: false }, googleStorage, deviceWait = DEVICE_WAIT,
   cooldownClock = { now: () => Date.now(), setTimeout: (fn, ms) => setTimeout(fn, ms), clearTimeout: id => clearTimeout(id) } }) {
   let noticeScope = null;
   const signupConversion = preview ? null : createSignupConversion();
@@ -134,6 +141,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   let automaticAuthorizationAttempted = false;
   // An app on this device that was approved before: its arrival address, opened only by 「연결하기」.
   let consentTarget = null;
+  // The pending end of a PC app's five-minute wait (see armDeviceWait).
+  let deviceTimer = null;
   // The verified account whose app request was gone, and whether that request was PATH's.
   let staleRecovery = null;
   let google = null;
@@ -181,6 +190,17 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);tickCooldowns();
   };
   const authorizationId = new URL(location.href).searchParams.get('authorization_id');
+  // When this tab first saw this app request: the closest known moment the app on this PC started waiting
+  // (the Google round trip returns to this tab and keeps it). Only the request ID and that time are kept.
+  const requestSeen = (() => {
+    const now = cooldownClock.now();if (!authorizationId) return now;
+    try {
+      const value = JSON.parse(recoveryStorage?.getItem(CONNECT_SEEN_KEY) || 'null');
+      if (value?.id === authorizationId && Number.isFinite(value.at) && value.at <= now) return value.at;
+      recoveryStorage?.setItem(CONNECT_SEEN_KEY, JSON.stringify({ id: authorizationId, at: now }));
+    } catch { /* this page's start then counts */ }
+    return now;
+  })();
   const initialUrl = new URL(location.href), initialFragment = new URLSearchParams(initialUrl.hash.slice(1));
   const recoveryRequested = initialUrl.searchParams.get('view') === 'reset';
   const hadCallback = initialUrl.searchParams.has('code') || initialUrl.searchParams.has('error') || initialFragment.has('error') || initialUrl.searchParams.has('google_flow');
@@ -302,6 +322,19 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // The device line comes first so the synthetic preview shows the very notice people will see.
     notice(native ? '이 PC에서 방금 SYNK 앱을 열었거나 로그인을 시작했다면, 계정을 확인하고 「연결하기」를 눌러 주세요.' : preview ? '제품과 연결할 정보를 확인한 뒤 선택해 주세요.'
       : automaticAuthorizationAttempted ? '연결할 앱을 보고 「연결하기」나 「취소」를 눌러 주세요.' : '로그인한 계정으로 앱에 연결하고 있어요…');
+    if (native && pcAppCallback(destination)) armDeviceWait();else disarmDeviceWait();
+  }
+  // A PC app stops waiting five minutes after it opened this sign-in: then its card gives way to the restart card.
+  function disarmDeviceWait() { if (deviceTimer !== null) cooldownClock.clearTimeout(deviceTimer);deviceTimer = null; }
+  function armDeviceWait() {
+    disarmDeviceWait();const left = requestSeen + deviceWait - cooldownClock.now();
+    if (left <= 0) expireDeviceWait();else deviceTimer = cooldownClock.setTimeout(expireDeviceWait, left);
+  }
+  function expireDeviceWait() {
+    deviceTimer = null;if (closed || $('consent').hidden) return;
+    // A press made before the lock finishes first (the address stays open 30 seconds longer).
+    if (consentOperation) { deviceTimer = cooldownClock.setTimeout(expireDeviceWait, 1000);return; }
+    showStaleAuthorization(false, true);
   }
   async function loadConsent(check) {
     // An app connection is answered only in a top-level window — no other page can frame this card and borrow the click.
@@ -342,15 +375,20 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     } catch { return false; }
   }
   // Signed in, only the app connection must start again: no form, no old connect card, no new sign-up.
-  function showStaleAuthorization(path) {
-    staleRecovery = { subject: session?.user?.id || null, path: path === true };details = null;consentTarget = null;
+  // device: a PC app's request whose five-minute wait ended (the app no longer listens), named as such.
+  function showStaleAuthorization(path, device = false) {
+    staleRecovery = { subject: session?.user?.id || null, path: path === true, device: device === true };details = null;consentTarget = null;disarmDeviceWait();
     $('consent').hidden = true;$('auth-panel').hidden = true;if ($('account-next')) $('account-next').hidden = true;
     setText($('consent-name'), '');setText($('consent-destination'), '');$('scopes').replaceChildren();
     cooldowns.delete('consent');feedbacks.delete('consent');renderControls();
-    const next = staleRecovery.path ? '아래 「PATH로 돌아가기」를 누른 뒤 PATH에서 「가입·로그인」을 다시 눌러 주세요.' : '사용하던 앱으로 돌아가 거기서 로그인을 다시 시작해 주세요. 계정은 아래 「내 SYNK 계정 보기」에서 볼 수 있어요.';
-    const en = staleRecovery.path ? 'You are signed in. The app request expired or was already used. No new sign-up needed: tap Back to PATH, then sign in again there.' : 'You are signed in. The app request expired or was already used. No new sign-up needed: go back to your app and sign in again there.';
+    const next = staleRecovery.path ? '아래 「PATH로 돌아가기」를 누른 뒤 PATH에서 「가입·로그인」을 다시 눌러 주세요.'
+      : staleRecovery.device ? 'SYNK 앱은 로그인을 시작하고 5분 동안만 연결을 기다려요. SYNK 앱으로 돌아가 로그인을 다시 시작해 주세요. 계정은 아래 「내 SYNK 계정 보기」에서 볼 수 있어요.'
+      : '사용하던 앱으로 돌아가 거기서 로그인을 다시 시작해 주세요. 계정은 아래 「내 SYNK 계정 보기」에서 볼 수 있어요.';
+    const en = staleRecovery.path ? 'You are signed in. The app request expired or was already used. No new sign-up needed: tap Back to PATH, then sign in again there.'
+      : staleRecovery.device ? 'You are signed in. The SYNK app waits only five minutes after you start signing in. No new sign-up needed: go back to the SYNK app and sign in again there.'
+      : 'You are signed in. The app request expired or was already used. No new sign-up needed: go back to your app and sign in again there.';
     const card = $('connection-restart');
-    if (!card) { notice('앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', false, true);return; }
+    if (!card) { notice(staleRecovery.device ? 'SYNK 앱이 연결을 기다리는 5분이 지났어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. SYNK 앱에서 로그인을 다시 시작해 주세요.' : '앱과 이어 주던 요청이 만료됐거나 이미 사용됐어요. SYNK ID 로그인은 그대로라 새로 가입하지 않아도 돼요. 사용하던 앱에서 로그인을 다시 시작해 주세요.', false, true);return; }
     setText($('connection-restart-next'), next);setText($('connection-restart-en'), en);
     const pathLink = $('connection-restart-path');pathLink.hidden = !staleRecovery.path;if (pathLink.style) pathLink.style.display = staleRecovery.path ? '' : 'none';
     $('connection-restart-home').classList?.toggle('soft', staleRecovery.path);
@@ -437,7 +475,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       void signupConversion?.confirmedUser(checked.data.user);
       if (authorizationId && !callbackBlocked) {
         // A repeated auth event for the same account shows the restart card again; the gone request is never retried.
-        if (staleRecovery?.subject === verified.id) { showStaleAuthorization(staleRecovery.path);return; }
+        if (staleRecovery?.subject === verified.id) { showStaleAuthorization(staleRecovery.path, staleRecovery.device);return; }
         await loadConsent(check);return;
       }
       const client = accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: 'platform', guard: check,
@@ -637,7 +675,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     finally { authOperation = false;renderControls(); }
   };
   for (const [id, method] of [['approve', 'approveAuthorization'], ['deny', 'denyAuthorization']]) $(id).onclick = () => respondToAuthorization(method);
-  window.addEventListener('pagehide', () => { closed = true;generation++;google?.stop();security.stop();view?.stop();consentOperation = null;clearCooldowns(); });
+  window.addEventListener('pagehide', () => { closed = true;generation++;google?.stop();security.stop();view?.stop();consentOperation = null;clearCooldowns();disarmDeviceWait(); });
   window.addEventListener('pageshow', event => { if(event.persisted) location.reload(); });
   const showStartupError = error => {
     if (hadCallback && !initializationFinished) { showCallbackWaiting(true);return; }
