@@ -166,7 +166,9 @@ function localCheckState(dir, v) {
 // 이미 걸린(공개 전) 돌림 판의 판본이 걸린 뒤 무효가 됐거나 다시 구워졌는가(11-11 — 시험관 넷으로 다시 받은 뜻 검사에서 걸린 판 셋이 떨어졌는데
 // 아무 도구도 알리지 않았다: 올리기 전 검사 ⑩의 고칠 것은 다 걸린 편이라 예약큐가 안 보고, 걸기의 지문 대조는 걸 때 한 번뿐이다).
 // 그대로 두면 검수 안 된 영상이 예약대로 공개된다. row = 그 계정의 게시결과 줄(「지문」 = 걸 때의 판 영상 SHA-256).
-// → null(문제 없음 · 판본을 모름) 또는 { key, why, changed(걸린 영상이 지금 판본 영상과 다름) }. 예약큐 경고 · 올리기 전 검사 ⑩이 쓴다.
+// → null(문제 없음 · 판본을 모름) 또는 { key, why, changed(걸린 영상이 지금 판본 영상과 다름), text?(걸린 뒤 게시글이 바뀜) }. 예약큐 경고 · 올리기 전 검사 ⑩이 쓴다.
+// 게시글(11-11 밤 Fable 5.2 다시 검수 P1-팔1): 걸린 뒤 제목 · 본문 · 댓글만 고치고 뜻 검사를 다시 통과하면 판본 상태는 「든다」로 돌아오고 영상 지문도
+// 그대로라 위 둘이 다 조용한데, 플랫폼 예약에는 떨어졌던 옛 글이 걸려 있다. 걸 때 줄에 적은 「게시글지문」(tools/게시장부.js postTextSha)과 지금 글을 견준다.
 function bookedVersionProblem(dir, prep, plate, row, { required = ['뜻', '글자'], accounts = null } = {}) {
   if (!plate || !plate.돌림 || !row) return null;
   const a = accounts?.[plate.계정];
@@ -177,7 +179,19 @@ function bookedVersionProblem(dir, prep, plate, row, { required = ['뜻', '글�
   const changed = Boolean(row.지문 && st.sha && row.지문 !== st.sha);
   if (!st.ready) return { key, why: st.why, changed };
   if (changed) return { key, why: '건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판)', changed };
+  const text = bookedTextProblem(dir, plate, row);
+  if (text) return { key, why: text, changed: false, text: true };
   return null;
+}
+
+// 걸린 판의 게시글이 걸 때와 다른가 → 까닭 글 또는 null(같음 · 걸 때 지문을 안 적은 옛 줄). 못 읽으면 다르다고 본다(닫는 쪽 — 견줄 수 없는 예약을 조용히 넘기지 않는다).
+function bookedTextProblem(dir, plate, row) {
+  if (!row || !row.게시글지문) return null;
+  let now;
+  try { now = 장부.postTextSha(dir, plate.계정); } catch (e) {
+    return `건 뒤의 게시글을 읽지 못해 걸 때 글과 견줄 수 없다(${String(e.message).split('\n')[0].slice(0, 100)})`;
+  }
+  return now === row.게시글지문 ? null : '건 뒤에 게시글(제목 · 본문 · 댓글)을 고쳤다(예약에는 옛 글이 걸려 있다)';
 }
 
 // 편 폴더들의 뜻 검사 기록(시험관 수 확인용) — 판본마다 다시 읽지 않게 뿌리(docs/마케팅)별로 잠깐 들고 있는다. 준비.json들의 크기 · 고친 때가
@@ -234,6 +248,13 @@ function versionState(dir, v, required, key = null, { accounts = null, 뜻기록
     if (lack) return { ready: false, why: `뜻 검수 시험관 ${lack.수}명(${lack.시험관.join(' · ')})으로 통과 — 넷이어야 한다(${lack.까닭.join(' · ')}). node tools/뜻검사.js 판본 <편 폴더> ${key}로 넷에게 다시 받는다`, sha };
   }
   if (key) {
+    // 판본 지도가 있는 편인데 준비.json 판본의 「글」이 지도가 뽑는 글.json이 아니면 아래 두 관문(글 낡음 · 렌더 낡음)이 이 판본을 볼 수 없다 — 닫는다
+    // (11-11 밤 Fable 5.2 다시 검수 P1-렌1: 「볼 것 없음」으로 넘겨, 판본렌더.mjs가 렌더.json에 적어 주던 꼴을 옮겨 적으면 두 관문이 꺼졌다)
+    let link;
+    try { link = 잇기.이음문제(dir, key, v); } catch (e) {
+      return { ready: false, why: `판본 지도를 못 읽음(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+    }
+    if (link) return { ready: false, why: link, sha };
     let stale;
     try { stale = 잇기.글낡음(dir, key, v, accounts ? { 원장: { accounts } } : {}); } catch (e) {
       return { ready: false, why: `판본 글을 뽑지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
@@ -672,5 +693,5 @@ function main() {
   }
 }
 
-module.exports = { rotationAccounts, versionState, bookedVersionProblem, localCheckState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
+module.exports = { rotationAccounts, versionState, bookedVersionProblem, bookedTextProblem, localCheckState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
 if (require.main === module) main();

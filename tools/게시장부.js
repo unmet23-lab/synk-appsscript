@@ -28,6 +28,15 @@
  * 첫 판 · 표의 참)도 모두 rowOf다 — 걸린 줄 뒤에 보류를 덧붙인 판을 예약큐는 빈 칸으로, 걸기는 찬 칸으로 보던 것(11-11 Fable 5.2 다시 검수 P2-1).
  * 쓰기(걸기 · 끝 · 풀기)가 고칠 줄은 그 계정의 「거는 중」 줄이 있으면 그 줄(뒤에 보류가 붙어 있어도 끊긴 걸기부터 닫는다), 없으면 rowOf다.
  * 걸기는 거둔 줄 · 작업 ID가 적힌 죽은 줄을 덮지 않고 새 줄을 더하고, 걸린 줄로 적은 줄은 늘 그 계정의 줄(rowOf)이 되게 맨 뒤에 둔다.
+ *
+ * 걸기가 더 보는 것(11-11 밤 Fable 5.2 다시 검수 — 올리기 전 검사 ⑩과 14시 회차의 차례만 막던 자리를 도구가 닫는다):
+ *   · 막힌 계정(원장 dailyBlocked — 플랫폼 경고로 멈춘 계정)에는 걸지 않는다(closedCell — ⑩ blocked-plate와 같은 셈, P1-넷6 · P2-넷7).
+ *   · 돌림 판은 그 계정 판본의 검수가 지금도 서 있어야 건다(tools/돌림표.js versionState — 뜻 · 글자 지문, 시험관 수, 글.json = 원천,
+ *     렌더 기록, 원고 고칠 것). 판 지문만 견주면 검수에서 떨어진 판 · 원본 그림을 고친 뒤 안 구운 판이 그대로 걸린다(8-0 반대쪽 길 · P2-렌7 · P1-장3).
+ *   · 걸 때 그 판으로 플랫폼에 적는 글(제목 · 본문 · 첫 댓글 · 고정 댓글)의 지문을 줄 「게시글지문」에 적는다 — 걸린 뒤 게시글만 고치고 뜻 검사를
+ *     다시 통과하면 판본 상태는 「든다」로 돌아오는데 예약에는 옛 글이 걸려 있다(P1-팔1 — tools/돌림표.js bookedVersionProblem이 견준다).
+ *   · 「실패」처럼 안 걸린 옛 줄 위에 다시 걸 때는 옛 줄의 칸(게시물 ID · 주소 · 확인 · 승인 …)을 물려받지 않는다 — 내린 영상의 ID가 새 예약 줄에
+ *     딸려 가면 성과 수집 · 「걸린 판 내리기」가 엉뚱한 영상을 본다(P2-장1). 옛 줄은 「앞시도」에 통째로 남긴다(내린 영상을 뒤에 치울 때 찾는다).
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -277,7 +286,12 @@ const READ_LIST = '그 플랫폼 예약 목록을 읽고 걸려 있으면 「끝
 // 어느 판이든, 돌림 판이면 그 현지 날짜에 그 칸이 안 열렸을 때(dailyTimesFrom · dailyFormatsFrom)도 까닭 글을 준다. 열려 있으면 null.
 // 손으로 단 판의 칸은 「가장 가까운 칸」으로 세는 것이라(새벽에 올리는 판 등) 닫힌 칸까지는 가리지 않는다 — 칸 시각은 올리기 전 검사 ⑩-2가 본다.
 // 걸기(claim)와 올리기 전 검사 ⑩이 같이 쓴다: 닫힌 계정에 손으로 단 판 · 계정을 닫은 뒤 남은 돌림 판을 아무 관문도 막지 않았다.
+// 막힌 계정(원장 dailyBlocked — 플랫폼 경고 · 쉼으로 멈춘 계정)은 하루 칸이 있든 없든, 시각이 무엇이든 닫힌 계정이다(11-11 밤 P1-넷6 · P2-넷7 —
+// 경고를 본 그 회차 안에서, 이미 검사를 통과한 다른 편의 그 계정 판을 지시문 글만 막고 있었다).
+const blockedWhy = (a) => (a && a.dailyBlocked ? `막힌 계정이다(원장 dailyBlocked — ${String(a.dailyBlocked).slice(0, 120)})` : null);
 function closedCell(a, timeIso, { rotation = false } = {}) {
+  const blocked = blockedWhy(a);
+  if (blocked) return blocked;
   if (!a || !Array.isArray(a.dailyTimes) || !a.dailyTimes.length) return null;
   const at = Date.parse(timeIso || '');
   if (!Number.isFinite(at)) return null;
@@ -290,7 +304,37 @@ function closedCell(a, timeIso, { rotation = false } = {}) {
   return null;
 }
 
-function claim({ dir, account, method = null, root = path.dirname(dir), repo = REPO, accounts, now = Date.now(), registry = null }) {
+// 그 판으로 플랫폼에 적는 글(제목 · 본문 · 첫 댓글 · 고정 댓글)의 지문 — 올리기 전 검사 · 14시 회차가 읽는 것과 같은 읽기(tools/lib/게시묶음.js plates).
+// 걸 때 줄 「게시글지문」에 적고, 걸린 뒤 게시글이 바뀌었는지는 tools/돌림표.js bookedVersionProblem이 이 값으로 견준다(P1-팔1). 글.json 지문으로
+// 견주지 않는 까닭: 글.json은 장면 설명 · 지도 · 한국어 원문까지 담아, 예약에 걸린 글 · 영상은 그대로인데 지도 한 줄만 고쳐도 걸린 판 전부가
+// 「걸린 뒤 바뀜」으로 떠 멀쩡한 예약이 내려진다(걸린 뒤 바뀜은 묻지 않고 내린다 — 11-11 유호님). 줄끝은 맞추고 센다. 글이 하나도 없으면 null.
+const TEXT_KEYS = ['title', 'caption', 'firstComment', 'pinnedComment'];
+function postTextSha(dir, account) {
+  const 묶음 = require('./lib/게시묶음.js');
+  const plate = 묶음.plates(묶음.load(dir)).find((p) => p.account === account);
+  const parts = TEXT_KEYS.map((k) => (plate?.texts?.[k] == null ? '' : String(plate.texts[k]).replace(/\r\n?/g, '\n').trim()));
+  return parts.some(Boolean) ? crypto.createHash('sha256').update(JSON.stringify(parts)).digest('hex') : null;
+}
+
+// 돌림 판을 못 거는 까닭(걸 수 있으면 null) — 그 계정 판본(rotationVersion, 없으면 countryCode)의 검수가 지금도 서 있어야 한다.
+// 판본을 못 찾으면 닫는다: 검수를 볼 수 없는 돌림 판은 걸지 않는다(올리기 전 검사 ⑩ rotation-version과 같은 판단).
+function versionBlock(dir, prep, plate, account, accounts, required) {
+  const a = accounts[account];
+  const key = a.rotationVersion || a.countryCode || null;
+  const v = key ? prep?.돌림?.판본?.[key] : null;
+  const again = 'node tools/돌림표.js --다시 --쓰기로 다시 짠다';
+  if (!v) return `이 편에 ${account}의 판본 ${key || '(키 없음)'}이 없어 판본 검수를 볼 수 없다 — 돌림 판은 그 판본의 검수가 서 있어야 건다(${again})`;
+  const slash = (p) => String(p || '').replace(/\\/g, '/');
+  if (slash(v.파일) !== slash(plate.파일)) return `판 파일(${plate.파일})이 판본 ${key}의 파일(${v.파일})과 다르다 — ${again}`;
+  let st;
+  try { st = require('./돌림표.js').versionState(dir, v, required, key, { accounts }); } catch (e) {
+    return `판본 ${key}의 검수 상태를 읽지 못했다(${String(e.message).split('\n')[0].slice(0, 120)}) — 읽히는 것을 본 뒤에 건다`;
+  }
+  if (!st.ready) return `판본 ${key}: ${st.why} — 검수가 서지 않은 판본은 걸지 않는다(판본을 고쳐 검수를 다시 받은 뒤 ${again})`;
+  return null;
+}
+
+function claim({ dir, account, method = null, root = path.dirname(dir), repo = REPO, accounts, now = Date.now(), registry = null, required = null }) {
   const place = placeOf(root, registry);
   return withLock(place.file, () => {
     const name = path.basename(dir);
@@ -304,6 +348,14 @@ function claim({ dir, account, method = null, root = path.dirname(dir), repo = R
     if (plate.지문 && plate.지문 !== sha) return { ok: false, why: `판 파일이 돌림표가 적은 지문과 다르다(검수 뒤 바뀜) — node tools/돌림표.js --다시 · 판본 검수부터` };
     const closed = closedCell(accounts[account], plate.시각, { rotation: Boolean(plate.돌림) });
     if (closed) return { ok: false, why: `${closed} — 닫힌 계정 · 칸에는 걸지 않는다(돌림 판이면 node tools/돌림표.js --다시 --쓰기로 다시 짜고, 손으로 단 판이면 뺀다. 계정 · 칸을 여는 것은 조율 세션 몫)` };
+    if (plate.돌림) {
+      const cfg = Array.isArray(required) && required.length ? required : readJson(path.join(root, 'sns-계정.json'))?.labRotation?.판본검수;
+      const unfit = versionBlock(dir, prep, plate, account, accounts, Array.isArray(cfg) && cfg.length ? cfg : ['뜻', '글자']);
+      if (unfit) return { ok: false, why: unfit };
+    }
+    // 걸 때의 게시글 지문 — 못 읽으면 줄에 적지 않는다(글이 없는 판 · 못 읽는 원고는 올리기 전 검사 no-text · 판본 원고 고칠 것이 막는다)
+    let textSha = null;
+    try { textSha = postTextSha(dir, account); } catch { /* 위 주석 */ }
     const clash = sameCell(root, dir, account, plate.시각, accounts);
     if (clash) return { ok: false, why: `같은 칸에 이미 ${clash.piece}(${clash.state})가 있다` };
     const reg = readRegistry(place.file);
@@ -343,7 +395,12 @@ function claim({ dir, account, method = null, root = path.dirname(dir), repo = R
         // 거둔 줄(보류 · 지움)도 같다(11-11 P3-2) — 덮으면 「보류」 글 칸이 새 줄에 딸려 가고, 그 판을 풀면 상태 없는 줄이 남아
         // 앞의 「예약됨」이 그 계정의 줄로 되살아난다.
         if (cur && (cur.작업 || WITHDRAWN.has(cur.상태))) { addRow(); cur = null; }
-        return { ...(cur || {}), 계정: account, 상태: CLAIM, 거는중: stamp, 시각: plate.시각, 지문: sha, ...(method ? { 방법: method } : {}) };
+        // 안 걸린 옛 줄(「실패」 · 풀린 줄 …) 위에 다시 걸 때는 그 줄의 칸을 물려받지 않는다(P2-장1) — 내린 영상의 게시물 ID · 주소 · 확인 · 승인이
+        // 새 「거는 중」 · 「예약됨」 줄에 딸려 가면 그 줄이 내린 영상을 가리킨다. 옛 줄은 「앞시도」에 통째로 남긴다.
+        const { 계정: _a, 앞시도: before = [], ...old } = cur || {};
+        const tries = [...(Array.isArray(before) ? before : []), ...(Object.keys(old).length ? [old] : [])];
+        return { 계정: account, 상태: CLAIM, 거는중: stamp, 시각: plate.시각, 지문: sha, ...(textSha ? { 게시글지문: textSha } : {}), ...(method ? { 방법: method } : {}),
+          ...(tries.length ? { 앞시도: tries } : {}) };
       });
     } finally {
       if (!next && key) { if (before) reg.칸[key] = before; else delete reg.칸[key]; writeRegistry(place.file, reg, now); }
@@ -414,7 +471,7 @@ function release({ dir, account, why, root = path.dirname(dir), now = Date.now()
       if (!cur || cur.상태 !== CLAIM) return undefined;
       local = true;
       was = { ...cur };
-      const { 거는중, 지문, 상태, ...rest } = cur;
+      const { 거는중, 지문, 게시글지문, 상태, ...rest } = cur;
       return Object.keys(rest).length > 1 ? { ...rest, 풀림: why } : null;
     });
     // 표에서는 이 편 · 이 계정 줄 가운데 참이 더는 잡고 있지 않은 것(방금 푼 줄 · 읽을 수 없는 작업본의 줄)을 거둔다
@@ -456,7 +513,8 @@ function pendingClaims(root, { registry = null } = {}) {
 function main(argv) {
   const [cmd, ...rest] = argv;
   const root = argValue(rest, '--폴더') ? path.resolve(argValue(rest, '--폴더')) : path.join(REPO, 'docs', '마케팅');
-  const accounts = (readJson(path.join(root, 'sns-계정.json')) || {}).accounts || {};
+  const ledger = readJson(path.join(root, 'sns-계정.json')) || {};
+  const accounts = ledger.accounts || {};
   const pos = rest.filter((a, i) => !a.startsWith('--') && !(i > 0 && rest[i - 1].startsWith('--')));
   try {
     if (cmd === '걸던것') {
@@ -470,7 +528,7 @@ function main(argv) {
     }
     const dir = pieceDir(pos[0], root);
     const account = pos[1];
-    const r = cmd === '걸기' ? claim({ dir, account, method: argValue(rest, '--방법'), root, accounts })
+    const r = cmd === '걸기' ? claim({ dir, account, method: argValue(rest, '--방법'), root, accounts, required: ledger.labRotation?.판본검수 || null })
       : cmd === '끝' ? finish({ dir, account, state: argValue(rest, '--상태'), id: argValue(rest, '--게시물ID'), url: argValue(rest, '--주소'), seen: argValue(rest, '--확인'), approval: argValue(rest, '--승인'), root, accounts })
         : release({ dir, account, why: argValue(rest, '--까닭') || '까닭 없음', root });
     if (!r.ok) { console.error(`${cmd} 못 함 — ${account} · ${path.basename(dir)}: ${r.why}`); return 1; }
@@ -479,5 +537,5 @@ function main(argv) {
   } catch (error) { console.error(error.message); return 1; }
 }
 
-module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, held, rowOf, registryHolds, CLAIM, TRIAL, WITHDRAWN };
+module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, blockedWhy, postTextSha, held, rowOf, registryHolds, CLAIM, TRIAL, WITHDRAWN };
 if (require.main === module) process.exitCode = main(process.argv.slice(2));

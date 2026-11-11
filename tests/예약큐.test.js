@@ -958,3 +958,42 @@ test('걸린(공개 전) 돌림 판의 판본이 걸린 뒤 검수 무효가 되
   쓰기({ 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: booked } });
   assert.match(큐().out, /판본 MX: 글자 검수 뒤 영상이 바뀜/);
 });
+
+test('걸린(공개 전) 돌림 판의 게시글만 건 뒤에 고쳤으면 판본 검수가 다시 서도 경고가 남는다 — 걸 때 줄에 적은 게시글 지문과 견준다(11-11 밤 P1-팔1)', (t) => {
+  const 장부 = require('../tools/게시장부.js');
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-걸린글-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const base = path.join(repo, 'docs', '마케팅');
+  const 편폴더 = path.join(base, 'LAB_걸린글');
+  const dir = path.join(편폴더, '게시');
+  fs.mkdirSync(path.join(dir, '판본', 'MX'), { recursive: true });
+  fs.mkdirSync(path.join(repo, 'tools'), { recursive: true });
+  const video = path.join(dir, '판본', 'MX', 'video.mp4'), text = path.join(dir, '판본', 'MX', '글.json'), 원고 = path.join(dir, '판본', 'MX', '원고_youtube.json');
+  fs.writeFileSync(video, 'mx-1');
+  fs.writeFileSync(text, '{"줄":[]}');
+  const 원고쓰기 = (title) => fs.writeFileSync(원고, JSON.stringify({ brand: 'LAB', platform: 'youtube', language: 'es', title, caption: 'Una frase coreana para decir con calma.' }));
+  원고쓰기('Di esto con calma');
+  const sha = (f) => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'lab-mx-youtube': 나라계정('America/Mexico_City', { countryCode: 'MX' }) } }));
+  const 판 = { 계정: 'lab-mx-youtube', 시각: '2026-11-12T13:00:00-06:00', 파일: '게시/판본/MX/video.mp4', 원고: '게시/판본/MX/원고_youtube.json', 돌림: true, 지문: sha(video) };
+  const 쓰기 = (줄) => 편('LAB_걸린글', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '걸린 글',
+    돌림: { 형식: '이야기', 판본: { MX: { 언어: 'es', 파일: '게시/판본/MX/video.mp4', 글: '게시/판본/MX/글.json', 원고: { youtube: '게시/판본/MX/원고_youtube.json' },
+      검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } } } },
+    판: [판] }, { 판: [줄] }, base);
+  쓰기({ 계정: 'lab-mx-youtube', 상태: '실패' }); // 준비.json부터 있어야 게시글을 읽는다
+  const 걸때 = 장부.postTextSha(편폴더, 'lab-mx-youtube');
+  assert.match(걸때, /^[0-9a-f]{64}$/);
+  const 걸린줄 = (extra = {}) => ({ 계정: 'lab-mx-youtube', 상태: '예약됨', 시각: 판.시각, 지문: 판.지문, 게시글지문: 걸때, ...extra });
+  const 큐 = () => 돌림큐(base, ['--오늘', '2026-11-11', '--일수', '6', '--알림']);
+  쓰기(걸린줄());
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/, '게시글이 걸 때 그대로');
+  // 건 뒤 제목만 고쳤다 — 판본 검수(뜻 · 글자)는 서 있고 영상도 그대로다. 고치기 전에는 여기서 경고가 없었다
+  원고쓰기('Dilo con calma');
+  const r = 큐();
+  assert.match(r.out, /! 걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube · LAB_걸린글 · 공개 2026-11-12\(현지 날짜, 한국 11-13 04:00\) — 판본 MX: 건 뒤에 게시글\(제목 · 본문 · 댓글\)을 고쳤다\(예약에는 옛 글이 걸려 있다\)/);
+  // 걸 때 지문을 안 적은 옛 줄 · 이미 나간 판은 조용하다
+  쓰기(걸린줄({ 게시글지문: undefined }));
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+  쓰기(걸린줄({ 상태: '게시됨' }));
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+});

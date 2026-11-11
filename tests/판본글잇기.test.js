@@ -360,10 +360,108 @@ test('지문 조건 — 판본 글을 고쳐 다시 뽑으면 돌림표가 뜻 �
   판본글.writeJson(원고파일, 원고);
   assert.equal(잇기.낡았나(편, 'US', { 원장 }), false, '동영상 언어 칸은 글.json에 안 든다');
   assert.equal(상태('US').ready, true, '앞 토막이 같으면 같은 말(en-US · en)');
-  // 지도가 없는 편 · 지도의 글.json이 아닌 글이면 낡음을 보지 않는다(null)
-  assert.equal(잇기.글낡음(편, 'US', { 글: 'remotion/src/m99/판본/US.json' }), null);
+  // 지도가 있는데 「글」이 지도의 글.json이 아니면 견줄 원천이 없다 — 낡은 것으로 본다(닫는 쪽, 11-11 밤 P1-렌1). 지도가 없는 편은 볼 것이 없다(null)
+  assert.equal(잇기.글낡음(편, 'US', { 글: 'remotion/src/m99/판본/US.json' }), true);
   fs.rmSync(path.join(편, 잇기.지도이름));
   assert.equal(잇기.글낡음(편, 'US', { 글: '게시/판본/US/글.json' }), null);
+});
+
+test('판본 「글」의 철자 — 같은 글.json을 다르게 적어도 글 · 렌더 관문이 그대로 서고, 지도의 글.json이 아닌 「글」은 돌림에 못 든다(11-11 밤 P1-렌1)', () => {
+  const { 편, 판본폴더 } = 편만들기();
+  잇기.채우기(편, 미국글);
+  const 리모션 = path.join(편, 'remotion');
+  fs.mkdirSync(path.join(리모션, 'public', 'img'), { recursive: true });
+  const 그림 = path.join(리모션, 'public', 'img', 'dusk.jpg');
+  fs.writeFileSync(그림, Buffer.from([0xff, 0xd8, 0x00, 0x01]));
+  잇기.맞추기(편, 'US', { 원장 });
+  const 영상 = 가짜렌더(편, 판본폴더, 'US');
+  잇기.준비에넣기(편, ['US']);
+  const 글파일 = path.join(편, '게시', '판본', 'US', '글.json');
+  판본글.검수쓰기(편, 'US', '뜻', { 결과: '통과', 지문: sha(글파일) });
+  판본글.검수쓰기(편, 'US', '글자', { 결과: '통과', 지문: sha(영상), 글지문: sha(글파일) });
+  const 캐시 = fs.mkdtempSync(path.join(os.tmpdir(), '판본잇기-철자-'));
+  // 준비.json 판본의 「글」을 그 철자로 바꿔 적고 돌림표가 보는 상태를 읽는다
+  const 상태 = (글) => {
+    const prep = 판본글.readJson(판본글.준비경로(편));
+    prep.돌림.판본.US.글 = 글;
+    판본글.writeJson(판본글.준비경로(편), prep);
+    const 코드 = `process.env.SYNK_ROTATION_DIR=${JSON.stringify(캐시)};const d=require(${JSON.stringify(path.join(REPO, 'tools', '돌림표.js'))});const p=require(${JSON.stringify(path.join(REPO, 'tools', 'lib', '판본글.js'))});`
+      + `const v=p.readJson(${JSON.stringify(판본글.준비경로(편))}).돌림.판본.US;console.log(JSON.stringify(d.versionState(${JSON.stringify(편)},v,['뜻','글자'],'US',{accounts:${JSON.stringify(원장.accounts)}})));`;
+    const r = spawnSync(process.execPath, ['-e', 코드], { encoding: 'utf8', windowsHide: true });
+    assert.equal(r.status, 0, r.stderr);
+    return JSON.parse(r.stdout.trim().split('\n').pop());
+  };
+  const 바른 = '게시/판본/US/글.json';
+  // 같은 파일을 가리키는 철자들 — 글자 그대로 견주던 동안에는 이 꼴들이 「지도와 안 이어진 판본」이 되어 두 관문이 꺼졌다
+  // (역빗금 철자는 윈도우에서만 — 그 밖에서는 역빗금이 든 파일 이름이라 돌림표가 그 글 파일을 못 찾아 먼저 닫는다)
+  const 철자들 = [바른, './게시/판본/US/글.json', '게시//판본/US/글.json', '게시/판본/../판본/US/글.json', path.join(편, '게시', '판본', 'US', '글.json'),
+    ...(process.platform === 'win32' ? ['게시\\판본\\US\\글.json'] : [])];
+  for (const 글 of 철자들) assert.equal(상태(글).ready, true, `멀쩡한 판본은 철자가 달라도 든다: ${글}`);
+  // 원본 그림을 고친 뒤 다시 굽지 않음 — 어느 철자로 적어도 렌더 관문이 닫는다(고치기 전: 바른 철자만 닫고 나머지는 든다)
+  fs.writeFileSync(그림, Buffer.from([0xff, 0xd8, 0x00, 0x02]));
+  for (const 글 of 철자들) {
+    const s = 상태(글);
+    assert.equal(s.ready, false, `렌더 뒤 그림이 바뀐 판본: ${글}`);
+    assert.match(s.why, /렌더 뒤 원본 그림 · 소리 · 틀/, 글);
+    assert.match(잇기.렌더낡음(편, 'US', { 글 }), /렌더 뒤 원본 그림 · 소리 · 틀/);
+  }
+  가짜렌더(편, 판본폴더, 'US');
+  for (const 글 of 철자들) {
+    assert.equal(잇기.이음문제(편, 'US', { 글 }), false, `이어진 글: ${글}`);
+    assert.equal(잇기.검사전(편, 'US', { 글 }).이음, true, 글);
+  }
+  // 원고를 고치고 다시 뽑지 않음 — 글 낡음 관문도 어느 철자로든 닫는다
+  const 원고파일 = path.join(편, '게시', '판본', 'US', '원고_youtube.json');
+  const 원고 = 판본글.readJson(원고파일);
+  판본글.writeJson(원고파일, { ...원고, pinnedComment: 'Who says 먹지 마 to you the most?' });
+  for (const 글 of 철자들) {
+    assert.match(상태(글).why, /다시 뽑지 않음/, 글);
+    assert.equal(잇기.글낡음(편, 'US', { 글 }, { 원장 }), true, 글);
+  }
+  판본글.writeJson(원고파일, 원고);
+  assert.equal(상태(바른).ready, true);
+  // 지도의 글.json이 아닌 「글」 — 판본렌더.mjs가 렌더.json 「돌림판본.글」에 적어 주던 꼴(판본 글 원천)을 옮겨 적은 판본, 다른 키의 글.json, 빈 칸
+  for (const 글 of ['remotion/src/m99/판본/US.json', '게시/판본/MX/글.json', '']) {
+    assert.match(잇기.이음문제(편, 'US', { 글 }), /이 판본 지도가 뽑는 글\(게시\/판본\/US\/글\.json\)이 아니다 — 글 · 렌더 관문이 이 판본을 볼 수 없다/, 글);
+    assert.equal(잇기.글낡음(편, 'US', { 글 }), true, `낡은 것으로 본다: ${글}`);
+    assert.match(잇기.렌더낡음(편, 'US', { 글 }), /판본 지도가 뽑는 글/, 글);
+  }
+  // 그 꼴이 준비.json에 들면: 뜻 검수 지문을 그 파일로 맞춰 적어도(판본 글 원천의 지문) 돌림에 못 든다 — 고치기 전에는 ready:true였다
+  const 팩 = 'remotion/src/m99/판본/US.json';
+  판본글.검수쓰기(편, 'US', '뜻', { 결과: '통과', 지문: sha(path.join(편, 팩)) });
+  const 끊김 = 상태(팩);
+  assert.equal(끊김.ready, false);
+  assert.match(끊김.why, /준비\.json 판본 US의 「글」\(remotion\/src\/m99\/판본\/US\.json\)이 판본 지도가 뽑는 글\(게시\/판본\/US\/글\.json\)이 아니다/);
+  // 윈도우는 대소문자를 가리지 않는 파일 체계 — 폴더 대소문자만 다른 철자는 같은 파일이다. 그 밖에서는 다른 파일(없는 파일)이라 닫힌다
+  const 소문자 = '게시/판본/us/글.json';
+  if (process.platform === 'win32') assert.equal(잇기.이음문제(편, 'US', { 글: 소문자 }), false);
+  else assert.match(잇기.이음문제(편, 'US', { 글: 소문자 }), /판본 지도가 뽑는 글/);
+  // 판본 지도가 없는 편은 볼 것이 없다
+  fs.rmSync(path.join(편, 잇기.지도이름));
+  assert.equal(잇기.이음문제(편, 'US', { 글: 팩 }), null);
+  assert.equal(잇기.렌더낡음(편, 'US', { 글: 팩 }), null);
+});
+
+test('판본렌더.mjs가 렌더.json 「돌림판본」에 적는 꼴은 지도가 뽑는 글.json이다 — 그 꼴을 준비.json에 옮겨도 관문과 이어진다(11-11 밤 P1-렌1)', () => {
+  const { 편 } = 편만들기();
+  잇기.채우기(편, 미국글);
+  잇기.맞추기(편, 'US', { 원장 });
+  // 판본렌더.mjs는 지도가 있으면 판본잇기 돌림판본을 그대로 적는다 — 그 꼴은 이어진 글이다
+  const 옮길꼴 = 잇기.돌림판본(편, 'US');
+  assert.equal(옮길꼴.글, '게시/판본/US/글.json');
+  assert.equal(잇기.이음문제(편, 'US', 옮길꼴), false);
+  // 저장소의 판본렌더.mjs(다섯 편이 같은 몸통)가 판본 글 원천을 「글」로 적는 옛 줄을 되살리지 않았는가
+  const 마케팅 = path.join(REPO, 'docs', '마케팅');
+  const 렌더들 = fs.readdirSync(마케팅, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => path.join(마케팅, d.name, '판본렌더.mjs')).filter((f) => fs.existsSync(f));
+  assert.ok(렌더들.length >= 2, '판본렌더.mjs가 있는 편(지마 · 화날때)');
+  for (const f of 렌더들) {
+    const src = fs.readFileSync(f, 'utf8');
+    const 줄 = src.split(/\r?\n/).filter((l) => /^\s*돌림판본:/.test(l));
+    assert.equal(줄.length, 1, `${path.basename(path.dirname(f))}: 「돌림판본」을 적는 줄은 하나`);
+    assert.ok(줄[0].includes('잇기.돌림판본(여기, k)'), `${path.basename(path.dirname(f))}: 지도가 있으면 판본잇기 돌림판본으로 적는다`);
+    assert.ok(!/글:\s*`\$\{편\.판본폴더\}/.test(줄[0]), `${path.basename(path.dirname(f))}: 판본 글 원천(<판본폴더>/<키>.json)을 「글」로 적지 않는다`);
+    assert.ok(줄[0].includes('글: `게시/판본/${k}/글.json`'), `${path.basename(path.dirname(f))}: 지도가 없는 편도 글.json 꼴`);
+  }
 });
 
 test('렌더 자산 지문 — 원본 그림 · 소리 · 틀이 바뀌면 달라지고, 줄끝 · 판본 글 · 숨김 파일 · node_modules는 세지 않는다(11-11)', () => {
@@ -464,8 +562,8 @@ test('렌더 관문 — 렌더 기록이 없거나, 화면 글 · 원본 그림�
   // 표지만 뜬 기록(글 · 영상 지문 없음)
   fs.writeFileSync(path.join(편, '게시', '판본', 'US', '렌더.json'), JSON.stringify({ 판본: 'US', 표지만: '렌더 기록 없이 표지만 떴다' }));
   assert.match(상태().why, /렌더 기록에 글 · 영상 지문이 없다/);
-  // 지도가 없는 편 · 지도의 글.json이 아닌 판본은 보지 않는다(null)
-  assert.equal(잇기.렌더낡음(편, 'US', { 글: 'remotion/src/m99/판본/US.json' }), null);
+  // 지도의 글.json이 아닌 「글」은 볼 것이 없는 것(null)이 아니라 닫히는 까닭이다(11-11 밤 P1-렌1 — 위 「판본 「글」의 철자」 시험)
+  assert.match(잇기.렌더낡음(편, 'US', { 글: 'remotion/src/m99/판본/US.json' }), /판본 지도가 뽑는 글\(게시\/판본\/US\/글\.json\)이 아니다/);
 });
 
 test('검사전 — 지도가 없는 편은 null, 「글」이 지도의 글.json이 아니면 이음 아님, 맞으면 맞추고 영상 낡음을 본다', () => {

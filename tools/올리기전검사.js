@@ -717,15 +717,12 @@ function tiktokFindings(plates, prep, known = {}) {
 
 // ⑩ 매일 판. 한 편은 그 줄의 모든 계정에 간다(유호님 10-26 「하루에 모든 계정에 하나씩」). 막힌 계정(dailyBlocked)은 빼고 본다.
 // 막힌 계정에 판이 달려 있으면 고칠 것 — 14시 게시 세션 · 검토 링크 「함께」가 판대로 걸기 때문이다(11-01 틱톡 @yuhobuilds 쉼, 유호님 「쉬게 해」).
+// 그 판단(blocked-plate)은 아래 closedFindings가 게시결과를 보고 낸다(11-11 밤 P1-넷6 — 여기서 게시결과 없이 내던 것을 옮겼다).
 // 11-10 LAB 39계정: 돌림 판(판 「돌림」: true — tools/돌림표.js가 계정 · 날을 정한다)과 「LAB 나라별」 줄은 「그 줄의 모든 계정」으로 보지 않고
 // 아래 rotationFindings가 칸 · 판본 · 계정 준비를 본다. 시작 전(dailyFrom 「미정」) 계정과, 이 편 형식(준비.json 「돌림」.형식)의 칸이 없는 계정
 // (텔레그램은 21:00 노래뿐)은 판이 없어도 된다.
 function dailyFindings(plates, prep, known = {}) {
   const out = [];
-  for (const p of plates) {
-    const why = known[p.account]?.dailyBlocked;
-    if (why) out.push({ level: FIX, code: 'blocked-plate', where: p.account, message: `막힌 계정이다(${why}) — 판에서 빼고 준비.json 「빠진판」에 {"${p.account}": "쉼"}을 적는다` });
-  }
   const have = new Set(plates.map((p) => p.account));
   const excused = prep.빠진판 && typeof prep.빠진판 === 'object' && !Array.isArray(prep.빠진판) ? prep.빠진판 : {};
   const format = prep.돌림?.형식 || null;
@@ -748,6 +745,10 @@ function dailyFindings(plates, prep, known = {}) {
 // 닫힌 계정 · 닫힌 칸(11-11 P2-8): 아직 안 연 계정(dailyFrom 「미정」 · 그 날짜 전)의 판은 손으로 단 판도, 계정을 닫거나 칸을 닫은 뒤 남은 돌림 판도
 // 고칠 것이다(tools/게시장부.js closedCell — 걸기도 같은 셈으로 막는다). 이미 걸린 판(예약됨 · 거는 중 …)은 확인할 것 — 플랫폼 예약을 거둘지 본다.
 // 게시된 판은 보지 않는다. posted = 계정 → 게시결과 상태(없으면 안 건 판으로 본다).
+// 막힌 계정(원장 dailyBlocked — 플랫폼 경고 · 쉼으로 멈춘 계정)의 판도 같은 세 갈래다(11-11 밤 Fable 5.2 다시 검수 P1-넷6): 이미 나간 판은 안 보고,
+// 걸린 판은 확인할 것(blocked-plate-booked), 안 건 판만 고칠 것(blocked-plate). 게시결과를 안 보고 모두 고칠 것으로 내던 동안에는, 경고로 한 계정을
+// 멈추면 그 계정이 이미 받은(나간 · 걸린) 원본마다 편 전체가 고칠 것이 되어 다른 계정 판까지 못 걸렸다 — 씨앗 계정이면 돌림 원본 전부가 묶인다.
+// 걸기도 같은 셈으로 막힌 계정을 거절한다(tools/게시장부.js closedCell — P2-넷7).
 function closedFindings(bundle, plates, { posted = null } = {}) {
   const out = [];
   for (const p of plates) {
@@ -756,10 +757,15 @@ function closedFindings(bundle, plates, { posted = null } = {}) {
     if (!why) continue;
     const state = posted ? posted.get(p.account) || null : null;
     if (state === '게시됨') continue;
-    if (state && state !== '실패' && !['보류', '취소됨', '지움'].includes(state)) {
+    const booked = Boolean(state) && state !== '실패' && !['보류', '취소됨', '지움'].includes(state);
+    const again = p.raw?.돌림 ? 'node tools/돌림표.js --다시 --쓰기로 다시 짠다' : '판에서 뺀다';
+    if (장부.blockedWhy(a)) {
+      if (booked) out.push({ level: LOOK, code: 'blocked-plate-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 「${state}」 상태다. 공개 전이면 그 플랫폼 예약을 거둘지 본다(계정을 멈춘 까닭이 플랫폼 경고면 거둔다 — 거둔 뒤 node tools/게시장부.js 끝 … --상태 실패 --확인 …)` });
+      else out.push({ level: FIX, code: 'blocked-plate', where: p.account, message: `${why} — ${p.raw?.돌림 ? again : `판에서 빼고 준비.json 「빠진판」에 {"${p.account}": "쉼"}을 적는다`}` });
+    } else if (booked) {
       out.push({ level: LOOK, code: 'closed-cell-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 「${state}」 상태다. 플랫폼 예약을 거둘지 본다(공개 전 예약을 다른 편으로 바꿔 거는 것은 상시 승인 안)` });
     } else {
-      out.push({ level: FIX, code: 'closed-cell', where: p.account, message: `${why} — 닫힌 계정 · 칸의 판이다. ${p.raw?.돌림 ? 'node tools/돌림표.js --다시 --쓰기로 다시 짠다' : '판에서 뺀다'}(계정 · 칸을 여는 것은 조율 세션 몫)` });
+      out.push({ level: FIX, code: 'closed-cell', where: p.account, message: `${why} — 닫힌 계정 · 칸의 판이다. ${again}(계정 · 칸을 여는 것은 조율 세션 몫)` });
     }
   }
   return out;
@@ -807,6 +813,10 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
     } else if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
     else if (booked && row.지문 && st.sha && row.지문 !== st.sha) {
       add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: 건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판) — 공개 전이면 그 플랫폼 예약을 내리고 새 판으로 다시 건다(node tools/게시장부.js 끝 … --상태 실패 --확인 … → node tools/돌림표.js --다시 --쓰기)`);
+    } else if (booked) {
+      // 걸린 뒤 게시글만 고친 판(11-11 밤 P1-팔1) — 판본 검수가 다시 서고 영상도 그대로라 위 둘이 조용한데, 예약에는 걸 때의 옛 글이 걸려 있다
+      const text = 돌림표.bookedTextProblem(bundle.dir, p.raw, row);
+      if (text) add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: ${text} — 공개 전이면 그 플랫폼 예약을 내리고 고친 글로 다시 건다(node tools/게시장부.js 끝 … --상태 실패 --확인 … → node tools/돌림표.js --다시 --쓰기)`);
     }
     // 뜻 검사에서 둘 이상이 같이 짚은 줄을 판정(원본 박자 · 한국어를 못 읽는 시험 전제)으로 내린 판본은 그 줄을 보이게 한다 — 판본에서 못 고치는
     // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).

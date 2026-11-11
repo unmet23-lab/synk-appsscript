@@ -7,19 +7,27 @@ const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
+// 걸기가 판본 검수를 볼 때 tools/돌림표.js가 영상 지문 곳간을 읽는다 — 이 PC의 실제 곳간(%LOCALAPPDATA%/synk/돌림표) 대신 빈 임시 폴더로
+process.env.SYNK_ROTATION_DIR = fs.mkdtempSync(path.join(os.tmpdir(), '게시장부-곳간-'));
 const 장부 = require('../tools/게시장부.js');
+
+const 지문 = (s) => crypto.createHash('sha256').update(s).digest('hex');
+// 돌림 판은 그 계정 판본의 검수가 서 있어야 걸린다(11-11 밤) — 뜻 검수 지문 = 글.json, 글자 검수 지문 = 영상
+const 판본TH = (글, 영상) => ({ TH: { 언어: 'th', 파일: '게시/판본/TH/video.mp4', 글: '게시/판본/TH/글.json', 검수: { 뜻: { 결과: '통과', 지문: 지문(글) }, 글자: { 결과: '통과', 지문: 지문(영상) } } } });
 
 function 마당() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), '게시장부-'));
-  const accounts = { 'lab-th-youtube': { brand: 'LAB', platform: 'youtube', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'] } };
+  const accounts = { 'lab-th-youtube': { brand: 'LAB', platform: 'youtube', countryCode: 'TH', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'] } };
   fs.writeFileSync(path.join(root, 'sns-계정.json'), JSON.stringify({ accounts }));
   const 편 = (name, time, body = 'video') => {
     const dir = path.join(root, name);
     fs.mkdirSync(path.join(dir, '게시', '판본', 'TH'), { recursive: true });
     const file = path.join(dir, '게시', '판본', 'TH', 'video.mp4');
     fs.writeFileSync(file, body);
-    const sha = crypto.createHash('sha256').update(body).digest('hex');
-    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 판: [{ 계정: 'lab-th-youtube', 파일: '게시/판본/TH/video.mp4', 시각: time, 돌림: true, 지문: sha }] }));
+    const 글 = JSON.stringify({ 줄: [name] });
+    fs.writeFileSync(path.join(dir, '게시', '판본', 'TH', '글.json'), 글);
+    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본: 판본TH(글, body) },
+      판: [{ 계정: 'lab-th-youtube', 파일: '게시/판본/TH/video.mp4', 시각: time, 돌림: true, 지문: 지문(body) }] }));
     return dir;
   };
   return { root, accounts, 편, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
@@ -423,14 +431,17 @@ function 사본마당() {
   fs.writeFileSync(path.join(main, '.git', 'worktrees', 'wt', 'commondir'), '../..\n');
   fs.mkdirSync(wt, { recursive: true });
   fs.writeFileSync(path.join(wt, '.git'), `gitdir: ${path.join(main, '.git', 'worktrees', 'wt')}\n`);
-  const accounts = { [A]: { brand: 'LAB', platform: 'youtube', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'] } };
+  const accounts = { [A]: { brand: 'LAB', platform: 'youtube', countryCode: 'TH', timeZone: 'Asia/Bangkok', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'] } };
   const rel = path.join('docs', '마케팅', 'LAB_가');
   const body = 'th-video';
   const sha = crypto.createHash('sha256').update(body).digest('hex');
-  const prep = { 브랜드: 'LAB', 판: [{ 계정: A, 파일: '게시/판본/TH/video.mp4', 시각: '2026-11-20T13:00:00+07:00', 돌림: true, 지문: sha }] };
+  const 글 = JSON.stringify({ 줄: ['LAB_가'] });
+  const prep = { 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본: 판본TH(글, body) }, 판: [{ 계정: A, 파일: '게시/판본/TH/video.mp4', 시각: '2026-11-20T13:00:00+07:00', 돌림: true, 지문: sha }] };
   for (const root of [main, wt]) {
-    fs.mkdirSync(path.join(root, rel, '게시'), { recursive: true });
+    // 준비.json · 글.json은 추적 파일이라 사본에도 있다
+    fs.mkdirSync(path.join(root, rel, '게시', '판본', 'TH'), { recursive: true });
     fs.writeFileSync(path.join(root, rel, '게시', '준비.json'), JSON.stringify(prep));
+    fs.writeFileSync(path.join(root, rel, '게시', '판본', 'TH', '글.json'), 글);
   }
   // 영상은 공용 작업본에만 있다(git 밖)
   fs.mkdirSync(path.join(main, rel, '게시', '판본', 'TH'), { recursive: true });
@@ -463,7 +474,8 @@ test('회차 사본에서 걸기: 판 영상은 공용 작업본에서 찾아 �
 // 표의 참)은 첫 걸린 줄을 읽어, 예약큐는 빈 칸으로 보이고 걸기는 막았다.
 function 줄마당() {
   const m = 마당();
-  m.accounts['lab-jp-youtube'] = { brand: 'LAB', platform: 'youtube', timeZone: 'Asia/Tokyo', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'], postRouteVerified: '첫판', publicProfileComplete: true };
+  // 이 마당의 편에는 판본이 TH 하나뿐이라 일본 계정도 그 판본을 쓰게 둔다(줄 읽기 시험 — 판본은 보지 않는다)
+  m.accounts['lab-jp-youtube'] = { brand: 'LAB', platform: 'youtube', rotationVersion: 'TH', timeZone: 'Asia/Tokyo', dailyTimes: ['13:00', '21:00'], dailyFormats: ['이야기', '퀴즈'], postRouteVerified: '첫판', publicProfileComplete: true };
   fs.writeFileSync(path.join(m.root, 'sns-계정.json'), JSON.stringify({ accounts: m.accounts }));
   const 판바꿈 = (dir, account, time) => {
     const f = path.join(dir, '게시', '준비.json');
@@ -722,4 +734,141 @@ test('[거는 중, 보류] — 안 닫힌 걸기는 뒤에 보류가 붙어 있�
   assert.equal(장부.release({ dir: a1, account: A, why: '예약 목록에 없음', root: w.one.root, registry }).ok, true);
   assert.equal(장부.rowOf(결과(a1).판, A).상태, '보류');
   assert.equal(장부.claim({ dir: b2, account: A, root: w.two.root, accounts: w.two.accounts, now: NOW + 2000, registry }).ok, true);
+});
+
+// ── 11-11 밤 Fable 5.2 다시 검수 — 걸기가 도구로 닫는 것(P1-팔1 · P1-넷6 · P2-넷7 · 8-0 반대쪽 길 · P2-장1) ──
+const 준비고침 = (dir, fn) => { const f = path.join(dir, '게시', '준비.json'); const p = JSON.parse(fs.readFileSync(f, 'utf8')); fn(p); fs.writeFileSync(f, JSON.stringify(p)); };
+
+test('걸기는 돌림 판의 판본 검수가 지금도 서 있어야 건다 — 검수에서 떨어진 판 · 글을 고친 판 · 시험관이 모자란 판 · 판본을 못 찾는 판은 판 지문이 맞아도 거절(8-0 · P1-장3)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const 걸기 = (dir, extra = {}) => 장부.claim({ dir, account: A, root: m.root, accounts: m.accounts, now: NOW, ...extra });
+  // 가) 뜻 검수에서 떨어진 판본 — 영상은 그대로라 판 지문은 맞는다(내린 판을 다시 걸 수 있던 길)
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  준비고침(a, (p) => { p.돌림.판본.TH.검수.뜻.결과 = '고칠 것'; });
+  const 떨어짐 = 걸기(a);
+  assert.equal(떨어짐.ok, false);
+  assert.match(떨어짐.why, /판본 TH: 뜻 검수 고칠 것 — 검수가 서지 않은 판본은 걸지 않는다/);
+  assert.equal(fs.existsSync(path.join(a, '게시', '게시결과.json')), false, '거절된 걸기는 줄을 남기지 않는다');
+  assert.equal(fs.existsSync(path.join(m.root, '.게시장부', '칸.json')), false, '칸 장부에도 줄이 없다');
+  준비고침(a, (p) => { p.돌림.판본.TH.검수.뜻.결과 = '통과'; });
+  // 나) 검수 뒤 글을 고친 판본(뜻 지문 ≠ 지금 글)
+  const 글 = path.join(a, '게시', '판본', 'TH', '글.json');
+  const 원래글 = fs.readFileSync(글, 'utf8');
+  fs.writeFileSync(글, JSON.stringify({ 줄: ['고친 글'] }));
+  assert.match(걸기(a).why, /판본 TH: 뜻 검수 뒤 글이 바뀜/);
+  fs.writeFileSync(글, 원래글);
+  // 다) 넷이어야 할 때 시험관 둘로 통과한 기록
+  준비고침(a, (p) => { Object.assign(p.돌림.판본.TH.검수.뜻, { 시험관: ['sonnet', 'haiku'], 시각: '2026-11-10T18:00:00+09:00', 언어: 'th', 틀: '이야기' }); });
+  assert.match(걸기(a).why, /판본 TH: 뜻 검수 시험관 2명\(sonnet · haiku\)으로 통과 — 넷이어야 한다/);
+  준비고침(a, (p) => { p.돌림.판본.TH.검수.뜻.시험관 = ['sonnet', 'haiku', 'opus', 'gpt']; });
+  // 라) 원장 판본검수에 「현지어」가 들면 그 기록도 있어야 한다 — 안 넘겨도 원장에서 읽는다
+  fs.writeFileSync(path.join(m.root, 'sns-계정.json'), JSON.stringify({ accounts: m.accounts, labRotation: { 판본검수: ['뜻', '글자', '현지어'] } }));
+  assert.match(걸기(a).why, /판본 TH: 현지어 검수 전/);
+  assert.equal(걸기(a, { required: ['뜻', '글자'] }).ok, true, '검수가 다 서 있으면 걸린다');
+  fs.writeFileSync(path.join(m.root, 'sns-계정.json'), JSON.stringify({ accounts: m.accounts }));
+  // 마) 판본을 못 찾는 돌림 판 · 판본 파일이 아닌 판 파일 — 검수를 볼 수 없으면 걸지 않는다
+  const b = m.편('LAB_나', '2026-11-21T13:00:00+07:00', 'b');
+  준비고침(b, (p) => { delete p.돌림.판본.TH; });
+  assert.match(걸기(b).why, /이 편에 lab-th-youtube의 판본 TH이 없어 판본 검수를 볼 수 없다/);
+  준비고침(b, (p) => { delete p.돌림; });
+  assert.match(걸기(b).why, /판본 TH이 없어 판본 검수를 볼 수 없다/, '「돌림」이 없는 편의 돌림 판');
+  const c = m.편('LAB_다', '2026-11-22T13:00:00+07:00', 'c');
+  fs.copyFileSync(path.join(c, '게시', '판본', 'TH', 'video.mp4'), path.join(c, '게시', '다른.mp4'));
+  준비고침(c, (p) => { p.판[0].파일 = '게시/다른.mp4'; });
+  assert.match(걸기(c).why, /판 파일\(게시\/다른\.mp4\)이 판본 TH의 파일\(게시\/판본\/TH\/video\.mp4\)과 다르다/);
+  // 바) 손으로 단 판(돌림 아님)은 판본을 보지 않는다
+  준비고침(b, (p) => { delete p.판[0].돌림; delete p.판[0].지문; });
+  assert.equal(걸기(b).ok, true);
+});
+
+test('막힌 계정(원장 dailyBlocked)에는 걸지 않는다 — 플랫폼 경고로 멈춘 계정의 안 건 판을 도구가 거절한다(P2-넷7), 하루 칸이 없는 계정도', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  const 막힌 = { [A]: { ...m.accounts[A], dailyBlocked: '11-12 스튜디오 기능 제한 경고 — 확인 전까지 멈춤' } };
+  const r = 장부.claim({ dir: a, account: A, root: m.root, accounts: 막힌, now: NOW });
+  assert.equal(r.ok, false);
+  assert.match(r.why, /막힌 계정이다\(원장 dailyBlocked — 11-12 스튜디오 기능 제한 경고 — 확인 전까지 멈춤\) — 닫힌 계정 · 칸에는 걸지 않는다/);
+  assert.equal(fs.existsSync(path.join(a, '게시', '게시결과.json')), false);
+  // 하루 칸(dailyTimes)이 없는 계정(매일 판 밖 · 다른 브랜드의 쉬는 계정)도 막혀 있으면 닫힌 계정이다
+  assert.match(장부.closedCell({ platform: 'tiktok', dailyBlocked: '11-01 쉼' }, '2026-11-20T13:00:00+09:00'), /막힌 계정이다\(원장 dailyBlocked — 11-01 쉼\)/);
+  assert.equal(장부.closedCell({ platform: 'tiktok', dailyBlocked: '11-01 쉼' }, null), '막힌 계정이다(원장 dailyBlocked — 11-01 쉼)', '시각이 없어도');
+  assert.equal(장부.blockedWhy({ platform: 'tiktok' }), null);
+  // 막힘을 풀면 걸린다
+  assert.equal(장부.claim({ dir: a, account: A, root: m.root, accounts: m.accounts, now: NOW }).ok, true);
+});
+
+test('걸 때 줄에 게시글 지문을 적는다 — 걸린 뒤 게시글만 고치고 뜻 검사를 다시 통과해도 「걸린 뒤 바뀜」이 남는다(P1-팔1)', (t) => {
+  const 돌림표 = require('../tools/돌림표.js');
+  const m = 마당();
+  t.after(m.cleanup);
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  const 원고 = path.join(a, '게시', '판본', 'TH', '원고_youtube.json');
+  const 원고쓰기 = (o) => fs.writeFileSync(원고, JSON.stringify(o));
+  원고쓰기({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร\n\nลองเดาดู', pinnedComment: 'คำไหนใช้บ่อยสุด' });
+  준비고침(a, (p) => { p.판[0].원고 = '게시/판본/TH/원고_youtube.json'; p.돌림.판본.TH.원고 = { youtube: '게시/판본/TH/원고_youtube.json' }; });
+  const 걸때 = 장부.postTextSha(a, A);
+  assert.match(걸때, /^[0-9a-f]{64}$/);
+  const c = 장부.claim({ dir: a, account: A, method: 'ego', root: m.root, accounts: m.accounts, now: NOW });
+  assert.equal(c.ok, true, c.why);
+  assert.equal(결과(a).판[0].게시글지문, 걸때, '걸 때의 게시글 지문');
+  assert.equal(장부.finish({ dir: a, account: A, state: '예약됨', id: 'yt1', seen: '스튜디오 예약 목록 · 글 첫 줄 같음', root: m.root, accounts: m.accounts }).ok, true);
+  const 줄 = () => 결과(a).판[0];
+  assert.equal(줄().게시글지문, 걸때, '예약됨으로 닫아도 남는다');
+  const 준비 = () => JSON.parse(fs.readFileSync(path.join(a, '게시', '준비.json'), 'utf8'));
+  const 문제 = () => 돌림표.bookedVersionProblem(a, 준비(), 준비().판[0], 줄(), { accounts: m.accounts });
+  assert.equal(문제(), null, '걸 때 그대로면 조용하다');
+  // 줄끝 · 플랫폼에 안 적는 칸(_원문)만 바뀐 것은 게시글이 바뀐 것이 아니다
+  원고쓰기({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร\r\n\r\nลองเดาดู', pinnedComment: 'คำไหนใช้บ่อยสุด', _원문: { title: '먹지 마' } });
+  assert.equal(문제(), null);
+  // 걸린 뒤 제목만 고침 — 판본 검수(뜻 · 글자 지문)는 그대로 서 있고 영상 지문도 같다. 고치기 전에는 여기서 알림이 꺼졌다
+  원고쓰기({ title: 'อย่ากินนะ!', caption: 'คำนี้แปลว่าอะไร\n\nลองเดาดู', pinnedComment: 'คำไหนใช้บ่อยสุด' });
+  const p = 문제();
+  assert.deepEqual([p.key, p.changed, p.text], ['TH', false, true]);
+  assert.match(p.why, /건 뒤에 게시글\(제목 · 본문 · 댓글\)을 고쳤다\(예약에는 옛 글이 걸려 있다\)/);
+  assert.equal(돌림표.bookedTextProblem(a, 준비().판[0], { 계정: A, 상태: '예약됨' }), null, '걸 때 지문을 안 적은 옛 줄은 견줄 것이 없다');
+  // 글을 걸 때대로 되돌리면 조용하다
+  원고쓰기({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร\n\nลองเดาดู', pinnedComment: 'คำไหนใช้บ่อยสุด' });
+  assert.equal(문제(), null);
+  // 풀기는 걸 때의 지문 둘(영상 · 게시글)을 줄에 남기지 않는다
+  const b = m.편('LAB_나', '2026-11-21T13:00:00+07:00', 'b');
+  fs.writeFileSync(path.join(b, '게시', '판본', 'TH', '원고_youtube.json'), JSON.stringify({ title: 'ชื่อ', caption: 'เนื้อหา' }));
+  준비고침(b, (q) => { q.판[0].원고 = '게시/판본/TH/원고_youtube.json'; });
+  assert.equal(장부.claim({ dir: b, account: A, root: m.root, accounts: m.accounts, now: NOW }).ok, true);
+  assert.match(결과(b).판[0].게시글지문, /^[0-9a-f]{64}$/);
+  assert.equal(장부.release({ dir: b, account: A, why: '예약 목록에 없음', root: m.root }).ok, true);
+  assert.deepEqual([결과(b).판[0].지문, 결과(b).판[0].게시글지문, 결과(b).판[0].풀림], [undefined, undefined, '예약 목록에 없음']);
+  // 글이 없는 판은 지문을 적지 않는다(걸기는 막지 않는다 — 글이 없는 판은 올리기 전 검사 no-text가 막는다)
+  const d = m.편('LAB_다', '2026-11-22T13:00:00+07:00', 'd');
+  assert.equal(장부.postTextSha(d, A), null);
+  assert.equal(장부.claim({ dir: d, account: A, root: m.root, accounts: m.accounts, now: NOW }).ok, true);
+  assert.equal('게시글지문' in 결과(d).판[0], false);
+});
+
+test('「실패」 줄 위에 다시 걸 때 옛 줄의 칸을 물려받지 않는다 — 내린 영상의 게시물 ID · 주소 · 확인 · 승인이 새 예약 줄에 딸려 가지 않고 「앞시도」에 남는다(P2-장1)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  const 내림 = { 계정: A, 상태: '실패', 시각: '2026-11-20T13:00:00+07:00', 지문: 'old-video-sha', 방법: 'ego', 게시물ID: 'OLDVIDEO', 주소: 'https://youtube.com/shorts/OLDVIDEO',
+    확인: '11-11 유호님 「내려 줘」로 공개 전에 내림 — 스튜디오 비공개', 승인: '유호님 11-02 묻지 말고 걸어', 기록시각: '2026-11-11T09:43:00.000Z' };
+  적기(a, 내림);
+  assert.equal(장부.claim({ dir: a, account: A, method: 'ego', root: m.root, accounts: m.accounts, now: NOW }).ok, true);
+  let row = 결과(a).판;
+  assert.equal(row.length, 1, '줄은 하나 그대로(제자리)');
+  assert.deepEqual([row[0].상태, row[0].게시물ID, row[0].주소, row[0].확인, row[0].승인, row[0].기록시각], ['거는 중', undefined, undefined, undefined, undefined, undefined]);
+  assert.equal(row[0].지문, 지문('video'), '지문은 지금 판 영상');
+  const { 계정: _계정, ...옛줄 } = 내림;
+  assert.deepEqual(row[0].앞시도, [옛줄], '내린 판의 기록은 앞시도에 통째로');
+  // 새 영상의 ID 없이 --확인만으로 닫아도 줄이 내린 영상을 가리키지 않는다(고치기 전에는 게시물ID · 주소가 OLDVIDEO로 남았다)
+  assert.equal(장부.finish({ dir: a, account: A, state: '예약됨', seen: '스튜디오 예약 목록 11-20 13:00', root: m.root, accounts: m.accounts }).ok, true);
+  row = 결과(a).판;
+  assert.deepEqual([row[0].상태, row[0].게시물ID, row[0].주소, row[0].확인], ['예약됨', undefined, undefined, '스튜디오 예약 목록 11-20 13:00']);
+  assert.equal(row[0].앞시도[0].게시물ID, 'OLDVIDEO');
+  // 또 내리고 다시 걸면 앞시도가 차례로 쌓인다
+  assert.equal(장부.finish({ dir: a, account: A, state: '실패', seen: '다시 내림', root: m.root, accounts: m.accounts }).ok, true);
+  assert.equal(장부.claim({ dir: a, account: A, root: m.root, accounts: m.accounts, now: NOW + 1000 }).ok, true);
+  row = 결과(a).판;
+  assert.deepEqual(row[0].앞시도.map((x) => [x.상태, x.게시물ID, x.확인]), [['실패', 'OLDVIDEO', 내림.확인], ['실패', undefined, '다시 내림']]);
+  assert.equal(row[0].확인, undefined);
 });

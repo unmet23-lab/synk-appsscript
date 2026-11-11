@@ -222,8 +222,15 @@ test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것,
   assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook', 'lab-telegram'), { 틱톡없음: '여러 장 편' }), [], '옛 「틱톡없음」도 받는다');
   assert.deepEqual(codes(plates('lab-instagram', 'lab-facebook'), { 빠진판: { 'lab-tiktok': ' ' } }), ['daily-plate:lab-tiktok', 'daily-plate:lab-telegram'], '빈 까닭은 까닭이 아니다');
   assert.deepEqual(codes(plates('yuhobuilds-instagram')), [], '막힌 계정은 판이 없어도 된다');
-  const blocked = 검사.dailyFindings(plates('yuhobuilds-instagram', 'yuhobuilds-x'), {}, known);
-  assert.deepEqual(blocked.map((f) => `${f.level}:${f.code}:${f.where}`), ['고칠 것:blocked-plate:yuhobuilds-x'], '막힌 계정에 판이 있으면 고칠 것(11-01 틱톡 쉼)');
+  // 막힌 계정의 판(blocked-plate)은 게시결과를 보고 세 갈래로 낸다(11-11 밤 P1-넷6) — closedFindings. 하루 칸(dailyTimes)이 없는 계정도 본다
+  const blocked = (posted = null) => 검사.closedFindings({ accounts: known }, plates('yuhobuilds-instagram', 'yuhobuilds-x'), { posted }).map((f) => `${f.level}:${f.code}:${f.where}`);
+  assert.deepEqual(blocked(), ['고칠 것:blocked-plate:yuhobuilds-x'], '막힌 계정에 안 건 판이 있으면 고칠 것(11-01 틱톡 쉼)');
+  assert.deepEqual(blocked(new Map([['yuhobuilds-x', '실패']])), ['고칠 것:blocked-plate:yuhobuilds-x'], '실패로 닫힌 판은 안 건 판');
+  assert.deepEqual(blocked(new Map([['yuhobuilds-x', '보류']])), ['고칠 것:blocked-plate:yuhobuilds-x'], '거둔 판도 안 건 판');
+  assert.deepEqual(blocked(new Map([['yuhobuilds-x', '예약됨']])), ['확인할 것:blocked-plate-booked:yuhobuilds-x'], '걸린 판은 확인할 것 — 고칠 것이면 그 편의 다른 계정 판까지 못 걸린다');
+  assert.deepEqual(blocked(new Map([['yuhobuilds-x', '거는 중']])), ['확인할 것:blocked-plate-booked:yuhobuilds-x']);
+  assert.deepEqual(blocked(new Map([['yuhobuilds-x', '게시됨']])), [], '이미 나간 판은 보지 않는다 — 계정을 멈춘 뒤에도 그 계정이 받은 원본이 묶이지 않는다');
+  assert.deepEqual(검사.dailyFindings(plates('yuhobuilds-instagram', 'yuhobuilds-x'), {}, known).map((f) => f.code), [], 'dailyFindings는 더는 blocked-plate를 내지 않는다(한 판에 두 번 뜨지 않게)');
   assert.deepEqual(codes(plates('lab-youtube', 'lab-us-youtube')), [], '줄 하나에 계정 하나 · 매일 판 밖 계정은 줄을 만들지 않는다');
   assert.deepEqual(검사.tiktokFindings(plates('lab-instagram'), {}, known).filter((f) => f.code === 'tiktok-plate'), [], '짝 틱톡이 매일 판이면 ⑩이 본다');
   assert.equal(검사.tiktokFindings(plates('lab-instagram'), {}, {}).filter((f) => f.code === 'tiktok-plate').length, 1, '계정 표에 줄이 없으면 ⑨가 그대로 본다');
@@ -250,6 +257,7 @@ test('⑫ 한 편의 같은 플랫폼 판 둘이 20시간 안이면 고칠 것 �
 
 test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구하지 않고, 판마다 칸 형식 · 판본 파일 · 판본 검수 지문 · 계정 준비를 본다', () => {
   const crypto = require('node:crypto');
+  const 장부 = require('../tools/게시장부.js');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), '올리기전검사-돌림-'));
   try {
     const dir = path.join(root, 'docs', '마케팅', 'LAB_가_mn_20261101');
@@ -322,6 +330,26 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     판본.TH.검수.뜻 = 뜻;
     assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: 'old-sha' }]), ['확인할 것:rotation-version-booked'], '건 뒤 다시 구운 판');
     assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), []);
+    // 걸린 뒤 게시글만 고친 판(11-11 밤 P1-팔1): 판본 검수는 서 있고 영상도 그대로인데 예약에는 걸 때의 옛 글이 걸려 있다 — 걸 때 줄에 적은
+    // 「게시글지문」과 지금 게시글이 다르면 확인할 것. 걸 때 지문을 안 적은 옛 줄은 견줄 것이 없어 조용하다(그 줄은 영상 지문만 본다)
+    const 원고 = path.join(dir, '게시', '판본', 'TH', '원고_youtube.json');
+    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 판: [{ 계정: 'lab-th-youtube', 파일: '게시/판본/TH/video.mp4', 원고: '게시/판본/TH/원고_youtube.json', 시각: '2026-11-20T13:00:00+07:00', 돌림: true }] }));
+    fs.writeFileSync(원고, JSON.stringify({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร' }));
+    const 걸때 = 장부.postTextSha(dir, 'lab-th-youtube');
+    assert.match(걸때, /^[0-9a-f]{64}$/);
+    const 걸린줄 = [{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video), 게시글지문: 걸때 }];
+    assert.deepEqual(booked(걸린줄), [], '게시글이 걸 때 그대로');
+    fs.writeFileSync(원고, JSON.stringify({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร', _원문: { title: '먹지 마' } }));
+    assert.deepEqual(booked(걸린줄), [], '플랫폼에 적지 않는 칸(_원문)만 바뀐 것은 게시글이 바뀐 것이 아니다');
+    fs.writeFileSync(원고, JSON.stringify({ title: 'อย่ากินนะ!', caption: 'คำนี้แปลว่าอะไร' }));
+    const 글고침 = 검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')], { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } }, results: 걸린줄 });
+    assert.deepEqual(글고침.map((f) => f.level + ':' + f.code), ['확인할 것:rotation-version-booked']);
+    assert.match(글고침[0].message, /건 뒤에 게시글\(제목 · 본문 · 댓글\)을 고쳤다\(예약에는 옛 글이 걸려 있다\)/);
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), [], '걸 때 게시글 지문을 안 적은 옛 줄');
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '게시됨', 지문: sha(video), 게시글지문: 걸때 }]), [], '이미 나간 판은 안 본다');
+    fs.rmSync(원고);
+    assert.deepEqual(booked(걸린줄), ['확인할 것:rotation-version-booked'], '걸 때 있던 게시글이 없어졌다');
+    fs.rmSync(path.join(dir, '게시', '준비.json'));
     // 시험관 수(11-11 P1-넷1): 넷이어야 할 때 시험관 둘로 통과한 판본 — 안 걸린 판은 고칠 것(걸리지 않게 막는다), 걸린 판은 확인할 것(내리라고 알린다),
     // 넷으로 통과했으면 조용하다. 「확인할 것 rotation-examiners」로만 보이던 동안 14시 회차가 그런 판 여섯을 걸었다(셋이 넷 시험에서 떨어짐)
     const 시험관둘 = { ...뜻, 시험관: ['sonnet', 'haiku'], 시각: '2026-11-10T18:00:00+09:00', 언어: 'th', 틀: '이야기' };
