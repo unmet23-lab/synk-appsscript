@@ -2,6 +2,7 @@ import {APP_IDS,APPS,PAUSED_APP_IDS,statusLabel,appArt,josa} from './state.mjs';
 import {MEMBER_BENEFITS} from './benefits.mjs';
 import {accountStorageKey,displayLibraryAppId,displayLibraryAppIds,projectLibraryPreferences} from './library.mjs';
 import {createDraftRecovery} from './draft-recovery.mjs';
+import {worldPhoneSection} from './world-phone.mjs';
 
 export const HOME_KEY='synk.platform.member-home.v1';
 const MAX_RECORDS=60;
@@ -186,13 +187,16 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
     const shelf=loading||unavailable?'':'<ul class="shelf'+(app?'':' is-benefits-only')+'" aria-label="'+(app?'내 앱과 회원 혜택':'회원 혜택')+'">'+appsShown.map((id,index)=>appSlot(id,index===0)).join('')+benefitsShown.map(benefitSlot).join('')+'</ul>'+(moreApps?'<p class="shelf-more"><button class="text-link" data-member-library>내 앱 '+model.order.length+'개 모두 보기 '+arrow+'</button></p>':'');
     // 인사 → 두 줄 큰 제목. 글은 홈 모델(할 일 · 최근 · 고른 일 · 바로 열기)에서 나온다.
     const name=app?spoken(model.first):'',direct=!!app&&homeLaunchTarget(actions[model.firstEntry])&&!!onLaunch;
-    const matchesPurpose=active&&personal.selected===model.first;
+    // 고른 일에 맞는 앱이 목록에 있을 때만 「고른 일에 맞는 ○○」이라고 말한다(personal.matched — 2026-11-11, 「배우기」의 WORLD는 휴대폰 칸).
+    const matchesPurpose=active&&personal.matched!==false&&personal.selected===model.first,worldOnPhone=snapshot.library.appIds?.includes('world');
     let who=snapshot.who?snapshot.who+' 님':guest?'반가워요':'내 홈',title,second,lead='',busy=false,extra='';
     if(loading&&snapshot.library.phase==='signing-in'){busy=true;title='브라우저에서 로그인을';second='마쳐 주세요.';lead='<p class="hello-lead" role="status">기본 브라우저에 열린 SYNK ID 창에서 Google이나 이메일로 로그인한 뒤 「연결하기」를 누르면 여기로 돌아와요. 창이 안 보이면 오른쪽 위 「로그인 중」을 눌러 취소한 뒤 다시 해 주세요.</p>';}
     else if(loading){busy=true;title='내 앱을 불러오고 있어요.';second='잠시만 기다려 주세요.';lead='<p class="hello-lead" role="status">로그인 상태와 쓸 수 있는 앱을 불러오는 중이에요.</p>';}
     else if(unavailable){title='앱 목록을';second='불러오지 못했어요.';lead='<p class="hello-lead">인터넷 연결을 확인하고 다시 불러와 주세요. 다시 불러와도 이 PC에 남긴 메모는 그대로예요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-retry>다시 불러오기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
+    else if(!app&&worldOnPhone){title='한국어 공부는';second='휴대폰의 WORLD에서 해요.';lead='<p class="hello-lead">아래 QR을 휴대폰 카메라로 찍으면 바로 열려요. 회원 혜택은 이 PC에서 바로 써요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
     else if(!app){title='아직 쓸 수 있는 앱이 없어요.';second='회원 혜택은 지금 바로 써요.';lead='<p class="hello-lead">학교나 회사에서 이 계정에 앱을 열어 주면 여기에 나와요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
     else if(guest){title='로그인 전에도';second=name+josa(name,'을','를')+' 둘러봐요.';extra='<div class="hello-actions"><button class="text-link" data-member-account>로그인하고 내 앱 보기</button></div>';}
+    else if(active&&personal.matched===false&&personal.context==='student'){title='한국어 공부는';second='휴대폰의 WORLD에서 해요.';lead='<p class="hello-lead">아래 QR을 휴대폰 카메라로 찍으면 바로 열려요.</p>';}
     else if(model.nextKind==='task'){title=name+'에 남긴 할 일,';second='이어서 할까요?';}
     else if(model.nextKind==='recent'){title=whenWord(recentAt(model.first))+' 하던 '+name+',';second=direct?'이어서 열까요?':'다시 둘러볼까요?';}
     else if(matchesPurpose){title='고른 일에 맞는 '+name+',';second=direct?'지금 열어 볼까요?':'먼저 둘러볼까요?';}
@@ -207,7 +211,9 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
     // 이어서 할 일 · 결과 메모: 제목 22 + 위 1px 검정 선 + 줄마다 1px 회색 선.
     const recordRow=row=>'<div tabindex="-1" data-member-record="'+esc(row.id)+'" class="member-record member-row'+(row.done?' is-done':'')+'">'+(row.kind==='task'?'<button class="member-check" data-member-toggle="'+row.id+'" aria-pressed="'+row.done+'" aria-label="'+esc(row.title)+(row.done?' 완료됨 · 다시 열기':' 완료 표시')+'" '+(storageBlocked?'disabled':'')+'>'+icon('check')+'</button>':'<span class="member-bullet" aria-hidden="true">—</span>')+'<div class="member-row-text"><strong>'+esc(row.title)+'</strong>'+(row.body?'<p class="member-record-body">'+esc(row.body)+'</p>':'')+'<span class="member-row-actions">'+launchButton(row.entryId||row.appId,'앱 열기','text-link')+'<button class="text-link" data-member-app="'+row.appId+'">앱 정보</button><button class="text-link member-remove" data-member-remove="'+row.id+'" aria-label="'+esc(row.title)+' 삭제" '+(storageBlocked?'disabled':'')+'>삭제</button></span></div><span class="member-tag">'+esc(spoken(row.appId))+'</span></div>';
     const addDisabled=loading||unavailable||model.canSave&&(!model.order.length||storageBlocked)?'disabled':'';
-    const addButton=kind=>'<button class="text-link member-add" '+(model.canSave?(kind==='notes'?'data-member-add data-member-kind="note"':'data-member-add'):'data-member-account')+' '+addDisabled+'>'+(model.canSave?'적어 두기':'로그인하고 적기')+'</button>';
+    // 목록에 보이는 앱이 없으면(예: WORLD 권한만 — WORLD는 휴대폰) 메모를 이을 앱이 없어 「적어 두기」를 세우지 않는다(2026-11-11).
+    const noListedApp=model.canSave&&!model.order.length&&!loading&&!unavailable;
+    const addButton=kind=>noListedApp?'':'<button class="text-link member-add" '+(model.canSave?(kind==='notes'?'data-member-add data-member-kind="note"':'data-member-add'):'data-member-account')+' '+addDisabled+'>'+(model.canSave?'적어 두기':'로그인하고 적기')+'</button>';
     const column=(kind,heading,rows,empty)=>'<section class="member-column" aria-labelledby="member-'+kind+'-title"><div class="member-column-head"><h2 id="member-'+kind+'-title">'+heading+' <span class="num">'+rows.length+'</span></h2>'+addButton(kind)+'</div><div class="member-rows">'+(rows.length?rows.map(recordRow).join(''):'<p class="member-empty">'+empty+'</p>')+'</div></section>';
     const notes='<section class="member-notes-area" aria-label="내 메모">'
       +(storageBlocked&&model.canSave?'<div class="member-draft-choice" role="alert" data-member-storage-error><strong>저장한 메모를 읽지 못했어요.</strong><p>'+esc(storageState.message)+'</p><button class="ghost-button" type="button" data-member-retry-storage>다시 읽기</button></div>':'')
@@ -217,10 +223,12 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
       +(discardRequested?'<div class="member-draft-choice" role="group" aria-labelledby="member-draft-title"><strong id="member-draft-title">아직 저장하지 않은 내용이 있어요.</strong><p>계속 쓰거나, 쓰던 내용을 버리고 닫을 수 있어요.</p><div><button class="solid-button" type="button" data-member-keep>계속 쓰기</button><button class="ghost-button" type="button" data-member-discard>버리기</button></div></div>':'')
       +'<p class="member-message" role="status">'+esc(message)+'</p>'
       +(records.length?'<div class="member-record-filters"><label class="search">'+icon('search')+'<input type="search" data-member-record-search value="'+esc(recordQuery)+'" placeholder="메모 찾기 · 제목·내용·앱 이름" aria-label="메모 찾기" aria-controls="member-record-results"></label><select data-member-record-filter aria-label="메모 보기" aria-controls="member-record-results">'+[['all','전부'],['pending','안 끝낸 할 일'],['done','끝낸 할 일'],['notes','결과 메모']].map(([value,label])=>'<option value="'+value+'" '+(recordFilter===value?'selected':'')+'>'+label+'</option>').join('')+'</select></div>':'')
-      +'<div id="member-record-results" class="member-notes">'+column('tasks','이어서 할 일',shownTasks,recordQuery||recordFilter!=='all'?'찾는 할 일이 없어요.':model.canSave?'앱에서 이어서 할 일을 적어 두면 여기에 모여요.':'로그인하면 이어서 할 일을 적어 둘 수 있어요.')+column('notes','결과 메모',shownNotes,recordQuery||recordFilter!=='all'?'찾는 메모가 없어요.':model.canSave?'기억할 결과를 적어 두면 여기에 모여요.':'로그인하면 결과 메모를 남길 수 있어요.')+'</div>'
+      +'<div id="member-record-results" class="member-notes">'+column('tasks','이어서 할 일',shownTasks,recordQuery||recordFilter!=='all'?'찾는 할 일이 없어요.':noListedApp?'이 PC에서 여는 앱이 생기면 그 앱에 이어서 할 일을 적어 둘 수 있어요.':model.canSave?'앱에서 이어서 할 일을 적어 두면 여기에 모여요.':'로그인하면 이어서 할 일을 적어 둘 수 있어요.')+column('notes','결과 메모',shownNotes,recordQuery||recordFilter!=='all'?'찾는 메모가 없어요.':noListedApp?'이 PC에서 여는 앱이 생기면 그 앱의 결과 메모를 남길 수 있어요.':model.canSave?'기억할 결과를 적어 두면 여기에 모여요.':'로그인하면 결과 메모를 남길 수 있어요.')+'</div>'
       +'<p class="member-notes-note">'+(model.canSave?'메모는 이 PC에 지금 계정으로 저장돼요. 일은 연결한 앱을 열어서 해요.':'메모는 SYNK ID로 로그인한 뒤 이 PC에 계정마다 따로 저장돼요.')+'</p></section>';
     // 바닥 한 줄(설치 상태 · 판 · 「업데이트 확인」)은 계정 이어가기 띠 아래에 두려고 index.html의 #home-foot이 맡는다.
-    root.innerHTML=hello+shelf+notes;
+    // WORLD는 앱 목록 대신 휴대폰으로 넘어가는 칸 하나(world-phone.mjs). 불러오는 중 · 실패 화면에는 두지 않는다.
+    const phone=loading||unavailable?'':worldPhoneSection({qrSrc:'/assets/launcher/world-qr.svg'});
+    root.innerHTML=hello+shelf+phone+notes;
     const nextForm=root.querySelector?.('#member-record-form');
     if(draft&&nextForm){for(const [name,value]of Object.entries(draft)){const field=nextForm.elements.namedItem(name);if(name==='consent')field.checked=value;else field.value=value;}if(focusState?.name){const field=nextForm.elements.namedItem(focusState.name);field?.focus({preventScroll:true});if(typeof focusState.start==='number')field.setSelectionRange(focusState.start,focusState.end);}}
   }

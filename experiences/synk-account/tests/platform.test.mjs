@@ -36,7 +36,7 @@ for(const failedAtStart of [false,true])test(`a ${failedAtStart?'startup':'later
  blocked=false;library.dispatch({type:'favorite',id:'care'});assert.deepEqual(library.read().favorites,['world','care']);assert.equal(library.read().rememberRecent,false);
 });
 test('malformed storage does not break platform and reset clears only its own namespace',()=>{const map=new Map([['other','keep']]);const lib=createLibrary({getItem:()=>'{bad',setItem:(k,v)=>map.set(k,v)});lib.dispatch({type:'save',id:'world'});lib.dispatch({type:'reset'});assert.equal(map.get('other'),'keep');assert.deepEqual(lib.read().saved,[]);});
-test('search, category and local collection filters combine without granting access',()=>{const library=normalizeLibrary({saved:['world','messenger'],collections:{learn:['world']}});assert.deepEqual(filterApplications({query:'리듬',library}).map(v=>v.id),['world']);assert.deepEqual(filterApplications({query:'AI',library}).map(v=>v.id),['world']);assert.deepEqual(filterApplications({query:'협업',library}).map(v=>v.id),['messenger']);assert.deepEqual(filterApplications({category:'work',collection:'learn',library}),[]);assert.deepEqual(filterApplications({onlySaved:true,collection:'learn',library}).map(v=>v.id),['world']);});
+test('search, category and local collection filters combine without granting access',()=>{const library=normalizeLibrary({saved:['world','messenger'],collections:{learn:['world']}});assert.deepEqual(filterApplications({query:'리듬',library}).map(v=>v.id),[]);assert.deepEqual(filterApplications({query:'AI',library}).map(v=>v.id),[]);assert.deepEqual(filterApplications({query:'면접',library}).map(v=>v.id),['path']);assert.deepEqual(filterApplications({query:'협업',library}).map(v=>v.id),['messenger']);assert.deepEqual(filterApplications({category:'work',collection:'learn',library}),[]);assert.deepEqual(filterApplications({onlySaved:true,collection:'learn',library}).map(v=>v.id),[]);assert.deepEqual(library.collections.learn,['world'],'the saved WORLD shortcut stays stored');});
 test('benefit shortcuts persist beside existing apps and can be found by category, search and favorites', () => {
  const map = new Map(), storage = { getItem: key => map.get(key) ?? null, setItem: (key, value) => map.set(key, value) };
  let library = createLibrary(storage);
@@ -46,7 +46,7 @@ test('benefit shortcuts persist beside existing apps and can be found by categor
  assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, category: 'life' }).map(v => v.id), ['care']);
  assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, query: '플레저' }).map(v => v.id), ['care']);
  assert.deepEqual(filterApplications({ library: library.read(), onlySaved: true, collection: 'favorites' }).map(v => v.id), ['care']);
- assert.deepEqual(filterApplications({ library: library.read() }).map(v => v.id), ['world', 'messenger', 'path']);
+ assert.deepEqual(filterApplications({ library: library.read() }).map(v => v.id), ['messenger', 'path']);
  assert.equal(libraryItemRoute('care'), '#benefits/care');assert.equal(libraryItemRoute('world'), '#app/world');assert.equal(libraryItemRoute('unknown'), '#discover');
  // 무료 운세는 다시 만드는 동안 내려 두어(10-30) 바로가기로 담기지 않는다.
  assert.equal(libraryItemRoute('fortune'), '#discover');assert.throws(() => library.dispatch({ type: 'save', id: 'fortune' }), /등록되지 않은 앱이에요/);

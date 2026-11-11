@@ -58,9 +58,16 @@ export function createLibrary(storage) {
       storage.setItem(LIBRARY_KEY, JSON.stringify(next));state = next;return this.read();
     } };
 }
+// WORLD는 휴대폰에서 쓰는 앱이라 둘러보기 · 검색 · 라이브러리에 칸을 두지 않고 내 홈의 휴대폰 칸으로 안내한다(2026-11-11).
+// 이 기기에 담아 둔 기록(saved · favorites · recent)은 그대로 두고 보여 주지만 않는다.
+export const UNLISTED_APP_IDS = Object.freeze(['world']);
+export const listedItem = id => !UNLISTED_APP_IDS.includes(id);
+const searchText = app => [app.name, app.subtitle, ...app.tags, ...(app.keywords || [])].join(' ').toLocaleLowerCase('ko');
+// 검색어가 목록에서 뺀 앱(WORLD)을 찾는 말인가 — 결과 자리에 그 앱의 안내(휴대폰 칸)를 보일 때 쓴다.
+export function unlistedSearchHit(query = '') { const needle = String(query).trim().toLocaleLowerCase('ko'); return !!needle && APPLICATIONS.some(app => !listedItem(app.id) && searchText(app).includes(needle)); }
 export function filterApplications({ query = '', category = 'all', collection = 'all', library, onlySaved = false, sort = 'default' } = {}) {
   const needle = query.trim().toLocaleLowerCase('ko');
-  const filtered = (onlySaved ? LIBRARY_ITEMS : APPLICATIONS).filter(app => (!onlySaved || library.saved.includes(app.id)) && (category === 'all' || app.category === category)
+  const filtered = (onlySaved ? LIBRARY_ITEMS : APPLICATIONS).filter(app => listedItem(app.id) && (!onlySaved || library.saved.includes(app.id)) && (category === 'all' || app.category === category)
     && (collection === 'all' || (collection === 'favorites' ? library.favorites : library.collections[collection] || []).includes(app.id))
     && (!needle || [app.name, app.subtitle, ...app.tags, ...(app.keywords || [])].join(' ').toLocaleLowerCase('ko').includes(needle)));
   if (sort === 'name') filtered.sort((a,b) => a.name.localeCompare(b.name, 'ko'));

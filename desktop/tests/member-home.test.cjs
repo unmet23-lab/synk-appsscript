@@ -133,28 +133,28 @@ test('storage failures are surfaced and do not claim a successful write',async()
 });
 test('home suggestions, recent launches and favorites intersect current app grants',async()=>{
   const {buildHomeModel}=await loaded;
-  const model=buildHomeModel({library:member('a',['world']),personal:{order:['messenger','world','pulse']},prefs:{favorites:['messenger','world'],lastLaunch:{messenger:300,world:200,pulse:400}},records:[{kind:'note',appId:'messenger'},{kind:'task',appId:'world',done:false}]});
-  assert.deepEqual(model.order,['world']);assert.deepEqual(model.recent,[{id:'world',at:200}]);assert.deepEqual(model.favorites,['world']);assert.equal(model.notes.length,0);assert.equal(model.tasks.length,1);
+  const model=buildHomeModel({library:member('a',['care']),personal:{order:['messenger','care','pulse']},prefs:{favorites:['messenger','care'],lastLaunch:{messenger:300,care:200,pulse:400}},records:[{kind:'note',appId:'messenger'},{kind:'task',appId:'care',done:false}]});
+  assert.deepEqual(model.order,['care']);assert.deepEqual(model.recent,[{id:'care',at:200}]);assert.deepEqual(model.favorites,['care']);assert.equal(model.notes.length,0);assert.equal(model.tasks.length,1);
 });
 test('renderer escapes handwritten records and refresh clears member content when owner changes',async()=>{
   const {mountMemberHome,createHomeStore}=await loaded,storage=memory();createHomeStore(storage,{clock:()=>100}).add(member(),{...input,title:'<img src=x onerror=bad()>',body:'<script>bad()</script>'});
   let library=member();const root={innerHTML:'',addEventListener(){}};
-  const home=mountMemberHome(root,{storage,getSnapshot:()=>({library,personal:{active:false,order:['world']},prefs:{}})});
+  const home=mountMemberHome(root,{storage,getSnapshot:()=>({library,personal:{active:false,order:['care']},prefs:{}})});
   home.render();assert.match(root.innerHTML,/&lt;img/);assert.doesNotMatch(root.innerHTML,/<script>/);
   library=member('b');home.render();assert.doesNotMatch(root.innerHTML,/onerror/);
 });
 
 test('the next home action prioritizes an unfinished task, then a recent usable app',async()=>{
   const {buildHomeModel}=await loaded;
-  const base={library:member('a',['world','messenger','pulse']),personal:{order:['pulse','world','messenger']},prefs:{lastLaunch:{world:100,messenger:200}},actions:{world:{action:'launch',disabled:false},messenger:{action:'launch',disabled:false},pulse:{action:'none',disabled:true}}};
-  const task={id:'next',kind:'task',appId:'world',title:'이어서 배우기',done:false,createdAt:300};
-  assert.equal(buildHomeModel({...base,records:[task]}).first,'world');
+  const base={library:member('a',['care','messenger','pulse']),personal:{order:['pulse','care','messenger']},prefs:{lastLaunch:{care:100,messenger:200}},actions:{care:{action:'launch',disabled:false},messenger:{action:'launch',disabled:false},pulse:{action:'none',disabled:true}}};
+  const task={id:'next',kind:'task',appId:'care',title:'이어서 배우기',done:false,createdAt:300};
+  assert.equal(buildHomeModel({...base,records:[task]}).first,'care');
   assert.equal(buildHomeModel({...base,records:[{...task,done:true}]}).first,'messenger');
-  const installing={...base,actions:{...base.actions,world:{action:'prepare',disabled:false}}};
+  const installing={...base,actions:{...base.actions,care:{action:'prepare',disabled:false}}};
   assert.equal(buildHomeModel({...installing,records:[task]}).first,'messenger');
-  assert.equal(buildHomeModel({...base,library:member('a',['world']),records:[{...task,appId:'messenger'}]}).first,'world');
-  const busy={...base,actions:{...base.actions,world:{action:'launch',disabled:true,pending:true}}};
-  assert.equal(buildHomeModel({...busy,records:[task]}).first,'world','opening must not move the selected home action');
+  assert.equal(buildHomeModel({...base,library:member('a',['care']),records:[{...task,appId:'messenger'}]}).first,'care');
+  const busy={...base,actions:{...base.actions,care:{action:'launch',disabled:true,pending:true}}};
+  assert.equal(buildHomeModel({...busy,records:[task]}).first,'care','opening must not move the selected home action');
   const explicit={...base,personal:{...base.personal,sessionOnly:true,selected:'messenger'}};
   assert.equal(buildHomeModel({...explicit,records:[task]}).first,'messenger','an explicit purpose takes priority for this window');
 });
@@ -178,7 +178,7 @@ test('home distinguishes checking, retry, guest and a member with no connected a
   const home=mountMemberHome(fixture.root,{storage:memory(),getSnapshot:()=>({library,personal:{},prefs:{}}),onRetry:()=>retried++});
   home.render();assert.match(fixture.root.innerHTML,/aria-busy="true"/);assert.doesNotMatch(fixture.root.innerHTML,/data-member-retry/);
   library={status:'unavailable',owner:'a',appIds:[]};home.render();assert.match(fixture.root.innerHTML,/data-member-retry/);fixture.click({memberRetry:''});assert.equal(retried,1);
-  library={status:'guest',owner:'anonymous-local',appIds:['world']};home.render();assert.match(fixture.root.innerHTML,/로그인하고 내 앱 보기/);
+  library={status:'guest',owner:'anonymous-local',appIds:['pulse']};home.render();assert.match(fixture.root.innerHTML,/로그인하고 내 앱 보기/);assert.match(fixture.root.innerHTML,/id="world-phone"/);
   library=member('a',[]);home.render();assert.match(fixture.root.innerHTML,/아직 쓸 수 있는 앱이 없어요/);assert.doesNotMatch(fixture.root.innerHTML,/id="member-record-form"/);
 });
 
@@ -235,9 +235,9 @@ test('command search never exposes notes from another owner or a revoked app',as
 });
 test('favorite order survives preference reload and appears in the same order on home',async()=>{
   const {parsePreferences}=await import('../renderer/state.mjs'),{buildHomeModel}=await loaded;
-  const prefs=parsePreferences(JSON.stringify({favorites:['care','world','care','retired','partners','pulse']}));
-  const model=buildHomeModel({library:member('member-a',['world','care']),personal:{order:['world','care']},prefs});
-  assert.deepEqual(prefs.favorites,['care','world','pulse']);assert.deepEqual(model.favorites,['care','world']);
+  const prefs=parsePreferences(JSON.stringify({favorites:['care','messenger','care','retired','partners','pulse']}));
+  const model=buildHomeModel({library:member('member-a',['messenger','care']),personal:{order:['messenger','care']},prefs});
+  assert.deepEqual(prefs.favorites,['care','messenger','pulse']);assert.deepEqual(model.favorites,['care','messenger']);
 });
 test('failed encrypted discard restores unsaved content so a second close cannot bypass it',async()=>{
   const {mountMemberHome}=await loaded,fixture=homeFixture();

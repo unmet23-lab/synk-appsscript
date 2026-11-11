@@ -65,7 +65,7 @@
     "dist/app.js": "bf8c079552d1792a4045df4ba3d8564a445534ed0fefc332b0f873a85c66c371",
     "dist/client.js": "ce32a6952382f8e63334f16891d5c778970e57d7a6806315af2d8d96f549ddbc",
     "dist/preview.js": "87cd66180c573530dd317914392e8118f5d9f44681086d364b424a778d58d054",
-    "dist/platform.js": "1aceb142f03b3f949f7ce10863539084a9903ba2b5bc3cada118ee1f08677567",
+    "dist/platform.js": "f35c77ef4ddc0af2724af4eecc6feaf3ef5744161ff265d8f839109dafd49bc6",
     "dist/local-world.js": "e39af72ba5da66e4d9201269fbb060805a3441bc5dffdd8f8da721fbe5bb2085",
     "dist/teacher.js": "91254d7b3ea5fdc71776db7e9eb3642d768c7e01dfc6b96618e1b8521a7e7e0a",
     "preview.html": "bbef8ca802c589b92fe7c4f0eb84fa415e9f81fa6a655042849bffbc79cd55c5"

@@ -6,10 +6,10 @@ const signed=(id,appIds)=>({status:'signed-in',signedIn:true,account:{synk_user_
 
 test('the guest entry never exposes the full app catalog and transient identity is closed',async()=>{
   const {resolveLibrary}=await libraryModule;
-  for(const status of ['signed-out','unconfigured'])assert.deepEqual(resolveLibrary({status,signedIn:false}).appIds,['world']);
+  for(const status of ['signed-out','unconfigured'])assert.deepEqual(resolveLibrary({status,signedIn:false}).appIds,['pulse']);
   for(const status of ['restoring','signing-in','signing-out','error','signed-in'])assert.deepEqual(resolveLibrary({status,signedIn:false}).appIds,[]);
   // A cancelled, timed-out or ended sign-in leaves the guest home, not 「앱 목록을 불러오지 못했어요 · 인터넷 연결」.
-  for(const code of ['AUTH_REQUIRED','AUTH_CANCELLED','AUTH_TIMEOUT'])assert.deepEqual(resolveLibrary({status:'signed-out',signedIn:false,error:{code}}),{status:'guest',owner:'anonymous-local',appIds:['world']});
+  for(const code of ['AUTH_REQUIRED','AUTH_CANCELLED','AUTH_TIMEOUT'])assert.deepEqual(resolveLibrary({status:'signed-out',signedIn:false,error:{code}}),{status:'guest',owner:'anonymous-local',appIds:['pulse']});
   assert.equal(resolveLibrary({status:'error',signedIn:false,error:{code:'NETWORK',retryable:true}}).status,'unavailable');
   assert.deepEqual(resolveLibrary(undefined).appIds,[]);
 });

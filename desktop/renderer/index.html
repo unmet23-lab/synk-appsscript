@@ -77,9 +77,10 @@
         <div id="recommendation" class="recommendation" hidden aria-live="polite"></div>
         <div id="app-list" class="app-list shelf-grid"></div>
         <p class="empty-search" id="empty-search" hidden>보여 줄 앱이 없어요. 찾는 낱말이나 필터를 바꿔 보세요.</p>
+        <p class="empty-search world-search-hint" id="world-search-hint" hidden>한국어 공부 앱 WORLD는 휴대폰에서 열어요. <button class="text-link" type="button" data-world-phone>내 홈의 QR 보기</button></p>
         <div id="benefits-search" class="benefits-search" hidden aria-label="회원 혜택 검색 결과"></div>
       </div>
-      <div class="library-empty" id="library-empty" hidden aria-live="polite"><p class="page-kicker">라이브러리</p><h1 id="library-empty-title">내 앱을 불러오고 있어요</h1><p id="library-empty-description">잠시만 기다려 주세요.</p><div class="empty-actions"><button class="solid-button" id="library-account">계정 관리</button><button class="ghost-button" id="library-retry" hidden>다시 불러오기</button></div></div>
+      <div class="library-empty" id="library-empty" hidden aria-live="polite"><p class="page-kicker">라이브러리</p><h1 id="library-empty-title">내 앱을 불러오고 있어요</h1><p id="library-empty-description">잠시만 기다려 주세요.</p><div class="empty-actions"><button class="solid-button" id="library-account">계정 관리</button><button class="ghost-button" id="library-retry" hidden>다시 불러오기</button><button class="ghost-button" id="library-world-phone" type="button" data-world-phone hidden>내 홈의 QR 보기</button></div></div>
       <div id="app-detail" class="app-detail" hidden>
         <nav class="crumb" aria-label="위치"><button type="button" id="breadcrumb-origin" data-view="library">라이브러리</button><span aria-hidden="true">/</span><strong id="breadcrumb-app" aria-current="page">SYNK WORLD</strong></nav>
         <div class="detail-grid">
@@ -130,7 +131,7 @@
       <div id="benefit-detail" hidden></div>
     </section>
     <section id="view-downloads" class="view padded-view" aria-labelledby="downloads-title" hidden>
-      <div class="section-title"><div><p class="page-kicker">이 PC</p><h1 id="downloads-title">설치·업데이트</h1><p>WORLD와 Workspace를 이 PC에 설치하거나 업데이트해요.</p></div><button class="ghost-button" id="refresh-downloads"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>다시 확인</button></div>
+      <div class="section-title"><div><p class="page-kicker">이 PC</p><h1 id="downloads-title">설치·업데이트</h1><p>Workspace를 이 PC에 설치하거나 업데이트해요. WORLD는 설치 없이 휴대폰 브라우저에서 열어요.</p></div><button class="ghost-button" id="refresh-downloads"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>다시 확인</button></div>
       <section class="platform-update" id="platform-update-downloads" aria-label="플랫폼 업데이트" hidden></section>
       <div id="download-list" class="download-list"></div>
       <div class="quiet-note"><strong>설치는 이렇게 돼요</strong><p>플랫폼에 들어 있는 설치 파일을 이 PC에 옮긴 뒤 열어요. Mac은 열린 창에서 앱을 Applications 폴더로 끌어다 놓아 주세요. 설치가 끝나면 라이브러리에서 바로 열 수 있어요.</p></div>
@@ -145,7 +146,7 @@
       </div>
       <div class="settings-group">
         <div class="setting-row"><div><h2>SYNK ID</h2><p id="settings-account">계정 상태 확인 중</p></div><button class="ghost-button" id="settings-login">내 계정</button></div>
-        <div class="setting-row"><div><h2>버전</h2><p>WORLD와 Workspace는 따로 설치하는 앱이에요.</p></div><span class="num version-tag" id="platform-version">—</span></div>
+        <div class="setting-row"><div><h2>버전</h2><p>Workspace는 따로 설치하는 앱이에요.</p></div><span class="num version-tag" id="platform-version">—</span></div>
         <div class="setting-row"><div><h2>보기 설정 되돌리기</h2><p>즐겨찾기, 화면 밀도, 마지막 실행 기록을 처음 상태로 되돌려요.</p></div><button class="ghost-button" id="reset-preferences">되돌리기</button></div>
       </div>
       <div class="quiet-note"><strong>연결 상태</strong><dl id="diagnostics"></dl></div>

@@ -233,6 +233,9 @@ main:focus,main:focus-visible{outline:none}
 .library-grid-view .filters{margin-bottom:40px}
 .app-list.shelf-grid{--stage:300px}
 .empty-search{padding:40px 0;font-size:var(--t15);color:var(--ink-3)}
+/* WORLD를 찾는 말로 검색하면 결과 아래 한 줄 — 휴대폰 칸으로 간다(2026-11-11). */
+.empty-search.world-search-hint{padding:24px 0 0}
+.empty-search.world-search-hint .text-link{margin-left:4px}
 .benefits-search{margin-top:56px;border-top:1px solid var(--ink)}
 .benefits-search .field-label{display:block;padding:16px 0 4px;font-size:var(--t13);font-weight:600;color:var(--ink-3)}
 .benefits-search button{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:60px;border-bottom:1px solid var(--line);font-size:var(--t17)}

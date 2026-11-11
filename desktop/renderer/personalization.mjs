@@ -18,12 +18,15 @@ const goalLabels={explore:'이것저것 보기',study:'한국어 공부',clarity
 const defaults={textSize:'standard',explanation:'standard',motion:'full'};
 const now=()=>new Date().toISOString();
 
+export const STUDY_ON_PHONE='한국어 공부 앱 WORLD는 휴대폰에서 열어요. 내 홈의 QR을 찍어 보세요.';
 // Choosing a purpose can guide this window without writing a consented profile.
 export function previewPurpose(state,context,appIds=APP_IDS){
   if(!Object.hasOwn(CONTEXTS,context))return state;
   const allowed=APP_IDS.filter(id=>appIds.includes(id));
   const order=[...new Set([...CONTEXTS[context].ids,...(state.order||[]),...allowed])].filter(id=>allowed.includes(id));
-  return {...state,active:true,sessionOnly:true,context,values:{...state.values,goal:CONTEXTS[context].goal},order,selected:order[0]||null,reason:'고른 일에 맞는 앱을 이 창에서만 먼저 보여 줘요. 다음에도 이렇게 보려면 저장해 주세요.'};
+  // 고른 일에 맞는 앱이 목록에 없으면(예: 「한국어 공부」의 WORLD · PATH는 플랫폼 목록 밖) 「맞는 앱」이라고 말하지 않는다(2026-11-11).
+  const matched=CONTEXTS[context].ids.some(id=>allowed.includes(id));
+  return {...state,active:true,sessionOnly:true,context,matched,values:{...state.values,goal:CONTEXTS[context].goal},order,selected:order[0]||null,reason:matched?'고른 일에 맞는 앱을 이 창에서만 먼저 보여 줘요. 다음에도 이렇게 보려면 저장해 주세요.':context==='student'?STUDY_ON_PHONE:'고른 일에 맞는 앱이 이 계정 목록에 없어요.'};
 }
 
 // Local, voluntary preferences are partitioned by the verified account ID.
@@ -42,7 +45,7 @@ export function createPlatformPersonalization(engine,storage,{clock=now,scope=PL
     if(!engine||!record)return {active:false,order:allowed,presentation:{...defaults},error,available:!!engine};
     try{
       const context=CONTEXTS[record.context];
-      if(!allowed.length){const values={...record.profile.values};return {active:true,available:true,context:record.context,values,presentation:{textSize:values.textSize||defaults.textSize,explanation:values.explanation||defaults.explanation,motion:values.motion||defaults.motion},order:[],selected:null,reason:'',error:null};}
+      if(!allowed.length){const values={...record.profile.values};return {active:true,available:true,context:record.context,matched:false,values,presentation:{textSize:values.textSize||defaults.textSize,explanation:values.explanation||defaults.explanation,motion:values.motion||defaults.motion},order:[],selected:null,reason:'',error:null};}
       const preferred=context.ids.filter(id=>allowed.includes(id));
       const candidates=preferred.length?preferred:allowed;
       const result=engine.selectPersonalization({profile:record.profile,scope:{...scope},experienceId:'platform-catalog',events:[],at:clock(),candidates:candidates.map(id=>({id,minutes:3,pace:'standard',goals:goals[id]}))});
@@ -50,8 +53,9 @@ export function createPlatformPersonalization(engine,storage,{clock=now,scope=PL
       const order=[...new Set([selected,...result.plan.alternatives,...allowed].filter(id=>allowed.includes(id)))];
       const match=selected&&goals[selected].includes(result.values.goal);
       const goal=match&&goalLabels[result.values.goal]!==context.label?' · ‘'+goalLabels[result.values.goal]+'’':'';
-      const reason=preferred.length?`고른 일(‘${context.label}’${goal})에 맞춰 먼저 보여 줘요.`:'이 계정에서 쓸 수 있는 앱 가운데 먼저 볼 만한 앱이에요.';
-      return {active:true,available:true,context:record.context,values:result.values,presentation:result.presentation,selected,order,reason,plan:result.plan,provenance:result.provenance,error:null};
+      // 「한국어 공부」의 앱(WORLD · PATH)이 목록에 없으면 엉뚱한 앱을 권하는 말 대신 휴대폰의 WORLD를 말한다(previewPurpose와 같은 글, 2026-11-11).
+      const reason=preferred.length?`고른 일(‘${context.label}’${goal})에 맞춰 먼저 보여 줘요.`:record.context==='student'?STUDY_ON_PHONE:'이 계정에서 쓸 수 있는 앱 가운데 먼저 볼 만한 앱이에요.';
+      return {active:true,available:true,context:record.context,matched:preferred.length>0,values:result.values,presentation:result.presentation,selected,order,reason,plan:result.plan,provenance:result.provenance,error:null};
     }catch{return {active:false,available:true,order:allowed,presentation:{...defaults},error:'앱 순서를 바꾸지 못했어요. 다시 저장해 주세요.'};}
   }
   return {

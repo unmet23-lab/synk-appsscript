@@ -13,7 +13,7 @@ test('PATH discovery is hidden for every authentication phase without changing g
   for(const auth of [signed(),...['signed-out','unconfigured','restoring','signing-in','signing-out','error'].map(status=>({status,signedIn:false}))]){
     const original=structuredClone(auth),library=resolveLibrary(auth,preview);
     assert.deepEqual(library.appIds,APP_IDS);assert.ok(!visibleLibraryAppIds(library).includes('path'));
-    assert.deepEqual(displayLibraryAppIds(library),['world','messenger','pulse','care']);assert.deepEqual(auth,original);
+    assert.deepEqual(displayLibraryAppIds(library),['messenger','pulse','care']);assert.deepEqual(auth,original);
   }
   assert.ok(APP_IDS.includes('path'));assert.equal(APPS.path.name,'SYNK PATH');
 });
@@ -21,7 +21,7 @@ test('PATH discovery is hidden for every authentication phase without changing g
 test('release projection retains PATH grants for existing records while discovery omits it',()=>{
   const auth=signed('member-a',['path','world','teacher','pulse']);
   for(const environment of [undefined,{...preview,mode:'release'},{...preview,nativeShell:false}]){
-    const library=resolveLibrary(auth,environment);assert.deepEqual(library,{status:'ready',owner:'member-a',appIds:['world','teacher','path','pulse']});assert.deepEqual(visibleLibraryAppIds(library),['world','teacher','pulse']);
+    const library=resolveLibrary(auth,environment);assert.deepEqual(library,{status:'ready',owner:'member-a',appIds:['world','teacher','path','pulse']});assert.deepEqual(visibleLibraryAppIds(library),['teacher','pulse']);
   }
   assert.deepEqual(visibleLibraryAppIds(resolveLibrary(signed('path-only',['path']))),[]);
 });
@@ -29,13 +29,13 @@ test('release projection retains PATH grants for existing records while discover
 test('saved PATH favorites and recents do not become shortcuts or restored routes',()=>{
   const raw=JSON.stringify({selected:'path',favorites:['path','world'],lastLaunch:{path:100,messenger:200},density:'compact'}),prefs=parsePreferences(raw),library=resolveLibrary(signed(),preview),visible=visibleLibraryAppIds(library);
   const before=structuredClone(prefs),projected=projectLibraryPreferences(prefs,library);
-  assert.deepEqual(trayShortcuts(projected,visible).map(row=>row.id),['world','messenger']);
-  assert.equal(normalizeRoute({view:'library',appId:'path'},visible).appId,null);assert.equal(visibleSelection('path',displayLibraryAppIds(library)),'world');assert.deepEqual(prefs,before);
+  assert.deepEqual(trayShortcuts(projected,visible).map(row=>row.id),['messenger']);
+  assert.equal(normalizeRoute({view:'library',appId:'path'},visible).appId,null);assert.equal(visibleSelection('path',displayLibraryAppIds(library)),'messenger');assert.deepEqual(prefs,before);
 });
 
 test('career and student recommendations exclude PATH while existing note contents remain visible',()=>{
   const library=resolveLibrary(signed(),preview),state={order:[...APP_IDS],values:{}};
-  for(const purpose of ['career','student']){const projection=previewPurpose(state,purpose,displayLibraryAppIds(library));assert.equal(projection.selected,'world');assert.ok(!projection.order.includes('path'));}
+  for(const purpose of ['career','student']){const projection=previewPurpose(state,purpose,displayLibraryAppIds(library));assert.ok(!['path','world'].includes(projection.selected));assert.ok(!projection.order.includes('path'));}
   const note={id:'path-note',kind:'note',appId:'path',title:'Read existing note',body:'existing body',createdAt:1793174400000};
   const model=buildHomeModel({library,personal:state,prefs:{},records:[note]});assert.deepEqual(model.notes,[note]);assert.ok(!model.order.includes('path'));assert.notEqual(model.first,'path');
   const task={...note,kind:'task',done:false};const pending=buildHomeModel({library,personal:state,prefs:{},records:[task]});assert.deepEqual(pending.tasks,[task]);assert.notEqual(pending.first,'path');

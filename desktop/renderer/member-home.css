@@ -46,6 +46,16 @@ button.shelf-go:hover:not(:disabled){text-decoration:underline;text-underline-of
 .shelf-slot:is(:hover,:focus-within) .shelf-go{opacity:1;transform:none}
 .shelf-more{margin-top:28px;text-align:right}
 
+/* WORLD는 휴대폰에서(2026-11-11): 앱 칸 대신 위 1px 검정 선 + 글 + 흰 판 위 QR 하나. QR은 밤 테마에서도 흰 판 위 검정으로 둔다(읽히게). */
+.world-phone{display:flex;align-items:center;justify-content:space-between;gap:40px;margin-top:88px;padding-top:28px;border-top:1px solid var(--ink)}
+.world-phone-copy{min-width:0}
+.world-phone h2{font-size:var(--t22);font-weight:600;outline-offset:4px}
+.world-phone-copy p{margin-top:10px;max-width:46ch;font-size:var(--t15);line-height:1.6;color:var(--ink-2)}
+.world-phone-copy .world-phone-url{margin-top:14px;font-size:var(--t13);color:var(--ink-3)}
+.world-phone-url .latin{margin-left:4px;font-size:var(--t15);font-weight:600;color:var(--ink)}
+.world-phone-qr{flex:none;margin:0;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.world-phone-qr img{display:block;width:132px;height:132px}
+
 /* 이어서 할 일 · 결과 메모 */
 .member-notes-area{padding-top:88px}
 .member-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:64px}
@@ -125,6 +135,9 @@ button.shelf-go:hover:not(:disabled){text-decoration:underline;text-underline-of
   .shelf .shelf-item .stage{background:var(--surface)}
   .shelf .shelf-item.is-lead .stage img{max-height:200px}
   .shelf-more{text-align:left}
+  .world-phone{gap:20px;margin-top:56px;padding-top:20px}
+  .world-phone-qr{padding:8px}
+  .world-phone-qr img{width:104px;height:104px}
   .member-notes-area{padding-top:56px}
   .member-notes{grid-template-columns:1fr;gap:48px}
   .member-row{flex-wrap:wrap}

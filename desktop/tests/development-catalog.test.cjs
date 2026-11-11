@@ -11,8 +11,8 @@ test('a signed-in account with no menu grants sees all development apps without 
   const auth=signed('member-with-no-grants'),before=JSON.stringify(auth);
   const library=resolveLibrary(auth,preview);
   assert.deepEqual(library.appIds,APP_IDS);assert.equal(library.owner,'member-with-no-grants');assert.equal(library.status,'ready');
-  // PATH is temporarily hidden; teacher opens inside Messenger's card; a fixed count broke whenever a benefit was added or retired.
-  const cards=APP_IDS.filter(id=>id!=='teacher'&&id!=='path');
+  // PATH is temporarily hidden, WORLD is a phone app shown by the home's phone panel (2026-11-11); teacher opens inside Messenger's card; a fixed count broke whenever a benefit was added or retired.
+  const cards=APP_IDS.filter(id=>!['teacher','path','world'].includes(id));
   assert.equal(library.developmentCatalog,true);assert.deepEqual(displayLibraryAppIds(library),cards);assert.ok(libraryCopy(library).note.includes('앱 '+cards.length+'개'));
   assert.equal(JSON.stringify(auth),before);assert.deepEqual(auth.library.appIds,[]);
 });
@@ -34,7 +34,7 @@ test('release, browser, other clients and malformed development flags retain acc
   const {resolveLibrary}=await libraryModule;
   for(const environment of [undefined,{}, {...preview,mode:'release'}, {...preview,clientId:'messenger'}, {...preview,clientId:'world'}, {...preview,nativeShell:false}, {...preview,nativeShell:'true'}, {mode:'development'}]){
     assert.deepEqual(resolveLibrary(signed('empty'),environment).appIds,[]);
-    assert.deepEqual(resolveLibrary({status:'signed-out',signedIn:false},environment).appIds,['world']);
+    assert.deepEqual(resolveLibrary({status:'signed-out',signedIn:false},environment).appIds,['pulse']);
   }
 });
 

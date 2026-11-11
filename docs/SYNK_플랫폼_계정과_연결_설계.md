@@ -1,5 +1,19 @@
 # SYNK 플랫폼 — 계정과 콘텐츠 연결 설계
 
+<a id="world-phone-only-20261111"></a>
+## 2026-11-11 WORLD는 휴대폰에서 — 플랫폼 앱 목록에서 빼고 휴대폰 칸 하나로
+
+유호님(11-11): 「SYNK platform에 Workspace(전직원용) · PULSE(클라이언트용)는 필수로 있어야 할 것 같은데 … 결국 한국어 배우고자 하는 학생들이 이용할 텐데 냉정하게 필요할까?」 → 「우리 심장인 synk world 앱 자체를 폐기한다는 게 아니라 synk platform에 노출시키는 의미가 있냐는 거야. 보통 거의 다 핸드폰으로 할 가능성이 높거든」 → 검토 뒤 「진행하자」.
+
+**판단 근거:** 학습자는 휴대폰 브라우저로 synk.im/world를 연다(몽골 시범 안내도 「앱을 깔 필요 없이 휴대폰 브라우저에서」). PC 플랫폼 공개 설치 파일 내려받기는 릴리스마다 10~15회로 거의 일정해 공개 검사와 우리 PC 자동 업데이트 몫과 갈라지지 않는다(11-11 GitHub 릴리스 집계). Windows 408MB · 서명 없는 Preview라 학생에게 깔게 할 문턱이 높고, PC 앱 창에서는 WORLD 학습 알림 푸시가 안 된다. 플랫폼의 「WORLD에 들어 있는 것」은 이미 옛 내용(싱크타운 광장 · 세 친구 옷장 · 한글 노래, 드라마 없음)이었다. **WORLD 제품 · 계정 · 학습 기록 · synk.im/world는 그대로다.**
+
+- **PC 런처(`desktop/renderer`):** 앱 목록 · 선반 · 검색 · 트레이 · 설치·업데이트 목록에서 WORLD를 뺀다 — 10-28 PATH와 같은 길(`library.mjs` `UNLISTED_APP_IDS` → `visibleLibraryAppIds`). 계정 권한(`library.appIds`)은 그대로라 WORLD 메모 · 학습 기록 · 내 성향은 남는다. 손님(로그인 전) 라이브러리는 `['pulse']`(고객의 입구 — PULSE 창은 손님 쿠키 통에서 열린다). 내 홈 선반 아래 「SYNK WORLD는 휴대폰에서」 칸(`world-phone.mjs` — 글 · `synk.im/world` 주소 · QR, 불러오는 중 · 실패 화면에는 없음). WORLD로 가던 입구(메모의 「앱 정보」 · 내 성향 「WORLD에서 이어서 하기」 · 옛 경로)는 `showWorldPhone`이 홈의 그 칸으로 데려간다. PC 앱은 바깥 주소를 정해진 것만 열어(public-apps 허용 목록) 「이 브라우저로 열기」는 두지 않는다. 깔려 있는 WORLD 하위 앱은 지우지 않고, 새 꾸러미도 만들지 않는다.
+- **웹 플랫폼(`experiences/synk-account`):** 둘러보기 · 검색 · 라이브러리(`library.mjs` `listedItem`)와 홈 선반 기본 칸에서 WORLD를 뺀다 — 이 기기에 담은 기록(saved · favorites · recent)은 지우지 않고 보이지만 않는다. 같은 휴대폰 칸(웹은 「이 브라우저로 열기 ↗」, 900px 이하는 QR 대신 검정 알약 단추). `#app/world`는 앱 소개 대신 같은 칸. 다운로드 · 도움말 · 설치 안내 글에서 WORLD 설치를 뺐고, 계정 라이브러리 띠에 WORLD 뺀 `getAppIds`를 넘겨 PC와 맞췄다.
+- **빈자리 글(검수 뒤 더함):** 「하려는 일」 · 저장한 성향이 고른 일의 앱이 목록에 없으면(`personalization.mjs` `matched:false` — 「한국어 공부」의 WORLD · PATH) 「고른 일에 맞는 ○○」 · 「먼저 볼 앱」을 세우지 않고, 「한국어 공부」면 「한국어 공부는 휴대폰의 WORLD에서 해요」와 「내 홈의 QR 보기」로 보낸다. WORLD 권한만 있는 계정의 빈 라이브러리 · 홈도 같은 말(`libraryCopy`는 계정 권한을 `granted`로 따로 받는다). 손님 라이브러리 머리글은 「PULSE 둘러보기」. WORLD를 찾는 말로 검색하면 웹은 결과 아래 휴대폰 칸, PC는 「한국어 공부 앱 WORLD는 휴대폰에서 열어요 · 내 홈의 QR 보기」 한 줄. 웹 라이브러리 개수 배지는 숨긴 WORLD를 세지 않는다.
+- **QR:** `desktop/assets/launcher/world-qr.svg` · `experiences/synk-account/assets/world-qr.svg`(같은 그림, segno 판 2 · 오류 정정 M, OpenCV로 읽어 `https://synk.im/world/` 확인). 밤 테마에서도 흰 판 위 검정으로 둔다.
+- **공개:** 웹은 공개본 묶음에 바뀐 조각만 얹는다([공개 후보 도구](../experiences/synk-account/qa/world-phone-live-20261111/README.md)). PC는 다음 플랫폼 판(0.4.87)에 실린다.
+- **다시 넣을 때:** `desktop/renderer/library.mjs` `UNLISTED_APP_IDS`와 `experiences/synk-account/src/library.mjs` `UNLISTED_APP_IDS`에서 'world'를 빼고, 손님 라이브러리 · 홈 기본 칸 · 글(설치 · 도움말 · 계정 창)과 시험(`desktop/tests/world-phone-visibility.test.mjs` 등)을 되돌린다.
+
 <a id="member-benefit-fortune-paused-20261030"></a>
 ## 2026-10-30 무료 운세 잠시 내림
 
