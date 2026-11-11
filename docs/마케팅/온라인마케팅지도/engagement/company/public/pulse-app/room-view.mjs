@@ -53,6 +53,8 @@ export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films'
 // 알림을 누르면 의뢰 흐름 손님이 갈 화면. 대화(담당자 답 · 자동 안내 · 프로젝트 답변)는 화면을 옮기지 않고 지금 화면의 일지 그 줄로(tab ''),
 // 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
 export function roomRoute(item,p){
+  // 작업 소식 알림(운영 조각 4): 화면을 옮기지 않고 지금 화면의 일지 그 줄로.
+  if(item?.progressId)return {tab:'',versionId:'',journal:'n:'+item.progressId};
   if(item?.tab==='history')return {tab:'review',versionId:item.versionId||finals(p).at(-1)?.id||'',focus:'delivery'};
   if(item?.tab==='review'){
     if(item.feedbackRoundId||item.target==='approval')return {tab:'review',versionId:item.versionId||''};
@@ -129,6 +131,8 @@ export function roomModel(p){
     pay:['pay','prepare-images'].includes(state)?payModel(p):null,
     // 고객 전용 인물(판 3): 서버 손님 보기 project.persona가 있을 때만(없으면 null — 고객 방은 판 3 전 그대로).
     persona:personaModel(p),
+    // 작업 소식(운영 조각 4): 저희 차례 큰 그림 칸에 띄울 최근 소식 그림(없으면 null — 예시 그림 그대로).
+    news:roomNews(p,state),
   };
 }
 // 결제 안내 카드(판 4): 값 · 받으실 날 · 수정 · 접수 번호 · 결제 상태. 값은 결제 요청에 적힌 값, 없으면 고른 방향의 값, 없으면 패키지 값.
@@ -180,6 +184,23 @@ export function draftModel(p){
   const showLook=!!look&&(!!(look.outfit||look.hair)||!!r.directionProposal);
   return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),...(persona?{persona}:{}),...(showLook?{look}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
+}
+// ── 작업 소식(운영 조각 4 · 설계 S1) ──
+// 서버가 손님 보기에 내리는 것은 올린 소식뿐이다({id, at, stage?, text, assets} — 서버 허용 목록). 그림 id는 손님 보기 자산 목록에서 주소를 찾고, 그림이 아닌 것 · 없는 것은 뺀다.
+export function progressLines(p){
+  const list=Array.isArray(requestOf(p)?.progress)?requestOf(p).progress:[];
+  return list.filter(item=>item&&typeof item.id==='string'&&typeof item.text==='string'&&Number.isFinite(Date.parse(item.at||''))).map(item=>({id:item.id,at:item.at,stage:typeof item.stage==='string'?item.stage:'',text:item.text,pictures:(Array.isArray(item.assets)?item.assets:[]).map(id=>assetById(p,id)).filter(asset=>asset?.mimeType?.startsWith('image/')&&assetUrl(asset)).slice(0,4).map(asset=>assetUrl(asset))})).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at));
+}
+// 차례가 저희에게 넘어온 때: 손님이 마지막으로 넘겨준 일(보냄 · 답 · 고름 · 의견 · 확인)과 결제 확인 가운데 가장 늦은 때. 못 읽으면 null.
+function turnSince(r){
+  const d=r?.directionProposal,times=[r?.submittedAt,r?.approvedAt,r?.payment?.confirmedAt,r?.modelProposal?.answeredAt,d?.answeredAt,d?.prior?.answeredAt,...(r?.asks||[]).map(ask=>ask.answeredAt),...(r?.rounds||[]).flatMap(round=>[round.feedbackAt,round.approvedAt])].map(value=>Date.parse(value||'')).filter(Number.isFinite);
+  return times.length?Math.max(...times):null;
+}
+// 저희 차례 큰 그림 칸: 차례가 넘어온 뒤에 올린 소식 가운데 그림이 있는 가장 최근 것(앞 단계의 소식이 다음 단계 화면에 남지 않게). 손님 차례 · 끝이면 null.
+export function roomNews(p,state=roomState(p)){
+  if(ROOM_COPY[state]?.turn!=='us')return null;
+  const since=turnSince(requestOf(p)),item=progressLines(p).filter(line=>line.pictures.length&&(since===null||Date.parse(line.at)>=since)).at(-1);
+  return item?{id:item.id,at:item.at,pictures:item.pictures}:null;
 }
 // ── 일지(판 3b) ──
 // 담당자가 한 말과 손님이 한 일을 한 줄기로. 손님 보기에 이미 오는 필드만 쓴다(서버 읽음 기록 없음). 그리기는 film-views.mjs journalView.
@@ -259,6 +280,8 @@ export function journalModel(p){
   // 「열기」는 고객 방에 결제 카드가 실제로 설 때만(되묻기가 열렸거나 시안이 온 방에는 카드가 없다 — 조각 2-A 화면 검수 F4).
   const payCardShown=['pay','prepare-images'].includes(roomState(p));
   for(const [entry,open] of paymentLines(r))add({id:'p:'+entry.kind+':'+entry.at,at:entry.at,who:'staff',name:owner,kind:'event',what:paymentWhat(entry),go:open&&payCardShown?{tab:'overview'}:null});
+  // 작업 소식(운영 조각 4): 담당자가 올린 작업 중 화면 — 글 전문 + 그림(줄 종류 progress). 줄 id는 n:<소식 id>(결제 p: · 말 m: · 댓글 c:과 겹치지 않게) — 알림의 progressId와 짝지어 「봤다」를 읽음으로(app.mjs markJournalSeen).
+  for(const item of progressLines(p))add({id:'n:'+item.id,ref:item.id,at:item.at,who:'staff',name:owner,kind:'progress',what:t('작업 소식',null,'journal'),stage:item.stage,text:item.text,pictures:item.pictures});
   // 시안 · 최종본 이름은 서버가 준 판 이름(label). 최종본은 사진 상품이면 다른 말이라 문맥을 나눈다.
   for(const v of p?.versions||[]){
     if(!['preview','final'].includes(v.kind))continue;
@@ -329,7 +352,9 @@ export function deskModel(p){
   const r=requestOf(p);if(!r)return null;
   const note=(r.notes||[]).at(-1)||null,assets=p?.studio?.assets||[],a=r.answers||{},proposal=r.modelProposal,direction=r.directionProposal;
   const canDirect=r.status==='confirmed'&&!(r.rounds||[]).length&&a.package!=='photo'&&(!direction||direction.status==='open'||direction.status==='declined'&&direction.round<2);
-  return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,paymentFlow:!!r.paymentFlow,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&!MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
+  return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer'&&asset.purpose!=='progress').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,
+    // 작업 소식(운영 조각 4): 서버가 안다고 알릴 때만(progressFeed). 소식마다 붙인 그림(직원 주소) · 소식 전용 그림 수(40장 상한).
+    progressFeed:!!r.progressFeed,progress:(Array.isArray(r.progress)?r.progress:[]).map(item=>({id:item.id,state:item.state,stage:item.stage||'',text:item.text||'',at:item.at||'',postedAt:item.postedAt||'',withdrawnAt:item.withdrawnAt||'',pictures:(item.assets||[]).map(id=>assets.find(asset=>asset.id===id)).filter(asset=>asset&&assetUrl(asset)).map(asset=>({id:asset.id,src:assetUrl(asset)}))})),progressUsed:assets.filter(asset=>asset.purpose==='progress').length,paymentFlow:!!r.paymentFlow,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||''}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&!MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
     direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name})),
       // 옷 · 머리(11-10): 손님이 방향과 함께 고른 값(proposal.look). 고른 · 정리한 방향에 카탈로그 모델이 있을 때만.
       ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,

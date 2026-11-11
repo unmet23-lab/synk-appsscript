@@ -12,6 +12,7 @@ import {requestActions,applyRequestAction,requestView,usesRequestFlow} from './p
 import {createPersonaGuard} from './pulse-personas.mjs';
 import {withTranslation,staffSources,translationStaffView,localizeCustomerProject,inlineObject} from './pulse-translations.mjs';
 import {serverText,staffDisplayName,createStaffNames} from './pulse-locale.mjs';
+import {postedProgressAssetIds,progressPurpose,assertProgressUpload} from './pulse-progress.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -45,12 +46,17 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     for(const value of visiblePreviewAssetIds(studio))ids.add(value);
     // 보낸 방향 제안(지금 회차)의 그림 · 움직임 견본. 갈아 끼운 옛 안의 자산은 다시 숨는다.
     for(const option of studio.request?.directionProposal?.options||[]){ids.add(option.assetId);if(option.filmAssetId)ids.add(option.filmAssetId);}
+    // 올린 작업 소식의 그림(운영 조각 4). 초안 · 거둔 소식의 그림은 다른 칸이 가리키지 않으면 숨는다.
+    for(const value of postedProgressAssetIds(studio))ids.add(value);
     return ids;
   }
-  function media(row,asset,staff){return {id:asset.id,fileName:asset.fileName,mimeType:asset.mimeType,byteSize:asset.byteSize,url:staff?`/api/client-projects/${row.id}/studio/media/${asset.id}`:`/pulse/api/studio/media/${asset.id}`};}
+  // 작업 소식 그림은 손님에게 직원이 올린 파일 이름을 내리지 않는다(설계 S1) — 형식만 남긴 이름. 소식 전용(purpose progress)이 아니어도 올린 소식이 가리키는 직원 그림이면 같다(GPT 서버 검수 GA1).
+  // 직원 보기에는 purpose를 함께 싣는다.
+  function media(row,asset,staff,hideName=false){const progress=progressPurpose(asset);return {id:asset.id,fileName:!staff&&(progress||hideName)?`progress.${asset.mimeType==='image/png'?'png':'jpg'}`:asset.fileName,mimeType:asset.mimeType,byteSize:asset.byteSize,url:staff?`/api/client-projects/${row.id}/studio/media/${asset.id}`:`/pulse/api/studio/media/${asset.id}`,...(staff&&progress?{purpose:'progress'}:{})};}
   function view(row,staff=false){
     const studio=studioOf(row),visible=visibleAssetIds(studio);
-    const assetMap=new Map(studio.assets.filter(asset=>staff||visible.has(asset.id)).map(asset=>[asset.id,media(row,asset,staff)]));
+    const posted=new Set(postedProgressAssetIds(studio));
+    const assetMap=new Map(studio.assets.filter(asset=>staff||visible.has(asset.id)).map(asset=>[asset.id,media(row,asset,staff,posted.has(asset.id)&&asset.author!=='customer')]));
     const card=value=>{const {authorId,...safe}=value;return {...safe,...(value.assetId&&assetMap.has(value.assetId)?{media:assetMap.get(value.assetId)}:{})};};
     const concepts=studio.concepts.filter(value=>staff||value.visibility==='customer'),scenes=studio.scenes.filter(value=>staff||value.visibility==='customer');
     const publicTarget=(type,target)=>type==='project'||(type==='concept'?concepts:scenes).some(value=>value.id===target);
@@ -87,7 +93,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
-    if(extension){extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row)});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);return;}
+    // 확장 동작이 돌려준 removed(작업 소식에서 거둔 그림의 파일 이름)는 커밋 뒤에 지우도록 부른 쪽으로 넘긴다.
+    if(extension){const outcome=extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row)});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);return Array.isArray(outcome?.removed)&&outcome.removed.length?{removed:outcome.removed}:undefined;}
     // 담당자 글 번역 하나 넣기 · 고치기(다국어 판 2). 키는 지금 손님에게 보이는 직원 글 칸이어야 하고, 빈 글자면 그 번역을 지운다.
     if(action==='save_translation'){
       if(!user)throw fail('담당자 화면에서만 할 수 있어요.',403);
@@ -152,12 +159,14 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     commit(row,studio,'PULSE 기획 '+action,who);
   }
   function customerMutate(token,csrf,input){return store.transaction(()=>{const {row}=customerWrite(token,csrf);mutate(row,input);return customerState(token);});}
-  function staffMutate(user,projectId,input){return store.transaction(()=>{const row=clientProjects.project(user,projectId,true);mutate(row,input,user);return staffState(user,projectId);});}
+  // removed: 작업 소식에서 거둬 기록을 뺀 그림 파일(운영 조각 4) — 이 트랜잭션이 커밋된 뒤 부른 쪽(server.mjs)이 디스크에서 지운다. 없으면 키가 없다.
+  function staffMutate(user,projectId,input){return store.transaction(()=>{const row=clientProjects.project(user,projectId,true),outcome=mutate(row,input,user),state=staffState(user,projectId);return outcome?.removed?{...state,removed:outcome.removed}:state;});}
   function assertCustomerUpload(token,csrf,value){const {row}=customerWrite(token,csrf);revision(row,value);capacity(studioOf(row).assets,120);return row;}
-  function assertStaffUpload(user,projectId,value){const row=clientProjects.project(user,projectId,true);revision(row,value);capacity(studioOf(row).assets,120);return row;}
-  function addAsset(row,metadata,user){const studio=studioOf(row);capacity(studio.assets,120);const who=actor(row,user);studio.assets.push({...metadata,...who,at:clock()});commit(row,studio,'PULSE 기획 자료 등록',who);}
+  // purpose 'progress': 작업 소식 그림 — 의뢰서가 있는 프로젝트에서 소식 전용 그림 40장까지(pulse-progress.mjs).
+  function assertStaffUpload(user,projectId,value,{purpose=''}={}){const row=clientProjects.project(user,projectId,true);revision(row,value);const studio=studioOf(row);capacity(studio.assets,120);if(purpose==='progress')assertProgressUpload(studio,{now:clock()});return row;}
+  function addAsset(row,metadata,user){const studio=studioOf(row);capacity(studio.assets,120);if(metadata?.purpose==='progress')assertProgressUpload(studio,{now:clock()});const who=actor(row,user);studio.assets.push({...metadata,...who,at:clock()});commit(row,studio,'PULSE 기획 자료 등록',who);}
   function customerUpload(token,csrf,value,metadata){return store.transaction(()=>{const row=assertCustomerUpload(token,csrf,value);addAsset(row,metadata);const result=customerState(token);return {...result,asset:result.project.studio.assets.find(asset=>asset.id===metadata.id)};});}
-  function staffUpload(user,projectId,value,metadata){return store.transaction(()=>{const row=assertStaffUpload(user,projectId,value);addAsset(row,metadata,user);const result=staffState(user,projectId);return {...result,asset:result.project.studio.assets.find(asset=>asset.id===metadata.id)};});}
+  function staffUpload(user,projectId,value,metadata){return store.transaction(()=>{const row=assertStaffUpload(user,projectId,value,{purpose:metadata?.purpose||''});addAsset(row,metadata,user);const result=staffState(user,projectId);return {...result,asset:result.project.studio.assets.find(asset=>asset.id===metadata.id)};});}
   function customerMedia(token,assetId){const {row}=customer(token),studio=studioOf(row),found=studio.assets.find(value=>value.id===id(assetId));if(!found||!visibleAssetIds(studio).has(found.id))throw fail('자료를 찾지 못했어요.',404);return found;}
   function staffMedia(user,projectId,assetId){const row=clientProjects.project(user,projectId),found=studioOf(row).assets.find(value=>value.id===id(assetId));if(!found)throw fail('자료를 찾지 못했어요.',404);return found;}
   // 접수 뒤 손님이 보낸 파일을 프로젝트에 붙인다. 화면에 띄울 수 있는 형식은 자료함으로, 나머지는 내려받기 전용(intake)으로 간다.

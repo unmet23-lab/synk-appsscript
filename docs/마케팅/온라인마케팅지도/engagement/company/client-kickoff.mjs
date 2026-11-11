@@ -23,7 +23,8 @@ export function clientKickoffSources(row,{customer=false}={}){
   const result=[];
   for(const asset of assets){
     const visible=publicAssets.has(asset.id);if(customer&&!visible)continue;
-    result.push({key:'asset:'+asset.id,label:asset.fileName||'기획 자료',kind:'asset',url:customer?'/pulse/api/studio/media/'+asset.id:'/api/client-projects/'+row.id+'/studio/media/'+asset.id,fingerprint:hash({kind:'asset',asset}),customerVisible:visible});
+    // 작업 소식 그림(purpose progress — 운영 조각 4)은 손님에게 직원 파일 이름을 내리지 않는다(장면 등으로 공개돼도). 다른 그림은 전과 같다.
+    result.push({key:'asset:'+asset.id,label:customer&&asset.purpose==='progress'?'기획 자료':asset.fileName||'기획 자료',kind:'asset',url:customer?'/pulse/api/studio/media/'+asset.id:'/api/client-projects/'+row.id+'/studio/media/'+asset.id,fingerprint:hash({kind:'asset',asset}),customerVisible:visible});
   }
   if(!customer)for(const file of records(row.intake?.files).filter(file=>file.kind==='attachment'))result.push({key:'intake:'+file.id,label:file.fileName||'접수 첨부',kind:'intake',url:'/api/client-projects/'+row.id+'/intake-files/'+file.id,fingerprint:hash({kind:'intake',file}),customerVisible:false});
   for(const reference of records(studio.references)){

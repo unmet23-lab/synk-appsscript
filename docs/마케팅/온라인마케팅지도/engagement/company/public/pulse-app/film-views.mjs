@@ -44,25 +44,30 @@ export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is
 // drawer(방향 · 완성 광고 — 넓은 화면은 오른쪽 서랍, 휴대폰은 아래 시트). 열고 닫기 · 「봤다」는 app.mjs가 맡는다.
 export const JOURNAL_SHOWN=5;
 const askForm=ask=>`<form class="sx-ask-reply" data-form="ask" data-id="${esc(ask.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:ask.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-quiet"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form>`;
-export function journalView(j,{place='column',here=null,video=false,open=false,all=false,owner=t('담당자')}={}){
+// talk(「말만 보기」 — 운영 조각 4 · 설계 S1): 켜면 말 줄(문의 · 답 · 담당자 글)만 보인다 — 사건 · 소식 줄이 늘어도 문답이 묻히지 않게. 말 줄과 다른 줄이 함께 있을 때만 단추를 둔다.
+export function journalView(j,{place='column',here=null,video=false,open=false,all=false,talk=false,owner=t('담당자')}={}){
   const overlay=place!=='column',isHere=go=>!!go&&!!here&&go.tab===here.tab&&(!go.versionId||go.versionId===here.versionId||!!go.final&&!!here.finals);
   const when=at=>at&&stamp(at)?` · <time datetime="${esc(at)}">${esc(stamp(at))}</time>`:'';
   // 「열기」 · 「이 화면」은 머리 줄 끝에. 지금 화면의 일감을 가리키는 인용은 그 글이 바로 옆에 있으니 머리 줄만 둔다(같은 말이 한 화면에 두 번 서지 않게).
   // 최종본을 볼 때는 납품 칸이 최종본 모두와 안내를 보이므로 최종본 줄은 모두 「지금 화면」. 서랍은 일감을 덮으므로 인용 글을 그대로 둔다.
   const row=item=>{
     const here=isHere(item.go),tail=item.go?(here?`<span class="sx-j-here">${esc(t('지금 화면'))}</span>`:`<button type="button" class="sx-quiet" data-journal-go="${esc(item.go.tab)}"${item.go.versionId?` data-version="${esc(item.go.versionId)}"`:''}>${esc(t('열기',null,'open'))}</button>`):'';
-    const meta=`<p class="sx-j-meta"><b>${esc(item.name)}</b>${item.what?` ${esc(item.what)}`:''}${when(item.at)}</p>`;
-    const body=item.kind==='talk'&&item.text?`<p class="sx-body sx-j-text">${esc(item.text)}</p>`:item.kind==='quote'&&(!here||place==='drawer')?`<p class="sx-j-quote">${esc(item.text)}</p>`:'';
+    const meta=`<p class="sx-j-meta"><b>${esc(item.name)}</b>${item.what?` ${esc(item.what)}`:''}${item.kind==='progress'&&stageName(item.stage)?` · ${esc(stageName(item.stage))}`:''}${when(item.at)}</p>`;
+    // 작업 소식(운영 조각 4): 글 전문 + 그림 넷까지, 그림 아래 「작업 중인 화면이에요 · 완성본이 아니에요」.
+    const shots=item.kind==='progress'&&item.pictures?.length?`<figure class="sx-j-shots" data-count="${item.pictures.length}"><div>${item.pictures.map(src=>`<img src="${esc(src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><figcaption class="sx-small sx-j-wip">${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</figcaption></figure>`:'';
+    const body=(item.kind==='talk'||item.kind==='progress')&&item.text?`<p class="sx-body sx-j-text">${esc(item.text)}</p>${shots}`:item.kind==='quote'&&(!here||place==='drawer')?`<p class="sx-j-quote">${esc(item.text)}</p>`:shots;
     return `<li class="sx-j-row is-${esc(item.kind)}${tail?' has-tail':''}" data-who="${esc(item.who)}" data-journal-id="${esc(item.id)}" tabindex="-1">${meta}${tail}${body}</li>`;
   };
   const asks=j.pinned.asks.map(ask=>`<section class="sx-j-ask" data-journal-id="a:${esc(ask.id)}" tabindex="-1"><p class="sx-j-meta"><b>${esc(owner)}</b> ${esc(t('물어봐요'))}${when(ask.at)}</p><h3 class="sx-serif">${esc(ask.label)}</h3>${ask.why?`<p class="sx-j-why">${esc(ask.why)}</p>`:''}${askForm(ask)}</section>`).join('');
-  const shown=all?j.items:j.items.slice(0,JOURNAL_SHOWN),rest=j.items.length-JOURNAL_SHOWN;
+  const talks=j.items.filter(item=>item.kind==='talk'),filter=talk||talks.length>0&&talks.length<j.items.length,items=talk?talks:j.items;
+  const shown=all?items:items.slice(0,JOURNAL_SHOWN),rest=items.length-JOURNAL_SHOWN;
   return `${overlay?`<div class="sx-j-scrim" data-journal-do="close" data-place="${esc(place)}"${open?'':' hidden'}></div>`:''}<aside class="sx-journal${open?' is-open':''}" id="room-journal" data-journal data-place="${esc(place)}" aria-labelledby="room-journal-title"${place==='drawer'?' role="dialog"':''}>
     <header class="sx-j-head"><h2 class="sx-serif" id="room-journal-title">${esc(t('담당자와 나눈 말'))}</h2>${overlay?`<button type="button" class="sx-quiet sx-j-close" data-journal-do="close">${esc(t('닫기'))}</button>`:''}</header>
     ${asks?`<div class="sx-j-pin" aria-label="${esc(t('답해 주실 것'))}">${asks}</div>`:''}
     ${j.pinned.next?`<p class="sx-j-next"><span>${esc(t('지금 담당자 안내'))}</span>${esc(j.pinned.next)}</p>`:''}
     <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000" required placeholder="${esc(t('담당자에게 물어보세요'))}" aria-label="${esc(t('담당자에게 물어보기'))}" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button>${video?`<p class="sx-j-hint" data-when="typing">${withMarks(t('영상에서 고칠 곳은 {where} 의견 칸에, 그 장면에서 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('영상 아래',null,'where'))}</span>`})}</p>`:''}</form>
-    ${j.items.length?`<ol class="sx-j-list" aria-label="${esc(t('지난 말'))}">${shown.map(row).join('')}</ol>`:''}
+    ${filter?`<p class="sx-j-tools"><button type="button" class="sx-quiet sx-j-filter" data-journal-do="talk" aria-pressed="${talk?'true':'false'}">${esc(t('말만 보기'))}</button></p>`:''}
+    ${items.length?`<ol class="sx-j-list" aria-label="${esc(t('지난 말'))}">${shown.map(row).join('')}</ol>`:talk?`<p class="sx-small sx-j-empty">${esc(t('나눈 말이 아직 없어요'))}</p>`:''}
     ${rest>0?`<button type="button" class="sx-quiet sx-j-more" data-journal-do="more" aria-expanded="${all?'true':'false'}">${esc(all?t('최근 말만 보기'):t('이전 말 {count}개 더 보기',{count:rest}))}</button>`:''}
   </aside>`;
 }
@@ -90,6 +95,8 @@ export const journalFocus=box=>{const title=box?.querySelector('#room-journal-ti
 export const journalAsk=(cls='')=>`<button type="button" class="sx-quiet sx-j-ask-open ${cls}" data-room-do="journal">${esc(t('담당자에게 묻기'))}</button>`;
 // 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
 function roomScreen(p){
+  // 저희 차례에 담당자가 올린 작업 소식 그림(운영 조각 4): 예시 · 지난 판 그림보다 앞에, 완성본이 아니라는 말과 함께. 「소식 보기」는 일지의 그 줄로.
+  if(p.news?.pictures?.length){const pics=p.news.pictures;return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
   if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
   if(p.state==='model'&&p.proposal)return `<img class="sx-q-fill" src="${esc(modelScene(p.proposal.id))}" alt=""><p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;

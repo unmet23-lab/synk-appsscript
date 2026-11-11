@@ -106,6 +106,15 @@ function paymentBlock(r){
   const buttons=p?.status==='confirmed'?line('결제 취소 적기','desk-pay-cancel'):line(p?.status==='requested'?'결제 요청 다시 적기':'크몽에 결제 요청 보냄','desk-pay-request')+line('결제 확인','desk-pay-confirm')+(p?.status==='requested'?line('결제 취소 적기','desk-pay-cancel'):'');
   return `<section class="desk-pay"><h2>결제 · 크몽</h2><p class="desk-sum"><i class="led ${p?.status==='confirmed'?'is-ok':'is-wait'}"></i> ${esc(state)}</p><p class="desk-at">장면 이미지 판과 시안은 결제를 확인한 뒤에 보내요. 크몽에서는 손님 문의(접수 번호)에 안전결제요청을 보내고, 결제가 들어오면 「결제 확인」을 눌러요.</p><div class="desk-pay-act">${buttons}</div></section>`;
 }
+// 작업 소식(운영 조각 4): 제작 중 화면을 손님에게 — 초안으로 저장하고 「손님에게 올리기」를 눌러야 보인다(공개는 늘 사람이). 서버가 안다고 알릴 때만(progressFeed).
+// 새 것이 위. 거둔 소식은 수만 적는다(손님에게는 이미 안 보인다).
+const PROGRESS_STAGE={check:'확인',draft:'1차안',make:'제작',review:'영상 · 납품'};
+function progressBlock(r){
+  if(!r.progressFeed||r.status==='retired')return '';
+  const list=(r.progress||[]).filter(item=>item.state==='draft'||item.state==='posted').reverse(),gone=(r.progress||[]).filter(item=>item.state==='withdrawn').length,edit=r.canEdit!==false;
+  const row=item=>`<li><i class="led ${item.state==='posted'?'is-ok':'is-wait'}"></i><div><b>${item.state==='posted'?`손님에게 올림 · ${esc(mailAt(item.postedAt))}`:'초안 · 손님에게 안 보여요'}${PROGRESS_STAGE[item.stage]?` · ${esc(PROGRESS_STAGE[item.stage])}`:''}</b><small class="desk-progress-text">${esc(item.text)}</small>${item.pictures.length?`<span class="desk-progress-shots">${item.pictures.map((picture,index)=>`<img src="${esc(picture.src)}" alt="소식 그림 ${index+1}" width="64" height="48" loading="lazy">`).join('')}</span>`:''}${edit?`<span class="desk-progress-act">${item.state==='draft'?line('고치기','desk-progress-edit',`data-id="${esc(item.id)}"`)+line('손님에게 올리기','desk-progress-post',`data-id="${esc(item.id)}"`):''}${line('거두기','desk-progress-withdraw',`data-id="${esc(item.id)}"`)}</span>`:''}</div></li>`;
+  return `<section class="desk-progress"><h2>작업 소식</h2><p class="desk-at">손님 일지와 저희 차례 화면에 「작업 중인 화면이에요 · 완성본이 아니에요」와 함께 보여요. 초안은 손님에게 안 보이고, 올리면 앱 안 · 기기 알림이 가요(메일은 없어요).</p>${list.length?`<ul class="checks">${list.map(row).join('')}</ul>`:''}${gone?`<p class="desk-at">거둔 소식 ${gone}개</p>`:''}${edit?`<div class="desk-pay-act">${line('소식 쓰기','desk-progress-new')}</div>`:''}</section>`;
+}
 function actions(r){
   if(r.canEdit===false)return '<p class="desk-sum">이 프로젝트는 보기만 할 수 있어요.</p>';
   if(r.status==='retired')return '<p class="desk-sum">보존 기한이 끝나 자료를 지운 의뢰예요.</p>';
@@ -138,6 +147,7 @@ export function deskView(r,{bar=true,top=''}={}){
         ${proposal?`<section><h2>모델 제안</h2><p class="desk-sum">${esc(proposal.modelName||proposal.modelId||'')} · ${esc(proposalText)}</p>${proposal.answer?`<p>${esc(proposal.answer)}</p>`:''}</section>`:''}
         ${r.rounds?.length?`<section><h2>보낸 판</h2><ul class="checks">${r.rounds.map(round=>`<li><i class="led ${round.approvedAt?'is-ok':'is-wait'}"></i><div><b>${round.round}판 · ${round.kind==='images'?'장면 이미지':'글 콘티'}</b><small>${esc(ROUND_STATE(round))}</small></div></li>`).join('')}</ul></section>`:''}
         ${paymentBlock(r)}
+        ${progressBlock(r)}
         <section class="desk-actions">${actions(r)}</section>
       </aside>
     </div>

@@ -459,3 +459,12 @@ html.view-entry .connection-banner,html.view-draft .connection-banner,#request-r
 .desk-pay .desk-at{font-size:12px;color:var(--ink-2);margin:4px 0 0}
 .desk-pay-act{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .desk-pay-act .btn-line{justify-content:center}
+/* 운영 조각 4(11-12): 직원 내부 확인의 작업 소식 */
+.desk-progress .desk-at{font-size:12px;color:var(--ink-2);margin:4px 0 0}
+.desk-progress-text{display:block;white-space:pre-line;overflow-wrap:anywhere}
+.desk-progress-shots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.desk-progress-shots img{width:64px;height:48px;object-fit:cover;background:#000}
+.desk-progress-act{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.desk-progress-keep{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0}
+.desk-progress-keep label{display:inline-flex;align-items:center;gap:4px}
+.desk-progress-keep img{width:72px;height:54px;object-fit:cover;background:#000}

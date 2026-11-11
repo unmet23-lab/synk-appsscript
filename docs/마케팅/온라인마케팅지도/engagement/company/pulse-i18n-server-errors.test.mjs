@@ -29,7 +29,7 @@ const MODULES=[
   {file:'server.mjs',scope:['body'],blocks:["'/pulse/api/"]},
   {file:'pulse-requests.mjs',
     scope:['busy','text','link','one','many','markets','normalizeRequestAnswers','requestFileKind','inDraft','inMedia','count','assertDisk','draftOf','start','read','save','receive','removeFile','newNumber','submit','receiveProjectFile','assertCasting','applyRequestAction','personaRequestOf','personaFileKind','receivePersonaFile'],
-    actions:{customer:['request_save','request_submit','request_answer','answer_model','answer_direction','submit_draft_review','approve_draft'],staff:['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','request_contact','settle_direction','payment_request','payment_confirm','payment_cancel']},
+    actions:{customer:['request_save','request_submit','request_answer','answer_model','answer_direction','submit_draft_review','approve_draft'],staff:['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','request_contact','settle_direction','payment_request','payment_confirm','payment_cancel','progress_save','progress_post','progress_withdraw']},
     staffFlags:['staff'],messageArgs:{link:2}},
   {file:'pulse-studio.mjs',
     scope:['customer','customerWrite','revision','studioOf','keys','capacity','commit','mutate','customerMutate','customerState','addRequestFile','removeRequestFile','customerAction'],

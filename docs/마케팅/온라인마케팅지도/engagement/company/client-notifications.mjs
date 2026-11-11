@@ -2,6 +2,7 @@ import {createHash} from 'node:crypto';
 import {customerClientKickoff} from './client-kickoff.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {serverText} from './pulse-locale.mjs';
+import {progressOf} from './pulse-progress.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
@@ -12,6 +13,8 @@ titles.auto_reply='문의에 자동 안내가 왔어요';
 titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
 // 결제(판 4): 담당자가 크몽 결제를 요청 · 확인 · 취소했을 때 손님에게. 손님 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
+// 작업 소식(운영 조각 4): 담당자가 소식을 올렸을 때 손님에게(앱 안 · 기기 알림만 — 메일 순간이 아니다). 거두면 손님 알림함에서 빠진다(pulse-live.mjs).
+titles.progress_posted='작업 중인 화면이 올라왔어요';
 // 의뢰서 흐름(2026-11-04): 새 의뢰 → 내부 확인 → 되묻기 · 모델 → 1차안. 고객 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{request_received:'새 의뢰가 들어왔어요',customer_request_answer:'고객이 되물은 내용에 답했어요',customer_request_file:'고객이 자료를 더 보냈어요',customer_request_edit:'고객이 의뢰서를 고쳤어요',customer_model_answer:'고객이 모델 제안에 답했어요',customer_direction_answer:'고객이 방향 제안에 답했어요',customer_draft_review:'고객이 1차안에 의견을 보냈어요',customer_draft_approved:'고객이 1차안을 확인했어요',request_asked:'몇 가지만 더 여쭤봐요',model_proposed:'모델을 확인해 주세요',direction_proposed:'방향 제안이 도착했어요',draft_ready:'1차안이 도착했어요'});
 Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
@@ -101,6 +104,8 @@ export function appendClientNotificationEvents(previous,row){
       if(action==='payment_request')add('payment_requested',String(row.revision),['customer'],{tab:'overview'});
       if(action==='payment_confirm')add('payment_confirmed',String(row.revision),['customer'],{tab:'overview'});
       if(action==='payment_cancel')add('payment_cancelled',String(row.revision),['customer'],{tab:'overview'});
+      // 작업 소식: 이번에 올린(전에는 올리지 않았던) 소식마다 하나. progressId로 일지의 그 줄과 짝짓고, 거둔 소식의 알림은 손님 보기에서 빠진다.
+      if(action==='progress_post'){const was=new Map(progressOf(before).map(item=>[item.id,item.state]));for(const item of progressOf(studio))if(item.state==='posted'&&was.get(item.id)!=='posted')add('progress_posted',item.id,['customer'],{tab:'overview',progressId:item.id});}
       if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy',strategyRevision:studio.strategy?.revision});
       if(action==='request_deliverable_review')add('deliverables_ready',String(studio.deliverables?.revision),['customer'],{tab:'strategy',target:'deliverables',deliverableRevision:studio.deliverables?.revision});
       if(action==='classify_feedback_round'){

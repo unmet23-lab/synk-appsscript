@@ -30,7 +30,9 @@
 // v44(11-11): 운영 조각 2 — 일지의 결제 요청 · 확인 · 취소 줄과 영상 단계의 「수정 n회 중 k회 남았어요」로 room-view.mjs · feedback-rounds-view.mjs · i18n/en.mjs가 바뀌었다.
 // v45(11-12): PULSE 스위치를 켜기 전 후속(첫 방문 무게 v41 · 보관 규칙 v42 · 접수 멈춤 v43 · 결제 일지 v44 위) — 첫 기다림 글을 이 기기의 언어로 먼저 바꾸는 boot-locale.js(고전 스크립트, CSP script-src 'self')를 더했다.
 // 영어 첫 화면 제목 · 글꼴 B(assets/NotoSerifDisplay-Light-latin.woff2), 끊긴 채 다시 열면 마지막으로 정한 언어로 · 「동작 시안」 용어 · 내 모델 로그아웃 403 · 닫힌 다시 쓰기 방의 「내 모델 열기」 · 실패한 파일 「다시 올리기」로 app.mjs · film-views.mjs · persona-view.mjs · my-models.mjs · request-flow.mjs · i18n/en.mjs · index.html도 바뀌었다.
-const CACHE = 'synk-pulse-shell-v45-before-switch-20261112';
+// v46(11-12): 운영 조각 4 작업 소식 — 일지의 소식 줄(그림 · 「작업 중인 화면이에요」) · 「말만 보기」 거르개 · 저희 차례 큰 그림 칸의 소식 그림 · 직원 「작업 소식」 칸으로
+// room-view.mjs · film-views.mjs · app.mjs · views.mjs · 내부 확인 모듈 · film.css · slate-screens.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v46-progress-feed-20261112';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

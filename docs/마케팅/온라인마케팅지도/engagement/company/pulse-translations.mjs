@@ -30,6 +30,8 @@ export function staffSources(studio,row=null){
   }
   for(const round of request?.rounds||[]){put(`round:${round.round}:oneLine`,round.oneLine,300);put(`round:${round.round}:note`,round.note,600);}
   for(const scene of studio?.scenes||[])if(scene.visibility==='customer'){put(`scene:${scene.id}:title`,scene.title,160);put(`scene:${scene.id}:description`,scene.description,3000);}
+  // 작업 소식(운영 조각 4 — studio.progress): 거두지 않은 소식 글(초안 포함 — 올리기 전에 번역을 붙인다). 키 꼴은 pulse-progress.mjs progressKey와 같다.
+  for(const item of Array.isArray(studio?.progress)?studio.progress:[])if(object(item)&&typeof item.id==='string'&&item.state!=='withdrawn')put(`progress:${item.id}:text`,item.text,600);
   if(row){
     for(const field of Object.keys(PROJECT_MAX))put(`project:${field}`,row[field],PROJECT_MAX[field]);
     for(const message of row.messages||[])if(message.author==='staff'&&message.visibility==='customer'&&!message.automated)put(`message:${message.id}:text`,message.text,3000);
@@ -120,6 +122,8 @@ export function localizeCustomerProject(project,{map,locale,text:tx,producer,sta
           ...(object(d.prior)?{prior:{...d.prior,names:(d.prior.names||[]).map((name,index)=>Array.isArray(d.prior.ids)&&d.prior.ids[index]?pick(`option:${d.prior.ids[index]}:name`,name):name),...(d.prior.by!==undefined?{by:staffName(d.prior.by)}:{})}}:{})};
       }
       if(Array.isArray(request.rounds))r.rounds=request.rounds.map(round=>({...round,oneLine:pick(`round:${round.round}:oneLine`,round.oneLine),note:pick(`round:${round.round}:note`,round.note),...by(round.by)}));
+      // 작업 소식(손님 보기는 이미 올린 것만 — requestView): 글을 확인한 번역으로.
+      if(Array.isArray(request.progress))r.progress=request.progress.map(item=>object(item)&&typeof item.text==='string'?{...item,text:pick(`progress:${item.id}:text`,item.text)}:item);
       if(request.confirmedBy!==undefined)r.confirmedBy=staffName(request.confirmedBy);
       next.request=r;
     }

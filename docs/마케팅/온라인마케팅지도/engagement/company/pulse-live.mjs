@@ -3,12 +3,13 @@ import {clientNotificationTitle,customerKickoffNotificationKey} from './client-n
 import {customerSceneRequests} from './client-scene-requests.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {serverText} from './pulse-locale.mjs';
+import {progressOf} from './pulse-progress.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const stamp=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const genericBody='프로젝트를 열어 새 내용과 다음 할 일을 확인해 주세요.';
 // 고객 알림 본문: 프로젝트 내용 없이 「무엇을 하면 되는지」만(알림 이벤트는 내용 없는 포인터라는 원칙 유지, 2026-10-19).
-const customerBodies={payment_requested:'크몽 메시지로 보내 드린 결제 요청에서 결제해 주세요. 확인되면 이어서 만들어요.',payment_confirmed:'크몽 결제를 확인했어요. 이어서 만들기 시작해요.',payment_cancelled:'결제가 취소됐어요. 다시 진행하시려면 담당자에게 알려 주세요.',request_asked:'아래 칸만 답해 주시면 바로 1차안을 만들어요.',model_proposed:'장면을 만들기 전에 모델을 확인해 주세요.',direction_proposed:'요청하신 내용은 그대로 두고 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.',draft_ready:'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.',preview_ready:'영상을 재생해 보고, 바꾸고 싶은 장면에 의견을 남기거나 승인해 주세요.',final_ready:'최종 파일을 받아 보고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.',staff_reply:'보낸 의견이나 문의에 대한 답을 확인해 주세요.',auto_reply:'남긴 문의에 자동 안내가 먼저 답했어요. 담당자도 이어서 확인해요.',strategy_ready:'메시지·근거·행동을 살펴보고, 이대로 진행해도 되면 확인을 남겨 주세요.',deliverables_ready:'받을 파일 목록과 규격을 살펴보고 확인을 남겨 주세요.',concept_ready:'콘셉트를 나란히 비교하고 마음에 가까운 방향을 골라 주세요.',scene_ready:'장면의 흐름과 문구를 확인하고, 바꾸고 싶은 곳이 있으면 의견을 남겨 주세요.',reference_ready:'제작팀이 정리한 참고 자료를 확인해 주세요.',feedback_classified:'보낸 의견을 어떻게 반영할지와 일정 안내를 확인해 주세요.',kickoff_updated:'제작을 시작하기 전에 준비할 자료를 확인해 주세요.',scene_review_ready:'고친 장면을 보고 확인을 남겨 주세요.',preview_review_ready:'이 시안을 기준으로 최종 제작을 승인할 수 있어요.'};
+const customerBodies={progress_posted:'완성본이 아니라 작업 중인 화면이에요. 의견은 다음 판이 오면 컷마다 남겨 주세요.',payment_requested:'크몽 메시지로 보내 드린 결제 요청에서 결제해 주세요. 확인되면 이어서 만들어요.',payment_confirmed:'크몽 결제를 확인했어요. 이어서 만들기 시작해요.',payment_cancelled:'결제가 취소됐어요. 다시 진행하시려면 담당자에게 알려 주세요.',request_asked:'아래 칸만 답해 주시면 바로 1차안을 만들어요.',model_proposed:'장면을 만들기 전에 모델을 확인해 주세요.',direction_proposed:'요청하신 내용은 그대로 두고 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.',draft_ready:'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.',preview_ready:'영상을 재생해 보고, 바꾸고 싶은 장면에 의견을 남기거나 승인해 주세요.',final_ready:'최종 파일을 받아 보고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.',staff_reply:'보낸 의견이나 문의에 대한 답을 확인해 주세요.',auto_reply:'남긴 문의에 자동 안내가 먼저 답했어요. 담당자도 이어서 확인해요.',strategy_ready:'메시지·근거·행동을 살펴보고, 이대로 진행해도 되면 확인을 남겨 주세요.',deliverables_ready:'받을 파일 목록과 규격을 살펴보고 확인을 남겨 주세요.',concept_ready:'콘셉트를 나란히 비교하고 마음에 가까운 방향을 골라 주세요.',scene_ready:'장면의 흐름과 문구를 확인하고, 바꾸고 싶은 곳이 있으면 의견을 남겨 주세요.',reference_ready:'제작팀이 정리한 참고 자료를 확인해 주세요.',feedback_classified:'보낸 의견을 어떻게 반영할지와 일정 안내를 확인해 주세요.',kickoff_updated:'제작을 시작하기 전에 준비할 자료를 확인해 주세요.',scene_review_ready:'고친 장면을 보고 확인을 남겨 주세요.',preview_review_ready:'이 시안을 기준으로 최종 제작을 승인할 수 있어요.'};
 // 앱 안 알림함에서는 이어서 온 같은 종류의 카드 알림(콘셉트·장면·참고 자료)을 한 줄로 묶는다. 기기 알림 목록(customerPushNotifications)은 묶지 않는다.
 const GROUPED=new Set(['concept_ready','scene_ready','reference_ready']);
 // 같은 카드가 올라온 뒤 고쳐졌으면 한 장으로 센다. 아직 읽지 않은 첫 등록(cardRevision 1)이 있으면 고객에게는 새 카드다.
@@ -56,6 +57,8 @@ export function createPulseLiveService({store,clientProjects,clientNotifications
       if(event.messageId&&!row.messages.some(message=>message.id===event.messageId&&message.visibility==='customer'))continue;
       if(event.sceneId&&!row.studio?.scenes?.some(scene=>scene.id===event.sceneId&&scene.visibility==='customer'))continue;
       if(event.conceptId&&!row.studio?.concepts?.some(concept=>concept.id===event.conceptId&&concept.visibility==='customer'))continue;
+      // 작업 소식(운영 조각 4): 거둔 소식(또는 사라진 소식)의 알림은 앱 안 · 기기 알림 모두에서 빠진다.
+      if(event.progressId&&!progressOf(row.studio).some(item=>item.id===event.progressId&&item.state==='posted'))continue;
       if(event.type==='preview_review_ready'){
         previewApproval??=buildCustomerPreviewApproval(row);
         if(!previewApproval.canApprove||previewApproval.versionId!==event.versionId||row.notificationEvents.findLast(item=>item.type==='preview_review_ready'&&item.versionId===event.versionId)?.id!==event.id)continue;
@@ -88,7 +91,7 @@ export function createPulseLiveService({store,clientProjects,clientNotifications
       // Existing durable reply pointers also land in the conversation after the
       // customer tabs changed; their stored receipts and identities stay intact.
       const tab=event.type==='staff_reply'&&(!event.tab||event.tab==='history')?'review':event.tab||'history';
-      const target=Object.fromEntries(['target','commentId','conceptId','sceneId','requestId','feedbackRoundId','feedbackItemId'].filter(key=>event[key]).map(key=>[key,event[key]]));
+      const target=Object.fromEntries(['target','commentId','conceptId','sceneId','requestId','feedbackRoundId','feedbackItemId','progressId'].filter(key=>event[key]).map(key=>[key,event[key]]));
       notifications.push({id:event.id,type:event.type,title:clientNotificationTitle(event.type,event,loc),body:serverText(loc,customerBodies[event.type]||genericBody),createdAt:event.createdAt,readAt,unread:!readAt,projectId:row.id,versionId:event.versionId||null,messageId:event.messageId||null,tab,...(Number.isSafeInteger(event.cardRevision)?{cardRevision:event.cardRevision}:{}),...target});
     }
     notifications.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));

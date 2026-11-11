@@ -7,6 +7,8 @@
  *   node tools/PULSE의뢰.js 받기 <번호>                 의뢰서 · 파일을 git 밖 synk-vendor/pulse-orders/<번호>/로 내려받는다
  *   node tools/PULSE의뢰.js 메모 <번호> <메모.json>      직원만 보는 1차 확인을 올린다
  *   node tools/PULSE의뢰.js 묻기 <번호> <묻기.json>      빠진 것만 손님에게 묻는다(손님에게 보이는 일 — 유호님 확인 뒤에)
+ *   node tools/PULSE의뢰.js 소식 <번호> --글 "…" [--단계 check|draft|make|review] [--그림 a.png b.jpg …] [--영어 "…"]
+ *                                                      작업 소식을 초안으로만 올린다 — 손님에게 올리기는 늘 사람이 직원 화면 「작업 소식」에서 누른다
  *
  * 메모.json: {"summary","lines":[한 문장 후보],"model","ref","risks":[…]}. 묻기.json: {"items":[{"label","why"}]}.
  * 로그인은 작업실 예약과 같은 Windows 자격 보관소 항목을 쓴다. 손님 자료는 공개 저장소에 넣지 않는다.
@@ -78,6 +80,47 @@ async function 묻기(ws, 번호, items) {
   return { 번호, 물음: items.length };
 }
 
+// 작업 소식(운영 조각 4 · 설계 S1): 제작 세션은 작업 중 화면을 초안까지만 올린다(progress_save). 손님에게 올리기(progress_post)는 이 도구에 잇지 않는다.
+// 그림은 결과물 프레임만(PNG · JPG 넷까지) — 작업 도구 화면 캡처에는 다른 손님 파일이 찍힐 수 있다. 소식 전용 그림으로 올린다(x-studio-purpose: progress — 프로젝트당 40장).
+// 영어 프로젝트는 --영어로 손님에게 보일 영어를 함께 둔다(없으면 직원 화면에서 붙인 뒤에 올릴 수 있다).
+const 소식단계 = ['check', 'draft', 'make', 'review'];
+function 소식인자(args) {
+  const out = { 글: '', 단계: '', 그림: [], 영어: '' };
+  for (let i = 0; i < args.length; i++) {
+    const 칸 = args[i];
+    if (칸 === '--글' || 칸 === '--단계' || 칸 === '--영어') { if (i + 1 >= args.length) throw new Error(`${칸} 뒤에 값을 적어 주세요.`); out[칸.slice(2)] = String(args[++i]); continue; }
+    if (칸 === '--그림') { while (i + 1 < args.length && !String(args[i + 1]).startsWith('--')) out.그림.push(String(args[++i])); continue; }
+    throw new Error(`모르는 칸입니다: ${칸}`);
+  }
+  return out;
+}
+const 그림형식 = (파일) => ({ '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' })[path.extname(파일).toLowerCase()] || '';
+async function 소식그림(ws, project, 파일) {
+  const type = 그림형식(파일), bytes = fs.readFileSync(파일);
+  const r = await ws.fetch(ws.base + `/api/client-projects/${project.id}/studio/media`, { method: 'POST', redirect: 'error', body: bytes, signal: AbortSignal.timeout(180000),
+    headers: ws.headers({ 'content-type': type, 'content-length': String(bytes.length), 'x-file-name': encodeURIComponent(path.basename(파일)), 'x-project-revision': String(project.revision), 'x-studio-purpose': 'progress' }) });
+  let data = {};try { data = await r.json(); } catch {}
+  if (!r.ok) throw Object.assign(new Error(`${path.basename(파일)} 올리기 실패(${r.status}) — ${data.error || ''}`.trim()), { status: r.status });
+  return data;
+}
+async function 소식(ws, 번호, { 글 = '', 단계 = '', 그림 = [], 영어 = '' } = {}) {
+  const 본문 = String(글).trim();
+  if (!본문) throw new Error('--글로 손님에게 보일 소식 글을 적어 주세요.');
+  if (String(글).length > 600) throw new Error('소식 글은 600자까지입니다.');
+  if (단계 && !소식단계.includes(단계)) throw new Error(`단계는 ${소식단계.join(' · ')} 가운데 하나입니다.`);
+  if (그림.length > 4) throw new Error('그림은 넷까지 붙입니다.');
+  for (const 파일 of 그림) { if (!그림형식(파일)) throw new Error(`작업 소식에는 PNG · JPG만 올립니다: ${파일}`); if (!fs.existsSync(파일)) throw new Error(`파일이 없습니다: ${파일}`); }
+  let { project } = await 찾기(ws, 번호);
+  if (!project.studio?.request?.progressFeed) throw new Error('이 서버는 아직 작업 소식을 모릅니다 — 회사 판이 오른 뒤 쓰세요.');
+  // --영어는 영어 프로젝트에만 — 다른 언어 프로젝트에 넣으면 그 언어의 확인된 번역으로 저장된다(끝 판 카본 검수 A2). 한국어 프로젝트는 번역을 두지 않는다.
+  if (영어.trim() && project.translation?.locale !== 'en') throw new Error(`이 프로젝트는 영어 프로젝트가 아닙니다(${project.translation?.locale || 'ko'}) — --영어를 빼거나 직원 화면에서 그 언어로 적어 주세요.`);
+  const assets = [];
+  for (const 파일 of 그림) { const data = await 소식그림(ws, project, 파일); project = data.project; assets.push(data.asset.id); }
+  const saved = await 스튜디오(ws, project, { action: 'progress_save', text: 본문, ...(단계 ? { stage: 단계 } : {}), assets, ...(영어.trim() ? { translation: { text: 영어.trim() } } : {}) });
+  const item = (saved?.project?.studio?.request?.progress || []).at(-1);
+  return { 번호, 초안: item?.id || '', 그림: assets.length };
+}
+
 async function main(argv) {
   const [명령, 번호, 파일] = argv;
   const { connect } = require('./작업실예약.js');
@@ -86,7 +129,8 @@ async function main(argv) {
   if (명령 === '받기') { const r = await 받기(ws, 번호); console.log(`${r.파일}개 받음 → ${r.방}`); return; }
   if (명령 === '메모') { await 메모(ws, 번호, JSON.parse(fs.readFileSync(파일, 'utf8'))); console.log('올렸습니다'); return; }
   if (명령 === '묻기') { await 묻기(ws, 번호, JSON.parse(fs.readFileSync(파일, 'utf8')).items); console.log('물었습니다'); return; }
-  console.log('쓰는 법: node tools/PULSE의뢰.js 목록 | 받기 <번호> | 메모 <번호> <메모.json> | 묻기 <번호> <묻기.json>');
+  if (명령 === '소식') { const r = await 소식(ws, 번호, 소식인자(argv.slice(2))); console.log(`초안으로 올렸습니다(${r.초안.slice(0, 8)} · 그림 ${r.그림}장) — 손님에게 올리기는 직원 화면 「작업 소식」에서 사람이 누릅니다`); return; }
+  console.log('쓰는 법: node tools/PULSE의뢰.js 목록 | 받기 <번호> | 메모 <번호> <메모.json> | 묻기 <번호> <묻기.json> | 소식 <번호> --글 "…" [--단계 …] [--그림 …] [--영어 "…"]');
 }
 if (require.main === module) main(process.argv.slice(2)).catch((error) => { console.error(error.message); process.exit(error.status === 401 ? 3 : 1); });
-module.exports = { 의뢰줄, 목록, 찾기, 받기, 메모, 묻기, 안전한이름, 보관 };
+module.exports = { 의뢰줄, 목록, 찾기, 받기, 메모, 묻기, 소식, 소식인자, 안전한이름, 보관 };

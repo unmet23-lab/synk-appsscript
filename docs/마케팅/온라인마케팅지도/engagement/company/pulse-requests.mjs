@@ -12,6 +12,7 @@ import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
 import {openPersonaProjectIds,PERSONA_SLOTS} from './pulse-personas.mjs';
 import {applyInlineTranslations,missingTranslations,inlineObject} from './pulse-translations.mjs';
+import {PROGRESS_FIELDS,applyProgressAction,progressOf,progressCustomerView} from './pulse-progress.mjs';
 
 // 초대 없이 시작하는 공개 의뢰서(2026-11-04, 설계 docs/마케팅/PULSE_의뢰흐름_20261104/README.md 5절).
 // 공개 경로라 프로젝트는 「보내기」에서만 생긴다. 그 전의 초안 · 파일은 따로 두어 스팸이 직원 서버의 프로젝트 · 백업으로 번지지 않게 하고,
@@ -442,9 +443,11 @@ const FIELDS={
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
   propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither','outfit','hair'],
   payment_request:['amount'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],
+  // 작업 소식(운영 조각 4 · 설계 S1): 직원만 — 초안 쓰기 · 공개 · 거두기. 동작은 pulse-progress.mjs.
+  ...PROGRESS_FIELDS,
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
-const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
+const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel','progress_save','progress_post','progress_withdraw'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
 // 카탈로그 모델로 정할 때는 붙어 있던 전용 인물 참조를 뗀다(「카탈로그로 바꿀 때만 교체」 — 기획 12-2 「선택 값」).
 // 옷 · 머리(2026-11-10): 값은 모델마다 다르다(머리 2는 그 모델의 헤어 2). 모델이 바뀌면 옛 모델의 값을 비우고, 손님이 이번에 보낸 값(look)만 쓴다.
 // 방향 고르기 · 직원 정리 · 글 콘티의 「다른 모델로 바꾸기」가 모두 이 한 자리를 지난다(설계 검토 1).
@@ -529,6 +532,8 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     return;
   }
   if(!studio.request)throw fail('의뢰서가 아직 없어요.',409);
+  // 작업 소식(운영 조각 4): 거둔 그림 중 지울 파일 이름을 돌려준다 — 파일은 커밋 뒤에 지운다(pulse-studio.mjs staffMutate → server.mjs).
+  if(['progress_save','progress_post','progress_withdraw'].includes(action))return applyProgressAction({studio,row,input,stamp,locale});
   // 담당자가 확인 뒤에도 알림 메일 주소를 고치거나 메일을 끈다(판 2 메일). 그때의 의뢰서 주소(basedOn)를 적어 두어
   // 손님이 그 뒤 의뢰서 주소를 고치면 손님 주소가 이긴다. 직원 화면의 연락처 줄도 함께 고친다.
   if(action==='request_contact'){
@@ -814,12 +819,14 @@ function strategyWith(strategy,data,stamp){
 export function requestView(studio,{staff=false}={}){
   const request=studio.request;if(!request)return null;
   // paymentLog(결제 이력 — 취소 까닭 · 담당자 이름 · 크몽 주문 번호 · 실수령)는 직원만 본다. 여기서 빼지 않으면 request가 통째로 손님에게 내려간다.
-  const {notes,contact,paymentLog,...safe}=request;
+  // 작업 소식(운영 조각 4)은 studio.progress에 있다(request 밖 — 앞 판 서버로 되돌려도 새지 않게, pulse-progress.mjs). 혹시 request에 같은 이름 칸이 있어도 내리지 않는다.
+  const {notes,contact,paymentLog,progress,...safe}=request;
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
   // paymentFlow는 직원 보기에도 둔다 — 직원 화면의 결제 줄 · 글 콘티 판 고르기 · 의견 다시 묶기는 이 서버에서만 켠다(화면 묶음이 서버보다 먼저 나가도 옛 서버에 모르는 칸을 보내지 않게).
   // castingLooks(2026-11-10 옷 · 머리 고르기): 이 서버가 방향 고르기의 옷 · 머리(answer_direction outfit · hair)를 안다 — 화면은 이것이 있을 때만 그 줄을 그리고 칸을 보낸다.
   // paymentLedger: 이 서버가 결제 이력을 쌓고 payment_confirm의 amount · channel · net을 안다 — 직원 화면은 이것이 있을 때만 그 칸을 보낸다.
-  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),paymentFlow:true,castingLooks:true,paymentLedger:true};
+  // progressFeed: 이 서버가 작업 소식(progress_save · progress_post · progress_withdraw, 그림 올리기의 x-studio-purpose: progress)을 안다 — 직원 화면은 이것이 있을 때만 「소식 올리기」를 그린다.
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,paymentLedger:true,progressFeed:true};
   // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
   // paymentTrail(운영 조각 2 · 11-11): 일지의 결제 줄 — 다시 요청해도 앞 요청 · 취소 줄이 남게 이력에서 만든다.
@@ -828,5 +835,7 @@ export function requestView(studio,{staff=false}={}){
   // 때를 읽을 수 없는 줄(빈 값 · 깨진 값)은 내리지 않는다(카본 끝판 검수 A1).
   const trail=paymentLogOf(request).filter(entry=>PAYMENT_TRAIL_KINDS.includes(entry?.kind)&&typeof entry.at==='string'&&Number.isFinite(Date.parse(entry.at))).map(entry=>({kind:entry.kind,at:entry.at,...(paymentAmount(entry.amount)?{amount:entry.amount}:{}),...(entry.kind==='confirmed'&&typeof entry.dueDate==='string'&&entry.dueDate?{dueDate:entry.dueDate}:{})}));
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
-  return {...safe,...(trail.length?{paymentTrail:trail}:{}),paymentFlow:true,castingLooks:true};
+  // 작업 소식: 올린 것만 {id, at, stage?, text, assets}로(pulse-progress.mjs progressCustomerView) request.progress 자리에 싣는다. 하나도 없으면 칸을 싣지 않는다.
+  const shown=progressCustomerView(studio);
+  return {...safe,...(trail.length?{paymentTrail:trail}:{}),...(shown.length?{progress:shown}:{}),paymentFlow:true,castingLooks:true};
 }

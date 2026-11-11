@@ -1152,6 +1152,17 @@ html.sx:not(.is-staff) .header-actions .install-button::before{display:none}
 .sx-j-quote{min-width:0;font-size:15px;line-height:1.5;color:var(--sx-ink);overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
 .sx-j-here{font-size:13px;color:var(--sx-faint);white-space:nowrap}
 .sx-j-more{justify-self:start}
+/* 운영 조각 4: 작업 소식 줄의 그림(넷까지 · 잘리지 않게 담음) · 「작업 중인 화면이에요」 · 「말만 보기」 거르개 */
+.sx-j-shots{margin:6px 0 2px;display:grid;gap:6px;min-width:0}
+/* 같은 높이의 띠로 — 세로 · 가로 그림이 섞여도 자르거나 검은 여백을 넣지 않는다. 한 장이면 원래 비율로 크게. */
+.sx-j-shots>div{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.sx-j-shots img{display:block;height:clamp(84px,24vw,140px);width:auto;max-width:100%;object-fit:contain;background:#000}
+.sx-j-shots[data-count="1"] img{height:auto;max-height:260px}
+.sx-j-wip{color:var(--sx-dim)}
+.sx-j-tools{margin:4px 0 -4px}
+.sx-j-filter[aria-pressed=true]{padding:2px 8px;background:var(--sx-ink);color:#0b0b0b;text-decoration:none}
+.sx-j-empty{padding:8px 0;color:var(--sx-dim)}
+.sx-room-cap .sx-link{margin-left:6px;padding:0;font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* 옛 화면(app.css)의 알림 강조(분홍 테두리 · !important)를 일지 줄에서는 이긴다 — 크림 톤 바탕만. */
 :is(.sx-j-row,.sx-j-ask).notification-target{outline:0;background:rgba(244,241,234,.12);box-shadow:-8px 0 0 rgba(244,241,234,.12),8px 0 0 rgba(244,241,234,.12)!important;border-radius:0;transition:background .8s ease}
 .sx-j-ask-open{display:none}

@@ -1826,6 +1826,12 @@ export default {
   "결제를 확인했어요 · 받으실 날 {date}":"confirmed your payment · delivery on {date}",
   "결제를 취소했어요":"cancelled the payment",
   "결제 요청을 취소했어요":"cancelled the payment request",
+  // 작업 소식(운영 조각 4 · 11-12): 일지 소식 줄(담당자 이름 뒤 — 동사로 시작) · 그림 아래 안내 · 저희 차례 큰 그림 칸 · 「말만 보기」 거르개(room-view.mjs · film-views.mjs)
+  [`journal${C}작업 소식`]:"shared a work-in-progress update",
+  "작업 중인 화면이에요 · 완성본이 아니에요":"Work in progress · not the finished version",
+  "소식 보기":"Read the update",
+  "말만 보기":"Show messages only",
+  "나눈 말이 아직 없어요":"No messages yet",
   "합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.":"Anything that differs from what we agreed on will still be corrected, even with no revisions left.",
   "수정 {total}회 중 {left}회 남았어요.":{"one":"Your one revision is still available.","other":"You have {left} of {total} revisions left."},
   "정한 수정 {total}회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your one agreed revision. We will confirm the scope with you before making further changes.","other":"You have used your {total} agreed revisions. We will confirm the scope with you before making further changes."},

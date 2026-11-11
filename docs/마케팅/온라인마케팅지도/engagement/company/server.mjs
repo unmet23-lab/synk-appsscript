@@ -1306,8 +1306,12 @@ export function createCompanyApp(options={}) {
       const pulseStudioUpload=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio\/media$/);
       if(pulseStudioUpload){
         const projectId=pulseStudioUpload[1],revision=Number(req.headers['x-project-revision']),originalHash=auth.hash;let upload;
-        const recheck=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);pulseStudio.assertStaffUpload(latest.user,projectId,revision);return latest.user;};
-        try{recheck();upload=await receiveStudioMedia(req,store.directory,{allowAudio:true});recheck();await commitStudioMedia(upload,store.directory);const result=pulseStudio.staffUpload(recheck(),projectId,revision,upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
+        // 작업 소식 그림(운영 조각 4): x-studio-purpose: progress로 올리면 소식 전용 그림으로 표시한다(PNG · JPG만, 프로젝트당 40장 — pulse-progress.mjs). 다른 값은 거절한다.
+        const purposeHeader=req.headers['x-studio-purpose'],purpose=purposeHeader===undefined?'':purposeHeader==='progress'?'progress':null;
+        if(purpose===null)throw httpError('올리는 자리를 확인해 주세요.',400);
+        if(purpose&&!['image/png','image/jpeg'].includes(String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase()))throw httpError('작업 소식에는 PNG · JPG 그림만 올릴 수 있어요.',415);
+        const recheck=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);pulseStudio.assertStaffUpload(latest.user,projectId,revision,{purpose});return latest.user;};
+        try{recheck();upload=await receiveStudioMedia(req,store.directory,{allowAudio:!purpose});recheck();await commitStudioMedia(upload,store.directory);const result=pulseStudio.staffUpload(recheck(),projectId,revision,{...upload.metadata,...(purpose?{purpose}:{})});upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
       }
       const personaUpload=path.match(/^\/api\/personas\/([a-f0-9-]{36})\/revisions\/([a-f0-9-]{36})\/media$/);
       if(personaUpload){
@@ -1417,7 +1421,8 @@ export function createCompanyApp(options={}) {
       if(scheduleRoute)return send(res,200,clientProjects.schedule(user,scheduleRoute[1],input));
       if(path==='/api/client-projects')return send(res,201,clientProjects.save(user,input));
       const pulseStudioRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio$/);
-      if(pulseStudioRoute)return send(res,200,pulseStudio.staffMutate(user,pulseStudioRoute[1],input));
+      // 작업 소식을 거두면 기록은 트랜잭션 안에서 빠지고, 지울 그림 파일(removed)은 커밋 뒤 여기서 지운다(운영 조각 4 — 기록 먼저 · 파일 나중). 응답에는 싣지 않는다.
+      if(pulseStudioRoute){const {removed,...result}=pulseStudio.staffMutate(user,pulseStudioRoute[1],input);for(const file of removed||[])await pulseRequests.discardProjectFile(file).catch(()=>{});return send(res,200,result);}
       // 고객 전용 인물(판 3): 직원 전이 · 판 · 견적 · 사용 범위. 지운 판 파일은 기록이 바뀐 뒤 지운다.
       // 고객 브랜드(판 4, 설계 4-4 · 5판 D15): 연결 요청 결정 · 브랜드 · 프로젝트 · 인물 일. 결정마다 감사 기록을 남기고, 삭제는 기록을 바꾼 뒤 파일을 지운다(서비스 안 — 문서 먼저 · 파일 나중).
       const workspaceClaimRoute=path.match(/^\/api\/customer-workspaces\/claims\/([a-f0-9-]{36})$/);
