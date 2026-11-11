@@ -16,9 +16,10 @@ export const MODEL_REASON=Object.freeze({expired:k('다시 쓰기 기한이 지�
 // 보관 자료 이름(서버 reuseTerms materials).
 const MATERIAL=Object.freeze({reference:k('기준 얼굴'),motion:k('동작 시안'),'model-files':k('이 모델을 다시 만드는 데 필요한 파일')});
 // 관리자 확인 화면(다시 쓰기 끄기 · 사용 멈추기 · 삭제 요청): 제목 · 무슨 일이 생기는지 · 단추 · 보낼 주소 · 끝난 뒤 알림.
+// keep(11-11 화면 최종 검수 F3): 끄거나 멈춰도 지우는 날은 그대로다(서버 brandDeleteAt — 철회 · 중지 · 기한 지남 모두 같은 시계). 그날이 아직 남았을 때만 한 줄 더 보인다.
 export const MODEL_ASK=Object.freeze({
-  withdraw:{title:k('다시 쓰기를 끌까요?'),text:k('끄면 이 모델로 새 의뢰를 할 수 없어요. 진행 중인 광고는 담당자가 확인해 연락드려요. 다시 켜려면 보관 동의를 새로 해 주세요.'),go:k('다시 쓰기 끄기'),path:'/reuse/withdraw',done:k('다시 쓰기를 껐어요.')},
-  stop:{title:k('이 모델의 사용을 멈출까요?'),text:k('멈추면 바로 이 모델로 새 의뢰 · 사용 확인 · 제작 시작을 할 수 없어요. 이미 만들고 있는 광고는 저절로 멈추지 않아요 — 담당자가 확인해요. 이미 공개한 광고를 내리는 일은 담당자와 따로 정해요. 다시 쓰려면 담당자가 멈춤을 푼 뒤 보관 동의를 새로 해 주세요.'),go:k('사용 멈추기'),path:'/stop',done:k('이 모델의 사용을 멈췄어요. 담당자가 진행 중인 광고를 확인해요.')},
+  withdraw:{title:k('다시 쓰기를 끌까요?'),text:k('끄면 이 모델로 새 의뢰를 할 수 없어요. 진행 중인 광고는 담당자가 확인해 연락드려요. 다시 켜려면 보관 동의를 새로 해 주세요.'),go:k('다시 쓰기 끄기'),path:'/reuse/withdraw',done:k('다시 쓰기를 껐어요.'),keep:k('끄더라도 그림과 파일은 {date}까지 두고, 그날 전에 다시 동의하지 않으면 지워요.')},
+  stop:{title:k('이 모델의 사용을 멈출까요?'),text:k('멈추면 바로 이 모델로 새 의뢰 · 사용 확인 · 제작 시작을 할 수 없어요. 이미 만들고 있는 광고는 저절로 멈추지 않아요 — 담당자가 확인해요. 이미 공개한 광고를 내리는 일은 담당자와 따로 정해요. 다시 쓰려면 담당자가 멈춤을 푼 뒤 보관 동의를 새로 해 주세요.'),go:k('사용 멈추기'),path:'/stop',done:k('이 모델의 사용을 멈췄어요. 담당자가 진행 중인 광고를 확인해요.'),keep:k('멈추더라도 그림과 파일은 {date}까지 두고, 그날 전에 담당자가 멈춤을 푼 뒤 다시 동의하지 않으면 지워요.')},
   delete:{title:k('이 모델의 삭제를 요청할까요?'),text:k('담당자가 확인한 뒤 이 모델의 그림과 파일을 지워요. 이 모델을 쓰는 진행 중인 광고가 있으면 그 일을 먼저 정리해요. 지운 뒤에는 되돌릴 수 없어요.'),go:k('삭제 요청 보내기'),path:'/delete-request',done:k('삭제 요청을 보냈어요. 담당자가 확인한 뒤 지워요.')},
 });
 // 한국 날짜(YYYY-MM-DD)로 — 보관 끝은 그날 한국 시각 끝 순간(ISO)이라 그 날짜를 그대로 보인다.
@@ -88,8 +89,8 @@ function consent(st){
     <div class="sx-mm-paper-act"><button type="button" class="sx-go is-solid" data-mm-do="consent-go" ${st.busy?'disabled':''}><span>${esc(first?t('동의하고 보관'):t('동의하고 연장'))}</span>${arrow}</button><button type="button" class="sx-quiet" data-mm-do="back">${esc(t('내 모델로 돌아가기'))}</button></div></article>`;
 }
 function ask(st){
-  const {ws,card,kind}=st.pick,a=MODEL_ASK[kind];
-  return `<article class="sx-mm-paper is-ask"><p class="sx-kicker">${esc(nameOf(card))} · ${esc(ws.name)}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t(a.title))}</h1><p class="sx-body">${esc(t(a.text))}</p>
+  const {ws,card,kind}=st.pick,a=MODEL_ASK[kind],keep=a.keep&&Date.parse(card.deleteAt)>Date.now();
+  return `<article class="sx-mm-paper is-ask"><p class="sx-kicker">${esc(nameOf(card))} · ${esc(ws.name)}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t(a.title))}</h1><p class="sx-body">${esc(t(a.text))}</p>${keep?`<p class="sx-body" data-mm-keep>${esc(t(a.keep,{date:dateOf(card.deleteAt)}))}</p>`:''}
     <label class="sx-field"><span class="sx-small">${esc(t('까닭 · 선택'))}</span><textarea data-mm-note rows="2" maxlength="300" placeholder="${esc(t('예) 이번 시즌 캠페인이 끝났어요'))}">${esc(st.note||'')}</textarea></label>${alertOf(st)}
     <div class="sx-mm-paper-act"><button type="button" class="sx-go is-solid" data-mm-do="ask-go" ${st.busy?'disabled':''}><span>${esc(t(a.go))}</span>${arrow}</button><button type="button" class="sx-quiet" data-mm-do="back">${esc(t('내 모델로 돌아가기'))}</button></div></article>`;
 }
