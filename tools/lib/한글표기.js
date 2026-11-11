@@ -499,7 +499,10 @@ function README자동칸바꾸기(본문) {
   const 시 = 본문.indexOf(자동시작);
   const 끝 = 본문.indexOf(자동끝);
   if (시 < 0 || 끝 < 시) throw new Error('README에 자동 칸 표시가 없다');
-  return `${본문.slice(0, 시 + 자동시작.length)}\n\n${자동칸()}\n\n${본문.slice(끝)}`;
+  // 줄끝은 본문을 따른다 — 공용 작업본은 core.autocrlf로 README가 CRLF로 체크아웃돼, LF로 만든 칸과 글자 그대로 견주면 갈렸다(11-11 조율 세션 실측)
+  const nl = 본문.includes('\r\n') ? '\r\n' : '\n';
+  const 칸 = 자동칸().replace(/\r?\n/g, nl);
+  return `${본문.slice(0, 시 + 자동시작.length)}${nl}${nl}${칸}${nl}${nl}${본문.slice(끝)}`;
 }
 
 const 언어이름 = { latin: '영어', mn: '몽골어(할하)', ru: '러시아어', kk: '카자흐어', ky: '키르기스어', hi: '힌디어', ne: '네팔어' };

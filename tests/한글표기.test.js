@@ -242,6 +242,9 @@ test('README 자동 칸이 json에서 만든 것과 같다', () => {
   const 본문 = fs.readFileSync(도구.README경로, 'utf8');
   assert.ok(본문.includes(도구.자동시작) && 본문.includes(도구.자동끝), 'README에 자동 칸 표시');
   assert.strictEqual(도구.README자동칸바꾸기(본문), 본문, 'README 표가 json과 갈렸다 — node tools/lib/한글표기.js --README');
+  // 공용 작업본은 core.autocrlf로 CRLF 체크아웃 — 자동 칸도 본문 줄끝을 따라야 같다(11-11)
+  const crlf = 본문.replace(/\r?\n/g, '\r\n');
+  assert.strictEqual(도구.README자동칸바꾸기(crlf), crlf, 'CRLF 본문에서 자동 칸 줄끝이 갈렸다');
   assert.match(본문, /### 아르곤 검수 반영 \(11-11\)/);
 });
 
