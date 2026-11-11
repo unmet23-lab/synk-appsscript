@@ -213,7 +213,7 @@ test('판 4 화면 최종 검수 F1 ~ F5: 붙인 칩은 다시 눌러도 그대�
 test('묶음: 손님 오프라인 목록에 내 모델 모듈(직원 브랜드 데스크는 빼고), 서버가 두 모듈을 내준다',()=>{
   const sw=read('sw.js');
   assert.match(sw,/FILES\.push\(BASE\+'my-models\.mjs'\);/);assert.doesNotMatch(sw,/'brand-desk-view\.mjs'/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v41-first-load-20261111';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v42-retention-20261111';/);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
   assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs'\]\)files\['\/pulse-app\/'\+file\]/);
 });
