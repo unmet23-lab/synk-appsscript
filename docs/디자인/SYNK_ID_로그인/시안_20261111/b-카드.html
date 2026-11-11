@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK ID · 시안 B 카드</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* B SYNK ID 카드 — 왼쪽 회색 무대(플랫폼 선반과 같은 #f3f3f4)에 실물 하나(목에 거는 SYNK ID 카드), 오른쪽은 폼 한 칸.
+   카드는 이 기기와 서버가 아는 것만 적는다: 처음엔 빈 줄, 지난번 로그인이 남았으면 가린 이메일 · 방법, 로그인하면 이름까지.
+   그래서 「지난번엔 뭐로 로그인했더라」(10-27 · 11-11 지적)의 답이 카드 위에 있다. 넓은 여백 위 실물 하나 = 참고 장부 4절 Recent 상위의 결. */
+.split{display:grid;grid-template-columns:minmax(0,56fr) minmax(0,44fr);min-height:100vh}
+.stage{background:var(--surface);min-width:0}
+.stage-in{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center}
+.stage .brand{position:absolute;left:40px;top:28px}
+.stage .cap{position:absolute;left:24px;right:24px;bottom:40px;text-align:center;font-size:var(--t13);color:var(--ink-3)}
+.hang{position:relative;transform:rotate(var(--tilt,-3deg));transform-origin:50% -40vh;margin-top:6vh;transition:transform .9s cubic-bezier(.2,.9,.25,1.25)}
+.hang.swing{animation:swing 1.1s cubic-bezier(.3,.7,.3,1)}
+@keyframes swing{0%{transform:rotate(-3deg)}25%{transform:rotate(1.6deg)}55%{transform:rotate(-4.2deg)}80%{transform:rotate(-2.4deg)}100%{transform:rotate(-3deg)}}
+.strap{position:absolute;left:50%;bottom:100%;width:28px;height:100vh;margin-left:-14px;margin-bottom:-16px;background:#17171a repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+.clip{position:absolute;left:50%;top:-30px;width:40px;height:36px;margin-left:-20px;border-radius:8px;background:linear-gradient(180deg,#d9d9de,#a5a5ab 60%,#c2c2c7);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 2px 3px rgba(0,0,0,.18)}
+.clip::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;margin-left:-6px;border-radius:50%;border:3px solid #a5a5ab;background:transparent}
+.card{position:relative;width:300px;height:476px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;background:linear-gradient(162deg,#fff 0%,#fcfcfc 55%,#f6f6f7 100%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.04),0 1px 1px rgba(0,0,0,.05),0 8px 16px -8px rgba(20,20,30,.16),0 44px 70px -34px rgba(20,20,30,.32)}
+.card .slot{position:absolute;left:50%;top:20px;width:56px;height:11px;margin-left:-28px;border-radius:999px;background:var(--surface);box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+.card-in{flex:1;display:flex;flex-direction:column;padding:56px 26px 18px}
+.card-in .t{font-size:var(--t13);font-weight:600;color:var(--ink-3)}
+.card-who{margin-top:auto;display:grid}
+.card-name{min-height:46px;font-size:var(--t34);font-weight:600;line-height:1.3;border-bottom:1px solid var(--line)}
+.card-name.blank{border-bottom-color:#d9d9dd}
+.card-mail{margin-top:12px;min-height:26px;font-size:var(--t15);font-weight:600;color:var(--ink-2);overflow-wrap:anywhere;border-bottom:1px solid transparent}
+.card-mail.blank{border-bottom-color:#d9d9dd;margin-right:40%}
+.card-rows{margin-top:18px;display:grid}
+.card-rows div{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;border-top:1px solid var(--line)}
+.card-rows span:first-child{font-size:var(--t13);color:var(--ink-3)}
+.card-rows span:last-child{font-size:var(--t15);font-weight:600;display:flex;align-items:center;gap:6px}
+.card-rows .i,.card-rows .g-mark{width:16px;height:16px}
+.card-rows .blank{display:block;width:72px;height:1px;background:#d9d9dd}
+.band{height:84px;flex:none;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 26px;color:#c9c9ce;font-size:var(--t13)}
+.band .wordmark{height:28px;fill:#fff}
+.side{min-width:0;display:flex;flex-direction:column;padding:28px max(40px,env(safe-area-inset-right,0px)) 40px 80px}
+.side .top{display:flex;justify-content:flex-end;font-size:var(--t15)}
+.side .top a{font-weight:600;color:var(--ink-3);text-decoration:none}
+.col{width:100%;max-width:400px;margin-top:clamp(40px,9vh,96px);display:flex;flex-direction:column;flex:1}
+.col.wide{max-width:440px}
+.col.account-col{max-width:520px}
+.head{display:grid;gap:8px;margin-bottom:36px}
+.body{display:grid;gap:24px}
+.fields{display:grid;gap:20px}
+.consents{display:grid;gap:16px}
+.block{display:block;margin-top:4px}
+.switch{justify-content:flex-start}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts{display:grid;gap:12px}
+.consent,.restart,.onboard{display:grid;gap:24px}
+.who{display:none}
+.give{display:grid;gap:10px}
+.rows.tight>li{min-height:48px;padding:10px 0}
+.account{display:grid;gap:40px}
+.account section{display:grid;gap:8px}
+.account section .rows{margin-top:12px}
+.account>.rows:first-of-type{display:none}
+.later{gap:16px!important}
+.later .h22{color:var(--ink-3);font-size:var(--t17)}
+.pill.g{height:40px;padding:0 16px;font-size:var(--t13);gap:8px}
+.pill.g .g-mark{width:16px;height:16px}
+.bottom{margin-top:auto;padding-top:64px}
+.out{justify-self:start}
+@media (max-width:900px){
+  .split{grid-template-columns:1fr}
+  .stage-in{position:relative;height:288px;display:block}
+  .stage .brand{left:20px;top:18px;z-index:1}
+  .stage .cap{display:none}
+  .hang{position:absolute;left:50%;top:40px;width:300px;margin:0 0 0 -150px;transform:rotate(-3deg) scale(.62);transform-origin:50% 0;transition:none}
+  .hang.swing{animation:none}
+  .side{padding:28px 20px 32px}
+  .side .top{display:none}
+  .col{margin-top:0}
+  .two-col,.row-input{grid-template-columns:1fr}
+  .account .rows>li{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="split">
+  <aside class="stage" aria-label="내 SYNK ID 카드"><div class="stage-in">
+    <a class="brand" href="#" aria-label="SYNK 홈" id="brand"></a>
+    <div class="hang"><div class="strap"></div><div class="clip"></div><div class="card" id="card"></div></div>
+    <p class="cap" id="cap"></p>
+  </div></aside>
+  <main class="side"><div class="top"><a href="#">synk.im</a></div><div class="col" id="col"></div></main>
+</div>
+<script src="scenes.js"></script>
+<script>
+(function () {
+  const M = window.SYNKMOCK, EX = M.EX;
+  document.getElementById('brand').innerHTML = M.WORDMARK;
+  // 카드에 적히는 것 — 이 기기(지난번 로그인 기록)와 서버(로그인한 계정)가 아는 값만
+  function known(s) {
+    if (s.mode === 'login' && s.recent) return { email: EX.masked, way: s.recent, note: '이 기기 · 지난번' };
+    if (s.mode === 'reset') return { email: EX.email, way: 'email' };
+    if (s.mode === 'onboarding') return { email: EX.email, way: 'google', note: '가입 마무리 중' };
+    if (s.mode === 'consent') return { name: EX.name, email: EX.email, way: 'email', note: '연결 요청 · SYNK Workspace' };
+    if (s.mode === 'restart' || s.mode === 'account') return { name: EX.name, email: EX.email, way: 'email' };
+    return {};
+  }
+  function card(s) {
+    const k = known(s), way = k.way === 'google' ? `${M.G}Google` : k.way === 'email' ? `${M.ICON.mail}이메일` : '';
+    return `<span class="slot"></span>
+      <div class="card-in">
+        <span class="t">SYNK ID</span>
+        <div class="card-who"><div class="card-name${k.name ? '' : ' blank'}">${k.name ? M.esc(k.name) : ''}</div>
+        <div class="card-mail${k.email ? '' : ' blank'}">${k.email ? M.esc(k.email) : ''}</div></div>
+        <div class="card-rows">
+          <div><span>로그인 방법</span><span>${way || '<i class="blank"></i>'}</span></div>
+          ${k.note ? `<div><span>${M.esc(k.note)}</span><span></span></div>` : ''}
+        </div>
+      </div>
+      <div class="band">${M.WORDMARK}<span class="num">synk.im/id</span></div>`;
+  }
+  function draw() {
+    const s = M.current(), c = M.copy(s), col = document.getElementById('col');
+    document.getElementById('card').innerHTML = card(s);
+    document.getElementById('cap').textContent = s.recent ? '카드의 이메일과 방법은 이 기기에 남은 지난번 로그인이에요.' : s.mode === 'consent' ? '이 카드의 이메일과 기본 프로필을 이 PC의 SYNK Workspace에 넘겨요.' : '';
+    col.className = 'col' + (s.mode === 'onboarding' ? ' wide' : s.mode === 'account' ? ' account-col' : '');
+    let body = '';
+    if (['login', 'signup', 'recover', 'reset'].includes(s.mode)) body = M.authBody(s);
+    else if (s.mode === 'onboarding') body = M.onboarding();
+    else if (s.mode === 'consent') body = M.consent({ wide: true });
+    else if (s.mode === 'restart') body = M.restart({ wide: true });
+    else if (s.mode === 'account') body = M.account({ head: false });
+    const lead = s.recent ? '지난번에 쓴 방법에 「최근 사용」을 붙여 뒀어요.' : s.mode === 'consent' ? `로그인한 계정 ${EX.email}` : c.lead;
+    col.innerHTML = `
+      <div class="head">
+        <h1 class="h34">${M.esc(c.h)}</h1>
+        ${lead ? `<p class="lead">${M.esc(lead)}</p>` : ''}
+        ${s.recent ? `<p>${M.recentForget}</p>` : ''}
+        ${s.mode === 'account' ? '<button class="pill pill-line out" type="button">로그아웃</button>' : ''}
+      </div>
+      <div class="body">${body}</div>
+      <div class="bottom">${M.footLinks}</div>`;
+    document.title = 'SYNK ID · B 카드 · ' + s.name;
+  }
+  // 손맛: 포인터를 따라 카드가 줄에 매달린 채 살짝 기울고, 장면이 바뀌면 한 번 흔들린다(움직임 줄이기 · 좁은 화면에서는 없음)
+  const hang = document.querySelector('.hang'), stage = document.querySelector('.stage-in');
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches || innerWidth <= 900;
+  stage.addEventListener('pointermove', e => { if (still()) return; const r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5; hang.style.setProperty('--tilt', (-3 + x * 5).toFixed(2) + 'deg'); });
+  stage.addEventListener('pointerleave', () => hang.style.removeProperty('--tilt'));
+  addEventListener('hashchange', () => { draw(); if (still()) return; hang.classList.remove('swing'); void hang.offsetWidth; hang.classList.add('swing'); });
+  hang.addEventListener('animationend', () => hang.classList.remove('swing'));
+  draw();
+})();
+</script>
+</body>
+</html>

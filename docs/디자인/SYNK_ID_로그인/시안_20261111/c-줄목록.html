@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK ID · 시안 C 줄 목록</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* C 줄 목록 — 플랫폼 「내 홈」의 두 줄 큰 인사(56 · 둘째 줄 회색)와 설정 화면의 1px 줄 목록을 그대로 잇는 판.
+   겹: 위 막대 72(싱ㅋ) → 두 줄 제목 → (안내 한 줄) → 검정 1px 선 위 방법 줄 둘 → 이메일 줄을 누르면 그 줄 아래로 칸 → 잔글 → 바닥 1px 선 + 링크.
+   왼쪽 정렬, 오른쪽은 비워 둔다(카드 · 상자 · 그림 없음). */
+:root{--gray-2:#808086}
+body{min-height:100vh;display:flex;flex-direction:column}
+.bar{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 max(40px,env(safe-area-inset-right,0px)) 0 max(40px,env(safe-area-inset-left,0px));max-width:1440px;width:100%;margin:0 auto}
+.bar .home{font-size:var(--t15);font-weight:600;color:var(--ink-3);text-decoration:none}
+.wrap{flex:1;width:100%;max-width:1440px;margin:0 auto;padding:clamp(40px,8vh,88px) max(40px,env(safe-area-inset-right,0px)) 72px max(40px,env(safe-area-inset-left,0px))}
+.col{max-width:680px}
+.two{font-size:var(--t56);font-weight:600;line-height:1.14;letter-spacing:-.01em;display:grid;text-wrap:balance}
+.two .g{color:var(--gray-2)}
+.lead-box{display:grid;gap:8px;margin-top:20px;max-width:560px}
+.body{margin-top:48px;display:grid;gap:28px}
+.mrows{border-top:1px solid var(--ink)}
+.mrows>li{border-bottom:1px solid var(--line)}
+.mrow{display:flex;align-items:center;gap:16px;width:100%;min-height:80px;padding:0;border:0;background:none;text-align:left;cursor:pointer;font-size:var(--t17);font-weight:600}
+.mrow:disabled{cursor:not-allowed;color:#8a8a90}
+.mrow:disabled .g-mark{opacity:.45;filter:grayscale(1)}
+.mrow-mark{width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--edge);display:grid;place-items:center;flex:none;transition:box-shadow .2s}
+.mrow:not(:disabled):hover .mrow-mark,.mrow[aria-expanded="true"] .mrow-mark{box-shadow:inset 0 0 0 2px var(--ink)}
+.mrow-name{flex:1;min-width:0}
+.mrow:not(:disabled):hover .mrow-name{text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px}
+.mrow-end{display:flex;align-items:center;color:var(--ink-3);font-weight:400}
+.mrow .badge{margin-right:6px}
+.mrow-body{padding:4px 0 32px 60px}
+.solo{border-top:1px solid var(--ink);padding-top:28px;max-width:560px}
+.fields{display:grid;gap:20px;max-width:500px}
+.fields .submit{justify-self:start;min-width:160px;margin-top:4px}
+.consents{display:grid;gap:16px}
+.block{display:block;margin-top:4px}
+.notes{display:grid;gap:14px;max-width:560px}
+.switch.left{justify-content:flex-start}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts{display:flex;flex-wrap:wrap;gap:12px}
+.consent,.restart,.onboard{display:grid;gap:24px;max-width:560px}
+.onboard{border-top:1px solid var(--ink);padding-top:28px}
+.who{display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line)}
+.avatar.sm{width:44px;height:44px;font-size:var(--t15)}
+.give{display:grid;gap:10px}
+.give .rows{border-top-color:var(--line)}
+.rows.tight>li{min-height:48px;padding:10px 0}
+.account{display:grid;gap:48px;max-width:680px}
+.account section{display:grid;gap:8px}
+.account section .rows{margin-top:12px}
+.me{display:flex;align-items:center;gap:16px}
+.me .r-main{flex:1}
+.later{gap:16px!important}
+.later .h22{color:var(--ink-3);font-size:var(--t17)}
+.pill.g{height:40px;padding:0 16px;font-size:var(--t13);gap:8px}
+.pill.g .g-mark{width:16px;height:16px}
+.foot-wrap{width:100%;max-width:1440px;margin:0 auto;padding:0 max(40px,env(safe-area-inset-right,0px)) 32px max(40px,env(safe-area-inset-left,0px))}
+.foot-wrap .foot{border-top:1px solid var(--line);padding-top:20px}
+@media (max-width:900px){
+  .bar{height:60px;padding:0 20px}
+  .wrap{padding:28px 20px 56px}
+  .foot-wrap{padding:0 20px 28px}
+  .two{font-size:var(--t34);line-height:1.2}
+  .body{margin-top:36px}
+  .mrow{min-height:72px}
+  .mrow-body{padding:0 0 28px}
+  .two-col,.row-input{grid-template-columns:1fr}
+  .account .rows>li{flex-wrap:wrap}
+  .fields .submit{width:100%}
+}
+</style>
+</head>
+<body>
+<header class="bar"><a href="#" aria-label="SYNK 홈" id="brand"></a><a class="home" href="#">synk.im</a></header>
+<main class="wrap"><div class="col" id="col"></div></main>
+<div class="foot-wrap" id="foot"></div>
+<script src="scenes.js"></script>
+<script>
+(function () {
+  const M = window.SYNKMOCK;
+  document.getElementById('brand').innerHTML = M.WORDMARK;
+  document.getElementById('foot').innerHTML = M.footLinks;
+  function draw() {
+    const s = M.current(), c = M.copy(s), col = document.getElementById('col');
+    let body = '';
+    if (['login', 'signup', 'recover', 'reset'].includes(s.mode)) body = M.rowsBody(s);
+    else if (s.mode === 'onboarding') body = M.onboarding({ submitWide: false });
+    else if (s.mode === 'consent') body = M.consent();
+    else if (s.mode === 'restart') body = M.restart();
+    else if (s.mode === 'account') body = M.account();
+    // 두 줄 제목 아래 안내: 지난번 로그인이면 가린 이메일, 그 밖엔 그 단계의 안내(로그인 첫 화면은 두 줄로 충분해 뺀다)
+    // 지난번 방법은 두 줄 제목이 이미 말하니 안내 줄에는 이 기기에 남은 계정(가린 이메일)만
+    const lead = s.recent ? `이 기기에 남은 지난번 계정 · ${M.EX.masked}` : s.mode === 'login' && !s.noGoogle ? '' : s.mode === 'consent' ? '' : c.lead;
+    col.innerHTML = `
+      <h1 class="two"><span>${M.esc(c.two[0])}</span><span class="g">${M.esc(c.two[1])}</span></h1>
+      ${lead || s.recent ? `<div class="lead-box">${lead ? `<p class="lead">${M.esc(lead)}</p>` : ''}${s.recent ? `<p>${M.recentForget}</p>` : ''}</div>` : ''}
+      <div class="body">${body}</div>`;
+    document.title = 'SYNK ID · C 줄 목록 · ' + s.name;
+  }
+  addEventListener('hashchange', draw);draw();
+})();
+</script>
+</body>
+</html>

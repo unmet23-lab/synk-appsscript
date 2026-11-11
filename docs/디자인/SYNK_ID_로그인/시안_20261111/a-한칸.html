@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK ID · 시안 A 한 칸</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* A 한 칸 — PC 앱 로그인 창(desktop/renderer #account-dialog)을 그대로 쪽으로 편 판.
+   겹: 싱ㅋ 표 → 「SYNK ID」 회색 머리 → 제목 34 한 줄 → 회색 안내 → 방법 한 쌍 → (이메일 칸) → 잔글 → 바닥 링크. 카드 · 둘로 나눔 · 첫머리 없음. */
+body{min-height:100vh}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:clamp(40px,11vh,120px) max(20px,env(safe-area-inset-right,0px)) 40px max(20px,env(safe-area-inset-left,0px))}
+.col{width:100%;max-width:400px;display:flex;flex-direction:column;flex:1}
+.col.wide{max-width:440px}
+.col.account-col{max-width:640px}
+.mark{display:block;width:64px;height:auto;fill:var(--ink)}
+.mark .wordmark{height:auto;width:64px}
+.head{display:grid;gap:8px;margin:28px 0 36px}
+.head .h34{margin-top:2px}
+.head .lead{margin-top:4px}
+.head .forget{margin-top:6px}
+.body{display:grid;gap:24px}
+.fields{display:grid;gap:20px}
+.fields .submit{margin-top:4px}
+.consents{display:grid;gap:16px}
+.block{display:block;margin-top:4px}
+.switch{justify-content:flex-start}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts{display:grid;gap:12px}
+.consent,.restart,.onboard{display:grid;gap:24px}
+.who{display:flex;align-items:center;gap:14px;padding:16px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line)}
+.avatar.sm{width:40px;height:40px;font-size:var(--t15)}
+.give{display:grid;gap:10px}
+.rows.tight>li{min-height:48px;padding:10px 0}
+.acts.stack{grid-template-columns:1fr}
+.restart .acts{grid-template-columns:1fr}
+.account{display:grid;gap:40px}
+.account section{display:grid;gap:8px}
+.account section .rows{margin-top:12px}
+.me{display:flex;align-items:center;gap:16px}
+.me .r-main{flex:1}
+.later{gap:16px!important;color:var(--ink-3)}
+.later .h22{color:var(--ink-3);font-size:var(--t17)}
+.pill.g{height:40px;padding:0 16px;font-size:var(--t13);gap:8px}
+.pill.g .g-mark{width:16px;height:16px}
+.bottom{margin-top:auto;padding-top:64px}
+@media (max-width:520px){
+  .page{padding-top:28px}
+  .head{margin:24px 0 28px}
+  .two-col{grid-template-columns:1fr}
+  .row-input{grid-template-columns:1fr}
+  .account .rows>li{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="page"><div class="col" id="col"></div></div>
+<script src="scenes.js"></script>
+<script>
+(function () {
+  const M = window.SYNKMOCK;
+  function draw() {
+    const s = M.current(), c = M.copy(s), col = document.getElementById('col');
+    col.className = 'col' + (s.mode === 'onboarding' ? ' wide' : s.mode === 'account' ? ' account-col' : '');
+    let body = '';
+    if (['login', 'signup', 'recover', 'reset'].includes(s.mode)) body = M.authBody(s);
+    else if (s.mode === 'onboarding') body = M.onboarding();
+    else if (s.mode === 'consent') body = M.consent({ wide: true });
+    else if (s.mode === 'restart') body = M.restart({ wide: true });
+    else if (s.mode === 'account') body = M.account();
+    // 「SYNK ID」 회색 머리는 제목이 SYNK를 말하지 않을 때만(PC 로그인 창과 같은 자리 · 같은 말) — 「SYNK ID로 로그인」 위에 또 쓰지 않는다
+    const kicker = /SYNK/.test(c.h) ? '' : s.mode === 'consent' ? '앱 연결' : 'SYNK ID';
+    col.innerHTML = `
+      <a class="mark" href="#" aria-label="SYNK 홈">${M.WORDMARK}</a>
+      <div class="head">
+        ${kicker ? `<p class="kicker">${kicker}</p>` : ''}
+        <h1 class="h34">${M.esc(c.h)}</h1>
+        ${c.lead ? `<p class="lead">${M.esc(c.lead)}</p>` : ''}
+        ${c.recent ? `<p class="forget">${M.recentForget}</p>` : ''}
+      </div>
+      <div class="body">${body}</div>
+      <div class="bottom">${M.footLinks}</div>`;
+    document.title = 'SYNK ID · A 한 칸 · ' + s.name;
+  }
+  addEventListener('hashchange', draw);draw();
+})();
+</script>
+</body>
+</html>
