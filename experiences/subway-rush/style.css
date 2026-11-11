@@ -106,7 +106,7 @@ html[data-lobby-fit=side] .ticket-route{flex-wrap:wrap;row-gap:2px;white-space:n
 /* 크기는 무대 높이(cqh)를 따라 줄어든다 — 낮은 화면(iPhone SE 667 · 주소창이 열린 폰 · 1366×768 창)에서 칸 글이 잘리던 것(검수 A1). 844 높이에서 처음 값과 같다.
    cq 단위를 모르는 브라우저(iOS Safari 15.4~15.8 · Firefox 109 아래)에서는 var()에 든 cqh가 계산 때 무효가 되어 누름 칸 높이가 0이 됐다(검수) —
    화면 높이(vh) 판을 먼저 두고 — 무대는 보통 화면 높이 그대로라 거의 같다 — cq 판은 @supports 안에서만, var() 없는 글자 크기는 vh 판 뒤에 같은 속성을 한 번 더(모르는 단위면 그 줄만 버려진다) */
-.stage{--pick-h:33%;--pick-head:clamp(44px,6.9vh,58px);--pk-pad:clamp(10px,2.6vh,22px);--pk-padb:clamp(8px,1.7vh,14px);--pk-gap:clamp(6px,1.55vh,13px);--pk-arrow-s:clamp(26px,5.2vh,44px)}
+.stage{--pick-h:min(33%,246px);--pick-head:clamp(44px,6.9vh,58px);--pk-pad:clamp(10px,2.6vh,22px);--pk-padb:clamp(8px,1.7vh,14px);--pk-gap:clamp(6px,1.55vh,13px);--pk-arrow-s:clamp(26px,5.2vh,44px)}
 @supports (height:1cqh){.stage{--pick-head:clamp(44px,6.9cqh,58px);--pk-pad:clamp(10px,2.6cqh,22px);--pk-padb:clamp(8px,1.7cqh,14px);--pk-gap:clamp(6px,1.55cqh,13px);--pk-arrow-s:clamp(26px,5.2cqh,44px)}}
 html[data-picking] .hud-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 html[data-picking] .hud-row2{justify-content:flex-end}
@@ -114,8 +114,9 @@ html[data-picking] .hud-row2{justify-content:flex-end}
 .pick[data-on]{transform:none}
 .pick[data-out]{transform:translateY(104%);transition:transform 380ms cubic-bezier(.55,0,.75,.3)}
 .pk-head{position:absolute;left:0;right:0;top:0;height:var(--pick-head);padding:var(--pk-pad) 22px 0}
-.pk-q{margin:0;font:600 19px/1.2 var(--ui);font-size:clamp(16px,2.25vh,19px);font-size:clamp(16px,2.25cqh,19px);letter-spacing:-.035em;word-break:keep-all;color:#ffffffb8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pk-hint{margin-left:10px;font-size:14px;font-weight:500;letter-spacing:-.01em;color:#ffffff73}
+.pk-q{margin:0;display:flex;align-items:baseline;gap:12px;font:600 19px/1.2 var(--ui);font-size:clamp(16px,2.25vh,19px);font-size:clamp(16px,2.25cqh,19px);letter-spacing:-.035em;word-break:keep-all;color:#ffffffb8;white-space:nowrap;overflow:hidden}
+.pk-ask{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pk-hint{margin-left:auto;flex:none;font-size:14px;font-weight:500;letter-spacing:-.01em;color:#ffffff73}   /* 손짓 안내는 판 오른쪽 끝 — 질문 바로 옆에 붙으면 질문이 흐려졌다(11-12 맹검) */
 .pk-opts{position:absolute;left:0;right:0;top:var(--pick-head);bottom:0;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #ffffff1a;padding-bottom:env(safe-area-inset-bottom)}
 .pk-opt{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:var(--pk-gap);padding:var(--pk-pad) 14px var(--pk-padb);color:#fff;border-left:1px solid #ffffff1a;animation:pk-in 520ms cubic-bezier(.22,1,.36,1) calc(120ms + var(--d) * 70ms) both;transition:filter 300ms ease,scale 160ms ease,color 200ms ease 80ms}
 .pk-opt:first-child{border-left:0}
@@ -126,7 +127,7 @@ html[data-picking] .hud-row2{justify-content:flex-end}
 .pk-opt[data-mine]::before{height:100%;background:var(--c)}
 .pk-arrow{display:block;width:var(--pk-arrow-s);height:var(--pk-arrow-s);flex:none;background:var(--a);-webkit-mask:var(--pk-arrow) center/contain no-repeat;mask:var(--pk-arrow) center/contain no-repeat;rotate:var(--pk-rot,0deg);transition:background 200ms ease 80ms}
 .pk-opt[data-mine] .pk-arrow{background:var(--t)}
-.pick{--pk-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5 23 12.5h-6.6V22.5H7.6V12.5H1z'/%3E%3C/svg%3E")}
+.pick{--pk-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1 22.5 11H15.5V23H8.5V11H1.5z'/%3E%3C/svg%3E")}
 .pk-opt[data-dir=l]{--pk-rot:-90deg}
 .pk-opt[data-dir=r]{--pk-rot:90deg}
 .pk-opt[data-dir=ul]{--pk-rot:-45deg}
@@ -140,7 +141,8 @@ html[data-picking] .hud-row2{justify-content:flex-end}
 .pk-words[data-size=s] .pk-big{font-size:20px;font-size:clamp(16px,2.4vh,20px);font-size:clamp(16px,2.4cqh,20px);line-height:1.08}
 .pk-words[data-size=s] .pk-small{font-size:18px;font-size:clamp(15px,2.1vh,18px);font-size:clamp(15px,2.1cqh,18px)}
 .pk-en{margin-top:auto;font:600 10px/1 var(--num);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;opacity:.6}
-.pk-line{position:absolute;right:12px;top:var(--pk-pad);width:24px;height:24px;border-radius:50%;background:#fff;color:var(--c);font:700 13px/24px var(--num);text-align:center}
+.pk-line{position:absolute;left:calc(14px + var(--pk-arrow-s) + 12px);top:calc(var(--pk-pad) + (var(--pk-arrow-s) - 24px) / 2);width:24px;height:24px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px #ffffff73;color:#fff;font:700 13px/24px var(--num);text-align:center}   /* 역 표지처럼 노선 색 동그라미에 흰 번호, 화살 바로 옆(11-12 맹검 — 흰 동그라미가 칸 구석에 따로 놀았다) */
+.pk-opt[data-mine] .pk-line{box-shadow:0 0 0 2px #fff}
 .pk-num{font:700 66px/.86 var(--num);font-size:clamp(42px,7.8vh,66px);font-size:clamp(42px,7.8cqh,66px);letter-spacing:-.05em;color:var(--a);transition:color 200ms ease 80ms}
 .pick[data-kind=exit] .pk-small{font-size:21px;font-size:clamp(16px,2.5vh,21px);font-size:clamp(16px,2.5cqh,21px)}
 /* 아주 낮은 무대: 영문 꼬리표부터 빼고, 더 낮으면 화살도 뺀다(색 띠 · 글이 남는다) */

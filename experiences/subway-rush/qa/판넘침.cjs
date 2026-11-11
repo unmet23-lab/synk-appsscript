@@ -68,7 +68,7 @@ srv.listen(0, '127.0.0.1', async () => {
         const st = document.getElementById('stage').getBoundingClientRect(), zs = document.getElementById('zones').getBoundingClientRect(), op = pick.querySelector('.pk-opts').getBoundingClientRect();
         // 누름 칸이 판의 칸 자리를 덮는가(위아래 2px 안) — 높이 0이면 고를 수 없다
         const zonesOk = zs.height > 40 && Math.abs(zs.top - op.top) <= 2 && zs.bottom >= op.bottom - 2 - parseFloat(getComputedStyle(pick.querySelector('.pk-opts')).paddingBottom || 0);
-        return { cells, qCut: q.scrollWidth > q.clientWidth + 1, hintShown: !!hint && getComputedStyle(hint).display !== 'none' && hint.getBoundingClientRect().width > 0, stageW: Math.round(st.width), stage: Math.round(st.height), zonesOk, zh: Math.round(zs.height) };
+        return { cells, qCut: q.scrollWidth > q.clientWidth + 1 || (() => { const a = q.querySelector('.pk-ask'); return !!a && a.scrollWidth > a.clientWidth + 1; })(), hintShown: !!hint && getComputedStyle(hint).display !== 'none' && hint.getBoundingClientRect().width > 0, stageW: Math.round(st.width), stage: Math.round(st.height), zonesOk, zh: Math.round(zs.height) };
       });
       const cut = r.cells.filter((c) => c.over).map((c) => c.text);
       count.넘친칸 += cut.length;
