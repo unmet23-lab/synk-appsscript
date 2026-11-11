@@ -176,8 +176,8 @@
   "endRead": "ne, sa-jang-nim",
   "endMn": "Sí, jefe~",
   "endMnSize": 48,
-  "end1": "Con jefes y mayores —",
-  "end2": "¡guardátelo!",
+  "end1": "¿Bronca con tu jefe?",
+  "end2": "¡Gritalo por dentro!",
   "endSize": 70,
   "inner": "por dentro",
   "ask": "¿Qué te dio bronca hoy?",
@@ -191,8 +191,8 @@
     "means.1": "열받네!(정말 화가 난다)",
     "means.2": "할 말이 없다…",
     "means.3": "불공평해!",
-    "end1": "사장님과 윗사람 앞에서는 —",
-    "end2": "속에 담아 둬!",
+    "end1": "사장님한테 화났어?",
+    "end2": "속으로 외쳐!",
     "ask": "오늘 뭐가 너를 열받게 했어?"
   }
 }

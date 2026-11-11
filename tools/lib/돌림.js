@@ -136,7 +136,7 @@ function bundlesOf(accounts) {
  * existing에는 원본이 아닌 편의 판도 넣는다(original: null) — 그 칸은 이미 찼다. gone은 나가지 않는 판(보류 · 취소됨 · 지움) —
  * 칸은 비지만 그 계정은 그 원본을 다시 받지 않는다. trial은 첫 판 확인 전 계정 — 판이 하나도 없을 때만 칸 하나를 받는다.
  */
-function plan({ accounts, originals, existing = [], from, days = 5, cfg: given = {}, useSpares = false }) {
+function plan({ accounts, originals, existing = [], from, days = 5, cfg: given = {}, useSpares = false, now = null }) {
   const cfg = { ...DEFAULTS, ...given };
   const byId = new Map(originals.map((o) => [o.id, o]));
   const platesOf = new Map(originals.map((o) => [o.id, []])); // 원본마다 판(ms · 플랫폼 · 언어)
@@ -178,9 +178,11 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
     const day = T.localDate(ms, T.tzOf(a));
     const slot = T.slotFor(p.time, a);
     occupied.add(`${p.account}|${day}|${slot.time}`);
-    // 첫 판 시험 계정의 「판 하나」 — 걸리지 않은 채(booked: false — 실패 · 못 건 판) 셈 첫날보다 앞으로 지나간 판은 세지 않는다. 안 그러면 그 계정은
+    // 첫 판 시험 계정의 「판 하나」 — 걸리지 않은 채(booked: false — 실패 · 못 건 판) 지나간 판은 세지 않는다. 안 그러면 그 계정은
     // 첫 판이 영영 「있는」 것으로 남아 다음 칸을 못 받는다(11-11 Fable 검수). 그 원본은 받은 것으로 남는다(다시 주지 않는다) — 새 칸은 다른 원본이 받는다.
-    const missed = p.booked === false && ms < T.zonedMs(from, '00:00', T.tzOf(a));
+    // 「지나갔다」는 지금 시각(now)으로 가른다(11-12 P2-모3) — 셈 첫날의 현지 자정으로 가르면 한국보다 늦은 시간대 계정의 아직 안 지난 판(회차가 곧 걸 판)이
+    // 「지나간 판」으로 세어져 첫 판 시험 계정이 판을 하나 더 받는다(11-12 14시의 캐나다 판 — 13시간 남았는데 지나간 판). now를 안 주면 옛 셈(셈 첫날의 현지 자정).
+    const missed = p.booked === false && ms < (Number.isFinite(now) ? now : T.zonedMs(from, '00:00', T.tzOf(a)));
     if (a.trial && !missed) trialUsed.add(p.account);
     // 씨앗 판도 같다(11-11 P3-1) — 걸리지 않은 채 지나간 씨앗 판은 씨앗 첫 판으로 세지 않는다(나가지 않은 판의 24시간 뒤를 다른 계정의 문으로 삼지 않게.
     // 그 씨앗 계정이 그 원본을 받은 것으로는 남는다). 다른 씨앗 판이 있으면 그 판이, 없으면 씨앗이 다시 올릴 때까지 다른 계정은 기다린다.

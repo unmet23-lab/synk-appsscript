@@ -179,8 +179,8 @@
   "end1": "Sa boss at nakatatanda —",
   "end2": "sa isip mo lang!",
   "endSize": 62,
-  "inner": "sa loob",
-  "ask": "Sino’ng laging mainit ang ulo?",
+  "inner": "sa isip",
+  "ask": "Ano’ng ikinainit ng ulo mo?",
   "askSize": 44,
   "coverAt": 2.9,
   "_원문": {
@@ -198,6 +198,6 @@
     "end1": "사장님과 윗사람 앞에서는 —",
     "end2": "속으로만!",
     "inner": "속으로",
-    "ask": "늘 머리에 열이 올라 있는 사람은 누구야?"
+    "ask": "뭐가 네 머리에 열이 오르게 했어?"
   }
 }

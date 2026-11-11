@@ -1106,3 +1106,91 @@ test('시험관 수(11-11 P1-넷1 · P2-넷2) — 넷이어야 할 때 넷보다
     assert.equal(뜻검사.시험관모자람({ 결과: '통과', 시험관: 넷, 시각: '2026-11-13T10:00:00+09:00', 언어: 'es' }, { 편: 'LAB_마', 판본: 'PY', 기록: [] }), null);
   } finally { 뜻기록비우기(); fs.rmSync(root, { recursive: true, force: true }); }
 });
+
+// ── 11-12 Fable 5.2 장부 고침 다시 검수 P2-모2 · 모3 ──
+const 그때 = (m, now, ...args) => spawnSync(process.execPath, [tool, '--폴더', m.root, '--지금', now, ...args], { encoding: 'utf8', env: { ...process.env, SYNK_ROTATION_DIR: m.cache } });
+const 돌림판들 = (m) => [G, N].flatMap((name) => 읽기(m, name).판.filter((p) => p.돌림).map((p) => `${name}|${p.계정}|${p.시각}`)).sort();
+
+test('돌림표 --다시 — 지난 판 · 무효 판만 빼고, 시각이 남은 유효한 안 건 판은 제자리에 둔다(P2-모2) · --다시모두는 안 건 판을 모두 빼고 다시 짠다', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  assert.equal(m.run('--부터', '2026-11-20', '--일수', '2', '--쓰기').status, 0);
+  const first = 돌림판들(m);
+  const th20 = first.find((x) => x.endsWith('lab-th-youtube|2026-11-20T13:00:00+07:00')); // 한국 15:00
+  const th21 = first.find((x) => x.endsWith('lab-th-youtube|2026-11-21T13:00:00+07:00'));
+  assert.ok(th20 && th21, first.join(' '));
+  const 때 = (x) => Date.parse(x.split('|')[2]);
+
+  // ① 한국 11-20 14:00 — 태국 11-20 판은 한 시간 남았다(셈 첫날은 내일 11-21). 지난 판(있으면 일본 11-20 13:00)만 빠지고 남은 판은 제자리다
+  const now1 = '2026-11-20T14:00:00+09:00';
+  const r1 = 그때(m, now1, '--일수', '2', '--다시', '--쓰기');
+  assert.equal(r1.status, 0, r1.stderr);
+  const after1 = 돌림판들(m);
+  for (const x of first.filter((p) => 때(p) > Date.parse(now1))) assert.ok(after1.includes(x), `시각이 남은 판은 제자리에 둔다: ${x}\n${after1.join('\n')}`);
+  for (const x of first.filter((p) => 때(p) <= Date.parse(now1))) assert.equal(after1.includes(x), false, `지난 판은 뺀다: ${x}`);
+  assert.ok(after1.includes(th20), '태국 11-20 판(아직 한 시간 남음)이 그대로 있다');
+
+  // ② 한국 11-20 15:30 — 태국 11-20 판이 걸리지 않은 채 지나갔다: 그 판만 빠지고(까닭이 보인다) 11-21 판은 제자리, 빠진 원본은 뒤 칸에 다시 달린다
+  const now2 = '2026-11-20T15:30:00+09:00';
+  const before2 = 돌림판들(m);
+  const r2 = 그때(m, now2, '--일수', '2', '--다시', '--쓰기');
+  assert.equal(r2.status, 0, r2.stderr);
+  assert.match(r2.stdout, /뺀 안 건 돌림 판 \d+: .*lab-th-youtube 2026-11-20T13:00\(판 시각이 지났다\)/);
+  const after2 = 돌림판들(m);
+  assert.equal(after2.includes(th20), false, '지난 판은 빠진다');
+  for (const x of before2.filter((p) => 때(p) > Date.parse(now2))) assert.ok(after2.includes(x), `시각이 남은 판은 제자리에 둔다: ${x}`);
+  assert.ok(after2.includes(th21));
+  const [gone] = th20.split('|');
+  assert.ok(after2.some((x) => x.startsWith(`${gone}|lab-th-youtube|2026-11-22`)), `빠진 원본은 그 계정의 뒤 칸(11-22)에 다시 달린다\n${after2.join('\n')}`);
+
+  // ③ 무효 판 — 태국 11-21 판의 판본 영상을 다시 구웠다(글자 검수 지문과 달라짐): 그 판만 빠지고 다시 달리지 않는다
+  const [bad] = th21.split('|');
+  fs.writeFileSync(path.join(m.root, bad, '게시', '판본', 'TH', 'video.mp4'), '다시 구운 영상');
+  const before3 = 돌림판들(m);
+  const r3 = 그때(m, '2026-11-20T15:40:00+09:00', '--일수', '2', '--다시', '--쓰기');
+  assert.equal(r3.status, 0, r3.stderr);
+  assert.match(r3.stdout, new RegExp(`뺀 안 건 돌림 판 1: ${bad} lab-th-youtube 2026-11-21T13:00`));
+  const after3 = 돌림판들(m);
+  assert.equal(after3.includes(th21), false);
+  assert.equal(after3.some((x) => x.startsWith(`${bad}|lab-th-youtube|`)), false, '검수가 안 선 판본은 다시 달리지 않는다');
+  for (const x of before3.filter((p) => p !== th21)) assert.ok(after3.includes(x), `다른 판은 그대로다: ${x}`);
+
+  // ④ --다시모두는 예전처럼 안 건 돌림 판을 모두 빼고 다시 짠다 — 태국의 11-22 판이 빈 11-21 칸으로 당겨진다
+  const r4 = 그때(m, '2026-11-20T15:50:00+09:00', '--일수', '2', '--다시모두', '--쓰기');
+  assert.equal(r4.status, 0, r4.stderr);
+  const after4 = 돌림판들(m);
+  assert.ok(after4.some((x) => x === `${gone}|lab-th-youtube|2026-11-21T13:00:00+07:00`), after4.join('\n'));
+  assert.equal(after4.some((x) => x.startsWith(`${gone}|lab-th-youtube|2026-11-22`)), false);
+});
+
+test('첫 판 시험 — 「걸리지 않은 채 지나간 판」은 지금 시각으로 가른다: 셈 첫날 전이어도 아직 안 지난 안 건 판은 첫 판 그대로다(P2-모3)', () => {
+  const accounts = { 'seed-ig': acct('instagram', 'MN', 'Asia/Ulaanbaatar', { seed: true, dailyFrom: '2099-01-01' }), th: acct('youtube', 'TH', 'Asia/Bangkok', { trial: true }) };
+  const s = seeded(['a', 'b', 'c'], '이야기', ['TH']);
+  const run = (now) => 돌림.plan({ accounts, originals: s.originals, existing: [...s.existing, { original: 'a', account: 'th', time: '2026-11-19T13:00:00+07:00', booked: false }], from: '2026-11-20', days: 3, now })
+    .cells.filter((c) => c.account === 'th' && c.original).map((c) => c.original);
+  // 지금 = 한국 11-19 12:00(방콕 10:00) — 판(방콕 13:00)은 세 시간 남았다: 지나간 판이 아니다 → 새 칸을 받지 않는다
+  assert.deepEqual(run(Date.parse('2026-11-19T12:00:00+09:00')), []);
+  // 지금 = 방콕 13:01 — 걸리지 않은 채 지나갔다: 다른 원본으로 새 첫 판을 받는다
+  const after = run(Date.parse('2026-11-19T13:01:00+07:00'));
+  assert.equal(after.length, 1);
+  assert.notEqual(after[0], 'a');
+  // now를 안 주면 옛 셈(셈 첫날의 현지 자정)
+  assert.equal(run(undefined).length, 1);
+});
+
+test('돌림표 명령 — 첫 판 시험 계정의 아직 안 지난 안 건 판은 지나간 판으로 세지 않는다(셈 첫날이 내일이어도 — P2-모3)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  원장고침(m, (acc) => { acc['lab-th-youtube'].postRouteVerified = '첫판'; });
+  assert.equal(m.run('--부터', '2026-11-20', '--일수', '2', '--쓰기').status, 0);
+  const plates = () => [G, N].flatMap((name) => 읽기(m, name).판.filter((p) => p.계정 === 'lab-th-youtube'));
+  assert.deepEqual(plates().map((p) => p.시각), ['2026-11-20T13:00:00+07:00']);
+  // 한국 11-20 10:00 — 그 판(한국 15:00)은 다섯 시간 남았다. 셈 첫날은 내일(11-21)이다: 판을 더 받지 않는다
+  const r1 = 그때(m, '2026-11-20T10:00:00+09:00', '--일수', '2', '--쓰기');
+  assert.equal(r1.status, 0, r1.stderr);
+  assert.equal(plates().length, 1, '아직 안 지난 첫 판이 있으면 판을 하나 더 받지 않는다');
+  // 한국 11-20 15:30 — 그 판이 걸리지 않은 채 지나갔다: 다른 원본으로 새 첫 판을 받는다
+  const r2 = 그때(m, '2026-11-20T15:30:00+09:00', '--일수', '2', '--쓰기');
+  assert.equal(r2.status, 0, r2.stderr);
+  assert.equal(plates().length, 2);
+});

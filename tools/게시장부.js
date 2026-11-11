@@ -3,7 +3,7 @@
 /* 게시 장부 잠금(2026-11-10 LAB 하루 두 편 · 39계정 — 설계 4 「게시 장부로 같은 칸이 두 번 걸리지 않게 막는다. 끊긴 뒤 다시 할 때는
  * 예약 목록부터 읽는다」). 판 하나를 걸기 전에 「거는 중」을 적고, 건 뒤 「예약됨」 · 「게시됨」(게시물 ID · 주소 · 확인)으로 끝낸다.
  *
- *   node tools/게시장부.js 걸기 <편 폴더> <계정> [--방법 <ego|크롬|작업실…>]
+ *   node tools/게시장부.js 걸기 <편 폴더> <계정> [--방법 <ego|크롬|작업실…>] [--이미올림 "<예약 목록 · 게시물에서 읽은 것>"]
  *       그 편 게시/준비.json에 그 계정 판이 있고, 판 파일 SHA-256(지문)이 판에 적힌 「지문」(돌림 판)과 같고, 그 계정의 같은 현지 날짜 ·
  *       칸에 다른 편이 걸려 있지 않고, 이 판이 이미 걸린 판이 아니면 게시결과.json에 {상태:「거는 중」} 을 적는다. 아니면 종료 1 — 까닭을 보인다.
  *       「걸려 있다」 = 「예약됨」 · 「게시됨」 · 「거는 중」, 그리고 작업실 길이 서버에 등록한 줄(「승인 대기」 · 「확인 필요」 + 작업 ID).
@@ -37,6 +37,13 @@
  *     다시 통과하면 판본 상태는 「든다」로 돌아오는데 예약에는 옛 글이 걸려 있다(P1-팔1 — tools/돌림표.js bookedVersionProblem이 견준다).
  *   · 「실패」처럼 안 걸린 옛 줄 위에 다시 걸 때는 옛 줄의 칸(게시물 ID · 주소 · 확인 · 승인 …)을 물려받지 않는다 — 내린 영상의 ID가 새 예약 줄에
  *     딸려 가면 성과 수집 · 「걸린 판 내리기」가 엉뚱한 영상을 본다(P2-장1). 옛 줄은 「앞시도」에 통째로 남긴다(내린 영상을 뒤에 치울 때 찾는다).
+ *
+ * 11-12 Fable 5.2 장부 고침 다시 검수의 남은 둘:
+ *   · 끝 예약됨 · 게시됨이 「거는 중」을 닫을 때는 표에 그 걸기의 줄이 남아 있어야 한다(P1-장2 — lostClaim). 다른 작업본이 2시간 넘은 끊긴 걸기를 「실패」 · 풀기로
+ *     닫으면 표의 줄이 거둬지고 그 칸을 다른 편이 잡을 수 있는데, 죽은 줄 알았던 회차가 되살아나 예약됨으로 적으면 같은 칸이 두 번 걸렸다. 거절하고
+ *     「풀기 → 걸기(칸을 다시 본다) → 끝」을 알린다.
+ *   · 시각이 이미 지난 돌림 판은 걸지 않는다(P2-모4) — 돌림표 --다시 --쓰기로 다시 짠다. 이미 플랫폼에 올라가 있는 판을 장부에 되살려 적을 때만
+ *     --이미올림 "<읽은 것>"(줄에 「이미올림」으로 남는다). 손으로 단 판은 보지 않는다. --지금 <ISO>는 시험용이다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -52,6 +59,7 @@ const CLAIM_LIVE_MS = 2 * 3600000;
 const LOCK_STALE_MS = 30000;
 const LOCK_WAIT_MS = 20000;
 const KEEP_DAYS = 14;
+const ALREADY_MIN = 10; // --이미올림에 적을 읽은 것의 가장 짧은 길이
 const argValue = (args, name) => { const i = args.indexOf(name); return i > -1 ? args[i + 1] : null; };
 
 // 그 칸을 잡고 있는 줄인가
@@ -334,7 +342,7 @@ function versionBlock(dir, prep, plate, account, accounts, required) {
   return null;
 }
 
-function claim({ dir, account, method = null, root = path.dirname(dir), repo = REPO, accounts, now = Date.now(), registry = null, required = null }) {
+function claim({ dir, account, method = null, root = path.dirname(dir), repo = REPO, accounts, now = Date.now(), registry = null, required = null, already = null }) {
   const place = placeOf(root, registry);
   return withLock(place.file, () => {
     const name = path.basename(dir);
@@ -348,6 +356,15 @@ function claim({ dir, account, method = null, root = path.dirname(dir), repo = R
     if (plate.지문 && plate.지문 !== sha) return { ok: false, why: `판 파일이 돌림표가 적은 지문과 다르다(검수 뒤 바뀜) — node tools/돌림표.js --다시 · 판본 검수부터` };
     const closed = closedCell(accounts[account], plate.시각, { rotation: Boolean(plate.돌림) });
     if (closed) return { ok: false, why: `${closed} — 닫힌 계정 · 칸에는 걸지 않는다(돌림 판이면 node tools/돌림표.js --다시 --쓰기로 다시 짜고, 손으로 단 판이면 뺀다. 계정 · 칸을 여는 것은 조율 세션 몫)` };
+    // 시각이 이미 지난 돌림 판은 걸지 않는다(P2-모4) — 돌림 판은 늘 그 계정의 현지 칸 시각에 예약으로 거는 판이라, 지난 시각으로 걸면 플랫폼이 바로 공개하거나
+    // 예약을 거절한다. 14시 회차의 차례(다시 짜기 → 검사 → 걸기)만 막던 자리다. 손으로 단 판은 보지 않는다(바로 올리는 플랫폼의 판은 판 시각 뒤에 건다).
+    // 그 시각에 이미 플랫폼에 올라가 있는 판을 장부에 되살려 적을 때(끊긴 걸기 · 표에서 거둬진 걸기)만 --이미올림으로 받는다 — 읽은 것을 줄에 남긴다.
+    const seenAlready = String(already || '').trim();
+    const plateAt = Date.parse(plate.시각 || '');
+    if (plate.돌림 && Number.isFinite(plateAt) && plateAt <= now && seenAlready.length < ALREADY_MIN) {
+      return { ok: false, why: `판 시각이 이미 지났다(${plate.시각}) — 지난 칸의 돌림 판은 걸지 않는다. node tools/돌림표.js --다시 --쓰기로 다시 짠 뒤 건다. `
+        + `그 시각에 이미 플랫폼에 올라가 있는 판을 장부에 적는 것이면(끊긴 걸기를 되살릴 때) 걸기에 --이미올림 "<그 플랫폼 예약 목록 · 게시물에서 읽은 것, ${ALREADY_MIN}자 이상>"을 붙이고, 다시 올리지 않고 「끝 --상태 게시됨 --확인 …」으로 닫는다` };
+    }
     if (plate.돌림) {
       const cfg = Array.isArray(required) && required.length ? required : readJson(path.join(root, 'sns-계정.json'))?.labRotation?.판본검수;
       const unfit = versionBlock(dir, prep, plate, account, accounts, Array.isArray(cfg) && cfg.length ? cfg : ['뜻', '글자']);
@@ -400,7 +417,7 @@ function claim({ dir, account, method = null, root = path.dirname(dir), repo = R
         const { 계정: _a, 앞시도: before = [], ...old } = cur || {};
         const tries = [...(Array.isArray(before) ? before : []), ...(Object.keys(old).length ? [old] : [])];
         return { 계정: account, 상태: CLAIM, 거는중: stamp, 시각: plate.시각, 지문: sha, ...(textSha ? { 게시글지문: textSha } : {}), ...(method ? { 방법: method } : {}),
-          ...(tries.length ? { 앞시도: tries } : {}) };
+          ...(plate.돌림 && plateAt <= now && seenAlready ? { 이미올림: seenAlready } : {}), ...(tries.length ? { 앞시도: tries } : {}) };
       });
     } finally {
       if (!next && key) { if (before) reg.칸[key] = before; else delete reg.칸[key]; writeRegistry(place.file, reg, now); }
@@ -426,6 +443,22 @@ function refuseFinish(cur, state, proof) {
   return null;
 }
 
+// 「거는 중」을 예약됨 · 게시됨으로 닫으려는데 표에 그 걸기의 줄이 없을 때의 거절 까닭(줄이 있으면 null) — 11-11 Fable 5.2 장부 고침 다시 검수 P1-장2.
+// 표의 줄은 건 작업본 밖에서도 거둬진다: 2시간 넘은 끊긴 「거는 중」을 다른 작업본이 「실패」 · 풀기로 닫으면 표의 줄이 지워지고(P1-팔9) 그 칸을 다른 편이 잡을 수 있다.
+// 죽은 줄 알았던 회차가 되살아나 제 「거는 중」을 예약됨으로 닫으면 같은 칸에 두 편이 걸린다(표에 제 줄이 없어도, 그 칸을 다른 편이 잡고 있어도 받던 자리).
+// 그 걸기의 줄 = 이 작업본이 적은 줄, 또는 표 줄의 때가 그 「거는 중」의 시각과 같은 줄(다른 작업본이 건 줄이 올라온 것 — 2시간 안의 살아 있는 줄도 그 걸기다).
+// 칸을 셀 수 없는 줄(key 없음 — 시각을 못 읽음)은 표에 적힌 적이 없어 보지 않는다.
+function lostClaim(reg, cur, name, account, root, key, state) {
+  if (!key) return null;
+  const own = Object.entries(reg.칸).some(([k, e]) => k.startsWith(`${account}|`) && e && e.편 === name && (samePath(e.자리, root) || Date.parse(e.때 || '') === stampOf(cur)));
+  if (own) return null;
+  const other = reg.칸[key] && reg.칸[key].편 && reg.칸[key].편 !== name ? reg.칸[key] : null;
+  return `칸 장부에 이 걸기(${cur.거는중 || '시각 없음'}부터 「거는 중」)의 줄이 없다 — 다른 작업본이 이 걸기를 이미 닫았다(2시간 넘은 끊긴 걸기를 「실패」 · 풀기로 거둠)`
+    + `${other ? `. 그 칸은 지금 ${other.편}(${other.상태} · ${other.자리})가 잡고 있다` : ''}. 여기서 「${state}」으로 적으면 같은 칸이 두 번 걸릴 수 있어 받지 않는다 — `
+    + `그 플랫폼 예약 목록을 읽고, 이 판이 걸려 있으면 「풀기 --까닭 …」으로 이 줄을 거둔 뒤 다시 올리지 않고 「걸기」(칸을 다시 본다) → 「끝 --상태 ${state} --확인 …」으로 적는다`
+    + `${other ? '(걸기가 그 칸의 다른 편 때문에 거절되면 두 판 가운데 하나를 플랫폼에서 내린다 — 내리는 것은 유호님께 여쭙는다)' : ''}. 걸려 있지 않으면 「풀기」로 거둔다`;
+}
+
 function finish({ dir, account, state, id = null, url = null, seen = null, approval = null, root = path.dirname(dir), accounts = null, now = Date.now(), registry = null }) {
   if (!['예약됨', '게시됨', '실패'].includes(state)) return { ok: false, why: '--상태는 예약됨 · 게시됨 · 실패' };
   const place = placeOf(root, registry);
@@ -433,8 +466,12 @@ function finish({ dir, account, state, id = null, url = null, seen = null, appro
     const name = path.basename(dir);
     let why = null;
     let was = null; // 닫기 직전의 줄
+    const reg = readRegistry(place.file);
+    const ledger = accounts || readJson(path.join(root, 'sns-계정.json'))?.accounts || {};
+    const plate = (readJson(path.join(dir, '게시', '준비.json'))?.판 || []).find((p) => p.계정 === account);
     const next = updateResult(dir, account, (cur) => {
       why = refuseFinish(cur, state, { id, url, seen });
+      if (!why && state !== '실패' && cur?.상태 === CLAIM) why = lostClaim(reg, cur, name, account, root, cellKey(account, cur.시각 || plate?.시각, ledger), state);
       if (why) return undefined;
       was = cur ? { ...cur } : null;
       const base = { ...cur };
@@ -442,7 +479,6 @@ function finish({ dir, account, state, id = null, url = null, seen = null, appro
       return { ...base, 상태: state, ...(id ? { 게시물ID: id } : {}), ...(url ? { 주소: url } : {}), ...(seen ? { 확인: seen } : {}), ...(approval ? { 승인: approval } : {}), 기록시각: new Date(now).toISOString() };
     });
     if (!next) return { ok: false, why };
-    const reg = readRegistry(place.file);
     // 이 작업본이 적은 표의 줄, 그리고 다른 작업본이 적었어도 **같은 예약**인 줄(표 줄의 때 = 닫기 직전 줄의 시각)을 고친다. 건 회차 사본이 아닌 곳에서
     // 닫는 것이 제작 절차의 보통 길인데(올라온 줄을 공용 · 다음 날 사본에서 닫는다), 「자리」가 같은 줄만 고치면 「실패」로 내린 판의 표 줄이 남아 그 칸 · 그 편 ·
     // (첫 판 계정은) 계정 전체가 보름 넘게 막힌다(11-11 내린 세 판 — P1-팔9). 다른 자리의 살아 있는 「거는 중」(2시간 안)은 건드리지 않는다 — 그 회차가 올리는 중이다.
@@ -450,8 +486,6 @@ function finish({ dir, account, state, id = null, url = null, seen = null, appro
     const mine = Object.keys(reg.칸).filter((k) => k.startsWith(`${account}|`) && reg.칸[k]?.편 === name && (samePath(reg.칸[k].자리, root) || same(k)));
     if (state === '실패') for (const k of mine) delete reg.칸[k];
     else {
-      const ledger = accounts || readJson(path.join(root, 'sns-계정.json'))?.accounts || {};
-      const plate = (readJson(path.join(dir, '게시', '준비.json'))?.판 || []).find((p) => p.계정 === account);
       const key = mine[0] || cellKey(account, next.시각 || plate?.시각, ledger);
       for (const k of mine.slice(1)) delete reg.칸[k];
       if (key && (!reg.칸[key] || mine.includes(key))) reg.칸[key] = { 편: name, 상태: state, 때: new Date(now).toISOString(), 자리: path.resolve(root) };
@@ -528,9 +562,13 @@ function main(argv) {
     }
     const dir = pieceDir(pos[0], root);
     const account = pos[1];
-    const r = cmd === '걸기' ? claim({ dir, account, method: argValue(rest, '--방법'), root, accounts, required: ledger.labRotation?.판본검수 || null })
-      : cmd === '끝' ? finish({ dir, account, state: argValue(rest, '--상태'), id: argValue(rest, '--게시물ID'), url: argValue(rest, '--주소'), seen: argValue(rest, '--확인'), approval: argValue(rest, '--승인'), root, accounts })
-        : release({ dir, account, why: argValue(rest, '--까닭') || '까닭 없음', root });
+    // --지금 <ISO>는 시험용(돌림표 · 예약큐와 같은 이음매) — 걸기의 「지난 판」 · 끝과 풀기의 2시간 셈이 이 시각을 지금으로 본다
+    const given = argValue(rest, '--지금');
+    const now = given ? Date.parse(given) : Date.now();
+    if (!Number.isFinite(now)) { console.error('--지금은 ISO 시각으로 준다'); return 2; }
+    const r = cmd === '걸기' ? claim({ dir, account, method: argValue(rest, '--방법'), root, accounts, required: ledger.labRotation?.판본검수 || null, already: argValue(rest, '--이미올림'), now })
+      : cmd === '끝' ? finish({ dir, account, state: argValue(rest, '--상태'), id: argValue(rest, '--게시물ID'), url: argValue(rest, '--주소'), seen: argValue(rest, '--확인'), approval: argValue(rest, '--승인'), root, accounts, now })
+        : release({ dir, account, why: argValue(rest, '--까닭') || '까닭 없음', root, now });
     if (!r.ok) { console.error(`${cmd} 못 함 — ${account} · ${path.basename(dir)}: ${r.why}`); return 1; }
     console.log(`${cmd} · ${account} · ${path.basename(dir)}${r.entry ? ` → ${r.entry.상태}` : ''}${r.note ? ` (${r.note})` : ''}`);
     return 0;
