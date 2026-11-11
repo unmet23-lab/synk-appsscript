@@ -54,8 +54,12 @@ const WITHDRAWN = new Set(['보류', '지움']);
 // 한 계정에 줄이 여럿일 수 있다(작업실 길은 다시 걸 때마다 줄을 더한다 — 취소됨 · 취소됨 · 예약됨). 뒤에서부터 읽어 걸려 있는 줄이나
 // 거둔 줄(보류 · 지움)을 먼저 만나면 그 줄, 없으면 마지막 줄. 다른 작업의 「취소됨」은 앞의 걸린 줄을 덮지 않지만, 바로 앞 걸린 줄과 같은
 // 작업의 「취소됨」은 그 예약이 취소된 것이라 덮는다(11-11 Fable 5.2 검수 P1-2 — 예약됨 → 보류 20줄이 「예약됨」으로 읽혀 그 칸이 채움으로 보였다).
+// 안 닫힌 「거는 중」 줄이 있으면 그 줄이 먼저다 — 끊긴 걸기 뒤에 보류를 덧붙인 [거는 중, 보류]를 뒤의 보류로 읽으면, 쓰는 쪽(updateResult)은 거는 중을 닫는데
+// 읽는 쪽(같은 칸 · 표의 참 · 첫 판 한도)은 빈 칸으로 보아 같은 칸에 다른 편이 걸린다(11-11 Fable 5.2 다시 검수 P1-팔7).
 function rowOf(rows, account) {
   const mine = (rows || []).filter((p) => p && p.계정 === account);
+  const open = mine.filter((p) => p.상태 === CLAIM).pop();
+  if (open) return open;
   for (let i = mine.length - 1; i >= 0; i -= 1) {
     const row = mine[i];
     if (held(row) || WITHDRAWN.has(row.상태)) return row;
@@ -178,15 +182,26 @@ function cellKey(account, time, accounts) {
   return `${account}|${T.localDate(ms, T.tzOf(a))}|${T.slotFor(time, a).time}`;
 }
 
+// 줄의 시각 — 기록시각 · 거는중 가운데 늦은 것(없으면 -Infinity). 걸기 · 끝은 표의 줄 「때」와 게시결과 줄에 같은 시각을 적는다 — 둘이 같으면 같은 예약이다.
+const stampOf = (row) => Math.max(Date.parse(row?.기록시각 || '') || -Infinity, Date.parse(row?.거는중 || '') || -Infinity);
+
 // 표의 줄이 가리키는 참. held: 아직 걸려 있다 · gone: 그 작업본에서 풀렸다(줄을 버려도 된다) · lost: 그 작업본을 읽을 수 없다(표를 믿는다)
+// 건 작업본 · 공용 작업본 · 이 작업본 가운데 하나라도 걸려 있으면 걸린 것이다. 「나중에 적힌 줄이 이긴다」로 읽지 않는다 — 낡은 사본이 옛 예약을 늦게 닫을 때
+// 다른 사본의 새 예약이 풀려 같은 칸이 두 번 걸린다(11-11 Fable 5.2 다시 검수 8-4: 후보를 경합 20꼴로 재어 열림 9). 풀린 것으로 읽는 것은 한 가지뿐이다:
+// 어느 작업본이 표 줄의 바로 그 예약(걸린 줄의 기록시각 = 표 줄의 때)을 들고 있고, 그 줄 뒤에 거둔 줄(보류 · 지움)을 붙였을 때.
 function truthOf(entry, account, here, shared, read = readJson) {
   const seen = [];
+  let holder = null;
   for (const r of [entry.자리, shared, here]) {
     if (!r || seen.some((s) => samePath(s, r))) continue;
     seen.push(r);
-    const row = rowOf(read(path.join(r, entry.편, '게시', '게시결과.json'))?.판, account);
-    if (held(row)) return { kind: 'held', state: row.상태, at: r };
+    const rows = (read(path.join(r, entry.편, '게시', '게시결과.json'))?.판 || []).filter((p) => p && p.계정 === account);
+    const row = rowOf(rows, account);
+    const same = rows.findIndex((p) => held(p) && p.기록시각 && p.기록시각 === entry.때);
+    if (row && WITHDRAWN.has(row.상태) && same > -1 && rows.indexOf(row) > same) return { kind: 'gone' };
+    if (held(row) && !holder) holder = { kind: 'held', state: row.상태, at: r };
   }
+  if (holder) return holder;
   return { kind: entry.자리 && fs.existsSync(path.join(entry.자리, entry.편, '게시', '준비.json')) ? 'gone' : 'lost' };
 }
 
@@ -360,16 +375,22 @@ function finish({ dir, account, state, id = null, url = null, seen = null, appro
   return withLock(place.file, () => {
     const name = path.basename(dir);
     let why = null;
+    let was = null; // 닫기 직전의 줄
     const next = updateResult(dir, account, (cur) => {
       why = refuseFinish(cur, state, { id, url, seen });
       if (why) return undefined;
+      was = cur ? { ...cur } : null;
       const base = { ...cur };
       delete base.거는중;
       return { ...base, 상태: state, ...(id ? { 게시물ID: id } : {}), ...(url ? { 주소: url } : {}), ...(seen ? { 확인: seen } : {}), ...(approval ? { 승인: approval } : {}), 기록시각: new Date(now).toISOString() };
     });
     if (!next) return { ok: false, why };
     const reg = readRegistry(place.file);
-    const mine = Object.keys(reg.칸).filter((k) => k.startsWith(`${account}|`) && reg.칸[k]?.편 === name && samePath(reg.칸[k].자리, root));
+    // 이 작업본이 적은 표의 줄, 그리고 다른 작업본이 적었어도 **같은 예약**인 줄(표 줄의 때 = 닫기 직전 줄의 시각)을 고친다. 건 회차 사본이 아닌 곳에서
+    // 닫는 것이 제작 절차의 보통 길인데(올라온 줄을 공용 · 다음 날 사본에서 닫는다), 「자리」가 같은 줄만 고치면 「실패」로 내린 판의 표 줄이 남아 그 칸 · 그 편 ·
+    // (첫 판 계정은) 계정 전체가 보름 넘게 막힌다(11-11 내린 세 판 — P1-팔9). 다른 자리의 살아 있는 「거는 중」(2시간 안)은 건드리지 않는다 — 그 회차가 올리는 중이다.
+    const same = (k) => Date.parse(reg.칸[k].때 || '') === stampOf(was) && !(reg.칸[k].상태 === CLAIM && now - Date.parse(reg.칸[k].때) < CLAIM_LIVE_MS);
+    const mine = Object.keys(reg.칸).filter((k) => k.startsWith(`${account}|`) && reg.칸[k]?.편 === name && (samePath(reg.칸[k].자리, root) || same(k)));
     if (state === '실패') for (const k of mine) delete reg.칸[k];
     else {
       const ledger = accounts || readJson(path.join(root, 'sns-계정.json'))?.accounts || {};
@@ -388,9 +409,11 @@ function release({ dir, account, why, root = path.dirname(dir), now = Date.now()
   return withLock(place.file, () => {
     const name = path.basename(dir);
     let local = false;
+    let was = null; // 풀기 직전의 줄
     updateResult(dir, account, (cur) => {
       if (!cur || cur.상태 !== CLAIM) return undefined;
       local = true;
+      was = { ...cur };
       const { 거는중, 지문, 상태, ...rest } = cur;
       return Object.keys(rest).length > 1 ? { ...rest, 풀림: why } : null;
     });
@@ -401,7 +424,9 @@ function release({ dir, account, why, root = path.dirname(dir), now = Date.now()
     for (const [k, e] of Object.entries(reg.칸)) {
       if (!k.startsWith(`${account}|`) || e?.편 !== name) continue;
       const truth = truthOf(e, account, root, place.shared);
-      if (truth.kind === 'held') { if (!samePath(truth.at, root)) elsewhere = truth; continue; }
+      // 다른 작업본에 걸려 있는 줄은 두되, 방금 푼 줄과 같은 걸기(표 줄의 때 = 푼 줄의 시각)이고 2시간이 지난 끊긴 「거는 중」이면 같이 거둔다(P1-팔9 · P2-팔13)
+      const sameStale = truth.kind === 'held' && local && !samePath(truth.at, root) && Date.parse(e.때 || '') === stampOf(was) && now - Date.parse(e.때) >= CLAIM_LIVE_MS;
+      if (truth.kind === 'held' && !sameStale) { if (!samePath(truth.at, root)) elsewhere = truth; continue; }
       delete reg.칸[k];
       dropped += 1;
     }

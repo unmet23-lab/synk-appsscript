@@ -138,7 +138,7 @@
   "meanSize": 54,
   "rule": "don't",
   "ruleSize": 100,
-  "last": "His last day…",
+  "last": "His last shift…",
   "lastSize": 64,
   "endCard": "가지 마 = Don't go",
   "endSize": 60,
@@ -147,7 +147,7 @@
   "coverAt": 11.6,
   "_원문": {
     "hook": "그는 날마다 안 된다고 했다…",
-    "last": "그의 마지막 날…",
+    "last": "그의 마지막 근무 날…",
     "endCard": "가지 마 = 가지 마",
     "ask": "너라면 누구에게 이 말을 할래?"
   }

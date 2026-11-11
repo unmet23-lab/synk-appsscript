@@ -73,7 +73,6 @@ const { musicLayerFindings } = require('./lib/음악층관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
 const 장부 = require('./게시장부.js');
-const 뜻검사 = require('./뜻검사.js');
 const 그림검사 = require('./그림검사.js');
 const { FORMATS } = require('./lib/돌림.js'); // 이야기 · 노래 · 퀴즈(21:00 칸은 11-10 밤부터 노래)
 const { 미디어경로 } = require('./lib/공용작업본.js');
@@ -779,7 +778,6 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
   const cfg = (ledger || 묶음.readJson(path.join(bundle.repo, 'docs', '마케팅', 'sns-계정.json')) || {}).labRotation || {};
   const required = Array.isArray(cfg.판본검수) && cfg.판본검수.length ? cfg.판본검수 : ['뜻', '글자'];
   const states = new Map();
-  let 뜻기록 = null; // 뜻 검사 지난 기록(편 폴더들의 준비.json) — 시험관 수 확인에 쓸 때만 읽는다
   let rows = results;
   if (rows === undefined) { try { rows = 묶음.readJson(path.join(bundle.dir, '게시', '게시결과.json')).판 || []; } catch { rows = []; } }
   for (const p of gen) {
@@ -814,15 +812,9 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
     // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).
     const verdicts = Array.isArray(v.검수?.뜻?.판정줄) ? v.검수.뜻.판정줄 : [];
     if (st.ready && verdicts.length) add(LOOK, 'rotation-verdict', p.account, `판본 ${key}: 뜻 검사에서 둘 이상이 짚은 줄 ${verdicts.length}개를 판정으로 내렸다 — ${verdicts.map((z) => `${z.줄}(${z.갈래})`).join(' · ')}. 판본 글로 못 고치는 줄인지 까닭을 본다(준비.json 돌림.판본.${key}.검수.뜻.판정줄)`);
-    // 시험관 수(11-11 P2-7) — 문자 체계마다 첫 3편은 언어판 전부 시험관 넷인데(설계), 셈을 고치기 전에 시험관 둘로 통과한 기록이 있다(「화날때」
-    // 영어 · 스페인어 판본). 지금 셈으로 넷이어야 하는 판본이 넷보다 적은 시험관으로 통과했으면 보이게 한다(막지는 않는다 — 넷으로 다시 받는다).
-    const exam = v.검수?.뜻;
-    if (st.ready && exam && Array.isArray(exam.시험관) && exam.시험관.length < 4) {
-      const 편이름 = bundle.name || path.basename(bundle.dir);
-      if (!뜻기록) { try { 뜻기록 = 뜻검사.지난기록(path.dirname(bundle.dir)); } catch { 뜻기록 = []; } }
-      const need = 뜻검사.넷판단({ 언어: v.언어, 틀: exam.틀 || format, 편: 편이름, 기록: 뜻기록.filter((r) => !(r.편 === 편이름 && r.판본 === key)) });
-      if (need.넷) add(LOOK, 'rotation-examiners', p.account, `판본 ${key}: 뜻 검사를 시험관 ${exam.시험관.length}명(${exam.시험관.join(' · ')})으로 통과했는데 지금 셈으로는 시험관 넷이다(${need.까닭.join(' · ')}) — node tools/뜻검사.js 판본 … ${key}로 넷에게 다시 받는다`);
-    }
+    // 시험관 수(11-11 P2-7 → P1-넷1) — 넷이어야 할 때 넷보다 적은 시험관으로 통과한 판본은 이제 판본 상태(돌림표 versionState)가 「돌림에 못 든다」로
+    // 닫는다: 안 걸린 판은 위의 고칠 것(rotation-version-check), 걸린 판은 확인할 것(rotation-version-booked)으로 뜬다. 「확인할 것 rotation-examiners」로만
+    // 보이던 동안 14시 회차가 그런 판 여섯을 걸었고 셋이 넷 시험에서 떨어졌다(11-11).
     // 현지어 대조 기록(11-11 P2-4) — 게시글 줄(제목 · 본문 · 고정 댓글)은 뜻 검사 시험지에 안 실려 현지어 대조만 본다. 판본검수에 「현지어」가 아직
     // 없는 동안(기록을 채우는 중)에는 기록이 없거나 글이 바뀐 판본을 확인할 것으로 보인다 — 판본검수에 들면 versionState가 고칠 것으로 막는다.
     // 대조에서 검수 필요로 나온 줄을 사람 판정으로 넘긴 판본은 그 줄이 보이게 한다(뜻 검사 판정줄과 같은 까닭).

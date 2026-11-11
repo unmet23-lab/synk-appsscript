@@ -94,7 +94,7 @@
     {
       "id": "sits.1",
       "칸": "진행",
-      "글": "The bus left right\nin front of me…",
+      "글": "The bus left\nright in front of me…",
       "원문": "버스가 바로 내 눈앞에서 떠나 버렸다…",
       "초": [
         3.2,
@@ -466,8 +466,8 @@
     {
       "id": "end1",
       "칸": "끝",
-      "글": "With elders and bosses —",
-      "원문": "윗사람 앞에서는 —",
+      "글": "Mad at your boss?",
+      "원문": "사장님한테 화났어?",
       "초": [
         25.3,
         28.6
@@ -479,15 +479,15 @@
         "줄높이": 1.14,
         "최대줄": 1,
         "가운데": true,
-        "글자크기": 76,
+        "글자크기": 66,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
     {
       "id": "end2",
       "칸": "끝",
-      "글": "say it in your head!",
-      "원문": "속으로만 말해!",
+      "글": "Scream it in your head!",
+      "원문": "속으로 외쳐!",
       "초": [
         25.3,
         28.6
@@ -498,7 +498,7 @@
         "줄높이": 1.14,
         "최대줄": 1,
         "가운데": true,
-        "글자크기": 76,
+        "글자크기": 66,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },

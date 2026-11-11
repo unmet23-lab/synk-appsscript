@@ -154,7 +154,7 @@
   "hookSize": 84,
   "gauge": "ANGER",
   "sits": [
-    "The bus left right\nin front of me…",
+    "The bus left\nright in front of me…",
     "Someone took\nthe last kimbap…",
     "He owes me money…\nbut got new shoes?!",
     "I did NOT break that cup…"
@@ -176,9 +176,9 @@
   "endRead": "ne, sa-jang-nim",
   "endMn": "Yes, boss~",
   "endMnSize": 48,
-  "end1": "With elders and bosses —",
-  "end2": "say it in your head!",
-  "endSize": 76,
+  "end1": "Boss nearby?",
+  "end2": "Scream all 4 in your head!",
+  "endSize": 62,
   "inner": "in my head",
   "ask": "What made you fume today?",
   "askSize": 44,
@@ -187,6 +187,7 @@
     "sits.2": "그는 나한테 돈을 빌렸는데… 새 신발을 샀다고?!",
     "ask": "오늘 뭐 때문에 부글부글 화났어?",
     "means.1": "열받아!(화나서 김이 나)",
-    "end2": "속으로만 말해!"
+    "end1": "사장님이 근처에 있어?",
+    "end2": "네 마디 다 속으로 외쳐!"
   }
 }

@@ -142,13 +142,13 @@
   "lastSize": 64,
   "endCard": "울지 마 = Don't cry",
   "endSize": 60,
-  "ask": "Who do you say this to most?",
+  "ask": "Who comforts you when you cry?",
   "askSize": 46,
   "coverAt": 14,
   "_원문": {
     "hook": "그는 늘 나에게 “하지 마”라고 했다…",
     "last": "그의 마지막 날…",
     "endCard": "울지 마 = 울지 마",
-    "ask": "너는 이 말을 누구에게 제일 많이 해?"
+    "ask": "네가 울 때 달래 주는 사람은 누구야?"
   }
 }

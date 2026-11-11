@@ -1028,3 +1028,81 @@ test('판본검수 「현지어」(11-11 P2-4) — 현지어 대조 기록은 �
     assert.equal(localCheckState(dir, v).why, '현지어 대조 뒤 글이 바뀌었다');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('시험관 수(11-11 P1-넷1 · P2-넷2) — 넷이어야 할 때 넷보다 적은 시험관으로 통과한 판본은 돌림에 못 들고, 뒤에 다른 편이 통과해도 저절로 넉넉해지지 않는다', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '돌림표-시험관-'));
+  const { versionState, bookedVersionProblem, 뜻기록비우기 } = require('../tools/돌림표.js');
+  const 뜻검사 = require('../tools/뜻검사.js');
+  const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+  const 넷 = ['sonnet', 'haiku', 'opus', 'gpt'], 둘 = ['sonnet', 'haiku'];
+  // 편 하나 — 판본마다 영상 · 글 파일과 뜻 · 글자 통과 기록(뜻 기록의 시험관 · 시각 · 처음통과를 받는다)
+  const 편쓰기 = (name, 판본들) => {
+    const dir = path.join(root, name);
+    const out = {};
+    for (const [key, { 언어, 시험관, 시각, 처음통과 }] of Object.entries(판본들)) {
+      fs.mkdirSync(path.join(dir, '게시', '판본', key), { recursive: true });
+      const video = path.join(dir, '게시', '판본', key, 'video.mp4'), text = path.join(dir, '게시', '판본', key, '글.json');
+      fs.writeFileSync(video, `v-${name}-${key}`);
+      fs.writeFileSync(text, JSON.stringify({ 줄: [`${name}-${key}`] }));
+      const 뜻 = { 결과: '통과', 지문: sha(text), 시각, 언어, 틀: '이야기' };
+      if (시험관) 뜻.시험관 = 시험관;
+      if (처음통과) 뜻.처음통과 = 처음통과;
+      out[key] = { 언어, 파일: `게시/판본/${key}/video.mp4`, 글: `게시/판본/${key}/글.json`, 검수: { 뜻, 글자: { 결과: '통과', 지문: sha(video) } } };
+    }
+    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 돌림: { 형식: '이야기', 판본: out } }, null, 2));
+    뜻기록비우기();
+    return { dir, 판본: out };
+  };
+  const 상태 = (편, key) => versionState(편.dir, 편.판본[key], ['뜻', '글자'], key);
+  try {
+    // 첫 원본 「가」 — 스페인어 · 영어 판본을 넷으로 통과(11-10)
+    const 가 = 편쓰기('LAB_가', { MX: { 언어: 'es', 시험관: 넷, 시각: '2026-11-10T10:00:00+09:00' }, US: { 언어: 'en', 시험관: 넷, 시각: '2026-11-10T10:05:00+09:00' } });
+    assert.equal(상태(가, 'MX').ready, true);
+    // 둘째 원본 「나」 — 파라과이판을 시험관 둘로 통과(11-10 18시): 라틴 문자 첫 3편 안이라 넷이어야 한다
+    let 나 = 편쓰기('LAB_나', { PY: { 언어: 'es', 시험관: 둘, 시각: '2026-11-10T18:00:00+09:00' } });
+    const 모자람 = 상태(나, 'PY');
+    assert.equal(모자람.ready, false);
+    assert.match(모자람.why, /뜻 검수 시험관 2명\(sonnet · haiku\)으로 통과 — 넷이어야 한다\(문자 체계\(라틴\) 첫 3편 — 이 편 앞에 통과한 편 1\)/);
+    assert.match(모자람.why, /뜻검사\.js 판본 <편 폴더> PY/);
+    assert.ok(모자람.sha, '영상 지문은 그대로 준다(걸린 판 대조에 쓴다)');
+    assert.equal(versionState(나.dir, 나.판본.PY, ['뜻', '글자']).ready, true, '판본 키를 안 주는 옛 부름은 시험관 수를 묻지 않는다');
+    assert.equal(versionState(나.dir, 나.판본.PY, ['글자'], 'PY').ready, true, '판본검수에 뜻이 없으면 묻지 않는다');
+    // 걸린 판이면 예약큐 · ⑩이 쓰는 bookedVersionProblem이 같은 까닭을 준다(걸린 뒤 넷으로 다시 세게 된 판)
+    const 걸린 = bookedVersionProblem(나.dir, { 돌림: { 판본: 나.판본 } }, { 계정: 'lab-py-youtube', 돌림: true }, { 계정: 'lab-py-youtube', 상태: '예약됨', 지문: 모자람.sha },
+      { accounts: { 'lab-py-youtube': { countryCode: 'PY' } } });
+    assert.match(걸린.why, /시험관 2명/);
+    assert.equal(걸린.changed, false);
+    // P2-넷2 — 뒤에(11-11 · 11-12) 다른 편 둘이 통과해도, 아무도 다시 받지 않은 「나」 PY는 그대로 모자라다
+    편쓰기('LAB_다', { MX: { 언어: 'es', 시험관: 넷, 시각: '2026-11-11T10:00:00+09:00' } });
+    편쓰기('LAB_라', { MX: { 언어: 'es', 시험관: 넷, 시각: '2026-11-12T10:00:00+09:00' } });
+    assert.equal(상태(나, 'PY').ready, false, '뒤에 통과한 편은 그때의 셈에 들지 않는다');
+    assert.equal(뜻검사.넷판단({ 언어: 'es', 틀: '이야기', 편: 'LAB_나', 기록: 뜻검사.지난기록(root).filter((r) => !(r.편 === 'LAB_나' && r.판본 === 'PY')) }).넷, false,
+      '지금 기록 전부로 세면 넉넉해 보인다 — 그래서 그때의 셈으로 본다');
+    // 넷으로 다시 받으면 든다
+    나 = 편쓰기('LAB_나', { PY: { 언어: 'es', 시험관: 넷, 시각: '2026-11-12T12:00:00+09:00' } });
+    assert.equal(상태(나, 'PY').ready, true);
+    // 넷째 원본 「마」(11-13) — 앞에 통과한 편이 셋(가 · 다 · 라)이라 시험관 둘로 된다
+    let 마 = 편쓰기('LAB_마', { PY: { 언어: 'es', 시험관: 둘, 시각: '2026-11-13T10:00:00+09:00' } });
+    assert.equal(상태(마, 'PY').ready, true);
+    // 앞 편 판본을 뒤에 다시 통과로 적어도(시각이 뒤로 감) 처음통과를 이어받으면 「먼저 통과한 편」으로 남는다 — 없으면 나중 것이 되어 세지 않는다
+    const 마기록 = { 결과: '통과', 시험관: 둘, 시각: '2026-11-13T10:00:00+09:00', 언어: 'es', 틀: '이야기' };
+    const 앞셋 = (가시각, 가처음) => [
+      { 편: 'LAB_가', 판본: 'MX', 언어: 'es', 틀: '이야기', 결과: '통과', 시각: 가시각, 처음통과: 가처음 },
+      { 편: 'LAB_다', 판본: 'MX', 언어: 'es', 틀: '이야기', 결과: '통과', 시각: '2026-11-11T10:00:00+09:00' },
+      { 편: 'LAB_라', 판본: 'MX', 언어: 'es', 틀: '이야기', 결과: '통과', 시각: '2026-11-12T10:00:00+09:00' },
+    ];
+    assert.equal(뜻검사.시험관모자람(마기록, { 편: 'LAB_마', 판본: 'PY', 기록: 앞셋('2026-11-10T10:00:00+09:00', null) }), null);
+    assert.equal(뜻검사.시험관모자람(마기록, { 편: 'LAB_마', 판본: 'PY', 기록: 앞셋('2026-11-14T10:00:00+09:00', '2026-11-10T10:00:00+09:00') }), null, '처음통과를 이어받은 기록은 먼저 통과한 편으로 남는다');
+    assert.match(뜻검사.시험관모자람(마기록, { 편: 'LAB_마', 판본: 'PY', 기록: 앞셋('2026-11-14T10:00:00+09:00', null) }).까닭.join(' '), /이 편 앞에 통과한 편 2/, '처음통과도 없고 시각도 뒤면 먼저라고 볼 수 없다');
+    // 시험관 칸이 없는 옛 기록은 묻지 않는다 · 기록을 직접 주면 편 폴더를 읽지 않는다
+    마 = 편쓰기('LAB_마', { PY: { 언어: 'es', 시각: '2026-11-13T10:00:00+09:00' } });
+    assert.equal(상태(마, 'PY').ready, true);
+    마 = 편쓰기('LAB_마', { PY: { 언어: 'es', 시험관: 둘, 시각: '2026-11-13T10:00:00+09:00' } });
+    assert.match(versionState(마.dir, 마.판본.PY, ['뜻', '글자'], 'PY', { 뜻기록: [] }).why, /새 언어/);
+    // 시험관모자람 — 시각이 없는 다른 기록은 세지 않고, 이 기록에 시각이 없으면 지금 기록 전부로 센다
+    const 셋편 = ['가', '다', '라'].map((n) => ({ 편: `LAB_${n}`, 판본: 'MX', 언어: 'es', 틀: '이야기', 결과: '통과', 시각: '' }));
+    assert.match(뜻검사.시험관모자람({ 결과: '통과', 시험관: 둘, 시각: '2026-11-13T10:00:00+09:00', 언어: 'es', 틀: '이야기' }, { 편: 'LAB_마', 판본: 'PY', 기록: 셋편 }).까닭.join(' '), /새 언어/);
+    assert.equal(뜻검사.시험관모자람({ 결과: '통과', 시험관: 둘, 언어: 'es', 틀: '이야기' }, { 편: 'LAB_마', 판본: 'PY', 기록: 셋편 }), null);
+    assert.equal(뜻검사.시험관모자람({ 결과: '통과', 시험관: 넷, 시각: '2026-11-13T10:00:00+09:00', 언어: 'es' }, { 편: 'LAB_마', 판본: 'PY', 기록: [] }), null);
+  } finally { 뜻기록비우기(); fs.rmSync(root, { recursive: true, force: true }); }
+});

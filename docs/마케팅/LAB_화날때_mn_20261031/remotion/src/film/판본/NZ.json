@@ -154,7 +154,7 @@
   "hookSize": 84,
   "gauge": "ANGER",
   "sits": [
-    "The bus left right\nin front of me…",
+    "The bus left\njust as I got there…",
     "Someone took\nthe last kimbap…",
     "He owes me money…\nbut got new shoes?!",
     "I did NOT break that cup…"
@@ -176,18 +176,20 @@
   "endRead": "ne, sa-jang-nim",
   "endMn": "Yes, boss~",
   "endMnSize": 48,
-  "end1": "With elders and bosses —",
-  "end2": "say it in your head!",
-  "endSize": 76,
+  "end1": "Mad at your boss?",
+  "end2": "Scream it in your head!",
+  "endSize": 66,
   "inner": "in my head",
-  "ask": "What left you speechless this week?",
+  "ask": "What’s got you fuming lately?",
   "askSize": 44,
   "coverAt": 2.9,
   "_원문": {
     "hook": "화가 부글부글? 한국어로 말하는 네 가지",
+    "sits.0": "내가 막 도착했는데 버스가 떠나 버렸다…",
     "sits.2": "그는 나한테 돈을 빌렸는데… 새 신발을 샀다고?!",
-    "ask": "이번 주에 무엇 때문에 말문이 막혔어?",
+    "ask": "요즘 뭐 때문에 부글부글 화가 나?",
     "means.1": "열받아!(화나서 김이 나)",
-    "end2": "속으로만 말해!"
+    "end1": "사장님한테 화났어?",
+    "end2": "속으로 외쳐!"
   }
 }

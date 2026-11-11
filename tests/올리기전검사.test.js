@@ -322,6 +322,18 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     판본.TH.검수.뜻 = 뜻;
     assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: 'old-sha' }]), ['확인할 것:rotation-version-booked'], '건 뒤 다시 구운 판');
     assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), []);
+    // 시험관 수(11-11 P1-넷1): 넷이어야 할 때 시험관 둘로 통과한 판본 — 안 걸린 판은 고칠 것(걸리지 않게 막는다), 걸린 판은 확인할 것(내리라고 알린다),
+    // 넷으로 통과했으면 조용하다. 「확인할 것 rotation-examiners」로만 보이던 동안 14시 회차가 그런 판 여섯을 걸었다(셋이 넷 시험에서 떨어짐)
+    const 시험관둘 = { ...뜻, 시험관: ['sonnet', 'haiku'], 시각: '2026-11-10T18:00:00+09:00', 언어: 'th', 틀: '이야기' };
+    판본.TH.검수.뜻 = 시험관둘;
+    const 둘 = 검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')], { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } }, results: [] });
+    assert.deepEqual(둘.map((f) => f.level + ':' + f.code), ['고칠 것:rotation-version-check']);
+    assert.match(둘[0].message, /시험관 2명\(sonnet · haiku\)으로 통과 — 넷이어야 한다\(새 언어/);
+    assert.ok(!둘.some((f) => f.code === 'rotation-examiners'), '확인할 것으로 따로 내지 않는다 — 판본 상태가 닫는다');
+    assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), ['확인할 것:rotation-version-booked'], '걸린 판은 내리라고 알린다');
+    판본.TH.검수.뜻 = { ...시험관둘, 시험관: ['sonnet', 'haiku', 'opus', 'gpt'] };
+    assert.deepEqual(booked([]), []);
+    판본.TH.검수.뜻 = 뜻;
     assert.deepEqual(codes([plate('lab-th-tiktok', '2026-11-20T13:00:00+07:00')]), ['rotation-ready:lab-th-tiktok'], '프로필 빈 계정은 채운 뒤에만');
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00', { 파일: '게시/다른.mp4' })]), ['rotation-version-file:lab-th-youtube']);
     fs.writeFileSync(text, '{"줄":["고친 글"]}');

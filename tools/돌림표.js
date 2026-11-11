@@ -180,7 +180,31 @@ function bookedVersionProblem(dir, prep, plate, row, { required = ['뜻', '글�
   return null;
 }
 
-function versionState(dir, v, required, key = null, { accounts = null } = {}) {
+// 편 폴더들의 뜻 검사 기록(시험관 수 확인용) — 판본마다 다시 읽지 않게 뿌리(docs/마케팅)별로 잠깐 들고 있는다. 준비.json들의 크기 · 고친 때가
+// 바뀌면 다시 읽고, 그 확인도 1초에 한 번만 한다(예약큐 · 돌림 셈이 한 번에 판본 수십 개를 본다).
+const 뜻기록곳간 = new Map();
+function 뜻기록들(뿌리) {
+  const 뜻검사 = require('./뜻검사.js');
+  const now = Date.now();
+  const hit = 뜻기록곳간.get(뿌리);
+  if (hit && now - hit.at < 1000) return hit.기록;
+  let sig = '';
+  try {
+    for (const d of fs.readdirSync(뿌리, { withFileTypes: true })) {
+      if (!d.isDirectory()) continue;
+      try { const s = fs.statSync(path.join(뿌리, d.name, '게시', '준비.json')); sig += `${d.name}:${s.size}:${s.mtimeMs};`; } catch { /* 준비.json 없는 폴더 */ }
+    }
+  } catch { /* 뿌리를 못 읽으면 기록 없음 */ }
+  if (hit && hit.sig === sig) { hit.at = now; return hit.기록; }
+  const 기록 = 뜻검사.지난기록(뿌리);
+  뜻기록곳간.set(뿌리, { at: now, sig, 기록 });
+  return 기록;
+}
+/** 들고 있던 뜻 검사 기록을 버린다(시험 — 같은 프로세스에서 준비.json을 고치고 곧바로 다시 볼 때) */
+function 뜻기록비우기() { 뜻기록곳간.clear(); }
+
+// 뜻기록(지난 뜻 검사 기록 배열)을 주면 편 폴더들을 읽지 않고 그것으로 시험관 수를 본다 — 안 주면 dir의 윗 폴더(docs/마케팅)에서 읽는다.
+function versionState(dir, v, required, key = null, { accounts = null, 뜻기록 = null } = {}) {
   if (!v) return { ready: false, why: '판본 없음' };
   const file = resolveIn(dir, v.파일);
   if (!file || !fs.existsSync(file)) return { ready: false, why: `영상 없음(${v.파일 || '파일 칸 없음'})` };
@@ -193,6 +217,21 @@ function versionState(dir, v, required, key = null, { accounts = null } = {}) {
       if (!text || !fs.existsSync(text)) return { ready: false, why: `${name} 검수할 글 파일 없음(판본 「글」)`, sha };
       if (r.지문 !== sha256(text)) return { ready: false, why: `${name} 검수 뒤 글이 바뀜`, sha };
     } else if (r.지문 !== sha) return { ready: false, why: `${name} 검수 뒤 영상이 바뀜`, sha };
+  }
+  // 뜻 검사를 넷이어야 할 때 넷보다 적은 시험관으로 통과한 판본은 돌림에 못 든다(11-11 Fable 5.2 다시 검수 P1-넷1). 올리기 전 검사 ⑩이 「확인할 것」
+  // (rotation-examiners)으로만 보이던 동안, 14시 회차가 그렇게 통과한 여섯 판을 걸었고 셋이 넷 시험에서 떨어져 공개 전에 내렸다(11-11).
+  // 넷이어야 했는지는 그 기록을 받은 때의 셈으로 본다(tools/뜻검사.js 시험관모자람 — 뒤에 다른 편이 통과해도 저절로 넉넉해지지 않는다).
+  if (key && required.includes('뜻')) {
+    let lack = null;
+    try {
+      const 편 = path.basename(dir);
+      const 기록 = Array.isArray(뜻기록) ? 뜻기록 : 뜻기록들(path.dirname(dir));
+      const 자기 = 기록.find((r) => r.편 === 편 && r.판본 === key);
+      lack = require('./뜻검사.js').시험관모자람(v.검수.뜻, { 언어: v.언어, 틀: 자기?.틀 || null, 편, 판본: key, 기록 });
+    } catch (e) {
+      return { ready: false, why: `뜻 검수 시험관 수를 확인하지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+    }
+    if (lack) return { ready: false, why: `뜻 검수 시험관 ${lack.수}명(${lack.시험관.join(' · ')})으로 통과 — 넷이어야 한다(${lack.까닭.join(' · ')}). node tools/뜻검사.js 판본 <편 폴더> ${key}로 넷에게 다시 받는다`, sha };
   }
   if (key) {
     let stale;
@@ -633,5 +672,5 @@ function main() {
   }
 }
 
-module.exports = { rotationAccounts, versionState, bookedVersionProblem, localCheckState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport };
+module.exports = { rotationAccounts, versionState, bookedVersionProblem, localCheckState, loadPieces, existingPlates, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
 if (require.main === module) main();

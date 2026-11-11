@@ -580,3 +580,146 @@ test('[예약됨, 보류]인 판을 다시 걸면 거둔 줄을 덮지 않고 �
   assert.equal(장부.claim({ dir: x, account: A, root: m.root, accounts: m.accounts, now, registry: m.reg }).ok, true);
   assert.deepEqual(m.상태들(x), ['게시됨', '지움', '거는 중']);
 });
+
+test('닫는 작업본이 건 작업본과 다를 때(11-11 내린 세 판 · P1-팔9) — 같은 예약이면 표의 줄도 거두고, 다른 예약 · 살아 있는 「거는 중」은 건드리지 않는다', (t) => {
+  const w = 두마당();
+  t.after(w.cleanup);
+  const { registry } = w;
+  const HOUR = 3600000;
+  const one = (o) => ({ root: w.one.root, accounts: w.one.accounts, registry, account: A, ...o });
+  const two = (o) => ({ root: w.two.root, accounts: w.two.accounts, registry, account: A, ...o });
+  const 올라옴 = (from, to) => fs.copyFileSync(path.join(from, '게시', '게시결과.json'), path.join(to, '게시', '게시결과.json'));
+  const 표 = () => JSON.parse(fs.readFileSync(registry, 'utf8')).칸;
+  const 표줄 = (name) => Object.values(표()).filter((e) => e.편 === name);
+  const 걸린 = (root) => 장부.registryHolds(root, { registry }).map((h) => `${h.piece}:${h.state}`);
+  let day = 20;
+  const 두편 = () => { day += 1; const K = `2026-11-${day}T13:00:00+07:00`; return [w.둘다(`LAB_${day}가`, K), w.둘다(`LAB_${day}나`, K, `b${day}`)]; };
+
+  // ① 건 사본(one)이 예약됨으로 닫고 줄이 올라왔다 → 다른 작업본(two)에서 공개 전에 내려 「실패」로 닫는다: 표의 줄이 거둬지고 그 칸이 열린다
+  {
+    const [[a1, a2], [, b2]] = 두편();
+    assert.equal(장부.claim(one({ dir: a1, now: NOW })).ok, true);
+    assert.equal(장부.finish(one({ dir: a1, state: '예약됨', id: 'yt1', now: NOW + 60000 })).ok, true);
+    올라옴(a1, a2);
+    assert.deepEqual(걸린(w.two.root), [`${path.basename(a1)}:예약됨`]);
+    assert.equal(장부.finish(two({ dir: a2, state: '실패', seen: '스튜디오에서 비공개로 내림 — 목록 「비공개」', now: NOW + 4 * HOUR })).ok, true);
+    assert.deepEqual(표줄(path.basename(a1)), [], '건 사본(one)이 적은 줄이지만 같은 예약이라 거둔다');
+    assert.equal(결과(a1).판[0].상태, '예약됨', '건 사본의 줄은 옛 「예약됨」 그대로다(끝난 회차 사본)');
+    assert.deepEqual(걸린(w.two.root), []);
+    assert.equal(장부.claim(two({ dir: b2, now: NOW + 5 * HOUR })).ok, true, '같은 칸의 다른 편이 걸린다');
+    assert.equal(장부.release({ dir: b2, account: A, why: '시험', root: w.two.root, registry }).ok, true);
+    assert.equal(장부.claim(two({ dir: a2, now: NOW + 5 * HOUR })).ok, true, '내린 판을 고쳐 다시 걸 수 있다');
+    assert.equal(장부.release({ dir: a2, account: A, why: '시험', root: w.two.root, registry }).ok, true);
+  }
+
+  // ② 낡은 사본(two)이 옛 예약을 늦게 「실패」로 닫아도, 건 사본(one)이 그 뒤에 다시 건 새 예약의 줄은 남는다 — 같은 칸의 다른 편은 막힌다
+  //    (「나중에 적힌 줄이 이긴다」로 고치면 여기서 같은 칸이 두 번 걸린다)
+  {
+    const [[c1, c2], [, d2]] = 두편();
+    assert.equal(장부.claim(one({ dir: c1, now: NOW })).ok, true);
+    assert.equal(장부.finish(one({ dir: c1, state: '예약됨', id: 'yt2', now: NOW + 60000 })).ok, true);
+    올라옴(c1, c2); // two는 옛 예약(예약됨 @ NOW+1분)을 들고 있다
+    assert.equal(장부.finish(one({ dir: c1, state: '실패', seen: '예약 목록에 없음', now: NOW + HOUR })).ok, true);
+    assert.equal(장부.claim(one({ dir: c1, now: NOW + 2 * HOUR })).ok, true);
+    assert.equal(장부.finish(one({ dir: c1, state: '예약됨', id: 'yt3', now: NOW + 2 * HOUR + 60000 })).ok, true);
+    assert.equal(장부.finish(two({ dir: c2, state: '실패', seen: '옛 예약이 목록에 없음', now: NOW + 3 * HOUR })).ok, true);
+    assert.equal(표줄(path.basename(c1)).length, 1, '새 예약의 줄은 남는다');
+    const blocked = 장부.claim(two({ dir: d2, now: NOW + 3 * HOUR + 1000 }));
+    assert.equal(blocked.ok, false);
+    assert.match(blocked.why, /같은 칸의 LAB_\d+가/);
+  }
+
+  // ③ 건 사본(one)이 올리는 중(거는 중 30분째)인 줄이 올라와 있어도, 다른 작업본에서 「실패」로 닫거나 풀어서 표의 줄을 지우지 못한다
+  {
+    const [[e1, e2], [, f2]] = 두편();
+    assert.equal(장부.claim(one({ dir: e1, now: NOW })).ok, true);
+    올라옴(e1, e2);
+    assert.equal(장부.finish(two({ dir: e2, state: '실패', now: NOW + HOUR / 2 })).ok, true);
+    assert.equal(표줄(path.basename(e1)).length, 1, '살아 있는 「거는 중」은 남는다');
+    assert.equal(장부.claim(two({ dir: f2, now: NOW + HOUR / 2 + 1000 })).ok, false);
+    const [[g1, g2], [, h2]] = 두편();
+    assert.equal(장부.claim(one({ dir: g1, now: NOW })).ok, true);
+    올라옴(g1, g2);
+    장부.release({ dir: g2, account: A, why: '시험', root: w.two.root, now: NOW + HOUR / 2, registry });
+    assert.equal(표줄(path.basename(g1)).length, 1, '풀기도 살아 있는 「거는 중」은 못 거둔다');
+    assert.equal(장부.claim(two({ dir: h2, now: NOW + HOUR / 2 + 1000 })).ok, false);
+  }
+
+  // ④ 2시간이 지난 끊긴 걸기는 다른 작업본에서 「실패」로 닫거나 풀면 표의 줄도 거둔다
+  {
+    const [[i1, i2], [, j2]] = 두편();
+    assert.equal(장부.claim(one({ dir: i1, now: NOW })).ok, true);
+    올라옴(i1, i2);
+    assert.equal(장부.finish(two({ dir: i2, state: '실패', now: NOW + 3 * HOUR })).ok, true);
+    assert.deepEqual(표줄(path.basename(i1)), []);
+    assert.equal(장부.claim(two({ dir: j2, now: NOW + 3 * HOUR + 1000 })).ok, true);
+    assert.equal(장부.release({ dir: j2, account: A, why: '시험', root: w.two.root, registry }).ok, true);
+    const [[k1, k2], [, l2]] = 두편();
+    assert.equal(장부.claim(one({ dir: k1, now: NOW })).ok, true);
+    올라옴(k1, k2);
+    assert.equal(장부.release({ dir: k2, account: A, why: '끊긴 걸기 — 예약 목록에 없음', root: w.two.root, now: NOW + 3 * HOUR, registry }).ok, true);
+    assert.deepEqual(표줄(path.basename(k1)), []);
+    assert.equal(장부.claim(two({ dir: l2, now: NOW + 3 * HOUR + 1000 })).ok, true);
+    assert.equal(장부.release({ dir: l2, account: A, why: '시험', root: w.two.root, registry }).ok, true);
+  }
+
+  // ⑤ 같은 예약 줄 뒤에 거둔 줄(보류)을 붙인 작업본이 있으면 그 예약은 풀린 것으로 읽는다 — 표 줄의 때와 걸린 줄의 기록시각이 같을 때만
+  {
+    const [[m1, m2], [, n2]] = 두편();
+    assert.equal(장부.claim(one({ dir: m1, now: NOW })).ok, true);
+    assert.equal(장부.finish(one({ dir: m1, state: '예약됨', id: 'yt5', now: NOW + 60000 })).ok, true);
+    올라옴(m1, m2);
+    const rows = 결과(m2).판;
+    const 줄쓰기 = (판) => fs.writeFileSync(path.join(m2, '게시', '게시결과.json'), JSON.stringify({ 판 }, null, 2));
+    // 걸린 줄의 기록시각이 표 줄의 때와 다르면(다른 예약) 거둔 줄이 붙어 있어도 건 사본의 줄을 믿는다
+    줄쓰기([{ ...rows[0], 기록시각: new Date(NOW - HOUR).toISOString() }, { 계정: A, 상태: '보류' }]);
+    assert.deepEqual(걸린(w.two.root).filter((x) => x.startsWith(path.basename(m1))), [`${path.basename(m1)}:예약됨`]);
+    assert.equal(장부.claim(two({ dir: n2, now: NOW + HOUR })).ok, false);
+    줄쓰기([...rows, { 계정: A, 상태: '보류', 까닭: '손으로 거둠' }]);
+    assert.deepEqual(걸린(w.two.root).filter((x) => x.startsWith(path.basename(m1))), []);
+    assert.equal(장부.claim(two({ dir: n2, now: NOW + HOUR })).ok, true);
+    assert.equal(장부.release({ dir: n2, account: A, why: '시험', root: w.two.root, registry }).ok, true);
+  }
+
+  // ⑥ 고치기 전에 이미 어긋난 줄(11-11 실물 — 공용 줄은 「실패」, 표에는 건 사본의 「예약됨」)은 읽는 쪽이 풀어 주지 않는다. 건 사본에서 「실패」로 닫아야 풀린다
+  {
+    const [[o1, o2], [, p2]] = 두편();
+    assert.equal(장부.claim(one({ dir: o1, now: NOW })).ok, true);
+    assert.equal(장부.finish(one({ dir: o1, state: '예약됨', id: 'yt6', now: NOW + 60000 })).ok, true);
+    fs.writeFileSync(path.join(o2, '게시', '게시결과.json'), JSON.stringify({ 판: [{ ...결과(o1).판[0], 상태: '실패', 확인: '공개 전에 내림', 기록시각: new Date(NOW + 4 * HOUR).toISOString() }] }, null, 2));
+    assert.deepEqual(걸린(w.two.root).filter((x) => x.startsWith(path.basename(o1))), [`${path.basename(o1)}:예약됨`], '나중에 적힌 실패 줄로 풀지 않는다');
+    assert.equal(장부.finish(two({ dir: o2, state: '실패', seen: '다시 확인', now: NOW + 5 * HOUR })).ok, true);
+    assert.equal(표줄(path.basename(o1)).length, 1, '공용에서 끝 실패를 다시 돌려도 남는다(닫기 직전 줄이 그 예약이 아니다)');
+    assert.equal(장부.claim(two({ dir: p2, now: NOW + 5 * HOUR + 1000 })).ok, false);
+    assert.equal(장부.finish(one({ dir: o1, state: '실패', seen: '스튜디오 목록 「비공개」', now: NOW + 6 * HOUR })).ok, true);
+    assert.deepEqual(표줄(path.basename(o1)), []);
+    assert.equal(장부.claim(two({ dir: p2, now: NOW + 6 * HOUR + 1000 })).ok, true);
+  }
+});
+
+test('[거는 중, 보류] — 안 닫힌 걸기는 뒤에 보류가 붙어 있어도 그 칸을 잡고 있다: 같은 칸의 다른 편 · 다른 작업본에서 걸리지 않는다(P1-팔7)', (t) => {
+  const w = 두마당();
+  t.after(w.cleanup);
+  const { registry } = w;
+  const K = '2026-11-20T13:00:00+07:00';
+  const [a1, a2] = w.둘다('LAB_가', K);
+  const [b1, b2] = w.둘다('LAB_나', K, 'b');
+  assert.equal(장부.claim({ dir: a1, account: A, root: w.one.root, accounts: w.one.accounts, now: NOW, registry }).ok, true);
+  // 끊긴 걸기 뒤에 손으로 보류를 덧붙였다
+  const rows = 결과(a1).판;
+  fs.writeFileSync(path.join(a1, '게시', '게시결과.json'), JSON.stringify({ 판: [...rows, { 계정: A, 상태: '보류', 까닭: '손으로 덧붙임' }] }, null, 2));
+  assert.equal(장부.rowOf(결과(a1).판, A).상태, '거는 중', '읽는 쪽도 안 닫힌 걸기를 먼저 본다');
+  // 같은 작업본의 같은 칸 다른 편
+  const same = 장부.claim({ dir: b1, account: A, root: w.one.root, accounts: w.one.accounts, now: NOW + 1000, registry });
+  assert.equal(same.ok, false);
+  assert.match(same.why, /같은 칸/);
+  // 다른 작업본의 같은 칸 다른 편 · 같은 판
+  assert.equal(장부.claim({ dir: b2, account: A, root: w.two.root, accounts: w.two.accounts, now: NOW + 1000, registry }).ok, false);
+  assert.equal(장부.claim({ dir: a2, account: A, root: w.two.root, accounts: w.two.accounts, now: NOW + 1000, registry }).ok, false);
+  assert.deepEqual(장부.registryHolds(w.two.root, { registry }).map((h) => `${h.piece}:${h.state}`), ['LAB_가:거는 중']);
+  assert.deepEqual(장부.pendingClaims(w.one.root, { registry }).map((c) => c.piece), ['LAB_가'], '걸던 것에도 보인다');
+  // 풀면 거둔 줄(보류)이 남아 그 칸이 열린다
+  assert.equal(장부.release({ dir: a1, account: A, why: '예약 목록에 없음', root: w.one.root, registry }).ok, true);
+  assert.equal(장부.rowOf(결과(a1).판, A).상태, '보류');
+  assert.equal(장부.claim({ dir: b2, account: A, root: w.two.root, accounts: w.two.accounts, now: NOW + 2000, registry }).ok, true);
+});

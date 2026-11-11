@@ -118,7 +118,7 @@
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.15,
   "hook": "He nagged me every day…",
-  "hookSize": 66,
+  "hookSize": 62,
   "reads": [
     "meok-ji ma",
     "nup-ji ma",
@@ -140,15 +140,15 @@
   "ruleSize": 100,
   "last": "His last day…",
   "lastSize": 64,
-  "endCard": "열지 마 = Don't open it",
+  "endCard": "가지 마 = Don't go",
   "endSize": 60,
-  "ask": "Who needs to hear this?",
+  "ask": "Who do you wish had stayed?",
   "askSize": 46,
   "coverAt": 6.7,
   "_원문": {
     "hook": "그는 날마다 나에게 잔소리했다…",
     "last": "그의 마지막 날…",
-    "endCard": "열지 마 = 그거 열지 마",
-    "ask": "이 말을 들어야 할 사람은?"
+    "endCard": "가지 마 = 가지 마",
+    "ask": "곁에 남아 줬으면 하는 사람은 누구야?"
   }
 }

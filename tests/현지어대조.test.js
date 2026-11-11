@@ -232,6 +232,8 @@ test('명령줄 --판본 — 글.json을 통째로 대조해 검수.현지어에
   assert.equal(fs.readFileSync(부른, 'utf8'), '', '글이 같은 줄은 다시 묻지 않는다');
   assert.equal(현지어().결과, '검수 필요');
   assert.equal(현지어().문제.length, 2);
+  // 결과 파일 자리(「기록」)에 절대 경로를 적지 않는다 — 준비.json은 공개 저장소에 올라가고 절대 경로에는 사용자 폴더 이름이 든다(11-11 다시 검수 8-2)
+  assert.ok(!path.isAbsolute(현지어().기록) && !/^[A-Za-z]:[\\/]/.test(현지어().기록), `기록 칸: ${현지어().기록}`);
   assert.equal(JSON.parse(fs.readFileSync(준비, 'utf8')).돌림.판본.TH.검수.뜻.결과, '통과', '다른 검수 칸은 그대로');
   // ③ 판정 꼴 — 없는 줄 · 짧은 까닭 · 통과한 줄에 단 판정은 실행 오류(적지 않는다)
   assert.equal(run('--기록', '--판정', '없는줄=까닭을 충분히 길게 적는다').status, 1);

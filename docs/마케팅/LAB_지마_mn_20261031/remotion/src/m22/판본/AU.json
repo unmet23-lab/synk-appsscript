@@ -140,15 +140,15 @@
   "ruleSize": 100,
   "last": "His last day…",
   "lastSize": 64,
-  "endCard": "눕지 마 = Don't lie down",
+  "endCard": "가지 마 = Don't go",
   "endSize": 60,
-  "ask": "Tag a mate who's always lying down",
+  "ask": "Which mate would you beg to stay?",
   "askSize": 46,
   "coverAt": 4.7,
   "_원문": {
     "hook": "그가 하는 말은 늘 “하지 마”뿐이었다…",
     "last": "그의 마지막 날…",
-    "endCard": "눕지 마 = 눕지 마",
-    "ask": "늘 누워 있는 친구를 태그해 봐"
+    "endCard": "가지 마 = 가지 마",
+    "ask": "어느 친구에게 가지 말라고 매달릴래?"
   }
 }
