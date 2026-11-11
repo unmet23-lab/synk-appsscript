@@ -11,7 +11,7 @@ import {createLiveConnection,projectRevision} from './live.mjs';
 import {publicBackend,projectBackend} from './request-backend.mjs';
 import {mountRequestFlow} from './request-flow.mjs';
 import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus} from './film-views.mjs';
-import {mountFilmList} from './film-home.mjs';
+import {mountFilmList,leanData} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
 import {draftModel,deskModel,roomState,directionModel,usesRoom,roomTab,roomRoute,journalModel} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
@@ -931,6 +931,14 @@ const connectivity=()=>{document.querySelector('#connection-banner').hidden=navi
 window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();
 if(filmDemo)void openFilmDemo();if(startRequest)void openPublicRequest();
 if(demo){accept(demo.snapshot());s.tab=demo.guide().tab;render();}else{render();await start(parseInvite(initialInvite));if(memberReturn||LOGIN_FAILED)void resumeMemberReturn();}initialInvite='';
-if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('./sw.js',{scope:'/pulse-app/'}).catch(()=>{});
+// 첫 방문 무게(11-11): 서비스 워커(셸 미리 받기 — 화면 모듈 · 글꼴 · 모델 사진)는 문서가 다 불러진 뒤 쉴 때 등록한다.
+// 첫 방문에 셸을 바로 받으면 느린 연결에서 의뢰서 · 첫 화면과 대역을 나눈다(판 6 점검 E). 다음 방문부터는 셸이 그대로 돈다.
+const afterLoadIdle=fn=>{const go=()=>setTimeout(()=>typeof requestIdleCallback==='function'?requestIdleCallback(fn,{timeout:5000}):fn(),1500);if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});};
+afterLoadIdle(()=>{if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('./sw.js',{scope:'/pulse-app/'}).catch(()=>{});});
+// 한국어 화면에서 손님이 글 칸에 들어오면 SYNK Sans의 남은 조각(화면 원문에 없는 음절, tools/build-pulse-fonts.py)을 받아 둔다 —
+// 손님이 쓰는 글자가 기기 글꼴로 잠깐 바뀌지 않게. 쓰지 않고 보기만 하는 손님은 받지 않는다. 데이터 절약 · 2G에서는 그 글자가 나올 때 받는다.
+// 끊긴 동안에는 받지 않는다(받기가 실패하면 그 면이 오류로 굳어 다시 이어져도 새로고침 전까지 안 받는다 — 검수 A1). 명조 나머지는 손님 글이 제목에 나올 때만 받는다.
+let restFontAsked=false;
+document.addEventListener('focusin',event=>{if(restFontAsked||locale()!=='ko'||leanData()||!navigator.onLine||!document.fonts||!event.target?.matches?.('textarea,input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden])'))return;restFontAsked=true;for(const face of document.fonts)if(face.family.replace(/["']/g,'')==='SYNK Sans'&&face.status==='unloaded')face.load().catch(()=>{});});
 
 

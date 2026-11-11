@@ -19,20 +19,27 @@
 // v39(11-10): 고객 전용 인물 판 3 — 고객 방 인물 카드 모듈 persona-view.mjs를 더했다. 의뢰서 · 고객 방 · 내부 확인 모듈과 film.css · slate-screens.css · i18n/en.mjs도 바뀌었다. 스위치가 꺼져 있으면 화면은 그대로다.
 // v40(11-10): PULSE 인물 판 4 — 손님 「내 모델」 화면 모듈 my-models.mjs를 더했다(스위치 myModels가 켜진 뒤 처음 열 때 읽는다). 고객 방 「내 모델로 모아 두기」 · 의뢰서 내 모델 고름 · 상태 줄 판 4 몫으로
 // app.mjs · api.mjs · film-home.mjs · film-views.mjs · persona-view.mjs · request-*.mjs · room-view.mjs · views.mjs · film.css · slate-screens.css · i18n/en.mjs도 바뀌었다. 직원 「고객 브랜드」 화면 모듈은 직원 화면이라 목록에 넣지 않는다.
-const CACHE = 'synk-pulse-shell-v40-my-models-20261110';
+// v41(11-11): 첫 방문 무게 — 고객 앱 글꼴을 글자 조각으로 나눴다(tools/build-pulse-fonts.py, SUIT → SYNK Sans 조각 넷 · 명조 조각 셋).
+// 미리 받는 목록에는 첫 화면이 쓰는 조각(라틴 · 첫 글자 · 화면 글자, 명조 기호 · 화면 글자)만 두고, 통째 글꼴 둘(직원 화면 app.css의 SUIT ·
+// 옛 명조)과 나머지 조각은 받을 때 담는 목록(RUNTIME)으로 옮겼다. 등록도 문서 load 뒤 쉴 때로 늦췄다(app.mjs) — 첫 방문의 셸 받기가
+// 의뢰서 · 첫 화면과 대역을 나누지 않게. film.css · film-home.mjs · app.mjs · index.html도 바뀌었다.
+const CACHE = 'synk-pulse-shell-v41-first-load-20261111';
 const BASE = '/pulse-app/';
-const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/SUIT.woff2','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
+const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');
 // 11-02 캐스팅북 뒤 여섯 명(모델 고르기의 대표 사진)도 셸에 둔다.
 for(const id of ['f05','m04','f06','f07','m05','m06'])FILES.push(BASE+'assets/casting/'+id+'.webp');
 // 11-03 아이돌 두 팀 여덟 명도 셸에 둔다.
 for(const id of ['f08','f09','f10','f11','m07','m08','m09','m10'])FILES.push(BASE+'assets/casting/'+id+'.webp');
 FILES.push(BASE+'motion.mjs',BASE+'request-data.mjs',BASE+'request-flow.mjs',BASE+'request-backend.mjs',BASE+'film-views.mjs',BASE+'room-view.mjs',BASE+'demo-film.mjs',BASE+'slate.css',BASE+'slate-screens.css',BASE+'slate-legacy.css',BASE+'assets/request/logo-paper.webp');
-FILES.push(BASE+'film.css',BASE+'film-legacy.css',BASE+'film-home.mjs',BASE+'film-review.mjs',BASE+'assets/NotoSerifKR-300.woff2',BASE+'assets/request/reel-wide-poster.webp',BASE+'assets/request/reel-tall-poster.webp');
+FILES.push(BASE+'film.css',BASE+'film-legacy.css',BASE+'film-home.mjs',BASE+'film-review.mjs',BASE+'assets/request/reel-wide-poster.webp',BASE+'assets/request/reel-tall-poster.webp');
+for(const name of ['SYNKSans-pulse-latin','SYNKSans-pulse-first','SYNKSans-pulse-ui','NotoSerifKR-300-sym','NotoSerifKR-300-ui'])FILES.push(BASE+'assets/'+name+'.woff2');
 FILES.push(BASE+'i18n.mjs',BASE+'i18n/en.mjs',BASE+'casting-choice.mjs',BASE+'locale-menu.mjs');
 FILES.push(BASE+'persona-view.mjs');
 FILES.push(BASE+'my-models.mjs');
-const ALLOWED = new Set(FILES);
+// 미리 받지 않고, 화면이 받을 때 담아 두는 파일(그 뒤로는 끊겨도 그대로 쓴다).
+const RUNTIME = ['assets/SUIT.woff2','assets/NotoSerifKR-300.woff2','assets/SYNKSans-pulse-rest.woff2','assets/NotoSerifKR-300-rest.woff2'].map(name=>BASE+name);
+const ALLOWED = new Set([...FILES,...RUNTIME]);
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('synk-pulse-shell-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

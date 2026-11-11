@@ -68,16 +68,32 @@ const OWN=FINISHED_FILMS.filter(film=>film.featured),CONTEST=null;
 const isTall=()=>typeof matchMedia==='function'&&matchMedia('(max-aspect-ratio: 1/1)').matches;
 const reelSrc=()=>`${A}reel-${isTall()?'tall':'wide'}.mp4`;
 const reelPoster=()=>`${A}reel-${isTall()?'tall':'wide'}-poster.webp`;
+// 첫 방문 무게(11-11): 문서가 다 불러졌는지(그 전에 받으면 화면 모듈 · 글꼴과 대역을 나눈다), 데이터를 아껴야 하는 연결인지.
+// navigator.connection이 없는 브라우저(사파리 · 파이어폭스)는 아끼지 않는 쪽 — 저절로 받는 것은 load 뒤라 첫 그리기와 겹치지 않는다.
+export const pageLoaded=()=>typeof document!=='object'||document.readyState==='complete';
+const connection=()=>typeof navigator==='object'?navigator.connection:null;
+export const leanData=()=>{const c=connection();return !!c&&(c.saveData===true||/(^|-)2g$/.test(String(c.effectiveType||'')));};
+export const slowData=()=>leanData()||String(connection()?.effectiveType||'')==='3g';
 
 // 쇼릴 하나를 video에 잇는다. focus(id)를 부르면 그 작품의 컷만 돌고, focus(null)이면 전체가 돈다.
-// held면 파일을 바로 받지 않고 처음 play()에서 붙인다(예시 · 의뢰서가 첫 화면 위에 곧바로 열릴 때).
+// held면 파일을 바로 받지 않고 처음 play()에서 붙인다(예시 · 의뢰서가 첫 화면 위에 곧바로 열릴 때). 붙잡힌 동안은 포스터도 받지 않는다(덮개 뒤라 안 보인다).
+// 첫 방문 무게(11-11): 쇼릴 파일(세로 6.9MB · 가로 7.4MB)은 문서가 다 불러진 뒤(load)에 붙인다. 그동안은 같은 첫 장면인 포스터가 보이고,
+// 느린 연결에서 화면 모듈 · 글꼴 · 보이는 그림과 대역을 나누지 않는다(판 6 점검 E — 쇼릴이 먼저 받으면 첫 화면 글이 늦게 그려진다).
+// 데이터 절약(saveData) · 2G 연결이면 저절로 받지 않고 포스터로 둔다 — 작품 이름에 손을 올리면(focus(id,{ask:true})) 그때 받는다.
 export function mountReel(video,{onCut,held=false}={}){
   video.muted=true;video.playsInline=true;video.loop=true;video.preload='auto';video.setAttribute('aria-hidden','true');
-  video.poster=reelPoster();
-  let only=null,index=0,wanted=!held,raf=0,frame=0,attached=false,keep=0,onMeta=null;
+  if(!held)video.poster=reelPoster();
+  let only=null,index=0,wanted=!held,want=!held,asked=false,raf=0,frame=0,attached=false,keep=0,onMeta=null,waiting=null;
   const dropMeta=()=>{if(onMeta)video.removeEventListener('loadedmetadata',onMeta);onMeta=null;};
   const attach=()=>{if(attached)return;attached=true;video.src=reelSrc();if(keep>0){const at=keep;onMeta=()=>{onMeta=null;try{video.currentTime=at;}catch{}};video.addEventListener('loadedmetadata',onMeta,{once:true});}};
-  if(!held)attach();
+  const dropWait=()=>{if(waiting)removeEventListener('load',waiting);waiting=null;};
+  // 파일을 붙일 때가 됐으면 붙이고, 재생을 바라면 튼다. 아직 문서를 불러오는 중이면 load에서 다시 본다.
+  const sync=()=>{
+    if(!want||(leanData()&&!asked))return;
+    if(!pageLoaded()){if(!waiting){waiting=()=>{waiting=null;sync();};addEventListener('load',waiting,{once:true});}return;}
+    attach();if(wanted&&!reduced())video.play().catch(()=>{});
+  };
+  sync();
   const cutAt=time=>{let at=0;for(let i=0;i<REEL.length;i++)if(time>=REEL[i].at)at=i;return at;};
   const endOf=at=>at+1<REEL.length?REEL[at+1].at:REEL_TOTAL;
   const cutsOf=id=>REEL.map((cut,i)=>[cut,i]).filter(([cut])=>cut.work===id).map(([,i])=>i);
@@ -91,17 +107,19 @@ export function mountReel(video,{onCut,held=false}={}){
   if(frames)frame=video.requestVideoFrameCallback(onFrame);
   const onTime=()=>{if(only||frames)return;const at=cutAt(video.currentTime);if(at!==index){index=at;report();}};
   video.addEventListener('timeupdate',onTime);
-  const play=()=>{wanted=true;attach();if(!reduced())video.play().catch(()=>{});if(only&&!raf)raf=requestAnimationFrame(watch);};
+  const play=()=>{wanted=true;want=true;if(!video.poster)video.poster=reelPoster();sync();if(only&&!raf)raf=requestAnimationFrame(watch);};
   const pause=()=>{wanted=false;video.pause();cancelAnimationFrame(raf);raf=0;};
   // 예시 · 의뢰서가 위를 덮으면 멈추고, 다 받지 못한 쇼릴은 내려받기도 놓는다. 다시 play()하면 그 자리에서 잇는다.
   const whole=()=>{const got=video.buffered;return got.length===1&&got.start(0)<=.1&&got.end(0)>=(video.duration||Infinity)-.15;};
   // 다시 붙인 뒤 메타데이터가 오기 전(readyState 0)이면 currentTime은 아직 0이라 떼던 자리(keep)를 그대로 둔다(검수 A1).
-  const suspend=()=>{pause();if(!attached||whole())return;if(video.readyState>=1)keep=video.currentTime||0;dropMeta();attached=false;video.removeAttribute('src');video.load?.();};
+  // 아직 붙이지 않았으면(load를 기다리는 중) 기다림도 거둔다.
+  const suspend=()=>{pause();if(!attached){want=false;dropWait();return;}if(whole())return;want=false;if(video.readyState>=1)keep=video.currentTime||0;dropMeta();attached=false;video.removeAttribute('src');video.load?.();};
   report();
   return {play,pause,suspend,video,
-    focus(id){if(id===only){if(wanted)play();return;}only=id;cancelAnimationFrame(raf);raf=0;if(id&&cutsOf(id).length){go(cutsOf(id)[0]);raf=requestAnimationFrame(watch);}else{only=null;report();}if(wanted)play();},
+    // ask: 손님이 작품 이름을 골랐다(데이터 절약이어도 이때는 받는다).
+    focus(id,{ask=false}={}){if(ask&&id)asked=true;if(id===only){if(wanted)play();return;}only=id;cancelAnimationFrame(raf);raf=0;if(id&&cutsOf(id).length){go(cutsOf(id)[0]);raf=requestAnimationFrame(watch);}else{only=null;report();}if(wanted)play();},
     current:()=>filmOf(REEL[index].work),
-    stop(){pause();if(frame)video.cancelVideoFrameCallback?.(frame);frame=0;dropMeta();video.removeEventListener('timeupdate',onTime);attached=false;video.removeAttribute('src');video.load?.();}};
+    stop(){pause();want=false;dropWait();if(frame)video.cancelVideoFrameCallback?.(frame);frame=0;dropMeta();video.removeEventListener('timeupdate',onTime);attached=false;video.removeAttribute('src');video.load?.();}};
 }
 
 // 열린 창 안에서만 Tab이 돈다.
@@ -159,9 +177,9 @@ const pages=({start,demoHref})=>[
     <ol class="sx-check-list">${CHECK_THREE.map((text,i)=>`<li data-in><button type="button" data-check="${i}"><span class="sx-no">${i+1}/3</span><span class="sx-serif">${esc(t(text))}</span></button></li>`).join('')}</ol>
     <p class="sx-small" data-in>${esc(t('장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.'))}</p></div>
     <div class="sx-check-stage" aria-hidden="true">
-      <div class="sx-pane sx-pane-cast is-on">${CHECK_CAST.map(modelCard).filter(Boolean).map(m=>`<figure><img src="${A}model-scene-${m.id.toLowerCase()}.webp" alt="" loading="lazy" decoding="async" width="960" height="1285"><figcaption class="sx-small"><b>${esc(t(m.name,null,'model'))}</b> ${esc(t(m.line))}</figcaption></figure>`).join('')}</div>
+      <div class="sx-pane sx-pane-cast is-on">${CHECK_CAST.map(modelCard).filter(Boolean).map(m=>`<figure><img data-src="${A}model-scene-${m.id.toLowerCase()}.webp" alt="" loading="lazy" decoding="async" width="960" height="1285"><figcaption class="sx-small"><b>${esc(t(m.name,null,'model'))}</b> ${esc(t(m.line))}</figcaption></figure>`).join('')}</div>
       <div class="sx-pane sx-pane-word"><p class="sx-serif sx-pane-one">${esc(t(CHECK_WORD.one))}</p><ol>${CHECK_WORD.rows.map(([at,text])=>`<li><span class="sx-no">${at}</span><span class="sx-small">${esc(t(text))}</span></li>`).join('')}</ol></div>
-      <div class="sx-pane sx-pane-cuts">${Array.from({length:12},(_,i)=>`<img src="${A}sheet-gift-${pad(i+1)}.webp" alt="" loading="lazy" decoding="async" width="360" height="640">`).join('')}</div>
+      <div class="sx-pane sx-pane-cuts">${Array.from({length:12},(_,i)=>`<img data-src="${A}sheet-gift-${pad(i+1)}.webp" alt="" loading="lazy" decoding="async" width="360" height="640">`).join('')}</div>
     </div>`},
   {layer:'none',cls:'is-paper',html:`<ol class="sx-promises">${INTRO_PROMISES.map(([title,text,link],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(t(title))}</h3><p class="sx-body">${esc(t(text))}${link?` ${link()}`:''}</p></li>`).join('')}</ol>`},
   {layer:'shard',cls:'is-stages',html:`<h2 class="sx-display">${lines([k('맡기면 이렇게 진행돼요')])}</h2><ol class="sx-stages">${STAGES.map(([title,text],i)=>`<li data-in><span class="sx-no">${pad(i+1)}</span><h3 class="sx-serif">${esc(t(title))}</h3><p class="sx-body">${esc(t(text))}</p></li>`).join('')}</ol>
@@ -176,7 +194,7 @@ const startLabel=resume=>resume?t('쓰던 의뢰서 이어 쓰기'):t('광고 �
 export function entryView({demoHref='?demo=film',entryError=null,resume=false}={}){
   const list=pages({start:startLabel(resume),demoHref});
   return `<div class="sx-home${entryError?' has-entry-error':''}">
-    <div class="sx-stage" aria-hidden="true">${LAYERS.map(layer=>`<div class="sx-layer sx-layer-${layer.id}" data-layer="${layer.id}">${layer.image?`<img src="${layer.image}" alt="" decoding="async">`:''}${layer.id==='reel'?'<video data-reel></video>':''}</div>`).join('')}<div class="sx-shade"></div><div class="sx-veil" data-veil></div></div>
+    <div class="sx-stage" aria-hidden="true">${LAYERS.map(layer=>`<div class="sx-layer sx-layer-${layer.id}" data-layer="${layer.id}">${layer.image?`<img data-src="${layer.image}" alt="" decoding="async">`:''}${layer.id==='reel'?'<video data-reel></video>':''}</div>`).join('')}<div class="sx-shade"></div><div class="sx-veil" data-veil></div></div>
     <header class="sx-top"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><nav class="sx-top-nav" aria-label="${esc(t('바로 가기'))}"><button type="button" data-entry="open">${esc(t('내 프로젝트 다시 열기'))}</button>${demoOn()?`<a href="${esc(demoHref)}" data-entry-demo>${DEMO_LABEL.top}</a>`:''}${localeMenu()}</nav></header>
     <div class="sx-reel" tabindex="-1">${list.map((page,i)=>`<section class="sx-p ${page.cls||''}" data-i="${i}" data-layer="${page.layer}">${page.html}</section>`).join('')}</div>
     <nav class="sx-nums" aria-label="${esc(t('쪽'))}">${list.map((_,i)=>`<button type="button" data-go="${i}" aria-label="${esc(t('{n}쪽',{n:i+1}))}"><span>${i+1}</span></button>`).join('')}<i class="sx-nums-bar" aria-hidden="true"></i></nav>
@@ -198,6 +216,16 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   const numbers=$$('.sx-nums button'),sections=$$('.sx-p'),reel=$('.sx-reel');
   let current=-1,cursor=null,screening=null;
   const smooth=()=>reduced()?'auto':'smooth';
+  // 첫 방문 무게(11-11): 뒤쪽 무대 그림(shard 449KB · end)과 「세 번 확인」 창 그림 16장(약 1MB)은 data-src로 그려 두고 가까이 왔을 때 붙인다 —
+  // 지금 쪽부터 두 쪽 앞까지의 무대 그림, 지금 쪽과 다음 쪽 안의 그림. 덮개(의뢰서 · 예시) 뒤에서는 붙이지 않는다(판 6 점검 E에서
+  // 의뢰서 밑 첫 화면 그림 1.4MB가 의뢰서 그림과 같이 받아졌다). 느리지 않은 연결이면 문서 load 뒤 쉴 때 남은 그림을 다 붙여 둔다
+  // (쪽 번호로 건너뛰어도 비지 않게 — 빠른 연결에서 보이는 것은 그대로다).
+  let gone=false,idleTimer=0,onLoad=null;
+  const hydrate=node=>{if(!node||gone)return;for(const img of node.querySelectorAll('img[data-src]')){img.src=img.dataset.src;img.removeAttribute('data-src');}};
+  const warm=i=>{if(hold||i<0)return;for(let k=i;k<=i+2&&k<list.length;k++)hydrate(layers.get(list[k].layer));hydrate(sections[i]);hydrate(sections[i+1]);};
+  const warmAll=()=>{if(!hold&&!slowData())hydrate(host);};
+  const later=()=>{clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(typeof requestIdleCallback==='function')requestIdleCallback(warmAll,{timeout:4000});else warmAll();},1200);};
+  if(pageLoaded())later();else{onLoad=()=>{onLoad=null;later();};addEventListener('load',onLoad,{once:true});}
   // 세 번 확인: 줄마다 오른쪽 화면이 바뀐다. 쪽에 머무는 동안 천천히 저절로 넘어가고, 손을 대면 멈춘다.
   const panes=$$('.sx-pane'),rows=$$('[data-check]');
   let checkAt=0,checkTimer=0;
@@ -208,6 +236,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   const clearWork=()=>{host.classList.remove('has-work');$$('.sx-work').forEach(item=>item.classList.remove('is-on'));};
   function activate(i){
     if(i===current)return;current=i;
+    warm(i);
     const page=list[i],id=page.layer;
     layers.forEach((el,key)=>el.classList.toggle('is-on',key===id));
     if(i!==1){reelApi.focus(page.focus??null);clearWork();}
@@ -255,7 +284,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
     sections[to].scrollIntoView({behavior:smooth()});
   },{passive:false});
   // 작품 이름에 손을 올리면 뒤 화면이 그 작품으로.
-  $$('.sx-work').forEach(button=>{const on=()=>{host.classList.add('has-work');$$('.sx-work').forEach(item=>item.classList.toggle('is-on',item===button));reelApi.focus(button.dataset.work);};button.addEventListener('pointerenter',on);button.addEventListener('focus',on);});
+  $$('.sx-work').forEach(button=>{const on=()=>{host.classList.add('has-work');$$('.sx-work').forEach(item=>item.classList.toggle('is-on',item===button));reelApi.focus(button.dataset.work,{ask:true});};button.addEventListener('pointerenter',on);button.addEventListener('focus',on);});
   $('.sx-works-wrap')?.addEventListener('pointerleave',()=>{clearWork();reelApi.focus(null);});
   const watch=film=>{reelApi.pause();screening=openScreening(film,{onClose:()=>{screening=null;if(list[current]?.layer==='reel'&&!hold)reelApi.play();}});};
   // 받은 링크 폼: 여는 단추 둘(넓은 화면 머리 · 휴대폰 1쪽)이 같은 상태를 따르고, 닫으면 연 단추(없으면 보이는 단추)로 초점이 돌아간다.
@@ -303,7 +332,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
     // 받은 링크 오류 · 이어 쓰기는 쇼릴을 끊지 않고 글만 바꾼다.
     // 예시 · 의뢰서 덮개가 열리고 닫힐 때(app.mjs overlayState).
     pause(){hold=true;reelApi.suspend();},
-    resume(){hold=false;if(list[current]?.layer==='reel'&&!screening)reelApi.play();},
+    resume(){hold=false;warm(current);later();if(list[current]?.layer==='reel'&&!screening)reelApi.play();},
     update({resume,entryError,busy}={}){
       if(busy!==undefined){const send=$('[data-form="invite"] button[type=submit]');if(send){send.disabled=!!busy;send.querySelector('span').textContent=busy?t('확인하고 있어요'):t('열기',null,'open');}}
       if(resume!==undefined)$$('[data-start-label]').forEach(node=>{node.textContent=startLabel(resume);});
@@ -315,6 +344,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
     },
     unmount(){
       document.documentElement.classList.remove('view-entry');
+      gone=true;clearTimeout(idleTimer);if(onLoad)removeEventListener('load',onLoad);
       observer?.disconnect();clearInterval(checkTimer);clearTimeout(wheelIdle);cancelAnimationFrame(cursorRaf);
       removeEventListener('keydown',onKey);if(onPointer)removeEventListener('pointermove',onPointer);
       screening?.close();reelApi.stop();
