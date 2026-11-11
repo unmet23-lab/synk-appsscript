@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK ID · 시안 C 두 줄 인사</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* C 두 줄 인사 — 플랫폼 「내 홈」의 두 줄 큰 인사(56 · 600, 둘째 줄 회색 #808086)를 그대로 잇는 판. 주인공은 글이다.
+   겹: 위 막대 72(싱ㅋ) → 두 줄 제목(첫 줄 = 그 단계의 제목 · 둘째 줄 = 그 제목을 받는 다른 한마디) → 방법 한 쌍 → Google 안내 → (이메일 칸) → 처음이세요 → 바닥 1px 선.
+   글 칸(760)은 화면 가운데에 놓고 그 안에서 왼쪽으로 맞춘다 — 넓은 화면에서 한쪽으로 쏠리지 않는다. 둘째 줄은 #auth-copy 자리(짧은 한마디)이고, 긴 안내는 그 칸 옆 잔글로 내려간다.
+   단추는 11-11 결정대로 같은 꼴 한 쌍(줄 목록은 「내 SYNK 계정」에만 쓴다). */
+.c{min-height:100vh;display:flex;flex-direction:column}
+.c .bar{display:flex;align-items:center;justify-content:space-between;height:72px;padding:0 max(40px,env(safe-area-inset-right,0px)) 0 max(40px,env(safe-area-inset-left,0px))}
+.c .bar .home{display:inline-flex;align-items:center;min-height:44px;font-size:var(--t15);font-weight:600;color:var(--ink-3);text-decoration:none}
+.c .wrap{flex:1;display:flex;flex-direction:column;width:100%;max-width:800px;margin:0 auto;padding:clamp(24px,6vh,72px) max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px))}
+.c .two{display:grid;margin-bottom:44px}
+.sid.c .two{gap:0}
+.sid.c .two h2,.sid.c .two>p.g{font-size:var(--t56);font-weight:600;line-height:1.16;letter-spacing:-.01em;text-wrap:balance}
+.sid.c .two>p.g{color:var(--gray-2)}
+.sid.c .two>p.lead{margin-top:20px;max-width:34em;font-size:var(--t17);line-height:1.6;color:var(--ink-2)}
+.c .two .sb-btn{justify-self:start;margin-top:20px}
+/* 둘째 줄이 이미 「지난번엔 이메일로.」라 그 아래 줄에는 남은 주소와 지우기만 */
+.c .recent-login .rl-say{display:none}
+.c .auth-card,.c .consent{max-width:400px}
+.c .google-onboarding-card,.c .consent{max-width:440px}
+.c .account{max-width:640px}
+.c footer{margin-top:auto;padding:56px 0 8px}
+.c footer .footer-links{padding-top:8px;border-top:1px solid var(--line)}
+@media (max-width:900px){
+  .c .bar{height:60px;padding:0 max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px))}
+  .c .wrap{padding-top:12px}
+  .c .two{margin-bottom:32px}
+  .sid.c .two h2,.sid.c .two>p.g{font-size:var(--t34);line-height:1.22;letter-spacing:0}
+}
+</style>
+</head>
+<body class="sid c">
+<header class="bar"><a class="brand" href="#" aria-label="SYNK 홈" id="brand"></a><a class="home" href="#">synk.im</a></header>
+<main class="wrap" id="wrap"></main>
+<script src="scenes.js"></script>
+<script>
+(function () {
+  const M = window.SYNKMOCK;
+  document.getElementById('brand').innerHTML = M.WORDMARK;
+  function draw() {
+    const s = M.current(), h = M.head(s), wrap = document.getElementById('wrap');
+    let top;
+    if (s.mode === 'consent') top = `<div class="two"><h2><span id="consent-name">SYNK Workspace</span>에 연결할까요?</h2></div>`;
+    else if (s.mode === 'restart') top = `<div class="two"><h2 id="connection-restart-heading">로그인은 돼 있어요.</h2><p class="g">앱 연결만 다시 시작해 주세요.</p></div>`;
+    else top = `<div class="two intro-copy"><h2 id="auth-heading">${M.esc(h.h)}</h2><p id="auth-copy" class="g">${M.esc(h.two)}</p>${s.mode === 'onboarding' ? `<p class="lead">${M.esc(h.copy)}</p>` : ''}${s.mode === 'signup' ? `<p class="lead">${M.esc(h.copy)}</p>` : ''}${s.mode === 'account' ? '<button class="sb-btn soft compact" type="button">로그아웃</button>' : ''}</div>`;
+    wrap.innerHTML = `${top}${M.body(s, { title: false, help: h.help || '' })}<footer>${M.footLinks}</footer>`;
+    document.title = 'SYNK ID · C 두 줄 인사 · ' + s.name;
+  }
+  addEventListener('hashchange', draw);draw();
+})();
+</script>
+</body>
+</html>

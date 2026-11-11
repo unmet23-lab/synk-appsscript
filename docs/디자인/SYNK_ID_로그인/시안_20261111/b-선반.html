@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SYNK ID · 시안 B 선반</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* B 선반 — 왼쪽은 폼 한 칸, 오른쪽은 플랫폼 「내 홈」과 같은 회색 선반(#f3f3f4) 위에 이 ID로 여는 것 셋(WORLD · 회원 혜택 · PC 앱).
+   물건은 플랫폼 선반에 이미 서 있는 구운 펠트 그림 그대로다(새로 그리지 않는다) — 로그인하면 그 선반으로 돌아간다는 것을 그림이 먼저 말한다.
+   공개본 첫머리의 한 줄 「WORLD와 회원 혜택, PC 앱을 같은 계정으로 써요.」가 글 대신 물건이 된 자리. 선반은 모든 장면에서 같고, 휴대폰에서는 접는다(폼이 곧 화면).
+   겹: (왼쪽) 싱ㅋ → 「SYNK ID」 → 제목 34 → 안내 → 방법 한 쌍 → … / (오른쪽) 선반 물건 셋 + 이름 + 한 줄. */
+.b .split{display:grid;grid-template-columns:minmax(0,46fr) minmax(0,54fr);min-height:100vh}
+.b .pane-form{display:flex;flex-direction:column;align-items:center;padding:20px max(32px,env(safe-area-inset-right,0px)) 16px max(32px,env(safe-area-inset-left,0px))}
+.b .pane-form .brand{align-self:flex-start}
+.b .col{width:100%;max-width:400px;flex:1;display:flex;flex-direction:column;margin-top:clamp(24px,8vh,88px)}
+.b .col.wide{max-width:440px}
+.b .col.account-col{max-width:520px}
+.b .head{margin-bottom:32px}
+.b .kicker-above{margin-bottom:8px}
+.b footer{margin-top:auto;padding-top:48px}
+.b .pane-shelf{background:var(--surface);min-width:0}
+.b .shelf-in{position:sticky;top:0;height:100vh;display:grid;align-content:center;justify-items:center;gap:44px;padding:40px clamp(24px,4vw,64px)}
+.b .shelf-row{display:grid;grid-template-columns:1.35fr 1fr 1fr;align-items:end;gap:clamp(16px,2.6vw,40px);width:min(680px,100%)}
+.b .obj{display:grid;justify-items:center;gap:18px;min-width:0}
+.b .obj .stand{position:relative;display:flex;align-items:flex-end;justify-content:center;width:100%;height:clamp(150px,19vw,250px)}
+.b .obj img{position:relative;z-index:1;display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 16px 14px rgba(0,0,0,.1)) drop-shadow(0 2px 3px rgba(0,0,0,.08))}
+.b .obj .stand::after{content:"";position:absolute;left:50%;bottom:-8px;width:68%;height:18px;margin-left:-34%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.16),transparent)}
+.b .obj.sm img{max-height:78%}
+.b .obj .name{font-size:var(--t17);font-weight:600;line-height:1.4;text-align:center}
+.b .shelf-say{max-width:26em;font-size:var(--t15);color:var(--ink-2);text-align:center;text-wrap:balance}
+@media (max-width:900px){
+  .b .split{grid-template-columns:minmax(0,1fr)}
+  .b .pane-shelf{display:none}
+  .b .pane-form{padding:12px max(20px,env(safe-area-inset-right,0px)) 16px max(20px,env(safe-area-inset-left,0px))}
+  .b .col{margin-top:12px}
+  .b .head{margin-bottom:28px}
+}
+</style>
+</head>
+<body class="sid b">
+<div class="split">
+  <div class="pane-form"><a class="brand" href="#" aria-label="SYNK 홈" id="brand"></a><main class="col" id="col"></main></div>
+  <aside class="pane-shelf" aria-label="SYNK ID로 여는 것"><div class="shelf-in">
+    <ul class="shelf-row">
+      <li class="obj"><div class="stand"><img data-src="world-annyeong.webp" alt=""></div><p class="name">SYNK WORLD</p></li>
+      <li class="obj sm"><div class="stand"><img data-src="member/benefit-gift.webp" alt=""></div><p class="name">회원 혜택</p></li>
+      <li class="obj sm"><div class="stand"><img data-src="laptop-felt.webp" alt=""></div><p class="name">PC 앱</p></li>
+    </ul>
+    <p class="shelf-say">WORLD와 회원 혜택, PC 앱을 같은 계정으로 써요.</p>
+  </div></aside>
+</div>
+<script src="scenes.js"></script>
+<script>
+(function () {
+  const M = window.SYNKMOCK;
+  document.getElementById('brand').innerHTML = M.WORDMARK;
+  // 선반 그림: 비교 쪽에서는 옆 폴더(shelf/), 저장소에서는 계정 화면 자산(플랫폼 선반과 같은 파일)
+  document.querySelectorAll('img[data-src]').forEach(img => { img.onerror = () => { img.onerror = null;img.src = '../../../../experiences/synk-account/assets/' + img.dataset.src; };img.src = 'shelf/' + img.dataset.src.split('/').pop(); });
+  function draw() {
+    const s = M.current(), h = M.head(s), col = document.getElementById('col');
+    col.className = 'col' + (['onboarding', 'consent', 'restart'].includes(s.mode) ? ' wide' : s.mode === 'account' ? ' account-col' : '');
+    let top;
+    if (s.mode === 'consent' || s.mode === 'restart') top = '<p class="id-kicker kicker-above">SYNK ID</p>';
+    else top = `<div class="head"><div class="intro-copy"><p class="id-kicker">SYNK ID</p>${s.mode === 'account'
+      ? `<div class="account-top"><h2>${M.esc(h.h)}</h2><button class="sb-btn soft compact" type="button">로그아웃</button></div>` : `<h2 id="auth-heading">${M.esc(h.h)}</h2>`}${h.copy ? `<p id="auth-copy">${M.esc(h.copy)}</p>` : ''}</div></div>`;
+    col.innerHTML = `${top}${M.body(s)}<footer>${M.footLinks}</footer>`;
+    document.title = 'SYNK ID · B 선반 · ' + s.name;
+  }
+  addEventListener('hashchange', draw);draw();
+})();
+</script>
+</body>
+</html>

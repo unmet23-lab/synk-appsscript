@@ -1,112 +1,151 @@
-/* SYNK ID 로그인 리디자인 시안 공통 바탕 (2026-11-11)
-   글자: SUIT 한 벌(한글 · 라틴 모두 — 지금 공개본은 라틴이 Inter Tight 700 한 벌로만 떠 문장 속 영문이 늘 굵었다),
-         크기 13 · 15 · 17 · 22 · 34 · 56, 굵기 400 · 600 · 700, 한글 자간 0. 숫자 · 주소만 Inter Tight.
-   단추: 알약 하나(채운 검정 = 그 화면의 한 행동, 테두리 = 그다음), 그 밖은 밑줄 글자.
-   근거: 플랫폼 A 진열대(docs/디자인/플랫폼_시그널/README.md#platform-shelf-20261108) · synk.im 뼈대(크기 · 굵기 · 알약 하나) ·
-         로그인 화면 실측(docs/디자인/SYNK_ID_로그인/README.md). 영문 대문자 꼬리표 · 펠트 · 실땀 · 형광펜 · 스티커 없음. */
+/* SYNK ID 로그인 리디자인 시안 공통 바탕 (2026-11-11, 2판)
+   선택자는 공개본 index.html 의 id · 클래스 그대로다(.method-btn · .password-field · .link-button · .sb-btn · .sb-btn.soft · .notice[data-kind] · .actions …).
+   JS가 클래스를 통째로 덮어쓰는 곳(#notice · 칸 옆 알림 · #security-status)은 그 클래스와 data-kind 에만 건다. 모든 규칙은 .sid 아래 — 같은 style.css 를 쓰는 다른 계정 쪽 화면에 번지지 않는다.
+   글자: SUIT 한 벌(한글 · 라틴 — 공개본은 라틴이 Inter Tight 700 한 벌로만 떠 문장 속 영문이 늘 굵었다. 구현 때는 플랫폼과 같은 SYNK Sans 조각으로 싣는다),
+         크기 13 · 15 · 17 · 22 · 34 · 56, 굵기 400 · 600, 한글 자간 0.
+   단추: 알약 하나 — 채운 검정(그 화면의 한 행동) · 테두리(그다음) · 밑줄 글자. 테두리는 그림자가 아니라 진짜 선(강제 색 모드에서도 남는다).
+   누르는 칸은 모두 44px 이상(보이는 글 크기는 그대로, 넓이만). 밤 테마는 이번 범위 밖(지금 SYNK ID도 낮 한 벌) — 색은 모두 변수다. */
 @font-face{font-family:"SUIT";src:url("fonts/SUIT-Variable.woff2") format("woff2"),url("../../../../experiences/synk-account/assets/SUIT-Variable.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"Inter Tight";src:url("fonts/InterTight-SemiBold.woff2") format("woff2"),url("../../../../experiences/synk-account/assets/InterTight-SemiBold.woff2") format("woff2");font-weight:600;font-display:swap}
-:root{
-  --paper:#fff;--ink:#0b0b0c;--ink-2:#4f4f55;--ink-3:#6c6c72;--line:#e7e7ea;--edge:#949499;--surface:#f3f3f4;--surface-2:#e9e9eb;
-  --err:#b3261e;--ok:#1f7a4d;--focus:#0b0b0c;
+.sid{
+  --paper:#fff;--ink:#0b0b0c;--ink-2:#4f4f55;--ink-3:#6c6c72;--line:#e7e7ea;--edge:#8a8a90;--g-edge:#747775;--g-ink:#1f1f1f;--surface:#f3f3f4;--gray-2:#808086;
+  --err:#b3261e;--ok:#1f7a4d;
   --t13:13px;--t15:15px;--t17:17px;--t22:22px;--t34:34px;--t56:56px;
   --sans:"SUIT",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  --num:"Inter Tight","SUIT",system-ui,sans-serif;
   --ease:cubic-bezier(.16,1,.3,1);
+  margin:0;font-family:var(--sans);font-size:var(--t15);line-height:1.6;color:var(--ink);background:var(--paper);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%
 }
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;font-family:var(--sans);font-size:var(--t15);line-height:1.6;color:var(--ink);background:var(--paper);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
-a{color:inherit}
-button,input,select{font:inherit;color:inherit}
-h1,h2,h3,p,ul,fieldset{margin:0}
-ul{padding:0;list-style:none}
-fieldset{border:0;padding:0;min-width:0}
-[hidden]{display:none!important}
-.num{font-family:var(--num);font-variant-numeric:tabular-nums}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
-.wordmark{display:block;height:24px;width:auto;fill:var(--ink)}
-.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.g-mark{width:20px;height:20px;flex:none;display:block}
+.sid *,.sid *::before,.sid *::after{box-sizing:border-box}
+.sid [hidden]{display:none!important}
+.sid button,.sid input,.sid select{font:inherit;color:inherit}
+.sid h1,.sid h2,.sid h3,.sid p,.sid ul,.sid fieldset{margin:0}
+.sid ul{padding:0;list-style:none}
+.sid :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sid .nw{white-space:nowrap}
+.sid .wordmark{display:block;height:24px;width:auto;fill:var(--ink)}
+.sid .brand{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
 
-/* 글 단계 */
-.kicker{font-size:var(--t17);font-weight:600;color:var(--ink-3)}
-.h34{font-size:var(--t34);font-weight:600;line-height:1.25;letter-spacing:0;text-wrap:balance}
-.h22{font-size:var(--t22);font-weight:600;line-height:1.35}
-.lead{font-size:var(--t17);line-height:1.6;color:var(--ink-2)}
-.fine{font-size:var(--t13);line-height:1.7;color:var(--ink-3)}
-.fine a,.lead a{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:#b9b9be}
+/* 머리 글 */
+.sid .intro-copy{display:grid;gap:8px}
+.sid .id-kicker{font-size:var(--t17);font-weight:600;color:var(--ink-3)}
+.sid h2{font-size:var(--t34);font-weight:600;line-height:1.25;letter-spacing:0;text-wrap:balance}
+.sid .intro-copy>p:not(.id-kicker),.sid #consent-account{font-size:var(--t17);line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+.sid .small{font-size:var(--t13);line-height:1.7;color:var(--ink-3);font-weight:400;text-wrap:pretty}
+.sid .muted{font-weight:400;color:var(--ink-3)}
+.sid .small a,.sid .intro-copy a{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:#b9b9be}
 
 /* 단추 */
-.pill{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:48px;padding:0 24px;border-radius:999px;border:0;font-size:var(--t15);font-weight:600;white-space:nowrap;cursor:pointer;text-decoration:none;transition:transform .2s var(--ease),background .2s,box-shadow .2s}
-.pill:active{transform:scale(.98)}
-.pill-solid{background:var(--ink);color:#fff}
-.pill-solid:hover{background:#2a2a2e}
-.pill-line{background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--edge)}
-.pill-line:hover{box-shadow:inset 0 0 0 1px var(--ink)}
-.pill.wide{width:100%}
-.link{background:none;border:0;padding:0;font-size:var(--t15);font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#b9b9be;cursor:pointer}
-.link:hover{text-decoration-color:currentColor}
-.link.small{font-size:var(--t13)}
+.sid .sb-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:#fff;font-size:var(--t15);font-weight:600;line-height:1.3;text-decoration:none;text-align:center;cursor:pointer;transition:background .2s,border-color .2s,transform .2s var(--ease)}
+.sid .sb-btn:hover{background:#2a2a2e;border-color:#2a2a2e}
+.sid .sb-btn:active{transform:scale(.98)}
+.sid .sb-btn.soft{background:var(--paper);color:var(--ink);border-color:var(--g-edge)}
+.sid .sb-btn.soft:hover{background:var(--paper);border-color:var(--ink)}
+.sid .sb-btn.compact{min-height:44px;padding:0 16px;font-size:var(--t13)}
+.sid .sb-btn:disabled{opacity:.55;cursor:wait}
+.sid .link-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0;border:0;background:none;font-size:var(--t15);font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:#b9b9be;cursor:pointer}
+.sid .link-button:hover{text-decoration-color:currentColor}
 
-/* 로그인 방법 한 쌍 — 두 단추는 같은 꼴(같은 높이 · 테두리 · 글 · 표식 자리). 11-11 결정 그대로 */
-.method{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:52px;padding:0 20px;border-radius:999px;border:0;background:var(--paper);box-shadow:inset 0 0 0 1px var(--edge);font-size:var(--t15);font-weight:600;cursor:pointer;transition:box-shadow .2s}
-.method:hover{box-shadow:inset 0 0 0 1px var(--ink)}
-.method[aria-expanded="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
-.method:disabled{color:#8a8a90;box-shadow:inset 0 0 0 1px #d4d4d8;cursor:not-allowed}
-.method:disabled .g-mark{opacity:.45;filter:grayscale(1)}
-.method .badge{position:absolute;right:8px;top:50%;transform:translateY(-50%)}
-.badge{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:var(--t13);font-weight:600;white-space:nowrap}
-.pair{display:grid;gap:12px}
+/* 로그인 방법 한 쌍 — 두 단추는 같은 꼴(11-11 결정). 표식 · 글 · 「최근 사용」 세 칸 격자: 글은 머리 글과 같은 왼쪽 축에 서고(가운데 정렬이면 왼쪽 정렬 제목과 축이 어긋난다 — 아르곤 맹검),
+   「최근 사용」이 붙어도 글과 겹치지 않는다(글이 길면 줄을 바꾼다) */
+.sid .method-choices{display:grid;gap:12px}
+.sid .method-btn{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;width:100%;min-height:52px;padding:8px 14px 8px 20px;border:1px solid var(--g-edge);border-radius:999px;background:var(--paper);color:var(--g-ink);font-size:var(--t15);font-weight:600;line-height:1.3;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.sid .method-btn:hover:enabled{border-color:var(--ink)}
+/* 고른 방법: 굵은 테두리 대신 옅은 바탕 — 아래 검정 「로그인」 알약과 무게가 겹치지 않게(아르곤 맹검) */
+.sid .method-btn[aria-expanded="true"]{border-color:var(--ink);background:var(--surface)}
+.sid .method-btn[aria-expanded="true"] .recent-badge{background:var(--paper)}
+.sid .method-btn:disabled{cursor:progress}
+.sid .method-btn[data-off]{color:#686b70;border-color:#aeb0b5;cursor:not-allowed}
+.sid .method-mark{justify-self:start;width:20px;height:20px;background:center/20px 20px no-repeat}
+.sid .google-mark{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E")}
+.sid .email-mark{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%231f1f1f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.3' y='4.3' width='15.4' height='11.4' rx='2.2'/%3E%3Cpath d='m3.4 6.2 6.6 5 6.6-5'/%3E%3C/svg%3E")}
+.sid .method-label{min-width:0;text-align:left;overflow-wrap:anywhere}
+.sid .recent-badge{justify-self:end;display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:var(--t13);font-weight:600;white-space:nowrap}
+.sid .method-status:empty{display:none}
+.sid .google-privacy-note{margin-top:-8px}
 
-/* 칸 */
-.field{display:grid;gap:8px}
-.field-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.label{font-size:var(--t15);font-weight:600}
-.label .opt{font-weight:400;color:var(--ink-3)}
-.input{display:flex;align-items:center;height:52px;border-radius:8px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--edge);transition:box-shadow .15s}
-.input:focus-within{box-shadow:inset 0 0 0 2px var(--ink)}
-.input input,.input select{flex:1;min-width:0;height:100%;border:0;background:transparent;padding:0 16px;font-size:var(--t17);outline:0;appearance:none}
-.input select{padding-right:44px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%230b0b0c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E") right 14px center/20px no-repeat}
-.input input::placeholder{color:#8a8a90}
-.input .peek{flex:none;height:36px;margin-right:8px;padding:0 12px;border:0;border-radius:999px;background:transparent;font-size:var(--t13);font-weight:600;color:var(--ink-2);cursor:pointer}
-.input .peek:hover{background:var(--surface)}
-.input.bad{box-shadow:inset 0 0 0 2px var(--err)}
-.row-input{display:grid;grid-template-columns:1fr auto;gap:8px}
-.check{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:start;font-size:var(--t15);line-height:1.5;cursor:pointer}
-.check input{appearance:none;width:22px;height:22px;margin:0;border-radius:6px;box-shadow:inset 0 0 0 1.5px var(--edge);background:var(--paper);display:grid;place-items:center;cursor:pointer}
-.check input:checked{background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 10.5 3.2 3.2L15 7'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:none}
-.check .opt{color:var(--ink-3)}
-.more{font-size:var(--t13);color:var(--ink-3)}
-.more summary{cursor:pointer;font-weight:600;color:var(--ink-2);list-style:none;display:inline-flex;align-items:center;gap:6px}
-.more summary::-webkit-details-marker{display:none}
-.more summary::before{content:"";width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234f4f55' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 5 5 5-5 5'/%3E%3C/svg%3E") center/16px no-repeat}
+/* 폼 */
+.sid .auth-card{display:grid;gap:24px}
+/* 지난번 로그인: 첫 줄은 한 문장, 둘째 줄은 남은 주소(Google일 때)와 「이 기기에서 지우기」 */
+.sid .recent-login{display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;margin-top:-20px;font-size:var(--t17);line-height:1.6;color:var(--ink-2)}
+.sid #recent-login-text{display:contents}
+.sid .rl-say{flex:0 0 100%}
+.sid .rl-who{font-weight:600;color:var(--ink)}
+.sid .rl-dot{display:none}
+.sid .email-fields{display:grid;gap:20px}
+.sid label{display:block;font-size:var(--t15);font-weight:600}
+.sid label>input:not([type="checkbox"]),.sid label>select{display:block;margin-top:8px}
+.sid input:not([type="checkbox"]),.sid select{width:100%;height:52px;padding:0 16px;border:1px solid var(--edge);border-radius:8px;background:var(--paper);font-size:var(--t17);font-weight:400;color:var(--ink);appearance:none}
+.sid input:not([type="checkbox"]):focus-visible,.sid select:focus-visible{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+.sid input::placeholder{color:var(--ink-3)}
+.sid input[aria-invalid="true"]{border-color:var(--err);box-shadow:inset 0 0 0 1px var(--err)}
+.sid select{padding-right:44px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%230b0b0c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E") right 14px center/20px no-repeat}
+.sid .field-row{display:grid;gap:8px}
+.sid .password-field{position:relative;display:block}
+.sid .password-field input{padding-right:76px}
+.sid .password-toggle{position:absolute;right:4px;top:4px;height:44px;min-width:60px;padding:0 12px;border:0;border-radius:6px;background:transparent;font-size:var(--t13);font-weight:600;color:var(--ink-2);cursor:pointer}
+.sid .password-toggle:hover{background:var(--surface)}
+.sid .forgot-row{display:flex;justify-content:flex-end;margin-top:-16px}
+.sid .field-help{margin-top:-12px}
+.sid .signup-choices{display:grid;gap:10px}
+.sid .toggle{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:center;min-height:44px;font-weight:400;line-height:1.5;cursor:pointer}
+.sid input[type="checkbox"]{appearance:none;width:22px;height:22px;margin:0;border:1.5px solid var(--edge);border-radius:6px;background:var(--paper);cursor:pointer}
+.sid input[type="checkbox"]:checked{border-color:var(--ink);background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 10.5 3.2 3.2L15 7'/%3E%3C/svg%3E") center/16px no-repeat}
+.sid .signup-details summary{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:var(--t13);font-weight:600;color:var(--ink-2);list-style:none;cursor:pointer}
+.sid .signup-details summary::-webkit-details-marker{display:none}
+.sid .signup-details summary::before{content:"";width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234f4f55' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m8 5 5 5-5 5'/%3E%3C/svg%3E") center/16px no-repeat}
+.sid .email-fields>.sb-btn,.sid .auth-card>.sb-btn{width:100%}
+/* 로그인 ↔ 가입을 오가는 하나뿐인 길 — 잔글 아래 묻히지 않게 선 하나로 갈라 제 줄을 준다 */
+.sid .switch-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;padding-top:12px;border-top:1px solid var(--line);font-size:var(--t17);color:var(--ink-2)}
+.sid .switch-row .link-button{font-size:var(--t17)}
 
-/* 알림 — 상자를 칠하지 않고 그 자리에 한 줄 */
-.say{display:flex;gap:10px;align-items:flex-start;font-size:var(--t15);line-height:1.55}
-.say .i{margin-top:2px}
-.say.err{color:var(--err);font-weight:600}
-.say.ok{color:var(--ok);font-weight:600}
-.say.info{color:var(--ink-2)}
+/* 알림 — 상자를 칠하지 않고 그 칸 옆에 한 줄(JS가 class 를 `notice` / `notice error` 로 덮어쓰므로 여기에만 건다) */
+.sid .notice{position:relative;padding-left:30px;font-size:var(--t15);line-height:1.6;color:var(--ink)}
+.sid .notice::before{content:"";position:absolute;left:0;top:2px;width:20px;height:20px;background:center/20px no-repeat}
+.sid .notice[data-kind="error"]{color:var(--err);font-weight:600}
+.sid .notice[data-kind="error"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23b3261e' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='M10 6.2v4.6M10 13.6v.1'/%3E%3C/svg%3E")}
+.sid .notice[data-kind="success"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%231f7a4d' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='m6.6 10.3 2.3 2.3 4.5-4.8'/%3E%3C/svg%3E")}
 
-/* 줄 목록(1px 선) */
-.rows{border-top:1px solid var(--ink)}
-.rows>li,.rows>.r{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:60px;padding:14px 0;border-bottom:1px solid var(--line)}
-.r-main{min-width:0;display:grid;gap:2px}
-.r-k{font-size:var(--t13);color:var(--ink-3)}
-.r-v{font-size:var(--t15);font-weight:600;overflow-wrap:anywhere}
-.r-v.plain{font-weight:400}
-.r-act{flex:none}
-.avatar{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--ink);color:#fff;font-size:var(--t22);font-weight:600;flex:none}
-.here{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:var(--t13);font-weight:600;margin-left:6px;vertical-align:2px}
-.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:2px}
-.switch{display:flex;justify-content:center;align-items:baseline;gap:10px;font-size:var(--t15);color:var(--ink-2)}
-.foot{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:var(--t13);color:var(--ink-3)}
-.foot a{text-decoration:none}
-.foot a:hover{text-decoration:underline;text-underline-offset:3px}
-.toggle-sw{position:relative;width:52px;height:32px;border-radius:999px;background:var(--surface-2);flex:none}
-.toggle-sw::after{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
-.url{font-family:var(--sans);font-size:var(--t13);color:var(--ink-3);overflow-wrap:anywhere}
-.fine,.lead{text-wrap:pretty}
+/* Google 첫 가입 마무리 */
+.sid .google-onboarding-card{gap:20px}
+.sid .google-phone-fields{display:grid;gap:8px;min-width:0;padding:0;border:0}
+.sid .google-phone-fields legend{padding:0;margin-bottom:4px;font-size:var(--t17);font-weight:600}
+.sid .google-field-label{margin-top:8px}
+.sid .google-phone-fields .field-help{margin-top:0}
+.sid .google-phone-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.sid .google-phone-row .sb-btn{min-height:52px}
+.sid .text-actions{display:grid}
+
+/* 앱 연결 · 다시 시작 */
+.sid .consent{display:grid;gap:20px}
+.sid .consent-give{display:grid;gap:10px}
+.sid .consent-lead{font-weight:600}
+.sid #scopes{border-top:1px solid var(--ink)}
+.sid #scopes li{display:flex;align-items:center;min-height:48px;border-bottom:1px solid var(--line)}
+.sid #consent-destination{overflow-wrap:anywhere}
+.sid .consent-native{font-size:var(--t15);font-weight:600;line-height:1.6;color:var(--ink)}
+.sid .actions{display:grid;gap:12px}
+
+/* 내 SYNK 계정 — 줄 목록(1px 선) */
+.sid .account{display:grid;gap:40px}
+.sid .account section{display:grid;gap:12px}
+.sid .security-head{display:grid;gap:4px}
+.sid .security-head h2{font-size:var(--t22);line-height:1.35}
+.sid .rows{border-top:1px solid var(--ink)}
+.sid .rows>li{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;min-height:64px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sid .r-main{display:grid;gap:2px;min-width:0}
+.sid .r-k{font-size:var(--t13);color:var(--ink-3)}
+.sid .r-v{font-size:var(--t15);font-weight:600;overflow-wrap:anywhere}
+.sid .r-v.plain{font-weight:400}
+.sid .rows>li>.link-button,.sid .rows>li>.sb-btn{flex:none}
+.sid .here{display:inline-flex;align-items:center;height:24px;margin-left:8px;padding:0 8px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:var(--t13);font-weight:600;vertical-align:1px}
+.sid .mock-note{padding-top:16px;border-top:1px solid var(--line)}
+.sid .account-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+
+/* 바닥 */
+.sid .footer-links{display:flex;flex-wrap:wrap;gap:0 20px;font-size:var(--t13);color:var(--ink-3)}
+.sid .footer-links a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:none}
+.sid .footer-links a:hover{text-decoration:underline;text-underline-offset:3px}
+@media (max-width:480px){
+  .sid .google-phone-row{grid-template-columns:minmax(0,1fr)}
+  .sid .rows>li{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){.sid *,.sid *::before,.sid *::after{transition:none!important;animation:none!important}}
