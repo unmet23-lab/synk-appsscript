@@ -147,7 +147,11 @@ Gemini는 2026-10-17 사용자 결정으로, 무료 API 문이 몫 상한(429)�
 - 붙이는 길(11-11 문서만 읽음 · 불러 보지 않음): 구글이 호스팅하는 [Colab MCP 서버](https://developers.google.com/colab/api/reference/mcp)(`colaboratory.googleapis.com/mcp` — 런타임 만들기 · 지우기, 코드 실행, 구독 읽기)나 [Colab API](https://developers.google.com/colab/api/reference/rest). 공식 CLI(`google-colab-cli`)는 리눅스 · 맥 전용이라 이 PC(WSL 없음)에서는 안 돈다. 감싸는 도구는 `tools/허깅페이스.py`처럼 잔액을 먼저 읽고, 예상 단위가 안 들어가면 부르지 않고, 끝나면 런타임을 반드시 지운다(쉬는 런타임도 단위를 깎는다).
 - 첫 시험은 LoRA 학습 한 번을 집 GPU와 나란히 돌려 시간 · 단위 · 결과를 재는 것이다. 시간당 단위는 글마다 달라(A100 5~15) 직접 잰다.
 
-**그동안:** 집 GPU · 허깅페이스 ZeroGPU 그대로다. 집 GPU가 밀려 기다리는 일이 실제로 생기면 Ultra 20x에 딸린 월 $100 구글 클라우드 크레딧으로 Colab Enterprise나 GPU VM을 쓸 수 있는지(크레딧 제외 품목 · GPU 할당량)를 먼저 확인하고 금액과 함께 여쭌다 — 11-11에는 「대상 구글 클라우드 제품에 쓸 수 있다」는 혜택 안내까지만 읽었다.
+**그동안:** 집 GPU · 허깅페이스 ZeroGPU 그대로다. Ultra 20x에 딸린 월 $100 구글 클라우드 크레딧으로 GPU를 빌리는 길은 11-11에 조건과 값까지 읽었고 켜지는 않았다(켤지는 유호님 — [트랙 §1](_ops/트랙.md)).
+- **되는 쪽:** 크레딧은 「대상 구글 클라우드 제품 어디에나」 쓸 수 있고 받은 날부터 1년 간다([혜택 FAQ](https://developers.google.com/profile/help/benefits)). AI Studio에서 만든 결제 계정도 구글 클라우드 전체를 쓰는 보통 결제 계정이고, Gemini API 말고는 후불로 붙는다([결제 안내](https://docs.cloud.google.com/billing/docs/in-product-billing-setup)).
+- **걸리는 쪽:** ① [크레딧 제외 품목](https://cloud.google.com/skus/exclusions)에 Spot · 선점형 전부와 「일부 GPU」가 있고, 어느 GPU인지는 적혀 있지 않다. ② 후불이라 제외 품목이거나 크레딧을 넘긴 몫은 결제 계정의 카드로 나간다 — 쓰기 전에 예산 알림을 걸고, 끝나면 런타임 · VM을 반드시 지운다. ③ 77yuhbs의 결제가 붙은 프로젝트(Default Gemini Project)는 Compute Engine API가 꺼져 있어 GPU 할당량이 화면에 없다. 켠 뒤 「GPUs (all regions)」와 지역별 GPU 줄을 읽고, 0이면 올려 달라는 요청을 내야 한다(공식 문서에 기본값 숫자는 없다 · Colab Enterprise도 Compute Engine의 GPU 할당량을 쓴다).
+- **값(11-11 [Colab Enterprise 값 표](https://cloud.google.com/colab/pricing), 지역을 바꾸지 않은 기본 표 · 시간당 USD):** GPU만 T4 0.42 · L4 0.67 · A100 40GB 3.52 · A100 80GB 4.71 · H100 11.76. vCPU · 메모리를 더하면 L4(g2-standard-8) 약 1.02, A100 40GB(a2-highgpu-1g) 약 4.41, A100 80GB(a2-ultragpu-1g) 약 6.03, H100(a3-highgpu-1g) 약 13.2다(머신 사양은 이번에 다시 읽지 않음). $100이면 A100 40GB 약 22시간 · L4 약 97시간이다. 표 값에는 관리 수수료 20%가 들어 있어(수수료 칸의 비율로 계산) Compute Engine VM을 직접 띄우면 그만큼 싸다 — Compute Engine 값 쪽은 표가 열리지 않아 직접 읽지 못했다. 같은 A100 80GB가 허깅페이스 Jobs에서는 $2.50이라(위 「허깅페이스」) 절반 값 이하지만 그쪽은 카드 돈이고 이쪽은 이미 받은 크레딧이다. L4는 집 5090보다 느려 넘길 까닭이 없고 A100부터 뜻이 있다.
+- **첫 걸음(유호님 말씀 뒤):** Compute Engine API 켜기 → GPU 할당량 1개 요청(둘 다 돈이 안 든다, 거절되면 거기서 닫는다) → 승인되면 예산 알림을 걸고 A100 한 장으로 LoRA 학습 한 번을 집 GPU와 나란히 잰다.
 
 ## 일레븐랩스
 
