@@ -10,7 +10,7 @@
 - **동작(그리는 층 밖에서 조금):** 같은 알림이 위 줄과 단추 옆에 두 번 보이지 않게 위 줄을 접는다(`#notice[data-folded]`, 읽기 프로그램에는 남김) · Google 단추는 「확인 중」과 「못 씀」을 가른다(`data-off` · 확인 줄은 0.6초 넘으면 보임) · 「지난번 로그인」은 문장과 (Google일 때만) 가린 주소 · 이메일 칸이 열리면 Google 안내는 칸 아래로 · 계정 줄의 실패는 그 줄 안에, 「로그인과 보안」 상태 줄은 마지막으로 요청한 줄에 · 재설정 · 이메일 변경 단계의 겹친 안내 없앰.
 - **공개:** 공개본 포털 구간을 통째로 갈아 끼우고 `id/index.html`을 새 짜임으로, `id/id.css` · `id/assets/SYNKSans-*.woff2`를 새로 올렸다([갈아 끼우기 도구](../experiences/synk-account/qa/sid-a-20261111/patch-live.mjs) — 앞 판 포털 `02ac206336`) · synk-policy `6d09898e`(11-12 06:43 KST). `id/style.css` · 옛 스크랩북 자산은 공개본에 그대로 둔다(옛 캐시 쪽이 찾을 수 있게). 공개 준비 도구(`tools/synk-id/prepare-portal.mjs`)도 새 파일들을 싣는다.
 - **검수:** 카본 다섯 회차(모두 P2 · P3 — 반영하거나 다음 판으로) · Fable 5.2 최종 세 회차(P0 · P1 0). 검수 사이에 다른 공개(5분 대기 카드 `d5fdcbf2` · Atlas `09c8d25c`)가 같은 `id/` 파일을 바꿔 공개 도구가 두 번 멈췄고, 그때마다 지금 공개본 위에서 사슬을 새로 열었다(마지막 사슬 `synk-id-a-redesign-20261112-r5`). 그 사슬의 P2 · P3 여섯은 다음 판으로(트랙).
-- **다음 판이 쓸 것:** 앞 판 원천은 이 공개를 담은 master 커밋(포털 모듈 바이트가 같은 판). 확인은 [장면 도구](../experiences/synk-account/qa/sid-a-20261111/scenes.mjs)(`--live https://synk.im/id/`이면 공개본 그대로 · 계정 프로젝트 요청만 합성) · `qa/login-one-form-20261111/run.mjs` · `qa/login-ux-20261027/run.mjs`(SYNK_QA_FILES가 `id__id.css`도 내준다).
+- **다음 판이 쓸 것:** 앞 판 원천은 이 공개를 담은 master `bdec67ddf2`(포털 모듈 · id.css · index.html · dist/app.js 바이트가 공개 원천 `cb764254e0`과 같음). 확인은 [장면 도구](../experiences/synk-account/qa/sid-a-20261111/scenes.mjs)(`--live https://synk.im/id/`이면 공개본 그대로 · 계정 프로젝트 요청만 합성) · `qa/login-one-form-20261111/run.mjs` · `qa/login-ux-20261027/run.mjs`(SYNK_QA_FILES가 `id__id.css`도 내준다).
 
 <a id="world-phone-only-20261111"></a>
 ## 2026-11-11 WORLD는 휴대폰에서 — 플랫폼 앱 목록에서 빼고 휴대폰 칸 하나로
