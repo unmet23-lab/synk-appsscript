@@ -9804,7 +9804,7 @@ var SynkLearning = (() => {
           }, delayMs);
         };
         const unsubscribe = port.subscribe((change) => {
-          if (stopped || change?.kind === "import") return;
+          if (stopped || phase === "blocked" || change?.kind === "import") return;
           if (change?.kind === "storage-error") {
             failedLocalEdits.add(keyOf({ kind: change.targetKind, key: change.key }));
             code = "STORAGE_ERROR";

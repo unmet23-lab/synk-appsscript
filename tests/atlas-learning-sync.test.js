@@ -191,6 +191,28 @@ test('reusing an old consent store for a new revision is blocked before any netw
   assert.equal(b.sync.status().code, 'REVISION_CONFLICT');assert.equal(s.gets.length, calls);assert.equal(storage.getItem(`${SYNC_KEY}.account.a`), before);b.sync.stop();
 });
 
+// 11-04 review H2: save() used to read another context's outbox itself and turned its REVISION_CONFLICT into
+// STORAGE_ERROR (a device-storage failure), while opening the same outbox kept the code. Every change now
+// re-reads the stored outbox first (adopt), so both a local append and an answer on the wire report the conflict.
+test('an outbox another context rewrote for a new consent revision stops this sync as a revision conflict, not a storage failure', async () => {
+  const key = `${SYNC_KEY}.account.a`;
+  const fresh = JSON.stringify({ version: 2, accountKey: 'account.a', revision: 2, cursor: 0, complete: true, acknowledged: [], pending: [], missing: [] });
+  for (const during of ['append', 'pull']) {
+    const s = server(), storage = disk(), c = client(s, { storage });
+    await c.sync.start();c.answer();await c.sync.flush();assert.equal(c.sync.status().phase, 'synced');
+    if (during === 'append') { storage.setItem(key, fresh);c.answer(); }
+    else {
+      let release;const get = s.get;s.get = args => new Promise(resolve => { release = () => resolve(get(args)); });
+      const pulling = c.sync.pull();while (!release) await new Promise(resolve => setImmediate(resolve));
+      storage.setItem(key, fresh);release();await pulling;
+    }
+    const state = c.sync.status(), calls = s.gets.length + s.posts.length;
+    assert.deepEqual([state.phase, state.code, state.durable], ['blocked', 'REVISION_CONFLICT', true], during);
+    assert.equal(storage.getItem(key), fresh, `${during}: the other context's outbox stays as written`);
+    await c.sync.flush();await c.sync.retry();assert.equal(s.gets.length + s.posts.length, calls, `${during}: nothing more is sent`);c.sync.stop();
+  }
+});
+
 test('stalled cursors, unsent acknowledgements and conflicting imported IDs cannot erase pending work', async () => {
   const c = client({ get: async () => ({ events: [], cursor: 0, hasMore: true, revision: 1 }), post: async () => assert.fail() });
   await c.sync.start();assert.equal(c.sync.status().code, 'INVALID_RESPONSE');c.sync.stop();

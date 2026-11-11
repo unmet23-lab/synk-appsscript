@@ -142,6 +142,26 @@ test('consent, revision and sign-in problems stop the synchroniser instead of re
   assert.equal((await sync(account(clockFrom('2026-10-02T09:00:00.000Z')), wrong).start()).code, 'REVISION_CONFLICT');
 });
 
+// 11-04 review H3: a local save failing after such a stop turned it into 'offline · STORAGE_ERROR', so the next
+// successful change scheduled a run and the synchroniser asked the server again (learning-sync.js already ignores it).
+test('a local save that fails after a consent, revision or sign-in stop keeps the stop and sends nothing', async () => {
+  for (const code of ['LEARNING_DISABLED', 'REVISION_CONFLICT', 'SESSION_REVOKED', 'UNAUTHORIZED']) {
+    const calls = [], seen = [];
+    const refuse = { get: async () => { calls.push('get'); return { ok: false, error: { code } }; }, post: async () => { calls.push('post'); return { ok: false, error: { code } }; } };
+    const storage = memoryStorage(), setItem = storage.setItem;let full = false;
+    storage.setItem = (k, v) => { if (full) throw new Error('quota'); return setItem(k, v); };
+    const a = account(clockFrom('2026-10-02T09:00:00.000Z'), storage), s = sync(a, refuse, { onStatus: state => seen.push([state.phase, state.code]) });
+    assert.deepEqual([(await s.start()).phase, s.status().code], ['blocked', code]);
+    full = true;assert.equal(a.setPresentation({ support: 'step' }), false, `${code}: the local save fails`);full = false;
+    assert.deepEqual([s.status().phase, s.status().code], ['blocked', code], `${code}: the stop is not replaced by the local failure`);
+    assert.equal(a.setPresentation({ support: 'independent' }), true);
+    await new Promise(resolve => setTimeout(resolve, 20));await s.flush();
+    assert.deepEqual(calls, ['get'], `${code}: nothing is sent after the stop`);
+    const stop = seen.findIndex(([phase]) => phase === 'blocked');
+    assert.deepEqual(seen.slice(stop), [['blocked', code]], `${code}: no other status follows the stop`);s.stop();
+  }
+});
+
 test('only an account store with a transport can synchronise; a device store stays on the device', () => {
   const device = learning.createGame({ gameId: 'g', map, storage: memoryStorage(), clock: clockFrom('2026-10-02T09:00:00.000Z') });
   assert.equal(device.memoryPort.scope, 'device');

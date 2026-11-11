@@ -222,7 +222,8 @@ function createMemorySync({ adapter, accountKey, revision, transport, onStatus =
     timer = setTimer(() => { timer = null; void run(); }, delayMs);
   };
   const unsubscribe = port.subscribe(change => {
-    if (stopped || change?.kind === 'import') return;
+    // A stop that needs the person or the host stays as it is: no later change reopens it.
+    if (stopped || phase === 'blocked' || change?.kind === 'import') return;
     if (change?.kind === 'storage-error') {
       failedLocalEdits.add(keyOf({ kind: change.targetKind, key: change.key })); code = 'STORAGE_ERROR'; phase = 'offline'; publish(); return;
     }
