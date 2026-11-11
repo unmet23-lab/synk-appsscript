@@ -74,4 +74,7 @@ test('누름 칸(#zones)은 판의 세 칸과 같은 자리 — 판 높이에서
   assert.match(css, /\.pk-opts\{[^}]*top:var\(--pick-head\);bottom:0;display:grid;grid-template-columns:repeat\(3,1fr\)/);
   assert.match(css, /\.pick\{[^}]*bottom:0;height:var\(--pick-h\)/);
   assert.doesNotMatch(css, /route-map|\.rm-/, '옛 아래 역 지도는 걷었다');
+  const z = (sel) => Number(css.match(new RegExp(`\\${sel}\\{[^}]*z-index:(\\d+)`))[1]);
+  assert.ok(z('.zones') > z('.pick'), '누름 칸이 판 위 — 키보드 초점 테두리가 판 뒤에 가리지 않게(검수 A2)');
+  assert.match(css, /--pick-head:clamp\(/, '판 머리 · 칸 크기는 무대 높이를 따라 줄어든다(검수 A1)');
 });

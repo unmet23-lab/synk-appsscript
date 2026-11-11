@@ -141,15 +141,18 @@ window.addEventListener('keydown', (e) => {
   const i = { ArrowLeft: 0, a: 0, ArrowUp: 1, w: 1, ArrowRight: 2, d: 2, 1: 0, 2: 1, 3: 2 }[e.key]; if (i !== undefined) pick(i);
 });
 /** 고를 차례의 사진 가라앉힘(0~1): 셰이더 uFocus. */
+let focusTok = 0;
 function setFocus(to, seconds = 0.5) {
-  const from = scene.state.focus;
-  return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.focus = from + (to - from) * k; }, ease.out);
+  const tok = ++focusTok, from = scene.state.focus;
+  return tween(reduced() ? 0.01 : seconds, (k) => { if (tok === focusTok) scene.state.focus = from + (to - from) * k; }, ease.out);
 }
 // 고를 차례의 상태 글 · 처음 두 판의 손짓 안내 — 고를 것마다 그 말로(문 화면에도 「길」, 그 밖에는 「고르세요」 한마디라 맹검 3차가 짚음)
 const PICK = { door: '내릴 문을', fork: '갈 길을', exit: '나갈 출구를', board: '할 일을' };
 // 판이 아래 38%를 덮으면 사진은 위 천장만 남는다(맹검 「위 절반이 빈 천장 · 정작 문 · 승객 · 갈래가 판에 잘린다」) — 고를 차례에 사진을 판 위로 올려 비춘다
 const FRAME_Y = { door: 0.11, fork: 0.12, exit: 0.1, board: 0.1 };
-function panY(to, seconds) { const from = scene.state.pan[1] || 0; return tween(reduced() ? 0.01 : seconds, (k) => { scene.state.pan = [scene.state.pan[0], from + (to - from) * k]; }, ease.out); }
+// 새 올림이 걸리면 앞 트윈은 손을 뗀다(검수 A4: 0.15초 안에 고르면 내려가는 0.4초 트윈이 먼저 끝나고 남은 0.55초 트윈이 사진을 도로 올렸다)
+let panTok = 0;
+function panY(to, seconds) { const tok = ++panTok, from = scene.state.pan[1] || 0; return tween(reduced() ? 0.01 : seconds, (k) => { if (tok === panTok) scene.state.pan = [scene.state.pan[0], from + (to - from) * k]; }, ease.out); }
 function endChoice() { panel.hide(); document.documentElement.removeAttribute('data-picking'); if (scene.state.focus > 0) setFocus(0, 0.3); }
 /** 세 칸을 띄우고 손짓을 기다린다. 자동 진행 때는 정해진 칸을 누른다. kind: door · fork · exit · board(고르는 판의 화살 방향). */
 function choose(options, autoId, kind) {
@@ -416,7 +419,7 @@ async function playSignDecision(run, d, { img, dep, keyLine, auto, note = null }
   noteMissed(result, d);
   const way = d.options.findIndex((o) => o.id === d.answer);
   if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
-  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); panel.show(kind, d.options, { line: LINES[hud.state.line]?.color }); panel.pick(way); await wait(0.7); }   // 맞는 길을 판에서 채워 짚고 그리로 달린다
+  else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); panel.show(kind, d.options, { line: LINES[hud.state.line]?.color }); await wait(0.6); panel.pick(way); await wait(0.7); }   // 맞는 길을 판에서 채워 짚고 그리로 달린다 — 판이 다 올라온 뒤에 채운다(검수 A3)
   return { way, result };
 }
 async function dashThrough(way, next) {
