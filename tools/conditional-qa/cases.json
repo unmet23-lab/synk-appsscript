@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 127,
+  "expectedCount": 128,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1020,6 +1020,14 @@
       "name": "드라이브를 넘는 되돌리기를 이어 할 때 다른 날짜의 같은 이름과 섞지 않는다 — 끝 이름 바꾸기가 막혔으면 다음에 이름만 바꿔 끝낸다",
       "group": "Windows robocopy와 연결 폴더(임시 폴더 자동 정리)",
       "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S128",
+      "file": "tests/컷연속성검사.test.js",
+      "name": "빛 이름 — 얼굴 빛 값(가짜 그림): 좌우 · 위아래 · 색 · 역광 셈, 너무 작은 상자는 재지 않는다 · 얼굴 없는 그림은 알림(검출기가 없는 곳은 확인)",
+      "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
+      "route": "linux",
       "profile": "default"
     }
   ]

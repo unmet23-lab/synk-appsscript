@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 127);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 34, linux: 11, local: 82 });
+  assert.equal(check(root), 128);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 34, linux: 12, local: 82 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -60,8 +60,9 @@ test('the text checker conditional cases keep their localization inputs and have
   assert.equal(outsideTestedTree('docs/마케팅/현지화/언어프로필.json'), false);
   assert.equal(outsideTestedTree('docs/브랜드_폰트/InterTight/InterTight-Bold.ttf'), false);
 });
-test('S117–S119 run on the Linux host with the hash-pinned image libraries, never by skipping', () => {
-  const rows = ['S117', 'S118', 'S119'].map(id => manifest.cases.find(item => item.id === id));
+test('S117–S119 and S128 run on the Linux host with the hash-pinned image libraries, never by skipping', () => {
+  // 11-11 `ce56e974c` added the face-light test (S128) without registering it; syntax-check skipped it and stayed red for 33 runs.
+  const rows = ['S117', 'S118', 'S119', 'S128'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /uses: actions\/setup-python@v\d+\n\s+with:\n\s+python-version: '3\.\d+'/);
   for (const library of ['numpy', 'pillow', 'opencv-python-headless', 'scipy']) assert.match(workflow, new RegExp(`\\n\\s+${library}==[\\d.]+ --hash=sha256:[0-9a-f]{64}`));
