@@ -1,0 +1,27 @@
+{
+ "lang": "en",
+ "bridge": "Bus pulling away? Koreans yell…",
+ "mean": "Wait a sec!",
+ "read": [
+  "jam",
+  "kkan",
+  "man"
+ ],
+ "clap": "Clap on the beat!",
+ "say": "Your turn — say it!",
+ "real": "Natural speed!",
+ "end": "How do you say “wait a sec” in your language?",
+ "_원문": {
+  "bridge": "버스가 떠나? 한국 사람은 이렇게 외쳐…",
+  "mean": "잠깐만!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "자연스러운 속도!",
+  "end": "너희 말로는 「잠깐만」를 뭐라고 해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6.7
+}

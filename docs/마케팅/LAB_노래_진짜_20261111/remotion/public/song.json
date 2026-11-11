@@ -1,0 +1,108 @@
+{
+ "fps": 30,
+ "duration": 16.487,
+ "audio": "song.wav",
+ "bpm": 101.895,
+ "first": 0.182,
+ "word": "진짜",
+ "syl": [
+  "진",
+  "짜"
+ ],
+ "parts": [
+  {
+   "kind": "count",
+   "t": 0,
+   "end": 3.093
+  },
+  {
+   "kind": "chop",
+   "t": 3.093,
+   "end": 3.831,
+   "at": [
+    3.143,
+    3.557
+   ]
+  },
+  {
+   "kind": "whole",
+   "t": 3.831,
+   "end": 5.39,
+   "at": [
+    3.881,
+    4.32
+   ]
+  },
+  {
+   "kind": "rest",
+   "t": 5.39,
+   "end": 7.745,
+   "mode": "clap"
+  },
+  {
+   "kind": "chop",
+   "t": 7.745,
+   "end": 8.54,
+   "at": [
+    7.852,
+    8.261
+   ]
+  },
+  {
+   "kind": "whole",
+   "t": 8.54,
+   "end": 9.573,
+   "at": [
+    8.59,
+    9.024
+   ]
+  },
+  {
+   "kind": "real",
+   "t": 9.573,
+   "end": 10.188,
+   "at": [
+    9.623
+   ]
+  },
+  {
+   "kind": "rest",
+   "t": 10.188,
+   "end": 12.543,
+   "mode": "say"
+  },
+  {
+   "kind": "end",
+   "t": 12.543,
+   "end": 16.487
+  }
+ ],
+ "stage": {
+  "mode": "mongle",
+  "img": "scene.jpg",
+  "focus": "50% 50%"
+ },
+ "loc": {
+  "lang": "en",
+  "bridge": "When you can’t believe it…",
+  "mean": "Really?!",
+  "read": [
+   "jin",
+   "jja"
+  ],
+  "clap": "Clap on the beat!",
+  "say": "Your turn — say it!",
+  "real": "Real speed!",
+  "end": "How do you say “really?!” in your language?"
+ },
+ "_원문": {},
+ "_출처": {
+  "검수": "D:/synk-vendor/lab-song-20261111/메들리A/재기/A_0dd4832a.검수.json",
+  "곡": "D:/synk-vendor/lab-song-20261111/메들리A/0dd4832a.mp3",
+  "손질": "D:\\synk-vendor\\lab-song-20261111\\메들리A\\하루판\\A_0dd4832a_진짜3.손질.json",
+  "확인할것": [
+   "이음매 5.390초 앞뒤 세기 차 +8.5dB"
+  ],
+  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/진짜2_몽글_235356.png(JPEG q2 4:4:4로 옮김)"
+ }
+}

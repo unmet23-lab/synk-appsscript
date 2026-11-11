@@ -1,0 +1,24 @@
+{
+  "id": "판본-US-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "en",
+  "alteredContent": false,
+  "audioLanguage": "en",
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "Sing it: 진짜 = Really 🎵 #learnkorean",
+  "caption": "One Korean word, one beat per syllable — 진짜 (jin-jja) means “really?!”.\nCasual, for friends. Polite version: 진짜요 (jin-jja-yo).\nClap during the break, then sing it back!\n\nSYNK LAB\n#learnkorean #koreanphrases #koreansong",
+  "pinnedComment": "Who’s the first person you’d say 진짜 to? 👇",
+  "_원문": {
+    "title": "따라 불러: 진짜 = 진짜?! 🎵",
+    "caption": "한국어 한 낱말, 음절마다 한 박: 진짜(jin-jja)는 「진짜?!」라는 뜻.\n친구끼리 쓰는 반말. 존댓말은 진짜요(jin-jja-yo).\n쉬는 구간에 손뼉 치고, 따라 불러 봐!\n\nSYNK LAB\n#learnkorean #koreanphrases #koreansong",
+    "pinnedComment": "진짜를 제일 먼저 누구에게 말할 거야? 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+ "fps": 30,
+ "duration": 19.194,
+ "audio": "song.wav",
+ "bpm": 100.03,
+ "first": 0.332,
+ "word": "배고파",
+ "syl": [
+  "배",
+  "고",
+  "파"
+ ],
+ "parts": [
+  {
+   "kind": "count",
+   "t": 0,
+   "end": 4.051
+  },
+  {
+   "kind": "chop",
+   "t": 4.051,
+   "end": 4.804,
+   "at": [
+    4.101,
+    4.365,
+    4.59
+   ]
+  },
+  {
+   "kind": "whole",
+   "t": 4.804,
+   "end": 7.069,
+   "at": [
+    4.854,
+    6.326
+   ]
+  },
+  {
+   "kind": "rest",
+   "t": 7.069,
+   "end": 9.468,
+   "mode": "clap"
+  },
+  {
+   "kind": "chop",
+   "t": 9.468,
+   "end": 11.074,
+   "at": [
+    9.483,
+    9.638,
+    9.777
+   ]
+  },
+  {
+   "kind": "whole",
+   "t": 11.074,
+   "end": 12.436,
+   "at": [
+    11.124,
+    11.808
+   ]
+  },
+  {
+   "kind": "real",
+   "t": 12.436,
+   "end": 13.502,
+   "at": [
+    12.486
+   ]
+  },
+  {
+   "kind": "rest",
+   "t": 13.502,
+   "end": 15.901,
+   "mode": "say"
+  },
+  {
+   "kind": "end",
+   "t": 15.901,
+   "end": 19.194
+  }
+ ],
+ "stage": {
+  "mode": "mongle",
+  "img": "scene.jpg",
+  "focus": "48% 50%"
+ },
+ "loc": {
+  "lang": "en",
+  "bridge": "When your stomach growls, Koreans say…",
+  "mean": "I'm hungry!",
+  "read": [
+   "bae",
+   "go",
+   "pa"
+  ],
+  "clap": "Clap on the beat!",
+  "say": "Your turn — say it!",
+  "real": "Real speed!",
+  "end": "How do you say “I'm hungry” in your language?"
+ },
+ "_원문": {
+  "bridge": "배가 꼬르륵거릴 때 한국 사람은 이렇게 말해…",
+  "mean": "배고파!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "진짜 속도!",
+  "end": "너희 말로는 「배고파」를 뭐라고 해?"
+ },
+ "_출처": {
+  "검수": "D:/synk-vendor/lab-song-20261111/메들리A/재기/A_ef4abaea.검수.json",
+  "곡": "D:/synk-vendor/lab-song-20261111/메들리A/ef4abaea.mp3",
+  "손질": "D:\\synk-vendor\\lab-song-20261111\\메들리A\\하루판\\A_ef4abaea_배고파.손질.json",
+  "확인할것": [],
+  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/시안A3_몽글_182856.png(JPEG q2 4:4:4로 옮김)"
+ }
+}

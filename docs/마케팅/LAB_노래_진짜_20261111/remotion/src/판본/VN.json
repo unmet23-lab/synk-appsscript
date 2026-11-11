@@ -1,0 +1,26 @@
+{
+ "lang": "vi",
+ "bridge": "Khi không tin vào mắt mình, người Hàn sẽ nói…",
+ "mean": "Thật hả?!",
+ "read": [
+  "jin",
+  "jja"
+ ],
+ "clap": "Vỗ tay theo nhịp!",
+ "say": "Đến lượt bạn — nói to lên nào!",
+ "real": "Tốc độ tự nhiên!",
+ "end": "Khi không tin nổi, bạn hay nói gì?",
+ "_원문": {
+  "bridge": "눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+  "mean": "진짜?!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 크게 말해 봐!",
+  "real": "자연스러운 속도!",
+  "end": "믿기지 않을 때 너는 뭐라고 해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 4.9
+}

@@ -221,7 +221,16 @@ async function 대조하기({ 줄들, 언어이름, 부름, 문법모델, 역모
   const 문법답 = new Map(), 역답 = new Map(), 호출오류 = [];
   for (const 묶음 of 묶음들) {
     try {
-      const t = await 부름(문법모델, 문법질문(언어이름, 묶음, { 맥락, 나라말, 금기 }), { schema: 문법스키마, thinking: 'high' });
+      const 질문 = 문법질문(언어이름, 묶음, { 맥락, 나라말, 금기 });
+      let t;
+      try {
+        t = await 부름(문법모델, 질문, { schema: 문법스키마, thinking: 'high' });
+      } catch (e) {
+        // 스키마를 붙인 긴 사고 답이 어떤 묶음(11-12 힌디 · 키르기스 · 카자흐 · 크메르 · 버마어 노래 판본)에서 빈 채로 끝난다 — 같은 모델 · 같은 지시를
+        // 스키마 없이 한 번 더 부른다(현장 노트 AI_CLI 「몽골어대조.js --구독이 같은 묶음에서 agy가 빈 답을 냈다」).
+        if (!/빈 답/.test(e.message)) throw e;
+        t = await 부름(문법모델, `${질문}\n\n답은 아래 꼴의 JSON 한 덩어리만 낸다(설명 · 코드 울타리 없이): {"줄":[{"id":"…","판정":"${판정들.join('|')}","문제":"…","고침":"…","불편":"…"}]}`, { thinking: 'high' });
+      }
       for (const x of JSON꺼내기(t)?.줄 || []) if (x && x.id) 문법답.set(String(x.id), x);
     } catch (e) { 호출오류.push(`문법 채점 실패: ${e.message}`); }
     if (문법만) continue;

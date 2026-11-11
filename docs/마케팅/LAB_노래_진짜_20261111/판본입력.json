@@ -1,0 +1,207 @@
+{
+ "_설명": "LAB 21:00 노래 「진짜」 나라별 판본 입력 — node docs/마케팅/LAB_노래틀/틀/판본글짓기.cjs <편>. 나라마다 같은 줄은 그 도구 안 「나라」. 장면: 자기보다 큰 딸기 앞에서 별 눈으로 뒤로 젖혀 놀란 몽글(옆 접시에 보통 딸기 한 알) 영어 밖 채널의 끝 물음은 그 곡의 상황으로 묻는다(이미 그 나라 말인 뜻을 「너는 어떻게 말해?」로 다시 물으면 동어반복 — 카본 11-12).",
+ "낱말": "진짜",
+ "존댓말": "진짜요?",
+ "뜻K": "진짜?!",
+ "다리K": "믿기지 않을 때 한국 사람은 이렇게 말해…",
+ "coverAt": 4.9,
+ "나라": {
+  "US": {
+   "bridge": "When you can’t believe your eyes, Koreans say…",
+   "mean": "Really?!",
+   "qm": "really?!",
+   "bridgeK": "눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…"
+  },
+  "CA": {
+   "bridge": "A strawberry THAT big? In Korean, you’d say…",
+   "mean": "Really?!",
+   "qm": "really?!",
+   "bridgeK": "그렇게 큰 딸기가? 한국어로는 이렇게 말해…"
+  },
+  "AU": {
+   "bridge": "Can’t believe what you’re seeing? Koreans go…",
+   "mean": "Really?!",
+   "qm": "really?!",
+   "bridgeK": "보고도 못 믿겠어? 한국 사람은 이렇게 말해…"
+  },
+  "NZ": {
+   "bridge": "No way — a giant strawberry? In Korean…",
+   "mean": "Really?!",
+   "qm": "really?!",
+   "bridgeK": "말도 안 돼, 거대한 딸기라고? 한국어로는…"
+  },
+  "EN": {
+   "bridge": "Seeing something unbelievable? Koreans say…",
+   "mean": "Really?!",
+   "qm": "really?!",
+   "bridgeK": "믿기 힘든 걸 봤어? 한국 사람은 이렇게 말해…"
+  },
+  "PH": {
+   "bridge": "Kapag hindi ka makapaniwala, ang sabi ng mga Koreano…",
+   "mean": "Talaga?!",
+   "qm": "talaga?!",
+   "end": "Kapag hindi ka makapaniwala, ano’ng sinasabi mo?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "BR": {
+   "bridge": "Quando você não acredita no que vê, em coreano se diz…",
+   "mean": "Sério?!",
+   "qm": "sério?!",
+   "bridgeK": "눈으로 보고도 못 믿을 때 한국어로는 이렇게 말해…",
+   "end": "E você, o que fala quando não acredita no que vê?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "MX": {
+   "bridge": "Cuando no puedes creer lo que ves, en coreano se dice…",
+   "mean": "¿En serio?",
+   "qm": "¿en serio?",
+   "bridgeK": "눈으로 보고도 못 믿을 때 한국어로는 이렇게 말해…",
+   "end": "¿Y tú qué dices cuando no lo puedes creer?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "PY": {
+   "bridge": "Cuando no podés creer lo que ves, en coreano decís…",
+   "mean": "¿En serio?",
+   "qm": "¿en serio?",
+   "bridgeK": "눈으로 보고도 못 믿을 때 한국어로는 이렇게 말해…",
+   "end": "¿Y vos qué decís cuando no lo podés creer?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "CN": {
+   "bridge": "不敢相信眼前的一幕时，\n韩国人会说……",
+   "mean": "真的吗？！",
+   "qm": "真的吗？！",
+   "bridgeK": "눈앞의 광경을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "不敢相信的时候，你会说什么？",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "TW": {
+   "bridge": "不敢相信眼前的畫面時，\n韓國人會說……",
+   "mean": "真的嗎？！",
+   "qm": "真的嗎？！",
+   "bridgeK": "눈앞의 광경을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "不敢相信的時候，你都說什麼？",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "JP": {
+   "bridge": "目を疑うようなものを見たら、\n韓国語では…",
+   "mean": "マジで！？",
+   "qm": "マジで！？",
+   "bridgeK": "눈을 의심할 만한 걸 보면 한국어로는…",
+   "end": "信じられない時、なんて言う？",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "TH": {
+   "bridge": "เวลาไม่อยากเชื่อสายตา คนเกาหลีจะพูดว่า…",
+   "mean": "จริงเหรอ!?",
+   "qm": "จริงเหรอ!?",
+   "bridgeK": "눈을 믿기 어려울 때 한국 사람은 이렇게 말해…",
+   "end": "เวลาไม่อยากเชื่อ คุณพูดว่าอะไร?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "VN": {
+   "bridge": "Khi không tin vào mắt mình, người Hàn sẽ nói…",
+   "mean": "Thật hả?!",
+   "qm": "thật hả?!",
+   "bridgeK": "눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Khi không tin nổi, bạn hay nói gì?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "ID": {
+   "bridge": "Pas nggak percaya sama yang kamu lihat, orang Korea bilang…",
+   "mean": "Serius?!",
+   "qm": "serius?!",
+   "bridgeK": "본 걸 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Kalau nggak percaya, kamu bilang apa?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "MY": {
+   "bridge": "Bila tak percaya apa yang awak nampak, orang Korea cakap…",
+   "mean": "Betul ke?!",
+   "qm": "betul ke?!",
+   "bridgeK": "본 걸 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Bila tak percaya, korang cakap apa?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "IN": {
+   "bridge": "जब आँखों पर यक़ीन न हो, तो कोरियन में कहते हैं…",
+   "mean": "सच में?!",
+   "qm": "सच में?!",
+   "bridgeK": "눈을 믿을 수 없을 때 한국어로는 이렇게 말해…",
+   "end": "जब यक़ीन न हो, तो तुम क्या बोलते हो?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "NP": {
+   "bridge": "आफ्नै आँखालाई पत्याउन नसक्दा कोरियालीहरू भन्छन्…",
+   "mean": "साँच्चै?!",
+   "qm": "साँच्चै?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "पत्याउनै नसक्दा तिमी के भन्छौ?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "LK": {
+   "bridge": "ඇස් අදහගන්න බැරි වුණාම කොරියන් අය කියන්නේ…",
+   "mean": "ඇත්තද?!",
+   "qm": "ඇත්තද?!",
+   "bridgeK": "눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "විශ්වාස කරන්න බැරි වුණාම ඔයා මොකක්ද කියන්නේ?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "MM": {
+   "bridge": "မျက်လုံးကို မယုံနိုင်တဲ့အခါ\nကိုရီးယားလို ဒီလိုပြောတယ်…",
+   "mean": "တကယ်လား?!",
+   "qm": "တကယ်လား?!",
+   "bridgeK": "눈을 믿을 수 없을 때 한국어로 이렇게 말해…",
+   "end": "မယုံနိုင်တဲ့အခါ မင်း ဘာ⁠ပြော⁠လဲ?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "KH": {
+   "bridge": "ពេលមិនជឿភ្នែកខ្លួនឯង\nជនជាតិកូរ៉េនិយាយថា…",
+   "mean": "ពិតមែនទេ?!",
+   "qm": "ពិតមែនទេ?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "ពេលមិនគួរឱ្យជឿ អ្នកនិយាយ⁠ថា⁠ម៉េច?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "MN": {
+   "bridge": "Нүдэндээ итгэхгүй байхдаа солонгосчууд ингэж хэлдэг…",
+   "mean": "Үнэн үү?!",
+   "qm": "Үнэн үү?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Итгэмээргүй үед чи юу гэж хэлдэг вэ?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "RU": {
+   "bridge": "Когда не веришь своим глазам, корейцы говорят…",
+   "mean": "Правда?!",
+   "qm": "правда?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "А что ты говоришь, когда не веришь глазам?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "KZ": {
+   "bridge": "Көзіңе сенбей тұрғанда корейлер былай дейді…",
+   "mean": "Шын ба?!",
+   "qm": "шын ба?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Сенбей тұрғанда сен не дейсің?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "KG": {
+   "bridge": "Көзүңө ишенбей турганда корейлер минтип айтышат…",
+   "mean": "Чын элеби?!",
+   "qm": "чын элеби?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Ишенбей турганда сен эмне дейсиң?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  },
+  "UZ": {
+   "bridge": "Koʻzingga ishonmay qolganda koreyslar shunday deydi…",
+   "mean": "Rostdanmi?!",
+   "qm": "rostdanmi?!",
+   "bridgeK": "제 눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+   "end": "Ishonmay qolganda sen nima deysan?",
+   "endK": "믿기지 않을 때 너는 뭐라고 해?"
+  }
+ }
+}

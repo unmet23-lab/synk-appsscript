@@ -1,0 +1,27 @@
+{
+ "lang": "en",
+ "bridge": "Bowl's empty and you're starving? In Korean…",
+ "mean": "I'm hungry!",
+ "read": [
+  "bae",
+  "go",
+  "pa"
+ ],
+ "clap": "Clap to the beat!",
+ "say": "You’re up — say it!",
+ "real": "Full speed!",
+ "end": "How would you say “I'm hungry” in your language?",
+ "_원문": {
+  "bridge": "그릇은 비었고 배는 고파? 한국어로는…",
+  "mean": "배고파!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "제 속도로!",
+  "end": "너희 말로는 「배고파」를 어떻게 말하겠어?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6
+}

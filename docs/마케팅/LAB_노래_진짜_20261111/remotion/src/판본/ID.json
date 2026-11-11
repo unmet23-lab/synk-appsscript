@@ -1,0 +1,26 @@
+{
+ "lang": "id",
+ "bridge": "Pas nggak percaya sama yang kamu lihat, orang Korea bilang…",
+ "mean": "Serius?!",
+ "read": [
+  "jin",
+  "jja"
+ ],
+ "clap": "Tepuk tangan sesuai irama!",
+ "say": "Giliranmu — ucapkan!",
+ "real": "Kecepatan asli!",
+ "end": "Kalau nggak percaya, kamu bilang apa?",
+ "_원문": {
+  "bridge": "본 걸 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+  "mean": "진짜?!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "진짜 속도!",
+  "end": "믿기지 않을 때 너는 뭐라고 해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 4.9
+}

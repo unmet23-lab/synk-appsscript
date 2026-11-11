@@ -1,0 +1,27 @@
+{
+ "lang": "vi",
+ "bridge": "Khi bụng sôi ùng ục, người Hàn sẽ nói…",
+ "mean": "Đói quá!",
+ "read": [
+  "bae",
+  "go",
+  "pa"
+ ],
+ "clap": "Vỗ tay theo nhịp!",
+ "say": "Đến lượt bạn — nói to lên nào!",
+ "real": "Tốc độ tự nhiên!",
+ "end": "Lúc đói, bạn hay nói gì?",
+ "_원문": {
+  "bridge": "배가 꼬르륵거릴 때 한국 사람은 이렇게 말해…",
+  "mean": "배고파!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 크게 말해 봐!",
+  "real": "자연스러운 속도!",
+  "end": "배고플 때 너는 뭐라고 해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6
+}

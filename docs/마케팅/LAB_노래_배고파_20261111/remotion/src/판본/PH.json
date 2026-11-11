@@ -1,0 +1,27 @@
+{
+ "lang": "fil",
+ "bridge": "Kapag kumakalam ang sikmura, ang sabi ng mga Koreano…",
+ "mean": "Gutom na ako!",
+ "read": [
+  "bae",
+  "go",
+  "pa"
+ ],
+ "clap": "Pumalakpak sa beat!",
+ "say": "Ikaw naman — sabihin mo!",
+ "real": "Normal na bilis!",
+ "end": "Kapag gutom ka, ano’ng sinasabi mo?",
+ "_원문": {
+  "bridge": "배가 꼬르륵거릴 때 한국 사람은 이렇게 말해…",
+  "mean": "배고파!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "이번엔 너 — 말해 봐!",
+  "real": "보통 빠르기!",
+  "end": "배고플 때 너는 뭐라고 해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6
+}

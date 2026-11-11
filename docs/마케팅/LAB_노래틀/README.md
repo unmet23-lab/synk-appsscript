@@ -14,10 +14,13 @@ python -X utf8 tools/노래검수.py 떼기 <밖>/떼기 <후보.mp3…>        
 python -X utf8 tools/노래검수.py 재기 <후보.mp3> --후보 <후보.json> --밖 <밖>/재기 --목소리 … --바탕 …   # 음절 시각 · 발음
 python -X utf8 tools/노래검수.py 훅 <밖>/재기/*.검수.json --첫줄 1 7 13 --이름 배고파 잠깐만 진짜        # 훅마다 후보 순서
 python -X utf8 docs/마케팅/LAB_노래틀/틀/편만들기.py <검수.json> <후보.mp3> <바탕.wav> <목소리.wav> --첫줄 1 --낱말 배고파 \
-    --판본 <판본 글.json> --무대 mongle|plain [--그림 <public 안 그림>] --밖 <밖>/하루판                   # 하루 판 곡 · song.json
-# 틀/public/에 song.wav · song.json · 그림을 놓고(public은 git 밖 — 글꼴은 퀴즈 은행 틀 public/fonts에서 복사)
+    --판본 <판본 글.json> --무대 mongle|plain [--그림 <public 안 그림>] [--줄짜임 4,1,4,1,1] --밖 <밖>/하루판   # 하루 판 곡 · song.json
+# 틀/public/에 song.wav · song.json · 그림을 놓고(틀 자리 public은 git 밖 — 글꼴은 퀴즈 은행 틀 public/fonts에서 복사)
 cd docs/마케팅/LAB_노래틀/틀 && npx remotion render song out/<이름>.mp4
 ```
+
+- **끼울 곳 · 끼울 반주(11-12):** 쉼 마디는 앞 줄 끝과 다음 줄 첫 음절 사이 가장 조용한 곳에 끼운다. 재기가 두 음절을 겹쳐 잡아 창이 뒤집히면 다음 줄 첫 음절 앞 0.6초 안에서 찾는다(메들리 A 「진짜」가 「진」 한가운데에 끼워졌던 일). 끼울 반주는 바로 앞 같은 길이가 기본이고, 그 자리에 무음이 있으면(스톱 타임 편곡) 0.1초 창이 모두 −45 dB 위인 가장 가까운 마디를 곡손질 「원천마디 · 원천끝마디」로 떠 되풀이한다. 끝 물음 화면은 2.5초 넘게(모자라면 세 마디 끼움). 현장 노트 [영상 · 쉼 마디](../../현장노트/영상_ffmpeg_자막.md).
+- **`--줄짜임`(11-12):** 카운트인 다음 끊어 · 이어 · 끊어 · 이어 · 진짜 속도가 각각 몇 가사 줄인가. 메들리 B처럼 끊어 줄을 한 줄에 한 음절(「가! / 자! / 가! / 자!」)로 적었으면 `4,1,4,1,1`. 끊어 시각은 낱말 음절을 차례로 되풀이한 것만 쓰고(추임새 「짝」은 뺀다) 틀이 음절을 돌려 켠다.
 
 - node_modules는 퀴즈 은행 틀(공용 작업본)의 것을 junction으로 잇는다(`node -e "fs.symlinkSync(<퀴즈 틀 node_modules>, '틀/node_modules', 'junction')"` — cmd `mklink`는 한글 경로를 깨뜨린다).
 - 판본 글(`loc`): `lang` · `bridge`(카운트인 동안 다리 글) · `mean`(뜻 알약) · `read`(음절마다 발음) · `clap` · `say` · `real` · `end` + `_원문`(한국어 뜻 — 역번역 대조 기준).
@@ -28,12 +31,15 @@ cd docs/마케팅/LAB_노래틀/틀 && npx remotion render song out/<이름>.mp4
 ```
 node docs/마케팅/LAB_노래틀/틀/새편.mjs <편 폴더> --곡 <하루 판 .wav> --정본 <song.json> [--그림 <그림>] --기준 <기준.json>
 #   → <편>/remotion(틀 사본 · node_modules 잇기 · public), 판본지도.json(틀 「노래」 — song.json 짜임에서 줄 · 시각 · 상자), 판본렌더.mjs
-#   <편>/remotion/src/판본/<KEY>.json = loc 글(lang · bridge · mean · read[음절 수] · clap · say · real · end · coverAt · _원문)
-node tools/판본글잇기.js 뽑기 <편> <KEY…>        # → 게시/판본/<KEY>/글.json
+#   편 public(곡 · 그림 · song.json)은 git에 넣는다 — 판본 렌더 기록의 자산 지문이 public · src를 세어 게시 회차 사본에도 있어야 한다
+node docs/마케팅/LAB_노래틀/틀/판본글짓기.cjs <편>   # <편>/판본입력.json → remotion/src/판본/<KEY>.json + 게시/판본/<KEY>/원고_<플랫폼>.json
+#   나라마다 같은 줄(손뼉 · 말하기 · 진짜 속도 · 끝 물음 꼴 · 게시글 꼴 · 해시태그)은 그 도구 안 「나라」(26 키 — 원장 21:00 「노래」 칸),
+#   곡마다 다른 것(다리 글 · 뜻 · 끝 물음 속 뜻 · 영어 밖 채널의 끝 물음 · 표지 순간 · 존댓말 꼴)은 편의 판본입력.json. read는 발음줄(낱말, 문자, { 음절: true })
+node tools/판본글잇기.js 뽑기 <편> 전부           # → 게시/판본/<KEY>/글.json
 node tools/글자검사.js 전 <편>/게시/판본/<KEY>/글.json
-node tools/현지어대조.js --파일 <편>/게시/판본/<KEY>/글.json --밖 …   # 역번역 세 겹(이야기 편 판본 시범 「한 판본의 차례」 그대로)
+node tools/판본글잇기.js 돌림 <편> 전부 --형식 노래   # 준비.json 「돌림」.판본(준비.json이 먼저 있어야 한다 — 노래 편은 판 없이 돌림만)
+node tools/현지어대조.js --판본 <편> --키 <KEY>      # 카본 문법 · 직역 역번역(한 판 약 6분 — 동시 여섯은 agy 빈 답이 났다), Opus 직역 · 뜻 대조 뒤 --기록 --뜻대조
 cd <편> && node 판본렌더.mjs <KEY…|전부>           # song-<KEY> → 게시/판본/<KEY>/video.mp4 · cover.png · 렌더.json(−14.5 LUFS · 10Mbps)
-node tools/판본글잇기.js 돌림 <편> <KEY…> --형식 노래   # 준비.json 「돌림」.판본
 node tools/뜻검사.js 판본 <편> <KEY>                 # 노래 틀은 웃음 대신 「따라 하고 싶은 자리」(손뼉 · 말하기 줄 — 대조: 웃음)를 묻는다
 ```
 

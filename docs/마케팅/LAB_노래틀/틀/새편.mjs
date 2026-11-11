@@ -5,7 +5,7 @@
 //
 // 만드는 것(편 폴더 아래):
 //   remotion/ — 틀의 src · 설정 사본, node_modules는 퀴즈 은행 틀의 것을 junction(틀 폴더의 node_modules가 이미 그쪽을 가리킨다),
-//              public/fonts(퀴즈 은행 틀 public/fonts 사본) · public/song.wav · public/song.json · (그림)  — public은 git 밖
+//              public/fonts(퀴즈 은행 틀 public/fonts 사본) · public/song.wav · public/song.json · (그림)  — 편의 public은 git에 넣는다(판본 자산 지문 · 아래 ①). 틀 자리의 public만 git 밖
 //   판본지도.json — song.json의 짜임(parts)에서 줄 · 시각 · 상자를 뽑은 판본지도/1(틀 「노래」). 뜻 검사 기준은 --기준(한문장 · 핵심 · 웃음)
 //   판본렌더.mjs — 이야기 편 판본렌더.mjs를 접두 song · 판본폴더 remotion/src/판본으로(소리 마감 −14.5 LUFS · 표지 · 렌더.json 그대로)
 // --갱신: remotion/src만 틀에서 다시 복사(판본 글 src/판본은 그대로) — 동결한 편에는 쓰지 않는다(설계 20).
@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const 틀 = path.dirname(fileURLToPath(import.meta.url));
+const REAL_LEAD = 0.5; // src/Song.tsx REAL_LEAD와 같은 값
 const 뿌리 = path.resolve(틀, '..', '..', '..', '..');
 const 인자 = process.argv.slice(2);
 const 값 = (n) => { const i = 인자.indexOf(n); return i > -1 ? 인자[i + 1] : null; };
@@ -32,7 +33,10 @@ for (const f of fs.readdirSync(path.join(틀, 'src'))) {
   if (fs.statSync(s).isFile()) fs.copyFileSync(s, path.join(사본, 'src', f));
 }
 if (!갱신) {
-  for (const f of ['package.json', 'remotion.config.ts', 'tsconfig.json', '.gitignore']) fs.copyFileSync(path.join(틀, f), path.join(사본, f));
+  for (const f of ['package.json', 'remotion.config.ts', 'tsconfig.json']) fs.copyFileSync(path.join(틀, f), path.join(사본, f));
+  // 편의 public(곡 · 그림 · 글꼴 · song.json)은 git에 넣는다 — 판본 렌더 기록의 자산 지문(tools/lib/판본잇기.js 자산지문)이 public · src를 세어,
+  // 게시 회차 사본(HEAD)에 public이 없으면 모든 판본이 「렌더 뒤 자산이 바뀌었다」로 돌림에서 빠진다. 틀의 .gitignore(public/)는 틀 자리에만 맞다.
+  fs.writeFileSync(path.join(사본, '.gitignore'), 'out/\n');
   const 모듈 = path.join(사본, 'node_modules');
   if (!fs.existsSync(모듈)) {
     const 틀모듈 = fs.realpathSync(path.join(틀, 'node_modules'));
@@ -83,8 +87,8 @@ if (doc) {
     { id: 'clap', 칸: '진행', 값: 'clap', 대조: '웃음', 원문: doc._원문?.clap, 초: 초(restClap.t, restClap.end),
       장면: '(반주만 흐르는 한 마디 — 시청자 차례) 음절 글자가 흐려지고, 위에 코랄 글로 이 글(손뼉 치기), 맨 아래 박 막대가 굵어져 박마다 켜진다',
       상자: { 폭: 834, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } },
-    { id: 'real', 칸: '진행', 값: 'real', 원문: doc._원문?.real, 초: 초(real.t, real.end),
-      장면: '노래가 같은 낱말을 실제 말 빠르기로 한 번 부르고, 음절 글자 위에 코랄 글로 이 글',
+    { id: 'real', 칸: '진행', 값: 'real', 원문: doc._원문?.real, 초: 초(real.t - REAL_LEAD, real.end), // Song.tsx REAL_LEAD — 딱지가 구간보다 먼저 뜬다
+      장면: '노래가 같은 낱말을 실제 말 빠르기로 한 번 부르고(그 0.5초 앞부터), 음절 글자 위에 검정 글(앞에 코랄 점)로 이 글',
       상자: { 폭: 834, 글자크기: 36, 굵기: 800, 줄높이: 1.1, 최대줄: 1, 줄바꿈: 'nowrap' } },
     { id: 'say', 칸: '진행', 값: 'say', 대조: '웃음', 원문: doc._원문?.say, 초: 초(restSay.t, restSay.end),
       장면: '(반주만 흐르는 한 마디 — 시청자 차례) 다시 음절 글자가 흐려지고 위에 코랄 글로 이 글(소리 내어 말하기), 박 막대가 박마다 켜진다',

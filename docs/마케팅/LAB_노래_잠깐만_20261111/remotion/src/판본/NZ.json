@@ -1,0 +1,27 @@
+{
+ "lang": "en",
+ "bridge": "The bus is leaving and you’re not on it? Call out…",
+ "mean": "Wait a sec!",
+ "read": [
+  "jam",
+  "kkan",
+  "man"
+ ],
+ "clap": "Clap to the beat!",
+ "say": "You’re up — say it!",
+ "real": "Full speed!",
+ "end": "How would you say “wait a sec” in your language?",
+ "_원문": {
+  "bridge": "버스는 가는데 너는 못 탔어? 이렇게 외쳐…",
+  "mean": "잠깐만!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "제 속도로!",
+  "end": "너희 말로는 「잠깐만」를 어떻게 말하겠어?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6.7
+}

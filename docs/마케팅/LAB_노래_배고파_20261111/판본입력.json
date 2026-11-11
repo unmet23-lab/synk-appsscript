@@ -1,0 +1,195 @@
+{
+ "_설명": "LAB 21:00 노래 「배고파」 나라별 판본 입력 — node docs/마케팅/LAB_노래틀/틀/판본글짓기.cjs <편>이 remotion/src/판본/<KEY>.json · 게시/판본/<KEY>/원고_<플랫폼>.json을 만든다. 나라마다 같은 줄(손뼉 · 말하기 · 진짜 속도 · 끝 물음 꼴 · 게시글 꼴)은 그 도구 안 「나라」. 장면: 빈 국수 그릇에 기대 김 나는 냄비를 바라보는 몽글. 영어 밖 채널의 끝 물음은 그 곡의 상황으로 묻는다(이미 그 나라 말인 뜻을 「너는 어떻게 말해?」로 다시 물으면 동어반복 — 카본 11-12).",
+ "낱말": "배고파",
+ "존댓말": "배고파요",
+ "뜻K": "배고파",
+ "다리K": "배가 꼬르륵거릴 때 한국 사람은 이렇게 말해…",
+ "coverAt": 6.0,
+ "나라": {
+  "US": {
+   "bridge": "When your stomach growls, Koreans say…",
+   "mean": "I'm hungry!",
+   "qm": "I'm hungry"
+  },
+  "CA": {
+   "bridge": "Empty bowl and a growling stomach? In Korean…",
+   "bridgeK": "빈 그릇에 꼬르륵거리는 배? 한국어로는…",
+   "mean": "I'm hungry!",
+   "qm": "I'm hungry"
+  },
+  "AU": {
+   "bridge": "Tummy rumbling? Koreans just say…",
+   "bridgeK": "배에서 꼬르륵 소리? 한국 사람은 그냥 이렇게 말해…",
+   "mean": "I'm hungry!",
+   "qm": "I'm hungry"
+  },
+  "NZ": {
+   "bridge": "Bowl's empty and you're starving? In Korean…",
+   "bridgeK": "그릇은 비었고 배는 고파? 한국어로는…",
+   "mean": "I'm hungry!",
+   "qm": "I'm hungry"
+  },
+  "EN": {
+   "bridge": "Starving? Here's what Koreans say…",
+   "bridgeK": "배고파 죽겠어? 한국 사람은 이렇게 말해…",
+   "mean": "I'm hungry!",
+   "qm": "I'm hungry"
+  },
+  "PH": {
+   "bridge": "Kapag kumakalam ang sikmura, ang sabi ng mga Koreano…",
+   "mean": "Gutom na ako!",
+   "qm": "gutom na ako",
+   "end": "Kapag gutom ka, ano’ng sinasabi mo?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "BR": {
+   "bridge": "Quando a barriga ronca, em coreano se diz…",
+   "mean": "Tô com fome!",
+   "qm": "tô com fome",
+   "end": "E você, o que fala quando tá com fome?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "MX": {
+   "bridge": "Cuando te ruge la panza, en coreano se dice…",
+   "mean": "¡Tengo hambre!",
+   "qm": "tengo hambre",
+   "end": "¿Y tú qué dices cuando tienes hambre?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "PY": {
+   "bridge": "Cuando te suena la panza, en coreano decís…",
+   "mean": "¡Tengo hambre!",
+   "qm": "tengo hambre",
+   "end": "¿Y vos qué decís cuando tenés hambre?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "CN": {
+   "bridge": "肚子咕咕叫的时候，\n韩国人会说……",
+   "mean": "我饿了！",
+   "qm": "我饿了",
+   "end": "肚子饿的时候，你平时怎么说？",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "TW": {
+   "bridge": "肚子咕嚕咕嚕叫的時候，\n韓國人會說……",
+   "mean": "我餓了！",
+   "qm": "我餓了",
+   "end": "肚子餓的時候，你都怎麼說？",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "JP": {
+   "bridge": "お腹がグーッと鳴ったら、\n韓国語では…",
+   "bridgeK": "배가 꼬르륵 울리면 한국어로는…",
+   "mean": "お腹すいた！",
+   "qm": "お腹すいた",
+   "end": "お腹すいたら、なんて言う？",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "TH": {
+   "bridge": "เวลาท้องร้อง คนเกาหลีจะพูดว่า…",
+   "mean": "หิวแล้ว!",
+   "qm": "หิวแล้ว",
+   "end": "เวลาหิว คุณพูดว่ายังไง?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "VN": {
+   "bridge": "Khi bụng sôi ùng ục, người Hàn sẽ nói…",
+   "mean": "Đói quá!",
+   "qm": "đói quá",
+   "end": "Lúc đói, bạn hay nói gì?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "ID": {
+   "bridge": "Pas perut keroncongan, orang Korea bilang…",
+   "mean": "Aku lapar!",
+   "qm": "aku lapar",
+   "end": "Kalau lagi lapar, kamu bilang apa?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "MY": {
+   "bridge": "Bila perut berkeroncong, orang Korea cakap…",
+   "mean": "Laparnya!",
+   "qm": "laparnya",
+   "end": "Bila lapar, korang cakap apa?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "IN": {
+   "bridge": "जब पेट गुड़गुड़ करे, तो कोरियन में कहते हैं…",
+   "bridgeK": "배가 꾸르륵거리면 한국어로는 이렇게 말해…",
+   "mean": "भूख लगी है!",
+   "qm": "भूख लगी है",
+   "end": "भूख लगने पर तुम क्या बोलते हो?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "NP": {
+   "bridge": "भोक लाग्दा कोरियालीहरू यसो भन्छन्…",
+   "bridgeK": "배고플 때 한국 사람은 이렇게 말해…",
+   "mean": "भोक लाग्यो!",
+   "qm": "भोक लाग्यो",
+   "end": "भोक लाग्दा तिमी के भन्छौ?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "LK": {
+   "bridge": "බඩගිනි වුණාම කොරියන් අය කියන්නේ…",
+   "bridgeK": "배고프면 한국 사람은 이렇게 말해…",
+   "mean": "බඩගිනියි!",
+   "qm": "බඩගිනියි",
+   "end": "බඩගිනි වුණාම ඔයා මොකක්ද කියන්නේ?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "MM": {
+   "bridge": "ဗိုက်ဆာလာရင်\nကိုရီးယားလို ဒီလိုပြောတယ်…",
+   "bridgeK": "배고파지면 한국어로 이렇게 말해…",
+   "mean": "ဗိုက်ဆာတယ်!",
+   "qm": "ဗိုက်ဆာတယ်",
+   "end": "ဗိုက်ဆာရင် မင်း ဘာ⁠ပြော⁠လဲ?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "KH": {
+   "bridge": "ពេលឃ្លាន\nជនជាតិកូរ៉េនិយាយថា…",
+   "bridgeK": "배고플 때 한국 사람은 이렇게 말해…",
+   "mean": "ឃ្លានណាស់!",
+   "qm": "ឃ្លានណាស់",
+   "end": "ពេលឃ្លាន អ្នកនិយាយ⁠ថា⁠ម៉េច?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "MN": {
+   "bridge": "Өлсөөд гэдэс хоржигнохоор солонгосчууд ингэж хэлдэг…",
+   "mean": "Өлсөж байна!",
+   "qm": "Өлсөж байна",
+   "end": "Өлсөхөөрөө чи юу гэж хэлдэг вэ?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "RU": {
+   "bridge": "Когда урчит в животе, корейцы говорят…",
+   "mean": "Хочу есть!",
+   "qm": "хочу есть",
+   "end": "А что ты говоришь, когда хочешь есть?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "KZ": {
+   "bridge": "Қарны ашып, шұрылдаса, корейлер былай дейді…",
+   "bridgeK": "배가 고파 꼬르륵거리면 한국 사람은 이렇게 말해…",
+   "mean": "Қарным ашты!",
+   "qm": "қарным ашты",
+   "end": "Қарның ашқанда сен не дейсің?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "KG": {
+   "bridge": "Курсагың ачып, курулдаса, корейлер минтип айтышат…",
+   "bridgeK": "배가 고파 꼬르륵거리면 한국 사람은 이렇게 말해…",
+   "mean": "Курсагым ачты!",
+   "qm": "курсагым ачты",
+   "end": "Курсагың ачканда сен эмне дейсиң?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  },
+  "UZ": {
+   "bridge": "Qorni ochib quldirasa, koreyslar shunday deydi…",
+   "bridgeK": "배가 고파 꼬르륵거리면 한국 사람은 이렇게 말해…",
+   "mean": "Qornim och!",
+   "qm": "qornim och",
+   "end": "Qorning ochganda sen nima deysan?",
+   "endK": "배고플 때 너는 뭐라고 해?"
+  }
+ }
+}

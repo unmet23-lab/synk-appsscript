@@ -1,0 +1,27 @@
+{
+ "lang": "en",
+ "bridge": "Starving? Here's what Koreans say…",
+ "mean": "I'm hungry!",
+ "read": [
+  "bae",
+  "go",
+  "pa"
+ ],
+ "clap": "Clap with the beat!",
+ "say": "Your turn — sing it!",
+ "real": "Native speed!",
+ "end": "In your language, how do you say “I'm hungry”?",
+ "_원문": {
+  "bridge": "배고파 죽겠어? 한국 사람은 이렇게 말해…",
+  "mean": "배고파!",
+  "clap": "박자와 함께 손뼉!",
+  "say": "네 차례 — 불러 봐!",
+  "real": "원어민 속도!",
+  "end": "너희 말로는 「배고파」를 어떻게 말해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6
+}

@@ -1,0 +1,199 @@
+{
+ "_설명": "LAB 21:00 노래 「잠깐만」 나라별 판본 입력 — node docs/마케팅/LAB_노래틀/틀/판본글짓기.cjs <편>. 나라마다 같은 줄은 그 도구 안 「나라」. 장면: 떠나는 버스를 쫓아 달려가는 몽글(먼지 뭉치 셋, 둥근 빈 정류장 표지) 잠깐만은 끝 물음 화면이 2.76초라 일본판 끝 물음을 줄였다(「あなたなら？」 — 글자 검사 읽기 시간). 영어 밖 채널의 끝 물음은 그 곡의 상황으로 묻는다(이미 그 나라 말인 뜻을 「너는 어떻게 말해?」로 다시 물으면 동어반복 — 카본 11-12).",
+ "낱말": "잠깐만",
+ "존댓말": "잠깐만요",
+ "뜻K": "잠깐만",
+ "다리K": "버스가 떠나려 할 때 한국 사람은 이렇게 외쳐…",
+ "coverAt": 6.7,
+ "나라": {
+  "US": {
+   "bridge": "Bus pulling away? Koreans yell…",
+   "mean": "Wait a sec!",
+   "qm": "wait a sec",
+   "bridgeK": "버스가 떠나? 한국 사람은 이렇게 외쳐…"
+  },
+  "CA": {
+   "bridge": "When the bus is leaving without you…",
+   "mean": "Wait a sec!",
+   "qm": "wait a sec",
+   "bridgeK": "버스가 너를 두고 떠날 때…"
+  },
+  "AU": {
+   "bridge": "Bus taking off without ya? In Korean, shout…",
+   "mean": "Wait a sec!",
+   "qm": "wait a sec",
+   "bridgeK": "버스가 너 없이 떠나? 한국어로는 이렇게 외쳐…"
+  },
+  "NZ": {
+   "bridge": "The bus is leaving and you’re not on it? Call out…",
+   "mean": "Wait a sec!",
+   "qm": "wait a sec",
+   "bridgeK": "버스는 가는데 너는 못 탔어? 이렇게 외쳐…"
+  },
+  "EN": {
+   "bridge": "Running for the bus? Koreans shout…",
+   "mean": "Wait a sec!",
+   "qm": "wait a sec",
+   "bridgeK": "버스 잡으러 뛰어? 한국 사람은 이렇게 외쳐…"
+  },
+  "PH": {
+   "bridge": "Kapag paalis na ang bus, ang sigaw ng mga Koreano…",
+   "mean": "Sandali lang!",
+   "qm": "sandali lang",
+   "end": "Kapag paalis na ang bus, ano’ng sinisigaw mo?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "BR": {
+   "bridge": "O ônibus tá indo embora? Em coreano, você grita…",
+   "mean": "Peraí!",
+   "qm": "peraí",
+   "bridgeK": "버스가 떠나려 해? 한국어로는 이렇게 외쳐…",
+   "end": "E você, o que grita quando o ônibus tá indo embora?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "MX": {
+   "bridge": "¿Se te va el camión? En coreano se grita…",
+   "mean": "¡Espérame tantito!",
+   "qm": "espérame tantito",
+   "bridgeK": "버스가 떠나 버려? 한국어로는 이렇게 외쳐…",
+   "end": "¿Y tú qué gritas cuando se te va el camión?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "PY": {
+   "bridge": "¿Se te va el colectivo? En coreano gritás…",
+   "mean": "¡Esperá un ratito!",
+   "qm": "esperá un ratito",
+   "bridgeK": "버스가 떠나 버려? 한국어로는 이렇게 외쳐…",
+   "end": "¿Y vos qué gritás cuando se te va el colectivo?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "CN": {
+   "bridge": "公交车要开走了？\n韩国人会喊……",
+   "mean": "等一下！",
+   "qm": "等一下",
+   "bridgeK": "버스가 떠나려 해? 한국 사람은 이렇게 외쳐…",
+   "end": "公交车要开走时，你会喊什么？",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "TW": {
+   "bridge": "公車要開走了？\n韓國人會喊……",
+   "mean": "等一下！",
+   "qm": "等一下",
+   "bridgeK": "버스가 떠나려 해? 한국 사람은 이렇게 외쳐…",
+   "end": "公車要開走時，你都喊什麼？",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "JP": {
+   "bridge": "バスが行っちゃう！\n韓国語では…",
+   "mean": "ちょっと待って！",
+   "qm": "ちょっと待って",
+   "bridgeK": "버스가 가 버려! 한국어로는…",
+   "end": "バスが出る時、なんて言う？",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "TH": {
+   "bridge": "รถเมล์กำลังจะออก! คนเกาหลีจะตะโกนว่า…",
+   "mean": "เดี๋ยวก่อน!",
+   "qm": "เดี๋ยวก่อน",
+   "end": "รถเมล์จะออกแล้ว คุณจะตะโกนว่าอะไร?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "VN": {
+   "bridge": "Xe buýt sắp chạy mất! Người Hàn sẽ hét lên…",
+   "mean": "Đợi chút!",
+   "qm": "đợi chút",
+   "end": "Khi xe buýt sắp chạy, bạn hét gì?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "ID": {
+   "bridge": "Busnya mau jalan? Orang Korea teriak…",
+   "mean": "Tunggu sebentar!",
+   "qm": "tunggu sebentar",
+   "bridgeK": "버스가 출발하려 해? 한국 사람은 이렇게 외쳐…",
+   "end": "Kalau busnya mau jalan, kamu teriak apa?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "MY": {
+   "bridge": "Bas dah nak bergerak? Orang Korea jerit…",
+   "mean": "Tunggu kejap!",
+   "qm": "tunggu kejap",
+   "bridgeK": "버스가 출발하려 해? 한국 사람은 이렇게 외쳐…",
+   "end": "Bila bas nak jalan, korang jerit apa?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "IN": {
+   "bridge": "बस छूटने वाली हो, तो कोरियन में चिल्लाते हैं…",
+   "mean": "एक मिनट रुको!",
+   "qm": "एक मिनट रुको",
+   "bridgeK": "버스를 놓치려 할 때 한국어로는 이렇게 외쳐…",
+   "end": "बस छूटने लगे, तो तुम क्या चिल्लाते हो?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "NP": {
+   "bridge": "बस छुट्न लाग्दा कोरियालीहरू कराउँछन्…",
+   "mean": "एकछिन पर्ख!",
+   "qm": "एकछिन पर्ख",
+   "bridgeK": "버스를 놓치려 할 때 한국 사람은 이렇게 외쳐…",
+   "end": "बस छुट्न लाग्दा तिमी के भनेर कराउँछौ?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "LK": {
+   "bridge": "බස් එක යන්න හදද්දි කොරියන් අය මෙහෙම කෑගහනවා…",
+   "mean": "පොඩ්ඩක් ඉන්න!",
+   "qm": "පොඩ්ඩක් ඉන්න",
+   "end": "බස් එක යන්න හදද්දි ඔයා මොකක් කියලද කෑගහන්නේ?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "MM": {
+   "bridge": "ဘတ်စ်ကား ထွက်သွားတော့မယ်ဆိုရင်\nကိုရီးယားလို ဒီလိုအော်တယ်…",
+   "mean": "ခဏလေး!",
+   "qm": "ခဏလေး",
+   "bridgeK": "버스가 떠나려 하면 한국어로 이렇게 외쳐…",
+   "end": "ဘတ်စ်ကား ထွက်တော့မယ်ဆို မင်း ဘာ⁠အော်⁠လဲ?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "KH": {
+   "bridge": "ពេលឡានក្រុងជិតចេញ\nជនជាតិកូរ៉េស្រែកថា…",
+   "mean": "ចាំបន្តិច!",
+   "qm": "ចាំបន្តិច",
+   "end": "ពេលឡានក្រុងជិតចេញ អ្នកស្រែក⁠ថា⁠ម៉េច?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "MN": {
+   "bridge": "Автобус хөдлөх гэж байхад солонгосчууд ингэж хашхирдаг…",
+   "mean": "Түр хүлээгээрэй!",
+   "qm": "Түр хүлээгээрэй",
+   "end": "Автобус хөдлөх гэж байхад чи юу гэж хашхирдаг вэ?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "RU": {
+   "bridge": "Автобус уезжает? Корейцы кричат…",
+   "mean": "Подожди секунду!",
+   "qm": "подожди секунду",
+   "bridgeK": "버스가 떠나? 한국 사람은 이렇게 외쳐…",
+   "end": "А что ты кричишь, когда автобус уезжает?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "KZ": {
+   "bridge": "Автобус кетіп бара жатса, корейлер былай айқайлайды…",
+   "mean": "Сәл күте тұр!",
+   "qm": "сәл күте тұр",
+   "end": "Автобус кетіп бара жатса, сен не деп айқайлайсың?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "KG": {
+   "bridge": "Автобус кетип баратса, корейлер минтип кыйкырышат…",
+   "mean": "Бир аз күтө тур!",
+   "qm": "бир аз күтө тур",
+   "end": "Автобус кетип баратса, сен эмне деп кыйкырасың?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  },
+  "UZ": {
+   "bridge": "Avtobus ketib qolayotganda koreyslar shunday deb baqiradi…",
+   "mean": "Bir daqiqa kut!",
+   "qm": "bir daqiqa kut",
+   "end": "Avtobus ketib qolayotganda sen nima deb baqirasan?",
+   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+  }
+ }
+}

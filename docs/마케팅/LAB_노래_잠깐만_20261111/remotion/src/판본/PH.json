@@ -1,0 +1,27 @@
+{
+ "lang": "fil",
+ "bridge": "Kapag paalis na ang bus, ang sigaw ng mga Koreano…",
+ "mean": "Sandali lang!",
+ "read": [
+  "jam",
+  "kkan",
+  "man"
+ ],
+ "clap": "Pumalakpak sa beat!",
+ "say": "Ikaw naman — sabihin mo!",
+ "real": "Normal na bilis!",
+ "end": "Kapag paalis na ang bus, ano’ng sinisigaw mo?",
+ "_원문": {
+  "bridge": "버스가 떠나려 할 때 한국 사람은 이렇게 외쳐…",
+  "mean": "잠깐만!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "이번엔 너 — 말해 봐!",
+  "real": "보통 빠르기!",
+  "end": "버스가 떠날 때 너는 뭐라고 외쳐?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 6.7
+}

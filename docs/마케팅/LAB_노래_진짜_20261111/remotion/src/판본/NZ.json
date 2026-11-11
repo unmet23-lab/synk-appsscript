@@ -1,0 +1,26 @@
+{
+ "lang": "en",
+ "bridge": "No way — a giant strawberry? In Korean…",
+ "mean": "Really?!",
+ "read": [
+  "jin",
+  "jja"
+ ],
+ "clap": "Clap to the beat!",
+ "say": "You’re up — say it!",
+ "real": "Full speed!",
+ "end": "How would you say “really?!” in your language?",
+ "_원문": {
+  "bridge": "말도 안 돼, 거대한 딸기라고? 한국어로는…",
+  "mean": "진짜?!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "제 속도로!",
+  "end": "너희 말로는 「진짜?!」를 어떻게 말하겠어?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 4.9
+}

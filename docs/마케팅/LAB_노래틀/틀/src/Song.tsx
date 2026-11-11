@@ -27,6 +27,7 @@ const C = {
   accentInk: '#C9382A',
 };
 const PAD = 96;
+export const REAL_LEAD = 0.5; // 진짜 속도 딱지가 그 구간보다 먼저 뜨는 초(아래 label)
 const RIGHT = 930; // 오른쪽 단추 열
 const TEXT_W = RIGHT - PAD;
 const CARD = { x: 0, y: 0, w: W, h: 1000, fade: 260 }; // 위 전체 폭, 아래 fade px은 바탕으로 스민다(위 269px은 앱 머리 자리라 그림만)
@@ -71,11 +72,13 @@ function glyphStates(doc: SongDoc, f: number, fps: number): { glyphs: Glyph[]; p
     // 처음 한 바퀴의 끊어 부르기에서는 아직 안 부른 음절을 흐린 글자로(노래방처럼 부른 데까지 짙어진다)
     const firstPass = !doc.parts.some((p) => (p.kind === 'chop' || p.kind === 'whole' || p.kind === 'real') && p.t < part.t);
     if (firstPass) part.at.forEach((a, i) => { if (i < n && t < a) glyphs[i] = { mode: 'ghost', scale: 1 }; });
+    // 낱말을 두 번 끊어 부르면(메들리 B 「가! 자! 가! 자!」) at이 음절 수보다 길다 — 음절을 차례로 돌려 켠다(한 번이면 예전과 같다)
     part.at.forEach((a, i) => {
-      if (i >= n || t < a) return;
-      glyphs[i] = { mode: 'on', scale: slam(f, at(a), fps, 1.14) };
+      const g = i % n;
+      if (t < a) return;
+      glyphs[g] = { mode: 'on', scale: slam(f, at(a), fps, 1.14) };
       const next = part.at[i + 1];
-      if (next !== undefined && t >= next) glyphs[i] = { mode: 'done', scale: 1 };
+      if (next !== undefined && t >= next) glyphs[g] = { mode: 'done', scale: 1 };
     });
     // 아직 안 부른 칸: 처음 끊어 부르기 전이면 흐린 글자, 한 번 부른 뒤면 검정 그대로
   }
@@ -131,7 +134,12 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
 
   const readMax = loc.read.reduce((a, b) => (b.length > a.length ? b : a), '');
   const readSize = fitBox(readMax, prof, G + gap - 8, 52, 28, 1).size;
-  const label = part.kind === 'rest' ? (part.mode === 'clap' ? loc.clap : loc.say) : part.kind === 'real' ? loc.real : '';
+  // 진짜 속도 딱지는 그 구간보다 REAL_LEAD초 먼저 뜬다 — 진짜 속도 구간이 0.6~1.1초뿐이라(메들리 A) 딱지를 읽을 틈이 없었다(11-12 글자 검사).
+  // 「이제 진짜 속도!」를 미리 알리는 자리라 이어 부르기 끝에 걸쳐도 뜻이 맞다. 판본 지도의 real 줄 시각도 같은 값(새편.mjs REAL_LEAD).
+  const realPart = doc.parts.find((p) => p.kind === 'real');
+  const realLead = !!realPart && part.kind !== 'rest' && t >= realPart.t - REAL_LEAD && t < realPart.end;
+  const label = part.kind === 'rest' ? (part.mode === 'clap' ? loc.clap : loc.say) : realLead ? loc.real : '';
+  const labelAt = realLead ? realPart!.t - REAL_LEAD : part.t;
   const labelSize = label ? fitBox(label, prof, TEXT_W, 76, 40, 1).size : 0;
   const meanSize = fitBox(`—— ${loc.mean}`, prof, TEXT_W, 86, 44, 1).size;
   const img = doc.stage.mode === 'mongle' ? doc.stage.img : doc.stage.pic;
@@ -179,7 +187,7 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
       {/* 딱지 줄 — 네 차례(손뼉 · 말하기) · 진짜 속도 */}
       {label && !inEnd ? (
         <div key={label} style={{ position: 'absolute', left: PAD, top: Y.label - 34, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: labelSize,
-          letterSpacing: '-0.02em', color: C.ink, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: labelSize * 0.32, ...blurIn(f, fr(part.t), fps) }}>
+          letterSpacing: '-0.02em', color: C.ink, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: labelSize * 0.32, ...blurIn(f, fr(labelAt), fps) }}>
           {/* 강조색은 코랄 하나 — 딱지 글은 검정, 앞의 점만 코랄(v3 맹검: 짙은 빨강 · 코랄 · 사이 색이 갈려 탁했다) */}
           <span style={{ width: labelSize * 0.42, height: labelSize * 0.42, borderRadius: '50%', background: C.accent, flex: 'none' }} />
           {label}

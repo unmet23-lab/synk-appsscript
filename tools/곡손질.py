@@ -16,6 +16,10 @@
    "끼우기": [{"곳": 21.79, "길이": "마디"|"박"|<초>, "찾기": "골"|"솟음"|null, "앞겹침": 0.06, "뒤겹침": 0.008}],
         # 원곡 시각 「곳」 바로 앞에 같은 길이만큼의 반주(바로 앞 그 길이의 바탕 갈래 — 박 자리가 그대로라 반주가 안 끊긴다)를 끼운다.
         # 찾기 골 = ±0.15초 안 목소리(300~3000Hz) 세기의 가장 낮은 곳, 솟음 = 답이 솟는 순간의 10ms 앞(이어 부른 물음 · 답).
+        # "원천마디": n · "원천끝마디": k(선택) — 끼울 반주를 「곳」에서 k마디 앞에서 끝나는 n마디로 떠서 되풀이해 채운다(박 자리는 마디 단위라 그대로).
+        #   바로 앞 그 길이가 카운트인 · 스톱 타임(박 사이 반주가 멎는 편곡)처럼 빈 자리면 끼운 마디가 뚝 꺼진다(11-12 메들리 A 「진짜」 −41.8dB ·
+        #   네 차례 마디 안 0.4~0.65초 무음). 되풀이 이음은 앞 조각 끝을 원천 바로 앞 소리와 겹쳐(10ms) 다음 조각 처음으로 잇고,
+        #   끼운 반주 뒤 「곳」으로 돌아가는 이음은 원천 끝 뒤 소리에서 들어온다(뒤겹침). 둘 다 없으면 예전처럼 「곳」 바로 앞 그 길이.
    "자르기": [시작초, 끝초, (끝빼기초)] | {"시작마디": n, "마디수": m},   # 원곡 시각. 마디 수로 주면 마디 첫 박에 맞춰 자른다.
         # 끝빼기 = 끼운 뒤 시각에서 끝을 당기는 길이(시작을 못갖춘마디만큼 당겼을 때 끝도 같이 — 셋째 값을 주면 마디에 맞춘 것으로 본다)
    "잇기": {"겹침": 0.04},             # 끝 뒤 꼬리를 처음에 겹쳐 더해 되풀이 재생이 이어지게(끝 · 시작은 마디 첫 박이어야 한다)
@@ -116,22 +120,38 @@ def main():
     for item in P.get('끼우기', []):
         L = {'마디': BAR, '박': BEAT}.get(item.get('길이', '마디'), item.get('길이'))
         c = snap(voc, float(item['곳']), item.get('찾기'))
-        ins.append((c, float(L), float(item.get('앞겹침', 0.06)), float(item.get('뒤겹침', 0.008)), float(item['곳'])))
+        ins.append((c, float(L), float(item.get('앞겹침', 0.06)), float(item.get('뒤겹침', 0.008)), float(item['곳']),
+                    (item.get('원천마디'), int(item.get('원천끝마디') or 0))))
     ins.sort()
     if ins and acc is None:
         raise SystemExit('끼우기에는 바탕 갈래가 든다')
     parts, prev, tail, joins = [], 0, None, []
-    for c, L, X, Y, asked in ins:
+    for c, L, X, Y, asked, (src_bars, src_k) in ins:
         ci, Li, Xi = idx(c), idx(L), max(1, idx(X))
         chunk = mix[prev:ci].copy()
         if tail is not None:
             a0, Yi = tail
             up = np.linspace(0, 1, Yi)[:, None]
             chunk[:Yi] = chunk[:Yi] * up + acc[a0:a0 + Yi] * (1 - up)
+        Ei = ci - idx(src_k * BAR)  # 원천이 끝나는 자리(k마디 앞)
+        Si = idx(float(src_bars) * BAR) if src_bars else Li
+        if src_k or Si < Li:
+            # 원천 n마디를 되풀이 — 조각 끝을 원천 바로 앞 소리와 겹쳐 다음 조각 처음으로 잇는다(마지막 조각은 그대로 — 원천 끝 뒤로 이어진다)
+            Fi = max(1, idx(0.01))
+            seg = acc[Ei - Si:Ei].copy()
+            loop = seg.copy()
+            fade = np.linspace(1, 0, Fi)[:, None]
+            loop[-Fi:] = loop[-Fi:] * fade + acc[Ei - Si - Fi:Ei - Si] * (1 - fade)
+            need = Li + Xi
+            reps = need // Si + 2
+            tiled = np.concatenate([loop] * (reps - 1) + [seg])[-need:]
+            pre, block = tiled[:Xi], tiled[Xi:]
+        else:
+            pre, block = acc[ci - Li - Xi:ci - Li], acc[ci - Li:ci].copy()
         down = np.linspace(1, 0, Xi)[:, None]
-        chunk[-Xi:] = chunk[-Xi:] * down + acc[ci - Li - Xi:ci - Li] * (1 - down)
-        parts += [chunk, acc[ci - Li:ci].copy()]
-        prev, tail = ci, (ci, max(1, idx(Y)))
+        chunk[-Xi:] = chunk[-Xi:] * down + pre * (1 - down)
+        parts += [chunk, block]
+        prev, tail = ci, (Ei, max(1, idx(Y)))  # 뒤겹침은 끼운 반주가 끝난 자리(원천 끝) 뒤 소리에서 「곳」 뒤 원곡으로
     chunk = mix[prev:].copy()
     if tail is not None:
         a0, Yi = tail
@@ -201,7 +221,7 @@ def main():
         if not bar_aligned:
             checks.append('잇기를 했는데 자르기가 마디 첫 박에 맞춰지지 않았다(「자르기」를 {시작마디, 마디수}로)')
     info = {'이름': name, '원곡': str(P['곡']), 'bpm': round(float(beat_cfg['bpm']), 3), '박': round(BEAT, 5), '마디': round(BAR, 5),
-            '마디첫박': round(first, 3), '끼움': [{'원곡곳': round(c, 3), '부탁한곳': asked, '길이': round(L, 5)} for c, L, _, _, asked in ins],
+            '마디첫박': round(first, 3), '끼움': [{'원곡곳': round(c, 3), '부탁한곳': asked, '길이': round(L, 5)} for c, L, _, _, asked, _ in ins],
             '자름': [round(s_new, 3), round(e_new, 3)], '길이': round(dur, 3), '최고': round(min(peak, 0.99), 3), '이음매': seam,
             '되풀이세기차_dB': loop_diff and round(loop_diff, 1), '확인할것': checks,
             '대응': '손질본 시각 = 원곡 시각 + (원곡곳 ≤ 원곡 시각인 끼움 길이 합) − 자름[0]'}

@@ -1,0 +1,26 @@
+{
+ "lang": "es",
+ "bridge": "Cuando no podés creer lo que ves, en coreano decís…",
+ "mean": "¿En serio?",
+ "read": [
+  "jin",
+  "jja"
+ ],
+ "clap": "¡Aplaudí al ritmo!",
+ "say": "¡Te toca! ¡Decilo!",
+ "real": "¡A velocidad real!",
+ "end": "¿Y vos qué decís cuando no lo podés creer?",
+ "_원문": {
+  "bridge": "눈으로 보고도 못 믿을 때 한국어로는 이렇게 말해…",
+  "mean": "진짜?!",
+  "clap": "박자에 맞춰 손뼉!",
+  "say": "네 차례 — 말해 봐!",
+  "real": "진짜 속도로!",
+  "end": "믿기지 않을 때 너는 뭐라고 해?"
+ },
+ "_발음": {
+  "문자": "latin",
+  "도구": "tools/lib/한글표기.js 발음줄(낱말, 문자, { 음절: true })"
+ },
+ "coverAt": 4.9
+}

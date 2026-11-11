@@ -1,0 +1,110 @@
+{
+ "fps": 30,
+ "duration": 18.843,
+ "audio": "song.wav",
+ "bpm": 101.895,
+ "first": 0,
+ "word": "잠깐만",
+ "syl": [
+  "잠",
+  "깐",
+  "만"
+ ],
+ "parts": [
+  {
+   "kind": "count",
+   "t": 0,
+   "end": 4.845
+  },
+  {
+   "kind": "chop",
+   "t": 4.845,
+   "end": 5.444,
+   "at": [
+    4.895,
+    5.05,
+    5.314
+   ]
+  },
+  {
+   "kind": "whole",
+   "t": 5.444,
+   "end": 8.462,
+   "at": [
+    5.494,
+    7.664
+   ]
+  },
+  {
+   "kind": "rest",
+   "t": 8.462,
+   "end": 10.817,
+   "mode": "clap"
+  },
+  {
+   "kind": "chop",
+   "t": 10.817,
+   "end": 11.905,
+   "at": [
+    10.832,
+    11.196,
+    11.8
+   ]
+  },
+  {
+   "kind": "whole",
+   "t": 11.905,
+   "end": 12.887,
+   "at": [
+    11.955,
+    12.553
+   ]
+  },
+  {
+   "kind": "real",
+   "t": 12.887,
+   "end": 13.727,
+   "at": [
+    12.937
+   ]
+  },
+  {
+   "kind": "rest",
+   "t": 13.727,
+   "end": 16.082,
+   "mode": "say"
+  },
+  {
+   "kind": "end",
+   "t": 16.082,
+   "end": 18.843
+  }
+ ],
+ "stage": {
+  "mode": "mongle",
+  "img": "scene.jpg",
+  "focus": "66% 50%"
+ },
+ "loc": {
+  "lang": "en",
+  "bridge": "When you need one more second…",
+  "mean": "Wait a sec!",
+  "read": [
+   "jam",
+   "kkan",
+   "man"
+  ],
+  "clap": "Clap on the beat!",
+  "say": "Your turn — say it!",
+  "real": "Real speed!",
+  "end": "How do you say “wait a sec” in your language?"
+ },
+ "_원문": {},
+ "_출처": {
+  "검수": "D:/synk-vendor/lab-song-20261111/메들리A/재기/A_0dd4832a.검수.json",
+  "곡": "D:/synk-vendor/lab-song-20261111/메들리A/0dd4832a.mp3",
+  "손질": "D:\\synk-vendor\\lab-song-20261111\\메들리A\\하루판\\A_0dd4832a_잠깐만.손질.json",
+  "확인할것": [],
+  "그림": "D:/synk-vendor/lab-song-20261111/시안/판/잠깐만2_몽글_235449_1.png(JPEG q2 4:4:4로 옮김)"
+ }
+}
