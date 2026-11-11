@@ -495,6 +495,25 @@ test('읽개 없는 셸 코치가 먼저 받은 저장소도 뒤 셸 코치의 �
   practice.dispose();
 });
 
+test('뒤에 같은 저장소를 받은 셸 코치의 계기가 걸린다 — 셸이 받을 때마다 그 셸의 것으로(Fable 5.2 D3)', async () => {
+  const time = clock();
+  const port = memoryPort();
+  const key = keyOf('late-health');
+  const first = createHealth();
+  const second = createHealth();
+  const a = coachOn({ items: [X, Y, Z], time, port, key, gameId: 'a', health: first });
+  await a.ready;
+  const b = coachOn({ items: [X, Y, Z], time, port, key, gameId: 'b', health: second });
+  await b.ready;
+  port.failNext(new Error('quota'));
+  b.present(X);
+  await settle();
+  assert.equal(second.snapshot().save.failures, 1, '뒤에 받은 셸의 계기에 남는다');
+  assert.equal(first.snapshot().save.failures, 0);
+  a.dispose();
+  b.dispose();
+});
+
 test('옮기기가 끝나면 먼저 준비된 틀 코치의 판도 옮겨 온 만남으로 다시 선다(Fable 5.2 D4 ㉠)', async () => {
   const top = topWindow();
   const time = clock();
@@ -549,6 +568,35 @@ test('옮기는 사이 같은 저장소를 받는 셸 · 틀 코치는 모두 �
     '준비가 끝난 때 모두 옮겨 온 만남을 본다',
   );
   assert.equal(reads, 1, '처음 읽개를 받은 곳만 읽는다');
+  for (const coach of coaches) coach.dispose();
+});
+
+test('저장소가 열리는 동안 읽개 없는 셸 · 틀 코치가 먼저 기다려도 뒤에 온 셸의 읽개로 옮긴 뒤에야 모두 준비를 끝낸다(r4 아르곤 A1)', async () => {
+  const top = topWindow();
+  const time = clock();
+  const key = keyOf('reader-last');
+  const items = [X, Y, Z];
+  let reads = 0;
+  let open = null;
+  const gate = new Promise(resolve => (open = resolve));
+  const slow = async () => {
+    reads += 1;
+    await gate;
+    return legacyOf();
+  };
+  const coaches = [
+    coachOn({ items, time, key, gameId: 'plain', scope: top }), // 읽개 없는 셸이 먼저 기다린다
+    coachOn({ items, time, key, gameId: 'game', scope: frameOf(top) }), // 틀도 먼저 기다린다
+    coachOn({ items, time, key, gameId: 'practice', scope: top, legacy: slow }), // 읽개는 맨 뒤 셸만
+  ];
+  const seen = coaches.map(coach => coach.ready.then(() => coach.exposure(X).met));
+  setTimeout(open, 30);
+  assert.deepEqual(
+    await Promise.all(seen),
+    [true, true, true],
+    '먼저 기다린 코치도 준비가 끝난 때 옮겨 온 만남을 본다',
+  );
+  assert.equal(reads, 1, '읽개는 한 번');
   for (const coach of coaches) coach.dispose();
 });
 

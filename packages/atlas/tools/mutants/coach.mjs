@@ -306,9 +306,9 @@ export const COACH_MUTANTS = [
   [
     C,
     '호스트',
-    '셸이 틀이 연 손님 저장소를 받을 때 옛 기록을 옮기지 않는다(GPT 다시 GA2 · GA5)',
+    '셸이 든 옛 기록 읽개를 저장소 자리에 적지 않는다 — 틀이 연 손님 저장소를 셸이 받아도 · 읽개 없는 셸 뒤에 와도 옛 기록이 안 옮겨진다(GPT 다시 GA2 · GA5 · D3)',
     HOST,
-    'legacy: options.legacy,',
+    '  if (options.fromFrame !== true && options.legacy && !entry.legacy) entry.legacy = options.legacy;\n',
     '',
   ],
   [
@@ -411,7 +411,7 @@ export const COACH_MUTANTS = [
   [
     C,
     '호스트',
-    '읽개는 그 저장소를 처음 받는 셸만 건다 — 읽개 없는 셸이 먼저 받으면 옛 기록이 안 옮겨진다(D3)',
+    '올리기 · 계기는 그 저장소를 처음 받는 셸만 건다 — 뒤에 받은 셸의 계기 · 올리기가 걸리지 않는다(D3)',
     HOST,
     '  host.take({',
     '  if (!entry.shell) host.take({',
@@ -423,6 +423,14 @@ export const COACH_MUTANTS = [
     HOST,
     "          tell('refresh'),",
     '          null,',
+  ],
+  [
+    C,
+    '호스트',
+    '읽개를 든 셸이 열기를 기다리기 전에 읽개를 적지 않는다 — 먼저 기다린 코치가 옮기기 전에 준비를 끝낸다(r4 아르곤 A1)',
+    HOST,
+    '    if (entry.legacy) host.take({ legacy: entry.legacy });\n',
+    '',
   ],
   [
     C,

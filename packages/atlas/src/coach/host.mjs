@@ -225,9 +225,10 @@ function createHost({
     get health() {
       return health;
     },
-    // 셸이 받을 때마다(여는 셸 · 틀이 연 것을 받는 셸 · 이미 셸 호스트인 것을 또 받는 셸) — 올리기 고리와 계기를 그 셸의 것으로 걸고
-    // (같은 값이면 그대로), 호스트가 아직 옛 기록 읽개를 받은 적이 없으면 그 읽개로 옮기기 약속을 건다(계획 §16 ③, Fable 5.2 D3 —
-    // 읽개 없는 셸 코치가 먼저 받았어도 뒤 셸 코치의 읽개가 걸린다). 틀이 넘긴 올리기 · 읽개는 들지 않는다(acquireHere가 셸만 부른다).
+    // 셸이 받을 때마다(여는 셸 · 틀이 연 것을 받는 셸 · 이미 셸 호스트인 것을 또 받는 셸) 올리기 고리와 계기를 그 셸의 것으로 건다
+    // (같은 값이면 그대로, Fable 5.2 D3). 옛 기록 읽개는 받는 코치가 누구든 저장소 자리에 적힌 셸의 읽개로 건다(acquireHere — 읽개를
+    // 든 셸이 열기를 기다리기 전에 적는다, r4 아르곤 A1) — 호스트가 읽개를 받은 적이 없을 때 한 번만 옮기기 약속이 선다(계획 §16 ③).
+    // 틀이 넘긴 올리기 · 읽개는 들지 않는다.
     take({
       transport: nextTransport = null,
       health: nextHealth = null,
@@ -398,12 +399,12 @@ function newEntry(registry, key, options, openPort) {
   return entry;
 }
 
-// 셸이 같은 저장소를 받으면 그 호스트는 셸의 것이다 — 받을 때마다 올리기 · 계기 · 옛 기록 읽개를 그 셸의 것으로 걸고(D3) 문서 호스트로 세운다.
+// 셸이 같은 저장소를 받으면 그 호스트는 셸의 것이다 — 받을 때마다 올리기 · 계기를 그 셸의 것으로 걸고(D3) 문서 호스트로 세운다.
+// 옛 기록 읽개는 여기서 걸지 않는다 — acquireHere가 저장소 자리에 적힌 읽개로 건다(한 길).
 function shellTakes(registry, entry, host, options) {
   host.take({
     transport: options.transport,
     health: options.health,
-    legacy: options.legacy,
   });
   entry.shell = true;
   if (registry.document == null) setDocument(registry, entry.key);
@@ -440,10 +441,15 @@ async function takeLater(registry, options) {
 async function acquireHere(scope, options, openPort) {
   const registry = registryOf(scope);
   const entry = takeNow(registry, options, openPort) ?? (await takeLater(registry, options));
+  // 읽개를 든 셸은 열기를 기다리기 전에(동기) 그 읽개를 저장소 자리에 적는다. 열기 대기는 등록 차례대로 풀려, 먼저 기다린 코치(읽개
+  // 없는 셸 · 틀)가 뒤 셸의 take보다 먼저 깨어나 옮기기 약속이 서기 전에 준비를 끝냈다(r4 아르곤 A1) — 깨어난 코치가 누구든 적힌
+  // 읽개로 약속을 먼저 건 뒤 기다린다. 틀이 넘긴 읽개는 적지 않는다(셸의 것만).
+  if (options.fromFrame !== true && options.legacy && !entry.legacy) entry.legacy = options.legacy;
   let host = null;
   try {
     host = await entry.opening;
     if (options.map) host.index.add(options.map);
+    if (entry.legacy) host.take({ legacy: entry.legacy });
     if (options.fromFrame !== true) shellTakes(registry, entry, host, options);
     // 옛 기록 옮기기의 약속 — 셸이든 틀이든 받는 코치는 모두 그 끝을 기다린다(계획 §16 ③ · D4 ㉡).
     await host.carried();
