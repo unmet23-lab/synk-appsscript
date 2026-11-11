@@ -15,7 +15,7 @@ export type Loc = {
   lang: string; // sns-계정.json language(판본 언어)
   bridge: string; // 카운트인 동안 다리 글(그 나라 말 — 그 낱말을 쓰는 상황 한 줄)
   mean: string; // 뜻 알약(이어 부르기 뒤)
-  read: string[]; // 음절마다 발음 줄(몽골판만 키릴, 다른 판은 로마자 — 표기표를 검수한 문자만 그 나라 글자)
+  read: string[]; // 음절마다 발음 줄 — tools/lib/한글표기.js 발음줄(글, 문자, { 음절: true })(표기표 v3, 금칙이면 로마자)
   clap: string; // 첫 네 차례 — 손뼉
   say: string; // 둘째 네 차례 — 말하기
   real: string; // 진짜 속도 딱지
@@ -31,7 +31,7 @@ export type SongDoc = {
   word: string; // 한국어 낱말(화면 칸은 이 글자 그대로)
   syl: string[]; // 음절
   parts: Part[];
-  stage: { mode: 'mongle' | 'plain'; img?: string; pic?: string; bg?: string };
+  stage: { mode: 'mongle' | 'plain'; img?: string; pic?: string; bg?: string; focus?: string }; // focus = 9:16로 채울 때 그림 기준점(CSS object-position, 기본 '10% 40%')
   loc: Loc;
   _원문?: Record<string, string>; // 판본 글의 한국어 뜻(역번역 대조 기준)
 };
