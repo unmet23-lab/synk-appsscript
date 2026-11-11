@@ -9,7 +9,7 @@
  * (docs/마케팅/기획장부/제작절차.md 「오마주」).
  *
  *   node tools/오마주.js 분해 <주소|원본.mp4> [--편 <편 폴더>] [--갈래 같은분야|형식만|우리편] [--주소 <원본 주소>] [--다시]
- *   node tools/오마주.js 아르곤 <원본 ID> [--u <번호> --계정 <이름>]   Gemini 웹 카본(가장 높은 사고 수준)에 원본을 올려 첫 분석을 받는다(ego, 차례를 잡은 뒤)
+ *   node tools/오마주.js 카본 <원본 ID> [--u <번호> --계정 <이름>]     Gemini 웹 카본(가장 높은 사고 수준)에 원본을 올려 첫 분석을 받는다(ego, 차례를 잡은 뒤 — 옛 명령 「아르곤」도 같다)
  *   node tools/오마주.js 나란히 <편 폴더> [--영상 <우리.mp4>] [--json]
  *
  * 분해: 원본을 git 밖 <공용 작업본>/.tmp/오마주/<원본 ID>/에 받는다(유튜브 · 틱톡은 yt-dlp — H.264 + AAC를 먼저 고른다.
@@ -446,8 +446,8 @@ function argon(id, opts = {}) {
   process.stdout.write(`${출력.trim()}\n`);
   const 결과 = 웹.결과가르기(출력, fs.existsSync(웹.표시경로(job.out)), 웹.새답(job.out, 시작));
   if (결과.결과 === '받음') return job.out;
-  if (결과.결과 === '보냄') throw new Error(`아르곤에 보냈지만 답을 못 받음 — 다시 보내지 말고 15분 뒤 같은 명령으로 읽는다(${결과.까닭})`);
-  throw new Error(`아르곤 ${mode} 실패: ${결과.까닭}`);
+  if (결과.결과 === '보냄') throw new Error(`카본에 보냈지만 답을 못 받음 — 다시 보내지 말고 15분 뒤 같은 명령으로 읽는다(${결과.까닭})`);
+  throw new Error(`카본 ${mode} 실패: ${결과.까닭}`);
 }
 
 // 아르곤 첫 분석 작업 — 원본 영상 하나를 tools/아르곤웹.mjs로 보낸다. 영상은 처리가 길어 답을 15분까지 기다린다.
@@ -478,12 +478,12 @@ function main(argv) {
     const r = decompose(arg, o);
     if (o.json) { console.log(JSON.stringify(r, null, 1)); return 0; }
     console.log(`원본 ${r.원본.주소 || arg} · ${초(r.영상.길이)} · ${r.영상.폭}x${r.영상.높이} · ${r.컷.length}컷(${r.컷.map((t) => t.toFixed(1)).join(' ')}) · 박자 ${r.박자.length}칸(${r.박자.map((t) => t.toFixed(1)).join(' ')})`);
-    console.log(`  측정 · 묶음 그림 · 아르곤 지시문: ${r.dir}(git 밖)`);
+    console.log(`  측정 · 묶음 그림 · 카본 지시문(아르곤_지시문.md): ${r.dir}(git 밖)`);
     if (r.편) { console.log(`  편: ${r.편.file}\n\n${r.편.컷표}\n`); }
-    console.log('다음: 칸.jpg · 첫3초.jpg로 컷 · 박자를 눈으로 확정해 오마주.json 「컷」 · 「박자」 · 「뼈대」(훅 · 반전 · 끝이 시작하는 원본 초)를 고치고 「확정」: true → 아르곤 첫 분석(node tools/오마주.js 아르곤 <원본 ID> --u <번호> --계정 <이름>, 차례를 잡은 뒤 `계정`이 준 그 줄로) → 컷표의 원본 칸을 우리 말로 채우고 우리 화면 · 말 칸을 쓴다.');
+    console.log('다음: 칸.jpg · 첫3초.jpg로 컷 · 박자를 눈으로 확정해 오마주.json 「컷」 · 「박자」 · 「뼈대」(훅 · 반전 · 끝이 시작하는 원본 초)를 고치고 「확정」: true → 카본 첫 분석(node tools/오마주.js 카본 <원본 ID> --u <번호> --계정 <이름>, 차례를 잡은 뒤 `계정`이 준 그 줄로) → 컷표의 원본 칸을 우리 말로 채우고 우리 화면 · 말 칸을 쓴다.');
     return 0;
   }
-  if (cmd === '아르곤' && arg) { console.log(`아르곤 답: ${argon(arg, o)}(git 밖)`); return 0; }
+  if ((cmd === '카본' || cmd === '아르곤') && arg) { console.log(`카본 답: ${argon(arg, o)}(git 밖)`); return 0; }
   if (cmd === '나란히' && arg) {
     const r = sideCheck(path.resolve(arg), o);
     if (o.json) { console.log(JSON.stringify(r, null, 1)); return r.맞음 ? 0 : 1; }
@@ -493,7 +493,7 @@ function main(argv) {
     return r.맞음 ? 0 : 1;
   }
   console.error('사용: node tools/오마주.js 분해 <주소|원본.mp4> [--편 <편 폴더>] [--갈래 같은분야|형식만|우리편] [--주소 <원본 주소>] [--다시]\n'
-    + '      node tools/오마주.js 아르곤 <원본 ID> [--u <번호> --계정 <이름>]\n      node tools/오마주.js 나란히 <편 폴더> [--영상 <우리.mp4>] [--json]');
+    + '      node tools/오마주.js 카본 <원본 ID> [--u <번호> --계정 <이름>]\n      node tools/오마주.js 나란히 <편 폴더> [--영상 <우리.mp4>] [--json]');
   return 2;
 }
 

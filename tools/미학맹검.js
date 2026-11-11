@@ -131,9 +131,10 @@ function 기준글(줄들, 통과 = [], 모음 = { 지적: [], 통과: [] }) {
 }
 
 function 눈풀기(v) {
-  const 눈 = String(v || '').trim().toLowerCase().replace(/^argon$/, '아르곤');
+  // 11-11부터 Gemini 눈의 보이는 이름은 「카본」(웹 「카본 높음」) — 기록 키는 옛 이름 「아르곤」 그대로라 여기서 바꿔 받는다.
+  const 눈 = String(v || '').trim().toLowerCase().replace(/^(?:argon|carbon|카본)$/, '아르곤');
   if (관문.뺀눈[눈]) throw new Error(`--눈 ${v}: ${관문.뺀눈[눈]} — 시각 대체는 GPT → Opus`);
-  if (!눈들.includes(눈)) throw new Error(`--눈은 ${눈들.join(' · ')} 가운데 하나(대체 순서 아르곤 → gpt → opus)`);
+  if (!눈들.includes(눈)) throw new Error(`--눈은 카본(= 아르곤) · gpt · opus 가운데 하나(대체 순서 카본 → gpt → opus)`);
   return 눈;
 }
 
@@ -266,7 +267,7 @@ function 답모으기(답들, 번호들, 묶음번호들 = null) {
 
 const 끝코드 = 모음 => (모음.빠짐.length ? 2 : 모음.낱장.some(x => x.판정 === '기각') ? 1 : 0);
 
-const 눈머리 = { 아르곤: '아르곤(Gemini 웹)', gpt: 'GPT(구독 Codex)', opus: 'Claude Opus(하위 에이전트)' };
+const 눈머리 = { 아르곤: '카본(Gemini 웹 「카본 높음」)', gpt: 'GPT(구독 Codex)', opus: 'Claude Opus(하위 에이전트)' };
 function 결과글(이름, 화면들, 모음, { 눈 = '아르곤', 막힘 = [], 뺌 = [] } = {}) {
   const 원래 = new Map(화면들.map(h => [h.번호, h]));
   const 표시 = (x) => `${x.이어받음 ? ' (지난 판정)' : ''}${x.안봄 ? ' (이번에 안 봄)' : ''}${x.눈 && x.눈 !== 눈 ? ` (${눈머리[x.눈] || x.눈})` : ''}`;
@@ -757,7 +758,7 @@ async function main(argv, 손 = {}) {
   fs.writeFileSync(path.join(폴더, '묶음.json'), JSON.stringify({ 판: 3, 눈: o.눈, 편: o.편 ? path.resolve(o.편) : null, 영상: o.영상 ? path.resolve(o.영상) : null, 영상잼, 순간예외, 의도: o.의도,
     ...(o.뺌.length ? { 뺌: o.뺌 } : {}), 표식: o.눈 === 'opus',
     묶음: 작업들.map(w => ({ k: w.k, 번호들: w.번호들, 답: path.basename(w.답), 꼬리: w.꼬리 })), 옮김: [...옮김.values()], 아르곤본: [...아르곤본.keys()] }, null, 1));
-  console.log(`미학 맹검 ${이름} · ${눈머리[o.눈]}: 화면 ${화면들.length}장(띠 ${화면들.filter(h => h.종류 === '띠').length} · 마스코트 ${화면들.filter(h => h.종류 === '마스코트').length}) · 지난 판정 이어받음 ${옮김.size}${o.눈 === '아르곤' ? '' : ` · 아르곤이 본 컷 ${아르곤본.size}장 뺌`} · 보낼 ${보낼.length}장 · 대화 ${작업들.length}개 · 지적 ${기준.지적수}줄 · 통과 ${기준.통과수}줄 → ${폴더}`);
+  console.log(`미학 맹검 ${이름} · ${눈머리[o.눈]}: 화면 ${화면들.length}장(띠 ${화면들.filter(h => h.종류 === '띠').length} · 마스코트 ${화면들.filter(h => h.종류 === '마스코트').length}) · 지난 판정 이어받음 ${옮김.size}${o.눈 === '아르곤' ? '' : ` · 카본이 본 컷 ${아르곤본.size}장 뺌`} · 보낼 ${보낼.length}장 · 대화 ${작업들.length}개 · 지적 ${기준.지적수}줄 · 통과 ${기준.통과수}줄 → ${폴더}`);
   if (o.준비만) { console.log(작업들.map(w => w.작업).join('\n')); return 0; }
 
   // 부르기
@@ -771,7 +772,7 @@ async function main(argv, 손 = {}) {
   if (o.눈 === '아르곤' && 작업들.length) {
     const 꺼짐 = (손.줄꺼짐 || 줄꺼짐)();
     if (꺼짐) {
-      console.log(`  아르곤 a 줄이 꺼져 있다(${꺼짐.첫줄}) — 보내지 않고 막힘으로 적는다. 대체 눈: --눈 gpt`);
+      console.log(`  카본(Gemini) a 줄이 꺼져 있다(${꺼짐.첫줄}) — 보내지 않고 막힘으로 적는다. 대체 눈: --눈 gpt`);
       for (const w of 작업들) 막힘.push({ 묶음: w.k, 화면: w.번호들, ...꺼짐 });
     } else {
       const 꼬리 = await (손.아르곤부르기 || 아르곤부르기)(작업들);
@@ -817,7 +818,7 @@ function 마무리(o, { 이름, 폴더, 화면들, 작업들, 옮김, 아르곤�
     if (옮김.has(n) || !대상.some(h => h.번호 === n)) continue;
     if (낱장.has(n)) 낱장.set(n, { ...낱장.get(n), 앞판정: 앞 }); else 앞판정빠짐.set(n, 앞);
   }
-  if (정리.안옮김.length) console.log(`  지난 대체 판정 가운데 지금 아르곤 기록에서 다른 그림이 된 컷은 옮기지 않았다: ${정리.안옮김.join(', ')}`);
+  if (정리.안옮김.length) console.log(`  지난 대체 판정 가운데 지금 카본 기록에서 다른 그림이 된 컷은 옮기지 않았다: ${정리.안옮김.join(', ')}`);
   const 모음 = {
     낱장: [...대상.map(h => 낱장.get(h.번호)).filter(Boolean), ...정리.남김낱장],
     쌍: 새.쌍,
@@ -831,7 +832,7 @@ function 마무리(o, { 이름, 폴더, 화면들, 작업들, 옮김, 아르곤�
   fs.writeFileSync(path.join(폴더, '결과.md'), 결과글(이름, [...화면들, ...정리.남김화면], 모음, { 눈: o.눈, 막힘: 막힘모두, 뺌: 정리.뺌 }));
   if (o.편) {
     if (o.눈 !== '아르곤' && !대상.length) {
-      console.log(`  대체 눈이 볼 화면이 없다(아르곤이 다 봤다) — 게시/${관문.대체이름}를 쓰지 않는다`);
+      console.log(`  대체 눈이 볼 화면이 없다(카본이 다 봤다) — 게시/${관문.대체이름}를 쓰지 않는다`);
     } else {
       const 답파일 = 작업들.filter(w => fs.existsSync(w.답)).map(w => ({ 묶음: w.k, 파일: path.basename(w.답), 지문: 그림눈.파일해시(w.답) }));
       // 「영상」은 그 영상에서 뽑은 띠 · 마스코트 대조를 이 기록이 다룰 때만(ⓒ), 값은 띠를 뽑을 때 잰 것(ⓓ)
@@ -855,7 +856,7 @@ function 마무리(o, { 이름, 폴더, 화면들, 작업들, 옮김, 아르곤�
   }
   const 셈 = 판정들.map(p => `${p} ${모음.낱장.filter(x => x.판정 === p).length}`).join(' · ');
   console.log(`결과(${눈머리[o.눈]}): ${셈}${옮김.size ? ` · 지난 판정 이어받음 ${옮김.size}` : ''}${정리.남김화면.length ? ` · 이번에 안 봄 ${정리.남김화면.length}(옛 판정 그대로)` : ''}${정리.뺌.length ? ` · 뺌 ${정리.뺌.length}` : ''}${모음.빠짐.length ? ` · 답 없음 ${모음.빠짐.length}` : ''}${막힘.length ? ` · 막힘 ${막힘.map(m => m.꼴).join('/')}` : ''} → ${path.join(폴더, '결과.md')}`);
-  if (막힘.length && o.눈 === '아르곤') console.log('  아르곤이 막혔다 — 같은 그림 · 같은 --영상 --순간에 --눈 gpt를 붙여 다시 부른다(GPT도 막히면 --눈 opus). 셋 다 막히면 예비편으로 바꾼다.');
+  if (막힘.length && o.눈 === '아르곤') console.log('  카본이 막혔다 — 같은 그림 · 같은 --영상 --순간에 --눈 gpt를 붙여 다시 부른다(GPT도 막히면 --눈 opus). 셋 다 막히면 예비편으로 바꾼다.');
   if (o.편 && o.눈 !== '아르곤' && !대상.length) return 0;
   return 끝코드(모음);
 }

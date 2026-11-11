@@ -27,7 +27,7 @@ const 기록이름 = '미학맹검.json';
 const 대체이름 = '미학맹검_대체.json';
 // 시각 대체 눈 — 순서대로. 이 밖의 눈(Fable · 그록 …)이 쓴 대체 결과는 받지 않는다.
 const 대체눈 = ['gpt', 'opus'];
-const 눈이름 = { 아르곤: '아르곤', gpt: 'GPT', opus: 'Claude Opus' };
+const 눈이름 = { 아르곤: '카본', gpt: 'GPT', opus: 'Claude Opus' };
 const 뺀눈 = {
   fable: 'Fable은 언어 교정 몫이라 시각 대체에서 뺀다(11-10 설계 18 — 11-08 눈가림 기각 3/8)',
   그록: '그록은 디자인 눈이 무르다(11-08 눈가림 기각 0/8)',
@@ -130,14 +130,14 @@ function aestheticFindings(bundle, videoFiles = [], { 판본영상 = [] } = {}) 
   const 영상들 = 배열(videoFiles);
   const 대신길 = 'node tools/미학맹검.js <같은 그림 · 같은 --영상 --순간> --편 <편 폴더> --눈 gpt(GPT도 막히면 --눈 opus로 재료를 만들어 하위 에이전트 Opus가 본다)';
   if (!P) {
-    if (S) add(FIX, 'aesthetic-order', `대체 맹검(${눈이름[String(S.눈).toLowerCase()] || S.눈 || '?'})만 있고 아르곤 맹검 기록이 없다 — 대체 순서는 아르곤 → GPT → Opus. 아르곤으로 먼저 돌리면 막혀도 막힌 증거가 남는다: node tools/미학맹검.js … --편 <편 폴더>`);
-    else if (못함) add(FIX, 'aesthetic-unverified', `「맹검못함」 글만으로는 못 넘는다(11-10 설계 18) — node tools/미학맹검.js <대표 프레임 · 카드 또는 --영상 --순간> --편 <편 폴더>로 아르곤을 부르면 막혀도 막힌 증거(보낸 시각 · 거절 첫 줄)가 남는다. 그다음 --눈 gpt → --눈 opus로 대신 보고, 셋 다 막히면 예비편으로 바꾼다`);
+    if (S) add(FIX, 'aesthetic-order', `대체 맹검(${눈이름[String(S.눈).toLowerCase()] || S.눈 || '?'})만 있고 카본 맹검 기록이 없다 — 대체 순서는 카본 → GPT → Opus. 카본으로 먼저 돌리면 막혀도 막힌 증거가 남는다: node tools/미학맹검.js … --편 <편 폴더>`);
+    else if (못함) add(FIX, 'aesthetic-unverified', `「맹검못함」 글만으로는 못 넘는다(11-10 설계 18) — node tools/미학맹검.js <대표 프레임 · 카드 또는 --영상 --순간> --편 <편 폴더>로 카본을 부르면 막혀도 막힌 증거(보낸 시각 · 거절 첫 줄)가 남는다. 그다음 --눈 gpt → --눈 opus로 대신 보고, 셋 다 막히면 예비편으로 바꾼다`);
     else add(FIX, 'aesthetic-missing', '보여 드리기 · 게시 전 미학 맹검이 없다(11-08부터 모든 편, 제작 절차 3 관문) — node tools/미학맹검.js <대표 프레임 · 카드 또는 --영상 <최종.mp4> --순간 <초>…> --편 <편 폴더>');
     return findings;
   }
   const 바 = 바뀐영상(P, P파일, 영상들, 판본영상);
   if (바.다른영상) add(FIX, 'aesthetic-stale', `맹검한 영상(${바.맹검영상.join(', ')})이 이 편의 판 영상이 아니다 — 판 영상으로 다시 맹검한다`);
-  else if (바.바뀜.length) add(FIX, 'aesthetic-stale', `맹검 뒤 영상이 바뀌었다(${바.바뀜.map((v) => path.basename(v)).join(', ')}) — 바뀐 판으로 다시 맹검한다(안 바뀐 컷은 지난 판정을 이어받는다). 그때도 아르곤이 막히면 도구가 막힌 증거를 남기고, 대체 눈으로 본다`);
+  else if (바.바뀜.length) add(FIX, 'aesthetic-stale', `맹검 뒤 영상이 바뀌었다(${바.바뀜.map((v) => path.basename(v)).join(', ')}) — 바뀐 판으로 다시 맹검한다(안 바뀐 컷은 지난 판정을 이어받는다). 그때도 카본이 막히면 도구가 막힌 증거를 남기고, 대체 눈으로 본다`);
   const 낱장 = 배열(P.낱장);
   const 빠짐 = 배열(P.빠짐).map(String);
   const 못본 = 빠짐.length ? 빠짐 : (낱장.length ? [] : (배열(P.화면).map((h) => String(h.번호)).filter(Boolean).length ? 배열(P.화면).map((h) => String(h.번호)) : ['?']));
@@ -149,7 +149,7 @@ function aestheticFindings(bundle, videoFiles = [], { 판본영상 = [] } = {}) 
       add(FIX, 'aesthetic-incomplete', `맹검 답을 못 받은 화면 ${못본.join(', ')} — 통과로 치지 않는다. 막힌 증거(보낸 시각 · 거절 첫 줄)가 기록에 없다${증거.빈?.length ? `(화면 ${증거.빈.join(', ')})` : ''}: 다시 맹검한다(11-10부터 도구가 막힘을 적는다 — 그때도 막히면 대체 눈)${덧글 ? ` · ${덧글} — 글만으로는 못 넘는다` : ''}`);
     } else {
       대 = 대체판정(S, S파일, P, P파일, 못본, 영상들, 판본영상);
-      const 앞 = `아르곤이 화면 ${못본.join(', ')}을 못 봤다(${증거.글})`;
+      const 앞 = `카본이 화면 ${못본.join(', ')}을 못 봤다(${증거.글})`;
       if (대.상태 === '받음') add(LOOK, 'aesthetic-substitute', `${앞} — 대체 눈 ${눈이름[대.눈]}의 판정을 쓴다${적중글(S) ? `(${적중글(S)})` : ''}. 대체 눈은 약한 눈이라 지적을 프레임과 대조한다${덧글 ? ` · ${덧글}` : ''}`);
       else if (대.상태 === '셋다막힘') add(FIX, 'aesthetic-swap', `${앞} · ${대.시도.map((t) => `${눈이름[String(t.눈).toLowerCase()] || t.눈} ${막힘한줄(t)}`).join(' · ')} — 셋 다 막혔다: 예비편으로 바꿔 건다(「맹검못함」으로 통과하지 않는다, 11-10 설계 18 · 21)`);
       else if (대.상태 === '눈아님') add(FIX, 'aesthetic-eye', `${앞} — 대체 맹검 눈이 ${대.눈}이다: ${대.까닭}`);
@@ -167,8 +167,8 @@ function aestheticFindings(bundle, videoFiles = [], { 판본영상 = [] } = {}) 
     const 고쳐 = 목록.filter((x) => x.판정 === '고쳐서 냄');
     if (고쳐.length) add(LOOK, 'aesthetic-fix', `${누구} 맹검 「고쳐서 냄」 ${고쳐.length}장 — ${고쳐.slice(0, 3).map(짧게).join(' · ')}`);
   };
-  판정보기(낱장, '아르곤');
-  내력보기(P, '아르곤', add);
+  판정보기(낱장, '카본');
+  내력보기(P, '카본', add);
   if (대?.상태 === '받음') { 판정보기(배열(S.낱장), `${눈이름[대.눈]} 대체`); 내력보기(S, `${눈이름[대.눈]} 대체`, add); }
   return findings;
 }
@@ -190,7 +190,7 @@ function 내력보기(기록, 누구, add) {
 // 예약 큐 · 게시 작업이 한 줄로 보이는 까닭 — 고칠 것만, 없으면 null
 const 짧은까닭 = {
   'aesthetic-missing': '미학 맹검 없음', 'aesthetic-stale': '맹검 뒤 영상 바뀜', 'aesthetic-incomplete': '맹검 답 빠짐', 'aesthetic-reject': '맹검 기각',
-  'aesthetic-unverified': '맹검 막힘 · 대체 맹검 없음', 'aesthetic-swap': '맹검 눈 셋 다 막힘 — 예비편', 'aesthetic-eye': '시각 대체 눈 아님', 'aesthetic-order': '아르곤 맹검 기록 없음',
+  'aesthetic-unverified': '맹검 막힘 · 대체 맹검 없음', 'aesthetic-swap': '맹검 눈 셋 다 막힘 — 예비편', 'aesthetic-eye': '시각 대체 눈 아님', 'aesthetic-order': '카본 맹검 기록 없음',
 };
 function aestheticBlock(bundle, videoFiles, opts = {}) {
   const fix = aestheticFindings(bundle, videoFiles, opts).filter((f) => f.level === FIX);

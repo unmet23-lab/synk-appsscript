@@ -413,7 +413,7 @@ test('P1-4 ⓐ 다시 물어 지난 판정을 덮으면 「앞판정」이 남�
   const x = 판.기록().낱장[0];
   assert.deepEqual([x.판정, x.눈, x.앞판정.판정, x.앞판정.이름, x.앞판정.같은그림], ['그대로 냄', '아르곤', '기각', 'r1', true]);
   assert.deepEqual(판.판정(), ['확인할 것:aesthetic-history']);
-  assert.match(aestheticFindingsOf(판.편)[0].message, /같은 그림을 다시 물어 「기각」이 바뀐 컷 1 — 끝\(아르곤 기각 → 그대로 냄\)/);
+  assert.match(aestheticFindingsOf(판.편)[0].message, /같은 그림을 다시 물어 「기각」이 바뀐 컷 1 — 끝\(카본 기각 → 그대로 냄\)/);
   // 고친 그림(같은 컷 이름 · 다른 그림)이면 앞판정은 남되 같은그림 false — ⑱은 조용
   fs.writeFileSync(p, '고친 그림');
   await 맹검.main([`${p}::끝 장면`, '--편', 판.편, '--이름', 'r3'], 손);

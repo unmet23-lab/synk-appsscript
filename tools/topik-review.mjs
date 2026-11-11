@@ -925,10 +925,10 @@ async function main([command, name, ...argv]) {
     console.log(`${made.배치id}: ${state.processing_status} ${JSON.stringify(state.request_counts)}`);
     return 0;
   }
-  if (command === '아르곤') {
+  if (command === '카본' || command === '아르곤') { // 11-11부터 보이는 이름은 카본(gemini-4-carbon high), 옛 명령 아르곤도 같다
     const { 부르기 } = require('./lib/제미나이구독호출.js');
     const state = await runArgon(packet, dir, { groupSize: num(argv, '--묶음') || 4, call: 부르기 });
-    console.log(`아르곤 결과 ${Object.keys(state.results).length}/${packet.units.length} · 호출 ${state.calls.length}`);
+    console.log(`카본 결과 ${Object.keys(state.results).length}/${packet.units.length} · 호출 ${state.calls.length}`);
     return Object.keys(state.results).length === packet.units.length ? 0 : 1;
   }
   const claude = fs.existsSync(path.join(dir, 'claude.json')) ? readJson(path.join(dir, 'claude.json')).results : {};

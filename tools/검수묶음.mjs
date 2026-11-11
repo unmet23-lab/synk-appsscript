@@ -5,7 +5,8 @@
 // (되풀이·다른 모델로 대체 없음, 다시 보내기는 사람이 --다시로), Fable은 5.2(claude-fable-5-2)로만 — 세션 모델이 5.2인 세션이 model을 비운 Agent에 fable.md를 준다(Agent model: fable은 5.1이라 쓰지 않는다, 유호님 11-11). 틀은 tools/topik-review.mjs를 본떴다.
 //
 //   node tools/검수묶음.mjs 준비 <이름> --종류 화면|백엔드 --바탕 <커밋> [<경로…>] [준비 옵션]   아르곤 묶음·전후 캡처·시험 TAP·Fable 요약
-//   node tools/검수묶음.mjs 아르곤 <이름> [--수준 high|medium] [--묶음 A …] [--다시]       묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
+//   node tools/검수묶음.mjs 카본 <이름> [--수준 high|medium] [--묶음 A …] [--다시]         묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
+//     (11-11부터 Gemini 검수자의 보이는 이름은 「카본」(gemini-4-carbon high) — 명령 「아르곤」 · --검수자 아르곤도 같고, 정책 · 지적표 · 기록의 키는 옛 이름 「아르곤」 그대로다)
 //   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수(2026-10-24 GPT 하나 — 막히면 아르곤 → 그록 → Fable, 판 5까지 묶음은 아르곤 → Fable) — 아르곤과 같은 묶음·같은 대조
 //   node tools/검수묶음.mjs 그록 <이름> [--수준 low|medium|high|xhigh|max] [--묶음 A …] [--다시]   그록(xAI 구독 CLI, 2026-11-07) — 같은 묶음·같은 대조, 지적은 KA1…
 //     정책 판 6(2026-11-08 눈가림 시험 뒤)부터 Claude 백엔드에서 GPT·아르곤이 둘 다 한도·로그인으로 막혔을 때만 대신한다 — 그록이 대신 본 사슬은
@@ -2248,6 +2249,9 @@ async function main(argv) {
   let o;
   try { o = 인자읽기(argv); } catch (e) { console.error(e.message); console.log(쓰는법()); return 2; }
   if (/^gpt$/i.test(o.명령 || '')) o.명령 = 'GPT';
+  // 11-11부터 Gemini 검수자는 보이는 이름이 「카본」(gemini-4-carbon high) — 기록 · 정책 안의 키는 옛 이름 「아르곤」 그대로라 여기서 바꿔 받는다.
+  if (o.명령 === '카본') o.명령 = '아르곤';
+  if (o.검수자 === '카본') o.검수자 = '아르곤';
   if (!o.명령 || !o.이름 || !['준비', '다시', '아르곤', 'GPT', '그록', '처리', '페이블', '페이블받기', '검수받기', '배포판정준비', '배포판정받기', '확인', '집계'].includes(o.명령)) { console.log(쓰는법()); return 2; }
   const 알리기 = m => console.error(`… ${m}`);
   if (o.명령 === '준비') {
@@ -2264,16 +2268,16 @@ async function main(argv) {
     if (목록.정책.사용자지정) {
       console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
     } else if (사이트점검화면정책(목록.정책)) {
-      console.log(`다음: node tools/검수묶음.mjs 아르곤 ${목록.이름} · ${필수글(목록.정책)} (이번 사이트 점검의 GPT 구현만 승인; 일반 화면 검수·배포 조건 유지)`);
+      console.log(`다음: node tools/검수묶음.mjs 카본 ${목록.이름} · ${필수글(목록.정책)} (이번 사이트 점검의 GPT 구현만 승인; 일반 화면 검수·배포 조건 유지)`);
     } else if (목록.정책.담당예외?.taskId === 'topik-writing-semantic-20261028') {
-      console.log(`다음: node tools/검수묶음.mjs 아르곤 ${목록.이름} (${필수글(목록.정책)})`);
+      console.log(`다음: node tools/검수묶음.mjs 카본 ${목록.이름} (${필수글(목록.정책)})`);
     } else if (목록.정책.작성자 === 'GPT') {
       console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개)`);
     } else if (대체순서(목록.정책)?.[0] === 'GPT') {
       console.log(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · ${대체안내(대체순서(목록.정책), 목록.이름)}${그록대체정책(목록.정책) ? ' — 그록이 대신 보면 그록 P2도 처리를 적는다' : ''})`);
     } else {
       const 순서 = 대체순서(목록.정책);
-      console.log(`다음: node tools/검수묶음.mjs 아르곤 ${목록.이름}   (수준 ${기본수준[목록.종류]} · 묶음 ${목록.묶음.length}개를 하나씩${순서?.includes('그록') ? ` · ${대체안내(순서, 목록.이름)} — 그록이 대신 보면 그록 P2도 처리를 적는다` : ''})`);
+      console.log(`다음: node tools/검수묶음.mjs 카본 ${목록.이름}   (수준 ${기본수준[목록.종류]} · 묶음 ${목록.묶음.length}개를 하나씩${순서?.includes('그록') ? ` · ${대체안내(순서, 목록.이름)} — 그록이 대신 보면 그록 P2도 처리를 적는다` : ''})`);
     }
     return 0;
   }
@@ -2310,7 +2314,7 @@ async function main(argv) {
     const { 부르기 } = require('./lib/제미나이구독호출.js');
     await 아르곤보내기(폴더, 목록, { 수준: o.수준 || 기본수준[목록.종류], 고른: o.묶음 || null, 다시: Boolean(o.다시), call: 부르기, 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록);
-    console.log(`아르곤 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
+    console.log(`카본 ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === '아르곤').length}건 → ${path.join(폴더, '지적표.md')}`);
     const 생략 = 목록.정책?.페이블생략 && 목록.갈래 !== '델타';
     if (목록.정책?.사용자지정) {
       console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
