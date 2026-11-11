@@ -31,13 +31,9 @@ const 경로표 = Object.freeze({
     medium: 'gemini-3.8-flash-medium',
     high: 'gemini-3.8-flash-high',
   }),
-  /* 10-18 유호님 「아르곤 붙여서 비교해봐줘」 — 몽골어 검문을 flash와 나란히 돌려 보려고 더했다(Ultra 계정 agy 목록에 있음,
-   * Pro 계정은 invalid model selection — 현장 노트 AI_CLI). 기본 픽은 그대로 모델정책(flash high)이다. */
-  'gemini-4-argon': Object.freeze({
-    low: 'gemini-4-argon-low',
-    medium: 'gemini-4-argon-medium',
-    high: 'gemini-4-argon-high',
-  }),
+  /* gemini-4-argon은 경로표에서 뺐다 — 아르곤을 달라는 요청은 아래 카본올림()이 gemini-4-carbon high로 바꾼다.
+   * (10-18에 몽골어 검문 비교용으로 더했던 줄. 11-11 「전부 카본」 뒤에도 옛 문서 · 예약 · 세션이 --model gemini-4-argon을
+   * 계속 넘겨 그대로 아르곤으로 돌았다 — 11-11 유호님 「왜 아직 적용이 안되고 다 아르곤으로 작업하고있는거지」.) */
   /* 11-11 유호님 「제미나이 관련한 검수나 이미지 생성 · 딥리서치 전부 카본(max)」 — 아르곤 검수 · 문법 채점의 기본 모델.
    * agy 1.5.5 목록은 low · medium · high까지이고 `--effort max`는 「gemini-4-carbon has no "max" effort」로 거절된다 —
    * 이 통로에서 가장 높은 수준은 high다(현장 노트 AI_CLI). */
@@ -55,7 +51,15 @@ function 값(argv, 이름) {
   if (!v || /^--?/.test(v)) throw new Error(`${이름} 뒤에 값이 없다`);
   return v;
 }
+/* 아르곤 요청(gemini-4-argon, 수준 붙은 slug 포함)은 수준과 상관없이 카본 가장 높은 단계(high)로 올린다.
+ * 올렸으면 올림에 원래 요청을 적어 돌려준다 — 부르는 쪽 기록 · 경고에 쓴다. */
+function 카본올림(model, thinking = 'high') {
+  const 요청 = String(model || '');
+  if (!/^gemini-4-argon(?:-(?:low|medium|high))?$/.test(요청)) return { model, thinking, 올림: null };
+  return { model: 'gemini-4-carbon', thinking: 'high', 올림: `${요청}/${thinking || 'high'}` };
+}
 function 구독모델(model, thinking = 'high') {
+  ({ model, thinking } = 카본올림(model, thinking));
   const 모델 = 경로표[String(model)];
   const 고른것 = 모델 && 모델[String(thinking || 'high')];
   if (!고른것) {
@@ -293,7 +297,9 @@ async function main(argv = process.argv.slice(2)) {
   if (!prompt.trim()) throw new Error('stdin 프롬프트가 비었다');
 
   구독설정확인();
+  const { 올림 } = 카본올림(model, thinking);
   const selectedModel = 구독모델(model, thinking);
+  if (올림) console.error(`참고: ${올림} 요청을 ${selectedModel}로 올렸다 — 11-11부터 Gemini는 전부 카본(운영 원칙 #gemini-carbon). 부르는 문서 · 명령의 --model을 gemini-4-carbon으로 고쳐 주세요.`);
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-agy-review-'));
   try {
     const args = [
@@ -360,7 +366,7 @@ function 부르기({ model, prompt, schema = null, thinking = 'high', timeoutMs 
 }
 
 module.exports = {
-  경로표, 구독모델, 결과읽기, 기록만들기, 비밀환경걷기, 설정파일, 구독설정확인, 임시방지우기, agy받기, 부르기, main,
+  경로표, 카본올림, 구독모델, 결과읽기, 기록만들기, 비밀환경걷기, 설정파일, 구독설정확인, 임시방지우기, agy받기, 부르기, main,
 };
 
 if (require.main === module) {

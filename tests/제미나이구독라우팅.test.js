@@ -14,6 +14,14 @@ test('Google AI Pro 구독 모델은 정책 픽과 정확히 대응하고 자동
   assert.equal(구독.구독모델('gemini-3.8-flash', 'medium'), 'gemini-3.8-flash-medium');
   assert.throws(() => 구독.구독모델('gemini-3.1-pro-preview', 'medium'), /자동 대체하지 않는다/);
   assert.throws(() => 구독.구독모델('없는-model', 'high'), /지원하지 않는 픽/);
+  // 11-11 「전부 카본」 — 아르곤은 이름 · slug · 수준과 상관없이 카본 가장 높은 단계로 올라간다.
+  for (const [m, t] of [['gemini-4-argon', 'high'], ['gemini-4-argon', 'low'], ['gemini-4-argon-medium', 'high'], ['gemini-4-argon-high', 'medium']]) {
+    assert.equal(구독.구독모델(m, t), 'gemini-4-carbon-high', `${m}/${t}`);
+  }
+  assert.equal(구독.카본올림('gemini-4-argon', 'low').올림, 'gemini-4-argon/low');
+  assert.equal(구독.카본올림('gemini-4-carbon', 'medium').올림, null);
+  assert.equal(구독.구독모델('gemini-4-carbon', 'medium'), 'gemini-4-carbon-medium');
+  assert.equal(구독.경로표['gemini-4-argon'], undefined, '아르곤으로 가는 길이 남아 있지 않다');
 });
 test('agy 스트림은 정확히 한 완료 결과만 받고 모델·구조 응답을 보존한다', () => {
   const raw = [

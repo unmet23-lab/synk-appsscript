@@ -93,7 +93,9 @@ function CLI(무대, 인자, 글 = '짧은 질문') {
     p.stdin.end(글, 'utf8');
   });
 }
-const 아르곤 = (무대, ...더) => ['--model', 'gemini-4-argon', '--thinking', 'high', '-o', 무대.출력, ...더];
+/* 아르곤 요청은 카본 high로 올라간다(11-11 「전부 카본」) — 첫 시험이 끝까지 보고, 나머지는 카본으로 바로 부른다. */
+const 아르곤 = (무대, ...더) => ['--model', 'gemini-4-argon', '--thinking', 'low', '-o', 무대.출력, ...더];
+const 카본 = (무대, ...더) => ['--model', 'gemini-4-carbon', '--thinking', 'high', '-o', 무대.출력, ...더];
 const 사용자줄 = (글) => JSON.stringify({ event: 'user', message: { content: 글 } }) + '\n';
 
 test('결과를 낸 뒤 끝나지 않는 agy(손주까지 버팀)에서도 답을 받고, 묶음째 닫아 제한보다 훨씬 빨리 끝난다', { timeout: 60_000 }, async () => {
@@ -103,19 +105,20 @@ test('결과를 낸 뒤 끝나지 않는 agy(손주까지 버팀)에서도 답�
     assert.equal(r.code, 0, r.stderr);
     assert.ok(r.걸린ms < 30_000, `걸린 시간 ${r.걸린ms}ms — 제한은 60초 + 30초`);
     assert.match(r.stderr, /결과를 낸 뒤 5초 안에 끝나지 않아 프로세스 묶음을 닫았다/);
+    assert.match(r.stderr, /gemini-4-argon\/low 요청을 gemini-4-carbon-high로 올렸다/);
     const [첫, 손주] = 무대.남긴것();
     assert.deepEqual(JSON.parse(fs.readFileSync(무대.출력, 'utf8')), {
       text: `가짜 답 ${첫.글자}`,
-      modelVersion: 'gemini-4-argon-high',
+      modelVersion: 'gemini-4-carbon-high',
       finishReason: 'SUCCESS',
       usage: { total_tokens: 7 },
       route: 'google-ai-subscription',
       requestedModel: 'gemini-4-argon',
-      requestedThinking: 'high',
-      selectedModel: 'gemini-4-argon-high',
+      requestedThinking: 'low',
+      selectedModel: 'gemini-4-carbon-high',
     });
     assert.deepEqual(첫.argv, ['--input-format', 'stream-json', '--output-format', 'stream-json',
-      '--model', 'gemini-4-argon-high', '--print-timeout', '60s', '--sandbox', '--disable-slash-commands']);
+      '--model', 'gemini-4-carbon-high', '--print-timeout', '60s', '--sandbox', '--disable-slash-commands']);
     assert.equal(첫.유료허용, null, 'agy에는 유료 API 허용 변수를 넘기지 않는다');
     assert.ok(첫.글자 > '짧은 질문'.length, '도구 없이 답하라는 머리말을 붙인다');
     assert.match(path.basename(첫.cwd), /^synk-agy-review-/);
@@ -130,13 +133,13 @@ test('스스로 끝나는 agy는 닫지 않고 받으며, 부르기도 손잡이
   const 무대 = 무대만들기('exit');
   const 옛 = {};
   try {
-    const r = await CLI(무대, 아르곤(무대));
+    const r = await CLI(무대, 카본(무대));
     assert.equal(r.code, 0, r.stderr);
     assert.doesNotMatch(r.stderr, /묶음을 닫았다/);
     const 손잡이 = JSON.parse(fs.readFileSync(무대.출력, 'utf8'));
 
     for (const k of ['SYNK_AGY_BIN', 'SYNK_AGY_SETTINGS', 'FAKE_AGY_MODE', 'FAKE_AGY_LOG']) { 옛[k] = process.env[k]; process.env[k] = 무대.env[k]; }
-    const 부른 = await 구독.부르기({ model: 'gemini-4-argon', thinking: 'high', prompt: '짧은 질문' });
+    const 부른 = await 구독.부르기({ model: 'gemini-4-carbon', thinking: 'high', prompt: '짧은 질문' });
     assert.deepEqual(부른, 손잡이);
     const 구조 = await 구독.부르기({ model: 'gemini-3.8-flash', thinking: 'medium', prompt: '짧은 질문', schema: { type: 'object' } });
     assert.equal(구조.selectedModel, 'gemini-3.8-flash-medium');
@@ -150,7 +153,7 @@ test('스스로 끝나는 agy는 닫지 않고 받으며, 부르기도 손잡이
 test('result 전에 끝나면 지금처럼 오류(종료 2)로 내고 agy 진단을 함께 보여 준다', { timeout: 60_000 }, async () => {
   const 무대 = 무대만들기('noresult');
   try {
-    const r = await CLI(무대, 아르곤(무대));
+    const r = await CLI(무대, 카본(무대));
     assert.equal(r.code, 2);
     assert.match(r.stderr, /확인 불가: 제미나이 구독 호출 실패 — agy가 결과 없이 끝났다\(종료 3\): 가짜 오류: 몫을 못 읽었다/);
     assert.equal(fs.existsSync(무대.출력), false);
@@ -162,7 +165,7 @@ test('result 전에 끝나면 지금처럼 오류(종료 2)로 내고 agy 진단
 test('상태가 SUCCESS가 아니면 지금처럼 오류로 내고, 남아 있는 agy 묶음도 닫는다', { timeout: 60_000 }, async () => {
   const 무대 = 무대만들기('status');
   try {
-    const r = await CLI(무대, 아르곤(무대));
+    const r = await CLI(무대, 카본(무대));
     assert.equal(r.code, 2);
     assert.match(r.stderr, /agy 상태 ERROR: 가짜 몫 초과/);
     assert.match(r.stderr, /프로세스 묶음을 닫았다/);
