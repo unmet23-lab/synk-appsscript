@@ -386,8 +386,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       };
       const fold = first ? event => foldOf(group, event, host.index, s.failed) : null;
       const { event, stored } = write(EVENT_TYPES.helped, fields, { fold });
-      if (first)
-        applyOwn(s.learner, foldOf(group, event, host.index, s.failed), memory, params, host.index);
+      // 첫 답 뒤에 본 도움(되짚기)은 접기 사건이 없다 — 어댑터가 도움 만남을 세우지 않는다(설계 §3-3 · Fable 5.2 최종 F1).
+      const own = first ? foldOf(group, event, host.index, s.failed) : null;
+      if (own) applyOwn(s.learner, own, memory, params, host.index);
       group.children.push(entryOf(event));
       return { event, stored };
     },

@@ -195,15 +195,33 @@ export const RECORD_MUTANTS = [
     'atMs: Math.min(at, receivedMs),',
     'atMs: at,',
   ],
-  // ── 어댑터 — 측정 계약 · 등급(§5-2 · §3-2 · Fable P1-1) ──
+  // ── 어댑터 — 도움 만남은 그 답을 내는 데 쓴 도움만: 첫 답보다 앞선 도움 · 답 없이 본 도움(§3-3 · Fable 5.2 최종 F1 — 단계 3의
+  //    「답 뒤에 본 도움도 만남」 변형(Fable P1-1)은 이 규칙이 되어 걷었다) ──
   [
     R,
     '어댑터',
-    '답 뒤에 본 도움을 만남으로 내지 않는다 — 이어서 혼자 맞힌 수가 안 끊긴다(Fable P1-1)',
+    '첫 답 뒤에 본 도움도 도움 만남으로 낸다 — 맞힌 뒤 「정답 보기」가 이어서 혼자 맞힌 수를 끊는다(Fable 5.2 최종 F1)',
     ADAPT,
-    'if (!state.firstHelp) state.firstHelp = entry;',
     'if (!state.answered && !state.firstHelp) state.firstHelp = entry;',
+    'if (!state.firstHelp) state.firstHelp = entry;',
   ],
+  [
+    R,
+    '어댑터',
+    '답 앞의 도움은 도움 만남으로 내지 않는다(답 없이 본 도움만 — 힌트를 보고 낸 답의 만남이 답 시각으로 밀린다)',
+    ADAPT,
+    '  if (state.firstHelp)\n    out.push(',
+    '  if (state.firstHelp && !state.answered)\n    out.push(',
+  ],
+  [
+    R,
+    '어댑터',
+    '답 없이 본 도움은 도움 만남으로 내지 않는다(도움만 보고 나간 것이 이어서를 안 끊는다 — 장면 ⑯카)',
+    ADAPT,
+    '  if (state.firstHelp)\n    out.push(',
+    '  if (state.firstHelp && state.answered)\n    out.push(',
+  ],
+  // ── 어댑터 — 측정 계약 · 등급(§5-2 · §3-2 · Fable P1-1) ──
   [
     R,
     '어댑터',

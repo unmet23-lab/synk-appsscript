@@ -5,8 +5,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
-import { PACKAGE_ROOT } from '../support/subject.mjs';
+import { sliceOf } from '../../tools/map-ship.mjs';
+import { PACKAGE_ROOT, subject } from '../support/subject.mjs';
 import { clock, createCoach, memoryPort } from './support.mjs';
+
+const { openMap } = await subject('map/index.mjs');
 
 const REPO = path.join(PACKAGE_ROOT, '..', '..');
 const WORLD = path.join(REPO, 'experiences', 'synk-world-app');
@@ -50,6 +53,8 @@ async function guestCoach() {
     gameId: 'world-practice',
     mapData: MAP_DATA,
     dayOffset: 540,
+    // 능력 이름 — 셸(app-shell.mjs lazyAtlasNext)이 넘기는 것과 같다(「한 단계 올려」 줄이 능력 이름을 말한다).
+    label: id => STRINGS[`position.skill.${id}`]?.ko ?? null,
     host: {
       guest: true,
       port: memoryPort(),
@@ -115,8 +120,124 @@ test('놓친 단위는 같은 판에서 다른 문항으로 다시 나온다(설
   coach.dispose();
 });
 
+test('전부 혼자 맞히는 학습자 — 답 뒤 「정답 보기」가 있어도 이어서 혼자 맞힌 수가 오르고 「한 단계 올려」가 나오며 「쉬운 것부터」는 없다(Fable 5.2 최종 F1)', async () => {
+  const { coach, time } = await guestCoach();
+  const pool = readingSkill[1];
+  const shown = [];
+  let independent = 0;
+  for (let round = 0; round < 3; round += 1) {
+    const session = createPracticeNextSession({ plays, coach, pool, length: 5 });
+    shown.push(...(await play(session, time, item => item.correctId)));
+    independent += (await session.settled()).filter(row => row.independent).length;
+    time.advance(5 * 60_000);
+  }
+  const whys = shown.map(now => now.why ?? '');
+  assert.ok(
+    whys.some(why => /이어서 혼자 맞혔어요/.test(why)),
+    `skill.up — ${whys.join(' | ')}`,
+  );
+  assert.ok(!whys.some(why => /쉬운 것부터/.test(why)), `skill.ease 없음 — ${whys.join(' | ')}`);
+  const skills = coach.summary().skills.filter(skill => skill.streak > 0);
+  assert.equal(
+    skills.reduce((sum, skill) => sum + skill.streak, 0),
+    independent,
+    '혼자 맞힌 처음 본 문항마다 이어서 맞힌 수가 하나씩',
+  );
+  coach.dispose();
+});
+
+test('하루 새 단위 한도를 다 쓴 날 새 항목의 판 — 한 문항도 못 내도 끝 까닭은 limited, 끝 화면에 「새 말 더 배우기」(Fable 5.2 최종 F2)', async () => {
+  const { coach, time } = await guestCoach();
+  const skills = [...bySkill].filter(
+    ([id, items]) => id.includes('.reading.') && items.length >= 5,
+  );
+  let empty = null;
+  for (const [id, pool] of skills.slice(0, 8)) {
+    const session = createPracticeNextSession({ plays, coach, pool, setPool: BANK, length: 5 });
+    const shown = await play(session, time, item => item.correctId);
+    const results = await session.settled();
+    assert.notEqual(session.ending.kind, 'none', `${id}: 낸 문항 ${shown.length} — none`);
+    if (!shown.length) {
+      empty = { id, results, ending: session.ending };
+      break;
+    }
+    time.advance(3 * 60_000);
+  }
+  assert.ok(empty, '같은 날 새 항목을 잇달아 열면 한도를 다 쓴 판이 온다');
+  assert.equal(empty.ending.kind, 'limited');
+  const html = view.renderPracticeNextDone({
+    skill: { id: empty.id, label: empty.id },
+    results: empty.results,
+    ending: empty.ending,
+    count: 5,
+  });
+  assert.match(html, /data-practice-end-line>이번 판의 새 말은 여기까지예요/);
+  assert.match(html, /data-practice-more/);
+  coach.dispose();
+});
+
+test('돌아온 것이 없는 첫날의 판 — 놓친 뒤 「다시」를 기다리는 동안에도 어느 문항에도 「다 만났어요」가 없다(Fable 5.2 최종 F3)', async () => {
+  const { coach, time } = await guestCoach();
+  const pool = readingSkill[1];
+  const shown = [];
+  for (let round = 0; round < 3; round += 1) {
+    const session = createPracticeNextSession({ plays, coach, pool, setPool: BANK, length: 7 });
+    const wrong = item => item.choices.find(choice => choice.id !== item.correctId).id;
+    shown.push(
+      ...(await play(session, time, (item, i) => (i % 3 === 0 ? wrong(item) : item.correctId))),
+    );
+    await session.settled();
+    time.advance(3 * 60_000);
+  }
+  assert.ok(shown.length >= 14);
+  assert.deepEqual(
+    shown.filter(now => /다 만났어요/.test(now.why ?? '')).map(now => now.item.itemKey),
+    [],
+  );
+  coach.dispose();
+});
+
+test('WORLD 입구가 받는 은행 조각만으로 연습 풀의 모든 문항이 색인 문항으로 찾아진다 — 마을 읽기(synk-town → synk-town-reading)도(Fable 5.2 최종 F4)', async () => {
+  const { banksOf } = await load('world-atlas-next.mjs');
+  const { worldPosition } = await load('world-position-kit.mjs');
+  worldPosition.topik.use(readJson(path.join(WORLD, 'world-topik-items.json')));
+  const pool = worldPosition.practice.pool;
+  assert.ok(
+    pool.some(item => item.itemKey.startsWith('synk-town.')),
+    '마을 읽기 문항이 풀에 있다',
+  );
+  const banks = banksOf(pool);
+  assert.ok(banks.includes('synk-town-reading'));
+  const full = openMap(MAP_DATA);
+  const sliced = openMap({
+    index: banks.map(bank => sliceOf(MAP_DATA.index, bank)),
+    units: MAP_DATA.units,
+  });
+  const shape = item =>
+    item && JSON.stringify([item.familyKey, item.skillId, item.difficulty, item.units, item.order]);
+  const off = pool.filter(
+    item => !full.item(item) || shape(sliced.item(item)) !== shape(full.item(item)),
+  );
+  assert.deepEqual(
+    off.map(item => item.itemKey),
+    [],
+    '조각 지도에서 색인 밖 문항(family 단위 · 진도 맨 뒤)으로 떨어진 문항',
+  );
+});
+
 test('판이 일찍 끝나면 그 까닭을 사실대로 고른다 — 돌아온 것을 안 낸 판에 「다 만났어요」가 없다', () => {
   assert.deepEqual(endingOf({ status: 'none' }, { due: false }), { kind: 'none' });
+  // 낼 것이 없어도(none) 그 판의 사실이 먼저다(Fable 5.2 최종 F2)
+  assert.deepEqual(endingOf({ status: 'none', facts: { limited: true } }, { due: false }), {
+    kind: 'limited',
+  });
+  assert.deepEqual(endingOf({ status: 'none', facts: { held: 'day' } }, { due: true }), {
+    kind: 'capped',
+  });
+  assert.deepEqual(endingOf({ status: 'none', facts: { held: 'stubborn' } }, { due: false }), {
+    kind: 'stubborn',
+  });
+  assert.deepEqual(endingOf({ status: 'none', facts: {} }, { due: true }), { kind: 'none' });
   assert.deepEqual(endingOf({ status: 'idle', facts: { held: 'day' } }, { due: false }), {
     kind: 'capped',
   });
@@ -410,4 +531,31 @@ test('WORLD 입구 — 후보에 연 코치가 받지 않은 은행이 있으면
   next.dispose();
   await new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(disposed, 4, '닫을 때 모두 닫는다');
+});
+
+test('「다시」를 기다리는 사이의 채우기(status ready · 이유 idle)에는 「다 만났어요」를 달지 않는다(Fable 5.2 최종 F3)', () => {
+  const pool = [fakeItem('q1'), fakeItem('q2')];
+  const line = '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.';
+  const coach = {
+    ...fakeCoach({ met: new Set() }),
+    recommend: () => ({
+      status: 'ready',
+      selected: pool[0],
+      tier: 4,
+      facts: {},
+      why: { code: 'idle', line },
+    }),
+  };
+  const session = createPracticeNextSession({ plays, coach, pool, length: 2 });
+  assert.equal(session.next().why, null);
+  // 다른 이유(다시 · 돌아온 것 · 새것)는 그대로 싣는다
+  coach.recommend = () => ({
+    status: 'ready',
+    selected: pool[1],
+    tier: 0,
+    facts: {},
+    why: { code: 'unit.retry', line: '방금 놓친 「…」, 다른 문제로 한 번 더 만나요.' },
+  });
+  session.skip();
+  assert.match(session.next().why, /한 번 더 만나요/);
 });

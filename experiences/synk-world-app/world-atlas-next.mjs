@@ -25,8 +25,10 @@ export function legacyReader(storage) {
     }
   };
 }
-// 연습 문항의 열쇠 앞마디가 지도의 은행 이름이다(TOPIK 은행 topik-items, 진단이 빌려 쓰는 게임 문항은 그 게임 이름).
-const BANKS = new Set([
+// 연습 문항의 열쇠 앞마디 → 지도의 은행 이름. 대개 같은 이름이고(TOPIK 은행 topik-items, 진단이 빌려 쓰는 게임 문항은 그 게임 이름),
+// 다른 것만 따로 적는다 — 마을 읽기 문항(synk-town.…)의 은행은 synk-town-reading이다(Fable 5.2 최종 F4: 빠지면 그 30문항이 색인 밖
+// 문항으로 떨어져 단위 · 진도 차례 · 이유 줄을 잃는다). 연습 풀에 새 은행이 들면 시험(world-practice.test.mjs 「은행 조각」)이 먼저 잡는다.
+const SAME = [
   'topik-items',
   'blank-slice',
   'entry-check',
@@ -37,13 +39,14 @@ const BANKS = new Set([
   'talk-rally',
   'order-rush',
   'story-classroom',
-]);
+];
+const BANKS = new Map([...SAME.map(bank => [bank, bank]), ['synk-town', 'synk-town-reading']]);
 
 export function banksOf(pool) {
   const banks = new Set();
   for (const item of pool ?? []) {
-    const head = String(item?.itemKey ?? '').split('.')[0];
-    if (BANKS.has(head)) banks.add(head);
+    const bank = BANKS.get(String(item?.itemKey ?? '').split('.')[0]);
+    if (bank) banks.add(bank);
   }
   return [...banks].sort();
 }

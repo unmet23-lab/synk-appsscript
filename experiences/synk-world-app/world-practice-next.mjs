@@ -35,13 +35,15 @@ export const endingLine = (kind, why) =>
   why?.line && ENGINE_ENDINGS[kind] === why.code ? why.line : null;
 
 // 판이 끝난 까닭 — 그 판에서 실제로 일어난 일에서 고른다(돌아온 것을 만나지 않은 판에 「다 만났어요」를 쓰지 않는다).
+// 엔진이 낼 것이 없다(none)고 해도 그 판의 사실이 먼저다 — 하루 새 단위 한도를 다 쓴 날 새 항목의 판은 한 문항도 못 내고 none이지만
+// 끝 까닭은 limited(「이번 판의 새 말은 여기까지예요」 + 「새 말 더 배우기」)다(계획 §7, Fable 5.2 최종 F2). none은 사실이 없을 때만.
 export function endingOf(picked, served) {
   if (!picked) return { kind: 'done' };
-  if (picked.status === 'none') return { kind: 'none' };
   const facts = picked.facts ?? {};
   if (facts.held === 'day') return { kind: 'capped' };
   if (facts.held === 'stubborn') return { kind: 'stubborn' };
   if (facts.limited) return { kind: 'limited' };
+  if (picked.status === 'none') return { kind: 'none' };
   if (facts.servedDue || served.due) return { kind: 'idle' };
   return { kind: 'exhausted' };
 }
@@ -219,7 +221,8 @@ export function createPracticeNextSession({
         audio: listening ? 'pending' : 'none',
         plays: { allowed: allowedPlays(item), completed: 0, extra: 0 },
         // 처음 보는 채우기 문항에는 엔진의 「다 만났어요」를 쓰지 않는다 — 돌아온 것을 만나지 않은 판일 수 있다(아르곤 A1).
-        why: freshFill ? null : (picked.why?.line ?? null),
+        // 놓친 단위의 「다시」가 차례를 기다리는 사이의 채우기(status ready · 이유 idle)에도 달지 않는다(Fable 5.2 최종 F3).
+        why: freshFill || picked.why?.code === ENGINE_ENDINGS.idle ? null : (picked.why?.line ?? null),
         fresh: freshFill,
         stubborn: picked.stubborn === true,
         targetLabel: picked.targetLabel ?? null,

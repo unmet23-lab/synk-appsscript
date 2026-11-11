@@ -9,7 +9,7 @@ import { EDITION } from '../edition.mjs';
 import { PARAMS } from '../params.mjs';
 import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
 import { storeName } from '../record/port.mjs';
-import { elapsedDays } from '../reason/index.mjs';
+import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
 import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
@@ -19,6 +19,7 @@ import { createSession, learnerOf } from './session.mjs';
 export { COACH_METHODS } from './methods.mjs';
 
 const SET_KINDS = ['short', 'diagnostic', 'mock'];
+const HELD_CODES = new Set([REASON_CODES.capped, REASON_CODES.stubborn]);
 const fail = (code, message) =>
   Object.assign(new Error(`Atlas coach: ${message} (${EDITION})`), { code });
 
@@ -50,6 +51,10 @@ function hostOptions(options) {
   const host = options.host ?? {};
   if (host.document === true) return { host, guest: null, key: null };
   const guest = host.guest === true || host.account == null;
+  // 손님 길(기기가 원천)로 여는 계정(동의 꺼진 계정 등)은 저장소 이름을 스스로 짓지 않는다 — 지으면 그 기기의 손님 기록과 한 저장소
+  // (synk-atlas:guest)에 섞인다(설계 §5-4 「저장 이름은 계정과 동의 판마다」, Fable 5.2 최종 F6). 그 길을 여는 제품이 key를 준다(4-1 계정 길).
+  if (host.guest === true && host.account != null && host.key == null)
+    throw new TypeError('Atlas coach: 손님 길로 여는 계정은 저장소 이름(host.key)을 준다');
   // key는 저장소 이름(storeName)이다. 시험 · 호스트가 같은 문서에서 저장소를 가를 때만 직접 준다.
   const key =
     host.key ??
@@ -171,10 +176,22 @@ export function createCoach(options = {}) {
     return { stored: true, independent, assisted, exposure };
   }
 
+  // none의 이유 — 엔진이 그 까닭을 아는 것(하루 복습 상한 · 끈질긴 단위의 판 몫, choose markTop)만 싣는다. 제품이 판 끝 줄을 그 사실대로
+  // 쓰게(Fable 5.2 최종 F2 — 하루 상한에 걸려 하나도 못 낸 판). 그 밖의 none은 이유가 없다.
+  const heldWhy = (top, opts) =>
+    HELD_CODES.has(top?.why?.code) ? { ...top.why, line: say(top.why, opts) } : null;
+
   // 고른 줄 → recommend의 결과. none이면 낼 문항이 없다(제품은 판을 끝낸다), idle이면 할 것이 없다(채우기 문항이 selected).
   function picked(top, products, facts, opts) {
     if (!top || top.none)
-      return { status: 'none', selected: null, why: null, none: true, idle: false, facts };
+      return {
+        status: 'none',
+        selected: null,
+        why: heldWhy(top, opts),
+        none: true,
+        idle: false,
+        facts,
+      };
     return {
       status: top.idle ? 'idle' : 'ready',
       selected: products.get(top.item.itemKey),

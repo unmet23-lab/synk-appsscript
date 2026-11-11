@@ -464,6 +464,23 @@ export const COACH_MUTANTS = [
     '`set.${gameId}.${now}.${s.tag}.${s.setSeq}`',
     '`set.${gameId}.${now}.${s.setSeq}`',
   ],
+  // ── Fable 5.2 최종(11-12) — none의 까닭 · 손님 길 계정의 저장소 이름 ──
+  [
+    C,
+    '고르기',
+    '낼 것이 없을 때(none) 엔진이 아는 까닭(하루 복습 상한 · 끈질긴 단위 몫)을 버린다 — 판 끝 줄이 비는다(Fable 5.2 최종 F2)',
+    'src/coach/index.mjs',
+    '        why: heldWhy(top, opts),',
+    '        why: null,',
+  ],
+  [
+    C,
+    '호스트',
+    '손님 길로 여는 계정도 저장소 이름을 손님 이름(synk-atlas:guest)으로 짓는다 — 그 기기의 손님 기록과 섞인다(Fable 5.2 최종 F6)',
+    'src/coach/index.mjs',
+    '  if (host.guest === true && host.account != null && host.key == null)',
+    '  if (false)',
+  ],
   [
     'unit',
     'Vellum',

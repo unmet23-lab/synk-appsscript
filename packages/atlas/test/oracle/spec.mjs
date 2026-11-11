@@ -143,6 +143,16 @@ export function specUnit(rows, params) {
   };
 }
 
+// 「도움을 받으면 0」의 도움(§3-3) — 그 답을 내는 데 쓴 도움, 곧 그 제시의 첫 답보다 앞선 도움과 답 없이 본 도움이다. 첫 답 뒤에
+// 정답 · 풀이를 본 것은 되짚기라 「이어서」를 끊지 않는다. 제시 하나의 도움 · 답({ kind: 'help' | 'answer', id, at })에서 능력 줄에
+// 설 도움 만남(그 첫 도움)을 낸다 — 없으면 null. 아래 능력 줄의 「도움을 받은 줄」이 이것이다(어댑터 시험이 맞댄다).
+export function specHelpMeeting(steps) {
+  const sorted = [...steps].sort(order);
+  const answered = sorted.findIndex(step => step.kind === 'answer');
+  const before = answered < 0 ? sorted : sorted.slice(0, answered);
+  return before.find(step => step.kind === 'help') ?? null;
+}
+
 // 한 능력의 답 줄({ at, id, grade, unaided, lead, difficulty, responseFormat, unknownOption })에서 작업 난도를 낸다.
 //   측정 답 = 그 계열의 첫 만남이고 도움 없이 낸 답. 측정 답만 θ와 답 수를 옮긴다(답이 적을 때 크게, 쌓이면 잔잔하게).
 //   찍기 바닥은 응답 꼴마다, 「모르겠어요」가 있는 문항이면 절반. level = 마지막 측정 답의 난도.

@@ -39,6 +39,7 @@ export function stepAbility(ability, row, params = PARAMS) {
 
 // 한 능력의 답 한 줄을 반영한다. lead = 그 계열의 첫 만남인가.
 // 이어서 혼자 맞힌 수: 처음 본 문항을 혼자 맞히면 +1, 그 능력의 어떤 문항이든 놓치거나 도움을 받으면 0, 복습을 맞힌 것은 그대로.
+// 도움 줄은 어댑터가 세운 도움 만남이다 — 그 제시의 첫 답보다 앞선 도움 · 답 없이 본 도움(첫 답 뒤의 되짚기는 줄이 없다, 설계 §3-3).
 export function stepSkill(skill, row, params = PARAMS) {
   const solo = row.lead && row.unaided;
   const miss = row.grade === 'again';

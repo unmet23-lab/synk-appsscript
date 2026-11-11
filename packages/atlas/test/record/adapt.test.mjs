@@ -1,6 +1,8 @@
 // 사건 2판의 꼴(events.mjs)과 어댑터(adapt.mjs)의 장면 — 계획 §2 · §3 · §11.
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { specHelpMeeting } from '../oracle/spec.mjs';
+import { pick, rng, seedRange } from '../support/seeds.mjs';
 import { subject } from '../support/subject.mjs';
 
 const R = await subject('record/events.mjs');
@@ -101,35 +103,128 @@ test('부모 · 차례 — 답은 같은 2판 제시를, 답 번호는 이어서
   );
 });
 
-test('답 뒤에 본 도움도 「이어서 혼자 맞힌 수」를 끊는다(혼자 맞힘 → 해설 → 혼자 맞힘 = 1)', () => {
+// 「이어서 혼자 맞힌 수」를 끊는 도움은 그 답을 내는 데 쓴 도움 — 그 제시의 첫 답보다 앞선 도움과 답 없이 본 도움(⑯카)이다.
+// 첫 답 뒤에 풀이를 보는 것은 되짚기라 끊지 않는다(설계 §3-3 · Fable 5.2 최종 F1 — 단계3 §11 P1-1의 「답 앞뒤 무관」을 좁힘).
+const attempt = (p, no, verdict, minutes) =>
+  make(
+    'practice.attempted',
+    { presentationId: p.id, attemptNo: no, verdict, errorTags: [] },
+    minutes,
+  );
+const helped = (p, level, minutes) =>
+  make(
+    'practice.helped',
+    { presentationId: p.id, helpId: `h${minutes}`, level, contentRef: 'c' },
+    minutes,
+  );
+const streakOf = events =>
+  foldServer(fold(events), createMemory(PARAMS), PARAMS).ability.get('ko.listening.detail');
+
+test('첫 답 뒤에 본 풀이는 「이어서 혼자 맞힌 수」를 끊지 않는다(혼자 맞힘 → 해설 → 혼자 맞힘 = 2) — 도움 사건 · 만난 비트는 그대로', () => {
   const p1 = make('practice.presented', presentedFields({ itemKey: 'a', familyKey: 'fa' }), 0);
   const p2 = make('practice.presented', presentedFields({ itemKey: 'b', familyKey: 'fb' }), 10);
   const events = [
     p1,
-    make(
-      'practice.attempted',
-      { presentationId: p1.id, attemptNo: 1, verdict: 'correct', errorTags: [] },
-      1,
-    ),
-    make(
-      'practice.helped',
-      { presentationId: p1.id, helpId: 'h', level: 'explanation', contentRef: 'c' },
-      2,
-    ),
+    attempt(p1, 1, 'correct', 1),
+    helped(p1, 'explanation', 2),
+    helped(p1, 'answer', 3),
     p2,
-    make(
-      'practice.attempted',
-      { presentationId: p2.id, attemptNo: 1, verdict: 'correct', errorTags: [] },
-      11,
-    ),
+    attempt(p2, 1, 'correct', 11),
   ];
   const folded = fold(events);
   assert.deepEqual(
     [...folded].sort((a, b) => a.at - b.at).map(e => e.kind),
-    ['answer', 'help', 'answer'],
+    ['answer', 'answer'],
+    '첫 답 뒤의 도움은 도움 만남을 세우지 않는다',
   );
-  const summary = foldServer(folded, createMemory(PARAMS), PARAMS);
-  assert.equal(summary.ability.get('ko.listening.detail').streak, 1);
+  assert.equal(streakOf(events).streak, 2);
+  // 도움 사건은 기록에 남고, 만난 표의 비트(답함 · 답을 봄 · 도움 받음)도 그대로다.
+  const group = A.groupsOf(events.map(entry)).get(p1.id);
+  assert.equal(group.children.filter(child => child.event.type === 'practice.helped').length, 2);
+  assert.equal(A.groupBits(group), 7);
+  // 만남(첫 만남 시각)은 그 첫 답이 세운다.
+  assert.equal(foldServer(folded, createMemory(PARAMS), PARAMS).met.get('fa'), T + 60_000);
+});
+
+test('답 앞의 도움 · 답 없이 본 도움은 그대로 끊고, 틀린 뒤 풀이를 보고 낸 둘째 답은 혼자 맞힘이 아니다', () => {
+  const solo = (p, minutes) => [p, attempt(p, 1, 'correct', minutes)];
+  const ps = [0, 10, 20, 30].map(m =>
+    make('practice.presented', presentedFields({ itemKey: `k${m}`, familyKey: `fk${m}` }), m),
+  );
+  // 답 앞의 힌트 → 맞힘: 도움 만남이 서고 그 답은 도움받은 답 — 앞의 둘을 끊는다
+  const before = [...solo(ps[0], 1), ...solo(ps[1], 11), ps[2], helped(ps[2], 'cue', 21)];
+  before.push(attempt(ps[2], 1, 'correct', 22));
+  assert.deepEqual(
+    fold([ps[2], helped(ps[2], 'cue', 21), attempt(ps[2], 1, 'correct', 22)]).map(e => e.kind),
+    ['help', 'answer'],
+  );
+  assert.equal(streakOf(before).streak, 0);
+  // 답 없이 본 도움(⑯카)
+  const answerless = [...solo(ps[0], 1), ...solo(ps[1], 11), ps[3], helped(ps[3], 'answer', 31)];
+  assert.deepEqual(
+    fold([ps[3], helped(ps[3], 'answer', 31)]).map(e => e.kind),
+    ['help'],
+  );
+  assert.equal(streakOf(answerless).streak, 0);
+  // 첫 답이 틀린 뒤 풀이를 보고 낸 둘째 답 — 놓침(답 보기)이고, 이어서는 첫 답이 이미 끊었다
+  const q = make('practice.presented', presentedFields({ itemKey: 'q', familyKey: 'fq' }), 40);
+  const retried = [
+    q,
+    attempt(q, 1, 'incorrect', 41),
+    helped(q, 'answer', 42),
+    attempt(q, 2, 'correct', 43),
+  ];
+  const answers = fold(retried).filter(e => e.kind === 'answer');
+  assert.deepEqual(
+    fold(retried).map(e => e.kind),
+    ['answer', 'answer'],
+  );
+  assert.equal(answers[1].answer.answerShown, true);
+  assert.equal(answers[1].answer.assisted, true);
+  const after = streakOf([...solo(ps[0], 1), ...retried]);
+  assert.equal(after.streak, 0);
+  assert.equal(after.n, 2, '측정 답은 두 계열의 첫 답뿐');
+});
+
+// 제시 하나와 임의의 도움 · 답(판정 · 건너뜀 · 판정 못 함)을 차례로 — 사건 열과 기준이 읽을 차례(steps).
+function randomGroup(random, base) {
+  const p = make('practice.presented', presentedFields({ itemKey: `r${base}` }), base);
+  const children = [];
+  const steps = [];
+  let attempts = 0;
+  const count = Math.floor(random() * 6);
+  for (let i = 1; i <= count; i += 1) {
+    const help = random() < 0.5;
+    if (!help) attempts += 1;
+    const event = help
+      ? helped(p, pick(random, ['cue', 'explanation', 'answer']), base + i)
+      : attempt(
+          p,
+          attempts,
+          pick(random, ['correct', 'incorrect', 'skipped', 'unassessed']),
+          base + i,
+        );
+    children.push(event);
+    steps.push({ kind: help ? 'help' : 'answer', id: event.id, at: Date.parse(event.at) });
+  }
+  return { events: [p, ...children], steps };
+}
+
+test('도움 만남은 글을 옮긴 기준(oracle specHelpMeeting)과 같다 — 임의의 도움 · 답 · 건너뜀 차례(씨앗마다)', () => {
+  for (const seed of seedRange({ count: 40 })) {
+    const random = rng(seed);
+    for (let round = 0; round < 25; round += 1) {
+      const { events, steps } = randomGroup(random, (seed * 100 + round) * 20);
+      const want = specHelpMeeting(steps);
+      assert.deepEqual(
+        fold(events)
+          .filter(e => e.kind === 'help')
+          .map(e => e.id),
+        want ? [want.id] : [],
+        `씨앗 ${seed} · ${round}: ${steps.map(step => step.kind).join(' → ')}`,
+      );
+    }
+  }
 });
 
 test('답 앞의 도움은 그 답을 도움받은 답으로, 답 보기 · 해설은 놓침으로 — 겨눈 단위에 실패를 적는다', () => {

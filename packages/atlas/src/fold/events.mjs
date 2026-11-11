@@ -2,9 +2,10 @@
 // 단계 3의 어댑터는 2판 사건(제시 · 전달 · 도움 · 답 · 제외 · 본인 말 · 옮겨 온 장부)과 옛 꼴 사건을 이 꼴로 바꾸고,
 // 그 시험과 이 패키지의 임의 시험이 같은 검사기(checkFoldEvent)를 쓴다 — 꼴이 어긋나면 접기 전에 던진다.
 //   답           { kind: 'answer', id, at, item, answer: { correct, assisted, answerShown, unknown, assessable, target } }
-//   도움         { kind: 'help',   id, at, item } — 제시에 도움(힌트 · 해설 · 답 보기)이 하나라도 있으면 그 제시의 첫 도움 시각에
-//                하나(답 없이 나간 제시도, 답한 뒤 해설을 본 제시도). 만남이고, 판정이 없어도 「이어서 혼자 맞힌 수」를 끊는다
-//                (server.mjs skillRowsOf — grade null · unaided false 줄). 단계 3 어댑터가 이렇게 낸다(단계3_계획.md §11).
+//   도움         { kind: 'help',   id, at, item } — 그 답을 내는 데 쓴 도움(힌트 · 해설 · 답 보기), 곧 그 제시의 첫 답보다 앞선
+//                도움이나 답 없이 본 도움이 있으면 그 첫 도움 시각에 하나. 첫 답 뒤에 본 도움(되짚기)은 내지 않는다(설계 §3-3 —
+//                단계 4 계획 §16 Fable 5.2 최종 F1, 단계3_계획.md §11 P1-1을 좁힘). 만남이고, 판정이 없어도 「이어서 혼자 맞힌 수」를
+//                끊는다(server.mjs skillRowsOf — grade null · unaided false 줄). 단계 3 어댑터가 이렇게 낸다.
 //   본인 말      { kind: 'say',    id, at, unit, say: 'known' | 'relearn' }
 //   제외         { kind: 'exclude', id, at, ref, touches? }      touches = { units, skills }
 //   옮겨 온 장부 { kind: 'carry',  id, at, families, after? }

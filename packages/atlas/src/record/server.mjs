@@ -36,7 +36,7 @@ export const FOLD_CAP = 2000;
 export const ISSUED_KEEP_MS = 2 * 86_400_000;
 
 // 기록 · 어댑터 · 근거 줄 규칙의 판 — 이 폴더의 접기 규칙을 고치면 올린다(옛 줄이 새 규칙으로 다시 접히게).
-export const RECORD_EDITION = 'record-3'; // 2: 2판 제시의 firstExposure false를 장부 만남으로(11-11) · 3: 옛 꼴 차례 열쇠를 적힌 시각 먼저로(11-11 GPT GA1)
+export const RECORD_EDITION = 'record-4'; // 2: 2판 제시의 firstExposure false를 장부 만남으로(11-11) · 3: 옛 꼴 차례 열쇠를 적힌 시각 먼저로(11-11 GPT GA1) · 4: 첫 답 뒤의 도움은 도움 만남을 세우지 않는다(11-12 Fable 5.2 최종 F1)
 
 // 판 묶음 — 접기에 드는 판(매개변수 · 기억 · 난도 · 문항 색인의 태그 판 · 기록 규칙). 이것이 바뀌면 그 계정을 옆에 다시 접는다(§4-5).
 export const foldEdition = (params, index = EMPTY_INDEX) =>

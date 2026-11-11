@@ -99,7 +99,10 @@ function stepChild(entry, state, context) {
     return;
   }
   if (event.type === EVENT_TYPES.helped) {
-    if (!state.firstHelp) state.firstHelp = entry;
+    // 도움 만남은 그 답을 내는 데 쓴 도움 — 그 제시의 첫 답보다 앞선 도움과 답 없이 본 도움 — 에만 선다(설계 §3-3).
+    // 첫 답 뒤에 정답 · 풀이를 본 것은 되짚기라 「이어서 혼자 맞힌 수」를 끊지 않는다(만남은 그 첫 답이 이미 세웠고,
+    // 도움 사건 · 만난 표의 비트는 그대로 남는다 — Fable 5.2 최종 F1, 11-12). 뒤 답의 도움 표시(assisted · answerShown)는 그대로다.
+    if (!state.answered && !state.firstHelp) state.firstHelp = entry;
     state.helps.push(event.level);
     return;
   }
@@ -167,6 +170,7 @@ function presentedGroup({ source, children = [], exclusions = [] }, index) {
   const out = [];
   const prior = priorNeeded(presented) ? priorOf(item, state) : null;
   if (prior) out.push(prior);
+  // 도움 만남 — 첫 답보다 앞선 첫 도움 또는 답 없이 본 첫 도움(stepChild). 첫 답 뒤의 도움만 있으면 없다.
   if (state.firstHelp)
     out.push({ kind: 'help', id: state.firstHelp.key, at: state.firstHelp.atMs, item });
   return [...out, ...state.out];

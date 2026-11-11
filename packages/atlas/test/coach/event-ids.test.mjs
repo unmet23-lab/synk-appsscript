@@ -233,6 +233,57 @@ test('돌아온 것으로 낸 내 제시는 판이 다시 서도 두 번 세지 
   other.dispose();
 });
 
+test('하루 복습 상한에 걸려 낼 것이 없으면(none) 그 까닭(day.capped)과 문장을 싣는다 — 제품이 판 끝 줄을 사실대로(Fable 5.2 최종 F2)', async () => {
+  const items = words(8, 'c');
+  const time = clock();
+  const params = { ...PARAMS, reviewsPerDay: 3 };
+  const coach = coachOn({ items, time, port: memoryPort(), key: keyOf('capped-none'), params });
+  await coach.ready;
+  coach.recommend(items, { set: { length: 8, newLimit: 8 } });
+  for (const item of items) {
+    await coach.answer(coach.present(item), { correct: true, assessable: true }).stored;
+    time.advance(STEP);
+  }
+  coach.finishSet({ record: false });
+  time.advance(40 * DAY);
+  coach.recommend(items, { set: { length: 10, newLimit: 0 } });
+  const served = new Set();
+  const left = () => items.filter(item => !served.has(item.itemKey));
+  for (let step = 0; step < 3; step += 1) {
+    const picked = coach.recommend(left());
+    assert.equal(picked.tier, 1, '돌아온 것');
+    served.add(picked.selected.itemKey);
+    await coach.answer(coach.present(picked.selected), { correct: true, assessable: true }).stored;
+    time.advance(STEP);
+  }
+  const none = coach.recommend(left());
+  assert.equal(none.status, 'none');
+  assert.equal(none.facts.held, 'day');
+  assert.equal(none.why?.code, 'day.capped');
+  assert.match(none.why.line, /오늘은 여기까지예요/);
+  // 까닭을 모르는 none(후보가 없음)에는 이유가 없다
+  assert.equal(coach.recommend([]).why, null);
+  coach.dispose();
+});
+
+test('손님 길로 여는 계정은 저장소 이름을 스스로 짓지 않는다 — key 없이 guest와 account를 함께 주면 준비가 거절된다(Fable 5.2 최종 F6)', async () => {
+  const items = words(2, 'g');
+  const time = clock();
+  const ambiguous = coachOn({ items, time, port: memoryPort(), account: 'acct-off', revision: 1 });
+  await assert.rejects(ambiguous.ready, /저장소 이름/);
+  ambiguous.dispose();
+  const named = coachOn({
+    items,
+    time,
+    port: memoryPort(),
+    account: 'acct-off',
+    revision: 1,
+    key: keyOf('consent-off'),
+  });
+  await named.ready;
+  named.dispose();
+});
+
 test('내 제시가 서버에서 접혀(시각이 눌려) 요약의 「낸 것」 줄로 돌아온 뒤에도 번호로 빼 두 번 세지 않는다(Fable 5.2 D8)', async () => {
   const items = words(8, 'v');
   const map = fakeMap(items);
