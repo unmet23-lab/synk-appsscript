@@ -4,6 +4,8 @@
 // film.css: 칸이 9:16보다 좁으면 채운다(cover — 높이가 배율을 정한다). 넓은 칸은 화소비 띠마다 정한 폭 이하일 때만 채우고(폭 × 화소비 / 720 ≤ 1.47) 넘으면 높이에 맞춘다(contain).
 // Fable 최종(pulse-model-films-20261110)이 9:16 문턱만으로는 최대화한 1440 창에 검정 띠가 생긴다고 짚어 띠를 더했다. 그래서 어느 칸이든 배율은
 // max(칸 높이 / 1280 × 화소비, 띠 폭 × 화소비 / 720)를 넘지 않는다 — 기기마다 높이 쪽을, 띠마다 폭 쪽을 잰다. 휴대폰은 폭을 알아 그대로 잰다.
+// 높이 쪽은 기준 기기 셋만으로는 지켜지지 않았다 — Fable 5.2 검수(pulse-model-films-20261111-f52, 11-11)가 화소비가 높은 큰 화면(맥북 프로 16형 1.75배 · 4K 150% 1.69배 · 5K 2.06배)을 짚어,
+// 칸 높이 × 화소비가 약 1,881을 넘으면 영상 칸에 위아래 안쪽 여백을 두는 높이 띠(화소비 4까지 빈틈 없이)를 더했다. 둘째 시험이 그 띠와 그 화면들을 잰다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -41,5 +43,29 @@ test('the model clip in the request form never stretches past the limit on the t
     const 맞춤=칸폭/칸높이<=9/16||band&&칸폭<=band.width?'cover':'contain';
     const scale=늘어난배율({칸폭,칸높이,원본폭:720,원본높이:1280,맞춤,화소비:device.화소비});
     assert.ok(scale<기본기준,`${device.이름}: a ${칸폭}×${Math.round(칸높이)} ${맞춤} portrait stretches the clip ${scale}×`);
+  }
+});
+
+test('the clip never stretches past the limit on its height either — tall boxes on high-density screens letterbox it on its own black padding',()=>{
+  const css=read('film.css');
+  const caps=[...css.matchAll(/@media ([^{]*)\{@container \(min-height:(\d+)px\)\{\.sx-casting-lead video\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([,query,min,cap])=>({
+    query,min:Number(min),cap:Number(cap),lo:Number(query.match(/min-resolution:([\d.]+)dppx/)?.[1]||0),hi:Number(query.match(/max-resolution:([\d.]+)dppx/)?.[1]),
+  })).sort((x,y)=>x.hi-y.hi);
+  assert.equal(caps.length,7,'seven height bands, up to a pixel ratio of 4');
+  // 띠 사이 틈이 없다 — 다음 띠는 앞 띠 위 끝 + 0.001dppx에서 시작한다(화소비 1.005 같은 표시 배율 · 확대 조합도 어느 띠에 든다).
+  for(let i=1;i<caps.length;i++)assert.ok(Math.abs(caps[i].lo-(caps[i-1].hi+0.001))<1e-9,`${caps[i].query} starts right after ${caps[i-1].query}`);
+  for(const band of caps){
+    assert.ok(Number.isFinite(band.hi),`${band.query} has an upper pixel ratio`);
+    assert.equal(band.min,band.cap+1,`${band.query}: the padding starts one pixel above the cap`);
+    const scale=늘어난배율({칸폭:band.cap*9/16,칸높이:band.cap,원본폭:720,원본높이:1280,맞춤:'cover',화소비:band.hi});
+    assert.ok(scale<기본기준,`${band.query}: a ${band.cap}px tall clip at ${band.hi}x stretches ${scale}×`);
+  }
+  // 화소비가 높은 큰 화면(11-11 · 11-12 크롬 실측과 같은 창). 넓은 창의 큰 칸은 창 높이를 꽉 채우고, 세로 창은 62dvh다.
+  const tall=Number(css.match(/\.sx-casting-lead\{grid-row:auto;grid-column:1\/-1;height:(\d+)vh;height:\1dvh\}/)?.[1])/100;
+  for(const [이름,w,h,ratio] of [['맥북 프로 16형',1728,1117,2],['맥북 프로 16형 창',1728,1000,2],['4K 150%',2560,1440,1.5],['4K 200%',1920,1080,2],['5K',2560,1320,2],['4K 100%',3840,2000,1],['3008 · 125%',3008,1600,1.25],['화소비 4 휴대폰',360,780,4]]){
+    const 칸높이=w<=820||w<=h?tall*h:h,band=caps.find(b=>ratio>=b.lo&&ratio<=b.hi);
+    const 높이=band&&칸높이>=band.min?band.cap:칸높이;
+    const scale=늘어난배율({칸폭:높이*9/16,칸높이:높이,원본폭:720,원본높이:1280,맞춤:'cover',화소비:ratio});
+    assert.ok(scale<기본기준,`${이름} ${w}×${h} at ${ratio}x: a ${Math.round(높이)}px tall clip stretches ${scale}×`);
   }
 });

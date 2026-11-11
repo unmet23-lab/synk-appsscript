@@ -37,6 +37,9 @@ export const MOVING_MODELS=Object.freeze(['M01','F01','F02','F03','M02','F04','F
 export const modelFilm=item=>item&&MOVING_MODELS.includes(item.id)?{src:`${MODEL_FILM_BASE}video/${item.id}-wall.mp4`,poster:`${MODEL_FILM_BASE}img/${item.id}/wall.webp`}:null;
 const stillOnly=()=>reduced()||!!globalThis.navigator?.connection?.saveData;
 const canHover=()=>typeof matchMedia==='function'&&matchMedia('(hover:hover)').matches;
+// 계속 도는 영상(큰 칸 lead · 예시 작품 win)의 멈춤 · 재생 단추. 보이는 글은 「멈춤」 · 「재생」, 읽는 이름에는 무엇을 멈추는지까지 담는다.
+const holdName=(kind,paused)=>kind==='lead'?(paused?t('모델 영상 재생'):t('모델 영상 멈춤')):(paused?t('예시 작품 영상 재생'):t('예시 작품 영상 멈춤'));
+const holdButton=(kind,paused)=>`<button type="button" class="sx-film-hold sx-small" data-do="filmhold" data-hold="${kind}"${paused?' data-paused':''} aria-label="${esc(holdName(kind,paused))}">${esc(paused?t('재생'):t('멈춤'))}</button>`;
 // 예시 작품 한 줄: 「작품」 · 무엇으로 이기는지 · 출처.
 const winCap=pick=>t('「{work}」 · {label} · 가상 브랜드로 만든 자체 작품',{work:t(pick.work),label:t(pick.label)});
 
@@ -67,7 +70,7 @@ const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t(
 const choiceShot=a=>a.modelChoice==='custom'&&personaPhoto(a)?.src||a.modelChoice==='persona'&&a.personaPick?.image||kindOf(a)?.shot||still('w-gift-sphere');
 const wall=a=>{
   const chosen=a.models.map(modelOf).filter(Boolean),picks=[...new Set([...chosen,...picksOf(a)])].slice(0,4),lead=chosen[0]||picks[0];
-  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" role="presentation"><img data-portrait src="${esc(choiceText(a)?choiceShot(a):bigScene(lead))}" alt="" decoding="async"><video data-portrait-film muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true"></video><figcaption class="sx-small" data-portrait-name aria-hidden="true">${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption><button type="button" class="sx-film-hold sx-small" data-do="filmhold">${esc(t('멈춤'))}</button></figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
+  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" role="presentation"><img data-portrait src="${esc(choiceText(a)?choiceShot(a):bigScene(lead))}" alt="" decoding="async"><video data-portrait-film muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true"></video><figcaption class="sx-small" data-portrait-name aria-hidden="true">${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption>${holdButton('lead',false)}</figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
 };
 const allWall=a=>{
   const fit=item=>!!MODEL_LINES[item.id]?.fits.includes(a.kind);
@@ -335,7 +338,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     if(id==='where'){const pkg=pkgOf(a),from=`<small data-price-from ${pkg?'':'hidden'}>${esc(t('부터'))}</small>`,value=`<span data-price>${pkg?price(pkg.price):'—'}</span>`;monSwap(`<div class="sx-q-where"><img class="sx-q-fill" src="${still(RATIO_STILL[ratioOf(a)])}" data-ratio-still alt=""><div class="sx-q-finder" data-frame data-ratio="${ratioOf(a)}"><span class="sx-no" data-ratio-label>${ratioOf(a)}</span></div><div class="sx-q-price"><b class="sx-serif">${fromBefore()?from+value:value+from}</b><span class="sx-small" data-cuts-line ${pkg?'':'hidden'}><span data-cuts-label>${esc(pkg?.photo?t('받으실 사진'):t('영상 전에 먼저 보여 드리는 컷'))}</span> <b class="sx-no" data-cuts>${pkg?pkg.cuts:0}</b></span><span class="sx-small" data-terms ${pkg?'':'hidden'}>${esc(termsOf(pkg))}</span><div class="sx-q-ticks" data-strip aria-hidden="true"></div></div></div>`);fillStrip(pkg?.cuts||0);return;}
     if(id==='files'){const own=ownPhoto(a);monSwap(`<div class="sx-q-how"><figure><img src="${esc(own||still('file-gift-set'))}" alt=""><figcaption class="sx-small"><span class="sx-no">01</span> ${esc(own?t('보내 주신 사진'):t('이런 사진이면 돼요'))}</figcaption></figure>${[['02',k('장면 이미지 · 확인'),'sheet-gift-05'],['03',k('완성 영상'),'w-gift']].map(([no,label,name])=>`<figure><img src="${still(name)}" alt=""><figcaption class="sx-small"><span class="sx-no">${no}</span> ${esc(t(label))}</figcaption></figure>`).join('')}<p class="sx-small sx-q-how-note">${esc(t('제품 · 로고 · 글자는 AI로 그리지 않고 실제 파일을 얹어요. 영상을 만들기 전에 02에서 모든 컷을 먼저 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.'))}</p></div>`);return;}
     if(id==='message'||id==='words'){const own=ownPhoto(a),shot=kindOf(a)?.shot;/* 판 4 B7: 사진 전에는 고른 업종의 작품 그림 위에 손님 말을 얹는다(음료 손님의 말이 눈 결정 · 화장품 병 위에 얹히던 것). */monSwap(`${frame({channels:a.channels.length?a.channels:['shorts']},`<img class="sx-q-fill" src="${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}" alt=""><div class="sx-q-copy${id==='words'?' is-top':''}" data-copy></div>`)}<p class="sx-small sx-q-cap">${esc(id==='words'?t('적으신 글자는 이 자리에 그대로 얹어요'):t('1차안에서 이 말을 한 문장으로 다듬어요'))}</p>`);updateCopy();return;}
-    if(id==='feel'){const pick=WIN.find(item=>item.id===a.win)||WIN[1];monSwap(`${frame({channels:[pick.ratio==='16:9'?'youtube':'shorts']},`<video class="sx-q-fill" data-win-film src="${esc(pick.film)}" poster="${esc(pick.poster)}" muted loop playsinline preload="metadata" ${reduced()?'':'autoplay'}></video><button type="button" class="sx-film-hold sx-small" data-do="filmhold">${esc(reduced()?t('재생'):t('멈춤'))}</button>`)}<p class="sx-small sx-q-cap"><span data-win-kind>${esc(t(pick.kind))}</span> · <span data-win-cap>${esc(winCap(pick))}</span></p>`);const film=$('[data-win-film]');if(film&&!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));return;}
+    if(id==='feel'){const pick=WIN.find(item=>item.id===a.win)||WIN[1];monSwap(`${frame({channels:[pick.ratio==='16:9'?'youtube':'shorts']},`<video class="sx-q-fill" data-win-film src="${esc(pick.film)}" poster="${esc(pick.poster)}" muted loop playsinline preload="metadata" ${reduced()?'':'autoplay'}></video>`)}${holdButton('win',reduced())}<p class="sx-small sx-q-cap"><span data-win-kind>${esc(t(pick.kind))}</span> · <span data-win-cap>${esc(winCap(pick))}</span></p>`);const film=$('[data-win-film]');if(film&&!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));return;}
     if(id==='model'){monSwap(allModels?allWall(a):wall(a));if(!allModels&&!choiceText(a))leadFilm(modelOf(a.models[0])||picksOf(a)[0]);return;}
     if(id==='contact'||id==='review'){monSwap(`${frame({channels:['shorts']},`<img class="sx-q-fill" src="${still(id==='contact'?'still-shards':'still-lid')}" alt="">`)}<p class="sx-small sx-q-cap">${esc(t('1차안의 장면 이미지는 이런 모습이에요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요'))}</p>`);return;}
     monSwap('');
@@ -387,7 +390,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     action(el){a.action=a.action===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="action"]').forEach(item=>setChip(item,item.dataset.id===a.action));renderSlate();saved();},
     avoid(el){toggleIn(a.avoid,el.dataset.id);setChip(el,a.avoid.includes(el.dataset.id));saved();},
     // 계속 도는 영상(모델의 4초 · 예시 작품)의 멈춤 · 재생. 큰 칸에서 멈춰 두면 사람을 바꿔도 첫 장면에 선다. 글은 play · pause 사건이 맞춘다.
-    filmhold(el){const film=el.parentElement.querySelector('video');if(!film)return;if(film.matches('[data-portrait-film]'))filmHeld=!film.paused;if(film.paused)film.play().catch(()=>{});else film.pause();},
+    filmhold(el){const lead=el.dataset.hold==='lead',film=$(lead?'[data-portrait-film]':'[data-win-film]');if(!film)return;if(lead)filmHeld=!film.paused;if(film.paused)film.play().catch(()=>{});else film.pause();},
     win(el){a.win=el.dataset.id;setRows('win',a.win);const pick=WIN.find(item=>item.id===a.win);if(pick){const film=$('[data-win-film]');if(film&&film.getAttribute('src')!==pick.film){film.poster=pick.poster;film.src=pick.film;film.closest('[data-frame]').dataset.ratio=pick.ratio;if(!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));else syncHold(film);play(film,[{opacity:.3},{opacity:1}],{duration:320});}$('[data-win-cap]').textContent=winCap(pick);$('[data-win-kind]').textContent=t(pick.kind);}renderSlate();saved();},
     refpoint(el){const ref=a.refs[0];toggleIn(ref.points,el.dataset.id);setChip(el,ref.points.includes(el.dataset.id));saved();},
     allmodels(){allModels=!allModels;renderMonitor('model');$('.sx-cast')?.focus({preventScroll:true});},
@@ -444,9 +447,9 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
       if(!film.isConnected||film.dataset.src!==src)return;
       film.pause();
       if(!next){if(film.hasAttribute('src')){film.removeAttribute('src');film.removeAttribute('poster');film.load();}return;}
-      const show=()=>{if(film.isConnected&&film.dataset.src===src)box.classList.add('has-film');};
+      const show=()=>{if(film.isConnected&&film.dataset.src===src&&!film.error)box.classList.add('has-film');};
       const still=new Image();still.src=next.poster;(still.decode?still.decode():Promise.reject()).then(show,()=>{if(film.readyState>=2)show();else film.addEventListener('loadeddata',show,{once:true});});
-      film.poster=next.poster;film.src=src;if(!filmHeld)film.play().catch(()=>{}).finally(()=>syncHold(film));else syncHold(film);
+      film.preload=filmHeld?'auto':'none';film.poster=next.poster;film.src=src;if(!filmHeld)film.play().catch(()=>{}).finally(()=>syncHold(film));else syncHold(film);
     },film.hasAttribute('src')?320:0);
   }
   // 21명 벽: 마우스를 올린 칸만 그 사람의 4초를 돌린다(올려 둔 동안만 받는다). 터치 화면 · 움직임 줄이기 · 데이터 절약은 사진 그대로.
@@ -561,7 +564,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   // 영상을 못 받으면 사진으로 돌아간다. 미디어 이벤트는 거품이 없어 붙잡기 단계로 듣는다.
   mon.addEventListener('error',event=>{const film=event.target;if(film.matches?.('[data-portrait-film]')&&film.dataset.src&&film.dataset.src===film.getAttribute('src'))film.parentElement.classList.remove('has-film');else if(film.matches?.('video[data-film]'))stopTile(film);},true);
   // 단추 글은 영상 상태에서 읽는다 — play · pause 사건만으로는 자동 재생이 막힌 기기 · 재생 중 src 교체(사건 없이 멈춤)에서 글이 거꾸로 선다.
-  function syncHold(film){const hold=film?.parentElement?.querySelector?.('.sx-film-hold');if(hold)hold.textContent=film.paused?t('재생'):t('멈춤');}
+  function syncHold(film){const kind=film?.matches?.('[data-portrait-film]')?'lead':film?.matches?.('[data-win-film]')?'win':'',hold=kind&&$(`[data-hold="${kind}"]`);if(!hold)return;hold.textContent=film.paused?t('재생'):t('멈춤');hold.toggleAttribute('data-paused',film.paused);hold.setAttribute('aria-label',holdName(kind,film.paused));}
   const holdLabel=event=>{if(event.target.tagName==='VIDEO')syncHold(event.target);};
   mon.addEventListener('play',holdLabel,true);mon.addEventListener('pause',holdLabel,true);
   form.addEventListener('submit',event=>event.preventDefault());
