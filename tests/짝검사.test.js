@@ -200,7 +200,8 @@ test('기본표 — WORLD 묶음 전부 · 스크립트·결과물·정확한 �
       const 이름식 = new RegExp(`\\btest\\(\\s*['"\`]${줄.시험[1].replace(/^\^/, '')}`);
       assert.match(fs.readFileSync(path.join(REPO, 줄.시험[0]), 'utf8'), 이름식, `${줄.이름}: ${줄.시험[0]}에 이름 무늬 ${줄.시험[1]}에 맞는 시험이 없다`);
     }
-    assert.ok(/^(?:tests|experiences)\//.test(줄.단계) ? fs.existsSync(path.join(REPO, 줄.단계)) : 흐름.includes(`name: ${줄.단계}`), `${줄.이름}: CI 단계 「${줄.단계}」가 워크플로에 없다`);
+    // 단계가 시험 파일이면 그 파일이 있어야 한다 — 루트 tests/ · 제품 폴더(experiences/) · 회사 폴더(docs/ 아래, wide-tests가 돈다 — 11-11 PULSE 글꼴 조각).
+    assert.ok(/^(?:tests|experiences|docs)\/.*\.test\.[cm]?js$/.test(줄.단계) ? fs.existsSync(path.join(REPO, 줄.단계)) : 흐름.includes(`name: ${줄.단계}`), `${줄.이름}: CI 단계 「${줄.단계}」가 워크플로에 없다`);
   }
   // CI가 그 단계에서 실제로 부르는 명령과 같은 스크립트다(package.json → sync-atlas · check-account-bundles · build-topik4-course).
   const 사슬 = ['package.json', 'tools/lib/atlas-copies.js', 'tools/check-account-bundles.js'].map((p) => fs.readFileSync(path.join(REPO, p), 'utf8')).join('\n');
@@ -225,6 +226,11 @@ test('기본표 — 10-20~10-22 master 빨강을 낸 push의 경로는 골리고
   assert.ok(이름(['docs/온라인반_TOPIK4급/쓰기과제.md']).includes('TOPIK4 수업 문항'));
   assert.ok(이름(['experiences/topik-items/items/tii-u14.json']).includes('WORLD TOPIK 은행'));
   assert.ok(이름(['atlas/engine.js']).includes('raw consumers and engine metadata'));
+  // 3f692ec8d(11-11) — PULSE 고객 앱 화면 글에 새 음절을 넣고 글꼴 조각을 안 다시 만들었다(회사 폴더 시험이라 CI wide에서야 깨졌다)
+  const 회사 = 'docs/마케팅/온라인마케팅지도/engagement/company';
+  for (const p of [`${회사}/public/pulse-app/my-models.mjs`, `${회사}/public/pulse-app/i18n/en.mjs`, `${회사}/public/pulse-app/sw.js`, `${회사}/public/pulse-app/index.html`, `${회사}/public/pulse-app/film.css`, 'tools/build-pulse-fonts.py'])
+    assert.ok(이름([p]).includes('PULSE 글꼴 조각'), p);
+  assert.ok(!이름([`${회사}/server.mjs`]).includes('PULSE 글꼴 조각') && !이름([`${회사}/public/pulse-app/app.css`]).includes('PULSE 글꼴 조각'), '서버 · 직원 화면 CSS는 화면 원문이 아니다');
   assert.deepEqual(이름(['docs/_ops/트랙.md', 'docs/_ops/결정.md', 'docs/현장노트/git_줄끝_잠금.md', 'README.md', 'AGENTS.md']), []);
   assert.deepEqual(이름(['docs/마케팅/제작양식/만족사례_장부.md', 'tools/바로올리기.js']), []);
 });

@@ -34,6 +34,7 @@ const path = require('node:path');
 const 뿌리 = path.resolve(__dirname, '..');
 const ATLAS단계 = 'verify all local Atlas consumer copies';
 const 계정단계 = 'verify account library and portal bundles';
+const PULSE회사 = 'docs/마케팅/온라인마케팅지도/engagement/company';
 const 기본한도ms = 3 * 60e3;
 const 함께 = 4;
 const 못돌림식 = /Cannot find (?:module|package) ['"](?:esbuild|@supabase\/supabase-js)['"]|의존성이 없다/;
@@ -170,6 +171,16 @@ function 기본표(root = 뿌리) {
     이름: '싱크타운 데이터 생성물', 단계: 'tests/town-places.test.js', 시험: ['tests/town-places.test.js', '^생성물이 원천과 같다'],
     고침: 'node tools/town-data-build.mjs', 결과물: ['experiences/synk-town/town/data.gen.mjs'],
     원천: ['experiences/synk-town/town/data/*.json', 'tools/town-data-build.mjs'],
+  });
+  표.push({
+    // PULSE 고객 앱 글꼴은 글자 조각이다(11-11 첫 방문 무게). 화면 글에 새 한글 음절이 들어가면 조각을 다시 만들어야
+    // 한국어 첫 방문이 나머지 조각(461KB)을 받지 않는다 — 11-11 보관 규칙 화면의 「칙」 하나로 CI wide가 빨개졌다.
+    // 회사 폴더 시험이라 관련시험(루트 tests/만)이 못 본다. 고치는 도구는 파이썬(fontTools)이고, 이 줄은 node 시험만 돈다.
+    이름: 'PULSE 글꼴 조각', 단계: `${PULSE회사}/pulse-first-load.test.mjs`, 시험: [`${PULSE회사}/pulse-first-load.test.mjs`, '^slices never overlap'],
+    고침: 'python -X utf8 tools/build-pulse-fonts.py',
+    결과물: [`${PULSE회사}/public/pulse-app/film.css`, `${PULSE회사}/public/pulse-app/assets/SYNKSans-pulse-*.woff2`, `${PULSE회사}/public/pulse-app/assets/NotoSerifKR-300-*.woff2`, 'docs/브랜드_폰트/PULSE_웹/fonts.json'],
+    원천: [`${PULSE회사}/public/pulse-app/*.mjs`, `${PULSE회사}/public/pulse-app/*.js`, `${PULSE회사}/public/pulse-app/i18n/*.mjs`, `${PULSE회사}/public/pulse-app/index.html`,
+      `${PULSE회사}/pulse-ui-text.mjs`, 'tools/build-pulse-fonts.py'],
   });
   표.push({
     // 지면 하나하나의 판정이라 작업본 대조는 하지 않는다 — 안 올리는 다른 지면은 CI에 안 간다.
