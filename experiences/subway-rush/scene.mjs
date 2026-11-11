@@ -150,7 +150,7 @@ export async function createScene(canvas, { base, tween, ease, files, calm = () 
       const c0 = [...state.c], from = state.push, p0 = state.pan[0];
       await tween(seconds, (k) => {
         state.c = [c0[0] + (target[0] - c0[0]) * k, c0[1] + (target[1] - c0[1]) * k];
-        state.pan = [p0 + pan * Math.min(1, k * 1.5), 0];
+        state.pan = [p0 + pan * Math.min(1, k * 1.5), state.pan[1] || 0];   // 세로는 그대로 — 고르는 판이 올려 둔 사진은 app.mjs panY가 내린다(한 프레임에 내려앉지 않게)
         state.push = from + push * k * k; state.blur = blur * k * k;
         if (state.nextImg) state.mix = Math.max(0, (k - 0.72) / 0.28);
         if (fadeWhite) { state.fadeTo = 1; state.fade = Math.max(0, (k - 0.62) / 0.38); }

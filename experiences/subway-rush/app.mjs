@@ -57,7 +57,9 @@ const music = createMusic(sound.ctx, { destination: sound.output });
 sound.onVoice = (on) => music.voice(on);
 await Promise.all([document.fonts.load('600 20px SubwaySign'), document.fonts.load('16px SubwayLED'), document.fonts.load('700 19px SubwayUI'), document.fonts.load('500 30px SubwayNum')]).catch(() => {});
 const hud = createHud({ route: $('hud-route'), clock: $('hud-clock'), status: $('hud-status'), badge: $('hud-badge'), stage: $('stage'), calm: reduced });
-const panel = createPickPanel({ root: $('pick') });
+// 옛 index.html(캐시 10분)이 새 app.mjs를 부르면 #pick이 없다 — 그때는 판 자리를 만들어 붙인다(Fable 5.2 P1: root null로 모듈이 죽어 입구도 안 떴다)
+const pickRoot = $('pick') || $('stage').appendChild(Object.assign(document.createElement('section'), { id: 'pick', className: 'pick', hidden: true }));
+const panel = createPickPanel({ root: pickRoot });
 const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced, look: query.get('look') === 'b' ? 'b' : 'a' }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
 const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();
 
@@ -360,7 +362,7 @@ async function meeting(m, afterCarId) {
   if (s.lead) { await wait(0.4); setStatus('announcer'); sound.chime(); await wait(1.1); await say(s.lead); }
   // 그 사람 쪽으로 시점이 돌아간다
   await scene.prepareNext({ img: p.photo, dep: `${p.photo}.depth`, c: [0.5, 0.4] });
-  await tween(0.55, (k) => { scene.state.mix = k; if (!reduced()) scene.state.pan = [0.03 * k, 0]; }, ease.inOut);
+  await tween(0.55, (k) => { scene.state.mix = k; if (!reduced()) scene.state.pan = [0.03 * k, scene.state.pan[1] || 0]; }, ease.inOut);   // 세로는 그대로 — 고르는 판이 올려 둔 사진이 내려오는 중이다(panY)
   scene.settleNext(); scene.state.streak = 0;
   // 말하는 동안 아주 조금 다가감(한 번 — 늘 도는 흔들림 아님)
   tween(3.2, (k) => { if (!reduced()) scene.state.push = 0.03 * k; }, ease.out);
@@ -418,7 +420,8 @@ async function playSignDecision(run, d, { img, dep, keyLine, auto, note = null }
   ex.answer(answerPayload({ correct: result.correct, assessable: d.assessable, selectedId: `subway.${chosen}`, correctId: `subway.${d.answer}` }));
   noteMissed(result, d);
   const way = d.options.findIndex((o) => o.id === d.answer);
-  if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); }
+  // 맞게 고르면 채운 칸을 잠깐 보이고 판이 내려가기 시작한 뒤 달려 나간다(Fable 5.2 P3 — 판이 달려 나감 · 만남의 앞을 덮었다)
+  if (result.correct) { sound.sfx.pass(); streakFlash(result); setClock(run); await wait(reduced() ? 0.1 : 0.45); }
   else { sound.sfx.ask(); if (!reduced()) await scene.peek(i - 1); else await wait(0.5); endChoice(); await afterWrong(run, d, result); await scene.show({ img, dep, c: [0.5, 0.515], push: reach }); panel.show(kind, d.options, { line: LINES[hud.state.line]?.color }); await wait(0.6); panel.pick(way); await wait(0.7); }   // 맞는 길을 판에서 채워 짚고 그리로 달린다 — 판이 다 올라온 뒤에 채운다(검수 A3)
   return { way, result };
 }

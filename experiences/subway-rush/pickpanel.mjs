@@ -64,11 +64,11 @@ export function createPickPanel({ root }) {
       root.dataset.on = ''; on = true; picked = -1;
     },
     press(i, down) { opts.children[i]?.toggleAttribute('data-press', !!down); },
-    /** 고르면 그 칸을 잠깐 채워 보인 뒤 판이 내려간다 — 문 열림 · 달려 나감(사진)을 가리지 않는다. */
+    /** 고르면 그 칸을 0.4초 채워 보인 뒤 판이 내려간다(0.38초). 문 열림(0.95초)은 그 뒤에 보이고, 통로 · 출구는 app.mjs가 0.45초 기다렸다 달려 나간다. */
     pick(i) { picked = i; root.dataset.picked = String(i); opts.children[i]?.setAttribute('data-mine', ''); this.hide(); },
     hide() {
       if (!on) return; on = false;
-      hideTimer = setTimeout(() => { root.dataset.out = ''; delete root.dataset.on; hideTimer = setTimeout(() => { root.hidden = true; }, 420); }, picked >= 0 ? 520 : 0);
+      hideTimer = setTimeout(() => { root.dataset.out = ''; delete root.dataset.on; hideTimer = setTimeout(() => { root.hidden = true; }, 420); }, picked >= 0 ? 400 : 0);
     },
   };
 }

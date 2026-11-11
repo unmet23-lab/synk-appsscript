@@ -70,11 +70,17 @@ test('모든 여정의 모든 결정: 칸 셋에 글이 있고, 굵은 말이 �
 
 test('누름 칸(#zones)은 판의 세 칸과 같은 자리 — 판 높이에서 머리를 뺀 아래, 폭 ⅓씩', () => {
   const css = readFileSync(fileURLToPath(new URL('./style.css', import.meta.url)), 'utf8');
-  assert.match(css, /\.zones\{[^}]*bottom:0;height:calc\(var\(--pick-h\) - var\(--pick-head\)\);display:grid;grid-template-columns:1fr 1fr 1fr/);
+  assert.match(css, /\.zones\{[^}]*bottom:env\(safe-area-inset-bottom,0px\);height:calc\(var\(--pick-h\) - var\(--pick-head\)\);display:grid;grid-template-columns:1fr 1fr 1fr/);
+  assert.match(css, /\.pick\{[^}]*height:calc\(var\(--pick-h\) \+ env\(safe-area-inset-bottom,0px\)\)/, '판은 아래 안전 영역만큼 더 높고, 칸 · 누름 칸은 그 위(검수 A2)');
   assert.match(css, /\.pk-opts\{[^}]*top:var\(--pick-head\);bottom:0;display:grid;grid-template-columns:repeat\(3,1fr\)/);
-  assert.match(css, /\.pick\{[^}]*bottom:0;height:var\(--pick-h\)/);
   assert.doesNotMatch(css, /route-map|\.rm-/, '옛 아래 역 지도는 걷었다');
   const z = (sel) => Number(css.match(new RegExp(`\\${sel}\\{[^}]*z-index:(\\d+)`))[1]);
   assert.ok(z('.zones') > z('.pick'), '누름 칸이 판 위 — 키보드 초점 테두리가 판 뒤에 가리지 않게(검수 A2)');
   assert.match(css, /--pick-head:clamp\(/, '판 머리 · 칸 크기는 무대 높이를 따라 줄어든다(검수 A1)');
+  const html = readFileSync(fileURLToPath(new URL('./index.html', import.meta.url)), 'utf8');
+  for (const f of ['sign', 'ui']) {
+    const v = css.match(new RegExp(`fonts/${f}\\.woff2(\\?v=[\\w-]+)?'`))?.[1] || '';
+    assert.ok(v, `${f}.woff2에 ?v= — 옛 글꼴 묶음 캐시(검수 -b A1)`);
+    assert.ok(html.includes(`fonts/${f}.woff2${v}"`), `${f}.woff2 preload 주소가 @font-face와 같다`);
+  }
 });

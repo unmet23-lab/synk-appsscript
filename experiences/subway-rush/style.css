@@ -1,8 +1,9 @@
 /* 환승 러시 겉(2026-11-04, 설계 5절 · 11-10 A 「노선도」): 입구 · 결과는 실제 물건(교통카드 단말기 · 종이 안내문 · 스탬프 카드), 달리는 화면은 노선도 그래픽(위 노선 줄 · 노선 색 문 전환), 고르는 순간은 아래에서 올라오는 길 안내 표지판(11-11 B).
    움직임 토큰은 주문 폭주 2판과 같다. 글자는 SubwaySign(본고딕 계열) · LED는 비트맵을 점으로(led.mjs) · 휴대폰 알림만 기기 글꼴. */
-@font-face{font-family:SubwaySign;src:url('assets/fonts/sign.woff2') format('woff2');font-weight:100 900;font-display:swap}
-@font-face{font-family:SubwayLED;src:url('assets/fonts/led.woff2') format('woff2');font-display:block}
-@font-face{font-family:SubwayUI;src:url('assets/fonts/ui.woff2') format('woff2');font-weight:100 900;font-display:swap}
+/* 글꼴은 게임 글자만 추린 묶음이라 글을 더하면 바뀐다 — 옛 묶음이 캐시에 남은 기기가 새 글자를 다른 글꼴로 그리지 않게 ?v=를 단다(preload 주소와 같게, 검수 A1). 글꼴을 다시 묶으면 값을 바꾼다 */
+@font-face{font-family:SubwaySign;src:url('assets/fonts/sign.woff2?v=q20261111') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:SubwayLED;src:url('assets/fonts/led.woff2?v=q20261111') format('woff2');font-display:block}
+@font-face{font-family:SubwayUI;src:url('assets/fonts/ui.woff2?v=q20261111') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:SubwayNum;src:url('assets/fonts/num-500.woff2') format('woff2');font-weight:100 550;font-display:swap}
 @font-face{font-family:SubwayNum;src:url('assets/fonts/num-600.woff2') format('woff2');font-weight:551 650;font-display:swap}
 @font-face{font-family:SubwayNum;src:url('assets/fonts/num-700.woff2') format('woff2');font-weight:651 900;font-display:swap}
@@ -102,18 +103,21 @@ html[data-lobby-fit=side] .ticket-route{flex-wrap:wrap;row-gap:2px;white-space:n
    판 머리는 질문 한 줄(보기가 주인공이라 한 단계 낮게), 위 노선 줄에는 노선 · 시계 · 도움 단추만 남는다(지시문과 단추가 같은 흰 글이던 맹검 지적).
    세 칸은 1px 세로줄로 나눈 한 판 — 칸마다 위에 갈 곳의 색 띠 · 속이 찬 길 안내 화살(사진 속 「↑ 나가는 곳」 표지와 같은 꼴) · 굵은 말 + 가는 말.
    고르면 그 칸이 갈 곳의 색으로 위에서부터 찬다. 판이 덮는 동안 사진은 판 위로 올라와 승객 · 갈래가 보인다(app.mjs FRAME_Y) */
-/* 크기는 무대 높이(cqh)를 따라 줄어든다 — 낮은 화면(iPhone SE 667 · 주소창이 열린 폰 · 1366×768 창)에서 칸 글이 잘리던 것(검수 A1). 844 높이에서 처음 값과 같다 */
-.stage{--pick-h:33%;--pick-head:clamp(44px,6.9cqh,58px);--pk-pad:clamp(10px,2.6cqh,22px);--pk-gap:clamp(6px,1.55cqh,13px);--pk-arrow-s:clamp(26px,5.2cqh,44px)}
+/* 크기는 무대 높이(cqh)를 따라 줄어든다 — 낮은 화면(iPhone SE 667 · 주소창이 열린 폰 · 1366×768 창)에서 칸 글이 잘리던 것(검수 A1). 844 높이에서 처음 값과 같다.
+   cq 단위를 모르는 브라우저(iOS Safari 15.4~15.8 · Firefox 109 아래)에서는 var()에 든 cqh가 계산 때 무효가 되어 누름 칸 높이가 0이 됐다(Fable 5.2 P2) —
+   화면 높이(vh) 판을 먼저 두고 — 무대는 보통 화면 높이 그대로라 거의 같다 — cq 판은 @supports 안에서만, var() 없는 글자 크기는 vh 판 뒤에 같은 속성을 한 번 더(모르는 단위면 그 줄만 버려진다) */
+.stage{--pick-h:33%;--pick-head:clamp(44px,6.9vh,58px);--pk-pad:clamp(10px,2.6vh,22px);--pk-padb:clamp(8px,1.7vh,14px);--pk-gap:clamp(6px,1.55vh,13px);--pk-arrow-s:clamp(26px,5.2vh,44px)}
+@supports (height:1cqh){.stage{--pick-head:clamp(44px,6.9cqh,58px);--pk-pad:clamp(10px,2.6cqh,22px);--pk-padb:clamp(8px,1.7cqh,14px);--pk-gap:clamp(6px,1.55cqh,13px);--pk-arrow-s:clamp(26px,5.2cqh,44px)}}
 html[data-picking] .hud-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 html[data-picking] .hud-row2{justify-content:flex-end}
-.pick{position:absolute;left:0;right:0;bottom:0;height:var(--pick-h);z-index:3;pointer-events:none;background:#101114;color:#fff;box-shadow:0 -18px 46px #0000007a;transform:translateY(104%);transition:transform 540ms cubic-bezier(.22,1,.36,1)}
+.pick{position:absolute;left:0;right:0;bottom:0;height:calc(var(--pick-h) + env(safe-area-inset-bottom,0px));z-index:3;pointer-events:none;background:#101114;color:#fff;box-shadow:0 -18px 46px #0000007a;transform:translateY(104%);transition:transform 540ms cubic-bezier(.22,1,.36,1)}
 .pick[data-on]{transform:none}
 .pick[data-out]{transform:translateY(104%);transition:transform 380ms cubic-bezier(.55,0,.75,.3)}
 .pk-head{position:absolute;left:0;right:0;top:0;height:var(--pick-head);padding:var(--pk-pad) 22px 0}
-.pk-q{margin:0;font:600 clamp(16px,2.25cqh,19px)/1.2 var(--ui);letter-spacing:-.035em;word-break:keep-all;color:#ffffffb8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk-q{margin:0;font:600 19px/1.2 var(--ui);font-size:clamp(16px,2.25vh,19px);font-size:clamp(16px,2.25cqh,19px);letter-spacing:-.035em;word-break:keep-all;color:#ffffffb8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pk-hint{margin-left:10px;font-size:14px;font-weight:500;letter-spacing:-.01em;color:#ffffff73}
 .pk-opts{position:absolute;left:0;right:0;top:var(--pick-head);bottom:0;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #ffffff1a;padding-bottom:env(safe-area-inset-bottom)}
-.pk-opt{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:var(--pk-gap);padding:var(--pk-pad) 14px clamp(8px,1.7cqh,14px);color:#fff;border-left:1px solid #ffffff1a;animation:pk-in 520ms cubic-bezier(.22,1,.36,1) calc(120ms + var(--d) * 70ms) both;transition:filter 300ms ease,scale 160ms ease,color 200ms ease 80ms}
+.pk-opt{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:var(--pk-gap);padding:var(--pk-pad) 14px var(--pk-padb);color:#fff;border-left:1px solid #ffffff1a;animation:pk-in 520ms cubic-bezier(.22,1,.36,1) calc(120ms + var(--d) * 70ms) both;transition:filter 300ms ease,scale 160ms ease,color 200ms ease 80ms}
 .pk-opt:first-child{border-left:0}
 .pk-opt::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--a);z-index:-1;transition:height 340ms cubic-bezier(.22,1,.36,1),background 200ms ease}
 .pk-opt[data-press]{scale:.95}
@@ -129,20 +133,20 @@ html[data-picking] .hud-row2{justify-content:flex-end}
 .pk-opt[data-dir=ur]{--pk-rot:45deg}
 .pk-opt[data-dir=wait]{--pk-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 3h5v18H5zM14 3h5v18h-5z'/%3E%3C/svg%3E")}
 .pk-words{display:flex;flex-direction:column;gap:3px;word-break:keep-all}
-.pk-big{font:800 clamp(24px,3.8cqh,32px)/1 var(--ui);letter-spacing:-.05em;animation:pk-weight 620ms cubic-bezier(.22,1,.36,1) calc(200ms + var(--d) * 70ms) both}
-.pk-small{font:300 clamp(17px,2.7cqh,23px)/1.05 var(--ui);letter-spacing:-.04em;opacity:.82}
-.pk-words[data-size=m] .pk-big{font-size:clamp(20px,3cqh,25px);line-height:1.04}
-.pk-words[data-size=m] .pk-small{font-size:clamp(16px,2.4cqh,20px)}
-.pk-words[data-size=s] .pk-big{font-size:clamp(16px,2.4cqh,20px);line-height:1.08}
-.pk-words[data-size=s] .pk-small{font-size:clamp(15px,2.1cqh,18px)}
+.pk-big{font:800 32px/1 var(--ui);font-size:clamp(24px,3.8vh,32px);font-size:clamp(24px,3.8cqh,32px);letter-spacing:-.05em;animation:pk-weight 620ms cubic-bezier(.22,1,.36,1) calc(200ms + var(--d) * 70ms) both}
+.pk-small{font:300 23px/1.05 var(--ui);font-size:clamp(17px,2.7vh,23px);font-size:clamp(17px,2.7cqh,23px);letter-spacing:-.04em;opacity:.82}
+.pk-words[data-size=m] .pk-big{font-size:25px;font-size:clamp(20px,3vh,25px);font-size:clamp(20px,3cqh,25px);line-height:1.04}
+.pk-words[data-size=m] .pk-small{font-size:20px;font-size:clamp(16px,2.4vh,20px);font-size:clamp(16px,2.4cqh,20px)}
+.pk-words[data-size=s] .pk-big{font-size:20px;font-size:clamp(16px,2.4vh,20px);font-size:clamp(16px,2.4cqh,20px);line-height:1.08}
+.pk-words[data-size=s] .pk-small{font-size:18px;font-size:clamp(15px,2.1vh,18px);font-size:clamp(15px,2.1cqh,18px)}
 .pk-en{margin-top:auto;font:600 10px/1 var(--num);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;opacity:.6}
 .pk-line{position:absolute;right:12px;top:var(--pk-pad);width:24px;height:24px;border-radius:50%;background:#fff;color:var(--c);font:700 13px/24px var(--num);text-align:center}
-.pk-num{font:700 clamp(42px,7.8cqh,66px)/.86 var(--num);letter-spacing:-.05em;color:var(--a);transition:color 200ms ease 80ms}
-.pick[data-kind=exit] .pk-small{font-size:clamp(16px,2.5cqh,21px)}
+.pk-num{font:700 66px/.86 var(--num);font-size:clamp(42px,7.8vh,66px);font-size:clamp(42px,7.8cqh,66px);letter-spacing:-.05em;color:var(--a);transition:color 200ms ease 80ms}
+.pick[data-kind=exit] .pk-small{font-size:21px;font-size:clamp(16px,2.5vh,21px);font-size:clamp(16px,2.5cqh,21px)}
 /* 아주 낮은 무대: 영문 꼬리표부터 빼고, 더 낮으면 화살도 뺀다(색 띠 · 글이 남는다) */
-@container (max-height:560px){.pk-en{display:none}}
-@container (max-height:450px){.pk-arrow{display:none}}
-@container (max-width:370px){.pk-hint{display:none}}   /* 좁은 무대(낮은 창의 폰 비율 무대)에서 질문 뒤 손짓 안내가 질문을 「…」로 잘랐다 — 안내만 뺀다 */
+@media (max-height:560px){.pk-en{display:none}}   /* 무대 높이 = 창 높이(게임 틀 iframe 안에서도) — @container가 아니라 @media라 cq를 모르는 브라우저에서도 듣는다 */
+@media (max-height:450px){.pk-arrow{display:none}.pk-line{position:static}}   /* 화살이 빠지면 노선 동그라미가 글 줄로 내려와 겹치므로 흐름에 넣는다(검수 A3) */
+@media (max-height:490px),(max-width:305px){.pk-hint{display:none}}   /* 무대 폭(= min(창 폭, 창 높이 × .62))이 305 아래일 때만 손짓 안내가 질문을 「…」로 잘랐다 — 그때만 뺀다(360 · 320 폰은 한 줄에 든다, Fable 5.2 P2). 창 크기로 재서 cq를 모르는 브라우저에서도 듣는다 */
 .pk-opt[data-mine] .pk-num{color:var(--t)}
 @keyframes pk-in{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
 @keyframes pk-weight{from{font-weight:260}to{font-weight:800}}
@@ -150,7 +154,7 @@ html[data-reduce-motion] .pick,html[data-reduce-motion] .pick *,html[data-reduce
 @media (prefers-reduced-motion:reduce){.pick,.pick *,.pick *::before{transition:none!important;animation:none!important}}
 
 /* ── 누르는 칸 ── */
-.zones{position:absolute;left:0;right:0;bottom:0;height:calc(var(--pick-h) - var(--pick-head));display:grid;grid-template-columns:1fr 1fr 1fr;z-index:4}   /* 판(z 3) 위 — 키보드 초점 테두리가 판 뒤에 가리지 않게(검수 A2). 안내문(z 4)은 DOM 뒤라 그 위 */
+.zones{position:absolute;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);height:calc(var(--pick-h) - var(--pick-head));display:grid;grid-template-columns:1fr 1fr 1fr;z-index:4}   /* 판(z 3) 위 — 키보드 초점 테두리가 판 뒤에 가리지 않게(검수 A2). 안내문(z 4)은 DOM 뒤라 그 위 */
 .zones button{height:100%;position:relative}
 .zones button:focus-visible{outline:2px solid #ffe34d;outline-offset:-4px}
 
