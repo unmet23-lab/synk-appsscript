@@ -1,0 +1,23 @@
+언어: 간체 중국어(zh-Hans) · 나라 CN · 문법 채점 gemini-4-carbon(high) · 직역 역번역 gemini-3.8-flash(high) · 구독 문(agy 로그인 계정)
+줄 3 · 묶음 1(12줄씩 섞음) · 다시 본 줄 3
+
+■ 줄마다 (원문 안 보여 주고 채점 · 섞어 보냄)
+[12] · 직역 — 거름망 통과
+  원문: 한국 친구가 "잘했어!"라고 써 줬어요
+  번역: 韩国朋友写了“做得好！”
+  문법: 정상
+  직역: 한국 친구가 “잘했다!”라고 썼다.
+[13] · 직역 — 거름망 통과
+  원문: 어? 친구의 ㅈ도 이렇게 써요?
+  번역: 咦，朋友的 ㅈ 也这样写？
+  문법: 정상
+  직역: 어라, 친구의 ㅈ도 이렇게 써?
+[14] · 직역 — 거름망 통과
+  원문: 친구가 쓴 것과 똑같아요!
+  번역: 和朋友写的一模一样！
+  문법: 정상
+  직역: 친구가 쓴 것과 완전히 똑같다!
+
+결과: 거름망 통과 3줄 · 검수 필요 0줄 — 간체 중국어 · 역번역 뜻 대조(원문과 견줌)는 따로
+기록: D:\SYNK-worktrees\SYNK-appsscript\nervous-chatelet-36afe2\docs\마케팅\LAB_처음쓰는ㅈ_20261107\게시\검문\zhs_바뀐줄2.txt.대조.json
+Opus 직역 역번역 질문: D:\SYNK-worktrees\SYNK-appsscript\nervous-chatelet-36afe2\docs\마케팅\LAB_처음쓰는ㅈ_20261107\게시\검문\zhs_바뀐줄2.txt.대조.역번역_질문.md — 원문을 안 본 새 Agent(model: opus)에게 주고, 답을 파일로 받아 node tools/현지어대조.js --대조표 "D:\SYNK-worktrees\SYNK-appsscript\nervous-chatelet-36afe2\docs\마케팅\LAB_처음쓰는ㅈ_20261107\게시\검문\zhs_바뀐줄2.txt.대조.json" --역번역답 <답 파일>

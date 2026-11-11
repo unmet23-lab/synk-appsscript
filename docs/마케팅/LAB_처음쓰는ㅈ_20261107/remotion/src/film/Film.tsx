@@ -280,6 +280,13 @@ const Pop: React.FC<{ at: number; children: React.ReactNode; style?: React.CSSPr
   );
 };
 
+// 말 판(목소리 없는 판) — 뜨는 순간부터 또렷하게(이해 시험 v1: 뜨는 중의 흐림이 「못 읽음」으로 찍혔다)
+const Say: React.FC<{ at: number; children: React.ReactNode }> = ({ at: t, children }) => {
+  const f = useCurrentFrame();
+  if (f < fr(t)) return null;
+  return <span style={{ display: 'inline-block', opacity: interpolate(f - fr(t), [0, 2], [0.6, 1], clamp) }}>{children}</span>;
+};
+
 const Kicker: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <span style={{ display: 'inline-block', background: C.coral, color: C.brown, fontFamily: EN, fontWeight: 800, fontSize: useLoc().size.kicker, lineHeight: 1.1, padding: '8px 18px 10px', borderRadius: 14, marginRight: 16, verticalAlign: 'middle', transform: 'translateY(-8px)', letterSpacing: 0 }}>{children}</span>
 );
@@ -301,13 +308,26 @@ const withHangul = (s: string) =>
 
 const Titles: React.FC = () => {
   const L = useLoc();
-  const big: React.CSSProperties = { ...BIG_TXT, fontSize: L.size.big };
+  const big: React.CSSProperties = { ...BIG_TXT, fontSize: L.size.big, lineHeight: L.size.lineHeight, letterSpacing: L.voice ? -1 : 0 };
   const f = useCurrentFrame();
   const t = f / 30;
   const fade = (a: number, b: number) => interpolate(t, [a, a + 0.12, b - 0.12, b], [0, 1, 1, 0], clamp);
+  // 목소리 없는 판(두 채널): 영어 목소리의 말을 제목 자리 둘째 줄 말 판으로(E23 「ㅍ」 두 채널 판과 같은 꼴)
+  const mute = !L.voice && !!L.says;
+  const saysStyle: React.CSSProperties = { display: 'inline-block', background: '#FFF8EC', border: `4px solid ${C.coral}`, borderRadius: 20, padding: '8px 22px 10px', fontFamily: EN, fontWeight: 800, fontSize: L.size.says, lineHeight: 1.3, color: C.brown, marginTop: 16 };
   if (t < T.flip[0] + 0.1) {
+    const out = interpolate(t, [T.flip[0] - 0.1, T.flip[0] + 0.1], [1, 0], clamp);
+    const says = mute ? (t >= T.a3 ? L.says!.a3 : t >= T.a2 ? L.says!.a2 : t >= T.a1 ? L.says!.a1 : null) : null;
+    // 셋째 이름표 펀치 인(1.2배) 동안 제목은 걷고 말 판만 남긴다 — 제목이 위 안전선을 넘지 않게
+    if (mute && t >= T.tag3 - 0.05) {
+      return (
+        <TitleZone top={400} height={170} opacity={out}>
+          <Say at={T.a3}><span style={{ ...saysStyle, marginTop: 0 }}>{L.says!.a3}</span></Say>
+        </TitleZone>
+      );
+    }
     return (
-      <TitleZone top={310} height={260} opacity={Math.min(interpolate(t, [T.flip[0] - 0.1, T.flip[0] + 0.1], [1, 0], clamp), interpolate(t, [T.tag3 - 0.05, T.tag3 + 0.12], [1, 0], clamp))}>
+      <TitleZone top={mute ? 340 : 310} height={mute ? 230 : 260} opacity={mute ? out : Math.min(out, interpolate(t, [T.tag3 - 0.05, T.tag3 + 0.12], [1, 0], clamp))}>
         <div style={big}>
           {L.title.map((line, i) => (
             <React.Fragment key={i}>
@@ -316,18 +336,30 @@ const Titles: React.FC = () => {
             </React.Fragment>
           ))}
         </div>
-        <div style={{ fontFamily: EN, fontWeight: 600, fontSize: L.size.sub, color: C.coralShade, marginTop: 14 }}>{L.sub}</div>
+        {says ? (
+          <Say at={t >= T.a3 ? T.a3 : t >= T.a2 ? T.a2 : T.a1}><span style={saysStyle}>{says}</span></Say>
+        ) : (
+          <div style={{ fontFamily: EN, fontWeight: L.voice ? 600 : 800, fontSize: L.size.sub, lineHeight: L.voice ? undefined : 1.4, color: C.coralShade, marginTop: 14 }}>{L.sub}</div>
+        )}
       </TitleZone>
     );
   }
-  if (t < T.noteIn[0]) return null;
+  if (t < T.noteIn[0]) {
+    if (!mute || t < T.r1) return null;
+    const r3 = t >= T.r3;
+    return (
+      <TitleZone opacity={fade(T.r1, T.noteIn[0])}>
+        <Say at={r3 ? T.r3 : T.r1}><span style={{ ...saysStyle, marginTop: 0, fontSize: L.size.says * 1.12 }}>{r3 ? L.says!.r3 : L.says!.r1}</span></Say>
+      </TitleZone>
+    );
+  }
   if (t < T.check[0]) {
     return (
       <TitleZone opacity={fade(T.noteIn[0], T.check[0])}>
         <div style={{ ...big, fontSize: L.size.note }}>
-          <Pop at={T.noteIn[0] + 0.05}>{L.note[0]}</Pop>
+          {L.voice ? <Pop at={T.noteIn[0] + 0.05}>{withHangul(L.note[0])}</Pop> : <Say at={T.noteIn[0] + 0.05}>{withHangul(L.note[0])}</Say>}
           <br />
-          <Pop at={T.noteIn[1] + 0.25} style={{ color: C.coralShade, fontSize: L.size.noteSub }}>{L.note[1]}</Pop>
+          {L.voice ? <Pop at={T.noteIn[1] + 0.25} style={{ color: C.coralShade, fontSize: L.size.noteSub }}>{withHangul(L.note[1])}</Pop> : <Say at={T.noteIn[1] + 0.25}><span style={{ color: C.coralShade, fontSize: L.size.noteSub }}>{withHangul(L.note[1])}</span></Say>}
         </div>
       </TitleZone>
     );
@@ -335,16 +367,17 @@ const Titles: React.FC = () => {
   if (t < T.arrange[0]) {
     return (
       <TitleZone opacity={fade(T.check[0], T.arrange[0])}>
-        <div style={{ ...big, fontSize: 110, color: C.red }}>
-          <Pop at={T.check[0]}>{withHangul(L.same)}</Pop>
+        <div style={{ ...big, fontSize: L.size.same, color: C.red }}>
+          {L.voice ? <Pop at={T.check[0]}>{withHangul(L.same)}</Pop> : <Say at={T.check[0]}>{withHangul(L.same)}</Say>}
         </div>
+        {mute ? <Say at={T.s2}><span style={saysStyle}>{L.says!.s2}</span></Say> : null}
       </TitleZone>
     );
   }
   // 끝은 따로 정리 카드를 띄우지 않는다(이해 시험 v1 haiku 9번 「끝 요약 카드가 지난 편과 같아 보임」) — 「2 ways」 제목은 끝까지 두고, 끝 말은 빨간 펜 손글씨로 쪽 위에
   return (
     <TitleZone opacity={interpolate(t, [T.arrange[0], T.arrange[0] + 0.12], [0, 1], clamp)}>
-      <div style={{ ...big, fontSize: 92 }}>
+      <div style={{ ...big, fontSize: L.size.two }}>
         <Pop at={T.arrange[0] + 0.05}>{withHangul(L.two)}</Pop>
       </div>
     </TitleZone>
@@ -366,7 +399,7 @@ const HandNote: React.FC = () => {
       </defs>
       {/* 올리기 전 검사: 아래 끝 1448px(안전선 1428) → 26px 올리고 조금 작게 */}
       <g clipPath="url(#handWipe)" transform="rotate(-3 540 1350)">
-        <text x={540} y={1352} textAnchor="middle" dominantBaseline="central" fontFamily={PEN} fontSize={L.size.end * 1.12} fill={C.red} filter="url(#redpen)">
+        <text x={540} y={L.handFont ? 1378 : 1352} textAnchor="middle" dominantBaseline="central" fontFamily={L.handFont ?? PEN} fontWeight={L.handFont ? 800 : undefined} fontSize={L.size.end * (L.handFont ? 1 : 1.12)} fill={C.red} filter="url(#redpen)">
           {L.end[0]}
         </text>
       </g>
@@ -543,6 +576,7 @@ const Z_AT = { x: 540, y: 1565, sc: 0.5 };
 const ZSCRIB: string = handPath(scribble('zz', [Z_AT.x - 82, Z_AT.y - 70], [Z_AT.x + 84, Z_AT.y + 72], 10, 46), { sharp: true, seed: 'zs', jitter: 3 });
 
 const PageTwo: React.FC = () => {
+  const L = useLoc();
   const f = useCurrentFrame();
   const t = f / 30;
   const { fps } = useVideoConfig();
@@ -604,15 +638,15 @@ const PageTwo: React.FC = () => {
           </g>
         ) : null}
         {/* 이해 시험 v3 haiku 답 1 「Z처럼 써도 된다」 — 끝 「never a Z」를 Z 옆 빨간 손글씨로도 */}
-        {t >= T.zScrib[1] ? (
+        {t >= (L.voice ? T.zScrib[1] : T.zIn[1]) ? (
           <g>
             <defs>
               <clipPath id="neverWipe">
-                <rect x={110} y={1490} width={310 * interpolate(t, [T.zScrib[1], T.zScrib[1] + 0.5], [0, 1], clamp)} height={160} />
+                <rect x={110} y={1490} width={340 * interpolate(t, L.voice ? [T.zScrib[1], T.zScrib[1] + 0.5] : [T.zIn[1], T.zIn[1] + 0.5], [0, 1], clamp)} height={160} />
               </clipPath>
             </defs>
-            <text x={118} y={1570} dominantBaseline="central" fontFamily={PEN} fontSize={84} fill={C.red} filter="url(#redpen)" clipPath="url(#neverWipe)" transform="rotate(-4 118 1570)">
-              never Z!
+            <text x={118} y={1570} dominantBaseline="central" fontFamily={L.handFont ?? PEN} fontWeight={L.handFont ? 800 : undefined} fontSize={L.handSize ?? 84} fill={C.red} filter="url(#redpen)" clipPath="url(#neverWipe)" transform="rotate(-4 118 1570)">
+              {L.never}
             </text>
           </g>
         ) : null}
@@ -756,7 +790,7 @@ export const Film: React.FC<{ loc?: Loc; plain?: boolean; scene?: boolean }> = (
   const cam = cs === 1 ? undefined : `translate(${(1 - cs) * cx}px, ${(1 - cs) * cy}px) scale(${cs})`;
   return (
     <LocCtx.Provider value={L}>
-      <AbsoluteFill style={{ backgroundColor: '#E9DCC4', transform: push === 1 ? undefined : `scale(${push})` }}>
+      <AbsoluteFill style={{ backgroundColor: '#E9DCC4', transform: push === 1 ? undefined : `scale(${push})`, ...(L.font ? ({ '--kids-font': L.font } as React.CSSProperties) : {}) }}>
         <AbsoluteFill style={{ transformOrigin: '0 0', transform: cam }}>
         <Img src={staticFile('img/notebook.jpg')} style={{ position: 'absolute', inset: 0, width: 1080, height: 1920 }} />
         {flipped ? <PageTwo /> : <PlainCtx.Provider value={plain}><PageOne /></PlainCtx.Provider>}
