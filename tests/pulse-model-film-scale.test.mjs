@@ -48,10 +48,12 @@ test('the model clip in the request form never stretches past the limit on the t
 
 test('the clip never stretches past the limit on its height either — tall boxes on high-density screens letterbox it on its own black padding',()=>{
   const css=read('film.css');
-  // 범위 문법 「(앞 위 끝dppx < resolution <= 이 위 끝dppx)」 · 「(height > 상한px)」 — 첫 띠만 아래 끝이 없다.
-  const caps=[...css.matchAll(/@media \((?:([\d.]+)dppx < )?resolution <= ([\d.]+)dppx\)\{@container \(height > (\d+)px\)\{\.sx-casting-lead video\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([query,lo,hi,over,cap])=>({
-    query,lo:lo===undefined?null:Number(lo),hi:Number(hi),over:Number(over),cap:Number(cap),
+  // 「앞 위 끝 < 화소비 ≤ 이 위 끝」을 옛 문법으로 — `@media not all and (max-resolution:앞 위 끝){@media (max-resolution:이 위 끝){…}}`.
+  // 범위 문법(`1.25dppx < resolution`)은 사파리 16.4부터라 16.0~16.3에서 띠가 통째로 무시된다(11-12 GPT 검수). 첫 띠만 아래 끝이 없다.
+  const caps=[...css.matchAll(/@media (?:not all and \(max-resolution:([\d.]+)dppx\)\{@media )?\(max-resolution:([\d.]+)dppx\)\{@container \(min-height:(\d+)px\)\{\.sx-casting-lead video\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([query,lo,hi,over,cap])=>({
+    query,lo:lo===undefined?null:Number(lo),hi:Number(hi),over:Number(over)-1,cap:Number(cap),
   })).sort((x,y)=>x.hi-y.hi);
+  assert.doesNotMatch(css,/resolution <=|< resolution/,'no media range syntax (Safari 16.0–16.3 drops the whole rule)');
   assert.equal(caps.length,7,'seven height bands, up to a pixel ratio of 4');
   // 띠 사이 틈이 없다(11-12 GPT 검수 — 0.001dppx 틈의 화소비 1.2505가 어느 띠에도 안 들어 1.56배였다): 첫 띠는 아래가 열리고, 다음 띠의 (배타) 아래 끝은 앞 띠의 위 끝과 같다.
   assert.equal(caps[0].lo,null,`${caps[0].query} covers every pixel ratio up to its top`);

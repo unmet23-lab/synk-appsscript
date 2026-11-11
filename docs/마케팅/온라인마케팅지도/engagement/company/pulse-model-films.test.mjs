@@ -41,7 +41,7 @@ test('the big portrait plays the clip over the scene photo, without enlarging it
   assert.match(css,/\.sx-casting-lead video\{[^}]*object-fit:contain;[^}]*background:#000;/,'a box wider than 9:16 fits the clip by its height on black instead of cropping and enlarging it');
   assert.ok(css.includes('@container (max-aspect-ratio:9/16){.sx-casting-lead video{object-fit:cover}}'),'a box narrower than 9:16 is always filled — its height sets the scale either way');
   assert.ok(css.includes('@media (max-resolution:1dppx){@container (max-width:1056px){.sx-casting-lead video{object-fit:cover}}}'),'a wider box is filled only while its width × pixel ratio keeps the clip under the limit (1440 · 1366 · 1920 windows); 2560 and phones keep black sides — the scale itself is tests/pulse-model-film-scale.test.mjs');
-  assert.ok(css.includes('@media (1.25dppx < resolution <= 1.5dppx){@container (height > 1254px){.sx-casting-lead video{object-fit:contain;padding-block:calc((100cqh - 1254px)/2)}}}'),'a box too tall for its pixel ratio letterboxes the clip on its own black padding instead of stretching it (4K at 150%) — every band is tests/pulse-model-film-scale.test.mjs');
+  assert.ok(css.includes('@media not all and (max-resolution:1.25dppx){@media (max-resolution:1.5dppx){@container (min-height:1255px){.sx-casting-lead video{object-fit:contain;padding-block:calc((100cqh - 1254px)/2)}}}}'),'a box too tall for its pixel ratio letterboxes the clip on its own black padding instead of stretching it (4K at 150%) — every band is tests/pulse-model-film-scale.test.mjs');
   assert.ok(css.includes('.sx-casting-lead.has-film video{opacity:1;'));
 });
 
