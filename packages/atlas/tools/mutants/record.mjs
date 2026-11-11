@@ -10,6 +10,15 @@ const ROWS = 'src/record/rows.mjs';
 const EVENTS = 'src/record/events.mjs';
 
 export const RECORD_MUTANTS = [
+  // ── 서버 줄 — 값이 같은 줄은 갱신 차례를 올리지 않는다(jsonb 열쇠 차례, Fable 5.2 Talk 끝 판 P2-2) ──
+  [
+    R,
+    '서버 접기',
+    '줄 값을 열쇠 차례대로 견준다(jsonb가 열쇠를 바꿔 돌려주면 값이 같은 줄도 다시 내려간다)',
+    SERVER,
+    'const same = (a, b) => canonical(a) === canonical(b);',
+    'const same = (a, b) => JSON.stringify(a) === JSON.stringify(b) || !canonical;',
+  ],
   // ── 저장 · 올리기 — 부모 없는 자식이 올리기를 막지 않게, 저장소가 요약 수만큼 커지지 않게(Fable 끝 판 P1 둘 · P2) ──
   [
     R,

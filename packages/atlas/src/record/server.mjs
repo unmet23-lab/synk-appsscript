@@ -100,7 +100,19 @@ function collect(rows, touched) {
   }
 }
 
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// 견주기는 열쇠 차례와 무관하게 — SQL 저장소(jsonb)는 줄 값의 열쇠를 길이 · 글자 순으로 바꿔 돌려준다. 그대로 견주면 값이 같은 줄도
+// 늘 「다르다」가 되어 갱신 차례가 오르고 달라진 줄로 다시 내려간다(Fable 5.2 Talk 끝 판 P2-2 — 설계 §4-3 「값이 같으면 차례를 올리지 않는다」).
+const canonical = value =>
+  JSON.stringify(value, (_key, v) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.keys(v)
+            .sort()
+            .map(key => [key, v[key]]),
+        )
+      : v,
+  );
+const same = (a, b) => canonical(a) === canonical(b);
 
 async function rebuildGroups(store, sources, { index, until }, touched) {
   for (const sourceId of sources) {

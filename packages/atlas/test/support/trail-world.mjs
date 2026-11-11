@@ -25,6 +25,17 @@ export function createMemoryAccount() {
   }
 
   const visible = () => log.filter(record => record.seq > floor);
+  // 줄 값은 SQL 저장소(jsonb)처럼 열쇠를 길이 · 글자 순으로 바꿔 돌려준다 — 견주기가 열쇠 차례에 기대지 않는지 메모리에서도 보게.
+  const jsonbOrder = value =>
+    Array.isArray(value)
+      ? value.map(jsonbOrder)
+      : value && typeof value === 'object'
+        ? Object.fromEntries(
+            Object.keys(value)
+              .sort((a, b) => a.length - b.length || (a < b ? -1 : a > b ? 1 : 0))
+              .map(key => [key, jsonbOrder(value[key])]),
+          )
+        : value;
 
   function port(head) {
     const rowsOf = source => head.rows.get(source) ?? [];
@@ -88,7 +99,7 @@ export function createMemoryAccount() {
         new Map(
           keys
             .filter(key => head.lines.has(lineKey(kind, key)))
-            .map(key => [key, structuredClone(head.lines.get(lineKey(kind, key)).value)]),
+            .map(key => [key, jsonbOrder(head.lines.get(lineKey(kind, key)).value)]),
         ),
       writeLines: async changes => {
         for (const { kind, key, value } of changes) {
