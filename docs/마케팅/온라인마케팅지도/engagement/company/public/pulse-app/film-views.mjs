@@ -125,18 +125,20 @@ function dpModel(d,ui){
 }
 // ── 옷 · 머리(2026-11-10, 설계 4-1) ──
 // 모델마다 이미 있는 사진(옷 세 벌 · 머리 세 가지) 가운데 고른다. 기본은 「담당자에게 맡기기」(값 없음), 「직접 고르기」로 펼친다.
-// 칸을 누르면 고르고 다시 누르면 풀린다(그 줄은 맡김). 처음 값은 같은 모델로 앞서 고른 값(d.look), 모델을 바꾸면 비운다.
+// 칸을 누르면 고르고 다시 누르면 풀린다(그 줄은 맡김). 처음 값은 같은 모델로 앞서 고른 값(d.look). 모델을 바꾸면 옛 모델의 고름은
+// 그 모델 몫(ui.picks)으로 접어 두고, 바뀐 모델은 그 모델에서 고르던 값(처음이면 맡김)으로 그린다 — 한 모델의 값이 다른 모델로 넘어가지 않는다.
 // 펼친 칸은 모델 큰 사진(「크게 보기」)과 함께 펼치지 않는다 — 방향을 고르는 화면이 주인공이라 높이를 지킨다.
 const seedLook=(d,ui)=>{if(ui.outfit===undefined)ui.outfit=d.look?.outfit||'';if(ui.hair===undefined)ui.hair=d.look?.hair||'';};
 const lookModel=(d,ui)=>(modelCard(ui.modelId)||d.model)?.id||'';
-const lookSum=look=>look.outfit||look.hair?lookLine(look):t('담당자에게 맡기기 · 방향에 맞춰 골라 드려요');
+// 요약 줄: 고른 것이 있으면 「옷 … · 머리 …」(길면 둘째 줄까지 꺾여 이름이 다 보인다), 없으면 「담당자에게 맡기기」 + 뒤 설명(한 줄에 들 때만 보인다 — film.css .sx-dp-look-say).
+const lookSum=look=>look.outfit||look.hair?lookLine(look):t('담당자에게 맡기기');
 function dpLooks(d,ui){
   const id=lookModel(d,ui),looks=modelLooks(id);if(!looks)return '';
   const now=lookOf(id,ui);
   // 이름은 칸 폭에 맞춰 줄여 보이므로 전체 이름을 title(마우스를 올리면)과 단추 이름에 둔다.
   const cell=(key,item)=>{const on=now[key]===item.id,name=t(item.label);return `<button type="button" class="sx-dp-pic${on?' is-on':''}" aria-pressed="${on?'true':'false'}" aria-label="${esc(name)}" title="${esc(name)}" data-dp-look-pick="${key}" data-value="${esc(item.id)}"><img src="${esc(item.src)}" alt="" loading="lazy" decoding="async"><span class="sx-small">${esc(name)}</span></button>`;};
   const set=(key,label,items)=>`<div class="sx-dp-look-set is-${key}" role="group" aria-label="${esc(label)}"><span class="sx-dp-label">${esc(label)}</span><div class="sx-dp-pics">${items.map(item=>cell(key,item)).join('')}</div></div>`;
-  return `<div class="sx-dp-look sx-small" data-dp-look data-model="${esc(id)}"><p class="sx-dp-look-row"><span class="sx-dp-label">${esc(t('옷 · 머리'))}</span><b data-dp-look-sum>${esc(lookSum(now))}</b><button type="button" class="sx-quiet sx-dp-look-open" data-dp-do="looks" aria-expanded="${ui.looks?'true':'false'}" aria-controls="dp-looks">${esc(ui.looks?t('접기'):t('직접 고르기'))}</button></p><div class="sx-dp-looks" id="dp-looks" data-dp-looks ${ui.looks?'':'hidden'}>${set('outfit',t('옷'),looks.outfits)}${set('hair',t('머리'),looks.hairs)}<p class="sx-dp-look-note">${esc(t('고른 옷 · 머리는 장면 이미지에서 이 사진 그대로 맞춰요.'))}</p></div></div>`;
+  return `<div class="sx-dp-look sx-small" data-dp-look data-model="${esc(id)}"><p class="sx-dp-look-row"><span class="sx-dp-label">${esc(t('옷 · 머리'))}</span><span class="sx-dp-look-say${now.outfit||now.hair?' is-picked':''}"><b data-dp-look-sum title="${esc(lookSum(now))}">${esc(lookSum(now))}</b><span class="sx-dp-look-hint" data-dp-look-hint ${now.outfit||now.hair?'hidden':''}> · ${esc(t('방향에 맞춰 골라 드려요'))}</span></span><button type="button" class="sx-quiet sx-dp-look-open" data-dp-do="looks" aria-expanded="${ui.looks?'true':'false'}" aria-controls="dp-looks">${esc(ui.looks?t('접기'):t('직접 고르기'))}</button></p><div class="sx-dp-looks" id="dp-looks" data-dp-looks ${ui.looks?'':'hidden'}>${set('outfit',t('옷'),looks.outfits)}${set('hair',t('머리'),looks.hairs)}<p class="sx-dp-look-note">${esc(t('고른 옷 · 머리는 장면 이미지에서 이 사진 그대로 맞춰요.'))}</p></div></div>`;
 }
 // 「이 방향으로 갈게요」 양식의 숨은 칸: 줄을 그릴 때만 두고, 그때는 빈 값(맡김)이라도 늘 보낸다(서버 규칙 — 칸이 없으면 건드리지 않음).
 const lookFields=(d,ui)=>{if(!d.looks)return '';const now=lookOf(lookModel(d,ui),ui);return `<input type="hidden" name="outfit" value="${esc(now.outfit)}"><input type="hidden" name="hair" value="${esc(now.hair)}">`;};
@@ -173,13 +175,36 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
   let playing=null;
   if(!ui.focus||!d.options.some(o=>o.id===ui.focus))ui.focus=(d.chosen&&d.options.find(o=>o.id===d.chosen.id)||d.options.find(o=>o.recommended)||d.options[0]).id;
   if(d.looks)seedLook(d,ui);
+  // 넘칠 때만 접기: 넓은 화면의 설명 칸은 고정 높이라, 고르기 칸의 내용이 넘치면 넘치지 않을 때까지만 한 단계씩 접는다(단계의 모양은 film.css .is-fit-1~5).
+  // 창 크기 · 안 수(두 안 · 세 안) · 글 길이를 가정하지 않고 실제 넘침을 잰다. 「자세히」를 편 동안은 긴 글이라 굴려 읽는 칸이므로 접은 채로 잰 단계를 그대로 둔다.
+  // 고르기 칸(.sx-dp-choose)의 안쪽 높이로 재서, 들어올 때의 움직임(칸 자체가 옮겨지는 변형)에 흔들리지 않는다 — 내용이 칸을 넘는 몫이
+  // 설명 칸의 아래 여백보다 클 때가 설명 칸이 굴러가는 때다(여백 안에 드는 몫은 굴러가지 않는다). 휴대폰 · 세로 화면은 칸이 흐름이라 단계를 쓰지 않는다.
+  // 단계는 화면 하나로 정한다: 안(방향)마다 설명 길이가 달라도 모든 안을 한 번씩 보여 재서 가장 많이 접어야 하는 안에 맞춘다 — 안을 넘길 때 윗부분이 오르내리지 않게.
+  // 안을 넘길 때(keep)는 단계를 내리지 않고, 창 크기 · 펼침이 바뀔 때만 처음부터 다시 센다. 재는 동안 숨긴 것은 그 자리에서 되돌리고 굴린 자리도 되살린다.
+  const FIT=['is-fit-1','is-fit-2','is-fit-3','is-fit-4','is-fit-5'];
+  function fit({keep=false}={}){
+    const box=$('.sx-dp-choose'),sheet=box?.parentElement;
+    if(!box||box.hidden||matchMedia?.(JOURNAL_SHEET).matches){host.classList.remove(...FIT);return;}
+    const top=sheet.scrollTop;
+    let level=keep?FIT.filter(step=>host.classList.contains(step)).length:0;
+    host.classList.remove(...FIT.slice(level));
+    const more=$('[data-dp-more]'),open=!!more&&!more.hidden;if(open)more.hidden=true;
+    const details=[...host.querySelectorAll('[data-dp-detail]')],shown=details.map(el=>el.hidden);
+    const over=()=>box.scrollHeight-box.clientHeight-(parseFloat(getComputedStyle(sheet).paddingBottom)||0)>1;
+    for(const detail of details){details.forEach(el=>{el.hidden=el!==detail;});while(level<FIT.length&&over())host.classList.add(FIT[level++]);}
+    details.forEach((el,i)=>{el.hidden=shown[i];});
+    if(open)more.hidden=false;
+    if(sheet.scrollTop!==top)sheet.scrollTop=top;
+  }
+  let fitFrame=0;const refit=()=>{cancelAnimationFrame(fitFrame);fitFrame=requestAnimationFrame(fit);};
+  window.addEventListener('resize',refit);
   // 옷 · 머리 사진을 못 받으면 사진만 숨기고 이름은 남긴다(글로는 늘 고를 수 있게).
-  const bindPics=()=>host.querySelectorAll('.sx-dp-pic img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;},{once:true}));
+  const bindPics=()=>host.querySelectorAll('.sx-dp-pic img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;fit();},{once:true}));
   function syncLooks(){
     const box=$('[data-dp-look]');if(!box)return;
     const now=lookOf(lookModel(d,ui),ui);ui.outfit=now.outfit;ui.hair=now.hair;
     box.querySelectorAll('[data-dp-look-pick]').forEach(button=>{const on=now[button.dataset.dpLookPick]===button.dataset.value;button.classList.toggle('is-on',on);button.setAttribute('aria-pressed',on?'true':'false');});
-    const sum=box.querySelector('[data-dp-look-sum]');if(sum)sum.textContent=lookSum(now);
+    const sum=box.querySelector('[data-dp-look-sum]'),hint=box.querySelector('[data-dp-look-hint]');if(sum){sum.textContent=lookSum(now);sum.title=lookSum(now);}if(hint)hint.hidden=!!(now.outfit||now.hair);box.querySelector('.sx-dp-look-say')?.classList.toggle('is-picked',!!(now.outfit||now.hair));
     const form=$('[data-form="direction-pick"]');if(form?.elements.outfit){form.elements.outfit.value=now.outfit;form.elements.hair.value=now.hair;}
   }
   // 모델 큰 사진과 옷 · 머리는 한 번에 하나만 펼친다.
@@ -215,12 +240,12 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
     host.querySelectorAll('[data-dp-pick]').forEach(tab=>{const on=tab.dataset.dpPick===id;tab.classList.toggle('is-on',on);tab.setAttribute('aria-pressed',on?'true':'false');});
     host.querySelectorAll('[data-dp-detail]').forEach(box=>{box.hidden=box.dataset.dpDetail!==id;});
     const form=$('[data-form="direction-pick"]');if(form){form.elements.optionId.value=id;$('[data-dp-go]').textContent=goLabel(o.name);}
-    drawWork();
+    drawWork();fit({keep:true});
     const box=host.querySelector(`[data-dp-detail="${CSS.escape(id)}"]`);
     if(!quiet&&box&&!reduced())[...box.children].forEach((child,i)=>play(child,[{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:460,delay:i*36,fill:'backwards'}));
   }
   function setView(view){
-    stopFilm();ui.view=view;host.dataset.view=view;$('.sx-dp-choose').hidden=view!=='choose';$('[data-form="direction-neither"]').hidden=view!=='neither';
+    stopFilm();ui.view=view;host.dataset.view=view;$('.sx-dp-choose').hidden=view!=='choose';$('[data-form="direction-neither"]').hidden=view!=='neither';fit();
     const target=view==='neither'?$('[data-form="direction-neither"] textarea'):host.querySelector(`[data-dp-detail="${CSS.escape(ui.focus)}"] .sx-dp-title`);
     target?.focus({preventScroll:true});
     // 휴대폰 · 세로 화면은 .sx-dp-sheet가 display:contents라 상자가 없다 — 지금 보이는 쪽(고르기 · 둘 다 아니에요)으로 간다(11-07 검수, film.css와 같은 조건).
@@ -238,10 +263,10 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
       // 방향의 모델로 돌아오면 앞서 고른 값)으로 사진째 다시 그린다(펼친 상태는 그대로). 다른 모델의 값이 넘어가지 않는다.
       const box=$('[data-dp-look]'),now=lookModel(d,ui);
       if(box&&now!==was){ui.picks={...ui.picks,[was]:{outfit:ui.outfit,hair:ui.hair}};const back=ui.picks[now]||(now===d.model?.id?d.look:null);ui.outfit=back?.outfit||'';ui.hair=back?.hair||'';box.outerHTML=dpLooks(d,ui);bindPics();syncLooks();}
-      return;
+      fit();return;
     }
     const look=event.target.closest('[data-dp-look-pick]');
-    if(look){const key=look.dataset.dpLookPick;ui[key]=ui[key]===look.dataset.value?'':look.dataset.value;syncLooks();return;}
+    if(look){const key=look.dataset.dpLookPick;ui[key]=ui[key]===look.dataset.value?'':look.dataset.value;syncLooks();fit();return;}
     const film=event.target.closest('[data-dp-film]')?.dataset.dpFilm;if(film){if(playing?.kind===film)stopFilm();else playFilm(film);return;}
     const what=event.target.closest('[data-dp-do]'),act=what?.dataset.dpDo;if(!act)return;
     if(act==='more')toggle('more',$('[data-dp-more]'),what,[t('접기'),t('자세히')]);
@@ -250,10 +275,13 @@ export function mountDirection(root,d,{ui={},animate=true}={}){
     if(act==='looks'){toggle('looks',$('[data-dp-looks]'),what,[t('접기'),t('직접 고르기')]);if(ui.looks)fold('casting');}
     if(act==='neither')setView('neither');
     if(act==='back')setView('choose');
+    if(['more','note','casting','looks'].includes(act))fit();
   });
   setFocus(ui.focus,{quiet:true});
+  // 글꼴이 늦게 오면 줄 수가 달라질 수 있어 한 번 더 잰다.
+  document.fonts?.ready?.then(()=>{if(host.isConnected)fit();});
   if(animate)riseAll(host.querySelectorAll('.sx-dp-frame,.sx-dp-top,.sx-dp-choose'),{start:120,gap:60});
-  return {unmount(){stopFilm();}};
+  return {unmount(){stopFilm();window.removeEventListener('resize',refit);cancelAnimationFrame(fitFrame);}};
 }
 const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item=>item.id!==m.id).map(item=>`<button type="button" class="sx-cast" data-room-model="${item.id}" aria-label="${esc([nameOf(item.name),t(MODEL_LINES[item.id]?.line||item.description),t('이 모델로 정하기')].join(' · '))}"><img src="${esc(sceneOf(item))}" alt="" loading="lazy" decoding="async" width="538" height="720"><span class="sx-cast-name sx-small">${esc(nameOf(item.name))}</span></button>`).join('')}</div>`;
 // 고객 전용 인물(판 3, persona-view.mjs): 인물이 손님 차례이고 영상 쪽이 손님 차례가 아니면 인물이 「지금 차례」(머리 글 · 카드 · 스크린)가 되고,

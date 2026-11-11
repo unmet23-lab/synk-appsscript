@@ -8,7 +8,7 @@ import {deskView} from './public/pulse-app/desk-view.mjs';
 import {castingSummary,castingView,normalizeDemoCasting,CASTING_KEYS} from './public/pulse-app/casting-view.mjs';
 
 // 옷 · 머리 고르기(2026-11-10, docs/마케팅/PULSE_의뢰흐름_20261104/옷머리고르기_설계_20261110.md 4절)의 화면 약속.
-// 화면 안의 눌러 고르기 · 모델 바꾸면 지움 · 펼침 높이는 브라우저 실측(검수 기록)으로 보고, 여기서는 그리는 조건 · 마크업 · 보낼 칸을 고정한다.
+// 화면 안의 눌러 고르기 · 모델을 바꾸면 그 모델 몫으로 접어 두고 돌아오면 되살림 · 펼침 높이는 브라우저 실측(검수 기록)으로 보고, 여기서는 그리는 조건 · 마크업 · 보낼 칸을 고정한다.
 globalThis.location??=new URL('http://localhost/pulse-app/');
 const appDir=new URL('./public/pulse-app/',import.meta.url);
 const read=name=>readFileSync(new URL(name,appDir),'utf8');
@@ -36,7 +36,7 @@ test('the outfit and hair line is drawn only for a pickable catalog model on a s
 
 test('folded, the line says leave it to us; unfolded, two labelled groups of three photo buttons with names and pressed states',()=>{
   const html=view({direction:open()});
-  assert.match(html,/<div class="sx-dp-look sx-small" data-dp-look data-model="F02"><p class="sx-dp-look-row"><span class="sx-dp-label">옷 · 머리<\/span><b data-dp-look-sum>담당자에게 맡기기 · 방향에 맞춰 골라 드려요<\/b><button type="button" class="sx-quiet sx-dp-look-open" data-dp-do="looks" aria-expanded="false" aria-controls="dp-looks">직접 고르기<\/button><\/p><div class="sx-dp-looks" id="dp-looks" data-dp-looks hidden>/);
+  assert.match(html,/<div class="sx-dp-look sx-small" data-dp-look data-model="F02"><p class="sx-dp-look-row"><span class="sx-dp-label">옷 · 머리<\/span><span class="sx-dp-look-say"><b data-dp-look-sum title="담당자에게 맡기기">담당자에게 맡기기<\/b><span class="sx-dp-look-hint" data-dp-look-hint > · 방향에 맞춰 골라 드려요<\/span><\/span><button type="button" class="sx-quiet sx-dp-look-open" data-dp-do="looks" aria-expanded="false" aria-controls="dp-looks">직접 고르기<\/button><\/p><div class="sx-dp-looks" id="dp-looks" data-dp-looks hidden>/);
   // 모델 줄(flex 한 줄) 안이 아니라 「크게 보기」 칸처럼 형제 블록.
   assert.ok(html.indexOf('data-dp-casts')<html.indexOf('data-dp-look '),'after the big model photos');assert.doesNotMatch(html,/<div class="sx-dp-model[^"]*">(?:(?!<\/div><div class="sx-dp-casts").)*data-dp-look/s);
   const groups=[...html.matchAll(/<div class="sx-dp-look-set is-(outfit|hair)" role="group" aria-label="([^"]+)">/g)].map(m=>[m[1],m[2]]);
@@ -56,7 +56,7 @@ test('the first values are the earlier picks for the same model; another model s
   const seeded=view({direction:open({status:'chosen',chosenId:'a',look:{outfit:'look-2',hair:''}}),answers:{models:['F02'],outfit:'look-2',hair:''}});
   assert.match(seeded,/aria-pressed="true" aria-label="스트라이프 원피스" title="스트라이프 원피스" data-dp-look-pick="outfit" data-value="look-2">/);
   assert.match(seeded,/class="sx-dp-pic is-on" aria-pressed="true"/);assert.equal((seeded.match(/aria-pressed="true" aria-label="[^"]+" title="[^"]+" data-dp-look-pick/g)||[]).length,1);
-  assert.match(seeded,/<b data-dp-look-sum>옷 스트라이프 원피스 · 머리 맡김<\/b>/);
+  assert.match(seeded,/<span class="sx-dp-look-say is-picked"><b data-dp-look-sum title="옷 스트라이프 원피스 · 머리 맡김">옷 스트라이프 원피스 · 머리 맡김<\/b><span class="sx-dp-look-hint" data-dp-look-hint hidden>/,'the hint about leaving it to us goes away once something is picked');
   assert.match(seeded,/name="outfit" value="look-2"><input type="hidden" name="hair" value="">/,'repicking a direction does not wipe the earlier pick');
   // 2회차 제안(기록 없음)도 같은 모델이면 앞서 고른 값에서 시작한다(의뢰 기록에서 읽음).
   assert.match(view({direction:open({round:2}),answers:{models:['F02'],outfit:'',hair:'look-3'}}),/name="outfit" value=""><input type="hidden" name="hair" value="look-3">/);
@@ -128,5 +128,47 @@ test('the CSS keeps the direction screen first: outfits uncropped, cells at most
   assert.ok(views.includes("if(act==='looks'){toggle('looks',$('[data-dp-looks]'),what,[t('접기'),t('직접 고르기')]);if(ui.looks)fold('casting');}"));
   // 모델을 바꾸면 옛 모델 몫은 접어 두고 새 모델은 그 모델에서 고르던 값(처음이면 맡김, 방향의 모델로 돌아오면 앞서 고른 값)으로 다시 그린다(Fable 최종 F2).
   assert.ok(views.includes("if(box&&now!==was){ui.picks={...ui.picks,[was]:{outfit:ui.outfit,hair:ui.hair}};const back=ui.picks[now]||(now===d.model?.id?d.look:null);ui.outfit=back?.outfit||'';ui.hair=back?.hair||'';box.outerHTML=dpLooks(d,ui);bindPics();syncLooks();}"),'changing the model never carries one model picks to another, and coming back restores them');
-  assert.ok(css.includes('@media (max-height:960px) and (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-dp-pic img{height:clamp(72px,10vh,140px)}.sx-dp-pic>.sx-small{-webkit-line-clamp:1}}'),'names are cut to one line only on low wide windows');
+  assert.ok(css.includes('@media (max-height:960px) and (min-width:821px) and (min-aspect-ratio:10001/10000){.sx-dp-pic img{height:clamp(72px,10vh,140px)}.sx-dp-pic>.sx-small{-webkit-line-clamp:1}}'),'names are cut to one line on low wide windows');
+});
+
+// 넘칠 때만 접기(11-11, Fable 5.2 화면 최종 F1 · F2): 창 크기 띠는 설명 칸 폭(두 안 400px · 세 안 420px)과 글 길이를 다 잡지 못했다
+// (1440×961 98px · 세 안 1680×961 60px · 「왜」 세 줄 1440×1080 15px 넘침). 화면이 실제 넘침을 재서 넘치지 않을 때까지만 한 단계씩 접는다.
+test('the direction sheet folds one step at a time only while it overflows, whatever the window, the number of options or the length of the text',()=>{
+  const css=read('film.css'),views=read('film-views.mjs');
+  assert.doesNotMatch(css,/max-width:1679px/,'no window-size band stands in for the real overflow');
+  for(const rule of [
+    '.sx-dp.is-fit-1 .sx-dp-lead{display:none}','.sx-dp.is-fit-1 .sx-dp-pic img{height:clamp(72px,10vh,140px)}','.sx-dp.is-fit-1 .sx-dp-pic>.sx-small{-webkit-line-clamp:1}',
+    '.sx-dp.is-fit-2 .sx-dp-choose:has([data-dp-looks]:not([hidden])) :is(.sx-dp-flow,.sx-dp-taste,.sx-dp-incl,.sx-dp-more){display:none}',
+    '.sx-dp.is-fit-3 .sx-dp-why{display:none}','.sx-dp.is-fit-4 .sx-dp-title{font-size:clamp(32px,3vw,42px)}','.sx-dp.is-fit-5 .sx-dp-look-note{display:none}',
+  ])assert.ok(css.includes(rule),rule);
+  // 재는 법: 고르기 칸의 내용이 칸을 넘는 몫이 설명 칸 아래 여백보다 클 때만(그때 설명 칸이 굴러간다), 휴대폰 · 세로 화면은 쓰지 않고, 「자세히」를 편 동안은 접은 채로 잰다.
+  assert.ok(views.includes("const FIT=['is-fit-1','is-fit-2','is-fit-3','is-fit-4','is-fit-5'];"));
+  assert.ok(views.includes("if(!box||box.hidden||matchMedia?.(JOURNAL_SHEET).matches){host.classList.remove(...FIT);return;}"),'phones, portrait windows and the 「neither」 view carry no steps');
+  assert.ok(views.includes("const over=()=>box.scrollHeight-box.clientHeight-(parseFloat(getComputedStyle(sheet).paddingBottom)||0)>1;"));
+  assert.ok(views.includes("const more=$('[data-dp-more]'),open=!!more&&!more.hidden;if(open)more.hidden=true;"));
+  // 단계는 화면 하나로: 모든 안을 한 번씩 보여 재서 가장 많이 접어야 하는 안에 맞춘다(안을 넘길 때 윗부분이 63px 오르내렸다 — 다시 검수 FA3). 안을 넘길 때는 내리지 않는다.
+  assert.ok(views.includes("let level=keep?FIT.filter(step=>host.classList.contains(step)).length:0;"));
+  assert.ok(views.includes("for(const detail of details){details.forEach(el=>{el.hidden=el!==detail;});while(level<FIT.length&&over())host.classList.add(FIT[level++]);}"));
+  assert.ok(views.includes("details.forEach((el,i)=>{el.hidden=shown[i];});"),'what was hidden for measuring is put back');
+  // 「자세히」를 편 채 다시 재도 굴린 자리가 맨 위로 튀지 않는다(FA2).
+  assert.ok(views.includes("const top=sheet.scrollTop;")&&views.includes("if(sheet.scrollTop!==top)sheet.scrollTop=top;"));
+  // 다시 재는 때: 안을 바꿀 때(움직임을 걸기 전 · 단계 유지) · 펼침 · 모델 · 고름 · 보기 바꿈 · 사진을 못 받았을 때 · 창 크기 · 글꼴이 온 뒤. 떠날 때 창 크기 듣기를 거둔다.
+  for(const call of ["drawWork();fit({keep:true});","if(['more','note','casting','looks'].includes(act))fit();","syncLooks();fit();return;}","fit();return;\r\n    }".replace(/\r\n/g,views.includes('\r\n')?'\r\n':'\n'),"img.hidden=true;fit();","window.addEventListener('resize',refit);","document.fonts?.ready?.then(()=>{if(host.isConnected)fit();});","window.removeEventListener('resize',refit);"])assert.ok(views.includes(call),call);
+});
+
+test('with nothing picked the summary stays on one line at any sheet width, picks show in full once folded, and the money row never lets two values touch',()=>{
+  const css=read('film.css');
+  // 「직접 고르기」의 왼쪽 여백이 뒤에 오는 단추 규칙(padding:2px 0)에 덮여 0이 됐고(칸 420px에서 요약과 1.7px), 여백을 살리면 줄이 꺾여 22px가 늘었다(F3).
+  assert.ok(css.includes('.sx-dp-look-row{display:flex;flex-wrap:nowrap;align-items:baseline;margin:0}'));
+  assert.ok(css.includes('.sx-dp-look-say{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;max-height:1.6em;max-height:1lh;overflow:hidden;'),'the hint shows only when it fits on the line');
+  assert.ok(css.includes('.sx-dp-look-say>b{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'));
+  // 고른 뒤에는 요약이 둘째 줄까지 꺾여 옷 · 머리 이름이 다 보인다(좁은 칸 · 휴대폰에서 잘렸다 — FA4), 가운뎃점 앞 빈칸은 지워지지 않는다(FA5).
+  assert.ok(css.includes('.sx-dp-look:has([data-dp-looks][hidden]) .sx-dp-look-say.is-picked{max-height:none;overflow:visible}'),'only while the panel is folded — open, the pressed cells show the picks');
+  assert.ok(css.includes('.sx-dp-look:has([data-dp-looks][hidden]) .sx-dp-look-say.is-picked>b{white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all}'));
+  assert.ok(css.includes('.sx-dp-look-hint{white-space:pre}'));
+  const views=read('film-views.mjs');
+  assert.ok(views.includes("box.querySelector('.sx-dp-look-say')?.classList.toggle('is-picked',!!(now.outfit||now.hair));"));
+  assert.ok(css.includes('.sx-dp-look-row>.sx-dp-look-open{flex:none;margin-left:8px}'),'the button keeps its gap whatever comes later in the file');
+  // 값 줄: 칸이 글 너비보다 좁아지지 않고 늘 10px 띄운다(칸 400px · 글자 23.8px에서 「11월 21일」과 「2회」가 1px였다, F4).
+  assert.ok(css.includes('.sx-dp-kv{display:grid;grid-template-columns:repeat(3,minmax(max-content,1fr));column-gap:10px;'));
 });

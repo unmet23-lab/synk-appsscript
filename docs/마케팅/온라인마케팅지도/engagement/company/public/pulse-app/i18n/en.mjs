@@ -866,7 +866,8 @@ export default {
   "이 모델로 바꿔 장면 이미지에서 보여 드려요.":"We’ll use this model instead in the scene images.",
   // outfit · hair picks (direction step, 11-10)
   "옷 · 머리":"Outfit · hair",
-  "담당자에게 맡기기 · 방향에 맞춰 골라 드려요":"Leave it to us · we’ll match it to the direction",
+  "담당자에게 맡기기":"Leave it to us",
+  "방향에 맞춰 골라 드려요":"we’ll match it to the direction",
   "직접 고르기":"Choose myself",
   "옷":"Outfit",
   "머리":"Hair",
