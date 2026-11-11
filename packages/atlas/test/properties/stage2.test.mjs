@@ -251,6 +251,60 @@ test('⑳ 활동 고르기 — 사실이 순위를 앞지르고, 그다음은 �
   assert.equal(closed.session, null);
 });
 
+// 숙제 · 관심은 목표다 — 앞지르지 않고 같은 층 안에서 맞춘 목표 수로 차례를 정한다(지금 Core 순위, 단계 4 Fable 설계 P2-4 · 조율 11-11).
+test('⑳ 활동 고르기 — 목표(숙제 · 관심)는 층을 앞지르지 않고 같은 층 안에서 앞선다, 목표 수가 같으면 할 것의 수', () => {
+  const learner = createLearner();
+  startSession(learner, T0, WIDE);
+  walk(learner, [false], T0, [word('a', 0)]); // 「a」를 놓쳤다 — 같은 판에서 다시 낼 차례
+  walk(learner, [true, true], T0 + 40_000, [word('b', 1), word('c', 2)]);
+  const now = T0 + 200_000;
+  const homework = { kind: 'homework', skill: 'ko.reading.vocabulary', status: 'missed' };
+  const plan = activities =>
+    planActivities(activities, learner, memory, now, { params: WIDE }).map(e => e.id);
+  // ① 숙제 + 돌아온 복습(방금 놓친 것) — 복습이 앞이다
+  const retry = { id: 'retry', candidates: [word('a2', 3, { units: ['word:a'] })] };
+  const hw = { id: 'homework', candidates: [word('h1', 4)], facts: { goals: [homework] } };
+  assert.deepEqual(plan([hw, retry]), ['retry', 'homework'], '숙제가 놓친 것을 앞지르지 않는다');
+  // ② 같은 층(새것)이면 숙제가 비숙제 앞 — 할 것이 더 많아도
+  const lesson = { id: 'lesson', candidates: [word('n1', 5), word('n2', 6), word('n3', 7)] };
+  assert.deepEqual(plan([lesson, hw]), ['homework', 'lesson']);
+  const top = planActivities([lesson, hw], learner, memory, now, { params: WIDE })[0];
+  assert.equal(top.why.code, 'host.homework', '새것뿐인 숙제 활동은 숙제 문장');
+  assert.deepEqual(top.why.slots, { skill: 'ko.reading.vocabulary', status: 'missed' });
+  assert.deepEqual(top.why.evidence, {
+    fact: 'homework',
+    skill: 'ko.reading.vocabulary',
+    status: 'missed',
+  });
+  // ③ 관심 + 급한 것 — 급한 것이 앞, 관심 활동의 이유는 그 주제
+  const interest = {
+    id: 'interest',
+    candidates: [word('i1', 8)],
+    facts: { goals: [{ kind: 'interest', topic: 'cafe' }] },
+  };
+  const ranked = planActivities([interest, retry], learner, memory, now, { params: WIDE });
+  assert.deepEqual(
+    ranked.map(e => e.id),
+    ['retry', 'interest'],
+  );
+  assert.equal(ranked[1].why.code, 'goal.match');
+  assert.deepEqual(ranked[1].why.slots, { topic: 'cafe' });
+  // ④ 목표 수가 같으면 할 것의 수 — 같은 목표를 두 번 넘겨도 하나로 센다
+  const one = { id: 'a-one', candidates: [word('o1', 9)], facts: { goals: [homework, homework] } };
+  const many = {
+    id: 'b-many',
+    candidates: [word('m1', 10), word('m2', 11)],
+    facts: { goals: [{ kind: 'interest', topic: 'cafe' }] },
+  };
+  assert.deepEqual(plan([one, many]), ['b-many', 'a-one']);
+  // 돌아온 복습 활동에 숙제가 걸려도 이유는 엔진의 더 구체적인 말(다시)이다
+  const both = { ...retry, facts: { goals: [homework] } };
+  assert.equal(
+    planActivities([both], learner, memory, now, { params: WIDE })[0].why.code,
+    'unit.retry',
+  );
+});
+
 test('⑳ 설정 거르기 — 소리 없는 자리 · 「지금은 아니에요」를 후보에서 뺀다', () => {
   const items = [
     word('a', 0, { audioRequired: true }),
