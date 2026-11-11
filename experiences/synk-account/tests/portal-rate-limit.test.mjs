@@ -28,7 +28,7 @@ function clock() {
 const waitError = seconds => ({ code: 'over_email_send_rate_limit', status: 429, message: `For security purposes, you can only request this after ${seconds} seconds.` });
 const settled = async () => { for (let n = 0; n < 4; n++) await new Promise(resolve => setImmediate(resolve)); };
 function deferred() { let resolve;const promise = new Promise(done => { resolve = done; });return { promise, resolve }; }
-async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined, framed = false } = {}) {
+async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined, localStorage = undefined, deviceWait = undefined, framed = false } = {}) {
   // Older manual-consent/rate-limit cases use the retained synthetic preview.
   // Automatic first-party login cases below explicitly exercise production mode.
   const ids = new Map(), events = new Map(), calls = [], replies = { ...initialReplies }, modes = ['login', 'signup', 'recover'].map(value => Object.assign(new Element('button'), { dataset: { view: value } })), time = clock();
@@ -47,7 +47,7 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
       return time[method](...args);
     };
   }
-  Object.assign(globalThis, { document, window: { addEventListener: (type, fn) => events.set(type, fn), ...(sessionStorage ? { sessionStorage } : {}), ...(framed ? { top: {}, self: {} } : {}), history: { state: null, replaceState(_state, _title, url) { historyUrls.push(url);location.href = url; } } }, location: {
+  Object.assign(globalThis, { document, window: { addEventListener: (type, fn) => events.set(type, fn), ...(sessionStorage ? { sessionStorage } : {}), ...(localStorage ? { localStorage } : {}), ...(framed ? { top: {}, self: {} } : {}), history: { state: null, replaceState(_state, _title, url) { historyUrls.push(url);location.href = url; } } }, location: {
     href: `https://id.example.test/?${reset ? 'view=reset' : consent ? 'authorization_id=synthetic-authorization' : ''}${callbackQuery}`,
     assign: value => destinations.push(value), reload() {},
   } });
@@ -64,7 +64,7 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
       approveAuthorization: (...args) => invoke('approveAuthorization', args), denyAuthorization: (...args) => invoke('denyAuthorization', args) },
   } };
   const mounting = mountPortal({ config: { configured: true, learningUrl: '/', portalUrl: 'https://id.example.test/', supabaseUrl: 'https://auth.example.test', supabasePublishableKey: 'synthetic-public-only',
-    clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients }, sdk, preview, ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
+    clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients }, sdk, preview, ...(deviceWait === undefined ? {} : { deviceWait }), ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
   await beforeMountComplete?.({ time, get, metrics, historyUrls, mounting, calls, events, replies, emit: (event, value) => { saved = value;listener(event, value); } });await mounting;
   return { get, calls, replies, time, receivers, events, destinations, historyUrls, metrics, notice: get('notice'), feedback: get('auth-submit').beforeNodes[0], consentFeedback: get('approve').beforeNodes[0],
     buttons: modes, mode: name => modes.find(button => button.dataset.view === name).onclick(), submit: () => get('auth-form').onsubmit({ preventDefault() {} }),
@@ -799,6 +799,40 @@ test('an account change after the wait still ends on the restart card', async t 
 test('leaving the page clears the pending wait', async t => {
   const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a') });
   const before = page.time.pending();page.events.get('pagehide')({});assert.equal(page.time.pending(), before - 1);
+});
+// The first-seen time is kept where the browser's other tabs read it: a mail link that returns in a new tab keeps the clock.
+test('a mail link opened in a new tab keeps the clock of the tab that first saw the request', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -280000 }) });
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: seenStore(), consentDetails: { redirect_url: deviceRedirect } });
+  assert.ok(restartShown(page));await page.get('approve').onclick();assert.deepEqual(page.destinations, []);
+});
+test('the first-seen time is written where other tabs read it, as the request ID and the time only', async t => {
+  const shared = seenStore(), tab = seenStore();
+  const page = await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: 0 });assert.equal(tab.data.has('synk.id.connect-seen.v1'), false);
+  assert.equal(page.get('consent').hidden, false);page.time.advance(270000);assert.ok(restartShown(page));
+});
+test('a visit without an app request drops a record once it is an hour old', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'earlier-request', at: -3600000 }) });
+  await fixture(t, { localStorage: shared });assert.equal(shared.data.has('synk.id.connect-seen.v1'), false);
+});
+test('a visit without an app request keeps a record still inside the hour (its mail link may yet come back)', async t => {
+  const record = JSON.stringify({ id: 'earlier-request', at: -3599999 }), shared = seenStore({ 'synk.id.connect-seen.v1': record });
+  await fixture(t, { localStorage: shared });assert.equal(shared.data.get('synk.id.connect-seen.v1'), record);
+});
+test('a visit without an app request drops a record it cannot read as a time', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'earlier-request', at: 'soon' }) });
+  await fixture(t, { localStorage: shared });assert.equal(shared.data.has('synk.id.connect-seen.v1'), false);
+});
+test('the synthetic preview keeps no first-seen time and an old record does not turn its card', async t => {
+  const record = JSON.stringify({ id: 'synthetic-authorization', at: -300000 }), tab = seenStore({ 'synk.id.connect-seen.v1': record }), shared = seenStore({ 'synk.id.connect-seen.v1': record });
+  const page = await fixture(t, { consent: true, preview: true, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: tab, localStorage: shared });
+  assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
+  assert.equal(tab.data.get('synk.id.connect-seen.v1'), record);assert.equal(shared.data.get('synk.id.connect-seen.v1'), record);
+});
+test('a wait longer than a timer can hold never fires early (the synthetic preview card stays)', async t => {
+  const page = await fixture(t, { consent: true, preview: true, redirectUri: deviceApp, initial: deviceSession('owner-a'), deviceWait: Infinity });
+  page.time.advance(86400000);assert.equal(page.get('consent').hidden, false);assert.equal(page.get('connection-restart').hidden, true);
 });
 const expiredAppRequest = { status: 404, code: 'oauth_authorization_not_found', message: 'authorization not found' };
 const pathPublicEntry = 'https://synk.im/path/app/';

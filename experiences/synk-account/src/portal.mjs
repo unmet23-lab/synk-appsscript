@@ -190,14 +190,18 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);tickCooldowns();
   };
   const authorizationId = new URL(location.href).searchParams.get('authorization_id');
-  // When this tab first saw this app request: the closest known moment the app on this PC started waiting
-  // (the Google round trip returns to this tab and keeps it). Only the request ID and that time are kept.
+  // When this browser first saw this app request: the closest known moment the app on this PC started waiting.
+  // It is kept where the browser's other tabs read it too, so a mail link that returns in a new tab keeps the same
+  // clock (the Google round trip returns to this tab). Only the request ID and that time are kept, one record at a
+  // time; a visit without an app request drops a record once it is an hour old. The synthetic preview keeps none.
+  const seenStore = preview ? null : recentStore || recoveryStorage;
   const requestSeen = (() => {
-    const now = cooldownClock.now();if (!authorizationId) return now;
+    const now = cooldownClock.now();if (!seenStore) return now;
     try {
-      const value = JSON.parse(recoveryStorage?.getItem(CONNECT_SEEN_KEY) || 'null');
-      if (value?.id === authorizationId && Number.isFinite(value.at) && value.at <= now) return value.at;
-      recoveryStorage?.setItem(CONNECT_SEEN_KEY, JSON.stringify({ id: authorizationId, at: now }));
+      const value = JSON.parse(seenStore.getItem(CONNECT_SEEN_KEY) || 'null'), known = Number.isFinite(value?.at) && value.at <= now;
+      if (authorizationId && value?.id === authorizationId && known) return value.at;
+      if (authorizationId) seenStore.setItem(CONNECT_SEEN_KEY, JSON.stringify({ id: authorizationId, at: now }));
+      else if (value && !(known && now - value.at < 3600000)) seenStore.removeItem(CONNECT_SEEN_KEY);
     } catch { /* this page's start then counts */ }
     return now;
   })();
@@ -328,7 +332,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   function disarmDeviceWait() { if (deviceTimer !== null) cooldownClock.clearTimeout(deviceTimer);deviceTimer = null; }
   function armDeviceWait() {
     disarmDeviceWait();const left = requestSeen + deviceWait - cooldownClock.now();
-    if (left <= 0) expireDeviceWait();else deviceTimer = cooldownClock.setTimeout(expireDeviceWait, left);
+    // A timer's delay tops out below 2^31 ms; a longer wait (the synthetic preview's) would fire at once.
+    if (left <= 0) expireDeviceWait();else deviceTimer = cooldownClock.setTimeout(expireDeviceWait, Math.min(left, 2147483647));
   }
   function expireDeviceWait() {
     deviceTimer = null;if (closed || $('consent').hidden) return;

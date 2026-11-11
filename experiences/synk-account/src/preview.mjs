@@ -5,6 +5,7 @@ import { readConfig } from './core.mjs';
 const params = new URL(location.href).searchParams;
 // ?device: the connect card for an app on this PC (a loopback arrival address) with the signed-in account named.
 // ?device=expired: the same request after the PC app stopped waiting (the restart card that names the five minutes).
+// Plain ?device never turns by itself, however long the page stays open, so the card can be worked on.
 const device = params.has('device'), deviceArrival = 'http://127.0.0.1:43822/synk/oauth/world/callback';
 const config = readConfig({ version: 1, supabaseUrl: 'https://preview.invalid', supabasePublishableKey: 'sb_publishable_preview_only', portalUrl: location.href,
   clients: { platform: { clientId: 'preview-platform', redirectUri: new URL('./client.html?product=platform', location.href).href }, // Without ?device the arrival is a web address even when this page itself is served from 127.0.0.1.
@@ -84,5 +85,5 @@ async function main() { if (params.get('account') === 'world') {
   document.getElementById('auth-panel').hidden = true;
   const view = createAccountView({ client: accountFactory(), product: 'world', guard: () => {}, notice, preview: true, logout: async (note, { scope } = {}) => { view.stop();notice(note || (scope === 'all' ? '예시 계정을 닫았어요. 실제 다른 제품의 로그인은 종료하지 않았어요.' : '예시 계정을 닫았어요.')); } });
   await view.load();notice('WORLD 계정 화면을 보여 줘요.');
-} else await mountPortal({ config, sdk, accountFactory, preview: true, ...(params.get('device') === 'expired' ? { deviceWait: 0 } : {}) }); }
+} else await mountPortal({ config, sdk, accountFactory, preview: true, deviceWait: params.get('device') === 'expired' ? 0 : Infinity }); }
 main().catch(error => notice(error.message));
