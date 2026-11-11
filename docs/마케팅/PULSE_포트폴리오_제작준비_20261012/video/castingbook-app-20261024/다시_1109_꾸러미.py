@@ -64,8 +64,11 @@ P11E = "\n".join([
     "@이미지 1 is the exact first frame of this video: start from it unchanged — same framing, same place, same light, colors and white balance, same fridge, bottles, poster and tape.",
     HEAD,
     "ACTION: Close on the glass door of the drinks fridge beside the counter: a matte paper poster — a printed photo advertising a strawberry latte — is taped to the outside of the glass "
-    "at its two top corners with beige masking tape. Nothing on the door moves — the door, both strips of tape and the poster stay perfectly still; the printed photo is flat ink on paper and never changes. "
-    "Behind the glass the bottles stand in soft focus in the cold white light. Only the faint reflections on the glass shift very slowly as the daylight outside changes.",
+    "at its two top corners with beige masking tape. Behind the glass the bottles stand in soft focus in the cold white light. "
+    "Only the faint reflections on the glass shift very slowly as the daylight outside changes.",
+    # 물건을 멈추는 말은 PHYSICS: 줄에 주어를 하나씩 밝혀 둔다(11-12 굽기전검사 — 여럿을 늘어놓은 주어는 물건으로 못 읽는다)
+    "PHYSICS: the fridge door stays perfectly still. The poster stays perfectly still and flat against the glass. Each strip of tape stays perfectly still. "
+    "The printed photo is flat ink on paper and never changes.",
     "CAMERA: the frame stays exactly where it is from the first frame to the last — the fridge door, the poster, the tape and the bottles never shift; no push-in, no zoom, no drift, no shake; only the faint reflections on the glass change.",
     LOOK.replace("Every printed photo in the scene (on a bag, a window poster, a sticker, a street banner or a wall frame) is a flat print whose picture never moves or changes.",
                  "Any printed picture already in the scene is a flat print that never moves or changes."),
@@ -95,7 +98,8 @@ def main():
             import shutil
             shutil.copyfile(pick, start)
         open(os.path.join(d, "지시문.txt"), "w", encoding="utf-8").write(prompt)
-        boards.append({"순서": k, "id": pid, "편": "p8", "컷": [cut], "폴더": os.path.basename(d), "길이": 4, "비율": "16:9", "소리": "끔", "묶음": False, "대안": False,
+        # 「인물」 — 컷표 없는 편이라 판마다 밝힌다(11-12 내기 도구의 굽기전검사): 7번은 소연, 11번은 사람 없는 냉장고 문(포스터 속 사진은 사람이 아니다)
+        boards.append({"순서": k, "id": pid, "편": "p8", "컷": [cut], "인물": [] if pid == "p8-11e" else ["소연"], "폴더": os.path.basename(d), "길이": 4, "비율": "16:9", "소리": "끔", "묶음": False, "대안": False,
                        "방식": "A", "시험": False, "낱판": [], "쓰는초": [use], "파일": ["1_시작.jpg"], "빠진 파일": [], "지시문 머리": prompt[:150], "지시문 글자 수": len(prompt)})
     json.dump(boards, open(os.path.join(OUT, "_순서.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(OUT, [(b["id"], b["지시문 글자 수"]) for b in boards])
