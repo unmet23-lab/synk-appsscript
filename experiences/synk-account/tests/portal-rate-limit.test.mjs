@@ -863,6 +863,27 @@ test('the list keeps the last four requests and nothing but IDs and times', asyn
   await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: seenStore() });
   assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'r3', at: -3000 }, { id: 'r4', at: -2000 }, { id: 'r5', at: -1000 }, { id: 'synthetic-authorization', at: 0 }]);
 });
+test('a request already in the list stays one line there, at its earliest time, after the other requests as they were', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'o1', at: -3000 }, { id: 'synthetic-authorization', at: -200000 }, { id: 'o2', at: -2000 }, { id: 'o3', at: -1000 }]) }), tab = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -100000 }) });
+  await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: tab });
+  assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'o1', at: -3000 }, { id: 'o2', at: -2000 }, { id: 'o3', at: -1000 }, { id: 'synthetic-authorization', at: -200000 }]);
+  assert.deepEqual(JSON.parse(tab.data.get('synk.id.connect-seen.v1')), { id: 'synthetic-authorization', at: -200000 });
+});
+test('an entry of another request dated ahead of now is dropped from the list', async t => {
+  const shared = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'ahead-request', at: 900000 }, { id: 'kept-request', at: -1000 }]) });
+  await fixture(t, { localStorage: shared });assert.deepEqual(JSON.parse(shared.data.get('synk.id.connect-seen.v1')), [{ id: 'kept-request', at: -1000 }]);
+});
+test('the list is written only when it changes', async t => {
+  const counting = entries => { const store = seenStore(entries);let writes = 0;return { getItem: store.getItem, setItem: (key, value) => { if (key === 'synk.id.connect-seen.v1') writes++;store.setItem(key, value); }, removeItem: key => { if (key === 'synk.id.connect-seen.v1') writes++;store.removeItem(key); }, data: store.data, writes: () => writes }; };
+  const idle = counting({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'earlier-request', at: -1000 }]) });
+  await fixture(t, { localStorage: idle });assert.equal(idle.writes(), 0, 'a visit with nothing to add or drop');
+});
+test('reopening the same request with the same times writes the list no second time', async t => {
+  let writes = 0;const store = seenStore({ 'synk.id.connect-seen.v1': JSON.stringify([{ id: 'synthetic-authorization', at: -5000 }]) });
+  const shared = { getItem: store.getItem, setItem: (key, value) => { if (key === 'synk.id.connect-seen.v1') writes++;store.setItem(key, value); }, removeItem: key => { if (key === 'synk.id.connect-seen.v1') writes++;store.removeItem(key); } };
+  await fixture(t, { consent: true, preview: false, redirectUri: deviceApp, initial: deviceSession('owner-a'), localStorage: shared, sessionStorage: seenStore({ 'synk.id.connect-seen.v1': JSON.stringify({ id: 'synthetic-authorization', at: -5000 }) }) });
+  assert.equal(writes, 0);assert.deepEqual(JSON.parse(store.data.get('synk.id.connect-seen.v1')), [{ id: 'synthetic-authorization', at: -5000 }]);
+});
 test('the synthetic preview keeps no first-seen time and an old record does not turn its card', async t => {
   const record = JSON.stringify({ id: 'synthetic-authorization', at: -300000 }), list = JSON.stringify([{ id: 'synthetic-authorization', at: -300000 }]), tab = seenStore({ 'synk.id.connect-seen.v1': record }), shared = seenStore({ 'synk.id.connect-seen.v1': list });
   const page = await fixture(t, { consent: true, preview: true, redirectUri: deviceApp, initial: deviceSession('owner-a'), sessionStorage: tab, localStorage: shared });
