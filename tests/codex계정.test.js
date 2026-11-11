@@ -179,3 +179,16 @@ test('⑨ Codex 오류 문장 — ERROR:/Error: 줄과 --json 사건만, 차례�
   /* 색을 강제한 출력 */
   assert.deepStrictEqual(코덱스오류({ 오류: `\x1b[31mERROR:\x1b[0m ${한도}` }), [한도]);
 });
+
+test('⑩ exec가 화면에 내는 안내 줄의 계정 메일은 앞 두 글자만 보인다 — 굽기 로그가 공개 저장소에 올라가도 메일이 통째로 남지 않게', () => {
+  const { 메일가림 } = require('../tools/codex계정.js');
+  assert.strictEqual(메일가림('bakeaccount@example.com'), 'ba***@example.com');
+  assert.strictEqual(메일가림('a@example.com'), 'a***@example.com');
+  assert.strictEqual(메일가림(''), '');
+  assert.strictEqual(메일가림(undefined), '');
+  /* 안내 줄 둘(쓸 계정 없음 · 예비로 굽는다)이 가린 값을 쓴다 */
+  const 글 = fs.readFileSync(path.join(__dirname, '..', 'tools', 'codex계정.js'), 'utf8');
+  const 안내줄 = 글.split('\n').filter((l) => l.includes('process.stderr.write') || l.includes('const 줄들 = 순서.map'));
+  assert.ok(안내줄.length >= 3, `안내 줄을 못 찾았다: ${안내줄.length}`);
+  for (const l of 안내줄) assert.ok(!l.includes('{a.메일') && !l.includes('{후보.메일'), `메일을 그대로 찍는 줄: ${l.trim().slice(0, 80)}`);
+});

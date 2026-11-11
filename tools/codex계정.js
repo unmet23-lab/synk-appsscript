@@ -36,6 +36,9 @@ const 옮길설정 = /^(model|forced_login_method|model_reasoning_effort|service
 const 한도문구 = /(hit|reached) your usage limit|usage_limit_reached/i;
 const 로그인문구 = /not logged in|please (re-?)?log ?in|401 unauthorized|refresh token|token (has )?expired/i;
 const 이름꼴 = /^[a-z0-9-]{1,20}$/;
+/* exec가 화면(stderr)에 내는 안내 줄의 계정 메일은 앞 두 글자만 보인다 — 굽기 출력을 편 폴더에 받아 둔 로그 38개가 메일째 공개 저장소에
+ * 올라가 있었다(2026-11-11). 인자 없이 보는 계정 표는 그대로 다 보인다. */
+const 메일가림 = (메일) => String(메일 || '').replace(/^(.{1,2})[^@]*(@.*)$/, '$1***$2');
 const 계정없음 = 3;
 
 /* ── 장부 ─────────────────────────────────────────────────────────────── */
@@ -237,12 +240,12 @@ async function 굽기(args) {
     const 순서 = [...장부().계정].sort((a, b) => !!a.예비 - !!b.예비);
     const 후보 = 순서.find((a) => !시도한.has(a.이름) && !a.로그인필요 && !(a.막힘까지 > 지금));
     if (!후보) {
-      const 줄들 = 순서.map((a) => `  ${a.이름} ${a.메일 || ''}${a.예비 ? '(예비)' : ''} — ${a.로그인필요 ? '로그인 필요' : a.막힘까지 > 지금 ? `${시각(a.막힘까지)}에 풀림` : '이번에 실패'}`);
+      const 줄들 = 순서.map((a) => `  ${a.이름} ${메일가림(a.메일)}${a.예비 ? '(예비)' : ''} — ${a.로그인필요 ? '로그인 필요' : a.막힘까지 > 지금 ? `${시각(a.막힘까지)}에 풀림` : '이번에 실패'}`);
       process.stderr.write(`[codex계정] 쓸 수 있는 굽기 계정이 없다. 본 계정 폴더(~/.codex)로는 넘어가지 않는다.\n${줄들.join('\n')}\n`);
       return 계정없음;
     }
     시도한.add(후보.이름);
-    if (후보.예비) process.stderr.write(`[codex계정] 보조 계정이 모두 막혀 예비 ${후보.이름}(${후보.메일 || ''})로 굽는다\n`);
+    if (후보.예비) process.stderr.write(`[codex계정] 보조 계정이 모두 막혀 예비 ${후보.이름}(${메일가림(후보.메일)})로 굽는다\n`);
     const r = await 실행(후보.이름, ['exec', ...args], 입력);
     /* 한도·로그인은 실패한 실행에서 Codex의 마지막 오류 문장으로만 본다. 풀리는 시각도 그 문장에서 읽는다 */
     const 오류 = r.code !== 0 ? 코덱스오류(r).pop() : undefined;
@@ -339,7 +342,7 @@ async function main(argv) {
   return 2;
 }
 
-module.exports = { 풀리는시각, 코덱스오류, 한도문구, 로그인문구, 묻기 };
+module.exports = { 풀리는시각, 코덱스오류, 한도문구, 로그인문구, 묻기, 메일가림 };
 
 if (require.main === module) {
   main(process.argv.slice(2)).then(
