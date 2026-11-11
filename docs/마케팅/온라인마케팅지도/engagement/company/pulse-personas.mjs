@@ -65,6 +65,7 @@ const HANGUL=/[가-힣]/;
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const KEY=/^[A-Za-z0-9_-]{8,80}$/;
 const sha=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const SHA256=/^[0-9a-f]{64}$/;
 function text(value,max,required=false){if(value===undefined||value===null){if(required)throw fail('필요한 내용을 적어 주세요.');return '';}if(typeof value!=='string'||value.length>max||CONTROL.test(value))throw fail('입력 내용과 길이를 확인해 주세요.');const clean=value.trim();if(required&&!clean)throw fail('필요한 내용을 적어 주세요.');return clean;}
 const int=(value,min,max,message)=>{if(!Number.isSafeInteger(value)||value<min||value>max)throw fail(message);return value;};
 const live=doc=>!!doc&&!doc.deletedAt;
@@ -168,7 +169,7 @@ export function createPersonaGuard(store,{clock=()=>new Date().toISOString()}={}
 const EVENT={created:'sent',source_added:'files',request_materials:'materials',ask_rights:'rights',start_review:'review',send_quote:'quote',publish_reference:'reference',publish_motion:'motion',set_usage:'usage',withdraw:'withdrawn',retire:'retired','approve:scope':'scope_ok','changes:scope':'scope_changes','approve:reference':'reference_ok','changes:reference':'reference_changes','approve:motion':'motion_ok','changes:motion':'motion_changes','approve:usage':'usage_ok'};
 const SOURCE_OPEN=['submitted','needs_materials','rights_pending','reviewing'];
 const REVISION_OPEN=['reviewing','quote_review','reference_making','reference_review','building','motion_review'];
-export const PERSONA_LIMITS=Object.freeze({sources:30,assets:40,history:200,revisions:20});
+export const PERSONA_LIMITS=Object.freeze({sources:30,assets:40,history:200,revisions:20,removedNoVault:1000});
 const STAFF_FIELDS={
   request_materials:['why','translation'],ask_rights:['why','translation'],start_review:[],send_quote:['price','days','revisions','scope','translation'],
   publish_reference:['revisionId','assetIds','note','translation'],publish_motion:['revisionId','assetIds','note','translation'],withdraw:['why','translation'],retire:[],
@@ -410,8 +411,20 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     return {projectId:row.id,projectRevision:row.revision,personas:store.all(K.personas).filter(persona=>live(persona)&&persona.originProjectId===row.id).sort(byTime).map(persona=>staffView(user,persona,row,editable))};
   }
   function staffRead(user,personaId){const persona=getPersona(personaId),row=clientProjects.project(user,persona.originProjectId);return staffView(user,persona,row,canWrite(user,row));}
+  // 판 파일 하나를 빼는 일(remove_asset)은 부르는 쪽(server)이 먼저 그 본문의 sha256을 잰다(파일 읽기라 트랜잭션 밖 — 이 모듈은 파일을 읽지 않는다).
+  // removalTarget이 잴 파일을 알려 주고, staffAction이 이름을 떼는 바로 그 트랜잭션에서 인물 문서 removedNoVault에 그 해시를 남긴다. 백업은 그 해시와
+  // 같은 본문을 계속 「금고 아님」으로 싣는다(workspace-media personaRetainedSha) — 인물은 두고 초안 파일만 뺀 뒤에도 같은 바이트의 프로젝트 자료가
+  // 오래 두는 보관 사본으로 가지 않게(11-11 설계 검토 · PC 검수 다섯째 회차). 다른 일 · 못 찾은 파일은 null(staffAction이 같은 까닭으로 멈춘다).
+  function removalTarget(user,personaId,input){
+    if(!object(input)||input.action!=='remove_asset')return null;
+    const persona=getPersona(personaId);clientProjects.project(user,persona.originProjectId,true);
+    const revision=typeof input.revisionId==='string'&&UUID.test(input.revisionId)?store.get(K.revisions,input.revisionId):null;
+    const found=live(revision)&&revision.personaId===persona.id&&Array.isArray(revision.assets)?revision.assets.find(item=>item.id===input.assetId):null;
+    return found?{assetId:found.id,diskName:found.diskName}:null;
+  }
   // 직원 쓰기: 원 프로젝트의 쓰기 권한(담당자 · 관리자 · 같은 팀 매니저, 보관 아님)과 인물 문서 판(revision)이 맞아야 한다. 지울 파일 이름을 함께 돌려준다(트랜잭션 밖에서 지운다).
-  function staffAction(user,personaId,input){
+  // prepared: remove_asset일 때 {assetId, diskName, sha256} — removalTarget이 알려 준 파일의 본문 해시(없는 파일은 null).
+  function staffAction(user,personaId,input,prepared=null){
     if(!object(input)||!Object.hasOwn(STAFF_FIELDS,input.action)||Object.keys(input).some(key=>!['action','revision',...STAFF_FIELDS[input.action]].includes(key)))throw fail('인물 작업 요청을 확인해 주세요.');
     const action=input.action;
     return store.transaction(()=>{
@@ -478,6 +491,13 @@ export function createPersonaService({store,clientProjects,features=null,localeO
         const revision=revisionOf(input.revisionId),found=revision.assets.find(item=>item.id===input.assetId);
         if(!found)throw fail('그 파일을 찾지 못했어요.',404);
         if(sentOf(persona,revision).includes(found.id))throw fail('손님에게 보낸 적 있는 파일은 지울 수 없어요(확인 기록으로 남겨요).',409);
+        // 미리 잰 해시가 이 파일의 것이어야 한다(그사이 판이 바뀌었으면 다시). 없는 파일(null)은 지킬 바이트가 없다.
+        if(!object(prepared)||prepared.assetId!==found.id||prepared.diskName!==found.diskName||!(prepared.sha256===null||SHA256.test(prepared.sha256||'')))throw fail('그사이 인물 파일이 바뀌었어요. 다시 해 주세요.',409);
+        if(SHA256.test(prepared.sha256||'')){
+          const kept=[...new Set([...(Array.isArray(persona.removedNoVault)?persona.removedNoVault:[]),prepared.sha256])].sort();
+          if(kept.length>PERSONA_LIMITS.removedNoVault)throw fail('이 인물에서 뺀 파일이 너무 많아요. 새 인물 요청으로 이어 가 주세요.',409);
+          next.removedNoVault=kept;
+        }
         store.put(K.revisions,revision.id,{...revision,assets:revision.assets.filter(item=>item.id!==found.id)});discard.push(found.diskName);label='전용 인물 판 파일 지움';
       }else if(action==='set_method'){
         const revision=revisionOf(input.revisionId);
@@ -566,7 +586,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   function mintConsentToken(personaId,{minutes=4320}={}){const persona=getPersona(personaId);if(persona.kind!=='real'||PERSONA_FINAL.includes(persona.status)||held(persona))throw fail('실제 인물 요청에만 당사자 확인을 보낼 수 있어요.',409);return store.mint(CONSENT_PURPOSE,null,{purpose:'persona-consent',personaId:persona.id,personaRevision:persona.revision},minutes);}
   function readConsentToken(raw){const token=store.readToken(raw,CONSENT_PURPOSE);if(!token||token.body?.purpose!=='persona-consent')return null;const persona=store.get(K.personas,token.body.personaId);if(!live(persona)||persona.kind!=='real'||PERSONA_FINAL.includes(persona.status))return null;return {personaId:persona.id};}
 
-  return {customerView,create,afterProjectSubmit,approve,addSource,customerMedia,staffList,staffRead,staffAction,assertAssetUpload,addAsset,staffMedia,consentRead,consentRecord,mintConsentToken,readConsentToken,openOf,flags};
+  return {customerView,create,afterProjectSubmit,approve,addSource,customerMedia,staffList,staffRead,removalTarget,staffAction,assertAssetUpload,addAsset,staffMedia,consentRead,consentRecord,mintConsentToken,readConsentToken,openOf,flags};
 }
 // 제작 설계의 인물 참조를 붙이거나(ref) 뗀다(null). 판 1 규칙: 이 칸은 서버만 쓴다. 바뀐 칸이 없으면 그대로 돌려준다.
 export function withPersonaRef(strategy,ref,stamp){

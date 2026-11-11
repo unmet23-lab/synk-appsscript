@@ -607,6 +607,8 @@ test('시나리오 10 · 프로젝트 정리 때 삭제(결정 표 11-11 ⑤): �
   assert.ok(xf.length>=3&&yf.length>=3&&zf.length>=3,'사진 · 기준 얼굴 · 동작 시안');
   const {createHash}=await import('node:crypto');
   const xsha=[...new Set(await Promise.all(xf.map(async name=>createHash('sha256').update(await readFile(mediaPath(f,name))).digest('hex'))))].sort();
+  // 앞서 판 파일 하나만 뺄 때 남긴 해시(removedNoVault)는 인물을 지울 때 묘비로 함께 옮겨진다(묘비는 정해진 칸만 남긴다).
+  const earlier='e'.repeat(64);f.store().put('pulsePersonas',x.personaId,{...f.store().get('pulsePersonas',x.personaId),removedNoVault:[earlier]});
   advance(f,91*86400000);
   for(const id of [z.projectId,reuse.projectId])touch(f,id);                        // 이 둘은 방금 움직였다
   const result=await f.app.pulseRequests.retireUnconfirmed();
@@ -615,7 +617,8 @@ test('시나리오 10 · 프로젝트 정리 때 삭제(결정 표 11-11 ⑤): �
   const tomb=f.store().get('pulsePersonas',x.personaId);
   assert.equal(tomb.status,'deleted');assert.ok(tomb.deletedAt);assert.equal(tomb.deletion.reason,'origin_retired');assert.equal(tomb.deletion.confirmedBy,'system');
   assert.ok(tomb.history.some(row=>row.action==='retention_deleting'&&row.actorKind==='system'));
-  assert.deepEqual(tomb.deletion.noVault,xsha,'이름을 떼는 트랜잭션에서 지운 본문의 sha256을 묘비에 남긴다(GPT GA1)');
+  assert.deepEqual(tomb.deletion.noVault,[...xsha,earlier].sort(),'이름을 떼는 트랜잭션에서 지운 본문의 sha256을 묘비에 남긴다(GPT GA1) — 앞서 뺀 판 파일의 해시도 함께');
+  assert.equal(tomb.removedNoVault,undefined);
   for(const name of xf)await assert.rejects(stat(mediaPath(f,name)),'브랜드 없는 인물의 사진 · 판 파일을 지웠다');
   assert.ok(f.store().all('pulsePersonaApprovals').some(item=>item.personaId===x.personaId&&item.kind==='reference'&&item.shown.assetIds.length),'판 3 승인 기록(무엇을 언제 확인했는지)은 남긴다');
   assert.ok(f.store().all('pulsePersonaRevisions').filter(item=>item.personaId===x.personaId).every(item=>item.deletedAt&&item.sent.length),'보낸 id 목록도 남긴다(D10)');

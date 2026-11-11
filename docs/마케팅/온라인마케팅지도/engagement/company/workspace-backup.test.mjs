@@ -175,6 +175,17 @@ test('a deleted persona keeps its bodies out of the vault through same-byte proj
   assert.ok(retention.noVault.every(hash=>list.files.some(file=>file.sha256===hash)));
 });
 
+// 11-11: 인물은 두고 판 파일 하나만 뺀(remove_asset) 본문의 해시(인물 문서 removedNoVault)와 같은 바이트의 작업실 파일도 금고 제외.
+test('a draft file removed from a living persona keeps its bytes out of the vault', async t => {
+  const f=await mediaFixture(t),company=new Store(f.companyDir);
+  const sha=value=>createHash('sha256').update(value).digest('hex');
+  try{company.put('pulsePersonas','alive',{id:'alive',status:'reference_making',removedNoVault:[sha('synthetic image body'),'e'.repeat(64),'not-a-hash']});}finally{company.close();}
+  const target=await backupWorkspace({destination:join(f.root,'retention-removed'),companyDataDir:f.companyDir,media:'manifest'});
+  const retention=JSON.parse(await readFile(join(target,'media-retention.json'),'utf8'));
+  assert.deepEqual(retention.noVault,[sha('synthetic image body')],'뺀 판 파일과 같은 작업실 본문 — 목록에 없는 해시는 싣지 않는다');
+  assert.equal(retention.legacyDeleted,0,'살아 있는 인물은 옛 판 묘비로 세지 않는다');
+});
+
 test('listed backups without persona documents write an empty vault filter', async t => {
   const f=await mediaFixture(t),target=await backupWorkspace({destination:join(f.root,'retention-none'),companyDataDir:f.companyDir,media:'manifest'});
   const retention=JSON.parse(await readFile(join(target,'media-retention.json'),'utf8'));

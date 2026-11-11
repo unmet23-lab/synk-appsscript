@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,rm,readFile,stat} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
 import {PERSONA_FLOW,PERSONA_APPROVAL_FLOW,PERSONA_STATES,personaNext,createPersonaGuard,openPersonaProjectIds} from './pulse-personas.mjs';
 
@@ -226,6 +226,50 @@ test('끝까지: 견적 → 기준 얼굴 → 동작 시안 → 이번 광고 �
   const approvals=f.app.store.all('pulsePersonaApprovals').filter(item=>item.personaId===personaId);
   assert.deepEqual(approvals.map(item=>`${item.kind}:${item.decision}`),['scope:approve','reference:changes','reference:approve','motion:approve','usage:approve','usage:approve']);
   assert.ok(approvals.every(item=>item.authMethod==='invite-link'&&item.actorKind==='invite'),'초대 링크 승인을 신원 확인으로 적지 않는다');
+});
+
+test('판 파일 하나만 빼도 그 본문의 해시가 인물 문서에 남는다 — 백업이 같은 바이트를 계속 오래 두는 보관 사본에서 뺀다(판 4 설계 11-2)',async t=>{
+  const f=await fixture(t);
+  await f.features({personaRequest:true});
+  const {projectId}=await f.send(custom());
+  const personaId=f.personaOf(projectId).id;
+  assert.equal((await f.act(personaId,{action:'start_review'})).status,200);
+  assert.equal((await f.act(personaId,{action:'send_quote',price:300000,days:7,revisions:2,scope:'기준 얼굴 1판'})).status,200);
+  assert.equal((await f.approve((await f.room()).project.persona)).status,200);
+  assert.equal((await f.act(personaId,{action:'open_revision'})).status,200);
+  const revisionId=f.app.store.all('pulsePersonaRevisions').find(item=>item.personaId===personaId&&item.status==='draft').id;
+  const other=Buffer.concat([png,Buffer.from('other draft')]);
+  assert.equal((await f.asset(personaId,revisionId,'reference',png,'front.png','image/png')).status,201);
+  assert.equal((await f.asset(personaId,revisionId,'reference',other,'side.png','image/png')).status,201);
+  const [a,b]=f.app.store.get('pulsePersonaRevisions',revisionId).assets;
+  const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+  // 보낸 적 없는 초안 파일 A를 뺀다: 이름을 떼는 같은 트랜잭션에서 인물 문서에 A 본문의 sha256이 남고, 파일은 지워진다.
+  const removed=await f.act(personaId,{action:'remove_asset',revisionId,assetId:a.id});assert.equal(removed.status,200,JSON.stringify(removed.data));
+  assert.deepEqual(f.app.store.get('pulsePersonas',personaId).removedNoVault,[hash(png)]);
+  assert.deepEqual(f.app.store.get('pulsePersonaRevisions',revisionId).assets.map(item=>item.id),[b.id]);
+  await assert.rejects(stat(join(f.app.store.directory,'studio-media',a.diskName)),{code:'ENOENT'});
+  // 둘째 파일도 빼면 해시가 쌓인다(같은 해시는 한 번만).
+  assert.equal((await f.act(personaId,{action:'remove_asset',revisionId,assetId:b.id})).status,200);
+  assert.deepEqual(f.app.store.get('pulsePersonas',personaId).removedNoVault,[hash(png),hash(other)].sort());
+  // 없는 파일은 예전처럼 404, 손님 · 직원 보기에는 이 칸이 실리지 않는다.
+  assert.equal((await f.act(personaId,{action:'remove_asset',revisionId,assetId:a.id})).status,404);
+  assert.equal(JSON.stringify((await f.staff('/api/personas/'+personaId)).data).includes('removedNoVault'),false);
+  assert.equal(JSON.stringify((await f.room()).project).includes('removedNoVault'),false);
+  // 미리 잰 그 파일의 해시가 있어야 이름을 뗀다 — 해시 없이 · 다른 파일의 것으로 · 틀린 꼴로 부르면 멈추고 아무것도 바뀌지 않는다.
+  assert.equal((await f.asset(personaId,revisionId,'reference',png,'again.png','image/png')).status,201);
+  const c=f.app.store.get('pulsePersonaRevisions',revisionId).assets[0],owner=f.app.store.all('users').find(user=>user.role==='admin');
+  const {createPersonaService}=await import('./pulse-personas.mjs'),personas=createPersonaService({store:f.app.store,clientProjects:f.app.clientProjects});
+  const input=()=>({action:'remove_asset',revision:f.app.store.get('pulsePersonas',personaId).revision,revisionId,assetId:c.id});
+  const target=personas.removalTarget(owner,personaId,input());
+  assert.deepEqual(target,{assetId:c.id,diskName:c.diskName});
+  assert.equal(personas.removalTarget(owner,personaId,{action:'note',text:'x'}),null,'다른 일에는 잴 파일이 없다');
+  for(const prepared of [null,{...target},{...target,sha256:'짧음'},{...target,diskName:randomUUID()+'.png',sha256:hash(png)},{assetId:randomUUID(),diskName:target.diskName,sha256:hash(png)}])
+    assert.throws(()=>personas.staffAction(owner,personaId,input(),prepared),/그사이 인물 파일이 바뀌었어요/);
+  assert.deepEqual(f.app.store.get('pulsePersonaRevisions',revisionId).assets.map(item=>item.id),[c.id],'멈추면 이름을 떼지 않는다');
+  assert.deepEqual(f.app.store.get('pulsePersonas',personaId).removedNoVault,[hash(png),hash(other)].sort());
+  // 파일이 이미 없으면(null) 지킬 바이트가 없다 — 이름은 떼고 해시는 더하지 않는다.
+  assert.equal(personas.staffAction(owner,personaId,input(),{...target,sha256:null}).discard[0],c.diskName);
+  assert.deepEqual(f.app.store.get('pulsePersonas',personaId).removedNoVault,[hash(png),hash(other)].sort());
 });
 
 test('GA1: 손님에게 한 번이라도 보낸 판 파일은 그 판을 다시 보낸 뒤에도 지울 수 없다 — 확인 기록이 가리키는 그림이 남는다',async t=>{

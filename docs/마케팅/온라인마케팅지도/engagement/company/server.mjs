@@ -1429,7 +1429,7 @@ export function createCompanyApp(options={}) {
       const workspaceRoute=path.match(/^\/api\/customer-workspaces\/([a-f0-9-]{36})$/);
       if(workspaceRoute){const result=pulseWorkspaces.workspaceAction(user,workspaceRoute[1],input);audit(user,'pulse-workspace',workspaceRoute[1],{step:input.action});return send(res,200,result);}
       const personaAction=path.match(/^\/api\/personas\/([a-f0-9-]{36})$/);
-      if(personaAction){const {persona,discard}=pulsePersonas.staffAction(user,personaAction[1],input);for(const diskName of discard)await discardStudioMedia({committed:true,metadata:{diskName}},store.directory).catch(()=>{});return send(res,200,{persona});}
+      if(personaAction){const target=pulsePersonas.removalTarget(user,personaAction[1],input),prepared=target?{...target,sha256:await pulseWorkspaces.mediaSha(target.diskName)}:null;const {persona,discard}=pulsePersonas.staffAction(user,personaAction[1],input,prepared);for(const diskName of discard)await discardStudioMedia({committed:true,metadata:{diskName}},store.directory).catch(()=>{});return send(res,200,{persona});}
       const personaConsentWrite=path.match(/^\/api\/personas\/([a-f0-9-]{36})\/consent$/);
       if(personaConsentWrite){const result=pulsePersonas.consentRecord(user,personaConsentWrite[1],input);audit(user,'pulse-persona-consent',personaConsentWrite[1],{revision:result.revision});return send(res,200,result);}
       if(path==='/api/client-workflow')return send(res,200,clientWorkflow.update(user,input));

@@ -596,7 +596,8 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     for(const source of store.all(K.sources).filter(item=>item.personaId===persona.id&&live(item))){if(typeof source.diskName==='string')names.push(source.diskName);store.put(K.sources,source.id,{id:source.id,personaId:source.personaId,projectId:source.projectId,purpose:source.purpose,diskName:null,deletedAt:now});}
     for(const revision of store.all(K.revisions).filter(item=>item.personaId===persona.id&&live(item))){for(const entry of revision.assets||[])if(typeof entry?.diskName==='string')names.push(entry.diskName);store.put(K.revisions,revision.id,{...revision,assets:[],reference:null,motion:null,method:null,deletedAt:now});}
     if(names.some(name=>!hashes?.has(name)))throw fail('그사이 인물 파일이 바뀌었어요. 다시 해 주세요.',409);
-    const noVault=[...new Set([...(persona.deletion?.noVault||[]),...names.map(name=>hashes.get(name))])].filter(hash=>typeof hash==='string'&&SHA256.test(hash)).sort();
+    // 앞서 판 파일만 뺄 때 남긴 해시(removedNoVault)도 묘비로 옮긴다 — 묘비는 정해진 칸만 남기므로 여기서 합친다.
+    const noVault=[...new Set([...(persona.deletion?.noVault||[]),...(Array.isArray(persona.removedNoVault)?persona.removedNoVault:[]),...names.map(name=>hashes.get(name))])].filter(hash=>typeof hash==='string'&&SHA256.test(hash)).sort();
     store.remove(K.consents,persona.id);
     const system=actorKind==='system';
     putPersona(persona,{status:'deleting',pendingUnlink:[...new Set(names)],deletion:{confirmedAt:now,confirmedBy:system?'system':actor,note,requested:persona.deletionRequest||null,...(reason?{reason}:{}),noVault}},{action:system?'retention_deleting':'deleting',actorKind,actor:system?'':actor});
@@ -663,7 +664,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     for(const persona of store.all(K.personas).filter(item=>item.status==='deleting'&&!item.deletedAt)){try{await finishDeletion(persona.id);}catch{/* 다음 시작 · 직원 「삭제 이어 하기」가 잇는다 */}}
   }
 
-  return {enabled,projectProof,draftProof,projectState,claim,withdrawClaim,models,model,asset,attach,reuse,withdrawReuse,stop,deleteRequest,
+  // 작업실 파일 하나의 본문 sha256(없는 파일은 null). 인물 판 파일 하나를 빼기 전에 server가 잰다(pulse-personas는 파일을 읽지 않는다).
+  const mediaSha=diskName=>{if(typeof diskName!=='string'||!MEDIA_NAME.test(diskName))throw fail('파일 이름을 확인해 주세요.');return fileSha(join(store.directory,'studio-media',diskName));};
+  return {mediaSha,enabled,projectProof,draftProof,projectState,claim,withdrawClaim,models,model,asset,attach,reuse,withdrawReuse,stop,deleteRequest,
     attachedRequest,ownerFor,personaReferences,staffList,staffRead,decideClaim,workspaceAction,projectAction,personaAction,deletePersona,finishDeletion,resumeDeletions,
     retentionDue,sweepRetention};
 }
