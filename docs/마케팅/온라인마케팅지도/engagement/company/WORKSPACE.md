@@ -987,7 +987,7 @@ node docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup
 
 - **파일:** `public/marketing-map.js` · `marketing-map.css`(그리기 — 간편판 머리 · 계기판 도우미를 그대로 씀, style 속성 없음) · `marketing-map.json`(자료). 서버는 정적 목록에 세 줄만 더했다 — 새 API · 저장 · 권한 없음. 간편판 `snsSimpleRender`가 `map` 장이면 `marketingMapRender()`로 넘긴다.
 - **자료:** `docs/마케팅/온라인마케팅지도/world/workspace-data.mjs`가 계정 원장 · PULSE 타깃 · 나라 경계로 만든다. 로그인 정보는 읽지 않는다(계정은 플랫폼 · 공개 핸들 · 공개 주소 · 확보 여부). 원장을 `build-map.mjs --complete`로 다시 만들면 끝에서 같이 다시 쓰이고, PULSE 타깃만 바꿨으면 `node docs/마케팅/온라인마케팅지도/world/workspace-data.mjs`. 운영에는 화면 묶음 바꿔 끼우기(`deploy/static/swap.mjs`)로 싣는다 — 처음 한 번만 새 주소 셋 때문에 이미지 판.
-- **시험:** `marketing-map.test.mjs` 4(자료 = 원장에서 다시 만든 것 · 로그인 정보 없음 · 원장 숫자대로 칠함 · 서버가 세 파일을 냄). 합성 작업실(`verify-workspace-fixture.mjs`)에서 1440 · 390 클릭 · Esc · 고른 사업 기억 26개, 넘침 · 콘솔 오류 · 실패 요청 0.
+- **시험:** `marketing-map.test.mjs` 4(자료 = 원장에서 다시 만든 것 · 로그인 정보 없음 · 원장 숫자대로 칠함 · 서버가 세 파일을 냄). 합성 작업실(`verify-workspace-fixture.mjs`)에서 1440 · 390 클릭 · Esc · 고른 사업 기억 26개, 넘침 · 콘솔 오류 · 실패 요청 0. 백엔드 검수 사슬 `marketing-map-workspace-backend-20261111` → `-b` GPT 0건 · 0건, 끝 판 아르곤 4건(P2, 반영 4 — 시험 단언 셋 · 생성기의 BOM 이스케이프와 미확보 계정 비우기). 회사 이미지 판에 실을 때 `--검수 marketing-map-workspace-backend-20261111-b`.
 
 <a id="sns-simple-20261024"></a>
 

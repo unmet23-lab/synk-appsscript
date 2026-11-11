@@ -33,10 +33,13 @@ test('작업실 지도 자료는 원장 · PULSE 타깃 · 나라 경계에서 �
 
 test('작업실 지도 자료에는 로그인 정보 · 이메일이 없다(공개 정적 파일)', () => {
   const text = JSON.stringify(shipped);
-  assert.doesNotMatch(text, /loginAlias|loginIdentity|loginMethod|@gmail\.com|@naver\.com|unmet\d+|synk\.yuh|비밀번호|password/i);
-  for (const view of Object.values(shipped.views)) for (const c of view.countries) for (const a of c.accounts) {
+  assert.doesNotMatch(text, /loginAlias|loginIdentity|loginMethod|unmet\d+|synk\.yuh|비밀번호|password/i);
+  // 이메일 꼴은 도메인과 상관없이 없어야 한다(핸들 「@synkpulse」 · 주소 「…com/@synklab.vn」은 @ 앞에 이름 칸이 없어 걸리지 않는다).
+  assert.doesNotMatch(text, /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/, '이메일 주소');
+  // 나라별 계정과 나라를 나누지 않은 공통 계정 모두 같은 여섯 칸만, 미확보면 주소 · 핸들 없음.
+  for (const view of Object.values(shipped.views)) for (const a of [...view.shared, ...view.countries.flatMap(c => c.accounts)]) {
     assert.deepEqual(Object.keys(a).sort(), ['handle', 'note', 'platform', 'secured', 'state', 'url']);
-    if (!a.secured) assert.equal(a.url, null, '미확보 계정에 주소를 지어내지 않는다');
+    if (!a.secured) { assert.equal(a.url, null, '미확보 계정에 주소를 지어내지 않는다'); assert.equal(a.handle, null); }
   }
 });
 
@@ -53,7 +56,8 @@ test('지도 장은 원장 숫자대로 칠하고, 고른 나라는 맨 위 · �
   assert.match(pulse, /class="mm-c hot is-target is-selected" d="[^"]+" data-code="SG"/);
   assert.match(pulse, /검토 · 추가/);
   assert.doesNotMatch(lab + pulse, /\sstyle=/, '마크업 style 속성 없음(CSP)');
-  assert.doesNotMatch(mmPage(shipped, 'pulse', null), /mm-map has-sel/, 'PULSE는 고른 뒤에도 다른 나라를 옅게 하지 않는다');
+  assert.doesNotMatch(pulse, /mm-map has-sel/, 'PULSE는 고른 뒤에도 다른 나라를 옅게 하지 않는다');
+  assert.match(mmPage(shipped, 'lab', 'TW'), /class="mm-map has-sel"/, 'LAB은 고르면 나머지를 옅게 한다');
 });
 
 test('서버는 지도 스크립트 · 스타일 · 자료를 내고, 첫 화면이 둘을 싣는다', async t => {

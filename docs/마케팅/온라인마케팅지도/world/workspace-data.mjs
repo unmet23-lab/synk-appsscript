@@ -15,7 +15,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 export const WORKSPACE_MAP_FILE = join(root, 'engagement', 'company', 'public', 'marketing-map.json');
 
-const account = a => ({ platform: a.platform, handle: a.handle || null, url: a.url || null, secured: Boolean(a.secured), state: a.state, note: a.note || null });
+// 미확보 계정은 주소 · 핸들을 내지 않는다(원장 모양이 바뀌어도 공개 파일에 예정 주소가 새지 않게).
+const account = a => { const secured = Boolean(a.secured); return { platform: a.platform, handle: secured ? a.handle || null : null, url: secured ? a.url || null : null, secured, state: a.state, note: a.note || null }; };
 
 function country(c, brand) {
   return {
@@ -63,7 +64,7 @@ export function buildWorkspaceMap({ data, targets, geo }) {
 }
 
 export function readSources() {
-  const read = path => JSON.parse(readFileSync(path, 'utf8').replace(/^﻿/, ''));
+  const read = path => JSON.parse(readFileSync(path, 'utf8').replace(/^\uFEFF/, ''));
   return {
     data: read(join(root, 'dashboard', 'src', 'data.json')),
     targets: read(join(root, 'inputs', 'pulse-targets.json')),
