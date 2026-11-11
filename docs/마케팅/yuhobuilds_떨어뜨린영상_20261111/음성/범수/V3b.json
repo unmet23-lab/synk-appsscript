@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3b",
+ "text": "세 번을 고쳐 보여 줘도, 하나가 계속, 지난 편이랑 같아 보인대요.",
+ "dur": 3.42,
+ "words": [
+  {
+   "text": "세",
+   "start": 0.02,
+   "end": 0.107
+  },
+  {
+   "text": "번을",
+   "start": 0.165,
+   "end": 0.367
+  },
+  {
+   "text": "고쳐",
+   "start": 0.41,
+   "end": 0.598
+  },
+  {
+   "text": "보여",
+   "start": 0.642,
+   "end": 0.787
+  },
+  {
+   "text": "줘도,",
+   "start": 0.83,
+   "end": 0.989
+  },
+  {
+   "text": "하나가",
+   "start": 1.307,
+   "end": 1.568
+  },
+  {
+   "text": "계속,",
+   "start": 1.61,
+   "end": 1.929
+  },
+  {
+   "text": "지난",
+   "start": 2.088,
+   "end": 2.305
+  },
+  {
+   "text": "편이랑",
+   "start": 2.349,
+   "end": 2.623
+  },
+  {
+   "text": "같아",
+   "start": 2.667,
+   "end": 2.826
+  },
+  {
+   "text": "보인대요.",
+   "start": 2.869,
+   "end": 3.42
+  }
+ ],
+ "source": {
+  "key": "da58721395223bcc9e35777f6580eace",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

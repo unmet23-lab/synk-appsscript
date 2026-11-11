@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "이 비교표, 그대로 가져가세요.",
+ "dur": 2.017,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.05,
+   "end": 0.07
+  },
+  {
+   "text": "비교표,",
+   "start": 0.171,
+   "end": 0.615
+  },
+  {
+   "text": "그대로",
+   "start": 0.978,
+   "end": 1.22
+  },
+  {
+   "text": "가져가세요.",
+   "start": 1.281,
+   "end": 2.017
+  }
+ ],
+ "source": {
+  "key": "02f9f5e67b5d46fb7b9971daf1fe1d30",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

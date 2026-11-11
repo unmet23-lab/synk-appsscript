@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5b",
+ "text": "AI가 합격시킨 열두 편 중에, 평소 세 배 넘게 터진 건, 한 편.",
+ "dur": 3.581,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.03,
+   "end": 0.418
+  },
+  {
+   "text": "합격시킨",
+   "start": 0.46,
+   "end": 0.889
+  },
+  {
+   "text": "열두",
+   "start": 0.931,
+   "end": 1.152
+  },
+  {
+   "text": "편",
+   "start": 1.194,
+   "end": 1.332
+  },
+  {
+   "text": "중에,",
+   "start": 1.374,
+   "end": 1.568
+  },
+  {
+   "text": "평소",
+   "start": 1.817,
+   "end": 2.039
+  },
+  {
+   "text": "세",
+   "start": 2.08,
+   "end": 2.149
+  },
+  {
+   "text": "배",
+   "start": 2.218,
+   "end": 2.26
+  },
+  {
+   "text": "넘게",
+   "start": 2.302,
+   "end": 2.496
+  },
+  {
+   "text": "터진",
+   "start": 2.551,
+   "end": 2.759
+  },
+  {
+   "text": "건,",
+   "start": 2.8,
+   "end": 2.939
+  },
+  {
+   "text": "한",
+   "start": 3.119,
+   "end": 3.23
+  },
+  {
+   "text": "편.",
+   "start": 3.272,
+   "end": 3.581
+  }
+ ],
+ "source": {
+  "key": "5eac4ec365762ceed2db313b49595bba",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

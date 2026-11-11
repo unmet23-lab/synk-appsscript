@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "지난 편이랑 같다고 떨어진 편은, 열에 여섯이 터졌고요.",
+ "dur": 2.892,
+ "words": [
+  {
+   "text": "지난",
+   "start": 0.04,
+   "end": 0.223
+  },
+  {
+   "text": "편이랑",
+   "start": 0.29,
+   "end": 0.59
+  },
+  {
+   "text": "같다고",
+   "start": 0.63,
+   "end": 0.906
+  },
+  {
+   "text": "떨어진",
+   "start": 0.958,
+   "end": 1.259
+  },
+  {
+   "text": "편은,",
+   "start": 1.299,
+   "end": 1.535
+  },
+  {
+   "text": "열에",
+   "start": 1.811,
+   "end": 1.982
+  },
+  {
+   "text": "여섯이",
+   "start": 2.034,
+   "end": 2.309
+  },
+  {
+   "text": "터졌고요.",
+   "start": 2.349,
+   "end": 2.892
+  }
+ ],
+ "source": {
+  "key": "d019fe11b35b38110b2b89f632789eb3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

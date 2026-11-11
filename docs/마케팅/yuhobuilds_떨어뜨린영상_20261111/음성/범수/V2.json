@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "페이스북에서 오만 칠천 번 재생됐어요.",
+ "dur": 1.874,
+ "words": [
+  {
+   "text": "페이스북에서",
+   "start": 0.02,
+   "end": 0.516
+  },
+  {
+   "text": "오만",
+   "start": 0.607,
+   "end": 0.777
+  },
+  {
+   "text": "칠천",
+   "start": 0.816,
+   "end": 1.038
+  },
+  {
+   "text": "번",
+   "start": 1.091,
+   "end": 1.182
+  },
+  {
+   "text": "재생됐어요.",
+   "start": 1.221,
+   "end": 1.874
+  }
+ ],
+ "source": {
+  "key": "89caca92afed376c959c9da1500d9d38",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}

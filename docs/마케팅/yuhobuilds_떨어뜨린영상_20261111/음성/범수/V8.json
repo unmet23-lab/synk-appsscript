@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "지금은 AI한테 틀린 곳만 찾게 하고, 잘될지는 올려서, 사람 반응으로 재 보는 중이에요.",
+ "dur": 4.624,
+ "words": [
+  {
+   "text": "지금은",
+   "start": 0.02,
+   "end": 0.34
+  },
+  {
+   "text": "AI한테",
+   "start": 0.395,
+   "end": 0.883
+  },
+  {
+   "text": "틀린",
+   "start": 0.952,
+   "end": 1.162
+  },
+  {
+   "text": "곳만",
+   "start": 1.203,
+   "end": 1.384
+  },
+  {
+   "text": "찾게",
+   "start": 1.426,
+   "end": 1.621
+  },
+  {
+   "text": "하고,",
+   "start": 1.663,
+   "end": 1.816
+  },
+  {
+   "text": "잘될지는",
+   "start": 2.122,
+   "end": 2.595
+  },
+  {
+   "text": "올려서,",
+   "start": 2.637,
+   "end": 2.916
+  },
+  {
+   "text": "사람",
+   "start": 3.264,
+   "end": 3.487
+  },
+  {
+   "text": "반응으로",
+   "start": 3.543,
+   "end": 3.821
+  },
+  {
+   "text": "재",
+   "start": 3.863,
+   "end": 3.947
+  },
+  {
+   "text": "보는",
+   "start": 3.988,
+   "end": 4.155
+  },
+  {
+   "text": "중이에요.",
+   "start": 4.197,
+   "end": 4.624
+  }
+ ],
+ "source": {
+  "key": "aa271f727b5400ca3186c73caf4d3bae",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 169
+ }
+}

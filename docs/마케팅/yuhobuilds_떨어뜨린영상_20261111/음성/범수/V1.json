@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "제 AI 심사위원이 떨어뜨린 영상이요,",
+ "dur": 2.14,
+ "words": [
+  {
+   "text": "제",
+   "start": 0.02,
+   "end": 0.124
+  },
+  {
+   "text": "AI",
+   "start": 0.272,
+   "end": 0.569
+  },
+  {
+   "text": "심사위원이",
+   "start": 0.642,
+   "end": 1.146
+  },
+  {
+   "text": "떨어뜨린",
+   "start": 1.191,
+   "end": 1.575
+  },
+  {
+   "text": "영상이요,",
+   "start": 1.62,
+   "end": 2.14
+  }
+ ],
+ "source": {
+  "key": "00c17edfc3e5fa2cbee66a541f2d7023",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

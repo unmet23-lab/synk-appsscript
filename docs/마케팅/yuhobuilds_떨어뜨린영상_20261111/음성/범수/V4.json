@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "그래서 불합격. 근데 매일 올리기로 해서, 그냥 올렸어요.",
+ "dur": 2.903,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.225
+  },
+  {
+   "text": "불합격.",
+   "start": 0.293,
+   "end": 0.73
+  },
+  {
+   "text": "근데",
+   "start": 1.127,
+   "end": 1.29
+  },
+  {
+   "text": "매일",
+   "start": 1.346,
+   "end": 1.537
+  },
+  {
+   "text": "올리기로",
+   "start": 1.591,
+   "end": 1.878
+  },
+  {
+   "text": "해서,",
+   "start": 1.919,
+   "end": 2.042
+  },
+  {
+   "text": "그냥",
+   "start": 2.097,
+   "end": 2.289
+  },
+  {
+   "text": "올렸어요.",
+   "start": 2.33,
+   "end": 2.903
+  }
+ ],
+ "source": {
+  "key": "0ac286b9646791aa5437e50f30c79917",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

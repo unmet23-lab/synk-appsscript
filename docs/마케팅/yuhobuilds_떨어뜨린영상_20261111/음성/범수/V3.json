@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "올리기 전에 AI 넷한테 먼저 보여 주거든요.",
+ "dur": 2.279,
+ "words": [
+  {
+   "text": "올리기",
+   "start": 0.02,
+   "end": 0.214
+  },
+  {
+   "text": "전에",
+   "start": 0.256,
+   "end": 0.41
+  },
+  {
+   "text": "AI",
+   "start": 0.493,
+   "end": 0.73
+  },
+  {
+   "text": "넷한테",
+   "start": 0.771,
+   "end": 1.091
+  },
+  {
+   "text": "먼저",
+   "start": 1.148,
+   "end": 1.356
+  },
+  {
+   "text": "보여",
+   "start": 1.412,
+   "end": 1.579
+  },
+  {
+   "text": "주거든요.",
+   "start": 1.621,
+   "end": 2.279
+  }
+ ],
+ "source": {
+  "key": "02d0b70ec91060f378bf42611fb6ea56",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

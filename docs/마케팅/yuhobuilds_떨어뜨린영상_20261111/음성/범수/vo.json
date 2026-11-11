@@ -1,0 +1,138 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1112,
+  "lufs": -17
+ },
+ "made": "2026-11-10T23:12:15.837Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "제 AI 심사위원이 떨어뜨린 영상이요,",
+   "dur": 2.14,
+   "syllablesPerSec": 6.54,
+   "src": "V1.wav",
+   "key": "00c17edfc3e5fa2cbee66a541f2d7023",
+   "words": 5
+  },
+  {
+   "id": "V2",
+   "text": "페이스북에서 오만 칠천 번 재생됐어요.",
+   "dur": 1.874,
+   "syllablesPerSec": 8.54,
+   "src": "V2.wav",
+   "key": "89caca92afed376c959c9da1500d9d38",
+   "words": 5
+  },
+  {
+   "id": "V3",
+   "text": "올리기 전에 AI 넷한테 먼저 보여 주거든요.",
+   "dur": 2.279,
+   "syllablesPerSec": 7.02,
+   "src": "V3.wav",
+   "key": "02d0b70ec91060f378bf42611fb6ea56",
+   "words": 7
+  },
+  {
+   "id": "V3b",
+   "text": "세 번을 고쳐 보여 줘도, 하나가 계속, 지난 편이랑 같아 보인대요.",
+   "dur": 3.42,
+   "syllablesPerSec": 7.31,
+   "src": "V3b.wav",
+   "key": "da58721395223bcc9e35777f6580eace",
+   "words": 11
+  },
+  {
+   "id": "V4",
+   "text": "그래서 불합격. 근데 매일 올리기로 해서, 그냥 올렸어요.",
+   "dur": 2.903,
+   "syllablesPerSec": 7.58,
+   "src": "V4.wav",
+   "key": "0ac286b9646791aa5437e50f30c79917",
+   "words": 8
+  },
+  {
+   "id": "P1",
+   "text": "그게 제일 터졌어요.",
+   "dur": 1.018,
+   "syllablesPerSec": 7.86,
+   "src": "P1.wav",
+   "key": "45464ffb052ca667141ef77cdefb6342",
+   "words": 3
+  },
+  {
+   "id": "V5",
+   "text": "그래서 판정이 남은 마흔두 편을, 나란히 놓고 봤어요.",
+   "dur": 2.761,
+   "syllablesPerSec": 7.61,
+   "src": "V5.wav",
+   "key": "fc4a871da5d7de2b285a05fb411ac25d",
+   "words": 8
+  },
+  {
+   "id": "V5b",
+   "text": "AI가 합격시킨 열두 편 중에, 평소 세 배 넘게 터진 건, 한 편.",
+   "dur": 3.581,
+   "syllablesPerSec": 5.86,
+   "src": "V5b.wav",
+   "key": "5eac4ec365762ceed2db313b49595bba",
+   "words": 13
+  },
+  {
+   "id": "V6",
+   "text": "떨어뜨린 서른 편에선, 열두 편이요.",
+   "dur": 1.755,
+   "syllablesPerSec": 7.98,
+   "src": "V6.wav",
+   "key": "eb6cf23e3a7365ccd848ff5fd84716ae",
+   "words": 5
+  },
+  {
+   "id": "V7",
+   "text": "지난 편이랑 같다고 떨어진 편은, 열에 여섯이 터졌고요.",
+   "dur": 2.892,
+   "syllablesPerSec": 7.61,
+   "src": "V7.wav",
+   "key": "d019fe11b35b38110b2b89f632789eb3",
+   "words": 8
+  },
+  {
+   "id": "P2",
+   "text": "그렇다고 AI 심사를 버리진 않았어요.",
+   "dur": 1.905,
+   "syllablesPerSec": 7.35,
+   "src": "P2.wav",
+   "key": "babfef5f603b41668f68afbec26e4146",
+   "words": 5
+  },
+  {
+   "id": "V8",
+   "text": "지금은 AI한테 틀린 곳만 찾게 하고, 잘될지는 올려서, 사람 반응으로 재 보는 중이에요.",
+   "dur": 4.624,
+   "syllablesPerSec": 7.14,
+   "src": "V8.wav",
+   "key": "aa271f727b5400ca3186c73caf4d3bae",
+   "words": 13
+  },
+  {
+   "id": "V9",
+   "text": "이 비교표, 그대로 가져가세요.",
+   "dur": 2.017,
+   "syllablesPerSec": 5.95,
+   "src": "V9.wav",
+   "key": "02f9f5e67b5d46fb7b9971daf1fe1d30",
+   "words": 4
+  }
+ ]
+}

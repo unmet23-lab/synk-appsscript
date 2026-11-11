@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "그래서 판정이 남은 마흔두 편을, 나란히 놓고 봤어요.",
+ "dur": 2.761,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.06,
+   "end": 0.289
+  },
+  {
+   "text": "판정이",
+   "start": 0.356,
+   "end": 0.678
+  },
+  {
+   "text": "남은",
+   "start": 0.718,
+   "end": 0.92
+  },
+  {
+   "text": "마흔두",
+   "start": 0.96,
+   "end": 1.269
+  },
+  {
+   "text": "편을,",
+   "start": 1.323,
+   "end": 1.591
+  },
+  {
+   "text": "나란히",
+   "start": 1.833,
+   "end": 2.088
+  },
+  {
+   "text": "놓고",
+   "start": 2.143,
+   "end": 2.29
+  },
+  {
+   "text": "봤어요.",
+   "start": 2.33,
+   "end": 2.761
+  }
+ ],
+ "source": {
+  "key": "fc4a871da5d7de2b285a05fb411ac25d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}
