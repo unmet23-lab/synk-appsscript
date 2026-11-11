@@ -5,8 +5,11 @@
 #       큐가 겹치거나 거꾸로 가면 쓰지 않고 멈춘다. --영상을 주면 영상 끝을 넘는 큐도 막는다.
 #   python -X utf8 tools/자막맞추기.py srt --시각 <take.json|*.align.json> --계획 <계획.json> [-o subtitles-ko.srt] [--시작 0] [--앞당김 0] [--머묾 0.3]
 #       나레이션 테이크의 줄 시각(tools/나레이션굽기.mjs의 take.json, 또는 아래 정렬 결과)으로 줄마다 큐 하나를 만든다(화면 글은 show, 없으면 text).
-#   python -X utf8 tools/자막맞추기.py 정렬 <테이크.wav…> --계획 <계획.json> [--segs c1,c2] [--모델 small] [--출력폴더 폴더] [--덮어쓰기]
-#       한 번에 읽힌 테이크(Gemini·녹음)를 로컬 받아쓰기(faster-whisper)로 듣고 대본 낱말에 시각을 붙인다 → <wav>.align.json.
+#   python -X utf8 tools/자막맞추기.py 정렬 <테이크.wav…> --계획 <계획.json> [--segs c1,c2] [--모델 small] [--언어 ko] [--받아쓰기시각] [--출력폴더 폴더] [--덮어쓰기]
+#       한 번에 읽힌 테이크(Gemini·녹음)에 대본 낱말 시각을 붙인다 → <wav>.align.json.
+#       11-11부터 시각은 대본 정렬기(tools/대본정렬.py, Qwen3-ForcedAligner — 첫소리 · 말끝 오차 30ms)에서, 「대본대로 말했나」(match · heard)는
+#       지금처럼 로컬 받아쓰기(faster-whisper)에서 온다. 두 시각이 0.5초 넘게 다른 줄은 ⚠로 찍는다(웃음 · 한숨 · 대본과 다른 말을 의심).
+#       정렬기가 안 깔렸거나 --받아쓰기시각이면 예전처럼 받아쓰기 낱말 시각으로 맞추고, 결과의 timing 칸에 그렇게 적는다.
 #       Typecast로 줄마다 구운 판은 받아쓰기보다 tools/나레이션굽기.mjs의 take.json(Typecast 낱말 시각)이 정확하다(숫자 많은 문장 경계 0.3~0.7초 오차).
 #   python -X utf8 tools/자막맞추기.py 대조 <완성본.mp4|wav> --자막 <자막.srt> [--줄 1] [--언어 ko] [--기준 0.8] [--모델 small] [--다시보기 medium,large-v3-turbo] [-o 결과.json]
 #       완성본 소리를 받아써서 큐마다 들린 글과 자막 글을 견준다. 걸린 큐만 다른 모델로 자르는 자리 다섯 곳에서 다시 듣는다.
@@ -382,7 +385,34 @@ def align_take(segments, x, sr, words):
     return out, sm.ratio(), on, off, sil
 
 
-def run_align(files, plan, segs, model_name, out_dir=None, overwrite=False):
+FAR = 0.5   # 정렬기와 받아쓰기의 줄 시작 · 끝이 이보다 벌어지면 ⚠
+
+
+def merge_timing(out_stt, out_aln):
+    """줄마다 시각(start · end · tokens)은 정렬기 쪽, 대본대로 들렸나(match · heard)는 받아쓰기 쪽. 받아쓰기 시각은 stt_start · stt_end로 남긴다."""
+    out, far = {}, []
+    for k, w in out_stt.items():
+        q = out_aln[k]
+        out[k] = {'start': q['start'], 'end': q['end'], 'tokens': q['tokens'], 'match': w['match'], 'heard': w['heard'],
+                  'stt_start': w['start'], 'stt_end': w['end']}
+        d = max(abs(q['start'] - w['start']), abs(q['end'] - w['end']))
+        if d > FAR:
+            far.append((k, round(d, 2)))
+    return out, far
+
+
+def aligner_runs(files, segments, language):
+    """테이크마다 대본 정렬기 낱말 [(글, 시작, 끝)] — 정렬기가 없으면 None과 까닭."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import 대본정렬
+    if not 대본정렬.깔렸나():
+        return None, '정렬기 없음 — python -X utf8 tools/대본정렬.py 설치'
+    script = ' '.join(str(s['text']) for s in segments)
+    res = 대본정렬.맞추기([{'소리': os.path.abspath(w), '글': script, '언어': language} for w in files])
+    return [[(it['글'], it['시작'], it['끝']) for it in r['낱말']] for r in res], f"정렬기 {res[0]['모델']}" if res else None
+
+
+def run_align(files, plan, segs, model_name, out_dir=None, overwrite=False, language='ko', stt_timing=False):
     rows = []
     segments = plan_lines(plan, segs)
     targets = [os.path.join(out_dir or os.path.dirname(os.path.abspath(w)), re.sub(r'\.[^.]+$', '', os.path.basename(w)) + '.align.json') for w in files]
@@ -391,13 +421,21 @@ def run_align(files, plan, segs, model_name, out_dir=None, overwrite=False):
             raise 자막오류(f'이미 있는 정렬 결과를 덮지 않는다: {t}\n  다른 곳에 쓰려면 --출력폴더, 다시 쓰려면 --덮어쓰기')
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)
-    for wav, target in zip(files, targets):
+    aligned, timing = (None, '받아쓰기(--받아쓰기시각)') if stt_timing else aligner_runs(files, segments, language)
+    if aligned is None and not stt_timing:
+        print('⚠ ' + timing + ' — 받아쓰기 낱말 시각으로 맞춘다', flush=True)
+        timing = '받아쓰기(' + timing.split(' — ')[0] + ')'
+    for fi, (wav, target) in enumerate(zip(files, targets)):
         # 크기·쉼은 원래 표본율로 재고(한번에_맞추기.py와 같게), 받아쓰기는 파일을 그대로 준다(faster-whisper가 16kHz로 푼다).
         sr = native_rate(wav)
         x = decode(wav, sr)
         dur = len(x) / sr
-        words, heard = transcribe(model_name, wav)
+        words, heard = transcribe(model_name, wav, language)
         out, ratio, on, off, sil = align_take(segments, x, sr, words)
+        far = []
+        if aligned is not None:
+            out_aln = align_take(segments, x, sr, aligned[fi])[0]
+            out, far = merge_timing(out, out_aln)
         ids = [s['id'] for s in segments]
         gaps = {ids[i + 1]: round(out[ids[i + 1]]['start'] - out[ids[i]]['end'], 3) for i in range(len(ids) - 1)}
         pause_total = sum(g[1] - g[0] for g in sil)
@@ -410,11 +448,15 @@ def run_align(files, plan, segs, model_name, out_dir=None, overwrite=False):
                'match': round(ratio, 3), 'syl_per_s': round(syl / (off - on), 2), 'artic_per_s': round(syl / max(0.1, off - on - pause_total), 2),
                'pauses': len(sil), 'pause_total': round(pause_total, 2), 'longest_pause': round(max([g[1] - g[0] for g in sil], default=0), 2),
                'f0_median': round(float(np.median(f0)), 1) if len(f0) else 0, 'f0_st_sd': round(float(np.std(st)), 2),
-               'gaps': gaps, 'segs': out, 'heard': heard, 'stt': model_name, 'tool': 'tools/자막맞추기.py 정렬'}
+               'gaps': gaps, 'segs': out, 'heard': heard, 'stt': model_name, 'timing': timing, 'tool': 'tools/자막맞추기.py 정렬'}
+        if far:
+            res['timing_far'] = dict(far)
         write_json(target, res)
         rows.append(res)
         worst = sorted(out.items(), key=lambda kv: kv[1]['match'])[:2]
-        print(f"{res['file']:<34} {dur:5.1f}초 말 {res['speech']:5.1f} 일치 {res['match']:.3f} 초당 {res['syl_per_s']:.1f}(발화 {res['artic_per_s']:.1f}) 쉼 {res['pauses']}개 {res['pause_total']:.1f}초 최장 {res['longest_pause']:.2f} F0 {res['f0_median']:.0f}Hz ±{res['f0_st_sd']:.1f}반음 | 약한 곳 " + ', '.join(f"{k} {v['match']:.2f}" for k, v in worst), flush=True)
+        print(f"{res['file']:<34} {dur:5.1f}초 말 {res['speech']:5.1f} 일치 {res['match']:.3f} 초당 {res['syl_per_s']:.1f}(발화 {res['artic_per_s']:.1f}) 쉼 {res['pauses']}개 {res['pause_total']:.1f}초 최장 {res['longest_pause']:.2f} F0 {res['f0_median']:.0f}Hz ±{res['f0_st_sd']:.1f}반음 | 약한 곳 " + ', '.join(f"{k} {v['match']:.2f}" for k, v in worst) + f' | 시각 {timing}', flush=True)
+        if far:
+            print(f'⚠ 정렬기와 받아쓰기가 {FAR}초 넘게 다른 줄(웃음 · 한숨 · 대본과 다른 말인지 본다): ' + ', '.join(f'{k} {d}초' for k, d in far), flush=True)
     return rows
 
 
@@ -551,6 +593,8 @@ def main(argv=None):
     a.add_argument('--모델', default=os.environ.get('STT_MODEL', 'small'))
     a.add_argument('--출력폴더')
     a.add_argument('--덮어쓰기', action='store_true')
+    a.add_argument('--언어', default='ko')
+    a.add_argument('--받아쓰기시각', action='store_true')
     c = sub.add_parser('대조')
     c.add_argument('media')
     c.add_argument('--자막', required=True)
@@ -584,7 +628,7 @@ def main(argv=None):
             print(f'{len(cues)}줄 {out}')
         elif o.cmd == '정렬':
             plan = read_json(o.계획)
-            run_align(o.files, plan, o.segs.split(',') if o.segs else None, o.모델, o.출력폴더, o.덮어쓰기)
+            run_align(o.files, plan, o.segs.split(',') if o.segs else None, o.모델, o.출력폴더, o.덮어쓰기, o.언어, o.받아쓰기시각)
         elif o.cmd == '대조':
             rechecks = [x for x in o.다시보기.split(',') if x]
             out = o.out or re.sub(r'\.[^.]+$', '', o.media) + '.대조.json'

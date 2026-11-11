@@ -147,5 +147,106 @@ class 정렬(unittest.TestCase):
         self.assertEqual(out['a']['match'], 1.0)
 
 
+def _합성테이크(path, sr=16000):
+    """말소리 두 덩어리(0.3~1.5 · 2.0~3.6초)인 4초 wav."""
+    import wave
+    x = np.zeros(int(sr * 4.0), np.float32)
+    t = np.arange(len(x)) / sr
+    for a, z in [(0.3, 1.5), (2.0, 3.6)]:
+        x[(t >= a) & (t < z)] = 0.3 * np.sin(2 * np.pi * 180 * t[(t >= a) & (t < z)])
+    with wave.open(str(path), 'wb') as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(sr)
+        w.writeframes((x * 32767).astype('<i2').tobytes())
+
+
+class 정렬기시각(unittest.TestCase):
+    """11-11: 시각은 대본 정렬기, 「대본대로 들렸나」는 받아쓰기. 정렬기 · 받아쓰기는 가짜로 준다."""
+    PLAN = {'lines': [{'id': 'a', 'text': '하나 둘'}, {'id': 'b', 'text': '셋 넷'}]}
+    STT = [('하나', 0.0, 0.8), ('둘', 0.85, 1.45), ('셋', 2.05, 2.7), ('넷', 2.75, 3.55)]   # 첫 낱말이 0초(앞 쉼을 끌어안음)
+    ALN = [('하나', 0.32, 0.8), ('둘', 0.88, 1.44), ('셋', 2.0, 2.64), ('넷', 2.72, 3.52)]
+
+    def setUp(self):
+        self._t, self._a = M.transcribe, M.aligner_runs
+
+    def tearDown(self):
+        M.transcribe, M.aligner_runs = self._t, self._a
+
+    def test_줄_시각은_정렬기_일치는_받아쓰기(self):
+        out_w = {'a': {'start': 0.0, 'end': 1.5, 'tokens': [0.0, 0.85], 'match': 0.9, 'heard': '하나두'},
+                 'b': {'start': 2.0, 'end': 3.6, 'tokens': [2.0, 2.75], 'match': 1.0, 'heard': '셋넷'}}
+        out_q = {'a': {'start': 0.3, 'end': 1.5, 'tokens': [0.3, 0.88], 'match': 1.0, 'heard': '하나둘'},
+                 'b': {'start': 2.0, 'end': 3.6, 'tokens': [2.0, 2.72], 'match': 1.0, 'heard': '셋넷'}}
+        out, far = M.merge_timing(out_w, out_q)
+        self.assertEqual(out['a']['start'], 0.3)
+        self.assertEqual(out['a']['tokens'], [0.3, 0.88])
+        self.assertEqual(out['a']['match'], 0.9)          # 들린 글 견주기는 받아쓰기 그대로
+        self.assertEqual(out['a']['heard'], '하나두')
+        self.assertEqual(out['a']['stt_start'], 0.0)
+        self.assertEqual(far, [])
+        out_q['b']['start'] = 2.8
+        self.assertEqual(M.merge_timing(out_w, out_q)[1], [('b', 0.8)])   # 0.5초 넘게 벌어지면 ⚠
+
+    def test_정렬_명령이_정렬기_시각을_적는다(self):
+        M.transcribe = lambda model, audio, language='ko': (self.STT, '하나 둘 셋 넷')
+        M.aligner_runs = lambda files, segments, language: ([self.ALN] * len(files), '정렬기 시험')
+        with tempfile.TemporaryDirectory() as d:
+            wav = Path(d) / 'take.wav'
+            _합성테이크(wav)
+            rows = M.run_align([str(wav)], self.PLAN, None, 'small')
+            res = M.read_json(str(Path(d) / 'take.align.json'))
+        self.assertEqual(res['timing'], '정렬기 시험')
+        self.assertEqual(res['segs']['a']['tokens'][1], 0.88)   # 「둘」 시작은 정렬기 값
+        self.assertEqual(res['segs']['a']['stt_start'], 0.3)     # 첫 줄 시작은 둘 다 말소리 시작으로 붙는다
+        self.assertEqual(rows[0]['match'], 1.0)
+        self.assertNotIn('timing_far', res)
+
+    def test_정렬기가_없으면_받아쓰기_시각으로_적고_알린다(self):
+        M.transcribe = lambda model, audio, language='ko': (self.STT, '하나 둘 셋 넷')
+        M.aligner_runs = lambda files, segments, language: (None, '정렬기 없음 — python -X utf8 tools/대본정렬.py 설치')
+        with tempfile.TemporaryDirectory() as d:
+            wav = Path(d) / 'take.wav'
+            _합성테이크(wav)
+            M.run_align([str(wav)], self.PLAN, None, 'small')
+            res = M.read_json(str(Path(d) / 'take.align.json'))
+        self.assertEqual(res['timing'], '받아쓰기(정렬기 없음)')
+        self.assertNotIn('stt_start', res['segs']['a'])
+
+    def test_받아쓰기시각을_고르면_정렬기를_부르지_않는다(self):
+        M.transcribe = lambda model, audio, language='ko': (self.STT, '하나 둘 셋 넷')
+        M.aligner_runs = lambda *a: self.fail('정렬기를 불렀다')
+        with tempfile.TemporaryDirectory() as d:
+            wav = Path(d) / 'take.wav'
+            _합성테이크(wav)
+            M.run_align([str(wav)], self.PLAN, None, 'small', stt_timing=True)
+            self.assertEqual(M.read_json(str(Path(d) / 'take.align.json'))['timing'], '받아쓰기(--받아쓰기시각)')
+
+
+ALIGN_SPEC = importlib.util.spec_from_file_location('script_aligner', ROOT / 'tools' / '대본정렬.py')
+A = importlib.util.module_from_spec(ALIGN_SPEC)
+ALIGN_SPEC.loader.exec_module(A)
+
+
+class 대본정렬도구(unittest.TestCase):
+    def test_언어_이름(self):
+        self.assertEqual(A.언어이름('ko'), 'Korean')
+        self.assertEqual(A.언어이름('pt-BR'), 'Portuguese')
+        self.assertEqual(A.언어이름('English'), 'English')
+        with self.assertRaises(A.정렬오류):
+            A.언어이름('mn')   # 몽골어는 정렬기에 없다
+
+    def test_안_깔렸으면_까닭을_말한다(self):
+        old = A.PY
+        try:
+            A.PY = os.path.join(tempfile.gettempdir(), '없는', 'python.exe')
+            self.assertFalse(A.깔렸나())
+            with self.assertRaises(A.정렬오류) as e:
+                A.맞추기([{'소리': 'x.wav', '글': '하나'}])
+            self.assertIn('설치', str(e.exception))
+        finally:
+            A.PY = old
+
+
 if __name__ == '__main__':
     unittest.main()

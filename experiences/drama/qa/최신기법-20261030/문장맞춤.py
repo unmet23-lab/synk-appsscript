@@ -7,8 +7,11 @@
 #   python -X utf8 문장맞춤.py <클립.mp4> <대사.mp3> <나갈.mp4> --닻 여기,나는,편하게 [--힌트 권태오]
 #   받아쓰기는 <나갈>.낱말.json에 남겨 다시 돌릴 때 쓴다.
 #   낱말로 안 잡히는 소리(웃음)는 잰 시각을 닻으로 준다: @원본초:클립초 (한 테이크 3판 --닻 네,@4.89:5.42,여기,나는,편하게 — 안 주면 웃음이 앞 문장에 붙어 0.5초 일찍 난다).
+#   11-11: --대본 "<원본 · 클립이 함께 말하는 글>"을 주면 받아쓰기 대신 대본 정렬기(tools/대본정렬.py)의 낱말 시각을 쓴다(<나갈>.정렬낱말.json).
+#   정렬기는 낱말을 조각으로 나누니(「편하 · 게」) 닻은 이웃 조각을 이어 붙여 찾는다. 웃음 닻(@)은 정렬기에서도 그대로 준다 — 웃음은 못 맞춘다.
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -18,6 +21,7 @@ args = sys.argv[1:]
 clip, line, dst = args[:3]
 anchors = args[args.index('--닻') + 1].split(',') if '--닻' in args else []
 hint = args[args.index('--힌트') + 1] if '--힌트' in args else None
+script = args[args.index('--대본') + 1] if '--대본' in args else None
 if not anchors:
     raise SystemExit('--닻 <문장 첫 낱말,…>을 준다')
 SR, HOP = 16000, 160
@@ -52,9 +56,17 @@ def spans(path):
 
 
 def words(paths):
-    cache = dst + '.낱말.json'
+    cache = dst + ('.정렬낱말.json' if script else '.낱말.json')
     if os.path.exists(cache):
         return json.load(open(cache, encoding='utf-8'))
+    if script:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '..', 'tools'))
+        import 대본정렬
+        keys = list(paths)
+        res = 대본정렬.맞추기([{'소리': os.path.abspath(paths[k]), '글': script, '언어': 'ko'} for k in keys])
+        out = {k: [[it['글'], it['시작'], it['끝']] for it in r['낱말']] for k, r in zip(keys, res)}
+        json.dump(out, open(cache, 'w', encoding='utf-8'), ensure_ascii=False)
+        return out
     from faster_whisper import WhisperModel
     m = WhisperModel('large-v3-turbo', device='cpu', compute_type='int8')
     out = {}
@@ -78,7 +90,11 @@ def onsets(ws, sp, side):
             got.append(after)
             continue
         # 낱말 「끝」이 앞 닻 뒤인 것을 찾는다 — 「시작」은 앞 쉼을 끌어안아 웃음 닻(@)보다 앞설 수 있다(10-31 벚꽃 판 「여기」 6.24 < 웃음 6.42)
-        w = next((w for w in ws if w[2] > after and w[0].startswith(a)), None)
+        # 이웃 조각을 이어 붙여 견준다(정렬기 「편하 · 게」, 받아쓰기 「네,」의 쉼표).
+        key = re.sub(r'[^가-힣A-Za-z0-9]', '', a)
+        w = next((w for i, w in enumerate(ws) if w[2] > after and
+                  re.sub(r'[^가-힣A-Za-z0-9]', '', ''.join(v[0] for v in ws[i:i + 4])).startswith(key) and
+                  key.startswith(re.sub(r'[^가-힣A-Za-z0-9]', '', w[0])[:1] or '\0')), None)
         if not w:
             raise SystemExit(f'닻 「{a}」를 받아쓰기에서 못 찾았다')
         seg = next((s for s in sp if s[0] - 0.05 <= w[2] <= s[1] + 0.05), None) or min(sp, key=lambda s: abs(s[0] - w[2]))
