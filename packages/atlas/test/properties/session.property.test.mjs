@@ -129,19 +129,28 @@ function createRun(seed) {
   return run;
 }
 
-// 판 하나를 연다(앱을 다시 켠 것처럼 — 하루의 한도는 「낸 것」 기록에서 다시 세어야 한다).
-function openSession(run) {
-  const { r, P, learner } = run;
-  const more = r() < 0.12;
-  // 하루는 시험이 따로 적은 「낸 것」 기록에서 다시 센다(판 안에서 새벽 4시를 넘긴 문항은 그 시각의 하루에 든다 — 설계 §5-4).
-  const key = dayKey(run.now, P);
-  const entries = run.log.filter(entry => dayKey(entry.at, P) === key);
-  run.today = {
+// 그 시각의 하루를 시험이 따로 적은 「낸 것」 기록에서 센다(새벽 4시를 넘긴 문항은 그 시각의 하루에 든다 — 설계 §3-5 · §5-4).
+function todayOf(run, more) {
+  const key = dayKey(run.now, run.P);
+  const entries = run.log.filter(entry => dayKey(entry.at, run.P) === key);
+  return {
     key,
     more: (run.today.key === key && run.today.more) || more,
     units: new Set(entries.flatMap(entry => entry.units)),
     reviews: entries.filter(entry => entry.review).length,
   };
+}
+
+// 판이 열린 채 새벽 4시를 넘으면 새 하루다 — 한도는 그 하루로 센다(GPT 끝 판 GB1 · GC1: 판을 열 때만 세면 어제 한도가 이어진다).
+function rollToday(run) {
+  if (run.today.key !== dayKey(run.now, run.P)) run.today = todayOf(run, run.s.more);
+}
+
+// 판 하나를 연다(앱을 다시 켠 것처럼 — 하루의 한도는 「낸 것」 기록에서 다시 세어야 한다).
+function openSession(run) {
+  const { r, P, learner } = run;
+  const more = r() < 0.12;
+  run.today = todayOf(run, more);
   learner.day = null;
   // 자리 잡기: 본인이 고른 연습 수준(없으면 선행값 0) — 선행값은 윗 끝 난도의 로짓이다(§3-3)
   const level = r() < 0.3 ? { min: 1, max: pick(r, [1, 2, 3]) } : undefined;
@@ -635,6 +644,7 @@ function answer(run, top, units) {
 // 한 걸음: 고르고, 보고, 내고, 답한다. 판을 끝내야 하면 false.
 function stepOnce(run) {
   run.step += 1;
+  rollToday(run);
   let rows;
   try {
     rows = choose(run.bank, run.learner, memory, run.now, { params: run.P });

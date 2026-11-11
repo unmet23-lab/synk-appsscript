@@ -392,9 +392,10 @@ test('라. 한 기기가 제 차례로만 쓰면 기다리는 줄이 없고, 얹
           units: alone.waitUnits,
           skills: alone.waitSkills,
         });
-    if (!mayWait && (alone.waitUnits.size || alone.waitSkills.size))
+    // 모두 기다림(waitAll)도 기다림이다 — 빼면 요약 그대로 보류해도 비교를 건너뛰어 통과한다(GPT 끝 판 GC2).
+    if (!mayWait && (alone.waitAll || alone.waitUnits.size || alone.waitSkills.size))
       out.push(
-        `기다릴 까닭이 없는데 기다림 — 단위 ${[...alone.waitUnits]} · 능력 ${[...alone.waitSkills]}`,
+        `기다릴 까닭이 없는데 기다림 — 모두 ${alone.waitAll} · 단위 ${[...alone.waitUnits]} · 능력 ${[...alone.waitSkills]}`,
       );
     return out;
   });

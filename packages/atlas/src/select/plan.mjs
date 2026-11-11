@@ -34,17 +34,23 @@ function goalsOf(facts) {
 // 목표가 문장이 되는 때 — 엔진에게 더 구체적인 말(다시 · 흔들림 · 돌아옴 · 수준 · 숨 고르기)이 없을 때만: 맨 앞 줄이 새것이거나
 // 할 것이 없거나(idle · none) 후보가 없다. 숙제가 먼저 말하고, 그다음 관심이다. 근거 칸은 사실 값의 정해진 열쇠만.
 const SPEAKS = new Set([REASON_CODES.fresh, REASON_CODES.idle]);
+const HOMEWORK_STATUS = ['review', 'missed'];
 function goalReason(goals, top) {
   if (top && !top.idle && !top.none && !SPEAKS.has(top.why?.code)) return null;
-  const homework = goals.find(goal => goal.kind === 'homework' && GOAL_KEY.test(goal.skill ?? ''));
-  if (homework) {
-    const status = homework.status === 'review' ? 'review' : 'missed';
+  // 숙제 문장은 제품이 숙제의 상태(review · missed)를 넘겼을 때만 — 모르면 「놓친 답이 있어…」처럼 사실 아닌 말을 짓지 않고
+  // 관심 · 엔진의 이유로 넘긴다(목표 수에는 그대로 센다, 조율 11-11 P3).
+  const homework = goals.find(
+    goal =>
+      goal.kind === 'homework' &&
+      GOAL_KEY.test(goal.skill ?? '') &&
+      HOMEWORK_STATUS.includes(goal.status),
+  );
+  if (homework)
     return {
       code: REASON_CODES.homework,
-      slots: { skill: homework.skill, status },
-      evidence: { fact: 'homework', skill: homework.skill, status },
+      slots: { skill: homework.skill, status: homework.status },
+      evidence: { fact: 'homework', skill: homework.skill, status: homework.status },
     };
-  }
   const interest = goals.find(goal => goal.kind === 'interest' && GOAL_KEY.test(goal.topic ?? ''));
   if (interest)
     return {
@@ -69,6 +75,9 @@ function entryOf(activity, view, memory, now, params, seed) {
     ? choose(activity.candidates, view, memory, now, { params, seed })
     : [];
   const top = rows[0];
+  // 숨 고르기는 판 안의 쉼이라 순위는 그 뒤 줄(숨 고르기 앞의 맨 앞)의 층으로 매긴다 — 할 것이 있는 활동이 채우기 활동 뒤로
+  // 밀리지 않게(설계 §3-6 「위 층의 가장 높은 것」, GPT 끝 판 GB2).
+  const lead = top?.breather ? rows[1] : top;
   const fact = factOf(facts);
   const goals = goalsOf(facts);
   const why =
@@ -80,7 +89,7 @@ function entryOf(activity, view, memory, now, params, seed) {
     locked: false,
     fact,
     goals: goals.length,
-    tier: top ? top.tier : 9,
+    tier: lead ? lead.tier : 9,
     todo: rows.filter(row => row.tier <= 2).length,
     idle: Boolean(top?.idle),
     none: !top || Boolean(top.none),

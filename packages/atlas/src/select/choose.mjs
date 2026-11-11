@@ -18,7 +18,7 @@ import {
   stubbornReason,
 } from '../reason/index.mjs';
 import { predictParts } from './predict.mjs';
-import { startSession } from './session.mjs';
+import { dayOf, startSession } from './session.mjs';
 
 // 동점을 가르는 씨앗 해시(FNV-1a). 문항 id 가나다순이나 기기 언어를 타지 않는다.
 const hash = text => {
@@ -42,13 +42,16 @@ function contextOf(learner, memory, now, params) {
   let backlog = 0;
   for (const unit of learner.memory.keys()) if (dueNow(unit)) backlog += 1;
   const rescue = backlog > params.backlog;
-  const capped = learner.day.reviews >= params.reviewsPerDay;
+  // 지금의 하루 — 판이 열린 채 새벽 4시를 넘었으면 새 하루의 한도로 센다.
+  const day = dayOf(learner, now, params);
+  const capped = day.reviews >= params.reviewsPerDay;
   return {
     learner,
     memory,
     now,
     params,
     session,
+    day,
     recent,
     lastShown,
     dueNow,
@@ -60,7 +63,7 @@ function contextOf(learner, memory, now, params) {
 
 // 문항이 묻는 단위들의 지금 상태 — 기억이 없거나 비운 단위는 null.
 function unitFacts(item, ctx) {
-  const { learner, memory, session, now, rescue } = ctx;
+  const { learner, memory, session, now, rescue, day } = ctx;
   const units = unitsOf(item);
   const states = units.map(unit => {
     const state = learner.memory.get(unit);
@@ -68,7 +71,7 @@ function unitFacts(item, ctx) {
   });
   const unseen = units.filter((_, i) => !states[i]);
   // 한도에 셀 새 단위: 하루 한도에는 오늘 아직 낸 적 없는 단위(brandNew), 한 판 한도에는 이 판에서 아직 낸 적 없는 기억 없는 단위(firstHere).
-  const brandNew = unseen.filter(unit => !learner.day.introduced.has(unit));
+  const brandNew = unseen.filter(unit => !day.introduced.has(unit));
   const firstHere = unseen.filter(unit => !session.introduced.has(unit));
   // 돌아온 단위: 밀린 것이 많으면 살릴 수 있는 것부터(떠올릴 확률 높은 순), 아니면 급한 것부터(낮은 순).
   const due = units
@@ -91,13 +94,13 @@ function holdOf(facts, ctx) {
 
 // ① 내지 않을 까닭 — 넷뿐이다. 문항 안의 어느 단위든 걸리면 그 문항은 이 판에서 어느 층으로도 내지 않는다.
 function blockedOf(item, facts, held, ctx) {
-  const { session, learner, params } = ctx;
+  const { session, day, params } = ctx;
   const spent = facts.units.some(unit => {
     const retry = session.retries.get(unit);
     return retry && !retry.pending && retry.tries >= params.retryMax;
   });
   const overSession = session.introduced.size + facts.firstHere.length > session.newLimit;
-  const overDay = learner.day.introduced.size + facts.brandNew.length > params.newPerDay;
+  const overDay = day.introduced.size + facts.brandNew.length > params.newPerDay;
   const over = !session.more && (overSession || overDay);
   const blank = session.blank.has(item.itemKey);
   return spent || over || held != null || blank;

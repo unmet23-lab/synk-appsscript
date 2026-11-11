@@ -7,6 +7,8 @@
 //            첫 만남이 내 쪽으로 바뀌므로 그 계열의 문항이 속한 능력은 기다린다. 다만 이번 얹기에서 내 앞 사건이 이미 첫 만남을
 //            정한 계열은 같은 시각이어도 기다리지 않는다(같은 (시각, 차례)로 서버도 그 앞 사건을 첫 만남으로 둔다 — 단계 3 장부 만남).
 //   기다리기 시작한 줄은 요약 값으로 돌려놓고 요약이 올 때까지 기다린다(앞 사건을 건너뛰고 뒤 사건만 얹지 않는다).
+//   아무것도 얹지 못하는 보기(waitAll)에는 뒤에 오는 내 사건(applyOwn)도 얹지 않는다 — 판 안의 고르기가 내 답을 늘 보게 하려는
+//   쪽(코치)은 판 연 때의 사본에서 waitAll을 끄고 그 위에 일지를 다시 돌린다.
 // 보기(view)는 요약에서 받은 줄(memory · ability · met) 위에 얹은 값과 기다리는 줄뿐이다. 판 상태(shown · log · day · session)는
 // src/select/session.mjs의 createLearner가 이 보기를 감싸 더한다.
 import { EMPTY_SKILL, stepSkill } from '../ability/index.mjs';
@@ -51,6 +53,8 @@ const waitEverything = view => {
 
 // 사건 하나가 적히는 줄(단위 · 능력). 제외를 만들 때 기기가 이것을 대기열의 그 제외 옆에 적어 둔다 —
 // 부모 사건이 기기에서 사라진 뒤에도 어느 줄을 기다릴지 알 수 있게.
+// 판정 못 한 답은 도움을 받았어도 줄을 내지 않는다 — 거둔 답은 만남으로 남고 도움 표시(unaided)도 그대로라(evidence.mjs addEvent),
+// 거두기 전후의 능력 줄 · 첫 만남이 같다(단계 4 아르곤 A3 — 재현 안 됨, 장면 stage2 ㉑).
 export function touchedBy(event) {
   if (event.kind === 'say') return { units: [event.unit], skills: [] };
   const grade = event.kind === 'answer' ? gradeOfEvent(event) : null;
@@ -96,8 +100,19 @@ function applySkill(view, item, mark, lead, params) {
   else view.ability.set(item.skillId, stepSkill(skill, { ...mark, lead }, params));
 }
 
+// 아무것도 얹지 못하는 동안(waitAll)의 사건: 줄(기억 · 능력 · 만남)은 요약 값 그대로 두고, 판 상태가 쓸 판정 · 첫 만남 · 적힐 단위만
+// 돌려준다 — 줄마다 기다림과 같은 규칙이다(앞 사건을 건너뛰고 뒤 사건만 얹지 않는다, GPT 끝 판 GA1).
+function heldOwn(view, event) {
+  if (event.kind !== 'answer' && event.kind !== 'help') return {};
+  const grade = gradeOfEvent(event, Boolean(event.gone));
+  const lead = !view.met.has(event.item.familyKey);
+  if (grade == null) return { grade, lead };
+  return { grade, lead, credited: creditedOf(event.item, event.answer, grade) };
+}
+
 // 내 사건 하나를 얹는다. index.familySkills = 계열 → 그 계열의 문항이 속한 능력들(문항 색인). 없으면 그 문항의 능력만 안다.
 export function applyOwn(view, event, memory, params = PARAMS, index = null) {
+  if (view.waitAll) return heldOwn(view, event);
   if (event.kind === 'say') return applySay(view, event, memory);
   if (event.kind === 'carry') return applyCarry(view, event, index);
   const item = event.item;

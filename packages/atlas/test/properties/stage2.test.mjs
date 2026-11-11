@@ -9,6 +9,7 @@ import { subject } from '../support/subject.mjs';
 
 const {
   PARAMS,
+  applyOwn,
   checkFoldEvent,
   choose,
   createLearner,
@@ -59,6 +60,12 @@ function play(learner, items, correct, now, params = WIDE) {
 }
 const walk = (learner, answers, now, items = LADDER) =>
   answers.map((correct, i) => play(learner, items, correct, now + i * 20000));
+// 학습자 전체(기억 · 능력 · 만남 · 판 · 하루 · 기록)를 값까지 글로 — 표와 모음도 펼친다(GPT 끝 판 GD2: 열쇠와 길이만 보면
+// 판 상태나 기억 값을 덮어써도 통과한다).
+const snapshot = learner =>
+  JSON.stringify(learner, (_, value) =>
+    value instanceof Map || value instanceof Set ? [...value] : value,
+  );
 
 test('⑰ 자리 잡기 — 고른 수준의 윗 끝에서 한 칸 아래부터, 놓치면 내린다(선행값은 고르기에만)', () => {
   const plain = createLearner();
@@ -222,11 +229,7 @@ test('⑳ 활동 고르기 — 사실이 순위를 앞지르고, 그다음은 �
   const learner = createLearner();
   startSession(learner, T0, WIDE);
   walk(learner, [true, true], T0, [word('a', 0), word('b', 1)]);
-  const before = JSON.stringify([
-    ...learner.memory.keys(),
-    learner.shown.length,
-    learner.log.length,
-  ]);
+  const before = snapshot(learner);
   const fresh = { id: 'lesson', candidates: [word('c', 2), word('d', 3)] };
   const known = { id: 'review', candidates: [word('a', 0), word('b', 1)] };
   const hangul = { id: 'hangul', candidates: [word('a', 0)], facts: { prerequisite: true } };
@@ -242,8 +245,9 @@ test('⑳ 활동 고르기 — 사실이 순위를 앞지르고, 그다음은 �
   assert.equal(plan[1].why.code, 'unit.new');
   assert.ok(plan[2].idle, '방금 다 맞힌 복습은 할 것이 없다');
   assert.equal(
-    JSON.stringify([...learner.memory.keys(), learner.shown.length, learner.log.length]),
+    snapshot(learner),
     before,
+    '학습자의 기억 · 능력 · 판 · 하루 · 기록을 값까지 바꾸지 않는다',
   );
   // 판이 열려 있지 않아도 학습자에 판을 열지 않는다
   const closed = createLearner();
@@ -289,6 +293,18 @@ test('⑳ 활동 고르기 — 목표(숙제 · 관심)는 층을 앞지르지 �
   );
   assert.equal(ranked[1].why.code, 'goal.match');
   assert.deepEqual(ranked[1].why.slots, { topic: 'cafe' });
+  // 숙제의 상태(review · missed)를 모르면 숙제 문장을 짓지 않는다 — 관심 · 엔진의 이유로 넘기고, 목표 수에는 센다(조율 11-11 P3)
+  const unsure = { kind: 'homework', skill: 'ko.reading.vocabulary' };
+  const vague = { id: 'vague', candidates: [word('v1', 4)], facts: { goals: [unsure] } };
+  const [vagueTop] = planActivities([vague, lesson], learner, memory, now, { params: WIDE });
+  assert.equal(vagueTop.id, 'vague', '목표 수에는 센다');
+  assert.equal(vagueTop.why.code, 'unit.new', '숙제 문장 대신 엔진의 이유');
+  const mixed = { ...vague, facts: { goals: [unsure, { kind: 'interest', topic: 'cafe' }] } };
+  assert.equal(
+    planActivities([mixed], learner, memory, now, { params: WIDE })[0].why.code,
+    'goal.match',
+    '관심이 있으면 관심 문장',
+  );
   // ④ 목표 수가 같으면 할 것의 수 — 같은 목표를 두 번 넘겨도 하나로 센다
   const one = { id: 'a-one', candidates: [word('o1', 9)], facts: { goals: [homework, homework] } };
   const many = {
@@ -407,4 +423,167 @@ test('⑳ 기기 얹기 — 이번 얹기에서 내 앞 사건이 첫 만남을 
     [other, SKILL].sort(),
     '두 답의 능력 모두 기다린다',
   );
+});
+
+// ㉑ 끝 판 GPT 보충 검수(11-11)가 짚은 셋 — 모두 기다리는 보기 · 판 안에서 넘어간 하루 · 숨 고르기가 맨 앞인 활동.
+const said = (id, at, item, correct = true) => ({
+  kind: 'answer',
+  id,
+  at,
+  item,
+  answer: {
+    correct,
+    assisted: false,
+    answerShown: false,
+    unknown: false,
+    assessable: true,
+    target: item.units[0],
+  },
+});
+
+test('㉑ 아무것도 얹지 못하는 보기(waitAll)에는 뒤에 오는 내 사건도 얹지 않는다 — 판 상태가 쓸 판정만 돌려준다(GA1)', () => {
+  const a = word('wa', 0);
+  const b = word('wb', 1);
+  const summary = foldServer([said('s1', T0, a)], memory, PARAMS);
+  // 이미 접힌 사건을 거두는데 부모도 닿는 줄도 모른다 → 모두 기다림
+  const view = overlay(
+    summary,
+    [{ kind: 'exclude', id: 'x1', at: T0 + 1000, ref: 'gone' }],
+    memory,
+    PARAMS,
+    {
+      familySkills: new Map(),
+    },
+  );
+  assert.equal(view.waitAll, true);
+  const helped = applyOwn(
+    view,
+    { kind: 'help', id: 'h1', at: T0 + 20 * 60_000, item: a },
+    memory,
+    PARAMS,
+  );
+  const answered = applyOwn(view, said('s2', T0 + 30 * 60_000, b), memory, PARAMS);
+  const told = applyOwn(
+    view,
+    { kind: 'say', id: 'k1', at: T0 + 40 * 60_000, unit: 'word:wa', say: 'known' },
+    memory,
+    PARAMS,
+  );
+  assert.deepEqual(
+    view.ability.get('ko.reading.vocabulary'),
+    summary.ability.get('ko.reading.vocabulary'),
+    '능력 줄은 요약 값 그대로',
+  );
+  assert.deepEqual(
+    view.memory.get('word:wa'),
+    summary.memory.get('word:wa'),
+    '본인 말도 얹지 않는다',
+  );
+  assert.equal(view.memory.has('word:wb'), false, '새 답도 얹지 않는다');
+  assert.equal(view.met.has(b.familyKey), false, '만남도 적지 않는다');
+  assert.deepEqual(helped, { grade: null, lead: false });
+  assert.deepEqual(answered, { grade: 'weak', lead: true, credited: ['word:wb'] });
+  assert.deepEqual(told, {});
+});
+
+test('㉑ 판이 열린 채 새벽 4시를 넘으면 새 하루의 한도로 센다 — 고르기는 학습자를 바꾸지 않고, 낼 때 갈아 끼운다(GB1)', () => {
+  const P = { ...PARAMS, newPerSession: 100, newPerDay: 3 };
+  const night = Date.parse('2026-12-02T03:40:00Z'); // 현지(offset 0) 03:40
+  const items = Array.from({ length: 8 }, (_, i) => word(`n${i}`, i));
+  const learner = createLearner();
+  startSession(learner, night, P, { dayOffset: 0, length: 100 });
+  for (let k = 0; k < 3; k += 1) play(learner, items, true, night + k * 60_000, P);
+  const late = night + 2 * 60_000 + 20_000;
+  const spent = choose(items, learner, memory, late, { params: P })[0];
+  assert.equal(spent.tier >= 3 && spent.idle, true, '그날 새 셋을 다 써서 할 것이 없다');
+  const dawn = Date.parse('2026-12-02T04:05:00Z');
+  const before = learner.day;
+  const top = choose(items, learner, memory, dawn, { params: P })[0];
+  assert.equal(top.tier, 2, '새 하루에는 새것을 낸다');
+  assert.equal(learner.day, before, '고르기는 하루를 갈아 끼우지 않는다');
+  present(learner, top, P);
+  assert.notEqual(learner.day.key, before.key, '낼 때 새 하루로 갈아 끼운다');
+  assert.deepEqual([...learner.day.introduced], top.brandNew, '새 하루에는 방금 낸 것만 센다');
+});
+
+test('㉑ 숨 고르기가 맨 앞인 활동은 그 뒤 줄의 층으로 순위를 매긴다 — 할 것이 있는 활동이 채우기 활동 뒤로 가지 않는다(GB2)', () => {
+  const HOUR = 3_600_000;
+  const known = word('kk', 0);
+  const faded = word('ff', 1);
+  const learner = createLearner();
+  for (const [item, at] of [
+    [faded, T0 - 6 * DAY],
+    [faded, T0 - 2 * DAY],
+    [known, T0 - 3 * DAY],
+    [known, T0 - 2 * DAY],
+    [known, T0 - 7 * HOUR],
+  ]) {
+    learner.session = null;
+    startSession(learner, at, WIDE);
+    record(learner, memory, item, { correct: true, target: item.units[0] }, at, WIDE);
+  }
+  learner.session = null;
+  startSession(learner, T0, WIDE);
+  learner.session.missStreak = 2; // 이 판에서 이어서 둘 놓쳤다
+  const lesson = [word('nn', 5), known];
+  const rows = choose(lesson, learner, memory, T0, { params: WIDE });
+  assert.equal(rows[0].breather, true, '맨 앞은 숨 고르기');
+  assert.equal(rows[1].tier, 2, '그 뒤는 새것');
+  const warm = choose([faded], learner, memory, T0, { params: WIDE })[0];
+  assert.equal(
+    warm.tier < rows[0].tier && warm.idle,
+    true,
+    '다른 활동은 할 것 없는 채우기(숨 고르기 줄보다 앞 층)',
+  );
+  const plan = planActivities(
+    [
+      { id: 'warm', candidates: [faded] },
+      { id: 'lesson', candidates: lesson },
+    ],
+    learner,
+    memory,
+    T0,
+    { params: WIDE },
+  );
+  assert.deepEqual(
+    plan.map(entry => [entry.id, entry.tier]),
+    [
+      ['lesson', 2],
+      ['warm', warm.tier],
+    ],
+  );
+});
+
+test('㉑ 판정 못 한 답(도움을 받았어도)을 거두는 제외 — 서버의 능력 줄 · 첫 만남이 그대로라 기기는 기다리지 않고 서버와 같다(단계 4 A3)', () => {
+  const SKILL_V = 'ko.reading.vocabulary';
+  const a = word('xa', 0);
+  const b = word('xb', 1);
+  const unjudged = { assessable: false, correct: null };
+  for (const extra of [
+    { ...unjudged, assisted: true },
+    { ...unjudged, answerShown: true },
+    unjudged,
+  ]) {
+    const first = said('y0', T0, b);
+    const help = {
+      ...said('y1', T0 + 60_000, a),
+      answer: { ...said('y1', T0, a).answer, ...extra },
+    };
+    const after = said('y2', T0 + 120_000, b);
+    const events = [first, help, after];
+    const drop = { kind: 'exclude', id: 'yx', at: T0 + 180_000, ref: 'y1' };
+    const before = foldServer(events, memory, PARAMS);
+    const server = foldServer([...events, drop], memory, PARAMS);
+    assert.deepEqual(server.ability.get(SKILL_V), before.ability.get(SKILL_V), '능력 줄은 그대로');
+    assert.deepEqual([...server.met], [...before.met], '첫 만남도 그대로');
+    const view = overlay(before, [drop], memory, PARAMS, {
+      familySkills: new Map([
+        ['xa', [SKILL_V]],
+        ['xb', [SKILL_V]],
+      ]),
+      lookup: id => events.find(event => event.id === id),
+    });
+    assert.equal(view.waitAll || view.waitSkills.size > 0, false, '기다리지 않는다');
+    assert.deepEqual(view.ability.get(SKILL_V), server.ability.get(SKILL_V), '서버와 같다');
+  }
 });

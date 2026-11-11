@@ -38,18 +38,30 @@ export function stubbornCapOf({ length } = {}, params = PARAMS) {
 // 자리 잡기의 선행값 θ₀ = 고른 연습 수준 범위의 윗 끝 난도(§3-3). 수준을 안 주면 0.
 const priorOf = (level, params) => (level?.max != null ? levelOf(level.max, params) : 0);
 
+// 그 하루의 한도 값을 「낸 것」 기록에서 센다 — 그날 처음 낸 단위들과 돌아온 것으로 낸 문항 수.
+function countDay(learner, key, params, offset) {
+  const today = learner.log.filter(entry => dayKey(entry.at, params, offset) === key);
+  return {
+    key,
+    reviews: today.filter(entry => entry.review).length,
+    introduced: new Set(today.flatMap(entry => entry.units)),
+  };
+}
+
+// 지금(now)의 하루. 판이 열린 채 새벽 4시를 넘었으면 새 하루의 값을 기록에서 다시 센다 — 학습자는 바꾸지 않는다
+// (고르기 · 활동 고르기가 부른다. 바꿔 끼우는 것은 present다 — GPT 끝 판 GB1).
+export function dayOf(learner, now, params = PARAMS) {
+  const offset = learner.dayOffset ?? 0;
+  const key = dayKey(now, params, offset);
+  return learner.day?.key === key ? learner.day : countDay(learner, key, params, offset);
+}
+
 // 판을 연다. options: more(본인이 「더 배우기」를 골랐다 — 새것 한도를 넘어도 새것으로 낸다) · length(판 길이) ·
 // newLimit(한 판 새것 한도) · level({ min, max } — 본인이 고른 연습 수준, 범위 밖 문항은 제품이 거른다) · dayOffset(현지 − UTC, 분).
 export function startSession(learner, now = 0, params = PARAMS, options = {}) {
   const offset = options.dayOffset ?? learner.dayOffset ?? 0;
   learner.dayOffset = offset;
-  const key = dayKey(now, params, offset);
-  const today = learner.log.filter(entry => dayKey(entry.at, params, offset) === key);
-  learner.day = {
-    key,
-    reviews: today.filter(entry => entry.review).length,
-    introduced: new Set(today.flatMap(entry => entry.units)),
-  };
+  learner.day = countDay(learner, dayKey(now, params, offset), params, offset);
   learner.session = {
     start: learner.shown.length,
     introduced: new Set(),
@@ -118,8 +130,10 @@ export function say(learner, memory, unit, kind, now, params = PARAMS) {
 }
 
 // 문항을 낸다. 「낸 것」 기록(처음 낸 단위 · 돌아온 것으로 냈는가 · 시각)을 남긴다 — 하루 한도는 이 기록에서 센다.
-export function present(learner, row) {
+// 판이 열린 채 하루가 넘어갔으면 새 하루로 갈아 끼운 뒤 센다(고를 때 본 하루와 같다).
+export function present(learner, row, params = PARAMS) {
   const session = learner.session;
+  learner.day = dayOf(learner, row.at, params);
   learner.log.push({
     at: row.at,
     review: row.tier === 1,

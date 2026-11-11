@@ -87,7 +87,11 @@ export function runMutants(list) {
     });
   } finally {
     fs.rmSync(WORK, { recursive: true, force: true });
-    if (fs.existsSync(BASE) && !fs.readdirSync(BASE).length) fs.rmSync(BASE, { recursive: true });
+    // 빈 공용 폴더만 지운다 — 비었는지 보고 재귀로 지우면 그 사이 다른 실행이 만든 사본까지 지운다(GPT 끝 판 GD1).
+    // rmdir은 비지 않은 폴더를 지우지 않으므로 보기와 지우기가 한 번에 된다.
+    try {
+      fs.rmdirSync(BASE);
+    } catch {}
   }
   console.log(`변형 ${list.length}개 가운데 못 잡은 것: ${missed.length}`);
   return missed;

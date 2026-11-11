@@ -26,8 +26,11 @@ export const learnerOf = view => ({
   seq: 0,
 });
 // 판을 열 때의 보기 사본 — 두뇌가 학습자의 표(Map)를 고치므로 표만 새로 뜬다(줄 값은 늘 새 객체로 바뀐다).
+// 판 안의 사본은 아무것도 얹지 못하는 보기(waitAll)에서 떠도 내 답을 얹는다 — 이 판의 내 답은 판 안의 고르기에서 늘 본 것이다
+// (Fable 설계 P2-2 가). 두뇌의 applyOwn은 waitAll이면 얹지 않으므로 사본에서는 끈다(줄마다 기다림은 그대로 지킨다, 단계 2 GPT GA1).
 const copyView = view => ({
   ...view,
+  waitAll: false,
   memory: new Map(view.memory),
   ability: new Map(view.ability),
   met: new Map(view.met),
@@ -166,7 +169,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
 
   // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다).
   function replay(tmp, op) {
-    if (op.kind === 'present') present(tmp, op.row);
+    if (op.kind === 'present') present(tmp, op.row, params);
     else if (op.kind === 'answer') record(tmp, memory, op.item, op.answer, op.at, params);
     else if (op.kind === 'say') say(tmp, memory, op.unit, op.say, op.at, params);
   }
@@ -343,7 +346,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       });
       const { event } = write(EVENT_TYPES.presented, fields, { issued: issuedOf(chosenRow) });
       const row = { ...chosenRow, at: Date.parse(event.at) };
-      present(s.learner, row);
+      present(s.learner, row, params);
       s.journal.push({ kind: 'present', eventId: event.id, row });
       s.groups.set(event.id, { source: entryOf(event), children: [], item, row, attempts: 0 });
       return event.id;

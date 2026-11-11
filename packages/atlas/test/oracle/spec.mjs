@@ -54,6 +54,8 @@ function sittingsOf(kept, params) {
 // 한 자리의 결과를 앞 상태에 적용한다.
 function nextOf(f, from, elapsed, result, params) {
   if (result !== 'weak') return f.next_state(from, elapsed, GRADE[result]);
+  // 약한 성공의 비중이 1 이상인 비교 설정(가상 학습자에서 견줄 때)은 처음부터 Good 그대로다(GPT 끝 판 GB4)
+  if (params.weakWeight >= 1) return f.next_state(from, elapsed, GRADE.good);
   if (!from) return f.next_state(null, 0, GRADE.hard); // 약한 성공의 첫 만남은 Hard의 출발값
   // 그 뒤로는 안정도를 Good이 늘렸을 만큼의 40%만 올리고, 난이도 값은 Good과 같게 갱신한다
   const good = f.next_state(from, elapsed, GRADE.good);

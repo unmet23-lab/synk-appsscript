@@ -33,7 +33,8 @@ const sigmoid = x => 1 / (1 + Math.exp(-x));
 const truthOf = (a, item) => 0.25 + 0.75 * sigmoid(a - PARAMS.difficultyLogit[item.difficulty]);
 const mean = list => list.reduce((x, y) => x + y, 0) / list.length;
 
-// 한 사람에게 새 문항 n개: 답마다 (예상 p, 참 확률, 결과)를 돌려준다.
+// 한 사람에게 새 문항 n개: 답마다 (예상 p, 참 확률, 결과)를 돌려준다. 후보는 아직 안 낸 계열만이다 — 놓친 문항의 「다시」(0층)는
+// 기억 항이 든 예상이라 능력만 보는 참 확률과 견줄 수 없다(GPT 끝 판 GB3: 전에는 다시가 섞여 표 4 · 7이 설명과 다른 조건을 쟀다).
 function runLearner(a, seed, n) {
   const random = rng(seed);
   const learner = createLearner();
@@ -41,7 +42,9 @@ function runLearner(a, seed, n) {
   const out = [];
   for (let i = 0; i < n; i += 1) {
     const now = T0 + i * 20_000;
-    const row = choose(ITEMS, learner, memory, now, { params: P, seed: `s${seed}` })[0];
+    const unseen = ITEMS.filter(item => !learner.shown.some(row => row.family === item.familyKey));
+    const row = choose(unseen, learner, memory, now, { params: P, seed: `s${seed}` })[0];
+    assert.equal(row.tier, 2, '새 문항만 낸다');
     const truth = truthOf(a, row.item);
     const correct = random() < truth;
     present(learner, row);
