@@ -58,16 +58,16 @@ test('the selected detail always belongs to the searched and filtered rows', () 
 });
 
 test('login overview counts only managed channels and keeps partial and switch-only distinct', () => {
-  assert.equal(managedChannels(channels).length,70);
-  assert.deepEqual(Object.fromEntries(loginSummary(channels).map(row=>[row.id,row.value])),{confirmed:54,'switch-only':6,partial:10,missing:0});
-  assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),70);
+  assert.equal(managedChannels(channels).length,71);
+  assert.deepEqual(Object.fromEntries(loginSummary(channels).map(row=>[row.id,row.value])),{confirmed:55,'switch-only':6,partial:10,missing:0});
+  assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),71);
   assert.ok(loginSummary(channels.filter(row=>row.accountStatus==='planned')).every(row=>row.value===0));
 });
 
 test('brand navigation opens its own channels and clears stale destination cuts', () => {
   assert.deepEqual(brandChannelView('PULSE'),{filters:{brand:'PULSE',channelCountry:'all',channelScope:'all',platform:'all',loginState:'all'},focus:{}});
   const pulse=channels.filter(row=>row.brand===brandChannelView('PULSE').filters.brand);
-  assert.equal(pulse.length,4);
+  assert.equal(pulse.length,5);
   assert.ok(pulse.some(row=>row.id==='pulse-youtube'));
   assert.ok(!pulse.some(row=>row.id==='lab-youtube'));
 });
@@ -79,7 +79,7 @@ test('login filters and connection search use audited values without changing th
   const index=createSearchIndex(identities,identitySearchFields);
   assert.deepEqual(searchRows(identities,index,'Behance').map(row=>row.id),['adobe-owner']);
   assert.deepEqual(searchRows(identities,index,'Pinterest').map(row=>row.id),['pinterest-owner']);
-  assert.equal(channels.length,88);
+  assert.equal(channels.length,89);
 });
 
 function uniqueIds(items, label, key = 'id') {
@@ -87,12 +87,12 @@ function uniqueIds(items, label, key = 'id') {
   assert.equal(new Set(items.map(row => row[key])).size, items.length, `${label}: duplicate ${key}`);
 }
 
-test('36 existing operating channels include the ten previously omitted records without enabling publishing', () => {
-  assert.equal(operating.length, 36);
+test('37 existing operating channels include the ten previously omitted records and the 11-12 PULSE TikTok without enabling publishing', () => {
+  assert.equal(operating.length, 37);
   assert.equal(operating.filter(row => row.publishable === true).length, 23);
   assert.equal(operating.filter(row => row.accountStatus === 'operating-contact').length, 1);
-  assert.equal(inventory.accounts.length, 45);
-  assert.equal(sourceChannels.length, 39);
+  assert.equal(inventory.accounts.length, 46);
+  assert.equal(sourceChannels.length, 40);
   assert.equal(inventory.metadata.counts.operatingAccountsAndChannels, operating.length);
   assert.equal(inventory.metadata.counts.publicPublishingTargets, 23);
   assert.equal(inventory.metadata.counts.totalRows, inventory.accounts.length);
@@ -172,8 +172,8 @@ test('the two reused Mongolia priority slots point to existing accounts, not new
   }
 });
 
-test('88 channel rows mean 39 existing/deferred entries plus 49 expansion slots', () => {
-  assert.equal(channels.length, 88);
+test('89 channel rows mean 40 existing/deferred entries plus 49 expansion slots', () => {
+  assert.equal(channels.length, 89);
   assert.equal(channels.length, sourceChannels.length + proposal.channels.length);
   assert.equal(channels.filter(row => row.brand === 'LAB').length, 54);
   assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 34);
@@ -202,13 +202,13 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
   for (const id of ['lab-youtube', 'synklab-substack']) assert.equal(channels.filter(row => row.id === id).length, 1);
   assert.deepEqual(channels.find(row => row.id === 'lab-youtube').sharedBrands, ['PULSE']);
   assert.deepEqual(channels.find(row => row.id === 'synklab-substack').sharedBrands, ['LAB', 'SHIFT']);
-  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 36);
+  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 37);
   const expectedShared = {SYNK: 0, LAB: 1, SHIFT: 1, YUHO: 0, PULSE: 1, PATH: 0, YUHOKOREAN: 0, POLITICS: 0};
   for (const brand of rows('brands')) {
     assert.equal(brand.ownedCount, channels.filter(row => row.brand === brand.id && row.channelScope === '기존 운영').length, brand.id);
     assert.equal(brand.sharedCount, expectedShared[brand.id], brand.id);
   }
-  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 4);
+  assert.equal(rows('brands').find(row => row.id === 'PULSE').ownedCount, 5);
   assert.equal(channels.find(row => row.id === 'pulse-youtube').handle, '@synkpulse');
   assert.equal(registry.accounts['pulse-youtube'].expectedChannelId, 'UCvCOJtdC-JgotRgAsbdNFBg');
 });
@@ -239,7 +239,7 @@ test('14 older concepts remain intact and two newer video review copies are trac
 });
 
 test('all login connections come from the audited source, not six historic role proposals', () => {
-  assert.equal(identityIds.length,27);
+  assert.equal(identityIds.length,28);
   assert.deepEqual(rows('identities'),loginAudit.identities);
   for (const row of rows('identities')) assert.equal(row.security,'이번 점검 범위 밖',row.id);
   assert.equal(channels.find(row=>row.id==='lab-cn-xiaohongshu').loginIdentityRef,'rednote-phone');
@@ -257,7 +257,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [36, '채널'], 'lab-secured': [34, '곳'], 'lab-pending': [15, '곳'], 'lab-world': [25, '개국']};
+  const expected = {existing: [37, '채널'], 'lab-secured': [34, '곳'], 'lab-pending': [15, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');
@@ -354,7 +354,7 @@ test('the built snapshot records hashes of the current source ledgers', () => {
 });
 
 test('every registry account and supplemental channel has one explicit login audit row', () => {
-  assert.equal(Object.keys(registry.accounts).length,63);
+  assert.equal(Object.keys(registry.accounts).length,64);
   assert.equal(loginAudit.supplementalIds.length,10);
   for (const id of [...Object.keys(registry.accounts),...loginAudit.supplementalIds]) {
     assert.equal(channels.filter(row=>row.id===id).length,1,id);
@@ -374,8 +374,8 @@ test('every registry account and supplemental channel has one explicit login aud
 
 test('login route confidence reconciles without claiming that every session is live', () => {
   const active=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
-  assert.equal(active.length,70);
-  const expected={confirmed:54,'switch-only':6,partial:10,missing:0};
+  assert.equal(active.length,71);
+  const expected={confirmed:55,'switch-only':6,partial:10,missing:0};
   for (const [state,count] of Object.entries(expected)) assert.equal(active.filter(row=>row.loginMappingStatus===state).length,count,state);
   assert.deepEqual(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id),[]);
   assert.equal(active.filter(row=>row.platform==='YouTube' && row.loginEvidenceAt==='2026-11-09').length,24);
@@ -393,6 +393,9 @@ test('parent administrators, account switching, and unknown identifiers remain d
   assert.equal(get('lab-uz-instagram').loginMappingStatus,'switch-only');
   assert.equal(get('shift-naverblog').loginIdentityRef,'naver-main');
   assert.equal(get('pulse-naverblog').loginIdentityRef,'naver-pulse');
+  assert.equal(get('pulse-tiktok').loginIdentityRef,'tiktok-pulse-email');
+  assert.equal(get('pulse-tiktok').handle,'@synkpulse');
+  assert.equal(get('pulse-tiktok').publishable,false);
   assert.equal(get('shift-class-naverblog').loginIdentityRef,'naver-class');
   assert.equal(get('lab-kz-tiktok').loginIdentityRef,'naver-class');
   assert.equal(get('lab-mx-tiktok').loginIdentityRef,'naver-pulse');
@@ -410,8 +413,9 @@ test('mail aliases and older long-term plans are not counted as created accounts
     assert.equal(row.loginMappingStatus,'not-created');
   }
   assert.equal(channels.find(row=>row.id==='lab-br-tiktok').plannedLoginIdentityRef,undefined);
-  assert.equal(loginAudit.otherPlanned.length,17);
-  assert.equal(planned.length+loginAudit.otherPlanned.length,32);
+  assert.equal(loginAudit.otherPlanned.length,16);
+  assert.equal(planned.length+loginAudit.otherPlanned.length,31);
+  assert.ok(!loginAudit.otherPlanned.some(row=>row.brand==='PULSE' && row.platform==='TikTok'),'11-12 PULSE TikTok은 계획에서 기존 등록으로 옮겼다');
   for (const row of loginAudit.otherPlanned) {
     assert.equal(row.accountStatus,'planned-unconfirmed');
     assert.ok(!channels.some(channel=>channel.id===row.id));

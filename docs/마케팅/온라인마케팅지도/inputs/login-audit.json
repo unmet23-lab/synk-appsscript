@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "auditedAt": "2026-11-09",
-  "scope": "SNS·채널 전체 88행 = 기존 등록 39 + LAB 확장 49. 별도 장기 계획 17, 서비스 가입은 따로 관리",
+  "scope": "SNS·채널 전체 89행 = 기존 등록 40 + LAB 확장 49. 별도 장기 계획 16(11-12 PULSE TikTok 영어 공통 @synkpulse가 계획에서 기존 등록으로), 서비스 가입은 따로 관리",
   "definition": "한 행은 공개 채널/프로필 또는 미개설 자리. 로그인 연결 수는 고유 사람·메일 계정 수가 아님.",
   "freshVerification": "11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님.",
   "privateDetails": "전체 이메일·실제 Naver ID·Aside 프로필 식별자는 저장소 밖 비공개 로그인 표에서 관리. 비밀번호·인증코드는 포함하지 않음.",
   "counts": {
-    "channelRows": 88,
-    "activeExisting": 70,
+    "channelRows": 89,
+    "activeExisting": 71,
     "excludedExisting": 1,
     "uncreatedOrExcluded": 2,
     "labExpansionPending": 15,
-    "otherPlanned": 17,
+    "otherPlanned": 16,
     "byStatus": {
-      "confirmed": 54,
+      "confirmed": 55,
       "switch-only": 6,
       "partial": 10,
       "missing": 0,
@@ -105,6 +105,15 @@
       "assignment": "로그인 경로 확인",
       "security": "이번 점검 범위 밖",
       "nextAction": "사용 전 대상 핸들과 현재 세션 확인"
+    },
+    {
+      "id": "tiktok-pulse-email",
+      "label": "TikTok PULSE 이메일",
+      "loginType": "이메일 가입·로그인(유호님 개인 메일, 주소는 비공개 표)",
+      "currentUse": "pulse-tiktok",
+      "assignment": "로그인 경로 확인",
+      "security": "이번 점검 범위 밖",
+      "nextAction": "Ego Profile 7에 로그인. 틱톡 웹은 계정 전환이 없어 다른 틱톡을 같은 프로필에 넣으면 이 계정이 풀린다"
     },
     {
       "id": "naver-class",
@@ -999,6 +1008,21 @@
       ],
       "loginSessionStatus": "현재 세션 전체 재검증 안 함"
     },
+    "pulse-tiktok": {
+      "loginIdentityRef": "tiktok-pulse-email",
+      "loginAlias": "TikTok PULSE 이메일",
+      "loginMethod": "이메일 가입·로그인",
+      "loginBrowser": "Ego · Profile 7",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-12",
+      "loginCaveat": "유호님이 휴대폰에서 가입(자동 아이디 synk.lama) → 노트북 Ego에 로그인 → @synkpulse로 바꿈. 구글로 계속하기는 쓰지 않음",
+      "loginSourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/sns-계정.json"
+      ],
+      "loginSessionStatus": "11-12 프로필 편집 · 설정 화면 확인"
+    },
     "yuhokorean-facebook": {
       "loginIdentityRef": "meta-yuhokorean",
       "loginAlias": "Meta · yuhokorean 운영자",
@@ -1607,18 +1631,6 @@
     }
   },
   "otherPlanned": [
-    {
-      "id": "other-plan-1",
-      "brand": "PULSE",
-      "platform": "TikTok",
-      "accountStatus": "planned-unconfirmed",
-      "loginStatusLabel": "미개설 · 로그인 미배정",
-      "lastEvidenceAt": "2026-11-04",
-      "sourcePaths": [
-        "docs/마케팅/로그인경로_점검_20261109.md"
-      ],
-      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님"
-    },
     {
       "id": "other-plan-2",
       "brand": "PULSE",

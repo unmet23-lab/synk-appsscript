@@ -8,14 +8,14 @@
     "scope": "11-09 전체 로그인 경로 대조. 11-04 별도 개설 기록·11-08 로그인 복구 기록의 누락 채널 10곳 추가. 11-09 YouTube 전환 메뉴에서 연결을 대조했지만 모든 채널의 현재 로그인·게시 권한을 실시간 재검증한 결과는 아니다. 후속으로 Behance Google 로그인과 Pinterest·유호 Naver Clip의 현재 소유자 세션·로그인 ID 3곳을 확인했다.",
     "grain": "accounts의 한 행은 실제 관리 계정/채널, 소유 미확인 준비 자리, 운영 제외 계정 또는 별도 웹 도착지 하나다. 공유·재사용 관계는 같은 id에 연결하며 새 계정 행으로 복제하지 않는다.",
     "counts": {
-      "registeredAccountEntries": 39,
-      "operatingAccountsAndChannels": 36,
+      "registeredAccountEntries": 40,
+      "operatingAccountsAndChannels": 37,
       "publicPublishingTargets": 23,
       "personalContactProfiles": 1,
       "plannedOrDeferredAccountEntries": 2,
       "excludedExistingAccounts": 1,
       "webDestinations": 6,
-      "totalRows": 45,
+      "totalRows": 46,
       "latestProfileSaved": 22,
       "latestProfileTarget": 23,
       "latestProfileDeferred": 1,
@@ -1089,6 +1089,30 @@
       "publishable": false,
       "sharedBrands": [],
       "loginIdentityRef": "meta-main"
+    },
+    {
+      "id": "pulse-tiktok",
+      "brand": "PULSE",
+      "platform": "tiktok",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.tiktok.com/@synkpulse",
+      "loginAlias": "TikTok PULSE 이메일",
+      "accountStatus": "operating",
+      "profileStatus": "owner-verified; handle-bio-approved-logo-saved; display-name-locked-until-2026-11-19",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-11-12",
+      "nextAction": "11-19 뒤 이름을 SYNK PULSE로. 웹드라마 영어판 전 게시·예약 없음.",
+      "sourcePaths": [
+        "docs/마케팅/계정_가입현황.md",
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      ],
+      "country": null,
+      "channelRole": "PULSE 영어 공통 계정(호주·싱가포르·영국·미국). 소유자 편집 화면 확인, 게시 연결 미검증",
+      "operatingScope": "PULSE",
+      "publishable": false,
+      "sharedBrands": [],
+      "loginIdentityRef": "tiktok-pulse-email"
     },
     {
       "id": "yuhokorean-youtube",

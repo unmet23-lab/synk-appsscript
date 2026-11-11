@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-11-10T15:01:03.796Z",
+  "generatedAt": "2026-11-11T20:28:44.969Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
     "latestContent": "2026-09-27"
   },
   "counts": {
-    "operating": 36,
+    "operating": 37,
     "mongolia": 5,
     "plannedCountries": 25,
     "prioritySlots": 51,
     "newSlots": 49,
     "expansionConfirmed": 34,
     "expansionUnconfirmed": 15,
-    "channelRows": 88,
+    "channelRows": 89,
     "contents": 25,
-    "identities": 27,
-    "activeManagedChannels": 70,
+    "identities": 28,
+    "activeManagedChannels": 71,
     "loginStatusCounts": {
-      "confirmed": 54,
+      "confirmed": 55,
       "switch-only": 6,
       "partial": 10,
       "missing": 0,
@@ -29,7 +29,7 @@
   "files": [
     {
       "file": "inputs/login-audit.json",
-      "sha256": "6d24895425065e63759fedabb71be3aa4df7ad77857af380fd45e203e0774ce0"
+      "sha256": "cf88cfe8922fe2e0c63e2ee8babed7d51c6f15c4f3972b505cc146812e4d1a32"
     },
     {
       "file": "inputs/upload-plan.json",
@@ -45,7 +45,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "c77973536d0216a0eaf7443797e5bc1a57f9061e0bbaaea06ba94c1877f6ce7f"
+      "sha256": "83a397730a30691eeb92d0ed71a17bef6f873ddc2b37c36109cf38d76f95c8a8"
     },
     {
       "file": "inputs/content-status.json",
@@ -65,7 +65,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "f5efc3cdb1ce52cfb8f9d7cc08a1a83352c821ca116a5c10e5e9a58af6c804be"
+      "sha256": "d7f7c7d3c965049433c1b38d20296fdfbdb6d8b2f1f1e9e9d428a8d103845b62"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",
