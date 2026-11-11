@@ -15,7 +15,7 @@ const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const sec = (s: number) => Math.round(s * FPS);
 const GREY = '#C4C4C4';
 const BUTTER = '#F5C445';
-const X = 74;
+const X = 84;
 const TOP = 340; // B38 컷 전수 검수 3: 고지 글 · 큰 글자를 안전선(269px) 안으로
 
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
@@ -51,7 +51,7 @@ const Lowered: React.FC<{ d?: number; children: React.ReactNode }> = ({ d = 210,
 const Shade: React.FC = () => {
   const f = useCurrentFrame();
   const on = LINES.reduce((m, l) => Math.max(m, interpolate(f, [sec(l.from) - 6, sec(l.from), sec(l.to), sec(l.to) + 8], [0, 1, 1, 0], clamp)), 0);
-  const base = interpolate(f, [sec(S.end), sec(S.end) + 8], [0.42, 0.2], clamp);
+  const base = interpolate(f, [sec(S.end), sec(S.end) + 8], [0.42, 0.75], clamp);
   const cut = CUTS.find((c) => f >= sec(c.from) && f < sec(c.to));
   const k = (base + (1 - base) * on) * (cut?.shade ?? 1);
   return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.8) 0px, rgba(10,10,10,0.66) 440px, rgba(10,10,10,0.22) 720px, rgba(10,10,10,0) 880px)' }} />;
@@ -66,7 +66,7 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
   const lift = interpolate(f, [b - fade, b], [0, fade > 3 ? -12 : 0], { ...clamp, easing: Easing.in(Easing.quad) });
   const up = (k: number, lineIdx?: number) => {
     const s0 = at && lineIdx != null && at[lineIdx] != null ? sec(at[lineIdx]) : a + k * 3;
-    const p = instant && (!at || lineIdx === 0 || lineIdx == null) ? (f >= s0 ? 1 : 0) : interpolate(f, [s0, s0 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
+    const p = instant && (!at || lineIdx === 0 || lineIdx == null) ? (f >= s0 ? 1 : 0) : interpolate(f, [s0 - 2, s0 + 3], [0, 1], { ...clamp, easing: EASE_OUT });
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
   };
   return (
@@ -84,7 +84,7 @@ const Label: React.FC = () => {
   const f = useCurrentFrame();
   const end = f >= sec(S.end);
   const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : 1;
-  return <div style={{ position: 'absolute', left: X, top: 288, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 32, color: 'rgba(255,255,255,0.78)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · AI 때문에 실제로 벌어진 일' : '재연 · 상황은 각색'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 300, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · AI 때문에 실제로 벌어진 일' : '재연 · 상황은 각색'}</div>;
 };
 
 export const Film: React.FC = () => {
