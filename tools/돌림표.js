@@ -6,7 +6,8 @@
  *       계정마다(현지 날짜 · 칸) 어느 원본의 어느 판본이 나갈지 셈해 보인다. --쓰기면 빈 칸의 판을 그 원본 편 게시/준비.json 「판」에
  *       더한다(판에 「돌림」: true). 이미 있는 판(예약 · 게시 · 만든 사람이 단 판 · 안 건 돌림 판)은 그대로 둔다. --다시면 아직 안 건 돌림 판 가운데
  *       지난 판 · 무효 판만 빼고 다시 셈한다(11-12 P2-모2 — staleWhy: 판 시각이 지났다 · 그 계정 · 칸이 닫혔다 · 판본 검수가 안 서 있다 ·
- *       판 영상 · 파일이 판본과 다르다 · 그 칸을 다른 편이 표에 잡았다). 시각이 남은 유효한 안 건 판은 제자리에 둔다 — 지난 판 하나 때문에 돌린
+ *       판 영상 · 파일이 판본과 다르다 · 그 칸을 다른 편이 표에 잡았다 · 같은 칸에 다른 편의 나가는 판이 있다 — --장부의 「같은 칸 두 번」).
+ *       시각이 남은 유효한 안 건 판은 제자리에 둔다 — 지난 판 하나 때문에 돌린
  *       --다시가 남은 판까지 지우고 내일부터 다시 짜서 하루~사흘씩 밀던 것(11-12 뉴질랜드 판 하나에 캐나다 · 미국 하루, 호주 사흘).
  *       --다시모두는 예전 --다시다(안 건 돌림 판을 모두 빼고 다시 셈 — 원장의 칸 · 셈 규칙을 바꾼 뒤 통째로 다시 짤 때). 셈 규칙은 tools/lib/돌림.js 머리말.
  *   node tools/돌림표.js --장부 [--부터 …] [--일수 …] [--json]
@@ -342,9 +343,10 @@ function holdsOf() {
 
 // --다시가 빼는 안 건 돌림 판인가(11-12 P2-모2) — 지난 판 · 무효 판이면 까닭 글, 시각이 남은 유효한 판이면 null(제자리에 둔다).
 // 유효 = 판 시각이 아직 안 지났고, 그 계정이 지금도 칸을 받는 돌림 계정이며 그 현지 날짜에 그 칸이 열려 있고, 그 계정 판본의 검수가 서 있고,
-// 판의 파일 · 지문이 지금 판본과 같고, 그 칸을 다른 편이 게시 장부 표에 잡고 있지 않다. now가 없으면(--지금 없이 lib로 부름) 시각은 보지 않는다.
+// 판의 파일 · 지문이 지금 판본과 같고, 그 칸을 다른 편이 게시 장부 표에 잡고 있지 않고, 같은 칸에 다른 편의 나가는 판(손으로 단 안 건 판 · 작업실 판처럼
+// 표에 줄이 없는 것까지 — shared = cellOwners)이 없다. now가 없으면(--지금 없이 lib로 부름) 시각은 보지 않는다.
 const slashed = (x) => String(x || '').split(String.fromCharCode(92)).join('/');
-function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map() } = {}) {
+function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map(), shared = new Map() } = {}) {
   const at = Date.parse(plate.시각 || '');
   if (!Number.isFinite(at)) return '판 시각을 읽을 수 없다';
   if (Number.isFinite(now) && at <= now) return '판 시각이 지났다';
@@ -362,7 +364,28 @@ function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map() }
   if (plate.지문 && v.sha && plate.지문 !== v.sha) return `판 영상이 바뀌었다(판본 ${a.versionKey} 지문 다름)`;
   const other = cells.get(`${plate.계정}|${day}|${slot.time}`);
   if (other && other !== piece.name) return `그 칸을 ${other}가 잡고 있다`;
+  // 같은 칸 두 번 — 칸 표에 줄이 없는 상대(손으로 단 안 건 판 · 작업실 판 · 칸 표 전에 걸린 판)도 --장부와 같은 기준으로 본다(cellOwners)
+  const also = [...(shared.get(`${plate.계정}|${day}|${slot.time}`) || [])].filter((n) => n !== piece.name);
+  if (also.length) return `같은 칸에 ${also.join(' · ')}의 판이 있다(같은 칸 두 번)`;
   return null;
+}
+
+/** 칸마다 그 칸에 나가는 판을 둔 편들 — `계정|현지 날짜|칸` → Set<편 이름>. 버린 편 · 나가지 않는 판(보류 · 취소됨 · 지움)은 뺀다(--장부의
+ *  「같은 칸 두 번」과 같은 기준). staleWhy가 「같은 칸에 다른 편의 판이 있는 안 건 돌림 판」을 무효로 보는 데 쓴다 — 돌림 계정의 판만 본다. */
+function cellOwners(pieces, rotation) {
+  const out = new Map();
+  for (const piece of pieces) {
+    if (piece.dead) continue;
+    for (const plate of piece.prep.판 || []) {
+      const a = rotation[plate.계정];
+      const at = Date.parse(plate.시각 || '');
+      if (!a || !Number.isFinite(at) || GONE.has(piece.stateOf(plate)?.상태)) continue;
+      const key = `${plate.계정}|${T.localDate(at, T.tzOf(a))}|${T.slotFor(plate.시각, a).time}`;
+      if (!out.has(key)) out.set(key, new Set());
+      out.get(key).add(piece.name);
+    }
+  }
+  return out;
 }
 
 // 이미 있는 판 — 버린 편은 칸을 차지하지 않는다. 나가지 않는 판(보류 · 취소됨 · 지움)은 칸은 비우되, 돌림 원본이면 그 계정이 그 원본을 이미
@@ -481,11 +504,12 @@ function runPlan(opts) {
   const originals = originalsOf(pieces);
   const stopped = new Set(originals.filter((o) => o.stopped).map((o) => o.id));
   const holds = holdsOf();
-  const stale = opts.replanAll ? null : (piece, plate) => staleWhy(piece, plate, { rotation, now: opts.now, cells: holds.byCell });
+  const shared = cellOwners(pieces, rotation);
+  const stale = opts.replanAll ? null : (piece, plate) => staleWhy(piece, plate, { rotation, now: opts.now, cells: holds.byCell, shared });
   const existing = existingPlates(pieces, { replan: opts.replan, stopped, holds: holds.byPlate, stale });
   const result = 돌림.plan({ accounts: rotation, originals, existing, from: opts.from, days: opts.days, cfg: cfg.셈 || {}, useSpares: opts.useSpares, now: opts.now });
   saveShaCache();
-  return { accounts, rotation, notReady, closedStory, holds, pieces, originals, existing, result, cfg };
+  return { accounts, rotation, notReady, closedStory, holds, pieces, originals, existing, result, cfg, shared };
 }
 
 function writePlates(run, opts) {
@@ -518,7 +542,7 @@ function writePlates(run, opts) {
       // 나가지 않는 판(보류 · 취소됨 · 지움 줄)은 시각이 남아 있어도 뺀다 — 셈은 이 판을 「그 계정이 그 원본을 받은 것」으로만 세고 칸은 비운다(existingPlates)
       const state = 장부.rowOf(rows, p.계정)?.상태;
       if (GONE.has(state)) return `나가지 않는 판(${state})`;
-      return staleWhy(piece, p, { rotation: run.rotation, now: opts.now, cells: holds.byCell });
+      return staleWhy(piece, p, { rotation: run.rotation, now: opts.now, cells: holds.byCell, shared: run.shared });
     };
     const keep = [];
     for (const p of fresh.판 || []) { const why = dropWhy(p); if (why) dropped.push({ piece: piece.name, account: p.계정, time: p.시각, why }); else keep.push(p); }
@@ -737,5 +761,5 @@ function main() {
   }
 }
 
-module.exports = { rotationAccounts, versionState, bookedVersionProblem, bookedTextProblem, localCheckState, loadPieces, existingPlates, staleWhy, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
+module.exports = { rotationAccounts, versionState, bookedVersionProblem, bookedTextProblem, localCheckState, loadPieces, existingPlates, staleWhy, cellOwners, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
 if (require.main === module) main();

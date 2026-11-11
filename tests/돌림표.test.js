@@ -1194,3 +1194,34 @@ test('돌림표 명령 — 첫 판 시험 계정의 아직 안 지난 안 건 �
   assert.equal(r2.status, 0, r2.stderr);
   assert.equal(plates().length, 2);
 });
+
+test('돌림표 --다시 — 「같은 칸 두 번」의 안 건 돌림 판도 뺀다: 같은 칸에 다른 편의 판(손으로 단 안 건 판 — 칸 표에 줄 없음)이 있으면 그 돌림 판만 다른 칸으로 옮긴다(14시 지시문 1-0 · P2-모2 뒤 빈틈)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  assert.equal(m.run('--부터', '2026-11-20', '--일수', '2', '--쓰기').status, 0);
+  const first = 돌림판들(m);
+  const th21 = first.find((x) => x.endsWith('lab-th-youtube|2026-11-21T13:00:00+07:00'));
+  const th20 = first.find((x) => x.endsWith('lab-th-youtube|2026-11-20T13:00:00+07:00'));
+  assert.ok(th20 && th21, first.join(' '));
+  const [moved] = th21.split('|');
+  // 다른 편(돌림 원본이 아닌 손으로 만든 편)이 같은 계정 · 같은 칸에 판을 달았다 — 아직 안 걸어 칸 표(칸.json)에는 줄이 없다
+  const hand = 'LAB_손_mn_20261103';
+  fs.mkdirSync(path.join(m.root, hand, '게시'), { recursive: true });
+  fs.writeFileSync(path.join(m.root, hand, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: '2026-11-21',
+    판: [{ 계정: 'lab-th-youtube', 파일: 'x.mp4', 시각: '2026-11-21T13:00:00+07:00', AI표시: false }] }, null, 2));
+  const now = '2026-11-20T10:00:00+09:00'; // 두 판 모두 시각이 남았고 판본도 멀쩡하다 — 지난 판 · 검수 무효가 아니다
+  const 장부 = () => 그때(m, now, '--일수', '3', '--장부');
+  assert.match(장부().stdout, /같은 칸 두 번: lab-th-youtube\|2026-11-21\|13:00/);
+
+  const r = 그때(m, now, '--일수', '3', '--다시', '--쓰기');
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes(`뺀 안 건 돌림 판 1: ${moved} lab-th-youtube 2026-11-21T13:00(같은 칸에 ${hand}의 판이 있다`), r.stdout);
+  const after = 돌림판들(m);
+  assert.equal(after.includes(th21), false, '겹친 칸의 돌림 판은 빠진다');
+  assert.ok(after.includes(th20), '다른 칸의 판은 제자리다');
+  const again = after.filter((x) => x.startsWith(`${moved}|lab-th-youtube|`));
+  assert.equal(again.length, 1, `빠진 원본은 그 계정의 다른 칸에 다시 달린다\n${after.join('\n')}`);
+  assert.notEqual(again[0].split('|')[2].slice(0, 10), '2026-11-21');
+  assert.deepEqual(읽기(m, hand).판.map((p) => p.시각), ['2026-11-21T13:00:00+07:00'], '손으로 단 판은 건드리지 않는다');
+  assert.doesNotMatch(장부().stdout, /같은 칸 두 번/);
+});
