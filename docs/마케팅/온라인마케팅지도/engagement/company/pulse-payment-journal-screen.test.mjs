@@ -126,8 +126,8 @@ test('남은 수정 · 영어',async()=>{
   try{
     assert.equal(leftLine(review({rounds:1})),'You have 1 of 2 revisions left.');
     assert.equal(leftLine(review({revisions:1,rounds:0})),'Your one revision is still available.','정한 횟수 1회 — 단수(카본 검수 A1)');
-    assert.equal(leftLine(review({rounds:2})),'You have used up your 2 agreed revisions. We will agree on the scope with you before making further changes. Anything that differs from what we agreed is corrected no matter how many revisions are left.');
-    assert.equal(leftLine(review({revisions:1,rounds:1})),'You have used your one agreed revision. We will agree on the scope with you before making further changes. Anything that differs from what we agreed is corrected no matter how many revisions are left.');
+    assert.equal(leftLine(review({rounds:2})),'You have used your 2 agreed revisions. We will confirm the scope with you before making further changes. Anything that differs from what we agreed on will still be corrected, even with no revisions left.');
+    assert.equal(leftLine(review({revisions:1,rounds:1})),'You have used your one agreed revision. We will confirm the scope with you before making further changes. Anything that differs from what we agreed on will still be corrected, even with no revisions left.');
   }finally{await setLocale('ko');}
 });
 
@@ -137,11 +137,15 @@ test('확인 창: 다 쓴 뒤 보내는 의견에는 약속 문장이 잇고, �
     p.studio.feedbackRounds={drafts:[{id:'d1',versionId:'v9',versionLabel:'3차',current:true,canSubmit:true,items:[{id:'i1',text:'더 밝게',seconds:2}]}],rounds:Array.from({length:rounds},(_,i)=>({id:'r'+i,number:i+1,versionId:'v'+i,versionLabel:(i+1)+'차',representativeName:'김합성',submittedAt:T(6+i),items:[]})),latestVersionId:'v9',latestVersionLabel:'3차',canDraft:true,maxItems:20,nextNumber:rounds+1};
     return feedbackRoundsColumn({project:p,versionId:''});};
   assert.match(sheet(2,2),/정한 수정 2회를 다 썼어요. 이번 의견은 담당자와 범위를 정한 뒤 반영해요. 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요./);
-  assert.match(sheet(2,1),/수정 2회 중 2회째를 써요./);assert.doesNotMatch(sheet(2,1),/round-terms[^<]*바로잡아요/);
+  // 아직 횟수가 남은 판(맨 위 줄 · 확인 창 모두)에는 약속 문장이 없다 — 화면 어디에도(Fable 다시 검수 FA1: 앞 판의 단언은 늘 통과했다).
+  assert.match(sheet(2,1),/수정 2회 중 2회째를 써요\./);assert.doesNotMatch(sheet(2,1),/바로잡아요/);
+  assert.equal((sheet(2,2).match(/바로잡아요/g)||[]).length,2,'다 쓴 판은 맨 위 줄과 확인 창에 한 번씩');
   await setLocale('en');
   try{
-    assert.match(sheet(1,1),/You have used your one agreed revision. We will agree on the scope with you before working these notes in. Anything that differs/);
-    assert.match(sheet(3,3),/You have used up your 3 agreed revisions./);assert.doesNotMatch(sheet(1,1)+sheet(3,3),/all 1|agree the scope/);
+    // 확인 창 문장은 끝(incorporating these notes)까지 묶는다 — 맨 위 줄(making further changes)이 대신 맞춰 주지 않게(FA1).
+    assert.match(sheet(1,1),/You have used your one agreed revision\. We will confirm the scope with you before incorporating these notes\. Anything that differs/);
+    assert.match(sheet(3,3),/You have used your 3 agreed revisions\. We will confirm the scope with you before incorporating these notes\. Anything that differs/);
+    assert.doesNotMatch(sheet(1,1)+sheet(3,3),/all 1|agree the scope|used up|working these notes in|no matter how many/);
   }finally{await setLocale('ko');}
 });
 

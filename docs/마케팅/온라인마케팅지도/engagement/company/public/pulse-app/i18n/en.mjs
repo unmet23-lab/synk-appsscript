@@ -1457,7 +1457,7 @@ export default {
   "어느 의뢰를 열까요?":"Which brief should we open?",
   "안내를 확인했다고 체크해 주세요.":"Please tick the box to confirm you have read the note.",
   "수정 {total}회 중 {used}회째를 써요.":"This uses revision {used} of {total}.",
-  "정한 수정 {total}회를 다 썼어요. 이번 의견은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your one agreed revision. We will agree on the scope with you before working these notes in.","other":"You have used up your {total} agreed revisions. We will agree on the scope with you before working these notes in."},
+  "정한 수정 {total}회를 다 썼어요. 이번 의견은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your one agreed revision. We will confirm the scope with you before incorporating these notes.","other":"You have used your {total} agreed revisions. We will confirm the scope with you before incorporating these notes."},
   "빠진 게 있으면 그 칸만 다시 여쭤요. 같은 말을 두 번 묻지 않아요. 방향 두 안과 값 · 받으실 날을 함께 보내 드리고, 결제는 글 콘티를 보신 뒤 크몽에서 해요.":"If anything is missing, we only ask about that item, never the same thing twice. We send two directions with the price and delivery date, and payment happens on Kmong after you have seen the script.",
   "메일로 다시 열기":"Reopen by email",
   "의뢰서에 적은 메일":"The email on your brief",
@@ -1816,7 +1816,7 @@ export default {
   "결제를 확인했어요 · 받으실 날 {date}":"confirmed your payment · delivery on {date}",
   "결제를 취소했어요":"cancelled the payment",
   "결제 요청을 취소했어요":"cancelled the payment request",
-  "합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.":"Anything that differs from what we agreed is corrected no matter how many revisions are left.",
+  "합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.":"Anything that differs from what we agreed on will still be corrected, even with no revisions left.",
   "수정 {total}회 중 {left}회 남았어요.":{"one":"Your one revision is still available.","other":"You have {left} of {total} revisions left."},
-  "정한 수정 {total}회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your one agreed revision. We will agree on the scope with you before making further changes.","other":"You have used up your {total} agreed revisions. We will agree on the scope with you before making further changes."},
+  "정한 수정 {total}회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your one agreed revision. We will confirm the scope with you before making further changes.","other":"You have used your {total} agreed revisions. We will confirm the scope with you before making further changes."},
 };
