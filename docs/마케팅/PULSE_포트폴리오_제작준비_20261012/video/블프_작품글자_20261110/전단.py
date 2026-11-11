@@ -187,6 +187,35 @@ def flyer_a2(tv):
     return html
 
 
+def flyer_a3(tv):
+    """11-11 동영상 판 — Gemini 「동영상 만들기」가 A2의 작은 줄(정상가 · BLACK FRIDAY 날짜 · 아래 두 줄 · 모델 줄)을 다시 그리며
+    「정인지 1,6000000원 · BLACE TOIDAT」처럼 뭉갰다(현장 노트 gemini_사진 「소품 글자는 크게 두세 줄만, 가장 작은 줄도 화면 높이의 2.5% 넘게」).
+    동영상 속 전단 높이(약 500px/2000)로 재면 원고 72px 아래 글은 18px 아래가 된다 — 큰 글 다섯(로고 · 「서두르지 마세요.」 · 값 · 「반값」 ·
+    「선착순 없음」)만 남기고 모두 그 크기 위로."""
+    amber = "#C9732E"
+    return f"""<!doctype html><html><head><meta charset="utf-8">{FONTS}<style>{PAPER}
+.top{{position:absolute;left:110px;right:110px;top:92px;display:flex;align-items:center;justify-content:space-between}}
+.rule{{position:absolute;left:110px;right:110px;height:3px;background:#1d1a17}}
+.head{{position:absolute;left:110px;top:290px;font-family:'Gowun Batang',serif;font-weight:700;font-size:150px;letter-spacing:-.02em;line-height:1.05}}
+.tv{{position:absolute;left:130px;top:520px;width:1240px}}
+.now{{position:absolute;left:104px;top:1395px;display:flex;align-items:baseline;gap:14px}}
+.now .n{{font-size:230px;font-weight:600;letter-spacing:-.02em;line-height:1}}
+.now .w{{font-size:96px;font-weight:600}}
+.stamp{{position:absolute;right:110px;top:1340px;width:300px;height:300px;border-radius:50%;background:{amber};box-shadow:inset 0 0 0 10px {amber},inset 0 0 0 15px #F5EFE4;color:#F5EFE4;display:flex;align-items:center;justify-content:center;transform:rotate(-8deg)}}
+.stamp .k{{font-family:'Gowun Batang',serif;font-weight:700;font-size:118px;line-height:1}}
+.foot{{position:absolute;left:110px;right:110px;bottom:96px;font-family:'Gowun Batang',serif;font-weight:700;font-size:96px;letter-spacing:-.01em}}
+</style></head><body><div class="paper"><div class="grain"></div>
+<div class="top"><div class="mark">{svg('neujimak_serif_word', 300, '#1d1a17')}</div></div>
+<div class="rule" style="top:246px"></div>
+<div class="head">서두르지 마세요.</div>
+<img class="tv" src="{tv}">
+<div class="now"><span class="n num">990,000</span><span class="w">원</span></div>
+<div class="stamp"><span class="k">반값</span></div>
+<div class="rule" style="top:1720px;height:2px;background:#bdb3a6"></div>
+<div class="foot">선착순 없음.</div>
+</div></body></html>"""
+
+
 def flyer_b(tv):
     amber = "#C9732E"
     return f"""<!doctype html><html><head><meta charset="utf-8">{FONTS}<style>{PAPER}
@@ -236,7 +265,8 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     tv = tv_png()
     outs = [shoot(flyer_a(tv), f"{OUT}/전단_A.png"), shoot(flyer_b(tv), f"{OUT}/전단_B.png"),
-            shoot(flyer_a2(tv_png(photo=True)), f"{OUT}/전단_A2.png")]
+            shoot(flyer_a2(tv_png(photo=True)), f"{OUT}/전단_A2.png"),
+            shoot(flyer_a3(tv_png(photo=True)), f"{OUT}/전단_A3.png")]
     for o in outs:
         im = Image.open(o).convert("RGB")
         im.resize((360, 480), Image.LANCZOS).save(o.replace(".png", "_360.png"))

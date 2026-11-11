@@ -44,8 +44,13 @@ def main():
     os.makedirs(refs, exist_ok=True)
     a2 = os.path.join(refs, "전단_A2.jpg")
     Image.open(os.path.join(SRC, "전단", "전단_A2.png")).convert("RGB").save(a2, quality=94)
+    a3 = os.path.join(refs, "전단_A3.jpg")
+    Image.open(os.path.join(SRC, "전단", "전단_A3.png")).convert("RGB").save(a3, quality=94)
     J = {"F07A3": {"ratio": "16:9", "refs": [os.path.join(refs, "S07.jpg"), a2], "prompt": FLYER,
-                   "메모": "7번 전단 면만 원고 A2로(11-11 「추천대로」) — 사람 · 방은 S07 그대로"}}
+                   "메모": "7번 전단 면만 원고 A2로(11-11 「추천대로」) — 사람 · 방은 S07 그대로"},
+         # 11-11 저녁: A2 판으로 구운 동영상이 작은 줄을 뭉개(「정인지 1,6000000원」) 큰 글 다섯만 남긴 A3로 다시
+         "F07A4": {"ratio": "16:9", "refs": [os.path.join(refs, "S07.jpg"), a3], "prompt": FLYER.replace("The TV on the page shows", "The page has only five large printed elements, exactly as in Image 2 — keep it that sparse. The TV on the page shows"),
+                   "메모": "7번 전단 면만 원고 A3(큰 글 다섯)로 — 동영상 판에서 작은 글이 무너지지 않게"}}
     for k, where in WHERE.items():
         p = os.path.join(refs, f"달력_{k}.png")
         Image.open(os.path.join(SRC, "달력", f"{k}.png")).convert("RGB").save(p)

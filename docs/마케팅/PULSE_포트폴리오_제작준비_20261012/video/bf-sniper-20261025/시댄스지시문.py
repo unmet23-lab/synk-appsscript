@@ -42,7 +42,7 @@ IMG = "C:/Users/q1212/Documents/synk-vendor/pulse-season4-20261025/콘티/bf-sni
                 "middle of the picture and stays exactly where it is.",
         "ROBOT": "the small round white robot vacuum from the first frame — a plain white disc with no markings that moves by itself.",
         "FLYER": "the matte cream sale flyer he holds open, exactly as printed in the first frame — the small black wordmark at the top, the "
-                 "big headline, the TV photo, the big price and the round orange stamp, and every printed Korean letter and number stay exactly "
+                 "big headline, the TV photo, the big price, the round orange stamp and the short line at the bottom, and every printed Korean letter and number stay exactly "
                  "as they are and are never redrawn.",
         "DESK": "the low light-oak 'operation desk' and the light wooden phone stands on it, exactly as in the first frame.",
         "CLOAK": "the grey fleece blanket draped over his head and back like a sniper's camouflage cloak, exactly as in the first frame.",

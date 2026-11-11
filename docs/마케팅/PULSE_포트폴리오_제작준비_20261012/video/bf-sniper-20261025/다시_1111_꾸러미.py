@@ -1,4 +1,6 @@
 # 블프 스나이퍼 전단 · 달력 컷 다시 굽기(2026-11-11, Claude) — 유호님 「추천대로」(슬롭 점검표 55번 훑기 · 02_콘티 9절).
+# ※ 11-11 유호님 「제미나이로만 만들어. 드리미나 쓰지말고」 — 이 드리미나 꾸러미로는 내지 않는다. 소품 줄 · 시작 그림 짝(START)만
+#   ../블프_작품글자_20261110/영상지시문.py(Gemini 앱 「동영상 만들기」)가 불러 쓴다.
 # 10-31 무제한 날 판(웹올리기_여섯편)의 여섯 컷(2 · 5 · 13 · 15 · 18 달력, 7 전단)을 같은 지시문 · 같은 길이로 다시 내고,
 # 바꾸는 것은 시작 그림(새 전단 A2 · 새 벽 달력에 Gemini가 손 · 펜을 얹은 판)과 CALENDAR · FLYER 소품 줄뿐이다(카메라 · 연기 · 초는 그대로).
 #   python -X utf8 다시_1111_꾸러미.py  → git 밖 pulse-seedance-day-20261028/웹올리기_블프글자_1111/ (+ 시작 그림을 시댄스/S0x_1111.jpg로도 남김)
@@ -24,10 +26,10 @@ NEW_CAL = ("CALENDAR: the paper wall calendar exactly as in the first frame — 
 OLD_FLY = ("FLYER: the glossy sale flyer he holds open, exactly as printed in the first frame — the big TV photo, the amber-orange price blocks "
            "and every printed Korean letter and number stay exactly as they are and are never redrawn.")
 NEW_FLY = ("FLYER: the matte cream sale flyer he holds open, exactly as printed in the first frame — the small black wordmark at the top, the big "
-           "headline, the TV photo, the big price and the round orange stamp, and every printed Korean letter and number stay exactly as they "
+           "headline, the TV photo, the big price, the round orange stamp and the short line at the bottom, and every printed Korean letter and number stay exactly as they "
            "are and are never redrawn.")
 # 컷 → 새 시작 그림(글자1110/받음의 작업 id)
-START = {"s4-02": "C02n", "s4-05": "C05n", "s4-07": "F07A3", "s4-13": "C13n", "s4-15": "C15n", "s4-18": "C18n"}
+START = {"s4-02": "C02n", "s4-05": "C05n", "s4-07": "F07A4", "s4-13": "C13n", "s4-15": "C15n", "s4-18": "C18n"}
 
 
 def latest(job):
