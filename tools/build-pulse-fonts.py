@@ -174,10 +174,15 @@ f = meta['faces']
 face = lambda family, file, weight: f"@font-face{{font-family:{family};src:url('./assets/{file}') format('woff2');font-weight:{weight};font-display:swap;unicode-range:{f[file]['unicodeRange']}}}"
 sans = '\n'.join(face("'SYNK Sans'", name, '100 900') for name in ('SYNKSans-pulse-rest.woff2', 'SYNKSans-pulse-ui.woff2', 'SYNKSans-pulse-first.woff2', 'SYNKSans-pulse-latin.woff2'))
 serif = '\n'.join(face("'Noto Serif KR'", name, '300') for name in ('NotoSerifKR-300-rest.woff2', 'NotoSerifKR-300-ui.woff2', 'NotoSerifKR-300-sym.woff2'))
-START, END = '/* 글꼴 조각 시작 — tools/build-pulse-fonts.py가 쓴다. 손으로 고치지 않는다. */', '/* 글꼴 조각 끝 */'
+# 시작 줄은 손님이 소스 보기로 읽는 공개 파일(film.css)에 들어간다 — 저장소 도구 경로를 적지 않는다
+# (회사 시험 pulse-model-films 「public app files name no internal checklist or repository tool」, 11-11 CI wide가 이 줄로 빨개졌다).
+# 구간은 「글꼴 조각 시작」으로 여는 주석이면 글이 달라도 찾는다(옛 시작 줄 · 손으로 고친 시작 줄) — 다시 쓸 때 아래 글로 맞춘다.
+START, END = '/* 글꼴 조각 시작 — 저장소의 글꼴 조각 도구가 쓴다. 손으로 고치지 않는다. */', '/* 글꼴 조각 끝 */'
+START_ANY = r'/\* 글꼴 조각 시작[^*]*\*/'
 block = f'{START}\n{sans}\n{serif}\n{END}'
-if START in css:
-    css = re.sub(re.escape(START) + r'.*?' + re.escape(END), lambda m: block, css, count=1, flags=re.S)
+if re.search(START_ANY, css):
+    assert len(re.findall(START_ANY, css)) == 1 and css.count(END) == 1, '글꼴 조각 구간이 하나가 아니다'
+    css = re.sub(START_ANY + r'.*?' + re.escape(END), lambda m: block, css, count=1, flags=re.S)
 else:
     old_suit = "@font-face{font-family:SUIT;src:url('./assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}"
     old_noto = "@font-face{font-family:'Noto Serif KR';src:url('./assets/NotoSerifKR-300.woff2') format('woff2');font-weight:300;font-display:swap}"
