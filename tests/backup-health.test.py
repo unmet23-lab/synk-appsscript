@@ -889,6 +889,12 @@ class RetentionStepTests(unittest.TestCase):
         row = self.vault(status='healthy', lastSync={'errors': 2})
         self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COPY_ERRORS']))
         self.assertEqual(self.vault(age=dt.timedelta(days=4))['codes'], ['VAULT_STALE'])
+        # 분류를 못 믿는 회사 백업 판의 영상을 금고에 새로 넣지 않은 날은 까닭과 함께 알린다(보존규칙.py closedRuns · closedWhy · unsureFiles).
+        row = self.vault(status='attention', closedRuns=2, closedWhy=['legacyDeleted:1', '분류 줄 없음'], unsureFiles=3)
+        self.assertEqual((row['status'], row['codes']), ('attention', ['VAULT_COMPANY_MEDIA_WITHHELD']))
+        self.assertIn('분류를 못 믿는 회사 백업 2판의 영상을 금고에 새로 넣지 않음(legacyDeleted:1 · 분류 줄 없음)', row['detail'])
+        self.assertIn('그 판에 있던 내용 3개는 앞선 판에서도 새로 넣지 않음', row['detail'])
+        self.assertEqual(self.vault(status='healthy', closedRuns=0, closedWhy=[], unsureFiles=0)['codes'], [])
         (self.root / health.VAULT['receipt']).write_text('{broken', encoding='utf-8')
         self.assertEqual(health.vault_copy(self.root, lib, self.now)['codes'], ['RECEIPT_UNREADABLE'])
 

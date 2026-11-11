@@ -420,6 +420,14 @@ def vault_copy(root, lib, now, item=VAULT, suspended=None):
         if sync and not sync.get('available', True): codes.append('VAULT_DRIVE_NOT_MOUNTED'); notes.append('G: 드라이브가 연결되지 않음')
         if sync.get('errors'): codes.append('VAULT_COPY_ERRORS'); notes.append(f"복사 실패 {sync['errors']}개")
         if sync.get('deferred'): notes.append(f"남은 {sync['deferred']}개는 다음 날 이어서")
+        # 보존규칙.py(PULSE 고객 전용 인물 금고 제외, 2026-11-11): 분류를 못 믿는 회사 백업 판은 영상 본문을 금고에 새로 넣지 않는다 — 사람이
+        # 회사 서버 판이나 해시 없는 인물 묘비를 고칠 때까지 이어지므로 까닭과 함께 알린다(판 4 설계 11-2).
+        if receipt.get('closedRuns'):
+            codes.append('VAULT_COMPANY_MEDIA_WITHHELD')
+            notes.append(f"분류를 못 믿는 회사 백업 {receipt['closedRuns']}판의 영상을 금고에 새로 넣지 않음({' · '.join(receipt.get('closedWhy') or []) or '까닭 미상'})")
+        if receipt.get('unsureFiles'):
+            codes.append('VAULT_COMPANY_MEDIA_WITHHELD')
+            notes.append(f"그 판에 있던 내용 {receipt['unsureFiles']}개는 앞선 판에서도 새로 넣지 않음")
         # A missing copy, an unmounted G: or a failed copy is a problem whatever status the receipt itself carries.
         if codes: state = 'attention'
         late = stale_note(checked, now, item, suspended)
