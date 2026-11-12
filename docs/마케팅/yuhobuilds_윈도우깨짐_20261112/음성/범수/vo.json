@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1112,
+  "lufs": -17
+ },
+ "made": "2026-11-12T06:58:37.109Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "새 SSD를 달다가, 윈도우가 깨졌어요.",
+   "dur": 2.588,
+   "syllablesPerSec": 5.02,
+   "src": "V1.wav",
+   "key": "8b545cea7fd8171c4360c2a0d4fe297b",
+   "words": 5
+  },
+  {
+   "id": "V2",
+   "text": "일테라를 통째로 백업하고 다시 깔았더니, 잃은 파일은 하나도 없었어요.",
+   "dur": 3.558,
+   "syllablesPerSec": 8.15,
+   "src": "V2.wav",
+   "key": "abc1b5d70027f7a5aa9fe3ac1f5d1128",
+   "words": 9
+  },
+  {
+   "id": "V3",
+   "text": "무거운 자료는 이테라로 옮기고, 원래 자리엔 바로가기를 뒀죠.",
+   "dur": 3.108,
+   "syllablesPerSec": 8.04,
+   "src": "V3.wav",
+   "key": "1c04afe681f953a433eef59554b4761f",
+   "words": 8
+  },
+  {
+   "id": "V4",
+   "text": "근데 옮기기 전 사본이 남아서, 일테라는 거의 꽉 차 있었어요.",
+   "dur": 3.165,
+   "syllablesPerSec": 7.58,
+   "src": "V4.wav",
+   "key": "e3775a52c035fe1e392d9b969446ffa2",
+   "words": 10
+  },
+  {
+   "id": "V5",
+   "text": "그래서 AI한테, 두 곳에 똑같은 파일만 골라 달라고 했더니, 칠백 기가가 넘었어요.",
+   "dur": 4.188,
+   "syllablesPerSec": 7.4,
+   "src": "V5.wav",
+   "key": "44f5d694fa5897ff28b19a6b448b6a42",
+   "words": 12
+  },
+  {
+   "id": "V6",
+   "text": "내용이 다른 건, 남겨 두고요.",
+   "dur": 1.829,
+   "syllablesPerSec": 6.01,
+   "src": "V6.wav",
+   "key": "2a34560fab4bee26636b98d6df84b8c4",
+   "words": 5
+  },
+  {
+   "id": "V7",
+   "text": "지우는 클릭은, 제가 했어요.",
+   "dur": 1.629,
+   "syllablesPerSec": 6.75,
+   "src": "V7.wav",
+   "key": "2cf5e053999149316b13186214b4ec2e",
+   "words": 4
+  }
+ ]
+}

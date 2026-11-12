@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "일테라를 통째로 백업하고 다시 깔았더니, 잃은 파일은 하나도 없었어요.",
+ "dur": 3.558,
+ "words": [
+  {
+   "text": "일테라를",
+   "start": 0.02,
+   "end": 0.427
+  },
+  {
+   "text": "통째로",
+   "start": 0.466,
+   "end": 0.768
+  },
+  {
+   "text": "백업하고",
+   "start": 0.821,
+   "end": 1.201
+  },
+  {
+   "text": "다시",
+   "start": 1.254,
+   "end": 1.451
+  },
+  {
+   "text": "깔았더니,",
+   "start": 1.504,
+   "end": 1.924
+  },
+  {
+   "text": "잃은",
+   "start": 2.226,
+   "end": 2.383
+  },
+  {
+   "text": "파일은",
+   "start": 2.449,
+   "end": 2.698
+  },
+  {
+   "text": "하나도",
+   "start": 2.738,
+   "end": 2.922
+  },
+  {
+   "text": "없었어요.",
+   "start": 2.962,
+   "end": 3.558
+  }
+ ],
+ "source": {
+  "key": "abc1b5d70027f7a5aa9fe3ac1f5d1128",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 158
+ }
+}

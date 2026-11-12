@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "무거운 자료는 이테라로 옮기고, 원래 자리엔 바로가기를 뒀죠.",
+ "dur": 3.108,
+ "words": [
+  {
+   "text": "무거운",
+   "start": 0.02,
+   "end": 0.275
+  },
+  {
+   "text": "자료는",
+   "start": 0.317,
+   "end": 0.615
+  },
+  {
+   "text": "이테라로",
+   "start": 0.658,
+   "end": 0.969
+  },
+  {
+   "text": "옮기고,",
+   "start": 1.04,
+   "end": 1.309
+  },
+  {
+   "text": "원래",
+   "start": 1.776,
+   "end": 1.975
+  },
+  {
+   "text": "자리엔",
+   "start": 2.017,
+   "end": 2.272
+  },
+  {
+   "text": "바로가기를",
+   "start": 2.314,
+   "end": 2.711
+  },
+  {
+   "text": "뒀죠.",
+   "start": 2.753,
+   "end": 3.108
+  }
+ ],
+ "source": {
+  "key": "1c04afe681f953a433eef59554b4761f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

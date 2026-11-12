@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "새 SSD를 달다가, 윈도우가 깨졌어요.",
+ "dur": 2.588,
+ "words": [
+  {
+   "text": "새",
+   "start": 0.02,
+   "end": 0.118
+  },
+  {
+   "text": "SSD를",
+   "start": 0.255,
+   "end": 0.82
+  },
+  {
+   "text": "달다가,",
+   "start": 0.878,
+   "end": 1.133
+  },
+  {
+   "text": "윈도우가",
+   "start": 1.581,
+   "end": 1.912
+  },
+  {
+   "text": "깨졌어요.",
+   "start": 1.97,
+   "end": 2.588
+  }
+ ],
+ "source": {
+  "key": "8b545cea7fd8171c4360c2a0d4fe297b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}

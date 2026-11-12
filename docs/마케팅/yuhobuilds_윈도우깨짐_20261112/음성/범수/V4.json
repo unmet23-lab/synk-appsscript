@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "근데 옮기기 전 사본이 남아서, 일테라는 거의 꽉 차 있었어요.",
+ "dur": 3.165,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.02,
+   "end": 0.187
+  },
+  {
+   "text": "옮기기",
+   "start": 0.271,
+   "end": 0.535
+  },
+  {
+   "text": "전",
+   "start": 0.577,
+   "end": 0.688
+  },
+  {
+   "text": "사본이",
+   "start": 0.73,
+   "end": 0.98
+  },
+  {
+   "text": "남아서,",
+   "start": 1.022,
+   "end": 1.314
+  },
+  {
+   "text": "일테라는",
+   "start": 1.704,
+   "end": 2.094
+  },
+  {
+   "text": "거의",
+   "start": 2.136,
+   "end": 2.275
+  },
+  {
+   "text": "꽉",
+   "start": 2.33,
+   "end": 2.456
+  },
+  {
+   "text": "차",
+   "start": 2.497,
+   "end": 2.567
+  },
+  {
+   "text": "있었어요.",
+   "start": 2.637,
+   "end": 3.165
+  }
+ ],
+ "source": {
+  "key": "e3775a52c035fe1e392d9b969446ffa2",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}
