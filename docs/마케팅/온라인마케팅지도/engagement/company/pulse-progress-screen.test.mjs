@@ -153,7 +153,9 @@ test('화면 Fable 최종 반영: 예시 일지의 「말만 보기」 · 인물
   const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
   assert.match(app,/sign=file=>\[file\.name,file\.size,file\.lastModified\]\.join\('\|'\)/);assert.match(app,/if\(!done\[key\]\)\{done\[key\]=await uploadStaffMedia\(file,\{purpose:'progress'\}\)/);
   assert.match(app,/lines=journalShownIds\(j,\{talk\}\),latest=journalSeenUpTo\(j,\{talk,seen:s\.journalSeen\}\)/);
-  assert.ok(app.indexOf('if(pair.length)Promise.resolve(live?.read(pair))')<app.indexOf('if(Number.isFinite(s.journalSeen)&&s.journalSeen>=latest)return;'),'알림 짝짓기는 봤다 시각 조기 반환 앞에서 늘 돈다(FA1)');
+  {const readAt=app.indexOf('Promise.resolve(live?.read(fresh))'),earlyAt=app.indexOf('if(Number.isFinite(s.journalSeen)&&s.journalSeen>=latest)return;');assert.ok(readAt>=0&&earlyAt>=0&&readAt<earlyAt,'알림 짝짓기는 봤다 시각 조기 반환 앞에서 늘 돈다(FA1 — 두 자리 모두 있어야 한다)');}
+  assert.match(app,/const fresh=pair\.filter\(id=>!journalReadSent\.has\(id\)\)/,'보낸 읽음 요청은 다시 보내지 않는다(FA1 다시 검수 F4)');
+  assert.match(app,/liveIdentity=key;liveSnapshot=null;journalReadSent\.clear\(\);/,'실시간 연결을 새로 열 때 보낸 목록도 비운다 — 같은 프로젝트 새 초대 판에서 다시 안 읽음이 된 같은 id(FA1 -b 지적 1)');
   const css=await readFile(new URL('./public/pulse-app/film.css',import.meta.url),'utf8');
   assert.match(css,/\.sx-j-filter\[aria-pressed=true\]\{padding-inline:8px;/);assert.doesNotMatch(css,/\.sx-j-filter\[aria-pressed=true\]\{padding:/);
   // F5: 영어 프로젝트의 직원 번역 칸 이름.
@@ -175,4 +177,8 @@ test('「말만 보기」를 켠 채 「봤다」: 숨은 소식 앞에서 멈�
   assert.equal(journalSeenUpTo(j,{talk:true,seen:Date.parse(T(5))}),Date.parse(T(6)));
   // 거르개 없이는 예전 그대로(일지 끝).
   assert.equal(journalSeenUpTo(j,{talk:false}),j.latestAt);
+  // 숨은 내 사건 줄(글 콘티 확인 T7) 뒤에 담당자 답(T8)이 오면 거른 채 봐도 끝까지 — 내 줄은 머리 숫자에 안 드니 멈추지 않는다(FA1 다시 검수 F1).
+  const mine=journalModel(project({rounds:[{round:1,kind:'script',sentAt:T(2),approvedAt:T(7),scenes:[]}]},{messages:[talk,{...reply,id:'m3',at:T(8)}]}));
+  const mineUpTo=journalSeenUpTo(mine,{talk:true,seen:Date.parse(T(5))});
+  assert.equal(mineUpTo,Date.parse(T(8)));assert.equal(journalNew(mine,mineUpTo),0,'답을 읽으면 머리 숫자가 남지 않는다');
 });
