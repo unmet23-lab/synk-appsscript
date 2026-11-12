@@ -137,7 +137,9 @@ test('the staff desk names a photo order in photo words, and a film order as bef
   assert.match(dialogContent('desk-pay-cancel',{photo:true}),/첫 장 뒤의 판 · 시안을 다시 보내려면/);assert.match(dialogContent('desk-pay-cancel',{}),/장면 이미지 · 시안을 다시 보내려면/);
   const app=read('app.mjs');
   assert.match(app,/openDialog\('desk-progress',\{\.\.\.trOf\(\),\.\.\.\(model\.photo\?\{photo:true\}:\{\}\),/);
-  assert.match(app,/dueDate:model\.payDays\?kst\.toISOString\(\)\.slice\(0,10\):'',\.\.\.\(model\.photo\?\{photo:true\}:\{\}\)\}\);/);
+  assert.match(app,/if\(action==='desk-pay-request'\|\|action==='desk-pay-confirm'\|\|action==='desk-pay-cancel'\)\{[^\n]*openDialog\(action,\{number:model\.number,amount:model\.payAmount,dueDate:model\.payDays\?kst\.toISOString\(\)\.slice\(0,10\):'',\.\.\.\(model\.photo\?\{photo:true\}:\{\}\)\}\);/,'the three payment dialogs — request, confirm, cancel — open from one line and all carry the photo mark');
+  // 결제를 확인한 뒤의 알림: 사진 의뢰에 「장면 이미지 판」을 말하지 않는다.
+  assert.match(app,/message:s\.project\?\.studio\?\.request\?\.answers\?\.package==='photo'\?'결제를 확인했어요\. 첫 장을 이미 승인받았으면 제작을 시작해요\.':'결제를 확인했어요\. 장면 이미지 판을 보낼 수 있어요\.',after:closeDialog/);
 });
 
 test('the first sheet dialog does not wait for a payment that is already confirmed; a photo that fails to load says so; English is in place',()=>{
@@ -168,7 +170,7 @@ test('a photo takes its own shape and opens larger; five finished photos fill th
   assert.equal(dialogContent('image',{src:'/pulse/api/media/v1',label:'참고'}),'<button class="dialog-close" type="button" data-action="close-dialog" aria-label="이미지 닫기">×</button><img src="/pulse/api/media/v1" alt="참고" referrerpolicy="no-referrer"><h2 id="dialog-title">참고</h2>','any other picture dialog is as before');
   const zoom=read('app.mjs').split(/\r?\n/).find(line=>line.startsWith("  if(action==='photo-zoom'){"));
   assert.ok(zoom,'the zoom action has its own line');
-  assert.match(zoom,/const view=button\.parentElement,img=button\.querySelector\('img'\),on=button\.getAttribute\('aria-pressed'\)!=='true';/);
+  assert.match(zoom,/const view=button\.parentElement,img=button\.querySelector\('img'\),on=button\.getAttribute\('aria-pressed'\)!=='true',r=img\.getBoundingClientRect\(\);if\(on&&!\(img\.naturalWidth&&img\.naturalHeight&&r\.width&&r\.height\)\)return;if\(on\)\{const box=view\.getBoundingClientRect\(\),ratio=img\.naturalWidth\/img\.naturalHeight,/,'a picture that has not loaded yet (size 0) is left alone — nothing is switched on');
   assert.match(zoom,/w=Math\.min\(r\.width,r\.height\*ratio\),h=w\/ratio,/,'the picture inside a letterboxed element, not the element');
   assert.match(zoom,/room=Math\.max\(box\.height,parseFloat\(getComputedStyle\(img\)\.maxHeight\)\|\|0\),/,'the room the dialog may use, read before the picture grows');
   assert.match(zoom,/view\.style\.width=box\.width\+'px';view\.style\.height=Math\.min\(h\*2\.5,room\)\+'px';img\.style\.width=w\*2\.5\+'px';img\.style\.height=h\*2\.5\+'px';button\.setAttribute\('aria-pressed','true'\);const now=view\.getBoundingClientRect\(\);/);
