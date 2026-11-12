@@ -1,0 +1,7 @@
+# 시작 그림 원본 PNG는 git 밖(공용 작업본으로 넘겨 원본 창고가 보관한다). 지시문 · 굽기 기록(_기록)은 올린다.
+판/*.png
+판/뺌/
+# 마감 한 줄은 마감.sh가 만들고 지운다(remotion/.gitignore는 틀 원천이라 여기에 둔다)
+remotion/public/master.wav
+remotion/public/sfx/room.wav
+remotion/public/sfx/room.wav

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d094-4dcb-72e3-aa9a-313e8d9f2727"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해, 참고 이미지의 차량 내부와 손·소매를 유지하면서 송금 화면과 버튼 위에 멈춘 엄지손가락을 중심으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":133587,"cached_input_tokens":120192,"cache_write_input_tokens":0,"output_tokens":1386,"reasoning_output_tokens":179}}

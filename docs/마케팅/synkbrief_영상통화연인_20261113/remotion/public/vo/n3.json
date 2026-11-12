@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n3",
+ "text": "얼굴을 봤어도, 만난 적 없는 사람에겐 돈을 보내지 마세요.",
+ "show": "얼굴을 봤어도, 만난 적 없는 사람에겐 돈을 보내지 마세요.",
+ "dur": 3.474,
+ "words": [
+  {
+   "text": "얼굴을",
+   "start": 0.03,
+   "end": 0.308
+  },
+  {
+   "text": "봤어도,",
+   "start": 0.355,
+   "end": 0.68
+  },
+  {
+   "text": "만난",
+   "start": 1.144,
+   "end": 1.391
+  },
+  {
+   "text": "적",
+   "start": 1.438,
+   "end": 1.546
+  },
+  {
+   "text": "없는",
+   "start": 1.592,
+   "end": 1.762
+  },
+  {
+   "text": "사람에겐",
+   "start": 1.809,
+   "end": 2.226
+  },
+  {
+   "text": "돈을",
+   "start": 2.335,
+   "end": 2.582
+  },
+  {
+   "text": "보내지",
+   "start": 2.629,
+   "end": 2.876
+  },
+  {
+   "text": "마세요.",
+   "start": 2.922,
+   "end": 3.474
+  }
+ ],
+ "source": {
+  "key": "6729d36230c139cbede6d274b739716f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

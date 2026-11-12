@@ -1,0 +1,54 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1113,
+  "lufs": -17
+ },
+ "made": "2026-11-12T16:32:05.344Z",
+ "lines": [
+  {
+   "id": "n1",
+   "text": "그렇게, 돈을 보냈어요.",
+   "show": "그렇게, 돈을 보냈어요",
+   "scene": "보냄",
+   "dur": 1.319,
+   "syllablesPerSec": 6.82,
+   "src": "n1.wav",
+   "key": "d7bee8311e6dc04cd79f376466c3074e",
+   "words": 3
+  },
+  {
+   "id": "n2",
+   "text": "남의 사진을 합성해 만든 가짜 인물이었어요. 경찰이 밝힌 피해자는 백여 명.",
+   "show": "남의 사진을 합성해 만든 가짜 인물이었어요. 경찰이 밝힌 피해자는 100여 명.",
+   "scene": "실제 일",
+   "dur": 3.99,
+   "syllablesPerSec": 7.52,
+   "src": "n2.wav",
+   "key": "f3852e33088df6527a9958a8eaa479b5",
+   "words": 11
+  },
+  {
+   "id": "n3",
+   "text": "얼굴을 봤어도, 만난 적 없는 사람에겐 돈을 보내지 마세요.",
+   "show": "얼굴을 봤어도, 만난 적 없는 사람에겐 돈을 보내지 마세요.",
+   "scene": "지키는 법",
+   "dur": 3.474,
+   "syllablesPerSec": 6.62,
+   "src": "n3.wav",
+   "key": "6729d36230c139cbede6d274b739716f",
+   "words": 9
+  }
+ ]
+}

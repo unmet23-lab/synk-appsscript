@@ -1,0 +1,91 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "남의 사진을 합성해 만든 가짜 인물이었어요. 경찰이 밝힌 피해자는 백여 명.",
+ "show": "남의 사진을 합성해 만든 가짜 인물이었어요. 경찰이 밝힌 피해자는 100여 명.",
+ "dur": 3.99,
+ "words": [
+  {
+   "text": "남의",
+   "start": 0.02,
+   "end": 0.218
+  },
+  {
+   "text": "사진을",
+   "start": 0.271,
+   "end": 0.562
+  },
+  {
+   "text": "합성해",
+   "start": 0.602,
+   "end": 0.879
+  },
+  {
+   "text": "만든",
+   "start": 0.919,
+   "end": 1.144
+  },
+  {
+   "text": "가짜",
+   "start": 1.197,
+   "end": 1.435
+  },
+  {
+   "text": "인물이었어요.",
+   "start": 1.501,
+   "end": 1.977
+  },
+  {
+   "text": "경찰이",
+   "start": 2.373,
+   "end": 2.691
+  },
+  {
+   "text": "밝힌",
+   "start": 2.73,
+   "end": 2.982
+  },
+  {
+   "text": "피해자는",
+   "start": 3.021,
+   "end": 3.392
+  },
+  {
+   "text": "백여",
+   "start": 3.431,
+   "end": 3.643
+  },
+  {
+   "text": "명.",
+   "start": 3.682,
+   "end": 3.99
+  }
+ ],
+ "source": {
+  "key": "f3852e33088df6527a9958a8eaa479b5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}
