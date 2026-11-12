@@ -506,6 +506,28 @@ test('㉑ 판이 열린 채 새벽 4시를 넘으면 새 하루의 한도로 센
   assert.deepEqual([...learner.day.introduced], top.brandNew, '새 하루에는 방금 낸 것만 센다');
 });
 
+test('㉒ 「더 배우기」 판으로 하루 새 단위가 한도를 넘은 날에도 새 단위가 없는 문항은 낸다 — 한도는 새로 셀 단위가 든 문항만 막는다(설계 §3-5, 4-1 화면 Fable 5.2 최종 P1)', () => {
+  const P = { ...PARAMS, newPerSession: 100, newPerDay: 3 };
+  const items = Array.from({ length: 8 }, (_, i) => word(`m${i}`, i));
+  const learner = createLearner();
+  startSession(learner, T0, P, { dayOffset: 0, length: 100 });
+  for (let k = 0; k < 3; k += 1) play(learner, items, true, T0 + k * 60_000, P);
+  // 「더 배우기」 판 — 하루 한도를 넘겨 새 단위 둘을 더 낸다
+  startSession(learner, T0 + 10 * 60_000, P, { dayOffset: 0, length: 100, more: true });
+  for (let k = 0; k < 2; k += 1) play(learner, items, true, T0 + (11 + k) * 60_000, P);
+  assert.equal(learner.day.introduced.size, 5, '그날 새 단위가 한도(3)를 넘었다');
+  // 보통 판 — 이미 만난 문항(새 단위 없음)은 낼 수 있고, 새 단위가 든 문항만 막힌다
+  startSession(learner, T0 + 20 * 60_000, P, { dayOffset: 0, length: 100 });
+  const rows = choose(items, learner, memory, T0 + 21 * 60_000, { params: P });
+  const seen = new Set(['m0', 'm1', 'm2', 'm3', 'm4']);
+  const top = rows[0];
+  assert.equal(top.none, false, '낼 문항이 있다');
+  assert.ok(seen.has(top.item.itemKey), `만난 문항을 낸다(${top.item.itemKey})`);
+  assert.deepEqual(top.brandNew, []);
+  for (const row of rows.filter(r => !seen.has(r.item.itemKey)))
+    assert.equal(row.tier, 9, `새 단위 문항 ${row.item.itemKey}는 막힌다`);
+});
+
 test('㉑ 숨 고르기가 맨 앞인 활동은 그 뒤 줄의 층으로 순위를 매긴다 — 할 것이 있는 활동이 채우기 활동 뒤로 가지 않는다(GB2)', () => {
   const HOUR = 3_600_000;
   const known = word('kk', 0);

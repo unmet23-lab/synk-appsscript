@@ -187,8 +187,11 @@ function blockedOf(run, item) {
     const retry = s.ledger.get(unit);
     return retry && !retry.pending && retry.tries >= P.retryMax;
   });
+  // 한도는 새로 셀 단위가 있는 문항만 막는다(설계 §3-5 — 「더 배우기」 판 뒤 한도를 넘은 날에도 새 단위 없는 문항은 낸다)
   const over =
-    !s.more && (s.units.size + here > P.newPerSession || today.units.size + fresh > P.newPerDay);
+    !s.more &&
+    ((here > 0 && s.units.size + here > P.newPerSession) ||
+      (fresh > 0 && today.units.size + fresh > P.newPerDay));
   const held = today.reviews >= P.reviewsPerDay && us.some(run.due);
   // 끈질긴 단위의 판 몫: 이 판에서 끈질긴 단위를 겨눠 돌아온 것으로 낸 수가 몫에 닿았고, 문항이 돌아온 끈질긴 단위를 묻는다
   const stubborn =

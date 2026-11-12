@@ -248,10 +248,12 @@ function createHost({
       if (nextTransport) transport = nextTransport;
       if (nextHealth) health = nextHealth;
       if (guest && reader && !state.carry)
-        state.carry = carryLegacy(state.trail.record, reader, note, legacyWait).then(() =>
+        state.carry = carryLegacy(state.trail.record, reader, note, legacyWait).then(() => {
           // 옮기기가 끝나면 듣는 판 모두에 알린다 — 약속보다 먼저 준비를 끝낸 코치의 판도 옮겨 온 만남 · 기억으로 다시 선다(D4 ㉠).
-          tell('refresh'),
-        );
+          // 다른 탭에도 알린다 — 옮겨 쓴 사건 · 장부를 그 탭이 꼬리로 읽게(받은 서버 답과 같은 길, GPT 끝 판 GB1).
+          announce();
+          tell('refresh');
+        });
       schedule();
     },
     // 옛 기록 옮기기의 약속 — 받는 모든 코치(셸 · 틀)가 이것을 기다린 뒤 준비를 끝낸다(D4 ㉡). 읽개를 받은 적이 없으면 곧 풀린다.

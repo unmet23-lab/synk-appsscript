@@ -290,6 +290,77 @@ test('「N문항 더 하기」는 처음 보는 문항이 남았을 때만 — i
   // 모르면(null) 판 길이를 다 낸 판에만 단추(지금 판과 같은 뜻)
   assert.match(done('done', null), /data-practice-again/);
   assert.doesNotMatch(done('idle', null), /data-practice-again/);
+  // 단추의 수는 판 길이와 남은 처음 보는 문항 가운데 작은 것(Fable 5.2 화면 최종 F4)
+  assert.match(done('done', 3), /3문항 더 하기/);
+  // 끈질긴 단위 몫으로 끝난 판은 「다음 판에」를 말하므로 다음 판 단추(F5), 하루 상한은 내일이라 단추 없음
+  assert.match(done('stubborn', 0), /data-practice-again/);
+  assert.doesNotMatch(done('capped', 0), /data-practice-again/);
+  // 문항 0으로 끝난 판(none · 엔진 문장이 없는 capped)도 빈 화면이 아니다 — 사실 한 줄(P1 ③)
+  assert.match(done('none', 0), /data-practice-end-line>지금은 이 항목에서 낼 문항이 없어요/);
+  assert.match(done('capped', 0), /data-practice-end-line>/);
+});
+
+test('끈질긴 단위 힌트는 읽기 꼴과 듣기 꼴이 세 언어에 있고, 영 · 몽 글의 이름은 그 언어 따옴표다(Fable 5.2 화면 최종 F2 · F5)', () => {
+  for (const key of ['practice.next.cue', 'practice.next.cue.listen']) {
+    const row = STRINGS[key];
+    for (const lang of ['ko', 'en', 'mn']) assert.match(row[lang], /\{name\}/, `${key} ${lang}`);
+    assert.match(row.ko, /「\{name\}」/);
+    assert.match(row.en, /‘\{name\}’/);
+    assert.match(row.mn, /«\{name\}»/);
+  }
+  assert.match(STRINGS['practice.next.cue.listen'].ko, /들으면서/);
+  assert.notEqual(STRINGS['practice.next.cue.listen'].en, STRINGS['practice.next.cue'].en);
+});
+
+test('「새 말 더 배우기」로 이어 가면 처음 보는 문항이 남은 동안 0문항 판을 만나지 않는다 — 하루 한도를 넘긴 날도(4-1 화면 Fable 5.2 최종 P1)', async () => {
+  const { coach, time } = await guestCoach();
+  const skills = [...bySkill]
+    .filter(([id, items]) => id.includes('.reading.') && items.length >= 5)
+    .slice(0, 8);
+  // 같은 날 항목을 잇달아 열어 새 말 한도에 닿는다
+  let limited = null;
+  for (const [id, pool] of skills) {
+    const session = createPracticeNextSession({ plays, coach, pool, setPool: BANK, length: 5 });
+    await play(session, time, item => item.correctId);
+    await session.settled();
+    time.advance(3 * 60_000);
+    if (session.ending.kind === 'limited') {
+      limited = { id, pool };
+      break;
+    }
+  }
+  assert.ok(limited, '새 말 한도에 닿는 판이 온다');
+  // 「새 말 더 배우기」 → 그 뒤 「N문항 더 하기」도 more를 이어 넘긴다(셸 world-learning-ui) — 처음 보는 문항이 남은 동안 판마다 문항이 있다
+  const fresh = () => limited.pool.filter(item => coach.exposure(item).met === false).length;
+  for (let round = 0; round < 4 && fresh() > 0; round += 1) {
+    const session = createPracticeNextSession({
+      plays,
+      coach,
+      pool: limited.pool,
+      setPool: BANK,
+      length: 5,
+      more: true,
+    });
+    const shown = await play(session, time, item => item.correctId);
+    await session.settled();
+    assert.ok(
+      shown.length > 0,
+      `더 배우기 ${round + 1}판: 0문항(${session.ending.kind}), 남은 처음 보는 문항 ${fresh()}`,
+    );
+    time.advance(3 * 60_000);
+  }
+  // 하루 한도를 넘긴 날의 보통 판도 새 단위 없는 문항(다시 · 채우기)이 있으면 0문항 none으로 끝나지 않는다
+  const plain = createPracticeNextSession({
+    plays,
+    coach,
+    pool: limited.pool,
+    setPool: BANK,
+    length: 5,
+  });
+  const shown = await play(plain, time, item => item.correctId);
+  await plain.settled();
+  assert.ok(shown.length > 0 || plain.ending.kind !== 'none', `보통 판 ${plain.ending.kind}`);
+  coach.dispose();
 });
 
 test('끝 까닭은 처음 보는 문항으로 좁힌 답의 사실까지 합친다 — 채우기(idle)가 남아도 새 문항이 하루 상한에 걸렸으면 capped와 그 문장(카본 A2)', () => {
@@ -372,14 +443,14 @@ test('판 끝 답 칸은 넷 — 새 문항 혼자 맞힘 · 그 밖의 맞힘 �
     results,
     ending: { kind: 'done' },
   });
-  assert.match(html, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(html, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
   assert.match(html, /data-practice-unsaved[^>]*>답 1개는 이 기기에 저장하지 못해/);
   const saved = view.renderPracticeNextDone({
     skill: { id: 'ko.reading.x', label: '읽기' },
     results: results.filter(r => r.stored !== false),
     ending: { kind: 'done' },
   });
-  assert.match(saved, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(saved, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
   assert.doesNotMatch(saved, /data-practice-unsaved/);
 });
 

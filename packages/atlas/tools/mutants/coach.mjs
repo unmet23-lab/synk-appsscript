@@ -421,8 +421,8 @@ export const COACH_MUTANTS = [
     '호스트',
     '옮기기가 끝나도 듣는 판에 알리지 않는다 — 먼저 준비된 코치가 옛 기록을 모른 채 고른다(D4 ㉠)',
     HOST,
-    "          tell('refresh'),",
-    '          null,',
+    "          tell('refresh');",
+    '',
   ],
   [
     C,
@@ -545,6 +545,14 @@ export const COACH_MUTANTS = [
     SESSION,
     '      if (rows[0] && !rows[0].none) s.chosen.set(rows[0].item.itemKey, rows[0]);',
     '      if (rows[0]) s.chosen.set(rows[0].item.itemKey, rows[0]);',
+  ],
+  [
+    C,
+    '탭',
+    '옛 기록을 옮긴 뒤 다른 탭에 알리지 않는다(GPT 끝 판 GB1)',
+    HOST,
+    "          announce();\n          tell('refresh');",
+    "          tell('refresh');",
   ],
   [
     'unit',

@@ -99,8 +99,13 @@ function blockedOf(item, facts, held, ctx) {
     const retry = session.retries.get(unit);
     return retry && !retry.pending && retry.tries >= params.retryMax;
   });
-  const overSession = session.introduced.size + facts.firstHere.length > session.newLimit;
-  const overDay = day.introduced.size + facts.brandNew.length > params.newPerDay;
+  // 한도는 새로 셀 단위가 있는 문항만 막는다 — 「더 배우기」 판으로 하루 새 단위가 한도를 넘은 날에도 새 단위가 없는 문항(다시 ·
+  // 돌아온 것 · 채우기)은 그대로 낸다(설계 §3-5 「그 밖의 까닭으로 막지 않는다」, 11-12 4-1 화면 Fable 5.2 최종 P1 · 설계 주인 승인).
+  const overSession =
+    facts.firstHere.length > 0 &&
+    session.introduced.size + facts.firstHere.length > session.newLimit;
+  const overDay =
+    facts.brandNew.length > 0 && day.introduced.size + facts.brandNew.length > params.newPerDay;
   const over = !session.more && (overSession || overDay);
   const blank = session.blank.has(item.itemKey);
   return spent || over || held != null || blank;

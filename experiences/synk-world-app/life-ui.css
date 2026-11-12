@@ -699,6 +699,11 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
 .wpos-cue{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px;margin:0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:15px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty}
 .wpos-cue>.w-led{margin-top:.55em}
 .wpos-unknown{justify-self:start;min-height:44px}
+/* 듣기 전에는 보기처럼 흐리게 — 이 단추만 눌릴 것처럼 보이지 않게(11-12 Fable 5.2 화면 최종 넘친 지적). */
+.wpos-unknown:disabled{color:var(--w-ink-q)}
+/* 이 기기에 저장하지 못한 답 — 저장 실패 문법(경고 글색 + 빨간 불)과 같게(.life-save-status · .cafe-repair-note). */
+[data-practice-unsaved]{display:flex;align-items:baseline;gap:9px;color:var(--w-alert-text)}
+[data-practice-unsaved]::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.5);transform:translateY(-1px)}
 .wpos-run-status{min-height:20px;margin:0;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
 .wpos-run-status:empty{min-height:0}
 .wpos-run-actions{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}

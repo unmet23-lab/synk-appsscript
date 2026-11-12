@@ -858,7 +858,9 @@ async function townSend(coachNow,{wait=true}={}){
   const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
   function paint(focus='.wpos-run-skill'){
    const now=session.current;if(!now){void finish();return;}
-   const cue=now.stubborn&&now.targetLabel?t('practice.next.cue',{name:now.targetLabel}):null;
+   // 듣기 문항은 듣기 전 화면에 찾아볼 글이 없다 — 「들으면서 먼저 찾아보세요」 꼴(4-1 화면 Fable 5.2 최종 F2).
+   const heard=now.item.audioRequired??now.item.modality==='listening';
+   const cue=now.stubborn&&now.targetLabel?t(heard?'practice.next.cue.listen':'practice.next.cue',{name:now.targetLabel}):null;
    box.innerHTML=view.renderPracticeItem({view:{...now,cue},skill,feedback:now.feedback,playing:player.playing,notice});
    if(focus)box.querySelector(focus)?.focus?.({preventScroll:true});
   }
@@ -887,7 +889,9 @@ async function townSend(coachNow,{wait=true}={}){
     else if(button.hasAttribute('data-practice-next'))advance();
     else if(button.hasAttribute('data-practice-skip')){player.silence();session.skip();advance();}
     else if(button.hasAttribute('data-practice-stop')){stop();void openPosition();}
-    else if(button.hasAttribute('data-practice-again'))void Promise.resolve(startPractice(skillId)).catch(failed);
+    // 「새 말 더 배우기」로 연 판 뒤의 「N문항 더 하기」는 같은 방문 안에서 more를 이어 넘긴다 — 오늘 더 배우겠다고 고른 사람이 판마다
+    // 0문항 「여기까지」를 거쳐 두 번 누르지 않게(4-1 화면 Fable 5.2 최종 P1). 내 위치로 나갔다 다시 들어오면 처음부터.
+    else if(button.hasAttribute('data-practice-again'))void Promise.resolve(startPractice(skillId,{more})).catch(failed);
     else if(button.hasAttribute('data-practice-more'))void Promise.resolve(startPractice(skillId,{more:true})).catch(failed);
     else if(button.hasAttribute('data-practice-position'))void openPosition();
     else if(button.hasAttribute('data-practice-home'))home.closePanel();

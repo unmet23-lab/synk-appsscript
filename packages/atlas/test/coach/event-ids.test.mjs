@@ -607,6 +607,29 @@ test('읽개 없는 셸 코치가 먼저 받은 저장소도 뒤 셸 코치의 �
   practice.dispose();
 });
 
+test('탭 A가 옛 기록을 옮기면 같은 저장소를 연 탭 B도 옮겨 온 만남을 본다 — 옮기기 뒤에도 다른 탭에 알린다(GPT 끝 판 GB1)', async () => {
+  const time = clock();
+  const port = memoryPort(); // 두 탭이 같은 손님 저장소를 본다
+  const key = keyOf('tab-carry');
+  const [topA, topB] = [topWindow(() => port), topWindow(() => port)];
+  const b = coachOn({ items: [X, Y, Z], time, key, gameId: 'b', scope: topB }); // 읽개 없는 탭
+  await b.ready;
+  assert.equal(b.exposure(X).met, false, '옮기기 전');
+  const a = coachOn({
+    items: [X, Y, Z],
+    time,
+    key,
+    gameId: 'a',
+    scope: topA,
+    legacy: async () => legacyOf(),
+  });
+  await a.ready;
+  for (let i = 0; i < 20 && b.exposure(X).met !== true; i += 1) await settle();
+  assert.equal(b.exposure(X).met, true, '탭 B가 꼬리를 읽어 옮겨 온 장부의 계열을 본다');
+  a.dispose();
+  b.dispose();
+});
+
 test('뒤에 같은 저장소를 받은 셸 코치의 계기가 걸린다 — 셸이 받을 때마다 그 셸의 것으로(Fable 5.2 D3)', async () => {
   const time = clock();
   const port = memoryPort();

@@ -102,7 +102,7 @@ test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
 test('언어는 물러서지 않는다 — 그 언어 줄이 없으면 null, 눈높이 · 말하는 사람은 물러선다', () => {
   const why = { code: 'unit.new', slots: { unit: 'u1' } };
   assert.equal(render(why, { lang: 'ko', label }), '「이름:u1」 처음 만나요.');
-  assert.equal(render(why, { lang: 'en', label }), 'Seeing 「이름:u1」 for the first time.');
+  assert.equal(render(why, { lang: 'en', label }), 'Seeing ‘이름:u1’ for the first time.');
   assert.equal(render(why, { lang: 'fr', label }), null);
   // 영어 · 몽골어 줄은 화면이 열린 종류만 있다 — 없는 종류(홈의 host.*)는 한국어로 물러서지 않는다
   const home = { code: 'host.next', slots: {} };
@@ -205,14 +205,15 @@ test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고
       const names = { u: '은행', s: skillName[lang] };
       const line = render({ code, slots }, { lang, label: id => names[id] });
       assert.equal(typeof line, 'string', `${lang} ${code}`);
+      assert.doesNotMatch(line, /「|」/, `${lang} ${code}: 낫표는 한국어 화면만`);
       assert.doesNotMatch(
-        line.replace(/「[^」]*」/g, ''),
+        line.replace(lang === 'en' ? /‘[^’]*’/g : /«[^»]*»/g, ''),
         /[가-힣]/,
         `${lang} ${code}: 이름 밖에 한국어가 없다`,
       );
       if (code.startsWith('skill.')) {
         assert.ok(line.startsWith(`${skillName[lang]}:`), `${lang} ${code}: 능력 이름이 앞에`);
-        assert.doesNotMatch(line, /「/, `${lang} ${code}: 능력 이름에 낫표 없음`);
+        assert.doesNotMatch(line, /「|‘|«/, `${lang} ${code}: 능력 이름에 따옴표 없음`);
       }
     }
   assert.equal(
@@ -220,7 +221,7 @@ test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고
       { code: 'unit.shaky', slots: { unit: 'u', reviews: 1, misses: 1, days: 1 } },
       { lang: 'en', label: () => '은행' },
     ),
-    'You missed 「은행」 last time — it’s back after 1 day.',
+    'You missed ‘은행’ last time — it’s back after 1 day.',
     '하루는 단수',
   );
 });

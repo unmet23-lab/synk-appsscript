@@ -788,4 +788,12 @@ export const BRAIN_MUTANTS = [
     '  if (learner.session) return learner;',
     '  if (learner.session) {\n    for (const [unit, state] of learner.memory)\n      learner.memory.set(unit, { ...state, stability: state.stability + 1e-9 });\n    return learner;\n  }',
   ],
+  [
+    P,
+    '한도',
+    '하루 한도가 새 단위 없는 문항까지 막는다 — 「더 배우기」 뒤 그날 0문항(4-1 화면 Fable 5.2 최종 P1)',
+    CHOOSE,
+    '    facts.brandNew.length > 0 && day.introduced.size + facts.brandNew.length > params.newPerDay;',
+    '    day.introduced.size + facts.brandNew.length > params.newPerDay;',
+  ],
 ];

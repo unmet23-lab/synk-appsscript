@@ -96,6 +96,8 @@ export function createPracticeNextSession({
     current && {
       index,
       total: length,
+      // 판 길이는 「최대」다 — 엔진이 낼 것이 없으면 그 전에 끝난다(화면은 끝을 약속하지 않는 진행 글을 쓴다, 4-1 화면 Fable 5.2 최종 F4).
+      upTo: true,
       item: current.item,
       answered: current.answered,
       feedback: current.feedback,
