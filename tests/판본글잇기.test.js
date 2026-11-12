@@ -621,6 +621,43 @@ test('뜻검사 — 판본 명령이 글.json을 맞춘 뒤 재료를 만들고,
   assert.equal(검수.지문, sha(path.join(편, '게시', '판본', 'US', '글.json')));
 });
 
+test('문화 소재 — 지도 「문화소재」는 뽑은 글.json에 실려 뜻 검사가 시험관 넷으로 보고, 칸이 없는 지도의 글.json은 앞뒤 바이트가 같다(11-13 「사층F」)', () => {
+  const { 편 } = 편만들기();
+  잇기.채우기(편, 미국글);
+  잇기.맞추기(편, 'US');
+  잇기.준비에넣기(편, ['US']);
+  const 글파일 = path.join(편, '게시', '판본', 'US', '글.json');
+  const 앞 = fs.readFileSync(글파일);
+  // 칸이 없는 지도 — 글.json에 칸이 생기지 않고, 지금 도구로 다시 뽑아도 같은 바이트(다른 편의 걸린 판 지문 · 뜻 검수 지문이 그대로)
+  assert.equal(판본글.readJson(글파일).문화소재, undefined);
+  assert.equal(잇기.낡았나(편, 'US'), false);
+  assert.ok(앞.equals(Buffer.from(잇기.뽑기(편, 'US').글자열, 'utf8')));
+  // 앞에 영어 이야기 편이 셋 통과해 문화 소재 말고는 넷일 까닭이 없다
+  const 기록 = ['LAB_가', 'LAB_나', 'LAB_다'].map((n) => ({ 편: n, 판본: 'US', 언어: 'en', 틀: '이야기', 결과: '통과', 시각: '2026-11-01T09:00:00+09:00' }));
+  const 시험관 = (밖) => 뜻.재료만들기(글파일, { 편, 밖: path.join(편, 밖), 기록 }).시험관;
+  assert.deepEqual(시험관('뜻앞'), ['sonnet', 'haiku']);
+  // 지도에 켜면 글.json이 낡고(다시 뽑기 전에는 돌림 · 뜻 기록 관문이 막는다), 다시 뽑으면 칸이 실려 시험관 넷
+  const 지도파일 = path.join(편, 잇기.지도이름);
+  const 지도글 = fs.readFileSync(지도파일, 'utf8');
+  fs.writeFileSync(지도파일, JSON.stringify({ ...JSON.parse(지도글), 문화소재: '한국의 숫자 4 기피(사 = 죽음)' }, null, 2));
+  assert.deepEqual(잇기.지도검증(잇기.지도읽기(편).지도), []);
+  assert.equal(잇기.낡았나(편, 'US'), true);
+  잇기.맞추기(편, 'US');
+  const 켬 = 판본글.readJson(글파일);
+  assert.equal(켬.문화소재, '한국의 숫자 4 기피(사 = 죽음)');
+  assert.deepEqual(판본글.검증(켬), [], '판본글/1 꼴 검사와 부딪히지 않는다');
+  assert.equal(잇기.낡았나(편, 'US'), false, '다시 뽑은 글은 원천과 같다(글 낡음 아님)');
+  assert.notEqual(sha(글파일), crypto.createHash('sha256').update(앞).digest('hex'), '켜면 지문이 바뀌어 옛 뜻 검수가 무효가 된다');
+  assert.deepEqual(시험관('뜻뒤'), ['sonnet', 'haiku', 'opus', 'gpt']);
+  // 다시 끄면(칸을 지우면) 처음 바이트로 돌아온다
+  fs.writeFileSync(지도파일, 지도글);
+  잇기.맞추기(편, 'US');
+  assert.ok(fs.readFileSync(글파일).equals(앞));
+  // 꼴 — true나 까닭 한 줄만 받는다
+  for (const 나쁜값 of ['', '  ', 1, false, ['4']]) assert.match(잇기.지도검증({ ...지도(), 문화소재: 나쁜값 }).join(), /문화소재/, JSON.stringify(나쁜값));
+  assert.deepEqual(잇기.지도검증({ ...지도(), 문화소재: true }), []);
+});
+
 test('CLI — 뽑기 · 돌림 · 확인(빈 판본은 건너뛰고 종료 1)', () => {
   const { 편 } = 편만들기();
   잇기.채우기(편, 미국글);

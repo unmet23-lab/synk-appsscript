@@ -420,6 +420,32 @@ test('판본 명령(프레임 검사 대역) — --엔진없이는 못 봄으로
   }
 });
 
+// 밀기 필터 실측(11-13 걸기 전 검수 P3 6) — ffmpeg가 실제로 기준 판의 표본을 이 판 표본보다 정확히 35프레임 뒤에서 뽑는다(필터 글자만이 아니라).
+// ffmpeg가 있어야 해서 따로 건너뛰는 시험으로 두지 않고(건너뛰는 시험은 tools/conditional-qa/cases.json S120~S122와 같아야 한다 — tests/conditional-qa.test.cjs),
+// 이미 ffmpeg로 도는 「판본 명령」 시험(S122)이 맨 앞에서 부른다.
+function 밀기필터실측() {
+  // Remotion 판처럼 시간 눈금이 잘게 쪼개진 30fps mp4(15360)라야 초로 자르던 옛 필터의 한 프레임 늦음이 재현된다(lavfi 그대로는 1/30 눈금이라 안 드러난다)
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-밀기-'));
+  try {
+    const 영상 = path.join(방, 't.mp4');
+    const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=s=64x64:r=30:d=3', '-c:v', 'libx264', '-qp', '0', '-pix_fmt', 'yuv444p', '-video_track_timescale', '15360', 영상], { windowsHide: true });
+    assert.equal(r.status, 0, String(r.stderr));
+    const 지문들 = (vf, n) => spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', 영상, ...(vf ? ['-vf', vf] : []), ...(n ? ['-frames:v', String(n)] : []), '-f', 'framemd5', '-'], { encoding: 'utf8', windowsHide: true })
+      .stdout.split('\n').filter((l) => l && !l.startsWith('#')).map((l) => l.split(',').pop().trim());
+    const 번호 = new Map(지문들(null).map((h, i) => [h, i])); // 원본 프레임 지문 → 몇 번째 프레임
+    assert.equal(번호.size, 90, '원본 프레임 90장이 모두 달라야 견줄 수 있다');
+    const 이판 = 지문들(G.표본필터(0), 3).map((h) => 번호.get(h));
+    const 기준 = 지문들(G.표본필터(-35 / G.밀기FPS), 3).map((h) => 번호.get(h)); // 기준 판에만 1.1667초(35프레임) 인사가 있다
+    assert.ok(이판.every(Number.isInteger) && 기준.every(Number.isInteger), `${이판} · ${기준}`);
+    assert.deepEqual(기준, 이판.map((n) => n + 35), `기준 표본 ${기준} · 이 판 표본 ${이판}`);
+    // 초로 자르던 옛 필터(trim=start=1.167)는 한 프레임 더 버렸다 — 이 시험이 그 되돌림을 잡는다
+    const 옛 = 지문들(`trim=start=1.167,setpts=PTS-STARTPTS,fps=${1 / 0.5}`, 3).map((h) => 번호.get(h));
+    assert.deepEqual(옛, 이판.map((n) => n + 36));
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+}
+
 test('나라 인사(11-12) — 인사 장면이 있는 판은 기준 판을 인사 길이 차만큼 밀어 견준다: 밀기 필터 · 판본 명령이 렌더.json 「인사초」로 밀림을 넘기고 기록에 남긴다', async () => {
   // 밀기 필터 — 이 판에만 인사가 있으면 기준을 뒤로 밀고, 기준에만 있으면 잘라 낸다
   assert.equal(G.밀기필터(0), '');
@@ -500,6 +526,7 @@ test('엔진 잼(크롬) — 실제 크롬으로 넘침을 잰다', { skip: !fs.
 });
 
 test('판본 명령 — 영상 프레임을 기준 판과 견주고 --기록이면 돌림.판본[키].검수.글자에 영상 지문을 적는다', { skip: (!도구있나('ffmpeg') || process.platform !== 'win32') && 'ffmpeg · 윈도우 OCR 없음' }, async () => {
+  밀기필터실측();
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-시험-'));
   const 편 = path.join(방, 'LAB_시험편_20261110');
   fs.mkdirSync(path.join(편, '게시'), { recursive: true });

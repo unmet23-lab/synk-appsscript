@@ -125,7 +125,7 @@ function 기준못씀(키, 판본, 파일) {
   return null;
 }
 /** 판본 영상 옆 렌더.json의 「인사초」(나라 인사 길이 — 판본렌더.mjs가 적는다). 기록이 없거나 인사가 없는 판은 0 */
-const 인사FPS = 30; // 판본렌더.mjs · 편마다의 timeline.ts FPS
+const 인사FPS = 검사.밀기FPS; // 판본렌더.mjs · 편마다의 timeline.ts FPS — 기준 판 밀기 필터와 한 값(tools/lib/글자검사.js)
 function 인사초읽기(영상) {
   try {
     const 초 = Number(JSON.parse(fs.readFileSync(path.join(path.dirname(영상), '렌더.json'), 'utf8').replace(/^﻿/, '')).인사초);
