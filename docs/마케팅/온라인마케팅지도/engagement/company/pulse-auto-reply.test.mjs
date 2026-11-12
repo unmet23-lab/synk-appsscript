@@ -38,6 +38,9 @@ test('a new inquiry gets one automatic guide from customer-visible facts and sta
   assert.equal(call.body.model,'claude-opus-5-5');assert.equal(call.body.output_config.format.type,'json_schema');assert.equal(call.body.output_config.effort,'medium');assert.equal(call.body.thinking,undefined);
   const sent=JSON.stringify(call.body);assert.match(sent,/봄 신메뉴 15초 광고/);assert.match(sent,/2026-10-24/);assert.match(sent,/언제쯤 받을 수 있을까요/);
   assert.doesNotMatch(sent,/PRIVATE-NOTE|PRIVATE-CONTACT|010-0000-0000/,'internal notes and contacts never reach the model');
+  // 운영 조각 5: 「오늘」은 서버 시계(문의를 받은 때)의 한국 날짜, 의뢰서가 없는 프로젝트는 앞 판처럼 프로젝트 단계를 넘긴다.
+  const facts=JSON.parse(call.body.messages[0].content[0].text.replace(/^프로젝트 사실\(JSON\):\n/,''));
+  assert.equal(facts.오늘,'2026-10-19 (월)');assert.equal(facts.프로젝트.단계,'제작');assert.equal(facts.의뢰,undefined);
   const messages=f.read().messages,answer=messages.at(-1);
   assert.equal(answer.author,'staff');assert.equal(answer.automated,true);assert.equal(answer.automatedKind,'ai');assert.equal(answer.authorName,'자동 안내');assert.equal(answer.replyTo,question.id);assert.equal(answer.visibility,'customer');
   assert.equal(messages.find(m=>m.id===question.id).resolved,false,'the inquiry stays open for the owner');
