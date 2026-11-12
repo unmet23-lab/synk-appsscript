@@ -18,16 +18,16 @@ export const CUT = [0, 3.4, 5.5, 7.2, 9.6, 12.3, 14.4, 17.7, 19.4, 21.9, 22.1, 2
 
 export const VO: { id: string; at: number; dur: number }[] = [
   { id: 'V1', at: 0.25, dur: 2.588 },
-  { id: 'V2', at: 5.75, dur: 3.558 },
-  { id: 'V3', at: 14.5, dur: 3.108 },
-  { id: 'V4', at: 22.0, dur: 3.165 },
+  { id: 'V2', at: 5.7, dur: 4.352 },
+  { id: 'V3', at: 14.5, dur: 3.203 },
+  { id: 'V4', at: 22.0, dur: 3.554 },
   { id: 'V5', at: 26.0, dur: 4.188 },
   { id: 'V6', at: 31.5, dur: 1.829 },
   { id: 'V7', at: 34.0, dur: 1.629 },
 ];
 
-const STORY = { broken: F(2.1), copy: F(7.2), copyLen: F(2.2), restore: F(9.6), restoreLen: F(1.9), move: F(15.0), moveLen: F(3.4) };
-const BEAT = { scan: [F(27.1), F(30.6)] as const, keep: F(31.45), keepOff: F(35.2), del: F(35.6), delLen: F(1.0), settle: F(36.75), settleLen: F(0.8) };
+const STORY = { broken: F(2.1), copy: F(7.2), copyLen: F(2.0), restore: F(9.6), restoreLen: F(1.6), move: F(15.0), moveLen: F(3.0), backupTag: [F(8.6), F(12.3)] as const, movedTag: [F(17.6), F(25.7)] as const, links: [F(18.0), F(22.0)] as const, oldCopy: [F(22.2), F(25.7)] as const };
+const BEAT = { scan: [F(27.1), F(29.3)] as const, keep: F(31.45), keepOff: F(35.2), del: F(35.6), delLen: F(1.0), settle: F(36.75), settleLen: F(2.4) };
 const CLICK = F(35.5);
 const CARD = F(40.2);
 
@@ -77,51 +77,79 @@ const Record: React.FC<{ from: number; to: number }> = ({ from, to }) => {
     const p = prog(f, from + i * 6, 10);
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.28)', opacity: p * out, transform: `translateY(${(1 - p) * 20}px)` }}>
-        <span style={{ fontWeight: 600, fontSize: 44, color: 'rgba(255,255,255,0.75)' }}>{a}</span>
-        <span style={{ fontWeight: 800, fontSize: 60, color: '#FFFFFF', fontVariantNumeric: 'tabular-nums', letterSpacing: -1.5 }}>{b}</span>
+        <span style={{ fontWeight: 700, fontSize: 52, color: 'rgba(255,255,255,0.8)' }}>{a}</span>
+        <span style={{ fontWeight: 800, fontSize: 76, color: '#FFFFFF', fontVariantNumeric: 'tabular-nums', letterSpacing: -2 }}>{b}</span>
       </div>
     );
   };
   return (
-    <div style={{ position: 'absolute', left: 74, right: 74, top: 300, fontFamily: KO }}>
-      <div style={{ fontWeight: 700, fontSize: 36, color: 'rgba(255,255,255,0.6)', marginBottom: 8, opacity: out }}>11월 7일 복원 기록</div>
+    <div style={{ position: 'absolute', left: 74, right: 160, top: 300, fontFamily: KO }}>
+      <div style={{ fontWeight: 700, fontSize: 42, color: 'rgba(255,255,255,0.66)', marginBottom: 8, opacity: out }}>11월 7일 복원 기록</div>
       {row(0, '되살린 문서', '1,796,647개')}
-      {row(1, '용량', '315.7GB')}
-      {row(2, '잃은 파일', <B>0개</B>)}
+      {row(1, '잃은 파일', <B>0개</B>)}
     </div>
   );
 };
 
-/** 끝 — 저장할 한 장(도구 이름 없이 그대로 따라 할 세 단계). 판은 어둡게 뒤에 남는다. */
+/** 끝 — 저장할 세 단계. 판(내려앉은 두 드라이브)은 그대로 아래에 두고 위에 세 줄만 — 카드 판 · 표 머리 없음. */
 const SaveCard: React.FC<{ from: number }> = ({ from }) => {
   const f = useCurrentFrame();
   if (f < from) return null;
   const line = (i: number, n: string, a: React.ReactNode) => {
-    const p = prog(f, from + 6 + i * 5, 10);
+    const p = prog(f, from + 4 + i * 5, 10);
     return (
-      <div style={{ display: 'flex', gap: 30, padding: '30px 0', borderTop: '1px solid rgba(255,255,255,0.3)', opacity: p, transform: `translateY(${(1 - p) * 22}px)` }}>
-        <span style={{ fontWeight: 900, fontSize: 58, color: BUTTER, width: 40, flex: 'none' }}>{n}</span>
-        <span style={{ fontWeight: 700, fontSize: 54, lineHeight: 1.22, letterSpacing: -1.2, color: '#FFFFFF' }}>{a}</span>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', marginTop: 14, opacity: p, transform: `translateY(${(1 - p) * 20}px)` }}>
+        <span style={{ fontWeight: 900, fontSize: 50, color: '#FFFFFF', width: 30, flex: 'none' }}>{n}</span>
+        <span style={{ fontWeight: 800, fontSize: 50, lineHeight: 1.2, letterSpacing: -1.4, color: '#FFFFFF' }}>{a}</span>
       </div>
     );
   };
   const p0 = prog(f, from, 10);
   return (
-    <div style={{ position: 'absolute', left: 74, right: 74, top: 300, fontFamily: KO }}>
-      <div style={{ fontWeight: 800, fontSize: 84, lineHeight: 1.14, letterSpacing: -2.5, color: '#FFFFFF', opacity: p0, transform: `translateY(${(1 - p0) * 28}px)`, marginBottom: 34 }}>
-        드라이브 정리할 때,
-        <br />
-        저장해 두세요
-      </div>
+    <div style={{ position: 'absolute', left: 74, right: 160, top: 286, fontFamily: KO }}>
+      <div style={{ fontWeight: 700, fontSize: 40, color: 'rgba(255,255,255,0.7)', letterSpacing: -0.8, opacity: p0 }}>드라이브 정리할 때 — 저장해 두세요</div>
       {line(0, '1', '옮긴 뒤, 원래 자리엔 바로가기')}
       {line(1, '2', <>지울 건 「두 곳에 똑같은 파일」만</>)}
       {line(2, '3', '다른 건 남기고, 클릭은 내가')}
+      <div style={{ marginTop: 18, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.66)', letterSpacing: -0.6, opacity: prog(f, from + 24, 10) }}>그대로 붙여 넣는 요청문은 아래 글에</div>
     </div>
   );
 };
 
+type Cam = 'full' | 'c' | 'dTop' | 'dMid' | 'dKeep' | 'mid' | 'end';
+const SHOTS: [number, Cam][] = [
+  [0, 'full'], [5.5, 'c'], [7.2, 'full'], [9.6, 'c'], [12.3, 'full'], [14.4, 'full'], [17.7, 'dTop'], [19.4, 'c'], [21.9, 'full'],
+  [25.7, 'mid'], [27.1, 'full'], [29.3, 'dMid'], [31.1, 'dKeep'], [33.9, 'c'], [36.5, 'full'], [40.2, 'end'],
+];
+// 보는 점 P를 화면 점 Q로: t = Q − s·P(transformOrigin 0 0)
+const CAMS: Record<Cam, { s: number; tx: number; ty: number }> = {
+  full: { s: 1, tx: 0, ty: 0 },
+  c: { s: 1.5, tx: 540 - 1.5 * 540, ty: 1030 - 1.5 * 860 },
+  dTop: { s: 1.5, tx: 540 - 1.5 * 540, ty: 1060 - 1.5 * 1230 },
+  dMid: { s: 1.45, tx: 540 - 1.45 * 540, ty: 1060 - 1.45 * 1290 },
+  dKeep: { s: 1.6, tx: 540 - 1.6 * 540, ty: 1060 - 1.6 * 1330 },
+  mid: { s: 1.22, tx: 540 - 1.22 * 540, ty: 1000 - 1.22 * 1050 },
+  end: { s: 1.0, tx: 0, ty: 70 },
+};
+const shotAt = (t: number) => {
+  let i = 0;
+  for (let k = 0; k < SHOTS.length; k++) if (t >= SHOTS[k][0]) i = k;
+  const start = SHOTS[i][0];
+  const end = i + 1 < SHOTS.length ? SHOTS[i + 1][0] : 43.6;
+  return { cam: SHOTS[i][1], prev: i > 0 ? SHOTS[i - 1][1] : SHOTS[i][1], start, len: end - start };
+};
+
 export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
   const f = useCurrentFrame();
+  const t = f / FPS;
+  const shot = shotAt(t);
+  const inShot = Math.max(0, Math.min(1, (t - shot.start) / shot.len));
+  // 끝 짜임은 컷이 아니라 천천히 물러난다(판을 아래로 내려 위에 세 줄 자리)
+  const endP = shot.cam === 'end' ? prog(f, CARD, 18) : 0;
+  const base = shot.cam === 'end' ? CAMS.full : CAMS[shot.cam];
+  const cam = shot.cam === 'end' ? { s: base.s + (CAMS.end.s - base.s) * endP, tx: base.tx + (CAMS.end.tx - base.tx) * endP, ty: base.ty + (CAMS.end.ty - base.ty) * endP } : base;
+  const drift = 1 + 0.04 * inShot; // 컷마다 아주 천천히 다가감
+  const zoomed = shot.cam !== 'full' && shot.cam !== 'end';
   const push = interpolate(f, [0, TOTAL], [1, 1.05], clamp);
   // 원본 박자 자리마다 판이 한 번 살짝 당겨진다(1.035배 → 제자리)
   const kick = CUT.slice(1).reduce((a, c) => {
@@ -129,7 +157,7 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
     return d >= 0 && d < 10 ? Math.max(a, 1 - d / 10) : a;
   }, 0);
   const settle = interpolate(f, [BEAT.settle, BEAT.settle + BEAT.settleLen], [0, 1], clamp);
-  const cardDim = Math.max(prog(f, CARD, 12), f >= F(12.3) && f < F(14.4) ? Math.min(prog(f, F(12.3), 6), 1 - prog(f, F(14.4) - 6, 6)) : 0);
+  const cardDim = f >= F(12.3) && f < F(14.4) ? Math.min(prog(f, F(12.3), 6), 1 - prog(f, F(14.4) - 6, 6)) : 0;
   const flash = (at: number) => Math.max(0, 1 - Math.abs(f - F(at)) / 3);
   const enter = prog(f, F(34.2), F(0.8));
   const cx = interpolate(enter, [0, 1], [1060, 600]);
@@ -141,28 +169,31 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
   const scanP = interpolate(f, [BEAT.scan[0], BEAT.scan[1]], [0, 1], clamp);
   return (
     <AbsoluteFill style={{ background: '#0A0B0E' }}>
-      <AbsoluteFill style={{ transform: `scale(${push * (1 + 0.035 * kick * kick)})`, transformOrigin: '50% 55%' }}>
-        <AbsoluteFill style={{ opacity: 1 - 0.86 * cardDim }}>
+      <AbsoluteFill style={{ transform: `scale(${push * drift * (1 + 0.035 * kick * kick)})`, transformOrigin: '50% 55%' }}>
+        <AbsoluteFill style={{ opacity: 1 - 0.86 * cardDim, transform: `translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})`, transformOrigin: '0 0' }}>
           <Drives beat={BEAT} story={STORY} showKept />
-          <DriveLabels settle={settle} />
+          <DriveLabels settle={settle} free={prog(f, F(22.1), 8)} o={zoomed ? 0 : 1} />
         </AbsoluteFill>
         {/* 새 2TB가 붙기 전 — 아래 판을 덮는다 */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: 880, height: 820, background: '#0A0B0E', transform: `translateY(${dIn * 900}px)` }} />
       </AbsoluteFill>
-      <AbsoluteFill style={{ background: '#FFFFFF', opacity: Math.max(flash(21.95), flash(31.2)) * 0.55 }} />
+      {/* 글 자리 막 — 접사 컷에서 판이 위 글 자리까지 올라오지 않게(위 560px은 늘 바탕색, 60px 그러데이션) */}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 620, background: 'linear-gradient(to bottom, #0A0B0E 0px, #0A0B0E 560px, rgba(10,11,14,0) 620px)' }} />
+      <AbsoluteFill style={{ background: '#FFFFFF', opacity: 0 * Math.max(flash(21.95), flash(31.2)) }} />
 
       <Head from={0} to={F(3.4)} lines={['새 SSD를 달다가', <B key="b">윈도우가 깨졌다</B>]} />
       <Head from={F(3.4)} to={F(5.5)} lines={[<>잃은 파일 <B key="z">0</B></>, '비운 자리 701.9GB']} />
-      <Step from={F(5.5)} to={F(9.6)} n="1" text="통째로 백업" />
-      <Head from={F(9.6)} to={F(12.3)} lines={['다시 깔고', <>되살림</>]} />
+      <Step from={F(5.5)} to={F(7.2)} n="1" text="통째로 백업" />
+      <Head from={F(7.2)} to={F(9.6)} lines={['원래 1TB를', '새 2TB에 통째로']} />
+      <Head from={F(9.6)} to={F(12.3)} lines={['윈도우 다시 깔고', '그대로 되살림']} />
       <Record from={F(12.3)} to={F(14.4)} />
-      <Step from={F(14.4)} to={F(17.7)} n="2" text="무거운 건 2TB로" />
+      <Step from={F(14.4)} to={F(17.7)} n="2" text="무거운 자료는 새 2TB로" />
       <Head from={F(17.7)} to={F(21.9)} lines={['원래 자리엔', '바로가기']} />
-      <Head from={F(22.1)} to={F(25.7)} lines={['옮기기 전 사본이', <>그대로 — <B key="f">여유 78.7GB</B></>]} />
+      <Head from={F(22.1)} to={F(25.7)} lines={['옮기기 전 사본이 그대로', <>원래 1TB 여유 <B key="f">78.7GB</B></>]} />
       <Step from={F(25.7)} to={F(27.1)} n="3" text="같은 파일 두 벌만" />
       {f >= F(27.1) && f < F(31.1) ? (
         <div style={{ position: 'absolute', left: 74, top: 290, fontFamily: KO }}>
-          <div style={{ fontWeight: 800, fontSize: 60, letterSpacing: -1.5, color: '#FFFFFF' }}>두 곳에 똑같은 파일</div>
+          <div style={{ fontWeight: 800, fontSize: 52, letterSpacing: -1.5, color: '#FFFFFF' }}>이름 · 크기 · 내용이 다 같은 파일</div>
           <div style={{ fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: -6, color: BUTTER, fontVariantNumeric: 'tabular-nums' }}>
             {fmt(Math.round(REAL.total * scanP * 10) / 10)}
             <span style={{ fontSize: 70, letterSpacing: -1, marginLeft: 8 }}>GB</span>
@@ -175,7 +206,7 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
         <div style={{ position: 'absolute', left: 74, top: 290, fontFamily: KO }}>
           <div style={{ fontWeight: 800, fontSize: 60, letterSpacing: -1.5, color: '#FFFFFF', opacity: prog(f, F(36.75), 6) }}>비운 자리</div>
           <div style={{ fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: -6, color: BUTTER, fontVariantNumeric: 'tabular-nums' }}>
-            {fmt(REAL.total)}
+            {fmt(Math.round(REAL.total * settle * 10) / 10)}
             <span style={{ fontSize: 70, letterSpacing: -1, marginLeft: 8 }}>GB</span>
           </div>
         </div>
@@ -192,6 +223,11 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <Sequence from={STORY.broken}>
         <Audio src={staticFile('sfx/thud.wav')} volume={0.9} />
       </Sequence>
+      {[STORY.copy, STORY.restore, STORY.move].map((at) => (
+        <Sequence key={at} from={at}>
+          <Audio src={staticFile('sfx/swish.wav')} volume={0.55} />
+        </Sequence>
+      ))}
       <Sequence from={BEAT.scan[0]} durationInFrames={BEAT.scan[1] - BEAT.scan[0]}>
         {Array.from({ length: 12 }, (_, i) => (
           <Sequence key={i} from={i * 8}>

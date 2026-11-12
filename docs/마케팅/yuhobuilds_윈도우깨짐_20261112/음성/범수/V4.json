@@ -1,62 +1,67 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "V4",
- "text": "근데 옮기기 전 사본이 남아서, 일테라는 거의 꽉 차 있었어요.",
- "dur": 3.165,
+ "text": "근데 옮기기 전 사본이 남아서, 원래 드라이브는 거의 꽉 차 있었어요.",
+ "dur": 3.554,
  "words": [
   {
    "text": "근데",
-   "start": 0.02,
-   "end": 0.187
+   "start": 0.06,
+   "end": 0.251
   },
   {
    "text": "옮기기",
-   "start": 0.271,
-   "end": 0.535
+   "start": 0.36,
+   "end": 0.618
   },
   {
    "text": "전",
-   "start": 0.577,
-   "end": 0.688
+   "start": 0.659,
+   "end": 0.768
   },
   {
    "text": "사본이",
-   "start": 0.73,
-   "end": 0.98
+   "start": 0.809,
+   "end": 1.082
   },
   {
    "text": "남아서,",
-   "start": 1.022,
-   "end": 1.314
+   "start": 1.122,
+   "end": 1.435
   },
   {
-   "text": "일테라는",
-   "start": 1.704,
-   "end": 2.094
+   "text": "원래",
+   "start": 1.912,
+   "end": 2.089
+  },
+  {
+   "text": "드라이브는",
+   "start": 2.13,
+   "end": 2.525
   },
   {
    "text": "거의",
-   "start": 2.136,
-   "end": 2.275
+   "start": 2.566,
+   "end": 2.702
   },
   {
    "text": "꽉",
-   "start": 2.33,
-   "end": 2.456
+   "start": 2.743,
+   "end": 2.879
   },
   {
    "text": "차",
-   "start": 2.497,
-   "end": 2.567
+   "start": 2.919,
+   "end": 2.974
   },
   {
    "text": "있었어요.",
-   "start": 2.637,
-   "end": 3.165
+   "start": 3.042,
+   "end": 3.554
   }
  ],
  "source": {
-  "key": "e3775a52c035fe1e392d9b969446ffa2",
+  "key": "e2ddd5d3ab8932cead85548c9a534a29",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -80,6 +85,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 152
+  "topPitchHz": 164
  }
 }

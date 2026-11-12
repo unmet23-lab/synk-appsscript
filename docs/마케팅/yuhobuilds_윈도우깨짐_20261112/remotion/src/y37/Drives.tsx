@@ -30,7 +30,16 @@ export type DriveStory = {
   restoreLen: number;
   move: number;
   moveLen: number;
+  /** 판 속 이름표 · 바로가기 선(r3 — 이해 시험 s · h · G 「어느 칸이 백업이고 복구인지 · 바로가기가 어디인지」) */
+  backupTag?: readonly [number, number];
+  movedTag?: readonly [number, number];
+  links?: readonly [number, number];
+  oldCopy?: readonly [number, number];
 };
+
+const span = (f: number, w?: readonly [number, number]) => (w ? clamp01((f - w[0]) / 8) * clamp01((w[1] - f) / 8) : 0);
+/** 1TB 옛 사본 덩이의 시작 차례(C_DEL_IDX가 덩이로 이어진 자리). */
+const RUNS: number[] = C_DEL_IDX.reduce<number[]>((a, v, k) => (k === 0 || v !== C_DEL_IDX[k - 1] + 1 ? [...a, k] : a), []);
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -97,6 +106,22 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
     };
     panel(C_TOP, C_ROWS, C_N);
     panel(D_TOP, D_ROWS, D_N);
+    // 비운 자리: 내려앉은 뒤 비워진 칸(지우기 전 쓰던 칸 수 → 지운 뒤 칸 수 사이)이 버터로 물든다
+    if (settleP > 0) {
+      const glow = (top: number, from: number, to: number) => {
+        for (let i = from; i < to; i++) {
+          const [px, py] = pos(top, i);
+          const q = clamp01(settleP * 1.6 - ((i - from) / Math.max(1, to - from)) * 0.6);
+          if (q <= 0) continue;
+          x.globalAlpha = q * 0.85 * (1 - dim * 0.7);
+          x.fillStyle = BUTTER;
+          x.fillRect(px + 1.3, py + 1.3, size, size);
+        }
+        x.globalAlpha = 1;
+      };
+      glow(C_TOP, roles.c.length - roles.c.filter((r) => r.kind === 'del').length, roles.c.length);
+      glow(D_TOP, roles.d.length - roles.d.filter((r) => r.kind === 'del').length, roles.d.length);
+    }
 
     const draw = (top: number, list: Role[], newPos: number[]) => {
       list.forEach((r, i) => {
@@ -141,6 +166,12 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
             } else if (f >= back && f < back + 8) {
               const q = (f - back) / 8;
               col = [col[0] + (255 - col[0]) * (1 - q), col[1] + (255 - col[1]) * (1 - q), col[2] + (255 - col[2]) * (1 - q)];
+            }
+            // 「옮기기 전 사본」: 1TB에 남은 옛 사본 덩이가 숨 쉬듯 밝아진다
+            const oc = span(f, story.oldCopy);
+            if (oc > 0 && r.kind === 'del') {
+              const q = oc * (0.55 + 0.45 * Math.sin((f - (story.oldCopy?.[0] ?? 0)) / 4));
+              col = [col[0] + (255 - col[0]) * q, col[1] + (255 - col[1]) * q * 0.95, col[2] + (255 - col[2]) * q * 0.7];
             }
             // 옮기는 동안 옮겨 가는 덩이(옛 사본)가 하얗게 한 번
             if (r.kind === 'del' && f >= story.move && f < story.move + story.moveLen + 10) {
@@ -198,6 +229,49 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
     };
     draw(C_TOP, roles.c, roles.cNew);
     draw(D_TOP, roles.d, roles.dNew);
+    if (story) {
+      const tag = (text: string, px: number, py: number, a: number) => {
+        if (a <= 0) return;
+        x.globalAlpha = a * (1 - dim * 0.7);
+        x.font = "900 50px 'SUIT'";
+        x.lineJoin = 'round';
+        x.lineWidth = 10;
+        x.strokeStyle = 'rgba(255,255,255,0.95)';
+        x.strokeText(text, px, py);
+        x.fillStyle = '#0A0B0E';
+        x.fillText(text, px, py);
+        x.globalAlpha = 1;
+      };
+      // 바로가기 선: 1TB 옛 자리 → 2TB 옮긴 자리
+      const la = span(f, story.links);
+      if (la > 0) {
+        x.globalAlpha = la * 0.75;
+        x.strokeStyle = '#FFFFFF';
+        x.lineWidth = 2.5;
+        x.setLineDash([10, 8]);
+        for (const k of RUNS) {
+          const [sx, sy] = pos(C_TOP, C_DEL_IDX[k]);
+          const [tx, ty] = pos(D_TOP, k);
+          x.beginPath();
+          x.moveTo(sx + PITCH / 2, sy + PITCH / 2);
+          x.lineTo(tx + PITCH / 2, ty + PITCH / 2);
+          x.stroke();
+        }
+        x.setLineDash([]);
+        x.globalAlpha = 1;
+      }
+      const [bx, by] = pos(D_TOP, 334 + 90 + COLS * 2);
+      tag('백업', bx + 12, by + 46, span(f, story.backupTag));
+      tag('옮긴 자료', PANEL_X + 300, D_TOP + 50, span(f, story.movedTag));
+      const [ox, oy] = pos(C_TOP, C_DEL_IDX[RUNS[0]]);
+      tag('바로가기', Math.min(ox + 12, PANEL_X + PANEL_W - 230), oy + 46, la);
+      const [qx, qy] = pos(C_TOP, C_DEL_IDX[RUNS[Math.min(2, RUNS.length - 1)]]);
+      if (showKept) {
+        const [kx, ky] = pos(D_TOP, D_KEPT_IDX[Math.floor(D_KEPT_IDX.length * 0.45)]);
+        tag('남김', Math.min(kx + 12, PANEL_X + PANEL_W - 120), ky - 12, span(f, [beat.keep, beat.keepOff ?? beat.keep + 60]));
+      }
+      tag('옮기기 전 사본', Math.min(qx + 12, PANEL_X + PANEL_W - 340), qy + 46, span(f, story.oldCopy));
+    }
   }, [f, beat, story, dim, roles, N, showKept]);
 
   return <canvas ref={ref} width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0 }} />;

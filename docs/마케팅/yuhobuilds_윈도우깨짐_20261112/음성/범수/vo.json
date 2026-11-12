@@ -15,7 +15,7 @@
   "seed": 1112,
   "lufs": -17
  },
- "made": "2026-11-12T06:58:37.109Z",
+ "made": "2026-11-12T07:30:53.727Z",
  "lines": [
   {
    "id": "V1",
@@ -28,30 +28,30 @@
   },
   {
    "id": "V2",
-   "text": "일테라를 통째로 백업하고 다시 깔았더니, 잃은 파일은 하나도 없었어요.",
-   "dur": 3.558,
-   "syllablesPerSec": 8.15,
+   "text": "원래 드라이브를 통째로 새 드라이브에 백업하고, 다시 깔았더니 잃은 파일은 하나도 없었어요.",
+   "dur": 4.352,
+   "syllablesPerSec": 8.73,
    "src": "V2.wav",
-   "key": "abc1b5d70027f7a5aa9fe3ac1f5d1128",
-   "words": 9
+   "key": "499e9d43da7d15e9256c7d05a7eafa7f",
+   "words": 12
   },
   {
    "id": "V3",
-   "text": "무거운 자료는 이테라로 옮기고, 원래 자리엔 바로가기를 뒀죠.",
-   "dur": 3.108,
-   "syllablesPerSec": 8.04,
+   "text": "무거운 자료는 새 드라이브로 옮기고, 원래 자리엔 바로가기를 뒀죠.",
+   "dur": 3.203,
+   "syllablesPerSec": 8.43,
    "src": "V3.wav",
-   "key": "1c04afe681f953a433eef59554b4761f",
-   "words": 8
+   "key": "e8a1b4b577c7550074f4604ef3c8fa88",
+   "words": 9
   },
   {
    "id": "V4",
-   "text": "근데 옮기기 전 사본이 남아서, 일테라는 거의 꽉 차 있었어요.",
-   "dur": 3.165,
-   "syllablesPerSec": 7.58,
+   "text": "근데 옮기기 전 사본이 남아서, 원래 드라이브는 거의 꽉 차 있었어요.",
+   "dur": 3.554,
+   "syllablesPerSec": 7.6,
    "src": "V4.wav",
-   "key": "e3775a52c035fe1e392d9b969446ffa2",
-   "words": 10
+   "key": "e2ddd5d3ab8932cead85548c9a534a29",
+   "words": 11
   },
   {
    "id": "V5",
