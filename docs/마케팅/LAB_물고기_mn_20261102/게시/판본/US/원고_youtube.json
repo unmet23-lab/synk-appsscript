@@ -1,0 +1,24 @@
+{
+  "id": "판본-US-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "en",
+  "audioLanguage": "en",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "In Korean, fish = “water meat” 🐟 #learnkorean",
+  "caption": "Korean builds words by adding them up: 물 (mul) water + 고기 (go-gi) meat = 물고기 (mul-go-gi), fish.\nOrdering fish tacos? What’s inside is 물고기 (mul-go-gi).\nSame trick: 눈 (nun) eye + 물 (mul) water = 눈물 (nun-mul), tears.\n\nSYNK LAB\n#learnkorean #koreanwords #koreanvocabulary",
+  "pinnedComment": "눈 (eye) + 사람 (person) makes what? Guess 👇",
+  "_원문": {
+    "title": "한국어로 물고기 = “물의 고기” 🐟 #learnkorean",
+    "caption": "한국어는 낱말을 더해 낱말을 만든다: 물 + 고기 = 물고기.\n피시 타코를 시킨다? 그 안에 든 것이 물고기다.\n같은 방법으로: 눈 + 물 = 눈물.\n\nSYNK LAB\n#learnkorean #koreanwords #koreanvocabulary",
+    "pinnedComment": "눈 + 사람은 무엇이 될까? 맞혀 봐 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

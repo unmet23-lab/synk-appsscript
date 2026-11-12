@@ -539,8 +539,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Late to stand-up?\n→ 죄송합니다.",
-      "원문": "스탠드업 회의에 늦었다?\n→ 죄송합니다.",
+      "글": "Spilled coffee on your boss?\n→ 죄송합니다.",
+      "원문": "사장님한테 커피를 쏟았다?\n→ 죄송합니다.",
       "초": [
         14,
         15.8
@@ -554,7 +554,7 @@
         "가운데": false,
         "x": 386,
         "y": 304,
-        "글자크기": 44,
+        "글자크기": 36,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -588,14 +588,14 @@
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "Korean “sorry” changes with who you’re talking to: 미안 (mi-an) for friends, 죄송합니다 (joe-song-ham-ni-da) for teachers and bosses.",
+      "글": "“Sorry” in Korean changes depending on who you’re talking to: 미안 (mi-an) for friends, 죄송합니다 (joe-song-ham-ni-da) for teachers and bosses.",
       "원문": "한국어의 “미안”은 상대에 따라 달라진다: 친구에게는 미안, 선생님과 상사에게는 죄송합니다."
     },
     {
       "id": "게시글.youtube.본문.2",
       "칸": "예문",
-      "글": "Spilled coffee on your manager right before stand-up? 죄송합니다! = I’m so sorry!",
-      "원문": "스탠드업 회의 직전에 팀장에게 커피를 쏟았다? 죄송합니다! = 정말 죄송합니다!"
+      "글": "Spilled coffee on your manager right before a meeting? 죄송합니다! = I’m so sorry!",
+      "원문": "회의 직전에 팀장에게 커피를 쏟았다? 죄송합니다! = 정말 죄송합니다!"
     },
     {
       "id": "게시글.youtube.본문.3",

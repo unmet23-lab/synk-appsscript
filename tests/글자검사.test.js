@@ -420,6 +420,56 @@ test('판본 명령(프레임 검사 대역) — --엔진없이는 못 봄으로
   }
 });
 
+test('나라 인사(11-12) — 인사 장면이 있는 판은 기준 판을 인사 길이 차만큼 밀어 견준다: 밀기 필터 · 판본 명령이 렌더.json 「인사초」로 밀림을 넘기고 기록에 남긴다', async () => {
+  // 밀기 필터 — 이 판에만 인사가 있으면 기준을 뒤로 밀고, 기준에만 있으면 잘라 낸다
+  assert.equal(G.밀기필터(0), '');
+  assert.equal(G.밀기필터(undefined), '');
+  assert.equal(G.밀기필터(1.35), 'setpts=PTS+1.35/TB,');
+  assert.equal(G.밀기필터(-1), 'trim=start=1,setpts=PTS-STARTPTS,');
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-인사-'));
+  const 원 = { 프레임검사: G.프레임검사, 글꼴검사: G.글꼴검사, 엔진재기: G.엔진재기, log: console.log, error: console.error };
+  const 받은 = [];
+  try {
+    const 편 = 가짜편(방, { US: 'en', MN: 'mn', BR: 'pt' });
+    fs.writeFileSync(path.join(편, '글_us.json'), JSON.stringify({ 꼴: '판본글/1', 편: 'LAB_시험편_20261111', 판본: 'US', 언어: 'en', 나라: ['US'], 틀: '이야기', 줄: [{ id: 'a', 칸: '상황', 글: 'Do not eat it!', 초: [0, 2] }] }));
+    const 준비파일 = path.join(편, '게시', '준비.json');
+    const prep = 판본글.readJson(준비파일);
+    // 판본마다 제 폴더(영상 옆 렌더.json) — 미국판 인사 1.35초 · 브라질판 인사 1초 · 몽골판은 인사 없음(렌더 기록도 없다)
+    for (const [k, 인사초] of [['US', 1.35], ['MN', null], ['BR', 1]]) {
+      fs.mkdirSync(path.join(편, k));
+      fs.renameSync(path.join(편, `${k}.mp4`), path.join(편, k, 'video.mp4'));
+      prep.돌림.판본[k].파일 = `${k}/video.mp4`;
+      if (인사초) fs.writeFileSync(path.join(편, k, '렌더.json'), JSON.stringify({ 판본: k, 인사초 }));
+    }
+    prep.돌림.판본.US.글 = '글_us.json';
+    prep.돌림.판본.BR.검수 = { 글자: { 결과: '통과', 지문: 판본글.sha256(path.join(편, 'BR', 'video.mp4')) } };
+    fs.writeFileSync(준비파일, JSON.stringify(prep, null, 2));
+    G.프레임검사 = (o) => { 받은.push(o); return { 찾음: [], 좁은: [], 프레임수: 4, OCR: { 판본: true, 기준: true } }; };
+    G.글꼴검사 = () => ({ 찾음: [], 줄: [] });
+    G.엔진재기 = async () => ({ 찾음: [], 잰것: [{ id: 'a', 줄수: 1 }] });
+    console.log = () => {}; console.error = () => {};
+    const { main } = require('../tools/글자검사.js');
+    assert.equal(await main(['판본', 편, 'US', '--기준', 'MN', '--기준', 'BR', '--기록', '--밖', path.join(방, '밖')]), 0);
+    assert.deepEqual(받은.at(-1).기준밀림, [1.35, 0.35], '몽골판(인사 없음)은 1.35초, 브라질판(인사 1초)은 그 차 0.35초만큼 민다');
+    assert.deepEqual(판본글.readJson(준비파일).돌림.판본.US.검수.글자.기준, [{ 키: 'MN', 언어: 'mn', 밀림: 1.35 }, { 키: 'BR', 언어: 'pt', 밀림: 0.35 }]);
+    // 인사가 없는 판(몽골판)을 인사 있는 기준과 견주면 기준을 잘라 낸다(음수) · 인사 길이가 같으면 0이라 기록에 칸이 없다
+    fs.writeFileSync(path.join(편, '글_mn.json'), JSON.stringify({ 꼴: '판본글/1', 편: 'LAB_시험편_20261111', 판본: 'MN', 언어: 'mn', 나라: ['MN'], 틀: '이야기', 줄: [{ id: 'a', 칸: '상황', 글: 'Битгий ид!', 초: [0, 2] }] }));
+    const p2 = 판본글.readJson(준비파일);
+    p2.돌림.판본.MN.글 = '글_mn.json';
+    fs.writeFileSync(준비파일, JSON.stringify(p2, null, 2));
+    assert.equal(await main(['판본', 편, 'MN', '--기준', 'BR', '--기록', '--밖', path.join(방, '밖2')]), 0);
+    assert.deepEqual(받은.at(-1).기준밀림, [-1]);
+    fs.writeFileSync(path.join(편, 'US', '렌더.json'), JSON.stringify({ 판본: 'US', 인사초: 1 }));
+    assert.equal(await main(['판본', 편, 'US', '--기준', 'BR', '--기록', '--밖', path.join(방, '밖')]), 0);
+    assert.deepEqual(받은.at(-1).기준밀림, [0]);
+    assert.deepEqual(판본글.readJson(준비파일).돌림.판본.US.검수.글자.기준, [{ 키: 'BR', 언어: 'pt' }]);
+  } finally {
+    Object.assign(G, { 프레임검사: 원.프레임검사, 글꼴검사: 원.글꼴검사, 엔진재기: 원.엔진재기 });
+    console.log = 원.log; console.error = 원.error;
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+});
+
 test('글꼴 검사(fontTools · HarfBuzz) — 네모 글자 · 결합 깨짐(점선 원) · 한자권 부호를 라틴 글꼴이 맡음', { skip: !파이썬모듈() && 'python fontTools · uharfbuzz 없음' }, () => {
   const th = P.언어('th');
   const r = G.글꼴검사(판([

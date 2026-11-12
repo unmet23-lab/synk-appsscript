@@ -130,7 +130,7 @@
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
   "boss": "Boss",
-  "scene": "Boss and I crashed. There goes the coffee.",
+  "scene": "Bumped into the boss. There goes the coffee.",
   "sceneSize": 40,
   "level": "Level {n}",
   "reads": [
@@ -179,7 +179,7 @@
   "helloVo": "Hello, 뉴질랜드!",
   "helloSec": 1.35,
   "_원문": {
-    "scene": "사장님과 내가 부딪쳤다. 커피가 날아갔다.",
+    "scene": "사장님과 부딪쳤다. 커피가 날아간다.",
     "endCard": "회의에 늦었다?\n→ 죄송합니다.",
     "ask": "사장님께 미안이라고 해 본 적 있어?",
     "tags.0": "친구에게만",

@@ -124,6 +124,13 @@ function 기준못씀(키, 판본, 파일) {
   if (!지문 || g.지문 !== 지문) return '글자 검사 통과 기록의 지문이 지금 영상과 다르다(검사 뒤 다시 구운 판)';
   return null;
 }
+/** 판본 영상 옆 렌더.json의 「인사초」(나라 인사 길이 — 판본렌더.mjs가 적는다). 기록이 없거나 인사가 없는 판은 0 */
+function 인사초읽기(영상) {
+  try {
+    const 초 = Number(JSON.parse(fs.readFileSync(path.join(path.dirname(영상), '렌더.json'), 'utf8').replace(/^﻿/, '')).인사초);
+    return Number.isFinite(초) && 초 > 0 && 초 <= 3 ? 초 : 0;
+  } catch { return 0; }
+}
 const 같은곳 = (a, b) => (process.platform === 'win32' ? path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase() : path.resolve(a) === path.resolve(b));
 
 /**
@@ -191,7 +198,7 @@ function 기록만들기(결과) {
   const 기록 = { 결과: 결과.판정, 지문: 결과.지문, 시각: 결과.시각, 도구, 기록: rel(결과.결과파일),
     고칠것: 결과.찾음.filter((x) => x.수준 === 검사.고칠).length, 확인할것: 결과.찾음.filter((x) => x.수준 === 검사.확인).length,
     엔진잼: 결과.엔진잼, 글자인식: 결과.글자인식,
-    기준: 결과.기준판.map((b) => (b.키 ? { 키: b.키, 언어: b.언어 } : { 키: null, 언어: null, 파일: rel(b.파일) })),
+    기준: 결과.기준판.map((b) => ({ ...(b.키 ? { 키: b.키, 언어: b.언어 } : { 키: null, 언어: null, 파일: rel(b.파일) }), ...(b.밀림 ? { 밀림: b.밀림 } : {}) })),
     넘긴코드 };
   if (결과.기준뺌.length) 기록.기준뺌 = 결과.기준뺌.map((b) => ({ 키: b.키, 언어: b.언어, 까닭: b.까닭, ...(b.코드 ? { 코드: b.코드 } : {}) }));
   if (결과.눈확인) 기록.눈확인 = 결과.눈확인;
@@ -287,7 +294,12 @@ async function main(argv) {
     }
     const 기준 = 기준판.쓸.map((b) => b.파일);
     const 플랫폼 = 값.플랫폼 || null;
-    const f = 검사.프레임검사({ 영상: 찾은.영상, 기준, 언어p: L, 플랫폼, 밖 });
+    // 나라 인사(11-12) — 인사 장면이 있는 판은 원본이 인사 길이만큼 밀려 시작한다. 기준 판을 두 판의 인사 길이 차(렌더.json 「인사초」)만큼 밀어 같은 원본 프레임끼리 견준다
+    const 내인사 = 인사초읽기(찾은.영상);
+    for (const b of 기준판.쓸) b.밀림 = Math.round((내인사 - 인사초읽기(b.파일)) * 1000) / 1000;
+    const 기준밀림 = 기준판.쓸.map((b) => b.밀림);
+    if (기준밀림.some(Boolean)) console.error(`  기준 판을 인사 길이 차만큼 밀어 견준다 — ${기준판.쓸.filter((b) => b.밀림).map((b) => `${b.키 || path.basename(b.파일)} ${b.밀림 > 0 ? '+' : ''}${b.밀림}초`).join(' · ')}`);
+    const f = 검사.프레임검사({ 영상: 찾은.영상, 기준, 기준밀림, 언어p: L, 플랫폼, 밖 });
     찾음.push(...f.찾음);
     const 눈확인 = 메모(값.눈확인), 직접봄 = 메모(값.직접봄);
     const 글자인식 = L.글자인식?.쓸만함 === false ? '못 믿음' : (f.OCR?.판본 ? '읽음' : '실패');

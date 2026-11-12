@@ -168,9 +168,9 @@
     "",
     ""
   ],
-  "endCard": "Cut the Timmies line?\n→ 죄송합니다.",
+  "endCard": "Bumped into the boss?\n→ 죄송합니다.",
   "endSize": 44,
-  "ask": "미안 or 죄송합니다, eh?",
+  "ask": "Is 미안 ever enough?",
   "askSize": 36,
   "coverAt": 2.9,
   "hello": "Hello",
@@ -180,8 +180,8 @@
   "helloSec": 1.1,
   "_원문": {
     "scene": "사장님과 내가 부딪쳤다. 커피도 부딪쳤다.",
-    "endCard": "팀 홀튼 줄에 새치기했다?\n→ 죄송합니다.",
-    "ask": "미안이야, 죄송합니다야, 응?",
+    "endCard": "사장님과 부딪쳤다?\n→ 죄송합니다.",
+    "ask": "미안으로 충분할 때가 있어?",
     "means.7": "당연히 내 월급도 올려 줘야지."
   }
 }

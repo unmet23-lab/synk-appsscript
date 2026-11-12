@@ -275,6 +275,9 @@ const Sfx: React.FC<{ file: string; at: number; vol: number; dur?: number; from?
 );
 const Sound: React.FC = () => (
   <>
+    {/* 엘리베이터 안 공기 소리(500~15000Hz 분홍 잡음, 아주 작게) — 음악이 멎은 뒤 조용한 구간이 길어 AAC 실측이 164~261kbps로 올림 규격 320kbps에
+        못 미쳤다(11-12 판본 렌더 다섯 판 미통과 · 현장 노트 영상 「조용한 펠트 피아노 · 초침 편은 AAC 실측이…」의 고침 그대로). 판본 렌더부터 들어간다 */}
+    <Sfx file="room.wav" at={0} vol={0.1} />
     <Sfx file="muzak_stop.wav" at={0} vol={0.34} from={5.2 - T.count[3]} />
     <Sfx file="ding.wav" at={T.count[0]} vol={0.26} />
     <Sfx file="ding.wav" at={T.count[1]} vol={0.26} />

@@ -168,8 +168,8 @@
     "",
     ""
   ],
-  "endCard": "Late to stand-up?\n→ 죄송합니다.",
-  "endSize": 44,
+  "endCard": "Spilled coffee on your boss?\n→ 죄송합니다.",
+  "endSize": 36,
   "ask": "Who gets your 죄송합니다?",
   "askSize": 36,
   "coverAt": 2.8,
@@ -180,7 +180,7 @@
   "helloSec": 1,
   "_원문": {
     "scene": "사장님과 부딪쳤다. 사방이 커피다.",
-    "endCard": "스탠드업 회의에 늦었다?\n→ 죄송합니다.",
+    "endCard": "사장님한테 커피를 쏟았다?\n→ 죄송합니다.",
     "ask": "네 죄송합니다는 누구 몫이야?",
     "means.7": "당연히 내 월급도 올려 줘야지."
   }

@@ -168,7 +168,7 @@
     "",
     ""
   ],
-  "endCard": "Late back from smoko?\n→ 죄송합니다.",
+  "endCard": "Spilt it on the boss?\n→ 죄송합니다.",
   "endSize": 44,
   "ask": "Would you risk a 미안?",
   "askSize": 36,
@@ -180,7 +180,7 @@
   "helloSec": 1.15,
   "_원문": {
     "scene": "사장님과 충돌. 플랫 화이트가 쓰러졌다.",
-    "endCard": "쉬는 시간에서 늦게 돌아왔다?\n→ 죄송합니다.",
+    "endCard": "사장님한테 쏟았다?\n→ 죄송합니다.",
     "ask": "너라면 미안이라고 해 볼래?",
     "tags.0": "친구에게만",
     "means.7": "당연히 내 급여도 올려 줘야지."

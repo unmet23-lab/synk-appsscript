@@ -539,8 +539,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Late back from smoko?\n→ 죄송합니다.",
-      "원문": "쉬는 시간에서 늦게 돌아왔다?\n→ 죄송합니다.",
+      "글": "Spilt it on the boss?\n→ 죄송합니다.",
+      "원문": "사장님한테 쏟았다?\n→ 죄송합니다.",
       "초": [
         14.15,
         15.95
@@ -606,7 +606,7 @@
     {
       "id": "게시글.youtube.고정댓글.1",
       "칸": "게시글",
-      "글": "Which sorry would your boss cop from you? 👇",
+      "글": "Which “sorry” would your boss get from you? 👇",
       "원문": "너희 사장님은 너에게서 어느 사과를 듣게 될까? 👇"
     }
   ],

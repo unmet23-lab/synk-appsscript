@@ -1,0 +1,24 @@
+{
+  "id": "판본-US-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "en",
+  "audioLanguage": "en",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "Why Korean elevators skip 4 👻 #learnkorean",
+  "caption": "In Korean, 4 is 사 (sa), and the word for death sounds exactly the same. So lots of buildings label the 4th floor F.\nLike the missing 13th floor in US high-rises? In Korea it’s 사 (sa) = 4 that goes missing.\nCount along: 일 (il) 1, 이 (i) 2, 삼 (sam) 3, 사 (sa) 4.\n\nSYNK LAB\n#learnkorean #koreannumbers #koreanculture",
+  "pinnedComment": "What number gets skipped where you live? 👇",
+  "_원문": {
+    "title": "한국 엘리베이터가 4를 건너뛰는 이유 👻 #learnkorean",
+    "caption": "한국어로 4는 사이고, 죽음을 뜻하는 말도 소리가 똑같다. 그래서 많은 건물이 4층을 F로 적는다.\n미국 고층 건물에 13층이 없는 것처럼? 한국에서 사라지는 것은 사 = 4다.\n같이 세어 보자: 일 1, 이 2, 삼 3, 사 4.\n\nSYNK LAB\n#learnkorean #koreannumbers #koreanculture",
+    "pinnedComment": "네가 사는 곳에서는 어떤 숫자를 건너뛰어? 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}

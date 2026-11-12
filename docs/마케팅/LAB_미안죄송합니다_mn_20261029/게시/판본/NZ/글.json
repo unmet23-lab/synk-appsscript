@@ -120,8 +120,8 @@
     {
       "id": "scene",
       "칸": "머리",
-      "글": "Boss and I crashed. There goes the coffee.",
-      "원문": "사장님과 내가 부딪쳤다. 커피가 날아갔다.",
+      "글": "Bumped into the boss. There goes the coffee.",
+      "원문": "사장님과 부딪쳤다. 커피가 날아간다.",
       "초": [
         1.35,
         5.75

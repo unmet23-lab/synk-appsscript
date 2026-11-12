@@ -472,9 +472,19 @@ function 길이(video) {
   return { 초: Number(j.format?.duration) || 0, 폭: Number(j.streams?.[0]?.width) || 0, 높이: Number(j.streams?.[0]?.height) || 0 };
 }
 
-/** 회색 반쪽 해상도 프레임(0.5초마다) */
-function 회색프레임(video) {
-  const r = ffmpeg(['-i', video, '-vf', `fps=${1 / 간격},scale=${반폭}:${반높이}:flags=area,format=gray`, '-f', 'rawvideo', '-'], '회색 프레임');
+/** 기준 판을 시간축에서 미는 필터 앞머리(11-12 나라 인사 카드) — 이 판에만 훅 앞 인사 장면이 있으면 원본은 그 길이만큼 밀려 시작한다.
+ *  밀림 > 0: 기준 판을 그만큼 뒤로 민다(앞 빈 구간은 기준 판 첫 프레임이 채운다 — 인사 구간은 기준 판과 견줄 것이 없어 픽셀 차이는 확인할 것까지만).
+ *  밀림 < 0: 기준 판에만 인사가 있다 — 그만큼 잘라 낸다. 0이면 빈 글. 프레임 표본(fps)은 이 뒤에 붙는다. */
+function 밀기필터(밀림 = 0) {
+  const s = Math.round((Number(밀림) || 0) * 1000) / 1000;
+  if (!s) return '';
+  return s > 0 ? `setpts=PTS+${s}/TB,` : `trim=start=${-s},setpts=PTS-STARTPTS,`;
+}
+const 표본필터 = (밀림 = 0) => `${밀기필터(밀림)}fps=${1 / 간격}${밀림 > 0 ? ':start_time=0' : ''}`;
+
+/** 회색 반쪽 해상도 프레임(0.5초마다) — 밀림(초)을 주면 그만큼 시간축을 민 프레임 */
+function 회색프레임(video, 밀림 = 0) {
+  const r = ffmpeg(['-i', video, '-vf', `${표본필터(밀림)},scale=${반폭}:${반높이}:flags=area,format=gray`, '-f', 'rawvideo', '-'], '회색 프레임');
   const 크기 = 반폭 * 반높이;
   const n = Math.floor(r.stdout.length / 크기);
   return { n, at: (i) => r.stdout.subarray(i * 크기, (i + 1) * 크기) };
@@ -687,15 +697,18 @@ function 기준상자모으기(읽은들, i) {
   return 읽은들.flatMap((r) => (r && r[i]) || []);
 }
 
-/** 영상(판본) [+ 기준 영상] → 프레임 판정 + 좁은 여백 세 장(원본 해상도 1:1 잘라 냄) */
-function 프레임검사({ 영상, 기준 = [], 언어p, 플랫폼 = null, 밖 }) {
+/** 영상(판본) [+ 기준 영상] → 프레임 판정 + 좁은 여백 세 장(원본 해상도 1:1 잘라 냄).
+ *  기준밀림[k](초) — 기준 판 k를 시간축에서 미는 값(이 판의 인사 길이 − 기준 판의 인사 길이, 렌더.json 「인사초」). 안 밀면 인사가 있는 판은
+ *  모든 프레임이 인사 길이만큼 어긋난 기준 프레임과 견줘져, 정본의 그림을 글로 읽은 OCR 헛글이 「정본과 같은 화소」로 내려가지 못한다(11-12 「미안 · 죄송합니다」
+ *  영어권 넷 ← 몽골판: 5.5~10초 몽글 몸 · 원두 분쇄기가 실행마다 다른 판본에서 「단추가림」 고칠 것). */
+function 프레임검사({ 영상, 기준 = [], 기준밀림 = [], 언어p, 플랫폼 = null, 밖 }) {
   fs.mkdirSync(밖, { recursive: true });
   for (const f of fs.readdirSync(밖)) if (/^좁은여백_/.test(f)) fs.rmSync(path.join(밖, f), { force: true });
   const 정보 = 길이(영상);
   const out = [];
   if (정보.폭 && (정보.폭 !== 1080 || 정보.높이 !== 1920)) out.push(찾음(확인, '해상도', `영상이 ${정보.폭}×${정보.높이}다 — 안전 영역은 1080×1920 기준으로 늘려 본다`));
   const 판 = 회색프레임(영상);
-  const 기준들 = 기준.map((v) => ({ 파일: v, f: 회색프레임(v) }));
+  const 기준들 = 기준.map((v, k) => ({ 파일: v, 밀림: Number(기준밀림[k]) || 0, f: 회색프레임(v, Number(기준밀림[k]) || 0) }));
   for (const b of 기준들) if (Math.abs(b.f.n - 판.n) > 1) out.push(찾음(확인, '기준길이', `기준 영상 ${path.basename(b.파일)}의 길이가 다르다(프레임 ${b.f.n} ↔ ${판.n}) — 같은 정본에서 렌더한 판이 아니면 차이가 엉뚱하게 잡힌다`));
   const n = Math.min(판.n, ...기준들.map((b) => b.f.n));
   // OCR — 판본(믿을 만한 언어만) · 기준(모든 기준 판, 넘은 자리 가르기용). 첫째 기준만 읽으면 틀이 다른 판이 첫째일 때(화날때 영어 판본의
@@ -703,10 +716,10 @@ function 프레임검사({ 영상, 기준 = [], 언어p, 플랫폼 = null, 밖 }
   const ocr방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-글자검사-ocr-'));
   let 판OCR = null, 기준OCR = null;
   try {
-    const 뽑기 = (video, sub) => {
+    const 뽑기 = (video, sub, 밀림 = 0) => {
       const d = path.join(ocr방, sub);
       fs.mkdirSync(d, { recursive: true });
-      ffmpeg(['-i', video, '-vf', `fps=${1 / 간격}`, '-q:v', '3', path.join(d, 'f%04d.jpg')], `${sub} 프레임`);
+      ffmpeg(['-i', video, '-vf', 표본필터(밀림), '-q:v', '3', path.join(d, 'f%04d.jpg')], `${sub} 프레임`);
       return 글자인식(d).sort((a, b) => a.name.localeCompare(b.name)).map(OCR상자);
     };
     if (!언어p || 언어p.글자인식?.쓸만함 !== false) {
@@ -714,7 +727,7 @@ function 프레임검사({ 영상, 기준 = [], 언어p, 플랫폼 = null, 밖 }
     }
     if (기준들.length) {
       const 읽은들 = 기준들.map((b, k) => {
-        try { return 뽑기(b.파일, `기준${k}`); } catch (e) {
+        try { return 뽑기(b.파일, `기준${k}`, b.밀림); } catch (e) {
           out.push(찾음(확인, '글자인식실패', `기준 판 ${path.basename(path.dirname(b.파일))}/${path.basename(b.파일)} 글자 인식 실패(${e.message}) — 넘은 자리를 그 기준 판 글과 가르지 못한다`));
           return null;
         }
@@ -814,6 +827,6 @@ function 판정하기(찾음들, 메모 = {}) {
 
 module.exports = {
   고칠, 확인, 통과, 규칙검사, 읽기시간검사, 글꼴검사, 엔진재기, 엔진판정, 엔진html, 프레임검사, 프레임판정, 차이덩어리, OCR상자, 넘은띠들, 다른화소비율,
-  정본같은가, 기준상자모으기,
+  정본같은가, 기준상자모으기, 밀기필터,
   판정하기, 판정풀이, 갈래, 갈래표, 갈래말, 갈래붙이기, 판단, 못봄, 안전영역, 낱말경계들, 자소수, 찾음, 띄어쓰기손줄바꿈, 모음없는조각,
 };
