@@ -125,10 +125,12 @@ function 기준못씀(키, 판본, 파일) {
   return null;
 }
 /** 판본 영상 옆 렌더.json의 「인사초」(나라 인사 길이 — 판본렌더.mjs가 적는다). 기록이 없거나 인사가 없는 판은 0 */
+const 인사FPS = 30; // 판본렌더.mjs · 편마다의 timeline.ts FPS
 function 인사초읽기(영상) {
   try {
     const 초 = Number(JSON.parse(fs.readFileSync(path.join(path.dirname(영상), '렌더.json'), 'utf8').replace(/^﻿/, '')).인사초);
-    return Number.isFinite(초) && 초 > 0 && 초 <= 3 ? 초 : 0;
+    // 틀은 인사 길이를 프레임으로 반올림해 원본을 민다(Remotion fr = round(초 × 30) — 1.15초 → 35프레임, 1.35초 → 41프레임). 초 그대로 밀면 반 프레임 어긋난다
+    return Number.isFinite(초) && 초 > 0 && 초 <= 3 ? Math.round(초 * 인사FPS) / 인사FPS : 0;
   } catch { return 0; }
 }
 const 같은곳 = (a, b) => (process.platform === 'win32' ? path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase() : path.resolve(a) === path.resolve(b));
