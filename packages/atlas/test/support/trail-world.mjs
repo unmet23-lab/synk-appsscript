@@ -47,6 +47,7 @@ export function createMemoryAccount() {
         floorSeq: floor,
         lineSeq: head.lineSeq,
         issued: structuredClone(head.issued),
+        gen: head.gen ?? null,
       }),
       writeHead: async patch => Object.assign(head, structuredClone(patch)),
       entriesAfter: async (after, limit) =>
@@ -126,10 +127,11 @@ export function createMemoryAccount() {
       return head ? { edition: head.edition } : null;
     },
     head: async edition => (heads.has(edition) ? { ...heads.get(edition) } : null),
-    create: async (edition, state) => {
+    create: async (edition, state, { gen = null } = {}) => {
       heads.set(edition, {
         edition,
         state,
+        gen,
         foldedUntil: 0,
         lineSeq: 0,
         issued: [],

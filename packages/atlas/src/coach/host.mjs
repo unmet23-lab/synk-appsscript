@@ -4,7 +4,8 @@
 //   불러올 때 자기 창에 「호스트를 만드는 길」(MAKER)을 걸고, 틀의 코치는 위 창의 그 길로 호스트를 받는다. 위 창에 엔진이 없는(혼자 뜬)
 //   페이지만 자기 창에 등록부를 둔다. 틀의 코치는 저장소 열쇠를 스스로 짓지 않고 셸이 연 문서 호스트를 받는다(host.document).
 //   다른 탭은 같은 IndexedDB 저장소에 덧붙이고 BroadcastChannel로 알린다(쓰기 · 서버의 답을 받았을 때) — 받은 탭은 꼬리만 다시 읽는다(record.refresh()).
-//   올리기는 계정만: 대기열(unsent) → 제품이 준 transport → 서버의 답(receive). 같은 사건을 두 탭이 올려도 서버가 번호로 거른다.
+//   올리기 · 받기는 계정만(sync.mjs): 대기열(unsent) → 제품이 준 나르개(post · get) → 서버의 답(receive). 같은 사건을 두 탭이 올려도
+//   서버가 번호로 거른다. 판 · 동의 · 스위치 · 인증 오류는 셸에 알린다(take의 onAccount — 셸이 계정을 다시 읽고 판을 다시 정한다).
 // 코치가 쓰는 보기 = 기록부 보기(record.view() — 저장이 끝난 사건) + 아직 저장이 안 끝난 내 답 · 본인 말(pending).
 import { EDITION } from '../edition.mjs';
 import { createMemory } from '../memory/index.mjs';
@@ -14,11 +15,10 @@ import { carriedFields, carriedSoFar, legacyToImport } from '../record/carry.mjs
 import { EVENT_TYPES } from '../record/events.mjs';
 import { idbPort } from '../record/idb.mjs';
 import { openTrail } from './record.mjs';
+import { carrierOf, createSync } from './sync.mjs';
 
 const REGISTRY = '__synkAtlasHosts';
 const MAKER = '__synkAtlasHostMaker';
-const UPLOAD_DELAY_MS = 1500;
-const UPLOAD_LIMIT = 256;
 // 옛 기록 읽개의 시간 한도(아래 carryLegacy). 시험만 host.legacyWait로 바꾼다.
 export const LEGACY_WAIT_MS = 4000;
 const DONE = Promise.resolve();
@@ -108,6 +108,7 @@ function createHost({
   now,
   map,
   onClose,
+  onAccount = null,
   claims = { users: 0 },
 }) {
   const index = compositeIndex();
@@ -121,8 +122,6 @@ function createHost({
     trail: null,
     channel: null,
     users: 0,
-    timer: null,
-    uploading: null,
     closed: false,
     carry: null, // 옛 기록 옮기기의 약속 — 호스트당 하나(계획 §16 ③)
   };
@@ -163,44 +162,30 @@ function createHost({
     tell('refresh');
   }
 
-  async function upload() {
-    if (guest || !transport || state.uploading || state.closed) return state.uploading;
-    if (!state.trail.unsent(1).length) return null;
-    state.uploading = (async () => {
-      let events = [];
-      try {
-        // 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝난 뒤에 보낸다 — 자식만 먼저 가서 서버가 부모 · 차례가 안 맞는다고 빼지 않게
-        // (단계 3 bed650c2f record.saved()).
-        await state.trail.saved();
-        events = state.trail.unsent(UPLOAD_LIMIT);
-        if (!events.length) return;
-        const answer = await transport(events);
-        await state.trail.receive(answer);
-        // 받은 표지 · 누른 것 · 버린 것 · 서버 요약도 저장소에 덧붙었다 — 다른 탭에도 알려 꼬리를 읽고 판을 다시 세우게 한다(쓰기와 같은
-        // 길). 안 알리면 다른 탭은 다음 쓰기 소식까지 서버 반영 전 상태(다른 기기의 낸 것 · 버린 사건 없이)로 고른다(GPT 최종 GC1).
-        announce();
-        tell('receive');
-      } catch {
-        tell('offline');
-        return;
-      } finally {
-        state.uploading = null;
-      }
-      // 한 묶음(256) 넘게 남았거나 올리는 사이에 쓴 것이 있으면 이어서 올린다 — 새 쓰기 · online · 다시 열기를 기다리지 않게(GPT GC3).
-      // 이번에 보낸 것만 남았으면(서버가 받았다고 안 한 것) 곧바로 다시 보내지 않는다 — 다음 쓰기 · online에(헛돌지 않게).
-      const sent = new Set(events.map(event => event.id));
-      if (!state.closed && state.trail.unsent(UPLOAD_LIMIT).some(event => !sent.has(event.id)))
-        schedule();
-    })();
-    return state.uploading;
-  }
-
-  function schedule() {
-    if (guest || !transport || state.closed) return;
-    clearTimeout(state.timer);
-    state.timer = setTimeout(() => void upload(), UPLOAD_DELAY_MS);
-    state.timer?.unref?.();
-  }
+  // 올리기 · 받기(sync.mjs) — 계정만. 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝난 뒤에 보내고(단계 3 bed650c2f record.saved()),
+  // 서버의 답(받은 표지 · 누른 것 · 버린 것 · 요약)을 덧붙인 뒤 다른 탭에도 알린다(GPT 최종 GC1). 한 묶음 넘게 남았거나 올리는 사이에
+  // 쓴 것이 있으면 이어서 올린다(GPT GC3).
+  const sync = createSync({
+    trail: () => state.trail,
+    carrier: () => carrierOf(guest ? null : transport),
+    note: (kind, outcome) => note(kind, outcome),
+    tell,
+    announce: () => announce(),
+    onAccount: detail => onAccount?.(detail),
+    now: () => (state.trail ? state.trail.now() : Date.now()),
+  });
+  const upload = () => (guest ? null : sync.upload());
+  const schedule = () => {
+    if (!guest && !state.closed) sync.schedule();
+  };
+  const online = () => {
+    if (!guest && !state.closed) sync.online();
+  };
+  // 화면이 다시 보일 때 — 요약 받기는 5분에 한 번까지(B5).
+  const visible = () => {
+    if (!guest && !state.closed && globalThis.document?.visibilityState !== 'hidden')
+      sync.visible();
+  };
 
   // 사건 하나를 쓴다. fold(event → 답 · 본인 말 · 도움의 접기 사건)와 issued(event → 제시의 「낸 것」 줄)는 저장이 끝날 때까지
   // 보기에 얹어 둔다. 둘 다 만든 사건(번호 · 시각)을 받아 짓는다.
@@ -244,9 +229,12 @@ function createHost({
       transport: nextTransport = null,
       health: nextHealth = null,
       legacy: reader = null,
+      onAccount: nextAccount = null,
     } = {}) {
       if (nextTransport) transport = nextTransport;
       if (nextHealth) health = nextHealth;
+      if (nextAccount) onAccount = nextAccount;
+      if (nextTransport && !guest && !state.closed) void sync.first();
       if (guest && reader && !state.carry)
         state.carry = carryLegacy(state.trail.record, reader, note, legacyWait).then(() => {
           // 옮기기가 끝나면 듣는 판 모두에 알린다 — 약속보다 먼저 준비를 끝낸 코치의 판도 옮겨 온 만남 · 기억으로 다시 선다(D4 ㉠).
@@ -272,8 +260,11 @@ function createHost({
         now,
       });
       state.channel = channelOf(key, () => void refresh());
-      if (globalThis.addEventListener) globalThis.addEventListener('online', schedule);
+      if (globalThis.addEventListener) globalThis.addEventListener('online', online);
+      globalThis.document?.addEventListener?.('visibilitychange', visible);
       schedule();
+      // 열 때 요약을 받는다(B5) — coach.ready는 이것을 기다리지 않는다(요약이 있는 기기는 오프라인으로 바로 선다, G4).
+      if (!guest) void sync.first();
       return this;
     },
     get trail() {
@@ -282,6 +273,10 @@ function createHost({
     now: () => state.trail.now(),
     write,
     upload,
+    // 요약 받기(GET) — force가 아니면 5분에 한 번까지. 첫 받기의 결과는 firstPull(한도)로 기다린다(G4).
+    pull: options => (guest ? Promise.resolve(null) : sync.pull(options)),
+    firstPull: wait => (guest ? Promise.resolve({ ok: true, guest: true }) : sync.firstPull(wait)),
+    syncStatus: () => sync.status(),
     refresh,
     subscribe(listener) {
       listeners.add(listener);
@@ -313,10 +308,17 @@ function createHost({
       claims.users -= 1;
       if (claims.users > 0) return false;
       state.closed = true;
-      clearTimeout(state.timer);
-      if (globalThis.removeEventListener) globalThis.removeEventListener('online', schedule);
+      sync.close();
+      if (globalThis.removeEventListener) globalThis.removeEventListener('online', online);
+      globalThis.document?.removeEventListener?.('visibilitychange', visible);
       state.channel?.close();
       onClose?.();
+      // 저장 중인 것(부모를 기다리는 자식까지)이 끝난 뒤 저장소 연결을 닫는다 — 열린 채 남은 연결이 뒤 판의 저장소 꼴 올리기 ·
+      // 앞 판 저장소 지우기 · 비우기를 막지 않게(단계 4 §18-5-5 G3). 닫히는 사이 같은 저장소를 다시 여는 코치는 새 연결을 받는다.
+      void Promise.allSettled([...inflight])
+        .then(() => state.trail?.saved())
+        .then(() => port.close?.())
+        .catch(() => {});
       return true;
     },
   };
@@ -403,8 +405,8 @@ function newEntry(registry, key, options, openPort) {
       memory,
       onClose,
       claims,
-      // 틀이 넘긴 올리기는 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(take). 옛 기록 읽개도 셸의 것만(take).
-      ...(options.fromFrame === true ? { transport: null } : {}),
+      // 틀이 넘긴 올리기 · 셸 알림은 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(take). 옛 기록 읽개도 셸의 것만(take).
+      ...(options.fromFrame === true ? { transport: null, onAccount: null } : {}),
     }).open();
   })();
   registry.set(key, entry);
@@ -418,6 +420,7 @@ function shellTakes(registry, entry, host, options) {
   host.take({
     transport: options.transport,
     health: options.health,
+    onAccount: options.onAccount,
   });
   entry.shell = true;
   if (registry.document == null) setDocument(registry, entry.key);

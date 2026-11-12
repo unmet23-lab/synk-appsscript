@@ -128,10 +128,7 @@ export async function createClient(
       await Promise.all(client.stores.splice(0));
       await record.saved();
     },
-    since() {
-      const summary = record.summary;
-      return summary ? { edition: summary.edition, seq: summary.lineSeq } : null;
-    },
+    since: () => record.since(),
     async push(limit = 256) {
       await client.settle();
       const events = record.unsent(limit);

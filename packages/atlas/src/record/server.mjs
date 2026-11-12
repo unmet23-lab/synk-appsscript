@@ -38,6 +38,19 @@ export const ISSUED_KEEP_MS = 2 * 86_400_000;
 // 기록 · 어댑터 · 근거 줄 규칙의 판 — 이 폴더의 접기 규칙을 고치면 올린다(옛 줄이 새 규칙으로 다시 접히게).
 export const RECORD_EDITION = 'record-4'; // 2: 2판 제시의 firstExposure false를 장부 만남으로(11-11) · 3: 옛 꼴 차례 열쇠를 적힌 시각 먼저로(11-11 GPT GA1) · 4: 첫 답 뒤의 도움은 도움 만남을 세우지 않는다(11-12 Fable 5.2 최종 F1)
 
+// 세대 표지(단계 4 계획 §18-5-4) — 머리를 만들 때 단다. `<머리 만든 서버 시각 13자리>.<난수 8자>`라 견줄 수 있다(시각이 큰 쪽이
+// 새 머리 — 기기는 summary.mjs headOrder로 가른다). 같은 판 묶음 이름의 머리를 다시 지어도(비우기 · A → B → A) 기기의 옛 since가
+// 부분 요약으로 통하지 않는다. random은 시험만 준다.
+export function newGen(nowMs, random = Math.random) {
+  const time = String(Math.max(0, Math.floor(nowMs)))
+    .padStart(13, '0')
+    .slice(-13);
+  const tail = Math.floor(random() * 36 ** 8)
+    .toString(36)
+    .padStart(8, '0');
+  return `${time}.${tail}`;
+}
+
 // 판 묶음 — 접기에 드는 판(매개변수 · 기억 · 난도 · 문항 색인의 태그 판 · 기록 규칙). 이것이 바뀌면 그 계정을 옆에 다시 접는다(§4-5).
 export const foldEdition = (params, index = EMPTY_INDEX) =>
   [
@@ -230,35 +243,42 @@ export async function foldPending(
 // 한 계정의 접기 — 판 묶음이 바뀌었으면 옆에 짓고 따라잡으면 바꿔 끼운다(설계 §5-3 「전부 다시 접기는 옆에 짓는다」).
 //   account.active()                       { edition } | null — 활성 머리
 //   account.head(edition)                  그 판 묶음의 머리 | null
-//   account.create(edition, state)         머리를 만든다(state: 'active' | 'building')
-//   account.store(edition)                 위 store 포트
+//   account.create(edition, state, { gen }) 머리를 만든다(state: 'active' | 'building', gen — 세대 표지 newGen)
+//   account.store(edition)                 위 store 포트(head()가 gen을 함께 돌려준다)
 //   account.activate(edition)              그 판 묶음을 활성으로, 나머지 판 묶음의 머리 · 근거 줄 · 줄을 지운다(파생 값)
 // 돌려주는 served = 지금 내려 줄 요약의 판 묶음(짓는 동안은 앞 판 — 판이 섞인 요약은 내려가지 않는다).
 export async function foldAccount(account, context) {
   const edition = foldEdition(context.params, context.index);
+  const gen = () => ({ gen: newGen(context.nowMs, context.random) });
   const active = await account.active();
   if (!active) {
-    await account.create(edition, 'active');
+    await account.create(edition, 'active', gen());
     return { served: edition, ...(await foldPending(account.store(edition), context)) };
   }
   if (active.edition === edition)
     return { served: edition, ...(await foldPending(account.store(edition), context)) };
-  if (!(await account.head(edition))) await account.create(edition, 'building');
+  if (!(await account.head(edition))) await account.create(edition, 'building', gen());
   const result = await foldPending(account.store(edition), context);
   if (!result.done) return { served: active.edition, building: edition, ...result };
   await account.activate(edition);
   return { served: edition, swapped: true, ...result };
 }
 
-// 요약에서 달라진 줄(설계 §5-3 「요약」). since = { edition, seq } — 같은 판 묶음이고 seq가 지금 차례 이하면 그 뒤 줄만,
-// 아니면 통째로(없어진 줄 표지 없이). 판 묶음이 바뀐 뒤에는 기기가 요약을 통째로 다시 받는다.
+// 요약에서 달라진 줄(설계 §5-3 「요약」). since = { edition, seq, gen? } — 같은 판 묶음 · 같은 머리(gen)이고 seq가 지금 차례
+// 이하면 그 뒤 줄만, 아니면 통째로(없어진 줄 표지 없이). 판 묶음이 바뀌거나 머리를 다시 지은 뒤에는 기기가 요약을 통째로 다시
+// 받는다 — gen이 없는 since는 gen 없는 머리와만 같다(§18-5-4).
 export async function summaryOf(store, { edition, since = null }) {
   const head = await store.head();
+  const gen = head.gen ?? null;
   const partial =
-    since?.edition === edition && Number.isSafeInteger(since.seq) && since.seq <= head.lineSeq;
+    since?.edition === edition &&
+    Number.isSafeInteger(since.seq) &&
+    since.seq <= head.lineSeq &&
+    (since.gen ?? null) === gen;
   const lines = await store.linesSince(partial ? since.seq : 0);
   return {
     edition,
+    ...(gen ? { gen } : {}),
     full: !partial,
     // 바닥 아래(비우기가 남긴 사건)는 셈을 마친 것이다 — 비운 뒤 새 사건이 아직 없어도 표지가 바닥보다 뒤로 가지 않는다(아르곤 끝 판 E1).
     foldedUntil: Math.max(head.foldedUntil, head.floorSeq ?? 0),

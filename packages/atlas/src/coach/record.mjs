@@ -1,6 +1,6 @@
 // 코치가 기록(단계 3 src/record)을 부르는 한 자리(단계 4 계획 §3-2 「기록에 기대는 얇은 겹」). 단계 3 끝 판 검수로 기록 API가
 // 바뀌면 이 파일만 고친다. 기록부는 저장이 끝난 사건만 근거로 보이고(add의 stored), 서버의 답을 받고(receive), 꼬리를 읽는다(refresh).
-// 서버의 답 꼴(learning?view=trail POST)은 단계 3 서버 반영 뒤 굳힌다 — 지금은 { accepted, clamped, rejected, summary, serverTime }.
+// 서버의 답 꼴(learning?view=trail POST · GET) — { accepted, clamped, rejected, rejectedCode, summary, serverTime }(GET은 summary · serverTime).
 import { evidenceOf } from '../fold/evidence.mjs';
 import { deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
 import { EVENT_FORM, EVENT_TYPES } from '../record/events.mjs';
@@ -82,7 +82,10 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     saved: () => record.saved?.() ?? Promise.resolve(),
     // 손님: 지금 든 사건까지 요약을 바로 접는다(판 끝 — 칸에 방금 푼 답이 들게). 계정은 서버가 접으므로 아무것도 안 한다.
     refold: () => record.refold?.() ?? Promise.resolve(),
-    unsent: limit => record.unsent(limit),
+    // 보낼 대기열 — skip(이 세션에 건너뛸 번호)과 그것에 기댄 사건은 빼고 그 너머를 읽는다(§18-5-2 R12 · R13).
+    unsent: (limit, skip) => record.unsent(limit, skip),
+    // 요약을 받을 기준(GET · POST의 since) — 판 묶음 · 줄 차례 · 세대 표지(§18-5-4).
+    since: () => record.since(),
     receive: answer =>
       record.receive({
         accepted: answer?.accepted ?? [],

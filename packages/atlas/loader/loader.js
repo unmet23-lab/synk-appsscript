@@ -23,6 +23,7 @@
     'plan',
     'due',
     'tell',
+    'synced',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;

@@ -15,7 +15,14 @@ import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, parentOf } from './event
 import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
 import { linesOfGroups } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
-import { applyDelta, emptySummary, packSummary, unpackSummary, viewOf } from './summary.mjs';
+import {
+  applyDelta,
+  emptySummary,
+  headOrder,
+  packSummary,
+  unpackSummary,
+  viewOf,
+} from './summary.mjs';
 
 export const KEEP_MS = 2 * 86_400_000;
 const GUEST_REFOLD = 64;
@@ -39,14 +46,20 @@ function noteSave(health, ok, code) {
   if (health) health.note('save', ok ? { ok: true } : { ok: false, code });
 }
 
-// 같은 판 묶음이면 갱신 차례가 큰 요약, 차례가 같으면 접은 자리가 같거나 앞선 요약만 — 늦게 붙은 옛 요약(같은 차례 · 덜 접힘)이
-// 새 요약을 덮어 접은 자리 · 「낸 것」이 뒤로 가지 않게(GPT 끝 판 GC2). 판 묶음이 바뀌면 새 요약.
-const newer = (current, next) =>
-  next &&
-  (!current ||
+// 머리가 다르면(gen) 새 머리의 요약 — 차례를 견주지 않는다(단계 4 §18-5-4 D1 · D2, summary.mjs headOrder). 같은 머리 · 같은 판 묶음이면
+// 갱신 차례가 큰 요약, 차례가 같으면 접은 자리가 같거나 앞선 요약만 — 늦게 붙은 옛 요약(같은 차례 · 덜 접힘)이 새 요약을 덮어
+// 접은 자리 · 「낸 것」이 뒤로 가지 않게(GPT 끝 판 GC2). 판 묶음이 바뀌면 새 요약.
+function newer(current, next) {
+  if (!next) return false;
+  if (!current) return true;
+  const order = headOrder(next, current);
+  if (order !== 0) return order > 0;
+  return (
     current.edition !== next.edition ||
     next.lineSeq > current.lineSeq ||
-    (next.lineSeq === current.lineSeq && next.foldedUntil >= current.foldedUntil));
+    (next.lineSeq === current.lineSeq && next.foldedUntil >= current.foldedUntil)
+  );
+}
 
 function createState(guest, now) {
   return {
@@ -66,6 +79,7 @@ function createState(guest, now) {
     readKey: 0, // 포트에서 읽은 데까지(내 덧붙이기로는 오르지 않는다 — 다른 탭이 먼저 쓴 기록을 건너뛰지 않게, Fable 끝 판 P2)
     unsaved: new Set(), // 이 기록부에서 저장에 실패한(또는 부모가 없어 쓰지 않은) 사건 번호
     inflight: new Map(), // 저장 중인 사건 번호 → 그 저장 약속(자식은 부모의 저장이 끝난 뒤 결과를 보고 쓴다)
+    lastAttempt: new Map(), // 제시 번호 → 이 기록부가 만든 그 제시의 마지막 답 번호(뒤 답은 앞 답에 기대어 쓴다 — §18-4)
     positions: 0,
     seqInMs: 0,
     lastMs: -1,
@@ -157,6 +171,27 @@ function ownOf(state, index) {
   return ownFoldEvents(entries, keys, { index, memo: id => state.held.get(id)?.touches ?? null });
 }
 
+// 서버의 답에 실린 요약 — 얹을 수 없는 부분 답(null) · 늦은 옛 답 · 옛 머리의 답(지금 요약 그대로)이면 null(요약 기록을 새로 쓰지
+// 않는다 — GPT 끝 판 GD1 · GD2, 단계 4 §18-5-4).
+function nextSummary(state, summary) {
+  const delta = summary ? applyDelta(state.summary, summary) : null;
+  return delta && delta !== state.summary ? delta : null;
+}
+
+// 서버의 답 하나를 기록 꼴로 — 받은 표지와 요약은 한 번의 덧붙이기로(설계 §5-4). 요약은 따로 한 기록이라 다음 요약이 서면 지운다.
+function answerValues({ accepted, clamped, rejected, serverTime, next }, now) {
+  return [
+    {
+      kind: 'ack',
+      acks: accepted.map(row => [row.id, row.seq]),
+      clamped: [...clamped],
+      dropped: [...rejected],
+      ...(Number.isFinite(serverTime) ? { offsetMs: serverTime - now() } : {}),
+    },
+    ...(next ? [{ kind: 'summary', summary: packSummary(next) }] : []),
+  ];
+}
+
 // 치울 사건 — 이틀 지났고 서버가 접었고, 남길 묶음에 들지 않은 것. 기기는 묶음 통째로 다시 지어 얹으므로(어댑터) 남길 것은 묶음
 // 단위다: 답이 안 달린 제시의 묶음, 아직 안 접힌 사건이 하나라도 든 묶음은 전부 남긴다(아르곤 끝 판 D1). 묶음 밖 사건(머리가
 // 기기에 없는 자식 · 제외)은 얹을 사건의 부모만 남긴다.
@@ -204,13 +239,14 @@ export function createRecord({
   const edition = () => foldEdition(params, index);
   const accept = row => take(state, row, now);
 
-  // 손님: 든 사건 전부로 요약을 스스로 접는다(서버와 같은 어댑터 · 근거 줄 · 접기).
+  // 손님: 든 사건으로 요약을 스스로 접는다(서버와 같은 어댑터 · 근거 줄 · 접기).
   async function refoldGuest() {
-    // 다른 탭이 먼저 쓴 기록까지 읽고 접는다 — 든 사건의 열쇠만 보면 아직 안 읽은 다른 탭 사건(더 앞 열쇠)까지 접었다고 적어,
-    // 그 사건이 요약에도 얹기에도 빠졌다(GPT 끝 판 GC1). 꼬리를 읽은 뒤에는 든 열쇠 가운데 가장 큰 것까지 모두 읽었다.
+    // 다른 탭이 먼저 쓴 기록까지 읽고, 포트에서 차례대로 읽은 데(readKey)까지만 접는다 — 든 사건 열쇠의 최댓값으로 잡으면 읽는 사이에
+    // 끝난 내 덧붙이기가 아직 안 읽은 다른 탭 사건(더 앞 열쇠)까지 접었다고 적어, 그 사건이 요약에도 얹기에도 빠졌다(GPT 끝 판 GC1 ·
+    // 단계 4 §18-5-1 A4 — s6). 내 덧붙이기로는 readKey가 오르지 않으니(take) 포트가 어떤 차례로 돌든 맞고, 그 뒤 열쇠의 내 사건은 밀린 것으로 얹힌다.
     await refresh();
-    const items = [...state.held.values()];
-    const until = items.reduce((max, item) => Math.max(max, item.key), 0);
+    const until = state.readKey;
+    const items = [...state.held.values()].filter(item => item.key <= until);
     // 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌었으면 든 사건으로 다시 접는다(아르곤 끝 판 D2).
     if (state.local && state.local.until >= until && state.local.summary?.edition === edition())
       return;
@@ -243,11 +279,19 @@ export function createRecord({
 
   // 부모(제시 · 겨눈 사건 · 판)가 이 기록부에서 저장되지 못했으면 자식도 쓰지 않는다 — 부모가 아직 저장 중이면 그 뒤에. 부모 없는
   // 자식이 저장되면 서버가 그 사건을 받지 못해 올리기가 막혔다(Fable 끝 판 P1 — 이제 서버도 그런 사건만 빼고 받는다).
-  async function append(type, event, value) {
-    if (state.unsaved.has(parentOf(event))) {
+  // 같은 제시의 답은 바로 앞 답에도 기댄다(단계 4 §18-4) — 앞 답이 저장되지 못했으면 뒤 답도 쓰지 않는다. 쓰면 1번이 없는
+  // attemptNo 2가 남아 서버가 EVENT_LINK로 빼고, 손님 기기에서는 틀린 뒤 다시 맞힌 답이 혼자 낸 첫 답으로 접혔다(s4).
+  // 딸린 거절은 계기에 코드만 센다(이어진 실패 수에 넣지 않는다 — G5 · H2).
+  async function append(type, event, value, before = null) {
+    const parentLost = state.unsaved.has(parentOf(event));
+    if (parentLost || (before != null && state.unsaved.has(before))) {
       state.unsaved.add(event.id);
       remember(state, event);
-      noteSave(health, false, 'PARENT_UNSAVED');
+      health?.note('save', {
+        ok: false,
+        code: parentLost ? 'PARENT_UNSAVED' : 'ATTEMPT_UNSAVED',
+        dependent: true,
+      });
       return false;
     }
     try {
@@ -270,9 +314,16 @@ export function createRecord({
   }
 
   function store(type, event, value) {
-    const run = () => append(type, event, value);
-    const parent = state.inflight.get(parentOf(event));
-    const result = parent ? parent.then(run, run) : run();
+    // 같은 제시의 바로 앞 답(이 기록부가 만든 것) — 저장 중이면 기다리고, 이미 실패했으면 append가 거절한다(§18-4 H1: 둘 다).
+    const attempt = type === EVENT_TYPES.attempted;
+    const before = attempt ? (state.lastAttempt.get(event.presentationId) ?? null) : null;
+    if (attempt) state.lastAttempt.set(event.presentationId, event.id);
+    const run = () => append(type, event, value, before);
+    const waits = [
+      state.inflight.get(parentOf(event)),
+      before && state.inflight.get(before),
+    ].filter(Boolean);
+    const result = waits.length ? Promise.allSettled(waits).then(run) : run();
     state.inflight.set(event.id, result);
     result.finally(() => {
       if (state.inflight.get(event.id) === result) state.inflight.delete(event.id);
@@ -320,14 +371,36 @@ export function createRecord({
       return { event, stored: store(type, event, value) };
     },
 
-    // 보낼 대기열 — 받은 표지가 없고 버리지 않은 내 2판 사건(만든 차례).
-    unsent(limit = 256) {
-      return [...state.held.values()]
-        .filter(item => isCurrent(item.event))
-        .filter(item => !state.acks.has(item.event.id) && !state.dropped.has(item.event.id))
-        .sort((a, b) => a.key - b.key)
-        .slice(0, limit)
-        .map(item => item.event);
+    // 보낼 대기열 — 받은 표지가 없고 버리지 않은 내 2판 사건(만든 차례). skip은 이 세션에 건너뛸 번호들(서버가 번호 없이 묶음째
+    // 돌려보낸 사건을 가려낸 것 — 버리지 않는다)이고, 그것에 기댄 사건(부모 사슬 — 그 제시의 전달 · 도움 · 답, 그것들을 겨눈 제외,
+    // 그 결정의 마침 · 응답)도 함께 건너뛰고 그 너머를 읽는다(단계 4 §18-5-2 R12 · R13). 부모 없이 보내면 서버가 EVENT_LINK로 빼고
+    // 기기가 그것을 버려, 부모가 올라간 뒤에도 다시 가지 않았다(s9). 부모는 늘 앞 열쇠라 한 번 훑기로 사슬이 다 걸린다.
+    unsent(limit = 256, skip = null) {
+      const blocked = new Set(skip ?? []);
+      const out = [];
+      for (const item of [...state.held.values()].sort((a, b) => a.key - b.key)) {
+        const event = item.event;
+        if (!isCurrent(event) || state.acks.has(event.id) || state.dropped.has(event.id)) continue;
+        if (blocked.has(event.id) || blocked.has(parentOf(event))) {
+          blocked.add(event.id);
+          continue;
+        }
+        out.push(event);
+        if (out.length >= limit) break;
+      }
+      return out;
+    },
+
+    // 요약을 받을 기준(GET · POST의 since) — 지금 계정 요약의 판 묶음 · 줄 차례 · 세대 표지. gen이 없는 요약(gen 전에 받은 것)이면 gen을
+    // 싣지 않는다 — 서버는 gen이 다르면 통째로 준다(§18-5-4 R17). 요약이 없으면 null(통째로).
+    since() {
+      const summary = state.summary;
+      if (!summary) return null;
+      return {
+        edition: summary.edition,
+        seq: summary.lineSeq,
+        ...(summary.gen ? { gen: summary.gen } : {}),
+      };
     },
 
     // 서버의 답 하나 — 받은 표지 · 누른 것 · 버린 것 · 요약을 한 기록으로 덧붙인다.
@@ -339,20 +412,14 @@ export function createRecord({
       summary = null,
       serverTime = null,
     }) {
-      // 얹을 수 없는 부분 답(null) · 늦은 옛 답(지금 요약 그대로)은 요약 기록을 새로 쓰지 않는다(GPT 끝 판 GD1 · GD2).
-      const delta = summary ? applyDelta(state.summary, summary) : null;
-      const next = delta && delta !== state.summary ? delta : null;
-      const values = [
-        {
-          kind: 'ack',
-          acks: accepted.map(row => [row.id, row.seq]),
-          clamped: [...clamped],
-          dropped: [...rejected],
-          ...(Number.isFinite(serverTime) ? { offsetMs: serverTime - now() } : {}),
-        },
-        // 받은 표지와 요약은 한 번의 덧붙이기로(설계 §5-4) — 요약은 따로 한 기록이라 다음 요약이 서면 지운다.
-        ...(next ? [{ kind: 'summary', summary: packSummary(next) }] : []),
-      ];
+      const next = nextSummary(state, summary);
+      // 달라진 것이 없는 답(받은 표지 · 누른 것 · 버린 것 · 새 요약이 없는 GET)은 기록을 쓰지 않는다 — 빈 표지가 쌓이고 다른 탭을
+      // 깨웠다(단계 4 §18-5-5 B5). 서버 시각과의 차이만 이 기록부의 시계에 맞춘다.
+      if (!accepted.length && !clamped.length && !rejected.length && !next) {
+        if (Number.isFinite(serverTime)) state.clock.sync(serverTime);
+        return baseOf(state);
+      }
+      const values = answerValues({ accepted, clamped, rejected, serverTime, next }, now);
       const keys = await port.append(values);
       values.forEach((value, i) => accept({ key: keys[i], value }));
       if (next) await dropRows(state.summaryRows, state.summaryKey);

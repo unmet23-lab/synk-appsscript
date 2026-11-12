@@ -88,13 +88,25 @@ function fakeIndexedDB() {
   const db = {
     objectStoreNames: { contains: () => true },
     transaction,
-    close() {},
+    closed: 0,
+    onversionchange: null,
+    close() {
+      db.closed += 1;
+    },
   };
   return {
     rows,
+    db,
+    blocked: false, // 다른 연결이 놓지 않아 열기가 막힌다 — onblocked를 부르고 열기를 미룬다
+    release: null, // 막힌 열기를 푼다
     open() {
       const req = request();
       req.result = db;
+      if (this.blocked) {
+        later(() => req.onblocked?.());
+        this.release = () => later(() => req.onsuccess?.());
+        return req;
+      }
       later(() => req.onsuccess?.());
       return req;
     },
@@ -130,6 +142,28 @@ test('지우기 도중 잘못된 열쇠가 섞이면 하나도 지우지 않고 
     (await port.read()).map(row => row.key),
     [2],
   );
+});
+
+test('다른 탭(뒤 판 엔진)이 저장소 꼴을 올리려 하면 이 연결을 닫아 비켜 준다(단계 4 §18-5-5 G3)', async () => {
+  const fake = fakeIndexedDB();
+  await idbPort('t', { indexedDB: fake });
+  assert.equal(typeof fake.db.onversionchange, 'function');
+  fake.db.onversionchange();
+  assert.equal(fake.db.closed, 1);
+});
+
+// 시간 한도를 둔다 — 거절하지 않는 판에서는 열기가 끝나지 않아 시험이 멈춘다(그 판을 잡아야 하는 시험이다).
+test('열기가 다른 연결에 막히면 한도 뒤 STORAGE_FAILED로 거절하고, 늦게 열린 연결은 바로 닫는다(G3 — coach.ready가 멈추지 않게)', {
+  timeout: 5000,
+}, async () => {
+  const fake = fakeIndexedDB();
+  fake.blocked = true;
+  await assert.rejects(idbPort('t', { indexedDB: fake, blockedWait: 20 }), {
+    code: 'STORAGE_FAILED',
+  });
+  fake.release();
+  await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(fake.db.closed, 1, '아무도 들지 않은 연결을 닫는다');
 });
 
 test('저장이 끝난 뒤 다른 탭 알림이 던져도 덧붙이기는 성공이고 열쇠를 돌려준다(닫힌 채널)', async () => {

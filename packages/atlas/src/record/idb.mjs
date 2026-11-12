@@ -42,17 +42,55 @@ async function atomically(transaction, issue) {
   return results;
 }
 
-export async function idbPort(name, { indexedDB = globalThis.indexedDB, channel = null } = {}) {
+// 열기가 다른 연결에 막혔을 때(뒤 판 엔진이 저장소 꼴을 올리는데 옛 판 탭이 연결을 쥔 채) 기다리는 한도 — 넘으면 STORAGE_FAILED로
+// 거절해 coach.ready가 거절도 없이 멈추지 않게 한다(단계 4 §18-5-5 G3). 시험만 blockedWait로 바꾼다.
+export const BLOCKED_WAIT_MS = 3000;
+
+const storageFailed = (message, cause) =>
+  Object.assign(new Error(`Atlas record: ${message}`), { code: 'STORAGE_FAILED', cause });
+
+// 열기 — 막히면(onblocked) 한도 뒤 거절하고, 그 뒤 늦게 열린 연결은 바로 닫는다(아무도 들지 않은 연결이 다른 탭의 판 올리기를 막지 않게).
+function openDb(indexedDB, name, wait) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open(name, 1);
+    let timer = null;
+    let gaveUp = false;
+    open.onupgradeneeded = () => {
+      if (!open.result.objectStoreNames.contains(STORE))
+        open.result.createObjectStore(STORE, { autoIncrement: true });
+    };
+    open.onblocked = () => {
+      if (timer) return;
+      timer = setTimeout(() => {
+        gaveUp = true;
+        reject(storageFailed('다른 연결이 저장소를 놓지 않는다'));
+      }, wait);
+      timer.unref?.();
+    };
+    open.onsuccess = () => {
+      clearTimeout(timer);
+      if (gaveUp) open.result.close();
+      else resolve(open.result);
+    };
+    open.onerror = () => {
+      clearTimeout(timer);
+      reject(open.error ?? storageFailed('저장소를 열지 못했다'));
+    };
+  });
+}
+
+export async function idbPort(
+  name,
+  { indexedDB = globalThis.indexedDB, channel = null, blockedWait = BLOCKED_WAIT_MS } = {},
+) {
   if (!indexedDB)
     throw Object.assign(new Error('Atlas record: IndexedDB가 없다'), {
       code: 'STORAGE_UNAVAILABLE',
     });
-  const open = indexedDB.open(name, 1);
-  open.onupgradeneeded = () => {
-    if (!open.result.objectStoreNames.contains(STORE))
-      open.result.createObjectStore(STORE, { autoIncrement: true });
-  };
-  const db = await done(open);
+  const db = await openDb(indexedDB, name, blockedWait);
+  // 다른 탭(뒤 판 엔진)이 저장소 꼴을 올리려 하면 이 연결을 닫아 비켜 준다 — 첫 공개 판에 이 손잡이가 없으면 뒤 판에서는 고칠 수 없다
+  // (옛 탭은 이미 떠 있다, G3). 닫힌 뒤의 읽기 · 쓰기는 던지고 기록부는 저장 실패로 받는다.
+  db.onversionchange = () => db.close();
   const each = async (range = null) => {
     const transaction = db.transaction(STORE, 'readonly');
     const store = transaction.objectStore(STORE);

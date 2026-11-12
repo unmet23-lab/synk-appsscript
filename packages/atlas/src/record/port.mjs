@@ -44,9 +44,11 @@ export function memoryPort({ failWith = null } = {}) {
 }
 
 // 저장 이름 — 계정과 동의 판마다 따로(지금 규칙 그대로). 손님은 계정 대신 guest.
-export function storeName({ account = null, revision = null }) {
+// local: 동의 꺼짐 · 쓰기 문 닫힘(learningSync 거짓) 계정의 기기 길 — 기기가 원천이고 올리지 않는다(단계 4 계획 §18-5-5 E1). 이름을
+// 제품이 글자로 짓지 않는다(다음 제품이 다르게 지으면 저장소가 갈린다).
+export function storeName({ account = null, revision = null, local = false }) {
   if (account == null) return 'synk-atlas:guest';
   if (!Number.isSafeInteger(revision) || revision < 1)
     throw new TypeError('Atlas record: 계정 저장에는 동의 판 번호가 있어야 한다');
-  return `synk-atlas:${account}:${revision}`;
+  return local ? `synk-atlas:local:${account}:${revision}` : `synk-atlas:${account}:${revision}`;
 }

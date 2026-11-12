@@ -10,6 +10,9 @@
 //   { ok: false, code }                   실패했다. 코드는 대문자 낱말만 남긴다(메시지 · 경고 문장 · 답 · 문항은 싣지 않는다)
 //   { ok: false, code, waiting: true }    (save) 다른 탭 · 틀이 쓰기 잠금을 쥐고 있어 미뤘다 — 정상 경로다. 시도로도 실패로도 세지 않고,
 //                                         다음에 저장이 될 때까지 「기다리는 중」으로 둔다
+//   { ok: false, code, dependent: true }  (save) 딸린 거절 — 부모 · 같은 제시의 앞 답이 저장되지 못해 쓰지 않았다(PARENT_UNSAVED ·
+//                                         ATTEMPT_UNSAVED). 코드만 센다 — 진짜 저장 실패 한 번 뒤의 다시 낸 답 둘이 「엔진 꺼짐」으로
+//                                         읽히지 않게 이어진 실패 수(streak)에는 넣지 않는다(단계 4 §18-5-2 G5 · H2)
 // observeStorage(available) — 저장소를 쓸 수 있는가의 마지막 관측. 판정에는 쓰지 않는다(잠금을 기다리는 탭도 false다).
 // snapshot() — 수 · 코드 · 시각만 있는 요약. 학습자 신원 · 문항 번호 · 답 내용이 없다.
 //
@@ -85,6 +88,10 @@ export function createHealth({ clock = Date.now, offAfter = 3 } = {}) {
     if (kind === 'save' && outcome.waiting === true) {
       tally.waits += 1;
       tally.waiting = true;
+      return;
+    }
+    if (kind === 'save' && outcome.ok === false && outcome.dependent === true) {
+      countCode(tally.codes, cleanCode(outcome.code));
       return;
     }
     tally.attempts += 1;

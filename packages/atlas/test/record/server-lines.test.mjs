@@ -69,7 +69,7 @@ test('접기에 닿았지만 값이 같은 줄은 갱신 차례가 오르지 않
   assert.equal(again.changed, 0, '달라진 줄이 없다');
   const after = await summaryOf(server.account.store(edition), {
     edition,
-    since: { edition, seq: first.lineSeq },
+    since: { edition, seq: first.lineSeq, gen: first.gen },
   });
   assert.equal(after.full, false);
   assert.equal(after.lineSeq, first.lineSeq, '갱신 차례가 오르지 않는다');

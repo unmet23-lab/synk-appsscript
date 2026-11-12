@@ -5,6 +5,7 @@ const C = 'coach';
 const SESSION = 'src/coach/session.mjs';
 const HOST = 'src/coach/host.mjs';
 const FIELDS = 'src/coach/fields.mjs';
+const SYNC = 'src/coach/sync.mjs';
 
 export const COACH_MUTANTS = [
   [
@@ -211,9 +212,9 @@ export const COACH_MUTANTS = [
     C,
     '호스트',
     '올리기가 한 묶음 뒤 멈춘다(GPT GC3)',
-    HOST,
-    'if (!state.closed && state.trail.unsent(UPLOAD_LIMIT).some(event => !sent.has(event.id)))',
-    'if (false)',
+    SYNC,
+    '          .some(event => !sent.has(event.id))\n      )\n        schedule();',
+    '          .some(event => !sent.has(event.id)) && false\n      )\n        schedule();',
   ],
   [
     C,
@@ -486,9 +487,9 @@ export const COACH_MUTANTS = [
     C,
     '호스트',
     '서버의 답을 받고 다른 탭에 알리지 않는다 — 다른 탭이 서버 요약 · 버린 사건 없이 고른다(GPT 최종 GC1)',
-    HOST,
-    "        announce();\n        tell('receive');",
-    "        tell('receive');",
+    SYNC,
+    "    if (state.received) {\n      announce();\n      tell('receive');",
+    "    if (state.received) {\n      tell('receive');",
   ],
   [
     C,
@@ -569,5 +570,94 @@ export const COACH_MUTANTS = [
     'src/vellum/ko.mjs',
     '      : null;',
     '      : `이번 주 숙제예요. 「${name}」에서 놓친 답이 있어 새 문항으로 다시 확인해요.`;',
+  ],
+  // ── 계정 길 ① — 올리기 · 받기 갈래(단계 4 §18-5-2 · §18-5-5) ──
+  [
+    C,
+    '올리기',
+    'POST의 403 FEATURE_DISABLED를 스위치 꺼짐으로 읽는다(쓰기 문 닫힘이 지금 판으로 — B2)',
+    SYNC,
+    "  ['403 FEATURE_DISABLED', ['writes', 'switch']],",
+    "  ['403 FEATURE_DISABLED', ['switch', 'switch']],",
+  ],
+  [
+    C,
+    '올리기',
+    '번호 없는 400에 올리기를 멈춘다(사건 하나가 뒤 대기열을 막는다 — B1)',
+    SYNC,
+    "    if (kind === 'too-large' || kind === 'sift') return sift(events, error);",
+    "    if (kind === 'too-large') return sift(events, error);",
+  ],
+  [
+    C,
+    '올리기',
+    '가려낸 것이 여덟을 넘어도 쉬지 않는다(R13)',
+    SYNC,
+    "    return state.skipped.size > SIFT_CAP ? 'paused' : 'ok';",
+    "    return 'ok';",
+  ],
+  [
+    C,
+    '올리기',
+    '뒤 조각을 보낼 때 앞 조각에서 가려낸 사건의 자식을 거르지 않는다(R12)',
+    SYNC,
+    '    const events = batch.filter(event => allowed.has(event.id));',
+    '    const events = batch;',
+  ],
+  [
+    C,
+    '올리기',
+    '서버가 번호를 짚은 사건을 버리지 않는다(같은 409를 되풀이한다)',
+    SYNC,
+    '    await receive({ rejected: gone, rejectedCode: codeOf(error) });',
+    '',
+  ],
+  [
+    C,
+    '올리기',
+    'REVISION_CONFLICT 뒤에도 올리기 · 받기를 이어 간다(R14)',
+    SYNC,
+    '    else state.stopped = kind;',
+    '    else state.stopped = null;',
+  ],
+  [
+    C,
+    '올리기',
+    '닫힌 뒤 돌아온 답을 받아 저장소에 쓴다(A3 ⓑ)',
+    SYNC,
+    '    if (state.closed) return; // 닫힌 뒤 돌아온 답은 받지 않는다 — 서버는 받았으니 다음에 같은 번호가 「받음」으로 돌아온다',
+    '',
+  ],
+  [
+    C,
+    '올리기',
+    '묶음을 바이트로 자르지 않는다(413 · 본문 상한 — B1)',
+    SYNC,
+    '    if (out.length >= limit || (out.length && total + size > bytes)) break;',
+    '    if (out.length >= limit) break;',
+  ],
+  [
+    C,
+    '받기',
+    'GET 400에 since 없이 다시 받지 않는다(R14)',
+    SYNC,
+    '        answer = await get(null); // since 없이 한 번 다시(통째)',
+    '        throw error;',
+  ],
+  [
+    C,
+    '호스트',
+    '손님 길 계정이 올리는 저장소 이름을 써도 받는다(E4)',
+    'src/coach/index.mjs',
+    '  if (host.guest === true && host.account != null && uploadsTo(host))',
+    '  if (false)',
+  ],
+  [
+    C,
+    '호스트',
+    '기기 길 계정의 저장소 이름이 올리는 저장소 이름과 같다(E1)',
+    'src/record/port.mjs',
+    '  return local ? `synk-atlas:local:${account}:${revision}` : `synk-atlas:${account}:${revision}`;',
+    '  return `synk-atlas:${account}:${revision}`;',
   ],
 ];

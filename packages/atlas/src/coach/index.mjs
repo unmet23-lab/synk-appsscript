@@ -47,14 +47,29 @@ async function loadMap(options) {
 }
 
 // host.document: 틀(게임) 안 코치 — 저장소 열쇠를 스스로 짓지 않고 위 창의 셸이 연 문서 호스트를 받는다(Fable 설계 P1-3).
+// 첫 받기를 기다리는 기본 한도(synced) — 계정 클라이언트의 요청 한도(12초)를 그대로 기다리지 않는다(B4 · G4).
+export const SYNC_WAIT_MS = 4000;
+
+// 손님 길(기기가 원천)로 여는 계정의 저장소 이름이 그 계정의 올리는 저장소 이름이면 거절 — 올리지 않는 기록이 올리는 저장소에 섞인다(E4).
+function uploadsTo(host) {
+  try {
+    return host.key === storeName({ account: host.account, revision: host.revision });
+  } catch {
+    return false; // 판 번호가 없으면 올리는 저장소 이름도 없다
+  }
+}
+
 function hostOptions(options) {
   const host = options.host ?? {};
   if (host.document === true) return { host, guest: null, key: null };
   const guest = host.guest === true || host.account == null;
   // 손님 길(기기가 원천)로 여는 계정(동의 꺼진 계정 등)은 저장소 이름을 스스로 짓지 않는다 — 지으면 그 기기의 손님 기록과 한 저장소
-  // (synk-atlas:guest)에 섞인다(설계 §5-4 「저장 이름은 계정과 동의 판마다」, Fable 5.2 최종 F6). 그 길을 여는 제품이 key를 준다(4-1 계정 길).
+  // (synk-atlas:guest)에 섞인다(설계 §5-4 「저장 이름은 계정과 동의 판마다」, Fable 5.2 최종 F6). 그 길을 여는 제품이 key를 준다 —
+  // storeName({ account, revision, local: true })로 짓는다(계획 §18-5-5 E1).
   if (host.guest === true && host.account != null && host.key == null)
     throw new TypeError('Atlas coach: 손님 길로 여는 계정은 저장소 이름(host.key)을 준다');
+  if (host.guest === true && host.account != null && uploadsTo(host))
+    throw new TypeError('Atlas coach: 손님 길로 여는 계정은 올리는 저장소 이름을 쓰지 않는다');
   // key는 저장소 이름(storeName)이다. 시험 · 호스트가 같은 문서에서 저장소를 가를 때만 직접 준다.
   const key =
     host.key ??
@@ -106,6 +121,7 @@ export function createCoach(options = {}) {
         params,
         health: host.health ?? null,
         transport: host.transport ?? null,
+        onAccount: host.onAccount ?? null,
         legacy: host.legacy ?? null,
         ...(host.legacyWait > 0 ? { legacyWait: host.legacyWait } : {}),
         now: host.now,
@@ -311,10 +327,22 @@ export function createCoach(options = {}) {
         storage: {
           available: true,
           guest: state.host.guest,
+          // 이 기기에 그 계정 · 그 동의 판의 요약이 있다(빈 요약 포함 — 계획 §6 셋째 조건). 손님은 기기가 원천이라 늘 참.
+          base: state.host.guest || base != null,
           pending: state.host.pendingCount(),
           unsent: state.host.trail.unsent().length,
+          sync: state.host.syncStatus(),
         },
       };
+    },
+
+    // 첫 받기(GET)의 결과를 한도 안에서 기다린다(계획 §18-5-5 G4) — 처음인 기기의 판 정하기가 쓴다. coach.ready는 받기를 기다리지
+    // 않는다(요약이 있는 기기는 오프라인으로 바로 선다). { ok, base, kind?, code? } — ok: 받기가 됐다, base: 이 기기에 그 계정 · 그 동의
+    // 판의 요약이 있다, kind: 못 받은 갈래(offline · switch · account · auth · other · timeout). 손님은 곧 { ok: true, base: true }.
+    async synced(wait = SYNC_WAIT_MS) {
+      live();
+      const result = await state.host.firstPull(wait);
+      return { ...result, base: state.host.guest || state.host.trail.summary() != null };
     },
 
     // 화면용 「봤나」(seen) — 띄우기만 한 제시도 본 것이다(지금 판 exposure와 같은 뜻). 측정용 「앞서 만났나」(met)를 함께 낸다 —

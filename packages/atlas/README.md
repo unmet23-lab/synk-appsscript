@@ -97,6 +97,7 @@ const { coach: open } = await import('/atlas/loader.mjs');
 - `loader.js`에는 정적 `import` · `export`가 없어 클래식 스크립트로도 모듈로도 실린다. 판 묶음은 동적 `import()`로 받는다(드라마 CSP `script-src 'self'` · PC 앱 `synk-desktop://` 모두 같은 출처라 통한다).
 - **`ready`는 한 번만 정해진다.** 판 묶음을 못 받으면(404 · 오프라인 · 시간 상한 20초) `code: 'LOAD_FAILED'`(`reason`: `IMPORT` · `TIMEOUT` · `EDITION_MISMATCH` · `NO_BASE`)로 거절한다. 제품은 이때 지금처럼 원고 순서로 가고, 호스트는 계기에 원인까지 담은 코드로 넘긴다 — `note('load', { ok: false, code: error.reason ? 'LOAD_' + error.reason : error.code })`(`LOAD_IMPORT` · `LOAD_TIMEOUT` · `LOAD_EDITION_MISMATCH` · `LOAD_NO_BASE` — 404인지 느린 망인지 판 엇갈림인지 가르려고). 판 묶음이 낸 코치의 `ready`가 거절되면 입구가 그 코치를 닫고 같은 거절을 넘긴다(그 코치가 쥔 잠금 · 구독이 새지 않게).
 - `ready` 전에 부른 메서드는 `NOT_READY`로 던진다. 떠나는 화면은 `ready` 전에도 `dispose()`할 수 있다 — 그 뒤 도착한 코치는 붙이지 않고 닫고, 메서드는 `DISPOSED`로 던진다.
+- **`ready`는 서버를 기다리지 않는다.** 요약이 있는 기기는 오프라인으로도 바로 선다. 계정으로 처음 여는 기기에서 판을 정하는 화면(첫 진단 · 「처음 오셨네요」)만 `await coach.synced()`로 첫 받기를 한도(4초) 안에서 기다린다 — `{ ok, base, kind?, code? }`, `base`는 이 기기에 그 계정 · 그 동의 판의 요약이 있는가, `kind`는 못 받은 갈래(`offline` · `switch` · `account` · `auth` · `other` · `timeout`). 손님은 곧 `{ ok: true, base: true }`다(단계 4 계획 §18-5-5 G4).
 - 같은 문서에 입구가 두 번 실리면 먼저 실린 판 하나만 돈다. **같은 출처의 위 창에 입구가 있으면 그 판을 따른다**(WORLD 틀 안 게임과 위 창이 다른 판을 받지 않게). 엇갈린 판은 `SynkAtlas.conflicts`에 남는다.
 - 제품은 입구를 `/atlas/loader.js` · `/atlas/loader.mjs` 절대 주소로, `?v=` 없이 부른다 — 토큰을 붙이면 엔진을 올릴 때마다 `tools/공개.js`가 제품 HTML의 토큰까지 바꿔 「엔진을 고쳐도 제품 묶음을 건드리지 않는다」가 깨진다. 판 폴더(`/atlas/<판>/…`)를 제품이 바로 부르지 않는다. WORLD 공개 빌드(`tools/build-world-app-public.mjs`)가 이것을 막는다.
 
