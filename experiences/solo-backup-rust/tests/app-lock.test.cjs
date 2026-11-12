@@ -81,6 +81,11 @@ test('window operations take the engine lock, read the run\'s settings first, ke
   assert.equal((await app.call('setAutomatic', [false])).value.ok, true);
   assert.equal(JSON.parse(fs.readFileSync(settings, 'utf8')).warning, 'written by a scheduled run', 'not overwritten with the window\'s old copy');
 
+  // Two quick clicks: the second is refused while the first is still waiting for the lock (review D1).
+  const both = await Promise.all([app.call('setAutomatic', [false]), app.call('setAutomatic', [false])]);
+  assert.deepEqual(both.map(r => r.value.ok).sort(), [false, true]);
+  assert.match(both.find(r => !r.value.ok).value.error, /진행 중인 작업/);
+
   // 「지금 백업」 answers at once; the lock stays until the job ends.
   assert.equal((await app.call('backupNow')).value.ok, true);
   assert.equal(host.held, true, 'held while the job runs');

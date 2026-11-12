@@ -111,7 +111,7 @@ jobs:
             Expect ($r.register.ok -eq $true -and $r.register.folder -eq $case.place) "$($case.n): register $($r.register | ConvertTo-Json -Compress)"
             Expect ($r.registeredAfter.Ok -eq $true) "$($case.n): not registered after registering"
             Expect (@($r.locations.Ok).Count -eq 1 -and @($r.locations.Ok)[0] -eq $case.place) "$($case.n): locations $(@($r.locations.Ok) -join ',')"
-            Expect ($r.remove.Ok -eq $true -and $r.registeredAfterRemove.Ok -eq $false) "$($case.n): remove"
+            Expect ($r.remove.Ok -eq $true -and $r.registeredAfterRemove.Ok -eq $false -and @($r.locationsAfterRemove.Ok).Count -eq 0) "$($case.n): remove left $(@($r.locationsAfterRemove.Ok) -join ',')"
           }
           $kept = Read 'user-root-kept'
           Expect ($kept.register.ok -eq $true -and $kept.register.folder -eq '\' -and @($kept.locations.Ok).Count -eq 1) 'user-root-kept: registered in the root'

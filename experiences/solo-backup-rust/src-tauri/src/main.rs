@@ -63,16 +63,17 @@ impl NativeHost {
     }
 }
 fn run_exe(app:&Path)->PathBuf{app.with_file_name("WorkBackupRun.exe")}
-fn task_user()->String{std::env::var("USERNAME").unwrap_or_default()}
 fn run_tasks_registered(app:&Path,test:bool)->Result<bool,String>{
     if test{return Ok(false);}
-    schedule::registered(&run_exe(app),&task_user(),&schedule::current_sid()?)
+    let sid=schedule::current_sid()?;
+    schedule::registered(&run_exe(app),&schedule::account_label(&sid),&sid)
 }
 /// Registers or removes the run tasks. A test or unpackaged build never touches Task
 /// Scheduler. Registering also removes the Windows Run entry earlier betas used.
 fn set_run_tasks(app:&Path,enabled:bool,test:bool,packaged:bool)->Result<bool,String>{
     if test||!packaged{return Err("STARTUP_TEST_DISABLED".into());}
-    let (run,user,sid)=(run_exe(app),task_user(),schedule::current_sid()?);
+    let (run,sid)=(run_exe(app),schedule::current_sid()?);
+    let user=schedule::account_label(&sid);
     if enabled{
         if !run.is_file(){return Err("RUN_EXE_MISSING".into());}
         schedule::register(&run,&user,&sid,&schedule::local_now())?;

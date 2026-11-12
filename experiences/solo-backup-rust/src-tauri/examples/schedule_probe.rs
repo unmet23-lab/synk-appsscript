@@ -15,6 +15,8 @@ fn main() {
     let (exe, out) = (PathBuf::from(&args[0]), PathBuf::from(&args[1]));
     let user = std::env::var("USERNAME").unwrap_or_default();
     let sid = schedule::current_sid();
+    // Task names use the token's account (as the app does), not USERNAME.
+    let user = sid.as_ref().map(|s| schedule::account_label(s)).unwrap_or(user);
     // Who really runs this probe comes from the token, not from USERNAME (a process
     // started with other credentials can inherit the parent's environment).
     let mut result = json!({ "envUser": schedule::user_label(&user), "sid": sid.as_ref().ok(), "admin": is_admin(), "elevated": is_elevated() });
@@ -27,6 +29,7 @@ fn main() {
         if !keep {
             result["remove"] = json!(schedule::remove(&user, sid).map(|_| true).map_err(|e| e.to_string()));
             result["registeredAfterRemove"] = json!(schedule::registered(&exe, &user, sid).map_err(|e| e.to_string()));
+            result["locationsAfterRemove"] = json!(schedule::locations(&user, sid).map_err(|e| e.to_string()));
         }
     }
     std::fs::write(&out, serde_json::to_vec_pretty(&result).unwrap()).expect("write result");

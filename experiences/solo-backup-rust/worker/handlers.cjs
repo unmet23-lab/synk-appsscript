@@ -80,10 +80,14 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
   let lockUsers = 0, lockChain = Promise.resolve();
   const jobsRunning = () => Object.values(profiles.engines).some(e => e.job);
   function lockCall(method) { const call = lockChain.then(() => host(method, [])); lockChain = call.catch(() => {}); return call; }
+  // Settings reloads run one after another (reviews D2 · D3): an operation waits for a reload
+  // already under way and then reads again, instead of acting on a half-opened engine.
+  let reloadChain = Promise.resolve();
+  function reloadSettings() { const run = reloadChain.then(() => profiles.reload()); reloadChain = run.catch(() => {}); return run; }
   async function engineLock() {
     lockUsers++;
     if ((await lockCall('engine.lock').catch(() => false)) !== true) { engineUnlock(); return false; }
-    try { await profiles.reload(); } catch (e) { engineUnlock(); throw e; }
+    try { await reloadSettings(); } catch (e) { engineUnlock(); throw e; }
     return true;
   }
   function engineUnlock() { lockUsers = Math.max(0, lockUsers - 1); maybeUnlock(); }
@@ -97,19 +101,21 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
   function handle(name, action, {read=false,switching=false,safeErrors=false,lock=!read&&!switching}={}) {
     handlers.set(name, async (...args) => {
       if (!read && (closing || dialogBusy || recovery.busy)) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
-      if (lock) {
-        let held;
-        try { held = await engineLock(); } catch (e) { return {ok:false,error:profiles.current.clean(e.message)}; }
-        if (!held) return {ok:false,error:'예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.',code:'RUN_ACTIVE'};
-      }
-      let claimed = false;
+      // The slot is taken before the first wait, so a second click cannot slip in while the
+      // first one waits for the engine lock (review D1).
+      let claimed = false, held = false;
+      if (!read) { dialogBusy = true; claimed = true; }
       try {
+        if (lock) {
+          try { held = await engineLock(); } catch (e) { return {ok:false,error:profiles.current.clean(e.message)}; }
+          if (!held) return {ok:false,error:'예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.',code:'RUN_ACTIVE'};
+        }
         const context = {engine:profiles.current, selection:profiles.selection};
         if (!read && !switching && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
         if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
-        try { if (!read) { dialogBusy=true; claimed=true; } profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
+        try { profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
         catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message)}; }
-      } finally { if (claimed) dialogBusy=false; if (lock) engineUnlock(); }
+      } finally { if (claimed) dialogBusy=false; if (held) engineUnlock(); }
     });
   }
   async function folder(title,multi=false) {
@@ -247,7 +253,7 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
     const ended = !!runProgress && !next;
     runProgress = next ?? null;
     // A run that just ended wrote new settings; read them (writes are atomic, no lock needed).
-    if (ended && lockUsers === 0 && !jobsRunning()) await profiles.reload().catch(() => {});
+    if (ended && lockUsers === 0 && !jobsRunning()) await reloadSettings().catch(() => {});
     push();
   }
   const timers = [setInterval(() => void recoveryTick(), 60000), setInterval(() => void refreshRun(), 5000)];

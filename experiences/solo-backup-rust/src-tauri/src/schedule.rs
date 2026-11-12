@@ -41,6 +41,14 @@ pub fn user_label(name: &str) -> String {
 pub fn task_name(user: &str, sid: &str, trigger: Trigger) -> String { format!("회차 - {} - {} · {}", user_label(user), trigger.label(), sid_tag(sid)) }
 fn sid_tag(sid: &str) -> String { use sha2::{Digest, Sha256}; format!("{:x}", Sha256::digest(sid.as_bytes()))[..6].to_string() }
 
+/// The text of the first `<tag>` element, unescaped (review C2: compare values, not escaped text).
+fn element(xml: &str, tag: &str) -> Option<String> {
+    let open = format!("<{tag}>");
+    let start = xml.find(&open)? + open.len();
+    let end = start + xml[start..].find(&format!("</{tag}>"))?;
+    Some(xml[start..end].replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&"))
+}
+
 fn escape(text: &str) -> String {
     text.chars().map(|c| match c { '&' => "&amp;".into(), '<' => "&lt;".into(), '>' => "&gt;".into(), '"' => "&quot;".into(), '\'' => "&apos;".into(), c => c.to_string() }).collect()
 }
@@ -126,6 +134,24 @@ fn sid_of(account: &str) -> Option<String> {
         Some(found)
     }
 }
+/// The account name for the task names, from the token's SID (review B1: USERNAME can be
+/// empty or inherited from another account, so the names would change between runs).
+#[cfg(test)] fn account_full(sid: &str) -> Option<String> { account_parts(sid).map(|(domain, name)| format!("{domain}\\{name}")) }
+fn account_parts(sid: &str) -> Option<(String, String)> {
+    use windows_sys::Win32::{Foundation::LocalFree, Security::{Authorization::ConvertStringSidToSidW, LookupAccountSidW}};
+    let wide: Vec<u16> = sid.encode_utf16().chain([0]).collect();
+    unsafe {
+        let mut psid = std::ptr::null_mut();
+        if ConvertStringSidToSidW(wide.as_ptr(), &mut psid) == 0 { return None; }
+        let (mut name, mut domain) = ([0u16; 256], [0u16; 256]);
+        let (mut name_len, mut domain_len, mut kind) = (256u32, 256u32, 0);
+        let ok = LookupAccountSidW(std::ptr::null(), psid, name.as_mut_ptr(), &mut name_len, domain.as_mut_ptr(), &mut domain_len, &mut kind) != 0;
+        LocalFree(psid as _);
+        ok.then(|| (String::from_utf16_lossy(&domain[..domain_len as usize]), String::from_utf16_lossy(&name[..name_len as usize])))
+    }
+}
+pub fn account_label(sid: &str) -> String { user_label(&account_parts(sid).map(|(_, name)| name).unwrap_or_default()) }
+
 /// The principal Task Scheduler keeps for this account's first task (for the T2 record).
 pub fn principal_of(user: &str, sid: &str) -> Option<String> {
     let _com = Com::init().ok()?;
@@ -177,6 +203,8 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
                 for (name, before) in done.iter().rev() {
                     let _ = match before { Some(xml) => register_one(&target, name, xml), None => delete_owned(&target, name, sid) };
                 }
+                // Another account's task under our name is not worked around in the next place (review C1).
+                if code == "SCHEDULE_FOREIGN" { return Err(code); }
                 last = code;
             }
         }
@@ -208,14 +236,15 @@ pub fn locations(user: &str, sid: &str) -> Result<Vec<String>, String> {
 pub fn registered(exe: &Path, user: &str, sid: &str) -> Result<bool, String> {
     let _com = Com::init()?;
     let service = service()?;
-        let command = format!("<Command>{}</Command>", escape(exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\")));
+        let command = exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\").to_string();
     for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
         let all = Trigger::ALL.iter().all(|t| {
             let Some(task) = task(&target, &task_name(user, sid, *t)) else { return false };
             let enabled = unsafe { task.Enabled() }.is_ok_and(|v| v == VARIANT_TRUE);
             let xml = unsafe { task.Xml() }.map(|x| x.to_string()).unwrap_or_default();
-            owned(&task, sid) && enabled && xml.contains(&command) && xml.contains(&format!("<Arguments>--run {}</Arguments>", t.arg()))
+            owned(&task, sid) && enabled && element(&xml, "Command").is_some_and(|c| c.eq_ignore_ascii_case(&command))
+                && element(&xml, "Arguments").as_deref() == Some(format!("--run {}", t.arg()).as_str())
         });
         if all { return Ok(true); }
     }
@@ -283,6 +312,15 @@ pub fn local_now() -> String {
         assert!(task_xml(Trigger::Logon, exe, SID, "2026-11-12T22:00:00").unwrap().contains("<LogonTrigger><Enabled>true</Enabled><UserId>"));
         assert!(task_xml(Trigger::Unlock, exe, SID, "2026-11-12T22:00:00").unwrap().contains("<StateChange>SessionUnlock</StateChange>"));
     }
+    #[test] fn action_values_are_compared_unescaped() {
+        // Task Scheduler writes an apostrophe back as is; the XML it was given had &apos; (review C2).
+        let path = "C:\\Users\\O'Connor\\run.exe";
+        assert_eq!(element(&format!("<Exec><Command>{path}</Command></Exec>"), "Command").as_deref(), Some(path));
+        assert_eq!(element(&format!("<Command>{}</Command>", escape(path)), "Command").as_deref(), Some(path));
+        assert_eq!(element("<Arguments>--run hourly</Arguments>", "Arguments").as_deref(), Some("--run hourly"));
+        assert_eq!(element("<Command>a &amp;lt; b</Command>", "Command").as_deref(), Some("a &lt; b"), "decoded once");
+        assert_eq!(element("<Other/>", "Command"), None);
+    }
     #[test] fn xml_refuses_bad_inputs() {
         let exe = Path::new(r"C:\Program Files\SYNK WorkBackup\WorkBackupRun.exe");
         assert!(task_xml(Trigger::Hourly, Path::new("WorkBackupRun.exe"), SID, "2026-11-12T22:00:00").is_err(), "relative path");
@@ -294,11 +332,14 @@ pub fn local_now() -> String {
     }
     #[test] fn sid_and_time_of_this_process() {
         let sid = current_sid().unwrap();
-        assert!(sid.starts_with("S-1-5-"));
+        assert!(sid.starts_with("S-1-"), "{sid}");
+        let label = account_label(&sid);
+        assert!(!label.is_empty() && label == user_label(&label), "a usable task-name label: {label}");
         // An owner kept as an account name and one kept as a SID compare the same.
         assert!(sid_of(&sid).is_some_and(|s| s.eq_ignore_ascii_case(&sid)));
-        let name = std::env::var("USERNAME").unwrap();
-        assert!(sid_of(&name).is_some_and(|s| s.eq_ignore_ascii_case(&sid)), "account name {name} resolves to this SID");
+        // The full DOMAIN\name of this SID resolves back to it (Task Scheduler may keep either form).
+        let full = account_full(&sid).expect("this account has a name");
+        assert!(sid_of(&full).is_some_and(|s| s.eq_ignore_ascii_case(&sid)), "{full} resolves to this SID");
         let now = local_now(); assert_eq!(now.len(), 19); assert_eq!(&now[10..11], "T");
     }
 }
