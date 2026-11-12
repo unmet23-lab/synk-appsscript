@@ -1,0 +1,92 @@
+name: workbackup-t2
+
+# 업무 백업 1단계 T2(experiences/solo-backup-rust/STAGE1_DESIGN.md 4.2 · 8): 회차 작업 넷(매시간 · 로그온 · 깨어남 · 잠금 해제)을
+# 보통 권한으로 등록 · 확인 · 삭제할 수 있는지 Windows 러너에서 잰다 — 관리자와 표준 사용자 각각, 제품 폴더(\SYNK 업무 백업)가
+# 없을 때와 설치기가 줄 권한으로 만들어 둔 때. 운영자 PC의 작업 스케줄러는 건드리지 않는다. 결과 JSON은 산출물로 남긴다.
+on:
+  push:
+    paths:
+      - 'experiences/solo-backup-rust/src-tauri/src/schedule.rs'
+      - 'experiences/solo-backup-rust/src-tauri/examples/schedule_probe.rs'
+      - '.github/workflows/workbackup-t2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbackup-t2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  t2:
+    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /experiences/solo-backup-rust/src-tauri/
+            /experiences/solo-backup-rust/scripts/stage-ui.cjs
+            /experiences/solo-backup-rust/bridge/
+            /experiences/solo-backup/ui/
+            /experiences/solo-backup/assets/
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: stage the window UI the Tauri build script reads
+        shell: pwsh
+        run: node experiences/solo-backup-rust/scripts/stage-ui.cjs
+      - name: build the schedule probe
+        shell: pwsh
+        run: cargo build --locked --example schedule_probe --manifest-path experiences/solo-backup-rust/src-tauri/Cargo.toml
+      - name: T2 — administrator and standard user, without and with the product folder
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $work = Join-Path $env:RUNNER_TEMP 't2'
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+          $probe = Join-Path $work 'schedule_probe.exe'
+          Copy-Item -LiteralPath 'experiences/solo-backup-rust/src-tauri/target/debug/examples/schedule_probe.exe' -Destination $probe
+          # The command the tasks would start; it need not exist for registration.
+          $runExe = 'C:\Program Files\SYNK WorkBackup\WorkBackupRun.exe'
+          # A standard user for the probe (random password, never printed).
+          $password = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(18)) + 'aA1!'
+          $secure = ConvertTo-SecureString $password -AsPlainText -Force
+          New-LocalUser -Name 'swbt2' -Password $secure -AccountNeverExpires -PasswordNeverExpires | Out-Null
+          $admins = (Get-LocalGroupMember -SID 'S-1-5-32-544').Name -join ', '
+          "administrators: $admins"
+          $credential = New-Object System.Management.Automation.PSCredential('swbt2', $secure)
+          icacls $work /grant 'swbt2:(OI)(CI)M' | Out-Null
+          $missing = @()
+          function Probe([string]$name, $as) {
+            $out = Join-Path $work "$name.json"
+            $arguments = @("`"$runExe`"", "`"$out`"")
+            try {
+              if ($as) { $p = Start-Process -FilePath $probe -ArgumentList $arguments -Credential $as -LoadUserProfile -WorkingDirectory $work -Wait -PassThru }
+              else { $p = Start-Process -FilePath $probe -ArgumentList $arguments -WorkingDirectory $work -Wait -PassThru -NoNewWindow }
+              "== $name (exit $($p.ExitCode))"
+            } catch { "== $name could not start: $($_.Exception.Message)" }
+            if (Test-Path -LiteralPath $out) { Get-Content -LiteralPath $out -Raw } else { "$name wrote no result"; $script:missing += $name }
+          }
+          Probe 'admin-no-folder' $null
+          Probe 'user-no-folder' $credential
+          # The installer (administrator) makes the folder and lets signed-in users add their own tasks.
+          $service = New-Object -ComObject Schedule.Service
+          $service.Connect()
+          $sddl = 'D:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GRGWGX;;;AU)'
+          $service.GetFolder('\').CreateFolder('SYNK 업무 백업', $sddl) | Out-Null
+          "folder security: $($service.GetFolder('\SYNK 업무 백업').GetSecurityDescriptor(4))"
+          Probe 'admin-folder' $null
+          Probe 'user-folder' $credential
+          if ($missing.Count) { throw "probes without a result: $($missing -join ', ')" }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workbackup-t2
+          path: ${{ runner.temp }}/t2/*.json
+          if-no-files-found: warn

@@ -6,3 +6,4 @@ pub mod migration;
 pub mod bundle;
 pub mod power;
 pub mod runlog;
+pub mod schedule;
