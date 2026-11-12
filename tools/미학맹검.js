@@ -561,9 +561,11 @@ function 막힘읽기(답파일, 출력꼬리 = '', 작업이름 = '') {
  *  11-12부터 --여러줄 — 공용 차례의 모든 줄 가운데 먼저 비는 줄로 보낸다. 읽기는 아르곤웹이 보냄 표시의 줄로만 선다. */
 async function 아르곤부르기(작업들) {
   const 아르곤 = path.join(뿌리, 'tools', '아르곤웹.js');
+  // 답이 있나는 아르곤웹과 같은 잣대로 — 앞 판이 Gemini 오류 · 거절 문구를 답으로 써 둔 묶음도 다시 보낸다(11-13 Fable 설계 검토 ③)
+  const { 답있음 } = require('./아르곤웹.js');
   let 꼬리 = '';
   const 한번 = (명령) => new Promise((resolve) => {
-    const 남은 = 작업들.filter(w => !fs.existsSync(w.답)).map(w => w.작업);
+    const 남은 = 작업들.filter(w => !답있음(w.답)).map(w => w.작업);
     if (!남은.length) return resolve(0);
     const c = spawn(process.execPath, [아르곤, 명령, ...남은, '--여러줄'], { cwd: 뿌리, stdio: ['inherit', 'pipe', 'pipe'] });
     const 흘림 = (곳) => (d) => { 곳.write(d); 꼬리 = (꼬리 + d).slice(-20000); };
@@ -573,7 +575,7 @@ async function 아르곤부르기(작업들) {
     c.on('close', (code) => resolve(code ?? 1));
   });
   await 한번('보내기');
-  if (작업들.some(w => !fs.existsSync(w.답))) await 한번('읽기');
+  if (작업들.some(w => !답있음(w.답))) await 한번('읽기');
   return 꼬리;
 }
 

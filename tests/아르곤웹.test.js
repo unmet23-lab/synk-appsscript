@@ -276,8 +276,11 @@ test('페이지 스크립트 — 사이드바 찾기: 대화 링크는 정확한
   const 지움 = 사이드바.indexOf('await fs.unlink(mark)');
   assert.ok(사이드바.indexOf('if (비슷함.length) await fail(') < 판단 && 판단 < 기록 && 기록 < 지움, '헷갈림 → 풀기 판단 → 「안 보내짐」 기록 → 표시 지움 차례');
   assert.ok(사이드바.indexOf('"안보내짐"', 지움) > 지움, '옮긴 뒤 「안보내짐」으로 끝낸다');
-  assert.match(사이드바, /if \(e\.kind !== "멈춤"\) await page\.close\(\)/, '찾기 탭은 닫고, 로봇 확인 화면만 남긴다');
-  assert.equal((s.match(/fs\.unlink\(mark\)/g) || []).length, 3, '표시를 지우는 곳은 받았을 때 · 보내기가 안 먹었을 때 · 사이드바까지 보고 옮길 때뿐');
+  assert.match(사이드바, /if \(e\.kind !== "멈춤" && e\.kind !== "Gemini오류"\) await page\.close\(\)/, '찾기 탭은 닫고, 로봇 확인 화면만 남긴다 · Gemini 오류 탭은 finish가 닫았다(page를 비우지 않아 원래 예외가 그대로 나간다, GPT 검수 GA3)');
+  assert.equal((s.match(/fs\.unlink\(mark\)/g) || []).length, 4, '표시를 지우는 곳은 받았을 때 · 보내기가 안 먹었을 때 · 사이드바까지 보고 옮길 때 · 답 대신 Gemini 오류 문구를 기록에 옮길 때(11-13)뿐');
+  const 마무리 = 덩이(s, 'const finish = async (text, url) => {');
+  const 오류기록 = 마무리.indexOf('await fs.writeFile(unsentMark');
+  assert.ok(오류기록 > 0 && 오류기록 < 마무리.indexOf('await fs.unlink(mark)') && 마무리.indexOf('await fs.unlink(mark)') < 마무리.indexOf('await fs.writeFile(out'), 'Gemini 오류도 기록을 먼저 쓰고 표시를 지운다 — 답 파일을 쓰기 전에');
   const 기다림 = 덩이(s, 'const waitAnswer = async');
   assert.match(기다림, /if \(사라짐 >= 3\) await fail\(.*, "사라짐"\);/, '보낸 글이 사라지고 새 채팅으로 돌아가면 12분을 기다리지 않는다(11-07 그림 8장)');
   assert.match(기다림, /사라짐 = r\.uqN === 0 && !busy && !text && /, '사라짐은 보낸 글 0 · 멈춤 단추 없음 · 답 글 없음이 함께일 때만');
@@ -1657,6 +1660,21 @@ process.stdin.on('end', () => {
     console.error(JSON.stringify({ step: 'fail', kind: '사라짐', why: '보낸 글이 화면에서 사라지고 새 채팅으로 돌아갔다 — 보낸 지 20분 뒤 「읽기」' }));
     process.exit(1);
   }
+  // 답 대신 Gemini 오류 문구(11-13 판) — 표시를 기록 파일로 옮기고 「Gemini오류」로 끝난다. FAKE_GEMINI_ERROR_OUTS의 답 파일 이름마다 처음 한 번만,
+  // 이름 뒤에 *가 붙으면 늘
+  const 오류목록 = String(process.env.FAKE_GEMINI_ERROR_OUTS || '').split(',').filter(Boolean);
+  const 오류이름 = path.basename(J.out);
+  const 오류표 = path.join(process.env.FAKE_DIR, 'gemini-error-' + 오류이름);
+  if (J.mode === '보내기' && (오류목록.includes(오류이름 + '*') || (오류목록.includes(오류이름) && !fs.existsSync(오류표)))) {
+    fs.writeFileSync(오류표, '1');
+    if (J.upload) { try { fs.unlinkSync(J.upload.lock + '/' + J.upload.key + '.key'); fs.rmSync(J.upload.lock, { recursive: true, force: true }); } catch {} }
+    const url = 'https://gemini.google.com/u/' + J.u + '/app/e0e0e0e0e0';
+    console.error(JSON.stringify({ step: 'sent', url }));
+    fs.writeFileSync(J.unsentMark, JSON.stringify([{ 대화: url, 까닭: 'Gemini 오류 문구 「오류가 발생했습니다.」 — 대화는 끝났고 답이 없다' }]));
+    console.error(JSON.stringify({ step: 'gemini-error', url, 글: '오류가 발생했습니다.', record: J.unsentMark }));
+    console.error(JSON.stringify({ step: 'fail', kind: 'Gemini오류', why: 'Gemini가 답 대신 오류 · 거절 문구를 냈다(「오류가 발생했습니다.」)', url, record: J.unsentMark }));
+    process.exit(1);
+  }
   if (process.env.FAKE_SORRY === J.account) { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '로봇 확인 화면(sorry) — 멈춤, 유호님 손' })); process.exit(1); }
   if (process.env.FAKE_WRONG_ACCOUNT === J.account && J.mode !== '읽기') { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '계정이 ' + J.account + '가 아님(/u/' + J.u + ' · 공간 ' + J.space + '): 계정 표시 없음 — 로그아웃 화면일 수 있다' })); process.exit(1); }
   if (J.mode === '확인') { console.error(JSON.stringify({ step: 'account', u: J.u, account: J.account, who: 'Google 계정: x (' + J.account + '@gmail.com)' })); console.error(JSON.stringify({ step: 'done', url: '', chars: 0, out: null })); return; }
@@ -1672,7 +1690,7 @@ process.stdin.on('end', () => {
   console.error(JSON.stringify({ step: 'done', url, chars: 300 }));
 });
 `;
-const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL', 'FAKE_WAIT_WRITE', 'FAKE_UNSENT_ONCE', 'FAKE_VANISH_OUTS'];
+const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL', 'FAKE_WAIT_WRITE', 'FAKE_UNSENT_ONCE', 'FAKE_VANISH_OUTS', 'FAKE_GEMINI_ERROR_OUTS'];
 const 여러줄시험 = async (fn, { 서버됨 = true, 환경 = {} } = {}) => {
   const dir = 임시();
   const 앞설정 = { ...웹.설정 };
@@ -1968,4 +1986,260 @@ test('사라짐이 두 번 이어지면 묶음을 멈춘다(11-13) — 사라진
     assert.ok(fs.existsSync(jobs[1].out));
     assert.doesNotMatch(찍힘.join('\n'), /두 번 이어 사라졌다/);
   }, { 환경: { FAKE_VANISH_OUTS: '답1.md,답3.md' } });
+});
+
+// ── Gemini 오류 · 거절 문구(11-13) — 「오류가 발생했습니다. / 다시 시도」 · 「저는 그런 것을 하도록 프로그램되지 않았습니다.」를 답으로 써 「받음」으로 셌다 ──
+
+test('Gemini 오류 문구 — 답 대신 뜬 오류 · 거절만 잡고, 오류를 짚는 진짜 답은 놓아 둔다 · 페이지 스크립트 앞 판단 함수로도 같다', () => {
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { Gemini오류답 };`)();
+  for (const 잡기 of [웹.Gemini오류답, 판단.Gemini오류답]) {
+    assert.equal(잡기('Gemini의 응답\n오류가 발생했습니다.\n다시 시도'), '오류가 발생했습니다.', '11-13 01:49 unmet25 답 그대로');
+    assert.equal(잡기('Gemini의 응답\n\n저는 그런 것을 하도록 프로그램되지 않았습니다.'), '저는 그런 것을 하도록 프로그램되지 않았습니다.', '11-13 05:31 거절');
+    assert.equal(잡기('오류가 발생했습니다'), '오류가 발생했습니다');
+    assert.equal(잡기('Gemini의 응답\r\n죄송합니다. 문제가 발생했습니다.\r\n다시 시도해 주세요.'), '죄송합니다. 문제가 발생했습니다. 다시 시도해 주세요.');
+    assert.equal(잡기('Something went wrong (13)\nTry again'), 'Something went wrong (13)');
+    assert.equal(잡기('I’m not programmed to do that.'), 'I’m not programmed to do that.');
+    for (const 거절 of [
+      '저는 언어 모델일 뿐이라 그것을 이해하고 대응할 능력이 없기 때문에 도와드릴 수가 없습니다.', // 11-13 첫날끝 10q 답 3
+      '그것을 도와드릴 수는 없습니다. 저는 언어 모델일 뿐이에요.', // 11-13 첫날끝 10r 답 1
+      'I’m a language model and don’t have the capacity to help with that.',
+      "I'm a text-based AI, and that is outside of my capabilities.",
+      "I'm just a language model, so I can't help you with that.",
+      "I'm not able to help with that, as I'm only a language model.",
+    ]) assert.equal(잡기(`Gemini의 응답\n\n${거절}`), 거절);
+    for (const 진짜 of [
+      '', '다시 시도', 'Gemini의 응답', '사과',
+      '첨부된 화면 이미지 4장(화면05.jpg, 화면06.jpg)이 모두 파일 열기 오류로 확인되지 않아 판정을 진행할 수 없습니다.',
+      '이 화면은 언어 모델 설명이 너무 길다 — 줄인다.',
+      '저는 언어 모델일 뿐이지만, 번역은 도와드릴 수 있습니다.', // GPT 검수 GA2 — 거절이 아닌 답
+      "I'm a language model, and I can help with that.",
+      'As a language model, I cannot run code. Use print(1 + 1) to output 2.', // GPT 다시 검수 GA2 — 제약을 말한 뒤 답이 이어진다
+      '저는 언어 모델일 뿐이라 실행은 도와드릴 수 없지만, print(1+1)은 2를 냅니다.',
+      '저는 언어 모델일 뿐이라 그것을 이해하지 못해서 도와드릴 수가 없습니다. 대신 화면 3을 보면 글이 잘립니다.',
+      '저는 언어 모델일 뿐이라 직접 실행은 못하지만 print(1+1)은 2를 출력하고 실행 자체는 도와드릴 수가 없습니다.', // GPT 다시 검수 1113d GA1 — 사이에 답이 낀 글
+      "I'm a language model, print(1 + 1) outputs 2, but I can't help you with that.",
+      '화면 3의 「오류가 발생했습니다」 안내가 너무 작다 — 키운다.',
+      'Gemini의 응답\n오류가 발생했습니다.\n2번 화면의 안내 글이 잘린다.\n3번 화면은 그대로 둔다.',
+      'Gemini의 응답\n{"낱장":[{"번호":"01","판정":"기각","점수":3,"약점":["오류가 발생했습니다 안내가 겹친다"]}]}',
+      `오류가 발생했습니다. ${'가'.repeat(80)}`,
+    ]) assert.equal(잡기(진짜), '', JSON.stringify(진짜));
+  }
+});
+
+test('Gemini 오류 — 결과는 「Gemini 오류」(대화 주소 · 옮긴 기록), 표시를 못 옮겨 남았으면 「보냄」(다시 보내지 않는다)', () => {
+  const 대화 = 'https://gemini.google.com/u/8/app/772ae5c0aeca19a0';
+  const 실패줄 = JSON.stringify({ step: 'fail', kind: 'Gemini오류', why: 'Gemini가 답 대신 오류 · 거절 문구를 냈다(「오류가 발생했습니다.」)', url: 대화, record: 'x/답.md.안보내짐.json' });
+  const r = 웹.결과가르기(`${JSON.stringify({ step: 'sent', url: 'https://gemini.google.com/u/8/app' })}\n${JSON.stringify({ step: 'gemini-error', url: 대화 })}\n${실패줄}\n`, false);
+  assert.deepEqual([r.결과, r.url, r.기록], ['Gemini 오류', 대화, 'x/답.md.안보내짐.json']);
+  assert.match(r.까닭, /오류가 발생했습니다/);
+  assert.equal(웹.결과가르기(실패줄, true).결과, '보냄');
+});
+
+test('Gemini 오류 — 앞 판이 오류 문구로 써 둔 답 파일은 답이 없는 것으로 보고 다시 한다(옮기거나 지우지 않는다) · 진짜 답은 그대로', () => {
+  const d = 임시();
+  const out = path.join(d, '답_2_97c1cb.md');
+  fs.writeFileSync(out, '# 아르곤 답 — 2026-11-13 01:49:48\r\n\r\n대화: https://gemini.google.com/u/8/app/772ae5c0aeca19a0\r\n올린 것: 화면05.png · 화면06.png · 유호님_기준.md\r\n\r\nGemini의 응답\r\n오류가 발생했습니다.\r\n다시 시도\r\n');
+  const 진짜 = path.join(d, '답_1_aaaaaa.md');
+  fs.writeFileSync(진짜, '# 아르곤 답 — 2026-11-13 01:37:53\n\n대화: https://gemini.google.com/u/8/app/847a69a8b7813119\n올린 것: 화면01.png\n\nGemini의 응답\n\n{"낱장":[{"번호":"01","판정":"통과"}]}\n');
+  const 짧은진짜 = path.join(d, '답_V.md');
+  fs.writeFileSync(짧은진짜, '# 사라짐 고침 시험 — 2026-11-13 02:10:00\n\n대화: https://gemini.google.com/u/3/app/1\n올린 것: 사과.png\n\nGemini의 응답\n사과\n');
+  const 없음 = path.join(d, '없음.md');
+  assert.equal(웹.오류답파일(out), '오류가 발생했습니다.');
+  assert.deepEqual([웹.오류답파일(진짜), 웹.오류답파일(짧은진짜), 웹.오류답파일(없음)], ['', '', ''], '짧아도 진짜 답이면 그대로');
+  assert.deepEqual([웹.답있음(out), 웹.답있음(진짜), 웹.답있음(짧은진짜), 웹.답있음(없음)], [false, true, true, false]);
+  assert.equal(웹.할일정하기({ out }, '보내기'), '보내기', '오류 답은 답이 아니다 — 다시 보낸다');
+  assert.equal(웹.할일정하기({ out: 진짜 }, '보내기'), '건너뜀');
+  assert.equal(웹.차례뒤할일({ out, 할일: '보내기' }), '보내기', '줄에서 기다린 뒤에도 오류 답은 건너뛰지 않는다');
+  assert.equal(웹.차례뒤할일({ out: 진짜, 할일: '보내기' }), '건너뜀', '그새 남이 받은 진짜 답은 덮지 않는다');
+  assert.equal(웹.다시할일({ out, 할일: '보내기' }), '보내기');
+  assert.equal(웹.다시할일({ out: 진짜, 할일: '보내기' }), '그만');
+  assert.equal(웹.새답(out, Date.now() - 1000), null, '그새 옛 판 실행기가 쓴 오류 답은 받은 것이 아니다');
+  assert.ok(웹.새답(진짜, Date.now() - 60_000));
+  assert.deepEqual(fs.readdirSync(d).sort(), ['답_1_aaaaaa.md', '답_2_97c1cb.md', '답_V.md'], '어느 파일도 옮기거나 지우지 않는다(남이 쓰는 중일 수 있다 — GPT 검수 GA1 · GA3)');
+});
+
+test('페이지 스크립트(Gemini 오류) — 답 파일을 쓰기 전에 보고, 오류 · 거절이면 답을 안 쓰고 표시를 기록에 덧붙여 옮긴 뒤 「Gemini오류」 · 탭을 닫는다, 진짜 답은 옛길대로', async () => {
+  const s = 페이지();
+  const 처음 = s.indexOf('const finish = async (text, url) => {');
+  const 끝 = s.indexOf('\n};', 처음);
+  assert.ok(처음 > 0 && 끝 > 처음);
+  const 몸 = s.slice(처음, 끝 + 3);
+  assert.ok(몸.indexOf('Gemini오류답(text)') > 0 && 몸.indexOf('Gemini오류답(text)') < 몸.indexOf('fs.writeFile(out'), '오류 문구는 답 파일을 쓰기 전에 본다');
+  assert.match(몸, /await fs\.unlink\(mark\)\.catch\(\(e\) => \{ if \(e\.code !== "ENOENT"\) throw e; \}\)/, '표시를 못 지우면 삼키지 않고 「없음」으로(Fable 설계 검토 ⑤)');
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { Gemini오류답, 풀린기록, 답파일글 };`)();
+  const AsyncFunction = (async () => {}).constructor;
+  const 대화 = 'https://gemini.google.com/u/8/app/772ae5c0aeca19a0';
+  const 돌려 = async (글, { 표시 = true, 앞기록 = null, 지우기실패 = false } = {}) => {
+    const dir = 임시();
+    const out = path.join(dir, '답.md');
+    const mark = `${out}.보냄.json`;
+    const unsentMark = `${out}.안보내짐.json`;
+    if (표시) fs.writeFileSync(mark, JSON.stringify({ 시각: '2026-11-13 01:37:00', 공간: 'synk-argon-web-p7', 계정: 8, 계정이름: 'unmet25', 줄: 'gemini-b', 대화: null }));
+    if (앞기록) fs.writeFileSync(unsentMark, JSON.stringify(앞기록));
+    const 기록 = [];
+    const 셈 = { 닫음: 0, 찍음: 0, 차례: [] };
+    const page = { close: async () => { 셈.닫음 += 1; 셈.차례.push('닫음'); }, screenshot: async () => { 셈.찍음 += 1; 셈.차례.push('찍음'); } };
+    // 실제 fail처럼 page가 있으면 그림을 찍고 던진다(위 tools/아르곤웹.mjs fail)
+    const fail = async (why, kind_ = '실패', more = {}) => { if (page) await page.screenshot(); 기록.push({ step: 'fail', kind: kind_, why, ...more }); const e = new Error(why); e.kind = kind_; throw e; };
+    const 표시읽기 = async () => { try { return { ...JSON.parse(fs.readFileSync(mark, 'utf8')), 파일시각: fs.statSync(mark).mtimeMs }; } catch { return null; } };
+    let 오류 = null, 끝페이지 = 'x';
+    // 표시 지우기 실패(EPERM)를 흉내 — 없는 표시(ENOENT)는 그대로 지나간다
+    const 파일 = 지우기실패 ? { ...fs.promises, unlink: async (p) => { if (p === mark) { const e = new Error('EPERM: operation not permitted'); e.code = 'EPERM'; throw e; } return fs.promises.unlink(p); } } : fs.promises;
+    try {
+      await new AsyncFunction('Gemini오류답', '풀린기록', '답파일글', '표시읽기', 'fs', 'unsentMark', 'mark', 'out', 'files', 'base', 'head', 'now', 'log', 'fail', 'shot', 'page', '글', '주소', '끝', `${몸}\ntry { await finish(글, 주소); } finally { 끝(page); }`)(
+        판단.Gemini오류답, 판단.풀린기록, 판단.답파일글, 표시읽기, 파일, unsentMark, mark, out, ['C:/x/화면05.png'], (f) => f.split(/[\\/]/).pop(), '아르곤 답', () => '2026-11-13 01:49:48', (o) => 기록.push(o), fail, path.join(dir, 'shot.png'), page, 글, 대화, (p) => { 끝페이지 = p; });
+    } catch (e) { 오류 = e; }
+    const 옮김 = fs.existsSync(unsentMark) ? JSON.parse(fs.readFileSync(unsentMark, 'utf8')) : null;
+    return { 오류, 기록, 셈, 답: fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null, 표시: fs.existsSync(mark), 옮김, 끝페이지, page };
+  };
+  const 오류판 = await 돌려('Gemini의 응답\n오류가 발생했습니다.\n다시 시도');
+  assert.equal(오류판.오류 && 오류판.오류.kind, 'Gemini오류');
+  assert.deepEqual([오류판.답, 오류판.표시], [null, false], '답 파일을 안 쓰고 표시를 지웠다');
+  assert.equal(오류판.옮김.length, 1);
+  assert.deepEqual([오류판.옮김[0].대화, 오류판.옮김[0].계정이름, 오류판.옮김[0].줄, '파일시각' in 오류판.옮김[0]], [대화, 'unmet25', 'gemini-b', false]);
+  assert.match(오류판.옮김[0].까닭, /오류가 발생했습니다/);
+  assert.deepEqual(오류판.기록.map((x) => x.step), ['gemini-error', 'fail']);
+  assert.deepEqual([오류판.기록[1].url, 오류판.셈.차례], [대화, ['찍음', '닫음']], '그림을 찍은 뒤 제 탭을 닫는다');
+  assert.equal(오류판.끝페이지, 오류판.page, 'page는 비우지 않는다 — 사이드바 catch가 원래 예외를 덮지 않게(GPT 검수 GA3)');
+  const 거절판 = await 돌려('Gemini의 응답\n\n저는 그런 것을 하도록 프로그램되지 않았습니다.', { 앞기록: [{ 까닭: '사이드바 최근 대화 15개에 없다 · 보낸 지 23분' }] });
+  assert.equal(거절판.오류 && 거절판.오류.kind, 'Gemini오류');
+  assert.equal(거절판.옮김.length, 2, '앞 기록에 덧붙인다');
+  const 진짜판 = await 돌려('Gemini의 응답\n\n{"낱장":[{"번호":"01","판정":"통과"}]}');
+  assert.equal(진짜판.오류, null);
+  assert.match(진짜판.답, /^# 아르곤 답 — 2026-11-13 01:49:48\n\n대화: https:\/\/gemini\.google\.com\/u\/8\/app\/772ae5c0aeca19a0\n올린 것: 화면05\.png\n\nGemini의 응답/);
+  assert.deepEqual([진짜판.표시, 진짜판.옮김, 진짜판.기록.map((x) => x.step), 진짜판.셈.닫음], [false, null, ['done'], 1]);
+  const 표시없음 = await 돌려('Gemini의 응답\n오류가 발생했습니다.\n다시 시도', { 표시: false });
+  assert.equal(표시없음.오류 && 표시없음.오류.kind, 'Gemini오류', '표시가 없던 읽기(ENOENT)는 그대로 「Gemini오류」');
+  const 못지움 = await 돌려('Gemini의 응답\n오류가 발생했습니다.\n다시 시도', { 지우기실패: true });
+  assert.deepEqual([못지움.오류 && 못지움.오류.kind, 못지움.표시, 못지움.답], ['없음', true, null], '표시를 못 지우면 「없음」 — 표시가 남아 다시 보내지 않는다');
+  assert.match(못지움.오류.message, /표시를 못 옮김\(EPERM/);
+});
+
+test('페이지 스크립트(읽기 ① 탭) — 보냄 표시가 없으면 맞는 탭이 하나뿐이어도 고르지 않고 「헷갈림」으로 손에 넘긴다(남의 대화일 수 있다 — Fable 설계 검토 ②)', async () => {
+  const s = 페이지();
+  assert.match(s, /const 고른탭 = 맞는탭\.find\(\(t\) => markId && t\.id === markId\) \|\| \(표시 && 맞는탭\.length === 1 && !J\.twins \? 맞는탭\[0\] : null\);/);
+  const AsyncFunction = (async () => {}).constructor;
+  const 앞 = { listTaskSpaces: globalThis.listTaskSpaces, taskSpace: globalThis.taskSpace, log: console.log };
+  const dir = 임시();
+  const 지시 = '편마다 같은 지시문 — 화면 넷을 보고 판정한다';
+  const job = 웹.작업만들기({ files: [쓰기(dir, '컷.jpg')], prompt: 지시, out: '답.md' }, dir, 't');
+  const 찍힘 = [];
+  let 정보 = 0;
+  const 쪽 = {
+    url: async () => 'https://gemini.google.com/u/2/app/abcd1234ef', // 같은 지시문 · 같은 그림 수의 남의 대화
+    evaluate: async () => [{ 글: 지시, 그림: 1 }],
+    info: async () => { 정보 += 1; return {}; }, screenshot: async () => {}, close: async () => {},
+  };
+  globalThis.listTaskSpaces = async () => [{ name: 웹.기본공간, profileId: 웹.기본프로필 }];
+  globalThis.taskSpace = async () => ({ pages: async () => [쪽], newPage: async () => 쪽 });
+  console.log = (x) => { 찍힘.push(String(x)); };
+  let 끝 = false;
+  try {
+    new AsyncFunction(웹.페이지글(job, 2, '읽기', '77yuhbs'))().catch(() => {}).finally(() => { 끝 = true; });
+    for (let t = 0; t < 3000 && !끝; t += 20) await 잠시(20);
+  } finally { globalThis.listTaskSpaces = 앞.listTaskSpaces; globalThis.taskSpace = 앞.taskSpace; console.log = 앞.log; delete globalThis.JOB; }
+  const 실패 = 찍힘.map((l) => { try { return JSON.parse(l); } catch { return null; } }).find((x) => x && x.step === 'fail');
+  assert.equal(실패 && 실패.kind, '헷갈림', 찍힘.join('\n'));
+  assert.match(실패.why, /이 작업의 보냄 표시가 없다/);
+  assert.equal(정보, 0, '탭을 고르지 않았다');
+  assert.ok(!fs.existsSync(job.out), '남의 답을 이 작업 답으로 쓰지 않는다');
+});
+
+test('답 파일 머리 — 쓰기(답파일글)와 떼기(답파일몸)는 한 쌍, 파일 판정은 화면 판정과 같다 · 몸 안의 「대화: 」 · 「올린 것: 」 · 「# 」 줄은 몸이다(Fable 설계 검토 ①)', () => {
+  const 판단 = new Function(`${웹.판단머리()}\nreturn { 답파일글, 답파일몸, Gemini오류답 };`)();
+  const 몸들 = [
+    'Gemini의 응답\n오류가 발생했습니다.\n다시 시도',
+    'Gemini의 응답\n\n저는 그런 것을 하도록 프로그램되지 않았습니다.',
+    'Gemini의 응답\n문제가 발생했습니다.\n대화: 3번 컷의 대사가 어색합니다 — 고칩니다.', // Fable 재현 ①-1
+    '오류가 발생했습니다.\n올린 것: 화면05.png는 글자가 잘립니다. 화면06.png는 통과입니다.', // ①-2
+    '저는 그런 것을 하도록 프로그램되지 않았습니다.\n대화: A — 안녕?\n대화: B — 그래.\n대화: A — 이 줄이 어색하다.', // ①-3
+    '# 머리처럼 보이는 줄\n\n대화: 몸 안의 줄\n\n오류가 발생했습니다.',
+    'Gemini의 응답\n\n{"낱장":[{"번호":"01","판정":"통과"}]}',
+    '사과',
+  ];
+  for (const 이름들 of ['화면05.png · 유호님_기준.md', '']) {
+    for (const 몸 of 몸들) {
+      const 글 = 웹.답파일글('아르곤 답', '2026-11-13 01:49:48', 'https://gemini.google.com/u/8/app/1', 이름들, 몸);
+      assert.equal(판단.답파일글('아르곤 답', '2026-11-13 01:49:48', 'https://gemini.google.com/u/8/app/1', 이름들, 몸), 글, '페이지 스크립트 앞 판단 함수도 같은 글');
+      assert.equal(웹.답파일몸(글), `${몸}\n`, JSON.stringify(몸));
+      assert.equal(웹.답파일몸(글.replace(/\n/g, '\r\n')), `${몸}\n`, 'CRLF로 바뀐 파일도 같다');
+      assert.equal(웹.오류답글(글), 웹.Gemini오류답(몸), `파일 판정 = 화면 판정: ${JSON.stringify(몸)}`);
+    }
+  }
+  assert.equal(웹.오류답글(웹.답파일글('h', 't', 'u', '', 몸들[2])), '', 'Fable 재현 ①-1 — 진짜 답은 답 없음으로 보지 않는다');
+  for (const 다른꼴 of ['오류가 발생했습니다.', '# 머리\n오류가 발생했습니다.', '# 머리\n\n오류가 발생했습니다.', '# 머리\n\n대화: u\n올린 것: a\n오류가 발생했습니다.']) {
+    assert.equal(웹.답파일몸(다른꼴), null, `머리 꼴이 아니면 판정하지 않는다: ${JSON.stringify(다른꼴)}`);
+    assert.equal(웹.오류답글(다른꼴), '');
+  }
+});
+
+test('거절 목록은 글자 그대로 — 목록 문장 뒤에 답이 한 마디라도 붙으면 잡지 않는다(꼴로 넓히지 않게)', () => {
+  const 목록 = [
+    '저는 그런 것을 하도록 프로그램되지 않았습니다.',
+    '저는 언어 모델일 뿐이라 그것을 이해하지 못해서 도와드릴 수가 없습니다.',
+    '저는 언어 모델일 뿐이라 그것에 필요한 정보나 능력이 없어서 도와드릴 수가 없습니다.',
+    '저는 언어 모델일 뿐이라 그것을 이해하고 대응할 능력이 없기 때문에 도와드릴 수가 없습니다.',
+    '그것을 도와드릴 수는 없습니다. 저는 언어 모델일 뿐이에요.',
+    "I'm not programmed to do that.",
+    "I'm a language model and don't have the capacity to help with that.",
+    "I'm just a language model, so I can't help you with that.",
+    "I'm not able to help with that, as I'm only a language model.",
+    "I'm a text-based AI, and that is outside of my capabilities.",
+  ];
+  for (const 문장 of 목록) {
+    assert.equal(웹.Gemini오류답(문장), 문장);
+    assert.equal(웹.Gemini오류답(`${문장} 화면 3은 통과입니다.`), '', 문장);
+    assert.equal(웹.Gemini오류답(`${문장}\n화면 3은 통과입니다.`), '', 문장);
+    assert.equal(웹.Gemini오류답(`앞말 ${문장}`), '', 문장);
+  }
+});
+
+test('Gemini 오류 뒤 다시 보내기(11-13) — 보내기 부름은 쉬고 한 번 다시 보내 받고, 두 번 이어지면 묶음을 멈추고 남은 건은 「안 함」 · 앞 판의 오류 답 파일은 옮기고 보낸다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'gemini-error-once' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => x.mode), ['보내기', '보내기'], '한 번 다시 보낸다');
+    assert.ok(fs.existsSync(j.out));
+    assert.match(찍힘.join('\n'), /작업1: Gemini 오류 — \d+초 쉬고 한 번 다시 보낸다/);
+    assert.deepEqual(본.쓰임().map((x) => x.결과), ['Gemini 오류', '받음']);
+  }, { 환경: { FAKE_GEMINI_ERROR_OUTS: '답1.md' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    // 한 작업이 내용 때문에 늘 거절(처음 + 다시 보내기) — 하나로 세어 남은 건은 그대로 보낸다(Fable 설계 검토 ④)
+    const jobs = [줄작업(dir, 1), 줄작업(dir, 2)];
+    assert.equal(await 웹.돌리기(jobs, { _: [], 파일: [], 이름: 'gemini-error-one-job' }, '보내기'), 1, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => [x.mode, x.out]), [['보내기', '답1.md'], ['보내기', '답1.md'], ['보내기', '답2.md']], '같은 작업의 두 번은 멈춤으로 세지 않는다');
+    assert.match(찍힘.join('\n'), /Gemini 오류 1 · /);
+    assert.match(찍힘.join('\n'), /Gemini 오류 {2}작업1 — .*오류가 발생했습니다.*\n.*답 파일은 쓰지 않았다/);
+    assert.doesNotMatch(찍힘.join('\n'), /멈춤: /);
+    assert.ok(!fs.existsSync(jobs[0].out) && !fs.existsSync(웹.표시경로(jobs[0].out)));
+    assert.ok(fs.existsSync(jobs[1].out), '남은 건은 받았다');
+  }, { 환경: { FAKE_GEMINI_ERROR_OUTS: '답1.md*' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    // 서로 다른 두 작업이 받음 없이 이어 오류 — 묶음을 멈추고 남은 건은 「안 함」
+    const jobs = [줄작업(dir, 1), 줄작업(dir, 2), 줄작업(dir, 3)];
+    assert.equal(await 웹.돌리기(jobs, { _: [], 파일: [], 이름: 'gemini-error-two-jobs' }, '보내기'), 1, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => x.out), ['답1.md', '답1.md', '답2.md'], '둘째 작업의 오류에서 멈추고 다시 보내지 않는다');
+    assert.match(찍힘.join('\n'), /Gemini 오류 2 · /);
+    assert.match(찍힘.join('\n'), /멈춤: 서로 다른 두 작업이 이어 답 대신 Gemini 오류 · 거절 문구를 받았다/);
+    assert.match(찍힘.join('\n'), /안 함 {2}작업3/);
+    assert.ok(jobs.every((x) => !fs.existsSync(x.out) && !fs.existsSync(웹.표시경로(x.out))));
+  }, { 환경: { FAKE_GEMINI_ERROR_OUTS: '답1.md*,답2.md*' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    fs.writeFileSync(j.out, '# 아르곤 답 — 2026-11-13 01:49:48\n\n대화: https://gemini.google.com/u/8/app/772ae5c0aeca19a0\n올린 것: 컷1.jpg\n\nGemini의 응답\n오류가 발생했습니다.\n다시 시도\n');
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'gemini-error-old' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => x.mode), ['보내기'], '건너뛰지 않고 보낸다');
+    assert.match(fs.readFileSync(j.out, 'utf8'), /답답답/, '새로 받은 답을 그 자리에 쓴다');
+    assert.deepEqual(fs.readdirSync(dir).filter((f) => /오류답/.test(f)), [], '옛 오류 답을 옆 이름으로 옮기지 않는다');
+    assert.match(찍힘.join('\n'), /작업1: 답 파일이 Gemini 오류 문구뿐이다\(「오류가 발생했습니다\.」\) — 답이 없는 것으로 보고 다시 한다/);
+  });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    // 다시 보낸 것도 오류면 옛 오류 답 파일은 그대로 남는다(페이지 스크립트가 답을 안 쓴다) — 지우지 않는다
+    const j = 줄작업(dir, 1);
+    const 옛글 = '# 아르곤 답 — 2026-11-13 01:49:48\n\n대화: https://gemini.google.com/u/8/app/772ae5c0aeca19a0\n\nGemini의 응답\n오류가 발생했습니다.\n다시 시도\n';
+    fs.writeFileSync(j.out, 옛글);
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'gemini-error-old-again' }, '보내기'), 1, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => x.mode), ['보내기', '보내기']);
+    assert.equal(fs.readFileSync(j.out, 'utf8'), 옛글);
+  }, { 환경: { FAKE_GEMINI_ERROR_OUTS: '답1.md*' } });
 });

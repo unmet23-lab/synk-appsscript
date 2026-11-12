@@ -246,6 +246,22 @@ test('아르곤부르기(11-12) — 보내기 · 읽기 모두 --여러줄로 �
   assert.match(글, /spawn\(process\.execPath, \[아르곤, 명령, \.\.\.남은, '--여러줄'\]/);
 });
 
+test('아르곤부르기(11-13) — 답이 있나는 아르곤웹과 같은 잣대(답있음): 앞 판이 Gemini 오류 · 거절 문구를 써 둔 묶음도 다시 보낸다', () => {
+  const 글 = fs.readFileSync(path.join(__dirname, '..', 'tools', '미학맹검.js'), 'utf8');
+  const 덩이 = 글.slice(글.indexOf('async function 아르곤부르기('), 글.indexOf('function 적중읽기('));
+  assert.match(덩이, /const \{ 답있음 \} = require\('\.\/아르곤웹\.js'\);/);
+  assert.match(덩이, /작업들\.filter\(w => !답있음\(w\.답\)\)/);
+  assert.match(덩이, /작업들\.some\(w => !답있음\(w\.답\)\)/);
+  assert.doesNotMatch(덩이, /fs\.existsSync\(w\.답\)/);
+  const { 답있음 } = require('../tools/아르곤웹.js');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mh-'));
+  const 오류답 = path.join(d, '답_1.md');
+  fs.writeFileSync(오류답, '# 아르곤 답 — 2026-11-13 01:49:48\n\n대화: https://gemini.google.com/u/8/app/1\n올린 것: 화면01.jpg\n\nGemini의 응답\n오류가 발생했습니다.\n다시 시도\n');
+  const 진짜 = path.join(d, '답_2.md');
+  fs.writeFileSync(진짜, '# 아르곤 답 — 2026-11-13 01:49:48\n\n대화: https://gemini.google.com/u/8/app/2\n올린 것: 화면01.jpg\n\nGemini의 응답\n{"낱장":[]}\n');
+  assert.deepEqual([답있음(오류답), 답있음(진짜), 답있음(path.join(d, '없음.md'))], [false, true, false]);
+});
+
 test('지시문: 띠 · 마스코트 대조 · 대본 의도 줄 — 긴 설명 넷 + 의도 200자도 아르곤 한도 안, 기준 없음(11-08 적중시험 꼴)', () => {
   const 화면 = [1, 2, 3].map((k) => ({ 번호: `0${k}`, 종류: '띠', 설명: 'ㄱ'.repeat(220) })).concat([{ 번호: '04', 종류: '마스코트', 설명: 'ㄴ'.repeat(220) }]);
   const 글 = 맹검.지시문(화면, [], { 의도: '배우는 사람이 ㅈ을 일본어 ス로 착각해 지우는 개그'.padEnd(200, '.') });

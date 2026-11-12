@@ -135,8 +135,25 @@ const waitAnswer = async (url, 빈답마감 = 0, 사라짐진단 = false) => {
   return await fail("답이 안 나옴: " + text.slice(0, 200));
 };
 const finish = async (text, url) => {
+  // 답 대신 Gemini 오류 · 거절 문구(11-13 — 「오류가 발생했습니다. / 다시 시도」를 답으로 써 「받음」으로 셌고 다시 보내지 않았다). 대화는 끝났고 답이 없다 —
+  // 답 파일은 쓰지 않고, 표시는 「안 보내짐」처럼 기록 파일에 덧붙여 옮긴다(기록을 먼저 쓰고 표시를 지운다 · 다음 보내기가 다시 보낸다)
+  const 오류 = Gemini오류답(text);
+  if (오류) {
+    const 앞표시 = await 표시읽기();
+    try {
+      let 앞 = [];
+      try { const t = JSON.parse(await fs.readFile(unsentMark, "utf8")); 앞 = Array.isArray(t) ? t : [t]; } catch { /* 처음 옮긴다 */ }
+      await fs.writeFile(unsentMark, JSON.stringify([...앞, 풀린기록({ ...(앞표시 || {}), 대화: url || (앞표시 && 앞표시.대화) || null }, null, `Gemini 오류 문구 「${오류}」 — 대화는 끝났고 답이 없다`, now())], null, 1) + "\n", "utf8");
+      await fs.unlink(mark).catch((e) => { if (e.code !== "ENOENT") throw e; }); // 없으면 됐다(표시 없는 읽기) — 못 지우면 아래 「없음」(Fable 설계 검토 ⑤)
+    } catch (e) { await fail(`Gemini가 답 대신 오류 문구를 냈다(「${오류}」) — 표시를 못 옮김(${e.message}) · 표시는 그대로`, "없음", { url }); }
+    log({ step: "gemini-error", url, 글: 오류, record: unsentMark });
+    // 받은 판처럼 제 탭을 닫는다 — fail이 그림을 찍은 뒤에. page는 비우지 않는다(사이드바 catch가 page를 쓴다 · 거기서는 다시 닫지 않는다, GPT 검수 GA3)
+    const 탭 = page;
+    try { await fail(`Gemini가 답 대신 오류 · 거절 문구를 냈다(「${오류}」)`, "Gemini오류", { url, record: unsentMark }); }
+    finally { if (탭) await 탭.close().catch(() => {}); }
+  }
   const names = files.map(base).join(" · ");
-  await fs.writeFile(out, `# ${head} — ${now()}\n\n대화: ${url}\n${names ? `올린 것: ${names}\n` : ""}\n${text}\n`, "utf8");
+  await fs.writeFile(out, 답파일글(head, now(), url, names, text), "utf8"); // 머리 꼴은 답파일몸과 짝(아르곤웹.js 판단함수)
   await fs.unlink(mark).catch(() => {});
   log({ step: "done", url, chars: text.length, out });
   await page.close().catch(() => {});
@@ -521,7 +538,7 @@ const 사이드바에서읽기 = async (markId, claimed) => {
     log({ step: "unsent", record: unsentMark });
     await fail(`${판단.까닭} — 안 보내진 것으로 본다. 표시를 ${unsentMark}로 옮겼다(다음 보내기가 다시 보낸다)`, "안보내짐", { record: unsentMark });
   } catch (e) {
-    if (e.kind !== "멈춤") await page.close().catch(() => {}); // 로봇 확인 화면은 유호님이 누르시게 둔다
+    if (e.kind !== "멈춤" && e.kind !== "Gemini오류") await page.close().catch(() => {}); // 로봇 확인 화면은 유호님이 누르시게 둔다 · Gemini 오류 탭은 finish가 닫았다
     throw e;
   }
 };
@@ -541,8 +558,10 @@ if (mode === "읽기") {
     탭들.push({ p, url: pu, id: 대화아이디(pu), 판정: 대화견주기(qs, 기대) });
   }
   const 맞는탭 = 탭들.filter((t) => t.판정 === "맞음" && !(t.id && claimed.has(t.id)));
-  const 고른탭 = 맞는탭.find((t) => markId && t.id === markId) || (맞는탭.length === 1 && !J.twins ? 맞는탭[0] : null);
-  if (!고른탭 && 맞는탭.length) await fail(`작업 공간 「${space}」에 이 지시문 · 첨부와 같은 대화 탭이 ${맞는탭.length}개${J.twins ? ` · 같은 지시문 작업이 ${J.twins}개 더 있다` : ""} — 어느 것이 이 작업인지 못 가린다: ${맞는탭.map((t) => t.url).join(" · ")}`, "헷갈림", { urls: 맞는탭.map((t) => t.url) });
+  // 보냄 표시가 없으면 작업 번호(표식)도 없어 지시문 · 그림 수로만 견준다 — 편마다 같은 지시문을 보내는 미학맹검의 남의 탭을 제 답으로 집지 않게,
+  // 맞는 탭이 하나뿐이어도 표시가 있을 때만 고른다(11-13 Fable 설계 검토 ② · 11-08 대사바뀜과 같은 꼴)
+  const 고른탭 = 맞는탭.find((t) => markId && t.id === markId) || (표시 && 맞는탭.length === 1 && !J.twins ? 맞는탭[0] : null);
+  if (!고른탭 && 맞는탭.length) await fail(`작업 공간 「${space}」에 이 지시문 · 첨부와 같은 대화 탭이 ${맞는탭.length}개${J.twins ? ` · 같은 지시문 작업이 ${J.twins}개 더 있다` : ""}${표시 ? "" : " · 이 작업의 보냄 표시가 없다(남의 대화일 수 있다)"} — 어느 것이 이 작업인지 못 가린다: ${맞는탭.map((t) => t.url).join(" · ")}`, "헷갈림", { urls: 맞는탭.map((t) => t.url) });
   if (고른탭) {
     page = 고른탭.p;
     await page.info();
