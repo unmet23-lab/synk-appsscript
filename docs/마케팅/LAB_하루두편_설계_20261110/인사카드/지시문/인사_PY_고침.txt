@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, the brown felt horn cup with its cream stitched rim, the green felt yerba leaves inside the cup and the silver bombilla straw exactly the same. Change only these two things:
+
+1. The character in the cup: remove the three green leaves from the top of its head — its head is plain coral-red wool with nothing on it. Make its visible upper body the shape of the character in the SECOND attached image: a rounded dome that is slightly taller than it is wide (a little ghost-shaped blob, not a ball), coral-red, two glossy solid-black bead eyes, the same happy open mouth with a tiny pink tongue. It still sits inside the cup with the green leaves around its waist.
+
+2. The felt lettering: keep every letter exactly as it is (¡Hola / 파라과이! / pa-ra-gwa-i — same letters, same shapes, same colors, same three lines) but make the whole lettering block smaller, about 82% of its current size, centered horizontally, so there is a clear band of plain sky-blue felt on its left and right. Its top edge stays at the same height.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.
