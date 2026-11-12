@@ -93,7 +93,7 @@ export function createCoach(options = {}) {
   const params = options.params ?? PARAMS;
   const dayOffset = options.dayOffset ?? -new Date().getTimezoneOffset();
   const scope = options.scope ?? globalThis; // 시험만 준다(틀 흉내)
-  const state = { map: null, host: null, session: null, disposed: false };
+  const state = { map: null, host: null, claim: null, session: null, disposed: false };
   const label = id => options.label?.(id) ?? state.map?.unit(id)?.label ?? null;
   // 틀이 여럿일 때 같은 날 같은 것에는 같은 말 — Vellum에 하루 열쇠를 넘긴다(Fable 설계 P2-5 ⑥).
   const say = (why, extra = {}) =>
@@ -118,8 +118,11 @@ export function createCoach(options = {}) {
     const map = await loadMap(options);
     const { host, guest, key } = hostOptions(options);
     // 저장소(IndexedDB) · 올리기 타이머 · 알림 통로는 호스트를 만드는 창(같은 출처의 가장 위 창의 엔진)이 연다 — host.mjs.
+    // claim: 셸로 받았는지 호스트가 적는 표 — 놓을 때 같이 넘겨 문서 호스트 셈을 내린다(host.mjs shellTakes · release).
+    state.claim = {};
     const opened = await acquireHost(
       {
+        claim: state.claim,
         key,
         document: host.document === true,
         wait: host.wait,
@@ -140,7 +143,7 @@ export function createCoach(options = {}) {
       scope,
     );
     if (state.disposed) {
-      releaseHost(opened);
+      releaseHost(opened, state.claim);
       throw fail('DISPOSED', '준비되기 전에 닫은 코치다');
     }
     state.map = map;
@@ -369,15 +372,39 @@ export function createCoach(options = {}) {
         },
         scope,
       );
+      // 여는 사이(저장소 열기 · 옛 기록 옮기기) 코치를 닫았으면 옆으로 연 것도 놓는다(카본 끝 판 C).
+      if (state.disposed) {
+        releaseHost(aside);
+        throw fail('DISPOSED', '손님 기록을 여는 사이 닫은 코치다');
+      }
       const target = state.host;
       let closed = false;
+      // 닫은 손잡이 · 닫은 코치에서는 옮기지 않는다 — 옛 판 · 닫힌 계정 호스트로 사건 · 표지가 가지 않게(카본 끝 판 C).
+      const open = () => {
+        if (closed) throw fail('CLOSED', '닫은 손님 기록이다');
+        live();
+      };
       return {
-        plan: (watermarks = {}) =>
-          planMove(aside, { account: target.account, revision: target.revision, watermarks }),
-        move: (how = {}) => moveGuest(aside, target, how),
-        keep: () => keepGuest(aside, { account: target.account }),
-        note: mark =>
-          noteGuest(aside, { mark, account: mark === 'logout' ? null : target.account }),
+        plan: async (watermarks = {}) => {
+          open();
+          return planMove(aside, {
+            account: target.account,
+            revision: target.revision,
+            watermarks,
+          });
+        },
+        move: async (how = {}) => {
+          open();
+          return moveGuest(aside, target, how);
+        },
+        keep: async () => {
+          open();
+          return keepGuest(aside, { account: target.account });
+        },
+        note: async mark => {
+          open();
+          return noteGuest(aside, { mark, account: mark === 'logout' ? null : target.account });
+        },
         close() {
           if (closed) return;
           closed = true;
@@ -532,7 +559,7 @@ export function createCoach(options = {}) {
       if (state.disposed) return;
       state.disposed = true;
       state.session?.dispose();
-      if (state.host) releaseHost(state.host);
+      if (state.host) releaseHost(state.host, state.claim);
       scope.removeEventListener?.('pagehide', coach.dispose);
     },
   };

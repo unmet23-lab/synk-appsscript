@@ -59,6 +59,17 @@ const planOf = async (record, revision, how) => {
 };
 const answers = plan =>
   plan.current.filter(event => event.type === EVENT_TYPES.attempted).map(event => event.id);
+// 옮김 표지 — move.mjs처럼 그때 실제로 옮긴 2판 사건 번호(ids)를 싣는다.
+const moved = (record, account, plan, revision = 1) =>
+  record.mark({
+    mark: 'moved',
+    account,
+    revision,
+    until: plan.until,
+    ids: plan.current.map(event => event.id),
+  });
+const attempt = (record, presentationId, attemptNo, verdict) =>
+  record.add(EVENT_TYPES.attempted, { presentationId, attemptNo, verdict, errorTags: [] });
 
 test('열쇠 경계 — 자기 옮김 · 두기는 until, 남의 표지 · 로그아웃은 표지 열쇠, 자기 「있었음」은 뺀다(R6)', () => {
   const marks = [
@@ -140,11 +151,11 @@ test('기준 시각 — 남이 다녀간 때보다 앞선 2판 묶음은 고르�
   );
 });
 
-test('경계 뒤의 제외는 대상이 Z가 이미 옮겨 간 자리 안이면 함께 옮긴다 — 남에게는 가지 않는다(R11)', async () => {
+test('경계 뒤의 제외는 대상을 Z가 이미 옮겨 갔으면(옮김 표지의 ids) 함께 옮긴다 — 남에게는 가지 않는다(R11)', async () => {
   const guest = await guestOn(memoryPort());
   const target = await practise(guest, items[0]);
   const plan = await planOf(guest, 1, { account: 'A' });
-  await guest.mark({ mark: 'moved', account: 'A', revision: 1, until: plan.until });
+  await moved(guest, 'A', plan);
   const excluded = guest.add(EVENT_TYPES.excluded, { targetId: target });
   await excluded.stored;
   const again = await planOf(guest, 1, { account: 'A' });
@@ -154,6 +165,69 @@ test('경계 뒤의 제외는 대상이 Z가 이미 옮겨 간 자리 안이면 
     'A에게는 제외만 다시 간다',
   );
   assert.deepEqual((await planOf(guest, 1, { account: 'B' })).current, [], 'B에게는 가지 않는다');
+});
+
+test('옮긴 제시에 뒤에 저장된 답(다른 탭 · 고른 뒤 저장)은 다음 옮기기에 Z로 간다 — 남에게도, 판이 오른(비운) Z에게도 가지 않는다(GPT 끝 판 GE1 · 카본 E1)', async () => {
+  const guest = await guestOn(memoryPort());
+  clockMs += 60_000;
+  const shown = guest.add(EVENT_TYPES.presented, presented(items[0]));
+  await shown.stored;
+  await attempt(guest, shown.event.id, 1, 'incorrect').stored;
+  const plan = await planOf(guest, 1, { account: 'A' });
+  assert.equal(answers(plan).length, 1);
+  await moved(guest, 'A', plan);
+  const second = attempt(guest, shown.event.id, 2, 'correct');
+  await second.stored;
+  assert.deepEqual(
+    answers(await planOf(guest, 1, { account: 'A' })),
+    [second.event.id],
+    '옮긴 제시의 뒤 답은 A에게 간다(제시는 다시 가지 않는다)',
+  );
+  assert.deepEqual(
+    (await planOf(guest, 1, { account: 'A' })).current.map(event => event.id),
+    [second.event.id],
+  );
+  assert.deepEqual(answers(await planOf(guest, 1, { account: 'B' })), [], 'B에게는 가지 않는다');
+  assert.deepEqual(
+    answers(await planOf(guest, 2, { account: 'A' })),
+    [],
+    '판이 오르면(비움) 앞 판에 옮긴 제시는 서버에 없다 — 뒤 답도 가지 않는다',
+  );
+});
+
+test('로그아웃 앞 · 「이 기기에만 두기」로 둔 사건을 겨눈 제외는 Z가 그 뒤에 옮겼어도 Z에게 가지 않는다(카본 끝 판 E1)', async () => {
+  const guest = await guestOn(memoryPort());
+  const before = await practise(guest, items[0]);
+  await guest.mark({ mark: 'logout' });
+  await practise(guest, items[1]);
+  const plan = await planOf(guest, 1, { account: 'Z' });
+  assert.equal(answers(plan).length, 1, '로그아웃 뒤의 것만 옮긴다');
+  await moved(guest, 'Z', plan);
+  const excluded = guest.add(EVENT_TYPES.excluded, { targetId: before });
+  await excluded.stored;
+  assert.deepEqual(
+    (await planOf(guest, 1, { account: 'Z' })).current,
+    [],
+    '누구 것인지 모르는 로그아웃 앞 사건의 제외는 Z에게 가지 않는다(Z의 until 안이어도)',
+  );
+  const kept = await guestOn(memoryPort());
+  const keptAnswer = await practise(kept, items[2]);
+  await kept.mark({
+    mark: 'kept',
+    account: 'Z',
+    until: (await planOf(kept, 0, { account: 'Z' })).until,
+  });
+  await practise(kept, items[3]);
+  const later = await planOf(kept, 1, { account: 'Z' });
+  assert.equal(answers(later).length, 1, '두기 뒤의 것만 옮긴다');
+  await moved(kept, 'Z', later);
+  const drop = kept.add(EVENT_TYPES.excluded, { targetId: keptAnswer });
+  await drop.stored;
+  assert.deepEqual(
+    (await planOf(kept, 1, { account: 'Z' })).current,
+    [],
+    '「이 기기에만 두기」로 둔 사건의 제외도 Z에게 가지 않는다',
+  );
 });
 
 test('고르기는 읽은 자리까지만 — 꼬리를 읽기 전의 내 덧붙이기는 다음 계획 몫이고, 두 계획이 같은 사건을 두 번 고르지 않는다(until)', async () => {

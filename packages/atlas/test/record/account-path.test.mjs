@@ -88,6 +88,24 @@ test('unsent의 skip — 건너뛴 사건에 기댄 사건(부모 사슬)도 함
   );
 });
 
+test('unsent의 skip — 같은 제시의 답 하나를 건너뛰면 그 뒤 답과 자손도 건너뛴다 · 제시와 다른 제시의 답은 간다(GPT 끝 판 GE2 · 카본 E2)', async () => {
+  const record = await account();
+  const p1 = record.add(EVENT_TYPES.presented, presented());
+  const a1 = record.add(EVENT_TYPES.attempted, answer(p1.event.id, 'incorrect', 1));
+  const a2 = record.add(EVENT_TYPES.attempted, answer(p1.event.id, 'correct', 2));
+  const x2 = record.add(EVENT_TYPES.excluded, { targetId: a2.event.id });
+  const p2 = record.add(EVENT_TYPES.presented, presented());
+  const b1 = record.add(EVENT_TYPES.attempted, answer(p2.event.id, 'correct', 1));
+  await record.saved();
+  for (const made of [p1, a1, a2, x2, p2, b1]) assert.equal(await made.stored, true);
+  assert.deepEqual(
+    record.unsent(256, new Set([a1.event.id])).map(e => e.id),
+    [p1.event.id, p2.event.id, b1.event.id],
+    '1번을 건너뛰면 2번(과 그 제외)도 이번엔 가지 않는다 — 1번 없는 2번은 서버가 EVENT_LINK로 짚어 기기가 버렸다',
+  );
+  assert.equal(record.unsent(256).length, 6, '건너뛰기는 버리지 않는다');
+});
+
 test('같은 제시의 둘째 답은 앞 답에 기대어 쓴다 — 앞 답이 저장되지 못했으면 쓰지 않고, 저장 중이면 기다린다(§18-4 H1)', async () => {
   const health = createHealth();
   const port = memoryPort();

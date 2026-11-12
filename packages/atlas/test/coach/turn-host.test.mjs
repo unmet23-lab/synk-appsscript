@@ -196,3 +196,39 @@ test('다른 탭이 차례를 쥐고 안 놓아도 대기열은 올라간다 —
   releaseHost(handle);
   coach.dispose();
 });
+
+test('첫 받기가 차례에 밀려도(다른 탭이 쥠) 받은 것으로 치지 않고 잠시 뒤 다시 받는다(카본 끝 판 D)', {
+  timeout: 15_000,
+}, async () => {
+  const items = bankOf(rng(9), { items: 4 });
+  const map = fakeMap(items);
+  const server = createServer({ random: rng(10), index: indexOfMap(map) });
+  await server.fold();
+  const time = clock();
+  const locks = fakeLocks();
+  const key = keyOf('first-busy');
+  const release = locks.hold(`synk-atlas:${key}`); // 다른 탭이 받기 동안 쥐고 있다
+  const coach = createCoach({
+    gameId: 'turn-first',
+    map,
+    seed: 't',
+    dayOffset: 0,
+    host: {
+      guest: false,
+      account: 'acct-first',
+      revision: 1,
+      key,
+      port: memoryPort(),
+      transport: routeOf(server),
+      now: time.now,
+      locks,
+      turnJobs: SHORT,
+    },
+  });
+  await coach.ready;
+  await new Promise(resolve => setTimeout(resolve, 200)); // 첫 받기가 한도(50ms)에 걸려 밀렸다
+  release();
+  const first = await coach.synced(6_000);
+  assert.deepEqual(first, { ok: true, base: true }, '잠시 뒤 다시 받아 첫 받기가 선다');
+  coach.dispose();
+});

@@ -264,8 +264,10 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
 // 새 길인데 세지 못했으면(엔진 · 저장소) 학습 줄 없이 묻고 결정의 기준 시각을 올리지 않는다(다음 로그인에 다시 묻는다, C4 · R7).
 export const ATLAS_COUNT_MS=8000;
 export function createDeviceRecordsOffer({storage=globalThis.localStorage,learningStatus=()=>null,accountAnswer=()=>null,setAccountAnswer,present,close,toast=()=>{},head='',now=Date.now,defer=fn=>setTimeout(fn,0),text=null,hangulPort=()=>null,accountOwner=null,
- importLife=null,importLearning=null,atlasWait=ATLAS_COUNT_MS}){
- const asked=new Set();let current=null;
+ accountGeneration=null,importLife=null,importLearning=null,atlasWait=ATLAS_COUNT_MS}){
+ const asked=new Set(),inFlight=new Map();let current=null;
+ // 다녀감 표지를 쓴 뒤에 옆으로 연 손님 저장소를 닫는다 — 표지가 닫힌 저장소로 가지 않게(카본 끝 판 B).
+ const closeAfter=(atlas,noting)=>{const shut=()=>{try{atlas?.close?.();}catch{/* 옆으로 연 손님 저장소 닫기 */}};if(noting)void noting.finally(shut);else shut();};
  function markup(plan){
   const T=recordsText(text),{rows,notes}=describeDeviceRecords(plan,T);
   return `<div class="ws-signin"><div class="ws-signin-head"><p class="ws-lead">${recordEscape(T.lead)}</p>${head}</div>`
@@ -274,22 +276,26 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
    +`<div class="world-actions"><button class="felt-button" data-world="device-records" data-choice="move">${recordEscape(T.move)}</button><button class="plain-button" data-world="device-records" data-choice="keep">${recordEscape(T.keep)}</button></div>`
    +`<p class="dialog-note" data-device-records-status role="status" aria-live="polite"></p></div>`;
  }
- function finish(job,value){if(current!==job)return;current=null;try{job.atlas?.close?.();}catch{/* 옆으로 연 손님 저장소 닫기 */}job.resolve(value);}
- function offer({owner}={},{atlas=null}={}){
+ function finish(job,value){if(current!==job)return;current=null;closeAfter(job.atlas,job.noting);job.resolve(value);}
+ function offer({owner,generation}={},{atlas=null}={}){
   const port=hangulPort();
   if(typeof owner!=='string'||!owner||owner==='guest'||asked.has(owner))return null;
   if(port&&port.accountId!==owner)return null;
   if(typeof atlas!=='function')return ask(owner,port,null);
-  asked.add(owner); // 세는 동안 같은 계정을 두 번 묻지 않게
+  // 세는 동안 같은 로그인이 두 번 묻지 않게 — 로그인 세대로 가른다: 세는 사이 로그아웃 뒤 같은 계정으로 다시 들어온 로그인은 제 셈으로 묻고,
+  // 앞 로그인의 셈은 끝나도 버린다(그 셈의 입구 · 한글 통로는 앞 로그인 것이다 — 카본 끝 판 B).
+  if(inFlight.has(owner)&&inFlight.get(owner).generation===generation)return null;
+  const token={generation};inFlight.set(owner,token);
   return (async()=>{
    const after=deviceWatermark(storage,owner),watermarks={others:deviceWatermark(storage,owner,{own:false}),all:after};
    const counting=Promise.resolve().then(()=>atlas({watermarks,pick:events=>pickGuestLearning(events,{after}).events}));
    let timer,found;
    try{found=await Promise.race([counting,new Promise(resolve=>{timer=setTimeout(()=>resolve({failed:true,late:true}),atlasWait);})]);}catch{found={failed:true};}finally{clearTimeout(timer);}
    if(found?.late)void counting.then(late=>late?.close?.(),()=>{});
-   asked.delete(owner);
-   // 세는 사이에 계정이 바뀌었으면 묻지 않는다(바뀐 계정은 제 차례에 묻는다).
-   if(accountOwner&&accountOwner()!==owner){try{found?.close?.();}catch{/* 닫기 */}return null;}
+   if(inFlight.get(owner)===token)inFlight.delete(owner);
+   // 세는 사이에 계정이 바뀌었거나 같은 계정의 새 로그인이 왔으면 묻지 않는다(바뀐 계정 · 새 로그인은 제 차례에 묻는다).
+   const stale=accountOwner&&accountOwner()!==owner||typeof accountGeneration==='function'&&generation!==undefined&&accountGeneration()!==generation;
+   if(stale){try{found?.close?.();}catch{/* 닫기 */}return null;}
    return ask(owner,port,found);
   })();
  }
@@ -301,10 +307,10 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   if(plan&&atlas?.failed)plan.atlasFailed=true;
   // 이 계정이 이 기기에 있었다는 사실은 기준 시각을 읽은 뒤에 남긴다(그래야 이 계정 자신의 기록은 빠지지 않는다). 새 길은 손님 저장소에도(되는 만큼만).
   noteDeviceAccount(storage,owner,now());
-  if(atlas&&!atlas.failed)void Promise.resolve().then(()=>atlas.note?.('visited')).catch(()=>{});
-  if(!plan){try{atlas?.close?.();}catch{/* 닫기 */}return null;}
+  const noting=atlas&&!atlas.failed?Promise.resolve().then(()=>atlas.note?.('visited')).catch(()=>{}):null;
+  if(!plan){closeAfter(atlas,noting);return null;}
   asked.add(owner);
-  return new Promise(resolve=>{const job={owner,plan,port,atlas:usable?atlas:null,resolve,busy:false,startedAt:now()};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
+  return new Promise(resolve=>{const job={owner,plan,port,atlas:usable?atlas:null,noting,resolve,busy:false,startedAt:now()};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
  }
  function done(job,value,message){finish(job,value);close();if(message)defer(()=>toast(message));return value;}
  // 앞 시도들이 남긴 것(같은 판을 다시 고를 때): moved — 서버가 받았다고 확인한 것(생활 진도·학습 기록 수, 한글·처음 고른 답),

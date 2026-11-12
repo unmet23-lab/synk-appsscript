@@ -156,3 +156,22 @@ test('가짜 자물쇠는 쥔 일 안에서 같은 이름을 또 청한 것을 �
   );
   assert.deepEqual(locks.reentered, ['s']);
 });
+
+test('못 얻는 일이 이어져 차례 없이 갈 때도 청하는 사이 닫히면 일을 하지 않는다(카본 끝 판 D)', async () => {
+  const locks = fakeLocks();
+  const release = locks.hold('s');
+  const turn = createTurn({ name: 's', locks, jobs: SHORT });
+  for (let i = 0; i < STREAK_COUNT; i += 1)
+    await assert.rejects(
+      turn('upload', async () => {}),
+      { code: 'TURN_BUSY' },
+    );
+  let ran = false;
+  const pending = turn('upload', async () => {
+    ran = true;
+  });
+  turn.close();
+  await assert.rejects(pending, { code: 'TURN_BUSY' });
+  assert.equal(ran, false, '닫힌 호스트에서 일하지 않는다');
+  release();
+});

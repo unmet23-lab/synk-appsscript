@@ -414,10 +414,10 @@ test('capacity retry preserves a previous account cutoff and cannot bypass a lat
 });
 
 // ── Atlas 새 길의 손님 → 계정 옮기기(단계4_계획 §18-5-3 — world-atlas-next.mjs guestMove) ──
-function atlasOffer({found,storage=memory(),wait=1000,owner=()=>ACCOUNT}={}){
+function atlasOffer({found,storage=memory(),wait=1000,owner=()=>ACCOUNT,generation=null}={}){
  const calls=[];let shown=null;
  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:value=>{shown=value;calls.push('present');},close:()=>{calls.push('close');shown?.onClose();shown=null;},
-  now:()=>LATER,defer:fn=>fn(),toast:message=>calls.push(`toast:${message}`),importLearning:async()=>{throw Error('옛 길로 옮기지 않는다');},atlasWait:wait,accountOwner:owner});
+  now:()=>LATER,defer:fn=>fn(),toast:message=>calls.push(`toast:${message}`),importLearning:async()=>{throw Error('옛 길로 옮기지 않는다');},atlasWait:wait,accountOwner:owner,accountGeneration:generation});
  const atlas=input=>{calls.push(['count',input.watermarks]);return typeof found==='function'?found(input):found;};
  return {offer,calls,storage,atlas,shown:()=>shown};
 }
@@ -476,11 +476,31 @@ test('새 길 물음 — 옮기기가 실패하면 결정 없이 다시 고르�
 test('새 길 물음 — 셀 것이 없으면(0건) 다른 줄이 없을 때 묻지 않고, 세는 사이에 계정이 바뀌면 묻지 않으며 같은 계정을 두 번 세지 않는다',async()=>{
  const empty=atlasFound({events:0,attempts:0}),f=atlasOffer({found:empty});
  assert.equal(await f.offer.offer({owner:ACCOUNT},{atlas:f.atlas}),null);
- assert.ok(empty.log.includes('close'),'옆으로 연 손님 저장소를 닫는다');
+ await new Promise(resolve=>setTimeout(resolve,0));
+ // 다녀감 표지를 쓴 뒤에 닫는다 — 닫힌 저장소에 표지를 쓰지 않게(카본 끝 판 B)
+ assert.deepEqual(empty.log,['note:visited','close'],'다녀감 표지 → 옆으로 연 손님 저장소 닫기');
  let who=ACCOUNT;const found=atlasFound(),g=atlasOffer({found,owner:()=>who});
  const first=g.offer.offer({owner:ACCOUNT},{atlas:()=>{who='someone-else';return found;}});
  assert.equal(g.offer.offer({owner:ACCOUNT},{atlas:g.atlas}),null,'세는 동안 다시 묻지 않는다');
  assert.equal(await Promise.race([first,new Promise(resolve=>setTimeout(()=>resolve('물음을 띄웠다'),300))]),null);assert.deepEqual(found.log,['close']);
+});
+
+test('새 길 물음 — 세는 사이에 로그아웃 뒤 같은 계정으로 다시 들어오면 앞 로그인의 셈은 버리고 새 로그인이 제 셈으로 묻는다',async()=>{
+ let gen=1,release;
+ const stale=atlasFound(),fresh=atlasFound();
+ const f=atlasOffer({found:null,generation:()=>gen});
+ const gate=new Promise(resolve=>{release=resolve;});
+ const first=f.offer.offer({owner:ACCOUNT,generation:1},{atlas:async()=>{await gate;return stale;}});
+ assert.equal(f.offer.offer({owner:ACCOUNT,generation:1},{atlas:f.atlas}),null,'같은 로그인은 세는 동안 다시 묻지 않는다');
+ gen=2; // 로그아웃 → 같은 계정 다시 로그인
+ const second=f.offer.offer({owner:ACCOUNT,generation:2},{atlas:()=>fresh});
+ assert.notEqual(second,null,'새 로그인은 앞 셈에 막히지 않는다');
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.ok(f.shown(),'새 로그인의 물음이 떴다');
+ release();
+ assert.equal(await Promise.race([first,new Promise(resolve=>setTimeout(()=>resolve('앞 셈이 물음을 띄웠다'),300))]),null,'앞 로그인의 셈은 묻지 않는다');
+ assert.deepEqual(stale.log,['close'],'앞 셈이 연 손님 저장소는 닫는다');
+ f.shown().onClose();await second;
 });
 
 test('pickGuestLearning — guestLearningEvents와 같은 고르기를 사건 배열에(새 길이 옮겨 온 옛 꼴 후보를 고른다)',()=>{

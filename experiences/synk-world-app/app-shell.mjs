@@ -950,7 +950,7 @@ async function importDeviceLife(records){
  refreshLife();life.education?.refresh();return added;
 }
 let hangulMigrationPort=null;
-const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatus:()=>window.SYNKLearningHost?.status?.()||null,hangulPort:()=>hangulMigrationPort,accountOwner:()=>client.snapshot?.accountId||'guest',
+const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatus:()=>window.SYNKLearningHost?.status?.()||null,hangulPort:()=>hangulMigrationPort,accountOwner:()=>client.snapshot?.accountId||'guest',accountGeneration:()=>client.generation,
  importLife:importDeviceLife,importLearning:operating?events=>account.importDeviceLearning(events):null,
  accountAnswer:()=>accountLife().hangulReading(),setAccountAnswer:async(answer,options)=>{const ui=accountLife();try{return await ui.setHangulReading(answer,options);}finally{refreshLife();}},
  present:({title,html,onClose})=>{show(title,html,'world-device-records');home.attachPanelResource({dispose:onClose});},close,toast:message=>home.toast(message),head:accountPrint(),text:deviceRecordsText});

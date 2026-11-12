@@ -8,6 +8,7 @@ const LOG = 'src/record/log.mjs';
 const OWN = 'src/record/own.mjs';
 const ROWS = 'src/record/rows.mjs';
 const EVENTS = 'src/record/events.mjs';
+const CARRY = 'src/record/carry.mjs';
 
 export const RECORD_MUTANTS = [
   // ── 「낸 것」 줄의 사건 번호 — 코치가 번호로 내 제시를 뺀다(단계 4 §16) ──
@@ -357,8 +358,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '건너뛴 사건에 기댄 사건은 보낸다(부모 없이 가서 EVENT_LINK로 버려진다 — R12)',
     LOG,
-    '        if (blocked.has(event.id) || blocked.has(parentOf(event))) {',
-    '        if (blocked.has(event.id)) {',
+    '    blocked.has(parentOf(event)) ||\n',
+    '',
   ],
   [
     R,
@@ -381,8 +382,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '같은 제시의 앞 답이 저장 중이어도 기다리지 않는다(§18-4)',
     LOG,
-    '      before && state.inflight.get(before),',
-    '      null,',
+    '        : [state.inflight.get(parentOf(event)), before && state.inflight.get(before)].filter(',
+    '        : [state.inflight.get(parentOf(event)), null].filter(',
   ],
   [
     R,
@@ -509,11 +510,84 @@ export const RECORD_MUTANTS = [
   [
     R,
     '기기',
-    '경계 뒤의 제외가 이미 옮겨 간 사건을 겨누면 두고 간다(R11)',
+    '경계 뒤의 자식 · 제외가 Z가 이미 옮겨 간 부모를 따라가지 않는다(옮긴 뒤 다른 탭이 이어 낸 답 · 그 뒤의 제외가 안 간다 — R11 · 끝 판 E1)',
     LOG,
-    '      (picked.has(parentOf(event)) || (item.parentKey ?? Number.POSITIVE_INFINITY) <= moved)',
-    '      picked.has(parentOf(event))',
+    '  return picked.has(parent) || (item.key > edge && moved.has(parent));',
+    '  return picked.has(parent);',
   ],
+  [
+    R,
+    '기기',
+    '경계 앞의 자식도 옮긴 부모를 따라 다시 고른다(이미 옮긴 답을 또 묻는다 — 끝 판 E1)',
+    LOG,
+    '  return picked.has(parent) || (item.key > edge && moved.has(parent));',
+    '  return picked.has(parent) || moved.has(parent);',
+  ],
+  [
+    R,
+    '기기',
+    '옮김 표지의 판을 가리지 않는다(비운 뒤에도 앞 판에 옮긴 부모를 따라가 서버에 부모 없는 사건이 간다 — 끝 판 E1)',
+    LOG,
+    "        mark => mark.mark === 'moved' && mark.account === account && mark.revision === revision,",
+    "        mark => mark.mark === 'moved' && mark.account === account,",
+  ],
+  [
+    R,
+    '기기',
+    '옮김 표지에 옮긴 번호를 적지 않는다(옮긴 부모 뒤의 답 · 제외가 영영 안 간다 — 끝 판 E1)',
+    LOG,
+    "        ...(mark === 'moved' && Array.isArray(ids) ? { ids: [...new Set(ids.filter(isId))] } : {}),\n",
+    '',
+  ],
+  [
+    R,
+    '기기',
+    '답 하나를 건너뛰어도 같은 제시의 뒤 답을 보낸다(1번 없는 2번이 EVENT_LINK로 버려진다 — 끝 판 E2)',
+    LOG,
+    '    (attempt && stalled.has(event.presentationId));',
+    '    false;',
+  ],
+  [
+    R,
+    '기기',
+    '건너뛴 답의 제시를 적지 않는다(그 뒤 답이 나간다 — 끝 판 E2)',
+    LOG,
+    '  if (attempt) stalled.add(event.presentationId);\n',
+    '',
+  ],
+  [
+    R,
+    '기기',
+    '치우기가 옛 꼴 ack 속 요약을 요약 기록으로 옮겨 적지 않는다(하나뿐인 요약이 사라진다 — GE3)',
+    LOG,
+    '        state.summary && !state.summaryRows.has(state.summaryKey)',
+    '        false',
+  ],
+  [
+    R,
+    '기기',
+    '옛 꼴 ack 속 요약의 기록 열쇠를 적지 않는다(섞인 저장소가 치운 뒤 앞 요약으로 돌아간다 — GE3)',
+    LOG,
+    '    state.summaryKey = key;\n  }\n  if (state.summary) state.clock.know(state.summary.latestAt);\n  if (value.swept) {',
+    '  }\n  if (state.summary) state.clock.know(state.summary.latestAt);\n  if (value.swept) {',
+  ],
+  [
+    R,
+    '기기',
+    '제외가 겨눈 묶음의 저장 중인 답을 기다리지 않는다(닿는 줄 메모가 빈다 — 끝 판 E3)',
+    LOG,
+    '      type === EVENT_TYPES.excluded\n        ? [...state.inflight.values()]',
+    '      false\n        ? [...state.inflight.values()]',
+  ],
+  [
+    R,
+    '기기',
+    '다시 옮기는 장부를 앞 장부를 옮긴 때에 세우지 않는다(어떤 만남보다 먼저로 — GD1)',
+    CARRY,
+    '    after: soFar.last ?? null,',
+    '    after: null,',
+  ],
+
   [
     R,
     '기기',

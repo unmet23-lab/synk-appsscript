@@ -87,11 +87,13 @@ export function createTurn({
     try {
       return await locks.request(name, { ifAvailable: true }, lock => {
         ran = true;
+        if (state.closed) throw turnBusy(job); // 청하는 사이 닫혔다 — 닫힌 호스트에서 일하지 않는다(카본 끝 판 D)
         if (lock) state.misses.delete(job);
         return inside(work);
       });
     } catch (error) {
       if (ran) throw error; // 일 자신의 오류
+      if (state.closed) throw turnBusy(job);
       return inside(work); // 청하기 자체가 거절됐다(SecurityError) — 차례 없이
     }
   }

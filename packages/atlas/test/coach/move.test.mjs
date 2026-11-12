@@ -209,3 +209,80 @@ test('표지를 못 쓰면 다음 옮기기가 다시 고르지만 계정 저장
   recs.close();
   a.dispose();
 });
+
+test('옮긴 뒤 다른 탭의 손님 코치가 같은 제시에 이어 낸 답은 다음 옮기기에 그 계정으로 가서 올라간다(GPT 끝 판 GE1 · 카본 E1 — 옮김 표지의 ids)', async () => {
+  const w = world(29);
+  // 다른 탭 — 제 등록부(창)로 같은 손님 저장소를 연다.
+  const guest = open(
+    { ...w, top: topWindow() },
+    { guest: true, key: storeName({}), port: w.guestPort },
+  );
+  await guest.ready;
+  const pid = guest.present(w.items[0]);
+  assert.equal(await guest.answer(pid, { correct: false, assessable: true }).stored, true);
+  w.time.advance(STEP);
+  const a = await accountCoach(w, 'A');
+  await settled(a);
+  const recs = await a.guestRecords({ port: w.guestPort });
+  const first = await recs.plan();
+  assert.equal((await recs.move()).current, 2, '제시와 첫 답');
+  assert.ok(
+    await uploaded(
+      w,
+      first.current.map(event => event.id),
+    ),
+  );
+  const marks = (await w.guestPort.read()).filter(row => row.value.kind === 'mark');
+  assert.deepEqual(
+    marks.map(row => [...row.value.ids].sort()),
+    [first.current.map(event => event.id).sort()],
+    '옮김 표지에 옮긴 번호를 적는다',
+  );
+  w.time.advance(STEP);
+  assert.equal(await guest.answer(pid, { correct: true, assessable: true }).stored, true);
+  const plan = await recs.plan();
+  assert.deepEqual(
+    answersOf(plan).map(event => event.attemptNo),
+    [2],
+    '옮긴 제시의 둘째 답만 고른다(제시는 다시 가지 않는다)',
+  );
+  assert.equal((await recs.move()).current, 1);
+  assert.ok(
+    await uploaded(
+      w,
+      plan.current.map(event => event.id),
+    ),
+    '서버가 받는다 — 제시 · 첫 답이 먼저 올라가 있다',
+  );
+  assert.equal(answersOf(await recs.plan()).length, 0, '그 뒤에는 다시 고르지 않는다');
+  recs.close();
+  a.dispose();
+  guest.dispose();
+});
+
+test('닫은 손잡이 · 닫은 코치에서는 옮기지 않고, 손님 기록을 여는 사이 코치를 닫으면 옆으로 연 것도 놓는다(카본 끝 판 C)', async () => {
+  const w = world(41);
+  await practiseAsGuest(w, w.items.slice(0, 1));
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort });
+  recs.close();
+  await assert.rejects(recs.plan(), { code: 'CLOSED' });
+  await assert.rejects(recs.move(), { code: 'CLOSED' });
+  await assert.rejects(recs.note('visited'), { code: 'CLOSED' });
+  const again = await a.guestRecords({ port: w.guestPort });
+  a.dispose();
+  await assert.rejects(
+    again.keep(),
+    { code: 'DISPOSED' },
+    '닫은 코치(옛 판 · 닫힌 계정 호스트)로 옮기지 않는다',
+  );
+  await assert.rejects(again.move(), { code: 'DISPOSED' });
+  again.close();
+  // 여는 사이 닫으면 옆으로 연 손님 호스트를 놓고 DISPOSED
+  const b = await accountCoach(w, 'B');
+  const opening = b.guestRecords({ port: w.guestPort });
+  b.dispose();
+  await assert.rejects(opening, { code: 'DISPOSED' });
+  await sleep(0);
+  assert.equal(w.top.__synkAtlasHosts.has(storeName({})), false, '손님 저장소 자리가 남지 않는다');
+});

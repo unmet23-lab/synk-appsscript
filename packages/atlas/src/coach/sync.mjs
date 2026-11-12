@@ -11,6 +11,7 @@ export const BATCH_BYTES = 200_000; // 서버 본문 상한 262,144의 약 4분�
 export const SIFT_CAP = 8; // 한 세션에 가려낸 사건이 이것을 넘으면 그 세션은 올리기를 쉰다(R13)
 export const UPLOAD_DELAY_MS = 1500;
 export const PULL_GAP_MS = 5 * 60_000; // 화면이 다시 보일 때의 GET은 5분에 한 번까지(B5)
+export const PULL_RETRY_MS = 3_000; // 첫 받기가 차례에 밀렸을 때(다른 탭이 쥠) 다시 받기까지
 const BACKOFF_MS = [UPLOAD_DELAY_MS, 5_000, 15_000, 60_000, 300_000]; // 같은 실패는 물러서기
 const AUTH_CODES = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 const CODE = /^[A-Z][A-Z0-9_]{1,39}$/;
@@ -137,10 +138,13 @@ export function createSync({
     return run;
   }
 
-  const canPost = () => !state.closed && !state.stopped && !state.writesOff && !state.paused;
+  // 스위치가 꺼지면(GET 403 FEATURE_DISABLED) 올리기도 멈춘다 — 같은 403을 POST로 다시 받아 쓰기 문 닫힘으로 잘못 알리지 않게(카본 끝 판 D).
+  const canPost = () =>
+    !state.closed && !state.stopped && !state.writesOff && !state.switchOff && !state.paused;
   const canGet = () => !state.closed && !state.stopped && !state.switchOff;
 
   function stop(kind, error) {
+    if (state.closed) return; // 닫힌 뒤 돌아온 실패는 셸에 알리지 않는다(카본 · GPT 끝 판 D)
     const code = codeOf(error);
     if (kind === 'writes') state.writesOff = true;
     else if (kind === 'switch') state.switchOff = true;
@@ -177,6 +181,7 @@ export function createSync({
 
   // 한 묶음을 보낸다 — 보낼 때마다 지금 대기열(건너뛸 것 · 기댄 것 뺌)과 맞춰 거른다(앞 조각에서 가려낸 사건의 자식이 뒤 조각에 있다).
   async function send(batch) {
+    if (state.closed) return 'closed'; // 닫힌 뒤에는 가려내기 · 나머지 보내기를 잇지 않는다(카본 · GPT 끝 판 D)
     const allowed = new Set(
       trail()
         .unsent(Number.POSITIVE_INFINITY, state.skipped)
@@ -188,6 +193,7 @@ export function createSync({
     try {
       answer = await carrier().post(events, trail().since());
     } catch (error) {
+      if (state.closed) return 'closed';
       return refused(events, error);
     }
     await receive(answer);
@@ -217,6 +223,7 @@ export function createSync({
   }
 
   function settle(outcome, sent) {
+    if (state.closed || outcome === 'closed') return;
     if (state.received) {
       announce();
       tell('receive');
@@ -269,13 +276,24 @@ export function createSync({
     then?.();
     return null;
   }
+  // 차례 밖의 오류(저장소 예외 — 다른 탭의 판 올림으로 연결이 닫힘 · 용량 등)는 계기에 남기고 거절을 새지 않게 한다(카본 끝 판 D).
+  function broke(error, first = false) {
+    if (state.closed) return null;
+    const code =
+      typeof error?.code === 'string' && CODE.test(error.code) ? error.code : 'SYNC_FAILED';
+    note('save', { ok: false, code });
+    if (first) settleFirst({ ok: false, kind: 'other', code });
+    return null;
+  }
 
   function upload() {
     if (!canPost() || !carrier().post) return state.uploading;
     if (state.uploading) return state.uploading;
     if (!trail().unsent(1, state.skipped).length) return null;
     state.uploading = inLane(() =>
-      turn('upload', round).catch(error => busy(error, schedule)),
+      turn('upload', round).catch(error =>
+        error?.code === 'TURN_BUSY' ? busy(error, schedule) : broke(error),
+      ),
     ).finally(() => {
       state.uploading = null;
       sweep();
@@ -310,6 +328,7 @@ export function createSync({
     state.firstWaiters.clear();
   }
 
+  // 받기 실패 — 닫힌 뒤 돌아온 실패는 getRound가 여기 오기 전에 거른다(닫을 때 첫 받기는 이미 CLOSED로 풀렸다).
   async function getFailed(kind, error) {
     if (kind === 'offline') state.failures += 1;
     else if (kind === 'bad-since') note('save', { ok: false, code: codeOf(error) });
@@ -318,20 +337,24 @@ export function createSync({
     return null;
   }
 
-  async function getRound() {
-    const get = carrier().get;
-    let answer;
+  // 받기 한 번 — 기준(since)이 맞지 않으면 since 없이 한 번 다시(통째). 실패는 { error }로 돌려준다(닫힌 뒤면 다시 하지 않는다).
+  async function fetchSummary(get) {
     try {
-      answer = await get(trail().since());
+      return { answer: await get(trail().since()) };
     } catch (error) {
-      if (failureOf(error, 'get') !== 'bad-since') return getFailed(failureOf(error, 'get'), error);
-      try {
-        answer = await get(null); // since 없이 한 번 다시(통째)
-      } catch (again) {
-        return getFailed(failureOf(again, 'get'), again);
-      }
+      if (state.closed || failureOf(error, 'get') !== 'bad-since') return { error };
     }
+    try {
+      return { answer: await get(null) };
+    } catch (again) {
+      return { error: again };
+    }
+  }
+
+  async function getRound() {
+    const { answer, error } = await fetchSummary(carrier().get);
     if (state.closed) return null;
+    if (error) return getFailed(failureOf(error, 'get'), error);
     const before = trail().summary();
     await trail().receive({
       summary: answer?.summary ?? null,
@@ -352,8 +375,22 @@ export function createSync({
     if (!canGet() || !carrier().get) return Promise.resolve(null);
     if (state.pulling) return state.pulling;
     if (!force && now() - state.lastPull < PULL_GAP_MS) return Promise.resolve(null);
+    const before = state.lastPull;
     state.lastPull = now();
-    state.pulling = inLane(() => turn('get', getRound).catch(error => busy(error))).finally(() => {
+    // 차례를 못 얻어(다른 탭이 쥠) 받지 못했으면 받은 것으로 치지 않는다 — 첫 받기는 잠시 뒤 다시(카본 끝 판 D).
+    const missedTurn = () => {
+      state.lastPull = before;
+      if (!state.first && !state.closed) {
+        clearTimeout(state.pullTimer);
+        state.pullTimer = setTimeout(() => void pull({ force: true }), PULL_RETRY_MS);
+        state.pullTimer?.unref?.();
+      }
+    };
+    state.pulling = inLane(() =>
+      turn('get', getRound).catch(error =>
+        error?.code === 'TURN_BUSY' ? busy(error, missedTurn) : broke(error, true),
+      ),
+    ).finally(() => {
       state.pulling = null;
       sweep();
     });
@@ -409,6 +446,7 @@ export function createSync({
     close() {
       state.closed = true;
       clearTimeout(state.timer);
+      clearTimeout(state.pullTimer);
       settleFirst({ ok: false, kind: 'closed', code: 'CLOSED' });
     },
   };

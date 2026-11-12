@@ -110,6 +110,7 @@ function createHost({
   now,
   map,
   onClose,
+  shellGone = null, // 셸로 받은 코치가 놓을 때(문서 호스트 셈 — 등록부 자리가 준다)
   onAccount = null,
   claims = { users: 0 },
   // 차례의 자물쇠(Web Locks) — 시험만 바꾼다(가짜 자물쇠 · null). 없는 브라우저는 차례 규칙만으로 한다(§18-5-1 ⓓ).
@@ -339,7 +340,12 @@ function createHost({
       claims.users += 1;
     },
     // 동기로 닫는다 — 사라지는 틀의 pagehide에서 불려도 등록부에서 바로 빠진다.
-    release() {
+    // claim: 받을 때 넘긴 표(셸로 받았으면 shell) — 셸 코치가 다 놓으면 이 저장소는 문서 호스트에서 내려온다(카본 · GPT 끝 판 C).
+    release(claim = null) {
+      if (claim?.shell) {
+        claim.shell = false;
+        shellGone?.();
+      }
       claims.users -= 1;
       if (claims.users > 0) return false;
       state.closed = true;
@@ -409,23 +415,39 @@ function documentOf(registry, wait) {
     registry.waiters.add(done);
   });
 }
-// 문서 호스트를 정한다 — 셸(위 창 자기 코치)이 연 호스트만 될 수 있고, 닫히면 남은 셸 호스트로 넘긴다(N3).
+// 문서 호스트를 정한다 — 셸(위 창 자기 코치)이 받은 호스트만 될 수 있고, 가장 나중에 받은 셸의 것이다(로그인 · 동의 판으로 저장소를
+// 갈아타면 따라간다). 셸 코치가 다 놓거나 닫히면 남은 셸 가운데 가장 나중의 것으로 넘긴다(N3 · 카본 · GPT 끝 판 C).
 function setDocument(registry, key) {
   registry.document = key;
   if (key != null) for (const done of [...(registry.waiters ?? [])]) done(key);
 }
+// 이 저장소가 문서 호스트면 남은 셸 가운데 가장 늦게 연 것으로 내려온다(없으면 빈다) — 셸이 다 놓을 때(shellGone)와 자리가 닫힐 때
+// (onClose) 같은 규칙이다(카본 · GPT 끝 판 C).
+function leaveDocument(registry, key) {
+  if (registry.document === key) setDocument(registry, nextDocument(registry));
+}
 function nextDocument(registry) {
-  for (const [key, entry] of registry) if (entry.shell) return key;
-  return null;
+  let next = null;
+  for (const [key, entry] of registry)
+    if (entry.shell && (!next || entry.shellAt > next.shellAt))
+      next = { key, shellAt: entry.shellAt };
+  return next?.key ?? null;
 }
 
 // 새 등록부 자리 — 등록부에 먼저 넣고 연다(같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게). shell은 셸이 받은 뒤에 선다(shellTakes).
 function newEntry(registry, key, options, openPort) {
   const claims = { users: 0 };
-  const entry = { key, shell: false, claims };
+  // shellUsers: 셸로 받은 코치 수, shellAt: 셸이 마지막으로 받은 차례(문서 호스트는 가장 나중의 셸 것).
+  const entry = { key, shell: false, shellUsers: 0, shellAt: 0, claims };
   const onClose = () => {
     if (registry.get(key) === entry) registry.delete(key);
-    if (registry.document === key) setDocument(registry, nextDocument(registry));
+    leaveDocument(registry, key);
+  };
+  const shellGone = () => {
+    entry.shellUsers = Math.max(0, entry.shellUsers - 1);
+    if (entry.shellUsers > 0) return;
+    entry.shell = false;
+    leaveDocument(registry, key);
   };
   entry.opening = (async () => {
     let port = options.port;
@@ -436,18 +458,30 @@ function newEntry(registry, key, options, openPort) {
     }
     // 판이 오른 계정 저장소를 열었으면 같은 계정의 앞 판 사본을 버린다(설계 §5-3 · 단계 4 §18-5-5 E3 — 기다리지 않는다).
     if (!options.port) void dropEarlier(key).catch(() => {});
-    // 기억(memory)은 호스트를 만드는 창이 스스로 만든다 — 사라질 수 있는 틀의 객체를 위 창의 호스트가 들지 않게(N3).
-    const memory = createMemory(options.params);
-    return createHost({
-      ...options,
-      key,
-      port,
-      memory,
-      onClose,
-      claims,
-      // 틀이 넘긴 올리기 · 셸 알림은 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(take). 옛 기록 읽개도 셸의 것만(take).
-      ...(options.fromFrame === true ? { transport: null, onAccount: null } : {}),
-    }).open();
+    try {
+      // 기억(memory)은 호스트를 만드는 창이 스스로 만든다 — 사라질 수 있는 틀의 객체를 위 창의 호스트가 들지 않게(N3).
+      const memory = createMemory(options.params);
+      return await createHost({
+        ...options,
+        key,
+        port,
+        memory,
+        onClose,
+        shellGone,
+        claims,
+        // 틀이 넘긴 올리기 · 셸 알림은 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(take). 옛 기록 읽개도 셸의 것만(take).
+        ...(options.fromFrame === true ? { transport: null, onAccount: null } : {}),
+      }).open();
+    } catch (error) {
+      // 이 자리가 연 저장소 연결은 닫는다 — 열린 채 남으면 뒤의 앞 판 지우기 · 비우기 · 저장소 꼴 올리기를 막는다(카본 끝 판 C).
+      if (!options.port)
+        try {
+          port?.close?.();
+        } catch {
+          // 닫기 실패는 열기 실패를 가리지 않는다
+        }
+      throw error;
+    }
   })();
   registry.set(key, entry);
   entry.opening.catch(onClose);
@@ -463,7 +497,12 @@ function shellTakes(registry, entry, host, options) {
     onAccount: options.onAccount,
   });
   entry.shell = true;
-  if (registry.document == null) setDocument(registry, entry.key);
+  entry.shellUsers += 1;
+  registry.shellSeq = (registry.shellSeq ?? 0) + 1;
+  entry.shellAt = registry.shellSeq;
+  if (options.claim) options.claim.shell = true; // 놓을 때 이 표로 셸 수를 내린다(release)
+  // 가장 나중에 받은 셸의 호스트가 문서 호스트다 — 옛 주인의 호스트를 틀이 아직 쥐고 있어도 새 틀은 새 주인의 것을 받는다(카본 · GPT 끝 판 C).
+  if (registry.document !== entry.key) setDocument(registry, entry.key);
 }
 
 const missing = () => hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
@@ -506,13 +545,14 @@ async function acquireHere(scope, options, openPort) {
     host = await entry.opening;
     if (options.map) host.index.add(options.map);
     if (entry.legacy) host.take({ legacy: entry.legacy });
-    if (options.fromFrame !== true && options.aside !== true)
+    // 셸만 문서 호스트를 세운다 — 틀이 넘긴 것 · 옆으로 연 것 · 같은 창에서 문서 호스트를 받는 코치(document)는 셸이 아니다.
+    if (options.fromFrame !== true && options.aside !== true && options.document !== true)
       shellTakes(registry, entry, host, options);
     // 옛 기록 옮기기의 약속 — 셸이든 틀이든 받는 코치는 모두 그 끝을 기다린다(계획 §16 ③ · D4 ㉡).
     await host.carried();
     return host;
   } catch (error) {
-    if (host) host.release();
+    if (host) host.release(options.claim);
     else entry.claims.users -= 1;
     throw error;
   }
@@ -539,6 +579,6 @@ export function acquireHost(options, scope = globalThis) {
   return maker(up ? { ...options, fromFrame: true } : options);
 }
 
-export function releaseHost(host) {
-  return host.release();
+export function releaseHost(host, claim = null) {
+  return host.release(claim);
 }

@@ -8,8 +8,8 @@
 //   ④ 손님(동의 꺼진 계정 포함)은 기기가 원천이다 — 사건을 다 들고 같은 어댑터 · 근거 줄로 요약을 스스로 접는다.
 // 기록 꼴(포트의 값): { kind: 'event', event, touches? } · { kind: 'ack', acks: [[id, seq]], clamped, dropped, summary?, offsetMs? }
 //                    · { kind: 'local', summary, until }(손님이 스스로 접은 요약 — until = 그 요약에 든 마지막 포트 열쇠)
-//                    · { kind: 'mark', mark, account?, revision?, until?, at }(손님 저장소의 경계 표지 — 단계 4 §18-5-3: 옮김 · 두기 ·
-//                      로그아웃 · 있었음)
+//                    · { kind: 'mark', mark, account?, revision?, until?, ids?, at }(손님 저장소의 경계 표지 — 단계 4 §18-5-3: 옮김 ·
+//                      두기 · 로그아웃 · 있었음. 옮김 표지의 ids는 그때 실제로 옮긴 2판 사건 번호)
 //   치우기의 합친 표지는 swept: { at }를 싣는다 — 다른 탭은 꼬리에서 그것을 만나면 포트를 통째로 다시 읽는다(단계 4 §18-5-5 A6).
 //   파생 기록(손님 요약 · 치우기 · 옮기기)을 쓰는 일은 호스트의 차례(src/coach/turn.mjs) 안에서 한다 — 기록부가 스스로 차례를
 //   청하는 곳은 차례 밖에서 시작된 손님 요약 저장 하나뿐이고(exclusive), 호스트가 「차례 안」으로 둔 동안에는 다시 청하지 않는다
@@ -17,7 +17,7 @@
 import { overlay } from '../fold/device.mjs';
 import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
 import { createClock } from './clock.mjs';
-import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, parentOf } from './events.mjs';
+import { createEvent, EVENT_FORM, EVENT_TYPES, eventId, isId, parentOf } from './events.mjs';
 import { familySkillsOf, ownFoldEvents, touchesOf, WAIT } from './own.mjs';
 import { linesOfGroups } from './rows.mjs';
 import { foldEdition, ISSUED_KEEP_MS } from './server.mjs';
@@ -140,7 +140,12 @@ function takeAck(state, value, key, now) {
   for (const id of value.dropped ?? []) state.dropped.add(id);
   if (Number.isFinite(value.offsetMs)) state.clock.sync(now() + value.offsetMs);
   const next = unpackSummary(value.summary);
-  if (newer(state.summary, next)) state.summary = next;
+  // 옛 꼴(11-11 앞 — 요약을 받은 표지에 함께 실었다)의 요약도 받는다. 그 기록 열쇠를 적어 두어 치우기가 그 ack를 지우기 전에
+  // 요약을 따로 한 기록으로 옮겨 적는다(GPT 끝 판 GE3).
+  if (newer(state.summary, next)) {
+    state.summary = next;
+    state.summaryKey = key;
+  }
   if (state.summary) state.clock.know(state.summary.latestAt);
   if (value.swept) {
     state.sweptAt = Math.max(state.sweptAt, value.swept.at ?? 0);
@@ -279,18 +284,25 @@ function edgeOf(mark, account) {
 export const keyEdge = (marks, account) =>
   marks.reduce((edge, mark) => Math.max(edge, edgeOf(mark, account)), 0);
 
-// Z가 이미 옮겨 간 자리 — 경계 뒤의 제외가 그 안의 사건을 겨누면 함께 옮긴다(R11).
-const movedUntil = (marks, account) =>
-  marks
-    .filter(mark => mark.mark === 'moved' && mark.account === account)
-    .reduce((edge, mark) => Math.max(edge, mark.until ?? 0), 0);
+// Z가 이 판(revision)으로 실제로 옮겨 간 2판 사건 번호 — 옮김 표지의 ids. 경계 뒤에 덧붙은 자식 · 제외가 그 안의 사건을 겨누면 함께
+// 옮긴다(R11 — 옮긴 뒤 다른 탭이 이어 낸 답, 그 뒤의 제외). 숫자 상한(until)으로 재면 그 자리 안이지만 옮기지 않은 사건(로그아웃 ·
+// 남의 표지 앞 · 두기 · 옛 판)을 겨눈 제외까지 Z에게 갔고, 옮긴 부모 뒤에 달린 답은 아예 가지 않았다(GPT 끝 판 GE1 · 카본 E1).
+// 판이 오르면(비움) 앞 판에 옮긴 것은 서버에 없으니 세지 않는다. ids 없는 옛 표지(리허설 저장소)는 아무것도 따라가지 않는다.
+const movedIds = (marks, account, revision) =>
+  new Set(
+    marks
+      .filter(
+        mark => mark.mark === 'moved' && mark.account === account && mark.revision === revision,
+      )
+      .flatMap(mark => (Array.isArray(mark.ids) ? mark.ids : [])),
+  );
 
 // 묶음의 머리 — 제시 · 본인 말 · 판 결정 · 장부. 자식(전달 · 도움 · 답 · 마침 · 응답 · 제외)은 부모를 따라간다.
 const isHead = event => parentOf(event) == null;
 
 // 2판 사건 고르기 — 머리가 열쇠 경계 뒤이고 그 시각이 남이 다녀간 기준 시각(others) 뒤인 묶음. 장부는 기준 시각(all — 자기 결정 포함)이
-// 0일 때만(장부에는 든 일이 언제 것인지 가릴 재료가 없다 — 결정 2의 보수 쪽). 자식은 고른 부모를 따라가고, 제외는 대상이 고른 것이거나
-// Z가 이미 옮겨 간 자리 안이면 따라간다.
+// 0일 때만(장부에는 든 일이 언제 것인지 가릴 재료가 없다 — 결정 2의 보수 쪽). 자식 · 제외는 이번에 고른 부모를 따라가고, 열쇠 경계
+// 뒤에 덧붙은 것은 부모를 Z가 이 판으로 이미 옮겨 갔으면 따라간다(moved — 옮김 표지의 ids).
 function takes(item, picked, { edge, moved, others, all }) {
   const { event } = item;
   if (isHead(event))
@@ -299,13 +311,23 @@ function takes(item, picked, { edge, moved, others, all }) {
       Date.parse(event.at) > others &&
       (event.type !== EVENT_TYPES.carried || all === 0)
     );
-  if (event.type === EVENT_TYPES.excluded)
-    return (
-      item.key > edge &&
-      (picked.has(parentOf(event)) || (item.parentKey ?? Number.POSITIVE_INFINITY) <= moved)
-    );
-  return picked.has(parentOf(event));
+  const parent = parentOf(event);
+  return picked.has(parent) || (item.key > edge && moved.has(parent));
 }
+// 대기열에서 건너뛸 사건인가(unsent) — 건너뛸 번호 자신 · 그것에 기댄 자식(부모 사슬), 답 하나가 건너뛰어진 제시의 뒤 답(같은 제시의
+// 답은 앞 답에 기댄다 — §18-4). 건너뛰면 그 번호를 막힌 것에 더한다(자손이 따라 걸린다).
+function skipped(event, blocked, stalled) {
+  const attempt = event.type === EVENT_TYPES.attempted;
+  const leans =
+    blocked.has(event.id) ||
+    blocked.has(parentOf(event)) ||
+    (attempt && stalled.has(event.presentationId));
+  if (!leans) return false;
+  blocked.add(event.id);
+  if (attempt) stalled.add(event.presentationId);
+  return true;
+}
+
 function pickCurrent(items, rule) {
   const picked = new Set();
   return items.filter(item => {
@@ -460,16 +482,28 @@ export function createRecord({
     return true;
   }
 
-  function store(type, event, value) {
+  // 기록 값 — 제외의 닿는 줄 메모(touches)는 저장 직전에 잰다: 겨눈 사건 · 그 묶음의 답이 아직 저장 중이면 든 사건에 없어 메모가
+  // 비었다(카본 끝 판 E3). 그래서 제외는 저장 중인 사건을 다 기다린 뒤에 잰다(store).
+  function valueOf(type, event) {
+    const touches =
+      type === EVENT_TYPES.excluded
+        ? touchesOf([...state.held.values()].map(entryOf), event.targetId, index)
+        : null;
+    return { kind: 'event', event, ...(touches ? { touches } : {}) };
+  }
+
+  function store(type, event, valueFor) {
     // 같은 제시의 바로 앞 답(이 기록부가 만든 것) — 저장 중이면 기다리고, 이미 실패했으면 append가 거절한다(§18-4 H1: 둘 다).
     const attempt = type === EVENT_TYPES.attempted;
     const before = attempt ? (state.lastAttempt.get(event.presentationId) ?? null) : null;
     if (attempt) state.lastAttempt.set(event.presentationId, event.id);
-    const run = () => append(type, event, value, before);
-    const waits = [
-      state.inflight.get(parentOf(event)),
-      before && state.inflight.get(before),
-    ].filter(Boolean);
+    const run = () => append(type, event, valueFor(), before);
+    const waits =
+      type === EVENT_TYPES.excluded
+        ? [...state.inflight.values()]
+        : [state.inflight.get(parentOf(event)), before && state.inflight.get(before)].filter(
+            Boolean,
+          );
     const result = waits.length ? Promise.allSettled(waits).then(run) : run();
     state.inflight.set(event.id, result);
     result.finally(() => {
@@ -531,27 +565,23 @@ export function createRecord({
       const id = nextId(state, atMs, tag);
       const event = createEvent(type, fields, { id, atMs, revision: guest ? 0 : revision });
       if (type === EVENT_TYPES.presented) state.families.set(id, event.familyKey);
-      const entries = [...state.held.values()].map(entryOf);
-      const touches =
-        type === EVENT_TYPES.excluded ? touchesOf(entries, event.targetId, index) : null;
-      const value = { kind: 'event', event, ...(touches ? { touches } : {}) };
-      return { event, stored: store(type, event, value) };
+      return { event, stored: store(type, event, () => valueOf(type, event)) };
     },
 
     // 보낼 대기열 — 받은 표지가 없고 버리지 않은 내 2판 사건(만든 차례). skip은 이 세션에 건너뛸 번호들(서버가 번호 없이 묶음째
     // 돌려보낸 사건을 가려낸 것 — 버리지 않는다)이고, 그것에 기댄 사건(부모 사슬 — 그 제시의 전달 · 도움 · 답, 그것들을 겨눈 제외,
     // 그 결정의 마침 · 응답)도 함께 건너뛰고 그 너머를 읽는다(단계 4 §18-5-2 R12 · R13). 부모 없이 보내면 서버가 EVENT_LINK로 빼고
     // 기기가 그것을 버려, 부모가 올라간 뒤에도 다시 가지 않았다(s9). 부모는 늘 앞 열쇠라 한 번 훑기로 사슬이 다 걸린다.
+    // 같은 제시의 답은 앞 답에도 기댄다(§18-4) — 답 하나를 건너뛰면 그 제시의 뒤 답도 건너뛴다. 1번 없이 2번을 보내면 서버가
+    // EVENT_LINK로 짚어 기기가 멀쩡한 2번을 영구히 버렸다(GPT 끝 판 GE2 · 카본 E2).
     unsent(limit = 256, skip = null) {
       const blocked = new Set(skip ?? []);
+      const stalled = new Set(); // 답 하나가 건너뛰어진 제시
       const out = [];
       for (const item of [...state.held.values()].sort((a, b) => a.key - b.key)) {
         const event = item.event;
         if (!isCurrent(event) || state.acks.has(event.id) || state.dropped.has(event.id)) continue;
-        if (blocked.has(event.id) || blocked.has(parentOf(event))) {
-          blocked.add(event.id);
-          continue;
-        }
+        if (skipped(event, blocked, stalled)) continue;
         out.push(event);
         if (out.length >= limit) break;
       }
@@ -671,9 +701,15 @@ export function createRecord({
         offsetMs: state.clock.offsetMs,
         swept: { at },
       };
-      const [keepKey] = await port.append([value]);
+      // 지금 요약이 지울 ack(옛 꼴)에서 왔으면 요약 기록을 같은 덧붙이기에 함께 쓴다 — 하나뿐인 요약을 지우지 않게(GPT 끝 판 GE3).
+      const carry =
+        state.summary && !state.summaryRows.has(state.summaryKey)
+          ? [{ kind: 'summary', summary: packSummary(state.summary) }]
+          : [];
+      const [keepKey, ...carried] = await port.append([value, ...carry]);
       state.ownSweeps.add(keepKey);
       accept({ key: keepKey, value });
+      carried.forEach((key, i) => accept({ key, value: carry[i] }));
       const isStale = row =>
         row.key <= seen &&
         (row.value.kind === 'ack' || (row.value.kind === 'event' && gone.has(row.value.event.id)));
@@ -687,20 +723,18 @@ export function createRecord({
     // 제외의 닿는 줄 메모(touches)를 함께 낸다. until은 이 계획을 고른 읽은 자리(옮김 표지에 적는다) — 고르는 것도 읽은 자리까지만이다
     // (내 덧붙이기는 읽은 자리를 올리지 않는다 — 고른 것보다 작은 until이 적히면 다음에 같은 것을 또 고른다, A4와 같은 규칙). 부르는 쪽이
     // 꼬리부터 읽는다(move.mjs). watermarks: { others, all } — 남이 다녀간 기준 시각 · 자기 결정까지 든 기준 시각(제품의 deviceWatermark).
+    // 옮긴 뒤에는 move.mjs가 current의 번호를 옮김 표지(ids)에 적는다 — 다음 고르기에서 경계 뒤 자식 · 제외가 그 부모를 따라간다.
     guestUpload(accountRevision, { account = null, watermarks = {} } = {}) {
       const until = state.readKey;
       const items = [...state.held.values()]
         .filter(item => item.key <= until)
         .sort((a, b) => a.key - b.key);
       const edge = keyEdge(state.marks, account);
-      const keyOf = id => state.held.get(id)?.key;
       const current = pickCurrent(
-        items
-          .filter(item => isCurrent(item.event))
-          .map(item => ({ ...item, parentKey: keyOf(parentOf(item.event)) })),
+        items.filter(item => isCurrent(item.event)),
         {
           edge,
-          moved: movedUntil(state.marks, account),
+          moved: movedIds(state.marks, account, accountRevision),
           others: watermarks.others ?? 0,
           all: watermarks.all ?? 0,
         },
@@ -714,7 +748,7 @@ export function createRecord({
     },
 
     // 경계 표지를 쓴다(손님 저장소 — §18-5-3). 차례 안에서 부른다(호스트의 move 일).
-    async mark({ mark, account = null, revision = null, until = null }) {
+    async mark({ mark, account = null, revision = null, until = null, ids = null }) {
       if (!MARKS.has(mark)) throw new TypeError(`Atlas record: 모르는 표지 ${mark}`);
       if (mark !== 'logout' && account == null) throw new TypeError('Atlas record: 계정 없는 표지');
       const value = {
@@ -723,6 +757,7 @@ export function createRecord({
         ...(account != null ? { account } : {}),
         ...(Number.isSafeInteger(revision) ? { revision } : {}),
         ...(Number.isSafeInteger(until) ? { until } : {}),
+        ...(mark === 'moved' && Array.isArray(ids) ? { ids: [...new Set(ids.filter(isId))] } : {}),
         at: Math.round(now() + state.clock.offsetMs),
       };
       const [key] = await port.append([value]);

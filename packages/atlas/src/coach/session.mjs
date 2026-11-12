@@ -54,7 +54,7 @@ const setSign = set =>
 // 측정 문항과 엔진의 보통 채우기를 가른다(조율 11-11). 회차(arm)는 바꾸지 않는다 — 좁힌 묶음 안에서는 엔진이 골랐다.
 const POOL = /^[a-z][a-z0-9-]{0,23}$/;
 const pooled = (row, pool) =>
-  row && POOL.test(pool ?? '')
+  row && typeof pool === 'string' && POOL.test(pool)
     ? { ...row, why: { ...row.why, evidence: { ...row.why.evidence, pool } } }
     : row;
 // 본인 말이 그 줄에 남긴 때 — 「다시 배울래요」는 빈 줄, 「이미 알아요」는 열린 자리가 known이다.
@@ -95,7 +95,9 @@ export function verdictOf(result, item) {
 
 function attemptFields(pid, attemptNo, verdict, result) {
   const choice = result.choice;
-  const choiceOk = choice && OPTION.test(choice.selectedId) && OPTION.test(choice.correctId);
+  // 정규식 test는 null · 수 · 참거짓을 글자로 바꿔 통과시킨다 — 글자일 때만(카본 끝 판 D).
+  const option = id => typeof id === 'string' && OPTION.test(id);
+  const choiceOk = choice && option(choice.selectedId) && option(choice.correctId);
   return {
     presentationId: pid,
     attemptNo,
@@ -186,6 +188,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     if (op.kind === 'present') present(tmp, op.row, params);
     else if (op.kind === 'answer') record(tmp, memory, op.item, op.answer, op.at, params);
     else if (op.kind === 'say') say(tmp, memory, op.unit, op.say, op.at, params);
+    else if (op.kind === 'help') applyOwn(tmp, op.own, memory, params, host.index);
   }
 
   const kept = op => !s.failed.has(op.eventId) && !s.failed.has(op.parent);
@@ -396,7 +399,12 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       const { event, stored } = write(EVENT_TYPES.helped, fields, { fold });
       // 첫 답 뒤에 본 도움(되짚기)은 접기 사건이 없다 — 어댑터가 도움 만남을 세우지 않는다(설계 §3-3 · Fable 5.2 최종 F1).
       const own = first ? foldOf(group, event, host.index, s.failed) : null;
-      if (own) applyOwn(s.learner, own, memory, params, host.index);
+      if (own) {
+        applyOwn(s.learner, own, memory, params, host.index);
+        // 판 일지에도 — 보기가 아무것도 얹지 못하는 동안 다시 세우면(일지를 판을 열 때의 사본에 다시 돌림) 이 도움의 만남 · 능력이
+        // 사라지지 않게(카본 끝 판 D). 저장이 실패하거나 제외되면 다른 줄처럼 빠진다(kept).
+        s.journal.push({ kind: 'help', eventId: event.id, parent: pid, own });
+      }
       group.children.push(entryOf(event));
       return { event, stored };
     },

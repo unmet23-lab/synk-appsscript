@@ -296,6 +296,97 @@ test('옮기기 물음 — 옮길 것이 없으면(손님 저장소 · 고를 �
  }
 });
 
+test('끝 판 B — 엔진을 한 번 못 받아도 문서 내내 굳지 않는다(기기 길은 다음 연습에서 다시 정한다)',async()=>{
+ const line=accountLine({enabled:false});
+ let fails=1;
+ const engine={storeName:atlas.storeName};
+ const opened=[];
+ const load=async()=>({coach:options=>{const made=fakeCoach();made.options=options;opened.push(made);return made;},
+  SynkAtlas:{load:async()=>{if(fails-->0)throw Object.assign(Error('offline'),{reason:'IMPORT'});return engine;}}});
+ const next=createAtlasNext({owner:'acct-40',storage:memoryStorage(),trail:line.trail,load,health:recorder()});
+ assert.equal(await next.practiceCoach(POOL),null,'이번 연습은 지금 판');
+ const made=await next.practiceCoach(POOL);
+ assert.ok(made,'다음 연습은 엔진을 다시 받아 기기 길');
+ assert.equal(made.options.host.key,atlas.storeName({account:'acct-40',revision:1,local:true}));
+ next.dispose();
+});
+
+test('끝 판 B — 이미 새 길로 간 계정이 계정을 못 읽으면(일시 실패) 옮기기 물음은 「못 셈」, 스위치 꺼짐은 지금 판 물음',async()=>{
+ const storage=memoryStorage([[NEXT_MARK+'acct-41','{"went":true}']]);
+ let broken=true;
+ const line=accountLine();
+ const trail=async()=>{if(broken)throw Object.assign(Error('net'),{code:'NETWORK',retryable:true});return line.trail();};
+ const {load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-41',storage,trail,load,health:recorder()});
+ assert.deepEqual(await next.guestMove({watermarks:{others:0,all:0}}),{failed:true},'기준 시각을 올리지 않게 못 셈');
+ broken=false;
+ const later=await next.guestMove({watermarks:{others:0,all:0}});
+ assert.equal(later.none,true,'다시 읽으면 새 길로 센다(이 기기엔 옮길 것 없음)');
+ next.dispose();
+ const off=createAtlasNext({owner:'acct-42',storage:memoryStorage([[NEXT_MARK+'acct-42','{"off":true}']]),trail:line.trail,load,health:recorder()});
+ assert.equal(await off.guestMove({watermarks:{others:0,all:0}}),null,'정해진 지금 판은 지금 판 물음');
+ off.dispose();
+});
+
+test('끝 판 B — 앞 판 코치의 늦은 알림 · 늦게 끝난 쓰기 다시 확인은 새 판의 코치를 닫지 않고, 같은 판의 겹친 쓰기 알림은 한 번만 읽는다',async()=>{
+ const line=accountLine();
+ let hold=false,release=()=>{};
+ // 다음 한 번의 계정 읽기만 붙든다(쓰기 다시 확인) — 그사이 새 판의 코치를 연다
+ const trail=async()=>{if(hold){hold=false;await new Promise(resolve=>{release=resolve;});}return line.trail();};
+ const {load,opened}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-43',storage:memoryStorage([[NEXT_MARK+'acct-43','{"went":true}']]),trail,load,health:recorder()});
+ const a=await next.practiceCoach(POOL);
+ const notifyA=a.options.host.onAccount;
+ const reads=line.reads;
+ hold=true;
+ notifyA({kind:'writes'});notifyA({kind:'writes'}); // 겹친 쓰기 알림
+ notifyA({kind:'account'}); // 그사이 판 알림 — 다시 정하고 앞 코치를 닫는다
+ await tick();
+ assert.ok(a.disposed>0,'앞 코치는 닫힌다');
+ const b=await next.practiceCoach(POOL);
+ assert.ok(b&&b!==a,'새 판의 코치');
+ // 붙든 쓰기 다시 확인이 이제 끝난다 — 쓰기 문이 닫힌 것으로 읽혀도 앞 판의 확인이라 새 코치를 닫지 않는다
+ line.learningSync=false;release();
+ for(let i=0;i<5;i++)await tick();
+ line.learningSync=true;
+ assert.equal(b.disposed,0,'늦게 끝난 앞 판의 쓰기 확인이 새 코치를 닫지 않는다');
+ assert.equal(line.reads-reads,2,'겹친 쓰기 알림은 계정을 한 번만 다시 읽는다(+ 새 판 정하기 한 번)');
+ // 앞 판 코치의 늦은 알림(판 · 쓰기)도 새 코치를 닫지 않는다
+ notifyA({kind:'account'});notifyA({kind:'writes'});
+ for(let i=0;i<5;i++)await tick();
+ assert.equal(b.disposed,0,'새 판의 코치는 그대로');
+ assert.equal(await next.practiceCoach(POOL),b,'다음 연습도 같은 코치');
+ assert.equal(opened.length,2);
+ next.dispose();
+});
+
+test('끝 판 B — 처음인 기기에서 같은 판의 두 코치가 겹치면, 한쪽이 첫 받기를 놓쳐도 다른 쪽이 새 길을 확인하면 다음 연습은 새 길',async()=>{
+ const storage=memoryStorage();
+ const line=accountLine();
+ const POOL2=[{itemKey:'blank-slice.x1'}];
+ // 은행 조합마다 다른 코치 — topik-items는 첫 받기를 놓치고(먼저), blank-slice는 받는다(뒤)
+ const make=options=>fakeCoach({synced:options.banks.includes('topik-items')
+  ? new Promise(resolve=>setTimeout(()=>resolve({ok:false,code:'TIMEOUT'}),20))
+  : new Promise(resolve=>setTimeout(()=>resolve({ok:true,base:true}),60))});
+ const loader=fakeLoader(options=>{const made=make(options);const synced=made.synced;made.synced=async()=>synced();return made;});
+ const next=createAtlasNext({owner:'acct-44',storage,trail:line.trail,load:loader.load,health:recorder()});
+ const [a,b]=await Promise.all([next.practiceCoach(POOL),next.practiceCoach(POOL2)]);
+ assert.equal(a,null,'놓친 쪽은 이번에 지금 판');
+ assert.ok(b,'받은 쪽은 새 길');
+ assert.equal(markOf(storage,'acct-44').went,true);
+ assert.ok(await next.practiceCoach(POOL),'다음 연습은 새 길(낮춘 판을 다시 정함)');
+ // 반대 차례: 받은 쪽이 먼저 끝나면 놓친 쪽도 그대로 새 길
+ const storage2=memoryStorage();
+ const make2=options=>fakeCoach({synced:options.banks.includes('topik-items')
+  ? new Promise(resolve=>setTimeout(()=>resolve({ok:false,code:'TIMEOUT'}),60))
+  : new Promise(resolve=>setTimeout(()=>resolve({ok:true,base:true}),20))});
+ const loader2=fakeLoader(options=>{const made=make2(options);const synced=made.synced;made.synced=async()=>synced();return made;});
+ const next2=createAtlasNext({owner:'acct-45',storage:storage2,trail:line.trail,load:loader2.load,health:recorder()});
+ const [c,d]=await Promise.all([next2.practiceCoach(POOL),next2.practiceCoach(POOL2)]);
+ assert.ok(c&&d,'둘 다 새 길');
+ next.dispose();next2.dispose();
+});
+
 test('로그아웃 표지 — 이미 연 계정 코치가 있고 손님 저장소가 있을 때만 쓴다(되는 만큼만)',async()=>{
  const line=accountLine(),marks=[];
  const aside={note:async mark=>{marks.push(mark);return true;},close(){marks.push('close');}};

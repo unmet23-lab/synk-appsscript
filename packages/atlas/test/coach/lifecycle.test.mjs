@@ -1203,3 +1203,162 @@ test('셸이 틀이 연 호스트를 받으면 그 뒤 저장 계기도 셸의 �
   game.dispose();
   shell.dispose();
 });
+
+test('문서 호스트는 가장 나중에 받은 셸의 것 — 옛 주인의 호스트를 틀이 쥐고 있어도 새 틀은 새 주인의 것을 받고, 셸이 다 놓으면 내려온다(카본 · GPT 끝 판 C)', async () => {
+  const items = bankOf(rng(14));
+  const time = clock();
+  const origin = { origin: 'https://world.test' };
+  const top = { location: origin };
+  top.parent = top;
+  installHostMaker(top, { openPort: () => memoryPort() });
+  const frame = () => ({
+    location: origin,
+    parent: top,
+    addEventListener() {},
+    removeEventListener() {},
+  });
+  const base = { map: fakeMap(items), seed: 's', dayOffset: 0 };
+  const open = (gameId, host, scope) => {
+    const coach = createCoach({ ...base, gameId, host: { now: time.now, ...host }, scope });
+    return coach.ready.then(() => coach);
+  };
+  const doc = () => top.__synkAtlasHosts.document ?? null;
+  // A 셸과 A의 틀 → A 셸을 먼저 닫는다(틀이 A 호스트를 아직 쥔다)
+  const aKey = keyOf('owner-a');
+  const a = await open('shell-a', { guest: true, key: aKey }, top);
+  const oldFrame = await open('frame-a', { document: true, wait: 0 }, frame());
+  assert.equal(doc(), aKey);
+  a.dispose();
+  assert.equal(doc(), null, '셸이 다 놓은 저장소는 틀이 쥐고 있어도 문서 호스트가 아니다');
+  // B 셸 → 새 틀은 B를 받고 B 기록부에 쓴다
+  const bKey = keyOf('owner-b');
+  const b = await open('shell-b', { guest: true, key: bKey }, top);
+  assert.equal(doc(), bKey);
+  const fresh = await open('frame-b', { document: true, wait: 0 }, frame());
+  const pid = fresh.present(items[0]);
+  await fresh.answer(pid, { correct: true, assessable: true }).stored;
+  assert.equal(b.exposure(items[0]).seen, true, '새 틀은 새 주인의 기록부에 쓴다');
+  b.dispose();
+  assert.equal(doc(), null, 'B 셸이 닫혀도 틀이 쥔 A가 되살아나지 않는다');
+  // 옛 셸을 닫기 전에 새 셸이 받으면 그때 바로 새 셸의 것(가장 나중), 새 셸을 닫으면 남은 셸로
+  const cKey = keyOf('owner-c');
+  const dKey = keyOf('owner-d');
+  const c = await open('shell-c', { guest: true, key: cKey }, top);
+  const d = await open('shell-d', { guest: true, key: dKey }, top);
+  assert.equal(doc(), dKey, '가장 나중에 받은 셸');
+  d.dispose();
+  assert.equal(doc(), cKey, '남은 셸로 넘어간다');
+  // 남은 셸이 여럿이면 그 가운데 가장 나중에 받은 것으로
+  const eKey = keyOf('owner-e');
+  const fKey = keyOf('owner-f');
+  const e = await open('shell-e', { guest: true, key: eKey }, top);
+  const f = await open('shell-f', { guest: true, key: fKey }, top);
+  assert.equal(doc(), fKey);
+  f.dispose();
+  assert.equal(doc(), eKey, '남은 셸(c · e) 가운데 가장 나중의 것');
+  e.dispose();
+  assert.equal(doc(), cKey);
+  // 같은 창에서 문서 호스트를 받는 코치(document)는 셸이 아니다 — 셸이 닫히면 문서 호스트도 내려온다
+  const consumer = await open('consumer', { document: true, wait: 0 }, top);
+  c.dispose();
+  assert.equal(doc(), null, '같은 창의 문서 호스트 소비자는 셸로 세지 않는다');
+  for (const coach of [oldFrame, fresh, consumer]) coach.dispose();
+});
+
+test('저장소를 연 뒤 호스트 열기가 실패하면 연 연결을 닫는다 — 열린 채 남아 지우기 · 판 올림을 막지 않게(카본 끝 판 C)', async () => {
+  const items = bankOf(rng(15));
+  const time = clock();
+  const top = { location: { origin: 'https://world.test' } };
+  top.parent = top;
+  let closed = 0;
+  const broken = () => ({
+    ...memoryPort(),
+    async read() {
+      throw new Error('broken store');
+    },
+    async range() {
+      throw new Error('broken store');
+    },
+    close() {
+      closed += 1;
+    },
+  });
+  installHostMaker(top, { openPort: broken });
+  const coach = createCoach({
+    map: fakeMap(items),
+    seed: 's',
+    dayOffset: 0,
+    gameId: 'broken',
+    scope: top,
+    host: { guest: true, key: keyOf('broken'), now: time.now },
+  });
+  await assert.rejects(coach.ready);
+  assert.equal(closed, 1, '연 연결을 닫았다');
+  assert.equal(top.__synkAtlasHosts.size, 0, '등록부 자리도 남지 않는다');
+});
+
+test('보기 번호 · 좁힌 까닭은 글자일 때만 싣는다 — null · 수 · 참거짓이 정규식을 지나 답을 깨지 않는다(카본 끝 판 D)', async () => {
+  const items = bankOf(rng(16));
+  const time = clock();
+  const port = memoryPort();
+  const coach = coachOn({ items, time, port, key: keyOf('choice-null') });
+  await coach.ready;
+  const picked = coach.recommend(items, { set: { length: 4 }, pool: true });
+  assert.equal(picked.why?.evidence?.pool, undefined, '참거짓 pool은 싣지 않는다');
+  const pid = coach.present(picked.selected);
+  const out = coach.answer(pid, {
+    correct: false,
+    assessable: true,
+    choice: { selectedId: null, correctId: 'a1' },
+  });
+  assert.equal(await out.stored, true, '답이 깨지지 않고 저장된다');
+  const attempted = (await eventsOf(port)).find(event => event.id === out.eventId);
+  assert.equal(attempted.choice, undefined, '글자가 아닌 보기 번호는 싣지 않는다');
+  coach.dispose();
+});
+
+test('첫 답 전 도움은 판 일지에 남는다 — 보기가 못 얹는 동안 판을 다시 세워도 그 도움의 만남이 사라지지 않는다(카본 끝 판 D)', async () => {
+  const { createSession } = await subject('coach/session.mjs');
+  const items = bankOf(rng(17));
+  const time = clock();
+  const port = memoryPort();
+  await port.append([
+    {
+      kind: 'ack',
+      acks: [],
+      clamped: [],
+      dropped: [],
+      summary: packSummary(emptySummary('other-edition')),
+    },
+  ]);
+  const map = fakeMap(items);
+  const host = await acquireHost({
+    key: keyOf('help-journal'),
+    port,
+    params: PARAMS,
+    now: time.now,
+    guest: false,
+    account: 'acct-help',
+    revision: 1,
+    map,
+  });
+  const mapItem = product => {
+    try {
+      return map.item(product);
+    } catch {
+      return null;
+    }
+  };
+  const session = createSession({ host, gameId: 'g', seed: 's', dayOffset: 0, mapItem });
+  session.choose(items, { set: { length: 4 } });
+  assert.equal(host.view().waitAll, true, '보기가 아무것도 얹지 못하는 동안');
+  const item = items[0];
+  const family = map.item(item).familyKey;
+  const pid = session.present(item, {});
+  session.help(pid, 'explanation');
+  assert.equal(session.learner.met.has(family), true, '첫 답 전 도움이 만남을 남긴다');
+  session.rebuild();
+  assert.equal(session.learner.met.has(family), true, '다시 세워도 그 만남이 남는다');
+  session.dispose?.();
+  releaseHost(host);
+});

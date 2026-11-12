@@ -5,7 +5,7 @@
 //      앞서 사건으로 옮긴 답은 그보다 이르므로 첫 만남 자격을 잃지 않고, 다녀온 사이 처음 만난 계열은 그 뒤 답이 첫 만남이 되지 않는다.
 //      같은 장부가 두 번 와도 새로 든 것이 없으면 사건을 만들지 않는다(합치는 것은 「있다」를 더하는 일).
 // 계정 기기는 옮기지 않는다 — 옛 판의 계정 장부는 서버가 이미 받은 사건만 접었다(learning-ledger.js 머리 주석).
-import { EVENT_FORM, EVENT_TYPES } from './events.mjs';
+import { EVENT_TYPES } from './events.mjs';
 
 const prefixed = (keys, prefix) =>
   Object.fromEntries(
@@ -61,10 +61,11 @@ export function cellsOf(ledgerCells = {}) {
     );
 }
 
-// 이미 옮긴 장부들(기록부가 든 record.carried 사건 — 거둔 장부는 없던 것) → 옮긴 계열 · 문항, 마지막으로 옮긴 때, 그리고 이 기기가
-// 새 판에서 낸 마지막 사건의 때(lastOwn). 옛 판 화면은 그 뒤에만 열릴 수 있으므로(같은 기기 · 같은 저장소) 다녀온 사이 든 장부의
-// 만남은 그 뒤다 — 새 판에서 먼저 낸 답의 첫 만남 자격을 빼앗지 않는다(아르곤 끝 판 B3). 옛 로그에서 옮긴 옛 꼴 사건은 세지 않는다
-// (장부가 그 로그를 접은 것이라 앞뒤를 모른다).
+// 이미 옮긴 장부들(기록부가 든 record.carried 사건 — 거둔 장부는 없던 것) → 옮긴 계열 · 문항, 마지막으로 옮긴 때.
+// 다시 옮기는 장부의 after는 앞 장부를 옮긴 때까지만이다 — 새 판에서 낸 마지막 사건의 때로 늦추지 않는다. 옛 판 게임은 다른 탭에서
+// 새 판과 같이 돌 수 있어(4-6까지) 장부에 든 만남이 새 판의 어느 답보다 앞인지 모른다 — 모르는 구간의 답은 첫 만남으로 치지 않는다
+// (덜 세는 쪽으로만 틀린다, GPT 끝 판 GD1 · 설계 주인 11-13 — 아르곤 끝 판 B3의 lastOwn을 거둠. 차례대로 다녀온 드문 경우의 첫 답이
+// 근거에서 빠지는 것은 받아들인다 — 줄이는 다듬기는 일부만 옮긴 뒤 근거를 부풀리는 길이 된다).
 const later = (a, b) => (!a ? (b ?? null) : !b ? a : a > b ? a : b);
 
 export function carriedSoFar(events) {
@@ -74,14 +75,10 @@ export function carriedSoFar(events) {
   const ledgers = events.filter(
     event => event.type === EVENT_TYPES.carried && !withdrawn.has(event.id),
   );
-  const own = events.filter(
-    event => event.schema === EVENT_FORM.current && event.type !== EVENT_TYPES.carried,
-  );
   return {
     families: new Set(ledgers.flatMap(event => Object.keys(event.families))),
     items: new Set(ledgers.flatMap(event => Object.keys(event.items))),
     last: ledgers.reduce((at, event) => later(at, event.at), null),
-    lastOwn: own.reduce((at, event) => later(at, event.at), null),
   };
 }
 
@@ -100,7 +97,7 @@ export function carriedFields(
   return {
     families: newFamilies,
     items: newItems,
-    after: later(soFar.last, soFar.lastOwn),
+    after: soFar.last ?? null,
     ...(soFar.last ? {} : { cells: cellsOf(ledger.cells) }),
   };
 }

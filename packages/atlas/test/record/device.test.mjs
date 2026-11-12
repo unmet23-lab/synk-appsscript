@@ -420,7 +420,97 @@ test('이미 접힌 답의 전달을 거두면 그 답이 적힌 줄을 기다�
   );
 });
 
-test('옮겨 온 장부 — 거둔 장부는 옮긴 것으로 세지 않고, 다시 옮기는 장부는 새 판의 마지막 내 사건 뒤에 서고, 망가진 칸은 건너뛴다(아르곤 끝 판 B3 · B7)', () => {
+test('치우기 — 요약이 옛 꼴(받은 표지에 함께 실은 요약)뿐인 저장소도 치운 뒤 다시 열면 요약이 그대로다(GPT 끝 판 GE3)', async () => {
+  const server = createServer({ random: rng(5), index });
+  const port = memoryPort();
+  const client = await createClient(server, { name: 'aaaa', port });
+  const shown = client.record.add('practice.presented', presented());
+  client.record.add('practice.attempted', answer(shown.event.id));
+  await client.push();
+  // 옛 꼴(11-11 앞)로 — 요약 기록을 바로 앞 받은 표지에 싣고 따로 두지 않는다.
+  const old = memoryPort();
+  const values = [];
+  for (const row of await port.read()) {
+    if (row.value.kind === 'summary') values[values.length - 1].summary = row.value.summary;
+    else values.push(row.value);
+  }
+  await old.append(values);
+  const open = () =>
+    openRecord({ port: old, revision: 1, memory, params: PARAMS, index, now: () => server.now });
+  const record = await open();
+  const before = record.summary;
+  assert.ok(before, '옛 꼴의 요약을 읽는다');
+  await record.receive({ serverTime: server.now });
+  await record.compact();
+  const kinds = (await old.read()).map(row => row.value.kind);
+  assert.ok(kinds.includes('summary'), '요약을 따로 한 기록으로 옮겨 적었다');
+  assert.ok(!kinds.slice(0, -2).includes('ack'), '옛 받은 표지는 치웠다');
+  const reopened = await open();
+  assert.deepEqual(reopened.summary, before, '치운 뒤 다시 열어도 같은 요약');
+  await reopened.receive({ serverTime: server.now });
+  await reopened.compact();
+  assert.equal(
+    (await old.read()).filter(row => row.value.kind === 'summary').length,
+    1,
+    '요약 기록에서 온 요약은 다시 적지 않는다',
+  );
+  // 섞인 저장소 — 앞 요약은 따로 한 기록, 더 새 요약은 옛 꼴 ack 속. 치우기가 새 요약을 지키고 앞 요약으로 돌아가지 않는다.
+  const next = client.record.add('practice.presented', presented());
+  client.record.add('practice.attempted', answer(next.event.id));
+  const earlier = (await port.read()).find(row => row.value.kind === 'summary').value;
+  await client.push();
+  const mixedPort = memoryPort();
+  const mixed = [earlier];
+  for (const row of await port.read()) {
+    if (row.value.kind === 'summary') mixed[mixed.length - 1].summary = row.value.summary;
+    else mixed.push(row.value);
+  }
+  await mixedPort.append(mixed);
+  const openMixed = () =>
+    openRecord({
+      port: mixedPort,
+      revision: 1,
+      memory,
+      params: PARAMS,
+      index,
+      now: () => server.now,
+    });
+  const newest = await openMixed();
+  assert.notDeepEqual(newest.summary, before, '새 요약(옛 꼴 ack 속)이 앞 요약보다 앞선다');
+  const kept = newest.summary;
+  await newest.receive({ serverTime: server.now });
+  await newest.compact();
+  assert.deepEqual(
+    (await openMixed()).summary,
+    kept,
+    '치운 뒤에도 새 요약 — 따로 둔 앞 요약으로 돌아가지 않는다',
+  );
+});
+
+test('제외의 닿는 줄 메모는 겨눈 사건 · 그 묶음의 답이 저장된 뒤에 잰다 — 저장 중에 만든 제외도 메모가 같다(카본 끝 판 E3)', async () => {
+  const touchesFor = async wait => {
+    const port = memoryPort();
+    const record = await openRecord({
+      port,
+      revision: 1,
+      memory,
+      params: PARAMS,
+      index,
+      now: () => T0,
+    });
+    const shown = record.add('practice.presented', presented());
+    record.add('practice.attempted', answer(shown.event.id, 'incorrect'));
+    if (wait) await record.saved();
+    const excluded = record.add('record.excluded', { targetId: shown.event.id });
+    assert.equal(await excluded.stored, true);
+    return (await port.read()).find(row => row.value.event?.id === excluded.event.id).value.touches;
+  };
+  const settled = await touchesFor(true);
+  assert.ok(settled, '저장된 뒤 만든 제외는 메모가 있다');
+  assert.deepEqual(await touchesFor(false), settled, '저장 중에 만든 제외도 같은 메모');
+});
+
+test('옮겨 온 장부 — 거둔 장부는 옮긴 것으로 세지 않고, 다시 옮기는 장부는 앞 장부를 옮긴 때에 서며(새 판 사건 뒤로 늦추지 않음), 망가진 칸은 건너뛴다(GPT 끝 판 GD1 · 아르곤 끝 판 B7)', () => {
   const t = n => new Date(T0 + n * 60_000).toISOString();
   const carried = {
     schema: 2,
@@ -443,14 +533,15 @@ test('옮겨 온 장부 — 거둔 장부는 옮긴 것으로 세지 않고, 다
   };
   const legacy = { schema: 1, id: 'old', type: 'practice.presented', at: t(9) };
   const ledger = { keys: { 'family:f1': 1, 'family:f2': 1 }, cells: null };
-  // 앞 장부가 있고 그 뒤 새 판에서 낸 사건이 있으면, 다시 옮기는 장부는 그 사건 뒤(옛 로그에서 옮긴 옛 꼴은 세지 않는다).
+  // 앞 장부가 있고 그 뒤 새 판에서 낸 사건이 있어도, 다시 옮기는 장부는 앞 장부를 옮긴 때에 선다 — 옛 판 게임이 다른 탭에서 같이
+  // 돌았을 수 있어 그 사이 새 판 답이 장부의 만남보다 앞인지 모른다(모르는 구간은 첫 만남으로 치지 않는다, GD1).
   const again = carriedFields(ledger, carriedSoFar([carried, mine, legacy]));
   assert.deepEqual(again.families, { f2: 1 });
-  assert.equal(again.after, t(5));
-  // 거둔 장부는 없던 것 — 처음 옮기는 장부로(칸 요약도), 그래도 새 판 사건 뒤.
+  assert.equal(again.after, t(1), '앞 장부를 옮긴 때 — 새 판 사건(t5) 뒤로 늦추지 않는다');
+  // 거둔 장부는 없던 것 — 처음 옮기는 장부로(칸 요약도), 어떤 만남보다 먼저(새 판 사건이 있어도).
   const first = carriedFields(ledger, carriedSoFar([carried, mine, withdrawn]));
   assert.deepEqual(first.families, { f1: 1, f2: 1 });
-  assert.equal(first.after, t(6));
+  assert.equal(first.after, null);
   assert.deepEqual(first.cells, [], '망가진 칸 표(null)는 건너뛴다');
   // 새 판 사건이 없는 처음 장부는 어떤 만남보다 먼저.
   assert.equal(carriedFields(ledger, carriedSoFar([legacy])).after, null);

@@ -40,6 +40,8 @@ function run(t, { missing = [], updateExit = 0, updateFailures = 0, timeoutFailu
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const bin = path.join(root, 'bin'), log = path.join(root, 'calls');
   fs.mkdirSync(bin); for (const folder of ['synk-account', 'solo-backup', 'solo-backup-rust/engine']) fs.mkdirSync(path.join(root, 'experiences', folder), { recursive: true });
+  // experiences 묶음은 WORLD 새 길 시험이 부르는 엔진(packages/atlas)의 의존성도 그 폴더에서 깐다(11-13).
+  fs.mkdirSync(path.join(root, 'packages', 'atlas'), { recursive: true });
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
   executable('npm', 'exit 0\n');
   executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"

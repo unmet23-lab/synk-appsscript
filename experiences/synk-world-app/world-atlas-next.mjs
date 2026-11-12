@@ -34,6 +34,8 @@ export function legacyReader(storage) {
     }
   };
 }
+// 정해진 지금 판(일시 실패가 아님) — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름.
+const SETTLED_OLD = new Set(['SWITCH_OFF', 'NO_TRAIL', 'SWITCH_UNKNOWN']);
 // 옮길 것이 없다는 답(손님 저장소도 고를 옛 기록도 없다) — 물음에 학습 줄을 넣지 않고 다녀감 표지도 쓰지 않는다.
 const NOTHING_TO_MOVE = () => ({ attempts: 0, events: 0, none: true, note: async () => false, close() {} });
 // 지금 판 규칙(pick)으로 고를 옛 기기 기록이 있나 — 못 읽으면 없다, 고르기가 던지면 있다고 본다(만들어 세는 쪽이 빠뜨리지 않는다).
@@ -298,6 +300,8 @@ export function createAtlasNext({
           health = engine.createHealth();
           for (const [kind, outcome] of early.splice(0)) health.note(kind, outcome);
         }
+        // 엔진을 못 받았으면(한 번의 네트워크 실패 등) 이 결과를 붙들지 않는다 — 문서 내내 엔진 없이 정하지 않게(카본 끝 판 B).
+        if (!engine) loaded = null;
         return { coach: module.coach, engine };
       });
     loaded.catch(() => {
@@ -339,7 +343,9 @@ export function createAtlasNext({
       return { path: 'upload', revision, line, transport: line.transport(revision), went: mark.went };
     // 기기 길(F6) — 올리지 않는다. 저장소 이름은 엔진이 짓고(E1), 스위치는 받기 한 번으로 묻는다(꺼짐이면 지금 판).
     const { engine } = await entry();
-    if (typeof engine?.storeName !== 'function') return settled(OLD('STORE_NAME'));
+    // 엔진을 못 받은 것은 일시 실패다 — 붙들지 않고 다음 연습에서 다시 정한다(카본 끝 판 B).
+    if (typeof engine?.storeName !== 'function')
+      throw Object.assign(new Error('Atlas engine not loaded'), { code: 'STORE_NAME' });
     const asked = await askSwitch(line.transport(revision), switchAskMs);
     if (asked === 'off') {
       writeMark(store, owner, { off: true });
@@ -361,23 +367,30 @@ export function createAtlasNext({
   }
 
   // 호스트가 셸에 알림(§18-5-2 표 — 판 · 동의 · 스위치 · 인증 · 그 밖). 판을 다시 정할 일이면 열린 코치를 닫는다.
-  function changed(detail = {}) {
-    if (disposed) return;
+  // at: 알린 코치를 연 판(세대) — 이미 다시 정한 뒤에 온 앞 판의 알림 · 늦게 끝난 다시 확인은 새 판의 코치를 닫지 않는다(카본 끝 판 B).
+  function changed(detail = {}, at = generation) {
+    if (disposed || at !== generation) return;
     const kind = detail?.kind;
     if (kind === 'auth') return; // 셸의 인증 처리에 맡긴다(운영: 계정 클라이언트가 토큰을 다시 받고도 안 되면 로그아웃)
     if (kind === 'writes') {
-      void recheckWrites(); // 쓰기 문만 닫힘 — 계정을 다시 읽어 learningSync가 거짓일 때만 기기 길로
+      void recheckWrites(at); // 쓰기 문만 닫힘 — 계정을 다시 읽어 learningSync가 거짓일 때만 기기 길로
       return;
     }
     if (kind === 'switch') writeMark(store, owner, { off: true });
     retire(kind ?? 'other');
   }
-  async function recheckWrites() {
+  let rechecking = null; // 다시 확인하는 판(같은 판의 겹친 알림은 한 번만 읽는다)
+  async function recheckWrites(at) {
+    if (rechecking === at) return;
+    rechecking = at;
     try {
       const line = await trail();
+      if (disposed || at !== generation) return;
       if (line?.learning?.enabled !== true || line?.learningSync !== true) retire('writes');
     } catch {
       // 다음 연습에서 다시 정한다
+    } finally {
+      if (rechecking === at) rechecking = null;
     }
   }
   // 판을 다시 정한다 — 열린 코치를 닫고(그 코치로 돌던 연습 화면에 먼저 알린다), 다음 practiceCoach가 계정을 다시 읽는다.
@@ -400,30 +413,40 @@ export function createAtlasNext({
       });
   }
 
-  function hostOf(plan) {
+  function hostOf(plan, at) {
     if (plan.path === 'guest') return { guest: true, health, legacy: store ? legacyReader(store) : null };
     if (plan.path === 'device')
       // 기기 길 계정에는 손님 기기의 옛 기록 읽개를 주지 않는다 — 손님 기록은 옮기기 물음을 지나서만 계정으로 간다(R16 · E2).
       return { guest: true, account: owner, revision: plan.revision, key: plan.key, health };
-    return { account: owner, revision: plan.revision, transport: plan.transport, health, onAccount: changed };
+    return { account: owner, revision: plan.revision, transport: plan.transport, health, onAccount: detail => changed(detail, at) };
   }
 
   // 올리는 길 — 이 기기에 그 계정 · 그 동의 판의 요약이 있거나(빈 요약 포함) 새 길 간 적이 있으면 새 길, 처음인 기기는 첫 받기를 한도 안에서
   // 기다려 요약을 받으면 새 길, 못 받으면 이번에는 지금 판(까닭은 계기에, 스위치 꺼짐이면 표지).
+  let lowered = null; // 첫 받기를 못 해 이번 문서를 지금 판으로 낮춘 판(세대)
   async function confirmed(made, plan, at) {
-    if (plan.went || made.summary().storage.base) return markWent(plan);
+    if (plan.went || made.summary().storage.base) return markWent(plan, at);
     const first = await made.synced(firstSyncMs);
-    if (first.ok && first.base) return markWent(plan);
+    // 같은 판의 다른 코치(옮기기 물음 · 다른 은행)가 그사이 새 길을 확인했으면 그대로 새 길이다.
+    if ((first.ok && first.base) || plan.went || markOf(store, owner).went) return markWent(plan, at);
     if (first.kind === 'switch') writeMark(store, owner, { off: true });
     // 이번 문서에서는 지금 판으로 — 연습마다 첫 받기를 다시 기다리지 않게(다시 열면 · 주인이 바뀌면 다시 정한다).
-    if (decided && generation === at) decided = Promise.resolve(OLD(first.code ?? 'FIRST_SYNC'));
+    if (decided && generation === at) {
+      decided = Promise.resolve(OLD(first.code ?? 'FIRST_SYNC'));
+      lowered = at;
+    }
     note('load', { ok: false, code: `PATH_${first.code ?? 'FIRST_SYNC'}`.slice(0, 40) });
     return false;
   }
-  function markWent(plan) {
+  function markWent(plan, at) {
     if (!plan.went) {
       writeMark(store, owner, { went: true });
       plan.went = true;
+    }
+    // 같은 판의 다른 코치가 먼저 낮췄으면 다음 연습에서 다시 정한다(표지가 있어 곧 새 길).
+    if (lowered === at && generation === at) {
+      lowered = null;
+      decided = null;
     }
     return true;
   }
@@ -438,7 +461,7 @@ export function createAtlasNext({
         banks,
         // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
         words: true,
-        host: hostOf(plan),
+        host: hostOf(plan, at),
         lang: lang(),
         label,
       });
@@ -520,7 +543,10 @@ export function createAtlasNext({
     async guestMove({ watermarks = {}, pick = events => events } = {}) {
       if (!account || disposed) return null;
       const plan = await decide();
-      if (disposed || plan.path !== 'upload') return null;
+      if (disposed) return null;
+      // 지금 판이 정해진 것(스위치 꺼짐 · 길 없음) · 기기 길은 지금 판 물음(null), 판을 못 정한 것(일시 실패 · 첫 받기 실패)은
+      // 「못 셈」 — 「두기」가 결정의 기준 시각을 올려 새 길 손님 기록을 빼지 않게(GPT 끝 판 B1).
+      if (plan.path !== 'upload') return plan.path === 'old' && !SETTLED_OLD.has(plan.code) ? { failed: true } : null;
       const reader = store ? legacyReader(store) : null;
       const before = legacyCandidates(reader, pick);
       let aside = null;

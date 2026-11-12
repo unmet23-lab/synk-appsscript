@@ -37,7 +37,13 @@ export async function moveGuest(guest, target, { watermarks = {}, postLegacy = n
   // 알릴 일이 없다.
   await guest
     .turn('move', () =>
-      guest.trail.record.mark({ mark: 'moved', account, revision, until: plan.until }),
+      guest.trail.record.mark({
+        mark: 'moved',
+        account,
+        revision,
+        until: plan.until,
+        ids: plan.current.map(event => event.id),
+      }),
     )
     .finally(() => {
       if (added.length) target.landed();

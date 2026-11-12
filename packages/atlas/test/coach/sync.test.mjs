@@ -351,6 +351,33 @@ test('닫힌 뒤 돌아온 POST 답은 받지 않는다 — 닫힌 호스트가 
   await uploading;
   await settle();
   assert.equal((await w.port.read()).length, rows, '받은 표지를 덧붙이지 않는다');
+  // GET — 서버에 답을 올려 둔 뒤 새 기기(빈 저장소)의 첫 받기를 붙든 채 닫고 요약이 든 답을 돌려준다: 닫힌 호스트는 요약을
+  // 저장소에 쓰지 않는다
+  const g = world(92);
+  const source = await open(g, keyOf('closed-get-src'));
+  await source.coach.synced(1000);
+  await answerAll(source.coach, g.items.slice(0, 2), g.time);
+  await source.handle.upload();
+  close(source);
+  g.port = memoryPort();
+  const server = g.route.get;
+  let gRelease = null;
+  g.route.get = async since => {
+    await new Promise(resolve => (gRelease = resolve));
+    return server.call(g.route, since);
+  };
+  const gOpened = await open(g, keyOf('closed-get-ok'));
+  while (!gRelease) await settle();
+  const gRows = (await g.port.read()).length;
+  close(gOpened);
+  gRelease();
+  await settle();
+  await settle();
+  assert.equal(
+    (await g.port.read()).length,
+    gRows,
+    '닫힌 뒤 돌아온 GET 답의 요약을 덧붙이지 않는다',
+  );
 });
 
 test('손님 길로 여는 계정은 올리는 저장소 이름을 쓰지 않는다 — 기기 길 이름은 storeName이 짓는다(E1 · E4)', async () => {
@@ -382,4 +409,127 @@ test('손님 길로 여는 계정은 올리는 저장소 이름을 쓰지 않는
   await right.ready;
   assert.deepEqual(await right.synced(10), { ok: true, guest: true, base: true });
   right.dispose();
+});
+
+test('스위치가 꺼진 뒤에는 올리기도 하지 않는다 — 같은 403을 POST로 다시 받아 쓰기 문 닫힘으로 잘못 알리지 않는다(카본 끝 판 D)', async () => {
+  const w = world(95);
+  w.route.refuse = () => fault(403, 'FEATURE_DISABLED');
+  const notes = [];
+  const opened = await open(w, keyOf('switch-post'), {
+    onAccount: detail => notes.push(detail.kind),
+  });
+  await opened.coach.synced(1000);
+  await answerAll(opened.coach, w.items.slice(0, 1), w.time);
+  const before = w.route.calls.length;
+  await opened.handle.upload();
+  assert.equal(
+    w.route.calls.slice(before).filter(call => call.method === 'post').length,
+    0,
+    'POST를 보내지 않는다',
+  );
+  assert.deepEqual(notes, ['switch']);
+  assert.equal(opened.handle.syncStatus().writesOff, false);
+  close(opened);
+});
+
+test('닫힌 뒤 돌아온 실패는 가려내기 · 나머지 보내기 · 셸 알림을 잇지 않는다 — POST · GET 모두(카본 · GPT 끝 판 D)', async () => {
+  const w = world(96);
+  const notes = [];
+  const opened = await open(w, keyOf('closed-fail'), {
+    onAccount: detail => notes.push(detail.kind),
+  });
+  await opened.coach.synced(1000);
+  await answerAll(opened.coach, w.items.slice(0, 2), w.time);
+  let posts = 0;
+  let release = null;
+  w.route.post = async () => {
+    posts += 1;
+    if (posts === 1) await new Promise(resolve => (release = resolve));
+    throw fault(400, 'INVALID_EVENTS');
+  };
+  const uploading = opened.handle.upload();
+  while (!release) await settle();
+  close(opened);
+  release();
+  await uploading?.catch(() => {});
+  await settle();
+  assert.equal(posts, 1, '닫힌 뒤 가려내기 POST를 잇지 않는다');
+  assert.deepEqual(notes, [], '셸에 알리지 않는다');
+  // GET — 첫 받기를 붙든 채 닫고 409 REVISION_CONFLICT로 돌려준다
+  const g = world(97);
+  const gNotes = [];
+  let gRelease = null;
+  g.route.get = async () => {
+    await new Promise(resolve => (gRelease = resolve));
+    throw fault(409, 'REVISION_CONFLICT', { revision: 2 });
+  };
+  const gOpened = await open(g, keyOf('closed-get'), {
+    onAccount: detail => gNotes.push(detail.kind),
+  });
+  while (!gRelease) await settle();
+  close(gOpened);
+  gRelease();
+  await settle();
+  await settle();
+  assert.deepEqual(gNotes, [], '닫힌 뒤 돌아온 GET 실패도 셸에 알리지 않는다');
+});
+
+test('나눠 보내는 사이 닫히면 앞 반쪽의 답을 받은 뒤에도 뒤 반쪽을 보내지 않는다(카본 · GPT 끝 판 D)', async () => {
+  const w = world(98);
+  const opened = await open(w, keyOf('closed-split'));
+  await opened.coach.synced(1000);
+  await answerAll(opened.coach, w.items.slice(0, 2), w.time);
+  const post = w.route.post;
+  let posts = 0;
+  let release = null;
+  w.route.post = async (events, since) => {
+    posts += 1;
+    if (posts === 1) throw fault(413, 'PAYLOAD_TOO_LARGE');
+    if (posts === 2) await new Promise(resolve => (release = resolve));
+    return post.call(w.route, events, since);
+  };
+  const uploading = opened.handle.upload();
+  while (!release) await settle();
+  close(opened);
+  release();
+  await uploading?.catch(() => {});
+  await settle();
+  assert.equal(posts, 2, '413으로 나눈 앞 반쪽까지만 — 닫힌 뒤 뒤 반쪽을 보내지 않는다');
+});
+
+test('받은 답을 기록부에 못 쓰면(저장소 예외) 계기에 남기고 거절이 새지 않으며, 첫 받기는 기다리게 두지 않는다(카본 끝 판 D)', async () => {
+  const w = world(98);
+  await w.server.fold();
+  const health = createHealth();
+  const leaked = [];
+  const onLeak = reason => leaked.push(String(reason?.message ?? reason));
+  process.on('unhandledRejection', onLeak);
+  try {
+    w.port.failNext(new Error('quota'));
+    const opened = await open(w, keyOf('broken-receive'), { health });
+    const first = await opened.coach.synced(2000);
+    assert.notEqual(first.kind, 'timeout', '첫 받기를 한도까지 기다리게 두지 않는다');
+    assert.equal(first.ok, false);
+    await settle();
+    await settle();
+    assert.ok((health.snapshot().save.codes.SYNC_FAILED ?? 0) >= 1, '계기에 남긴다');
+    assert.deepEqual(leaked, [], '처리되지 않은 거절이 새지 않는다');
+    w.port.heal();
+    close(opened);
+  } finally {
+    process.off('unhandledRejection', onLeak);
+  }
+});
+
+test('올린 답을 기록부에 못 쓰면(저장소 예외) 계기에 남기고 올리기 약속은 거절로 새지 않는다(카본 끝 판 D)', async () => {
+  const w = world(99);
+  const health = createHealth();
+  const opened = await open(w, keyOf('broken-ack'), { health });
+  await opened.coach.synced(1000);
+  await answerAll(opened.coach, w.items.slice(0, 2), w.time);
+  w.port.failNext(new Error('quota'));
+  await opened.handle.upload(); // 거절로 새면 여기서 던진다
+  assert.ok((health.snapshot().save.codes.SYNC_FAILED ?? 0) >= 1, '계기에 남긴다');
+  w.port.heal();
+  close(opened);
 });
