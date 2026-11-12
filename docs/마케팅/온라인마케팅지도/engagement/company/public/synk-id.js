@@ -1,5 +1,5 @@
 'use strict';
-let synkCompanyStatus=null,synkConnectionPending=false,synkRenewPending=false,synkRenewTimer=null,synkPageClosed=false,synkLogoutPending=false,synkAutomaticAttempt=null;
+let synkReturnFailure=null,synkReturnRead=false,synkCompanyStatus=null,synkConnectionPending=false,synkRenewPending=false,synkRenewTimer=null,synkPageClosed=false,synkLogoutPending=false,synkAutomaticAttempt=null;
 const getSynkDesktopBridge=()=>window.synkDesktop?.companyRequest?window.synkDesktop:null;
 const synkPlatformEntryKey='synk.company.platform-entry.v1';
 let synkPlatformEntry;
@@ -257,14 +257,31 @@ function syncSynkRenewLoop(){
   clearInterval(synkRenewTimer);synkRenewTimer=null;
   if(getSynkDesktopBridge()&&!synkPageClosed&&!document.hidden&&document.hasFocus()){void renewSynkCompanySession();synkRenewTimer=setInterval(()=>{if(document.hidden||!document.hasFocus()){synkNativeNeedsRecheck=true;return;}void renewSynkCompanySession();},20_000);}
 }
+// A browser SYNK ID round trip comes back with ?synkError=<code>. On the login screen it stays under the button (and the
+// company password row opens); after a link or unlink inside the app it is a notice. The action is remembered before leaving.
+const SYNK_ACTION_KEY='synk.workspace.synkAction';
+function synkLoginFailureText(code){const texts={SYNK_NOT_LINKED:'SYNK ID는 확인됐지만 아직 회사 계정에 연결되지 않았어요. 아래 회사 비밀번호로 들어온 뒤 「로그인 정보 → 연결 관리」에서 연결해 주세요.',SYNK_INACTIVE:'지금은 쓸 수 없는 회사 계정이에요. 회사 관리자에게 물어봐 주세요.',SYNK_ACCOUNT_CHANGED:'다른 회사 계정에 로그인돼 있었어요. 다시 「SYNK ID로 로그인」을 눌러 주세요.',SYNK_PLATFORM_ACCOUNT_MISMATCH:'플랫폼에서 고른 SYNK ID와 로그인한 계정이 달라요. 같은 계정으로 다시 로그인해 주세요.'};return (Object.hasOwn(texts,code)&&texts[code])||'SYNK ID로 들어오지 못했어요. 다시 누르거나 아래 회사 비밀번호로 들어와 주세요.';}
+// Read once, whichever comes first: this file's DOMContentLoaded or the login screen app.js draws after /api/me.
+function consumeSynkReturn(){
+  if(synkReturnRead)return;synkReturnRead=true;
+  const params=new URLSearchParams(location.search),failure=params.get('synkError'),connected=params.has('synkConnected');
+  let action='';try{action=sessionStorage.getItem(SYNK_ACTION_KEY)||'';sessionStorage.removeItem(SYNK_ACTION_KEY);}catch{}
+  if(!failure&&!connected)return;
+  params.delete('synkError');params.delete('synkConnected');const rest=params.toString();history.replaceState(null,'',location.pathname+(rest?'?'+rest:'')+location.hash);
+  // A login failure waits for the login screen (installSynkLogin) or, when the app opens signed in, for app.js to show it.
+  if(failure){if(['link','unlink'].includes(action))notify('SYNK ID 연결을 완료하지 못했어요. 「로그인 정보 → 연결 관리」에서 다시 해 주세요.');else synkReturnFailure=failure;}
+  else if(['link','unlink'].includes(action))notify(action==='link'?'SYNK ID 연결을 완료했어요.':'SYNK ID 연결을 해제했어요.');
+}
+function takeSynkReturnFailure(){consumeSynkReturn();const code=synkReturnFailure;synkReturnFailure=null;return code;}
 async function installSynkLogin(){
   const form=document.querySelector('#auth-form');if(!form||document.querySelector('#synk-id-login'))return;
   const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn synk-id-button" id="synk-id-login" aria-describedby="synk-id-login-note" disabled>SYNK ID로 로그인</button><p class="table-foot" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';
   // The company password form folds under #auth-company (app.js); the SYNK ID entry stands above it.
   (form.closest?.('#auth-company')||form).before(section);
-  const button=section.querySelector('button'),note=section.querySelector('p');
-  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 비밀번호로 들어와 주세요.':'Google이나 SYNK ID 이메일로 들어가요. 회사 계정에 연결한 SYNK ID만 들어올 수 있어요.';if(button.disabled)document.querySelector('#auth-company')?.setAttribute('open','');button.onclick=()=>beginSynkCompany('login',{},button,note);}
-  catch(error){if(note.isConnected){note.textContent=error.message;document.querySelector('#auth-company')?.setAttribute('open','');}}
+  const button=section.querySelector('button'),note=section.querySelector('p'),failure=takeSynkReturnFailure(),failureText=failure?synkLoginFailureText(failure):'';
+  if(failureText){note.textContent=failureText;note.classList?.add('is-error');document.querySelector('#auth-company')?.setAttribute('open','');}
+  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);if(!failureText)note.textContent=button.disabled?'SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 비밀번호로 들어와 주세요.':'Google이나 SYNK ID 이메일로 들어가요. 회사 계정에 연결한 SYNK ID만 들어올 수 있어요.';if(button.disabled)document.querySelector('#auth-company')?.setAttribute('open','');button.onclick=()=>beginSynkCompany('login',{},button,note);}
+  catch(error){if(note.isConnected){note.textContent=failureText||error.message;document.querySelector('#auth-company')?.setAttribute('open','');}}
   void automaticallyEnterSynkCompany();
 }
 async function automaticallyEnterSynkCompany(){
@@ -294,7 +311,7 @@ async function beginSynkCompany(action,params={},button,note){
   if(synkConnectionPending)return;synkConnectionPending=true;if(button)button.disabled=true;
   try{
     const values={action,...params,csrfToken:state.csrf,confirm:true};
-    if(!getSynkDesktopBridge()){if(action==='login'){const intent=readSynkPlatformEntry();if(intent){intent.attempted=true;sessionStorage.setItem(synkPlatformEntryKey,JSON.stringify(intent));values.expectedAccountId=intent.accountId;}}const result=await synkCompanyRequest('start',values);location.assign(result.authorizationUrl);return;}
+    if(!getSynkDesktopBridge()){if(action==='login'){const intent=readSynkPlatformEntry();if(intent){intent.attempted=true;sessionStorage.setItem(synkPlatformEntryKey,JSON.stringify(intent));values.expectedAccountId=intent.accountId;}}const result=await synkCompanyRequest('start',values);try{sessionStorage.setItem(SYNK_ACTION_KEY,action);}catch{}location.assign(result.authorizationUrl);return;}
     const challenge=await synkCompanyRequest('challenge',values);if(note){note.textContent='열린 브라우저에서 Google 또는 기존 SYNK ID로 로그인해 주세요.';const cancel=document.createElement('button');cancel.type='button';cancel.className='text-button';cancel.textContent='로그인 취소';cancel.onclick=()=>{void getSynkDesktopBridge().authCancelSignIn();cancel.remove();};note.append(document.createTextNode(' '),cancel);}
     const account=await waitForNativeSynk();
     if(action!=='login'){
@@ -319,8 +336,7 @@ async function openSynkIdentityDialog(){
 }
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-action="synk-id-account"]'))void openSynkIdentityDialog();});
 document.addEventListener('DOMContentLoaded',()=>{
-  const params=new URLSearchParams(location.search),failure=params.get('synkError'),connected=params.has('synkConnected');
-  if(failure||connected){params.delete('synkError');params.delete('synkConnected');history.replaceState(null,'',location.pathname+(params.size?'?'+params.toString():'')+location.hash);notify(failure?'SYNK ID 연결을 완료하지 못했어요. 기존 회사 계정에서 다시 확인해 주세요.':'SYNK ID 연결을 완료했어요.');}
+  consumeSynkReturn();
   if(getSynkDesktopBridge()){
     installNativeSynkObserver();
     // Clicking into the chat frame blurs this window while the document keeps focus; only leaving the window stops renewals.

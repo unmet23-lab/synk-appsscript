@@ -17,7 +17,7 @@ test('classic login script coexists with the non-configurable preload bridge and
   const section={get isConnected(){return inserted;},querySelector:selector=>selector==='button'?button:note};
   const form={before(value){assert.equal(value,section);inserted=true;}};
   const desktop={companyRequest:async operation=>{calls.push(operation);return {enabled:true,browserEnabled:false};}};
-  const context=vm.createContext({desktop,document:{addEventListener(){},querySelector:selector=>selector==='#auth-form'?form:null,createElement:()=>section},fetch(){throw Error('Native login must use its bridge, not browser fetch');}});
+  const context=vm.createContext({desktop,URLSearchParams,location:{search:'',pathname:'/',hash:''},document:{addEventListener(){},querySelector:selector=>selector==='#auth-form'?form:null,createElement:()=>section},fetch(){throw Error('Native login must use its bridge, not browser fetch');}});
   // contextBridge exposes a non-configurable property on the real window/global object.
   vm.runInContext("globalThis.window=globalThis;Object.defineProperty(globalThis,'synkDesktop',{value:desktop,writable:false,configurable:false})",context);
   vm.runInContext(source,context,{filename:'synk-id.js'});

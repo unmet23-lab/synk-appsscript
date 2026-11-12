@@ -31,16 +31,21 @@ let initialInvite=new URLSearchParams(location.hash.slice(1)).get('invite')||'';
 const demoMode=!initialInvite&&['gift','coffee'].includes(new URLSearchParams(location.search).get('demo'));
 const demo=demoMode?(await import('./demo.mjs')).createDemoSession():null;
 const request=(path,settings={})=>demo?demo.request(path,settings):networkRequest(path,foregroundProjectOptions(path,settings,document.visibilityState==='visible'));
-const openNotificationsOnStart=new URLSearchParams(location.search).get('notifications')==='1';
+// 직원 화면 딥링크(프로젝트 · 탭 · 장면 · 기록 · 알림)는 로그인하러 워크스페이스에 다녀오면 ?mode=staff만 남는다. 「SYNK ID로 로그인」을 누를 때 이 창의 sessionStorage에
+// 적어 두고, 꼬리 없이 직원 화면으로 돌아온 부팅에서 한 번 읽고 지운다(30분 안 · 저장소를 못 쓰면 없음 — 내 모델의 memberReturn과 같은 꼴).
+const STAFF_RETURN_KEY='synk-pulse-staff-return';
+const staffSearch=(()=>{const opened=location.search,here=new URLSearchParams(opened);if(here.get('mode')!=='staff')return opened;let saved=null;try{const raw=sessionStorage.getItem(STAFF_RETURN_KEY);sessionStorage.removeItem(STAFF_RETURN_KEY);saved=raw?JSON.parse(raw):null;}catch{}if([...here.keys()].some(key=>key!=='mode')||typeof saved?.search!=='string')return opened;const age=Date.now()-Number(saved.at);if(!(age>=0&&age<1800000))return opened;const back=new URLSearchParams(saved.search);return back.get('mode')==='staff'?'?'+back.toString():opened;})();
+let staffReturnSearch=staffSearch;
+const openNotificationsOnStart=new URLSearchParams(staffSearch).get('notifications')==='1';
 const staffMode=!demoMode&&new URLSearchParams(location.search).get('mode')==='staff';
 // 새 예시(?demo=film)와 바로 의뢰(?start=request · synk.im에서 넘어오는 길). 둘 다 render() 밖 전용 칸에서 돈다.
 // 둘 다 처음 한 번만 뜻이 있다 — 예시는 화면 언어가 한국어가 아니면 열지 않고(openFilmDemo), 바로 의뢰는 의뢰서를 닫으면 끝난다(closeFlow). 그 뒤에 다시 붙이는 첫 화면은 쇼릴을 기다리지 않는다.
 let filmDemo=!initialInvite&&!demoMode&&!staffMode&&new URLSearchParams(location.search).get('demo')==='film';
 let startRequest=!initialInvite&&!demoMode&&!staffMode&&new URLSearchParams(location.search).get('start')==='request';
-let initialStaffProject=staffMode?new URLSearchParams(location.search).get('project')||'':'';
-const initialStaffTab=staffMode?new URLSearchParams(location.search).get('tab')||'strategy':'strategy';
-let initialStaffScene=staffMode?new URLSearchParams(location.search).get('scene')||'':'';
-let initialStaffHistory=staffMode?readStaffHistoryTarget(location.search):null;
+let initialStaffProject=staffMode?new URLSearchParams(staffSearch).get('project')||'':'';
+const initialStaffTab=staffMode?new URLSearchParams(staffSearch).get('tab')||'strategy':'strategy';
+let initialStaffScene=staffMode?new URLSearchParams(staffSearch).get('scene')||'':'';
+let initialStaffHistory=staffMode?readStaffHistoryTarget(staffSearch):null;
 let pendingInitialScene='';
 // 예시는 장면 꼬리(#room 같은 영문 낱말 하나)만 남긴다 — 장면 주소로 바로 열리게(demo-film.mjs가 시작할 때 읽는다).
 // 링크의 언어(?lang=)는 주소를 지우기 전에 읽어 둔다. 고르는 것은 시작 흐름이 서버가 허락한 목록 안에서 한다(applyLocale).
@@ -747,7 +752,7 @@ function focusInitialStaffHistory(){
   if(!record){notice('연결한 의견을 찾지 못했어요. 이 프로젝트의 기록에서 찾아봐 주세요.');return;} // i18n-skip
   record.classList.add('notification-target');record.focus({preventScroll:true});record.scrollIntoView({block:'center',behavior:'auto'});
 }
-async function openInitialStaffProject(){const id=initialStaffProject;if(!id||s.mode!=='staff'||!s.user)return;initialStaffProject='';const requestEpoch=epoch,userId=s.user.id,sceneId=initialStaffScene,historyTarget=initialStaffHistory;initialStaffScene='';initialStaffHistory=null;if(!s.workspace?.projects?.some(project=>project.id===id)){notice('이 프로젝트를 찾을 수 없거나 볼 권한이 없어요. 목록에서 골라 주세요.');return;}await loadProject(id);if(requestEpoch!==epoch||s.user?.id!==userId)return;s.tab=initialStaffTab==='scenes'?'storyboard':['desk','strategy','direction','concepts','storyboard','review','history'].includes(initialStaffTab)?initialStaffTab:'strategy';if(historyTarget&&s.tab==='history'){if(staffHistoryRecordId(s.project,historyTarget))s.historyTarget=historyTarget;else notice('연결한 의견을 찾지 못했어요. 이 프로젝트의 기록에서 찾아봐 주세요.');}if(sceneId&&s.tab==='storyboard'){if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sceneId)&&s.project?.id===id&&s.project.studio?.scenes?.some(scene=>scene.id===sceneId))pendingInitialScene=sceneId;else notice('연결한 장면을 찾지 못했어요. 장면 목록에서 찾아봐 주세요.');}} // i18n-skip
+async function openInitialStaffProject(){const id=initialStaffProject;if(!id||s.mode!=='staff'||!s.user)return;initialStaffProject='';staffReturnSearch='';const requestEpoch=epoch,userId=s.user.id,sceneId=initialStaffScene,historyTarget=initialStaffHistory;initialStaffScene='';initialStaffHistory=null;if(!s.workspace?.projects?.some(project=>project.id===id)){notice('이 프로젝트를 찾을 수 없거나 볼 권한이 없어요. 목록에서 골라 주세요.');return;}await loadProject(id);if(requestEpoch!==epoch||s.user?.id!==userId)return;s.tab=initialStaffTab==='scenes'?'storyboard':['desk','strategy','direction','concepts','storyboard','review','history'].includes(initialStaffTab)?initialStaffTab:'strategy';if(historyTarget&&s.tab==='history'){if(staffHistoryRecordId(s.project,historyTarget))s.historyTarget=historyTarget;else notice('연결한 의견을 찾지 못했어요. 이 프로젝트의 기록에서 찾아봐 주세요.');}if(sceneId&&s.tab==='storyboard'){if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sceneId)&&s.project?.id===id&&s.project.studio?.scenes?.some(scene=>scene.id===sceneId))pendingInitialScene=sceneId;else notice('연결한 장면을 찾지 못했어요. 장면 목록에서 찾아봐 주세요.');}} // i18n-skip
 function focusInitialStaffScene(){if(!pendingInitialScene)return;const id=pendingInitialScene;pendingInitialScene='';if(s.mode!=='staff'||s.tab!=='storyboard'||!s.project?.studio?.scenes?.some(scene=>scene.id===id))return;const card=main.querySelector('#scene-'+id);if(card){card.setAttribute('tabindex','-1');card.focus({preventScroll:true});card.scrollIntoView({block:'center',behavior:'auto'});}}
 // 메일 코드로 다시 열기(판 4): 서버가 켜졌다고 알릴 때만 다시 열기 판에 메일 칸을 보인다. 메일의 「?open=mail」로 왔으면 판을 열어 둔다(주소창에서는 지운다).
 let mailOpenAvailable=null,mailOpenChecking=false,mailOpenAsked=false,mailEmail='',mailChoices=null;
@@ -970,6 +975,8 @@ document.addEventListener('click',async event=>{
 });
 
 // 「캐스팅북 코드로 채우기」 접힘: toggle은 한 박자 뒤에 와서, 접자마자 탭을 옮기면 떨어져 나간 칸에서 울려 놓친다 — 누르는 순간에도 적어 둔다.
+// 직원 화면의 「SYNK ID로 로그인」: 아직 열지 못한 딥링크를 적어 두고 워크스페이스 로그인으로 간다(돌아오면 staffSearch가 읽는다).
+document.addEventListener('click',event=>{if(!event.target?.closest?.('[data-staff-login]'))return;const back=new URLSearchParams(staffReturnSearch);if(back.get('mode')!=='staff'||![...back.keys()].some(key=>key!=='mode'))return;try{sessionStorage.setItem(STAFF_RETURN_KEY,JSON.stringify({search:back.toString(),at:Date.now()}));}catch{}},true);
 document.addEventListener('click',event=>{const details=event.target?.closest?.('details.casting-code>summary')?.parentElement;if(details?.matches?.('details.casting-code'))s.castingCodeOpen=!details.open;},true);
 // 언어 메뉴(다국어 판 2): 고르는 단추(data-set-locale)는 첫 화면 · 머리 · 의뢰서 어디에 있든 여기 한 곳에서 받는다. locale-menu가 고른 언어를 기억하고 소식(LOCALE_EVENT)을 보낸다.
 document.addEventListener('click',event=>{const choice=event.target?.closest?.('[data-set-locale]');if(!choice||choice.disabled)return;event.preventDefault();void chooseLocale(choice.dataset.setLocale);});

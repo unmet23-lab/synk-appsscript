@@ -443,6 +443,8 @@
 :root .synk-login-entry>.table-foot{display:flex;align-items:flex-start;gap:9px;margin:2px 0 0;padding:0 4px;font-size:12px;line-height:1.6;color:var(--sg-frame-ink-3);word-break:keep-all}
 :root .synk-login-entry>.table-foot::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--sg-butter);box-shadow:0 0 8px rgba(245,196,69,.55)}
 :root .synk-login-entry .synk-id-button:not(:disabled)+.table-foot::before{background:#6FD39B;box-shadow:0 0 8px rgba(111,211,155,.6)}
+:root .synk-login-entry>.table-foot.is-error{color:var(--sg-frame-ink-2)}
+:root .synk-login-entry>.table-foot.is-error::before,:root .synk-login-entry .synk-id-button:not(:disabled)+.table-foot.is-error::before{background:var(--sg-coral);box-shadow:0 0 8px rgba(249,104,89,.55)}
 :root .synk-login-entry .text-button{color:var(--sg-lapis-light);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 :root .synk-login-entry::after{content:'OR';content:'OR' / '';display:block;margin:14px 0 20px;text-align:center;font:500 10.5px/1 var(--sg-mono);letter-spacing:.22em;color:rgba(250,250,249,.38);background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) left center/calc(50% - 26px) 1px no-repeat,linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) right center/calc(50% - 26px) 1px no-repeat}
 /* 입력: 어두운 칸, 누르고 있을 때만 무지개 테 */
@@ -608,6 +610,7 @@
 :root #overlay .login-info>div+div{border-top:1px solid var(--sg-line)}
 :root #overlay .login-info dt{color:var(--sg-ink-3);font-size:12.5px;font-weight:600}
 :root #overlay .login-info dd{margin:0;color:var(--sg-ink);font-size:14px;font-weight:600;line-height:1.55;overflow-wrap:anywhere;word-break:keep-all}
+:root #overlay .login-info-differs{margin:-6px 0 22px;font-size:13px;line-height:1.6;color:var(--sg-ink-2);word-break:keep-all}
 @media(max-width:480px){:root #overlay .login-info>div{grid-template-columns:1fr;gap:2px}}
 
 /* ── 겹창 바탕과 빠른 검색(어두운 유리 HUD) ─────────── */
