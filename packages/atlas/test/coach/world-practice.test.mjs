@@ -290,8 +290,13 @@ test('「N문항 더 하기」는 처음 보는 문항이 남았을 때만 — i
   // 모르면(null) 판 길이를 다 낸 판에만 단추(지금 판과 같은 뜻)
   assert.match(done('done', null), /data-practice-again/);
   assert.doesNotMatch(done('idle', null), /data-practice-again/);
-  // 단추의 수는 판 길이와 남은 처음 보는 문항 가운데 작은 것(Fable 5.2 화면 최종 F4)
-  assert.match(done('done', 3), /3문항 더 하기/);
+  // 단추의 수는 다음 판의 길이(「최대」 — 진행 글과 같은 수). 남은 처음 보는 문항 수로 약속하면 놓치는 학습자에게는 그보다 많이
+  // 나왔다(「다시」 · 채우기 — Fable 5.2 다시 FA3, 앞 F4를 갈음)
+  assert.match(done('done', 3), /최대 5문항 더 하기/);
+  assert.match(
+    view.renderPracticeNextDone({ results: [], ending: { kind: 'done' }, more: 9, count: 3 }),
+    /최대 3문항 더 하기/,
+  );
   // 끈질긴 단위 몫으로 끝난 판은 「다음 판에」를 말하므로 다음 판 단추(F5), 하루 상한은 내일이라 단추 없음
   assert.match(done('stubborn', 0), /data-practice-again/);
   assert.doesNotMatch(done('capped', 0), /data-practice-again/);
@@ -443,15 +448,38 @@ test('판 끝 답 칸은 넷 — 새 문항 혼자 맞힘 · 그 밖의 맞힘 �
     results,
     ending: { kind: 'done' },
   });
-  assert.match(html, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(
+    html,
+    /새 문항 혼자 맞힘\u00a01\u00a0· 그 밖의 맞힘\u00a01\u00a0· 틀림\u00a02\u00a0· 건너뜀\u00a01/,
+  );
   assert.match(html, /data-practice-unsaved[^>]*>답 1개는 이 기기에 저장하지 못해/);
   const saved = view.renderPracticeNextDone({
     skill: { id: 'ko.reading.x', label: '읽기' },
     results: results.filter(r => r.stored !== false),
     ending: { kind: 'done' },
   });
-  assert.match(saved, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(
+    saved,
+    /새 문항 혼자 맞힘\u00a01\u00a0· 그 밖의 맞힘\u00a01\u00a0· 틀림\u00a02\u00a0· 건너뜀\u00a01/,
+  );
   assert.doesNotMatch(saved, /data-practice-unsaved/);
+});
+
+test('새 판 글 표 — 답 칸의 「·」는 세 언어 모두 앞 칸에 붙고(줄이 「·」로 시작하지 않게), 영어는 이 흐름의 철자 practice 하나다(Fable 5.2 다시 FA4 · FA2)', () => {
+  const summary = STRINGS['practice.next.summary'];
+  for (const lang of ['ko', 'en', 'mn']) {
+    assert.equal(
+      (summary[lang].match(/ · /g) ?? []).length,
+      3,
+      `${lang} 구분점 셋이 앞 칸에 붙는다`,
+    );
+    assert.doesNotMatch(summary[lang], / ·/, `${lang} 구분점 앞에 줄 바꿀 빈칸이 없다`);
+  }
+  const english = Object.entries(STRINGS)
+    .filter(([key]) => key.startsWith('practice.next.'))
+    .flatMap(([, row]) => (typeof row.en === 'string' ? [row.en] : Object.values(row.en ?? {})));
+  assert.ok(english.length > 5);
+  for (const line of english) assert.doesNotMatch(line, /practis/i, line);
 });
 
 test('처음 보는 문항이 남은 동안은 같은 항목을 잇달아 연습해도 판 길이까지 간다 — idle이면 처음 보는 문항으로 잇는다(Fable P1-1)', async () => {

@@ -27865,8 +27865,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const canMore = more == null ? kind === "done" : more > 0;
     const engineLine = ["capped", "stubborn"].includes(kind) ? ending?.why : null;
     const line = engineLine || (kind === "exhausted" || kind === "done" && !canMore ? t3("practice.shortage") : kind === "limited" ? t3("practice.next.limited") : kind === "idle" ? t3("practice.next.idle") : ["none", "capped", "stubborn"].includes(kind) ? t3("practice.next.none") : "");
-    const size = Number.isInteger(count) && count > 0 ? count : 5;
-    const againN = kind === "stubborn" ? size : Number.isInteger(more) && more > 0 ? Math.min(more, size) : size;
+    const againN = Number.isInteger(count) && count > 0 ? count : 5;
     const showAgain = kind === "stubborn" || ["done", "idle"].includes(kind) && canMore;
     const itemOf = (id) => items?.get?.(id) || null;
     const missedIds = [...new Set(answered.filter((row) => ["incorrect", "unknown"].includes(row.verdict)).map((row) => row.itemId))];

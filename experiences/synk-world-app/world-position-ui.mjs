@@ -308,10 +308,11 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const canMore=more==null?kind==='done':more>0;
   const engineLine=['capped','stubborn'].includes(kind)?ending?.why:null;
   const line=engineLine||(kind==='exhausted'||(kind==='done'&&!canMore)?t('practice.shortage'):kind==='limited'?t('practice.next.limited'):kind==='idle'?t('practice.next.idle'):['none','capped','stubborn'].includes(kind)?t('practice.next.none'):'');
-  // 「N문항 더 하기」의 N은 판 길이와 남은 처음 보는 문항 가운데 작은 것(F4). 끈질긴 단위 몫으로 끝난 판(stubborn)은 문장이 「다음 판에」를
-  // 말하므로 다음 판 단추를 둔다(F5 — 다음 판은 몫이 새로 선다). 하루 상한(capped)은 「내일」이라 단추가 없다.
-  const size=Number.isInteger(count)&&count>0?count:5;
-  const againN=kind==='stubborn'?size:Number.isInteger(more)&&more>0?Math.min(more,size):size;
+  // 「최대 N문항 더 하기」의 N은 다음 판의 길이 — 문항 화면의 진행 글(「최대 {total}문항」)과 같은 수다. 다음 판은 처음 보는 문항 말고도
+  // 놓친 단위의 「다시」와 그 사이 채우기를 내므로 남은 처음 보는 문항 수로 약속하지 않는다(4-1 화면 Fable 5.2 다시 FA3 — 앞 F4의 「남은 수」는
+  // 다 맞히는 길에서만 맞았다). 끈질긴 단위 몫으로 끝난 판(stubborn)은 문장이 「다음 판에」를 말하므로 다음 판 단추를 둔다(F5 — 다음 판은
+  // 몫이 새로 선다). 하루 상한(capped)은 「내일」이라 단추가 없다.
+  const againN=Number.isInteger(count)&&count>0?count:5;
   const showAgain=kind==='stubborn'||(['done','idle'].includes(kind)&&canMore);
   const itemOf=id=>items?.get?.(id)||null;
   // 같은 문항을 「다시」로 또 놓쳤으면 한 번만(새 판은 다른 문항이 없을 때 같은 문항으로 다시 낸다).
