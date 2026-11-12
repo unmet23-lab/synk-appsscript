@@ -588,6 +588,10 @@ test('⑰ 소리 빈자리 — 합계 · 최장이 다 넘으면 고칠 것, 하
 });
 
 test('⑱ 미학 맹검(11-08 · 11-10 설계 18): 모든 편은 결과가 있어야 하고, 기각 · 빠짐 · 맹검 뒤 바뀐 영상은 고칠 것, 기각의 「맹검판단」은 확인할 것, 답 빠짐은 막힌 증거 + 대체 눈 결과가 있어야 확인할 것', (t) => {
+  // 11-12부터 ⑱ 기본은 권고(tools/lib/미학관문.js) — 이 시험은 옛 막음 판정을 보므로 SYNK_미학관문=막음을 켜고 끝나면 되돌린다
+  const 앞스위치 = process.env.SYNK_미학관문;
+  process.env.SYNK_미학관문 = '막음';
+  t.after(() => { if (앞스위치 === undefined) delete process.env.SYNK_미학관문; else process.env.SYNK_미학관문 = 앞스위치; });
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'aesthetic-'));
   t.after(() => fs.rmSync(뿌리, { recursive: true, force: true }));
   const 편 = (name, prep = {}) => { const dir = path.join(뿌리, name); fs.mkdirSync(path.join(dir, '게시'), { recursive: true }); return { name, dir, prep }; };

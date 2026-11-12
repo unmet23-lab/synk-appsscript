@@ -243,10 +243,13 @@ test('채점: 11-08 눈가림 셈(기각 8 · 채택 4 · 쌍)', () => {
   assert.deepEqual(r.평균점수, { 기각: 4, 채택: 8 });
 });
 
+// 이 파일의 ⑱ 단언은 도구가 남긴 기록을 옛 막음 판정으로 읽는다 — 11-12부터 기본은 권고라 부를 때만 SYNK_미학관문=막음을 켜고 원래 값으로 되돌린다
 function aestheticFindingsOf(편) {
   let prep = {};
   try { prep = JSON.parse(fs.readFileSync(path.join(편, '게시', '준비.json'), 'utf8')); } catch { /* 없다 */ }
-  return 관문.aestheticFindings({ dir: 편, prep }, []);
+  const 앞 = process.env.SYNK_미학관문;
+  process.env.SYNK_미학관문 = '막음';
+  try { return 관문.aestheticFindings({ dir: 편, prep }, []); } finally { if (앞 === undefined) delete process.env.SYNK_미학관문; else process.env.SYNK_미학관문 = 앞; }
 }
 
 test('흐름(가짜 눈): 아르곤 줄 꺼짐 → 막힘 기록 → ⑱ 고칠 것 → GPT 대체 → ⑱ 확인할 것 → 다시 부르면 이어받아 안 보낸다 → opus 재료 · 받기', async (t) => {

@@ -23,6 +23,12 @@ function 편(name, prep, result, base = root, 맹검 = 통과맹검) {
   if (result) fs.writeFileSync(path.join(dir, '게시결과.json'), JSON.stringify(result));
   if (맹검) fs.writeFileSync(path.join(dir, '미학맹검.json'), JSON.stringify(맹검));
 }
+// 11-12부터 ⑱ 기본은 권고(막지 않음, tools/lib/미학관문.js) — 옛 막음으로 「고칠 것」을 보는 시험만 SYNK_미학관문=막음을 켠다(도구 자식 프로세스가 물려받는다)
+function 미학막음(t) {
+  const 앞 = process.env.SYNK_미학관문;
+  process.env.SYNK_미학관문 = '막음';
+  t.after(() => { if (앞 === undefined) delete process.env.SYNK_미학관문; else process.env.SYNK_미학관문 = 앞; });
+}
 
 function 돌리기(base, ...args) {
   return spawnSync(process.execPath, [tool, '--폴더', base, ...args], { encoding: 'utf8' });
@@ -372,6 +378,7 @@ test('걸린 줄 뒤에 보류를 덧붙인 판(취소됨 → 예약됨 → 보�
 });
 
 test('⑱ 돌림 원본 — 씨앗 판이 나간 뒤 다시 검사해 기록에 판본 영상만 남아도, 씨앗 영상을 맹검한 기록은 「맹검 뒤 영상 바뀜」으로 헛막지 않는다(11-11 Fable 5.2 검수 P1-1 「화날때」)', (t) => {
+  미학막음(t);
   // 저장소 꼴 임시 마당 — 검사 기록의 경로는 --폴더의 두 단계 위 기준이라(checkOf), docs/마케팅 아래에 편을 두고 실제 파일 값을 적는다.
   // 그러지 않으면 「다시 검사」로 빠져 ⑱ 까닭이 늘 비고, 이 시험이 옛 코드에서도 통과한다(11-11 Fable 5.2 다시 검수 P2-2).
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-돌림맹검-'));
@@ -600,7 +607,8 @@ test('작업실 검토 링크를 승인한 판(게시결과 「예약됨」 + �
 });
 
 test('⑱ 미학 맹검 — 옛 검사 기록이 「확인할 것」이어도 걸 판이 남은 편은 맹검이 없거나 기각이면 고칠 것(까닭 함께), 기각의 맹검판단은 그대로, 맹검못함 글만이면 고칠 것(11-10 설계 18), 다 건 편은 묻지 않는다', t => {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-맹검-'));
+  미학막음(t);
+  const base =fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-맹검-'));
   t.after(() => fs.rmSync(base, { recursive: true, force: true }));
   const 검사 = { 결과: '확인할 것', 파일: [] };
   const 기각 = { 낱장: [{ 번호: '01', 판정: '기각', 점수: 3, 약점: ['[K6] 끝 마침표'] }], 빠짐: [] };
@@ -616,6 +624,11 @@ test('⑱ 미학 맹검 — 옛 검사 기록이 「확인할 것」이어도 �
   const 글 = 돌리기(base, '--오늘', '2026-11-08', '--일수', '7').stdout;
   assert.match(글, /없음 · 검사 고칠 것\(미학 맹검 없음\)/, '편 줄에 까닭이 보여 14시 회차가 옛 기록만 믿고 걸지 않는다');
   assert.match(글, /판단 · 검사 확인할 것/);
+  // 11-12 권고(기본): 같은 편들이 ⑱ 때문에 「고칠 것」이 되지 않는다 — 검사 기록(확인할 것) 그대로 걸 편에 든다
+  delete process.env.SYNK_미학관문;
+  const 권고 = 돌리기(base, '--오늘', '2026-11-08', '--일수', '7', '--json');
+  assert.equal(권고.status, 0, 권고.stderr);
+  assert.deepEqual(JSON.parse(권고.stdout).fix, []);
 });
 
 test('하루 두 칸 계정(LAB 몽골 12:00 · 21:00, 11-09 유호님 「두 편으로」) — 칸마다 따로 세고, 열리기 전 날은 앞 칸이 쉼, 같은 칸 두 편만 경고', () => {
@@ -736,6 +749,7 @@ function 돌림큐(base, args) {
 }
 
 test('P2-9 ⓐ 돌림 원본(슬롯 = 씨앗이 나간 옛 날)의 돌림 판이 「고칠 것」이면 판이 든 날(계정 현지 날짜)에 편 줄 · 까닭이 찍히고 fix · 알림에 든다 — 브랜드 표는 그대로 슬롯으로', (t) => {
+  미학막음(t); // 「고칠 것」 편을 만드는 데 옛 ⑱ 막음(맹검 없음)을 쓴다
   const base = 돌림원본(t, { 맹검: null });
   const j = JSON.parse(돌림큐(base, ['--오늘', '2026-11-11', '--일수', '5', '--json']).out);
   // fix: 슬롯(11-02)은 지났어도 아직 걸 판이 11-12 · 11-13(현지)에 있다
@@ -895,7 +909,8 @@ test('작업실 줄 뒤에 보류를 덧붙였는데 그 작업이 서버에 살
 });
 
 test('⑱ --폴더가 저장소 꼴이 아니어서(옆에 tools 폴더 없음) 묶음이 판 영상을 못 찾으면 검사 기록의 영상으로 본다 — 맹검한 영상을 헛막지 않는다(P3-6)', (t) => {
-  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-꼴아님-'));
+  미학막음(t);
+  const repo =fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-꼴아님-'));
   t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
   const base = path.join(repo, 'docs', '마케팅'); // tools 폴더를 두지 않는다 — 게시묶음.repoOf가 도구의 저장소로 떨어진다
   const 원본 = (name, 맹검영상) => {

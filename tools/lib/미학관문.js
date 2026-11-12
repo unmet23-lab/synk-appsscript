@@ -1,5 +1,9 @@
 'use strict';
 
+// 11-12 막음 → 권고(유호님이 효율 고침은 묻지 않고 진행하라고 하심): 9일 맹검 1,133컷 가운데 통과 17컷(1.5%), 기각이 있어도 22편이 「맹검판단」 글로 나갔고, 편마다 평균 다섯 번
+// 다시 돌려 점수는 1~2점 올랐다 — 막는 힘 없이 다시 돌리는 시간만 들었다. 이제 기본은 권고: aestheticBlock은 늘 null, aestheticFindings는 확인할 것만
+// (기록 없음 한 줄 · 기각 · 고쳐서 냄 목록) 내고 고친 뒤 다시 맹검하지 않는다. 아래 옛 막음은 SYNK_미학관문=막음일 때만 돈다(되돌리기 · 옛 시험용, 불릴 때 읽는다).
+//
 // ⑱ 미학 맹검 관문(11-08 유호님 「내 피드백도 … 검수, 검토작업에 적용해줬으면 해」) — 올리기 전 검사(tools/올리기전검사.js)와
 // 예약 큐(tools/예약큐.js — 14시 「오늘 편 게시」가 이것으로 걸 편을 고른다)가 같이 쓴다. 매시 도는 예약 큐 알림이 무거운 검사 도구를
 // 불러오지 않게 판정만 여기에 둔다(fs · path · 게시글규칙만 부른다). th-post.mjs(스레드 21시)의 `맹검막음`은 이 판정의 짧은 판이다.
@@ -136,9 +140,10 @@ const 적중글 = (S) => {
   return `11-08 눈가림 기각 ${j.기각 ?? '?'}${j.아르곤 ? `(아르곤 ${j.아르곤})` : ''}`;
 };
 
+// 옛 막음(SYNK_미학관문=막음일 때만 — 11-12 전 동작 그대로).
 // bundle = { dir: 편 폴더, prep: 준비.json }, videoFiles = 그 편의 영상 판(맹검 뒤에 바뀌었는지 본다),
 // 판본영상 = 돌림 원본의 나라 판본 영상(맹검한 영상으로 받는다 — 위 바뀐영상)
-function aestheticFindings(bundle, videoFiles = [], { 판본영상 = [] } = {}) {
+function 막음판정(bundle, videoFiles = [], { 판본영상 = [] } = {}) {
   const findings = [];
   const add = (level, code, message) => findings.push({ level, code, where: '미학 맹검', message });
   const 글칸 = (k) => (typeof bundle.prep?.[k] === 'string' ? bundle.prep[k].trim() : '');
@@ -210,9 +215,49 @@ const 짧은까닭 = {
   'aesthetic-missing': '미학 맹검 없음', 'aesthetic-stale': '맹검 뒤 영상 바뀜', 'aesthetic-incomplete': '맹검 답 빠짐', 'aesthetic-reject': '맹검 기각',
   'aesthetic-unverified': '맹검 막힘 · 대체 맹검 없음', 'aesthetic-swap': '맹검 눈 셋 다 막힘 — 예비편', 'aesthetic-eye': '시각 대체 눈 아님', 'aesthetic-order': '카본 맹검 기록 없음',
 };
-function aestheticBlock(bundle, videoFiles, opts = {}) {
-  const fix = aestheticFindings(bundle, videoFiles, opts).filter((f) => f.level === FIX);
+function 막음까닭(bundle, videoFiles, opts = {}) {
+  const fix = 막음판정(bundle, videoFiles, opts).filter((f) => f.level === FIX);
   return fix.length ? [...new Set(fix.map((f) => 짧은까닭[f.code] || f.code))].join(' · ') : null;
 }
 
-module.exports = { aestheticFindings, aestheticBlock, AESTHETIC_FROM, 막힘됨, 막힘증거, 바뀐영상, 대체판정, 대체눈, 뺀눈, 막힘꼴, 기록이름, 대체이름, 눈이름 };
+// ── 11-12 권고(기본) ── 막지 않고, 한 번 돌린 맹검의 고칠 목록만 확인할 것으로 보인다. 다시 맹검 · 대체 눈 · 「맹검판단」 · 「맹검못함」 글을
+// 요구하는 지적(영상 바뀜 · 답 빠짐 · 막힘 → 대체 눈 · 카본부터 · 내력)은 내지 않는다 — 고친 뒤 다시 맹검하지 않는 것이 새 규칙이다.
+const 막음모드 = () => process.env.SYNK_미학관문 === '막음';
+
+const 낱장한줄 = (x) => `${x.번호}(${x.점수 ?? '—'}점${x.이어받음 ? ' · 지난 판정' : ''}${x.안봄 ? ' · 이번에 안 봄' : ''}) ${짧게글((x.약점 || [])[0], 70)}`;
+
+function 권고판정(bundle) {
+  const findings = [];
+  const add = (code, message) => findings.push({ level: LOOK, code, where: '미학 맹검', message });
+  const P파일 = path.join(bundle.dir, '게시', 기록이름), S파일 = path.join(bundle.dir, '게시', 대체이름);
+  const P = 읽기(P파일), S = 읽기(S파일);
+  if (!P && !S) {
+    add('aesthetic-missing', '미학 맹검 기록 없음 — 한 번 돌리면 고칠 목록이 나온다(막지 않음): node tools/미학맹검.js <대표 프레임 · 카드 또는 --영상 <최종.mp4> --순간 <초>…> --편 <편 폴더>');
+    return findings;
+  }
+  // 카본 기록, 그리고 대체 눈 기록(카본 기록과 같은 때나 그 뒤에 만든 것만 — 옛 대체 기록의 지적을 다시 꺼내지 않는다)
+  const 목록 = [];
+  if (P) 목록.push([배열(P.낱장), '카본', 기록이름]);
+  if (S && (!P || 만든때of(S, S파일) + 1000 >= 만든때of(P, P파일))) {
+    목록.push([배열(S.낱장), `${눈이름[String(S.눈 || '').toLowerCase()] || S.눈 || '대체 눈'} 대체`, 대체이름]);
+  }
+  for (const [낱장, 누구, 파일] of 목록) {
+    const 더 = (n) => (n > 3 ? ` · 전체는 게시/${파일}` : '');
+    const 기각 = 낱장.filter((x) => x && x.판정 === '기각');
+    if (기각.length) add('aesthetic-reject', `${누구} 맹검 「기각」 ${기각.length}장 — ${기각.slice(0, 3).map(낱장한줄).join(' · ')}${더(기각.length)} — 지적대로 고친다(고친 뒤 다시 맹검하지 않는다 · 막지 않음)`);
+    const 고쳐 = 낱장.filter((x) => x && x.판정 === '고쳐서 냄');
+    if (고쳐.length) add('aesthetic-fix', `${누구} 맹검 「고쳐서 냄」 ${고쳐.length}장 — ${고쳐.slice(0, 3).map(낱장한줄).join(' · ')}${더(고쳐.length)}`);
+  }
+  return findings;
+}
+
+// 밖에서 부르는 판정 — 스위치는 부를 때마다 읽는다(시험에서 켰다 껐다 할 수 있게)
+function aestheticFindings(bundle, videoFiles = [], opts = {}) {
+  return 막음모드() ? 막음판정(bundle, videoFiles, opts) : 권고판정(bundle);
+}
+// 예약 큐 · 14시 게시가 한 줄로 보이는 까닭 — 권고에서는 늘 null(막지 않는다), 막음이면 옛 고칠 것 까닭
+function aestheticBlock(bundle, videoFiles, opts = {}) {
+  return 막음모드() ? 막음까닭(bundle, videoFiles, opts) : null;
+}
+
+module.exports = { aestheticFindings, aestheticBlock, 막음모드, AESTHETIC_FROM, 막힘됨, 막힘증거, 바뀐영상, 대체판정, 대체눈, 뺀눈, 막힘꼴, 기록이름, 대체이름, 눈이름 };
