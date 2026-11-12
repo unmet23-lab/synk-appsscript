@@ -31,6 +31,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /experiences/solo-backup-rust/src-tauri/
+            /experiences/solo-backup-rust/contract/
             /experiences/solo-backup-rust/scripts/stage-ui.cjs
             /experiences/solo-backup-rust/bridge/
             /experiences/solo-backup/ui/
