@@ -14,7 +14,7 @@ import {customerRoomFacts,roomPayHow,ROOM_PACKAGES} from './pulse-room-facts.mjs
 
 globalThis.location??=new URL('http://localhost/pulse-app/');
 const {roomModel,roomState,ROOM_STAGES}=await import('./public/pulse-app/room-view.mjs');
-const {roomView}=await import('./public/pulse-app/film-views.mjs');
+const {roomView,roomRail}=await import('./public/pulse-app/film-views.mjs');
 const {emptyAnswers,PACKAGES,pkgOf}=await import('./public/pulse-app/request-data.mjs');
 
 const KEY='sk-ant-api03-'+'f'.repeat(40);
@@ -61,7 +61,9 @@ const unescape=html=>html.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&qu
 function screenOf(p){
   const m=roomModel(p),html=roomView(m,{bar:false}),stage=ROOM_STAGES.find(item=>item.id===m.stage),r=p.studio?.request||{},proposed=r.directionProposal?.revisions;
   const pick=re=>{const found=html.match(re);assert.ok(found,'고객 방에 '+re);return unescape(found[1]);};
-  return {state:roomState(p),stage:`${stage.no} ${stage.name}`,turn:{'is-you':'you','is-done':'done','':'us'}[pick(/<p class="sx-kicker sx-turn"><i class="([^"]*)"/)],
+  // 단계 이름은 머리 단계 줄(roomRail)이 실제로 그린 지금 단계 단추 글(사진 상품은 「사진 · 납품」), 번호는 ROOM_STAGES.
+  const now=roomRail(m,{tab:'overview'}).match(/class="sx-step is-now"[^>]*>([^<]*)<\/button>/);assert.ok(now,'머리 단계 줄의 지금 단계');
+  return {state:roomState(p),stage:`${stage.no} ${unescape(now[1])}`,turn:{'is-you':'you','is-done':'done','':'us'}[pick(/<p class="sx-kicker sx-turn"><i class="([^"]*)"/)],
     title:pick(/<h1 class="sx-display" data-room-title>([\s\S]*?)<\/h1>/),text:pick(/<p class="sx-body sx-room-lead" data-room-in>([\s\S]*?)<\/p>/),
     due:m.brief.find(([key])=>key==='받으실 날')?.[1]||'',revisions:Number.isSafeInteger(proposed)?proposed:pkgOf(r.answers||{})?.revisions??null};
 }
@@ -204,6 +206,10 @@ test('작업 소식은 손님 보기의 올린 소식 최근 다섯(오래된 �
   const got=facts(project({progress:[...progress].reverse()}),T(16)).의뢰.작업소식;
   assert.deepEqual(got.map(item=>item.글),['소식 3','소식 4','소식 5','소식 6','소식 7']);
   assert.equal(got.at(-1).단계,'제작');assert.equal(got.at(-1).그림,'4장','그림은 넷까지');assert.equal(got[0].그림,undefined);
+  // 소식 단계 이름: 다섯째는 영상 「영상 · 납품」 · 사진 상품 「사진 · 납품」(머리 단계 줄과 같다 — 조각 5 끝 판 카본 A1), 모르는 단계는 이름 없음.
+  const last=[{id:N(30),at:T(9),stage:'review',text:'납품 파일을 정리하고 있어요.',assets:[]},{id:N(31),at:T(10),stage:'request',text:'의뢰서 단계 소식',assets:[]},{id:N(32),at:T(11),stage:'모름',text:'모르는 단계',assets:[]}];
+  assert.deepEqual(facts(project({progress:last}),T(12)).의뢰.작업소식.map(item=>item.단계),['영상 · 납품','의뢰서',undefined]);
+  assert.equal(facts(project({progress:last,answers:{...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],package:'photo'}}),T(12)).의뢰.작업소식[0].단계,'사진 · 납품');
   assert.equal(got.at(-1).올린때,'2026-11-12 16:30','UTC 07:30 → 한국 16:30');
   assert.ok(got.every(item=>!Object.hasOwn(item,'id')&&!Object.hasOwn(item,'assets')));
   // 한국 날짜가 넘어가는 때: UTC 16:00 = 한국 다음 날 01:00(금요일).
@@ -249,6 +255,10 @@ test('고객 방 일치: 상태 · 단계 · 차례 표시 · 제목 · 왼쪽 �
     '결제 확인':project({directionProposal:direction({status:'chosen',chosenId:'o1'}),rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'confirmed',requestedAt:T(4),confirmedAt:T(5),amount:290000,dueDate:'2026-11-22'}}),
     '제작':project({approvedAt:T(6),payment:{status:'confirmed',confirmedAt:T(5),dueDate:'2026-11-22'}},{stage:'producing'}),
     '제작 · 사진':project({answers:photo,approvedAt:T(6)},{stage:'producing'}),
+    '첫 장 옴 · 사진':project({answers:photo,rounds:[round('images')]}),
+    '첫 장 고치는 중 · 사진':project({answers:photo,rounds:[round('images',{feedbackAt:T(3)})]}),
+    '사진 옴':project({answers:photo,approvedAt:T(6)},{stage:'review',versions:[{id:'v1',kind:'preview',label:'1차 시안',createdAt:T(7)}]}),
+    '납품 · 사진':project({answers:photo,approvedAt:T(6)},{stage:'delivered',versions:[{id:'v9',kind:'final',label:'최종본',createdAt:T(8),guide:'안내'}]}),
     '영상 옴':project({approvedAt:T(6)},{stage:'review',versions:[{id:'v1',kind:'preview',label:'1차 시안',createdAt:T(7)}]}),
     '납품':project({approvedAt:T(6)},{stage:'delivered',versions:[{id:'v9',kind:'final',label:'최종본',createdAt:T(8),guide:'올릴 곳마다 파일이 있어요.'}]}),
     '수령 끝':project({approvedAt:T(6)},{stage:'delivered',versions:[{id:'v9',kind:'final',label:'최종본',createdAt:T(8),guide:'안내'}],closeout:{receipt:{confirmedAt:T(9)}}}),
@@ -275,6 +285,8 @@ test('고객 방 일치: 상태 · 단계 · 차례 표시 · 제목 · 왼쪽 �
   assert.equal(customerRoomFacts(cases['결제 요청']).number,'P-2026-ABCD');assert.equal(customerRoomFacts(project({number:'<b>x</b>'})).number,'');
   // 의뢰서가 없는 프로젝트는 null.
   assert.equal(customerRoomFacts({studio:{}}),null);assert.equal(customerRoomFacts(null),null);
+  // 패키지 표는 자기 칸만 읽는다(끝 판 카본 P2 A1 — 「constructor」 같은 이름이 함수 객체를 패키지로 잡지 않게).
+  for(const name of ['constructor','toString','__proto__']){const got=customerRoomFacts(project({answers:{...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],package:name}}));assert.equal(got.pkg,null,name);assert.equal(got.revisions,null,name);}
 });
 
 test('서버 규칙 모듈은 화면 파일을 가져오지 않는다(정적 묶음 교체로 서버 동작이 바뀌지 않게)',async()=>{

@@ -1,7 +1,7 @@
 // 고객 방이 지금 보이는 차례 · 글 · 받으실 날 · 정한 수정 횟수를 서버에서 같은 규칙으로(운영 조각 5 — 자동 안내 사실 보강, 2026-11-12).
 // 화면의 정본은 public/pulse-app/room-view.mjs(roomState · ROOM_COPY · roomBrief의 받으실 날) · film-views.mjs(왼쪽 글 copyBase) · request-data.mjs(PACKAGES)다.
 // 서버는 그 파일을 가져오지 않는다 — 그 파일은 화면만 따로 바꿔 올리는 정적 묶음(deploy/static/policy.json)에 들어 서버 동작이 화면 교체로 바뀌면 안 된다
-// (deploy-static-swap.test.mjs 「no server module imports … the static set would carry」). 대신 pulse-room-facts.test.mjs가 화면 함수와 글자까지 같은지 견준다 —
+// (deploy-static-swap.test.mjs 「no server module imports … the static set would carry」). 대신 pulse-auto-reply-facts.test.mjs 「고객 방 일치」가 화면 함수와 글자까지 같은지 견준다 —
 // 화면 글 · 차례 규칙을 바꾸면 이 파일도 함께 고친다(시험이 떨어진다). 재료는 손님 보기(customerSnapshot)뿐이다.
 
 // 패키지(request-data.mjs PACKAGES의 서버 쪽 — 이름 · 기간 · 수정 횟수만). 기업은 기간 · 횟수가 협의라 없다.
@@ -12,8 +12,10 @@ export const ROOM_PACKAGES=Object.freeze({
   corp:{label:'기업',title:'기업 캠페인'},
   photo:{label:'사진',title:'모델이 제품을 든 사진 5장',days:3,revisions:2,photo:true},
 });
-// 단계 다섯(room-view.mjs ROOM_STAGES · STAGE_OF).
+// 단계 다섯(room-view.mjs ROOM_STAGES · STAGE_OF, 머리 단계 줄 이름은 film-views.mjs stageName — 사진 상품의 다섯째는 「사진 · 납품」).
 export const ROOM_STAGE_NAMES=Object.freeze({request:'01 의뢰서',check:'02 확인',draft:'03 1차안',make:'04 제작',review:'05 영상 · 납품'});
+const PHOTO_STAGE_NAMES=Object.freeze({...ROOM_STAGE_NAMES,review:'05 사진 · 납품'});
+export const roomStageName=(id,photo=false)=>Object.hasOwn(ROOM_STAGE_NAMES,id)?(photo?PHOTO_STAGE_NAMES:ROOM_STAGE_NAMES)[id]:'';
 const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',pay:'draft',make:'make',review:'review',deliver:'review',done:'review'};
 // 상태마다 고객 방 왼쪽 글(room-view.mjs ROOM_COPY — 단추는 뺐다).
 const COPY={
@@ -75,6 +77,8 @@ function copyOf(state,r,photo){
   if(state==='prepare'&&chosen)return {turn:'us',title:'이 방향으로 정했어요',text:'광고가 남길 한 문장과 글 콘티를 만들어 보내 드려요. 보시고 마음에 드시면 그때 크몽 결제를 안내해 드려요.'};
   if(state==='redirect'&&last)return {turn:'us',title:'담당자가 직접 연락드려요',text:'주신 말씀을 들고 담당자가 연락드려 함께 정해요. 정해지면 글 콘티를 보내 드려요.'};
   if(state==='model'&&photo)return {...COPY.model,text:'첫 장을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.'};
+  if(state==='images'&&photo)return {...COPY.images,title:'첫 장이 도착했어요',text:'첫 장을 보고 의견을 남겨 주세요. 방향이 맞으면 나머지 장을 만들어요.'};
+  if(state==='review'&&photo)return {...COPY.review,title:'사진이 도착했어요',text:'사진을 보고 고칠 곳에 의견을 남겨 주세요.'};
   if(state==='prepare'&&photo)return {turn:'us',title:'첫 장을 만들고 있어요',text:'보내 주신 사진과 의뢰서대로 첫 장을 먼저 보내 드려요. 방향이 맞으면 나머지 장을 만들어요.'};
   if(state==='make'&&photo)return {turn:'us',title:'확인하신 첫 장대로 만들고 있어요',text:'나머지 장을 같은 결로 만들고 있어요. 다음에 받으실 것은 완성 사진이에요.'};
   if(state==='check'&&photo)return {...COPY.check,text:'보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 첫 장을 먼저 보내 드려요.'};
@@ -102,10 +106,10 @@ export function roomPayHow(photo){
 // 손님 보기 하나에서 고객 방이 보이는 것. 의뢰서가 없는 프로젝트면 null.
 export function customerRoomFacts(p){
   const r=requestOf(p);if(!r)return null;
-  const state=roomStateOf(p),pkg=ROOM_PACKAGES[r.answers?.package]||null,photo=r.answers?.package==='photo',copy=copyOf(state,r,photo);
+  const state=roomStateOf(p),pkg=Object.hasOwn(ROOM_PACKAGES,r.answers?.package??'')?ROOM_PACKAGES[r.answers.package]:null,photo=r.answers?.package==='photo',copy=copyOf(state,r,photo);
   // 정한 수정 횟수: 방향 제안에 적힌 것, 없으면 패키지 것(feedback-rounds-view.mjs · room-view.mjs payModel과 같은 값).
   const proposed=r.directionProposal?.revisions,revisions=Number.isSafeInteger(proposed)?proposed:pkg?.revisions??null;
   // 접수 번호: 고객 방 머리 · 결제 카드에 보이는 번호(크몽 「문의하기」에 손님이 보낸다).
   const number=typeof r.number==='string'&&/^P-[0-9A-Z-]{4,20}$/.test(r.number)?r.number:'';
-  return {state,stage:ROOM_STAGE_NAMES[STAGE_OF[state]||'check'],turn:copy.turn,title:copy.title,text:copy.text,photo,pkg,due:dueOf(r,pkg),revisions,number};
+  return {state,stage:(photo?PHOTO_STAGE_NAMES:ROOM_STAGE_NAMES)[STAGE_OF[state]||'check'],turn:copy.turn,title:copy.title,text:copy.text,photo,pkg,due:dueOf(r,pkg),revisions,number};
 }

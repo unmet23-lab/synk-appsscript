@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import {customerRoomFacts,roomPayHow,ROOM_STAGE_NAMES} from './pulse-room-facts.mjs';
+import {customerRoomFacts,roomPayHow,roomStageName} from './pulse-room-facts.mjs';
 
 // PULSE 고객 문의 자동 안내(2026-10-19, 유호님 「…노트북이 꺼져있어도 24시간 양질의 답변을 하도록…」).
 // 고객이 PULSE에 문의(support)를 남기면 회사 서버가 그 프로젝트에서 고객에게 이미 보이는 사실만 Claude에 넘겨
@@ -92,14 +92,15 @@ function revisionFacts(total,st){
   return {정한횟수:total,쓴횟수:used,남은횟수:left,세는법:left?'시안에 보낸 의견 묶음 하나가 한 번이에요.':'시안에 보낸 의견 묶음 하나가 한 번이에요. 정한 횟수를 다 썼어요 — 더 고칠 곳은 담당자와 범위를 정한 뒤 반영하고, 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.'};
 }
 // 작업 소식: 손님 보기에 오는 올린 소식만(초안 · 거둔 소식 · 쓴 사람은 서버가 이미 뺐다). 최근 다섯, 그림은 장 수만.
-function progressFacts(r){
+// 소식의 단계 이름은 사진 상품이면 다섯째가 「사진 · 납품」(머리 단계 줄과 같다 — 조각 5 끝 판 카본 A1).
+function progressFacts(r,photo){
   const list=Array.isArray(r.progress)?r.progress:[];
   return list.filter(item=>item&&typeof item.text==='string'&&item.text.trim()&&kstTime(item.at)).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)).slice(-PROGRESS_SHOWN)
-    .map(item=>({올린때:kstTime(item.at),...(Object.hasOwn(ROOM_STAGE_NAMES,item.stage)?{단계:ROOM_STAGE_NAMES[item.stage].slice(3)}:{}),글:item.text.slice(0,600),...(Array.isArray(item.assets)&&item.assets.length?{그림:`${Math.min(4,item.assets.length)}장`}:{})}));
+    .map(item=>({올린때:kstTime(item.at),...(roomStageName(item.stage,photo)?{단계:roomStageName(item.stage,photo).slice(3)}:{}),글:item.text.slice(0,600),...(Array.isArray(item.assets)&&item.assets.length?{그림:`${Math.min(4,item.assets.length)}장`}:{})}));
 }
 function requestFacts(p){
   const room=customerRoomFacts(p);if(!room)return null;
-  const r=p.studio.request,pkg=room.pkg,pay=paymentFacts(r,room.state,room.photo),fix=revisionFacts(room.revisions,p.studio||{}),news=progressFacts(r),note=typeof p.nextStep==='string'?p.nextStep.trim():'';
+  const r=p.studio.request,pkg=room.pkg,pay=paymentFacts(r,room.state,room.photo),fix=revisionFacts(room.revisions,p.studio||{}),news=progressFacts(r,room.photo),note=typeof p.nextStep==='string'?p.nextStep.trim():'';
   return {
     ...(room.number?{접수번호:room.number}:{}),...(pkg?{상품:room.photo?`사진 · ${pkg.title}`:`${pkg.label} 영상 · ${pkg.title}`}:{}),
     지금:{단계:room.stage,차례:TURN[room.turn]||'',화면제목:room.title,화면안내:room.text},
