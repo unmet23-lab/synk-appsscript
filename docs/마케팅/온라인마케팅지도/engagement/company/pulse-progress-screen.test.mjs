@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 
 globalThis.location??=new URL('http://localhost/pulse-app/');
-const {journalModel,roomModel,roomNews,roomRoute,deskModel,progressLines}=await import('./public/pulse-app/room-view.mjs');
+const {journalModel,roomModel,roomNews,roomRoute,deskModel,progressLines,journalSeenUpTo,journalShownIds,journalNew}=await import('./public/pulse-app/room-view.mjs');
 const {journalView,roomView}=await import('./public/pulse-app/film-views.mjs');
 const {deskView}=await import('./public/pulse-app/desk-view.mjs');
 const {setLocale,t}=await import('./public/pulse-app/i18n.mjs');
@@ -152,10 +152,27 @@ test('화면 Fable 최종 반영: 예시 일지의 「말만 보기」 · 인물
   // F3 · F4 · F6: 그림 다시 올리기는 파일마다 · 「말만 보기」를 켠 채 「봤다」는 보이는 줄만 · 켜진 단추는 좌우 여백만.
   const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
   assert.match(app,/sign=file=>\[file\.name,file\.size,file\.lastModified\]\.join\('\|'\)/);assert.match(app,/if\(!done\[key\]\)\{done\[key\]=await uploadStaffMedia\(file,\{purpose:'progress'\}\)/);
-  assert.match(app,/shown=s\.journalTalk\?j\.items\.filter\(item=>item\.kind==='talk'\):j\.items/);assert.match(app,/const lines=new Set\(shown\.map\(item=>item\.id\)\)/);
+  assert.match(app,/lines=journalShownIds\(j,\{talk\}\),latest=journalSeenUpTo\(j,\{talk,seen:s\.journalSeen\}\)/);
+  assert.ok(app.indexOf('if(pair.length)Promise.resolve(live?.read(pair))')<app.indexOf('if(Number.isFinite(s.journalSeen)&&s.journalSeen>=latest)return;'),'알림 짝짓기는 봤다 시각 조기 반환 앞에서 늘 돈다(FA1)');
   const css=await readFile(new URL('./public/pulse-app/film.css',import.meta.url),'utf8');
   assert.match(css,/\.sx-j-filter\[aria-pressed=true\]\{padding-inline:8px;/);assert.doesNotMatch(css,/\.sx-j-filter\[aria-pressed=true\]\{padding:/);
   // F5: 영어 프로젝트의 직원 번역 칸 이름.
   const desk=deskView({...deskModel(project({progressFeed:true,progress:[]},{},[])),queue:[],canEdit:true,translation:{locale:'en',entries:{[`progress:${N(1)}:text`]:{source:'작업 중이에요',max:1200,text:'',status:'',fresh:false}}}},{bar:false});
   assert.match(desk,/작업 소식 · 글/);assert.doesNotMatch(desk,/progress · 글/);
+});
+
+test('「말만 보기」를 켠 채 「봤다」: 숨은 소식 앞에서 멈춰 머리 숫자에 남고, 거르개를 끄면 그때 읽힌다(화면 Fable 다시 검수 FA1)',()=>{
+  const talk={id:'m1',author:'customer',action:'support',text:'로고는 언제까지요?',at:T(2)},reply={id:'m2',author:'staff',authorName:'김하늘',visibility:'customer',text:'내일까지요.',at:T(6)};
+  // 소식(T5) → 담당자 답(T6)이 차례로 왔다. 거르개를 켠 채 본다.
+  const j=journalModel(project(news([{id:N(1),at:T(5),text:'편집 중',assets:[]}]),{messages:[talk,reply]}));
+  const seenBefore=Date.parse(T(3)),upTo=journalSeenUpTo(j,{talk:true,seen:seenBefore});
+  assert.equal(upTo,Date.parse(T(5))-1,'숨은 소식 바로 앞에서 멈춘다(답 T6까지 넘어가지 않는다)');
+  assert.equal(journalNew(j,upTo),2,'숨은 소식과 그 뒤 답이 머리 숫자에 남는다');
+  assert.ok(!journalShownIds(j,{talk:true}).has('n:'+N(1)),'숨은 소식 알림은 아직 읽지 않는다');
+  // 거르개를 끄면 그 줄이 보이고 끝까지 본다.
+  assert.equal(journalSeenUpTo(j,{talk:false,seen:upTo}),j.latestAt);assert.ok(journalShownIds(j,{talk:false}).has('n:'+N(1)));
+  // 숨은 줄이 이미 본 것뿐이면 말 줄 끝까지.
+  assert.equal(journalSeenUpTo(j,{talk:true,seen:Date.parse(T(5))}),Date.parse(T(6)));
+  // 거르개 없이는 예전 그대로(일지 끝).
+  assert.equal(journalSeenUpTo(j,{talk:false}),j.latestAt);
 });

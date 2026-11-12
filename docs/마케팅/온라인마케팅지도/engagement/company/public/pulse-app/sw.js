@@ -37,7 +37,8 @@
 // demo-film.mjs · film-views.mjs · room-view.mjs · app.mjs · 내부 확인 모듈 · film.css · slate-screens.css가 바뀌었다(v47 위). 목록은 그대로이고 판만 올린다.
 // v49(11-12): 사진 상품의 옷 · 머리(작업 소식 화면 검수 반영 v48 위) — 모델 제안 카드의 옷 · 머리 두 줄 · 일지 · 내부 확인 화면의 한 줄 · 사진 상품 머리글로 film-views.mjs · room-view.mjs · app.mjs · views.mjs ·
 // 내부 확인 모듈 · film.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v49-photo-looks-20261112';
+// v50(11-12): 운영 조각 4 화면 후속 FA1 — 「말만 보기」를 켠 채 「봤다」가 숨은 소식 앞에서 멈추고 알림 짝짓기는 늘 돌게 room-view.mjs · app.mjs가 바뀌었다(v49 위). 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v50-journal-seen-20261112';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

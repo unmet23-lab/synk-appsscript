@@ -317,6 +317,15 @@ export function journalModel(p){
 const josaOf=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?'이':'가';return /[0-9]/.test(last)?('013678'.includes(last)?'이':'가'):'이';}; // i18n-skip
 function withRoOf(word){const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);const batchim=code>=0xAC00&&code<=0xD7A3?(code-0xAC00)%28:/[0-9]/.test(last)?('013678'.includes(last)?1:0):1;return batchim&&batchim!==8?'으로':'로';} // i18n-skip
 // 「본 시각」보다 뒤에 온 담당자 · 자동 안내 줄과 열린 되묻기 수. 머리 「나눈 말」 숫자.
+// 「봤다」 시각과 읽음 짝짓기에 쓸 줄(운영 조각 4 화면 검수 F4 · FA1). 거르개(「말만 보기」)가 켜져 있으면 그려진 줄(말 줄 · 되묻기)만 보고,
+// 봤다 시각은 숨은 줄 가운데 아직 안 본 가장 이른 줄 바로 앞에서 멈춘다 — 숨은 소식이 머리 「나눈 말 N」에 새 것으로 남고, 거르개를 끄면 그때 읽힌다.
+export const journalShownIds=(j,{talk=false}={})=>new Set((talk?j.items.filter(item=>item.kind==='talk'):j.items).map(item=>item.id));
+export function journalSeenUpTo(j,{talk=false,seen=NaN}={}){
+  if(!talk)return j.latestAt;
+  const shown=Math.max(0,...j.items.filter(item=>item.kind==='talk').map(item=>item.t||0),...j.pinned.asks.map(ask=>ask.t||0));
+  const hidden=j.items.filter(item=>item.kind!=='talk'&&Number.isFinite(item.t)&&(!Number.isFinite(seen)||item.t>seen)).map(item=>item.t);
+  return hidden.length?Math.min(shown,Math.min(...hidden)-1):shown;
+}
 export const journalNew=(j,seen)=>Number.isFinite(seen)?j.items.filter(item=>item.who!=='me'&&item.t>seen).length+j.pinned.asks.filter(ask=>ask.t>seen).length:0;
 // ── 여기부터 직원 화면(내부 확인 · 새 의뢰 목록)만 쓴다 — 직원 화면은 한국어로 둔다(번역하지 않는다). ──
 // i18n-skip-start

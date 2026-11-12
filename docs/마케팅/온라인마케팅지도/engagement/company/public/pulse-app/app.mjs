@@ -13,7 +13,7 @@ import {mountRequestFlow} from './request-flow.mjs';
 import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus} from './film-views.mjs';
 import {mountFilmList,leanData} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
-import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel} from './room-view.mjs';
+import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel,journalShownIds,journalSeenUpTo} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
 import {MODEL_OPTIONAL_CHOICES,personaRefOf} from './casting-choice.mjs';
 import {PERSONA_DONE} from './persona-view.mjs';
@@ -187,12 +187,12 @@ function syncJournalSeen(){
 function markJournalSeen({opened=false}={}){
   if(!roomCustomer())return;
   if(!opened&&(document.hidden||document.hasFocus?.()===false)){journalSeenLater=true;return;}
-  // 「말만 보기」가 켜져 있으면 그려진 줄(말 줄 · 답할 되묻기)만 봤다로 센다 — 숨은 소식 · 사건 줄과 그 알림은 새 것으로 남는다(운영 조각 4 화면 검수 F4).
-  journalSeenLater=false;const j=journalModel(s.project),shown=s.journalTalk?j.items.filter(item=>item.kind==='talk'):j.items,latest=s.journalTalk?Math.max(0,...shown.map(item=>item.t||0),...j.pinned.asks.map(ask=>ask.t||0)):j.latestAt;
+  // 「말만 보기」가 켜져 있으면 그려진 줄(말 줄 · 답할 되묻기)만 봤다로 세고, 봤다 시각은 숨은 줄 가운데 안 본 가장 이른 줄 앞에서 멈춘다(room-view journalSeenUpTo).
+  // 알림 짝짓기는 봤다 시각과 상관없이 보이는 줄마다 — 거르개를 끈 뒤 보인 소식의 알림도 읽음으로(운영 조각 4 화면 검수 F4 · FA1).
+  journalSeenLater=false;const j=journalModel(s.project),talk=!!s.journalTalk,lines=journalShownIds(j,{talk}),latest=journalSeenUpTo(j,{talk,seen:s.journalSeen}),pair=(s.live.notifications||[]).filter(row=>row.unread&&row.projectId===s.project.id&&(row.messageId&&lines.has('m:'+row.messageId)||row.commentId&&lines.has('c:'+row.commentId)||row.progressId&&lines.has('n:'+row.progressId))).flatMap(row=>Array.isArray(row.ids)&&row.ids.length?row.ids:[row.id]);
+  if(pair.length)Promise.resolve(live?.read(pair)).catch(()=>{});
   if(Number.isFinite(s.journalSeen)&&s.journalSeen>=latest)return;
   s.journalSeen=latest;try{localStorage.setItem(seenKey(),String(latest));}catch{}
-  const lines=new Set(shown.map(item=>item.id)),pair=(s.live.notifications||[]).filter(row=>row.unread&&row.projectId===s.project.id&&(row.messageId&&lines.has('m:'+row.messageId)||row.commentId&&lines.has('c:'+row.commentId)||row.progressId&&lines.has('n:'+row.progressId))).flatMap(row=>Array.isArray(row.ids)&&row.ids.length?row.ids:[row.id]);
-  if(pair.length)Promise.resolve(live?.read(pair)).catch(()=>{});
   const button=document.querySelector('.app-header [data-journal-count]'),box=document.createElement('div');box.innerHTML=headJournal(s);if(button&&box.firstElementChild)button.innerHTML=box.firstElementChild.innerHTML;
 }
 function watchJournal(){
