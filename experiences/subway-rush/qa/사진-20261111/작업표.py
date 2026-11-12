@@ -134,7 +134,31 @@ for name, people in SWAP_PEOPLE.items():
 for car in ['calm', 'rush', 'concert', 'hike']:
     for side, other in [('LEFT', 'RIGHT'), ('RIGHT', 'LEFT')]:
         jobs.append({'id': f'open-{car}-{side.lower()}', 'ratio': '9:16', 'refs': [fwd(REFS / f'base-{car}.jpg')], 'prompt': OPEN.replace('{SIDE}', side).replace('{OTHER}', other), 'out': fwd(out / f'open-{car}-{side.lower()}_{{n}}.png')})
+# 11-12 고침(카본 맹검 세 번이 늘 짚은 사진 탈만 — 유호님 「전부 니가 자율주행으로」): 지금 게임 판(assets/world)을 Image 1로 그 자리만 편집한다.
+#   출구: 오른쪽 낮은 벽 뒤 지하 높이에 뜬 시내버스 · 간판 아랫테 휨 / 통로: 마주 오는 엄마와 아이 · 마주 선 두 청년의 뭉개진 얼굴 / 칸: 창을 짚은 남자 자세 · 컵 쥔 손.
+GAME = Path(__file__).resolve().parents[2] / 'assets' / 'world'
+for src, name in [('exit-fork.webp', 'now-exit.jpg'), ('fork.webp', 'now-fork.jpg'), ('car-calm.webp', 'now-calm.jpg')]:
+    Image.open(GAME / src).convert('RGB').save(REFS / name, quality=95)
+FIX = ("Create one photograph, vertical 9:16, by EDITING Image 1, a real photo taken {WHERE}. Keep EVERYTHING exactly as in Image 1 - the camera, framing, architecture, "
+       "signs and their exact text, floor, light, and every person not named below, all at the same place and size. Do not zoom, crop or re-frame. Change only this:\n")
+FIXES = {
+    'exit-f': ('now-exit.jpg', 'in the exit concourse of a Seoul subway station',
+               "- Through the opening at the upper right, behind the low wall beside the right-hand staircase, a blue city bus seems to float at basement level. Remove the bus completely: "
+               "show instead the right-hand staircase continuing up to daylight at street level, a plain pale building wall and one bare street tree at the top. No vehicles anywhere.\n"
+               "- The black hanging sign keeps its exact text and arrow, and its lower frame edge is perfectly straight.\n"),
+    'fork-f': ('now-fork.jpg', 'in a transfer corridor of a Seoul subway station',
+               "- The mother and small child walking toward the camera in the middle of the corridor: they now walk away from the camera, seen from behind, hand in hand, a little further down the corridor.\n"
+               "- The two young men standing face to face on the right: replace them with one young man walking away from the camera toward the right-hand passage, seen from behind, a backpack on one shoulder.\n"
+               "- Nobody's face is large or close to the camera.\n"),
+    'car-calm-f': ('now-calm.jpg', 'inside a Seoul subway car',
+                   "- The man in a dark padded vest standing in the middle-right of the aisle, reaching toward the window: he now stands naturally facing the aisle, holding an overhead hand strap with his right hand and looking down at the phone in his left hand.\n"
+                   "- The woman in a camel coat seated nearest on the right with a paper coffee cup: both hands rest naturally around the cup, every finger clearly formed.\n"
+                   "- The nearest doors at the far left and far right edges stay exactly as they are, closed.\n"),
+}
+
 for j in jobs:
     assert len(j['prompt']) < 4300, (j['id'], len(j['prompt']))
     print(j['id'], len(j['prompt']))
+for name, (ref, where, change) in FIXES.items():
+    jobs.append({'id': name, 'ratio': '9:16', 'refs': [fwd(REFS / ref)], 'prompt': FIX.replace('{WHERE}', where) + change + REAL, 'out': fwd(out / f'{name}_{{n}}.png')})
 (W / 'nb' / 'jobs.json').write_text(json.dumps(jobs, ensure_ascii=False, indent=1), encoding='utf-8')

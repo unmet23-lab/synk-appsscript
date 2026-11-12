@@ -74,7 +74,10 @@ SIGN_FLAT = {
 }
 
 
-def flatten_signs(dep, boxes):
+SIGN_ONE_DEPTH = {'exit-fork'}   # 표지 칸을 한 깊이로(메우기만으로 기울기가 남는 판)
+
+
+def flatten_signs(dep, boxes, flat=False):
     """깊이 지도(L, 절반 크기)의 표지 칸을 둘레 깊이로 메운다(cv2.inpaint) — 칸 둘레와 이어져 기울기가 끊기지 않는다."""
     import cv2
     d = np.asarray(dep, dtype=np.uint8).copy()
@@ -83,7 +86,13 @@ def flatten_signs(dep, boxes):
     for x0, y0, x1, y1 in boxes:
         mask[int(y0 * h):int(y1 * h) + 1, int(x0 * w):int(x1 * w) + 1] = 255
     mask = cv2.dilate(mask, np.ones((5, 5), np.uint8))
-    return Image.fromarray(cv2.inpaint(d, mask, 9, cv2.INPAINT_TELEA), 'L')
+    out = cv2.inpaint(d, mask, 9, cv2.INPAINT_TELEA)
+    if flat:
+        # 11-13 버스를 지운 출구 편집 판: 메운 칸 안에 위아래 기울기(표준편차 7)가 남아 다가갈 때 간판 글자 획이 끊겼다 — 칸을 한 깊이로 펴고 가장자리만 부드럽게 잇는다
+        m = cv2.GaussianBlur((mask > 0).astype(np.float32), (0, 0), 3)
+        vals = out[mask > 0]
+        out = (out.astype(np.float32) * (1 - m) + float(np.median(vals)) * m).astype(np.uint8)
+    return Image.fromarray(out, 'L')
 
 
 def depth_map(session, img, soft=False):
@@ -114,7 +123,7 @@ def main():
             dp = OUT / f'{name}.depth.png'
             if not dp.exists() or dp.stat().st_mtime < f.stat().st_mtime:
                 dm = depth_map(session, img, soft=name in SOFT_DEPTH)
-                (flatten_signs(dm, SIGN_FLAT[name]) if name in SIGN_FLAT else dm).save(dp, optimize=True)
+                (flatten_signs(dm, SIGN_FLAT[name], flat=name in SIGN_ONE_DEPTH) if name in SIGN_FLAT else dm).save(dp, optimize=True)
         have[name] = True
     (GAME / 'assets' / 'assets.json').write_text(json.dumps(sorted(have), ensure_ascii=False) + '\n', encoding='utf-8')
     print(len(have), '장', sum(p.stat().st_size for p in OUT.iterdir()) // 1024 // 1024, 'MB')
