@@ -234,9 +234,10 @@ function mountDraftScreen(model,animate){
     onRecast:()=>openDialog('recast'),
     onSend:state=>{const items=model.cuts.map((cut,i)=>({cut,item:state[i]})).filter(({item})=>item.react).map(({cut,item})=>({sceneId:cut.id,status:item.react==='fix'?'changes':'confirmed',text:item.react==='fix'?item.note.trim():''}));return mutate(()=>studioAction('submit_draft_review',{round:model.round,items}),{message:t('의견을 보냈어요. 반영한 판을 다시 보내 드릴게요.'),after:()=>{drafts.delete(key);s.tab='overview';}});},
     onApprove:state=>{
+      // 사진 상품의 첫 장(model.photo): 승인해도 결제가 확인되기 전에는 제작이 시작되지 않는다 — 알림도 그렇게 말한다.
       // 판 4: 제작이 시작되는 승인에는 취소 · 환불 안내 동의를 함께 보낸다 — 서버가 결제 상태를 아는 판(paymentFlow)일 때만(앞 판 서버는 모르는 칸을 거절한다).
       const terms=model.kind!=='script'&&s.project?.studio?.request?.paymentFlow?{terms:true}:{};
-      const send=()=>mutate(()=>studioAction('approve_draft',{round:model.round,...terms}),{message:model.kind==='script'?t('글 콘티를 확인했어요. 장면 이미지를 만들어 보내 드릴게요.'):t('장면 이미지를 확인했어요. 이 컷으로 제작을 시작해요.'),after:()=>{drafts.delete(key);closeDialog();s.tab='overview';}});
+      const send=()=>mutate(()=>studioAction('approve_draft',{round:model.round,...terms}),{message:model.kind==='script'?t('글 콘티를 확인했어요. 장면 이미지를 만들어 보내 드릴게요.'):model.photo?(s.project?.studio?.request?.payment?.status==='confirmed'?t('첫 장을 확인했어요. 이 결로 나머지 장을 만들어요.'):t('첫 장을 확인했어요. 결제가 확인되면 나머지 장을 만들어요.')):t('장면 이미지를 확인했어요. 이 컷으로 제작을 시작해요.'),after:()=>{drafts.delete(key);closeDialog();s.tab='overview';}});
       if(model.kind==='script')return send();
       const rest=(state||[]).filter(item=>!item.react).length;
       const photo=s.project?.studio?.request?.answers?.package==='photo';

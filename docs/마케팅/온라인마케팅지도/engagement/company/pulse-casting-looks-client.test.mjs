@@ -288,6 +288,11 @@ test('after the customer switches models, the desk no longer shows the outfit an
   const moved=project({direction:chosen,answers:{models:['M06'],outfit:'',hair:''},casting:{modelId:'M06',outfit:'',hair:''}});
   assert.equal('look' in deskModel(moved).direction,false);
   assert.doesNotMatch(deskView({...deskModel(moved),queue:[]}),/data-desk-look/);
+  // 바꿨다가 처음 모델로 되돌려도 값은 비워져 「맡김」이다 — 그때 고른 값이 지금 의뢰 기록의 값과 같을 때만 보인다(Fable F5).
+  const back=project({direction:chosen,answers:{models:['F02'],outfit:'',hair:''},casting:{modelId:'F02',outfit:'',hair:''}});
+  assert.equal('look' in deskModel(back).direction,false);
+  const partly=project({direction:chosen,answers:{models:['F02'],outfit:'look-2',hair:''},casting:{modelId:'F02',outfit:'look-2',hair:''}});
+  assert.equal('look' in deskModel(partly).direction,false,'a later answer changed one value: the old pair is not shown as current');
   // 일지의 그때 줄은 기록이라 그대로 남는다.
   assert.equal(journalModel(moved).items.find(item=>item.id==='d:1:ok').what,'「톡」으로 정했어요 · 옷 스트라이프 원피스 · 머리 긴 웨이브');
 });
@@ -330,7 +335,28 @@ test('a photo order reads as photos from the stage line to the first sheet, and 
   // 듣개 · 승인 창 · 꾸밈 · 영어.
   const views=read('film-views.mjs'),app=read('app.mjs');
   assert.match(views,/\$\('\[data-cut-sec\]'\)\.textContent=d\.photo\?'':secs\(cut\.seconds\);/);
-  assert.match(views,/d\.photo&&!script\?t\('다 확인하셨어요\. 이대로 괜찮으면 이 첫 장대로 진행해요\.'\)/);
+  assert.match(views,/d\.photo\?t\('다 확인하셨어요\. 이대로 괜찮으면 이 첫 장대로 진행해요\.'\):script\?/);
+  // 사진 말은 그림이 붙은 판(첫 장)에만 — 글만 든 판은 방 · 일지 · 대본 장과 같이 「글 콘티」 말 그대로다(카본 A1 · Fable F4: 같은 판을 두 이름으로 부르지 않는다).
+  const text=project({answers:{package:'photo',models:['F02']},casting:{modelId:'F02'},scenes:[{id:'s1',revision:1,title:'첫 장',description:'캔을 든 반신',duration:3}],rounds:[{round:1,kind:'script',oneLine:'한 줄',scenes:[{id:'s1',revision:1}],sentAt:'2026-11-12T03:00:00.000Z'}]});
+  assert.equal('photo' in draftModel(text),false);
+  const textHtml=draftView(draftModel(text));
+  assert.match(textHtml,/<div class="sx-draft sx-dr is-script" data-draft/);assert.match(textHtml,/글 콘티 · 1판/);assert.match(textHtml,/<span>이대로 장면 이미지 만들기<\/span>/);assert.doesNotMatch(textHtml,/첫 장 · 1판|is-photo/);
+  assert.equal(journalModel(text).items.find(item=>item.id==='r:1').what,'글 콘티 1판을 보냈어요');
+  // 방의 큰 그림 칸 설명(F2): 사진 상품은 움직임 · 장면 이미지 · 완성 영상을 말하지 않는다.
+  assert.match(room,/<p class="sx-small sx-room-cap">첫 장 1판 · 1장<\/p>/);assert.doesNotMatch(room,/움직이는 동안/);
+  assert.match(roomView(roomModel(film)),/1판 · 1컷\. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요\./);
+  const bare=project({answers:{package:'photo',models:['F02']},casting:{modelId:'F02'}}),bareFilm=project({answers:{package:'s15',models:['F02']},casting:{modelId:'F02'}});
+  for(const state of ['prepare','make']){
+    const shown=roomView({...roomModel(bare),state});
+    assert.match(shown,/저희가 만든 광고의 한 장면이에요\. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품/,state);assert.doesNotMatch(shown,/완성 영상의 예시예요|다음에 받으실 장면 이미지의 예시예요/,state);
+  }
+  assert.match(roomView({...roomModel(bareFilm),state:'make'}),/완성 영상의 예시예요\./);assert.match(roomView({...roomModel(bareFilm),state:'prepare'}),/다음에 받으실 장면 이미지의 예시예요\./);
+  // 일지의 작업 소식 줄 단계 낱말(F3)과 첫 장 승인 뒤 알림(F1).
+  assert.equal(journalModel(photo).photo,true);assert.equal('photo' in journalModel(film),false);
+  assert.match(views,/stageName\(item\.stage,j\.photo\)/);
+  assert.match(app,/model\.photo\?\(s\.project\?\.studio\?\.request\?\.payment\?\.status==='confirmed'\?t\('첫 장을 확인했어요\. 이 결로 나머지 장을 만들어요\.'\):t\('첫 장을 확인했어요\. 결제가 확인되면 나머지 장을 만들어요\.'\)\):t\('장면 이미지를 확인했어요\. 이 컷으로 제작을 시작해요\.'\)/);
+  for(const key of ['첫 장을 확인했어요. 결제가 확인되면 나머지 장을 만들어요.','첫 장을 확인했어요. 이 결로 나머지 장을 만들어요.','첫 장 {round}판 · {count}장','저희가 만든 광고의 한 장면이에요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품'])assert.ok(read('i18n/en.mjs').includes(`"${key}":`),key);
+  assert.doesNotMatch(read('i18n/en.mjs'),/이대로 첫 장 만들기|이대로 괜찮으면 첫 장을 만들어요/,'the half-renamed text sheet strings are gone');
   assert.match(app,/photo\?t\('아직 확인하지 않은 \{count\}장도 이대로 진행해요\.',\{count:rest\}\):t\('아직 확인하지 않은 컷 \{count\}개도 이대로 만들어요\.',\{count:rest\}\)/);
   assert.match(read('film.css'),/\.sx-draft\.is-photo \.sx-strip-tc\{display:none\}/);
   const en=read('i18n/en.mjs');

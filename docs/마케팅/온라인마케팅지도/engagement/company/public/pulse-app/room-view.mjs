@@ -186,7 +186,7 @@ export function draftModel(p){
   const selection=st.strategy?.data?.castingSelection,answers=r.answers||{};
   const look=r.castingLooks&&casting.kind==='catalog'&&modelCard(modelId)?lookOf(modelId,selection?.modelId===modelId?selection:answers.models?.[0]===modelId?answers:{}):null;
   const showLook=!!look&&(!!(look.outfit||look.hair)||!!r.directionProposal);
-  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',...(r.answers?.package==='photo'?{photo:true}:{}),model:modelCard(modelId),...(persona?{persona}:{}),...(showLook?{look}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
+  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',...(r.answers?.package==='photo'&&round.kind==='images'?{photo:true}:{}),model:modelCard(modelId),...(persona?{persona}:{}),...(showLook?{look}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
 }
 // ── 작업 소식(운영 조각 4 · 설계 S1) ──
@@ -312,7 +312,7 @@ export function journalModel(p){
   items.sort((a,b)=>(b.t??-Infinity)-(a.t??-Infinity)||(a.who==='me')-(b.who==='me'));
   const asks=(r?.asks||[]).filter(ask=>ask.status==='open').map(ask=>({id:ask.id,label:ask.label,why:ask.why||'',at:ask.at,t:timeOf(ask.at)}));
   const latestAt=Math.max(0,...items.map(item=>item.t||0),...asks.map(ask=>ask.t||0));
-  return {pinned:{asks,next:String(p?.nextStep||'').trim()},items,latestAt};
+  return {pinned:{asks,next:String(p?.nextStep||'').trim()},items,latestAt,...(r?.answers?.package==='photo'?{photo:true}:{})};
 }
 // 조사 도우미(한국어 문장에만 — 번역하지 않는다).
 const josaOf=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?'이':'가';return /[0-9]/.test(last)?('013678'.includes(last)?'이':'가'):'이';}; // i18n-skip
@@ -377,7 +377,8 @@ export function deskModel(p){
     direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name})),
       // 옷 · 머리(11-10): 손님이 방향과 함께 고른 값(proposal.look). 고른 · 정리한 방향에 카탈로그 모델이 있을 때만.
       // 그 뒤 손님이 다른 모델로 바꿨으면(글 콘티의 「다른 모델로 바꾸기」) 옛 모델의 값이라 보이지 않는다 — 지금 값은 제작 설계 요약이 보인다.
-      ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)&&(a.models?.[0]||direction.modelId)===direction.modelId?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
+      // 바꿨다가 처음 모델로 되돌려도 값은 비워져 있으므로(맡김), 그때 고른 값이 지금 의뢰 기록의 값과 같을 때만 보인다.
+      ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)&&(!a.models?.[0]||a.models[0]===direction.modelId&&(a.outfit||'')===(direction.look.outfit||'')&&(a.hair||'')===(direction.look.hair||''))?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};
 }
