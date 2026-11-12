@@ -7,13 +7,15 @@ import {t,k,locale,intlLocale} from './i18n.mjs';
 const shot=code=>`./assets/request/model-scene-${code}.webp`;
 export const KINDS=Object.freeze([
   // 11-09: 업종마다 완성 광고가 있으면 그 작품 그림을 둔다(음료 오미톡 · 앱 모두의코스 · 기업 도담중공업 — 진열 정본 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). 없는 업종은 예시 장면 그대로.
-  {id:'food',label:k('음료 · 식품'),note:k('먹고 마시는 제품'),shot:'./assets/films/omitok-court-poster-v1.webp',who:k('「치익이 톡이 될 때까지」 오미톡 · 가상 브랜드로 만든 자체 작품'),group:'product'},
-  {id:'beauty',label:k('화장품 · 뷰티'),note:k('스킨케어, 색조, 뷰티 기기'),shot:'./assets/request/w-gift-sphere.webp',who:k('「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품'),group:'product'},
-  {id:'fashion',label:k('패션 · 잡화'),note:k('옷, 가방, 신발, 액세서리'),shot:shot('m09'),who:k('예시 장면 · 서율 · 블루 그레이빛 차가운 비주얼'),group:'wear'},
-  {id:'living',label:k('생활용품 · 가전'),note:k('집과 일상에서 쓰는 물건'),shot:'./assets/films/maejin-imbak-poster-v1.webp',who:k('「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품'),group:'product'},
-  {id:'app',label:k('앱 · 웹 서비스'),note:k('화면으로 쓰는 서비스'),shot:'./assets/films/modu-course-poster-v1.webp',who:k('「가는 데마다 또 그 사람」 모두의코스 · 가상 브랜드로 만든 자체 작품'),group:'app'},
-  {id:'place',label:k('매장 · 공간 · 서비스'),note:k('찾아오거나 예약하는 곳'),shot:'./assets/films/hwaseong-cf-light-poster-v1.webp',who:k('「1억 년의 빛」 화성 CF · 공모전 출품작'),group:'place'},
-  {id:'brand',label:k('브랜드 · 기업 전체'),note:k('제품 하나가 아니라 회사 이야기'),shot:'./assets/films/dodam-heavy-poster-v1.webp',who:k('「이 아이를 보냅니다」 도담중공업 · 가상 브랜드로 만든 자체 작품'),group:'brand'},
+  // 11-12: shotShape는 업종 그림의 꼴(tall 세로 9:16 · wide 가로 16:9 · scene 모델 장면 사진 폭 960). 늘리지 않고 꼴대로 놓는다 — 작품 그림은 큰 판이 없고(작품 원본 720p),
+  // 모델 장면 사진은 의뢰서 큰 칸에서만 큰 판(srcset)으로 채운다(스크린 · 광고 틀에서는 꼴대로).
+  {id:'food',label:k('음료 · 식품'),note:k('먹고 마시는 제품'),shot:'./assets/films/omitok-court-poster-v1.webp',shotShape:'tall',who:k('「치익이 톡이 될 때까지」 오미톡 · 가상 브랜드로 만든 자체 작품'),group:'product'},
+  {id:'beauty',label:k('화장품 · 뷰티'),note:k('스킨케어, 색조, 뷰티 기기'),shot:'./assets/request/w-gift-sphere.webp',shotShape:'tall',who:k('「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품'),group:'product'},
+  {id:'fashion',label:k('패션 · 잡화'),note:k('옷, 가방, 신발, 액세서리'),shot:shot('m09'),shotShape:'scene',who:k('예시 장면 · 서율 · 블루 그레이빛 차가운 비주얼'),group:'wear'},
+  {id:'living',label:k('생활용품 · 가전'),note:k('집과 일상에서 쓰는 물건'),shot:'./assets/films/maejin-imbak-poster-v1.webp',shotShape:'wide',who:k('「매진 임박」 홈쇼핑 × 공포 코미디 · 가상 브랜드로 만든 자체 작품'),group:'product'},
+  {id:'app',label:k('앱 · 웹 서비스'),note:k('화면으로 쓰는 서비스'),shot:'./assets/films/modu-course-poster-v1.webp',shotShape:'tall',who:k('「가는 데마다 또 그 사람」 모두의코스 · 가상 브랜드로 만든 자체 작품'),group:'app'},
+  {id:'place',label:k('매장 · 공간 · 서비스'),note:k('찾아오거나 예약하는 곳'),shot:'./assets/films/hwaseong-cf-light-poster-v1.webp',shotShape:'wide',who:k('「1억 년의 빛」 화성 CF · 공모전 출품작'),group:'place'},
+  {id:'brand',label:k('브랜드 · 기업 전체'),note:k('제품 하나가 아니라 회사 이야기'),shot:'./assets/films/dodam-heavy-poster-v1.webp',shotShape:'wide',who:k('「이 아이를 보냅니다」 도담중공업 · 가상 브랜드로 만든 자체 작품'),group:'brand'},
 ]);
 export const CHANNELS=Object.freeze([
   {id:'shorts',label:k('릴스 · 쇼츠 · 틱톡'),ratio:'9:16'},

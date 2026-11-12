@@ -1276,6 +1276,7 @@
 - 고침: 「Fable 5.2로」 검수는 세션 모델이 `claude-fable-5-2`인 세션에서 model 없이 하위 에이전트를 띄운다. 다른 세션의 모델은 `set_session_model`(앱 모델 목록 id `claude-fable-5-2`)로 바꿀 수 있다. 자기 세션은 못 바꾸고, `start_session`의 model은 같은 등급 이하만 받는다. 검수자에게 답 첫 줄에 모델을 적게 하고, 기록으로도 확인한다: `grep -o '"model":"claude-[^"]*"' ~/.claude/projects/<프로젝트>/<세션 id>/subagents/agent-<id>.jsonl | sort | uniq -c`.
 - 다시 확인: 같은 grep이 `claude-fable-5-2`만 센다.
 - 11-11 덧붙임(Claude, `pulse-model-films-20261111-f52`): 다른 세션이 맡긴 곁 세션에서 5.2 검수 세션을 띄우려고 `start_session`(initiation `user_asked`)을 부르면 「Start sessions only on the user's own words …」로 거절된다. 그 부모 세션도 다른 세션의 글로 시작된 차례면 똑같이 막힌다. `own_initiative` 카드로 올리면 유호님이 눌러야 뜬다. 뜬 뒤에는 첫 차례가 Opus로 돌아 「기다림」만 답하고, `set_session_model claude-fable-5-2` → 「시작」 글로 맡긴다. 그 세션이 직접 검수하면(하위 에이전트 없이) 기록은 `~/.claude/projects/<프로젝트>/<세션 id>.jsonl`의 model 칸으로 센다(이번엔 5.2 316줄 · Opus 4줄 = 첫 「기다림」 차례). 곁 세션이 5.2 검수를 맡을 일이면 맡길 때 시작 세션이 5.2 세션을 먼저 띄워 두거나, 유호님이 카드를 눌러 주실 것을 함께 알린다.
+- 11-12 덧붙임(Claude, `pulse-request-kind-shot-20261112`): 곁 세션에서 새 세션을 못 띄울 때, 같은 가족(`list_sessions {"linked": true}`)에 쉬는 5.2 세션이 있으면 `get_session`으로 `model: claude-fable-5-2`를 확인하고 `SendMessage`(to: 그 세션 id)로 「fable.md를 읽고 그대로 검수, 답 첫 줄에 모델, 답 JSON은 그 세션 워크트리의 같은 상대 경로에, 끝나면 내 id로 경로만」을 맡기면 카드 없이 바로 돈다(그 세션이 직접 검수 — 하위 에이전트 없음). 답 파일은 `until [ -s <그 경로> ]` 백그라운드 기다림으로 받고 `페이블받기 <이름> <그 경로>`. `notify_when_idle`은 데스크톱 세션에 안 걸린다. 같은 세션에 `다시` 묶음도 이어서 맡겼다.
 
 ## Hermes(텔레그램 팁 봇)
 

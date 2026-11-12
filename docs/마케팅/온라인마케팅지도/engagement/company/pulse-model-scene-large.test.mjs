@@ -36,7 +36,8 @@ test('the big portrait offers the large cut through srcset, and only for model s
   // sizes = cover로 그려지는 폭 ÷ 1.47(작은 판으로 1.47배를 넘을 때 큰 판) — 세로 창은 두 조건으로 나눠 적는다(sizes에 「or」를 모르는 브라우저).
   assert.equal(SCENE_SIZES,'(max-width:820px) max(68.1vw,34vh), (max-aspect-ratio:1/1) max(68.1vw,34vh), max(22.1vw,calc(40.8vw - 277px),54.8vh)');
   const flow=readFileSync(new URL('./public/pulse-app/request-flow.mjs',import.meta.url),'utf8');
-  assert.ok(flow.includes("function crossfade(img,src,set=''){if(!img||img.getAttribute('src')===src)return;play(img,[{opacity:1},{opacity:.25}],{duration:120}).finished.then(()=>{if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else{img.removeAttribute('srcset');img.removeAttribute('sizes');}img.src=src;"),'swapping the photo swaps (or drops) its srcset before the src — srcset wins over src');
+  assert.ok(flow.includes("const next=new Image();if(set){next.sizes=SCENE_SIZES;next.srcset=set;}next.src=src;"),'the next photo is fetched with the same set first, so the swap below happens once it is in');
+  assert.ok(flow.includes("if(swaps.get(img)!==token)return;swaps.delete(img);if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else{img.removeAttribute('srcset');img.removeAttribute('sizes');}const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.src=src;"),'swapping the photo swaps (or drops) its srcset and its shape before the src — srcset wins over src');
   assert.ok(flow.includes("crossfade($('[data-portrait]'),choiceShot(a),sceneSet(choiceShot(a)))"),'「recommend」 shows a work poster (or the fashion model scene) with its own set');
 });
 

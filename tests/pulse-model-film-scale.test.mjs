@@ -17,10 +17,10 @@ const read=name=>readFileSync(new URL(name,appDir),'utf8');
 test('the model clip in the request form never stretches past the limit on the three reference screens',()=>{
   const css=read('film.css');
   assert.match(css,/\.sx-casting-lead video\{[^}]*object-fit:contain;/,'wide boxes fit the clip by its height unless a band allows filling');
-  assert.ok(css.includes('@container (max-aspect-ratio:9/16){.sx-casting-lead video{object-fit:cover}}'),'boxes narrower than 9:16 are filled');
+  assert.ok(css.includes('@container (max-aspect-ratio:9/16){.sx-casting-lead video,.sx-casting-lead img[data-shot=tall]{object-fit:cover}}'),'boxes narrower than 9:16 are filled');
   assert.ok(css.includes('.sx-casting-lead{container-type:size}'),'the container queries read the portrait box itself');
   // 화소비 띠: 띠의 가장 큰 화소비에서도 띠 폭이 1.5배를 넘기지 않는다(띠 사이 틈의 화소비는 어느 띠에도 안 들어 늘 contain).
-  const bands=[...css.matchAll(/@media ([^{]*)\{@container \(max-width:(\d+)px\)\{\.sx-casting-lead video\{object-fit:cover\}\}\}/g)].map(([,query,width])=>{
+  const bands=[...css.matchAll(/@media ([^{]*)\{@container \(max-width:(\d+)px\)\{\.sx-casting-lead video,\.sx-casting-lead img\[data-shot=tall\]\{object-fit:cover\}\}\}/g)].map(([,query,width])=>{
     const max=query.match(/max-resolution:([\d.]+)dppx/)?.[1];
     return {query,width:Number(width),ratio:Number(max)};
   });
@@ -50,7 +50,7 @@ test('the clip never stretches past the limit on its height either — tall boxe
   const css=read('film.css');
   // 「앞 위 끝 < 화소비 ≤ 이 위 끝」을 옛 문법으로 — `@media not all and (max-resolution:앞 위 끝){@media (max-resolution:이 위 끝){…}}`.
   // 범위 문법(`1.25dppx < resolution`)은 사파리 16.4부터라 16.0~16.3에서 띠가 통째로 무시된다(11-12 GPT 검수). 첫 띠만 아래 끝이 없다.
-  const caps=[...css.matchAll(/@media (?:not all and \(max-resolution:([\d.]+)dppx\)\{@media )?\(max-resolution:([\d.]+)dppx\)\{@container \(min-height:(\d+)px\)\{\.sx-casting-lead video\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([query,lo,hi,over,cap])=>({
+  const caps=[...css.matchAll(/@media (?:not all and \(max-resolution:([\d.]+)dppx\)\{@media )?\(max-resolution:([\d.]+)dppx\)\{@container \(min-height:(\d+)px\)\{\.sx-casting-lead video,\.sx-casting-lead img\[data-shot=tall\]\{object-fit:contain;padding-block:calc\(\(100cqh - (\d+)px\)\/2\)\}\}\}/g)].map(([query,lo,hi,over,cap])=>({
     query,lo:lo===undefined?null:Number(lo),hi:Number(hi),over:Number(over)-1,cap:Number(cap),
   })).sort((x,y)=>x.hi-y.hi);
   assert.doesNotMatch(css,/resolution <=|< resolution/,'no media range syntax (Safari 16.0–16.3 drops the whole rule)');
