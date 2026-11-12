@@ -38,12 +38,21 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+      # cargo cannot list package files inside a non-cone sparse git tree, so build from a plain copy.
+      - name: copy the sources out of the sparse checkout
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'src'
+          New-Item -ItemType Directory -Force -Path (Join-Path $src 'experiences') | Out-Null
+          Copy-Item -Recurse -LiteralPath 'experiences/solo-backup-rust' -Destination (Join-Path $src 'experiences/solo-backup-rust')
+          Copy-Item -Recurse -LiteralPath 'experiences/solo-backup' -Destination (Join-Path $src 'experiences/solo-backup')
+          "SWB_SRC=$src" >> $env:GITHUB_ENV
       - name: stage the window UI the Tauri build script reads
         shell: pwsh
-        run: node experiences/solo-backup-rust/scripts/stage-ui.cjs
+        run: node (Join-Path $env:SWB_SRC 'experiences/solo-backup-rust/scripts/stage-ui.cjs')
       - name: build the schedule probe
         shell: pwsh
-        run: cargo build --locked --example schedule_probe --manifest-path experiences/solo-backup-rust/src-tauri/Cargo.toml
+        run: cargo build --locked --example schedule_probe --manifest-path (Join-Path $env:SWB_SRC 'experiences/solo-backup-rust/src-tauri/Cargo.toml')
       - name: T2 — administrator and standard user, without and with the product folder
         shell: pwsh
         run: |
@@ -51,7 +60,7 @@ jobs:
           $work = Join-Path $env:RUNNER_TEMP 't2'
           New-Item -ItemType Directory -Force -Path $work | Out-Null
           $probe = Join-Path $work 'schedule_probe.exe'
-          Copy-Item -LiteralPath 'experiences/solo-backup-rust/src-tauri/target/debug/examples/schedule_probe.exe' -Destination $probe
+          Copy-Item -LiteralPath (Join-Path $env:SWB_SRC 'experiences/solo-backup-rust/src-tauri/target/debug/examples/schedule_probe.exe') -Destination $probe
           # The command the tasks would start; it need not exist for registration.
           $runExe = 'C:\Program Files\SYNK WorkBackup\WorkBackupRun.exe'
           # A standard user for the probe (random password, never printed).
