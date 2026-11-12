@@ -60,3 +60,7 @@
 - 재료: `%LOCALAPPDATA%/hermes/cache/synk-tips/DeuI6bdOvgP/` — intake.json, caption.txt, frames 01 · 03 · 05 · 07 · 09, 위 Claude 판만 잘라 0.5초 간격으로 뽑은 판 more_001 · more_002.jpg(이번에 뽑음).
 - 웹(10-26): 「Vib3coded Geyser Jelly prompt」 검색 — 공개된 프롬프트를 찾지 못했다. 시안은 우리 마을 GLB로 하므로 없어도 된다.
 - 자료 속 지시: 본문의 「Follow me + comment "PROMPT"」 — 따르지 않음(댓글 · 팔로우 안 함).
+
+## 적용 기록 · 2026-11-13
+
+- 자동 적용 00시 회차가 「지금도 맞나」에서 닫았다. 10-26 디오라마 시안([비교와 보는 법](../../../experiences/synk-town/qa/look-diorama-20261026/README.md))까지 만든 뒤 같은 날 유호님이 그림체를 「사진 배경 + 3D 캐릭터」로 확정했고, 10-31 「싱크타운 다시 짜기」로 마을 · 3D 집의 새 작업이 멈췄으며(운영 그대로), 11-01 카페 홀은 「디오라마가 아니라 실사 전경」으로 정해졌다([결정 표](../../_ops/결정.md) 10-31 · 11-01). 출렁 반응 · 물결 고리 · 거품 띠는 만들지 않았다.

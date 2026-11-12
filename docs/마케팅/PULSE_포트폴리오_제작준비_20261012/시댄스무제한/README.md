@@ -68,6 +68,12 @@
 - **옷 · 소품:** 4번 트렌치 단추 · 여밈 · 소매 탭 · 가방 어깨(0.1~0.9초 컷 — 제품이라 눈에 띄면 그 컷만 다시), 4번 C33 코트 색, 5번 S04 탑 끈(시작 ↔ 끝), 12번 C11 바람막이 · 짙은 바지.
 - **후반에서 합성:** 12번 16a · 16b 폰의 「모두의코스」 앱 화면(영상에서 작은 글자가 무너지니 화면을 따라 붙인다), 5번 16 초록 모니터(합성판과 같은 화면), 16 · 16b 유리잔 상표 글자 지우기.
 - **카메라(10-29 손질 뒤):** 고정이라고 쓴 컷이 천천히 다가가지 않는지, 2번 7 · 8이 슬로로 나왔는지(깨지면 대안 실제 속도 판), 12번 1 · 10~15가 정말 그에게 다가가는지 본다. 고정 컷이 움직이면 5번에서 쓴 문구(「화면이 처음부터 끝까지 그 자리」처럼 긍정으로 먼저 · 장비 이름 빼기 · 손떨림은 「제자리에서만」)를 그 편 고정 컷에도 옮겨 다시 낸다 — 아래 「카메라 요즘 기법 손질」.
+- **카메라 높이가 원본대로 안 나온 판 — 앵글만 다시 찍기(가설 · 11-13, [참고 카드 34행](../../../참고카드/카드/2026-10-29_앵글감정_다시찍기.md) · 우리 판으로는 아직 안 해 봄):** 감정 전환점 컷과 원본과 높이가 어긋난 컷만 고른다. 새 시작 그림 없이 받은 그 판을 참고 영상으로, 같은 사람 얼굴 세트를 참고 그림으로 함께 넣는다(팁 화면은 Higgsfield Create Video의 References · Seedance 2.5였다 — 드리미나 길에서 참고 영상이 되는지는 시험 때 먼저 본다). 그 편의 주력 모델 안에서만 하고, 다시 그린 판이라 원본 판의 프레임과 잇지 않는다(판째 바꾸거나 앞 컷 끝에서 하드컷). 「앵글만」이라 해도 팁의 판은 거리까지 바뀌었으니(미디엄 → 클로즈업) 크기를 꼭 적는다. 길이는 쓰는 초 + 0.8초, 최소 4초.
+  - 공통 머리: `Re-shoot the reference video as ONE SINGLE CONTINUOUS SHOT. Keep everything exactly the same — the same people and faces, clothes, props, set, light, colors, action and timing. Change ONLY the camera. No new people, no new text, no sound.`
+  - 하이: `CAMERA: a high angle from above, looking down at [대상]; keep the same shot size as the reference ([크기]) — do not move closer.`
+  - 로우: `CAMERA: a low angle from near the floor, looking up at [대상], who looms over the lens; keep the same shot size as the reference ([크기]).`
+  - 돌리 줌(한 편에 한 번): `Keep the reference video unchanged until [2.0] s. From [2.0] s, change only the camera technique to a dolly zoom: the camera pushes in while the lens zooms out, so [대상] keeps the same size in frame while the background stretches away behind. Do not change the composition, the background or the people.`
+  - **앵글만 시험 셋(아직 안 냄 — 크레딧이 들어 유호님 말씀 뒤):** 이미 받은 얼굴 컷 하나로 하이 · 로우 · 돌리 줌을 4초씩 낸다(드리미나 울트라 720p면 초당 18 × 12초 = 216크레딧 어림). 받은 판과 나란히 판 + 1초 시트 + 0.33초 얼굴 띠로 ① 같은 사람인가 ② 옷 · 소품 · 빛 · 동작 시각이 그대로인가 ③ 적은 크기를 지켰나 ④ 돌리 줌이 정한 초에 하드컷 없이 오나 ⑤ 휴대폰 크기에서 감정이 바뀌어 읽히나(유호님 눈)를 본다. 되는 앵글만 제작 규칙 표에서 「확인됨」으로 바꾸고, 본 버릇은 [현장 노트 · Higgsfield](../../../현장노트/higgsfield.md)에 남긴다.
 
 ## 결제 전 검수와 고친 것(10-28)
 
