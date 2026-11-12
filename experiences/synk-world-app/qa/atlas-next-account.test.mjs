@@ -140,6 +140,40 @@ test('셸 알림 — 그 밖(426 등)은 계정을 다시 읽어 그대로면 �
  next.dispose();
 });
 
+test('지금 판이 풀리면 알린다 — 계정을 못 읽은 일시 실패 뒤 다시 읽어 새 길 · 꺼짐 표지 뒤 켜짐 · 첫 받기로 낮춘 판을 다른 코치가 되돌림(§19-3 7)',async()=>{
+ // ㉠ 표지 없는 계정이 계정을 못 읽으면 이번은 지금 판 — 다음에 다시 읽어 새 길로 정해지면 알린다
+ const line=accountLine();const real=line.trail;let down=true;
+ line.trail=async()=>{if(down)throw fail(0,'NETWORK',{retryable:true});return real();};
+ const a=createAtlasNext({owner:'acct-r1',storage:memoryStorage(),trail:()=>line.trail(),load:fakeLoader().load,health:recorder()});
+ const heardA=[];const stop=a.reopened(detail=>heardA.push(detail.reason));
+ assert.equal(await a.practiceCoach(POOL),null);assert.deepEqual(heardA,[],'지금 판으로 정한 때는 알리지 않는다');
+ down=false;assert.ok(await a.practiceCoach(POOL));
+ assert.deepEqual(heardA,['decided'],'지금 판 뒤 새 길로 정해지면 알린다');
+ stop();a.redecide('account');assert.ok(await a.practiceCoach(POOL));assert.deepEqual(heardA,['decided'],'끊은 뒤 · 새 길 → 새 길은 알리지 않는다');
+ a.dispose();
+ // ㉡ 꺼짐 표지 — 뒤에서 다시 물어 켜졌으면 알린다(GB2와 같은 길)
+ const storage=memoryStorage([[NEXT_MARK+'acct-r2',JSON.stringify({off:true})]]);
+ const b=createAtlasNext({owner:'acct-r2',storage,trail:accountLine().trail,load:fakeLoader().load,health:recorder()});
+ const heardB=[];b.reopened(detail=>heardB.push(detail.reason));
+ assert.equal(await b.practiceCoach(POOL),null);
+ await until(()=>heardB.includes('switch'));assert.equal(markOf(storage,'acct-r2').off,undefined);
+ assert.ok(await b.lifeCoach(),'알림을 받은 면이 다시 물으면 새 길');assert.deepEqual(heardB,['switch','decided']);
+ b.dispose();
+ // ㉢ 처음인 기기 — 연습 코치는 첫 받기를 못 해 이번 문서를 지금 판으로 낮추고, 같이 열던 생활 코치가 그 뒤 요약을 받으면 되돌리며 알린다
+ let release=null;const late=new Promise(resolve=>{release=resolve;});
+ const loader=fakeLoader(options=>options.banks.includes('world-life')?fakeCoach({synced:late}):fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
+ const c=createAtlasNext({owner:'acct-r3',storage:memoryStorage(),trail:accountLine().trail,load:loader.load,health:recorder()});
+ const heardC=[];c.reopened(detail=>heardC.push(detail.reason));
+ const life=c.lifeCoach();
+ assert.equal(await c.practiceCoach(POOL),null,'첫 받기를 못 한 연습은 지금 판으로 낮춘다');
+ release({ok:true,base:true});
+ assert.ok(await life,'생활 코치는 요약을 받아 새 길');
+ assert.deepEqual(heardC,['lowered'],'낮춘 판을 되돌리면 알린다');
+ assert.ok(await c.practiceCoach(POOL),'다시 묻는 연습은 새 길');assert.deepEqual(heardC,['lowered','decided']);
+ c.dispose();
+ assert.equal(typeof c.reopened(()=>{}),'function','닫은 뒤에도 끊는 함수를 돌려준다');
+});
+
 test('새 길 간 적 있는 기기 — 판이 오른 직후 그 판의 요약이 없고 받기가 실패해도 새 길 그대로(B4)',async()=>{
  const storage=memoryStorage([[NEXT_MARK+'acct-3',JSON.stringify({went:true})]]),line=accountLine({revision:4});
  const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));

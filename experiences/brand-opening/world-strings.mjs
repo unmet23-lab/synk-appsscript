@@ -614,6 +614,8 @@ export default {
  // 연습 도중 학습 기록의 판을 다시 정해(동의를 끄고 켬 · 다른 기기에서 비움 · 새 길을 잠시 닫음) 연습을 닫을 때(단계 4 계정 길 — 단계4_계획 §18-5-5).
  // 몽골어 11-13 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · flash 직역 「학습 등록 설정이 변경되어 이 연습을 닫았다」가 원문 뜻과 같음, Opus 확인).
  'practice.next.changed':{ko:'학습 기록 설정이 바뀌어서 이번 연습을 닫았어요. 다시 시작해 주세요.',en:'Your learning record settings changed, so this practice was closed. Please start again.',mn:'Таны сургалтын бүртгэлийн тохиргоо өөрчлөгдсөн тул энэ дасгалыг хаалаа. Дахин эхлүүлнэ үү.'},
+ // 새 길 생활 화면(4-2 — 단계4_계획 §19-1 ①): 판이 바뀌어 생활 코치가 닫히면 열린 레슨 · 복습 화면을 이 한 줄과 함께 닫는다(진도는 남아 다시 열면 이어진다).
+ 'life.next.changed':{ko:'학습 기록 설정이 바뀌어서 이 화면을 닫았어요. 하던 자리는 그대로 남아요.',en:'Your learning record settings changed, so this screen was closed. Your place is saved.',mn:'Таны сургалтын бүртгэлийн тохиргоо өөрчлөгдсөн тул энэ дэлгэцийг хаалаа. Зогссон хэсэг тань хадгалагдсан.'},
  'practice.next.more':{ko:'새 말 더 배우기',en:'Learn more new expressions',mn:'Шинэ үг хэллэг нэмж сурах'},
  // 다음 판 단추 — n은 다음 판의 길이(「최대」, 문항 화면의 진행 글과 같은 수). 다음 판은 처음 보는 문항 말고도 놓친 말의 「다시」와 채우기를
  // 내므로 남은 처음 보는 문항 수로 약속하지 않는다(4-1 화면 Fable 5.2 다시 FA3).
@@ -846,6 +848,10 @@ export default {
  'life.when.minutes':{ko:'{n}분 뒤',en:{one:'in 1 min',other:'in {n} min'},mn:'{n} минутын дараа'},
  'life.when.today':{ko:'오늘 {time}',en:'today at {time}',mn:'өнөөдөр {time}'},
  'life.when.tomorrow':{ko:'내일 {time}',en:'tomorrow at {time}',mn:'маргааш {time}'},
+ // 새 길(4-2 — §19-1 ⑤ F)의 「다음 돌아올 때」는 엔진의 예상이라 날까지만, 예상으로 — 위 두 문장의 {date} 자리에 들어간다(분 · 시각은 말하지 않는다).
+ 'life.when.todayDay':{ko:'오늘 중',en:'later today',mn:'өнөөдөртөө'},
+ 'life.when.tomorrowDay':{ko:'내일쯤',en:'tomorrow',mn:'маргааш'},
+ 'life.when.aroundDay':{ko:'{date}쯤',en:'around {date}',mn:'{date} орчим'},
  'life.comingBack':{ko:'곧 돌아올 표현',en:'Coming back soon',mn:'Удахгүй дахин гарах хэллэгүүд'},
  'life.ago.days':{ko:'{n}일 전',en:{one:'1 day ago',other:'{n} days ago'},mn:'{n} өдрийн өмнө'},
  'life.rest':{ko:'한 시간 넘게 했어요. 잠깐 쉬어도 돼요. 하던 자리는 그대로 남아요.',en:'You’ve been at it for over an hour. It’s fine to take a break. Your place is saved.',mn:'Та нэг цаг гаруй хичээллэлээ. Түр амарч болно. Зогссон хэсэг тань хэвээр үлдэнэ.'},
@@ -940,6 +946,8 @@ export default {
  'life.reviewSubFirst':{ko:'먼저 새 장면 {n}개에서 다시 골라요.',en:{one:'First, you choose again in a new situation.',other:'First, you choose again in {n} new situations.'},mn:'Эхлээд {n} шинэ нөхцөл байдалд тохирох хэллэгээ дахин сонгоно.'},
  'life.reviewSubOpens':{ko:'{date}에 열려요.',en:'Opens {date}.',mn:'Нээгдэх хугацаа: {date}.'},
  'life.reviewSubNone':{ko:'레슨을 하나 마치면 복습할 표현이 생겨요.',en:'Finish a lesson and you’ll have expressions to review.',mn:'Нэг хичээл дуусгавал давтах хэллэгтэй болно.'},
+ // 새 길(4-2 — §19-1 ⑤ M7): 판정을 넣었는데 아직 확인 중(생활 코치를 여는 중 · 이 기기에 요약이 아직 없음) — 수 · 날짜를 그리지 않는 동안의 글.
+ 'life.reviewChecking':{ko:'복습할 표현을 확인하고 있어요.',en:'Checking which expressions to review.',mn:'Давтах хэллэгүүдийг шалгаж байна.'},
  'life.reviewStart':{ko:'복습 시작하기',en:'Start review',mn:'Давтлага эхлэх'},
  'life.doNextLesson':{ko:'다음 레슨 하기',en:'Do the next lesson',mn:'Дараагийн хичээлийг хийх'},
  'life.reviewResultTitle':{ko:'복습 결과',en:'Review results',mn:'Давтлагын үр дүн'},
@@ -950,6 +958,8 @@ export default {
  'life.reviewRemembered':{ko:'잘 기억했어요',en:'Well remembered',mn:'Сайн санажээ'},
  'life.reviewSpacing':{ko:'잘 기억한 표현은 더 오래 있다가 돌아와요.',en:'Expressions you remember well come back after a longer break.',mn:'Сайн санасан хэллэг илүү удаан хугацааны дараа дахин гарч ирнэ.'},
  'life.reviewSoon':{ko:'조금 뒤 다시 나와요',en:'Back soon',mn:'Удахгүй дахин гарч ирнэ'},
+ // 새 길(4-2 — §19-1 ④ M4): 혼자 맞혔어도 그 표현이 하루 안에 다시 돌아오면(같은 자리에서 놓친 적이 있는 등) 「잘 기억했어요」 대신 이 글.
+ 'life.reviewAgainSoon':{ko:'하루 안에 한 번 더 만나요',en:'Once more within a day',mn:'Нэг өдрийн дотор дахин давтана'},
  'life.reviewHeader':{ko:'{pack} · 새 장면 복습',en:'{pack} · review in a new situation',mn:'{pack} · шинэ нөхцөл байдалд давтах'},
  'life.reviewOrigin':{ko:'{origin} 배운 표현',en:'Learned {origin}',mn:'{origin} сурсан хэллэг'},
  'life.everydayKorean':{ko:'생활 한국어',en:'Everyday Korean',mn:'Өдөр тутмын солонгос хэл'},

@@ -272,6 +272,34 @@ async function waitingRun(items, { seed, length, steps }) {
   return out;
 }
 
+test('요약의 storage.waiting — 받아 둔 요약의 판 묶음이 달라 보기가 아무것도 얹지 못하는 동안은 참이다(제품의 「확인 중」, 단계 4 §19-1 ⑤ M7)', async () => {
+  const time = clock();
+  const port = memoryPort();
+  await port.append([
+    {
+      kind: 'ack',
+      acks: [],
+      clamped: [],
+      dropped: [],
+      summary: packSummary(emptySummary('other-edition')),
+    },
+  ]);
+  const coach = coachOn({
+    items: bankOf(rng(7)),
+    time,
+    port,
+    key: keyOf('wait-summary'),
+    guest: false,
+    account: 'acct-wait',
+    revision: 1,
+  });
+  await coach.ready;
+  const { storage } = coach.summary();
+  assert.equal(storage.base, true, '요약은 있다(판 묶음만 다르다)');
+  assert.equal(storage.waiting, true);
+  coach.dispose();
+});
+
 test('보기가 아무것도 얹지 못하는 동안에도 판 안의 결정은 두뇌만 돌린 것과 같다 — 이 판의 내 답은 늘 본 것이다(Fable P2-2 가)', async () => {
   for (const seed of seedRange({ count: 8 })) {
     const items = bankOf(rng(seed + 300));

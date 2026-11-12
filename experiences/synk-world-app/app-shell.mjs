@@ -38,17 +38,22 @@ const atlasNextOn=connection.features?.atlasNext===true;
 // 계정 길(단계 4 ④ — 단계4_계획 §18-2 · §18-5): 운영은 계정을 다시 읽는 world-account의 prepareAtlasTrail, 리허설은 리허설 서버의 trail
 // (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
- let made=null,loading=null,disposed=false;
+ let made=null,loading=null,disposed=false;const reopeners=new Set();
  const trailOf=m=>owner==='guest'?null:operating?()=>account.prepareAtlasTrail():m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest'});
- const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
+  // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
+  async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
+  // 지금 판으로 정했던 판이 풀렸을 때(지금 판 → 새 길일 수 있음) — 생활 · 홈이 판을 다시 묻는다(단계4_계획 §19-3 7). 끊는 함수를 돌려준다.
+  reopened(fn){if(disposed||typeof fn!=='function')return()=>{};reopeners.add(fn);return()=>reopeners.delete(fn);},
+  note:(kind,outcome)=>{if(made&&!disposed)made.note(kind,outcome);},
   retired:(coach,fn)=>made&&!disposed?made.retired(coach,fn):()=>{},
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
   redecide(reason){if(made&&!disposed)made.redecide(reason);},
   health:()=>made?.health()??null,
-  dispose(){disposed=true;made?.dispose();}};
+  dispose(){disposed=true;reopeners.clear();made?.dispose();}};
 }
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
 // 바람길·말의 리듬은 한 판씩 체험으로 연다(guest-trial.mjs, 기록·코인은 로그인 뒤). 체험을 마친 게임은 로그인부터 열고, 추천도 같은 목록을 쓴다.
@@ -371,8 +376,14 @@ function lifeProgressFor({owner,port,guard,fallback}){
  const status=progress.status;return Object.freeze({...progress,status:()=>({...status(),message:'계정 진도를 불러오지 못해 이 기기의 기록으로 이어 가요.'})});
 }
 // 배우기 화면(생활 화면 → 학습 화면 → 알림)을 세운다. keep으로 붙인 조각은 생활 세션이 그 기록과 함께 만든 반대 순서로 버린다(home 연결도 그때 끊는다).
-function mountLifeLearning({owner,keep}){
+function mountLifeLearning({owner,progress,keep}){
  let education=null,reminders=null;
+ // Atlas 새 길(기능 atlasNext — 4-2 생활, 단계4_계획 §19-1 ① · ⑤): 입구를 생활 화면보다 먼저 세운다. 문서 시작 때 생활 코치를 열어(M7 — 홈의 첫 그림을
+ // 막지 않는다) 진도에 「돌아온 복습」 판정을 넣고(world-life-next watchLifeDue — 홈 칩 · 튜터 · 홈 후보 · 알림이 같은 목록을 읽는다), 생활 화면은 옛 거울 대신
+ // 새 판 겉으로 적는다(learning.next). 꺼진 판은 입구 · 엔진을 받지 않는다(지금 판 그대로).
+ const atlasNext=atlasNextOn?keep('atlasNext',lazyAtlasNext(owner)):null;
+ const lifeDue=atlasNext&&progress&&typeof worldLearning.life.watchLifeDue==='function'?keep('lifeDue',worldLearning.life.watchLifeDue({open:()=>atlasNext.lifeCoach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),reopened:fn=>atlasNext.reopened(fn),progress,lessons:LESSONS,note:(kind,outcome)=>atlasNext.note(kind,outcome)})):null;
+ const lifeNext=lifeDue?{coach:()=>lifeDue.coach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),note:(kind,outcome)=>atlasNext.note(kind,outcome),nextAt:id=>lifeDue.nextAt(id)}:null;
  // 입장 때 준비한 한글 옮기기 통로도 이 생활 기록에 딸린다. 계정 변경·다시 세우기·pagehide에서 함께 버린다.
  keep('hangulMigration',null,()=>{const port=hangulMigrationPort;hangulMigrationPort=null;port?.dispose();});
  const ui=keep('ui',createLifeExperience({home,getProgress:()=>life.progress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav}),onSummary:()=>{education?.refresh();queueMicrotask(repaintWritingRow);},onNext:()=>education?.next(),presentation:()=>education?.presentation(),
@@ -380,13 +391,14 @@ function mountLifeLearning({owner,keep}){
   leadRows:print=>education?.examType?.()==='topik2'?writingRow(print):'',
   moreRows:print=>[education?.planRow?.(print),education?.examType?.()==='topik2'?'':writingRow(print),speakingModule?.speakingRow?.(print),reminders?.askMarkup()].filter(Boolean).join(''),positionTotal:()=>education?.positionTotal?.(),
   // 배움의 거울(Atlas × WORLD D, 11-08 — life-trail.mjs): 생활 화면이 먼저 서므로 학습 호스트는 늦게 읽는다.
-  learning:{coach:()=>education?.lifeLearning?.coach()??null,prepare:()=>education?.lifeLearning?.prepare(),life:worldLearning.life}}));
+  learning:{coach:()=>education?.lifeLearning?.coach()??null,prepare:()=>education?.lifeLearning?.prepare(),life:worldLearning.life,...(lifeNext?{next:lifeNext}:{})}}));
  // 공개판(계정 모드)의 손님은 GUEST_GAMES와 체험이 남은 게임만 바로 열고 나머지는 로그인부터 연다(launchGame). 추천도 같은 목록을 써야 로그인 창을 맴돌지 않는다.
  // 「내 성향」 답(life.answers)은 이 주인의 것이 늦게 와도 그때부터 쓴다.
- const createPlan=options=>createWorldLearningPlan({...options,answers:life.answers,openGames:operating&&!client.snapshot?guestGames():null});
+ // 새 길이면 생활 복습 후보도 진도에 넣은 판정(lifeDue)에서 고른다(§19-1 ⑤ M8 — 확인 중이면 복습 후보 없음).
+ const createPlan=options=>createWorldLearningPlan({...options,answers:life.answers,openGames:operating&&!client.snapshot?guestGames():null,...(lifeDue?{due:lifeDue.judge(options.progress,Number.isFinite(+options.now)?+options.now:Date.now())}:{})});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
  education=keep('education',createWorldEducation({home,getProgress:()=>life.progress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,responses:responsesOn,
-  atlasNext:atlasNextOn?keep('atlasNext',lazyAtlasNext(owner)):null,
+  atlasNext,
   readHangulProgress:operating&&owner!=='guest'?async()=>{
    const port=await account.prepareHangulProgress({storage:localStorage,target:window});
    try{return port.read();}finally{port.dispose();}
@@ -424,8 +436,11 @@ function mountLifeLearning({owner,keep}){
 function reminderInputs(){
  const progress=life.progress;if(!progress)return null;
  const snapshot=progress.exportSnapshot(),examPlan=life.education?.metrics?.().plan?.examPlan||null,exam=examPlan?.exam||null;
- const reviews=Object.values(snapshot.reviews||{}).map(review=>review?.dueAt).filter(Number.isFinite);
- return {reviews,exam,examPlan,studyTimes:studyTimes(snapshot),hangulStage:snapshot.hangul?.answer==='new',hasReturn:reviews.length>0||typeof exam?.date==='string'&&exam.date.length===10};
+ // 새 길(4-2 — §19-1 ⑤): 진도에 넣은 「돌아온 복습」 판정의 때들(돌아온 것 · 앞으로 열릴 것). 확인 중이면 복습 알림을 잡지 않는다 — 엔진이 되면 진도가 다시 부른다.
+ // 판정이 없으면 지금 판 그대로(진도의 dueAt). 「돌아올 것이 있는가」는 두 판 모두 복습 기록이 있는가다.
+ const judged=life.lifeDue?.judge(snapshot,Date.now())??null,records=Object.values(snapshot.reviews||{});
+ const reviews=judged?(judged.state==='engine'?[...judged.times]:[]):records.map(review=>review?.dueAt).filter(Number.isFinite);
+ return {reviews,exam,examPlan,studyTimes:studyTimes(snapshot),hangulStage:snapshot.hangul?.answer==='new',hasReturn:(judged?records.length>0:reviews.length>0)||typeof exam?.date==='string'&&exam.date.length===10};
 }
 // 공부한 시각(「그날 이미 공부했는지」와 공부하던 시간대): 학습 기록(Trail)의 답 · 생활 레슨·복습의 답 · 쓰기 점검.
 // 학습 기록은 읽기 전용 코치로 읽는다(쓰지 않는다 — world-reminder-device.mjs createTrailTimes, 게임 판이 닫혀 코치가 끊기면 다시 만든다).

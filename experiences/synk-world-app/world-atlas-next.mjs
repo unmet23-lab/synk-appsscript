@@ -17,6 +17,8 @@ export const SWITCH_ASK_MS = 4000;
 export const GUEST_COUNT_MS = 8000;
 // 옮기기 물음 · 로그아웃 표지가 여는 계정 코치의 은행(손님 저장소를 옆으로 열 지도 — 옛 기록 옮기기의 색인).
 const MOVE_BANKS = ['topik-items'];
+// 생활 화면의 은행(4-2 — 생활 원고 132문항, 경험 world-life, 단계 4 §19-1 ①).
+const LIFE_BANKS = ['world-life'];
 
 // 옛 기기 기록 읽개(계획 §1 #22 — 손님 호스트가 열 때마다 부른다). 옛 로그(events)와 접힌 장부(ledger)를 그대로 넘기고, 옮길 것을
 // 고르는 일(아직 안 옮긴 옛 꼴 사건 · 새로 든 장부)은 엔진(record/carry.mjs)이 한다. 못 읽으면 null — 새 길은 그대로 연다.
@@ -365,6 +367,19 @@ export function createAtlasNext({
   let disposed = false;
   let generation = 0; // 판을 다시 정할 때마다 오른다 — 앞 판에서 열기 시작한 코치는 돌려주지 않는다
   let decided = null; // 계정의 판(약속) — 다시 정하면 비운다
+  // 지금 판으로 정했던 판이 풀렸을 때 부를 함수들(§19-3 7 — 생활 · 홈은 문서를 열 때 정한 지금 판을 붙들지 않는다). lastPath는 마지막으로
+  // 정한 판의 길이다 — 지금 판 뒤에 새 길로 정해지면 알린다(연습이 다시 정한 것을 생활 화면이 모르고 지금 판으로 남지 않게 — 아르곤 A4).
+  const reopeners = new Set();
+  let lastPath = null;
+  function reopen(reason) {
+    if (disposed) return;
+    for (const fn of [...reopeners])
+      try {
+        fn({ reason });
+      } catch {
+        // 한 화면의 실패가 다른 화면의 다시 묻기를 막지 않는다
+      }
+  }
   let loaded = null;
 
   // 입구(로더) · 엔진 모듈. 엔진은 로더의 SynkAtlas.load()(코치가 받는 것과 같은 약속) — 계기 · 저장소 이름(storeName)을 엔진에서 받는다.
@@ -399,10 +414,19 @@ export function createAtlasNext({
   function decide() {
     if (decided) return decided;
     const at = generation;
-    const deciding = decidePath().catch(error => {
-      if (decided === deciding && generation === at) decided = null;
-      return settled(OLD(failCode(error)));
-    });
+    const deciding = decidePath()
+      .catch(error => {
+        if (decided === deciding && generation === at) decided = null;
+        return settled(OLD(failCode(error)));
+      })
+      .then(plan => {
+        if (generation !== at) return plan;
+        const was = lastPath;
+        lastPath = plan.path;
+        // 지금 판 뒤에 새 길로 정해졌다(계정을 못 읽은 일시 실패 뒤 다시 읽음 등) — 지금 판으로 남은 면이 다시 묻게 알린다.
+        if (was === 'old' && plan.path !== 'old') reopen('decided');
+        return plan;
+      });
     decided = deciding;
     return deciding;
   }
@@ -495,7 +519,10 @@ export function createAtlasNext({
       if (!Number.isSafeInteger(revision) || typeof line.transport !== 'function') return;
       if ((await askSwitch(line.transport(revision), switchAskMs)) === 'on') {
         writeMark(store, owner, { off: false });
-        if (!disposed && at === generation) decided = null;
+        if (!disposed && at === generation) {
+          decided = null;
+          reopen('switch'); // 꺼짐 표지 뒤 켜짐 — 지금 판으로 남은 면이 다시 묻는다(§19-3 7)
+        }
       }
     } catch {
       // 다음 시작에 다시 묻는다
@@ -581,6 +608,7 @@ export function createAtlasNext({
     if (decided && generation === at) {
       decided = Promise.resolve(OLD(first.code ?? 'FIRST_SYNC'));
       lowered = at;
+      lastPath = 'old';
     }
     note('load', { ok: false, code: `PATH_${first.code ?? 'FIRST_SYNC'}`.slice(0, 40) });
     return false;
@@ -595,17 +623,18 @@ export function createAtlasNext({
     if (lowered === at && generation === at) {
       lowered = null;
       decided = null;
+      reopen('lowered'); // 낮춘 판 되돌림 — 지금 판으로 남은 면이 다시 묻는다(§19-3 7)
     }
     return true;
   }
 
   // 입구 받기 · 코치 만들기 · 준비 — 어디서 실패해도 계기에 원인을 남기고 null(셸은 지금 판으로 간다).
-  async function open(banks, plan, at) {
+  async function open(banks, plan, at, gameId) {
     let made = null;
     try {
       const { coach } = await entry();
       made = coach({
-        gameId: 'world-practice',
+        gameId,
         banks,
         // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
         words: true,
@@ -633,11 +662,12 @@ export function createAtlasNext({
     return made;
   }
 
-  function coachFor(plan, banks) {
-    const key = `${plan.path}:${plan.revision ?? 0}:${banks.join(',')}`;
+  // gameId: 판 번호 · 도움의 contentRef · 단계 5 판 비교가 읽는 경험 이름(짧은 연습 world-practice · 생활 world-life — §19 M9).
+  function coachFor(plan, banks, gameId = 'world-practice') {
+    const key = `${plan.path}:${plan.revision ?? 0}:${gameId}:${banks.join(',')}`;
     if (!coaches.has(key)) {
       const at = generation;
-      const opening = open(banks, plan, at).then(made => {
+      const opening = open(banks, plan, at, gameId).then(made => {
         if (made && (at !== generation || disposed)) {
           made.dispose(); // 여는 사이에 판을 다시 정했다 — 앞 판의 코치는 돌려주지 않는다
           return null;
@@ -680,6 +710,25 @@ export function createAtlasNext({
     // 것만 올리기의 답으로 안다(넘친 #18 — 앞 판 코치로 연 다음 연습의 첫 답이 앞 판 저장소에만 남아 버려지던 것).
     redecide(reason = 'account') {
       if (!disposed && account) retire(reason);
+    },
+    // 생활 화면의 코치(4-2 — 은행 world-life · 경험 world-life, §19-1 ①). 짧은 연습과 같은 판 정하기 · 같은 호스트(저장소)이고,
+    // 새 길 문서의 시작 때 셸이 미리 연다(M7 — 「돌아온 복습」 판정이 홈의 첫 그림부터 엔진을 읽게). 지금 판이면 null.
+    async lifeCoach() {
+      if (disposed) return null;
+      let plan = account ? await decide() : GUEST;
+      if (plan.path === 'device' && !disposed && (await deviceStale(plan))) {
+        retire('account');
+        plan = await decide();
+      }
+      if (disposed || plan.path === 'old') return null;
+      return coachFor(plan, LIFE_BANKS, 'world-life');
+    },
+    // 지금 판으로 정했던 판이 풀렸을 때(지금 판 → 새 길일 수 있음) 부를 함수 — 생활 · 홈이 판을 다시 묻는다(§19-3 7 — 세 갈래: 계정을 못
+    // 읽은 일시 실패 뒤 다시 읽음 · 낮춘 판 되돌림 · 꺼짐 표지 뒤 켜짐). retired(새 길 → 다시 정함)의 짝이다. 돌려준 함수로 끊는다.
+    reopened(fn) {
+      if (typeof fn !== 'function' || disposed) return () => {};
+      reopeners.add(fn);
+      return () => reopeners.delete(fn);
     },
     // 판을 다시 정해 그 코치를 닫을 때 부를 함수(연습 화면이 안내 한 줄과 함께 닫히게). 돌려준 함수로 끊는다.
     retired(made, fn) {
@@ -771,6 +820,8 @@ export function createAtlasNext({
         aside?.close();
       }
     },
+    // 계기에 남긴다(생활 판 겉 · 판정 — 4-2). 엔진을 받기 전이면 모아 두었다가 넘긴다.
+    note,
     // 계기 요약(수 · 코드 · 시각만) — 엔진을 받기 전이면 모아 둔 것.
     health: () => health?.snapshot?.() ?? { early: early.map(([kind, outcome]) => ({ kind, ...outcome })) },
     dispose() {
@@ -779,6 +830,7 @@ export function createAtlasNext({
       for (const opening of coaches.values()) void opening.then(made => made?.dispose());
       coaches.clear();
       watchers.clear();
+      reopeners.clear();
     },
   };
 }

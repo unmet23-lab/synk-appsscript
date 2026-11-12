@@ -20,6 +20,7 @@ import { storeExists } from './stores.mjs';
 
 export { COACH_METHODS } from './methods.mjs';
 
+const DAY_MS = 86_400_000;
 const SET_KINDS = ['short', 'diagnostic', 'mock'];
 const HELD_CODES = new Set([REASON_CODES.capped, REASON_CODES.stubborn]);
 const fail = (code, message) =>
@@ -336,6 +337,9 @@ export function createCoach(options = {}) {
             due: memory.isDue(line, now),
             recall: memory.retrievability(line, now),
             lastAt: line.lastAt,
+            // 다음에 돌아올 때 — 떠올릴 확률이 목표 아래로 내려오는 때(같은 자리 6시간보다 이르지 않고 최대 간격보다 늦지 않다).
+            // 생활 화면 · 알림이 「다음 복습은 ○일쯤」을 이 값으로 낸다(단계 4 §19-1 ⑤ F).
+            dueAt: line.lastAt + memory.intervalDays(line) * DAY_MS,
           })),
         storage: {
           available: true,
@@ -345,6 +349,9 @@ export function createCoach(options = {}) {
           pending: state.host.pendingCount(),
           unsent: state.host.trail.unsent().length,
           sync: state.host.syncStatus(),
+          // 보기가 아무것도 얹지 못하는 동안(판 묶음이 다른 요약 · 서버가 누른 사건) — 위 단위 · 능력 줄이 아직 내 답을 다 담지 않았다.
+          // 제품의 「돌아온 복습」은 그동안 「확인 중」이다(단계 4 §19-1 ⑤ M7).
+          waiting: view.waitAll === true,
         },
       };
     },
@@ -529,6 +536,22 @@ export function createCoach(options = {}) {
         ...entry,
         why: entry.why ? { ...entry.why, line: say(entry.why, opts) } : null,
       }));
+    },
+
+    // 지도 문항의 단위(제품이 단위를 짓지 않는다 — 4-2 생활의 「복습 → 생활 단위」, 단계 4 §19-3 · 설계 주인 11-13). 받는 값은 열쇠 글자나
+    // { itemKey }. 지도 차례 그대로(첫째 = 주 단위) [{ unit, kind, label }]의 얼린 사본 — unit은 due() · summary().units[]의 unit과 같은 이름이라
+    // 그대로 맞댄다. 태그 없는 문항은 계열 단위 그대로({ unit: 'family:…', kind: 'family', label: null }), 생활 단위는 kind로 가른다(제품이 앞머리를
+    // 잘라 보지 않는다). 이 코치가 받은 은행의 문항만 안다(lifeCoach는 world-life) — label은 그 단위의 이름이 실린 조각을 받았을 때만 있다(낱말은
+    // null일 수 있다). 지도에 없는 문항이면 빈 목록, 준비 전에는 다른 메서드처럼 NOT_READY(받는 동안 모든 복습이 「생활 단위 없음」으로 읽히지 않게).
+    itemUnits(ref) {
+      live();
+      const key = typeof ref === 'string' ? ref : ref?.itemKey;
+      const item = typeof key === 'string' ? state.map.item(key) : null;
+      return Object.freeze(
+        (item?.units ?? []).map(unit =>
+          Object.freeze({ unit, kind: state.map.unit(unit)?.kind ?? null, label: label(unit) }),
+        ),
+      );
     },
 
     // 돌아온 단위 — 늘 호스트 보기에서 읽는다(같은 문서 다른 코치의 답 · 본인 말까지, Fable 설계 P2-1 다).

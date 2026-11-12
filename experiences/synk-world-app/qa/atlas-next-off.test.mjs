@@ -21,7 +21,10 @@ test('셸은 기능이 켜졌을 때만 새 길 입구를 동적으로 부르고
  const shell=read('app-shell.mjs');
  assert.match(shell,/const atlasNextOn=connection\.features\?\.atlasNext===true;/);
  // 기능이 꺼지면 null — 켜졌을 때만 주인 수명(keep)에 걸어 둔 새 길 입구를 넘긴다(주인이 바뀌면 닫힌다, 화면 검수 카본 A6).
- assert.match(shell,/atlasNext:atlasNextOn\?keep\('atlasNext',lazyAtlasNext\(owner\)\):null/);
+ // 4-2(§19-1 ⑤ M7): 입구는 생활 화면보다 먼저 서고, 생활 판정(lifeDue)도 입구가 있을 때만 — 꺼진 판은 판정을 넣지 않아 지금 판 그대로다.
+ assert.match(shell,/const atlasNext=atlasNextOn\?keep\('atlasNext',lazyAtlasNext\(owner\)\):null;/);
+ assert.match(shell,/const lifeDue=atlasNext&&progress&&/);
+ assert.match(shell,/\n  atlasNext,\r?\n/,'학습 화면에도 같은 입구');
  assert.equal(shell.match(/import\(['"]\.\/world-atlas-next\.mjs['"]\)/g)?.length,1,'새 길 입구를 부르는 곳은 lazyAtlasNext 하나');
  for(const file of ['app-shell.mjs','world-learning-ui.mjs','world-position-ui.mjs','world-reading-practice.mjs','operating-mode.mjs'])
   assert.doesNotMatch(read(file),/^import[^;]*(world-atlas-next|world-practice-next|\/atlas\/)/m,`${file}이 새 길을 정적으로 부르지 않는다`);

@@ -131,6 +131,8 @@ export function createLifeSession({identity,openPort,createProgress,prepareHost=
   get ui(){return part('ui');},get education(){return part('education');},get trail(){return part('trail');},get reminders(){return part('reminders');},
   // Atlas 새 길 입구(기능 atlasNext — app-shell lazyAtlasNext): 기기 기록 물음 · 로그아웃 표지가 이 주인의 것을 읽는다.
   get atlasNext(){return part('atlasNext');},
+  // 새 길의 「돌아온 복습」 판정(4-2 — app-shell watchLifeDue): 알림 입력이 진도와 같은 판정을 읽는다.
+  get lifeDue(){return part('lifeDue');},
   // 저장 충돌 확인 창을 이 기록에서 이미 띄웠는지(새 기록·remount마다 처음으로 돌아간다).
   get recoveryShown(){return !!current?.recoveryShown;},set recoveryShown(value){if(current)current.recoveryShown=!!value;},
  });

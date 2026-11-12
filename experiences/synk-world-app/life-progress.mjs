@@ -211,15 +211,23 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   if(!duplicate||state.activeLessonId===id)commit(next);
   return {id,completed:true,duplicate,completedAt:next.lessons[id].completedAt,totalCompleted:Object.values(state.lessons).filter(v=>v.completedAt!==null).length};
  }
- function dueReviews(limit=100,horizon=now()){check();return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
+ // 새 길(atlasNext)의 「돌아온 복습」 판정(단계 4 §19-1 ⑤ — world-life-next.mjs lifeDue). 넣은 것이 없으면 null — 지금 판(dueAt 간격표) 그대로.
+ // 판정은 { state:'checking' }(코치가 아직 없거나 보기가 얹지 못함 — 수 · 날짜를 그리지 않는다) 또는 { state:'engine', ids, nextAt, times, upcoming }.
+ let dueSource=null;
+ // 판정이 null이면 지금 판(이 문서는 지금 판으로 정해짐 · 판정을 거둠), 던지거나 엔진 꼴이 아니면 확인 중.
+ function judged(){if(!dueSource)return null;let value;try{value=dueSource(state,now());}catch{value=undefined;}if(value===null)return null;if(value?.state==='engine'&&Array.isArray(value.ids))return {...value,ids:value.ids.filter(id=>state.reviews[id])};return {state:'checking',ids:[],nextAt:null,times:[],upcoming:[]};}
+ function dueReviews(limit=100,horizon=now()){check();const engine=judged();if(engine)return engine.ids.slice(0,Math.max(0,Math.min(100,limit))).map(id=>clone(state.reviews[id]));return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
  // soon: a lesson result may open its just-missed expressions in a new scene right away. Those are
  // due at most a minute after the answer, so only reviews coming due within that minute are added.
- function startReview(limit=6,preferredId=null,allowedIds=null,{soon=false}={}){
+ // ids(새 길): 고른 복습을 그대로 연다 — 간격 거르기를 건너뛴다(튜터 「이 표현 같이 연습」 · 레슨 결과의 「새 장면으로 다시 보기」).
+ function startReview(limit=6,preferredId=null,allowedIds=null,{soon=false,ids:chosen=null}={}){
   check();const existing=state.activeReview;
   if(existing&&existing.ids.some(id=>!existing.answers[id]))return clone(existing);
   if(allowedIds!==null&&(!Array.isArray(allowedIds)||allowedIds.length>100||new Set(allowedIds).size!==allowedIds.length||allowedIds.some(id=>!safeId(id)||!state.reviews[id])))throw TypeError('Invalid review selection');
-  if(soon&&allowedIds===null)throw TypeError('An early review needs its expressions');
-  const due=dueReviews(100,now()+(soon?MINUTE:0)).filter(row=>allowedIds===null||allowedIds.includes(row.id));if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
+  if(chosen!==null&&(!Array.isArray(chosen)||!chosen.length||chosen.length>100||new Set(chosen).size!==chosen.length||chosen.some(id=>!safeId(id)||!state.reviews[id])))throw TypeError('Invalid review selection');
+  if(soon&&allowedIds===null&&chosen===null)throw TypeError('An early review needs its expressions');
+  const engine=chosen===null?judged():null;
+  const due=chosen!==null?chosen.map(id=>clone(state.reviews[id])):engine?(soon&&allowedIds!==null?allowedIds.map(id=>clone(state.reviews[id])):dueReviews(100).filter(row=>allowedIds===null||allowedIds.includes(row.id))):dueReviews(100,now()+(soon?MINUTE:0)).filter(row=>allowedIds===null||allowedIds.includes(row.id));if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
   const next=clone(state),ids=due.slice(0,Math.max(0,Math.min(100,limit))).map(v=>v.id);if(!ids.length)return null;
   next.activeReview={id:uuid(),startedAt:now(),ids,answers:{},pendingHelp:{}};commit(next);return clone(next.activeReview);
  }
@@ -365,13 +373,14 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   // the player back to the first untouched pack. Existing record IDs stay intact.
   const cafeNext=latest&&isCafeLesson(latest.id)?nextVisit||ordered.find(l=>l.packId==='cafe'&&state.lessons[l.id]?.completedAt==null):null;
   const next=active||cafeNext||ordered.find(lesson=>state.lessons[lesson.id]?.completedAt==null)||null;
-  const due=dueReviews(),total=ordered.length,completed=ordered.filter(lesson=>state.lessons[lesson.id]?.completedAt!=null).length;
+  const engine=judged(),due=dueReviews(),total=ordered.length,completed=ordered.filter(lesson=>state.lessons[lesson.id]?.completedAt!=null).length;
   // Only a lesson with an answered question is 「하던 자리」. One merely opened stays the next lesson,
   // but a returned review is not hidden behind it.
   const resume=!!active&&Object.keys(state.lessons[active.id]?.answers||{}).length>0;
   return {owner,completed,total,allCompleted:total>0&&completed===total,nextLesson:next?{...next,progress:lessonState(next.id)}:null,resume,
    cafe:{completed:visits.filter(l=>state.lessons[l.id]?.completedAt!=null).length,total:visits.length,nextNumber:next&&isCafeLesson(next.id)?CAFE_LESSON_IDS.indexOf(next.id)+1:null},
-   dueCount:due.length,dueExpressions:dueExpressionCount(due),dueReviews:due.slice(0,6),nextReviewAt:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
+   dueCount:due.length,dueExpressions:engine?due.length:dueExpressionCount(due),dueReviews:due.slice(0,6),nextReviewAt:engine?engine.nextAt??null:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
+   ...(engine?{dueState:engine.state,dueIds:[...engine.ids],dueTimes:[...(engine.times??[])],dueUpcoming:(engine.upcoming??[]).map(row=>({...row}))}:{}),
    packs:packs.map(pack=>{const ids=(pack.lessons||[]).map(value=>typeof value==='string'?value:value.id);return {id:pack.id,completed:ids.filter(id=>state.lessons[id]?.completedAt!=null).length,total:ids.length};}),status:status()};
  }
  async function flush(){
@@ -379,6 +388,8 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
  const api=Object.freeze({arrival,setArrival,key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,displayLanguage,setDisplayLanguage,importRecords,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
-  exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
+  exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register,
+  // 새 길의 판정을 넣는다(app-shell — 깃발이 켜진 문서만). null이면 지금 판으로 돌아간다. 판정이 바뀌면 화면에 알린다.
+  setDueSource(source){dueSource=typeof source==='function'?source:null;emit();}});
  return api;
 }

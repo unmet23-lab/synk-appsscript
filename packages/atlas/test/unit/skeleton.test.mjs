@@ -29,6 +29,7 @@ const DESIGN_METHODS = [
   'tell',
   'synced',
   'guestRecords',
+  'itemUnits',
 ];
 
 test('모듈 자리 여섯은 채울 단계와 함께 있다(설계 §11)', async () => {

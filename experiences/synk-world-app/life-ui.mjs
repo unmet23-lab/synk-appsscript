@@ -43,6 +43,17 @@ const dayLabel=at=>{
  if(day(at)===day(now+86400000))return t('life.when.tomorrow',{time});
  return formatDate(at,{month:'short',day:'numeric'});
 };
+// 새 길(4-2 — 단계 4 §19-1 ⑤ F)의 「다음 돌아올 때」는 엔진의 예상이라 날까지만, 예상으로 말한다 — 오늘 중 · 내일쯤 · ○월 ○일쯤(분 · 시각은 말하지 않는다).
+// 문장(「다음 복습 {date}」 · 「{date}에 열려요」)은 지금 판과 같고 {date} 자리만 다르다.
+const dayOnly=at=>{
+ if(!Number.isFinite(at))return '';
+ const now=Date.now(),day=value=>new Date(value).toDateString();
+ if(at<=now||day(at)===day(now))return t('life.when.todayDay');
+ if(day(at)===day(now+86400000))return t('life.when.tomorrowDay');
+ return t('life.when.aroundDay',{date:formatDate(at,{month:'short',day:'numeric'})});
+};
+// 진도에 새 길 판정이 들어 있으면(s.dueState) 날까지, 아니면 지금 판 그대로.
+const whenOf=(s,at)=>s?.dueState?dayOnly(at):dayLabel(at);
 // 복습에서 「언제 · 어디서」 배운 표현인지 붙인다. 시각은 그때그때 계산한다.
 const ago=at=>{if(!Number.isFinite(at))return '';const minutes=Math.floor(Math.max(0,Date.now()-at)/60000);if(minutes<1)return t('life.ago.now');if(minutes<60)return t('life.ago.minutes',{n:minutes});const hours=Math.floor(minutes/60);return hours<24?t('life.ago.hours',{n:hours}):t('life.ago.days',{n:Math.floor(hours/24)});};
 const placeAt=packId=>hasString(`life.place.${packId}`)?t(`life.place.${packId}`):'';
@@ -81,9 +92,16 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 거울 부품(learning.life = worldLearning.life, life-trail.mjs)은 계정 묶음이 넘긴다 — 이 화면 모듈은 브라우저가 묶지 않고 바로 읽으므로
  // Strata(CJS) · 검수 판정(JSON)을 직접 부르지 않는다. 부품이 없으면 거울 없이 레슨만 간다.
  const life=learning?.life&&typeof learning.life.createLifeTrail==='function'?learning.life:null;
- const trail=life?life.createLifeTrail({coach:()=>{try{return learning?.coach?.()||null;}catch{return null;}},snapshot:()=>getProgress().exportSnapshot()}):NO_TRAIL;
+ // 새 길(atlasNext — 4-2, 단계 4 §19-1 ①): 셸이 learning.next를 넘긴 문서는 새 판 겉(world-life-next.mjs)이 새 코치(은행 world-life)로 적고
+ // 옛 거울은 만들지 않는다(한 답을 두 기록부에 쓰지 않는다). 판이 바뀌어 코치가 닫히면 이 화면도 안내 한 줄과 함께 닫는다.
+ const nextPath=learning?.next&&typeof life?.createLifeNext==='function'?learning.next:null;
+ const trail=nextPath?life.createLifeNext({coach:()=>nextPath.coach(),watch:(made,fn)=>nextPath.retired(made,fn),snapshot:()=>getProgress().exportSnapshot(),note:(axis,detail)=>nextPath.note?.(axis,detail),onRetired:()=>retiredClose()})
+  :life?life.createLifeTrail({coach:()=>{try{return learning?.coach?.()||null;}catch{return null;}},snapshot:()=>getProgress().exportSnapshot()}):NO_TRAIL;
  const lessonSlot=(attempt,id)=>life?life.lessonSlot(attempt,id):null,reviewSlot=(run,id)=>life?life.reviewSlot(run,id):null;
- const prepareLearning=()=>{try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}};
+ // 새 길은 옛 코치를 준비하지 않는다 — 생활 코치는 셸이 문서 시작 때 연다(§19-1 ⑤ M7).
+ const prepareLearning=()=>{if(nextPath)return;try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}};
+ // 판이 바뀌어 생활 코치가 닫혔다(새 길) — 열린 레슨 · 복습 화면이면 안내 한 줄과 함께 닫는다(진도는 남아 다시 열면 이어진다, §19-1 ①).
+ function retiredClose(){if(ended||!shown)return;try{void getProgress().flush().catch(()=>{});}catch{}home.closePanel();updateHome();home.toast(t('life.next.changed'));}
  const engineItem=(lesson,question,review=false)=>life?life.lifeItem({lesson,question,review}):null;
  const lessonOfQuestion=id=>LESSONS.find(lesson=>lesson.questions.some(q=>q.id===id))||null;
  // 지금 화면의 판(레슨 시도 · 복습 회차 · 문항).
@@ -100,7 +118,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 저장이 던지면 이 줄에 오지 않는다(레슨은 그 오류를 알린다).
  function mirrorAnswer(slot,saved,stored,correctId){
   if(!saved||saved.duplicate!==false||!stored||typeof stored.correct!=='boolean')return;
-  trail.answer(slot,{correct:stored.correct,choiceId:stored.choiceId??null,correctId,helped:stored.helped===true});
+  // helpBy: 설정(「한 단계씩」)이 스스로 편 도움이면 'setting' — 새 길은 그 답을 시범 답으로 적는다(§19-1 ② D). 옛 거울은 읽지 않는다.
+  trail.answer(slot,{correct:stored.correct,choiceId:stored.choiceId??null,correctId,helped:stored.helped===true,helpBy:stored.helped===true?stored.helpSource==='setting'?'setting':'user':null});
  }
  // 한 자리에서 한 시간을 넘기면 「잠깐 쉬어도 돼요」를 한 번만 보여 준다(10분 넘게 자리를 비우면 다시 센다).
  let sittingSince=Date.now(),hiddenSince=0,restKey=null;
@@ -132,7 +151,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    const snapshot=p.exportSnapshot(),record=Object.values(snapshot.reviews).find(r=>r.questionId===id);
    if(!record||record.lapses<=0||record.streak!==0)return false;
    exposedTransfers.add(record.id);guideTransfer(record.questionId);
-   const run=record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
+   // 새 길은 그 표현 하나만 연다(간격 · 판정을 건너뜀 — 제품 간격표로 고른 복습 판을 만들지 않는다, §19-1 ⑤ M5).
+   const run=nextPath?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
    // Seeing this same transfer before finishing an active review is assistance.
    if(run?.ids.includes(record.id)&&!run.answers[record.id])p.markReviewHelp(record.id);
    return true;
@@ -264,11 +284,11 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    return {kind:'lesson',packId:pack.id,html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print(pack.id)}<small class="life-poster-label">${started?'CONTINUE':'UP NEXT'} · PACK ${pad(packIndex+1)}</small><strong class="life-poster-word" lang="ko">${escape(lesson.title)}</strong><span class="life-poster-sub">${escape(packTitle(pack))} · ${phaseName(lesson.type)}</span>${meter(index,total,`${pad(index+1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson.id}">${t(started?'life.continue':'life.start')} <span aria-hidden="true">→</span></button></section>`};
   }
   if(s.dueCount)return {kind:'review',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print('review')}<small class="life-poster-label">REVIEW · ${pad(backCount(s))}</small><strong class="life-poster-word">${t('life.backWord')}</strong><span class="life-poster-sub">${t('life.backSub',{n:backCount(s)})}</span><button class="felt-button" data-life-review>${t('life.reviewNow')} <span aria-hidden="true">→</span></button></section>`};
-  const future=Number.isFinite(s.nextReviewAt)?dayLabel(s.nextReviewAt):'';
+  const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'';
   return {kind:'rest',html:`<section class="life-poster life-now" aria-label="${t('life.upNext')}">${print('complete')}<small class="life-poster-label">ALL PACKS · ${s.completed} / ${s.total}</small><strong class="life-poster-word">${t('life.allPacksWord')}</strong><span class="life-poster-sub">${future?t('life.nextReviewOpens',{date:escape(future)}):t('life.pickPackAgain')}</span><button class="felt-button" data-life-review>${t('life.reviewSchedule')} <span aria-hidden="true">→</span></button></section>`};
  }
  function reviewRow(s){
-  const future=Number.isFinite(s.nextReviewAt)?dayLabel(s.nextReviewAt):'';
+  const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'';
   return `<button class="life-row" data-life-review>${print('review','life-row-print')}<span class="life-row-copy"><strong>${t('life.review')}</strong><small>${s.dueCount?t('life.reviewBack',{n:backCount(s)}):t('life.reviewNext',{date:escape(future)})}</small></span>${s.dueCount?`<span class="life-row-state"><i class="w-led check"></i>${t('life.count',{n:backCount(s)})}</span>`:''}</button>`;
  }
  function packs(){if(!ensureReadable())return;place='life';context=null;const s=summary(),now=nowPoster(s),hasReviews=s.dueCount>0||Number.isFinite(s.nextReviewAt);
@@ -294,7 +314,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const episodes=PACKS.map(p=>({pack:p,episode:p.lessons.find(l=>l.type==='story')})).filter(e=>e.episode);
   paint(t('life.stories'),`<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print('stories')}<small class="life-poster-label">STORIES · ${pad(episodes.length)}</small><strong class="life-poster-word">${t('life.stories')}</strong><span class="life-poster-sub">${t('life.storiesSub')}</span></section></div><section class="life-list" aria-label="${t('life.stories')}"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({pack,episode})=>lessonRow(episode,0,{className:'life-story-card',lead:print(pack.id,'life-row-print'),kicker:packTitle(pack),labels:[t('life.state.readAgain'),t('life.state.reading'),'']})).join('')}</div></section><section class="life-list" aria-label="${t('life.cafeVisits')}"><div class="life-section-head"><p class="life-section-label">CAFE VISITS</p><small class="life-library-note">${t('life.visitsCount',{n:CAFE_VISITS.length})}</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);}
  function pack(id){if(!ensureReadable())return;const value=packById(id);if(!value)return;place=id==='cafe'?'cafe':'life';context=null;
-  const p=getProgress(),s=summary(),hasReviews=s.dueCount>0||Number.isFinite(s.nextReviewAt),activeId=p.exportSnapshot().activeLessonId,nextVisit=CAFE_VISITS.find(v=>v.id===activeId)||CAFE_VISITS.find(v=>p.lessonState(v.id).status==='started')||CAFE_VISITS.find(v=>p.lessonState(v.id).status!=='completed')||CAFE_VISITS[0],visited=CAFE_VISITS.filter(v=>p.lessonState(v.id).status==='completed').length;
+  const p=getProgress(),s=summary(),hasReviews=s.dueCount>0||Number.isFinite(s.nextReviewAt)||s.dueState==='checking'&&Object.keys(p.exportSnapshot().reviews||{}).length>0,activeId=p.exportSnapshot().activeLessonId,nextVisit=CAFE_VISITS.find(v=>v.id===activeId)||CAFE_VISITS.find(v=>p.lessonState(v.id).status==='started')||CAFE_VISITS.find(v=>p.lessonState(v.id).status!=='completed')||CAFE_VISITS[0],visited=CAFE_VISITS.filter(v=>p.lessonState(v.id).status==='completed').length;
   const lessons=value.lessons.filter(l=>id!=='cafe'||!isCafeLesson(l.id)),index=PACKS.findIndex(p=>p.id===id),[word,label]=packWords[id]||[value.title,id.toUpperCase()],done=packDone(value);
   const cafe=id==='cafe'?`<section class="cafe-pack-preview"><img src="${asset('home/cafe-room-v1.webp')}" alt="${t('life.cafeAlt')}" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape(nextVisit.title)}</h3><p>${escape(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status==='started'?'life.continue':nextVisit.number===1?'life.cafeEnter':'life.cafeNext')} <span aria-hidden="true">→</span></button></div></section><section class="life-list" aria-label="${t('life.cafeVisits')}"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited?t('life.visited',{done:visited,total:CAFE_VISITS.length}):t('life.visitsCount',{n:CAFE_VISITS.length})}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>`:'';
   const heading=id==='cafe'?`<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t('life.cafeBefore')}</small></div><p class="life-pack-description">${escape(packSub(value))}</p></div>`
@@ -458,13 +478,23 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const at=snapshot.lessons[record.lessonId]?.answers?.[record.questionId]?.at??record.lastAt;
   return [ago(at),placeAt(record.packId)].filter(Boolean).join(' · ');
  }
- function review(){if(!ensureReadable())return;place='life';context=null;lastFeedback=null;helped=false;helpBy=null;reviewRun=null;const s=summary(),future=Number.isFinite(s.nextReviewAt)?dayLabel(s.nextReviewAt):'',snapshot=getProgress().exportSnapshot();
+ function review(){if(!ensureReadable())return;place='life';context=null;lastFeedback=null;helped=false;helpBy=null;reviewRun=null;const s=summary(),future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'',snapshot=getProgress().exportSnapshot(),checking=s.dueState==='checking';
   const items=reviewRowsByExpression(s.dueReviews.map(r=>{const l=lessonById(r.lessonId),q=l?.questions.find(x=>x.id===r.questionId);return {korean:expressionOf(l,q).korean,origin:reviewOrigin(r,snapshot)};}));
   const backList=reviewListShape(items);
   // 아직 열린 복습이 없으면 곧 돌아올 표현과 그때를 보인다 — 포스터 한 장만 남은 빈 화면이 「잊을 때쯤 다시」를 가렸다(11-08 프론트 검수).
   // 같은 표현이 레슨 · 이야기에서 따로 잡혀도 한 번만(가장 이른 때), 여섯 개까지.
   const upcoming=[];
-  if(!s.dueCount){
+  // 새 길: 엔진이 낸 「다음 돌아올 때」의 단위마다 복습 하나(lifeDue upcoming) — 날까지만. 확인 중에는 목록을 그리지 않는다.
+  if(!s.dueCount&&s.dueState==='engine'){
+   const metKorean=new Set();
+   for(const row of s.dueUpcoming||[]){
+    const r=snapshot.reviews?.[row.id],l=lessonById(r?.lessonId),q=l?.questions.find(x=>x.id===r.questionId),korean=q?expressionOf(l,q).korean:'';
+    if(!korean||metKorean.has(korean))continue;
+    metKorean.add(korean);upcoming.push({korean,when:dayOnly(row.at)});
+    if(upcoming.length>=6)break;
+   }
+  }
+  else if(!s.dueCount&&!s.dueState){
    const metKorean=new Set();
    for(const r of Object.values(snapshot.reviews||{}).filter(r=>Number.isFinite(r?.dueAt)&&r.dueAt>Date.now()).sort((a,b)=>a.dueAt-b.dueAt||String(a.id).localeCompare(String(b.id)))){
     const l=lessonById(r.lessonId),q=l?.questions.find(x=>x.id===r.questionId),korean=q?expressionOf(l,q).korean:'';
@@ -473,15 +503,17 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
     if(upcoming.length>=6)break;
    }
   }
-  paint(t('life.reviewTitle'),`<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print('review')}<small class="life-poster-label">REVIEW${s.dueCount?` · ${pad(backCount(s))}`:''}</small><h3 class="life-poster-word">${s.dueCount?t('life.reviewWordCount',{n:backCount(s)}):t(future?'life.reviewWordNext':'life.reviewWordNone')}</h3><p class="life-poster-sub">${s.dueCount?s.dueCount>s.dueReviews.length?t('life.reviewSubFirst',{n:s.dueReviews.length}):t('life.reviewSubScenes',{n:s.dueCount}):future?t('life.reviewSubOpens',{date:escape(future)}):t('life.reviewSubNone')}</p></section>${items.length?`<section class="life-review-list" aria-label="${t('life.backWord')}"><p class="life-section-label${listHead()}">${t(s.dueCount>s.dueReviews.length?'life.reviewFirstList':'life.backWord')}</p>${backList.origin?`<p class="life-review-origin">${escape(backList.origin)}</p>`:''}<ul>${backList.rows.map(i=>{const note=[i.origin,i.scenes>1?t('life.reviewScenes',{n:i.scenes}):''].filter(Boolean).join(' · ');return `<li><strong lang="ko">${escape(i.korean)}</strong>${note?`<small>${escape(note)}</small>`:''}</li>`;}).join('')}</ul></section>`:''}${upcoming.length?`<section class="life-review-list" data-upcoming aria-label="${t('life.comingBack')}"><p class="life-section-label${listHead()}">${t('life.comingBack')}</p><ul>${upcoming.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.when)}</small></li>`).join('')}</ul></section>`:''}${restLine('review')}</div><div class="life-actions">${s.dueCount?`<button class="felt-button" data-life-review-start>${t('life.reviewStart')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.doNextLesson')}</button>`:`<button class="felt-button" data-life-next>${t('life.doNextLesson')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-home>${t('life.toTown')}</button>`}</div>`,{type:'life-review',tutorPhase:s.dueCount?'reviewDue':future?'reviewNext':'reviewEmpty'});
+  paint(t('life.reviewTitle'),`<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print('review')}<small class="life-poster-label">REVIEW${s.dueCount?` · ${pad(backCount(s))}`:''}</small><h3 class="life-poster-word">${s.dueCount?t('life.reviewWordCount',{n:backCount(s)}):t(future||checking?'life.reviewWordNext':'life.reviewWordNone')}</h3><p class="life-poster-sub">${s.dueCount?s.dueCount>s.dueReviews.length?t('life.reviewSubFirst',{n:s.dueReviews.length}):t('life.reviewSubScenes',{n:s.dueCount}):checking?t('life.reviewChecking'):future?t('life.reviewSubOpens',{date:escape(future)}):t('life.reviewSubNone')}</p></section>${items.length?`<section class="life-review-list" aria-label="${t('life.backWord')}"><p class="life-section-label${listHead()}">${t(s.dueCount>s.dueReviews.length?'life.reviewFirstList':'life.backWord')}</p>${backList.origin?`<p class="life-review-origin">${escape(backList.origin)}</p>`:''}<ul>${backList.rows.map(i=>{const note=[i.origin,i.scenes>1?t('life.reviewScenes',{n:i.scenes}):''].filter(Boolean).join(' · ');return `<li><strong lang="ko">${escape(i.korean)}</strong>${note?`<small>${escape(note)}</small>`:''}</li>`;}).join('')}</ul></section>`:''}${upcoming.length?`<section class="life-review-list" data-upcoming aria-label="${t('life.comingBack')}"><p class="life-section-label${listHead()}">${t('life.comingBack')}</p><ul>${upcoming.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.when)}</small></li>`).join('')}</ul></section>`:''}${restLine('review')}</div><div class="life-actions">${s.dueCount?`<button class="felt-button" data-life-review-start>${t('life.reviewStart')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.doNextLesson')}</button>`:`<button class="felt-button" data-life-next>${t('life.doNextLesson')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-home>${t('life.toTown')}</button>`}</div>`,{type:'life-review',tutorPhase:s.dueCount?'reviewDue':future||checking?'reviewNext':'reviewEmpty'});
  }
+ // 새 길: 그 복습의 생활 단위가 하루 안에 다시 돌아오는가(엔진의 다음 돌아올 때 — 모르면 아니다, §19-1 ④ M4). 지금 판은 늘 아니다(글 그대로).
+ const backSoon=id=>{if(!nextPath)return false;let at=null;try{at=nextPath.nextAt?.(id)??null;}catch{at=null;}return Number.isFinite(at)&&at<=Date.now()+86400000;};
  // soon: 레슨 결과의 「새 장면으로 다시 보기」 — 방금 놓친 표현은 1분 안에 돌아오므로 그 1분을 기다리지 않는다.
  function reviewStart(lessonId=null,requestedIds=null,{soon=false}={}){prepareLearning();const p=getProgress(),ids=Array.isArray(requestedIds)&&requestedIds.length?requestedIds:null;reviewRun=p.startReview(ids?Math.min(6,ids.length):6,ids?.[0]||null,ids,{soon:soon&&!!ids});if(!reviewRun)return review();for(const id of reviewRun.ids)if(exposedTransfers.has(id)&&!reviewRun.answers[id])p.markReviewHelp(id);lastFeedback=null;helped=false;helpBy=null;renderReview();}
  function renderReview(){
   const run=getProgress().exportSnapshot().activeReview;if(!run)return review();reviewRun=run;
   const index=run.ids.findIndex(id=>!run.answers[id]);
   if(index<0){
-   summary();const snapshot=getProgress().exportSnapshot(),items=reviewRowsByExpression(run.ids.map(id=>{const r=snapshot.reviews[id],l=lessonById(r?.lessonId),q=l?.questions.find(x=>x.id===r.questionId),a=run.answers[id];return {korean:expressionOf(l,q).korean,soon:!(a&&a.correct&&!a.helped)};})).map(i=>({korean:i.korean,note:t(i.soon?'life.reviewSoon':'life.reviewRemembered'),tone:i.soon?'check':'ok'})).sort((a,b)=>(a.tone==='ok'?0:1)-(b.tone==='ok'?0:1));
+   summary();const snapshot=getProgress().exportSnapshot(),items=reviewRowsByExpression(run.ids.map(id=>{const r=snapshot.reviews[id],l=lessonById(r?.lessonId),q=l?.questions.find(x=>x.id===r.questionId),a=run.answers[id],alone=!!(a&&a.correct&&!a.helped);return {korean:expressionOf(l,q).korean,soon:!alone,again:alone&&backSoon(id)};})).map(i=>({korean:i.korean,note:t(i.soon?'life.reviewSoon':i.again?'life.reviewAgainSoon':'life.reviewRemembered'),tone:i.soon||i.again?'check':'ok'})).sort((a,b)=>(a.tone==='ok'?0:1)-(b.tone==='ok'?0:1));
    paint(t('life.reviewResultTitle'),`<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print('review')}<small class="life-poster-label">RESULT · REVIEW</small><strong class="life-poster-word">${t('life.reviewDoneWord')}</strong><h3 class="life-poster-sub">${t('life.reviewMet',{n:items.length||run.ids.length})}</h3></section>${learnedList(items,t('life.reviewedList'),listHead(),items.some(i=>i.tone==='ok')?t('life.reviewSpacing'):'')}</div><div class="life-actions"><button class="felt-button" data-life-home>${t('life.toTown')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.nextLesson')}</button></div>`,{type:'life-review-complete',tutorPhase:'complete'});
    celebrate();return;
   }

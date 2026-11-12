@@ -25,4 +25,5 @@ export const COACH_METHODS = Object.freeze([
   'tell',
   'synced', // 첫 받기의 결과를 한도 안에서(단계 4 계획 §18-5-5 G4 — 처음인 기기의 판 정하기)
   'guestRecords', // 손님 → 계정 옮기기(단계 4 계획 §18-5-3 — 경계 표지 · 다섯 걸음)
+  'itemUnits', // 지도 문항의 단위(단계 4 계획 §19-3 — 생활 복습 → 생활 단위, 제품이 단위를 짓지 않는다)
 ]);

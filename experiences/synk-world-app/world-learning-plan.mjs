@@ -127,20 +127,24 @@ function practiceNeed(review,progress,now){
 // openGames: 지금 열 수 있는 게임 ID 목록(null이면 전부). 공개판(계정 모드) 손님은 10-19 결정으로 한글 만나기만 열고
 // 바람길·리듬은 로그인부터 연다. 열 수 없는 게임은 「지금 열 수 없음」으로 넘겨 Core가 빼게 하고(activity.unavailable)
 // 다음 후보를 고르게 한다 — 손님이 같은 로그인 창을 맴돌지 않게.
-export function buildWorldLearningCandidates({progress={},settings={},now=Date.now(),openGames=null}={}){
+// due: 새 길(atlasNext — 4-2, 단계4_계획 §19-1 ⑤ · M8)에서 셸이 넣은 「돌아온 복습」 판정(world-life-next lifeDue — { state, ids }). 있으면 생활 복습 후보는
+// 그 목록(차례 그대로)만이고 진도의 간격(dueAt)을 읽지 않으며 reviewAt은 지금 시각이다. 확인 중(state가 engine이 아님)이면 복습 후보가 없다.
+// 없으면(null) 지금 판 그대로.
+export function buildWorldLearningCandidates({progress={},settings={},now=Date.now(),openGames=null,due=null}={}){
  const at=clock(now),source=record(progress)?progress:{},candidates=[];
  PACKS.forEach((pack,index)=>{
   const next=pack.lessons.find(lesson=>!time(source.lessons?.[lesson.id]?.completedAt));
   if(next)candidates.push(lessonCandidate(knownLessons.get(next.id),index,settings));
  });
- const reviews=verifiedReviews(source).filter(review=>review.dueAt<=at&&review.lastAt<=at);
+ const dueIds=record(due)?(due.state==='engine'&&Array.isArray(due.ids)?due.ids:[]):null;
+ const reviews=dueIds?verifiedReviews(source).filter(review=>dueIds.includes(review.id)):verifiedReviews(source).filter(review=>review.dueAt<=at&&review.lastAt<=at);
  const groups=new Map();for(const review of reviews){if(!groups.has(review.lessonId))groups.set(review.lessonId,[]);groups.get(review.lessonId).push(review);}
  for(const [lessonId,rows]of groups){
-  rows.sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id));
+  rows.sort(dueIds?(a,b)=>dueIds.indexOf(a.id)-dueIds.indexOf(b.id):(a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id));
   const need=rows.map(review=>practiceNeed(review,source,at)).filter(Boolean).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at))[0];
   candidates.push({id:`world.review.${lessonId}`,label:`${rows[0].lesson.title} · 새 상황 복습`,route:'review',lessonId,packId:rows[0].packId,
    minutes:Math.max(1,Math.ceil(rows.length/3)),minutesEstimated:true,targets:rows.flatMap(review=>lifeTargets(review.lesson,[review.question],true)),goals:[...PACK_GOALS[rows[0].packId]],supports:[...supports],audioRequired:false,modality:'reading',
-   reviewIds:rows.map(review=>review.id),reviewAt:iso(rows[0].dueAt),presentation:presentationFor(settings),...(need?{practiceNeed:need}:{})});
+   reviewIds:rows.map(review=>review.id),reviewAt:iso(dueIds?at:rows[0].dueAt),presentation:presentationFor(settings),...(need?{practiceNeed:need}:{})});
  }
  const runnerTargets=LISTENING_CHECKS.map(item=>{const target=checkMetadata(item);return {id:target.id,skillIds:[target.skillId],difficulty:target.difficulty,
   modality:target.modality,responseFormat:target.responseFormat,familyKeys:[target.familyKey],itemKey:target.itemKey,conceptIds:[...target.conceptIds]};});
@@ -236,7 +240,7 @@ function hostReason(chosen,{history,plan,labels}){
 // `answers` ({interested, notNow}: worldTopicAnswers) are the person's own answers on 「내 성향」.
 // extra: 읽기 짧은 연습·짧은 진단 후보(extraCandidate). examPlan: 시험 계획(world-exam-plan.mjs buildExamPlan) — 있으면 후보마다 계획 토큰(planTokens)을
 // 붙이고 그 주 초점 토큰을 목표로 넘긴다. 순위는 그대로 Core가 정한다.
-export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null,openGames=null,extra=[],examPlan=null}={}){
+export function createWorldLearningPlan({summary=null,progress={},settings={},now=Date.now(),recommendActivities,answers=null,openGames=null,extra=[],examPlan=null,due=null}={}){
  if(typeof recommendActivities!=='function')throw TypeError('WORLD learning plan needs Core recommendActivities');
  const at=clock(now),source=record(progress)?progress:{},planned=record(examPlan)&&Array.isArray(examPlan.goals)?examPlan:null;
  const normalized=worldLearningSettings(settings,{planGoals:planned?.goals||[]}),told=answersOf(answers);
@@ -244,7 +248,7 @@ export function createWorldLearningPlan({summary=null,progress={},settings={},no
  const skills=new Set(profile.skills.map(skill=>skill.id));
  const resumes=resumeCandidates(source,settings,at),resumingReview=resumes.some(candidate=>candidate.route==='review');
  const added=(Array.isArray(extra)?extra:[]).map(candidate=>extraCandidate(candidate,settings)).filter(Boolean);
- const candidates=[...resumes,...buildWorldLearningCandidates({progress:source,settings,now:at,openGames}).filter(candidate=>
+ const candidates=[...resumes,...buildWorldLearningCandidates({progress:source,settings,now:at,openGames,due}).filter(candidate=>
   !(resumingReview&&candidate.route==='review')&&!resumes.some(resume=>candidate.route==='lesson'&&resume.route==='lesson'&&resume.lessonId===candidate.lessonId)),...added];
  // A partial/empty host summary cannot manufacture missing ability cells. The
  // activities remain available through declared goals, without a skill claim.
