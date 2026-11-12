@@ -161,8 +161,10 @@ const 진단걸기 = (새보내기 = false) => page.evaluate((새) => {
   try { performance.setResourceTimingBufferSize(1000); } catch (e) { /* 자원 타이밍 칸 늘리기 — 못 하면 기본 250 */ }
   const 적기 = (rec) => { window.__synkNet.push(rec); if (window.__synkNet.length > 20) window.__synkNet.shift(); };
   const 올리기 = (u) => /content-push|\/upload\//.test(u || "");
-  // 누른 뒤 60초가 지난 요청은 적지 않는다 — 긴 답을 기다리는 동안 13초마다 오가는 batchexecute가 누르기 언저리 기록을 밀어냈다(11-13 실물)
-  const 볼것 = (u) => (/StreamGenerate|batchexecute/.test(u || "") || 올리기(u)) && !(window.__synkClick && Date.now() - window.__synkClick > 60_000);
+  // 누른 뒤 60초가 지난 요청은 적지 않는다 — 긴 답을 기다리는 동안 13초마다 오가는 batchexecute가 누르기 언저리 기록을 밀어냈다(11-13 실물).
+  // 보내기 · 답은 geminiweb-pa.clients6.google.com/processSession(XHR)로 오간다 — 11-13 03:33 고친 판 첫 사라짐에서 자원 타이밍으로 찾았다(64초 · 200).
+  // 그 응답 앞뒤 200자에 구글 쪽 까닭이 있을 것이라 함께 적는다(ProcessFile은 올린 파일 처리)
+  const 볼것 = (u) => (/StreamGenerate|batchexecute|processSession|ProcessFile/.test(u || "") || 올리기(u)) && !(window.__synkClick && Date.now() - window.__synkClick > 60_000);
   const 이름 = (u) => (올리기(u) ? "upload" : String(u).replace(/\?.*$/, "").split("/").pop().slice(0, 40));
   // 같은 XHR 객체를 다시 쓰면(open → send를 되풀이) 요청마다 건 듣기가 쌓여 끝 수가 더 늘고 앞 기록이 덮였다(GPT 검수 11-13) — 객체마다 듣기는
   // 한 번만 걸고, 기록은 지금 요청 것(__synkRec)만 닫는다. 진행 중에 open을 다시 하면 앞 요청은 이벤트 없이 끊기니 그때 닫는다(reopen)
@@ -226,7 +228,7 @@ const 누름표시 = () => page.evaluate(() => {
 // (fetch · XHR · beacon · other — 그림 · 글꼴 · 스크립트는 뺌)은 이름과 상관없이 담는다. 구글 밖 주소는 호스트를 붙인다
 const 진단읽기 = () => page.evaluate(() => {
   const 누름 = window.__synkClick || 0;
-  const 볼것 = /StreamGenerate|batchexecute|content-push|\/upload\//;
+  const 볼것 = /StreamGenerate|batchexecute|processSession|ProcessFile|content-push|\/upload\//;
   const 요청꼴 = (e) => /^(fetch|xmlhttprequest|beacon|other)$/.test(e.initiatorType || "");
   const 떨어짐 = (e) => performance.timeOrigin + e.startTime - 누름;
   const 가까이 = (e) => 누름 && 떨어짐(e) > -25_000 && 떨어짐(e) < 60_000; // 올리기(누르기 20초쯤 전) ~ 보내기 · 답 첫머리, 페이지 열기(40초쯤 전) 잡음은 뺀다

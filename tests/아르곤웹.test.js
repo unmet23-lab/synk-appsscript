@@ -1321,12 +1321,18 @@ test('페이지 스크립트(진단 고리 · 11-13) — 같은 XHR 객체를 �
   y.status = 429; y.responseText = ')]}\'\n[["er",null,null,null,null,429]]'; y.쏘기('loadend');
   const 보냄 = window.__synkNet.find((r) => r.u === 'StreamGenerate');
   assert.deepEqual([보냄.status, 보냄.len > 0, /429/.test(보냄.tail)], [429, true, true], '보내기 요청은 상태 · 응답 앞뒤를 적는다');
+  // 11-13 03:33 사라짐에서 찾은 실제 보내기 · 답 길 — geminiweb-pa …/processSession(XHR) 응답 앞뒤도 적는다
+  const p = new 가짜XHR();
+  p.open('POST', 'https://geminiweb-pa.clients6.google.com/$rpc/google.internal.x.v1.Service/processSession'); p.send();
+  p.status = 200; p.responseText = '[["e",4,null,null,"RESOURCE_EXHAUSTED"]]'; p.쏘기('loadend');
+  const 세션 = window.__synkNet.find((r) => r.u === 'processSession');
+  assert.deepEqual([세션.status, /RESOURCE_EXHAUSTED/.test(세션.tail)], [200, true], 'processSession은 상태 · 응답 앞뒤를 적는다');
   const z = new 가짜XHR(); z.open('GET', 'https://gemini.google.com/app/other'); z.send(); z.쏘기('loadend');
-  assert.equal(window.__synkNet.length, 5, '볼 요청(보내기 · 올리기)만 적는다');
+  assert.equal(window.__synkNet.length, 6, '볼 요청(보내기 · 답 · 올리기)만 적는다');
   window.__synkClick = Date.now() - 61_000;
   const 늦은 = new 가짜XHR(); 늦은.open('POST', 'https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=x'); 늦은.send(); 늦은.쏘기('loadend');
   const 늦은올림 = new 가짜XHR(); 늦은올림.open('POST', 올림); 늦은올림.send(); 늦은올림.쏘기('loadend');
-  assert.equal(window.__synkNet.length, 5, '누른 뒤 60초가 지난 요청은 적지 않는다(누르기 언저리 기록을 지킨다)');
+  assert.equal(window.__synkNet.length, 6, '누른 뒤 60초가 지난 요청은 적지 않는다(누르기 언저리 기록을 지킨다)');
   assert.deepEqual(window.__synkUp, { 시작: 4, 끝: 4 }, '적지 않은 올리기는 셈에도 안 든다');
   // 같은 문서를 다음 보내기가 다시 쓴다(빈탭이 사라진 탭을 다시 씀) — 앞 보내기의 누른 때 · 셈 · 기록을 비우고 세대를 올린다
   window.__synkClick = 0;
