@@ -91,7 +91,11 @@ export function noteDeviceAccount(storage,accountId,at=Date.now()){
 export function guestLearningEvents(storage,{after=0}={}){
  let value=null;try{value=JSON.parse(storage?.getItem(GUEST_LEARNING_KEY)||'null');}catch{value=null;}
  if(!recordObject(value)||value.version!==1||value.owner!=null||!Array.isArray(value.events))return {events:[],attempts:0};
- const events=value.events.filter(event=>recordObject(event)&&recordId(event.id)&&typeof event.type==='string');
+ return pickGuestLearning(value.events,{after});
+}
+// 같은 규칙을 사건 배열에(Atlas 새 길 — 손님 저장소로 옮겨 온 옛 꼴 사건 가운데 이 계정에 옮길 것, 단계4_계획 §18-5-3 「옮겨 온 옛 꼴 사건」).
+export function pickGuestLearning(list,{after=0}={}){
+ const events=(Array.isArray(list)?list:[]).filter(event=>recordObject(event)&&recordId(event.id)&&typeof event.type==='string');
  const byId=new Map(events.map(event=>[event.id,event]));
  const shown=new Set(),decisions=new Set();
  for(const event of events){
@@ -162,7 +166,8 @@ export function planDeviceRecords({storage=globalThis.localStorage,learning=null
 }
 // 옮기는 순간에 다시 본다: 그사이 계정에 기록이 생겼으면 합치지 않는다('exists'), 손님 기록이 사라졌으면 건너뛴다('gone').
 // importLife(records): 계정 생활 진도에 없는 것만 더하고 서버에 저장됐는지까지 확인한다(app-shell). importLearning(events): 같은 것을 학습 기록에.
-export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer,hangulPort=null,guard=()=>{},importLife=null,importLearning=null}){
+// atlasMove(): Atlas 새 길의 손님 → 계정 옮기기(world-atlas-next.mjs guestMove의 move — 다섯 걸음, 표지는 그 안에서 먼저 쓴다 · R8).
+export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,accountAnswer=()=>null,setAccountAnswer,hangulPort=null,guard=()=>{},importLife=null,importLearning=null,atlasMove=null}){
  // pending: 서버 확인 전에 실패했지만 계정 쪽에 이미 더한 것(다시 고를 때 「일부만」으로 치지 않으려고 판이 기억한다).
  const result={hangul:null,answer:null,life:null,learning:null,errors:[],added:{lessons:0,reviews:0,days:0,profile:false,events:0},pending:{},capacitySkipped:{}};
  if(plan?.hangul){
@@ -195,6 +200,12 @@ export async function applyDeviceRecords(plan,{storage=globalThis.localStorage,a
    if(added?.confirmed===false)throw Object.assign(Error('학습 기록이 아직 계정에 올라가지 않았어요.'),{code:'LEARNING_NOT_SAVED',added:added?.added||0});
    result.added.events=added?.added||0;result.learning=added?.added?'moved':'exists';}
   catch(error){if(Number.isInteger(error?.added)&&error.added>0)result.pending.learning=error.added;result.errors.push(error);}
+ }
+ if(plan?.atlas&&typeof atlasMove==='function'){
+  try{guard();const moved=await atlasMove();guard();
+   if(moved?.ok!==true)throw Object.assign(Error('학습 기록을 옮기지 못했어요.'),{code:moved?.code||'ATLAS_MOVE_FAILED'});
+   const count=(moved.legacy||0)+(moved.current||0);result.added.events+=count;result.learning=count?'moved':'exists';}
+  catch(error){result.errors.push(error);}
  }
  return result;
 }
@@ -235,6 +246,7 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
  const counts=plan?.life?.counts;
  if(counts&&(counts.lessons||counts.reviews||counts.days))rows.push({label:T.lifeRow,value:[counts.lessons?T.lessons(counts.lessons):'',counts.reviews?T.reviews(counts.reviews):'',!counts.lessons&&counts.days?T.days(counts.days):''].filter(Boolean).join(' · ')});
  if(plan?.learning?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.learning.attempts)});
+ if(plan?.atlas?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.atlas.attempts)});
  if(counts?.profile)rows.push({label:T.profileRow,value:T.profileValue});
  const notes=[];
  if(plan?.kept.hangul)notes.push(T.keptHangul);
@@ -247,8 +259,12 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
 // 고른 뒤에는 관문이 이어지게 먼저 끝을 알리고 같은 차례에 판을 닫는다(이어지는 튜터 고르기 판을 닫지 않게). 알림은 그다음 판 위에 뜨게 미룬다.
 // text: 판 글을 고른 화면 언어로 넘기는 함수(DEVICE_RECORDS_TEXT와 같은 키, 열 때·알릴 때마다 다시 읽는다).
 // importLife·importLearning: 생활 진도·학습 기록을 옮기는 통로(app-shell, 없으면 한글만 — 10-19와 같다).
+// Atlas 새 길(단계4_계획 §18-5-3): offer(identity,{atlas})의 atlas({watermarks,pick})가 손님 저장소에서 옮길 수를 센다(world-atlas-next.mjs guestMove).
+// 새 길이면 옛 기기 로그의 학습 줄(importLearning) 대신 그 수를 묻고, 「옮기기」는 새 길의 다섯 걸음 · 「두기」는 두기 표지를 먼저 쓴 뒤 결정을 남긴다(R8).
+// 새 길인데 세지 못했으면(엔진 · 저장소) 학습 줄 없이 묻고 결정의 기준 시각을 올리지 않는다(다음 로그인에 다시 묻는다, C4 · R7).
+export const ATLAS_COUNT_MS=8000;
 export function createDeviceRecordsOffer({storage=globalThis.localStorage,learningStatus=()=>null,accountAnswer=()=>null,setAccountAnswer,present,close,toast=()=>{},head='',now=Date.now,defer=fn=>setTimeout(fn,0),text=null,hangulPort=()=>null,accountOwner=null,
- importLife=null,importLearning=null}){
+ importLife=null,importLearning=null,atlasWait=ATLAS_COUNT_MS}){
  const asked=new Set();let current=null;
  function markup(plan){
   const T=recordsText(text),{rows,notes}=describeDeviceRecords(plan,T);
@@ -258,18 +274,37 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
    +`<div class="world-actions"><button class="felt-button" data-world="device-records" data-choice="move">${recordEscape(T.move)}</button><button class="plain-button" data-world="device-records" data-choice="keep">${recordEscape(T.keep)}</button></div>`
    +`<p class="dialog-note" data-device-records-status role="status" aria-live="polite"></p></div>`;
  }
- function finish(job,value){if(current!==job)return;current=null;job.resolve(value);}
- function offer({owner}={}){
+ function finish(job,value){if(current!==job)return;current=null;try{job.atlas?.close?.();}catch{/* 옆으로 연 손님 저장소 닫기 */}job.resolve(value);}
+ function offer({owner}={},{atlas=null}={}){
   const port=hangulPort();
   if(typeof owner!=='string'||!owner||owner==='guest'||asked.has(owner))return null;
   if(port&&port.accountId!==owner)return null;
+  if(typeof atlas!=='function')return ask(owner,port,null);
+  asked.add(owner); // 세는 동안 같은 계정을 두 번 묻지 않게
+  return (async()=>{
+   const after=deviceWatermark(storage,owner),watermarks={others:deviceWatermark(storage,owner,{own:false}),all:after};
+   const counting=Promise.resolve().then(()=>atlas({watermarks,pick:events=>pickGuestLearning(events,{after}).events}));
+   let timer,found;
+   try{found=await Promise.race([counting,new Promise(resolve=>{timer=setTimeout(()=>resolve({failed:true,late:true}),atlasWait);})]);}catch{found={failed:true};}finally{clearTimeout(timer);}
+   if(found?.late)void counting.then(late=>late?.close?.(),()=>{});
+   asked.delete(owner);
+   // 세는 사이에 계정이 바뀌었으면 묻지 않는다(바뀐 계정은 제 차례에 묻는다).
+   if(accountOwner&&accountOwner()!==owner){try{found?.close?.();}catch{/* 닫기 */}return null;}
+   return ask(owner,port,found);
+  })();
+ }
+ function ask(owner,port,atlas){
   const entry=accountEntry(readDevice(storage),owner),retryCloud=!!port&&entry?.decision==='moved'&&entry.cloud!==true;
-  let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer(),hangulPort:port,accountId:owner,life:typeof importLife==='function',learningLog:typeof importLearning==='function',retryCloud});}catch{plan=null;}
-  // 이 계정이 이 기기에 있었다는 사실은 기준 시각을 읽은 뒤에 남긴다(그래야 이 계정 자신의 기록은 빠지지 않는다).
+  let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer(),hangulPort:port,accountId:owner,life:typeof importLife==='function',learningLog:!atlas&&typeof importLearning==='function',retryCloud});}catch{plan=null;}
+  const usable=!!atlas&&!atlas.failed&&typeof atlas.move==='function';
+  if(usable&&atlas.events>0)plan={...(plan??{hangul:null,answer:null,life:null,learning:null,after:deviceWatermark(storage,owner),kept:{hangul:false,answer:false}}),atlas:{attempts:atlas.attempts||0,events:atlas.events}};
+  if(plan&&atlas?.failed)plan.atlasFailed=true;
+  // 이 계정이 이 기기에 있었다는 사실은 기준 시각을 읽은 뒤에 남긴다(그래야 이 계정 자신의 기록은 빠지지 않는다). 새 길은 손님 저장소에도(되는 만큼만).
   noteDeviceAccount(storage,owner,now());
-  if(!plan)return null;
+  if(atlas&&!atlas.failed)void Promise.resolve().then(()=>atlas.note?.('visited')).catch(()=>{});
+  if(!plan){try{atlas?.close?.();}catch{/* 닫기 */}return null;}
   asked.add(owner);
-  return new Promise(resolve=>{const job={owner,plan,port,resolve,busy:false,startedAt:now()};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
+  return new Promise(resolve=>{const job={owner,plan,port,atlas:usable?atlas:null,resolve,busy:false,startedAt:now()};current=job;present({title:recordsText(text).title,html:markup(plan),onClose:()=>finish(job,'dismissed')});});
  }
  function done(job,value,message){finish(job,value);close();if(message)defer(()=>toast(message));return value;}
  // 앞 시도들이 남긴 것(같은 판을 다시 고를 때): moved — 서버가 받았다고 확인한 것(생활 진도·학습 기록 수, 한글·처음 고른 답),
@@ -286,15 +321,19 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   // cloud: 계정 한글 저장이 있는 상태에서 고른 결정이다(옮겼든 「두기」로 남겼든 한글은 정해졌다). 없으면 예전 기기 안 이전으로 보고 다음 로그인에
   // 계정 저장으로 다시 묻는다(retryCloud) — 일부만 옮기고 「두기」를 고른 한글을 다시 묻지 않게 한글 성공 여부로 가르지 않는다(10-21 재확인).
   const cloudDone=()=>!!job.port;
+  // 새 길인데 세지 못한 물음은 결정의 기준 시각을 앞 값 그대로 둔다(C4 · R7 — 다음 로그인에 다시 묻는다).
+  const through=job.plan.atlasFailed?job.plan.after:job.startedAt;
   if(choice==='keep'){
+   // 새 길: 두기 표지를 먼저(손님 저장소 — R8). 못 쓰면 결정만 남는다 — 고를 때 둘을 다 지나야 하므로 넘치지 않는다.
+   if(job.atlas&&job.plan.atlas){try{await job.atlas.keep();}catch{/* 계기는 엔진이 남긴다 */}if(current!==job)return null;}
    // 앞 「옮기기」가 일부만 해냈으면 서버가 받은 만큼은 옮긴 것으로 남긴다. 서버 확인을 못 한 것만 있으면 고른 대로 「두기」로 남기되,
    // 계정에 이미 더한 것이 있다고 알린다(그것은 다음 저장 때 올라간다 — 「옮기지 않았다」고도, 「옮겼다」고도 하지 않는다).
-   if(movedSoFar()){saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:job.startedAt,moved:{...carry.moved,at:now()}});return done(job,'moved',T.partly);}
-   saveDeviceRecordsDecision(storage,job.owner,'kept',now(),{through:job.startedAt});
+   if(movedSoFar()){saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through,moved:{...carry.moved,at:now()}});return done(job,'moved',T.partly);}
+   saveDeviceRecordsDecision(storage,job.owner,'kept',now(),{through});
    return done(job,'kept',lifeNonzero(carry.pending.life)||carry.pending.learning>0?T.pendingKept:T.kept);}
   status(T.moving,true);
   const guard=()=>{if(current!==job||hangulPort()!==job.port||accountOwner&&accountOwner()!==job.owner)throw Error('로그인한 계정이 바뀌었어요.');};
-  const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard,importLife,importLearning});
+  const result=await applyDeviceRecords(job.plan,{storage,accountAnswer,setAccountAnswer,hangulPort:job.port,guard,importLife,importLearning,atlasMove:job.atlas&&job.plan.atlas?()=>job.atlas.move():null});
   if(current!==job)return null;
   // 「이미 있음」이 앞 시도 몫이면(앞에서 옮겼거나, 더하고 확인만 못 했다가 이번에 오류 없이 끝났다) 옮긴 것으로 본다.
   const hadLife=lifeNonzero(carry.moved)||lifeNonzero(carry.pending.life),hadEvents=carry.moved.events>0||carry.pending.learning>0;
@@ -311,11 +350,11 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   if(result.pending.learning>0)carry.pending.learning+=result.pending.learning;
   const movedNow=Object.values(status4).includes('moved');
   // 계정 저장이 서버에 닿았는지 모르는 부분이 하나라도 있으면(생활 진도·학습 기록·계정 한글 저장) 고른 것을 남기지 않고 다시 고르게 한다.
-  if(result.errors.length&&(!movedNow||job.plan.hangul?.cloud||job.plan.life||job.plan.learning)){job.busy=false;status(T.failed,false);return null;}
+  if(result.errors.length&&(!movedNow||job.plan.hangul?.cloud||job.plan.life||job.plan.learning||job.plan.atlas)){job.busy=false;status(T.failed,false);return null;}
   const capacityLimited=Object.keys(result.capacitySkipped).length>0;
   // A capacity limit is not a decision to leave the rest behind. Keep the old
   // cutoff so the same account can choose again; other-account/logout marks still apply.
-  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:capacityLimited?job.plan.after:job.startedAt,moved:{...carry.moved,at:now()}});
+  saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through:capacityLimited?job.plan.after:through,moved:{...carry.moved,at:now()}});
   const partly=capacityLimited||result.errors.length||Object.values(status4).includes('exists')||!movedNow;
   return done(job,'moved',capacityLimited?`${movedNow?T.partly:T.snapshot} ${T.snapshotBody}`:partly?T.partly:T.moved);
  }

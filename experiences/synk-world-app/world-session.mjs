@@ -129,6 +129,8 @@ export function createLifeSession({identity,openPort,createProgress,prepareHost=
   get owner(){return current?.owner??null;},get mounted(){return !!current?.mounted;},
   get port(){return current?.port??null;},get progress(){return current?.progress??null;},get answers(){return current?.answers??null;},
   get ui(){return part('ui');},get education(){return part('education');},get trail(){return part('trail');},get reminders(){return part('reminders');},
+  // Atlas 새 길 입구(기능 atlasNext — app-shell lazyAtlasNext): 기기 기록 물음 · 로그아웃 표지가 이 주인의 것을 읽는다.
+  get atlasNext(){return part('atlasNext');},
   // 저장 충돌 확인 창을 이 기록에서 이미 띄웠는지(새 기록·remount마다 처음으로 돌아간다).
   get recoveryShown(){return !!current?.recoveryShown;},set recoveryShown(value){if(current)current.recoveryShown=!!value;},
  });

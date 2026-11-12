@@ -31,6 +31,10 @@ if(database)await database.db.exec(fs.readFileSync(path.join(talk,'supabase/migr
 const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-town`}):null;
 const sessions=new Map();
 let speakingHost=null;
+// Atlas 새 기록 길 리허설(재설계 단계 4 ④ — 단계4_계획 §18-2 11): 합성 계정마다 메모리에서 talk와 같은 검사 · 같은 서버 접기로 답한다(rehearsal-trail.mjs).
+// 엔진은 SYNK_ATLAS_DEV_OUT의 묶음(브라우저가 받는 판), 없으면 패키지 원천. 스위치는 SYNK_WORLD_ATLAS_TRAIL(기본 on · off · player-a 같은 쉼표 목록).
+let trailHost=null;
+const trailRoutes=new Set(['rehearsal/trail','rehearsal/trail-clear','rehearsal/trail-account','rehearsal/trail-control','rehearsal/trail-legacy']);
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
 const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage','order-rush','entry-check','blank-slice','snap-words','board-decode','korean-racing','talk-rally','subway-rush','seoul-arrival']);
 const mime={'.bin':'application/octet-stream','.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf','.mp4':'video/mp4','.mp3':'audio/mpeg','.wav':'audio/wav','.glb':'model/gltf-binary','.wasm':'application/wasm'};
@@ -55,7 +59,7 @@ const server=http.createServer(async(req,res)=>{
    const tab=req.headers['x-synk-rehearsal-tab'];if(tab!==undefined&&(typeof tab!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tab)))return json(res,400,{ok:false,error:{code:'REHEARSAL_TAB_INVALID'}});
    if(!['GET','POST','PUT'].includes(req.method))return json(res,405,{ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
    if(req.method!=='GET'&&!req.headers['content-type']?.startsWith('application/json'))return json(res,415,{ok:false,error:{code:'JSON_REQUIRED'}});
-   const raw=req.method==='GET'?undefined:await body(req,url.pathname==='/api/world/life-progress'?600000:url.pathname==='/api/world/speaking'?2000000:16384);const headers=new Headers(req.headers);
+   const raw=req.method==='GET'?undefined:await body(req,url.pathname==='/api/world/life-progress'?600000:url.pathname==='/api/world/speaking'?2000000:['/api/world/rehearsal/trail','/api/world/rehearsal/trail-legacy'].includes(url.pathname)?262144:16384);const headers=new Headers(req.headers);
    const suffix=url.pathname.slice('/api/world/'.length);
    const request=new Request(`http://local/synk-world-v1/${suffix}${url.search}`,{method:req.method,headers,...(raw?{body:raw}:{})});
    if(suffix==='rehearsal/status'&&req.method==='GET'){let authenticated=false;try{identity(request);authenticated=true;}catch{}return json(res,200,{ok:true,authenticated,rehearsal:true,...(authenticated?{accessToken:requestToken(request)}:{})});}
@@ -69,6 +73,12 @@ const server=http.createServer(async(req,res)=>{
     return json(res,200,{ok:true,accessToken:token,accountId:id,rehearsal:true},{'Set-Cookie':`${sessionCookieName(request)}=${token}; HttpOnly; SameSite=Strict; Path=/api/world; Max-Age=3600`});
    }
    if(suffix==='rehearsal/logout'&&req.method==='POST'){const token=requestToken(request),cookie=cookieToken(request);sessions.delete(token);return json(res,200,{ok:true},token===cookie?{'Set-Cookie':`${sessionCookieName(request)}=; HttpOnly; SameSite=Strict; Path=/api/world; Max-Age=0`}:{});}
+   if(trailRoutes.has(suffix)){
+    const account=identity(request);
+    trailHost??=import('./rehearsal-trail.mjs').then(m=>m.openRehearsalTrail({root,devOut:process.env.SYNK_ATLAS_DEV_OUT||null,trailSwitch:process.env.SYNK_WORLD_ATLAS_TRAIL,keys:ids})).catch(error=>{trailHost=null;throw error;});
+    const reply=await(await trailHost).handle({account,path:suffix.slice('rehearsal/'.length),method:req.method,query:url.searchParams,body:raw,headers});
+    return json(res,reply.status,reply.body);
+   }
    if(suffix==='life-progress'){
     if(!['GET','POST'].includes(req.method))return json(res,405,{ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
     if(req.method==='POST'){let command;try{command=JSON.parse(raw.toString('utf8'));}catch{return json(res,400,{ok:false,error:{code:'INVALID_JSON'}});}if(command.action!=='progress'||!Array.isArray(command.changes)||command.changes.some(change=>change.key!=='synk.life-korean.progress.v1'))return json(res,400,{ok:false,error:{code:'INVALID_PLAY_REQUEST'}});}

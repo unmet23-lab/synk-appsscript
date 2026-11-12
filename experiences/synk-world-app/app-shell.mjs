@@ -35,10 +35,18 @@ const responsesOn=connection.features?.worldFeedback===true;
 const atlasNextOn=connection.features?.atlasNext===true;
 // 받기는 한 번(동시에 불러도 같은 약속), 받는 사이에 닫히면 받은 것을 바로 닫는다 — 주인이 바뀌어 생활 기록을 버릴 때(keep) 떠난 주인의
 // 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 카본 A6). 받기가 실패하면 다음에 다시 받는다.
+// 계정 길(단계 4 ④ — 단계4_계획 §18-2 · §18-5): 운영은 계정을 다시 읽는 world-account의 prepareAtlasTrail, 리허설은 리허설 서버의 trail
+// (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
  let made=null,loading=null,disposed=false;
- const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;}});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
- return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),dispose(){disposed=true;made?.dispose();}};
+ const trailOf=m=>owner==='guest'?null:operating?()=>account.prepareAtlasTrail():m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId})});
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
+ return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
+  retired:(coach,fn)=>made&&!disposed?made.retired(coach,fn):()=>{},
+  async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
+  async noteLogout(){return made&&!disposed?made.noteLogout():false;},
+  health:()=>made?.health()??null,
+  dispose(){disposed=true;made?.dispose();}};
 }
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
 // 바람길·말의 리듬은 한 판씩 체험으로 연다(guest-trial.mjs, 기록·코인은 로그인 뒤). 체험을 마친 게임은 로그인부터 열고, 추천도 같은 목록을 쓴다.
@@ -884,7 +892,10 @@ const commands={
  // 2단(앱을 닫아도 받기): 휴대폰 묻는 카드 · 동의 상자의 「동의하고 켜기」(누른 그 동작 안에서 world-push가 권한을 청한다) · 「괜찮아요」.
  ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
- logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+ logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
+   // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
+   try{const leavingAtlas=life.owner===leaving?life.atlasNext:null;if(leavingAtlas){let timer;await Promise.race([leavingAtlas.noteLogout(),new Promise(resolve=>{timer=setTimeout(resolve,1500);})]).finally(()=>clearTimeout(timer));}}catch{/* 로그아웃을 막지 않는다 */}
+   await client.logout();const signedOutAt=Date.now();if(leaving)noteDeviceAccount(localStorage,leaving,signedOutAt);noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 commands.me2=openMe2;
@@ -959,7 +970,9 @@ entryGate=createWorldEntryGate({
    if(identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation||life.closed||life.education!==education){port.dispose();return null;}
    hangulMigrationPort=port;
   }
-  return deviceRecords.offer(identity);
+  // Atlas 새 길(기능 atlasNext): 이 주인의 새 길 입구가 손님 저장소에서 옮길 수를 센다(올리는 길의 계정일 때만 — 아니면 지금 판 물음).
+  const next=atlasNextOn&&identity.owner!=='guest'&&life.owner===identity.owner?life.atlasNext:null;
+  return deviceRecords.offer(identity,{atlas:next?input=>next.guestMove(input):null});
  },
  read:()=>({owner:client.snapshot?.accountId||'guest',generation:client.generation,tutor:home.tutor?.().tutor||null}),
  choose:then=>home.ensureTutor?.(then),

@@ -25,7 +25,8 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
  const document={addEventListener(type,fn,capture){(listeners[type]??=[]).push({fn,capture});},querySelector:selector=>nodes.get(selector)||null,querySelectorAll:()=>[]};
  const home={isMaru:false,tutor:()=>({}),showPanel:(...args)=>shown.push(args),closePanel:()=>disposed.push('panel'),toast:text=>toasts.push(text),connectEducation:no,connectReminders:no};
  const account={assertActive:no,supportsClassroom:true,supportsHomework:true,preferences:()=>null,readClassrooms:no,courseRequest:no,readHomework:no,submitHomework:no,readHomeworkKey:no,enrollmentRequest:no,restore:async()=>{},prepareGame:async()=>{}};
- const context={console,Promise,queueMicrotask,document,client,home,account,operating,localStorage:memory(),sheetResource,window:{confirm:text=>{confirms.push(text);return confirm;}},
+ // atlasNextOn: Atlas 새 길(기능 atlasNext — 4-1부터 mountLifeLearning이 읽는다). 이 시험은 꺼진 판(지금 판)의 셸을 돈다.
+ const context={console,Promise,queueMicrotask,document,client,home,account,operating,atlasNextOn:false,localStorage:memory(),sheetResource,window:{confirm:text=>{confirms.push(text);return confirm;}},
   sheet:null,gameLaunch:0,gameRecovery:null,screen:'',EYEBROWS:{},TUTOR_NAMES:{},t:key=>key,escape:String,profilePortrait:()=>'',responsesSection:()=>'',mountResponses:no,signIn:no,
   $:selector=>nodes.get(selector)||{},renderHomeHanger:no,hanger:{},
   addMe2Row:()=>{captures.photoRowMounts=(captures.photoRowMounts||0)+1;},

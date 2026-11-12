@@ -99,14 +99,19 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 짧은 연습 한 판의 문항 수: 짧은 연습(코치 world-practice)에 남긴 마지막 응답 하나로 — 많았어요 3, 더 하고 싶어요 7, 그 밖·없음은 연습 규칙 그대로(5).
  // 따로 저장하는 상태가 없다(Core 분량 규칙과 같은 절대 규칙) — 응답을 빼거나 30일이 지나면 효과도 빠진다. 진단·시험 형식 응답은 길이를 움직이지 않는다.
  const PRACTICE_LENGTH=Object.freeze({too_much:3,want_more:7});
+ // 새 판(Atlas 새 길)의 끝 화면에서 이 문서에 고른 짧은 연습 응답 — 새 코치의 판 응답은 기기 기록에만 있고 요약에 실리지 않아(다른 기기 ·
+ // 30일 규칙을 읽을 자리가 아직 없다 — 단계4_계획 §18-5-7 ④e, 4-5에서 「나」 화면과 함께) 다시 열면 지금 판 코치의 응답으로 돌아간다.
+ let nextShort=null;
  function practiceLength(){
   const base=position?.practice?.PRACTICE_POLICY?.count||5;
   if(!answering())return base;
+  if(nextShort)return PRACTICE_LENGTH[nextShort]||base;
   try{const last=(readPracticeCoach()?.setFeedback?.()||[]).filter(row=>row.kind==='short').at(-1);return PRACTICE_LENGTH[last?.value]||base;}catch{return base;}
  }
  // 끝 화면의 응답 줄 잇기: 고르면 코치에 남기고(같은 값은 그대로, 다른 값은 앞 응답을 대신한다) 그 줄만 다시 그린다.
  // 짧은 연습이면 길이가 바뀌므로 「새 문항 n개 더 하기」의 n도 고친다(more: 그 항목에 남은 새 문항 수).
- function bindResponse({box,coachNow,set,kind,more=0}){
+ // next: 새 판(Atlas 새 길)의 끝 화면 — 단추는 「최대 n문항 더 하기」(n = 다음 판의 길이)이고, 고른 응답이 다음 새 판 길이가 된다(④e).
+ function bindResponse({box,coachNow,set,kind,more=0,next=false}){
   if(!set||!box?.querySelector?.('[data-set-response-box]'))return;
   let chosen=null;
   box.addEventListener('click',event=>{
@@ -119,8 +124,10 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const ask=node.querySelector?.('#wpos-response-ask'),status=node.querySelector?.('[data-set-response-status]');
    if(text&&ask&&status){ask.textContent=text.ask;status.textContent=text.status;for(const pill of node.querySelectorAll('[data-set-response]'))pill.setAttribute('aria-pressed',pill.dataset.setResponse===chosen?'true':'false');}
    else{node.outerHTML=view.renderSetResponse({kind,value:chosen,failed});box.querySelector(`[data-set-response="${value}"]`)?.focus?.({preventScroll:true});}
+   if(next&&!failed&&kind==='short')nextShort=chosen;
    const again=kind==='short'?box.querySelector('[data-practice-again]'):null;
-   if(again)again.innerHTML=`${escape(t('practice.again',{n:Math.min(more,practiceLength())}))} <span aria-hidden="true">→</span>`;
+   if(again)again.innerHTML=next?`${escape(t('practice.next.again',{n:practiceLength()}))} <span aria-hidden="true">→</span>`
+    :`${escape(t('practice.again',{n:Math.min(more,practiceLength())}))} <span aria-hidden="true">→</span>`;
   });
  }
  const responseView=(set,kind)=>set?{kind,value:null}:null;
@@ -849,11 +856,14 @@ async function townSend(coachNow,{wait=true}={}){
   if(!pool.length){home.toast(t(audioAvailable?'practice.shortage':'practice.audioOff'));void openPosition();return;}
   const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};
   const session=atlasNext.createPracticeNextSession({coach:next,pool,setPool:all,length:count,audioAvailable,more,lang:currentLang(),plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
-  let ended=false,notice='';
+  let ended=false,notice='',unwatch=()=>{};
   const player=soundPlayer({session,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'&&session.current?.heard?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-practice-listen]');}});
-  const stop=()=>{if(ended)return;ended=true;player.silence();try{session.stop();}catch{}queueMicrotask(()=>refresh());};
+  const stop=()=>{unwatch();if(ended)return;ended=true;player.silence();try{session.stop();}catch{}queueMicrotask(()=>refresh());};
   home.showPanel(t(listening?'practice.title.listening':'practice.title'),'<div class="wpos-stage" data-practice-stage></div>',{...PANEL,eyebrow:'PRACTICE'});
   home.attachPanelResource?.({dispose:stop});
+  // 판을 다시 정해 이 코치가 닫히면(동의 판이 오름 · 동의 꺼짐 · 서버 스위치 꺼짐 — 단계4_계획 §18-5-5 G4) 안내 한 줄과 함께 연습을 닫는다.
+  // 끝 화면은 그대로 둔다(이미 저장을 기다려 셈을 보였다). 다음 연습은 입구가 계정을 다시 읽어 정한 판으로 연다.
+  unwatch=atlasNext.retired?.(next,()=>{if(ended)return;stop();home.toast(t('practice.next.changed'));void openPosition();})??(()=>{});
   const box=panelNode('[data-practice-stage]');if(!box){stop();return;}
   const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
   function paint(focus='.wpos-run-skill'){
@@ -875,7 +885,7 @@ async function townSend(coachNow,{wait=true}={}){
    if(!box.isConnected)return;
    const set=finishSet(next,'short');
    box.innerHTML=view.renderPracticeNextDone({skill,results,items:new Map([...position.itemsById,...all.map(item=>[item.id,item])]),listening,count,more:session.freshLeft(),ending:session.ending,response:responseView(set,'short')});
-   bindResponse({box,coachNow:next,set,kind:'short'});
+   bindResponse({box,coachNow:next,set,kind:'short',next:true});
    box.querySelector('[data-practice-done]')?.focus?.({preventScroll:true});top();
    queueMicrotask(()=>refresh());evidenced();
   }

@@ -178,6 +178,24 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(!owner||!session||!gameHost)throw Object.assign(Error('계정 학습 기록 연결을 다시 열어 주세요.'),{code:'LEARNING_NOT_READY'});
   const host=gameHost,result=await host.importDeviceLearning(events);guard(expected);if(gameHost!==host)throw changed();return result;
  }
+ // Atlas 새 기록 길(재설계 단계 4 — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §18-2 4 · §18-5-2): 계정을 다시 읽어(verify) 지금 동의 · 판 ·
+ // 쓰기 문과 그 판의 나르개를 준다. 판 정하기는 world-atlas-next.mjs가 한다(부를 때마다 계정을 다시 읽는다 — 판이 오름 · 동의 꺼짐을 그때 안다).
+ // 나르개는 계정 클라이언트의 trail(view=trail)을 그 판으로 부르고, postLegacy(묶음 하나)는 옛 POST(손님 → 계정 옮기기의 옛 꼴 — 지금 판 학습
+ // 호스트를 세우지 않는다, §18-5-3 ②). 인증 오류는 지금 판 게임 호스트(prepareGame)처럼 세션을 닫는다(§18-5-2 401 줄). PC 앱 브리지는 4-8.
+ async function prepareAtlasTrail(){
+  const expected=epoch;guard(expected);
+  if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인한 뒤 학습 기록을 이어가요.'),{code:'AUTH_REQUIRED',status:401});
+  try{await verify(expected);guard(expected);}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}
+  const id=owner,client=verifiedClient,prefs=currentAccount?.learning;
+  if(typeof client?.trail?.get!=='function'||typeof client?.trail?.post!=='function'||!prefs||typeof prefs.enabled!=='boolean'||!Number.isSafeInteger(prefs.revision)||prefs.revision<1)
+   throw Object.assign(Error('계정의 학습 기록 연결이 아직 준비되지 않았어요.'),{code:'TRAIL_NOT_READY'});
+  const check=()=>{guard(expected);if(owner!==id)throw changed();};
+  const wrap=fn=>async input=>{check();try{const value=await fn(input);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}};
+  const get=wrap(input=>client.trail.get(input)),post=wrap(input=>client.trail.post(input)),legacy=typeof client.learning?.post==='function'?wrap(input=>client.learning.post(input)):null;
+  return Object.freeze({learning:Object.freeze({enabled:prefs.enabled,revision:prefs.revision}),learningSync:currentAccount.capabilities?.learningSync===true,
+   transport:revision=>Object.freeze({get:since=>get({revision,since}),post:(events,since)=>post({revision,events,since})}),
+   postLegacy:legacy?events=>legacy({revision:prefs.revision,events}):null});
+ }
  async function prepareHangulProgress({storage:cache=globalThis.localStorage,target=globalThis}={}){
   const expected=epoch,launch=++hangulLaunch;guard(expected);
   if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED'});
@@ -352,7 +370,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,speakingRequest,me2Request,pushRequest,pushAnonymous,get supportsMe2(){return !native;},get supportsPush(){return !native;},get supportsWriting(){return !native;},get supportsSpeaking(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},get supportsTownCheck(){return !native||nativeTownCheck;},get supportsTownPulse(){return !native||nativeTownPulse;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,prepareHangulProgress,importDeviceLearning,prepareAtlasTrail,topicAnswers,readClassrooms,readHomework,submitHomework,readHomeworkKey,courseRequest,writingRequest,speakingRequest,me2Request,pushRequest,pushAnonymous,get supportsMe2(){return !native;},get supportsPush(){return !native;},get supportsWriting(){return !native;},get supportsSpeaking(){return !native;},get supportsClassroom(){return !native||nativeClassroom;},get supportsHomework(){return !native||nativeHomework;},get supportsTownCheck(){return !native||nativeTownCheck;},get supportsTownPulse(){return !native||nativeTownPulse;},identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=clientFor(expected);

@@ -6,7 +6,7 @@ import {progressKey} from '../../hangul-stage/learning.mjs';
 import {emptyProgress,meet,answer as answerLetter} from '../../hangul-stage/core.mjs';
 import {createLifeProgress,LIFE_PROGRESS_KEY} from '../life-progress.mjs';
 import {HANGUL_DEVICE_KEY,GUEST_LIFE_KEY,DEVICE_RECORDS_KEY,hangulAccountKey,hangulProgressSummary,deviceHangulAnswer,planDeviceRecords,applyDeviceRecords,
- deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer,GUEST_LEARNING_KEY,guestLearningEvents,guestLifeRecords,deviceWatermark,noteDeviceSignOut,noteDeviceAccount,
+ deviceRecordsDecision,saveDeviceRecordsDecision,describeDeviceRecords,createDeviceRecordsOffer,GUEST_LEARNING_KEY,guestLearningEvents,pickGuestLearning,guestLifeRecords,deviceWatermark,noteDeviceSignOut,noteDeviceAccount,
  DEVICE_RECORDS_TEXT} from '../device-records.mjs';
 import {PACKS,LESSONS} from '../life-content.mjs';
 import {createRequire} from 'node:module';
@@ -411,4 +411,96 @@ test('capacity retry preserves a previous account cutoff and cannot bypass a lat
  const offer=make(),pending=offer.offer({owner:ACCOUNT});assert.ok(pending);await offer.choose('move',{owner:ACCOUNT});await pending;
  assert.equal(JSON.parse(storage.getItem(DEVICE_RECORDS_KEY)).accounts[ACCOUNT].through,old);
  noteDeviceSignOut(storage,LATER+1);assert.equal(make().offer({owner:ACCOUNT}),null,'sign-out remains the privacy boundary');
+});
+
+// ── Atlas 새 길의 손님 → 계정 옮기기(단계4_계획 §18-5-3 — world-atlas-next.mjs guestMove) ──
+function atlasOffer({found,storage=memory(),wait=1000,owner=()=>ACCOUNT}={}){
+ const calls=[];let shown=null;
+ const offer=createDeviceRecordsOffer({storage,learningStatus:()=>learning,present:value=>{shown=value;calls.push('present');},close:()=>{calls.push('close');shown?.onClose();shown=null;},
+  now:()=>LATER,defer:fn=>fn(),toast:message=>calls.push(`toast:${message}`),importLearning:async()=>{throw Error('옛 길로 옮기지 않는다');},atlasWait:wait,accountOwner:owner});
+ const atlas=input=>{calls.push(['count',input.watermarks]);return typeof found==='function'?found(input):found;};
+ return {offer,calls,storage,atlas,shown:()=>shown};
+}
+const atlasFound=(over={})=>{const log=[];return {log,attempts:2,events:5,move:async()=>{log.push('move');return {ok:true,legacy:1,current:4};},keep:async()=>{log.push('keep');return 9;},
+ note:async mark=>{log.push(`note:${mark}`);return true;},close:()=>log.push('close'),...over};};
+
+test('새 길 물음 — 손님 저장소에서 센 답 수를 묻고, 옮기기는 새 길의 다섯 걸음으로 한 뒤 결정을 남긴다(옛 기기 로그 줄은 묻지 않는다)',async()=>{
+ const found=atlasFound(),f=atlasOffer({found});
+ // 옛 기기 로그에 옮길 사건이 있어도 새 길이면 그 줄(importLearning — 옛 길)은 묻지 않는다(새 길이 옛 기록 읽개로 손님 저장소에서 센다).
+ f.storage.setItem(GUEST_LEARNING_KEY,JSON.stringify({version:1,events:[{id:'d9',type:'decision.made',at:AT,experienceId:'game'},
+  {id:'p9',type:'practice.presented',at:AT,decisionId:'d9'},{id:'a9',type:'practice.attempted',at:AT,presentationId:'p9',attemptNo:1}]}));
+ const pending=f.offer.offer({owner:ACCOUNT},{atlas:f.atlas});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(f.calls[0],['count',{others:0,all:0}]);
+ assert.ok(f.shown().html.includes(DEVICE_RECORDS_TEXT.learningRow),'학습 줄');
+ assert.ok(f.shown().html.includes(DEVICE_RECORDS_TEXT.answers(2)));
+ assert.deepEqual(found.log,['note:visited'],'있었음 표지(되는 만큼만)');
+ assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),'moved');assert.equal(await pending,'moved');
+ assert.deepEqual(found.log,['note:visited','move','close']);
+ assert.equal(deviceRecordsDecision(f.storage,ACCOUNT),'moved');
+});
+
+test('새 길 물음 — 「두기」는 두기 표지를 먼저 쓰고 결정을 남긴다(R8), 표지가 실패해도 결정은 남는다',async()=>{
+ for(const keep of [async()=>9,async()=>{throw Error('표지 실패');}]){
+  const found=atlasFound({keep:async()=>{found.log.push('keep');return keep();}}),f=atlasOffer({found});
+  const pending=f.offer.offer({owner:ACCOUNT},{atlas:f.atlas});await new Promise(resolve=>setTimeout(resolve,0));
+  assert.equal(await f.offer.choose('keep',{owner:ACCOUNT}),'kept');assert.equal(await pending,'kept');
+  assert.deepEqual(found.log,['note:visited','keep','close']);
+  assert.equal(deviceRecordsDecision(f.storage,ACCOUNT),'kept');
+ }
+});
+
+test('새 길 물음 — 옮기기가 실패하면 결정 없이 다시 고르게 하고, 세지 못했으면(failed · 한도) 학습 줄 없이 묻고 기준 시각을 올리지 않는다',async()=>{
+ const found=atlasFound({move:async()=>({ok:false,step:'legacy',code:'LEGACY_POST_FAILED'})}),f=atlasOffer({found});
+ const pending=f.offer.offer({owner:ACCOUNT},{atlas:f.atlas});await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),null);assert.equal(deviceRecordsDecision(f.storage,ACCOUNT),null);
+ f.shown().onClose();assert.equal(await pending,'dismissed');assert.ok(found.log.includes('close'));
+ // 세지 못함 — 다른 줄(한글)만으로 묻고, 결정의 기준 시각은 앞 값 그대로(다음 로그인에 학습을 다시 묻는다)
+ const storage=memory();storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));
+ const g=atlasOffer({found:{failed:true},storage});
+ const asked=g.offer.offer({owner:ACCOUNT},{atlas:g.atlas});await new Promise(resolve=>setTimeout(resolve,0));
+ assert.ok(!g.shown().html.includes(DEVICE_RECORDS_TEXT.learningRow),'학습 줄 없이');
+ assert.equal(await g.offer.choose('keep',{owner:ACCOUNT}),'kept');await asked;
+ assert.equal(deviceWatermark(storage,ACCOUNT),0,'기준 시각을 올리지 않는다');
+ // 한도를 넘긴 셈은 실패로 묻고, 늦게 온 손님 저장소는 닫는다
+ const late=atlasFound();let release;
+ const h=atlasOffer({found:()=>new Promise(resolve=>{release=()=>resolve(late);}),wait:20});
+ h.storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));
+ const slow=h.offer.offer({owner:ACCOUNT},{atlas:h.atlas});
+ await new Promise(resolve=>setTimeout(resolve,40));
+ assert.ok(h.shown(),'한도 뒤에 묻는다');release();await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(late.log,['close']);
+ h.shown().onClose();await slow;
+});
+
+test('새 길 물음 — 셀 것이 없으면(0건) 다른 줄이 없을 때 묻지 않고, 세는 사이에 계정이 바뀌면 묻지 않으며 같은 계정을 두 번 세지 않는다',async()=>{
+ const empty=atlasFound({events:0,attempts:0}),f=atlasOffer({found:empty});
+ assert.equal(await f.offer.offer({owner:ACCOUNT},{atlas:f.atlas}),null);
+ assert.ok(empty.log.includes('close'),'옆으로 연 손님 저장소를 닫는다');
+ let who=ACCOUNT;const found=atlasFound(),g=atlasOffer({found,owner:()=>who});
+ const first=g.offer.offer({owner:ACCOUNT},{atlas:()=>{who='someone-else';return found;}});
+ assert.equal(g.offer.offer({owner:ACCOUNT},{atlas:g.atlas}),null,'세는 동안 다시 묻지 않는다');
+ assert.equal(await Promise.race([first,new Promise(resolve=>setTimeout(()=>resolve('물음을 띄웠다'),300))]),null);assert.deepEqual(found.log,['close']);
+});
+
+test('pickGuestLearning — guestLearningEvents와 같은 고르기를 사건 배열에(새 길이 옮겨 온 옛 꼴 후보를 고른다)',()=>{
+ const storage=memory();
+ const events=[{id:'d1',type:'decision.made',at:'2026-10-19T03:00:00.000Z',experienceId:'game'},{id:'p1',type:'practice.presented',at:'2026-10-19T03:00:01.000Z',decisionId:'d1'},
+  {id:'a1',type:'practice.attempted',at:'2026-10-19T03:00:02.000Z',presentationId:'p1',attemptNo:1},{id:'p0',type:'practice.presented',at:'2026-10-18T03:00:00.000Z'},
+  {id:'a0',type:'practice.attempted',at:'2026-10-18T03:00:01.000Z',presentationId:'p0',attemptNo:1}];
+ storage.setItem(GUEST_LEARNING_KEY,JSON.stringify({version:1,events}));
+ const after=Date.parse('2026-10-19T00:00:00.000Z');
+ assert.deepEqual(pickGuestLearning(events,{after}),guestLearningEvents(storage,{after}));
+ assert.deepEqual(pickGuestLearning(events,{after}).events.map(e=>e.id),['d1','p1','a1']);
+ assert.deepEqual(pickGuestLearning(null),{events:[],attempts:0});
+});
+
+test('새 길 물음 — 다른 줄(한글)은 옮겼어도 새 길 옮기기가 실패하면 결정을 남기지 않고 다시 고르게 한다',async()=>{
+ const storage=memory();storage.setItem(HANGUL_DEVICE_KEY,JSON.stringify(guestHangul()));
+ const found=atlasFound({move:async()=>({ok:false,step:'current',code:'TURN_BUSY'})}),f=atlasOffer({found,storage});
+ const pending=f.offer.offer({owner:ACCOUNT},{atlas:f.atlas});await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(await f.offer.choose('move',{owner:ACCOUNT}),null);
+ assert.equal(deviceRecordsDecision(storage,ACCOUNT),null,'결정 없음 — 다음에 다시 고른다');
+ assert.ok(f.shown(),'물음은 열려 있다');
+ f.shown().onClose();await pending;
 });

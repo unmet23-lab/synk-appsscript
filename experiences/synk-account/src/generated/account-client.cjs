@@ -8,6 +8,7 @@ const messages = {
   REVISION_CONFLICT: '다른 기기에서 연결 설정이 바뀌었어요. 계정을 다시 확인해 주세요.',
   PROFILE_CONFLICT: '다른 기기에서 프로필이 바뀌었어요. 다시 확인해 주세요.',
   LEARNING_DISABLED: '학습 기록 연결이 꺼져 있어요. 내 SYNK 계정에서 확인해 주세요.',
+  WRITES_DISABLED: '이 앱에서는 학습 기록을 아직 계정에 올리지 않아요. 기록은 이 기기에 남아 있어요.',
   HISTORY_CAPACITY: '기록 보관 한도에 도달했어요. 기존 기록은 보존되어 있으니 고객 지원에 문의해 주세요.',
   SESSION_REVOKED: '기기 연결이 해제됐어요. 다시 로그인해 주세요.',
   AUTH_REQUIRED: '다시 로그인해 주세요.', AUTH_SESSION_MISSING: '로그인 정보를 새로 확인해야 해요. 다시 로그인해 주세요.',
@@ -75,7 +76,8 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
       throw fault(code,
         messages[code] || (data?.error?.message !== code && data?.error?.message) || '계정 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.',
         response.status === 429 || response.status >= 500,
-        { status: response.status, revision: data?.revision });
+        // ids: 서버가 짚은 사건 번호(409 EVENT_REVISION · EVENT_CONFLICT — Atlas 새 기록 길의 기기가 그 번호만 버린다).
+        { status: response.status, revision: data?.revision, ...(Array.isArray(data?.ids) ? { ids: data.ids } : {}) });
     }
     return data;
   }
@@ -136,6 +138,16 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     learning: Object.freeze({
       get: ({ after, revision, signal }) => request(`synk-learning?after=${encodeURIComponent(after)}&revision=${encodeURIComponent(revision)}`, undefined, { signal }),
       post: ({ revision, events, signal }) => request('synk-learning', { revision, events }, { signal }),
+    }),
+    // Atlas 새 기록 길(재설계 단계 4 — SYNK-appsscript docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §18-2 4 · §18-5-2): 2판 사건 올리기 ·
+    // 달라진 줄만 내려 주는 요약 · 연습 기록 비우기. since = { edition, seq, gen? }(기기 기록부의 since()). 서버 스위치(SYNK_ATLAS_TRAIL) 뒤라
+    // 꺼진 서버는 403 FEATURE_DISABLED(GET) · WRITES_DISABLED(POST — 쓰기만 막힘)로 답한다.
+    trail: Object.freeze({
+      get: ({ revision, since = null, signal }) => request(`synk-learning?view=trail&revision=${encodeURIComponent(revision)}${since
+        ? `&edition=${encodeURIComponent(since.edition)}&since=${encodeURIComponent(since.seq)}${since.gen ? `&gen=${encodeURIComponent(since.gen)}` : ''}` : ''}`,
+        undefined, { signal }),
+      post: ({ revision, events, since = null, signal }) => request('synk-learning?view=trail', { revision, events, ...(since ? { since } : {}) }, { signal }),
+      clear: ({ revision, signal }) => request('synk-learning?view=trail-clear', { revision }, { signal }),
     }),
     // Core memory (lib/atlas/memory-sync.js): chosen presentation, content memories, declined offers.
     memory: Object.freeze({

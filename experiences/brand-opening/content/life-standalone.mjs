@@ -23169,9 +23169,11 @@ function createWorldEducation({
     }
   }
   const PRACTICE_LENGTH = Object.freeze({ too_much: 3, want_more: 7 });
+  let nextShort = null;
   function practiceLength() {
     const base = position?.practice?.PRACTICE_POLICY?.count || 5;
     if (!answering()) return base;
+    if (nextShort) return PRACTICE_LENGTH[nextShort] || base;
     try {
       const last = (readPracticeCoach()?.setFeedback?.() || []).filter((row) => row.kind === "short").at(-1);
       return PRACTICE_LENGTH[last?.value] || base;
@@ -23179,7 +23181,7 @@ function createWorldEducation({
       return base;
     }
   }
-  function bindResponse({ box, coachNow, set, kind, more = 0 }) {
+  function bindResponse({ box, coachNow, set, kind, more = 0, next: next2 = false }) {
     if (!set || !box?.querySelector?.("[data-set-response-box]")) return;
     let chosen = null;
     box.addEventListener("click", (event) => {
@@ -23206,8 +23208,9 @@ function createWorldEducation({
         node.outerHTML = view.renderSetResponse({ kind, value: chosen, failed: failed2 });
         box.querySelector(`[data-set-response="${value}"]`)?.focus?.({ preventScroll: true });
       }
+      if (next2 && !failed2 && kind === "short") nextShort = chosen;
       const again = kind === "short" ? box.querySelector("[data-practice-again]") : null;
-      if (again) again.innerHTML = `${escape3(t2("practice.again", { n: Math.min(more, practiceLength()) }))} <span aria-hidden="true">\u2192</span>`;
+      if (again) again.innerHTML = next2 ? `${escape3(t2("practice.next.again", { n: practiceLength() }))} <span aria-hidden="true">\u2192</span>` : `${escape3(t2("practice.again", { n: Math.min(more, practiceLength()) }))} <span aria-hidden="true">\u2192</span>`;
     });
   }
   const responseView = (set, kind) => set ? { kind, value: null } : null;
@@ -24651,13 +24654,15 @@ function createWorldEducation({
     }
     const count = practiceLength(), skill2 = { id: skillId, label: skillLabel(skillId) };
     const session = atlasNext.createPracticeNextSession({ coach: next2, pool, setPool: all, length: count, audioAvailable, more, lang: currentLang2(), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
-    let ended = false, notice = "";
+    let ended = false, notice = "", unwatch = () => {
+    };
     const player = soundPlayer({ session, url: audioUrl, onChange: (state) => {
       if (ended) return;
       notice = state === "failed" && session.current?.heard ? t2("position.diagnostic.audioFailed") : "";
       paint(state === "completed" ? ".wpos-choice:not([disabled])" : "[data-practice-listen]");
     } });
     const stop = () => {
+      unwatch();
       if (ended) return;
       ended = true;
       player.silence();
@@ -24669,6 +24674,13 @@ function createWorldEducation({
     };
     home.showPanel(t2(listening ? "practice.title.listening" : "practice.title"), '<div class="wpos-stage" data-practice-stage></div>', { ...PANEL, eyebrow: "PRACTICE" });
     home.attachPanelResource?.({ dispose: stop });
+    unwatch = atlasNext.retired?.(next2, () => {
+      if (ended) return;
+      stop();
+      home.toast(t2("practice.next.changed"));
+      void openPosition();
+    }) ?? (() => {
+    });
     const box = panelNode("[data-practice-stage]");
     if (!box) {
       stop();
@@ -24714,7 +24726,7 @@ function createWorldEducation({
       if (!box.isConnected) return;
       const set = finishSet(next2, "short");
       box.innerHTML = view.renderPracticeNextDone({ skill: skill2, results, items: new Map([...position.itemsById, ...all.map((item) => [item.id, item])]), listening, count, more: session.freshLeft(), ending: session.ending, response: responseView(set, "short") });
-      bindResponse({ box, coachNow: next2, set, kind: "short" });
+      bindResponse({ box, coachNow: next2, set, kind: "short", next: true });
       box.querySelector("[data-practice-done]")?.focus?.({ preventScroll: true });
       top();
       queueMicrotask(() => refresh());
