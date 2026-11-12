@@ -1079,4 +1079,20 @@ export const COACH_MUTANTS = [
     '      ? `Өнөөдөр алдсан үг хэллэг: «${name}». Дахин давтъя.`',
     '      ? `Өмнө нь алдсан үг хэллэг: «${name}». ${s.days} хоног өнгөрсөн тул дахин давтъя.`',
   ],
+  [
+    C,
+    '호스트',
+    '저장소 닫힘을 호스트마다 한 번이 아니라 닫힐 때마다 알린다(셸이 판을 거듭 다시 정한다 — F5 · 설계 주인 11-13)',
+    HOST,
+    '      if (state.closed || state.storeGone) return;\n      state.storeGone = true;\n',
+    '      if (state.closed) return;\n',
+  ],
+  [
+    C,
+    '호스트',
+    '닫은(닫는 중인) 호스트도 저장소 닫힘을 알린다(제 탭이 새 판을 열며 앞 판을 지울 때 새 판 코치를 닫는다 — F5 · 설계 주인 11-13)',
+    HOST,
+    '      if (state.closed || state.storeGone) return;\n',
+    '      if (state.storeGone) return;\n',
+  ],
 ];

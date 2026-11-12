@@ -325,6 +325,30 @@ test('판 응답 · 결정 · 마침을 겨눈 제외가 밀린 동안에도 계
   await client.record.add('practice.attempted', answer(next.event.id, 'incorrect')).stored;
   assert.equal(client.record.view().waitAll, false, '그 뒤에 낸 답도 얹힌다');
   assert.equal(client.record.unsent().length, 5, '제외 셋 · 제시 · 답은 올리기를 기다린다');
+  // 옛 꼴 판 결정을 겨눈 제외는 그 결정의 제시들 답을 통째로 거둔다 — 제시들이 기기에 없으면 적어 둔 줄이 없어 기다린다(설계 주인 11-13)
+  await client.push();
+  assert.equal(client.record.view().waitAll, false, '올린 뒤');
+  const when = new Date(T0).toISOString();
+  await client.record.importLegacy([
+    {
+      schema: 1,
+      id: 'old-decided',
+      scope: { domain: 'LAB', workspace: 'learning', subject: 'device' },
+      at: when,
+      recordedAt: when,
+      type: 'decision.made',
+      experienceId: 'g',
+      variant: 'v',
+      policy: 'x',
+      evidence: [],
+    },
+  ]);
+  await client.record.add('record.excluded', { targetId: 'old-decided' }).stored;
+  assert.equal(
+    client.record.view().waitAll,
+    true,
+    '옛 꼴 결정을 겨눈 제외는 얹을 것이 없다고 보지 않는다',
+  );
 });
 
 test('⑧ 손님 기록(옛 로그 + 접힌 장부 + 2판) → 계정: 예전 문항이 「처음 본 정답」이 아니고, 같은 장부 두 번 = 같음, 계정 요약 = 손님 요약', async () => {

@@ -689,7 +689,15 @@ export const RECORD_MUTANTS = [
     '기기',
     '응답 · 결정 · 마침을 겨눈 제외가 밀린 동안 계정 보기가 통째로 기다린다(Fable 5.2 끝 판 넘친 #1)',
     OWN,
-    '  return NOT_FOLDED.has(byId.get(entry.event.targetId)?.event.type);',
+    '  return target?.schema === EVENT_FORM.current && NOT_FOLDED.has(target.type);',
     '  return false;',
+  ],
+  [
+    R,
+    '기기',
+    '옛 꼴 판 결정 · 마침을 겨눈 제외도 얹을 것이 없다고 본다(그 제시들의 답을 통째로 거두는데 기다리지 않는다 — 설계 주인 11-13)',
+    OWN,
+    '  return target?.schema === EVENT_FORM.current && NOT_FOLDED.has(target.type);',
+    '  return NOT_FOLDED.has(target?.type);',
   ],
 ];

@@ -87,6 +87,67 @@ test('저장소 연결이 닫히면(다른 탭이 판이 오른 저장소를 엶
   }
 });
 
+test('닫힘 알림은 호스트마다 한 번 · 닫은 호스트는 알리지 않는다 — 기기 길(올리지 않는 계정 저장소)도 셸에 알리고 손님 저장소는 계기만(F5 · 설계 주인 11-13)', async () => {
+  const w = world(14);
+  const closers = [];
+  const top = topWindow(async (_key, options) => {
+    closers.push(options?.onClosed ?? null);
+    return memoryPort();
+  });
+  const notes = [];
+  const health = {
+    note: (kind, outcome) => notes.push(outcome?.code ?? null),
+    snapshot: () => ({}),
+  };
+  const open = host =>
+    createCoach({
+      gameId: 'closed',
+      map: w.map,
+      seed: 's',
+      dayOffset: 0,
+      scope: top,
+      host: { now: w.time.now, health, ...host },
+    });
+  // 기기 길 — guest + 그 계정 · 판의 기기 저장소(서버와 오가지 않음). 셸이 준 onAccount로 알린다.
+  const told = [];
+  const device = open({
+    guest: true,
+    account: 'acct-closed',
+    revision: 2,
+    key: keyOf('d'),
+    onAccount: detail => told.push(detail.code),
+  });
+  await device.ready;
+  const closeDevice = closers.at(-1);
+  closeDevice();
+  closeDevice();
+  assert.deepEqual(told, ['STORE_CLOSED'], '기기 길도 알린다 — 호스트마다 한 번');
+  device.dispose();
+  // 닫은(닫는 중인) 호스트의 연결에 온 닫힘은 알리지 않는다 — 제 탭이 새 판을 열며 앞 판을 지울 때
+  const late = [];
+  const gone = accountCoach(w, top, {
+    key: keyOf('g'),
+    health,
+    onAccount: detail => late.push(detail.code),
+  });
+  await gone.ready;
+  const closeGone = closers.at(-1);
+  gone.dispose();
+  closeGone();
+  assert.deepEqual(late, [], '닫은 호스트는 알리지 않는다');
+  // 손님 저장소 — 셸이 onAccount를 주지 않는다(지우기 대상이 아니다): 계기만
+  const before = notes.length;
+  const guest = open({ guest: true, key: keyOf('u') });
+  await guest.ready;
+  closers.at(-1)();
+  assert.deepEqual(
+    notes.slice(before).filter(code => code === 'STORE_CLOSED'),
+    ['STORE_CLOSED'],
+    '손님 저장소의 닫힘은 계기에 남는다',
+  );
+  guest.dispose();
+});
+
 test('저장이 실패하기 시작하면 받기를 한 번 강제한다 — 판 울타리 답(409)으로 셸이 판을 다시 정하게, 실패가 이어지는 동안은 한 번(Fable 5.2 끝 판 F5)', async () => {
   const w = world(13);
   const port = memoryPort();

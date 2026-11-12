@@ -125,6 +125,13 @@ test('셸 알림 — 그 밖(426 등)은 계정을 다시 읽어 그대로면 �
  const second=await next.practiceCoach(POOL);assert.equal(second.options.host.revision,2);
  const closed=[];next.retired(second,detail=>closed.push(detail.reason));
  second.options.host.onAccount({kind:'store',code:'STORE_CLOSED'});
+ // 기기 길 코치도 저장소 닫힘을 받는다(서버와 오가지 않아 알림은 그것뿐 — F5 · 설계 주인 11-13)
+ const deviceLine=accountLine({enabled:false,learningSync:false,revision:4});
+ const devicePath=createAtlasNext({owner:'acct-f7d',storage:memoryStorage(),trail:deviceLine.trail,load:fakeLoader().load,health:recorder()});
+ const deviceCoach=await devicePath.practiceCoach(POOL);
+ assert.equal(deviceCoach.options.host.guest,true,'기기 길');assert.equal(typeof deviceCoach.options.host.onAccount,'function','기기 길 호스트에도 알림 통로');
+ deviceCoach.options.host.onAccount({kind:'store',code:'STORE_CLOSED'});
+ await until(()=>deviceCoach.disposed===1);devicePath.dispose();
  await until(()=>second.disposed===1);assert.deepEqual(closed,['store'],'저장소가 닫히면 닫는다');
  const third=await next.practiceCoach(POOL);
  next.redecide('account');
@@ -196,7 +203,8 @@ test('동의 꺼진 계정 — 받기 한 번으로 스위치를 묻고(LEARNING
  const host=coach.options.host;
  assert.deepEqual({guest:host.guest,account:host.account,revision:host.revision,key:host.key},
   {guest:true,account:'acct-5',revision:3,key:atlas.storeName({account:'acct-5',revision:3,local:true})});
- assert.equal(host.legacy,undefined);assert.equal(host.transport,undefined);assert.equal(host.onAccount,undefined);
+ assert.equal(host.legacy,undefined);assert.equal(host.transport,undefined);
+ assert.equal(typeof host.onAccount,'function','알림 통로는 준다 — 서버와 오가지 않아 오는 것은 저장소 닫힘뿐(F5 · 설계 주인 11-13)');
  assert.equal(coach.syncedCalls,0);
  assert.deepEqual(markOf(storage,'acct-5'),{went:true,path:'device',revision:3});
  next.dispose();

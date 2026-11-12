@@ -562,8 +562,9 @@ export function createAtlasNext({
   function hostOf(plan, at) {
     if (plan.path === 'guest') return { guest: true, health, legacy: store ? legacyReader(store) : null };
     if (plan.path === 'device')
-      // 기기 길 계정에는 손님 기기의 옛 기록 읽개를 주지 않는다 — 손님 기록은 옮기기 물음을 지나서만 계정으로 간다(R16 · E2).
-      return { guest: true, account: owner, revision: plan.revision, key: plan.key, health };
+      // 기기 길 계정에는 손님 기기의 옛 기록 읽개를 주지 않는다 — 손님 기록은 옮기기 물음을 지나서만 계정으로 간다(R16 · E2). 서버와
+      // 오가지 않으니 알림은 저장소 닫힘(다른 탭이 판이 오른 저장소를 열어 이 판을 지움)뿐이다 — 판을 다시 정한다(F5 · 설계 주인 11-13).
+      return { guest: true, account: owner, revision: plan.revision, key: plan.key, health, onAccount: detail => changed(detail, at) };
     return { account: owner, revision: plan.revision, transport: plan.transport, health, onAccount: detail => changed(detail, at) };
   }
 

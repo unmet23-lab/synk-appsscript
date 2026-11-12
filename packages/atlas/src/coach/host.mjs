@@ -132,6 +132,7 @@ function createHost({
     channel: null,
     users: 0,
     closed: false,
+    storeGone: false, // 저장소 연결이 닫혔다고 알렸다(호스트마다 한 번 — F5)
     carry: null, // 옛 기록 옮기기의 약속 — 호스트당 하나(계획 §16 ③)
     unsaved: false, // 저장 실패가 이어지는 중(받기를 한 번 강제했다 — F5)
   };
@@ -258,9 +259,13 @@ function createHost({
       schedule();
     },
     // 이 저장소의 연결이 닫혔다(다른 탭이 판이 오른 저장소를 열어 이 판을 지움 — 포트의 onClosed). 뒤의 저장은 모두 실패하니 셸에 알려 판을
-    // 다시 정하게 한다 — 받기의 판 울타리 답을 기다리지 않는다(오프라인이어도). 손님 저장소는 판이 없어 지워지지 않는다(Fable 5.2 끝 판 F5).
+    // 다시 정하게 한다 — 받기의 판 울타리 답을 기다리지 않는다(오프라인이어도). 알림은 호스트마다 한 번이고, 이미 닫은(닫는 중인) 호스트는
+    // 알리지 않는다 — 제 탭이 새 판 저장소를 열며 앞 판을 지울 때 닫는 중인 앞 판 호스트에도 versionchange가 온다. 올리는 길 · 기기 길
+    // 저장소는 지워질 수 있어 셸(onAccount)에 알리고, 손님 저장소는 지우기 대상이 아니라 계기만 남긴다(셸이 손님 호스트에는 onAccount를
+    // 주지 않는다 — Fable 5.2 끝 판 F5 · 설계 주인 11-13).
     storeClosed() {
-      if (state.closed || guest) return;
+      if (state.closed || state.storeGone) return;
+      state.storeGone = true;
       note('save', { ok: false, code: 'STORE_CLOSED' });
       try {
         onAccount?.({ kind: 'store', code: 'STORE_CLOSED', status: null, revision: null });

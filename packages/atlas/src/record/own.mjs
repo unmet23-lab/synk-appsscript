@@ -145,8 +145,10 @@ export function ownFoldEvents(entries, pending, { index, memo = () => null }) {
   return out;
 }
 
-// 접기 재료가 아닌 사건(판 결정 · 마침 · 응답)을 겨눈 제외 — 겨눈 사건이 기기에 있으면 얹을 것이 없다(기다리지 않는다). 겨눈 사건이
-// 기기에 없을 때만 적어 둔 줄을 보거나 기다린다(Fable 5.2 끝 판 넘친 #1 — 「응답 빼기」가 밀린 동안 계정 보기가 통째로 기다렸다).
+// 접기 재료가 아닌 2판 사건(판 결정 · 마침 · 응답)을 겨눈 제외 — 겨눈 사건이 기기에 있으면 얹을 것이 없다(기다리지 않는다). 옛 꼴 판
+// 결정 · 마침을 겨눈 제외는 그 제시들의 답을 통째로 거두므로(adapt.mjs sourcesOf · whole — 결정은 기기에 있는데 제시들이 없으면 묶음 밖으로
+// 떨어져 여기 온다) 지금처럼 적어 둔 줄을 보거나 기다린다. 겨눈 사건이 기기에 없을 때도 같다(Fable 5.2 끝 판 넘친 #1 · 설계 주인 11-13 —
+// 「응답 빼기」가 밀린 동안 계정 보기가 통째로 기다렸다).
 const NOT_FOLDED = new Set([
   EVENT_TYPES.setDecided,
   EVENT_TYPES.setCompleted,
@@ -154,7 +156,8 @@ const NOT_FOLDED = new Set([
 ]);
 function aimsAtNothing(entry, byId) {
   if (entry.event.type !== EVENT_TYPES.excluded) return false;
-  return NOT_FOLDED.has(byId.get(entry.event.targetId)?.event.type);
+  const target = byId.get(entry.event.targetId)?.event;
+  return target?.schema === EVENT_FORM.current && NOT_FOLDED.has(target.type);
 }
 
 // 제외를 만들 때 그 답이 적힌 줄을 함께 적어 둔다(부모 사건이 기기에서 사라진 뒤에도 기다릴 줄을 안다 — 설계 §5-1).
