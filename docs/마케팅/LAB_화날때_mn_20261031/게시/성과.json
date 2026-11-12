@@ -378,6 +378,17 @@
         }
       },
       {
+        "계정": "lab-ca-youtube",
+        "채널": "유튜브 @synklabcanada",
+        "주소": "https://www.youtube.com/watch?v=wjbJkFHsk54",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-12T18:00:01.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-youtube",
         "채널": "유튜브 @synkkorean",
         "주소": "https://www.youtube.com/watch?v=unqTCDvSamI",
