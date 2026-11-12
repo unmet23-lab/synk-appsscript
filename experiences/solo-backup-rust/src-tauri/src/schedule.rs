@@ -105,29 +105,40 @@ fn principal(task: &IRegisteredTask) -> Option<String> {
     unsafe { principal.UserId(&mut user) }.ok()?;
     Some(user.to_string())
 }
-/// Only tasks that run as this account are read, replaced or deleted (review GA4).
-fn owned(task: &IRegisteredTask, ids: &[String]) -> bool { principal(task).is_some_and(|p| ids.contains(&p.to_lowercase())) }
-fn identities(sid: &str) -> Vec<String> { let mut ids = vec![sid.to_lowercase()]; if let Some(name) = account_name(sid) { ids.push(name.to_lowercase()); } ids }
-fn account_name(sid: &str) -> Option<String> {
-    use windows_sys::Win32::{Foundation::LocalFree, Security::{Authorization::ConvertStringSidToSidW, LookupAccountSidW}};
-    let wide: Vec<u16> = sid.encode_utf16().chain([0]).collect();
+/// Only tasks that run as this account are read, replaced or deleted (review GA4). Task
+/// Scheduler may keep the principal as a SID or as an account name, so both sides are
+/// compared as SIDs (T2 11-13: the stored form did not match the SID text).
+fn owned(task: &IRegisteredTask, sid: &str) -> bool { principal(task).and_then(|p| sid_of(&p)).is_some_and(|p| p.eq_ignore_ascii_case(sid)) }
+/// A SID text as is, or the SID of an account name.
+fn sid_of(account: &str) -> Option<String> {
+    if account.get(..4).is_some_and(|p| p.eq_ignore_ascii_case("S-1-")) { return Some(account.to_string()); }
+    use windows_sys::Win32::{Foundation::LocalFree, Security::{Authorization::ConvertSidToStringSidW, LookupAccountNameW}};
+    let wide: Vec<u16> = account.encode_utf16().chain([0]).collect();
+    let (mut sid, mut sid_len) = (vec![0u8; 68], 68u32);
+    let (mut domain, mut domain_len, mut kind) = ([0u16; 256], 256u32, 0);
     unsafe {
-        let mut psid = std::ptr::null_mut();
-        if ConvertStringSidToSidW(wide.as_ptr(), &mut psid) == 0 { return None; }
-        let (mut name, mut domain) = ([0u16; 256], [0u16; 256]);
-        let (mut name_len, mut domain_len, mut kind) = (256u32, 256u32, 0);
-        let ok = LookupAccountSidW(std::ptr::null(), psid, name.as_mut_ptr(), &mut name_len, domain.as_mut_ptr(), &mut domain_len, &mut kind) != 0;
-        LocalFree(psid as _);
-        ok.then(|| format!("{}\\{}", String::from_utf16_lossy(&domain[..domain_len as usize]), String::from_utf16_lossy(&name[..name_len as usize])))
+        if LookupAccountNameW(std::ptr::null(), wide.as_ptr(), sid.as_mut_ptr() as _, &mut sid_len, domain.as_mut_ptr(), &mut domain_len, &mut kind) == 0 { return None; }
+        let mut text: *mut u16 = std::ptr::null_mut();
+        if ConvertSidToStringSidW(sid.as_mut_ptr() as _, &mut text) == 0 { return None; }
+        let len = (0..).take_while(|&i| *text.add(i) != 0).count();
+        let found = String::from_utf16_lossy(std::slice::from_raw_parts(text, len));
+        LocalFree(text as _);
+        Some(found)
     }
+}
+/// The principal Task Scheduler keeps for this account's first task (for the T2 record).
+pub fn principal_of(user: &str, sid: &str) -> Option<String> {
+    let _com = Com::init().ok()?;
+    let service = service().ok()?;
+    [FOLDER, ROOT].into_iter().filter_map(|path| folder(&service, path)).find_map(|f| task(&f, &task_name(user, sid, Trigger::Hourly)).and_then(|t| principal(&t)))
 }
 fn register_one(folder: &ITaskFolder, name: &str, xml: &str) -> Result<(), String> {
     unsafe { folder.RegisterTask(&BSTR::from(name), &BSTR::from(xml), TASK_CREATE_OR_UPDATE.0, &VARIANT::default(), &VARIANT::default(), TASK_LOGON_INTERACTIVE_TOKEN, &VARIANT::default()) }
         .map(|_| ()).map_err(|e| format!("SCHEDULE_REGISTER:{:#x}", e.code().0))
 }
-fn delete_owned(folder: &ITaskFolder, name: &str, ids: &[String]) -> Result<(), String> {
+fn delete_owned(folder: &ITaskFolder, name: &str, sid: &str) -> Result<(), String> {
     match task(folder, name) {
-        Some(t) if owned(&t, ids) => unsafe { folder.DeleteTask(&BSTR::from(name), 0) }.map_err(|e| format!("SCHEDULE_DELETE:{:#x}", e.code().0)),
+        Some(t) if owned(&t, sid) => unsafe { folder.DeleteTask(&BSTR::from(name), 0) }.map_err(|e| format!("SCHEDULE_DELETE:{:#x}", e.code().0)),
         _ => Ok(()),
     }
 }
@@ -139,8 +150,7 @@ fn delete_owned(folder: &ITaskFolder, name: &str, ids: &[String]) -> Result<(), 
 pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placement, String> {
     let _com = Com::init()?;
     let service = service()?;
-    let ids = identities(sid);
-    let xmls: Vec<(String, String)> = Trigger::ALL.iter().map(|t| Ok((task_name(user, sid, *t), task_xml(*t, exe, sid, start)?))).collect::<Result<_, String>>()?;
+        let xmls: Vec<(String, String)> = Trigger::ALL.iter().map(|t| Ok((task_name(user, sid, *t), task_xml(*t, exe, sid, start)?))).collect::<Result<_, String>>()?;
     let mut last = String::from("SCHEDULE_FOLDER");
     for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
@@ -148,7 +158,7 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
         let mut failed = None;
         for (name, xml) in &xmls {
             let before = match task(&target, name) {
-                Some(t) if !owned(&t, &ids) => { failed = Some("SCHEDULE_FOREIGN".to_string()); break; }
+                Some(t) if !owned(&t, sid) => { failed = Some("SCHEDULE_FOREIGN".to_string()); break; }
                 Some(t) => match unsafe { t.Xml() } { Ok(x) => Some(x.to_string()), Err(e) => { failed = Some(format!("SCHEDULE_READ:{:#x}", e.code().0)); break; } },
                 None => None,
             };
@@ -159,13 +169,13 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
                 // One place only: copies left in the other place (from a registration before the
                 // installer made the folder, or before it refused) would start every run twice.
                 for other in [FOLDER, ROOT].into_iter().filter(|p| *p != path) {
-                    if let Some(old) = folder(&service, other) { for (name, _) in &done { let _ = delete_owned(&old, name, &ids); } }
+                    if let Some(old) = folder(&service, other) { for (name, _) in &done { let _ = delete_owned(&old, name, sid); } }
                 }
                 return Ok(Placement { folder: path.into(), tasks: done.into_iter().map(|(n, _)| n).collect() });
             }
             Some(code) => {
                 for (name, before) in done.iter().rev() {
-                    let _ = match before { Some(xml) => register_one(&target, name, xml), None => delete_owned(&target, name, &ids) };
+                    let _ = match before { Some(xml) => register_one(&target, name, xml), None => delete_owned(&target, name, sid) };
                 }
                 last = code;
             }
@@ -179,10 +189,9 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
 pub fn remove(user: &str, sid: &str) -> Result<(), String> {
     let _com = Com::init()?;
     let service = service()?;
-    let ids = identities(sid);
-    for path in [FOLDER, ROOT] {
+        for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
-        for t in Trigger::ALL { delete_owned(&target, &task_name(user, sid, t), &ids)?; }
+        for t in Trigger::ALL { delete_owned(&target, &task_name(user, sid, t), sid)?; }
     }
     Ok(())
 }
@@ -191,8 +200,7 @@ pub fn remove(user: &str, sid: &str) -> Result<(), String> {
 pub fn locations(user: &str, sid: &str) -> Result<Vec<String>, String> {
     let _com = Com::init()?;
     let service = service()?;
-    let ids = identities(sid);
-    Ok([FOLDER, ROOT].into_iter().filter(|path| folder(&service, path).is_some_and(|f| Trigger::ALL.iter().any(|t| task(&f, &task_name(user, sid, *t)).is_some_and(|x| owned(&x, &ids))))).map(String::from).collect())
+        Ok([FOLDER, ROOT].into_iter().filter(|path| folder(&service, path).is_some_and(|f| Trigger::ALL.iter().any(|t| task(&f, &task_name(user, sid, *t)).is_some_and(|x| owned(&x, sid))))).map(String::from).collect())
 }
 
 /// True when all four tasks exist in one place, run as this account, are enabled and
@@ -200,15 +208,14 @@ pub fn locations(user: &str, sid: &str) -> Result<Vec<String>, String> {
 pub fn registered(exe: &Path, user: &str, sid: &str) -> Result<bool, String> {
     let _com = Com::init()?;
     let service = service()?;
-    let ids = identities(sid);
-    let command = format!("<Command>{}</Command>", escape(exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\")));
+        let command = format!("<Command>{}</Command>", escape(exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\")));
     for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
         let all = Trigger::ALL.iter().all(|t| {
             let Some(task) = task(&target, &task_name(user, sid, *t)) else { return false };
             let enabled = unsafe { task.Enabled() }.is_ok_and(|v| v == VARIANT_TRUE);
             let xml = unsafe { task.Xml() }.map(|x| x.to_string()).unwrap_or_default();
-            owned(&task, &ids) && enabled && xml.contains(&command) && xml.contains(&format!("<Arguments>--run {}</Arguments>", t.arg()))
+            owned(&task, sid) && enabled && xml.contains(&command) && xml.contains(&format!("<Arguments>--run {}</Arguments>", t.arg()))
         });
         if all { return Ok(true); }
     }
@@ -286,7 +293,12 @@ pub fn local_now() -> String {
         assert!(amp.contains(r"<Command>C:\A &amp; B\run.exe</Command>"));
     }
     #[test] fn sid_and_time_of_this_process() {
-        assert!(current_sid().unwrap().starts_with("S-1-5-"));
+        let sid = current_sid().unwrap();
+        assert!(sid.starts_with("S-1-5-"));
+        // An owner kept as an account name and one kept as a SID compare the same.
+        assert!(sid_of(&sid).is_some_and(|s| s.eq_ignore_ascii_case(&sid)));
+        let name = std::env::var("USERNAME").unwrap();
+        assert!(sid_of(&name).is_some_and(|s| s.eq_ignore_ascii_case(&sid)), "account name {name} resolves to this SID");
         let now = local_now(); assert_eq!(now.len(), 19); assert_eq!(&now[10..11], "T");
     }
 }

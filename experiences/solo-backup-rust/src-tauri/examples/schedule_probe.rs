@@ -23,6 +23,7 @@ fn main() {
         result["register"] = match &placed { Ok(p) => json!({ "ok": true, "folder": p.folder, "tasks": p.tasks }), Err(e) => json!({ "ok": false, "error": e }) };
         result["registeredAfter"] = json!(schedule::registered(&exe, &user, sid).map_err(|e| e.to_string()));
         result["locations"] = json!(schedule::locations(&user, sid).map_err(|e| e.to_string()));
+        result["principal"] = json!(schedule::principal_of(&user, sid));
         if !keep {
             result["remove"] = json!(schedule::remove(&user, sid).map(|_| true).map_err(|e| e.to_string()));
             result["registeredAfterRemove"] = json!(schedule::registered(&exe, &user, sid).map_err(|e| e.to_string()));
