@@ -123,6 +123,22 @@ test('스위치 꺼짐 — 첫 받기가 FEATURE_DISABLED면 꺼짐 표지, 다�
  d.dispose();
 });
 
+test('기기 길로 확인된 계정이 엔진만 못 받으면 옮기기 물음은 지금 판 물음(null)이고, 판은 붙들지 않아 다음 연습에서 기기 길로 연다(카본 다시 A2)',async()=>{
+ const storage=memoryStorage(),line=accountLine({enabled:false,revision:3,get:async()=>{throw fail(403,'LEARNING_DISABLED',{revision:3});}});
+ let broken=true;const working=fakeLoader();
+ const load=async()=>{if(broken)return {coach:()=>{throw Error('엔진 없음');},SynkAtlas:{load:async()=>{throw Error('offline');}}};return working.load();};
+ const health=recorder();
+ const next=createAtlasNext({owner:'acct-a2',storage,trail:line.trail,load,health});
+ assert.equal(await next.guestMove({watermarks:{}}),null,'기기 길은 손님 기록을 올리지 않는다 — 못 셈({failed})이 아니다');
+ assert.equal(await next.practiceCoach(POOL),null,'이번 연습은 지금 판');
+ assert.ok(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='PATH_DEVICE_UNLOADED'),'까닭은 계기에');
+ broken=false;
+ const coach=await next.practiceCoach(POOL);
+ assert.ok(coach,'다음 연습에서 다시 정해 기기 길로');
+ assert.equal(coach.options.host.guest,true);
+ next.dispose();
+});
+
 test('동의 꺼진 계정 — 받기 한 번으로 스위치를 묻고(LEARNING_DISABLED = 켜짐) 그 계정 · 그 판의 기기 저장소로, 옛 기록 읽개 · 나르개 없이(F6 · E1 · E2)',async()=>{
  const storage=memoryStorage([[LEGACY_KEY,JSON.stringify({version:1,events:[{schema:1,id:'old'}]})]]);
  const line=accountLine({enabled:false,revision:3,get:async()=>{throw fail(403,'LEARNING_DISABLED',{revision:3});}});
@@ -225,7 +241,7 @@ test('옮기기 물음 — 올리는 길이면 손님 저장소를 옆으로(옛
  const current=[{id:'c1',type:'practice.presented'},{id:'c2',type:'practice.attempted',attemptNo:1},{id:'c3',type:'practice.attempted',attemptNo:2}];
  const aside={
   plan:async watermarks=>{calls.push(['plan',watermarks]);return {legacy,current,until:9,touches:new Map()};},
-  move:async how=>{calls.push(['move',how.watermarks]);const sent=await how.postLegacy(legacy);return {ok:sent,legacy:legacy.length,current:current.length,until:9};},
+  move:async how=>{calls.push(['move',how.watermarks]);const sent=await how.postLegacy(legacy);calls.push(['sent',sent]);return {ok:sent===true||sent?.ok===true,legacy:legacy.length,current:current.length,until:9};},
   keep:async()=>{calls.push(['keep']);return 10;},note:async mark=>{calls.push(['note',mark]);return true;},close:()=>calls.push(['close']),
  };
  let asked=null;
@@ -241,8 +257,10 @@ test('옮기기 물음 — 올리는 길이면 손님 저장소를 옆으로(옛
  const moved=await found.move();
  assert.equal(moved.ok,true);
  assert.deepEqual(line.legacy.map(batch=>batch.map(e=>e.id)),[['d1','p1','a1']],'고른 것만 부모 먼저');
+ const answered=calls.find(call=>call[0]==='sent')[1];
+ assert.deepEqual({ok:answered.ok,ids:[...answered.ids].sort()},{ok:true,ids:['a1','d1','p1']},'보낸 옛 꼴 번호를 엔진에 돌려준다(옮김 표지 ids — GPT 다시 GA2)');
  await found.note('visited');await found.keep();found.close();
- assert.deepEqual(calls.slice(1).map(call=>call[0]),['move','note','keep','close']);
+ assert.deepEqual(calls.slice(1).map(call=>call[0]),['move','sent','note','keep','close']);
  // 손님 저장소가 없으면 만들지 않고 0, 지금 판이면 null, 엔진을 못 열면 failed
  const none=createAtlasNext({owner:'acct-15',storage,trail:line.trail,load:fakeLoader(()=>fakeCoach()).load,health:recorder()});
  assert.deepEqual((({attempts,events,none:empty})=>({attempts,events,empty}))(await none.guestMove({watermarks})),{attempts:0,events:0,empty:true});

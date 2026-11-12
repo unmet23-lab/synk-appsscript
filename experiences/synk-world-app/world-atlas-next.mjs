@@ -34,8 +34,9 @@ export function legacyReader(storage) {
     }
   };
 }
-// 정해진 지금 판(일시 실패가 아님) — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름.
-const SETTLED_OLD = new Set(['SWITCH_OFF', 'NO_TRAIL', 'SWITCH_UNKNOWN']);
+// 정해진 지금 판(일시 실패가 아님) — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름 · 기기 길로 확인된 계정이 엔진만
+// 못 받음(옮기기 물음은 지금 판 물음 — 기기 길은 손님 기록을 올리지 않는다, 카본 다시 A2. 판은 붙들지 않아 다음 연습에서 다시 정한다).
+const SETTLED_OLD = new Set(['SWITCH_OFF', 'NO_TRAIL', 'SWITCH_UNKNOWN', 'DEVICE_UNLOADED']);
 // 옮길 것이 없다는 답(손님 저장소도 고를 옛 기록도 없다) — 물음에 학습 줄을 넣지 않고 다녀감 표지도 쓰지 않는다.
 const NOTHING_TO_MOVE = () => ({ attempts: 0, events: 0, none: true, note: async () => false, close() {} });
 // 지금 판 규칙(pick)으로 고를 옛 기기 기록이 있나 — 못 읽으면 없다, 고르기가 던지면 있다고 본다(만들어 세는 쪽이 빠뜨리지 않는다).
@@ -342,10 +343,15 @@ export function createAtlasNext({
     if (line.learning.enabled === true && line.learningSync === true)
       return { path: 'upload', revision, line, transport: line.transport(revision), went: mark.went };
     // 기기 길(F6) — 올리지 않는다. 저장소 이름은 엔진이 짓고(E1), 스위치는 받기 한 번으로 묻는다(꺼짐이면 지금 판).
-    const { engine } = await entry();
-    // 엔진을 못 받은 것은 일시 실패다 — 붙들지 않고 다음 연습에서 다시 정한다(카본 끝 판 B).
+    let engine = null;
+    try {
+      ({ engine } = await entry());
+    } catch {
+      engine = null;
+    }
+    // 엔진을 못 받은 것은 일시 실패다 — 붙들지 않고 다음 연습에서 다시 정한다(카본 끝 판 B). 기기 길인 것은 이미 알았다(DEVICE_UNLOADED).
     if (typeof engine?.storeName !== 'function')
-      throw Object.assign(new Error('Atlas engine not loaded'), { code: 'STORE_NAME' });
+      throw Object.assign(new Error('Atlas engine not loaded'), { code: 'DEVICE_UNLOADED' });
     const asked = await askSwitch(line.transport(revision), switchAskMs);
     if (asked === 'off') {
       writeMark(store, owner, { off: true });
@@ -571,12 +577,14 @@ export function createAtlasNext({
         const move = () =>
           aside.move({
             watermarks,
+            // 보낸 옛 꼴 번호를 돌려준다 — 엔진이 옮김 표지 ids에 실어 그것을 겨눈 제외가 따라가게(GPT 다시 GA2). 고르지 않은 것은 안 보냈다.
             postLegacy: async events => {
               const chosen = pick(events);
-              if (!chosen.length) return true;
+              const sent = { ok: true, ids: chosen.map(event => event.id) };
+              if (!chosen.length) return sent;
               if (typeof line.postLegacy !== 'function') return false;
               try {
-                return await postLegacyBatches(chosen, batch => line.postLegacy(batch));
+                return (await postLegacyBatches(chosen, batch => line.postLegacy(batch))) ? sent : false;
               } catch {
                 return false;
               }

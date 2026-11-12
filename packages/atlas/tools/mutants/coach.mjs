@@ -755,7 +755,7 @@ export const COACH_MUTANTS = [
     '옮기기',
     '옛 꼴을 보내지 못해도 표지를 쓴다(다시 고르지 않아 옛 기록이 사라진다 — §18-5-3)',
     'src/coach/move.mjs',
-    "    if (sent !== true) return { ok: false, step: 'legacy', code: 'LEGACY_POST_FAILED' };",
+    "    if (sent !== true && !listed) return { ok: false, step: 'legacy', code: 'LEGACY_POST_FAILED' };",
     '',
   ],
   [
@@ -868,7 +868,7 @@ export const COACH_MUTANTS = [
     '옮기기',
     '옮김 표지에 옮긴 번호를 넘기지 않는다(옮긴 제시 뒤 다른 탭의 답이 영영 안 간다 — 끝 판 E1)',
     'src/coach/move.mjs',
-    '        ids: plan.current.map(event => event.id),\n',
+    '        ids: [...legacyIds, ...plan.current.map(event => event.id)],\n',
     '',
   ],
   [
@@ -958,5 +958,29 @@ export const COACH_MUTANTS = [
     'src/coach/turn.mjs',
     '        if (state.closed) throw turnBusy(job); // 청하는 사이 닫혔다 — 닫힌 호스트에서 일하지 않는다(카본 끝 판 D)',
     '        if (false) throw turnBusy(job); // 청하는 사이 닫혔다 — 닫힌 호스트에서 일하지 않는다(카본 끝 판 D)',
+  ],
+  [
+    C,
+    '손님 → 계정',
+    '옮김 표지에 보낸 옛 꼴 번호를 싣지 않는다(옛 꼴을 겨눈 제외가 못 간다 — GPT 다시 GA2)',
+    'src/coach/move.mjs',
+    '        ids: [...legacyIds, ...plan.current.map(event => event.id)],',
+    '        ids: plan.current.map(event => event.id),',
+  ],
+  [
+    C,
+    '손님 → 계정',
+    '옛 POST가 고른 번호를 가리지 않는다(보내지 않은 옛 꼴까지 싣는다 — GA2)',
+    'src/coach/move.mjs',
+    '    legacyIds = plan.legacy.map(event => event.id).filter(id => !listed || listed.has(id));',
+    '    legacyIds = plan.legacy.map(event => event.id);',
+  ],
+  [
+    C,
+    '손님 → 계정',
+    '옛 POST의 { ok, ids } 답을 실패로 친다(GA2)',
+    'src/coach/move.mjs',
+    '    if (sent !== true && !listed) return',
+    '    if (sent !== true) return',
   ],
 ];

@@ -195,6 +195,62 @@ test('옮긴 제시에 뒤에 저장된 답(다른 탭 · 고른 뒤 저장)은 
   );
 });
 
+test('옮긴 제시에 남이 다녀가기 전에 낸 답은 Z에게 가지 않는다 — 옮긴 부모를 따라가는 자식도 기준 시각(others) 뒤여야 한다(카본 다시 A1 ①)', async () => {
+  const guest = await guestOn(memoryPort());
+  clockMs += 60_000;
+  const shown = guest.add(EVENT_TYPES.presented, presented(items[0]));
+  await shown.stored;
+  await attempt(guest, shown.event.id, 1, 'incorrect').stored;
+  const plan = await planOf(guest, 1, { account: 'Z' });
+  await moved(guest, 'Z', plan);
+  // Z가 코치를 열지 않고 나간 뒤 기기 길 계정 Y(손님 저장소에 표지를 쓰지 않는다)가 탭에 남은 제시에 답하고 나갔다 — others만 오른다
+  clockMs += 60_000;
+  const strangers = attempt(guest, shown.event.id, 2, 'correct');
+  await strangers.stored;
+  const visitedAt = clockMs + 1;
+  clockMs = visitedAt + 60_000;
+  assert.deepEqual(
+    answers(await planOf(guest, 1, { account: 'Z', watermarks: { others: visitedAt } })),
+    [],
+    '남이 다녀가기 전의 답은 Z에게 가지 않는다',
+  );
+  assert.deepEqual(
+    answers(await planOf(guest, 1, { account: 'Z' })),
+    [strangers.event.id],
+    '다녀간 사람이 없으면(others 0) 옮긴 제시의 뒤 답은 Z에게 간다(GE1 그대로)',
+  );
+});
+
+test('옮긴 제시의 앞 답이 안 가고 남으면 그 제시의 뒤 답도 고르지 않는다 — 앞 답 없이 가면 서버가 차례로 영구히 버린다(카본 다시 A1 ②)', async () => {
+  const guest = await guestOn(memoryPort());
+  clockMs += 60_000;
+  const shown = guest.add(EVENT_TYPES.presented, presented(items[0]));
+  await shown.stored;
+  const plan = await planOf(guest, 1, { account: 'Z' });
+  assert.deepEqual(answers(plan), [], '답 전에 옮긴 제시');
+  await moved(guest, 'Z', plan);
+  // 첫 답은 남이 다녀가기 전(others 앞)이라 Z에게 못 가고, 둘째 답은 그 뒤다
+  clockMs += 60_000;
+  const first = attempt(guest, shown.event.id, 1, 'incorrect');
+  await first.stored;
+  const visitedAt = clockMs + 1;
+  clockMs = visitedAt + 60_000;
+  const second = attempt(guest, shown.event.id, 2, 'correct');
+  await second.stored;
+  const help = guest.add(EVENT_TYPES.excluded, { targetId: second.event.id });
+  await help.stored;
+  assert.deepEqual(
+    (await planOf(guest, 1, { account: 'Z', watermarks: { others: visitedAt } })).current,
+    [],
+    '앞 답(1번)이 남았으니 뒤 답(2번)과 그것을 겨눈 제외도 가지 않는다',
+  );
+  assert.deepEqual(
+    answers(await planOf(guest, 1, { account: 'Z' })),
+    [first.event.id, second.event.id],
+    '다녀간 사람이 없으면 둘 다 차례대로 간다',
+  );
+});
+
 test('로그아웃 앞 · 「이 기기에만 두기」로 둔 사건을 겨눈 제외는 Z가 그 뒤에 옮겼어도 Z에게 가지 않는다(카본 끝 판 E1)', async () => {
   const guest = await guestOn(memoryPort());
   const before = await practise(guest, items[0]);

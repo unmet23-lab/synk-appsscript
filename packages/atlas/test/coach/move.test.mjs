@@ -58,6 +58,18 @@ async function practiseAsGuest(w, items) {
   coach.dispose();
 }
 
+// 사건들이 그 포트에 실제로 들 때까지 — 제외는 저장 대기 수(pending — 답 · 본인 말)에 들지 않아, 기다리지 않으면 옮길 계획이
+// 마지막 쓰기를 못 본다.
+async function inPort(port, events) {
+  const want = events.map(event => event.id);
+  for (let i = 0; i < 400; i += 1) {
+    const ids = new Set((await port.read()).map(row => row.value?.event?.id).filter(Boolean));
+    if (want.every(id => ids.has(id))) return;
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+  assert.fail(`포트에 들지 않았다: ${want.join(' · ')}`);
+}
+
 async function accountCoach(w, account, revision = 1) {
   const coach = open(w, {
     guest: false,
@@ -158,6 +170,55 @@ test('옛 꼴을 보내지 못하면 표지를 쓰지 않고 계정 저장소에
     [],
     '보낸 옛 꼴은 다시 고르지 않는다(열쇠 경계 — C1)',
   );
+  // 보낸 옛 꼴 답을 겨눈 2판 제외는 다음 옮기기에서 A로 간다 — 옮김 표지 ids에 옛 꼴 번호도 실었다(GPT 다시 GA2)
+  const guest = open(w, { guest: true, key: storeName({}), port: w.guestPort });
+  await guest.ready;
+  const excluded = guest.exclude('legacy-p1');
+  await inPort(w.guestPort, [excluded]);
+  guest.dispose();
+  const next = await recs.plan();
+  assert.deepEqual(
+    next.current.map(event => event.id),
+    [excluded.id],
+    '옛 꼴 대상을 겨눈 제외도 따라간다',
+  );
+  recs.close();
+  a.dispose();
+});
+
+test('옛 POST가 고른 것만 보냈으면(ok · ids) 그 번호만 옮김 표지에 — 보내지 않은 옛 꼴을 겨눈 제외는 따라가지 않는다(GPT 다시 GA2)', async () => {
+  const w = world(24);
+  const at = new Date(w.time.now()).toISOString();
+  const legacy = id => ({
+    schema: 1,
+    id,
+    scope: { domain: 'LAB', workspace: 'learning', subject: 'device' },
+    at,
+    recordedAt: at,
+    type: 'practice.presented',
+  });
+  await practiseAsGuest(w, w.items.slice(0, 1));
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({
+    port: w.guestPort,
+    legacy: () => ({ log: [legacy('legacy-sent'), legacy('legacy-kept')], ledger: null }),
+  });
+  const done = await recs.move({ postLegacy: async () => ({ ok: true, ids: ['legacy-sent'] }) });
+  assert.equal(done.ok, true);
+  const guest = open(w, { guest: true, key: storeName({}), port: w.guestPort });
+  await guest.ready;
+  const sentDrop = guest.exclude('legacy-sent');
+  const keptDrop = guest.exclude('legacy-kept');
+  await inPort(w.guestPort, [sentDrop, keptDrop]);
+  guest.dispose();
+  assert.ok(keptDrop.id, '보내지 않은 옛 꼴을 겨눈 제외도 손님 저장소에는 든다');
+  assert.deepEqual(
+    (await recs.plan()).current.map(event => event.id),
+    [sentDrop.id],
+    '보낸 것을 겨눈 제외만',
+  );
+  const refused = await recs.move({ postLegacy: async () => ({ ok: false, ids: [] }) });
+  assert.equal(refused.ok, true, '옛 꼴이 남지 않았으면 옛 POST를 부르지 않는다');
   recs.close();
   a.dispose();
 });

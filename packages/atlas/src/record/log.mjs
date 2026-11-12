@@ -302,8 +302,10 @@ const isHead = event => parentOf(event) == null;
 
 // 2판 사건 고르기 — 머리가 열쇠 경계 뒤이고 그 시각이 남이 다녀간 기준 시각(others) 뒤인 묶음. 장부는 기준 시각(all — 자기 결정 포함)이
 // 0일 때만(장부에는 든 일이 언제 것인지 가릴 재료가 없다 — 결정 2의 보수 쪽). 자식 · 제외는 이번에 고른 부모를 따라가고, 열쇠 경계
-// 뒤에 덧붙은 것은 부모를 Z가 이 판으로 이미 옮겨 갔으면 따라간다(moved — 옮김 표지의 ids).
-function takes(item, picked, { edge, moved, others, all }) {
+// 뒤에 덧붙은 것은 부모를 Z가 이 판으로 이미 옮겨 갔으면(moved — 옮김 표지의 ids) 머리와 같이 남이 다녀간 기준 시각 뒤일 때만 따라간다
+// (Z가 옮긴 뒤 남 · 기기 길 계정이 탭에 남은 제시에 낸 답이 Z로 가지 않게 — 카본 다시 A1 ①). 막힌 제시(stalled — 앞 답이 이번에도
+// 앞서도 안 간 제시)의 뒤 답은 고르지 않는다 — 앞 답 없이 뒤 답만 가면 서버가 차례(EVENT_LINK)로 영구히 버린다(같은 A1 ②).
+function takes(item, picked, { edge, moved, others, all }, stalled) {
   const { event } = item;
   if (isHead(event))
     return (
@@ -311,8 +313,11 @@ function takes(item, picked, { edge, moved, others, all }) {
       Date.parse(event.at) > others &&
       (event.type !== EVENT_TYPES.carried || all === 0)
     );
+  if (event.type === EVENT_TYPES.attempted && stalled.has(event.presentationId)) return false;
   const parent = parentOf(event);
-  return picked.has(parent) || (item.key > edge && moved.has(parent));
+  return (
+    picked.has(parent) || (item.key > edge && Date.parse(event.at) > others && moved.has(parent))
+  );
 }
 // 대기열에서 건너뛸 사건인가(unsent) — 건너뛸 번호 자신 · 그것에 기댄 자식(부모 사슬), 답 하나가 건너뛰어진 제시의 뒤 답(같은 제시의
 // 답은 앞 답에 기댄다 — §18-4). 건너뛰면 그 번호를 막힌 것에 더한다(자손이 따라 걸린다).
@@ -330,9 +335,16 @@ function skipped(event, blocked, stalled) {
 
 function pickCurrent(items, rule) {
   const picked = new Set();
+  const stalled = new Set();
   return items.filter(item => {
-    if (!takes(item, picked, rule)) return false;
-    picked.add(item.event.id);
+    const { event } = item;
+    if (!takes(item, picked, rule, stalled)) {
+      // 고르지 않은 답이 앞서 옮겨 간 것도 아니면 그 제시는 막혔다 — 뒤 답은 앞 답에 기댄다(§18-4).
+      if (event.type === EVENT_TYPES.attempted && !rule.moved.has(event.id))
+        stalled.add(event.presentationId);
+      return false;
+    }
+    picked.add(event.id);
     return true;
   });
 }

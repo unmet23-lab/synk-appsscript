@@ -21,11 +21,16 @@ export async function moveGuest(guest, target, { watermarks = {}, postLegacy = n
     await guest.trail.refresh(); // 차례에 들자마자 꼬리부터(§18-5-1)
     return guest.trail.record.guestUpload(revision, { account, watermarks });
   });
+  // 옛 POST가 실제로 보낸 옛 꼴 번호 — true면 준 것 모두, { ok: true, ids }면 그 번호만(제품이 고른 것). 옮김 표지 ids에 함께 실어
+  // 그것을 겨눈 2판 제외가 다음 옮기기에서 Z로 따라가게 한다(GPT 다시 GA2 — 2판 번호만이면 계정 답이 빠지지 않고 남았다).
+  let legacyIds = [];
   if (plan.legacy.length) {
     if (typeof postLegacy !== 'function')
       return { ok: false, step: 'legacy', code: 'NO_LEGACY_POST' };
     const sent = await postLegacy(plan.legacy);
-    if (sent !== true) return { ok: false, step: 'legacy', code: 'LEGACY_POST_FAILED' };
+    const listed = sent?.ok === true && Array.isArray(sent.ids) ? new Set(sent.ids) : null;
+    if (sent !== true && !listed) return { ok: false, step: 'legacy', code: 'LEGACY_POST_FAILED' };
+    legacyIds = plan.legacy.map(event => event.id).filter(id => !listed || listed.has(id));
   }
   let added = [];
   if (plan.current.length)
@@ -42,7 +47,7 @@ export async function moveGuest(guest, target, { watermarks = {}, postLegacy = n
         account,
         revision,
         until: plan.until,
-        ids: plan.current.map(event => event.id),
+        ids: [...legacyIds, ...plan.current.map(event => event.id)],
       }),
     )
     .finally(() => {
