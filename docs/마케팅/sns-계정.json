@@ -32,7 +32,7 @@
       "registrationCompleted": true,
       "creationVerified": true,
       "createdAt": "2026-11-08",
-      "loginVerifiedAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "manual-only",
       "connection": "web-community-management-verified-api-not-verified",
       "bio": "Говори по-корейски то, что хочешь сказать. Короткие сценки и живые фразы с русскими субтитрами.\n\nhttps://synk.im/lab/",
@@ -68,7 +68,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "unknown",
       "metricsRoute": "vk-api",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "egoProfile": "Profile 5",
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — VK QR 승인 — 개인 관리자 1129937278 확인."
     },
     "lab-cn-douyin": {
       "brand": "LAB",
@@ -81,7 +83,7 @@
       "registrationCompleted": true,
       "creationVerified": true,
       "acquisitionMethod": "user-mobile-app-signup-web-owner-verified",
-      "loginVerifiedAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-12",
       "loginMethod": "mobile-app-qr-with-additional-identity-verification",
       "publisher": "manual-only",
       "connection": "web-owner-verified-api-not-verified",
@@ -117,7 +119,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "unknown",
       "metricsRoute": "screen-only",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "egoProfile": "Profile 5",
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — 더우인 앱 QR 승인 — 「SYNK LAB 韩语」 39504393074 확인."
     },
     "lab-jp-instagram": {
       "brand": "LAB",
@@ -129,9 +133,9 @@
       "registrationCompleted": true,
       "creationVerified": true,
       "acquisitionMethod": "existing-account-renamed-by-user-from-xi01music",
-      "loginVerifiedAt": "2026-11-08",
-      "egoProfile": null,
-      "egoProfileNote": "인스타 로그인 대기 — 옛 Profile 2는 11-11 프로필 재생성 때 없어졌다(2026-11-12 확인). 로그인한 뒤 그 프로필 이름을 egoProfile에 적는다.",
+      "loginVerifiedAt": "2026-11-12",
+      "egoProfile": "Profile 5",
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — instagram.com 「Switch」 창에서 비밀번호 로그인 — @synk.jp 확인. 같은 프로필 인스타 웹은 @synk.mn · @synk.jp · @synklab.uz가 섞여 있고 바꾸려면 비밀번호가 다시 든다(11-12 끝 상태는 @synklab.uz).",
       "publisher": "manual-only",
       "connection": "web-owner-switch-verified-api-not-verified",
       "profileStatus": "name-bio-avatar-owner-profile-verified-website-mobile-pending",
@@ -175,9 +179,9 @@
       "registrationCompleted": true,
       "creationVerified": true,
       "acquisitionMethod": "user-added-account-from-existing-synk.mn-login",
-      "loginVerifiedAt": "2026-11-08",
-      "egoProfile": null,
-      "egoProfileNote": "인스타 로그인 대기 — 옛 Profile 2는 11-11 프로필 재생성 때 없어졌다(2026-11-12 확인). 로그인한 뒤 그 프로필 이름을 egoProfile에 적는다.",
+      "loginVerifiedAt": "2026-11-12",
+      "egoProfile": "Profile 5",
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — instagram.com 「Switch」 창에서 비밀번호 로그인 — @synklab.uz 확인. 같은 프로필 인스타 웹은 @synk.mn · @synk.jp · @synklab.uz가 섞여 있고 바꾸려면 비밀번호가 다시 든다(11-12 끝 상태는 @synklab.uz).",
       "publisher": "manual-only",
       "connection": "web-owner-switch-verified-api-not-verified",
       "profileStatus": "name-bio-avatar-owner-profile-verified-website-mobile-pending",
@@ -384,7 +388,7 @@
       "publicUrlEvidence": "일반 웹 QR 로그인 후 나 메뉴에서 동일한 계정명·고유 프로필 ID·표시 ID를 확인했다. 로그인 세션의 내 프로필 확인이며 독립 비로그인 공개 검증은 아니다. 계정 생성 시점은 미확인이다.",
       "loginAlias": "rednote-phone",
       "loginAliasEvidence": "11-08 QR 기기 불일치 뒤 해외 창작자 사이트에서 +82 문자 인증으로 사용자 로그인 완료 및 소유자 화면 확인. 정확한 전화번호는 공개 원장에 기록하지 않음.",
-      "loginVerifiedAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-12",
       "loginMethod": "overseas-creator-phone-sms",
       "publisher": "manual-only",
       "connection": "web-owner-verified-api-not-verified",
@@ -425,7 +429,9 @@
       "postRoutePolicy": "unknown",
       "metricsRoute": "screen-only",
       "metricsState": "missing",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "egoProfile": "Profile 5",
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — +82 휴대폰 문자 인증(creator.rednote.com) — 노트 23 · 11-13/14 예약 판 확인."
     },
     "lab-mm-tiktok": {
       "brand": "LAB",
@@ -561,7 +567,7 @@
       "publicUrlEvidence": "2026-09-20 최초 265자 소개 공개 확인 이후 2026-09-21 공식 GID 재로그인·Studio 소개 저장 제출. 공개 채널 새로고침에서 이름·297자 소개 전문·공개 DOM의 클릭 가능한 LAB 링크와 대상 URL 확인. 링크 방문·리디렉션 성공은 검증하지 않았으며 이번 저장 성공 토스트도 관찰하지 않음.",
       "loginAlias": "synk.yuh",
       "loginMethod": "official-gid-email-verification",
-      "loginVerifiedAt": "2026-09-21",
+      "loginVerifiedAt": "2026-11-12",
       "loginRestoredAt": "2026-11-08",
       "loginRestorationEvidence": "프로필설정_20261108/README.md — 사용자 이메일 인증 뒤 기존 채널 81398864의 사용자 아이콘·채널 설정·영상 관리 버튼 확인",
       "publisher": "manual-only",
@@ -615,7 +621,9 @@
       "metricsState": "missing",
       "publicProfileComplete": true,
       "profileCheckedAt": "2026-11-10",
-      "profileCheckNote": "2026-11-10 공개 API(profile/user) — 이름 · 소개 · 사진 · 소개 속 링크 synk.im/lab 읽음, 영상 0"
+      "profileCheckNote": "2026-11-10 공개 API(profile/user) — 이름 · 소개 · 사진 · 소개 속 링크 synk.im/lab 읽음, 영상 0",
+      "egoProfile": "Profile 5",
+      "egoProfileNote": "2026-11-12 ego Profile 5에 로그인 확인 — synk.yuh 메일 4자리 코드 — 「SYNK LAB Russia」(81398864) 확인."
     },
     "lab-np-facebook": {
       "brand": "LAB",
@@ -1739,11 +1747,12 @@
       "connection": "needs-threads-app",
       "profileStatus": "existing-yuhobuilds-login-via-correct-Instagram-session-confirmed-2026-09-14-without-extra-user-verification; bio-114-saved-and-full-public-profile-reloaded-rechecked-2026-09-14; name-photo-two-links-switches-unchanged; no-new-thread-or-account-created",
       "dailyLine": "yuhobuilds",
-      "egoProfile": "Profile 1",
-      "loginVerifiedAt": "2026-10-30",
+      "egoProfile": "Profile 7",
+      "loginVerifiedAt": "2026-11-12",
       "firstPostUrl": "https://www.threads.com/@yuhobuilds/post/DfFRqNakUGl",
       "loginIdentityRef": "instagram-yuhobuilds",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "egoProfileNote": "2026-11-12 ego Profile 7에 로그인 확인 — threads.com 「yuhobuilds로 계속」(인스타 세션) — 비밀번호 없이 @yuhobuilds 확인. ~/ego/threads-daily/th-post.mjs가 이 칸을 읽는다."
     },
     "synkbrief-threads": {
       "brand": "SHIFT",
