@@ -24,7 +24,7 @@ export const Cursor: React.FC<{ x: number; y: number; press: number; o?: number 
 /** 드라이브 이름과 실제 여유 — settle(0~1)에 따라 지우기 전 → 뒤. */
 export const DriveLabels: React.FC<{ settle: number; o?: number; free?: number }> = ({ settle, o = 1, free = 1 }) => {
   const row = (top: number, name: string, a: number, b: number) => (
-    <div style={{ position: 'absolute', left: PANEL_X - 6, width: 920 - PANEL_X + 6, top: top - 66, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: KO, opacity: o }}>
+    <div style={{ position: 'absolute', left: PANEL_X + 12, width: 880 - PANEL_X - 12, top: top - 66, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: KO, opacity: o }}>
       <span style={{ fontWeight: 800, fontSize: 46, color: '#FFFFFF', letterSpacing: -1 }}>{name}</span>
       <span style={{ fontWeight: 600, fontSize: 38, color: 'rgba(255,255,255,0.72)', letterSpacing: -0.5, fontVariantNumeric: 'tabular-nums', opacity: free }}>
         여유 <span style={{ fontWeight: 800, color: '#FFFFFF', display: 'inline-block', width: 150, textAlign: 'right' }}>{fmt(a + (b - a) * settle)}</span>GB

@@ -19,6 +19,7 @@ export type DriveBeat = {
   settleLen: number;
   keep: number; // 남길 옛 판 테두리
   keepOff?: number; // 남길 옛 판 테두리를 거두는 프레임
+  pulse?: number; // 끝: 비운 자리를 밝은 띠가 한 번 훑는 프레임
 };
 
 /** 앞 이야기(편 전체에서만): 깨짐 → 통째 백업(1TB → 2TB) → 되살림(2TB → 1TB) → 무거운 자료 옮김(1TB 덩이 → 2TB 앞쪽). */
@@ -116,6 +117,15 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
           x.globalAlpha = q * 0.85 * (1 - dim * 0.7);
           x.fillStyle = BUTTER;
           x.fillRect(px + 1.3, py + 1.3, size, size);
+          if (beat.pulse !== undefined && f >= beat.pulse && f < beat.pulse + 40) {
+            const cx = ((f - beat.pulse) / 40) * (COLS + 12) - 6;
+            const b = clamp01(1 - Math.abs((i % COLS) - cx) / 5);
+            if (b > 0) {
+              x.globalAlpha = b * 0.9 * (1 - dim * 0.7);
+              x.fillStyle = '#FFF3C4';
+              x.fillRect(px + 1.3, py + 1.3, size, size);
+            }
+          }
         }
         x.globalAlpha = 1;
       };
@@ -140,7 +150,7 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
         if (r.kind === 'del' && lit > 0) col = [col[0] + (245 - col[0]) * lit, col[1] + (196 - col[1]) * lit, col[2] + (69 - col[2]) * lit];
         // 「남김」 박자: 지울 칸은 가라앉고 남길 옛 판만 하얗게 선다
         const keepOn = showKept && f >= beat.keep && (beat.keepOff === undefined || f < beat.keepOff + 8) ? clamp01((f - beat.keep) / 8) * (beat.keepOff === undefined ? 1 : clamp01((beat.keepOff + 8 - f) / 8)) : 0;
-        if (keepOn > 0 && r.kind === 'del') col = [col[0] + (62 - col[0]) * keepOn * 0.85, col[1] + (63 - col[1]) * keepOn * 0.85, col[2] + (66 - col[2]) * keepOn * 0.85];
+        if (keepOn > 0 && r.kind === 'del') col = [col[0] + (64 - col[0]) * keepOn, col[1] + (64 - col[1]) * keepOn, col[2] + (66 - col[2]) * keepOn];
         if (keepOn > 0 && r.kind === 'kept') col = [col[0] + (255 - col[0]) * keepOn, col[1] + (255 - col[1]) * keepOn, col[2] + (255 - col[2]) * keepOn];
         if (r.kind === 'twin' && r.rank >= 0 && scanP > r.rank / N) {
           // 짝이 켜지는 순간 남는 쪽은 하얗게 한 번 번쩍였다 제 색으로 — 「같은 것이 저기에도 있다」
@@ -213,7 +223,7 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
         if (settleP > 0 && newPos[i] >= 0 && newPos[i] !== i) {
           const [nx, ny] = pos(top, newPos[i]);
           const rows = top === C_TOP ? C_ROWS : D_ROWS;
-          const tIn = clamp01(settleP * 1.7 - (Math.floor(newPos[i] / COLS) / rows) * 0.7);
+          const tIn = clamp01(settleP * 1.3 - (Math.floor(newPos[i] / COLS) / rows) * 0.3);
           const fill = `rgb(${col[0] | 0},${col[1] | 0},${col[2] | 0})`;
           x.fillStyle = fill;
           x.globalAlpha = alpha * (1 - tIn) * (1 - dim * 0.7);

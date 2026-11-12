@@ -1,37 +1,42 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "V6",
- "text": "내용이 다른 건, 남겨 두고요.",
- "dur": 1.829,
+ "text": "다르거나 한쪽에만 있는 건, 남겨 두고요.",
+ "dur": 2.122,
  "words": [
   {
-   "text": "내용이",
+   "text": "다르거나",
    "start": 0.02,
-   "end": 0.283
+   "end": 0.347
   },
   {
-   "text": "다른",
-   "start": 0.344,
-   "end": 0.546
+   "text": "한쪽에만",
+   "start": 0.39,
+   "end": 0.788
+  },
+  {
+   "text": "있는",
+   "start": 0.831,
+   "end": 1.002
   },
   {
    "text": "건,",
-   "start": 0.607,
-   "end": 0.789
+   "start": 1.044,
+   "end": 1.243
   },
   {
    "text": "남겨",
-   "start": 1.073,
-   "end": 1.316
+   "start": 1.485,
+   "end": 1.698
   },
   {
    "text": "두고요.",
-   "start": 1.377,
-   "end": 1.829
+   "start": 1.741,
+   "end": 2.122
   }
  ],
  "source": {
-  "key": "2a34560fab4bee26636b98d6df84b8c4",
+  "key": "69f6a08d3c75c20e4c209bc5b8808244",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -46,7 +51,7 @@
    "lufs": -17,
    "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
   },
-  "speed": 1,
+  "speed": 1.04,
   "cut": null
  },
  "level": {

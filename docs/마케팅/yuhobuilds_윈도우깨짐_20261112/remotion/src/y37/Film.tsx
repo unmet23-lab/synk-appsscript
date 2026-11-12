@@ -22,12 +22,12 @@ export const VO: { id: string; at: number; dur: number }[] = [
   { id: 'V3', at: 14.5, dur: 3.203 },
   { id: 'V4', at: 22.0, dur: 3.554 },
   { id: 'V5', at: 26.0, dur: 4.188 },
-  { id: 'V6', at: 31.5, dur: 1.829 },
+  { id: 'V6', at: 31.5, dur: 2.122 },
   { id: 'V7', at: 34.0, dur: 1.629 },
 ];
 
-const STORY = { broken: F(2.1), copy: F(7.2), copyLen: F(2.0), restore: F(9.6), restoreLen: F(1.6), move: F(15.0), moveLen: F(3.0), backupTag: [F(8.6), F(12.3)] as const, movedTag: [F(17.6), F(25.7)] as const, links: [F(18.0), F(22.0)] as const, oldCopy: [F(22.2), F(25.7)] as const };
-const BEAT = { scan: [F(27.1), F(29.3)] as const, keep: F(31.45), keepOff: F(35.2), del: F(35.6), delLen: F(1.0), settle: F(36.75), settleLen: F(2.4) };
+const STORY = { broken: F(2.1), copy: F(7.2), copyLen: F(2.0), restore: F(9.6), restoreLen: F(1.6), move: F(15.0), moveLen: F(3.0), backupTag: [F(8.6), F(12.3)] as const, movedTag: [F(17.6), F(19.4)] as const, links: [F(18.0), F(22.0)] as const, oldCopy: [F(22.2), F(25.7)] as const };
+const BEAT = { pulse: F(40.6), scan: [F(27.1), F(29.3)] as const, keep: F(31.45), keepOff: F(35.2), del: F(35.6), delLen: F(1.0), settle: F(36.75), settleLen: F(2.4) };
 const CLICK = F(35.5);
 const CARD = F(40.2);
 
@@ -85,7 +85,7 @@ const Record: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   return (
     <div style={{ position: 'absolute', left: 74, right: 160, top: 300, fontFamily: KO }}>
       <div style={{ fontWeight: 700, fontSize: 42, color: 'rgba(255,255,255,0.66)', marginBottom: 8, opacity: out }}>11월 7일 복원 기록</div>
-      {row(0, '되살린 문서', `${Math.round(1796647 * prog(f, from + 3, 20)).toLocaleString('en-US')}개`)}
+      {row(0, '문서 폴더 파일', `${Math.round(1796647 * prog(f, from + 3, 20)).toLocaleString('en-US')}개`)}
       {row(1, '잃은 파일', <span style={{ display: 'inline-block', transform: `scale(${1 + 0.25 * Math.max(0, 1 - Math.abs(f - from - 30) / 6)})`, opacity: prog(f, from + 26, 4) }}><B>0개</B></span>)}
     </div>
   );
@@ -109,7 +109,7 @@ const SaveCard: React.FC<{ from: number }> = ({ from }) => {
     <div style={{ position: 'absolute', left: 74, right: 160, top: 286, fontFamily: KO }}>
       <div style={{ fontWeight: 800, fontSize: 48, color: '#FFFFFF', letterSpacing: -1.2, opacity: p0, marginBottom: 6 }}>드라이브 정리할 때, 저장해 두세요</div>
       {line(0, '1', '옮긴 뒤, 원래 자리엔 바로가기')}
-      {line(1, '2', <>지울 건 「두 곳에 똑같은 파일」만</>)}
+      {line(1, '2', '지울 건 두 곳에 똑같은 파일만')}
       {line(2, '3', '다른 건 남기고, 클릭은 내가')}
       <div style={{ marginTop: 18, fontWeight: 700, fontSize: 40, color: 'rgba(255,255,255,0.85)', letterSpacing: -0.6, opacity: prog(f, from + 24, 10) }}>그대로 붙여 넣는 요청문은 아래 글에</div>
     </div>
@@ -173,7 +173,7 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <AbsoluteFill style={{ transform: `translateX(${pan}px) scale(${push * drift * (1 + 0.035 * kick * kick)})`, transformOrigin: '50% 55%' }}>
         <AbsoluteFill style={{ opacity: 1 - 0.86 * cardDim, transform: `translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})`, transformOrigin: '0 0' }}>
           <Drives beat={BEAT} story={STORY} showKept />
-          <DriveLabels settle={settle} free={prog(f, F(22.1), 8)} o={zoomed ? 0 : 1} />
+          <DriveLabels settle={settle} free={prog(f, F(22.1), 8)} o={zoomed ? 0 : 1 - 0.9 * Math.min(prog(f, F(7.1), 5), 1 - prog(f, F(9.5), 6))} />
         </AbsoluteFill>
         {/* 새 2TB가 붙기 전 — 아래 판을 덮는다 */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: 880, height: 820, background: '#0A0B0E', transform: `translateY(${dIn * 900}px)` }} />
@@ -194,20 +194,21 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
       <Step from={F(25.7)} to={F(27.1)} n="3" text="같은 파일 두 벌만" />
       {f >= F(27.1) && f < F(31.1) ? (
         <div style={{ position: 'absolute', left: 74, top: 290, fontFamily: KO }}>
-          <div style={{ fontWeight: 800, fontSize: 52, letterSpacing: -1.5, color: '#FFFFFF' }}>이름 · 크기 · 내용이 다 같은 파일</div>
+          <div style={{ fontWeight: 800, fontSize: 52, letterSpacing: -1.5, color: '#FFFFFF' }}>자리 · 크기 · 수정 시각이 같은 파일</div>
           <div style={{ fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: -6, color: BUTTER, fontVariantNumeric: 'tabular-nums' }}>
-            <span style={{ display: 'inline-block', width: 420, textAlign: 'right' }}>{fmt(Math.round(REAL.total * scanP * 10) / 10)}</span>
+            <span style={{ fontFeatureSettings: '"tnum" 1' }}>{fmt(Math.round(REAL.total * scanP * 10) / 10)}</span>
             <span style={{ fontSize: 70, letterSpacing: -1, marginLeft: 8 }}>GB</span>
           </div>
+          <div style={{ fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: 'rgba(255,255,255,0.85)', marginTop: 10, opacity: prog(f, BEAT.scan[1] - 4, 8), fontFeatureSettings: '"tnum" 1' }}>원래 1TB 옛 사본 222.6 + 새 2TB 백업 479.2</div>
         </div>
       ) : null}
-      <Head from={F(31.4)} to={F(33.9)} lines={['내용이 다른 79.5GB는', '그대로 남김']} />
+      <Head from={F(31.4)} to={F(33.9)} lines={['달라졌거나 한쪽에만 있는', '79.5GB는 그대로 남김']} size={84} />
       <Head from={F(33.9)} to={F(36.75)} lines={['지우는 클릭은', <B key="m">내가</B>]} />
       {f >= F(36.75) && f < CARD ? (
         <div style={{ position: 'absolute', left: 74, top: 290, fontFamily: KO }}>
           <div style={{ fontWeight: 800, fontSize: 60, letterSpacing: -1.5, color: '#FFFFFF', opacity: prog(f, F(36.75), 6) }}>비운 자리</div>
           <div style={{ fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: -6, color: BUTTER, fontVariantNumeric: 'tabular-nums' }}>
-            <span style={{ display: 'inline-block', width: 420, textAlign: 'right' }}>{fmt(Math.round(REAL.total * settle * 10) / 10)}</span>
+            <span style={{ fontFeatureSettings: '"tnum" 1' }}>{fmt(Math.round(REAL.total * settle * 10) / 10)}</span>
             <span style={{ fontSize: 70, letterSpacing: -1, marginLeft: 8 }}>GB</span>
           </div>
         </div>

@@ -1,11 +1,11 @@
 // 두 드라이브 칸 데이터 — 숫자는 11-07 실제 정리 기록(지우던 회차 16:00:49 ~ 17:09:18) 그대로.
 // 칸 하나 = 같은 용량(1TB · 2TB 칸 밀도가 같다). 칸 위치 · 짝은 씨앗 고정이라 어느 프레임을 뽑아도 같다.
 
-export const GB_PER_CELL = 1022.9 / 1536; // 1TB 칸 64×24 = 1536칸이 실제 C: 크기 1,022.9GB
+export const GB_PER_CELL = 952.6 / 1536; // 1TB 칸 64×24 = 1536칸이 실제 C: 크기 952.6GB(기록의 GB = 1024³과 같은 단위 · 11-12 Get-Volume 바이트 ÷ 1024³)
 
 export const REAL = {
-  cSize: 1022.9,
-  dSize: 2047.2,
+  cSize: 952.6,
+  dSize: 1906.6,
   cFreeBefore: 78.7,
   cFreeAfter: 298.4,
   dFreeBefore: 898.7,
