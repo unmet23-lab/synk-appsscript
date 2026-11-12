@@ -378,7 +378,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       const why=persona.deletionRequest?'deletion_requested':persona.status==='deleting'?'deleting':retentionDue(persona,now)?'retention_due':workspace.status!=='active'?'closed':!status.usable&&['expired','paused','reuse_off'].includes(status.reason)?status.reason:null;
       if(!why)continue;
       const whole=['deletion_requested','deleting','retention_due'].includes(why),refs=staffReferences(staff,personaReferences(persona,now,{reuseOnly:!whole}));
-      if(why==='deletion_requested'||why==='deleting'||refs.projects.length||refs.hidden)out.push({personaId:persona.id,name:persona.displayName||'',why,projects:refs.projects,hidden:refs.hidden});
+      if(why==='deletion_requested'||why==='deleting'||refs.projects.length||refs.hidden)out.push({personaId:persona.id,name:persona.displayName||'',why,projects:refs.projects,hidden:refs.hidden,drafts:refs.drafts||0});
     }
     return out;
   }

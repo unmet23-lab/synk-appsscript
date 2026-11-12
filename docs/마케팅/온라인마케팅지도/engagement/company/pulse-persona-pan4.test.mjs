@@ -413,7 +413,7 @@ test('삭제(설계 5-6 · 5판 D10): 끝나지 않은 참조가 있으면 막�
   // 두 프로젝트를 끝내면(보관) 24시간 안 초안 붙임이 남아 막는다 — 삭제와 붙이기는 하나만 이긴다.
   for(const id of [x.projectId,reuse.projectId]){const row=f.store().get('clientProjects',id);f.store().put('clientProjects',id,{...row,stage:'archived'});}
   const {draft}=await f.reuseRequest(a,wa,x.personaId,x.revisionId,{submit:false});
-  refused=await f.personaAct(x.personaId,{action:'delete',note:'고객 요청'});assert.equal(refused.status,409);assert.equal(refused.data.references.drafts,1);
+  refused=await f.personaAct(x.personaId,{action:'delete',note:'고객 요청'});assert.equal(refused.status,409);assert.equal(refused.data.references.drafts,1);assert.deepEqual((await f.staff('/api/customer-workspaces/'+wa)).data.workspace.todos.filter(item=>item.why==='deletion_requested').map(item=>[item.projects.length,item.hidden,item.drafts]),[[0,0,1]],'할 일도 초안 붙임을 센다(최종 검수 P2 — 「정리 끝」으로 읽지 않게)');
   assert.equal((await a.call('/pulse/api/request/save',{body:{answers:answers({modelChoice:'ask'}),step:'model'},csrf:draft.csrf})).status,200);
   // 지울 파일 이름 · 백업 목록.
   const names=[...f.store().all('pulsePersonaSources').filter(item=>item.personaId===x.personaId).map(item=>item.diskName),...f.store().get('pulsePersonaRevisions',x.revisionId).assets.map(item=>item.diskName)];

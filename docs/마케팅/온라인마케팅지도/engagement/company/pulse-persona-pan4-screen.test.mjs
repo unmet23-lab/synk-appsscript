@@ -249,7 +249,9 @@ test('직원 브랜드 데스크 할 일: 삭제 요청인데 남은 참조가 �
   const line=item=>TODO[todoWhy(item)]||item.why;
   assert.equal(line({why:'deletion_requested',projects:[{id:'p1',title:'탄산수'}],hidden:0}),'손님이 삭제를 요청했어요 — 아래 참조를 정리한 뒤 관리자가 지워요');
   assert.equal(line({why:'deletion_requested',projects:[],hidden:1}),'손님이 삭제를 요청했어요 — 아래 참조를 정리한 뒤 관리자가 지워요','볼 수 없는 프로젝트가 남아도 정리 전');
-  assert.equal(line({why:'deletion_requested',projects:[],hidden:0}),'손님이 삭제를 요청했어요 — 참조 정리가 끝났어요. 관리자가 지우면 돼요');
+  assert.equal(line({why:'deletion_requested',projects:[],hidden:0,drafts:1}),'손님이 삭제를 요청했어요 — 아래 참조를 정리한 뒤 관리자가 지워요','24시간 안 초안 붙임이 남아도 정리 전(서버 삭제가 막는 것과 같다)');
+  assert.equal(line({why:'deletion_requested',projects:[],hidden:0,drafts:0}),'손님이 삭제를 요청했어요 — 참조 정리가 끝났어요. 관리자가 지우면 돼요');
+  assert.ok(desk.includes('item.drafts?`초안 붙임 ${item.drafts}개(24시간 안에 풀려요)`'),'남은 초안 붙임을 할 일 아래 작은 줄에');
   assert.equal(line({why:'retention_due',projects:[],hidden:0}),TODO.retention_due,'다른 할 일은 그대로');
   assert.match(desk,/\$\{esc\(TODO\[todoWhy\(item\)\]\|\|item\.why\)\}<\/b>/);
 });
