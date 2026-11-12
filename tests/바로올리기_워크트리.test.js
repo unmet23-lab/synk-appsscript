@@ -116,6 +116,10 @@ test('워크트리: 꼬리(남의 미푸시)에서 떠도 내가 바꾼 것만 �
   const r2 = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['공용.md', '내.md'], 메시지: '또', 실행: true });
   assert.equal(r2.결과, '올릴 것 없음', JSON.stringify(r2));
   assert.equal(판.원격머리(), r.머리);
+  // 올림 장부(2026-11-12): 이 작업본이 올린 커밋만 그 작업본 git 폴더에 한 줄 — 검수 합침 고리가 앞 검수 뒤 자기 커밋을 가른다
+  const 장부 = fs.readFileSync(path.join(워.gitdir(), '바로올리기-올림.jsonl'), 'utf8').trim().split('\n').map(x => JSON.parse(x));
+  assert.deepEqual(장부.map(x => x.커밋), [r.머리], '올릴 것 없음은 적지 않는다');
+  assert.equal(fs.existsSync(path.join(판.공용.gitdir(), '바로올리기-올림.jsonl')), false, '다른 작업본 장부에는 적지 않는다');
 });
 
 test('워크트리: 미리 보기는 origin·가지·인덱스·작업본을 바꾸지 않는다', async (t) => {
@@ -129,6 +133,20 @@ test('워크트리: 미리 보기는 origin·가지·인덱스·작업본을 바
   assert.equal(r.따라가기.결과, '계획');
   assert.deepEqual({ 원격: 판.원격머리(), 머리: 워.머리(), 인덱스: 지문(path.join(워.gitdir(), 'index')) }, 전);
   assert.deepEqual(워.상태(), 상태전);
+  assert.equal(워.읽기('a.txt'), '2\n');
+  assert.equal(fs.existsSync(path.join(워.gitdir(), '바로올리기-올림.jsonl')), false, '미리 보기는 올림 장부를 적지 않는다');
+});
+
+test('워크트리: 올림 장부를 push 전에 적지 못하면 아무것도 올리지 않는다(검수 합침 고리가 자기 커밋을 못 가르게 되는 길을 막는다 — 11-12)', async (t) => {
+  const 판 = 새판(t, { 파일: { 'a.txt': '1\n' } });
+  const 워 = 판.워크트리('wt');
+  워.쓰기('a.txt', '2\n');
+  fs.mkdirSync(path.join(워.gitdir(), '바로올리기-올림.jsonl'));   // 덧붙이기가 실패하는 자리
+  const 전 = { 원격: 판.원격머리(), 머리: 워.머리() };
+  const r = await 도구.올리기({ 저장소: 워.폴더, 경로들: ['a.txt'], 메시지: '2', 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /올림 장부를 적지 못해 아무것도 올리지 않았다/);
+  assert.deepEqual({ 원격: 판.원격머리(), 머리: 워.머리() }, 전);
   assert.equal(워.읽기('a.txt'), '2\n');
 });
 
@@ -174,6 +192,9 @@ test('워크트리: push 직전에 남이 먼저 올려 거절되면 다시 받�
   assert.equal(판.원격파일('a.txt'), '2\n');
   assert.equal(워.머리(), r.머리);
   assert.equal(워.읽기('남.txt'), '끼어듦\n');
+  // 올림 장부는 push 직전에 적는다 — 거절된 첫 판도 남지만(origin에 없어 해가 없다) 실제로 오른 커밋은 꼭 있다
+  const 장부 = fs.readFileSync(path.join(워.gitdir(), '바로올리기-올림.jsonl'), 'utf8').trim().split('\n').map(x => JSON.parse(x).커밋);
+  assert.equal(장부.length, 2); assert.equal(장부.at(-1), r.머리);
 });
 
 test('워크트리: 아직 고치는 다른 파일은 따라가며 3방향으로 지키고, 같은 줄이 겹치면 따라가지 않고(push는 됨) 다시 돌리면 올릴 것 없음', async (t) => {

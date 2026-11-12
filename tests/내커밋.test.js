@@ -636,6 +636,42 @@ test('올리기: 남의 미푸시 커밋은 두고 내 커밋만 origin 위에 �
   assert.equal(저장.머리(), 저장.C1, '로컬 가지는 그대로');
   assert.equal(r.합치기.결과, '건너뜀', 'origin의 남의 커밋(원격.txt)이 로컬에 없으니 합치지 않는다');
   assert.ok(r.합치기.예.includes('원격.txt'));
+  // 올림 장부(11-12): 다시 쌓아 올린 커밋을 이 작업본 git 폴더에 적는다 — 검수 합침 고리가 자기 커밋으로 가른다
+  const 장부 = fs.readFileSync(path.join(저장.작업본, '.git', '바로올리기-올림.jsonl'), 'utf8').trim().split('\n').map((x) => JSON.parse(x));
+  assert.deepEqual(장부.map((x) => [x.커밋, x.바탕, x.원격, x.가지]), [[r.머리, O1, 'origin', 'master']]);
+});
+
+test('올리기: 한 번에 올린 커밋은 모두 올림 장부에 차례대로 한 줄씩 적고, 미리 보기 · 올릴 것 없음은 적지 않는다(검수 합침 고리 — 11-12)', async (t) => {
+  const 저장 = 새저장소(t, { 원격: true, 파일: { 'code.js': 'const a = 1;\n' } });
+  저장.쓰기('code.js', 'const a = 2;\n');
+  저장.git('commit', '-q', '-am', '첫째');
+  const A = 저장.머리();
+  저장.쓰기('b.js', 'const b = 1;\n');
+  저장.git('add', 'b.js');
+  저장.git('commit', '-q', '-m', '둘째');
+  const B = 저장.머리();
+  const 장부 = path.join(저장.작업본, '.git', '바로올리기-올림.jsonl');
+  assert.equal((await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [A, B] })).결과, '미리 보기');
+  assert.equal(fs.existsSync(장부), false, '미리 보기는 적지 않는다');
+  const r = await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [A, B], 실행: true });
+  assert.equal(r.결과, '올림', JSON.stringify(r.문제 || r.이유));
+  assert.equal(r.머리, B, 'origin 바로 위라 그대로 올린다');
+  assert.deepEqual(fs.readFileSync(장부, 'utf8').trim().split('\n').map((x) => JSON.parse(x).커밋), [A, B]);
+  assert.equal((await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [A, B], 실행: true })).결과, '올릴 것 없음');
+  assert.equal(fs.readFileSync(장부, 'utf8').trim().split('\n').length, 2, '올릴 것 없음은 적지 않는다');
+});
+
+test('올리기: 올림 장부를 push 전에 적지 못하면 아무것도 올리지 않는다(적지 못한 채 올라가면 검수 합침 고리가 남의 커밋으로 본다 — 11-12)', async (t) => {
+  const 저장 = 새저장소(t, { 원격: true, 파일: { 'code.js': 'const a = 1;\n' } });
+  저장.쓰기('code.js', 'const a = 2;\n');
+  저장.git('commit', '-q', '-am', '첫째');
+  const A = 저장.머리(), 전 = 저장.원격머리();
+  fs.mkdirSync(path.join(저장.작업본, '.git', '바로올리기-올림.jsonl'));   // 덧붙이기가 실패하는 자리
+  const r = await 도구.올리기({ 저장소: 저장.작업본, 커밋들: [A], 실행: true });
+  assert.equal(r.결과, '멈춤', JSON.stringify(r));
+  assert.match(r.이유, /올림 장부를 적지 못해 아무것도 올리지 않았다/);
+  assert.equal(저장.원격머리(), 전, 'origin은 그대로');
+  assert.equal(저장.머리(), A);
 });
 
 test('올리기: 로컬 바탕에 없는 원격 줄을 내 조각에 같이 넣었으면 원격 판에 그 줄은 한 번만 두고 내 줄은 그 뒤에 붙인다(10-20 재현)', async (t) => {

@@ -1,5 +1,6 @@
 // 검수 입력·배포 후보의 내용 계약. 모델 호출이나 배포는 하지 않는다.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -629,8 +630,185 @@ export function 대신할검수자(정책, 누구) {
   const 차례 = ['GPT', '아르곤', 'Fable'], i = 차례.indexOf(누구);
   return i < 0 ? [누구] : 차례.slice(i);
 }
-export function 입력증명({ 정책, 파일, 배포후보 = null, 항목 = [], 자료해시 = null, 보조파일 = [], 후보앞판 = null }) {
-  const body = { 정책, 파일, 배포후보, 항목, 자료해시, 보조파일, ...(후보앞판 ? { 후보앞판 } : {}) };
+/** 머리(2026-11-12): 그 스냅샷이 선 커밋(끝 커밋, 작업본이면 그때 HEAD) — 증명에 묶어 합침 고리가 둘의 바탕을 증명 밖 칸에서 읽지 않게 한다(GPT 검수 GA2). 옛 증명에는 없다. */
+export function 입력증명({ 정책, 파일, 배포후보 = null, 항목 = [], 자료해시 = null, 보조파일 = [], 후보앞판 = null, 머리 = null }) {
+  const body = { 정책, 파일, 배포후보, 항목, 자료해시, 보조파일, ...(후보앞판 ? { 후보앞판 } : {}), ...(머리 ? { 머리 } : {}) };
   const 검토입력해시 = 정규해시(body);
   return { ...body, 검토입력해시, 표식: `END_OF_FINAL_REVIEW_${검토입력해시}`, 항목 };
+}
+
+// ── 합침 고리(2026-11-12) ─────────────────────────────────────────────
+// 앞 검수 뒤 이 세션의 고침 없이 origin/master에 먼저 오른 커밋을 합쳐 바이트만 바뀐 판은 검수자를 다시 부르지 않고
+// 기계 대조로 사슬을 잇는다(검수묶음.mjs 다시 --합침만). 경계: 배포 바이트 = (origin/master에 있는 커밋들) ⊕ (이 사슬이 검수한 고침) —
+// 첫 준비의 바탕 아래 남의 변경을 이 사슬 검수자가 보지 않는 것과 같은 경계를 사슬 중간에 오른 origin 커밋까지 넓힌다.
+// 이 세션의 손 고침(작업본 · 안 올린 커밋 · 충돌 풀이 · 검수한 고침과 같은 커밋에 섞여 올라간 덧고침)은 한 줄이라도 거절한다.
+export const 원격참조 = 'refs/remotes/origin/master';
+const 판열쇠 = x => (x?.sha256 == null ? null : `${x.모드}\u0000${x.sha256}`);
+const 글바이트 = b => !b.subarray(0, 8000).includes(0);
+/** git merge-file -p <a> <y> <t> — 종료 0만 깨끗한 합침, 1~127은 충돌 수, 그 밖은 실행 오류. */
+export function git합침(a, y, t) {
+  const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-merge-'));
+  try {
+    for (const [n, b] of [['a', a], ['y', y], ['t', t]]) fs.writeFileSync(path.join(임시, n), b);
+    const r = spawnSync('git', ['merge-file', '-p', 'a', 'y', 't'], { cwd: 임시, windowsHide: true, maxBuffer: 1 << 28 });
+    if (r.error) throw r.error;
+    if (r.status === 0) return { 결과: r.stdout, 충돌: false };
+    if (r.status > 0 && r.status < 128) return { 결과: null, 충돌: true };
+    throw new Error(`git merge-file 실패(${r.status}): ${String(r.stderr || '').trim().slice(0, 300)}`);
+  } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
+}
+/** 세 방향 합침 ⊕(a, y, t) — 판은 { sha256, 모드, 바이트 }(없는 판은 sha256 null). 같은 쪽 규칙이 먼저고, 셋 다 있는 글(NUL 없음)만 git merge-file로 바이트를 합친다.
+ *  이진 · 있음/없음이 엇갈린 셋 · 모드 셋이 다 다름 · 줄 충돌은 충돌이다. 돌려주는 판에는 바이트가 있다(없는 판은 null). */
+export function 판합침(a, y, t, { 합치기 = git합침 } = {}) {
+  const ka = 판열쇠(a), ky = 판열쇠(y), kt = 판열쇠(t);
+  if (ka === kt) return { 판: a, 충돌: false };
+  if (ka === ky) return { 판: t, 충돌: false };
+  if (kt === ky) return { 판: a, 충돌: false };
+  if (!a.바이트 || !y.바이트 || !t.바이트 || ![a, y, t].every(x => 글바이트(x.바이트))) return { 판: null, 충돌: true };
+  const 모드 = a.모드 === t.모드 ? a.모드 : a.모드 === y.모드 ? t.모드 : t.모드 === y.모드 ? a.모드 : null;
+  if (!모드) return { 판: null, 충돌: true };
+  const 바이트 = a.바이트.equals(t.바이트) ? a.바이트 : a.바이트.equals(y.바이트) ? t.바이트 : t.바이트.equals(y.바이트) ? a.바이트 : null;
+  if (바이트) return { 판: { sha256: sha256(바이트), 모드, 바이트 }, 충돌: false };
+  const r = 합치기(a.바이트, y.바이트, t.바이트);
+  return r.충돌 ? { 판: null, 충돌: true } : { 판: { sha256: sha256(r.결과), 모드, 바이트: r.결과 }, 충돌: false };
+}
+function 깃(cwd, args, { buffer = false, input = undefined, 허용 = [0] } = {}) {
+  const r = spawnSync('git', ['-c', 'core.quotepath=off', ...args], { cwd, windowsHide: true, maxBuffer: 1 << 29, input, ...(buffer ? {} : { encoding: 'utf8' }) });
+  if (r.error) throw r.error;
+  if (!허용.includes(r.status)) throw new Error(`합침 대조 git ${args[0]} 실패(${r.status}): ${String(r.stderr || '').trim().slice(0, 300)}`);
+  return r;
+}
+const 줄들 = s => String(s).split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+// 사슬 중간의 합침은 몇 시간 · 며칠 안의 origin 커밋이다 — 바탕이 너무 멀면 새로 준비하는 편이 맞고, 기록도 커진다
+export const 합침커밋상한 = 3000;
+/** 날 바이트를 맞춘 꼴 판으로 — 소스 스냅샷 해시와 같은 꼴(utf8 글은 CRLF → LF). 배포 후보도 이 꼴로 견준다: 날 바이트는 배포 도구가 따로 origin/master와 대조한다. */
+export const 맞춘판 = (b, 모드) => { if (b == null) return { sha256: null, 모드: null, 바이트: null }; const m = 맞춘내용(b).바이트; return { sha256: sha256(m), 모드, 바이트: m }; };
+/** 여러 rev의 항목 판을 `git cat-file --batch` 한 번으로 — Map(rev → Map(열쇠 → 판)). 모드는 그 트리 항목의 모드(%(objectmode)), 없는 경로는 빈 판. */
+function 판들읽기(cwd, revs, 항목) {
+  const 결과 = new Map(revs.map(rev => [rev, new Map(항목.map(x => [x.열쇠, 맞춘판(null)]))]));
+  const 줄 = revs.flatMap(rev => 항목.map(x => ({ rev, x })));
+  if (!줄.length) return 결과;
+  if (줄.some(({ x }) => /[\r\n]/.test(x.경로))) throw new Error('합침 대조할 수 없는 경로(줄바꿈)');
+  const out = 깃(cwd, ['cat-file', '--batch=%(objectmode) %(objectname) %(objecttype) %(objectsize)'], { buffer: true, input: 줄.map(({ rev, x }) => `${rev}:${x.경로}`).join('\n') + '\n' }).stdout;
+  let i = 0;
+  for (const { rev, x } of 줄) {
+    const 끝 = out.indexOf(10, i);
+    if (끝 < 0) throw new Error(`합침 대조 blob 읽기가 끊겼다: ${x.경로}`);
+    const 머리 = out.subarray(i, 끝).toString('utf8');
+    if (머리 === `${rev}:${x.경로} missing`) { i = 끝 + 1; continue; }
+    const m = /^(\d{6}) ([0-9a-f]+) (\w+) (\d+)$/.exec(머리);
+    if (!m) throw new Error(`합침 대조 blob 읽기 실패: ${x.경로} (${rev.slice(0, 9)}) — ${머리.slice(0, 80)}`);
+    if (m[3] !== 'blob' || !['100644', '100755'].includes(m[1])) throw new Error(`합침 대조할 수 없는 git 모드: ${x.경로} ${m[1]} ${m[3]} (${rev.slice(0, 9)})`);
+    const n = Number(m[4]);
+    결과.get(rev).set(x.열쇠, 맞춘판(Buffer.from(out.subarray(끝 + 1, 끝 + 1 + n)), m[1]));
+    i = 끝 + 1 + n + 1;
+  }
+  return 결과;
+}
+const 덩이로 = (xs, n = 60) => Array.from({ length: Math.ceil(xs.length / n) }, (_, i) => xs.slice(i * n, i * n + n));
+const 커밋이름 = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
+/** git rev-list 출력(커밋 이름만 — 자유 글 없음)을 줄마다 읽어 꼴을 본다. */
+const 커밋줄들 = (cwd, args) => 줄들(깃(cwd, ['rev-list', ...args]).stdout).map(줄 => {
+  const xs = 줄.split(' ');
+  if (!xs.every(x => 커밋이름.test(x))) throw new Error(`합침 대조 커밋 목록을 읽지 못했다: ${줄.slice(0, 90)}`);
+  return xs;
+});
+/** Y..O 커밋을 오래된 것부터 — [{ 커밋, 부모[] }]와, 경로 묶음을 바꾼 커밋 집합을 주는 닿음(경로들). 모두 `rev-list` 출력(커밋 이름뿐)에서만 읽는다 —
+ *  커밋 제목의 제어 문자(GPT 검수 GA3)나 다음 커밋 이름과 같은 파일 이름(GPT 다시 검수 GA2)으로 경계를 속이지 못하게, 경로는 git의 경로 거름(pathspec)이 고른다. */
+function 범위커밋들(cwd, Y, O) {
+  const 차례 = 커밋줄들(cwd, ['--topo-order', '--reverse', '--parents', `${Y}..${O}`]).map(([커밋, ...부모]) => ({ 커밋, 부모 }));
+  const 닿음 = 경로묶음 => {
+    const s = new Set();
+    for (const 덩이 of 덩이로([...new Set(경로묶음)])) for (const [c] of 커밋줄들(cwd, ['--full-history', `${Y}..${O}`, '--', ...덩이.map(p => `:(literal)${p}`)])) s.add(c);
+    return s;
+  };
+  return { 차례, 닿음 };
+}
+/** 보이는 기록용 커밋 제목 — 판정에는 쓰지 않는다. 제어 문자는 빈칸으로. */
+function 커밋제목들(cwd, 커밋들) {
+  const 제목 = new Map();
+  for (const 덩이 of 덩이로(커밋들, 100)) for (const 줄 of 깃(cwd, ['log', '-z', '--no-walk=unsorted', '--format=%H %s', ...덩이]).stdout.split('\0')) {
+    const m = /^([0-9a-f]{40}(?:[0-9a-f]{24})?) ([\s\S]*)$/.exec(줄);
+    if (m) 제목.set(m[1], m[2].replace(/[\u0000-\u001f\u007f]/g, ' ').trim());
+  }
+  return 제목;
+}
+/** 합침 대조 — 앞 검수 판 A(항목마다 앞 = { sha256, 모드, 바이트 }), 지금 판 S(지금 = { sha256, 모드 }), 앞 고리 머리 H, origin 판 O로
+ *  둘의 바탕 Y = merge-base(H, O)를 잡고 세 모양 가운데 하나로 기대 판 E를 정해 S와 견준다. 항목 = [{ 열쇠, 갈래: '소스', 경로, 앞, 지금 }] — 배포 후보는 바이트가 바뀌면 합침만을 받지 않아 항목에 없다.
+ *  O는 만들 때 merge-base(지금 머리, origin/master), 다시 대조할 때는 기록한 값(origin/master의 조상인지 본다).
+ *   · 앞 판 그대로 — A = Y(이 사슬 고침이 이미 Y 아래): E = O
+ *   · 안 올림 — O에 이 사슬 고침이 한 줄도 없다(M = A⊕O가 깨끗하고, 고침이 있는 항목마다 M에서 고침을 되돌리면 정확히 O): E = M
+ *   · 올림 — O에 이 사슬 고침이 있다: Y..O에서 그 고침을 처음 들인, 그 고침만 담은 부모 하나인 커밋(나르개)이 있어야 한다 —
+ *     부모 C^에는 이 사슬 고침이 한 줄도 없고(안 올림과 같은 되돌리기 대조) 모든 항목에서 C = A⊕C^. 고침 일부를 덧고침과 함께 먼저 올리고
+ *     나머지를 따로 올린 꼴은 나르개가 없다(GPT 검수 GA1). E = O
+ *  구조 문제(H · O · Y를 못 읽음, O가 origin/master에 없음, 바탕이 여럿 · 없음)는 던지고, 판정은 { 모양, 다름, 충돌, 나르개 }로 돌려준다. */
+export function 합침대조({ 저장소, 앞머리, 지금머리 = null, origin = null, 항목, 합치기 = git합침 }) {
+  const 바탕하나 = (a, b, 말) => {
+    if (!a || !b) throw new Error(`${말}을 git에서 읽지 못했다: 기록 없음`);
+    const r = 깃(저장소, ['merge-base', '--all', a, b], { 허용: [0, 1, 128] }), xs = 줄들(r.stdout);
+    if (r.status === 128) throw new Error(`${말}을 git에서 읽지 못했다: ${String(r.stderr || '').trim().split('\n')[0].slice(0, 160)}`);
+    if (xs.length !== 1) throw new Error(`${말}의 바탕이 ${xs.length ? '여럿이다(교차 합침)' : '없다'} — 합침만으로 잇지 못한다`);
+    return xs[0];
+  };
+  // O: 만들 때는 지금 머리가 서 있는 가장 새 origin 커밋, 다시 대조할 때는 기록한 값이 아직 origin/master의 조상인지
+  let O;
+  if (origin) {
+    const r = 깃(저장소, ['merge-base', '--is-ancestor', origin, 원격참조], { 허용: [0, 1, 128] });
+    if (r.status !== 0) throw new Error(r.status === 1 ? `origin 판 ${String(origin).slice(0, 9)}가 origin/master에 없다` : `기록한 origin 판 · origin/master 원격 참조를 git에서 읽지 못했다: ${String(r.stderr || '').trim().split('\n')[0].slice(0, 160)}`);
+    O = origin;
+  } else O = 바탕하나(지금머리, 원격참조, '지금 머리와 origin/master');
+  const Y = 바탕하나(앞머리, O, '앞 고리 머리와 origin 판');
+  const 범위 = 범위커밋들(저장소, Y, O);
+  if (범위.차례.length > 합침커밋상한) throw new Error(`앞 고리 머리와 origin 판 사이 커밋이 ${범위.차례.length}개라 합침 대조를 하지 않는다 — 새로 준비한다`);
+  // 감사용 기록: 항목 경로를 바꾼 Y..O 커밋, 오래된 것부터 — 나르개 후보도 여기서 고른다. 제목은 보이기만 하고 판정에는 쓰지 않는다
+  const 항목닿음 = 항목.length ? 범위.닿음(항목.map(x => x.경로)) : new Set();
+  const 고른 = 범위.차례.filter(c => 항목닿음.has(c.커밋));
+  const 제목 = 고른.length ? 커밋제목들(저장소, 고른.map(c => c.커밋)) : new Map();
+  const 커밋들 = 고른.map(c => ({ 커밋: c.커밋, 제목: 제목.get(c.커밋) ?? '' }));
+  const 판 = 판들읽기(저장소, [Y, O], 항목), Y판 = 판.get(Y), O판 = 판.get(O);
+  const 고침 = 항목.filter(x => 판열쇠(x.앞) !== 판열쇠(Y판.get(x.열쇠)));
+  // X에 이 사슬 고침이 한 줄도 없는가 — A⊕X가 모든 항목에서 깨끗하고, 고침이 있는 항목마다 그 합침에서 고침을 되돌리면 정확히 X.
+  // 같은 고침이 X에 이미 있으면 합침은 깨끗해도 되돌린 결과가 X와 달라 드러난다.
+  const 고침없는판 = X판 => {
+    const M = new Map(), 충돌 = [];
+    for (const x of 항목) { const r = 판합침(x.앞, Y판.get(x.열쇠), X판.get(x.열쇠), { 합치기 }); if (r.충돌) 충돌.push(x.열쇠); else M.set(x.열쇠, r.판); }
+    const 없음 = !충돌.length && 고침.every(x => { const r = 판합침(M.get(x.열쇠), x.앞, Y판.get(x.열쇠), { 합치기 }); return !r.충돌 && 판열쇠(r.판) === 판열쇠(X판.get(x.열쇠)); });
+    return { 없음, M, 충돌 };
+  };
+  let 모양, 기대, 나르개 = null, 충돌 = [];
+  if (!고침.length) { 모양 = '앞 판 그대로'; 기대 = O판; }
+  else {
+    const o = 고침없는판(O판);
+    충돌 = o.충돌;
+    if (o.없음) { 모양 = '안 올림'; 기대 = o.M; }
+    else {
+      모양 = '올림'; 기대 = O판;
+      // 나르개 후보: 이 사슬 고침이 있는 경로를 바꾼, 부모가 하나인 Y..O 커밋 — 그 커밋과 부모 판을 한 번에 읽는다.
+      // 부모에 이 사슬 고침이 한 줄도 없고(처음 들인 커밋) 모든 항목에서 C = A⊕C^여야 한다(덧고침 · 나눠 올림이면 없다).
+      const 고침닿음 = 범위.닿음(고침.map(x => x.경로));
+      const 후보들 = 고른.filter(c => c.부모.length === 1 && 고침닿음.has(c.커밋));
+      const 후보판 = 후보들.length ? 판들읽기(저장소, [...new Set(후보들.flatMap(c => [c.커밋, c.부모[0]]))], 항목) : new Map();
+      for (const c of 후보들) {
+        const C판 = 후보판.get(c.커밋), P판 = 후보판.get(c.부모[0]), p = 고침없는판(P판);
+        if (p.없음 && 항목.every(x => 판열쇠(p.M.get(x.열쇠)) === 판열쇠(C판.get(x.열쇠)))) { 나르개 = c.커밋; break; }
+      }
+    }
+  }
+  const 다름 = 항목.filter(x => 판열쇠(x.지금) !== 판열쇠(기대.get(x.열쇠))).map(x => x.열쇠);
+  const 짧게 = x => (x?.sha256 == null ? null : { sha256: x.sha256, 모드: x.모드 });
+  const 경로 = 항목.filter(x => 판열쇠(x.앞) !== 판열쇠(x.지금) || 고침.includes(x)).map(x => ({ 열쇠: x.열쇠, 앞: 짧게(x.앞), 바탕: 짧게(Y판.get(x.열쇠)), origin: 짧게(O판.get(x.열쇠)), 기대: 짧게(기대.get(x.열쇠)), 지금: 짧게(x.지금) }));
+  return { 모양, origin: O, 바탕: Y, 앞머리, 나르개, 다름, 충돌: 모양 === '안 올림' ? [] : 충돌, 고침: 고침.map(x => x.열쇠), 경로, 커밋들 };
+}
+/** 합침 대조가 통과인지 — 거절 까닭 목록(빈 목록이면 통과). */
+export function 합침거절(r) {
+  const 까닭 = [];
+  const 말 = 열쇠들 => 열쇠들.map(k => k.replace(/^소스:/, '').replace(/^후보:/, '배포 후보 ')).join(', ');
+  if (r.모양 === '올림' && !r.나르개) 까닭.push(`앞 검수 판의 고침이 origin에 있는데 그 고침만 담은 커밋을 찾지 못했다 — 덧고침이 같이 올라갔거나 나눠 올렸다${r.충돌.length ? `(origin과 합치면 충돌: ${말(r.충돌)})` : ''}`);
+  if (r.다름.length) 까닭.push(`지금 판이 ${r.모양 === '안 올림' ? '앞 검수 판 ⊕ origin 판의 깨끗한 합침' : 'origin 판'}과 다르다(손 고침 · 충돌 풀이 · 앞 검수에 없던 고침): ${말(r.다름)}`);
+  return 까닭;
+}
+/** 합침 고리 증명 — 다시증명과 같은 꼴에 합침 기록을 묶는다(검수자 · 대상 · 묶음 없음). */
+export function 합침증명(body) {
+  if (!body?.합침 || body.대상?.length || body.검수자들?.length || body.항목?.length) throw new Error('합침 고리 증명에는 합침 기록만 있고 검수자 · 대상 · 묶음이 없다');
+  return 다시증명(body);
 }

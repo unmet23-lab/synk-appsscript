@@ -19,7 +19,7 @@ async function 시나리오(t, 옵션 = {}) {
   t.after(() => fs.rmSync(temp, { recursive: true, force: true, maxRetries: 5 }));
   const root = path.join(temp, 'repo');
   fs.mkdirSync(root);
-  const 파일 = { 'Code.js': 'function doGet() { return "ok"; }\n', 'appsscript.json': '{"timeZone":"Asia/Seoul"}\n',
+  const 파일 = { 'Code.js': 옵션.코드 ?? 'function doGet() { return "ok"; }\n', 'appsscript.json': '{"timeZone":"Asia/Seoul"}\n',
     '.clasp.json': '{"scriptId":"fixture-script","rootDir":"","scriptExtensions":[".js"]}\n',
     '.claspignore': '**/*\n!Code.js\n!appsscript.json\n' };
   for (const [p, b] of Object.entries(파일)) fs.writeFileSync(path.join(root, p), b);
@@ -180,6 +180,45 @@ test('Apps Script: 다시 검수 사슬이 끊기거나 끝 후보 뒤에 바뀌
   f.git(['add', 'Code.js']); f.git(['commit', '-qm', 'again']); f.git(['update-ref', 'refs/remotes/origin/master', 'HEAD']);
   await assert.rejects(f.도구.검수반영({ ...f.args, 검수: 다시 }), /검수 뒤 파일 변경: Code\.js|후보와 현재 배포 파일/);
   assert.equal(f.calls.length, 0);
+});
+
+// 2026-11-12 합침 고리: 검수 뒤 남의 커밋만 사슬의 소스 파일에 합쳐진 판은 검수자를 다시 부르지 않고 다시 --합침만으로 잇고 반영한다.
+// 라이브로 나가는 Apps Script 후보 바이트가 바뀐 판은 합침만으로 잇지 않는다(Fable 설계 검토 P1 — 그 바이트는 검수자가 읽어야 한다)
+test('Apps Script: 남의 커밋이 사슬의 소스만 바꾼 판은 다시 --합침만(검수자 없음)으로 잇고 반영한다 — 후보 바이트가 바뀌거나 손 고침이 섞이면 거절한다', async t => {
+  const 줄 = (바꿈 = {}) => Array.from({ length: 12 }, (_, i) => 바꿈[i] ?? `const v${i} = ${i};`).join('\n') + '\n';
+  const f = await 시나리오(t, { 코드: `function doGet() { return "ok"; }\n${줄()}` });
+  const 뿌리 = path.dirname(f.root), 코드 = path.join(f.root, 'Code.js'), 메모 = path.join(f.root, 'notes.md');
+  const 도구 = await import(require('node:url').pathToFileURL(path.resolve(__dirname, '../tools/검수묶음.mjs')));
+  const 올림 = (표, 말) => { for (const [p, v] of Object.entries(표)) fs.writeFileSync(path.join(f.root, p), v); f.git(['add', '-A']); f.git(['commit', '-qm', 말]); f.git(['update-ref', 'refs/remotes/origin/master', 'HEAD']); };
+  const 메모판 = (바꿈 = {}) => Array.from({ length: 12 }, (_, i) => 바꿈[i] ?? `- 메모 ${i}`).join('\n') + '\n';
+  // 이 세션 고침(검수 받음): Code.js 2번째 줄과 메모 — 올리고 다시 검수
+  올림({ 'Code.js': `function doGet() { return "ok"; }\n${줄({ 2: 'const v2 = "이 세션";' })}`, 'notes.md': 메모판({ 1: '- 이 세션 메모' }) }, '이 세션 고침');
+  const 다시 = await 다시증거({ 앞: f.검수, 저장소: f.root, 배포후보: 실제.후보쓰기(path.join(뿌리, 'candidate-2'), 실제.배포후보읽기(f.root)), 폴더: path.join(뿌리, 'review-2') });
+  // 남의 커밋: 메모의 다른 줄만 — Code.js · 후보는 그대로다. 그대로는 사슬의 소스 바이트가 달라 막힌다
+  올림({ 'notes.md': 메모판({ 1: '- 이 세션 메모', 9: '- 남의 메모' }) }, '남의 고침');
+  await assert.rejects(f.도구.검수반영({ ...f.args, 검수: 다시 }), /검수 뒤 파일 변경: notes\.md.*--앞 review-2/);
+  const 합 = await 도구.다시하기({ 이름: 'review-3', 폴더: path.join(뿌리, 'review-3'), 앞: 다시, 저장소: f.root, 합침만: true });
+  assert.deepEqual(합.목록.검수자들, []); assert.equal(합.목록.합침.모양, '앞 판 그대로');
+  assert.deepEqual(합.목록.바뀐경로, { 소스: ['notes.md'], 후보: [] });
+  assert.equal(fs.readdirSync(합.폴더).some(n => /^(?:GPT|아르곤|Claude|Fable)-|^묶음-/.test(n)), false, '검수자를 부르지 않았다');
+  const r = await f.도구.검수반영({ ...f.args, 검수: 합.폴더 });
+  assert.equal(r.통과, true); assert.deepEqual(r.사슬, ['review', 'review-2', 'review-3']);
+  assert.ok(f.calls.some(x => x.args.includes('deploy')));
+  // 손 고침 한 줄: 메모를 작업본에서 고치면 합침만이 거절한다
+  fs.writeFileSync(메모, 메모판({ 1: '- 이 세션 메모', 9: '- 남의 메모', 5: '- 몰래' }));
+  await assert.rejects(도구.다시하기({ 이름: 'review-4', 폴더: path.join(뿌리, 'review-4'), 앞: 합.폴더, 저장소: f.root, 합침만: true }),
+    /합침만으로 잇지 못한다 — 지금 판이 origin 판과 다르다\(손 고침[^)]*\): notes\.md/);
+  fs.writeFileSync(메모, 메모판({ 1: '- 이 세션 메모', 9: '- 남의 메모' }));
+  // 남의 커밋이 Code.js(라이브 후보)를 바꾸면 깨끗한 합침이어도 합침만으로 잇지 않는다
+  올림({ 'Code.js': `function doGet() { return "ok"; }\n${줄({ 2: 'const v2 = "이 세션";', 10: 'const v10 = "남";' })}` }, '남의 Code.js 고침');
+  const 후보5 = 실제.후보쓰기(path.join(뿌리, 'candidate-5'), 실제.배포후보읽기(f.root));
+  await assert.rejects(도구.다시하기({ 이름: 'review-5', 폴더: path.join(뿌리, 'review-5'), 앞: 합.폴더, 저장소: f.root, 합침만: true, 배포후보: 후보5 }),
+    /배포 후보\(apps-script\) 바이트가 바뀐 판은 합침만으로 잇지 않는다/);
+  // 후보를 새로 짓지 않고(앞 고리 후보 그대로) 합침만을 해도 — 확인은 지나도 배포 도구가 후보 불일치로 막을 헛고리라 먼저 거절한다(Fable 다시 검토 P3)
+  await assert.rejects(도구.다시하기({ 이름: 'review-6', 폴더: path.join(뿌리, 'review-6'), 앞: 합.폴더, 저장소: f.root, 합침만: true }),
+    /배포 후보\(apps-script\)를 짓는 파일\(Code\.js\)이 바뀌었는데 후보는 앞 고리 그대로다/);
+  assert.equal(fs.existsSync(path.join(뿌리, 'review-6')), false);
+  await assert.rejects(f.도구.검수반영({ ...f.args, 검수: 합.폴더 }), /검수 뒤 파일 변경: Code\.js|후보와 현재 배포 파일/);
 });
 
 test('Apps Script: 무관한 HEAD 변화는 검수와 후보 일치를 깨지 않는다', async t => {
