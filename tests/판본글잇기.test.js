@@ -714,7 +714,12 @@ test('나라 인사 — 지도 검증: 인사 줄에 초 · 칸 「머리」 · 
   delete j.인사.자산;
   const 문제 = 잇기.지도검증(j).join('\n');
   assert.match(문제, /인사 줄 1\(hello\): 초는 적지 않는다/);
-  assert.match(문제, /인사 줄 2\(hello\.name\): 인사 줄은 칸 「머리」를 쓰지 않는다/);
+  assert.match(문제, /인사 줄 2\(hello\.name\): 인사 줄의 칸은 진행 · 한국어 · 읽기만 쓴다\(「머리」/);
+  for (const 칸 of ['상황', '예문', '끝질문', '게시글', '뜻']) {
+    const k = 인사지도();
+    k.인사.줄[1].칸 = 칸;
+    assert.match(잇기.지도검증(k).join(' | '), /인사 줄의 칸은 진행 · 한국어 · 읽기만 쓴다/, 칸);
+  }
   assert.match(문제, /인사 줄 3\(hook\): id가 겹친다/);
   assert.match(문제, /인사\.자산/);
 });

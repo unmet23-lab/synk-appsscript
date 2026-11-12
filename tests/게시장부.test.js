@@ -1189,6 +1189,22 @@ test('플랫폼에 걸린 판을 장부에 되살려 적는 길이 다른 관문
     assert.equal(표줄(`LAB_바${day}`).length, 1);
   }
 
+  // ⑥-2 다시 건 작업본이 그 뒤 지워졌어도(보관) 되살아난 옛 회차의 끝은 받지 않는다 — 못 읽는 자리의 줄은 표를 믿는다(11-12 Fable 5.2 검수 N1)
+  {
+    const [j1, j2] = w.둘다('LAB_사', '2026-12-05T13:00:00+07:00', 'j');
+    assert.equal(장부.claim(one({ dir: j1, now: NOW })).ok, true);
+    fs.copyFileSync(path.join(j1, '게시', '게시결과.json'), path.join(j2, '게시', '게시결과.json'));
+    assert.equal(장부.finish(two({ dir: j2, state: '실패', now: NOW + 3 * HOUR })).ok, true);
+    assert.equal(장부.claim(two({ dir: j2, now: NOW + 3 * HOUR + 1000 })).ok, true, '같은 편을 다시 건다');
+    assert.equal(장부.finish(two({ dir: j2, state: '예약됨', id: 'yt-two', now: NOW + 3 * HOUR + 2000 })).ok, true);
+    fs.rmSync(j2, { recursive: true, force: true });
+    const late = 장부.finish(one({ dir: j1, state: '예약됨', id: 'yt-one', now: NOW + 3 * HOUR + 3000 }));
+    assert.equal(late.ok, false, '다시 건 작업본이 지워져도 받지 않는다');
+    assert.match(late.why, /같은 편을 다른 작업본이 다시 걸었다/);
+    assert.equal(결과(j1).판[0].상태, '거는 중');
+    assert.equal(표줄('LAB_사').length, 1);
+  }
+
   // ⑦ 첫 판 확인 전 계정 — 그사이 다른 칸에 다른 편이 걸렸으면 끝을 받지 않는다(판 하나 한도)
   {
     const v = 두마당();

@@ -146,10 +146,25 @@ function stillFrame(file, t, out) {
   return r.status === 0 && fs.existsSync(out);
 }
 
+// 나라 인사 카드(11-12)가 붙은 판본 영상의 인사 길이(초) — 그 영상 옆 렌더.json 「인사초」(판본렌더.mjs가 적는다). 없으면 0.
+// 렌더 기록이 다른 영상의 것이면(영상 이름이 다르다) 믿지 않는다.
+function greetSec(file) {
+  try {
+    const j = JSON.parse(fs.readFileSync(path.join(path.dirname(path.resolve(file)), '렌더.json'), 'utf8').replace(/^﻿/, ''));
+    const sec = Number(j && j.인사초);
+    if (!(sec > 0 && sec <= 3)) return 0;
+    if (j.영상 && path.basename(String(j.영상)) !== path.basename(file)) return 0;
+    return sec;
+  } catch { return 0; }
+}
+
 // 영상 하나 → { dur, first, last } (첫 · 끝 축소판)
+// 「첫 장면」은 인사 뒤 원본의 첫 장면이다 — 인사 판본을 0.3초에서 뜨면 인사 그림이 잡혀, 인사 없는 지난 편과는 같은 무대여도 늘 다르고
+// (새는 쪽) 같은 계정의 인사 판 둘은 원본이 달라도 늘 같다(헛막음 — 11-12 Fable 5.2 인사 카드 검수 P1).
 function stageOf(file) {
   const dur = duration(file);
-  return { dur, first: thumb(file, EDGE), last: thumb(file, dur - EDGE) };
+  const greet = greetSec(file);
+  return { dur, first: thumb(file, Math.min(greet + EDGE, Math.max(0, dur - EDGE))), last: thumb(file, dur - EDGE), ...(greet ? { greet } : {}) };
 }
 
 function ocrFolder(dir) {
@@ -345,4 +360,4 @@ function main(argv) {
 
 if (require.main === module) main(process.argv.slice(2));
 
-module.exports = { repeatFindings, previousOf, episodes, stageVerdict, similar, core, screenEnding, narrationEnding, closestEnding, linesOfImage, mad, STAGE_SAME, LINE_SAME, LINE_NEAR };
+module.exports = { stageOf, greetSec, repeatFindings, previousOf, episodes, stageVerdict, similar, core, screenEnding, narrationEnding, closestEnding, linesOfImage, mad, STAGE_SAME, LINE_SAME, LINE_NEAR };

@@ -543,7 +543,9 @@ function lostClaim(reg, cur, name, account, root, key, state, { dir = null, time
       if (!k.startsWith(`${account}|`) || !x || typeof x !== 'object' || x.편 !== name) continue;
       const truth = truthOf(x, account, root, shared);
       if (truth.kind === 'gone') { delete reg.칸[k]; continue; }
-      if (truth.kind === 'held' && samePath(truth.at, root)) continue;
+      // 「건 쪽은 풀었다」로 읽는 것은 그 줄의 자리(건 작업본)가 읽힐 때만이다 — 그 작업본이 지워졌으면(보관) truthOf는 이 작업본의 「거는 중」을 참으로
+      // 돌려주는데, 그것은 건 쪽이 풀었다는 뜻이 아니다. 못 읽는 자리의 줄은 표를 믿는다(다른 편의 줄 「lost」와 같은 잣대 — 11-12 Fable 5.2 검수 N1)
+      if (truth.kind === 'held' && samePath(truth.at, root) && x.자리 && fs.existsSync(path.join(x.자리, x.편, '게시', '준비.json'))) continue;
       other = { 편: `${x.편}(같은 편을 다른 작업본이 다시 걸었다)`, 상태: truth.kind === 'held' ? truth.state : x.상태, 자리: truth.kind === 'held' ? truth.at : x.자리 };
       break;
     }
