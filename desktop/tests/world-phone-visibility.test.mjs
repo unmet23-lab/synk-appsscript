@@ -82,3 +82,18 @@ test('searching the web platform for WORLD finds the phone panel instead of noth
   for(const q of ['WORLD','world','한국어','TOPIK','바람길'])assert.equal(unlistedSearchHit(q),true,q);
   for(const q of ['','   ','면접','Workspace'])assert.equal(unlistedSearchHit(q),false,q);
 });
+
+test('a WORLD and member-benefit account lists the benefit only and its empty shelf still points to the phone panel',()=>{
+  // 런처는 혜택 앱(플레저)을 선반 격자에서 빼고 넘긴다(launcher.mjs renderLibrary의 sidebarIds). 빈 화면 안내와 앱 소개가 겹치지 않는 것은 renderer-auth 시험이 본다.
+  const library={status:'ready',owner:'learner-care',appIds:['world','care']};
+  assert.deepEqual(displayLibraryAppIds(library),['care']);
+  const copy=libraryCopy({...library,appIds:[]},{granted:library.appIds});
+  assert.equal(copy.worldOnPhone,true);assert.match(copy.title,/휴대폰의 WORLD/);assert.doesNotMatch(copy.title,/아직 쓸 수 있는 앱이 없어요/);
+});
+
+test('the account dialog says the same sentence before and after the launcher fills it, without WORLD',()=>{
+  const html=readFileSync(new URL('../renderer/index.html',import.meta.url),'utf8'),launcher=readFileSync(new URL('../renderer/launcher.mjs',import.meta.url),'utf8');
+  const sentence='SYNK ID 하나로 Workspace·PULSE·회원 혜택을 써요.';
+  assert.ok(html.includes(`<p id="account-description">${sentence}</p>`));assert.ok(launcher.includes(`'${sentence}'`));
+  assert.doesNotMatch(html.match(/<dialog id="account-dialog"[\s\S]*?<\/dialog>/)[0],/WORLD/);
+});

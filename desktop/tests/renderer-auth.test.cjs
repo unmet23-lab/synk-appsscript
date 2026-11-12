@@ -362,6 +362,17 @@ test('PULSE intro opens from the home card with the approved words while launchi
   await f.action({detail:'info'});assert.match(f.element('detail-content').innerHTML,/알아 둘 것/);assert.match(f.element('detail-content').innerHTML,/초대 링크로 연결한 프로젝트만 보여요/);
   await f.click('primary-action');assert.equal(opened,1);
 });
+// WORLD와 혜택 권한만 있는 계정: 라이브러리 탭은 휴대폰 안내, 홈에서 플레저 소개를 열면 그 소개만 선다(2026-11-12 검수 -d P2).
+test('a WORLD and member-benefit account sees the phone notice or the benefit introduction, never both',async()=>{
+  const f=await fixture({initialAuth:account('learner-care',['world','care'])});assert.equal(await f.ready,'true');
+  const shown=()=>({empty:!f.element('library-empty').hidden,phone:!f.element('library-world-phone').hidden,grid:!f.element('library-grid').hidden,detail:!f.element('app-detail').hidden});
+  await f.action({view:'library'});
+  assert.deepEqual(shown(),{empty:true,phone:true,grid:false,detail:false});assert.match(f.element('library-empty-title').textContent,/휴대폰의 WORLD/);assert.doesNotMatch(f.element('library-empty-title').textContent,/아직 쓸 수 있는 앱이 없어요/);
+  await f.action({view:'home'});await f.element('view-home').handlers.get('click')({target:{closest:()=>({dataset:{memberApp:'care'}})}});await settleLibrary();
+  assert.equal(f.view(),'library');assert.deepEqual(shown(),{empty:false,phone:true,grid:false,detail:true});assert.equal(f.element('breadcrumb-app').textContent,'SYNK 플레저');
+  await f.action({view:'library'});
+  assert.deepEqual(shown(),{empty:true,phone:true,grid:false,detail:false},'leaving the introduction brings the phone notice back');
+});
 test('teacher preview needs server library and explicit development capability',async()=>{
   let calls=0;const opts={getEnvironment:async()=>({...environment,teacherPreviewAvailable:true}),openTeacherPreview:async()=>{calls++;return {ok:true};}};const f=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:opts});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').dataset.action,'teacher-preview');await f.click('primary-action');await settleLibrary();assert.equal(calls,1);assert.notEqual(f.element('last-launch').textContent,'기록 없음');const old=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:{openTeacherPreview:opts.openTeacherPreview}});assert.equal(await old.ready,'true');assert.equal(old.element('primary-action').disabled,true);await old.click('primary-action');assert.equal(calls,1);
 });

@@ -102,3 +102,20 @@ test('a learning item from the record stands in 「」 (Vellum, 2026-11-10); cho
   assert.equal(V.memberUnderstandingLine({ kind: 'practice-mode', label: '듣기', count: 7, activeDays: 3, state: 'observed' }), '최근 30일 동안 듣기로 3일에 걸쳐 7번 답했어요. 기록된 방식일 뿐 선호를 뜻하지 않아요.');
   assert.equal(V.memberCorrectionLine({ kind: 'override', facet: 'explanation', labels: ['자세히'] }), '설명 길이로 ‘자세히’를 골랐어요.');
 });
+// 「내 성향」 and Atlas Vellum put a learning item's name in 「」 themselves (item() here, atlas/vellum.js learningReason), so
+// no Strata name they can read may bring its own corners: an edge-quoted name would read 「「…」」 (Fable 5.2 검수
+// pc-held-seven-0488 P3, 2026-11-12). Only task nodes, which neither sentence path reads, quote inside their label.
+test('no Strata name the 「」 sentences read already carries 「」', () => {
+  const fs = require('node:fs'), path = require('node:path'), dir = path.join(__dirname, '../strata/maps');
+  let read = 0;
+  for (const file of fs.readdirSync(dir).filter(name => name.endsWith('.json'))) {
+    for (const node of JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')).nodes || []) {
+      if (typeof node.label_ko !== 'string') continue;
+      read += 1;
+      assert.doesNotMatch(node.label_ko, /^\s*「[\s\S]*」\s*$/, `${file} ${node.id}`);
+      if (node.kind !== 'task') assert.doesNotMatch(node.label_ko, /[「」『』]/, `${file} ${node.id}`);
+    }
+  }
+  assert.ok(read > 400, 'the generated Strata maps were read');
+  assert.equal(V.memberUnderstandingLine({ kind: 'learning-topic', label: '인사말(기본)', state: 'declared', selection: 'interested' }), '「인사말(기본)」을 더 배우고 싶다고 알려 줬어요.');
+});
