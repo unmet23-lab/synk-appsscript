@@ -1,10 +1,12 @@
 // LAB 몽골 M20 「4층 F」(영어 편 E19와 그림 · 소리를 나눠 쓴다) — 4층 버튼을 찾는 몽글, 일 · 이 · 삼까지 경쾌하게 세다 「사」에서 음악이 멎고 불이 나가며 F에 불이 들어온다.
 // 사 = 4 = 死. 도착한 F층 문이 열리자 작은 유령들의 찻자리가 일제히 돌아보고, 문을 닫아 안도한 몽글의 머리 위에 유령 하나가 앉아 있다.
 // 문은 닫힌 문 그림을 좌우로 갈라 실제로 밀고, 몽글만 그 위에 오려 얹는다(public/img/mongle_back.png). 전부 useCurrentFrame()으로만 움직인다.
+// 11-10 판본 틀: 화면 글(머리 글 · 읽는 법 · 등식 · 표지판 · 안도)과 새 끝 카드 · 끝 질문은 판본/<KEY>.json(판본.ts)에서 읽는다 — 그림 · 소리 · 박자는 그대로.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { BTN, COUNT, LocPack, P } from './data';
+import { BTN, COUNT } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8', amber: '#FFC15E' };
 const KO = "'SUIT', 'Inter Tight', sans-serif";
@@ -86,7 +88,7 @@ const Panel: React.FC<{ t: number }> = ({ t }) => {
 };
 
 // ── 세는 글 판(버튼판 오른쪽) ──
-const CountBoard: React.FC<{ t: number }> = ({ t }) => {
+const CountBoard: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
   if (t < T.count[0] || t >= T.eq1) return null;
   let k = 0;
   for (let i = 1; i < 4; i++) if (t >= T.count[i]) k = i;
@@ -99,7 +101,7 @@ const CountBoard: React.FC<{ t: number }> = ({ t }) => {
     <div style={{ position: 'absolute', left: inside ? 365 : 560, top: inside ? 310 : 720, width: 350, height: 370, borderRadius: 30, background: '#140A06', border: '6px solid #8A6A2E', boxShadow: `0 0 34px rgba(255,180,70,${dark ? 0.55 : 0.3})`, transform: `scale(${pop})`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 170, lineHeight: 1, color: dark ? '#FF6A4D' : C.amber, textShadow: '0 0 18px rgba(255,170,60,0.7)' }}>{c.ko}</div>
       <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 60, color: C.cream, marginTop: 10 }}>
-        {c.read} · {c.n}
+        {p.counts[k]} · {c.n}
       </div>
     </div>
   );
@@ -114,10 +116,10 @@ const Equation: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
   return (
     <div style={{ position: 'absolute', left: 90, width: 800, top: 1010, height: 380, borderRadius: 40, background: 'rgba(30,14,10,0.95)', boxShadow: '0 12px 30px rgba(0,0,0,0.4)', opacity: a, transform: `translateY(${(1 - a) * 24}px)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 112, lineHeight: 1.12, color: C.cream, whiteSpace: 'nowrap', transform: `translateY(${(1 - b) * 110}px)` }}>4 = 사</div>
-      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: 84, lineHeight: 1.12, color: '#FF7A66', opacity: b, transform: `scale(${1 + 0.07 * hit})`, whiteSpace: 'nowrap' }}>
-        {p.death} <span style={{ fontFamily: KO }}>사</span> (са)!
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.deathSize, lineHeight: 1.12, color: '#FF7A66', opacity: b, transform: `scale(${1 + 0.07 * hit})`, whiteSpace: 'nowrap' }}>
+        {p.death} <span style={{ fontFamily: KO }}>사</span> ({p.whisper})!
       </div>
-      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: 54, lineHeight: p.lineH, color: C.amber, opacity: b, marginTop: 6, whiteSpace: 'nowrap' }}>{p.sameSound}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.sameSize, lineHeight: p.lineH, color: C.amber, opacity: b, marginTop: 6, whiteSpace: 'nowrap' }}>{p.sameSound}</div>
     </div>
   );
 };
@@ -142,7 +144,7 @@ const SoBoard: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
   return (
     <div style={{ position: 'absolute', left: 60, width: 860, top: 300, borderRadius: 40, background: 'rgba(255,253,248,0.97)', boxShadow: '0 10px 28px rgba(0,0,0,0.3)', opacity: a, padding: '30px 30px 34px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.soSize, lineHeight: p.lineH, color: C.brown, textAlign: 'center' }}>{p.so}</div>
-      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: 92, lineHeight: p.lineH, color: C.coralShade, opacity: o2, transform: `scale(${pop})`, marginTop: 8 }}>{p.soSub}</div>
+      <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.soSubSize, lineHeight: p.lineH, color: C.coralShade, opacity: o2, transform: `scale(${pop})`, marginTop: 8 }}>{p.soSub}</div>
     </div>
   );
 };
@@ -192,7 +194,7 @@ const FloorSign: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
   if (t < T.arrive || t >= T.face) return null;
   const a = interpolate(t, [T.arrive, T.arrive + 0.15], [0, 1], { ...clamp, easing: EASE_OUT });
   return (
-    <div style={{ position: 'absolute', left: 140, width: 800, top: 300, borderRadius: 30, background: '#140A06', border: '6px solid #8A6A2E', opacity: a, padding: '14px 0 18px', textAlign: 'center', fontFamily: p.font, fontWeight: 800, fontSize: 66, lineHeight: p.lineH, color: C.amber }}>
+    <div style={{ position: 'absolute', left: 140, width: 800, top: 300, borderRadius: 30, background: '#140A06', border: '6px solid #8A6A2E', opacity: a, padding: '14px 0 18px', textAlign: 'center', fontFamily: p.font, fontWeight: 800, fontSize: p.floorSize, lineHeight: p.lineH, color: C.amber }}>
       {p.floorA}
       <br />
       {p.floorF}
@@ -235,13 +237,13 @@ const Phew: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
   );
 };
 // 유령이 작게 「사」 — 끝 글을 두지 않고 농담과 배운 말을 한 번에 닫는다(v4 볼 이유 심사)
-const Whisper: React.FC<{ t: number }> = ({ t }) => {
+const Whisper: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
   if (t < T.whisper) return null;
   const a = interpolate(t, [T.whisper, T.whisper + 0.16], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   return (
     <div style={{ position: 'absolute', left: 150, top: 340, padding: '18px 40px 22px', borderRadius: 44, background: '#140A06', border: '6px solid #8A6A2E', transform: `scale(${a})`, transformOrigin: '90% 100%', textAlign: 'center' }}>
       <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 120, lineHeight: 1.05, color: '#FF7A66' }}>사!</div>
-      <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 54, color: C.cream }}>{P.whisper}</div>
+      <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 54, color: C.cream }}>{p.whisper}</div>
       <svg width={70} height={70} style={{ position: 'absolute', right: -6, bottom: -60 }}>
         <path d="M0 0 L58 0 L66 62 Z" fill="#140A06" />
       </svg>
@@ -296,20 +298,35 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC = () => {
+// ── 끝 카드 · 끝 질문(판본 endCard · ask, 선택) — 유령의 「사!」 뒤, 오른쪽 위 금빛 문 자리(유령 말풍선 오른쪽 · 머리 위 유령 위).
+// 둘 다 비우면 그리지 않는다(몽골판 그대로). 오른쪽 끝 910px — 오른쪽 단추 자리(920px) 안. 보이는 시간은 14.9~16.0초(1.1초)뿐이다.
+const END_AT = T.whisper + 0.25;
+const EndCard: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
+  if (t < END_AT || (!p.endCard && !p.ask)) return null;
+  const a = interpolate(t, [END_AT, END_AT + 0.16], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
+  return (
+    <div style={{ position: 'absolute', left: 470, top: 300, width: 440, padding: '18px 20px 22px', borderRadius: 30, background: '#140A06', border: '6px solid #8A6A2E', boxShadow: '0 0 34px rgba(255,180,70,0.35)', transform: `scale(${a})`, transformOrigin: '50% 0%', textAlign: 'center', fontFamily: p.font, fontWeight: 800, lineHeight: p.lineH, whiteSpace: 'pre-line' }}>
+      {p.endCard ? <div style={{ fontSize: p.endSize, color: C.amber }}>{p.endCard}</div> : null}
+      {p.ask ? <div style={{ fontSize: p.askSize, color: C.cream, marginTop: p.endCard ? 8 : 0 }}>{p.ask}</div> : null}
+    </div>
+  );
+};
+
+// p = 판본 글(판본/<KEY>.json) — Root가 판본마다 컴포지션 m20-<KEY>로 넘긴다
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const t = f / 30;
-  const p: LocPack = P;
   return (
     <AbsoluteFill style={{ backgroundColor: '#1a0c07' }}>
       {t < T.panel ? <Inside t={t} /> : t < T.react ? (t >= T.count[1] - 0.05 && t < T.count[2] - 0.05 ? <Bounce t={t} /> : <Panel t={t} />) : t < T.patch ? <React_ t={t} /> : t < T.arrive ? <Patch t={t} /> : t >= T.face && t < T.slam ? <Face t={t} /> : t < T.relief ? <Doors t={t} /> : <Relief t={t} />}
       <Hook t={t} p={p} />
-      {t >= T.panel && t < T.react ? <CountBoard t={t} /> : null}
+      {t >= T.panel && t < T.react ? <CountBoard t={t} p={p} /> : null}
       <Equation t={t} p={p} />
       <SoBoard t={t} p={p} />
       <FloorSign t={t} p={p} />
       <Phew t={t} p={p} />
-      <Whisper t={t} />
+      <Whisper t={t} p={p} />
+      <EndCard t={t} p={p} />
       <Sound />
     </AbsoluteFill>
   );

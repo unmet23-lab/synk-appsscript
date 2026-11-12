@@ -2,10 +2,12 @@
 // 그림은 칸마다 앞 칸을 참고로 구운 한 장(누끼 · 얹기 없음), 카메라는 고정, 칸은 박자에 바로 바뀐다. 소리는 목소리 하나(소진 · 한국어 줄만),
 // 음악 없음, 끝 카드 없음. 화면 글은 E9 v3와 같은 몽글의 흰 말풍선(꼬리가 처음 몽글 머리를 가리킴)에 한글 · 키릴 읽기 · 몽골 뜻 —
 // 사장님 얼굴(왼쪽 위)을 비켜 오른쪽에 붙인다. E9 Film.tsx를 옮겨 판별 글 표 대신 칸마다 몽골어 칸을 읽게 했다.
+// 11-10 판본 틀: 뜻 · 읽는 법 · 꼬리 · 단계 · 상황 줄 · 사장님 이름표와 새 끝 카드 · 끝 질문은 판본/<KEY>.json(판본.ts)에서 읽는다 — 그림 · 한국어 · 목소리 · 박자는 그대로.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { BOSS, CELLS, FPS, LEVEL, Loc, PORTS, ROMAN, SCENE, TOTAL } from './data';
+import { CELLS, END_AT, FPS, TOTAL } from './data';
+import { LocPack } from './판본';
 
 const fr = (sec: number) => Math.round(sec * FPS);
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
@@ -37,21 +39,20 @@ const Plate: React.FC<{ src: string; push: number }> = ({ src, push }) => (
   </AbsoluteFill>
 );
 
-const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
+// 단계 알약 글 — 판본 level의 {n} 자리에 단계 수
+const levelText = (L: LocPack, n: number) => L.level.split('{n}').join(String(n));
+
+const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
   const frame = useCurrentFrame();
   const c = CELLS[i];
-  // 두 채널 판은 읽는 법을 로마자로, 뜻 · 꼬리 · 둘째 걸음을 그 나라 말 칸에서 읽는다
-  const P = loc === 'mn' ? null : PORTS[loc];
-  const read = P ? (c.level ? ROMAN[c.level - 1] : undefined) : c.read;
-  const mean = P ? P.lines[i].text : c.mn;
-  const meanSize = P ? P.lines[i].size : c.mnSize;
-  const tag = P ? P.lines[i].tag : c.tag;
-  const moreText = P ? P.lines[i].more : c.more?.mn;
+  // 판본 글(판본/<KEY>.json): 뜻 · 꼬리는 말풍선 차례 c.b로, 읽는 법은 배울 세 낱말(단계 1~3)만
+  const read = c.level && c.level <= L.reads.length ? L.reads[c.level - 1] : undefined;
+  const mean = L.means[c.b];
+  const meanSize = L.meanSizes[c.b];
+  const tag = L.tags[c.b] || undefined;
   // 칸이 바뀔 때 말풍선만 4프레임 살짝 튀어나온다(그림은 바로 바뀜)
   const p = c.cont ? 1 : interpolate(frame, [fr(c.at), fr(c.at) + 4], [0.9, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
-  // v5: 둘째 걸음 뜻 줄도 처음부터 보이고 그 말이 나올 때 산호색으로 밝아진다(v4 두 시험관 다 「'주말에도'가 화면 글에 없음」)
-  const moreOn = c.more ? frame >= fr(c.more.at) : false;
-  const enFont = P ? P.font : EN;
+  const enFont = L.font;
   // 목소리 박자대로 밝아지는 줄 — v5부터 줄 전체가 처음부터 흐리게 보이고, 말한 낱말만 진해진다(3.2초 동안 끝 낱말까지 읽히게)
   const koLine = c.words ? (
     <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.16 }}>
@@ -90,25 +91,24 @@ const Bubble: React.FC<{ i: number; loc: Loc }> = ({ i, loc }) => {
         >
           {c.zero ? (
             <div style={{ marginBottom: 4 }}>
-              <span style={{ display: 'inline-block', background: INK, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
-                {LEVEL[loc](0)} ❌
+              <span style={{ display: 'inline-block', background: INK, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
+                {levelText(L, 0)} ❌
               </span>
             </div>
           ) : null}
           {c.level ? (
             <div style={{ marginBottom: 4 }}>
-              <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
-                {LEVEL[loc](c.level)}
+              <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
+                {levelText(L, c.level)}
               </span>
             </div>
           ) : null}
-          <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: meanSize, color: MEAN, lineHeight: 1.16, marginBottom: 8, whiteSpace: 'pre-line' }}>
+          <div style={{ fontFamily: enFont, fontWeight: 800, fontSize: meanSize, color: MEAN, lineHeight: Math.max(1.16, L.lineH), marginBottom: 8, whiteSpace: 'pre-line' }}>
             {mean}
-            {moreText ? <span style={{ color: moreOn ? CORAL : MEAN, opacity: moreOn ? 1 : 0.45 }}>{` ${moreText}`}</span> : null}
           </div>
           {koLine}
           {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 44, color: '#4F3F33', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
-          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 700, fontSize: 40, color: '#4F3F33', lineHeight: 1.15 }}>→ {tag}</div> : null}
+          {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 700, fontSize: 40, color: '#4F3F33', lineHeight: Math.max(1.15, L.lineH) }}>→ {tag}</div> : null}
         </div>
       </div>
       {/* 꼬리 — 말풍선 위 끝에서 계산대 위 몽글로 */}
@@ -137,25 +137,43 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ loc: Loc }> = ({ loc }) => {
+// 끝 카드 · 끝 질문(판본 endCard · ask, 선택) — 마지막 칸 말 뒤(END_AT) 사장님 얼굴 오른쪽, 0~4.4초 상황 줄과 같은 자리 · 같은 꼴.
+// 둘 다 비우면 그리지 않는다(몽골판 그대로). 오른쪽 끝 900px — 오른쪽 단추 자리(920px) 안.
+const EndCard: React.FC<{ L: LocPack }> = ({ L }) => {
+  const frame = useCurrentFrame();
+  if (frame < fr(END_AT) || (!L.endCard && !L.ask)) return null;
+  const p = interpolate(frame, [fr(END_AT), fr(END_AT) + 5], [0.86, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
+  return (
+    <div style={{ position: 'absolute', left: 360, top: 290, maxWidth: 540, textAlign: 'left', transform: `scale(${p})`, transformOrigin: '0% 0%' }}>
+      <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `4px solid ${INK}`, boxShadow: '0 6px 16px rgba(0,0,0,0.3)', fontFamily: L.font, fontWeight: 800, lineHeight: Math.max(1.2, L.lineH), padding: '10px 22px 12px', borderRadius: 22, whiteSpace: 'pre-line' }}>
+        {L.endCard ? <span style={{ display: 'block', fontSize: L.endSize, color: CORAL }}>{L.endCard}</span> : null}
+        {L.ask ? <span style={{ display: 'block', fontSize: L.askSize, color: '#4F3F33', marginTop: L.endCard ? 6 : 0 }}>{L.ask}</span> : null}
+      </span>
+    </div>
+  );
+};
+
+// L = 판본 글(판본/<KEY>.json) — Root가 판본마다 컴포지션 sorry-<KEY>로 넘긴다
+export const Film: React.FC<{ L: LocPack }> = ({ L }) => {
   const frame = useCurrentFrame();
   const i = cellAt(frame / FPS);
   return (
     <AbsoluteFill style={{ backgroundColor: '#2a1d16' }}>
       <Plate src={CELLS[i].img} push={interpolate(frame, [fr(CELLS[i].at), fr(i + 1 < CELLS.length ? CELLS[i + 1].at : TOTAL)], [1, 1.035], clamp)} />
-      {/* v3: 사장님 옆 상황 한 줄 — 무엇을 사과하는지(v4: 0~2.3초 → 0~4.4초) */}
+      {/* v3: 사장님 옆 상황 한 줄 — 무엇을 사과하는지(v4: 0~2.3초 → 0~4.4초) · 판본의 첫 2초 카드 */}
       {frame < fr(CELLS[3].at) ? (
         <div style={{ position: 'absolute', left: 360, top: 290, maxWidth: 540, textAlign: 'left' }}>
-          <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `4px solid ${INK}`, boxShadow: '0 6px 16px rgba(0,0,0,0.3)', fontFamily: loc === 'mn' ? EN : PORTS[loc].font, fontWeight: 800, fontSize: 40, lineHeight: 1.2, padding: '10px 22px 12px', borderRadius: 22 }}>{SCENE[loc]}</span>
+          <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `4px solid ${INK}`, boxShadow: '0 6px 16px rgba(0,0,0,0.3)', fontFamily: L.font, fontWeight: 800, fontSize: L.sceneSize, lineHeight: Math.max(1.2, L.lineH), padding: '10px 22px 12px', borderRadius: 22 }}>{L.scene}</span>
         </div>
       ) : null}
       {/* v3: 칸마다 새로 생긴 몽글 자리에 「+1 🙇」 0.7초 — 같은 몽글이 한 번 더 숙였다는 것 */}
       {frame < fr(CELLS[2].at) ? (
         <div style={{ position: 'absolute', left: 60, top: 500, opacity: interpolate(frame, [0, 4], [0, 1], clamp) }}>
-          <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `5px solid ${INK}`, fontFamily: loc === 'mn' ? EN : PORTS[loc].font, fontWeight: 800, fontSize: 52, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999, boxShadow: '0 6px 16px rgba(0,0,0,0.3)' }}>👆 {BOSS[loc]}</span>
+          <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `5px solid ${INK}`, fontFamily: L.font, fontWeight: 800, fontSize: 52, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999, boxShadow: '0 6px 16px rgba(0,0,0,0.3)' }}>👆 {L.boss}</span>
         </div>
       ) : null}
-      <Bubble i={i} loc={loc} />
+      <Bubble i={i} L={L} />
+      <EndCard L={L} />
       <Sound />
     </AbsoluteFill>
   );

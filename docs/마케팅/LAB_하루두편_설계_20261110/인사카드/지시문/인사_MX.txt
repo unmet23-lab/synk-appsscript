@@ -1,0 +1,23 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+A real handmade needle-felt diorama photographed with a macro lens, like a still from a stop-motion short film.
+
+Set: a plain sky-blue wool felt backdrop (flat, clean, evenly lit) fills the upper part. A warm wooden tabletop fills the bottom 28% of the image; the front strip of the tabletop is empty wood, softly out of focus.
+
+Character — Mongle: copy the character in the SECOND attached image exactly: a small coral-red needle-felted ghost-shaped blob, two glossy solid-black bead eyes (no whites), a wavy scalloped hem with one line of cream running stitch. Mongle has no arms, no legs, no hands. The only addition: a small happy open mouth (dark inside, tiny pink tongue).
+
+Action (one clear gag, readable in one second): Mongle is doing an impression of an axolotl. Next to Mongle sits ONE needle-felted axolotl (soft pink wool, simple smooth shapes, a wide happy smile, three feathery deep-pink gills on each side of its head, short tail), about two thirds as tall as Mongle. Mongle wears a little pink felt headband with the very same feathery deep-pink gills sticking out on both sides, and smiles the same wide smile at the camera, copying its new friend. Mongle is on the left, the axolotl on the right, close together like twins.
+
+Lettering: handmade felt lettering appliqued flat onto the sky-blue felt backdrop like a handmade banner. Copy the FIRST attached image exactly — the same letters, the same order, the same three lines, the same letter shapes:
+   - Line 1: ¡Hola — thick cream-white wool felt cut-out letters. It begins with the Spanish inverted exclamation mark (¡ — a dot on top and a short stroke hanging below it), the same height as the letters.
+   - Line 2: 멕시코! — larger, thick coral-red wool felt cut-out letters, each backed by a slightly larger cream felt layer so every letter has a clean cream outline. Copy the Korean syllable blocks 멕, 시 and 코 stroke for stroke from the first image.
+   - Line 3: mek-si-ko — small letters hand-embroidered in cream thread (neat backstitch).
+   Tiny visible stitches hold the felt letters on the backdrop. The lettering block is centered horizontally and no wider than 64% of the image width. Its top edge is at about 18% of the image height and its bottom edge at about 36%. Above the lettering there is only plain sky-blue felt.
+
+Layout: Mongle and the axolotl sit in the middle band of the image, between 40% and 72% of the image height, and inside the central 76% of the width — clear empty margin on the left and right edges. They do not touch or overlap the lettering.
+
+Craft quality: tidy, deliberate craftsmanship. All surfaces are tightly felted and smooth with only a short soft fuzz; no long stray fibers, no swirl patterns, no busy texture. Big simple shapes with few details. Soft natural daylight from the upper left, gentle contact shadows on the wood.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. No clouds. Nothing else is added.

@@ -1,11 +1,12 @@
 // LAB 몽골 M24 「물고기 = загас」 — 영어 편 E22를 몽골어로. 몽글의 점심 스테이크가 어항에 풍덩 빠져 헤엄친다(물 + 고기 = «усны мах»?).
 // 진짜 금붕어가 와서 마주 보고(ЗАГАС), 몽글은 빈 접시 앞에서 운다(눈 + 물 = НУЛИМС). 끝은 고기와 금붕어가 친구가 되어 나란히 헤엄치고, 몽글이 「Баяртай, миний мах!」.
 // 물개 세트는 뺐다(관문 조건 「세트 둘 · 18초 안」) — 그 시간표 자리는 99초.
+// 11-10 판본 틀: 화면 글(뜻 · 읽는 법 · 말풍선)과 새 첫 2초 카드 · 끝 카드 · 끝 질문은 판본/<KEY>.json(판본.ts)에서 읽는다 — 그림 · 소리 · 박자는 그대로.
 // 그림은 장면 판 넷(어항 · 놀람 · 울음 · 기쁨)과 끝 판, 물건은 오린 조각을 띠로 잘라 실제로 구부린다(Wag). 전부 useCurrentFrame()으로만 움직인다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, random, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { Loc, LOCS, LocPack, READ } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8' };
 const KO = "'SUIT', 'Inter Tight', sans-serif";
@@ -571,10 +572,36 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => {
+// ── 첫 2초 카드(판본 hook, 선택) — 「물」 칸이 뜨는 0.62초부터 「물고기」 제목(3.0초) 앞까지, 낱말 칸 둘 바로 아래 · 어항 물 위.
+// 0~0.62초는 스테이크가 튀어 어항에 빠지는 장면이라 비워 둔다. 비우면 그리지 않는다(몽골판 그대로).
+const HookBand: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
+  if (!p.hook || t < T.w1 || t >= T.lit) return null;
+  const a = interpolate(t, [T.w1, T.w1 + 0.2], [0, 1], { ...clamp, easing: EASE_OUT });
+  return (
+    <div style={{ position: 'absolute', left: 68, width: 848, top: 630, padding: '18px 26px 22px', borderRadius: 40, background: 'rgba(43,26,20,0.92)', boxShadow: '0 10px 28px rgba(40,10,0,0.3)', opacity: a, transform: `translateY(${(1 - a) * 16}px)`, textAlign: 'center', fontFamily: `${p.font}, 'Segoe UI Emoji'`, fontWeight: 800, fontSize: p.hookSize, lineHeight: p.lineH, color: C.cream, whiteSpace: 'pre-line' }}>
+      {p.hook}
+    </div>
+  );
+};
+
+// ── 끝 카드 · 끝 질문(판본 endCard · ask, 선택) — 꿀꺽 뒤 「…?!」(16.2초)와 함께, 그 말풍선(470px) 위 줄. 한 줄씩만 들어간다(아래 끝 460px).
+const END_AT = T.gulp + 1.3;
+const EndCard: React.FC<{ t: number; p: LocPack }> = ({ t, p }) => {
+  if (t < END_AT || (!p.endCard && !p.ask)) return null;
+  const a = pop(t, END_AT);
+  return (
+    <div style={{ position: 'absolute', left: 110, top: 290, width: 800, padding: '14px 20px 18px', borderRadius: 38, background: 'rgba(43,26,20,0.92)', boxShadow: '0 10px 28px rgba(40,10,0,0.3)', transform: `scale(${a})`, transformOrigin: '50% 0%', textAlign: 'center', fontFamily: `${p.font}, 'Segoe UI Emoji'`, fontWeight: 800, lineHeight: p.lineH, whiteSpace: 'pre-line' }}>
+      {p.endCard ? <div style={{ fontSize: p.endSize, color: '#FFC15E' }}>{p.endCard}</div> : null}
+      {p.ask ? <div style={{ fontSize: p.askSize, color: C.cream, marginTop: p.endCard ? 6 : 0 }}>{p.ask}</div> : null}
+    </div>
+  );
+};
+
+// p = 판본 글(판본/<KEY>.json) — Root가 판본마다 컴포지션 m24-<KEY>로 넘긴다. 읽는 법 reads는 물 · 고기 · 물고기 · 눈 · 눈물 차례
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
   const f = useCurrentFrame();
   const t = f / 30;
-  const p = LOCS[loc];
+  const [rMul, rGogi, rMulgogi, rNun, rNunmul] = p.reads;
   const bowl = t < T.shock || (t >= T.real && t < T.eye) || (t >= T.cryEnd && t < T.pals);
   return (
     <AbsoluteFill style={{ backgroundColor: '#1a0c07' }}>
@@ -584,13 +611,15 @@ export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => {
       {t >= T.joy && t < T.end ? <Joy t={t} /> : null}
       {t >= T.pals ? <Farewell t={t} /> : null}
       {t >= T.end ? <EndScene t={t} /> : null}
-      <Pair t={t} p={p} a0={T.w1} b0={T.w2} plus0={T.plus} end={T.lit} a={['물', READ.mul, p.water]} b={['고기', READ.gogi, p.meat]} />
-      <Title t={t} p={p} at={T.lit} end={T.shock} ko="물고기" read={READ.mulgogi} mean={p.litFish} />
-      <Title t={t} p={p} at={T.fishT} end={T.eye} ko="물고기" read={READ.mulgogi} mean={p.fish} />
-      <Pair t={t} p={p} a0={T.eyeL} b0={T.waterL} plus0={T.waterL + 0.3} end={T.whip2} a={['눈', READ.nun, p.eye]} b={['물', READ.mul, p.water]} />
-      <Title t={t} p={p} at={T.cry} end={T.cryEnd} ko="눈물" read={READ.nunmul} mean={p.tears} strong />
+      <Pair t={t} p={p} a0={T.w1} b0={T.w2} plus0={T.plus} end={T.lit} a={['물', rMul, p.water]} b={['고기', rGogi, p.meat]} />
+      <Title t={t} p={p} at={T.lit} end={T.shock} ko="물고기" read={rMulgogi} mean={p.litFish} />
+      <Title t={t} p={p} at={T.fishT} end={T.eye} ko="물고기" read={rMulgogi} mean={p.fish} />
+      <Pair t={t} p={p} a0={T.eyeL} b0={T.waterL} plus0={T.waterL + 0.3} end={T.whip2} a={['눈', rNun, p.eye]} b={['물', rMul, p.water]} />
+      <Title t={t} p={p} at={T.cry} end={T.cryEnd} ko="눈물" read={rNunmul} mean={p.tears} strong />
       <Lunch t={t} p={p} />
       <Bye t={t} p={p} />
+      <HookBand t={t} p={p} />
+      <EndCard t={t} p={p} />
       <Sound />
     </AbsoluteFill>
   );

@@ -652,3 +652,130 @@ test('저장소의 판본 지도는 꼴이 맞고, 글이 찬 판본은 판본�
     }
   }
 });
+
+// ── 나라 인사(11-12 유호님 「(가) 인사 카드」) ──
+const 인사지도 = () => ({
+  ...지도(),
+  인사: { 켬: 'hello', 초: 'helloSec', 자산: 'remotion/public/greet', 줄: [
+    { id: 'hello', 칸: '진행', 값: 'hello', 원문: '안녕', 장면: '인사 장면 한 장' },
+    { id: 'hello.name', 칸: '한국어', 값: 'helloName' },
+    { id: 'hello.read', 칸: '읽기', 값: 'helloRead' },
+    { id: 'hello.vo', 칸: '한국어', 값: 'helloVo' },
+  ] },
+});
+const 인사틀 = { hello: '', helloName: '', helloRead: '', helloVo: '', helloSec: 1 };
+function 인사편만들기() {
+  const m = 편만들기();
+  fs.writeFileSync(path.join(m.편, 잇기.지도이름), JSON.stringify(인사지도(), null, 2));
+  for (const [k, lang] of Object.entries({ US: 'en', MX: 'es', EN: 'en' })) fs.writeFileSync(path.join(m.판본폴더, `${k}.json`), JSON.stringify(틀(lang, 인사틀), null, 2) + '\n');
+  const 인사폴더 = path.join(m.편, 'remotion', 'public', 'greet');
+  fs.mkdirSync(인사폴더, { recursive: true });
+  return { ...m, 인사폴더 };
+}
+const 미국인사 = { hello: 'Hello', helloName: '미국!', helloRead: 'mi-guk', helloVo: 'Hello, 미국!', helloSec: 1.1 };
+
+test('나라 인사 — 인사가 켜진 판본은 인사 줄이 [0, 인사 초]에 실리고 원본 줄의 초가 그만큼 밀린다. 꺼진 판본은 그대로다', () => {
+  const { 편 } = 인사편만들기();
+  잇기.채우기(편, { US: { ...미국글.US, ...미국인사 }, EN: { ...미국글.US } });
+  const 켠 = 잇기.뽑기(편, 'US', { 원장 }).자료;
+  assert.deepEqual(켠.인사, { 초: 1.1 });
+  assert.deepEqual(켠.줄.slice(0, 4).map((z) => [z.id, z.칸, z.글, z.초]), [
+    ['hello', '진행', 'Hello', [0, 1.1]], ['hello.name', '한국어', '미국!', [0, 1.1]], ['hello.read', '읽기', 'mi-guk', [0, 1.1]], ['hello.vo', '한국어', 'Hello, 미국!', [0, 1.1]],
+  ]);
+  assert.equal(켠.줄[0].원문, '안녕');
+  const 줄 = (자료, id) => 자료.줄.find((z) => z.id === id);
+  assert.deepEqual(줄(켠, 'hook').초, [1.1, 2.7], '첫 카드는 인사 뒤로 밀린다');
+  assert.deepEqual(줄(켠, 'means.2').초, [16.7, 18.8]);
+  assert.deepEqual(줄(켠, 'ask').초, [19.1, 21.7]);
+  assert.equal(켠.줄.filter((z) => z.칸 === '머리').length, 1, '인사 줄은 첫 카드(칸 머리)가 아니다 — 같은 언어 묶음 검사는 원본의 첫 카드로 견준다');
+  // 인사를 안 켠 판본(전 세계 판) — 인사 줄 없음 · 초 그대로 · 「인사」 칸 없음
+  const 끈 = 잇기.뽑기(편, 'EN', { 원장 }).자료;
+  assert.equal(끈.인사, undefined);
+  assert.equal(끈.줄.some((z) => z.id.startsWith('hello')), false);
+  assert.deepEqual(줄(끈, 'hook').초, [0, 1.6]);
+  // 인사말만 있고 나라 이름이 비면 뽑지 못한다(빈 칸) · 길이가 수가 아니면 던진다
+  잇기.채우기(편, { EN: { hello: 'Hello' } });
+  assert.throws(() => 잇기.뽑기(편, 'EN', { 원장 }), /글이 아직 비었다\(helloName · helloRead · helloVo\)/);
+  잇기.채우기(편, { EN: { helloName: '세계!', helloRead: 'se-gye', helloVo: 'Hello, 세계!', helloSec: 0 } });
+  assert.throws(() => 잇기.뽑기(편, 'EN', { 원장 }), /인사가 켜졌는데\(hello\) 인사 길이\(helloSec\)가 0~3초의 수가 아니다/);
+  // 지도 「인사」.초를 수로 적으면 모든 판본이 그 값
+  const j = 인사지도();
+  j.인사.초 = 1;
+  fs.writeFileSync(path.join(편, 잇기.지도이름), JSON.stringify(j, null, 2));
+  assert.deepEqual(잇기.뽑기(편, 'US', { 원장 }).자료.줄.find((z) => z.id === 'hook').초, [1, 2.6]);
+});
+
+test('나라 인사 — 지도 검증: 인사 줄에 초 · 칸 「머리」 · 겹치는 id를 적으면 틀린 꼴이다', () => {
+  const j = 인사지도();
+  assert.deepEqual(잇기.지도검증(j), []);
+  j.인사.줄[0].초 = [0, 1];
+  j.인사.줄[1].칸 = '머리';
+  j.인사.줄[2].id = 'hook';
+  delete j.인사.자산;
+  const 문제 = 잇기.지도검증(j).join('\n');
+  assert.match(문제, /인사 줄 1\(hello\): 초는 적지 않는다/);
+  assert.match(문제, /인사 줄 2\(hello\.name\): 인사 줄은 칸 「머리」를 쓰지 않는다/);
+  assert.match(문제, /인사 줄 3\(hook\): id가 겹친다/);
+  assert.match(문제, /인사\.자산/);
+});
+
+test('나라 인사 — 다른 나라의 인사 그림을 더하거나 고쳐도 이 판본의 렌더는 낡지 않고, 이 판본의 인사 파일이 바뀌면 낡는다', () => {
+  const { 편, 판본폴더, 인사폴더 } = 인사편만들기();
+  잇기.채우기(편, { US: { ...미국글.US, ...미국인사 }, EN: { ...미국글.US } });
+  fs.writeFileSync(path.join(인사폴더, 'US.jpg'), Buffer.from([0xff, 0xd8, 0x00, 0x01]));
+  fs.writeFileSync(path.join(인사폴더, 'US.wav'), Buffer.from([0x52, 0x49, 0x00, 0x01]));
+  fs.writeFileSync(path.join(인사폴더, 'pop.wav'), Buffer.from([0x52, 0x49, 0x00, 0x09])); // 모든 판본이 같이 쓰는 소리 — 공통 자산
+  const { 지도: 맵 } = 잇기.지도읽기(편);
+  assert.deepEqual(잇기.자산파일들(편, 맵).map((f) => f.이름), ['remotion/public/greet/pop.wav'], '판본별 인사 파일(<KEY>.<확장자>)은 공통 자산에서 빠진다');
+  assert.deepEqual(잇기.인사지문(편, 맵, 'US').파일, ['US.jpg', 'US.wav']);
+  assert.equal(잇기.인사지문(편, 맵, 'EN'), null);
+  // 판본렌더.mjs가 적는 꼴 — 인사가 켜진 판본은 인사sha256까지
+  const 렌더 = (키) => {
+    가짜렌더(편, 판본폴더, 키);
+    const 파일 = path.join(편, '게시', '판본', 키, '렌더.json');
+    const 기록 = JSON.parse(fs.readFileSync(파일, 'utf8'));
+    const 인사 = 잇기.인사지문(편, 맵, 키);
+    if (인사 && 잇기.인사초(맵, 판본글.readJson(path.join(판본폴더, `${키}.json`)), 키)) 기록.인사sha256 = 인사.지문;
+    fs.writeFileSync(파일, JSON.stringify(기록));
+  };
+  렌더('US');
+  렌더('EN');
+  assert.equal(잇기.렌더문제(편, 'US'), null);
+  assert.equal(잇기.렌더문제(편, 'EN'), null);
+  // ⓐ 다른 나라(MX)의 인사 그림 · 목소리를 더한다 → 공통 자산 지문 그대로, US · EN 렌더는 낡지 않는다
+  const 앞 = 잇기.자산지문(편).지문;
+  fs.writeFileSync(path.join(인사폴더, 'MX.jpg'), Buffer.from([0xff, 0xd8, 0x00, 0x05]));
+  fs.writeFileSync(path.join(인사폴더, 'MX.wav'), Buffer.from([0x52, 0x49, 0x00, 0x05]));
+  assert.equal(잇기.자산지문(편).지문, 앞);
+  assert.equal(잇기.렌더문제(편, 'US'), null, '멕시코 인사를 더해도 미국판은 다시 굽지 않는다');
+  assert.equal(잇기.렌더문제(편, 'EN'), null);
+  // ⓑ 이 판본의 인사 그림을 고친다 → 그 판본만 낡는다
+  fs.writeFileSync(path.join(인사폴더, 'US.jpg'), Buffer.from([0xff, 0xd8, 0x00, 0x02]));
+  assert.match(잇기.렌더문제(편, 'US'), /렌더 뒤 이 판본의 인사 그림 · 목소리\(remotion\/public\/greet\/US\.\*\)가 바뀌었다 — node 판본렌더\.mjs US → 글자 검사 다시/);
+  assert.equal(잇기.렌더문제(편, 'EN'), null);
+  렌더('US');
+  assert.equal(잇기.렌더문제(편, 'US'), null);
+  // ⓒ 인사가 켜졌는데 인사 파일이 없다 · 인사 없이 구운 판본에 인사를 켰다(글 지문이 먼저 잡는다) · 공통 소리(pop.wav)는 모든 판본을 낡게 한다
+  fs.rmSync(path.join(인사폴더, 'US.jpg'));
+  fs.rmSync(path.join(인사폴더, 'US.wav'));
+  assert.match(잇기.렌더문제(편, 'US'), /인사가 켜진 판본인데 인사 그림 · 목소리\(remotion\/public\/greet\/US\.\*\)가 없다/);
+  fs.writeFileSync(path.join(인사폴더, 'pop.wav'), Buffer.from([0x52, 0x49, 0x00, 0x08]));
+  assert.match(잇기.렌더문제(편, 'EN'), /렌더 뒤 원본 그림 · 소리 · 틀/);
+  // ⓓ 지도에 「인사」가 없는 편(지마 · 화날때)은 전과 같다 — greet 폴더의 <KEY> 파일도 공통 자산으로 센다
+  const 옛 = { ...맵 };
+  delete 옛.인사;
+  assert.ok(잇기.자산파일들(편, 옛).some((f) => f.이름 === 'remotion/public/greet/MX.jpg'));
+  assert.equal(잇기.인사지문(편, 옛, 'MX'), null);
+});
+
+test('나라 인사 — 판본렌더.mjs 다섯 벌이 인사 지문을 같은 꼴로 적는다', () => {
+  const 마케팅 = path.join(REPO, 'docs', '마케팅');
+  const 벌 = fs.readdirSync(마케팅).map((d) => path.join(마케팅, d, '판본렌더.mjs')).filter((f) => fs.existsSync(f));
+  assert.ok(벌.length >= 2);
+  for (const f of 벌) {
+    const src = fs.readFileSync(f, 'utf8');
+    if (!/인사sha256/.test(src)) continue; // 다른 틀(노래 등)의 렌더 스크립트는 인사를 다루지 않는다
+    assert.match(src, /잇기\.인사초\(인사지도, pack, k\)/, path.basename(path.dirname(f)));
+    assert.match(src, /if \(인사\) Object\.assign\(기록, \{ 인사sha256: 인사\.지문, 인사초: 인사켜짐 \}\);/, path.basename(path.dirname(f)));
+  }
+});

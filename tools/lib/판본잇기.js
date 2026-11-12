@@ -30,6 +30,14 @@
  * 원고_<플랫폼>.json은 tools/sns-발행.js 원고 꼴(title · caption · firstComment · pinnedComment · language …) 그대로이고, 「_원문」 { title, caption, … }에
  * 같은 줄 수의 한국어 원문을 둔다. 제목 · 본문 줄마다 칸 「게시글」 줄이 된다(해시태그만 있는 줄 · 서명 줄 · 주소만 있는 줄은 뺀다, 플랫폼끼리 같은 줄은 한 번만).
  * 원고 「_칸」 { "caption": { "2": "예문" } }은 본문 둘째 줄을 칸 「예문」으로 낸다 — 그 나라 상황 예문처럼 같은 언어 묶음 검사가 따로 견줄 줄.
+ *
+ * 나라 인사(11-12 유호님 「(가) 인사 카드」 — 훅 앞에 그 나라 인사 장면을 두고 원본을 그대로 잇는다)가 있는 편은 지도에 「인사」를 둔다:
+ *   "인사": { "켬": "hello"(판본 글의 이 칸이 찬 판본만 인사가 있다), "초": "helloSec"(인사 길이 — 판본 글의 그 칸, 수를 적으면 모든 판본이 그 값),
+ *             "자산": "remotion/public/greet"(판본마다 다른 인사 그림 · 목소리 <KEY>.jpg · <KEY>.wav가 든 폴더),
+ *             "줄": [ { "id": "hello", "칸": "진행", "값": "hello", "원문": "안녕", "장면": "…" } … ] }
+ *   - 인사가 있는 판본은 인사 줄이 [0, 인사 초]에 실리고, 지도 「줄」의 초는 모두 인사 초만큼 뒤로 민다(원본 박자는 지도에 한 번만 적는다).
+ *   - 인사 자산 폴더의 <KEY>.<확장자> 파일은 원본 자산 지문에서 뺀다 — 나라 하나의 인사를 더하거나 고쳐도 다른 판본의 렌더는 낡지 않는다.
+ *     그 판본의 인사 파일 지문은 렌더.json 「인사sha256」이 따로 지킨다(렌더문제).
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -76,10 +84,39 @@ function 자산자리(지도) {
   return [뿌리 ? `${뿌리}/public` : 'public', 뿌리 ? `${뿌리}/src` : 'src'];
 }
 
-/** 자산 파일 목록 — [{ 이름(편 폴더 기준 · 빗금), 파일 }] 이름 순. 판본 글 · 숨김 파일 · node_modules · out은 뺀다. */
+// ── 나라 인사(11-12) — 판본마다 다른 인사 그림 · 목소리는 지도 「인사」.자산 폴더 바로 아래 <KEY>.<확장자>다 ──
+const 인사파일식 = /^[A-Z]{2}\.[A-Za-z0-9]+$/;
+const 인사폴더 = (지도) => (지도 && 지도.인사 && typeof 지도.인사.자산 === 'string' ? 지도.인사.자산.split('\\').join('/').replace(/\/+$/, '') : '');
+
+/** 이 판본의 인사 자산 지문 → { 지문, 수, 파일: [이름…] }. 지도에 「인사」가 없거나 그 키의 파일이 없으면 null. */
+function 인사지문(편, 지도, 키) {
+  const 자리 = 인사폴더(지도);
+  if (!자리) return null;
+  const 폴더 = path.join(path.resolve(편), 자리);
+  if (!fs.existsSync(폴더)) return null;
+  const 파일 = fs.readdirSync(폴더).filter((f) => 인사파일식.test(f) && f.startsWith(`${키}.`)).sort();
+  if (!파일.length) return null;
+  const h = crypto.createHash('sha256');
+  for (const f of 파일) h.update(`${f}\0${자산파일지문(fs.readFileSync(path.join(폴더, f)))}\n`);
+  return { 지문: h.digest('hex'), 수: 파일.length, 파일 };
+}
+
+/** 이 판본 글에 인사가 있나 → 인사 길이(초). 없으면 0. 켜졌는데 길이가 수가 아니면 던진다. */
+function 인사초(지도, 팩, 키 = '') {
+  const 인사 = 지도 && 지도.인사;
+  if (!인사) return 0;
+  const 켬 = 값꺼내기(팩, 인사.켬 || 'hello');
+  if (typeof 켬 !== 'string' || !켬.trim()) return 0;
+  const 초 = typeof 인사.초 === 'number' ? 인사.초 : 값꺼내기(팩, 인사.초 || 'helloSec');
+  if (!(typeof 초 === 'number' && Number.isFinite(초) && 초 > 0 && 초 <= 3)) throw new Error(`판본 ${키}: 인사가 켜졌는데(${인사.켬 || 'hello'}) 인사 길이(${typeof 인사.초 === 'number' ? '지도 「인사」.초' : 인사.초 || 'helloSec'})가 0~3초의 수가 아니다(${JSON.stringify(초)})`);
+  return 초;
+}
+
+/** 자산 파일 목록 — [{ 이름(편 폴더 기준 · 빗금), 파일 }] 이름 순. 판본 글 · 판본별 인사 자산 · 숨김 파일 · node_modules · out은 뺀다. */
 function 자산파일들(편, 지도) {
   const 뿌리 = path.resolve(편);
   const 판본자리 = String(지도.판본폴더 || '').split('\\').join('/').replace(/\/+$/, '');
+  const 인사자리 = 인사폴더(지도);
   const out = [];
   const 걷기 = (abs) => {
     let st;
@@ -93,6 +130,7 @@ function 자산파일들(편, 지도) {
       return;
     }
     if (판본자리 && 이름.startsWith(`${판본자리}/`) && /^[A-Z]{2}\.json$/.test(path.basename(abs))) return; // 판본 글 — 글sha256이 지킨다
+    if (인사자리 && 이름.startsWith(`${인사자리}/`) && 인사파일식.test(이름.slice(인사자리.length + 1))) return; // 판본별 인사 그림 · 목소리 — 인사sha256이 지킨다
     out.push({ 이름, 파일: abs, 크기: st.size, 때: st.mtimeMs });
   };
   for (const 자리 of 자산자리(지도)) 걷기(path.join(뿌리, 자리));
@@ -134,6 +172,14 @@ function 렌더문제(편, 키, { 지도: 준지도 = null, 영상지문 = null 
   if (영상지문 && j.영상sha256 !== 영상지문) return `영상이 렌더 기록(렌더.json)과 다르다 — ${다시}`;
   if (!j.자산sha256) return `렌더 기록에 자산 지문이 없다 — 원본 그림 · 소리 · 틀이 렌더 뒤 바뀌었는지 알 수 없다(${다시})`;
   if (j.자산sha256 !== 자산지문(편, 지도).지문) return `렌더 뒤 원본 그림 · 소리 · 틀(${자산자리(지도).join(' · ')})이 바뀌었다 — ${다시}`;
+  // 나라 인사 — 그 판본의 인사 그림 · 목소리는 공통 자산 지문 밖이라 따로 견준다. 인사가 켜진 판본인데 파일이 없으면 구울 수 없는 판본이다.
+  if (지도.인사) {
+    const 지금 = 인사지문(편, 지도, 키);
+    let 켜짐 = 0;
+    try { 켜짐 = 인사초(지도, 판본글.readJson(팩), 키); } catch (e) { return `${e.message} — ${다시}`; }
+    if (켜짐 && !지금) return `인사가 켜진 판본인데 인사 그림 · 목소리(${인사폴더(지도)}/${키}.*)가 없다 — ${다시}`;
+    if ((j.인사sha256 || null) !== ((켜짐 && 지금 && 지금.지문) || null)) return `렌더 뒤 이 판본의 인사 그림 · 목소리(${인사폴더(지도)}/${키}.*)가 바뀌었다 — ${다시}`;
+  }
   return null;
 }
 
@@ -178,6 +224,25 @@ function 지도검증(지도) {
     if ((z.값 === undefined) === (z.글 === undefined)) 문제.push(`${곳}: 「값」(판본 글의 칸)과 「글」(판본마다 같은 글) 가운데 하나만 적는다`);
     if (z.초 !== undefined && !(Array.isArray(z.초) && z.초.length === 2 && z.초[0] <= z.초[1])) 문제.push(`${곳}: 초는 [시작, 끝]`);
     if (z.상자 && !(z.상자.폭 > 0 && (z.상자.글자크기 > 0 || z.크기))) 문제.push(`${곳}: 상자에는 폭과 글자크기(또는 줄의 「크기」 — 판본 글의 글자 크기 칸)가 있어야 한다`);
+  }
+  if (지도.인사 !== undefined) {
+    const 인사 = 지도.인사;
+    if (!인사 || typeof 인사 !== 'object' || Array.isArray(인사)) 문제.push('「인사」는 { 켬, 초, 자산, 줄 } 객체다');
+    else {
+      if (인사.초 !== undefined && !(typeof 인사.초 === 'string' || (typeof 인사.초 === 'number' && 인사.초 > 0 && 인사.초 <= 3))) 문제.push('인사.초는 판본 글의 칸 이름이거나 0~3의 수다');
+      if (typeof 인사.자산 !== 'string' || !인사.자산.trim()) 문제.push('인사.자산(판본별 인사 그림 · 목소리 폴더 — 편 폴더 기준)이 없다');
+      if (!Array.isArray(인사.줄) || !인사.줄.length) 문제.push('인사.줄이 비었다');
+      for (const [i, z] of (Array.isArray(인사.줄) ? 인사.줄 : []).entries()) {
+        const 곳 = `인사 줄 ${i + 1}${z.id ? `(${z.id})` : ''}`;
+        if (!z.id) 문제.push(`${곳}: id가 없다`);
+        else if (ids.has(z.id)) 문제.push(`${곳}: id가 겹친다`);
+        ids.add(z.id);
+        if (!Object.prototype.hasOwnProperty.call(판본글.칸표, z.칸)) 문제.push(`${곳}: 모르는 칸 「${z.칸}」`);
+        if (typeof z.값 !== 'string' || !z.값) 문제.push(`${곳}: 「값」(판본 글의 칸)이 없다`);
+        if (z.초 !== undefined) 문제.push(`${곳}: 초는 적지 않는다(도구가 [0, 인사 초]로 넣는다)`);
+        if (z.칸 === '머리') 문제.push(`${곳}: 인사 줄은 칸 「머리」를 쓰지 않는다(첫 카드는 원본의 훅이다 — 같은 언어 묶음 검사가 첫 카드로 견준다)`);
+      }
+    }
   }
   for (const [키, m] of Object.entries(지도.원고 || {})) {
     if (!키식.test(키)) 문제.push(`원고: 판본 키가 아니다(${키})`);
@@ -278,6 +343,21 @@ function 뽑기(편, 키, { 원장 = null, 지도: 준지도 = null } = {}) {
   const 경고 = [];
   const 빈 = [];
   const 줄 = [];
+  // 나라 인사 — 켜진 판본은 인사 줄이 [0, 인사 초]에 먼저 실리고 원본 줄의 초가 그만큼 밀린다
+  const 밀림 = 인사초(지도, 팩, 키);
+  const 민 = (t) => Math.round((t + 밀림) * 1000) / 1000;
+  if (밀림) {
+    for (const z of 지도.인사.줄) {
+      const 글 = 값꺼내기(팩, z.값);
+      if (typeof 글 !== 'string' || !글.trim()) { if (!z.선택) 빈.push(z.값); continue; }
+      const 한줄 = { id: z.id, 칸: z.칸, 글, 초: [0, 밀림] };
+      const 원문 = (팩._원문 && typeof 팩._원문[z.값] === 'string' && 팩._원문[z.값].trim()) ? 팩._원문[z.값] : z.원문;
+      if (원문) 한줄.원문 = 원문;
+      if (z.장면) 한줄.장면 = z.장면;
+      if (z.대조) 한줄.대조 = z.대조;
+      줄.push(한줄);
+    }
+  }
   for (const z of 지도.줄) {
     const 글 = z.글 !== undefined ? z.글 : 값꺼내기(팩, z.값);
     if (typeof 글 !== 'string' || !글.trim()) {
@@ -287,7 +367,7 @@ function 뽑기(편, 키, { 원장 = null, 지도: 준지도 = null } = {}) {
     const 한줄 = { id: z.id, 칸: z.칸, 글 };
     const 원문 = (z.값 !== undefined && 팩._원문 && typeof 팩._원문[z.값] === 'string' && 팩._원문[z.값].trim()) ? 팩._원문[z.값] : z.원문;
     if (원문) 한줄.원문 = 원문;
-    if (z.초) 한줄.초 = z.초;
+    if (z.초) 한줄.초 = 밀림 ? z.초.map(민) : z.초;
     if (z.장면) 한줄.장면 = z.장면;
     if (z.대조) 한줄.대조 = z.대조;
     if (z.상자) {
@@ -305,7 +385,7 @@ function 뽑기(편, 키, { 원장 = null, 지도: 준지도 = null } = {}) {
   }
   if (빈.length) throw new Error(`판본 ${키}의 글이 아직 비었다(${빈.join(' · ')}) — ${슬래시(path.relative(편폴더(편), 팩파일))}`);
   for (const [k, v] of Object.entries(팩._원문 || {})) {
-    if (typeof v === 'string' && v.trim() && !지도.줄.some((z) => z.값 === k)) 경고.push(`판본 글 「_원문」.${k}: 지도에 그 값을 쓰는 줄이 없다`);
+    if (typeof v === 'string' && v.trim() && ![...지도.줄, ...((지도.인사 && 지도.인사.줄) || [])].some((z) => z.값 === k)) 경고.push(`판본 글 「_원문」.${k}: 지도에 그 값을 쓰는 줄이 없다`);
   }
 
   // 게시글 — 원고마다 제목 · 본문 · 첫 댓글 · 고정 댓글의 줄. 플랫폼끼리 같은 줄은 한 번만.
@@ -350,6 +430,7 @@ function 뽑기(편, 키, { 원장 = null, 지도: 준지도 = null } = {}) {
   const 자료 = {
     꼴: '판본글/1', 편: path.basename(편폴더(편)), 판본: 키, 언어: 팩.lang, 나라, 틀: 지도.틀, 화면: 지도.화면 || { 폭: 1080, 높이: 1920 },
     ...(기준 ? { 기준 } : {}),
+    ...(밀림 ? { 인사: { 초: 밀림 } } : {}),
     줄,
     ...(Array.isArray(지도.퀴즈) && 지도.퀴즈.length ? { 퀴즈: 지도.퀴즈 } : {}),
     원천: { 글: 슬래시(path.join(지도.판본폴더, `${키}.json`)), 지도: 지도이름, 원고, 도구: 'tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.js 뽑기)' },
@@ -570,4 +651,4 @@ function 채우기(편, 입력) {
   return out;
 }
 
-module.exports = { 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 글낡음, 이음문제, 같은글자리, 자산자리, 자산파일들, 자산지문, 렌더문제, 렌더낡음, 원고고칠것, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };
+module.exports = { 인사지문, 인사초, 인사폴더, 지도이름, 플랫폼들, 있나, 지도읽기, 지도검증, 키들, 값꺼내기, 계정들, 원고들, 뽑기, 낡았나, 글낡음, 이음문제, 같은글자리, 자산자리, 자산파일들, 자산지문, 렌더문제, 렌더낡음, 원고고칠것, 맞추기, 검사전, 돌림판본, 준비에넣기, 확인, 채우기, 글상대, 글경로, 팩경로, 같은글 };

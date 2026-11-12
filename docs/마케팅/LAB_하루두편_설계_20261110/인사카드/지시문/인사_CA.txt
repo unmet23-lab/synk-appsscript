@@ -1,0 +1,23 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+A real handmade needle-felt diorama photographed with a macro lens, like a still from a stop-motion short film.
+
+Set: a plain sky-blue wool felt backdrop (flat, clean, evenly lit) fills the upper part. A warm wooden tabletop fills the bottom 28% of the image; the front strip of the tabletop is empty wood, softly out of focus.
+
+Character — Mongle: copy the character in the SECOND attached image exactly: a small coral-red needle-felted ghost-shaped blob, two glossy solid-black bead eyes (no whites), a wavy scalloped hem with one line of cream running stitch. Mongle has no arms, no legs, no hands. The only addition: a small happy open mouth (dark inside, tiny pink tongue).
+
+Action (one clear gag, readable in one second): Mongle is sitting on a moose's head, nestled between its antlers. ONE needle-felted moose (chocolate-brown wool, simple smooth shapes, big soft nose, wide cream-tan felt antlers) lies calmly on the tabletop facing the camera, its eyes rolled up to look at the little guest on its head. Mongle sits snugly between the two antlers, happy open mouth, looking at the camera. One small red felt maple leaf is pinned on one antler tip. The moose with Mongle on top is about 32% of the image height in total.
+
+Lettering: handmade felt lettering appliqued flat onto the sky-blue felt backdrop like a handmade banner. Copy the FIRST attached image exactly — the same letters, the same order, the same three lines, the same letter shapes:
+   - Line 1: Hello — thick cream-white wool felt cut-out letters.
+   - Line 2: 캐나다! — larger, thick coral-red wool felt cut-out letters, each backed by a slightly larger cream felt layer so every letter has a clean cream outline. Copy the Korean syllable blocks 캐, 나 and 다 stroke for stroke from the first image.
+   - Line 3: kae-na-da — small letters hand-embroidered in cream thread (neat backstitch).
+   Tiny visible stitches hold the felt letters on the backdrop. The lettering block is centered horizontally and no wider than 64% of the image width. Its top edge is at about 18% of the image height and its bottom edge at about 36%. Above the lettering there is only plain sky-blue felt.
+
+Layout: Mongle and the moose sit in the middle band of the image, between 40% and 72% of the image height, and inside the central 76% of the width — clear empty margin on the left and right edges. They do not touch or overlap the lettering.
+
+Craft quality: tidy, deliberate craftsmanship. All surfaces are tightly felted and smooth with only a short soft fuzz; no long stray fibers, no swirl patterns, no busy texture. Big simple shapes with few details. Soft natural daylight from the upper left, gentle contact shadows on the wood.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. No clouds. Nothing else is added.
