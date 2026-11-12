@@ -440,8 +440,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "13? Try 사.",
-      "원문": "13? 여기는 사.",
+      "글": "Dare to press 사?",
+      "원문": "사를 누를 용기 있어?",
       "초": [
         15.9,
         17
@@ -460,27 +460,6 @@
       }
     },
     {
-      "id": "ask",
-      "칸": "끝질문",
-      "글": "Your number?",
-      "원문": "네 숫자는?",
-      "초": [
-        15.9,
-        17
-      ],
-      "상자": {
-        "폭": 388,
-        "굵기": 800,
-        "줄높이": 1.15,
-        "최대줄": 2,
-        "가운데": true,
-        "x": 496,
-        "y": 447,
-        "글자크기": 38,
-        "글꼴": "'Inter Tight', 'SUIT', sans-serif"
-      }
-    },
-    {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
       "글": "Why Korean elevators skip 4 👻 #learnkorean",
@@ -495,8 +474,8 @@
     {
       "id": "게시글.youtube.본문.2",
       "칸": "예문",
-      "글": "Like the missing 13th floor in US high-rises? In Korea it’s 사 (sa) = 4 that goes missing.",
-      "원문": "미국 고층 건물에 13층이 없는 것처럼? 한국에서 사라지는 것은 사 = 4다."
+      "글": "Ever noticed the missing 13th floor in US high-rises? In Korea, it’s floor 4 (사, sa) that goes missing.",
+      "원문": "미국 고층 건물에 13층이 없는 걸 본 적 있어? 한국에서 사라지는 것은 사 = 4다."
     },
     {
       "id": "게시글.youtube.본문.3",

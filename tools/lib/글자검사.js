@@ -474,11 +474,13 @@ function 길이(video) {
 
 /** 기준 판을 시간축에서 미는 필터 앞머리(11-12 나라 인사 카드) — 이 판에만 훅 앞 인사 장면이 있으면 원본은 그 길이만큼 밀려 시작한다.
  *  밀림 > 0: 기준 판을 그만큼 뒤로 민다(앞 빈 구간은 기준 판 첫 프레임이 채운다 — 인사 구간은 기준 판과 견줄 것이 없어 픽셀 차이는 확인할 것까지만).
- *  밀림 < 0: 기준 판에만 인사가 있다 — 그만큼 잘라 낸다. 0이면 빈 글. 프레임 표본(fps)은 이 뒤에 붙는다. */
+ *  밀림 < 0: 기준 판에만 인사가 있다 — 그만큼 잘라 낸다. 0이면 빈 글. 프레임 표본(fps)은 이 뒤에 붙는다.
+ *  잘라 낼 때는 초가 아니라 프레임 수로 자른다(11-13 걸기 전 검수 P2 1 — 35/30초를 ms로 반올림한 1.167초로 자르면 35번째 프레임까지 버려 한 프레임 늦었다). */
+const 밀기FPS = 30; // 판본렌더.mjs · 편마다의 timeline.ts FPS(tools/글자검사.js 인사FPS와 같은 값)
 function 밀기필터(밀림 = 0) {
   const s = Math.round((Number(밀림) || 0) * 1000) / 1000;
   if (!s) return '';
-  return s > 0 ? `setpts=PTS+${s}/TB,` : `trim=start=${-s},setpts=PTS-STARTPTS,`;
+  return s > 0 ? `setpts=PTS+${s}/TB,` : `trim=start_frame=${Math.round(-s * 밀기FPS)},setpts=PTS-STARTPTS,`;
 }
 const 표본필터 = (밀림 = 0) => `${밀기필터(밀림)}fps=${1 / 간격}${밀림 > 0 ? ':start_time=0' : ''}`;
 

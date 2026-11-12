@@ -440,8 +440,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "Level 사? Nah.",
-      "원문": "사 층? 됐어.",
+      "글": "Brave enough to press 사?",
+      "원문": "사를 누를 만큼 용감해?",
       "초": [
         16.05,
         17.15
@@ -460,27 +460,6 @@
       }
     },
     {
-      "id": "ask",
-      "칸": "끝질문",
-      "글": "Stairs?",
-      "원문": "계단으로?",
-      "초": [
-        16.05,
-        17.15
-      ],
-      "상자": {
-        "폭": 388,
-        "굵기": 800,
-        "줄높이": 1.15,
-        "최대줄": 2,
-        "가운데": true,
-        "x": 496,
-        "y": 447,
-        "글자크기": 38,
-        "글꼴": "'Inter Tight', 'SUIT', sans-serif"
-      }
-    },
-    {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
       "글": "The lift button Koreans avoid 👻 #learnkorean",
@@ -495,8 +474,8 @@
     {
       "id": "게시글.youtube.본문.2",
       "칸": "예문",
-      "글": "Staying on level 4 in Seoul? Press F: 사 (sa) = 4.",
-      "원문": "서울에서 4층에 묵는다? F를 눌러라: 사 = 4."
+      "글": "Staying on level 4 in Seoul? Press F instead of 4 — 사 (sa) = 4.",
+      "원문": "서울에서 4층에 묵는다? 4 대신 F를 눌러라 — 사 = 4."
     },
     {
       "id": "게시글.youtube.본문.3",

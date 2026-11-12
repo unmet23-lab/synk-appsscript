@@ -425,7 +425,8 @@ test('나라 인사(11-12) — 인사 장면이 있는 판은 기준 판을 인�
   assert.equal(G.밀기필터(0), '');
   assert.equal(G.밀기필터(undefined), '');
   assert.equal(G.밀기필터(1.35), 'setpts=PTS+1.35/TB,');
-  assert.equal(G.밀기필터(-1), 'trim=start=1,setpts=PTS-STARTPTS,');
+  assert.equal(G.밀기필터(-1), 'trim=start_frame=30,setpts=PTS-STARTPTS,');
+  assert.equal(G.밀기필터(-1.167), 'trim=start_frame=35,setpts=PTS-STARTPTS,', '35프레임(1.1667초)은 35프레임만 버린다 — 초로 자르면 한 프레임 더 버린다');
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-인사-'));
   const 원 = { 프레임검사: G.프레임검사, 글꼴검사: G.글꼴검사, 엔진재기: G.엔진재기, log: console.log, error: console.error };
   const 받은 = [];

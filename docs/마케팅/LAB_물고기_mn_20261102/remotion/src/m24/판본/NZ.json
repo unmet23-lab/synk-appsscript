@@ -159,11 +159,11 @@
   "mean": 76,
   "lunch": "My lunch!!",
   "lunchSize": 84,
-  "bye": "Bye, my meat!",
+  "bye": "Bye, steak!",
   "byeSize": 62,
-  "endCard": "Snapper? 물고기.",
+  "endCard": "Scoffed by a 물고기.",
   "endSize": 52,
-  "ask": "Catch any?",
+  "ask": "Hungry now?",
   "askSize": 40,
   "coverAt": 3.85,
   "hello": "Hello",
@@ -173,8 +173,8 @@
   "helloSec": 1.35,
   "_원문": {
     "hook": "물 + 고기는…\n어떤 한국어 낱말이 될까?",
-    "endCard": "도미? 물고기.",
-    "ask": "좀 잡았어?",
-    "bye": "안녕, 내 고기!"
+    "endCard": "물고기한테 먹혔다.",
+    "ask": "이제 배고파?",
+    "bye": "안녕, 스테이크!"
   }
 }

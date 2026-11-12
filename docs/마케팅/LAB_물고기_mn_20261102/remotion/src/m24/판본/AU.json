@@ -141,7 +141,7 @@
   "lang": "en",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Water plus meat.\nGuess the Korean word?",
+  "hook": "Water plus meat.\nCan you guess the word?",
   "hookSize": 52,
   "reads": [
     "mul",
@@ -159,11 +159,11 @@
   "mean": 76,
   "lunch": "My lunch!!",
   "lunchSize": 84,
-  "bye": "Bye, my meat!",
+  "bye": "Bye, steak!",
   "byeSize": 62,
-  "endCard": "Barramundi? 물고기.",
+  "endCard": "The 물고기 ate the lot.",
   "endSize": 52,
-  "ask": "Hungry yet?",
+  "ask": "",
   "askSize": 40,
   "coverAt": 3.65,
   "hello": "Hello",
@@ -172,9 +172,9 @@
   "helloVo": "Hello, 호주!",
   "helloSec": 1.15,
   "_원문": {
-    "hook": "물 더하기 고기.\n한국어 낱말을 맞혀 볼래?",
-    "endCard": "바라문디? 물고기.",
-    "ask": "벌써 배고파?",
-    "bye": "안녕, 내 고기!"
+    "hook": "물 더하기 고기.\n낱말을 맞힐 수 있어?",
+    "endCard": "물고기가 다 먹었다.",
+    "ask": "뻔뻔하지?",
+    "bye": "안녕, 스테이크!"
   }
 }

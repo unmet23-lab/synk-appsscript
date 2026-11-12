@@ -141,7 +141,7 @@
   "lang": "en",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Add water to meat.\nWhat do you get?",
+  "hook": "Water meets meat.\nWhat’s the Korean word?",
   "hookSize": 52,
   "reads": [
     "mul",
@@ -159,11 +159,11 @@
   "mean": 76,
   "lunch": "My lunch!!",
   "lunchSize": 84,
-  "bye": "Bye, my meat!",
+  "bye": "Bye, steak!",
   "byeSize": 62,
-  "endCard": "Salmon run? 물고기.",
+  "endCard": "The 물고기 did it.",
   "endSize": 52,
-  "ask": "Seen one?",
+  "ask": "Guilty?",
   "askSize": 40,
   "coverAt": 3.6,
   "hello": "Hello",
@@ -172,9 +172,9 @@
   "helloVo": "Hello, 캐나다!",
   "helloSec": 1.1,
   "_원문": {
-    "hook": "고기에 물을 더하면.\n무엇이 될까?",
-    "endCard": "연어 떼? 물고기.",
-    "ask": "본 적 있어?",
-    "bye": "안녕, 내 고기!"
+    "hook": "물이 고기를 만났다.\n한국어 낱말은 무엇일까?",
+    "endCard": "물고기가 그랬다.",
+    "ask": "유죄지?",
+    "bye": "안녕, 스테이크!"
   }
 }

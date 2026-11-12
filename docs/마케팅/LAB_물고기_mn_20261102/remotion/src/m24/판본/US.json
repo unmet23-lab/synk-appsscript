@@ -159,11 +159,11 @@
   "mean": 76,
   "lunch": "My lunch!!",
   "lunchSize": 84,
-  "bye": "Bye, my meat!",
+  "bye": "Bye, steak!",
   "byeSize": 62,
-  "endCard": "Fish taco? 물고기.",
+  "endCard": "Lunch thief: 물고기.",
   "endSize": 52,
-  "ask": "Lunch plans?",
+  "ask": "Team Fish?",
   "askSize": 40,
   "coverAt": 3.5,
   "hello": "Hello",
@@ -173,8 +173,8 @@
   "helloSec": 1,
   "_원문": {
     "hook": "물 + 고기 =\n한국어로 무엇일까?",
-    "endCard": "피시 타코? 물고기.",
-    "ask": "점심 계획은?",
-    "bye": "안녕, 내 고기!"
+    "endCard": "점심 도둑: 물고기.",
+    "ask": "물고기 편이야?",
+    "bye": "안녕, 스테이크!"
   }
 }
