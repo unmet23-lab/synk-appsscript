@@ -49,7 +49,8 @@
 // v55(11-13): 사진 상품의 사진 판(v54 위) — 사진이 자기 비율로 서고 누르면 크게 보며, 완성 사진 다섯 장은 빈 칸 없이 놓이고, 영어 판의 「최종본」 줄과 설치 안내가 사진 말을 쓴다.
 // views.mjs · film-views.mjs · film-review.mjs · feedback-rounds-view.mjs · install.mjs · app.mjs · film.css · film-legacy.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
 // v56(11-13): 사진 크게 보기 창에서 사진을 누르면 키워 밀어 보고, 사진을 못 불러왔을 때 단추의 이름 · 커서를 맞춘다(v55 위 — views.mjs · app.mjs · film-legacy.css · i18n/en.mjs). 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v56-photo-zoom-20261113';
+// v57(11-13): 직원 작업실 다시 짓기(B안 「제작 보드」, v56 위) — 직원 머리 띠 · 첫 화면 보드 · 쉬기 칸으로 views.mjs · room-view.mjs · app.mjs가 바뀌고 직원 화면만 싣는 staff.css를 목록에 더했다.
+const CACHE = 'synk-pulse-shell-v57-staff-board-20261113';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');
@@ -57,7 +58,7 @@ FILES.push(BASE+'assets/casting/f04.webp');
 for(const id of ['f05','m04','f06','f07','m05','m06'])FILES.push(BASE+'assets/casting/'+id+'.webp');
 // 11-03 아이돌 두 팀 여덟 명도 셸에 둔다.
 for(const id of ['f08','f09','f10','f11','m07','m08','m09','m10'])FILES.push(BASE+'assets/casting/'+id+'.webp');
-FILES.push(BASE+'motion.mjs',BASE+'request-data.mjs',BASE+'request-flow.mjs',BASE+'request-backend.mjs',BASE+'film-views.mjs',BASE+'room-view.mjs',BASE+'demo-film.mjs',BASE+'slate.css',BASE+'slate-screens.css',BASE+'slate-legacy.css',BASE+'assets/request/logo-paper.webp');
+FILES.push(BASE+'motion.mjs',BASE+'request-data.mjs',BASE+'request-flow.mjs',BASE+'request-backend.mjs',BASE+'film-views.mjs',BASE+'room-view.mjs',BASE+'demo-film.mjs',BASE+'slate.css',BASE+'slate-screens.css',BASE+'slate-legacy.css',BASE+'staff.css',BASE+'assets/request/logo-paper.webp');
 FILES.push(BASE+'film.css',BASE+'film-legacy.css',BASE+'film-home.mjs',BASE+'film-review.mjs',BASE+'assets/request/reel-wide-poster.webp',BASE+'assets/request/reel-tall-poster.webp');
 for(const name of ['SYNKSans-pulse-latin','SYNKSans-pulse-first','SYNKSans-pulse-ui','NotoSerifKR-300-sym','NotoSerifKR-300-ui'])FILES.push(BASE+'assets/'+name+'.woff2');
 FILES.push(BASE+'i18n.mjs',BASE+'i18n/en.mjs',BASE+'casting-choice.mjs',BASE+'locale-menu.mjs');

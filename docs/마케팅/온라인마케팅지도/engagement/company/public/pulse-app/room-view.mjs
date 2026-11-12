@@ -342,8 +342,53 @@ const DESK_STATE={write:'의뢰서 쓰는 중',check:'새 의뢰',ask:'답을 �
 const DESK_STATE_PHOTO={'prepare-images':'첫 장 준비 중',images:'첫 장을 보는 중',review:'사진 확인 중'};
 // 결제 차례는 결제 상태로 가른다(판 4 화면 검수 F3 — 결제 확인은 담당자 손 단계라 목록에서 보여야 한다).
 const PAY_DESK={requested:'크몽 결제 요청 보냄',cancelled:'결제 취소'};
+const deskState=(p,state=roomState(p))=>{const r=p.studio.request,a=r.answers||{};return state==='pay'&&PAY_DESK[r.payment?.status]||a.package==='photo'&&DESK_STATE_PHOTO[state]||DESK_STATE[state]||'';};
 export function deskQueue(projects=[],when=value=>value){
-  return projects.filter(p=>p.studio?.request&&p.studio.request.status!=='retired'&&!['archived','delivered'].includes(p.stage)).sort((a,b)=>String(b.studio.request.submittedAt||b.updatedAt).localeCompare(String(a.studio.request.submittedAt||a.updatedAt))).map(p=>{const state=roomState(p),a=p.studio.request.answers||{};return {id:p.id,title:p.title,meta:[KINDS.find(item=>item.id===a.kind)?.label,when(p.studio.request.submittedAt)].filter(Boolean).join(' · '),state:state==='pay'&&PAY_DESK[p.studio.request.payment?.status]||a.package==='photo'&&DESK_STATE_PHOTO[state]||DESK_STATE[state]||'',tone:state==='check'?'is-new':''};});
+  return projects.filter(p=>p.studio?.request&&p.studio.request.status!=='retired'&&!['archived','delivered'].includes(p.stage)).sort((a,b)=>String(b.studio.request.submittedAt||b.updatedAt).localeCompare(String(a.studio.request.submittedAt||a.updatedAt))).map(p=>{const state=roomState(p),a=p.studio.request.answers||{};return {id:p.id,title:p.title,meta:[KINDS.find(item=>item.id===a.kind)?.label,when(p.studio.request.submittedAt)].filter(Boolean).join(' · '),state:deskState(p,state),tone:state==='check'?'is-new':''};});
+}
+// 직원 첫 화면(작업실 · 11-13 다시 짓기): 프로젝트를 누구 차례인지 · 어느 단계인지로 가른다. 화면(views.mjs picker)은 이 결과만 그린다.
+// 단계는 손님 방의 다섯과 같되 직원은 의뢰서를 쓰지 않으니 「확인」부터, 영상 확인과 납품은 나눈다(누가 움직일지가 다르다).
+export const STAFF_STAGES=Object.freeze([{id:'check',name:'확인'},{id:'draft',name:'1차안'},{id:'make',name:'제작'},{id:'review',name:'영상 확인'},{id:'deliver',name:'납품'}]);
+const STAFF_STAGE_OF={...STAGE_OF,write:'check',review:'review',deliver:'deliver',done:'deliver'};
+// 옛 흐름(의뢰서 없이 직원이 만든) 프로젝트는 단계 칸(stage)만 안다. 시안 확인은 손님 차례, 그 앞은 우리 차례로 본다.
+const LEGACY_STAGE={received:'check',planning:'draft',producing:'make',review:'review',delivered:'deliver'};
+const LEGACY_STATE={received:'접수',planning:'내용 · 일정 협의',producing:'제작 중',review:'시안 확인 중',delivered:'최종 전달'};
+const LEGACY_TURN={received:'us',planning:'us',producing:'us',review:'them',delivered:'done'};
+const kstDay=ms=>new Date(ms+9*3600000).toISOString().slice(0,10);
+const dayGap=(from,to)=>Math.round((Date.parse(to+'T00:00:00Z')-Date.parse(from+'T00:00:00Z'))/86400000);
+const mediaOf=(p,asset)=>asset?`/api/client-projects/${encodeURIComponent(p.id)}/studio/media/${encodeURIComponent(asset.id)}`:'';
+// 대표 그림: 확인 단계는 손님이 보낸 제품 사진(앞면 먼저), 그 뒤는 우리가 올린 가장 최근 그림(장면 · 작업 소식), 없으면 손님 사진.
+function staffPicture(p,stage){
+  const images=(p.studio?.assets||[]).filter(asset=>asset?.id&&String(asset.mimeType||'').startsWith('image/'));
+  const theirs=images.filter(asset=>asset.author==='customer').sort((a,b)=>(a.slot==='front'?0:1)-(b.slot==='front'?0:1));
+  const ours=images.filter(asset=>asset.author!=='customer').sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
+  const pick=stage==='check'?theirs[0]||ours[0]:ours[0]||theirs[0];
+  return pick?{src:mediaOf(p,pick),mine:pick.author!=='customer'}:null;
+}
+export function staffBoard(projects=[],now=Date.now()){
+  const today=kstDay(now),rows={fresh:[],ours:[],theirs:[],done:[],archived:[]};
+  for(const p of projects){
+    const r=p.studio?.request&&p.studio.request.status!=='retired'?p.studio.request:null,a=r?.answers||{};
+    const state=r?roomState(p):'',archived=p.stage==='archived';
+    const stage=r?STAFF_STAGE_OF[state]||'check':LEGACY_STAGE[p.stage]||'check';
+    const turn=archived?'archived':r?(ROOM_COPY[state]?.turn==='us'?'us':ROOM_COPY[state]?.turn==='done'?'done':'them'):LEGACY_TURN[p.stage]||'us';
+    const due=/^\d{4}-\d{2}-\d{2}$/.test(p.dueDate||'')?p.dueDate:'',left=due?dayGap(today,due):null;
+    const moved=Date.parse(p.updatedAt||p.createdAt||''),waited=Number.isFinite(moved)?Math.max(0,dayGap(kstDay(moved),today)):null;
+    const missing=r&&state==='check'?deskChecks(p).filter(check=>!check.ok):[];
+    const item={id:p.id,title:p.title||'',who:p.customerName||'',owner:p.ownerName||'',number:r?.number||'',at:r?.submittedAt||p.createdAt||'',
+      kind:KINDS.find(item=>item.id===a.kind)?.label||'',pkg:r?(pkgOf(a)?`${pkgOf(a).label} ${pkgOf(a).title}`:''):'',
+      state:r?deskState(p,state):LEGACY_STATE[p.stage]||'',note:String(p.nextStep||'').trim(),stage,step:STAFF_STAGES.findIndex(s=>s.id===stage)+1,turn,
+      fresh:!!r&&state==='check'&&!archived,due,left,waited,missing:missing.map(check=>check.label),picture:staffPicture(p,stage)};
+    if(archived)rows.archived.push(item);else if(item.fresh)rows.fresh.push(item);else if(turn==='done')rows.done.push(item);else if(turn==='us')rows.ours.push(item);else rows.theirs.push(item);
+  }
+  const at=item=>String(item.at||'');
+  rows.fresh.sort((x,y)=>at(y).localeCompare(at(x)));
+  rows.ours.sort((x,y)=>(x.left??1e9)-(y.left??1e9)||at(x).localeCompare(at(y)));
+  rows.theirs.sort((x,y)=>(y.waited??-1)-(x.waited??-1)||at(x).localeCompare(at(y)));
+  rows.done.sort((x,y)=>at(y).localeCompare(at(x)));
+  const live=[...rows.fresh,...rows.ours,...rows.theirs];
+  const soon=[...rows.ours,...rows.theirs].filter(item=>item.left!==null&&item.left<=3);
+  return {...rows,stages:STAFF_STAGES.map(s=>({...s,items:[...rows.fresh,...rows.ours,...rows.theirs,...rows.done].filter(item=>item.stage===s.id)})),soon,total:live.length};
 }
 // 내부 확인 화면: 답을 그대로 믿지 않고 빠진 칸을 코드가 먼저 짚는다. 판단(묻기 · 넘기기)은 사람이 한다.
 export function deskChecks(p){

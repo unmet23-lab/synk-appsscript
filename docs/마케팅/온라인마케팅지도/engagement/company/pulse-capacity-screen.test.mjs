@@ -171,22 +171,41 @@ test('앱: 접수 상태는 공개 주소에서 읽고, 쉬는 중에 쓰던 초
 test('직원 첫 화면의 스위치: 서버가 알 때만 그리고, 바꾸는 단추 · 폼은 관리자에게만',()=>{
   const base={mode:'staff',user:{id:'u1',name:'담당자'},workspace:{projects:[],canWrite:true}};
   assert.doesNotMatch(picker(base),/data-intake/,'옛 서버 · 못 읽음이면 스위치가 없다');
-  const open=picker({...base,staffIntake:{state:'open',open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',reopened:'',canEdit:true}});
-  assert.match(open,/data-intake/);assert.match(open,/새 의뢰를 받는 중/);assert.match(open,/<form data-form="intake-pause">/);assert.doesNotMatch(open,/data-action="intake-open"/);
-  for(const name of ['pauseNote','pauseNoteEn','pausedUntil'])assert.match(open,new RegExp(`name="${name}"`));
-  assert.match(open,/name="pauseNote" type="text" value="" maxlength="200"/);assert.match(open,/name="pausedUntil" type="date"[^>]* min="\d{4}-\d{2}-\d{2}"/);
-  const paused=picker({...base,staffIntake:{state:'paused',open:false,pausedUntil:'2026-11-20',pauseNote:'일정이 <찼어요>',pauseNoteEn:'Fully booked',reopened:'',canEdit:true}});
+  assert.doesNotMatch(header(base),/data-intake-head/,'옛 서버 · 못 읽음이면 머리 띠에도 스위치가 없다');
+  const OPEN={state:'open',open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',reopened:'',canEdit:true};
+  // 작업실 판(11-13): 받는 중이면 첫 화면에는 날짜 줄의 상태만, 쉬는 폼은 「쉬기」를 눌러 연 칸(s.intakeSheet)에만 있다.
+  const open=picker({...base,staffIntake:OPEN});
+  assert.match(open,/data-intake/);assert.match(open,/새 의뢰를 받는 중/);assert.doesNotMatch(open,/data-form="intake-pause"/);assert.doesNotMatch(open,/data-action="intake-open"/);
+  const sheet=picker({...base,staffIntake:OPEN,intakeSheet:true});
+  assert.match(sheet,/<form data-form="intake-pause">/);assert.doesNotMatch(sheet,/data-action="intake-open"/);assert.match(sheet,/data-action="intake-sheet-close"/);
+  for(const name of ['pauseNote','pauseNoteEn','pausedUntil'])assert.match(sheet,new RegExp(`name="${name}"`));
+  assert.match(sheet,/name="pauseNote" type="text" value="" maxlength="200"/);assert.match(sheet,/name="pausedUntil" type="date"[^>]* min="\d{4}-\d{2}-\d{2}"/);
+  // 머리 띠: 받는 중이면 「받는 중」이 눌린 채이고 다시 받기 동작이 없다, 「쉬기」가 쉬는 칸을 연다.
+  const headOpen=header({...base,staffIntake:OPEN});
+  assert.match(headOpen,/class="staff-intake-on" aria-pressed="true">받는 중</);assert.match(headOpen,/data-action="intake-sheet" aria-pressed="false"/);assert.doesNotMatch(headOpen,/data-action="intake-open"/);
+  const PAUSE={state:'paused',open:false,pausedUntil:'2026-11-20',pauseNote:'일정이 <찼어요>',pauseNoteEn:'Fully booked',reopened:'',canEdit:true};
+  const paused=picker({...base,staffIntake:PAUSE});
   assert.match(paused,/새 의뢰를 쉬는 중 · 11월 20일에 저절로 다시 열려요/);assert.match(paused,/data-action="intake-open"/);assert.doesNotMatch(paused,/data-form="intake-pause"/);
+  assert.match(paused,/data-action="intake-sheet"/,'쉬는 동안 안내 · 날짜 고치기');
+  // 쉬는 동안 고치기: 같은 폼을 지금 값으로 연다(서버는 쉬는 중의 쉬기를 안내 · 날짜 고침으로 받는다).
+  const editing=picker({...base,staffIntake:PAUSE,intakeSheet:true});
+  assert.match(editing,/name="pausedUntil" type="date" value="2026-11-20"/);assert.match(editing,/name="pauseNote" type="text" value="일정이 &lt;찼어요&gt;"/);assert.match(editing,/name="pauseNoteEn" type="text" value="Fully booked"/);
+  // 크루는 「쉬기」 칸을 열 수 없다(s.intakeSheet가 남아 있어도).
+  assert.doesNotMatch(picker({...base,staffIntake:{...PAUSE,canEdit:false},intakeSheet:true}),/data-form="intake-pause"/);
   assert.match(paused,/일정이 &lt;찼어요&gt;/);assert.match(paused,/영어 화면: Fully booked/);
   const crew=picker({...base,staffIntake:{state:'paused',open:false,pausedUntil:'',pauseNote:'',pauseNoteEn:'',reopened:'',canEdit:false}});
   assert.match(crew,/새 의뢰를 쉬는 중 · 다시 열 때까지 쉬어요/);assert.match(crew,/따로 적지 않았어요\(기본 문장 「지금은 잠시 접수를 쉬어요」와 다시 여는 날만 보여요\)/,'안내를 안 적어도 다시 여는 날은 손님에게 보인다고 말한다');assert.match(crew,/바꾸기는 관리자만/);assert.doesNotMatch(crew,/data-action="intake-open"|data-form="intake-pause"/);
   const crewOpen=picker({...base,staffIntake:{state:'open',open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',reopened:'',canEdit:false}});
   assert.doesNotMatch(crewOpen,/data-action="intake-open"|data-form="intake-pause"/);
   assert.match(picker({...base,staffIntake:{state:'open',open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',reopened:'2026-11-13',canEdit:true}}),/11월 13일에 저절로 다시 열렸어요/);
-  // 머리 줄: 쉬는 동안 어느 직원 화면에서나 보인다(잊고 닫아 둔 채 판매가 멈추지 않게). 손님 머리 줄에는 없다.
-  assert.match(header({...base,staffIntake:{state:'paused'}}),/intake-chip">접수 쉬는 중</);
-  assert.doesNotMatch(header({...base,staffIntake:{state:'open'}}),/intake-chip/);
-  assert.doesNotMatch(header({mode:'customer',staffIntake:{state:'paused'},intake:PAUSED}),/intake-chip/);
+  // 머리 띠: 스위치는 어느 직원 화면에서나 보인다(잊고 쉬어 둔 채 판매가 멈추지 않게). 쉬는 동안 「받는 중」은 그 자리에서 다시 받는다. 손님 머리 줄에는 없다.
+  const headPaused=header({...base,staffIntake:{state:'paused',canEdit:true}});
+  assert.match(headPaused,/class="staff-intake is-paused"/);assert.match(headPaused,/aria-pressed="false" data-action="intake-open" data-mutate>받는 중</);assert.match(headPaused,/data-action="intake-sheet" aria-pressed="true"/);
+  assert.match(header({...base,project:{id:'p'},staffIntake:{state:'paused',canEdit:true}}),/staff-intake is-paused/,'프로젝트를 연 화면에서도 보인다');
+  const headCrew=header({...base,staffIntake:{state:'paused',canEdit:false}});
+  assert.match(headCrew,/staff-intake is-readonly is-paused/);assert.match(headCrew,/접수 쉬는 중/);assert.doesNotMatch(headCrew,/data-action="intake-(open|sheet)"/);
+  assert.doesNotMatch(header({...base,staffIntake:{state:'open',canEdit:true}}),/is-paused/);
+  assert.doesNotMatch(header({mode:'customer',staffIntake:{state:'paused'},intake:PAUSED}),/data-intake-head|staff-intake/);
 });
 
 // Fable 5.2 최종 검수(11-11) P2 다섯 — 브라우저 동작(글 묶음 윗변 · 화면으로 돌아올 때 다시 묻기 · 직원 표시 · 폼 글 · 커서)은 손으로 돌린 확인이 보고, 여기서는 그 약속이 코드에 남아 있는지 본다.
@@ -224,7 +243,9 @@ test('직원: 스위치 상태는 화면으로 돌아올 때 · 새로 불러올
   assert.match(app,/async function intakeSave\(body,message,form=null\)\{if\(busy\|\|loading\|\|s\.mode!=='staff'\)return;const key=form\?draftKey\(form\):'',revision=drafts\.get\(key\)\?\.revision;/);
   assert.ok(app.includes('staffIntakeAt=Date.now();if(key)clearDraft(key,revision);render();notice(message);'),'성공하면 폼 글을 지운다');
   assert.match(app,/if\(type==='intake-pause'\)\{await intakeSave\(\{open:false,[^}]*\},'[^']*',form\);return;\}/);
-  assert.ok(css.includes('@media (max-width:640px){.header-actions .intake-chip{position:absolute;top:calc(100% - 10px);right:8px;z-index:1;pointer-events:none;'),'휴대폰 폭에서는 숨기지 않고 머리 줄 아랫선에 건다(단계 줄 화살표에 닿지 않게)');
+  const staffCss=read('staff.css'),narrowStaff=staffCss.slice(staffCss.indexOf('@media (max-width:820px){'));
+  assert.ok(narrowStaff.includes('html.is-staff .staff-intake{order:6;margin-left:auto}'),'휴대폰 폭에서도 스위치를 숨기지 않고 띠 첫 줄 오른쪽에 둔다(작업실 11-13)');
+  assert.doesNotMatch(narrowStaff,/\.staff-intake\{[^}]*display:none/);
   assert.ok(app.includes('if(canApplyRemote()){s.staffIntake=intake;render({remote:true});}else staffIntakeAt=0;'),'직원 화면도 그릴 수 있을 때만 바꾼다');
   assert.doesNotMatch(css,/\.intake-chip\{display:none\}/);
 });

@@ -6,7 +6,7 @@ import {kickoffSubmission} from './kickoff-view.mjs';
 import {previewApprovalState} from './production-context.mjs';
 import {strategySaveMessage,strategyUnsavedReviewMessage,strategyReviewState,castingCodeSaveMessage} from './strategy-view.mjs';
 import {sceneConfirmation} from './scene-requests-view.mjs';
-import {header,headerCrumb,welcome,login,picker,projectView,dialogContent,liveView,headJournal} from './views.mjs';
+import {header,headerCrumb,welcome,login,picker,projectView,dialogContent,liveView,headJournal,staffNotifyLabel} from './views.mjs';
 import {createLiveConnection,projectRevision} from './live.mjs';
 import {publicBackend,projectBackend,resumableDraft} from './request-backend.mjs';
 import {mountRequestFlow} from './request-flow.mjs';
@@ -70,7 +70,7 @@ function ensureLegacyCss(){
   if(legacyCss)return legacyCss;
   if(legacyCssReady)return legacyCss=Promise.resolve();
   const anchor=document.querySelector('#film-css'),add=(file,after)=>new Promise(resolve=>{const link=document.createElement('link');link.rel='stylesheet';link.href='./'+file;link.onload=link.onerror=()=>resolve();if(anchor){if(after)anchor.after(link);else anchor.before(link);}else document.head.append(link);});
-  legacyCss=Promise.all([...LEGACY_CSS.map(file=>add(file,false)),add('film-legacy.css',true)]).then(()=>{legacyCssReady=true;});
+  legacyCss=Promise.all([...LEGACY_CSS.map(file=>add(file,false)),add('film-legacy.css',true),...(staffMode?[new Promise(resolve=>{const link=document.createElement('link');link.rel='stylesheet';link.href='./staff.css';link.onload=link.onerror=()=>resolve();document.head.append(link);})]:[])]).then(()=>{legacyCssReady=true;});
   return legacyCss;
 }
 const wiredMedia=new WeakSet();
@@ -78,7 +78,7 @@ const drafts=new Map();let epoch=0,busy=false,loading=false,noticeTimer,leaveAct
 let pendingInvite='',inviteNavigationPrompt=false,inviteNavigationScheduled=false;
 // 고객 화면은 프로젝트를 확인하는 동안 「초대 링크 붙여 넣기」 첫 화면 대신 확인 중 표시를 둔다(10-19 검수: 링크를 눌렀는데 붙여 넣기 화면이 먼저 보였다).
 let booting=!demo&&!filmDemo;
-if(staffMode){document.documentElement?.classList?.remove?.('sx');document.documentElement?.classList?.add?.('is-staff');}
+if(staffMode){document.documentElement?.classList?.remove?.('sx');document.documentElement?.classList?.add?.('is-staff');const caption=document.querySelector?.('.header-caption');if(caption)caption.textContent='작업실';} // i18n-skip
 if(staffMode||demoMode||initialInvite)void ensureLegacyCss();
 // 연결이 끝나 프로젝트를 닫을 때 쓰던 글을 이 창의 메모리에만 잠시 보관했다가, 같은 프로젝트로 다시 연결되면 되살린다(저장소에는 쓰지 않는다).
 let keptDrafts=null;
@@ -629,9 +629,9 @@ function scheduleInviteNavigation(){
   });
 }
 function withLeave(action){if(busy||loading){notice(t('처리 중이에요. 끝난 뒤 이동해 주세요.'));return;}if(drafts.size){leaveAction=action;openDialog('leave');}else action();}
-function resetContext({preserveInvite=false}={}){loading=false;s.journalOpen=false;s.journalAll=false;s.journalTalk=false;s.journalSeenFor='';journalOpener=null;production.reset();pendingInitialScene='';if(!preserveInvite)cancelInviteNavigation();live?.stop();live=null;liveIdentity='';liveSnapshot=null;deviceState=null;deviceOperation++;deviceRefresh++;deviceBusy=false;s.live.deviceBusy=false;setBusy(false);epoch++;drafts.clear();pendingRemote=null;closeDialog();Object.assign(s,{project:null,canEdit:false,editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',error:'',conflict:false,workflow:[],historyTarget:null,notificationCommentId:null,tab:'strategy',castingCode:null,castingCodeOpen:null});castingCodeSave=null;s.brands=null;}
+function resetContext({preserveInvite=false}={}){loading=false;s.journalOpen=false;s.journalAll=false;s.journalTalk=false;s.journalSeenFor='';journalOpener=null;production.reset();pendingInitialScene='';if(!preserveInvite)cancelInviteNavigation();live?.stop();live=null;liveIdentity='';liveSnapshot=null;deviceState=null;deviceOperation++;deviceRefresh++;deviceBusy=false;s.live.deviceBusy=false;setBusy(false);epoch++;drafts.clear();pendingRemote=null;closeDialog();Object.assign(s,{project:null,canEdit:false,editor:null,versionId:'',compare:false,showVersion:false,inviteUrl:'',error:'',conflict:false,workflow:[],historyTarget:null,notificationCommentId:null,tab:'strategy',castingCode:null,castingCodeOpen:null});castingCodeSave=null;s.brands=null;s.intakeSheet=false;}
 function accept(result){noteFeatures(result.features);if(!result.project&&result.id&&Number.isFinite(result.revision))result={...result,project:result};if(result.project&&!result.project.studio&&result.project.id===s.project?.id)result.project.studio=s.project.studio;if(result.csrf)s.csrf=result.csrf;if(result.csrfToken)s.csrf=result.csrfToken;if(result.project){if(!s.project&&s.mode==='customer'&&!demo)s.tab='overview';else if(!s.project&&s.mode==='staff'&&result.project.studio?.request&&['received','planning'].includes(result.project.stage))s.tab='desk';else if(!s.project&&!result.project.studio?.strategy?.revision){const versions=result.project.versions||[];if(versions.some(v=>v.kind==='final')&&result.project.stage==='delivered')s.tab='history';else if(versions.some(v=>v.kind==='preview'))s.tab='review';}s.project=result.project;if(!s.project.studio)s.project.studio={preferences:{},assets:[],references:[],concepts:[],scenes:[],sceneReviews:[],comments:[]};if(result.canEdit!==undefined)s.canEdit=!!result.canEdit;}}
-function renderLive(){const box=document.querySelector('#pulse-live');if(!box)return;box.hidden=!!demo||!(s.project||s.user);if(box.hidden)return;const active=box.contains(document.activeElement)?document.activeElement.dataset?.id:null;box.innerHTML=liveView(s);if(active)Array.from(box.querySelectorAll('[data-action=open-notification]')).find(node=>node.dataset.id===active)?.focus({preventScroll:true});const badge=document.querySelector('[data-action=notifications]');if(badge){badge.textContent=s.live.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림');badge.setAttribute('aria-expanded',String(s.live.open));}}
+function renderLive(){const box=document.querySelector('#pulse-live');if(!box)return;box.hidden=!!demo||!(s.project||s.user);if(box.hidden)return;const active=box.contains(document.activeElement)?document.activeElement.dataset?.id:null;box.innerHTML=liveView(s);if(active)Array.from(box.querySelectorAll('[data-action=open-notification]')).find(node=>node.dataset.id===active)?.focus({preventScroll:true});const badge=document.querySelector('[data-action=notifications]');if(badge){if(s.mode==='staff')badge.innerHTML=staffNotifyLabel(s.live.unreadCount||0);else badge.textContent=s.live.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림');badge.setAttribute('aria-expanded',String(s.live.open));}}
 function syncLive(){if(demo)return;const key=s.mode==='staff'?(s.user?`staff:${s.user.id}`:''):(s.project?`customer:${s.project.id}`:'');if(key===liveIdentity)return;live?.stop();live=null;liveIdentity=key;liveSnapshot=null;journalReadSent.clear();pendingRemote=null;deviceState=null;s.live={...s.live,deviceEnabled:false,deviceReady:false,deviceNote:t('기기 알림 상태를 확인하고 있어요.'),deviceIssue:'',deviceProgress:'',deviceUncertain:false,notifications:[],unreadCount:0,open:openNotificationsOnStart,pending:false,status:'connecting'};if(!key)return;refreshDevice();live=createLiveConnection({mode:s.mode,request,options,onSnapshot:snapshot=>{if(key!==liveIdentity)return;if((s.mode==='staff'&&snapshot.userId&&snapshot.userId!==s.user?.id)||(s.mode==='customer'&&snapshot.projectId&&snapshot.projectId!==s.project?.id)){connectionExpired();return;}liveSnapshot=snapshot;s.live.notifications=snapshot.notifications||[];s.live.unreadCount=snapshot.unreadCount||0;renderLive();fetchRemote();},onFresh:items=>{if(key!==liveIdentity)return;notice(items.length===1?items[0].title:t('새 알림 {count}개가 도착했어요.',{count:items.length}));},onStatus:status=>{s.live.status=status;renderLive();},onExpired:connectionExpired});}
 const devicePath=()=>s.mode==='staff'?'/api/pulse-device-notifications':'/pulse/api/device-notifications';
 const deviceScope=()=>'/pulse-app/push-'+s.mode+'/';
@@ -732,7 +732,7 @@ async function recheckStaffIntake({force=false}={}){
   if(canApplyRemote()){s.staffIntake=intake;render({remote:true});}else staffIntakeAt=0;
 }
 // form: 「접수 쉬기」 폼 — 성공하면 적어 둔 안내 · 날짜를 쓰던 글에서 지운다(다른 직원 폼과 같다 — 남기면 나갈 때 「보내지 않은 글」 확인이 뜨고 다시 받은 뒤 폼이 지난 글로 펼쳐진다).
-async function intakeSave(body,message,form=null){if(busy||loading||s.mode!=='staff')return;const key=form?draftKey(form):'',revision=drafts.get(key)?.revision;setBusy(true);try{const result=await request('/api/settings/pulse-capacity',{...options(),body});s.staffIntake=['open','paused'].includes(result?.state)?result:null;staffIntakeAt=Date.now();if(key)clearDraft(key,revision);render();notice(message);}catch(error){notice(error.message);}finally{setBusy(false);}}
+async function intakeSave(body,message,form=null){if(busy||loading||s.mode!=='staff')return;const key=form?draftKey(form):'',revision=drafts.get(key)?.revision;setBusy(true);try{const result=await request('/api/settings/pulse-capacity',{...options(),body});s.staffIntake=['open','paused'].includes(result?.state)?result:null;s.intakeSheet=false;staffIntakeAt=Date.now();if(key)clearDraft(key,revision);render();notice(message);}catch(error){notice(error.message);}finally{setBusy(false);}}
 // 직원 기록 · 프로젝트 바로 열기(아래 넷)는 직원 화면(늘 한국어)이라 번역하지 않는다.
 function readStaffHistoryTarget(search){
   const params=new URLSearchParams(search),keys=[...params.keys()],uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -913,6 +913,10 @@ document.addEventListener('click',async event=>{
   if(action==='brands'&&s.mode==='staff'){withLeave(async()=>{resetContext();await openBrands();});return;}
   if(action==='brand-pick'&&s.brands){const pick={kind:button.dataset.kind,id};withLeave(async()=>{drafts.clear();s.brands.detail=null;await openBrands(pick);});return;}
   if(action==='intake-open'){void intakeSave({open:true},'새 의뢰를 다시 받아요. 손님 화면에는 1~2분 안에 보여요.');return;} // i18n-skip
+  // 「쉬기」(머리 띠 · 쉬는 줄): 쉬는 칸은 첫 화면 본문에 연다 — 프로젝트 · 고객 브랜드를 보던 중이면 첫 화면으로 돌아가서 연다(작업실 11-13).
+  if(action==='intake-sheet'&&s.mode==='staff'){if(!s.staffIntake?.canEdit)return;const openSheet=()=>{s.intakeSheet=true;render();const field=main.querySelector('[data-form=intake-pause] input');field?.focus({preventScroll:true});field?.closest('[data-intake]')?.scrollIntoView?.({block:'nearest'});};if(s.project||s.brands)withLeave(async()=>{resetContext();try{await loadWorkspace();}catch(error){notice(error.message);}openSheet();});else openSheet();return;}
+  if(action==='intake-sheet-close'){const form=main.querySelector('[data-form=intake-pause]');if(form)drafts.delete(draftKey(form));s.intakeSheet=false;render();document.querySelector('[data-action=intake-sheet]')?.focus({preventScroll:true});return;}
+  if(action==='staff-stage'){s.staffStage=button.dataset.stage||'';render();return;}
   if(action==='projects'){withLeave(async()=>{resetContext();try{await loadWorkspace();render();}catch(error){render();notice(error.message);}});return;}
   if(action==='open-project'){withLeave(async()=>{resetContext();loading=true;try{await loadProject(id);render();}catch(error){notice(error.message);}finally{loading=false;scheduleInviteNavigation();}});return;}
   if(action==='new-project'){s.newProject=true;render();main.querySelector('[data-form=new-project] input')?.focus();return;}

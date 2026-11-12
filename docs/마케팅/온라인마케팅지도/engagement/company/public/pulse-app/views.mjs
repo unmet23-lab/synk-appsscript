@@ -11,7 +11,7 @@ import {strategyView,strategySummary,strategyHistory,strategyConfirmDialog,strat
 import {FINISHED_FILMS,filmLine,filmNote,filmsView,hasFinishedFilms,filmTitle} from './films-view.mjs';
 import {arrow} from './film-home.mjs';
 import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen,journalView,journalAsk} from './film-views.mjs';
-import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew} from './room-view.mjs';
+import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew,staffBoard} from './room-view.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {personaModelsLine} from './persona-view.mjs';
 import {MODEL_LINES,PACKAGES} from './request-data.mjs';
@@ -66,11 +66,29 @@ const assetFields=(s,item={})=>`${field('새 이미지 올리기','file','','fil
 const visibility=value=>`<label class="field">공개 범위<select name="visibility"><option value="internal" ${value!=='customer'?'selected':''}>제작자만 보기 · 준비 중</option><option value="customer" ${value==='customer'?'selected':''}>고객에게 보이기</option></select></label>`;
 // 체험 머리 · 직원 이름표 — 체험은 영어에서 숨기고 직원 화면은 한국어다.
 const demoHeader=()=>'<span class="tag berry demo-tag">고객 체험</span>'+btn('처음부터','demo-reset','','quiet')+'<a class="button quiet" href="./">체험 나가기</a>';
-const STAFF_HEAD={space:'제작자 공간',projects:'프로젝트',brands:'고객 브랜드',logout:'로그아웃',paused:'접수 쉬는 중'};
+const STAFF_HEAD={space:'작업실',projects:'제작 보드',brands:'고객 브랜드',notify:'알림',logout:'로그아웃',install:'앱 설치',intake:'새 의뢰',open:'받는 중',pause:'쉬기',paused:'접수 쉬는 중'};
+// 직원 머리 띠(작업실 · 11-13 B안 「제작 보드」): 검정 띠 하나에 갈 곳 셋(제작 보드 · 고객 브랜드 · 알림)과 새 의뢰 접수 스위치를 늘 둔다.
+// 스위치는 어느 직원 화면에서나 보인다(잊고 쉬어 둔 채 판매가 멈추지 않게). 바꾸기는 관리자만 — 「쉬기」는 첫 화면에 쉬는 칸을 열고(폼은 본문에 둬야 실시간 갱신에 쓰던 글이 남는다),
+// 쉬는 동안 「받는 중」은 그 자리에서 다시 받는다. 크루에게는 상태 글만 보인다.
+const staffNotify=s=>{const n=s.live?.unreadCount||0;return `<button type="button" class="button quiet notify-button staff-tab" data-action="notifications" aria-controls="pulse-notifications" aria-expanded="${String(!!s.live?.open)}">${staffNotifyLabel(n)}</button>`;};
+export const staffNotifyLabel=n=>`<span>${STAFF_HEAD.notify}</span>${n?`<b class="staff-count">${esc(n)}</b><span class="sr">개 새 소식</span>`:''}`;
+function staffIntakeHead(s){
+  const c=s.staffIntake;if(!c||!s.user)return '';
+  const paused=c.state==='paused';
+  if(!c.canEdit)return `<span class="staff-intake is-readonly${paused?' is-paused':''}" data-intake-head><span class="staff-intake-label">${STAFF_HEAD.intake}</span><span class="staff-intake-now">${paused?STAFF_HEAD.paused:STAFF_HEAD.open}</span></span>`;
+  return `<div class="staff-intake${paused?' is-paused':''}" role="group" aria-label="새 의뢰 접수" data-intake-head><span class="staff-intake-label">${STAFF_HEAD.intake}</span><button type="button" class="staff-intake-on" aria-pressed="${String(!paused)}"${paused?' data-action="intake-open" data-mutate':''}>${STAFF_HEAD.open}</button><button type="button" class="staff-intake-off" data-action="intake-sheet" aria-pressed="${String(paused)}" aria-label="${paused?'쉬는 안내 · 다시 여는 날 고치기':'새 의뢰 쉬기'}">${STAFF_HEAD.pause}</button></div>`;
+}
+function staffHeader(s){
+  // 앱 설치는 로그인 전에도 둔다(PC 앱 창은 설치 안내가 없다). 아이콘은 staff.css가 그리고 글은 단추 이름으로 남는다(좁은 폭에서는 글을 숨긴다).
+  const install=s.desktopApp?'':btn(STAFF_HEAD.install,'install',`title="${STAFF_HEAD.install}"`,'quiet install-button');
+  if(!s.user)return install; // 로그인 전: 띠 설명 글 「작업실」(app.mjs)이 이름표를 대신한다.
+  const home=!s.project&&!s.brands,me=[...(s.user.name||STAFF_HEAD.space)][0];
+  return `<nav class="staff-nav" aria-label="작업실">${btn(STAFF_HEAD.projects,'projects',home?'aria-current="page"':'','quiet staff-tab')}${btn(STAFF_HEAD.brands,'brands',s.brands?'aria-current="page"':'','quiet staff-tab')}${staffNotify(s)}</nav>${staffIntakeHead(s)}${install}<span class="staff-me" title="${esc(s.user.name||'')}" aria-hidden="true">${esc(me)}</span><span class="user-label small">${esc(s.user.name||STAFF_HEAD.space)}</span>${btn(STAFF_HEAD.logout,'logout','','quiet staff-logout')}`;
+}
 // i18n-skip-end
 // PC 앱의 PULSE 창(s.desktopApp)은 앱 설치·기기 알림을 쓸 수 없어 설치 안내 단추를 두지 않는다. 새 소식은 「알림」(앱 안 알림)으로 본다.
 // 언어 메뉴는 손님 머리 끝에 — 첫 화면과 의뢰 흐름 손님만(옛 흐름 프로젝트 · 직원 화면은 한국어). 허락 언어가 하나면 빈 글자다.
-export function header(s){if(s.demo)return demoHeader();return `${s.project&&isCustomerRoom(s)?headAsk(s):''}${s.desktopApp?'':btn(t('앱 설치'),'install','','install-button')}${s.mode==='staff'?`${s.user&&s.staffIntake?.state==='paused'?`<span class="tag berry intake-chip">${STAFF_HEAD.paused}</span>`:''}<span class="user-label small">${esc(s.user?.name||STAFF_HEAD.space)}</span>${s.user?btn(STAFF_HEAD.projects,'projects','','quiet')+btn(STAFF_HEAD.brands,'brands',s.brands?'aria-current="page"':'','quiet'):''}`:!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">${esc(t('제작자 공간 ↗'))}</a>`:''}${s.project||s.user?btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button')+(s.mode==='staff'?btn(STAFF_HEAD.logout,'logout','','quiet'):''):''}${s.mode==='staff'||s.project&&!isCustomerRoom(s)?'':localeMenu()}`;}
+export function header(s){if(s.demo)return demoHeader();if(s.mode==='staff')return staffHeader(s);return `${s.project&&isCustomerRoom(s)?headAsk(s):''}${s.desktopApp?'':btn(t('앱 설치'),'install','','install-button')}${!s.project?`<a class="button quiet creator-link" href="https://workspace.synk.im/pulse-app/?mode=staff" target="_blank" rel="noopener noreferrer">${esc(t('제작자 공간 ↗'))}</a>`:''}${s.project?btn(s.live?.unreadCount?t('알림 {count}',{count:s.live.unreadCount}):t('알림'),'notifications','aria-controls="pulse-notifications" aria-expanded="'+String(!!s.live?.open)+'"','quiet notify-button'):''}${s.project&&!isCustomerRoom(s)?'':localeMenu()}`;}
 // 머리 막대 가운데: 열린 프로젝트의 이름·지금 단계·전달 예정일(app.mjs가 #header-crumb에 넣는다).
 // 의뢰 흐름 손님(판 3, 11-08): 머리 하나 — 프로젝트 이름(고객 방으로) · 접수 번호 · 단계 다섯. 화면 안에는 단계 줄을 두지 않는다.
 // 오른쪽 「나눈 말」(판 3b): 새 말 숫자(이 기기에서 일지를 본 뒤 온 담당자 줄) · 답할 되묻기가 있으면 점. 누르면 그 화면의 일지로.
@@ -80,21 +98,63 @@ export function headerCrumb(s){const p=s.project;if(!p)return '';if(isCustomerRo
 export function welcome(s){return entryView({demoHref:'?demo=film',entryError:s.entryError,resume:s.requestResume,paused:s.intake?.state==='paused'?s.intake:null});}
 // 직원 로그인 · 프로젝트 고르기 — 직원 화면.
 // i18n-skip-start
-export function login(){return `<section class="login-wrap"><div class="login-copy"><span class="eyebrow">PULSE / CREATOR</span><h1>고객 프로젝트를<span>여기서 준비해요.</span></h1><p class="muted">SYNK 제작자 계정으로 로그인해 주세요.</p></div><div class="login-forms"><section class="panel-card"><h3>SYNK ID로 로그인</h3><p>워크스페이스 로그인 화면이 열려요. 거기서 들어오면 이 화면으로 바로 돌아와요.</p><div class="button-row"><a class="button primary" href="/?after=pulse-staff" data-staff-login>SYNK ID로 로그인</a></div><p class="form-note">회사 비밀번호로 들어가려면 열린 화면에서 「회사 비밀번호로 로그인」을 눌러 주세요. 고객 초대 링크는 고객 화면에서 열어 주세요.</p><a class="text-button" href="./">고객 화면으로 돌아가기</a></section></div></section>`;}
-// 새 의뢰 접수 스위치(운영 조각 3 · 2026-11-11): 직원 첫 화면 맨 위 한 줄. 서버가 이 설정을 알 때만 그린다(app.mjs loadWorkspace). 바꾸는 것은 관리자만이고 크루에게는 상태만 보인다.
+export function login(){return `<section class="login-wrap"><div class="login-copy"><span class="eyebrow">PULSE 작업실 · 직원 전용</span><h1>고객 프로젝트를<span>여기서 준비해요.</span></h1><p class="muted">SYNK 제작자 계정으로 로그인해 주세요.</p></div><div class="login-forms"><section class="panel-card"><h3>SYNK ID로 로그인</h3><p>워크스페이스 로그인 화면이 열려요. 거기서 들어오면 이 화면으로 바로 돌아와요.</p><div class="button-row"><a class="button primary" href="/?after=pulse-staff" data-staff-login>SYNK ID로 로그인</a></div><p class="form-note">회사 비밀번호로 들어가려면 열린 화면에서 「회사 비밀번호로 로그인」을 눌러 주세요. 고객 초대 링크는 고객 화면에서 열어 주세요.</p><a class="text-button" href="./">고객 화면으로 돌아가기</a></section></div></section>`;}
+// 새 의뢰 접수(운영 조각 3 · 2026-11-11 → 11-13 작업실 판): 스위치는 머리 띠(staffIntakeHead)에 늘 있고, 첫 화면에는 쉬는 동안의 베리 줄 · 쉬는 칸 · 날짜 줄의 상태만 둔다.
+// 서버가 이 설정을 알 때만 그린다(app.mjs loadWorkspace). 바꾸는 것은 관리자만이고 크루에게는 상태만 보인다.
 // 쉬면 공개 의뢰서의 「광고 의뢰하기」 자리에 안내가 서고 새 의뢰서 시작만 막힌다 — 쓰던 의뢰서 · 진행 중인 프로젝트는 그대로다.
+// 쉬는 동안 다시 쉬기를 내면 서버가 안내 · 다시 여는 날만 바꾼다(pulse-capacity.mjs configure) — 「안내 · 날짜 고치기」가 같은 폼을 지금 값으로 연다.
 const intakeDay=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value||'');return m?`${Number(m[2])}월 ${Number(m[3])}일`:'';};
 const intakeTomorrow=()=>new Date(Date.now()+9*3600000+86400000).toISOString().slice(0,10);
-function intakeRow(s){
-  const c=s.staffIntake;if(!c)return '';
-  const paused=c.state==='paused';
+function intakeParts(s){
+  const c=s.staffIntake;if(!c)return {block:'',line:''};
+  const paused=c.state==='paused',sheet=!!(c.canEdit&&s.intakeSheet);
   const status=paused?(c.pausedUntil?`새 의뢰를 쉬는 중 · ${intakeDay(c.pausedUntil)}에 저절로 다시 열려요`:'새 의뢰를 쉬는 중 · 다시 열 때까지 쉬어요'):c.reopened?`새 의뢰를 받는 중 · ${intakeDay(c.reopened)}에 저절로 다시 열렸어요`:'새 의뢰를 받는 중';
-  const note=paused?`<p>손님에게 보이는 안내: ${c.pauseNote?esc(c.pauseNote):'따로 적지 않았어요(기본 문장 「지금은 잠시 접수를 쉬어요」와 다시 여는 날만 보여요).'}</p>${c.pauseNoteEn?`<p>영어 화면: ${esc(c.pauseNoteEn)}</p>`:''}`:'<p>쉬면 공개 의뢰서의 「광고 의뢰하기」 자리에 쉬는 안내가 서요. 쓰던 의뢰서와 진행 중인 프로젝트는 그대로예요.</p>';
-  const act=!c.canEdit?'<small>바꾸기는 관리자만 할 수 있어요.</small>':paused?btn('다시 받기','intake-open','data-mutate','primary'):'';
-  const form=c.canEdit&&!paused?`<details class="form-panel intake-pause"><summary>접수 쉬기</summary><form data-form="intake-pause">${field('손님에게 보일 안내(안 적어도 돼요)','pauseNote','','text',{max:200,placeholder:'예: 11월 셋째 주까지 제작 일정이 찼어요.'})}${field('영어 화면에 보일 안내(안 적어도 돼요)','pauseNoteEn','','text',{max:300,placeholder:'e.g. We are fully booked until late November.',attrs:'lang="en"'})}${field('다시 여는 날(비우면 직접 열 때까지 쉬어요)','pausedUntil','','date',{max:10,attrs:`min="${intakeTomorrow()}"`})}<div class="button-row">${submit('접수 쉬기')}</div></form></details>`:'';
-  return `<div class="intake-switch${paused?' is-paused':''}" data-intake><div class="demo-entry is-compact"><div><span class="tag ${paused?'berry':'green'}">${paused?'접수 쉬는 중':'접수 받는 중'}</span><h3>${esc(status)}</h3>${note}</div>${act}</div>${form}</div>`;
+  const form=sheet?`<form data-form="intake-pause">${field('다시 여는 날(비우면 직접 열 때까지 쉬어요)','pausedUntil',paused?c.pausedUntil||'':'','date',{max:10,attrs:`min="${intakeTomorrow()}"`})}${field('손님에게 보일 안내(안 적어도 돼요)','pauseNote',paused?c.pauseNote||'':'','text',{max:200,placeholder:'예: 11월 셋째 주까지 제작 일정이 찼어요.'})}${field('영어 화면에 보일 안내(안 적어도 돼요)','pauseNoteEn',paused?c.pauseNoteEn||'':'','text',{max:300,placeholder:'e.g. We are fully booked until late November.',attrs:'lang="en"'})}<div class="button-row">${submit(paused?'이대로 쉬기':'접수 쉬기')}${btn(paused?'고치지 않기':'그대로 받기','intake-sheet-close')}</div></form>`:'';
+  if(paused){
+    const note=`손님에게 보이는 안내: ${c.pauseNote?esc(c.pauseNote):'따로 적지 않았어요(기본 문장 「지금은 잠시 접수를 쉬어요」와 다시 여는 날만 보여요).'}${c.pauseNoteEn?` · 영어 화면: ${esc(c.pauseNoteEn)}`:''}`;
+    const acts=c.canEdit?`${sheet?'':btn('안내 · 날짜 고치기','intake-sheet','','quiet')}${btn('지금 다시 받기','intake-open','data-mutate','primary')}`:'<small>바꾸기는 관리자만 할 수 있어요.</small>';
+    return {line:'',block:`<section class="staff-paused" data-intake aria-label="새 의뢰 접수"><div class="staff-paused-copy"><h2>${esc(status)}</h2><p>${note}</p></div><div class="staff-paused-acts">${acts}</div>${form?`<div class="staff-sheet-form">${form}</div>`:''}</section>`};
+  }
+  if(sheet)return {line:status,block:`<section class="staff-sheet" data-intake aria-label="새 의뢰 쉬기"><div class="staff-sheet-copy"><h2>새 의뢰 접수를 잠시 쉬어요</h2><p>쉬면 공개 의뢰서의 「광고 의뢰하기」 자리에 쉬는 안내가 서요. 쓰던 의뢰서와 진행 중인 프로젝트는 그대로예요.</p></div><div class="staff-sheet-form">${form}</div></section>`};
+  return {line:status,block:''};
 }
-export function picker(s){return `<section class="project-picker">${pageIntro('CREATOR WORKSPACE','어떤 광고를 함께 만들까요?','프로젝트마다 고객과 볼 방향·장면·영상을 준비해요.',s.workspace?.canWrite?btn('새 프로젝트','new-project','','primary'):'')}${intakeRow(s)}<div class="demo-entry is-compact"><div><span class="eyebrow">CLIENT EXPERIENCE</span><h3>고객은 어떤 화면을 보게 될까요?</h3><p>예시 광고로 취향 선택부터 최종 승인까지 직접 체험해 보세요.</p></div><a class="button soft" href="?demo=gift" target="_blank" rel="noopener noreferrer">고객 체험 열기 ↗</a></div><div class="project-list">${(s.workspace?.projects||[]).map(p=>`<button type="button" class="project-tile" data-action="open-project" data-id="${esc(p.id)}"><span class="tag berry">${esc(stages[p.stage]||p.stage)}</span>${p.studio?.request&&roomState(p)==='check'?'<span class="tag berry">새 의뢰</span>':''}<strong>${esc(p.title)}</strong><span class="small">${esc(p.customerName)} · 담당 ${esc(p.ownerName||'확인 중')}</span><span class="small">${esc(p.nextStep||(p.studio?.request?`의뢰 ${p.studio.request.number}`:'고객이 다음에 할 일을 적어 주세요.'))}</span></button>`).join('')}</div>${!(s.workspace?.projects||[]).length?'<div class="empty-note"><h3>아직 프로젝트가 없어요.</h3><p>프로젝트를 만들고 자료를 올린 뒤 고객에게 초대 링크를 보내요.</p></div>':''}${s.newProject?`<form class="form-panel project-create" data-form="new-project"><h3>새 프로젝트</h3>${field('프로젝트 이름','title','','text',{required:true,max:160,placeholder:'예: 여름 신제품 30초 광고'})}${field('고객 이름 또는 회사','customerName','','text',{required:true,max:100})}${field('무엇을 함께 만들까요?','summary','','textarea',{placeholder:'이번 광고의 목적과 전달할 내용을 적어 주세요.'})}<div class="button-row">${submit('프로젝트 만들기')}${btn('취소','cancel-new')}</div></form>`:''}</section>`;}
+// 작업실 첫 화면(11-13 B안 「제작 보드」): 큰 숫자 셋(새 의뢰 · 우리 차례 · 사흘 안 전달) → 단계 다섯 칸 보드(카드마다 손님 제품 사진 · 우리 장면 그림) → 끝남 · 보관 접기.
+// 나누기는 room-view.mjs staffBoard 한 곳. 휴대폰은 단계 탭 하나를 고르면 그 칸만 보인다(s.staffStage). 카드 단추는 옛 계약 그대로 data-action="open-project".
+const WEEKDAY=['일','월','화','수','목','금','토'];
+const kstNow=(ms=Date.now())=>new Date(ms+9*3600000);
+const kstToday=()=>{const d=kstNow();return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일 ${WEEKDAY[d.getUTCDay()]}요일`;};
+function staffAgo(at,now=Date.now()){
+  const ms=Date.parse(at||'');if(!Number.isFinite(ms))return '';
+  const minutes=Math.max(0,Math.round((now-ms)/60000)),d=kstNow(ms),today=kstNow(now).toISOString().slice(0,10),day=d.toISOString().slice(0,10),time=d.toISOString().slice(11,16);
+  if(minutes<1)return '방금';if(minutes<60)return `${minutes}분 전`;
+  if(day===today)return `${Math.floor(minutes/60)}시간 전`;
+  if(day===kstNow(now-86400000).toISOString().slice(0,10))return `어제 ${time}`;
+  return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일`;
+}
+const staffDue=item=>item.left===null||item.turn==='done'?'':item.left<0?`${-item.left}일 지남`:item.left===0?'오늘 전달':`D-${item.left}`;
+const STAGE_SHORT={check:'확인',draft:'1차안',make:'제작',review:'영상',deliver:'납품'};
+function staffCard(item){
+  const due=staffDue(item),pic=item.picture?`<img src="${esc(item.picture.src)}" alt="" loading="lazy" decoding="async">`:`<span class="staff-pic-none" aria-hidden="true">${esc([...item.title.trim()][0]||'')}</span>`;
+  const turn=item.turn==='us'?`<span class="staff-turn is-us"><i aria-hidden="true"></i><span><b>우리 차례</b> · ${esc(item.fresh?'의뢰서를 확인할 차례':item.state)}</span></span>`:item.turn==='done'?`<span class="staff-turn is-done"><i aria-hidden="true"></i><span><b>끝</b> · ${esc(item.state)}</span></span>`:`<span class="staff-turn is-them"><i aria-hidden="true"></i><span><b>손님 차례 · ${item.waited?`${item.waited}일째`:'오늘'}</b> · ${esc(item.state)}</span></span>`;
+  const line=item.fresh?(item.missing.length?`빠진 것 ${item.missing.length} · ${item.missing[0]}`:'자동 점검 · 빠진 것 없음'):item.note;
+  const who=[esc(item.who),item.fresh?esc(staffAgo(item.at)+' 접수'):'',item.number?`<span class="mono">${esc(item.number)}</span>`:''].filter(Boolean).join(' · ');
+  return `<button type="button" class="project-tile staff-card is-${item.turn}${item.fresh?' is-fresh':''}" data-action="open-project" data-id="${esc(item.id)}"><span class="staff-pic">${pic}${item.fresh?'<span class="staff-flag">새 의뢰</span>':''}${due?`<span class="staff-due${item.left<=2?' is-hot':''}">${due}</span>`:''}</span><span class="staff-card-t">${esc(item.title)}</span>${who?`<span class="staff-card-w">${who}</span>`:''}${turn}${line?`<span class="staff-card-note">${esc(line)}</span>`:''}</button>`;
+}
+const newProjectForm=()=>`<section class="staff-sheet" aria-label="새 프로젝트"><div class="staff-sheet-copy"><h2>새 프로젝트</h2><p>의뢰서 없이 직접 만드는 프로젝트예요. 만든 뒤 자료를 올리고 고객에게 초대 링크를 보내요.</p></div><form class="staff-sheet-form project-create" data-form="new-project">${field('프로젝트 이름','title','','text',{required:true,max:160,placeholder:'예: 여름 신제품 30초 광고'})}${field('고객 이름 또는 회사','customerName','','text',{required:true,max:100})}${field('무엇을 함께 만들까요?','summary','','textarea',{placeholder:'이번 광고의 목적과 전달할 내용을 적어 주세요.'})}<div class="button-row">${submit('프로젝트 만들기')}${btn('취소','cancel-new')}</div></form></section>`;
+export function picker(s){
+  const projects=s.workspace?.projects||[],b=staffBoard(projects),intake=intakeParts(s),canWrite=!!s.workspace?.canWrite;
+  // 끝난 프로젝트는 2주 동안만 납품 칸에 남기고, 그 뒤는 보관과 함께 접는다(칸이 끝없이 길어지지 않게).
+  const recent=item=>item.turn!=='done'||(item.waited??99)<=14,cols=b.stages.map(stage=>({...stage,items:stage.items.filter(recent)}));
+  const older=b.done.filter(item=>!recent(item)),folded=[...older,...b.archived];
+  const active=cols.some(col=>col.id===s.staffStage)?s.staffStage:b.fresh.length?'check':cols.find(col=>col.items.length)?.id||'check';
+  const soon=b.soon[0],meters=[[b.fresh.length,'새 의뢰','의뢰서를 확인할 차례',b.fresh.length?' is-hot':''],[b.ours.length,'우리 차례','만들거나 고칠 것',''],[b.soon.length,'사흘 안 전달',soon?`${soon.title}${b.soon.length>1?` 외 ${b.soon.length-1}`:''}`:'없어요','']];
+  const top=`<header class="staff-top"><div class="staff-top-copy"><p class="staff-date"${intake.line?' data-intake':''}>${esc(kstToday())}${intake.line?` · ${esc(intake.line)}`:''}</p><div class="staff-meters">${meters.map(([n,label,sub,cls])=>`<p class="staff-meter${cls}"><b>${n}</b><span>${label}<small>${esc(sub)}</small></span></p>`).join('')}</div></div><div class="staff-top-acts"><a class="staff-demo-link" href="?demo=gift" target="_blank" rel="noopener noreferrer">손님 화면 예시 ↗</a>${canWrite?btn('새 프로젝트','new-project','','primary staff-new'):''}</div></header>`;
+  const tabs=`<div class="staff-stage-tabs" role="group" aria-label="단계 고르기">${cols.map((col,index)=>`<button type="button" data-action="staff-stage" data-stage="${col.id}" aria-pressed="${String(col.id===active)}"><span class="mono">0${index+1}</span><span>${STAGE_SHORT[col.id]}</span><b>${col.items.length}</b></button>`).join('')}</div>`;
+  const board=`<div class="staff-board" data-stage="${active}">${cols.map((col,index)=>`<section class="staff-col${col.id==='check'&&b.fresh.length?' is-new':''}" data-col="${col.id}" aria-labelledby="staff-col-${col.id}"><header class="staff-col-h"><h2 id="staff-col-${col.id}"><span class="mono">0${index+1}</span>${col.name}</h2><span class="staff-col-n" aria-label="${col.items.length}개">${col.items.length}</span></header>${col.items.length?col.items.map(staffCard).join(''):'<p class="staff-empty">비었어요</p>'}</section>`).join('')}</div>`;
+  const fold=folded.length?`<details class="staff-fold"><summary><span><b>끝난 프로젝트 ${older.length}</b> · 보관 ${b.archived.length}</span><span class="staff-fold-hint" aria-hidden="true"></span></summary><div class="staff-fold-list">${folded.map(item=>`<button type="button" class="project-tile staff-row" data-action="open-project" data-id="${esc(item.id)}"><span class="staff-row-t">${esc(item.title)}</span><span>${esc(item.who)}</span><span>${item.turn==='archived'?'보관됨':esc(item.state)}</span></button>`).join('')}</div></details>`:'';
+  const empty=!projects.length?'<div class="staff-none"><h2>아직 프로젝트가 없어요.</h2><p>새 의뢰가 들어오면 「확인」 칸 맨 위에 서요. 의뢰서 없이 시작하려면 「새 프로젝트」를 눌러요.</p></div>':'';
+  return `<section class="project-picker staff-home" aria-label="제작 보드">${intake.block}${top}${s.newProject?newProjectForm():''}${projects.length?tabs+board:empty}${fold}</section>`;
+}
 // i18n-skip-end
 const sceneConfirmed=(st,scene)=>(st.sceneReviews||[]).filter(r=>r.sceneId===scene.id&&r.current).at(-1)?.status==='confirmed';
 // 담당자가 확인을 요청한 납품 규격이 아직 확인 전이면 고객 차례다. 글은 한국어 값으로 두고(옛 흐름이 그대로 그리고 TEAM_TURN이 제목을 견준다) 고객 방이 그릴 때 옮긴다.
