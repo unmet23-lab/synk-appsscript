@@ -26,7 +26,7 @@
 
 **엔진 갈래 기준선(T1 준비):** 갈라 오기 전 0.5.0 엔진 시험 전체를 실제 restic으로 돌렸다 — 81개 중 통과 80 · 실패 0 · 건너뜀 1(추천 경로 통합 시험은 원래 별도 환경 변수가 있어야 돈다), 260.7초. 원시 TAP은 같은 증거 폴더의 `t1-baseline-20261112/engine-0.5.0.tap`.
 
-**Actions 비밀값:** CI용 출입증 둘과 저장소 암호 씨앗을 넣는 `gh secret set`(값은 표준 입력으로만)은 자동 모드 판정기가 막아(까닭 없음) 아직 넣지 않았다. 유호님이 이 세션에서 이름을 대어 승인하시면 [`server/tools/ci-secrets.mjs`](server/tools/ci-secrets.mjs)로 넣는다.
+**Actions 비밀값:** CI용 출입증 둘(`ci/`, 삭제 없음)과 주소 · 지역 · 버킷 · 저장소 암호 씨앗을 `WORKBACKUP_CI_*` 여덟 개로 넣었다(11-12 19:13 KST, [`server/tools/ci-secrets.mjs`](server/tools/ci-secrets.mjs) — 값은 표준 입력으로만). 처음 시도는 자동 모드 판정기가 막아(까닭 없음) 우회하지 않았고, 유호님 「Actions 비밀값 넣기 진행」 뒤 넣었다. 운영 · 실측 출입증은 넣지 않았다.
 
 대상은 Windows x64용 `0.6.0-rust-beta.1`이다. Rust/Tauri 셸과 기존 Node/restic 호환 엔진을 묶었다. 기존 Electron 0.5.0 운영 백업의 소스·설정·시작 등록은 변경하지 않았다.
 
