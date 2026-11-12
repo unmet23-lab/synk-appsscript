@@ -440,7 +440,7 @@ export async function streamDraftFile(res,{paths,file},req){
 // ── 프로젝트 안의 의뢰서 액션(pulse-studio의 mutate 확장 — 다른 액션과 같은 트랜잭션 · 판 검사를 탄다) ──
 const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation','kind'],
-  request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
+  request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note','outfit','hair'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
   propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither','outfit','hair'],
   payment_request:['amount'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],
   // 작업 소식(운영 조각 4 · 설계 S1): 직원만 — 초안 쓰기 · 공개 · 거두기. 동작은 pulse-progress.mjs.
@@ -590,11 +590,16 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
   if(action==='answer_model'){
     const proposal=request.modelProposal;
     const picked=input.modelId?one(input.modelId,MODEL_IDS):'';
+    // 옷 · 머리(2026-11-12 사진 상품 — 방향 제안이 없어 모델 제안 카드에서 고른다): 받는 규칙은 방향 고르기와 같다(lookOf — 칸이 없으면 건드리지 않고, ''는 맡김,
+    // 틀린 값은 400). 값은 모델이 정해질 때만 쓰고(말로만 답하면 버린다), 모델이 바뀌면 옛 모델의 값은 비운다(answersWithModel · catalogCasting).
+    const look=lookOf(input);
     if(input.accept!==true&&!picked&&!text(input.note,300))throw fail('진행할 모델을 고르거나 바라는 점을 적어 주세요.');
     const modelId=picked||(input.accept===true?proposal?.modelId:'');
-    studio.request={...request,answers:modelId?answersWithModel(request.answers,modelId):request.answers,modelProposal:{...(proposal||{}),status:modelId?'accepted':'declined',answer:text(input.note,300),answeredAt:now,...(modelId?{modelId}:{})}};
+    // look은 그때 정한 값의 기록(일지 · 담당자 칸이 읽는다 — 방향 제안의 proposal.look과 같은 뜻). 모델을 정하지 않은 답에는 남기지 않는다.
+    const answers=modelId?answersWithModel(request.answers,modelId,look):request.answers,{look:_old,...rest}=proposal||{};
+    studio.request={...request,answers,modelProposal:{...rest,status:modelId?'accepted':'declined',answer:text(input.note,300),answeredAt:now,...(modelId?{modelId,look:{outfit:answers.outfit||'',hair:answers.hair||''}}:{})}};
     // 확인 끝 뒤에 정해진 모델은 제작 설계에도 옮긴다(확인 때 옮긴 값을 고객이 바꿀 수 있다). 전용 인물이 붙어 있었으면 그 참조도 뗀다.
-    if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId)},stamp);
+    if(modelId&&(request.confirmedAt||personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)))studio.strategy=strategyWith(studio.strategy,{...studio.strategy.data,castingSelection:catalogCasting(studio.strategy.data?.castingSelection,modelId,look)},stamp);
     return;
   }
   // 영상 전 세 번 확인의 첫 번째(11-07 판): 방향 두세 안과 모델을 함께 내밀고 손님이 고른다. 설계 docs/마케팅/PULSE_의뢰흐름_20261104/판1_설계.md 1b.
@@ -824,9 +829,10 @@ export function requestView(studio,{staff=false}={}){
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
   // paymentFlow는 직원 보기에도 둔다 — 직원 화면의 결제 줄 · 글 콘티 판 고르기 · 의견 다시 묶기는 이 서버에서만 켠다(화면 묶음이 서버보다 먼저 나가도 옛 서버에 모르는 칸을 보내지 않게).
   // castingLooks(2026-11-10 옷 · 머리 고르기): 이 서버가 방향 고르기의 옷 · 머리(answer_direction outfit · hair)를 안다 — 화면은 이것이 있을 때만 그 줄을 그리고 칸을 보낸다.
+  // modelProposalLooks(2026-11-12 사진 상품): 이 서버가 모델 답(answer_model)의 outfit · hair를 안다 — 화면은 이것이 있을 때만 모델 제안 카드에 그 줄을 그리고 칸을 보낸다.
   // paymentLedger: 이 서버가 결제 이력을 쌓고 payment_confirm의 amount · channel · net을 안다 — 직원 화면은 이것이 있을 때만 그 칸을 보낸다.
   // progressFeed: 이 서버가 작업 소식(progress_save · progress_post · progress_withdraw, 그림 올리기의 x-studio-purpose: progress)을 안다 — 직원 화면은 이것이 있을 때만 「소식 올리기」를 그린다.
-  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,paymentLedger:true,progressFeed:true};
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,modelProposalLooks:true,paymentLedger:true,progressFeed:true};
   // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
   // paymentTrail(운영 조각 2 · 11-11): 일지의 결제 줄 — 다시 요청해도 앞 요청 · 취소 줄이 남게 이력에서 만든다.
@@ -837,5 +843,5 @@ export function requestView(studio,{staff=false}={}){
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
   // 작업 소식: 올린 것만 {id, at, stage?, text, assets}로(pulse-progress.mjs progressCustomerView) request.progress 자리에 싣는다. 하나도 없으면 칸을 싣지 않는다.
   const shown=progressCustomerView(studio);
-  return {...safe,...(trail.length?{paymentTrail:trail}:{}),...(shown.length?{progress:shown}:{}),paymentFlow:true,castingLooks:true};
+  return {...safe,...(trail.length?{paymentTrail:trail}:{}),...(shown.length?{progress:shown}:{}),paymentFlow:true,castingLooks:true,modelProposalLooks:true};
 }

@@ -175,3 +175,83 @@ test('the production plan keeps a picked outfit when an older screen saves witho
   assert.equal(s.data.castingSelection.outfit,'','an explicit empty value clears it');
   assert.throws(()=>applyStrategyAction(s,{action:'save_strategy',strategy:{castingSelection:{modelId:'M01',outfit:'original'}}},stamp),/모델과 스타일 선택값을 확인해 주세요/);
 });
+
+// ── 사진 상품(2026-11-12, 설계 8절 후속 · 10절): 방향 제안이 없어 모델 제안 카드에서 고른다 — 모델 답(answer_model)이 같은 규칙으로 옷 · 머리를 받는다. ──
+const modelAnswer=async h=>(await h.refresh()).studio.request.modelProposal;
+test('a photo order picks outfit and hair while accepting the proposed model: both places and the record',async t=>{
+  const h=await confirmed(t,{package:'photo'});
+  assert.deepEqual(requestActions('answer_model'),['accept','modelId','note','outfit','hair']);
+  await h.act({action:'propose_model',modelId:'F02',note:'제품 색과 잘 맞아요'});
+  assert.equal(h.row.studio.request.modelProposalLooks,true,'the staff view says this server takes the picks');
+  assert.equal((await h.croom()).project.studio.request.modelProposalLooks,true,'and so does the customer view');
+  await h.cact({action:'answer_model',accept:true,outfit:'look-2',hair:'look-3'});
+  const now=await looks(h),p=await modelAnswer(h);
+  assert.deepEqual([now.answers,now.casting,now.models],[{outfit:'look-2',hair:'look-3'},{modelId:'F02',outfit:'look-2',hair:'look-3'},['F02']]);
+  assert.deepEqual([p.status,p.modelId,p.look],['accepted','F02',{outfit:'look-2',hair:'look-3'}],'the record of what was set then');
+});
+
+test('the model answer follows the same three rules: absent keeps, empty leaves it to us, a wrong value is refused',async t=>{
+  const h=await confirmed(t,{package:'photo'});
+  await h.act({action:'propose_model',modelId:'F02',note:''});
+  await h.cact({action:'answer_model',accept:true,outfit:'look-1',hair:'look-2'});
+  // 칸을 모르는 옛 화면이 같은 모델로 다시 답하면 건드리지 않는다.
+  await h.cact({action:'answer_model',modelId:'F02',note:'그대로요'});
+  let now=await looks(h);assert.deepEqual([now.answers,now.casting],[{outfit:'look-1',hair:'look-2'},{modelId:'F02',outfit:'look-1',hair:'look-2'}],'absent fields keep the picks');
+  await h.cact({action:'answer_model',modelId:'F02',outfit:'',hair:'look-3'});
+  now=await looks(h);assert.deepEqual([now.answers,now.casting,(await modelAnswer(h)).look],[{outfit:'',hair:'look-3'},{modelId:'F02',outfit:'',hair:'look-3'},{outfit:'',hair:'look-3'}],'an empty value leaves that row to us');
+  const before=await looks(h);
+  for(const bad of [{outfit:'original'},{outfit:'look-3'},{hair:'look-1'},{hair:'fullbody'},{outfit:null},{hair:0},{outfit:['look-1']}]){
+    const result=await h.customerTry({action:'answer_model',modelId:'F02',outfit:'look-1',hair:'look-2',...bad});
+    assert.equal(result.status,400,JSON.stringify(bad));assert.equal(result.data.error,'옷 · 머리 고름을 확인해 주세요.',JSON.stringify(bad));
+  }
+  assert.equal((await h.customerTry({action:'answer_model',modelId:'F02',shoes:'x'})).status,400,'unknown fields are still refused');
+  assert.deepEqual(await looks(h),before,'a refused answer changes nothing');
+  // 벽에서 다른 모델을 고르면 옛 모델의 값은 두 곳에서 비고, 함께 보낸 값만 남는다.
+  await h.cact({action:'answer_model',modelId:'M06'});
+  now=await looks(h);assert.deepEqual([now.answers,now.casting,now.models,(await modelAnswer(h)).look],[{outfit:'',hair:''},{modelId:'M06',outfit:'',hair:''},['M06'],{outfit:'',hair:''}]);
+  await h.cact({action:'answer_model',modelId:'F01',outfit:'look-1',hair:''});
+  now=await looks(h);assert.deepEqual([now.answers,now.casting],[{outfit:'look-1',hair:''},{modelId:'F01',outfit:'look-1',hair:''}],'values sent along belong to the new model');
+});
+
+test('an answer in words only sets nothing and leaves no outfit record; a new proposal starts clean',async t=>{
+  const h=await confirmed(t,{package:'photo'});
+  await h.act({action:'propose_model',modelId:'F02',note:''});
+  await h.cact({action:'answer_model',note:'조금 더 어린 느낌이면 좋겠어요',outfit:'look-1',hair:'look-2'});
+  let p=await modelAnswer(h),now=await looks(h);
+  assert.equal(p.status,'declined');assert.equal('look' in p,false);
+  assert.deepEqual([now.answers.outfit||'',now.answers.hair||'',now.casting.outfit||'',now.casting.hair||'',now.models],['','','','',[]],'no model, so the picks are dropped');
+  assert.equal((await h.customerTry({action:'answer_model',note:'말로만',outfit:'wrong'})).status,400,'a wrong value is refused even when it would be dropped');
+  await h.act({action:'propose_model',modelId:'F01',note:'다시 골랐어요'});
+  await h.cact({action:'answer_model',accept:true,outfit:'fullbody',hair:'original'});
+  p=await modelAnswer(h);assert.deepEqual([p.status,p.modelId,p.look],['accepted','F01',{outfit:'fullbody',hair:'original'}]);
+  // 기록이 남은 답 뒤의 새 제안은 그 기록(look)을 물려받지 않는다. 의뢰 기록의 값은 손님이 새로 답할 때까지 앞 모델 몫 그대로다.
+  await h.act({action:'propose_model',modelId:'M06',note:'한 번 더 골랐어요'});
+  p=await modelAnswer(h);now=await looks(h);
+  assert.deepEqual([p.status,p.modelId,'look' in p],['open','M06',false],'a new proposal starts without the earlier record');
+  assert.deepEqual([now.answers,now.casting,now.models],[{outfit:'fullbody',hair:'original'},{modelId:'F01',outfit:'fullbody',hair:'original'},['F01']],'proposing alone changes no picks');
+  // 말로만 답하면 기록(look) 없이 거절로 남고, 앞서 정한 모델과 값은 그대로다.
+  await h.cact({action:'answer_model',note:'역시 다른 분이면 좋겠어요'});
+  p=await modelAnswer(h);now=await looks(h);assert.equal(p.status,'declined');assert.equal('look' in p,false);
+  assert.deepEqual([now.answers,now.models],[{outfit:'fullbody',hair:'original'},['F01']]);
+  // 받아들인 답(기록 있음) 바로 뒤에 같은 제안에 말로만 다시 답해도 앞 기록을 떼어 낸다 — 거절한 답에 옛 값이 붙어 다니지 않게.
+  await h.act({action:'propose_model',modelId:'F02',note:''});
+  await h.cact({action:'answer_model',accept:true,outfit:'look-1',hair:''});
+  p=await modelAnswer(h);assert.deepEqual([p.status,p.look],['accepted',{outfit:'look-1',hair:''}]);
+  await h.cact({action:'answer_model',note:'다시 생각해 볼게요'});
+  p=await modelAnswer(h);assert.equal(p.status,'declined');assert.equal('look' in p,false);
+});
+
+test('picks made on the model proposal before the brief is confirmed reach the production plan when it is',async t=>{
+  const f=await fixture(t);
+  const draft=(await f.call('/pulse/api/request/start',{body:{}})).data.draft;
+  const sent=await f.call('/pulse/api/request/submit',{body:{answers:answers({package:'photo'})},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));
+  const id=sent.data.projectId,read=async()=>(await f.staff('/api/client-projects/'+id+'/studio')).data.project;
+  const act=async body=>{const row=await read(),result=await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,...body}});assert.equal(result.status,200,JSON.stringify(result.data));};
+  await act({action:'propose_model',modelId:'F02',note:''});
+  const room=(await f.call('/pulse/api/project')).data;
+  const answered=await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'answer_model',accept:true,outfit:'look-1',hair:''},csrf:room.csrf});assert.equal(answered.status,200,JSON.stringify(answered.data));
+  let row=await read();assert.deepEqual([row.studio.request.answers.outfit,row.studio.request.answers.hair,row.studio.request.answers.models],['look-1','',['F02']]);
+  await act({action:'request_confirm'});
+  row=await read();const cast=row.studio.strategy.data.castingSelection;
+  assert.deepEqual([cast.modelId,cast.outfit,cast.hair||''],['F02','look-1','']);
+});

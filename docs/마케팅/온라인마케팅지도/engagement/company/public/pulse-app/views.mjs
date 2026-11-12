@@ -285,7 +285,7 @@ function customerRoom(s){
   // 내 모델 입구(판 4 운영 시험 P3): 스위치 myModels가 켜진 손님 방에서, 위 인물 칸이 이미 「내 모델 열기」를 둔 방(브랜드 회원 · 다시 쓰기)이 아니면 아래 띠에 한 줄.
   // 위 인물 칸이 실제로 「내 모델 열기」를 그린 방만 뺀다 — 인물이 끝난 방(turn end)은 personaKeep이 아무것도 그리지 않는다(최종 검수 F4).
   const mine=s.keep?.projectId===p.id?s.keep.state:'',kept=info.persona?info.persona.turn!=='end'&&['member','reuse'].includes(mine):mine==='reuse',models=s.mode==='customer'&&!s.demo&&s.myModelsOn===true&&!kept?personaModelsLine():'';
-  return roomView(info,{bar:false,top:alertBox(s),after,foot:models,tail:s.rememberOffer?rememberOffer(s):'',prep:roomPrep(s),journal:journalOf(s,'column',{tab:'overview'})});
+  return roomView(info,{bar:false,top:alertBox(s),after,foot:models,tail:s.rememberOffer?rememberOffer(s):'',prep:roomPrep(s),journal:journalOf(s,'column',{tab:'overview'}),ui:info.proposal?.key&&s.proposeUi?.key===info.proposal.key?s.proposeUi:{}});
 }
 // 옛 흐름의 현황 · 옛 탭(overviewScreen부터 legacyStage까지)은 의뢰 흐름이 아닌 프로젝트와 체험만 쓴다 — 한국어 그대로.
 // i18n-skip-start

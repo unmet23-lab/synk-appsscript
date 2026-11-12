@@ -140,14 +140,19 @@ const seedLook=(d,ui)=>{if(ui.outfit===undefined)ui.outfit=d.look?.outfit||'';if
 const lookModel=(d,ui)=>(modelCard(ui.modelId)||d.model)?.id||'';
 // 요약 줄: 고른 것이 있으면 「옷 … · 머리 …」(길면 둘째 줄까지 꺾여 이름이 다 보인다), 없으면 「담당자에게 맡기기」 + 뒤 설명(한 줄에 들 때만 보인다 — film.css .sx-dp-look-say).
 const lookSum=look=>look.outfit||look.hair?lookLine(look):t('담당자에게 맡기기');
-function dpLooks(d,ui){
-  const id=lookModel(d,ui),looks=modelLooks(id);if(!looks)return '';
+// 방향 화면과 사진 상품의 모델 제안 카드(11-12)가 같은 줄을 쓴다 — 자리마다 다른 것(속성 이름 · 뒤 설명 · 안내 한 줄)만 at으로 받는다.
+function lookBox(id,ui,at){
+  const looks=modelLooks(id);if(!looks)return '';
   const now=lookOf(id,ui);
   // 이름은 칸 폭에 맞춰 줄여 보이므로 전체 이름을 title(마우스를 올리면)과 단추 이름에 둔다.
-  const cell=(key,item)=>{const on=now[key]===item.id,name=t(item.label);return `<button type="button" class="sx-dp-pic${on?' is-on':''}" aria-pressed="${on?'true':'false'}" aria-label="${esc(name)}" title="${esc(name)}" data-dp-look-pick="${key}" data-value="${esc(item.id)}"><img src="${esc(item.src)}" alt="" loading="lazy" decoding="async"><span class="sx-small">${esc(name)}</span></button>`;};
+  const cell=(key,item)=>{const on=now[key]===item.id,name=t(item.label);return `<button type="button" class="sx-dp-pic${on?' is-on':''}" aria-pressed="${on?'true':'false'}" aria-label="${esc(name)}" title="${esc(name)}" ${at.pick}="${key}" data-value="${esc(item.id)}"><img src="${esc(item.src)}" alt="" loading="lazy" decoding="async"><span class="sx-small">${esc(name)}</span></button>`;};
   const set=(key,label,items)=>`<div class="sx-dp-look-set is-${key}" role="group" aria-label="${esc(label)}"><span class="sx-dp-label">${esc(label)}</span><div class="sx-dp-pics">${items.map(item=>cell(key,item)).join('')}</div></div>`;
-  return `<div class="sx-dp-look sx-small" data-dp-look data-model="${esc(id)}"><p class="sx-dp-look-row"><span class="sx-dp-label">${esc(t('옷 · 머리'))}</span><span class="sx-dp-look-say${now.outfit||now.hair?' is-picked':''}"><b data-dp-look-sum title="${esc(lookSum(now))}">${esc(lookSum(now))}</b><span class="sx-dp-look-hint" data-dp-look-hint ${now.outfit||now.hair?'hidden':''}> · ${esc(t('방향에 맞춰 골라 드려요'))}</span></span><button type="button" class="sx-quiet sx-dp-look-open" data-dp-do="looks" aria-expanded="${ui.looks?'true':'false'}" aria-controls="dp-looks">${esc(ui.looks?t('접기'):t('직접 고르기'))}</button></p><div class="sx-dp-looks" id="dp-looks" data-dp-looks ${ui.looks?'':'hidden'}>${set('outfit',t('옷'),looks.outfits)}${set('hair',t('머리'),looks.hairs)}<p class="sx-dp-look-note">${esc(t('고른 옷 · 머리는 장면 이미지에서 이 사진 그대로 맞춰요.'))}</p></div></div>`;
+  return `<div class="sx-dp-look sx-small" ${at.box} data-model="${esc(id)}"><p class="sx-dp-look-row"><span class="sx-dp-label">${esc(t('옷 · 머리'))}</span><span class="sx-dp-look-say${now.outfit||now.hair?' is-picked':''}"><b ${at.sum} title="${esc(lookSum(now))}">${esc(lookSum(now))}</b><span class="sx-dp-look-hint" ${at.hint} ${now.outfit||now.hair?'hidden':''}> · ${esc(at.say)}</span></span><button type="button" class="sx-quiet sx-dp-look-open" ${at.toggle} aria-expanded="${ui.looks?'true':'false'}" aria-controls="${at.id}">${esc(ui.looks?t('접기'):t('직접 고르기'))}</button></p><div class="sx-dp-looks" id="${at.id}" ${at.panel} ${ui.looks?'':'hidden'}>${set('outfit',t('옷'),looks.outfits)}${set('hair',t('머리'),looks.hairs)}<p class="sx-dp-look-note">${esc(at.note)}</p></div></div>`;
 }
+const dpLooks=(d,ui)=>lookBox(lookModel(d,ui),ui,{box:'data-dp-look',pick:'data-dp-look-pick',sum:'data-dp-look-sum',hint:'data-dp-look-hint',toggle:'data-dp-do="looks"',panel:'data-dp-looks',id:'dp-looks',say:t('방향에 맞춰 골라 드려요'),note:t('고른 옷 · 머리는 장면 이미지에서 이 사진 그대로 맞춰요.')});
+// 사진 상품의 모델 제안 카드: 방향 화면이 없어 여기서 고른다(기본은 맡김). ui는 app.mjs s.proposeUi — 실시간으로 다시 그려도 고르던 값 · 펼침이 남는다.
+const seedPropose=(m,ui)=>{if(ui.outfit===undefined)ui.outfit=m.look?.outfit||'';if(ui.hair===undefined)ui.hair=m.look?.hair||'';};
+const proposeLooks=(m,ui)=>lookBox(m.id,ui,{box:`data-room-look data-key="${esc(m.key||'')}"`,pick:'data-room-look-pick',sum:'data-room-look-sum',hint:'data-room-look-hint',toggle:'data-room-do="looks"',panel:'data-room-looks',id:'room-looks',say:t('제품에 맞춰 골라 드려요'),note:t('고른 옷 · 머리는 사진에서 이 모습 그대로 맞춰요.')});
 // 「이 방향으로 갈게요」 양식의 숨은 칸: 줄을 그릴 때만 두고, 그때는 빈 값(맡김)이라도 늘 보낸다(서버 규칙 — 칸이 없으면 건드리지 않음).
 const lookFields=(d,ui)=>{if(!d.looks)return '';const now=lookOf(lookModel(d,ui),ui);return `<input type="hidden" name="outfit" value="${esc(now.outfit)}"><input type="hidden" name="hair" value="${esc(now.hair)}">`;};
 export function directionView(p,{top='',ui={},journal=''}={}){
@@ -295,8 +300,8 @@ const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item
 // 고객 전용 인물(판 3, persona-view.mjs): 인물이 손님 차례이고 영상 쪽이 손님 차례가 아니면 인물이 「지금 차례」(머리 글 · 카드 · 스크린)가 되고,
 // 영상 쪽도 손님 차례면 인물 카드는 그 아래 제 머리를 단 카드로, 인물이 저희 차례 · 끝이면 작은 한 줄로 선다. 인물이 없으면 판 3 전과 바이트가 같다(기존 줄 안에만 이어 붙인다).
 // 되묻기 차례는 답할 칸이 일지 맨 위에 있어(「아래 칸만 채워 주시면」) 인물 칸을 일지 뒤로 보낸다 — 되묻기 글과 답 칸 사이에 끼지 않게.
-export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail=''}={}){
-  const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main?'':CONFIRM_OF[p.state];
+export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail='',ui={}}={}){
+  const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main||p.photo?'':CONFIRM_OF[p.state];
   // 판 4: 인물 칸 바로 아래 「내 모델로 모아 두기」(앱이 회원 상태를 읽어 넘긴 p.keep이 있을 때만 — 없으면 판 4 전과 같다).
   const keep=p.persona&&p.keep?personaKeep(p.persona,p.keep):'';
   // 내 모델로 맡긴 의뢰인데 서버가 인물을 싣지 않은 다시 쓰기 방(연결 확인 전 · 지금 쓸 수 없는 모델 — 켜기 전 후속 11-11)은 내 모델로 가는 한 줄만 둔다.
@@ -312,7 +317,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
         ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true})+keep:''}
         ${p.state==='pay'?payCard(p):''}
         ${p.state==='done'?doneCard(p):''}
-        ${p.state==='model'&&p.proposal?proposeCard(p.proposal):''}
+        ${p.state==='model'&&p.proposal?proposeCard(p.proposal,ui):''}
         ${p.state==='prepare'&&p.direction?.chosen?chosenCard(p.direction):''}
         ${p.state==='ask'&&!journal?askList(p):''}${late?'':below}
         ${after}
@@ -365,6 +370,8 @@ function copyBase(p){
   if(p.state==='prepare-images'&&p.pay?.status==='confirmed')return {turn:'us',title:k('결제를 확인했어요'),text:k('확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.')};
   if(p.state==='prepare'&&p.direction?.chosen)return {turn:'us',title:k('이 방향으로 정했어요'),text:k('광고가 남길 한 문장과 글 콘티를 만들어 보내 드려요. 보시고 마음에 드시면 그때 크몽 결제를 안내해 드려요.')};
   if(p.state==='redirect'&&p.direction?.last)return {turn:'us',title:k('담당자가 직접 연락드려요'),text:k('주신 말씀을 들고 담당자가 연락드려 함께 정해요. 정해지면 글 콘티를 보내 드려요.')};
+  // 사진 상품의 모델 제안: 장면이 아니라 첫 장을 만들기 전이다.
+  if(p.state==='model'&&p.photo)return {...ROOM_COPY.model,text:k('첫 장을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.')};
   if(p.state==='prepare'&&p.photo)return {turn:'us',title:k('첫 장을 만들고 있어요'),text:k('보내 주신 사진과 의뢰서대로 첫 장을 먼저 보내 드려요. 방향이 맞으면 나머지 장을 만들어요.')};
   if(p.state==='make'&&p.photo)return {turn:'us',title:k('확인하신 첫 장대로 만들고 있어요'),text:k('나머지 장을 같은 결로 만들고 있어요. 다음에 받으실 것은 완성 사진이에요.')};
   if(p.state==='check'&&p.photo)return {...ROOM_COPY.check,text:k('보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 첫 장을 먼저 보내 드려요.')};
@@ -404,14 +411,15 @@ function chosenCard(d){
 // 되묻기: 칸마다 글로 답하거나 파일을 보낸다. 파일만, 글만 보내도 된다.
 function askList(p){return `<ul class="sx-asks" data-room-in>${p.asks.map(item=>`<li><div class="sx-ask-head"><b class="sx-serif">${esc(item.label)}</b>${item.why?`<p class="sx-small">${esc(item.why)}</p>`:''}</div><form class="sx-ask-reply" data-form="ask" data-id="${esc(item.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:item.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-small sx-link"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form></li>`).join('')}${(p.answered||[]).map(item=>`<li class="is-answered"><div class="sx-ask-head"><b>${esc(item.label)}</b><p class="sx-small">${esc(item.answer||item.fileName||t('파일을 보내 주셨어요.'))}</p></div><span class="sx-small">${esc(t('보냈어요'))}</span></li>`).join('')}</ul>`;}
 // 영상 전 첫 확인: 모델을 맡긴 손님에게 저희가 고른 모델을 보여 드린다. 다른 모델은 그 자리에서 고르거나 글로 말할 수 있다.
-function proposeCard(m){
-  return `<section class="sx-propose" data-room-in><h2 class="sx-serif">${esc(nameOf(m.name))}</h2><p class="sx-body sx-propose-line">${esc(t(m.line))}</p>${m.note?`<p class="sx-small">${esc(m.note)}</p>`:''}<div class="sx-propose-actions"><button type="button" class="sx-go is-solid" data-room-do="model-accept"><span>${esc(t('이 모델로 할게요'))}</span>${arrow}</button><button type="button" class="sx-quiet" data-room-do="model-others">${esc(t('다른 모델 보기'))}</button></div>
+function proposeCard(m,ui={}){
+  if(m.looks)seedPropose(m,ui);
+  return `<section class="sx-propose" data-room-in><h2 class="sx-serif">${esc(nameOf(m.name))}</h2><p class="sx-body sx-propose-line">${esc(t(m.line))}</p>${m.note?`<p class="sx-small">${esc(m.note)}</p>`:''}${m.looks?proposeLooks(m,ui):''}<div class="sx-propose-actions"><button type="button" class="sx-go is-solid" data-room-do="model-accept"><span>${esc(t('이 모델로 할게요'))}</span>${arrow}</button><button type="button" class="sx-quiet" data-room-do="model-others">${esc(t('다른 모델 보기'))}</button></div>
     <form class="sx-propose-say" data-form="model-say" data-model-say hidden><label class="sx-field"><span class="sx-small">${esc(t('딱 맞는 모델이 없으면 말로 알려 주세요'))}</span><textarea name="note" rows="2" maxlength="300" required placeholder="${esc(t('예) 조금 더 어린 느낌이면 좋겠어요'))}"></textarea></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('이대로 보내기'))}</span>${arrow}</button></form></section>`;
 }
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
 // onPersona({decision,button}) · onPersonaFiles(purpose,files): 고객 전용 인물 카드(판 3)의 승인 단추와 사진 보내기 — 부른 쪽(app.mjs)이 서버에 보낸다.
 // onKeep() · onMyModels(): 판 4 「내 모델로 모아 두기」와 「내 모델 열기」(persona-view personaKeep).
-export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles,onKeep,onMyModels}={}){
+export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles,onKeep,onMyModels,ui={}}={}){
   const host=root.querySelector('.sx-room,.sx-shell,.sx-draft');if(!host)return {unmount(){}};
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
   const steps=host.querySelector('.sx-steps-run'),current=steps?.querySelector('.is-now');
@@ -422,9 +430,21 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
   }
   const film=host.querySelector('[data-room-film]');if(film&&!reduced())film.play?.().catch(()=>{});else if(film)holdPoster(film);
   host.querySelectorAll('video[data-hold]').forEach(video=>holdPoster(video));
+  // 모델 제안 카드의 옷 · 머리(사진 상품): 누르면 고르고 다시 누르면 맡김. 사진을 못 받으면 사진만 숨기고 이름은 남긴다(글로는 늘 고를 수 있게).
+  // 처음 값: 그릴 때 누른 채로 그린 칸(앞서 정한 값)을 읽는다 — 다시 그릴 때는 ui에 이미 고르던 값이 있다.
+  const lookBoxEl=host.querySelector('[data-room-look]'),lookNow=()=>lookOf(lookBoxEl.dataset.model,ui);
+  if(lookBoxEl)for(const key of ['outfit','hair'])if(ui[key]===undefined)ui[key]=lookBoxEl.querySelector(`[data-room-look-pick="${key}"][aria-pressed="true"]`)?.dataset.value||'';
+  function syncRoomLooks(){
+    const now=lookNow(),any=!!(now.outfit||now.hair),text=lookSum(now);ui.outfit=now.outfit;ui.hair=now.hair;
+    lookBoxEl.querySelectorAll('[data-room-look-pick]').forEach(button=>{const on=now[button.dataset.roomLookPick]===button.dataset.value;button.classList.toggle('is-on',on);button.setAttribute('aria-pressed',on?'true':'false');});
+    const sum=lookBoxEl.querySelector('[data-room-look-sum]'),hint=lookBoxEl.querySelector('[data-room-look-hint]');if(sum){sum.textContent=text;sum.title=text;}if(hint)hint.hidden=any;lookBoxEl.querySelector('.sx-dp-look-say')?.classList.toggle('is-picked',any);
+  }
+  lookBoxEl?.querySelectorAll('.sx-dp-pic img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;},{once:true}));
   host.addEventListener('click',event=>{
     if(event.target.closest('[data-journal],.sx-j-scrim'))return;
     const go=event.target.closest('[data-room-go]');if(go){if(!go.disabled)onGo?.(go.dataset.roomGo);return;}
+    const lookPick=lookBoxEl&&event.target.closest('[data-room-look-pick]');
+    if(lookPick){const key=lookPick.dataset.roomLookPick;ui[key]=ui[key]===lookPick.dataset.value?'':lookPick.dataset.value;syncRoomLooks();return;}
     const model=event.target.closest('[data-room-model]')?.dataset.roomModel;if(model){onModel?.({modelId:model});return;}
     const button=event.target.closest('[data-room-do]'),what=button?.dataset.roomDo;if(!what)return;
     if(what==='persona-approve'){onPersona?.({decision:'approve',button});return;}
@@ -436,8 +456,13 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
     if(what==='contact')onContact?.();
     // 준비 칸(바뀐 내용 · 준비 자료 · 납품 규격): 같은 화면에 있으면 그리로, 아니면(영상 화면) 부른 쪽이 방으로 옮겨 보인다.
     if(what==='paper'){const box=host.querySelector(`[data-paper-for="${CSS.escape(button.dataset.paper||'')}"]`);if(box){box.scrollIntoView({block:'start',behavior:reduced()?'auto':'smooth'});}else onPaper?.(button.dataset.paper||'');}
-    if(what==='model-accept')onModel?.({accept:true});
-    if(what==='model-others'){const box=host.querySelector('[data-model-others]'),say=host.querySelector('[data-model-say]');box.hidden=!box.hidden;if(say)say.hidden=box.hidden;button.textContent=box.hidden?t('다른 모델 보기'):t('이 모델 다시 보기');if(!box.hidden)play(box,[{opacity:0},{opacity:1}],{duration:420});}
+    // 옷 · 머리 줄을 그린 카드에서는 두 칸을 늘(빈 값 = 맡김이라도) 함께 보낸다 — 줄이 없으면(영상 상품 · 옛 서버) 칸을 보내지 않는다.
+    if(what==='model-accept')onModel?.({accept:true,...(lookBoxEl?(now=>({outfit:now.outfit,hair:now.hair}))(lookNow()):{})});
+    if(what==='looks'&&lookBoxEl){const panel=lookBoxEl.querySelector('[data-room-looks]');ui.looks=!ui.looks;panel.hidden=!ui.looks;button.setAttribute('aria-expanded',ui.looks?'true':'false');button.textContent=ui.looks?t('접기'):t('직접 고르기');if(ui.looks)play(panel,[{opacity:0},{opacity:1}],{duration:320});}
+    if(what==='model-others'){const box=host.querySelector('[data-model-others]'),say=host.querySelector('[data-model-say]');box.hidden=!box.hidden;if(say)say.hidden=box.hidden;button.textContent=box.hidden?t('다른 모델 보기'):t('이 모델 다시 보기');if(!box.hidden){play(box,[{opacity:0},{opacity:1}],{duration:420});
+      // 휴대폰에서는 벽이 화면 위쪽 큰 사진 칸에 뜨고 그 칸 높이로 잘린다 — 옷 · 머리를 편 채 아래에서 누르면 벽이 화면 밖이거나 띠만 보인다.
+      // 벽 상자가 아니라 벽이 실제로 보이는 그 칸으로 재서, 칸이 창에 온전히 보이지 않으면 칸째 보이게 굴린다(넓은 화면은 칸이 늘 창에 붙어 있어 굴리지 않는다).
+      const frame=box.closest('.sx-room-screen')||box,at=frame.getBoundingClientRect(),seen=Math.min(at.bottom,innerHeight)-Math.max(at.top,0);if(seen<Math.min(at.height,innerHeight)-1)frame.scrollIntoView({block:'nearest',behavior:reduced()?'auto':'smooth'});}}
   });
   // 예시(앱 밖)에서만 쓴다. 실제 앱은 문서 전체의 폼 처리기가 받는다.
   if(onForm)host.addEventListener('submit',event=>{event.preventDefault();onForm(event.target);});

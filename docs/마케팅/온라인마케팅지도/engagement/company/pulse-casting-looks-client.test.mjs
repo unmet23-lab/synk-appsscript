@@ -172,3 +172,109 @@ test('with nothing picked the summary stays on one line at any sheet width, pick
   // 값 줄: 칸이 글 너비보다 좁아지지 않고 늘 10px 띄운다(칸 400px · 글자 23.8px에서 「11월 21일」과 「2회」가 1px였다, F4).
   assert.ok(css.includes('.sx-dp-kv{display:grid;grid-template-columns:repeat(3,minmax(max-content,1fr));column-gap:10px;'));
 });
+
+// ── 사진 상품(2026-11-12, 설계 10절): 방향 제안이 없어 모델 제안 카드에서 고른다. ──
+function photoProject({proposal={},answers={},flag=true,casting={}}={}){
+  const p=project({answers:{package:'photo',...answers},casting});
+  p.studio.request.modelProposal={modelId:'F02',note:'제품 색과 잘 맞아요',at:'2026-11-12T01:00:00.000Z',by:'김하늘',status:'open',...proposal};
+  if(flag)p.studio.request.modelProposalLooks=true;
+  return p;
+}
+const card=(extra,ui={})=>roomView(roomModel(photoProject(extra)),{ui});
+
+test('a photo order draws the same two rows on the model proposal card, only where they can be taken',()=>{
+  const m=roomModel(photoProject());
+  assert.equal(m.state,'model');
+  assert.deepEqual([m.proposal.looks,m.proposal.key,m.proposal.look],[true,'F02:2026-11-12T01:00:00.000Z',{outfit:'',hair:''}]);
+  const none=extra=>{const info=roomModel(photoProject(extra));assert.equal('looks' in info.proposal,false,JSON.stringify(extra).slice(0,60));assert.doesNotMatch(roomView(info),/data-room-look|직접 고르기|sx-dp-look/);};
+  none({flag:false});                                  // 옛 서버: 줄도 칸도 없다
+  none({answers:{package:'s15'}});                     // 영상 상품은 방향 화면에서 고른다
+  none({answers:{modelChoice:'custom'}});none({answers:{modelChoice:'persona'}});
+  none({casting:{personaRef:{personaId:'11111111-1111-4111-8111-111111111111',revisionId:'22222222-2222-4222-8222-222222222222'}}});
+  assert.equal(roomModel(photoProject({proposal:{status:'accepted'}})).proposal,null,'no card once answered');
+  const html=card();
+  assert.match(html,/<div class="sx-dp-look sx-small" data-room-look data-key="F02:2026-11-12T01:00:00\.000Z" data-model="F02"><p class="sx-dp-look-row"><span class="sx-dp-label">옷 · 머리<\/span><span class="sx-dp-look-say"><b data-room-look-sum title="담당자에게 맡기기">담당자에게 맡기기<\/b><span class="sx-dp-look-hint" data-room-look-hint > · 제품에 맞춰 골라 드려요<\/span><\/span><button type="button" class="sx-quiet sx-dp-look-open" data-room-do="looks" aria-expanded="false" aria-controls="room-looks">직접 고르기<\/button><\/p><div class="sx-dp-looks" id="room-looks" data-room-looks hidden>/);
+  const cells=[...html.matchAll(/<button type="button" class="sx-dp-pic" aria-pressed="false" aria-label="([^"]+)" title="([^"]+)" data-room-look-pick="(outfit|hair)" data-value="([^"]+)"><img src="([^"]+)" alt="" loading="lazy" decoding="async"><span class="sx-small">([^<]+)<\/span><\/button>/g)].map(x=>[x[3],x[4],x[1]]);
+  assert.deepEqual(cells,[['outfit','fullbody','기본 옷'],['outfit','look-1','파스텔 캐주얼'],['outfit','look-2','스트라이프 원피스'],['hair','original','기본 · 어깨 길이 레이어드'],['hair','look-2','하이 포니테일'],['hair','look-3','긴 웨이브']]);
+  assert.match(html,/<p class="sx-dp-look-note">고른 옷 · 머리는 사진에서 이 모습 그대로 맞춰요\.<\/p>/,'photo wording — there are no scene images here');
+  assert.doesNotMatch(html,/방향에 맞춰 골라 드려요|장면 이미지에서 이 사진 그대로/);
+  // 줄은 모델 설명 아래, 「이 모델로 할게요」 위에 선다.
+  assert.ok(html.indexOf('sx-propose-line')<html.indexOf('data-room-look ')&&html.indexOf('data-room-look ')<html.indexOf('data-room-do="model-accept"'));
+  assert.doesNotMatch(html,/data-dp-look|id="dp-looks"/,'the direction screen names are not reused in the room');
+});
+
+test('the card keeps what was being picked across a redraw, and starts from the earlier picks for the same model',()=>{
+  const redraw=card({}, {outfit:'look-2',hair:'',looks:true});
+  assert.equal((redraw.match(/class="sx-dp-pic is-on" aria-pressed="true"/g)||[]).length,1);
+  assert.match(redraw,/aria-pressed="true" aria-label="스트라이프 원피스" title="스트라이프 원피스" data-room-look-pick="outfit" data-value="look-2">/);
+  assert.match(redraw,/<span class="sx-dp-look-say is-picked"><b data-room-look-sum title="옷 스트라이프 원피스 · 머리 맡김">옷 스트라이프 원피스 · 머리 맡김<\/b><span class="sx-dp-look-hint" data-room-look-hint hidden>/);
+  assert.match(redraw,/aria-expanded="true" aria-controls="room-looks">접기<\/button><\/p><div class="sx-dp-looks" id="room-looks" data-room-looks >/);
+  // 같은 모델로 앞서 정한 값이 있으면(다시 제안) 그 값에서 시작하고, 다른 모델의 값은 넘어오지 않는다.
+  assert.deepEqual(roomModel(photoProject({answers:{models:['F02'],outfit:'look-1',hair:'look-3'}})).proposal.look,{outfit:'look-1',hair:'look-3'});
+  assert.deepEqual(roomModel(photoProject({answers:{models:['M06'],outfit:'look-1',hair:'look-3'}})).proposal.look,{outfit:'',hair:''});
+  assert.match(card({answers:{models:['F02'],outfit:'look-1',hair:''}}),/aria-pressed="true" aria-label="파스텔 캐주얼" title="파스텔 캐주얼" data-room-look-pick="outfit" data-value="look-1">/);
+  // 다른 제안은 열쇠가 달라 고르던 값을 물려받지 않는다(app.mjs s.proposeUi).
+  assert.notEqual(roomModel(photoProject({proposal:{at:'2026-11-12T02:00:00.000Z'}})).proposal.key,roomModel(photoProject()).proposal.key);
+});
+
+test('the room sends both fields with the accept only when the row is drawn, and keeps the picks in the app state',()=>{
+  const views=read('film-views.mjs'),app=read('app.mjs');
+  assert.match(views,/if\(what==='model-accept'\)onModel\?\.\(\{accept:true,\.\.\.\(lookBoxEl\?\(now=>\(\{outfit:now\.outfit,hair:now\.hair\}\)\)\(lookNow\(\)\):\{\}\)\}\);/);
+  assert.match(views,/const lookBoxEl=host\.querySelector\('\[data-room-look\]'\)/);
+  assert.match(views,/if\(lookPick\)\{const key=lookPick\.dataset\.roomLookPick;ui\[key\]=ui\[key\]===lookPick\.dataset\.value\?'':lookPick\.dataset\.value;syncRoomLooks\(\);return;\}/,'press again to leave it to us');
+  assert.match(app,/const proposeKey=room\?main\.querySelector\('\[data-room-look\]'\)\?\.dataset\.key\|\|'':'';if\(proposeKey&&s\.proposeUi\?\.key!==proposeKey\)s\.proposeUi=\{key:proposeKey\};/);
+  assert.match(app,/mountRoom\(main,\{animate,ui:proposeKey\?s\.proposeUi:\{\},/);
+  assert.match(read('views.mjs'),/ui:info\.proposal\?\.key&&s\.proposeUi\?\.key===info\.proposal\.key\?s\.proposeUi:\{\}\}\);/);
+  // 사진 상품은 글 콘티가 없다 — 정한 뒤 글이 「첫 장」을 말한다.
+  assert.match(app,/photo\?t\('모델을 정했어요\. 첫 장을 준비해 보내 드릴게요\.'\):t\('모델을 정했어요\. 글 콘티를 준비해 보내 드릴게요\.'\)/);
+  const en=read('i18n/en.mjs');
+  for(const key of ['제품에 맞춰 골라 드려요','고른 옷 · 머리는 사진에서 이 모습 그대로 맞춰요.','모델 {name}{ro} 정했어요 · {look}','모델을 정했어요. 첫 장을 준비해 보내 드릴게요.'])assert.ok(en.includes(`"${key}":`),key);
+  // 옷 · 머리 칸에 둔 자판 초점은 실시간 다시 그리기 뒤 같은 칸으로 돌아간다(F4).
+  assert.match(app,/look:previousFocus\.dataset\.roomLookPick\?previousFocus\.dataset\.roomLookPick\+':'\+previousFocus\.dataset\.value:''\}:null;/);
+  assert.match(app,/focusKey\.look\?node\.dataset\.roomLookPick\+':'\+node\.dataset\.value===focusKey\.look:focusKey\.room\?/);
+  // 「다른 모델 보기」 벽이 뜨는 큰 사진 칸이 창에 온전히 보이지 않으면(휴대폰에서 옷 · 머리를 편 채 아래에서 누름) 칸째 보이게 굴린다(F3).
+  // 벽 상자가 아니라 벽을 자르는 그 칸으로 잰다 — 벽 상자로 재면 띠만 보이는 자리에서 굴리지 않았다(다시 검수 FA1).
+  assert.match(views,/const frame=box\.closest\('\.sx-room-screen'\)\|\|box,at=frame\.getBoundingClientRect\(\),seen=Math\.min\(at\.bottom,innerHeight\)-Math\.max\(at\.top,0\);if\(seen<Math\.min\(at\.height,innerHeight\)-1\)frame\.scrollIntoView\(\{block:'nearest',behavior:reduced\(\)\?'auto':'smooth'\}\);/);
+});
+
+test('a photo order does not speak of films on the model proposal screen',()=>{
+  // 사진 상품의 고객 방은 「영상 전 확인 n/3」을 달지 않고, 모델 제안의 안내는 「첫 장을 만들기 전에」다(F5).
+  const html=card();
+  assert.doesNotMatch(html,/영상 전 확인|장면을 만들기 전에/);
+  assert.match(html,/첫 장을 만들기 전에 모델부터 정해요\. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요\./);
+  // 영상 상품의 모델 제안은 그대로다.
+  const film=roomView(roomModel(photoProject({answers:{package:'s15'}})));
+  assert.match(film,/<span>영상 전 확인 <b class="sx-no">1\/3<\/b><\/span>/);
+  assert.match(film,/장면을 만들기 전에 모델부터 정해요\./);
+  assert.ok(read('i18n/en.mjs').includes(`'첫 장을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.':`));
+});
+
+test('after the model is set, the journal and the desk show the picked outfit and hair; all left to us stays short',()=>{
+  const set=look=>photoProject({proposal:{status:'accepted',answeredAt:'2026-11-12T02:00:00.000Z',...(look?{look}:{})},answers:{models:['F02'],...(look||{})}});
+  const p=set({outfit:'look-2',hair:''});
+  assert.equal(journalModel(p).items.find(item=>item.id==='o:2026-11-12T01:00:00.000Z:ok').what,'모델 하린으로 정했어요 · 옷 스트라이프 원피스 · 머리 맡김');
+  assert.equal(journalModel(set({outfit:'',hair:''})).items.find(item=>item.id==='o:2026-11-12T01:00:00.000Z:ok').what,'모델 하린으로 정했어요');
+  assert.equal(journalModel(set()).items.find(item=>item.id==='o:2026-11-12T01:00:00.000Z:ok').what,'모델 하린으로 정했어요','an older record has no look');
+  // 그 뒤 모델이 바뀌었으면(다른 모델로 바꾸기) 옛 모델의 옷 · 머리를 새 모델 이름 옆에 적지 않는다.
+  const moved=set({outfit:'look-2',hair:''});moved.studio.request.answers.models=['M06'];
+  assert.doesNotMatch(journalModel(moved).items.find(item=>item.id==='o:2026-11-12T01:00:00.000Z:ok').what,/옷 /);
+  assert.equal(deskModel(p).modelProposal.lookText,'옷 스트라이프 원피스 · 머리 맡김');
+  assert.match(deskView({...deskModel(p),queue:[]}),/고객이 정했어요<\/p><p class="desk-sum" data-desk-model-look>옷 스트라이프 원피스 · 머리 맡김<\/p>/);
+  assert.equal(deskModel(set({outfit:'',hair:''})).modelProposal.lookText,undefined);
+  assert.doesNotMatch(deskView({...deskModel(set({outfit:'',hair:''})),queue:[]}),/data-desk-model-look/);
+  assert.equal(deskModel(photoProject()).modelProposal.lookText,undefined,'an open proposal shows nothing yet');
+  // 첫 장 카드: 고른 것이 있으면 사진 상품에도 같은 한 줄과 그 옷 사진(다 맡겼으면 줄이 없다 — 위 시험).
+  const sheet=set({outfit:'look-2',hair:''});sheet.studio.strategy.data.castingSelection={modelId:'F02',outfit:'look-2',hair:''};
+  sheet.studio.scenes=[{id:'s1',revision:1,title:'컷 1',description:'캔을 든 반신',duration:3}];sheet.studio.request.rounds=[{round:1,kind:'script',oneLine:'한 줄',scenes:[{id:'s1',revision:1}],sentAt:'x'}];
+  assert.match(draftView(draftModel(sheet)),/<img src="\.\/assets\/casting\/photos\/f02-look-2\.webp" alt="" class="is-outfit"><span class="sx-small"><b>하린<\/b> [^<]*<span class="sx-draft-look">옷 스트라이프 원피스 · 머리 맡김<\/span>/);
+});
+
+test('the card row uses the card width and the shared look styles are not tied to the direction sheet',()=>{
+  const css=read('film.css');
+  // min-width:0 — 카드는 grid라 이것이 없으면 고른 이름(한 줄 글)만큼 줄이 넓어져 휴대폰 화면이 가로로 넘친다(Fable 5.2 F1 — 이름이 긴 모델, 390 폭에서 106px).
+  assert.match(css,/\.sx-propose>\.sx-dp-look\{justify-self:stretch;width:100%;min-width:0;max-width:520px;margin-top:8px;padding-top:10px;border-top:1px solid var\(--sx-rule\)\}/);
+  // 고른 뒤 접어 두면 카드에서도 요약이 꺾여 이름이 다 보인다(방향 화면 규칙은 그 화면의 펼침 칸 이름에 묶여 있다 — F2).
+  assert.match(css,/\.sx-dp-look:has\(\[data-room-looks\]\[hidden\]\) \.sx-dp-look-say\.is-picked\{max-height:none;overflow:visible\}/);
+  assert.match(css,/\.sx-dp-look:has\(\[data-room-looks\]\[hidden\]\) \.sx-dp-look-say\.is-picked>b\{white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all\}/);
+  for(const rule of ['.sx-dp-look-row{','.sx-dp-looks{','.sx-dp-look-set{','.sx-dp-pics{','.sx-dp-pic{'])assert.ok(css.includes('\n'+rule)||css.includes('\r\n'+rule),rule+' is a top-level rule');
+});
