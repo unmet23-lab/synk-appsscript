@@ -38,7 +38,7 @@
 
 - 일레븐 v4 새 배역은 공식 API가 힉스필드 경유보다 약 5배 싸다 → 공유 목소리를 더해 굽고 값은 머리글로 읽는다 (아래 「목소리·받아쓰기」 끝)
 - Remotion에서 CSS `mask-image: url()`을 쓰면 렌더마다 몇 프레임씩 가면이 빠진다(11-09 M32 여섯 장) → 기다리는 `<Img>`에 `crossOrigin="anonymous"`, 낼 판은 번지는 구간을 낱프레임으로 잰다 (아래 「렌더(Remotion·Playwright)」 끝)
-- 새 편의 Remotion 틀과 부품 폴더는 `node tools/새편.js <편 폴더> --실행`으로 세운다(11-11, synkbrief 줄부터) — 앞 편의 `remotion/`을 복사하거나 `node_modules`를 편끼리 잇지 않는다. 옛 편 · 연결이 끊긴 편도 같은 명령이고 그때는 부품만 잇는다 ([자세히](#remotion-parts))
+- 새 편의 Remotion 틀과 부품 폴더는 `node tools/새편.js <편 폴더> --실행`으로 세운다(synkbrief 11-12 · LAB 11-13부터, LAB 노래 · 퀴즈 편은 제 틀) — 앞 편의 `remotion/`을 복사하거나 `node_modules`를 편끼리 잇지 않는다. 옛 편 · 연결이 끊긴 편도 같은 명령이고 그때는 부품만 잇는다 ([자세히](#remotion-parts))
 
 ## 목차
 
@@ -622,7 +622,7 @@
 ### 편끼리 이은 `node_modules` 사슬은 머리가 지워지면 뒤 편이 다 죽는다 — 부품 폴더는 `새편.js`가 저장소 밖 한 곳에 잇는다 (2026-11-11 Claude)
 - 증상: 11-11 공용 작업본의 편 78곳이 옛 편 하나(`LAB_처음쓰는ㄹ_20261024`)의 실폴더에 매달려 있었다. 44곳만 바로 가리키고 나머지는 편에서 편으로 이어져, synkbrief 줄은 아홉 편이 줄줄이였다. 틀 파일도 앞 편을 복사하며 갈라졌다(11월 35편에 `fonts.ts` 세 판 · `tsconfig.json` 두 판).
 - 원인: 예약 회차 절차가 「가장 최근 같은 브랜드 편으로 junction」이었다. 그리고 사슬 머리는 공간 지킴이가 지우는 꼴이다 — 편 폴더 안의 실폴더이고 `package-lock.json`이 있으면, 48시간 조용하고 C: 여유가 320GB 아래일 때 지운다(바로 위 10-24 · 10-27 절이 그렇게 비워진 머리다). 지금까지는 날마다 누가 렌더해 살아 있었을 뿐이다.
-- 고침: `node tools/새편.js <편 폴더> --실행`(처음 깔 때만 몇 분). 틀 파일(설정 · `src/index.ts` · `src/lib/fonts.ts` · 글꼴 다섯)을 원천 `tools/편틀`에서 찍고 `remotion/node_modules`를 `%LOCALAPPDATA%\synk\remotion-parts\<열쇠>\node_modules`에 잇는다. 이미 있는 옛 편에 돌리면 틀은 건드리지 않고 부품만 잇는다. 편만의 서체 · 설정은 틀 파일을 고치지 않고 편 파일(`src/lib/편서체.ts`)에 둔다 — 고친 틀 파일은 `tests/편틀.test.js`가 올리기 전에 알린다(synkbrief 11-15부터). 부품 자리가 비었거나 없으면 같은 명령이 같은 자리에 다시 깐다(`node tools/새편.js 부품 --실행`).
+- 고침: `node tools/새편.js <편 폴더> --실행`(처음 깔 때만 몇 분). 틀 파일(설정 · `src/index.ts` · `src/lib/fonts.ts` · 글꼴 다섯)을 원천 `tools/편틀`에서 찍고 `remotion/node_modules`를 `%LOCALAPPDATA%\synk\remotion-parts\<열쇠>\node_modules`에 잇는다. 이미 있는 옛 편에 돌리면 틀은 건드리지 않고 부품만 잇는다. 편만의 서체 · 설정은 틀 파일을 고치지 않고 편 파일(`src/lib/편서체.ts`)에 둔다 — 고친 틀 파일은 `tests/편틀.test.js`가 올리기 전에 알린다(synkbrief 11-15 · LAB 11-16 편부터). 부품 자리가 비었거나 없으면 같은 명령이 같은 자리에 다시 깐다(`node tools/새편.js 부품 --실행`).
 - 다시 확인: `node tools/새편.js <편 폴더>`(미리 보기)가 「부품: 이어져 있음 → …remotion-parts…」와 「할 일 없다」를 보인다. 사본을 지우기 전에는 지금처럼 연결부터 끊는다(예약 회차는 `예약사본.js 끝`). 재기 · 대조 숫자는 [편 틀 설계](../_ops/qa/작업방식정리_20261110/3단계_편틀_설계.md).
 
 ### 같은 Remotion 프로젝트를 두 번 렌더해도 프레임이 바이트로 같지 않다 — 두 길을 견줄 때는 같은 길 두 번의 차이를 바탕값으로 잡는다 (2026-11-11 Claude)
