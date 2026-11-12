@@ -385,12 +385,13 @@ test('host.issued()는 번호로 합친다 — 제시가 기록부에 든 뒤 �
   const time = clock();
   const base = memoryPort();
   let gate = null;
-  // 손님 요약(kind: 'local') 쓰기만 붙든다 — 느린 IndexedDB 쓰기 흉내(64개째 사건에서 손님이 요약을 다시 접는다).
+  // 꼬리 읽기만 붙든다 — 64개째 사건에서 손님이 요약을 다시 접는데(계산 전에 꼬리부터 읽는다), 그 동안 그 사건은 기록부에 들었지만
+  // 저장 끝(stored)은 아직 안 풀린다. 손님 요약 저장은 뒤로 갔으므로(단계 4 §18-5-1 R2) 그 틈을 꼬리 읽기로 만든다 — 느린 IndexedDB 흉내.
   const port = {
     ...base,
-    append: async values => {
-      if (gate && values.some(value => value.kind === 'local')) await gate.promise;
-      return base.append(values);
+    range: async after => {
+      if (gate) await gate.promise;
+      return base.range(after);
     },
   };
   const key = keyOf('dup');

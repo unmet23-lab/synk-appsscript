@@ -8,6 +8,10 @@
 //   ④ 손님(동의 꺼진 계정 포함)은 기기가 원천이다 — 사건을 다 들고 같은 어댑터 · 근거 줄로 요약을 스스로 접는다.
 // 기록 꼴(포트의 값): { kind: 'event', event, touches? } · { kind: 'ack', acks: [[id, seq]], clamped, dropped, summary?, offsetMs? }
 //                    · { kind: 'local', summary, until }(손님이 스스로 접은 요약 — until = 그 요약에 든 마지막 포트 열쇠)
+//   치우기의 합친 표지는 swept: { at }를 싣는다 — 다른 탭은 꼬리에서 그것을 만나면 포트를 통째로 다시 읽는다(단계 4 §18-5-5 A6).
+//   파생 기록(손님 요약 · 치우기 · 옮기기)을 쓰는 일은 호스트의 차례(src/coach/turn.mjs) 안에서 한다 — 기록부가 스스로 차례를
+//   청하는 곳은 차례 밖에서 시작된 손님 요약 저장 하나뿐이고(exclusive), 호스트가 「차례 안」으로 둔 동안에는 다시 청하지 않는다
+//   (Web Locks는 다시 들어갈 수 없다 — 단계 4 §18-5-1 R1 · s8).
 import { overlay } from '../fold/device.mjs';
 import { deviceKey, EMPTY_INDEX, groupsOf } from './adapt.mjs';
 import { createClock } from './clock.mjs';
@@ -25,6 +29,8 @@ import {
 } from './summary.mjs';
 
 export const KEEP_MS = 2 * 86_400_000;
+// 치우기는 하루 한 번(어느 탭이든 — 합친 표지의 swept.at으로 잰다, 단계 4 §18-3 · A6).
+export const SWEEP_EVERY_MS = 86_400_000;
 const GUEST_REFOLD = 64;
 
 const randomTag = () =>
@@ -80,11 +86,36 @@ function createState(guest, now) {
     unsaved: new Set(), // 이 기록부에서 저장에 실패한(또는 부모가 없어 쓰지 않은) 사건 번호
     inflight: new Map(), // 저장 중인 사건 번호 → 그 저장 약속(자식은 부모의 저장이 끝난 뒤 결과를 보고 쓴다)
     lastAttempt: new Map(), // 제시 번호 → 이 기록부가 만든 그 제시의 마지막 답 번호(뒤 답은 앞 답에 기대어 쓴다 — §18-4)
+    turnDepth: 0, // 호스트가 쥔 차례 안(§18-5-1 R1) — 0보다 크면 기록부가 차례를 다시 청하지 않는다
+    saving: null, // 손님 요약 저장(하나씩 — 저장하는 사이 새로 접힌 요약은 dirty로 한 번 더)
+    dirty: false,
+    resync: false, // 꼬리에서 다른 탭의 치운 표시를 만났다 — 포트를 통째로 다시 읽는다(A6)
+    ownSweeps: new Set(), // 이 기록부가 쓴 치운 표시 기록의 열쇠
+    sweptAt: 0, // 가장 늦은 치우기의 시각(서버 시각을 고친 기기 시각 — 포트에서 읽은 값)
+    serverTimed: false, // 이 세션에 서버의 답에서 서버 시각을 받았다 — 치우기는 그 뒤에만(A6)
     positions: 0,
     seqInMs: 0,
     lastMs: -1,
     clock: createClock({ now }),
   };
+}
+
+// 포트에서 읽어 세운 값만 비운다(치운 뒤 다시 읽기 — A6). 이 기록부가 만든 쓰기의 상태(저장 실패 · 저장 중 · 앞 답 · 계열 · 번호)와
+// 시계 · 차례 · 서버 시각을 받았는지는 그대로 둔다.
+function resetRead(state) {
+  state.held = new Map();
+  state.acks = new Map();
+  state.clamped = new Set();
+  state.dropped = new Set();
+  state.summary = null;
+  state.summaryKey = 0;
+  state.summaryRows = new Set();
+  state.local = null;
+  state.localRows = new Set();
+  state.lastKey = 0;
+  state.readKey = 0;
+  state.positions = 0;
+  state.sweptAt = 0;
 }
 
 function takeEvent(state, value, key) {
@@ -99,7 +130,7 @@ function takeEvent(state, value, key) {
   state.clock.know(Date.parse(value.event.at));
 }
 
-function takeAck(state, value, now) {
+function takeAck(state, value, key, now) {
   for (const [id, seq] of value.acks ?? []) state.acks.set(id, seq);
   for (const id of value.clamped ?? []) state.clamped.add(id);
   for (const id of value.dropped ?? []) state.dropped.add(id);
@@ -107,6 +138,10 @@ function takeAck(state, value, now) {
   const next = unpackSummary(value.summary);
   if (newer(state.summary, next)) state.summary = next;
   if (state.summary) state.clock.know(state.summary.latestAt);
+  if (value.swept) {
+    state.sweptAt = Math.max(state.sweptAt, value.swept.at ?? 0);
+    if (!state.ownSweeps.has(key)) state.resync = true;
+  }
 }
 
 function takeSummary(state, value, key) {
@@ -119,16 +154,22 @@ function takeSummary(state, value, key) {
   if (state.summary) state.clock.know(state.summary.latestAt);
 }
 
-function take(state, { key, value }, now) {
+// 손님 요약 기록 — 판 묶음이 다른 것(다른 판 엔진의 탭이 쓴 것)은 받지도 지우지도 않는다. 보기의 바탕은 늘 내 판 묶음으로 접은
+// 요약이다(§18-5-1 R3 — 없으면 refoldGuest가 그 자리에서 메모리로 접는다).
+function takeLocal(state, value, key, edition) {
+  const summary = unpackSummary(value.summary);
+  if (summary?.edition !== edition) return;
+  state.localRows.add(key);
+  if (!state.local || value.until >= state.local.until)
+    state.local = { summary, until: value.until, key };
+}
+
+function take(state, { key, value }, now, edition) {
   state.lastKey = Math.max(state.lastKey, key);
   if (value.kind === 'event') takeEvent(state, value, key);
-  else if (value.kind === 'ack') takeAck(state, value, now);
+  else if (value.kind === 'ack') takeAck(state, value, key, now);
   else if (value.kind === 'summary') takeSummary(state, value, key);
-  else if (value.kind === 'local') {
-    state.localRows.add(key);
-    if (!state.local || value.until >= state.local.until)
-      state.local = { summary: unpackSummary(value.summary), until: value.until, key };
-  }
+  else if (value.kind === 'local') takeLocal(state, value, key, edition);
 }
 
 const entryOf = item => ({
@@ -234,10 +275,12 @@ export function createRecord({
   health = null,
   now = () => Date.now(),
   tag = randomTag(),
+  // 차례 밖에서 시작된 손님 요약 저장이 청하는 차례(호스트의 turn — (job, work) => 약속). 없으면 그대로 쓴다.
+  exclusive = (_job, work) => work(),
 }) {
   const state = createState(guest, now);
   const edition = () => foldEdition(params, index);
-  const accept = row => take(state, row, now);
+  const accept = row => take(state, row, now, edition());
 
   // 손님: 든 사건으로 요약을 스스로 접는다(서버와 같은 어댑터 · 근거 줄 · 접기).
   async function refoldGuest() {
@@ -257,10 +300,58 @@ export function createRecord({
       .filter(event => isIssued(event) && Date.parse(event.at) >= floor)
       .map(issuedRow);
     const next = { ...emptySummary(edition()), lines, issued, lineSeq: until, foldedUntil: until };
-    const value = { kind: 'local', summary: packSummary(next), until };
-    const [key] = await port.append([value]);
-    accept({ key, value });
-    await dropRows(state.localRows, state.local?.key ?? key);
+    // 보기의 바탕은 이 메모리 요약이다 — 탭 하나여도 차례 없이 선다(s2). 저장은 뒤에서, 아무도 기다리지 않는다(§18-5-1 R2 —
+    // coach.ready · 사건의 stored · 판 끝의 folded는 이 계산까지만 기다린다).
+    state.local = { summary: next, until, key: null };
+    void saveLocal();
+  }
+
+  // 손님 요약 저장 — 하나씩, 저장하는 사이 새로 접힌 요약이 있으면 한 번 더. 호스트의 차례 안이면 그대로 쓰고, 밖이면 차례를 청한다
+  // (exclusive — 못 얻으면 이번 저장만 건너뛴다, §18-5-1 R1 · R2). 저장 실패는 계기에만 — 사건 저장과 보기는 이미 섰다(아르곤 끝 판 D5).
+  function saveLocal() {
+    if (state.saving) {
+      state.dirty = true;
+      return state.saving;
+    }
+    state.saving = (async () => {
+      do {
+        state.dirty = false;
+        if (!(await saveOnce())) break;
+      } while (state.dirty);
+    })().finally(() => {
+      state.saving = null;
+    });
+    return state.saving;
+  }
+
+  async function saveOnce() {
+    const local = state.local;
+    if (!local || local.key != null) return false;
+    const value = { kind: 'local', summary: packSummary(local.summary), until: local.until };
+    const write = async () => {
+      const [key] = await port.append([value]);
+      accept({ key, value });
+      await dropRows(state.localRows, state.local?.key ?? key);
+    };
+    try {
+      await (state.turnDepth > 0 ? write() : exclusive('summary', () => within(write)));
+      return true;
+    } catch (error) {
+      if (error?.code === 'TURN_BUSY')
+        health?.note('save', { ok: false, code: 'TURN_BUSY', dependent: true });
+      else noteSave(health, false, 'LOCAL_SUMMARY');
+      return false;
+    }
+  }
+
+  // 차례 안 — 기록부 스스로 청한 차례(손님 요약 저장)도 그 동안은 다시 청하지 않는다(호스트의 enterTurn과 같은 표시).
+  async function within(work) {
+    state.turnDepth += 1;
+    try {
+      return await work();
+    } finally {
+      state.turnDepth -= 1;
+    }
   }
 
   // 새 요약이 선 뒤 앞 요약 기록을 지운다 — 요약을 기록마다 통째로 쌓으면 문항 수백 개 뒤 저장소가 수십 MB가 된다(Fable 끝 판 P1).
@@ -331,11 +422,30 @@ export function createRecord({
     return result;
   }
 
-  async function refresh() {
+  async function readTail() {
     for (const row of await port.range(state.readKey)) {
       accept(row);
       state.readKey = Math.max(state.readKey, row.key);
     }
+  }
+
+  // 꼬리를 읽는다 — 다른 탭의 치운 표시를 만났으면 포트를 통째로 다시 읽는다(A6).
+  async function refresh() {
+    await readTail();
+    for (let guard = 0; state.resync && guard < 3; guard += 1) await reload();
+  }
+
+  // 다른 탭이 치웠다 — 메모리 사본을 버리고 포트를 통째로 다시 읽는다. 표지를 읽기 전에 치워진 사건이 받은 표지 없이 남아 두 번
+  // 얹히지 않게(§18-5-5 A6). 다시 읽은 스냅숏 뒤에 끝난 덧붙이기는 꼬리로 한 번 더 읽는다.
+  async function reload() {
+    const rows = await port.read();
+    resetRead(state);
+    for (const row of rows) {
+      accept(row);
+      state.readKey = Math.max(state.readKey, row.key);
+    }
+    state.resync = false;
+    await readTail();
   }
 
   return {
@@ -344,6 +454,7 @@ export function createRecord({
         accept(row);
         state.readKey = Math.max(state.readKey, row.key);
       }
+      state.resync = false; // 처음부터 통째로 읽었다 — 앞의 치운 표시는 다 반영됐다
       if (guest) await refoldGuest();
       return this;
     },
@@ -412,6 +523,7 @@ export function createRecord({
       summary = null,
       serverTime = null,
     }) {
+      if (Number.isFinite(serverTime)) state.serverTimed = true;
       const next = nextSummary(state, summary);
       // 달라진 것이 없는 답(받은 표지 · 누른 것 · 버린 것 · 새 요약이 없는 GET)은 기록을 쓰지 않는다 — 빈 표지가 쌓이고 다른 탭을
       // 깨웠다(단계 4 §18-5-5 B5). 서버 시각과의 차이만 이 기록부의 시계에 맞춘다.
@@ -465,6 +577,18 @@ export function createRecord({
       while (state.inflight.size) await Promise.allSettled([...state.inflight.values()]);
     },
     pending: () => pendingIds(state),
+    // 호스트가 차례 안에서 일을 시작하고 끝낼 때(§18-5-1 R1) — 그 동안 기록부는 차례를 다시 청하지 않는다.
+    enterTurn() {
+      state.turnDepth += 1;
+    },
+    leaveTurn() {
+      state.turnDepth = Math.max(0, state.turnDepth - 1);
+    },
+    // 뒤에서 도는 손님 요약 저장이 끝날 때까지(호스트가 포트를 닫기 전 · 시험).
+    localSaved: () => state.saving ?? Promise.resolve(),
+    // 치울 때가 됐나 — 이 세션에 서버 시각을 받았고, 마지막 치우기(어느 탭이든)에서 하루가 지났다(A6 · §18-3 「하루 한 번」).
+    compactDue: () =>
+      !guest && state.serverTimed && now() + state.clock.offsetMs - state.sweptAt >= SWEEP_EVERY_MS,
     has: id => state.held.has(id),
     heldEvent: id => state.held.get(id)?.event ?? null,
     heldEvents: () =>
@@ -474,11 +598,14 @@ export function createRecord({
     // 오래되고 서버가 접은 사건 · 지난 표지 기록을 치운다. 답이 아직 안 달린 제시와 얹을 사건의 부모는 둔다.
     // 먼저 남길 표지 · 요약을 한 기록으로 덧붙이고 나서 앞 기록을 지운다(그 사이 끊겨도 겹친 표지는 해가 없다).
     // 지우는 것은 이 스냅숏에 담은 차례(seen)까지다 — 다른 탭이 그 뒤에 덧붙인 표지 · 사건은 남긴다(아르곤 끝 판 D3).
+    // 치우기는 이 세션에 서버 시각을 한 번 받은 뒤에만 한다 — 틀린 기기 시계로 이틀을 재지 않게(§18-5-5 A6). 합친 표지에 치운 표시를
+    // 싣는다 — 다른 탭은 그것을 만나면 포트를 통째로 다시 읽는다.
     async compact() {
-      if (guest) return 0;
+      if (guest || !state.serverTimed) return 0;
       await refresh();
       const seen = state.readKey;
-      const gone = new Set(staleIds(state, now() + state.clock.offsetMs - KEEP_MS));
+      const at = Math.round(now() + state.clock.offsetMs);
+      const gone = new Set(staleIds(state, at - KEEP_MS));
       const kept = id => state.held.has(id) && !gone.has(id);
       const value = {
         kind: 'ack',
@@ -486,8 +613,10 @@ export function createRecord({
         clamped: [...state.clamped].filter(kept),
         dropped: [...state.dropped].filter(kept),
         offsetMs: state.clock.offsetMs,
+        swept: { at },
       };
       const [keepKey] = await port.append([value]);
+      state.ownSweeps.add(keepKey);
       accept({ key: keepKey, value });
       const isStale = row =>
         row.key <= seen &&

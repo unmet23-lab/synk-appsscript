@@ -545,6 +545,7 @@ test('부모 저장이 실패하면 자식은 쓰지 않고(올리기가 막히�
     await guest.saved();
     await guest.refold();
   }
+  await guest.localSaved(); // 손님 요약 저장은 뒤에서 돈다(§18-5-1 R2)
   assert.equal((await guestPort.read()).filter(row => row.value.kind === 'local').length, 1);
   // ③ 두 탭 — 다른 탭이 먼저 쓴(열쇠가 더 앞인) 기록을 내 덧붙이기가 지나쳐도 꼬리 읽기가 건너뛰지 않는다.
   const shared = memoryPort();

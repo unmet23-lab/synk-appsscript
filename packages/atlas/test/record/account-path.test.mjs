@@ -205,6 +205,7 @@ test('손님 요약은 포트에서 차례대로 읽은 데까지만 접는다 �
   };
   await a.refold();
   await a.refresh(); // 이제 다른 탭 답(열쇠 n)을 읽는다
+  await a.localSaved(); // 손님 요약 저장은 뒤에서 돈다(§18-5-1 R2)
   const rows = await port.read();
   const otherKey = rows.find(row => row.value.event?.id === otherId).key;
   const local = rows.filter(row => row.value.kind === 'local').at(-1);

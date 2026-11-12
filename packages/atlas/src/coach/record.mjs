@@ -57,7 +57,18 @@ function leadAt(record, family, at, index) {
   };
 }
 
-export async function openTrail({ port, revision, guest, memory, params, index, health, now }) {
+// exclusive: 호스트의 차례(turn) — 기록부가 차례 밖에서 시작된 손님 요약 저장에만 청한다(§18-5-1 R1).
+export async function openTrail({
+  port,
+  revision,
+  guest,
+  memory,
+  params,
+  index,
+  health,
+  now,
+  exclusive,
+}) {
   const record = await openRecord({
     port,
     revision,
@@ -67,6 +78,7 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     index,
     health,
     ...(now ? { now } : {}),
+    ...(exclusive ? { exclusive } : {}),
   });
   const clockNow = now ?? (() => Date.now());
   const nowMs = () => Math.round(clockNow() + record.clock.offsetMs);
@@ -100,6 +112,12 @@ export async function openTrail({ port, revision, guest, memory, params, index, 
     heldEvents: () => record.heldEvents(),
     summary: () => record.summary,
     pending: () => record.pending(),
+    // 호스트가 차례 안에서 일을 할 때(그 동안 기록부는 차례를 다시 청하지 않는다) · 뒤의 손님 요약 저장 · 하루 한 번 치우기(A6).
+    enterTurn: () => record.enterTurn(),
+    leaveTurn: () => record.leaveTurn(),
+    localSaved: () => record.localSaved(),
+    compactDue: () => record.compactDue(),
+    compact: () => record.compact(),
     // 고르기의 지금 시각 — 서버 시각과의 차이를 고친 기기 시각(사건 시각과 같은 시계).
     now: nowMs,
   };

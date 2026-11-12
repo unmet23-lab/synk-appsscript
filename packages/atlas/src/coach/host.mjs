@@ -15,7 +15,9 @@ import { carriedFields, carriedSoFar, legacyToImport } from '../record/carry.mjs
 import { EVENT_TYPES } from '../record/events.mjs';
 import { idbPort } from '../record/idb.mjs';
 import { openTrail } from './record.mjs';
+import { dropEarlier } from './stores.mjs';
 import { carrierOf, createSync } from './sync.mjs';
+import { createTurn } from './turn.mjs';
 
 const REGISTRY = '__synkAtlasHosts';
 const MAKER = '__synkAtlasHostMaker';
@@ -110,6 +112,10 @@ function createHost({
   onClose,
   onAccount = null,
   claims = { users: 0 },
+  // 차례의 자물쇠(Web Locks) — 시험만 바꾼다(가짜 자물쇠 · null). 없는 브라우저는 차례 규칙만으로 한다(§18-5-1 ⓓ).
+  locks = globalThis.navigator?.locks ?? null,
+  // 일마다 한도 표(turn.mjs TURN_JOBS) — 시험만 짧게 바꾼다.
+  turnJobs = null,
 }) {
   const index = compositeIndex();
   // 지도를 기록부를 열기 전에 넣는다 — 기록부가 처음 접는 요약의 판 묶음(색인 판)이 그 뒤의 보기와 같아야 한다.
@@ -138,6 +144,16 @@ function createHost({
   };
   // 지금 호스트의 계기에 — 셸이 받으면 계기가 셸의 것으로 바뀐다(take).
   const note = (kind, outcome) => health?.note(kind, outcome);
+
+  // 차례 — 파생 기록을 쓰는 일 하나 동안만 쥐었다 놓는다(turn.mjs, §18-5-1). 쥐는 겹은 이 호스트 하나다(R1): 올리기 · 받기 · 치우기 ·
+  // 옛 기록 옮기기를 이 안에서 하고, 같은 함수를 기록부에 exclusive로 준다. 일을 하는 동안 기록부는 「차례 안」이다.
+  const turn = createTurn({
+    name: `synk-atlas:${key}`,
+    locks,
+    enter: () => state.trail?.enterTurn(),
+    leave: () => state.trail?.leaveTurn(),
+    ...(turnJobs ? { jobs: turnJobs } : {}),
+  });
 
   // 다른 탭에 덧붙였다고 알린다. 닫은 뒤 늦게 끝난 쓰기는 알리지 않는다.
   function announce() {
@@ -172,6 +188,7 @@ function createHost({
     tell,
     announce: () => announce(),
     onAccount: detail => onAccount?.(detail),
+    turn,
     now: () => (state.trail ? state.trail.now() : Date.now()),
   });
   const upload = () => (guest ? null : sync.upload());
@@ -235,13 +252,18 @@ function createHost({
       if (nextHealth) health = nextHealth;
       if (nextAccount) onAccount = nextAccount;
       if (nextTransport && !guest && !state.closed) void sync.first();
+      // 옛 기록 옮기기는 차례 안에서 — 못 얻으면 기다리지 않고 차례 없이 한다(coach.ready가 기다리는 일, §18-5-1 R2).
       if (guest && reader && !state.carry)
-        state.carry = carryLegacy(state.trail.record, reader, note, legacyWait).then(() => {
-          // 옮기기가 끝나면 듣는 판 모두에 알린다 — 약속보다 먼저 준비를 끝낸 코치의 판도 옮겨 온 만남 · 기억으로 다시 선다(D4 ㉠).
-          // 다른 탭에도 알린다 — 옮겨 쓴 사건 · 장부를 그 탭이 꼬리로 읽게(받은 서버 답과 같은 길, GPT 끝 판 GB1).
-          announce();
-          tell('refresh');
-        });
+        state.carry = turn('legacy', () =>
+          carryLegacy(state.trail.record, reader, note, legacyWait),
+        )
+          .catch(() => {}) // 닫힌 호스트 — 옮기기는 다음에 열 때
+          .then(() => {
+            // 옮기기가 끝나면 듣는 판 모두에 알린다 — 약속보다 먼저 준비를 끝낸 코치의 판도 옮겨 온 만남 · 기억으로 다시 선다(D4 ㉠).
+            // 다른 탭에도 알린다 — 옮겨 쓴 사건 · 장부를 그 탭이 꼬리로 읽게(받은 서버 답과 같은 길, GPT 끝 판 GB1).
+            announce();
+            tell('refresh');
+          });
       schedule();
     },
     // 옛 기록 옮기기의 약속 — 받는 모든 코치(셸 · 틀)가 이것을 기다린 뒤 준비를 끝낸다(D4 ㉡). 읽개를 받은 적이 없으면 곧 풀린다.
@@ -258,6 +280,7 @@ function createHost({
         index,
         health: healthNow,
         now,
+        exclusive: turn,
       });
       state.channel = channelOf(key, () => void refresh());
       if (globalThis.addEventListener) globalThis.addEventListener('online', online);
@@ -309,6 +332,7 @@ function createHost({
       if (claims.users > 0) return false;
       state.closed = true;
       sync.close();
+      turn.close(); // 기다리던 청하기를 거둔다
       if (globalThis.removeEventListener) globalThis.removeEventListener('online', online);
       globalThis.document?.removeEventListener?.('visibilitychange', visible);
       state.channel?.close();
@@ -317,6 +341,7 @@ function createHost({
       // 앞 판 저장소 지우기 · 비우기를 막지 않게(단계 4 §18-5-5 G3). 닫히는 사이 같은 저장소를 다시 여는 코치는 새 연결을 받는다.
       void Promise.allSettled([...inflight])
         .then(() => state.trail?.saved())
+        .then(() => state.trail?.localSaved())
         .then(() => port.close?.())
         .catch(() => {});
       return true;
@@ -340,6 +365,7 @@ function withinTime(promise, wait) {
 
 async function carryLegacy(record, legacy, note, wait) {
   try {
+    await record.refresh(); // 차례에 들자마자 꼬리부터 — 다른 탭이 방금 옮긴 것을 또 옮기지 않게(§18-5-1)
     const old = await withinTime(Promise.resolve().then(legacy), wait);
     if (!old) return;
     await record.importLegacy(legacyToImport(old.log, id => record.has(id)));
@@ -396,6 +422,8 @@ function newEntry(registry, key, options, openPort) {
     } catch (error) {
       throw hostError('STORAGE_FAILED', '저장소를 열지 못했다', error);
     }
+    // 판이 오른 계정 저장소를 열었으면 같은 계정의 앞 판 사본을 버린다(설계 §5-3 · 단계 4 §18-5-5 E3 — 기다리지 않는다).
+    if (!options.port) void dropEarlier(key).catch(() => {});
     // 기억(memory)은 호스트를 만드는 창이 스스로 만든다 — 사라질 수 있는 틀의 객체를 위 창의 호스트가 들지 않게(N3).
     const memory = createMemory(options.params);
     return createHost({

@@ -124,6 +124,9 @@ export function createCoach(options = {}) {
         onAccount: host.onAccount ?? null,
         legacy: host.legacy ?? null,
         ...(host.legacyWait > 0 ? { legacyWait: host.legacyWait } : {}),
+        // 차례의 자물쇠 · 일마다 한도 — 시험만 바꾼다(가짜 · null · 짧은 한도). 주지 않으면 브라우저의 navigator.locks와 표 그대로.
+        ...(host.locks !== undefined ? { locks: host.locks } : {}),
+        ...(host.turnJobs ? { turnJobs: host.turnJobs } : {}),
         now: host.now,
         map,
       },

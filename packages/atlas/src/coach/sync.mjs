@@ -107,7 +107,7 @@ export function createSync({
   tell,
   announce,
   onAccount,
-  turn = work => work(),
+  turn = (_job, work) => work(),
   now = () => Date.now(),
 }) {
   const state = {
@@ -116,6 +116,7 @@ export function createSync({
     lane: Promise.resolve(),
     uploading: null,
     pulling: null,
+    sweeping: null, // 하루 한 번 치우기(A6)
     stopped: null, // 'account' · 'auth' · 'other' — 올리기 · 받기를 멈춘 까닭(사건 덧붙이기는 계속)
     writesOff: false, // 올리기만 멈춤(WRITES_DISABLED)
     switchOff: false, // 그 계정의 서버 스위치 꺼짐(GET 403 FEATURE_DISABLED)
@@ -261,14 +262,37 @@ export function createSync({
     settle(outcome, new Set(events.map(event => event.id)));
   }
 
+  // 차례를 못 얻었다(TURN_BUSY) — 이번 바퀴를 쉬고 다음 바퀴에(실패로 세지 않는다, §18-5-1 R2). 못 얻는 일이 이어지면 차례가 스스로
+  // 기다리지 않고 차례 없이 한다(turn.mjs).
+  function busy(error, then = null) {
+    if (error?.code !== 'TURN_BUSY') throw error;
+    then?.();
+    return null;
+  }
+
   function upload() {
     if (!canPost() || !carrier().post) return state.uploading;
     if (state.uploading) return state.uploading;
     if (!trail().unsent(1, state.skipped).length) return null;
-    state.uploading = inLane(() => turn(round)).finally(() => {
+    state.uploading = inLane(() =>
+      turn('upload', round).catch(error => busy(error, schedule)),
+    ).finally(() => {
       state.uploading = null;
+      sweep();
     });
     return state.uploading;
+  }
+
+  // 하루 한 번 치운다 — 서버 시각을 받은 뒤, 같은 줄에서 차례 안에(못 얻으면 다음에 — 차례 없이 하지 않는다, §18-5-5 A6).
+  function sweep() {
+    if (state.closed || state.sweeping || !trail()?.compactDue?.()) return;
+    state.sweeping = inLane(() => turn('compact', () => trail().compact()))
+      .catch(error =>
+        error?.code === 'TURN_BUSY' ? null : note('save', { ok: false, code: 'COMPACT_FAILED' }),
+      )
+      .finally(() => {
+        state.sweeping = null;
+      });
   }
 
   function schedule() {
@@ -329,8 +353,9 @@ export function createSync({
     if (state.pulling) return state.pulling;
     if (!force && now() - state.lastPull < PULL_GAP_MS) return Promise.resolve(null);
     state.lastPull = now();
-    state.pulling = inLane(() => turn(getRound)).finally(() => {
+    state.pulling = inLane(() => turn('get', getRound).catch(error => busy(error))).finally(() => {
       state.pulling = null;
+      sweep();
     });
     return state.pulling;
   }
