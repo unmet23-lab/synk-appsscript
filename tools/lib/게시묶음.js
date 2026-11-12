@@ -60,9 +60,11 @@ function load(dirArg) {
 function resolve(bundle, p) {
   if (!p || typeof p !== 'string') return null;
   if (path.isAbsolute(p)) return p;
+  // 편 폴더가 저장소와 다른 드라이브면(D: 워크트리에서 C: 임시 폴더의 편 — 시험 마당) path.relative가 절대 경로를 낸다.
+  // path.join은 그 절대 경로를 뿌리 뒤에 이어 붙여 없는 자리(D:\…\C:\…)를 만드니 path.resolve로 푼다(11-12 — D: 회차 사본에서 시험 넷이 깨짐).
   const 편 = path.relative(bundle.repo, bundle.dir);
   const tries = [bundle.repo, ...(bundle.mediaRoot ? [bundle.mediaRoot] : [])]
-    .flatMap((base) => [path.join(base, p), path.join(base, 편, p), path.join(base, 편, '게시', p)]);
+    .flatMap((base) => [path.join(base, p), path.resolve(base, 편, p), path.resolve(base, 편, '게시', p)]);
   return tries.find((f) => fs.existsSync(f)) || tries[0];
 }
 

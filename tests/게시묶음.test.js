@@ -58,3 +58,16 @@ test('공용 작업본에서 읽으면 mediaRoot가 없고 경로 셈은 그대�
   assert.equal(묶음.rel(bundle, plate.video.path), p.영상);
   assert.equal(묶음.resolve(bundle, 'docs/마케팅/편1/없는.mp4'), path.join(p.공용, 'docs/마케팅/편1/없는.mp4'), '없으면 첫 후보(이 작업본)');
 });
+
+test('resolve — 편 폴더가 저장소와 다른 드라이브에 있어도 편 기준 경로를 찾는다(D: 워크트리 + C: 임시 폴더의 편, 11-12)', { skip: process.platform !== 'win32' }, () => {
+  const 편 = fs.mkdtempSync(path.join(os.tmpdir(), '게시묶음-드라이브-'));
+  fs.mkdirSync(path.join(편, '게시', '판본', 'US'), { recursive: true });
+  const 원고 = path.join(편, '게시', '판본', 'US', '원고_youtube.json');
+  fs.writeFileSync(원고, '{}');
+  // 저장소를 편과 다른 드라이브 글자로 둔다(그 드라이브가 실제로 없어도 된다 — 경로 셈만 본다)
+  const 다른 = path.parse(편).root.toUpperCase().startsWith('Z') ? 'Y:/' : 'Z:/';
+  const bundle = { repo: path.join(다른, '없는저장소'), dir: 편, mediaRoot: null };
+  assert.ok(path.isAbsolute(path.relative(bundle.repo, bundle.dir)), '다른 드라이브면 상대 경로가 절대 경로로 나온다');
+  assert.equal(묶음.resolve(bundle, '게시/판본/US/원고_youtube.json'), 원고);
+  assert.equal(묶음.resolve(bundle, '판본/US/원고_youtube.json'), 원고, '「게시」 아래도 찾는다');
+});
