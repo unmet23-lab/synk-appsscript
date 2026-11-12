@@ -78,10 +78,15 @@ const problems = [
 ].filter(Boolean);
 if (problems.length) { console.log(JSON.stringify({ ...check, problems }, null, 1)); throw new Error('SETUP_CHECK_FAILED:' + problems.join(',')); }
 
-// The temporary key goes last; afterwards it must no longer authorize.
+// The temporary key goes last; afterwards it must no longer authorize. Right after b2_delete_key the
+// authorization service can still accept the key for a few seconds (11-13: accepted once, refused with
+// 401 on the next look), so look again for up to a minute; any answer other than 401 stops here.
 await admin.deleteKey(temp.keyId);
 let tempGone = false;
-try { await authorize(temp); } catch (e) { tempGone = e.status === 401; }
+for (let i = 0; i < 12 && !tempGone; i++) {
+  if (i) await new Promise((r) => setTimeout(r, 5000));
+  try { await authorize(temp); } catch (e) { if (e.status !== 401) throw e; tempGone = true; }
+}
 console.log(JSON.stringify({ ...check, tempKeyDeleted: tempGone }, null, 1));
 // A management key that still works is a failed setup (review B6): stop loudly and keep the store entry for a retry.
 if (!tempGone) throw new Error('TEMP_KEY_STILL_VALID');
