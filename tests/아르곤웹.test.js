@@ -1244,7 +1244,7 @@ test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 
   assert.ok(푸는곳.indexOf('fs.unlink(') < 푸는곳.indexOf('await fs.rename(up.lock, 무덤)') && 푸는곳.indexOf('await fs.rename(up.lock, 무덤)') < 푸는곳.indexOf('await fs.rm(무덤'), '열쇠 파일을 지운 뒤에만 폴더를 옮겨 지운다(경로째 지우지 않는다)');
   assert.match(푸는곳, /e\.code === "ENOENT"[^\n]*\) return;/, '내 열쇠 파일이 없으면(남이 넘겨받음) 손대지 않는다');
   assert.match(덩이(s, '감시 = setTimeout(() => {'), /^감시 = setTimeout\(\(\) => \{\r?\n\s*if \(누름\) return;/, '감시는 누른 뒤에는 아무것도 안 한다');
-  assert.match(s, /\n\} finally \{\r?\n {2}if \(감시\) clearTimeout\(감시\);\r?\n {2}await 올리기풀기\(\);\r?\n {2}if \(넘김 && page\) await page\.close\(\)[^\n]*\r?\n\}\s*$/, '맨 끝 finally — 어느 길로 끝나든 감시를 끄고 잠금을 풀고, 마감으로 그만뒀으면 제 탭을 닫는다');
+  assert.match(s, /\n\} finally \{\r?\n {2}if \(감시\) clearTimeout\(감시\);\r?\n {2}await 올리기풀기\(\);\r?\n {2}if \(넘김 && page\) await page\.close\(\)[^\n]*\r?\n(?: {2}\/\/[^\n]*\r?\n)* {2}else if \(page && !누름 && \(mode === "보내기" \|\| mode === "확인"\)\) \{[\s\S]*?\r?\n {2}\}\r?\n\}\s*$/, '맨 끝 finally — 어느 길로 끝나든 감시를 끄고 잠금을 풀고, 마감으로 그만뒀으면 제 탭을 닫고, 누르기 전에 끝난 보내기 · 확인은 입력창을 비운다');
   // 마감확인 — 공간 열기 뒤 · 빈 탭 뒤 · 첫 화면 뒤 · 올리기 앞 · 파일 넣기 앞(GA1)
   const 확인자리 = [...s.matchAll(/await 마감확인\(\);/g)].map((m) => m.index);
   const 앞에 = (t) => { const i = s.indexOf(t); assert.ok(i > 0, t); return 확인자리.some((k) => k < i && s.slice(k, i).split('\n').length <= 3); };
@@ -1284,17 +1284,24 @@ test('카본 판단 — 사고 수준 단계 순위(max > 높음 · 최고가 > 
 
 // 가짜 Gemini 화면 — 모드 칸은 지금 모델 · 단계로 그리고, 모드 메뉴 · 사고 수준 하위 메뉴 · 항목 누르기를 흉내 낸다.
 // 메뉴 글은 11-11 실물 꼴(설명 다음 모델 이름 · 「단계 + 설명」)을 따른다. 실물 아르곤의 단계는 「낮음 · 보통 · 높음」이고, Max는 있다고 치고 본 갈래다.
-const 카본화면 = ({ 모델 = 'Argon', 단계 = '높음', 단계들 = ['낮음\nFast and efficient', '보통\n균형 잡힌 깊이', '높음\n매우 철저함', 'Max\n가장 깊게'], 칸 = null } = {}) => {
-  const 화 = { 모델, 단계, 메뉴: false, 하위: false, 표시: {}, 누름: [] };
+// 11-12 새 계정 꼴: 위치창 = 「정확한 위치를 사용하시겠습니까?」 창이 떠 있어 모드 단추를 가린다, 모드단추늦음 = 모드 단추 첫 n번 누르기가 시간 초과.
+// 입력창 글(화.글)은 insertText로 늘고 ControlOrMeta+a → Backspace로 빈다.
+const 카본화면 = ({ 모델 = 'Argon', 단계 = '높음', 단계들 = ['낮음\nFast and efficient', '보통\n균형 잡힌 깊이', '높음\n매우 철저함', 'Max\n가장 깊게'], 칸 = null, 위치창 = false, 모드단추늦음 = 0 } = {}) => {
+  const 화 = { 모델, 단계, 메뉴: false, 하위: false, 표시: {}, 누름: [], 위치창, 늦음: 모드단추늦음, 글: '', 전체: false };
   const 항목 = (t) => ({ innerText: t, getBoundingClientRect: () => ({ width: 100, height: 20 }), setAttribute: (k, v) => { 화.표시[v] = t; }, removeAttribute: () => {} });
   const 모드칸 = () => (칸 ? 칸(화) : `모드 선택 도구 열기, 현재 ${화.모델} ${화.단계} 모드 사용 중`);
+  const 단추 = (t) => ({ innerText: t, getAttribute: () => null, setAttribute: (k, v) => { 화.표시[v] = t; } });
+  const 편집 = { get innerText() { return 화.글; } };
   const doc = {
     body: { innerText: '' },
-    querySelector: (s) => (s.includes('Gemini 프롬프트 입력') ? { innerText: '' } : null),
+    querySelector: (s) => (s.includes('Gemini 프롬프트 입력') ? 편집 : null),
     querySelectorAll(s) {
       if (s === 'button') return [{ getAttribute: () => 모드칸() }, { getAttribute: () => '업로드 및 도구' }];
       if (s === '[aria-label]') return [{ getAttribute: () => 'Google 계정: acct@example.test' }];
       if (s.startsWith('[data-synk=')) return [];
+      if (s.includes('[role=dialog]')) {
+        return 화.위치창 ? [{ innerText: '정확한 위치를 사용하시겠습니까?\n닫기\n정확한 위치 사용', getBoundingClientRect: () => ({ width: 300, height: 200 }), querySelectorAll: (q) => (q === 'button' ? [단추('닫기'), 단추('정확한 위치 사용')] : []) }] : [];
+      }
       if (s.includes('gem-menu-item')) return [...(화.메뉴 ? ['Quick answers\n3.5 Flash-Lite', '무엇이든 도움을 받으세요\n3.8 Flash', 'Code & analysis\n4 Argon', 'Most complex work\n4 카본', '사고 수준'] : []), ...(화.하위 ? 단계들 : [])].map(항목);
       return [];
     },
@@ -1305,12 +1312,18 @@ const 카본화면 = ({ 모델 = 'Argon', 단계 = '높음', 단계들 = ['낮�
     goto: async () => {}, waitForTimeout: async () => {}, screenshot: async () => {}, close: async () => { 화.닫힘 = true; },
     click: async (sel) => {
       화.누름.push(sel);
+      if (sel.includes('loc-close')) { if (화.표시['loc-close'] === '닫기') 화.위치창 = false; return; }
+      if (sel.includes('모드 선택 도구 열기') && 화.위치창) throw new Error('<div> intercepts pointer events');
+      if (sel.includes('모드 선택 도구 열기') && 화.늦음 > 0) { 화.늦음 -= 1; throw new Error('Timeout 15000ms exceeded'); }
       if (sel.includes('모드 선택 도구 열기')) 화.메뉴 = true;
       else if (sel.includes('data-synk="carbon"')) { 화.모델 = '카본'; 닫기(); }
       else if (sel.includes('data-synk="think"')) 화.하위 = true;
       else if (sel.includes('data-synk="lvl"')) { 화.단계 = 화.표시.lvl.split('\n')[0]; 닫기(); }
     },
-    keyboard: { insertText: async () => {}, press: async (k) => { if (k === 'Escape') 닫기(); } },
+    keyboard: {
+      insertText: async (x) => { 화.글 += x; },
+      press: async (k) => { if (k === 'Escape') 닫기(); if (k === 'ControlOrMeta+a') 화.전체 = true; if (k === 'Backspace' && 화.전체) { 화.글 = ''; 화.전체 = false; } },
+    },
     evaluate: async (fn, arg) => new Function('document', 'location', 'arg', `return (${fn.toString()})(arg);`)(doc, { href: 'https://gemini.google.com/u/1/app', pathname: '/u/1/app' }, arg),
   };
   return { 화, page };
@@ -1363,34 +1376,72 @@ test('페이지 스크립트(카본 고르기) — 모드 칸에 고른 단계�
   assert.ok(!steps.some((x) => x.step === 'done'));
 });
 
-// ── 두 줄(11-12) — a 줄은 메인 ego, b 줄은 둘째 ego(gemini-b) ──
-// 11-12 b 줄(unmet25)이 4일 넘게 놀았다 — 미학맹검 · 아르곤웹이 --두줄 없이 a 줄만 섰다. 같은 브라우저에서 두 줄이 돌면 참조 올리기가 엉켜서다(10-31 · 11-08).
-// 고친 뒤: b 줄은 둘째 ego로만 돌고, --두줄이면 먼저 비는 줄로, 보낸 대화는 보낸 줄(보냄 표시)로만 읽는다.
+test('페이지 스크립트(새 계정 11-12) — 「정확한 위치」 창은 위치를 주지 않는 「닫기」로만 닫고, 늦게 그려지는 모드 단추는 다시 누른다', async () => {
+  const 화면 = 카본화면({ 위치창: true, 모드단추늦음: 1 });
+  const { steps, 오류 } = await 확인돌리기(화면);
+  assert.equal(오류, null, 오류 && 오류.message);
+  assert.ok(steps.some((x) => x.step === 'dismiss'), '위치 창을 닫았다');
+  assert.equal(화면.화.위치창, false);
+  assert.equal(화면.화.표시['loc-close'], '닫기', '닫기 단추만 고른다(정확한 위치 사용은 안 누름)');
+  assert.deepEqual(steps.filter((x) => x.step === 'retry').map((x) => x.what), ['모드 단추'], '시간 초과 한 번 뒤 다시 눌러 넘어간다(11-12 synk.yuh)');
+  assert.ok(steps.some((x) => x.step === 'done'));
+  const 없음 = 카본화면();
+  await 확인돌리기(없음);
+  assert.ok(!없음.화.누름.some((s) => s.includes('loc-close')), '위치 창이 없으면 아무것도 누르지 않는다');
+});
 
-test('두 줄 — 줄 이름 · 줄 자리 · 보낸 줄 · 설 수 있는 줄', () => {
-  assert.equal(웹.줄표('gemini-b unmet25 https://gemini.google.com/u/0/'), 'gemini-b');
+test('페이지 스크립트(새 계정 11-12) — 모드 단추가 세 번 다 안 먹으면 멈추고, 실패해도 입력창에 넣은 「.」을 지운다', async () => {
+  const 화면 = 카본화면({ 모드단추늦음: 9, 칸: (화) => (화.글 ? `모드 선택 도구 열기, 현재 ${화.모델} ${화.단계} 모드 사용 중` : '') });
+  const { steps, 오류 } = await 확인돌리기(화면);
+  assert.ok(오류, '멈춘다');
+  assert.match(오류.message, /Timeout 15000ms exceeded/);
+  assert.equal(steps.filter((x) => x.step === 'retry').length, 2, '두 번까지 다시');
+  assert.equal(화면.화.글, '', '「.」을 지웠다(11-12 synk.yuh 확인이 남김)');
+  assert.ok(steps.some((x) => x.step === 'cleared' && x.글자 === 1));
+});
+
+// ── 여러 줄(11-12) — 줄은 공용 차례의 `줄들`(a 77yuhbs · b unmet25 · c 77unmet · d synk.yuh · e unmet22, 모두 메인 ego Profile 7) ──
+// 11-12 b 줄(unmet25)이 4일 넘게 놀았다 — 미학맹검 · 아르곤웹이 a 줄만 섰다. 같은 날 가족 계정 셋이 더 들어와 줄을 차례 `줄들`에서 읽게 고쳤다.
+// 고친 뒤: 줄을 안 고르면 --여러줄로 먼저 비는 줄, 꺼진 줄은 빼고, 보낸 대화는 보낸 줄 · 보낸 공간으로만 읽는다. 차례가 ego=<서버>를 주는 줄은 그 ego로.
+
+test('여러 줄 — 줄 이름 · ego 서버 · 줄 자리 · 고른 줄 · 보낸 줄 · 설 수 있는 줄', () => {
+  assert.equal(웹.줄표('gemini-c 77unmet https://gemini.google.com/u/3/'), 'gemini-c');
   assert.equal(웹.줄표('gemini-a 77yuhbs https://gemini.google.com/u/2/'), 'gemini-a');
   assert.equal(웹.줄표('쥔 줄 없음'), '');
+  assert.equal(웹.줄서버('gemini-c 77unmet https://gemini.google.com/u/3/'), '', '메인 ego');
+  assert.equal(웹.줄서버('gemini-f unmet25 https://gemini.google.com/u/0/ ego=gemini-x'), 'gemini-x');
+  assert.equal(웹.계정번호('gemini-f unmet25 https://gemini.google.com/u/0/ ego=gemini-x'), 0);
+  assert.equal(웹.계정이름('gemini-f unmet25 https://gemini.google.com/u/0/ ego=gemini-x'), 'unmet25');
+  assert.equal(웹.줄키('gemini-d'), 'd');
   assert.deepEqual(웹.줄자리('gemini-a', {}), { 줄: 'gemini-a', 서버: '', space: 웹.기본공간, profile: 웹.기본프로필 });
-  assert.deepEqual(웹.줄자리('gemini-b', { space: 웹.기본공간 }), { 줄: 'gemini-b', 서버: 'gemini-b', space: 'synk-argon-web-b', profile: 'Default' }, 'b 줄은 둘째 ego의 Default 프로필 · 따로 둔 공간');
-  assert.equal(웹.줄자리('gemini-b', { space: '내공간' }).space, '내공간', '작업이 정한 공간은 그 이름 그대로(둘째 ego 안에)');
+  assert.deepEqual(웹.줄자리('gemini-c', { space: 웹.기본공간 }), { 줄: 'gemini-c', 서버: '', space: `${웹.기본공간}-c`, profile: 웹.기본프로필 }, '메인 ego 다른 줄은 공간 끝에 줄 키');
+  assert.equal(웹.줄자리('gemini-c', { space: '내공간' }).space, '내공간-c', '작업이 정한 공간에도 줄 키');
+  assert.equal(웹.줄자리('gemini-a', { space: '내공간' }).space, '내공간', 'a는 작업이 정한 공간 그대로');
+  assert.deepEqual(웹.줄자리('gemini-f', {}, 'gemini-x'), { 줄: 'gemini-f', 서버: 'gemini-x', space: 'synk-argon-web-f', profile: 'Default' }, '이름 붙은 ego 줄은 그 ego의 Default 프로필');
   const dir = 임시();
   const 답 = (n, 표시) => { const out = path.join(dir, `${n}.md`); if (표시) fs.writeFileSync(`${out}.보냄.json`, JSON.stringify(표시)); return out; };
-  const 줄계정 = { '77yuhbs': 'gemini-a', unmet25: 'gemini-b' };
-  assert.equal(웹.표시줄(답('줄', { 계정: 0, 계정이름: 'unmet25', 줄: 'gemini-b' }), 줄계정), 'gemini-b', '표시의 「줄」');
-  assert.equal(웹.표시줄(답('계정만', { 계정: 8, 계정이름: 'unmet25' }), 줄계정), 'gemini-b', '줄이 없으면 계정 이름을 차례 줄과 맞춘다');
+  assert.equal(웹.줄자리('gemini-c', { 할일: '읽기', out: 답('공간', { 공간: 'synk-argon-web-p7-c', 계정: 3, 계정이름: '77unmet' }) }).space, 'synk-argon-web-p7-c', '읽기는 보낸 공간');
+  assert.equal(웹.줄자리('gemini-a', { 할일: '읽기', space: 'synk-argon-web-p7-a2', out: 답('a공간', { 공간: 'synk-argon-web-p7', 계정: 2 }) }).space, 'synk-argon-web-p7', '11-12 다른 공간으로 부른 읽기가 「보낸 공간은 …」으로 끝났다');
+  assert.deepEqual(웹.고른줄키({ 줄: 'c,d' }), ['c', 'd']);
+  assert.deepEqual(웹.고른줄키({ b줄만: true }), ['b'], '옛 깃발');
+  assert.equal(웹.고른줄키({}), null, '고르지 않으면 모든 줄');
+  assert.equal(웹.고른줄키({ 두줄: true }), null, '옛 --두줄도 모든 줄');
+  const 줄계정 = { '77yuhbs': 'gemini-a', unmet25: 'gemini-b', '77unmet': 'gemini-c' };
+  assert.equal(웹.표시줄(답('줄', { 계정: 3, 계정이름: '77unmet', 줄: 'gemini-c' }), 줄계정), 'gemini-c', '표시의 「줄」');
+  assert.equal(웹.표시줄(답('계정만', { 계정: 3, 계정이름: '77unmet' }), 줄계정), 'gemini-c', '줄이 없으면 계정 이름을 차례 줄과 맞춘다(11-12 나눔 분배기 표시)');
   assert.equal(웹.표시줄(답('옛', { 계정: 1 }), 줄계정), 'gemini-a', '옛 표시(계정 이름 없음)는 a — 11-12 전에는 a로만 보냈다');
   assert.equal(웹.표시줄(답('없음'), 줄계정), '', '표시가 없으면 빈 글');
-  const 둘 = ['gemini-a', 'gemini-b'];
-  assert.deepEqual(웹.쓸줄({ 할일: '보내기', out: 답('보낼') }, 둘), 둘);
-  assert.deepEqual(웹.쓸줄({ 할일: '읽기', out: 답('b읽기', { 줄: 'gemini-b' }) }, 둘, 줄계정), ['gemini-b'], '읽기는 보낸 줄만');
-  assert.deepEqual(웹.쓸줄({ 할일: '읽기', out: 답('표시없는읽기') }, 둘, 줄계정), ['gemini-a']);
-  const JOB = JSON.parse(웹.페이지글({ ...웹.작업만들기({ prompt: '질문', out: '답.md' }, dir, 't'), 줄: 'gemini-b' }, 0, '보내기', 'unmet25').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
-  assert.equal(JOB.줄, 'gemini-b', '페이지 스크립트가 보냄 표시에 줄을 적는다');
+  const 다섯 = ['gemini-a', 'gemini-b', 'gemini-c', 'gemini-d', 'gemini-e'];
+  assert.deepEqual(웹.쓸줄({ 할일: '보내기', out: 답('보낼') }, 다섯), 다섯);
+  assert.deepEqual(웹.쓸줄({ 할일: '읽기', out: 답('c읽기', { 줄: 'gemini-c' }) }, 다섯, 줄계정), ['gemini-c'], '읽기는 보낸 줄만');
+  assert.deepEqual(웹.쓸줄({ 할일: '읽기', out: 답('표시없는읽기') }, 다섯, 줄계정), ['gemini-a']);
+  const JOB = JSON.parse(웹.페이지글({ ...웹.작업만들기({ prompt: '질문', out: '답.md' }, dir, 't'), 줄: 'gemini-c' }, 3, '보내기', '77unmet').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
+  assert.equal(JOB.줄, 'gemini-c', '페이지 스크립트가 보냄 표시에 줄을 적는다');
   assert.match(fs.readFileSync(웹.페이지, 'utf8'), /계정이름: account \|\| null, \.\.\.\(J\.줄 \? \{ 줄: J\.줄 \} : \{\}\)/, '보냄 표시에 「줄」');
 });
 
-// 가짜 차례.py — 기다리기는 깃발대로 줄을 정해(--b줄만 → b · --두줄 → FAKE_TWO_LANE(기본 b) · 없으면 a) 부른 깃발을 남기고, 계정 · 보기는 실제 꼴로 찍는다
+// 가짜 차례.py — 줄 다섯(FAKE_EGO_LANE='b=gemini-x'면 그 줄은 이름 붙은 ego · /u/0). 기다리기는 깃발대로 줄을 정해(--줄이면 FAKE_LANE이 들어 있을 때
+// 그 줄 · 아니면 맨 앞 키, --여러줄이면 FAKE_LANE(기본 a), 없으면 a) 부른 깃발을 남기고, 계정 · 줄들 · 끄기 · 보기는 실제 꼴로 찍는다
 const 가짜차례py = [
   'import json, os, sys',
   'D = os.path.dirname(os.path.abspath(__file__))',
@@ -1399,25 +1450,48 @@ const 가짜차례py = [
   'def 남김(x):',
   "    with open(os.path.join(D, '차례부름.log'), 'a', encoding='utf-8') as fh: fh.write(json.dumps(x, ensure_ascii=False) + '\\n')",
   "f = os.path.join(D, '잡음.txt')",
-  "줄 = {'a': 'gemini-a 77yuhbs https://gemini.google.com/u/2/', 'b': 'gemini-b unmet25 https://gemini.google.com/u/0/'}",
+  "줄 = {'a': ['77yuhbs', 2, ''], 'b': ['unmet25', 8, ''], 'c': ['77unmet', 3, ''], 'd': ['synk.yuh', 4, ''], 'e': ['unmet22', 9, '']}",
+  "x = os.environ.get('FAKE_EGO_LANE', '')",
+  "if x:",
+  "    k, s = x.split('=')",
+  "    줄[k] = [줄[k][0], 0, s]",
+  "def 계정글(k):",
+  "    acc, u, ego = 줄[k]",
+  "    return f'gemini-{k} {acc} https://gemini.google.com/u/{u}/' + (f' ego={ego}' if ego else '')",
   "if cmd == '기다리기':",
   "    깃발 = a[4:]",
-  "    k = 'b' if '--b줄만' in 깃발 else (os.environ.get('FAKE_TWO_LANE', 'b') if '--두줄' in 깃발 else 'a')",
+  "    want = os.environ.get('FAKE_LANE', 'a')",
+  "    if '--줄' in 깃발:",
+  "        keys = 깃발[깃발.index('--줄') + 1].split(',')",
+  "        k = want if want in keys else keys[0]",
+  "    elif '--여러줄' in 깃발:",
+  "        k = want",
+  "    else:",
+  "        k = 'a'",
   "    남김({'cmd': cmd, '이름': a[2], '깃발': 깃발, '줄': k})",
   "    open(f, 'w').write(k)",
   "    print(f'gemini-{k} 잠금 잡음')",
   "elif cmd == '계정':",
-  "    print(줄[open(f).read().strip()])",
+  "    print(계정글(open(f).read().strip()))",
   "elif cmd == '내려놓기':",
   '    try: os.remove(f)',
   '    except OSError: pass',
   "    print('gemini 내려놓음')",
+  "elif cmd == '줄들':",
+  "    n = int(open(os.path.join(D, '줄들셈.txt')).read()) + 1 if os.path.exists(os.path.join(D, '줄들셈.txt')) else 1",
+  "    open(os.path.join(D, '줄들셈.txt'), 'w').write(str(n))",
+  "    보통 = n <= int(os.environ.get('FAKE_PLAIN_UNTIL', '0'))",
+  "    print(json.dumps([{'줄': f'gemini-{k}', '키': k, '계정': v[0], 'u': v[1], 'ego': v[2], '꺼짐': os.path.exists(os.path.join(D, f'gemini-{k}.off')), '쥔이': 'bake' if 보통 and k == 'a' else None, '쥔이종류': '보통' if 보통 and k == 'a' else None} for k, v in 줄.items()], ensure_ascii=False))",
+  "elif cmd == '끄기':",
+  "    for k in (list(줄) if a[2] == '모두' else a[2].split(',')):",
+  "        with open(os.path.join(D, f'gemini-{k}.off'), 'a', encoding='utf-8') as fh: fh.write(' '.join(a[3:]) + '\\n')",
+  "    남김({'cmd': cmd, '키': a[2], '까닭': ' '.join(a[3:])})",
   "elif cmd == '보기':",
-  "    print('[gemini-a 77yuhbs] 잠금: 비어 있음')",
-  "    print('[gemini-b unmet25] 잠금: 비어 있음')",
+  "    for k, v in 줄.items(): print(f'[gemini-{k} {v[0]}] 잠금: 비어 있음')",
 ].join('\n');
-// 가짜 ego — 메인 · 둘째 어느 것으로 불렸는지와 JOB(u · 계정 · 공간 · 프로필 · 줄)을 남기고, 보내기는 표시(줄 · 계정 이름)를 쓴 뒤 답을 쓴다.
-// FAKE_WRONG_ACCOUNT=<메인|둘째>면 그쪽 계정 확인에서 멈추고, FAKE_NO_CONNECT=<…>면 「Failed to connect」로 끝나고, FAKE_LATE=<…>면 보낸 뒤 「늦음」
+// 가짜 ego — 어느 ego(메인 · 서버 이름)로 불렸는지와 JOB(u · 계정 · 공간 · 프로필 · 줄)을 남기고, 보내기는 표시(줄 · 계정 이름)를 쓴 뒤 답을 쓴다.
+// FAKE_WRONG_ACCOUNT=<계정 이름>이면 그 계정 확인에서 멈추고, FAKE_SORRY=<계정 이름>이면 로봇 확인으로 멈추고, FAKE_NO_CONNECT=<ego>면 「Failed to connect」로
+// 끝나고, FAKE_LATE=<계정 이름>이면 보낸 뒤 「늦음」
 const 가짜에고2 = `const fs = require('fs'); const path = require('path');
 const 어느 = process.argv[2];
 let s = '';
@@ -1426,22 +1500,23 @@ process.stdin.on('end', () => {
   const J = JSON.parse(s.split('\\n')[0].replace(/^globalThis\\.JOB = /, '').replace(/;$/, ''));
   fs.appendFileSync(path.join(process.env.FAKE_DIR, 'ego부름.log'), JSON.stringify({ 어느, mode: J.mode, u: J.u, account: J.account, space: J.space, profile: J.profile, 줄: J.줄 || null, out: path.basename(J.out) }) + '\\n');
   if (process.env.FAKE_NO_CONNECT === 어느) { console.error('Error: Failed to connect to ego_cli bootstrap'); process.exit(1); }
-  if (process.env.FAKE_WRONG_ACCOUNT === 어느 && J.mode !== '읽기') { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '계정이 ' + J.account + '가 아님(/u/' + J.u + ' · 공간 ' + J.space + '): 계정 표시 없음 — 로그아웃 화면일 수 있다' })); process.exit(1); }
+  if (process.env.FAKE_SORRY === J.account) { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '로봇 확인 화면(sorry) — 멈춤, 유호님 손' })); process.exit(1); }
+  if (process.env.FAKE_WRONG_ACCOUNT === J.account && J.mode !== '읽기') { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '계정이 ' + J.account + '가 아님(/u/' + J.u + ' · 공간 ' + J.space + '): 계정 표시 없음 — 로그아웃 화면일 수 있다' })); process.exit(1); }
   if (J.mode === '확인') { console.error(JSON.stringify({ step: 'account', u: J.u, account: J.account, who: 'Google 계정: x (' + J.account + '@gmail.com)' })); console.error(JSON.stringify({ step: 'done', url: '', chars: 0, out: null })); return; }
   if (J.mode === '보내기') {
     fs.writeFileSync(J.mark, JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: J.space, 계정: J.u, 계정이름: J.account, ...(J.줄 ? { 줄: J.줄 } : {}), 대화: null }));
     console.error(JSON.stringify({ step: 'clicking' }));
     if (J.upload) { try { fs.unlinkSync(J.upload.lock + '/' + J.upload.key + '.key'); fs.rmSync(J.upload.lock, { recursive: true, force: true }); } catch {} }
-    if (process.env.FAKE_LATE === 어느) { console.error(JSON.stringify({ step: 'fail', kind: '늦음', why: '답이 12분 안에 안 끝남(가짜)' })); process.exit(1); }
+    if (process.env.FAKE_LATE === J.account) { console.error(JSON.stringify({ step: 'fail', kind: '늦음', why: '답이 12분 안에 안 끝남(가짜)' })); process.exit(1); }
   }
-  const url = 'https://gemini.google.com/u/' + J.u + '/app/ab12cd34ef' + (어느 === '둘째' ? 'b0' : 'a0');
+  const url = 'https://gemini.google.com/u/' + J.u + '/app/ab12cd34ef' + (어느 === '메인' ? 'a0' : 'b0');
   fs.writeFileSync(J.out, '# 답\\n\\n대화: ' + url + '\\n\\n' + '답'.repeat(300));
   fs.rmSync(J.mark, { force: true });
   console.error(JSON.stringify({ step: 'done', url, chars: 300 }));
 });
 `;
-const 가짜환경 = ['FAKE_DIR', 'FAKE_TWO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_NO_CONNECT', 'FAKE_LATE'];
-const 두줄시험 = async (fn, { 둘째됨 = true, 환경 = {} } = {}) => {
+const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL'];
+const 여러줄시험 = async (fn, { 서버됨 = true, 환경 = {} } = {}) => {
   const dir = 임시();
   const 앞설정 = { ...웹.설정 };
   const 앞환경 = Object.fromEntries(['SYNK_CHARYE_PY', ...가짜환경].map((k) => [k, process.env[k]]));
@@ -1449,165 +1524,210 @@ const 두줄시험 = async (fn, { 둘째됨 = true, 환경 = {} } = {}) => {
   const 찍힘 = [];
   fs.writeFileSync(path.join(dir, '차례.py'), 가짜차례py);
   const ego = 쓰기(dir, 'fake-ego2.cjs', 가짜에고2);
+  for (const k of 가짜환경) delete process.env[k];
   Object.assign(process.env, { SYNK_CHARYE_PY: path.join(dir, '차례.py'), FAKE_DIR: dir, ...환경 });
-  let 준비부름 = 0;
+  const 준비부름 = [];
   Object.assign(웹.설정, {
-    폴더: path.join(dir, 'upload.lock'), 기록폴더: path.join(dir, 'logs'), 쉼: 25, 살핌: 25,
-    에고: `"${process.execPath}" "${ego}" 메인`, 둘째에고: `"${process.execPath}" "${ego}" 둘째`,
-    둘째준비: async () => { 준비부름 += 1; return 둘째됨 ? { 됨: true, 까닭: '가짜 둘째 ego에 붙음' } : { 됨: false, 까닭: '가짜 — 둘째 ego 없음' }; },
+    폴더: path.join(dir, 'upload.lock'), 기록폴더: path.join(dir, 'logs'), 쉼: 25, 살핌: 25, 보통쉼: 25,
+    에고: `"${process.execPath}" "${ego}" 메인`, 이름에고: (서버) => `"${process.execPath}" "${ego}" ${서버}`,
+    서버준비: async (서버) => { 준비부름.push(서버); return 서버됨 ? { 됨: true, 까닭: `가짜 ego 서버 ${서버}에 붙음` } : { 됨: false, 까닭: `가짜 — ego 서버 ${서버} 없음` }; },
   });
   const 줄들 = (f) => { try { return fs.readFileSync(path.join(dir, f), 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l)); } catch { return []; } };
   console.log = (...a) => { 찍힘.push(a.join(' ')); };
   try {
-    return await fn(dir, 찍힘, { ego: () => 줄들('ego부름.log'), 차례: () => 줄들('차례부름.log').filter((x) => x.cmd === '기다리기'), 쓰임: () => 줄들('gemini.아르곤웹.jsonl'), 준비부름: () => 준비부름 });
+    return await fn(dir, 찍힘, { ego: () => 줄들('ego부름.log'), 차례: () => 줄들('차례부름.log').filter((x) => x.cmd === '기다리기'), 끄기: () => 줄들('차례부름.log').filter((x) => x.cmd === '끄기'), 쓰임: () => 줄들('gemini.아르곤웹.jsonl'), 준비부름: () => 준비부름 });
   } finally {
     console.log = 원래로그;
     Object.assign(웹.설정, 앞설정);
     for (const [k, v] of Object.entries(앞환경)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   }
 };
-const 두줄작업 = (dir, n, prompt = '질문') => 웹.작업만들기({ files: [쓰기(dir, `컷${n}.jpg`)], prompt: `${prompt} ${n}`, out: `답${n}.md` }, dir, `작업${n}`);
+const 줄작업 = (dir, n, prompt = '질문') => 웹.작업만들기({ files: [쓰기(dir, `컷${n}.jpg`)], prompt: `${prompt} ${n}`, out: `답${n}.md` }, dir, `작업${n}`);
+const 끔 = (dir, k, 글 = '시험으로 끔') => fs.writeFileSync(path.join(dir, `gemini-${k}.off`), `${글}\n`);
 
-test('두 줄 보내기 — --두줄로 서서 b를 잡으면 둘째 ego(/u/0 · unmet25 · 공간 synk-argon-web-b · Default)로, a를 잡으면 메인 ego로 · 쓰임 기록에 줄마다 한 줄', async () => {
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    const jobs = [두줄작업(dir, 1), 두줄작업(dir, 2)];
-    assert.equal(await 웹.돌리기(jobs, { _: [], 파일: [], 두줄: true, 이름: 'two-b' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.차례().map((x) => x.깃발), [['--두줄']]);
+test('여러 줄 보내기 — 줄을 안 고르면 --여러줄로 서서 잡은 줄(c)의 계정 · 주소 · 공간(-c)으로 · 쓰임 기록에 줄마다, --줄 d면 d만', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const jobs = [줄작업(dir, 1), 줄작업(dir, 2)];
+    assert.equal(await 웹.돌리기(jobs, { _: [], 파일: [], 이름: 'multi-c' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--여러줄']]);
     assert.deepEqual(본.ego().map((x) => [x.어느, x.mode, x.u, x.account, x.space, x.profile, x.줄]), [
-      ['둘째', '보내기', 0, 'unmet25', 'synk-argon-web-b', 'Default', 'gemini-b'],
-      ['둘째', '보내기', 0, 'unmet25', 'synk-argon-web-b', 'Default', 'gemini-b'],
+      ['메인', '보내기', 3, '77unmet', `${웹.기본공간}-c`, 웹.기본프로필, 'gemini-c'],
+      ['메인', '보내기', 3, '77unmet', `${웹.기본공간}-c`, 웹.기본프로필, 'gemini-c'],
     ]);
-    assert.deepEqual(본.쓰임().map((x) => [x.줄, x.계정, x.결과]), [['gemini-b', 'unmet25', '받음'], ['gemini-b', 'unmet25', '받음']]);
+    assert.deepEqual(본.쓰임().map((x) => [x.줄, x.계정, x.결과]), [['gemini-c', '77unmet', '받음'], ['gemini-c', '77unmet', '받음']]);
     assert.ok(jobs.every((j) => fs.existsSync(j.out)));
+    assert.deepEqual(본.준비부름(), [], '메인 ego 줄만이면 ego 서버를 준비하지 않는다');
+  }, { 환경: { FAKE_LANE: 'c' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 두줄: true, 이름: 'old-two' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--여러줄']], '옛 --두줄도 모든 줄');
+    assert.deepEqual(본.ego().map((x) => [x.u, x.account, x.space]), [[2, '77yuhbs', 웹.기본공간]], 'a를 잡으면 기본 공간');
   });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.돌리기([두줄작업(dir, 1)], { _: [], 파일: [], 두줄: true, 이름: 'two-a' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.ego().map((x) => [x.어느, x.u, x.account, x.space, x.profile, x.줄]), [['메인', 2, '77yuhbs', 웹.기본공간, 웹.기본프로필, 'gemini-a']]);
-  }, { 환경: { FAKE_TWO_LANE: 'a' } });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.돌리기([두줄작업(dir, 1)], { _: [], 파일: [], 이름: 'plain' }, '보내기'), 0);
-    assert.deepEqual(본.차례().map((x) => x.깃발), [[]], '--두줄 없이 부르면 옛날처럼 a 줄만');
-    assert.equal(본.ego()[0].어느, '메인');
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 줄: 'd', 이름: 'only-d' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--줄', 'd']]);
+    assert.deepEqual(본.ego().map((x) => [x.u, x.account, x.space]), [[4, 'synk.yuh', `${웹.기본공간}-d`]]);
+  });
+  await 여러줄시험(async (dir, 찍힘) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 줄: 'c', 여러줄: true, 이름: 'both' }, '보내기'), 2, '--줄 · --여러줄 함께는 거절');
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 줄: 'C!', 이름: 'bad' }, '보내기'), 2, '줄 키 꼴이 틀리면 거절');
   });
 });
 
-test('두 줄 보내기 — 둘째 ego를 못 쓰면 --두줄도 a 줄만 서고, a 줄까지 꺼졌으면 서지 않고 멈춘다 · --b줄만은 서지 않고 「안 함」', async () => {
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.돌리기([두줄작업(dir, 1)], { _: [], 파일: [], 두줄: true, 이름: 'nob' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.차례().map((x) => x.깃발), [[]]);
-    assert.equal(본.ego()[0].어느, '메인');
-    assert.match(찍힘.join('\n'), /둘째 ego를 못 쓴다 — 가짜 — 둘째 ego 없음 · b 줄은 쓰지 않는다/);
-  }, { 둘째됨: false });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    fs.writeFileSync(path.join(dir, 'gemini-a.off'), '시험\n');
-    assert.equal(await 웹.돌리기([두줄작업(dir, 1)], { _: [], 파일: [], 두줄: true, 이름: 'nob-aoff' }, '보내기'), 1);
-    assert.deepEqual(본.차례(), [], 'a가 꺼졌고 b를 못 쓰면 줄에 서지 않는다(몇 시간 기다리지 않게)');
-    assert.match(찍힘.join('\n'), /멈춤: gemini-a 줄이 꺼져 있고 b 줄\(둘째 ego\)을 못 쓴다/);
-  }, { 둘째됨: false });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.돌리기([두줄작업(dir, 1)], { _: [], 파일: [], b줄만: true, 이름: 'onlyb' }, '보내기'), 1);
+test('여러 줄 보내기 — 꺼진 줄은 빼고 서고(--줄 a,b,d,e), 고른 줄이 다 꺼졌으면 서지 않고 멈춘다(몇 시간 기다리지 않게)', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    끔(dir, 'c');
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'c-off' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--줄', 'a,b,d,e']]);
+  });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    끔(dir, 'c');
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 줄: 'c', 이름: 'only-c-off' }, '보내기'), 1);
     assert.deepEqual(본.차례(), []);
-    assert.match(찍힘.join('\n'), /안 함 {2}작업1 — --b줄만인데 둘째 ego를 못 쓴다/);
-  }, { 둘째됨: false });
+    assert.match(찍힘.join('\n'), /안 함 {2}작업1 — 고른 줄\(c\)을 지금 못 쓴다/);
+    assert.match(찍힘.join('\n'), /멈춤: 보낼 줄이 없다 — 고른 줄\(c\)이 꺼져 있다/);
+  });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    for (const k of 'abcde') 끔(dir, k);
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'all-off' }, '보내기'), 1);
+    assert.deepEqual(본.차례(), []);
+    assert.match(찍힘.join('\n'), /멈춤: 보낼 줄이 없다 — 모든 줄이 꺼져 있다/);
+  });
 });
 
-test('두 줄 읽기 — 보낸 대화는 보낸 줄에서만: b 표시는 --b줄만으로 서서 둘째 ego로, 옛 표시는 a · 섞인 묶음은 a 차례에 a 일만 하고 b로 다시 선다', async () => {
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    const b = 두줄작업(dir, 1), b2 = 두줄작업(dir, 2), a = 두줄작업(dir, 3);
-    fs.writeFileSync(웹.표시경로(b.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-b', 계정: 0, 계정이름: 'unmet25', 줄: 'gemini-b' }));
-    fs.writeFileSync(웹.표시경로(b2.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-b', 계정: 8, 계정이름: 'unmet25' }));
+test('여러 줄 읽기 — 보낸 대화는 보낸 줄 · 보낸 공간에서만: 섞인 묶음은 잡은 줄의 일만 하고 다른 줄로 다시 선다, 보낸 줄이 꺼졌으면 「안 함」', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const c1 = 줄작업(dir, 1), c2 = 줄작업(dir, 2), a = 줄작업(dir, 3);
+    fs.writeFileSync(웹.표시경로(c1.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-p7-c', 계정: 3, 계정이름: '77unmet', 줄: 'gemini-c' }));
+    fs.writeFileSync(웹.표시경로(c2.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-p7-c', 계정: 3, 계정이름: '77unmet' }));
     fs.writeFileSync(웹.표시경로(a.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 웹.기본공간, 계정: 2 }));
-    assert.equal(await 웹.돌리기([b, b2, a], { _: [], 파일: [], 이름: 'read-mix' }, '읽기'), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.차례().map((x) => x.깃발), [['--두줄'], []], '두 줄 다 일이 있으면 --두줄(가짜는 b를 줌) → b 일을 한 뒤 남은 a 일은 a 줄만');
-    assert.deepEqual(본.ego().map((x) => [x.어느, x.mode, x.out, x.space]), [
-      ['둘째', '읽기', '답1.md', 'synk-argon-web-b'], ['둘째', '읽기', '답2.md', 'synk-argon-web-b'], ['메인', '읽기', '답3.md', 웹.기본공간],
-    ], '처음에 잡은 b 줄(가짜 기본)로 b 일 둘 → a 일은 a로 다시 서서');
+    assert.equal(await 웹.돌리기([c1, c2, a], { _: [], 파일: [], 이름: 'read-mix' }, '읽기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--줄', 'a,c'], ['--줄', 'a']], '두 줄에 일이 있으면 그 두 줄(가짜는 c를 줌) → c 일을 한 뒤 남은 a 일은 a 줄만');
+    assert.deepEqual(본.ego().map((x) => [x.어느, x.mode, x.out, x.account, x.space]), [
+      ['메인', '읽기', '답1.md', '77unmet', 'synk-argon-web-p7-c'], ['메인', '읽기', '답2.md', '77unmet', 'synk-argon-web-p7-c'], ['메인', '읽기', '답3.md', '77yuhbs', 웹.기본공간],
+    ]);
+  }, { 환경: { FAKE_LANE: 'c' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    끔(dir, 'c', '2026-11-12 20:00:00 c 계정 로그아웃');
+    const c = 줄작업(dir, 1), j = 줄작업(dir, 2);
+    fs.writeFileSync(웹.표시경로(c.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-p7-c', 계정: 3, 계정이름: '77unmet', 줄: 'gemini-c' }));
+    assert.equal(await 웹.돌리기([c, j], { _: [], 파일: [], 이름: 'c-off-read' }, '보내기'), 1);
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--줄', 'a,b,d,e']], '보낼 일만 켜진 줄로');
+    assert.deepEqual(본.ego().map((x) => x.out), ['답2.md']);
+    assert.ok(fs.existsSync(웹.표시경로(c.out)), '보냄 표시는 그대로 — 다시 보내지 않는다');
+    assert.match(찍힘.join('\n'), /안 함 {2}작업1 — 보낸 줄\(gemini-c\)이 꺼져 있다 — 다시 보내지 말고 그 줄이 켜진 뒤 읽기/);
   });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    const b = 두줄작업(dir, 1), a = 두줄작업(dir, 2);
-    fs.writeFileSync(웹.표시경로(b.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-b', 계정: 0, 계정이름: 'unmet25', 줄: 'gemini-b' }));
-    assert.equal(await 웹.돌리기([b, a], { _: [], 파일: [], 두줄: true, 이름: 'mix-a' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.차례().map((x) => [x.깃발, x.줄]), [[['--두줄'], 'a'], [['--b줄만'], 'b']], 'a를 잡은 차례에는 보낼 일만, b 읽기는 b로 다시');
-    assert.deepEqual(본.ego().map((x) => [x.어느, x.mode, x.out]), [['메인', '보내기', '답2.md'], ['둘째', '읽기', '답1.md']]);
-  }, { 환경: { FAKE_TWO_LANE: 'a' } });
 });
 
-test('두 줄 읽기 — b 줄이 꺼졌거나 둘째 ego를 못 쓰면 b에서 보낸 대화는 서지 않고 「안 함」(다시 보내지 않는다), a 일은 그대로', async () => {
-  for (const [꼴, 둘째됨] of [['꺼짐', true], ['못씀', false]]) {
-    await 두줄시험(async (dir, 찍힘, 본) => {
-      if (꼴 === '꺼짐') fs.writeFileSync(path.join(dir, 'gemini-b.off'), '시험\n');
-      const b = 두줄작업(dir, 1), a = 두줄작업(dir, 2);
-      fs.writeFileSync(웹.표시경로(b.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 계정: 0, 계정이름: 'unmet25', 줄: 'gemini-b' }));
-      assert.equal(await 웹.돌리기([b, a], { _: [], 파일: [], 이름: `boff-${꼴}` }, '보내기'), 1);
-      assert.deepEqual(본.차례().map((x) => x.깃발), [[]], 'a 일만 a로');
-      assert.deepEqual(본.ego().map((x) => x.out), ['답2.md']);
-      assert.ok(fs.existsSync(웹.표시경로(b.out)), '보냄 표시는 그대로 — 다시 보내지 않는다');
-      assert.match(찍힘.join('\n'), new RegExp(`안 함 {2}작업1 — 보낸 줄\\(gemini-b\\)${꼴 === '꺼짐' ? '이 꺼져 있다' : '의 둘째 ego를 못 쓴다'} — 다시 보내지 말고 b 줄이 켜진 뒤 읽기`));
-    }, { 둘째됨 });
-  }
-});
-
-test('두 줄 — b 줄에서 화면 계정이 다르면 b 줄을 끄고(gemini-b.off) 그 건을 a로 다시 보낸다 · 둘째 ego에 못 붙으면 끄지 않고 a로', async () => {
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    const j = 두줄작업(dir, 1);
-    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 두줄: true, 이름: 'wrong-b' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.match(fs.readFileSync(path.join(dir, 'gemini-b.off'), 'utf8'), /둘째 ego 계정 확인 실패 · wrong-b — 계정이 unmet25가 아님/);
-    assert.ok(!fs.existsSync(path.join(dir, 'gemini-a.off')), 'a 줄은 그대로');
-    assert.deepEqual(본.차례().map((x) => x.깃발), [['--두줄'], []], 'b를 끈 뒤에는 a 줄만');
-    assert.deepEqual(본.ego().map((x) => x.어느), ['둘째', '메인']);
+test('여러 줄 — a 말고 다른 줄에서 화면 계정이 다르면 그 줄만 끄고(차례 끄기 c) 그 건을 다른 줄로 다시 보낸다 · a에서 다르면 옛날처럼 멈춘다 · sorry면 모든 줄을 끈다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'wrong-c' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.끄기().map((x) => x.키), ['c']);
+    assert.match(fs.readFileSync(path.join(dir, 'gemini-c.off'), 'utf8'), /gemini-c 계정 확인 실패 · wrong-c — 계정이 77unmet가 아님/);
+    assert.ok(!fs.existsSync(path.join(dir, 'gemini-a.off')), '다른 줄은 그대로');
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--여러줄'], ['--줄', 'a,b,d,e']], 'c를 끈 뒤에는 남은 줄로');
+    assert.deepEqual(본.ego().map((x) => x.account), ['77unmet', '77yuhbs']);
     assert.ok(fs.existsSync(j.out));
-    assert.deepEqual(본.쓰임().map((x) => [x.줄, x.결과]), [['gemini-b', '멈춤'], ['gemini-a', '받음']]);
-  }, { 환경: { FAKE_WRONG_ACCOUNT: '둘째' } });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    const j = 두줄작업(dir, 1);
-    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 두줄: true, 이름: 'noconn-b' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.ok(!fs.existsSync(path.join(dir, 'gemini-b.off')), '못 붙은 것은 계정 문제가 아니라 줄을 끄지 않는다');
-    assert.deepEqual(본.ego().map((x) => x.어느), ['둘째', '메인']);
-    assert.match(찍힘.join('\n'), /둘째 ego에 못 붙었다 · 그 건은 a 줄로 다시 선다/);
-  }, { 환경: { FAKE_NO_CONNECT: '둘째' } });
+    assert.deepEqual(본.쓰임().map((x) => [x.줄, x.결과]), [['gemini-c', '멈춤'], ['gemini-a', '받음']]);
+  }, { 환경: { FAKE_LANE: 'c', FAKE_WRONG_ACCOUNT: '77unmet' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'wrong-a' }, '보내기'), 1);
+    assert.deepEqual(본.끄기(), [], 'a는 끄지 않는다');
+    assert.match(찍힘.join('\n'), /멈춤: 계정이 77yuhbs가 아님/);
+  }, { 환경: { FAKE_WRONG_ACCOUNT: '77yuhbs' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'sorry-d' }, '보내기'), 1);
+    assert.deepEqual(본.끄기().map((x) => x.키), ['모두']);
+    assert.ok('abcde'.split('').every((k) => fs.existsSync(path.join(dir, `gemini-${k}.off`))), '같은 회선이라 모든 줄');
+    assert.match(fs.readFileSync(path.join(dir, 'gemini-e.off'), 'utf8'), /로봇 확인\(sorry\) · sorry-d/);
+  }, { 환경: { FAKE_LANE: 'd', FAKE_SORRY: 'synk.yuh' } });
 });
 
-test('두 줄 — 늦은 답은 보낸 줄 표시를 남기고, 다음 읽기가 그 줄로 선다(보낸 계정에서만 읽는다)', async () => {
-  let 표시 = null;
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    const j = 두줄작업(dir, 1);
-    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 두줄: true, 이름: 'late-b' }, '보내기'), 1);
-    표시 = JSON.parse(fs.readFileSync(웹.표시경로(j.out), 'utf8'));
-    assert.deepEqual([표시.줄, 표시.계정이름, 표시.계정, 표시.공간], ['gemini-b', 'unmet25', 0, 'synk-argon-web-b']);
-    delete process.env.FAKE_LATE;
-    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 두줄: true, 이름: 'late-b' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.차례().map((x) => x.깃발), [['--두줄'], ['--b줄만']], '다시 부르면 보내기가 아니라 b 줄 읽기');
-    assert.deepEqual(본.ego().map((x) => [x.어느, x.mode]), [['둘째', '보내기'], ['둘째', '읽기']]);
-  }, { 환경: { FAKE_LATE: '둘째' } });
-});
-
-test('두 줄 확인 — --b줄만은 둘째 ego로 b 계정을 보고, 둘째 ego를 못 쓰면 서지 않는다', async () => {
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.확인({ _: [], 파일: [], b줄만: true, 이름: 'chk-b' }), 0, 찍힘.join('\n'));
-    assert.deepEqual(본.차례().map((x) => x.깃발), [['--b줄만']]);
-    assert.deepEqual(본.ego().map((x) => [x.어느, x.mode, x.u, x.account, x.profile]), [['둘째', '확인', 0, 'unmet25', 'Default']]);
-    assert.match(찍힘.join('\n'), /통과 · gemini-b \/u\/0 unmet25/);
-  });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.확인({ _: [], 파일: [], b줄만: true, 이름: 'chk-nob' }), 1);
-    assert.deepEqual(본.차례(), []);
-  }, { 둘째됨: false });
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    assert.equal(await 웹.확인({ _: [], 파일: [], b줄만: true, 이름: 'chk-wrong' }), 1);
-    assert.match(fs.readFileSync(path.join(dir, 'gemini-b.off'), 'utf8'), /둘째 ego 계정 확인 실패/, '확인에서도 b 계정이 다르면 b 줄을 끈다');
-  }, { 환경: { FAKE_WRONG_ACCOUNT: '둘째' } });
-});
-
-test('두 줄 — b 줄이 꺼져 있으면(11-12 둘째 ego 로그아웃) 둘째 ego를 띄우지도 붙어 보지도 않고, --두줄은 a로 · 확인 --b줄만은 서지 않는다', async () => {
-  await 두줄시험(async (dir, 찍힘, 본) => {
-    fs.writeFileSync(path.join(dir, 'gemini-b.off'), '시험 — 둘째 ego 로그아웃\n');
-    assert.equal(await 웹.돌리기([두줄작업(dir, 1)], { _: [], 파일: [], 두줄: true, 이름: 'boff-send' }, '보내기'), 0, 찍힘.join('\n'));
-    assert.equal(본.준비부름(), 0, '꺼진 b 때문에 창을 띄우지 않는다');
-    assert.deepEqual(본.차례().map((x) => x.깃발), [[]]);
+test('여러 줄 — 이름 붙은 ego 줄(차례 ego=)은 그 서버 · Default 프로필 · synk-argon-web-<키>로, 그 ego를 못 쓰면 그 줄은 빼고 서고, 못 붙으면 다른 줄로 다시', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'ego-b' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.준비부름(), ['gemini-x']);
+    assert.deepEqual(본.ego().map((x) => [x.어느, x.u, x.account, x.space, x.profile, x.줄]), [['gemini-x', 0, 'unmet25', 'synk-argon-web-b', 'Default', 'gemini-b']]);
+  }, { 환경: { FAKE_LANE: 'b', FAKE_EGO_LANE: 'b=gemini-x' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'ego-b-no' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--줄', 'a,c,d,e']]);
     assert.equal(본.ego()[0].어느, '메인');
-    assert.match(찍힘.join('\n'), /둘째 ego를 못 쓴다 — b 줄이 꺼져 있다\(gemini-b\.off\)/);
-    assert.equal(await 웹.확인({ _: [], 파일: [], b줄만: true, 이름: 'boff-chk' }), 1);
-    assert.equal(본.준비부름(), 0);
-    assert.equal(본.차례().length, 1, '확인 --b줄만은 줄에 서지 않는다(꺼진 b를 끝없이 기다리지 않게)');
+    assert.match(찍힘.join('\n'), /ego 서버 gemini-x를 못 쓴다 — 가짜 — ego 서버 gemini-x 없음 · 그 줄은 쓰지 않는다/);
+  }, { 서버됨: false, 환경: { FAKE_LANE: 'b', FAKE_EGO_LANE: 'b=gemini-x' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'ego-b-noconn' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.ok(!fs.existsSync(path.join(dir, 'gemini-b.off')), '못 붙은 것은 계정 문제가 아니라 줄을 끄지 않는다');
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--여러줄'], ['--줄', 'a,c,d,e']]);
+    assert.deepEqual(본.ego().map((x) => x.어느), ['gemini-x', '메인']);
+    assert.match(찍힘.join('\n'), /ego 서버 gemini-x에 못 붙었다 · 그 건은 다른 줄로 다시 선다/);
+  }, { 환경: { FAKE_LANE: 'b', FAKE_EGO_LANE: 'b=gemini-x', FAKE_NO_CONNECT: 'gemini-x' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    끔(dir, 'b');
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'ego-b-off' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.준비부름(), [], '꺼진 ego 줄 때문에 창을 띄우지 않는다');
+  }, { 환경: { FAKE_EGO_LANE: 'b=gemini-x' } });
+});
+
+test('여러 줄 — 메인 ego를 보통 세션(굽기)이 쥐고 있으면 올리기 잠금을 내려놓고 그 세션이 놓을 때까지 기다린 뒤 올린다 · 이름 붙은 ego 줄은 안 기다린다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'wait-plain' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.equal(찍힘.filter((l) => /메인 ego를 보통 세션\(gemini-a bake\)이 쥐고 있다 — 같은 브라우저라 그 세션이 놓을 때까지 올리지 않고 기다린다/.test(l)).length, 1, '알림은 한 번');
+    assert.ok(Number(fs.readFileSync(path.join(dir, '줄들셈.txt'), 'utf8')) >= 5, '놓을 때까지 다시 봤다');
+    assert.ok(fs.existsSync(j.out));
+    assert.ok(!fs.existsSync(path.join(dir, 'upload.lock')), '잠금은 풀렸다');
+  }, { 환경: { FAKE_LANE: 'c', FAKE_PLAIN_UNTIL: '4' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.돌리기([줄작업(dir, 1)], { _: [], 파일: [], 이름: 'ego-no-wait' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.ok(!찍힘.some((l) => /보통 세션/.test(l)), '다른 브라우저(이름 붙은 ego) 줄은 메인 ego 보통 세션을 안 기다린다');
+    assert.equal(본.ego()[0].어느, 'gemini-x');
+  }, { 환경: { FAKE_LANE: 'b', FAKE_EGO_LANE: 'b=gemini-x', FAKE_PLAIN_UNTIL: '99' } });
+});
+
+test('여러 줄 — 늦은 답은 보낸 줄 표시를 남기고, 다음 부름은 다시 보내지 않고 그 줄 · 그 공간으로 읽는다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    process.env.FAKE_LATE = 'synk.yuh';
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'late-d' }, '보내기'), 1);
+    const 표시 = JSON.parse(fs.readFileSync(웹.표시경로(j.out), 'utf8'));
+    assert.deepEqual([표시.줄, 표시.계정이름, 표시.계정, 표시.공간], ['gemini-d', 'synk.yuh', 4, `${웹.기본공간}-d`]);
+    delete process.env.FAKE_LATE;
+    process.env.FAKE_LANE = 'a';
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'late-d' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--여러줄'], ['--줄', 'd']], '다시 부르면 보내기가 아니라 d 줄 읽기');
+    assert.deepEqual(본.ego().map((x) => [x.mode, x.account, x.space]), [['보내기', 'synk.yuh', `${웹.기본공간}-d`], ['읽기', 'synk.yuh', `${웹.기본공간}-d`]]);
+  }, { 환경: { FAKE_LANE: 'd' } });
+});
+
+test('여러 줄 확인 — 줄을 안 고르면 a, --줄 c면 c 계정, --여러줄이면 먼저 비는 줄 · 꺼진 줄은 서지 않고 · a 말고 다른 줄의 계정이 다르면 그 줄을 끈다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.확인({ _: [], 파일: [], 이름: 'chk' }), 0, 찍힘.join('\n'));
+    assert.equal(await 웹.확인({ _: [], 파일: [], 줄: 'c', 이름: 'chk-c' }), 0, 찍힘.join('\n'));
+    assert.equal(await 웹.확인({ _: [], 파일: [], 여러줄: true, 이름: 'chk-any' }), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => x.깃발), [['--줄', 'a'], ['--줄', 'c'], ['--여러줄']]);
+    assert.deepEqual(본.ego().map((x) => [x.mode, x.u, x.account, x.space]), [['확인', 2, '77yuhbs', 웹.기본공간], ['확인', 3, '77unmet', `${웹.기본공간}-c`], ['확인', 2, '77yuhbs', 웹.기본공간]]);
+    assert.match(찍힘.join('\n'), /통과 · gemini-c \/u\/3 77unmet/);
   });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    끔(dir, 'c', '2026-11-12 19:51:38 새 줄 — 한 줄씩 켠다');
+    assert.equal(await 웹.확인({ _: [], 파일: [], 줄: 'c', 이름: 'chk-c-off' }), 1);
+    assert.deepEqual(본.차례(), [], '꺼진 줄을 끝없이 기다리지 않게 서지 않는다');
+    assert.match(찍힘.join('\n'), /고른 줄\(c\)을 지금 못 쓴다 — 꺼짐: gemini-c\(/);
+  });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.확인({ _: [], 파일: [], 줄: 'e', 이름: 'chk-e-wrong' }), 1);
+    assert.match(fs.readFileSync(path.join(dir, 'gemini-e.off'), 'utf8'), /gemini-e 계정 확인 실패 · chk-e-wrong/, '확인에서도 다른 줄 계정이 다르면 그 줄을 끈다');
+  }, { 환경: { FAKE_WRONG_ACCOUNT: 'unmet22' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.확인({ _: [], 파일: [], 줄: 'b', 이름: 'chk-ego-b' }), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.준비부름(), ['gemini-x']);
+    assert.deepEqual(본.ego().map((x) => [x.어느, x.mode, x.u, x.account, x.profile]), [['gemini-x', '확인', 0, 'unmet25', 'Default']]);
+  }, { 환경: { FAKE_EGO_LANE: 'b=gemini-x' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    assert.equal(await 웹.확인({ _: [], 파일: [], 줄: 'b', 이름: 'chk-ego-b-no' }), 1);
+    assert.deepEqual(본.차례(), [], 'ego를 못 쓰면 서지 않는다');
+  }, { 서버됨: false, 환경: { FAKE_EGO_LANE: 'b=gemini-x' } });
 });

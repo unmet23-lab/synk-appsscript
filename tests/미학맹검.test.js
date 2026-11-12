@@ -213,32 +213,37 @@ test('막힘읽기: 거절 한 줄 · 보낸 글 사라짐 · 안 보내짐 · �
   for (const m of [맹검.막힘읽기(답(1)), 맹검.막힘읽기(답(3)), 맹검.막힘읽기(답(4)), 실패]) assert.equal(관문.막힘됨(m), true, '관문이 받는 증거 꼴');
 });
 
-test('줄꺼짐(11-12 두 줄): a 줄이 꺼져도 b 줄(둘째 ego)을 쓸 수 있으면 막힘이 아니고, b도 꺼졌거나 둘째 ego를 못 쓰면 끈 때 · 끝 줄을 막힘으로', async (t) => {
+test('줄꺼짐(11-12 여러 줄): 메인 ego 줄이 하나라도 켜져 있으면 막힘이 아니고, 다 꺼졌으면 끈 까닭을(같으면 한 번) 막힘으로 · 이름 붙은 ego 줄만 남으면 그 ego를 본다', async (t) => {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), '줄꺼짐-')); t.after(() => fs.rmSync(d, { recursive: true, force: true }));
   const 차례 = path.join(d, '차례.py');
   let 부름 = 0;
-  const 됨 = async () => { 부름 += 1; return { 됨: true, 까닭: '둘째 ego에 붙음' }; };
-  const 안됨 = async () => { 부름 += 1; return { 됨: false, 까닭: '둘째 ego를 띄웠는데 30초 안에 통로가 안 생겼다' }; };
-  assert.equal(await 맹검.줄꺼짐(차례, 됨), null);
-  assert.equal(부름, 0, 'a 줄이 켜져 있으면 둘째 ego를 건드리지 않는다');
+  const 됨 = async () => { 부름 += 1; return { 됨: true, 까닭: 'ego 서버 gemini-x에 붙음' }; };
+  const 안됨 = async () => { 부름 += 1; return { 됨: false, 까닭: 'ego 서버 gemini-x를 띄웠는데 30초 안에 통로가 안 생겼다' }; };
+  const 다섯 = ['a', 'b', 'c', 'd', 'e'].map((k) => ({ 줄: `gemini-${k}`, 키: k, ego: '' }));
+  assert.equal(await 맹검.줄꺼짐(차례, 됨, 다섯), null);
   fs.writeFileSync(path.join(d, 'gemini-a.off'), '11-08 07:41 공모전 관리 세션: a 줄 끔\n');
-  assert.equal(await 맹검.줄꺼짐(차례, 됨), null, 'a가 꺼져도 b로 간다');
-  const 못씀 = await 맹검.줄꺼짐(차례, 안됨);
-  assert.equal(못씀.꼴, '줄 꺼짐');
-  assert.match(못씀.첫줄, /a 줄: 11-08 07:41 공모전 관리 세션: a 줄 끔 · b 줄은 둘째 ego를 못 씀: 둘째 ego를 띄웠는데/);
-  assert.equal(관문.막힘됨(못씀), true);
-  fs.writeFileSync(path.join(d, 'gemini-b.off'), '11-12 sorry\n');
-  부름 = 0;
-  const m = await 맹검.줄꺼짐(차례, 됨);
+  assert.equal(await 맹검.줄꺼짐(차례, 됨, 다섯), null, 'a가 꺼져도 b · c · d · e로 간다');
+  for (const k of 'bcde') fs.writeFileSync(path.join(d, `gemini-${k}.off`), '2026-11-12 22:00:00 아르곤웹 · 로봇 확인(sorry)\n');
+  const m = await 맹검.줄꺼짐(차례, 됨, 다섯);
   assert.equal(m.꼴, '줄 꺼짐');
-  assert.match(m.첫줄, /a 줄 끔 · b 줄도 꺼짐: 11-12 sorry/);
-  assert.equal(부름, 0, '두 줄 다 꺼졌으면 둘째 ego를 띄우지 않는다');
+  assert.match(m.첫줄, /^a 줄: 11-08 07:41 공모전 관리 세션: a 줄 끔 · b,c,d,e 줄: 2026-11-12 22:00:00 아르곤웹 · 로봇 확인\(sorry\)$/);
+  assert.equal(부름, 0, '메인 ego 줄만 있으면 ego 서버를 건드리지 않는다');
   assert.equal(관문.막힘됨(m), true);
+  fs.writeFileSync(path.join(d, 'gemini-a.off'), '2026-11-12 22:00:00 아르곤웹 · 로봇 확인(sorry)\n');
+  assert.equal((await 맹검.줄꺼짐(차례, 됨, 다섯)).첫줄, '모든 줄: 2026-11-12 22:00:00 아르곤웹 · 로봇 확인(sorry)', '까닭이 같으면 한 번');
+  assert.equal((await 맹검.줄꺼짐(차례, 됨, 다섯.map((l) => ({ ...l, 꺼짐: true, 꺼진까닭: '차례가 알려 준 까닭' })))).꼴, '줄 꺼짐', '차례 줄들의 꺼짐도 본다');
+  const 섞임 = [...다섯, { 줄: 'gemini-f', 키: 'f', ego: 'gemini-x' }];
+  assert.equal(await 맹검.줄꺼짐(차례, 됨, 섞임), null, '켜진 줄이 이름 붙은 ego 줄뿐이어도 그 ego가 되면 간다');
+  assert.equal(부름, 1);
+  const 못씀 = await 맹검.줄꺼짐(차례, 안됨, 섞임);
+  assert.match(못씀.첫줄, /f 줄은 ego 서버 gemini-x를 못 씀: ego 서버 gemini-x를 띄웠는데/);
+  for (const k of 'bcde') fs.rmSync(path.join(d, `gemini-${k}.off`));
+  assert.equal(await 맹검.줄꺼짐(차례, 됨), null, '줄 목록을 못 읽으면(옛 차례.py) 끔 파일 a · b만 — b가 켜져 있으면 간다');
 });
 
-test('아르곤부르기(11-12) — 보내기 · 읽기 모두 --두줄로 부른다(b 줄이 4일 넘게 놀던 까닭)', () => {
+test('아르곤부르기(11-12) — 보내기 · 읽기 모두 --여러줄로 부른다(먼저 비는 줄 — b 줄이 4일 넘게 놀던 까닭)', () => {
   const 글 = fs.readFileSync(path.join(__dirname, '..', 'tools', '미학맹검.js'), 'utf8');
-  assert.match(글, /spawn\(process\.execPath, \[아르곤, 명령, \.\.\.남은, '--두줄'\]/);
+  assert.match(글, /spawn\(process\.execPath, \[아르곤, 명령, \.\.\.남은, '--여러줄'\]/);
 });
 
 test('지시문: 띠 · 마스코트 대조 · 대본 의도 줄 — 긴 설명 넷 + 의도 200자도 아르곤 한도 안, 기준 없음(11-08 적중시험 꼴)', () => {

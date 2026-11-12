@@ -27,8 +27,9 @@
  *     · --편: 결과를 그 편 폴더 게시/미학맹검.json에도 남긴다 — 올리기 전 검사(⑱ · tools/lib/미학관문.js)가 본다.
  *     · 설명은 판정이 드러나지 않게 쓴다(「새 판」 「고친」 「옛」 금지 — 「가상 러닝화 광고의 끝 화면(9:16)」처럼).
  *     · 그림은 화면01…로 이름을 바꿔 보낸다(파일 이름이 답을 흘리지 않게). 아르곤 웹 한 대화에 그림 4장까지 — 쌍은 같은 대화에 둔다.
- *   줄(11-12): 카본은 공용 차례에 --두줄로 선다 — a 줄(77yuhbs · 메인 ego) · b 줄(unmet25 · 둘째 ego gemini-b) 가운데 먼저 비는 줄(b 줄이 4일 넘게
- *     놀았다 — 이 도구가 a 줄만 섰다). a 줄이 꺼져도 b를 쓸 수 있으면 보내고, 둘 다 못 쓰면 막힘 「줄 꺼짐」. 보낸 대화는 보낸 줄에서만 읽는다(아르곤웹).
+ *   줄(11-12): 카본은 공용 차례에 --여러줄로 선다 — a 77yuhbs · b unmet25 · c 77unmet · d synk.yuh · e unmet22(모두 Ultra, 웹 몫은 계정마다 따로) 가운데
+ *     먼저 비는 줄(b 줄이 4일 넘게 놀았다 — 이 도구가 a 줄만 섰다). 켜진 줄이 하나라도 있으면 보내고, 다 꺼졌으면 막힘 「줄 꺼짐」. 보낸 대화는 보낸 줄에서만
+ *     읽는다(아르곤웹).
  *   막힘(11-10 설계 18): 아르곤이 답을 못 주면(거절 한 줄 · 보낸 글 사라짐 · 안 보내짐 · 줄 꺼짐) 묶음마다 꼴 · 보낸 시각 · 거절 첫 줄을 기록 「막힘」에
  *     남긴다 — ⑱은 이 증거와 대체 눈의 결과 파일이 있어야 확인할 것으로 내린다(「맹검못함」 글만으로는 못 넘는다). 대체 순서는 아르곤 → GPT → Opus:
  *       --눈 gpt   같은 그림을 GPT(구독 Codex — tools/codex계정.js, 돈 안 나감)가 본다. 적중(11-08 기각 사례)을 잰 기록이 있어야 쓴다.
@@ -46,7 +47,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const { 마지막JSON } = require('./lib/그록호출.js');
 const 관문 = require('./lib/미학관문.js');
@@ -497,11 +498,12 @@ function 지난정리(화면들, 지난, { 눈 = '아르곤', 뺌 = [], 아르�
 
 /* ── 막힌 증거 ───────────────────────────────────────────────────────── */
 
-/** 아르곤웹 공용 차례에서 미학맹검이 설 줄이 모두 막혔나 → 막힘 한 줄 또는 null. 11-12부터 미학맹검은 --두줄로 a · b 가운데 먼저 비는 줄에 서니
- *  a 줄이 꺼져도 b 줄(unmet25 · 둘째 ego gemini-b)을 쓸 수 있으면 간다 — b 줄도 꺼졌거나 둘째 ego를 못 쓰면(띄우기 · 붙기 실패) 막힘이다.
- *  둘째준비는 a 줄이 꺼졌을 때만 부른다(아르곤웹.js 둘째준비 — 안 떠 있으면 띄우고 붙어 본다). */
+/** 아르곤웹 공용 차례에서 미학맹검이 설 줄이 모두 막혔나 → 막힘 한 줄 또는 null. 11-12부터 미학맹검은 --여러줄로 모든 줄(a 77yuhbs · b unmet25 ·
+ *  c 77unmet · d synk.yuh · e unmet22 — 차례 `줄들`) 가운데 먼저 비는 줄에 서니, 메인 ego 줄이 하나라도 켜져 있으면 간다. 켜진 줄이 모두 이름 붙은
+ *  ego 줄이면 그 ego를 준비해 보고(아르곤웹.js 서버준비 — 안 떠 있으면 띄우고 붙어 본다) 못 쓰면 막힘, 다 꺼졌으면 막힘(꺼진 줄의 끝 줄 — 까닭이 같으면
+ *  한 번만). 줄 목록을 못 읽는 옛 차례.py면 끔 파일 a · b만 본다. 줄들은 시험에서 넘긴다. */
 async function 줄꺼짐(차례py = process.env.SYNK_CHARYE_PY || path.join(os.homedir(), 'Documents', 'synk-vendor', '_공용차례', '차례.py'),
-  둘째준비 = () => require('./아르곤웹.js').둘째준비()) {
+  서버준비 = (서버) => require('./아르곤웹.js').서버준비(서버), 줄들 = null) {
   const 끈것 = (k) => {
     const f = path.join(path.dirname(차례py), `gemini-${k}.off`);
     let 글 = '';
@@ -510,14 +512,26 @@ async function 줄꺼짐(차례py = process.env.SYNK_CHARYE_PY || path.join(os.h
     let 때 = null; try { 때 = KST시각(fs.statSync(f).mtimeMs); } catch { /* 모름 */ }
     return { 끈때: 때, 첫줄: 줄 };
   };
-  const a = 끈것('a');
-  if (!a) return null;
-  const b = 끈것('b');
-  if (b) return { 꼴: '줄 꺼짐', 끈때: a.끈때, 첫줄: 자르기(`a 줄: ${a.첫줄} · b 줄도 꺼짐: ${b.첫줄}`, 200) };
-  let r = null;
-  try { r = await 둘째준비(); } catch (e) { r = { 됨: false, 까닭: e.message }; }
-  if (r && r.됨) return null;
-  return { 꼴: '줄 꺼짐', 끈때: a.끈때, 첫줄: 자르기(`a 줄: ${a.첫줄} · b 줄은 둘째 ego를 못 씀: ${r ? r.까닭 : '모름'}`, 200) };
+  let 목록 = 줄들;
+  if (!Array.isArray(목록)) {
+    const r = spawnSync('python', ['-X', 'utf8', 차례py, 'gemini', '줄들'], { encoding: 'utf8', windowsHide: true, timeout: 60_000 });
+    try { 목록 = JSON.parse(String(r.stdout || '').trim().split(/\r?\n/).pop()); } catch { 목록 = null; }
+    if (!Array.isArray(목록)) 목록 = ['a', 'b'].map((k) => ({ 줄: `gemini-${k}`, 키: k, ego: '' }));
+  }
+  const 켜짐 = 목록.filter((l) => !l.꺼짐 && !끈것(l.키));
+  if (켜짐.some((l) => !l.ego)) return null;
+  const 못씀 = [];
+  for (const 서버 of new Set(켜짐.map((l) => l.ego))) {
+    let r = null;
+    try { r = await 서버준비(서버); } catch (e) { r = { 됨: false, 까닭: e.message }; }
+    if (r && r.됨) return null;
+    못씀.push(`${켜짐.filter((l) => l.ego === 서버).map((l) => l.키).join(',')} 줄은 ego 서버 ${서버}를 못 씀: ${r ? r.까닭 : '모름'}`);
+  }
+  const 꺼진 = 목록.map((l) => ({ 키: l.키, f: 끈것(l.키) || (l.꺼짐 ? { 끈때: null, 첫줄: l.꺼진까닭 || '꺼짐' } : null) })).filter((x) => x.f);
+  const 까닭별 = new Map();
+  for (const x of 꺼진) 까닭별.set(x.f.첫줄, [...(까닭별.get(x.f.첫줄) || []), x.키]);
+  const 글 = [...[...까닭별].map(([첫줄, 키들]) => `${키들.length === 목록.length ? '모든 줄' : `${키들.join(',')} 줄`}: ${첫줄}`), ...못씀].join(' · ');
+  return { 꼴: '줄 꺼짐', 끈때: (꺼진.find((x) => x.f.끈때) || { f: {} }).f.끈때 || null, 첫줄: 자르기(글 || '쓸 수 있는 줄이 없다', 200) };
 }
 
 /** 묶음 하나의 막힌 증거 — 답 파일(JSON 없는 거절 · 오류 한 줄) · 보냄 표시(보냈는데 대화 · 답 없음) · 안보내짐 표시 · 아르곤웹 출력 꼬리. 답이 JSON이면 null. */
@@ -544,14 +558,14 @@ function 막힘읽기(답파일, 출력꼬리 = '', 작업이름 = '') {
 /* ── 부르기 ─────────────────────────────────────────────────────────── */
 
 /** 아르곤웹 보내기 → (답 없는 작업만) 읽기. 출력은 그대로 흘리며 꼬리를 남긴다.
- *  11-12부터 --두줄 — a(77yuhbs · 메인 ego) · b(unmet25 · 둘째 ego) 가운데 먼저 비는 줄로 보낸다. 읽기는 아르곤웹이 보냄 표시의 줄로만 선다. */
+ *  11-12부터 --여러줄 — 공용 차례의 모든 줄 가운데 먼저 비는 줄로 보낸다. 읽기는 아르곤웹이 보냄 표시의 줄로만 선다. */
 async function 아르곤부르기(작업들) {
   const 아르곤 = path.join(뿌리, 'tools', '아르곤웹.js');
   let 꼬리 = '';
   const 한번 = (명령) => new Promise((resolve) => {
     const 남은 = 작업들.filter(w => !fs.existsSync(w.답)).map(w => w.작업);
     if (!남은.length) return resolve(0);
-    const c = spawn(process.execPath, [아르곤, 명령, ...남은, '--두줄'], { cwd: 뿌리, stdio: ['inherit', 'pipe', 'pipe'] });
+    const c = spawn(process.execPath, [아르곤, 명령, ...남은, '--여러줄'], { cwd: 뿌리, stdio: ['inherit', 'pipe', 'pipe'] });
     const 흘림 = (곳) => (d) => { 곳.write(d); 꼬리 = (꼬리 + d).slice(-20000); };
     c.stdout.on('data', 흘림(process.stdout));
     c.stderr.on('data', 흘림(process.stderr));

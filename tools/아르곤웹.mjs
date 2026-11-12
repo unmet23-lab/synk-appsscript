@@ -214,6 +214,26 @@ const 빈탭 = async () => {
   return await task.newPage();
 };
 
+// 새 계정 첫 화면의 「정확한 위치를 사용하시겠습니까?」 창이 클릭을 막는다(11-12 unmet22 — 「닫기 / 정확한 위치 사용」) — 위치를 주지 않는 쪽
+// (닫기)으로만 닫는다. 그 창이 없으면 아무것도 누르지 않는다. 닫았으면 true
+const 위치창닫기 = async () => {
+  const 있음 = await page.evaluate(() => {
+    document.querySelectorAll('[data-synk="loc-close"]').forEach((e) => e.removeAttribute("data-synk"));
+    for (const d of document.querySelectorAll('[role=dialog], [role=alertdialog], mat-dialog-container, .cdk-overlay-pane')) {
+      const r = d.getBoundingClientRect();
+      if (!r.width || !r.height || !/정확한 위치/.test(d.innerText || "")) continue;
+      const b = [...d.querySelectorAll("button")].find((x) => /^(닫기|Close|아니요|나중에)$/.test((x.innerText || x.getAttribute("aria-label") || "").trim()));
+      if (b) { b.setAttribute("data-synk", "loc-close"); return true; }
+    }
+    return false;
+  }).catch(() => false);
+  if (!있음) return false;
+  await page.click('loc=css:[data-synk="loc-close"]', { timeout: 10000, label: "close location prompt" }).catch(() => {});
+  await page.waitForTimeout(800);
+  log({ step: "dismiss", what: "정확한 위치 창 — 닫기(위치를 주지 않음)" });
+  return true;
+};
+
 // 같은 계정 첫 화면을 열고 sorry · 한도 · 계정을 본다(보내기 · 확인 · 사이드바 찾기). 한도 문구는 보낼 때만 멈춘다 — 읽기는 모델 몫이 없어도 된다.
 const 첫화면 = async () => {
   await page.info();
@@ -231,6 +251,7 @@ const 첫화면 = async () => {
   for (let i = 0; i < 45; i++) { await page.waitForTimeout(2000); if (/sorry/.test(await page.url().catch(() => ""))) break; s = await state().catch(() => ({ mode: "", len: -1, limit: false })); if (s.mode || s.len >= 0) break; }
   if (/sorry/.test(await page.url())) await fail("로봇 확인 화면(sorry) — 멈춤, 유호님 손", "멈춤");
   if (s.limit && mode !== "읽기") await fail("사용량 한도 문구가 보임", "멈춤");
+  await 위치창닫기();
   // 계정 확인 — 로그인이 바뀌면 /u/ 순번도 바뀐다(11-07 ego 프로필 교체). 계정 표시는 입력창보다 늦게 뜰 수 있어 10초까지 본다.
   const whoNow = () => page.evaluate(() => [...document.querySelectorAll("[aria-label]")].map((e) => e.getAttribute("aria-label")).filter((t) => /@/.test(t)).join(" | ")).catch(() => "");
   let who = await whoNow();
@@ -446,6 +467,20 @@ if (mode === "읽기") {
     s = await state();
     if (!s.mode) await fail("모드 단추가 없음(도구 판을 열어도)");
   };
+  // 모드 메뉴 단추 누르기 — 새 계정은 단추가 늦게 그려지거나 안내 창이 가려 첫 누르기가 15초 넘게 안 먹는다(11-12 synk.yuh 첫 확인, 두 번째엔 통과).
+  // 위치 창을 닫고 Escape · 도구 판 다시 열기 뒤 두 번까지 다시 누른다
+  const 모드단추누르기 = async () => {
+    for (let i = 0; ; i += 1) {
+      try { await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" }); return; } catch (e) {
+        if (i >= 2) throw e;
+        log({ step: "retry", what: "모드 단추", why: String(e.message || e).slice(0, 160) });
+        await 위치창닫기();
+        await page.keyboard.press("Escape").catch(() => {});
+        await page.waitForTimeout(3000);
+        await openTools();
+      }
+    }
+  };
   // 모드 고르기(11-11 유호님 「제미나이 관련한 검수나 이미지 생성 · 딥리서치 전부 카본(max)」) — 모델 「카본」 + 사고 수준 하위 메뉴의 가장 높은 단계.
   // 단계 이름은 판마다 바뀌어 와서(낮음 · 보통 · 높음 ↔ 최저가 · 보통 · 최고가) 하위 메뉴를 열어 읽은 항목에 순위를 매겨 가장 높은 것을 누르고,
   // 모드 칸에 「카본」과 그 단계 이름이 있는지로 대조한다(카본인가 · 수준순위 · 가장높은수준 · 카본모드맞나 — tools/아르곤웹.js 판단 함수, 시험은 그쪽).
@@ -465,14 +500,14 @@ if (mode === "읽기") {
     for (let i = 0; i < 3; i++) {
       await openTools();
       if (OK(s.mode)) return;
-      await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" });
+      await 모드단추누르기();
       await page.waitForTimeout(1300);
       // 모델 항목 글은 「Most complex work 4 카본」처럼 설명이 앞에 온다(11-11 실물) — 이름은 맨 앞이 아니라 낱말 경계로 찾는다
       if (!카본인가(s.mode) && (await mark_("(?:^|\\s)(?:\\d+(?:\\.\\d+)?\\s*)?(?:Carbon|카본)(?:\\s|$)", "carbon"))) {
         await page.click('loc=css:[data-synk="carbon"]', { timeout: 15000, label: "choose Carbon" });
         await page.waitForTimeout(1300);
         await openTools();
-        await page.click('loc=css:button[aria-label^="모드 선택 도구 열기"]', { timeout: 15000, label: "open mode menu" });
+        await 모드단추누르기();
         await page.waitForTimeout(1300);
       }
       if (await mark_("^사고 수준", "think")) {
@@ -609,4 +644,15 @@ if (mode === "읽기") {
   if (감시) clearTimeout(감시);
   await 올리기풀기();
   if (넘김 && page) await page.close().catch(() => {}); // 마감으로 그만둔 판 — 제 탭을 닫는다(실패 그림은 fail이 먼저 찍었다)
+  // 보내기 누르기 전에 끝난 보내기 · 확인은 입력창에 넣은 「.」 · 지시문을 지운다(11-12 synk.yuh 확인이 실패하며 「.」을 남겼다 — 다음 빈 탭 찾기도
+  // 초안이 있는 탭은 안 쓴다). 누른 뒤 · 읽기는 건드리지 않는다
+  else if (page && !누름 && (mode === "보내기" || mode === "확인")) {
+    const 남은글 = await page.evaluate(() => { const ed = document.querySelector('[aria-label="Gemini 프롬프트 입력"]'); return ed ? ed.innerText.trim().length : 0; }).catch(() => 0);
+    if (남은글) {
+      await page.click('loc=css:[aria-label="Gemini 프롬프트 입력"]', { timeout: 5000, label: "focus prompt box" }).catch(() => {});
+      await page.keyboard.press("ControlOrMeta+a").catch(() => {});
+      await page.keyboard.press("Backspace").catch(() => {});
+      log({ step: "cleared", 글자: 남은글 });
+    }
+  }
 }
