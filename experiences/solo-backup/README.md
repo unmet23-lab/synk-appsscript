@@ -1,5 +1,7 @@
 # 업무 백업 · Windows 시험판 0.5.0
 
+> **2026-11-12 꺼짐 · 동결.** 유호님 요청으로 이 PC의 0.5.0 자동 백업과 Windows 시작 등록(`SoloWorkBackup`)을 껐다. B2 사본과 Google 복구 정보는 그대로 있다. 이 Electron 판은 더 고치지 않는다. 새 기능은 [Rust 판](../solo-backup-rust/README.md)에서 [상품화 로드맵](../solo-backup-rust/ROADMAP.md) 순서대로 만든다.
+
 선택한 작업 폴더를 암호화해 외장 드라이브 또는 Backblaze B2 클라우드에 자동 백업하고, 최신 완료본을 새 폴더에 복구하는 운영자 시험판입니다. Windows x64용이며 Node.js나 별도 백업 프로그램을 설치할 필요가 없습니다. 외장·로컬과 클라우드는 각자의 설정과 복구 키를 사용하며 동시에 켤 수 있습니다.
 
 ## 시작하기
