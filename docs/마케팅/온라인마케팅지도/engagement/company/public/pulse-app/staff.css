@@ -176,6 +176,7 @@ html.is-staff .staff-home [data-form="intake-pause"] .button.primary{background:
 html.is-staff #main>.login-wrap{max-width:none;margin:0;padding:64px 28px;border-radius:0;background:none;box-shadow:none;border-bottom:1px solid var(--st-line)}
 html.is-staff .login-wrap .panel-card{border-radius:0;background:var(--st-sheet);box-shadow:none;border:1px solid var(--st-line)}
 html.is-staff .login-wrap .button{border-radius:0}
+html.is-staff .login-wrap .eyebrow{font-family:var(--st-sans);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--st-ink-56)}
 
 /* ── 프로젝트 안(의뢰 확인) — 한글 13px 아래 글 · 36px 아래 누르는 자리만 맞춘다(짜임은 슬레이트 판 그대로) ── */
 html.is-staff .desk .desk-at{font-size:13px}
