@@ -3,10 +3,10 @@
 // **첫 설계 판 v0.2(11-11 07시 회차 — 동영상을 받기 전 · Fable 검수 반영)**: src의 start · crop · 대사 초는 받은 영상의 소리 크기 곡선 + 받아쓰기로 다시 잰다.
 // v0.2: 판사의 지어낸 끝 줄을 빼고 해설로 · 가운데 16초를 줄임(「변호사님…?」 3초 · 기다림 2.6초 · 손 3.4초 · 버팀은 침묵 한 판만) · 끝을 바닥 접사 → 두 사람 두 컷으로(해설 뒤 음악을 끊고).
 // 컷마다 그 영상에 든 소리(대사 · 방 소리)를 그대로 깐다(audio). 동영상은 public/img/*.mp4(git 밖 — 제미나이 앱 동영상 · 막히면 Flow Omni).
-export type Crop = { s: number; cx: number; cy: number; ay?: number };
+export type Crop = { s: number; cx: number; cy: number; ay?: number; push?: { t0: number; t1: number; to: number } }; // push = 컷 안 t0~t1초에 배율을 to배까지 천천히 키운다(다가감)
 export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; a?: { src: string; start: number; vol?: number } };
 
-export const S = { hook: 5.0, hold: 33.8, confess: 36.5, look: 41.0, quiet: 56.8, end: 57.0 };
+export const S = { hook: 5.0, hold: 33.8, confess: 36.5, look: 41.0, quiet: 55.3, end: 55.4 };
 export const TOTAL_S = 59.7;
 // 원본(제미나이 앱 동영상)이 24fps라 편집도 24fps로 굽는다 — 30fps 시간선에 넣으면 5프레임마다 한 장이 겹쳐 떨린다(현장 노트 영상 · 24fps 원본).
 export const FPS = 24;
@@ -21,16 +21,16 @@ export const CUTS: CutT[] = [
   { from: 1.3, to: 2.9, src: 'img/VJ1.mp4', start: 1.9, crop: JF, audio: 1.0 },
   { from: 2.9, to: 4.4, src: 'img/VW2.mp4', start: 0.5, crop: F, drift: 0.015, a: { src: 'img/VJ1.mp4', start: 3.5 } },
   { from: 4.4, to: 5.5, src: 'img/VL1.mp4', start: 0.0, crop: F, audio: 1.0 },
-  { from: 5.5, to: 7.4, src: 'img/VL1.mp4', start: 1.1, crop: { s: 1.35, cx: 400, cy: 760 }, audio: 1.0, drift: 0 },
-  { from: 7.4, to: 9.7, src: 'img/VL1.mp4', start: 3.0, crop: { s: 1.35, cx: 800, cy: 1000 }, audio: 1.0, drift: 0 },
+  { from: 5.5, to: 7.4, src: 'img/VH.mp4', start: 6.3, crop: F, drift: 0, a: { src: 'img/VL1.mp4', start: 1.1 } },
+  { from: 7.4, to: 9.7, src: 'img/VL1.mp4', start: 3.0, crop: F, audio: 1.0 },
   // 승
   { from: 9.7, to: 11.0, src: 'img/VJ1.mp4', start: 5.8, crop: JF, audio: 0.8 },
-  { from: 11.0, to: 12.3, src: 'img/VJ1.mp4', start: 7.1, crop: { s: 1.3, cx: 640, cy: 900 }, audio: 1.0, drift: 0 },
-  { from: 12.3, to: 14.0, src: 'img/VL1.mp4', start: 5.4, crop: F, a: { src: 'img/VJ1.mp4', start: 8.4 } },
+  { from: 11.0, to: 12.3, src: 'img/VL3.mp4', start: 0.3, crop: F, drift: 0, a: { src: 'img/VJ1.mp4', start: 7.1 } },
+  { from: 12.3, to: 14.0, src: 'img/VJ1.mp4', start: 8.4, crop: { s: 1.3, cx: 640, cy: 900 }, audio: 1.0, drift: 0 },
   { from: 14.0, to: 15.9, src: 'img/VH.mp4', start: 0.2, crop: F, audio: 0.8 },
   { from: 15.9, to: 18.4, src: 'img/VL1.mp4', start: 7.2, crop: F, audio: 1.0 },
   { from: 18.4, to: 21.4, src: 'img/VW2.mp4', start: 2.0, crop: F, audio: 0.4, drift: 0.015 },
-  { from: 21.4, to: 23.4, src: 'img/VCb.mp4', start: 0.0, crop: { s: 1.3, cx: 700, cy: 1000 }, drift: 0 },
+  { from: 21.4, to: 23.4, src: 'img/VL3.mp4', start: 4.6, crop: F, drift: 0 },
   // 전
   { from: 23.4, to: 25.8, src: 'img/VJ2.mp4', start: 0.6, crop: JF, audio: 1.0 },
   { from: 25.8, to: 27.2, src: 'img/VL2.mp4', start: 0.0, crop: F, a: { src: 'img/VJ2.mp4', start: 3.0 } },
@@ -40,16 +40,15 @@ export const CUTS: CutT[] = [
   { from: 34.0, to: 35.5, src: 'img/VW2.mp4', start: 5.0, crop: F, audio: 0.4, drift: 0.015 },
   { from: 35.5, to: 39.2, src: 'img/VL2.mp4', start: 3.4, crop: F, audio: 1.0 },
   { from: 39.2, to: 41.0, src: 'img/VJ2.mp4', start: 6.8, crop: JF, a: { src: 'img/VL2.mp4', start: 7.1 } },
-  { from: 41.0, to: 45.8, src: 'img/VCa.mp4', start: 5.2, crop: { s: 1.5, cx: 600, cy: 800 }, audio: 0.6, drift: 0 },
-  { from: 45.8, to: 47.6, src: 'img/VL2.mp4', start: 7.3, crop: { s: 1.25, cx: 540, cy: 760 }, audio: 0.4, drift: 0 },
-  // 결
-  { from: 47.6, to: 48.9, src: 'img/VJ2.mp4', start: 8.6, crop: JF, audio: 0.5 },
-  { from: 48.9, to: 50.4, src: 'img/VW2.mp4', start: 7.4, crop: F, audio: 0.4, drift: 0.015 },
-  { from: 50.4, to: 52.6, src: 'img/VL2.mp4', start: 7.8, crop: F, audio: 0.4 },
-  { from: 52.6, to: 54.4, src: 'img/VH.mp4', start: 8.2, crop: F, audio: 0.4 },
-  { from: 54.4, to: 57.0, src: 'img/VCb.mp4', start: 2.4, crop: F, audio: 0.7 },
-  { from: 57.0, to: 58.5, src: 'img/VCb.mp4', start: 6.9, crop: { s: 1.7, cx: 400, cy: 840 }, audio: 1.0, low: 0, drift: 0 },
-  { from: 58.5, to: 59.7, src: 'img/VCb.mp4', start: 8.8, crop: { s: 1.25, cx: 580, cy: 1500 }, audio: 1.0, low: 0, drift: 0 },
+  { from: 41.0, to: 44.6, src: 'img/VCa.mp4', start: 5.2, crop: { s: 1.5, cx: 600, cy: 800 }, audio: 0.6, drift: 0 },
+  { from: 44.6, to: 46.2, src: 'img/VL2.mp4', start: 7.3, crop: { s: 1.25, cx: 540, cy: 760 }, audio: 0.4, drift: 0 },
+  // 결 — 해설 둘 → (음악 끊김) 끝 한 방은 한 판으로: 의뢰인이 의자째 빠져나감 → 곁눈 → 한숨
+  { from: 46.2, to: 47.6, src: 'img/VJ2.mp4', start: 8.6, crop: JF, audio: 0.5 },
+  { from: 47.6, to: 48.9, src: 'img/VW2.mp4', start: 7.4, crop: F, audio: 0.4, drift: 0.015 },
+  { from: 48.9, to: 50.4, src: 'img/VCa.mp4', start: 3.2, crop: F, audio: 0.4, drift: 0 },
+  { from: 50.4, to: 52.6, src: 'img/VH.mp4', start: 7.8, crop: F, audio: 0.4 },
+  { from: 52.6, to: 54.4, src: 'img/VL3.mp4', start: 7.2, crop: F, audio: 0.4, drift: 0 },
+  { from: 54.4, to: 59.7, src: 'img/VE.mp4', start: 0.4, crop: { s: 1.0, cx: 0, cy: 1010, push: { t0: 0.4, t1: 1.5, to: 1.3 } }, audio: 1.0, low: 0, drift: 0 },
 ];
 
 // 큰 글자 = 말. grey = 변호인 · 의뢰인(판사와 해설은 흰). at = 줄마다 뜨는 초(말하는 때).
@@ -65,13 +64,13 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   { lines: ['출처가 어딥니까?'], from: 27.7, to: 29.5, size: 85 },
   { lines: ['변호사님…?'], from: 32.6, to: 33.9, grey: true, size: 85 },
   { lines: ['…AI가,', '찾아 줬습니다'], from: 36.5, to: 40.9, grey: true, size: 96, at: [36.5, 39.1] },
-  { lines: ['설문에 답한 판사 셋 중 둘이,', '가짜 판례가 적힌 서류를 받아 봤대요'], from: 47.7, to: 51.5, size: 57, meta: '법원행정처 설문 · 법관 360명 응답 · 2026년 11월', at: [47.7, 49.2] },
-  { lines: ['AI는 없는 판결에도', '번호까지 붙여 줘요'], from: 51.6, to: 53.9, size: 82, at: [51.6, 52.5] },
-  { lines: ['근거를 대면,', '그 번호부터 직접 찾아보세요'], from: 54.0, to: 56.8, size: 76, meta: '판결은 대법원 사법정보공개포털 「허위 사건번호 확인」', at: [54.0, 54.8] },
+  { lines: ['설문에 답한 판사 셋 중 둘이,', '가짜 판례가 적힌 서류를 받아 봤대요'], from: 46.3, to: 50.1, size: 57, meta: '법원행정처 설문 · 법관 360명 응답 · 2026년 11월', at: [46.3, 47.8] },
+  { lines: ['AI는 없는 판결에도', '번호까지 붙여 줘요'], from: 50.2, to: 52.4, size: 82, at: [50.2, 51.1] },
+  { lines: ['근거를 대면,', '그 번호부터 직접 찾아보세요'], from: 52.5, to: 55.3, size: 76, meta: '판결은 대법원 사법정보공개포털 「허위 사건번호 확인」', at: [52.5, 53.3] },
 ];
 
 export const VO: { id: string; t: number }[] = [
-  { id: 'n1', t: 18.5 }, { id: 'n2', t: 47.7 }, { id: 'n3', t: 51.6 },
+  { id: 'n1', t: 18.5 }, { id: 'n2', t: 46.3 }, { id: 'n3', t: 50.2 },
 ];
 
 export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [];

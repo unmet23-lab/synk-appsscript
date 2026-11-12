@@ -21,7 +21,7 @@ const TOP = 340; // B38 컷 전수 검수 3: 고지 글 · 큰 글자를 안전�
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
 const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number }> = ({ src, start, crop, rate = 1, drift = 0.012 }) => {
   const f = useCurrentFrame();
-  const s = crop.s * (1 + (f / FPS) * drift);
+  const s = crop.s * (1 + (f / FPS) * drift) * (crop.push ? interpolate(f / FPS, [crop.push.t0, crop.push.t1], [1, crop.push.to], { ...clamp, easing: Easing.inOut(Easing.cubic) }) : 1);
   const ay = crop.ay ?? 1000;
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
   const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
