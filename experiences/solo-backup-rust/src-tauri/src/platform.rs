@@ -23,6 +23,13 @@ fn root_allowed(path:&Path,appdata:&Path,test:bool)->bool{
     !overlap(path,&appdata.join("SoloWorkBackup"))&&(!test||!overlap(path,&appdata.join("SoloWorkBackupRustBeta")))
 }
 pub fn state_root(test: bool) -> Result<(PathBuf, File), String> {
+    let (root, lock) = open_state(test)?;
+    match lock { Some(lock) => Ok((root, lock)), None => { signal_existing(&root); Err("ALREADY_RUNNING".into()) } }
+}
+/// The checked state folder and its lock, without waking the window that holds
+/// the lock: a scheduled run that finds it held records 「바쁨」 and ends
+/// (STAGE1_DESIGN.md 4.1 · 4.2). `None` means another process holds it.
+pub fn open_state(test: bool) -> Result<(PathBuf, Option<File>), String> {
     let appdata = std::env::var_os("APPDATA").ok_or("STATE_ROOT")?;
     let production = PathBuf::from(&appdata).join("SoloWorkBackup");
     let requested = if test { PathBuf::from(std::env::var_os("SOLO_BACKUP_TEST_STATE").ok_or("TEST_STATE_REQUIRED")?) }
@@ -36,11 +43,11 @@ pub fn state_root(test: bool) -> Result<(PathBuf, File), String> {
     let lockpath = root.join("native.lock");
     if fs::symlink_metadata(&lockpath).is_ok_and(|m| m.file_attributes() & 0x400 != 0) { return Err("STATE_ROOT".into()); }
     let lock = OpenOptions::new().read(true).write(true).create(true).truncate(false).open(lockpath).map_err(|_| "STATE_LOCK")?;
-    if lock.try_lock_exclusive().is_err(){signal_existing(&root);return Err("ALREADY_RUNNING".into());}
+    let held = lock.try_lock_exclusive().is_err();
     // std::fs::canonicalize returns extended-length syntax on Windows. The
     // existing engine deliberately rejects device/UNC inputs; pass the same
     // checked local drive spelling it receives from an Electron folder picker.
-    Ok((worker_path(&root)?, lock))
+    Ok((worker_path(&root)?, if held { None } else { Some(lock) }))
 }
 
 fn signal_name(root:&Path)->Vec<u16>{format!("Local\\SoloWorkBackupRustBeta-{:x}",Sha256::digest(key_path(root).as_bytes())).encode_utf16().chain([0]).collect()}
@@ -110,7 +117,23 @@ impl ProcessJob {
         Ok(())
     }
     pub fn terminate(&self) { unsafe { TerminateJobObject(self.0, 1); } }
+    /// What the job's processes (worker and every restic it started, ended ones
+    /// included) used so far: peak commit and total CPU time (4.2 「회차 기록」).
+    pub fn usage(&self) -> Option<JobUsage> {
+        let mut limits: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = unsafe { std::mem::zeroed() };
+        let mut basic: JOBOBJECT_BASIC_ACCOUNTING_INFORMATION = unsafe { std::mem::zeroed() };
+        let ok = unsafe {
+            QueryInformationJobObject(self.0, JobObjectExtendedLimitInformation, &mut limits as *mut _ as *mut _, std::mem::size_of_val(&limits) as u32, ptr::null_mut()) != 0
+            && QueryInformationJobObject(self.0, JobObjectBasicAccountingInformation, &mut basic as *mut _ as *mut _, std::mem::size_of_val(&basic) as u32, ptr::null_mut()) != 0
+        };
+        if !ok { return None; }
+        Some(JobUsage { peak_job_bytes: limits.PeakJobMemoryUsed as u64, peak_process_bytes: limits.PeakProcessMemoryUsed as u64,
+            cpu_ms: (basic.TotalUserTime.max(0) as u64 + basic.TotalKernelTime.max(0) as u64) / 10_000, processes: basic.TotalProcesses })
+    }
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JobUsage { pub peak_job_bytes: u64, pub peak_process_bytes: u64, pub cpu_ms: u64, pub processes: u32 }
 impl Drop for ProcessJob { fn drop(&mut self) { unsafe { CloseHandle(self.0); } } }
 
 #[cfg(test)] mod tests {
@@ -133,6 +156,16 @@ impl Drop for ProcessJob { fn drop(&mut self) { unsafe { CloseHandle(self.0); } 
     #[test] fn oauth_is_exact_origin() {
         assert!(oauth_allowed("https://accounts.google.com/o/oauth2/v2/auth?state=test"));
         for u in ["https://accounts.google.com.evil/o/oauth2/v2/auth", "https://user@accounts.google.com/o/oauth2/v2/auth", "http://accounts.google.com/o/oauth2/v2/auth", "https://accounts.google.com/o/oauth2/v2/token"] { assert!(!oauth_allowed(u)); }
+    }
+    #[test] fn job_usage_counts_its_processes(){
+        use std::{process::Command,os::windows::process::CommandExt};
+        let job=ProcessJob::new().unwrap();
+        let comspec=std::env::var_os("ComSpec").unwrap_or_else(||"cmd.exe".into());
+        let mut child=Command::new(comspec).args(["/c","ping -n 2 127.0.0.1 >nul"]).creation_flags(0x08000000).spawn().unwrap();
+        job.assign(&child).unwrap();child.wait().unwrap();
+        let usage=job.usage().unwrap();
+        assert!(usage.processes>=1,"cmd and ping are counted: {usage:?}");
+        assert!(usage.peak_job_bytes>0&&usage.peak_process_bytes<=usage.peak_job_bytes);
     }
     #[test] fn job_terminates_owned_descendant(){
         use std::{io::{BufRead,BufReader,Write},process::{Command,Stdio},os::windows::process::CommandExt};

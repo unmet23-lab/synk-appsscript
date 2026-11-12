@@ -57,6 +57,13 @@ class Profiles extends EventEmitter {
     this.emit('state', this.getState());
   }
   start() { this.timer = setInterval(() => this.tick(), 30000); this.timer.unref?.(); this.tick(); }
+  // One scheduled run over both profiles, one after the other (no timers).
+  async runOnce(options = {}) {
+    this.boundaries();
+    const results = {};
+    for (const [name, engine] of Object.entries(this.engines)) results[name] = await engine.runOnce(options);
+    return results;
+  }
   async stop() { this.closing = true; clearInterval(this.timer); await Promise.all(Object.values(this.engines).map(e => e.stop())); }
   active() { return Object.values(this.engines).some(e => e.config?.automatic || e.job); }
   busy() { return Object.values(this.engines).some(e => e.job); }

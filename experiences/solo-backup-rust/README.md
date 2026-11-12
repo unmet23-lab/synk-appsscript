@@ -57,7 +57,7 @@ npm ci --ignore-scripts --prefix experiences/solo-backup-rust/engine
   -PublicOAuthClient C:\build-input\recovery-client.json
 ```
 
-출력 폴더는 새 경로여야 한다. restic은 기존 엔진이 고정한 SHA-256과 일치해야 한다. `PublicOAuthClient`에는 배포 가능한 데스크톱 OAuth 클라이언트 설정만 넣으며 개인 토큰은 넣지 않는다. 빌드 스크립트가 Node·restic·워커·의존성을 묶고 리소스 목록 해시를 실행 파일에 고정한다. `WorkBackupRust.exe`와 `resources` 폴더를 함께 옮긴다. 산출물과 자격 파일은 Git에 넣지 않는다.
+출력 폴더는 새 경로여야 한다. restic은 기존 엔진이 고정한 SHA-256과 일치해야 한다. `PublicOAuthClient`에는 배포 가능한 데스크톱 OAuth 클라이언트 설정만 넣으며 개인 토큰은 넣지 않는다. 빌드 스크립트가 Node·restic·워커·의존성을 묶고 리소스 목록 해시를 실행 파일에 고정한다. `WorkBackupRust.exe`(화면 앱) · `WorkBackupRun.exe`(회차 실행기, 11-12부터)와 `resources` 폴더를 함께 옮긴다. 산출물과 자격 파일은 Git에 넣지 않는다.
 
 `InventoryBinDirectory`는 절대 경로의 `release` 폴더로 지정한다. 스크립트가 해당 target에 현재 진단기·계획기 소스를 `--locked`로 빌드한 뒤 묶는다. 상대 빌드 경로는 이번 판의 검증 범위 밖이다.
 
@@ -78,6 +78,14 @@ cargo test --locked --manifest-path experiences/solo-backup-rust/src-tauri/Cargo
 # 실제 배포용 EXE로 합성 파일 백업·전체/선택 복구와 SHA-256을 확인한다.
 node experiences/solo-backup-rust/test-support/native-smoke.cjs `
   C:\build-output\work-backup-rust\WorkBackupRust.exe C:\test-output
+
+# 회차 실행기(디버그 빌드): 꺼짐 · 지금 백업 · 잠금 보유 · 옮기기 중단 · 잘못된 인자와 기록에 경로가 없는지.
+$env:SWB_RUN_EXE = 'C:\build-target\debug\WorkBackupRun.exe'
+node --test experiences/solo-backup-rust/tests/run-exe.test.cjs
+
+# T7(1단계 설계 4.3): 배포용 실행기로 합성 자료 300MB의 회차 시작 · 메모리를 재고 restic 단독과 견준다.
+node experiences/solo-backup-rust/test-support/t7-runner.cjs `
+  C:\build-output\work-backup-rust\WorkBackupRun.exe C:\test-output 300 5
 ```
 
 합성 자료가 없으면 암호 호환 시험을 건너뛰지 않고 실패한다. `--test-mode`는 별도 `SOLO_BACKUP_TEST_STATE`가 필요하며 운영 상태 폴더·시작 등록·외부 URL 열기를 거부한다. 실제 B2 시험은 운영자가 준비한 읽기 전용 사본에서만 수행했다. 상세 결과와 확인하지 않은 범위는 [QA](QA.md), 채택한 기존 제품 기능은 [조사](../solo-backup/RESEARCH.md)에 있다.

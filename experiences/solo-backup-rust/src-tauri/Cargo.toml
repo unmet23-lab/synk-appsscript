@@ -4,6 +4,7 @@ version = "0.6.1-beta.1"
 edition = "2021"
 rust-version = "1.90"
 publish = false
+autobins = false
 
 [lib]
 name = "backup_native"
@@ -13,6 +14,10 @@ path = "src/lib.rs"
 name = "WorkBackupRust"
 path = "src/main.rs"
 
+[[bin]]
+name = "WorkBackupRun"
+path = "src/bin/run.rs"
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -20,7 +25,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "=2.12.5", features = ["tray-icon", "image-png"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tokio = { version = "1", features = ["sync", "time"] }
+tokio = { version = "1", features = ["sync", "time", "rt"] }
 sha2 = "0.10"
 base64 = "0.22"
 aes-gcm = "0.10"
@@ -29,7 +34,8 @@ fs2 = "0.4"
 rfd = { version = "0.18", features = ["common-controls-v6"] }
 url = "2"
 winreg = "0.55"
-windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Cryptography", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Memory", "Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows = { version = "0.62", features = ["Networking_Connectivity"] }
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Cryptography", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Memory", "Win32_System_Power", "Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 
 [profile.release]
 strip = true

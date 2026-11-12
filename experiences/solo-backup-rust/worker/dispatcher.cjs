@@ -4,7 +4,7 @@
 const {StringDecoder}=require('node:string_decoder');
 const contract=require('../contract/methods.json');
 const MAX_IN=131072,MAX_OUT=2*1024*1024;
-const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,booting=false,stopping=false,terminating=false;
+const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,ran=false,booting=false,stopping=false,terminating=false;
 function send(value){const text=JSON.stringify({v:1,...value});if(Buffer.byteLength(text)+1>MAX_OUT)fatal('PAYLOAD_TOO_LARGE');else process.stdout.write(text+'\n');}
 function fatal(code){if(terminating)return;terminating=true;stopping=true;process.stdout.write(JSON.stringify({v:1,fatal:code})+'\n',()=>process.exit(1));setTimeout(()=>process.exit(1),1000).unref();}
 function host(method,args){
@@ -25,6 +25,18 @@ async function message(value){
     if(value.ok===true)entry.resolve(value.value);else entry.reject(new Error(typeof value.code==='string'?value.code:'HOST_FAILED'));return;
   }
   if(!Number.isSafeInteger(value.id)||value.id<1||!Array.isArray(value.args)||value.args.length>2||typeof value.method!=='string')throw Error('INVALID_REQUEST');
+  if(value.method==='$boot'&&process.env.SWB_MODE==='run'){
+    // Scheduled-run mode: profile engines only, one `$run` per boot (runner.cjs).
+    if(booting||runner)throw Error('DUPLICATE_BOOT');booting=true;
+    const {createRunner}=require('./runner.cjs');
+    runner=await createRunner({host,root:process.env.SWB_ROOT,resticPath:process.env.SWB_RESTIC,publish:state=>send({event:'state',value:state})});
+    send({id:value.id,ok:true,value:{mode:'run'}});return;
+  }
+  if(value.method==='$run'){
+    if(!runner||ran)throw Error('NOT_READY');ran=true;
+    const result=await runner.runOnce(value.args[0]);send({id:value.id,ok:true,value:result});return;
+  }
+  if(value.method==='$shutdown'&&runner){stopping=true;await runner.stop();send({id:value.id,ok:true,value:null});process.stdin.pause();process.stdout.end(()=>process.exit(0));return;}
   if(value.method==='$boot'){
     if(booting||application)throw Error('DUPLICATE_BOOT');booting=true;
     const {createApplication}=require('./handlers.cjs');

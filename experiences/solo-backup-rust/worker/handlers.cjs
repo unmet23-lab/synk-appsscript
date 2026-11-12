@@ -2,7 +2,7 @@
 // Handler bodies carried from the reviewed 0.5.0 Electron controller. Only the
 // native adapter and awaited startup setter differ; the backup engine is shared.
 const fs = require('node:fs/promises'), path = require('node:path');
-const engineRoot = process.env.SWB_ENGINE_ROOT || path.resolve(__dirname, '../../solo-backup');
+const engineRoot = process.env.SWB_ENGINE_ROOT || path.resolve(__dirname, '../engine');
 const { Profiles } = require(path.join(engineRoot, 'src/profiles.cjs'));
 const { parseKit } = require(path.join(engineRoot, 'src/engine.cjs'));
 const { RecoveryService } = require(path.join(engineRoot, 'src/recovery-service.cjs'));

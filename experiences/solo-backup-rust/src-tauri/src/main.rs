@@ -1,8 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use backup_native::{platform, protocol, secret, worker::Worker};
 use serde_json::{json,Value};
-use sha2::{Digest,Sha256};
-use std::{collections::VecDeque, fs, io::{Read,Write}, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
+use std::{collections::VecDeque, fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
 use tauri::{Emitter,Manager};
 
 struct AppState { worker:Arc<Worker>, current:Arc<Mutex<Value>>, closing:AtomicBool }
@@ -64,24 +63,6 @@ fn shell_open(value:&str)->Result<(),String>{
     if result as isize<=32{Err("OPEN_FAILED".into())}else{Ok(())}
 }
 
-fn verify_resources(root:&Path)->Result<(),String>{
-    let bytes=fs::read(root.join("manifest.json")).map_err(|_|"BUNDLE_MISSING")?;
-    if let Some(expected)=option_env!("SWB_RESOURCE_MANIFEST_SHA") {
-        if format!("{:x}",Sha256::digest(&bytes))!=expected{return Err("BUNDLE_INTEGRITY".into());}
-    }else if !cfg!(debug_assertions){return Err("BUNDLE_UNSEALED".into());}
-    let manifest:Value=serde_json::from_slice(&bytes).map_err(|_|"BUNDLE_INVALID")?;
-    let files=manifest["files"].as_object().ok_or("BUNDLE_INVALID")?;
-    for required in ["node.exe","restic.exe","worker/dispatcher.cjs","worker/handlers.cjs","contract/methods.json","engine/package.json"]{if !files.contains_key(required){return Err("BUNDLE_INVALID".into());}}
-    for (name,entry) in files {
-        if name.contains('\\')||Path::new(name).components().any(|c|!matches!(c,std::path::Component::Normal(_))){return Err("BUNDLE_INVALID".into());}
-        let path=root.join(name);if !path.is_file(){return Err("BUNDLE_MISSING".into());}
-        let mut file=fs::File::open(&path).map_err(|_|"BUNDLE_MISSING")?;let mut hash=Sha256::new();let mut buffer=[0u8;65536];let mut size=0u64;
-        loop{let read=file.read(&mut buffer).map_err(|_|"BUNDLE_READ")?;if read==0{break;}size+=read as u64;hash.update(&buffer[..read]);}
-        if Some(size)!=entry["size"].as_u64()||Some(format!("{:x}",hash.finalize()).as_str())!=entry["sha256"].as_str(){return Err("BUNDLE_INTEGRITY".into());}
-    }
-    Ok(())
-}
-
 #[tauri::command]
 async fn backup_call(window:tauri::WebviewWindow,state:tauri::State<'_,AppState>,method:String,args:Value)->Result<Value,String>{
     if window.label()!="main"||!window.url().is_ok_and(|u|protocol::local_url(&u))||!protocol::request_allowed(&method,&args){return Ok(json!({"ok":false,"error":"이 화면에서는 실행할 수 없습니다.","code":"INVALID_REQUEST"}));}
@@ -134,7 +115,7 @@ fn run()->Result<(),String>{
     if smoke_mode&&!test{return Err("TEST_MODE_REQUIRED".into());}
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
     let resources=if cfg!(debug_assertions){std::env::var_os("SWB_RESOURCES").map(PathBuf::from).unwrap_or(exe.parent().unwrap().join("resources"))}else{exe.parent().unwrap().join("resources")};
-    verify_resources(&resources)?;
+    backup_native::bundle::verify(&resources,&[])?;
     let (root,lock)=platform::state_root(test)?;
     if root.join("migration-incomplete").exists(){return Err("MIGRATION_INCOMPLETE".into());}
     let signal=Arc::new(platform::InstanceSignal::new(&root)?);
@@ -145,7 +126,7 @@ fn run()->Result<(),String>{
     let app=tauri::Builder::default().invoke_handler(tauri::generate_handler![backup_call]).setup(move|app|{
         let handle=app.handle().clone();let publish_handle=handle.clone();let published=current.clone();
         let failure_handle=handle.clone();let failure_root=root.clone();
-        let worker=Worker::start(&resources,&root,lock,test,Arc::new(move|name,args|native.call(name,args)),Arc::new(move|value|{
+        let worker=Worker::start(&resources,&root,lock,test,false,Arc::new(move|name,args|native.call(name,args)),Arc::new(move|value|{
             *published.lock().unwrap()=value.clone();let _=publish_handle.emit("backup:state",value);
         }),Arc::new(move|code|{
             let _=fs::write(failure_root.join("native-error.txt"),code);

@@ -23,6 +23,7 @@
 - encrypt/decrypt는 비동기 host 호출이다. 기존 호출부가 모두 await하므로 동작이 같다.
 - host 호출은 별도 ID 공간을 쓰고 동시 대기는 최대 8개다. 워커 메시지 최대 2MiB, 렌더러 요청 최대 128KiB. 자동 재전송·자동 재시작은 없다.
 - 자식 종료, 충돌, 프로토콜 위반 시 fail closed: 대기 요청을 고정 오류로 끝내고 작업을 멈춘다. OS 상태 잠금으로 중복 실행을 막고, Job 객체 kill-on-close로 워커와 restic을 함께 끝낸다.
+- 회차 실행기 `WorkBackupRun.exe --run <계기>`(11-12, [1단계 설계](STAGE1_DESIGN.md) 4.2): 같은 리소스 · 같은 통신으로 워커를 회차 모드(`SWB_MODE=run`, `worker/runner.cjs`)로 띄워 `$run` 한 번만 하고 끝난다. Tauri를 링크하지 않고 창 · 대화상자를 띄우지 않는다. 상태 잠금을 못 잡으면 「바쁨」만 적고 끝나며 화면 앱을 깨우지 않는다. 쉼 판단(배터리 30% 아래 · 절전 · 종량 회선)은 Rust가 하고, 직접 누른 회차(`manual`)는 쉬지 않는다. 회차마다 `runs.jsonl`에 한 줄(정해 둔 칸만 — 경로 · 파일 이름 · 비밀 없음, 1MB마다 돌려 씀), 도는 동안 `progress.json`(종류 · 단계 · 퍼센트만). 리소스 확인은 restic.exe를 크기만 보고 해시는 엔진에 맡긴다(엔진이 고정 SHA-256으로 워커마다 확인). 잠금 둘로 나누기(`engine.lock` · `ui.lock`)는 다음 증분이고, 지금은 화면 앱과 같은 `native.lock`을 쓴다.
 
 ## 상태 분리와 이전
 - 상태 폴더는 SoloWorkBackupRustBeta이고 Run 항목도 Electron 판과 다른 이름을 쓴다.

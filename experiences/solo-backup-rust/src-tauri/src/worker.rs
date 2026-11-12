@@ -17,7 +17,9 @@ pub struct Worker {
 }
 
 impl Worker {
-    pub fn start(resources: &Path, root: &Path, lock: File, test: bool, host: Arc<Host>, publish: Arc<Publish>, failure: Arc<Failure>) -> Result<Arc<Self>, String> {
+    /// `run` starts the worker in scheduled-run mode (SWB_MODE=run): profile
+    /// engines only and a single `$run` (worker/runner.cjs, STAGE1_DESIGN.md 4.2).
+    pub fn start(resources: &Path, root: &Path, lock: File, test: bool, run: bool, host: Arc<Host>, publish: Arc<Publish>, failure: Arc<Failure>) -> Result<Arc<Self>, String> {
         let job = ProcessJob::new()?;
         let mut command = Command::new(resources.join("node.exe"));
         command.arg(resources.join("worker/dispatcher.cjs")).current_dir(resources).env_clear();
@@ -27,6 +29,7 @@ impl Worker {
         command.env("SWB_ROOT",root).env("SWB_RESTIC",resources.join("restic.exe")).env("SWB_ENGINE_ROOT",resources.join("engine"))
             .env("SWB_TEST",if test {"1"}else{"0"}).creation_flags(0x08000000).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
         let client = resources.join("recovery-client.json"); if client.is_file() { command.env("SWB_CLIENT",client); }
+        if run { command.env("SWB_MODE","run"); }
         let mut child = command.spawn().map_err(|_| "WORKER_SPAWN")?;
         if let Err(error) = job.assign(&child) { let _=child.kill(); let _=child.wait(); return Err(error); }
         let input = child.stdin.take().ok_or("PIPE_FAILED")?;
@@ -101,6 +104,7 @@ impl Worker {
         Ok(())
     }
     pub fn terminate(&self){self.job.terminate();}
+    pub fn usage(&self)->Option<crate::platform::JobUsage>{self.job.usage()}
     pub fn pid(&self)->u32 {self.child.lock().unwrap().id()}
 }
 impl Drop for Worker {fn drop(&mut self){self.job.terminate();let _=self.child.get_mut().unwrap().wait();}}

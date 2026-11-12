@@ -16,9 +16,31 @@ const selection = require('./restore-select.cjs');
 const APP = 'solo-work-backup-v1';
 const VERIFIED = 'complete-structure-checked';
 const DAY = 86400000;
+// Exit 11 (another process holds the repository lock) is shown as this notice, not as an error;
+// the next successful backup clears it.
+const BUSY_WARNING = '다른 작업이 백업 저장소를 쓰는 중이라 이번 작업은 건너뛰었습니다. 자동 백업은 다음 회차에 다시 하고, 지금 백업은 잠시 뒤 다시 눌러 주세요.';
 const RESTIC_SHA256 = 'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830';
 const isId = s => typeof s === 'string' && /^[a-f0-9]{64}$/.test(s);
 const json = s => JSON.parse(s.replace(/^\uFEFF/, ''));
+// Stream the pinned restic (31 MB) instead of reading it whole, and verify a
+// given file once per process (keyed by path, size and mtime so a swapped file
+// is checked again). Every engine (local · cloud · recommended) used to read the
+// whole binary into memory on open — the T7 preliminary saw the worker peak at
+// 134 MB largely from that (STAGE1_DESIGN.md 4.3).
+const verifiedBinaries = new Map();
+async function sha256File(file) {
+  const hash = crypto.createHash('sha256');
+  const handle = await fs.open(file, 'r');
+  try { const buffer = Buffer.allocUnsafe(1 << 20); for (;;) { const { bytesRead } = await handle.read(buffer, 0, buffer.length, null); if (!bytesRead) break; hash.update(buffer.subarray(0, bytesRead)); } }
+  finally { await handle.close(); }
+  return hash.digest('hex');
+}
+async function verifyRestic(file) {
+  const stat = await fs.stat(file); const key = `${path.resolve(file)}|${stat.size}|${stat.mtimeMs}`;
+  if (verifiedBinaries.get(key) === true) return;
+  if (await sha256File(file) !== RESTIC_SHA256) throw new Error('백업 엔진 파일 검증에 실패했습니다. 배포본을 다시 받아 주세요.');
+  verifiedBinaries.set(key, true);
+}
 function parseKit(text) {
   if (typeof text !== 'string' || Buffer.byteLength(text) > 65536) throw new Error('복구 키 파일을 읽을 수 없습니다.');
   const kit = json(text);
@@ -43,10 +65,7 @@ class BackupEngine extends EventEmitter {
     this.stateDir = await directory(this.stateDir);
     await fs.mkdir(path.join(this.stateDir, 'cache'), { recursive: true });
     await fs.mkdir(path.join(this.stateDir, 'temp'), { recursive: true });
-    if (!this.runner) {
-      const hash = crypto.createHash('sha256').update(await fs.readFile(this.resticPath)).digest('hex');
-      if (hash !== RESTIC_SHA256) throw new Error('백업 엔진 파일 검증에 실패했습니다. 배포본을 다시 받아 주세요.');
-    }
+    if (!this.runner) await verifyRestic(this.resticPath);
     try { this.config = json(await fs.readFile(path.join(this.stateDir, 'settings.json'), 'utf8')); }
     catch (e) { if (e.code !== 'ENOENT') throw new Error('설정 파일이 손상되었습니다. 복구 키로 별도 PC에서 복구할 수 있습니다.'); }
     if (this.config) {
@@ -156,7 +175,11 @@ class BackupEngine extends EventEmitter {
       if (this.config) { if (kind !== 'probe') this.config.lastError = null; await this.save(); }
       return value;
     } catch (e) {
-      if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
+      // Exit 11 is another process holding the repository lock — "busy, try the
+      // next run", not an error (STAGE1_DESIGN.md 4.2 · review F2). The window still
+      // says why nothing happened: a person-started job returns at once (review GA2).
+      if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
+      else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
       const error = new Error(this.clean(e.message)); error.exitCode = e.exitCode; throw error;
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
@@ -169,6 +192,7 @@ class BackupEngine extends EventEmitter {
       if (!permitted) throw new Error('복구 전용 연결에서는 백업·전체 점검·삭제를 실행할 수 없습니다.');
       providerArgs.push('--no-lock');
     }
+    if (this.resticStartedAt === null) this.resticStartedAt = Date.now();
     if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs });
     return new Promise((resolve, reject) => {
       const child = spawn(this.resticPath, ['--repo', repository, ...providerArgs, '--retry-lock', '10s', ...args], { env, windowsHide: true, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -405,22 +429,24 @@ class BackupEngine extends EventEmitter {
       await validateSources(this.config.sources, this.forbidden());
       const runTag = `run:${crypto.randomUUID()}`;
       this.stage('작업 파일 백업 중');
-      await this.run(['backup', '--json', '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...this.config.sources]);
+      // OneDrive online-only files would be downloaded by reading them; OneDrive keeps them (4.2 step 7, review GA1).
+      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...this.config.sources]);
       const pending = await this.snapshots([runTag, 'pending']);
       if (pending.length !== 1) throw new Error('새 백업을 정확하게 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
       this.stage('저장 구조 확인 중');
       try { await this.run(['check'], { timeoutMs: 1800000 }); }
-      catch (e) { this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '저장소 점검이 끝나지 않았습니다. 기존 백업의 현재 무결성도 보장하지 않습니다.' }; throw e; }
+      catch (e) { if (e.exitCode !== 11) this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '저장소 점검이 끝나지 않았습니다. 기존 백업의 현재 무결성도 보장하지 않습니다.' }; throw e; }
       this.stage('백업 완료 기록 중');
       await this.run(['tag', '--add', VERIFIED, '--remove', 'pending', pending[0].id]);
       const promoted = await this.snapshots([runTag, VERIFIED]);
       if (promoted.length !== 1) throw new Error('백업 완료 기록을 확인하지 못했습니다.');
       const s = promoted[0];
       this.config.lastBackup = { id: s.id, at: s.time, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
+      this.lastSummary = s.summary || null;
       this.config.warning = null; await this.save();
       if (!this.config.health || this.config.health.status !== 'ok' || this.now() - Date.parse(this.config.health.checkedAt) >= (this.isCloud() ? 30 : 1) * DAY) {
         try { await this.fullCheck(); }
-        catch { this.config.warning = '백업은 저장했지만 전체 데이터 점검을 완료하지 못했습니다. 백업 위치와 연결을 확인한 뒤 다시 점검해 주세요.'; }
+        catch (e) { this.config.warning = e.exitCode === 11 ? '백업은 저장했고, 다른 작업이 백업 저장소를 쓰는 중이라 전체 데이터 점검은 다음 회차로 미뤘습니다.' : '백업은 저장했지만 전체 데이터 점검을 완료하지 못했습니다. 백업 위치와 연결을 확인한 뒤 다시 점검해 주세요.'; }
       }
       const probeInterval = this.config.lastProbe?.reason === 'limit' ? 30 * DAY : 7 * DAY;
       if (!this.config.lastProbe || this.now() - time(this.config.lastProbe.at) >= probeInterval) await this.probeBody();
@@ -435,7 +461,8 @@ class BackupEngine extends EventEmitter {
       await this.run(['check', '--read-data']);
       this.config.health = { status: 'ok', checkedAt: new Date(this.now()).toISOString(), snapshotId: this.config.lastBackup?.id || null, detail: '이 시각에 저장소의 전체 데이터를 읽어 점검했습니다. 그 뒤에 추가한 백업은 구조 점검 결과를 따릅니다.' };
     } catch (e) {
-      this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: this.clean(e.message) };
+      // Busy (exit 11) proves nothing about the data: keep the last health, retry next run (review GA3).
+      if (e.exitCode !== 11) this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: this.clean(e.message) };
       throw e;
     } finally { await this.save(); }
   }
@@ -697,6 +724,47 @@ class BackupEngine extends EventEmitter {
     // and timer events can never start a second backup.
     if (this.config.pausedUntil) this.config.pausedUntil = null;
     try { await this.backupNow(); } catch { /* Error is persisted and surfaced in state; retry on the next interval. */ }
+  }
+  // A run killed mid-backup (power, logoff, time limit) leaves a restic lock that
+  // makes check · forget fail with exit 11 until removed; restic and 0.5.0 never
+  // removed it. `unlock` without --remove-all removes only stale locks, and with a
+  // key that has no deleteFiles it hides them (B2 measurement M3b, STAGE1_DESIGN.md 4.2).
+  async unlockStale() {
+    if (!this.config?.repositoryId || !this.secret || this.config.readOnly || this.config.mode !== 'backup') return { ran: false };
+    try { await this.run(['unlock'], { timeoutMs: 120000 }); return { ran: true, ok: true }; }
+    catch (e) { return { ran: true, ok: false, exitCode: e.exitCode ?? null }; }
+  }
+  // One scheduled run. From stage 1 the Windows Task Scheduler is the only
+  // scheduler (hourly · logon · wake · unlock); this decides whether this run
+  // backs up and reports what happened for the run log. `dueMs` is 55 minutes so
+  // an hourly trigger that fires a little early still runs.
+  async runOnce({ skipCloud = null, force = false, dueMs = 55 * 60000 } = {}) {
+    const c = this.config;
+    if (!c?.repositoryId) return { outcome: 'skipped', reason: 'not-configured' };
+    if (c.mode !== 'backup' || c.readOnly) return { outcome: 'skipped', reason: 'read-only' };
+    if (!this.secret) return { outcome: 'skipped', reason: 'credential' };
+    if (!c.automatic && !force) return { outcome: 'skipped', reason: 'off' };
+    if (this.job || this.stopping) return { outcome: 'busy', reason: 'job' };
+    if (skipCloud && this.isCloud() && !force) return { outcome: 'skipped', reason: String(skipCloud).slice(0, 40) };
+    if (!force) {
+      const timing = schedule(c, Math.min(this.intervalMs, dueMs), this.now(), this.lastAttempt);
+      if (timing.clockHold) return { outcome: 'skipped', reason: 'clock' };
+      if (timing.paused) return { outcome: 'skipped', reason: 'paused' };
+      if (timing.dueAt > this.now()) return { outcome: 'not-due', nextAt: new Date(timing.dueAt).toISOString() };
+    }
+    this.resticStartedAt = null; this.lastSummary = null;
+    const unlock = await this.unlockStale();
+    if (c.pausedUntil) c.pausedUntil = null;
+    const before = c.lastBackup?.id || null, started = this.now();
+    try {
+      await this.backupNow();
+      const s = this.config.lastBackup, sum = this.lastSummary || {}, num = v => Number.isFinite(v) ? v : null;
+      return { outcome: 'complete', unlock, durationMs: this.now() - started, newSnapshot: !!s?.id && s.id !== before, files: s?.files ?? null, bytes: s?.bytes ?? null,
+        filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
+    } catch (e) {
+      const exitCode = e.exitCode ?? null;
+      return { outcome: exitCode === 11 ? 'busy' : exitCode === 3 ? 'partial' : 'failed', exitCode, unlock, durationMs: this.now() - started, resticStartedAt: this.resticStartedAt };
+    }
   }
   startScheduler(pollMs = 30000) { this.stopScheduler(); this.timer = setInterval(() => { void this.tick(); }, pollMs); this.timer.unref?.(); }
   stopScheduler() { clearInterval(this.timer); }

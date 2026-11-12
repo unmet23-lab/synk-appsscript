@@ -36,7 +36,9 @@ if ($Toolchain) { $cargoArgs += "+$Toolchain" }
 $cargoArgs += @('build','--release','--locked','-j','4','--manifest-path',(Join-Path $appRoot 'src-tauri/Cargo.toml'))
 & $cargo @cargoArgs
 if ($LASTEXITCODE -ne 0) { throw 'Rust build failed; incomplete output retained for inspection.' }
-Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'release/WorkBackupRust.exe') -Destination (Join-Path $outputRoot 'WorkBackupRust.exe')
+# The window app and the scheduled-run executable (STAGE1_DESIGN.md 4.2) share one resources folder.
+foreach ($name in 'WorkBackupRust.exe','WorkBackupRun.exe') { Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR "release/$name") -Destination (Join-Path $outputRoot $name) }
 $exeHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot 'WorkBackupRust.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
-@{ version='0.6.1-rust-beta.1'; exeSha256=$exeHash; resourceManifestSha256=$resourceResult.manifestSha256; resourceFiles=$resourceResult.files } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputRoot 'build-receipt.json') -Encoding utf8
+$runHash = (Get-FileHash -LiteralPath (Join-Path $outputRoot 'WorkBackupRun.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
+@{ version='0.6.1-rust-beta.1'; exeSha256=$exeHash; runExeSha256=$runHash; resourceManifestSha256=$resourceResult.manifestSha256; resourceFiles=$resourceResult.files } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $outputRoot 'build-receipt.json') -Encoding utf8
 Write-Output "Built $outputRoot"
