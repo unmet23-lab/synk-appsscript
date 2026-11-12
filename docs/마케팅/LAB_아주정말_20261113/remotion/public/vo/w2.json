@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w2",
+ "text": "정말!",
+ "dur": 0.555,
+ "words": [
+  {
+   "text": "정말!",
+   "start": 0.02,
+   "end": 0.555
+  }
+ ],
+ "source": {
+  "key": "da73d601c67bbefada90719297a85104",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1137,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

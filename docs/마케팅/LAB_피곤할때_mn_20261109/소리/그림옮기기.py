@@ -11,7 +11,7 @@ from PIL import Image
 os.makedirs(밖, exist_ok=True)
 이름 = {
     '첫화면': 'open', '수업1': 'class1', '수업2': 'class2', '지하철1': 'sub1', '지하철2': 'sub2',
-    '알바1': 'store1', '알바6': 'store2', '과제1': 'desk1', '과제2': 'desk2', '문자': 'phone', '번쩍3': 'up', '노래방': 'karaoke', '다음날3': 'next',
+    '알바1': 'store1', '알바7': 'store2', '과제1': 'desk1', '과제2': 'desk2', '문자': 'phone', '번쩍4': 'up', '노래방': 'karaoke', '다음날3': 'next',
 }
 for ko, en in 이름.items():
     후보 = sorted(glob.glob(os.path.join(판, f'{ko}_[0-9]*.png')))

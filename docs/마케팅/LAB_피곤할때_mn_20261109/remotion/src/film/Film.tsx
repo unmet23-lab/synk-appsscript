@@ -232,7 +232,10 @@ const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
   const W = 84;
   const H = 190;
   const fillH = Math.max(0.04, v) * (H - 16);
+  // 밝은 벽(편의점 · 노래방) 위에서 흰 글자가 묻히지 않게 배터리 뒤를 어둡게 한다(11-13 올리기 전 검사 ⑤)
   return (
+    <>
+    <Glow x={125} y={790} w={360} h={520} a={0.55} />
     <div style={{ position: 'absolute', left: 50, top: 640, width: 150, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: `scale(${grow})`, transformOrigin: '50% 40%', filter: 'drop-shadow(0 4px 10px rgba(16,8,4,0.55))' }}>
       <div style={{ width: 30, height: 9, background: CREAM, borderRadius: '5px 5px 0 0' }} />
       <div style={{ position: 'relative', width: W, height: H, border: `4px solid ${CREAM}`, borderRadius: 18, boxSizing: 'border-box', overflow: 'hidden', background: 'rgba(22,12,8,0.28)' }}>
@@ -241,6 +244,7 @@ const Battery: React.FC<{ t: number; scene?: boolean }> = ({ t }) => {
       <div style={{ marginTop: 8, fontFamily: EN, fontWeight: 900, fontSize: 46, color: CREAM, lineHeight: 1.1, textShadow: SH }}>{Math.round(v * 100)}%</div>
       <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 26, color: DIM, whiteSpace: 'nowrap', textShadow: SH, letterSpacing: 1 }}>{TEXT.gauge}</div>
     </div>
+    </>
   );
 };
 
@@ -259,7 +263,7 @@ const Speech: React.FC<{ b: BubbleData; at: number; t: number }> = ({ b, at, t }
   const cx = b.side === 'right' ? 1080 - 160 - b.width / 2 : 150 + b.width / 2;
   return (
     <>
-      <Glow x={cx} y={b.bottom - 190} w={b.width + 260} h={560} a={0.46 * Math.min(1, p)} />
+      <Glow x={cx} y={b.bottom - 170} w={b.width + 340} h={680} a={0.8 * Math.min(1, p)} />
       <div style={{ position: 'absolute', bottom: 1920 - b.bottom, ...(b.side === 'right' ? { right: 160 } : { left: 150 }), width: b.width, textAlign: 'center', transform: `scale(${p}) rotate(-2deg)`, transformOrigin: '50% 100%', textShadow: SH }}>
         <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 40, color: DIM, lineHeight: 1, letterSpacing: 2 }}>{b.n} / 4</div>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: 124, color: CREAM, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{b.ko}</div>
@@ -277,7 +281,7 @@ const Small: React.FC<{ t: number; from: number; until: number; left: number; to
   const h = Math.round(koSize * 1.14 + 42 * 1.15 + (mn ? 46 * 1.14 + 4 : 0) + 28 + 12 + 6);
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
-      <Glow x={left + width / 2} y={top + h / 2} w={width + 220} h={h + 220} a={0.44} />
+      <Glow x={left + width / 2} y={top + h / 2} w={width + 260} h={h + 260} a={0.6} />
       <div style={{ position: 'absolute', left, top, width, height: h, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', transform: `scale(${p}) rotate(-2deg)`, transformOrigin: '50% 100%', textShadow: SH }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: koSize * 1.12, color: CREAM, lineHeight: 1.14, whiteSpace: 'nowrap' }}>{ko}</div>
         <div style={{ fontFamily: EN, fontWeight: 700, fontSize: 42, color: DIM, lineHeight: 1.15, whiteSpace: 'nowrap', fontStyle: 'italic' }}>{read}</div>

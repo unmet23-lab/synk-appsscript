@@ -1,0 +1,138 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_65a8c7e1915a6295614f775b",
+  "name": "미선"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1137,
+  "lufs": -17
+ },
+ "made": "2026-11-12T22:53:10.323Z",
+ "lines": [
+  {
+   "id": "w1",
+   "text": "아주!",
+   "dur": 0.756,
+   "syllablesPerSec": 2.65,
+   "src": "w1.wav",
+   "key": "cadf295cf659e9e7165a774cc143b851",
+   "words": 1
+  },
+  {
+   "id": "w2",
+   "text": "정말!",
+   "dur": 0.555,
+   "syllablesPerSec": 3.6,
+   "src": "w2.wav",
+   "key": "da73d601c67bbefada90719297a85104",
+   "words": 1
+  },
+  {
+   "id": "w3",
+   "text": "진짜!",
+   "dur": 0.994,
+   "syllablesPerSec": 2.01,
+   "src": "w3.wav",
+   "key": "8352085b22d05a827e987dcb2b656ba7",
+   "words": 1
+  },
+  {
+   "id": "w4",
+   "text": "완전!",
+   "dur": 0.646,
+   "syllablesPerSec": 3.1,
+   "src": "w4.wav",
+   "key": "378ad3f94bb62ad9084fbd70ad31ef55",
+   "words": 1
+  },
+  {
+   "id": "f1",
+   "text": "매우!",
+   "dur": 0.505,
+   "syllablesPerSec": 3.96,
+   "src": "f1.wav",
+   "key": "b176270b57425db5ec0138235be8887f",
+   "words": 1
+  },
+  {
+   "id": "f2",
+   "text": "너무!",
+   "dur": 0.561,
+   "syllablesPerSec": 3.57,
+   "src": "f2.wav",
+   "key": "a964d0e4bd386d7958d1c6fbccfe0d24",
+   "words": 1
+  },
+  {
+   "id": "f3",
+   "text": "엄청!",
+   "dur": 0.767,
+   "syllablesPerSec": 2.61,
+   "src": "f3.wav",
+   "key": "2a3f8de5130ab6414df3c4a4a25dadfe",
+   "words": 1
+  },
+  {
+   "id": "f4",
+   "text": "되게!",
+   "dur": 0.537,
+   "syllablesPerSec": 3.72,
+   "src": "f4.wav",
+   "key": "04e787403fa3a5d0adb1012ce38d8260",
+   "words": 1
+  },
+  {
+   "id": "f5",
+   "text": "무척!",
+   "dur": 0.53,
+   "syllablesPerSec": 3.77,
+   "src": "f5.wav",
+   "key": "85b406d0112e29c4d57c0c0ed0bb5e76",
+   "words": 1
+  },
+  {
+   "id": "f6",
+   "text": "굉장히!",
+   "dur": 0.605,
+   "syllablesPerSec": 4.96,
+   "src": "f6.wav",
+   "key": "1a5bcc3fc156f12b3520eb8d5ce14fd8",
+   "words": 1
+  },
+  {
+   "id": "f7",
+   "text": "몹시!",
+   "dur": 0.773,
+   "syllablesPerSec": 2.59,
+   "src": "f7.wav",
+   "key": "509b69d270791b59e9805fa8fb772a2e",
+   "words": 1
+  },
+  {
+   "id": "f8",
+   "text": "대단히!",
+   "dur": 0.587,
+   "syllablesPerSec": 5.11,
+   "src": "f8.wav",
+   "key": "33bb4269955195bc11df485f1552119c",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "한국어… 진짜 어려워…",
+   "dur": 2.156,
+   "syllablesPerSec": 3.71,
+   "src": "m1.wav",
+   "key": "9059862aaf994aa0a5cd3e27b9e99448",
+   "words": 3
+  }
+ ]
+}

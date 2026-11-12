@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, needle-felted wool miniature diorama photographed with a real camera (shallow depth of field, soft warm light).
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the reference photos (Image 1 and Image 2 — use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with one continuous cream running stitch, glossy black bead eyes with no whites) — no cheeks, no blush. Mongle has NO mouth, NO arms, NO legs, ever. Its wool is neat and smoothly felted, no flyaway hairs.
+
+Scene: a small, cozy felt bedroom-study at night, seen from the front at Mongle's eye level. A low wooden felt desk stands in the lower middle of the picture. On the desk lies one big open felt dictionary book, thick, its pages fanned open. Mongle sits on a felt cushion behind the desk, its body resting on the floor, looking down at the open book with round curious eyes, head tilted a little. A warm desk lamp on the left, a small window with a night city on the right wall, a felt bookshelf in the back. Lots of empty floor space around the desk and plenty of empty wall above (the room will later fill up with felt tiles). The upper third of the picture is a calm, softly lit plain wall.
+
+Absolutely no text, letters, numbers, logos or symbols anywhere — the book pages are blank cream felt.

@@ -1,0 +1,11 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, needle-felted wool miniature diorama photographed with a real camera (shallow depth of field, soft warm light).
+
+Mongle: the coral needle-felted wool ghost-shaped mascot in the reference photos (Image 2 and Image 3 — use them ONLY for its coral wool color, fuzzy texture, glossy black bead eyes with no whites) — no cheeks, no blush. Mongle has NO mouth, NO arms, NO legs, ever.
+
+Use Image 1 as the base picture: keep EXACTLY the same felt bedroom-study at night, the same window, lamp glow, bookshelf, the same camera, framing and warm light. Only change what is written below.
+
+Change: the whole room is now filled with a huge heap of small blank felt tiles (soft rounded rectangles of thick wool felt in pastel cream, mint, butter yellow, sky blue and pink — the same tiles as in Image 1). The heap fills the room from the floor up to about two thirds of the picture height, burying the desk and the dictionary completely. Only the top of Mongle's coral head and its two bead eyes with heavy, tired half-closed eyelids poke out of the very top of the heap in the middle of the picture — it looks dazed and exhausted, buried by words. The upper third of the picture still shows the calm, softly lit wall and the top of the window. Every tile rests on the heap — none float in the air.
+
+Absolutely no text, letters, numbers, logos or symbols anywhere — every tile is blank.

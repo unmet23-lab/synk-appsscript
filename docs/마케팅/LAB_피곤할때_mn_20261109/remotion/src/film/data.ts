@@ -93,11 +93,11 @@ export const MONGLE: Record<string, { cx: number; cy: number; rx: number; ry: nu
   'sub1.jpg': { cx: 563, cy: 1632, rx: 260, ry: 260 },
   'sub2.jpg': { cx: 505, cy: 1436, rx: 450, ry: 300 },
   'store1.jpg': { cx: 460, cy: 1448, rx: 260, ry: 260 },
-  'store2.jpg': { cx: 545, cy: 1190, rx: 320, ry: 225 },
+  'store2.jpg': { cx: 510, cy: 1160, rx: 330, ry: 235 },
   'desk1.jpg': { cx: 402, cy: 1360, rx: 330, ry: 300 },
   'desk2.jpg': { cx: 483, cy: 1402, rx: 500, ry: 380 },
   'phone.jpg': { cx: 632, cy: 1080, rx: 440, ry: 260 },
-  'up.jpg': { cx: 600, cy: 1080, rx: 300, ry: 520 }, // 머리 위 흐린 띠에 걸리면 늘일 때 머리가 납작해진다
+  'up.jpg': { cx: 590, cy: 1150, rx: 300, ry: 470 }, // 머리 위 흐린 띠에 걸리면 늘일 때 머리가 납작해진다
   'karaoke.jpg': { cx: 425, cy: 1195, rx: 400, ry: 440 },
   'next.jpg': { cx: 597, cy: 1103, rx: 500, ry: 320 },
 };

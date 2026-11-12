@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "w1",
+ "text": "아주!",
+ "dur": 0.756,
+ "words": [
+  {
+   "text": "아주!",
+   "start": 0.02,
+   "end": 0.756
+  }
+ ],
+ "source": {
+  "key": "cadf295cf659e9e7165a774cc143b851",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1137,
+   "lufs": -17,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 315
+ }
+}

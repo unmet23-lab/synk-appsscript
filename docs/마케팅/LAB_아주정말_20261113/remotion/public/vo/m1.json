@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "한국어… 진짜 어려워…",
+ "dur": 2.156,
+ "words": [
+  {
+   "text": "한국어…",
+   "start": 0.18,
+   "end": 0.583
+  },
+  {
+   "text": "진짜",
+   "start": 0.931,
+   "end": 1.316
+  },
+  {
+   "text": "어려워…",
+   "start": 1.39,
+   "end": 2.156
+  }
+ ],
+ "source": {
+  "key": "9059862aaf994aa0a5cd3e27b9e99448",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "tonedown",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1137,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 401
+ }
+}

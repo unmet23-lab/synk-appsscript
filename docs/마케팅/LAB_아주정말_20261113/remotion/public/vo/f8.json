@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f8",
+ "text": "대단히!",
+ "dur": 0.587,
+ "words": [
+  {
+   "text": "대단히!",
+   "start": 0.02,
+   "end": 0.587
+  }
+ ],
+ "source": {
+  "key": "33bb4269955195bc11df485f1552119c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1137,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.2,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}
