@@ -15,7 +15,8 @@ const 워크플로 = '.claude/workflows/video-gate.js';
 const 소스 = 읽기(워크플로);
 
 function 메타() {
-  const m = 소스.match(/^export const meta = (\{[\s\S]*?\n\})\n/m);
+  // 줄끝은 CRLF도 받는다 — core.autocrlf=true인 윈도 작업본은 따라가기 뒤 CRLF로 풀린다(11-12 이 PC에서만 깨졌다, CI 리눅스는 LF)
+  const m = 소스.match(/^export const meta = (\{[\s\S]*?\r?\n\})\r?\n/m);
   assert.ok(m, 'meta 블록을 못 찾음');
   return new Function(`return ${m[1]}`)();
 }

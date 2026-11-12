@@ -229,6 +229,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 이 PC는 `core.autocrlf=true`라 바로올리기의 「따라가기」가 막 올린 파일을 작업본에 다시 꺼내며 CRLF로 바꾼다(`git ls-files --eol` → `i/lf w/crlf`). 여러 줄 앵커의 LF가 파일의 CRLF와 안 맞는다. 한 줄 앵커는 맞아서 섞여 보인다.
 - 고침: 읽을 때 CRLF를 LF로 펴서 바꾸고, 원래 CRLF였으면 쓸 때 다시 CRLF로 접는다(앵커가 정확히 한 번 맞는지 세는 작은 도우미로). 바꿀 글은 셸 heredoc의 파이썬 문자열에 넣지 말고 Write 도구로 파일에 써서 읽게 한다 — 백슬래시 꼴(줄바꿈 표기 등)이 heredoc·파이썬·JSON을 거치며 실제 줄바꿈·CR로 바뀌어 노트를 깨뜨렸다. Edit 도구는 한 줄 앵커로 쓴다.
 - 다시 확인: `git ls-files --eol <파일>`이 `w/crlf`인지 보고, 고친 뒤 CR 개수가 줄 수와 같은지(CRLF 파일) 센다.
+- 11-12 덧붙임(Claude): 파일을 읽는 시험도 같다 — `tests/영상관문.test.js`가 워크플로의 meta를 `\n\}\n` 정규식으로 찾아, 올리기 전 관련 시험(LF)과 CI(리눅스)는 통과했는데 따라가기 뒤 이 PC에서만 「meta 블록을 못 찾음」으로 깨졌다. 여러 줄을 맞추는 시험 정규식은 `\r?\n`으로 쓰고, 고친 뒤 `git ls-files --eol`이 `w/crlf`인 작업본에서 한 번 더 돌린다.
 
 ### 계정 원천을 고치면 바로올리기 짝 검사가 내용이 같은 `teaching-host.js`를 「낡음」 또는 「통과(작업본에서만)」로 막는다 — autocrlf 작업본의 줄끝 탓 (2026-10-22 Claude)
 - 증상: 10-22 워크트리에서 `experiences/synk-account/src/enrollment.mjs`만 고치고 바로올리기 미리 보기를 돌리자 짝 검사 「계정 포털·교사 연결 묶음」이 `FAIL 회사 교사 연결 묶음 — Stale Messenger teaching host`로 멈췄다. `node tools/check-account-bundles.js --build`로 다시 만들면 이번엔 「통과(작업본에서만) — 이 검사가 보는 파일이 작업본에서 바뀌었는데 이번 push에 없다: teaching-host.js」로 멈췄다. 다시 만든 파일은 CR을 떼면 origin 판과 sha가 같고(`tr -d '\r' | sha256sum`), 고친 화면은 그 묶음에 들어 있지도 않다.
