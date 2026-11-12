@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "이제 또 멈춰도, 다음 AI가 그 파일을 보고 어디까지 했는지 알아요.",
+ "dur": 3.499,
+ "words": [
+  {
+   "text": "이제",
+   "start": 0.02,
+   "end": 0.117
+  },
+  {
+   "text": "또",
+   "start": 0.159,
+   "end": 0.243
+  },
+  {
+   "text": "멈춰도,",
+   "start": 0.298,
+   "end": 0.646
+  },
+  {
+   "text": "다음",
+   "start": 1.022,
+   "end": 1.232
+  },
+  {
+   "text": "AI가",
+   "start": 1.286,
+   "end": 1.649
+  },
+  {
+   "text": "그",
+   "start": 1.718,
+   "end": 1.788
+  },
+  {
+   "text": "파일을",
+   "start": 1.872,
+   "end": 2.15
+  },
+  {
+   "text": "보고",
+   "start": 2.192,
+   "end": 2.345
+  },
+  {
+   "text": "어디까지",
+   "start": 2.457,
+   "end": 2.734
+  },
+  {
+   "text": "했는지",
+   "start": 2.79,
+   "end": 3.055
+  },
+  {
+   "text": "알아요.",
+   "start": 3.125,
+   "end": 3.499
+  }
+ ],
+ "source": {
+  "key": "addbdcc7df370e9245733b64519118e8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1116,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 118
+ }
+}

@@ -1,0 +1,105 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "이어 받은 AI 앞엔, 질문지랑 답 몇 장뿐이었어요. 나머지 답은 멈춘 대화 안에 있었거든요.",
+ "dur": 4.922,
+ "words": [
+  {
+   "text": "이어",
+   "start": 0.02,
+   "end": 0.129
+  },
+  {
+   "text": "받은",
+   "start": 0.184,
+   "end": 0.416
+  },
+  {
+   "text": "AI",
+   "start": 0.471,
+   "end": 0.717
+  },
+  {
+   "text": "앞엔,",
+   "start": 0.798,
+   "end": 1.072
+  },
+  {
+   "text": "질문지랑",
+   "start": 1.304,
+   "end": 1.755
+  },
+  {
+   "text": "답",
+   "start": 1.81,
+   "end": 1.918
+  },
+  {
+   "text": "몇",
+   "start": 1.96,
+   "end": 2.042
+  },
+  {
+   "text": "장뿐이었어요.",
+   "start": 2.096,
+   "end": 2.643
+  },
+  {
+   "text": "나머지",
+   "start": 2.957,
+   "end": 3.216
+  },
+  {
+   "text": "답은",
+   "start": 3.257,
+   "end": 3.476
+  },
+  {
+   "text": "멈춘",
+   "start": 3.516,
+   "end": 3.803
+  },
+  {
+   "text": "대화",
+   "start": 3.845,
+   "end": 4.049
+  },
+  {
+   "text": "안에",
+   "start": 4.117,
+   "end": 4.212
+  },
+  {
+   "text": "있었거든요.",
+   "start": 4.254,
+   "end": 4.922
+  }
+ ],
+ "source": {
+  "key": "19ef6c4cb85842bae6782e0557a859ed",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1116,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

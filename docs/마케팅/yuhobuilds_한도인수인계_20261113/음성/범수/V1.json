@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI한테 아침 일곱 시에 일을 맡겼는데, 열 시 이십육 분에 한도로 멈췄어요.",
+ "dur": 4.201,
+ "words": [
+  {
+   "text": "AI한테",
+   "start": 0.02,
+   "end": 0.516
+  },
+  {
+   "text": "아침",
+   "start": 0.59,
+   "end": 0.793
+  },
+  {
+   "text": "일곱",
+   "start": 0.837,
+   "end": 1.028
+  },
+  {
+   "text": "시에",
+   "start": 1.071,
+   "end": 1.188
+  },
+  {
+   "text": "일을",
+   "start": 1.261,
+   "end": 1.392
+  },
+  {
+   "text": "맡겼는데,",
+   "start": 1.436,
+   "end": 1.903
+  },
+  {
+   "text": "열",
+   "start": 2.385,
+   "end": 2.516
+  },
+  {
+   "text": "시",
+   "start": 2.575,
+   "end": 2.648
+  },
+  {
+   "text": "이십육",
+   "start": 2.735,
+   "end": 2.998
+  },
+  {
+   "text": "분에",
+   "start": 3.042,
+   "end": 3.159
+  },
+  {
+   "text": "한도로",
+   "start": 3.203,
+   "end": 3.422
+  },
+  {
+   "text": "멈췄어요.",
+   "start": 3.466,
+   "end": 4.201
+  }
+ ],
+ "source": {
+  "key": "9130df839301373a5bb5719b865125c0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1116,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}
