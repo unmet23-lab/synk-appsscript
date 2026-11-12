@@ -110,11 +110,13 @@ test('스위치 꺼짐 — 첫 받기가 FEATURE_DISABLED면 꺼짐 표지, 다�
  await until(()=>line.gets.length>=1);await tick();
  assert.deepEqual(markOf(storage,'acct-4'),{off:true});
  b.dispose();
- // 서버가 스위치를 켰다 — 이번 시작은 아직 지금 판, 뒤에서 물어 표지를 지운다
+ // 서버가 스위치를 켰다 — 이번 연습은 아직 지금 판, 뒤에서 물어 표지를 지우고 같은 문서의 다음 연습부터 새 길(GPT 끝 판 GB2 — 새로고침을 기다리지 않는다)
  line.get=async()=>({summary:null,serverTime:0});
  const c=createAtlasNext({owner:'acct-4',storage,trail:line.trail,load:second.load,health:recorder()});
  assert.equal(await c.practiceCoach(POOL),null);
  await until(()=>!markOf(storage,'acct-4').off);
+ await tick();
+ assert.ok(await c.practiceCoach(POOL),'같은 문서의 다음 연습부터 새 길');
  c.dispose();
  const d=createAtlasNext({owner:'acct-4',storage,trail:line.trail,load:second.load,health:recorder()});
  assert.ok(await d.practiceCoach(POOL),'그다음 시작부터 새 길');

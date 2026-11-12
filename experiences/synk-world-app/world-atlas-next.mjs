@@ -331,7 +331,7 @@ export function createAtlasNext({
   async function decidePath() {
     const mark = markOf(store, owner);
     if (mark.off) {
-      void recheck(); // 뒤에서 다시 물어 열리면 다음 시작부터 새 길
+      void recheck(generation); // 뒤에서 다시 물어 열리면 다음 연습부터 새 길
       return settled(OLD('SWITCH_OFF'));
     }
     if (typeof trail !== 'function') return settled(OLD('NO_TRAIL'));
@@ -355,12 +355,17 @@ export function createAtlasNext({
     writeMark(store, owner, { went: true });
     return { path: 'device', revision, key: engine.storeName({ account: owner, revision, local: true }) };
   }
-  async function recheck() {
+  // at: 꺼짐 표지로 지금 판을 정한 판(세대). 다시 물어 켜졌으면 표지를 지우고, 그 판이 아직 지금 판이면 정한 것을 비운다 — 다음 연습(코치를
+  // 청할 때)이 다시 정해 새 길로 간다(새로고침을 기다리지 않는다 — GPT 끝 판 GB2, 첫 받기를 다른 코치가 확인한 markWent와 같은 갈래).
+  async function recheck(at) {
     try {
       const line = await trail?.();
       const revision = line?.learning?.revision;
       if (!Number.isSafeInteger(revision) || typeof line.transport !== 'function') return;
-      if ((await askSwitch(line.transport(revision), switchAskMs)) === 'on') writeMark(store, owner, { off: false });
+      if ((await askSwitch(line.transport(revision), switchAskMs)) === 'on') {
+        writeMark(store, owner, { off: false });
+        if (!disposed && at === generation) decided = null;
+      }
     } catch {
       // 다음 시작에 다시 묻는다
     }
