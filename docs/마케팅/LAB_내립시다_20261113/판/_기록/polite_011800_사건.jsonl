@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d08d-4604-7d72-8ac0-41895e9ce526"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글이 바닥에 단단히 서 있고, 승객들이 비켜 준 길 끝으로 지하철 문이 열리는 장면을 한 장 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"승객들이 비켜 준 길에서 몽글이 살짝 열리는 지하철 문을 바라봅니다."}}
+{"type":"turn.completed","usage":{"input_tokens":134018,"cached_input_tokens":108928,"cache_write_input_tokens":0,"output_tokens":1457,"reasoning_output_tokens":156}}
