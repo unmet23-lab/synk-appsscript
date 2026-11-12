@@ -24,4 +24,5 @@ export const COACH_METHODS = Object.freeze([
   'due',
   'tell',
   'synced', // 첫 받기의 결과를 한도 안에서(단계 4 계획 §18-5-5 G4 — 처음인 기기의 판 정하기)
+  'guestRecords', // 손님 → 계정 옮기기(단계 4 계획 §18-5-3 — 경계 표지 · 다섯 걸음)
 ]);

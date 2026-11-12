@@ -51,6 +51,7 @@ export {
   legacyToImport,
   linesOfGroups,
   memoryPort,
+  newGen,
   openRecord,
   partitionLinks,
   RECORD_EDITION,

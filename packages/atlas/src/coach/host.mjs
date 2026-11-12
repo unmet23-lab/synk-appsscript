@@ -116,6 +116,7 @@ function createHost({
   locks = globalThis.navigator?.locks ?? null,
   // 일마다 한도 표(turn.mjs TURN_JOBS) — 시험만 짧게 바꾼다.
   turnJobs = null,
+  account = null, // 계정 저장소의 계정(손님 → 계정 옮기기의 받는 쪽 — §18-5-3)
 }) {
   const index = compositeIndex();
   // 지도를 기록부를 열기 전에 넣는다 — 기록부가 처음 접는 요약의 판 묶음(색인 판)이 그 뒤의 보기와 같아야 한다.
@@ -232,9 +233,20 @@ function createHost({
   return {
     key,
     guest,
+    account,
+    revision,
     index,
     memory,
     params,
+    // 파생 기록을 쓰는 일 하나 동안의 차례(§18-5-1) — 손님 → 계정 옮기기(move.mjs)가 쓴다.
+    turn: (job, work) => turn(job, work),
+    note: (kind, outcome) => note(kind, outcome),
+    // 다른 저장소에서 사건을 옮겨 왔다 — 다른 탭 · 같은 문서의 판들에 알리고 올린다(§18-5-3 ⑤).
+    landed() {
+      announce();
+      tell('refresh');
+      schedule();
+    },
     get health() {
       return health;
     },
@@ -494,7 +506,8 @@ async function acquireHere(scope, options, openPort) {
     host = await entry.opening;
     if (options.map) host.index.add(options.map);
     if (entry.legacy) host.take({ legacy: entry.legacy });
-    if (options.fromFrame !== true) shellTakes(registry, entry, host, options);
+    if (options.fromFrame !== true && options.aside !== true)
+      shellTakes(registry, entry, host, options);
     // 옛 기록 옮기기의 약속 — 셸이든 틀이든 받는 코치는 모두 그 끝을 기다린다(계획 §16 ③ · D4 ㉡).
     await host.carried();
     return host;

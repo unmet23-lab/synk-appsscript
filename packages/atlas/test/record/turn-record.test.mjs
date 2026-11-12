@@ -3,6 +3,7 @@
 //   차례를 못 얻거나 저장이 실패해도 열기 · 보기는 그대로다. 판 묶음이 다른 손님 요약은 받지도 지우지도 않는다(R3).
 //   치우기는 서버 시각을 받은 뒤에만, 다른 탭의 치운 표시를 만난 탭은 포트를 통째로 다시 읽는다(A6).
 //   자물쇠 없이 두 기록부 · 한 포트(R4): 저장된 답은 요약 또는 밀린 것 꼭 한쪽에만 — 보기가 포트 전체를 한 번 접은 것과 같다.
+//   새 파생 기록 종류는 이 임의 시험에 넣는다(§18-5-6) — 경계 표지(§18-5-3): 표지는 탭마다 꼭 한 번씩 들고, 옮길 계획은 포트를 새로 읽은 것과 같다.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { seedRange } from '../support/seeds.mjs';
@@ -202,6 +203,22 @@ test('다른 탭의 치운 표시를 만난 탭은 포트를 통째로 다시 �
 
 // 기다리지 않는 줄은 같다 — 다른 탭의 「더 이른 시각」 답이 요약 뒤에 들어오면 얹기는 그 줄을 요약 값 그대로 기다리게 둔다(설계 §5-4
 // 「얹을 수 없는 줄」 — 저장 관문 ③과 같은 비교, device.property.test.mjs sameMap).
+const MARK_KINDS = ['moved', 'kept', 'logout', 'visited'];
+const ACCOUNTS = ['A', 'B'];
+// 표지는 받은 차례(내가 쓴 것은 쓸 때, 남의 것은 꼬리에서)로 쌓인다 — 경계는 가장 큰 값만 보므로 열쇠 차례로 견준다.
+const marksOf = record =>
+  record
+    .marks()
+    .map(({ key, mark, account, until }) => ({ key, mark, account, until }))
+    .sort((x, y) => x.key - y.key);
+const planOf = (record, account) => {
+  const plan = record.guestUpload(1, { account });
+  return {
+    current: plan.current.map(event => event.id),
+    legacy: plan.legacy.map(event => event.id),
+  };
+};
+
 function sameLines(view, want, label) {
   for (const [key, line] of want.memory)
     if (!view.waitUnits.has(key))
@@ -215,9 +232,51 @@ function sameLines(view, want, label) {
   assert.deepEqual([...view.met].sort(), [...want.met].sort(), `${label} 첫 만남`);
 }
 
+// 임의 걸음 하나 — 답 · 다른 탭의 답이 끼어드는 다시 접기 · 경계 표지 · 꼬리 읽기.
+async function randomStep(tabs, random, cut) {
+  const pick = list => list[Math.floor(random() * list.length)];
+  const tab = pick(tabs);
+  const other = tabs.find(t => t !== tab);
+  const roll = random();
+  if (roll < 0.4) return practise(tab, pick(items), random() < 0.6 ? 'correct' : 'incorrect');
+  if (roll < 0.65) {
+    cut(() => practise(other, pick(items), 'correct'));
+    return tab.refold();
+  }
+  if (roll < 0.85) {
+    const mark = pick(MARK_KINDS);
+    const account = mark === 'logout' ? null : pick(ACCOUNTS);
+    const until = tab.guestUpload(1, { account }).until;
+    return tab.mark({ mark, account, revision: mark === 'moved' ? 1 : null, until });
+  }
+  return tab.refresh();
+}
+
+// 끝 확인 ① ~ ⑤(아래 R4 머리말).
+async function checkTab(tab, fresh, answers, label) {
+  const until = tab.summary.foldedUntil;
+  for (const row of answers)
+    assert.notEqual(
+      row.key <= until,
+      tab.pending().has(row.value.event.id),
+      `${label}: ${row.value.event.id}는 요약 또는 밀린 것 꼭 한쪽에만`,
+    );
+  sameLines(tab.view(), fresh.view(), label);
+  await tab.refold();
+  assert.equal(linesOf(tab.view()), linesOf(fresh.view()), `${label}: 다시 접은 보기`);
+  assert.deepEqual(marksOf(tab), marksOf(fresh), `${label}: 표지는 열쇠당 꼭 한 번`);
+  for (const account of ACCOUNTS)
+    assert.deepEqual(
+      planOf(tab, account),
+      planOf(fresh, account),
+      `${label}: ${account}에게 옮길 계획 = 포트를 새로 읽은 것`,
+    );
+}
+
 // R4 — 자물쇠 없이 두 손님 기록부 · 한 포트. 접는 도중(꼬리를 읽은 직후) 다른 탭의 답이 끼어든다. 끝에 ① 저장된 답은 탭마다 요약
 // (열쇠 ≤ 요약의 「어디까지 접었나」) 또는 밀린 것 꼭 한쪽에만 있고 ② 기다리지 않는 줄은 포트 전체를 한 번 접은 보기와 같으며 ③ 다시
-// 접으면 보기 전체가 같다 — 요약이 읽지 않은 답까지 접었다고 적거나(빠짐, A4) 같은 답이 두 번 얹히면 ② · ③이 다르다.
+// 접으면 보기 전체가 같다 — 요약이 읽지 않은 답까지 접었다고 적거나(빠짐, A4) 같은 답이 두 번 얹히면 ② · ③이 다르다. 경계 표지(§18-5-6)도
+// 섞어 쓴다 — ④ 표지는 탭마다 열쇠당 꼭 한 번(내가 쓴 표지가 꼬리에서 다시 와도) ⑤ 계정마다 옮길 계획(2판 · 옛 꼴)이 포트를 새로 읽은 것과 같다.
 for (const seed of seedRange({ count: 6 })) {
   test(`자물쇠 없이 두 손님 기록부 · 한 포트 임의 시험(씨앗 ${seed}) — 보기는 포트 전체를 한 번 접은 것과 같다(R4)`, async () => {
     const random = rng(1000 + seed);
@@ -234,17 +293,10 @@ for (const seed of seedRange({ count: 6 })) {
       return rows;
     };
     const tabs = [await guest(port, { tag: 'r4aaaaaa' }), await guest(port, { tag: 'r4bbbbbb' })];
-    const pick = list => list[Math.floor(random() * list.length)];
-    for (let step = 0; step < 24; step += 1) {
-      const tab = pick(tabs);
-      const other = tabs.find(t => t !== tab);
-      const roll = random();
-      if (roll < 0.45) await practise(tab, pick(items), random() < 0.6 ? 'correct' : 'incorrect');
-      else if (roll < 0.75) {
-        cutIn = () => practise(other, pick(items), 'correct');
-        await tab.refold();
-      } else await tab.refresh();
-    }
+    const cut = run => {
+      cutIn = run;
+    };
+    for (let step = 0; step < 24; step += 1) await randomStep(tabs, random, cut);
     for (const tab of tabs) {
       await tab.refresh();
       await tab.localSaved();
@@ -253,18 +305,7 @@ for (const seed of seedRange({ count: 6 })) {
     const answers = (await port.read()).filter(
       row => row.value.event?.type === EVENT_TYPES.attempted,
     );
-    for (const [i, tab] of tabs.entries()) {
-      const until = tab.summary.foldedUntil;
-      for (const row of answers)
-        assert.notEqual(
-          row.key <= until,
-          tab.pending().has(row.value.event.id),
-          `탭 ${i}: ${row.value.event.id}는 요약 또는 밀린 것 꼭 한쪽에만`,
-        );
-      sameLines(tab.view(), fresh.view(), `탭 ${i}`);
-      await tab.refold();
-      assert.equal(linesOf(tab.view()), linesOf(fresh.view()), `탭 ${i}: 다시 접은 보기`);
-    }
+    for (const [i, tab] of tabs.entries()) await checkTab(tab, fresh, answers, `탭 ${i}`);
   });
 }
 

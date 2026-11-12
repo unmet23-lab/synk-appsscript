@@ -12,6 +12,39 @@ export function storeParts(name) {
   return { account: match[2], revision, local: Boolean(match[1]) };
 }
 
+// 저장소가 이미 있나 — 만들지 않고 본다(되는 만큼만 쓰는 손님 표지 · 물음 앞의 손님 저장소, §18-5-3). 판 이름 목록이 없는 브라우저는
+// 열어 보고, 새로 만들어지려 하면(upgradeneeded) 그 열기를 거둔다(저장소가 생기지 않는다).
+export async function storeExists(name, { indexedDB = globalThis.indexedDB } = {}) {
+  if (!indexedDB) return false;
+  if (typeof indexedDB.databases === 'function') {
+    try {
+      return (await indexedDB.databases()).some(db => db?.name === name);
+    } catch {
+      // 목록을 못 읽으면 열어 본다.
+    }
+  }
+  return new Promise(resolve => {
+    let fresh = false;
+    let open;
+    try {
+      open = indexedDB.open(name);
+    } catch {
+      resolve(false);
+      return;
+    }
+    open.onupgradeneeded = () => {
+      fresh = true;
+      open.transaction?.abort();
+    };
+    open.onsuccess = () => {
+      open.result.close();
+      resolve(!fresh);
+    };
+    open.onerror = () => resolve(false);
+    open.onblocked = () => resolve(true); // 다른 연결이 쥐고 있다 — 있다
+  });
+}
+
 // name(지금 연 계정 저장소)보다 앞 판인 같은 계정의 저장소를 지운다 — 올리는 길 · 기기 길 둘 다. 판 이름 목록(indexedDB.databases())이
 // 없는 브라우저는 바로 앞 판 둘만 지운다. 다른 탭이 앞 판을 열어 두었으면 그 탭이 onversionchange로 닫은 뒤 브라우저가 마저 지운다 —
 // 기다리지 않는다(지우기는 사본 정리이지 맞음의 조건이 아니다). 지운(지우려 한) 이름을 돌려준다.

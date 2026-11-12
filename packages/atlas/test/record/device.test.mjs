@@ -372,6 +372,7 @@ test('⑧ 손님 기록(옛 로그 + 접힌 장부 + 2판) → 계정: 예전 �
   // 계정으로 — 옛 꼴은 옛 POST로 먼저, 2판은 그 계정의 지금 판으로 도장을 찍어 새 길로.
   const server = createServer({ random: rng(6), index });
   server.tick(60 * 60_000);
+  await guest.refresh(); // 고르기는 읽은 자리까지만(§18-5-3) — 꼬리부터 읽고 고른다
   const plan = guest.guestUpload(3);
   assert.deepEqual(
     plan.legacy.map(e => e.id),

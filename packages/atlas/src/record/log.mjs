@@ -8,6 +8,8 @@
 //   ④ 손님(동의 꺼진 계정 포함)은 기기가 원천이다 — 사건을 다 들고 같은 어댑터 · 근거 줄로 요약을 스스로 접는다.
 // 기록 꼴(포트의 값): { kind: 'event', event, touches? } · { kind: 'ack', acks: [[id, seq]], clamped, dropped, summary?, offsetMs? }
 //                    · { kind: 'local', summary, until }(손님이 스스로 접은 요약 — until = 그 요약에 든 마지막 포트 열쇠)
+//                    · { kind: 'mark', mark, account?, revision?, until?, at }(손님 저장소의 경계 표지 — 단계 4 §18-5-3: 옮김 · 두기 ·
+//                      로그아웃 · 있었음)
 //   치우기의 합친 표지는 swept: { at }를 싣는다 — 다른 탭은 꼬리에서 그것을 만나면 포트를 통째로 다시 읽는다(단계 4 §18-5-5 A6).
 //   파생 기록(손님 요약 · 치우기 · 옮기기)을 쓰는 일은 호스트의 차례(src/coach/turn.mjs) 안에서 한다 — 기록부가 스스로 차례를
 //   청하는 곳은 차례 밖에서 시작된 손님 요약 저장 하나뿐이고(exclusive), 호스트가 「차례 안」으로 둔 동안에는 다시 청하지 않는다
@@ -93,6 +95,7 @@ function createState(guest, now) {
     ownSweeps: new Set(), // 이 기록부가 쓴 치운 표시 기록의 열쇠
     sweptAt: 0, // 가장 늦은 치우기의 시각(서버 시각을 고친 기기 시각 — 포트에서 읽은 값)
     serverTimed: false, // 이 세션에 서버의 답에서 서버 시각을 받았다 — 치우기는 그 뒤에만(A6)
+    marks: [], // 손님 저장소의 경계 표지(포트 열쇠 자리 — §18-5-3)
     positions: 0,
     seqInMs: 0,
     lastMs: -1,
@@ -116,6 +119,7 @@ function resetRead(state) {
   state.readKey = 0;
   state.positions = 0;
   state.sweptAt = 0;
+  state.marks = [];
 }
 
 function takeEvent(state, value, key) {
@@ -170,6 +174,9 @@ function take(state, { key, value }, now, edition) {
   else if (value.kind === 'ack') takeAck(state, value, key, now);
   else if (value.kind === 'summary') takeSummary(state, value, key);
   else if (value.kind === 'local') takeLocal(state, value, key, edition);
+  // 표지는 열쇠로 한 번만 — 내가 쓴 표지는 꼬리를 읽을 때 다시 온다(내 덧붙이기는 읽은 자리를 올리지 않는다).
+  else if (value.kind === 'mark' && !state.marks.some(mark => mark.key === key))
+    state.marks.push({ ...value, key });
 }
 
 const entryOf = item => ({
@@ -257,6 +264,55 @@ function staleIds(state, floor) {
   return [...state.held.keys()].filter(
     id => folded(state, id) && Date.parse(state.held.get(id).event.at) < floor && !keep.has(id),
   );
+}
+
+// ── 손님 → 계정 옮기기의 경계(단계 4 계획 §18-5-3 — R5 · R6 · R11) ──
+// 표지 꼴: moved(account · revision · until) · kept(account · until) · logout · visited(account).
+// 열쇠 경계(Z) — Z 자신의 옮김 · 두기 표지는 until(고른 스냅숏의 읽은 자리 — 고른 뒤 표지 사이에 낀 손님 사건이 다음에 Z에게 물리게),
+// 남의 표지 · 로그아웃 표지는 표지 열쇠 그대로(그 틈의 사건이 누구 것인지 모른다). Z 자신의 「있었음」은 빼고 가장 큰 것.
+const MARKS = new Set(['moved', 'kept', 'logout', 'visited']);
+function edgeOf(mark, account) {
+  if (mark.mark === 'logout' || mark.account !== account) return mark.key;
+  if (mark.mark === 'visited') return 0;
+  return Number.isFinite(mark.until) ? mark.until : mark.key;
+}
+export const keyEdge = (marks, account) =>
+  marks.reduce((edge, mark) => Math.max(edge, edgeOf(mark, account)), 0);
+
+// Z가 이미 옮겨 간 자리 — 경계 뒤의 제외가 그 안의 사건을 겨누면 함께 옮긴다(R11).
+const movedUntil = (marks, account) =>
+  marks
+    .filter(mark => mark.mark === 'moved' && mark.account === account)
+    .reduce((edge, mark) => Math.max(edge, mark.until ?? 0), 0);
+
+// 묶음의 머리 — 제시 · 본인 말 · 판 결정 · 장부. 자식(전달 · 도움 · 답 · 마침 · 응답 · 제외)은 부모를 따라간다.
+const isHead = event => parentOf(event) == null;
+
+// 2판 사건 고르기 — 머리가 열쇠 경계 뒤이고 그 시각이 남이 다녀간 기준 시각(others) 뒤인 묶음. 장부는 기준 시각(all — 자기 결정 포함)이
+// 0일 때만(장부에는 든 일이 언제 것인지 가릴 재료가 없다 — 결정 2의 보수 쪽). 자식은 고른 부모를 따라가고, 제외는 대상이 고른 것이거나
+// Z가 이미 옮겨 간 자리 안이면 따라간다.
+function takes(item, picked, { edge, moved, others, all }) {
+  const { event } = item;
+  if (isHead(event))
+    return (
+      item.key > edge &&
+      Date.parse(event.at) > others &&
+      (event.type !== EVENT_TYPES.carried || all === 0)
+    );
+  if (event.type === EVENT_TYPES.excluded)
+    return (
+      item.key > edge &&
+      (picked.has(parentOf(event)) || (item.parentKey ?? Number.POSITIVE_INFINITY) <= moved)
+    );
+  return picked.has(parentOf(event));
+}
+function pickCurrent(items, rule) {
+  const picked = new Set();
+  return items.filter(item => {
+    if (!takes(item, picked, rule)) return false;
+    picked.add(item.event.id);
+    return true;
+  });
 }
 
 export async function openRecord(options) {
@@ -626,13 +682,68 @@ export function createRecord({
       return gone.size;
     },
 
-    // 손님 로그를 계정으로 옮길 계획 — 옛 꼴은 옛 POST로 먼저(부모 먼저), 2판은 그 계정의 지금 판으로 도장을 찍어 새 길로.
-    guestUpload(accountRevision) {
-      const events = [...state.held.values()].sort((a, b) => a.key - b.key).map(i => i.event);
+    // 손님 로그를 계정 Z로 옮길 계획(§18-5-3 — 경계 둘을 다 지난 것만). 옛 꼴은 열쇠 경계 뒤의 것을 그대로 돌려준다 — 기준 시각으로
+    // 고르는 지금 판의 규칙(guestLearningEvents)은 제품이 건다(옛 POST로 먼저 · 부모 먼저). 2판은 그 계정의 지금 판으로 도장을 찍고,
+    // 제외의 닿는 줄 메모(touches)를 함께 낸다. until은 이 계획을 고른 읽은 자리(옮김 표지에 적는다) — 고르는 것도 읽은 자리까지만이다
+    // (내 덧붙이기는 읽은 자리를 올리지 않는다 — 고른 것보다 작은 until이 적히면 다음에 같은 것을 또 고른다, A4와 같은 규칙). 부르는 쪽이
+    // 꼬리부터 읽는다(move.mjs). watermarks: { others, all } — 남이 다녀간 기준 시각 · 자기 결정까지 든 기준 시각(제품의 deviceWatermark).
+    guestUpload(accountRevision, { account = null, watermarks = {} } = {}) {
+      const until = state.readKey;
+      const items = [...state.held.values()]
+        .filter(item => item.key <= until)
+        .sort((a, b) => a.key - b.key);
+      const edge = keyEdge(state.marks, account);
+      const keyOf = id => state.held.get(id)?.key;
+      const current = pickCurrent(
+        items
+          .filter(item => isCurrent(item.event))
+          .map(item => ({ ...item, parentKey: keyOf(parentOf(item.event)) })),
+        {
+          edge,
+          moved: movedUntil(state.marks, account),
+          others: watermarks.others ?? 0,
+          all: watermarks.all ?? 0,
+        },
+      );
       return {
-        legacy: events.filter(event => !isCurrent(event)),
-        current: events.filter(isCurrent).map(event => ({ ...event, revision: accountRevision })),
+        until,
+        legacy: items.filter(item => !isCurrent(item.event) && item.key > edge).map(i => i.event),
+        current: current.map(item => ({ ...item.event, revision: accountRevision })),
+        touches: new Map(current.filter(i => i.touches).map(i => [i.event.id, i.touches])),
       };
+    },
+
+    // 경계 표지를 쓴다(손님 저장소 — §18-5-3). 차례 안에서 부른다(호스트의 move 일).
+    async mark({ mark, account = null, revision = null, until = null }) {
+      if (!MARKS.has(mark)) throw new TypeError(`Atlas record: 모르는 표지 ${mark}`);
+      if (mark !== 'logout' && account == null) throw new TypeError('Atlas record: 계정 없는 표지');
+      const value = {
+        kind: 'mark',
+        mark,
+        ...(account != null ? { account } : {}),
+        ...(Number.isSafeInteger(revision) ? { revision } : {}),
+        ...(Number.isSafeInteger(until) ? { until } : {}),
+        at: Math.round(now() + state.clock.offsetMs),
+      };
+      const [key] = await port.append([value]);
+      accept({ key, value });
+      return key;
+    },
+    marks: () => state.marks.map(mark => ({ ...mark })),
+
+    // 손님 저장소에서 옮겨 오는 2판 사건(§18-5-3 ③ — 계정 기록부). 이미 든 번호는 건너뛰고(두 번 옮겨도 한 번), 제외의 닿는 줄 메모도
+    // 함께 한 번에 덧붙인다. 도장(판 번호)은 guestUpload가 찍었다.
+    async importMoved(events, touches = new Map()) {
+      const fresh = events.filter(event => isCurrent(event) && !state.held.has(event.id));
+      if (!fresh.length) return [];
+      const values = fresh.map(event => ({
+        kind: 'event',
+        event,
+        ...(touches.get(event.id) ? { touches: touches.get(event.id) } : {}),
+      }));
+      const keys = await port.append(values);
+      keys.forEach((key, i) => accept({ key, value: values[i] }));
+      return keys;
     },
 
     // 옛 저장소에서 옮겨 온 옛 꼴 사건을 덧붙인다(손님 — carry.mjs의 legacyToImport가 아직 안 옮긴 것만 고른다).

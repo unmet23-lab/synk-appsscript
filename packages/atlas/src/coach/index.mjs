@@ -14,7 +14,9 @@ import { planActivities } from '../select/plan.mjs';
 import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
 import { acquireHost, hostScope, releaseHost } from './host.mjs';
+import { keepGuest, moveGuest, noteGuest, planMove } from './move.mjs';
 import { createSession, learnerOf } from './session.mjs';
+import { storeExists } from './stores.mjs';
 
 export { COACH_METHODS } from './methods.mjs';
 
@@ -77,6 +79,12 @@ function hostOptions(options) {
   return { host, guest, key };
 }
 
+// 차례의 자물쇠 · 일마다 한도 — 시험만 바꾼다(가짜 · null · 짧은 한도). 주지 않으면 브라우저의 navigator.locks와 표 그대로.
+const testHost = (host = {}) => ({
+  ...(host.locks !== undefined ? { locks: host.locks } : {}),
+  ...(host.turnJobs ? { turnJobs: host.turnJobs } : {}),
+});
+
 export function createCoach(options = {}) {
   if (options === null || typeof options !== 'object') {
     throw new TypeError('Atlas: coach options must be an object');
@@ -122,11 +130,10 @@ export function createCoach(options = {}) {
         health: host.health ?? null,
         transport: host.transport ?? null,
         onAccount: host.onAccount ?? null,
+        account: guest ? null : (host.account ?? null),
         legacy: host.legacy ?? null,
         ...(host.legacyWait > 0 ? { legacyWait: host.legacyWait } : {}),
-        // 차례의 자물쇠 · 일마다 한도 — 시험만 바꾼다(가짜 · null · 짧은 한도). 주지 않으면 브라우저의 navigator.locks와 표 그대로.
-        ...(host.locks !== undefined ? { locks: host.locks } : {}),
-        ...(host.turnJobs ? { turnJobs: host.turnJobs } : {}),
+        ...testHost(host),
         now: host.now,
         map,
       },
@@ -335,6 +342,46 @@ export function createCoach(options = {}) {
           pending: state.host.pendingCount(),
           unsent: state.host.trail.unsent().length,
           sync: state.host.syncStatus(),
+        },
+      };
+    },
+
+    // 손님 → 계정 옮기기(계정 코치 — 단계 4 계획 §18-5-3). 손님 저장소를 옆으로(셸 표시 · 문서 호스트 없이 — 틀이 손님 저장소를 받지
+    // 않게, R7) 열어 옛 기록 옮기기를 한 번 돌린 뒤 다룬다: plan(watermarks) — 옮길 계획(물음의 수), move({ watermarks, postLegacy }) —
+    // 다섯 걸음, keep() — 「이 기기에만 두기」, note(mark) — 되는 만큼만 쓰는 표지(visited · logout), close(). watermarks: { others, all }
+    // (제품의 기준 시각 — 남이 다녀간 때 · 자기 결정까지). create: false면 손님 저장소가 없을 때 null(만들지 않는다). port는 시험만.
+    async guestRecords({ legacy = null, create = true, port = null } = {}) {
+      live();
+      if (state.host.guest) throw fail('GUEST', '손님 코치에는 옮길 계정이 없다');
+      const key = storeName({});
+      if (!create && !port && !(await storeExists(key))) return null;
+      const aside = await acquireHost(
+        {
+          key,
+          aside: true,
+          guest: true,
+          params,
+          legacy,
+          map: state.map,
+          now: options.host?.now,
+          ...(port ? { port } : {}),
+          ...testHost(options.host),
+        },
+        scope,
+      );
+      const target = state.host;
+      let closed = false;
+      return {
+        plan: (watermarks = {}) =>
+          planMove(aside, { account: target.account, revision: target.revision, watermarks }),
+        move: (how = {}) => moveGuest(aside, target, how),
+        keep: () => keepGuest(aside, { account: target.account }),
+        note: mark =>
+          noteGuest(aside, { mark, account: mark === 'logout' ? null : target.account }),
+        close() {
+          if (closed) return;
+          closed = true;
+          releaseHost(aside);
         },
       };
     },

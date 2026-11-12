@@ -39,6 +39,7 @@ export {
   foldAccount,
   foldEdition,
   foldPending,
+  newGen,
   RECORD_EDITION,
   summaryOf,
 } from './server.mjs';
