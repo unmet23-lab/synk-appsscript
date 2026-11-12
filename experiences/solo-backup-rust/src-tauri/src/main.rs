@@ -1,11 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use backup_native::{platform, protocol, secret, worker::Worker};
+use backup_native::{platform, protocol, schedule, secret, worker::Worker};
 use serde_json::{json,Value};
 use std::{collections::VecDeque, fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
 use tauri::{Emitter,Manager};
 
 struct AppState { worker:Arc<Worker>, current:Arc<Mutex<Value>>, closing:AtomicBool }
-struct NativeHost { root:PathBuf, exe:PathBuf, test:bool, packaged:bool, dialogs:Mutex<VecDeque<Value>>, dialog_busy:AtomicBool }
+struct NativeHost { root:PathBuf, exe:PathBuf, test:bool, packaged:bool, dialogs:Mutex<VecDeque<Value>>, dialog_busy:AtomicBool, engine:Mutex<Option<fs::File>> }
 impl NativeHost {
     fn call(&self,method:&str,args:Value)->Result<Value,String> {
         let args=args.as_array().ok_or("HOST_REQUEST")?;
@@ -13,8 +13,14 @@ impl NativeHost {
         match method {
             "secret.encrypt"=>Ok(json!(secret::encrypt(first.as_str().ok_or("HOST_REQUEST")?)?)),
             "secret.decrypt"=>{let value=secret::decrypt(first.as_str().ok_or("HOST_REQUEST")?)?;Ok(json!(value.as_str()))},
-            "startup.read"=>Ok(json!(platform::startup_read(&self.exe,self.test)?)),
-            "startup.set"=>Ok(json!(platform::startup_set(&self.exe,first.as_bool().ok_or("HOST_REQUEST")?,self.test,self.packaged)?)),
+            // The engine lock while one of the window's operations runs (STAGE1_DESIGN.md 4.1).
+            "engine.lock"=>{let mut held=self.engine.lock().unwrap();if held.is_some(){return Ok(json!(true));}
+                match platform::try_lock(&self.root,platform::ENGINE_LOCK)?{Some(file)=>{*held=Some(file);Ok(json!(true))},None=>Ok(json!(false))}},
+            "engine.unlock"=>{*self.engine.lock().unwrap()=None;Ok(json!(true))},
+            "run.progress"=>Ok(backup_native::runlog::live(&self.root)),
+            // 「자동 실행 등록」 is now the four run tasks in Task Scheduler (STAGE1_DESIGN.md 4.1 · 4.2).
+            "startup.read"=>Ok(json!(run_tasks_registered(&self.exe,self.test)?)),
+            "startup.set"=>Ok(json!(set_run_tasks(&self.exe,first.as_bool().ok_or("HOST_REQUEST")?,self.test,self.packaged)?)),
             "openExternal"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!platform::oauth_allowed(value){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
             "openPath"=>{let value=first.as_str().ok_or("HOST_REQUEST")?;if self.test||!platform::open_directory_allowed(Path::new(value),&self.root){return Err("OPEN_FORBIDDEN".into());}shell_open(value)?;Ok(Value::Null)},
             "dialog.open"|"dialog.save"|"dialog.message"=>{
@@ -56,6 +62,27 @@ impl NativeHost {
         }
     }
 }
+fn run_exe(app:&Path)->PathBuf{app.with_file_name("WorkBackupRun.exe")}
+fn task_user()->String{std::env::var("USERNAME").unwrap_or_default()}
+fn run_tasks_registered(app:&Path,test:bool)->Result<bool,String>{
+    if test{return Ok(false);}
+    schedule::registered(&run_exe(app),&task_user(),&schedule::current_sid()?)
+}
+/// Registers or removes the run tasks. A test or unpackaged build never touches Task
+/// Scheduler. Registering also removes the Windows Run entry earlier betas used.
+fn set_run_tasks(app:&Path,enabled:bool,test:bool,packaged:bool)->Result<bool,String>{
+    if test||!packaged{return Err("STARTUP_TEST_DISABLED".into());}
+    let (run,user,sid)=(run_exe(app),task_user(),schedule::current_sid()?);
+    if enabled{
+        if !run.is_file(){return Err("RUN_EXE_MISSING".into());}
+        schedule::register(&run,&user,&sid,&schedule::local_now())?;
+        let _=platform::startup_set(app,false,false,true);
+    }else{schedule::remove(&user,&sid)?;}
+    let active=schedule::registered(&run,&user,&sid)?;
+    if active!=enabled{return Err("SCHEDULE_NOT_APPLIED".into());}
+    Ok(active)
+}
+
 fn shell_open(value:&str)->Result<(),String>{
     use windows_sys::Win32::{UI::{Shell::ShellExecuteW,WindowsAndMessaging::SW_SHOWNORMAL}};
     let wide:Vec<u16>=value.encode_utf16().chain([0]).collect();let verb:Vec<u16>="open".encode_utf16().chain([0]).collect();
@@ -120,7 +147,7 @@ fn run()->Result<(),String>{
     if root.join("migration-incomplete").exists(){return Err("MIGRATION_INCOMPLETE".into());}
     let signal=Arc::new(platform::InstanceSignal::new(&root)?);
     let scripted=if test{match std::env::var_os("SOLO_BACKUP_TEST_DIALOGS"){Some(path)=>{let data=fs::read(path).map_err(|_|"TEST_DIALOGS")?;if data.len()>131072{return Err("TEST_DIALOGS".into());}serde_json::from_slice::<VecDeque<Value>>(&data).map_err(|_|"TEST_DIALOGS")?},None=>VecDeque::new()}}else{VecDeque::new()};
-    let native=Arc::new(NativeHost{root:root.clone(),exe,test,packaged:!cfg!(debug_assertions),dialogs:Mutex::new(scripted),dialog_busy:AtomicBool::new(false)});
+    let native=Arc::new(NativeHost{root:root.clone(),exe,test,packaged:!cfg!(debug_assertions),dialogs:Mutex::new(scripted),dialog_busy:AtomicBool::new(false),engine:Mutex::new(None)});
     let current=Arc::new(Mutex::new(Value::Null));
     let background=args.contains(&"--background".into());
     let app=tauri::Builder::default().invoke_handler(tauri::generate_handler![backup_call]).setup(move|app|{

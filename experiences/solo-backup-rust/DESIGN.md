@@ -18,15 +18,15 @@
 - 메서드 허용 목록, args 배열, 요청 128KiB 제한은 Rust가 직접 검사한다. 렌더러 권한은 backup_call과 이벤트 listen/unlisten뿐이며 fs/shell/opener/dialog 플러그인을 열지 않는다.
 
 ## 프로세스
-- Rust: 창, 트레이, 로그인 시 시작, DPAPI, 워커 stdio RPC.
+- Rust: 창, 트레이, 회차 작업 등록(작업 스케줄러), DPAPI, 워커 stdio RPC.
 - worker/handlers.cjs: Electron main의 핸들러 구간을 복사하고 대화상자·시작 설정 호출만 비동기 host 호출로 바꾼다. electron require나 대체 stub은 없다.
 - encrypt/decrypt는 비동기 host 호출이다. 기존 호출부가 모두 await하므로 동작이 같다.
 - host 호출은 별도 ID 공간을 쓰고 동시 대기는 최대 8개다. 워커 메시지 최대 2MiB, 렌더러 요청 최대 128KiB. 자동 재전송·자동 재시작은 없다.
 - 자식 종료, 충돌, 프로토콜 위반 시 fail closed: 대기 요청을 고정 오류로 끝내고 작업을 멈춘다. OS 상태 잠금으로 중복 실행을 막고, Job 객체 kill-on-close로 워커와 restic을 함께 끝낸다.
-- 회차 실행기 `WorkBackupRun.exe --run <계기>`(11-12, [1단계 설계](STAGE1_DESIGN.md) 4.2): 같은 리소스 · 같은 통신으로 워커를 회차 모드(`SWB_MODE=run`, `worker/runner.cjs`)로 띄워 `$run` 한 번만 하고 끝난다. Tauri를 링크하지 않고 창 · 대화상자를 띄우지 않는다. 상태 잠금을 못 잡으면 「바쁨」만 적고 끝나며 화면 앱을 깨우지 않는다. 쉼 판단(배터리 30% 아래 · 절전 · 종량 회선)은 Rust가 하고, 직접 누른 회차(`manual`)는 쉬지 않는다. 회차마다 `runs.jsonl`에 한 줄(정해 둔 칸만 — 경로 · 파일 이름 · 비밀 없음, 1MB마다 돌려 씀), 도는 동안 `progress.json`(종류 · 단계 · 퍼센트만). 리소스 확인은 restic.exe를 크기만 보고 해시는 엔진에 맡긴다(엔진이 고정 SHA-256으로 워커마다 확인). 잠금 둘로 나누기(`engine.lock` · `ui.lock`)는 다음 증분이고, 지금은 화면 앱과 같은 `native.lock`을 쓴다.
+- 회차 실행기 `WorkBackupRun.exe --run <계기>`(11-12, [1단계 설계](STAGE1_DESIGN.md) 4.2): 같은 리소스 · 같은 통신으로 워커를 회차 모드(`SWB_MODE=run`, `worker/runner.cjs`)로 띄워 `$run` 한 번만 하고 끝난다. Tauri를 링크하지 않고 창 · 대화상자를 띄우지 않는다. 상태 잠금을 못 잡으면 「바쁨」만 적고 끝나며 화면 앱을 깨우지 않는다. 쉼 판단(배터리 30% 아래 · 절전 · 종량 회선)은 Rust가 하고, 직접 누른 회차(`manual`)는 쉬지 않는다. 회차마다 `runs.jsonl`에 한 줄(정해 둔 칸만 — 경로 · 파일 이름 · 비밀 없음, 1MB마다 돌려 씀), 도는 동안 `progress.json`(종류 · 단계 · 퍼센트만). 리소스 확인은 restic.exe를 크기만 보고 해시는 엔진에 맡긴다(엔진이 고정 SHA-256으로 워커마다 확인). 잠금은 둘이다(11-13): 화면 앱은 떠 있는 동안 `ui.lock`(창 하나), restic을 돌리거나 설정을 쓰는 쪽만 `engine.lock` — 실행기는 회차 동안, 화면 앱은 작업 동안 호스트 호출(`engine.lock` · `engine.unlock`)로 쥐고, 쥘 때마다 설정을 디스크에서 다시 읽고(`reload`), 「지금 백업」 같은 작업은 끝날 때까지 쥔다. 그래서 창이 열려 있어도 회차가 돌고, 회차 중 창의 조작은 「예약 백업이 도는 중」으로 미뤄지며 진행은 `progress.json`으로 「예약 백업 · 단계」를 보인다. 화면 앱의 30초 자체 예약은 없앴고, 봉투 재확인은 엔진 잠금을 쥔 때만 돈다(검토 N5). 「자동 실행 등록」(`startup.read` · `startup.set`)은 Windows Run 대신 계기별 회차 작업 넷([`schedule.rs`](src-tauri/src/schedule.rs))을 읽고 만들며, 만들 때 옛 시험판의 Run 항목을 지운다(시험 · 디버그 빌드는 등록하지 않는다).
 
 ## 상태 분리와 이전
-- 상태 폴더는 SoloWorkBackupRustBeta이고 Run 항목도 Electron 판과 다른 이름을 쓴다.
+- 상태 폴더는 SoloWorkBackupRustBeta다. 11-13부터 Run 항목은 쓰지 않고(작업 스케줄러 회차 작업), 옛 시험판이 남긴 항목은 회차 작업을 등록할 때 지운다.
 - 운영 데이터의 자동 이전·전환은 없다.
 - 선택형 1회 읽기 전용 이전 복사: 먼저 정확한 Electron fixture로 v10 AES-GCM+DPAPI 복호화를 검증한다. 새 격리 사본에만 쓰고 복구 전용 모드를 강제하며 자동 실행과 원격 변경을 하지 않는다. 기존 읽기 전용 restic --no-lock 보호를 유지한다.
 

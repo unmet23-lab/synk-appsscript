@@ -159,8 +159,9 @@ fn run() -> i32 {
     let guard = lock.as_ref().and_then(|f| f.try_clone().ok());
     let writing = Arc::new(Mutex::new(true));
     let code = match lock {
-        // The window app (or another run) holds the lock: record and end (4.2 step 1).
-        None => { line["outcome"] = json!("busy"); line["reason"] = json!("ui"); 0 }
+        // Another process holds the engine lock: a live run (its progress file) or the
+        // window's own operation. Record and end (4.2 step 1).
+        None => { line["outcome"] = json!("busy"); line["reason"] = json!(if runlog::live(&root).is_null() { "ui" } else { "run" }); 0 }
         Some(lock) => {
             let code = execute(&args, &root, lock, clock, started, &mut line, &mut worker, writing.clone())
                 .unwrap_or_else(|error| { line["outcome"] = json!("failed"); line["error"] = json!(error); 1 });

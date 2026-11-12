@@ -7,6 +7,9 @@ test('startup read failure preserves the confirmed value and reports failure wit
   let fail=false,reads=0;
   assert.ok(process.env.SOLO_BACKUP_RESTIC,'SOLO_BACKUP_RESTIC must point to the pinned Windows restic binary');
   const app=await createApplication({root,resticPath:process.env.SOLO_BACKUP_RESTIC,publish:()=>{},testMode:true,host:async method=>{
+    // The window also takes the engine lock and reads a run's progress (STAGE1_DESIGN.md 4.1).
+    if(method==='engine.lock'||method==='engine.unlock')return true;
+    if(method==='run.progress')return null;
     assert.equal(method,'startup.read');reads++;await new Promise(r=>setTimeout(r,10));if(fail)throw Error('HOST_BUSY');return true;
   }});
   try{

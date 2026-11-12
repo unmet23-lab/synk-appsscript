@@ -66,6 +66,10 @@ class BackupEngine extends EventEmitter {
     await fs.mkdir(path.join(this.stateDir, 'cache'), { recursive: true });
     await fs.mkdir(path.join(this.stateDir, 'temp'), { recursive: true });
     if (!this.runner) await verifyRestic(this.resticPath);
+    // The stamp is taken before reading: a run that writes in between leaves a newer file
+    // than the stamp, so the next reload reads it (review GA2). It is recorded before the
+    // credential is opened, so a window waiting for a recovery key does not reopen forever (GA3).
+    const stamp = await this.settingsKeyNow();
     try { this.config = json(await fs.readFile(path.join(this.stateDir, 'settings.json'), 'utf8')); }
     catch (e) { if (e.code !== 'ENOENT') throw new Error('설정 파일이 손상되었습니다. 복구 키로 별도 PC에서 복구할 수 있습니다.'); }
     if (this.config) {
@@ -77,6 +81,7 @@ class BackupEngine extends EventEmitter {
         c.provider = b2.provider(c.provider, c.vaultId);
         if (c.repository !== b2.repository(c.provider, c.vaultId)) throw new Error('클라우드 저장소 경로가 일치하지 않습니다.');
       } else if (!path.isAbsolute(c.repository)) throw new Error('백업 폴더 경로가 올바르지 않습니다.');
+      this.settingsKey = stamp;
       try {
         const value = await this.secretStore.decrypt(await fs.readFile(path.join(this.stateDir, 'credential.bin')));
         if (this.isCloud()) { const envelope = json(value); if (envelope.version !== 2) throw new Error('invalid credential'); this.secret = envelope.password; this.cloudCredentials = b2.credentials(envelope); }
@@ -94,8 +99,24 @@ class BackupEngine extends EventEmitter {
         this.connection = { endpoint: p.endpoint, bucket: p.bucket, credentials: b2.credentials(value) };
       } catch { /* Optional preset can be replaced by manually entered credentials. */ }
     }
+    this.settingsKey = stamp;
     return this.getState();
   }
+  // Whoever takes the engine lock reads the settings again: a scheduled run may have
+  // written them meanwhile (STAGE1_DESIGN.md 4.1). Skipped while a job runs, and when the
+  // file is the one this engine last read or wrote. A missing credential is not an error
+  // here — the window then offers recovery, as when it opened (review GA3).
+  async reload() {
+    if (this.job || this.stopping) return false;
+    const key = await this.settingsKeyNow();
+    if (key === null || key === this.settingsKey) return false;
+    try { await this.open(); } catch (e) { if (e.code !== 'RECOVERY_REQUIRED') throw e; }
+    return true;
+  }
+  async settingsKeyNow() {
+    try { const s = await fs.stat(path.join(this.stateDir, 'settings.json')); return `${s.size}:${s.mtimeMs}`; } catch { return null; }
+  }
+  async settingsStamp() { this.settingsKey = await this.settingsKeyNow(); }
   getState() {
     const c = this.config;
     const timing = schedule(c, this.intervalMs, this.now(), this.lastAttempt);
@@ -142,7 +163,7 @@ class BackupEngine extends EventEmitter {
   }
   emitState() { this.emit('state', this.getState()); }
   stage(stage, percent = null) { if (this.job) { this.job.stage = stage; this.job.percent = percent; this.emitState(); } }
-  async save() { await atomic(path.join(this.stateDir, 'settings.json'), JSON.stringify(this.config, null, 2)); this.emitState(); }
+  async save() { await atomic(path.join(this.stateDir, 'settings.json'), JSON.stringify(this.config, null, 2)); await this.settingsStamp(); this.emitState(); }
   async recoverCredential(text, credentials = this.cloudCredentials) {
     const kit = parseKit(text);
     if (!this.config?.repositoryId || kit.repositoryId !== this.config.repositoryId || kit.vaultId !== this.config.vaultId) throw new Error('현재 설정에 맞는 복구 키가 아닙니다.');

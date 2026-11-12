@@ -22,14 +22,28 @@ pub fn overlap(a: &Path, b: &Path) -> bool {
 fn root_allowed(path:&Path,appdata:&Path,test:bool)->bool{
     !overlap(path,&appdata.join("SoloWorkBackup"))&&(!test||!overlap(path,&appdata.join("SoloWorkBackupRustBeta")))
 }
+/// The two locks of STAGE1_DESIGN.md 4.1. The window app holds `ui.lock` while it is open
+/// (one window). Whoever runs restic or writes settings holds `engine.lock`: the run
+/// executable for a whole run, the window app only while one of its operations runs.
+pub const UI_LOCK: &str = "ui.lock";
+pub const ENGINE_LOCK: &str = "engine.lock";
+
+/// The window app: the checked state folder and the window lock. A second window wakes
+/// the first one and ends.
 pub fn state_root(test: bool) -> Result<(PathBuf, File), String> {
-    let (root, lock) = open_state(test)?;
-    match lock { Some(lock) => Ok((root, lock)), None => { signal_existing(&root); Err("ALREADY_RUNNING".into()) } }
+    let root = state_dir(test)?;
+    match try_lock(&root, UI_LOCK)? { Some(lock) => Ok((root, lock)), None => { signal_existing(&root); Err("ALREADY_RUNNING".into()) } }
 }
-/// The checked state folder and its lock, without waking the window that holds
-/// the lock: a scheduled run that finds it held records 「바쁨」 and ends
-/// (STAGE1_DESIGN.md 4.1 · 4.2). `None` means another process holds it.
+/// The run executable: the checked state folder and the engine lock, without waking the
+/// window. `None` means another process holds the engine; the run records 「바쁨」 and ends
+/// (STAGE1_DESIGN.md 4.2 step 1). An open window alone does not stop a run.
 pub fn open_state(test: bool) -> Result<(PathBuf, Option<File>), String> {
+    let root = state_dir(test)?;
+    let lock = try_lock(&root, ENGINE_LOCK)?;
+    Ok((root, lock))
+}
+/// The checked state folder, in the plain local-drive spelling the worker receives.
+pub fn state_dir(test: bool) -> Result<PathBuf, String> {
     let appdata = std::env::var_os("APPDATA").ok_or("STATE_ROOT")?;
     let production = PathBuf::from(&appdata).join("SoloWorkBackup");
     let requested = if test { PathBuf::from(std::env::var_os("SOLO_BACKUP_TEST_STATE").ok_or("TEST_STATE_REQUIRED")?) }
@@ -40,14 +54,19 @@ pub fn open_state(test: bool) -> Result<(PathBuf, Option<File>), String> {
     let protected = fs::canonicalize(&production).unwrap_or(production);
     let real_appdata=fs::canonicalize(Path::new(&appdata)).map_err(|_|"STATE_ROOT")?;
     if overlap(&root, &protected) || !root_allowed(&root,&real_appdata,test) || fs::symlink_metadata(&requested).map_err(|_| "STATE_ROOT")?.file_attributes() & 0x400 != 0 { return Err("PRODUCTION_STATE_FORBIDDEN".into()); }
-    let lockpath = root.join("native.lock");
-    if fs::symlink_metadata(&lockpath).is_ok_and(|m| m.file_attributes() & 0x400 != 0) { return Err("STATE_ROOT".into()); }
-    let lock = OpenOptions::new().read(true).write(true).create(true).truncate(false).open(lockpath).map_err(|_| "STATE_LOCK")?;
-    let held = lock.try_lock_exclusive().is_err();
     // std::fs::canonicalize returns extended-length syntax on Windows. The
     // existing engine deliberately rejects device/UNC inputs; pass the same
     // checked local drive spelling it receives from an Electron folder picker.
-    Ok((worker_path(&root)?, if held { None } else { Some(lock) }))
+    worker_path(&root)
+}
+/// Takes the lock file `name` in the state folder without waiting. `None` when another
+/// process holds it. The lock lasts while the returned file (or a clone of it) is open.
+pub fn try_lock(root: &Path, name: &str) -> Result<Option<File>, String> {
+    if ![UI_LOCK, ENGINE_LOCK].contains(&name) { return Err("STATE_LOCK".into()); }
+    let lockpath = root.join(name);
+    if fs::symlink_metadata(&lockpath).is_ok_and(|m| m.file_attributes() & 0x400 != 0) { return Err("STATE_ROOT".into()); }
+    let lock = OpenOptions::new().read(true).write(true).create(true).truncate(false).open(lockpath).map_err(|_| "STATE_LOCK")?;
+    Ok(if lock.try_lock_exclusive().is_err() { None } else { Some(lock) })
 }
 
 fn signal_name(root:&Path)->Vec<u16>{format!("Local\\SoloWorkBackupRustBeta-{:x}",Sha256::digest(key_path(root).as_bytes())).encode_utf16().chain([0]).collect()}
@@ -156,6 +175,18 @@ impl Drop for ProcessJob { fn drop(&mut self) { unsafe { CloseHandle(self.0); } 
     #[test] fn oauth_is_exact_origin() {
         assert!(oauth_allowed("https://accounts.google.com/o/oauth2/v2/auth?state=test"));
         for u in ["https://accounts.google.com.evil/o/oauth2/v2/auth", "https://user@accounts.google.com/o/oauth2/v2/auth", "http://accounts.google.com/o/oauth2/v2/auth", "https://accounts.google.com/o/oauth2/v2/token"] { assert!(!oauth_allowed(u)); }
+    }
+    #[test] fn two_locks_are_independent(){
+        let dir=std::env::temp_dir().join(format!("swb-locks-{}",std::process::id()));let _=fs::remove_dir_all(&dir);fs::create_dir_all(&dir).unwrap();
+        let ui=try_lock(&dir,UI_LOCK).unwrap().expect("ui lock");
+        let engine=try_lock(&dir,ENGINE_LOCK).unwrap().expect("an open window does not hold the engine");
+        assert!(try_lock(&dir,ENGINE_LOCK).unwrap().is_none(),"engine lock is exclusive");
+        let clone=engine.try_clone().unwrap();drop(engine);
+        assert!(try_lock(&dir,ENGINE_LOCK).unwrap().is_none(),"a clone keeps the lock (run.rs keeps one until the record is written)");
+        drop(clone);
+        assert!(try_lock(&dir,ENGINE_LOCK).unwrap().is_some(),"released when the last handle closes");
+        assert!(try_lock(&dir,"other.lock").is_err());
+        drop(ui);fs::remove_dir_all(&dir).unwrap();
     }
     #[test] fn job_usage_counts_its_processes(){
         use std::{process::Command,os::windows::process::CommandExt};

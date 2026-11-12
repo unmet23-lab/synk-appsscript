@@ -28,6 +28,8 @@ function worker(stateDir, { mode = null, dialogs = [] } = {}) {
         if (m.method === 'secret.encrypt') value = Buffer.from(String(a[0])).toString('base64');
         else if (m.method === 'secret.decrypt') value = Buffer.from(String(a[0]), 'base64').toString();
         else if (m.method === 'startup.read') value = false;
+        else if (m.method === 'engine.lock' || m.method === 'engine.unlock') value = true;
+        else if (m.method === 'run.progress') value = null;
         else if (m.method.startsWith('dialog.')) { const d = script.shift(); ok = !!d && d.method === m.method; value = d?.value; }
         else ok = false;
         send(ok ? { callResult: m.call, ok: true, value } : { callResult: m.call, ok: false, code: 'TEST_HOST' });

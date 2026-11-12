@@ -40,7 +40,7 @@ Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리
 | 통신 | 상속된 표준 입출력, 메서드 허용 목록, 메시지·대기 수 제한 |
 | 중복 실행·프로세스 종료 | Windows 파일 잠금과 Job Object |
 
-기본 상태 폴더는 `%APPDATA%\SoloWorkBackupRustBeta`, 시작 등록 이름은 `SoloWorkBackupRustBeta`다. 기존 `%APPDATA%\SoloWorkBackup`과 분리한다. 복구 전용 모드는 네이티브와 워커 양쪽에서 백업·자격 변경을 차단한다. 워커가 죽으면 작업을 실패로 알리고 자동 재실행·재전송하지 않는다.
+기본 상태 폴더는 `%APPDATA%\SoloWorkBackupRustBeta`다. 자동 백업은 11-13부터 작업 스케줄러의 회차 작업 넷(매시간 · 로그온 · 깨어남 · 잠금 해제 → `WorkBackupRun.exe`)이 돌리고, 예전의 시작 등록 `SoloWorkBackupRustBeta`는 쓰지 않는다(등록할 때 지운다). 기존 `%APPDATA%\SoloWorkBackup`과 분리한다. 복구 전용 모드는 네이티브와 워커 양쪽에서 백업·자격 변경을 차단한다. 워커가 죽으면 작업을 실패로 알리고 자동 재실행·재전송하지 않는다.
 
 로컬 DPAPI만으로 다른 PC에서 복구할 수 있는 것은 아니다. 별도 복구 키 또는 기존 Google 계정 복구가 필요하다. 이번 복구 전용 사본은 기존 원격 복구 보관을 대체하지 않는다. Google 서비스 코드와 화면은 포함되어 있으나, Rust 앱에서의 새 Google 로그인은 이번 실제 계정 시험 범위에 포함되지 않는다.
 

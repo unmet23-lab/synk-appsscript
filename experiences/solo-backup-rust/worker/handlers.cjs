@@ -55,22 +55,61 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
   await recommended.open();recommended.onChange=()=>push();
   function state() {
     const value = {...profiles.getState(), version:'0.6.1-rust-beta.1', recovery:recovery.getState(), launchAtLogin,recommended:recommended.state()};
+    withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
   }
   function push() { publish(state()); }
+  // A scheduled run's progress (progress.json, read by the host) shows as that profile's
+  // job — 「예약 백업 · 단계 N%」 — while this window runs nothing there itself.
+  let runProgress = null;
+  function withRun(value) {
+    const runs = runProgress?.profiles; if (!runs) return;
+    for (const [name, job] of Object.entries(runs)) {
+      if (!job || !value.profiles?.[name] || value.profiles[name].job) continue;
+      const shown = { kind: job.kind || 'backup', stage: `예약 백업 · ${job.stage || '진행 중'}`, percent: job.percent ?? null, scheduled: true };
+      value.profiles[name] = { ...value.profiles[name], job: shown };
+      if (name === value.profile && !value.job) value.job = shown;
+    }
+  }
+  // The engine lock (STAGE1_DESIGN.md 4.1): a scheduled run holds it for a whole run; this
+  // window takes it only while one of its operations runs, reads the settings again first,
+  // and lets it go when its last job ends. The window no longer schedules backups itself.
+  // Lock and unlock reach the host in the order they were asked (host calls otherwise run on
+  // separate threads), and a request counts as a user before its answer arrives, so a job
+  // ending meanwhile cannot let the lock go under it (review GA1).
+  let lockUsers = 0, lockChain = Promise.resolve();
+  const jobsRunning = () => Object.values(profiles.engines).some(e => e.job);
+  function lockCall(method) { const call = lockChain.then(() => host(method, [])); lockChain = call.catch(() => {}); return call; }
+  async function engineLock() {
+    lockUsers++;
+    if ((await lockCall('engine.lock').catch(() => false)) !== true) { engineUnlock(); return false; }
+    try { await profiles.reload(); } catch (e) { engineUnlock(); throw e; }
+    return true;
+  }
+  function engineUnlock() { lockUsers = Math.max(0, lockUsers - 1); maybeUnlock(); }
+  function maybeUnlock() { if (lockUsers === 0 && !jobsRunning()) void lockCall('engine.unlock').catch(() => {}); }
+  for (const engine of Object.values(profiles.engines)) engine.on('idle', maybeUnlock);
   async function setStartup(enabled) { launchAtLogin = await host('startup.set', [enabled]); return launchAtLogin; }
   function launchJob(engine, action) {
     if (closing || engine.stopping || engine.job) throw new Error('진행 중인 작업이 끝난 뒤 다시 눌러 주세요.');
     void action().catch(() => push()); return state();
   }
-  function handle(name, action, {read=false,switching=false,safeErrors=false}={}) {
+  function handle(name, action, {read=false,switching=false,safeErrors=false,lock=!read&&!switching}={}) {
     handlers.set(name, async (...args) => {
-      const context = {engine:profiles.current, selection:profiles.selection};
-      if (!read && (closing || dialogBusy || recovery.busy || (!switching && context.engine.job))) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
-      if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
-      try { if (!read) dialogBusy=true; profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
-      catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message)}; }
-      finally {if(!read)dialogBusy=false;}
+      if (!read && (closing || dialogBusy || recovery.busy)) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
+      if (lock) {
+        let held;
+        try { held = await engineLock(); } catch (e) { return {ok:false,error:profiles.current.clean(e.message)}; }
+        if (!held) return {ok:false,error:'예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.',code:'RUN_ACTIVE'};
+      }
+      let claimed = false;
+      try {
+        const context = {engine:profiles.current, selection:profiles.selection};
+        if (!read && !switching && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
+        if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
+        try { if (!read) { dialogBusy=true; claimed=true; } profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
+        catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message)}; }
+      } finally { if (claimed) dialogBusy=false; if (lock) engineUnlock(); }
     });
   }
   async function folder(title,multi=false) {
@@ -97,9 +136,9 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
       const picked=await folder('복구한 추천 자료를 담을 별도 드라이브');if(!picked)return state();profiles.assertOutput(picked[0]);void recommended.restore(picked[0]).catch(()=>push());return state();
     },{switching:true});
     handle('selectProfile', (_context, name) => { profiles.select(name); return state(); }, { switching: true });
-    handle('chooseSources', async ({ engine, selection }) => { if (engine.config?.repositoryId || (engine.isCloud() && engine.config)) throw new Error('설정한 작업 폴더는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업할 작업 폴더 선택', true); if (picked) { await engine.resetUnfinishedSetup(); selection.sources = picked; } return [...selection.sources]; });
-    handle('chooseTarget', async ({ engine, selection }) => { if (engine.isCloud() || engine.config?.repositoryId) throw new Error('설정한 저장소는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업을 보관할 폴더 선택'); if (picked) { profiles.assertLocalTarget(picked[0]); await engine.resetUnfinishedSetup(); selection.target = picked[0]; } return selection.target; });
-    handle('reuseLocalSources', ({ engine, selection }) => { if (!engine.isCloud() || engine.config) throw new Error('새 클라우드 연결에서만 폴더를 가져올 수 있습니다.'); selection.sources = [...(profiles.engines.local.config?.sources || [])]; return state(); });
+    handle('chooseSources', async ({ engine, selection }) => { if (engine.config?.repositoryId || (engine.isCloud() && engine.config)) throw new Error('설정한 작업 폴더는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업할 작업 폴더 선택', true); if (picked) { await engine.resetUnfinishedSetup(); selection.sources = picked; } return [...selection.sources]; }, { lock: false });
+    handle('chooseTarget', async ({ engine, selection }) => { if (engine.isCloud() || engine.config?.repositoryId) throw new Error('설정한 저장소는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업을 보관할 폴더 선택'); if (picked) { profiles.assertLocalTarget(picked[0]); await engine.resetUnfinishedSetup(); selection.target = picked[0]; } return selection.target; }, { lock: false });
+    handle('reuseLocalSources', ({ engine, selection }) => { if (!engine.isCloud() || engine.config) throw new Error('새 클라우드 연결에서만 폴더를 가져올 수 있습니다.'); selection.sources = [...(profiles.engines.local.config?.sources || [])]; return state(); }, { lock: false });
     handle('setup', async ({ engine, selection }) => { profiles.assertLocalTarget(selection.target); await engine.setup({ sources: selection.sources, parent: selection.target }); return state(); });
     handle('setupCloud', async ({ engine, selection }, input) => { if (!input || typeof input !== 'object') throw new Error('B2 연결 정보를 입력해 주세요.'); const { endpoint, bucket, keyId, applicationKey } = input; await engine.setupCloud({ sources: selection.sources, endpoint, bucket, credentials: { keyId, applicationKey } }); if (recovery.getState().connected && recovery.getState().readKeyReady) await recovery.sync().catch(() => {}); return state(); });
     handle('connectRecovery', async () => { await recovery.connect(); return state(); });
@@ -114,12 +153,12 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
       profiles.assertOutput(path.dirname(result.filePath));
       await engine.saveRecoveryKit(result.filePath); return state();
     });
-    handle('startAutomatic', async ({ engine }) => { await engine.setAutomatic(true); setImmediate(() => profiles.tick()); return state(); });
-    handle('setAutomatic', async ({ engine }, enabled) => { await engine.setAutomatic(enabled); if (enabled) setImmediate(() => profiles.tick()); return state(); });
+    handle('startAutomatic', async ({ engine }) => { await engine.setAutomatic(true); profiles.tick(); return state(); });
+    handle('setAutomatic', async ({ engine }, enabled) => { await engine.setAutomatic(enabled); if (enabled) profiles.tick(); return state(); });
     handle('backupNow', ({ engine }) => launchJob(engine, () => engine.backupNow()));
     handle('protectNow', ({ engine }) => { engine.assertBackupReady(); return launchJob(engine, () => engine.protectNow({ registerStartup: async () => setStartup(true) })); });
     handle('pauseAutomatic', async ({ engine }, minutes) => { await engine.pauseAutomatic(minutes); return state(); });
-    handle('resumeAutomatic', async ({ engine }) => { await engine.resumeAutomatic(); setImmediate(() => profiles.tick()); return state(); });
+    handle('resumeAutomatic', async ({ engine }) => { await engine.resumeAutomatic(); profiles.tick(); return state(); });
     handle('probeRestore', ({ engine }) => { engine.assertBackupReady(); return launchJob(engine, () => engine.probeRestore()); });
     handle('checkRepository', async ({ engine }) => { if (engine.isCloud()) { const answer = await dialog.showMessageBox(window, { type: 'question', message: '클라우드의 전체 데이터를 내려받아 점검합니다.', detail: 'B2 다운로드 사용량이 늘어나며 무료 한도를 넘으면 요금이 발생할 수 있습니다.', buttons: ['취소', '전체 점검'], defaultId: 0, cancelId: 0 }); if (answer.response !== 1) throw new Error('전체 점검을 취소했습니다.'); } return launchJob(engine, () => engine.checkRepository()); });
     handle('restoreLatest', async ({ engine }) => {
@@ -188,11 +227,32 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
     handle('setLaunchAtLogin', async (_context, enabled) => {
       await setStartup(enabled);
       return state();
-    });
-    handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; });
+    }, { lock: false });
+    handle('openRestoreFolder', async ({ engine }) => { const target = engine.config?.lastRestore?.path; if (!target) throw new Error('완료된 복구 폴더가 없습니다.'); const error = await shell.openPath(target); if (error) throw new Error(error); return null; }, { lock: false });
 
   profiles.on('state',push); recovery.on('state',push);
-  profiles.start(); void recovery.tick();
+  // No backup timer here any more: Windows Task Scheduler starts the runs (STAGE1_DESIGN.md
+  // 4.1 · 4.2). The account-recovery check runs only while this window holds the engine
+  // lock, so it never writes settings under a scheduled run (review N5).
+  clearInterval(recovery.timer);
+  async function recoveryTick() {
+    if (closing || recovery.busy) return;
+    let held = false;
+    try { held = await engineLock(); if (held) await recovery.tick(); } catch { /* next minute */ } finally { if (held) engineUnlock(); }
+  }
+  async function refreshRun() {
+    if (closing) return;
+    const next = await host('run.progress', []).catch(() => null);
+    if (JSON.stringify(next ?? null) === JSON.stringify(runProgress)) return;
+    const ended = !!runProgress && !next;
+    runProgress = next ?? null;
+    // A run that just ended wrote new settings; read them (writes are atomic, no lock needed).
+    if (ended && lockUsers === 0 && !jobsRunning()) await profiles.reload().catch(() => {});
+    push();
+  }
+  const timers = [setInterval(() => void recoveryTick(), 60000), setInterval(() => void refreshRun(), 5000)];
+  for (const t of timers) t.unref?.();
+  void recoveryTick(); void refreshRun();
   let startupRefresh = null;
   return {
     state,
@@ -204,7 +264,7 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
       }
       return handlers.get(name)(...args);
     },
-    async stop() { if(closing)return;closing=true;await recommended.stop();await Promise.all([recovery.stop(),profiles.stop()]); },
+    async stop() { if(closing)return;closing=true;for(const t of timers)clearInterval(t);await recommended.stop();await Promise.all([recovery.stop(),profiles.stop()]);await lockCall('engine.unlock').catch(()=>{}); },
     active:()=>profiles.active()||!!recommended.engine?.config?.automatic||recommended.busy, busy:()=>profiles.busy()||recommended.busy
   };
 }

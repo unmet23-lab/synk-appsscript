@@ -48,6 +48,13 @@ class Profiles extends EventEmitter {
   assertLocalTarget(parent) {
     if (this.engines.b2.config?.sources.some(p => overlap(parent, p))) throw new Error('클라우드 백업 대상 폴더 안에 로컬 저장소를 만들 수 없습니다.');
   }
+  // Settings a scheduled run wrote since this window last looked (STAGE1_DESIGN.md 4.1).
+  async reload() {
+    let changed = false;
+    for (const engine of Object.values(this.engines)) changed = (await engine.reload()) || changed;
+    if (changed) { this.boundaries(); this.emit('state', this.getState()); }
+    return changed;
+  }
   tick() {
     if (this.closing) return;
     this.boundaries();

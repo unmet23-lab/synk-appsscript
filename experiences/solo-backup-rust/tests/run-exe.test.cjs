@@ -65,23 +65,27 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   assert.ok(done.job.peakJobBytes > 0 && done.job.processes >= 2, JSON.stringify(done.job));
   assert.ok(!fs.existsSync(path.join(state, 'progress.json')), 'progress file removed at the end');
 
-  // The window app (or another run) holds the lock: busy, nothing else.
-  const lock = await holdLock(path.join(state, 'native.lock'));
+  // Another process holds the engine lock (the window's own job or another run): busy, nothing else.
+  const lock = await holdLock(path.join(state, 'engine.lock'));
   try { assert.equal(await runExe(['--run', 'unlock', '--test-mode'], env), 0); } finally { await lock.release(); }
   const busy = lines(state)[2];
   assert.deepEqual([busy.outcome, busy.reason, busy.profiles], ['busy', 'ui', undefined]);
+  // An open window alone (ui.lock) does not stop a run (STAGE1_DESIGN.md 4.1).
+  const window = await holdLock(path.join(state, 'ui.lock'));
+  try { assert.equal(await runExe(['--run', 'manual', '--test-mode'], env), 0); } finally { await window.release(); }
+  assert.equal(lines(state)[3].outcome, 'complete');
 
   // An interrupted move of the state folder stops the run.
   fs.writeFileSync(path.join(state, 'migration-incomplete'), '');
   assert.equal(await runExe(['--run', 'hourly', '--test-mode'], env), 1);
   fs.rmSync(path.join(state, 'migration-incomplete'));
-  assert.equal(lines(state)[3].error, 'MIGRATION_INCOMPLETE');
+  assert.equal(lines(state)[4].error, 'MIGRATION_INCOMPLETE');
 
   // Bad arguments and test mode without a test state folder record nothing.
   assert.equal(await runExe(['--run', 'daily', '--test-mode'], env), 64);
   const { SOLO_BACKUP_TEST_STATE, ...noState } = env;
   assert.equal(await runExe(['--run', 'hourly', '--test-mode'], noState), 70);
-  assert.equal(lines(state).length, 4);
+  assert.equal(lines(state).length, 5);
 
   const text = fs.readFileSync(path.join(state, 'runs.jsonl'), 'utf8');
   for (const p of [root, data, repo, keys, os.homedir()]) {

@@ -35,6 +35,8 @@ function appWorker(stateDir, { restic, dialogs = [] }) {
           if (m.method === 'secret.encrypt') value = dpapi('encrypt', String(a[0]));
           else if (m.method === 'secret.decrypt') value = dpapi('decrypt', String(a[0]));
           else if (m.method === 'startup.read') value = false;
+          else if (m.method === 'engine.lock' || m.method === 'engine.unlock') value = true;
+          else if (m.method === 'run.progress') value = null;
           else if (m.method.startsWith('dialog.')) { const d = script.shift(); ok = !!d && d.method === m.method; value = d?.value; }
           else ok = false;
         } catch { ok = false; }
