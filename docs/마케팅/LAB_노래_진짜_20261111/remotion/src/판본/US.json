@@ -1,6 +1,6 @@
 {
  "lang": "en",
- "bridge": "When you can’t believe your eyes, Koreans say…",
+ "bridge": "When Koreans can’t believe their eyes, they say…",
  "mean": "Really?!",
  "read": [
   "jin",
@@ -8,14 +8,14 @@
  ],
  "clap": "Clap on the beat!",
  "say": "Your turn — say it!",
- "real": "Natural speed!",
+ "real": "Talking speed!",
  "end": "How do you say “really?!” in your language?",
  "_원문": {
-  "bridge": "눈을 믿을 수 없을 때 한국 사람은 이렇게 말해…",
+  "bridge": "한국 사람은 제 눈을 믿을 수 없을 때 이렇게 말해…",
   "mean": "진짜?!",
   "clap": "박자에 맞춰 손뼉!",
   "say": "네 차례 — 말해 봐!",
-  "real": "자연스러운 속도!",
+  "real": "말하는 빠르기!",
   "end": "너희 말로는 「진짜?!」를 뭐라고 해?"
  },
  "_발음": {

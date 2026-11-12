@@ -24,6 +24,7 @@ cd docs/마케팅/LAB_노래틀/틀 && npx remotion render song out/<이름>.mp4
 
 - node_modules는 퀴즈 은행 틀(공용 작업본)의 것을 junction으로 잇는다(`node -e "fs.symlinkSync(<퀴즈 틀 node_modules>, '틀/node_modules', 'junction')"` — cmd `mklink`는 한글 경로를 깨뜨린다).
 - 판본 글(`loc`): `lang` · `bridge`(카운트인 동안 다리 글) · `mean`(뜻 알약) · `read`(음절마다 발음) · `clap` · `say` · `real` · `end` + `_원문`(한국어 뜻 — 역번역 대조 기준).
+- **글 자리 · 딱지 길이(11-12):** 글은 글자 검사 안전선(오른쪽 920 · 아래 1428 — `tools/올리기전검사.js` SAFE) 안에 둔다 — 음절 글자 상한 230 · 뜻 줄 최대 76 · 글 아래 끝 `SAFE_BOTTOM` 1400, 뜻 줄은 12px만 떠오른다(26px이면 들어오는 동안 아래 캡션 자리를 15px 넘었다). 「진짜 속도」(`real`) 딱지는 화면에 1.3~1.6초뿐이라 짧게(라틴 글 16자 안팎) — 「Natural speed!」류는 무엇의 속도인지 시험관 넷 중 둘 이상이 몰랐다(11개 언어). 그 언어는 「말하는 빠르기」 뜻(「Talking speed!」 · 「Como se fala!」 · 「日常语速！」)으로 바꿨다.
 - 윈도는 파일 이름 대소문자를 가리지 않는다 — `Song.tsx`와 `song.ts`를 같이 두면 컴포지션이 undefined가 된다(그래서 정본 꼴 파일은 `songDoc.ts`).
 
 ## 판본(나라별판) — 이야기 편과 같은 사슬

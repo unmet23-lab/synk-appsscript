@@ -1,7 +1,7 @@
 {
  "lang": "en",
  "bridge": "Bus pulling away? Koreans yell…",
- "mean": "Wait a sec!",
+ "mean": "Hold on!",
  "read": [
   "jam",
   "kkan",
@@ -9,14 +9,14 @@
  ],
  "clap": "Clap on the beat!",
  "say": "Your turn — say it!",
- "real": "Natural speed!",
- "end": "How do you say “wait a sec” in your language?",
+ "real": "Talking speed!",
+ "end": "How do you say “hold on” in your language?",
  "_원문": {
   "bridge": "버스가 떠나? 한국 사람은 이렇게 외쳐…",
   "mean": "잠깐만!",
   "clap": "박자에 맞춰 손뼉!",
   "say": "네 차례 — 말해 봐!",
-  "real": "자연스러운 속도!",
+  "real": "말하는 빠르기!",
   "end": "너희 말로는 「잠깐만」를 뭐라고 해?"
  },
  "_발음": {

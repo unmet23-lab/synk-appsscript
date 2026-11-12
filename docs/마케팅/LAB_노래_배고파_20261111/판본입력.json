@@ -8,32 +8,34 @@
  "나라": {
   "US": {
    "bridge": "When your stomach growls, Koreans say…",
-   "mean": "I'm hungry!",
-   "qm": "I'm hungry"
+   "mean": "I’m hungry!",
+   "qm": "I’m hungry"
   },
   "CA": {
    "bridge": "Empty bowl and a growling stomach? In Korean…",
    "bridgeK": "빈 그릇에 꼬르륵거리는 배? 한국어로는…",
-   "mean": "I'm hungry!",
-   "qm": "I'm hungry"
+   "mean": "I’m hungry!",
+   "qm": "I’m hungry",
+   "end": "What’s your way of saying “I’m hungry”?",
+   "endK": "「배고파」, 너만의 말로는 뭐라고 해?"
   },
   "AU": {
    "bridge": "Tummy rumbling? Koreans just say…",
    "bridgeK": "배에서 꼬르륵 소리? 한국 사람은 그냥 이렇게 말해…",
-   "mean": "I'm hungry!",
-   "qm": "I'm hungry"
+   "mean": "I’m hungry!",
+   "qm": "I’m hungry"
   },
   "NZ": {
    "bridge": "Bowl's empty and you're starving? In Korean…",
    "bridgeK": "그릇은 비었고 배는 고파? 한국어로는…",
-   "mean": "I'm hungry!",
-   "qm": "I'm hungry"
+   "mean": "I’m hungry!",
+   "qm": "I’m hungry"
   },
   "EN": {
    "bridge": "Starving? Here's what Koreans say…",
    "bridgeK": "배고파 죽겠어? 한국 사람은 이렇게 말해…",
-   "mean": "I'm hungry!",
-   "qm": "I'm hungry"
+   "mean": "I’m hungry!",
+   "qm": "I’m hungry"
   },
   "PH": {
    "bridge": "Kapag kumakalam ang sikmura, ang sabi ng mga Koreano…",
@@ -67,8 +69,8 @@
    "bridge": "肚子咕咕叫的时候，\n韩国人会说……",
    "mean": "我饿了！",
    "qm": "我饿了",
-   "end": "肚子饿的时候，你平时怎么说？",
-   "endK": "배고플 때 너는 뭐라고 해?"
+   "end": "肚子饿的时候，你们那儿怎么说？",
+   "endK": "배고플 때 너희 동네에선 뭐라고 해?"
   },
   "TW": {
    "bridge": "肚子咕嚕咕嚕叫的時候，\n韓國人會說……",
@@ -142,8 +144,8 @@
    "bridgeK": "배고파지면 한국어로 이렇게 말해…",
    "mean": "ဗိုက်ဆာတယ်!",
    "qm": "ဗိုက်ဆာတယ်",
-   "end": "ဗိုက်ဆာရင် မင်း ဘာ⁠ပြော⁠လဲ?",
-   "endK": "배고플 때 너는 뭐라고 해?"
+   "end": "ဗိုက်ဆာရင် ဘာ⁠ပြော⁠ကြ⁠လဲ?",
+   "endK": "배고플 때 다들 뭐라고 해?"
   },
   "KH": {
    "bridge": "ពេលឃ្លាន\nជនជាតិកូរ៉េនិយាយថា…",
@@ -184,11 +186,11 @@
    "endK": "배고플 때 너는 뭐라고 해?"
   },
   "UZ": {
-   "bridge": "Qorni ochib quldirasa, koreyslar shunday deydi…",
-   "bridgeK": "배가 고파 꼬르륵거리면 한국 사람은 이렇게 말해…",
+   "bridge": "Qorni och boʻlganda koreyslar shunday deydi…",
+   "bridgeK": "배가 고플 때 한국 사람은 이렇게 말해…",
    "mean": "Qornim och!",
    "qm": "qornim och",
-   "end": "Qorning ochganda sen nima deysan?",
+   "end": "Qorning och boʻlganda sen nima deysan?",
    "endK": "배고플 때 너는 뭐라고 해?"
   }
  }

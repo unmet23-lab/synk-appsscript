@@ -1,7 +1,7 @@
 {
  "lang": "en",
  "bridge": "When your stomach growls, Koreans say…",
- "mean": "I'm hungry!",
+ "mean": "I’m hungry!",
  "read": [
   "bae",
   "go",
@@ -9,14 +9,14 @@
  ],
  "clap": "Clap on the beat!",
  "say": "Your turn — say it!",
- "real": "Natural speed!",
- "end": "How do you say “I'm hungry” in your language?",
+ "real": "Talking speed!",
+ "end": "How do you say “I’m hungry” in your language?",
  "_원문": {
   "bridge": "배가 꼬르륵거릴 때 한국 사람은 이렇게 말해…",
   "mean": "배고파!",
   "clap": "박자에 맞춰 손뼉!",
   "say": "네 차례 — 말해 봐!",
-  "real": "자연스러운 속도!",
+  "real": "말하는 빠르기!",
   "end": "너희 말로는 「배고파」를 뭐라고 해?"
  },
  "_발음": {

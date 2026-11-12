@@ -8,8 +8,8 @@
  "나라": {
   "US": {
    "bridge": "Bus pulling away? Koreans yell…",
-   "mean": "Wait a sec!",
-   "qm": "wait a sec",
+   "mean": "Hold on!",
+   "qm": "hold on",
    "bridgeK": "버스가 떠나? 한국 사람은 이렇게 외쳐…"
   },
   "CA": {
@@ -25,10 +25,10 @@
    "bridgeK": "버스가 너 없이 떠나? 한국어로는 이렇게 외쳐…"
   },
   "NZ": {
-   "bridge": "The bus is leaving and you’re not on it? Call out…",
+   "bridge": "Bus leaving without you? Here’s what Koreans shout…",
    "mean": "Wait a sec!",
    "qm": "wait a sec",
-   "bridgeK": "버스는 가는데 너는 못 탔어? 이렇게 외쳐…"
+   "bridgeK": "버스가 너 없이 떠나? 한국 사람은 이렇게 외쳐…"
   },
   "EN": {
    "bridge": "Running for the bus? Koreans shout…",
@@ -106,10 +106,10 @@
    "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
   },
   "ID": {
-   "bridge": "Busnya mau jalan? Orang Korea teriak…",
+   "bridge": "Busnya mau jalan? Orang Korea bilang…",
    "mean": "Tunggu sebentar!",
    "qm": "tunggu sebentar",
-   "bridgeK": "버스가 출발하려 해? 한국 사람은 이렇게 외쳐…",
+   "bridgeK": "버스가 출발하려 해? 한국 사람은 이렇게 말해…",
    "end": "Kalau busnya mau jalan, kamu teriak apa?",
    "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
   },
@@ -145,12 +145,12 @@
    "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
   },
   "MM": {
-   "bridge": "ဘတ်စ်ကား ထွက်သွားတော့မယ်ဆိုရင်\nကိုရီးယားလို ဒီလိုအော်တယ်…",
+   "bridge": "ဘတ်စ်ကား ထွက်သွားတော့မယ်ဆိုရင်\nကိုရီးယားလို ဒီလိုအော်ပြောတယ်…",
    "mean": "ခဏလေး!",
    "qm": "ခဏလေး",
    "bridgeK": "버스가 떠나려 하면 한국어로 이렇게 외쳐…",
-   "end": "ဘတ်စ်ကား ထွက်တော့မယ်ဆို မင်း ဘာ⁠အော်⁠လဲ?",
-   "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
+   "end": "ဘတ်စ်ကား ထွက်တော့မယ်ဆိုရင် ဘာ⁠အော်⁠ပြော⁠မလဲ?",
+   "endK": "버스가 떠나려 하면 뭐라고 외칠 거야?"
   },
   "KH": {
    "bridge": "ពេលឡានក្រុងជិតចេញ\nជនជាតិកូរ៉េស្រែកថា…",
@@ -168,8 +168,8 @@
   },
   "RU": {
    "bridge": "Автобус уезжает? Корейцы кричат…",
-   "mean": "Подожди секунду!",
-   "qm": "подожди секунду",
+   "mean": "Подожди!",
+   "qm": "подожди",
    "bridgeK": "버스가 떠나? 한국 사람은 이렇게 외쳐…",
    "end": "А что ты кричишь, когда автобус уезжает?",
    "endK": "버스가 떠날 때 너는 뭐라고 외쳐?"
