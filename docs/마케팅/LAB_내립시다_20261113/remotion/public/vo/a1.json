@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a1",
+ "text": "내립시다!",
+ "dur": 0.935,
+ "words": [
+  {
+   "text": "내립시다!",
+   "start": 0.02,
+   "end": 0.935
+  }
+ ],
+ "source": {
+  "key": "cd82bb66cda40c0f22b01e80a6017102",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1136,
+   "lufs": -17,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 350
+ }
+}
