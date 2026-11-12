@@ -310,10 +310,17 @@ test('보기가 얹지 못하는 동안 이미 답한 문항은 「만난 적 �
   const seen = coach.exposure(picked.selected);
   assert.equal(seen.met, null, '측정용 앞선 만남은 모름');
   assert.equal(seen.seen, true, '화면용으로는 이 기기의 제시가 있다');
-  // 다시 내면 제시 사건의 firstExposure는 true가 아니다(모르면 null)
+  // 이 기기에서 아직 내지 않은 다른 계열 문항도 화면용 · 측정용 모두 모름이다 — 「안 봤다」로 단정하지 않는다
+  // (exposure의 waitAll 분기를 밟는 자리, 카본 끝판 다시 검수 A1)
+  const unshown = items.find(
+    item =>
+      item.itemKey !== picked.selected.itemKey && item.familyKey !== picked.selected.familyKey,
+  );
+  assert.deepEqual(coach.exposure(unshown), { seen: null, met: null });
+  // 다시 내면 제시 사건의 firstExposure는 모름(null)이다 — true도 false도 아니다
   const again = coach.present(picked.selected);
   const event = (await port.read()).map(row => row.value.event).find(e => e?.id === again);
-  assert.notEqual(event?.firstExposure, true);
+  assert.equal(event?.firstExposure, null);
   coach.dispose();
 });
 

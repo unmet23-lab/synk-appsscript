@@ -540,6 +540,14 @@ export const COACH_MUTANTS = [
   ],
   [
     C,
+    '측정용 처음',
+    '보기가 얹지 못하는 동안 아직 안 낸 문항을 화면용으로 「안 봤다」고 단정한다(카본 끝판 다시 검수 A1)',
+    'src/coach/index.mjs',
+    '      if (view.waitAll === true) return { seen: null, met };',
+    '',
+  ],
+  [
+    C,
     '제시 칸',
     '낼 수 없는 줄(층 9)도 고른 줄로 남긴다(카본 끝 판 B2)',
     SESSION,
