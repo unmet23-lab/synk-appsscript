@@ -27,6 +27,8 @@
  *     · --편: 결과를 그 편 폴더 게시/미학맹검.json에도 남긴다 — 올리기 전 검사(⑱ · tools/lib/미학관문.js)가 본다.
  *     · 설명은 판정이 드러나지 않게 쓴다(「새 판」 「고친」 「옛」 금지 — 「가상 러닝화 광고의 끝 화면(9:16)」처럼).
  *     · 그림은 화면01…로 이름을 바꿔 보낸다(파일 이름이 답을 흘리지 않게). 아르곤 웹 한 대화에 그림 4장까지 — 쌍은 같은 대화에 둔다.
+ *   줄(11-12): 카본은 공용 차례에 --두줄로 선다 — a 줄(77yuhbs · 메인 ego) · b 줄(unmet25 · 둘째 ego gemini-b) 가운데 먼저 비는 줄(b 줄이 4일 넘게
+ *     놀았다 — 이 도구가 a 줄만 섰다). a 줄이 꺼져도 b를 쓸 수 있으면 보내고, 둘 다 못 쓰면 막힘 「줄 꺼짐」. 보낸 대화는 보낸 줄에서만 읽는다(아르곤웹).
  *   막힘(11-10 설계 18): 아르곤이 답을 못 주면(거절 한 줄 · 보낸 글 사라짐 · 안 보내짐 · 줄 꺼짐) 묶음마다 꼴 · 보낸 시각 · 거절 첫 줄을 기록 「막힘」에
  *     남긴다 — ⑱은 이 증거와 대체 눈의 결과 파일이 있어야 확인할 것으로 내린다(「맹검못함」 글만으로는 못 넘는다). 대체 순서는 아르곤 → GPT → Opus:
  *       --눈 gpt   같은 그림을 GPT(구독 Codex — tools/codex계정.js, 돈 안 나감)가 본다. 적중(11-08 기각 사례)을 잰 기록이 있어야 쓴다.
@@ -495,14 +497,27 @@ function 지난정리(화면들, 지난, { 눈 = '아르곤', 뺌 = [], 아르�
 
 /* ── 막힌 증거 ───────────────────────────────────────────────────────── */
 
-/** 아르곤웹 공용 차례의 a 줄이 꺼졌나(미학맹검은 --두줄 없이 a 줄만 선다) → 막힘 한 줄 또는 null. */
-function 줄꺼짐(차례py = process.env.SYNK_CHARYE_PY || path.join(os.homedir(), 'Documents', 'synk-vendor', '_공용차례', '차례.py')) {
-  const f = path.join(path.dirname(차례py), 'gemini-a.off');
-  let 글 = '';
-  try { 글 = fs.readFileSync(f, 'utf8'); } catch { return null; }
-  const 줄 = 글.split(/\r?\n/).map(s => s.trim()).filter(Boolean).pop() || 'gemini-a.off';
-  let 때 = null; try { 때 = KST시각(fs.statSync(f).mtimeMs); } catch { /* 모름 */ }
-  return { 꼴: '줄 꺼짐', 끈때: 때, 첫줄: 자르기(줄, 200) };
+/** 아르곤웹 공용 차례에서 미학맹검이 설 줄이 모두 막혔나 → 막힘 한 줄 또는 null. 11-12부터 미학맹검은 --두줄로 a · b 가운데 먼저 비는 줄에 서니
+ *  a 줄이 꺼져도 b 줄(unmet25 · 둘째 ego gemini-b)을 쓸 수 있으면 간다 — b 줄도 꺼졌거나 둘째 ego를 못 쓰면(띄우기 · 붙기 실패) 막힘이다.
+ *  둘째준비는 a 줄이 꺼졌을 때만 부른다(아르곤웹.js 둘째준비 — 안 떠 있으면 띄우고 붙어 본다). */
+async function 줄꺼짐(차례py = process.env.SYNK_CHARYE_PY || path.join(os.homedir(), 'Documents', 'synk-vendor', '_공용차례', '차례.py'),
+  둘째준비 = () => require('./아르곤웹.js').둘째준비()) {
+  const 끈것 = (k) => {
+    const f = path.join(path.dirname(차례py), `gemini-${k}.off`);
+    let 글 = '';
+    try { 글 = fs.readFileSync(f, 'utf8'); } catch { return null; }
+    const 줄 = 글.split(/\r?\n/).map(s => s.trim()).filter(Boolean).pop() || `gemini-${k}.off`;
+    let 때 = null; try { 때 = KST시각(fs.statSync(f).mtimeMs); } catch { /* 모름 */ }
+    return { 끈때: 때, 첫줄: 줄 };
+  };
+  const a = 끈것('a');
+  if (!a) return null;
+  const b = 끈것('b');
+  if (b) return { 꼴: '줄 꺼짐', 끈때: a.끈때, 첫줄: 자르기(`a 줄: ${a.첫줄} · b 줄도 꺼짐: ${b.첫줄}`, 200) };
+  let r = null;
+  try { r = await 둘째준비(); } catch (e) { r = { 됨: false, 까닭: e.message }; }
+  if (r && r.됨) return null;
+  return { 꼴: '줄 꺼짐', 끈때: a.끈때, 첫줄: 자르기(`a 줄: ${a.첫줄} · b 줄은 둘째 ego를 못 씀: ${r ? r.까닭 : '모름'}`, 200) };
 }
 
 /** 묶음 하나의 막힌 증거 — 답 파일(JSON 없는 거절 · 오류 한 줄) · 보냄 표시(보냈는데 대화 · 답 없음) · 안보내짐 표시 · 아르곤웹 출력 꼬리. 답이 JSON이면 null. */
@@ -528,14 +543,15 @@ function 막힘읽기(답파일, 출력꼬리 = '', 작업이름 = '') {
 
 /* ── 부르기 ─────────────────────────────────────────────────────────── */
 
-/** 아르곤웹 보내기 → (답 없는 작업만) 읽기. 출력은 그대로 흘리며 꼬리를 남긴다. */
+/** 아르곤웹 보내기 → (답 없는 작업만) 읽기. 출력은 그대로 흘리며 꼬리를 남긴다.
+ *  11-12부터 --두줄 — a(77yuhbs · 메인 ego) · b(unmet25 · 둘째 ego) 가운데 먼저 비는 줄로 보낸다. 읽기는 아르곤웹이 보냄 표시의 줄로만 선다. */
 async function 아르곤부르기(작업들) {
   const 아르곤 = path.join(뿌리, 'tools', '아르곤웹.js');
   let 꼬리 = '';
   const 한번 = (명령) => new Promise((resolve) => {
     const 남은 = 작업들.filter(w => !fs.existsSync(w.답)).map(w => w.작업);
     if (!남은.length) return resolve(0);
-    const c = spawn(process.execPath, [아르곤, 명령, ...남은], { cwd: 뿌리, stdio: ['inherit', 'pipe', 'pipe'] });
+    const c = spawn(process.execPath, [아르곤, 명령, ...남은, '--두줄'], { cwd: 뿌리, stdio: ['inherit', 'pipe', 'pipe'] });
     const 흘림 = (곳) => (d) => { 곳.write(d); 꼬리 = (꼬리 + d).slice(-20000); };
     c.stdout.on('data', 흘림(process.stdout));
     c.stderr.on('data', 흘림(process.stderr));
@@ -810,9 +826,9 @@ async function main(argv, 손 = {}) {
     return 4;
   }
   if (o.눈 === '아르곤' && 작업들.length) {
-    const 꺼짐 = (손.줄꺼짐 || 줄꺼짐)();
+    const 꺼짐 = await (손.줄꺼짐 || 줄꺼짐)();
     if (꺼짐) {
-      console.log(`  카본(Gemini) a 줄이 꺼져 있다(${꺼짐.첫줄}) — 보내지 않고 막힘으로 적는다. 대체 눈: --눈 gpt`);
+      console.log(`  카본(Gemini) 줄을 쓸 수 없다(${꺼짐.첫줄}) — 보내지 않고 막힘으로 적는다. 대체 눈: --눈 gpt`);
       for (const w of 작업들) 막힘.push({ 묶음: w.k, 화면: w.번호들, ...꺼짐 });
     } else {
       const 꼬리 = await (손.아르곤부르기 || 아르곤부르기)(작업들);

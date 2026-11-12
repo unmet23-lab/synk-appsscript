@@ -99,7 +99,8 @@ const 표시읽기 = async () => {
 let markAt = null;
 const writeMark = (url, more = {}) => {
   markAt = markAt || now();
-  return fs.writeFile(mark, JSON.stringify({ 시각: markAt, 공간: space, 계정: u, 계정이름: account || null, 대화: url || null, 지시문앞: promptHead, ...(J.표식 ? { 표식: J.표식 } : {}), 답: out, ...more }, null, 1) + "\n", "utf8").catch(() => {});
+  // 줄(11-12) — 다음 읽기가 보낸 줄(브라우저 · 계정)로만 선다(b 줄은 둘째 ego)
+  return fs.writeFile(mark, JSON.stringify({ 시각: markAt, 공간: space, 계정: u, 계정이름: account || null, ...(J.줄 ? { 줄: J.줄 } : {}), 대화: url || null, 지시문앞: promptHead, ...(J.표식 ? { 표식: J.표식 } : {}), 답: out, ...more }, null, 1) + "\n", "utf8").catch(() => {});
 };
 
 // 답 기다리기 — 글이 30초 동안 안 늘고 멈춤 단추가 없으면 끝(200자 아래 짧은 답은 60초). 대화 주소가 늦게 붙으면 붙는 대로 표시에 적는다.

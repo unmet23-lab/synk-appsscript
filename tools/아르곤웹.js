@@ -6,7 +6,7 @@
  *   node tools/아르곤웹.js 점검 <지시문 파일…> [--json] [--없이 <항목,…>]
  *        굽기 전 지시문(작업 JSON 배열 · 「## 컷」 마크다운 · 글 한 편)을 길이 · 필수 문장 · 충돌 · 좌우 표기로 본다. 빠짐 · 넘침이 있으면 종료 1.
  *        항목: 길이 · 영상 · 나이 · 점 · 결 · 글자 · 혼자 · 충돌 · 좌우 · 비율 (--없이 혼자,좌우 처럼 뺀다 — 단체 컷 등)
- *   node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄] [--덮어쓰기] [--차례없이 --u <번호> [--계정 <이름>]] [--공간 <작업 공간>]
+ *   node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄 | --b줄만] [--덮어쓰기] [--차례없이 --u <번호> [--계정 <이름>]] [--공간 <작업 공간>]
  *   node tools/아르곤웹.js 보내기 --파일 <사진·글…> --지시문 <지시문 파일> --답 <답.md> [--머리 <답 머리 글>]
  *        공용 차례(gemini)를 잡고 → 작업마다 새 대화(새 탭)에 올려 보내고 → 답을 파일로 받고 → 내려놓는다.
  *        한 차례(보내기 · 읽기 6번 · 20분)를 넘길 것 같으면 내려놓고 다시 줄을 선다. 답 파일이 이미 있는 작업은 건너뛴다.
@@ -15,8 +15,16 @@
  *        같은 계정 첫 화면의 사이드바 최근 대화(보낸 지 20분 안이면 8개, 지나면 15개)를 차례로 열어 지시문 전체 · 그림 수가 맞는 대화를 찾아
  *        답을 읽고, 표시 · 결과에 그 주소를 남긴다(11-08). 어디에도 없고 보낸 지 20분이 지났으면 표시를 <답>.안보내짐.json으로 옮긴다 —
  *        다음 보내기가 다시 보낸다. 지시문이 같은데 첨부가 다르거나 같은 대화가 여럿이면 「헷갈림」으로 멈추고 손에 넘긴다(표시는 그대로).
- *   node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄] [--차례없이 --u <번호> --계정 <이름>] [--공간 <작업 공간>]
+ *   node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄 | --b줄만] [--차례없이 --u <번호> --계정 <이름>] [--공간 <작업 공간>]
  *        차례를 잡고 그 줄 계정의 새 대화 화면만 열어 「Google 계정 … @」 표시가 차례의 계정과 같은지 본다 — 올리기 · 보내기 없음(11-07).
+ *
+ * 두 줄(11-12): a 줄(77yuhbs)은 메인 ego, b 줄(unmet25)은 unmet25만 로그인한 둘째 ego(이름 붙은 서버 gemini-b, 프로필 Default, 공간
+ *   synk-argon-web-b)에서 돈다 — 같은 브라우저에서 두 줄이 돌면 참조 올리기가 엉킨다(10-31 · 11-08). 브라우저는 차례 `계정` 출력의 줄 이름
+ *   (gemini-a · gemini-b)으로 고르고 /u/ 번호로 가르지 않는다. --두줄: 둘째 ego를 준비해(안 떠 있으면 띄우고 붙어 본다) a · b 가운데 먼저 비는 줄로
+ *   보낸다 — 둘째 ego를 못 쓰면 a 줄만 선다. --b줄만: b 줄만(시험 · 확인). 보냄 표시가 남은 작업(읽기)은 보낸 줄에서만 읽는다 — 표시의 「줄」
+ *   (없으면 계정 이름을 차례 줄과 맞춘다 · 옛 표시는 a)로 서고(b면 차례.py --b줄만), b 줄이 꺼졌거나 둘째 ego를 못 쓰면 「안 함」으로 남긴다
+ *   (다시 보내지 않는다). b 줄에서 화면 계정이 unmet25가 아니면(로그아웃 · 다른 계정) gemini-b.off를 쓰고 그 건을 a 줄로 다시 선다.
+ *   한 건마다 공용차례 폴더 gemini.아르곤웹.jsonl에 줄 · 계정 · 할 일 · 결과 한 줄을 남긴다(줄마다 하루 몇 건 받았나).
  *
  * 작업 파일: { "files": [...], "prompt": "<지시문>" | "promptFile": "<파일>", "out": "<답.md>", "shots"?, "head"?, "space"?, "answerMin"? }
  *   경로는 작업 파일 폴더 기준으로도 쓴다. 첨부는 한 번에 10개까지, 지시문은 4,300자 안(긴 자료는 글 파일로 붙인다).
@@ -33,11 +41,12 @@
  *   (%TEMP%/synk-argonweb-upload.lock)으로 지킨다. 11-08부터 gemini 차례를 잡은 뒤, 파일이 있는 보내기 한 건의 「올리기 ~ 보내기 누르기 직전」에만
  *   쥔다(차례를 기다리며 쥐던 앞 판은 줄이 꺼진 7시간 동안 이 PC의 아르곤을 모두 묶었다). 상한(10분 + 25MB마다 1분, 15분까지)을 넘기면 올리기를
  *   그만두고 잠금을 풀어 「올리기 시간 넘김」으로 묶음을 멈춘다(보내지 않았으니 다시 불러도 된다). 상한 + 3분을 넘겨 살아 쥔 주인은 기다리는 쪽이
- *   「멈춘 주인」으로 치우고 공용차례 README 막힘 기록에 남긴다. 「--두줄」은 다른 올리기 실행기가 안 도는 것을 알 때만 붙인다.
+ *   「멈춘 주인」으로 치우고 공용차례 README 막힘 기록에 남긴다. 잠금은 두 브라우저에 걸쳐 하나다 — b 줄(둘째 ego)도 올리기는 한 건씩, 답을
+ *   기다리는 동안(한 건 5~12분)만 두 줄이 겹친다(11-12).
  * 차례: 사용자 폴더의 synk-vendor/_공용차례/차례.py(README). 막힘 · 한도 · 동의 창은 누르지 않고 멈춘다 — sorry면 두 줄 다 끈다(off 파일).
- * 계정: 차례의 `계정` 출력(「gemini-a 77yuhbs https://gemini.google.com/u/1/」)에서 번호와 계정 이름을 함께 받아, 페이지 스크립트가 화면의 계정
- *   표시와 대조한다 — 다르면 올리기 전에 멈춘다. 11-07 ego 기본 프로필이 `Profile 2`(「유호 (Chrome)」)로 바뀌어 구글 로그인이 그 프로필에만 있고
- *   순번도 달라졌다(a 77yuhbs /u/1 · b unmet25 /u/5). 공간은 그 프로필에 새 이름(`-p2`)으로 만든다 — 이름이 같은 옛 공간은 「유호」 프로필 그대로 열린다.
+ * 계정: 차례의 `계정` 출력(「gemini-a 77yuhbs https://gemini.google.com/u/2/」)에서 줄 이름 · 번호 · 계정 이름을 함께 받아, 페이지 스크립트가 화면의 계정
+ *   표시와 대조한다 — 다르면 올리기 전에 멈춘다. 11-11부터 메인 ego 기본 프로필은 `Profile 7`(a 77yuhbs /u/2), 11-12부터 b는 둘째 ego의 /u/0(위 「두 줄」).
+ *   공간은 그 프로필에 만든다 — 이름이 같은 옛 공간이 다른 프로필에 있으면 멈춘다.
  * 함정: docs/현장노트/gemini_사진.md 「영상 올려 분석시키기」. 시험: node --test tests/아르곤웹.test.js
  * 실행기 원문: 실행마다 .tmp/아르곤웹/<시각-pid-고유값>/stdout.log · stderr.log에 받은 바이트 전체를 남긴다(재시도도 새 폴더).
  *   실행.json에는 작업 · 종료 코드 · 신호 · 바이트 수 · 실행한 스크립트 SHA-256을 남긴다. 원문에는 계정 · 답이 섞일 수 있어 공개하지 않는다.
@@ -54,6 +63,9 @@ const 페이지 = path.join(__dirname, '아르곤웹.mjs');
 // 구글 로그인은 Profile 7에 있고 77yuhbs는 /u/2다(공용 차례 a 줄). 옛 판: 11-07 Profile 2(-p2) · 그 전 「유호」 Profile 1.
 const 기본공간 = 'synk-argon-web-p7';
 const 기본프로필 = 'Profile 7';
+// 11-12 b 줄(unmet25)은 unmet25만 로그인한 둘째 ego 브라우저에서만 돈다(11-03 유호님이 정한 두 계정 방식 — 같은 브라우저에서 두 줄이 돌면 참조
+// 올리기가 엉킨다, 10-31 · 11-08). 그 브라우저의 프로필은 Default 하나, unmet25는 /u/0(차례.py b 줄 주소). 공간 이름은 메인 ego와 따로 둔다.
+const 둘째 = { 줄: 'gemini-b', 서버: 'gemini-b', 공간: 'synk-argon-web-b', 프로필: 'Default' };
 const 첨부한도 = 10;
 const 지시문한도 = 4300;
 const 한차례 = { 건: 6, 새건마감: 12 * 60_000, 다시읽기마감: 15 * 60_000 }; // 한 건 3~8분 — 12분 뒤에는 새 건을 시작하지 않는다(20분 안)
@@ -73,7 +85,7 @@ const 차례경로 = () => process.env.SYNK_CHARYE_PY || path.join(os.homedir(),
 
 // ── 인자 ──
 
-const 참거짓 = new Set(['json', '두줄', '덮어쓰기', '차례없이']);
+const 참거짓 = new Set(['json', '두줄', 'b줄만', '덮어쓰기', '차례없이']);
 function parseArgs(argv) {
   const o = { _: [], 파일: [] };
   for (let i = 0; i < argv.length; i += 1) {
@@ -195,6 +207,7 @@ function 페이지글(job, u, mode, 계정 = '') {
     head: job.head || '아르곤 답', mark: 슬래시(표시경로(job.out)), unsentMark: 슬래시(풀린표시경로(job.out)),
     claimed: Array.isArray(job.claimed) ? job.claimed : [], twins: 표식 ? 0 : Number(job.twins) || 0, releaseAfterMs: 풀기기다림, // 표식이 있으면 쌍둥이도 번호로 갈린다
     ...(표식 ? { 표식 } : {}),
+    ...(job.줄 ? { 줄: job.줄 } : {}), // 보냄 표시에 적어 다음 읽기가 같은 줄(브라우저 · 계정)로 선다(11-12)
     ...(job.failShot ? { failShot: 슬래시(job.failShot) } : {}),
     ...(job.answerMin ? { answerMin: job.answerMin } : {}), ...(job.sentWaitSec ? { sentWaitSec: job.sentWaitSec } : {}),
     ...(job.upload ? { upload: job.upload } : {}), // 올리기 잠금 { lock, key, deadline } — 파일을 올리는 보내기만(페이지돌리기가 쥔 뒤)
@@ -251,6 +264,19 @@ function 계정번호(글) {
 function 계정이름(글) {
   const m = /^gemini-[a-z]+\s+(\S+)\s+https:\/\/gemini\.google\.com\/u\/\d+\//m.exec(String(글 || ''));
   return m ? m[1] : '';
+}
+
+// 차례 `계정` 출력의 첫 칸(줄 이름 gemini-a · gemini-b) — 브라우저는 이것으로 고른다(11-09 옛 차례.sh가 /u/ 번호로 갈라 꺼진 둘째 ego에 붙었다)
+function 줄표(글) {
+  const m = /^(gemini-[a-z]+)\s+\S+\s+https:\/\/gemini\.google\.com\/u\/\d+\//m.exec(String(글 || ''));
+  return m ? m[1] : '';
+}
+
+// 줄마다 페이지를 돌릴 자리 — { 줄, 서버(이름 붙은 ego · 메인은 ''), space, profile }. b 줄은 둘째 ego의 Default 프로필, 공간은 작업이 따로 정하지
+// 않았으면 synk-argon-web-b(메인의 공간 이름과 섞이지 않게 — 보냄 표시의 「공간」으로 읽기가 같은 공간을 연다)
+function 줄자리(줄, job = {}) {
+  if (줄 !== 둘째.줄) return { 줄: 줄 || 'gemini-a', 서버: '', space: job.space || 기본공간, profile: job.profile || 기본프로필 };
+  return { 줄, 서버: 둘째.서버, space: !job.space || job.space === 기본공간 ? 둘째.공간 : job.space, profile: 둘째.프로필 };
 }
 
 // ── 보낸 대화 알아보기 · 표시 풀기 판단 ──
@@ -446,9 +472,11 @@ function 차례(args) {
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}`.trim() };
 }
 
-function 차례기다리기(이름, 할일, 두줄) {
+// 서기 = ''(a 줄만) · '두줄'(a · b 가운데 먼저 비는 줄) · 'b줄만'(b 계정에서 보낸 대화 읽기 · 시험) — 차례.py 기다리기의 --두줄 · --b줄만(11-12)
+function 차례기다리기(이름, 할일, 서기 = '') {
+  if (서기 === true) 서기 = '두줄'; // 옛 부름(참거짓)
   return new Promise((resolve, reject) => {
-    const args = ['-X', 'utf8', 차례경로(), 'gemini', '기다리기', 이름, 할일, ...(두줄 ? ['--두줄'] : [])];
+    const args = ['-X', 'utf8', 차례경로(), 'gemini', '기다리기', 이름, 할일, ...(서기 === '두줄' ? ['--두줄'] : 서기 === 'b줄만' ? ['--b줄만'] : [])];
     const child = spawn('python', args, { windowsHide: true });
     const 흘림 = (d) => { for (const l of String(d).split(/\r?\n/)) if (l.trim()) console.log(`  차례 · ${l.trim()}`); };
     child.stdout.on('data', 흘림);
@@ -463,6 +491,71 @@ function 줄끄기(까닭) {
   for (const k of ['a', 'b']) {
     try { fs.appendFileSync(path.join(dir, `gemini-${k}.off`), `${new Date().toISOString()} 아르곤웹 · ${까닭} — 유호님이 확인을 누르신 뒤 지운다\n`); } catch { /* 폴더가 없으면 알림만 */ }
   }
+}
+
+// ── 두 줄(11-12) — a 줄은 메인 ego, b 줄은 둘째 ego(gemini-b) ──
+
+// b 줄만 끈다 — 둘째 ego 화면의 계정이 b 줄 계정(unmet25)이 아닐 때(로그아웃 · 다른 계정). 로그인은 유호님 몫이라 고친 뒤 지운다(.off.풀림_<시각>)
+function b줄끄기(까닭) {
+  try { fs.appendFileSync(path.join(path.dirname(차례경로()), `${둘째.줄}.off`), `${new Date().toISOString()} 아르곤웹 · ${까닭} — 둘째 ego(${둘째.서버}) 로그인을 고친 뒤 지운다\n`); } catch { /* 알림만 */ }
+}
+const 꺼진줄 = (줄) => fs.existsSync(path.join(path.dirname(차례경로()), `${줄}.off`));
+
+// 차례 줄마다 계정 — 「보기」의 「[gemini-a 77yuhbs] 잠금: …」 줄에서 { 77yuhbs: 'gemini-a', unmet25: 'gemini-b' }. 못 읽으면 {}
+function 줄계정읽기() {
+  const 표 = {};
+  for (const m of String(차례(['보기']).out || '').matchAll(/^\[(gemini-[a-z]+) (\S+)\]/gm)) 표[m[2]] = m[1];
+  return 표;
+}
+
+// 보냄 표시가 남은 작업을 읽을 줄 — 보낸 계정에서만 읽는다(사이드바 찾기 · 표시 풀기는 보낸 계정 · 공간에서만, 아르곤웹.mjs). 표시의 「줄」(11-12부터
+// 씀) → 계정 이름이 차례의 어느 줄 계정인가 → 그 밖(옛 표시 · 계정 이름 없음 — 11-12 전에는 a 줄로만 보냈다)은 a. 표시가 없으면 ''
+function 표시줄(out, 줄계정 = {}) {
+  const 표시 = 표시읽기(out);
+  if (!표시) return '';
+  if (/^gemini-[a-z]+$/.test(String(표시.줄 || ''))) return 표시.줄;
+  if (표시.계정이름 && 줄계정[표시.계정이름]) return 줄계정[표시.계정이름];
+  return 'gemini-a';
+}
+
+// 둘째 ego가 떠 있나 — 이름 붙은 통로 \\.\pipe\mojo.CitroLabs.ego.<판>.gemini-b(없으면 '')
+function 둘째통로() {
+  if (process.platform !== 'win32') return '';
+  const 꼴 = new RegExp(`^mojo\\.CitroLabs\\.ego\\.[\\d.]+\\.${둘째.서버}$`);
+  try { return fs.readdirSync('\\\\.\\pipe\\').find((f) => 꼴.test(f)) || ''; } catch { return ''; }
+}
+
+// 둘째 ego를 쓸 수 있게 한다 — 안 떠 있으면 띄우고(PC를 다시 켜면 메인 ego만 뜬다 — 현장노트 LoRA 11-05), 붙어 본다(통로가 있어도 ego 판을 올린 뒤
+// 남은 옛 판이면 「Failed to connect」 — 브라우저 노트 11-04 · 11-09). 끄지는 않는다(남의 프로세스일 수 있다). { 됨, 띄움, 까닭 } — 한 실행에 한 번 본다
+let 둘째본 = null;
+async function 둘째준비() {
+  if (typeof 설정.둘째준비 === 'function') return 설정.둘째준비();
+  if (둘째본) return 둘째본;
+  let 띄움 = false;
+  if (!둘째통로()) {
+    const exe = process.env.SYNK_EGO_EXE || path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Citro Labs', 'ego lite', 'Application', 'ego.exe');
+    const 데이터 = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'Citro Labs', 'ego lite', `User Data ${둘째.서버}`);
+    if (!fs.existsSync(exe) || !fs.existsSync(데이터)) return (둘째본 = { 됨: false, 띄움, 까닭: `둘째 ego를 띄울 수 없다 — ${fs.existsSync(exe) ? 데이터 : exe} 없음` });
+    try {
+      // 알림 권한 창이 뜨면 ego가 작업 공간을 사람 손으로 넘긴다(11-03 0장) — --disable-notifications
+      spawn(exe, [`--user-data-dir=${데이터}`, `--ego-server-name=${둘째.서버}`, '--disable-notifications'], { detached: true, stdio: 'ignore' }).unref();
+    } catch (e) { return (둘째본 = { 됨: false, 띄움, 까닭: `둘째 ego를 못 띄움: ${e.message}` }); }
+    띄움 = true;
+    for (let i = 0; i < 60 && !둘째통로(); i += 1) await 쉬기(500);
+    if (!둘째통로()) return (둘째본 = { 됨: false, 띄움, 까닭: '둘째 ego를 띄웠는데 30초 안에 통로가 안 생겼다' });
+  }
+  const r = spawnSync(설정.둘째에고, { shell: true, windowsHide: true, encoding: 'utf8', timeout: 60_000, input: "console.log('붙음', (await listTaskSpaces()).length)" });
+  const 글 = `${r.stdout || ''}${r.stderr || ''}`;
+  if (!/붙음 \d+/.test(글)) return (둘째본 = { 됨: false, 띄움, 까닭: `둘째 ego에 못 붙음 — ${(글.trim().split(/\r?\n/).filter(Boolean).pop() || `종료 ${r.status}`).slice(0, 200)}` });
+  return (둘째본 = { 됨: true, 띄움, 까닭: 띄움 ? '둘째 ego를 띄우고 붙음' : '둘째 ego에 붙음' });
+}
+
+// 한 건마다 공용차례 폴더 gemini.아르곤웹.jsonl에 한 줄 — 줄마다 하루 몇 건 받았나(11-12 두 줄 쓰임 재기). 못 쓰면 그냥 간다
+function 쓰임기록(줄, 계정, 이름, j, r) {
+  try {
+    fs.appendFileSync(path.join(path.dirname(차례경로()), 'gemini.아르곤웹.jsonl'),
+      `${JSON.stringify({ 때: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }), 줄, 계정, 이름, 작업: j.이름, 할일: j.할일, 결과: r.결과 })}\n`);
+  } catch { /* 기록 못 함 */ }
 }
 
 const 살아있나 = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
@@ -480,6 +573,8 @@ const 설정 = {
   폴더: path.join(os.tmpdir(), 'synk-argonweb-upload.lock'),
   기록폴더: path.join(__dirname, '..', '.tmp', '아르곤웹'), // 원문은 공개 저장소 밖에, 실행마다 새 폴더(재시도도 덮지 않음)
   에고: 'ego-browser nodejs', // 페이지 스크립트를 표준 입력으로 받는 실행기(시험은 가짜로 바꾼다)
+  둘째에고: `ego-browser --ego-server-name=${둘째.서버} nodejs`, // b 줄(둘째 ego) 실행기(시험은 가짜로 바꾼다)
+  둘째준비: null, // 시험용 — 함수면 둘째 ego 준비(띄우기 · 붙어 보기) 대신 부른다
   쉼: 10_000, // 기다리는 쪽이 다시 보는 간격
   살핌: 2_000, // 쥔 쪽이 스크립트가 잠금을 풀었는지 보는 간격
   끄기여유: 60_000, // 상한 뒤 페이지 스크립트가 스스로 그만두고 풀 틈 — 그래도 쥐고 있으면 실행기를 끈다
@@ -725,7 +820,7 @@ function 실행기기록(job, u, mode) {
   fs.mkdirSync(설정.기록폴더, { recursive: true });
   const dir = fs.mkdtempSync(path.join(설정.기록폴더, `${new Date().toISOString().replace(/[:.]/g, '-')}-${process.pid}-`));
   const 기록 = { 폴더: dir, stdout: path.join(dir, 'stdout.log'), stderr: path.join(dir, 'stderr.log'), 실행: path.join(dir, '실행.json') };
-  const 정보 = { 시작: new Date().toISOString(), 작업: job.이름, mode, u, out: job.out };
+  const 정보 = { 시작: new Date().toISOString(), 작업: job.이름, mode, u, ...(job.줄 ? { 줄: job.줄 } : {}), out: job.out };
   fs.writeFileSync(기록.실행, JSON.stringify(정보, null, 2) + '\n');
   const 관 = {}, 판정줄 = [];
   const 줄찍기 = (s) => { for (const l of s) { 판정줄.push(l); if (l.trim().startsWith('{"step"')) console.log(`    ${l.trim()}`); } };
@@ -762,7 +857,8 @@ async function 페이지돌리기(job, u, mode, 계정, 선택 = {}) {
   }
   const script = 페이지글(잠금 ? { ...job, upload: { lock: 슬래시(잠금.폴더), key: 잠금.열쇠, deadline: 잠금.상한 } } : job, u, mode, 계정);
   const 상한 = (mode === '확인' ? 5 : (job.answerMin || 12) + 18) * 60_000; // 페이지 스크립트 자체 상한(올리기 · 보냄 확인 · 답) 뒤의 마지막 그물 — 확인은 화면 하나라 5분
-  const child = spawn(설정.에고, { shell: true, windowsHide: true, detached: process.platform !== 'win32' }); // 리눅스는 나무째 끄려고 따로 무리를 만든다
+  // b 줄은 둘째 ego(이름 붙은 서버)로 — 메인 ego에서 b 줄 주소를 열면 다른 계정이다(11-12). 리눅스는 나무째 끄려고 따로 무리를 만든다
+  const child = spawn(job.서버 === 둘째.서버 ? 설정.둘째에고 : 설정.에고, { shell: true, windowsHide: true, detached: process.platform !== 'win32' });
   child.stdout.on('data', (d) => 기록.받기('stdout', d));
   child.stderr.on('data', (d) => 기록.받기('stderr', d));
   child.stdin.on('error', () => {}); // 실행기가 먼저 끝나면 EPIPE — 출력으로 가른다
@@ -816,15 +912,22 @@ async function 페이지돌리기(job, u, mode, 계정, 선택 = {}) {
 // 전체 = 이 묶음의 작업들 — 읽기가 사이드바에서 찾을 때 다른 작업이 쓴 대화 · 같은 지시문 작업을 가린다(찾기정보, 부를 때마다 새로 본다)
 // 선택 = { 이름, 그만() } — 올리기 잠금 주인 이름 · 차례를 잃었는지(잠금을 기다리다 잃으면 그만둔다)
 async function 한건(job, u, mode, 계정, 전체 = [job], 선택 = {}) {
-  console.log(`  ${시각()} ${mode} ${job.이름} — 첨부 ${job.files.length}개 · 지시문 ${job.prompt.length}자 · 계정 /u/${u}${계정 ? ` ${계정}` : ''}`);
+  console.log(`  ${시각()} ${mode} ${job.이름} — 첨부 ${job.files.length}개 · 지시문 ${job.prompt.length}자 · 계정 /u/${u}${계정 ? ` ${계정}` : ''}${job.서버 ? ` · ${job.줄}(둘째 ego ${job.서버})` : ''}`);
   const 시작 = Date.now();
   const run = await 페이지돌리기({ ...job, ...찾기정보(전체, job) }, u, mode, 계정, 선택);
   if (run.그만) return { 결과: '실패', 까닭: '차례를 잃어 올리기 잠금 기다리기를 그만뒀다(보내지 않음)' };
+  const 붙기실패 = /Failed to connect|ego_cli bootstrap/i.test(run.출력); // 이름 붙은 ego가 꺼졌거나 판이 다르다(브라우저 노트 11-09)
   let r = 결과가르기(run.출력, fs.existsSync(표시경로(job.out)), 새답(job.out, 시작));
   // 마감 뒤 풀림 · 끔인데 결과가 「실패」 — 실행기를 껐거나 실패 줄이 없으면 올리기 시간 넘김. 마감 즈음 제 까닭으로 실패한 건(실패 줄이 있음)은 실패 그대로(한 번 다시 한다)
   if (run.넘김 === '올리기' && r.결과 === '실패' && (run.죽임 || !/"step":"fail"/.test(run.출력))) r = { 결과: '올리기 시간 넘김', 까닭: `올리기가 상한 ${run.상한분}분 안에 보내기 앞까지 못 갔다 — 실행기를 끄고 잠금을 풀었다(보내지 않음 · 다시 부르면 다시 보낸다)` };
   if (r.결과 === '받음') fs.rmSync(표시경로(job.out), { force: true }); // 답을 썼는데 표시가 남은 판 — 다음 부름이 읽기로 가지 않게
-  return { ...r, 실행기기록: run.기록, 종료코드: run.code };
+  return { ...r, 실행기기록: run.기록, 종료코드: run.code, ...(붙기실패 ? { 붙기실패 } : {}) };
+}
+
+// 이 작업이 설 수 있는 줄 — 보내기는 보낼 줄들(--두줄이고 둘째 ego가 되면 a · b, --b줄만이면 b, 아니면 a), 읽기는 보낸 줄만(표시줄 — 표시가 없으면 a)
+function 쓸줄(j, 보낼줄, 줄계정 = {}) {
+  if (j.할일 === '읽기') return [표시줄(j.out, 줄계정) || 'gemini-a'];
+  return 보낼줄;
 }
 
 // ── 보내기 · 읽기 ──
@@ -832,7 +935,8 @@ async function 한건(job, u, mode, 계정, 전체 = [job], 선택 = {}) {
 async function 돌리기(jobs, o, 처음) {
   const 문제 = jobs.flatMap((j) => 작업문제(j).map((p) => `${j.이름}: ${p}`));
   if (문제.length) { for (const p of 문제) console.error(`  ✗ ${p}`); console.error('작업 파일을 고친 뒤 다시 부른다(아무것도 보내지 않았다).'); return 2; }
-  if (o.차례없이 && !/^\d$/.test(String(o.u || ''))) { console.error('--차례없이는 --u <계정 번호>(차례 `계정`이 준 번호 — 11-07부터 a 줄 1 · b 줄 5)와 함께, --계정 <이름>도 주면 화면 계정과 대조한다 — 차례는 부르는 쪽이 쥐고 있어야 한다'); return 2; }
+  if (o.차례없이 && !/^\d$/.test(String(o.u || ''))) { console.error('--차례없이는 --u <계정 번호>(차례 `계정`이 준 번호 — 11-11부터 a 줄 2)와 함께, --계정 <이름>도 주면 화면 계정과 대조한다 — 차례는 부르는 쪽이 쥐고 있어야 한다(메인 ego로만 돈다)'); return 2; }
+  if (o.두줄 && o.b줄만) { console.error('--두줄과 --b줄만은 함께 쓰지 않는다'); return 2; }
   const 결과 = [];
   const 남은 = [];
   for (const j of jobs) {
@@ -845,27 +949,71 @@ async function 돌리기(jobs, o, 처음) {
   for (const j of 남은) if (j.할일 === '보내기') for (const w of 작업경고(j)) console.log(`  ⚠ ${j.이름}: ${w}`);
   const 할일글 = `아르곤웹 ${남은.length}건 — ${남은.slice(0, 3).map((j) => j.이름).join(' · ')}${남은.length > 3 ? ' …' : ''}`;
   let 멈춤 = '';
-  let 이어실패 = 0;
+  let 이어실패 = 0, 빈차례 = 0;
+  // 두 줄(11-12) — 둘째 ego는 b 줄을 쓸 일이 있을 때만 준비한다(--두줄 · --b줄만 · b 줄에서 보낸 표시를 읽을 때). 못 쓰면 a 줄로만 선다
+  const 줄계정 = o.차례없이 ? {} : 줄계정읽기();
+  let 둘째됨 = false;
+  if (!o.차례없이 && (o.두줄 || o.b줄만 || 남은.some((j) => j.할일 === '읽기' && 표시줄(j.out, 줄계정) === 둘째.줄))) {
+    // b 줄이 꺼져 있으면 둘째 ego를 띄우지도 붙어 보지도 않는다(11-12 — 둘째 ego 로그아웃으로 꺼 둔 동안 창만 띄우지 않게)
+    const r = 꺼진줄(둘째.줄) ? { 됨: false, 까닭: `b 줄이 꺼져 있다(${둘째.줄}.off)` } : await 둘째준비();
+    둘째됨 = r.됨;
+    console.log(`  ${시각()} ${r.됨 ? r.까닭 : `둘째 ego를 못 쓴다 — ${r.까닭}${o.b줄만 ? '' : ' · b 줄은 쓰지 않는다'}`}`);
+    if (!r.됨 && o.b줄만) return 보고(남은.map((j) => ({ 작업: j, 결과: '안 함', 까닭: `--b줄만인데 둘째 ego를 못 쓴다 — ${r.까닭}` })), `둘째 ego를 못 쓴다 — ${r.까닭}`);
+  }
+  const 보낼줄 = () => (o.b줄만 ? [둘째.줄] : o.두줄 && 둘째됨 ? ['gemini-a', 둘째.줄] : ['gemini-a']);
   // 올리기 잠금은 여기서 쥐지 않는다 — 차례를 잡은 뒤 파일을 올리는 보내기 한 건마다 페이지돌리기가 쥐고 푼다(11-08, 위 「올리기 잠금」)
   while (남은.length && !멈춤) {
-    let u = Number(o.u), 계정 = o.계정 || '';
     if (!o.차례없이) {
-      await 차례기다리기(이름, 할일글, o.두줄);
-      const 줄 = 차례(['계정', 이름]).out;
-      u = 계정번호(줄);
-      계정 = 계정이름(줄);
-      if (u === null || !계정) { 차례(['내려놓기', 이름]); throw new Error(`잡은 줄의 계정 주소 · 이름을 못 읽음: ${줄}`); }
+      // b 줄에서만 할 수 있는 작업(b에서 보낸 표시 읽기 · --b줄만)은 b 줄이 꺼졌거나 둘째 ego를 못 쓰면 「안 함」으로 남긴다 — 다시 보내지 않는다
+      for (let k = 남은.length - 1; k >= 0; k -= 1) {
+        const 줄들 = 쓸줄(남은[k], 보낼줄(), 줄계정);
+        if (줄들.length === 1 && 줄들[0] === 둘째.줄 && (!둘째됨 || 꺼진줄(둘째.줄))) {
+          const j = 남은.splice(k, 1)[0];
+          결과.unshift({ 작업: j, 결과: '안 함', 까닭: `${j.할일 === '읽기' ? '보낸 줄' : '고른 줄'}(${둘째.줄})${꺼진줄(둘째.줄) ? '이 꺼져 있다' : '의 둘째 ego를 못 쓴다'} — ${j.할일 === '읽기' ? '다시 보내지 말고 b 줄이 켜진 뒤 읽기' : '다시 부른다'}` });
+        }
+      }
+      if (!남은.length) break;
+    }
+    const 설줄 = new Set(남은.flatMap((j) => 쓸줄(j, 보낼줄(), 줄계정)));
+    const 서기 = 설줄.has('gemini-a') ? (설줄.has(둘째.줄) ? '두줄' : '') : 'b줄만';
+    // --두줄로 불렀는데 둘째 ego를 못 써 a 줄만 설 판에 a 줄이 꺼져 있으면 서지 않는다 — 켜질 때까지 몇 시간이고 기다리게 된다(미학맹검은 막힘으로 적는다)
+    if (!o.차례없이 && o.두줄 && 서기 === '' && 꺼진줄('gemini-a')) { 멈춤 = 'gemini-a 줄이 꺼져 있고 b 줄(둘째 ego)을 못 쓴다'; break; }
+    let u = Number(o.u), 계정 = o.계정 || '', 줄 = 'gemini-a';
+    if (!o.차례없이) {
+      await 차례기다리기(이름, 할일글, 서기);
+      const 줄글 = 차례(['계정', 이름]).out;
+      u = 계정번호(줄글);
+      계정 = 계정이름(줄글);
+      줄 = 줄표(줄글) || 'gemini-a';
+      if (u === null || !계정) { 차례(['내려놓기', 이름]); throw new Error(`잡은 줄의 계정 주소 · 이름을 못 읽음: ${줄글}`); }
     }
     const 시작 = Date.now();
-    let 건 = 0, 잃음 = false;
+    let 건 = 0, 잃음 = false, 한일 = 0;
     const 선택 = { 이름, 그만: () => 잃음 };
     const 살 = o.차례없이 ? null : setInterval(() => { if (차례(['살아있음', 이름]).code !== 0) 잃음 = true; }, 150_000);
     try {
       while (남은.length && !멈춤 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.새건마감) {
-        const j = 남은.shift();
+        // 잡은 줄로 할 수 있는 작업부터 — 다른 줄의 읽기는 남겨 두었다가 그 줄로 다시 선다(보낸 계정에서만 읽는다)
+        const k = o.차례없이 ? 0 : 남은.findIndex((x) => 쓸줄(x, 보낼줄(), 줄계정).includes(줄));
+        if (k < 0) break;
+        const j0 = 남은.splice(k, 1)[0];
+        const j = o.차례없이 ? j0 : { ...j0, ...줄자리(줄, j0) };
         건 += 1;
+        한일 += 1;
         let r = await 한건(j, u, j.할일, 계정, jobs, 선택);
         if (!o.차례없이 && 차례(['살아있음', 이름]).code !== 0) 잃음 = true;
+        // b 줄에서 화면 계정이 다르거나(로그아웃 · 다른 계정) 둘째 ego에 못 붙었다 — 이 실행은 b 줄을 쓰지 않는다(계정이 다르면 b 줄을 끈다 — 로그인은
+        // 유호님 몫). 보내기는 계정 확인이 올리기 · 보냄 표시 앞이라 보내지 않았으니 a 줄로 다시 서고, 보냄 표시가 있는 읽기는 「안 함」(다시 보내지 않는다)
+        if (줄 === 둘째.줄 && ((r.결과 === '멈춤' && /^계정이 /.test(String(r.까닭))) || r.붙기실패)) {
+          if (!r.붙기실패) b줄끄기(`둘째 ego 계정 확인 실패 · ${이름} — ${String(r.까닭).slice(0, 160)}`);
+          const 보냄 = fs.existsSync(표시경로(j.out));
+          console.log(`  ${시각()} ${r.붙기실패 ? '둘째 ego에 못 붙었다' : `b 줄을 껐다(${둘째.줄}.off) — ${r.까닭}`}${보냄 ? '' : ' · 그 건은 a 줄로 다시 선다'}`);
+          쓰임기록(줄, 계정, 이름, j, r);
+          둘째됨 = false;
+          if (보냄) 결과.push({ 작업: j, 결과: '안 함', 까닭: `보낸 줄(${둘째.줄})을 못 쓴다 — ${r.까닭 || '둘째 ego에 못 붙음'} · 다시 보내지 말고 b 줄을 고친 뒤 읽기` });
+          else 남은.unshift(j0);
+          break;
+        }
         // 보낸 뒤 끊긴 판 — 다시 보내지 않고 같은 탭을 읽는다. 보낸 글이 화면에서 사라진 판(사라짐)은 1분 뒤 읽어도 없다 — 20분 뒤 읽기로
         if (r.결과 === '보냄' && !r.늦음 && !r.사라짐 && !잃음 && 건 < 한차례.건 && Date.now() - 시작 < 한차례.다시읽기마감) {
           await 쉬기(60_000);
@@ -878,7 +1026,7 @@ async function 돌리기(jobs, o, 처음) {
           // 다시 하기 전에 답 파일 · 보냄 표시를 다시 본다 — 답이 생겼거나 보냄 표시가 있으면 다시 보내지 않는다
           const 다음 = 다시할일(j);
           if (이어실패 >= 2) 멈춤 = `보내기 전 실패가 두 번 이어짐 — ${r.까닭}`;
-          else if (!j.다시 && 다음 !== '그만') { 남은.unshift({ ...j, 할일: 다음, 다시: true }); await 쉬기(보내기전실패쉼); continue; }
+          else if (!j.다시 && 다음 !== '그만') { 남은.unshift({ ...j0, 할일: 다음, 다시: true }); await 쉬기(보내기전실패쉼); continue; } // 줄 자리는 다음에 잡은 줄로 다시 붙인다
           if (다음 === '그만') r = { ...r, 까닭: `${r.까닭} · 답 파일이 생겼다 — 열어 보고 판단한다(다시 보내지 않음)` };
         } else if (r.결과 !== '없음') 이어실패 = 0;
         if (r.결과 === '멈춤') {
@@ -887,6 +1035,7 @@ async function 돌리기(jobs, o, 처음) {
         }
         // 올리기가 상한 안에 안 끝난 날(11-08 07시 계정 단위 첨부 「!」 같은)은 이어 올려도 같다 — 묶음을 멈추고 알린다(보내지 않았으니 다시 불러도 된다)
         if (r.결과 === '올리기 시간 넘김') 멈춤 = r.까닭;
+        if (!o.차례없이) 쓰임기록(줄, 계정, 이름, j, r);
         결과.push({ 작업: j, ...r });
       }
     } finally {
@@ -894,6 +1043,8 @@ async function 돌리기(jobs, o, 처음) {
       if (!o.차례없이) console.log(`  차례 · ${차례(['내려놓기', 이름]).out.split(/\r?\n/).pop()}`);
     }
     if (o.차례없이 && 남은.length && !멈춤) { 멈춤 = `한 차례(${한차례.건}건 · 20분)를 다 써서 남은 ${남은.length}건은 다시 부른다(--차례없이)`; }
+    // 잡은 줄로 할 작업이 없었다(같은 이름이 이미 다른 줄을 쥐고 있던 판 등) — 세 번 이어지면 손으로 본다(줄을 헛잡고 도는 것을 막는다)
+    if (!o.차례없이 && !멈춤) { 빈차례 = 한일 ? 0 : 빈차례 + 1; if (빈차례 >= 3) 멈춤 = `잡은 줄(${줄})로 할 작업이 세 번 이어 없었다 — 차례 · 보냄 표시를 손으로 본다`; }
   }
   for (const j of 남은) 결과.push({ 작업: j, 결과: '안 함', 까닭: 멈춤 || '' });
   return 보고(결과, 멈춤);
@@ -904,24 +1055,36 @@ async function 확인(o) {
   const 이름 = o.이름 || 'argonweb-check';
   if (/[_\s]/.test(이름)) { console.error('--이름에는 밑줄 · 띄어쓰기를 쓰지 않는다'); return 2; }
   if (o.차례없이 && (!/^\d$/.test(String(o.u || '')) || !o.계정)) { console.error('--차례없이 확인은 --u <번호> --계정 <이름>과 함께 — 차례는 부르는 쪽이 쥐고 있어야 한다'); return 2; }
+  if (o.두줄 && o.b줄만) { console.error('--두줄과 --b줄만은 함께 쓰지 않는다'); return 2; }
   const out = path.join(os.tmpdir(), `synk-argonweb-${이름}-확인.md`);
   const job = { 이름: '계정 확인', files: [], prompt: '', out, shots: path.dirname(out), space: o.공간 || 기본공간, head: '계정 확인', answerMin: 1 };
-  let u = Number(o.u), 계정 = o.계정 || '';
-  if (!o.차례없이) {
-    await 차례기다리기(이름, '아르곤웹 계정 확인(올리기 · 보내기 없음)', o.두줄);
-    const 줄 = 차례(['계정', 이름]).out;
-    u = 계정번호(줄);
-    계정 = 계정이름(줄);
+  // --두줄 · --b줄만이면 둘째 ego부터 준비한다(11-12) — 못 쓰면 --두줄은 a 줄로, --b줄만은 서지 않고 끝
+  let 서기 = o.b줄만 ? 'b줄만' : o.두줄 ? '두줄' : '';
+  if (서기 && !o.차례없이) {
+    // b 줄이 꺼져 있으면 --b줄만은 켜질 때까지 줄에서 기다리게 된다 — 서지 않는다(--두줄은 a로)
+    const r = 꺼진줄(둘째.줄) ? { 됨: false, 까닭: `b 줄이 꺼져 있다(${둘째.줄}.off) — 끈 까닭을 고친 뒤 .off.풀림_<시각>으로` } : await 둘째준비();
+    console.log(`  ${시각()} ${r.됨 ? r.까닭 : `둘째 ego를 못 쓴다 — ${r.까닭}`}`);
+    if (!r.됨) { if (o.b줄만) return 1; 서기 = ''; }
   }
+  let u = Number(o.u), 계정 = o.계정 || '', 줄 = 'gemini-a';
+  if (!o.차례없이) {
+    await 차례기다리기(이름, '아르곤웹 계정 확인(올리기 · 보내기 없음)', 서기);
+    const 줄글 = 차례(['계정', 이름]).out;
+    u = 계정번호(줄글);
+    계정 = 계정이름(줄글);
+    줄 = 줄표(줄글) || 'gemini-a';
+  }
+  const 자리 = o.차례없이 ? {} : 줄자리(줄, job);
   try {
     if (u === null || !계정) { console.error('잡은 줄의 계정 주소 · 이름을 못 읽음'); return 1; }
-    console.log(`  ${시각()} 확인 — 계정 /u/${u} ${계정} · 공간 ${job.space}`);
-    const run = await 페이지돌리기(job, u, '확인', 계정);
+    console.log(`  ${시각()} 확인 — ${줄} · 계정 /u/${u} ${계정} · 공간 ${자리.space || job.space}${자리.서버 ? ` · 둘째 ego(${자리.서버})` : ''}`);
+    const run = await 페이지돌리기({ ...job, ...자리 }, u, '확인', 계정);
     const 본 = String(run.출력).split(/\r?\n/).map((l) => { try { return JSON.parse(l.trim()); } catch { return null; } }).find((x) => x && x.step === 'account');
     const r = 결과가르기(run.출력, false);
     const 통과 = r.결과 === '받음';
-    console.log(`${통과 ? '통과' : '안 됨'} · /u/${u} ${계정} — 화면 ${본 ? 본.who || '계정 표시 없음' : '계정 단계 전에 끝남'}${통과 ? '' : ` · ${r.까닭}`}`);
+    console.log(`${통과 ? '통과' : '안 됨'} · ${줄} /u/${u} ${계정} — 화면 ${본 ? 본.who || '계정 표시 없음' : '계정 단계 전에 끝남'}${통과 ? '' : ` · ${r.까닭}`}`);
     if (r.결과 === '멈춤' && /sorry|로봇/.test(r.까닭) && !o.차례없이) { 줄끄기(`로봇 확인(sorry) · ${이름} 계정 확인`); console.log('  두 줄을 껐다(gemini-a.off · gemini-b.off) — 유호님이 ego에서 확인을 누르신 뒤 지운다'); }
+    else if (줄 === 둘째.줄 && r.결과 === '멈춤' && /^계정이 /.test(String(r.까닭))) { b줄끄기(`둘째 ego 계정 확인 실패 · ${이름} — ${String(r.까닭).slice(0, 160)}`); console.log(`  b 줄을 껐다(${둘째.줄}.off) — 둘째 ego 로그인을 고친 뒤 지운다(유호님 몫)`); }
     return 통과 ? 0 : 1;
   } finally {
     if (!o.차례없이) console.log(`  차례 · ${차례(['내려놓기', 이름]).out.split(/\r?\n/).pop()}`);
@@ -1083,10 +1246,10 @@ async function main(argv) {
     return 돌리기(jobs, o, cmd);
   }
   console.error('사용: node tools/아르곤웹.js 점검 <지시문 파일…> [--json] [--없이 <항목,…>]\n'
-    + '      node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄] [--덮어쓰기] [--차례없이 --u <번호>]\n'
+    + '      node tools/아르곤웹.js 보내기 <작업.json…> [--이름 <줄 이름>] [--두줄 | --b줄만] [--덮어쓰기] [--차례없이 --u <번호>]\n'
     + '      node tools/아르곤웹.js 보내기 --파일 <사진·글…> --지시문 <지시문 파일> --답 <답.md> [--머리 <답 머리 글>]\n'
-    + '      node tools/아르곤웹.js 읽기 <작업.json…> [같은 선택]\n'
-    + '      node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄] [--차례없이 --u <번호> --계정 <이름>]');
+    + '      node tools/아르곤웹.js 읽기 <작업.json…> [같은 선택] — 보낸 줄(보냄 표시)로만 읽는다\n'
+    + '      node tools/아르곤웹.js 확인 [--이름 <줄 이름>] [--두줄 | --b줄만] [--차례없이 --u <번호> --계정 <이름>]');
   return 2;
 }
 
@@ -1100,4 +1263,5 @@ module.exports = {
   글정규화, 대화아이디, 대화견주기, 보낸때, 표시계정, 표시풀까, 풀린기록, 올리기뒤기다림, 올리기끝상한초, 답대화, 표시읽기, 찾기정보, 표식붙이기, 표식길이, 이번표식,
   카본인가, 수준순위, 가장높은수준, 카본모드맞나,
   설정, 살아있나, 올리기상한, 올리기상한계산, 잠금주인읽기, 잠금풀기, 줄주인, 멈춘주인, 잠금치우기, 올리기잠금, 폴더표, 페이지돌리기, 한건, 돌리기,
+  둘째, 줄표, 줄자리, 표시줄, 쓸줄, 줄계정읽기, 꺼진줄, b줄끄기, 둘째통로, 둘째준비, 쓰임기록, 확인,
 };
