@@ -20,7 +20,8 @@ const PRACTICE_SHA256='7467d775500e51949ac5400769b148b54904682e847e39bcf065d5d84
 test('셸은 기능이 켜졌을 때만 새 길 입구를 동적으로 부르고, 첫 화면 모듈은 새 길을 정적으로 부르지 않는다',()=>{
  const shell=read('app-shell.mjs');
  assert.match(shell,/const atlasNextOn=connection\.features\?\.atlasNext===true;/);
- assert.match(shell,/atlasNext:atlasNextOn\?lazyAtlasNext\(owner\):null/);
+ // 기능이 꺼지면 null — 켜졌을 때만 주인 수명(keep)에 걸어 둔 새 길 입구를 넘긴다(주인이 바뀌면 닫힌다, 화면 검수 카본 A6).
+ assert.match(shell,/atlasNext:atlasNextOn\?keep\('atlasNext',lazyAtlasNext\(owner\)\):null/);
  assert.equal(shell.match(/import\(['"]\.\/world-atlas-next\.mjs['"]\)/g)?.length,1,'새 길 입구를 부르는 곳은 lazyAtlasNext 하나');
  for(const file of ['app-shell.mjs','world-learning-ui.mjs','world-position-ui.mjs','world-reading-practice.mjs','operating-mode.mjs'])
   assert.doesNotMatch(read(file),/^import[^;]*(world-atlas-next|world-practice-next|\/atlas\/)/m,`${file}이 새 길을 정적으로 부르지 않는다`);

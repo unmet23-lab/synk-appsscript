@@ -146,7 +146,11 @@ export function createCoach(options = {}) {
     const itemKey = brain?.itemKey ?? item?.itemKey;
     const familyKey = brain?.familyKey ?? item?.familyKey ?? itemKey;
     const base = state.host.trail.summary();
-    if (state.host.view().met.has(familyKey) || base?.lines.item.has(itemKey)) return true;
+    const view = state.host.view();
+    if (view.met.has(familyKey) || base?.lines.item.has(itemKey)) return true;
+    // 보기가 아무것도 얹지 못하는 동안(판 묶음이 다른 요약 · 누른 사건)에는 요약 뒤의 만남이 표에 없다 — 「만난 적 없음」으로
+    // 단정하지 않고 모름(null)이다. 단정하면 이미 푼 문항이 처음 보는 후보로 들고 측정용 「처음」이 잘못 적혔다(카본 끝 판 B1).
+    if (view.waitAll === true) return null;
     return state.host.guest || base != null ? false : null;
   }
 
@@ -330,8 +334,11 @@ export function createCoach(options = {}) {
             (event.itemKey === itemKey || event.familyKey === familyKey),
         );
       const met = metBefore(product);
-      if (state.host.view().met.has(familyKey) || base?.lines.item.has(itemKey) || shown)
+      const view = state.host.view();
+      if (view.met.has(familyKey) || base?.lines.item.has(itemKey) || shown)
         return { seen: true, met };
+      // 보기가 얹지 못하는 동안은 화면용 seen도 모른다(카본 끝 판 B1과 같은 까닭).
+      if (view.waitAll === true) return { seen: null, met };
       return { seen: state.host.guest || base != null ? false : null, met };
     },
 

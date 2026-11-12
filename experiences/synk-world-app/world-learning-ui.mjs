@@ -862,14 +862,17 @@ async function townSend(coachNow,{wait=true}={}){
    box.innerHTML=view.renderPracticeItem({view:{...now,cue},skill,feedback:now.feedback,playing:player.playing,notice});
    if(focus)box.querySelector(focus)?.focus?.({preventScroll:true});
   }
-  function advance(){player.silence();notice='';const now=session.next();if(!now){void finish();return;}if(now.stubborn)session.preHelp();paint();top();}
+  // 힌트를 실제로 보일 때만 도움으로 남긴다 — 이름이 없어 힌트 줄을 못 그리는 끈질긴 단위 문항에 보이지 않은 도움이 적히지 않게(카본 A3).
+  function advance(){player.silence();notice='';const now=session.next();if(!now){void finish();return;}if(now.stubborn&&now.targetLabel)session.preHelp();paint();top();}
+  // 판 끝은 한 번만 — 마지막 문항에서 저장을 기다리는 사이 「다음」 · 「건너뛰기」를 거듭 눌러도 판 기록 · 응답이 두 번 서지 않게(카본 A4).
+  let finishing=false;
   async function finish(){
-   if(ended&&!box.isConnected)return;
-   ended=true;player.silence();
+   if(finishing||(ended&&!box.isConnected))return;
+   finishing=true;ended=true;player.silence();
    let results=session.results();try{results=await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
    if(!box.isConnected)return;
    const set=finishSet(next,'short');
-   box.innerHTML=view.renderPracticeNextDone({skill,results,items:new Map([...position.itemsById,...all.map(item=>[item.id,item])]),listening,count,ending:session.ending,response:responseView(set,'short')});
+   box.innerHTML=view.renderPracticeNextDone({skill,results,items:new Map([...position.itemsById,...all.map(item=>[item.id,item])]),listening,count,more:session.freshLeft(),ending:session.ending,response:responseView(set,'short')});
    bindResponse({box,coachNow:next,set,kind:'short'});
    box.querySelector('[data-practice-done]')?.focus?.({preventScroll:true});top();
    queueMicrotask(()=>refresh());evidenced();

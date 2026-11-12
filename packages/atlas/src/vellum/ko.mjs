@@ -13,10 +13,13 @@ const shaky = (s, name) =>
     ? `지난번에 놓친 「${name}」, ${s.days}일 만에 다시 만나요.`
     : `「${name}」 ${s.reviews}번 중 ${s.misses}번 놓쳤어요. ${s.days}일 만에 다시 만나요.`;
 
+// 숙제 상태를 모르면 말하지 않는다(null) — plan.mjs가 review · missed만 싣는 것과 같이, 모르는 상태를 놓친 답 문장으로 짓지 않는다(카본 끝 판 C4).
 const homework = (s, name) =>
   s.status === 'review'
     ? `이번 주 숙제예요. 「${name}」 기록이 오래돼 새 문항으로 다시 확인해요.`
-    : `이번 주 숙제예요. 「${name}」에서 놓친 답이 있어 새 문항으로 다시 확인해요.`;
+    : s.status === 'missed'
+      ? `이번 주 숙제예요. 「${name}」에서 놓친 답이 있어 새 문항으로 다시 확인해요.`
+      : null;
 
 const one = sentence => ({ standard: { default: [sentence] } });
 

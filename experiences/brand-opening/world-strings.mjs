@@ -606,12 +606,17 @@ export default {
  // 몽골어는 11-12 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · flash와 Opus 직역이 원문 뜻과 같음)을 거쳤다.
  // Vellum 몽골어와 같이 이름에는 격 어미를 붙이지 않고 「…: 「이름」.」 꼴, 「말」은 「үг хэллэг」로 맞췄다. 마지막 겹(Fable 교정)은 4-1 화면 검수.
  'practice.unknown':{ko:'모르겠어요',en:'I don’t know',mn:'Мэдэхгүй байна'},
- 'practice.next.cue':{ko:'자꾸 놓치는 말 「{name}」 — 문제 속에서 먼저 찾아보세요.',en:'You keep missing 「{name}」 — look for it in the question first.',mn:'Байнга алддаг үг хэллэг: 「{name}」. Эхлээд асуулт дотроос хайж олоорой.'},
- 'practice.next.limited':{ko:'이번 판의 새 말은 여기까지예요.',en:'That’s all the new words for this round.',mn:'Энэ удаагийн шинэ үг хэллэг үүгээр дууслаа.'},
- 'practice.next.more':{ko:'새 말 더 배우기',en:'Learn more new words',mn:'Шинэ үг хэллэг нэмж сурах'},
+ // 영어 「in this problem」 · 「new expressions」는 11-12 화면 검수 카본 B2 · B4(목표 표현은 발문이 아니라 지문에 있을 수 있고, 새 말은 낱말만이 아니다).
+ 'practice.next.cue':{ko:'자꾸 놓치는 말 「{name}」 — 문제 속에서 먼저 찾아보세요.',en:'You keep missing 「{name}」 — try to spot it in this problem first.',mn:'Байнга алддаг үг хэллэг: 「{name}」. Эхлээд асуулт дотроос хайж олоорой.'},
+ 'practice.next.limited':{ko:'이번 판의 새 말은 여기까지예요.',en:'That’s all the new expressions for this round.',mn:'Энэ удаагийн шинэ үг хэллэг үүгээр дууслаа.'},
+ 'practice.next.more':{ko:'새 말 더 배우기',en:'Learn more new expressions',mn:'Шинэ үг хэллэг нэмж сурах'},
  'practice.next.again':{ko:'{n}문항 더 하기',en:{one:'Practise 1 more',other:'Practise {n} more'},mn:'Дахиад {n} асуултад хариулах'},
- // 새 판 판 끝의 답 칸 넷(「다시 만나 맞힘」 — 「다시」로 돌아온 문항 · 힌트를 본 문항을 맞힘)과 이 기기에 저장하지 못한 답 한 줄.
- 'practice.next.summary':{ko:'혼자 맞힘 {right} · 다시 만나 맞힘 {again} · 틀림 {wrong} · 건너뜀 {skipped}',en:'Right on my own {right} · right when it came back {again} · wrong {wrong} · skipped {skipped}',mn:'Өөрөө зөв хариулсан {right} · дахин гарахад зөв хариулсан {again} · буруу {wrong} · алгассан {skipped}'},
+ // idle로 끝난 판(돌아온 것을 냈고 처음 보는 문항도 다 씀) — 엔진의 idle 문장(「가볍게 이어가요」) 대신(카본 A1). 몽골어는 검문을 지난 두 문장
+ // (Vellum idle 첫 문장 · practice.shortage 첫 문장)을 이었다.
+ 'practice.next.idle':{ko:'오늘 돌아온 말은 다 만났어요. 이 항목의 새 문항도 지금은 여기까지예요.',en:'You’ve covered everything due for review today, and that’s all the new questions for this skill for now.',mn:'Өнөөдөр давтах ёстой бүхнээ давтлаа. Энэ чадварын шинэ асуулт одоогоор ингээд дууслаа.'},
+ // 새 판 판 끝의 답 칸 넷 — 내 위치 근거가 되는 「새 문항 혼자 맞힘」과 그 밖의 맞힘(「다시」로 돌아온 문항 · 힌트 · 다시 듣기 · 같은 지문 둘째
+ // 문항을 맞힘), 틀림, 건너뜀(카본 A7 · B1 — 처음 이름 「혼자 맞힘 · 다시 만나 맞힘」은 새 문항 조건과 도움을 가리지 못했다). 이 기기에 저장하지 못한 답 한 줄.
+ 'practice.next.summary':{ko:'새 문항 혼자 맞힘 {right} · 그 밖의 맞힘 {again} · 틀림 {wrong} · 건너뜀 {skipped}',en:'New, right on my own {right} · other right answers {again} · wrong {wrong} · skipped {skipped}',mn:'Шинэ асуултад өөрөө зөв хариулсан {right} · бусад зөв хариулт {again} · буруу {wrong} · алгассан {skipped}'},
  'practice.next.unsaved':{ko:'답 {n}개는 이 기기에 저장하지 못해 내 위치에 반영되지 않아요.',en:{one:'1 answer couldn’t be saved on this device, so it won’t count toward Where I stand.',other:'{n} answers couldn’t be saved on this device, so they won’t count toward Where I stand.'},mn:'{n} хариултыг энэ төхөөрөмжид хадгалж чадаагүй тул «Миний ахиц»-д тооцогдохгүй.'},
  'practice.home':{ko:'홈으로',en:'Back home',mn:'Нүүр хуудас руу'},
  // ── 10-22 연습 한 판의 응답(WORLD 학습자 응답 설계 §3): 끝 화면의 묻기 줄 · 「내 계정」의 「내가 남긴 응답」 ──

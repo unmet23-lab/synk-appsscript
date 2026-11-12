@@ -75,6 +75,30 @@ function handBank() {
   ];
 }
 
+test('엔진이 낼 것이 없다고 한 문항을 제품이 그래도 내면 제품 순서 줄로 적는다 — 회차 host · 겨눈 단위가 찬다(카본 끝 판 B2)', async () => {
+  const items = handBank();
+  const ys = items.slice(2, 6); // 저마다 새 단위 하나
+  const time = clock();
+  const port = memoryPort();
+  const coach = coachOn({ items, time, port, key: keyOf('none-then-present') });
+  await coach.ready;
+  // 새것 한도 1 — 첫 문항이 새 단위 하나를 쓰고 나면 남은 문항(모두 새 단위)은 낼 수 없다
+  const first = coach.recommend(ys, { set: { length: 4, newLimit: 1 } });
+  assert.equal(first.status, 'ready');
+  const pid = coach.present(first.selected);
+  await coach.answer(pid, { correct: true, assessable: true }).stored;
+  time.advance(STEP);
+  const rest = ys.filter(item => item !== first.selected);
+  const picked = coach.recommend(rest);
+  assert.equal(picked.status, 'none');
+  const forced = coach.present(rest[0]);
+  const event = (await eventsOf(port)).find(e => e.id === forced);
+  assert.equal(event.arm, 'host');
+  assert.equal(event.reason.code, 'host.order');
+  assert.deepEqual(event.reason.target, rest[0].units[0]);
+  coach.dispose();
+});
+
 test('띄우기만 하고 닫은 제시 뒤의 첫 답은 혼자 낸 첫 답이다 — 측정용 「처음」은 만남의 표로만 정한다(Fable P1-2)', async () => {
   const items = bankOf(rng(3));
   const X = items[0];
@@ -254,6 +278,43 @@ test('보기가 아무것도 얹지 못하는 동안에도 판 안의 결정은 
     const options = { seed: `w${seed}`, length: 8, steps: 12 };
     assert.deepEqual(await waitingRun(items, options), brainRun(items, options), `씨앗 ${seed}`);
   }
+});
+
+test('보기가 얹지 못하는 동안 이미 답한 문항은 「만난 적 없음」이 아니라 모름 — 처음 보는 후보에 들지 않고 측정용 「처음」을 적지 않는다(카본 끝 판 B1)', async () => {
+  const items = bankOf(rng(311));
+  const time = clock();
+  const port = memoryPort();
+  await port.append([
+    {
+      kind: 'ack',
+      acks: [],
+      clamped: [],
+      dropped: [],
+      summary: packSummary(emptySummary('other-edition')),
+    },
+  ]);
+  const coach = coachOn({
+    items,
+    time,
+    port,
+    key: keyOf('wait-met'),
+    guest: false,
+    account: 'acct-wait-met',
+    revision: 1,
+  });
+  await coach.ready;
+  const picked = coach.recommend(items, { set: { length: 4 } });
+  const pid = coach.present(picked.selected);
+  await coach.answer(pid, { correct: true, assessable: true }).stored;
+  await settle();
+  const seen = coach.exposure(picked.selected);
+  assert.equal(seen.met, null, '측정용 앞선 만남은 모름');
+  assert.equal(seen.seen, true, '화면용으로는 이 기기의 제시가 있다');
+  // 다시 내면 제시 사건의 firstExposure는 true가 아니다(모르면 null)
+  const again = coach.present(picked.selected);
+  const event = (await port.read()).map(row => row.value.event).find(e => e?.id === again);
+  assert.notEqual(event?.firstExposure, true);
+  coach.dispose();
 });
 
 // X1을 놓친 판에서 Y 둘을 맞힌 뒤 고르면 — 「다시」가 살아 있으면 X2가 unit.retry로 나온다.

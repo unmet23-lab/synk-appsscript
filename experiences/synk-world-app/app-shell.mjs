@@ -33,10 +33,12 @@ const responsesOn=connection.features?.worldFeedback===true;
 // Atlas 새 길(재설계 단계 4, 기능 atlasNext — 리허설만 켠다, operating-mode.mjs): 켜졌을 때만 새 길 입구(world-atlas-next.mjs)를 처음 쓸 때 받는다.
 // 꺼지면 이 입구도 엔진(/atlas/loader.mjs)도 받지 않는다(단계4_계획 §6).
 const atlasNextOn=connection.features?.atlasNext===true;
+// 받기는 한 번(동시에 불러도 같은 약속), 받는 사이에 닫히면 받은 것을 바로 닫는다 — 주인이 바뀌어 생활 기록을 버릴 때(keep) 떠난 주인의
+// 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 카본 A6). 받기가 실패하면 다음에 다시 받는다.
 function lazyAtlasNext(owner){
- let made=null;
- const load=async()=>{if(!made)made=(await import('./world-atlas-next.mjs')).createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;}});return made;};
- return {async practiceCoach(pool){return (await load()).practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),dispose(){made?.dispose();}};
+ let made=null,loading=null,disposed=false;
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;}});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
+ return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),dispose(){disposed=true;made?.dispose();}};
 }
 // 10-19 결정 「WORLD 손님」(공개판 설계 §2): 손님(로그인 전)에게 한글 만나기를 연다 — 진도는 그 기기에 남는다.
 // 바람길·말의 리듬은 한 판씩 체험으로 연다(guest-trial.mjs, 기록·코인은 로그인 뒤). 체험을 마친 게임은 로그인부터 열고, 추천도 같은 목록을 쓴다.
@@ -374,7 +376,7 @@ function mountLifeLearning({owner,keep}){
  const createPlan=options=>createWorldLearningPlan({...options,answers:life.answers,openGames:operating&&!client.snapshot?guestGames():null});
  // 내 위치(10-19 결정): 짧은 진단 듣기 문항의 녹음은 게임 폴더(korean-runner·korean-rhythm)에서 부른다.
  education=keep('education',createWorldEducation({home,getProgress:()=>life.progress,engine:worldLearning,createPlan,target:window,position:worldPosition,audioUrl:worldUrl,responses:responsesOn,
-  atlasNext:atlasNextOn?lazyAtlasNext(owner):null,
+  atlasNext:atlasNextOn?keep('atlasNext',lazyAtlasNext(owner)):null,
   readHangulProgress:operating&&owner!=='guest'?async()=>{
    const port=await account.prepareHangulProgress({storage:localStorage,target:window});
    try{return port.read();}finally{port.dispose();}

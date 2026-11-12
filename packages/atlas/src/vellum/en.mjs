@@ -26,11 +26,11 @@ export const EN = Object.freeze({
   'unit.new': one((_, name) => `Seeing 「${name}」 for the first time.`),
   'skill.up': one(
     (s, name) =>
-      `「${name}」: you got it right on your own ${times(s.streak)} in a row. Let’s step it up a level.`,
+      `${name}: you got it right on your own ${times(s.streak)} in a row. Let’s step it up a level.`,
   ),
   'skill.ease': one(
     (_, name) =>
-      `「${name}」: let’s build this skill back up, starting with something a little easier.`,
+      `${name}: let’s build this skill back up, starting with something a little easier.`,
   ),
   'pace.breather': one(
     (s, name) =>

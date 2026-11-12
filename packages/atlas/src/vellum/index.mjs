@@ -35,7 +35,12 @@ const NAMELESS = new Set([
   'host.next',
 ]);
 
-export const subjectOf = why => why.slots?.[SUBJECT_SLOT[why.code] ?? 'unit'] ?? null;
+// 이름 없는 종류 · 빈 이유에는 가리키는 것이 없다(null) — 슬롯 열쇠는 표의 제 열쇠만(카본 끝 판 C2).
+export const subjectOf = why => {
+  if (!why?.code || NAMELESS.has(why.code)) return null;
+  const slot = Object.hasOwn(SUBJECT_SLOT, why.code) ? SUBJECT_SLOT[why.code] : 'unit';
+  return why.slots?.[slot] ?? null;
+};
 
 const hash = text => {
   let h = 2166136261;
@@ -46,13 +51,18 @@ const hash = text => {
   return h >>> 0;
 };
 
+// 물러서기 차례: 그 눈높이의 그 말하는 사람 → 그 눈높이의 default → standard의 그 말하는 사람 → standard의 default. 빈 목록도 없는 것으로
+// 본다 — 한 눈높이에 다른 말하는 사람 줄만 있어도 standard로 물러선다(카본 끝 판 C1). 언어는 물러서지 않는다.
 function templatesOf(code, { lang, level, speaker }) {
   const row = TABLE[lang]?.[code];
   if (!row) return null;
-  const byLevel = row[level] ?? row.standard;
-  if (!byLevel) return null;
-  const list = byLevel[speaker] ?? byLevel.default;
-  return list?.length ? list : null;
+  const tries = [
+    row[level]?.[speaker],
+    row[level]?.default,
+    row.standard?.[speaker],
+    row.standard?.default,
+  ];
+  return tries.find(list => Array.isArray(list) && list.length) ?? null;
 }
 
 function nameOf(why, label) {

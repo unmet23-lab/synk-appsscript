@@ -530,4 +530,28 @@ export const COACH_MUTANTS = [
     '  const row = TABLE[lang]?.[code];',
     '  const row = TABLE[lang]?.[code] ?? TABLE.ko[code];',
   ],
+  [
+    C,
+    '측정용 처음',
+    '보기가 얹지 못하는 동안에도 앞선 만남을 「없음」으로 단정한다(카본 끝 판 B1)',
+    'src/coach/index.mjs',
+    '    if (view.waitAll === true) return null;',
+    '',
+  ],
+  [
+    C,
+    '제시 칸',
+    '낼 수 없는 줄(층 9)도 고른 줄로 남긴다(카본 끝 판 B2)',
+    SESSION,
+    '      if (rows[0] && !rows[0].none) s.chosen.set(rows[0].item.itemKey, rows[0]);',
+    '      if (rows[0]) s.chosen.set(rows[0].item.itemKey, rows[0]);',
+  ],
+  [
+    'unit',
+    'Vellum',
+    '숙제 상태를 모르면 놓친 답 문장으로 짓는다(카본 끝 판 C4)',
+    'src/vellum/ko.mjs',
+    '      : null;',
+    '      : `이번 주 숙제예요. 「${name}」에서 놓친 답이 있어 새 문항으로 다시 확인해요.`;',
+  ],
 ];

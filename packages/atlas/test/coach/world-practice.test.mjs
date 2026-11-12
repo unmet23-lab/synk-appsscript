@@ -250,7 +250,8 @@ test('판이 일찍 끝나면 그 까닭을 사실대로 고른다 — 돌아온
 
 test('판 끝 줄의 엔진 문장은 끝 까닭이 엔진의 것일 때만 — 처음 보는 문항이 바닥난 판에 「다 만났어요」가 없다(Fable P1-1)', () => {
   const idle = { code: 'idle', line: '오늘 돌아온 것은 다 만났어요. 가볍게 이어가요.' };
-  assert.equal(endingLine('idle', idle), idle.line);
+  // idle로 끝난 판에는 엔진 문장(「가볍게 이어가요」)을 쓰지 않는다 — 제품 문장(카본 A1)
+  assert.equal(endingLine('idle', idle), null);
   assert.equal(endingLine('exhausted', idle), null);
   assert.equal(endingLine('limited', idle), null);
   assert.equal(endingLine('capped', idle), null, '하루 상한 판에는 그 이유 종류(day.capped)만');
@@ -269,9 +270,88 @@ test('판 끝 줄의 엔진 문장은 끝 까닭이 엔진의 것일 때만 — 
   assert.match(done({ kind: 'exhausted', why: null }), /새 문항은 여기까지예요/);
   assert.match(done({ kind: 'limited', why: null }), /새 말은 여기까지예요/);
   assert.match(done({ kind: 'idle', why: idle.line }), /다 만났어요/);
+  assert.doesNotMatch(done({ kind: 'idle', why: idle.line }), /가볍게 이어가요/);
 });
 
-test('판 끝 답 칸은 넷 — 혼자 맞힘 · 다시 만나 맞힘 · 틀림 · 건너뜀의 합이 푼 수이고, 이 기기에 저장하지 못한 답은 맞힘 칸에 넣지 않고 한 줄로 말한다(계획 §7 · Fable 설계 P2-5 ⑤ · Fable 5.2 최종 F7)', () => {
+test('「N문항 더 하기」는 처음 보는 문항이 남았을 때만 — idle로 끝난 판 · 남은 새 문항이 없는 판은 단추 없이 「새 문항은 여기까지」(카본 A1)', () => {
+  const done = (kind, more) =>
+    view.renderPracticeNextDone({
+      skill: { id: 'ko.reading.x', label: '읽기' },
+      results: [],
+      ending: { kind, why: null },
+      more,
+    });
+  assert.match(done('done', 4), /data-practice-again/);
+  assert.doesNotMatch(done('done', 4), /data-practice-end-line/);
+  assert.doesNotMatch(done('done', 0), /data-practice-again/);
+  assert.match(done('done', 0), /data-practice-end-line>이 항목의 새 문항은 여기까지예요/);
+  assert.doesNotMatch(done('idle', 0), /data-practice-again/);
+  assert.match(done('idle', 0), /data-practice-end-line>오늘 돌아온 말은 다 만났어요/);
+  // 모르면(null) 판 길이를 다 낸 판에만 단추(지금 판과 같은 뜻)
+  assert.match(done('done', null), /data-practice-again/);
+  assert.doesNotMatch(done('idle', null), /data-practice-again/);
+});
+
+test('끝 까닭은 처음 보는 문항으로 좁힌 답의 사실까지 합친다 — 채우기(idle)가 남아도 새 문항이 하루 상한에 걸렸으면 capped와 그 문장(카본 A2)', () => {
+  const capped = { code: 'day.capped', line: '오늘은 여기까지예요. 남은 것은 내일 만나요.' };
+  const pool = BANK.slice(0, 3);
+  // 전체 풀은 채우기(idle), 좁힌 묶음은 하루 상한으로 none
+  const coach = {
+    recommend: (candidates, options) =>
+      options.pool === 'unseen'
+        ? { status: 'none', selected: null, facts: { held: 'day' }, why: capped }
+        : { status: 'idle', selected: candidates[0], facts: {}, why: { code: 'idle', line: 'x' } },
+    present: () => 'p',
+    answer: () => ({ verdict: 'correct', evidence: Promise.resolve({ independent: false }) }),
+    help: () => {},
+    delivery: () => {},
+    exposure: () => ({ met: false, seen: false }),
+    finishSet: () => {},
+  };
+  const session = createPracticeNextSession({ plays, coach, pool, length: 5 });
+  assert.equal(session.next(), null);
+  assert.deepEqual(session.ending, { kind: 'capped', why: capped.line });
+});
+
+test('근거 약속이 거부된 답은 저장 실패로 센다 — 미처리 거부 없이 판 끝까지 기다린다(카본 A5)', async () => {
+  const pool = BANK.filter(item => !(item.audioRequired ?? item.modality === 'listening')).slice(
+    0,
+    2,
+  );
+  let n = 0;
+  const coach = {
+    recommend: candidates => ({
+      status: 'ready',
+      selected: candidates[n % candidates.length],
+      facts: {},
+      why: null,
+    }),
+    present: () => `p${(n += 1)}`,
+    answer: () =>
+      n === 1
+        ? { verdict: 'correct', evidence: Promise.reject(new Error('저장 실패')) }
+        : { verdict: 'correct', evidence: Promise.resolve({ independent: true }) },
+    help: () => {},
+    delivery: () => {},
+    exposure: () => ({ met: false, seen: false }),
+    finishSet: () => {},
+  };
+  const session = createPracticeNextSession({ plays, coach, pool, length: 2 });
+  for (let i = 0; i < 2; i += 1) {
+    const now = session.next();
+    session.answer(now.item.correctId);
+  }
+  const rows = await session.settled();
+  assert.deepEqual(
+    rows.map(row => [row.stored, row.independent]),
+    [
+      [false, false],
+      [true, true],
+    ],
+  );
+});
+
+test('판 끝 답 칸은 넷 — 새 문항 혼자 맞힘 · 그 밖의 맞힘 · 틀림 · 건너뜀의 합이 푼 수이고, 이 기기에 저장하지 못한 답은 맞힘 칸에 넣지 않고 한 줄로 말한다(계획 §7 · Fable 설계 P2-5 ⑤ · Fable 5.2 최종 F7)', () => {
   const row = (verdict, independent, stored = true, skipped = false) => ({
     itemId: `i.${verdict}.${independent}.${stored}.${skipped}`,
     verdict,
@@ -292,14 +372,14 @@ test('판 끝 답 칸은 넷 — 혼자 맞힘 · 다시 만나 맞힘 · 틀림
     results,
     ending: { kind: 'done' },
   });
-  assert.match(html, /혼자 맞힘 1 · 다시 만나 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(html, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
   assert.match(html, /data-practice-unsaved[^>]*>답 1개는 이 기기에 저장하지 못해/);
   const saved = view.renderPracticeNextDone({
     skill: { id: 'ko.reading.x', label: '읽기' },
     results: results.filter(r => r.stored !== false),
     ending: { kind: 'done' },
   });
-  assert.match(saved, /혼자 맞힘 1 · 다시 만나 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(saved, /새 문항 혼자 맞힘 1 · 그 밖의 맞힘 1 · 틀림 2 · 건너뜀 1/);
   assert.doesNotMatch(saved, /data-practice-unsaved/);
 });
 

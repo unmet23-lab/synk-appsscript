@@ -150,8 +150,16 @@ function createHost({
     }
   }
 
+  // 다른 탭의 알림으로 꼬리를 읽는다 — 닫힌 뒤에는 읽지 않고, 저장소 읽기가 실패해도 처리되지 않은 거절로 새지 않게 계기에만 남긴다
+  // (다음 알림 · 다음 열기에 다시 읽는다, 카본 끝 판 B5).
   async function refresh() {
-    await state.trail.refresh();
+    if (state.closed) return;
+    try {
+      await state.trail.refresh();
+    } catch {
+      note('save', { ok: false, code: 'REFRESH_FAILED' });
+      return;
+    }
     tell('refresh');
   }
 

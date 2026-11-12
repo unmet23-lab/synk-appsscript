@@ -73,11 +73,30 @@ test('한국어 기능 글은 reasonLine과 같다 — 다른 것은 받침 뒤�
 test('reasonLine이 다루는 이유 종류는 모두 표에 있다', () => {
   const host = new Set(['host.resume', 'host.prerequisite', 'host.homework', 'goal.match']);
   for (const code of Object.values(REASON_CODES)) {
-    const slots = { unit: 'u', skill: 's', topic: 't', days: 2, reviews: 3, misses: 1, streak: 2 };
+    const slots = {
+      unit: 'u',
+      skill: 's',
+      topic: 't',
+      days: 2,
+      reviews: 3,
+      misses: 1,
+      streak: 2,
+      status: 'missed',
+    };
     const line = render({ code, slots }, { label });
     assert.equal(typeof line, 'string', code);
     if (!host.has(code)) assert.ok(line.length > 5, code);
   }
+  // 숙제 상태를 모르면 말하지 않는다 — 모르는 상태를 「놓친 답이 있어」로 짓지 않는다(카본 끝 판 C4)
+  assert.equal(render({ code: 'host.homework', slots: { skill: 's' } }, { label }), null);
+  assert.equal(
+    render({ code: 'host.homework', slots: { skill: 's', status: 'later' } }, { label }),
+    null,
+  );
+  // 빈 이유 · 이름 없는 종류에는 가리키는 것이 없다(카본 끝 판 C2)
+  assert.equal(subjectOf(null), null);
+  assert.equal(subjectOf({ code: 'idle', slots: { unit: 'u' } }), null);
+  assert.equal(subjectOf({ code: 'toString', slots: { unit: 'u' } }), 'u');
 });
 
 test('언어는 물러서지 않는다 — 그 언어 줄이 없으면 null, 눈높이 · 말하는 사람은 물러선다', () => {
@@ -179,9 +198,11 @@ test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고
     ['day.capped', {}],
     ['pace.stubborn', {}],
   ];
-  const names = { u: '은행', s: '읽고 세부 정보 찾기' };
+  // 단위 이름은 한국어 학습 대상이라 「」 안에, 능력 이름은 셸이 화면 언어로 번역해 넘기므로 낫표 없이(11-12 화면 검수 카본 A8).
+  const skillName = { en: 'Reading for details', mn: 'Уншаад нарийн мэдээллийг олох' };
   for (const lang of ['en', 'mn'])
     for (const [code, slots] of PRACTICE) {
+      const names = { u: '은행', s: skillName[lang] };
       const line = render({ code, slots }, { lang, label: id => names[id] });
       assert.equal(typeof line, 'string', `${lang} ${code}`);
       assert.doesNotMatch(
@@ -189,6 +210,10 @@ test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고
         /[가-힣]/,
         `${lang} ${code}: 이름 밖에 한국어가 없다`,
       );
+      if (code.startsWith('skill.')) {
+        assert.ok(line.startsWith(`${skillName[lang]}:`), `${lang} ${code}: 능력 이름이 앞에`);
+        assert.doesNotMatch(line, /「/, `${lang} ${code}: 능력 이름에 낫표 없음`);
+      }
     }
   assert.equal(
     render(

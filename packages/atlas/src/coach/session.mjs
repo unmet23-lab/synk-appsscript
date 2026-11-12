@@ -216,7 +216,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   function refreshChosen() {
     for (const [key, row] of s.chosen) {
       const now = choose([row.item], s.learner, memory, host.now(), { params, seed })[0];
-      if (!now) s.chosen.delete(key);
+      // 다시 세운 줄이 낼 수 없는 줄(층 9 · none)이면 고른 줄에서 뺀다 — 제품이 그래도 내면 제품 순서 줄(hostRow)로 겨눈 단위를 채운다
+      // (층 9 줄 그대로 내면 겨눈 단위 없이 제시 사건이 섰다, 카본 끝 판 B2).
+      if (!now || now.none) s.chosen.delete(key);
       else s.chosen.set(key, now.tier === row.tier ? { ...now, why: row.why, arm: row.arm } : now);
     }
   }
@@ -335,7 +337,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       );
       if (rows[0]) rows[0] = pooled(rows[0], options.pool);
       s.chosen.clear();
-      if (rows[0]) s.chosen.set(rows[0].item.itemKey, rows[0]);
+      if (rows[0] && !rows[0].none) s.chosen.set(rows[0].item.itemKey, rows[0]);
       return { rows, products, facts: factsOf(rows) };
     },
 
@@ -380,7 +382,10 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     help(pid, kind) {
       const group = this.group(pid);
       if (!HELP_KINDS.includes(kind)) throw new TypeError('Atlas coach: 도움의 종류가 아니다');
-      const first = !group.children.some(entry => entry.event.type === EVENT_TYPES.helped);
+      // 저장에 실패했거나 제외된 도움은 없던 일 — 그 뒤의 도움이 첫 도움이다(접기 foldOf와 같은 거름, 카본 끝 판 B3).
+      const first = !group.children.some(
+        entry => entry.event.type === EVENT_TYPES.helped && !s.failed.has(entry.event.id),
+      );
       const fields = {
         presentationId: pid,
         helpId: kind,
