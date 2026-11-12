@@ -46,7 +46,7 @@ const 기대 = { 지시문: prompt, 그림: files.some((f) => kind(f) === "영�
 const norm = 글정규화; // 보낸 글은 목록 번호 · 마크다운 기호가 빠져 그려진다(tools/아르곤웹.js와 같은 함수)
 const promptHead = norm(prompt).slice(0, 40);
 const promptLen = String(prompt || "").replace(/\s+/g, "").length;
-const log = (o) => console.log(JSON.stringify(o));
+const log = (o) => console.log(JSON.stringify({ ...o, t: new Date().toISOString().slice(11, 23) })); // t(UTC) — 같은 브라우저 실행기끼리 언제 겹쳤는지 · 사라짐이 몰린 때를 가린다(11-12 밤)
 const now = () => new Date().toLocaleString("sv-SE", { timeZone: "Asia/Seoul" });
 const 경로 = (x) => { try { return new URL(x).pathname; } catch { return ""; } };
 let page = null;
