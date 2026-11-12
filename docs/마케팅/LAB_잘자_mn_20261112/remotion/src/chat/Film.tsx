@@ -43,8 +43,19 @@ const Band: React.FC = () => {
   const f = useCurrentFrame();
   const s = useSpringAt(T.rule, { damping: 14, stiffness: 190 });
   const q = useSpringAt(T.ask, { damping: 14, stiffness: 190 });
-  const on = f >= fr(T.rule);
+  const m = useSpringAt(T.morning, { damping: 14, stiffness: 190 });
+  const t = f / 30;
   const ask = f >= fr(T.ask);
+  // 다음 날 밤 — 띠도 바뀐다(미학 맹검 v4 「다음 날 밤인데 띠 문구가 8칸 내내 그대로」 · 방 그림 위 시각 알약은 걷음)
+  if (t >= T.morning) {
+    return (
+      <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: BAND_H, background: C.coral }}>
+        <div style={{ position: 'absolute', left: 70, width: 850, bottom: 40, textAlign: 'center', fontFamily: `${EN}, ${EMOJI}`, fontWeight: 800, fontSize: 64, lineHeight: 1.1, color: '#FFFFFF', opacity: interpolate(m, [0, 0.4], [0, 1], clamp), transform: `scale(${0.9 + 0.1 * m})` }}>
+          {MN.nextNight}… 🌙
+        </div>
+      </div>
+    );
+  }
   // 4.0초 물음 — 첫 줄을 걷고 두 줄로 크게(길어진 몽골어가 한 줄을 넘쳤다)
   if (ask) {
     return (
@@ -55,12 +66,20 @@ const Band: React.FC = () => {
       </div>
     );
   }
+  // 첫 줄: 처음엔 두 줄 크게 → 0.6초 둘째 줄이 오면 작은 한 줄로 → 1.8초 답이 오면 둘째 줄을 걷고 다시 크게.
+  // 미학 맹검 v4 「첫 줄이 한 칸 만에 작아짐」 · 「답이 왔는데 띠는 아직 '답 쓰는 중'」 → 크기를 바꾸지 않고 두 판을 0.25초 겹쳐 바꾼다.
+  // 겹쳐 바꾸면 0.25초 동안 두 판 글자가 포개져 어지럽다 → 앞 판이 다 빠진 뒤 다음 판이 든다
+  const big = interpolate(t, [T.rule, T.rule + 0.12, T.reply + 0.12, T.reply + 0.25], [1, 0, 0, 1], clamp);
+  const small = interpolate(t, [T.rule + 0.12, T.rule + 0.25, T.reply, T.reply + 0.12], [0, 1, 1, 0], clamp);
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: BAND_H, background: C.coral }}>
-      <div style={{ position: 'absolute', left: 70, width: 850, ...(on ? { top: 274 } : { bottom: 26 }), textAlign: 'center', fontFamily: `${EN}, ${EMOJI}`, fontWeight: 800, fontSize: on ? 32 : 44, lineHeight: 1.14, whiteSpace: on ? 'nowrap' : 'normal', color: C.brown, opacity: on ? 0.78 : 1 }}>
+      <div style={{ position: 'absolute', left: 70, width: 850, bottom: 26, textAlign: 'center', fontFamily: `${EN}, ${EMOJI}`, fontWeight: 800, fontSize: 44, lineHeight: 1.14, color: C.brown, opacity: big }}>
         {MN.band}
       </div>
-      <div style={{ position: 'absolute', left: 60, width: 860, top: 318, textAlign: 'center', fontFamily: `${EN}, ${EMOJI}`, fontWeight: 800, fontSize: 44, lineHeight: 1.1, whiteSpace: 'nowrap', color: '#FFFFFF', opacity: on ? interpolate(s, [0, 0.5], [0, 1], clamp) : 0, transform: `scale(${0.85 + 0.15 * s})` }}>
+      <div style={{ position: 'absolute', left: 70, width: 850, top: 274, textAlign: 'center', fontFamily: `${EN}, ${EMOJI}`, fontWeight: 800, fontSize: 32, lineHeight: 1.14, whiteSpace: 'nowrap', color: C.brown, opacity: 0.78 * small }}>
+        {MN.band}
+      </div>
+      <div style={{ position: 'absolute', left: 60, width: 860, top: 318, textAlign: 'center', fontFamily: `${EN}, ${EMOJI}`, fontWeight: 800, fontSize: 44, lineHeight: 1.1, whiteSpace: 'nowrap', color: '#FFFFFF', opacity: interpolate(s, [0, 0.5], [0, 1], clamp) * small, transform: `scale(${0.85 + 0.15 * s})` }}>
         {MN.rule2}
       </div>
     </div>
@@ -130,9 +149,11 @@ const OneTag: React.FC = () => {
   const t = f / 30;
   const s = useSpringAt(T.tagIn, { damping: 13, stiffness: 200 });
   const s2 = useSpringAt(T.vanish, { damping: 10, stiffness: 240, mass: 0.6 });
-  const gone = interpolate(t, [T.typing[0] - 0.2, T.typing[0] + 0.1], [1, 0], clamp);
+  // 미학 맹검 v4 「«1» → ∅ уншчихлаа! 꼬리표가 0.25초 깜박이듯 지나감」 → 읽음 꼬리표는 걷고 「1」과 함께 사라진다(읽음은 위 띠 둘째 줄이 말한다)
+  const gone = interpolate(t, [T.vanish, T.vanish + 0.15], [1, 0], clamp);
   if (t < T.tagIn || gone <= 0) return null;
-  const read = t >= T.vanish;
+  const read = false;
+  void s2;
   return (
     <div style={{ position: 'absolute', left: 230, top: CHAT.y + 226, opacity: interpolate(s, [0, 0.4], [0, 1], clamp) * gone, transform: `rotate(-4deg) scale(${(0.7 + 0.3 * s) * (read ? 0.9 + 0.1 * s2 : 1)})`, transformOrigin: 'left center' }}>
       <div style={{ background: read ? C.red : '#FFFFFF', color: read ? '#FFFFFF' : C.brown, border: `4px solid ${read ? C.red : C.one}`, borderRadius: 18, padding: '10px 20px 12px', fontFamily: EN, fontWeight: 800, fontSize: 44, lineHeight: 1, boxShadow: '0 6px 14px rgba(80,30,20,0.18)' }}>
@@ -171,9 +192,16 @@ const typed = (t: number): string => {
 const InputBox: React.FC<{ text: string; t: number }> = ({ text, t }) => {
   const caret = Math.floor(t * 3) % 2 === 0;
   return (
-    <div style={{ position: 'absolute', left: 40, right: 40, bottom: 14, height: 80, borderRadius: 40, background: '#FFFFFF', border: `3px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 30px', fontFamily: `${KO.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: 46, color: C.brown, whiteSpace: 'nowrap' }}>
-      {text}
-      <span style={{ display: 'inline-block', width: 4, height: 50, marginLeft: 4, background: caret ? C.coral : 'transparent' }} />
+    // 미학 맹검 v4 「입력 칸에 보내기 단추 하나 없이 회색 줄 사이 글자만」 → 메신저 입력 줄 꼴(더하기 · 칸 · 보내기)
+    <div style={{ position: 'absolute', left: 70, right: 70, bottom: 12, height: 96, display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ width: 64, height: 64, borderRadius: 32, background: '#EFE7E1', color: C.gray, fontFamily: "'Inter Tight', sans-serif", fontWeight: 700, fontSize: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>+</div>
+      <div style={{ flex: 1, height: 88, borderRadius: 44, background: '#FFFFFF', border: `3px solid ${C.coral}`, boxShadow: '0 4px 12px rgba(80,30,20,0.12)', display: 'flex', alignItems: 'center', padding: '0 30px', fontFamily: `${KO.replace(', sans-serif', '')}, ${EMOJI}`, fontWeight: 800, fontSize: 46, color: C.brown, whiteSpace: 'nowrap', overflow: 'hidden' }}>
+        {text}
+        <span style={{ display: 'inline-block', width: 4, height: 50, marginLeft: 4, background: caret ? C.coral : 'transparent' }} />
+      </div>
+      <div style={{ width: 76, height: 76, borderRadius: 38, background: text ? C.coral : '#E6DCD6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width={40} height={40} viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" stroke="#FFFFFF" strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </div>
     </div>
   );
 };
@@ -187,7 +215,7 @@ const Chat: React.FC = () => {
   const r2 = spring({ frame: f - fr(T.reply2), fps, config: { damping: 14, stiffness: 200, mass: 0.7 } });
   // 답이 오면 대화가 위로 밀린다(아주머니의 첫 「잘 자~」가 위로 나간다)
   const lift = t >= T.reply ? interpolate(r1, [0, 1], [0, 1], clamp) : 0;
-  const dim = t >= T.cardA - 0.1 && t < T.morning ? 0.25 : 1;
+  const dim = t >= T.cardA - 0.1 && t < T.morning ? 0 : 1; // 카드 밑으로 흐린 뜻 줄이 비쳐 어지러웠다
   const appear = (s: number) => ({ opacity: interpolate(s, [0, 0.4], [0, 1], clamp), transform: `translateY(${(1 - s) * 30}px)` });
   // 다음 날 밤 — 아주머니 「몽글아 잘 자~」 → 입력 칸에서 치고 · 지우고 · 다시 쳐서 「안녕히 주무세요!」 → 「아이고, 예뻐라~」
   if (t >= T.morning) {
@@ -236,7 +264,7 @@ const Chat: React.FC = () => {
         ) : null}
         <div style={{ height: 10 }} />
         {t >= T.reply2 ? (
-          <div style={appear(r2)}>
+          <div style={{ opacity: interpolate(r2, [0, 0.4], [0, 1], clamp) }}>{/* 미학 맹검 v4 「올라오는 뜻 줄 아랫절반이 대화 칸 아래에서 잘림」 → 올라오지 않고 제자리에서 뜬다 */}
             <Bubble text="어른께는 '안녕히 주무세요'~" me={false} />
             <Gloss text={MN.replyGloss} />
           </div>
@@ -278,7 +306,9 @@ const Col: React.FC<{ w: { who: string; ko: string; read: string; mn: string }; 
 const Cards: React.FC = () => {
   const f = useCurrentFrame();
   const t = f / 30;
-  const sub = (a: number) => ({ opacity: interpolate(t, [a, a + 0.2], [0, 1], clamp), transform: `translateY(${interpolate(t, [a, a + 0.25], [12, 0], { ...clamp, easing: EASE })}px)` });
+  // 「자다 → 주무시다」가 한 칸 만에 툭 뜬다(미학 맹검 v4) → 커지며 튀어 들어온다
+  const pv = useSpringAt(T.verbIn, { damping: 11, stiffness: 200, mass: 0.7 });
+  const sub = (a: number) => ({ opacity: interpolate(t, [a, a + 0.2], [0, 1], clamp), transform: `translateY(${interpolate(t, [a, a + 0.25], [12, 0], { ...clamp, easing: EASE })}px) scale(${t < a ? 0.6 : 0.6 + 0.4 * pv})` });
   return (
     <Card from={T.cardA} to={T.morning - 0.1}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 20 }}>
@@ -313,25 +343,26 @@ const Scene: React.FC = () => {
   const k = ROOMS.reduce((acc, r, i) => (t >= r.at ? i : acc), 0);
   const cur = ROOMS[k];
   const prev = k > 0 ? ROOMS[k - 1] : null;
-  const fade = k > 0 ? interpolate(t, [cur.at, cur.at + 0.06], [0, 1], clamp) : 1;
+  // 미학 맹검 v4 「정지 그림 두 장을 단순 교체해 휴대폰 · 벽등 · 창이 통째로 튐」 → 0.22초 겹쳐 바꾸고, 앞 그림도 그때의 크기로 둔다
+  const fade = k > 0 ? interpolate(t, [cur.at, cur.at + 0.22], [0, 1], { ...clamp, easing: EASE }) : 1;
+  const prevZoom = prev ? 1 + 0.03 * Math.max(0, cur.at - Math.max(0, prev.at)) : 1;
+  // 숨결 — 같은 그림이 박제처럼 서 있지 않게(2.4초에 한 번 0.6%)
+  const breath = 1 + 0.006 * Math.sin((t * 2 * Math.PI) / 2.4);
   const since = t - Math.max(0, cur.at);
   const io = { ...clamp, easing: Easing.bezier(0.65, 0, 0.35, 1) };
   // 카드 동안 굳은 얼굴로 다가가고(같은 그림이 멈춰 있지 않게), 끝 잠든 몽글은 크게
   const toFace = cur.src.includes('frozen') && t < T.morning ? interpolate(t, [T.cardA + 1.2, T.cardA + 1.55, T.morning - 0.2, T.morning + 0.05], [0, 1, 1, 0], io) : 0;
   const faceGo = interpolate(t, [T.cardA + 1.2, T.morning], [0, 1], clamp);
   const toEnd = cur.src.includes('sleep') ? interpolate(t, [T.flat + 0.3, T.flat + 0.9], [0, 1], io) : 0;
-  const zoom = (1 + 0.03 * since) * (1 + (0.45 + 0.3 * faceGo) * toFace) * (1 + 0.22 * toEnd + 0.05 * Math.max(0, t - T.flat - 0.9));
+  // 굳은 얼굴로 다가가는 배율 0.45~0.75 → 0.3~0.45(미학 맹검 v4 「확대될수록 펠트 화질만 무뎌짐」)
+  const zoom = (1 + 0.03 * since) * (1 + (0.3 + 0.15 * faceGo) * toFace) * (1 + 0.22 * toEnd + 0.05 * Math.max(0, t - T.flat - 0.9));
   const pop = cur.src.includes('frozen') || cur.src.includes('sleep') ? spring({ frame: f - fr(cur.at), fps, config: { damping: 9, stiffness: 220, mass: 0.6 } }) : 1;
   const popSc = 1 + 0.05 * Math.sin(Math.min(1, pop) * Math.PI);
-  const pill = t >= T.morning ? `${MN.nextNight} ${clockText(t)}` : clockText(t);
+  // 방 그림 위 시각 알약은 걷었다 — 대화 머리의 시각과 겹치고 창 속 달을 덮었다(미학 맹검 v4 K40). 다음 날 밤은 위 띠가 말한다.
   return (
     <div style={{ position: 'absolute', left: SCENE.x, top: SCENE.y, width: SCENE.s, height: SCENE.s, borderRadius: 40, overflow: 'hidden', boxShadow: '0 16px 36px rgba(60,30,20,0.28)', background: '#3A2A22' }}>
-      {prev && fade < 1 ? <Img src={staticFile(prev.src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} /> : null}
-      <Img src={staticFile(cur.src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: fade, transform: `scale(${zoom * popSc})`, transformOrigin: toEnd > 0 ? '48% 60%' : toFace > 0 ? '42% 42%' : '45% 55%' }} />
-      <div style={{ position: 'absolute', left: 24, top: 24, padding: '8px 22px 10px', borderRadius: 30, background: 'rgba(18,22,40,0.74)', color: '#FFFFFF', fontFamily: `'Inter Tight', ${EMOJI}`, fontWeight: 800, fontSize: 48, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontFamily: EMOJI, fontSize: 40 }}>🌙</span>
-        {pill}
-      </div>
+      {prev && fade < 1 ? <Img src={staticFile(prev.src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${prevZoom * breath})`, transformOrigin: '45% 55%' }} /> : null}
+      <Img src={staticFile(cur.src)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: fade, transform: `scale(${zoom * popSc * breath})`, transformOrigin: toEnd > 0 ? '48% 60%' : toFace > 0 ? '42% 42%' : '45% 55%' }} />
     </div>
   );
 };
@@ -397,10 +428,11 @@ const useCam = () => {
     [T.verbIn + 0.14, 1.04, 540, 700],
     [T.morning - 0.02, 1.04, 540, 700],
     [T.morning + 0.2, 1, 540, 960],
-    [T.type1[0], 1, 540, 960],
-    [T.type1[0] + 0.25, 1.1, 540, 760],
-    [T.myReply - 0.02, 1.1, 540, 760],
-    [T.myReply + 0.2, 1, 540, 960],
+    [T.type1[0], 1, 540, 380],
+    // 입력 칸으로 다가갈 때 대화 머리가 위 띠 밑으로 밀려 잘렸다(미학 맹검 v4 K5) → 머리 윗선(380)을 축으로 키운다
+    [T.type1[0] + 0.25, 1.08, 540, 380],
+    [T.myReply - 0.02, 1.08, 540, 380],
+    [T.myReply + 0.2, 1, 540, 380],
   ];
   const k = keys.findIndex((_, i) => i === keys.length - 1 || t < keys[i + 1][0]);
   const a = keys[k], b = keys[Math.min(k + 1, keys.length - 1)];
