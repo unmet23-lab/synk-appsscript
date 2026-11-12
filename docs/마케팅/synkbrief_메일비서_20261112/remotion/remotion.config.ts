@@ -16,6 +16,8 @@ Config.setX264Preset("slow");
 Config.setPixelFormat("yuv420p");
 Config.setColorSpace("bt709");
 Config.setOverwriteOutput(true);
+// 조용한 방 편이라 AAC가 317kbps에 멈췄다(11-13 올리기 전 검사 — 기준 320) — B39 설정처럼 384k로 담는다.
+Config.setAudioBitrate("384k");
 Config.setDefaultPremountInSeconds(2);
 
 Config.setChromiumOpenGlRenderer("angle");

@@ -1,48 +1,48 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "n1",
- "text": "AI 안전 책임자도, 메일 200통 넘게 지워졌어요.",
- "show": "AI 안전 책임자도, 메일 200통 넘게 지워졌어요.",
- "dur": 3.085,
+ "text": "이 일을 겪은 사람, AI 안전 책임자였어요.",
+ "show": "이 일을 겪은 사람, AI 안전 책임자였어요.",
+ "dur": 2.792,
  "words": [
   {
-   "text": "AI",
+   "text": "이",
    "start": 0.02,
-   "end": 0.326
+   "end": 0.04
+  },
+  {
+   "text": "일을",
+   "start": 0.1,
+   "end": 0.221
+  },
+  {
+   "text": "겪은",
+   "start": 0.281,
+   "end": 0.521
+  },
+  {
+   "text": "사람,",
+   "start": 0.581,
+   "end": 0.822
+  },
+  {
+   "text": "AI",
+   "start": 1.383,
+   "end": 1.664
   },
   {
    "text": "안전",
-   "start": 0.39,
-   "end": 0.567
+   "start": 1.724,
+   "end": 1.904
   },
   {
-   "text": "책임자도,",
-   "start": 0.615,
-   "end": 1.017
-  },
-  {
-   "text": "메일",
-   "start": 1.435,
-   "end": 1.676
-  },
-  {
-   "text": "200통",
-   "start": 1.74,
-   "end": 2.045
-  },
-  {
-   "text": "넘게",
-   "start": 2.094,
-   "end": 2.303
-  },
-  {
-   "text": "지워졌어요.",
-   "start": 2.351,
-   "end": 3.085
+   "text": "책임자였어요.",
+   "start": 1.964,
+   "end": 2.792
   }
  ],
  "source": {
-  "key": "9ad25e8092e830b39f3fb6afdafcdea7",
+  "key": "4913edd78624039a7780e1f20f6245df",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -66,6 +66,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 159
+  "topPitchHz": 153
  }
 }

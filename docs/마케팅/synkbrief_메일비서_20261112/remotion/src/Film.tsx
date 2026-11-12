@@ -16,7 +16,7 @@ const sec = (s: number) => Math.round(s * FPS);
 const GREY = '#C4C4C4';
 const BUTTER = '#F5C445';
 const X = 84;
-const TOP = 340; // B38 컷 전수 검수 3: 고지 글 · 큰 글자를 안전선(269px) 안으로
+const TOP = 352; // B38 컷 전수 검수 3: 고지 글 · 큰 글자를 안전선(269px) 안으로. 11-13: 위 표시(298)와 출처 줄 사이를 띄우려 340 → 352
 
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
 const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number }> = ({ src, start, crop, rate = 1, drift = 0.012 }) => {
@@ -54,11 +54,18 @@ const Shade: React.FC = () => {
   const base = interpolate(f, [sec(S.end), sec(S.end) + 8], [0.42, 0.75], clamp);
   const cut = CUTS.find((c) => f >= sec(c.from) && f < sec(c.to));
   const k = (base + (1 - base) * on) * (cut?.shade ?? 1);
-  return <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.8) 0px, rgba(10,10,10,0.66) 440px, rgba(10,10,10,0.22) 720px, rgba(10,10,10,0) 880px)' }} />;
+  // deep = 석 줄(+출처)이라 셋째 줄이 그늘 꼬리(720px 밖)에 걸리는 줄 — 그 줄이 떠 있을 때만 그늘 꼬리를 1000px까지 늘인다(11-13 올리기 전 검사 ⑤ 흰 기본 글자 28.0초)
+  const deep = LINES.reduce((m, l) => (l.deep ? Math.max(m, interpolate(f, [sec(l.from) - 6, sec(l.from), sec(l.to), sec(l.to) + 8], [0, 1, 1, 0], clamp)) : m), 0);
+  return (
+    <>
+      <AbsoluteFill style={{ opacity: k, background: 'linear-gradient(to bottom, rgba(10,10,10,0.8) 0px, rgba(10,10,10,0.66) 440px, rgba(10,10,10,0.22) 720px, rgba(10,10,10,0) 880px)' }} />
+      {deep > 0 ? <AbsoluteFill style={{ opacity: deep, background: 'linear-gradient(to bottom, rgba(10,10,10,0) 380px, rgba(10,10,10,0.5) 610px, rgba(10,10,10,0.44) 790px, rgba(10,10,10,0) 1010px)' }} /> : null}
+    </>
+  );
 };
 
 // 큰 글자가 곧 말 — at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄만).
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; fade?: number; at?: number[]; butter?: boolean }> = ({ lines, from, to, grey, size = 92, meta, instant, fade = 3, at, butter }) => {
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
@@ -70,8 +77,8 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
   };
   return (
-    <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: '0 1px 10px rgba(0,0,0,0.45)' }}>
-      {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: 40, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18 }}>{meta}</div> : null}
+    <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: deep ? '0 0 3px rgba(0,0,0,0.55), 0 1px 12px rgba(0,0,0,0.55)' : '0 1px 10px rgba(0,0,0,0.45)' }}>
+      {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18, maxWidth: 820, wordBreak: 'keep-all', lineHeight: 1.3, whiteSpace: 'pre-line' }}>{meta}</div> : null}
       {lines.map((l, i) => (
         <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === 0 ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
@@ -79,12 +86,12 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
   );
 };
 
-// 「재연 · 상황은 각색」 · 「SYNK 브리핑」 — 위 그늘 안 큰 글자 바로 위 고정 자리
+// 「재연 · 상황은 각색」 · 「SYNK 브리핑」 — 위 그늘 안 큰 글자 바로 위 고정 자리(11-13 카본 맹검 06 「출처 줄이 위 표시 바로 밑에 다닥다닥」 — 표시는 298 · 큰 글 자리 TOP을 352로 내려 띄움. 284로 올리면 위 머리 안전선 269에 걸림)
 const Label: React.FC = () => {
   const f = useCurrentFrame();
   const end = f >= sec(S.end);
   const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : 1;
-  return <div style={{ position: 'absolute', left: X, top: 300, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · AI 비서에게 메일을 맡겼다가 생긴 실제 일' : '재연 · 인물 · 상황은 각색'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · 집 컴퓨터의 AI 비서에게 메일을 맡겼다가' : '재연 · 인물 · 상황은 각색'}</div>;
 };
 
 export const Film: React.FC = () => {
@@ -101,7 +108,7 @@ export const Film: React.FC = () => {
       {LINES.map((l, i) => {
         const next = LINES[i + 1];
         const fade = !next || next.from - l.to > 0.6 ? 8 : 3;
-        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} fade={fade} at={l.at} butter={l.butter} />;
+        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} />;
       })}
 
       <Label />
