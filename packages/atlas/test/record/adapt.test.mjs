@@ -186,6 +186,59 @@ test('답 앞의 도움 · 답 없이 본 도움은 그대로 끊고, 틀린 뒤
   assert.equal(after.n, 2, '측정 답은 두 계열의 첫 답뿐');
 });
 
+// 「첫 답」에는 판정 못 한 답 · 건너뜀도 든다(설계 정본 주인 11-12 — 다시 검수 Fable 5.2 FA1). 박자 게임(korean-rhythm)은 답하지 않은
+// 문항에 판정 못 한 답을 쓰고 곧바로 정답을 보이는데, 그 정답 보기로 끊으면 박자를 놓칠 때마다 이어서가 0이 되어 F1이 되풀이된다.
+test('판정 못 한 답 · 건너뜀 뒤에 본 정답은 「이어서 혼자 맞힌 수」를 끊지 않는다 — 그 뒤 새 문항 혼자 맞힘이 이어진다', () => {
+  for (const verdict of ['unassessed', 'skipped']) {
+    const ps = [0, 10, 20, 30].map(m =>
+      make(
+        'practice.presented',
+        presentedFields({ itemKey: `${verdict}${m}`, familyKey: `f${verdict}${m}` }),
+        m,
+      ),
+    );
+    const events = [
+      ps[0],
+      attempt(ps[0], 1, 'correct', 1),
+      ps[1],
+      attempt(ps[1], 1, 'correct', 11),
+      ps[2],
+      attempt(ps[2], 1, verdict, 21),
+      helped(ps[2], 'answer', 22),
+      ps[3],
+      attempt(ps[3], 1, 'correct', 31),
+    ];
+    assert.deepEqual(
+      fold([ps[2], attempt(ps[2], 1, verdict, 21), helped(ps[2], 'answer', 22)]).filter(
+        e => e.kind === 'help',
+      ),
+      [],
+      `${verdict} 뒤의 정답 보기는 도움 만남이 아니다`,
+    );
+    assert.equal(
+      streakOf(events).streak,
+      3,
+      `${verdict}: 혼자 맞힘 둘 → ${verdict} → 정답 보기 → 혼자 맞힘 = 3`,
+    );
+  }
+});
+
+test('판정 못 한 답 뒤 정답을 보고 같은 제시에 낸 둘째 답은 놓침(답 보기)이라 이어서를 끊는다', () => {
+  const p0 = make('practice.presented', presentedFields({ itemKey: 'u0', familyKey: 'fu0' }), 0);
+  const q = make('practice.presented', presentedFields({ itemKey: 'uq', familyKey: 'fuq' }), 10);
+  const retried = [
+    q,
+    attempt(q, 1, 'unassessed', 11),
+    helped(q, 'answer', 12),
+    attempt(q, 2, 'correct', 13),
+  ];
+  const answers = fold(retried).filter(e => e.kind === 'answer');
+  assert.equal(answers.length, 2);
+  assert.equal(answers[1].answer.answerShown, true);
+  assert.equal(answers[1].answer.assisted, true);
+  assert.equal(streakOf([p0, attempt(p0, 1, 'correct', 1), ...retried]).streak, 0);
+});
+
 // 제시 하나와 임의의 도움 · 답(판정 · 건너뜀 · 판정 못 함)을 차례로 — 사건 열과 기준이 읽을 차례(steps).
 function randomGroup(random, base) {
   const p = make('practice.presented', presentedFields({ itemKey: `r${base}` }), base);

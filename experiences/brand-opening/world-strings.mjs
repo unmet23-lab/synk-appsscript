@@ -603,12 +603,16 @@ export default {
  'practice.again':{ko:'새 문항 {n}개 더 하기',en:{one:'Try 1 more new question',other:'Try {n} more new questions'},mn:'Дахиад {n} шинэ асуулт хийх'},
  'practice.shortage':{ko:'이 항목의 새 문항은 여기까지예요. 다른 항목을 연습하거나, 새 문항이 생기면 다시 열려요.',en:'That’s all the new questions for this skill for now. Practice another skill, or come back when new ones arrive.',mn:'Энэ чадварын шинэ асуулт одоогоор ингээд дууслаа. Өөр чадвараа давтаж болно, шинэ асуулт нэмэгдвэл дахин нээгдэнэ.'},
  // 짧은 연습의 새 판(Atlas 재설계 단계 4-1, 기능 atlasNext — 리허설에서만 켠다). 이유 한 줄 · 끝난 까닭은 엔진 문장 표(Vellum)가 내고, 여기는 화면의 조작 글만.
- // 몽골어 · 영어는 초안이다 — 사용자에게 켜기 전(4-8)에 현지어 세 겹 대조를 거친다(단계4_계획 §4).
+ // 몽골어는 11-12 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · flash와 Opus 직역이 원문 뜻과 같음)을 거쳤다.
+ // Vellum 몽골어와 같이 이름에는 격 어미를 붙이지 않고 「…: 「이름」.」 꼴, 「말」은 「үг хэллэг」로 맞췄다. 마지막 겹(Fable 교정)은 4-1 화면 검수.
  'practice.unknown':{ko:'모르겠어요',en:'I don’t know',mn:'Мэдэхгүй байна'},
- 'practice.next.cue':{ko:'자꾸 놓치는 말 「{name}」 — 문제 속에서 먼저 찾아보세요.',en:'You keep missing 「{name}」 — look for it in the question first.',mn:'Та 「{name}」-г байнга алгасаж байна — эхлээд асуултаас олоорой.'},
- 'practice.next.limited':{ko:'이번 판의 새 말은 여기까지예요.',en:'That’s all the new words for this round.',mn:'Энэ удаагийн шинэ үг энд хүртэл.'},
- 'practice.next.more':{ko:'새 말 더 배우기',en:'Learn more new words',mn:'Шинэ үг нэмж сурах'},
- 'practice.next.again':{ko:'{n}문항 더 하기',en:{one:'Practise 1 more',other:'Practise {n} more'},mn:'Дахиад {n} асуулт хийх'},
+ 'practice.next.cue':{ko:'자꾸 놓치는 말 「{name}」 — 문제 속에서 먼저 찾아보세요.',en:'You keep missing 「{name}」 — look for it in the question first.',mn:'Байнга алддаг үг хэллэг: 「{name}」. Эхлээд асуулт дотроос хайж олоорой.'},
+ 'practice.next.limited':{ko:'이번 판의 새 말은 여기까지예요.',en:'That’s all the new words for this round.',mn:'Энэ удаагийн шинэ үг хэллэг үүгээр дууслаа.'},
+ 'practice.next.more':{ko:'새 말 더 배우기',en:'Learn more new words',mn:'Шинэ үг хэллэг нэмж сурах'},
+ 'practice.next.again':{ko:'{n}문항 더 하기',en:{one:'Practise 1 more',other:'Practise {n} more'},mn:'Дахиад {n} асуултад хариулах'},
+ // 새 판 판 끝의 답 칸 넷(「다시 만나 맞힘」 — 「다시」로 돌아온 문항 · 힌트를 본 문항을 맞힘)과 이 기기에 저장하지 못한 답 한 줄.
+ 'practice.next.summary':{ko:'혼자 맞힘 {right} · 다시 만나 맞힘 {again} · 틀림 {wrong} · 건너뜀 {skipped}',en:'Right on my own {right} · right when it came back {again} · wrong {wrong} · skipped {skipped}',mn:'Өөрөө зөв хариулсан {right} · дахин гарахад зөв хариулсан {again} · буруу {wrong} · алгассан {skipped}'},
+ 'practice.next.unsaved':{ko:'답 {n}개는 이 기기에 저장하지 못해 내 위치에 반영되지 않아요.',en:{one:'1 answer couldn’t be saved on this device, so it won’t count toward Where I stand.',other:'{n} answers couldn’t be saved on this device, so they won’t count toward Where I stand.'},mn:'{n} хариултыг энэ төхөөрөмжид хадгалж чадаагүй тул «Миний ахиц»-д тооцогдохгүй.'},
  'practice.home':{ko:'홈으로',en:'Back home',mn:'Нүүр хуудас руу'},
  // ── 10-22 연습 한 판의 응답(WORLD 학습자 응답 설계 §3): 끝 화면의 묻기 줄 · 「내 계정」의 「내가 남긴 응답」 ──
  // 응답 이름 넷의 영어는 처리방침 #synk-id 문장(Good / Not for me / Too much / I want more)과 같아야 한다.

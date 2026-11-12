@@ -694,6 +694,11 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
 .wpos-pictures{grid-template-columns:repeat(3,minmax(0,1fr))}
 .wpos-pictures .wpos-choice{justify-content:center;min-height:104px;padding:12px;font-size:52px;line-height:1;text-align:center}
 .wpos-pictures .wpos-choice:disabled{opacity:.42}
+/* 짧은 연습 새 판(Atlas 단계 4-1): 문항 위 이유 한 줄은 .wpos-note 그대로, 끈질긴 단위 힌트는 해설 카드와 같은 면에 불 하나 + 글(여러 줄이면 불은 첫 줄에),
+   「모르겠어요」는 보기 아래 왼쪽의 조용한 단추(누르는 자리 44px). */
+.wpos-cue{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px;margin:0;padding:12px 14px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:15px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty}
+.wpos-cue>.w-led{margin-top:.55em}
+.wpos-unknown{justify-self:start;min-height:44px}
 .wpos-run-status{min-height:20px;margin:0;font-size:13px;line-height:1.5;color:var(--w-ink-3)}
 .wpos-run-status:empty{min-height:0}
 .wpos-run-actions{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}

@@ -289,8 +289,13 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // 새 판(Atlas 단계 4-1, 기능 atlasNext)의 판 끝: 이번 답(혼자 맞힘 · 틀림 · 건너뜀) → 끝난 까닭 한 줄(ending — 그 판의 사실에서) → 틀린 문항 해설 →
  // 다음 한 걸음. 칸 견주기(지금 판 요약의 여섯 상태)는 새 판에 없어 4-4에서 칸으로 되살린다.
  // ending.kind: done(판 길이를 다 냄) · idle · capped · stubborn · limited(새 말이 이 판 한도에 걸림 — 「새 말 더 배우기」) · exhausted · none.
+ // 답 칸은 넷이다 — 혼자 맞힘(처음 본 문항의 혼자 낸 첫 답) · 다시 만나 맞힘(「다시」로 돌아온 문항 · 힌트를 본 문항을 맞힘 — 맞혔지만
+ // 내 위치의 근거는 아니다, Fable 설계 P2-5 ⑤) · 틀림(「모르겠어요」 포함) · 건너뜀. 이 기기에 저장하지 못한 답은 근거가 아니어서 맞힘 칸에
+ // 넣지 않고 따로 한 줄로 말한다(Fable 5.2 최종 F7 — 판 끝 화면이 stored: false를 읽지 않았다).
  function renderPracticeNextDone({skill,results=[],items=null,listening=false,count=5,ending=null,response=null}={}){
   const answered=results.filter(row=>!row.skipped),right=answered.filter(row=>row.verdict==='correct'&&row.independent).length;
+  const again=answered.filter(row=>row.verdict==='correct'&&!row.independent&&row.stored!==false).length;
+  const unsaved=answered.filter(row=>row.stored===false).length;
   const wrong=answered.filter(row=>['incorrect','unknown'].includes(row.verdict)).length,skipped=results.length-answered.length;
   const kind=ending?.kind||'done';
   // 끝 줄은 끝 까닭이 먼저다 — 엔진 문장(why)은 까닭이 엔진의 것(idle · capped · stubborn)일 때만, 처음 보는 문항이 바닥났거나(exhausted)
@@ -303,7 +308,8 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const misses=missedIds.map(itemId=>({itemId})).map(row=>{const item=itemOf(row.itemId);return item?`<li><span lang="ko">${posEscape(item.label||item.question||'')}</span>${explainBlock(item)}</li>`:'';}).join('');
   const next=kind==='limited'?`<button class="felt-button" type="button" data-practice-more>${posEscape(t('practice.next.more'))} <span aria-hidden="true">→</span></button>`
    :['done','idle'].includes(kind)?`<button class="felt-button" type="button" data-practice-again>${posEscape(t('practice.next.again',{n:Number.isInteger(count)&&count>0?count:5}))} <span aria-hidden="true">→</span></button>`:'';
-  return `<div class="wpos life-heading" data-practice-done data-practice-ending="${posEscape(kind)}" tabindex="-1">${poster(t(listening?'practice.doneTitle.listening':'practice.doneTitle'),t('practice.doneSummary',{right,wrong,skipped}))}${line?`<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill||{}))}</p><p class="wpos-intro" data-practice-end-line>${posEscape(line)}</p></section>`:''}${misses?`<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t('practice.misses'))}</p><ul>${misses}</ul></section>`:''}${next}${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t('position.open'))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t('practice.home'))}</button></div></div>`;
+  const lost=unsaved?`<p class="wpos-note" data-practice-unsaved role="status">${posEscape(t('practice.next.unsaved',{n:unsaved}))}</p>`:'';
+  return `<div class="wpos life-heading" data-practice-done data-practice-ending="${posEscape(kind)}" tabindex="-1">${poster(t(listening?'practice.doneTitle.listening':'practice.doneTitle'),t('practice.next.summary',{right,again,wrong,skipped}))}${lost}${line?`<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill||{}))}</p><p class="wpos-intro" data-practice-end-line>${posEscape(line)}</p></section>`:''}${misses?`<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t('practice.misses'))}</p><ul>${misses}</ul></section>`:''}${next}${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t('position.open'))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t('practice.home'))}</button></div></div>`;
  }
  // ── 시험 형식 연습(미니 모의 · world-exam-form.mjs, 10-21 ④) ──
  // 안내(줄인 판의 구성·시간·규칙) → 문항(남은 시간·번호판·듣기 허용 횟수) → 영역 사이 → 끝 한 장(영역별 맞힘·틀림·답하지 않음과 틀린 문항

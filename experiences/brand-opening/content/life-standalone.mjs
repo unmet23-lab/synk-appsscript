@@ -27855,6 +27855,8 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
   }
   function renderPracticeNextDone({ skill: skill2, results = [], items = null, listening = false, count = 5, ending = null, response = null } = {}) {
     const answered = results.filter((row) => !row.skipped), right = answered.filter((row) => row.verdict === "correct" && row.independent).length;
+    const again = answered.filter((row) => row.verdict === "correct" && !row.independent && row.stored !== false).length;
+    const unsaved = answered.filter((row) => row.stored === false).length;
     const wrong = answered.filter((row) => ["incorrect", "unknown"].includes(row.verdict)).length, skipped = results.length - answered.length;
     const kind = ending?.kind || "done";
     const engineLine = ["idle", "capped", "stubborn"].includes(kind) ? ending?.why : null;
@@ -27866,7 +27868,8 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
       return item ? `<li><span lang="ko">${posEscape(item.label || item.question || "")}</span>${explainBlock(item)}</li>` : "";
     }).join("");
     const next = kind === "limited" ? `<button class="felt-button" type="button" data-practice-more>${posEscape(t3("practice.next.more"))} <span aria-hidden="true">\u2192</span></button>` : ["done", "idle"].includes(kind) ? `<button class="felt-button" type="button" data-practice-again>${posEscape(t3("practice.next.again", { n: Number.isInteger(count) && count > 0 ? count : 5 }))} <span aria-hidden="true">\u2192</span></button>` : "";
-    return `<div class="wpos life-heading" data-practice-done data-practice-ending="${posEscape(kind)}" tabindex="-1">${poster(t3(listening ? "practice.doneTitle.listening" : "practice.doneTitle"), t3("practice.doneSummary", { right, wrong, skipped }))}${line ? `<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill2 || {}))}</p><p class="wpos-intro" data-practice-end-line>${posEscape(line)}</p></section>` : ""}${misses ? `<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t3("practice.misses"))}</p><ul>${misses}</ul></section>` : ""}${next}${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t3("position.open"))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t3("practice.home"))}</button></div></div>`;
+    const lost = unsaved ? `<p class="wpos-note" data-practice-unsaved role="status">${posEscape(t3("practice.next.unsaved", { n: unsaved }))}</p>` : "";
+    return `<div class="wpos life-heading" data-practice-done data-practice-ending="${posEscape(kind)}" tabindex="-1">${poster(t3(listening ? "practice.doneTitle.listening" : "practice.doneTitle"), t3("practice.next.summary", { right, again, wrong, skipped }))}${lost}${line ? `<section class="wpos-change"><p class="life-section-label">${posEscape(skillName(skill2 || {}))}</p><p class="wpos-intro" data-practice-end-line>${posEscape(line)}</p></section>` : ""}${misses ? `<section class="wpos-misses"><p class="wpos-evidence-title">${posEscape(t3("practice.misses"))}</p><ul>${misses}</ul></section>` : ""}${next}${renderSetResponse(response)}<div class="wpos-run-actions"><button class="quiet-button" type="button" data-practice-position>${posEscape(t3("position.open"))}</button><button class="quiet-button" type="button" data-practice-home>${posEscape(t3("practice.home"))}</button></div></div>`;
   }
   const mockClock = (ms) => {
     const total = Math.max(0, Math.ceil((Number(ms) || 0) / 1e3));

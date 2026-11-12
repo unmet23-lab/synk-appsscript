@@ -271,6 +271,38 @@ test('판 끝 줄의 엔진 문장은 끝 까닭이 엔진의 것일 때만 — 
   assert.match(done({ kind: 'idle', why: idle.line }), /다 만났어요/);
 });
 
+test('판 끝 답 칸은 넷 — 혼자 맞힘 · 다시 만나 맞힘 · 틀림 · 건너뜀의 합이 푼 수이고, 이 기기에 저장하지 못한 답은 맞힘 칸에 넣지 않고 한 줄로 말한다(계획 §7 · Fable 설계 P2-5 ⑤ · Fable 5.2 최종 F7)', () => {
+  const row = (verdict, independent, stored = true, skipped = false) => ({
+    itemId: `i.${verdict}.${independent}.${stored}.${skipped}`,
+    verdict,
+    independent,
+    stored,
+    skipped,
+  });
+  const results = [
+    row('correct', true),
+    row('correct', false), // 「다시」로 돌아온 문항 · 힌트를 본 문항을 맞힘
+    row('correct', false, false), // 저장 실패 — 근거가 아니다
+    row('incorrect', false),
+    row('unknown', false),
+    row(null, false, true, true),
+  ];
+  const html = view.renderPracticeNextDone({
+    skill: { id: 'ko.reading.x', label: '읽기' },
+    results,
+    ending: { kind: 'done' },
+  });
+  assert.match(html, /혼자 맞힘 1 · 다시 만나 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.match(html, /data-practice-unsaved[^>]*>답 1개는 이 기기에 저장하지 못해/);
+  const saved = view.renderPracticeNextDone({
+    skill: { id: 'ko.reading.x', label: '읽기' },
+    results: results.filter(r => r.stored !== false),
+    ending: { kind: 'done' },
+  });
+  assert.match(saved, /혼자 맞힘 1 · 다시 만나 맞힘 1 · 틀림 2 · 건너뜀 1/);
+  assert.doesNotMatch(saved, /data-practice-unsaved/);
+});
+
 test('처음 보는 문항이 남은 동안은 같은 항목을 잇달아 연습해도 판 길이까지 간다 — idle이면 처음 보는 문항으로 잇는다(Fable P1-1)', async () => {
   const { coach, time } = await guestCoach();
   const pool = readingSkill[1];
