@@ -201,35 +201,42 @@ test('⑯ 돌림 — 퀴즈는 개그 무대만 견주고, 이야기 편은 그 
 });
 
 test('인사 판본의 「첫 장면」은 인사 뒤 원본의 첫 장면이다 — 렌더.json 「인사초」만큼 건너 뜬다(11-12 인사 카드 검수 P1)', () => {
-  const { spawnSync } = require('node:child_process');
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '무대반복-인사-'));
+  // 가짜 영상 — 조각 [색(0~255), 초]의 차례. ffmpeg 없이 「몇 초에서 떴나」만 본다(CI의 문법 검사 작업에는 ffmpeg가 없다)
+  const 영상들 = new Map();
   const 만들기 = (이름, 조각) => {
     const 폴더 = path.join(방, 이름);
     fs.mkdirSync(폴더, { recursive: true });
     const 파일 = path.join(폴더, 'video.mp4');
-    const 입력 = 조각.flatMap(([색, 초]) => ['-f', 'lavfi', '-t', String(초), '-i', `color=c=${색}:s=180x320:r=30`]);
-    const r = spawnSync('ffmpeg', ['-v', 'error', '-y', ...입력, '-filter_complex', `${조각.map((_, i) => `[${i}:v]`).join('')}concat=n=${조각.length}:v=1[v]`, '-map', '[v]', '-pix_fmt', 'yuv420p', 파일], { windowsHide: true });
-    assert.equal(r.status, 0, String(r.stderr));
+    fs.writeFileSync(파일, 이름);
+    영상들.set(파일, 조각);
     return 파일;
   };
-  // 원본(인사 없음): 빨강 2초 → 초록 1초. 인사 판 둘: 파랑(인사 그림) 1.2초 + 같은 원본 / 파랑 1.2초 + 다른 원본(노랑 → 하양)
-  const 원본 = 만들기('원본', [['red', 2], ['green', 1]]);
-  const 인사판 = 만들기('US', [['blue', 1.2], ['red', 2], ['green', 1]]);
-  const 다른편 = 만들기('US2', [['blue', 1.2], ['yellow', 2], ['white', 1]]);
+  const read = {
+    duration: (f) => 영상들.get(f).reduce((s, [, 초]) => s + 초, 0),
+    thumb: (f, t) => { let 끝 = 0; for (const [색, 초] of 영상들.get(f)) { 끝 += 초; if (t < 끝) return Buffer.alloc(9 * 16 * 3, 색); } return Buffer.alloc(9 * 16 * 3, 영상들.get(f).at(-1)[0]); },
+  };
+  const 장면 = (f) => 반복.stageOf(f, read);
+  // 원본(인사 없음): 장면 A 2초 → 끝 장면 1초. 인사 판 둘: 인사 그림 1.2초 + 같은 원본 / 인사 그림 1.2초 + 다른 원본
+  const [인사그림, A, 끝A, B, 끝B] = [10, 90, 170, 230, 250];
+  const 원본 = 만들기('원본', [[A, 2], [끝A, 1]]);
+  const 인사판 = 만들기('US', [[인사그림, 1.2], [A, 2], [끝A, 1]]);
+  const 다른편 = 만들기('US2', [[인사그림, 1.2], [B, 2], [끝B, 1]]);
   const 기록 = (파일, 덧) => fs.writeFileSync(path.join(path.dirname(파일), '렌더.json'), JSON.stringify({ 영상: 'docs/x/video.mp4', ...덧 }));
   // 렌더 기록이 없으면(또는 인사초가 없으면) 전처럼 0.3초 — 인사 그림이 잡힌다
   assert.equal(반복.greetSec(인사판), 0);
-  assert.equal(반복.stageVerdict(반복.stageOf(인사판), 반복.stageOf(원본)).level, '확인할 것', '고치기 전 꼴: 같은 무대인데 첫 장면이 달라 고칠 것이 못 뜬다');
+  assert.equal(반복.stageVerdict(장면(인사판), 장면(원본)).level, '확인할 것', '고치기 전 꼴: 같은 무대인데 첫 장면이 달라 고칠 것이 못 뜬다');
+  assert.equal(반복.stageVerdict(장면(인사판), 장면(다른편)).level, '확인할 것', '고치기 전 꼴: 다른 원본인데 인사 그림 때문에 첫 장면이 같다');
   기록(인사판, { 인사초: 1.2 });
   기록(다른편, { 인사초: 1.2 });
   assert.equal(반복.greetSec(인사판), 1.2);
-  assert.equal(반복.stageOf(인사판).greet, 1.2);
+  assert.equal(장면(인사판).greet, 1.2);
   // ⓐ 인사 판 ↔ 인사 없는 같은 무대: 첫 · 끝이 다 같아 고칠 것
-  const 같은 = 반복.stageVerdict(반복.stageOf(인사판), 반복.stageOf(원본));
+  const 같은 = 반복.stageVerdict(장면(인사판), 장면(원본));
   assert.equal(같은.level, '고칠 것');
   assert.ok(같은.first < 반복.STAGE_SAME);
   // ⓑ 같은 인사 그림으로 시작하는 다른 원본 둘: 첫 장면이 다르다 — 인사 그림 때문에 묶이지 않는다
-  const 다른 = 반복.stageVerdict(반복.stageOf(인사판), 반복.stageOf(다른편));
+  const 다른 = 반복.stageVerdict(장면(인사판), 장면(다른편));
   assert.equal(다른.level, null);
   assert.ok(다른.first > 반복.STAGE_SAME);
   // 다른 영상의 렌더 기록 · 범위 밖 값은 믿지 않는다

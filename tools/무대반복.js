@@ -161,10 +161,11 @@ function greetSec(file) {
 // 영상 하나 → { dur, first, last } (첫 · 끝 축소판)
 // 「첫 장면」은 인사 뒤 원본의 첫 장면이다 — 인사 판본을 0.3초에서 뜨면 인사 그림이 잡혀, 인사 없는 지난 편과는 같은 무대여도 늘 다르고
 // (새는 쪽) 같은 계정의 인사 판 둘은 원본이 달라도 늘 같다(헛막음 — 11-12 Fable 5.2 인사 카드 검수 P1).
-function stageOf(file) {
-  const dur = duration(file);
+// read = { duration, thumb } — 시험이 ffmpeg 없이 뜨는 자리(초)를 볼 때 바꿔 넣는다
+function stageOf(file, read = { duration, thumb }) {
+  const dur = read.duration(file);
   const greet = greetSec(file);
-  return { dur, first: thumb(file, Math.min(greet + EDGE, Math.max(0, dur - EDGE))), last: thumb(file, dur - EDGE), ...(greet ? { greet } : {}) };
+  return { dur, first: read.thumb(file, Math.min(greet + EDGE, Math.max(0, dur - EDGE))), last: read.thumb(file, dur - EDGE), ...(greet ? { greet } : {}) };
 }
 
 function ocrFolder(dir) {
