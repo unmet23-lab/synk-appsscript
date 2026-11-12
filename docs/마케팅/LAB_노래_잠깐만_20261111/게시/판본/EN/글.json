@@ -193,8 +193,8 @@
     {
       "id": "say",
       "칸": "진행",
-      "글": "Your turn — sing it!",
-      "원문": "네 차례 — 불러 봐!",
+      "글": "Your turn — say it!",
+      "원문": "네 차례 — 말해 봐!",
       "초": [
         13.73,
         16.08
@@ -231,8 +231,8 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "잠깐만 means Wait a sec — sing along 🎵 #learnkorean",
-      "원문": "잠깐만는 잠깐만라는 뜻 — 따라 불러 🎵"
+      "글": "잠깐만 means “wait a sec” — sing along 🎵 #learnkorean",
+      "원문": "잠깐만는 「잠깐만」라는 뜻 — 따라 불러 🎵"
     },
     {
       "id": "게시글.youtube.본문.1",

@@ -30,7 +30,7 @@
     {
       "id": "bridge",
       "칸": "머리",
-      "글": "Starving? Here's what Koreans say…",
+      "글": "Starving? Here’s what Koreans say…",
       "원문": "배고파 죽겠어? 한국 사람은 이렇게 말해…",
       "초": [
         0,
@@ -190,8 +190,8 @@
     {
       "id": "say",
       "칸": "진행",
-      "글": "Your turn — sing it!",
-      "원문": "네 차례 — 불러 봐!",
+      "글": "Your turn — say it!",
+      "원문": "네 차례 — 말해 봐!",
       "초": [
         13.5,
         15.9
@@ -228,8 +228,8 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "배고파 means I’m hungry — sing along 🎵 #learnkorean",
-      "원문": "배고파는 배고파라는 뜻 — 따라 불러 🎵"
+      "글": "배고파 means “I’m hungry” — sing along 🎵 #learnkorean",
+      "원문": "배고파는 「배고파」라는 뜻 — 따라 불러 🎵"
     },
     {
       "id": "게시글.youtube.본문.1",

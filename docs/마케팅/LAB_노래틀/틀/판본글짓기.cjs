@@ -67,14 +67,14 @@ const 나라 = {
     tags: '#learnkorean #koreanlanguage #learnkoreanfast', pin: 'Who would you say {w} to first? 👇',
     K: { real: '말하는 빠르기!', clap: '박자에 맞춰 손뼉!', say: '네 차례 — 말해 봐!', end: '너희 말로는 {qk}를 어떻게 말하겠어?', title: '{w}({qk}), 불러서 배우기 🎵',
       cap1: '귀에 붙는 방법으로 {w}({r})를 배워 — {qk}라는 뜻.', cap2: '친구 · 가족끼리 쓰는 반말. 존댓말: {p}({pr}).', cap3: '노래가 멈추면 손뼉, 그다음 네 차례!', pin: '{w}를 누구에게 제일 먼저 말할 거야? 👇' } },
-  EN: { lang: 'en', 문자: 'latin', 따옴: ['“', '”'], clap: 'Clap to the beat!', say: 'Your turn — sing it!', real: 'Speaking speed!',
+  EN: { lang: 'en', 문자: 'latin', 따옴: ['“', '”'], clap: 'Clap to the beat!', say: 'Your turn — say it!', real: 'Speaking speed!',
     end: 'In your language, how do you say {q}?',
-    title: '{w} means {m} — sing along 🎵 #learnkorean',
+    title: '{w} means {q} — sing along 🎵 #learnkorean',
     cap1: 'Hear it, clap it, say it: {w} ({r}) = {q}.',
     cap2: 'This is casual Korean. To be polite, add 요: {p} ({pr}).',
     cap3: 'Say it on the beat when it’s your turn, and you’ve got it!',
     tags: '#learnkorean #koreanphrases #studykorean', pin: 'Comment {w} if you sang along 👇',
-    K: { real: '말하는 빠르기!', clap: '박자에 맞춰 손뼉!', say: '네 차례 — 불러 봐!', end: '너희 말로는 {qk}를 어떻게 말해?', cap3: '네 차례에 박에 맞춰 말하면 다 배운 거야!', title: '{w}는 {mk}라는 뜻 — 따라 불러 🎵',
+    K: { real: '말하는 빠르기!', clap: '박자에 맞춰 손뼉!', say: '네 차례 — 말해 봐!', end: '너희 말로는 {qk}를 어떻게 말해?', cap3: '네 차례에 박에 맞춰 말하면 다 배운 거야!', title: '{w}는 {qk}라는 뜻 — 따라 불러 🎵',
       cap1: '듣고, 손뼉 치고, 말해: {w}({r}) = {qk}.', cap2: '반말이다. 공손하게 하려면 요를 붙여: {p}({pr}).', cap3: '빈 박에 말하면 다 배운 거야!', pin: '따라 불렀으면 댓글에 {w} 👇' } },
   PH: { lang: 'fil', 문자: 'latin', 따옴: ['“', '”'], clap: 'Pumalakpak sa beat!', say: 'Ikaw naman — sabihin mo!', real: 'Normal na pagsasalita!',
     end: 'Ikaw, paano mo sinasabi ang {q}?',
@@ -168,7 +168,7 @@ const 나라 = {
   IN: { lang: 'hi', 문자: 'hi', 따옴: ['“', '”'], clap: 'ताल पर ताली बजाओ!', say: 'अब तुम्हारी बारी — बोलो!', real: 'बोलने की गति!',
     end: 'तुम {q} कैसे बोलते हो?',
     title: '{w} = {m} 🎵 गाकर सीखो #learnkorean',
-    cap1: 'एक कोरियन शब्द, हर अक्षर पर एक ताल: {w} ({r}) का मतलब है {q}।',
+    cap1: 'एक कोरियन शब्द, हर अक्षर पर एक बीट: {w} ({r}) का मतलब है {q}।',
     cap2: 'यह दोस्तों से बोलने का तरीका है। आदर से कहना हो तो: {p} ({pr})।',
     cap3: 'गाना रुके तो ताली बजाओ, फिर साथ में गाओ!',
     tags: '#learnkorean #koreanlanguage #कोरियन', pin: 'तुम सबसे पहले किससे {w} कहोगे? 👇',
@@ -176,7 +176,7 @@ const 나라 = {
   NP: { lang: 'ne', 문자: 'ne', 따옴: ['“', '”'], clap: 'तालमा ताली बजाऊ!', say: 'अब तिम्रो पालो — भन!', real: 'बोल्ने गति!',
     end: 'तिमी {q} कसरी भन्छौ?',
     title: '{w} = {m} 🎵 गाएर सिक',
-    cap1: 'एउटा कोरियन शब्द, हरेक अक्षरमा एक ताल: {w} ({r}) को अर्थ {q} हो।',
+    cap1: 'एउटा कोरियन शब्द, हरेक अक्षरमा एक बिट: {w} ({r}) को अर्थ {q} हो।',
     cap2: 'यो साथीहरूबीच बोलिने शब्द हो। आदरपूर्वक भन्दा: {p} ({pr})।',
     cap3: 'गीत रोकिँदा ताली बजाऊ, अनि सँगै गाऊ!',
     tags: '#कोरियनभाषा #कोरियन #learnkorean', pin: 'तिमी सबैभन्दा पहिले कसलाई {w} भन्छौ? 👇',
@@ -264,6 +264,14 @@ const 키들 = 값('--키') ? 값('--키').split(',').map((k) => k.trim().toUppe
 
 const 채움 = (틀, 값들) => 틀.replace(/\{(\w+)\}/g, (_m, k) => { if (!(k in 값들)) throw new Error(`틀 칸 {${k}} 값이 없다`); return 값들[k]; })
   .replace(/([?!？！])([”」»"])[.。]/gu, '$1$2'); // 따옴표 안이 ?! 로 끝나면 뒤 마침표를 겹치지 않는다(「“really?!”.」 — 카본 11-12)
+// 제목에 들어가는 뜻({m}) — 끝 부호는 떼되, 뜻이 물음이면 물음표 하나는 남긴다(스페인어는 「¿…?」 짝). 부호를 다 떼면 「Betul ke」 · 「真的吗」 ·
+// 「Правда」처럼 물음 꼴 낱말이 부호 없이 남아 틀린 글처럼 보이거나 다른 뜻(「진실」)으로 읽힌다(11-12 Fable 5.2 현지어 층)
+function 제목뜻(mean) {
+  const 끝 = (mean.match(/[!！?？。.]+$/u) || [''])[0];
+  const 맨 = mean.slice(0, mean.length - 끝.length).replace(/^[¡¿]/, '');
+  if (!/[?？]/.test(끝)) return 맨;
+  return `${mean.startsWith('¿') ? '¿' : ''}${맨}${끝.includes('？') ? '？' : '?'}`;
+}
 function 읽기(낱말, 문자) {
   const r = 표기.발음줄(낱말, 문자);
   return { 줄: 문자 === 'latin' || r.문자 === 'latin' ? 표기.발음줄(낱말, 'latin', { 음절: true }).음절.join('-') + (/[?!]$/.test(낱말) ? '' : '') : r.줄, 문자: r.문자, 금칙: r.금칙 };
@@ -281,7 +289,7 @@ for (const 키 of 키들) {
   const read = rd.음절;
   const r = 읽기(낱말, n.문자);
   const pr = 읽기(입력.존댓말.replace(/[?!]/g, ''), n.문자);
-  const v = { w: 낱말, r: r.줄, m: s.mean.replace(/[!！?？。.]+$/u, '').replace(/^[¡¿]/, ''), q: `${n.따옴[0]}${s.qm}${n.따옴[1]}`,
+  const v = { w: 낱말, r: r.줄, m: 제목뜻(s.mean), q: `${n.따옴[0]}${s.qm}${n.따옴[1]}`,
     p: 입력.존댓말.replace(/[?!]/g, ''), pr: pr.줄 }; // 게시글 속 존댓말 꼴은 물음표 없이(스페인어 「¿」 규칙 — 「진짜요」 자체가 꼴)
   const vk = { w: 낱말, r: r.줄, mk: 입력.뜻K, qk: `「${입력.뜻K}」`, p: 입력.존댓말.replace(/[?!]/g, ''), pr: pr.줄 };
   const 판본 = {

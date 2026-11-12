@@ -163,8 +163,8 @@
     {
       "id": "say",
       "칸": "진행",
-      "글": "Your turn — sing it!",
-      "원문": "네 차례 — 불러 봐!",
+      "글": "Your turn — say it!",
+      "원문": "네 차례 — 말해 봐!",
       "초": [
         10.19,
         12.54
@@ -201,8 +201,8 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "진짜 means Really — sing along 🎵 #learnkorean",
-      "원문": "진짜는 진짜?!라는 뜻 — 따라 불러 🎵"
+      "글": "진짜 means “really?!” — sing along 🎵 #learnkorean",
+      "원문": "진짜는 「진짜?!」라는 뜻 — 따라 불러 🎵"
     },
     {
       "id": "게시글.youtube.본문.1",

@@ -1,6 +1,6 @@
 {
  "lang": "en",
- "bridge": "Starving? Here's what Koreans say…",
+ "bridge": "Starving? Here’s what Koreans say…",
  "mean": "I’m hungry!",
  "read": [
   "bae",
@@ -8,14 +8,14 @@
   "pa"
  ],
  "clap": "Clap to the beat!",
- "say": "Your turn — sing it!",
+ "say": "Your turn — say it!",
  "real": "Speaking speed!",
  "end": "In your language, how do you say “I’m hungry”?",
  "_원문": {
   "bridge": "배고파 죽겠어? 한국 사람은 이렇게 말해…",
   "mean": "배고파!",
   "clap": "박자에 맞춰 손뼉!",
-  "say": "네 차례 — 불러 봐!",
+  "say": "네 차례 — 말해 봐!",
   "real": "말하는 빠르기!",
   "end": "너희 말로는 「배고파」를 어떻게 말해?"
  },
