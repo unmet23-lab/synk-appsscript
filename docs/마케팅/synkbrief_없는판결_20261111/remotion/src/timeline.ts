@@ -52,6 +52,7 @@ export const CUTS: CutT[] = [
 ];
 
 // 큰 글자 = 말. grey = 변호인 · 의뢰인(판사와 해설은 흰). at = 줄마다 뜨는 초(말하는 때).
+// v14(11-12 15시 회차 · GPT 대체 맹검 04 기각): 해설 세 줄 사이 0.1초 틈에 글 없이 위 그늘만 남던 자리를 없앤다 — 앞 줄 끝 = 다음 줄 시작(교차해 바뀜).
 export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; at?: number[]; lead?: boolean }[] = [
   { lines: ['변호인'], from: 0.6, to: 1.3, size: 85, instant: true },
   { lines: ['의견서에 쓰신 판결들,', '어디서 찾으셨습니까?'], from: 1.6, to: 4.35, size: 80, at: [1.6, 3.1] },
@@ -64,8 +65,8 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   { lines: ['출처가 어딥니까?'], from: 27.7, to: 29.5, size: 85 },
   { lines: ['변호사님…?'], from: 32.6, to: 33.9, grey: true, size: 85 },
   { lines: ['…AI가,', '찾아 줬습니다'], from: 36.5, to: 40.9, grey: true, size: 96, at: [36.5, 39.1] },
-  { lines: ['설문에 답한 판사 셋 중 둘이,', '가짜 판례가 적힌 서류를 받아 봤대요'], from: 46.3, to: 50.1, size: 57, meta: '법원행정처 설문 · 법관 360명 응답 · 2026년 11월', at: [46.3, 47.8] },
-  { lines: ['AI는 없는 판결에도', '번호까지 붙여 줘요'], from: 50.2, to: 52.4, size: 82, at: [50.2, 51.1] },
+  { lines: ['설문에 답한 판사 셋 중 둘이,', '가짜 판례가 적힌 서류를 받아 봤대요'], from: 46.3, to: 50.2, size: 57, meta: '법원행정처 설문 · 법관 360명 응답 · 2026년 11월', at: [46.3, 47.8] },
+  { lines: ['AI는 없는 판결에도', '번호까지 붙여 줘요'], from: 50.2, to: 52.5, size: 82, at: [50.2, 51.1] },
   { lines: ['근거를 대면,', '그 번호부터 직접 찾아보세요'], from: 52.5, to: 55.3, size: 76, meta: '판결은 대법원 사법정보공개포털 「허위 사건번호 확인」', at: [52.5, 53.3] },
 ];
 
