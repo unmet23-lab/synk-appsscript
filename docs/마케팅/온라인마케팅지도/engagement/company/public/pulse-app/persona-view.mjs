@@ -1,4 +1,4 @@
-import {esc} from './api.mjs';
+import {esc,day} from './api.mjs';
 import {t,k,locale} from './i18n.mjs';
 import {arrow} from './film-home.mjs';
 
@@ -29,6 +29,8 @@ const PURPOSE=Object.freeze({identity:k('출연하실 분의 사진 보내기'),
 const ACCEPT='image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif';
 // 값: 한국어는 만 원으로 떨어지면 「30만원」, 아니면 「395,500원」. 다른 언어는 원화 그대로 「KRW 300,000」(결제 통화를 바꾸지 않는다). 한국어 꼴은 값 포맷터다.
 const won=value=>!Number.isSafeInteger(value)?'':locale()!=='ko'?`KRW ${value.toLocaleString('en-US')}`:value&&value%10000===0?`${value/10000}만원`:`${value.toLocaleString('ko-KR')}원`; // i18n-skip
+// 90일 시계(판 4 설계 11-6)의 날짜: 서버 ISO 순간 → 한국 날짜 → 손님 언어 날짜(api.mjs day).
+const dateOf=value=>{const at=Date.parse(value);return Number.isFinite(at)?day(new Date(at+9*3600000).toISOString().slice(0,10)):'';};
 // 다시 쓰기 방(판 4 — 서버 mode 'reuse')의 인물은 브랜드가 보관한 「내 모델」이다.
 const nameLine=m=>m.mode==='reuse'?(m.name?t('내 모델 「{name}」',{name:m.name}):t('내 모델의 모델')):m.name?t('맞춤 인물 「{name}」',{name:m.name}):t('맞춤 인물');
 
@@ -42,7 +44,9 @@ export function personaModel(p){
   return {id:v.id,mode:reuse?'reuse':'origin',kind:v.kind==='real'?'real':'virtual',status:String(v.status||''),step:!reuse&&Number.isFinite(v.step)?v.step:null,turn:String(v.turn||''),card,name:v.name||'',why:v.why||'',
     quote:v.quote?{price:won(v.quote.price),days:v.quote.days,revisions:v.quote.revisions,scope:v.quote.scope||''}:null,
     number:v.revision?.number||null,reference:v.revision?.reference||null,motion:v.revision?.motion||null,usage:v.usage||null,awaiting:v.awaiting||null,
-    canAddSources:!!v.canAddSources,sources:{identity:Number(sources.identity)||0,mood:Number(sources.mood)||0,count:Array.isArray(sources.files)?sources.files.length:0}};
+    canAddSources:!!v.canAddSources,sources:{identity:Number(sources.identity)||0,mood:Number(sources.mood)||0,count:Array.isArray(sources.files)?sources.files.length:0},
+    // 손님 차례에서 멈춘 카드의 지우는 날(서버가 원 프로젝트 · 제작 신호 없음 · 손님 차례일 때만 싣는다).
+    deleteAt:typeof v.deleteAt==='string'&&Number.isFinite(Date.parse(v.deleteAt))?v.deleteAt:''};
 }
 // 왼쪽 단의 「지금 차례」 글: 인물 카드가 있고 영상 쪽이 손님 차례가 아닐 때 이 글이 방의 글을 대신한다(film-views roomView). 제목은 그리는 자리에서 옮긴다.
 export function personaCopy(m){const c=CARD[m?.card];if(!c)return null;return {turn:'you',title:c.title,text:m.card==='materials'&&m.why?m.why:t(c.text),confirm:m.mode==='reuse'?'':PERSONA_CONFIRM_OF[m.card]||''};}
@@ -78,8 +82,16 @@ function kicker(m){
 export function personaCard(m,{main=false}={}){
   const c=CARD[m?.card];if(!c)return '';
   const head=main?'':`<p class="sx-small sx-persona-kicker">${kicker(m)}</p><h2 class="sx-serif">${esc(t(c.title))}</h2><p class="sx-body">${esc(m.card==='materials'&&m.why?m.why:t(c.text))}</p>`;
-  return `<section class="sx-persona" data-room-in data-persona-card="${esc(m.card)}" aria-label="${esc(nameLine(m))}">${head}${body(m)}${act(m)}</section>`;
+  return `<section class="sx-persona" data-room-in data-persona-card="${esc(m.card)}" aria-label="${esc(nameLine(m))}">${head}${body(m)}${act(m)}${clockLine(m)}</section>`;
 }
+// 손님 차례 카드 끝의 작은 한 줄(설계 11-6 · 설계 검토 P2): 의뢰서 동의 줄 「제작으로 이어지지 않으면 90일 뒤 지워요」의 날짜.
+// 서버는 그 한국 날짜가 끝날 때(23:59:59.999)에 지운다 — 한국어 화면은 그 날짜까지, 다른 언어 화면은 하루 앞 날짜까지로 보인다(손님 시간대가 어디든 그 날 안에는
+// 지우지 않게, 화면 최종 검수 P1). 「{날짜}에 지워요 · 지웠어요」 줄은 지우는 날 그대로다.
+const byDate=deleteAt=>dateOf(locale()==='ko'?deleteAt:new Date(Date.parse(deleteAt)-86400000).toISOString());
+const clockLine=m=>m?.deleteAt?`<p class="sx-small sx-persona-clock">${esc(t('{date}까지 진행이 없으면 보내 주신 사진과 인물을 지워요.',{date:byDate(m.deleteAt)}))}</p>`:'';
+// 90일 시계로 지운 뒤(설계 검토 P2): 서버는 지운 날만 준다 — 인물 이름 · 그림 · 단계는 싣지 않는다. 이 방에는 인물 사진 올릴 자리가 없으니(인물이 없다)
+// 다시 맡기는 길은 담당자에게 묻기 하나로 안내한다(의뢰서를 고칠 수 있는지는 의뢰 상태마다 달라 담당자가 정한다 — 화면 검수 A1).
+export const personaRemovedLine=removed=>removed?.at?`<section class="sx-persona is-line" data-room-in data-persona-removed aria-label="${esc(t('맞춤 인물'))}"><p class="sx-small"><b>${esc(t('맞춤 인물'))}</b> · ${esc(t('{date}에 90일 동안 진행이 없어 보내 주신 사진과 인물을 지웠어요. 다시 맡기시려면 담당자에게 알려 주세요.',{date:dateOf(removed.at)}))} <button type="button" class="sx-quiet" data-room-do="journal">${esc(t('담당자에게 묻기'))}</button></p></section>`:'';
 // 저희 차례 · 끝난 인물의 작은 한 줄. 사진을 더 받는 동안(접수 · 검토)에는 사진 보내기를 함께 둔다(프로젝트 길 의뢰서는 사진을 여기서 처음 보낸다).
 export function personaLine(m){
   if(!m)return '';

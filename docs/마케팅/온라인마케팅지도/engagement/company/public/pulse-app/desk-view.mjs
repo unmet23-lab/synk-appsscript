@@ -52,6 +52,20 @@ const P_KEEP={once:'이번 광고만',reuse:'다음 광고에도'},P_RELATION={s
 const P_USAGE=[['brand','브랜드',80],['product','제품',120],['purpose','광고 목적',200,true],['media','매체',200,true],['regions','지역',120],['period','기간',120,true],['fee','비용',120],['schedule','일정',120],['note','메모',600]];
 const P_ACTION={request_materials:['자료 더 요청',[['why','손님에게 보일 이유 한 줄',300,true]]],ask_rights:['당사자 동의 확인으로',[['why','손님에게 보일 이유 한 줄',300,true]]],start_review:['검토 시작',[]],send_quote:['견적 · 범위 보내기',[]],publish_reference:['기준 얼굴 보내기',[]],publish_motion:['동작 시안 보내기',[]],withdraw:['요청 거두기',[['why','손님에게 보일 이유 한 줄',300,true]]],retire:['사용 마침',[]]};
 function personaDesk(list,canEdit){return (list||[]).map(p=>personaOne(p,canEdit&&p.canEdit!==false)).join('');}
+// 90일 시계(판 4 설계 11-6): 제작으로 이어지지 않은 프로젝트의 브랜드 없는 인물은 마지막 움직임에서 90일 뒤 지운다 — 14일 전에 담당자 알림(예고)이 가고, 예고가 나간 인물만 지운다.
+// 지운 뒤에는 그 묘비 날짜 한 줄만 남는다(손님 방도 같은 날짜를 본다). 날짜는 한국 날짜.
+const kstDayOf=value=>{const ms=Date.parse(value);return Number.isFinite(ms)?new Date(ms+9*3600000).toISOString().slice(0,10):'';};
+function personaClock(p){
+  const s=p.stopped;if(!s)return '';
+  if(s.unclear)return '<p class="desk-at">이 인물의 지우는 날을 셀 수 없어요 — 프로젝트 날짜를 읽지 못해 지우지 않고 두어요. 관리자에게 알려 주세요.</p>';
+  // 90일 정리된 의뢰(지운 의뢰)에 남은 인물 — 정리 뒤 귀속을 취소한 인물 등. 그 프로젝트는 보관 상태라 기록을 남기려면 먼저 보관을 풀어야 하고(풀기 · 기록은 날을 옮긴다),
+  // 원 프로젝트가 브랜드에 연결돼 있으면 브랜드 관리자의 보관으로도 남는다(화면 최종 검수 P2 · 서버 끝 판 검수 A1).
+  if(s.retired)return `<p class="desk-sum desk-persona-clock"><i class="led is-wait"></i> 정리된 의뢰의 인물이에요 — ${s.noticed?'지우기 예고를 보냈어요 · ':''}<b>${esc(kstDayOf(s.deleteAt))}</b>에 이 인물과 손님 사진을 지워요. 이어 가려면 그 전에 이 프로젝트의 보관을 풀고 기록을 남기거나, 브랜드 관리자가 「내 모델」에서 보관을 정해야 해요.</p>`;
+  // 예고는 지우는 날 14일 전에 나가므로 아직 90일이 차지 않았다 — 과거형으로 「90일 동안 없었어요」라 쓰지 않고 마지막 움직임 날을 적는다(화면 검수 A4).
+  return s.noticed?`<p class="desk-sum desk-persona-clock"><i class="led is-wait"></i> 지우기 예고를 보냈어요 — <b>${esc(kstDayOf(s.deleteAt))}</b>에 이 인물과 손님 사진을 지워요(제작으로 이어지지 않았고 ${esc(kstDayOf(s.lastAt))} 뒤로 진행이 없어요). 이어 가려면 이 프로젝트에 기록을 남겨 주세요.</p>`
+    :`<p class="desk-at desk-persona-clock">이 프로젝트가 ${esc(kstDayOf(s.deleteAt))}까지 움직이지 않으면 이 인물과 손님 사진을 지워요(제작으로 이어지지 않은 프로젝트). 기록을 남기면 그날부터 다시 90일이고, 시안 · 최종본이나 마감 기록이 있으면 지우지 않아요.</p>`;
+}
+const personaRemoved=r=>r?`<section class="desk-persona" data-persona-removed><h2 class="desk-h">맞춤 인물${r.name?` · ${esc(r.name)}`:''} · 지움</h2><p class="desk-at">${esc(kstDayOf(r.at))}에 지웠어요 — 제작으로 이어지지 않은 채 90일 동안 진행이 없었어요. 손님이 다시 맡기려면 의뢰서에서 맞춤 인물을 다시 요청하고 사진을 다시 보내야 해요.</p></section>`:'';
 function personaOne(p,canEdit){
   const en=!!p.locale&&p.locale!=='ko',input=(name,label,max,{area=false,required=false,value='',type='text',attrs=''}={})=>`<label><span>${esc(label)}</span>${area?`<textarea name="${name}" rows="2" maxlength="${max}" ${required?'required':''}>${esc(value)}</textarea>`:`<input type="${type}" name="${name}" value="${esc(value)}" ${type==='text'?`maxlength="${max}"`:''} ${required?'required':''} ${attrs}>`}</label>${en&&['why','scope','note','displayName',...P_USAGE.map(([key])=>key)].includes(name)&&!attrs.includes('data-no-tr')?`<label><span>${esc(label)} · 손님에게 보일 영어</span>${area?`<textarea name="${name}Tr" rows="2" maxlength="${max*2}" lang="en"></textarea>`:`<input name="${name}Tr" maxlength="${max*2}" lang="en">`}</label>`:''}`;
   const form=(action,inner,label,{key=action,main=false}={})=>canEdit?`<form class="desk-persona-form" data-form="desk-persona" data-id="${esc(p.id)}:${esc(key)}" data-persona="${esc(p.id)}" data-persona-action="${action}" data-revision="${p.revision}">${inner}<button type="submit" class="${main?'btn-main':'btn-line'}">${esc(label)}</button></form>`:'';
@@ -81,7 +95,7 @@ function personaOne(p,canEdit){
   const unnamed=canEdit&&!p.displayName&&Number(p.step)>=4&&!['withdrawn','retired','deleting','deleted'].includes(p.status);
   return `<section class="desk-persona" data-persona-id="${esc(p.id)}"><h2 class="desk-h">맞춤 인물 · ${p.kind==='real'?'실제 인물':'새 가상 인물'}${p.displayName?` · ${esc(p.displayName)}`:''} · ${esc(P_STATUS[p.status]||p.status)}${p.step?` <span class="mono">${p.step}/7</span>`:''}</h2>
     <p class="desk-sum"><i class="led ${['quote_review','reference_review','motion_review','needs_materials'].includes(p.status)||p.status==='ready'&&usage&&!p.usageDone?'is-wait':p.usageDone||p.status==='retired'?'is-ok':'is-wait'}"></i> ${esc(p.next)}</p>
-    ${p.why?`<p class="desk-at">손님에게 보이는 이유: ${esc(p.why)}</p>`:''}${unnamed?'<p class="desk-at">손님에게 보일 이름을 아직 정하지 않았어요 — 손님 화면에는 「이름 없는 모델」 · 「내 모델의 모델」로 보여요. 아래 「이름 · 내부 메모」에서 정해 주세요.</p>':''}
+    ${personaClock(p)}${p.why?`<p class="desk-at">손님에게 보이는 이유: ${esc(p.why)}</p>`:''}${unnamed?'<p class="desk-at">손님에게 보일 이름을 아직 정하지 않았어요 — 손님 화면에는 「이름 없는 모델」 · 「내 모델의 모델」로 보여요. 아래 「이름 · 내부 메모」에서 정해 주세요.</p>':''}
     ${asked.length?`<dl class="kv">${asked.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`:''}
     <h3 class="desk-h">손님 사진 <span class="mono">${p.sources.length}</span></h3>${p.sources.length?`<div class="contact is-wide desk-persona-media">${p.sources.map(item=>`<figure>${media(item)}<figcaption>${esc(P_PURPOSE[item.purpose]||item.purpose)} · ${esc(item.fileName)}</figcaption></figure>`).join('')}</div>`:'<p class="desk-at">아직 없어요. 손님은 고객 방 인물 칸에서 보낼 수 있어요.</p>'}
     ${p.quote?`<h3 class="desk-h">견적</h3><p class="desk-sum">${esc(won(p.quote.price))} · ${p.quote.days}일 · 수정 ${p.quote.revisions}회 · ${esc(mailAt(p.quote.at))}</p><p>${esc(p.quote.scope)}</p>`:''}
@@ -137,7 +151,7 @@ export function deskView(r,{bar=true,top=''}={}){
         <dl class="kv">${r.brief.map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
         <h2 class="desk-h">받은 자료</h2><div class="contact is-wide">${r.files.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}${file.size?`<small>${esc(file.size)}</small>`:''}</figcaption></figure>`).join('')}</div>
         ${r.staffFiles?.length?`<h2 class="desk-h">저희가 올린 그림</h2><div class="contact is-wide">${r.staffFiles.map(file=>`<figure><img src="${esc(file.src)}" alt=""><figcaption>${esc(file.label)}</figcaption></figure>`).join('')}</div>`:''}
-        ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}${personaDesk(r.personas,r.canEdit!==false)}${translationBlock(r.translation,r.canEdit!==false)}
+        ${r.attachments?.length?`<h2 class="desk-h">내려받는 자료</h2><ul class="desk-files">${r.attachments.map(file=>`<li><a href="${esc(file.url)}" download>${esc(file.label)}</a></li>`).join('')}</ul>`:''}${personaDesk(r.personas,r.canEdit!==false)}${personaRemoved(r.personaRemoved)}${translationBlock(r.translation,r.canEdit!==false)}
       </div>
       <aside class="desk-side">
         <section><h2>자동 점검</h2><ul class="checks">${r.checks.map(item=>`<li><i class="led ${item.ok?'is-ok':'is-wait'}"></i><div><b>${esc(item.label)}</b>${item.note?`<small>${esc(item.note)}</small>`:''}</div></li>`).join('')}</ul></section>

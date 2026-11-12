@@ -220,7 +220,9 @@ test('보관 규칙 화면 최종 검수 F1 ~ F3(11-11): 의뢰서 인물 안내
   // F1: 「의뢰 기록을 정리할 때 함께 지움」은 그 정리(90일)가 도는 공개 의뢰서(ctx.photos)에만 — 담당자가 만든 프로젝트 · 확인 뒤 멈춘 의뢰의 인물은 기록과 함께 남는다.
   const flow=read('request-flow.mjs');
   assert.match(flow,/t\('사진과 만들어 드린 인물은 이 의뢰에만 쓰고, 이 의뢰의 기록과 함께 둬요\. 지우기를 원하시면 담당자에게 알려 주세요\.'\)/);
-  assert.match(flow,/\$\{ctx\.photos\?` \$\{esc\(t\('의뢰가 진행되지 않아 의뢰 기록을 지울 때는 사진과 인물도 함께 지워요\.'\)\)\}`:''\}/,'정리 때 함께 지움은 공개 의뢰서에만');
+  // 90일 시계(11-12, 판 4 설계 11-6)부터는 두 의뢰서 공통 문장 하나 — 공개 의뢰서에만 붙던 「의뢰 기록을 지울 때 함께」는 방 안 의뢰서에 그대로 붙이면 틀려서 없앴다.
+  assert.match(flow,/\)\)\} \$\{esc\(t\('제작으로 이어지지 않고 90일 동안 진행이 없으면 사진과 인물을 지워요\.'\)\)\} /,'두 의뢰서 공통(ctx.photos 조건 없이)');
+  assert.doesNotMatch(flow,/의뢰가 진행되지 않아 의뢰 기록을 지울 때는/,'공개 의뢰서에만 붙던 옛 문장');
   assert.doesNotMatch(flow,/제작으로 이어지지 않고 의뢰가 정리되면/,'실물보다 넓은 옛 문장');
   // F3: 끄거나 멈춰도 지우는 날은 그대로 — 그날이 남았을 때만 확인 화면에 한 줄.
   const card=(extra={})=>({id:ID,name:'하루',kind:'virtual',status:'ready',usable:true,reason:null,revisionId:REV,reuse:true,until:'2099-11-10T14:59:59.999Z',deleteAt:'2099-12-10T14:59:59.999Z',deletionRequested:false,...extra});
@@ -237,7 +239,7 @@ test('보관 규칙 화면 최종 검수 F1 ~ F3(11-11): 의뢰서 인물 안내
 test('묶음: 손님 오프라인 목록에 내 모델 모듈(직원 브랜드 데스크는 빼고), 서버가 두 모듈을 내준다',()=>{
   const sw=read('sw.js');
   assert.match(sw,/FILES\.push\(BASE\+'my-models\.mjs'\);/);assert.doesNotMatch(sw,/'brand-desk-view\.mjs'/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v52-journal-seen-20261112';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v53-stopped-clock-20261112';/);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
   assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs','boot-locale\.js'\]\)files\['\/pulse-app\/'\+file\]/);
 });

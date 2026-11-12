@@ -129,6 +129,55 @@ export function reuseStateOf(store,persona,{workspaceId=persona?.workspaceId,rev
   const revision=typeof revisionId==='string'&&revisionId?store.get(K.revisions,revisionId):null;
   return {...personaUsability({persona,workspace,approval,revision,now}),workspace,approval,revision};
 }
+// ── 멈춘 프로젝트의 브랜드 없는 인물 — 90일 시계(판 4 설계 11-6, 11-12 유호님 「약속대로」 · Fable 5.2 설계 검토 반영) ──
+// 의뢰서 동의 줄 「제작으로 이어지지 않으면 90일 뒤 지워요」를 실물로: 브랜드 없는 인물의 원 프로젝트가 제작으로 이어지지 않은 채 90일 움직이지 않으면 지운다.
+// 저장하는 시계는 없다 — 읽을 때마다 계산한다(브랜드 쪽 brandDeleteAt과 같은 방식). 지우기는 14일 전 예고(persona.retentionNotice)가 나간 인물만이다.
+export const STOPPED_DAYS=90,STOPPED_NOTICE_DAYS=14;
+const DAY_MS=86400000;
+// 원 프로젝트가 제작으로 이어졌는지 — 지우지 않는 쪽으로 넓게: 제작 시작 승인 · 지금 확인 상태인 결제 · 시안 · 최종본 · 납품 수령 · 마감.
+// 단계(stage)는 보지 않는다(보관을 풀면 늘 received로 돌아간다). 결제는 지금 confirmed일 때만(취소 — 전액 환불로 끝난 결제는 제작이 아니다, 설계 검토 P2).
+export function projectInProduction(row){
+  const request=row?.studio?.request;
+  return !!(request?.approvedAt||request?.payment?.status==='confirmed'||(row?.versions||[]).length||(row?.deliveryReceipts||[]).length||(row?.closureHistory||[]).length);
+}
+// 브랜드 없는 인물을 지우는 길은 이 시계 하나다(카본 서버 검수 두 회차 P1 → Fable 5.2 설계 검토 「한 길」, 11-12):
+// 공개 의뢰서 90일 정리(retireUnconfirmed)는 그 프로젝트의 브랜드 없는 인물이 다 지워진 뒤에만 돌고(personaHoldsProject), 이미 「지운 의뢰」가 된
+// 프로젝트에 남은 브랜드 없는 인물(정리 때 브랜드 인물이었다가 귀속을 취소한 인물 · 옛 잔여)도 예고 없이 바로 지우지 않고 이 시계를 탄다.
+// 공개 의뢰서 정리가 이 프로젝트를 붙잡을 인물: 살아 있는(묘비 아님) 인물 가운데 브랜드 없는 인물(상태와 상관없이 — 지우는 중 포함), 또는 아직 열린 인물(브랜드 인물의 지우는 중 포함 — 판 3 그대로).
+export function personaHoldsProject(store,projectId){
+  return store.all(K.personas).some(persona=>live(persona)&&persona.originProjectId===projectId&&(!persona.workspaceId||!PERSONA_SETTLED.includes(persona?.status)));
+}
+// 브랜드 없는 인물의 시계. 돌려줌:
+//   null — 시계 없음(브랜드 인물 · 지우는 중 · 묘비 · 제작한 프로젝트).
+//   {unclear} — 원 프로젝트가 없거나 날짜를 읽을 수 없다. 지우지 않는다(직원 칸에 알리고 쓸기 결과에 센다).
+//   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt} — 마지막 움직임 = max(원 프로젝트의 마지막 움직임, 인물 updatedAt)(인물 쪽 직원 일 · 귀속 취소는 인물 문서만 옮긴다),
+//     clockAt = 그 + 90일, noticeFrom = clockAt - 14일. 원 프로젝트의 마지막 움직임은 updatedAt, 「지운 의뢰」면 정리 때(retiredAt) - 90일(정리는 90일 움직임이 없을 때만
+//     돌았으니 그 위쪽 끝 — 지운 의뢰의 인물은 clockAt = max(retiredAt, 인물 updatedAt + 90일)), 다만 정리 뒤에 그 프로젝트가 움직였으면(보관 풀기 · 기록 — updatedAt >
+//     retiredAt, 정리 기록과 retiredAt은 같은 때로 맞춘다) 그 움직임 — 예고 알림의 「보관을 풀고 기록을 남기면」이 실제로 날을 옮긴다(카본 서버 끝 판 A1). 예고는 마지막 움직임보다 «뒤»에 나간 것만 이 시계의 예고다
+//     (다시 움직이면 — 같은 밀리초여도 — 예고가 풀린다, 카본 서버 검수 A2). 지우는 날 = 예고가 나갔으면 max(clockAt, 예고 + 14일), 아니면 max(clockAt, 지금 + 14일)을
+//     그 한국 날짜의 끝(23:59:59.999)으로 올린 순간 — 화면이 「{날짜}까지」로 보인 날 안에는 지우지 않는다(브랜드 시계 kstDayEnd와 같은 방식, 화면 Fable 5.2 최종 P1).
+// 시스템 쓰기(예고 기록 · 지운 뒤 참조 떼기)는 updatedAt을 옮기지 않는다(공개 의뢰서 90일 정리가 밀리지 않게).
+export function stoppedClock(store,persona,now){
+  if(!persona||persona.deletedAt||persona.workspaceId||['deleting','deleted'].includes(persona.status))return null;
+  const row=typeof persona.originProjectId==='string'&&persona.originProjectId?store.get('clientProjects',persona.originProjectId):null;
+  if(!row)return {unclear:'origin'};
+  if(projectInProduction(row))return null;
+  const retired=row.studio?.request?.status==='retired';
+  const touched=Date.parse(row.updatedAt),retiredAt=retired?Date.parse(row.studio.request.retiredAt||row.updatedAt):NaN;
+  // 날짜를 먼저 확인한다 — 지운 의뢰에서 프로젝트 날짜를 못 읽으면 비교가 거짓이 되어 지우는 쪽으로 넘어가지 않게(GPT 서버 끝 판 GA2).
+  if(!Number.isFinite(touched)||retired&&!Number.isFinite(retiredAt))return {unclear:'date'};
+  const project=!retired?touched:touched>retiredAt?touched:retiredAt-STOPPED_DAYS*DAY_MS,own=Date.parse(persona.updatedAt),at=Date.parse(now);
+  if(!Number.isFinite(project)||!Number.isFinite(own)||!Number.isFinite(at))return {unclear:'date'};
+  const last=Math.max(project,own),clockAt=last+STOPPED_DAYS*DAY_MS,notice=persona.retentionNotice,sent=Date.parse(notice?.at);
+  const noticed=Number.isFinite(sent)&&sent>last;
+  const iso=value=>new Date(value).toISOString();
+  const deleteAt=Date.parse(kstDayEnd(kstToday(iso(Math.max(clockAt,(noticed?sent:at)+STOPPED_NOTICE_DAYS*DAY_MS)))));
+  return {lastAt:iso(last),clockAt:iso(clockAt),noticeFrom:iso(clockAt-STOPPED_NOTICE_DAYS*DAY_MS),noticed,noticeAt:noticed?iso(sent):null,deleteAt:iso(deleteAt),...(retired?{retired:true}:{})};
+}
+// 쓸기가 지금 예고를 낼 인물인지 · 지울 인물인지(둘 다 위 시계 하나로).
+export const stoppedNoticeDue=(clock,now)=>!!clock&&!clock.unclear&&!clock.noticed&&Date.parse(clock.noticeFrom)<=Date.parse(now);
+export const stoppedDeleteDue=(clock,now)=>!!clock&&!clock.unclear&&clock.noticed&&Date.parse(clock.deleteAt)<=Date.parse(now);
+
 // 다시 쓰기 의뢰 프로젝트가 참조한 인물 · 판(설계 4-3): personaRef가 있으면 그 판, 없으면 의뢰 때 붙인 판.
 export function reuseRefOf(row){
   const request=row?.workspaceRequest;
@@ -266,6 +315,8 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     const usageDone=!!(current&&usage&&usageApproval(store,row,persona,current.id));
     const turn=PERSONA_FINAL.includes(persona.status)?'end':want||persona.status==='needs_materials'?'customer':persona.status==='ready'&&usageDone?'done':'staff';
     const numbers=new Map(revisionsOf(persona.id).map(revision=>[revision.id,revision.number]));
+    // 90일 시계(설계 11-6): 손님 차례에서 멈춘 카드에 지우는 날을 보인다(원 프로젝트 · 제작 신호가 없을 때만 — 시계가 그때만 선다).
+    const stopped=reuse||turn!=='customer'?null:stoppedClock(store,persona,clock());
     // 다시 쓰기 모드: 원 프로젝트의 손님 글 · 사진 수 · 견적 · 일지는 싣지 않는다(판 3 화면이 그대로 그리도록 칸은 비워 둔다).
     return {id:persona.id,kind:persona.kind,status:persona.status,step:PERSONA_STEPS[persona.status]||null,turn,...(reuse?{mode:'reuse'}:{}),
       name:tr(`persona:${persona.id}:name`,persona.displayName),why:reuse?'':tr(`persona:${persona.id}:why`,persona.why),
@@ -276,9 +327,20 @@ export function createPersonaService({store,clientProjects,features=null,localeO
       revision:current?{id:current.id,number:current.number,reference:set('reference','referenceNote'),motion:set('motion','motionNote')}:null,
       usage:usage?{...Object.fromEntries(Object.keys(USAGE_TEXT).map(key=>[key,tr(`usage:${persona.id}:${key}`,usage[key])])),setAt:usage.setAt||'',approved:usageDone,approvedAt:usageDone?usage.approvedAt||'':''}:null,
       awaiting:want?{kind:want.kind,revisionId:want.revision?.id||null,viewedHash:want.viewedHash}:null,
+      ...(stopped?.deleteAt?{deleteAt:stopped.deleteAt}:{}),
       events:reuse?[]:(persona.history||[]).map(entry=>({entry,code:EVENT[entry.action]})).filter(item=>item.code).map(({entry,code})=>({id:entry.id,at:entry.at,code,who:entry.actorKind==='customer'?'me':'staff'})),
       approvals:approvalsOf(persona.id).filter(approval=>approval.projectId===row.id).map(approval=>({kind:approval.kind,decision:approval.decision,at:approval.at,number:numbers.get(approval.revisionId)||null}))};
   }
+
+  // 90일 시계로 지운 인물의 흔적(설계 11-6 · 설계 검토 P2): 이 프로젝트에서 시작한 가장 최근 인물이 「90일 동안 진행이 없어」 지운 묘비이고
+  // 살아 있는 인물이 없을 때만 그 날짜 하나를 돌려준다(손님 방 · 직원 칸이 「{날짜}에 … 지웠어요」를 보인다). 묘비에서만 읽는다 — 프로젝트에 흔적을 쓰지 않는다.
+  function removedOf(row){
+    if(personasOf(row.id).length)return null;
+    const latest=store.all(K.personas).filter(persona=>persona?.originProjectId===row.id).sort(byTime).at(-1);
+    if(!latest?.deletedAt||latest.deletion?.reason!=='origin_stopped')return null;
+    return {personaId:latest.id,name:latest.displayName||'',kind:latest.kind==='real'?'real':'virtual',at:latest.deletion.confirmedAt||latest.deletedAt};
+  }
+  function removedView(row){const found=removedOf(row);return found?{at:found.at}:null;}
 
   // ── 초안 · 의뢰서에서 인물 만들기(부르는 쪽의 트랜잭션 안) ──
   // 스위치는 서버가 강제한다: 접수를 끄면 새 인물을 만들지 않고, 실제 인물은 실제 인물 접수를 켰을 때만.
@@ -393,8 +455,11 @@ export function createPersonaService({store,clientProjects,features=null,localeO
     const mediaUrl=id=>`/api/personas/${persona.id}/media/${id}`,approvals=approvalsOf(persona.id),current=currentOf(persona),usage=usageOf(row,persona);
     const usageDone=!!(current&&usage&&usageApproval(store,row,persona,current.id));
     const next=persona.status==='ready'?(usage?(usageDone?'이번 광고에 쓸 준비가 끝났어요':'손님이 이번 광고 사용을 확인하기를 기다려요'):'이번 광고의 사용 범위를 적어 손님에게 보내요'):NEXT_LINE[persona.status]||'상태를 확인해 주세요';
+    // 90일 시계(설계 11-6): 지우는 날 · 예고 — 날짜를 읽지 못하면 unclear(지우지 않는다).
+    const stopped=stoppedClock(store,persona,clock());
     return {id:persona.id,kind:persona.kind,status:persona.status,step:PERSONA_STEPS[persona.status]||null,revision:persona.revision,workspaceId:persona.workspaceId??null,originProjectId:persona.originProjectId,
       effective:effectivePersonaStatus(persona,clock()),retention:persona.retention||null,deletionRequest:persona.deletionRequest||null,
+      stopped:stopped?(stopped.unclear?{unclear:true}:{deleteAt:stopped.deleteAt,noticed:stopped.noticed,noticeAt:stopped.noticeAt,lastAt:stopped.lastAt,...(stopped.retired?{retired:true}:{})}):null,
       request:persona.request||{},displayName:persona.displayName||'',why:persona.why||'',quote:persona.quote||null,staffNote:persona.staffNote||'',currentRevisionId:persona.currentRevisionId||null,createdAt:persona.createdAt,updatedAt:persona.updatedAt,history:persona.history||[],
       next,usageDone,locale:localeOf(row),canEdit,
       actions:canEdit?Object.keys(PERSONA_FLOW).filter(action=>personaNext(persona,{by:'staff',action})):[],
@@ -408,7 +473,8 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   const canWrite=(user,row)=>{try{clientProjects.project(user,row.id,true);return true;}catch{return false;}};
   function staffList(user,projectId){
     const row=clientProjects.project(user,projectId),editable=canWrite(user,row);
-    return {projectId:row.id,projectRevision:row.revision,personas:store.all(K.personas).filter(persona=>live(persona)&&persona.originProjectId===row.id).sort(byTime).map(persona=>staffView(user,persona,row,editable))};
+    const removed=removedOf(row);
+    return {projectId:row.id,projectRevision:row.revision,personas:store.all(K.personas).filter(persona=>live(persona)&&persona.originProjectId===row.id).sort(byTime).map(persona=>staffView(user,persona,row,editable)),...(removed?{removed}:{})};
   }
   function staffRead(user,personaId){const persona=getPersona(personaId),row=clientProjects.project(user,persona.originProjectId);return staffView(user,persona,row,canWrite(user,row));}
   // 판 파일 하나를 빼는 일(remove_asset)은 부르는 쪽(server)이 먼저 그 본문의 sha256을 잰다(파일 읽기라 트랜잭션 밖 — 이 모듈은 파일을 읽지 않는다).
@@ -586,7 +652,7 @@ export function createPersonaService({store,clientProjects,features=null,localeO
   function mintConsentToken(personaId,{minutes=4320}={}){const persona=getPersona(personaId);if(persona.kind!=='real'||PERSONA_FINAL.includes(persona.status)||held(persona))throw fail('실제 인물 요청에만 당사자 확인을 보낼 수 있어요.',409);return store.mint(CONSENT_PURPOSE,null,{purpose:'persona-consent',personaId:persona.id,personaRevision:persona.revision},minutes);}
   function readConsentToken(raw){const token=store.readToken(raw,CONSENT_PURPOSE);if(!token||token.body?.purpose!=='persona-consent')return null;const persona=store.get(K.personas,token.body.personaId);if(!live(persona)||persona.kind!=='real'||PERSONA_FINAL.includes(persona.status))return null;return {personaId:persona.id};}
 
-  return {customerView,create,afterProjectSubmit,approve,addSource,customerMedia,staffList,staffRead,removalTarget,staffAction,assertAssetUpload,addAsset,staffMedia,consentRead,consentRecord,mintConsentToken,readConsentToken,openOf,flags};
+  return {customerView,removedView,create,afterProjectSubmit,approve,addSource,customerMedia,staffList,staffRead,removalTarget,staffAction,assertAssetUpload,addAsset,staffMedia,consentRead,consentRecord,mintConsentToken,readConsentToken,openOf,flags};
 }
 // 제작 설계의 인물 참조를 붙이거나(ref) 뗀다(null). 판 1 규칙: 이 칸은 서버만 쓴다. 바뀐 칸이 없으면 그대로 돌려준다.
 export function withPersonaRef(strategy,ref,stamp){

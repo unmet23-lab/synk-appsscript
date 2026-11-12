@@ -7,7 +7,7 @@
 import {randomUUID,createHash} from 'node:crypto';
 import {unlink,open} from 'node:fs/promises';
 import {join} from 'node:path';
-import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse} from './pulse-personas.mjs';
+import {PERSONA_KINDS,PERSONA_SETTLED,REUSE_MONTHS,BACKUP_MAX_MONTHS,withPersonaRef,reuseStateOf,reuseUntil,reuseDeleteAt,consentAllowsReuse,stoppedClock,stoppedNoticeDue,stoppedDeleteDue} from './pulse-personas.mjs';
 import {personaRefOf} from './public/pulse-app/casting-choice.mjs';
 import {withTranslation} from './pulse-translations.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
@@ -176,7 +176,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const admin=member.role==='admin';
     const owned=store.all(K.personas).filter(persona=>live(persona)&&persona.workspaceId===workspace.id&&persona.status!=='deleting').sort(byTime);
     return {id:workspace.id,name:workspace.name,role:member.role,models:owned.map(persona=>modelCard(persona,workspace,now,admin)),
-      pending:admin?pendingPersonas(workspace).map(persona=>{const revision=currentRevision(persona),image=revision.reference?.assetIds?.[0];return {id:persona.id,name:persona.displayName||'',kind:persona.kind,revisionId:revision.id,image:image?assetUrl(image):null,consent:consentOffer(persona,workspace,now)};}):[]};
+      pending:admin?pendingPersonas(workspace).map(persona=>{const revision=currentRevision(persona),image=revision.reference?.assetIds?.[0],stopped=stoppedClock(store,persona,now);return {id:persona.id,name:persona.displayName||'',kind:persona.kind,revisionId:revision.id,image:image?assetUrl(image):null,consent:consentOffer(persona,workspace,now),...(stopped?.deleteAt?{deleteAt:stopped.deleteAt}:{})};}):[]};
   }
 
   // ── 고객 SYNK ID 회원 경로(/api/customer/pulse/*, 설계 4-2) ── 요청마다 회원 목록 · 역할 · 브랜드 상태를 다시 읽는다(캐시 없음).
@@ -353,8 +353,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
   }
 
   // ── 삭제 참조(설계 5-6 · 5판 D9) ── 끝나지 않은 프로젝트 가운데 원 프로젝트 · 다시 쓰기 의뢰(확인 여부와 상관없이) · 인물 참조, 그리고 24시간 안의 초안 붙임.
-  function personaReferences(persona,now=clock(),{reuseOnly=false,workspaceId=null}={}){
-    const projects=store.all(PROJECTS).filter(row=>unfinishedProject(row)&&(!workspaceId||row.customerWorkspaceId===workspaceId||row.workspaceRequest?.workspaceId===workspaceId)&&(
+  // exceptOrigin(90일 시계 — 설계 11-6): 원 프로젝트가 멈춘 것이 지우는 까닭이라 그 프로젝트 자신만 참조에서 뺀다(다른 프로젝트 · 초안 붙임은 그대로 미룬다).
+  function personaReferences(persona,now=clock(),{reuseOnly=false,workspaceId=null,exceptOrigin=false}={}){
+    const projects=store.all(PROJECTS).filter(row=>unfinishedProject(row)&&!(exceptOrigin&&row.id===persona.originProjectId)&&(!workspaceId||row.customerWorkspaceId===workspaceId||row.workspaceRequest?.workspaceId===workspaceId)&&(
       !reuseOnly&&row.id===persona.originProjectId||row.workspaceRequest?.personaId===persona.id||personaRefOf(row.studio?.strategy?.data?.castingSelection?.personaRef)?.personaId===persona.id&&row.id!==persona.originProjectId));
     const drafts=store.all(DRAFTS).filter(draft=>['draft','sending'].includes(draft.status)&&draft.personaAttach?.personaId===persona.id&&Date.parse(draft.personaAttach.expiresAt)>Date.parse(now));
     return {projects:projects.map(row=>({id:row.id,title:row.title,stage:row.stage,origin:row.id===persona.originProjectId})),drafts:drafts.length};
@@ -416,7 +417,7 @@ export function createWorkspaceService({store,clientProjects,features=null,local
         workspaceRequest:object(row.workspaceRequest)?{personaId:row.workspaceRequest.personaId,confirmedAt:row.workspaceRequest.confirmedAt||null}:null}));
       return {workspace:{id:workspace.id,name:workspace.name,status:workspace.status,revision:workspace.revision,staffOwnerId:workspace.staffOwnerId,staffOwnerName:store.get('users',workspace.staffOwnerId)?.name||'',createdAt:workspace.createdAt,closedAt:workspace.closedAt||null,
         members:(workspace.members||[]).map(member=>({id:member.id,displayName:member.displayName||'',idHint:idHint(member.synkUserId),role:member.role,addedAt:member.addedAt,via:member.via?.claimId?'claim':'staff'})),
-        personas,pending:pendingPersonas(workspace).map(persona=>({id:persona.id,name:persona.displayName||'',originProjectId:persona.originProjectId})),projects,todos:todosOf(workspace,now,staff),
+        personas,pending:pendingPersonas(workspace).map(persona=>{const stopped=stoppedClock(store,persona,now);return {id:persona.id,name:persona.displayName||'',originProjectId:persona.originProjectId,...(stopped?.deleteAt?{deleteAt:stopped.deleteAt,noticed:stopped.noticed}:{})};}),projects,todos:todosOf(workspace,now,staff),
         history:(workspace.history||[]).slice(-50),canManage:canManage(staff,workspace)&&staff.role!=='viewer',isAdmin:staff.role==='admin'}};
     });
   }
@@ -615,30 +616,86 @@ export function createWorkspaceService({store,clientProjects,features=null,local
     const last=store.all(K.approvals).filter(approval=>approval.kind==='reuse'&&approval.decision==='approve'&&approval.personaId===persona.id&&approval.workspaceId===persona.workspaceId).sort(byTime).at(-1);
     return last?last.terms?.deleteAt||reuseDeleteAt(last.terms?.until):null;
   }
-  const originRetired=persona=>store.get(PROJECTS,persona.originProjectId)?.studio?.request?.status==='retired';
+  // 판정: 브랜드 인물(reuse_ended — 브랜드 시계) · 브랜드 없는 인물(origin_stopped — 90일 시계, 예고 뒤에만). 브랜드 없는 인물을 지우는 길은 시계 하나다
+  // (카본 서버 검수 두 회차 P1 → Fable 5.2 설계 검토 「한 길」, 11-12): 공개 의뢰서 정리는 브랜드 없는 인물이 다 지워진 뒤에 돌고(pulse-requests retireUnconfirmed),
+  // 이미 「지운 의뢰」가 된 프로젝트에 남은 인물도 시계(clockAt = max(retiredAt, 인물 updatedAt + 90일))로 예고 뒤 지운다 — 62의 origin_retired(예고 없이 정리 회차에 함께)는 없앴다.
+  // 옛 묘비의 까닭 origin_retired는 그대로 읽힌다.
   function retentionDue(persona,now){
     if(!live(persona)||persona.status==='deleting')return null;
     if(persona.workspaceId){const at=brandDeleteAt(persona);return at&&Date.parse(at)<=Date.parse(now)?{reason:'reuse_ended',deleteAt:at}:null;}
-    return PERSONA_SETTLED.includes(persona.status)&&originRetired(persona)?{reason:'origin_retired',deleteAt:null}:null;
+    const stopped=stoppedClock(store,persona,now);
+    return stoppedDeleteDue(stopped,now)?{reason:'origin_stopped',deleteAt:stopped.deleteAt,retired:!!stopped.retired}:null;
   }
-  // 6시간마다 · 서버 시작 때(pulse-requests retireUnconfirmed 끝). 인물마다 트랜잭션 하나로 다시 읽어 판정하고, 커밋 뒤 파일을 지운다(멈추면 resumeDeletions가 잇는다).
-  async function sweepRetention(){
-    const result={deleted:0,held:0,failed:0};
-    for(const {id} of store.all(K.personas).filter(persona=>retentionDue(persona,clock()))){
+  const STOPPED_NOTE='제작으로 이어지지 않은 채 90일 동안 진행이 없어 지움',RETIRED_NOTE='원 의뢰를 90일 정리한 뒤 예고하고 지움';
+  // 시스템 쓰기는 시계(updatedAt)를 옮기지 않는다(설계 검토 P2 — 공개 의뢰서 90일 정리 · 인물 시계가 밀리지 않게). 판(revision)은 올려 열린 직원 화면이 새로 읽게 한다.
+  function systemPersona(persona,patch,action,now){
+    const next={...persona,...patch,revision:(persona.revision||0)+1,updatedAt:persona.updatedAt};
+    next.history=[...(persona.history||[]),{id:randomUUID(),at:now,action,actorKind:'system',actor:'',from:persona.status,to:next.status}].slice(-200);
+    store.put(K.personas,next.id,next);return next;
+  }
+  function systemProject(row,studio,entry){
+    const next={...row,...(studio?{studio}:{}),revision:row.revision+1,updatedAt:row.updatedAt,history:[...(row.history||[]),{id:randomUUID(),actor:'system',...entry}].slice(-300)};
+    return clientProjects.commitWorkflow(next);
+  }
+  // 지우기 14일 전 예고(설계 검토 P2): 예고 기록은 인물 문서에(retentionNotice), 원 프로젝트 담당자 · 검토자에게는 알림 한 줄(프로젝트 기록의 시스템 줄 —
+  // client-notifications가 persona_retention_notice로 싣는다, 보관한 프로젝트에서도). 예고가 나간 인물만 지운다(stoppedDeleteDue).
+  function sendStoppedNotice(persona,stopped,now){
+    const row=store.get(PROJECTS,persona.originProjectId);
+    systemPersona(persona,{retentionNotice:{at:now,deleteAt:stopped.deleteAt,reason:'origin_stopped'}},'retention_notice',now);
+    if(row)systemProject(row,null,{action:'맞춤 인물 지우기 예고(제작으로 이어지지 않은 채 90일 동안 진행 없음)',at:now,notice:'persona_retention',personaId:persona.id,personaName:persona.displayName||'',deleteAt:stopped.deleteAt});
+  }
+  // 지우는 트랜잭션 안(설계 검토 P1 · P2): 열린 검토는 먼저 닫는 기록(withdrawn · 시스템 · 까닭 origin_stopped)을 남기고, 원 프로젝트의 인물 참조 · 사용 범위를 뗀다.
+  function closeStoppedOrigin(persona,now){
+    const open=!PERSONA_SETTLED.includes(persona.status);
+    const closed=open?systemPersona(persona,{status:'withdrawn',why:'',closed:{at:now,by:'system',reason:'origin_stopped'}},'retention_withdraw',now):persona;
+    const row=store.get(PROJECTS,persona.originProjectId);
+    if(row){
+      const studio=row.studio&&typeof row.studio==='object'?structuredClone(row.studio):null;
+      if(studio){
+        if(personaRefOf(studio.strategy?.data?.castingSelection?.personaRef)?.personaId===persona.id)studio.strategy=withPersonaRef(studio.strategy,null,{at:now,author:'system',authorId:'system',authorName:'PULSE'});
+        if(object(studio.request)&&studio.request.personaUsage?.personaId===persona.id){const {personaUsage,...request}=studio.request;studio.request=request;}
+      }
+      systemProject(row,studio,{action:'맞춤 인물 지움(제작으로 이어지지 않은 채 90일 동안 진행 없음)',at:now,personaId:persona.id});
+    }
+    return closed;
+  }
+  // 6시간마다 · 서버 시작 때(pulse-requests retireUnconfirmed 처음 — 의뢰 정리보다 먼저). 차례: ① 지우는 중에 멈춘 인물 이어 끝내기(멱등 — 브랜드 없는 인물은
+  // 「삭제 이어 하기」 단추가 없고 그 인물이 의뢰 정리를 붙잡으므로, Fable 5.2 설계 검토 P2) ② 예고 ③ 지우기(인물마다 트랜잭션 하나로 다시 읽어 판정, 커밋 뒤 파일).
+  // noticeOnly(서버 시작 직후 회차): ① · ③을 건너뛰고 예고만 — 백업 복원 직후 잃은 구간을 사람이 볼 틈(설계 검토 P3, resumeDeletions는 서버 시작이 따로 부른다).
+  // 결과의 unclear: 날짜를 못 읽거나 원 프로젝트가 없어 시계를 셀 수 없는 브랜드 없는 인물 수(지우지 않는다 — 설계 검토 P3, 알림은 다음 판).
+  async function sweepRetention({noticeOnly=false}={}){
+    const result={deleted:0,held:0,failed:0,noticed:0,resumed:0,unclear:0};
+    if(!noticeOnly)for(const {id} of store.all(K.personas).filter(persona=>persona.status==='deleting'&&!persona.deletedAt)){
+      try{await finishDeletion(id);if(store.get(K.personas,id)?.status==='deleted')result.resumed++;}catch{result.failed++;}
+    }
+    for(const persona of store.all(K.personas))if(stoppedClock(store,persona,clock())?.unclear)result.unclear++;
+    for(const {id} of store.all(K.personas).filter(persona=>stoppedNoticeDue(stoppedClock(store,persona,clock()),clock()))){
+      try{
+        store.transaction(()=>{
+          const now=clock(),persona=store.get(K.personas,id),stopped=stoppedClock(store,persona,now);
+          if(!stoppedNoticeDue(stopped,now))return;
+          sendStoppedNotice(persona,stopped,now);result.noticed++;
+        });
+      }catch{result.failed++;}
+    }
+    if(!noticeOnly)for(const {id} of store.all(K.personas).filter(persona=>retentionDue(persona,clock()))){
       let started=false,hashes;
       try{hashes=await personaHashes(store.get(K.personas,id));}catch{result.failed++;continue;}
       try{
         store.transaction(()=>{
           const now=clock(),persona=store.get(K.personas,id),due=retentionDue(persona,now);
           if(!due)return;
-          if(referenced(personaReferences(persona,now))){result.held++;return;}
-          beginDeletion(persona,{actorKind:'system',actor:'',note:due.reason==='origin_retired'?'원 프로젝트를 정리해 함께 지움':'다시 쓰기 기한이 끝나 지움',reason:due.reason,now,hashes});
+          const stopped=due.reason==='origin_stopped';
+          if(referenced(personaReferences(persona,now,{exceptOrigin:stopped}))){result.held++;return;}
+          const target=stopped?closeStoppedOrigin(persona,now):persona;
+          beginDeletion(target,{actorKind:'system',actor:'',note:stopped?(due.retired?RETIRED_NOTE:STOPPED_NOTE):'다시 쓰기 기한이 끝나 지움',reason:due.reason,now,hashes});
           started=true;
         });
       }catch{result.failed++;continue;}
       if(!started)continue;
       try{await finishDeletion(id);result.deleted++;}catch{result.failed++;}
     }
+    for(const key of ['noticed','resumed','unclear'])if(!result[key])delete result[key];
     return result;
   }
   // 문서는 이미 지웠다: 파일 지우기가 막히면(Windows에서 읽는 중인 파일의 EPERM · EBUSY 등) 오류 대신 「지우는 중」과 남은 파일 수를 돌려준다(Fable P2-2).

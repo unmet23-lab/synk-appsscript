@@ -287,3 +287,57 @@ test('끝까지(실제 서버 응답): 의뢰서 접수부터 이번 광고 사�
     }finally{await setLocale('ko');}
   }
 });
+
+test('90일 시계 화면(판 4 설계 11-6): 손님 차례 카드 · 지운 뒤 한 줄 · 직원 인물 칸 지우는 날 · 예고 · 날짜를 못 읽음 · 묘비 · 내부 확인 점검 줄 — 한국어 · 영어',async()=>{
+  const {myModelsView}=await import('./public/pulse-app/my-models.mjs');
+  const deleteAt='2027-02-08T03:00:00.000Z';
+  // 손님 차례 카드 끝에 지우는 날 한 줄(서버가 deleteAt을 실었을 때만). 저희 차례 한 줄 · 서버가 안 실은 카드에는 없다.
+  const card=personaCard(personaModel({persona:view('quote_review',{deleteAt})}));
+  // 날짜 자리가 비지 않는다(서버 2027-02-08T03:00Z → 한국 날짜 2027-02-08 → 「2월 8일」 꼴, 화면 카본 B2).
+  assert.match(card,/<p class="sx-small sx-persona-clock">[^<]*2월 8일[^<]*까지 진행이 없으면 보내 주신 사진과 인물을 지워요\.<\/p><\/section>$/);
+  assert.ok(!personaCard(personaModel({persona:view('quote_review')})).includes('sx-persona-clock'),'서버가 안 실으면 줄도 없다');
+  assert.ok(!personaLine(personaModel({persona:view('reviewing',{deleteAt})})).includes('sx-persona-clock'),'저희 차례 한 줄에는 두지 않는다');
+  // 지운 뒤: 서버가 personaRemoved({at})만 준다 — 인물 칸 대신 그 한 줄, 인물 그림 · 단추 · 일지 줄은 없다.
+  const removed={...project(),personaRemoved:{at:deleteAt}},room=roomModel(removed);
+  assert.equal(room.persona,null);assert.deepEqual(room.personaRemoved,{at:deleteAt});
+  const html=roomView(room,{bar:false});
+  assert.equal(count(html,'data-persona-removed'),1);assert.match(html,/2월 8일[^<]*에 90일 동안 진행이 없어 보내 주신 사진과 인물을 지웠어요\. 다시 맡기시려면 담당자에게 알려 주세요\. <button type="button" class="sx-quiet" data-room-do="journal">담당자에게 묻기<\/button>/,'이 방에는 사진 올릴 자리가 없으니 담당자에게 묻기로(화면 카본 A1)');
+  assert.ok(!html.includes('data-persona-card')&&!html.includes('data-room-do="persona-approve"'));
+  assert.ok(!roomView(roomModel(project()),{bar:false}).includes('data-persona-removed'),'묘비가 없으면 판 3 전 모양 그대로');
+  // 내 모델 보관 대기 카드: 그 광고가 멈춰 있으면 「{날짜}까지 보관에 동의하지 않으면 지워요」.
+  const pendingCard=extra=>myModelsView({view:'list',data:{workspaces:[{id:'w1',name:'가 브랜드',role:'admin',models:[],pending:[{id:ID,name:'하루',kind:'virtual',revisionId:REV,image:null,consent:null,...extra}]}]}});
+  assert.match(pendingCard({deleteAt}),/원래 광고에 진행이 없으면 [^<]*2월 8일[^<]*에 지워요\. 그 전에 보관을 정하면 남겨 둬요\.<\/p>/,'보관하지 않아도 원래 광고가 움직이면 남는다(화면 카본 A2)');
+  assert.ok(!pendingCard({}).includes('sx-mm-clock'));
+  // 영어: 네 문장 모두 사전에 있고, 날짜 자리에 그 언어 날짜가 들어간다.
+  await setLocale('en');
+  try{
+    // 「by」는 하루 앞 날짜 — 서버는 그 한국 날짜가 끝날 때 지우므로, 손님 시간대가 어디든 보인 날 안에는 지우지 않는다(화면 Fable 5.2 최종 P1).
+    assert.match(personaCard(personaModel({persona:view('quote_review',{deleteAt})})),/If there’s no activity by [^<]*Feb 7[^<]*, we’ll delete the photos you sent and the persona\./);
+    assert.match(roomView(roomModel(removed),{bar:false}),/On [^<]*Feb[^<]*, we deleted the photos you sent and the persona because there had been no activity for 90 days\. If you’d like to start again, let your producer know\./);
+    assert.match(pendingCard({deleteAt}),/If there’s no activity on the original ad, we’ll delete this model on [^<]*Feb[^<]*\. Choose to keep it before then and it stays\./);
+    // 의뢰서 맞춤 인물 칸의 두 의뢰서 공통 문장도 사전에 있다(화면 카본 B1).
+    const {t}=await import('./public/pulse-app/i18n.mjs');
+    assert.equal(t('제작으로 이어지지 않고 90일 동안 진행이 없으면 사진과 인물을 지워요.'),'If this doesn’t lead to production and there’s no activity for 90 days, we’ll delete the photos and the persona.');
+  }finally{await setLocale('ko');}
+  // 직원 인물 칸: 예고 전 · 예고 뒤 · 날짜를 못 읽음, 그리고 지운 뒤의 묘비 한 줄.
+  const staff=(extra={})=>({id:ID,kind:'virtual',status:'ready',step:7,revision:4,workspaceId:null,originProjectId:'p1',request:{},displayName:'하루',why:'',quote:null,staffNote:'',currentRevisionId:null,createdAt:'2026-11-10T01:00:00.000Z',updatedAt:'2026-11-10T02:00:00.000Z',history:[],next:'이번 광고의 사용 범위를 적어 손님에게 보내요',usageDone:false,locale:'ko',canEdit:true,actions:[],canOpenRevision:false,sources:[],revisions:[],approvals:[],usage:null,consent:null,stopped:null,...extra});
+  const p=project({state:'prepare'}),model=deskModel(p),desk=extra=>deskView({...model,queue:[],canEdit:true,...extra},{bar:false});
+  assert.ok(desk({personas:[staff({stopped:{deleteAt,noticed:false,noticeAt:null,lastAt:'2026-11-10T03:00:00.000Z'}})]}).includes('이 프로젝트가 2027-02-08까지 움직이지 않으면 이 인물과 손님 사진을 지워요'));
+  const noticed=desk({personas:[staff({stopped:{deleteAt,noticed:true,noticeAt:'2027-01-25T03:00:00.000Z',lastAt:'2026-11-10T03:00:00.000Z'}})]});
+  assert.ok(noticed.includes('지우기 예고를 보냈어요 — <b>2027-02-08</b>에 이 인물과 손님 사진을 지워요(제작으로 이어지지 않았고 2026-11-10 뒤로 진행이 없어요)'));
+  assert.ok(!noticed.includes('90일 동안 진행이 없었어요'),'예고 때는 아직 90일 전이라 과거형으로 쓰지 않는다(화면 카본 A4)');
+  assert.ok(desk({personas:[staff({stopped:{unclear:true}})]}).includes('지우는 날을 셀 수 없어요'));
+  // 정리된 의뢰의 인물: 보관을 먼저 풀어야 기록을 남길 수 있다는 것과 브랜드 보관 길(화면 Fable 5.2 최종 P2 · 카본 서버 끝 판 A1).
+  const retiredLine=desk({personas:[staff({stopped:{deleteAt,noticed:false,noticeAt:null,lastAt:'2026-11-10T03:00:00.000Z',retired:true}})]});
+  assert.ok(retiredLine.includes('정리된 의뢰의 인물이에요 — <b>2027-02-08</b>에 이 인물과 손님 사진을 지워요. 이어 가려면 그 전에 이 프로젝트의 보관을 풀고 기록을 남기거나, 브랜드 관리자가 「내 모델」에서 보관을 정해야 해요.'));
+  assert.ok(!desk({personas:[staff()]}).includes('desk-persona-clock'),'제작한 프로젝트 · 브랜드 인물은 줄이 없다');
+  const tomb=desk({personas:[],personaRemoved:{personaId:ID,name:'하루',kind:'virtual',at:deleteAt}});
+  assert.ok(tomb.includes('data-persona-removed')&&tomb.includes('맞춤 인물 · 하루 · 지움')&&tomb.includes('2027-02-08에 지웠어요'));
+  // 내부 확인 점검: 맞춤 인물 의뢰인데 지운 뒤면 「맞춤 인물 의뢰예요」 대신 지웠다는 줄 하나(모델 제안 줄도 겹치지 않는다).
+  const checks=deskChecks({...p,personas:[],personaRemoved:{personaId:ID,at:deleteAt}});
+  // 방향 제안이 있는 프로젝트에서도 지웠다는 줄이 선다(화면 카본 A3).
+  const withDirection={...p,personas:[],personaRemoved:{personaId:ID,at:deleteAt},studio:{...p.studio,request:{...p.studio.request,directionProposal:{status:'open',round:1,options:[],modelId:''}}}};
+  assert.ok(deskChecks(withDirection).some(item=>item.label.startsWith('맞춤 인물을 지웠어요')));
+  assert.ok(checks.some(item=>item.label.startsWith('맞춤 인물을 지웠어요')));
+  assert.ok(!checks.some(item=>item.label.startsWith('맞춤 인물 의뢰예요'))&&!checks.some(item=>item.label==='모델을 제안해 확인받아야 해요'));
+});

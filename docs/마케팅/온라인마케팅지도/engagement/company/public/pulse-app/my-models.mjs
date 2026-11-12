@@ -64,7 +64,10 @@ function modelCard(ws,card){
 }
 // 보관 대기(관리자만): 원 프로젝트가 이 브랜드에 연결됐고 준비가 끝난 인물. 보관을 정하면 이 브랜드의 내 모델로 들어온다.
 function pendingCard(ws,card){
-  return `<li class="sx-mm-card is-pending"><figure class="sx-mm-face ${card.image?'':'is-empty'}">${face(card)}</figure><div class="sx-mm-info"><h3 class="sx-serif">${esc(nameOf(card))}</h3><p class="sx-small sx-mm-state">${esc(t('광고 하나를 위해 만든 모델이에요. 보관을 정하면 이 브랜드 회원들이 다음 광고에도 쓸 수 있어요.'))}</p>
+  // 90일 시계(판 4 설계 11-6): 그 광고가 제작으로 이어지지 않은 채 멈춰 있으면 서버가 지우는 날을 싣는다 — 보관에 동의하면 브랜드 시계로 옮겨 가고,
+  // 원래 광고가 다시 움직이거나 제작으로 이어져도 날이 옮겨 가거나 사라진다(그래서 「보관하지 않으면 지운다」가 아니라 「원래 광고에 진행이 없으면」 — 화면 검수 A2).
+  const clock=dateOf(card.deleteAt);
+  return `<li class="sx-mm-card is-pending"><figure class="sx-mm-face ${card.image?'':'is-empty'}">${face(card)}</figure><div class="sx-mm-info"><h3 class="sx-serif">${esc(nameOf(card))}</h3><p class="sx-small sx-mm-state">${esc(t('광고 하나를 위해 만든 모델이에요. 보관을 정하면 이 브랜드 회원들이 다음 광고에도 쓸 수 있어요.'))}</p>${clock?`<p class="sx-small sx-mm-state sx-mm-clock">${esc(t('원래 광고에 진행이 없으면 {date}에 지워요. 그 전에 보관을 정하면 남겨 둬요.',{date:clock}))}</p>`:''}
     ${card.consent?`<button type="button" class="sx-go" data-mm-do="consent" data-ws="${esc(ws.id)}" data-id="${esc(card.id)}" data-pending="1"><span>${esc(t('다음 광고에도 쓰기'))}</span>${arrow}</button>`:''}</div></li>`;
 }
 function list(st){

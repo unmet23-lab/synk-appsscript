@@ -11,6 +11,12 @@ titles.customer_delivery_receipt='고객이 최종본을 받았대요';
 // 고객 문의에 자동 안내가 먼저 답한 알림(2026-10-19). 사람 답인 「제작팀이 답했어요」와 구별한다.
 titles.auto_reply='문의에 자동 안내가 왔어요';
 titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
+// 맞춤 인물 90일 시계의 지우기 예고(판 4 설계 11-6, 11-12): 제작으로 이어지지 않은 채 멈춘 프로젝트의 인물을 14일 뒤 지운다고 담당자 · 검토자에게.
+// 보관한 프로젝트에서도 싣는다(그 프로젝트를 아무도 열지 않아 예고가 필요하다). 본문은 기록 줄의 이름 · 날짜로 만든다.
+const RETENTION_NOTICE='persona_retention_notice';
+titles[RETENTION_NOTICE]='맞춤 인물을 곧 지워요';
+const kstDayOf=value=>{const at=Date.parse(value);return Number.isFinite(at)?new Date(at+9*3600000).toISOString().slice(0,10):'';};
+const retentionNoticeText=event=>`${event.personaName?`맞춤 인물 「${event.personaName}」`:'맞춤 인물'}을 ${kstDayOf(event.deleteAt)||'곧'} 지워요 — 제작으로 이어지지 않은 채 진행이 멈춰 있어요. 이어 가려면 이 프로젝트에 기록을 남겨 주세요(보관한 프로젝트는 보관을 풀면 돼요).`;
 // 결제(판 4): 담당자가 크몽 결제를 요청 · 확인 · 취소했을 때 손님에게. 손님 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
 // 작업 소식(운영 조각 4): 담당자가 소식을 올렸을 때 손님에게(앱 안 · 기기 알림만 — 메일 순간이 아니다). 거두면 손님 알림함에서 빠진다(pulse-live.mjs).
@@ -78,6 +84,8 @@ export function appendClientNotificationEvents(previous,row){
   for(const receipt of row.deliveryReceipts||[])if(!oldReceipts.has(receipt.id))add('customer_delivery_receipt',receipt.id,['owner','reviewer'],{deliveryReceiptId:receipt.id,deliveryKey:receipt.deliveryKey,actorId:'customer'});
   const history=row.history?.at(-1),action=history?.action?.replace(/^PULSE (?:기획|제작) /,'');
   const committed=history?.id&&history.id!==previous?.history?.at(-1)?.id;
+  // 지우기 예고: 시스템 기록 줄 하나가 알림 하나. 그 쓰기는 프로젝트 시계(updatedAt)를 옮기지 않으므로 알림 때는 기록 줄의 때다.
+  if(committed&&history.actor==='system'&&history.notice==='persona_retention'&&typeof history.personaId==='string')add(RETENTION_NOTICE,history.id,['owner','reviewer'],{createdAt:history.at,tab:'desk',personaId:history.personaId,personaName:String(history.personaName||'').slice(0,40),deleteAt:history.deleteAt||null});
   if(committed&&actorId!=='customer'){
     const approval=buildCustomerPreviewApproval(row),beforeApproval=buildCustomerPreviewApproval(previous||{});
     // Uploads already create preview_ready. Announce the later point at which
@@ -134,7 +142,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   const notify=ids=>{try{onChange(unique(ids));}catch{/* Notification delivery is recoverable from the durable source. */}};
   const unsubscribe=clientProjects.subscribeChanges?.(change=>notify(change.userIds));
   function eligible(user,project,event){
-    if(project.stage==='archived'||user.role==='viewer'||event.actorId===user.id)return false;
+    if(project.stage==='archived'&&event.type!==RETENTION_NOTICE||user.role==='viewer'||event.actorId===user.id)return false;
     const owner=project.ownerId===user.id;
     const reviewer=project.reviewerId===user.id&&(user.role==='admin'||user.teamId&&user.teamId===project.teamId);
     if(!event.audiences.some(audience=>audience==='owner'&&owner||audience==='reviewer'&&reviewer))return false;
@@ -149,7 +157,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
     // workflow views. These sources apply the same current project ACL once.
     const projects=projectId?[clientProjects.project(user,projectId)]:clientProjects.readableSources(user);
     for(const source of projects){
-      if(source.stage==='archived'||user.role==='viewer'||!source.notificationEvents?.length)continue;
+      if(user.role==='viewer'||!source.notificationEvents?.length||source.stage==='archived'&&!source.notificationEvents.some(event=>event.type===RETENTION_NOTICE))continue;
       const messages=new Map(source.messages.map(message=>[message.id,message])),versions=new Map(source.versions.map(version=>[version.id,version]));
       for(const event of source.notificationEvents||[]){
         if(!eligible(user,source,event))continue;
@@ -163,10 +171,10 @@ export function createClientNotificationsService({store,clientProjects,clientWor
         const studioEvent=['customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment','request_received','customer_request_answer','customer_request_file','customer_request_edit','customer_model_answer','customer_draft_review','customer_draft_approved'].includes(event.type)&&['direction','strategy','concepts','storyboard','history','desk'].includes(event.tab);
         // The existing messenger consumes workroom links only. Project news has
         // its own source opener, so use the exact PULSE tab for this projection.
-        const href=projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;
+        const href=event.type===RETENTION_NOTICE?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:'desk'}):projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;
         const readAt=store.get('clientNotificationReads',receiptId(user.id,event.id))?.readAt||null;
         const reviewNote=message?.workflow?.history?.findLast(entry=>entry.at===event.workflowAt&&entry.action===event.workflowAction&&entry.actor===event.actorId)?.note;
-        const text=projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 보냈어요. 영상 확인에서 봐 주세요.`:event.type==='customer_delivery_receipt'?'고객이 파일과 사용 안내를 받았다고 했어요. 남은 일을 보고 마감해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}을 고객이 승인했어요.`:event.type==='changes_requested'?reviewNote||'무엇을 더 고칠지 봐 주세요.':event.type==='review_requested'?`${version?.label||'고친 시안'}을 봐 주세요.`:message?.text||source.nextStep||'이 프로젝트의 요청과 다음 할 일을 봐 주세요.';
+        const text=event.type===RETENTION_NOTICE?retentionNoticeText(event):projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 보냈어요. 영상 확인에서 봐 주세요.`:event.type==='customer_delivery_receipt'?'고객이 파일과 사용 안내를 받았다고 했어요. 남은 일을 보고 마감해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}을 고객이 승인했어요.`:event.type==='changes_requested'?reviewNote||'무엇을 더 고칠지 봐 주세요.':event.type==='review_requested'?`${version?.label||'고친 시안'}을 봐 주세요.`:message?.text||source.nextStep||'이 프로젝트의 요청과 다음 할 일을 봐 주세요.';
         result.push({id:event.id,kind:'client_workflow',type:event.type,message:null,title:titles[event.type]||'고객 프로젝트가 바뀌었어요',text,body:text,projectTitle:source.title,createdAt:event.createdAt,readAt,unread:!readAt,href,projectId:source.id,messageId:event.messageId||null,versionId:event.versionId||null,seconds:message?.seconds??null,tab:event.tab||(event.versionId?'review':'history')});
       }
     }

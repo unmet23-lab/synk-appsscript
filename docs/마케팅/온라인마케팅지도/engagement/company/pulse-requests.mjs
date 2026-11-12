@@ -10,7 +10,7 @@ import {CASTING_MODELS,OUTFIT_IDS,HAIR_IDS} from './public/pulse-app/casting-cat
 import {castingOf,personaRefOf,MODEL_CHOICE_KINDS,MODEL_OPTIONAL_CHOICES} from './public/pulse-app/casting-choice.mjs';
 import {LOCALES} from './public/pulse-app/i18n.mjs';
 import {validPulseMailAddress} from './pulse-mail.mjs';
-import {openPersonaProjectIds,PERSONA_SLOTS} from './pulse-personas.mjs';
+import {personaHoldsProject,PERSONA_SLOTS} from './pulse-personas.mjs';
 import {applyInlineTranslations,missingTranslations,inlineObject} from './pulse-translations.mjs';
 import {PROGRESS_FIELDS,applyProgressAction,progressOf,progressCustomerView} from './pulse-progress.mjs';
 
@@ -347,24 +347,29 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
   }
   // 동의 문구의 약속: 접수 뒤 90일 동안 아무 움직임이 없고 제작으로 이어지지 않은 의뢰는 연락처 · 답 · 파일을 지우고 보관으로 돌린다.
   // 유지보수 예약에서만 돈다(익명 요청이 방아쇠가 되면 안 된다). 움직임 하나라도 있으면 그때부터 다시 잰다.
-  async function retireUnconfirmed(){
+  // 차례(판 4 설계 11-6 「한 길」 — Fable 5.2 설계 검토 11-12): 먼저 보관 기간 뒤 지우기(sweepRetention — 브랜드 인물의 기한 · 브랜드 없는 인물의 90일 시계,
+  // 14일 전 예고 뒤에만 지움), 그다음 의뢰 정리. 브랜드 없는 인물(또는 열린 인물)이 살아 있는 의뢰는 정리하지 않는다 — 인물이 시계로 지워진 같은 회차에 정리된다.
+  // 그래서 브랜드 없는 인물을 지우는 날은 직원 · 손님 화면이 보는 시계의 날 하나다. startup(서버 시작 직후 회차): 예고만 내고 지우기 · 정리는 다음 회차(6시간 뒤)부터 —
+  // 백업 복원 직후 잃은 구간의 움직임을 사람이 볼 틈을 둔다(Fable 5.2 설계 검토 P3).
+  async function retireUnconfirmed({startup=false}={}){
+    const retention=workspaces?.sweepRetention?await workspaces.sweepRetention({noticeOnly:startup}):null;
     const stamp=now(),cutoff=REQUEST_LIMITS.unconfirmedDays*86400000;let retired=0;
-    // 전용 인물 검토가 열린 프로젝트는 건너뛴다(인물 쪽 움직임은 프로젝트 시계를 늘 돌리지 않는다 — 기획 12-2 「90일 정리」).
-    const personaOpen=openPersonaProjectIds(store);
-    for(const row of store.all(KIND)){
+    for(const row of startup?[]:store.all(KIND)){
       if(row.status!=='submitted')continue;
       const project=row.projectId&&store.get('clientProjects',row.projectId);
       if(!project){if(stamp-Date.parse(row.submittedAt)>cutoff)store.remove(KIND,row.id);continue;}
-      if(stamp-Date.parse(project.updatedAt)<=cutoff||personaOpen.has(project.id))continue;
+      if(stamp-Date.parse(project.updatedAt)<=cutoff)continue;
+      // 붙잡는 인물은 정리하는 바로 그 순간에 본다(await 없이 정리 트랜잭션 앞 — 회차 도중의 귀속 취소 · 새 요청도 본다, Fable 5.2 설계 검토 P1 (b)).
+      // 정리 대기 줄을 지우는 아래 갈래보다 먼저 본다 — 인물 검토 중 보관한 의뢰도 줄을 남겨, 보관을 풀면 뒤에 정리된다(GPT 서버 다시 검수 GA1).
+      if(personaHoldsProject(store,project.id))continue;
+      // 보관한 확인 전 의뢰는 대기 줄을 남긴다 — 보관을 풀면(received) 그때부터 다시 재어 정리된다(GPT 서버 끝 판 GA1). 확인됐거나 다른 단계로 간 의뢰만 줄을 지운다.
+      if(!project.studio?.request?.confirmedAt&&project.stage==='archived')continue;
       if(project.studio?.request?.confirmedAt||project.stage!=='received'){store.remove(KIND,row.id);continue;}
       const files=clientProjects.retireRequest(project.id,{...emptyPulseStudio(),request:{schemaVersion:1,number:row.number||'',status:'retired',retiredAt:clock(),answers:{},files:[],asks:[],notes:[],rounds:[]}});
       for(const file of files)await unlink(inMedia(file.diskName)).catch(()=>{});
       store.remove(KIND,row.id);retired++;
     }
-    // 보관 기간 뒤 지우기(11-11 결정 표 ① · ④ · ⑤, 판 4 설계 11-3): 방금 정리한 원 프로젝트의 브랜드 없는 인물과 지우는 날이 지난 브랜드 인물.
-    // 같은 예약(6시간마다 · 서버 시작 때)에서 정리 다음에 돈다. 한 일이 있을 때만 결과에 싣는다.
-    const retention=workspaces?.sweepRetention?await workspaces.sweepRetention():null;
-    return {retired,...(retention&&(retention.deleted||retention.held||retention.failed)?{retention}:{})};
+    return {retired,...(retention&&(retention.deleted||retention.held||retention.failed||retention.noticed||retention.resumed||retention.unclear)?{retention}:{})};
   }
   // 접수 뒤 손님이 더 보내는 파일(되묻기 답 · 자료 더 보내기 · 담당자가 만든 프로젝트의 의뢰서). 받는 형식과 문턱은 초안과 같고, 자리는 처음부터 백업되는 폴더다.
   async function receiveProjectFile(req,{session,client=''}){

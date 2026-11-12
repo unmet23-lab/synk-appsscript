@@ -515,7 +515,7 @@ function filmsRoom(s){
 function deskScreen(s){
   if(!s.deskView)return '<div class="loading" role="status"><span class="loading-mark"></span>의뢰서를 불러오고 있어요.</div>'; // i18n-skip
   const model=deskModel(s.project);
-  return s.deskView({...model,at:model.at?stamp(model.at):'',note:model.note?{...model.note,at:stamp(model.note.at)}:null,canEdit:s.canEdit,translation:s.project.translation,personas:s.project.personas||[],queue:deskQueue(s.workspace?.projects||[],stamp)},{bar:false,top:roomAlert(s)});
+  return s.deskView({...model,at:model.at?stamp(model.at):'',note:model.note?{...model.note,at:stamp(model.note.at)}:null,canEdit:s.canEdit,translation:s.project.translation,personas:s.project.personas||[],personaRemoved:s.project.personaRemoved||null,queue:deskQueue(s.workspace?.projects||[],stamp)},{bar:false,top:roomAlert(s)});
 }
 export function projectView(s){
   if(s.mode==='staff'&&s.tab==='desk'&&s.project.studio?.request)return deskScreen(s);

@@ -120,21 +120,23 @@ test('주소 오류는 칸마다 고정 문장이고, 손님 파일 이름이 �
 });
 
 // 11-11 결정 표 ⑤(판 4 설계 11-3): 정리한 원 프로젝트의 브랜드 없는 인물은 함께 지운다 — 예전에는 인물 판의 파일이 정리 뒤에도 남았다.
-test('90일 정리는 전용 인물 검토가 열린 프로젝트를 건너뛰고, 정리한 원 프로젝트의 브랜드 없는 인물은 파일까지 함께 지운다',async t=>{
+test('90일 정리는 브랜드 없는 인물이 살아 있는 프로젝트를 건너뛰고, 예고 뒤 14일이 지난 인물을 지운 같은 회차에 그 의뢰를 정리한다 — 판 파일까지(판 4 설계 11-6 한 길)',async t=>{
   const f=await fixture(t),{store}=f.app,old=new Date(Date.now()-91*86400000).toISOString();
   const open=(await f.send()).projectId,done=(await f.send()).projectId;
   for(const id of [open,done])store.put('clientProjects',id,{...store.get('clientProjects',id),updatedAt:old});
   // 검토 중 인물 하나(열림), 쓸 수 있게 된 인물 하나(끝남 — 그 프로젝트는 정리된다). 끝난 쪽 판의 파일은 프로젝트 자산과 이름이 같다.
   const doneRow=store.get('clientProjects',done),shared=doneRow.studio.assets[0].diskName;
   const personaOpen=randomUUID(),personaDone=randomUUID(),revision=randomUUID();
-  store.put('pulsePersonas',personaOpen,{id:personaOpen,originProjectId:open,workspaceId:null,kind:'virtual',status:'reviewing'});
-  store.put('pulsePersonas',personaDone,{id:personaDone,originProjectId:done,workspaceId:null,kind:'virtual',status:'ready'});
+  // 열린 인물은 아직 예고 전(첫 쓸기가 예고만), 끝난 인물은 15일 전에 예고가 나갔다(지우는 날이 지났다).
+  store.put('pulsePersonas',personaOpen,{id:personaOpen,originProjectId:open,workspaceId:null,kind:'virtual',status:'reviewing',updatedAt:old});
+  store.put('pulsePersonas',personaDone,{id:personaDone,originProjectId:done,workspaceId:null,kind:'virtual',status:'ready',updatedAt:old,retentionNotice:{at:new Date(Date.now()-15*86400000).toISOString(),deleteAt:'',reason:'origin_stopped'}});
   store.put('pulsePersonaRevisions',revision,{id:revision,personaId:personaDone,revision:1,status:'published',assets:[{id:randomUUID(),diskName:shared,mimeType:'image/png'}]});
   const before=(await readdir(join(f.options.dataDir,'studio-media'))).length;
   f.jar.clear();await f.start();
-  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1,retention:{deleted:1,held:0,failed:0}});
+  assert.deepEqual(await f.app.pulseRequests.retireUnconfirmed(),{retired:1,retention:{deleted:1,held:0,failed:0,noticed:1}});
   assert.equal(store.get('clientProjects',open).stage,'received','열린 인물 검토가 있는 프로젝트는 그대로');
-  assert.equal(store.get('pulsePersonas',personaOpen).status,'reviewing');assert.equal(store.get('pulsePersonas',personaDone).status,'deleted');
+  assert.equal(store.get('pulsePersonas',personaOpen).status,'reviewing');assert.ok(store.get('pulsePersonas',personaOpen).retentionNotice,'열린 인물은 예고만');
+  assert.equal(store.get('pulsePersonas',personaDone).status,'deleted');assert.equal(store.get('pulsePersonas',personaDone).deletion.reason,'origin_stopped');
   const gone=store.get('clientProjects',done);
   assert.equal(gone.stage,'archived');assert.equal(gone.studio.request.status,'retired');
   const after=await readdir(join(f.options.dataDir,'studio-media'));

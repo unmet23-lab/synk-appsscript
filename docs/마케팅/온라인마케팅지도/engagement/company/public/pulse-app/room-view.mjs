@@ -135,6 +135,8 @@ export function roomModel(p){
     pay:['pay','prepare-images'].includes(state)?payModel(p):null,
     // 고객 전용 인물(판 3): 서버 손님 보기 project.persona가 있을 때만(없으면 null — 고객 방은 판 3 전 그대로).
     persona:personaModel(p),
+    // 90일 시계로 지운 인물(판 4 설계 11-6): 서버가 지운 날만 싣는다(인물 · 그림 없음). 살아 있는 인물이 있으면 서버가 싣지 않는다.
+    personaRemoved:p?.personaRemoved&&typeof p.personaRemoved.at==='string'?{at:p.personaRemoved.at}:null,
     // 작업 소식(운영 조각 4): 저희 차례 큰 그림 칸에 띄울 최근 소식 그림(없으면 null — 예시 그림 그대로).
     news:roomNews(p,state),
   };
@@ -349,10 +351,13 @@ export function deskChecks(p){
   checks.push(a.channels?.length?{ok:true,label:'올릴 곳을 알려 주셨어요'}:{ok:false,label:'올릴 곳이 비어 있어요',note:'저희가 제안해요.'});
   const direction=r.directionProposal,casting=castingOf({...r,answers:a},p.studio?.strategy?.data?.castingSelection);
   // 맞춤 인물(판 3)은 이 프로젝트의 가장 최근 인물 요청이 아직 열려 있을 때만 「맞춤 인물 의뢰」다. 거뒀거나 사용을 마쳤으면 모델 점검으로 넘긴다(판 3 화면 검수 F4).
-  const latest=(p.personas||[]).filter(item=>item.originProjectId===p.id).at(-1),customLive=casting.kind==='custom'&&!['withdrawn','retired'].includes(latest?.status);
+  // 90일 시계로 지운 인물(판 4 설계 11-6): 살아 있는 인물이 없고 묘비 날짜가 있으면 「맞춤 인물 의뢰」 대신 지웠다는 줄 하나.
+  const latest=(p.personas||[]).filter(item=>item.originProjectId===p.id).at(-1),removed=casting.kind==='custom'&&!latest&&!!p.personaRemoved,customLive=casting.kind==='custom'&&!removed&&!['withdrawn','retired'].includes(latest?.status);
   if(direction)checks.push(['chosen','settled'].includes(direction.status)?{ok:true,label:`손님이 방향 「${direction.options.find(option=>option.id===direction.chosenId)?.name||''}」${direction.status==='settled'?'으로 정리했어요':'을 골랐어요'}`,note:direction.answer?`손님 말: ${direction.answer}`:''}:direction.status==='declined'?{ok:false,label:direction.round>=2?'두 번째 방향도 아니래요 — 손님과 이야기해 정리해 주세요':'손님이 두 방향 다 아니래요',note:direction.answer?`손님 말: ${direction.answer}`:''}:{ok:false,label:'방향 제안을 보냈어요',note:'손님 답을 기다려요.'});
-  else if(!customLive&&casting.kind!=='persona'&&!casting.agreed)checks.push({ok:false,label:'모델을 제안해 확인받아야 해요',note:r.modelProposal?.status==='open'?'제안을 보냈어요. 답을 기다려요.':r.modelProposal?.answer?`손님 답: ${r.modelProposal.answer}`:'글 콘티를 보내기 전에 먼저 정해요.'});
+  else if(!customLive&&!removed&&casting.kind!=='persona'&&!casting.agreed)checks.push({ok:false,label:'모델을 제안해 확인받아야 해요',note:r.modelProposal?.status==='open'?'제안을 보냈어요. 답을 기다려요.':r.modelProposal?.answer?`손님 답: ${r.modelProposal.answer}`:'글 콘티를 보내기 전에 먼저 정해요.'});
   // 맞춤 인물(판 3): 손님이 이번 광고 사용까지 확인해야 제작 설계에 인물이 붙고, 그 전에는 제작 시작(이미지 판 확인)을 서버가 막는다.
+  // 방향 제안이 있어도 서야 해서 방향 갈래와 떼어 둔다(화면 검수 A3).
+  if(removed)checks.push({ok:false,label:'맞춤 인물을 지웠어요 — 제작으로 이어지지 않은 채 90일 동안 진행이 없었어요',note:'다시 맡기려면 손님이 맞춤 인물을 다시 요청하고 사진을 다시 보내야 해요(손님 방에는 「담당자에게 알려 주세요」로 보여요). 다른 모델로 가려면 모델을 제안해 확인받아요.'});
   if(customLive)checks.push({ok:false,label:'맞춤 인물 의뢰예요 — 아래 맞춤 인물 칸에서 검토 · 확인을 받아요',note:'손님이 이번 광고 사용까지 확인하면 제작 설계에 인물이 붙어요. 그 전에는 제작을 시작할 수 없어요.'});
   // 내 모델 다시 쓰기 의뢰(판 4): 인물 참조가 붙기 전에는 고객 브랜드 화면에서 연결 확인 → 손님 사용 확인 차례다.
   if(casting.kind==='persona')checks.push(casting.personaRef?{ok:true,label:'전용 인물이 붙었어요',note:'손님이 이번 광고 사용을 확인했어요.'}:p.workspaceRequest?.confirmedAt?{ok:false,label:'내 모델 연결을 확인했어요 — 손님이 이번 광고 사용을 확인하기를 기다려요',note:'사용 범위를 고치려면 고객 브랜드 화면에서 고쳐요. 확인 전에는 제작을 시작할 수 없어요.'}:{ok:false,label:'내 모델 다시 쓰기 의뢰예요 — 고객 브랜드 화면에서 연결을 확인하고 사용 범위를 보내요',note:'연결을 확인하기 전에는 손님 방에 인물이 열리지 않아요.'});

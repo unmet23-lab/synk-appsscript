@@ -141,7 +141,12 @@ async function cdMutate(path,body,clearDraft=null){
   clientDesk.busy=true;const hold=clearDraft&&typeof clientDraftsHold==='function';if(hold)clientDraftsHold(clearDraft,true);
   try{
     const result=await api(path,body);if(!cdSessionCurrent(stamp))return;
-    cdClearSavedDraft(clearDraft,draftRevision);if(hold)clientDraftsHold(clearDraft,false,{resume:(clientDesk.draftRevisions[clearDraft]||0)!==draftRevision});
+    // 저장 사이에 더 고쳤는지는 초안 정리 전에 잰다 — 정리(cdClearSavedDraft)가 그 열쇠의 판을 지워 뒤에 재면 늘 「더 고침」이 된다(검수 pulse-expiry-p3-workroom F1).
+    // 「보관」으로 저장이 끝났으면 그 양식의 보관 초안은 더 고쳤어도 지운다 — 보관한 프로젝트에는 초안을 새로 보관하지 않아, 남긴 초안 줄은 보관을 풀 때 옛 글로 뜬다(같은 검수 F2).
+    const edited=(clientDesk.draftRevisions[clearDraft]||0)!==draftRevision,archived=!!clearDraft&&result?.project?.stage==='archived';
+    if(archived&&edited){if(typeof clientDraftsSaved==='function')void clientDraftsSaved(clearDraft,{force:true});delete clientDesk.drafts[clearDraft];delete clientDesk.draftRevisions[clearDraft];}
+    else cdClearSavedDraft(clearDraft,draftRevision);
+    if(hold)clientDraftsHold(clearDraft,false,{resume:edited&&!archived});
     if(path==='/api/client-projects'&&clearDraft==='new:project:'&&result.project?.id&&Object.hasOwn(clientDesk.drafts,clearDraft)){
       const createdKey=result.project.id+':project:';
       if(!Object.hasOwn(clientDesk.drafts,createdKey)){

@@ -65,3 +65,35 @@ test('a 403 on an autosave for a project that is now archived folds the draft qu
  const g=fixture();g.cache();const other=g.form('project',{nextStep:'권한을 잃은 뒤'});g.context.form=other.node;g.run('clientDraftsRemember(form)');g.tick();const last=g.requests.length-1;g.requests[last].reject(Object.assign(new Error('이 프로젝트에서 초안을 쓸 권한이 없어요.'),{status:403}));await turn();const check=g.requests.at(-1);assert.equal(check.path,'/api/client-projects','지금 보관 상태인지 서버 목록을 한 번 다시 읽는다');check.resolve({projects:[{...g.run('project'),stage:'review'}],canWrite:true});await turn();await turn();
  assert.equal(g.run('clientDesk.data.projects.some(row=>row.id===id)'),false);
 });
+test('a form save measures "more was typed" before draft cleanup, so a plain save does not resume autosave (review pulse-expiry-p3-workroom F1)',async()=>{
+ const f=fixture();f.cache();f.run('globalThis.holds=[];const hold=clientDraftsHold;clientDraftsHold=(key,on,options)=>{holds.push([on,options?.resume??null]);return hold(key,on,options);}');
+ f.run("clientDesk.drafts[id+':project:']={nextStep:'적던 글'};clientDesk.draftRevisions[id+':project:']=1;cdfCapture(id,'project',{nextStep:'적던 글'})");
+ let pending=f.run("cdMutate('/api/client-projects/'+id,{revision:4,nextStep:'적던 글'},id+':project:')");
+ f.requests.find(request=>request.body?.nextStep==='적던 글'&&request.path==='/api/client-projects/'+id).resolve({project:{...project,nextStep:'적던 글'}});await turn();
+ assert.deepEqual(JSON.parse(JSON.stringify(f.context.holds)),[[true,null],[false,false]],'더 고치지 않았으면 다시 걸지 않는다');
+ f.run('holds.length=0');f.run('clientDesk.busy=false');
+ f.run("clientDesk.drafts[id+':project:']={nextStep:'둘째 글'};clientDesk.draftRevisions[id+':project:']=1");
+ pending=f.run("cdMutate('/api/client-projects/'+id,{revision:4,nextStep:'둘째 글'},id+':project:')");
+ f.run("clientDesk.draftRevisions[id+':project:']=2;cdfCapture(id,'project',{nextStep:'저장 사이에 더 쓴 글'})");
+ f.requests.find(request=>request.body?.nextStep==='둘째 글').resolve({project:{...project,nextStep:'둘째 글'}});await turn();
+ assert.deepEqual(JSON.parse(JSON.stringify(f.context.holds)),[[true,null],[false,true]],'저장 사이에 더 고쳤으면 다시 건다');
+ assert.ok(/const edited=\(clientDesk\.draftRevisions\[clearDraft\]\|\|0\)!==draftRevision,archived=[^;]+;\s*if\(archived&&edited\)[^\n]+\n\s*else cdClearSavedDraft\(clearDraft,draftRevision\);/.test(readFileSync(new URL('public/client-projects.js',import.meta.url),'utf8')),'잰 뒤에 정리한다');
+});
+test('an "archive" save that ends while more was typed still deletes the saved draft of that form and does not resume autosave (review pulse-expiry-p3-workroom F2)',async()=>{
+ const f=fixture();f.cache();
+ f.run("cdfCapture(id,'project',{nextStep:'보관 전에 적던 글'})");f.tick();
+ const first=f.requests.at(-1);assert.equal(first.body.action,'save');first.resolve(response(active('project',1,{nextStep:'보관 전에 적던 글'})));await turn();
+ assert.equal(f.run("cdfForm(id,'project').bound"),true);
+ f.run("clientDesk.drafts[id+':project:']={nextStep:'보관 전에 적던 글'};clientDesk.draftRevisions[id+':project:']=1");
+ const pending=f.run("cdMutate('/api/client-projects/'+id,{revision:4,stage:'archived'},id+':project:')");
+ f.run("clientDesk.draftRevisions[id+':project:']=2;cdfCapture(id,'project',{nextStep:'저장 응답을 기다리며 더 쓴 글'})");
+ assert.equal(f.timers.size,0,'저장이 도는 동안은 자동 보관을 쉰다');
+ f.requests.find(request=>request.body?.stage==='archived').resolve({project:{...project,stage:'archived'}});await turn();
+ const removal=f.requests.find(request=>request.body?.action==='delete');
+ assert.ok(removal,'보관 초안 지우기를 보낸다');assert.equal(removal.body.expectedRevision,1);
+ removal.resolve(response({...empty('project'),revision:2,status:'deleted'}));await turn();await turn();
+ assert.equal(f.timers.size,0,'다시 걸지 않는다(보관한 프로젝트에는 초안을 새로 보관하지 않는다)');
+ assert.equal(f.run("Object.hasOwn(clientDesk.drafts,id+':project:')"),false);assert.equal(f.run("cdfForm(id,'project').fields"),null);
+ assert.equal(f.run("cdfForm(id,'project').remote.status"),'deleted');
+ void pending;
+});

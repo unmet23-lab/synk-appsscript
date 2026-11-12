@@ -295,6 +295,7 @@ export function createCompanyApp(options={}) {
   let pulseAutoReplyTimer=null,pulseAutoReplySoonTimer=null;
   const scanPulseAutoReplies=()=>pulseAutoReply.tick().catch(()=>{});
   let pulseRequestTimer=null;
+  // 6시간마다: 보관 기간 뒤 지우기 → 공개 의뢰서 90일 정리. 서버 시작 직후 회차는 예고만 낸다(판 4 설계 11-6 · Fable 5.2 설계 검토 P3 — 복원 직후 바로 지우지 않게).
   const retirePulseRequests=()=>pulseRequests.retireUnconfirmed().catch(()=>{});
   clientProjects.subscribeChanges(()=>{if(!pulseAutoReplyTimer||pulseAutoReplySoonTimer)return;pulseAutoReplySoonTimer=setTimeout(()=>{pulseAutoReplySoonTimer=null;void scanPulseAutoReplies();},1500);pulseAutoReplySoonTimer.unref?.();});
   const clientStartupTemplates=createClientStartupTemplatesService({store,clientProjects,clock});
@@ -2105,7 +2106,7 @@ export function createCompanyApp(options={}) {
         if(deliveryCheckSchedule&&!stopRequested){deliveryCheckTimer=setInterval(scanDeliveryChecks,60000);deliveryCheckTimer.unref();void scanDeliveryChecks();}
         if(socialSchedule&&!stopRequested){socialTimer=setInterval(scanSocialPublishing,15000);socialTimer.unref();void scanSocialPublishing();}
         if(pulseMailSchedule&&!stopRequested){pulseMailTimer=setInterval(scanPulseMail,30000);pulseMailTimer.unref();void scanPulseMail();}
-        if(pulseAutoReplySchedule&&!stopRequested){pulseAutoReplyTimer=setInterval(scanPulseAutoReplies,15000);pulseAutoReplyTimer.unref();void scanPulseAutoReplies();pulseRequestTimer=setInterval(retirePulseRequests,6*3600000);pulseRequestTimer.unref();void retirePulseRequests();}
+        if(pulseAutoReplySchedule&&!stopRequested){pulseAutoReplyTimer=setInterval(scanPulseAutoReplies,15000);pulseAutoReplyTimer.unref();void scanPulseAutoReplies();pulseRequestTimer=setInterval(retirePulseRequests,6*3600000);pulseRequestTimer.unref();void pulseRequests.retireUnconfirmed({startup:true}).catch(()=>{});}
         ready=!stopRequested;
         if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
         return server.address();
