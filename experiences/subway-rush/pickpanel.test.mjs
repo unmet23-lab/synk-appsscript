@@ -33,10 +33,12 @@ test('칸 색: 통로는 가는 노선 색, 출구는 노랑, 나가는 곳은 �
   assert.equal(tileColor(EXIT[0], line).ink, '#16171a', '노란 칸 위 글은 먹색');
 });
 
-test('화살: 문 · 승강장은 왼쪽 · 위 · 오른쪽(승강장 가운데는 멈춤 표), 통로 · 출구는 왼쪽 위 · 위 · 오른쪽 위', () => {
-  assert.deepEqual([0, 1, 2].map((i) => arrowOf('door', i)), ['l', 'u', 'r']);
+test('화살: 문 · 승강장은 왼쪽 · 가운데 · 오른쪽(문 가운데 「그대로」는 열차 표, 승강장 가운데는 멈춤 표), 통로 · 출구는 왼쪽 위 · 위 · 오른쪽 위', () => {
+  assert.deepEqual([0, 1, 2].map((i) => arrowOf('door', i)), ['l', 'stay', 'r']);
   assert.deepEqual([0, 1, 2].map((i) => arrowOf('board', i)), ['l', 'wait', 'r']);
   for (const k of ['fork', 'exit']) assert.deepEqual([0, 1, 2].map((i) => arrowOf(k, i)), ['ul', 'u', 'ur']);
+  const css = readFileSync(fileURLToPath(new URL('./style.css', import.meta.url)), 'utf8');
+  for (const d of ['stay', 'wait']) assert.ok(css.includes(`.pk-opt[data-dir=${d}]{--pk-arrow:url(`), `${d}: 화살 대신 제 꼴`);
 });
 
 test('칸 글: 문 · 승강장만 영문, 통로는 노선 동그라미(로마자 없음), 출구는 큰 번호, 글은 이스케이프', () => {

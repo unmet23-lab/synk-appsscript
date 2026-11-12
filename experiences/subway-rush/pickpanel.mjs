@@ -28,8 +28,8 @@ export function tileColor(o, line) {
   const c = o.line ? o.color : line;
   return { fill: c, accent: lift(c), ink: '#fff' };
 }
-/** 화살 방향: 문 · 승강장은 왼쪽 · 위 · 오른쪽(승강장 가운데 「기다리기」는 멈춤 표), 통로 · 출구는 왼쪽 위 · 위 · 오른쪽 위. */
-export const arrowOf = (kind, i) => (kind === 'board' && i === 1 ? 'wait' : (kind === 'door' || kind === 'board' ? ['l', 'u', 'r'] : ['ul', 'u', 'ur'])[i]);
+/** 화살 방향: 문 · 승강장은 왼쪽 · 가운데 · 오른쪽 — 문 가운데 「그대로」는 열차 앞모습(안 내리고 그대로 탄다 — ↑는 「앞으로 간다」로 읽혔다, 11-12 맹검), 승강장 가운데 「기다리기」는 멈춤 표. 통로 · 출구는 왼쪽 위 · 위 · 오른쪽 위. */
+export const arrowOf = (kind, i) => (kind === 'door' && i === 1 ? 'stay' : kind === 'board' && i === 1 ? 'wait' : (kind === 'door' || kind === 'board' ? ['l', 'u', 'r'] : ['ul', 'u', 'ur'])[i]);
 
 /** 칸 글: 노선 동그라미(통로) + 굵은 말 + 가는 말 + 영문(문 · 승강장만 — 역 이름엔 로마자를 달지 않는다). 출구는 큰 번호 + 「번 출구」. */
 export function labelHtml(kind, o) {
