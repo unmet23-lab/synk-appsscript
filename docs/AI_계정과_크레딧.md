@@ -108,10 +108,10 @@ Claude API는 2026-10-17 사용자 결정으로 Max·Team 플랜에 딸린 월 A
 
 | 쓰는 곳 | 키 차례 | 바닥날 때 | 상태 |
 |---|---|---|---|
-| 무인 작업 · 팁 적용안(`~/SYNK_보안/클로드_키목록.json`) | unmet25 → unmet27 → founder(곧 사라질 크레딧부터) → PC CLI 구독 | 1토큰 확인 · 첫 턴의 크레딧 거절이면 다음 키(`클로드키.js`) | 11-12 됨 — synk.yuh는 talk 쪽 대체 키 뒤에 |
-| GPT 중계 · 검수 · 일괄(`클로드_키목록_검수.json`) | 한도키 unmet23-프로모 · 77yuhbs → unmet25 → synk.yuh(unmet27은 11-22부터) | 같음 | 11-12 됨 — founder는 DM 서버 쪽 대체 키 뒤에 |
+| 무인 작업 · 팁 적용안(`~/SYNK_보안/클로드_키목록.json`) | unmet25 → unmet27 → founder → synk.yuh(곧 사라질 크레딧부터) → PC CLI 구독 | 1토큰 확인 · 첫 턴의 크레딧 거절이면 다음 키(`클로드키.js`) | 11-12 됨(synk.yuh는 talk 쪽 대체 키가 이어진 15:51 뒤에) |
+| GPT 중계 · 검수 · 일괄(`클로드_키목록_검수.json`) | 한도키 unmet23-프로모 · 77yuhbs → unmet25 → founder → synk.yuh(unmet27은 11-22부터) | 같음 | 11-12 됨(founder는 DM 서버 쪽 대체 키가 이어진 15:51 뒤에) |
 | 헤르메스 DM(`hermes auth list anthropic`) | founder → unmet27 → unmet25(`.env`) — 직접 넣은 키가 `.env` 키보다 앞선다 | 결제 오류면 바로 다음 키, 그 키는 1시간 쉼(헤르메스 키 묶음) | 11-12 됨 |
-| talk 강사 도우미 · WORLD 쓰기 · 말하기 · 인스타 DM(Supabase 비밀값 `COMPANION_` · `WORLD_WRITING_` · `WORLD_SPEAKING_` · `SYNKBRIEF_ANTHROPIC_API_KEYS`) | 11-12 지문 대조: 강사 도우미 · WORLD는 synk.yuh → unmet29, DM은 founder 하나 → 잇기: 강사 도우미 · WORLD 뒤에 founder → unmet25 → unmet27, DM 뒤에 unmet25 → unmet27 → synk.yuh → unmet29 | 코드에 돌림이 있다(크레딧 거절 → 같은 요청을 다음 키로, 그 키는 6시간 쉼) — 비밀값에 키만 더하면 된다(배포 없음) | 유호님 11-12 「응, 붙여」 — 운영 비밀값 쓰기를 자동 모드 판정기가 막아, 지금 값을 지문으로 확인하고 쓰고 다시 대조하는 스크립트를 유호님이 한 번 실행 |
+| talk 강사 도우미 · WORLD 쓰기 · 말하기 · 인스타 DM(Supabase 비밀값 `COMPANION_` · `WORLD_WRITING_` · `WORLD_SPEAKING_` · `SYNKBRIEF_ANTHROPIC_API_KEYS`) | 강사 도우미 · WORLD 쓰기 · 말하기: synk.yuh → unmet29 → founder → unmet25 → unmet27 · DM: founder → unmet25 → unmet27 → synk.yuh → unmet29(11-12 전에는 강사 도우미 · WORLD가 synk.yuh → unmet29, DM이 founder 하나) | 코드에 돌림이 있다(크레딧 거절 → 같은 요청을 다음 키로, 그 키는 6시간 쉼) — 비밀값에 키만 더하면 된다(배포 없음, 함수가 새로 뜰 때부터) | 11-12 15:51 됨 — 유호님 「응, 붙여」 뒤 운영 비밀값 쓰기를 자동 모드 판정기가 막아, 지금 값을 지문으로 확인하고 쓰고 다시 대조하는 스크립트를 유호님이 실행. 다섯 칸 지문이 새 목록과 맞음 |
 | talk AI 교정(`correct`) · 관찰 초안(`teach/observation`) | 공통 `ANTHROPIC_API_KEY` 하나 — 11-12 지문 대조로는 이 PC에 없는 09-10 키(옛 기록상 talk 운영 조직 = unmet23) | 돌림 코드 없음. 교정은 Message Batches라 결과를 만든 조직의 키로만 받는다 — 배치마다 만든 키를 남겨야 해서 데이터 흐름을 고친다 | SYNK-talk 코드 고침 · 독립 검토 · 배포 — 따로 세션 |
 | GPT(OpenAI) — 받아 적기 · 상황극 · 튜터 · 전사 | 크레딧 조직은 synk.yuh 하나(unmet23 Pro는 11-12에 끝) | `voice-link`는 돌림이 있지만 넘어갈 다른 크레딧 조직이 없다 · `transcribe` · `tutor`는 키 하나 | 갈아탈 곳 없음 |
 
