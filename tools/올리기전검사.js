@@ -748,6 +748,11 @@ function dailyFindings(plates, prep, known = {}) {
 // 걸린 판은 확인할 것(blocked-plate-booked), 안 건 판만 고칠 것(blocked-plate). 게시결과를 안 보고 모두 고칠 것으로 내던 동안에는, 경고로 한 계정을
 // 멈추면 그 계정이 이미 받은(나간 · 걸린) 원본마다 편 전체가 고칠 것이 되어 다른 계정 판까지 못 걸렸다 — 씨앗 계정이면 돌림 원본 전부가 묶인다.
 // 걸기도 같은 셈으로 막힌 계정을 거절한다(tools/게시장부.js closedCell — P2-넷7).
+// 「걸린 판」 = 플랫폼에 실제로 걸린 상태(「예약됨」 · 「거는 중」)뿐이다(11-12 다시 검수 3 P1-막1). 「실패 · 보류 · 취소됨 · 지움이 아닌 모든 상태」로 보던 동안에는
+// 작업실 「승인 대기」(검토 링크 승인 전) · 「확인 필요」 · 스레드 「대기」 · 「놓침」 · 「손으로」가 확인할 것으로 내려가 편이 통과했고, 그대로 승인 · 게시가 갔다
+// (tools/작업실예약.js · 스레드 21시 작업은 dailyBlocked를 보지 않는다). 그 상태들은 아직 플랫폼에 안 걸린 판이라 고칠 것이다 — 승인하지 말고 거둔다.
+const ON_PLATFORM = new Set(['예약됨', '거는 중']);
+const NOT_GOING = new Set(['실패', '보류', '취소됨', '지움']);
 function closedFindings(bundle, plates, { posted = null } = {}) {
   const out = [];
   for (const p of plates) {
@@ -756,13 +761,20 @@ function closedFindings(bundle, plates, { posted = null } = {}) {
     if (!why) continue;
     const state = posted ? posted.get(p.account) || null : null;
     if (state === '게시됨') continue;
-    const booked = Boolean(state) && state !== '실패' && !['보류', '취소됨', '지움'].includes(state);
+    const booked = ON_PLATFORM.has(state);
+    // 줄은 있는데 아직 플랫폼에 걸리지 않은 판(승인 대기 · 확인 필요 · 대기 · 놓침 · 손으로 …)
+    const pending = Boolean(state) && !booked && !NOT_GOING.has(state);
     const again = p.raw?.돌림 ? 'node tools/돌림표.js --다시 --쓰기로 다시 짠다' : '판에서 뺀다';
+    const cancel = `이 판은 「${state}」 상태다(아직 플랫폼에 걸리지 않았다) — 승인하지 말고 작업실에서 취소한다(작업실 판이면 node tools/작업실예약.js 취소 <편 폴더> — 그 편의 등록 전체를 거두니, 이 판을 뺀 뒤 나머지 계정 판을 다시 등록한다. 스레드 「대기」 · 손으로 올릴 판이면 올리지 않는다). 그 뒤 `;
     if (장부.blockedWhy(a)) {
-      if (booked) out.push({ level: LOOK, code: 'blocked-plate-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 「${state}」 상태다. 공개 전이면 그 플랫폼 예약을 거둘지 본다(계정을 멈춘 까닭이 플랫폼 경고면 거둔다 — 거둔 뒤 node tools/게시장부.js 끝 … --상태 실패 --확인 …)` });
+      // 걸린 판은 스스로 거두지 않는다 — 14시 게시 지시문(「스스로 거두지 않고 보고 맨 위에」)이 유호님 허락 범위다(11-12: 「플랫폼 경고면 거둔다」던 문구를 맞춤)
+      if (booked) out.push({ level: LOOK, code: 'blocked-plate-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 「${state}」 상태다. 스스로 거두지 않는다 — 보고 맨 위에 계정 · 편 · 공개 시각과 막힌 까닭을 적는다(거둘지는 유호님이 정한다. 거두기로 하면 그 플랫폼 예약을 내린 뒤 node tools/게시장부.js 끝 … --상태 실패 --확인 …)` });
+      else if (pending) out.push({ level: FIX, code: 'blocked-plate', where: p.account, message: `${why} — ${cancel}${p.raw?.돌림 ? again : `판에서 빼고 준비.json 「빠진판」에 {"${p.account}": "쉼"}을 적는다`}` });
       else out.push({ level: FIX, code: 'blocked-plate', where: p.account, message: `${why} — ${p.raw?.돌림 ? again : `판에서 빼고 준비.json 「빠진판」에 {"${p.account}": "쉼"}을 적는다`}` });
     } else if (booked) {
       out.push({ level: LOOK, code: 'closed-cell-booked', where: p.account, message: `${why} — 그런데 이 판은 이미 「${state}」 상태다. 플랫폼 예약을 거둘지 본다(공개 전 예약을 다른 편으로 바꿔 거는 것은 상시 승인 안)` });
+    } else if (pending) {
+      out.push({ level: FIX, code: 'closed-cell', where: p.account, message: `${why} — 닫힌 계정 · 칸의 판이다. ${cancel}${again}(계정 · 칸을 여는 것은 조율 세션 몫)` });
     } else {
       out.push({ level: FIX, code: 'closed-cell', where: p.account, message: `${why} — 닫힌 계정 · 칸의 판이다. ${again}(계정 · 칸을 여는 것은 조율 세션 몫)` });
     }
@@ -797,6 +809,10 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
       const slot = T.slotFor(p.time, a);
       if (slot.format !== format || slot.time !== local) add(FIX, 'rotation-slot', p.account, `현지 ${local}(${a.timeZone || 'Asia/Seoul'})은 이 계정의 ${format} 칸이 아니다(칸: ${T.allSlots(a).map((s) => `${s.time} ${s.format || ''}`.trim()).join(' · ')}) — node tools/돌림표.js --다시`);
     }
+    // 쓸날(11-12) — 쓸날 없는(「미정」) 노래 원본의 판 · 쓸날 전 날짜의 판. 걸기도 같은 셈으로 거절한다(tools/게시장부.js readyDayWhy). 걸린 판은 확인할 것.
+    const early = 장부.readyDayWhy(bundle.prep, p.raw, a);
+    if (early && booked) add(LOOK, 'rotation-ready-day-booked', p.account, `${early} — 그런데 이 판은 이미 「${row.상태}」 상태다. 스스로 거두지 않고 보고 맨 위에 계정 · 편 · 공개 시각을 적는다(쓸날을 미룬 까닭을 아는 조율 세션이 정한다)`);
+    else if (early) add(FIX, 'rotation-ready-day', p.account, `${early} — node tools/돌림표.js --다시 --쓰기로 다시 짠다`);
     // postRouteVerified 「첫판」(첫 판 시험)은 판 하나만 — 그 한도는 돌림 셈(tools/lib/돌림.js)과 게시 장부 「걸기」가 지킨다
     if (!a.rotationSeed && (a.publicProfileComplete !== true || (a.postRouteVerified !== true && a.postRouteVerified !== '첫판'))) {
       add(FIX, 'rotation-ready', p.account, `프로필(publicProfileComplete) · 예약 경로(postRouteVerified — true, 또는 첫 판 시험 「첫판」)가 확인되기 전 계정이다 — 채운 뒤에만 건다(설계 4 · 5)`);
@@ -807,7 +823,10 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
     if (String(v.파일 || '').replace(/\\/g, '/') !== String(p.raw.파일 || '').replace(/\\/g, '/')) add(FIX, 'rotation-version-file', p.account, `판 파일(${p.raw.파일})이 판본 ${key}의 파일(${v.파일})과 다르다`);
     if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required, key, { accounts: bundle.accounts }));
     const st = states.get(key);
-    if (!st.ready && booked) {
+    if (!st.ready && booked && st.unreadable && !(row.지문 && st.sha && row.지문 !== st.sha)) {
+      // 판본 상태를 못 읽은 것(깨진 원고 · 지도 · 렌더 기록)은 「걸린 뒤 바뀜」과 다른 코드다(11-12 P1-지1) — 내리라고 하지 않는다
+      add(LOOK, 'rotation-booked-unreadable', p.account, `판본 ${key}: ${st.why} — 이 판은 이미 「${row.상태}」 상태다. 예약은 내리지 않는다 — 그 파일을 읽히게 고친 뒤 다시 검사한다(읽힌 뒤에도 판본이 못 들면 그때 내린다)`);
+    } else if (!st.ready && booked) {
       add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: ${st.why} — 그런데 이 판은 이미 「${row.상태}」 상태다(걸린 뒤 판본 검수가 무효가 됐다). 그대로 두면 검수 안 된 영상이 예약대로 공개된다 — 공개 전이면 그 플랫폼 예약을 내리고(node tools/게시장부.js 끝 … --상태 실패 --확인 …) node tools/돌림표.js --다시 --쓰기 뒤 고친 판으로 다시 건다`);
     } else if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
     else if (booked && row.지문 && st.sha && row.지문 !== st.sha) {
@@ -815,7 +834,9 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
     } else if (booked) {
       // 걸린 뒤 게시글만 고친 판(11-11 밤 P1-팔1) — 판본 검수가 다시 서고 영상도 그대로라 위 둘이 조용한데, 예약에는 걸 때의 옛 글이 걸려 있다
       const text = 돌림표.bookedTextProblem(bundle.dir, p.raw, row);
-      if (text) add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: ${text} — 공개 전이면 그 플랫폼 예약을 내리고 고친 글로 다시 건다(node tools/게시장부.js 끝 … --상태 실패 --확인 … → node tools/돌림표.js --다시 --쓰기)`);
+      // 못 읽어 견줄 수 없는 것은 「바뀜」과 다른 코드다(11-12 P1-지1) — 내리라고 하지 않는다
+      if (text && text.unreadable) add(LOOK, 'rotation-booked-unreadable', p.account, `판본 ${key}: ${text.why} — 예약은 내리지 않는다. ${text.file ? `${text.file}을(를)` : '그 파일을'} 읽히게 고친 뒤 다시 검사한다(읽힌 뒤에도 글이 걸 때와 다르면 그때 내린다)`);
+      else if (text) add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: ${text.why} — 공개 전이면 그 플랫폼 예약을 내리고 고친 글로 다시 건다(node tools/게시장부.js 끝 … --상태 실패 --확인 … → node tools/돌림표.js --다시 --쓰기)`);
     }
     // 뜻 검사에서 둘 이상이 같이 짚은 줄을 판정(원본 박자 · 한국어를 못 읽는 시험 전제)으로 내린 판본은 그 줄을 보이게 한다 — 판본에서 못 고치는
     // 줄이라 통과시켰지만(설계 20 「동결 뒤 고침은 P0만」), 다음 원본에서 고칠 거리이고 검수자가 판정을 다시 볼 수 있어야 한다(11-10).

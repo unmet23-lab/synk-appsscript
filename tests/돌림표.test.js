@@ -1282,3 +1282,95 @@ test('돌림표 명령 — 쓸날 없는 노래 원본은 셈에서 빠져 씨�
   assert.ok(re.stdout.includes('(노래 원본에 「돌림」.쓸날이 없다)'), re.stdout);
   assert.equal(읽기(m, 노래).판.filter((p) => p.돌림).length, 0, '쓸날이 없어진 노래 원본의 안 건 돌림 판은 빠진다');
 });
+
+// 노래 칸이 열린 마당과 노래 원본 만들기(씨앗 판본까지 검수가 선 원본 — 쓸날만 있으면 씨앗의 빈 노래 칸에 바로 달린다)
+function 노래마당(t) {
+  const m = 마당();
+  t.after(m.cleanup);
+  원장고침(m, (acc) => { for (const k of ['lab-instagram', 'lab-th-youtube', 'lab-jp-youtube']) acc[k].dailyFormats = ['이야기', '노래']; });
+  const 노래원본 = (name, 고침) => {
+    fs.cpSync(path.join(m.root, G), path.join(m.root, name), { recursive: true });
+    const prep = 읽기(m, name);
+    prep.돌림.형식 = '노래';
+    delete prep.돌림.쓸날;
+    prep.판 = [];
+    fs.cpSync(path.join(m.root, name, '게시', '판본', 'TH'), path.join(m.root, name, '게시', '판본', 'MN'), { recursive: true });
+    prep.돌림.판본.MN = JSON.parse(JSON.stringify(prep.돌림.판본.TH).split('/판본/TH/').join('/판본/MN/'));
+    고침(prep);
+    적기(m, name, '준비.json', prep);
+    적기(m, name, '게시결과.json', { 판: [] });
+  };
+  const 쓸날적기 = (name, 값) => { const p = 읽기(m, name); if (값 === undefined) delete p.돌림.쓸날; else p.돌림.쓸날 = 값; 적기(m, name, '준비.json', p); };
+  const 셈 = (...더) => { const r = m.run('--부터', '2026-11-20', '--일수', '4', '--json', ...더); assert.equal(r.status, 0, r.stderr); return { j: JSON.parse(r.stdout), err: r.stderr }; };
+  const 받은 = (j, name) => j.cells.filter((c) => c.original === name).map((c) => `${c.account} ${c.day}`);
+  return { m, 노래원본, 쓸날적기, 셈, 받은 };
+}
+
+test('돌림표 명령 — 연재: 앞 차례가 쓸날 없이 기다리면 뒤 차례는 먼저 달리지 않는다 · 쓸날을 미룬 원본의 앞 날짜 판은 --다시가 뺀다(다시 검수 3 갈래 I)', (t) => {
+  const { m, 노래원본, 쓸날적기, 셈, 받은 } = 노래마당(t);
+  const 하나 = 'LAB_노래_하나_20261111', 둘 = 'LAB_노래_둘_20261111';
+  // 1번째가 쓸날 없이 기다리면 2번째(쓸날 있음 · 판본 섬)는 먼저 달리지 않는다. 고치기 전: 1번째가 셈에서 빠져 「없는 차례」가 되고 2번째가 씨앗 칸에 달렸다
+  노래원본(하나, (p) => { p.돌림.연재 = { 이름: '한글노래', 차례: 1 }; });
+  노래원본(둘, (p) => { p.돌림.쓸날 = '2026-11-20'; p.돌림.연재 = { 이름: '한글노래', 차례: 2 }; });
+  const 기다림 = 셈();
+  assert.deepEqual(받은(기다림.j, 둘), [], '앞 차례가 기다리는 동안 뒤 차례는 달리지 않는다');
+  assert.deepEqual(받은(기다림.j, 하나), []);
+  const 빈칸 = 기다림.j.cells.find((c) => c.account === 'lab-instagram' && c.format === '노래');
+  assert.match(빈칸.why, /연재 「한글노래」 1번째를 먼저 받아야 한다|쓸날 전/, 빈칸.why);
+  const w = m.run('--부터', '2026-11-20', '--일수', '4', '--쓰기');
+  assert.equal(w.status, 0, w.stderr);
+  assert.match(w.stdout, /^! 쓸날 없는 노래 원본 1 — 셈에서 뺐다.*연재 원본이면 뒤 차례도 이 원본을 기다린다/);
+  assert.deepEqual([읽기(m, 하나).판.length, 읽기(m, 둘).판.length], [0, 0], '--쓰기도 어느 쪽에도 판을 쓰지 않는다');
+  // 1번째에 쓸날을 적으면 1 → 2 차례로 달린다
+  쓸날적기(하나, '2026-11-20');
+  const 열림 = 셈();
+  const 씨앗 = (name) => 열림.j.cells.filter((c) => c.original === name && c.account === 'lab-instagram').map((c) => c.day);
+  assert.equal(씨앗(하나).length, 1, JSON.stringify(열림.j.cells.filter((c) => c.format === '노래')));
+  assert.ok(!씨앗(둘).length || 씨앗(둘)[0] > 씨앗(하나)[0], '2번째는 1번째 뒤에');
+  assert.deepEqual(열림.j.waiting, []);
+
+  // 판을 받은 뒤 쓸날을 미루면 그 앞 날짜의 안 건 돌림 판은 무효다 — --다시가 뺀다(걸기 · 올리기 전 검사 ⑩도 같은 셈으로 막는다)
+  const now = '2026-11-19T10:00:00+09:00';
+  assert.equal(그때(m, now, '--부터', '2026-11-20', '--일수', '4', '--쓰기').status, 0);
+  assert.ok(읽기(m, 하나).판.length > 0);
+  쓸날적기(하나, '2026-12-05');
+  const 다시 = 그때(m, now, '--부터', '2026-11-20', '--일수', '4', '--다시', '--쓰기');
+  assert.equal(다시.status, 0, 다시.stderr);
+  assert.match(다시.stdout, /뺀 안 건 돌림 판 \d+: .*LAB_노래_하나_20261111 lab-instagram [^(]*\(판의 현지 날짜\(2026-11-2\d\)가 이 원본의 쓸날\(2026-12-05\) 전이다/);
+  assert.equal(읽기(m, 하나).판.length, 0);
+});
+
+test('돌림표 명령 — 기다리는 노래 원본(쓸날 없음 · 빈 문자열 · 「미정」)은 --준비무시 · --다시모두 · --예비씀으로도 칸을 못 받는다 · 틀린 날짜는 멈춘다(쓸날 보강)', (t) => {
+  const { m, 노래원본, 쓸날적기, 셈, 받은 } = 노래마당(t);
+  const 하나 = 'LAB_노래_하나_20261111';
+
+  // ① 쓸날 없는 노래 원본 하나 — 준비 · 예비 · 다시모두 어느 길로도 칸을 못 받고, 씨앗의 노래 칸은 빈 채다
+  노래원본(하나, (p) => { p.돌림.예비 = true; });
+  for (const 길 of [[], ['--준비무시'], ['--다시모두'], ['--예비씀'], ['--예비씀', '--준비무시']]) {
+    const { j, err } = 셈(...길);
+    assert.deepEqual(받은(j, 하나), [], `쓸날 없는 노래 원본은 칸을 못 받는다(${길.join(' ') || '기본'})`);
+    assert.equal(j.cells.some((c) => c.account === 'lab-instagram' && c.format === '노래' && c.original), false, `씨앗의 노래 칸은 비어 있다(${길.join(' ') || '기본'})`);
+    assert.deepEqual(j.waiting, [{ piece: 하나, why: '노래 원본에 「돌림」.쓸날이 없다' }]);
+    assert.match(err, /^! 쓸날 없는 노래 원본 1 — 셈에서 뺐다\(이 원본들은 판을 받지 않는다\): LAB_노래_하나_20261111 — /);
+  }
+  // ② 빈 문자열 · 「미정」도 기다림이다(고치기 전: 「쓸날은 YYYY-MM-DD 꼴이다」로 돌림표가 섰다). 틀린 날짜는 계속 멈춘다
+  for (const 값 of ['', '미정', null]) {
+    쓸날적기(하나, 값);
+    const { j } = 셈('--예비씀');
+    assert.deepEqual([받은(j, 하나), j.waiting.map((x) => x.piece)], [[], [하나]], `쓸날 ${JSON.stringify(값)}`);
+  }
+  for (const 틀린 of ['11-20', '2026-13-40', '2026-02-30', '곧']) {
+    쓸날적기(하나, 틀린);
+    const bad = m.run('--부터', '2026-11-20', '--일수', '4', '--json');
+    assert.equal(bad.status, 1, `틀린 쓸날 ${틀린}`);
+    assert.match(bad.stderr, /쓸날은 YYYY-MM-DD 꼴이다/);
+  }
+  // 이야기 원본의 쓸날 「미정」도 기다림이다(줄이 따로 뜬다) — 판을 받지 않는다
+  const 이야기쓸날 = 읽기(m, N).돌림.쓸날;
+  쓸날적기(하나, undefined);
+  쓸날적기(N, '미정');
+  const 미정 = 셈();
+  assert.deepEqual(받은(미정.j, N), []);
+  assert.match(미정.err, /! 쓸날 「미정」인 원본 1 — 판을 받지 않는다: /);
+  쓸날적기(N, 이야기쓸날);
+});

@@ -183,21 +183,25 @@ function bookedVersionProblem(dir, prep, plate, row, { required = ['뜻', '글�
   if (!v) return null;
   const st = versionState(dir, v, required, key, { accounts });
   const changed = Boolean(row.지문 && st.sha && row.지문 !== st.sha);
-  if (!st.ready) return { key, why: st.why, changed };
+  // 판본 상태를 못 읽은 것(unreadable — 깨진 파일)은 「걸린 뒤 바뀜」이 아니다(11-12 P1-지1): 걸린 영상이 달라진 것이 보이면(changed) 그쪽이 먼저다
+  if (!st.ready) return { key, why: st.why, changed, ...(st.unreadable && !changed ? { unreadable: true, file: null } : {}) };
   if (changed) return { key, why: '건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판)', changed };
   const text = bookedTextProblem(dir, plate, row);
-  if (text) return { key, why: text, changed: false, text: true };
+  if (text) return { key, why: text.why, changed: false, text: true, ...(text.unreadable ? { unreadable: true, file: text.file } : {}) };
   return null;
 }
 
-// 걸린 판의 게시글이 걸 때와 다른가 → 까닭 글 또는 null(같음 · 걸 때 지문을 안 적은 옛 줄). 못 읽으면 다르다고 본다(닫는 쪽 — 견줄 수 없는 예약을 조용히 넘기지 않는다).
+// 걸린 판의 게시글이 걸 때와 다른가 → null(같음 · 걸 때 지문을 안 적은 옛 줄) 또는 { why, unreadable?, file? }.
+// 「바뀜」과 「못 읽음」은 다른 일이다(11-12 P1-지1): 바뀜은 예약에 옛 글이 걸려 있다는 뜻(공개 전에 내린다), 못 읽음(unreadable — file = 못 읽은 파일)은
+// 견줄 수 없다는 뜻이다 — 조용히 넘기지 않되 「내려라」로 알리지 않는다(예약큐 · 올리기 전 검사 ⑩이 다른 줄 · 다른 코드로 보인다). 읽는 것은 그 계정 판의 글뿐이다.
 function bookedTextProblem(dir, plate, row) {
   if (!row || !row.게시글지문) return null;
   let now;
   try { now = 장부.postTextSha(dir, plate.계정); } catch (e) {
-    return `건 뒤의 게시글을 읽지 못해 걸 때 글과 견줄 수 없다(${String(e.message).split('\n')[0].slice(0, 100)})`;
+    const file = e && e.file ? e.file : null;
+    return { unreadable: true, file, why: `건 뒤의 게시글을 읽지 못해 걸 때 글과 견줄 수 없다(${String(e.message).split('\n')[0].slice(0, 200)})` };
   }
-  return now === row.게시글지문 ? null : '건 뒤에 게시글(제목 · 본문 · 댓글)을 고쳤다(예약에는 옛 글이 걸려 있다)';
+  return now === row.게시글지문 ? null : { why: '건 뒤에 게시글(제목 · 본문 · 댓글)을 고쳤다(예약에는 옛 글이 걸려 있다)' };
 }
 
 // 편 폴더들의 뜻 검사 기록(시험관 수 확인용) — 판본마다 다시 읽지 않게 뿌리(docs/마케팅)별로 잠깐 들고 있는다. 준비.json들의 크기 · 고친 때가
@@ -249,7 +253,7 @@ function versionState(dir, v, required, key = null, { accounts = null, 뜻기록
       const 자기 = 기록.find((r) => r.편 === 편 && r.판본 === key);
       lack = require('./뜻검사.js').시험관모자람(v.검수.뜻, { 언어: v.언어, 틀: 자기?.틀 || null, 편, 판본: key, 기록 });
     } catch (e) {
-      return { ready: false, why: `뜻 검수 시험관 수를 확인하지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+      return { ready: false, unreadable: true, why: `뜻 검수 시험관 수를 확인하지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
     }
     if (lack) return { ready: false, why: `뜻 검수 시험관 ${lack.수}명(${lack.시험관.join(' · ')})으로 통과 — 넷이어야 한다(${lack.까닭.join(' · ')}). node tools/뜻검사.js 판본 <편 폴더> ${key}로 넷에게 다시 받는다`, sha };
   }
@@ -258,12 +262,12 @@ function versionState(dir, v, required, key = null, { accounts = null, 뜻기록
     // (11-11 밤 Fable 5.2 다시 검수 P1-렌1: 「볼 것 없음」으로 넘겨, 판본렌더.mjs가 렌더.json에 적어 주던 꼴을 옮겨 적으면 두 관문이 꺼졌다)
     let link;
     try { link = 잇기.이음문제(dir, key, v); } catch (e) {
-      return { ready: false, why: `판본 지도를 못 읽음(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+      return { ready: false, unreadable: true, why: `판본 지도를 못 읽음(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
     }
     if (link) return { ready: false, why: link, sha };
     let stale;
     try { stale = 잇기.글낡음(dir, key, v, accounts ? { 원장: { accounts } } : {}); } catch (e) {
-      return { ready: false, why: `판본 글을 뽑지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+      return { ready: false, unreadable: true, why: `판본 글을 뽑지 못함(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
     }
     if (stale) return { ready: false, why: '원고 · 판본 글을 고친 뒤 글.json을 다시 뽑지 않음(node tools/판본글잇기.js 뽑기 → 뜻 검사 다시)', sha };
     // 영상이 지금 원천(판본 글 · 원본 그림 · 소리 · 틀)으로 구운 것인가(11-11 Fable 5.2 끝 판 검수 P1-3) — 렌더 기록(렌더.json)의 글 · 영상 · 자산
@@ -271,12 +275,13 @@ function versionState(dir, v, required, key = null, { accounts = null, 뜻기록
     // 11-10 「지마」 일곱 판본)은 글자 검수 지문이 그대로여도 돌림에 못 든다. 렌더 기록이 없어도 못 든다.
     let render;
     try { render = 잇기.렌더낡음(dir, key, v, { 영상지문: sha }); } catch (e) {
-      return { ready: false, why: `렌더 기록을 못 읽음(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
+      return { ready: false, unreadable: true, why: `렌더 기록을 못 읽음(${String(e.message).split('\n')[0].slice(0, 120)})`, sha };
     }
     if (render) return { ready: false, why: render, sha };
   }
   const fixes = 잇기.원고고칠것(dir, v);
-  if (fixes.length) return { ready: false, why: `원고 고칠 것 — ${fixes[0]}${fixes.length > 1 ? ` 밖 ${fixes.length - 1}` : ''}`, sha };
+  // 원고를 못 읽는 것뿐이면(깨진 JSON · 병합 충돌 표식) 「못 읽음」이다 — 판본이 돌림에 못 드는 것은 같지만, 걸린 판의 알림은 「바뀜」과 가른다(unreadable)
+  if (fixes.length) return { ready: false, ...(fixes.every((x) => /원고를 못 읽는다/.test(x)) ? { unreadable: true } : {}), why: `원고 고칠 것 — ${fixes[0]}${fixes.length > 1 ? ` 밖 ${fixes.length - 1}` : ''}`, sha };
   return { ready: true, sha, file };
 }
 
@@ -300,7 +305,11 @@ function loadPieces(accounts, cfg) {
     if (original && !dead) checkOriginal(d.name, original, accounts);
     // 쓸날 없는 노래 원본은 셈에서 뺀다(waiting — originalsOf가 거른다: 판을 받지 않는다). 11-12: 던져서 돌림표의 모든 명령을 세우던 것 —
     // 여는 날이 아직 미정인 노래 원본(만드는 중 · 검수 중) 하나가 그날 나라별 돌림 전체를 세웠다. main이 맨 위에 알린다(waitingLine).
-    const waiting = original && !dead && original.형식 === '노래' && !original.쓸날 ? '노래 원본에 「돌림」.쓸날이 없다' : null;
+    // 11-12 저녁: 셈에서 빼지 않고 먼 날짜(WAIT_DAY)로 넘긴다 — 빼면 연재의 그 차례가 「없는 차례」가 되어 다음 차례가 먼저 달린다(originalsOf).
+    // 빈 문자열 · 「미정」도 기다림이다(원장이 dailyFrom에 쓰는 글자 — 노래 원본이 아니어도 「미정」은 기다린다).
+    const waiting = !original || dead ? null
+      : original.쓸날 === READY_PENDING ? (original.형식 === '노래' ? '노래 원본에 「돌림」.쓸날이 없다' : '「돌림」.쓸날이 「미정」이다')
+        : original.형식 === '노래' && !original.쓸날 ? '노래 원본에 「돌림」.쓸날이 없다' : null;
     const versions = {};
     if (original && !dead) for (const [k, v] of Object.entries(original.판본 || {})) versions[k] = versionState(dir, v, required, k, { accounts });
     pieces.push({ name: d.name, dir, prep, result, stateOf, original, versions, dead, waiting });
@@ -314,8 +323,12 @@ function checkOriginal(name, original, accounts) {
   // 쓸날 없는 노래 원본을 그대로 셈에 넣으면 --쓰기가 씨앗의 빈 21:00 칸(D+4 · D+5)에 바로 달고, 그 뒤 07 · 15시 제작 회차가 그날 줄 편을 만들면
   // 같은 칸에 두 번 걸린다(11-11 Fable 검수 — 제작 절차 「LAB 하루 두 편」 10 ⑤: 쓸날 = 21:00 노래 칸을 여는 날). 그런 원본은 여기서 던지지 않고
   // loadPieces가 「기다림」으로 적어 셈에서 뺀다(11-12 — 던지면 만들던 노래 원본 하나가 돌림표의 모든 명령을 세운다).
+  // 빈 문자열 · 「미정」은 「아직 안 정함」이다(11-12 저녁 — 던지면 돌림표가 다시 선다): 꼴 검사에서 빼고 loadPieces가 기다림으로 본다. 틀린 날짜는 계속 던진다.
   const day = original.쓸날;
-  if (day !== undefined && day !== null && !/^\d{4}-\d{2}-\d{2}$/.test(String(day))) throw new Error(`${name}: 「돌림」.쓸날은 YYYY-MM-DD 꼴이다(${day})`);
+  const valid = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === String(d);
+  if (day !== undefined && day !== null && day !== '' && day !== READY_PENDING && !(() => { try { return valid(day); } catch { return false; } })()) {
+    throw new Error(`${name}: 「돌림」.쓸날은 YYYY-MM-DD 꼴이다(${day})`);
+  }
   const s = original.연재;
   if (s !== undefined && s !== null && !(typeof s === 'object' && typeof s.이름 === 'string' && s.이름.trim() && Number.isFinite(s.차례))) {
     throw new Error(`${name}: 「돌림」.연재는 {"이름": "<연재 이름>", "차례": <숫자>} 꼴이다`);
@@ -328,10 +341,15 @@ function checkOriginal(name, original, accounts) {
   }
 }
 
+// 기다리는 원본(쓸날 없는 노래 원본 · 쓸날 「미정」)은 빼지 않고 쓸날을 먼 날짜로 넘긴다(11-12 다시 검수 3 — 갈래 I): 어느 칸도 그 날짜에 못 미쳐 판을 받지 않고
+// (--준비무시 · --다시모두 · --예비씀도 쓸날은 풀지 않는다), 연재 차례표에는 남아 뒤 차례가 그 차례를 건너뛰지 않는다. 빼던 동안에는 1번째만 쓸날이 비면
+// 2번째가 먼저 달리고 뒤에 1번째에 쓸날을 적으면 2 → 3 → 1이 됐다.
+const WAIT_DAY = '9999-12-31';
+const READY_PENDING = '미정';
 function originalsOf(pieces) {
-  return pieces.filter((p) => p.original && !p.dead && !p.waiting).map((p) => ({
+  return pieces.filter((p) => p.original && !p.dead).map((p) => ({
     id: p.name, format: p.original.형식, stopped: Boolean(p.original.멈춤), spare: Boolean(p.original.예비),
-    readyFrom: p.original.쓸날 || null, versions: p.versions,
+    readyFrom: p.waiting ? WAIT_DAY : p.original.쓸날 || null, ...(p.waiting ? { waiting: true } : {}), versions: p.versions,
     series: p.original.연재 ? { id: p.original.연재.이름.trim(), order: p.original.연재.차례 } : null,
   }));
 }
@@ -360,6 +378,9 @@ function staleWhy(piece, plate, { rotation = {}, now = null, cells = new Map(), 
   const day = T.localDate(at, T.tzOf(a));
   const slot = T.slotFor(plate.시각, a);
   if (!T.slotsOn(a, day).some((x) => x.time === slot.time && x.format)) return `현지 ${day} ${slot.time} 칸이 닫혀 있다`;
+  // 쓸날을 미룬 뒤 그 앞 날짜에 남은 판(11-12 — 걸기 · 올리기 전 검사 ⑩과 같은 셈: 게시 장부 readyDayWhy)
+  const early = 장부.readyDayWhy(piece.prep, plate, a);
+  if (early) return early;
   const v = piece.versions?.[a.versionKey];
   if (!v) return `판본 ${a.versionKey || '(키 없음)'}이 없다`;
   if (!v.ready) return `판본 ${a.versionKey}: ${v.why || '검수가 서 있지 않다'}`;
@@ -520,8 +541,16 @@ function runPlan(opts) {
 // 셈에서 뺀 원본(쓸날 없는 노래 원본)을 알리는 줄 — 모든 명령의 맨 위에 찍는다(--json이면 표준 오류로: 표준 출력은 JSON만).
 function waitingLine(run) {
   if (!run.waiting.length) return null;
-  return `! 쓸날 없는 노래 원본 ${run.waiting.length} — 셈에서 뺐다(이 원본들은 판을 받지 않는다): ${run.waiting.map((w) => w.piece).join(' · ')} — `
-    + '21:00 노래 칸을 여는 날을 「돌림」.쓸날(YYYY-MM-DD)에 적는다(node tools/판본글잇기.js 돌림 <편 폴더> 전부 --형식 노래 --쓸날 <날짜> · 제작 절차 「LAB 하루 두 편」 10 ⑤)';
+  // 「셈에서 뺐다」 = 판을 받지 않는다. 11-12 저녁부터 연재 차례표에는 남는다(뒤 차례가 이 차례를 건너뛰지 않는다) — 줄 머리는 14시 지시문이 옮겨 적는 글이라 그대로 둔다.
+  const songs = run.waiting.filter((w) => !/미정/.test(w.why));
+  const pending = run.waiting.filter((w) => /미정/.test(w.why));
+  const lines = [];
+  if (songs.length) {
+    lines.push(`! 쓸날 없는 노래 원본 ${songs.length} — 셈에서 뺐다(이 원본들은 판을 받지 않는다): ${songs.map((w) => w.piece).join(' · ')} — `
+      + '21:00 노래 칸을 여는 날을 「돌림」.쓸날(YYYY-MM-DD)에 적는다(node tools/판본글잇기.js 돌림 <편 폴더> 전부 --형식 노래 --쓸날 <날짜> · 제작 절차 「LAB 하루 두 편」 10 ⑤). 연재 원본이면 뒤 차례도 이 원본을 기다린다');
+  }
+  if (pending.length) lines.push(`! 쓸날 「미정」인 원본 ${pending.length} — 판을 받지 않는다: ${pending.map((w) => w.piece).join(' · ')} — 여는 날이 정해지면 「돌림」.쓸날(YYYY-MM-DD)에 적는다`);
+  return lines.join('\n');
 }
 
 function writePlates(run, opts) {

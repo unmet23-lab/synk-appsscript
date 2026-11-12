@@ -229,6 +229,16 @@ test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것,
   assert.deepEqual(blocked(new Map([['yuhobuilds-x', '보류']])), ['고칠 것:blocked-plate:yuhobuilds-x'], '거둔 판도 안 건 판');
   assert.deepEqual(blocked(new Map([['yuhobuilds-x', '예약됨']])), ['확인할 것:blocked-plate-booked:yuhobuilds-x'], '걸린 판은 확인할 것 — 고칠 것이면 그 편의 다른 계정 판까지 못 걸린다');
   assert.deepEqual(blocked(new Map([['yuhobuilds-x', '거는 중']])), ['확인할 것:blocked-plate-booked:yuhobuilds-x']);
+  // 「걸린 판」은 플랫폼에 실제로 걸린 상태(예약됨 · 거는 중)뿐이다(11-12 다시 검수 3 P1-막1) — 작업실 「승인 대기」 · 「확인 필요」 · 스레드 「대기」 · 「놓침」 ·
+  // 「손으로」는 아직 안 걸린 판이라 고칠 것이다(확인할 것으로 내려가 편이 통과하면 승인 · 게시가 그대로 간다)
+  for (const st of ['승인 대기', '확인 필요', '대기', '놓침', '손으로']) {
+    assert.deepEqual(blocked(new Map([['yuhobuilds-x', st]])), ['고칠 것:blocked-plate:yuhobuilds-x'], `막힌 계정의 「${st}」 판은 고칠 것`);
+  }
+  const 글 = (st) => 검사.closedFindings({ accounts: known }, plates('yuhobuilds-x'), { posted: new Map([['yuhobuilds-x', st]]) })[0].message;
+  assert.match(글('승인 대기'), /「승인 대기」 상태다\(아직 플랫폼에 걸리지 않았다\) — 승인하지 말고 작업실에서 취소한다/);
+  // 걸린 판의 문구는 14시 게시 지시문과 같은 쪽이다(B-2) — 스스로 거두지 않고 보고 맨 위에
+  assert.match(글('예약됨'), /스스로 거두지 않는다 — 보고 맨 위에 계정 · 편 · 공개 시각과 막힌 까닭을 적는다/);
+  assert.doesNotMatch(글('예약됨'), /플랫폼 경고면 거둔다/);
   assert.deepEqual(blocked(new Map([['yuhobuilds-x', '게시됨']])), [], '이미 나간 판은 보지 않는다 — 계정을 멈춘 뒤에도 그 계정이 받은 원본이 묶이지 않는다');
   assert.deepEqual(검사.dailyFindings(plates('yuhobuilds-instagram', 'yuhobuilds-x'), {}, known).map((f) => f.code), [], 'dailyFindings는 더는 blocked-plate를 내지 않는다(한 판에 두 번 뜨지 않게)');
   assert.deepEqual(codes(plates('lab-youtube', 'lab-us-youtube')), [], '줄 하나에 계정 하나 · 매일 판 밖 계정은 줄을 만들지 않는다');
@@ -284,6 +294,15 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     // 11-10 밤: 21:00 칸은 노래 — 형식 「노래」 원본의 판은 노래 칸에 걸리고, 모르는 형식은 고칠 것
     known['lab-th-youtube'].dailyFormats = ['이야기', '노래'];
     prep.돌림.형식 = '노래';
+    // 쓸날(11-12) — 쓸날 없는 노래 원본의 돌림 판 · 쓸날 전 날짜의 돌림 판은 고칠 것, 걸린 판이면 확인할 것(걸기도 같은 셈으로 거절한다)
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-ready-day:lab-th-youtube'], '쓸날 없는 노래 원본');
+    prep.돌림.쓸날 = '미정';
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-ready-day:lab-th-youtube'], '쓸날 「미정」');
+    prep.돌림.쓸날 = '2026-11-21';
+    assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), ['rotation-ready-day:lab-th-youtube'], '쓸날 전 날짜(현지 11-20 < 11-21)');
+    assert.deepEqual(검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } }, results: [{ 계정: 'lab-th-youtube', 상태: '예약됨' }] })
+      .map((f) => `${f.level}:${f.code}`), ['확인할 것:rotation-ready-day-booked'], '이미 걸린 판은 확인할 것');
+    prep.돌림.쓸날 = '2026-11-20';
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')]), []);
     assert.deepEqual(codes([plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')]), ['rotation-slot:lab-th-youtube'], '13:00은 이야기 칸');
     prep.돌림.형식 = '춤';
@@ -347,6 +366,13 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     assert.match(글고침[0].message, /건 뒤에 게시글\(제목 · 본문 · 댓글\)을 고쳤다\(예약에는 옛 글이 걸려 있다\)/);
     assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '예약됨', 지문: sha(video) }]), [], '걸 때 게시글 지문을 안 적은 옛 줄');
     assert.deepEqual(booked([{ 계정: 'lab-th-youtube', 상태: '게시됨', 지문: sha(video), 게시글지문: 걸때 }]), [], '이미 나간 판은 안 본다');
+    // 못 읽어 견줄 수 없는 것은 「바뀜」과 다른 코드다(11-12 다시 검수 3 P1-지1) — 내리라고 하지 않고 못 읽은 파일을 보인다
+    fs.writeFileSync(원고, '<<<<<<< HEAD\n{"title": "อย่ากินนะ"}');
+    const 못읽음 = 검사.rotationFindings(bundle, [plate('lab-th-youtube', '2026-11-20T13:00:00+07:00')], { ledger: { labRotation: { 판본검수: ['뜻', '글자'] } }, results: 걸린줄 });
+    assert.deepEqual(못읽음.map((f) => f.level + ':' + f.code), ['확인할 것:rotation-booked-unreadable']);
+    assert.match(못읽음[0].message, /못 읽은 파일 게시\/판본\/TH\/원고_youtube\.json — /);
+    assert.match(못읽음[0].message, /예약은 내리지 않는다/);
+    assert.doesNotMatch(못읽음[0].message, /예약을 내리고/);
     fs.rmSync(원고);
     assert.deepEqual(booked(걸린줄), ['확인할 것:rotation-version-booked'], '걸 때 있던 게시글이 없어졌다');
     fs.rmSync(path.join(dir, '게시', '준비.json'));
@@ -378,6 +404,9 @@ test('⑩ 돌림 판(11-10) — 「LAB 나라별」은 모든 계정을 요구�
     assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '예약됨']])), ['확인할 것:closed-cell-booked:lab-th-youtube']);
     assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '게시됨']])), []);
     assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '취소됨']])), ['고칠 것:closed-cell:lab-th-youtube']);
+    // 닫힌 계정 · 칸도 같다(11-12 P1-막1) — 승인 대기 · 대기 판은 걸린 판이 아니라 고칠 것, 거는 중은 걸린 판
+    for (const st of ['승인 대기', '대기', '놓침']) assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', st]])), ['고칠 것:closed-cell:lab-th-youtube'], st);
+    assert.deepEqual(closed([plate('lab-th-youtube', '2026-11-20T21:00:00+07:00')], new Map([['lab-th-youtube', '거는 중']])), ['확인할 것:closed-cell-booked:lab-th-youtube']);
     delete known['lab-th-youtube'].dailyFormatsFrom;
     fs.writeFileSync(text, '{"줄":["고친 글"]}');
     // ⑩ 줄 셈: 이야기 편은 텔레그램(퀴즈뿐)을 요구하지 않고, 「LAB 나라별」 · 시작 전 계정도 요구하지 않는다

@@ -1012,3 +1012,65 @@ test('걸린(공개 전) 돌림 판의 게시글만 건 뒤에 고쳤으면 판�
   쓰기(걸린줄({ 상태: '게시됨' }));
   assert.doesNotMatch(큐().out, /걸린 돌림 판/);
 });
+
+test('걸린 돌림 판의 게시글 지문은 그 계정 판의 글만 읽는다 — 다른 판 원고가 안 읽혀도 조용하고, 제 원고를 못 읽으면 「걸린 뒤 바뀜」(내리는 걸음)이 아닌 다른 줄로 파일 이름과 함께 알린다(다시 검수 3 P1-지1)', (t) => {
+  const 장부 = require('../tools/게시장부.js');
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-못읽음-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const base = path.join(repo, 'docs', '마케팅');
+  const 편폴더 = path.join(base, 'LAB_못읽음');
+  const dir = path.join(편폴더, '게시');
+  fs.mkdirSync(path.join(dir, '판본', 'MX'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '판본', 'US'), { recursive: true });
+  fs.mkdirSync(path.join(repo, 'tools'), { recursive: true });
+  const video = path.join(dir, '판본', 'MX', 'video.mp4'), text = path.join(dir, '판본', 'MX', '글.json'), 원고 = path.join(dir, '판본', 'MX', '원고_youtube.json');
+  const 남의원고 = path.join(dir, '판본', 'US', '원고_youtube.json');
+  fs.writeFileSync(video, 'mx-1');
+  fs.writeFileSync(path.join(dir, '판본', 'US', 'video.mp4'), 'us-1');
+  fs.writeFileSync(text, '{"줄":[]}');
+  const 좋은 = JSON.stringify({ brand: 'LAB', platform: 'youtube', language: 'es', title: 'Di esto con calma', caption: 'Una frase coreana para decir con calma.' });
+  fs.writeFileSync(원고, 좋은);
+  fs.writeFileSync(남의원고, JSON.stringify({ brand: 'LAB', platform: 'youtube', language: 'en', title: 'Say it calmly', caption: 'A Korean line to say calmly.' }));
+  const sha = (f) => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'lab-mx-youtube': 나라계정('America/Mexico_City', { countryCode: 'MX' }), 'lab-us-youtube': 나라계정('America/New_York', { countryCode: 'US' }) } }));
+  const 판 = { 계정: 'lab-mx-youtube', 시각: '2026-11-12T13:00:00-06:00', 파일: '게시/판본/MX/video.mp4', 원고: '게시/판본/MX/원고_youtube.json', 돌림: true, 지문: sha(video) };
+  // 이미 나간 다른 판(미국판) — 같은 편의 준비.json에 남아 있다
+  const 남의판 = { 계정: 'lab-us-youtube', 시각: '2026-11-09T13:00:00-05:00', 파일: '게시/판본/US/video.mp4', 원고: '게시/판본/US/원고_youtube.json', 돌림: true };
+  let 판본원고 = { 원고: { youtube: '게시/판본/MX/원고_youtube.json' } };
+  const 쓰기 = (줄) => 편('LAB_못읽음', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '못 읽는 원고',
+    돌림: { 형식: '이야기', 판본: { MX: { 언어: 'es', 파일: '게시/판본/MX/video.mp4', 글: '게시/판본/MX/글.json', ...판본원고,
+      검수: { 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } } } } },
+    판: [남의판, 판] }, { 판: [{ 계정: 'lab-us-youtube', 상태: '게시됨', 시각: 남의판.시각 }, 줄] }, base);
+  쓰기({ 계정: 'lab-mx-youtube', 상태: '실패' });
+  const 걸때 = 장부.postTextSha(편폴더, 'lab-mx-youtube');
+  const 걸린줄 = { 계정: 'lab-mx-youtube', 상태: '예약됨', 시각: 판.시각, 지문: 판.지문, 게시글지문: 걸때 };
+  쓰기(걸린줄);
+  const 큐 = () => 돌림큐(base, ['--오늘', '2026-11-11', '--일수', '6', '--알림']);
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+  // 가) 이미 나간 다른 판의 원고에 병합 충돌 표식 한 줄 — 걸린 멕시코판의 글은 그대로다. 고치기 전에는 「걸린 뒤 바뀜 … 예약을 내리고」가 떴다(헛내림)
+  const 깨진 = (s) => `<<<<<<< HEAD\n${s}`;
+  fs.writeFileSync(남의원고, 깨진(fs.readFileSync(남의원고, 'utf8')));
+  assert.equal(장부.postTextSha(편폴더, 'lab-mx-youtube'), 걸때, '다른 판 원고가 안 읽혀도 이 판의 지문은 읽힌다');
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/, '다른 판 원고가 안 읽히는 것은 이 판의 일이 아니다');
+  // 나) 걸린 판 제 원고가 안 읽힌다 — 견줄 수 없다는 줄이 따로 뜨고(못 읽은 파일 이름), 「걸린 뒤 바뀜」 · 「예약을 내리고」는 뜨지 않는다
+  fs.writeFileSync(원고, 깨진(좋은));
+  // 나-1) 판본 「원고」 지도에 든 원고 — 판본 상태(원고 고칠 것)가 먼저 못 읽는다: 고치기 전에는 이것도 「걸린 뒤 바뀜 … 예약을 내리고」였다
+  const s = 큐();
+  assert.match(s.out, /! 걸린 돌림 판의 판본 상태를 읽지 못함: lab-mx-youtube · LAB_못읽음 · 공개 2026-11-12\(현지 날짜, 한국 11-13 04:00\) — 판본 MX: 원고 고칠 것 — youtube: 원고를 못 읽는다\(게시\/판본\/MX\/원고_youtube\.json\)\. 예약은 내리지 않는다/);
+  assert.doesNotMatch(s.out, /판본이 걸린 뒤 바뀜:/);
+  assert.doesNotMatch(s.out, /예약을 내리고/);
+  // 나-2) 판에만 적힌 원고(판본 지도에 없음) — 판본 상태는 서 있고 게시글 지문 견줌이 못 읽는다
+  판본원고 = {};
+  쓰기(걸린줄);
+  const r = 큐();
+  assert.match(r.out, /! 걸린 돌림 판의 게시글을 읽지 못함: lab-mx-youtube · LAB_못읽음 · 공개 2026-11-12\(현지 날짜, 한국 11-13 04:00\) — 판본 MX: 건 뒤의 게시글을 읽지 못해 걸 때 글과 견줄 수 없다\(못 읽은 파일 게시\/판본\/MX\/원고_youtube\.json — /);
+  assert.match(r.out, /예약은 내리지 않는다 — 게시\/판본\/MX\/원고_youtube\.json을\(를\) 읽히게 고친 뒤/);
+  assert.doesNotMatch(r.out, /판본이 걸린 뒤 바뀜:/);
+  assert.doesNotMatch(r.out, /예약을 내리고/);
+  assert.doesNotMatch(r.sent, /걸린 돌림 판/, '텔레그램에는 넣지 않는다');
+  // 다) 읽히게 고치면 조용하고, 읽힌 글이 걸 때와 다르면 그때 「걸린 뒤 바뀜」이다
+  fs.writeFileSync(원고, 좋은);
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+  fs.writeFileSync(원고, 좋은.replace('Di esto', 'Dilo'));
+  assert.match(큐().out, /! 걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube .*건 뒤에 게시글\(제목 · 본문 · 댓글\)을 고쳤다/);
+});

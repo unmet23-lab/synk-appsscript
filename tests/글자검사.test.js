@@ -366,7 +366,9 @@ test('판본 명령(프레임 검사 대역) — --엔진없이는 못 봄으로
     const 준비파일 = path.join(편, '게시', '준비.json');
     const prep = 판본글.readJson(준비파일);
     prep.돌림.판본.EN.글 = '글_en.json';
-    prep.돌림.판본.MN.검수 = { 글자: { 결과: '통과', 지문: 'mn-옛지문' } };
+    // 씨앗 판(MN)도 글자 기록이 있으면 통과 · 지금 영상 지문이어야 기준이 된다(11-12 P1-글1) — 지금 영상의 지문을 적는다
+    const MN지문 = 판본글.sha256(path.join(편, 'MN.mp4'));
+    prep.돌림.판본.MN.검수 = { 글자: { 결과: '통과', 지문: MN지문 } };
     fs.writeFileSync(준비파일, JSON.stringify(prep, null, 2));
     G.프레임검사 = ({ 기준 }) => { 받은기준.push(기준.map((p) => path.basename(p))); return { 찾음: [G.찾음('확인할 것', '좁은여백', '좁은 여백 셋')], 좁은: [], 프레임수: 4, OCR: { 판본: true, 기준: true } }; };
     G.글꼴검사 = () => ({ 찾음: [], 줄: [] });
@@ -410,7 +412,7 @@ test('판본 명령(프레임 검사 대역) — --엔진없이는 못 봄으로
     g = 기록();
     assert.equal(g.엔진잼, '함');
     assert.deepEqual(g.넘긴코드, { 판단: ['좁은여백'] });
-    assert.equal(판본글.readJson(준비파일).돌림.판본.MN.검수.글자.지문, 'mn-옛지문', '다른 판본 기록은 건드리지 않는다');
+    assert.deepEqual(판본글.readJson(준비파일).돌림.판본.MN.검수.글자, { 결과: '통과', 지문: MN지문 }, '다른 판본 기록은 건드리지 않는다');
   } finally {
     Object.assign(G, { 프레임검사: 원.프레임검사, 글꼴검사: 원.글꼴검사, 엔진재기: 원.엔진재기 });
     console.log = 원.log; console.error = 원.error;
@@ -550,6 +552,66 @@ test('기준 고르기 — 기준 판은 글자 검사 통과 기록이 지금 �
     const g = 판본글.readJson(준비파일).돌림.판본.US.검수.글자;
     assert.deepEqual(g.기준, [{ 키: 'MN', 언어: 'mn' }]);
     assert.deepEqual(g.기준뺌.map((b) => [b.키, b.코드]), [['KG', '기준검수없음']]);
+  } finally {
+    Object.assign(G, { 프레임검사: 원.프레임검사, 글꼴검사: 원.글꼴검사, 엔진재기: 원.엔진재기 });
+    console.log = 원.log; console.error = 원.error;
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+});
+
+test('기준 고르기 — 씨앗 판(EN · MN)도 글자 기록이 있으면 「통과 = 지금 영상」이어야 기준이 된다: 고칠 것이 붙은 씨앗 판 · 검사 뒤 다시 구운 씨앗 판은 빠지고, 기본 기준에서 빠진 판은 알린다(다시 검수 3 P1-글1 · H-4)', async () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-씨앗기준-'));
+  const 원 = { 프레임검사: G.프레임검사, 글꼴검사: G.글꼴검사, 엔진재기: G.엔진재기, log: console.log, error: console.error };
+  try {
+    const 편 = 가짜편(방, { EN: 'en', MN: 'mn', BR: 'pt-BR', PY: 'es' });
+    const 준비파일 = path.join(편, '게시', '준비.json');
+    const prep = 판본글.readJson(준비파일);
+    const { 기준고르기, 기준못씀, main } = require('../tools/글자검사.js');
+    const 지문 = (k) => 판본글.sha256(path.join(편, `${k}.mp4`));
+    const 키들 = (r) => r.쓸.map((b) => b.키);
+    // 기록이 없는 씨앗 판은 전처럼 기준이 된다(첫 판본은 견줄 통과 판이 없다)
+    assert.equal(기준못씀('EN', prep.돌림.판본.EN, path.join(편, 'EN.mp4')), null);
+    assert.deepEqual(키들(기준고르기(편, 'PY', prep)), ['EN', 'MN']);
+    assert.deepEqual(기준고르기(편, 'PY', prep).뺌, []);
+    // 영어 씨앗 판 자신이 끝 카드 넘침으로 「고칠 것」 — 그 기록이 지금 영상에 붙어 있다. 고치기 전에는 그대로 기본 기준이 됐다
+    prep.돌림.판본.EN.검수 = { 글자: { 결과: '고칠 것', 지문: 지문('EN') } };
+    assert.match(기준못씀('EN', prep.돌림.판본.EN, path.join(편, 'EN.mp4')), /통과 기록이 없다\(고칠 것\)/);
+    let r = 기준고르기(편, 'PY', prep);
+    assert.deepEqual(키들(r), ['MN'], '고칠 것이 붙은 씨앗 판은 기본 기준이 아니다');
+    assert.deepEqual(r.뺌.map((b) => [b.키, b.코드]), [['EN', '기본기준뺌']], '기본 기준에서 빠진 판은 알린다');
+    assert.match(r.뺌[0].까닭, /고칠 것/);
+    // 주어진 기준으로 줘도 빠진다(확인할 것 「기준검수없음」)
+    r = 기준고르기(편, 'PY', prep, ['EN', 'MN']);
+    assert.deepEqual([키들(r), r.뺌.map((b) => [b.키, b.코드])], [['MN'], [['EN', '기준검수없음']]]);
+    // 통과 기록이 지금 영상과 맞으면 기준이고, 검사 뒤 다시 구우면(영상이 바뀌면) 빠진다
+    prep.돌림.판본.EN.검수 = { 글자: { 결과: '통과', 지문: 지문('EN') } };
+    assert.deepEqual(키들(기준고르기(편, 'PY', prep)), ['EN', 'MN']);
+    fs.writeFileSync(path.join(편, 'EN.mp4'), 'video EN 다시 구움');
+    assert.match(기준못씀('EN', prep.돌림.판본.EN, path.join(편, 'EN.mp4')), /지문이 지금 영상과 다르다/);
+    // 빠진 자리에 다음 판(BR — 통과 기록 있음)이 들어오면 그 바뀜도 알린다
+    prep.돌림.판본.BR.검수 = { 글자: { 결과: '통과', 지문: 지문('BR') } };
+    r = 기준고르기(편, 'PY', prep);
+    assert.deepEqual([키들(r), r.뺌.map((b) => b.키)], [['MN', 'BR'], ['EN']]);
+
+    // 판본 명령 — 기본 기준에서 빠진 씨앗 판은 프레임 검사에 안 넘어가고, 표준 오류와 기록 「기준뺌」에 남고, 찾음(판정)에는 들지 않는다
+    fs.writeFileSync(path.join(편, '글_py.json'), JSON.stringify({ 꼴: '판본글/1', 편: 'LAB_시험편_20261111', 판본: 'PY', 언어: 'es', 나라: ['PY'], 틀: '이야기', 줄: [{ id: 'a', 칸: '상황', 글: '¡No lo comas!', 초: [0, 2] }] }));
+    prep.돌림.판본.PY.글 = '글_py.json';
+    fs.writeFileSync(준비파일, JSON.stringify(prep, null, 2));
+    const 받은기준 = [];
+    const 알림 = [];
+    G.프레임검사 = ({ 기준 }) => { 받은기준.push(기준.map((p) => path.basename(p))); return { 찾음: [], 좁은: [], 프레임수: 4, OCR: { 판본: true, 기준: true } }; };
+    G.글꼴검사 = () => ({ 찾음: [], 줄: [] });
+    G.엔진재기 = async () => ({ 찾음: [], 잰것: [] });
+    console.log = () => {}; console.error = (...a) => { 알림.push(a.join(' ')); };
+    const 밖 = path.join(방, '밖');
+    assert.equal(await main(['판본', 편, 'PY', '--기록', '--밖', 밖]), 0, '빠진 기본 기준은 판정을 바꾸지 않는다');
+    assert.deepEqual(받은기준.at(-1), ['MN.mp4', 'BR.mp4']);
+    assert.ok(알림.some((x) => /기본 기준에서 EN를 뺐다 — .*지문이 지금 영상과 다르다.*지금 기준: MN · BR/.test(x)), 알림.join('\n'));
+    const g = 판본글.readJson(준비파일).돌림.판본.PY.검수.글자;
+    assert.equal(g.결과, '통과');
+    assert.deepEqual(g.기준, [{ 키: 'MN', 언어: 'mn' }, { 키: 'BR', 언어: 'pt-BR' }]);
+    assert.deepEqual(g.기준뺌.map((b) => [b.키, b.코드]), [['EN', '기본기준뺌']]);
+    assert.equal(판본글.readJson(path.join(밖, '결과.json')).찾음.some((f) => /기준/.test(f.코드)), false);
   } finally {
     Object.assign(G, { 프레임검사: 원.프레임검사, 글꼴검사: 원.글꼴검사, 엔진재기: 원.엔진재기 });
     console.log = 원.log; console.error = 원.error;

@@ -186,8 +186,11 @@ function plateTexts(bundle, plate, platform) {
   const ms = manuscriptFile(bundle, plate);
   let manuscript = null;
   if (ms) {
-    manuscript = readJson(ms);
-    take({ title: manuscript.title, caption: manuscript.caption, firstComment: manuscript.firstComment, pinnedComment: manuscript.pinnedComment }, rel(bundle, ms));
+    // 못 읽은 원고는 오류에 그 파일(절대 경로)을 「file」로 달아 던진다 — 받는 쪽(게시 장부 게시글 지문)이 어느 파일인지 보인다(11-12 P1-지1)
+    try {
+      manuscript = readJson(ms);
+      take({ title: manuscript.title, caption: manuscript.caption, firstComment: manuscript.firstComment, pinnedComment: manuscript.pinnedComment }, rel(bundle, ms));
+    } catch (e) { if (e && typeof e === 'object' && !e.file) e.file = ms; throw e; }
     const dir = path.dirname(ms);
     for (const [name, key] of [['제목.txt', 'title'], ['게시문안.txt', null], ['고정댓글.txt', 'pinnedComment']]) {
       const f = path.join(dir, name);

@@ -319,7 +319,9 @@ function collect(server, accounts, now) {
         if (p.돌림 && ['예약됨', '거는 중'].includes(local.상태) && Number.isFinite(at) && at > now) {
           let stale = null;
           try { stale = bookedVersionProblem(path.join(ROOT, dir.name), prep, p, local, { required, accounts }); } catch { /* 판본을 못 읽으면 넘긴다 */ }
-          if (stale) warnings.push(`걸린 돌림 판의 판본이 걸린 뒤 바뀜: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 공개 전에 그 플랫폼 예약을 내리고 「게시장부 끝 --상태 실패 --확인」 → 「돌림표 --다시 --쓰기」 → 고친 판으로 다시 건다`);
+          // 게시글 · 판본 상태를 못 읽어 견줄 수 없는 것은 「바뀜」이 아니다(11-12 P1-지1) — 다른 줄로 보이고 「내려라」를 말하지 않는다(걸린 뒤 바뀜은 묻지 않고 내리는 걸음이다)
+          if (stale && stale.unreadable) warnings.push(`걸린 돌림 판의 ${stale.text ? '게시글을' : '판본 상태를'} 읽지 못함: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 예약은 내리지 않는다 — ${stale.file ? `${stale.file}을(를)` : '그 파일을'} 읽히게 고친 뒤 예약 큐를 다시 본다(읽힌 뒤에 「걸린 뒤 바뀜」이 뜨면 그때 내린다)`);
+          else if (stale) warnings.push(`걸린 돌림 판의 판본이 걸린 뒤 바뀜: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 공개 전에 그 플랫폼 예약을 내리고 「게시장부 끝 --상태 실패 --확인」 → 「돌림표 --다시 --쓰기」 → 고친 판으로 다시 건다`);
         }
         // 게시 장부 잠금(11-10, tools/게시장부.js) — 2시간 넘은 「거는 중」은 끊긴 회차다: 그 플랫폼 예약 목록부터 읽고 닫는다
         if (local.상태 === '거는 중' && now - Date.parse(local.거는중 || 0) > GRACE_MS) {
@@ -794,7 +796,8 @@ function todayAlert(report, now) {
 // 10-30 유호님 「당분간은 텔레그램으로 검수승인(게시물관련)안해도 돼」 — 승인 대기 계정 · 검토 링크 만료 줄은 텔레그램에 넣지 않는다
 // (승인은 노트북 앱 세션에서 받는다). 두 줄은 예약 큐 출력 · report.warnings에는 그대로 남아 세션이 본다.
 // 「걸린 돌림 판의 판본이 걸린 뒤 바뀜」(11-11)도 텔레그램에 넣지 않는다 — 판본을 고치는 세션 · 14시 게시 회차가 예약 큐 출력에서 보고 바꿔 거는 일이다.
-const APPROVAL_WARNING = /^(검토 링크가 |걸린 돌림 판의 판본이 )/;
+// 「걸린 돌림 판의 게시글을 · 판본 상태를 읽지 못함」(11-12)도 같다 — 원고 파일을 고치는 세션이 본다.
+const APPROVAL_WARNING = /^(검토 링크가 |걸린 돌림 판의 )/;
 function alert(report) {
   const warnings = report.warnings.filter((w) => !APPROVAL_WARNING.test(w));
   // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다. 까닭(맹검 · 검사 뒤 바뀜 · 판 더해짐)이 있으면 괄호에,

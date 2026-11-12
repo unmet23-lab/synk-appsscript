@@ -386,3 +386,58 @@ test('채점 --기록 — 뜻 기록에 받은 때의 셈(시험관셈)을 얼�
     fs.rmSync(방, { recursive: true, force: true });
   }
 });
+
+test('받은 때의 셈은 재료를 만든 때 한 번 세어 재료에 적고 채점 --기록은 옮겨 적기만 한다 — 재료를 만든 뒤 이웃 편이 두 걸음으로 다시 받아져도 뒤집히지 않는다(다시 검수 3 P1-셈1)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-셈재료-'));
+  const 앞 = process.env.SYNK_MARKETING_DIR;
+  const 마당 = path.join(방, '마당');
+  process.env.SYNK_MARKETING_DIR = 마당;
+  try {
+    // 이웃 세 편 — 같은 언어 · 같은 틀로 이미 통과(문자 체계 첫 3편이 찼다)
+    const 이웃준비 = (name) => path.join(마당, name, '게시', '준비.json');
+    const 이웃쓰기 = (name, 뜻) => {
+      fs.mkdirSync(path.dirname(이웃준비(name)), { recursive: true });
+      fs.writeFileSync(이웃준비(name), JSON.stringify({ 브랜드: 'LAB', 돌림: { 형식: '퀴즈', 판본: { TH: { 언어: 'th', 검수: { 뜻 } } } } }));
+    };
+    const 통과뜻 = (시각, 덧 = {}) => ({ 결과: '통과', 언어: 'th', 틀: '퀴즈', 시각, 시험관: ['sonnet', 'haiku', 'opus', 'gpt'], ...덧 });
+    이웃쓰기('LAB_이웃가', 통과뜻('2026-11-01T10:00:00+09:00'));
+    이웃쓰기('LAB_이웃나', 통과뜻('2026-11-02T10:00:00+09:00'));
+    이웃쓰기('LAB_이웃다', 통과뜻('2026-11-03T10:00:00+09:00'));
+    const { 편 } = 판본글만들기(방);
+    const 밖 = path.join(방, '밖');
+    조용히(() => M.main(['판본', 편, 'TH', '--밖', 밖]));
+    const 재료파일 = path.join(밖, '재료.json');
+    const 재료 = JSON.parse(fs.readFileSync(재료파일, 'utf8'));
+    const 좋은 = { 요약: '배꼽이 빠지다는 너무 웃긴다는 뜻', 풀기: [{ 문제: 1, 고름: 'A' }], 유일: [{ 문제: 1, 또있음: null }], 웃음: { 웃김: true, 줄: [3] } };
+    for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답(좋은));
+    // 재료를 만든 뒤 — 이웃 「다」가 두 걸음으로 다시 받아졌다(확인할 것 → 눈확인 통과: 처음통과가 새 시각이 된다)
+    const 나중 = '2099-01-01T10:10:00+09:00';
+    이웃쓰기('LAB_이웃다', 통과뜻(나중, { 처음통과: 나중 }));
+    const 첫3편 = (셈) => 셈.까닭.some((x) => /첫 3편/.test(x));
+    assert.equal(첫3편(M.받은때셈(재료)), true, '지금의 이웃 기록으로 다시 세면 「앞에 통과한 편」이 둘로 준다');
+    const 뜻기록 = () => JSON.parse(fs.readFileSync(path.join(편, '게시', '준비.json'), 'utf8')).돌림.판본.TH.검수.뜻;
+    조용히(() => M.main(['채점', 밖, '--기록']));
+    // 고치기 전: 채점할 때의 이웃 기록으로 다시 세어 「첫 3편 — 이 편 앞에 통과한 편 2」가 얼었다
+    assert.equal(첫3편(뜻기록().시험관셈), false, '채점은 재료를 만든 때의 셈을 옮겨 적는다');
+    assert.deepEqual(뜻기록().시험관셈, 재료.시험관셈);
+    assert.equal(재료.시험관셈.센때, 재료.시각);
+    // 같은 재료로 다시 적어도 같다(--눈확인 두 걸음 · 다시 채점)
+    조용히(() => M.main(['채점', 밖, '--기록']));
+    assert.deepEqual(뜻기록().시험관셈, 재료.시험관셈);
+    // 셈 칸이 없는 옛 재료 — 같은 재료로 앞서 적은 기록(센때 = 재료 시각)이 있으면 그 값을 물려받는다
+    const { 시험관셈: _셈, ...옛재료 } = 재료;
+    fs.writeFileSync(재료파일, JSON.stringify(옛재료, null, 2));
+    조용히(() => M.main(['채점', 밖, '--기록']));
+    assert.deepEqual(뜻기록().시험관셈, 재료.시험관셈, '앞 기록의 셈을 물려받는다');
+    // 물려받을 기록도 없으면 전처럼 지금 기록으로 센다(옛 재료의 동작 그대로)
+    const 준비파일 = path.join(편, '게시', '준비.json');
+    const p = JSON.parse(fs.readFileSync(준비파일, 'utf8'));
+    delete p.돌림.판본.TH.검수.뜻;
+    fs.writeFileSync(준비파일, JSON.stringify(p, null, 2));
+    조용히(() => M.main(['채점', 밖, '--기록']));
+    assert.equal(첫3편(뜻기록().시험관셈), true);
+  } finally {
+    if (앞 === undefined) delete process.env.SYNK_MARKETING_DIR; else process.env.SYNK_MARKETING_DIR = 앞;
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+});

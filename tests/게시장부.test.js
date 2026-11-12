@@ -911,21 +911,20 @@ test('끝 예약됨 · 게시됨이 「거는 중」을 닫으려면 표에 그 
     assert.match(again.why, new RegExp(`같은 칸의 ${path.basename(b2)}`));
   }
 
-  // ② two가 풀기로 거둔 뒤에도 같다. 그 칸이 비어 있으면 풀기 → 걸기 → 끝으로 다시 적을 수 있다(다시 올리지 않고)
+  // ② two가 풀기로 거뒀지만 그 칸을 아무도 잡지 않았으면 받는다 — 표 줄을 다시 적는다(11-12 다시 검수 3 P1-되1: 「줄이 없다」만으로 거절하던 동안에는
+  //    안내의 풀기 → 걸기가 판본 관문 · 막힌 계정 · 판 지문에 막혀 플랫폼에 걸린 판이 장부 어디에도 없이 남았다). 두 번 걸림은 없다 — 그 칸은 이 판이 잡는다
   {
-    const [[c1, c2]] = 두편();
+    const [[c1, c2], [, d2]] = 두편();
     assert.equal(장부.claim(one({ dir: c1, now: NOW })).ok, true);
     올라옴(c1, c2);
     assert.equal(장부.release({ dir: c2, account: A, why: '끊긴 걸기 — 예약 목록에 없음', root: w.two.root, now: NOW + 3 * HOUR, registry }).ok, true);
     assert.deepEqual(표줄(path.basename(c1)), []);
     const late = 장부.finish(one({ dir: c1, state: '예약됨', seen: '스튜디오 예약 목록에 걸려 있음', now: NOW + 3 * HOUR + 1000 }));
-    assert.equal(late.ok, false);
-    assert.match(late.why, /칸 장부에 이 걸기.*줄이 없다/);
-    assert.doesNotMatch(late.why, /잡고 있다/);
-    assert.equal(장부.release({ dir: c1, account: A, why: '표에 줄이 없다 — 예약 목록에 걸려 있음', root: w.one.root, now: NOW + 3 * HOUR + 2000, registry }).ok, true);
-    assert.equal(장부.claim(one({ dir: c1, now: NOW + 3 * HOUR + 3000 })).ok, true);
-    assert.equal(장부.finish(one({ dir: c1, state: '예약됨', seen: '스튜디오 예약 목록에 걸려 있음', now: NOW + 3 * HOUR + 4000 })).ok, true);
-    assert.equal(표줄(path.basename(c1)).length, 1);
+    assert.equal(late.ok, true, late.why);
+    assert.deepEqual(표줄(path.basename(c1)).map((e) => e.상태), ['예약됨'], '표 줄을 다시 적는다');
+    const other = 장부.claim(two({ dir: d2, now: NOW + 3 * HOUR + 2000 }));
+    assert.equal(other.ok, false, '그 칸에 다른 편은 걸리지 않는다');
+    assert.match(other.why, new RegExp(`같은 칸의 ${path.basename(c1)}`));
   }
 
   // ③ 보통 길은 그대로다 — 건 사본이 아닌 곳에서(올라온 줄) 닫아도 표에 그 걸기의 줄이 있으면 받는다: 2시간 안(살아 있는 줄) · 2시간 뒤 모두
@@ -1008,4 +1007,285 @@ test('시각이 이미 지난 돌림 판은 걸지 않는다 — 다시 짜게 �
   const r2 = await 명령(m.root, '걸기', d, A, '--지금', '2026-11-22T15:30:00+09:00', '--이미올림', seen);
   assert.equal(r2.code, 0, r2.out);
   assert.equal(결과(d).판[0].이미올림, seen);
+});
+
+// ── 11-12 저녁 — Fable 5.2 다시 검수 3의 남은 P1(지1 · A-2 · 되1 · F-3 · 지금1)과 쓸날 ──
+test('게시글 지문은 그 계정 판의 글만 읽는다 — 다른 판 원고가 안 읽혀도 이 판의 지문 · 걸기 · 견줌은 그대로고, 돌림 판은 제 글을 못 읽으면 걸지 않는다(다시 검수 3 P1-지1 · A-2)', (t) => {
+  const 돌림표 = require('../tools/돌림표.js');
+  const m = 마당();
+  t.after(m.cleanup);
+  const accounts = { ...m.accounts, 'lab-vn-youtube': { ...m.accounts[A], countryCode: 'VN', timeZone: 'Asia/Ho_Chi_Minh' } };
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  const 원고 = path.join(a, '게시', '판본', 'TH', '원고_youtube.json');
+  const 남의원고 = path.join(a, '게시', '원고_vn.json');
+  fs.writeFileSync(원고, JSON.stringify({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร' }));
+  fs.writeFileSync(남의원고, JSON.stringify({ title: 'Đừng ăn', caption: 'Câu này nghĩa là gì' }));
+  // 같은 편의 다른 계정 판(이미 나간 판)이 준비.json에서 이 판보다 앞에 있다
+  준비고침(a, (p) => {
+    p.판[0].원고 = '게시/판본/TH/원고_youtube.json';
+    p.판.unshift({ 계정: 'lab-vn-youtube', 파일: '게시/판본/TH/video.mp4', 원고: '게시/원고_vn.json', 시각: '2026-11-10T13:00:00+07:00' });
+  });
+  const 걸때 = 장부.postTextSha(a, A);
+  assert.notEqual(걸때, 장부.postTextSha(a, 'lab-vn-youtube'), '계정마다 제 판의 글');
+  // 다른 판 원고에 병합 충돌 표식 — 고치기 전에는 이 계정의 지문 읽기까지 던졌다(편의 모든 판 글을 읽었다)
+  fs.writeFileSync(남의원고, '<<<<<<< HEAD\n{"title": "Đừng ăn"}');
+  assert.equal(장부.postTextSha(a, A), 걸때, '다른 판 원고가 안 읽혀도 이 판의 지문은 같다');
+  assert.throws(() => 장부.postTextSha(a, 'lab-vn-youtube'), (e) => e.code === 장부.TEXT_UNREADABLE && /못 읽은 파일 게시\/원고_vn\.json — /.test(e.message) && /원고_vn\.json$/.test(e.file));
+  const c = 장부.claim({ dir: a, account: A, root: m.root, accounts, now: NOW });
+  assert.equal(c.ok, true, c.why);
+  assert.equal(결과(a).판[0].게시글지문, 걸때, '다른 판 원고가 깨져 있어도 걸 때 지문이 적힌다');
+  assert.equal(장부.finish({ dir: a, account: A, state: '예약됨', id: 'yt1', root: m.root, accounts, now: NOW + 1000 }).ok, true);
+  const 준비 = () => JSON.parse(fs.readFileSync(path.join(a, '게시', '준비.json'), 'utf8'));
+  const 내판 = () => 준비().판.find((p) => p.계정 === A);
+  const 문제 = () => 돌림표.bookedVersionProblem(a, 준비(), 내판(), 결과(a).판[0], { accounts });
+  assert.equal(문제(), null, '걸린 판은 조용하다 — 다른 판 원고가 안 읽히는 것은 이 판의 일이 아니다(헛내림)');
+  // 걸린 판 제 원고가 안 읽히면 「바뀜」이 아니라 「못 읽음」이다 — 못 읽은 파일 이름과 함께
+  fs.writeFileSync(원고, '<<<<<<< HEAD\n{"title": "อย่ากินนะ"}');
+  const p = 문제();
+  assert.deepEqual([p.key, p.changed, p.text, p.unreadable], ['TH', false, true, true]);
+  assert.match(p.file, /원고_youtube\.json$/);
+  assert.match(p.why, /건 뒤의 게시글을 읽지 못해 걸 때 글과 견줄 수 없다\(못 읽은 파일 게시\/판본\/TH\/원고_youtube\.json — /);
+  assert.equal(돌림표.bookedTextProblem(a, 내판(), 결과(a).판[0]).unreadable, true);
+  // 읽히면: 걸 때와 다르면 「바뀜」(unreadable 아님), 같으면 조용
+  fs.writeFileSync(원고, JSON.stringify({ title: 'อย่ากินนะ!', caption: 'คำนี้แปลว่าอะไร' }));
+  assert.deepEqual([문제().text, 문제().unreadable], [true, undefined]);
+  fs.writeFileSync(원고, JSON.stringify({ title: 'อย่ากินนะ', caption: 'คำนี้แปลว่าอะไร' }));
+  assert.equal(문제(), null);
+
+  // A-2 — 걸 때 제 글을 못 읽는 돌림 판은 걸지 않는다(지문 없이 걸리면 그 뒤 글을 고쳐도 영영 조용하다). 손으로 단 판은 전처럼 지문 없이 건다
+  const b = m.편('LAB_나', '2026-11-21T13:00:00+07:00', 'b');
+  fs.writeFileSync(path.join(b, '게시', '판본', 'TH', '원고_youtube.json'), '{"title": "깨진');
+  준비고침(b, (q) => { q.판[0].원고 = '게시/판본/TH/원고_youtube.json'; });
+  const no = 장부.claim({ dir: b, account: A, root: m.root, accounts, now: NOW });
+  assert.equal(no.ok, false);
+  assert.match(no.why, /이 판의 게시글을 읽지 못했다\(못 읽은 파일 게시\/판본\/TH\/원고_youtube\.json — .*걸 때의 글 지문을 적을 수 없어 걸지 않는다/);
+  assert.equal(fs.existsSync(path.join(b, '게시', '게시결과.json')), false);
+  준비고침(b, (q) => { delete q.판[0].돌림; delete q.판[0].지문; });
+  assert.equal(장부.claim({ dir: b, account: A, root: m.root, accounts, now: NOW }).ok, true, '손으로 단 판');
+  assert.equal('게시글지문' in 결과(b).판[0], false);
+});
+
+test('플랫폼에 걸린 판을 장부에 되살려 적는 길이 다른 관문에 막히지 않는다 — 걸기는 칸(이미 걸림 · 표의 줄)을 판본 관문보다 먼저 보고, --이미올림은 판본 · 막힌 계정 · 판 지문 관문을 넘고, 끝은 그 칸이 비어 있으면 받는다(다시 검수 3 P1-되1 · F-3)', (t) => {
+  const 돌림표 = require('../tools/돌림표.js');
+  const w = 두마당();
+  t.after(w.cleanup);
+  const { registry } = w;
+  const HOUR = 3600000;
+  const one = (o) => ({ root: w.one.root, accounts: w.one.accounts, registry, account: A, ...o });
+  const two = (o) => ({ root: w.two.root, accounts: w.two.accounts, registry, account: A, ...o });
+  const 표 = () => JSON.parse(fs.readFileSync(registry, 'utf8')).칸;
+  const 표줄 = (name) => Object.values(표()).filter((e) => e.편 === name);
+  const seen = '스튜디오 예약 목록 11-21 13:00 예약됨 — 글 첫 줄 같음';
+
+  // ① 표에만 줄이 남은 판(건 사본은 지워졌다 · 플랫폼에는 걸려 있다) — 그사이 판본이 뜻 검수에서 떨어졌다
+  {
+    const [a1, a2] = w.둘다('LAB_가', '2026-11-21T13:00:00+07:00');
+    assert.equal(장부.claim(one({ dir: a1, now: NOW })).ok, true);
+    assert.equal(장부.finish(one({ dir: a1, state: '예약됨', id: 'yt-a', now: NOW + 1000 })).ok, true);
+    // 건 사본이 지워졌다 — 표의 줄이 가리키는 자리를 없는 경로로
+    const reg = JSON.parse(fs.readFileSync(registry, 'utf8'));
+    for (const e of Object.values(reg.칸)) e.자리 = path.join(w.one.root, '..', '지워진-사본');
+    fs.writeFileSync(registry, JSON.stringify(reg));
+    준비고침(a2, (p) => { p.돌림.판본.TH.검수.뜻.결과 = '고칠 것'; });
+    // 걸기 — 판본 거절 글이 아니라 「읽을 수 없다 … 예약 목록을 읽은 뒤」 안내가 먼저 나온다(고치기 전: 판본 거절 글만 보였다)
+    const first = 장부.claim(two({ dir: a2, now: NOW + HOUR }));
+    assert.equal(first.ok, false);
+    assert.match(first.why, /그 작업본을 읽을 수 없다.*그 플랫폼 예약 목록을 읽은 뒤 「풀기 LAB_가 lab-th-youtube --까닭/);
+    assert.doesNotMatch(first.why, /검수가 서지 않은 판본/);
+    // 안내대로 — 풀기 → 걸기. 그냥 걸면 판본 관문이 막고(뜻 검수 고칠 것), --이미올림으로 되살려 적으면 받는다
+    assert.equal(장부.release({ dir: a2, account: A, why: '예약 목록에 걸려 있음 — 줄을 거두고 다시 적는다', root: w.two.root, now: NOW + HOUR + 1000, registry }).ok, true);
+    const plain = 장부.claim(two({ dir: a2, now: NOW + HOUR + 2000 }));
+    assert.equal(plain.ok, false);
+    assert.match(plain.why, /판본 TH: 뜻 검수 고칠 것 — 검수가 서지 않은 판본은 걸지 않는다/);
+    assert.match(plain.why, /--이미올림/);
+    assert.equal(장부.claim(two({ dir: a2, now: NOW + HOUR + 2000, already: '봄' })).ok, false, '읽은 것이 너무 짧으면 받지 않는다');
+    const back = 장부.claim(two({ dir: a2, now: NOW + HOUR + 3000, already: seen }));
+    assert.equal(back.ok, true, back.why);
+    assert.equal(결과(a2).판[0].이미올림, seen);
+    assert.match(결과(a2).판[0].넘은관문, /판본 TH: 뜻 검수 고칠 것/);
+    assert.equal(장부.finish(two({ dir: a2, state: '예약됨', seen, now: NOW + HOUR + 4000 })).ok, true);
+    assert.equal(표줄('LAB_가').length, 1, '표에 줄이 다시 선다');
+    // 줄이 서니 걸린 뒤 알림이 그 판을 본다(내릴 수 있다) — 고치기 전에는 줄 없음 · 표 줄 0 · 알림 없음
+    const prep = JSON.parse(fs.readFileSync(path.join(a2, '게시', '준비.json'), 'utf8'));
+    assert.match(돌림표.bookedVersionProblem(a2, prep, prep.판[0], 결과(a2).판[0], { accounts: w.two.accounts }).why, /뜻 검수 고칠 것/);
+    // 그 칸은 잡혀 있다 — 같은 칸의 다른 편은 걸리지 않는다
+    const [, n2] = w.둘다('LAB_가2', '2026-11-21T13:00:00+07:00', 'n');
+    assert.equal(장부.claim(two({ dir: n2, now: NOW + HOUR + 5000 })).ok, false);
+  }
+
+  // ② --이미올림은 막힌 계정 · 판 지문 다름도 넘는다(되살려 적는 줄의 영상 지문은 판에 적힌 지문 — 올라가 있는 것은 그 영상이다). 칸은 넘지 못한다
+  {
+    const [b1] = w.둘다('LAB_나', '2026-11-22T13:00:00+07:00', 'b');
+    const 막힌 = { [A]: { ...w.one.accounts[A], dailyBlocked: '11-12 경고' } };
+    assert.match(장부.claim(one({ dir: b1, accounts: 막힌, now: NOW })).why, /막힌 계정이다/);
+    fs.writeFileSync(path.join(b1, '게시', '판본', 'TH', 'video.mp4'), '다시 구움');
+    const back = 장부.claim(one({ dir: b1, accounts: 막힌, now: NOW, already: seen }));
+    assert.equal(back.ok, true, back.why);
+    assert.equal(결과(b1).판[0].지문, 지문('b'), '판에 적힌 지문(올라가 있는 영상)');
+    assert.match(결과(b1).판[0].넘은관문, /판 파일이 돌림표가 적은 지문과 다르다/);
+    const [c1] = w.둘다('LAB_나2', '2026-11-22T13:00:00+07:00', 'c');
+    const clash = 장부.claim(one({ dir: c1, now: NOW, already: seen }));
+    assert.equal(clash.ok, false, '--이미올림으로도 같은 칸의 다른 편은 못 넘는다');
+    assert.match(clash.why, /같은 칸에 이미 LAB_나/);
+  }
+
+  // ③ 이미 걸린 판은 판본이 떨어져 있어도 「이미 예약됨」이 먼저다
+  {
+    const [d1] = w.둘다('LAB_다', '2026-11-23T13:00:00+07:00', 'd');
+    assert.equal(장부.claim(one({ dir: d1, now: NOW })).ok, true);
+    assert.equal(장부.finish(one({ dir: d1, state: '예약됨', id: 'yt-d', now: NOW + 1000 })).ok, true);
+    준비고침(d1, (p) => { p.돌림.판본.TH.검수.뜻.결과 = '고칠 것'; });
+    assert.equal(장부.claim(one({ dir: d1, now: NOW + 2000 })).why, '이미 예약됨');
+  }
+
+  // ④ 끝 — 「거는 중」을 닫는데 표에 그 걸기의 줄이 없어도 그 칸이 비어 있으면 받고 표 줄을 다시 적는다(다른 작업본이 풀기로 거둔 뒤 · 표 줄이 청소된 뒤).
+  //    판본이 그사이 떨어졌어도 받는다 — 끝은 판본을 묻지 않는다(고치기 전: 거절 → 안내의 걸기가 판본 관문에 막혀 줄 없음 · 표 줄 0)
+  {
+    const [e1, e2] = w.둘다('LAB_라', '2026-11-24T13:00:00+07:00', 'e');
+    const [, f2] = w.둘다('LAB_라2', '2026-11-24T13:00:00+07:00', 'f');
+    assert.equal(장부.claim(one({ dir: e1, now: NOW })).ok, true);
+    fs.copyFileSync(path.join(e1, '게시', '게시결과.json'), path.join(e2, '게시', '게시결과.json'));
+    assert.equal(장부.release({ dir: e2, account: A, why: '끊긴 걸기로 봄', root: w.two.root, now: NOW + 3 * HOUR, registry }).ok, true);
+    assert.deepEqual(표줄('LAB_라'), []);
+    준비고침(e1, (p) => { p.돌림.판본.TH.검수.뜻.결과 = '고칠 것'; });
+    const late = 장부.finish(one({ dir: e1, state: '예약됨', seen, now: NOW + 3 * HOUR + 1000 }));
+    assert.equal(late.ok, true, late.why);
+    assert.deepEqual(표줄('LAB_라').map((x) => x.상태), ['예약됨'], '표 줄을 다시 적는다');
+    const blocked = 장부.claim(two({ dir: f2, now: NOW + 3 * HOUR + 2000 }));
+    assert.equal(blocked.ok, false, '그 칸은 잡혀 있다');
+  }
+
+  // ⑤ 그 칸의 다른 편 표 줄이 이미 풀린 줄(건 작업본에서 풀기 · 실패)이면 빈 칸이다 — 받는다
+  {
+    const [g1, g2] = w.둘다('LAB_마', '2026-11-25T13:00:00+07:00', 'g');
+    const [, h2] = w.둘다('LAB_마2', '2026-11-25T13:00:00+07:00', 'h');
+    assert.equal(장부.claim(one({ dir: g1, now: NOW })).ok, true);
+    fs.copyFileSync(path.join(g1, '게시', '게시결과.json'), path.join(g2, '게시', '게시결과.json'));
+    assert.equal(장부.finish(two({ dir: g2, state: '실패', now: NOW + 3 * HOUR })).ok, true);
+    assert.equal(장부.claim(two({ dir: h2, now: NOW + 3 * HOUR + 1000 })).ok, true);
+    // 다른 편이 잡고 있는 동안은 거절(P1-장2 그대로)
+    assert.equal(장부.finish(one({ dir: g1, state: '예약됨', seen, now: NOW + 3 * HOUR + 2000 })).ok, false);
+    // 그 편이 풀렸다 — 표에는 줄이 남아 있어도(게시결과만 손으로 실패로) 참이 풀려 있으면 빈 칸
+    assert.equal(장부.finish(two({ dir: h2, state: '실패', now: NOW + 3 * HOUR + 3000 })).ok, true);
+    const late = 장부.finish(one({ dir: g1, state: '예약됨', seen, now: NOW + 3 * HOUR + 4000 }));
+    assert.equal(late.ok, true, late.why);
+    assert.deepEqual(표줄('LAB_마').map((x) => x.상태), ['예약됨']);
+  }
+
+  // ⑥ 같은 편을 다른 작업본이 다시 걸었으면(내린 뒤 다시 거는 보통 길) 되살아난 옛 회차의 끝은 받지 않는다 — 같은 칸에 같은 편이 두 번 걸린다(독립 검수)
+  for (const 닫기 of ['실패', '풀기']) {
+    const day = 닫기 === '실패' ? 26 : 27;
+    const [i1, i2] = w.둘다(`LAB_바${day}`, `2026-11-${day}T13:00:00+07:00`, `i${day}`);
+    assert.equal(장부.claim(one({ dir: i1, now: NOW })).ok, true);
+    fs.copyFileSync(path.join(i1, '게시', '게시결과.json'), path.join(i2, '게시', '게시결과.json'));
+    if (닫기 === '실패') assert.equal(장부.finish(two({ dir: i2, state: '실패', now: NOW + 3 * HOUR })).ok, true);
+    else assert.equal(장부.release({ dir: i2, account: A, why: '끊긴 걸기', root: w.two.root, now: NOW + 3 * HOUR, registry }).ok, true);
+    assert.equal(장부.claim(two({ dir: i2, now: NOW + 3 * HOUR + 1000 })).ok, true, '같은 편을 다시 건다');
+    assert.equal(장부.finish(two({ dir: i2, state: '예약됨', id: 'yt-two', now: NOW + 3 * HOUR + 2000 })).ok, true);
+    const late = 장부.finish(one({ dir: i1, state: '예약됨', id: 'yt-one', now: NOW + 3 * HOUR + 3000 }));
+    assert.equal(late.ok, false, `되살아난 회차의 끝은 받지 않는다(${닫기})`);
+    assert.match(late.why, /같은 편을 다른 작업본이 다시 걸었다/);
+    assert.equal(결과(i1).판[0].상태, '거는 중');
+    assert.equal(표줄(`LAB_바${day}`).length, 1);
+  }
+
+  // ⑦ 첫 판 확인 전 계정 — 그사이 다른 칸에 다른 편이 걸렸으면 끝을 받지 않는다(판 하나 한도)
+  {
+    const v = 두마당();
+    t.after(v.cleanup);
+    const uno = (o) => ({ root: v.one.root, registry: v.registry, account: A, ...o });
+    const dos = (o) => ({ root: v.two.root, registry: v.registry, account: A, ...o });
+    const 첫판 = { [A]: { ...v.one.accounts[A], postRouteVerified: '첫판' } };
+    const [j1, j2] = v.둘다('LAB_사', '2026-11-28T13:00:00+07:00', 'j');
+    const [, k2] = v.둘다('LAB_사2', '2026-11-29T13:00:00+07:00', 'k');
+    assert.equal(장부.claim(uno({ dir: j1, accounts: 첫판, now: NOW })).ok, true);
+    fs.copyFileSync(path.join(j1, '게시', '게시결과.json'), path.join(j2, '게시', '게시결과.json'));
+    assert.equal(장부.finish(dos({ dir: j2, accounts: 첫판, state: '실패', now: NOW + 3 * HOUR })).ok, true);
+    assert.equal(장부.claim(dos({ dir: k2, accounts: 첫판, now: NOW + 3 * HOUR + 1000 })).ok, true, '다른 칸의 다른 편');
+    const late = 장부.finish(uno({ dir: j1, accounts: 첫판, state: '예약됨', id: 'yt-j', now: NOW + 3 * HOUR + 2000 }));
+    assert.equal(late.ok, false);
+    assert.match(late.why, /첫 판 확인 전 계정의 다른 판/);
+  }
+});
+
+test('--지금은 시험용이다 — --폴더가 git 작업본 밖일 때만 받고, 표의 14일 청소는 실제 시각보다 뒤의 「지금」으로 지우지 않는다(다시 검수 3 P1-지금1)', async (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  // ① 운영 명령(--폴더 없음) — 편 폴더를 보기도 전에 거절한다(아무것도 쓰지 않는다)
+  const run = (...args) => new Promise((resolve) => {
+    const p = spawn(process.execPath, [path.join(__dirname, '..', 'tools', '게시장부.js'), ...args]);
+    let out = '';
+    p.stdout.on('data', (d) => { out += d; });
+    p.stderr.on('data', (d) => { out += d; });
+    p.on('close', (code) => resolve({ code, out }));
+  });
+  for (const cmd of ['걸기', '끝', '풀기']) {
+    const r = await run(cmd, 'LAB_없는편_시험', 'lab-없는계정', '--지금', '2020-01-01T00:00:00+09:00');
+    assert.equal(r.code, 2, r.out);
+    assert.match(r.out, /--지금은 시험용이다 — --폴더가 git 작업본 밖\(임시 폴더\)일 때만 받는다/);
+  }
+  // ② --폴더가 git 작업본 안이면 거절(다른 작업본을 가리켜 운영 표를 건드리는 길)
+  const 안 = fs.mkdtempSync(path.join(os.tmpdir(), '게시장부-작업본-'));
+  t.after(() => fs.rmSync(안, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(안, '.git'));
+  const 안마당 = path.join(안, 'docs', '마케팅');
+  fs.mkdirSync(안마당, { recursive: true });
+  const r2 = await run('걸기', 'LAB_가', A, '--폴더', 안마당, '--지금', 그날);
+  assert.equal(r2.code, 2, r2.out);
+  assert.match(r2.out, /--지금은 시험용이다/);
+  assert.equal(fs.existsSync(path.join(안, '.tmp')), false, '표를 만들지 않았다');
+  // ③ 작업본 밖 임시 폴더에서는 그대로 받는다(다른 시험들이 쓰는 길) · 값이 시각이 아니면 2
+  const a = m.편('LAB_가', '2026-11-20T13:00:00+07:00');
+  assert.equal((await 명령(m.root, '걸기', a, A, '--지금', '어제')).code, 2);
+  assert.equal((await 명령(m.root, '걸기', a, A, '--지금', 그날)).code, 0);
+
+  // ④ 14일 청소 — 「지금」을 20일 뒤로 줘도 실제 시각으로는 14일이 안 지난 다른 계정의 표 줄은 남는다(고치기 전: 지워졌다)
+  const m2 = 마당();
+  t.after(m2.cleanup);
+  const real = Date.now();
+  const day = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const iso = (ms) => `${day(ms)}T13:00:00+07:00`;
+  const b = m2.편('LAB_나', iso(real + 3 * 86400000));
+  assert.equal(장부.claim({ dir: b, account: A, root: m2.root, accounts: m2.accounts, now: real }).ok, true);
+  const regFile = path.join(m2.root, '.게시장부', '칸.json');
+  const reg = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+  reg.칸[`lab-구경꾼|${day(real - 2 * 86400000)}|13:00`] = { 편: 'LAB_구경', 상태: '예약됨', 때: new Date(real - 3 * 86400000).toISOString(), 자리: path.join(m2.root, '..', '다른-사본') };
+  reg.칸[`lab-구경꾼|${day(real - 30 * 86400000)}|13:00`] = { 편: 'LAB_옛구경', 상태: '게시됨', 때: new Date(real - 31 * 86400000).toISOString(), 자리: path.join(m2.root, '..', '다른-사본') };
+  fs.writeFileSync(regFile, JSON.stringify(reg));
+  assert.equal(장부.release({ dir: b, account: A, why: '시험', root: m2.root, now: real + 20 * 86400000 }).ok, true);
+  const after = Object.values(JSON.parse(fs.readFileSync(regFile, 'utf8')).칸).map((e) => e.편).sort();
+  assert.deepEqual(after, ['LAB_구경'], '실제로 14일이 안 지난 줄은 남고(먼 뒤의 「지금」으로 지우지 않는다), 실제로 14일이 지난 줄만 지워진다');
+});
+
+test('쓸날 — 쓸날 없는(「미정」) 노래 원본의 돌림 판 · 쓸날 전 날짜의 돌림 판은 걸지 않는다(걸기 · 올리기 전 검사 ⑩ · 돌림표 --다시가 같은 셈)', (t) => {
+  const m = 마당();
+  t.after(m.cleanup);
+  const acc = { [A]: { ...m.accounts[A], dailyFormats: ['이야기', '노래'] } };
+  const 걸기 = (dir, extra = {}) => 장부.claim({ dir, account: A, root: m.root, accounts: acc, now: NOW, ...extra });
+  const a = m.편('LAB_노래_가', '2026-11-20T21:00:00+07:00');
+  준비고침(a, (p) => { p.돌림.형식 = '노래'; p.돌림.쓸날 = '2026-11-21'; });
+  assert.equal(걸기(a).ok, false, '쓸날 전 날짜의 돌림 판은 걸리지 않는다(고치기 전: 걸렸다)');
+  준비고침(a, (p) => { delete p.돌림.쓸날; });
+  assert.match(걸기(a).why, /노래 원본에 「돌림」\.쓸날이 없다\(쓸날 = 21:00 노래 칸을 여는 날\) — 걸지 않는다/);
+  for (const 빈 of [null, '']) { 준비고침(a, (p) => { p.돌림.쓸날 = 빈; }); assert.match(걸기(a).why, /쓸날이 없다/, JSON.stringify(빈)); }
+  준비고침(a, (p) => { p.돌림.쓸날 = '미정'; });
+  assert.match(걸기(a).why, /「돌림」\.쓸날이 「미정」이다/);
+  준비고침(a, (p) => { p.돌림.쓸날 = '2026-11-21'; });
+  assert.match(걸기(a).why, /판의 현지 날짜\(2026-11-20\)가 이 원본의 쓸날\(2026-11-21\) 전이다/);
+  assert.equal(fs.existsSync(path.join(a, '게시', '게시결과.json')), false);
+  준비고침(a, (p) => { p.돌림.쓸날 = '2026-11-20'; });
+  assert.equal(걸기(a).ok, true, '쓸날 당일(현지 날짜)부터 건다');
+  // 이야기 원본 — 쓸날이 없으면 묻지 않고, 「미정」이면 걸지 않고, 쓸날 전 날짜면 걸지 않는다
+  const b = m.편('LAB_나', '2026-11-21T13:00:00+07:00', 'b');
+  준비고침(b, (p) => { p.돌림.쓸날 = '미정'; });
+  assert.match(걸기(b).why, /쓸날이 「미정」이다/);
+  준비고침(b, (p) => { p.돌림.쓸날 = '2026-12-01'; });
+  assert.match(걸기(b).why, /쓸날\(2026-12-01\) 전이다/);
+  준비고침(b, (p) => { delete p.돌림.쓸날; });
+  assert.equal(걸기(b).ok, true);
+  // 손으로 단 판(씨앗 판)은 쓸날을 묻지 않는다
+  const c = m.편('LAB_노래_다', '2026-11-22T21:00:00+07:00', 'c');
+  준비고침(c, (p) => { p.돌림.형식 = '노래'; delete p.판[0].돌림; delete p.판[0].지문; });
+  assert.equal(걸기(c).ok, true);
+  assert.equal(장부.readyDayWhy({ 돌림: { 형식: '노래', 쓸날: '2026-11-20' } }, { 시각: '2026-11-19T23:30:00+09:00' }, { timeZone: 'Pacific/Auckland' }), null, '현지 날짜로 센다(오클랜드는 이미 11-20)');
 });
