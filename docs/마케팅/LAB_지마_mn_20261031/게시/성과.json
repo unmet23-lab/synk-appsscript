@@ -193,6 +193,17 @@
         }
       },
       {
+        "계정": "lab-lk-youtube",
+        "채널": "유튜브 @synklabsrilanka",
+        "주소": "https://www.youtube.com/watch?v=2vJuaZ6IS4Y",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-12T07:30:13.000Z",
+        "훅": null,
+        "역할": "육성",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-my-youtube",
         "채널": "유튜브 @synklabmalaysia",
         "주소": "https://www.youtube.com/watch?v=TI8m0zNT_Nc",
