@@ -141,7 +141,7 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
   const realLead = !!realPart && part.kind !== 'rest' && t >= realPart.t - REAL_LEAD && t < realPart.end;
   const label = part.kind === 'rest' ? (part.mode === 'clap' ? loc.clap : loc.say) : realLead ? loc.real : '';
   const labelAt = realLead ? realPart!.t - REAL_LEAD : part.t;
-  const labelSize = label ? fitBox(label, prof, TEXT_W - 64, 76, 36, 1).size : 0; // 앞의 코랄 점 · 사이(약 0.74 × 크기)만큼 덜어 맞춘다(11-12 카자흐판이 920을 넘음)
+  const labelSize = label ? fitBox(label, prof, TEXT_W - 64, 60, 36, 1).size : 0; // 60: 큰 음절과 간격(11-12 맹검 「딱지가 큰 글자 위에 끼워 넣은 주석」) // 앞의 코랄 점 · 사이(약 0.74 × 크기)만큼 덜어 맞춘다(11-12 카자흐판이 920을 넘음)
   const meanSize = fitBox(`—— ${loc.mean}`, prof, TEXT_W, 76, 44, 1).size; // 76: 뜻 줄 아래 끝이 SAFE_BOTTOM 안(11-12)
   const img = doc.stage.mode === 'mongle' ? doc.stage.img : doc.stage.pic;
 
@@ -162,13 +162,15 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
       {/* 카운트인 — 이 낱말을 쓰는 상황 한 줄(0프레임에 이미 보인다) */}
       {showBridge ? (() => {
         const box = fitBox(loc.bridge, prof, TEXT_W, 100, 56, 4);
+        // 남는 높이(아래 안전선까지)의 40%만큼 내려 놓는다 — 위에 몰린 작은 두 줄 아래가 비어 보였다(11-12 맹검)
+        const bridgeTop = Y.label + 8 + Math.max(0, (SAFE_BOTTOM - (Y.label + 8) - box.lines.length * box.size * 1.12) * 0.4);
         // 읽는 빠르기로 낱말마다 짙어진다 — 첫 박부터 카운트인 끝 0.7초 전까지(0프레임에는 흐리게 다 보인다 · 표지)
         const words = box.lines.map((l) => l.split(/(\s+)/).filter((x) => x !== ''));
         const total = words.flat().filter((w) => !/^\s+$/.test(w)).length;
         const span = Math.max(0.5, count!.end - 0.7 - doc.first);
         let k2 = -1;
         return (
-          <div style={{ position: 'absolute', left: PAD, top: Y.label + 8, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: box.size, lineHeight: 1.12,
+          <div style={{ position: 'absolute', left: PAD, top: bridgeTop, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: box.size, lineHeight: 1.12,
             letterSpacing: '-0.025em', opacity: 1 - swapOut, translate: `0 ${-36 * swapOut}px` }}>
             {words.map((ws, i) => (
               <div key={i}>
@@ -187,7 +189,7 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
 
       {/* 딱지 줄 — 네 차례(손뼉 · 말하기) · 진짜 속도 */}
       {label && !inEnd ? (
-        <div key={label} style={{ position: 'absolute', left: PAD, top: Y.label - 46, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: labelSize,
+        <div key={label} style={{ position: 'absolute', left: PAD, top: Y.label - 62, width: TEXT_W, fontFamily: LOC, fontWeight: 800, fontSize: labelSize,
           letterSpacing: '-0.02em', color: C.ink, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: labelSize * 0.32, ...blurIn(f, fr(labelAt), fps) }}>
           {/* 강조색은 코랄 하나 — 딱지 글은 검정, 앞의 점만 코랄(v3 맹검: 짙은 빨강 · 코랄 · 사이 색이 갈려 탁했다) */}
           <span style={{ width: labelSize * 0.42, height: labelSize * 0.42, borderRadius: '50%', background: C.accent, flex: 'none' }} />
@@ -235,21 +237,25 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
         const meanEnd = Math.min(48, meanSize);
         const qTop = Y.label - 10 + wordSize + 10 + meanEnd * 1.1 + 50;
         const avail = SAFE_BOTTOM - qTop;
-        let box = fitBox(q, prof, TEXT_W, 74, 34, 4);
+        let box = fitBox(q, prof, TEXT_W, 92, 34, 4);
+        let qPick = q; // 고른 줄바꿈 그대로 그린다(띄어쓰기 없는 한자 · 가나는 브라우저가 못 나눈다)
+        // 92: 끝 물음이 마지막 화면을 잡게(11-12 맹검 「작은 검정 한 줄」)
         let best = 0;
         // 줄을 \n에서만 나누는 꼴(타이 · 크메르 · 버마어 — 띄어쓰기가 절 경계)은 띄어쓰기에서 나눈 판도 잰다
         // (11-12 태국어 끝 물음이 한 줄에 욱여넣어져 다른 언어보다 눈에 띄게 작았다). 화면은 그 크기에서 브라우저가 띄어쓰기에서 나눈다.
-        const qs = prof.breaks === 'phrase' && / /.test(q) ? [q, q.replace(/ +/g, '\n')] : [q];
+        const qs = [q];
+        if (prof.breaks === 'phrase' && / /.test(q)) qs.push(q.replace(/ +/g, '\n'));
+        if (prof.breaks === 'phrase' && /[、，,]/.test(q)) qs.push(q.replace(/([、，,])\s*/g, '$1\n')); // 「、」「，」 뒤에서도(11-12 일본어 끝 물음이 한 줄에 작게)
         for (let nl = 1; nl <= 4; nl++) { // 줄 수마다 들어가는 크기를 재고 가장 큰 쪽(한 줄에 작게 욱여넣지 않게)
           const cap = Math.floor(avail / (nl * 1.12));
           if (cap < 34) break;
           for (const qq of qs) {
-            const b = fitBox(qq, prof, TEXT_W, Math.min(74, cap), 34, nl);
-            if (!b.over && b.lines.length <= nl && b.size <= cap && b.size > best) { box = b; best = b.size; }
+            const b = fitBox(qq, prof, TEXT_W, Math.min(92, cap), 34, nl);
+            if (!b.over && b.lines.length <= nl && b.size <= cap && b.size > best) { box = b; best = b.size; qPick = qq; }
           }
         }
         const at0 = fr(endPart!.t);
-        const qWords = q.split(/( +)/).filter((x) => x !== ''); // 보통 띄어쓰기로만 — 붙여 둔 NBSP(\u00A0)는 낱말 안에 남긴다
+        const qWords = qPick.split(/( +|\n)/).filter((x) => x !== ''); // 보통 띄어쓰기로만 — 붙여 둔 NBSP(\u00A0)는 낱말 안에 남긴다
         let qk = -1;
         return (
           <>
@@ -265,6 +271,7 @@ export const Song: React.FC<{ doc?: SongDoc }> = ({ doc = SONG }) => {
                 // 따옴표 안 말(그 낱말의 뜻)만 코랄 — 끝 물음의 강약, 박마다 살짝 뛴다(멈춘 끝 화면이 되지 않게)
                 let inQ = false;
                 return qWords.map((w, i) => {
+                  if (w === '\n') return <br key={i} />;
                   if (/^ +$/.test(w)) return <span key={i}>{w}</span>;
                   qk += 1;
                   const opens = /^[“"«「『]/.test(w);
