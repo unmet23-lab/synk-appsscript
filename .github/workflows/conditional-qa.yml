@@ -78,6 +78,35 @@ jobs:
           Invoke-WebRequest -Uri 'https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip' -OutFile $zip -MaximumRetryCount 3 -RetryIntervalSec 5
           if ((Get-FileHash -Algorithm SHA256 -Path $zip).Hash -ne 'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d') { throw 'restic ZIP SHA-256 mismatch' }
           Expand-Archive -Path $zip -DestinationPath $folder
+      # S129–S135 — the work backup Stage 1 fork (its own engine, the run executable WorkBackupRun.exe and the window
+      # lock) and the recommended-files planner both engines call. Only the two executables are cached, keyed by every
+      # tracked file they are built from, so a push that does not touch them restores them in seconds; on a miss they are
+      # built here from these sources. A missing executable is red, never a skip (tools/conditional-qa/README.md).
+      - name: install the forked work backup engine dependency
+        if: runner.os == 'Windows'
+        run: npm ci --prefix experiences/solo-backup-rust/engine --ignore-scripts --no-audit --no-fund
+      - name: restore the work backup run executable and planner built from these sources
+        if: runner.os == 'Windows'
+        id: work-backup-exes
+        uses: actions/cache@v6.1.0
+        with:
+          path: ${{ runner.temp }}\work-backup-exes
+          key: work-backup-exes-v1-${{ hashFiles('experiences/solo-backup-rust/src-tauri/**', 'experiences/solo-backup-rust/contract/**', 'experiences/solo-backup-rust/inventory/**') }}
+      - name: build the work backup run executable and planner
+        if: runner.os == 'Windows' && steps.work-backup-exes.outputs.cache-hit != 'true'
+        run: |
+          # cargo cannot list package files inside a non-cone sparse git tree, so build from a plain copy (as workbackup-t2 does).
+          $app = Join-Path $env:RUNNER_TEMP 'work-backup-src/experiences/solo-backup-rust'
+          New-Item -ItemType Directory -Force -Path $app | Out-Null
+          foreach ($part in 'src-tauri', 'contract', 'inventory') { Copy-Item -Recurse -LiteralPath "experiences/solo-backup-rust/$part" -Destination (Join-Path $app $part) }
+          cargo build --locked --bin WorkBackupRun --manifest-path (Join-Path $app 'src-tauri/Cargo.toml')
+          if ($LASTEXITCODE -ne 0) { throw 'WorkBackupRun build failed' }
+          cargo build --locked --release --bin WorkBackupPlanner --manifest-path (Join-Path $app 'inventory/Cargo.toml')
+          if ($LASTEXITCODE -ne 0) { throw 'WorkBackupPlanner build failed' }
+          $out = Join-Path $env:RUNNER_TEMP 'work-backup-exes'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Copy-Item -LiteralPath (Join-Path $app 'src-tauri/target/debug/WorkBackupRun.exe') -Destination $out
+          Copy-Item -LiteralPath (Join-Path $app 'inventory/target/release/WorkBackupPlanner.exe') -Destination $out
       - name: build current Rust source and install media tools
         if: runner.os == 'Linux'
         run: |
@@ -120,6 +149,9 @@ jobs:
         env:
           DRAMA_LIVE_WORLD_BUNDLE: ${{ runner.os == 'Linux' && format('{0}/.tmp/conditional-drama-public/world/world-account.bundle.mjs', github.workspace) || '' }}
           SOLO_BACKUP_RESTIC: ${{ runner.os == 'Windows' && format('{0}\solo-backup-restic\restic_0.19.1_windows_amd64.exe', runner.temp) || '' }}
+          SWB_RECOMMENDED_RESTIC: ${{ runner.os == 'Windows' && format('{0}\solo-backup-restic\restic_0.19.1_windows_amd64.exe', runner.temp) || '' }}
+          SWB_RECOMMENDED_PLANNER: ${{ runner.os == 'Windows' && format('{0}\work-backup-exes\WorkBackupPlanner.exe', runner.temp) || '' }}
+          SWB_RUN_EXE: ${{ runner.os == 'Windows' && format('{0}\work-backup-exes\WorkBackupRun.exe', runner.temp) || '' }}
         run: node tools/conditional-qa/run.cjs --route ${{ matrix.route }} --output "${{ runner.temp }}/conditional-${{ matrix.route }}"
       - name: save the actual event ledger
         if: always()

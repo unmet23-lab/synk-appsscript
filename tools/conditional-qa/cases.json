@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 128,
+  "expectedCount": 135,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1028,6 +1028,62 @@
       "name": "빛 이름 — 얼굴 빛 값(가짜 그림): 좌우 · 위아래 · 색 · 역광 셈, 너무 작은 상자는 재지 않는다 · 얼굴 없는 그림은 알림(검출기가 없는 곳은 확인)",
       "group": "컷 연속성 검사의 파이썬 그림 라이브러리 · ffmpeg",
       "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S129",
+      "file": "experiences/solo-backup-rust/engine/tests/engine.test.cjs",
+      "name": "real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S130",
+      "file": "experiences/solo-backup-rust/engine/tests/recommended.test.cjs",
+      "name": "recommendations remove overlap and visibly exclude sensitive/manual/cache paths",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S131",
+      "file": "experiences/solo-backup-rust/engine/tests/recommended.test.cjs",
+      "name": "native plan -> append-only backup -> fresh independent restore, original and earlier snapshots retained",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S132",
+      "file": "experiences/solo-backup-rust/tests/worker-runner.test.cjs",
+      "name": "run mode: one $run per boot, person-started run is forced, app methods are refused",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S133",
+      "file": "experiences/solo-backup-rust/tests/run-exe.test.cjs",
+      "name": "WorkBackupRun.exe: off → skipped, manual → complete, held lock → busy, records carry no paths",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S134",
+      "file": "experiences/solo-backup-rust/tests/app-lock.test.cjs",
+      "name": "window operations take the engine lock, read the run's settings first, keep it until the job ends, and show a run's progress",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S135",
+      "file": "experiences/solo-backup/tests/recommended.test.cjs",
+      "name": "native plan -> append-only backup -> fresh independent restore, original and earlier snapshots retained",
+      "group": "업무 백업 추천 자료 — 계획기와 실제 restic",
+      "route": "windows",
       "profile": "default"
     }
   ]

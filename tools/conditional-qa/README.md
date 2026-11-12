@@ -4,10 +4,10 @@
 
 | 실행 위치 | 등록 항목 | 실행 조건 |
 |---|---:|---|
-| GitHub Windows | 34 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic, 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더 |
+| GitHub Windows | 41 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic(0.5.0 · 1단계 갈래 · 회차 실행기 · 추천 자료 계획기), 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더 |
 | GitHub Linux | 11 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화, 컷 연속성 검사의 그림 · 영상(파이썬 그림 라이브러리) |
 | Windows 로컬 | 82 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA·Windows 글꼴과 OCR |
-| 합계 | 128 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다. S128은 11-12에 등록한 [컷 연속성 검사의 얼굴 빛 값](#cut-continuity-images) 시험이다 — 11-11 `ce56e974c`가 등록 없이 넣어 syntax-check가 33회 빨갰다 |
+| 합계 | 135 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다. S128은 11-12에 등록한 [컷 연속성 검사의 얼굴 빛 값](#cut-continuity-images) 시험이다 — 11-11 `ce56e974c`가 등록 없이 넣어 syntax-check가 33회 빨갰다. S129~S135는 11-13에 등록한 [업무 백업 1단계 갈래와 추천 자료](#solo-backup-rust) 시험이다 — 11-10 `26d6e9e72`(S135)와 11-12~13 1단계 갈래(S129~S134)가 등록 없이 넣어 wide-tests(experiences)가 Linux에서 건너뛰고 빨갰다 |
 
 `conditional-qa.yml`은 master의 각 push에 세 관문을 건다. 파일과 시험 이름이 일치하는 실제 Node 시험 이벤트가 정확히 한 번 통과해야 한다. skip/todo, 이름 변경, 누락, 중복, 프로세스 실패·시간 초과는 실패다. 기존 syntax/wide CI에 처음 생긴 조건부 제외도 등록되지 않았으면 실패한다. 새 제외를 추가할 때에는 재현 입력과 자동 실행 경로를 함께 등록한다. 등록된 이름을 바꿀 때에는 같은 ID의 이름과 시험을 함께 바꾼다.
 
@@ -107,6 +107,10 @@ S097은 화면의 마이크 막대에 합성 신호가 들어온 시간만 센�
 <a id="solo-backup-restic"></a>
 
 S116은 GitHub Windows에서 공식 restic 0.19.1 ZIP을 받아 SHA-256을 대조하고 푼 뒤 `SOLO_BACKUP_RESTIC`으로 가리켜 `experiences/solo-backup/tests/engine.test.cjs`의 실제 백업·복구 시험을 돌린다. 엔진은 열 때 EXE 해시를 다시 본다. 파일을 못 받거나 해시가 다르면 빨강이고 건너뛰지 않는다. restic 판을 올리면 이 워크플로의 주소·해시와 엔진의 `RESTIC_SHA256`을 함께 바꾼다.
+
+<a id="solo-backup-rust"></a>
+
+S129~S135는 같은 restic으로 업무 백업 1단계 갈래(`experiences/solo-backup-rust`)를 돌린다 — 갈라 온 엔진의 백업 · 복구(S129), Windows 경로 규칙(S130)과 추천 자료(S131), 회차 모드 워커(S132), 회차 실행기 `WorkBackupRun.exe` 끝까지(S133), 화면 앱 잠금(S134). S135는 0.5.0 쪽 추천 자료 시험이다(0.5.0은 동결이라 코드는 그대로 두고 등록만 했다). 갈래 엔진의 의존성은 그 lock 파일로 깔고, 회차 실행기(디버그)와 추천 자료 계획기(`WorkBackupPlanner.exe`)는 `src-tauri` · `contract` · `inventory` 추적 파일의 해시를 열쇠로 실행 파일 둘만 캐시한다 — 그 원천을 건드리지 않은 push는 몇 초 만에 되살리고, 열쇠가 바뀌면 그 자리에서 빌드한다(cargo가 비원뿔 희소 체크아웃 안의 파일 목록을 못 읽어 `workbackup-t2`처럼 사본에서 빌드). 실행 파일이 없거나 빌드가 실패하면 빨강이고 건너뛰지 않는다. 갈래에 건너뛸 수 있는 시험을 더하면 같은 커밋에서 여기에 등록한다 — `tests/conditional-qa.test.cjs`가 갈래의 건너뛰는 선언을 훑어 등록과 대조한다.
 
 <a id="drama-release-sync"></a>
 
