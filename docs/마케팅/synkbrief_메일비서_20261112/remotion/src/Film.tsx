@@ -90,7 +90,8 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
 const Label: React.FC = () => {
   const f = useCurrentFrame();
   const end = f >= sec(S.end);
-  const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : 1;
+  // v12(컷 전수 2 「5.0초 위 표시가 바로 바뀜」): 바뀌는 자리에서 4장 흐렸다가 다시 뜬다
+  const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : interpolate(f, [sec(S.hook) - 4, sec(S.hook), sec(S.hook) + 4], [1, 0, 1], clamp);
   return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · 집 컴퓨터의 AI 비서에게 메일을 맡겼다가' : '재연 · 인물 · 상황은 각색'}</div>;
 };
 
