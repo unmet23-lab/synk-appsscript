@@ -439,8 +439,8 @@
       "publicUrlVerifiedAt": "2026-09-21",
       "publicUrlEvidence": "2026-09-21 같은 Chrome의 새 공식 프로필 탭에서 유호·synklab.mm·버마어 bioShort 정확 일치 확인. 이번에는 소개 재저장하지 않았으며 반영 주체·시점은 미확인.",
       "loginAlias": "synk.yuh",
-      "egoProfile": "Profile 1",
-      "loginVerifiedAt": "2026-09-20",
+      "egoProfile": "Profile 9",
+      "loginVerifiedAt": "2026-11-12",
       "loginMethod": "continue-with-google-and-email-identity-check",
       "publisher": "manual-only",
       "connection": "web-owner-verified-api-not-verified",
@@ -485,7 +485,8 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "reading",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mm」(Profile 9)에 로그인 확인 — Google synk.yuh. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "lab-vn-tiktok": {
       "brand": "LAB",
@@ -497,7 +498,7 @@
       "publicUrlVerifiedAt": "2026-09-20",
       "publicUrlEvidence": "이름·짧은 소개 저장 후 원탭과 독립 새 공개 탭에서 SYNK LAB Vietnam·synklab.vn·bioShort 정확 일치를 확인",
       "loginAlias": "unmet27",
-      "loginVerifiedAt": "2026-09-20",
+      "loginVerifiedAt": "2026-11-12",
       "loginMethod": "continue-with-google",
       "publisher": "manual-only",
       "connection": "web-owner-verified-api-not-verified",
@@ -543,7 +544,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "unconfirmed"
+      "metricsState": "unconfirmed",
+      "egoProfile": "Profile 11",
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.vn」(Profile 11)에 로그인 확인 — Google unmet27. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "lab-ru-rutube": {
       "brand": "LAB",
@@ -1575,8 +1578,8 @@
       "platform": "tiktok",
       "handle": "@synk.mn",
       "loginAlias": "77yuhbs",
-      "egoProfile": "TikTok synk.mn",
-      "loginVerifiedAt": "2026-09-14",
+      "egoProfile": "Profile 8",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "direct-after-review",
       "connection": "needs-reviewed-app",
       "profileStatus": "google77-owner-login-confirmed-and-new-bio-79-saved-then-public-profile-reloaded-heading-exact-match-confirmed-2026-09-14; approved-LAB-instagram-copy-with-only-dot-synk-im-suffix-removed-for-80-char-limit; name-handle-photo-existing-videos-unchanged; no-new-posts; native-language-review-incomplete",
@@ -1600,7 +1603,8 @@
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "reading",
-      "rotationSeed": true
+      "rotationSeed": true,
+      "egoProfileNote": "2026-11-12 ego 「TikTok synk.mn」(Profile 8)에 로그인 확인 — Google 77yuhbs. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "yuhobuilds-youtube": {
       "brand": "SHIFT",
@@ -1685,15 +1689,16 @@
       "platform": "tiktok",
       "handle": "@synkbrief",
       "loginAlias": "unmet25",
-      "egoProfile": "TikTok synkbrief",
-      "loginVerifiedAt": "2026-09-14",
+      "egoProfile": "Profile 10",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "direct-after-review",
       "connection": "needs-reviewed-app",
       "profileStatus": "owner-login-confirmed-and-bio-57-saved-profile-updated-toast-then-full-public-heading-reloaded-exact-match-confirmed-2026-09-14; name-photo-handle-unchanged; no-new-posts",
       "contentStatus": "no-content-confirmed",
       "dailyLine": "synkbrief",
       "loginIdentityRef": "unmet25",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "egoProfileNote": "2026-11-12 ego 「TikTok synkbrief」(Profile 10)에 로그인 확인 — Google unmet25. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "lab-facebook": {
       "brand": "LAB",
@@ -2047,7 +2052,7 @@
       "locale": "es",
       "handle": "@synklab.mx",
       "publicUrl": "https://www.tiktok.com/@synklab.mx",
-      "loginVerifiedAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "manual-only",
       "connection": "web-owner-verified; publishing-not-connected",
       "creationVerified": true,
@@ -2079,7 +2084,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "egoProfile": "Profile 12",
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.mx」(Profile 12)에 로그인 확인 — 틱톡 이메일(PULSE 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "lab-kz-tiktok": {
       "brand": "LAB",
@@ -2088,7 +2095,7 @@
       "locale": "kk",
       "handle": "@synklab.kz",
       "publicUrl": "https://www.tiktok.com/@synklab.kz",
-      "loginVerifiedAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "manual-only",
       "connection": "web-owner-verified; publishing-not-connected",
       "creationVerified": true,
@@ -2120,7 +2127,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "egoProfile": "Profile 13",
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.kz」(Profile 13)에 로그인 확인 — 틱톡 이메일(SHIFT 수업 블로그 네이버). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "lab-th-tiktok": {
       "brand": "LAB",
@@ -2129,7 +2138,7 @@
       "locale": "th",
       "handle": "@synklab.th",
       "publicUrl": "https://www.tiktok.com/@synklab.th",
-      "loginVerifiedAt": "2026-11-08",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "manual-only",
       "connection": "web-owner-verified; publishing-not-connected",
       "creationVerified": true,
@@ -2161,7 +2170,9 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "missing"
+      "metricsState": "missing",
+      "egoProfile": "Profile 14",
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.th」(Profile 14)에 로그인 확인 — 틱톡 이메일(태국). 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
     },
     "lab-id-tiktok": {
       "brand": "LAB",
@@ -2171,7 +2182,7 @@
       "handle": "@synklab.id",
       "publicUrl": "https://www.tiktok.com/@synklab.id",
       "loginAlias": "unmet29",
-      "loginVerifiedAt": "2026-10-19",
+      "loginVerifiedAt": "2026-11-12",
       "publisher": "manual-only",
       "connection": "web-owner-verified-workspace-read-api-connected-sandbox",
       "creationVerified": true,
@@ -2227,7 +2238,10 @@
       "postRouteVerified": false,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
-      "metricsState": "unconfirmed"
+      "metricsState": "unconfirmed",
+      "egoProfile": "Profile 15",
+      "egoProfileNote": "2026-11-12 ego 「TikTok synklab.id」(Profile 15)에 로그인 확인 — Google unmet29. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "loginMethod": "continue-with-google"
     },
     "pulse-youtube": {
       "brand": "PULSE",
