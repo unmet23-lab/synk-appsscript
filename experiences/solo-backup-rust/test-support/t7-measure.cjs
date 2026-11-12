@@ -45,7 +45,9 @@ function startWorker(stateDir, script) {
     }
   });
   const call = (method, args = []) => new Promise((ok) => { const id = ++next; waiting.set(id, ok); send({ id, method, args }); });
-  return { child, call, t0 };
+  // Registered at spawn: an exit that comes before $shutdown resolves is not missed (review D3).
+  const exited = new Promise((ok) => child.once('exit', ok));
+  return { child, call, t0, exited };
 }
 // Worker frames: {ok, value: {ok, value: <state>}} for app methods.
 async function idle(call) { for (let i = 0; i < 36000; i++) { const s = await call('getState'); const st = s.value?.value; if (s.ok && st && !st.job) return st; await new Promise((r) => setTimeout(r, 100)); } throw Error('TIMEOUT'); }
@@ -58,7 +60,7 @@ async function idle(call) { for (let i = 0; i < 36000; i++) { const s = await ca
     fs.mkdirSync(path.join(out, `boot-${i}`), { recursive: true });
     const r = await w.call('$boot'); const ms = Number(process.hrtime.bigint() - w.t0) / 1e6;
     result.boots.push({ ok: r.ok === true, ms: +ms.toFixed(1) });
-    await w.call('$shutdown'); await new Promise((ok) => w.child.once('exit', ok));
+    await w.call('$shutdown'); await w.exited;
   }
   const sorted = result.boots.map((b) => b.ms).sort((a, b) => a - b); result.bootMedianMs = sorted[Math.floor(sorted.length / 2)];
 
@@ -83,7 +85,7 @@ async function idle(call) { for (let i = 0; i < 36000; i++) { const s = await ca
   }
   result.workerAfterBackup = memory(w.child.pid);
   result.workerPeakWorkingSetMB = result.workerAfterBackup.peakWorkingSetMB;
-  await w.call('$shutdown'); await new Promise((ok) => w.child.once('exit', ok));
+  await w.call('$shutdown'); await w.exited;
 
   // 3) restic alone on the same data (a Rust-only run would still have this process).
   const repo2 = path.join(out, 'repo-direct');

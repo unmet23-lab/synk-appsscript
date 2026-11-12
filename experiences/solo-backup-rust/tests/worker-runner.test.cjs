@@ -34,7 +34,8 @@ function worker(stateDir, { mode = null, dialogs = [] } = {}) {
       } else if (m.id && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); }
     }
   });
-  const exited = new Promise(ok => child.once('exit', code => ok(code)));
+  // 'close' comes after every stdout chunk has been read, unlike 'exit' (review E2).
+  const exited = new Promise(ok => child.once('close', code => ok(code)));
   const call = (method, args = []) => new Promise(ok => { const id = ++next; waiting.set(id, ok); send({ id, method, args }); });
   return { call, exited, frames, child };
 }
@@ -86,15 +87,31 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
   assert.equal(await r2.exited, 1);
   assert.ok(r2.frames.some(f => f.fatal === 'WORKER_FAILED'));
 
+  // $shutdown sent while $run is still working (twice): the run answers first, then the worker saves and exits 0 (review E1).
+  const r5 = worker(state, { mode: 'run' });
+  await r5.call('$boot');
+  const running = r5.call('$run', [{ trigger: 'manual' }]);
+  const stops = [r5.call('$shutdown'), r5.call('$shutdown')];
+  const answer = await running;
+  assert.equal(answer.ok, true);
+  assert.equal(answer.value.profiles.local.outcome, 'complete');
+  for (const stop of stops) assert.equal((await stop).ok, true);
+  assert.equal(await r5.exited, 0);
+  const ids = r5.frames.filter(f => f.id).map(f => f.id);
+  assert.ok(ids.indexOf(2) < ids.indexOf(3), 'the run answers before the shutdown');
+
   // App methods do not exist in run mode.
   const r3 = worker(state, { mode: 'run' });
   await r3.call('$boot');
   r3.call('getState');
   assert.equal(await r3.exited, 1);
 
-  // Unknown trigger or skip value is refused.
-  const r4 = worker(state, { mode: 'run' });
-  await r4.call('$boot');
-  r4.call('$run', [{ trigger: 'hourly', skipCloud: 'anything' }]);
-  assert.equal(await r4.exited, 1);
+  // Unknown trigger, unknown skip value and a malformed input are each refused (review E3).
+  for (const input of [{ trigger: 'hourly', skipCloud: 'anything' }, { trigger: 'daily' }, ['hourly'], null]) {
+    const r4 = worker(state, { mode: 'run' });
+    await r4.call('$boot');
+    r4.call('$run', [input]);
+    assert.equal(await r4.exited, 1, JSON.stringify(input));
+    assert.ok(r4.frames.some(f => f.fatal === 'WORKER_FAILED'), JSON.stringify(input));
+  }
 });

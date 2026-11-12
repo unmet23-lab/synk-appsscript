@@ -82,5 +82,7 @@ if (problems.length) { console.log(JSON.stringify({ ...check, problems }, null, 
 await admin.deleteKey(temp.keyId);
 let tempGone = false;
 try { await authorize(temp); } catch (e) { tempGone = e.status === 401; }
-if (tempGone) store.remove('custAdmin');
 console.log(JSON.stringify({ ...check, tempKeyDeleted: tempGone }, null, 1));
+// A management key that still works is a failed setup (review B6): stop loudly and keep the store entry for a retry.
+if (!tempGone) throw new Error('TEMP_KEY_STILL_VALID');
+store.remove('custAdmin');

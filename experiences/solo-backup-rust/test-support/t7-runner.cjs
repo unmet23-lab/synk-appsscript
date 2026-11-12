@@ -16,6 +16,8 @@ const { makeData, peakWorkingSet } = require('./t7-data.cjs');
 const [exeArg, workRoot, dataMBArg, nArg] = process.argv.slice(2);
 if (!exeArg || !workRoot) throw Error('usage: t7-runner.cjs <WorkBackupRun.exe> <work-root> [dataMB] [incrementals]');
 const exe = path.resolve(exeArg), dataMB = Number(dataMBArg || 300), n = Number(nArg || 5);
+// At least one unchanged run is needed to judge the start rule (review D1).
+if (!(dataMB > 0) || !Number.isInteger(n) || n < 1) throw Error('dataMB > 0 and incrementals >= 1 required');
 const restic = path.join(path.dirname(exe), 'resources', 'restic.exe');
 const out = path.join(path.resolve(workRoot), `t7r-${new Date().toISOString().replace(/[:.]/g, '-')}`);
 const MB = v => v == null ? null : +(v / 1048576).toFixed(1);
@@ -33,8 +35,11 @@ function summary(rows) {
 async function resticAlone(env, repo, data) {
   const t = Date.now();
   const child = spawn(restic, ['-r', repo, 'backup', '--json', data], { env, windowsHide: true, stdio: 'ignore' });
-  let peak = 0; const poll = setInterval(() => { const v = peakWorkingSet(child.pid); if (v) peak = Math.max(peak, v); }, 500);
-  const code = await new Promise(ok => child.once('exit', ok)); clearInterval(poll);
+  // Sample at once and every 250 ms; a run that ends before any sample reports null, not 0 (review D2).
+  const exited = new Promise(ok => child.once('exit', ok));
+  let peak = null; const sample = () => { const v = peakWorkingSet(child.pid); if (v) peak = Math.max(peak ?? 0, v); };
+  sample(); const poll = setInterval(sample, 250);
+  const code = await exited; clearInterval(poll);
   return { code, ms: Date.now() - t, peakWorkingSetMB: MB(peak) };
 }
 
@@ -58,7 +63,7 @@ async function resticAlone(env, repo, data) {
 
   // restic alone: same data, its own repository and cache, measure-only password.
   const renv = { SystemRoot: process.env.SystemRoot, RESTIC_PASSWORD: 'measure-only-' + crypto.randomBytes(8).toString('hex'), RESTIC_CACHE_DIR: path.join(out, 'cache-direct'), TEMP: process.env.TEMP, TMP: process.env.TMP };
-  spawnSync(restic, ['-r', dirs.direct, 'init'], { env: renv, windowsHide: true });
+  if (spawnSync(restic, ['-r', dirs.direct, 'init'], { env: renv, windowsHide: true }).status !== 0) throw Error('restic init failed');
   result.resticAlone = { first: await resticAlone(renv, dirs.direct, dirs.data), unchanged: [] };
   for (let i = 0; i < Math.min(n, 3); i++) result.resticAlone.unchanged.push(await resticAlone(renv, dirs.direct, dirs.data));
 

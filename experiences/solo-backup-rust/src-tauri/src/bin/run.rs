@@ -110,7 +110,7 @@ fn record_profiles(result: &Value, started: u64, line: &mut Value) -> &'static s
 
 /// Runs with the state lock held. The worker owns the lock from its start; the
 /// caller keeps the worker alive until runs.jsonl is written.
-fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, line: &mut Value, keep: &mut Option<Arc<Worker>>) -> Result<i32, String> {
+fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, line: &mut Value, keep: &mut Option<Arc<Worker>>, writing: Arc<Mutex<bool>>) -> Result<i32, String> {
     if root.join("migration-incomplete").exists() { return Err("MIGRATION_INCOMPLETE".into()); }
     let resources = resources()?;
     let checked = Instant::now();
@@ -124,7 +124,8 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
     let failure: Arc<Mutex<Option<String>>> = Arc::default();
     let (progress_root, failed) = (root.to_path_buf(), failure.clone());
     let worker = Worker::start(&resources, root, lock, args.test, true, Arc::new(host),
-        Arc::new(move |value| { let _ = runlog::progress(&progress_root, &progress(&value)); }),
+        // Progress is written only while the gate is open; run() closes it before removing the file (review C2).
+        Arc::new(move |value| { let open = writing.lock().unwrap(); if *open { let _ = runlog::progress(&progress_root, &progress(&value)); } }),
         Arc::new(move |code| { *failed.lock().unwrap() = Some(code.to_owned()); }))?;
     *keep = Some(worker.clone());
     let runtime = tokio::runtime::Builder::new_current_thread().enable_time().build().map_err(|_| "RUNTIME")?;
@@ -135,6 +136,8 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
         let _ = worker.stop().await;
         Ok::<_, String>((ready, value))
     });
+    // A failed call leaves no worker running behind the record (review C2).
+    if result.is_err() { worker.terminate(); }
     if let Some(usage) = worker.usage() { line["job"] = json!(usage); }
     let (ready, value) = result.map_err(|code| failure.lock().unwrap().clone().unwrap_or(code))?;
     line["workerReadyMs"] = json!(ready);
@@ -151,13 +154,20 @@ fn run() -> i32 {
     let Ok((root, lock)) = platform::open_state(args.test) else { return 70 };
     let mut line = json!({"v": 1, "trigger": args.trigger, "start": iso(started)});
     let mut worker = None;
+    // A second handle to the same lock file keeps the lock until the record is written, also when
+    // execute() fails before or while starting the worker (review C1).
+    let guard = lock.as_ref().and_then(|f| f.try_clone().ok());
+    let writing = Arc::new(Mutex::new(true));
     let code = match lock {
         // The window app (or another run) holds the lock: record and end (4.2 step 1).
         None => { line["outcome"] = json!("busy"); line["reason"] = json!("ui"); 0 }
         Some(lock) => {
-            let code = execute(&args, &root, lock, clock, started, &mut line, &mut worker)
+            let code = execute(&args, &root, lock, clock, started, &mut line, &mut worker, writing.clone())
                 .unwrap_or_else(|error| { line["outcome"] = json!("failed"); line["error"] = json!(error); 1 });
+            let mut open = writing.lock().unwrap();
+            *open = false;
             let _ = fs::remove_file(root.join("progress.json"));
+            drop(open);
             code
         }
     };
@@ -165,7 +175,8 @@ fn run() -> i32 {
     line["ms"] = json!(clock.elapsed().as_millis() as u64);
     line["exit"] = json!(code);
     let _ = runlog::append(&root, &line);
-    drop(worker); // the state lock goes with the worker, after the record is written
+    drop(worker); // the state lock goes with the worker and the guard, after the record is written
+    drop(guard);
     code
 }
 

@@ -21,8 +21,10 @@ async function fixture({ provider = 'local' } = {}) {
     calls.push(args[0]); seen[args[0]] = args;
     if (args[0] === 'cat') return JSON.stringify({ id: repositoryId });
     if (args[0] === 'backup') {
-      if (fail.backup) throw Object.assign(new Error('fixture backup'), { exitCode: fail.backup });
+      // A real exit 3 (some files unreadable) still writes a pending snapshot (review B5).
+      if (fail.backup && fail.backup !== 3) throw Object.assign(new Error('fixture backup'), { exitCode: fail.backup });
       snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
+      if (fail.backup === 3) throw Object.assign(new Error('fixture partial'), { exitCode: 3 });
       return '';
     }
     if (args[0] === 'check' && args.includes('--read-data') && fail.readData) throw Object.assign(new Error('fixture lock'), { exitCode: fail.readData });
@@ -36,7 +38,7 @@ async function fixture({ provider = 'local' } = {}) {
     await engine.setup({ sources: [source], parent: target });
     await engine.saveRecoveryKit(path.join(keys, 'kit.json'));
   }
-  return { engine, calls, fail, seen, advance: ms => { now += ms; }, root };
+  return { engine, calls, fail, seen, snapshots, advance: ms => { now += ms; }, root };
 }
 
 test('not configured, off and read-only are skipped without running restic', async () => {
@@ -45,6 +47,10 @@ test('not configured, off and read-only are skipped without running restic', asy
   const { engine, calls } = await fixture();
   calls.length = 0;
   assert.deepEqual(await engine.runOnce({}), { outcome: 'skipped', reason: 'off' });
+  engine.config.readOnly = true;
+  assert.deepEqual(await engine.runOnce({ force: true }), { outcome: 'skipped', reason: 'read-only' }, 'even a person-started run (review B4)');
+  engine.config.readOnly = false; engine.config.mode = 'restore';
+  assert.deepEqual(await engine.runOnce({ force: true }), { outcome: 'skipped', reason: 'read-only' });
   assert.equal(calls.length, 0);
 });
 
@@ -127,7 +133,7 @@ test('a busy full data check keeps the health and the backup still completes (re
 });
 
 test('exit 3 is partial and is not promoted to a completed backup', async () => {
-  const { engine, fail, advance } = await fixture();
+  const { engine, fail, advance, snapshots } = await fixture();
   await engine.setAutomatic(true);
   await engine.runOnce({});
   const before = engine.config.lastBackup.id;
@@ -135,4 +141,30 @@ test('exit 3 is partial and is not promoted to a completed backup', async () => 
   const r = await engine.runOnce({});
   assert.equal(r.outcome, 'partial');
   assert.equal(engine.config.lastBackup.id, before);
+  const partial = snapshots.at(-1);
+  assert.ok(partial.tags.includes('pending') && !partial.tags.includes(VERIFIED), 'the partial snapshot stays pending');
+});
+
+test('a person-started run leaves a pause in place; a scheduled run respects it and clears it once expired (review B1)', async () => {
+  const { engine, advance } = await fixture();
+  await engine.setAutomatic(true);
+  engine.config.pausedUntil = new Date(engine.now() + 3600000).toISOString();
+  assert.deepEqual(await engine.runOnce({}), { outcome: 'skipped', reason: 'paused' });
+  assert.equal((await engine.runOnce({ force: true })).outcome, 'complete');
+  assert.ok(engine.config.pausedUntil, 'the pause is still set');
+  advance(2 * 3600000);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  assert.equal(engine.config.pausedUntil, null);
+});
+
+test('when the full data check finds the repository busy, the sample restore and the cleanup wait (review B3)', async () => {
+  const { engine, fail, calls, advance } = await fixture();
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  assert.equal(engine.config.health.status, 'ok');
+  advance(25 * 3600000);
+  calls.length = 0; fail.readData = 11;
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  assert.deepEqual(calls.filter(c => ['forget', 'prune', 'dump'].includes(c)), []);
+  assert.match(engine.config.warning, /전체 데이터 점검은 다음 회차로/);
 });

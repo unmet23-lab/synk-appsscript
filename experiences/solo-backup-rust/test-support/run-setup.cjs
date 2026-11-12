@@ -42,7 +42,7 @@ function appWorker(stateDir, { restic, dialogs = [] }) {
       } else if (m.id && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); }
     }
   });
-  const exited = new Promise(ok => child.once('exit', code => ok(code)));
+  const exited = new Promise(ok => child.once('close', code => ok(code)));
   const call = (method, args = []) => new Promise(ok => { const id = ++next; waiting.set(id, ok); send({ id, method, args }); });
   return { call, exited };
 }
@@ -72,7 +72,7 @@ function runExe(exe, args, env, timeoutMs = 3600000) {
   return new Promise((resolve, reject) => {
     const child = spawn(exe, args, { env, windowsHide: true, stdio: 'ignore' });
     const timer = setTimeout(() => { child.kill(); reject(Error('run timeout')); }, timeoutMs);
-    child.on('error', reject);
+    child.on('error', e => { clearTimeout(timer); reject(e); });
     child.on('exit', code => { clearTimeout(timer); resolve(code); });
   });
 }

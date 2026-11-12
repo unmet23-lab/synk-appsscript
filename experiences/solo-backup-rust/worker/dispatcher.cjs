@@ -4,7 +4,7 @@
 const {StringDecoder}=require('node:string_decoder');
 const contract=require('../contract/methods.json');
 const MAX_IN=131072,MAX_OUT=2*1024*1024;
-const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,ran=false,booting=false,stopping=false,terminating=false;
+const pending=new Map();let nextCall=0,buffer=Buffer.alloc(0),application=null,runner=null,ran=false,runWork=Promise.resolve(),shutdownIds=null,booting=false,stopping=false,terminating=false;
 function send(value){const text=JSON.stringify({v:1,...value});if(Buffer.byteLength(text)+1>MAX_OUT)fatal('PAYLOAD_TOO_LARGE');else process.stdout.write(text+'\n');}
 function fatal(code){if(terminating)return;terminating=true;stopping=true;process.stdout.write(JSON.stringify({v:1,fatal:code})+'\n',()=>process.exit(1));setTimeout(()=>process.exit(1),1000).unref();}
 function host(method,args){
@@ -34,9 +34,17 @@ async function message(value){
   }
   if(value.method==='$run'){
     if(!runner||ran)throw Error('NOT_READY');ran=true;
-    const result=await runner.runOnce(value.args[0]);send({id:value.id,ok:true,value:result});return;
+    // A $shutdown that arrives meanwhile waits for this answer, then stops (review E1).
+    const work=runner.runOnce(value.args[0]);runWork=work.catch(()=>{});
+    const result=await work;send({id:value.id,ok:true,value:result});return;
   }
-  if(value.method==='$shutdown'&&runner){stopping=true;await runner.stop();send({id:value.id,ok:true,value:null});process.stdin.pause();process.stdout.end(()=>process.exit(0));return;}
+  if(value.method==='$shutdown'&&runner){
+    // One stop for every $shutdown: later ones join it and all are answered before the exit (review E1).
+    if(shutdownIds){shutdownIds.push(value.id);return;}
+    shutdownIds=[value.id];stopping=true;await runWork;await runner.stop();
+    for(const id of shutdownIds)send({id,ok:true,value:null});
+    process.stdin.pause();process.stdout.end(()=>process.exit(0));return;
+  }
   if(value.method==='$boot'){
     if(booting||application)throw Error('DUPLICATE_BOOT');booting=true;
     const {createApplication}=require('./handlers.cjs');

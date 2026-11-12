@@ -84,5 +84,8 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   assert.equal(lines(state).length, 4);
 
   const text = fs.readFileSync(path.join(state, 'runs.jsonl'), 'utf8');
-  for (const p of [root, data, repo, keys, os.homedir()]) assert.ok(!text.includes(JSON.stringify(p).slice(1, -1)) && !text.includes(p), 'no path in runs.jsonl');
+  for (const p of [root, data, repo, keys, os.homedir()]) {
+    for (const form of [p, p.replaceAll(path.sep, '/')]) assert.ok(!text.includes(JSON.stringify(form).slice(1, -1)) && !text.includes(form), 'no path in runs.jsonl');
+  }
+  for (const name of ['보고서.txt', 'recovery.json', path.basename(root)]) assert.ok(!text.includes(name), 'no file or folder name in runs.jsonl');
 });

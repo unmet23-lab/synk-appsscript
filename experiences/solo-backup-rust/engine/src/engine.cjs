@@ -17,8 +17,8 @@ const APP = 'solo-work-backup-v1';
 const VERIFIED = 'complete-structure-checked';
 const DAY = 86400000;
 // Exit 11 (another process holds the repository lock) is shown as this notice, not as an error;
-// the next successful backup clears it.
-const BUSY_WARNING = '다른 작업이 백업 저장소를 쓰는 중이라 이번 작업은 건너뛰었습니다. 자동 백업은 다음 회차에 다시 하고, 지금 백업은 잠시 뒤 다시 눌러 주세요.';
+// the next operation that succeeds clears it (review B2).
+const BUSY_WARNING = '다른 작업이 백업 저장소를 쓰는 중이라 이번 작업은 하지 못했습니다. 잠시 뒤 다시 해 주세요. 자동 백업은 다음 회차에 다시 합니다.';
 const RESTIC_SHA256 = 'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830';
 const isId = s => typeof s === 'string' && /^[a-f0-9]{64}$/.test(s);
 const json = s => JSON.parse(s.replace(/^\uFEFF/, ''));
@@ -172,7 +172,7 @@ class BackupEngine extends EventEmitter {
     this.job = { kind, stage: '준비 중', percent: null }; this.emitState();
     try {
       const value = await fn();
-      if (this.config) { if (kind !== 'probe') this.config.lastError = null; await this.save(); }
+      if (this.config) { if (kind !== 'probe') this.config.lastError = null; if (this.config.warning === BUSY_WARNING) this.config.warning = null; await this.save(); }
       return value;
     } catch (e) {
       // Exit 11 is another process holding the repository lock — "busy, try the
@@ -444,14 +444,18 @@ class BackupEngine extends EventEmitter {
       this.config.lastBackup = { id: s.id, at: s.time, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
       this.lastSummary = s.summary || null;
       this.config.warning = null; await this.save();
+      let busy = false;
       if (!this.config.health || this.config.health.status !== 'ok' || this.now() - Date.parse(this.config.health.checkedAt) >= (this.isCloud() ? 30 : 1) * DAY) {
         try { await this.fullCheck(); }
-        catch (e) { this.config.warning = e.exitCode === 11 ? '백업은 저장했고, 다른 작업이 백업 저장소를 쓰는 중이라 전체 데이터 점검은 다음 회차로 미뤘습니다.' : '백업은 저장했지만 전체 데이터 점검을 완료하지 못했습니다. 백업 위치와 연결을 확인한 뒤 다시 점검해 주세요.'; }
+        catch (e) { busy = e.exitCode === 11; this.config.warning = busy ? '백업은 저장했고, 다른 작업이 백업 저장소를 쓰는 중이라 전체 데이터 점검은 다음 회차로 미뤘습니다.' : '백업은 저장했지만 전체 데이터 점검을 완료하지 못했습니다. 백업 위치와 연결을 확인한 뒤 다시 점검해 주세요.'; }
       }
-      const probeInterval = this.config.lastProbe?.reason === 'limit' ? 30 * DAY : 7 * DAY;
-      if (!this.config.lastProbe || this.now() - time(this.config.lastProbe.at) >= probeInterval) await this.probeBody();
-      if (this.config.health?.status === 'ok' && !this.config.probeHold) {
-        try { await this.retain(); } catch (e) { this.config.warning = `백업은 저장했습니다. 오래된 백업 정리는 보류합니다: ${this.clean(e.message)}`; }
+      // Still locked by another process: the sample restore and the cleanup wait for the next run (review B3).
+      if (!busy) {
+        const probeInterval = this.config.lastProbe?.reason === 'limit' ? 30 * DAY : 7 * DAY;
+        if (!this.config.lastProbe || this.now() - time(this.config.lastProbe.at) >= probeInterval) await this.probeBody();
+        if (this.config.health?.status === 'ok' && !this.config.probeHold) {
+          try { await this.retain(); } catch (e) { this.config.warning = `백업은 저장했습니다. 오래된 백업 정리는 보류합니다: ${this.clean(e.message)}`; }
+        }
       }
       await this.save(); return this.getState();
   }
@@ -751,10 +755,11 @@ class BackupEngine extends EventEmitter {
       if (timing.clockHold) return { outcome: 'skipped', reason: 'clock' };
       if (timing.paused) return { outcome: 'skipped', reason: 'paused' };
       if (timing.dueAt > this.now()) return { outcome: 'not-due', nextAt: new Date(timing.dueAt).toISOString() };
+      // An expired pause is cleared as tick() does; a person-started run leaves a pause alone (review B1).
+      if (c.pausedUntil) c.pausedUntil = null;
     }
     this.resticStartedAt = null; this.lastSummary = null;
     const unlock = await this.unlockStale();
-    if (c.pausedUntil) c.pausedUntil = null;
     const before = c.lastBackup?.id || null, started = this.now();
     try {
       await this.backupNow();

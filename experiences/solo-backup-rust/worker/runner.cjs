@@ -23,7 +23,7 @@ async function createRunner({ host, root, resticPath, publish = () => {} }) {
   const progress = () => ({ profiles: Object.fromEntries(Object.entries(profiles.engines).map(([name, e]) =>
     [name, e.job ? { kind: e.job.kind, stage: e.job.stage, percent: e.job.percent } : null])) });
   profiles.on('state', () => publish(progress()));
-  let running = false, closing = false;
+  let running = false, closing = false, stopped = null;
   return {
     async runOnce(input) {
       if (!input || typeof input !== 'object' || Array.isArray(input)) throw Error('RUN_INPUT');
@@ -41,7 +41,8 @@ async function createRunner({ host, root, resticPath, publish = () => {} }) {
         return { trigger, skipCloud, profiles: results, worker: { maxRssKb: process.resourceUsage().maxRSS } };
       } finally { running = false; }
     },
-    async stop() { if (closing) return; closing = true; await profiles.stop(); }
+    // Every caller waits for the same stop, so a second $shutdown cannot exit before the first has saved (review E1).
+    stop() { if (!stopped) { closing = true; stopped = profiles.stop(); } return stopped; }
   };
 }
 module.exports = { createRunner };
