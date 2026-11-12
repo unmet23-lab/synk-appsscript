@@ -443,7 +443,7 @@ const PageTwo: React.FC<{ plain: boolean }> = ({ plain }) => {
           <g opacity={extra}>
             <HandLine l={JEO} id="jeo" />
             <Stroke d={STRIKE} p={prog(f, T.strike)} width={9} color="#17171C" />
-            {plain ? null : <RedHand text={L.asFor} x={P2.x - 6} y={P2.y - 124} size={104} win={T.asfor} w={460} id="asfor" rot={-4} />}
+            {plain ? null : <RedHand text={L.asFor} x={P2.x - 6} y={P2.y - 146} size={104} win={T.asfor} w={460} id="asfor" rot={-4} />}
           </g>
         ) : null}
         {ar > 0 ? <RuleLine y={A2.y + 16} /> : null}
