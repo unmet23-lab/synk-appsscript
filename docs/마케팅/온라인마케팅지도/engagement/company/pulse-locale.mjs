@@ -43,6 +43,10 @@ const EN=Object.freeze({
   '요청하신 내용은 그대로 두고 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.':'Everything you asked for stays. We’ve sent a few directions — pick one and we’ll write the script.',
   '컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.':'Look through each shot and leave notes, or move on to the next step if it all works.',
   '영상을 재생해 보고, 바꾸고 싶은 장면에 의견을 남기거나 승인해 주세요.':'Play the film, then leave a note on any scene you’d change — or approve it.',
+  // 사진 상품의 같은 순간(pulse-live.mjs customerBodiesPhoto)
+  '첫 장을 만들기 전에 모델을 확인해 주세요.':'Please confirm the model before we make the first photo.',
+  '첫 장을 보고 의견을 남기거나, 괜찮으면 그대로 진행해 주세요.':'Look at the first photo and leave notes, or go ahead if it works.',
+  '사진을 보고, 바꾸고 싶은 곳에 의견을 남기거나 승인해 주세요.':'Look through the photos, then leave a note on anything you’d change — or approve them.',
   '최종 파일을 받아 보고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.':'Download the final files, read the usage notes, then confirm receipt.',
   '보낸 의견이나 문의에 대한 답을 확인해 주세요.':'There’s a reply to your note or question.',
   '남긴 문의에 자동 안내가 먼저 답했어요. 담당자도 이어서 확인해요.':'An automatic reply answered your question first. Your producer will follow up too.',

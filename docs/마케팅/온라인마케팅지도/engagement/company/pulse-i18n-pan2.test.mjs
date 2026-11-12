@@ -32,6 +32,9 @@ test('서버 손님 문구: 한국어는 그대로, 영어는 사전에 빠짐�
   const live=readFileSync(new URL('./pulse-live.mjs',import.meta.url),'utf8');
   const bodies=[...live.matchAll(/const customerBodies=\{([^\n]*)\};/g)][0][1];
   for(const [,text]of bodies.matchAll(/:'([^']+)'/g))assert.ok(Object.hasOwn(EN,text),'본문 영어: '+text);
+  // 사진 상품의 본문(11-12): 같은 순간의 사진 말 세 줄도 영어가 있다.
+  const photoBodies=[...live.matchAll(/const customerBodiesPhoto=\{([^\n]*)\};/g)][0][1],photoTexts=[...photoBodies.matchAll(/:'([^']+)'/g)].map(([,text])=>text);
+  assert.equal(photoTexts.length,3);for(const text of photoTexts)assert.ok(Object.hasOwn(EN,text),'사진 본문 영어: '+text);
   // 죽은 키 0: 서버 사전의 한국어 문장은 서버 코드 어딘가에 따옴표 문자열로 있다.
   const sources=['pulse-live.mjs','client-notifications.mjs','pulse-mail.mjs','client-projects.mjs'].map(name=>readFileSync(new URL('./'+name,import.meta.url),'utf8')).join('\n');
   // pulse-locale.mjs가 스스로 쓰는 키(담당자 · 다른 직원 표시 이름)는 사전 파일 밖에 따옴표로 없다.

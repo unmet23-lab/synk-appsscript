@@ -45,7 +45,7 @@ export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is
 export const JOURNAL_SHOWN=5;
 const askForm=ask=>`<form class="sx-ask-reply" data-form="ask" data-id="${esc(ask.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:ask.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-quiet"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form>`;
 // talk(「말만 보기」 — 운영 조각 4 · 설계 S1): 켜면 말 줄(문의 · 답 · 담당자 글)만 보인다 — 사건 · 소식 줄이 늘어도 문답이 묻히지 않게. 말 줄과 다른 줄이 함께 있을 때만 단추를 둔다.
-export function journalView(j,{place='column',here=null,video=false,open=false,all=false,talk=false,owner=t('담당자')}={}){
+export function journalView(j,{place='column',here=null,video=false,photo=false,open=false,all=false,talk=false,owner=t('담당자')}={}){
   const overlay=place!=='column',isHere=go=>!!go&&!!here&&go.tab===here.tab&&(!go.versionId||go.versionId===here.versionId||!!go.final&&!!here.finals);
   const when=at=>at&&stamp(at)?` · <time datetime="${esc(at)}">${esc(stamp(at))}</time>`:'';
   // 「열기」 · 「이 화면」은 머리 줄 끝에. 지금 화면의 일감을 가리키는 인용은 그 글이 바로 옆에 있으니 머리 줄만 둔다(같은 말이 한 화면에 두 번 서지 않게).
@@ -65,7 +65,7 @@ export function journalView(j,{place='column',here=null,video=false,open=false,a
     <header class="sx-j-head"><h2 class="sx-serif" id="room-journal-title">${esc(t('담당자와 나눈 말'))}</h2>${overlay?`<button type="button" class="sx-quiet sx-j-close" data-journal-do="close">${esc(t('닫기'))}</button>`:''}</header>
     ${asks?`<div class="sx-j-pin" aria-label="${esc(t('답해 주실 것'))}">${asks}</div>`:''}
     ${j.pinned.next?`<p class="sx-j-next"><span>${esc(t('지금 담당자 안내'))}</span>${esc(j.pinned.next)}</p>`:''}
-    <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000" required placeholder="${esc(t('담당자에게 물어보세요'))}" aria-label="${esc(t('담당자에게 물어보기'))}" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button>${video?`<p class="sx-j-hint" data-when="typing">${withMarks(t('영상에서 고칠 곳은 {where} 의견 칸에, 그 장면에서 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('영상 아래',null,'where'))}</span>`})}</p>`:''}</form>
+    <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000" required placeholder="${esc(t('담당자에게 물어보세요'))}" aria-label="${esc(t('담당자에게 물어보기'))}" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button>${video?`<p class="sx-j-hint" data-when="typing">${photo?withMarks(t('사진에서 고칠 곳은 {where} 의견 칸에 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('사진 아래',null,'where'))}</span>`}):withMarks(t('영상에서 고칠 곳은 {where} 의견 칸에, 그 장면에서 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('영상 아래',null,'where'))}</span>`})}</p>`:''}</form>
     ${filter?`<p class="sx-j-tools"><button type="button" class="sx-quiet sx-j-filter" data-journal-do="talk" aria-pressed="${talk?'true':'false'}">${esc(t('말만 보기'))}</button></p>`:''}
     ${items.length?`<ol class="sx-j-list" aria-label="${esc(t('지난 말'))}">${shown.map(row).join('')}</ol>`:talk?`<p class="sx-small sx-j-empty">${esc(t('나눈 말이 아직 없어요'))}</p>`:''}
     ${rest>0?`<button type="button" class="sx-quiet sx-j-more" data-journal-do="more" aria-expanded="${all?'true':'false'}">${esc(all?t('최근 말만 보기'):t('이전 말 {count}개 더 보기',{count:rest}))}</button>`:''}
@@ -101,6 +101,8 @@ function roomScreen(p,{news=true}={}){
   if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
   if(p.state==='model'&&p.proposal)return `<img class="sx-q-fill" src="${esc(modelScene(p.proposal.id))}" alt=""><p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
+  // 사진 상품(2026-11-12): 도착한 사진 · 완성 사진을 그대로 건다(영상 상품이 도착한 영상을 트는 자리) — 저희 작품의 예시 대신 손님 사진. 누르면 사진 확인 화면으로.
+  if(p.shots?.length)return `<div class="sx-room-files" data-count="${Math.min(p.shots.length,6)}">${p.shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(p.shots.length>1?t('완성 사진 {count}장',{count:p.shots.length}):p.shots[0].label)}</p>`;
   const cuts=p.draft?.cuts||[];
   const pictured=cuts.filter(cut=>cut.src);
   if(pictured.length)return `<div class="sx-room-cuts" data-count="${Math.min(pictured.length,12)}">${pictured.slice(0,12).map(cut=>`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><p class="sx-small sx-room-cap">${esc(p.photo?t('첫 장 {round}판 · {count}장',{round:String(p.draft.round),count:cuts.length}):t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:cuts.length}))}</p>`;
@@ -403,8 +405,8 @@ function payCard(p){
   </section>`;
 }
 // 끝맺음(판 4 B4): 수령 확인 뒤. 크몽 구매확정 · 후기 · 같은 모델로 다음 편, 방이 닫히기 전에 파일을 따로 두라는 말.
-function doneCard(){
-  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
+function doneCard(p){
+  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){

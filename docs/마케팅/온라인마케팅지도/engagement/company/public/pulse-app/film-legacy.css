@@ -354,6 +354,7 @@ html.sx .crumb-no{display:none}
 .sx-say-tools .sx-go{padding:8px 0}
 .sx-notes{display:grid;gap:12px;align-content:start}
 .sx-note-row{display:grid;grid-template-columns:40px minmax(0,1fr);position:relative;border:0;background:none}
+.sx-note-row.is-plain{grid-template-columns:minmax(0,1fr)} /* 사진 상품: 시각 칸이 없는 줄 */
 .sx-note-row>.sx-no{text-align:left;color:var(--sx-dim);line-height:21px;align-self:start}
 .sx-note-row.is-near>.sx-no{color:var(--sx-ink)}
 @media (hover:hover){.sx-note-row>button.sx-no:hover{color:var(--sx-ink)}}

@@ -99,6 +99,8 @@ function slotsWithFiles(answers,files=[]){const slots={...(answers.slots||{})};f
 const filled=r=>({...emptyAnswers(),...(r?.answers||{}),slots:slotsWithFiles(r?.answers||{},r?.files)});
 // 영상이 도착한 상태면 고객 방 스크린에 그 영상을 소리 없이 튼다.
 const screenFilm=(p,state)=>{const version=state==='deliver'||state==='done'?finals(p).at(-1):state==='review'?previews(p).at(-1):null,src=version?.media?.mimeType?.startsWith('video/')?version.media.url:'';return src?{src,label:version.label,go:'review'}:null;};
+// 사진 상품(2026-11-12): 도착한 사진을 고객 방 큰 그림 칸에 건다 — 확인 차례에는 최신 시안 한 장, 납품 뒤에는 완성 사진(그림 파일로 올린 판만).
+const screenShots=(p,state)=>(state==='review'?previews(p).slice(-1):state==='deliver'||state==='done'?finals(p):[]).filter(version=>version.media?.mimeType?.startsWith('image/')&&version.media.url).map(version=>({src:version.media.url,label:version.label}));
 // 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
 // 「길이 · 구성」은 briefRows의 줄 이름과 견주는 값이라 번역하지 않는다(보일 때는 roomPaper가 옮긴다).
 function roomBrief(r,answers){
@@ -122,12 +124,13 @@ export function roomModel(p){
   // 영상 상품은 방향 화면에서 고르므로 줄이 없고, 맞춤 인물 요청 · 전용 인물도 없다. 처음 값은 같은 모델로 앞서 정한 값(의뢰 기록), 아니면 맡김.
   // key는 제안마다 다르다 — 화면이 고르던 값을 그 제안에만 붙여 둔다(app.mjs s.proposeUi).
   const proposed=r?.modelProposal?.status==='open'?modelCard(r.modelProposal.modelId):null,proposalLooks=!!proposed&&!!r.modelProposalLooks&&answers.package==='photo'&&!!modelLooks(proposed.id)&&!['custom','persona'].includes(answers.modelChoice)&&castingOf(r,p?.studio?.strategy?.data?.castingSelection).kind!=='persona';
+  const shots=answers.package==='photo'?screenShots(p,state):[];
   const proposal=proposed?{...proposed,note:r.modelProposal.note||'',...(proposalLooks?{looks:true,key:`${proposed.id}:${r.modelProposal.at||''}`,look:(look=>({outfit:look.outfit,hair:look.hair}))(answers.models?.[0]===proposed.id?lookOf(proposed.id,answers):lookOf(''))}:{})}:null,direction=directionModel(p);
   return {
     state,stage:roomStage(state),photo:answers.package==='photo',options:r?.directionProposal?.options?.length||0,title:p?.title||'',number:r?.number||'',manager:p?.ownerName||t('PULSE 담당자'),hasRound:!!lastRound(r),lastKind:lastRound(r)?.kind||'',
     brief:r?roomBrief(r,answers):[],
     files,others,proposal,direction,asks:(r?.asks||[]).filter(ask=>ask.status==='open'),answered:(r?.asks||[]).filter(ask=>ask.status==='answered'),canEdit:!!r&&r.status!=='confirmed',
-    draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),
+    draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),...(shots.length?{shots}:{}),
     // 메일 알림이 실제로 나갈 때만 가린 주소(서버가 정함). 꺼져 있으면 화면에 메일 말이 없다.
     mail:p?.mail?.mailOn&&typeof p.mail.mailTo==='string'?p.mail.mailTo:'',
     // 메일이 나가는 순간(서버가 알림 — 판 4의 여덟 순간). 옛 서버는 목록이 없어 11-07의 네 순간으로 본다.
@@ -300,7 +303,7 @@ export function journalModel(p){
     add({id:'v:'+v.id,at:v.createdAt,who:'staff',name:owner,kind:v.guide?'quote':'event',what:v.guide?quote:arrived,...(v.guide?{text:v.guide}:{}),go});
     if(v.kind==='preview'&&v.approvedAt)add({id:'v:'+v.id+':ok',at:v.approvedAt,who:'me',name:me,kind:'event',what:t('{label}{eul} 승인했어요',{label,eul:withEul(label)})});
   }
-  for(const fb of st.feedbackRounds?.rounds||[])if(fb.submittedAt){const count=(fb.items||[]).length;add({id:'f:'+fb.id,at:fb.submittedAt,who:'me',name:me,kind:'event',what:fb.versionLabel?t('{label}에 의견 {count}개를 보냈어요',{label:fb.versionLabel,count}):t('영상에 의견 {count}개를 보냈어요',{count})});}
+  for(const fb of st.feedbackRounds?.rounds||[])if(fb.submittedAt){const count=(fb.items||[]).length;add({id:'f:'+fb.id,at:fb.submittedAt,who:'me',name:me,kind:'event',what:fb.versionLabel?t('{label}에 의견 {count}개를 보냈어요',{label:fb.versionLabel,count}):photo?t('사진에 의견 {count}개를 보냈어요',{count}):t('영상에 의견 {count}개를 보냈어요',{count})});}
   // 문의와 답: 3a 묻기 화면과 같은 거름(영상 의견 하나하나는 영상 화면에만).
   for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?t('자동 안내'):m.authorName||owner):me,kind:'talk',what:m.author==='staff'?'':t('문의',null,'journal'),text:m.text||''});
   for(const c of st.comments||[])if(c.targetType==='project')add({id:'c:'+c.id,ref:c.id,at:c.at,who:c.author==='customer'?'me':'staff',name:c.author==='customer'?me:c.authorName||owner,kind:'talk',what:'',text:c.text||''});
@@ -335,10 +338,12 @@ export const journalNew=(j,seen)=>Number.isFinite(seen)?j.items.filter(item=>ite
 // i18n-skip-start
 // 직원 쪽 말로 옮긴 지금 상태(내부 확인의 새 의뢰 목록).
 const DESK_STATE={write:'의뢰서 쓰는 중',check:'새 의뢰',ask:'답을 기다려요',direction:'방향 답을 기다려요',redirect:'방향을 다시 제안해요',model:'모델 답을 기다려요',prepare:'1차안 준비 중','prepare-images':'장면 이미지 준비 중',script:'글 콘티를 보는 중',images:'장면 이미지를 보는 중',revise:'의견 반영 중',make:'제작 중',review:'영상 확인 중',deliver:'납품',pay:'결제 안내 중',done:'수령 확인 끝'};
+// 사진 상품은 「장면 이미지 · 영상」이 아니라 「첫 장 · 사진」이다(손님 화면과 같은 말).
+const DESK_STATE_PHOTO={'prepare-images':'첫 장 준비 중',images:'첫 장을 보는 중',review:'사진 확인 중'};
 // 결제 차례는 결제 상태로 가른다(판 4 화면 검수 F3 — 결제 확인은 담당자 손 단계라 목록에서 보여야 한다).
 const PAY_DESK={requested:'크몽 결제 요청 보냄',cancelled:'결제 취소'};
 export function deskQueue(projects=[],when=value=>value){
-  return projects.filter(p=>p.studio?.request&&p.studio.request.status!=='retired'&&!['archived','delivered'].includes(p.stage)).sort((a,b)=>String(b.studio.request.submittedAt||b.updatedAt).localeCompare(String(a.studio.request.submittedAt||a.updatedAt))).map(p=>{const state=roomState(p),a=p.studio.request.answers||{};return {id:p.id,title:p.title,meta:[KINDS.find(item=>item.id===a.kind)?.label,when(p.studio.request.submittedAt)].filter(Boolean).join(' · '),state:state==='pay'&&PAY_DESK[p.studio.request.payment?.status]||DESK_STATE[state]||'',tone:state==='check'?'is-new':''};});
+  return projects.filter(p=>p.studio?.request&&p.studio.request.status!=='retired'&&!['archived','delivered'].includes(p.stage)).sort((a,b)=>String(b.studio.request.submittedAt||b.updatedAt).localeCompare(String(a.studio.request.submittedAt||a.updatedAt))).map(p=>{const state=roomState(p),a=p.studio.request.answers||{};return {id:p.id,title:p.title,meta:[KINDS.find(item=>item.id===a.kind)?.label,when(p.studio.request.submittedAt)].filter(Boolean).join(' · '),state:state==='pay'&&PAY_DESK[p.studio.request.payment?.status]||a.package==='photo'&&DESK_STATE_PHOTO[state]||DESK_STATE[state]||'',tone:state==='check'?'is-new':''};});
 }
 // 내부 확인 화면: 답을 그대로 믿지 않고 빠진 칸을 코드가 먼저 짚는다. 판단(묻기 · 넘기기)은 사람이 한다.
 export function deskChecks(p){
@@ -385,6 +390,8 @@ export function deskModel(p){
       // 바꿨다가 처음 모델로 되돌려도 값은 비워져 있으므로(맡김), 그때 고른 값이 지금 의뢰 기록의 값과 같을 때만 보인다.
       ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)&&(!a.models?.[0]||a.models[0]===direction.modelId&&(a.outfit||'')===(direction.look.outfit||'')&&(a.hair||'')===(direction.look.hair||''))?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
     canDirect,
-    canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};
+    canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length,
+    // 사진 상품: 내부 확인 화면이 판 이름 · 단계 이름 · 결제 안내를 사진 말로 쓴다(영상 상품은 키가 없다).
+    ...(a.package==='photo'?{photo:true}:{})};
 }
 // i18n-skip-end

@@ -1872,4 +1872,17 @@ export default {
   "합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.":"Anything that differs from what we agreed on will still be corrected, even with no revisions left.",
   "수정 {total}회 중 {left}회 남았어요.":{"one":"Your one revision is still available.","other":"You have {left} of {total} revisions left."},
   "정한 수정 {total}회를 다 썼어요. 더 고칠 곳은 담당자와 범위를 정한 뒤 반영해요.":{"one":"You have used your one agreed revision. We will confirm the scope with you before making further changes.","other":"You have used your {total} agreed revisions. We will confirm the scope with you before making further changes."},
+  // 사진 상품의 확인 · 납품(11-12): 사진이 도착한 뒤 화면 — 꼬리표 · 안내 · 의견 칸 · 일지 줄(담당자 · 「나」 이름 뒤 — 동사로 시작) · 납품 · 끝맺음 · 결제가 먼저 확인된 첫 장 승인 창
+  "사진 확인":"Photo review",
+  "{name}{josa}. 바꿀 곳이 있으면 의견을 남겨 주세요.":"This is {name}. If anything should change, leave a note.",
+  "새 시안이 도착했어요. 보던 사진과 쓰던 의견은 그대로 있어요.":"A new preview is here. What you were viewing and writing is still here.",
+  "사진을 불러오지 못했어요. 인터넷 연결을 확인하고, 계속 안 되면 담당자에게 알려 주세요.":"We couldn’t load the photo. Check your connection, and if it keeps happening, let your producer know.",
+  "다른 형식이나 크기가 필요하면 담당자에게 알려 주세요.":"Need another format or size? Let your producer know.",
+  "이 사진에 남길 의견":"A note on this photo",
+  "사진에서 고칠 곳은 {where} 의견 칸에 남겨 주세요.":"For changes to the photo, use the notes box {where}.",
+  [`where${C}사진 아래`]:"below the photo",
+  "완성 사진 {count}장":{"one":"{count} finished photo","other":"{count} finished photos"},
+  "사진에 의견 {count}개를 보냈어요":{"one":"sent {count} note on the photo","other":"sent {count} notes on the photo"},
+  "같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요":"We can make your next photos with the same model. Just tell your producer",
+  "이 첫 장과 같은 결로 나머지 장을 만들어요. 결제가 확인돼 있어 바로 시작해요.":"We make the rest in the same look as this first photo. Your payment is confirmed, so we start right away.",
 };

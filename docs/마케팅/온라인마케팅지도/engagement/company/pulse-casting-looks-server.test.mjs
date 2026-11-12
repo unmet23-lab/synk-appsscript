@@ -255,3 +255,28 @@ test('picks made on the model proposal before the brief is confirmed reach the p
   row=await read();const cast=row.studio.strategy.data.castingSelection;
   assert.deepEqual([cast.modelId,cast.outfit,cast.hair||''],['F02','look-1','']);
 });
+
+// 사진 상품의 알림 본문(2026-11-12, 설계 12절): 앱 안 알림함 · 기기 알림의 본문이 같은 순간을 사진 말로 한다 — 그림이 붙은 판(첫 장)에만, 글만 든 판과 영상 상품은 전과 같다.
+test('a photo order hears of the model, the first sheet and the photos in photo words; a text sheet and a film order keep theirs',async t=>{
+  const bodies=async h=>Object.fromEntries((await h.f.call('/pulse/api/live')).data.notifications.map(item=>[item.id.split(':').slice(3).join(':'),item.body]));
+  const walk=async extra=>{
+    const h=await confirmed(t,extra);
+    await h.act({action:'propose_model',modelId:'F02',note:''});
+    await h.cact({action:'answer_model',accept:true});
+    const first=await h.upload('first.png');
+    await h.act({action:'save_scene',title:'첫 장',description:'캔을 든 반신',narration:'',screenText:'',duration:3,visibility:'customer',assetId:first});
+    // 1판은 글만 든 판으로, 2판은 그림이 붙은 판으로 보낸다.
+    await h.act({action:'send_draft',oneLine:'한 캔에 맛이 다섯 번',note:'',kind:'script'});
+    await h.cact({action:'approve_draft',round:1});
+    await h.act({action:'payment_confirm'});
+    await h.act({action:'send_draft',oneLine:'한 캔에 맛이 다섯 번',note:''});
+    return h;
+  };
+  const photo=await bodies(await walk({package:'photo'}));
+  assert.equal(photo['model_proposed:'+Object.keys(photo).find(key=>key.startsWith('model_proposed:')).split(':')[1]],'첫 장을 만들기 전에 모델을 확인해 주세요.');
+  assert.equal(photo['draft_ready:1'],'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.','a text sheet keeps the script words');
+  assert.equal(photo['draft_ready:2'],'첫 장을 보고 의견을 남기거나, 괜찮으면 그대로 진행해 주세요.');
+  const film=await bodies(await walk({}));
+  assert.equal(Object.entries(film).find(([key])=>key.startsWith('model_proposed:'))[1],'장면을 만들기 전에 모델을 확인해 주세요.');
+  assert.equal(film['draft_ready:1'],'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.');assert.equal(film['draft_ready:2'],'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.');
+});
