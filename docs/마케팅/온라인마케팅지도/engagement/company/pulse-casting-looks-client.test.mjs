@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {emptyAnswers,answersForServer} from './public/pulse-app/request-data.mjs';
 import {roomModel,directionModel,draftModel,journalModel,deskModel,lookOf,lookLine} from './public/pulse-app/room-view.mjs';
-import {directionView,roomView,draftView} from './public/pulse-app/film-views.mjs';
+import {directionView,roomView,draftView,roomRail} from './public/pulse-app/film-views.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
 import {castingSummary,castingView,normalizeDemoCasting,CASTING_KEYS} from './public/pulse-app/casting-view.mjs';
 
@@ -277,4 +277,63 @@ test('the card row uses the card width and the shared look styles are not tied t
   assert.match(css,/\.sx-dp-look:has\(\[data-room-looks\]\[hidden\]\) \.sx-dp-look-say\.is-picked\{max-height:none;overflow:visible\}/);
   assert.match(css,/\.sx-dp-look:has\(\[data-room-looks\]\[hidden\]\) \.sx-dp-look-say\.is-picked>b\{white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all\}/);
   for(const rule of ['.sx-dp-look-row{','.sx-dp-looks{','.sx-dp-look-set{','.sx-dp-pics{','.sx-dp-pic{'])assert.ok(css.includes('\n'+rule)||css.includes('\r\n'+rule),rule+' is a top-level rule');
+});
+
+// ── 사진 상품의 말 · 담당자 방향 칸(2026-11-12 후속 — 운영 시험이 찾은 것과 설계 10절의 남긴 글). ──
+test('after the customer switches models, the desk no longer shows the outfit and hair picked for the old model',()=>{
+  const chosen=open({status:'chosen',chosenId:'b',answeredAt:'2026-11-10T06:00:00.000Z',look:{outfit:'look-2',hair:'look-3'}});
+  const same=project({direction:chosen,answers:{models:['F02'],outfit:'look-2',hair:'look-3'},casting:{modelId:'F02',outfit:'look-2',hair:'look-3'}});
+  assert.equal(deskModel(same).direction.look,'옷 스트라이프 원피스 · 머리 긴 웨이브');
+  // 글 콘티의 「다른 모델로 바꾸기」 뒤: 의뢰 기록의 모델이 그 방향의 모델과 다르다 — 옛 모델의 값은 지금 모델 옆에 서지 않는다.
+  const moved=project({direction:chosen,answers:{models:['M06'],outfit:'',hair:''},casting:{modelId:'M06',outfit:'',hair:''}});
+  assert.equal('look' in deskModel(moved).direction,false);
+  assert.doesNotMatch(deskView({...deskModel(moved),queue:[]}),/data-desk-look/);
+  // 일지의 그때 줄은 기록이라 그대로 남는다.
+  assert.equal(journalModel(moved).items.find(item=>item.id==='d:1:ok').what,'「톡」으로 정했어요 · 옷 스트라이프 원피스 · 머리 긴 웨이브');
+});
+
+test('a photo order reads as photos from the stage line to the first sheet, and a film order is unchanged',()=>{
+  const scenes=[{id:'s1',revision:1,title:'첫 장',description:'캔을 든 반신',duration:3,assetId:'img-a'}];
+  const sheet=(pkg,extra={})=>{const p=project({answers:{package:pkg,models:['F02']},casting:{modelId:'F02'},scenes,rounds:[{round:1,kind:'images',oneLine:'한 줄',scenes:[{id:'s1',revision:1}],sentAt:'2026-11-12T03:00:00.000Z',...extra}]});p.studio.request.modelProposal={modelId:'F02',status:'accepted',at:'2026-11-12T01:00:00.000Z',answeredAt:'2026-11-12T02:00:00.000Z'};return p;};
+  const photo=sheet('photo'),film=sheet('s15');
+  // 머리 단계 줄.
+  assert.match(roomRail(roomModel(photo)),/>사진 · 납품<\/button>/);assert.doesNotMatch(roomRail(roomModel(photo)),/영상 · 납품/);
+  assert.match(roomRail(roomModel(film)),/>영상 · 납품<\/button>/);
+  // 고객 방: 첫 장이 도착한 때 · 사진이 도착한 때.
+  const info=roomModel(photo);assert.equal(info.state,'images');
+  const room=roomView(info);
+  assert.match(room,/첫 장이 도착했어요/);assert.match(room,/첫 장을 보고 의견을 남겨 주세요\. 방향이 맞으면 나머지 장을 만들어요\./);assert.match(room,/<span>첫 장 보기<\/span>/);
+  assert.doesNotMatch(room,/장면 이미지가 도착했어요|영상 전 확인|장면 이미지 보기/);
+  const arrived=roomView({...info,state:'review',stage:'review'});
+  assert.match(arrived,/사진이 도착했어요/);assert.match(arrived,/<span>사진 보기<\/span>/);assert.doesNotMatch(arrived,/영상이 도착했어요|영상 보기/);
+  assert.match(roomView(roomModel(film)),/장면 이미지가 도착했어요/);
+  // 첫 장 화면.
+  const d=draftModel(photo);assert.equal(d.photo,true);assert.equal('photo' in draftModel(film),false,'a film order keeps the earlier shape');
+  const html=draftView(d);
+  assert.match(html,/<div class="sx-draft sx-dr  is-photo" data-draft/);
+  assert.match(html,/<p class="sx-small">첫 장 · 1판 · 1장<\/p>/);
+  assert.match(html,/<span class="sx-small" data-cut-sec><\/span>/,'no seconds on a photo');
+  assert.match(html,/첫 장으로 방향을 맞춰요\. 의견을 주시면 그 결로 나머지 장을 만들어요\./);
+  assert.match(html,/data-decide-note>첫 장을 보고 의견을 남겨 주세요\.<\/p>/);
+  assert.match(html,/data-draft-do="approve"><span>이 첫 장대로 진행<\/span>/);
+  assert.match(html,/aria-label="사진 목록">/);assert.match(html,/aria-label="1번째 장"/);
+  assert.match(html,/이 장에서 무엇을 바꾸면 좋을까요\?/);
+  assert.doesNotMatch(html,/영상 전 확인|움직이는 동안|제작 시작|컷을 하나씩|장면 이미지/);
+  const filmHtml=draftView(draftModel(film));
+  assert.match(filmHtml,/<div class="sx-draft sx-dr " data-draft/);assert.match(filmHtml,/영상 전 확인 <b class="sx-no">3\/3<\/b>/);assert.match(filmHtml,/data-draft-do="approve"><span>이대로 제작 시작<\/span>/);assert.match(filmHtml,/aria-label="1번 컷, 3\.0초"/);
+  // 일지: 사진 상품의 그림 판은 「장면 이미지」가 아니라 「첫 장」이다.
+  assert.equal(journalModel(photo).items.find(item=>item.id==='r:1').what,'첫 장 1판을 보냈어요');
+  const closed=journalModel(sheet('photo',{feedbackAt:'2026-11-12T03:30:00.000Z',changes:2,approvedAt:'2026-11-12T04:00:00.000Z'})).items;
+  assert.equal(closed.find(item=>item.id==='r:1:fix').what,'첫 장 1판에 고칠 곳 2개를 보냈어요');assert.equal(closed.find(item=>item.id==='r:1:ok').what,'첫 장 1판을 확인했어요');
+  assert.equal(journalModel(sheet('photo',{note:'색을 맞췄어요'})).items.find(item=>item.id==='r:1').what,'첫 장 1판');
+  assert.equal(journalModel(film).items.find(item=>item.id==='r:1').what,'장면 이미지 1판을 보냈어요');
+  // 듣개 · 승인 창 · 꾸밈 · 영어.
+  const views=read('film-views.mjs'),app=read('app.mjs');
+  assert.match(views,/\$\('\[data-cut-sec\]'\)\.textContent=d\.photo\?'':secs\(cut\.seconds\);/);
+  assert.match(views,/d\.photo&&!script\?t\('다 확인하셨어요\. 이대로 괜찮으면 이 첫 장대로 진행해요\.'\)/);
+  assert.match(app,/photo\?t\('아직 확인하지 않은 \{count\}장도 이대로 진행해요\.',\{count:rest\}\):t\('아직 확인하지 않은 컷 \{count\}개도 이대로 만들어요\.',\{count:rest\}\)/);
+  assert.match(read('film.css'),/\.sx-draft\.is-photo \.sx-strip-tc\{display:none\}/);
+  const en=read('i18n/en.mjs');
+  for(const key of ['첫 장이 도착했어요','첫 장 보기','사진이 도착했어요','사진 보기','{n}번째 장','{total}장 중 {count}장을 확인하셨어요.','첫 장 · {round}판 · {count}장','이 첫 장대로 진행','사진 목록','아직 확인하지 않은 {count}장도 이대로 진행해요.'])assert.ok(en.includes(`'${key}':`)||en.includes(`"${key}":`),key);
+  assert.ok(en.includes('[`stage${C}사진 · 납품`]:'));
 });

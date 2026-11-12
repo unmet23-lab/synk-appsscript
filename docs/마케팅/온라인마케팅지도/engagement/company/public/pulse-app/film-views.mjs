@@ -14,13 +14,13 @@ export {entryView,mountEntry} from './film-home.mjs';
 const ASSET='./assets/request/';
 const pad=(value,size=2)=>String(value).padStart(size,'0');
 const secs=value=>t('{sec}초',{sec:Number(value).toFixed(value%1?2:0)});
-const cutName=(index,cut,react='')=>{const vars={n:index+1,sec:cut.seconds.toFixed(1)};return react==='ok'?t('{n}번 컷, {sec}초, 좋아요',vars):react==='fix'?t('{n}번 컷, {sec}초, 고칠 곳 있음',vars):t('{n}번 컷, {sec}초',vars);};
+const cutName=(index,cut,react='',photo=false)=>{const vars={n:index+1,sec:cut.seconds.toFixed(1)};if(photo)return react==='ok'?t('{n}번째 장, 좋아요',vars):react==='fix'?t('{n}번째 장, 고칠 곳 있음',vars):t('{n}번째 장',vars);return react==='ok'?t('{n}번 컷, {sec}초, 좋아요',vars):react==='fix'?t('{n}번 컷, {sec}초, 고칠 곳 있음',vars):t('{n}번 컷, {sec}초',vars);};
 const modelScene=id=>`${ASSET}model-scene-${String(id).toLowerCase()}.webp`;
 const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.image;
 // 모델 이름 · 한 줄은 카탈로그 한국어를 그리는 자리에서 번역한다.
 const nameOf=name=>t(name,null,'model');
 // 단계 이름(단계 문맥 — 의뢰서 칸 이름 「확인」과 영어가 갈린다).
-const stageName=id=>({request:t('의뢰서',null,'stage'),check:t('확인',null,'stage'),draft:t('1차안',null,'stage'),make:t('제작',null,'stage'),review:t('영상 · 납품',null,'stage')})[id]||'';
+const stageName=(id,photo=false)=>({request:t('의뢰서',null,'stage'),check:t('확인',null,'stage'),draft:t('1차안',null,'stage'),make:t('제작',null,'stage'),review:photo?t('사진 · 납품',null,'stage'):t('영상 · 납품',null,'stage')})[id]||'';
 // 번역문 안의 자리표에 마크업을 넣는다: 번역문 전체를 먼저 이스케이프하고 자리표만 바꾼다(마크업은 자리표 밖 — 글은 늘 이스케이프된다).
 const withMarks=(text,marks)=>Object.entries(marks).reduce((html,[name,mark])=>html.split(`{${name}}`).join(mark),esc(text));
 
@@ -30,7 +30,7 @@ export function roomRail(p,{tab='overview'}={}){
   const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films'].includes(view)?view:p.stage,away=view==='films';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
-  return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id))}</button>`).join('')}</div>${p.films?`<div class="sx-steps-foot sx-small"><button type="button" class="${view==='films'?'is-now':''}" ${view==='films'?'aria-current="page"':''} data-room-go="films">${esc(t('완성 광고'))}</button></div>`:''}</nav>`;
+  return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div>${p.films?`<div class="sx-steps-foot sx-small"><button type="button" class="${view==='films'?'is-now':''}" ${view==='films'?'aria-current="page"':''} data-room-go="films">${esc(t('완성 광고'))}</button></div>`:''}</nav>`;
 }
 // 머리 하나: 프로젝트 이름(누르면 고객 방) · 접수 번호 · 단계 줄. 앱에서는 앱 머리 칸에, 예시에서는 화면 안 머리에 같은 마크업을 그린다.
 // 언어 메뉴(다국어 판 2)는 이 가운데 칸에 두지 않는다 — 앱 머리 오른쪽 끝(views.mjs header)에 하나만 선다(같은 머리에 둘이 서지 않게).
@@ -372,6 +372,8 @@ function copyBase(p){
   if(p.state==='redirect'&&p.direction?.last)return {turn:'us',title:k('담당자가 직접 연락드려요'),text:k('주신 말씀을 들고 담당자가 연락드려 함께 정해요. 정해지면 글 콘티를 보내 드려요.')};
   // 사진 상품의 모델 제안: 장면이 아니라 첫 장을 만들기 전이다.
   if(p.state==='model'&&p.photo)return {...ROOM_COPY.model,text:k('첫 장을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.')};
+  if(p.state==='images'&&p.photo)return {...ROOM_COPY.images,title:k('첫 장이 도착했어요'),text:k('첫 장을 보고 의견을 남겨 주세요. 방향이 맞으면 나머지 장을 만들어요.'),action:{label:k('첫 장 보기'),go:'draft'}};
+  if(p.state==='review'&&p.photo)return {...ROOM_COPY.review,title:k('사진이 도착했어요'),text:k('사진을 보고 고칠 곳에 의견을 남겨 주세요.'),action:{label:k('사진 보기'),go:'review'}};
   if(p.state==='prepare'&&p.photo)return {turn:'us',title:k('첫 장을 만들고 있어요'),text:k('보내 주신 사진과 의뢰서대로 첫 장을 먼저 보내 드려요. 방향이 맞으면 나머지 장을 만들어요.')};
   if(p.state==='make'&&p.photo)return {turn:'us',title:k('확인하신 첫 장대로 만들고 있어요'),text:k('나머지 장을 같은 결로 만들고 있어요. 다음에 받으실 것은 완성 사진이에요.')};
   if(p.state==='check'&&p.photo)return {...ROOM_COPY.check,text:k('보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 첫 장을 먼저 보내 드려요.')};
@@ -487,7 +489,7 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
 const moment=value=>`${Math.floor(value/60)}:${pad(Math.floor(value%60))}`;
 function scriptSheet(d,total){
   let from=0;
-  const rows=d.cuts.map((cut,i)=>{const at=from;from+=cut.seconds;return `<button type="button" class="sx-strip-cut sx-sheet-row ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut))}" data-cut="${i}" data-w="${cut.seconds}"><span class="sx-no sx-sheet-at"><b>${pad(i+1)}</b>${moment(at)}</span><span class="sx-sheet-what"><span class="sx-serif">${esc(cut.what)}</span>${cut.say?`<span class="sx-sheet-line"><b>${esc(t('말',null,'cut'))}</b> ${esc(cut.say)}</span>`:''}${cut.text?`<span class="sx-sheet-line"><b>${esc(t('화면 글자'))}</b> ${esc(cut.text)}</span>`:''}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`;}).join('');
+  const rows=d.cuts.map((cut,i)=>{const at=from;from+=cut.seconds;return `<button type="button" class="sx-strip-cut sx-sheet-row ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut,'',d.photo))}" data-cut="${i}" data-w="${cut.seconds}"><span class="sx-no sx-sheet-at"><b>${pad(i+1)}</b>${moment(at)}</span><span class="sx-sheet-what"><span class="sx-serif">${esc(cut.what)}</span>${cut.say?`<span class="sx-sheet-line"><b>${esc(t('말',null,'cut'))}</b> ${esc(cut.say)}</span>`:''}${cut.text?`<span class="sx-sheet-line"><b>${esc(t('화면 글자'))}</b> ${esc(cut.text)}</span>`:''}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`;}).join('');
   // 숫자는 고정폭 글자(.sx-no)로 — 문장은 하나로 옮기고 숫자 자리에만 마크업을 넣는다(수는 복수형을 고를 때만 쓴다).
   const facts=withMarks(t('{cuts}컷 · {sec}초 · {ratio}',{count:d.cuts.length}),{cuts:`<span class="sx-no">${d.cuts.length}</span>`,sec:`<span class="sx-no">${total.toFixed(1)}</span>`,ratio:`<span class="sx-no">${esc(d.ratio||'9:16')}</span>`});
   return `<figure class="sx-dr-films sx-sheet-room"><div class="sx-sheet"><header class="sx-sheet-head"><span class="sx-small">${esc(t('글 콘티 {round}판',{round:String(d.round)}))}</span><span class="sx-small">${facts}</span></header><div class="sx-sheet-rows" data-strip role="listbox" aria-label="${esc(t('컷 목록'))}">${rows}<i class="sx-strip-head" data-head hidden></i></div><footer class="sx-sheet-foot"><p class="sx-small sx-strip-tc"><span class="sx-strip-at"><span data-tc-no>${esc(t('컷 {n}',{n:'01'}))}</span> · <span data-tc>0:00</span></span></p></footer></div></figure>`;
@@ -496,8 +498,10 @@ export function draftView(d,{top='',head='',journal=''}={}){
   const total=d.cuts.reduce((sum,cut)=>sum+cut.seconds,0),script=d.cuts.every(cut=>!cut.src),locked=d.approved?t('이 판은 확인을 마쳤어요.'):d.feedbackAt?t('보내 주신 의견을 반영하고 있어요. 새 판이 오면 알려 드려요.'):'';
   // 크레딧 한 줄: 문장 하나로 옮기고 「영상 전 확인 2/3」의 숫자 자리에만 마크업을 넣는다.
   const facts={round:String(d.round),count:d.cuts.length,sec:total.toFixed(1)},step=`<b class="sx-no">${script?'2':'3'}/3</b>`;
-  const credit=withMarks(script?t('글 콘티 · {round}판 · {count}컷 · {sec}초 · 영상 전 확인 {step}',facts):t('장면 이미지 · {round}판 · {count}컷 · {sec}초 · 영상 전 확인 {step}',facts),{step});
-  return `<div class="sx-draft sx-dr ${script?'is-script':''}" data-draft data-ratio="${esc(d.ratio||'9:16')}">
+  // 사진 상품(2026-11-12): 첫 장으로 방향을 맞추는 판이라 초 · 「영상 전 확인」 · 움직임 안내가 없다 — 크레딧 · 의견 칸 · 안내 · 결정 글 · 단추를 「첫 장 · 장」 말로.
+  const photo=!!d.photo;
+  const credit=photo?withMarks(t('첫 장 · {round}판 · {count}장',facts),{}):withMarks(script?t('글 콘티 · {round}판 · {count}컷 · {sec}초 · 영상 전 확인 {step}',facts):t('장면 이미지 · {round}판 · {count}컷 · {sec}초 · 영상 전 확인 {step}',facts),{step});
+  return `<div class="sx-draft sx-dr ${script?'is-script':''}${photo?' is-photo':''}" data-draft data-ratio="${esc(d.ratio||'9:16')}">
     ${head}
     ${script?scriptSheet(d,total):`<figure class="sx-dr-films"><div class="sx-dr-box" data-frame-box><img data-frame ${d.cuts[0].src?`src="${esc(d.cuts[0].src)}"`:'hidden'} alt=""></div></figure>`}
     <header class="sx-dr-left">
@@ -507,15 +511,15 @@ export function draftView(d,{top='',head='',journal=''}={}){
       ${d.model?`<div class="sx-draft-cast"><img src="${esc(d.look?.outfitSrc||modelScene(d.model.id))}" alt=""${d.look?.outfitSrc?' class="is-outfit"':''}><span class="sx-small"><b>${esc(nameOf(d.model.name))}</b> ${esc(t(d.model.line))}${d.look?`<span class="sx-draft-look">${esc(lookLine(d.look))}</span>`:''}${script&&!locked?` <button type="button" class="sx-quiet" data-draft-do="recast">${esc(t('다른 모델로 바꾸기'))}</button>`:''}</span></div>`:d.persona?`<div class="sx-draft-cast">${d.persona.image?`<img src="${esc(d.persona.image)}" alt="">`:''}<span class="sx-small"><b>${esc(d.persona.name)}</b> ${esc(t('이번 광고에 쓰기로 하신 맞춤 인물'))}</span></div>`:''}
     </header>
     <aside class="sx-dr-right">
-      <p class="sx-no sx-draft-cut"><b data-cut-no>01</b> / ${pad(d.cuts.length)} <span class="sx-small" data-cut-sec>${esc(secs(d.cuts[0].seconds))}</span></p>
+      <p class="sx-no sx-draft-cut"><b data-cut-no>01</b> / ${pad(d.cuts.length)} <span class="sx-small" data-cut-sec>${photo?'':esc(secs(d.cuts[0].seconds))}</span></p>
       <h2 class="sx-serif sx-draft-what" data-cut-what>${esc(d.cuts[0].what)}</h2>
       <dl class="sx-kv is-tight"><div><dt>${esc(t('말',null,'cut'))}</dt><dd data-cut-say>${esc(d.cuts[0].say||t('없음'))}</dd></div><div><dt>${esc(t('화면 글자'))}</dt><dd data-cut-text>${esc(d.cuts[0].text||t('없음'))}</dd></div></dl>
       ${locked?'':`<div class="sx-draft-react"><button type="button" class="sx-chip sx-react" data-draft-do="ok" aria-pressed="false">${esc(t('좋아요'))}</button><button type="button" class="sx-chip sx-react" data-draft-do="fix" aria-pressed="false">${esc(t('고칠 곳이 있어요'))}</button></div>
-      <label class="sx-field sx-draft-comment" data-comment hidden><span class="sx-small">${esc(t('이 컷에서 무엇을 바꾸면 좋을까요?'))}</span><textarea rows="2" maxlength="1000" placeholder="${esc(t('예) 강아지가 조금 더 크게 보이면 좋겠어요'))}" data-comment-input></textarea></label>`}
-      <p class="sx-small sx-draft-warn">${esc(script?t('글이 맞으면 컷마다 장면 이미지를 만들어 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.'):t('장면 이미지는 그 컷의 첫 화면이에요. 움직이는 동안 작은 부분은 달라질 수 있어요. 제품 · 로고 · 글자는 실제 파일을 얹고, 글자를 또렷이 읽어야 하는 컷은 멈춘 컷으로 잡아요.'))}</p>
-      <div class="sx-draft-decide"><p class="sx-small" data-decide-note>${esc(locked||t('컷을 하나씩 보고 의견을 남겨 주세요.'))}</p>${locked?'':`<button type="button" class="sx-go is-solid" data-draft-do="send" hidden><span>${withMarks(t('의견 보내기 {n}'),{n:'<b class="sx-no" data-count>0</b>'})}</span>${arrow}</button><button type="button" class="sx-go is-solid" data-draft-do="approve"><span>${esc(script?t('이대로 장면 이미지 만들기'):t('이대로 제작 시작'))}</span>${arrow}</button>`}</div>
+      <label class="sx-field sx-draft-comment" data-comment hidden><span class="sx-small">${esc(photo?t('이 장에서 무엇을 바꾸면 좋을까요?'):t('이 컷에서 무엇을 바꾸면 좋을까요?'))}</span><textarea rows="2" maxlength="1000" placeholder="${esc(t('예) 강아지가 조금 더 크게 보이면 좋겠어요'))}" data-comment-input></textarea></label>`}
+      <p class="sx-small sx-draft-warn">${esc(photo?t('첫 장으로 방향을 맞춰요. 의견을 주시면 그 결로 나머지 장을 만들어요.'):script?t('글이 맞으면 컷마다 장면 이미지를 만들어 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.'):t('장면 이미지는 그 컷의 첫 화면이에요. 움직이는 동안 작은 부분은 달라질 수 있어요. 제품 · 로고 · 글자는 실제 파일을 얹고, 글자를 또렷이 읽어야 하는 컷은 멈춘 컷으로 잡아요.'))}</p>
+      <div class="sx-draft-decide"><p class="sx-small" data-decide-note>${esc(locked||(photo?t('첫 장을 보고 의견을 남겨 주세요.'):t('컷을 하나씩 보고 의견을 남겨 주세요.')))}</p>${locked?'':`<button type="button" class="sx-go is-solid" data-draft-do="send" hidden><span>${withMarks(t('의견 보내기 {n}'),{n:'<b class="sx-no" data-count>0</b>'})}</span>${arrow}</button><button type="button" class="sx-go is-solid" data-draft-do="approve"><span>${esc(photo?(script?t('이대로 첫 장 만들기'):t('이 첫 장대로 진행')):script?t('이대로 장면 이미지 만들기'):t('이대로 제작 시작'))}</span>${arrow}</button>`}</div>
     </aside>
-    ${script?'':`<div class="sx-dr-bottom sx-draft-strip"><div class="sx-strip-run" data-strip role="listbox" aria-label="${esc(t('컷 목록'))}">${d.cuts.map((cut,i)=>`<button type="button" class="sx-strip-cut ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut))}" data-cut="${i}" data-w="${cut.seconds}">${cut.src?`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`:''}<span class="sx-no sx-strip-no">${pad(i+1)}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`).join('')}<i class="sx-strip-head" data-head aria-hidden="true"></i></div><p class="sx-small sx-strip-tc"><button type="button" class="sx-dr-play" data-draft-do="play"><i aria-hidden="true"></i><span data-play-label>${esc(t('차례로 보기'))}</span></button><span class="sx-strip-at"><span data-tc-no>${esc(t('컷 {n}',{n:'01'}))}</span> · <span data-tc>0:00</span></span></p></div>`}
+    ${script?'':`<div class="sx-dr-bottom sx-draft-strip"><div class="sx-strip-run" data-strip role="listbox" aria-label="${esc(photo?t('사진 목록'):t('컷 목록'))}">${d.cuts.map((cut,i)=>`<button type="button" class="sx-strip-cut ${i===0?'is-on':''}" role="option" aria-selected="${i===0?'true':'false'}" aria-label="${esc(cutName(i,cut,'',photo))}" data-cut="${i}" data-w="${cut.seconds}">${cut.src?`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`:''}<span class="sx-no sx-strip-no">${pad(i+1)}</span><i class="sx-strip-state" aria-hidden="true"></i></button>`).join('')}<i class="sx-strip-head" data-head aria-hidden="true"></i></div><p class="sx-small sx-strip-tc"><button type="button" class="sx-dr-play" data-draft-do="play"><i aria-hidden="true"></i><span data-play-label>${esc(t('차례로 보기'))}</span></button><span class="sx-strip-at"><span data-tc-no>${esc(t('컷 {n}',{n:'01'}))}</span> · <span data-tc>0:00</span></span></p></div>`}
   </div>`;
 }
 // 컷마다 남긴 의견은 부른 쪽이 쥘 수 있게 state로 받는다(실시간 갱신으로 화면을 다시 그려도 잃지 않게).
@@ -533,7 +537,7 @@ export function mountDraft(root,d,{animate=true,state:kept,at:startAt=0,onChange
   function moveHead(seconds){const head=$('[data-head]');head.style.setProperty('--x',String(seconds/total));}
   function show(index,{quick=false}={}){
     clearTimeout(nextTimer);at=index;const cut=d.cuts[index];
-    const image=$('[data-frame]');if(image){image.hidden=!cut.src;if(cut.src)image.src=cut.src;}$('[data-cut-no]').textContent=pad(index+1);$('[data-cut-sec]').textContent=secs(cut.seconds);$('[data-cut-what]').textContent=cut.what;$('[data-cut-say]').textContent=cut.say||t('없음');$('[data-cut-text]').textContent=cut.text||t('없음');$('[data-tc-no]').textContent=t('컷 {n}',{n:pad(index+1)});$('[data-tc]').textContent=moment(startOf(index));
+    const image=$('[data-frame]');if(image){image.hidden=!cut.src;if(cut.src)image.src=cut.src;}$('[data-cut-no]').textContent=pad(index+1);$('[data-cut-sec]').textContent=d.photo?'':secs(cut.seconds);$('[data-cut-what]').textContent=cut.what;$('[data-cut-say]').textContent=cut.say||t('없음');$('[data-cut-text]').textContent=cut.text||t('없음');$('[data-tc-no]').textContent=t('컷 {n}',{n:pad(index+1)});$('[data-tc]').textContent=moment(startOf(index));
     if(!quick&&image)play(image,[{opacity:.35},{opacity:1}],{duration:240});
     cuts.forEach((el,i)=>{el.classList.toggle('is-on',i===index);el.setAttribute('aria-selected',i===index?'true':'false');});
     // 페이지가 아니라 필름 띠만 옮긴다.
@@ -543,7 +547,7 @@ export function mountDraft(root,d,{animate=true,state:kept,at:startAt=0,onChange
   }
   // 고칠 곳을 적어 두면 주 단추가 「의견 보내기」로 바뀐다. 의견을 적어 둔 채 제작이 시작되는 일이 없게 한다.
   function syncReact(){
-    cuts.forEach((el,i)=>{el.dataset.state=state[i].react;el.setAttribute('aria-label',cutName(i,d.cuts[i],state[i].react));});
+    cuts.forEach((el,i)=>{el.dataset.state=state[i].react;el.setAttribute('aria-label',cutName(i,d.cuts[i],state[i].react,d.photo));});
     onChange?.(state,at);
     if(!$('.sx-react'))return;
     const s=state[at],script=d.cuts.every(cut=>!cut.src);
@@ -551,7 +555,7 @@ export function mountDraft(root,d,{animate=true,state:kept,at:startAt=0,onChange
     const box=$('[data-comment]'),input=$('[data-comment-input]');box.hidden=s.react!=='fix';if(input.value!==s.note)input.value=s.note;
     const fixes=state.filter(item=>item.react==='fix'),blank=fixes.filter(item=>!item.note.trim()).length,seen=state.filter(item=>item.react).length;
     $('[data-count]').textContent=fixes.length;$('[data-draft-do="send"]').hidden=!fixes.length;$('[data-draft-do="approve"]').hidden=!!fixes.length;
-    $('[data-decide-note]').textContent=blank?t('고칠 곳 {total}개 중 {count}개가 비어 있어요. 무엇을 바꾸면 좋을지 적어 주세요.',{total:fixes.length,count:blank}):fixes.length?t('고칠 곳 {count}개를 모았어요. 보내 주시면 반영한 판을 다시 보여 드려요.',{count:fixes.length}):seen===d.cuts.length?(script?t('모든 컷을 확인하셨어요. 이대로 괜찮으면 장면 이미지를 만들어요.'):t('모든 컷을 확인하셨어요. 이대로 괜찮으면 제작을 시작해요.')):seen?t('{total}컷 중 {count}컷을 확인하셨어요.',{total:d.cuts.length,count:seen}):t('컷을 하나씩 보고 의견을 남겨 주세요.');
+    $('[data-decide-note]').textContent=blank?t('고칠 곳 {total}개 중 {count}개가 비어 있어요. 무엇을 바꾸면 좋을지 적어 주세요.',{total:fixes.length,count:blank}):fixes.length?t('고칠 곳 {count}개를 모았어요. 보내 주시면 반영한 판을 다시 보여 드려요.',{count:fixes.length}):seen===d.cuts.length?(d.photo&&!script?t('다 확인하셨어요. 이대로 괜찮으면 이 첫 장대로 진행해요.'):script?t('모든 컷을 확인하셨어요. 이대로 괜찮으면 장면 이미지를 만들어요.'):t('모든 컷을 확인하셨어요. 이대로 괜찮으면 제작을 시작해요.')):seen?(d.photo?t('{total}장 중 {count}장을 확인하셨어요.',{total:d.cuts.length,count:seen}):t('{total}컷 중 {count}컷을 확인하셨어요.',{total:d.cuts.length,count:seen})):d.photo?t('첫 장을 보고 의견을 남겨 주세요.'):t('컷을 하나씩 보고 의견을 남겨 주세요.');
   }
   const playLabel=on=>{const label=$('[data-play-label]');if(label)label.textContent=on?t('멈춤'):t('차례로 보기');};
   function stop(){clearTimeout(nextTimer);playing=false;delete host.dataset.playing;cancelAnimationFrame(timer);$('.sx-dr-play')?.classList.remove('is-playing');playLabel(false);}

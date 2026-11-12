@@ -236,7 +236,7 @@ function mountDraftScreen(model,animate){
       if(model.kind==='script')return send();
       const rest=(state||[]).filter(item=>!item.react).length;
       const photo=s.project?.studio?.request?.answers?.package==='photo';
-      confirmAction=send;openDialog('confirm',{title:photo?t('이 첫 장대로 진행할까요?'):t('이대로 제작을 시작할까요?'),text:(rest?t('아직 확인하지 않은 컷 {count}개도 이대로 만들어요.',{count:rest})+' ':'')+(photo?t('이 첫 장과 같은 결로 나머지 장을 만들어요. 결제가 확인되면 시작해요.'):t('이 장면 이미지로 소리와 영상을 만들어요. 장면 이미지는 그 컷의 첫 화면이라, 움직이는 동안 작은 부분은 달라질 수 있어요.')),...(terms.terms?{note:t('제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 패키지 수정 횟수 안에서 고쳐 드리고, 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.'),check:t('이 안내를 확인했어요')}:{}),button:photo?t('이대로 진행'):t('제작 시작')});
+      confirmAction=send;openDialog('confirm',{title:photo?t('이 첫 장대로 진행할까요?'):t('이대로 제작을 시작할까요?'),text:(rest?(photo?t('아직 확인하지 않은 {count}장도 이대로 진행해요.',{count:rest}):t('아직 확인하지 않은 컷 {count}개도 이대로 만들어요.',{count:rest}))+' ':'')+(photo?t('이 첫 장과 같은 결로 나머지 장을 만들어요. 결제가 확인되면 시작해요.'):t('이 장면 이미지로 소리와 영상을 만들어요. 장면 이미지는 그 컷의 첫 화면이라, 움직이는 동안 작은 부분은 달라질 수 있어요.')),...(terms.terms?{note:t('제작을 시작한 뒤에는 맞춤 제작이라 환불 대신 패키지 수정 횟수 안에서 고쳐 드리고, 합의와 다르게 만든 부분은 횟수와 상관없이 바로잡아요.'),check:t('이 안내를 확인했어요')}:{}),button:photo?t('이대로 진행'):t('제작 시작')});
     }});
 }
 // 방향 제안 대화상자의 값을 서버 꼴로. 새 파일은 프로젝트 자료로 먼저 올리고 그 id를 쓴다. 담당자 화면(늘 한국어)이라 번역하지 않는다.

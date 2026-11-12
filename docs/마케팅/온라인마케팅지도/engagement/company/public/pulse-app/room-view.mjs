@@ -186,7 +186,7 @@ export function draftModel(p){
   const selection=st.strategy?.data?.castingSelection,answers=r.answers||{};
   const look=r.castingLooks&&casting.kind==='catalog'&&modelCard(modelId)?lookOf(modelId,selection?.modelId===modelId?selection:answers.models?.[0]===modelId?answers:{}):null;
   const showLook=!!look&&(!!(look.outfit||look.hair)||!!r.directionProposal);
-  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',model:modelCard(modelId),...(persona?{persona}:{}),...(showLook?{look}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
+  return {round:round.round,kind:round.kind,oneLine:round.oneLine,note:round.note||'',approved:!!round.approvedAt,feedbackAt:round.feedbackAt||'',...(r.answers?.package==='photo'?{photo:true}:{}),model:modelCard(modelId),...(persona?{persona}:{}),...(showLook?{look}:{}),ratio:ratioOf({channels:r.answers?.channels||[]}),
     cuts:scenes.map(scene=>({id:scene.id,revision:scene.revision,seconds:Number(scene.duration)||3,what:scene.description||scene.title||'',say:scene.narration||'',text:scene.screenText||'',src:round.kind==='images'?scene.media?.url||assetSrc(scene)||scene.imageUrl||'':''}))};
 }
 // ── 작업 소식(운영 조각 4 · 설계 S1) ──
@@ -276,10 +276,11 @@ export function journalModel(p){
   const rounds=r?.rounds||[],last=rounds.at(-1);
   // 판 이름(「글 콘티 1판」)이 든 줄은 종류마다 문장 하나 — 판 이름은 늘 「판」으로 끝나 조사가 정해져 있다.
   for(const round of rounds){
-    const script=round.kind==='script',no=String(round.round);
-    add(round.note?{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'quote',what:script?t('글 콘티 {round}판',{round:no},'journal'):t('장면 이미지 {round}판',{round:no},'journal'),text:round.note,go:round===last?{tab:'draft'}:null}:{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'event',what:script?t('글 콘티 {round}판을 보냈어요',{round:no}):t('장면 이미지 {round}판을 보냈어요',{round:no}),go:round===last?{tab:'draft'}:null});
-    if(round.feedbackAt)add({id:'r:'+round.round+':fix',at:round.feedbackAt,who:'me',name:me,kind:'event',what:round.changes?(script?t('글 콘티 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes}):t('장면 이미지 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes})):(script?t('글 콘티 {round}판 컷 확인을 보냈어요',{round:no}):t('장면 이미지 {round}판 컷 확인을 보냈어요',{round:no}))});
-    if(round.approvedAt)add({id:'r:'+round.round+':ok',at:round.approvedAt,who:'me',name:me,kind:'event',what:script?t('글 콘티 {round}판을 확인했어요',{round:no}):t('장면 이미지 {round}판을 확인했어요',{round:no})});
+    // 사진 상품의 그림 판은 「장면 이미지」가 아니라 「첫 장」이다(고객 방 · 첫 장 화면과 같은 말).
+    const script=round.kind==='script',no=String(round.round),first=!script&&r.answers?.package==='photo';
+    add(round.note?{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'quote',what:script?t('글 콘티 {round}판',{round:no},'journal'):first?t('첫 장 {round}판',{round:no},'journal'):t('장면 이미지 {round}판',{round:no},'journal'),text:round.note,go:round===last?{tab:'draft'}:null}:{id:'r:'+round.round,at:round.sentAt,who:'staff',name:round.by||owner,kind:'event',what:script?t('글 콘티 {round}판을 보냈어요',{round:no}):first?t('첫 장 {round}판을 보냈어요',{round:no}):t('장면 이미지 {round}판을 보냈어요',{round:no}),go:round===last?{tab:'draft'}:null});
+    if(round.feedbackAt)add({id:'r:'+round.round+':fix',at:round.feedbackAt,who:'me',name:me,kind:'event',what:round.changes?(script?t('글 콘티 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes}):first?t('첫 장 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes}):t('장면 이미지 {round}판에 고칠 곳 {count}개를 보냈어요',{round:no,count:round.changes})):(script?t('글 콘티 {round}판 컷 확인을 보냈어요',{round:no}):first?t('첫 장 {round}판 확인을 보냈어요',{round:no}):t('장면 이미지 {round}판 컷 확인을 보냈어요',{round:no}))});
+    if(round.approvedAt)add({id:'r:'+round.round+':ok',at:round.approvedAt,who:'me',name:me,kind:'event',what:script?t('글 콘티 {round}판을 확인했어요',{round:no}):first?t('첫 장 {round}판을 확인했어요',{round:no}):t('장면 이미지 {round}판을 확인했어요',{round:no})});
   }
   // 결제(운영 조각 2 · 11-11): 요청 · 확인 · 취소를 일지 줄로 — 결제 요청이 언제 왔고 언제 확인됐는지를 나눈 말 사이에서 본다.
   // 서버가 내린 결제 줄(paymentTrail — 종류 · 때 · 값 · 받으실 날뿐)을 쓰고, 옛 서버면 지금 결제 상태의 때로 대신 그린다. 열린 요청 줄만 결제 카드로 간다.
@@ -374,7 +375,8 @@ export function deskModel(p){
       ...(proposal.status==='accepted'&&proposal.look&&modelLooks(proposal.modelId)?(look=>look.outfit||look.hair?{lookText:`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`}:{})(lookOf(proposal.modelId,proposal.look)):{})}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&!MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
     direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name})),
       // 옷 · 머리(11-10): 손님이 방향과 함께 고른 값(proposal.look). 고른 · 정리한 방향에 카탈로그 모델이 있을 때만.
-      ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
+      // 그 뒤 손님이 다른 모델로 바꿨으면(글 콘티의 「다른 모델로 바꾸기」) 옛 모델의 값이라 보이지 않는다 — 지금 값은 제작 설계 요약이 보인다.
+      ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)&&(a.models?.[0]||direction.modelId)===direction.modelId?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length};
 }

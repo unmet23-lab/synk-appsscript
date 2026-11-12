@@ -678,6 +678,8 @@ html.sx .loading-mark{display:block;width:44px;height:1px;background:var(--sx-in
 .sx-propose{display:grid;gap:6px;justify-items:start}
 .sx-propose h2{font-size:var(--sx-t2);line-height:1.3}
 .sx-propose-line{color:var(--sx-ink)}
+/* 사진 상품의 첫 장 화면: 초가 없어 「차례로 보기」와 시각 줄을 두지 않는다(칸은 남겨 듣개가 그대로 쓴다). */
+.sx-draft.is-photo .sx-strip-tc{display:none}
 /* 사진 상품: 모델 제안 카드의 옷 · 머리 줄(방향 화면과 같은 줄 — .sx-dp-look). 카드 폭을 쓰고, 요약 줄은 왼쪽 단 글 폭을 넘지 않는다.
    min-width:0 — 카드는 grid라 칸의 가장 좁은 폭이 안의 한 줄 글(고른 옷 · 머리 이름)만큼 넓어진다. 이름이 긴 모델에서 줄이 카드보다 넓어져 휴대폰 화면이 가로로 넘치고 「접기」가 화면 밖으로 나갔다.
    고른 뒤 접어 두면 방향 화면처럼 요약이 둘째 줄까지 꺾여 옷 · 머리 이름이 다 보인다(휴대폰은 title을 볼 수 없다) — 그 규칙은 방향 화면의 펼침 칸 이름에 묶여 있어 카드 몫을 따로 둔다. */
