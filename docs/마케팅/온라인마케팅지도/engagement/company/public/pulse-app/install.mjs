@@ -15,7 +15,7 @@ export function installationEnvironment({userAgent='',platform='',maxTouchPoints
 
 // The guide never creates permissions, saves an invitation, or changes a device.
 // Render these strings as escaped text, not trusted HTML.
-export function installationGuide(environment={}, {connected=false,enabled=false,canPrompt=false}={}){
+export function installationGuide(environment={}, {connected=false,enabled=false,canPrompt=false,photo=false}={}){
   const env=environment,needsHomeScreen=!!env.ios&&!env.standalone;
   const guide={title:t('앱 설치 · 알림'),summary:t('홈 화면에서 바로 열고, 새 수정본과 답변을 알림으로 확인하세요.'),steps:[],notes:[],canPrompt:!!canPrompt&&!env.standalone&&!env.ios&&!env.embedded&&env.secure!==false,needsHomeScreen,openNotifications:!!connected&&!needsHomeScreen&&!env.embedded&&env.secure!==false};
   const reconnect=t('앱을 열었는데 프로젝트가 보이지 않으면, 담당자에게 받은 초대 링크를 첫 화면에 붙여 넣어 한 번 연결해 주세요.');
@@ -46,7 +46,8 @@ export function installationGuide(environment={}, {connected=false,enabled=false
     guide.steps=[guide.canPrompt?t('아래 ‘이 기기에 설치’를 누르고 브라우저의 설치 안내를 따라 주세요.'):t('Chrome·Edge의 주소창 설치 아이콘 또는 메뉴에서 PULSE를 설치할 수 있어요. Safari는 파일 → Dock에 추가를 이용해 주세요.'),enable];
   }
   if(!connected&&!env.standalone)guide.notes.push(t('기기 알림을 켜려면 먼저 받은 초대 링크로 프로젝트에 연결해 주세요.'));
-  guide.notes.push(t('설치하지 않아도 브라우저에서 영상 확인, 수정 의견, 승인을 할 수 있어요.'));
+  // 사진 상품의 손님(photo)에게는 「사진 확인」이라고 말한다.
+  guide.notes.push(photo?t('설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요.'):t('설치하지 않아도 브라우저에서 영상 확인, 수정 의견, 승인을 할 수 있어요.'));
   if(enabled)guide.notes.push(t('알림이 보이지 않으면 휴대폰·PC 설정의 PULSE 또는 사용 중인 브라우저 알림과 방해 금지 설정을 확인해 주세요.'));
   return guide;
 }

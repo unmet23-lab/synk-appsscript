@@ -46,7 +46,9 @@
 // my-models.mjs · request-flow.mjs · views.mjs · 내부 확인 모듈 · i18n/en.mjs가 바뀌었다(v52 위). 목록은 그대로이고 판만 올린다.
 // v54(11-12): 사진 상품의 확인 · 납품(v53 위) — 사진이 도착한 뒤의 화면(꼬리표 「사진 확인」 · 의견 칸에 시계 없음 · 방 큰 그림 칸에 도착한 사진 · 납품 · 끝맺음 글)으로
 // views.mjs · film-views.mjs · room-view.mjs · feedback-rounds-view.mjs · app.mjs · film-legacy.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v54-photo-review-20261112';
+// v55(11-13): 사진 상품의 사진 판(v54 위) — 사진이 자기 비율로 서고 누르면 크게 보며, 완성 사진 다섯 장은 빈 칸 없이 놓이고, 영어 판의 「최종본」 줄과 설치 안내가 사진 말을 쓴다.
+// views.mjs · film-views.mjs · film-review.mjs · feedback-rounds-view.mjs · install.mjs · app.mjs · film.css · film-legacy.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v55-photo-shape-20261113';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

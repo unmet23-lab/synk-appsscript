@@ -164,6 +164,9 @@ export function mountReview(root,{previous=null,onError}={}){
   const seek=value=>{if(!video)return;poster?.release();const total=duration();video.currentTime=Math.max(0,Math.min(value,total?total-.03:value));paintTime();};
   const placeScenes=()=>{const row=$('[data-scenes]'),total=duration();if(!row||!total)return;const sum=Number(row.dataset.total)||0;row.hidden=Math.abs(sum-total)>1;row.style.setProperty('--cols',[...row.children].map(li=>`${li.dataset.w}fr`).join(' '));};
   const placeMarks=()=>{const total=duration();if(!total)return;host.querySelectorAll('[data-mark-at]').forEach(mark=>mark.style.setProperty('--x',String(Math.min(1,Number(mark.dataset.markAt)/total))));};
+  // 사진 상품의 사진 판(views.mjs reviewFilm — data-photo-shot): 영상처럼, 불러와진 사진의 비율로 상자를 맞춘다(가로 · 정사각 사진이 세로 상자 안에 작게 서지 않게).
+  const shot=$('[data-film-box] img[data-photo-shot]');
+  if(shot){const fit=()=>{if(!shot.naturalWidth||!shot.naturalHeight)return;const ratio=shot.naturalWidth/shot.naturalHeight;host.style.setProperty('--r',String(ratio));host.dataset.shape=ratio>1.1?'wide':ratio<.9?'tall':'square';};shot.addEventListener('load',fit,{signal});fit();}
   const setShape=()=>{if(!video||!box||!video.videoWidth)return;const ratio=video.videoWidth/video.videoHeight;host.style.setProperty('--r',String(ratio));host.dataset.shape=ratio>1.1?'wide':ratio<.9?'tall':'square';};
   // 띠(숨은 영상으로 판마다 칸을 그림)는 본 영상의 첫 그림이 선 뒤(canplay)에 시작한다 — 메타데이터가 오자마자 이 판 · 앞 판을 함께 받으면
   // 느린 망에서 본 영상이 몇 초 검게 남았다(운영 1440 · 390, 판 3c 실측). 첫 그림이 안 와도 2.5초 뒤에는 시작한다.

@@ -695,6 +695,10 @@ html.sx .loading-mark{display:block;width:44px;height:1px;background:var(--sx-in
 .sx-room-files[data-count="3"] img:first-child{grid-row:span 2}
 .sx-room-files[data-count="4"]{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
 .sx-room-files:is([data-count="5"],[data-count="6"]){grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr)}
+/* 사진 상품의 완성 사진 다섯 장: 빈 칸 없이 윗줄 두 장 · 아랫줄 석 장 */
+.sx-room-files.is-shots[data-count="5"]{grid-template-columns:repeat(6,1fr)}
+.sx-room-files.is-shots[data-count="5"] img{grid-column:span 2}
+.sx-room-files.is-shots[data-count="5"] img:nth-child(-n+2){grid-column:span 3}
 .sx-room-cuts{grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(0,1fr)}
 .sx-room-cuts:is([data-count="7"],[data-count="8"],[data-count="9"],[data-count="10"],[data-count="11"],[data-count="12"]){grid-template-columns:repeat(4,1fr)}
 .sx-room-word{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(24px,5vh,48px);padding:clamp(28px,6vw,88px);background:#0e0e0e}

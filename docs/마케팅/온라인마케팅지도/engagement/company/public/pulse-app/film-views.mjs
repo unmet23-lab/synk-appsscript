@@ -102,7 +102,7 @@ function roomScreen(p,{news=true}={}){
   if(p.state==='model'&&p.proposal)return `<img class="sx-q-fill" src="${esc(modelScene(p.proposal.id))}" alt=""><p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
   // 사진 상품(2026-11-12): 도착한 사진 · 완성 사진을 그대로 건다(영상 상품이 도착한 영상을 트는 자리) — 저희 작품의 예시 대신 손님 사진. 누르면 사진 확인 화면으로.
-  if(p.shots?.length)return `<div class="sx-room-files" data-count="${Math.min(p.shots.length,6)}">${p.shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(p.shots.length>1?t('완성 사진 {count}장',{count:p.shots.length}):p.shots[0].label)}</p>`;
+  if(p.shots?.length)return `<div class="sx-room-files is-shots" data-count="${Math.min(p.shots.length,6)}">${p.shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(p.shots.length>1?t('완성 사진 {count}장',{count:p.shots.length}):p.shots[0].label)}</p>`;
   const cuts=p.draft?.cuts||[];
   const pictured=cuts.filter(cut=>cut.src);
   if(pictured.length)return `<div class="sx-room-cuts" data-count="${Math.min(pictured.length,12)}">${pictured.slice(0,12).map(cut=>`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><p class="sx-small sx-room-cap">${esc(p.photo?t('첫 장 {round}판 · {count}장',{round:String(p.draft.round),count:cuts.length}):t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:cuts.length}))}</p>`;
@@ -368,7 +368,7 @@ function copyBase(p){
   // 결제 차례(판 4): 서버가 결제 상태를 알면 그 상태를, 모르면(앞 판 서버) 「글 콘티를 확인해 주셨어요」를 보인다.
   if(p.state==='pay'){
     const pay=p.pay||{};
-    if(pay.status==='cancelled')return {turn:'you',title:k('결제가 취소됐어요'),text:k('다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료와 글 콘티는 그대로 있어요.')};
+    if(pay.status==='cancelled')return {turn:'you',title:k('결제가 취소됐어요'),text:p.photo?k('다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.'):k('다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료와 글 콘티는 그대로 있어요.')};
     if(pay.status==='requested')return {turn:'you',title:k('크몽에서 결제해 주세요'),text:p.photo?k('크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 나머지 장을 만들어요.'):k('크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 장면 이미지를 만들기 시작해요.')};
     if(p.photo)return {turn:'you',title:k('첫 장을 확인해 주셨어요'),text:k('이제 크몽에서 결제해 주세요. 결제가 확인되면 나머지 장을 만들어요.')};
   }

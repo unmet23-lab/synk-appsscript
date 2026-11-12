@@ -5,6 +5,8 @@ import {emptyAnswers} from './public/pulse-app/request-data.mjs';
 import {roomModel,journalModel,deskModel,deskQueue} from './public/pulse-app/room-view.mjs';
 import {projectView,dialogContent} from './public/pulse-app/views.mjs';
 import {roomView,journalView} from './public/pulse-app/film-views.mjs';
+import {installationEnvironment,installationGuide} from './public/pulse-app/install.mjs';
+import {loadLocale,setLocale} from './public/pulse-app/i18n.mjs';
 import {deskView} from './public/pulse-app/desk-view.mjs';
 
 // 사진 상품(모델이 제품을 든 사진 5장)의 「사진이 도착한 뒤」(2026-11-12, docs/마케팅/PULSE_의뢰흐름_20261104/옷머리고르기_설계_20261110.md 12절):
@@ -33,7 +35,7 @@ test('the photo review screen speaks of photos: tag, sentence, note box without 
   assert.match(html,/<input type="hidden" name="seconds" value="">/,'the form still sends an empty time');
   assert.match(html,/<p class="sx-j-hint" data-when="typing">사진에서 고칠 곳은 <span class="is-wide">오른쪽<\/span><span class="is-phone">사진 아래<\/span> 의견 칸에 남겨 주세요\.<\/p>/);
   assert.match(html,/<p id="video-error" class="sx-small sx-review-error" data-photo-error hidden>사진을 불러오지 못했어요\. 인터넷 연결을 확인하고, 계속 안 되면 담당자에게 알려 주세요\.<\/p>/);
-  assert.match(html,/<div class="sx-dr-box" data-film-box><img src="[^"]*\/pulse\/api\/media\/v1" alt="1차 사진"><\/div>/,'the photo itself, no player');
+  assert.match(html,/<div class="sx-dr-box" data-film-box><button type="button" class="sx-dr-zoom" data-action="image" data-src="[^"]*\/pulse\/api\/media\/v1" data-label="1차 사진" data-close="닫기" aria-label="1차 사진 크게 보기"><img src="[^"]*\/pulse\/api\/media\/v1" alt="1차 사진" data-photo-shot><\/button><\/div>/,'the photo itself, no player — press it to see it larger');
   assert.doesNotMatch(html,VIDEO_WORDS);
   // 영상 상품은 그대로다.
   const film=projectView(state(project('s15',{versions:[clip('v1','1차 시안')]})));
@@ -43,7 +45,7 @@ test('the photo review screen speaks of photos: tag, sentence, note box without 
   assert.match(film,/<p id="video-error" class="sx-small sx-review-error" hidden>영상을 재생하지 못했어요\./);assert.doesNotMatch(film,/data-photo-error|사진 확인|이 사진에/);
   // 영상 상품에 그림 판을 올린 경우도 전과 같다(사진 말은 사진 상품에만).
   const still=projectView(state(project('s15',{versions:[shot('v1','표지 시안')]})));
-  assert.match(still,/영상 확인 · /);assert.match(still,/data-live-clock>0:00/);assert.match(still,/그 순간에 의견을 남겨 주세요/);assert.doesNotMatch(still,/data-photo-error|is-plain/);
+  assert.match(still,/영상 확인 · /);assert.match(still,/data-live-clock>0:00/);assert.match(still,/그 순간에 의견을 남겨 주세요/);assert.doesNotMatch(still,/data-photo-error|is-plain|data-photo-shot|sx-dr-zoom/);assert.match(still,/<div class="sx-dr-box" data-film-box><img src="[^"]*\/pulse\/api\/media\/v1" alt="표지 시안"><\/div>/,'a still on a film order stays a plain picture');
 });
 
 test('notes on a photo carry no time column, drafts and sent alike; a film keeps the time or 「전체」',()=>{
@@ -81,12 +83,12 @@ test('the room hangs the arrived photos where a film order plays its film, and t
   const review=project('photo',{versions:[shot('v1','1차 사진'),shot('v2','2차 사진')]}),info=roomModel(review);
   assert.equal(info.state,'review');assert.deepEqual(info.shots,[{src:'/pulse/api/media/v2',label:'2차 사진'}],'the latest preview only');assert.equal(info.film,null);
   const room=roomView(info);
-  assert.match(room,/<div class="sx-room-files" data-count="1"><img src="\/pulse\/api\/media\/v2" alt="2차 사진" decoding="async"><\/div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">사진 보기<\/span><\/button><p class="sx-small sx-room-cap">2차 사진<\/p>/);
+  assert.match(room,/<div class="sx-room-files is-shots" data-count="1"><img src="\/pulse\/api\/media\/v2" alt="2차 사진" decoding="async"><\/div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">사진 보기<\/span><\/button><p class="sx-small sx-room-cap">2차 사진<\/p>/);
   assert.doesNotMatch(room,/저희가 만든 광고의 한 장면이에요|w-gift/);
   const finals=[shot('v1','1차 사진','preview',{approvedAt:at}),...[1,2,3,4,5].map(n=>shot('f'+n,'완성 사진 '+n,'final',{guide:'안내',approvedPreviewId:'v1'}))];
   const delivered=project('photo',{stage:'delivered',versions:finals,extra:{closeout:{deliveryKey:'k1',canConfirm:true,files:[]}}});
   const got=roomModel(delivered);assert.equal(got.state,'deliver');assert.equal(got.shots.length,5);
-  assert.match(roomView(got),/<div class="sx-room-files" data-count="5">(<img src="\/pulse\/api\/media\/f\d" alt="완성 사진 \d" decoding="async">){5}<\/div>/);assert.match(roomView(got),/<p class="sx-small sx-room-cap">완성 사진 5장<\/p>/);
+  assert.match(roomView(got),/<div class="sx-room-files is-shots" data-count="5">(<img src="\/pulse\/api\/media\/f\d" alt="완성 사진 \d" decoding="async">){5}<\/div>/);assert.match(roomView(got),/<p class="sx-small sx-room-cap">완성 사진 5장<\/p>/);
   const closed=roomView(roomModel({...delivered,closeout:{deliveryKey:'k1',receipt:{confirmedAt:at},files:[]}}));
   assert.match(closed,/data-state="done"/);assert.match(closed,/같은 모델로 다음 사진을 이어 만들 수 있어요\. 담당자에게 알려 주세요/);assert.match(closed,/완성 사진 5장/);assert.doesNotMatch(closed,/자막 규격|다음 편/);
   // 그림 파일이 아닌 판(묶음 파일 · 링크)만 왔으면 걸 사진이 없다 — 전처럼 저희 작품의 한 장면.
@@ -146,4 +148,95 @@ test('the first sheet dialog does not wait for a payment that is already confirm
   const en=read('i18n/en.mjs');
   for(const key of ['사진 확인','{name}{josa}. 바꿀 곳이 있으면 의견을 남겨 주세요.','새 시안이 도착했어요. 보던 사진과 쓰던 의견은 그대로 있어요.','사진을 불러오지 못했어요. 인터넷 연결을 확인하고, 계속 안 되면 담당자에게 알려 주세요.','다른 형식이나 크기가 필요하면 담당자에게 알려 주세요.','이 사진에 남길 의견','사진에서 고칠 곳은 {where} 의견 칸에 남겨 주세요.','완성 사진 {count}장','사진에 의견 {count}개를 보냈어요','같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요','이 첫 장과 같은 결로 나머지 장을 만들어요. 결제가 확인돼 있어 바로 시작해요.'])assert.ok(en.includes(`"${key}":`),key);
   assert.ok(en.includes('[`where${C}사진 아래`]:'));
+});
+
+// ── 검수 반영(2026-11-13): 사진의 비율 · 크게 보기 · 다섯 장 격자 · 영어 판 · 남은 글 ──
+test('a photo takes its own shape and opens larger; five finished photos fill the room without an empty cell',()=>{
+  // 상자: 불러와진 사진의 비율로 --r · data-shape를 맞춘다(영상의 규칙과 같은 문턱). 영상 줄은 그대로다.
+  const review=read('film-review.mjs');
+  assert.match(review,/const shot=\$\('\[data-film-box\] img\[data-photo-shot\]'\);\s*if\(shot\)\{const fit=\(\)=>\{if\(!shot\.naturalWidth\|\|!shot\.naturalHeight\)return;const ratio=shot\.naturalWidth\/shot\.naturalHeight;host\.style\.setProperty\('--r',String\(ratio\)\);host\.dataset\.shape=ratio>1\.1\?'wide':ratio<\.9\?'tall':'square';\};shot\.addEventListener\('load',fit,\{signal\}\);fit\(\);\}/);
+  assert.match(review,/const setShape=\(\)=>\{if\(!video\|\|!box\|\|!video\.videoWidth\)return;const ratio=video\.videoWidth\/video\.videoHeight;host\.style\.setProperty\('--r',String\(ratio\)\);host\.dataset\.shape=ratio>1\.1\?'wide':ratio<\.9\?'tall':'square';\};/);
+  const legacy=read('film-legacy.css');
+  assert.match(legacy,/\.sx-dr-zoom\{display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:zoom-in\}/);
+  assert.match(legacy,/\.sx-dr-zoom:focus-visible\{outline:2px solid var\(--sx-ink\);outline-offset:2px\}/);
+  // 크게 보기: 기존 그림 창을 쓰고, 닫기 이름표만 화면 언어로 넘긴다(다른 화면이 여는 그림 창은 전과 같다).
+  assert.match(dialogContent('image',{src:'/pulse/api/media/v1',label:'1차 사진',closeLabel:'닫기'}),/^<button class="dialog-close" type="button" data-action="close-dialog" aria-label="닫기">×<\/button><img src="\/pulse\/api\/media\/v1" alt="1차 사진" /);
+  assert.match(dialogContent('image',{src:'/pulse/api/media/v1',label:'참고'}),/aria-label="이미지 닫기">×<\/button>/);
+  assert.match(read('app.mjs'),/if\(action==='image'\)\{openDialog\('image',\{src:button\.dataset\.src,label:button\.dataset\.label,\.\.\.\(button\.dataset\.close\?\{closeLabel:button\.dataset\.close\}:\{\}\)\}\);if\(button\.dataset\.close\)dialog\.classList\.add\('is-photo'\);return;\}/);
+  assert.ok(legacy.includes('html.sx #app-dialog.image-dialog.is-photo .dialog-close{text-shadow:0 0 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8)}'),'the close mark stays visible over a bright photo');
+  // 휴대폰 폭: 사진 창은 화면 폭을 다 쓴다(상자 안의 사진보다 작아지지 않게). 다른 그림 창은 표식이 없어 그대로다.
+  assert.match(legacy,/@media \(max-width:820px\)\{html\.sx #app-dialog\.image-dialog\.is-photo\{width:100vw;max-width:100vw;max-height:100dvh;margin-inline:0\}html\.sx #app-dialog\.image-dialog\.is-photo img\{width:100%;max-height:calc\(100dvh - 44px\)\}\}/);
+  // 최종본도 같은 단추다(납품 화면).
+  const done=project('photo',{stage:'delivered',versions:[shot('v1','1차','preview',{approvedAt:at}),shot('f1','완성 1','final',{approvedPreviewId:'v1'})],extra:{closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:true,files:[{id:'f1',label:'완성 1'}]}}});
+  assert.match(projectView(state(done)),/<button type="button" class="sx-dr-zoom" data-action="image" data-src="[^"]*\/pulse\/api\/media\/f1" data-label="완성 1" data-close="닫기" aria-label="완성 1 크게 보기"><img /);
+  // 다섯 장: 6열 격자에 윗줄 두 장(3열씩) · 아랫줄 석 장(2열씩). 받은 자료 칸(표식 없음)의 격자는 그대로다.
+  const film=read('film.css');
+  assert.match(film,/\.sx-room-files\.is-shots\[data-count="5"\]\{grid-template-columns:repeat\(6,1fr\)\}\s*\.sx-room-files\.is-shots\[data-count="5"\] img\{grid-column:span 2\}\s*\.sx-room-files\.is-shots\[data-count="5"\] img:nth-child\(-n\+2\)\{grid-column:span 3\}/);
+  assert.match(film,/\.sx-room-files:is\(\[data-count="5"\],\[data-count="6"\]\)\{grid-template-columns:repeat\(3,1fr\);grid-template-rows:repeat\(2,1fr\)\}/);
+  assert.equal((read('film-views.mjs').match(/sx-room-files is-shots/g)||[]).length,1,'only the photo order\'s own photos carry the mark');
+});
+
+test('the leftover film words on a photo order: install note, the send dialog, the news example, a cancelled payment',()=>{
+  const env=installationEnvironment({userAgent:'Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 Safari/537.36'});
+  const notes=options=>installationGuide(env,{connected:true,...options}).notes.join(' ');
+  assert.match(notes({photo:true}),/설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요\./);assert.doesNotMatch(notes({photo:true}),/영상/);
+  assert.match(notes({}),/설치하지 않아도 브라우저에서 영상 확인, 수정 의견, 승인을 할 수 있어요\./);
+  const app=read('app.mjs');
+  assert.match(app,/canPrompt:!!s\.installPrompt,\.\.\.\(s\.project\?\.studio\?\.request\?\.answers\?\.package==='photo'\?\{photo:true\}:\{\}\)\}\)/);
+  assert.match(app,/openDialog\('desk-send',\{\.\.\.trOf\(\),\.\.\.\(st\.request\?\.answers\?\.package==='photo'\?\{photo:true,confirmed:st\.request\?\.payment\?\.status==='confirmed'\}:\{\}\),flow:/);
+  // 새 판 보내기 창: 사진 의뢰는 「첫 장 · n장」, 다음 걸음은 결제 전 · 뒤에 맞게(결제 전 승인은 제작을 시작하지 않는다 — 서버 approve_draft).
+  const send=item=>dialogContent('desk-send',{count:1,oneLine:'한 줄',flow:true,...item});
+  assert.match(send({photo:true,kind:'images',paid:true,confirmed:false}),/<h2 id="dialog-title">고객에게 첫 장을 보낼까요\?<\/h2><p>1장을 보내요\. 모든 장에 그림이 있어요\. 고객이 승인해도 제작은 크몽 결제를 확인한 뒤에 시작해요\.<\/p>/);
+  assert.match(send({photo:true,kind:'images',paid:true,confirmed:true}),/<p>1장을 보내요\. 모든 장에 그림이 있어요\. 고객이 승인하면 제작을 시작해요\.<\/p>/);
+  assert.match(send({photo:true,kind:'images',paid:false,confirmed:false}),/첫 장을 승인받은 뒤의 판은 크몽 결제를 확인한 뒤에 보낼 수 있어요 — 지금은 글 콘티 판으로 보내요\.<\/p>/);
+  assert.match(send({photo:true,kind:'script',paid:true}),/<h2 id="dialog-title">고객에게 글 콘티를 보낼까요\?<\/h2><p>1장을 보내요\. 그림이 빠진 장이 있어 글 콘티로 보내요\. 고객이 확인하면 첫 장을 준비해요\.<\/p>/);
+  for(const item of [{kind:'images',paid:true,confirmed:false},{kind:'images',paid:true,confirmed:true},{kind:'images',paid:false},{kind:'script',paid:true}])assert.doesNotMatch(send({photo:true,...item}).split('<form')[0],/장면 이미지|컷/);
+  assert.match(send({kind:'images',paid:true}),/<h2 id="dialog-title">고객에게 장면 이미지를 보낼까요\?<\/h2><p>1컷을 보내요\. 모든 컷에 장면 이미지가 있어요\. 고객이 확인하면 제작 단계로 넘어가요\.<\/p>/);
+  assert.match(send({kind:'images',paid:false}),/장면 이미지 판은 크몽 결제를 확인한 뒤에 보낼 수 있어요 — 지금은 글 콘티 판으로 보내요\.<\/p>/);
+  assert.match(send({kind:'script',paid:true}),/<h2 id="dialog-title">고객에게 글 콘티를 보낼까요\?<\/h2><p>1컷을 보내요\. 그림이 빠진 컷이 있어 글 콘티로 보내요\. 고객이 확인하면 장면 이미지를 준비해요\.<\/p>/);
+  // 시안 · 최종본 올리기 양식: 사진 의뢰에만 올리는 법 한 줄(판 하나에 파일 하나 — 서버 addVersion).
+  const views=read('views.mjs');
+  assert.match(views,/\$\{isPhoto\(s\.project\)\?'<p class="small" data-photo-upload-note>사진 의뢰: 판 하나에 파일 하나예요\. 시안을 장마다 따로 올리면 마지막 장만 최신 시안이 되고 앞 장은 수정 전 판으로 보여요 — 시안은 한 장에 모아 올리고, 최종본은 장마다 따로 올려요\(고객 방에 여섯 장까지 나란히 걸려요\)\.<\/p>':''\}<div class="button-row">\$\{submit\('고객에게 보내기'\)\}/);
+  // 작업 소식 창의 예시 글.
+  assert.match(dialogContent('desk-progress',{photo:true}),/placeholder="예\) 둘째 장을 만들고 있어요\. 손 모양을 다듬는 중이에요\."/);
+  assert.match(dialogContent('desk-progress',{}),/placeholder="예\) 2번 컷 장면 이미지를 그리고 있어요\. 손 모양을 다듬는 중이에요\."/);
+  // 결제가 취소된 방: 사진 의뢰에는 글 콘티가 없다.
+  const cancelled=pkg=>{const p=project(pkg,{stage:'planning'});p.studio.request={...p.studio.request,approvedAt:'',approvedRound:null,scriptApprovedAt:pkg==='photo'?'':at,rounds:[{round:1,kind:pkg==='photo'?'images':'script',oneLine:'한 줄',scenes:[{id:'s1',revision:1}],sentAt:at,approvedAt:at}],payment:{status:'cancelled',requestedAt:at,cancelledAt:at,amount:150000}};return roomView(roomModel(p));};
+  assert.match(cancelled('photo'),/다시 진행하시려면 담당자에게 알려 주세요\. 보내 주신 자료는 그대로 있어요\./);assert.doesNotMatch(cancelled('photo'),/글 콘티/);
+  assert.match(cancelled('s15'),/다시 진행하시려면 담당자에게 알려 주세요\. 보내 주신 자료와 글 콘티는 그대로 있어요\./);
+});
+
+test('in English a photo order never reads film or watch on the review, approval and delivery screens',async()=>{
+  const approve=item=>dialogContent('approve',{id:'v1',label:'1차 사진',revision:3,...item});
+  const stale={drafts:[{id:'d0',current:false,versionId:'v1',versionLabel:'1차 사진',items:[{id:'i0',text:'NOTE',seconds:null}]}],nextNumber:1};
+  const finals=make=>[make('v2','2차','preview',{approvedAt:at}),make('f1','F1','final',{guide:'G',approvedPreviewId:'v2'})];
+  const screens=(pkg,make)=>{
+    const review=project(pkg,{versions:[make('v1','V1'),make('v2','V2')],feedback:stale});
+    const ready=project(pkg,{versions:[make('v1','V1')]});
+    const done=project(pkg,{stage:'delivered',versions:finals(make),feedback:{canDraft:false},extra:{closeout:{deliveryKey:'k1',approvedPreviewId:'v2',canConfirm:true,files:[{id:'f1',label:'F1'}]}}});
+    return [projectView(state(ready)),projectView(state(review)),projectView(state(review,{versionId:'v1'})),projectView(state(done)),projectView(state(done,{versionId:'v2'})),roomView(roomModel(done)),approve(pkg==='photo'?{photo:true}:{})].join('\n');
+  };
+  // 한국어는 문맥이 붙어도 글자가 같다.
+  const ko=screens('photo',shot);
+  for(const text of ['이 시안으로 최종본을 만들까요?','최종본이 도착했어요','최종본 보기','<p class="sx-small">최종본 · ','이 시안대로 최종본을 만드는 데 동의합니다.','이 초안은 지금 시안으로 보내지지 않아요. 새 시안을 본 뒤 필요한 의견을 다시 적어 주세요.'])assert.ok(ko.includes(text),text);
+  assert.equal(await loadLocale('en'),true);
+  try{
+    await setLocale('en');
+    const photo=screens('photo',shot),words=photo.replace(/<(?:script|style)[\s\S]*?<\/(?:script|style)>/g,' ').replace(/<[^>]*?(?:aria-label|placeholder|alt|title)="([^"]*)"[^>]*>/g,' $1 ').replace(/<[^>]+>/g,' ');
+    assert.doesNotMatch(words,/\b(?:films?|watch(?:ing|ed)?|videos?|clips?|footage)\b/i);
+    for(const text of ['Photo review · ','Make the final photos from this preview?','Your final photos are here','See the final photos','Final photos · ','I agree to have the final photos made as shown.','After looking at the new one, write down any notes you still need.','aria-label="View V1 larger"','data-close="Close"'])assert.ok(photo.includes(text),text);
+    const film=screens('s15',clip);
+    for(const text of ['Film review · ','Make the final film from this preview?','Your final film is here','See the final film','Final film · ','I agree to have the final film made as shown.','After watching the new one, write down any notes you still need.'])assert.ok(film.includes(text),text);
+    assert.match(installationGuide(installationEnvironment({userAgent:'Chrome/130.0'}),{connected:true,photo:true}).notes.join(' '),/you can review photos, leave notes and approve in your browser\./);
+  }finally{await setLocale('ko');}
+  // 승인 창 · 승인 알림은 사진 판일 때만 사진 문맥으로 부른다.
+  const app=read('app.mjs');
+  // 사진 상품이고 그 판이 영상이 아닐 때만(views.mjs reviewRoom의 photo와 같은 규칙).
+  assert.match(app,/openDialog\('approve',\{\.\.\.latest,revision:s\.project\.revision,\.\.\.\(s\.project\.studio\?\.request\?\.answers\?\.package==='photo'&&!latest\.media\?\.mimeType\?\.startsWith\('video\/'\)\?\{photo:true\}:\{\}\)\}\);/);
+  assert.match(app,/const still=s\.project\.studio\?\.request\?\.answers\?\.package==='photo'&&!latestPreview\(\)\?\.media\?\.mimeType\?\.startsWith\('video\/'\);if\(id!==latestPreview\(\)\?\.id\)/);
+  assert.match(app,/message:still\?t\('시안을 승인했어요\. 이 시안으로 최종본을 만들어요\.',null,'photo'\):t\('시안을 승인했어요\. 이 시안으로 최종본을 만들어요\.'\),after:closeDialog/);
+  assert.match(app,/notice\(still\?t\('새 시안이 왔어요\. 최신 시안을 보고 승인해 주세요\.',null,'photo'\):t\('새 시안이 왔어요\. 최신 시안을 보고 승인해 주세요\.'\)\);/);
+  const en=read('i18n/en.mjs'),TICK=String.fromCharCode(96);
+  for(const key of ['최종본','이 시안으로 최종본을 만들까요?','최종본이 도착했어요','최종본 보기','이 시안의 내용과 표현을 확인했고, 이 시안대로 최종본을 만드는 데 동의합니다.','이 초안은 지금 시안으로 보내지지 않아요. 새 시안을 본 뒤 필요한 의견을 다시 적어 주세요.','새 시안이 왔어요. 최신 시안을 보고 승인해 주세요.','시안을 승인했어요. 이 시안으로 최종본을 만들어요.'])assert.ok(en.includes('['+TICK+'photo$'+'{C}'+key+TICK+']:'),key);
+  for(const key of ['{name} 크게 보기','설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요.','다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.'])assert.ok(en.includes('"'+key+'":'),key);
 });

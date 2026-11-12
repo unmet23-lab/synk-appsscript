@@ -270,13 +270,20 @@ test('a photo order hears of the model, the first sheet and the photos in photo 
     await h.cact({action:'approve_draft',round:1});
     await h.act({action:'payment_confirm'});
     await h.act({action:'send_draft',oneLine:'한 캔에 맛이 다섯 번',note:''});
+    // 그림 판을 승인해 제작을 시작하고(결제는 확인돼 있다) 시안을 그림 파일로 올린다.
+    await h.cact({action:'approve_draft',round:2,terms:true});
+    const row=await h.refresh(),sent=await h.f.staff(`/api/client-projects/${h.id}/media`,{raw:png,headers:{'Content-Type':'image/png','X-File-Name':encodeURIComponent('preview.png'),'X-Version-Label':encodeURIComponent('1차 시안'),'X-Version-Kind':'preview','X-Version-Guide':'','X-Project-Revision':String(row.revision)}});
+    assert.equal(sent.status,201,JSON.stringify(sent.data));
     return h;
   };
+  const preview=map=>Object.entries(map).find(([key])=>key.startsWith('preview_ready:'))?.[1];
   const photo=await bodies(await walk({package:'photo'}));
   assert.equal(photo['model_proposed:'+Object.keys(photo).find(key=>key.startsWith('model_proposed:')).split(':')[1]],'첫 장을 만들기 전에 모델을 확인해 주세요.');
   assert.equal(photo['draft_ready:1'],'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.','a text sheet keeps the script words');
   assert.equal(photo['draft_ready:2'],'첫 장을 보고 의견을 남기거나, 괜찮으면 그대로 진행해 주세요.');
+  assert.equal(preview(photo),'사진을 보고, 바꾸고 싶은 곳에 의견을 남기거나 승인해 주세요.');
   const film=await bodies(await walk({}));
   assert.equal(Object.entries(film).find(([key])=>key.startsWith('model_proposed:'))[1],'장면을 만들기 전에 모델을 확인해 주세요.');
   assert.equal(film['draft_ready:1'],'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.');assert.equal(film['draft_ready:2'],'컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.');
+  assert.equal(preview(film),'영상을 재생해 보고, 바꾸고 싶은 장면에 의견을 남기거나 승인해 주세요.');
 });

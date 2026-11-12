@@ -1885,4 +1885,16 @@ export default {
   "사진에 의견 {count}개를 보냈어요":{"one":"sent {count} note on the photo","other":"sent {count} notes on the photo"},
   "같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요":"We can make your next photos with the same model. Just tell your producer",
   "이 첫 장과 같은 결로 나머지 장을 만들어요. 결제가 확인돼 있어 바로 시작해요.":"We make the rest in the same look as this first photo. Your payment is confirmed, so we start right away.",
+  // 사진 상품의 사진 판: 한국어는 중립인 「최종본 · 시안」 줄의 영어를 사진 말로(문맥 photo) + 크게 보기 · 설치 안내 · 결제 취소.
+  [`photo${C}최종본`]:"Final photos",
+  [`photo${C}이 시안으로 최종본을 만들까요?`]:"Make the final photos from this preview?",
+  [`photo${C}최종본이 도착했어요`]:"Your final photos are here",
+  [`photo${C}최종본 보기`]:"See the final photos",
+  [`photo${C}이 시안의 내용과 표현을 확인했고, 이 시안대로 최종본을 만드는 데 동의합니다.`]:"I’ve reviewed this preview’s content and style, and I agree to have the final photos made as shown.",
+  [`photo${C}이 초안은 지금 시안으로 보내지지 않아요. 새 시안을 본 뒤 필요한 의견을 다시 적어 주세요.`]:"This draft won’t be sent with the current preview. After looking at the new one, write down any notes you still need.",
+  [`photo${C}새 시안이 왔어요. 최신 시안을 보고 승인해 주세요.`]:"A new preview just arrived. Look at the latest one, then approve.",
+  [`photo${C}시안을 승인했어요. 이 시안으로 최종본을 만들어요.`]:"Preview approved. We’ll make the final photos from it.",
+  "{name} 크게 보기":"View {name} larger",
+  "설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요.":"Even without installing, you can review photos, leave notes and approve in your browser.",
+  "다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.":"Tell your producer if you would like to continue. Your files are still here.",
 };
