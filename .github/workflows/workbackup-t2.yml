@@ -98,6 +98,27 @@ jobs:
           # Registering again moves them into the folder; the root copies must be gone (locations: folder only).
           Probe 'user-folder' $credential
           if ($missing.Count) { throw "probes without a result: $($missing -join ', ')" }
+          # Judge the results, not only their presence (review GA6).
+          $bad = @()
+          function Read([string]$name) { Get-Content -LiteralPath (Join-Path $work "$name.json") -Raw | ConvertFrom-Json }
+          function Expect($ok, [string]$what) { if (-not $ok) { $script:bad += $what } }
+          $folderPath = '\SYNK 업무 백업'
+          foreach ($case in @(@{ n = 'admin-no-folder'; admin = $true; place = '\' }, @{ n = 'user-no-folder'; admin = $false; place = '\' },
+                              @{ n = 'admin-folder'; admin = $true; place = $folderPath }, @{ n = 'user-folder'; admin = $false; place = $folderPath })) {
+            $r = Read $case.n
+            Expect ($r.admin -eq $case.admin) "$($case.n): admin is $($r.admin)"
+            Expect ($case.admin -or -not $r.elevated) "$($case.n): a standard user must not be elevated"
+            Expect ($r.register.ok -eq $true -and $r.register.folder -eq $case.place) "$($case.n): register $($r.register | ConvertTo-Json -Compress)"
+            Expect ($r.registeredAfter.Ok -eq $true) "$($case.n): not registered after registering"
+            Expect (@($r.locations.Ok).Count -eq 1 -and @($r.locations.Ok)[0] -eq $case.place) "$($case.n): locations $(@($r.locations.Ok) -join ',')"
+            Expect ($r.remove.Ok -eq $true -and $r.registeredAfterRemove.Ok -eq $false) "$($case.n): remove"
+          }
+          $kept = Read 'user-root-kept'
+          Expect ($kept.register.ok -eq $true -and $kept.register.folder -eq '\' -and @($kept.locations.Ok).Count -eq 1) 'user-root-kept: registered in the root'
+          $userSid = (Read 'user-folder').sid; $adminSid = (Read 'admin-folder').sid
+          Expect ($userSid -and $adminSid -and $userSid -ne $adminSid -and $userSid -eq $kept.sid) 'the standard-user probes ran as one account other than the administrator'
+          if ($bad.Count) { $bad | ForEach-Object { "MISMATCH: $_" }; throw "T2 expectations not met: $($bad.Count)" }
+          'T2 expectations: all met'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

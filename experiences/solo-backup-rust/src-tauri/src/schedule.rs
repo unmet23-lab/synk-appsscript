@@ -17,7 +17,7 @@ use std::path::Path;
 use windows::core::BSTR;
 use windows::Win32::Foundation::{RPC_E_CHANGED_MODE, VARIANT_TRUE};
 use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED};
-use windows::Win32::System::TaskScheduler::{ITaskFolder, ITaskService, TaskScheduler, TASK_CREATE_OR_UPDATE, TASK_LOGON_INTERACTIVE_TOKEN};
+use windows::Win32::System::TaskScheduler::{IRegisteredTask, ITaskFolder, ITaskService, TaskScheduler, TASK_CREATE_OR_UPDATE, TASK_LOGON_INTERACTIVE_TOKEN};
 use windows::Win32::System::Variant::VARIANT;
 
 pub const FOLDER: &str = "\\SYNK 업무 백업";
@@ -36,7 +36,10 @@ pub fn user_label(name: &str) -> String {
     let clean: String = name.chars().filter(|c| !matches!(c, '\\' | '/' | ':' | '*' | '?' | '"' | '<' | '>' | '|') && !c.is_control()).take(40).collect();
     if clean.trim().is_empty() { "사용자".into() } else { clean.trim().to_string() }
 }
-pub fn task_name(user: &str, trigger: Trigger) -> String { format!("회차 - {} - {}", user_label(user), trigger.label()) }
+/// The account's SID goes into the name as a short tag, so two accounts that share a user
+/// name (or a process that inherited another account's USERNAME) never share a task (review GA4).
+pub fn task_name(user: &str, sid: &str, trigger: Trigger) -> String { format!("회차 - {} - {} · {}", user_label(user), trigger.label(), sid_tag(sid)) }
+fn sid_tag(sid: &str) -> String { use sha2::{Digest, Sha256}; format!("{:x}", Sha256::digest(sid.as_bytes()))[..6].to_string() }
 
 fn escape(text: &str) -> String {
     text.chars().map(|c| match c { '&' => "&amp;".into(), '<' => "&lt;".into(), '>' => "&gt;".into(), '"' => "&quot;".into(), '\'' => "&apos;".into(), c => c.to_string() }).collect()
@@ -94,75 +97,118 @@ fn folder(service: &ITaskService, path: &str) -> Option<ITaskFolder> { unsafe { 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct Placement { pub folder: String, pub tasks: Vec<String> }
 
+fn task(folder: &ITaskFolder, name: &str) -> Option<IRegisteredTask> { unsafe { folder.GetTask(&BSTR::from(name)) }.ok() }
+/// The account a task runs as, as Task Scheduler keeps it (a SID or DOMAIN\name).
+fn principal(task: &IRegisteredTask) -> Option<String> {
+    let principal = unsafe { task.Definition().ok()?.Principal().ok()? };
+    let mut user = BSTR::new();
+    unsafe { principal.UserId(&mut user) }.ok()?;
+    Some(user.to_string())
+}
+/// Only tasks that run as this account are read, replaced or deleted (review GA4).
+fn owned(task: &IRegisteredTask, ids: &[String]) -> bool { principal(task).is_some_and(|p| ids.contains(&p.to_lowercase())) }
+fn identities(sid: &str) -> Vec<String> { let mut ids = vec![sid.to_lowercase()]; if let Some(name) = account_name(sid) { ids.push(name.to_lowercase()); } ids }
+fn account_name(sid: &str) -> Option<String> {
+    use windows_sys::Win32::{Foundation::LocalFree, Security::{Authorization::ConvertStringSidToSidW, LookupAccountSidW}};
+    let wide: Vec<u16> = sid.encode_utf16().chain([0]).collect();
+    unsafe {
+        let mut psid = std::ptr::null_mut();
+        if ConvertStringSidToSidW(wide.as_ptr(), &mut psid) == 0 { return None; }
+        let (mut name, mut domain) = ([0u16; 256], [0u16; 256]);
+        let (mut name_len, mut domain_len, mut kind) = (256u32, 256u32, 0);
+        let ok = LookupAccountSidW(std::ptr::null(), psid, name.as_mut_ptr(), &mut name_len, domain.as_mut_ptr(), &mut domain_len, &mut kind) != 0;
+        LocalFree(psid as _);
+        ok.then(|| format!("{}\\{}", String::from_utf16_lossy(&domain[..domain_len as usize]), String::from_utf16_lossy(&name[..name_len as usize])))
+    }
+}
+fn register_one(folder: &ITaskFolder, name: &str, xml: &str) -> Result<(), String> {
+    unsafe { folder.RegisterTask(&BSTR::from(name), &BSTR::from(xml), TASK_CREATE_OR_UPDATE.0, &VARIANT::default(), &VARIANT::default(), TASK_LOGON_INTERACTIVE_TOKEN, &VARIANT::default()) }
+        .map(|_| ()).map_err(|e| format!("SCHEDULE_REGISTER:{:#x}", e.code().0))
+}
+fn delete_owned(folder: &ITaskFolder, name: &str, ids: &[String]) -> Result<(), String> {
+    match task(folder, name) {
+        Some(t) if owned(&t, ids) => unsafe { folder.DeleteTask(&BSTR::from(name), 0) }.map_err(|e| format!("SCHEDULE_DELETE:{:#x}", e.code().0)),
+        _ => Ok(()),
+    }
+}
+
 /// Registers (or updates) the four tasks for the current user. Tries the product folder
-/// first and falls back to the root folder when that folder is missing or refuses.
+/// first and falls back to the root folder when that folder is missing or refuses. A set
+/// that fails half-way puts every task back as it was — earlier ones in their old XML,
+/// new ones removed (review GA5) — and a same-named task of another account stops it.
 pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placement, String> {
     let _com = Com::init()?;
     let service = service()?;
-    let xmls: Vec<(String, String)> = Trigger::ALL.iter().map(|t| Ok((task_name(user, *t), task_xml(*t, exe, sid, start)?))).collect::<Result<_, String>>()?;
+    let ids = identities(sid);
+    let xmls: Vec<(String, String)> = Trigger::ALL.iter().map(|t| Ok((task_name(user, sid, *t), task_xml(*t, exe, sid, start)?))).collect::<Result<_, String>>()?;
     let mut last = String::from("SCHEDULE_FOLDER");
     for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
-        let mut done = Vec::new();
+        let mut done: Vec<(String, Option<String>)> = Vec::new();
         let mut failed = None;
         for (name, xml) in &xmls {
-            match unsafe { target.RegisterTask(&BSTR::from(name.as_str()), &BSTR::from(xml.as_str()), TASK_CREATE_OR_UPDATE.0, &VARIANT::default(), &VARIANT::default(), TASK_LOGON_INTERACTIVE_TOKEN, &VARIANT::default()) } {
-                Ok(_) => done.push(name.clone()),
-                Err(e) => { failed = Some(format!("SCHEDULE_REGISTER:{:#x}", e.code().0)); break; }
-            }
+            let before = match task(&target, name) {
+                Some(t) if !owned(&t, &ids) => { failed = Some("SCHEDULE_FOREIGN".to_string()); break; }
+                Some(t) => match unsafe { t.Xml() } { Ok(x) => Some(x.to_string()), Err(e) => { failed = Some(format!("SCHEDULE_READ:{:#x}", e.code().0)); break; } },
+                None => None,
+            };
+            match register_one(&target, name, xml) { Ok(()) => done.push((name.clone(), before)), Err(code) => { failed = Some(code); break; } }
         }
         match failed {
             None => {
                 // One place only: copies left in the other place (from a registration before the
                 // installer made the folder, or before it refused) would start every run twice.
                 for other in [FOLDER, ROOT].into_iter().filter(|p| *p != path) {
-                    if let Some(old) = folder(&service, other) { for name in &done { if unsafe { old.GetTask(&BSTR::from(name.as_str())) }.is_ok() { let _ = unsafe { old.DeleteTask(&BSTR::from(name.as_str()), 0) }; } } }
+                    if let Some(old) = folder(&service, other) { for (name, _) in &done { let _ = delete_owned(&old, name, &ids); } }
                 }
-                return Ok(Placement { folder: path.into(), tasks: done });
+                return Ok(Placement { folder: path.into(), tasks: done.into_iter().map(|(n, _)| n).collect() });
             }
-            // A half-made set is removed before trying the next folder.
-            Some(code) => { for name in &done { let _ = unsafe { target.DeleteTask(&BSTR::from(name.as_str()), 0) }; } last = code; }
+            Some(code) => {
+                for (name, before) in done.iter().rev() {
+                    let _ = match before { Some(xml) => register_one(&target, name, xml), None => delete_owned(&target, name, &ids) };
+                }
+                last = code;
+            }
         }
     }
     Err(last)
 }
 
-/// Removes the four tasks of this user from both places; missing tasks are fine.
-pub fn remove(user: &str) -> Result<(), String> {
+/// Removes this account's four tasks from both places; missing tasks are fine, and tasks of
+/// another account with the same name are never touched.
+pub fn remove(user: &str, sid: &str) -> Result<(), String> {
     let _com = Com::init()?;
     let service = service()?;
+    let ids = identities(sid);
     for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
-        for t in Trigger::ALL {
-            let name = task_name(user, t);
-            if unsafe { target.GetTask(&BSTR::from(name.as_str())) }.is_ok() {
-                unsafe { target.DeleteTask(&BSTR::from(name.as_str()), 0) }.map_err(|e| format!("SCHEDULE_DELETE:{:#x}", e.code().0))?;
-            }
-        }
+        for t in Trigger::ALL { delete_owned(&target, &task_name(user, sid, t), &ids)?; }
     }
     Ok(())
 }
 
-/// The places (folder paths) that hold any of this user's run tasks.
-pub fn locations(user: &str) -> Result<Vec<String>, String> {
+/// The places (folder paths) that hold any of this account's run tasks.
+pub fn locations(user: &str, sid: &str) -> Result<Vec<String>, String> {
     let _com = Com::init()?;
     let service = service()?;
-    Ok([FOLDER, ROOT].into_iter().filter(|path| folder(&service, path).is_some_and(|f| Trigger::ALL.iter().any(|t| unsafe { f.GetTask(&BSTR::from(task_name(user, *t).as_str())) }.is_ok()))).map(String::from).collect())
+    let ids = identities(sid);
+    Ok([FOLDER, ROOT].into_iter().filter(|path| folder(&service, path).is_some_and(|f| Trigger::ALL.iter().any(|t| task(&f, &task_name(user, sid, *t)).is_some_and(|x| owned(&x, &ids))))).map(String::from).collect())
 }
 
-/// True when all four tasks exist in one place, are enabled and start this executable
-/// with their own trigger argument.
-pub fn registered(exe: &Path, user: &str) -> Result<bool, String> {
+/// True when all four tasks exist in one place, run as this account, are enabled and
+/// start this executable with their own trigger argument.
+pub fn registered(exe: &Path, user: &str, sid: &str) -> Result<bool, String> {
     let _com = Com::init()?;
     let service = service()?;
+    let ids = identities(sid);
     let command = format!("<Command>{}</Command>", escape(exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\")));
     for path in [FOLDER, ROOT] {
         let Some(target) = folder(&service, path) else { continue };
         let all = Trigger::ALL.iter().all(|t| {
-            let Ok(task) = (unsafe { target.GetTask(&BSTR::from(task_name(user, *t).as_str())) }) else { return false };
+            let Some(task) = task(&target, &task_name(user, sid, *t)) else { return false };
             let enabled = unsafe { task.Enabled() }.is_ok_and(|v| v == VARIANT_TRUE);
             let xml = unsafe { task.Xml() }.map(|x| x.to_string()).unwrap_or_default();
-            enabled && xml.contains(&command) && xml.contains(&format!("<Arguments>--run {}</Arguments>", t.arg()))
+            owned(&task, &ids) && enabled && xml.contains(&command) && xml.contains(&format!("<Arguments>--run {}</Arguments>", t.arg()))
         });
         if all { return Ok(true); }
     }
@@ -204,7 +250,10 @@ pub fn local_now() -> String {
     use super::*;
     const SID: &str = "S-1-5-21-1111111111-2222222222-3333333333-1001";
     #[test] fn names_drop_forbidden_characters() {
-        assert_eq!(task_name("유호", Trigger::Wake), "회차 - 유호 - 깨어남");
+        let name = task_name("유호", SID, Trigger::Wake);
+        assert!(name.starts_with("회차 - 유호 - 깨어남 · ") && name.chars().count() == "회차 - 유호 - 깨어남 · ".chars().count() + 6, "{name}");
+        assert_ne!(name, task_name("유호", "S-1-5-21-1-2-3-1002", Trigger::Wake), "same user name, other account: other task");
+        assert_eq!(name, task_name("유호", SID, Trigger::Wake), "stable");
         assert_eq!(user_label("a\\b:c*d?e\"f<g>h|i/j"), "abcdefghij");
         assert_eq!(user_label("  "), "사용자");
         assert_eq!(user_label(&"x".repeat(80)).chars().count(), 40);
