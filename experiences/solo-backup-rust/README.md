@@ -4,7 +4,7 @@
 >
 > **2026-11-12:** 유호님 요청으로 0.5.0 정기 백업과 Windows 시작 등록을 껐다. B2 사본과 Google 복구 정보는 그대로 있다. 상품화 순서와 단계마다 넘을 관문은 [상품화 로드맵](ROADMAP.md)에 있다.
 
-Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리를 Rust/Tauri로 옮긴 **0.6.1-rust-beta.1**이다. 백업 엔진은 검증된 [0.5.0](../solo-backup/README.md)의 Node 모듈과 restic을 함께 넣는다. 엔진 전체를 Rust로 다시 쓴 버전은 아니다.
+Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리를 Rust/Tauri로 옮긴 **0.6.1-rust-beta.1**이다. 백업 엔진은 검증된 [0.5.0](../solo-backup/README.md)의 Node 모듈과 restic을 함께 넣는다. 엔진 전체를 Rust로 다시 쓴 버전은 아니다. 11-12부터 그 엔진은 이 폴더의 [`engine/`](engine/README.md)으로 갈라 와 묶고(0.5.0은 동결), 상품화 1단계의 고침은 거기에만 한다.
 
 기존 화면과 폴더 선택 → 보호 시작 → 상태 확인 → 전체/선택 복구 흐름을 유지한다. 사용자가 Node나 Rust를 설치할 필요는 없다. 실행에 필요한 Microsoft Edge WebView2는 별도 시스템 구성 요소다.
 
@@ -49,7 +49,7 @@ Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리
 Windows x64, MSVC 빌드 도구, Rust MSVC 도구 모음, Node, WebView2가 필요하다. 이 시험판은 Rust 1.99.1·Node 26.13.0으로 빌드했다. Cargo.lock을 사용한다.
 
 ```powershell
-npm ci --ignore-scripts --prefix experiences/solo-backup
+npm ci --ignore-scripts --prefix experiences/solo-backup-rust/engine
 ./experiences/solo-backup-rust/scripts/build.ps1 `
   -ResticPath C:\build-input\restic.exe `
   -OutputDirectory C:\build-output\work-backup-rust `

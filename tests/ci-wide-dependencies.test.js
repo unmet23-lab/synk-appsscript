@@ -39,7 +39,7 @@ function run(t, { missing = [], updateExit = 0, updateFailures = 0, timeoutFailu
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-deps-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const bin = path.join(root, 'bin'), log = path.join(root, 'calls');
-  fs.mkdirSync(bin); for (const folder of ['synk-account', 'solo-backup']) fs.mkdirSync(path.join(root, 'experiences', folder), { recursive: true });
+  fs.mkdirSync(bin); for (const folder of ['synk-account', 'solo-backup', 'solo-backup-rust/engine']) fs.mkdirSync(path.join(root, 'experiences', folder), { recursive: true });
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
   executable('npm', 'exit 0\n');
   executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"

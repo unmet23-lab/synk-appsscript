@@ -5,7 +5,8 @@ const hash=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 async function stage({node,restic,output,client,inventoryBin}) {
   output=path.resolve(output);
   if(await fs.stat(output).then(()=>true,()=>false))throw Error('Output must be a new directory');
-  const self=path.resolve(__dirname,'..'),engine=path.resolve(self,'../solo-backup');
+  // 1단계부터 엔진은 이 패키지 안의 갈래(engine/)다 — 0.5.0(../solo-backup)은 동결(STAGE1_DESIGN 4.1).
+  const self=path.resolve(__dirname,'..'),engine=path.resolve(self,'engine');
   const resticBytes=await fs.readFile(restic);if(hash(resticBytes)!==RESTIC)throw Error('Restic hash mismatch');
   await fs.mkdir(output,{recursive:true});const files={};
   async function put(name,bytes){const dest=path.join(output,name);await fs.mkdir(path.dirname(dest),{recursive:true});await fs.writeFile(dest,bytes,{flag:'wx'});files[name]={size:bytes.length,sha256:hash(bytes)};}

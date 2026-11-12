@@ -1,0 +1,20 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { startupControl } = require('../src/startup.cjs');
+test('explicit protection re-enables a disabled named Windows startup item and verifies effective launch', () => {
+  let value = { openAtLogin: true, executableWillLaunchAtLogin: false, launchItems: [{ name: 'SoloWorkBackup', enabled: false }] };
+  const calls = [];
+  const app = { isPackaged: true, getLoginItemSettings(options) { assert.deepEqual(options.args, ['--background']); return value; }, setLoginItemSettings(options) { calls.push(options); value = { openAtLogin: options.openAtLogin, executableWillLaunchAtLogin: options.enabled, launchItems: [{ name: options.name, enabled: options.enabled }] }; } };
+  const control = startupControl(app, { executable: 'fixture-app.exe' });
+  assert.equal(control.startupRegistered(), false);
+  assert.equal(control.setStartup(true), true); assert.equal(calls.length, 1); assert.equal(control.startupRegistered(), true);
+  control.setStartup(true); assert.equal(calls.length, 1);
+  value = { openAtLogin: true, executableWillLaunchAtLogin: true, launchItems: [{ name: 'AnotherItem', enabled: true }, { name: 'SoloWorkBackup', enabled: false }] };
+  assert.equal(control.startupRegistered(), false); control.setStartup(true); assert.equal(calls.length, 2);
+  value = { openAtLogin: true, executableWillLaunchAtLogin: false, launchItems: [{ name: 'SoloWorkBackup', enabled: false }] };
+  control.setStartup(false); assert.equal(calls.length, 3); assert.equal(value.openAtLogin, false);
+  app.setLoginItemSettings = () => {};
+  assert.throws(() => control.setStartup(true), /확인하지/);
+  const safe = startupControl(app, { testMode: true }); assert.equal(safe.startupRegistered(), false); assert.throws(() => safe.setStartup(true), /시험 실행/);
+});

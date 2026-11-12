@@ -1,7 +1,7 @@
 # 업무 백업 Rust 시험판 설계 (solo-backup-rust)
 
 ## 범위
-- 위치는 experiences/solo-backup-rust. 원본 ../solo-backup은 읽기만 하며 바꾸지 않는다.
+- 위치는 experiences/solo-backup-rust. 원본 ../solo-backup은 읽기만 하며 바꾸지 않는다. 2026-11-12부터 엔진은 이 폴더의 `engine/`(0.5.0을 바이트 그대로 갈라 온 것)을 묶고, 상품화 1단계의 고침은 [1단계 설계](STAGE1_DESIGN.md)를 따른다.
 - Tauri v2 Rust 네이티브 셸과 기존 Node/restic 호환 워커로 만든 과도기 시험판이다. 엔진 전체를 Rust로 옮긴 것이 아니다.
 - 버전 문자열은 백엔드 state.version이 0.6.0-rust-beta.1로 준다.
 - RESEARCH.md의 기존 벤치마크 결론(버튼 하나로 보호, 분명한 상태, 검증된 복구)을 그대로 기준으로 쓴다.
