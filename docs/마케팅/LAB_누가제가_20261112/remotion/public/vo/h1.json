@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "h1",
+ "text": "Same answer... easy.",
+ "dur": 1.459,
+ "words": [
+  {
+   "text": "Same",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "answer...",
+   "start": 0.342,
+   "end": 0.663
+  },
+  {
+   "text": "easy.",
+   "start": 0.985,
+   "end": 1.459
+  }
+ ],
+ "source": {
+  "key": "db0d7e0b6032119ff9602ec4b31e76e4",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Question one: what did you eat? I wrote: I ate pizza, and got a check mark. Question two looks almost the same, so I copy my first answer.",
+   "next": "Wait... why is that wrong?!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 489
+ }
+}

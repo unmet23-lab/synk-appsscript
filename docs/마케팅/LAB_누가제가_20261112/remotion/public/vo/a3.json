@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "a3",
+ "text": "Wait... why is that wrong?",
+ "dur": 1.827,
+ "words": [
+  {
+   "text": "Wait...",
+   "start": 0.02,
+   "end": 0.362
+  },
+  {
+   "text": "why",
+   "start": 0.743,
+   "end": 0.864
+  },
+  {
+   "text": "is",
+   "start": 0.924,
+   "end": 0.984
+  },
+  {
+   "text": "that",
+   "start": 1.065,
+   "end": 1.226
+  },
+  {
+   "text": "wrong?",
+   "start": 1.286,
+   "end": 1.827
+  }
+ ],
+ "source": {
+  "key": "dbe17c1ef2d05f58d7f541e927939700",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 362
+ }
+}

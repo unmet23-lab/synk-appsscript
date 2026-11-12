@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1cea8-3905-7b52-b969-2b50cc8d8f67"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to match the reference pizza and create the half-eaten slice on a pure white background.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":134070,"cached_input_tokens":99584,"cache_write_input_tokens":0,"output_tokens":1076,"reasoning_output_tokens":297}}

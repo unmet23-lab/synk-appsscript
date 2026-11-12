@@ -1,0 +1,16 @@
+Create one photorealistic image, square 1:1, 1536x1536 if possible.
+
+Subject: a top-down (overhead, camera looking straight down) photo of a right hand holding a yellow wooden HB pencil in a relaxed writing grip, as if writing on paper that lies flat under it. The reference image shows the exact pencil to use (yellow hexagonal body, sharpened graphite tip, silver ferrule, pink eraser) — keep that pencil.
+
+Composition (important):
+- The pencil's sharpened graphite tip is near the upper-left corner of the frame, about 6% in from the left edge and 6% down from the top edge.
+- The pencil runs diagonally from that tip toward the lower right, at about 40 degrees, like the reference.
+- The hand holds the pencil about one third of the way up from the tip, and the hand, wrist and a little of the forearm come in from the lower-right corner and leave the frame there.
+- Nothing else in the frame: no paper, no desk, no table, no text.
+
+Look:
+- Pure flat white background (#FFFFFF) everywhere around the hand and pencil, evenly lit, with NO cast shadow on the background (the background must stay pure white so it can be cut out).
+- Soft daylight from the upper left, gentle natural shading on the hand.
+- Natural young adult skin, short clean nails, no rings, no nail polish, no watch.
+- A plain light grey knit sweater cuff at the wrist.
+- Sharp focus on the whole hand and pencil, no motion blur, no depth-of-field blur, no vignette.

@@ -1,0 +1,7 @@
+Create one photorealistic image, square 1:1.
+
+The reference image shows a leftover pizza crust. Make the SAME pizza (same golden crust with the same dark baked spots, same pepperoni, same cheese colour, same soft daylight from the upper left, same top-down overhead angle) but BEFORE it was eaten: one whole triangular slice of pepperoni pizza with only ONE small bite taken out of the pointed tip.
+
+Composition: the slice lies diagonally, crust at the upper right, pointed tip toward the lower left, filling about 70% of the frame. Three pepperoni slices on it, melted cheese, a little tomato sauce visible.
+
+Look: pure flat white background (#FFFFFF) everywhere around the slice, evenly lit, with NO cast shadow on the background. Sharp focus, no blur, no vignette, no text, no plate, no box, no hands. Real casual food photo, not a studio hero shot.

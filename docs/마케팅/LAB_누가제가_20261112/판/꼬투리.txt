@@ -1,0 +1,10 @@
+Create one photorealistic image, square 1:1.
+
+Subject: a top-down (overhead, camera looking straight down) photo of ONE leftover pizza crust — the last bitten end of a pepperoni pizza slice: the golden-brown puffy crust edge with a small strip of cheese and half a pepperoni still on it, and a clear bite mark on the inner side. It lies flat. A few small crumbs next to it.
+
+Composition: the crust lies diagonally across the middle of the frame, filling about 60% of the frame width, with empty space around it.
+
+Look:
+- Pure flat white background (#FFFFFF) everywhere around the crust, evenly lit, with NO cast shadow on the background (the background must stay pure white so it can be cut out).
+- Soft daylight from the upper left, natural food-photo colours, appetising but casual (a real leftover, not a studio hero shot).
+- Sharp focus, no blur, no vignette, no text, no plate, no box, no hands.

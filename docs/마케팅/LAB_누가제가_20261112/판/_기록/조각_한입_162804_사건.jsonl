@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1cea8-1691-70b2-b2b2-1069ffaf641e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to rebuild the full slice, matching the reference’s crust, toppings, and lighting.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":111790,"cached_input_tokens":98304,"cache_write_input_tokens":0,"output_tokens":1086,"reasoning_output_tokens":212}}

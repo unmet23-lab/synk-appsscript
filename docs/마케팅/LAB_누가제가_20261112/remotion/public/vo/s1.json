@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "It was ME!",
+ "dur": 0.936,
+ "words": [
+  {
+   "text": "It",
+   "start": 0.02,
+   "end": 0.081
+  },
+  {
+   "text": "was",
+   "start": 0.142,
+   "end": 0.284
+  },
+  {
+   "text": "ME!",
+   "start": 0.366,
+   "end": 0.936
+  }
+ ],
+ "source": {
+  "key": "d7751818ee91c9a4521e2d374d07f66f",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 526
+ }
+}

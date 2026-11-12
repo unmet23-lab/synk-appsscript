@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "en",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1112,
+  "lufs": -17
+ },
+ "made": "2026-11-12T07:28:31.204Z",
+ "lines": [
+  {
+   "id": "h1",
+   "text": "Same answer... easy.",
+   "dur": 1.459,
+   "syllablesPerSec": null,
+   "src": "h1.wav",
+   "key": "db0d7e0b6032119ff9602ec4b31e76e4",
+   "words": 3
+  },
+  {
+   "id": "a3",
+   "text": "Wait... why is that wrong?",
+   "dur": 1.827,
+   "syllablesPerSec": null,
+   "src": "a3.wav",
+   "key": "dbe17c1ef2d05f58d7f541e927939700",
+   "words": 5
+  },
+  {
+   "id": "r0",
+   "text": "Number one: what?",
+   "dur": 1.454,
+   "syllablesPerSec": null,
+   "src": "r0.wav",
+   "key": "fb8a6e1feb47d2417b236b5e60017fa8",
+   "words": 3
+  },
+  {
+   "id": "r1",
+   "text": "Number two: who?",
+   "dur": 1.428,
+   "syllablesPerSec": null,
+   "src": "r1.wav",
+   "key": "dd00c1af8d1ee4e6d61a843af3dcc709",
+   "words": 3
+  },
+  {
+   "id": "k0",
+   "text": "저는...",
+   "dur": 0.512,
+   "syllablesPerSec": 3.91,
+   "src": "k0.wav",
+   "key": "526c92b5d46716889494d2280e4938e0",
+   "words": 1
+  },
+  {
+   "id": "r3",
+   "text": "That's about me...",
+   "dur": 1.117,
+   "syllablesPerSec": null,
+   "src": "r3.wav",
+   "key": "6925ecd0354fb2a6dd1e7d3ddd2bc067",
+   "words": 3
+  },
+  {
+   "id": "k2",
+   "text": "제가!",
+   "dur": 0.524,
+   "syllablesPerSec": 3.82,
+   "src": "k2.wav",
+   "key": "a9e957290556b0a01d965c32a4047ee8",
+   "words": 1
+  },
+  {
+   "id": "s1",
+   "text": "It was ME!",
+   "dur": 0.936,
+   "syllablesPerSec": null,
+   "src": "s1.wav",
+   "key": "d7751818ee91c9a4521e2d374d07f66f",
+   "words": 3
+  },
+  {
+   "id": "k1",
+   "text": "제가 피자 먹었어요.",
+   "dur": 1.383,
+   "syllablesPerSec": 5.78,
+   "src": "k1.wav",
+   "key": "2b032ffacd4aeee08fe5da206d28de2d",
+   "words": 3
+  },
+  {
+   "id": "e1",
+   "text": "So... who ate the pizza?",
+   "dur": 1.783,
+   "syllablesPerSec": null,
+   "src": "e1.wav",
+   "key": "ffcafbc2516ffaf10fc48ee4f97d2b88",
+   "words": 5
+  },
+  {
+   "id": "e2",
+   "text": "제가...",
+   "dur": 0.593,
+   "syllablesPerSec": 3.37,
+   "src": "e2.wav",
+   "key": "40bae7eb080c31ad240caff063dc5694",
+   "words": 1
+  }
+ ]
+}

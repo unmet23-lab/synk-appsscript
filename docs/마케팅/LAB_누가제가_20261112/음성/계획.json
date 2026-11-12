@@ -1,0 +1,88 @@
+{
+  "note": "LAB E41 「누가?」엔 「제가!」 나레이션 — 해설 소진 세기 1.0(LAB 장부 머리말 「목소리」 10-28), 영어 줄 + 한국어 예문 줄(한국어 표현은 한국어 음성 — 머리말 「국가별 음성·자막」). 원본(우리편) E5 「처음 쓰는 ㄹ」의 줄 자리를 따른다. 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_누가제가_20261112/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_666a9871abcf27a5169850d0",
+    "name": "소진"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "en",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1112,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "h1",
+      "text": "Same answer... easy.",
+      "emotion": "smart",
+      "prev": "Question one: what did you eat? I wrote: I ate pizza, and got a check mark. Question two looks almost the same, so I copy my first answer.",
+      "next": "Wait... why is that wrong?!"
+    },
+    {
+      "id": "a3",
+      "text": "Wait... why is that wrong?",
+      "emotion": "normal"
+    },
+    {
+      "id": "r0",
+      "text": "Number one: what?",
+      "emotion": "normal"
+    },
+    {
+      "id": "r1",
+      "text": "Number two: who?",
+      "emotion": "smart",
+      "prev": "Number one: what?",
+      "next": "So you answer like this."
+    },
+    {
+      "id": "k0",
+      "text": "저는...",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "r3",
+      "text": "That's about me...",
+      "emotion": "normal"
+    },
+    {
+      "id": "k2",
+      "text": "제가!",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "s1",
+      "text": "It was ME!",
+      "emotion": "normal"
+    },
+    {
+      "id": "k1",
+      "text": "제가 피자 먹었어요.",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1
+    },
+    {
+      "id": "e1",
+      "text": "So... who ate the pizza?",
+      "emotion": "normal"
+    },
+    {
+      "id": "e2",
+      "text": "제가...",
+      "lang": "ko",
+      "emotion": "normal",
+      "intensity": 1,
+      "tempo": 0.9
+    }
+  ]
+}

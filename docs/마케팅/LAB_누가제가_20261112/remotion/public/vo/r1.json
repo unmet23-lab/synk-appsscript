@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "Number two: who?",
+ "dur": 1.428,
+ "words": [
+  {
+   "text": "Number",
+   "start": 0.02,
+   "end": 0.322
+  },
+  {
+   "text": "two:",
+   "start": 0.383,
+   "end": 0.664
+  },
+  {
+   "text": "who?",
+   "start": 0.866,
+   "end": 1.428
+  }
+ ],
+ "source": {
+  "key": "dd00c1af8d1ee4e6d61a843af3dcc709",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "Number one: what?",
+   "next": "So you answer like this."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 427
+ }
+}

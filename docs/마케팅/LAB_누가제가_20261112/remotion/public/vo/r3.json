@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r3",
+ "text": "That's about me...",
+ "dur": 1.117,
+ "words": [
+  {
+   "text": "That's",
+   "start": 0.02,
+   "end": 0.241
+  },
+  {
+   "text": "about",
+   "start": 0.302,
+   "end": 0.604
+  },
+  {
+   "text": "me...",
+   "start": 0.664,
+   "end": 1.117
+  }
+ ],
+ "source": {
+  "key": "6925ecd0354fb2a6dd1e7d3ddd2bc067",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 454
+ }
+}

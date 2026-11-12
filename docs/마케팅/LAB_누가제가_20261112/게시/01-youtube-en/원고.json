@@ -1,0 +1,20 @@
+{
+  "id": "01-youtube-en",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "en",
+  "audioLanguage": "en",
+  "title": "Same answer… one ✓ one ✗? 😳 #learnkorean",
+  "caption": "누가 = who?\nWhen the question is \"who?\", answer with 제가 — \"I'm the one.\"\n\n뭐 먹었어요? (What did you eat?)\n→ 저는 피자 먹었어요. ✓ (As for me, I ate pizza.)\n\n누가 피자 먹었어요? (Who ate the pizza?)\n→ 제가 피자 먹었어요. ✓ (It was me who ate it.)\n\n저는 = 저 + 는: talks about me (the topic).\n제가 = 저 + 가: points at the one who did it (the answer to \"who?\").\n\nSYNK LAB\n#learnkorean #studykorean #koreangrammar #hangul",
+  "pinnedComment": "누가 한국어 공부해요? (Who's learning Korean?) — answer in Korean 👇\nHint: 제가요! = \"Me!\" (요 just makes it polite)",
+  "alt": [
+    "Top-down view of a Korean quiz sheet in a notebook, with a slice of pepperoni pizza on the page. Question 1 asks 뭐 먹었어요? (What did you eat?) and the handwritten answer 저는 피자 먹었어요. already has a red check. A hand with a pencil copies the same answer under question 2, 누가 피자 먹었어요? (Who ate the pizza?), and it gets a big red X. Red pen circles 저는, then 뭐 with what? and 누가 with who?. On the next page the pizza is half eaten; the hand writes 저는 (about me...), crosses it out and writes 제가 (boxed, it was ME!) 피자 먹었어요., which gets a check. Both answers are shown with checks under the lines 저는 … about me and “Who?” → 제가!, and at the end only the pizza crust is left as the hand writes 제가... (me...)."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "video.mp4 = who v5(시험 받은 v4에서 6초 what? 흐리게 · about me 크게 · 「=」 꼴 걷기 · 12.6초 제목 빼기 — 글 · 자리만, 다시 시험 안 함 · 18.6초 · 관문 못 넘음 — 기획.md 「판정」) → 음량마감 −14.5 LUFS. 10MB 올림판 upload_10MB.mp4(9.47MB). 표지 cover.png = 2.6초(같은 답 ✓ / ✗ · POV 제목). 어린이 전용 아님. 합성 표시: 켜지 않음 — 손 · 피자 사진은 GPT 이미지 2.5로 구운 소품(E5 공책 · 연필과 같은 판단), 실제 사람 · 사건을 흉내 내지 않고 목소리는 특정인이 아닌 TTS.",
+  "version": "e41-en-v5"
+}

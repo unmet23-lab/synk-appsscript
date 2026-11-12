@@ -1,0 +1,7 @@
+Create one photorealistic image, square 1:1.
+
+The reference image shows a leftover pizza crust. Make the SAME pizza (same golden crust with the same dark baked spots, same pepperoni, same cheese colour, same soft daylight from the upper left, same top-down overhead angle) at the HALF-EATEN stage: a triangular slice of pepperoni pizza whose front half has been bitten away in two or three big bites — the bitten edge shows soft bread and stretched cheese, one pepperoni slice and part of a second one remain near the crust, a few crumbs next to it.
+
+Composition: the remaining piece lies diagonally, crust at the upper right, bitten edge toward the lower left, filling about 55% of the frame.
+
+Look: pure flat white background (#FFFFFF) everywhere around it, evenly lit, with NO cast shadow on the background. Sharp focus, no blur, no vignette, no text, no plate, no box, no hands. Real casual food photo.

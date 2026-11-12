@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "So... who ate the pizza?",
+ "dur": 1.783,
+ "words": [
+  {
+   "text": "So...",
+   "start": 0.02,
+   "end": 0.161
+  },
+  {
+   "text": "who",
+   "start": 0.282,
+   "end": 0.807
+  },
+  {
+   "text": "ate",
+   "start": 0.868,
+   "end": 0.969
+  },
+  {
+   "text": "the",
+   "start": 1.029,
+   "end": 1.171
+  },
+  {
+   "text": "pizza?",
+   "start": 1.231,
+   "end": 1.783
+  }
+ ],
+ "source": {
+  "key": "ffcafbc2516ffaf10fc48ee4f97d2b88",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "en",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 391
+ }
+}
