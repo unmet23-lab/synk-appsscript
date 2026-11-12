@@ -20,7 +20,7 @@ const watch=()=>{const html=Object.getOwnPropertyDescriptor(Element.prototype,'i
 async function session(options){
   const context=await browser.newContext(options);await context.addInitScript(watch);
   const login=await context.newPage();await login.goto(fixture.url,{waitUntil:'domcontentloaded'});
-  await login.fill('input[placeholder="이메일 또는 기존 아이디"]',fixture.email);await login.fill('input[type="password"]',fixture.password);await login.press('input[type="password"]','Enter');
+  await login.fill('#auth-form input[name="email"]',fixture.email);await login.fill('input[type="password"]',fixture.password);await login.press('input[type="password"]','Enter');
   await login.waitForURL(/tab=home/,{timeout:15000});await login.close();return context;
 }
 async function busy(context,changing){let tick=0;await context.route(url=>url.pathname==='/api/state',async route=>{const response=await route.fetch(),body=await response.json();body.runs=[{id:'qa-run',status:'running',channelId:null,startedAt:'2026-10-18T00:00:00.000Z',processed:changing?tick++:0},...(body.runs||[])];await route.fulfill({response,json:body});});}

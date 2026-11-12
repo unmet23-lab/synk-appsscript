@@ -125,6 +125,25 @@ test('status exposes an account only for the currently verified SYNK session, ne
   await c.login();const legacy=(await c.request('/api/synk-id/status')).data;assert.equal(legacy.linked,true);assert.equal(legacy.synkUserId,null);
 });
 
+test('status names the SYNK ID login email from the centrally accepted token only to that verified SYNK session',async t=>{
+  const payload={ok:true,account:{synk_user_id:ids.one,status:'active'}};
+  const f=await fixture(t,{verify:false,fetcher:async()=>({ok:true,status:200,json:async()=>payload})}),c=f.client(),legacy=f.client();
+  const token=claims=>'header.'+Buffer.from(JSON.stringify({exp:Math.floor(Date.now()/1000)+3600,...claims})).toString('base64url')+'.synthetic';
+  assert.equal((await c.request('/api/synk-id/status')).data.loginEmail,null);
+  assert.equal((await c.link(f.staff,token({email:'Founder@Example.test'}))).status,200);
+  assert.equal((await c.request('/api/synk-id/status')).data.loginEmail,'founder@example.test');
+  const db=new DatabaseSync(join(f.directory,'company.sqlite'),{readOnly:true});let row;try{row=db.prepare('SELECT ciphertext FROM synk_identity_sessions').all();}finally{db.close();}
+  assert.equal(row.length,1);assert.doesNotMatch(row[0].ciphertext,/founder@example/i);
+  await f.restart();assert.equal((await c.request('/api/synk-id/status')).data.loginEmail,null);
+  await c.request('/api/me');assert.equal((await c.request('/api/synk-id/status')).data.loginEmail,'founder@example.test');
+  await legacy.login();const company=(await legacy.request('/api/synk-id/status')).data;assert.equal(company.session,'company');assert.equal(company.loginEmail,null);
+});
+test('a token without a usable email claim names nobody and keeps the session working',async t=>{
+  const f=await fixture(t,{verify:false,fetcher:async()=>({ok:true,status:200,json:async()=>({ok:true,account:{synk_user_id:ids.one,status:'active'}})})}),c=f.client();
+  const jwt='header.'+Buffer.from(JSON.stringify({exp:Math.floor(Date.now()/1000)+3600,email:'not an email'})).toString('base64url')+'.synthetic';
+  assert.equal((await c.link(f.staff,jwt)).status,200);const status=(await c.request('/api/synk-id/status')).data;
+  assert.equal(status.synkUserId,ids.one);assert.equal(status.loginEmail,null);assert.equal((await c.request('/api/me')).data.user.id,f.staff.id);
+});
 test('deactivation during central verification blocks linking and session issuance',async t=>{
   let release,started;const waiting=new Promise(r=>release=r),began=new Promise(r=>started=r);
   const f=await fixture(t,{verify:async()=>{started();await waiting;return {synkUserId:ids.one,expiresAt:Date.now()+3600_000};}}),c=f.client();await c.login();const begin=await c.challenge('link',{currentPassword:password,confirm:true}),pending=c.exchange(begin.data.challenge);await began;f.app.store.put('users',f.staff.id,{...f.staff,active:false});release();assert.equal((await pending).status,409);assert.equal(f.app.store.db.prepare('SELECT COUNT(*) AS n FROM synk_identity_links').get().n,0);

@@ -790,7 +790,6 @@ document.addEventListener('submit',async event=>{
   if(s.mode==='staff'&&type.startsWith('brand-')){await brandSubmit(type,form,values);return;}
   if(type==='invite'){const invite=parseInvite(values.invite);if(!invite){s.entryError={title:k('초대 링크를 읽지 못했어요'),text:k('담당자에게 받은 링크 전체(https://… #invite=…)를 붙여 넣어 주세요.')};render();return;}const kept=keptDrafts;resetContext();keptDrafts=kept;booting=true;render();await start(invite);return;}
   if(type==='intake-pause'){await intakeSave({open:false,pausedUntil:String(values.pausedUntil||''),pauseNote:String(values.pauseNote||''),pauseNoteEn:String(values.pauseNoteEn||'')},'새 의뢰 접수를 쉬어요. 손님 화면에는 1~2분 안에 보여요.',form);return;} // i18n-skip
-  if(type==='login'){setBusy(true);try{const result=await request('/api/login',{body:values});resetContext();s.user=result.user;s.csrf=result.csrfToken||'';await loadWorkspace();await openInitialStaffProject();render();}catch(error){notice(error.message);}finally{setBusy(false);}return;}
   if(type==='new-project'){await mutate(()=>request('/api/client-projects',{...options(),body:{...values,ownerId:s.user.id}}),{form,message:'프로젝트를 만들었어요.',after:async result=>{s.newProject=false;accept(result);if(!s.project&&result.id)await loadProject(result.id);if(s.project)await loadProject(s.project.id);s.tab='strategy';}});return;} // i18n-skip
   if(!s.project)return;
   if(await production.submit(form))return;
@@ -849,7 +848,7 @@ document.addEventListener('click',async event=>{
   if(action==='install'){showInstallGuide();return;}
   if(action==='install-now'){const prompt=s.installPrompt;if(!prompt){showInstallGuide();return;}button.disabled=true;try{await prompt.prompt();const choice=await prompt.userChoice;if(choice.outcome==='accepted')notice(t('설치를 시작했어요. 끝나면 홈 화면의 PULSE를 열어 주세요.'));}catch{notice(t('브라우저 메뉴에서 ‘앱 설치’나 ‘홈 화면에 추가’를 골라 주세요.'));}finally{if(s.installPrompt===prompt)s.installPrompt=null;if(dialog.open&&dialog.dataset.installGuide==='true')showInstallGuide();}return;}
   if(action==='install-notifications'){closeDialog();s.live.open=true;renderLive();document.querySelector('#pulse-notifications h2')?.focus();refreshDevice();return;}
-  if(action==='retry'||action==='check-login'){await start('',{manual:action==='retry'});return;}
+  if(action==='retry'){await start('',{manual:true});return;}
   if(action==='refresh'){await refresh();return;}
   if(action==='reset-production-draft'){if(busy||loading)return;const form=button.closest('form');if(!form||!(/^(round-|preview-)/.test(form.dataset.form)||form.dataset.form==='deliverables'))return;const stamp=projectStamp();drafts.delete(draftKey(form));await refresh();if(current(stamp)&&!s.error)notice(t('쓰던 내용을 지우고 최신 내용을 불러왔어요. 새 내용에서 다시 골라 주세요.'));return;}
   if(action==='notifications'){s.live.open=!s.live.open;renderLive();if(s.live.open){document.querySelector('#pulse-notifications h2')?.focus();refreshDevice();}return;}

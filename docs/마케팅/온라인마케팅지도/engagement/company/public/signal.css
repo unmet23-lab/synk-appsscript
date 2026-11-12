@@ -471,6 +471,19 @@
 /* 로그인 되찾기(10-23): 로그인 단추 아래 글 단추 · 재설정 뒤 초록 안내 · 도움 판(옅은 유리 칸 셋) · 재설정 화면의 아이디 표 */
 :root .auth-form-card .auth-help-link{justify-self:center;margin-top:2px;padding:6px 4px;color:var(--sg-frame-ink-2);font-size:13px;font-weight:650;text-decoration:underline;text-decoration-color:rgba(250,250,249,.28);text-underline-offset:4px}
 :root .auth-form-card .auth-help-link:hover{color:var(--sg-frame-ink)}
+/* 로그인 한 길(11-12): 「SYNK ID로 로그인」 아래 회사 비밀번호 칸은 접힌 줄 하나 — 열면 지금 폼 그대로. 막혔을 때 글 단추는 접힘 밖 */
+:root .auth-company{margin:0}
+:root .auth-company>summary{display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 18px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);color:var(--sg-frame-ink-2);font-size:14px;font-weight:700;letter-spacing:-.01em;cursor:pointer;list-style:none;-webkit-user-select:none;user-select:none}
+:root .auth-company>summary::-webkit-details-marker{display:none}
+:root .auth-company>summary::after{content:'';flex:none;width:7px;height:7px;margin-top:-4px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(45deg)}
+:root .auth-company[open]>summary::after{margin-top:4px;transform:rotate(-135deg)}
+:root .auth-company>summary:hover{color:var(--sg-frame-ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
+:root .auth-company>summary:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px}
+:root .auth-company[open]>summary{margin-bottom:18px}
+:root .auth-form-card .auth-company-note{margin:-8px 4px 0;font-size:12px;line-height:1.55;color:var(--sg-frame-ink-3);word-break:keep-all}
+:root .auth-form-card>.auth-help-link{display:block;margin:14px auto 0}
+:root .auth-form-card>.auth-after-note{display:flex;align-items:flex-start;gap:9px;margin:0 0 16px;padding:11px 14px;border-radius:12px;background:rgba(111,211,155,.1);box-shadow:inset 0 0 0 1px rgba(111,211,155,.28);color:var(--sg-frame-ink);font-size:13px;line-height:1.6;word-break:keep-all}
+:root .auth-form-card>.auth-after-note::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:#6FD39B;box-shadow:0 0 8px rgba(111,211,155,.6)}
 :root .auth-form-card .auth-help-link:focus-visible,:root .auth-form-card .auth-form-footer .text-button:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px;border-radius:6px}
 :root .auth-form-card h2:focus{outline:0}
 :root .auth-form-card .auth-notice{display:flex;align-items:flex-start;gap:9px;margin:0;padding:11px 14px;border-radius:12px;background:rgba(111,211,155,.1);box-shadow:inset 0 0 0 1px rgba(111,211,155,.28);color:var(--sg-frame-ink);font-size:13px;line-height:1.6;word-break:keep-all}

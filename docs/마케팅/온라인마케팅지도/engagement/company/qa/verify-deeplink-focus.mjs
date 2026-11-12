@@ -29,7 +29,7 @@ try{
   // At 700px the link has to scroll to the field, so the scenarios can see whether that scroll survives a late repaint.
   const context=await browser.newContext({viewport:{width:1280,height:700}}),login=await context.newPage();
   await login.goto(fixture.url,{waitUntil:'domcontentloaded'});
-  await login.fill('input[placeholder="이메일 또는 기존 아이디"]',fixture.email);await login.fill('input[type="password"]',fixture.password);await login.press('input[type="password"]','Enter');
+  await login.fill('#auth-form input[name="email"]',fixture.email);await login.fill('input[type="password"]',fixture.password);await login.press('input[type="password"]','Enter');
   await login.waitForURL(/tab=home/,{timeout:15000});await login.close();
   for(const scenario of scenarios){
     const page=await context.newPage(),[pattern,ms]=scenario.delay||['',0];

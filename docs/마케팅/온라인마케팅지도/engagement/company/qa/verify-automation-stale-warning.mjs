@@ -44,7 +44,7 @@ const results=[],pageErrors=[],consoleErrors=[];let child,childClosed,browser,fi
 const check=(name,ok,detail={})=>results.push({name,ok:!!ok,...detail});
 async function login(context){
   const page=await context.newPage();await page.goto(fixture.url,{waitUntil:'domcontentloaded'});
-  await page.fill('input[placeholder="이메일 또는 기존 아이디"]',fixture.email);await page.fill('input[type="password"]',fixture.password);await page.press('input[type="password"]','Enter');
+  await page.fill('#auth-form input[name="email"]',fixture.email);await page.fill('input[type="password"]',fixture.password);await page.press('input[type="password"]','Enter');
   await page.waitForURL(/tab=home/,{timeout:15000});await page.close();
 }
 async function openStatus(context,issues){

@@ -259,10 +259,12 @@ function syncSynkRenewLoop(){
 }
 async function installSynkLogin(){
   const form=document.querySelector('#auth-form');if(!form||document.querySelector('#synk-id-login'))return;
-  const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn synk-id-button" id="synk-id-login" aria-describedby="synk-id-login-note" disabled>Google · SYNK ID로 로그인</button><p class="table-foot" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';form.before(section);
+  const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn synk-id-button" id="synk-id-login" aria-describedby="synk-id-login-note" disabled>SYNK ID로 로그인</button><p class="table-foot" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';
+  // The company password form folds under #auth-company (app.js); the SYNK ID entry stands above it.
+  (form.closest?.('#auth-company')||form).before(section);
   const button=section.querySelector('button'),note=section.querySelector('p');
-  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'Google · SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 계정을 이용해 주세요.':'Google로 가입했다면 이 버튼을 누른 뒤 Google로 계속해 주세요. 회사 계정에 연결한 SYNK ID로 들어가요. 처음에는 회사 초대를 받고 계정을 연결해 주세요.';button.onclick=()=>beginSynkCompany('login',{},button,note);}
-  catch(error){if(note.isConnected)note.textContent=error.message;}
+  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 비밀번호로 들어와 주세요.':'Google이나 SYNK ID 이메일로 들어가요. 회사 계정에 연결한 SYNK ID만 들어올 수 있어요.';if(button.disabled)document.querySelector('#auth-company')?.setAttribute('open','');button.onclick=()=>{if(typeof rememberWorkspaceLogin==='function')rememberWorkspaceLogin('synk');return beginSynkCompany('login',{},button,note);};}
+  catch(error){if(note.isConnected){note.textContent=error.message;document.querySelector('#auth-company')?.setAttribute('open','');}}
   void automaticallyEnterSynkCompany();
 }
 async function automaticallyEnterSynkCompany(){

@@ -129,8 +129,37 @@ function providerFor(platform) { return (state.data?.oauthProviders || []).find(
 function capabilityFor(platform) { return (state.data?.capabilities || []).find(item => platformKey(item.id) === platformKey(platform)); }
 function requirementText(value) { return Array.isArray(value) ? value : value ? [value] : []; }
 
+// Which way this browser last came in ('synk' | 'password') — only decides whether the company password form starts open.
+function lastWorkspaceLogin() { try { return localStorage.getItem('synk.workspace.lastLogin') || ''; } catch { return ''; } }
+// SYNK ID cannot be used here (not set up, or a browser without the browser flow): the company password row starts open.
+function synkLoginUnavailable() { try { const status = synkCompanyStatus; return Boolean(status) && (!status.enabled || (!(typeof getSynkDesktopBridge === 'function' && getSynkDesktopBridge()) && !status.browserEnabled)); } catch { return false; } }
+function rememberWorkspaceLogin(kind) { try { if (['synk', 'password'].includes(kind)) localStorage.setItem('synk.workspace.lastLogin', kind); } catch {} }
+// A screen that sends people here to sign in names itself with ?after=<key>; only these same-origin paths come back.
+const AFTER_LOGIN = { 'pulse-staff': '/pulse-app/?mode=staff' }, AFTER_LOGIN_KEY = 'synk.workspace.after', AFTER_LOGIN_MS = 15 * 60_000;
+function rememberAfterLogin() {
+  const search = new URLSearchParams(location.search), key = search.get('after');
+  if (key === null) return;
+  try { if (Object.hasOwn(AFTER_LOGIN, key)) sessionStorage.setItem(AFTER_LOGIN_KEY, JSON.stringify({ key, at: Date.now() })); } catch {}
+  search.delete('after'); const rest = search.toString(); history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+}
+function afterLoginTarget() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(AFTER_LOGIN_KEY) || 'null');
+    if (saved && Object.hasOwn(AFTER_LOGIN, saved.key) && Date.now() - saved.at < AFTER_LOGIN_MS && Date.now() >= saved.at) return AFTER_LOGIN[saved.key];
+    sessionStorage.removeItem(AFTER_LOGIN_KEY);
+  } catch {}
+  return null;
+}
+function continueAfterLogin() {
+  const target = afterLoginTarget();
+  if (!target) return false;
+  try { sessionStorage.removeItem(AFTER_LOGIN_KEY); } catch {}
+  location.replace(target); return true;
+}
+
 async function initialize() {
   try {
+    if (typeof rememberAfterLogin === 'function') rememberAfterLogin();
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const requestedView=new URLSearchParams(location.search).get('tab')||params.get('view');
     if(isDemoMode()&&['messenger','home','workroom','handbook','teaching'].includes(requestedView)){location.replace(requestedView==='teaching'?demoTeachingUrl():requestedView==='home'?demoHomeUrl():requestedView==='workroom'?demoWorkroomUrl():requestedView==='handbook'?demoHandbookUrl():demoMessengerUrl());return;}
@@ -161,6 +190,7 @@ async function initialize() {
     state.synkUserId = me.synkUserId || null;
     state.platformUrl = me.platformUrl || null;
     state.passwordSet = me.passwordSet === true;
+    if (state.user && !isDemoMode() && typeof continueAfterLogin === 'function' && continueAfterLogin()) return;
     if (state.user) selectRequestedView();
     if (params.get('invite')) { state.authMode = 'join'; state.authToken = params.get('invite'); history.replaceState(null, '', location.pathname + location.search); }
     else if (me.needsSetup || params.get('setup')) { state.authMode = 'setup'; state.authToken = params.get('setup') || ''; if (params.get('setup')) history.replaceState(null, '', location.pathname + location.search); }
@@ -241,9 +271,13 @@ function renderAuth() {
   state.workspaceSidebarOpen=false;state.workspaceSidebarView='';
   resetWorkspaceModule();
   const join = state.authMode === 'join', setup = state.authMode === 'setup', help = state.authMode === 'help', reset = state.authMode === 'reset';
+  // One login rule (2026-11-12): 「SYNK ID로 로그인」 first; the company password form folds under its own name and opens by itself
+  // when SYNK ID is not ready, after a password reset, or when this browser last came in with the company password.
+  const login = !setup && !join && !help && !reset, companyOpen = login && Boolean(state.authNotice || state.authPrefill || (typeof lastWorkspaceLogin === 'function' && lastWorkspaceLogin() === 'password') || (typeof synkLoginUnavailable === 'function' && synkLoginUnavailable()));
+  const afterNote = login && typeof afterLoginTarget === 'function' && afterLoginTarget() ? '<p class="auth-after-note" role="status">로그인하면 PULSE 직원 화면으로 돌아가요.</p>' : '';
   const title = setup ? '우리 회사 공간 만들기' : join ? '팀에 합류하기' : help ? '로그인이 막혔나요?' : reset ? (state.resetLink?.retry ? '링크를 확인하지 못했어요' : state.resetLink?.error ? '이 링크는 쓸 수 없어요' : '새 비밀번호 정하기') : '다시 만나 반가워요';
   const description = setup ? '처음 한 번, 회사 이름과 관리자 계정을 등록해 주세요.' : join ? '초대받은 이름과 로그인할 비밀번호를 정해 주세요.' : help ? '메일 없이 다시 들어오는 길이에요. 맞는 것을 골라 주세요.' : reset ? (state.resetLink?.retry ? '링크가 아직 살아 있을 수 있어요. 잠시 뒤 다시 확인해 주세요.' : state.resetLink?.error ? '새 링크를 받거나 다른 길로 들어와 주세요.' : state.resetLink?.loginId ? `${escape(state.resetLink.name)} 님 계정의 비밀번호를 새로 정해요.` : '관리자가 만든 비밀번호 재설정 링크예요.') : '회사 계정으로 대화, 마케팅, 제작 업무를 함께 이어가세요.';
-  app.innerHTML = `<main class="auth-layout" id="main"><header class="auth-bar"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><span class="auth-edition">WORKSPACE</span></header><section class="auth-intro" aria-labelledby="auth-poster-title"><div class="auth-poster"><div class="auth-poster-top"><span class="auth-poster-scope">SYNK · 팀</span><span class="auth-poster-stage">팀원 전용</span></div><div class="auth-poster-media" aria-hidden="true"><img src="/messenger/assets/signal-laptop.webp" alt="" width="640" height="640" decoding="async"></div><div class="auth-poster-text"><div class="eyebrow">WORK · TEACH · CREATE</div><h1 id="auth-poster-title"><span class="auth-poster-name">SYNK Workspace</span><span class="auth-poster-word">워크<br>스페이스</span></h1><p class="lead">우리 팀의 일, 한곳에서 이어져요.</p></div><span class="auth-poster-caption" aria-hidden="true">SYNK WORKSPACE · 싱크 워크스페이스</span></div><dl class="auth-readouts"><div><dt>MESSENGER</dt><dd>대화와 파일을 한곳에</dd></div><div><dt>MARKETING</dt><dd>채널 변화와 성과</dd></div><div><dt>STUDIO</dt><dd>기획과 좋은 예시</dd></div></dl></section><section class="auth-form-side"><div class="auth-form-card"><div class="eyebrow">${setup ? 'GET STARTED' : join ? 'YOU ARE INVITED' : help ? 'ACCOUNT HELP' : reset ? 'NEW PASSWORD' : 'WELCOME BACK'}</div><h2 tabindex="-1">${title}</h2><p class="auth-description">${description}</p>${help ? authHelpBody() : reset ? authResetBody() : `<form class="form-stack" id="auth-form" data-form="auth">${state.authNotice && !setup && !join ? `<div class="auth-notice" role="status">${escape(state.authNotice)}</div>` : ''}<div class="form-error" role="alert"></div>${setup ? '<label class="field">회사 이름<input name="companyName" required maxlength="100" value="SYNK" autocomplete="organization"></label>' : ''}${setup || join ? '<label class="field">내 이름<input name="name" required maxlength="80" autocomplete="name" placeholder="이름을 입력해 주세요"></label>' : ''}${!join ? `<label class="field">${setup?'이메일':'이메일 또는 기존 메신저 아이디'}<input name="email" type="${setup?'email':'text'}" required autocomplete="username" placeholder="${setup?'name@company.com':'이메일 또는 기존 아이디'}" maxlength="254" value="${setup?'':escape(state.authPrefill||'')}"></label>` : ''}<label class="field">비밀번호<input name="password" type="password" required ${setup || join ? 'minlength="9" maxlength="256" autocomplete="new-password" placeholder="9자 이상으로 입력해 주세요"' : 'autocomplete="current-password" placeholder="비밀번호를 입력해 주세요"'}></label>${setup && !state.authToken ? '<label class="field">관리자 시작 코드<input name="setupToken" required autocomplete="off" placeholder="회사 프로그램의 시작 코드를 입력해 주세요"><small>처음 실행한 컴퓨터의 관리자 시작 화면에서 확인할 수 있어요.</small></label>' : ''}<button class="btn primary auth-submit" type="submit">${setup ? '회사 공간 만들기' : join ? '초대 수락하고 시작하기' : '로그인'}${icon('arrow')}</button>${!setup && !join ? '<button type="button" class="text-button auth-help-link" data-action="auth-help">아이디·비밀번호를 잊었어요</button>' : ''}</form><div class="auth-form-footer">${join ? '초대 링크는 한 번만 사용할 수 있어요.<br><button type="button" class="text-button" data-action="auth-login">이미 계정이 있다면 로그인</button>' : setup ? '관리자만 크루를 초대하고 전체 현황을 관리할 수 있어요.' : '계정이 없다면 회사 관리자에게 초대를 요청해 주세요.'}</div>`}</div></section></main>`;
+  app.innerHTML = `<main class="auth-layout" id="main"><header class="auth-bar"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><span class="auth-edition">WORKSPACE</span></header><section class="auth-intro" aria-labelledby="auth-poster-title"><div class="auth-poster"><div class="auth-poster-top"><span class="auth-poster-scope">SYNK · 팀</span><span class="auth-poster-stage">팀원 전용</span></div><div class="auth-poster-media" aria-hidden="true"><img src="/messenger/assets/signal-laptop.webp" alt="" width="640" height="640" decoding="async"></div><div class="auth-poster-text"><div class="eyebrow">WORK · TEACH · CREATE</div><h1 id="auth-poster-title"><span class="auth-poster-name">SYNK Workspace</span><span class="auth-poster-word">워크<br>스페이스</span></h1><p class="lead">우리 팀의 일, 한곳에서 이어져요.</p></div><span class="auth-poster-caption" aria-hidden="true">SYNK WORKSPACE · 싱크 워크스페이스</span></div><dl class="auth-readouts"><div><dt>MESSENGER</dt><dd>대화와 파일을 한곳에</dd></div><div><dt>MARKETING</dt><dd>채널 변화와 성과</dd></div><div><dt>STUDIO</dt><dd>기획과 좋은 예시</dd></div></dl></section><section class="auth-form-side"><div class="auth-form-card"><div class="eyebrow">${setup ? 'GET STARTED' : join ? 'YOU ARE INVITED' : help ? 'ACCOUNT HELP' : reset ? 'NEW PASSWORD' : 'WELCOME BACK'}</div><h2 tabindex="-1">${title}</h2><p class="auth-description">${description}</p>${help ? authHelpBody() : reset ? authResetBody() : `${login ? `${afterNote}<details class="auth-company" id="auth-company"${companyOpen ? ' open' : ''}><summary>회사 비밀번호로 로그인</summary>` : ''}<form class="form-stack" id="auth-form" data-form="auth">${state.authNotice && !setup && !join ? `<div class="auth-notice" role="status">${escape(state.authNotice)}</div>` : ''}<div class="form-error" role="alert"></div>${setup ? '<label class="field">회사 이름<input name="companyName" required maxlength="100" value="SYNK" autocomplete="organization"></label>' : ''}${setup || join ? '<label class="field">내 이름<input name="name" required maxlength="80" autocomplete="name" placeholder="이름을 입력해 주세요"></label>' : ''}${!join ? `<label class="field">${setup?'이메일':'회사 계정 이메일'}<input name="email" type="${setup?'email':'text'}" required autocomplete="username" placeholder="${setup?'name@company.com':'초대받은 회사 계정 이메일'}" maxlength="254" value="${setup?'':escape(state.authPrefill||'')}"></label>` : ''}<label class="field">${login ? '회사 비밀번호' : '비밀번호'}<input name="password" type="password" required ${setup || join ? 'minlength="9" maxlength="256" autocomplete="new-password" placeholder="9자 이상으로 입력해 주세요"' : 'autocomplete="current-password" placeholder="회사 비밀번호를 입력해 주세요"'}></label>${login ? '<p class="auth-company-note">SYNK ID 비밀번호가 아니라, 회사에서 정한 비밀번호예요.</p>' : ''}${setup && !state.authToken ? '<label class="field">관리자 시작 코드<input name="setupToken" required autocomplete="off" placeholder="회사 프로그램의 시작 코드를 입력해 주세요"><small>처음 실행한 컴퓨터의 관리자 시작 화면에서 확인할 수 있어요.</small></label>' : ''}<button class="btn primary auth-submit" type="submit">${setup ? '회사 공간 만들기' : join ? '초대 수락하고 시작하기' : '로그인'}${icon('arrow')}</button></form>${login ? '</details><button type="button" class="text-button auth-help-link" data-action="auth-help">로그인이 막혔나요?</button>' : ''}<div class="auth-form-footer">${join ? '초대 링크는 한 번만 사용할 수 있어요.<br><button type="button" class="text-button" data-action="auth-login">이미 계정이 있다면 로그인</button>' : setup ? '관리자만 크루를 초대하고 전체 현황을 관리할 수 있어요.' : '계정이 없다면 회사 관리자에게 초대를 요청해 주세요.'}</div>`}</div></section></main>`;
   if(!setup&&!join&&!help&&!reset&&typeof installSynkLogin==='function')void installSynkLogin();
   if(help)void installAuthHelpSynk();
   // After a reset the login ID is filled in; the next field to type is the new password.
@@ -253,7 +287,7 @@ function renderAuth() {
 const untilFormatter = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false });
 const untilTime = value => { const date = new Date(value); return Number.isFinite(date.getTime()) ? untilFormatter.format(date) : ''; };
 function authHelpBody() {
-  return `<div class="auth-help"><section class="auth-help-way"><h3>SYNK ID를 연결했다면</h3><p>Google로 가입한 SYNK ID도 같아요. 비밀번호 없이 들어올 수 있어요. 들어온 뒤 오른쪽 위 계정 단추 → 로그인 정보에서 내 아이디를 보고, 비밀번호가 아직 없으면 바로 정할 수 있어요.</p><div class="synk-login-entry"><button type="button" class="btn synk-id-button" id="auth-help-synk" aria-describedby="auth-help-synk-note" disabled>SYNK ID로 들어오기</button><p class="table-foot" id="auth-help-synk-note" role="status">연결 상태를 확인하고 있어요.</p></div></section><section class="auth-help-way"><h3>비밀번호를 잊었다면</h3><p>회사 관리자에게 「비밀번호 재설정 링크」를 부탁해 주세요. 링크는 60분 동안 한 번 쓸 수 있고, 열면 내 로그인 아이디가 보여요. 새 비밀번호를 정하면 다른 기기의 로그인은 모두 끝나요.</p></section><section class="auth-help-way"><h3>아이디가 기억나지 않으면</h3><p>아이디는 초대받을 때 쓴 이메일이에요. 예전 메신저 아이디는 회사 비밀번호를 정하기 전까지만 쓸 수 있어요. 관리자가 팀·크루 화면에서 알려 줄 수 있어요.</p></section><p class="auth-help-admin">관리자 계정이 막혔다면 서버를 맡은 운영 담당에게 「관리자 복구 링크」를 부탁해 주세요. 서버에서 30분짜리 링크를 만들어 드려요.</p><div class="auth-form-footer"><button type="button" class="text-button" data-action="auth-login">로그인으로 돌아가기</button></div></div>`;
+  return `<div class="auth-help"><section class="auth-help-way"><h3>SYNK ID를 연결했다면</h3><p>회사 비밀번호 없이 들어올 수 있어요. SYNK ID 화면에서 가입할 때 쓴 방법(Google 또는 이메일) 그대로 들어오면 돼요. 들어온 뒤 오른쪽 위 계정 단추 → 로그인 정보에서 회사 계정 이메일을 보고, 회사 비밀번호가 아직 없으면 바로 정할 수 있어요.</p><div class="synk-login-entry"><button type="button" class="btn synk-id-button" id="auth-help-synk" aria-describedby="auth-help-synk-note" disabled>SYNK ID로 로그인</button><p class="table-foot" id="auth-help-synk-note" role="status">연결 상태를 확인하고 있어요.</p></div></section><section class="auth-help-way"><h3>회사 비밀번호를 잊었다면</h3><p>회사 관리자에게 「비밀번호 재설정 링크」를 부탁해 주세요. 링크는 60분 동안 한 번 쓸 수 있고, 열면 내 회사 계정 이메일이 보여요. 새 비밀번호를 정하면 다른 기기의 로그인은 모두 끝나요.</p></section><section class="auth-help-way"><h3>회사 계정 이메일이 기억나지 않으면</h3><p>초대받을 때 쓴 이메일이에요. 예전 메신저 아이디는 회사 비밀번호를 정하기 전까지만 쓸 수 있어요. 관리자가 팀·크루 화면에서 알려 줄 수 있어요.</p></section><p class="auth-help-admin">관리자 계정이 막혔다면 서버를 맡은 운영 담당에게 「관리자 복구 링크」를 부탁해 주세요. 서버에서 30분짜리 링크를 만들어 드려요.</p><div class="auth-form-footer"><button type="button" class="text-button" data-action="auth-login">로그인으로 돌아가기</button></div></div>`;
 }
 function authResetBody() {
   const link = state.resetLink;
@@ -490,7 +524,7 @@ function periodSection(report) {
   return `<section class="section"><div class="section-head"><div><h2>기간별 증감</h2><p>${escape(state.start.replaceAll('-', '.'))} — ${escape(state.end.replaceAll('-', '.'))} · 같은 대상의 시작 전날과 종료일 기록을 비교해요.</p></div></div><div class="table-wrap"><table class="data-table"><thead><tr><th>지표</th><th>최근 합계</th><th>이 기간 증감</th><th>증감률</th><th>직전 기간 증감</th><th>직전 증감률</th><th>비교 / 전체</th></tr></thead><tbody>${METRICS.map(([key, label]) => { const metric = report.metrics?.[key]; return `<tr><td>${label}</td><td class="num">${number(metric?.latest)}</td><td class="num">${delta(metric?.period?.delta)}</td><td>${validNumber(metric?.period?.rate) ? delta(metric.period.rate, '%') : '—'}</td><td>${delta(metric?.previousPeriod?.delta)}</td><td>${validNumber(metric?.previousPeriod?.rate) ? delta(metric.previousPeriod.rate, '%') : '—'}</td><td>${number(metric?.period?.count ?? 0)} / ${number(metric?.period?.eligible ?? 0)}</td></tr>`; }).join('')}</tbody></table></div><p class="table-foot">비교 기준일 ${escape(comparable?.baseDate || '—')} · 직전 기간은 이 기간과 날수가 같아요. 두 기간에 비교한 대상 수는 다를 수 있어요. 기준 수치가 0이거나 기록이 없으면 증감률은 —예요.</p></section>`;
 }
 function passwordPanel() {
-  return `<section class="settings-panel section"><h2>내 로그인 비밀번호</h2><p>로그인 아이디 <strong>${escape(state.user?.email || '')}</strong> · 비밀번호 ${state.passwordSet === false ? '아직 없음' : '정해 둠'}</p>${passwordForm()}</section>`;
+  return `<section class="settings-panel section"><h2>내 회사 비밀번호</h2><p>회사 계정 이메일 <strong>${escape(state.user?.email || '')}</strong> · 회사 비밀번호 ${state.passwordSet === false ? '아직 없음' : '정해 둠'}</p>${passwordForm()}</section>`;
 }
 // Shared by the settings page and the login information window every crew can open. Without a password there is nothing to confirm.
 function passwordForm() {
@@ -507,8 +541,11 @@ async function loginInfoModal() {
     const [me, synk] = await Promise.all([api('/api/me'), typeof synkCompanyRequest === 'function' ? synkCompanyRequest('status').catch(() => null) : null]);
     const body = $('.modal-body', overlay); if (request !== state.modalRequest || !body) return;
     state.passwordSet = me.passwordSet === true;
-    const synkLine = !synk?.enabled ? 'SYNK ID 로그인은 준비 중이에요.' : synk.linked ? '연결돼 있어요. 비밀번호를 잊어도 로그인 화면의 SYNK ID 단추로 들어올 수 있어요.' : '아직 연결 전이에요. 연결해 두면 비밀번호를 잊어도 로그인 화면의 SYNK ID 단추로 들어올 수 있어요.';
-    body.innerHTML = `<dl class="login-info"><div><dt>로그인 아이디</dt><dd>${escape(me.user?.email || '')}</dd></div><div><dt>비밀번호</dt><dd>${state.passwordSet ? '정해 둠' : '아직 없음'}</dd></div><div><dt>SYNK ID</dt><dd>${escape(synkLine)}${synk?.enabled ? ' <button type="button" class="text-button" data-action="synk-id-account">연결 관리</button>' : ''}</dd></div></dl>${passwordForm()}`;
+    // The status names a SYNK ID login email only to the SYNK session that came in with it (synk-identity.mjs status).
+    const loginEmail = String(synk?.loginEmail || ''), companyEmail = String(me.user?.email || '');
+    const synkLine = !synk?.enabled ? 'SYNK ID 로그인은 준비 중이에요.' : synk.linked ? (loginEmail ? `연결돼 있어요. 지금 SYNK ID ${loginEmail}(으)로 들어왔어요.` : '연결돼 있어요. 로그인 화면의 「SYNK ID로 로그인」으로 비밀번호 없이 들어올 수 있어요.') : '아직 연결 전이에요. 연결해 두면 로그인 화면의 「SYNK ID로 로그인」으로 비밀번호 없이 들어올 수 있어요.';
+    const differs = loginEmail && loginEmail.toLowerCase() !== companyEmail.toLowerCase() ? '<p class="notice login-info-differs">회사 계정 이메일과 SYNK ID 로그인 이메일이 달라요. 어느 쪽으로 들어와도 같은 회사 계정이지만, 회사 비밀번호 칸에는 회사 계정 이메일을 넣어 주세요.</p>' : '';
+    body.innerHTML = `<dl class="login-info"><div><dt>회사 계정 이메일</dt><dd>${escape(companyEmail)}</dd></div><div><dt>회사 비밀번호</dt><dd>${state.passwordSet ? '정해 둠' : '아직 없음'}</dd></div><div><dt>SYNK ID</dt><dd>${escape(synkLine)}${synk?.enabled ? ' <button type="button" class="text-button" data-action="synk-id-account">연결 관리</button>' : ''}</dd></div></dl>${differs}${passwordForm()}`;
     $('form[data-form="password"] input:not([hidden])', body)?.focus();
   } catch (error) { const body = $('.modal-body', overlay); if (request === state.modalRequest && body) body.innerHTML = `<div class="form-error" role="alert">${escape(error.message)}</div>`; }
 }
@@ -653,6 +690,8 @@ function confirmModal(title, explanation, action, id = '') { modal(title, '', `<
 
 document.addEventListener('toggle', event => {
   const target=event.target;
+  // The company password row (login screen): only a person opening it moves focus; opening by itself (SYNK ID not ready) leaves focus where it is.
+  if(target?.id==='auth-company'){if(target.open&&document.activeElement===target.querySelector('summary')){const email=target.querySelector('input[name="email"]');(email&&!email.value?email:target.querySelector('input[name="password"]'))?.focus();}return;}
   if(target.id!=='growth-home-extras'||!target.isConnected||state.tab!=='overview')return;
   const opened=target.open&&!state.homeExtrasOpen;state.homeExtrasOpen=target.open;
   if(opened&&!isDemoMode())void loadHype();
@@ -678,7 +717,7 @@ document.addEventListener('click', async event => {
     if (action === 'command-tab') { closeModal(); selectWorkspaceView(target.dataset.tab); state.report = null; render(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); window.scrollTo(0,0); return; }
     if (action === 'command-channel') { closeModal(); state.scope = 'all'; state.teamId = ''; state.channelSearch = ''; state.channelPlatform = ''; state.tab = 'channels'; render(); await historyDrawer(id); return; }
     if (action === 'reload') { location.reload(); return; }
-    if (action === 'auth-login') { state.authMode = 'login'; state.authToken = ''; state.resetLink = null; renderAuth(); $('#auth-form input[name="email"]')?.focus(); return; }
+    if (action === 'auth-login') { state.authMode = 'login'; state.authToken = ''; state.resetLink = null; renderAuth(); const email = $('#auth-form input[name="email"]'); if (email?.closest('details:not([open])')) $('.auth-form-card h2')?.focus(); else email?.focus(); return; }
     if (action === 'auth-reset-retry') { if (state.authMode !== 'reset' || !state.authToken) return; state.resetLink = null; renderAuth(); await inspectResetLink(); return; }
     if (action === 'auth-help') { state.authMode = 'help'; state.authToken = ''; state.resetLink = null; state.authNotice = ''; renderAuth(); $('.auth-form-card h2')?.focus?.(); return; }
     if (action === 'account-login-info') { await loginInfoModal(); return; }
@@ -767,7 +806,7 @@ document.addEventListener('submit', async event => {
         try { result = await api('/api/password-reset', { token: state.authToken, password: values.password }); }
         catch (error) { if (!error.status) throw new Error('연결이 끊겨 새 비밀번호를 저장하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); throw error; }
         state.authMode = 'login'; state.authToken = ''; state.resetLink = null; state.authPrefill = String(result.loginId || '');
-        state.authNotice = '새 비밀번호를 정했어요. 이제부터는 아래 이메일 아이디와 새 비밀번호로 들어와요. 다른 기기의 로그인은 모두 끝났어요.';
+        state.authNotice = '새 회사 비밀번호를 정했어요. 이제부터는 아래 회사 계정 이메일과 새 비밀번호로 들어와요. 다른 기기의 로그인은 모두 끝났어요.';
         renderAuth(); break;
       }
       case 'auth': {
@@ -776,8 +815,9 @@ document.addEventListener('submit', async event => {
         if (state.authMode === 'join') values.token = state.authToken;
         if (state.authMode === 'setup') values.setupToken = state.authToken || values.setupToken;
         await api(endpoint, values); state.authMode = 'login'; state.authToken = ''; state.authNotice = ''; state.authPrefill = '';
+        if (endpoint === '/api/login' && typeof rememberWorkspaceLogin === 'function') rememberWorkspaceLogin('password');
         const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;if(synkEntry===false)break;
-        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.passwordSet = me.passwordSet === true; state.user = me.user; state.csrf = me.csrfToken || ''; if(state.user)selectRequestedView(); await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
+        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.passwordSet = me.passwordSet === true; state.user = me.user; state.csrf = me.csrfToken || ''; if(state.user&&!isDemoMode()&&typeof continueAfterLogin==='function'&&continueAfterLogin())break; if(state.user)selectRequestedView(); await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
       }
       case 'add-channels': {
         const urls = values.urls.split(/\r?\n/).map(url => url.trim()).filter(Boolean), results = { added: [], existing: [], errors: [] };
@@ -795,7 +835,7 @@ document.addEventListener('submit', async event => {
         const result = await api('/api/members/invite', values); await loadState();
         $('.modal-body', overlay).innerHTML = `<div class="invite-result"><div class="form-success">${escape(values.name)} 님의 초대 링크를 만들었어요.</div><p class="notice">아래 링크를 그 크루에게 직접 보내 주세요. 링크에서 이름과 비밀번호를 정하면 로그인할 수 있어요.</p>${state.data.deployment?.localOnly ? '<div class="note-box">이 링크는 지금 이 컴퓨터에서만 열려요. 크루 컴퓨터에서 열려면 회사 서버에 연결해야 해요.</div>' : ''}<div class="link-row"><input readonly aria-label="팀원 초대 링크" value="${escape(result.inviteUrl)}">${button('복사', 'copy', 'copy', '', `data-value="${escape(result.inviteUrl)}"`)}</div><p class="tiny muted">링크만 있으면 누구나 계정을 만들 수 있으니 그 크루에게만 보내 주세요.</p></div>`; break;
       }
-      case 'password': { if (values.password !== values.confirmPassword) throw new Error('새 비밀번호 두 칸이 서로 달라요.'); const first = state.passwordSet === false; await api('/api/account/password', { oldPassword: values.oldPassword, password: values.password }); const me = await api('/api/me'); state.csrf = me.csrfToken || ''; state.user = me.user; state.passwordSet = me.passwordSet === true; form.reset(); if (form.closest('#overlay')) closeModal(); else if (state.tab === 'settings') render(); notify(first ? '로그인 비밀번호를 정했어요. 이제 이메일 아이디와 이 비밀번호로도 들어올 수 있어요.' : '로그인 비밀번호를 바꿨어요. 이 기기는 그대로이고, 다른 기기에서는 다시 로그인해야 해요.'); break; }
+      case 'password': { if (values.password !== values.confirmPassword) throw new Error('새 비밀번호 두 칸이 서로 달라요.'); const first = state.passwordSet === false; await api('/api/account/password', { oldPassword: values.oldPassword, password: values.password }); const me = await api('/api/me'); state.csrf = me.csrfToken || ''; state.user = me.user; state.passwordSet = me.passwordSet === true; form.reset(); if (form.closest('#overlay')) closeModal(); else if (state.tab === 'settings') render(); notify(first ? '회사 비밀번호를 정했어요. 이제 회사 계정 이메일과 이 비밀번호로도 들어올 수 있어요.' : '회사 비밀번호를 바꿨어요. 이 기기는 그대로이고, 다른 기기에서는 다시 로그인해야 해요.'); break; }
       case 'settings': { await api('/api/settings', { companyName: values.companyName, hourKst: Number(values.hourKst), enabled: values.enabled === 'on' }); await loadState(); notify('회사 이름과 수집 시각을 저장했어요.'); break; }
       case 'pulse-auto-reply': { const input = { dailyUsd: Number(values.dailyUsd), monthlyUsd: Number(values.monthlyUsd), perProjectDaily: Number(values.perProjectDaily), enabled: values.enabled === 'on' }; if (values.removeKey === 'on') { input.apiKey = ''; input.enabled = false; } else if (values.apiKey) input.apiKey = values.apiKey; await api('/api/settings/pulse-auto-reply', input); await loadState(); notify(input.enabled ? '자동 안내를 켰어요. 이제부터 들어오는 문의에 먼저 답해요.' : '자동 안내 설정을 저장했어요.'); break; }
     }

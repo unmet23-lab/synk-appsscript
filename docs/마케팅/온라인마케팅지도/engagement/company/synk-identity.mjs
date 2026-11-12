@@ -7,6 +7,10 @@ const fail=(status,code,message)=>Object.assign(new Error(message),{status,code:
 const cookie=(req,name)=>new RegExp('(?:^|;\\s*)'+name+'=([^;]+)').exec(req.headers.cookie||'')?.[1];
 const jwtExpiry=value=>{try{const data=JSON.parse(Buffer.from(value.split('.')[1],'base64url'));return Number.isFinite(data.exp)?data.exp*1000:0;}catch{return 0;}};
 const random=()=>randomBytes(32).toString('base64url');
+// The SYNK ID login email is shown only to its own session (「로그인 정보」). It comes from the access token the central
+// account API has just accepted, so a token it rejected never names anyone; a token without the claim names nobody.
+const loginEmailOf=value=>typeof value==='string'&&value.length<=254&&/^[^\s@]+@[^\s@]+$/.test(value)?value.toLowerCase():null;
+const jwtEmail=value=>{try{return loginEmailOf(JSON.parse(Buffer.from(value.split('.')[1],'base64url')).email);}catch{return null;}};
 function httpsUrl(value,label){let url;try{url=new URL(value);}catch{throw Error(label+' 설정을 확인해 주세요.');}if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||['localhost','127.0.0.1','[::1]'].includes(url.hostname))throw Error(label+'에는 외부 HTTPS 주소가 필요합니다.');return url;}
 
 export function synkIdentityConfig(env=process.env){
@@ -37,7 +41,7 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
   function requireOrigin(req){if(req.headers.origin!==origin)throw fail(403,'ORIGIN','회사 로그인 화면에서 다시 시작해 주세요.');}
   function binding(req){return cookie(req,'synk_company_flow');}
   function clearFlowCookie(res){res.setHeader('Set-Cookie',`synk_company_flow=; HttpOnly; SameSite=Lax; Path=/api/synk-id; Max-Age=0${secure}`);}
-  function status(auth){const link=auth&&byCompany(auth.user.id),synkUserId=auth?.body?.synkIdentity&&sessionAllowed(auth)?auth.body.synkIdentity.toLowerCase():null;return {enabled,browserEnabled:enabled&&Boolean(config.issuer&&config.clientId),linked:Boolean(link),canLink:Boolean(auth?.user?.passwordHash),session:auth?.body?.synkIdentity?'synk':'company',synkUserId};}
+  function status(auth){const link=auth&&byCompany(auth.user.id),synkUserId=auth?.body?.synkIdentity&&sessionAllowed(auth)?auth.body.synkIdentity.toLowerCase():null;return {enabled,browserEnabled:enabled&&Boolean(config.issuer&&config.clientId),linked:Boolean(link),canLink:Boolean(auth?.user?.passwordHash),session:auth?.body?.synkIdentity?'synk':'company',synkUserId,loginEmail:synkUserId?sessions.get(auth.hash)?.loginEmail||null:null};}
   async function challenge(req,res,input,auth,getAuth=()=>auth){
     requireEnabled();requireOrigin(req);rate(req);
     const action=input.action;if(!['login','link','unlink'].includes(action))throw fail(400,'ACTION','로그인 동작을 확인해 주세요.');
@@ -80,20 +84,20 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
       }
     }catch(error){if(error.code?.startsWith('SYNK_'))throw error;if([401,403].includes(error.status))throw fail(401,'IDENTITY_REJECTED','SYNK ID 로그인을 다시 진행해 주세요.');throw Object.assign(fail(503,'IDENTITY_UNAVAILABLE','SYNK ID 연결을 확인할 수 없습니다. 잠시 뒤 다시 시도해 주세요.'),{retryable:true});}
     if(!identity||typeof identity.synkUserId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identity.synkUserId)||!Number.isFinite(identity.expiresAt)||identity.expiresAt<=now())throw fail(401,'IDENTITY_REJECTED','SYNK ID 로그인이 만료되었습니다. 다시 로그인해 주세요.');
-    return identity;
+    return {...identity,loginEmail:verifyIdentity?loginEmailOf(identity.loginEmail):jwtEmail(accessToken)};
   }
   function linkStillValid(row,entry){const link=byCompany(row.userId),user=store.get('users',row.userId);return user?.active&&link?.synk_user_id===entry.synkUserId&&link.revision===entry.revision;}
   function storedSession(sessionHash){if(closed)return null;const row=store.db.prepare("SELECT * FROM tokens WHERE hash=? AND purpose='session' AND expiresAt>?").get(sessionHash,new Date(now()).toISOString());if(!row)return null;try{return {...row,body:JSON.parse(row.body)};}catch{return null;}}
   function removeSession(sessionHash){sessions.delete(sessionHash);if(closed)return;store.db.prepare('DELETE FROM tokens WHERE hash=?').run(sessionHash);if(!closing)onRevoked();}
   function persist(row,entry){
     if(!entryIsCurrent(row,entry))throw fail(401,'ACCOUNT_CHANGED','회사 로그인 상태가 변경되었습니다.');
-    const {accessToken,synkUserId,revision,expiresAt,currentSessionId,source,refreshToken,pendingAccessToken}=entry;
-    const ciphertext=store.encrypt({version:1,configuration,sessionHash:row.hash,companyUserId:row.userId,accessToken,synkUserId,revision,expiresAt,currentSessionId,source,refreshToken,pendingAccessToken});
+    const {accessToken,synkUserId,revision,expiresAt,currentSessionId,source,refreshToken,pendingAccessToken,loginEmail}=entry;
+    const ciphertext=store.encrypt({version:1,configuration,sessionHash:row.hash,companyUserId:row.userId,accessToken,synkUserId,revision,expiresAt,currentSessionId,source,refreshToken,pendingAccessToken,loginEmail:loginEmail||null});
     store.db.prepare('INSERT INTO synk_identity_sessions VALUES (?,?) ON CONFLICT(session_hash) DO UPDATE SET ciphertext=excluded.ciphertext').run(row.hash,ciphertext);
   }
   function attachSession(sessionHash,accessToken,identity,link,browserTokens=null){
     if(closing)throw unavailable();
-    const entry={accessToken,synkUserId:identity.synkUserId,revision:link.revision,expiresAt:identity.expiresAt,currentSessionId:identity.currentSessionId||null,checkedAt:now(),checking:null,source:browserTokens?'browser':'desktop',refreshToken:typeof browserTokens?.refresh_token==='string'&&browserTokens.refresh_token.length<=16_384?browserTokens.refresh_token:null,pendingAccessToken:null};
+    const entry={accessToken,synkUserId:identity.synkUserId,revision:link.revision,expiresAt:identity.expiresAt,currentSessionId:identity.currentSessionId||null,checkedAt:now(),checking:null,source:browserTokens?'browser':'desktop',refreshToken:typeof browserTokens?.refresh_token==='string'&&browserTokens.refresh_token.length<=16_384?browserTokens.refresh_token:null,pendingAccessToken:null,loginEmail:identity.loginEmail||null};
     sessions.set(sessionHash,entry);
     try{const row=storedSession(sessionHash);if(!row)throw unavailable();persist(row,entry);}catch(error){removeSession(sessionHash);throw error;}
   }
@@ -106,7 +110,7 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
     try{
       row=storedSession(saved.session_hash);entry=store.decrypt(saved.ciphertext);
       if(!enabled||!row||entry.version!==1||entry.configuration!==configuration||entry.sessionHash!==row.hash||entry.companyUserId!==row.userId||entry.synkUserId!==row.body.synkIdentity||!linkStillValid(row,entry)||!credential(entry.accessToken)||!Number.isFinite(entry.expiresAt)||!['browser','desktop'].includes(entry.source)||entry.refreshToken!==null&&(typeof entry.refreshToken!=='string'||entry.refreshToken.length>16_384)||entry.pendingAccessToken!==null&&!credential(entry.pendingAccessToken))throw Error('invalid saved identity');
-      sessions.set(row.hash,{...entry,checkedAt:0,checking:null,blocked:true});
+      sessions.set(row.hash,{...entry,loginEmail:loginEmailOf(entry.loginEmail),checkedAt:0,checking:null,blocked:true});
     }catch{store.db.prepare('DELETE FROM tokens WHERE hash=?').run(saved.session_hash);}
   }
   const unavailable=()=>Object.assign(fail(503,'IDENTITY_UNAVAILABLE','SYNK ID 연결을 확인할 수 없습니다. 잠시 뒤 다시 시도해 주세요.'),{retryable:true});
@@ -135,7 +139,7 @@ export function createSynkIdentity({store,origin,config=null,fetch:fetcher=globa
       if(needsRefresh&&!entry.pendingAccessToken)await refreshBrowser(row,entry);
       const candidate=entry.pendingAccessToken||entry.accessToken,identity=await verify(candidate);
       if(!entryIsCurrent(row,entry)||identity.synkUserId!==entry.synkUserId)throw fail(401,'ACCOUNT_CHANGED','회사 로그인 상태가 변경되었습니다.');
-      entry.accessToken=candidate;entry.pendingAccessToken=null;entry.currentSessionId=identity.currentSessionId||entry.currentSessionId;entry.checkedAt=now();entry.expiresAt=identity.expiresAt;entry.blocked=false;persist(row,entry);return true;
+      entry.accessToken=candidate;entry.pendingAccessToken=null;entry.loginEmail=identity.loginEmail||entry.loginEmail||null;entry.currentSessionId=identity.currentSessionId||entry.currentSessionId;entry.checkedAt=now();entry.expiresAt=identity.expiresAt;entry.blocked=false;persist(row,entry);return true;
     }catch(error){if(sessions.get(row.hash)===entry){if(error.retryable){entry.blocked=true;onRevoked();throw error;}removeSession(row.hash);}return sessionAllowed(row);}finally{entry.checking=null;}})();return entry.checking;
   }
   async function refreshSessions(){for(const [sessionHash,entry]of sessions){if(closing)return;const stored=storedSession(sessionHash);if(!stored){removeSession(sessionHash);continue;}if(entry.blocked||entry.checkedAt+CHECK_MS/2<=now()||entry.expiresAt<=now()+REFRESH_MS)await validateSession(stored,{force:true}).catch(()=>{});}if(!closing)onRevoked();}

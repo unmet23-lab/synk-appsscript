@@ -1489,7 +1489,7 @@ export function createCompanyApp(options={}) {
           let valid=await passwordMatches(input.password,expectedHash);
           if(!candidate){const linkedId=await messenger.authenticateLinkedUsername(email,input.password);const linked=linkedId&&store.get('users',linkedId);if(linked?.active&&!linked.passwordHash){candidate=linked;expectedHash=linked.passwordHash;valid=true;}}
           const latest=candidate&&store.get('users',candidate.id);
-          if(!latest?.active||!valid||latest.passwordHash!==expectedHash)throw httpError('이메일 또는 기존 메신저 아이디와 비밀번호를 확인해 주세요.',401);
+          if(!latest?.active||!valid||latest.passwordHash!==expectedHash)throw httpError('회사 계정 이메일과 회사 비밀번호를 확인해 주세요. SYNK ID 비밀번호로는 들어올 수 없어요 — SYNK ID로 들어오려면 「SYNK ID로 로그인」을 눌러 주세요.',401);
           return latest;
         });}catch(error){if(error.status!==401)release();throw error;}
         release();return send(res,200,setSession(res,u));
