@@ -8,13 +8,15 @@
 #     사이트에서 누를 곳은 사이트 단추 하나다 — 조각 속 흰 알약과 사이트 단추가 한 화면에 둘이면 어디를 누를지 갈린다(맹검 K36 · C018, 세 회차 연속).
 #     돌아올 표현은 앞 두 줄(1분 뒤 · 내일)만 — 셋째 줄이 둘째 줄과 시각까지 같아 「대충 채운 목록」으로 읽혔다(11-10 맹검 C024).
 #  (11-10까지 ③ LAB 문제 카드의 펠트 그림도 만들었다 — 흰 바탕째 붙은 그림이 맹검 네 회차 연속 「스티커」(C023)라 카드에서 뺐다.)
-# 쓰기: python -I -X utf8 그림.py <구운 사진 폴더 | - (사진은 건너뜀)> <캡처 폴더(ko · en이 든)> <나갈 폴더>
+# 쓰기: python -I -X utf8 그림.py <구운 사진 폴더 | - (사진은 건너뜀)> <캡처 폴더(ko · en이 든)> <나갈 폴더> [조각 이름…]
+#   조각 이름(예: piece-game)을 주면 그 조각만 쓴다 — 게임 화면만 바뀌었을 때 튜터 카드 조건(「최근 놓친」이 나온 날)에 걸리지 않는다(11-13).
 import os, sys
 import numpy as np
 import cv2
 from PIL import Image, ImageDraw
 
 사진폴더, 캡처뿌리, 나갈 = sys.argv[1], sys.argv[2], sys.argv[3]
+고를조각 = set(sys.argv[4:])  # 비면 모두
 os.makedirs(나갈, exist_ok=True)
 
 # ── ① 사진 ──
@@ -113,16 +115,17 @@ for 언어 in ('ko', 'en'):
         print(언어, '캡처 없음'); continue
     os.makedirs(폴더, exist_ok=True)
     열기 = lambda n: Image.open(os.path.join(캡처, n + '.png')).convert('RGB')
-    쓰기 = lambda 이름, im: (im.save(os.path.join(폴더, 이름 + '.webp'), 'WEBP', quality=88, method=6), print(언어, 이름, im.size, os.path.getsize(os.path.join(폴더, 이름 + '.webp')) // 1024, 'KB'))
+    쓰기 = lambda 이름, im: None if 고를조각 and 이름 not in 고를조각 else (im.save(os.path.join(폴더, 이름 + '.webp'), 'WEBP', quality=88, method=6), print(언어, 이름, im.size, os.path.getsize(os.path.join(폴더, 이름 + '.webp')) // 1024, 'KB'))
     # 튜터 카드 — 단추 아래 34px(@2x)에서 자른다. 사이트 카드에는 「최근 놓친 …」 이유가 나온 날을 쓴다 — 환승 러시 결과는 판마다 달라 그 문장이
     # 나오는 날도 판마다 다르다(11-09: 8일째가 「다시 살펴볼 때」인 판이 있었다). 8일째를 먼저 본다 — 둘째 날은 추천도 「듣기 짧은 연습 · 듣고 세부 정보 찾기」라
     # 카드 위아래 줄에 같은 말이 겹쳤다(11-09 맹검). 8일째는 「바람길 · 짧은 지시 듣기」 + 놓친 항목이라 겹치지 않는다.
     찾을글 = {'ko': '최근 놓친', 'en': 'since you missed'}[언어]
     놓친날 = next((n for n in ('30-day8-home', '20-day2-home', '40-day31-home') if 찾을글 in open(os.path.join(캡처, n + '.txt'), encoding='utf-8').read()), None)
-    assert 놓친날, f'{언어}: 「{찾을글}」 이유가 나온 날이 없다 — 장면을 다시 돌린다'
-    print(언어, 'piece-tutor 원본', 놓친날)
+    튜터 = not 고를조각 or bool(고를조각 & {'piece-tutor', 'piece-tutor-review'})
+    assert 놓친날 or not 튜터, f'{언어}: 「{찾을글}」 이유가 나온 날이 없다 — 장면을 다시 돌린다'
+    if 튜터: print(언어, 'piece-tutor 원본', 놓친날)
     # 튜터 카드는 이유 문장까지 — 흰 단추 줄부터 잘라 내고, 아래 여백은 카드 위 여백(테두리에서 첫 글 · 얼굴까지)과 같게
-    for 이름, 원본 in (('piece-tutor', 놓친날 + '.crop'), ('piece-tutor-review', '63-day2-home-review.crop')):
+    for 이름, 원본 in ((('piece-tutor', 놓친날 + '.crop'), ('piece-tutor-review', '63-day2-home-review.crop')) if 튜터 else ()):
         im = 열기(원본); 단추위, _ = 단추자리(im)
         글 = [b for b in 덩어리(im.crop((0, 0, im.width, 단추위 - 2)))]
         assert len(글) >= 2, f'{이름}: 단추 위 글 덩어리를 못 찾음'
