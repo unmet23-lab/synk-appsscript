@@ -1441,7 +1441,8 @@ test('여러 줄 — 줄 이름 · ego 서버 · 줄 자리 · 고른 줄 · 보
 });
 
 // 가짜 차례.py — 줄 다섯(FAKE_EGO_LANE='b=gemini-x'면 그 줄은 이름 붙은 ego · /u/0). 기다리기는 깃발대로 줄을 정해(--줄이면 FAKE_LANE이 들어 있을 때
-// 그 줄 · 아니면 맨 앞 키, --여러줄이면 FAKE_LANE(기본 a), 없으면 a) 부른 깃발을 남기고, 계정 · 줄들 · 끄기 · 보기는 실제 꼴로 찍는다
+// 그 줄 · 아니면 맨 앞 키, --여러줄이면 FAKE_LANE(기본 a), 없으면 a) 부른 깃발을 남기고, 계정 · 줄들 · 끄기 · 보기는 실제 꼴로 찍는다.
+// FAKE_WAIT_WRITE={경로: 글}이면 첫 기다리기 동안 그 파일을 쓴다(줄에서 기다리는 사이 다른 실행기가 답을 받거나 보낸 판)
 const 가짜차례py = [
   'import json, os, sys',
   'D = os.path.dirname(os.path.abspath(__file__))',
@@ -1459,6 +1460,10 @@ const 가짜차례py = [
   "    acc, u, ego = 줄[k]",
   "    return f'gemini-{k} {acc} https://gemini.google.com/u/{u}/' + (f' ego={ego}' if ego else '')",
   "if cmd == '기다리기':",
+  "    w = os.environ.get('FAKE_WAIT_WRITE', '')",
+  "    if w and not os.path.exists(os.path.join(D, '기다림씀.txt')):",
+  "        for p, s in json.loads(w).items(): open(p, 'w', encoding='utf-8', newline='').write(s)",
+  "        open(os.path.join(D, '기다림씀.txt'), 'w').write('1')",
   "    깃발 = a[4:]",
   "    want = os.environ.get('FAKE_LANE', 'a')",
   "    if '--줄' in 깃발:",
@@ -1515,7 +1520,7 @@ process.stdin.on('end', () => {
   console.error(JSON.stringify({ step: 'done', url, chars: 300 }));
 });
 `;
-const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL'];
+const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL', 'FAKE_WAIT_WRITE'];
 const 여러줄시험 = async (fn, { 서버됨 = true, 환경 = {} } = {}) => {
   const dir = 임시();
   const 앞설정 = { ...웹.설정 };
@@ -1616,6 +1621,46 @@ test('여러 줄 읽기 — 보낸 대화는 보낸 줄 · 보낸 공간에서�
     assert.deepEqual(본.ego().map((x) => x.out), ['답2.md']);
     assert.ok(fs.existsSync(웹.표시경로(c.out)), '보냄 표시는 그대로 — 다시 보내지 않는다');
     assert.match(찍힘.join('\n'), /안 함 {2}작업1 — 보낸 줄\(gemini-c\)이 꺼져 있다 — 다시 보내지 말고 그 줄이 켜진 뒤 읽기/);
+  });
+});
+
+test('차례 뒤 할 일 다시 보기(11-12 19:51 덮어씀) — 기다리는 사이 다른 줄이 답을 받았으면 건너뜀(덮지 않음), 보냈으면 다시 보내지 않고 보낸 줄에서 읽기', async () => {
+  {
+    const dir = 임시();
+    const j = 줄작업(dir, 1);
+    const 지금 = Date.now();
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '보내기' }, {}, 지금), '보내기');
+    fs.writeFileSync(웹.표시경로(j.out), '{}');
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '보내기' }, {}, 지금), '읽기', '보내기였는데 표시가 생겼다');
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '읽기' }, {}, 지금), '읽기');
+    fs.writeFileSync(j.out, '# 남의 답');
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '읽기' }, {}, 지금), '건너뜀', '답이 생겼다');
+    const 옛 = (지금 - 600_000) / 1000;
+    fs.utimesSync(j.out, 옛, 옛);
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '보내기' }, { 덮어쓰기: true }, 지금), '읽기', '--덮어쓰기면 실행 전 옛 답은 덮는다(표시가 있으니 읽기)');
+    fs.rmSync(웹.표시경로(j.out));
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '보내기' }, { 덮어쓰기: true }, 지금), '보내기');
+    assert.equal(웹.차례뒤할일({ ...j, 할일: '보내기' }, { 덮어쓰기: true }, 지금 - 1_200_000), '건너뜀', '이 실행이 시작된 뒤 생긴 답은 --덮어쓰기여도 덮지 않는다');
+  }
+  // 기다리는 사이 다른 줄이 작업1의 답을 받았다 — 작업1은 보내지 않고(남의 답 그대로) 작업2만 보낸다
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j1 = 줄작업(dir, 1), j2 = 줄작업(dir, 2);
+    const 남의답 = '# 답\n\n대화: https://gemini.google.com/u/3/app/other00\n\n남의 답';
+    process.env.FAKE_WAIT_WRITE = JSON.stringify({ [j1.out]: 남의답 });
+    assert.equal(await 웹.돌리기([j1, j2], { _: [], 파일: [], 이름: 'wait-answered' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => [x.mode, x.out]), [['보내기', '답2.md']], '작업1은 보내지 않는다');
+    assert.equal(fs.readFileSync(j1.out, 'utf8'), 남의답, '남이 받은 답을 덮지 않는다');
+    assert.match(찍힘.join('\n'), /건너뜀 {2}작업1 — 줄에서 기다리는 사이 답이 생겼다/);
+  });
+  // 기다리는 사이 다른 실행기가 c 줄로 보냈다(보냄 표시) — a를 잡아도 다시 보내지 않고, c 줄로 다시 서서 보낸 공간에서 읽는다
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    process.env.FAKE_WAIT_WRITE = JSON.stringify({ [웹.표시경로(j.out)]: JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 'synk-argon-web-p7-c', 계정: 3, 계정이름: '77unmet', 줄: 'gemini-c', 표식: 'abcdef12' }) });
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'wait-sent' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.차례().map((x) => [x.깃발, x.줄]), [[['--여러줄'], 'a'], [['--줄', 'c'], 'c']], 'a를 잡은 뒤 표시를 보고 c로 다시 선다');
+    assert.deepEqual(본.ego().map((x) => [x.mode, x.account, x.space]), [['읽기', '77unmet', 'synk-argon-web-p7-c']], 'a에서 다시 보내지 않는다');
+    assert.match(찍힘.join('\n'), /작업1: 기다리는 사이 보냄 표시가 생겼다\(gemini-c\) — 다시 보내지 않고 그 줄에서 읽기/);
+    assert.ok(fs.existsSync(j.out));
   });
 });
 
