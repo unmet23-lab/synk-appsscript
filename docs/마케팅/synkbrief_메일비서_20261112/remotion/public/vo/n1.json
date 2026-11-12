@@ -1,48 +1,48 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "n1",
- "text": "AI 안전 담당자도, 메일 200통 넘게 잃었어요.",
- "show": "AI 안전 담당자도, 메일 200통 넘게 잃었어요.",
- "dur": 3.071,
+ "text": "AI 안전 책임자도, 메일 200통 넘게 지워졌어요.",
+ "show": "AI 안전 책임자도, 메일 200통 넘게 지워졌어요.",
+ "dur": 3.085,
  "words": [
   {
    "text": "AI",
    "start": 0.02,
-   "end": 0.301
+   "end": 0.326
   },
   {
    "text": "안전",
-   "start": 0.381,
-   "end": 0.602
+   "start": 0.39,
+   "end": 0.567
   },
   {
-   "text": "담당자도,",
-   "start": 0.662,
-   "end": 1.144
+   "text": "책임자도,",
+   "start": 0.615,
+   "end": 1.017
   },
   {
    "text": "메일",
-   "start": 1.545,
-   "end": 1.786
+   "start": 1.435,
+   "end": 1.676
   },
   {
    "text": "200통",
-   "start": 1.846,
-   "end": 2.127
+   "start": 1.74,
+   "end": 2.045
   },
   {
    "text": "넘게",
-   "start": 2.187,
-   "end": 2.367
+   "start": 2.094,
+   "end": 2.303
   },
   {
-   "text": "잃었어요.",
-   "start": 2.428,
-   "end": 3.071
+   "text": "지워졌어요.",
+   "start": 2.351,
+   "end": 3.085
   }
  ],
  "source": {
-  "key": "54b358544544f0f016247f205c93d08c",
+  "key": "9ad25e8092e830b39f3fb6afdafcdea7",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -66,6 +66,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 146
+  "topPitchHz": 159
  }
 }

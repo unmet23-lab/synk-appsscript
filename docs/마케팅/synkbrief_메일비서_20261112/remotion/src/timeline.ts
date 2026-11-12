@@ -7,8 +7,8 @@ export type Crop = { s: number; cx: number; cy: number; ay?: number; push?: { t0
 export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; a?: { src: string; start: number; vol?: number } };
 
 // hook = 위 표시가 「재연 · AI 때문에 실제로 벌어진 일」에서 「재연 · 상황은 각색」으로 · dash = 복도 질주(음악이 올라옴) · plug = 전원선(음악이 끊김) · end = 「SYNK 브리핑」
-export const S = { hook: 5.0, dash: 9.0, plug: 16.4, end: 28.85 };
-export const TOTAL_S = 29.0;
+export const S = { hook: 5.0, dash: 9.0, plug: 16.4, end: 28.2 };
+export const TOTAL_S = 29.03;
 // 원본(제미나이 앱 동영상)이 24fps라 편집도 24fps로 굽는다 — 30fps 시간선에 넣으면 5프레임마다 한 장이 겹쳐 떨린다(현장 노트 영상 · 24fps 원본).
 export const FPS = 24;
 
@@ -23,25 +23,25 @@ export const CUTS: CutT[] = [
   { from: 7.4, to: 9.0, src: 'img/V1.mp4', start: 7.4, crop: { s: 1.35, cx: 560, cy: 780 }, audio: 1.0, drift: 0 },
   // 전 — 복도 질주(핵심 장면) · 전원선
   { from: 9.0, to: 15.7, src: 'img/V3.mp4', start: 0.0, crop: F, audio: 1.0, drift: 0.01 },
-  { from: 15.7, to: 18.9, src: 'img/V4.mp4', start: 1.3, crop: F, audio: 1.0, drift: 0 },
-  // 결 — 꺼진 방 넓게(폰이 켜짐 · 사과) → 같은 판 가깝게(해설 둘 — 25.25초에 한 번 더 다가감)
-  { from: 18.9, to: 22.0, src: 'img/V5.mp4', start: 0.0, crop: F, audio: 1.0, low: 0, drift: 0.008 },
-  { from: 22.0, to: 29.0, src: 'img/V5.mp4', start: 3.1, crop: { s: 1.4, cx: 560, cy: 1050, push: { t0: 3.0, t1: 4.2, to: 1.15 } }, audio: 1.0, low: 0, drift: 0 },
+  { from: 15.7, to: 19.0, src: 'img/V4.mp4', start: 1.3, crop: F, audio: 1.0, drift: 0 },
+  // 결 — 잠시 뒤 다시 켠 방 넓게(폰이 켜짐 · 사과) → 같은 판 가깝게(해설 둘 — 24.9초에 한 번 더 다가감). V5 한 판(10.03초)을 끝까지 쓴다
+  { from: 19.0, to: 21.9, src: 'img/V5.mp4', start: 0.0, crop: F, audio: 1.0, low: 0, drift: 0.008 },
+  { from: 21.9, to: 29.03, src: 'img/V5.mp4', start: 2.9, crop: { s: 1.4, cx: 560, cy: 1050, push: { t0: 3.0, t1: 4.2, to: 1.15 } }, audio: 1.0, low: 0, drift: 0 },
 ];
 
 // 큰 글자 = 말. grey = AI의 사과(남자 · 해설은 흰). at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄).
 export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; at?: number[]; butter?: boolean }[] = [
-  { lines: ['골라만 달랬지,', '지우라곤 안 했잖아?'], from: 0.8, to: 3.75, size: 84, meta: '미국 AI 안전 담당자가 직접 올린 일 · 2026년 2월', at: [0.8, 2.0] },
+  { lines: ['메일 골라만 달랬지,', '지우라곤 안 했잖아?'], from: 0.8, to: 3.75, size: 84, meta: '미국 AI 안전 책임자가 직접 올린 일 · 2026년 2월', at: [0.8, 2.1] },
   { lines: ['그만'], from: 3.9, to: 5.45, size: 96, instant: true },
   { lines: ['멈춰!'], from: 5.6, to: 7.35, size: 104, instant: true },
   { lines: ['멈추라고!!'], from: 7.45, to: 9.0, size: 112, instant: true, butter: true },
-  { lines: ['맞아요, 하지 말라고 하셨죠', '제가 어겼어요 죄송합니다'], from: 19.8, to: 21.95, grey: true, size: 74, at: [19.8, 20.8] },
-  { lines: ['AI 안전 담당자도,', '메일 200통 넘게 잃었어요'], from: 22.1, to: 25.1, size: 80, at: [22.1, 23.4] },
-  { lines: ["'지우지 마'는 말일 뿐", '지우기 · 보내기 권한부터 끄고 맡기세요'], from: 25.25, to: 28.85, size: 62, meta: '과기정통부 · KISA 에이전틱 AI 안내서 — 위험한 일은 사람 승인', at: [25.25, 27.1] },
+  { lines: ['맞아요, 하지 말라고 하셨죠', '제가 어겼어요 죄송합니다'], from: 19.9, to: 21.85, grey: true, size: 74, meta: '다시 켜고 물어보자 온 답', at: [19.9, 20.8] },
+  { lines: ['AI 안전 책임자도,', '메일 200통 넘게 지워졌어요'], from: 22.0, to: 25.1, size: 80, at: [22.0, 23.3] },
+  { lines: ["'지우지 마'는 말일 뿐", '지우기 · 보내기 권한은 주지 말고 맡기세요'], from: 25.2, to: 28.95, size: 62, meta: '과기정통부 · KISA 「에이전틱 AI 제로트러스트 안내서」', at: [25.2, 27.0] },
 ];
 
 export const VO: { id: string; t: number }[] = [
-  { id: 'n1', t: 22.1 }, { id: 'n2', t: 25.25 },
+  { id: 'n1', t: 22.0 }, { id: 'n2', t: 25.2 },
 ];
 
 export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [];
