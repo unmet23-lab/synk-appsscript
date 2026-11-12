@@ -3,21 +3,34 @@
 // hides and overwrites leave older versions in place for the bucket's 30-day
 // lifecycle window, and this plan brings the state at T back.
 //
-// For each file name under the prefix:
-//   visible at T, now hidden by hide markers only  -> delete those hide markers (data untouched)
-//   visible at T, overwritten (or overwritten+hidden) -> copy the T version on top (server-side copy)
-//   not visible at T, visible now                    -> hide (reversible; lifecycle deletes after 30 days)
-//   otherwise                                         -> unchanged
-// Unfinished large files ('start') and 'folder' entries are ignored.
+// Always copy (design review Q5): the tool never deletes a file version.
+//   visible at T, now hidden or replaced -> server-side copy of the T version on top
+//   not visible at T, visible now        -> hide (reversible; lifecycle deletes after 30 days)
+//   otherwise                            -> unchanged
+// Hide markers stay, so "when was it hidden" survives for a second restore, and
+// undoing a restore is the same tool with T = the moment before it ran.
+// restic lock files (locks/), unfinished large files ('start') and 'folder'
+// entries are ignored.
 
 const DAY = 86400000;
-export const MAX_AGE_MS = 30 * DAY;
+// The lifecycle runs once a day, so a version hidden 30 days ago may already be
+// gone; offer at most 29 days.
+export const MAX_AGE_MS = 29 * DAY;
 
-// restic layout order: restore data before the files that reference it, and
-// hide new snapshots before the data they reference.
-const RESTORE_ORDER = ['data/', 'index/', 'keys/', 'config', 'snapshots/', 'locks/'];
-const HIDE_ORDER = ['snapshots/', 'locks/', 'index/', 'data/', 'keys/', 'config'];
-function rank(order, rel) { const i = order.findIndex(p => p.endsWith('/') ? rel.startsWith(p) : rel === p); return i < 0 ? order.length : i; }
+// restic layout order: add data before the files that reference it, and hide
+// new snapshots before the data they reference. A run stopped half-way always
+// leaves more visible than needed, so restic can still open the repository.
+const RESTORE_ORDER = ['data/', 'index/', 'snapshots/', 'keys/', 'config'];
+const HIDE_ORDER = ['snapshots/', 'index/', 'data/', 'keys/', 'config'];
+function rank(order, rel) { const i = order.findIndex((p) => p.endsWith('/') ? rel.startsWith(p) : rel === p); return i < 0 ? order.length : i; }
+// restic names every file except `config` by the SHA-256 of its content, and a
+// B2 server-side copy keeps the SHA-1. Same name + same SHA-1 + same length is
+// the same file (an earlier restore's copy); a different SHA-1 is an overwrite.
+export function sameContent(a, b) {
+  if (!a || !b) return false;
+  if (a.fileId === b.fileId) return true;
+  return typeof a.contentSha1 === 'string' && a.contentSha1.length === 40 && a.contentSha1 === b.contentSha1 && a.contentLength === b.contentLength;
+}
 
 export function planRestore(versions, { at, now = Date.now(), prefix, maxAgeMs = MAX_AGE_MS }) {
   if (!Number.isSafeInteger(at) || at <= 0) throw new Error('RESTORE_TIME_INVALID');
@@ -28,31 +41,25 @@ export function planRestore(versions, { at, now = Date.now(), prefix, maxAgeMs =
   versions.forEach((v, index) => {
     if (v.action !== 'upload' && v.action !== 'hide') return;
     if (typeof v.fileName !== 'string' || !v.fileName.startsWith(prefix)) throw new Error('RESTORE_OUTSIDE_PREFIX');
+    if (v.fileName.slice(prefix.length).startsWith('locks/')) return;
     if (!Number.isSafeInteger(v.uploadTimestamp)) throw new Error('RESTORE_VERSION_INVALID');
     (byName.get(v.fileName) || byName.set(v.fileName, []).get(v.fileName)).push({ ...v, index });
   });
-  const items = []; const counts = { unhide: 0, copy: 0, hide: 0, unchanged: 0 }; let bytes = 0;
+  const items = []; const counts = { copy: 0, hide: 0, unchanged: 0 }; let copyBytes = 0;
   for (const [fileName, list] of byName) {
     // B2 lists one name newest first; ascending time, ties keep B2's order reversed.
     list.sort((a, b) => a.uploadTimestamp - b.uploadTimestamp || b.index - a.index);
-    const atOrBefore = list.filter(v => v.uploadTimestamp <= at);
-    const stateAt = atOrBefore.at(-1) || null;
+    const stateAt = list.filter((v) => v.uploadTimestamp <= at).at(-1) || null;
     const atUpload = stateAt?.action === 'upload' ? stateAt : null;
     const current = list.at(-1);
     const currentUpload = current.action === 'upload' ? current : null;
     const rel = fileName.slice(prefix.length);
     if (atUpload) {
-      if (currentUpload && currentUpload.fileId === atUpload.fileId) { counts.unchanged++; continue; }
-      const after = list.filter(v => v.uploadTimestamp > at);
-      if (after.length && after.every(v => v.action === 'hide')) {
-        items.push({ type: 'unhide', fileName, rel, deleteFileIds: after.map(v => v.fileId), bytes: atUpload.contentLength || 0 });
-        counts.unhide++;
-      } else {
-        items.push({ type: 'copy', fileName, rel, sourceFileId: atUpload.fileId, bytes: atUpload.contentLength || 0 });
-        counts.copy++; bytes += atUpload.contentLength || 0;
-      }
+      if (sameContent(currentUpload, atUpload)) { counts.unchanged++; continue; }
+      items.push({ type: 'copy', fileName, rel, sourceFileId: atUpload.fileId, sourceUploadedAt: atUpload.uploadTimestamp, bytes: atUpload.contentLength || 0 });
+      counts.copy++; copyBytes += atUpload.contentLength || 0;
     } else if (currentUpload) {
-      items.push({ type: 'hide', fileName, rel, bytes: currentUpload.contentLength || 0 }); counts.hide++;
+      items.push({ type: 'hide', fileName, rel, currentFileId: currentUpload.fileId, bytes: currentUpload.contentLength || 0 }); counts.hide++;
     } else counts.unchanged++;
   }
   items.sort((a, b) => {
@@ -61,26 +68,26 @@ export function planRestore(versions, { at, now = Date.now(), prefix, maxAgeMs =
     const order = ta ? HIDE_ORDER : RESTORE_ORDER;
     return rank(order, a.rel) - rank(order, b.rel) || a.fileName.localeCompare(b.fileName);
   });
-  return { at, prefix, counts, copyBytes: bytes, items };
+  return { at, prefix, counts, copyBytes, items };
 }
 
-// Applies a plan with a B2Session that holds listFiles/readFiles/writeFiles/deleteFiles
-// on the bucket. Returns a journal of what was done so the run can be reviewed or undone.
-export async function applyPlan(session, { bucketId, plan, onStep = () => {} }) {
+// Applies a plan with a B2Session holding listFiles/readFiles/writeFiles on the
+// bucket (no deleteFiles needed). Before acting it re-reads the listing and
+// re-plans, so a change between preview and run cannot be overwritten blindly.
+// Re-running after a stop continues: done items no longer appear in a fresh plan.
+export async function applyPlan(session, { bucketId, plan, freshVersions, now = Date.now(), onStep = () => {} }) {
+  const fresh = freshVersions ? planRestore(freshVersions, { at: plan.at, now, prefix: plan.prefix }) : plan;
   const journal = [];
-  for (const item of plan.items) {
-    if (!item.fileName.startsWith(plan.prefix)) throw new Error('RESTORE_OUTSIDE_PREFIX');
-    if (item.type === 'unhide') {
-      for (const fileId of item.deleteFileIds) await session.deleteFileVersion({ fileName: item.fileName, fileId });
-      journal.push({ type: 'unhide', fileName: item.fileName, deletedHideMarkers: item.deleteFileIds });
-    } else if (item.type === 'copy') {
+  for (const item of fresh.items) {
+    if (!item.fileName.startsWith(fresh.prefix)) throw new Error('RESTORE_OUTSIDE_PREFIX');
+    if (item.type === 'copy') {
       const r = await session.copyFile({ sourceFileId: item.sourceFileId, fileName: item.fileName });
       journal.push({ type: 'copy', fileName: item.fileName, sourceFileId: item.sourceFileId, newFileId: r.fileId });
     } else if (item.type === 'hide') {
       const r = await session.hideFile({ bucketId, fileName: item.fileName });
-      journal.push({ type: 'hide', fileName: item.fileName, hideMarkerId: r.fileId });
+      journal.push({ type: 'hide', fileName: item.fileName, hiddenFileId: item.currentFileId, hideMarkerId: r.fileId });
     }
-    onStep(journal.length, plan.items.length);
+    onStep(journal.length, fresh.items.length);
   }
-  return journal;
+  return { plan: fresh, journal };
 }

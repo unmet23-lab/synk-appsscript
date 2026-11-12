@@ -166,7 +166,7 @@ const m3 = `t/${run}/m3`; const p3 = pw(); let snap1, snap2, manifest2;
   const t0 = Date.now();
   const plan = planRestore(await versions(m3 + '/'), { at: T, now: T + 3600000, prefix: m3 + '/' });
   r.plan = { counts: plan.counts, copyBytes: plan.copyBytes };
-  const journal = await applyPlan(S, { bucketId: bucket.bucketId, plan });
+  const { journal } = await applyPlan(S, { bucketId: bucket.bucketId, plan });
   r.applyMs = Date.now() - t0; r.journalSteps = journal.length;
   const snaps = restic(A, m3, p3, ['snapshots', '--json']);
   const list = snaps.code === 0 ? JSON.parse(snaps.out || '[]') : [];
