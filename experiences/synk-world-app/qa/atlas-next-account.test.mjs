@@ -56,7 +56,7 @@ test('처음인 기기 — 첫 받기가 요약(빈 요약 포함)을 받으면 
  assert.equal(host.account,'acct-1');assert.equal(host.revision,1);assert.equal(host.guest,undefined);assert.equal(host.legacy,undefined,'계정 길에는 손님 옛 기록 읽개가 없다');
  assert.equal(typeof host.transport.get,'function');assert.equal(typeof host.onAccount,'function');assert.equal(host.health,health);
  assert.equal(coach.syncedCalls,1,'처음인 기기는 첫 받기를 기다린다');
- assert.deepEqual(markOf(storage,'acct-1'),{went:true});
+ assert.deepEqual(markOf(storage,'acct-1'),{went:true,path:'upload',revision:1},'마지막으로 정한 길 · 판도 적는다(F1)');
  assert.equal(await next.practiceCoach(POOL),coach);assert.equal(opened.length,1);
  assert.deepEqual(health.notes.at(-1),['load',{ok:true}]);
  next.dispose();
@@ -86,6 +86,53 @@ test('계정을 못 읽은 실패(네트워크 · 인증)는 붙들지 않는다
  next.dispose();
 });
 
+test('새 길에 다녀간 계정이 오프라인으로 다시 열면(계정 읽기 실패) 표지의 마지막 길 · 판으로 새 길 — 인증 실패 · 표지 없는 계정 · 다른 주인은 열지 않는다(Fable 5.2 끝 판 F1)',async()=>{
+ const storage=memoryStorage([[NEXT_MARK+'acct-f1',JSON.stringify({went:true,path:'upload',revision:5})]]);
+ const line=accountLine({revision:5});const real=line.trail;let down=true;
+ line.trail=async()=>{if(down)throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});return real();};
+ const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
+ const next=createAtlasNext({owner:'acct-f1',storage,trail:()=>line.trail(),load,health:recorder()});
+ const coach=await next.practiceCoach(POOL);
+ assert.equal(coach,opened[0],'오프라인이어도 새 길');assert.equal(coach.options.host.revision,5,'표지의 판으로');
+ assert.equal(coach.syncedCalls,0,'첫 받기를 기다리지 않는다');
+ await assert.rejects(coach.options.host.transport.get(null),{code:'NETWORK'},'나르개는 부를 때 계정을 다시 읽는다 — 못 닿으면 그 실패');
+ down=false;
+ await coach.options.host.transport.get(null);
+ assert.deepEqual(line.gets.map(row=>row.at),[5],'닿으면 표지의 판으로 부른다(판이 달랐으면 서버가 409)');
+ assert.deepEqual(await next.guestMove({watermarks:{}}),{failed:true},'계정을 못 읽은 채 연 판은 옮기기를 세지 않는다');
+ next.dispose();
+ // 인증 실패는 그 값으로 열지 않는다 · 표지 없는 계정은 지금 판 · 꼴에 안 맞는 계정 줄은 붙들지 않는다
+ const denied=createAtlasNext({owner:'acct-f1',storage,trail:async()=>{throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED',status:401});},load,health:recorder()});
+ assert.equal(await denied.practiceCoach(POOL),null,'인증 실패는 지금 판');denied.dispose();
+ const other=createAtlasNext({owner:'acct-f1-other',storage,trail:async()=>{throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});},load,health:recorder()});
+ assert.equal(await other.practiceCoach(POOL),null,'표지는 계정마다 — 다른 주인은 열지 않는다');other.dispose();
+ let shape=false;const odd=createAtlasNext({owner:'acct-f1b',storage:memoryStorage(),trail:async()=>shape?real():({learning:null}),load:fakeLoader().load,health:recorder()});
+ assert.equal(await odd.practiceCoach(POOL),null,'꼴에 안 맞는 계정 줄은 이번 연습만 지금 판');
+ shape=true;assert.ok(await odd.practiceCoach(POOL),'다음 연습에서 다시 읽는다(ACCOUNT_UNREAD를 붙들지 않는다)');odd.dispose();
+});
+
+test('셸 알림 — 그 밖(426 등)은 계정을 다시 읽어 그대로면 코치를 두고 달라졌으면 닫는다, 저장소 닫힘(store)은 닫는다, 셸이 동의를 바꾸면 다시 정한다(넘친 #7 · F5 · #18)',async()=>{
+ const line=accountLine();const {opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-f7',storage:memoryStorage(),trail:line.trail,load,health:recorder()});
+ const coach=await next.practiceCoach(POOL);
+ const reads=line.reads;
+ coach.options.host.onAccount({kind:'other',code:'CONTRACT_UNSUPPORTED',status:426});
+ await until(()=>line.reads>reads);await tick();await tick();
+ assert.equal(coach.disposed,0,'판 · 동의 · 쓰기 문이 그대로면 코치를 둔다');
+ line.revision=2;
+ coach.options.host.onAccount({kind:'other',code:'CONTRACT_UNSUPPORTED',status:426});
+ await until(()=>coach.disposed===1);
+ const second=await next.practiceCoach(POOL);assert.equal(second.options.host.revision,2);
+ const closed=[];next.retired(second,detail=>closed.push(detail.reason));
+ second.options.host.onAccount({kind:'store',code:'STORE_CLOSED'});
+ await until(()=>second.disposed===1);assert.deepEqual(closed,['store'],'저장소가 닫히면 닫는다');
+ const third=await next.practiceCoach(POOL);
+ next.redecide('account');
+ await until(()=>third.disposed===1);
+ assert.equal(opened.length,3);
+ next.dispose();
+});
+
 test('새 길 간 적 있는 기기 — 판이 오른 직후 그 판의 요약이 없고 받기가 실패해도 새 길 그대로(B4)',async()=>{
  const storage=memoryStorage([[NEXT_MARK+'acct-3',JSON.stringify({went:true})]]),line=accountLine({revision:4});
  const {opened,load}=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'offline',code:'NETWORK'}}));
@@ -96,7 +143,7 @@ test('새 길 간 적 있는 기기 — 판이 오른 직후 그 판의 요약�
  next.dispose();
 });
 
-test('스위치 꺼짐 — 첫 받기가 FEATURE_DISABLED면 꺼짐 표지, 다음 시작은 곧장 지금 판이고 뒤에서 다시 물어 열리면 그다음 시작부터 새 길',async()=>{
+test('스위치 꺼짐 — 첫 받기가 FEATURE_DISABLED면 꺼짐 표지, 다음 시작은 곧장 지금 판이고 뒤에서 다시 물어 열리면 같은 문서의 다음 연습부터 새 길(GB2 — 다음에 판을 정할 때부터)',async()=>{
  const storage=memoryStorage(),line=accountLine({get:async()=>{throw fail(403,'FEATURE_DISABLED');}});
  const first=fakeLoader(()=>fakeCoach({synced:{ok:false,kind:'switch',code:'FEATURE_DISABLED'}}));
  const a=createAtlasNext({owner:'acct-4',storage,trail:line.trail,load:first.load,health:recorder()});
@@ -119,7 +166,7 @@ test('스위치 꺼짐 — 첫 받기가 FEATURE_DISABLED면 꺼짐 표지, 다�
  assert.ok(await c.practiceCoach(POOL),'같은 문서의 다음 연습부터 새 길');
  c.dispose();
  const d=createAtlasNext({owner:'acct-4',storage,trail:line.trail,load:second.load,health:recorder()});
- assert.ok(await d.practiceCoach(POOL),'그다음 시작부터 새 길');
+ assert.ok(await d.practiceCoach(POOL),'다음 문서도 새 길');
  d.dispose();
 });
 
@@ -151,7 +198,7 @@ test('동의 꺼진 계정 — 받기 한 번으로 스위치를 묻고(LEARNING
   {guest:true,account:'acct-5',revision:3,key:atlas.storeName({account:'acct-5',revision:3,local:true})});
  assert.equal(host.legacy,undefined);assert.equal(host.transport,undefined);assert.equal(host.onAccount,undefined);
  assert.equal(coach.syncedCalls,0);
- assert.deepEqual(markOf(storage,'acct-5'),{went:true});
+ assert.deepEqual(markOf(storage,'acct-5'),{went:true,path:'device',revision:3});
  next.dispose();
  // 스위치가 꺼진 계정은 지금 판(꺼짐 표지), 모르면(네트워크) 처음인 기기는 지금 판 · 새 길 간 적 있으면 기기 길
  const off=accountLine({enabled:false,revision:3,get:async()=>{throw fail(403,'FEATURE_DISABLED');}});
@@ -211,7 +258,7 @@ test('알림 갈래 — 스위치 꺼짐은 표지와 닫기(다음은 지금 �
  const up=await n2.practiceCoach(POOL);
  up.options.host.onAccount({kind:'switch',code:'FEATURE_DISABLED',status:403});
  await until(()=>up.disposed===1);
- assert.deepEqual(markOf(storage,'acct-12'),{went:true,off:true});
+ assert.deepEqual(markOf(storage,'acct-12'),{went:true,off:true,path:'upload',revision:1});
  assert.equal(await n2.practiceCoach(POOL),null);
  n2.dispose();
 });
@@ -241,7 +288,7 @@ test('옮기기 물음 — 올리는 길이면 손님 저장소를 옆으로(옛
  const current=[{id:'c1',type:'practice.presented'},{id:'c2',type:'practice.attempted',attemptNo:1},{id:'c3',type:'practice.attempted',attemptNo:2}];
  const aside={
   plan:async watermarks=>{calls.push(['plan',watermarks]);return {legacy,current,until:9,touches:new Map()};},
-  move:async how=>{calls.push(['move',how.watermarks]);const sent=await how.postLegacy(legacy);calls.push(['sent',sent]);return {ok:sent===true||sent?.ok===true,legacy:legacy.length,current:current.length,until:9};},
+  move:async how=>{calls.push(['move',how.watermarks]);const sent=await how.postLegacy(legacy);calls.push(['sent',sent]);return {ok:sent?.ok===true,legacy:legacy.length,current:current.length,until:9};},
   keep:async()=>{calls.push(['keep']);return 10;},note:async mark=>{calls.push(['note',mark]);return true;},close:()=>calls.push(['close']),
  };
  let asked=null;
@@ -441,13 +488,33 @@ test('옛 POST 묶음 — 부모 먼저(결정 → 제시 → 딸린 것 → 마
   {id:'p',type:'practice.presented',at:'2026-11-01T00:00:01.000Z'},{id:'d',type:'decision.made',at:'2026-11-01T00:00:00.000Z'},
  ];
  const sent=[];
- assert.equal(await postLegacyBatches(events,async batch=>{sent.push(batch.map(e=>e.id));return {ok:true};},{limit:4}),true);
+ assert.equal((await postLegacyBatches(events,async batch=>{sent.push(batch.map(e=>e.id));return {ok:true};},{limit:4})).ok,true);
  assert.deepEqual(sent,[['d','p','a','c'],['f','x']]);
  sent.length=0;
- assert.equal(await postLegacyBatches(events,async batch=>{sent.push(batch.map(e=>e.id));return {ok:true};},{bytes:120}),true);
+ assert.equal((await postLegacyBatches(events,async batch=>{sent.push(batch.map(e=>e.id));return {ok:true};},{bytes:120})).ok,true);
  assert.ok(sent.length>1&&sent.flat().join()==='d,p,a,c,f,x','바이트로도 자른다');
- assert.equal(await postLegacyBatches(events,async batch=>({ok:batch[0].id!=='f'}),{limit:4}),false);
- assert.equal(await postLegacyBatches([],async()=>{throw Error('부르지 않는다');}),true);
+ assert.equal((await postLegacyBatches(events,async batch=>({ok:batch[0].id!=='f'}),{limit:4})).ok,false);
+ assert.deepEqual(await postLegacyBatches([],async()=>{throw Error('부르지 않는다');}),{ok:true,ids:[],skipped:0,gaveUp:false});
+});
+
+test('옛 POST 409 EVENT_CONFLICT — 그 옛 꼴 묶음은 다른 판으로 이미 서버에 있다: 번호가 없으면 묶음 단위로 반씩 가려 걸린 묶음만, 번호가 있으면 그 묶음만 건너뛰고, 여덟을 넘으면 옛 꼴 몫 전체를(F3)',async()=>{
+ const at=n=>`2026-11-01T00:00:${String(n).padStart(2,'0')}.000Z`;
+ const bundle=(p,n)=>[{id:p,type:'practice.presented',at:at(n)},{id:`${p}a`,type:'practice.attempted',presentationId:p,at:at(n+1)}];
+ const events=[...bundle('p1',0),...bundle('p2',2),...bundle('p3',4),...bundle('p4',6)];
+ const onServer=new Set(['p2','p2a']);const posts=[];
+ const conflict=(extra={})=>Object.assign(Error('EVENT_CONFLICT'),{status:409,code:'EVENT_CONFLICT',...extra});
+ const post=async batch=>{posts.push(batch.map(e=>e.id));if(batch.some(e=>onServer.has(e.id)))throw conflict();return {ok:true};};
+ const sifted=await postLegacyBatches(events,post);
+ assert.equal(sifted.ok,true);assert.equal(sifted.skipped,1);assert.equal(sifted.gaveUp,false);
+ assert.deepEqual(sifted.ids.sort(),['p1','p1a','p3','p3a','p4','p4a'],'걸린 묶음(p2 — 머리와 답 함께)만 빼고 받았다');
+ assert.ok(posts.every(batch=>!(batch.includes('p2')!==batch.includes('p2a'))),'묶음을 쪼개지 않는다');
+ const named=await postLegacyBatches(events,async batch=>{if(batch.some(e=>e.id==='p3a'))throw conflict({ids:['p3a']});return {ok:true};});
+ assert.deepEqual(named.ids.sort(),['p1','p1a','p2','p2a','p4','p4a'],'번호를 실은 409면 그 번호의 묶음만');
+ const many=Array.from({length:10},(_,i)=>bundle(`q${i}`,i*2)).flat();
+ const all=await postLegacyBatches(many,async()=>{throw conflict();});
+ assert.deepEqual([all.ok,all.gaveUp,all.ids.length],[true,true,0],'여덟을 넘으면 옛 꼴 몫 전체를 건너뛴다');
+ const down=await postLegacyBatches(events,async()=>{throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});});
+ assert.equal(down.ok,false,'그 밖의 실패는 다음에 다시');
 });
 
 test('스위치 묻기 — 받기의 답으로 켜짐 · 꺼짐 · 모름을 가르고 한도를 넘으면 모름',async()=>{
@@ -533,7 +600,7 @@ test('한 바퀴 — 손님 연습 → 계정 첫 받기로 새 길 → 손님 �
  const next=createAtlasNext({owner:A_ID,storage,trail:rehearsalTrail({fetcher}),load,health});
  const coach=await next.practiceCoach(READING);
  assert.ok(coach,`새 길 — ${JSON.stringify(health.notes)}`);
- assert.deepEqual(markOf(storage,A_ID),{went:true});
+ assert.deepEqual(markOf(storage,A_ID),{went:true,path:'upload',revision:1});
  // 손님 → 계정 옮기기
  const found=await next.guestMove({watermarks:{others:0,all:0},pick:events=>events});
  assert.equal(found.attempts,3);
@@ -576,4 +643,19 @@ test('기기 길은 연습을 열 때마다 계정을 다시 읽어 — 동의�
  assert.equal(upload.options.host.revision,4);assert.equal(upload.options.host.guest,undefined);
  assert.equal(opened.length,2);
  next.dispose();
+});
+
+test('리허설 나르개 — 받은 때의 주인과 지금 주인이 다르면 요청 앞뒤에서 ACCOUNT_CHANGED로 던진다(운영 check와 같은 꼴 — 넘친 #19)',async()=>{
+ let who='player-a';const seen=[];
+ const answer={ok:true,learning:{enabled:true,revision:1},capabilities:{learningSync:true},summary:null,serverTime:0};
+ const line=await rehearsalTrail({fetcher:async url=>{seen.push(url);return {ok:true,status:200,json:async()=>answer};},owner:()=>who})();
+ const transport=line.transport(1);
+ await transport.get(null);
+ who='player-b';
+ await assert.rejects(transport.get(null),{code:'ACCOUNT_CHANGED'});
+ await assert.rejects(line.postLegacy([{id:'o1'}]),{code:'ACCOUNT_CHANGED'});
+ assert.equal(seen.length,2,'바뀐 뒤에는 보내지 않는다');
+ who='player-a';
+ const slow=rehearsalTrail({fetcher:async()=>{who='player-b';return {ok:true,status:200,json:async()=>answer};},owner:()=>who});
+ await assert.rejects(slow(),{code:'ACCOUNT_CHANGED'},'답이 오는 사이 바뀌어도 그 답을 버린다');
 });

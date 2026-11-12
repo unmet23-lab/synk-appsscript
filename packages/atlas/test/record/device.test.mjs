@@ -271,6 +271,62 @@ test('치우기 — 이틀 지난 · 서버가 접은 사건만 치우고, 다�
   assert.equal(reopened.summary.lineSeq, client.record.summary.lineSeq);
 });
 
+test('치우기 — 서버가 번호를 짚어 버린 사건도 이틀이 지나면 치운다(받은 표지가 없어 접힌 적이 없다 — Fable 5.2 끝 판 넘친 #12)', async () => {
+  const server = createServer({ random: rng(6), index });
+  const client = await createClient(server, { name: 'dropaaaa', port: memoryPort() });
+  const open = client.record.add('practice.presented', presented());
+  await client.push();
+  const shown = client.record.add('practice.presented', presented());
+  const made = client.record.add('practice.attempted', answer(shown.event.id));
+  const lone = client.record.add('practice.presented', presented());
+  await Promise.all([shown.stored, made.stored, lone.stored]);
+  await client.record.receive({
+    accepted: [],
+    rejected: [shown.event.id, made.event.id, lone.event.id],
+  });
+  assert.deepEqual(client.record.unsent(), [], '버린 것은 다시 보내지 않는다');
+  server.tick(3 * 86_400_000);
+  await client.push();
+  assert.equal(await client.record.compact(), 3, '버린 제시 · 그 답 · 답 없이 버린 제시를 치운다');
+  assert.equal(client.record.has(shown.event.id), false);
+  assert.equal(client.record.has(lone.event.id), false, '버린 제시는 답을 기다리며 남기지 않는다');
+  assert.equal(client.record.has(open.event.id), true, '버리지 않은 · 답이 안 달린 제시는 둔다');
+});
+
+test('판 응답 · 결정 · 마침을 겨눈 제외가 밀린 동안에도 계정 보기는 기다리지 않는다 — 얹을 것이 없다(Fable 5.2 끝 판 넘친 #1)', async () => {
+  const server = createServer({ random: rng(9), index });
+  const client = await createClient(server, { name: 'feedaaaa', port: memoryPort() });
+  const decided = client.record.add('decision.made', {
+    experienceId: 'world-practice',
+    variant: 'v1',
+    setId: 'set1',
+  });
+  const shown = client.record.add('practice.presented', presented());
+  client.record.add('practice.attempted', answer(shown.event.id));
+  const completed = client.record.add('experience.completed', {
+    decisionId: decided.event.id,
+    experienceId: 'world-practice',
+    variant: 'v1',
+    setId: 'set1',
+  });
+  const given = client.record.add('feedback.given', {
+    completionId: completed.event.id,
+    value: 'helpful',
+  });
+  await given.stored;
+  await client.push();
+  assert.equal(client.record.view().waitAll, false, '올린 뒤');
+  for (const target of [given, completed, decided]) {
+    const drop = client.record.add('record.excluded', { targetId: target.event.id });
+    await drop.stored;
+  }
+  assert.equal(client.record.view().waitAll, false, '응답 · 마침 · 결정 빼기가 밀린 동안에도');
+  const next = client.record.add('practice.presented', presented());
+  await client.record.add('practice.attempted', answer(next.event.id, 'incorrect')).stored;
+  assert.equal(client.record.view().waitAll, false, '그 뒤에 낸 답도 얹힌다');
+  assert.equal(client.record.unsent().length, 5, '제외 셋 · 제시 · 답은 올리기를 기다린다');
+});
+
 test('⑧ 손님 기록(옛 로그 + 접힌 장부 + 2판) → 계정: 예전 문항이 「처음 본 정답」이 아니고, 같은 장부 두 번 = 같음, 계정 요약 = 손님 요약', async () => {
   const at = n => new Date(T0 + n * 60_000).toISOString();
   const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };

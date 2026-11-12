@@ -12,17 +12,24 @@ const retry = (s, name) =>
     ? `You just missed ‘${name}’ — let’s try it again in a different question.`
     : `You just missed ‘${name}’ — let’s try it one more time.`;
 
-const shaky = (s, name) =>
-  s.reviews === 1
+// 같은 하루(days 0)에 돌아오면 날 수를 말하지 않는다(Fable 5.2 끝 판 F4).
+const shaky = (s, name) => {
+  if (!s.days)
+    return s.reviews === 1
+      ? `You missed ‘${name}’ earlier today — here it is again.`
+      : `‘${name}’: missed ${s.misses} out of ${times(s.reviews)}. Back again today.`;
+  return s.reviews === 1
     ? `You missed ‘${name}’ last time — it’s back after ${days(s.days)}.`
     : `‘${name}’: missed ${s.misses} out of ${times(s.reviews)}. Back after ${days(s.days)}.`;
+};
 
 export const EN = Object.freeze({
   'unit.retry': one(retry),
   'unit.shaky': one(shaky),
-  'unit.due': one(
-    (s, name) =>
-      `It’s been ${days(s.days)} since you last saw ‘${name}’. Let’s review it once more before it fades.`,
+  'unit.due': one((s, name) =>
+    s.days
+      ? `It’s been ${days(s.days)} since you last saw ‘${name}’. Let’s review it once more before it fades.`
+      : `You saw ‘${name}’ earlier today. Let’s review it once more before it fades.`,
   ),
   'unit.new': one((_, name) => `Seeing ‘${name}’ for the first time.`),
   'skill.up': one(
@@ -43,6 +50,8 @@ export const EN = Object.freeze({
   'day.capped': one(() => 'That’s it for today. We’ll save the rest for tomorrow.'),
   'pace.stubborn': one(
     () =>
-      'That’s it for the expressions you kept missing this round. Next round, we’ll try them a different way.',
+      // 끈질긴 단위는 여러 날에 걸친 표시다 — 「this round」를 「kept missing」에 붙이면 「이번 판에서 자꾸 놓친 말」로 읽혀(이번 판에 한 문항만
+      // 냈고 맞혔어도 나온다) 현재형 · 판 쪽으로 옮겼다(Fable 5.2 끝 판 넘친 #16 — 한국어 원문 「자꾸 놓치는 말은 이번 판에 여기까지」).
+      'That’s it for this round on the expressions you keep missing. Next round, we’ll try them a different way.',
   ),
 });

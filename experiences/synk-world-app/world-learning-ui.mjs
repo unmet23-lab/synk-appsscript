@@ -856,14 +856,17 @@ async function townSend(coachNow,{wait=true}={}){
   if(!pool.length){home.toast(t(audioAvailable?'practice.shortage':'practice.audioOff'));void openPosition();return;}
   const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};
   const session=atlasNext.createPracticeNextSession({coach:next,pool,setPool:all,length:count,audioAvailable,more,lang:currentLang(),plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
-  let ended=false,notice='',unwatch=()=>{};
+  // finishing: 판 끝이 답 저장을 기다리는 중 · changedWhileFinishing: 그 사이 판이 바뀌었다(아래 지켜보는 함수 — 넘친 #10).
+  let ended=false,notice='',unwatch=()=>{},finishing=false,changedWhileFinishing=false;
   const player=soundPlayer({session,url:audioUrl,onChange:state=>{if(ended)return;notice=state==='failed'&&session.current?.heard?t('position.diagnostic.audioFailed'):'';paint(state==='completed'?'.wpos-choice:not([disabled])':'[data-practice-listen]');}});
   const stop=()=>{unwatch();if(ended)return;ended=true;player.silence();try{session.stop();}catch{}queueMicrotask(()=>refresh());};
   home.showPanel(t(listening?'practice.title.listening':'practice.title'),'<div class="wpos-stage" data-practice-stage></div>',{...PANEL,eyebrow:'PRACTICE'});
   home.attachPanelResource?.({dispose:stop});
   // 판을 다시 정해 이 코치가 닫히면(동의 판이 오름 · 동의 꺼짐 · 서버 스위치 꺼짐 — 단계4_계획 §18-5-5 G4) 안내 한 줄과 함께 연습을 닫는다.
   // 끝 화면은 그대로 둔다(이미 저장을 기다려 셈을 보였다). 다음 연습은 입구가 계정을 다시 읽어 정한 판으로 연다.
-  unwatch=atlasNext.retired?.(next,()=>{if(ended)return;stop();home.toast(t('practice.next.changed'));void openPosition();})??(()=>{});
+  // 판 끝이 저장을 기다리는 사이 바뀌면 표시만 남긴다 — 끝내는 함수가 기다림 뒤에 안내 한 줄과 함께 닫는다(넘친 #10 — 끝 화면도 안내도 없이
+  // 마지막 문항 화면에 멈추고 닫힌 코치의 거절이 새던 것).
+  unwatch=atlasNext.retired?.(next,()=>{if(finishing){changedWhileFinishing=true;return;}if(ended)return;stop();home.toast(t('practice.next.changed'));void openPosition();})??(()=>{});
   const box=panelNode('[data-practice-stage]');if(!box){stop();return;}
   const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
   function paint(focus='.wpos-run-skill'){
@@ -877,14 +880,16 @@ async function townSend(coachNow,{wait=true}={}){
   // 힌트를 실제로 보일 때만 도움으로 남긴다 — 이름이 없어 힌트 줄을 못 그리는 끈질긴 단위 문항에 보이지 않은 도움이 적히지 않게(카본 A3).
   function advance(){player.silence();notice='';const now=session.next();if(!now){void finish();return;}if(now.stubborn&&now.targetLabel)session.preHelp();paint();top();}
   // 판 끝은 한 번만 — 마지막 문항에서 저장을 기다리는 사이 「다음」 · 「건너뛰기」를 거듭 눌러도 판 기록 · 응답이 두 번 서지 않게(카본 A4).
-  let finishing=false;
   async function finish(){
    if(finishing||(ended&&!box.isConnected))return;
    finishing=true;ended=true;player.silence();
    let results=session.results();try{results=await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
    if(!box.isConnected)return;
+   if(changedWhileFinishing){unwatch();home.toast(t('practice.next.changed'));void openPosition();return;}
+   // 닫힌 코치(판이 바뀐 직후)는 남은 수를 못 센다 — 「더 하기」 없이 그린다.
+   let more=null;try{more=session.freshLeft();}catch{more=null;}
    const set=finishSet(next,'short');
-   box.innerHTML=view.renderPracticeNextDone({skill,results,items:new Map([...position.itemsById,...all.map(item=>[item.id,item])]),listening,count,more:session.freshLeft(),ending:session.ending,response:responseView(set,'short')});
+   box.innerHTML=view.renderPracticeNextDone({skill,results,items:new Map([...position.itemsById,...all.map(item=>[item.id,item])]),listening,count,more,ending:session.ending,response:responseView(set,'short')});
    bindResponse({box,coachNow:next,set,kind:'short',next:true});
    box.querySelector('[data-practice-done]')?.focus?.({preventScroll:true});top();
    queueMicrotask(()=>refresh());evidenced();

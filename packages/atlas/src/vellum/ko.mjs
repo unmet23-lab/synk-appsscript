@@ -8,10 +8,20 @@ const retry = (s, name) =>
     ? `방금 놓친 「${name}」, 다른 문제로 한 번 더 만나요.`
     : `방금 놓친 「${name}」, 한 번 더 만나요.`;
 
-const shaky = (s, name) =>
-  s.reviews === 1
+// 같은 하루(days 0 — 기기 새벽 4시 경계)에 돌아오면 날 수를 말하지 않는다(Fable 5.2 끝 판 F4 · 설계 주인 11-13).
+const shaky = (s, name) => {
+  if (!s.days)
+    return s.reviews === 1
+      ? `오늘 놓친 「${name}」, 다시 만나요.`
+      : `「${name}」 ${s.reviews}번 중 ${s.misses}번 놓쳤어요. 오늘 한 번 더 만나요.`;
+  return s.reviews === 1
     ? `지난번에 놓친 「${name}」, ${s.days}일 만에 다시 만나요.`
     : `「${name}」 ${s.reviews}번 중 ${s.misses}번 놓쳤어요. ${s.days}일 만에 다시 만나요.`;
+};
+const due = (s, name) =>
+  s.days
+    ? `「${name}」 본 지 ${s.days}일 됐어요. 잊기 전에 한 번 더 만나요.`
+    : `오늘 만난 「${name}」, 잊기 전에 한 번 더 만나요.`;
 
 // 숙제 상태를 모르면 말하지 않는다(null) — plan.mjs가 review · missed만 싣는 것과 같이, 모르는 상태를 놓친 답 문장으로 짓지 않는다(카본 끝 판 C4).
 const homework = (s, name) =>
@@ -26,7 +36,7 @@ const one = sentence => ({ standard: { default: [sentence] } });
 export const KO = Object.freeze({
   'unit.retry': one(retry),
   'unit.shaky': one(shaky),
-  'unit.due': one((s, name) => `「${name}」 본 지 ${s.days}일 됐어요. 잊기 전에 한 번 더 만나요.`),
+  'unit.due': one(due),
   'unit.new': one((_, name) => `「${name}」 처음 만나요.`),
   'skill.up': one(
     (s, name) => `「${name}」 ${s.streak}번 이어서 혼자 맞혔어요. 한 단계 올려 볼게요.`,

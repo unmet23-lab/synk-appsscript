@@ -8,7 +8,8 @@ import { createPracticeNextSession } from './world-practice-next.mjs';
 const ENTRY = '/atlas/loader.mjs';
 // 지금 판 코치(atlas/game-learning.js)가 손님 기록을 두는 자리 — { version, epoch, events, ledger, … }.
 export const LEGACY_KEY = 'synk.atlas.learning.v1.device';
-// 「새 길 간 적 있음」 · 「스위치 꺼짐」 표지 — 계정마다 하나, 판과 무관한 자리(§18-5-5 B4 · R15). 값 { went?: true, off?: true }.
+// 「새 길 간 적 있음」 · 「스위치 꺼짐」 표지 — 계정마다 하나, 판과 무관한 자리(§18-5-5 B4 · R15). 값 { went?: true, off?: true, path?, revision? }
+// — path · revision은 마지막으로 정한 새 길('upload' | 'device')과 그 판이다. 계정을 네트워크로 못 읽을 때 그 값으로 새 길을 연다(Fable 5.2 끝 판 F1).
 export const NEXT_MARK = 'synk.atlas.next.';
 // 처음인 기기의 첫 받기를 기다리는 한도(§18-5-5 G4) · 스위치를 묻는 받기 한도 · 옮기기 물음을 세는 한도(셸이 쓴다).
 export const FIRST_SYNC_MS = 4000;
@@ -34,8 +35,9 @@ export function legacyReader(storage) {
     }
   };
 }
-// 정해진 지금 판(일시 실패가 아님) — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름 · 기기 길로 확인된 계정이 엔진만
-// 못 받음(옮기기 물음은 지금 판 물음 — 기기 길은 손님 기록을 올리지 않는다, 카본 다시 A2. 판은 붙들지 않아 다음 연습에서 다시 정한다).
+// 옮기기 물음을 지금 판 물음(null)으로 보내는 지금 판의 까닭 — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름 · 기기
+// 길로 확인된 계정이 엔진만 못 받음(기기 길은 손님 기록을 올리지 않는다 — 카본 다시 A2, 그 판은 붙들지 않아 다음 연습에서 다시 정한다).
+// 그 밖의 지금 판(계정을 못 읽음 · 첫 받기 실패 등)은 「못 셈」이다.
 const SETTLED_OLD = new Set(['SWITCH_OFF', 'NO_TRAIL', 'SWITCH_UNKNOWN', 'DEVICE_UNLOADED']);
 // 옮길 것이 없다는 답(손님 저장소도 고를 옛 기록도 없다) — 물음에 학습 줄을 넣지 않고 다녀감 표지도 쓰지 않는다.
 const NOTHING_TO_MOVE = () => ({ attempts: 0, events: 0, none: true, note: async () => false, close() {} });
@@ -95,20 +97,29 @@ function deviceStorage(note) {
   }
 }
 
+const NEXT_PATHS = new Set(['upload', 'device']);
 function markOf(storage, owner) {
   try {
     const value = JSON.parse(storage?.getItem?.(NEXT_MARK + owner) ?? 'null');
-    return { went: value?.went === true, off: value?.off === true };
+    const went = value?.went === true;
+    const path = went && NEXT_PATHS.has(value?.path) ? value.path : null;
+    const revision = path && Number.isSafeInteger(value?.revision) && value.revision > 0 ? value.revision : null;
+    return { went, off: value?.off === true, path: revision ? path : null, revision };
   } catch {
-    return { went: false, off: false };
+    return { went: false, off: false, path: null, revision: null };
   }
 }
 function writeMark(storage, owner, patch) {
   const next = { ...markOf(storage, owner), ...patch };
+  const kept = next.went && NEXT_PATHS.has(next.path) && Number.isSafeInteger(next.revision) && next.revision > 0;
   try {
     storage?.setItem?.(
       NEXT_MARK + owner,
-      JSON.stringify({ ...(next.went ? { went: true } : {}), ...(next.off ? { off: true } : {}) }),
+      JSON.stringify({
+        ...(next.went ? { went: true } : {}),
+        ...(next.off ? { off: true } : {}),
+        ...(kept ? { path: next.path, revision: next.revision } : {}),
+      }),
     );
     return true;
   } catch {
@@ -146,7 +157,28 @@ export async function askSwitch(transport, wait = SWITCH_ASK_MS) {
 }
 
 // 옛 꼴 사건을 옛 POST로(§18-5-3 ② — 부모 먼저 · 건수와 바이트로 자름, 지금 판 학습 호스트를 세우지 않는다). post(묶음) → 서버의 답.
-// 모든 묶음이 받았다는 답(ok)일 때만 true. 차례: 결정 → 제시 → 딸린 사건 → 마침 → 응답 → 제외(옛 POST가 묶음마다 부모를 본다).
+// 차례: 결정 → 제시 → 딸린 사건 → 마침 → 응답 → 제외(옛 POST가 묶음마다 부모를 본다). 돌려줌 { ok, ids, skipped, gaveUp } — ids는 서버가
+// 받은 번호. 옛 POST의 409 EVENT_CONFLICT는 「그 옛 꼴 묶음은 다른 판으로 이미 서버에 있다 — 되살리지 않는다」로 받는다: 번호가 없으면
+// 옛 꼴 묶음(머리 + 자식을 쪼개지 않고)을 반씩 가려 걸리는 묶음만 건너뛰고, 번호가 있으면 그 번호의 묶음만 건너뛴다. 건너뛴 묶음이
+// cap(8)을 넘으면 옛 꼴 몫 전체를 건너뛴다(gaveUp — 부르는 쪽이 계기에). 그 밖의 실패는 ok: false(표지 없이 다음에 다시). 옮기기가 끊긴 뒤
+// 동의를 껐다 켜 판이 오르면 같은 번호 · 다른 판이라 다시 옮기기가 영영 실패하던 것(Fable 5.2 끝 판 F3 · 설계 주인 11-13).
+export const LEGACY_SKIP_CAP = 8;
+const legacyParent = event =>
+  event?.presentationId ?? event?.targetId ?? event?.completionId ?? event?.decisionId ?? null;
+// 사건 번호 → 그 옛 꼴 묶음의 뿌리(준 사건 안에서 부모를 거슬러 오른 끝).
+function legacyRoots(events) {
+  const byId = new Map(events.map(event => [event?.id, event]));
+  const rootOf = event => {
+    const seen = new Set();
+    let at = event;
+    for (let up = byId.get(legacyParent(at)); up && !seen.has(up); up = byId.get(legacyParent(at))) {
+      seen.add(at);
+      at = up;
+    }
+    return at?.id;
+  };
+  return new Map(events.map(event => [event?.id, rootOf(event)]));
+}
 const LEGACY_RANK = {
   'decision.made': 0,
   'practice.presented': 1,
@@ -155,34 +187,82 @@ const LEGACY_RANK = {
   'record.excluded': 5,
 };
 const encoder = new TextEncoder();
-export async function postLegacyBatches(events, post, { limit = 256, bytes = 200_000 } = {}) {
+export async function postLegacyBatches(events, post, { limit = 256, bytes = 200_000, cap = LEGACY_SKIP_CAP } = {}) {
   const rank = event => LEGACY_RANK[event?.type] ?? 2;
   const ordered = [...events].sort(
     (a, b) => rank(a) - rank(b) || String(a?.at ?? '').localeCompare(String(b?.at ?? '')),
   );
+  const root = legacyRoots(ordered);
+  const skipped = new Set(); // 건너뛴 묶음(뿌리 번호)
+  const ids = [];
+  const conflict = error => error?.status === 409 && error?.code === 'EVENT_CONFLICT';
+  // 묶음을 건너뛴다 — cap을 넘으면 옛 꼴 몫 전체를 건너뛴다('gave-up').
+  const skip = roots => {
+    for (const id of roots) skipped.add(id);
+    return skipped.size > cap ? 'gave-up' : 'ok';
+  };
+  // 한 묶음을 보낸다 — 받았으면 'ok', 409 EVENT_CONFLICT면 걸린 옛 꼴 묶음을 가려 건너뛰고, 그 밖의 실패는 'fail'.
+  async function send(batch) {
+    const live = batch.filter(event => !skipped.has(root.get(event?.id)));
+    if (!live.length) return 'ok';
+    try {
+      if ((await post(live))?.ok !== true) return 'fail';
+    } catch (error) {
+      if (!conflict(error)) return 'fail';
+      return Array.isArray(error.ids) && error.ids.length ? named(live, new Set(error.ids)) : sift(live);
+    }
+    ids.push(...live.map(event => event.id));
+    return 'ok';
+  }
+  // 번호를 실은 409 — 그 번호의 묶음만 건너뛰고 나머지를 다시. 짚은 번호가 이 묶음에 없으면 되풀이하지 않게 실패로.
+  async function named(live, hit) {
+    const roots = new Set(live.filter(event => hit.has(event.id)).map(event => root.get(event.id)));
+    if (!roots.size) return 'fail';
+    const step = skip(roots);
+    return step === 'ok' ? send(live) : step;
+  }
+  // 번호 없는 409 — 옛 꼴 묶음 단위로 반씩 나눠 걸리는 묶음을 찾는다(묶음 하나만 남으면 그 묶음을 건너뛴다).
+  async function sift(live) {
+    const roots = [...new Set(live.map(event => root.get(event.id)))];
+    if (roots.length === 1) return skip(roots);
+    const half = new Set(roots.slice(0, Math.ceil(roots.length / 2)));
+    const first = await send(live.filter(event => half.has(root.get(event.id))));
+    return first === 'ok' ? send(live.filter(event => !half.has(root.get(event.id)))) : first;
+  }
+  const done = step =>
+    step === 'fail'
+      ? { ok: false, ids, skipped: skipped.size, gaveUp: false }
+      : { ok: true, ids, skipped: skipped.size, gaveUp: step === 'gave-up' };
   let batch = [];
   let size = 0;
-  const flush = async () => {
-    if (!batch.length) return true;
-    const sent = batch;
-    batch = [];
-    size = 0;
-    return (await post(sent))?.ok === true;
-  };
   for (const event of ordered) {
     const n = encoder.encode(JSON.stringify(event)).length;
-    if ((batch.length >= limit || (batch.length && size + n > bytes)) && !(await flush())) return false;
+    if (batch.length >= limit || (batch.length && size + n > bytes)) {
+      const step = await send(batch);
+      if (step !== 'ok') return done(step);
+      batch = [];
+      size = 0;
+    }
     batch.push(event);
     size += n;
   }
-  return flush();
+  return done(batch.length ? await send(batch) : 'ok');
 }
 
 // 리허설 계정 길 — 리허설 서버의 /api/world/rehearsal/trail(rehearsal-trail.mjs)을 운영 계정 클라이언트(trail.get · post — talk
 // lib/synk-account-client.js)와 같은 꼴로 감싼다. 오류는 { code, status, retryable, revision?, ids? }(엔진 sync.mjs failureOf가 가른다).
 // headers(): 리허설 세션의 머리말(Authorization · X-Synk-Rehearsal-Tab — WorldClient와 같은 것). 운영은 world-account.mjs prepareAtlasTrail.
-export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args), headers = () => ({}) } = {}) {
-  async function call(path, { method = 'GET', body } = {}) {
+// owner(): 지금 세션의 주인 — 나르개를 받은 때의 주인과 다르면 요청 앞뒤에서 ACCOUNT_CHANGED로 던진다(운영 prepareAtlasTrail의 check와 같은
+// 꼴 — 연습을 여는 사이 다른 합성 계정으로 들어오면 앞 계정의 코치가 새 토큰으로 받은 요약을 앞 계정 저장소에 받던 것, 넘친 #19).
+export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args), headers = () => ({}), owner = () => null } = {}) {
+  const changed = () => Object.assign(new Error('ACCOUNT_CHANGED'), { code: 'ACCOUNT_CHANGED' });
+  async function call(path, { method = 'GET', body } = {}, from = undefined) {
+    if (from !== undefined && owner() !== from) throw changed();
+    const data = await send(path, { method, body });
+    if (from !== undefined && owner() !== from) throw changed();
+    return data;
+  }
+  async function send(path, { method = 'GET', body } = {}) {
     let response;
     try {
       response = await fetcher(`/api/world/${path}`, {
@@ -229,18 +309,19 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
     return q.toString();
   };
   return async () => {
-    const data = await call('rehearsal/trail-account');
+    const from = owner();
+    const data = await call('rehearsal/trail-account', {}, from);
     const revision = data?.learning?.revision;
     return {
       learning: data?.learning ?? null,
       learningSync: data?.capabilities?.learningSync === true,
       transport: at =>
         Object.freeze({
-          get: since => call(`rehearsal/trail?${query(at, since)}`),
+          get: since => call(`rehearsal/trail?${query(at, since)}`, {}, from),
           post: (events, since) =>
-            call('rehearsal/trail', { method: 'POST', body: { revision: at, events, ...(since ? { since } : {}) } }),
+            call('rehearsal/trail', { method: 'POST', body: { revision: at, events, ...(since ? { since } : {}) } }, from),
         }),
-      postLegacy: events => call('rehearsal/trail-legacy', { method: 'POST', body: { revision, events } }),
+      postLegacy: events => call('rehearsal/trail-legacy', { method: 'POST', body: { revision, events } }, from),
     };
   };
 }
@@ -336,10 +417,18 @@ export function createAtlasNext({
       return settled(OLD('SWITCH_OFF'));
     }
     if (typeof trail !== 'function') return settled(OLD('NO_TRAIL'));
-    const line = await trail();
+    let line;
+    try {
+      line = await trail();
+    } catch (error) {
+      const kept = await keptPath(mark, error);
+      if (kept) return kept;
+      throw error;
+    }
     const revision = line?.learning?.revision;
+    // 꼴에 안 맞는 계정 줄도 일시 실패로 — 입구 수명 내내 지금 판으로 붙들지 않고 다음 연습에서 다시 읽는다(Fable 5.2 끝 판 F1).
     if (!Number.isSafeInteger(revision) || revision < 1 || typeof line.transport !== 'function')
-      return settled(OLD('ACCOUNT_UNREAD'));
+      throw Object.assign(new Error('ACCOUNT_UNREAD'), { code: 'ACCOUNT_UNREAD' });
     if (line.learning.enabled === true && line.learningSync === true)
       return { path: 'upload', revision, line, transport: line.transport(revision), went: mark.went };
     // 기기 길(F6) — 올리지 않는다. 저장소 이름은 엔진이 짓고(E1), 스위치는 받기 한 번으로 묻는다(꺼짐이면 지금 판).
@@ -358,8 +447,44 @@ export function createAtlasNext({
       return settled(OLD('SWITCH_OFF'));
     }
     if (asked !== 'on' && !mark.went) return settled(OLD('SWITCH_UNKNOWN'));
-    writeMark(store, owner, { went: true });
+    writeMark(store, owner, { went: true, path: 'device', revision });
     return { path: 'device', revision, key: engine.storeName({ account: owner, revision, local: true }) };
+  }
+  // 새 길에 다녀간 계정이 계정 읽기에 네트워크 · 일시 실패로 못 닿으면(휴대폰을 오프라인으로 다시 엶) 표지의 마지막 길 · 판으로 새 길을
+  // 연다 — 보기는 그 판의 기기 요약에서, 올리기는 나르개가 계정을 다시 읽을 때까지 오프라인 갈래다. 돌아와 판이 달랐으면 서버의 409 →
+  // onAccount가 다시 정한다(이미 있는 길). 인증 실패 · 주인 바뀜 · 그 밖은 그 값으로 열지 않는다 — 표지는 계정마다라 남의 저장소를 열지
+  // 않게(Fable 5.2 끝 판 F1 — 계획 §6 「켠 계정이 오프라인으로 다시 열어도 새 길이고 어제 놓친 것이 맨 앞」, 설계 주인 11-13).
+  async function keptPath(mark, error) {
+    const transient = error?.retryable === true || error?.code === 'NETWORK';
+    if (!mark.went || !mark.path || !transient || error?.status === 401 || error?.code === 'ACCOUNT_CHANGED') return null;
+    if (mark.path === 'upload')
+      return { path: 'upload', revision: mark.revision, line: null, transport: unreadTransport(mark.revision), went: true, unread: true };
+    let engine = null;
+    try {
+      ({ engine } = await entry());
+    } catch {
+      engine = null;
+    }
+    if (typeof engine?.storeName !== 'function')
+      throw Object.assign(new Error('Atlas engine not loaded'), { code: 'DEVICE_UNLOADED' });
+    return { path: 'device', revision: mark.revision, key: engine.storeName({ account: owner, revision: mark.revision, local: true }) };
+  }
+  // 계정을 못 읽은 채 연 올리는 길의 나르개 — 부를 때 계정을 다시 읽어 그 판의 나르개로 잇는다(아직 못 닿으면 그 실패를 그대로 던져 호스트가
+  // 물러서며 다시 한다). 판이 달라졌어도 표지의 판으로 부른다 — 서버가 판 울타리(409 REVISION_CONFLICT)로 답하면 호스트가 알린다.
+  function unreadTransport(revision) {
+    let real = null;
+    const ready = async () => {
+      if (real) return real;
+      const line = await trail();
+      if (typeof line?.transport !== 'function')
+        throw Object.assign(new Error('ACCOUNT_UNREAD'), { code: 'ACCOUNT_UNREAD', retryable: true });
+      real = line.transport(revision);
+      return real;
+    };
+    return Object.freeze({
+      get: async since => (await ready()).get(since),
+      post: async (events, since) => (await ready()).post(events, since),
+    });
   }
   // at: 꺼짐 표지로 지금 판을 정한 판(세대). 다시 물어 켜졌으면 표지를 지우고, 그 판이 아직 지금 판이면 정한 것을 비운다 — 다음 연습(코치를
   // 청할 때)이 다시 정해 새 길로 간다(새로고침을 기다리지 않는다 — GPT 끝 판 GB2, 첫 받기를 다른 코치가 확인한 markWent와 같은 갈래).
@@ -383,21 +508,31 @@ export function createAtlasNext({
     if (disposed || at !== generation) return;
     const kind = detail?.kind;
     if (kind === 'auth') return; // 셸의 인증 처리에 맡긴다(운영: 계정 클라이언트가 토큰을 다시 받고도 안 되면 로그아웃)
-    if (kind === 'writes') {
-      void recheckWrites(at); // 쓰기 문만 닫힘 — 계정을 다시 읽어 learningSync가 거짓일 때만 기기 길로
+    if (kind === 'writes' || kind === 'other' || kind == null) {
+      // 쓰기 문만 닫힘 · 그 밖(426 · 404 등 그 밖의 4xx) — 호스트는 올리기 · 받기만 멈췄다. 계정을 다시 읽어 판 · 동의 · 쓰기 문이 달라졌을
+      // 때만 닫는다. 그대로면 코치를 둔다 — 사건은 기기에 쌓이고 다음에 연 호스트가 다시 올린다(넘친 #7 — 같은 답이 이어지는 동안
+      // 연습이 열자마자 닫히던 것).
+      void recheckLine(at, kind === 'writes' ? 'writes' : 'other');
       return;
     }
     if (kind === 'switch') writeMark(store, owner, { off: true });
-    retire(kind ?? 'other');
+    retire(kind);
   }
   let rechecking = null; // 다시 확인하는 판(같은 판의 겹친 알림은 한 번만 읽는다)
-  async function recheckWrites(at) {
+  async function recheckLine(at, reason) {
     if (rechecking === at) return;
     rechecking = at;
     try {
       const line = await trail();
       if (disposed || at !== generation) return;
-      if (line?.learning?.enabled !== true || line?.learningSync !== true) retire('writes');
+      const plan = await decided;
+      if (disposed || at !== generation) return;
+      const same =
+        plan?.path === 'upload' &&
+        line?.learning?.revision === plan.revision &&
+        line?.learning?.enabled === true &&
+        line?.learningSync === true;
+      if (!same) retire(reason);
     } catch {
       // 다음 연습에서 다시 정한다
     } finally {
@@ -450,8 +585,9 @@ export function createAtlasNext({
     return false;
   }
   function markWent(plan, at) {
-    if (!plan.went) {
-      writeMark(store, owner, { went: true });
+    const mark = markOf(store, owner);
+    if (!plan.went || mark.path !== 'upload' || mark.revision !== plan.revision) {
+      writeMark(store, owner, { went: true, path: 'upload', revision: plan.revision });
       plan.went = true;
     }
     // 같은 판의 다른 코치가 먼저 낮췄으면 다음 연습에서 다시 정한다(표지가 있어 곧 새 길).
@@ -486,6 +622,9 @@ export function createAtlasNext({
         ok: false,
         code: error?.reason ? `LOAD_${error.reason}` : (error?.code ?? 'LOAD_FAILED'),
       });
+      // 계정이 새 길로 정해졌는데 엔진 · 지도 · 저장소를 못 받아 이번 연습이 지금 판으로 가는 것 — 따로 세어 4-8에서 얼마나 밟는지 본다
+      // (Fable 5.2 끝 판 F1 · 설계 주인 11-13). 판은 붙들지 않는다 — 다음 연습에서 다시 연다(카본 끝 판 B · 다시 A2).
+      if (plan.path !== 'guest') note('load', { ok: false, code: 'PATH_ENGINE' });
       made?.dispose();
       return null;
     }
@@ -536,6 +675,11 @@ export function createAtlasNext({
       if (disposed || plan.path === 'old') return null;
       return coachFor(plan, banksOf(pool));
     },
+    // 셸이 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 판을 다시 정한다(연 코치를 닫고 다음 연습이 계정을 다시 읽는다). 다른 기기에서 바뀐
+    // 것만 올리기의 답으로 안다(넘친 #18 — 앞 판 코치로 연 다음 연습의 첫 답이 앞 판 저장소에만 남아 버려지던 것).
+    redecide(reason = 'account') {
+      if (!disposed && account) retire(reason);
+    },
     // 판을 다시 정해 그 코치를 닫을 때 부를 함수(연습 화면이 안내 한 줄과 함께 닫히게). 돌려준 함수로 끊는다.
     retired(made, fn) {
       if (!made || typeof fn !== 'function') return () => {};
@@ -558,6 +702,8 @@ export function createAtlasNext({
       // 지금 판이 정해진 것(스위치 꺼짐 · 길 없음) · 기기 길은 지금 판 물음(null), 판을 못 정한 것(일시 실패 · 첫 받기 실패)은
       // 「못 셈」 — 「두기」가 결정의 기준 시각을 올려 새 길 손님 기록을 빼지 않게(GPT 끝 판 B1).
       if (plan.path !== 'upload') return plan.path === 'old' && !SETTLED_OLD.has(plan.code) ? { failed: true } : null;
+      // 계정을 못 읽은 채 표지로 연 판 — 옛 POST(계정 줄)가 없고 판도 확인 전이라 세지 않는다(「못 셈」 — 기준 시각을 올리지 않는다).
+      if (plan.unread) return { failed: true };
       const reader = store ? legacyReader(store) : null;
       const before = legacyCandidates(reader, pick);
       let aside = null;
@@ -578,13 +724,17 @@ export function createAtlasNext({
           aside.move({
             watermarks,
             // 보낸 옛 꼴 번호를 돌려준다 — 엔진이 옮김 표지 ids에 실어 그것을 겨눈 제외가 따라가게(GPT 다시 GA2). 고르지 않은 것은 안 보냈다.
+            // 판이 오른 뒤의 409 EVENT_CONFLICT는 그 옛 꼴 묶음만 건너뛰고(이미 다른 판으로 서버에 있다) 계기에 남긴다(F3).
             postLegacy: async events => {
               const chosen = pick(events);
-              const sent = { ok: true, ids: chosen.map(event => event.id) };
-              if (!chosen.length) return sent;
+              if (!chosen.length) return { ok: true, ids: [] };
               if (typeof line.postLegacy !== 'function') return false;
               try {
-                return (await postLegacyBatches(chosen, batch => line.postLegacy(batch))) ? sent : false;
+                const sent = await postLegacyBatches(chosen, batch => line.postLegacy(batch));
+                if (!sent.ok) return false;
+                if (sent.skipped)
+                  note('save', { ok: false, code: sent.gaveUp ? 'LEGACY_CONFLICT_ALL' : 'LEGACY_CONFLICT', dependent: true });
+                return { ok: true, ids: sent.ids };
               } catch {
                 return false;
               }

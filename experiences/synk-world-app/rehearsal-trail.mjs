@@ -180,10 +180,11 @@ function memoryAccount(atlas) {
     // 같은 번호를 찾는다 — 사건 번호는 계정 안에서 하나(talk의 고유 열쇠), 바닥 아래 남은 사건도 본다.
     byIds: ids => new Map(log.filter(r => ids.includes(r.event.id)).map(r => [r.event.id, r])),
     visible,
-    append(events, receivedMs) {
+    // revision: 옛 POST가 받은 판(옛 꼴 사건은 사건에 판이 없다 — talk처럼 기록에 적는다, 넘친 #8).
+    append(events, receivedMs, revision = null) {
       return events.map(event => {
         seq += 1;
-        const record = { seq, receivedMs, event: structuredClone(event) };
+        const record = { seq, receivedMs, event: structuredClone(event), ...(revision == null ? {} : { revision }) };
         log.push(record);
         return record;
       });
@@ -224,6 +225,7 @@ export function createRehearsalTrail({
   keys = {},
   cap = atlas.FOLD_CAP,
   warn = message => console.warn(message),
+  firstRevision = 1, // 합성 계정을 처음 만들 때의 판(서버를 켤 때 openRehearsalTrail이 켠 시각으로 준다 — 넘친 #9)
 }) {
   const params = atlas.PARAMS;
   const memory = atlas.createMemory(params);
@@ -236,7 +238,7 @@ export function createRehearsalTrail({
     if (!entry) {
       entry = {
         id,
-        revision: 1,
+        revision: firstRevision,
         enabled: true,
         writes: true,
         on: switchOn(id),
@@ -364,7 +366,9 @@ export function createRehearsalTrail({
     };
   }
 
-  // 옛 POST(talk synk-server.js learning POST와 같은 검사 — 범위 · 번호 · 같은 번호의 다른 사건은 409 EVENT_CONFLICT, ids 없음).
+  // 옛 POST(talk synk-server.js learning POST와 같은 검사 — 범위 · 번호 · 같은 번호의 다른 사건 · 다른 판에서 받은 같은 번호는 409
+  // EVENT_CONFLICT, ids 없음). 받은 판을 적어 두고 견준다 — 판을 안 보면 talk의 409가 리허설에서는 통과로 보였다(Fable 5.2 끝 판 넘친 #8 ①).
+  // 부모 · 차례 · 꼴 검사는 talk에만 있다(파일 머리 — 4-8 리허설 대조에서).
   function legacy(entry, body) {
     const ids = new Set();
     for (const event of body.events) {
@@ -383,10 +387,11 @@ export function createRehearsalTrail({
     const fresh = [];
     for (const event of body.events) {
       const existing = old.get(event.id);
-      if (existing && stable(existing.event) !== stable(event)) fail(409, 'EVENT_CONFLICT');
+      if (existing && (stable(existing.event) !== stable(event) || existing.revision !== body.revision))
+        fail(409, 'EVENT_CONFLICT');
       if (!existing) fresh.push(JSON.parse(stable(event)));
     }
-    if (fresh.length) entry.store.append(fresh, now());
+    if (fresh.length) entry.store.append(fresh, now(), body.revision);
     return { ok: true, accepted: [...ids], revision: body.revision };
   }
 
@@ -517,5 +522,8 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
     indexFile = path.join(pkg, 'map', 'index.json');
   }
   const index = atlas.openMap({ index: JSON.parse(fs.readFileSync(indexFile, 'utf8')) }).foldIndex;
-  return createRehearsalTrail({ atlas, index, trailSwitch, keys });
+  // 켤 때마다 큰 판으로 시작한다(켠 시각의 초) — 서버를 다시 켜면 메모리 계정이 사라지는데 판이 1로 돌아가, 같은 브라우저의 기기가 앞 사본
+  // (계정 · 판 1)을 그대로 열고 옛 받은 표지와 새 서버 차례가 어긋나 「답이 사라진다」처럼 보였다. 판이 오르면 기기는 새 저장소를 열고 앞 판
+  // 사본을 버린다(coach/stores.mjs dropEarlier — Fable 5.2 끝 판 넘친 #9).
+  return createRehearsalTrail({ atlas, index, trailSwitch, keys, firstRevision: Math.max(1, Math.floor(Date.now() / 1000)) });
 }

@@ -23,6 +23,11 @@ import {classroomEndpoint,classroomReply,requestClassrooms} from './classroom-cl
 import {homeworkReply,homeworkSubmission,homeworkUnavailable} from './homework-client.mjs';
 const changed=()=>Object.assign(Error('로그인한 계정이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
+// Atlas 새 기록 길의 나르개(trail GET · POST · 옛 POST)는 진짜 인증 실패(401)에서만 세션을 닫는다 — 계정 클라이언트는 코드 없는 4xx를
+// ACCOUNT_UNAVAILABLE로 이름 붙여, 413 · 404 · 426 · PRODUCT_FORBIDDEN에도 로그아웃했다. 그 밖의 4xx는 그대로 던져 엔진 갈래(413은 반으로 ·
+// 그 밖은 멈추고 셸이 계정을 다시 읽음 — 계획 §18-5-2 표)에 맡긴다(Fable 5.2 끝 판 넘친 #6).
+const trailAuthErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED']);
+const trailAuthFailed=error=>trailAuthErrors.has(error?.code)||error?.status===401;
 // 반 연결(classId)이 붙지 않는 타운 경로: 입장 조회·입장 확인·첫 장면 배치는 계정 하나의 일이다.
 const TOWN_ACCOUNT_ROUTES=new Set(['town/entry','town/check','town/placement']);
 const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['town/pulse','POST'],['town/boundary','POST'],['town/check','POST'],['town/placement','POST'],['enrollment/preview','POST'],['enrollment/claim','POST'],['homework','GET'],['homework/submit','POST'],['homework/key','POST'],['writing','POST'],['speaking','POST'],['me2','POST']]);
@@ -190,7 +195,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   if(typeof client?.trail?.get!=='function'||typeof client?.trail?.post!=='function'||!prefs||typeof prefs.enabled!=='boolean'||!Number.isSafeInteger(prefs.revision)||prefs.revision<1)
    throw Object.assign(Error('계정의 학습 기록 연결이 아직 준비되지 않았어요.'),{code:'TRAIL_NOT_READY'});
   const check=()=>{guard(expected);if(owner!==id)throw changed();};
-  const wrap=fn=>async input=>{check();try{const value=await fn(input);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();forgetSession();}throw error;}};
+  const wrap=fn=>async input=>{check();try{const value=await fn(input);check();return value;}catch(error){if(expected===epoch&&trailAuthFailed(error)){clear();forgetSession();}throw error;}};
   const get=wrap(input=>client.trail.get(input)),post=wrap(input=>client.trail.post(input)),legacy=typeof client.learning?.post==='function'?wrap(input=>client.learning.post(input)):null;
   return Object.freeze({learning:Object.freeze({enabled:prefs.enabled,revision:prefs.revision}),learningSync:currentAccount.capabilities?.learningSync===true,
    transport:revision=>Object.freeze({get:since=>get({revision,since}),post:(events,since)=>post({revision,events,since})}),

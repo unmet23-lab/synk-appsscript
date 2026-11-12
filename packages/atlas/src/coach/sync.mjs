@@ -12,6 +12,7 @@ export const SIFT_CAP = 8; // 한 세션에 가려낸 사건이 이것을 넘으
 export const UPLOAD_DELAY_MS = 1500;
 export const PULL_GAP_MS = 5 * 60_000; // 화면이 다시 보일 때의 GET은 5분에 한 번까지(B5)
 export const PULL_RETRY_MS = 3_000; // 첫 받기가 차례에 밀렸을 때(다른 탭이 쥠) 다시 받기까지
+export const WRITES_RETRY_MS = 300_000; // 쓰기 막힘(WRITES_DISABLED) 뒤 다시 보내 보기까지 — 물러서기의 마지막 간격과 같다
 const BACKOFF_MS = [UPLOAD_DELAY_MS, 5_000, 15_000, 60_000, 300_000]; // 같은 실패는 물러서기
 const AUTH_CODES = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 const CODE = /^[A-Z][A-Z0-9_]{1,39}$/;
@@ -108,6 +109,7 @@ export function createSync({
   tell,
   announce,
   onAccount,
+  writesRetryMs = WRITES_RETRY_MS,
   turn = (_job, work) => work(),
   now = () => Date.now(),
 }) {
@@ -120,6 +122,7 @@ export function createSync({
     sweeping: null, // 하루 한 번 치우기(A6)
     stopped: null, // 'account' · 'auth' · 'other' — 올리기 · 받기를 멈춘 까닭(사건 덧붙이기는 계속)
     writesOff: false, // 올리기만 멈춤(WRITES_DISABLED)
+    writesTimer: null, // 쓰기 막힘을 풀고 다시 보내 볼 때
     switchOff: false, // 그 계정의 서버 스위치 꺼짐(GET 403 FEATURE_DISABLED)
     paused: false, // 이 세션에 가려낸 사건이 SIFT_CAP을 넘었다
     skipped: new Set(), // 이 세션에 건너뛸 번호(가려낸 사건)
@@ -146,11 +149,23 @@ export function createSync({
   function stop(kind, error) {
     if (state.closed) return; // 닫힌 뒤 돌아온 실패는 셸에 알리지 않는다(카본 · GPT 끝 판 D)
     const code = codeOf(error);
-    if (kind === 'writes') state.writesOff = true;
-    else if (kind === 'switch') state.switchOff = true;
+    if (kind === 'writes') {
+      state.writesOff = true;
+      // 쓰기 막힘은 긴 간격으로 다시 보내 본다 — 문이 잠깐 닫혔다 열리면 같은 호스트가 다시 올린다(403이 또 오면 또 막힘 · 또 알림). 셸은
+      // 알림마다 계정을 다시 읽어 learningSync가 거짓이면 기기 길로 닫는다(Fable 5.2 끝 판 넘친 #3 — 문서를 다시 열 때까지 올리지 않던 것).
+      clearTimeout(state.writesTimer);
+      state.writesTimer = setTimeout(() => {
+        state.writesTimer = null;
+        if (state.closed) return;
+        state.writesOff = false;
+        schedule();
+      }, writesRetryMs);
+      state.writesTimer?.unref?.();
+    } else if (kind === 'switch') state.switchOff = true;
     else state.stopped = kind;
     if (kind !== 'auth' && kind !== 'switch') note('save', { ok: false, code });
     clearTimeout(state.timer);
+    state.timer = null;
     const revision = Number.isSafeInteger(error?.revision) ? error.revision : null;
     try {
       onAccount?.({ kind, code, status: error?.status ?? null, revision });
@@ -313,11 +328,18 @@ export function createSync({
       });
   }
 
+  // 쓰기 · 알림마다 부른다. 물러서는 중(failures > 0)에는 이미 건 기한을 미루지 않는다 — 걸린 기한이 새 기한보다 이르다. 부를 때마다 다시
+  // 걸면 15초 · 60초 · 300초 간격보다 자주 답하는 동안 다시 보내기가 영영 밀렸다(Fable 5.2 끝 판 F2). 쓰기의 1.5초 모으기는 failures가 0일
+  // 때만이다(다시 온라인 — online()이 failures를 0으로 두고 부르면 곧 보낸다).
   function schedule() {
     if (!canPost() || !carrier().post) return;
+    if (state.failures > 0 && state.timer) return;
     clearTimeout(state.timer);
     const delay = BACKOFF_MS[Math.min(state.failures, BACKOFF_MS.length - 1)];
-    state.timer = setTimeout(() => void upload(), delay);
+    state.timer = setTimeout(() => {
+      state.timer = null;
+      void upload();
+    }, delay);
     state.timer?.unref?.();
   }
 
@@ -446,6 +468,7 @@ export function createSync({
     close() {
       state.closed = true;
       clearTimeout(state.timer);
+      clearTimeout(state.writesTimer);
       clearTimeout(state.pullTimer);
       settleFirst({ ok: false, kind: 'closed', code: 'CLOSED' });
     },

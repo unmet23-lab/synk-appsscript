@@ -21,22 +21,29 @@ export async function moveGuest(guest, target, { watermarks = {}, postLegacy = n
     await guest.trail.refresh(); // 차례에 들자마자 꼬리부터(§18-5-1)
     return guest.trail.record.guestUpload(revision, { account, watermarks });
   });
-  // 옛 POST가 실제로 보낸 옛 꼴 번호 — true면 준 것 모두, { ok: true, ids }면 그 번호만(제품이 고른 것). 옮김 표지 ids에 함께 실어
-  // 그것을 겨눈 2판 제외가 다음 옮기기에서 Z로 따라가게 한다(GPT 다시 GA2 — 2판 번호만이면 계정 답이 빠지지 않고 남았다).
+  // ② 옛 POST의 답 꼴은 하나 — 실제로 보낸 옛 꼴 번호 { ok: true, ids }(고른 것이 없으면 ids: []). 그 꼴이 아니면 실패로 본다 —
+  // 「true = 준 것 모두」를 두면 제품이 고르지 않은 번호까지 표지에 실려 그것을 겨눈 제외가 따라가고 서버가 EVENT_LINK로 버렸다(설계 주인
+  // 11-13 — GPT 다시 GA2 (a)). 보낸 번호는 옮김 표지 ids에 함께 실어 그것을 겨눈 2판 제외가 다음 옮기기에서 Z로 따라가게 하고(GA2),
+  // 이번 옛 꼴 후보를 겨눈 제외(legacyExclusions)는 그 사건이 이번에 보내졌을 때만 같은 회차에 함께 보낸다(GA2 (b)).
   let legacyIds = [];
+  let alongside = [];
   if (plan.legacy.length) {
     if (typeof postLegacy !== 'function')
       return { ok: false, step: 'legacy', code: 'NO_LEGACY_POST' };
     const sent = await postLegacy(plan.legacy);
-    const listed = sent?.ok === true && Array.isArray(sent.ids) ? new Set(sent.ids) : null;
-    if (sent !== true && !listed) return { ok: false, step: 'legacy', code: 'LEGACY_POST_FAILED' };
-    legacyIds = plan.legacy.map(event => event.id).filter(id => !listed || listed.has(id));
+    if (sent?.ok !== true || !Array.isArray(sent.ids))
+      return { ok: false, step: 'legacy', code: 'LEGACY_POST_FAILED' };
+    const listed = new Set(sent.ids);
+    legacyIds = plan.legacy.map(event => event.id).filter(id => listed.has(id));
+    const went = new Set(legacyIds);
+    alongside = (plan.legacyExclusions ?? []).filter(event => went.has(event.targetId));
   }
+  const current = [...plan.current, ...alongside];
   let added = [];
-  if (plan.current.length)
+  if (current.length)
     added = await target.turn('move', async () => {
       await target.trail.refresh();
-      return target.trail.record.importMoved(plan.current, plan.touches);
+      return target.trail.record.importMoved(current, plan.touches);
     });
   // ④ 표지 → ⑤ 알리고 올린다. 표지를 못 썼어도 계정 저장소에 든 것은 알리고 올린다 — 다음 옮기기는 같은 번호를 건너뛰어(③) 다시
   // 알릴 일이 없다.
@@ -47,13 +54,14 @@ export async function moveGuest(guest, target, { watermarks = {}, postLegacy = n
         account,
         revision,
         until: plan.until,
-        ids: [...legacyIds, ...plan.current.map(event => event.id)],
+        ids: [...legacyIds, ...current.map(event => event.id)],
       }),
     )
     .finally(() => {
       if (added.length) target.landed();
     });
-  return { ok: true, legacy: plan.legacy.length, current: added.length, until: plan.until };
+  // legacy는 실제로 보낸 옛 꼴 수다 — 고르기 전 후보 수를 내면 결정 기록의 「옮긴 수」가 부풀었다(Fable 5.2 끝 판 넘친 #17).
+  return { ok: true, legacy: legacyIds.length, current: added.length, until: plan.until };
 }
 
 // 「이 기기에만 두기」 — 지금 읽은 자리까지는 Z에게 다시 묻지 않는다(두기 표지 · until).

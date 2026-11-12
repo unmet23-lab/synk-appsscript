@@ -263,3 +263,24 @@ test('import conflict permits the account state only and an ended recovery handl
  const h=await f.account.prepareGame({target,storage:f.cache});assert.equal(h.status().play.code,'IMPORT_CONFLICT');await assert.rejects(h.resolve('local'),{code:'IMPORT_CONFLICT'});
  assert.equal((await h.resolve('remote')).play.phase,'synced');await f.client.logout();await assert.rejects(h.resolve('remote'),{code:'ACCOUNT_CHANGED'});
 });
+test('Atlas 나르개(trail GET · POST · 옛 POST)는 진짜 인증 실패(401)에서만 세션을 닫는다 — 413 · PRODUCT_FORBIDDEN · 코드 없는 4xx는 엔진 갈래에 맡긴다(Fable 5.2 끝 판 넘친 #6)',async()=>{
+ const fault=(status,code)=>Object.assign(Error(code),{status,code});
+ let next=null;
+ const f=fixture({accountFactory:()=>({
+  load:async()=>({ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}],learning:{enabled:true,revision:2},capabilities:{learningSync:true}}),
+  revokeSession:async()=>({refreshRevoked:true}),
+  trail:{get:async()=>{throw next;},post:async()=>{throw next;}},
+  learning:{post:async()=>{throw next;}}})});
+ assert.equal(await f.client.restore(),true);
+ const line=await f.account.prepareAtlasTrail();
+ assert.deepEqual(line.learning,{enabled:true,revision:2});
+ for(const error of [fault(413,'ACCOUNT_UNAVAILABLE'),fault(403,'PRODUCT_FORBIDDEN'),fault(404,'ACCOUNT_UNAVAILABLE'),fault(426,'CONTRACT_UNSUPPORTED')]){
+  next=error;
+  await assert.rejects(line.transport(2).post([],null),{code:error.code});
+  await assert.rejects(line.postLegacy([{id:'o1'}]),{code:error.code});
+  assert.equal(f.invalidations(),0,`${error.status} ${error.code}: 세션을 닫지 않는다`);
+ }
+ next=fault(401,'AUTH_REQUIRED');
+ await assert.rejects(line.transport(2).get(null),{code:'AUTH_REQUIRED'});
+ assert.equal(f.invalidations(),1,'401은 세션을 닫는다');
+});

@@ -118,6 +118,7 @@ function createHost({
   // 일마다 한도 표(turn.mjs TURN_JOBS) — 시험만 짧게 바꾼다.
   turnJobs = null,
   account = null, // 계정 저장소의 계정(손님 → 계정 옮기기의 받는 쪽 — §18-5-3)
+  ownsPort = true, // 이 호스트가 연 포트인가 — 제품이 준 포트(host.port)는 제품이 닫는다(넘친 #14)
 }) {
   const index = compositeIndex();
   // 지도를 기록부를 열기 전에 넣는다 — 기록부가 처음 접는 요약의 판 묶음(색인 판)이 그 뒤의 보기와 같아야 한다.
@@ -132,6 +133,7 @@ function createHost({
     users: 0,
     closed: false,
     carry: null, // 옛 기록 옮기기의 약속 — 호스트당 하나(계획 §16 ③)
+    unsaved: false, // 저장 실패가 이어지는 중(받기를 한 번 강제했다 — F5)
   };
   // 듣는 함수마다 감싼다 — 하나(사라진 틀의 판 등)가 던져도 쓰기의 stored가 거절로 바뀌거나 뒤 판들이 소식을 놓치지 않는다.
   // 던진 듣는 함수를 지우지 않는다 — 일시적인 오류 하나가 그 판을 영영 귀먹게 하지 않게(N2). 듣는 함수는 그 판이 닫힐 때 빠진다.
@@ -219,10 +221,17 @@ function createHost({
       pending.delete(id);
       issuing.delete(id);
       if (ok) {
+        state.unsaved = false;
         announce();
         schedule();
         tell('written', { id }); // 같은 문서의 다른 코치(판)가 이 쓰기를 본다
-      } else tell('failed', { id });
+      } else {
+        // 저장이 실패하기 시작하면 받기를 한 번 강제한다 — 다른 탭이 판을 올려 이 판 저장소가 닫힌 것이면 서버의 판 울타리 답(409)으로
+        // 셸이 판을 다시 정한다(저장이 됐을 때만 올리기를 잡아, 그 답을 받을 일이 없었다 — Fable 5.2 끝 판 F5). 실패가 이어지는 동안은 한 번.
+        if (!guest && !state.closed && !state.unsaved) void sync.pull({ force: true });
+        state.unsaved = true;
+        tell('failed', { id });
+      }
       return ok;
     });
     inflight.add(stored);
@@ -247,6 +256,17 @@ function createHost({
       announce();
       tell('refresh');
       schedule();
+    },
+    // 이 저장소의 연결이 닫혔다(다른 탭이 판이 오른 저장소를 열어 이 판을 지움 — 포트의 onClosed). 뒤의 저장은 모두 실패하니 셸에 알려 판을
+    // 다시 정하게 한다 — 받기의 판 울타리 답을 기다리지 않는다(오프라인이어도). 손님 저장소는 판이 없어 지워지지 않는다(Fable 5.2 끝 판 F5).
+    storeClosed() {
+      if (state.closed || guest) return;
+      note('save', { ok: false, code: 'STORE_CLOSED' });
+      try {
+        onAccount?.({ kind: 'store', code: 'STORE_CLOSED', status: null, revision: null });
+      } catch {
+        // 셸의 알림이 던져도 호스트는 그대로다
+      }
     },
     get health() {
       return health;
@@ -360,7 +380,7 @@ function createHost({
       void Promise.allSettled([...inflight])
         .then(() => state.trail?.saved())
         .then(() => state.trail?.localSaved())
-        .then(() => port.close?.())
+        .then(() => (ownsPort ? port.close?.() : null))
         .catch(() => {});
       return true;
     },
@@ -434,6 +454,21 @@ function nextDocument(registry) {
   return next?.key ?? null;
 }
 
+// 저장소 연결을 연다(제품이 준 포트면 그것). 연 연결이 닫히면(다른 탭이 판이 오른 저장소를 열어 이 판을 지움 — 포트의 onClosed) 호스트가
+// 셸에 알린다 — 호스트가 서기 전에 닫혔으면 선 뒤에 알린다(watch.early, Fable 5.2 끝 판 F5).
+async function openWatched(openPort, key, given) {
+  const watch = { host: null, early: false };
+  const onClosed = () => {
+    if (watch.host) watch.host.storeClosed();
+    else watch.early = true;
+  };
+  try {
+    return { port: given ?? (await openPort(key, { onClosed })), watch };
+  } catch (error) {
+    throw hostError('STORAGE_FAILED', '저장소를 열지 못했다', error);
+  }
+}
+
 // 새 등록부 자리 — 등록부에 먼저 넣고 연다(같은 저장소를 동시에 여는 코치들이 연결을 둘 만들지 않게). shell은 셸이 받은 뒤에 선다(shellTakes).
 function newEntry(registry, key, options, openPort) {
   const claims = { users: 0 };
@@ -450,18 +485,13 @@ function newEntry(registry, key, options, openPort) {
     leaveDocument(registry, key);
   };
   entry.opening = (async () => {
-    let port = options.port;
-    try {
-      port ??= await openPort(key);
-    } catch (error) {
-      throw hostError('STORAGE_FAILED', '저장소를 열지 못했다', error);
-    }
+    const { port, watch } = await openWatched(openPort, key, options.port);
     // 판이 오른 계정 저장소를 열었으면 같은 계정의 앞 판 사본을 버린다(설계 §5-3 · 단계 4 §18-5-5 E3 — 기다리지 않는다).
     if (!options.port) void dropEarlier(key).catch(() => {});
     try {
       // 기억(memory)은 호스트를 만드는 창이 스스로 만든다 — 사라질 수 있는 틀의 객체를 위 창의 호스트가 들지 않게(N3).
       const memory = createMemory(options.params);
-      return await createHost({
+      const host = await createHost({
         ...options,
         key,
         port,
@@ -469,9 +499,15 @@ function newEntry(registry, key, options, openPort) {
         onClose,
         shellGone,
         claims,
+        // 제품이 준 포트는 닫지 않는다 — 같은 포트를 다음 코치에 다시 주면 앞 호스트의 늦은 닫기가 새 호스트의 포트를 닫았다(넘친 #14,
+        // 열기 실패 길과 같은 가름).
+        ownsPort: !options.port,
         // 틀이 넘긴 올리기 · 셸 알림은 들지 않는다 — 셸이 같은 저장소를 받을 때 제 것을 건다(take). 옛 기록 읽개도 셸의 것만(take).
         ...(options.fromFrame === true ? { transport: null, onAccount: null } : {}),
       }).open();
+      watch.host = host;
+      if (watch.early) host.storeClosed();
+      return host;
     } catch (error) {
       // 이 자리가 연 저장소 연결은 닫는다 — 열린 채 남으면 뒤의 앞 판 지우기 · 비우기 · 저장소 꼴 올리기를 막는다(카본 끝 판 C).
       if (!options.port)

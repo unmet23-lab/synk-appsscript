@@ -11,11 +11,17 @@ export function reasonLine(why, label = id => id) {
         ? `방금 놓친 「${name}」, 다른 문제로 한 번 더 만나요.`
         : `방금 놓친 「${name}」, 한 번 더 만나요.`;
     case 'unit.shaky':
+      if (!s.days)
+        return s.reviews === 1
+          ? `오늘 놓친 「${name}」, 다시 만나요.`
+          : `「${name}」 ${s.reviews}번 중 ${s.misses}번 놓쳤어요. 오늘 한 번 더 만나요.`;
       return s.reviews === 1
         ? `지난번에 놓친 「${name}」, ${s.days}일 만에 다시 만나요.`
         : `「${name}」 ${s.reviews}번 중 ${s.misses}번 놓쳤어요. ${s.days}일 만에 다시 만나요.`;
     case 'unit.due':
-      return `「${name}」 본 지 ${s.days}일 됐어요. 잊기 전에 한 번 더 만나요.`;
+      return s.days
+        ? `「${name}」 본 지 ${s.days}일 됐어요. 잊기 전에 한 번 더 만나요.`
+        : `오늘 만난 「${name}」, 잊기 전에 한 번 더 만나요.`;
     case 'skill.up':
       return `「${name}」 ${s.streak}번 이어서 혼자 맞혔어요. 한 단계 올려 볼게요.`;
     case 'skill.ease':

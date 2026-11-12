@@ -81,16 +81,29 @@ function openDb(indexedDB, name, wait) {
 
 export async function idbPort(
   name,
-  { indexedDB = globalThis.indexedDB, channel = null, blockedWait = BLOCKED_WAIT_MS } = {},
+  {
+    indexedDB = globalThis.indexedDB,
+    channel = null,
+    blockedWait = BLOCKED_WAIT_MS,
+    onClosed = null,
+  } = {},
 ) {
   if (!indexedDB)
     throw Object.assign(new Error('Atlas record: IndexedDB가 없다'), {
       code: 'STORAGE_UNAVAILABLE',
     });
   const db = await openDb(indexedDB, name, blockedWait);
-  // 다른 탭(뒤 판 엔진)이 저장소 꼴을 올리려 하면 이 연결을 닫아 비켜 준다 — 첫 공개 판에 이 손잡이가 없으면 뒤 판에서는 고칠 수 없다
-  // (옛 탭은 이미 떠 있다, G3). 닫힌 뒤의 읽기 · 쓰기는 던지고 기록부는 저장 실패로 받는다.
-  db.onversionchange = () => db.close();
+  // 다른 탭(뒤 판 엔진)이 저장소 꼴을 올리려 하거나 판이 오른 저장소를 열어 이 판 저장소를 지우면 이 연결을 닫아 비켜 준다 — 첫 공개 판에
+  // 이 손잡이가 없으면 뒤 판에서는 고칠 수 없다(옛 탭은 이미 떠 있다, G3). 닫힌 뒤의 읽기 · 쓰기는 던지고 기록부는 저장 실패로 받는다.
+  // 닫은 것은 onClosed로 알린다 — 호스트가 셸에 알려 판을 다시 정하게(Fable 5.2 끝 판 F5 — 저장 안 되는 연습이 알림 없이 이어졌다).
+  db.onversionchange = () => {
+    db.close();
+    try {
+      onClosed?.();
+    } catch {
+      // 알림이 던져도 연결은 닫혔다
+    }
+  };
   const each = async (range = null) => {
     const transaction = db.transaction(STORE, 'readonly');
     const store = transaction.objectStore(STORE);

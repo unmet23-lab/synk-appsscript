@@ -144,7 +144,8 @@ function dueShape(item, target, facts, ctx) {
   const need = ctx.rescue ? r : 1 - r / params.retention; // 급한 정도: 떠올릴 확률이 목표에서 멀수록 먼저
   const promote =
     PRODUCED.includes(item.responseFormat) && state.stability >= params.promoteAtDays ? 1 : 0;
-  return { need, promote, why: dueReason(target, state, ctx.now) };
+  const day = { dayStartHour: params.dayStartHour, offset: ctx.learner.dayOffset ?? 0 };
+  return { need, promote, why: dueReason(target, state, ctx.now, day) };
 }
 
 function freshShape(item, target, ctx) {

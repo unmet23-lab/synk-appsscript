@@ -217,3 +217,18 @@ test('옛 POST 흉내(trail-legacy) — 옛 꼴 사건을 같은 기록에 더�
  const closed=await call('trail-legacy',{method:'POST',body:{revision:1,events:legacyTrio('g5')}});
  assert.equal(closed.status,403);assert.equal(closed.body.error.code,'FEATURE_DISABLED');
 });
+
+test('옛 POST 흉내는 받은 판을 적는다 — 동의를 껐다 켜 판이 오른 뒤 같은 번호를 다시 보내면 talk처럼 409 EVENT_CONFLICT(번호 없음), 처음 판은 켤 때 정할 수 있다(Fable 5.2 끝 판 넘친 #8 ① · #9)',async()=>{
+ const {call}=setup();
+ const trio=legacyTrio('r1');
+ assert.equal((await call('trail-legacy',{method:'POST',body:{revision:1,events:trio}})).status,200);
+ await call('trail-control',{method:'POST',body:{action:'consent',enabled:false}});
+ await call('trail-control',{method:'POST',body:{action:'consent',enabled:true}});
+ const revision=(await call('trail-account')).body.learning.revision;
+ assert.ok(revision>1,'동의 왕복으로 판이 올랐다');
+ const again=await call('trail-legacy',{method:'POST',body:{revision,events:trio}});
+ assert.equal(again.status,409);assert.equal(again.body.error.code,'EVENT_CONFLICT');assert.equal(again.body.ids,undefined,'번호는 싣지 않는다(talk 그대로)');
+ assert.equal((await call('trail-legacy',{method:'POST',body:{revision,events:legacyTrio('r2')}})).status,200,'새 번호는 새 판으로 받는다');
+ const later=setup({firstRevision:1_762_900_000});
+ assert.equal((await later.call('trail-account')).body.learning.revision,1_762_900_000,'켤 때 준 처음 판으로 합성 계정을 만든다');
+});

@@ -161,9 +161,18 @@ test('옛 꼴을 보내지 못하면 표지를 쓰지 않고 계정 저장소에
   assert.equal(failed.ok, false);
   assert.equal(failed.step, 'legacy');
   assert.equal(answersOf(await recs.plan()).length, 1, '표지를 쓰지 않았다 — 다시 고른다');
+  const old = await recs.move({ postLegacy: async () => true });
+  assert.equal(
+    old.code,
+    'LEGACY_POST_FAILED',
+    '옛 POST의 답 꼴은 { ok: true, ids } 하나 — true는 받지 않는다(설계 주인 11-13)',
+  );
   const sent = [];
-  const done = await recs.move({ postLegacy: async events => (sent.push(...events), true) });
+  const done = await recs.move({
+    postLegacy: async events => (sent.push(...events), { ok: true, ids: events.map(e => e.id) }),
+  });
   assert.equal(done.ok, true);
+  assert.equal(done.legacy, 1, '실제로 보낸 옛 꼴 수');
   assert.ok(sent.length >= 1, '옛 꼴은 옛 POST로');
   assert.deepEqual(
     (await recs.plan()).legacy,
@@ -219,6 +228,54 @@ test('옛 POST가 고른 것만 보냈으면(ok · ids) 그 번호만 옮김 표
   );
   const refused = await recs.move({ postLegacy: async () => ({ ok: false, ids: [] }) });
   assert.equal(refused.ok, true, '옛 꼴이 남지 않았으면 옛 POST를 부르지 않는다');
+  recs.close();
+  a.dispose();
+});
+
+test('첫 옮기기 때 이미 있던 옛 꼴 제외는 그 옛 꼴이 이번에 보내지면 같은 회차에 함께 간다 — 보내지 않은 것을 겨눈 제외는 이번에도 다음에도 안 간다(설계 주인 11-13 (나))', async () => {
+  const w = world(26);
+  const at = new Date(w.time.now()).toISOString();
+  const legacy = id => ({
+    schema: 1,
+    id,
+    scope: { domain: 'LAB', workspace: 'learning', subject: 'device' },
+    at,
+    recordedAt: at,
+    type: 'practice.presented',
+  });
+  await practiseAsGuest(w, w.items.slice(0, 1));
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({
+    port: w.guestPort,
+    legacy: () => ({ log: [legacy('legacy-sent'), legacy('legacy-kept')], ledger: null }),
+  });
+  const guest = open(w, { guest: true, key: storeName({}), port: w.guestPort });
+  await guest.ready;
+  const sentDrop = guest.exclude('legacy-sent');
+  const keptDrop = guest.exclude('legacy-kept');
+  await inPort(w.guestPort, [sentDrop, keptDrop]);
+  guest.dispose();
+  const plan = await recs.plan();
+  assert.deepEqual(
+    plan.legacyExclusions.map(event => event.id).sort(),
+    [sentDrop.id, keptDrop.id].sort(),
+    '이번 옛 꼴 후보를 겨눈 제외 둘',
+  );
+  const done = await recs.move({ postLegacy: async () => ({ ok: true, ids: ['legacy-sent'] }) });
+  assert.equal(done.ok, true);
+  assert.equal(done.legacy, 1, '실제로 보낸 옛 꼴은 하나');
+  assert.equal(
+    done.current,
+    3,
+    '제시 · 답 · 보낸 옛 꼴을 겨눈 제외(보내지 않은 것을 겨눈 제외는 빠짐)',
+  );
+  const next = await recs.plan();
+  assert.deepEqual(next.current, [], '같은 회차에 간 제외를 다시 고르지 않는다');
+  assert.deepEqual(
+    next.legacyExclusions,
+    [],
+    '보내지 않은 옛 꼴을 겨눈 제외는 다음에도 가지 않는다',
+  );
   recs.close();
   a.dispose();
 });

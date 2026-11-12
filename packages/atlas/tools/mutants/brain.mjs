@@ -796,4 +796,20 @@ export const BRAIN_MUTANTS = [
     '    facts.brandNew.length > 0 && day.introduced.size + facts.brandNew.length > params.newPerDay;',
     '    day.introduced.size + facts.brandNew.length > params.newPerDay;',
   ],
+  [
+    P,
+    '이유',
+    '같은 하루도 1일로 센다(아침에 놓친 말을 오후에 「1일 만에」 — Fable 5.2 끝 판 F4)',
+    'src/reason/index.mjs',
+    '  return Math.max(0, dayOf(now) - dayOf(state.lastAt));',
+    '  return Math.max(1, dayOf(now) - dayOf(state.lastAt));',
+  ],
+  [
+    P,
+    '이유',
+    '날 수를 실제 지난 시간의 반올림으로 센다(하루 경계를 보지 않는다 — Fable 5.2 끝 판 F4)',
+    'src/reason/index.mjs',
+    '  const dayOf = at => Math.floor((at + offset * MINUTE - dayStartHour * HOUR) / DAY);',
+    '  const dayOf = at => Math.round(at / DAY);',
+  ],
 ];

@@ -30,8 +30,15 @@ const unitEvidence = state => ({
   stubborn: state?.stubborn === true,
 });
 
-// 「며칠 만에」 — 마지막 만남에서 지금까지(반올림, 최소 1일).
-export const elapsedDays = (state, now) => Math.max(1, Math.round((now - state.lastAt) / DAY));
+// 「며칠 만에」 — 마지막 만남과 지금 사이의 하루 수. 하루는 한도의 하루와 같은 달력(기기 현지 새벽 4시 경계 — offset은 현지 시각 − UTC,
+// 분)이고 같은 하루면 0이다 — 그때 이유 줄은 날 수를 말하지 않는다(「오늘 놓친 …」). 반올림 · 최소 1일로 세면 아침에 놓친 말을 그날
+// 오후에 다시 만나도 「1일 만에」라고 했다(Fable 5.2 끝 판 F4 · 설계 주인 11-13 — 근거 칸은 기록에 있는 사실만, 설계 §3-7).
+const HOUR = 3_600_000;
+const MINUTE = 60_000;
+export const elapsedDays = (state, now, { dayStartHour = 4, offset = 0 } = {}) => {
+  const dayOf = at => Math.floor((at + offset * MINUTE - dayStartHour * HOUR) / DAY);
+  return Math.max(0, dayOf(now) - dayOf(state.lastAt));
+};
 
 // 방금 놓친 단위를 다시(0층 · 당겨 낸 5층). other = 놓친 문항과 다른 계열의 문항인가.
 export const retryReason = (unit, state, other) => ({
@@ -40,9 +47,9 @@ export const retryReason = (unit, state, other) => ({
   evidence: unitEvidence(state),
 });
 
-// 돌아온 단위(1층). 놓친 적이 있으면 「흔들리는 것」, 없으면 「돌아온 것」.
-export function dueReason(unit, state, now) {
-  const days = elapsedDays(state, now);
+// 돌아온 단위(1층). 놓친 적이 있으면 「흔들리는 것」, 없으면 「돌아온 것」. day: 하루 경계({ dayStartHour, offset } — elapsedDays).
+export function dueReason(unit, state, now, day = {}) {
+  const days = elapsedDays(state, now, day);
   const evidence = unitEvidence(state);
   if (state.lapses > 0) {
     return {

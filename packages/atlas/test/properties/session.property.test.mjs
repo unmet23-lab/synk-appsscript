@@ -419,8 +419,11 @@ function reasonWrong(run, top) {
   const state = top.target ? run.mem(top.target) : null;
   const ability = learner.ability.get(top.item.skillId);
   const level = ability?.level ?? null;
+  // 며칠 만에 = 기기 하루(새벽 4시 경계)로 센 날 차이, 같은 하루면 0(Fable 5.2 끝 판 F4 — 정의를 옮겨 적지 않고 사실로 잰다)
+  const dayOf = at =>
+    Math.floor((at + (learner.dayOffset ?? 0) * 60_000 - PARAMS.dayStartHour * 3_600_000) / DAY);
   const elapsed =
-    state && run.has(top.target) ? Math.max(1, Math.round((run.now - state.lastAt) / DAY)) : null;
+    state && run.has(top.target) ? Math.max(0, dayOf(run.now) - dayOf(state.lastAt)) : null;
   switch (top.why.code) {
     case 'unit.retry':
       return (

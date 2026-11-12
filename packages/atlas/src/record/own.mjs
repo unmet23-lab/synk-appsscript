@@ -133,10 +133,28 @@ export function ownFoldEvents(entries, pending, { index, memo = () => null }) {
     for (const entry of members) covered.add(entry.key);
     out.push(...ownOfGroup(group, pending, index));
   }
+  const byId = new Map(entries.map(entry => [entry.event.id, entry]));
   for (const entry of entries)
-    if (pending.has(entry.key) && !covered.has(entry.key) && !standalone(entry.event))
+    if (
+      pending.has(entry.key) &&
+      !covered.has(entry.key) &&
+      !standalone(entry.event) &&
+      !aimsAtNothing(entry, byId)
+    )
       out.push(unknownOf(entry, memo(entry.event.id)));
   return out;
+}
+
+// 접기 재료가 아닌 사건(판 결정 · 마침 · 응답)을 겨눈 제외 — 겨눈 사건이 기기에 있으면 얹을 것이 없다(기다리지 않는다). 겨눈 사건이
+// 기기에 없을 때만 적어 둔 줄을 보거나 기다린다(Fable 5.2 끝 판 넘친 #1 — 「응답 빼기」가 밀린 동안 계정 보기가 통째로 기다렸다).
+const NOT_FOLDED = new Set([
+  EVENT_TYPES.setDecided,
+  EVENT_TYPES.setCompleted,
+  EVENT_TYPES.feedback,
+]);
+function aimsAtNothing(entry, byId) {
+  if (entry.event.type !== EVENT_TYPES.excluded) return false;
+  return NOT_FOLDED.has(byId.get(entry.event.targetId)?.event.type);
 }
 
 // 제외를 만들 때 그 답이 적힌 줄을 함께 적어 둔다(부모 사건이 기기에서 사라진 뒤에도 기다릴 줄을 안다 — 설계 §5-1).

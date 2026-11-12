@@ -251,6 +251,98 @@ test('옮긴 제시의 앞 답이 안 가고 남으면 그 제시의 뒤 답도 
   );
 });
 
+test('옮긴 제시의 도움 · 전달이 경계 앞에 남고 그 뒤에 첫 답이 오면 답도 고르지 않는다 — 계정에서 답을 보고 낸 답이 혼자 맞힌 답이 되지 않게(설계 주인 11-13 (가))', async () => {
+  const childBeforeLogout = async (item, child) => {
+    const guest = await guestOn(memoryPort());
+    clockMs += 60_000;
+    const shown = guest.add(EVENT_TYPES.presented, presented(item));
+    await shown.stored;
+    await moved(guest, 'Z', await planOf(guest, 1, { account: 'Z' }));
+    clockMs += 60_000;
+    const made = guest.add(child.type, { presentationId: shown.event.id, ...child.fields });
+    await made.stored;
+    await guest.mark({ mark: 'logout' });
+    clockMs += 60_000;
+    await attempt(guest, shown.event.id, 1, 'correct').stored;
+    return (await planOf(guest, 1, { account: 'Z' })).current;
+  };
+  const help = {
+    type: EVENT_TYPES.helped,
+    fields: { helpId: 'h1', level: 'answer', contentRef: 'c' },
+  };
+  assert.deepEqual(
+    await childBeforeLogout(items[0], help),
+    [],
+    '도움이 로그아웃 앞(누구 것인지 모름)에 남았으니 그 뒤 첫 답도 Z에게 가지 않는다',
+  );
+  assert.deepEqual(
+    await childBeforeLogout(items[1], {
+      type: EVENT_TYPES.delivery,
+      fields: { audio: 'completed' },
+    }),
+    [],
+    '전달도 같은 줄이다(소리 상태가 그 뒤 답의 판정에 쓰인다)',
+  );
+  // 경계가 없으면 옮긴 제시 뒤에 이어 낸 도움 · 답이 차례대로 함께 간다
+  const plain = await guestOn(memoryPort());
+  clockMs += 60_000;
+  const shown = plain.add(EVENT_TYPES.presented, presented(items[2]));
+  await shown.stored;
+  await moved(plain, 'Z', await planOf(plain, 1, { account: 'Z' }));
+  clockMs += 60_000;
+  const helped = plain.add(help.type, { presentationId: shown.event.id, ...help.fields });
+  await helped.stored;
+  const answer = attempt(plain, shown.event.id, 1, 'correct');
+  await answer.stored;
+  assert.deepEqual(
+    (await planOf(plain, 1, { account: 'Z' })).current.map(event => event.id),
+    [helped.event.id, answer.event.id],
+    '옮긴 제시 뒤의 도움 · 답은 함께 간다',
+  );
+});
+
+test('이번 옛 꼴 후보를 겨눈 2판 제외는 2판 몫과 따로 돌려준다(legacyExclusions) — 옛 꼴이 경계 앞으로 가면(옮긴 뒤) 다시 내지 않는다(설계 주인 11-13 (나))', async () => {
+  const guest = await guestOn(memoryPort());
+  const at = new Date(clockMs).toISOString();
+  const legacy = id => ({
+    schema: 1,
+    id,
+    scope: { domain: 'LAB', workspace: 'learning', subject: 'device' },
+    at,
+    recordedAt: at,
+    type: 'practice.presented',
+  });
+  await guest.importLegacy([legacy('legacy-a1'), legacy('legacy-b1')]);
+  const drop = guest.add(EVENT_TYPES.excluded, { targetId: 'legacy-a1' });
+  await drop.stored;
+  const plan = await planOf(guest, 1, { account: 'Z' });
+  assert.deepEqual(
+    plan.legacy.map(event => event.id),
+    ['legacy-a1', 'legacy-b1'],
+  );
+  assert.deepEqual(plan.current, [], '겨눈 옛 꼴은 이번에 고른 2판이 아니다');
+  assert.deepEqual(
+    plan.legacyExclusions.map(event => event.id),
+    [drop.event.id],
+  );
+  assert.equal(plan.legacyExclusions[0].revision, 1, '그 계정의 판으로 도장');
+  await guest.mark({
+    mark: 'moved',
+    account: 'Z',
+    revision: 1,
+    until: plan.until,
+    ids: ['legacy-b1'],
+  });
+  const later = await planOf(guest, 1, { account: 'Z' });
+  assert.deepEqual(later.legacy, []);
+  assert.deepEqual(
+    later.legacyExclusions,
+    [],
+    '보내지 않은 옛 꼴을 겨눈 제외는 다음 회차에도 없다',
+  );
+  assert.deepEqual(later.current, []);
+});
+
 test('로그아웃 앞 · 「이 기기에만 두기」로 둔 사건을 겨눈 제외는 Z가 그 뒤에 옮겼어도 Z에게 가지 않는다(카본 끝 판 E1)', async () => {
   const guest = await guestOn(memoryPort());
   const before = await practise(guest, items[0]);
@@ -299,6 +391,31 @@ test('고르기는 읽은 자리까지만 — 꼬리를 읽기 전의 내 덧붙
     '두 계획을 합치면 꼭 한 번씩',
   );
   assert.equal(guest.marks().length, 1, '내 표지를 꼬리에서 다시 읽어도 한 번');
+});
+
+test('같은 옛 꼴이 두 열쇠에 서면(차례 없이 겹쳐 옮김) 어느 탭이든 앞 열쇠로 든다 — 로그아웃이 그 사이에 서도 다음 계정의 후보가 아니다(Fable 5.2 끝 판 넘친 #11)', async () => {
+  const port = memoryPort();
+  const first = await guestOn(port);
+  const second = await guestOn(port);
+  const at = new Date(clockMs).toISOString();
+  const old = {
+    schema: 1,
+    id: 'old-p1',
+    scope: { domain: 'LAB', workspace: 'learning', subject: 'device' },
+    at,
+    recordedAt: at,
+    type: 'practice.presented',
+  };
+  await first.importLegacy([old]);
+  await first.mark({ mark: 'logout' });
+  // 둘째 탭은 꼬리를 읽지 않은 채 같은 옛 꼴을 또 옮긴다 — 그 탭은 제 덧붙이기(로그아웃 뒤 열쇠)로 먼저 든다
+  await second.importLegacy([old]);
+  for (const record of [second, first, await guestOn(port)])
+    assert.deepEqual(
+      (await planOf(record, 1, { account: 'B' })).legacy,
+      [],
+      '로그아웃 앞(앞 열쇠)의 옛 꼴은 B에게 가지 않는다 — 덧붙인 탭 · 다른 탭 · 새로 연 기록부가 같다',
+    );
 });
 
 test('옛 꼴도 열쇠 경계 뒤의 것만 후보로 돌려준다 — Z에게 옮긴 뒤 · 로그아웃 뒤의 남에게는 다시 내지 않는다(C1)', async () => {

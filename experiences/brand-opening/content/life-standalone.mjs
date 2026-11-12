@@ -24655,7 +24655,7 @@ function createWorldEducation({
     const count = practiceLength(), skill2 = { id: skillId, label: skillLabel(skillId) };
     const session = atlasNext.createPracticeNextSession({ coach: next2, pool, setPool: all, length: count, audioAvailable, more, lang: currentLang2(), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
     let ended = false, notice = "", unwatch = () => {
-    };
+    }, finishing = false, changedWhileFinishing = false;
     const player = soundPlayer({ session, url: audioUrl, onChange: (state) => {
       if (ended) return;
       notice = state === "failed" && session.current?.heard ? t2("position.diagnostic.audioFailed") : "";
@@ -24675,6 +24675,10 @@ function createWorldEducation({
     home.showPanel(t2(listening ? "practice.title.listening" : "practice.title"), '<div class="wpos-stage" data-practice-stage></div>', { ...PANEL, eyebrow: "PRACTICE" });
     home.attachPanelResource?.({ dispose: stop });
     unwatch = atlasNext.retired?.(next2, () => {
+      if (finishing) {
+        changedWhileFinishing = true;
+        return;
+      }
       if (ended) return;
       stop();
       home.toast(t2("practice.next.changed"));
@@ -24712,7 +24716,6 @@ function createWorldEducation({
       paint();
       top();
     }
-    let finishing = false;
     async function finish() {
       if (finishing || ended && !box.isConnected) return;
       finishing = true;
@@ -24724,8 +24727,20 @@ function createWorldEducation({
       } catch {
       }
       if (!box.isConnected) return;
+      if (changedWhileFinishing) {
+        unwatch();
+        home.toast(t2("practice.next.changed"));
+        void openPosition();
+        return;
+      }
+      let more2 = null;
+      try {
+        more2 = session.freshLeft();
+      } catch {
+        more2 = null;
+      }
       const set = finishSet(next2, "short");
-      box.innerHTML = view.renderPracticeNextDone({ skill: skill2, results, items: new Map([...position.itemsById, ...all.map((item) => [item.id, item])]), listening, count, more: session.freshLeft(), ending: session.ending, response: responseView(set, "short") });
+      box.innerHTML = view.renderPracticeNextDone({ skill: skill2, results, items: new Map([...position.itemsById, ...all.map((item) => [item.id, item])]), listening, count, more: more2, ending: session.ending, response: responseView(set, "short") });
       bindResponse({ box, coachNow: next2, set, kind: "short", next: true });
       box.querySelector("[data-practice-done]")?.focus?.({ preventScroll: true });
       top();

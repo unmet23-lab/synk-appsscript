@@ -123,7 +123,13 @@ function resetRead(state) {
 }
 
 function takeEvent(state, value, key) {
-  if (state.held.has(value.event.id)) return;
+  const held = state.held.get(value.event.id);
+  if (held) {
+    // 같은 번호가 두 열쇠에 섰다(차례 없이 겹쳐 옮긴 옛 기록 — R10에서 받아들인 것). 더 작은 열쇠(포트 차례)로 맞춰 어느 탭 · 새로 연
+    // 기록부가 읽어도 같은 열쇠로 든다 — 표지가 두 열쇠 사이에 서면 탭마다 옮길 옛 꼴이 갈렸다(Fable 5.2 끝 판 넘친 #11). 자리는 그대로.
+    if (key < held.key) held.key = key;
+    return;
+  }
   state.positions += 1;
   state.held.set(value.event.id, {
     event: value.event,
@@ -252,8 +258,10 @@ function keptIds(state, pending) {
   const keep = new Set();
   for (const group of groupsOf([...state.held.values()].map(entryOf)).values()) {
     const members = [group.source, ...group.children, ...group.exclusions].map(e => e.event.id);
+    // 서버가 버린 제시에는 답이 달려도 서버가 받지 않는다 — 답을 기다리며 남기지 않는다(Fable 5.2 끝 판 넘친 #12).
     const open =
       group.source.event.type === EVENT_TYPES.presented &&
+      !state.dropped.has(group.source.event.id) &&
       !group.children.some(child => child.event.type === EVENT_TYPES.attempted);
     if (open || members.some(id => pending.has(id))) for (const id of members) keep.add(id);
   }
@@ -264,10 +272,15 @@ function keptIds(state, pending) {
   return keep;
 }
 
+// 서버가 번호를 짚어 버린 사건(dropped)은 받은 표지가 없어 접힌 적이 없다 — 접힌 것과 같이 친다. 아니면 영영 남아 보기 · 대기열 ·
+// 묶음 짓기에 계속 실렸다(Fable 5.2 끝 판 넘친 #12).
 function staleIds(state, floor) {
   const keep = keptIds(state, pendingIds(state));
   return [...state.held.keys()].filter(
-    id => folded(state, id) && Date.parse(state.held.get(id).event.at) < floor && !keep.has(id),
+    id =>
+      (folded(state, id) || state.dropped.has(id)) &&
+      Date.parse(state.held.get(id).event.at) < floor &&
+      !keep.has(id),
   );
 }
 
@@ -300,11 +313,23 @@ const movedIds = (marks, account, revision) =>
 // 묶음의 머리 — 제시 · 본인 말 · 판 결정 · 장부. 자식(전달 · 도움 · 답 · 마침 · 응답 · 제외)은 부모를 따라간다.
 const isHead = event => parentOf(event) == null;
 
+// 제시의 자식 — 전달 · 도움 · 답. 같은 제시의 자식은 차례가 뜻을 가진다: 뒤 답은 앞 답에 기대고(§18-4 시도 번호), 답의 판정은 그 앞의
+// 도움 · 전달에 기댄다(adapt.mjs — 첫 답 앞의 도움이 있어야 도움 받은 답, 소리 상태는 전달에서). 그래서 열쇠 차례의 앞머리로만 옮기고
+// 보낸다(설계 주인 11-13 — 카본 다시 A1 ② · GPT 다시 GA1 · GA3 · GA4).
+const PRESENTATION_CHILDREN = new Set([
+  EVENT_TYPES.delivery,
+  EVENT_TYPES.helped,
+  EVENT_TYPES.attempted,
+]);
+const ofPresentation = event => PRESENTATION_CHILDREN.has(event.type);
+
 // 2판 사건 고르기 — 머리가 열쇠 경계 뒤이고 그 시각이 남이 다녀간 기준 시각(others) 뒤인 묶음. 장부는 기준 시각(all — 자기 결정 포함)이
 // 0일 때만(장부에는 든 일이 언제 것인지 가릴 재료가 없다 — 결정 2의 보수 쪽). 자식 · 제외는 이번에 고른 부모를 따라가고, 열쇠 경계
 // 뒤에 덧붙은 것은 부모를 Z가 이 판으로 이미 옮겨 갔으면(moved — 옮김 표지의 ids) 머리와 같이 남이 다녀간 기준 시각 뒤일 때만 따라간다
-// (Z가 옮긴 뒤 남 · 기기 길 계정이 탭에 남은 제시에 낸 답이 Z로 가지 않게 — 카본 다시 A1 ①). 막힌 제시(stalled — 앞 답이 이번에도
-// 앞서도 안 간 제시)의 뒤 답은 고르지 않는다 — 앞 답 없이 뒤 답만 가면 서버가 차례(EVENT_LINK)로 영구히 버린다(같은 A1 ②).
+// (Z가 옮긴 뒤 남 · 기기 길 계정이 탭에 남은 제시에 낸 답이 Z로 가지 않게 — 카본 다시 A1 ①). 막힌 제시(stalled — 이번에 고르지 않았고
+// 앞서 옮기지도 않은 전달 · 도움 · 답이 있는 제시)는 거기서 멈추고 그 뒤 전달 · 도움 · 답은 고르지 않는다 — 1번 답 없이 2번만 가면 서버가
+// 차례(EVENT_LINK)로 영구히 버리고, 경계 앞에 남은 도움 없이 그 뒤 답만 가면 계정에서 답을 보고 낸 답이 혼자 맞힌 답이 된다(근거를
+// 부풀린다 — GD1과 같은 까닭). 제외는 겨눈 것(이번에 고른 것 · ids에 든 것)만 따라가고 막힘을 걸지 않는다.
 function takes(item, picked, { edge, moved, others, all }, stalled) {
   const { event } = item;
   if (isHead(event))
@@ -313,23 +338,24 @@ function takes(item, picked, { edge, moved, others, all }, stalled) {
       Date.parse(event.at) > others &&
       (event.type !== EVENT_TYPES.carried || all === 0)
     );
-  if (event.type === EVENT_TYPES.attempted && stalled.has(event.presentationId)) return false;
+  if (ofPresentation(event) && stalled.has(event.presentationId)) return false;
   const parent = parentOf(event);
   return (
     picked.has(parent) || (item.key > edge && Date.parse(event.at) > others && moved.has(parent))
   );
 }
-// 대기열에서 건너뛸 사건인가(unsent) — 건너뛸 번호 자신 · 그것에 기댄 자식(부모 사슬), 답 하나가 건너뛰어진 제시의 뒤 답(같은 제시의
-// 답은 앞 답에 기댄다 — §18-4). 건너뛰면 그 번호를 막힌 것에 더한다(자손이 따라 걸린다).
+// 대기열에서 건너뛸 사건인가(unsent) — 건너뛸 번호 자신 · 그것에 기댄 자식(부모 사슬), 자식 하나가 건너뛰어진 제시의 뒤 전달 · 도움 ·
+// 답(고르기와 같은 앞머리 규칙 — 건너뛴 도움이 못 올라가는 동안 답만 올라가면 서버 요약에 혼자 맞힌 답으로 굳는다). 건너뛰면 그 번호를
+// 막힌 것에 더한다(자손이 따라 걸린다). 덜 보내는 쪽이고 버리지 않는다.
 function skipped(event, blocked, stalled) {
-  const attempt = event.type === EVENT_TYPES.attempted;
+  const child = ofPresentation(event);
   const leans =
     blocked.has(event.id) ||
     blocked.has(parentOf(event)) ||
-    (attempt && stalled.has(event.presentationId));
+    (child && stalled.has(event.presentationId));
   if (!leans) return false;
   blocked.add(event.id);
-  if (attempt) stalled.add(event.presentationId);
+  if (child) stalled.add(event.presentationId);
   return true;
 }
 
@@ -339,9 +365,8 @@ function pickCurrent(items, rule) {
   return items.filter(item => {
     const { event } = item;
     if (!takes(item, picked, rule, stalled)) {
-      // 고르지 않은 답이 앞서 옮겨 간 것도 아니면 그 제시는 막혔다 — 뒤 답은 앞 답에 기댄다(§18-4).
-      if (event.type === EVENT_TYPES.attempted && !rule.moved.has(event.id))
-        stalled.add(event.presentationId);
+      // 고르지 않은 제시의 자식이 앞서 옮겨 간 것도 아니면 그 제시는 거기서 멈춘다 — 뒤 자식은 앞 자식에 기댄다.
+      if (ofPresentation(event) && !rule.moved.has(event.id)) stalled.add(event.presentationId);
       return false;
     }
     picked.add(event.id);
@@ -584,11 +609,12 @@ export function createRecord({
     // 돌려보낸 사건을 가려낸 것 — 버리지 않는다)이고, 그것에 기댄 사건(부모 사슬 — 그 제시의 전달 · 도움 · 답, 그것들을 겨눈 제외,
     // 그 결정의 마침 · 응답)도 함께 건너뛰고 그 너머를 읽는다(단계 4 §18-5-2 R12 · R13). 부모 없이 보내면 서버가 EVENT_LINK로 빼고
     // 기기가 그것을 버려, 부모가 올라간 뒤에도 다시 가지 않았다(s9). 부모는 늘 앞 열쇠라 한 번 훑기로 사슬이 다 걸린다.
-    // 같은 제시의 답은 앞 답에도 기댄다(§18-4) — 답 하나를 건너뛰면 그 제시의 뒤 답도 건너뛴다. 1번 없이 2번을 보내면 서버가
-    // EVENT_LINK로 짚어 기기가 멀쩡한 2번을 영구히 버렸다(GPT 끝 판 GE2 · 카본 E2).
+    // 같은 제시의 자식(전달 · 도움 · 답)은 앞 자식에도 기댄다 — 하나를 건너뛰면 그 제시의 뒤 자식도 건너뛴다(고르기와 같은 앞머리 규칙).
+    // 1번 없이 2번을 보내면 서버가 EVENT_LINK로 짚어 기기가 멀쩡한 2번을 영구히 버렸고(GPT 끝 판 GE2 · 카본 E2), 건너뛴 도움 없이 답만
+    // 올라가면 서버 요약에 혼자 맞힌 답으로 굳는다(설계 주인 11-13).
     unsent(limit = 256, skip = null) {
       const blocked = new Set(skip ?? []);
-      const stalled = new Set(); // 답 하나가 건너뛰어진 제시
+      const stalled = new Set(); // 자식 하나가 건너뛰어진 제시
       const out = [];
       for (const item of [...state.held.values()].sort((a, b) => a.key - b.key)) {
         const event = item.event;
@@ -751,11 +777,31 @@ export function createRecord({
           all: watermarks.all ?? 0,
         },
       );
+      const legacy = items
+        .filter(item => !isCurrent(item.event) && item.key > edge)
+        .map(item => item.event);
+      // 이번 옛 꼴 후보를 겨눈 2판 제외 — 옛 POST가 그 사건을 실제로 보냈을 때만 같은 회차에 함께 간다(move.mjs). 위 고르기에서는 겨눈
+      // 옛 꼴이 picked에 없어 못 가고, 다음 회차에는 열쇠가 until 앞이라 못 가 기기에서 거둔 답이 계정에 남았다(설계 주인 11-13 — GPT
+      // 다시 GA2 (b)). 앞서 보내 ids에 든 옛 꼴을 겨눈 것은 위 고르기의 지금 규칙(경계 뒤 · others 뒤)이다. 제외를 겨눈 제외는 없어(linkOk)
+      // 사슬은 한 겹이다.
+      const candidates = new Set(legacy.map(event => event.id));
+      const chosen = new Set(current.map(item => item.event.id));
+      const alongside = items.filter(
+        item =>
+          item.event.type === EVENT_TYPES.excluded &&
+          isCurrent(item.event) &&
+          candidates.has(item.event.targetId) &&
+          !chosen.has(item.event.id),
+      );
+      const stamp = item => ({ ...item.event, revision: accountRevision });
       return {
         until,
-        legacy: items.filter(item => !isCurrent(item.event) && item.key > edge).map(i => i.event),
-        current: current.map(item => ({ ...item.event, revision: accountRevision })),
-        touches: new Map(current.filter(i => i.touches).map(i => [i.event.id, i.touches])),
+        legacy,
+        current: current.map(stamp),
+        legacyExclusions: alongside.map(stamp),
+        touches: new Map(
+          [...current, ...alongside].filter(i => i.touches).map(i => [i.event.id, i.touches]),
+        ),
       };
     },
 

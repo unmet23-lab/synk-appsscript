@@ -541,7 +541,10 @@ export function createCoach(options = {}) {
         .filter(([, line]) => memory.has(line) && memory.isDue(line, now))
         .map(([unit, line]) => ({
           unit,
-          days: elapsedDays(line, now),
+          days: elapsedDays(line, now, {
+            dayStartHour: state.host.params?.dayStartHour ?? 4,
+            offset: dayOffset,
+          }),
           lapses: line.lapses,
           sittings: line.sittings,
           recall: memory.retrievability(line, now),

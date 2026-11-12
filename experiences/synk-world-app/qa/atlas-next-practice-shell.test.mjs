@@ -40,18 +40,18 @@ function fakeSession({views=[],ending={kind:'done'},fresh=3}={}){
 }
 
 // 손님 셸 하나 — 판을 열 때마다 셸이 넘긴 값(opened)을 남기고, 다음 가짜 판(sessions의 앞)을 준다.
-function world(sessions){
+function world(sessions,{retired=null,toasts=[]}={}){
  const opened=[];
  let box=null;
  const values=new Map();
  const progress={owner:'guest',learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>({audio:'on'}),
   status:()=>({phase:'synced',rejected:false,scoped:false,message:''}),exportSnapshot:()=>({}),flush:async()=>{},hangulReading:()=>({answer:'reads'})};
- const home={updateStudy(){},toast(){},closePanel(){},attachPanelResource(){},showPanel:(title,html)=>{if(/data-practice-stage/.test(html))box=stage();}};
+ const home={updateStudy(){},toast:message=>toasts.push(message),closePanel(){},attachPanelResource(){},showPanel:(title,html)=>{if(/data-practice-stage/.test(html))box=stage();}};
  const target={localStorage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)},
   addEventListener(){},removeEventListener(){},setTimeout,document:{querySelector:selector=>/data-practice-stage/.test(selector)?box:null}};
- const atlasNext={practiceCoach:async()=>({}),createPracticeNextSession:options=>{opened.push(options);return fakeSession(sessions.shift());}};
+ const atlasNext={practiceCoach:async()=>({}),createPracticeNextSession:options=>{opened.push(options);const next=sessions.shift();return typeof next?.settled==='function'?next:fakeSession(next);},...(retired?{retired}:{})};
  const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},position:worldPosition,target,atlasNext});
- return {education,opened,box:()=>box};
+ return {education,opened,toasts,box:()=>box};
 }
 
 // 셸의 일(판 열기 · 판 끝)은 비동기다 — 조건이 설 때까지 틱을 넘긴다(한도 안에서).
@@ -96,4 +96,23 @@ test('끈질긴 단위 힌트는 듣기 문항이면 듣기 꼴(「들으면서�
   assert.doesNotMatch(w.box().html,other);
   assert.match(w.box().html,/「시계」/);
  }
+});
+
+test('판 끝이 답 저장을 기다리는 사이 판이 바뀌면 끝 화면 대신 안내 한 줄과 함께 닫는다 — 닫힌 코치의 남은 수를 못 세도 끝 화면이 서고 거절이 새지 않는다(넘친 #10)',async()=>{
+ const skillId=worldPosition.practice.pool.find(item=>/^ko.reading./.test(item.skillId)).skillId;
+ let release=null,watcher=null;
+ const held={...fakeSession(),settled:()=>new Promise(resolve=>{release=resolve;}),freshLeft:()=>{throw Object.assign(Error('DISPOSED'),{code:'DISPOSED'});}};
+ const toasts=[];
+ const w=world([held],{toasts,retired:(_coach,fn)=>{watcher=fn;return()=>{watcher=null;};}});
+ await w.education.practice(skillId);
+ await until(()=>typeof release==='function');
+ assert.equal(typeof watcher,'function','판이 바뀌면 부를 함수를 건다');
+ watcher({reason:'account'});
+ release([]);
+ await until(()=>toasts.length>0);
+ assert.equal(done(w),false,'끝 화면을 그리지 않는다');
+ assert.equal(toasts.length,1,'안내 한 줄');
+ const plain=world([{...fakeSession(),freshLeft:()=>{throw Object.assign(Error('DISPOSED'),{code:'DISPOSED'});}}]);
+ await plain.education.practice(skillId);
+ await until(()=>done(plain)); // freshLeft가 던져도(닫힌 코치) 끝 화면이 선다 — 남은 수는 모름(null)으로 그린다
 });

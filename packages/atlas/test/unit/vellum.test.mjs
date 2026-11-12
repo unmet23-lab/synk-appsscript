@@ -225,3 +225,56 @@ test('영어 · 몽골어 줄 — 짧은 연습에 보이는 종류마다 있고
     '하루는 단수',
   );
 });
+
+test('같은 하루(기기 새벽 4시 경계)에 돌아온 말은 날 수를 말하지 않는다 — 한국어 · 영어 · 몽골어(Fable 5.2 끝 판 F4 · 설계 주인 11-13)', () => {
+  const line = (lang, code, slots) =>
+    render({ code, slots: { unit: 'u', ...slots } }, { lang, label: () => '은행' });
+  const one = { reviews: 1, misses: 1, days: 0 };
+  const many = { reviews: 3, misses: 2, days: 0 };
+  assert.equal(line('ko', 'unit.shaky', one), '오늘 놓친 「은행」, 다시 만나요.');
+  assert.equal(
+    line('ko', 'unit.shaky', many),
+    '「은행」 3번 중 2번 놓쳤어요. 오늘 한 번 더 만나요.',
+  );
+  assert.equal(
+    line('ko', 'unit.due', { days: 0 }),
+    '오늘 만난 「은행」, 잊기 전에 한 번 더 만나요.',
+  );
+  assert.equal(
+    line('en', 'unit.shaky', one),
+    'You missed ‘은행’ earlier today — here it is again.',
+  );
+  assert.equal(
+    line('en', 'unit.shaky', many),
+    '‘은행’: missed 2 out of 3 times. Back again today.',
+  );
+  assert.equal(
+    line('en', 'unit.due', { days: 0 }),
+    'You saw ‘은행’ earlier today. Let’s review it once more before it fades.',
+  );
+  assert.equal(line('mn', 'unit.shaky', one), 'Өнөөдөр алдсан үг хэллэг: «은행». Дахин давтъя.');
+  assert.equal(
+    line('mn', 'unit.shaky', many),
+    '«은행»: 3 оролдлогоос 2 удаа алдсан. Өнөөдөр дахин давтъя.',
+  );
+  assert.equal(
+    line('mn', 'unit.due', { days: 0 }),
+    '«은행»: өнөөдөр үзсэн. Мартахаасаа өмнө дахин нэг давтъя.',
+  );
+  for (const lang of ['ko', 'en', 'mn'])
+    for (const [code, slots] of [
+      ['unit.shaky', one],
+      ['unit.shaky', many],
+      ['unit.due', { days: 0 }],
+    ])
+      assert.doesNotMatch(
+        line(lang, code, slots),
+        /\b0\b|0일|0 хоног/,
+        `${lang} ${code}: 0일을 말하지 않는다`,
+      );
+  assert.equal(
+    line('ko', 'unit.shaky', { ...one, days: 2 }),
+    '지난번에 놓친 「은행」, 2일 만에 다시 만나요.',
+    '하루를 넘기면 날 수를 그대로',
+  );
+});
