@@ -34,8 +34,8 @@ test('the photo review screen speaks of photos: tag, sentence, note box without 
   assert.match(html,/<div class="sx-say-row"><textarea name="text" rows="1" required maxlength="3000" placeholder="이 사진에 남길 의견" aria-label="이 사진에 남길 의견" data-grow>/,'no clock in front of the note box');
   assert.match(html,/<input type="hidden" name="seconds" value="">/,'the form still sends an empty time');
   assert.match(html,/<p class="sx-j-hint" data-when="typing">사진에서 고칠 곳은 <span class="is-wide">오른쪽<\/span><span class="is-phone">사진 아래<\/span> 의견 칸에 남겨 주세요\.<\/p>/);
-  assert.match(html,/<p id="video-error" class="sx-small sx-review-error" data-photo-error hidden>사진을 불러오지 못했어요\. 인터넷 연결을 확인하고, 계속 안 되면 담당자에게 알려 주세요\.<\/p>/);
-  assert.match(html,/<div class="sx-dr-box" data-film-box><button type="button" class="sx-dr-zoom" data-action="image" data-src="[^"]*\/pulse\/api\/media\/v1" data-label="1차 사진" data-close="닫기" aria-label="1차 사진 크게 보기"><img src="[^"]*\/pulse\/api\/media\/v1" alt="1차 사진" data-photo-shot><\/button><\/div>/,'the photo itself, no player — press it to see it larger');
+  assert.match(html,/<p id="video-error" class="sx-small sx-review-error" data-photo-error role="alert" hidden>사진을 불러오지 못했어요\. 인터넷 연결을 확인하고, 계속 안 되면 담당자에게 알려 주세요\.<\/p>/);
+  assert.match(html,/<div class="sx-dr-box" data-film-box><button type="button" class="sx-dr-zoom" data-action="image" data-src="[^"]*\/pulse\/api\/media\/v1" data-label="1차 사진" data-close="닫기" data-zoom="확대해서 보기" aria-label="1차 사진 크게 보기"><img src="[^"]*\/pulse\/api\/media\/v1" alt="1차 사진" data-photo-shot><\/button><\/div>/,'the photo itself, no player — press it to see it larger');
   assert.doesNotMatch(html,VIDEO_WORDS);
   // 영상 상품은 그대로다.
   const film=projectView(state(project('s15',{versions:[clip('v1','1차 시안')]})));
@@ -162,13 +162,28 @@ test('a photo takes its own shape and opens larger; five finished photos fill th
   // 크게 보기: 기존 그림 창을 쓰고, 닫기 이름표만 화면 언어로 넘긴다(다른 화면이 여는 그림 창은 전과 같다).
   assert.match(dialogContent('image',{src:'/pulse/api/media/v1',label:'1차 사진',closeLabel:'닫기'}),/^<button class="dialog-close" type="button" data-action="close-dialog" aria-label="닫기">×<\/button><img src="\/pulse\/api\/media\/v1" alt="1차 사진" /);
   assert.match(dialogContent('image',{src:'/pulse/api/media/v1',label:'참고'}),/aria-label="이미지 닫기">×<\/button>/);
-  assert.match(read('app.mjs'),/if\(action==='image'\)\{openDialog\('image',\{src:button\.dataset\.src,label:button\.dataset\.label,\.\.\.\(button\.dataset\.close\?\{closeLabel:button\.dataset\.close\}:\{\}\)\}\);if\(button\.dataset\.close\)dialog\.classList\.add\('is-photo'\);return;\}/);
+  assert.match(read('app.mjs'),/if\(action==='image'\)\{openDialog\('image',\{src:button\.dataset\.src,label:button\.dataset\.label,\.\.\.\(button\.dataset\.close\?\{closeLabel:button\.dataset\.close,zoomLabel:button\.dataset\.zoom\}:\{\}\)\}\);if\(button\.dataset\.close\)dialog\.classList\.add\('is-photo'\);return;\}/);
+  // 사진 창 안의 사진은 누르면 키워 보는 단추다(다른 그림 창은 그림 그대로). 누르면 그 칸의 크기를 붙들고 사진만 2.5배로 키워 그 안에서 밀어 본다.
+  assert.equal(dialogContent('image',{src:'/pulse/api/media/v1',label:'1차 사진',closeLabel:'닫기',zoomLabel:'확대해서 보기'}),'<button class="dialog-close" type="button" data-action="close-dialog" aria-label="닫기">×</button><div class="dialog-photo-view"><button type="button" class="dialog-photo" data-action="photo-zoom" aria-pressed="false" aria-label="확대해서 보기"><img src="/pulse/api/media/v1" alt="1차 사진" referrerpolicy="no-referrer"></button></div><h2 id="dialog-title">1차 사진</h2>');
+  assert.equal(dialogContent('image',{src:'/pulse/api/media/v1',label:'참고'}),'<button class="dialog-close" type="button" data-action="close-dialog" aria-label="이미지 닫기">×</button><img src="/pulse/api/media/v1" alt="참고" referrerpolicy="no-referrer"><h2 id="dialog-title">참고</h2>','any other picture dialog is as before');
+  const zoom=read('app.mjs').split(/\r?\n/).find(line=>line.startsWith("  if(action==='photo-zoom'){"));
+  assert.ok(zoom,'the zoom action has its own line');
+  assert.match(zoom,/const view=button\.parentElement,img=button\.querySelector\('img'\),on=button\.getAttribute\('aria-pressed'\)!=='true';/);
+  assert.match(zoom,/w=Math\.min\(r\.width,r\.height\*ratio\),h=w\/ratio,/,'the picture inside a letterboxed element, not the element');
+  assert.match(zoom,/room=Math\.max\(box\.height,parseFloat\(getComputedStyle\(img\)\.maxHeight\)\|\|0\),/,'the room the dialog may use, read before the picture grows');
+  assert.match(zoom,/view\.style\.width=box\.width\+'px';view\.style\.height=Math\.min\(h\*2\.5,room\)\+'px';img\.style\.width=w\*2\.5\+'px';img\.style\.height=h\*2\.5\+'px';button\.setAttribute\('aria-pressed','true'\);const now=view\.getBoundingClientRect\(\);/);
+  assert.match(zoom,/view\.scrollLeft=x\*w\*2\.5-\(event\.detail\?event\.clientX-now\.left:now\.width\/2\);view\.scrollTop=y\*h\*2\.5-\(event\.detail\?event\.clientY-now\.top:now\.height\/2\);/,'the pressed point stays under the pointer; a key press zooms on the middle');
+  assert.match(zoom,/\}else\{view\.style\.width=view\.style\.height=img\.style\.width=img\.style\.height='';button\.setAttribute\('aria-pressed','false'\);\}return;\}$/);
+  for(const rule of ['.dialog-photo-view{overflow:auto;overscroll-behavior:contain}','.dialog-photo{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}','.dialog-photo[aria-pressed=true]{width:max-content;margin-inline:auto;cursor:zoom-out}','html.sx #app-dialog.image-dialog.is-photo .dialog-photo[aria-pressed=true] img{max-width:none;max-height:none}','.dialog-photo:focus-visible{outline:2px solid var(--sx-ink);outline-offset:-2px}'])assert.ok(legacy.includes(rule),rule);
+  // 사진을 못 불러오면: 꺼진 단추의 이름은 보이는 글(「이미지를 불러오지 못했어요」)이고 돋보기 커서가 남지 않는다. 안내 줄은 알림으로 읽힌다(위 첫 시험의 role="alert").
+  assert.match(read('app.mjs'),/parent\.disabled=true;parent\.textContent=t\('이미지를 불러오지 못했어요'\);parent\.classList\.add\('empty-visual'\);parent\.removeAttribute\('aria-label'\);\}/);
+  assert.ok(legacy.includes('.sx-dr-zoom:disabled{cursor:default}'));
   assert.ok(legacy.includes('html.sx #app-dialog.image-dialog.is-photo .dialog-close{text-shadow:0 0 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8)}'),'the close mark stays visible over a bright photo');
   // 휴대폰 폭: 사진 창은 화면 폭을 다 쓴다(상자 안의 사진보다 작아지지 않게). 다른 그림 창은 표식이 없어 그대로다.
   assert.match(legacy,/@media \(max-width:820px\)\{html\.sx #app-dialog\.image-dialog\.is-photo\{width:100vw;max-width:100vw;max-height:100dvh;margin-inline:0\}html\.sx #app-dialog\.image-dialog\.is-photo img\{width:100%;max-height:calc\(100dvh - 44px\)\}\}/);
   // 최종본도 같은 단추다(납품 화면).
   const done=project('photo',{stage:'delivered',versions:[shot('v1','1차','preview',{approvedAt:at}),shot('f1','완성 1','final',{approvedPreviewId:'v1'})],extra:{closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:true,files:[{id:'f1',label:'완성 1'}]}}});
-  assert.match(projectView(state(done)),/<button type="button" class="sx-dr-zoom" data-action="image" data-src="[^"]*\/pulse\/api\/media\/f1" data-label="완성 1" data-close="닫기" aria-label="완성 1 크게 보기"><img /);
+  assert.match(projectView(state(done)),/<button type="button" class="sx-dr-zoom" data-action="image" data-src="[^"]*\/pulse\/api\/media\/f1" data-label="완성 1" data-close="닫기" data-zoom="확대해서 보기" aria-label="완성 1 크게 보기"><img /);
   // 다섯 장: 6열 격자에 윗줄 두 장(3열씩) · 아랫줄 석 장(2열씩). 받은 자료 칸(표식 없음)의 격자는 그대로다.
   const film=read('film.css');
   assert.match(film,/\.sx-room-files\.is-shots\[data-count="5"\]\{grid-template-columns:repeat\(6,1fr\)\}\s*\.sx-room-files\.is-shots\[data-count="5"\] img\{grid-column:span 2\}\s*\.sx-room-files\.is-shots\[data-count="5"\] img:nth-child\(-n\+2\)\{grid-column:span 3\}/);
@@ -196,11 +211,11 @@ test('the leftover film words on a photo order: install note, the send dialog, t
   assert.match(send({kind:'script',paid:true}),/<h2 id="dialog-title">고객에게 글 콘티를 보낼까요\?<\/h2><p>1컷을 보내요\. 그림이 빠진 컷이 있어 글 콘티로 보내요\. 고객이 확인하면 장면 이미지를 준비해요\.<\/p>/);
   // 시안 · 최종본 올리기 양식: 사진 의뢰에만 올리는 법 한 줄(판 하나에 파일 하나 — 서버 addVersion).
   const views=read('views.mjs');
-  assert.match(views,/\$\{isPhoto\(s\.project\)\?'<p class="small" data-photo-upload-note>사진 의뢰: 판 하나에 파일 하나예요\. 시안을 장마다 따로 올리면 마지막 장만 최신 시안이 되고 앞 장은 수정 전 판으로 보여요 — 시안은 한 장에 모아 올리고, 최종본은 장마다 따로 올려요\(고객 방에 여섯 장까지 나란히 걸려요\)\.<\/p>':''\}<div class="button-row">\$\{submit\('고객에게 보내기'\)\}/);
+  assert.match(views,/\$\{isPhoto\(s\.project\)\?'<p class="small" data-photo-upload-note>사진 의뢰: 판 하나에 파일 하나예요\. 시안을 장마다 따로 올리면 마지막 장만 최신 시안이 되고 앞 장은 수정 전 판으로 보여요 — 시안은 한 줄에 두 장씩 세로로 이어 한 장에 모아 올리고\(가로로 길게 붙이면 휴대폰에서 장마다 너무 작아요\), 최종본은 장마다 따로 올려요\(고객 방에 여섯 장까지 나란히 걸려요\)\.<\/p>':''\}<div class="button-row">\$\{submit\('고객에게 보내기'\)\}/);
   // 작업 소식 창의 예시 글.
   assert.match(dialogContent('desk-progress',{photo:true}),/placeholder="예\) 둘째 장을 만들고 있어요\. 손 모양을 다듬는 중이에요\."/);
   assert.match(dialogContent('desk-progress',{}),/placeholder="예\) 2번 컷 장면 이미지를 그리고 있어요\. 손 모양을 다듬는 중이에요\."/);
-  // 결제가 취소된 방: 사진 의뢰에는 글 콘티가 없다.
+  // 결제가 취소된 방: 사진 의뢰에는 「글 콘티」를 약속하지 않는다(사진 의뢰는 그림이 붙은 첫 장으로 가는 것이 보통이다 — 글 콘티 판으로 나간 적이 있어도 틀린 말은 아니다).
   const cancelled=pkg=>{const p=project(pkg,{stage:'planning'});p.studio.request={...p.studio.request,approvedAt:'',approvedRound:null,scriptApprovedAt:pkg==='photo'?'':at,rounds:[{round:1,kind:pkg==='photo'?'images':'script',oneLine:'한 줄',scenes:[{id:'s1',revision:1}],sentAt:at,approvedAt:at}],payment:{status:'cancelled',requestedAt:at,cancelledAt:at,amount:150000}};return roomView(roomModel(p));};
   assert.match(cancelled('photo'),/다시 진행하시려면 담당자에게 알려 주세요\. 보내 주신 자료는 그대로 있어요\./);assert.doesNotMatch(cancelled('photo'),/글 콘티/);
   assert.match(cancelled('s15'),/다시 진행하시려면 담당자에게 알려 주세요\. 보내 주신 자료와 글 콘티는 그대로 있어요\./);
@@ -224,7 +239,7 @@ test('in English a photo order never reads film or watch on the review, approval
     await setLocale('en');
     const photo=screens('photo',shot),words=photo.replace(/<(?:script|style)[\s\S]*?<\/(?:script|style)>/g,' ').replace(/<[^>]*?(?:aria-label|placeholder|alt|title)="([^"]*)"[^>]*>/g,' $1 ').replace(/<[^>]+>/g,' ');
     assert.doesNotMatch(words,/\b(?:films?|watch(?:ing|ed)?|videos?|clips?|footage)\b/i);
-    for(const text of ['Photo review · ','Make the final photos from this preview?','Your final photos are here','See the final photos','Final photos · ','I agree to have the final photos made as shown.','After looking at the new one, write down any notes you still need.','aria-label="View V1 larger"','data-close="Close"'])assert.ok(photo.includes(text),text);
+    for(const text of ['Photo review · ','Make the final photos from this preview?','Your final photos are here','See the final photos','Final photos · ','I agree to have the final photos made as shown.','After looking at the new one, write down any notes you still need.','aria-label="View V1 larger"','data-close="Close"','data-zoom="Zoom in"'])assert.ok(photo.includes(text),text);
     const film=screens('s15',clip);
     for(const text of ['Film review · ','Make the final film from this preview?','Your final film is here','See the final film','Final film · ','I agree to have the final film made as shown.','After watching the new one, write down any notes you still need.'])assert.ok(film.includes(text),text);
     assert.match(installationGuide(installationEnvironment({userAgent:'Chrome/130.0'}),{connected:true,photo:true}).notes.join(' '),/you can review photos, leave notes and approve in your browser\./);
@@ -238,5 +253,5 @@ test('in English a photo order never reads film or watch on the review, approval
   assert.match(app,/notice\(still\?t\('새 시안이 왔어요\. 최신 시안을 보고 승인해 주세요\.',null,'photo'\):t\('새 시안이 왔어요\. 최신 시안을 보고 승인해 주세요\.'\)\);/);
   const en=read('i18n/en.mjs'),TICK=String.fromCharCode(96);
   for(const key of ['최종본','이 시안으로 최종본을 만들까요?','최종본이 도착했어요','최종본 보기','이 시안의 내용과 표현을 확인했고, 이 시안대로 최종본을 만드는 데 동의합니다.','이 초안은 지금 시안으로 보내지지 않아요. 새 시안을 본 뒤 필요한 의견을 다시 적어 주세요.','새 시안이 왔어요. 최신 시안을 보고 승인해 주세요.','시안을 승인했어요. 이 시안으로 최종본을 만들어요.'])assert.ok(en.includes('['+TICK+'photo$'+'{C}'+key+TICK+']:'),key);
-  for(const key of ['{name} 크게 보기','설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요.','다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.'])assert.ok(en.includes('"'+key+'":'),key);
+  for(const key of ['{name} 크게 보기','확대해서 보기','설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요.','다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.'])assert.ok(en.includes('"'+key+'":'),key);
 });

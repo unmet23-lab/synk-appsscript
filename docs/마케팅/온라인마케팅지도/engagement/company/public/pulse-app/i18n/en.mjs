@@ -1895,6 +1895,7 @@ export default {
   [`photo${C}새 시안이 왔어요. 최신 시안을 보고 승인해 주세요.`]:"A new preview just arrived. Look at the latest one, then approve.",
   [`photo${C}시안을 승인했어요. 이 시안으로 최종본을 만들어요.`]:"Preview approved. We’ll make the final photos from it.",
   "{name} 크게 보기":"View {name} larger",
+  "확대해서 보기":"Zoom in",
   "설치하지 않아도 브라우저에서 사진 확인, 수정 의견, 승인을 할 수 있어요.":"Even without installing, you can review photos, leave notes and approve in your browser.",
   "다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.":"Tell your producer if you would like to continue. Your files are still here.",
 };
