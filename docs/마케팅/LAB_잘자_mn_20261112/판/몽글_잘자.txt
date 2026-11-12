@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — four bedtime moments of "Mongle", a student living in a Korean boarding house, texting good night to the landlady who lives downstairs. Needle-felted wool diorama photography, one sheet.
+
+Character: Mongle, the coral needle-felted wool ghost-shaped mascot in the attached reference photos (use them ONLY for its body shape, coral wool color, fuzzy texture, scalloped bottom hem with a cream running stitch, glossy black bead eyes). No arms, no legs, no hands, ever. Mongle never holds anything; props stand or lean beside it.
+
+Layout: one SQUARE image, 2 columns × 2 rows, four cells of equal size with thin even gaps of plain dark background between them. EVERY CELL IS THE SAME TINY FELT BEDROOM SEEN FROM THE SAME CAMERA ANGLE: a small felt bed across the bottom half with a soft butter-yellow felt blanket and a white pillow; Mongle in the bed, its lower half under the blanket; on a tiny wooden felt bedside table at the right, a felt smartphone standing upright on a small stand with its screen facing the camera; a felt window with a night sky in the upper left; a small felt wall lamp glowing warm in the upper right. Keep the bed, blanket, table, phone, window and lamp in exactly the same places in all four cells — only Mongle's face and pose, the phone glow and the window change. Absolutely no text, letters, numbers, logos, emoji or symbols anywhere — not on the phone screen, not in the air.
+
+Cell 1 (top left) — CHEERFUL GOOD NIGHT: deep navy night sky with a felt crescent moon. Mongle sits up in bed, turned toward the phone, eyes soft and happy, a big relaxed smile, pink cheeks — casually saying good night. The phone screen glows cream-white with one small butter-yellow felt speech bubble on its right side.
+
+Cell 2 (top right) — SAME NIGHT, "OOPS": same moon and light. Mongle is frozen stiff and upright in bed, eyes wide open and round, mouth a small tight wavy line, one big clear felt sweat drop on its side, cheeks flushed deep pink — embarrassed, realizing it was rude. The phone screen now shows the yellow bubble on the right AND one small cream-white felt speech bubble on the left.
+
+Cell 3 (bottom left) — THE NEXT NIGHT, POLITE: the window now shows a felt half moon and three tiny stars (a different night). Mongle leans its whole body forward toward the phone in a deep, polite bow, eyes closed in a gentle respectful curve, a small neat smile. The phone screen shows one fresh butter-yellow speech bubble on the right.
+
+Cell 4 (bottom right) — SAME NEXT NIGHT, SLEEPING HAPPILY: the wall lamp is off, the room lit only by soft blue moonlight; Mongle lies down snugly under the blanket up to its eyes, eyes closed in happy curved lines, a tiny content smile, rosy cheeks. The phone screen glows faintly with the yellow bubble on the right AND a small pink felt speech bubble with a tiny felt heart shape on the left.
+
+Style: real handmade needle-felt craft diorama photographed with a macro lens, visible wool fibers, cozy soft cinematic light (warm lamp-lit night in cells 1–3, cool moonlight in cell 4), cute but not babyish (for teenagers and university students), the same camera and composition in all four cells. Make Mongle large in each cell (about 35% of the cell height) so its face reads at phone size.

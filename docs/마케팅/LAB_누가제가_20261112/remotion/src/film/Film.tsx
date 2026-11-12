@@ -187,7 +187,7 @@ const Tag: React.FC<{ text: string; at: number; x: number; y: number; align: 'le
         position: 'absolute',
         top: y,
         ...pos,
-        transform: `rotate(-5deg) scale(${0.6 + 0.4 * sp})`,
+        transform: `rotate(${kind === 'bad' ? -2 : -5}deg) scale(${0.6 + 0.4 * sp})`, // 판 위 진한 글자 — -5°면 글자 줄 상자 모서리에 종이가 들어 올리기 전 검사 ⑤-2가 「판 없는 흰 글자」로 읽음(v6)
         transformOrigin: align === 'right' ? 'right top' : 'left top',
         opacity: interpolate(sp, [0, 0.4], [0, 1], clamp),
         background: kind === 'bad' ? C.coral : '#FFFDF8',
@@ -197,7 +197,7 @@ const Tag: React.FC<{ text: string; at: number; x: number; y: number; align: 'le
         fontWeight: 800,
         fontSize: L.size.tag,
         lineHeight: 1,
-        padding: kind === 'bad' ? '14px 22px 16px' : '10px 18px 12px',
+        padding: kind === 'bad' ? '20px 26px 22px' : '10px 18px 12px',
         borderRadius: 18,
         boxShadow: '0 6px 14px rgba(80,30,20,0.18)',
         whiteSpace: 'nowrap',
