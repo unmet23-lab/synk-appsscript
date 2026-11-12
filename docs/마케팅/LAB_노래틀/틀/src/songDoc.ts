@@ -31,7 +31,11 @@ export type SongDoc = {
   word: string; // 한국어 낱말(화면 칸은 이 글자 그대로)
   syl: string[]; // 음절
   parts: Part[];
-  stage: { mode: 'mongle' | 'plain'; img?: string; pic?: string; bg?: string; focus?: string }; // focus = 9:16로 채울 때 그림 기준점(CSS object-position, 기본 '10% 40%')
+  // focus = 그림 기준점(「48% 50%」 꼴). cam = 가상 카메라가 오가는 세 자리(그림 안 비율 [가로, 세로] — v8, 11-12):
+  // wide = 둘을 함께 담는 자리(시작 · 네 차례), hero = 몽글 얼굴(끊어 부르기 · 진짜 속도 · 끝), obj = 그 낱말의 사물(이어 부르기 — 빈 그릇 · 떠나는 버스 · 큰 딸기).
+  // 없으면 셋 다 focus. v10은 from → to([가로, 세로, 줌]) 한 길로 편 전체를 옮겨 간다(없으면 wide → hero). aspect = 그림 가로/세로(기본 1.5 — 가로 3:2로 굽는다).
+  stage: { mode: 'mongle' | 'plain'; img?: string; pic?: string; bg?: string; focus?: string;
+    cam?: { wide?: [number, number]; hero?: [number, number]; obj?: [number, number]; from?: [number, number, number]; to?: [number, number, number] }; aspect?: number };
   loc: Loc;
   _원문?: Record<string, string>; // 판본 글의 한국어 뜻(역번역 대조 기준)
 };
