@@ -255,6 +255,58 @@ test('점검하기: 앞 공개본 첫 잼이 못 잼이면 한 번 더 재서 �
   assert.ok(r.알림.some((x) => /앞 공개본에서도 같게 나 막지 않았다/.test(x.이유)));
 });
 
+test('점검하기: 후보가 시간을 넘겨 못 잼이면 풀이 끝난 뒤 혼자 한 번 더 잰다 — 다른 창이 브라우저를 붙잡아 못 잰 쪽은 지나가고, 혼자도 멈추는 쪽 · 무너진 쪽은 걸린다', async () => {
+  // 11-12 실측의 꼴: 앞 공개본 /en/path/를 재는 동안 브라우저가 약 100초 멈춰, 그동안 시작한 /lab/ 후보가 「createBrowserContext 30초」로 못 잼
+  const 공개 = new Map([
+    ['slow/index.html', 쪽('<p>옛 판</p>')], ['lab/index.html', 쪽('<p>앞</p>')],
+    ['hang/index.html', 쪽('<p>앞</p>')], ['crash/index.html', 쪽('<p>앞</p>')], ['partial/index.html', 쪽('<p>앞</p>')],
+  ]);
+  const 후보 = new Map([
+    ['slow/index.html', 쪽('<p>새 판</p>')], ['lab/index.html', 쪽('<p>뒤</p>')],
+    ['hang/index.html', 쪽('<p>뒤</p>')], ['crash/index.html', 쪽('<p>뒤</p>')], ['partial/index.html', 쪽('<p>뒤</p>')],
+  ]);
+  const 부름 = [];
+  let 함께 = 0, 가장많이 = { 다시: 0 };
+  const 재기 = async (일) => {
+    부름.push(`${일.판} ${일.쪽.주소}${일.다시 ? ' 다시' : ''}`);
+    함께++;
+    if (일.다시 && 일.판 === '후보') 가장많이.다시 = Math.max(가장많이.다시, 함께);
+    await new Promise((r) => setTimeout(r, 5));
+    함께--;
+    const 빈 = { 주소: 일.주소, 실림: true, 오류: [], 콘솔: [], axe: { 좁은: { 어긴것: [] }, 넓은: { 어긴것: [] } }, 문제: null };
+    // 붙잡은 창(옛 공개본) · 그동안 시작해 시간을 넘긴 후보(첫 잼만) · 혼자도 멈추는 후보 · 무너지는 후보 ·
+    // 첫 잼이 오류 · 치명 위반을 모은 뒤 넓은 폭에서 시간을 넘긴 후보(다시 재면 깨끗 — 첫 잼의 결함을 지우면 안 된다, GPT GA1)
+    if (일.쪽.주소 === '/partial/' && 일.판 === '후보' && !일.다시) {
+      const 오류 = [{ 말: 'TypeError: 첫 잼에만 난 오류', 곳: '', 열쇠: 점검.열쇠로('TypeError: 첫 잼에만 난 오류'), 수: 1 }];
+      const 치명 = { id: 'aria-required-children', impact: 'critical', help: 'x', n: 1, 곳: [{ 대상: '.entry', html: '<div class="entry">' }] };
+      return { ...빈, 오류, axe: { 좁은: { 어긴것: [치명] } }, 문제: 'Emulation.setDeviceMetricsOverride가 30초 안에 답하지 않았다' };
+    }
+    if (일.쪽.주소 === '/slow/' && 일.판 === '공개본') return { ...빈, 문제: 'Emulation.setDeviceMetricsOverride가 30초 안에 답하지 않았다' };
+    if (일.쪽.주소 === '/lab/' && 일.판 === '후보' && !일.다시) return { ...빈, 문제: 'Target.createBrowserContext가 30초 안에 답하지 않았다' };
+    if (일.쪽.주소 === '/hang/' && 일.판 === '후보') return { ...빈, 문제: '150초 안에 재기를 마치지 못했다' };
+    if (일.쪽.주소 === '/crash/' && 일.판 === '후보') return { ...빈, 문제: '쪽이 무너졌다(렌더러 멈춤)' };
+    return 빈;
+  };
+  const 알림말 = [];
+  const 항목들 = [...후보.keys()].map((p) => 항(p, '바꿈', 후보.get(p)));
+  const r = await 점검.점검하기({ 항목들, 후보읽기: 판읽개(후보), 공개읽기: 판읽개(공개), 후보있나: (p) => 후보.has(p), 재기, 알리기: (m) => 알림말.push(m), 동시: 3 });
+  assert.ok(부름.includes('후보 /lab/ 다시') && 부름.includes('후보 /hang/ 다시') && 부름.includes('후보 /partial/ 다시'), '시간 넘김 후보만 한 번 더');
+  assert.ok(!부름.includes('후보 /crash/ 다시') && !부름.includes('후보 /slow/ 다시'), '무너진 쪽 · 잰 쪽은 다시 재지 않는다');
+  const 첫다시 = 부름.findIndex((x) => / 다시$/.test(x));
+  assert.ok(부름.slice(첫다시).every((x) => / 다시$/.test(x)) && 부름.slice(0, 첫다시).length === 10, `다시 재기는 풀이(10번)가 끝난 뒤: ${부름.join(', ')}`);
+  assert.equal(가장많이.다시, 1, '후보를 다시 잴 때는 혼자(막힌 쪽 공개본 다시 재기는 그 뒤 따로)');
+  const 걸린쪽 = [...new Set(r.걸림.map((x) => x.경로))].sort();
+  assert.deepEqual(걸린쪽, ['crash/index.html', 'hang/index.html', 'partial/index.html'], JSON.stringify(r.걸림));
+  const 첫결함 = r.걸림.filter((x) => x.경로 === 'partial/index.html').map((x) => x.이유).join('\n');
+  assert.match(첫결함, /TypeError: 첫 잼에만 난 오류/, '다시 잰 결과가 깨끗해도 첫 잼이 모은 오류는 남는다');
+  assert.match(첫결함, /aria-required-children 새 1곳/, '첫 잼이 모은 좁은 폭 치명 위반도 남는다');
+  assert.match(r.걸림.find((x) => x.경로 === 'hang/index.html').이유, /150초 안에 재기를 마치지 못했다 \(혼자 한 번 더 재도 · 첫 잼: 150초/);
+  assert.ok(!r.걸림.some((x) => x.경로 === 'lab/index.html'), '다른 창 탓에 못 잰 후보는 다시 재 통과');
+  assert.ok(r.쪽.find((x) => x.주소 === '/lab/') && !r.쪽.find((x) => x.주소 === '/lab/').문제);
+  assert.ok(알림말.some((m) => /시간을 넘겨 못 잰 후보 쪽 3개를 하나씩 한 번 더 잰다/.test(m)), 알림말.join('\n'));
+  assert.ok(r.알림.some((x) => x.경로 === 'slow/index.html' && /앞 공개본을 재지 못해/.test(x.이유)), '공개본만 못 잰 쪽은 그대로 알림');
+});
+
 test('점검하기: 건너뜀이면 재지 않고 알림 · 크롬을 못 띄우면 「못 잼」 알림으로 막지 않음 · 바뀐 HTML이 없으면 볼 쪽 없음', async () => {
   const 판 = new Map([['a/index.html', 쪽('<!--치명:button-name:#go-->')]]);
   const 항목들 = [항('a/index.html', '새', 판.get('a/index.html'))];
