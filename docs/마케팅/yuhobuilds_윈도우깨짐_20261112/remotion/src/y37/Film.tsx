@@ -74,7 +74,7 @@ const Record: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   if (f < from || f >= to) return null;
   const out = 1 - prog(f, to - 5, 5);
   const row = (i: number, a: React.ReactNode, b: React.ReactNode) => {
-    const p = prog(f, from + i * 6, 10);
+    const p = prog(f, from + i * 16, 8);
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderTop: '1px solid rgba(255,255,255,0.28)', opacity: p * out, transform: `translateY(${(1 - p) * 20}px)` }}>
         <span style={{ fontWeight: 700, fontSize: 52, color: 'rgba(255,255,255,0.8)' }}>{a}</span>
@@ -85,8 +85,8 @@ const Record: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   return (
     <div style={{ position: 'absolute', left: 74, right: 160, top: 300, fontFamily: KO }}>
       <div style={{ fontWeight: 700, fontSize: 42, color: 'rgba(255,255,255,0.66)', marginBottom: 8, opacity: out }}>11월 7일 복원 기록</div>
-      {row(0, '되살린 문서', '1,796,647개')}
-      {row(1, '잃은 파일', <B>0개</B>)}
+      {row(0, '되살린 문서', `${Math.round(1796647 * prog(f, from + 3, 20)).toLocaleString('en-US')}개`)}
+      {row(1, '잃은 파일', <span style={{ display: 'inline-block', transform: `scale(${1 + 0.25 * Math.max(0, 1 - Math.abs(f - from - 30) / 6)})`, opacity: prog(f, from + 26, 4) }}><B>0개</B></span>)}
     </div>
   );
 };
@@ -99,19 +99,19 @@ const SaveCard: React.FC<{ from: number }> = ({ from }) => {
     const p = prog(f, from + 4 + i * 5, 10);
     return (
       <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', marginTop: 14, opacity: p, transform: `translateY(${(1 - p) * 20}px)` }}>
-        <span style={{ fontWeight: 900, fontSize: 50, color: '#FFFFFF', width: 30, flex: 'none' }}>{n}</span>
-        <span style={{ fontWeight: 800, fontSize: 50, lineHeight: 1.2, letterSpacing: -1.4, color: '#FFFFFF' }}>{a}</span>
+        <span style={{ fontWeight: 900, fontSize: 60, color: '#FFFFFF', width: 40, flex: 'none' }}>{n}</span>
+        <span style={{ fontWeight: 800, fontSize: 52, lineHeight: 1.2, letterSpacing: -1.4, color: '#FFFFFF' }}>{a}</span>
       </div>
     );
   };
   const p0 = prog(f, from, 10);
   return (
     <div style={{ position: 'absolute', left: 74, right: 160, top: 286, fontFamily: KO }}>
-      <div style={{ fontWeight: 700, fontSize: 40, color: 'rgba(255,255,255,0.7)', letterSpacing: -0.8, opacity: p0 }}>드라이브 정리할 때 — 저장해 두세요</div>
+      <div style={{ fontWeight: 800, fontSize: 48, color: '#FFFFFF', letterSpacing: -1.2, opacity: p0, marginBottom: 6 }}>드라이브 정리할 때, 저장해 두세요</div>
       {line(0, '1', '옮긴 뒤, 원래 자리엔 바로가기')}
       {line(1, '2', <>지울 건 「두 곳에 똑같은 파일」만</>)}
       {line(2, '3', '다른 건 남기고, 클릭은 내가')}
-      <div style={{ marginTop: 18, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.66)', letterSpacing: -0.6, opacity: prog(f, from + 24, 10) }}>그대로 붙여 넣는 요청문은 아래 글에</div>
+      <div style={{ marginTop: 18, fontWeight: 700, fontSize: 40, color: 'rgba(255,255,255,0.85)', letterSpacing: -0.6, opacity: prog(f, from + 24, 10) }}>그대로 붙여 넣는 요청문은 아래 글에</div>
     </div>
   );
 };
@@ -125,11 +125,11 @@ const SHOTS: [number, Cam][] = [
 const CAMS: Record<Cam, { s: number; tx: number; ty: number }> = {
   full: { s: 1, tx: 0, ty: 0 },
   c: { s: 1.5, tx: 540 - 1.5 * 540, ty: 1030 - 1.5 * 860 },
-  dTop: { s: 1.5, tx: 540 - 1.5 * 540, ty: 1060 - 1.5 * 1230 },
-  dMid: { s: 1.45, tx: 540 - 1.45 * 540, ty: 1060 - 1.45 * 1290 },
-  dKeep: { s: 1.6, tx: 540 - 1.6 * 540, ty: 1060 - 1.6 * 1330 },
-  mid: { s: 1.22, tx: 540 - 1.22 * 540, ty: 1000 - 1.22 * 1050 },
-  end: { s: 1.0, tx: 0, ty: 70 },
+  dTop: { s: 1.5, tx: 540 - 1.5 * 540, ty: 1080 - 1.5 * 1260 },
+  dMid: { s: 1.45, tx: 540 - 1.45 * 540, ty: 1080 - 1.45 * 1320 },
+  dKeep: { s: 1.6, tx: 540 - 1.6 * 540, ty: 1080 - 1.6 * 1360 },
+  mid: { s: 1.22, tx: 540 - 1.22 * 540, ty: 1010 - 1.22 * 1070 },
+  end: { s: 1.0, tx: 0, ty: 150 },
 };
 const shotAt = (t: number) => {
   let i = 0;
@@ -148,7 +148,8 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
   const endP = shot.cam === 'end' ? prog(f, CARD, 18) : 0;
   const base = shot.cam === 'end' ? CAMS.full : CAMS[shot.cam];
   const cam = shot.cam === 'end' ? { s: base.s + (CAMS.end.s - base.s) * endP, tx: base.tx + (CAMS.end.tx - base.tx) * endP, ty: base.ty + (CAMS.end.ty - base.ty) * endP } : base;
-  const drift = 1 + 0.04 * inShot; // 컷마다 아주 천천히 다가감
+  const drift = 1 + 0.07 * inShot; // 컷마다 천천히 다가감
+  const pan = (shot.start * 7) % 2 < 1 ? -18 * inShot : 18 * inShot;
   const zoomed = shot.cam !== 'full' && shot.cam !== 'end';
   const push = interpolate(f, [0, TOTAL], [1, 1.05], clamp);
   // 원본 박자 자리마다 판이 한 번 살짝 당겨진다(1.035배 → 제자리)
@@ -169,7 +170,7 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
   const scanP = interpolate(f, [BEAT.scan[0], BEAT.scan[1]], [0, 1], clamp);
   return (
     <AbsoluteFill style={{ background: '#0A0B0E' }}>
-      <AbsoluteFill style={{ transform: `scale(${push * drift * (1 + 0.035 * kick * kick)})`, transformOrigin: '50% 55%' }}>
+      <AbsoluteFill style={{ transform: `translateX(${pan}px) scale(${push * drift * (1 + 0.035 * kick * kick)})`, transformOrigin: '50% 55%' }}>
         <AbsoluteFill style={{ opacity: 1 - 0.86 * cardDim, transform: `translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})`, transformOrigin: '0 0' }}>
           <Drives beat={BEAT} story={STORY} showKept />
           <DriveLabels settle={settle} free={prog(f, F(22.1), 8)} o={zoomed ? 0 : 1} />
@@ -195,18 +196,18 @@ export const Film: React.FC<{ bgm?: boolean }> = ({ bgm = true }) => {
         <div style={{ position: 'absolute', left: 74, top: 290, fontFamily: KO }}>
           <div style={{ fontWeight: 800, fontSize: 52, letterSpacing: -1.5, color: '#FFFFFF' }}>이름 · 크기 · 내용이 다 같은 파일</div>
           <div style={{ fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: -6, color: BUTTER, fontVariantNumeric: 'tabular-nums' }}>
-            {fmt(Math.round(REAL.total * scanP * 10) / 10)}
+            <span style={{ display: 'inline-block', width: 420, textAlign: 'right' }}>{fmt(Math.round(REAL.total * scanP * 10) / 10)}</span>
             <span style={{ fontSize: 70, letterSpacing: -1, marginLeft: 8 }}>GB</span>
           </div>
         </div>
       ) : null}
-      <Head from={F(31.4)} to={F(33.9)} lines={['내용이 다른 79.5GB는', '남김']} />
+      <Head from={F(31.4)} to={F(33.9)} lines={['내용이 다른 79.5GB는', '그대로 남김']} />
       <Head from={F(33.9)} to={F(36.75)} lines={['지우는 클릭은', <B key="m">내가</B>]} />
       {f >= F(36.75) && f < CARD ? (
         <div style={{ position: 'absolute', left: 74, top: 290, fontFamily: KO }}>
           <div style={{ fontWeight: 800, fontSize: 60, letterSpacing: -1.5, color: '#FFFFFF', opacity: prog(f, F(36.75), 6) }}>비운 자리</div>
           <div style={{ fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: -6, color: BUTTER, fontVariantNumeric: 'tabular-nums' }}>
-            {fmt(Math.round(REAL.total * settle * 10) / 10)}
+            <span style={{ display: 'inline-block', width: 420, textAlign: 'right' }}>{fmt(Math.round(REAL.total * settle * 10) / 10)}</span>
             <span style={{ fontSize: 70, letterSpacing: -1, marginLeft: 8 }}>GB</span>
           </div>
         </div>

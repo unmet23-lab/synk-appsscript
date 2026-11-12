@@ -27,7 +27,7 @@ export const DriveLabels: React.FC<{ settle: number; o?: number; free?: number }
     <div style={{ position: 'absolute', left: PANEL_X - 6, width: 920 - PANEL_X + 6, top: top - 66, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: KO, opacity: o }}>
       <span style={{ fontWeight: 800, fontSize: 46, color: '#FFFFFF', letterSpacing: -1 }}>{name}</span>
       <span style={{ fontWeight: 600, fontSize: 38, color: 'rgba(255,255,255,0.72)', letterSpacing: -0.5, fontVariantNumeric: 'tabular-nums', opacity: free }}>
-        여유 <span style={{ fontWeight: 800, color: '#FFFFFF' }}>{fmt(a + (b - a) * settle)}GB</span>
+        여유 <span style={{ fontWeight: 800, color: '#FFFFFF', display: 'inline-block', width: 150, textAlign: 'right' }}>{fmt(a + (b - a) * settle)}</span>GB
       </span>
     </div>
   );

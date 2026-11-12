@@ -9,7 +9,7 @@ export const PANEL_X = 90;
 export const PANEL_W = 900;
 export const PITCH = PANEL_W / COLS;
 export const C_TOP = 690;
-export const D_TOP = 1080;
+export const D_TOP = 1110;
 
 export type DriveBeat = {
   scan: readonly [number, number]; // 짝이 켜지는 구간
@@ -140,7 +140,7 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
         if (r.kind === 'del' && lit > 0) col = [col[0] + (245 - col[0]) * lit, col[1] + (196 - col[1]) * lit, col[2] + (69 - col[2]) * lit];
         // 「남김」 박자: 지울 칸은 가라앉고 남길 옛 판만 하얗게 선다
         const keepOn = showKept && f >= beat.keep && (beat.keepOff === undefined || f < beat.keepOff + 8) ? clamp01((f - beat.keep) / 8) * (beat.keepOff === undefined ? 1 : clamp01((beat.keepOff + 8 - f) / 8)) : 0;
-        if (keepOn > 0 && r.kind === 'del') col = [col[0] * (1 - 0.55 * keepOn), col[1] * (1 - 0.55 * keepOn), col[2] * (1 - 0.55 * keepOn)];
+        if (keepOn > 0 && r.kind === 'del') col = [col[0] + (62 - col[0]) * keepOn * 0.85, col[1] + (63 - col[1]) * keepOn * 0.85, col[2] + (66 - col[2]) * keepOn * 0.85];
         if (keepOn > 0 && r.kind === 'kept') col = [col[0] + (255 - col[0]) * keepOn, col[1] + (255 - col[1]) * keepOn, col[2] + (255 - col[2]) * keepOn];
         if (r.kind === 'twin' && r.rank >= 0 && scanP > r.rank / N) {
           // 짝이 켜지는 순간 남는 쪽은 하얗게 한 번 번쩍였다 제 색으로 — 「같은 것이 저기에도 있다」
@@ -161,7 +161,8 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
                 alpha = hash(i * 13 + f) > 0.35 + g / 30 ? 1 : 0.2;
                 col = hash(band + f * 3) > 0.7 ? [255, 255, 255] : col;
               } else {
-                alpha = 0.13;
+                const dead = hash(i * 29 + 7) < 0.14;
+                col = dead ? [24, 25, 28] : [col[0] * 0.42, col[1] * 0.42, col[2] * 0.44];
               }
             } else if (f >= back && f < back + 8) {
               const q = (f - back) / 8;
@@ -209,10 +210,18 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
           const back = clamp01((f - beat.del - (r.rank / N) * beat.delLen * 0.55) / 10);
           col = [col[0] + (217 * shade - col[0]) * back, col[1] + (213 * shade - col[1]) * back, col[2] + (205 * shade - col[2]) * back];
         }
-        if (settleP > 0 && newPos[i] >= 0) {
+        if (settleP > 0 && newPos[i] >= 0 && newPos[i] !== i) {
           const [nx, ny] = pos(top, newPos[i]);
-          px = ox + (nx - ox) * settleP;
-          py = oy + (ny - oy) * settleP;
+          const rows = top === C_TOP ? C_ROWS : D_ROWS;
+          const tIn = clamp01(settleP * 1.7 - (Math.floor(newPos[i] / COLS) / rows) * 0.7);
+          const fill = `rgb(${col[0] | 0},${col[1] | 0},${col[2] | 0})`;
+          x.fillStyle = fill;
+          x.globalAlpha = alpha * (1 - tIn) * (1 - dim * 0.7);
+          x.fillRect(px + 1.3, py + 1.3, size, size);
+          x.globalAlpha = alpha * tIn * (1 - dim * 0.7);
+          x.fillRect(nx + 1.3, ny + 1.3, size, size);
+          x.globalAlpha = 1;
+          return;
         }
         x.globalAlpha = alpha * (1 - dim * 0.7);
         x.fillStyle = `rgb(${col[0] | 0},${col[1] | 0},${col[2] | 0})`;
@@ -233,29 +242,36 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
       const tag = (text: string, px: number, py: number, a: number) => {
         if (a <= 0) return;
         x.globalAlpha = a * (1 - dim * 0.7);
-        x.font = "900 50px 'SUIT'";
-        x.lineJoin = 'round';
-        x.lineWidth = 10;
-        x.strokeStyle = 'rgba(255,255,255,0.95)';
-        x.strokeText(text, px, py);
-        x.fillStyle = '#0A0B0E';
+        x.font = "800 40px 'SUIT'";
+        const w = x.measureText(text).width;
+        const bx0 = px - 20;
+        const by0 = py - 44;
+        const bw = w + 40;
+        const bh = 60;
+        x.fillStyle = 'rgba(10,11,14,0.94)';
+        x.beginPath();
+        x.roundRect(bx0, by0, bw, bh, 30);
+        x.fill();
+        x.fillStyle = '#FFFFFF';
         x.fillText(text, px, py);
         x.globalAlpha = 1;
       };
       // 바로가기 선: 1TB 옛 자리 → 2TB 옮긴 자리
       const la = span(f, story.links);
       if (la > 0) {
-        x.globalAlpha = la * 0.75;
-        x.strokeStyle = '#FFFFFF';
-        x.lineWidth = 2.5;
-        x.setLineDash([10, 8]);
-        for (const k of RUNS) {
-          const [sx, sy] = pos(C_TOP, C_DEL_IDX[k]);
-          const [tx, ty] = pos(D_TOP, k);
-          x.beginPath();
-          x.moveTo(sx + PITCH / 2, sy + PITCH / 2);
-          x.lineTo(tx + PITCH / 2, ty + PITCH / 2);
-          x.stroke();
+        x.globalAlpha = la * 0.9;
+        for (const [w, c] of [[8, '#0A0B0E'], [3, '#FFFFFF']] as const) {
+          x.strokeStyle = c;
+          x.lineWidth = w;
+          x.setLineDash(c === '#FFFFFF' ? [12, 9] : []);
+          for (const k of RUNS) {
+            const [sx, sy] = pos(C_TOP, C_DEL_IDX[k]);
+            const [tx, ty] = pos(D_TOP, k);
+            x.beginPath();
+            x.moveTo(sx + PITCH / 2, sy + PITCH / 2);
+            x.lineTo(tx + PITCH / 2, ty + PITCH / 2);
+            x.stroke();
+          }
         }
         x.setLineDash([]);
         x.globalAlpha = 1;
@@ -266,10 +282,6 @@ export const Drives: React.FC<{ beat: DriveBeat; story?: DriveStory; dim?: numbe
       const [ox, oy] = pos(C_TOP, C_DEL_IDX[RUNS[0]]);
       tag('바로가기', Math.min(ox + 12, PANEL_X + PANEL_W - 230), oy + 46, la);
       const [qx, qy] = pos(C_TOP, C_DEL_IDX[RUNS[Math.min(2, RUNS.length - 1)]]);
-      if (showKept) {
-        const [kx, ky] = pos(D_TOP, D_KEPT_IDX[Math.floor(D_KEPT_IDX.length * 0.45)]);
-        tag('남김', Math.min(kx + 12, PANEL_X + PANEL_W - 120), ky - 12, span(f, [beat.keep, beat.keepOff ?? beat.keep + 60]));
-      }
       tag('옮기기 전 사본', Math.min(qx + 12, PANEL_X + PANEL_W - 340), qy + 46, span(f, story.oldCopy));
     }
   }, [f, beat, story, dim, roles, N, showKept]);
