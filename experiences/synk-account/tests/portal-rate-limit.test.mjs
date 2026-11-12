@@ -1030,13 +1030,25 @@ for (const [label, details] of [
   assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);assert.equal(page.get('consent').hidden, true);
 });
 
+const catchUp = async ({ time }) => { for (const ms of [100, 200, 400, 800]) { await settled();time.advance(ms); }await settled(); };
 test('a central user response for a different identity cannot authorize the stored session', async t => {
-  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), verifiedUser: { id: 'owner-b' }, initialReplies: { approveAuthorization: automaticResult } });
+  // This tab's session is asked again while it may still be catching up (0.1 · 0.2 · 0.4 · 0.8 s) — the clock runs through those waits.
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), verifiedUser: { id: 'owner-b' }, initialReplies: { approveAuthorization: automaticResult }, beforeMountComplete: catchUp });
   assert.equal(page.metrics.consentLoads, 0);assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);
 });
 
+// Fable r2 P1 (11-12): a request Auth answered for another account (this tab's SDK session moved under the page) shows no card.
+test('an app request answered for another account shows no card and starts nothing', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), consentDetails: { client: { id: 'synthetic-client', name: '합성 앱' }, redirect_uri: 'https://app.example.test/', scope: 'openid email profile', user: { id: 'owner-b', email: 'b@example.test' } }, initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.metrics.consentLoads, 1);assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);assert.equal(page.get('consent').hidden, true);
+  assert.match(page.get('notice').textContent, /로그인 상태를 확인하지 못했어요/);
+});
+test('an app request answered for this account still shows its card', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), redirectUri: 'synktalk://oauth/callback', consentDetails: { client: { id: 'synthetic-client', name: '합성 앱' }, redirect_uri: 'synktalk://oauth/callback', scope: 'openid email profile', user: { id: 'owner-a', email: 'a@example.test' } } });
+  assert.equal(page.metrics.consentLoads, 1);assert.equal(page.get('consent').hidden, false);
+});
 test('a malformed central identity cannot start automatic authorization', async t => {
-  const page = await fixture(t, { consent: true, preview: false, initial: { user: {} }, verifiedUser: {}, initialReplies: { approveAuthorization: automaticResult } });
+  const page = await fixture(t, { consent: true, preview: false, initial: { user: {} }, verifiedUser: {}, initialReplies: { approveAuthorization: automaticResult }, beforeMountComplete: catchUp });
   assert.equal(page.metrics.consentLoads, 0);assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);
 });
 

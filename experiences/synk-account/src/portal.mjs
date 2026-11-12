@@ -383,6 +383,9 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     // The account is verified but this app's request is gone: offer a restart, not the sign-in form.
     if (result.error && staleAuthorization(result.error)) { showStaleAuthorization(pathEntryHint());return; }
     if (result.error) throw result.error;
+    // The card is shown only for the account this page checked: a request answered for another account (this tab's SDK session
+    // moved under it) closes like a failed check (11-12).
+    const owner = result.data?.user?.id;if (owner && owner !== session?.user?.id) throw new Error('로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.');
     if (result.data?.redirect_url) {
       const target = trustedConsentRedirect(result.data.redirect_url, config);
       if (!deviceDestination(target)) { location.assign(target);return; }
@@ -495,7 +498,19 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     $('auth-panel').hidden = true;
     notice('로그인 정보를 확인하고 내 계정을 불러오고 있어요…', false, false, 'pending');
     try {
-      const checked = await bounded(sdk.auth.getUser());check();if (checked.error || typeof checked.data?.user?.id !== 'string' || !checked.data.user.id || checked.data.user.id !== session?.user?.id) throw new Error('로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.');
+      // Auth answers for this tab's own SDK session, and only that session can open the account: every later request (password,
+      // e-mail, app connection) goes with it. A sign-in in another tab of this browser arrives here as an event a moment before the
+      // session stored here follows (none yet, or the one stored before), so the SDK is asked again a few times while it catches up
+      // (0.1 · 0.2 · 0.4 · 0.8 s); if it never becomes the event's account (a browser whose tabs keep their own session), the tab
+      // closes as before. The event's own token is never used to ask (11-12 — Fable r2 P1 · P2).
+      const mine = reply => !reply?.error && typeof reply?.data?.user?.id === 'string' && !!reply.data.user.id && reply.data.user.id === session?.user?.id;
+      let checked = await bounded(sdk.auth.getUser());check();
+      for (const wait of [100, 200, 400, 800]) {
+        if (mine(checked)) break;
+        await new Promise(resolve => cooldownClock.setTimeout(resolve, wait));check();
+        checked = await bounded(sdk.auth.getUser());check();
+      }
+      if (!mine(checked)) throw new Error('로그인 상태를 확인하지 못했어요. 다시 로그인해 주세요.');
       const verified = checked.data.user;
       if (!await google.check(verified, check)) { $('auth-panel').hidden = true;return; }check();
       // Only a sign-in that reached the account counts: a Google sign-in that just came back (not a link to an account

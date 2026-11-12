@@ -156,7 +156,8 @@
 .sid .google-phone-fields .field-help{margin-top:0}
 .sid .google-phone-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .sid .google-phone-row .sb-btn{min-height:52px}
-.sid #google-phone-status{color:var(--ink-2)}
+.sid #google-phone-status:not([data-kind="error"]){color:var(--ink-2)}
+.sid #google-phone-status[data-kind="error"]{color:var(--err);font-weight:600}
 .sid .text-actions{display:grid}
 
 /* 앱 연결 · 다시 시작 */

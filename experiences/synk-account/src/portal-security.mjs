@@ -45,11 +45,15 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   setBusy = () => {}, hostBusy = () => false, onPasswordChanged = () => {}, fetcher = (...args) => globalThis.fetch(...args) }) {
   // Both forms start folded under their buttons (10-27): the card reads as three lines — e-mail, ways, password.
   let user = null, generation = 0, busy = false, formOpen = false, emailOpen = false, closed = false;
-  const status = (text, kind = 'info') => { const node = $('security-status');node.textContent = text;node.setAttribute('data-kind', kind);node.className = `small security-status${kind === 'error' ? ' error' : ''}`;if (text && kind !== 'pending') node.scrollIntoView?.({ block: 'nearest' }); };
-  // The line's seat: after the open form, else at the end of the row of the last change (11-12 — not at the top of the card, off screen
-  // on a phone). It moves only in render (a form opening or closing), so words written for a press land in a live region already in place.
+  // A failure shown in its row clears an earlier success still at the top (「로그인됐어요」 · 「…바꿨어요」), as the account rows do (11-12).
+  const status = (text, kind = 'info') => { if (kind === 'error' && $('notice')?.getAttribute?.('data-kind') === 'success') notice('', false, false, 'idle');
+    const node = $('security-status');node.textContent = text;node.setAttribute('data-kind', kind);node.className = `small security-status${kind === 'error' ? ' error' : ''}`;if (text && kind !== 'pending') node.scrollIntoView?.({ block: 'nearest' }); };
+  // The line's seat: in the row of the last change — after the e-mail form, after the password form (open, or folded after a change:
+  // right under 「비밀번호 바꾸기」, where the keyboard goes back), or after the reset-mail line (11-12 — not at the top of the card, off
+  // screen on a phone). It moves when a form opens or closes and when a press starts in another row, always before the words for that
+  // press are written, so they land in a live region already in place.
   let lastRow = 'reset';
-  const seat = () => { const node = $('security-status'), anchor = lastRow === 'email' ? $('email-change-form') : lastRow === 'password' && formOpen ? $('password-change-form') : $('password-mail')?.parentElement;
+  const seat = () => { const node = $('security-status'), anchor = lastRow === 'email' ? $('email-change-form') : lastRow === 'password' ? $('password-change-form') : $('password-mail')?.parentElement;
     if (node && anchor && anchor !== node && anchor.nextElementSibling !== node) anchor.after?.(node); };
   const message = error => {
     const code = error?.code || error?.error_code;

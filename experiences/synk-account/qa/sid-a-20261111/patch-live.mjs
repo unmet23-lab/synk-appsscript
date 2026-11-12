@@ -15,6 +15,10 @@
 //   made with tools/synk-id/prepare-portal.mjs's swaps of now (the page has no top navigation any more) and cache tokens that are
 //   the first 12 hex of each file's sha256 (the publishing tool keeps them, since they already name the bytes).
 // - id/style.css is no longer used by the page and stays published as it is (an old cached page still finds it).
+// Once the published page is itself an A page (<prior rev> has id.css — every round after 11-12's 6d09898e), <live dir> also holds
+// id__id.css and the two font pieces: the published page must be <prior rev>'s page with the published tokens, id.css and the
+// fonts its bytes; only the portal modules need to have moved (any of the four), and report.publish names the files whose bytes
+// differ from the published ones — the files to publish (the out dir still holds id__id.css for the checks that serve it).
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -61,6 +65,7 @@ async function portalScope(rev) {
   if (!inner.startsWith('var __synkPortal=')) throw new Error('unexpected inner bundle head');
   return { text: `${bridge}${inner}${TAIL}`, inputs };
 }
+const priorIsA = source(priorRev, 'experiences/synk-account/index.html').includes('href="./id.css?v=sid-a-20261111"');
 const liveApp = live('id__dist__app.js');
 const start = once(liveApp, 'var __synkPortalLive={', 'published portal scope'), end = once(liveApp, TAIL, 'published portal tail') + TAIL.length;
 const prior = await portalScope(priorRev);
@@ -70,7 +75,7 @@ const inputs = [...new Set([...prior.inputs, ...next.inputs])];
 const moved = inputs.filter(file => { try { return source(priorRev, file) !== source(nextRev, file); } catch { return true; } });
 const foreign = moved.filter(file => !CHANGED.includes(file));
 if (foreign.length) throw new Error('scope modules changed since the published page beyond this change: ' + foreign.join(', '));
-if (!CHANGED.every(file => moved.includes(file))) throw new Error('the next scope does not carry this change: ' + CHANGED.filter(file => !moved.includes(file)).join(', '));
+if (priorIsA ? !moved.length : !CHANGED.every(file => moved.includes(file))) throw new Error('the next scope does not carry this change: ' + (priorIsA ? 'no portal module moved' : CHANGED.filter(file => !moved.includes(file)).join(', ')));
 for (const needle of ['data-folded', '"rl-say"', '"rl-who"', 'data-off', '"account-hero"', '"profile-name"', '내 SYNK 계정', 'sb-btn soft compact', '("google-availability")', 'createPortalSecurity', 'synk.id.recent-login.v1'])
   if (!next.text.includes(needle)) throw new Error('patched scope lacks ' + needle);
 for (const needle of ['MY SYNK ID', '"hero-title"', 'profile-avatar']) if (next.text.includes(needle)) throw new Error('patched scope still has ' + needle);
@@ -85,7 +90,7 @@ if (head < start || tail < liveApp.length - end) throw new Error('app.js: bytes 
 
 // --- id/index.html ---------------------------------------------------------------------------------------------------------
 const liveHtml = live('id__index.html');
-const liveTokens = Object.fromEntries(['style.css', 'dist/app.js', 'vendor/atlas-learning.js'].map(file => {
+const liveTokens = Object.fromEntries([priorIsA ? 'id.css' : 'style.css', 'dist/app.js', 'vendor/atlas-learning.js'].map(file => {
   const value = liveHtml.match(new RegExp(`\\./${file.replace(/[./]/g, '\\$&')}\\?v=([A-Za-z0-9_-]+)`))?.[1];
   if (!value) throw new Error('published index.html has no token for ' + file);return [file, value]; }));
 const ICONS = [16, 32, 48].map(size => `<link rel="icon" type="image/png" sizes="${size}x${size}" href="/assets/favicon-synk-20260919-${size}.png">`).join('\n')
@@ -102,6 +107,13 @@ function page(rev, swaps) {
 }
 // The page as published before: the old swaps (top navigation) and the published tokens. Nothing published since is dropped.
 function publishedBefore() {
+  if (priorIsA) {
+    let h = page(priorRev, () => {}).html;
+    for (const [file, from] of [['id.css', 'sid-a-20261111'], ['dist/app.js', 'sid-a-20261111'], ['vendor/atlas-learning.js', 'atlas-learning']]) {
+      const needle = `./${file}?v=${from}`;if (count(h, needle) !== 1) throw new Error(`index.html (${priorRev}): expected one ${needle}`);h = h.replace(needle, `./${file}?v=${liveTokens[file]}`);
+    }
+    return h;
+  }
   let h = page(priorRev, swap => {
     swap('<nav><a href="./platform.html">플랫폼</a><a href="./client.html?product=world">WORLD</a></nav>', '<nav><a href="https://synk.im/">synk.im</a></nav>', 1);
     swap('<a class="brand" href="./platform.html">', '<a class="brand" href="./">', 1);
@@ -112,6 +124,9 @@ function publishedBefore() {
   return h;
 }
 if (lf(liveHtml) !== publishedBefore()) throw new Error(`the published index.html is not ${priorRev}'s page`);
+// An A page's own files as published must be <prior rev>'s bytes too.
+if (priorIsA) for (const [name, file] of [['id__id.css', 'experiences/synk-account/id.css'], ['id__assets__SYNKSans-rest.woff2', 'experiences/synk-account/assets/SYNKSans-rest.woff2'], ['id__assets__SYNKSans-ui.woff2', 'experiences/synk-account/assets/SYNKSans-ui.woff2']])
+  if (!fs.readFileSync(path.join(liveDir, name)).equals(binary(priorRev, file))) throw new Error(`the published ${name.replace(/__/g, '/')} is not ${priorRev}'s`);
 // The next page: prepare-portal's swaps of now, and tokens that name the next bytes.
 const css = source(nextRev, 'experiences/synk-account/id.css');
 let html = page(nextRev, () => {}).html;
@@ -134,15 +149,19 @@ const fonts = Object.fromEntries(['SYNKSans-rest.woff2', 'SYNKSans-ui.woff2'].ma
 const carried = nextRev === 'WORKTREE' || priorRev === 'WORKTREE' ? null
   : git('log', '--format=%h %s', `${priorRev}..${nextRev}`, '--', ...inputs, 'experiences/synk-account/index.html', 'experiences/synk-account/id.css', 'experiences/synk-account/assets/SYNKSans-rest.woff2', 'experiences/synk-account/assets/SYNKSans-ui.woff2')
     .toString('utf8').trim().split(/\r?\n/).filter(Boolean).map(row => row.slice(0, 140));
-const report = { priorRev: priorRev === 'WORKTREE' ? priorRev : git('rev-parse', priorRev).toString().trim(), nextRev: nextRev === 'WORKTREE' ? nextRev : git('rev-parse', nextRev).toString().trim(), liveDir: path.resolve(liveDir), carriedCommits: carried, files: {
+const publish = ['id/dist/app.js', 'id/index.html', 'id/id.css', 'id/assets/SYNKSans-rest.woff2', 'id/assets/SYNKSans-ui.woff2'].filter(file => {
+  const name = file.replace(/\//g, '__'), mine = { 'id__dist__app.js': Buffer.from(app), 'id__index.html': Buffer.from(html), 'id__id.css': Buffer.from(css), ...Object.fromEntries(Object.entries(fonts).map(([font, bytes]) => [`id__assets__${font}`, bytes])) }[name];
+  return !fs.existsSync(path.join(liveDir, name)) || !fs.readFileSync(path.join(liveDir, name)).equals(mine); });
+const report = { publish, priorRev: priorRev === 'WORKTREE' ? priorRev : git('rev-parse', priorRev).toString().trim(), nextRev: nextRev === 'WORKTREE' ? nextRev : git('rev-parse', nextRev).toString().trim(), liveDir: path.resolve(liveDir), carriedCommits: carried, files: {
   'id/dist/app.js': { liveBytes: Buffer.byteLength(liveApp), outBytes: Buffer.byteLength(app), scopeReplaced: [start, end], priorScopeMatched: true, nextScopeBytes: Buffer.byteLength(next.text), scopeInputs: next.inputs.length, changedInputs: moved, firstDifference: head, sameTail: tail, token: token(Buffer.from(app)) },
   'id/index.html': { liveBytes: Buffer.byteLength(liveHtml), outBytes: Buffer.byteLength(html), priorPageMatched: true, liveTokens },
-  'id/id.css': { new: true, bytes: Buffer.byteLength(css), token: token(Buffer.from(css)) },
-  ...Object.fromEntries(Object.entries(fonts).map(([name, bytes]) => [`id/assets/${name}`, { new: true, bytes: bytes.length }])) } };
+  // 「new」 = not published yet (the first A round); 「publish」 = its bytes differ from the published ones (Carbon r2 A1, 11-12).
+  'id/id.css': { new: !fs.existsSync(path.join(liveDir, 'id__id.css')), publish: publish.includes('id/id.css'), bytes: Buffer.byteLength(css), token: token(Buffer.from(css)) },
+  ...Object.fromEntries(Object.entries(fonts).map(([name, bytes]) => [`id/assets/${name}`, { new: !fs.existsSync(path.join(liveDir, `id__assets__${name}`)), publish: publish.includes(`id/assets/${name}`), bytes: bytes.length }])) } };
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'id__dist__app.js'), app);
 fs.writeFileSync(path.join(outDir, 'id__index.html'), html);
 fs.writeFileSync(path.join(outDir, 'id__id.css'), css);
-for (const [name, bytes] of Object.entries(fonts)) fs.writeFileSync(path.join(outDir, `id__assets__${name}`), bytes);
+for (const [name, bytes] of Object.entries(fonts)) if (publish.includes(`id/assets/${name}`)) fs.writeFileSync(path.join(outDir, `id__assets__${name}`), bytes);
 fs.writeFileSync(path.join(outDir, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify(report, null, 1));

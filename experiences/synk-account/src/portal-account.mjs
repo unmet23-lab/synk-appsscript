@@ -23,6 +23,10 @@ const MESSAGES = Object.freeze({
   SESSION_NOT_FOUND: '이미 끝난 로그인이에요. 목록을 새로 불러왔어요.',
 });
 const errorText = error => MESSAGES[error?.code] || (/[가-힣]/.test(error?.message || '') ? error.message : '처리하지 못했어요. 잠시 뒤 다시 해 주세요.');
+// A reply that says nothing about the change itself (the service or the connection is down, or the account client's catch-all
+// 「계정 정보를 불러오지 못했어요」) is told in the words of the pressed control — 「로그아웃시키기」 fails as 「로그아웃시키지 못했어요」.
+const UNSAID = new Set(['SERVICE_UNAVAILABLE', 'NETWORK', 'INVALID_RESPONSE']), CATCH_ALL = '계정 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+const failText = (error, failed) => failed && !MESSAGES[error?.code] && (UNSAID.has(error?.code) || error?.message === CATCH_ALL || !/[가-힣]/.test(error?.message || '')) ? failed : errorText(error);
 const dayText = value => { const time = Date.parse(value || '');return Number.isFinite(time) ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(time)) : ''; };
 const momentText = value => { const time = Date.parse(value || '');return Number.isFinite(time) ? new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(time)) : ''; };
 
@@ -49,8 +53,11 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     return node;
   };
   const live = () => { guard();if (ended) throw Object.assign(new Error('closed'), { code: 'ACCOUNT_CHANGED' }); };
+  // A change that fails says so in its own row; a success line still at the top from an earlier change goes, so the page does not
+  // say 「…켰어요」 above 「…못했어요」 (11-12).
+  const dropSuccess = () => { if (doc.getElementById('notice')?.getAttribute?.('data-kind') === 'success') notice('', false, false, 'idle'); };
   // One change for this account at a time per control; the screen reloads after it.
-  async function act(key, run, { reload = true } = {}) {
+  async function act(key, run, { reload = true, failed = '' } = {}) {
     if (busy.has(key) || ended) return;
     // The pressed control is disabled while it works; its key brings the keyboard back to it afterwards.
     const token = epoch;pendingFocus = doc.activeElement?.dataset?.key || pendingFocus;busy.add(key);rowError = null;render();
@@ -58,7 +65,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     catch (error) {
       if (ended || error?.code === 'ACCOUNT_CHANGED' || token !== epoch) return;
       if (['PROFILE_CONFLICT', 'REQUEST_NOT_FOUND', 'SESSION_NOT_FOUND', 'REVISION_CONFLICT', 'PARTIAL'].includes(error?.code)) { try { await load(); } catch { /* the message below still applies */ } }
-      rowError = { key, text: errorText(error), said: false };
+      rowError = { key, text: failText(error, failed), said: false };dropSuccess();
     } finally { busy.delete(key);if (!ended) render(); }
   }
   // The portal owns sign-out; a second press while one is running finds the screen already changed and does nothing.
@@ -103,12 +110,12 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
   }
   function saveName() {
     const value = doc.getElementById('profile-name-input')?.value ?? nameDraft, problem = nameProblem(value);
-    if (problem) { nameDraft = value;rowError = { key: 'name', text: problem, said: false };render();return; }
+    if (problem) { nameDraft = value;rowError = { key: 'name', text: problem, said: false };dropSuccess();render();return; }
     void act('name', async () => {
-      if (value.trim() === (data?.account?.profile?.display_name || '')) { editingName = false;return; }
+      if (value.trim() === (data?.account?.profile?.display_name || '')) { editingName = false;pendingFocus = 'name-edit';return; }
       const change = profileChange(data?.account, value);await client.updateProfile(change.profile, change.expected_profile_revision);live();
-      editingName = false;nameDraft = '';notice('이름을 바꿨어요. SYNK 앱마다 다음에 열 때 새 이름이 보여요.', false, false, 'success');
-    });
+      editingName = false;nameDraft = '';pendingFocus = 'name-edit';notice('이름을 바꿨어요. SYNK 앱마다 다음에 열 때 새 이름이 보여요.', false, false, 'success');
+    }, { failed: '이름을 저장하지 못했어요. 다시 눌러 주세요.' });
   }
   function sessionsBlock() {
     const rows = sessionRows(data), shown = allSessions ? rows : rows.slice(0, SESSIONS_SHOWN), endedRows = (data?.sessions || []).filter(row => row?.revoked).length;
@@ -118,7 +125,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
       h('ul', { className: 'rows session-list' }, shown.length ? shown.map(row => h('li', { className: 'row session-row' },
         h('div', { className: 'row-main' }, h('h3', {}, row.name, row.current ? ' ' : null, row.current ? h('span', { className: 'here' }, '이 브라우저') : null),
           h('p', {}, [row.label, row.seen ? `${row.seen}에 사용` : ''].filter(Boolean).join(' · ') || '사용 기록 없음')),
-        h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'session:' + row.id, disabled: busy.has('session:' + row.id) || preview, onclick: () => row.current ? void signOut() : void act('session:' + row.id, async () => { await client.revokeSession(row.id);live();notice('그곳의 로그인을 끝냈어요.', false, false, 'success'); }) },
+        h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'session:' + row.id, disabled: busy.has('session:' + row.id) || preview, onclick: () => row.current ? void signOut() : void act('session:' + row.id, async () => { await client.revokeSession(row.id);live();notice('그곳의 로그인을 끝냈어요.', false, false, 'success'); }, { failed: '로그아웃시키지 못했어요. 다시 눌러 주세요.' }) },
           row.current ? '로그아웃' : '로그아웃시키기'))) : h('li', { className: 'row' }, h('p', { className: 'small' }, '표시할 로그인 기록이 없어요.'))),
       rows.length > SESSIONS_SHOWN ? h('p', {}, h('button', { className: 'link-button', type: 'button', 'data-key': 'sessions-more', 'aria-expanded': String(allSessions), onclick: () => { allSessions = !allSessions;render(); } }, allSessions ? '줄여 보기' : `${rows.length - SESSIONS_SHOWN}곳 더 보기`)) : null,
       endedRows ? h('p', { className: 'small session-ended' }, `이미 끝난 로그인 ${endedRows}곳은 목록에서 뺐어요.`) : null,
@@ -133,7 +140,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
       let done = 0;
       for (const row of rows) { try { await client.revokeSession(row.id);done++; } catch (error) { if (error?.code === 'ACCOUNT_CHANGED') throw error;if (error?.code !== 'SESSION_NOT_FOUND') throw Object.assign(new Error(done ? `${done}곳은 로그아웃시켰지만 나머지는 하지 못했어요. 다시 눌러 주세요.` : '로그아웃시키지 못했어요. 다시 눌러 주세요.'), { code: 'PARTIAL' }); }live(); }
       notice(`다른 ${done}곳의 로그인을 끝냈어요. 이 브라우저는 그대로예요.`, false, false, 'success');
-    });
+    }, { failed: '로그아웃시키지 못했어요. 다시 눌러 주세요.' });
   }
   // 「학습 기록과 내 데이터」 as in the PC app: the link switch, what the account keeps (summary), the records download.
   function learningBlock() {
@@ -146,11 +153,11 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
           rowMain('학습 기록 연결', on ? '켜져 있어요. 연습 기록을 계정에 저장해 다른 기기와 SYNK 앱에서 이어 가요.' : canEnable ? '꺼져 있어요. 켜면 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요. 로그인 전에 한 기록은 옮기지 않아요.' : deleting ? '계정 삭제를 요청해서 켤 수 없어요. 요청을 취소하면 다시 켤 수 있어요.' : '지금은 켤 수 없어요. 이 기기에서 하는 연습은 그대로 할 수 있어요.', { id: 'learning-link-heading' }),
           h('button', { className: 'sb-btn soft compact switch', type: 'button', 'data-key': 'learning', role: 'switch', 'aria-checked': String(on), 'aria-labelledby': 'learning-link-heading', disabled: !usable || busy.has('learning'), onclick: () => void act('learning', async () => {
             await client.setLearning(!on, data.learning.revision);live();notice(!on ? '학습 기록 연결을 켰어요.' : '학습 기록 연결을 껐어요.', false, false, 'success');
-          }) }, on ? '켜짐' : '꺼짐')),
+          }, { failed: on ? '학습 기록 연결을 끄지 못했어요. 다시 눌러 주세요.' : '학습 기록 연결을 켜지 못했어요. 다시 눌러 주세요.' }) }, on ? '켜짐' : '꺼짐')),
         h('li', { className: 'row-wide' }, summaryList()),
         h('li', { className: 'row' },
           rowMain('연습 기록 내려받기', '계정에 저장한 연습 기록과 내 정보, 마을 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.'),
-          h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'export', disabled: busy.has('export') || preview, onclick: () => void act('export', download, { reload: false }) }, busy.has('export') ? '준비 중…' : '내려받기'))));
+          h('button', { className: 'sb-btn soft compact', type: 'button', 'data-key': 'export', disabled: busy.has('export') || preview, onclick: () => void act('export', download, { reload: false, failed: '기록을 내려받지 못했어요. 다시 눌러 주세요.' }) }, busy.has('export') ? '준비 중…' : '내려받기'))));
   }
   function summaryList() {
     if (summaryState === 'loading') return h('p', { className: 'small' }, '학습 요약을 불러오고 있어요.');
@@ -191,7 +198,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
             : deleting ? '늦어도 요청 후 30일 안에 계정과 기록을 지워요.' : '요청하면 7일 동안은 취소할 수 있고, 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요.'),
           deletion ? h('button', { className: 'sb-btn compact', type: 'button', 'data-key': 'delete', disabled: busy.has('delete') || preview, onclick: () => void act('delete', async () => {
             await client.cancelDeletion(deletion.request_id);live();deleteRequestId = null;notice('삭제 요청을 취소했어요. 학습 기록 연결은 꺼 둔 채예요. 다시 쓰려면 위에서 켜 주세요.', false, false, 'success');
-          }) }, '삭제 요청 취소')
+          }, { failed: '삭제 요청을 취소하지 못했어요. 다시 눌러 주세요.' }) }, '삭제 요청 취소')
             : deleting ? null : h('button', { className: 'sb-btn soft compact danger', type: 'button', 'data-key': 'delete', disabled: busy.has('delete') || preview, onclick: () => void requestDeletion() }, '계정 삭제 요청'))),
       data?.account?.synk_user_id ? h('details', { className: 'support-id' }, h('summary', {}, '문의할 때 쓰는 계정 번호'), h('p', {}, 'hello@synk.im에 문의할 때 이 번호를 같이 적어 주세요.'), h('code', {}, data.account.synk_user_id)) : null);
   }
@@ -201,7 +208,7 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     await act('delete', async () => {
       deleteRequestId ||= randomId();const result = await client.requestDeletion(deleteRequestId);live();const due = momentText(result?.request?.due_at);
       notice(`삭제 요청을 받았어요. 학습 기록 연결을 멈췄고, ${due ? `${due}까지는` : '7일 동안은'} 이 화면에서 취소할 수 있어요.`, false, false, 'success');
-    });
+    }, { failed: '삭제 요청을 보내지 못했어요. 다시 눌러 주세요.' });
   }
   async function download() {
     const events = [], meta = [];let after = 0, until, memory, myInfo, townData;
@@ -233,9 +240,13 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
     // The keyboard stays where it was, found by a control's key (its words may change), or comes back to the control
     // that started a change once it is enabled again.
     if (typing && editingName) { const input = doc.getElementById('profile-name-input');if (input && doc.activeElement !== input) { input.focus?.({ preventScroll: true });input.setSelectionRange?.(...typing); }return; }
-    const want = key || (pendingFocus && (!active || active === doc.body || !active.isConnected) ? pendingFocus : null);
+    // When that control is gone after the redraw (「취소」 · 「저장」 close the name form), the control the change asked for takes the
+    // keyboard (pendingFocus — 「바꾸기」), not the top of the page (11-12).
+    const controls = [...(profileRoot.querySelectorAll?.('[data-key]') || []), ...(root.querySelectorAll?.('[data-key]') || [])];
+    const own = key ? controls.find(node => node.dataset?.key === key) : null;
+    const want = own ? key : pendingFocus && (!active || active === doc.body || !active.isConnected) ? pendingFocus : null;
     if (!want) return;
-    const target = [...(profileRoot.querySelectorAll?.('[data-key]') || []), ...(root.querySelectorAll?.('[data-key]') || [])].find(node => node.dataset?.key === want);
+    const target = own || controls.find(node => node.dataset?.key === want);
     if (target && !target.disabled) { if (doc.activeElement !== target) target.focus?.({ preventScroll: true });if (want === pendingFocus) pendingFocus = null; }
   }
   // The failed change's line goes in its own row (the row of the control with its key — for the name, the open form or its button);

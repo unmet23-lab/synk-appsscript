@@ -4,7 +4,9 @@
 //   node experiences/synk-account/qa/sid-a-20261111/scenes.mjs <playwright dir> <out dir> [--root <portal dir>] [--only id,id] [--widths 1440,390] [--no-extra]
 // Pictures: <out>/<width>/<scene>.png (full page) and .txt (the page's words). report.json: per picture the horizontal overflow,
 // text below 4.5:1 (3:1 for large text, placeholders included), controls under 44px, fonts · sizes · weights in use, page errors;
-// per scene the overflow at 320 · 360 · 768 · 901 · 1024 · 1280 · 1920; the Tab order on the e-mail fields.
+// per scene the overflow at 320 · 360 · 768 · 901 · 1024 · 1280 · 1920; the Tab order on the e-mail fields. A scene may also carry
+// an expectation (where the keyboard is, which words a failure uses, where a status line sits, what another tab's sign-in leaves
+// here) — checked at every width; a broken one is listed in report.summary.expectFailed.
 // --live <url> (e.g. https://synk.im/id/): the published page itself — its own files and config — with every request to the account
 // project answered by the synthetic servers here and every other origin cut off, so nothing reaches the production project or a
 // real account. Scenes that need a registered app (consent · restart) are left out there.
@@ -31,7 +33,7 @@ const USERS = {
   // A long address (the longest a person is likely to have) for the wrap checks.
   l: { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', email: 'a.very.long.member.name.for.layout.check@subdomain.example-university.example', password: 'example-pass-5', identities: ['email'], name: '긴 주소 회원' },
 };
-const fresh = () => ({ google: true, learning: true, deleting: false, pendingEmail: '', manyPlaces: false, settingsDelay: 0, failRevoke: false, atlasDelay: 0, names: Object.fromEntries(Object.entries(USERS).map(([key, u]) => [key, u.name])) });
+const fresh = () => ({ revoked: new Set(), google: true, learning: true, deleting: false, pendingEmail: '', manyPlaces: false, settingsDelay: 0, failRevoke: false, atlasDelay: 0, names: Object.fromEntries(Object.entries(USERS).map(([key, u]) => [key, u.name])) });
 let state = fresh();
 const now = () => Math.floor(Date.now() / 1000), ago = minutes => new Date(Date.now() - minutes * 60000).toISOString();
 const sessions = new Map(), RESET_TOKEN = 'pkce_' + 'a1'.repeat(28);
@@ -45,7 +47,7 @@ const accountData = key => { const u = USERS[key], places = state.manyPlaces ? P
   account: { synk_user_id: 'SYNK-' + u.id.slice(0, 8).toUpperCase() + '-EXAMPLE', status: state.deleting ? 'deletion-requested' : 'active', profile: state.names[key] ? { display_name: state.names[key] } : {}, profile_revision: 1, providers: u.identities },
   memberships: key === 'a' ? [{ kind: 'staff', role: 'teacher', staff_id: 'example-staff' }] : [], entitlements: key === 'a' ? [{ key: 'platform-basic', product: 'platform', valid_until: '2027-03-31T00:00:00Z' }] : [],
   learning: { enabled: key === 'a' && state.learning && !state.deleting, revision: 1 }, capabilities: { learningSync: true },
-  sessions: [{ id: `${key}-current`, product: 'platform', label: 'Chrome · Windows', current: true, revoked: false, last_seen: ago(0) }, ...places.map(([product, label, minutes], i) => ({ id: `${key}-p${i}`, product, label, current: false, revoked: false, last_seen: ago(minutes) })),
+  sessions: [{ id: `${key}-current`, product: 'platform', label: 'Chrome · Windows', current: true, revoked: false, last_seen: ago(0) }, ...places.map(([product, label, minutes], i) => ({ id: `${key}-p${i}`, product, label, current: false, revoked: state.revoked.has(`${key}-p${i}`), last_seen: ago(minutes) })),
     ...(state.manyPlaces ? [0, 1, 2, 3].map(i => ({ id: `${key}-r${i}`, product: 'world', label: '', current: false, revoked: true, last_seen: ago(60 * 24 * 30) })) : [])],
   dataRequests: state.deleting ? [{ kind: 'delete', status: 'pending', request_id: '00000000-0000-4000-8000-000000000001', requested_at: ago(60 * 24), due_at: new Date(Date.now() + 6 * 86400000).toISOString() }] : [] }; };
 const atlas = key => { const on = key === 'a' && state.learning && !state.deleting;return { ok: true, shared: on ? 'practice-and-settings' : 'declared-only', learning: { enabled: on, revision: 1 }, summary: {
@@ -94,6 +96,7 @@ const auth = http.createServer(async (req, res) => {
   if (view === 'atlas') { if (state.atlasDelay) await new Promise(resolve => setTimeout(resolve, state.atlasDelay));return send(res, 200, atlas(key)); }
   if (req.method === 'POST') {
     if (state.failRevoke && data.action === 'revoke-session') return send(res, 503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } });
+    if (data.action === 'revoke-session') state.revoked.add(data.session_id);
     if (data.action === 'profile-update') state.names[key] = data.profile?.display_name || '';
     if (data.action === 'learning-consent') state.learning = data.enabled === true;
     if (data.action === 'delete-request') state.deleting = true;
@@ -153,13 +156,47 @@ const SCENES = [
   ['google-checking', 'Google 확인이 늦을 때(1.2초)', async tab => { await tab.waitForTimeout(1200); }, { set: { settingsDelay: 5000 }, checking: true }],
   ['consent-long', '앱 연결 · 긴 이메일 주소', async (tab, url) => { await signIn(tab, 'l');await tab.goto(url + '?authorization_id=device-1', { waitUntil: 'networkidle' });await tab.waitForSelector('#consent:not([hidden])'); }],
   ['account-long', '내 계정 · 긴 이메일 주소', async tab => { await signIn(tab, 'l');await settledAccount(tab);await tab.click('#password-form-toggle'); }],
-  ['account-row-error', '내 계정 · 로그아웃시키기 실패', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('[data-key="session:a-p0"]');await tab.waitForSelector('.row-error'); }, { set: { failRevoke: true } }],
-  ['account-password-error', '내 계정 · 새 비밀번호 두 칸이 다름', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('#password-form-toggle');await tab.fill('#current-password', 'example-pass-1');await tab.fill('#new-password', 'example-next-1');await tab.fill('#new-password-confirm', 'example-next-2');await tab.click('#password-change-submit');await tab.waitForFunction(() => /서로 달라요/.test(document.getElementById('security-status').textContent)); }],
+  ['account-row-error', '내 계정 · 로그아웃시키기 실패', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('[data-key="session:a-p0"]');await tab.waitForSelector('.row-error'); }, { set: { failRevoke: true }, expect: rowSays('로그아웃시키지 못했어요. 다시 눌러 주세요.') }],
+  ['account-password-error', '내 계정 · 새 비밀번호 두 칸이 다름', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('#password-form-toggle');await tab.fill('#current-password', 'example-pass-1');await tab.fill('#new-password', 'example-next-1');await tab.fill('#new-password-confirm', 'example-next-2');await tab.click('#password-change-submit');await tab.waitForFunction(() => /서로 달라요/.test(document.getElementById('security-status').textContent)); },
+    { expect: async tab => tab.evaluate(() => { const n = document.getElementById('notice');return n.getAttribute('data-kind') === 'success' ? [`위 알림이 남음: ${n.textContent.trim().slice(0, 30)}`] : []; }) }],
   // The learning summary arrives after a failed name save (render('main') redraws the blocks, not the profile): still one line.
   // Spaces only — an empty field is stopped by the browser (required) before the page sees it.
   ['account-name-error', '내 계정 · 공백만 넣은 이름 저장(요약이 늦게 옴)', async tab => { await signIn(tab, 'a');await tab.click('[data-key="name-edit"]');await tab.fill('#profile-name-input', '   ');await tab.click('[data-key="name-save"]');await tab.waitForSelector('.row-error');await tab.waitForTimeout(3200); }, { set: { atlasDelay: 2500 } }],
   ['signed-out', '로그아웃한 뒤', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('[data-action="sign-out"]');await tab.waitForFunction(() => /로그아웃했어요/.test(document.getElementById('notice').textContent)); }],
+  // 11-12 next round (r5 follow-ups and 「로그인 방법 한 쌍」 ①).
+  ['account-name-cancel', '내 계정 · 이름 고치기를 키보드로 취소', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.focus('[data-key="name-edit"]');await tab.keyboard.press('Enter');await tab.waitForSelector('#profile-name-input');await tab.focus('[data-key="name-cancel"]');await tab.keyboard.press('Enter');await tab.waitForSelector('[data-key="name-edit"]'); },
+    { expect: focusOn('name-edit') }],
+  ['account-name-saved', '내 계정 · 이름을 Enter로 저장', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.focus('[data-key="name-edit"]');await tab.keyboard.press('Enter');await tab.waitForSelector('#profile-name-input');await tab.fill('#profile-name-input', '김유나 선생님');await tab.keyboard.press('Enter');await tab.waitForFunction(() => /이름을 바꿨어요/.test(document.getElementById('notice').textContent));await settledAccount(tab); },
+    { expect: focusOn('name-edit') }],
+  ['account-success-then-fail', '내 계정 · 학습 기록 연결을 끈 뒤 로그아웃시키기 실패', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('[data-key="learning"]');await tab.waitForFunction(() => /학습 기록 연결을 껐어요/.test(document.getElementById('notice').textContent));await settledAccount(tab);await tab.click('[data-key="session:a-p0"]');await tab.waitForSelector('.row-error'); },
+    { set: { failRevoke: true }, expect: async tab => [...await rowSays('로그아웃시키지 못했어요. 다시 눌러 주세요.')(tab), ...await tab.evaluate(() => { const n = document.getElementById('notice');return n.textContent.trim() || n.getAttribute('data-kind') === 'success' ? [`위 알림이 남음: ${n.getAttribute('data-kind')} ${n.textContent.trim().slice(0, 30)}`] : []; })] }],
+  ['account-password-changed', '내 계정 · 비밀번호를 바꾼 뒤', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('#password-form-toggle');await tab.fill('#current-password', USERS.a.password);await tab.fill('#new-password', 'example-next-1');await tab.fill('#new-password-confirm', 'example-next-1');await tab.click('#password-change-submit');await tab.waitForFunction(() => /비밀번호를 바꿨어요/.test(document.getElementById('security-status').textContent));await tab.waitForTimeout(300); },
+    { expect: async tab => tab.evaluate(() => { const status = document.getElementById('security-status'), toggle = document.getElementById('password-form-toggle'), mail = document.getElementById('password-mail')?.parentElement, problems = [];
+      if (status.previousElementSibling?.id !== 'password-change-form') problems.push(`상태 줄 앞: ${status.previousElementSibling?.id || status.previousElementSibling?.className}`);
+      const s = status.getBoundingClientRect(), t = toggle.getBoundingClientRect(), m = mail?.getBoundingClientRect();
+      if (!(s.top >= t.bottom - 1 && (!m || s.bottom <= m.top + 1))) problems.push(`상태 줄 자리 ${Math.round(s.top)} · 단추 끝 ${Math.round(t.bottom)} · 메일 줄 ${Math.round(m?.top)}`);
+      if (document.activeElement !== toggle) problems.push(`초점: ${document.activeElement?.id || document.activeElement?.tagName}`);return problems; }) }],
+  // Another tab of the same browser signs in; this tab (the login screen, or an account another tab then leaves) follows it.
+  ['other-tab-sign-in', '다른 탭에서 로그인한 뒤 이 탭', async (tab, url) => { const other = await tab.context().newPage();await other.goto(tab.url(), { waitUntil: 'networkidle' });await signIn(other, 'a');await tab.waitForSelector('#account-profile:not([hidden])', { timeout: 8000 }).catch(() => {});await settledAccount(tab);await other.close(); },
+    { expect: signedInAs('a') }],
+  ['other-tab-switch', '다른 탭에서 로그아웃하고 다른 회원으로 로그인한 뒤 이 탭', async (tab, url) => { await signIn(tab, 'a');await settledAccount(tab);const other = await tab.context().newPage();await other.goto(tab.url(), { waitUntil: 'networkidle' });await other.waitForSelector('#account-profile:not([hidden])');await settledAccount(other);await other.click('[data-action="sign-out"]');await other.waitForSelector('#auth-panel:not([hidden])');await tab.waitForSelector('#auth-panel:not([hidden])', { timeout: 8000 }).catch(() => {});await signIn(other, 'g');await tab.waitForFunction(email => document.querySelector('.profile-email')?.textContent === email, USERS.g.email, { timeout: 8000 }).catch(() => {});await settledAccount(tab);await other.close(); },
+    { expect: signedInAs('g') }],
+  // The case the 11-11 review reproduced (10 of 11): this tab waits on an app-connection card; another tab signs out and signs in as
+  // someone else. This tab must not fall to 「로그인 상태를 확인하지 못했어요」 — it shows the card again for the new account.
+  ['other-tab-consent', '앱 연결 카드에서 기다리는 동안 다른 탭이 다른 회원으로 로그인', async (tab, url) => { await signIn(tab, 'a');await tab.goto(url + '?authorization_id=device-1', { waitUntil: 'networkidle' });await tab.waitForSelector('#consent:not([hidden])');const other = await tab.context().newPage();await other.goto(url, { waitUntil: 'networkidle' });await other.waitForSelector('#account-profile:not([hidden])');await settledAccount(other);await other.click('[data-action="sign-out"]');await other.waitForSelector('#auth-panel:not([hidden])');await signIn(other, 'g');await tab.waitForFunction(email => document.getElementById('consent-account')?.textContent.includes(email) || /확인하지 못했어요/.test(document.getElementById('notice').textContent), USERS.g.email, { timeout: 8000 }).catch(() => {});await tab.waitForTimeout(300);await other.close(); },
+    { expect: async tab => tab.evaluate(email => { const problems = [], note = document.getElementById('notice').textContent;if (/확인하지 못했어요/.test(note)) problems.push(`알림: ${note.slice(0, 40)}`);
+      if (document.getElementById('consent').hidden || !document.getElementById('consent-account')?.textContent.includes(email)) problems.push(`카드: ${document.getElementById('consent').hidden ? '닫힘' : document.getElementById('consent-account')?.textContent.slice(0, 40)}`);return problems; }, USERS.g.email) }],
+  // A browser whose tabs keep their own session (site data blocked: the SDK keeps the session in each tab's memory, the sign-in
+  // event still reaches the other tabs — Fable r2 P1). This tab holds 김유나; another tab signs in as 이민준. This tab must not draw
+  // 이민준's account over 김유나's session (every later request would go as 김유나) — it stays, or closes as before.
+  ['other-tab-separate', '탭마다 따로 로그인하는 브라우저 · 다른 탭이 다른 회원으로 로그인', async (tab, url) => { await signIn(tab, 'a');await settledAccount(tab);const other = await tab.context().newPage();await other.goto(tab.url(), { waitUntil: 'networkidle' });await signIn(other, 'g');await tab.waitForTimeout(3000);await other.close(); },
+    { blockStorage: true, expect: async tab => tab.evaluate(email => { const shown = document.querySelector('.profile-email')?.textContent;return !document.getElementById('account-profile').hidden && shown === email ? [`이 탭이 다른 회원 계정을 그림: ${shown}`] : []; }, USERS.g.email) }],
 ];
+function focusOn(key) { return async tab => tab.evaluate(want => document.activeElement?.dataset?.key === want ? [] : [`초점: ${document.activeElement?.dataset?.key || document.activeElement?.id || document.activeElement?.tagName}`], key); }
+function rowSays(text) { return async tab => tab.evaluate(want => { const rows = [...document.querySelectorAll('.row-error')].map(node => node.textContent.trim());return rows.length === 1 && rows[0] === want ? [] : [`줄 안 알림: ${JSON.stringify(rows)}`]; }, text); }
+function signedInAs(key) { return async tab => tab.evaluate(email => { const problems = [], note = document.getElementById('notice').textContent;
+  if (document.getElementById('account-profile').hidden) problems.push('내 계정이 안 열림');if (document.querySelector('.profile-email')?.textContent !== email) problems.push(`보이는 계정: ${document.querySelector('.profile-email')?.textContent}`);
+  if (/확인하지 못했어요/.test(note)) problems.push(`알림: ${note.slice(0, 40)}`);return problems; }, USERS[key].email); }
 function audit() {
   const parse = c => { const m = c.match(/rgba?\(([^)]+)\)/);if (!m) return null;const p = m[1].split(',').map(Number);return { r: p[0], g: p[1], b: p[2], a: p[3] ?? 1 }; };
   const lin = v => { v /= 255;return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
@@ -192,7 +229,7 @@ function audit() {
 }
 const report = { made: new Date().toISOString(), root: portalRoot, shots: [], widths: [], tab: null };
 const browser = await chromium.launch({ channel: process.env.SYNK_QA_CHANNEL || 'chrome' });
-const LIVE_SKIP = new Set(['consent', 'restart', 'consent-long']);
+const LIVE_SKIP = new Set(['consent', 'restart', 'consent-long', 'other-tab-consent']);
 async function relay(route) {
   const request = route.request(), target = new URL(request.url()), method = request.method();
   const headers = Object.fromEntries(Object.entries(request.headers()).filter(([name]) => ['authorization', 'apikey', 'content-type', 'x-client-info', 'x-supabase-api-version', 'x-synk-contract', 'x-synk-product', 'x-synk-app-version'].includes(name)));
@@ -204,6 +241,7 @@ async function run(id, width, step, opts = {}) {
   const context = await browser.newContext({ viewport: { width, height: width > 500 ? 1000 : 844 }, deviceScaleFactor: SHOT.includes(width) ? 2 : 1 });
   await context.route('http://127.0.0.1:43999/**', route => route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: '<!doctype html><title>example arrival</title>' }));
   if (LIVE) await context.route('**/*', route => { const url = new URL(route.request().url());if (url.origin === liveProject) return relay(route);if (url.origin === new URL(LIVE).origin || url.protocol === 'data:' || url.protocol === 'blob:') return route.continue();return route.abort(); });
+  if (opts.blockStorage) await context.addInitScript(() => { for (const name of ['localStorage', 'sessionStorage']) Object.defineProperty(window, name, { configurable: true, get() { throw new DOMException('The operation is insecure.', 'SecurityError'); } }); });
   if (opts.hint) await context.addInitScript(([value, key]) => { localStorage.setItem(key, value); }, [hint(opts.hint), 'synk.id.recent-login.v1:' + (LIVE ? new URL(LIVE).pathname : '/')]);
   const tab = await context.newPage(), errors = [];
   tab.on('pageerror', error => errors.push(String(error).slice(0, 200)));
@@ -220,13 +258,14 @@ try {
     for (const width of [...SHOT, ...EXTRA]) {
       const { context, tab, errors } = await run(id, width, step, opts);
       try {
-        const a = await tab.evaluate(audit);
+        const expect = opts?.expect ? await opts.expect(tab) : [];
+        const a = { ...await tab.evaluate(audit), expect };
         if (SHOT.includes(width)) {
           const dir = path.join(outDir, String(width));fs.mkdirSync(dir, { recursive: true });
           await tab.screenshot({ path: path.join(dir, id + '.png'), fullPage: true });
           fs.writeFileSync(path.join(dir, id + '.txt'), await tab.evaluate(() => document.body.innerText));
           report.shots.push({ id, name, width, ...a, errors: [...errors] });
-        } else report.widths.push({ id, width, overflow: a.overflow, gaps: a.gaps, errors: errors.length });
+        } else report.widths.push({ id, width, overflow: a.overflow, gaps: a.gaps, errors: errors.length, expect });
         if (id === 'email' && width === SHOT[0]) {
           await tab.focus('#email');const order = ['email'];
           for (let i = 0; i < 5; i++) { await tab.keyboard.press('Tab');order.push(await tab.evaluate(() => document.activeElement.id || document.activeElement.textContent.trim().slice(0, 14))); }
@@ -240,7 +279,7 @@ const uniq = list => [...new Set(list)];
 report.summary = { shots: report.shots.length, overflow: report.shots.filter(s => s.overflow).map(s => `${s.width} ${s.id} +${s.overflow}`), lowContrast: report.shots.filter(s => s.low.length).map(s => `${s.width} ${s.id} ${JSON.stringify(s.low.slice(0, 2))}`),
   smallTargets: report.shots.filter(s => s.small.length).map(s => `${s.width} ${s.id} ${s.small.slice(0, 4).join(' / ')}`), saidTwice: report.shots.filter(s => s.twice.length).map(s => `${s.width} ${s.id} ${s.twice[0].slice(0, 40)}`),
   errors: report.shots.filter(s => s.errors.length).map(s => `${s.width} ${s.id} ${s.errors[0]}`).concat(report.widths.filter(s => s.errors).map(s => `${s.width} ${s.id}`)),
-  otherWidthsOverflow: report.widths.filter(s => s.overflow).map(s => `${s.width} ${s.id} +${s.overflow}`), badgeGapMin: Math.min(...report.shots.concat(report.widths).flatMap(s => s.gaps), 999),
+  otherWidthsOverflow: report.widths.filter(s => s.overflow).map(s => `${s.width} ${s.id} +${s.overflow}`), expectFailed: report.shots.concat(report.widths).filter(s => s.expect?.length).map(s => `${s.width} ${s.id} ${s.expect.join(' / ')}`), badgeGapMin: Math.min(...report.shots.concat(report.widths).flatMap(s => s.gaps), 999),
   families: uniq(report.shots.flatMap(s => s.families)), sizes: uniq(report.shots.flatMap(s => s.sizes)).sort((a, b) => a - b), weights: uniq(report.shots.flatMap(s => s.weights)).sort((a, b) => a - b), tab: report.tab };
 fs.writeFileSync(path.join(outDir, 'report.json'), JSON.stringify(report, null, 1) + '\n');
 console.log(JSON.stringify(report.summary, null, 1));
