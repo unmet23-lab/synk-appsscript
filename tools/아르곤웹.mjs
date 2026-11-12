@@ -107,7 +107,9 @@ const writeMark = (url, more = {}) => {
 // 보낸 글이 사라지고 새 채팅 주소(대화 번호 없음)로 15초 넘게 있으면 대화가 안 남은 것이다. 빈답마감을 주면 그동안 답 글이 없을 때 끝낸다(사이드바로 연 대화).
 // 멈춤 단추가 남아도 200자 넘는 글이 3분 동안 한 글자도 안 바뀌면 끝으로 본다(11-11 — 다 쓴 답을 「중지」 단추가 남아 「늦음」으로 놓친 것이
 // 05시 1만 5천 자 한 번, 17시 카본 듣기 다섯 번. 모두 늦음 때 글자 수와 나중에 받은 답 길이가 같았다 — 현장노트 gemini_사진).
-const waitAnswer = async (url, 빈답마감 = 0) => {
+// 사라짐진단 — 보내기에서 부를 때(11-13): 사라짐이면 실패 앞에 진단(요청 상태 · 누를 때 올리는 중이던 수 · 화면 알림)을 단계 기록 vanished로 남긴다.
+// 표시는 그대로 두고 옛 길대로 20분 뒤 읽기 — 화면이 새 채팅으로 튕겨도 대화가 생겼고 사이드바가 늦게 바뀐 일이 있다(10-19 지유 세트 셋 · GPT 검수 11-13)
+const waitAnswer = async (url, 빈답마감 = 0, 사라짐진단 = false) => {
   let last = "", same = 0, 고정 = 0, text = "", busy = true, 사라짐 = 0;
   const t0 = Date.now();
   while (Date.now() - t0 < answerMs) {
@@ -120,6 +122,7 @@ const waitAnswer = async (url, 빈답마감 = 0) => {
     last = text;
     if (busy && 고정 >= 36 && text.length > 200) { log({ step: "answer-still", 초: 고정 * 5, chars: text.length, why: "멈춤 단추는 남았는데 글이 3분째 그대로 — 끝으로 본다" }); return { text, url }; }
     사라짐 = r.uqN === 0 && !busy && !text && /^\/u\/\d+\/app\/?$/.test(r.path) ? 사라짐 + 1 : 0;
+    if (사라짐 >= 3 && 사라짐진단) log({ step: "vanished", ...(await 진단읽기()) });
     if (사라짐 >= 3) await fail("보낸 글이 화면에서 사라지고 새 채팅으로 돌아갔다 — 대화가 안 남았을 수 있다. 다시 보내지 말고 보낸 지 20분 뒤 「읽기」(사이드바를 보고 없으면 표시를 푼다)", "사라짐");
     if (!/\/app\/[0-9a-f]+/.test(url)) {
       const nu = await page.url().catch(() => url);
@@ -138,6 +141,121 @@ const finish = async (text, url) => {
   log({ step: "done", url, chars: text.length, out });
   await page.close().catch(() => {});
 };
+
+// 사라짐 진단(11-12 밤 · 11-13 올리기 요청까지) — 사라짐은 보내기의 약 17%(11-11~12 · 카페 와이파이 22% · 집 12%, 사진 1장 + 글 묶음 40%)
+// 나는데 화면에 오류 글이 안 남아 까닭을 못 가렸다. 올리기 앞에서 이 탭에 Gemini 보내기 요청(StreamGenerate · batchexecute)과 파일 올리기 요청
+// (content-push · /upload/)의 응답 상태 · 걸린 시간, 보내기 요청 응답 앞뒤 200자, 화면 알림(스낵바) 글을 적는 고리를 건다. 올리기 요청은
+// 시작 · 끝 수를 따로 세어(__synkUp) 누르기 전에 끝나기를 기다린다 — 11-08 「덜 올라간 채 보내져 사라짐」을 화면 빙글 표시가 못 잡았다
+// (11-11~12 보내기 176건 내내 빙글 0). 사라짐이면 진단을 단계 기록에 남긴다(비공개 .tmp/아르곤웹). 탭이 새로 떴으면(고리가 없음) 「새로뜸」
+// 새보내기 — 올리기 앞에서 부를 때: 같은 문서를 다음 보내기가 다시 쓰면(빈탭이 사라진 탭을 다시 씀) 앞 보내기의 누른 때 · 셈 · 기록이 남아 있으니 비우고
+// 세대(__synkGen)를 올린다 — 앞 세대 요청이 늦게 끝나도 새 셈에 안 든다. 누르기 바로 앞에서는 비우지 않는다(탭이 새로 떴을 때만 건다)
+const 진단걸기 = (새보내기 = false) => page.evaluate((새) => {
+  if (window.__synkNet) {
+    if (새) { window.__synkGen = (window.__synkGen || 0) + 1; window.__synkNet = []; window.__synkToast = []; window.__synkUp = { 시작: 0, 끝: 0 }; window.__synkClick = 0; window.__synkUpAtClick = undefined; }
+    return;
+  }
+  window.__synkGen = 1;
+  window.__synkNet = [];
+  window.__synkToast = [];
+  window.__synkUp = { 시작: 0, 끝: 0 };
+  try { performance.setResourceTimingBufferSize(1000); } catch (e) { /* 자원 타이밍 칸 늘리기 — 못 하면 기본 250 */ }
+  const 적기 = (rec) => { window.__synkNet.push(rec); if (window.__synkNet.length > 20) window.__synkNet.shift(); };
+  const 올리기 = (u) => /content-push|\/upload\//.test(u || "");
+  // 누른 뒤 60초가 지난 요청은 적지 않는다 — 긴 답을 기다리는 동안 13초마다 오가는 batchexecute가 누르기 언저리 기록을 밀어냈다(11-13 실물)
+  const 볼것 = (u) => (/StreamGenerate|batchexecute/.test(u || "") || 올리기(u)) && !(window.__synkClick && Date.now() - window.__synkClick > 60_000);
+  const 이름 = (u) => (올리기(u) ? "upload" : String(u).replace(/\?.*$/, "").split("/").pop().slice(0, 40));
+  // 같은 XHR 객체를 다시 쓰면(open → send를 되풀이) 요청마다 건 듣기가 쌓여 끝 수가 더 늘고 앞 기록이 덮였다(GPT 검수 11-13) — 객체마다 듣기는
+  // 한 번만 걸고, 기록은 지금 요청 것(__synkRec)만 닫는다. 진행 중에 open을 다시 하면 앞 요청은 이벤트 없이 끊기니 그때 닫는다(reopen)
+  const 닫기 = (x, 까닭) => {
+    const rec = x.__synkRec;
+    if (!rec || rec.닫힘) return null;
+    rec.닫힘 = true;
+    if (x.__synkUpNow && rec.gen === window.__synkGen) window.__synkUp.끝 += 1;
+    if (까닭 && !rec.err) rec.err = 까닭;
+    return rec;
+  };
+  const O = XMLHttpRequest.prototype.open, S = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function (m, u) { 닫기(this, "reopen"); this.__synkU = String(u || ""); return O.apply(this, arguments); };
+  XMLHttpRequest.prototype.send = function () {
+    if (볼것(this.__synkU)) {
+      const up = 올리기(this.__synkU);
+      const rec = { u: 이름(this.__synkU), t0: Date.now(), gen: window.__synkGen };
+      적기(rec);
+      if (up) window.__synkUp.시작 += 1;
+      this.__synkRec = rec;
+      this.__synkUpNow = up;
+      if (!this.__synkHooked) {
+        this.__synkHooked = true;
+        this.addEventListener("loadend", () => {
+          const r = 닫기(this);
+          if (!r) return;
+          r.status = this.status; r.ms = Date.now() - r.t0;
+          if (this.__synkUpNow) return; // 올리기 응답 본문(파일 자리)은 안 적는다
+          try { const tx = String(this.responseText || ""); r.len = tx.length; r.head = tx.slice(0, 200); r.tail = tx.slice(-200); } catch (e) { r.len = -1; }
+        });
+        for (const k of ["error", "abort", "timeout"]) this.addEventListener(k, () => { const r = this.__synkRec; if (r && !r.닫힘) r.err = k; });
+      }
+    } else this.__synkRec = null;
+    return S.apply(this, arguments);
+  };
+  const F = window.fetch;
+  window.fetch = async function (input, init) {
+    const u = String((input && input.url) || input || "");
+    if (!볼것(u)) return F.apply(this, arguments);
+    const up = 올리기(u);
+    const rec = { u: 이름(u), t0: Date.now(), via: "fetch", gen: window.__synkGen };
+    적기(rec);
+    if (up) window.__synkUp.시작 += 1;
+    try { const r = await F.apply(this, arguments); rec.status = r.status; rec.ms = Date.now() - rec.t0; return r; } catch (e) { rec.err = String((e && e.message) || e).slice(0, 100); throw e; } finally { if (up && rec.gen === window.__synkGen) window.__synkUp.끝 += 1; }
+  };
+  new MutationObserver(() => {
+    for (const el of document.querySelectorAll("mat-snack-bar-container, simple-snack-bar, .mdc-snackbar__label, [role=alert]")) {
+      const tx = String(el.innerText || "").trim().slice(0, 200);
+      if (tx && !window.__synkToast.includes(tx)) window.__synkToast.push(tx);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+}, 새보내기).catch(() => {});
+// 누르기 바로 앞 — 누른 때와 그때 아직 올리는 중이던 올리기 요청 수를 적는다(진단읽기가 요청마다 누르기 앞뒤를 가른다). 고리가 없으면 -1
+const 누름표시 = () => page.evaluate(() => {
+  window.__synkClick = Date.now();
+  window.__synkUpAtClick = window.__synkUp ? window.__synkUp.시작 - window.__synkUp.끝 : -1;
+  return window.__synkUpAtClick;
+}).catch(() => -1);
+// 자원 — 11-13 실물 시험에서 보내기 요청이 고리에도, 자원 타이밍의 「StreamGenerate」 이름으로도 안 잡혔다(이름이 바뀐 듯). 브라우저 자원 타이밍은
+// 어떤 길로 나간 요청이든 남기니(주소 · 시작 · 걸린 시간 · 응답 상태 · 받은 크기), 이름이 맞는 것과 함께 누르기 앞뒤 60초 안의 요청 꼴 자원
+// (fetch · XHR · beacon · other — 그림 · 글꼴 · 스크립트는 뺌)은 이름과 상관없이 담는다. 구글 밖 주소는 호스트를 붙인다
+const 진단읽기 = () => page.evaluate(() => {
+  const 누름 = window.__synkClick || 0;
+  const 볼것 = /StreamGenerate|batchexecute|content-push|\/upload\//;
+  const 요청꼴 = (e) => /^(fetch|xmlhttprequest|beacon|other)$/.test(e.initiatorType || "");
+  const 떨어짐 = (e) => performance.timeOrigin + e.startTime - 누름;
+  const 가까이 = (e) => 누름 && 떨어짐(e) > -25_000 && 떨어짐(e) < 60_000; // 올리기(누르기 20초쯤 전) ~ 보내기 · 답 첫머리, 페이지 열기(40초쯤 전) 잡음은 뺀다
+  const 이름 = (u) => {
+    if (/content-push|\/upload\//.test(u)) return "upload";
+    const 끝 = String(u).replace(/[?#].*$/, "").split("/").pop().slice(0, 40);
+    try { const h = new URL(u).host; return h === location.host ? 끝 : `${h}/${끝}`.slice(0, 60); } catch (e) { return 끝; }
+  };
+  let 자원 = [];
+  try {
+    // 누른 때를 알면 그 창(25초 전 ~ 60초 뒤) 안에서 누른 때에 가까운 30개를 시간 순으로(11-13 실물 — 긴 답을 기다리는 13초마다의 batchexecute,
+    // 페이지를 열 때 몰린 cspreport · fine-allowlist가 칸을 채워 누르기 언저리가 밀렸다), 모르면 이름이 맞는 마지막 30개
+    const 모두 = performance.getEntriesByType("resource");
+    const 고름 = 누름
+      ? 모두.filter((e) => (볼것.test(e.name) || 요청꼴(e)) && 가까이(e)).sort((a, b) => Math.abs(떨어짐(a)) - Math.abs(떨어짐(b))).slice(0, 30).sort((a, b) => a.startTime - b.startTime)
+      : 모두.filter((e) => 볼것.test(e.name)).slice(-30);
+    자원 = 고름.map((e) => ({
+      u: 이름(e.name),
+      ...(누름 ? { 누른뒤시작: Math.round(performance.timeOrigin + e.startTime - 누름) } : {}),
+      ms: Math.round(e.duration), status: e.responseStatus ?? null, 받은: e.transferSize ?? null, 종류: e.initiatorType,
+    }));
+  } catch (e) { 자원 = [{ 못읽음: String((e && e.message) || e).slice(0, 80) }]; }
+  return {
+    망: (window.__synkNet || []).map((x) => { const { t0, gen, ...rest } = x; return { ...rest, 지남: Date.now() - t0, ...(누름 ? { 누른뒤시작: t0 - 누름 } : {}) }; }),
+    자원, 알림: window.__synkToast || [], 새로뜸: !window.__synkNet,
+    올리는중누를때: window.__synkUpAtClick === undefined ? null : window.__synkUpAtClick, 올리기: window.__synkUp || null,
+  };
+}).catch((e) => ({ 진단못함: String((e && e.message) || e).slice(0, 100) }));
+const 받은진단 = (d) => ({ 망: (d.망 || []).map(({ head, tail, ...x }) => x), 올리는중누를때: d.올리는중누를때 ?? null, 자원: d.자원 || [] });
 
 // 올리기 잠금(11-08) — 잠금은 부르는 쪽(tools/아르곤웹.js)이 쥐고, 푸는 것은 여기서 한다: 보내기 누르기 직전(표시를 쓴 뒤) · 그 앞에서 끝날 때
 // (맨 끝 finally) · 마감. 잠금 폴더의 내 열쇠 파일(<key>.key)을 지운 때만 폴더를 지운다 — 지우기는 한 사람만 되고, 남이 넘겨받은 잠금에는 내 열쇠
@@ -538,6 +656,7 @@ if (mode === "읽기") {
     await page.close().catch(() => {});
   } else {
 
+    await 진단걸기(true); // 올리기 요청도 세려고 올리기 앞에서 건다(11-13) — 누르기 전에 올리는 중인 요청이 끝나기를 기다리고 사라짐 진단에 남긴다
     // 파일 올리기 — 숨은 파일 칸이 없어 「파일 업로드」를 파일 선택 대기와 함께 실제로 누른다(10-22)
     let 올릴바이트 = 0; // 올리기 기다림을 크기에 맞춘다(11-08)
     for (const f of files) { try { 올릴바이트 += (await fs.stat(f)).size; } catch { /* 없는 파일은 부르는 쪽 작업문제가 먼저 막는다 */ } }
@@ -595,7 +714,8 @@ if (mode === "읽기") {
     if (s.mode && !OK(s.mode)) { await chooseCarbon(); s = await state(); if (!OK(s.mode)) await fail("보내기 직전 모드가 바뀜: " + s.mode); }
     // 누르기 직전 올리기 끝 기다림(11-08 — 큰 그림 묶음 셋 · 영상 하나가 덜 올라간 채 보내져 새 채팅으로 사라졌다): 미리보기 안 돌고 있는 표시와 꺼진 보내기
     // 단추가 없어질 때까지 크기에 비례한 상한(올리기끝상한초)까지 본다. 표시 선택자는 10-27 p7 실행기 것 — 그 실행기 round-22에서 덜 끝난 올리기(썸네일 6 → 5)를
-    // 잡았고 다시 할 때는 바로 지나갔다. 상한을 넘겨도 지금처럼 보낸다(선택자가 다른 것을 잡아도 늦어질 뿐 막히지 않게) — 기다린 초를 단계 기록에 남겨 다음에 가린다
+    // 잡았고 다시 할 때는 바로 지나갔다. 상한을 넘겨도 지금처럼 보낸다(선택자가 다른 것을 잡아도 늦어질 뿐 막히지 않게) — 기다린 초를 단계 기록에 남겨 다음에 가린다.
+    // 11-13: 그 표시는 11-11~12 보내기 176건 내내 0이었다 — 진단 고리가 센 끝나지 않은 올리기 요청(올리는중)도 0이 될 때까지 함께 본다
     if (files.length) {
       const 상한초 = 올리기끝상한초(올릴바이트);
       let 초 = 0, 본 = { 빙글: 0, 꺼짐: false };
@@ -604,12 +724,13 @@ if (mode === "읽기") {
           const 미리보기 = [...document.querySelectorAll("uploader-file-preview, .file-preview-container, [class*='file-preview']")];
           const 빙글 = 미리보기.filter((c) => c.querySelector("svg circle, [role=progressbar], mat-progress-spinner, mat-spinner, [class*='spinner'], [class*='progress'], [class*='loading'], [aria-busy=true]")).length;
           const b = document.querySelector('[aria-label="메시지 보내기"]');
-          return { 빙글, 꺼짐: !!b && (b.disabled || b.getAttribute("aria-disabled") === "true") };
-        }).catch(() => ({ 빙글: 0, 꺼짐: false }));
-        if (!본.빙글 && !본.꺼짐) break;
+          const 올리는중 = window.__synkUp ? window.__synkUp.시작 - window.__synkUp.끝 : -1; // 진단 고리가 센 끝나지 않은 올리기 요청(없으면 -1)
+          return { 빙글, 꺼짐: !!b && (b.disabled || b.getAttribute("aria-disabled") === "true"), 올리는중 };
+        }).catch(() => ({ 빙글: 0, 꺼짐: false, 올리는중: -1 }));
+        if (!본.빙글 && !본.꺼짐 && !(본.올리는중 > 0)) break;
         await page.waitForTimeout(1000);
       }
-      log({ step: "upload-wait", 초, 상한초, 빙글: 본.빙글, 꺼짐: 본.꺼짐, MB: Math.round(올릴바이트 / 104857.6) / 10 });
+      log({ step: "upload-wait", 초, 상한초, 빙글: 본.빙글, 꺼짐: 본.꺼짐, 올리는중: 본.올리는중, MB: Math.round(올릴바이트 / 104857.6) / 10 });
     }
     // 올리기 마감을 넘겼으면 표시를 쓰지 않고 그만둔다(감시가 이미 탭을 닫았을 수 있다). 이 검사와 「누름」 사이에는 await가 없어 감시가 끼어들지 못한다
     if (넘김 || (upDeadline && Date.now() > upDeadline)) await fail("올리기 마감을 넘겨 보내지 않는다(표시 안 씀) — 다시 돌려도 된다", "올리기넘김");
@@ -619,6 +740,8 @@ if (mode === "읽기") {
     log({ step: "clicking", 첨부단추: s.closes, 모드: s.mode });
     await 올리기풀기(); // 올리기 · 썸네일 뒤 기다림 · 지시문 넣기가 끝났다 — 누르기 전에 다음 올리기에 넘긴다(답을 기다리는 동안 쥐지 않는다)
     let clickErr = "";
+    await 진단걸기();
+    await 누름표시();
     await page.click('loc=css:[aria-label="메시지 보내기"]', { timeout: 15000, label: "send prompt" }).catch((e) => { clickErr = e.message; });
     // 보냈는지 — 대화 주소, 보낸 글의 지시문 앞머리, 멈춤 단추 가운데 하나. 60초가 지나도 보낸 글이 없고 입력창에 지시문이 그대로면 안 간 것.
     let url = await page.url(), sent = false, notSent = false;
@@ -636,7 +759,8 @@ if (mode === "읽기") {
     if (!sent) await fail("보낸 글도 대화 주소도 안 보임 — 다시 보내지 말고 사이드바 맨 위 대화부터 볼 것", "늦음");
     if (/\/app\/[0-9a-f]+/.test(url)) await writeMark(url);
     log({ step: "sent", url });
-    const r = await waitAnswer(url);
+    const r = await waitAnswer(url, 0, true);
+    log({ step: "net", ...받은진단(await 진단읽기()) }); // 받은 보내기의 요청 상태(본문 빼고) · 누를 때 올리는 중이던 수 — 사라짐과 견줄 바탕
     await finish(r.text, r.url);
   }
 }

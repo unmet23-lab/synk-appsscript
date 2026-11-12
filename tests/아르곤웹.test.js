@@ -158,6 +158,9 @@ test('결과 가르기(11-08) — 사이드바에서 찾아 받음 · 안 보내
   assert.equal(사라짐.결과, '보냄');
   assert.equal(사라짐.사라짐, true, '1분 뒤 다시 읽어도 없다 — 바로 다시 읽지 않는다');
   assert.equal(웹.결과가르기(줄({ step: 'fail', kind: '없음', why: '보낸 지 3분 — 20분이 지나야 푼다' }), true).결과, '보냄', '사이드바에 없어도 20분 안이면 표시는 그대로');
+  // 11-13 — 보내기가 사라짐을 본 판(vanished)은 그 자리 확인이 표시를 못 풀어도 사라짐(1분 뒤 다시 읽지 않음), 풀었으면 안 보내짐 + 사라짐
+  const 못풂 = 웹.결과가르기(줄({ step: 'sent', url: 'https://gemini.google.com/u/2/app' }, { step: 'vanished', 망: [] }, { step: 'fail', kind: '없음', why: '화면 계정을 대조하지 못했다' }), true);
+  assert.deepEqual([못풂.결과, 못풂.사라짐], ['보냄', true]);
 });
 
 test('새 답 · 다시 할 일 — 이번 실행에 써진 답만 받음, 실패한 건은 답이 생겼으면 그만 · 표시가 있으면 읽기', () => {
@@ -1225,6 +1228,14 @@ test('페이지 스크립트(올리기 끝 기다림) — 누르기 직전, 빙�
   assert.equal(안사라짐.줄.MB, 10);
   const 마감 = await 돌려([빙글(3)], { 넘김: true });
   assert.equal(마감.물음, 0, '마감 감시가 울렸으면 기다리지 않고 바로 마감 검사로 간다');
+  // 11-13 — 빙글 표시가 없어도 진단 고리가 센 올리기 요청이 끝나지 않았으면 기다린다(고리가 없으면 -1 — 옛날처럼)
+  const 올림 = (n) => ({ 빙글: 0, 꺼짐: false, 올리는중: n });
+  const 요청 = await 돌려([올림(2), 올림(1), 올림(0)]);
+  assert.deepEqual([요청.줄.초, 요청.줄.올리는중, 요청.쉼], [2, 0, 2], '올리기 요청이 다 끝나면 누르러 간다');
+  const 고리없음 = await 돌려([올림(-1)]);
+  assert.deepEqual([고리없음.줄.초, 고리없음.쉼], [0, 0], '고리가 없으면(-1) 기다리지 않는다');
+  assert.match(보내기, /await 진단걸기\(true\);[^\n]*\r?\n\s*\/\/ 파일 올리기/, '진단 고리는 올리기 앞에서 건다(올리기 요청을 센다 · 새 보내기로 앞 상태를 비운다)');
+  assert.ok(자리('await 진단걸기(true); // 올리기 요청도') < 자리('const chooserP = page.waitForFileChooser'));
 });
 
 test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 보냄 표시 → clicking → 잠금 풀기 → 보내기 누르기, 맨 끝 finally가 감시를 끄고 푼다', () => {
@@ -1255,6 +1266,125 @@ test('페이지 스크립트(올리기 잠금) — 마감 검사 → 누름 → 
   const JOB = (x) => JSON.parse(웹.페이지글(x, 1, '보내기', 'acct').split('\n')[0].replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
   assert.deepEqual(JOB({ ...j, upload: { lock: 'C:/t/upload.lock', key: 'k', deadline: 1 } }).upload, { lock: 'C:/t/upload.lock', key: 'k', deadline: 1 });
   assert.equal(JOB(j).upload, undefined, '잠금을 쥐지 않은 부름(읽기 · 오마주)에는 없다');
+});
+
+test('페이지 스크립트(사라짐 진단 · 11-13) — 보내기의 사라짐은 진단(vanished)을 남기고 옛 길대로 표시를 둔 채 끝난다(20분 뒤 읽기) · 받은 보내기는 요청 상태(net)를 남긴다', () => {
+  const s = 페이지();
+  const { 보내기 } = 갈래(s);
+  assert.match(보내기, /await 진단걸기\(\);\r?\n\s*await 누름표시\(\);\r?\n\s*await page\.click\('loc=css:\[aria-label="메시지 보내기"\]'/, '누르기 바로 앞에 진단 고리(탭이 새로 떴으면 다시 건다) · 누른 때 · 그때 올리는 중이던 요청 수');
+  assert.match(덩이(s, 'const 진단읽기 = () => page.evaluate(() => {'), /올리는중누를때: /, '사라짐 진단에 누를 때 올리는 중이던 요청 수');
+  assert.match(덩이(s, 'const 진단걸기 = (새보내기 = false) => page.evaluate((새) => {'), /const 올리기 = \(u\) => \/content-push\|\\\/upload\\\/\/\.test/, '올리기 요청(content-push · /upload/)도 센다');
+  assert.match(보내기, /const r = await waitAnswer\(url, 0, true\);\r?\n\s*log\(\{ step: "net", \.\.\.받은진단\(await 진단읽기\(\)\) \}\);[^\n]*\r?\n\s*await finish\(r\.text, r\.url\);/, '받으면 요청 상태(본문 빼고)를 남긴다');
+  const 기다림 = 덩이(s, 'const waitAnswer = async (url, 빈답마감 = 0, 사라짐진단 = false) => {');
+  assert.match(기다림, /if \(사라짐 >= 3 && 사라짐진단\) log\(\{ step: "vanished", \.\.\.\(await 진단읽기\(\)\) \}\);\r?\n\s*if \(사라짐 >= 3\) await fail\("보낸 글이 화면에서 사라지고[^"]*20분 뒤 「읽기」[^"]*", "사라짐"\);/, '사라짐이면 진단을 남긴 뒤 옛 실패(표시 그대로 — 20분 뒤 읽기)');
+  assert.doesNotMatch(s, /사라짐뒤확인|바로 = false|바로 \? 0 : releaseAfter/, '사라짐 바로 뒤 표시를 푸는 길은 없다 — 튕겨도 대화가 생긴 일(10-19) · GPT 검수 11-13');
+  assert.match(덩이(s, 'const 사이드바에서읽기 = async (markId, claimed) => {'), /표시풀까\(표시, Date\.now\(\), 본, releaseAfter\)/, '표시 풀기는 늘 보낸 지 20분 뒤');
+  assert.match(s, /const 받은진단 = \(d\) => \(\{ 망: \(d\.망 \|\| \[\]\)\.map\(\(\{ head, tail, \.\.\.x \}\) => x\), 올리는중누를때: /, '받은 보내기 net — 본문 빼고 · 누를 때 올리는 중이던 수');
+  assert.ok(s.indexOf('const 진단읽기 = ') < s.indexOf('\ntry {'), '진단 함수는 맨 위 범위(답 기다리기가 본다)');
+});
+
+test('페이지 스크립트(진단 고리 · 11-13) — 같은 XHR 객체를 다시 써도 올리기 시작 · 끝 수가 맞고(듣기가 쌓이지 않음), 진행 중에 open을 다시 하면 앞 요청을 끝으로 센다 · 볼 요청만 적는다', () => {
+  const s = 페이지();
+  const 몸 = s.match(/const 진단걸기 = \(새보내기 = false\) => page\.evaluate\((\(새\) => \{[\s\S]*?\r?\n\}), 새보내기\)\.catch\(\(\) => \{\}\);/);
+  assert.ok(몸, '진단걸기의 page.evaluate 함수');
+  // 가짜 브라우저 — 고리가 원형을 바꿔 끼우는 XHR(듣기 · 이벤트 쏘기) · fetch · document · MutationObserver
+  class 가짜XHR {
+    constructor() { this.듣기 = {}; this.status = 0; this.responseText = ''; }
+    addEventListener(k, f) { (this.듣기[k] ||= []).push(f); }
+    쏘기(k) { for (const f of this.듣기[k] || []) f(); }
+    open() {}
+    send() {}
+  }
+  const window = { fetch: async () => ({ status: 200 }) };
+  const 환경 = { window, XMLHttpRequest: 가짜XHR, document: { body: {}, querySelectorAll: () => [] }, MutationObserver: class { observe() {} } };
+  const 걸기 = new Function(...Object.keys(환경), `return (${몸[1]});`)(...Object.values(환경));
+  걸기(false);
+  const 올리는중 = () => window.__synkUp.시작 - window.__synkUp.끝;
+  const 올림 = 'https://content-push.googleapis.com/upload/';
+  const x = new 가짜XHR();
+  x.open('POST', 올림); x.send();
+  assert.equal(올리는중(), 1);
+  x.status = 200; x.쏘기('loadend');
+  assert.equal(올리는중(), 0);
+  x.open('POST', `${올림}?n=2`); x.send();
+  assert.equal(올리는중(), 1, '같은 객체로 둘째 올리기 — 진행 중');
+  x.쏘기('loadend');
+  assert.equal(올리는중(), 0, '듣기가 쌓이지 않아 끝은 한 번만 는다');
+  x.open('POST', `${올림}?n=3`); x.send();
+  x.open('POST', `${올림}?n=4`);
+  assert.equal(올리는중(), 0, '진행 중에 open을 다시 하면 앞 요청은 끝으로 센다(이벤트 없이 끊긴다)');
+  x.send(); x.쏘기('loadend');
+  assert.deepEqual(window.__synkUp, { 시작: 4, 끝: 4 });
+  assert.deepEqual(window.__synkNet.filter((r) => r.u === 'upload').map((r) => r.err || ''), ['', '', 'reopen', '']);
+  const y = new 가짜XHR();
+  y.open('POST', 'https://gemini.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate?bl=x'); y.send();
+  y.status = 429; y.responseText = ')]}\'\n[["er",null,null,null,null,429]]'; y.쏘기('loadend');
+  const 보냄 = window.__synkNet.find((r) => r.u === 'StreamGenerate');
+  assert.deepEqual([보냄.status, 보냄.len > 0, /429/.test(보냄.tail)], [429, true, true], '보내기 요청은 상태 · 응답 앞뒤를 적는다');
+  const z = new 가짜XHR(); z.open('GET', 'https://gemini.google.com/app/other'); z.send(); z.쏘기('loadend');
+  assert.equal(window.__synkNet.length, 5, '볼 요청(보내기 · 올리기)만 적는다');
+  window.__synkClick = Date.now() - 61_000;
+  const 늦은 = new 가짜XHR(); 늦은.open('POST', 'https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=x'); 늦은.send(); 늦은.쏘기('loadend');
+  const 늦은올림 = new 가짜XHR(); 늦은올림.open('POST', 올림); 늦은올림.send(); 늦은올림.쏘기('loadend');
+  assert.equal(window.__synkNet.length, 5, '누른 뒤 60초가 지난 요청은 적지 않는다(누르기 언저리 기록을 지킨다)');
+  assert.deepEqual(window.__synkUp, { 시작: 4, 끝: 4 }, '적지 않은 올리기는 셈에도 안 든다');
+  // 같은 문서를 다음 보내기가 다시 쓴다(빈탭이 사라진 탭을 다시 씀) — 앞 보내기의 누른 때 · 셈 · 기록을 비우고 세대를 올린다
+  window.__synkClick = 0;
+  const 앞올림 = new 가짜XHR(); 앞올림.open('POST', 올림); 앞올림.send();
+  assert.equal(올리는중(), 1, '앞 보내기의 올리기가 아직 진행 중');
+  window.__synkClick = Date.now() - 61_000;
+  걸기(true);
+  assert.deepEqual([window.__synkUp, window.__synkClick, window.__synkNet.length, window.__synkGen], [{ 시작: 0, 끝: 0 }, 0, 0, 2]);
+  앞올림.쏘기('loadend');
+  assert.equal(올리는중(), 0, '앞 세대 요청이 늦게 끝나도 새 셈에 안 든다(음수가 안 된다)');
+  const 새올림 = new 가짜XHR(); 새올림.open('POST', 올림); 새올림.send();
+  assert.equal(올리는중(), 1, '앞 보내기의 누른 때가 지워져 새 올리기를 센다');
+  새올림.쏘기('loadend');
+  assert.deepEqual([window.__synkUp, window.__synkNet.length], [{ 시작: 1, 끝: 1 }, 1]);
+  걸기(false);
+  assert.equal(window.__synkNet.length, 1, '누르기 바로 앞에서 다시 불러도(새보내기 아님) 비우지 않는다');
+});
+
+test('페이지 스크립트(진단 읽기 · 11-13) — 고리에 안 잡히는 보내기 요청도 브라우저 자원 타이밍에서 읽는다(주소 · 누른 뒤 시작 · 걸린 시간 · 응답 상태), 볼 요청만', () => {
+  const s = 페이지();
+  const 몸 = s.match(/const 진단읽기 = \(\) => page\.evaluate\((\(\) => \{[\s\S]*?\r?\n\})\)\.catch\(\(e\) => \(\{ 진단못함/);
+  assert.ok(몸, '진단읽기의 page.evaluate 함수');
+  const window = { __synkClick: 10_000, __synkNet: [], __synkToast: ['문제가 발생했습니다'], __synkUpAtClick: 0, __synkUp: { 시작: 1, 끝: 1 } };
+  const 항목 = [
+    { name: 'https://content-push.googleapis.com/upload/?upload_id=x', startTime: 8_000, duration: 600, responseStatus: 200, transferSize: 120, initiatorType: 'xmlhttprequest' },
+    { name: 'https://www.gstatic.com/x.js', startTime: 9_000, duration: 10, responseStatus: 200, transferSize: 1, initiatorType: 'script' },
+    { name: 'https://gemini.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate?bl=x&rt=c', startTime: 10_500, duration: 800, responseStatus: 429, transferSize: 300, initiatorType: 'fetch' },
+  ];
+  항목.push(
+    { name: 'https://gemini.google.com/_/BardChatUi/data/NewSendName?x=1', startTime: 10_200, duration: 900, responseStatus: 0, transferSize: 0, initiatorType: 'fetch' },
+    { name: 'https://play.google.com/log?format=json', startTime: 12_000, duration: 50, responseStatus: 200, transferSize: 20, initiatorType: 'beacon' },
+    { name: 'https://gemini.google.com/_/BardChatUi/data/Late?x=1', startTime: 80_000, duration: 50, responseStatus: 200, transferSize: 20, initiatorType: 'fetch' },
+  );
+  const performance = { timeOrigin: 0, getEntriesByType: (k) => (k === 'resource' ? 항목 : []) };
+  const location = { host: 'gemini.google.com' };
+  const 읽기 = (perf) => new Function('window', 'performance', 'location', `return (${몸[1]})();`)(window, perf, location);
+  const d = 읽기(performance);
+  assert.deepEqual(d.자원, [
+    { u: 'upload', 누른뒤시작: -2000, ms: 600, status: 200, 받은: 120, 종류: 'xmlhttprequest' },
+    { u: 'NewSendName', 누른뒤시작: 200, ms: 900, status: 0, 받은: 0, 종류: 'fetch' },
+    { u: 'StreamGenerate', 누른뒤시작: 500, ms: 800, status: 429, 받은: 300, 종류: 'fetch' },
+    { u: 'play.google.com/log', 누른뒤시작: 2000, ms: 50, status: 200, 받은: 20, 종류: 'beacon' },
+  ], '누르기 언저리 창 안의 이름이 맞는 것 · 요청 꼴(이름이 바뀐 보내기 요청 · 구글 밖은 호스트)을 시간 순으로 — 스크립트 · 창 밖은 뺀다');
+  // 11-13 실물 꼴 — 페이지 열기(누르기 42초 전) 잡음 마흔 개 · 답을 기다리는 동안(누른 뒤 30초) batchexecute 서른다섯 개가 있어도 누르기 언저리를 남긴다
+  const 붐빔 = [
+    ...Array.from({ length: 40 }, (_, i) => ({ name: 'https://gemini.google.com/_/BardChatUi/cspreport/fine-allowlist', startTime: -32_000 + i, duration: 100, responseStatus: 204, transferSize: 300, initiatorType: 'other' })),
+    ...항목,
+    ...Array.from({ length: 35 }, (_, i) => ({ name: 'https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=y', startTime: 40_000 + i, duration: 200, responseStatus: 200, transferSize: 440, initiatorType: 'fetch' })),
+  ].sort((a, b) => a.startTime - b.startTime);
+  const 붐빈 = 읽기({ timeOrigin: 0, getEntriesByType: () => 붐빔 });
+  assert.equal(붐빈.자원.length, 30);
+  assert.deepEqual(붐빈.자원.slice(0, 4).map((x) => x.u), ['upload', 'NewSendName', 'StreamGenerate', 'play.google.com/log'], '누른 때에 가까운 것부터 — 페이지 열기 잡음은 창 밖');
+  assert.ok(!붐빈.자원.some((x) => x.u === 'fine-allowlist'));
+  const 누름모름 = new Function('window', 'performance', 'location', `return (${몸[1]})();`)({ ...window, __synkClick: 0 }, performance, location);
+  assert.deepEqual(누름모름.자원.map((x) => x.u), ['upload', 'StreamGenerate'], '누른 때를 모르면 이름이 맞는 것만');
+  assert.deepEqual([d.올리는중누를때, d.알림, d.새로뜸], [0, ['문제가 발생했습니다'], false]);
+  const 고장 = 읽기({ timeOrigin: 0, getEntriesByType: () => { throw new Error('없음'); } });
+  assert.equal(고장.자원[0].못읽음, '없음', '자원 타이밍을 못 읽어도 나머지 진단은 남긴다');
 });
 
 // ── 11-11 카본 고르기(유호님 「제미나이 관련한 검수나 이미지 생성 · 딥리서치 전부 카본(max)」) ──
@@ -1505,6 +1635,22 @@ process.stdin.on('end', () => {
   const J = JSON.parse(s.split('\\n')[0].replace(/^globalThis\\.JOB = /, '').replace(/;$/, ''));
   fs.appendFileSync(path.join(process.env.FAKE_DIR, 'ego부름.log'), JSON.stringify({ 어느, mode: J.mode, u: J.u, account: J.account, space: J.space, profile: J.profile, 줄: J.줄 || null, out: path.basename(J.out) }) + '\\n');
   if (process.env.FAKE_NO_CONNECT === 어느) { console.error('Error: Failed to connect to ego_cli bootstrap'); process.exit(1); }
+  // 읽기가 보낸 지 20분 지난 표시를 사이드바까지 보고 옮김(안 보내짐) — 한 번만
+  if (process.env.FAKE_UNSENT_ONCE === J.account && J.mode === '읽기' && !fs.existsSync(path.join(process.env.FAKE_DIR, 'unsent-once'))) {
+    fs.writeFileSync(path.join(process.env.FAKE_DIR, 'unsent-once'), '1');
+    fs.writeFileSync(J.unsentMark, JSON.stringify([{ 시각: '2026-11-12 21:01:46', 풀린때: '2026-11-12 21:25:00', 까닭: '사이드바 최근 대화 15개에 없다 · 보낸 지 23분' }]));
+    fs.rmSync(J.mark, { force: true });
+    console.error(JSON.stringify({ step: 'fail', kind: '안보내짐', why: '사이드바 최근 대화 15개에 없다 · 보낸 지 23분 — 안 보내진 것으로 본다', record: J.unsentMark }));
+    process.exit(1);
+  }
+  // 보낸 글 사라짐(11-13 판) — 표시를 남긴 채 진단(vanished) 뒤 「사라짐」으로 끝난다(답 파일 이름이 목록에 든 보내기마다)
+  if (J.mode === '보내기' && String(process.env.FAKE_VANISH_OUTS || '').split(',').includes(path.basename(J.out))) {
+    fs.writeFileSync(J.mark, JSON.stringify({ 시각: '2026-11-13 01:00:00', 공간: J.space, 계정: J.u, 계정이름: J.account, 줄: J.줄 || null }));
+    console.error(JSON.stringify({ step: 'sent', url: 'https://gemini.google.com/u/' + J.u + '/app' }));
+    console.error(JSON.stringify({ step: 'vanished', 망: [], 알림: [], 새로뜸: false, 올리는중누를때: 0 }));
+    console.error(JSON.stringify({ step: 'fail', kind: '사라짐', why: '보낸 글이 화면에서 사라지고 새 채팅으로 돌아갔다 — 보낸 지 20분 뒤 「읽기」' }));
+    process.exit(1);
+  }
   if (process.env.FAKE_SORRY === J.account) { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '로봇 확인 화면(sorry) — 멈춤, 유호님 손' })); process.exit(1); }
   if (process.env.FAKE_WRONG_ACCOUNT === J.account && J.mode !== '읽기') { console.error(JSON.stringify({ step: 'fail', kind: '멈춤', why: '계정이 ' + J.account + '가 아님(/u/' + J.u + ' · 공간 ' + J.space + '): 계정 표시 없음 — 로그아웃 화면일 수 있다' })); process.exit(1); }
   if (J.mode === '확인') { console.error(JSON.stringify({ step: 'account', u: J.u, account: J.account, who: 'Google 계정: x (' + J.account + '@gmail.com)' })); console.error(JSON.stringify({ step: 'done', url: '', chars: 0, out: null })); return; }
@@ -1520,7 +1666,7 @@ process.stdin.on('end', () => {
   console.error(JSON.stringify({ step: 'done', url, chars: 300 }));
 });
 `;
-const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL', 'FAKE_WAIT_WRITE'];
+const 가짜환경 = ['FAKE_DIR', 'FAKE_LANE', 'FAKE_EGO_LANE', 'FAKE_WRONG_ACCOUNT', 'FAKE_SORRY', 'FAKE_NO_CONNECT', 'FAKE_LATE', 'FAKE_PLAIN_UNTIL', 'FAKE_WAIT_WRITE', 'FAKE_UNSENT_ONCE', 'FAKE_VANISH_OUTS'];
 const 여러줄시험 = async (fn, { 서버됨 = true, 환경 = {} } = {}) => {
   const dir = 임시();
   const 앞설정 = { ...웹.설정 };
@@ -1533,7 +1679,7 @@ const 여러줄시험 = async (fn, { 서버됨 = true, 환경 = {} } = {}) => {
   Object.assign(process.env, { SYNK_CHARYE_PY: path.join(dir, '차례.py'), FAKE_DIR: dir, ...환경 });
   const 준비부름 = [];
   Object.assign(웹.설정, {
-    폴더: path.join(dir, 'upload.lock'), 기록폴더: path.join(dir, 'logs'), 쉼: 25, 살핌: 25, 보통쉼: 25,
+    폴더: path.join(dir, 'upload.lock'), 기록폴더: path.join(dir, 'logs'), 쉼: 25, 살핌: 25, 보통쉼: 25, 다시보냄쉼: 25,
     에고: `"${process.execPath}" "${ego}" 메인`, 이름에고: (서버) => `"${process.execPath}" "${ego}" ${서버}`,
     서버준비: async (서버) => { 준비부름.push(서버); return 서버됨 ? { 됨: true, 까닭: `가짜 ego 서버 ${서버}에 붙음` } : { 됨: false, 까닭: `가짜 — ego 서버 ${서버} 없음` }; },
   });
@@ -1775,4 +1921,45 @@ test('여러 줄 확인 — 줄을 안 고르면 a, --줄 c면 c 계정, --여�
     assert.equal(await 웹.확인({ _: [], 파일: [], 줄: 'b', 이름: 'chk-ego-b-no' }), 1);
     assert.deepEqual(본.차례(), [], 'ego를 못 쓰면 서지 않는다');
   }, { 서버됨: false, 환경: { FAKE_EGO_LANE: 'b=gemini-x' } });
+});
+
+test('안 보내짐 뒤 다시 보내기(11-13) — 보내기 부름에서 옛 표시를 읽어 「안 보내짐」(20분 지난 표시를 옛 검사로 옮김)이면 쉬고 한 번 다시 보내 받고, 읽기만 시킨 부름은 다시 안 보낸다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    fs.writeFileSync(웹.표시경로(j.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 웹.기본공간, 계정: 2, 계정이름: '77yuhbs', 줄: 'gemini-a' }));
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'unsent-once' }, '보내기'), 0, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => x.mode), ['읽기', '보내기'], '표시가 있으면 먼저 읽고, 안 보내짐이면 한 번 다시 보낸다');
+    assert.ok(fs.existsSync(j.out));
+    assert.match(찍힘.join('\n'), /작업1: 안 보내짐 — \d+초 쉬고 한 번 다시 보낸다/);
+    assert.deepEqual(본.쓰임().map((x) => x.결과), ['안 보내짐', '받음']);
+  }, { 환경: { FAKE_UNSENT_ONCE: '77yuhbs' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const j = 줄작업(dir, 1);
+    fs.writeFileSync(웹.표시경로(j.out), JSON.stringify({ 시각: '2026-11-12 19:00:00', 공간: 웹.기본공간, 계정: 2, 계정이름: '77yuhbs', 줄: 'gemini-a' }));
+    assert.equal(await 웹.돌리기([j], { _: [], 파일: [], 이름: 'read-only-unsent' }, '읽기'), 1);
+    assert.deepEqual(본.ego().map((x) => x.mode), ['읽기'], '읽기만 시킨 부름은 다시 보내지 않는다');
+    assert.ok(!fs.existsSync(j.out));
+  }, { 환경: { FAKE_UNSENT_ONCE: '77yuhbs' } });
+});
+
+test('사라짐이 두 번 이어지면 묶음을 멈춘다(11-13) — 사라진 건은 표시를 둔 「보냄」(1분 뒤 다시 읽기 안 함), 남은 건은 「안 함」, 줄은 끄지 않는다 · 사이에 받으면 다시 센다', async () => {
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const jobs = [줄작업(dir, 1), 줄작업(dir, 2), 줄작업(dir, 3)];
+    assert.equal(await 웹.돌리기(jobs, { _: [], 파일: [], 이름: 'vanish-twice' }, '보내기'), 1, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => [x.mode, x.out]), [['보내기', '답1.md'], ['보내기', '답2.md']], '사라짐 둘 뒤로는 보내지 않고 · 1분 뒤 다시 읽지도 않는다');
+    assert.deepEqual(본.쓰임().map((x) => x.결과), ['보냄', '보냄']);
+    assert.deepEqual(본.끄기(), [], '로봇 확인이 아니니 줄은 끄지 않는다');
+    assert.match(찍힘.join('\n'), /두 번 이어 사라졌다/);
+    assert.ok(fs.existsSync(웹.표시경로(jobs[0].out)) && fs.existsSync(웹.표시경로(jobs[1].out)), '사라진 건의 표시는 그대로(20분 뒤 읽기)');
+    assert.ok(jobs.every((j) => !fs.existsSync(j.out)));
+  }, { 환경: { FAKE_VANISH_OUTS: '답1.md,답2.md' } });
+  await 여러줄시험(async (dir, 찍힘, 본) => {
+    const jobs = [줄작업(dir, 1), 줄작업(dir, 2), 줄작업(dir, 3)];
+    // 작업1 사라짐 → 작업2 받음(센 것 비움) → 작업3 사라짐 — 이어진 사라짐이 아니니 멈추지 않는다(비우는 줄이 빠지면 여기서 멈춘다)
+    assert.equal(await 웹.돌리기(jobs, { _: [], 파일: [], 이름: 'vanish-reset' }, '보내기'), 1, 찍힘.join('\n'));
+    assert.deepEqual(본.ego().map((x) => x.out), ['답1.md', '답2.md', '답3.md']);
+    assert.deepEqual(본.쓰임().map((x) => x.결과), ['보냄', '받음', '보냄']);
+    assert.ok(fs.existsSync(jobs[1].out));
+    assert.doesNotMatch(찍힘.join('\n'), /두 번 이어 사라졌다/);
+  }, { 환경: { FAKE_VANISH_OUTS: '답1.md,답3.md' } });
 });
