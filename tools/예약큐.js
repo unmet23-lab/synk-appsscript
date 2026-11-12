@@ -211,7 +211,8 @@ function addedAfterCheck(prep, pieceDir, pending) {
     if (!pending.has(p.index) || p.blog || !p.video) continue;
     const raw = p.raw?.원본 || p.raw?.파일;
     const tries = p.video.exists || typeof raw !== 'string' || path.isAbsolute(raw) ? [p.video.path]
-      : bases.flatMap((b) => [path.join(b, raw), path.join(b, piece, raw), path.join(b, piece, '게시', raw)]);
+      // piece는 편이 저장소와 다른 드라이브면 절대 경로다(D: 워크트리 + C: 임시 폴더의 시험 마당) — path.resolve로 푼다(tools/lib/게시묶음.js resolve와 같은 셈, 11-12)
+      : bases.flatMap((b) => [path.join(b, raw), path.resolve(b, piece, raw), path.resolve(b, piece, '게시', raw)]);
     const f = tries.map((t) => recorded.get(norm(t))).find(Boolean);
     if (!f || (Array.isArray(f.판) && !f.판.includes(p.account))) out.push(p.account);
   }
