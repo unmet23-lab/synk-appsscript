@@ -1160,9 +1160,12 @@ html.sx:not(.is-staff) .header-actions .install-button::before{display:none}
 .sx-j-shots[data-count="1"] img{height:auto;max-height:260px}
 .sx-j-wip{color:var(--sx-dim)}
 .sx-j-tools{margin:4px 0 -4px}
-.sx-j-filter[aria-pressed=true]{padding:2px 8px;background:var(--sx-ink);color:#0b0b0b;text-decoration:none}
+/* 켜진 모양은 좌우 여백만 더한다 — 위아래는 기본 · 터치 규칙(6px)을 그대로 따라 켜고 끌 때 높이가 바뀌지 않게(화면 검수 F6). */
+.sx-j-filter[aria-pressed=true]{padding-inline:8px;background:var(--sx-ink);color:#0b0b0b;text-decoration:none}
 .sx-j-empty{padding:8px 0;color:var(--sx-dim)}
 .sx-room-cap .sx-link{margin-left:6px;padding:0;font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+/* 휴대폰: 누를 높이를 넓히되 줄 높이는 그대로(위아래 여백을 음수 바깥 여백으로 되돌린다). */
+@media (hover:none){.sx-room-cap .sx-link{display:inline-block;padding-block:12px;margin-block:-12px}}
 /* 옛 화면(app.css)의 알림 강조(분홍 테두리 · !important)를 일지 줄에서는 이긴다 — 크림 톤 바탕만. */
 :is(.sx-j-row,.sx-j-ask).notification-target{outline:0;background:rgba(244,241,234,.12);box-shadow:-8px 0 0 rgba(244,241,234,.12),8px 0 0 rgba(244,241,234,.12)!important;border-radius:0;transition:background .8s ease}
 .sx-j-ask-open{display:none}

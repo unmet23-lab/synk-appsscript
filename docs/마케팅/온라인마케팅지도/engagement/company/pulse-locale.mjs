@@ -93,7 +93,7 @@ const EN=Object.freeze({
   '결제가 취소됐어요. 다시 진행하시려면 담당자에게 알려 주세요.':'The payment was cancelled. Tell your producer if you would like to continue.',
   // 운영 조각 4(11-12): 작업 소식 알림(앱 안 · 기기만 — 메일 없음)
   '작업 중인 화면이 올라왔어요':'New work-in-progress update',
-  '완성본이 아니라 작업 중인 화면이에요. 의견은 다음 판이 오면 컷마다 남겨 주세요.':'This is a work in progress, not the finished version. Please leave feedback on each shot once the next version arrives.',
+  '완성본이 아니라 작업 중인 화면이에요. 의견은 다음 판이 오면 그때 남겨 주세요.':'This is a work in progress, not the finished version. Please leave your notes once the next version arrives.',
   '이 기기를 기억해 두셨다면 바로 열려요. 다른 기기에서는 「메일로 다시 열기」에 이 메일 주소를 넣으시면 코드를 보내 드려요.':'If you asked us to remember this device, it opens right away. On another device, enter this email address under “Reopen by email” and we will send you a code.',
   '〔SYNK PULSE〕 의뢰를 받았어요 · {number}':'〔SYNK PULSE〕 We received your brief · {number}',
   '〔SYNK PULSE〕 의뢰를 받았어요':'〔SYNK PULSE〕 We received your brief',

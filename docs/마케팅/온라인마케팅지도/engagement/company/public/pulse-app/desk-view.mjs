@@ -24,7 +24,7 @@ function mailBlock(m){
 }
 // 영어 프로젝트(다국어 판 2): 손님에게 보이는 직원 글의 영어. 보내는 창마다 영어 칸이 있고, 여기서는 이미 보인 글(장면 · 일지 답 · 프로젝트 머리 · 보낸 파일 이름 등)의 영어를 넣거나 고친다.
 // 확인한 영어만 손님에게 보이고, 빠졌거나 원문이 바뀐 칸은 손님에게 한국어 원문이 나간다. 저장하면 확인(reviewed)으로 남는다.
-const TR_PART={ask:'되물은 것',model:'모델 제안',direction:'방향 안내',option:'방향 안',round:'보낸 판',scene:'장면',project:'프로젝트',message:'일지 답',version:'보낸 파일'};
+const TR_PART={ask:'되물은 것',model:'모델 제안',direction:'방향 안내',option:'방향 안',round:'보낸 판',scene:'장면',project:'프로젝트',message:'일지 답',version:'보낸 파일',progress:'작업 소식'};
 const TR_FIELD={label:'물을 것',why:'이유',note:'메모',lead:'한 줄 안내',name:'이름',sentence:'한 문장',filmNote:'견본 설명',flow:'흐름',oneLine:'한 문장',title:'제목',description:'설명',summary:'만들 내용',nextStep:'다음 할 일',terms:'제작 범위',text:'글',guide:'사용 안내'};
 const TR_STATE={missing:['빠짐','is-wait','저장'],stale:['원문이 바뀜','is-wait','확인하고 저장'],draft:['초안','is-wait','확인하고 저장'],same:['원문이 이미 영어','is-ok','저장'],ok:['확인','is-ok','고쳐 저장']};
 // 납품 파일 이름처럼 직원이 처음부터 영어로 적은 칸은 빠진 것으로 세지 않는다(손님에게 그 글이 그대로 보인다).

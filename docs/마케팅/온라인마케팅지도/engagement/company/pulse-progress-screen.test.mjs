@@ -135,3 +135,27 @@ test('영어: 소식 줄 · 안내 · 「말만 보기」 · 「소식 보기」
     assert.match(html,/shared a work-in-progress update · /);assert.match(html,/Work in progress · not the finished version/);
   }finally{await setLocale('ko');}
 });
+
+test('화면 Fable 최종 반영: 예시 일지의 「말만 보기」 · 인물 차례 방의 큰 그림 칸 · 그림 다시 올리기 · 거른 채 「봤다」 · 직원 번역 칸 이름 · 켜진 단추 높이',async()=>{
+  // F1(P1): 공개 예시(?demo=film) 일지도 「말만 보기」를 받는다 — 다시 그리기 콜백이 어느 단추인지 받고, 부르는 네 자리가 말만 보기 상태를 들고 다시 그린다.
+  const demo=await readFile(new URL('./public/pulse-app/demo-film.mjs',import.meta.url),'utf8');
+  assert.match(demo,/if\(act==='more'\|\|act==='talk'\)\{const wasOpen=el\.classList\.contains\('is-open'\);redraw\?\.\(act\);/);
+  assert.equal((demo.match(/if\(act==='talk'\)/g)||[]).length,4,'방 · 글 콘티 · 영상 확인 · 납품 네 자리');
+  assert.match(demo,/journalAll:false,journalTalk:false,/);
+  // F2: 맞춤 인물 카드가 「지금 차례」(머리 「내 차례」)이고 인물 그림이 없으면 큰 그림 칸은 소식 그림이 아니다.
+  const assets=[image(2)],rounds=[{round:1,kind:'images',sentAt:T(2),approvedAt:T(3),scenes:[]}];
+  const withPersona=project({approvedAt:T(3),rounds,progress:[{id:N(2),at:T(4),text:'편집 중',assets:[A(2)]}]},{stage:'producing',persona:{id:'persona-1',turn:'customer',status:'needs_materials',why:'옆모습 사진이 더 필요해요.',kind:'virtual',sources:{identity:0,mood:0,files:[]}}},assets);
+  const model=roomModel(withPersona);
+  assert.ok(model.news,'소식은 있다');assert.ok(model.persona?.card,'인물 카드가 손님 차례');
+  const screen=(roomView(model,{bar:false}).match(/<div class="sx-room-screen">[\s\S]*?<\/div>\s*<\/section>/)||[''])[0];
+  assert.doesNotMatch(screen,/작업 중인 화면이에요/,'인물 차례 방에는 소식 그림을 띄우지 않는다');
+  // F3 · F4 · F6: 그림 다시 올리기는 파일마다 · 「말만 보기」를 켠 채 「봤다」는 보이는 줄만 · 켜진 단추는 좌우 여백만.
+  const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
+  assert.match(app,/sign=file=>\[file\.name,file\.size,file\.lastModified\]\.join\('\|'\)/);assert.match(app,/if\(!done\[key\]\)\{done\[key\]=await uploadStaffMedia\(file,\{purpose:'progress'\}\)/);
+  assert.match(app,/shown=s\.journalTalk\?j\.items\.filter\(item=>item\.kind==='talk'\):j\.items/);assert.match(app,/const lines=new Set\(shown\.map\(item=>item\.id\)\)/);
+  const css=await readFile(new URL('./public/pulse-app/film.css',import.meta.url),'utf8');
+  assert.match(css,/\.sx-j-filter\[aria-pressed=true\]\{padding-inline:8px;/);assert.doesNotMatch(css,/\.sx-j-filter\[aria-pressed=true\]\{padding:/);
+  // F5: 영어 프로젝트의 직원 번역 칸 이름.
+  const desk=deskView({...deskModel(project({progressFeed:true,progress:[]},{},[])),queue:[],canEdit:true,translation:{locale:'en',entries:{[`progress:${N(1)}:text`]:{source:'작업 중이에요',max:1200,text:'',status:'',fresh:false}}}},{bar:false});
+  assert.match(desk,/작업 소식 · 글/);assert.doesNotMatch(desk,/progress · 글/);
+});

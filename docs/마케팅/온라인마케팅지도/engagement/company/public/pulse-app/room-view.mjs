@@ -196,7 +196,8 @@ function turnSince(r){
   const d=r?.directionProposal,times=[r?.submittedAt,r?.approvedAt,r?.payment?.confirmedAt,r?.modelProposal?.answeredAt,d?.answeredAt,d?.prior?.answeredAt,...(r?.asks||[]).map(ask=>ask.answeredAt),...(r?.rounds||[]).flatMap(round=>[round.feedbackAt,round.approvedAt])].map(value=>Date.parse(value||'')).filter(Number.isFinite);
   return times.length?Math.max(...times):null;
 }
-// 저희 차례 큰 그림 칸: 차례가 넘어온 뒤에 올린 소식 가운데 그림이 있는 가장 최근 것(앞 단계의 소식이 다음 단계 화면에 남지 않게). 손님 차례 · 끝이면 null.
+// 저희 차례 큰 그림 칸: 차례가 넘어온 뒤에 올린 소식 가운데 그림이 있는 가장 최근 것(손님이 넘겨준 일 앞의 소식이 그 뒤 화면에 남지 않게 — 의뢰서 확인은 직원 동작이라
+// 차례를 넘기지 않아, 확인 중에 올린 소식은 1차안 준비 화면에도 남는다). 손님 차례 · 끝이면 null. 맞춤 인물 카드가 「지금 차례」면 그리는 쪽이 빼낸다(film-views roomView).
 export function roomNews(p,state=roomState(p)){
   if(ROOM_COPY[state]?.turn!=='us')return null;
   const since=turnSince(requestOf(p)),item=progressLines(p).filter(line=>line.pictures.length&&(since===null||Date.parse(line.at)>=since)).at(-1);

@@ -71,7 +71,8 @@ function bindExampleJournal(root,say,redraw){
     const act=event.target.closest('[data-journal-do]')?.dataset.journalDo;
     if(act==='close'){close();return;}
     // 다시 그리면 새 일지는 닫힌 채라, 연 시트 · 서랍이었으면 그대로 다시 연다(가림막만 남거나 문서가 잠긴 채 남지 않게).
-    if(act==='more'){const wasOpen=el.classList.contains('is-open');redraw?.();if(wasOpen)journalSetOpen(root,true);box()?.querySelector('[data-journal-do="more"]')?.focus({preventScroll:true});return;}
+    // more(이전 말 더 보기) · talk(「말만 보기」 — 운영 조각 4 화면 검수 F1)를 부른 쪽이 상태로 들고 다시 그린다.
+    if(act==='more'||act==='talk'){const wasOpen=el.classList.contains('is-open');redraw?.(act);if(wasOpen)journalSetOpen(root,true);box()?.querySelector(`[data-journal-do="${act}"]`)?.focus({preventScroll:true});return;}
     if(event.target.closest('[data-journal-go]')){close();say('예시예요. 실제 프로젝트에서는 그 화면으로 옮겨 가요.');}
   });
   root.addEventListener('keydown',event=>{if(event.key==='Escape'&&box()?.classList.contains('is-open')&&!document.querySelector('.sx-round-sheet[open],dialog[open]'))close();});
@@ -89,7 +90,7 @@ function exampleState(){
   const asked={id:'demo-m1',author:'customer',authorName:'예시 고객',action:'feedback',versionId:'demo-v1',seconds:8,text:'떠 있는 시간이 길어요. 뚜껑 위 결정을 더 크게 보여 주세요.',resolved:true,at:AT};
   const scenes=[['결정이 자라요',3],['서리가 구슬을 덮어요',3],['깨지고, 멈춰요',5],['이름을 남겨요',4]].map(([title,duration],i)=>({id:`demo-s${i}`,title,duration,visibility:'customer'}));
   const talk=[{id:'demo-q1',author:'customer',authorName:'예시 고객',action:'support',text:'연말 선물 시즌 전에 받을 수 있을까요?',at:KST(4,'10:02')},{id:'demo-q2',author:'staff',authorName:'김하늘',text:'네, 11월 21일에 맞춰 드려요. 2차 시안은 오늘 오후에 올려요.',at:KST(4,'10:30')}];
-  return {mode:'customer',demo:false,example:true,tab:'review',versionId:'',compare:false,reviewPanel:'note',error:'',rememberOffer:false,journalAll:false,project:{id:'demo-film',title:ROOM.title,ownerName:'김하늘',stage:'review',revision:1,requestFlow:true,versions:[v1,v2],messages:[asked,...talk],
+  return {mode:'customer',demo:false,example:true,tab:'review',versionId:'',compare:false,reviewPanel:'note',error:'',rememberOffer:false,journalAll:false,journalTalk:false,project:{id:'demo-film',title:ROOM.title,ownerName:'김하늘',stage:'review',revision:1,requestFlow:true,versions:[v1,v2],messages:[asked,...talk],
     closeout:{deliveryKey:'demo',canConfirm:true,files:[{id:'demo-final',label:'15초 광고 최종본'}]},
     studio:{scenes,assets:[],comments:[],sceneReviews:[],request:exampleRequest('review'),
       feedbackRounds:{latestVersionId:'demo-v2',latestVersionLabel:'2차 시안',canDraft:true,maxItems:30,nextNumber:2,drafts:[],rounds:[{id:'demo-r1',number:1,versionId:'demo-v1',versionLabel:'1차 시안',representativeName:'예시 고객',submittedAt:KST(4,'09:40'),items:[{id:'demo-i1',messageId:'demo-m1',seconds:8,text:asked.text,resolved:true,classification:{label:'합의한 범위 안의 수정',scopeNote:'제품이 떠 있는 시간과 끝 컷',scheduleNote:'2차 시안에 반영'}}]}]}}}};
@@ -175,18 +176,18 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
     }
     if(['room','ask','pay'].includes(id)){
       const stateName={room:'check',ask:'ask',pay:'pay'}[id],stage=id==='pay'?'draft':'check',more=id==='pay'?{pay:PAY,draft:SCRIPT,hasRound:true}:{};
-      let all=false;const draw=()=>{root.innerHTML=roomView({...ROOM,...more,state:stateName,stage},{journal:exampleJournal(id,{place:'column',here:{tab:'overview'},all})});root.querySelector('.sx-room').classList.add('is-example');};draw();
-      bindExampleJournal(root,say,()=>{all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=exampleJournal(id,{place:'column',here:{tab:'overview'},all});old?.replaceWith(...box.children);});
+      let all=false,talk=false;const draw=()=>{root.innerHTML=roomView({...ROOM,...more,state:stateName,stage},{journal:exampleJournal(id,{place:'column',here:{tab:'overview'},all,talk})});root.querySelector('.sx-room').classList.add('is-example');};draw();
+      bindExampleJournal(root,say,act=>{if(act==='talk')talk=!talk;else all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=exampleJournal(id,{place:'column',here:{tab:'overview'},all,talk});old?.replaceWith(...box.children);});
       root.addEventListener('submit',event=>event.stopPropagation());
       mountRoom(root,{onGo:to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');else if(to==='draft')go('script');},onEdit:()=>go('request'),onForm:()=>go('room'),onContact:()=>say(NOT_REAL),onFiles:()=>say('예시라 올리지 않아요. 실제 의뢰에서는 여기서 자료를 더 보내실 수 있어요.')});return;
     }
     // 글 콘티 · 장면 이미지도 다른 장면과 같은 머리(이름 · 단계 · 묻기)를 단다 — 손님 앱의 「← 현황」은 머리가 대신한다.
     const draftHead=exampleHead({...ROOM,stage:'draft',hasRound:true},{tab:'draft'}),headGo=to=>{if(to==='request')go('request');else if(to==='check'||to==='room')go('room');};
-    const sideJournal=(scene,all=false)=>exampleJournal(scene,{place:'side',here:{tab:'draft'},all}),bindDraftJournal=(root,scene)=>{let all=false;bindExampleJournal(root,say,()=>{all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=sideJournal(scene,all);old?.replaceWith(...[...box.children].filter(node=>node.matches('[data-journal]')));});};
+    const sideJournal=(scene,all=false,talk=false)=>exampleJournal(scene,{place:'side',here:{tab:'draft'},all,talk}),bindDraftJournal=(root,scene)=>{let all=false,talk=false;bindExampleJournal(root,say,act=>{if(act==='talk')talk=!talk;else all=!all;const old=root.querySelector('[data-journal]'),box=document.createElement('div');box.innerHTML=sideJournal(scene,all,talk);old?.replaceWith(...[...box.children].filter(node=>node.matches('[data-journal]')));});};
     if(id==='script'){root.innerHTML=draftView(SCRIPT,{head:draftHead,journal:sideJournal('script')});bindDraftJournal(root,'script');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,SCRIPT,{onBack:()=>go('room'),onApprove:()=>go('pay'),onSend:()=>go('room'),onRecast:()=>go('direction')});return;}
     if(id==='draft'){root.innerHTML=draftView(DRAFT,{head:draftHead,journal:sideJournal('draft')});bindDraftJournal(root,'draft');mountRoom(root,{animate:false,onGo:headGo,onContact:()=>say(NOT_REAL)});document.documentElement.classList.add('view-dr');handle=mountDraft(root,DRAFT,{onBack:()=>go('room'),onApprove:()=>go('review'),onSend:()=>go('room')});return;}
-    if(id==='review'){state=exampleState();if(nextPanel){state.reviewPanel=nextPanel;nextPanel='';}bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'review');});drawProject(root,'review');return;}
-    if(id==='history'){state=asFinal(exampleState());bindProject(root);bindExampleJournal(root,say,()=>{state.journalAll=!state.journalAll;drawProject(root,'history');});drawProject(root,'history');}
+    if(id==='review'){state=exampleState();if(nextPanel){state.reviewPanel=nextPanel;nextPanel='';}bindProject(root);bindExampleJournal(root,say,act=>{if(act==='talk')state.journalTalk=!state.journalTalk;else state.journalAll=!state.journalAll;drawProject(root,'review');});drawProject(root,'review');return;}
+    if(id==='history'){state=asFinal(exampleState());bindProject(root);bindExampleJournal(root,say,act=>{if(act==='talk')state.journalTalk=!state.journalTalk;else state.journalAll=!state.journalAll;drawProject(root,'history');});drawProject(root,'history');}
   }
   nav.addEventListener('click',event=>{if(event.target.dataset?.protoLeave!==undefined){onLeave?.();return;}const id=event.target.dataset?.scene;if(id)go(id);});
   // 장면 꼬리(#room)는 첫 로드든 주소줄에 직접 친 것이든 읽은 뒤 그 장면을 열기 전에 지운다 — 옮겨 다녀도 주소가 낡은 장면을 가리키지 않고, 의뢰서의 뒤로 가기 덫 칸도 꼬리 없는 같은 주소로 쌓인다.

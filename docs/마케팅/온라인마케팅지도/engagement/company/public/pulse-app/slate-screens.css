@@ -465,6 +465,6 @@ html.view-entry .connection-banner,html.view-draft .connection-banner,#request-r
 .desk-progress-shots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .desk-progress-shots img{width:64px;height:48px;object-fit:cover;background:#000}
 .desk-progress-act{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.desk-progress-keep{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0}
+.desk-progress-keep{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;border:0}
 .desk-progress-keep label{display:inline-flex;align-items:center;gap:4px}
 .desk-progress-keep img{width:72px;height:54px;object-fit:cover;background:#000}

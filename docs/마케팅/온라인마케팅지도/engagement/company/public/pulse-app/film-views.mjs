@@ -94,9 +94,10 @@ export const journalFocus=box=>{const title=box?.querySelector('#room-journal-ti
 // 휴대폰에서만 보이는 「담당자에게 묻기」(넓은 화면은 같은 화면 왼쪽에 일지가 있다). 시트를 연다.
 export const journalAsk=(cls='')=>`<button type="button" class="sx-quiet sx-j-ask-open ${cls}" data-room-do="journal">${esc(t('담당자에게 묻기'))}</button>`;
 // 오른쪽 스크린: 그 상태에 가장 알맞은 실제 자료. 손님 자료가 없을 때만 예시를 놓고 예시라고 쓴다.
-function roomScreen(p){
+// news: 맞춤 인물 카드가 「지금 차례」인 방(머리 「내 차례」)에서는 인물 그림이 없을 때 이리 떨어져도 소식 그림을 띄우지 않는다(운영 조각 4 화면 검수 F2).
+function roomScreen(p,{news=true}={}){
   // 저희 차례에 담당자가 올린 작업 소식 그림(운영 조각 4): 예시 · 지난 판 그림보다 앞에, 완성본이 아니라는 말과 함께. 「소식 보기」는 일지의 그 줄로.
-  if(p.news?.pictures?.length){const pics=p.news.pictures;return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
+  if(news&&p.news?.pictures?.length){const pics=p.news.pictures;return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
   if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
   if(p.state==='model'&&p.proposal)return `<img class="sx-q-fill" src="${esc(modelScene(p.proposal.id))}" alt=""><p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
@@ -317,7 +318,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
         ${after}
         ${journal}${late?below:''}
       </div>
-      <div class="sx-room-screen">${main&&personaScreen(p.persona)||roomScreen(p)}</div>
+      <div class="sx-room-screen">${main&&personaScreen(p.persona)||roomScreen(p,{news:!main})}</div>
     </section>
     ${foot?`<div class="sx-room-foot">${foot}</div>`:''}
     ${roomPaper(p)}

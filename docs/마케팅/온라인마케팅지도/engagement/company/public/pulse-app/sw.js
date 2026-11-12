@@ -33,7 +33,9 @@
 // v46(11-12): 운영 조각 4 작업 소식 — 일지의 소식 줄(그림 · 「작업 중인 화면이에요」) · 「말만 보기」 거르개 · 저희 차례 큰 그림 칸의 소식 그림 · 직원 「작업 소식」 칸으로
 // room-view.mjs · film-views.mjs · app.mjs · views.mjs · 내부 확인 모듈 · film.css · slate-screens.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
 // v47(11-12): 만료 · 삭제 운영 시험 P3(작업 소식 v46 위) — 내 모델 카드의 삭제 요청 상태 한 줄로 my-models.mjs · i18n/en.mjs가 바뀌었다(목록은 그대로).
-const CACHE = 'synk-pulse-shell-v47-expiry-p3-20261112';
+// v48(11-12): 운영 조각 4 화면 최종 검수 반영 — 예시 일지의 「말만 보기」 · 인물 차례 방의 큰 그림 칸 · 거른 채 「봤다」 · 켜진 단추 높이 · 휴대폰 「소식 보기」 누를 높이로
+// demo-film.mjs · film-views.mjs · room-view.mjs · app.mjs · 내부 확인 모듈 · film.css · slate-screens.css가 바뀌었다(v47 위). 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v48-progress-review-20261112';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');
