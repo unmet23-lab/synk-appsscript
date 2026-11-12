@@ -317,6 +317,8 @@ html.sx .crumb-no{display:none}
 .sx-dr-zoom:disabled{cursor:default}
 /* 사진 크게 보기 창(is-photo): 닫기 × 가 밝은 사진 위에서도 보이게 그림자를 둔다 */
 html.sx #app-dialog.image-dialog.is-photo .dialog-close{text-shadow:0 0 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8)}
+/* 사진 크게 보기 창: 낮은 화면(눕힌 휴대폰)에서 사진 + 제목이 창 높이를 넘지 않게 사진 한도를 창 한도에 맞춘다 */
+html.sx #app-dialog.image-dialog.is-photo img{max-height:min(84dvh,calc(100dvh - 82px))}
 /* 사진 크게 보기 창: 사진을 누르면 2.5배로 키워 그 칸 안에서 밀어 본다(누른 사진은 제 크기라 창의 맞춤 한도를 푼다) */
 .dialog-photo-view{overflow:auto;overscroll-behavior:contain}
 .dialog-photo{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
