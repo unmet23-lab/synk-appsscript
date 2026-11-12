@@ -1,0 +1,43 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1112,
+  "lufs": -17
+ },
+ "made": "2026-11-12T07:17:44.469Z",
+ "lines": [
+  {
+   "id": "n1",
+   "text": "AI 안전 담당자도, 메일 200통 넘게 잃었어요.",
+   "show": "AI 안전 담당자도, 메일 200통 넘게 잃었어요.",
+   "scene": "실제 일",
+   "dur": 3.071,
+   "syllablesPerSec": 4.88,
+   "src": "n1.wav",
+   "key": "54b358544544f0f016247f205c93d08c",
+   "words": 7
+  },
+  {
+   "id": "n2",
+   "text": "'지우지 마'는 말일 뿐이에요. 지우기, 보내기 권한부터 끄고 맡기세요.",
+   "show": "'지우지 마'는 말일 뿐이에요. 지우기 · 보내기 권한부터 끄고 맡기세요.",
+   "scene": "지키는 법",
+   "dur": 3.741,
+   "syllablesPerSec": 7.22,
+   "src": "n2.wav",
+   "key": "006412e567400f6b3fc88e16f15e5f28",
+   "words": 9
+  }
+ ]
+}

@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n2",
+ "text": "'지우지 마'는 말일 뿐이에요. 지우기, 보내기 권한부터 끄고 맡기세요.",
+ "show": "'지우지 마'는 말일 뿐이에요. 지우기 · 보내기 권한부터 끄고 맡기세요.",
+ "dur": 3.741,
+ "words": [
+  {
+   "text": "'지우지",
+   "start": 0.02,
+   "end": 0.296
+  },
+  {
+   "text": "마'는",
+   "start": 0.345,
+   "end": 0.556
+  },
+  {
+   "text": "말일",
+   "start": 0.605,
+   "end": 0.751
+  },
+  {
+   "text": "뿐이에요.",
+   "start": 0.8,
+   "end": 1.141
+  },
+  {
+   "text": "지우기,",
+   "start": 1.84,
+   "end": 2.165
+  },
+  {
+   "text": "보내기",
+   "start": 2.278,
+   "end": 2.522
+  },
+  {
+   "text": "권한부터",
+   "start": 2.571,
+   "end": 2.961
+  },
+  {
+   "text": "끄고",
+   "start": 3.01,
+   "end": 3.172
+  },
+  {
+   "text": "맡기세요.",
+   "start": 3.221,
+   "end": 3.741
+  }
+ ],
+ "source": {
+  "key": "006412e567400f6b3fc88e16f15e5f28",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 163
+ }
+}

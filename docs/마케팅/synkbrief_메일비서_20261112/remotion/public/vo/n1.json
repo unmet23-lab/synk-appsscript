@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n1",
+ "text": "AI 안전 담당자도, 메일 200통 넘게 잃었어요.",
+ "show": "AI 안전 담당자도, 메일 200통 넘게 잃었어요.",
+ "dur": 3.071,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.02,
+   "end": 0.301
+  },
+  {
+   "text": "안전",
+   "start": 0.381,
+   "end": 0.602
+  },
+  {
+   "text": "담당자도,",
+   "start": 0.662,
+   "end": 1.144
+  },
+  {
+   "text": "메일",
+   "start": 1.545,
+   "end": 1.786
+  },
+  {
+   "text": "200통",
+   "start": 1.846,
+   "end": 2.127
+  },
+  {
+   "text": "넘게",
+   "start": 2.187,
+   "end": 2.367
+  },
+  {
+   "text": "잃었어요.",
+   "start": 2.428,
+   "end": 3.071
+  }
+ ],
+ "source": {
+  "key": "54b358544544f0f016247f205c93d08c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1112,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

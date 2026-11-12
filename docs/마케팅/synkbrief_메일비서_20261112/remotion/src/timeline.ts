@@ -1,0 +1,47 @@
+// B44 「메일 비서」 시간표 — 컷 · 말 · 소리 한 곳(초). 뼈대는 8pmlciY-FgA(22.1초 · 오마주 「형식만」) — 18.9초까지 원본 초 그대로
+// (0.7초 첫 말 · 3.8초 근접 · 5.5초 바뀜 · 9.0초 넓어지며 뜻밖의 것(복도 질주) · 15.7초 근접 · 18.9초 넓은 끝 판), 끝 칸만 사과 · 해설을 읽을 시간만큼 길게.
+// **첫 설계 판 v0.1(11-12 15시 회차 — 동영상을 받기 전)**: src의 start · crop · 대사 초는 받은 영상의 소리 크기 곡선 + 받아쓰기로 다시 잰다.
+// 컷마다 그 영상에 든 소리(대사 · 방 소리)를 그대로 깐다(audio). 말은 듣는 쪽 그림 위에도 깐다(a = 그 컷 밑에 까는 다른 영상의 소리).
+// 동영상은 public/img/*.mp4(git 밖 — 제미나이 앱 동영상 · 막히면 Flow Omni).
+export type Crop = { s: number; cx: number; cy: number; ay?: number; push?: { t0: number; t1: number; to: number } }; // push = 컷 안 t0~t1초에 배율을 to배까지 천천히 키운다(다가감)
+export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; a?: { src: string; start: number; vol?: number } };
+
+// hook = 위 표시가 「재연 · AI 때문에 실제로 벌어진 일」에서 「재연 · 상황은 각색」으로 · dash = 복도 질주(음악이 올라옴) · plug = 전원선(음악이 끊김) · end = 「SYNK 브리핑」
+export const S = { hook: 5.0, dash: 9.0, plug: 16.4, end: 28.85 };
+export const TOTAL_S = 29.0;
+// 원본(제미나이 앱 동영상)이 24fps라 편집도 24fps로 굽는다 — 30fps 시간선에 넣으면 5프레임마다 한 장이 겹쳐 떨린다(현장 노트 영상 · 24fps 원본).
+export const FPS = 24;
+
+const F: Crop = { s: 1.0, cx: 540, cy: 960 };
+export const CUTS: CutT[] = [
+  // 기 — 현관 · 폰 속 메일 줄이 사라짐
+  { from: 0, to: 0.7, src: 'img/V1.mp4', start: 0.0, crop: F, drift: 0, audio: 1.0 },
+  { from: 0.7, to: 3.8, src: 'img/V2.mp4', start: 0.4, crop: F, a: { src: 'img/V1.mp4', start: 0.7 } },
+  // 승 — 「그만」 · 「멈춰!」 · 「멈추라고!!」
+  { from: 3.8, to: 5.5, src: 'img/V1.mp4', start: 3.8, crop: { s: 1.25, cx: 560, cy: 800 }, audio: 1.0, drift: 0 },
+  { from: 5.5, to: 7.4, src: 'img/V2.mp4', start: 4.6, crop: { s: 1.15, cx: 600, cy: 1100 }, a: { src: 'img/V1.mp4', start: 5.5 }, drift: 0 },
+  { from: 7.4, to: 9.0, src: 'img/V1.mp4', start: 7.4, crop: { s: 1.35, cx: 560, cy: 780 }, audio: 1.0, drift: 0 },
+  // 전 — 복도 질주(핵심 장면) · 전원선
+  { from: 9.0, to: 15.7, src: 'img/V3.mp4', start: 0.0, crop: F, audio: 1.0, drift: 0.01 },
+  { from: 15.7, to: 18.9, src: 'img/V4.mp4', start: 1.3, crop: F, audio: 1.0, drift: 0 },
+  // 결 — 꺼진 방 넓게(폰이 켜짐 · 사과) → 같은 판 가깝게(해설 둘 — 25.25초에 한 번 더 다가감)
+  { from: 18.9, to: 22.0, src: 'img/V5.mp4', start: 0.0, crop: F, audio: 1.0, low: 0, drift: 0.008 },
+  { from: 22.0, to: 29.0, src: 'img/V5.mp4', start: 3.1, crop: { s: 1.4, cx: 560, cy: 1050, push: { t0: 3.0, t1: 4.2, to: 1.15 } }, audio: 1.0, low: 0, drift: 0 },
+];
+
+// 큰 글자 = 말. grey = AI의 사과(남자 · 해설은 흰). at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄).
+export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; at?: number[]; butter?: boolean }[] = [
+  { lines: ['골라만 달랬지,', '지우라곤 안 했잖아?'], from: 0.8, to: 3.75, size: 84, meta: '미국 AI 안전 담당자가 직접 올린 일 · 2026년 2월', at: [0.8, 2.0] },
+  { lines: ['그만'], from: 3.9, to: 5.45, size: 96, instant: true },
+  { lines: ['멈춰!'], from: 5.6, to: 7.35, size: 104, instant: true },
+  { lines: ['멈추라고!!'], from: 7.45, to: 9.0, size: 112, instant: true, butter: true },
+  { lines: ['맞아요, 하지 말라고 하셨죠', '제가 어겼어요 죄송합니다'], from: 19.8, to: 21.95, grey: true, size: 74, at: [19.8, 20.8] },
+  { lines: ['AI 안전 담당자도,', '메일 200통 넘게 잃었어요'], from: 22.1, to: 25.1, size: 80, at: [22.1, 23.4] },
+  { lines: ["'지우지 마'는 말일 뿐", '지우기 · 보내기 권한부터 끄고 맡기세요'], from: 25.25, to: 28.85, size: 62, meta: '과기정통부 · KISA 에이전틱 AI 안내서 — 위험한 일은 사람 승인', at: [25.25, 27.1] },
+];
+
+export const VO: { id: string; t: number }[] = [
+  { id: 'n1', t: 22.1 }, { id: 'n2', t: 25.25 },
+];
+
+export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [];
