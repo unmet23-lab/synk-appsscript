@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI한테 한 지적을, 전부 모아 봤어요. 백사십칠 개.",
+ "dur": 3.21,
+ "words": [
+  {
+   "text": "AI한테",
+   "start": 0.03,
+   "end": 0.494
+  },
+  {
+   "text": "한",
+   "start": 0.552,
+   "end": 0.61
+  },
+  {
+   "text": "지적을,",
+   "start": 0.668,
+   "end": 1.036
+  },
+  {
+   "text": "전부",
+   "start": 1.248,
+   "end": 1.461
+  },
+  {
+   "text": "모아",
+   "start": 1.518,
+   "end": 1.673
+  },
+  {
+   "text": "봤어요.",
+   "start": 1.731,
+   "end": 2.06
+  },
+  {
+   "text": "백사십칠",
+   "start": 2.369,
+   "end": 2.871
+  },
+  {
+   "text": "개.",
+   "start": 2.93,
+   "end": 3.21
+  }
+ ],
+ "source": {
+  "key": "2ad85fb47773b89a6d62f263f855a282",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

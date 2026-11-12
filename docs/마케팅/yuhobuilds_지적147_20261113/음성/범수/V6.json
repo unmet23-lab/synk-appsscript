@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "그래서 지적을, 만들기 전에 스스로 묻는 질문으로 바꿨어요.",
+ "dur": 3.171,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.238
+  },
+  {
+   "text": "지적을,",
+   "start": 0.278,
+   "end": 0.606
+  },
+  {
+   "text": "만들기",
+   "start": 0.92,
+   "end": 1.233
+  },
+  {
+   "text": "전에",
+   "start": 1.274,
+   "end": 1.478
+  },
+  {
+   "text": "스스로",
+   "start": 1.711,
+   "end": 1.956
+  },
+  {
+   "text": "묻는",
+   "start": 1.996,
+   "end": 2.201
+  },
+  {
+   "text": "질문으로",
+   "start": 2.242,
+   "end": 2.582
+  },
+  {
+   "text": "바꿨어요.",
+   "start": 2.624,
+   "end": 3.171
+  }
+ ],
+ "source": {
+  "key": "29863193b64bd89fae479dbf6777442e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 128
+ }
+}

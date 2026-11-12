@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "제일 높은 더미는, 화면이 뻔한 AI 틀 같다는 말. 서른여덟 번이었어요.",
+ "dur": 4.066,
+ "words": [
+  {
+   "text": "제일",
+   "start": 0.02,
+   "end": 0.247
+  },
+  {
+   "text": "높은",
+   "start": 0.29,
+   "end": 0.503
+  },
+  {
+   "text": "더미는,",
+   "start": 0.546,
+   "end": 0.858
+  },
+  {
+   "text": "화면이",
+   "start": 1.257,
+   "end": 1.54
+  },
+  {
+   "text": "뻔한",
+   "start": 1.583,
+   "end": 1.81
+  },
+  {
+   "text": "AI",
+   "start": 1.867,
+   "end": 2.095
+  },
+  {
+   "text": "틀",
+   "start": 2.152,
+   "end": 2.237
+  },
+  {
+   "text": "같다는",
+   "start": 2.28,
+   "end": 2.578
+  },
+  {
+   "text": "말.",
+   "start": 2.621,
+   "end": 2.777
+  },
+  {
+   "text": "서른여덟",
+   "start": 3.076,
+   "end": 3.459
+  },
+  {
+   "text": "번이었어요.",
+   "start": 3.502,
+   "end": 4.066
+  }
+ ],
+ "source": {
+  "key": "613ef17cb5c4d9dd4b3218cf25504d52",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

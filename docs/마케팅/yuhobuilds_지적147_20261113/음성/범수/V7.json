@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "같은 잔소리 또 하고 있다면, 한번 모아서 묶어 보세요.",
+ "dur": 2.829,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.06,
+   "end": 0.283
+  },
+  {
+   "text": "잔소리",
+   "start": 0.325,
+   "end": 0.604
+  },
+  {
+   "text": "또",
+   "start": 0.66,
+   "end": 0.716
+  },
+  {
+   "text": "하고",
+   "start": 0.757,
+   "end": 0.883
+  },
+  {
+   "text": "있다면,",
+   "start": 0.925,
+   "end": 1.287
+  },
+  {
+   "text": "한번",
+   "start": 1.622,
+   "end": 1.859
+  },
+  {
+   "text": "모아서",
+   "start": 1.901,
+   "end": 2.125
+  },
+  {
+   "text": "묶어",
+   "start": 2.166,
+   "end": 2.334
+  },
+  {
+   "text": "보세요.",
+   "start": 2.376,
+   "end": 2.829
+  }
+ ],
+ "source": {
+  "key": "052853ea8fcf0f6e809e23db3fae279d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 193
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1113,
+  "lufs": -17
+ },
+ "made": "2026-11-12T16:26:39.908Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "AI한테 한 지적을, 전부 모아 봤어요. 백사십칠 개.",
+   "dur": 3.21,
+   "syllablesPerSec": 5.61,
+   "src": "V1.wav",
+   "key": "2ad85fb47773b89a6d62f263f855a282",
+   "words": 8
+  },
+  {
+   "id": "V2",
+   "text": "영상이랑 화면 만들던 대화를, AI한테 다시 읽혔거든요.",
+   "dur": 3.428,
+   "syllablesPerSec": 6.13,
+   "src": "V2.wav",
+   "key": "d8962ce4dfa9d2340de22b676d9a9e31",
+   "words": 7
+  },
+  {
+   "id": "V3",
+   "text": "같은 원인끼리 묶어 달라고 했더니, 더미로 쌓이더라고요.",
+   "dur": 2.975,
+   "syllablesPerSec": 7.73,
+   "src": "V3.wav",
+   "key": "70d52a7e9ec24bc4938b9bf78f59b5dd",
+   "words": 7
+  },
+  {
+   "id": "V4",
+   "text": "제일 높은 더미는, 화면이 뻔한 AI 틀 같다는 말. 서른여덟 번이었어요.",
+   "dur": 4.066,
+   "syllablesPerSec": 6.39,
+   "src": "V4.wav",
+   "key": "613ef17cb5c4d9dd4b3218cf25504d52",
+   "words": 11
+  },
+  {
+   "id": "V5",
+   "text": "근데 따져 보니까, 문제가 제일 많이 시작된 데는, 만들기도 전인 기획이었어요.",
+   "dur": 4.615,
+   "syllablesPerSec": 6.72,
+   "src": "V5.wav",
+   "key": "f65c271817bc6a3e884fd948554d4e9c",
+   "words": 11
+  },
+  {
+   "id": "V6",
+   "text": "그래서 지적을, 만들기 전에 스스로 묻는 질문으로 바꿨어요.",
+   "dur": 3.171,
+   "syllablesPerSec": 7.57,
+   "src": "V6.wav",
+   "key": "29863193b64bd89fae479dbf6777442e",
+   "words": 8
+  },
+  {
+   "id": "V7",
+   "text": "같은 잔소리 또 하고 있다면, 한번 모아서 묶어 보세요.",
+   "dur": 2.829,
+   "syllablesPerSec": 7.42,
+   "src": "V7.wav",
+   "key": "052853ea8fcf0f6e809e23db3fae279d",
+   "words": 9
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "영상이랑 화면 만들던 대화를, AI한테 다시 읽혔거든요.",
+ "dur": 3.428,
+ "words": [
+  {
+   "text": "영상이랑",
+   "start": 0.02,
+   "end": 0.451
+  },
+  {
+   "text": "화면",
+   "start": 0.495,
+   "end": 0.681
+  },
+  {
+   "text": "만들던",
+   "start": 0.725,
+   "end": 1.027
+  },
+  {
+   "text": "대화를,",
+   "start": 1.07,
+   "end": 1.372
+  },
+  {
+   "text": "AI한테",
+   "start": 2.004,
+   "end": 2.45
+  },
+  {
+   "text": "다시",
+   "start": 2.494,
+   "end": 2.695
+  },
+  {
+   "text": "읽혔거든요.",
+   "start": 2.738,
+   "end": 3.428
+  }
+ ],
+ "source": {
+  "key": "d8962ce4dfa9d2340de22b676d9a9e31",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

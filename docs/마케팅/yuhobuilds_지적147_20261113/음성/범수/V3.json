@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "같은 원인끼리 묶어 달라고 했더니, 더미로 쌓이더라고요.",
+ "dur": 2.975,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.277
+  },
+  {
+   "text": "원인끼리",
+   "start": 0.333,
+   "end": 0.731
+  },
+  {
+   "text": "묶어",
+   "start": 0.775,
+   "end": 0.945
+  },
+  {
+   "text": "달라고",
+   "start": 0.988,
+   "end": 1.229
+  },
+  {
+   "text": "했더니,",
+   "start": 1.273,
+   "end": 1.557
+  },
+  {
+   "text": "더미로",
+   "start": 1.97,
+   "end": 2.254
+  },
+  {
+   "text": "쌓이더라고요.",
+   "start": 2.312,
+   "end": 2.975
+  }
+ ],
+ "source": {
+  "key": "70d52a7e9ec24bc4938b9bf78f59b5dd",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

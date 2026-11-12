@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "근데 따져 보니까, 문제가 제일 많이 시작된 데는, 만들기도 전인 기획이었어요.",
+ "dur": 4.615,
+ "words": [
+  {
+   "text": "근데",
+   "start": 0.05,
+   "end": 0.206
+  },
+  {
+   "text": "따져",
+   "start": 0.252,
+   "end": 0.469
+  },
+  {
+   "text": "보니까,",
+   "start": 0.516,
+   "end": 0.78
+  },
+  {
+   "text": "문제가",
+   "start": 1.463,
+   "end": 1.727
+  },
+  {
+   "text": "제일",
+   "start": 1.774,
+   "end": 1.992
+  },
+  {
+   "text": "많이",
+   "start": 2.038,
+   "end": 2.225
+  },
+  {
+   "text": "시작된",
+   "start": 2.271,
+   "end": 2.597
+  },
+  {
+   "text": "데는,",
+   "start": 2.643,
+   "end": 2.876
+  },
+  {
+   "text": "만들기도",
+   "start": 3.187,
+   "end": 3.622
+  },
+  {
+   "text": "전인",
+   "start": 3.669,
+   "end": 3.871
+  },
+  {
+   "text": "기획이었어요.",
+   "start": 3.917,
+   "end": 4.615
+  }
+ ],
+ "source": {
+  "key": "f65c271817bc6a3e884fd948554d4e9c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}
