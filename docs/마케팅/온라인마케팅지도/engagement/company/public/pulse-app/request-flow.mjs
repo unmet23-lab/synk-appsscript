@@ -35,6 +35,12 @@ const ownPhoto=a=>Object.entries(a.slots).filter(([id])=>!isPersonaSlot(id)).fla
 const personaPhoto=a=>{for(const slot of PERSONA_SLOTS){const file=(a.slots[slot.id]?.files||[]).find(item=>item.preview&&!item.error);if(file)return {src:file.preview,identity:slot.id==='persona-identity'};}return null;};
 const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.image;
 const bigScene=item=>`${ASSET}model-scene-${String(item.id).toLowerCase()}.webp`;
+// 큰 칸의 장면 사진(폭 960)을 실제 화소의 1.5배 넘게 늘릴 화면(화소비가 높은 큰 화면)만 큰 판(폭 1600)을 받는다.
+// sizes = cover로 그려지는 폭 ÷ 1.47 — 브라우저는 작은 판으로 1.47배를 넘을 때 큰 판을 고른다. 넓은 창은 칸 폭((창 − min(46%,680px)) × 3/5)과
+// 창 높이 × 0.805(사진 비율) 가운데 큰 쪽, 세로 창(820px 이하 · 정사각보다 좁음)은 창 폭과 62vh × 0.805 가운데 큰 쪽.
+export const SCENE_SIZES='(max-width:820px) max(68.1vw,34vh), (max-aspect-ratio:1/1) max(68.1vw,34vh), max(22.1vw,calc(40.8vw - 277px),54.8vh)';
+export const sceneSet=src=>/\/model-scene-[a-z]\d+\.webp$/.test(src)?`${src} 960w, ${src.replace(/\.webp$/,'-l.webp')} 1600w`:'';
+const portraitImg=src=>{const set=sceneSet(src);return `<img data-portrait src="${esc(src)}"${set?` srcset="${esc(set)}" sizes="${SCENE_SIZES}"`:''} alt="" decoding="async">`;};
 // 모델이 움직이는 4초(11-10): 캐스팅북(synk.im/pulse/casting) 모델 벽의 사람별 한 컷(장소 · 옷 · 동작이 사람마다 다르다)을 그 주소에서 그대로 받는다.
 // 영상을 회사 서버에 두 벌 두지 않는다 — 캐스팅북 빌드가 정본이고(pulse-model-films 시험이 대조한다), 고객 앱 보안 정책(media-src · img-src https:)이 받는다.
 // 세로 9:16 · 720p라 세로로 긴 칸(큰 칸 · 21명 벽 칸)에서만 돌리고, 큰 칸에서도 실제 화소의 1.5배 넘게 키우지 않는다(film.css).
@@ -77,7 +83,7 @@ const choiceText=a=>a.modelChoice==='ask'?{name:t('추천해 주세요'),line:t(
 const choiceShot=a=>a.modelChoice==='custom'&&personaPhoto(a)?.src||a.modelChoice==='persona'&&a.personaPick?.image||kindOf(a)?.shot||still('w-gift-sphere');
 const wall=a=>{
   const chosen=a.models.map(modelOf).filter(Boolean),picks=[...new Set([...chosen,...picksOf(a)])].slice(0,4),lead=chosen[0]||picks[0];
-  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" role="presentation"><img data-portrait src="${esc(choiceText(a)?choiceShot(a):bigScene(lead))}" alt="" decoding="async"><video data-portrait-film muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true"></video><figcaption class="sx-small" data-portrait-name aria-hidden="true">${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption>${holdButton('lead',false)}</figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
+  return `<div class="sx-casting" role="group" aria-label="${esc(t('이 광고에 어울리는 모델'))}"><figure class="sx-casting-lead" role="presentation">${portraitImg(choiceText(a)?choiceShot(a):bigScene(lead))}<video data-portrait-film muted loop playsinline preload="none" disablepictureinpicture disableremoteplayback aria-hidden="true"></video><figcaption class="sx-small" data-portrait-name aria-hidden="true">${esc(choiceText(a)?choiceText(a).caption:`${nameOf(lead)} · ${castLine(lead)}`)}</figcaption>${holdButton('lead',false)}</figure>${picks.map(item=>castTile(a,item,!!MODEL_LINES[item.id]?.fits.includes(a.kind))).join('')}<button type="button" class="sx-small sx-link sx-casting-all" data-do="allmodels">${esc(t('{count}명 모두 보기',{count:CASTING_MODELS.length}))}</button></div>`;
 };
 const allWall=a=>{
   const fit=item=>!!MODEL_LINES[item.id]?.fits.includes(a.kind);
@@ -375,7 +381,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function toggleIn(list,value,max=99){const at=list.indexOf(value);if(at>=0)list.splice(at,1);else{if(list.length>=max)list.shift();list.push(value);}}
   function setRows(group,id){form.querySelectorAll(`[data-do="${group}"]`).forEach(el=>{const on=el.dataset.id===id;el.classList.toggle('is-on',on);el.setAttribute('aria-checked',on?'true':'false');if(on)play(el.querySelector('.sx-row-mark'),[{transform:'scale(0)'},{transform:'scale(1)'}],{duration:320});});}
   function setChip(el,on){el.classList.toggle('is-on',on);el.setAttribute('aria-pressed',on?'true':'false');play(el,[{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:220});}
-  function crossfade(img,src){if(!img||img.getAttribute('src')===src)return;play(img,[{opacity:1},{opacity:.25}],{duration:120}).finished.then(()=>{img.src=src;play(img,[{opacity:.25,transform:'scale(1.035)'},{opacity:1,transform:'scale(1)'}],{duration:620});});}
+  function crossfade(img,src,set=''){if(!img||img.getAttribute('src')===src)return;play(img,[{opacity:1},{opacity:.25}],{duration:120}).finished.then(()=>{if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else{img.removeAttribute('srcset');img.removeAttribute('sizes');}img.src=src;play(img,[{opacity:.25,transform:'scale(1.035)'},{opacity:1,transform:'scale(1)'}],{duration:620});});}
 
   const actions={
     exit(event){event.preventDefault();onExit?.();},
@@ -452,8 +458,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   }
   function pickPersona(key,group,el){const p=a.personaRequest;p[key]=p[key]===el.dataset.id?'':el.dataset.id;form.querySelectorAll(`[data-do="${group}"]`).forEach(item=>setChip(item,item.dataset.id===p[key]));saved();}
   // 판 4 B6: 「추천해 주세요」 · 「사람 없이」를 고르면 하린 같은 한 사람의 이름 · 큰 사진을 남기지 않는다. 고른 것을 풀면 첫 후보로 돌아간다.
-  function showChoice(){const text=choiceText(a);if(!text){const first=a.models[0]||picksOf(a)[0]?.id;if(first)showModel(first);return;}leadFilm(null);const name=$('[data-cast-name]');if(name){name.textContent=text.name;$('[data-cast-line]').textContent=text.line;$('[data-cast-desc]').textContent='';}const lead=$('[data-portrait-name]');if(lead)lead.textContent=text.caption;crossfade($('[data-portrait]'),choiceShot(a));}
-  function showModel(id){const item=modelOf(id);if(!item)return;crossfade($('[data-portrait]'),bigScene(item));leadFilm(item);const lead=$('[data-portrait-name]');if(lead)lead.textContent=`${nameOf(item)} · ${castLine(item)}`;const name=$('[data-cast-name]');if(name){name.textContent=nameOf(item);$('[data-cast-line]').textContent=MODEL_LINES[id]?.line?t(MODEL_LINES[id].line):'';$('[data-cast-desc]').textContent=t(item.description);}}
+  function showChoice(){const text=choiceText(a);if(!text){const first=a.models[0]||picksOf(a)[0]?.id;if(first)showModel(first);return;}leadFilm(null);const name=$('[data-cast-name]');if(name){name.textContent=text.name;$('[data-cast-line]').textContent=text.line;$('[data-cast-desc]').textContent='';}const lead=$('[data-portrait-name]');if(lead)lead.textContent=text.caption;crossfade($('[data-portrait]'),choiceShot(a),sceneSet(choiceShot(a)));}
+  function showModel(id){const item=modelOf(id);if(!item)return;crossfade($('[data-portrait]'),bigScene(item),sceneSet(bigScene(item)));leadFilm(item);const lead=$('[data-portrait-name]');if(lead)lead.textContent=`${nameOf(item)} · ${castLine(item)}`;const name=$('[data-cast-name]');if(name){name.textContent=nameOf(item);$('[data-cast-line]').textContent=MODEL_LINES[id]?.line?t(MODEL_LINES[id].line):'';$('[data-cast-desc]').textContent=t(item.description);}}
   // 큰 칸의 4초. 첫 장면 포스터를 받은 뒤에 영상 칸이 사진(장면)을 덮는다(has-film) — 그 전에 덮으면 검정 칸이 먼저 보인다.
   // 못 받으면(error) 사진으로 돌아가고, 자동 재생이 막히거나 손님이 멈춰 두었으면(filmHeld) 첫 장면에 선다.
   // 사람을 바꿀 때는 지금 영상을 먼저 걷고(0.32초) 새 것을 건다. 넷을 빠르게 훑으면 마지막 사람 것만 받는다.

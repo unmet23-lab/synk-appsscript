@@ -61,6 +61,9 @@ for (const code of codes) {
   add(code, castingIds.includes(code), `casting-catalog.mjs CASTING_MODELS에 ${code}${castingIds.includes(code) ? '' : ' 없음'}`);
   const scene = path.join(app, `assets/request/model-scene-${id}.webp`);
   add(code, exists(scene), `자산 assets/request/model-scene-${id}.webp${exists(scene) ? '' : ' 없음'}`);
+  // 큰 판(폭 1600): 의뢰서 큰 칸이 화소비가 높은 큰 화면에서 srcset으로 받는다 — 없으면 그 화면에서 404. 굽기는 make-request-scene-large.py.
+  const sceneLarge = path.join(app, `assets/request/model-scene-${id}-l.webp`);
+  add(code, exists(sceneLarge), `자산 assets/request/model-scene-${id}-l.webp${exists(sceneLarge) ? '' : ' 없음(python make-request-scene-large.py)'}`);
   const portrait = path.join(app, `assets/casting/${id}.webp`);
   add(code, exists(portrait), `자산 assets/casting/${id}.webp${exists(portrait) ? '' : ' 없음'}`);
   for (const shot of ['fullbody', 'look-1', 'look-2', 'context']) {
@@ -75,6 +78,8 @@ for (const code of codes) {
   add(code, swOk, `sw.js 셸 목록에 ${id}${swOk ? '' : ' 없음'}`);
   const serverGeneric = /CASTING_MODELS\.map\(\s*model\s*=>\s*'model-scene-'/.test(serverSrc);
   add(code, serverGeneric, `server.mjs 정적 목록이 CASTING_MODELS로 model-scene-<id>를 만드는 줄${serverGeneric ? '(CASTING_MODELS에 들어가면 함께 실림)' : ' 못 찾음'}`);
+  const serverLarge = /CASTING_MODELS\.map\(\s*model\s*=>\s*'model-scene-'\+model\.id\.toLowerCase\(\)\+'-l'\)/.test(serverSrc);
+  add(code, serverLarge, `server.mjs 정적 목록이 CASTING_MODELS로 model-scene-<id>-l(큰 판)을 만드는 줄${serverLarge ? '' : ' 못 찾음'}`);
 }
 
 // 인원수 글: 공개되면 늘어날 수를 기준으로 본다

@@ -41,8 +41,8 @@ test('F3: the staff list names the payment wait by its state',()=>{
 test('F4: picking “recommend” or “no model” swaps the big portrait for the business picture, on first paint and on change',()=>{
   const flow=read('request-flow.mjs');
   assert.match(flow,/const choiceShot=a=>a\.modelChoice==='custom'&&personaPhoto\(a\)\?\.src\|\|a\.modelChoice==='persona'&&a\.personaPick\?\.image\|\|kindOf\(a\)\?\.shot\|\|still\('w-gift-sphere'\);/,'추천 · 사람 없이는 업종 그림 그대로(맞춤 인물은 판 3에서 인물 칸 사진, 내 모델은 판 4에서 그 인물 그림이 먼저)');
-  assert.match(flow,/<img data-portrait src="\$\{esc\(choiceText\(a\)\?choiceShot\(a\):bigScene\(lead\)\)\}"/);
-  assert.match(flow,/if\(lead\)lead\.textContent=text\.caption;crossfade\(\$\('\[data-portrait\]'\),choiceShot\(a\)\);\}/);
+  assert.match(flow,/\$\{portraitImg\(choiceText\(a\)\?choiceShot\(a\):bigScene\(lead\)\)\}/,'첫 그림도 같은 판단(장면 사진의 큰 판 srcset은 portraitImg가 붙인다 — pulse-model-scene-large 시험)');
+  assert.match(flow,/if\(lead\)lead\.textContent=text\.caption;crossfade\(\$\('\[data-portrait\]'\),choiceShot\(a\),sceneSet\(choiceShot\(a\)\)\);\}/);
 });
 
 test('F5 · F6: the refund notice and its tick ride with the consent the server records; past the agreed revisions the line says so',()=>{

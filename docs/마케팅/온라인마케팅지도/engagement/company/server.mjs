@@ -1986,7 +1986,8 @@ export function createCompanyApp(options={}) {
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     // 시사실 판(2026-11-05) 그림 · 영상. 쇼릴 mp4 둘은 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
-    for(const name of ['reel-wide-poster','reel-tall-poster','shard','end','file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid',...Array.from({length:12},(_,index)=>'sheet-gift-'+String(index+1).padStart(2,'0')),...CASTING_MODELS.map(model=>'model-scene-'+model.id.toLowerCase())])files['/pulse-app/assets/request/'+name+'.webp']=['public/pulse-app/assets/request/'+name+'.webp','image/webp'];
+    // model-scene-<id>-l(폭 1600, 11-12): 의뢰서 큰 칸이 화소비가 높은 큰 화면에서만 srcset으로 받는 큰 판(request-flow.mjs SCENE_SIZES).
+    for(const name of ['reel-wide-poster','reel-tall-poster','shard','end','file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid',...Array.from({length:12},(_,index)=>'sheet-gift-'+String(index+1).padStart(2,'0')),...CASTING_MODELS.map(model=>'model-scene-'+model.id.toLowerCase()),...CASTING_MODELS.map(model=>'model-scene-'+model.id.toLowerCase()+'-l')])files['/pulse-app/assets/request/'+name+'.webp']=['public/pulse-app/assets/request/'+name+'.webp','image/webp'];
     for(const name of ['reel-wide','reel-tall'])files['/pulse-app/assets/request/'+name+'.mp4']=['public/pulse-app/assets/request/'+name+'.mp4','video/mp4'];
     files['/pulse-app/assets/NotoSerifKR-300.woff2']=['public/pulse-app/assets/NotoSerifKR-300.woff2','font/woff2'];
     // 첫 방문 무게(11-11): 고객 앱 글꼴 조각(tools/build-pulse-fonts.py). 통째 SUIT · 명조는 직원 화면(app.css)과 옛 탭 · 옛 셸을 위해 그대로 둔다.
