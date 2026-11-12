@@ -262,6 +262,13 @@ test('auth errors explain credentials, confirmation, expired links and connectio
     [{ code: 'flow_state_not_found' }, /이메일 확인을 이미 마쳤다면/],
     [{ message: 'Failed to fetch' }, /인터넷 연결/],
     [{ status: 503 }, /계정 서버가 잠시 응답하지/],
+    // Adding a Google another login owner holds names the way an unfinished sign-up frees it; Auth's own 「already linked」 means this account (2026-11-12).
+    [{ code: 'GOOGLE_CALLBACK_INCOMPLETE', reason: 'identity_already_exists', description: 'Identity is already linked to another user' }, /다른 SYNK 계정이나 끝내지 않은 가입에 묶여 있어요.*「기존 SYNK ID로 로그인」/],
+    [{ code: 'GOOGLE_CALLBACK_INCOMPLETE', reason: 'identity_already_exists' }, /다른 SYNK 계정이나 끝내지 않은 가입에 묶여 있어요/],
+    [{ code: 'GOOGLE_CALLBACK_INCOMPLETE', reason: 'identity_already_exists', description: 'Identity is already linked' }, /이미 이 SYNK 계정에 연결돼 있어요/],
+    // Auth's two sentences (supabase/auth identity.go, read 11-12) decide by their words, not exact letters (Fable F4).
+    [{ code: 'GOOGLE_CALLBACK_INCOMPLETE', reason: 'identity_already_exists', description: 'identity is already linked.' }, /이미 이 SYNK 계정에 연결돼 있어요/],
+    [{ code: 'GOOGLE_CALLBACK_INCOMPLETE', reason: 'identity_already_exists', description: 'Identity is already linked to another user.' }, /다른 SYNK 계정이나 끝내지 않은 가입에 묶여 있어요/],
   ]) assert.match(authErrorMessage(error), expected);
   assert.equal(authErrorMessage(new Error('만 14세 이상인지 확인해 주세요.')), '만 14세 이상인지 확인해 주세요.');
   assert.equal(authErrorMessage({ message: 'Internal auth failure synthetic-private-detail' }), '요청을 마치지 못했어요. 입력 내용을 확인하고 다시 시도해 주세요.');

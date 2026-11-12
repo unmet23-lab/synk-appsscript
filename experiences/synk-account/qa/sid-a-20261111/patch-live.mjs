@@ -39,7 +39,8 @@ const binary = (rev, file) => rev === 'WORKTREE' ? fs.readFileSync(path.join(rep
 const live = name => fs.readFileSync(path.join(liveDir, name), 'utf8');
 const token = bytes => crypto.createHash('sha256').update(bytes).digest('hex').slice(0, 12);
 const UNPUBLISHED = ['createWardrobeView', 'createClassroomTownHost', 'WORLD_GAMES', 'createWorldLearningHost', '말 랠리'];
-const CHANGED = ['experiences/synk-account/src/portal.mjs', 'experiences/synk-account/src/google-auth.mjs', 'experiences/synk-account/src/portal-account.mjs', 'experiences/synk-account/src/portal-security.mjs'];
+// The portal also carries the PC 「내 계정」 page's helpers (desktop/renderer/account-page.mjs — login-ux-20261027): its words may move with the web's (2026-11-12, the name line).
+const CHANGED = ['experiences/synk-account/src/portal.mjs', 'experiences/synk-account/src/google-auth.mjs', 'experiences/synk-account/src/portal-account.mjs', 'experiences/synk-account/src/portal-security.mjs', 'desktop/renderer/account-page.mjs'];
 
 // --- id/dist/app.js: the portal scope (bridge, stubs and tail as the published scope was built — town-records-20261028) --------
 const LIVE = { createAccountClient: 'import_account_client.createAccountClient', PRODUCTS: 'PRODUCTS', firstPartyAuthorization: 'firstPartyAuthorization', trustedConsentRedirect: 'trustedConsentRedirect',

@@ -32,13 +32,13 @@ function clock() {
     advance(ms) { now += ms;for (const [id, timer] of [...timers]) if (timer.at <= now) { timers.delete(id);timer.fn(); } } };
 }
 function fixture(t, { user = null, callback = false, initialize = null, loginSettings = { google: true, phone: true },
-  callbackQuery = '', pendingFlow = null, initializeError = null, controllerOnly = false, phoneVerificationRequired } = {}) {
+  callbackQuery = '', pendingFlow = null, initializeError = null, controllerOnly = false, phoneVerificationRequired, registrationDone = false, accountError = null } = {}) {
   const nodes = new Map(), events = new Map(), calls = [], replies = {}, redirects = [], writes = [], time = clock(), storage = new Map();
   const get = id => { if (!nodes.has(id)) nodes.set(id, new Element('div', writes));return nodes.get(id); };
   const modes = ['login', 'signup', 'recover'].map(view => Object.assign(new Element('button', writes), { dataset: { view } }));
   for (const id of ['account', 'consent', 'auth-panel', 'google-onboarding', 'google-linking', 'setup']) get(id).hidden = true;
   get('email').value = 'synthetic@example.invalid';get('password').value = 'synthetic-password';get('signup-age').checked = true;
-  let saved = user ? { user, access_token: 'synthetic-access' } : null, listener, registrationRequired = true;
+  let saved = user ? { user, access_token: 'synthetic-access' } : null, listener, registrationRequired = !registrationDone;
   const config = { configured: true, portalUrl: 'https://id.example.invalid/account/', learningUrl: '/',
     supabaseUrl: 'https://account.example.invalid', accountApiUrl: 'https://account.example.invalid', supabasePublishableKey: 'synthetic-public-key',
     clients: { platform: { clientId: 'synthetic-client', redirectUri: 'https://platform.example.invalid/' } }, authorizationClients: [] };
@@ -80,14 +80,14 @@ function fixture(t, { user = null, callback = false, initialize = null, loginSet
   } };
   replies.google = async () => ({ data: { url: 'https://account.example.invalid/auth/v1/authorize?provider=google' } });
   const accountFactory = () => ({ load: async () => {
-    calls.push({ method: 'account' });return { ok: true, account: { synk_user_id: 'synthetic-stable-id', status: 'active', profile: {} }, learning: { enabled: false, revision: 1 }, capabilities: {}, sessions: [] };
+    calls.push({ method: 'account' });if (accountError) throw accountError;return { ok: true, account: { synk_user_id: 'synthetic-stable-id', status: 'active', profile: {} }, learning: { enabled: false, revision: 1 }, capabilities: {}, sessions: [] };
   } });
   const access = controllerOnly ? createGoogleAccess({ config, sdk, enabled: loginSettings.google, phoneEnabled: loginSettings.phone,
     storage: pendingStorage, getSession: () => saved, generation: () => 0, setBusy() {}, notice: text => { get('notice').textContent = text; },
     continuePortal: async () => {}, endSession: async () => {}, initialUrl: initialUrl.href }) : null;
   const ready = access ? Promise.resolve() : mountPortal({ config, sdk, accountFactory, loginSettings, cooldownClock: time, googleStorage: pendingStorage });
   t.after(() => { access?.stop();events.get('pagehide')?.({});for (const [key, descriptor] of original) { if (descriptor) Object.defineProperty(globalThis, key, descriptor);else delete globalThis[key]; } });
-  return { ready, access, get, calls, replies, redirects, writes, events, time, mode: view => modes.find(button => button.dataset.view === view).onclick(),
+  return { ready, access, get, calls, replies, redirects, writes, events, time, emit, mode: view => modes.find(button => button.dataset.view === view).onclick(),
     submit: () => get('auth-form').onsubmit({ preventDefault() {} }),
     complete: () => get('google-onboarding-form').onsubmit({ preventDefault() {} }),
     fill() { get('google-country').value = 'KR';get('google-age').value = '24';get('google-gender').value = 'unspecified';get('google-privacy').checked = true; } };
@@ -227,11 +227,40 @@ test('a Google identity already linked elsewhere preserves the email account and
   assert.equal(f.calls.filter(call => call.method === 'account').length, 1);
   assert.equal(f.calls.filter(call => ['consent-load', 'approve', 'deny', 'logout', 'password', 'google', 'link'].includes(call.method)).length, 0);
   assert.equal(f.redirects.length, 0);
-  assert.match(f.get('notice').textContent, /Google 계정은 다른 SYNK 계정에 연결/);
+  assert.match(f.get('notice').textContent, /Google 계정은 다른 SYNK 계정이나 끝내지 않은 가입에 묶여 있어요/);
+  // An unfinished Google sign-up holding it is freed by its own 「기존 SYNK ID로 로그인」(2026-11-12).
+  assert.match(f.get('notice').textContent, /「기존 SYNK ID로 로그인」/);
   assert.match(f.get('notice').textContent, /현재 로그인된 SYNK 계정은 유지/);
   assert.doesNotMatch(f.get('notice').textContent, /취소|다시 계속|재시도/);
   const cleaned = new URL(location.href);assert.equal(cleaned.searchParams.get('authorization_id'), authorizationId);
   assert.equal(cleaned.searchParams.has('google_flow'), false);assert.equal(cleaned.searchParams.has('error_code'), false);
+});
+
+// 「다른 Google 계정 더하기」 came back (2026-11-12, Fable F2): the page says the Google was added and 「로그인 방법」 names its address.
+test('a Google added from 「로그인과 보안」 says so, and the ways-in row names each Google address', async t => {
+  const nonce = 'synthetic-google-link-nonce-0001';
+  const owner = { id: 'synthetic-email-owner', identities: [{ provider: 'email' }, { provider: 'google', identity_data: { email: 'first@example.invalid' }, created_at: '2026-10-01T00:00:00Z' },
+    { provider: 'google', identity_data: { email: 'added@example.invalid' }, created_at: '2026-11-12T00:00:00Z' }] };
+  const f = fixture(t, { user: owner, callback: true, registrationDone: true, callbackQuery: new URLSearchParams({ google_flow: nonce }).toString(),
+    pendingFlow: { version: 1, action: 'link', nonce, createdAt: Date.now(), authorizationId: null, subject: owner.id } });
+  await f.ready;
+  assert.equal(f.get('account').hidden, false);assert.equal(f.get('google-onboarding').hidden, true);
+  assert.equal(f.get('notice').textContent, 'Google 계정을 더했어요. 이제 그 Google로도 로그인할 수 있어요.');
+  assert.equal(f.get('security-methods').textContent, '이메일·비밀번호 · Google(first@example.invalid, added@example.invalid)');
+});
+
+// Fable FA1 (11-13): when the account then fails to load, the 「added」 notice goes with that entry — the login screen after a sign-out never says it.
+test('an added-Google notice is dropped when the account fails to load, and the next login screen does not say it', async t => {
+  const nonce = 'synthetic-google-link-nonce-0002';
+  const owner = { id: 'synthetic-email-owner', identities: [{ provider: 'email' }, { provider: 'google', identity_data: { email: 'added@example.invalid' } }] };
+  const f = fixture(t, { user: owner, callback: true, registrationDone: true, accountError: Object.assign(new Error('synthetic account outage'), { status: 503 }),
+    callbackQuery: new URLSearchParams({ google_flow: nonce }).toString(),
+    pendingFlow: { version: 1, action: 'link', nonce, createdAt: Date.now(), authorizationId: null, subject: owner.id } });
+  await f.ready;
+  assert.equal(f.calls.filter(call => call.method === 'account').length, 1);
+  assert.doesNotMatch(f.get('notice').textContent, /더했어요/);
+  f.emit('SIGNED_OUT', null);await settled();
+  assert.equal(f.get('auth-panel').hidden, false);assert.doesNotMatch(f.get('notice').textContent, /더했어요/);
 });
 
 test('a successful SDK Google callback with a different nonce remains fail closed', async t => {

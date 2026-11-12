@@ -79,7 +79,8 @@ export function createPortalAccount({ client, user, guard, notice, logout, previ
   function profile() {
     const account = data?.account || {}, name = account.profile?.display_name || '', deleting = account.status === 'deletion-requested';
     const memberships = membershipLines(data), joined = dayText(user?.created_at), email = user?.email || '';
-    const NAME_NOTE = 'WORLD·Workspace 같은 SYNK 앱에서 보이는 이름이에요.';
+    // Workspace shows the company account's own name, not this one (로그인 지도 4절 5).
+    const NAME_NOTE = 'WORLD·PC 앱 같은 SYNK 앱에서 보이는 이름이에요. 회사 Workspace에는 회사 계정 이름이 보여요.';
     const nameRow = editingName
       ? h('li', { className: 'row' }, rowMain('이름', NAME_NOTE),
         h('form', { className: 'profile-name-form', onsubmit: event => { event.preventDefault();saveName(); } },

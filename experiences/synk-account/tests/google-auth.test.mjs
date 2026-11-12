@@ -32,12 +32,12 @@ class Element {
   querySelector(selector) { return selector === 'span:last-child' ? this.children.at(-1) : null; }
 }
 function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequired, storage = memoryStorage(), initialUrl } = {}) {
-  const writes = [], notices = [], calls = [], nodes = new Map(), redirects = [], continued = [];
+  const writes = [], notices = [], calls = [], nodes = new Map(), redirects = [], continued = [], existing = [];
   for (const id of ['google-login', 'google-link', 'google-availability', 'google-onboarding', 'google-onboarding-form',
     'google-phone', 'google-phone-send', 'google-phone-code', 'google-phone-verify', 'google-phone-status', 'google-country',
     'google-age', 'google-gender', 'google-gender-text', 'google-gender-text-label', 'google-privacy', 'google-learning',
     'google-complete', 'google-cancel', 'google-linking', 'google-link-status', 'method-choices', 'google-privacy-note',
-    'google-phone-fields', 'google-onboarding-copy', 'google-privacy-fields', 'google-privacy-action-note', 'google-cancel-phone-note'])
+    'google-phone-fields', 'google-onboarding-copy', 'google-privacy-fields', 'google-privacy-action-note', 'google-cancel-phone-note', 'google-existing'])
     nodes.set(id, new Element('div', id, writes));
   for (const id of ['google-onboarding', 'google-linking', 'google-gender-text-label']) nodes.get(id).hidden = true;
   for (const id of ['google-login', 'google-link']) {
@@ -67,6 +67,7 @@ function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequ
   const access = createGoogleAccess({ config, sdk, enabled, phoneEnabled, storage, getSession: () => session, generation: () => epoch,
     setBusy: value => writes.push({ id: 'portal', key: 'busy', value }), notice: (...args) => { notices.push(args);writes.push({ id: 'portal', key: 'notice', value: args }); },
     continuePortal: async () => continued.push(session?.user?.id), endSession: async () => { session = null;epoch++; },
+    existingAccount: async removed => { existing.push(removed);session = null;epoch++; },
     fetcher, now: () => time, initialUrl: initialUrl || location.href });
   const get = id => { const node = nodes.get(id);assert.ok(node, `Expected fixture node ${id}`);return node; };
   const guard = () => {};
@@ -81,7 +82,7 @@ function fixture(t, { enabled = true, phoneEnabled = true, phoneVerificationRequ
   const verify = async () => { get('google-privacy').checked = true;get('google-phone').value = PHONE;await click('google-phone-send');get('google-phone-code').value = '123456';await click('google-phone-verify'); };
   const switchAccount = async () => { epoch++;session = { user: syntheticUser('synthetic-b'), access_token: 'synthetic-access-b' };access.reset();await check(); };
   t.after(() => { access.stop();for (const [key, descriptor] of originals) { if (descriptor) Object.defineProperty(globalThis, key, descriptor);else delete globalThis[key]; } });
-  return { access, get, check, click, submit, fill, verify, switchAccount, calls, replies, writes, notices, redirects, continued, storage, advance: ms => { time += ms; } };
+  return { access, get, check, click, submit, fill, verify, switchAccount, calls, replies, writes, notices, redirects, continued, existing, storage, advance: ms => { time += ms; } };
 }
 
 test('Google callback keeps authorization intent, is single-use, and expires after ten minutes', () => {
@@ -327,7 +328,14 @@ for (const [action, expected] of [['login', true], ['link', false]]) test(`a ver
   await f.check();assert.equal(f.access.takeSignedIn(), expected);assert.equal(f.access.takeSignedIn(), false);
 });
 test('a page without a returning Google flow never reports a Google sign-in', async t => {
-  const f = fixture(t);await f.check();assert.equal(f.access.takeSignedIn(), false);
+  const f = fixture(t);await f.check();assert.equal(f.access.takeSignedIn(), false);assert.equal(f.access.takeLinked(), false);
+});
+// 「다른 Google 계정 더하기」 (2026-11-12, Fable F2): a link that came back verified on this account is reported once, so the page can say so.
+for (const [action, expected] of [['link', true], ['login', false]]) test(`a verified Google ${action} is ${expected ? '' : 'not '}reported once as an added Google`, async t => {
+  const storage = memoryStorage(), flow = beginGoogleFlow({ config, storage, action, subject: action === 'link' ? 'synthetic-a' : null, now: 1000000, nonce: NONCE });
+  const f = fixture(t, { storage, initialUrl: flow.redirectTo });
+  assert.equal(f.access.takeLinked(), false, 'nothing is reported before the account is verified');
+  await f.check();assert.equal(f.access.takeLinked(), expected);assert.equal(f.access.takeLinked(), false);
 });
 
 // 2026-11-11: the Google button is one of a pair with the e-mail one, so it says the same thing in each step.
@@ -350,4 +358,44 @@ test('without Google the line under the pair names the e-mail way for that step'
   assert.equal(f.get('google-availability').textContent, '지금은 Google로 가입할 수 없어요. 이메일로 가입해 주세요.');assert.equal(f.get('google-login').disabled, true);
   f.access.settings({ google: true, phone: false });
   assert.equal(f.get('google-availability').textContent, '');assert.equal(f.get('google-login').disabled, false);assert.equal(f.get('google-privacy-note').hidden, false);
+});
+
+// 「기존 SYNK ID로 로그인」 on the Google sign-up step (2026-11-12): one POST that names only the action — never an account, a phone or a
+// credential — and only then the hand-over to the login screen. A refusal keeps the sign-up step and says why.
+const abandonReply = (status, value) => call => call.method === 'POST' ? new Response(JSON.stringify(value), { status })
+  : new Response(JSON.stringify({ ok: true, registration: { required: true } }), { status: 200 });
+test('the existing-SYNK-ID button removes only this unfinished sign-up, then hands over to signing in', async t => {
+  const f = fixture(t);await f.check();f.replies.fetch = abandonReply(200, { ok: true, abandoned: true });
+  await f.click('google-existing');
+  const posts = f.calls.filter(call => call.method === 'POST');assert.equal(posts.length, 1);
+  assert.deepEqual(posts[0].body, { action: 'abandon-google-signup' });assert.equal(new URL(posts[0].url).search, '');
+  assert.equal(posts[0].options.headers.Authorization, 'Bearer synthetic-access-a');assert.equal(posts[0].options.headers['x-synk-product'], 'platform');
+  assert.equal(posts[0].options.headers['x-synk-contract'], '1');assert.equal(posts[0].options.credentials, 'omit');
+  assert.deepEqual(f.existing, [true]);assert.equal(f.get('google-onboarding').hidden, true);assert.equal(f.continued.length, 0);
+});
+test('a login that had already ended still goes on to signing in, saying nothing was removed', async t => {
+  const f = fixture(t);await f.check();f.replies.fetch = abandonReply(401, { ok: false, error: { code: 'AUTH_REQUIRED' } });
+  await f.click('google-existing');assert.deepEqual(f.existing, [false]);
+});
+for (const [status, code, words] of [[409, 'SYNK_ID_LINKED', /이미 마쳤어요/], [409, 'SIGNUP_IN_USE', /남은 기록/], [409, 'SIGNUP_NOT_ABANDONABLE', /hello@synk\.im/], [503, 'AUTH_UNAVAILABLE', /잠시 뒤 다시 눌러/], [500, 'SERVER_UNAVAILABLE', /잠시 뒤 다시 눌러/]])
+  test(`a refused clean-up (${code}) keeps the sign-up step and says why`, async t => {
+    const f = fixture(t);await f.check();f.replies.fetch = abandonReply(status, { ok: false, error: { code } });
+    await f.click('google-existing');
+    assert.deepEqual(f.existing, []);assert.equal(f.get('google-onboarding').hidden, false);assert.match(f.notices.at(-1)[0], words);assert.equal(f.notices.at(-1)[1], true);
+    assert.equal(f.get('google-existing').disabled, false);
+  });
+test('the button does nothing once the sign-up is not required', async t => {
+  const f = fixture(t);f.replies.fetch = () => new Response(JSON.stringify({ ok: true, registration: { required: false } }));
+  await f.check();await f.click('google-existing');assert.equal(f.calls.filter(call => call.method === 'POST').length, 0);assert.deepEqual(f.existing, []);
+});
+test('the button is held while the sign-up completion runs', async t => {
+  const g = fixture(t), gate = deferred();await g.check();g.fill();await g.verify();g.replies.fetch = call => call.method === 'POST' ? gate.promise : new Response('{}');
+  const pending = g.submit();await tick();assert.equal(g.get('google-existing').disabled, true);
+  gate.resolve(new Response(JSON.stringify({ ok: true, registration: { required: false } })));await pending;
+});
+test('an account that already has Google can still add another Google address', async t => {
+  const f = fixture(t);f.replies.fetch = () => new Response(JSON.stringify({ ok: true, registration: { required: false } }));
+  await f.check();f.access.showAccount(true);
+  assert.equal(f.get('google-link').hidden, false);assert.equal(f.get('google-link-label').textContent, '다른 Google 계정 더하기');
+  assert.match(f.get('google-link-status').textContent, /다른 주소의 Google도 더할 수 있어요/);
 });

@@ -159,6 +159,9 @@
 .sid #google-phone-status:not([data-kind="error"]){color:var(--ink-2)}
 .sid #google-phone-status[data-kind="error"]{color:var(--err);font-weight:600}
 .sid .text-actions{display:grid}
+/* 「이미 SYNK ID가 있나요?」 — 가입 양식 앞의 갈림길. 로그인 쪽 「처음이세요? 가입하기」와 같은 줄(선 하나 · 밑줄 글자), 아래 잔글 한 줄 */
+.sid .existing-row{display:grid;gap:2px;margin:-8px 0 28px}
+.sid .existing-row>.small{margin:0}
 
 /* 앱 연결 · 다시 시작 */
 .sid .consent{display:grid;gap:20px}
@@ -219,7 +222,7 @@
 .sid .security-status[data-kind="error"]{color:var(--err);font-weight:600}
 .sid .security-status[data-kind="success"]{color:var(--ok);font-weight:600}
 .sid .security-status[data-kind="pending"]{color:var(--ink-2)}
-.sid .google-linking{display:grid;justify-items:end;gap:4px;min-width:0}
+.sid .google-linking{display:grid;justify-items:end;gap:4px;min-width:0;max-width:340px;margin-left:auto}
 .sid .google-linking .small{text-align:right}
 /* 학습 기록 연결: 켜면 검은 알약(PC 앱 「내 계정」과 같다) */
 .sid .switch[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -285,7 +288,7 @@
   .sid .row{gap:8px 24px}
   .sid .row-side{justify-content:flex-start}
   .sid .row-value{text-align:left}
-  .sid .google-linking{justify-items:start}
+  .sid .google-linking{justify-items:start;max-width:none;margin-left:0}
   .sid .google-linking .small{text-align:left}
 }
 @media (max-width:340px){

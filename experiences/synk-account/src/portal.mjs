@@ -48,8 +48,12 @@ const CHOICE_MODES = new Set(['login', 'signup']);
 const SWITCH_COPY = { login: '처음이세요?', signup: '이미 계정이 있나요?', recover: '비밀번호가 생각났나요?', reset: '' };
 const RATE_CODES = new Set(['over_email_send_rate_limit', 'over_sms_send_rate_limit', 'over_request_rate_limit', 'rate_limit_exceeded']);
 export function authErrorMessage(error) {
+  // Adding a Google that another login owner holds. Auth says which (supabase/auth internal/api/identity.go linkIdentityToUser, read 11-12):
+  // 「Identity is already linked to another user」 or, for this account's own Google, 「Identity is already linked」. No wording → another owner.
+  // Another owner is often a Google sign-up left unfinished — its own 「기존 SYNK ID로 로그인」 frees it (2026-11-12).
   if (error?.code === 'GOOGLE_CALLBACK_INCOMPLETE' && error.reason === 'identity_already_exists')
-    return '이 Google 계정은 다른 SYNK 계정에 연결돼 있어요. 그 계정으로 로그인하거나 hello@synk.im으로 문의해 주세요.';
+    return /\balready linked\b/i.test(error.description || '') && !/\banother\b/i.test(error.description || '') ?'이 Google 계정은 이미 이 SYNK 계정에 연결돼 있어요. 다른 주소의 Google을 더하려면 Google 계정을 고를 때 그 주소를 골라 주세요.'
+      : '이 Google 계정은 다른 SYNK 계정이나 끝내지 않은 가입에 묶여 있어요. 끝내지 않은 가입이면 로그아웃하고 그 Google로 로그인해 「기존 SYNK ID로 로그인」을 누른 뒤, 여기서 다시 더해 주세요. 아니면 hello@synk.im으로 문의해 주세요.';
   const messages = {
     // Never says whether the address has an account; it only names the other way in.
     invalid_credentials: '이메일 또는 비밀번호가 맞지 않아요. 다시 입력해 주세요. Google로 가입했다면 「Google로 로그인」을 눌러 주세요.',
@@ -240,7 +244,17 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   google = createGoogleAccess({ config, sdk, enabled: !preview && loginSettings.google, phoneEnabled: !preview && loginSettings.phone, settled: typeof loginSettings?.then !== 'function',
     storage: pendingGoogleStorage, getSession: () => session, generation: () => generation,
     setBusy: value => { authOperation = value;renderControls(); }, hostBusy: () => authOperation || hadCallback && !initializationFinished, notice, bounded, authorizationId,
-    continuePortal: () => enter(), registrationHeaders: () => signupConversion?.registrationHeaders() || {}, onRegistrationCompleted: result => signupConversion?.googleCompleted(result), endSession: async () => { authOperation = false;await logout('가입을 완료하지 않고 이 브라우저에서 로그아웃했어요.', {}, guarded(generation)); } });
+    continuePortal: () => enter(), registrationHeaders: () => signupConversion?.registrationHeaders() || {}, onRegistrationCompleted: result => signupConversion?.googleCompleted(result), endSession: async () => { authOperation = false;await leaveSignUp('가입을 완료하지 않고 이 브라우저에서 로그아웃했어요.'); },
+    // 「기존 SYNK ID로 로그인」 on the Google sign-up step: the unfinished sign-up is gone, or its login had already ended — then nobody knows whether
+    // it is gone (another tab removed it, or the session simply ran out), so the login screen also names the way back if adding the Google is refused.
+    existingAccount: async removed => { authOperation = false;await leaveSignUp(removed ? '이 Google로 시작한 가입을 지웠어요. 기존 SYNK ID로 로그인한 뒤 「로그인과 보안」에서 이 Google을 더해 주세요.'
+      : '로그인이 끝나 있어 이 Google로 시작한 가입을 지웠는지 확인하지 못했어요. 기존 SYNK ID로 로그인해 「로그인과 보안」에서 이 Google을 더해 보고, 막히면 이 Google로 다시 로그인해 「기존 SYNK ID로 로그인」을 눌러 주세요.'); } });
+  // Leaving the Google sign-up step (「나중에 하기」 · 「기존 SYNK ID로 로그인」): sign out here, then the keyboard goes to what the login screen
+  // says — the step that held it is gone (Fable 11-12). Another account or a newer sign-in owns its own notice, so only this one is revealed.
+  async function leaveSignUp(text) {
+    await logout(text, {}, guarded(generation));
+    if (!closed && $('notice').textContent === text) notice(text, false, true);
+  }
   const security = createPortalSecurity({ config, sdk, bounded, notice, preview, errorMessage: authErrorMessage, rateLimit: authRateLimit,
     setBusy: value => { authOperation = value;renderControls(); }, hostBusy: () => authOperation || hadCallback && !initializationFinished,
     onPasswordChanged: () => tidySessions(generation) });
@@ -517,6 +531,9 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       // already signed in) and finished any sign-up step, or this tab's password sign-in. A first Google visit that
       // stops at the sign-up step records nothing until that step is done (the flag waits in google-auth until then).
       if (google.takeSignedIn?.()) pendingMethod = 'google';
+      // A Google added from 「로그인과 보안」 came back on this account: say so once the account is drawn (the ways-in row now names its
+      // address, 2026-11-12). Held here, not in landingNotice, so an account load that fails drops it with this entry (Fable FA1).
+      const addedGoogle = google.takeLinked?.() === true;
       if (pendingMethod) { writeRecentLogin(pendingMethod, verified.email, { storage: recentStore, realm: recentRealm });pendingMethod = null; }
       else if (!recent()) { const ways = signInMethods(verified);if (ways.email !== ways.google) writeRecentLogin(ways.google ? 'google' : 'email', verified.email, { storage: recentStore, realm: recentRealm }); }
       // Only local pending-owner validation is awaited. Tracking never adds an authentication request.
@@ -540,6 +557,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       google.showAccount(!preview);
       security.show(verified, { focus: focusSecurity, section: securitySection });focusSecurity = false;
       if (landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(text, error, true, error ? 'error' : 'success'); }
+      else if (addedGoogle) notice('Google 계정을 더했어요. 이제 그 Google로도 로그인할 수 있어요.', false, true, 'success');
     } catch (error) {
       if (token !== generation || entry !== entryId || error.code === 'ACCOUNT_CHANGED') return;
       view?.stop();view = null;security.hide();mode = 'login';setMode(mode);$('auth-panel').hidden = false;report(error);
@@ -767,7 +785,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     initializationFinished = true;
     if (hadCallback && (result?.error || new URL(location.href).searchParams.has('code') || initialUrl.searchParams.has('error') || initialFragment.has('error'))) {
       callbackBlocked = true;callbackError = { code: initialUrl.searchParams.has('google_flow') ? 'GOOGLE_CALLBACK_INCOMPLETE' : recoveryRequested ? 'AUTH_RECOVERY_CALLBACK' : 'AUTH_CALLBACK_INCOMPLETE',
-        reason: initialUrl.searchParams.get('error_code') || initialFragment.get('error_code') || result?.error?.code };
+        reason: initialUrl.searchParams.get('error_code') || initialFragment.get('error_code') || result?.error?.code,
+        description: initialUrl.searchParams.get('error_description') || initialFragment.get('error_description') || '' };
       // An explicit failed exchange cannot authorize an app. Keep a separately
       // verified existing session usable; successful callbacks still validate the nonce/owner.
       if (callbackError.code === 'GOOGLE_CALLBACK_INCOMPLETE') google.clearCallback();

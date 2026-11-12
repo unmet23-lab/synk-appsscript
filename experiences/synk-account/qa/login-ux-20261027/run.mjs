@@ -209,7 +209,7 @@ try {
   // 10. A Google-only account and an unconfirmed sign-up.
   { const { context, tab, errors } = await page();await tab.goto(base, { waitUntil: 'networkidle' });await signIn(tab, 'g');
     check('a Google-only account: no name yet, Google as the way, a mail that sets a password', /SYNK 회원/.test(await textOf(tab, '.profile-name')) && /정하기/.test(await textOf(tab, '.profile-facts'))
-      && await textOf(tab, '#security-methods') === 'Google' && await textOf(tab, '#password-mail-heading') === 'Google로 가입한 계정이에요' && await textOf(tab, '#password-form-toggle') === '이미 만든 비밀번호 바꾸기', { screenshot: await shot(tab, '10-google-only') });
+      && await textOf(tab, '#security-methods') === `Google(${users.get('g').email})` && await textOf(tab, '#password-mail-heading') === 'Google로 가입한 계정이에요' && await textOf(tab, '#password-form-toggle') === '이미 만든 비밀번호 바꾸기', { screenshot: await shot(tab, '10-google-only') });
     await tab.click('[data-action="sign-out"]');await tab.waitForSelector('#auth-panel:not([hidden])');
     await tab.fill('#email', users.get('u').email);await tab.fill('#password', users.get('u').password);await tab.click('#auth-submit');await tab.waitForSelector('#resend-confirm:not([hidden])');
     const before = log.length;await tab.click('#resend-confirm');await tab.waitForFunction(() => /확인 메일을 다시 요청했어요/.test(document.getElementById('notice').textContent));

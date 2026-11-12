@@ -730,6 +730,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 소프트 리셋은 WIP 커밋의 판을 인덱스에 남긴다. 그 뒤 고친 파일은 인덱스 · 작업본 · HEAD가 셋 다 달라 따라가기의 「고치는 파일을 바탕 판으로」가 막힌다.
 - 고침: `git reset -q`(인덱스만 비움 — 작업본 파일은 그대로) 뒤 `node tools/바로올리기.js 따라가기 --실행` → `c855a9e71 → cdc94eced`, 바뀐 파일 0. 처음부터 소프트 리셋 바로 뒤에 `git reset -q`를 해 두면 걸리지 않는다.
 - 다시 확인: `git status --short`가 비고 `git log -1`이 올린 커밋.
+- 11-12 덧붙임(Claude, SYNK ID 기존 SYNK ID로 로그인): WIP를 `git rebase origin/master`로 옮긴 뒤 한참 있다가 `git reset --soft origin/master`로 풀자, 그사이 다른 도구의 fetch로 origin/master가 앞으로 가 있어 인덱스에 남의 커밋 38파일을 **되돌리는** 차이가 올라갔다(내 11파일 + 남의 38파일 · 삭제 1,636줄). 소프트 리셋의 과녁은 지금의 origin/master가 아니라 WIP가 올라앉은 커밋(`git reset --soft HEAD~1` 또는 리베이스 때 본 해시)이다. 이미 밟았으면 `git diff --name-only -z <옛 바탕> HEAD | xargs -0 git restore --source=HEAD --staged --worktree --`로 그사이 들어온 파일만 HEAD 판으로 돌리고(내 파일과 겹치지 않을 때), 위처럼 `git reset -q`.
 
 ### 공용 작업본 따라가기가 받은 새 경로 수백 개에서 몇 분 걸리고, 계획 한도(420초)를 넘기면 그 경로를 남긴다 — 경로마다 `cat-file --filters`를 띄웠다 (2026-11-10 Claude)
 - 증상: `tests/바로올리기.test.js`(11-11부터 `tests/바로올리기_워크트리.test.js`) 「공용 작업본: 새 경로 목록이 Windows 명령 길이를 넘어도…」(origin이 넣은 300경로와 같은 파일이 공용 작업본에 미추적으로 있음) 한 시험이 246~300초였다. 실제 공용 작업본에서도 같은 꼴(다른 세션이 만든 파일을 워크트리에서 올린 뒤 공용 작업본이 받음)이면 같은 만큼 걸리고, 바쁜 PC에서 420초를 넘기면 나머지 경로는 「합쳐 볼 시간을 넘겼다」로 남는다.

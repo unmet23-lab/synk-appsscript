@@ -32,13 +32,17 @@ const USERS = {
   u: { id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', email: 'not.yet@example.com', password: 'example-pass-4', identities: ['email'], name: '', unconfirmed: true },
   // A long address (the longest a person is likely to have) for the wrap checks.
   l: { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', email: 'a.very.long.member.name.for.layout.check@subdomain.example-university.example', password: 'example-pass-5', identities: ['email'], name: '긴 주소 회원' },
+  // E-mail plus two Googles on one login owner (로그인 지도 5절 — the founder account's shape), one with a long address.
+  m: { id: 'ffffffff-ffff-4fff-8fff-ffffffffffff', email: 'two.google@example.com', password: 'example-pass-6', identities: ['email', 'google', 'google'], googleEmails: ['two.google@example.com', 'another.google.address.for.layout@example-university.example'], name: '박서준' },
 };
-const fresh = () => ({ revoked: new Set(), google: true, learning: true, deleting: false, pendingEmail: '', manyPlaces: false, settingsDelay: 0, failRevoke: false, atlasDelay: 0, names: Object.fromEntries(Object.entries(USERS).map(([key, u]) => [key, u.name])) });
+const fresh = () => ({ revoked: new Set(), google: true, learning: true, deleting: false, pendingEmail: '', manyPlaces: false, settingsDelay: 0, failRevoke: false, atlasDelay: 0, abandonError: '', names: Object.fromEntries(Object.entries(USERS).map(([key, u]) => [key, u.name])) });
+// 「기존 SYNK ID로 로그인」(2026-11-12): what the page sent to the account server — checked after the run (report.abandon).
+const abandonRequests = [];
 let state = fresh();
 const now = () => Math.floor(Date.now() / 1000), ago = minutes => new Date(Date.now() - minutes * 60000).toISOString();
 const sessions = new Map(), RESET_TOKEN = 'pkce_' + 'a1'.repeat(28);
 const userJson = key => { const u = USERS[key];return { id: u.id, aud: 'authenticated', role: 'authenticated', email: u.email, created_at: '2026-10-01T00:00:00Z', ...(key === 'a' && state.pendingEmail ? { new_email: state.pendingEmail } : {}),
-  app_metadata: { provider: u.identities[0], providers: u.identities }, user_metadata: {}, identities: u.identities.map(provider => ({ id: u.id + provider, user_id: u.id, provider, identity_data: { email: u.email, sub: u.id }, created_at: '2026-10-01T00:00:00Z' })) }; };
+  app_metadata: { provider: u.identities[0], providers: u.identities }, user_metadata: {}, identities: u.identities.map((provider, i) => ({ id: u.id + provider + (i || ''), user_id: u.id, provider, identity_data: { email: provider === 'google' && u.googleEmails ? u.googleEmails[u.identities.slice(0, i).filter(p => p === 'google').length] : u.email, sub: u.id + (i || '') }, created_at: `2026-10-0${1 + i}T00:00:00Z` })) }; };
 const issue = key => { const access = 'example-access-' + crypto.randomUUID(), refresh = 'example-refresh-' + crypto.randomUUID();
   sessions.set(access, { key, refresh, live: true });return { access_token: access, refresh_token: refresh, token_type: 'bearer', expires_in: 3600, expires_at: now() + 3600, user: userJson(key) }; };
 const PLACES = [['platform', 'Windows PC 앱', 30], ['world', 'iPhone · Safari', 60 * 26], ['messenger', 'Windows PC 앱', 60 * 50], ['platform', 'Chrome · macOS', 60 * 24 * 4], ['world', 'Galaxy · Chrome', 60 * 24 * 6], ['platform', 'Edge · Windows', 60 * 24 * 9],
@@ -94,6 +98,13 @@ const auth = http.createServer(async (req, res) => {
   if (url.pathname === '/functions/v1/synk-town/records') return send(res, 200, town(key));
   if (view === 'registration') return send(res, 200, { ok: true, registration: USERS[key].onboarding ? { required: true, completed: false, phoneVerificationRequired: true } : { required: false, completed: true, phoneVerificationRequired: false } });
   if (view === 'atlas') { if (state.atlasDelay) await new Promise(resolve => setTimeout(resolve, state.atlasDelay));return send(res, 200, atlas(key)); }
+  if (req.method === 'POST' && data.action === 'abandon-google-signup') {
+    abandonRequests.push({ user: key, body: data, query: url.search, product: req.headers['x-synk-product'] || '', contract: req.headers['x-synk-contract'] || '', bearer: /^Bearer example-access-/.test(req.headers.authorization || '') });
+    if (state.abandonError) return send(res, 409, { ok: false, error: { code: state.abandonError, message: state.abandonError } });
+    if (!USERS[key].onboarding) return send(res, 409, { ok: false, error: { code: 'SYNK_ID_LINKED', message: 'SYNK_ID_LINKED' } });
+    for (const s of sessions.values()) if (s.key === key) s.live = false;
+    return send(res, 200, { ok: true, abandoned: true });
+  }
   if (req.method === 'POST') {
     if (state.failRevoke && data.action === 'revoke-session') return send(res, 503, { ok: false, error: { code: 'SERVICE_UNAVAILABLE' } });
     if (data.action === 'revoke-session') state.revoked.add(data.session_id);
@@ -142,6 +153,10 @@ const SCENES = [
   ['no-google', 'Google을 못 쓸 때', async () => {}, { set: { google: false } }],
   ['unconfirmed', '이메일 확인 전 로그인', async tab => { await signIn(tab, 'u', '#resend-confirm:not([hidden])'); }],
   ['onboarding', 'Google 첫 가입 마무리', async tab => { await signIn(tab, 'o', '#google-onboarding:not([hidden])'); }],
+  // 「이미 SYNK ID가 있나요? 기존 SYNK ID로 로그인」(2026-11-12): the unfinished sign-up is removed, then the login screen says what next.
+  ['onboarding-existing', 'Google 가입 마무리 → 기존 SYNK ID로 로그인', async tab => { await signIn(tab, 'o', '#google-onboarding:not([hidden])');await tab.focus('#google-existing');await tab.keyboard.press('Enter');await tab.waitForFunction(() => /가입을 지웠어요/.test(document.getElementById('notice').textContent) && !document.getElementById('auth-panel').hidden);
+    await tab.waitForFunction(() => document.activeElement?.id === 'notice', null, { timeout: 2000 }).catch(() => {}); }, { expect: noticeFocused() }],
+  ['onboarding-existing-refused', 'Google 가입 마무리 → 정리할 수 없을 때', async tab => { await signIn(tab, 'o', '#google-onboarding:not([hidden])');await tab.click('#google-existing');await tab.waitForFunction(() => /남은 기록/.test(document.getElementById('notice').textContent)); }, { set: { abandonError: 'SIGNUP_IN_USE' } }],
   ['consent', '앱 연결 · 이 PC 앱', async (tab, url) => { await signIn(tab, 'a');await tab.goto(url + '?authorization_id=device-1', { waitUntil: 'networkidle' });await tab.waitForSelector('#consent:not([hidden])'); }],
   ['restart', '앱 연결 다시 시작', async (tab, url) => { await signIn(tab, 'a');await tab.goto(url + '?authorization_id=gone-1', { waitUntil: 'networkidle' });await tab.waitForSelector('#connection-restart:not([hidden])'); }],
   ['account', '내 SYNK 계정', async tab => { await signIn(tab, 'a');await settledAccount(tab); }],
@@ -150,7 +165,9 @@ const SCENES = [
   ['account-email', '내 계정 · 이메일 바꾸기', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('#email-form-toggle'); }],
   ['account-password', '내 계정 · 비밀번호 바꾸기', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('#password-form-toggle'); }],
   ['account-pending', '내 계정 · 새 이메일 확인 대기', async tab => { await signIn(tab, 'a');await settledAccount(tab); }, { set: { pendingEmail: 'yuna.new@example.com' } }],
-  ['account-google', '내 계정 · Google로만 가입', async tab => { await signIn(tab, 'g');await settledAccount(tab); }],
+  ['account-google', '내 계정 · Google로만 가입', async tab => { await signIn(tab, 'g');await settledAccount(tab); }, { expect: googleButtonPlaced() }],
+  ['account-two-google', '내 계정 · 이메일 + Google 둘', async tab => { await signIn(tab, 'm');await settledAccount(tab); },
+    { expect: async tab => [...await googleButtonPlaced()(tab), ...await tab.evaluate(emails => { const ways = document.getElementById('security-methods').textContent;return emails.every(email => ways.includes(email)) ? [] : [`로그인 방법: ${ways.slice(0, 60)}`]; }, USERS.m.googleEmails)] }],
   ['account-deleting', '내 계정 · 삭제 요청됨', async tab => { await signIn(tab, 'a');await settledAccount(tab); }, { set: { deleting: true } }],
   ['account-confirm', '내 계정 · 삭제 확인 창', async tab => { await signIn(tab, 'a');await settledAccount(tab);await tab.click('[data-key="delete"]');await tab.waitForSelector('dialog.portal-confirm[open]'); }],
   ['google-checking', 'Google 확인이 늦을 때(1.2초)', async tab => { await tab.waitForTimeout(1200); }, { set: { settingsDelay: 5000 }, checking: true }],
@@ -192,6 +209,16 @@ const SCENES = [
   ['other-tab-separate', '탭마다 따로 로그인하는 브라우저 · 다른 탭이 다른 회원으로 로그인', async (tab, url) => { await signIn(tab, 'a');await settledAccount(tab);const other = await tab.context().newPage();await other.goto(tab.url(), { waitUntil: 'networkidle' });await signIn(other, 'g');await tab.waitForTimeout(3000);await other.close(); },
     { blockStorage: true, expect: async tab => tab.evaluate(email => { const shown = document.querySelector('.profile-email')?.textContent;return !document.getElementById('account-profile').hidden && shown === email ? [`이 탭이 다른 회원 계정을 그림: ${shown}`] : []; }, USERS.g.email) }],
 ];
+// The Google add button stands at the row's right end beside 「로그인 방법」 on a wide card and at its start on a narrow one (Fable 11-12).
+function googleButtonPlaced() { return async tab => tab.evaluate(() => {
+  const button = document.getElementById('google-link'), row = button?.closest('.row'), name = row?.querySelector('.row-main');
+  if (!button || !row || !name || !button.getClientRects().length) return ['Google 더하기 단추가 안 보임'];
+  const b = button.getBoundingClientRect(), r = row.getBoundingClientRect(), n = name.getBoundingClientRect(), problems = [];
+  if (innerWidth > 520 && Math.abs(r.right - b.right) > 1) problems.push(`단추 오른쪽 끝이 줄 끝보다 ${Math.round(r.right - b.right)}px 안쪽`);
+  if (innerWidth >= 700 && b.top >= n.bottom) problems.push('단추가 「로그인 방법」 아래 줄로 내려감');
+  if (innerWidth <= 520 && Math.abs(b.left - r.left) > 1) problems.push(`좁은 폭 단추가 줄 처음이 아님(+${Math.round(b.left - r.left)}px)`);
+  return problems; }); }
+function noticeFocused() { return async tab => tab.evaluate(() => document.activeElement?.id === 'notice' ? [] : [`초점: ${document.activeElement?.id || document.activeElement?.tagName}`]); }
 function focusOn(key) { return async tab => tab.evaluate(want => document.activeElement?.dataset?.key === want ? [] : [`초점: ${document.activeElement?.dataset?.key || document.activeElement?.id || document.activeElement?.tagName}`], key); }
 function rowSays(text) { return async tab => tab.evaluate(want => { const rows = [...document.querySelectorAll('.row-error')].map(node => node.textContent.trim());return rows.length === 1 && rows[0] === want ? [] : [`줄 안 알림: ${JSON.stringify(rows)}`]; }, text); }
 function signedInAs(key) { return async tab => tab.evaluate(email => { const problems = [], note = document.getElementById('notice').textContent;
@@ -227,7 +254,7 @@ function audit() {
   const said = [...document.querySelectorAll('.notice')].filter(shown).map(node => node.textContent.trim()).filter(Boolean), twice = said.filter((text, i) => said.indexOf(text) !== i);
   return { overflow: Math.max(0, document.documentElement.scrollWidth - innerWidth), low, small, gaps, twice, families: [...fams], sizes: [...sizes].sort((a, b) => a - b), weights: [...weights].sort((a, b) => a - b), height: document.documentElement.scrollHeight };
 }
-const report = { made: new Date().toISOString(), root: portalRoot, shots: [], widths: [], tab: null };
+const report = { made: new Date().toISOString(), root: portalRoot, shots: [], widths: [], tab: null, abandon: abandonRequests };
 const browser = await chromium.launch({ channel: process.env.SYNK_QA_CHANNEL || 'chrome' });
 const LIVE_SKIP = new Set(['consent', 'restart', 'consent-long', 'other-tab-consent']);
 async function relay(route) {
@@ -245,7 +272,7 @@ async function run(id, width, step, opts = {}) {
   if (opts.hint) await context.addInitScript(([value, key]) => { localStorage.setItem(key, value); }, [hint(opts.hint), 'synk.id.recent-login.v1:' + (LIVE ? new URL(LIVE).pathname : '/')]);
   const tab = await context.newPage(), errors = [];
   tab.on('pageerror', error => errors.push(String(error).slice(0, 200)));
-  tab.on('console', message => { if (message.type() === 'error' && !/atlas-learning|404|status of (?:400|401|403|422)/.test(message.text())) errors.push(message.text().slice(0, 200)); });
+  tab.on('console', message => { if (message.type() === 'error' && !/atlas-learning|404|status of (?:400|401|403|409|422)/.test(message.text())) errors.push(message.text().slice(0, 200)); });
   // A scene that looks at Google still being looked up must not wait for the network to go quiet (the settings answer is held back).
   await tab.goto((LIVE || base) + (opts.query || ''), { waitUntil: opts.checking ? 'domcontentloaded' : 'networkidle' });await tab.waitForSelector('#auth-panel:not([hidden]), #account-profile:not([hidden])');
   if (!opts.checking) await tab.waitForFunction(() => !(document.getElementById('google-availability')?.textContent || '').includes('확인하고'));

@@ -39,6 +39,8 @@
 </section>
 <section id="google-onboarding" class="google-onboarding" aria-labelledby="google-onboarding-heading" hidden>
   <div class="intro-copy"><h1 id="google-onboarding-heading" tabindex="-1">가입을 마무리해요.</h1><p id="google-onboarding-copy">휴대폰을 인증하고 기본 정보를 입력해 주세요. 아이디와 비밀번호는 따로 만들지 않아요.</p></div>
+  <!-- 이미 SYNK ID가 있는 사람이 다른 주소의 Google로 들어온 자리: 양식을 채우기 전에 갈림길을 둔다. 누르면 이 가입(연결 없는 로그인 주인)을 지우고 로그인 화면으로. -->
+  <div id="google-existing-row" class="existing-row"><p class="switch-row"><span>이미 SYNK ID가 있나요?</span><button id="google-existing" class="link-button" type="button" aria-describedby="google-existing-note">기존 SYNK ID로 로그인</button></p><p id="google-existing-note" class="small">이 Google로 시작한 가입은 지우고 로그인 화면으로 가요. 로그인한 뒤 「로그인과 보안」에서 이 Google을 더할 수 있어요.</p></div>
   <form id="google-onboarding-form" class="auth-card google-onboarding-card" aria-labelledby="google-onboarding-heading">
     <div class="signup-choices google-signup-choices">
       <label class="toggle"><input id="google-privacy" type="checkbox" aria-describedby="google-privacy-summary" required><span>개인정보 수집·이용 안내를 확인했어요 <span class="muted">(필수)</span></span></label>
@@ -89,7 +91,7 @@
     </li>
     <li class="row security-row">
       <div class="row-main"><h3>로그인 방법</h3><p id="security-methods" class="security-value"></p></div>
-      <div id="google-linking" class="google-linking" hidden><button id="google-link" class="sb-btn soft compact google-btn" type="button" aria-describedby="google-link-status"><span class="google-mark" aria-hidden="true"></span><span>Google 계정 연결</span></button><p id="google-link-status" class="small" role="status" aria-live="polite" aria-atomic="true"></p></div>
+      <div id="google-linking" class="google-linking" hidden><button id="google-link" class="sb-btn soft compact google-btn" type="button" aria-describedby="google-link-status"><span class="google-mark" aria-hidden="true"></span><span id="google-link-label">Google 계정 연결</span></button><p id="google-link-status" class="small" role="status" aria-live="polite" aria-atomic="true"></p></div>
     </li>
     <li class="row security-row">
       <div class="row-main"><h3>비밀번호</h3><p>바꾸면 이 브라우저를 뺀 다른 기기와 앱(PC 앱·WORLD 포함)에서는 로그아웃돼요.</p></div>

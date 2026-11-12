@@ -66,13 +66,15 @@ export async function publicLoginSettings(config, fetcher = fetch) {
   } catch { return { google: false, phone: false }; }
 }
 export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled = false, storage, getSession, generation, setBusy, hostBusy = () => false,
-  notice, bounded = promise => promise, continuePortal, endSession, settled = true, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
+  notice, bounded = promise => promise, continuePortal, endSession, existingAccount = endSession, settled = true, onRegistrationCompleted = () => {}, registrationHeaders = () => ({}), authorizationId = null, fetcher = fetch, now = () => Date.now(), initialUrl = location.href }) {
   const node = id => document.getElementById(id), button = node('google-login'), link = node('google-link'), section = node('google-onboarding');
-  let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null, signedIn = false, mode = 'login';
+  let closed = false, busy = false, operationSequence = 0, user = null, required = false, phoneRequired = true, accountVisible = false, confirmedPhone = null, sentPhone = null, sendAfter = 0, flow = null, flowError = null, checkedSubject = null, signedIn = false, linked = false, mode = 'login';
   try { flow = consumeGoogleFlow({ storage, url: initialUrl, now: now() }); } catch (error) { flowError = error; }
   const check = (token, subject) => { if (closed || generation() !== token || getSession()?.user?.id !== subject) throw fault('ACCOUNT_CHANGED', '로그인 상태가 바뀌었어요.'); };
   const errorMessage = error => ({ ONBOARDING_REQUIRED: phoneRequired ? '휴대폰 인증과 가입 정보를 먼저 완료해 주세요.' : '가입 정보를 먼저 완료해 주세요.', PHONE_UNVERIFIED: '휴대폰 번호를 먼저 인증해 주세요.', PHONE_VERIFICATION_REQUIRED: '서버에서 휴대폰 인증을 확인하지 못했어요. 번호를 다시 인증해 주세요.', INVALID_REGISTRATION: '국가·나이·성별을 다시 보고, 개인정보 안내에 체크해 주세요.', GOOGLE_FLOW_INVALID: error?.message,
-    phone_exists: '다른 계정에서 쓰는 휴대폰 번호예요. 그 SYNK 계정으로 로그인하거나 hello@synk.im으로 문의해 주세요.', over_sms_send_rate_limit: '인증번호를 너무 자주 요청했어요. 잠시 뒤 다시 요청해 주세요.', otp_expired: '인증번호가 만료됐거나 맞지 않아요. 문자를 다시 보고 입력해 주세요.', manual_linking_disabled: '지금은 Google 계정을 연결할 수 없어요. 이메일로 로그인해 주세요.', REGISTRATION_CONFLICT: '이미 가입을 마친 계정이에요. 그 계정으로 로그인해 주세요.' }[error?.code] || (/[가-힣]/.test(error?.message || '') ? error.message : '요청을 마치지 못했어요. 입력한 내용을 다시 보고 시도해 주세요.'));
+    phone_exists: '다른 계정에서 쓰는 휴대폰 번호예요. 그 SYNK 계정으로 로그인하거나 hello@synk.im으로 문의해 주세요.', over_sms_send_rate_limit: '인증번호를 너무 자주 요청했어요. 잠시 뒤 다시 요청해 주세요.', otp_expired: '인증번호가 만료됐거나 맞지 않아요. 문자를 다시 보고 입력해 주세요.', manual_linking_disabled: '지금은 Google 계정을 연결할 수 없어요. 이메일로 로그인해 주세요.', REGISTRATION_CONFLICT: '이미 가입을 마친 계정이에요. 그 계정으로 로그인해 주세요.',
+    SYNK_ID_LINKED: '이 Google로 가입을 이미 마쳤어요. 페이지를 새로 고치면 그 SYNK 계정으로 들어가요.', SIGNUP_NOT_ABANDONABLE: '이 Google 계정은 여기서 정리할 수 없어요. hello@synk.im으로 문의해 주세요.',
+    SIGNUP_IN_USE: '이 Google 계정에 남은 기록이 있어 여기서 정리할 수 없어요. hello@synk.im으로 문의해 주세요.', ABANDON_UNAVAILABLE: '계정 서버가 잠시 응답하지 않아요. 잠시 뒤 다시 눌러 주세요.' }[error?.code] || (/[가-힣]/.test(error?.message || '') ? error.message : '요청을 마치지 못했어요. 입력한 내용을 다시 보고 시도해 주세요.'));
   const text = (id, value) => { const target = node(id);if (target && target.textContent !== value) target.textContent = value; };
   const confirmedNumber = owner => {
     // Auth/server time is authoritative; a slow device clock must not require a paid re-send.
@@ -93,6 +95,7 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     for (const id of ['google-phone-send', 'google-phone-verify']) if (node(id)) node(id).disabled = busy || hostBusy() || !phoneRequired || !phoneEnabled;
     if (node('google-complete')) node('google-complete').disabled = busy || hostBusy() || phoneRequired && !phoneEnabled;
     if (node('google-cancel')) node('google-cancel').disabled = busy || hostBusy();
+    if (node('google-existing')) node('google-existing').disabled = busy || hostBusy();
     for (const id of ['google-country', 'google-age', 'google-gender', 'google-privacy', 'google-learning']) if (node(id)) node(id).disabled = busy;
     if (node('google-phone-fields')) { node('google-phone-fields').hidden = !phoneRequired;node('google-phone-fields').disabled = !phoneRequired; }
     if (node('google-phone')) { node('google-phone').disabled = busy || !phoneRequired;node('google-phone').required = phoneRequired; }
@@ -105,8 +108,11 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     text('google-privacy-action-note', phoneRequired ? '번호를 보내기 전에' : '가입을 완료하기 전에');
     if (node('google-cancel-phone-note')) node('google-cancel-phone-note').hidden = !phoneRequired;
     text('google-phone-status', !phoneEnabled ? '문자 인증은 아직 쓸 수 없어요.' : confirmedPhone ? '휴대폰 번호 인증을 확인했어요.' : sentPhone ? '문자로 받은 인증번호를 입력해 주세요.' : '국가번호를 포함한 휴대폰 번호로 인증번호를 보내 주세요.');
-    text('google-link-status', user?.identities?.some(identity => identity.provider === 'google') ? '이 SYNK 계정에 Google이 연결돼 있어요.' : '지금 계정에 Google 로그인을 더해요. 기록은 그대로예요.');
-    if (link) link.hidden = !!user?.identities?.some(identity => identity.provider === 'google');
+    // One login owner may hold more than one Google (로그인 지도 5절), so the button stays once Google is there: the person who
+    // left an unfinished sign-up on another Google address adds that one here (「기존 SYNK ID로 로그인」, 2026-11-12).
+    const hasGoogle = !!user?.identities?.some(identity => identity.provider === 'google');
+    text('google-link-status', hasGoogle ? '이 SYNK 계정에 Google이 연결돼 있어요. 다른 주소의 Google도 더할 수 있어요.' : '지금 계정에 Google 로그인을 더해요. 기록은 그대로예요.');
+    text('google-link-label', hasGoogle ? '다른 Google 계정 더하기' : 'Google 계정 연결');
   }
   const countries = node('google-country');
   if (countries) {
@@ -184,12 +190,28 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     required = false;section.hidden = true;notice('SYNK 가입을 마쳤어요. 내 계정으로 연결하고 있어요…');await continuePortal();
   }); };
   if (node('google-cancel')) node('google-cancel').onclick = () => action(async () => { required = false;section.hidden = true;confirmedPhone = sentPhone = null;await endSession(); });
+  // 「기존 SYNK ID로 로그인」: the account server removes this unfinished Google sign-up — only the caller's own login owner, and only while
+  // it has no SYNK ID and no other way in — so this Google can be added from the existing SYNK ID's 「로그인과 보안」. Nothing else is sent.
+  if (node('google-existing')) node('google-existing').onclick = () => action(async () => {
+    if (!required) return;
+    const token = generation(), subject = user?.id;
+    let removed = true;
+    try { await request({ action: 'abandon-google-signup' }); }
+    catch (error) {
+      // AUTH_REQUIRED: this login has already ended (the sign-up was cleared in another tab, or the session is over) — go on to sign in.
+      if (error?.code === 'AUTH_REQUIRED') removed = false;
+      else throw ['SYNK_ID_LINKED', 'SIGNUP_NOT_ABANDONABLE', 'SIGNUP_IN_USE', 'ACCOUNT_CHANGED'].includes(error?.code) ? error : fault('ABANDON_UNAVAILABLE', '');
+    }
+    check(token, subject);
+    required = false;section.hidden = true;confirmedPhone = sentPhone = null;
+    await existingAccount(removed);
+  });
   render();
   return {
     async check(verified, guard) {
       guard();user = verified;render();
       if (flowError) throw flowError;
-      if (flow && checkedSubject !== verified.id) { verifiedGoogleUser(verified, flow);checkedSubject = verified.id;signedIn = flow.action === 'login';flow = null; }
+      if (flow && checkedSubject !== verified.id) { verifiedGoogleUser(verified, flow);checkedSubject = verified.id;signedIn = flow.action === 'login';linked = flow.action === 'link';flow = null; }
       if (!verified.identities?.some(identity => identity.provider === 'google')) { required = false;if (section) section.hidden = true;return true; }
       const result = await request();guard();
       if (typeof result.registration?.required !== 'boolean') throw fault('REGISTRATION_UNAVAILABLE', '가입을 마쳤는지 확인하지 못했어요. 다시 시도해 주세요.');
@@ -206,10 +228,12 @@ export function createGoogleAccess({ config, sdk, enabled = false, phoneEnabled 
     showAccount(show) { accountVisible = show;render(); },
     refreshControls: render,
     settings(value) { settled = true;enabled = value?.google === true;phoneEnabled = value?.phone === true;render(); },
-    clearCallback() { flow = null;flowError = null;signedIn = false; },
+    clearCallback() { flow = null;flowError = null;signedIn = false;linked = false; },
     // Once: whether the page's own Google sign-in (not a link to an account already signed in) just came back verified.
     takeSignedIn() { const value = signedIn;signedIn = false;return value; },
-    reset() { operationSequence++;if (busy) { busy = false;setBusy(false); }required = false;signedIn = false;phoneRequired = true;accountVisible = false;user = null;confirmedPhone = sentPhone = null;sendAfter = 0;if (section) section.hidden = true;if (node('google-linking')) node('google-linking').hidden = true;
+    // Once: whether 「Google 계정 연결」 · 「다른 Google 계정 더하기」 just came back verified on this account (2026-11-12).
+    takeLinked() { const value = linked;linked = false;return value; },
+    reset() { operationSequence++;if (busy) { busy = false;setBusy(false); }required = false;signedIn = false;linked = false;phoneRequired = true;accountVisible = false;user = null;confirmedPhone = sentPhone = null;sendAfter = 0;if (section) section.hidden = true;if (node('google-linking')) node('google-linking').hidden = true;
       for (const id of ['google-phone', 'google-phone-code', 'google-age', 'google-gender-text']) if (node(id)) node(id).value = '';
       for (const id of ['google-country', 'google-gender']) if (node(id)) node(id).value = '';
       for (const id of ['google-privacy', 'google-learning']) if (node(id)) node(id).checked = false;

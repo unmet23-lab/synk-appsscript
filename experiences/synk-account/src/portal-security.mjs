@@ -41,6 +41,13 @@ export function signInMethods(user) {
   const providers = [...new Set((Array.isArray(user?.identities) ? user.identities : []).map(row => row?.provider).filter(value => typeof value === 'string'))];
   return { email: providers.includes('email'), google: providers.includes('google'), providers };
 }
+// The addresses of the Google sign-ins on this login owner, oldest first, each once (Auth's identity_data.email).
+export function googleAddresses(user) {
+  const rows = (Array.isArray(user?.identities) ? user.identities : []).filter(row => row?.provider === 'google')
+    .map((row, index) => ({ email: typeof row?.identity_data?.email === 'string' ? row.identity_data.email.trim() : '', at: Date.parse(row?.created_at) || 0, index }))
+    .filter(row => row.email).sort((a, b) => a.at - b.at || a.index - b.index);
+  return [...new Set(rows.map(row => row.email))];
+}
 export function createPortalSecurity({ config, sdk, bounded, notice, errorMessage, rateLimit, preview = false,
   setBusy = () => {}, hostBusy = () => false, onPasswordChanged = () => {}, fetcher = (...args) => globalThis.fetch(...args) }) {
   // Both forms start folded under their buttons (10-27): the card reads as three lines — e-mail, ways, password.
@@ -84,7 +91,9 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     const methods = signInMethods(user);
     section.hidden = false;
     $('security-email').textContent = user.email || '이메일 없음';
-    $('security-methods').textContent = [methods.email ? '이메일·비밀번호' : null, methods.google ? 'Google' : null].filter(Boolean).join(' · ') || '이메일·비밀번호';
+    // One login owner may hold more than one Google (2026-11-12): the row names their addresses, so adding another shows here.
+    const googles = methods.google ? googleAddresses(user) : [];
+    $('security-methods').textContent = [methods.email ? '이메일·비밀번호' : null, methods.google ? (googles.length ? `Google(${googles.join(', ')})` : 'Google') : null].filter(Boolean).join(' · ') || '이메일·비밀번호';
     const pending = typeof user.new_email === 'string' && user.new_email ? user.new_email : '';
     $('security-pending-email').hidden = !pending;
     $('security-pending-email').textContent = pending ? `새 이메일 ${pending} 확인을 기다리고 있어요. 두 주소로 간 메일의 「변경 확인하기」를 모두 누르면 바뀌어요.` : '';

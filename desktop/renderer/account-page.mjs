@@ -88,7 +88,7 @@ export function renderAccountPage(state) {
     : `<div class="ap-actions"><strong class="ap-value">${esc(name)}</strong><button class="ghost-button" type="button" aria-label="이름 바꾸기" data-account-action="name-edit"${account && !deleting ? '' : ' disabled'}>바꾸기</button></div>`;
   const memberships = membershipLines(data);
   const profile = `${section('01', 'PROFILE', '프로필')}<div class="settings-group">`
-    + `<div class="setting-row"><div><h3>이름</h3><p>WORLD·Workspace 같은 SYNK 앱에서 보이는 이름이에요.</p></div>${nameRow}</div>`
+    + `<div class="setting-row"><div><h3>이름</h3><p>WORLD·PC 앱 같은 SYNK 앱에서 보이는 이름이에요. 회사 Workspace에는 회사 계정 이름이 보여요.</p></div>${nameRow}</div>`
     + `<div class="setting-row"><div><h3>로그인 이메일</h3><p>로그인과 SYNK ID 메일을 받는 주소예요.${identity?.newEmail ? ` 새 이메일 ${esc(identity.newEmail)} 확인을 기다리고 있어요.` : ''}</p></div><div class="ap-actions"><strong class="ap-value">${esc(email || (identityError ? '불러오지 못함' : '불러오는 중'))}</strong><button class="ghost-button" type="button" aria-label="로그인 이메일 바꾸기, 브라우저에서 열려요" data-account-action="security" data-section="email"${disabled('security')}>바꾸기<svg class="i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></button></div></div>`
     + (identity?.createdAt ? `<div class="setting-row"><div><h3>가입한 날</h3></div><span class="ap-value">${esc(dayText(identity.createdAt))}</span></div>` : '')
     + `<div class="setting-row"><div><h3>소속</h3><p>${memberships.length ? esc(memberships.join(' / ')) : '학교·회사와 연결된 소속이 없어요.'}</p></div></div></div>`;
