@@ -263,7 +263,7 @@ async function installSynkLogin(){
   // The company password form folds under #auth-company (app.js); the SYNK ID entry stands above it.
   (form.closest?.('#auth-company')||form).before(section);
   const button=section.querySelector('button'),note=section.querySelector('p');
-  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 비밀번호로 들어와 주세요.':'Google이나 SYNK ID 이메일로 들어가요. 회사 계정에 연결한 SYNK ID만 들어올 수 있어요.';if(button.disabled)document.querySelector('#auth-company')?.setAttribute('open','');button.onclick=()=>{if(typeof rememberWorkspaceLogin==='function')rememberWorkspaceLogin('synk');return beginSynkCompany('login',{},button,note);};}
+  try{synkCompanyStatus=await synkCompanyRequest('status');if(!section.isConnected)return;button.disabled=!synkCompanyStatus.enabled||(!getSynkDesktopBridge()&&!synkCompanyStatus.browserEnabled);note.textContent=button.disabled?'SYNK ID 로그인은 연결 준비 중이에요. 아래 회사 비밀번호로 들어와 주세요.':'Google이나 SYNK ID 이메일로 들어가요. 회사 계정에 연결한 SYNK ID만 들어올 수 있어요.';if(button.disabled)document.querySelector('#auth-company')?.setAttribute('open','');button.onclick=()=>beginSynkCompany('login',{},button,note);}
   catch(error){if(note.isConnected){note.textContent=error.message;document.querySelector('#auth-company')?.setAttribute('open','');}}
   void automaticallyEnterSynkCompany();
 }

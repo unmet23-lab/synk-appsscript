@@ -190,6 +190,8 @@ async function initialize() {
     state.synkUserId = me.synkUserId || null;
     state.platformUrl = me.platformUrl || null;
     state.passwordSet = me.passwordSet === true;
+    // Remember the way this browser actually came in (a SYNK session names its SYNK ID; a pressed but unfinished SYNK login records nothing).
+    if (state.user && !isDemoMode() && typeof rememberWorkspaceLogin === 'function') rememberWorkspaceLogin(me.synkUserId ? 'synk' : 'password');
     if (state.user && !isDemoMode() && typeof continueAfterLogin === 'function' && continueAfterLogin()) return;
     if (state.user) selectRequestedView();
     if (params.get('invite')) { state.authMode = 'join'; state.authToken = params.get('invite'); history.replaceState(null, '', location.pathname + location.search); }
