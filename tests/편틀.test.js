@@ -22,7 +22,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { 이번push새파일 } = require('./_git밖.js');
-const { 틀읽기, 잠금읽기, 편이름풀기, 적용편인가, 요구하나, raw줄읽기, 지난blob, blob값, 기본원천 } = require('../tools/새편.js');
+const { 틀읽기, 잠금읽기, 편이름풀기, 적용편인가, 다른틀찾기, 요구하나, raw줄읽기, 지난blob, blob값, 기본원천 } = require('../tools/새편.js');
 
 const REPO = path.resolve(__dirname, '..');
 const 원천상대 = path.relative(REPO, 기본원천).split(path.sep).join('/');
@@ -204,4 +204,21 @@ test('편 가르기 — 맨 위 편만, 브랜드는 첫 _ 앞, 날짜는 폴더
   assert.strictEqual(대상인가(편('synkbrief_다른틀_20261120'), 틀), false, '「예외」에 적힌 편은 넘긴다');
   assert.strictEqual(대상인가(편('synkbriefX_새편_20261120'), 틀), false, '브랜드 이름은 통째로 같아야 한다');
   assert.strictEqual(대상인가(편('synkbrief_날짜없는편'), 틀), false);
+  // 같은 브랜드 안에서 제 틀을 가진 줄(틀.json 「다른틀」)은 「적용」에 그 브랜드가 있어도 보지 않는다
+  const 랩 = { 적용: { LAB: '20261115' }, 예외: {}, 다른틀: { LAB_노래_: 'docs/마케팅/LAB_노래틀/틀/새편.mjs' } };
+  assert.strictEqual(대상인가(편('LAB_물개_mn_20261120'), 랩), true);
+  assert.strictEqual(대상인가(편('LAB_노래_배고파_20261120'), 랩), false, '다른 틀이 세우는 편은 이 원천과 견주지 않는다');
+});
+
+test('진짜 틀.json의 「다른틀」 — 지금 있는 LAB 노래 · 퀴즈 편이 모두 그 접두에 걸린다(LAB을 「적용」에 넣어도 그 편들은 대조 밖이다)', () => {
+  const 틀 = 틀읽기();
+  const 목록 = git(['ls-files', '-z', '--', 'docs/마케팅/*/remotion/package.json']);
+  assert.strictEqual(목록.status, 0, 목록.stderr);
+  const 편들 = String(목록.stdout).split('\0').filter(Boolean).map(편가르기).filter(Boolean);
+  // 제 틀(src/fonts.ts — src/lib 아님 · 제 tsconfig)로 세운 편: 노래 틀 · 퀴즈 틀의 새편.mjs가 찍는다
+  const 노래퀴즈 = 편들.filter((편) => /^LAB_(노래|퀴즈)_/.test(편.편));
+  for (const 편 of 노래퀴즈) assert.ok(다른틀찾기(틀, 편.편), `${편.편} — 틀.json 「다른틀」 접두에 안 걸린다(LAB을 「적용」에 넣으면 이 편이 틀 대조에 걸린다)`);
+  // 「적용」에 LAB이 있다고 치고, 문턱 뒤 날짜의 그런 편이 대조 대상이 아닌지
+  const 가정 = { ...틀, 적용: { ...틀.적용, LAB: '20261101' } };
+  assert.deepStrictEqual(노래퀴즈.filter((편) => 대상인가(편, 가정)).map((편) => 편.편), []);
 });

@@ -578,6 +578,42 @@ test('원천에 나중에 더한 틀 파일(틀.json 「더함」)은 그 날짜
   assert.throws(() => 새편.틀읽기(무.원천), /날짜 꼴/);
 });
 
+test('다른 틀이 세우는 편(틀.json 「다른틀」 — LAB 노래 · 퀴즈)은 견주지도 찍지도 않는다 — 이미 있으면 부품만 잇고, 새로 세우기 · --갱신은 거절한다', (t) => {
+  const 무 = 무대(t, { 다른틀: { LAB_노래_: 'docs/마케팅/LAB_노래틀/틀/새편.mjs' } });
+  const 틀 = 새편.틀읽기(무.원천);
+  assert.deepStrictEqual(새편.다른틀찾기(틀, 'LAB_노래_배고파_20261120'), { 접두: 'LAB_노래_', 세우는법: 'docs/마케팅/LAB_노래틀/틀/새편.mjs' });
+  assert.strictEqual(새편.다른틀찾기(틀, 'LAB_노래방에서_20261120'), null, '접두는 글자 그대로 — LAB_노래_ 로 시작해야 한다');
+  assert.strictEqual(새편.적용편인가(틀, 새편.편이름풀기('LAB_노래_배고파_20261120')), false, 'LAB이 「적용」에 있어도 다른 틀의 편은 대조 대상이 아니다');
+  assert.strictEqual(새편.적용편인가(틀, 새편.편이름풀기('LAB_배고파_20261120')), true);
+  // 아직 없는 편 — 이 명령으로 세우지 않는다(미리 보기도 거절해 잘못 세우는 길을 보이지 않는다)
+  const 새노래 = 무.편('LAB_노래_새곡_20261120');
+  assert.throws(() => 새편.편찍기(새노래, { ...무.옵션 }), /다른 틀이 세운다[\s\S]*LAB_노래틀\/틀\/새편\.mjs/);
+  assert.throws(() => 새편.편찍기(새노래, { ...무.옵션, 실행: true }), /다른 틀이 세운다/);
+  assert.strictEqual(fs.existsSync(새노래), false);
+  // 그 틀이 세운 편 — 제 tsconfig · src/fonts.ts(src/lib 아님)를 가진다. 부품만 잇고 틀 파일은 하나도 안 생기고 안 바뀐다
+  const 편 = 무.편('LAB_노래_배고파_20261120'), 프 = path.join(편, 'remotion');
+  fs.mkdirSync(path.join(프, 'src'), { recursive: true });
+  fs.copyFileSync(path.join(무.원천, 'package.json'), path.join(프, 'package.json'));
+  fs.writeFileSync(path.join(프, 'tsconfig.json'), '{ "compilerOptions": { "strict": true } }\n');
+  fs.writeFileSync(path.join(프, 'src', 'fonts.ts'), 'export const KO = "SUIT";\n');
+  fs.writeFileSync(path.join(프, 'src', 'index.ts'), "import { registerRoot } from 'remotion';\n");
+  const 앞 = 모습(프);
+  const r = 새편.편찍기(편, { ...무.옵션, 실행: true });
+  assert.deepStrictEqual([r.결과, r.갈래, r.찍음, r.덮음, r.다름, r.막힘, r.연결.상태], ['됨', '부품만', [], [], [], [], '이어짐']);
+  assert.deepStrictEqual(r.보기만, { 다름: [], 지난판: [], 없음: [] }, '다른 틀의 편은 이 원천과 견주지 않는다');
+  assert.deepStrictEqual(모습(프), 앞);
+  assert.match(새편.편글(r), /다른 틀 docs\/마케팅\/LAB_노래틀\/틀\/새편\.mjs 가 세운 편/);
+  assert.throws(() => 새편.편찍기(편, { ...무.옵션, 실행: true, 갱신: true }), /--갱신으로 덮지 않는다/);
+  assert.deepStrictEqual(모습(프), 앞, '--갱신을 줘도 그 편의 틀을 덮지 않는다');
+  // 「다른틀」 꼴
+  const 파일 = path.join(무.원천, '틀.json');
+  const 원 = JSON.parse(fs.readFileSync(파일, 'utf8'));
+  fs.writeFileSync(파일, JSON.stringify({ ...원, 다른틀: { LAB_노래_: '../밖/새편.mjs' } }));
+  assert.throws(() => 새편.틀읽기(무.원천), /「다른틀」/);
+  fs.writeFileSync(파일, JSON.stringify({ ...원, 다른틀: { 'LAB/노래': 'docs/x.mjs' } }));
+  assert.throws(() => 새편.틀읽기(무.원천), /「다른틀」/);
+});
+
 test('blob 셈 — 글 파일은 줄끝(CRLF)을 정리해 재고, 이진 파일은 그대로 잰다', () => {
   // git hash-object로 미리 잰 값: "a\nb\n" → 422c2b7a…
   assert.strictEqual(새편.blob값(Buffer.from('a\nb\n')), '422c2b7ab3b3c668038da977e4e93a5fc623169c');
