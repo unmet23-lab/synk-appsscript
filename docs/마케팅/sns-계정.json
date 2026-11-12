@@ -906,7 +906,7 @@
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -947,7 +947,7 @@
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -1070,7 +1070,7 @@
         "노래": "미정"
       },
       "postRoute": "youtube-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
