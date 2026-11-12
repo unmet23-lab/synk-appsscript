@@ -112,7 +112,14 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
             }
         }
         match failed {
-            None => return Ok(Placement { folder: path.into(), tasks: done }),
+            None => {
+                // One place only: copies left in the other place (from a registration before the
+                // installer made the folder, or before it refused) would start every run twice.
+                for other in [FOLDER, ROOT].into_iter().filter(|p| *p != path) {
+                    if let Some(old) = folder(&service, other) { for name in &done { if unsafe { old.GetTask(&BSTR::from(name.as_str())) }.is_ok() { let _ = unsafe { old.DeleteTask(&BSTR::from(name.as_str()), 0) }; } } }
+                }
+                return Ok(Placement { folder: path.into(), tasks: done });
+            }
             // A half-made set is removed before trying the next folder.
             Some(code) => { for name in &done { let _ = unsafe { target.DeleteTask(&BSTR::from(name.as_str()), 0) }; } last = code; }
         }
@@ -134,6 +141,13 @@ pub fn remove(user: &str) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+/// The places (folder paths) that hold any of this user's run tasks.
+pub fn locations(user: &str) -> Result<Vec<String>, String> {
+    let _com = Com::init()?;
+    let service = service()?;
+    Ok([FOLDER, ROOT].into_iter().filter(|path| folder(&service, path).is_some_and(|f| Trigger::ALL.iter().any(|t| unsafe { f.GetTask(&BSTR::from(task_name(user, *t).as_str())) }.is_ok()))).map(String::from).collect())
 }
 
 /// True when all four tasks exist in one place, are enabled and start this executable

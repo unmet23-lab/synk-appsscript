@@ -73,9 +73,10 @@ jobs:
           $credential = New-Object System.Management.Automation.PSCredential('swbt2', $secure)
           icacls $work /grant 'swbt2:(OI)(CI)M' | Out-Null
           $missing = @()
-          function Probe([string]$name, $as) {
+          function Probe([string]$name, $as, [switch]$keep) {
             $out = Join-Path $work "$name.json"
             $arguments = @("`"$runExe`"", "`"$out`"")
+            if ($keep) { $arguments += '--keep' }
             try {
               if ($as) { $p = Start-Process -FilePath $probe -ArgumentList $arguments -Credential $as -LoadUserProfile -WorkingDirectory $work -Wait -PassThru }
               else { $p = Start-Process -FilePath $probe -ArgumentList $arguments -WorkingDirectory $work -Wait -PassThru -NoNewWindow }
@@ -85,6 +86,8 @@ jobs:
           }
           Probe 'admin-no-folder' $null
           Probe 'user-no-folder' $credential
+          # A user registered before the installer made the folder: the tasks stay in the root for now.
+          Probe 'user-root-kept' $credential -keep
           # The installer (administrator) makes the folder and lets signed-in users add their own tasks.
           $service = New-Object -ComObject Schedule.Service
           $service.Connect()
@@ -92,6 +95,7 @@ jobs:
           $service.GetFolder('\').CreateFolder('SYNK 업무 백업', $sddl) | Out-Null
           "folder security: $($service.GetFolder('\SYNK 업무 백업').GetSecurityDescriptor(4))"
           Probe 'admin-folder' $null
+          # Registering again moves them into the folder; the root copies must be gone (locations: folder only).
           Probe 'user-folder' $credential
           if ($missing.Count) { throw "probes without a result: $($missing -join ', ')" }
       - uses: actions/upload-artifact@v4

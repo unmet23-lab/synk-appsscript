@@ -9,7 +9,9 @@ use std::path::PathBuf;
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.len() != 2 { eprintln!("usage: schedule_probe <run exe> <out.json>"); std::process::exit(64); }
+    // --keep leaves the tasks registered (to check that the next registration moves them).
+    let keep = args.len() == 3 && args[2] == "--keep";
+    if args.len() != 2 && !keep { eprintln!("usage: schedule_probe <run exe> <out.json> [--keep]"); std::process::exit(64); }
     let (exe, out) = (PathBuf::from(&args[0]), PathBuf::from(&args[1]));
     let user = std::env::var("USERNAME").unwrap_or_default();
     let sid = schedule::current_sid();
@@ -20,8 +22,11 @@ fn main() {
         let placed = schedule::register(&exe, &user, sid, &schedule::local_now());
         result["register"] = match &placed { Ok(p) => json!({ "ok": true, "folder": p.folder, "tasks": p.tasks }), Err(e) => json!({ "ok": false, "error": e }) };
         result["registeredAfter"] = json!(schedule::registered(&exe, &user).map_err(|e| e.to_string()));
-        result["remove"] = json!(schedule::remove(&user).map(|_| true).map_err(|e| e.to_string()));
-        result["registeredAfterRemove"] = json!(schedule::registered(&exe, &user).map_err(|e| e.to_string()));
+        result["locations"] = json!(schedule::locations(&user).map_err(|e| e.to_string()));
+        if !keep {
+            result["remove"] = json!(schedule::remove(&user).map(|_| true).map_err(|e| e.to_string()));
+            result["registeredAfterRemove"] = json!(schedule::registered(&exe, &user).map_err(|e| e.to_string()));
+        }
     }
     std::fs::write(&out, serde_json::to_vec_pretty(&result).unwrap()).expect("write result");
     println!("{result}");
