@@ -39,6 +39,19 @@ body{background:var(--paper);color:var(--ink)}
 .l{grid-column:1;grid-row:1/-1;display:flex;flex-direction:column;justify-content:center;gap:40px;padding:120px 56px 96px 72px;position:relative}
 .r{grid-column:2;grid-row:1/-1;background:var(--table);display:grid;place-items:center;padding:104px 48px 64px;position:relative;overflow:hidden}
 .foot{position:absolute;left:72px;right:56px;bottom:32px;font-size:13px;color:var(--ink-3)}
+/* 넓은 창 — 오른쪽 종이가 창보다 길어도(다시 깔 것 목록 · 복구 코드) 왼쪽 글과 할 일은 창 안에 붙어 있게 한다 */
+@media (min-width:901px){
+  .l{position:sticky;top:0;align-self:start;min-height:100vh}
+}
+/* 실제 앱 창(기본 1080 × 820)처럼 낮은 창 — 위아래 여백과 제목을 줄여 주 행동이 첫 화면에 들게 한다 */
+@media (min-width:901px) and (max-height:860px){
+  .l{padding-top:92px;padding-bottom:64px;gap:28px}
+  .l:has(>.foot){padding-bottom:100px}
+  .kick{margin-bottom:12px}
+  h1{font-size:48px}
+  h1.m{font-size:38px}
+  .sub{margin-top:14px;font-size:18px}
+}
 
 .kick{font-size:15px;font-weight:600;color:var(--ink-3);margin-bottom:18px}
 h1{font-size:56px;line-height:1.14;font-weight:600;letter-spacing:-.01em}
@@ -196,6 +209,9 @@ h1.m{font-size:44px;line-height:1.18}
 .selbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;padding-top:14px;border-top:1.5px solid var(--ink);font-size:15px}
 .selbar b{font-weight:600}
 .selbar span+span{font-size:13px;color:var(--ink-3)}
+.selbar{flex-wrap:wrap;row-gap:6px}
+.selbar>span:first-child{white-space:nowrap}
+.selbar .lnk{font-size:13px;margin-left:12px;white-space:nowrap}
 
 /* 되돌리기 그래프(빗금 막대 · 0부터 세는 양) */
 .chart{margin-top:34px}
@@ -346,8 +362,9 @@ const row = (k, v, cls = '') => `<div class="row ${cls}"><span>${k}</span><b cla
 const pp = (w, pair) => josa(w, pair).slice(w.length); // 조사만
 const paren = (s) => s.replace(/ ([월화수목금토일])$/, '($1)'); // '11월 17일 화' → '11월 17일(화)'
 const notes = (list) => `<div class="notes">${list.map((t) => `<p class="note">${t}</p>`).join('')}</div>`;
-// 기본 화면의 할 일 — 늘 쓰는 「파일 되살리기」는 채운 알약, 드문 「새 PC로 옮겨 오기」는 밑줄 글자
-const ACT = `<button class="btn btn-solid" type="button">파일 되살리기</button><a class="lnk" href="#move-1">새 PC로 옮겨 오기 ${ICON.rarr}</a>`;
+// 기본 화면의 할 일 — 늘 쓰는 「파일 되살리기」는 채운 알약, 드문 「새 PC로 옮겨 오기」는 밑줄 글자.
+// 백업하는 이 PC에서는 옮겨 오기를 돌리지 않으므로(설계 4.6) 「새 PC에서 할 일」 안내(move-0)를 연다
+const ACT = `<button class="btn btn-solid" type="button">파일 되살리기</button><a class="lnk" href="#move-0">새 PC로 옮겨 오기 ${ICON.rarr}</a>`;
 
 function top({ flow, step, total, right = true, back = true, extra = '' } = {}) {
   if (!flow) {
@@ -461,8 +478,8 @@ S['home-run'] = () => sp({
   head: top(),
   kick: `${D.device} · ${D.run.kind} 도는 중`,
   h1: '지금 백업하고 있습니다.',
-  sub: `창을 닫아도 계속됩니다. 그동안 되살리는 판은 오늘 <b class="num">${D.last.ko}</b> 판입니다.`,
-  act: `${ACT}<span class="hint">지금 누르면 ${josa(D.run.kind, '이/가')} 끝나는 대로 이어서 엽니다.</span>`,
+  sub: `창을 닫아도 계속됩니다. 끝나기 전까지 가장 최근 판은 오늘 <b class="num">${D.last.ko}</b> 판입니다.`,
+  act: `${ACT}<span class="hint">파일 되살리기는 지금 누르면 ${josa(D.run.kind, '이/가')} 끝나는 대로 이어서 엽니다.</span>`,
   right: runReceipt(),
 });
 
@@ -514,7 +531,7 @@ S['start-1'] = () => sp({
   kick: '설정할 것이 없습니다',
   h1: '업무 자료를<br><span class="soft">매시간 저절로 지킵니다.</span>',
   sub: 'Google 계정으로 시작하면 이 PC의 문서 · 바탕화면 · 사진과 찾아낸 작업 폴더를 암호화해 클라우드에 올립니다.',
-  act: `<button class="btn btn-solid" type="button">${ICON.google}Google로 시작</button><span class="hint">브라우저가 열리면 계정을 고르고 「계속」을 누르세요.</span>`,
+  act: `<button class="btn btn-solid" type="button">${ICON.google}Google로 시작</button><span class="hint">브라우저가 열리면 계정을 고르고 「계속」을 누르세요.</span><p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><a class="lnk" href="#start-1">복구 코드로 되살리기</a></p>`,
   more: notes([
     '<b>SYNK도 백업 내용을 열 수 없습니다.</b> 여는 열쇠는 내 Google 계정에만 맡깁니다.',
     '그래서 Google 계정에 들어갈 수 있는 사람은 백업도 열 수 있습니다. <b>Google 2단계 인증을 켜 두세요.</b>',
@@ -586,8 +603,9 @@ S.restore = () => sp({
   head: top({ flow: '파일 되살리기' }),
   kick: `가장 최근 판 · 오늘 ${D.last.ko}`,
   h1: '무엇을 되살릴까요?',
-  sub: '고른 파일은 새 폴더에 되살립니다. 원래 파일은 그대로 두고, 되살린 뒤 백업과 같은지 하나하나 확인합니다.',
-  act: '<button class="btn btn-solid" type="button">고른 3개 되살리기</button><button class="btn btn-line" type="button">전부 되살리기</button>',
+  sub: '고른 파일은 지키는 폴더 밖의 새 폴더에 되살립니다. 원래 파일은 그대로 두고, 되살린 뒤 백업과 같은지 하나하나 확인합니다.',
+  more: `${notes(['지난 24시간의 판은 모두 남아 있고, 붙들어 둔 판(찾을 수 없는 폴더 · 한꺼번에 지워지기 전)도 고를 수 있습니다.'])}<a class="lnk" href="#restore" style="margin-top:14px">다른 시각 판 고르기 ${ICON.rarr}</a>`,
+  act: `<button class="btn btn-solid" type="button">고른 3개 되살리기</button><button class="btn btn-line" type="button">전체 ${D.total.files}개 되살리기</button>`,
   right: `<section class="sheet wide" aria-label="찾기">
     <h2>찾기</h2><p class="meta num">${D.total.files}개 가운데 · 오늘 ${D.last.ko} 판</p>
     <div class="find">${ICON.search}<span>견적</span><em class="num">5개 찾음</em></div>
@@ -598,7 +616,7 @@ S.restore = () => sp({
       ['견적 양식.xlsx', '문서 › 양식', '46KB', '10월 2일', false],
       ['2026 견적 모음.zip', '프로젝트 › 보관', '212MB', '9월 30일', false],
     ].map(([n, w, s, d, on]) => `<div class="fl"><span class="cb ${on ? '' : 'off'}">${on ? ICON.check : ''}</span><span class="nm">${n}</span><span class="vl"><span>${s}</span><span>${d}</span></span><span class="ds">${w}</span></div>`).join('')}
-    <div class="selbar"><span><b class="num">3개</b> 고름 · <span class="num">6.1MB</span></span><span>새 폴더: 문서 › 되살린 파일</span></div>
+    <div class="selbar"><span><b class="num">3개</b> 고름 · <span class="num">6.1MB</span></span><span>놓을 자리: ${D.restoreTo}<a class="lnk" href="#restore">자리 바꾸기</a></span></div>
   </section>`,
 });
 
@@ -640,6 +658,31 @@ S['partial-std'] = () => partialScreen(true);
 const opt = (on, h, p, map) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${on}"><div class="oh"><h3>${h}</h3><span class="pick" aria-hidden="true">${on ? ICON.check : ''}</span></div>
     <p>${p}</p><div class="map">${map.map(([a, b]) => `<span>${a}</span><i aria-hidden="true">→</i><span class="num">${b}</span>`).join('')}</div></div>`;
 
+// 백업하는 이 PC(옛 PC)에서 「새 PC로 옮겨 오기」를 누르면 — 옮겨 오기는 새 PC에서 하고, 이 PC는 새 PC가 이어 받을 때까지 지킨다(설계 2.3 · 4.6)
+S['move-0'] = () => sp({
+  cls: 'flow',
+  head: top({ flow: '새 PC로 옮겨 오기' }),
+  kick: `${D.device} · 새 PC로 옮기기 전에`,
+  h1: '새 PC에서<br><span class="soft">세 걸음이면 됩니다.</span>', h1Cls: 'm',
+  sub: '새 PC에 업무 백업을 깔고 같은 Google 계정으로 시작하면, 이 PC의 마지막 판을 찾아 옮겨 옵니다.',
+  more: notes([
+    '옮기기 직전에 「지금 한 번 더 백업」을 누르면 방금 고친 파일까지 갑니다.',
+    '새 PC가 이어 받으면 이 PC는 백업을 쉽니다. 그 전까지는 지금처럼 매시간 지킵니다.',
+  ]),
+  act: '<button class="btn btn-solid" type="button">지금 한 번 더 백업</button><p class="alt"><span>Google 계정 없이 옮기려면</span><a class="lnk" href="#code">복구 코드 만들기</a></p>',
+  right: `<section class="sheet" aria-label="새 PC에서 할 일">
+    <h2>새 PC에서 할 일</h2><p class="meta">이 PC는 그대로 두고, 새 PC에서 합니다</p>
+    <div class="steps" style="margin-top:16px">
+      <div class="st"><span class="k num">1</span><h3>업무 백업 깔기</h3><p>처음 받은 곳에서 설치 파일을 다시 받아 새 PC에서 엽니다.</p></div>
+      <div class="st"><span class="k num">2</span><h3>같은 Google 계정으로 시작</h3><p class="num">${D.account}</p></div>
+      <div class="st"><span class="k num">3</span><h3>「이 PC로 옮겨 오기」 누르기</h3><p>놓을 자리 · 원본과 대조 · 다시 깔 프로그램까지 앱이 차례로 안내합니다.</p></div>
+    </div>
+    <div class="hr"></div>
+    ${row('옮겨 올 것', `${D.total.files}개 · ${D.total.size}`)}
+    ${row('다시 깔 프로그램', `${D.programs.length}개 찾아 둠`)}
+  </section>`,
+});
+
 S['move-1'] = () => sp({
   cls: 'flow',
   head: top({ flow: '새 PC로 옮겨 오기', step: 1, total: 4 }),
@@ -650,7 +693,7 @@ S['move-1'] = () => sp({
     '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.',
     `약 <b class="num">${D.move.waitMin}분</b> 걸립니다(옛 노트북의 회선 속도로 어림). 끊겨도 멈춘 곳부터 잇습니다.`,
   ]),
-  act: '<button class="btn btn-solid" type="button">이 자리로 옮겨 오기</button><p class="alt"><span>같은 PC를 다시 깔았나요?</span><a class="lnk" href="#move-1">되살리지 않고 이어서 백업</a></p>',
+  act: '<button class="btn btn-solid" type="button">이 자리로 옮겨 오기</button><p class="alt"><span>파일이 이 PC에 그대로 남아 있나요?</span><a class="lnk" href="#move-1">되살리지 않고 이어서 백업</a></p><span class="hint">Windows를 새로 깔아 파일이 비었거나 일부만 남았으면 누르지 마세요. 「이 자리로 옮겨 오기」로 채웁니다.</span>',
   right: `<div class="opts" role="radiogroup" aria-label="놓을 자리">
     ${opt(true, '원래 자리', '이 PC의 문서 · 바탕화면 · 사진은 OneDrive 밖이라 그대로 놓습니다.', [['문서', '이 PC의 문서'], ['바탕화면', '이 PC의 바탕화면'], ['사진', '이 PC의 사진'], ['D:\\Projects', 'D:\\Projects']])}
     ${opt(false, 'OneDrive 밖 새 폴더', '문서 폴더가 OneDrive 안에 있는 PC에 권합니다.', [['폴더 네 곳', D.move.newFolder]])}
@@ -691,7 +734,7 @@ S['move-3'] = () => sp({
     `「(복구본)」 <b class="num">${D.move.sideBySide}</b>개는 이 PC에 같은 이름의 다른 파일이 있어 나란히 두었습니다.`,
     `저절로 실행되는 자리의 파일 <b class="num">${D.move.autorun}</b>개는 원래 자리 대신 「따로 둔 폴더」에 놓았습니다. 옛 PC에 나쁜 프로그램이 있었다면 새 PC에서 저절로 실행되지 않게 하려는 것입니다.`,
   ]),
-  act: `<button class="btn btn-solid" type="button">다시 깔 프로그램 보기</button><a class="lnk" href="#move-3">나란히 둔 ${D.move.sideBySide}개 보기</a>`,
+  act: `<button class="btn btn-solid" type="button">다음 · 백업 켜기</button><a class="lnk" href="#move-3">나란히 둔 ${D.move.sideBySide}개 보기</a><span class="hint">아직 이 PC는 백업하지 않습니다. 다음 화면에서 옛 노트북 연결을 끊고 자동 백업을 켭니다.</span>`,
   right: receipt({
     title: '옮겨 오기 확인서', sub: `${D.move.from} → ${D.newDevice} · ${D.todayDots}`, ghosts: false,
     st: stamp('대조 끝', 'ok', '11.13', ['옮겨 오기', '원본과 같음']),
@@ -758,10 +801,10 @@ S['undo-2'] = () => sp({
   cls: 'flow',
   head: top({ flow: '사고가 났을 때 되돌리기', step: 2, total: 3 }),
   kick: '미리 보기',
-  h1: `${D.undo.versionKo} 판으로<br><span class="soft">돌아갑니다.</span>`, h1Cls: 'm',
-  sub: '되돌리는 것은 클라우드 백업입니다. 이 PC의 파일은 바뀌지 않고, 필요한 파일은 다음 화면에서 새 폴더로 꺼냅니다.',
+  h1: `${D.undo.versionKo}로<br><span class="soft">되돌립니다.</span>`, h1Cls: 'm',
+  sub: '클라우드 백업만 되돌립니다. 이 PC의 파일은 그대로 둡니다.',
   more: `<div class="steps" style="max-width:33em">
-    <div class="st"><span class="k num">1</span><h3>이 계정의 모든 기기 연결을 새 것으로 바꿉니다</h3><p>이 PC만 새 연결을 받습니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다.</p></div>
+    <div class="st"><span class="k num">1</span><h3>이 계정의 모든 기기 연결을 새 것으로 바꿉니다</h3><p>이 PC만 새 연결을 받습니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다. 전에 받은 복구 코드도 쓸 수 없게 되어, 끝나면 새로 만듭니다.</p></div>
     <div class="st"><span class="k num">2</span><h3>그 시각의 백업을 다시 보이게 합니다</h3><p>지우는 것은 없습니다. 도중에 끊겨도 다시 누르면 이어서 합니다.</p></div>
     <div class="st"><span class="k num">3</span><h3>확인을 마칠 때까지 자동 백업과 정리를 멈춥니다</h3><p>요청과 실행은 이 계정의 모든 기기와 메일로 알립니다.</p></div>
   </div>`,
@@ -784,18 +827,18 @@ S['undo-2'] = () => sp({
 S['undo-3'] = () => sp({
   cls: 'flow',
   head: top({ flow: '사고가 났을 때 되돌리기', step: 3, total: 3, back: false }),
-  kick: '되돌렸습니다',
+  kick: '되돌렸습니다 · 자동 백업 멈춤',
   h1: `${D.undo.versionKo}로<br><span class="soft">되돌렸습니다.</span>`, h1Cls: 'm',
   sub: '자동 백업과 정리를 멈춰 두었습니다. 먼저 필요한 파일을 새 폴더로 꺼내 확인하세요.',
   more: notes([
     '<b>파일 꺼내기</b>는 되돌린 판에서 필요한 파일을 새 폴더로 꺼냅니다. 이 PC의 파일은 건드리지 않습니다.',
-    '<b>여기서부터 계속</b>은 이 PC의 지금 파일로 이어 백업합니다. 망가진 파일이 남아 있으면 먼저 꺼내세요.',
+    '<b>여기서부터 계속</b>은 이 PC의 지금 파일로 다시 매시간 백업합니다. 지키는 폴더에 망가진 파일이 남아 있으면, 꺼낸 파일로 바꿔 놓은 뒤에 누르세요.',
     `<b>되돌리기 취소</b>는 되돌리기 직전(${D.undo.cancelKo})으로 다시 돌립니다.`,
   ]),
   act: '<button class="btn btn-solid" type="button">파일 꺼내기</button><button class="btn btn-line" type="button">여기서부터 계속</button><a class="lnk" href="#undo-3">되돌리기 취소</a>',
   right: receipt({
     title: '되돌리기 확인서', ghosts: false,
-    st: stamp('되돌림', 'ok', '11.13', ['사고 되돌리기', '지운 것 없음']),
+    st: stamp('되돌림', 'warn', '11.13', ['사고 되돌리기', '지운 것 없음']),
     body: `<div class="hr"></div>
     ${row('되돌린 판', D.undo.versionH24)}
     ${row('파일', `${D.undo.files}개`)}
@@ -805,13 +848,14 @@ S['undo-3'] = () => sp({
     ${row('자동 백업', '고를 때까지 멈춤')}
     <div class="hr"></div>
     <p class="pf-k">다음 할 일</p>
-    <p class="pf-t" style="margin-top:4px">새 복구 코드를 만들어 두세요. 전에 받은 코드는 이제 쓸 수 없습니다.</p>`,
+    <p class="pf-t" style="margin-top:4px">새 복구 코드를 만들어 두세요. 전에 받은 코드는 이제 쓸 수 없습니다.</p>
+    <div class="lk" style="margin:8px 0 6px"><a class="lnk" href="#code">새 복구 코드 만들기 ${ICON.rarr}</a></div>`,
   }),
 });
 
 S.lost = () => sp({
   cls: 'flow',
-  head: top({ flow: '분실 신고' }),
+  head: top({ flow: '분실 신고', step: 1, total: 2 }),
   kick: `${D.newDevice}에서`,
   h1: `「${D.device}」${pp(D.device, '을/를')}<br><span class="soft">분실 신고합니다.</span>`, h1Cls: 'm',
   sub: '신고하는 즉시 그 노트북의 백업 연결을 끊습니다. 파일과 백업은 지워지지 않습니다.',
@@ -822,11 +866,38 @@ S.lost = () => sp({
     <div class="steps" style="margin-top:16px">
       <div class="st now"><span class="k num">1</span><h3>Google로 확인</h3><p>본인인지 Google 로그인으로 한 번 더 확인합니다.</p></div>
       <div class="st"><span class="k num">2</span><h3>그 노트북의 백업 연결 끊기</h3><p>SYNK 서버가 바로 합니다.</p></div>
-      <div class="st"><span class="k num">3</span><h3>Google 계정에서 그 노트북을 로그아웃하고 「업무 백업」 접근 지우기</h3><p>잃어버린 노트북에 남은 Google 로그인으로 복구 정보를 계속 읽을 수 있어서입니다.</p>
-        <div class="lk"><a class="lnk" href="#lost">Google 기기 관리 ${ICON.ext}</a><a class="lnk" href="#lost">연결된 앱 ${ICON.ext}</a></div></div>
+      <div class="st"><span class="k num">3</span><h3>Google 계정에서 그 노트북을 로그아웃하고 「업무 백업」 접근 지우기</h3><p>잃어버린 노트북에 남은 Google 로그인으로 복구 정보를 계속 읽을 수 있어서입니다. 신고한 뒤 다음 화면에서 합니다.</p></div>
       <div class="st"><span class="k num">4</span><h3>이 PC에서 다시 로그인</h3><p>새 복구 정보를 맡기고, 새 복구 코드를 만듭니다.</p></div>
     </div>
   </section>`,
+});
+
+// 신고 직후 — 남은 Google 걸음(설계 2.4의 3 · 4). 「업무 백업」 접근을 지우면 이 PC의 Google 토큰도 끊기고, 앱은 그것으로 3이 끝났음을 안다
+S['lost-2'] = () => sp({
+  cls: 'flow',
+  head: top({ flow: '분실 신고', step: 2, total: 2, back: false }),
+  kick: `${D.newDevice} · 신고 끝, 남은 걸음 둘`,
+  h1: 'Google에서도<br><span class="soft">그 노트북을 내보내세요.</span>', h1Cls: 'm',
+  sub: '백업 연결은 끊었습니다. 그 노트북에 남은 Google 로그인도 끊어야 합니다.',
+  more: `<div class="steps" style="max-width:33em">
+    <div class="st now"><span class="k num">1</span><h3>Google 기기 관리에서 「${D.device}」 로그아웃</h3><p>훔쳐 갔을 수 있으면 Google 비밀번호도 바꾸세요.</p></div>
+    <div class="st now"><span class="k num">2</span><h3>연결된 앱에서 「업무 백업」 접근 지우기</h3><p>이 PC도 함께 로그아웃되고, 앱은 그것으로 다 지웠는지 압니다.</p></div>
+  </div>`,
+  act: `<button class="btn btn-solid" type="button">Google 기기 관리 열기 ${ICON.ext}</button><button class="btn btn-line" type="button">연결된 앱 열기 ${ICON.ext}</button><span class="hint">둘 다 마치면 다시 로그인 · 새 복구 코드 만들기로 넘어갑니다. 그 전에는 새 복구 정보를 맡기지 않습니다.</span>`,
+  right: receipt({
+    title: '분실 신고 확인서', ghosts: false,
+    st: stamp('신고', 'warn', '11.13', ['분실 신고', 'Google 걸음 남음']),
+    body: `<div class="hr"></div>
+    ${row('신고한 때', D.lost.ko)}
+    ${row('신고한 곳', D.newDevice)}
+    <div class="hr"></div>
+    ${row('백업 연결', '끊음')}
+    ${row('전에 받은 복구 코드', '쓸 수 없음')}
+    ${row('파일과 백업', '그대로')}
+    <div class="hr"></div>
+    ${row('Google 로그인 끊기', '기다림')}
+    ${row('새 복구 코드', '그다음')}`,
+  }),
 });
 
 S.code = () => sp({
@@ -841,7 +912,7 @@ S.code = () => sp({
     <div class="ttl"><h2>업무 백업 · 복구 코드</h2>${MARK}</div>
     <p class="meta">만든 날 <span class="num">2026. 11. 13.</span> · ${D.device} · ${D.account}</p>
     <div class="cg">${D.codeGroups.map((g) => `<span>${g}</span>`).join('')}</div>
-    <p class="use">새 PC에서 업무 백업을 깔고 <b>「복구 코드로 되살리기」</b>를 누른 뒤 이 글자를 그대로 넣으세요. Google 계정 없이 열립니다.</p>
+    <p class="use">새 PC에서 업무 백업을 깔고 첫 화면의 <b>「복구 코드로 되살리기」</b>를 누른 뒤, USB에 저장한 파일을 열거나 이 글자를 그대로 넣으세요. Google 계정 없이 열립니다.</p>
     <p class="cut">분실 신고나 사고 되돌리기를 하면 이 코드는 쓸 수 없게 되고, 새 코드를 다시 권해 드립니다.</p>
   </article>`,
 });
@@ -850,10 +921,11 @@ S.web = () => `<div class="web">
   <div class="wl">
     <div class="wtop">${MARK}<span>${D.app}</span></div>
     <div><p class="kick">새 기기 연결</p><h1 class="m">이 계정에<br>새 기기가 연결됐습니다.</h1>
-      <p class="sub">내가 한 일이 아니면 바로 끊으세요. 끊으면 그 기기는 백업을 읽지도 올리지도 못합니다.</p></div>
+      <p class="sub">내가 한 일이 아니면 바로 끊으세요. 끊으면 SYNK 서버가 그 기기의 백업 연결을 지우고, 전에 받은 복구 코드도 쓸 수 없게 합니다.</p></div>
     <div class="act"><button class="btn btn-solid" type="button">${ICON.google}Google로 확인하고 끊기</button><button class="btn btn-line" type="button">내가 한 일이 맞음</button>
       <span class="hint">이 링크만으로는 끊지 않습니다. 계정 주인인지 Google 로그인으로 확인합니다.</span></div>
-    ${notes(['그 기기를 이은 사람은 내 Google 계정에 들어간 사람입니다. 내가 한 일이 아니면 <b>Google 비밀번호도 바꾸세요.</b>'])}
+    <div class="box"><b>끊은 뒤 Google에서도 내보내세요</b>그 기기를 이은 사람은 내 Google 계정에 들어간 사람입니다. Google 비밀번호를 바꾸고, 그 기기를 로그아웃한 뒤 「업무 백업」 접근을 지우세요. 그대로 두면 새로 맡길 복구 정보까지 읽을 수 있습니다. 「${D.device}」${pp(D.device, '은/는')} 다시 로그인한 뒤 새 복구 코드를 권합니다.
+      <div class="lk" style="margin-top:10px"><a class="lnk" href="#web">Google 기기 관리 ${ICON.ext}</a><a class="lnk" href="#web">연결된 앱 ${ICON.ext}</a></div></div>
     <a class="lnk" href="#lost">기기를 잃어버렸나요? 분실 신고 ${ICON.rarr}</a>
   </div>
   <div class="wr"><div class="dev">${receipt({
@@ -882,4 +954,4 @@ S.drawer = () => `${S.home()}<div class="dim"></div><aside class="drawer" aria-l
   ${DRAWER.map((g) => `<section class="dg"><h3>${g.group}</h3>${g.rows.map((r) => `<div class="dr"><span class="nm">${r.name}${r.nudge ? '<i aria-label="권함"></i>' : ''}</span><span class="vl">${r.value}</span>${r.act ? `<a class="lnk" href="#${r.to || 'drawer'}">${r.act}</a>` : ''}</div>`).join('')}</section>`).join('')}
 </aside>`;
 
-export const screens = SCREENS.map(([id]) => ({ id, html: S[id]() }));
+export const screens = SCREENS.filter(([id]) => S[id]).map(([id]) => ({ id, html: S[id]() }));

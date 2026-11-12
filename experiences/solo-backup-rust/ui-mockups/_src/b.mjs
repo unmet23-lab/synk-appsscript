@@ -782,4 +782,5 @@ S.drawer = () => `${S.home()}<div class="dim"></div><aside class="drawer" aria-l
   ${DRAWER.map((g) => `<section class="dg"><h3>${g.group}</h3>${g.rows.map((r) => `<div class="dr"><span class="nm">${r.name}${r.nudge ? '<i aria-label="권함"></i>' : ''}</span><span class="vl">${r.value}</span>${r.act ? `<a class="lnk" href="#${r.to || 'drawer'}">${r.act}</a>` : ''}</div>`).join('')}</section>`).join('')}
 </aside>`;
 
-export const screens = SCREENS.map(([id]) => ({ id, html: S[id]() }));
+// B는 11-13 고를 때 판의 기록이다 — 그 뒤 A에만 더한 화면(move-0 · lost-2)은 원고에 없어 굽지 않는다
+export const screens = SCREENS.filter(([id]) => S[id]).map(([id]) => ({ id, html: S[id]() }));

@@ -74,7 +74,11 @@ const SCRIPT = `
 `;
 
 export function page({ name, lang = 'ko', css, screens, bodyClass = '' }) {
-  const list = SCREENS.map(([id, t], i) => `<a href="#${id}"><b>${String(i + 1).padStart(2, '0')}</b>${t}</a>`).join('');
+  // 목록은 그 시안이 실제로 가진 화면만(시안마다 화면 수가 다를 수 있다)
+  const list = screens.map((s, i) => {
+    const meta = SCREENS.find(([id]) => id === s.id);
+    return `<a href="#${s.id}"><b>${String(i + 1).padStart(2, '0')}</b>${meta ? meta[1] : s.id}</a>`;
+  }).join('');
   const body = screens.map((s) => {
     const meta = SCREENS.find(([id]) => id === s.id);
     return `<section class="scr ${s.cls || ''}" id="s-${s.id}" data-title="${meta ? meta[1] : s.id}">${s.html}</section>`;
@@ -90,7 +94,7 @@ export function page({ name, lang = 'ko', css, screens, bodyClass = '' }) {
 </head>
 <body class="${bodyClass}" data-name="${name}">
 ${body}
-<button class="idx-btn" type="button">화면 ${SCREENS.length}</button>
+<button class="idx-btn" type="button">화면 ${screens.length}</button>
 <nav class="idx" hidden aria-label="시안 화면 목록">${list}</nav>
 <script>${SCRIPT}</script>
 </body>

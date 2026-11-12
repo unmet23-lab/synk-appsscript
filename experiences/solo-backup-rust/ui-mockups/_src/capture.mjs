@@ -36,6 +36,8 @@ for (const key of keys.length ? keys : ['a', 'b']) {
     for (const [id] of SCREENS) {
       if (only && !only.includes(id)) continue;
       await pg.goto(pathToFileURL(file).href + `?cap#${id}`);
+      // 그 시안에 없는 화면(A에만 더한 move-0 · lost-2)은 찍지 않는다 — 없으면 기본 화면으로 떨어져 잘못 찍힌다
+      if (!(await pg.evaluate((s) => !!document.getElementById('s-' + s), id))) continue;
       await pg.evaluate(() => document.fonts.ready);
       await pg.waitForTimeout(80);
       const m = await pg.evaluate(() => {
