@@ -1,4 +1,4 @@
-import {esc} from './api.mjs';
+import {esc,dropSrcset} from './api.mjs';
 import {t,k,locale,intlLocale,htmlLang} from './i18n.mjs';
 import {localeMenu,offeredLocales,LOCALE_EVENT} from './locale-menu.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
@@ -398,7 +398,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   function setChip(el,on){el.classList.toggle('is-on',on);el.setAttribute('aria-pressed',on?'true':'false');play(el,[{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:220});}
   // 그림 바꾸기(사람 · 업종 그림): 새 그림을 다 받은 뒤 srcset · 꼴(data-shot) · src를 한 번에 바꾼다 — 브라우저는 새 그림이 올 때까지 옛 그림을 그리므로,
   // 먼저 바꾸면 옛 사람 사진이 작품 그림의 꼴(검정 여백)로 줄어 보인다. 받는 사이 다른 그림을 고르면 앞 바꾸기는 버리고, 지금 그림으로 되돌아오면 흐림만 걷는다.
-  function crossfade(img,src,set=''){if(!img)return;const pending=swaps.get(img);if(img.getAttribute('src')===src){if(pending){swaps.delete(img);play(img,[{opacity:.25},{opacity:1}],{duration:300});}return;}if(pending?.src===src)return;const token={src};swaps.set(img,token);const next=new Image();if(set){next.sizes=SCENE_SIZES;next.srcset=set;}next.src=src;Promise.all([play(img,[{opacity:1},{opacity:.25}],{duration:120}).finished,next.decode?next.decode().catch(()=>{}):null]).then(()=>{if(swaps.get(img)!==token)return;swaps.delete(img);if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else{img.removeAttribute('srcset');img.removeAttribute('sizes');}const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.toggleAttribute('data-cap',!set&&!shape);img.src=src;play(img,[{opacity:.25,transform:'scale(1.035)'},{opacity:1,transform:'scale(1)'}],{duration:620});});}
+  function crossfade(img,src,set=''){if(!img)return;const pending=swaps.get(img);if(img.getAttribute('src')===src){if(pending){swaps.delete(img);play(img,[{opacity:.25},{opacity:1}],{duration:300});}return;}if(pending?.src===src)return;const token={src};swaps.set(img,token);const next=new Image();if(set){next.sizes=SCENE_SIZES;next.srcset=set;}next.src=src;Promise.all([play(img,[{opacity:1},{opacity:.25}],{duration:120}).finished,next.decode?next.decode().catch(()=>{}):null]).then(()=>{if(swaps.get(img)!==token)return;swaps.delete(img);if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else dropSrcset(img);const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.toggleAttribute('data-cap',!set&&!shape);img.src=src;play(img,[{opacity:.25,transform:'scale(1.035)'},{opacity:1,transform:'scale(1)'}],{duration:620});});}
 
   const actions={
     exit(event){event.preventDefault();onExit?.();},

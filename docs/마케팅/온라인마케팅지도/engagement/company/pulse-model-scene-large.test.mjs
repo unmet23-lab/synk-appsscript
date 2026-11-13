@@ -37,7 +37,7 @@ test('the big portrait offers the large cut through srcset, and only for model s
   assert.equal(SCENE_SIZES,'(max-width:820px) max(68.1vw,34vh), (max-aspect-ratio:1/1) max(68.1vw,34vh), max(22.1vw,calc(40.8vw - 277px),54.8vh)');
   const flow=readFileSync(new URL('./public/pulse-app/request-flow.mjs',import.meta.url),'utf8');
   assert.ok(flow.includes("const next=new Image();if(set){next.sizes=SCENE_SIZES;next.srcset=set;}next.src=src;"),'the next photo is fetched with the same set first, so the swap below happens once it is in');
-  assert.ok(flow.includes("if(swaps.get(img)!==token)return;swaps.delete(img);if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else{img.removeAttribute('srcset');img.removeAttribute('sizes');}const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.toggleAttribute('data-cap',!set&&!shape);img.src=src;"),'swapping the photo swaps (or drops) its srcset, its shape and its pixel cap before the src — srcset wins over src, and the cap is on when the new picture loads');
+  assert.ok(flow.includes("if(swaps.get(img)!==token)return;swaps.delete(img);if(set){img.sizes=SCENE_SIZES;img.srcset=set;}else dropSrcset(img);const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.toggleAttribute('data-cap',!set&&!shape);img.src=src;"),'swapping the photo swaps (or drops) its srcset, its shape and its pixel cap before the src — srcset wins over src, and the cap is on when the new picture loads');
   assert.ok(flow.includes("crossfade($('[data-portrait]'),choiceShot(a),sceneSet(choiceShot(a)))"),'「recommend」 shows a work poster (or the fashion model scene) with its own set');
 });
 

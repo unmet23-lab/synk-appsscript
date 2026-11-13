@@ -10,7 +10,7 @@ import {readFileSync} from 'node:fs';
 globalThis.location??=new URL('http://localhost/pulse-app/');
 const appDir=new URL('./public/pulse-app/',import.meta.url);
 const read=name=>readFileSync(new URL(name,appDir),'utf8');
-const {capPixels,watchPixelCaps}=await import('./public/pulse-app/api.mjs');
+const {capPixels,watchPixelCaps,dropSrcset}=await import('./public/pulse-app/api.mjs');
 const {emptyAnswers,sceneSet}=await import('./public/pulse-app/request-data.mjs');
 const {roomModel}=await import('./public/pulse-app/room-view.mjs');
 const {roomView,ROOM_SCENE_SIZES}=await import('./public/pulse-app/film-views.mjs');
@@ -18,22 +18,25 @@ const {entryView,HOME_SCENE_SIZES}=await import('./public/pulse-app/film-home.mj
 const {myModelsView}=await import('./public/pulse-app/my-models.mjs');
 
 const fakeImg=({currentSrc,srcset=null,naturalWidth,naturalHeight})=>{
-  const props={};
-  return {tagName:'IMG',currentSrc,src:currentSrc,naturalWidth,naturalHeight,complete:true,ownerDocument:{baseURI:'http://localhost/pulse-app/index.html'},props,
-    getAttribute:name=>name==='srcset'?srcset:null,hasAttribute:name=>name==='data-cap',style:{setProperty(key,value){props[key]=value;}}};
+  const props={},img={tagName:'IMG',currentSrc,src:currentSrc,srcset,naturalWidth,naturalHeight,complete:true,ownerDocument:{baseURI:'http://localhost/pulse-app/index.html'},props,
+    getAttribute:name=>name==='srcset'?img.srcset:null,hasAttribute:name=>name==='data-cap'||(name==='srcset'&&img.srcset!=null),style:{setProperty(key,value){props[key]=value;}}};
+  return img;
 };
 
-// 파일을 새로 열어 재는 길(srcset 없는 그림)은 Image가 있어야 한다 — 주소마다 실제 크기를 돌려주는 흉내.
+// 파일을 새로 열어 재는 길(앞서 srcset을 그린 img)은 Image가 있어야 한다 — 주소마다 실제 크기를 돌려주는 흉내. 몇 번 열었는지 센다.
 const FILES=new Map([['blob:http://localhost/1',[1080,1350]],['blob:http://localhost/2',[640,800]]]);
-globalThis.Image=class{set src(value){const size=FILES.get(value);if(size){[this.naturalWidth,this.naturalHeight]=size;this.onload?.();}}};
+let opened=0;
+globalThis.Image=class{constructor(){opened++;}set src(value){const size=FILES.get(value);if(size){[this.naturalWidth,this.naturalHeight]=size;this.onload?.();}}};
 
 test('capPixels writes the real pixels of the file the browser took, also out of a srcset where naturalWidth is divided by the density',()=>{
-  const own=fakeImg({currentSrc:'blob:http://localhost/1',naturalWidth:1080,naturalHeight:1350});
-  capPixels(own);assert.deepEqual(own.props,{'--cap-w':'1080px','--cap-h':'1350px'},'a picture without srcset: the file opened afresh');
+  // srcset을 그린 적 없는 img는 naturalWidth가 실제 화소다 — 파일을 다시 열지 않는다(서버 그림은 no-store라 다시 받을 수도 있었다, Fable 5.2 -b P3).
+  opened=0;const own=fakeImg({currentSrc:'blob:http://localhost/1',naturalWidth:1080,naturalHeight:1350});
+  capPixels(own);assert.deepEqual(own.props,{'--cap-w':'1080px','--cap-h':'1350px'},'a picture that never drew a srcset: its own naturalWidth');
+  assert.equal(opened,0,'and the file is not opened a second time');
   // 같은 img가 앞서 srcset 그림을 그렸다가 src만 바꾸면 크롬은 naturalWidth를 앞 판의 밀도로 나눈 채 준다(Fable 5.2 F2 — 640이 328) — 그 값을 믿지 않는다.
-  const back=fakeImg({currentSrc:'blob:http://localhost/2',naturalWidth:328,naturalHeight:410});
+  const back=Object.assign(fakeImg({currentSrc:'blob:http://localhost/2',naturalWidth:328,naturalHeight:410}),{__drewSet:true});
   capPixels(back);assert.deepEqual(back.props,{'--cap-w':'640px','--cap-h':'800px'},'a picture that had a srcset before keeps its real size');
-  assert.ok(read('api.mjs').includes("  const probe=new Image();probe.onload=()=>put(probe.naturalWidth,probe.naturalHeight);probe.src=src;\r\n}")||read('api.mjs').includes("  const probe=new Image();probe.onload=()=>put(probe.naturalWidth,probe.naturalHeight);probe.src=src;\n}"),'every picture without a usable descriptor is measured from the file itself');
+  assert.equal(opened,1,'only that one is measured from the file itself');
   const set='./assets/request/model-scene-f02.webp 960w, ./assets/request/model-scene-f02-l.webp 1600w';
   const large=fakeImg({currentSrc:'http://localhost/pulse-app/assets/request/model-scene-f02-l.webp',srcset:set,naturalWidth:800,naturalHeight:993});
   capPixels(large);assert.deepEqual(large.props,{'--cap-w':'1600px','--cap-h':'1986px'},'the large cut is 1600 wide whatever density the browser chose it at');
@@ -49,6 +52,23 @@ test('one capture listener on the document measures every data-cap picture as it
   const img=fakeImg({currentSrc:'blob:http://localhost/2',naturalWidth:640,naturalHeight:800});listeners[0].fn({target:img});
   assert.deepEqual(img.props,{'--cap-w':'640px','--cap-h':'800px'});
   const plain={...fakeImg({currentSrc:'x',naturalWidth:1,naturalHeight:1}),hasAttribute:()=>false};listeners[0].fn({target:plain});assert.deepEqual(plain.props,{},'pictures without data-cap are left alone');
+  // 큰 칸 그림 바꾸기의 길: data-cap 없이 srcset으로 받은 img를 표시해 두었다가, srcset을 떼고 손님 사진으로 바꾸면 그 파일을 새로 열어 잰다.
+  const big=fakeImg({currentSrc:'http://localhost/pulse-app/assets/request/model-scene-f02-l.webp',srcset:'./assets/request/model-scene-f02.webp 960w, ./assets/request/model-scene-f02-l.webp 1600w',naturalWidth:800,naturalHeight:993});
+  big.hasAttribute=name=>name==='srcset'&&big.srcset!=null;listeners[0].fn({target:big});
+  assert.equal(big.__drewSet,true,'an img that loaded a srcset is marked even without data-cap');assert.deepEqual(big.props,{},'and is not capped');
+  Object.assign(big,{srcset:null,currentSrc:'blob:http://localhost/2',src:'blob:http://localhost/2',naturalWidth:328,naturalHeight:410,hasAttribute:name=>name==='data-cap'});
+  opened=0;listeners[0].fn({target:big});
+  assert.deepEqual(big.props,{'--cap-w':'640px','--cap-h':'800px'},'after the srcset is taken off, the stale naturalWidth is not trusted');assert.equal(opened,1);
+  // 밀도는 srcset 판을 고를 때 남는다 — 그 판이 아직 오는 중이거나 못 받아 load가 없었어도 떼는 순간(dropSrcset) 표시한다(11-13 크롬 실측: 손님 사진 1080이 607로).
+  const late=fakeImg({currentSrc:'http://localhost/pulse-app/assets/request/model-scene-f02-l.webp',srcset:'./assets/request/model-scene-f02.webp 960w, ./assets/request/model-scene-f02-l.webp 1600w',naturalWidth:0,naturalHeight:0});
+  const gone=[];late.removeAttribute=name=>{gone.push(name);if(name==='srcset')late.srcset=null;};
+  dropSrcset(late);assert.equal(late.__drewSet,true,'marked when the srcset is taken off, with no load before');assert.deepEqual(gone,['srcset','sizes']);
+  Object.assign(late,{currentSrc:'blob:http://localhost/1',src:'blob:http://localhost/1',naturalWidth:607,naturalHeight:759});
+  opened=0;listeners[0].fn({target:late});
+  assert.deepEqual(late.props,{'--cap-w':'1080px','--cap-h':'1350px'},'the customer photo keeps its real 1080 although naturalWidth says 607');assert.equal(opened,1);
+  const plainDrop=fakeImg({currentSrc:'blob:http://localhost/2',naturalWidth:640,naturalHeight:800});plainDrop.removeAttribute=()=>{};
+  dropSrcset(plainDrop);assert.equal(plainDrop.__drewSet,undefined,'an img without a srcset is not marked');
+  assert.ok(read('request-flow.mjs').includes("else dropSrcset(img);"),'the big portrait takes its srcset off through dropSrcset');
   assert.doesNotThrow(()=>watchPixelCaps(undefined));
   assert.ok(read('api.mjs').includes('\nwatchPixelCaps();'),'api.mjs starts listening when it is read — every screen module reads it before it draws');
 });
