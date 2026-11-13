@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 136);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 42, linux: 12, local: 82 });
+  assert.equal(check(root), 137);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 43, linux: 12, local: 82 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -86,11 +86,12 @@ test('S116 runs on the Windows host with the pinned restic release, never by ski
   assert.match(workflow, /SOLO_BACKUP_RESTIC: \$\{\{ runner\.os == 'Windows' && format\('\{0\}\\solo-backup-restic\\restic_0\.19\.1_windows_amd64\.exe', runner\.temp\)/);
   assert.ok(fs.readFileSync(path.join(root, row.file), 'utf8').includes(`test('${row.name}'`), 'the registered name must stay the test name');
 });
-test('S129–S136 run on the Windows host with the forked engine, the run executable and the planner built from these sources, never by skipping', () => {
+test('S129–S137 run on the Windows host with the forked engine, the run executable and the planner built from these sources, never by skipping', () => {
   // 11-10 `26d6e9e72` (S135) and the 11-12–13 work backup Stage 1 fork (S129–S134) added these without registering them;
   // wide-tests skipped them on Linux and its experiences bundle stayed red. S136 is 0.5.0's Windows path-rule test, which
-  // failed on Linux there (11-13) — skipped off Windows like the fork's copy (S130), and run here.
-  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
+  // failed on Linux there (11-13) — skipped off Windows like the fork's copy (S130), and run here. S137 (11-13 `52d029ece`)
+  // put `skip:` on the next line, which the one-line scan did not see.
+  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /npm ci --prefix experiences\/solo-backup-rust\/engine /);
   // The executables are cached only under a key of every tracked file they are built from; a miss builds them here.
@@ -103,17 +104,17 @@ test('S129–S136 run on the Windows host with the forked engine, the run execut
   }
   assert.ok(workflow.includes(`SWB_RECOMMENDED_RESTIC: \${{ runner.os == 'Windows' && format('{0}\\solo-backup-restic\\restic_0.19.1_windows_amd64.exe', runner.temp) || '' }}`));
   // Every top-level test in the fork that can skip is one of these — on the PC nothing skips, so only this scan sees it before the push.
-  const declaration = /^test\((['"])((?:\\.|(?!\1).)*)\1\s*,\s*\{[^}\n]*\bskip\s*:/;
+  // The options object may span lines (`{` here, `skip:` on the next).
+  const declaration = /^test\((['"])((?:\\.|(?!\1).)*)\1\s*,\s*\{[^}]*?\bskip\s*:/gm;
   const skipping = [];
   for (const folder of ['experiences/solo-backup-rust/tests', 'experiences/solo-backup-rust/engine/tests']) {
     for (const file of fs.readdirSync(path.join(root, folder)).filter(name => /\.test\.(?:js|cjs|mjs)$/.test(name))) {
-      for (const line of fs.readFileSync(path.join(root, folder, file), 'utf8').split(/\r?\n/)) {
-        const match = declaration.exec(line);
-        if (match) skipping.push(`${folder}/${file}\n${match[2].replace(/\\(.)/g, '$1')}`);
+      for (const match of fs.readFileSync(path.join(root, folder, file), 'utf8').matchAll(declaration)) {
+        skipping.push(`${folder}/${file}\n${match[2].replace(/\\(.)/g, '$1')}`);
       }
     }
   }
-  assert.deepEqual(skipping.sort(), rows.slice(0, 6).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
+  assert.deepEqual(skipping.sort(), rows.slice(0, 7).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
   for (const row of rows) {
     assert.deepEqual([row.route, row.profile], ['windows', 'default'], row.id);
     const source = fs.readFileSync(path.join(root, row.file), 'utf8');

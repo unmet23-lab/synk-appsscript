@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 136,
+  "expectedCount": 137,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1091,6 +1091,14 @@
       "file": "experiences/solo-backup/tests/recommended.test.cjs",
       "name": "recommendations remove overlap and visibly exclude sensitive/manual/cache paths",
       "group": "업무 백업 추천 자료 — 계획기와 실제 restic",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S137",
+      "file": "experiences/solo-backup-rust/engine/tests/workdir.test.cjs",
+      "name": "roots given by a short name are the real folders, and a place inside them is refused by either name",
+      "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
       "route": "windows",
       "profile": "default"
     }

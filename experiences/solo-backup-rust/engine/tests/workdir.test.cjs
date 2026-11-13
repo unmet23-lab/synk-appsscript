@@ -95,14 +95,19 @@ test('the recommended engine refuses the recommended folders and every protected
 test('roots given by a short name are the real folders, and a place inside them is refused by either name', {
   skip: process.platform !== 'win32' && 'Windows 8.3 이름을 보는 시험 — Windows에서만',
 }, async (t) => {
-  const base = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'swb-shortname-')));
-  t.after(() => fs.rm(base, { recursive: true, force: true }));
-  const longRoot = path.join(base, 'StateFolderWithALongName'), longWork = path.join(base, 'LocalFolderWithALongName');
-  await fs.mkdir(longRoot); await fs.mkdir(longWork);
   // cmd's own quoting, given as is (Node's escaping of the inner quotes is not cmd's).
   const short = (p) => execFileSync('cmd.exe', ['/d', '/s', '/c', `"for %I in ("${p}") do @echo %~sI"`], { encoding: 'utf8', windowsVerbatimArguments: true }).trim();
+  // A work disk that makes no 8.3 names (a runner's D:) has no short spelling; the profile folder (`RUNNER~1`) does.
+  let base = null;
+  for (const parent of [os.tmpdir(), process.env.LOCALAPPDATA, process.env.USERPROFILE].filter(Boolean)) {
+    const candidate = await fs.realpath(await fs.mkdtemp(path.join(parent, 'swb-shortname-')));
+    t.after(() => fs.rm(candidate, { recursive: true, force: true }));
+    if (short(candidate).toLowerCase() !== candidate.toLowerCase()) { base = candidate; break; }
+  }
+  if (!base) return t.skip('8.3 이름으로 쓸 수 있는 자리가 없다');
+  const longRoot = path.join(base, 'StateFolderWithALongName'), longWork = path.join(base, 'LocalFolderWithALongName');
+  await fs.mkdir(longRoot); await fs.mkdir(longWork);
   const shortRoot = short(longRoot), shortWork = short(longWork);
-  if (shortRoot.toLowerCase() === longRoot.toLowerCase()) return t.skip('이 드라이브는 8.3 이름을 만들지 않는다');
   const profiles = new Profiles({ root: shortRoot, workRoot: shortWork, ...options });
   await profiles.open();
   assert.equal(profiles.root.toLowerCase(), longRoot.toLowerCase());
