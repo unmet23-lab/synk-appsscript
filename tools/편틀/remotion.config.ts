@@ -16,6 +16,9 @@ Config.setX264Preset("slow");
 Config.setPixelFormat("yuv420p");
 Config.setColorSpace("bt709");
 Config.setOverwriteOutput(true);
+// 소리는 섞은 판(PCM)에서 바로 384k로 담는다. Remotion 기본값 320k로는 실측 317kbps가 나와 올리기 기준(짧은 변 1080 이상 · 스테레오 실측 320kbps — tools/lib/upload-audio-bitrate.cjs)에 못 미친다(현장 노트 영상 · 11-04).
+// 한 편만 다른 값이 필요하면 이 파일을 고치지 말고 렌더 명령에 --audio-bitrate=<값>을 준다(명령줄이 이 줄보다 먼저다).
+Config.setAudioBitrate("384k");
 Config.setDefaultPremountInSeconds(2);
 
 Config.setChromiumOpenGlRenderer("angle");

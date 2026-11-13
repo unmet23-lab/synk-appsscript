@@ -187,7 +187,8 @@ test('--갱신 — 편이 틀 파일에 더한 이름을 다른 편 파일이 �
   assert.match(r.막힘.join('\n'), /src\/lib\/fonts\.ts — 편이 더한 PEN을\(를\) src\/Film\.tsx이\(가\) 쓴다/);
   assert.strictEqual(fs.readFileSync(path.join(프, 'src', 'lib', 'fonts.ts'), 'utf8'), 옛fonts, '쓰이는 이름이 든 파일은 덮지 않았다');
   assert.deepStrictEqual(r.덮음, ['tsconfig.json'], '다른 틀 파일은 원천 판으로 바꿨다');
-  assert.match(r.알림.join('\n'), /렌더 · 게시 흔적[\s\S]*판본 지문/);
+  assert.ok(r.찍음.some((이름) => 이름.startsWith('public/fonts/')), '이 실행이 글꼴을 새로 찍는다');
+  assert.match(r.알림.join('\n'), /렌더 · 게시 흔적[\s\S]*판본 지문[\s\S]*다시 렌더해야 한다/, '덮는 것은 설정 파일뿐이어도 public 아래 글꼴을 새로 찍으면 판본 지문이 달라진다');
   assert.match(r.사라진줄['src/lib/fonts.ts'].join('\n'), /export const PEN/);
   // 통째로 가져와 쓰는 꼴 · 다시 내보내는 꼴도 잡는다(여러 줄 import 포함)
   fs.writeFileSync(path.join(프, 'src', 'Film.tsx'), "import * as F from './lib/fonts';\nexport const Film = () => <div style={{ fontFamily: F.PEN }}>{F.KO}</div>;\n");
@@ -204,8 +205,15 @@ test('--갱신 — 편이 틀 파일에 더한 이름을 다른 편 파일이 �
   fs.writeFileSync(path.join(프, 'src', 'Film.tsx'), "import { KO } from './lib/fonts';\nimport { PEN } from './lib/편서체';\nexport const Film = () => <div style={{ fontFamily: PEN }}>{KO}</div>;\n");
   const 둘 = 새편.편찍기(편, { ...무.옵션, 실행: true, 갱신: true });
   assert.deepStrictEqual([둘.결과, 둘.덮음, 둘.막힘], ['됨', ['src/lib/fonts.ts'], []]);
+  assert.match(둘.알림.join('\n'), /렌더 · 게시 흔적[\s\S]*판본 지문[\s\S]*다시 렌더해야 한다/, 'src 아래 틀 파일을 덮으면 판본을 다시 렌더하라고 알린다');
   assert.ok(읽기(path.join(프, 'src', 'lib', 'fonts.ts')).equals(읽기(path.join(무.원천, 'src', 'lib', 'fonts.ts'))));
   assert.match(fs.readFileSync(path.join(프, 'src', 'lib', '편서체.ts'), 'utf8'), /PEN/, '편 파일은 그대로다');
+  // 렌더한 편에서 src · public 밖의 설정 파일만 덮을 때(새로 찍는 것도 없을 때)는 판본 지문이 그대로라 다시 렌더하라고 하지 않는다
+  fs.appendFileSync(path.join(프, 'tsconfig.json'), '// 편에서 고침\n');
+  const 셋 = 새편.편찍기(편, { ...무.옵션, 실행: true, 갱신: true });
+  assert.deepStrictEqual([셋.결과, 셋.찍음, 셋.덮음], ['됨', [], ['tsconfig.json']]);
+  assert.match(셋.알림.join('\n'), /렌더 · 게시 흔적[\s\S]*설정 파일뿐이라 판본 지문[\s\S]*그대로다/);
+  assert.doesNotMatch(셋.알림.join('\n'), /다시 렌더해야 한다/);
 });
 
 test('옛 편 · 「적용」에 없는 브랜드 · 「예외」 편은 부품만 잇는다 — 틀은 찍지도 덮지도 않는다', (t) => {
