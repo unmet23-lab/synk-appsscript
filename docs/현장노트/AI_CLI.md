@@ -1549,6 +1549,7 @@
 - 고침: `SKILL.md`를 직접 쓰거나 Windows 작업 스케줄러 · 다른 예약 도구로 돌아가지 않는다. 차례를 넘김 문서에 적고 유호님께 그대로 알린다. 허용 줄을 넓히는 것은 이름 댄 승인 뒤다(`update-config`).
 - 다시 확인: `mcp__scheduled-tasks__list_scheduled_tasks`에 그 taskId가 있는지.
 - 11-11 또(다른 세션이 띄운 곁 세션, Claude): 한 번짜리 알림 예약을 만들려던 `create_scheduled_task`가 두 번 막혔다(읽고 보여 주기만 하는 지시문으로 줄여도 같음). 그 알림을 이미 도는 예약의 지시문에 더하려던 `update_scheduled_task`는 「Auto-Mode Bypass」로 막혔다 — 막힌 일을 다른 예약에 얹는 것도 우회로 본다. 같은 세션에서 그 예약의 기간(cron) · 제목 · 날짜 문구만 바꾼 `update_scheduled_task`는 통과했다. 막히면 더 부르지 않고 트랙 줄에 날짜와 할 일을 적은 뒤 유호님께 그대로 알린다.
+- 11-13 덧붙임(Claude, 조율 세션): 유호님이 이 세션의 물음에 단추로 답하신 뒤(「작게 지금 넘기기」) 매일 도는 예약의 `create_scheduled_task`는 통과했고(자동 모드로 저장됨), 시각 · 제목만 바꾼 `update_scheduled_task`도 통과했다. 첫 회차를 바로 보려던 `run_scheduled_task`(지금 실행)는 「judged this action dangerous」로 막혔다 — 우회하지 않고 첫 회차를 예약 시각에 맡겼다(유호님이 앱 예약 목록에서 「지금 실행」을 누르시면 된다). 만든 뒤 지시문의 `model:` 줄과 걸음은 SKILL.md를 직접 고쳤고, 도구로 시각 · 제목을 바꿔도 그 줄은 남는다.
 
 ### 예약 작업이 제 시각에 안 뜨고 실행 기록도 없다 — 앱이 동시 실행 상한(`global_limit`)에 걸려 1분마다 건너뛴다 (2026-11-09 Claude)
 - 증상: 11-09 「스레드 21시 게시」(20:53)가 21:15까지 안 떴다. `list_task_runs`에 그날 줄이 없고 `list_scheduled_tasks`의 `nextRunAt`은 지난 시각이다. 오류도 알림도 없다.
@@ -1556,6 +1557,7 @@
 - 고침: 작업 쪽 잘못이 아니니 지시문을 건드리지 않는다. 시각이 중요한 회차가 있는 저녁에는 제작 회차를 한꺼번에 깨우거나 「지금 실행」으로 여럿 띄우지 않는다.
 - 다시 확인: 장부 `%LOCALAPPDATA%\Claude-Data\<프로필>\claude-code-sessions\<계정>\<조직>\scheduled-tasks.json`의 `recordedSkips.<작업>`에 `{"at":…,"reason":"global_limit"}`가 1분마다 쌓이고, `lastRunAt`이 그대로다.
 - 11-10 덧붙임(Claude, 상한은 3): 02:42에 건 한 번짜리 시험 회차가 턴을 도는 예약 세션 셋(LAB · synkbrief · yuhobuilds 제작) 뒤에서 1분마다 `global_limit`으로 밀리다가, yuhobuilds 회차가 턴을 끝내고 쉬던 06:01~06:11 사이(06:05)에 떴다 — 3시간 23분 늦음. 앱이 세는 것은 `scheduledTaskId`가 있고 지금 턴을 도는(`isRunning`) 세션과 띄우는 중인 회차뿐이다(앱 `setActiveSessionCounter`). 대화 세션은 안 세고, 턴을 끝내고 쉬는 예약 세션도 안 센다 — `list_task_runs`의 status 「running」과 다르니 상한을 셀 때는 `get_session`의 `isRunning`을 본다. 한 번짜리(`fireAt`) 작업은 `lastRunAt`이 빈 동안 시간 제한 없이 매분 다시 본다. 시험 회차를 당기려고 「지금 실행」(`run_scheduled_task`)을 쓰지 않는다 — `fireAt`으로 뜬 회차만 실제 예약 회차와 같은 길이다.
+- 11-13 덧붙임(Claude, 새 매일 예약의 시각): 새 매일 예약을 만들 때는 먼저 `list_scheduled_tasks`로 그 시각에 턴을 도는 예약 세션을 센다 — 07:00 · 15:00대는 제작 회차 셋이 몇 시간씩 자리 셋을 다 쓴다. 10:20으로 만든 나라 판본 예약(`synk-daily-lab-versions`)은 그 뒤로 밀리고, 낮에 오래 돌면 14시 게시 회차 자리를 막을 수 있어 같은 밤 03:10으로 옮겼다. 밀려서 낮에 뜬 회차는 상한을 줄이고 13:00 뒤면 그날 쉬게 지시문에 「시각 지키기」를 넣었다(이날 22:30 `drama-pilot-tally-202611`도 `waiting: global_limit`이었다).
 
 ### 예약 작업 지시문을 도구로 통째로 바꾸는 사이 다른 세션이 같은 지시문을 고친다 — 바꾸기 직전에 다시 읽고, 바꾼 뒤 기대 본문과 대조한다 (2026-11-11 Claude)
 - 증상: 11-11 21:57 `synk-daily-synkbrief` 지시문에 한 줄(편 틀)을 넣으려고 `update_scheduled_task`에 본문 전체를 보냈다. 20초쯤 뒤 다른 세션이 예약 지시문 넷에 「카본」 문단을 넣었다. 순서가 반대였으면 그 문단이 말없이 사라졌다 — 도구는 본문을 통째로 바꾸고 겹침을 알리지 않는다.
