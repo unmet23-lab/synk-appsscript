@@ -173,8 +173,10 @@ export function touchesOf(entries, targetId, index) {
   return { units: touched.units.sort(), skills: touched.skills.sort() };
 }
 
-// 계열 → 그 계열의 문항이 속한 능력들 = 요약의 계열 줄(만남이 있는 능력) ∪ 문항 색인 ∪ 기기가 든 2판 제시.
-// 내 이른 답이 그 계열의 첫 만남을 가져가면 이 능력들의 줄을 기다린다(단계 2 overlay의 index.familySkills).
+// 계열 → 그 계열의 문항이 속한 능력들 = 요약의 계열 줄(만남이 있는 능력) ∪ 문항 색인 ∪ 기기가 든 제시(2판 · 옛 꼴 measure).
+// 내 이른 답이 그 계열의 첫 만남을 가져가면 이 능력들의 줄을 기다린다(단계 2 overlay의 index.familySkills). 옛 꼴 제시는 색인을 거치지 않고
+// 적힌 measure 그대로 읽는다 — 색인 · 요약에 없는 계열의 옛 꼴 답 앞에 옮겨 온 장부가 서면 그 능력 줄을 기다림 없이 틀리게 냈다(Fable 5.2
+// 합친 끝 판 넘친 #16).
 export function familySkillsOf(summary, index, events) {
   const out = new Map();
   const add = (family, skills) => out.set(family, union(out.get(family) ?? [], skills));
@@ -183,6 +185,12 @@ export function familySkillsOf(summary, index, events) {
   for (const event of events)
     if (event.type === EVENT_TYPES.presented && event.schema === EVENT_FORM.current)
       add(event.familyKey, [event.skillId]);
+    else if (
+      event.type === EVENT_TYPES.presented &&
+      event.measure?.familyKey &&
+      event.measure?.skillId
+    )
+      add(event.measure.familyKey, [event.measure.skillId]);
   for (const [family, skills] of out) out.set(family, skills.sort());
   return out;
 }

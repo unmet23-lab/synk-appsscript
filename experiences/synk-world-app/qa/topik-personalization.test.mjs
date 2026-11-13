@@ -675,3 +675,22 @@ test('TOPIK II 쓰기: 계획 판의 쓰기 칸에서 「TOPIK II 쓰기 연습�
  const one=exam.buildExamPlan({exam:exam.examInfo({...EXAM,examType:'topik1',targetGrade:2}),summary:s.coach.summary(),now:s.now(),available:{reading:{'ko.reading.detail':3},listening:{},recheck:15,life:true}});
  assert.doesNotMatch(view.renderExamPlan({plan:one}),/data-plan-writing/);
 });
+
+// 홈 추천은 판정(due) 없이 부른다(지금 판 — 12/10까지 라이브). 돌아온 생활 복습이 있는 합성 학생의 홈 후보는 4-2 앞(ae3a3f2c7) 그대로다 —
+// 때가 된 복습만 · dueAt 차례(id 차례가 아니다) · reviewAt은 가장 이른 dueAt · 돌아온 복습이 먼저(Fable 5.2 합친 끝 판 넘친 #10).
+test('홈 후보(판정 없음): 돌아온 생활 복습은 때가 된 것만 dueAt 차례로, reviewAt은 가장 이른 dueAt으로 받고 복습이 먼저다(Fable 5.2 합친 끝 판 넘친 #10)',()=>{
+ const s=student(),lesson=LESSONS.find(row=>row.id==='greetings-expressions'),[hello,thanks,name]=lesson.questions;
+ s.life.startLesson(lesson);
+ // 둘째 문항을 먼저 놓치고 1초 뒤 첫 문항을 놓친다(dueAt 차례와 id 차례가 반대). 셋째는 혼자 맞힌다(하루 뒤 돌아옴).
+ for(const [q,correct]of [[thanks,false],[hello,false],[name,true]]){s.tick();s.life.recordAnswer({lessonId:lesson.id,questionId:q.id,correct,choiceId:correct?q.answerId:q.choices.find(choice=>choice.id!==q.answerId).id});}
+ s.life.finishLesson(lesson.id);
+ s.advance(2*3600000); // 두 시간 뒤 — 놓친 둘은 돌아왔고 맞힌 것은 아직이다
+ const reviews=s.life.exportSnapshot().reviews,dueAt=q=>reviews[q.review.id].dueAt;
+ assert.ok(hello.review.id.localeCompare(thanks.review.id)<0&&dueAt(thanks)<dueAt(hello)&&dueAt(hello)<s.now()&&dueAt(name)>s.now());
+ const result=recommend(s,{settings:{reasons:['travel']},extra:[]});
+ assert.deepEqual(result.candidates.filter(c=>c.route==='review').map(c=>[c.lessonId,c.reviewIds,c.reviewAt]),[[lesson.id,[thanks.review.id,hello.review.id],new Date(dueAt(thanks)).toISOString()]],
+  '때가 된 복습만 · dueAt 차례 · reviewAt은 가장 이른 dueAt(지금 시각이 아니다)');
+ assert.equal(result.selected.route,'review','돌아온 복습이 먼저');
+ assert.deepEqual(result.selected.reviewIds,[thanks.review.id,hello.review.id]);
+ assert.ok(result.reasons.includes('review.due'));
+});

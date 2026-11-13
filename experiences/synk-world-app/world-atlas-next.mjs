@@ -164,8 +164,9 @@ export async function askSwitch(transport, wait = SWITCH_ASK_MS) {
 // 옛 꼴 묶음(머리 + 자식을 쪼개지 않고)을 반씩 가려 걸리는 묶음만 건너뛰고, 번호가 있으면 그 번호의 묶음만 건너뛴다. 건너뛴 묶음이
 // cap(8)을 넘으면 옛 꼴 몫의 남은 것을 건너뛴다(gaveUp — 부르는 쪽이 계기에). 다만 이미 머리(일부)를 보낸 묶음은 나머지까지 마저 보낸다 —
 // 차례가 종류 먼저라 앞 묶음은 머리뿐이고, 표지의 until이 그 묶음들을 덮어 다시 고르지 않으므로 남기면 계정에 답 없는 제시가 남았다(Fable 5.2
-// 끝 판 둘째 넘친 #20). 그 밖의 실패는 ok: false(표지 없이 다음에 다시). 옮기기가 끊긴 뒤
-// 동의를 껐다 켜 판이 오르면 같은 번호 · 다른 판이라 다시 옮기기가 영영 실패하던 것(Fable 5.2 끝 판 F3 · 설계 주인 11-13).
+// 끝 판 둘째 넘친 #20). 마저 보낼 때의 409도 걸린 묶음만 건너뛴다(몫은 더 세지 않는다 — 합친 끝 판 넘친 #23). 그 밖의 실패는 ok: false(표지
+// 없이 다음에 다시). 옮기기가 끊긴 뒤 동의를 껐다 켜 판이 오르면 같은 번호 · 다른 판이라 다시 옮기기가 영영 실패하던 것(Fable 5.2 끝 판 F3 ·
+// 설계 주인 11-13).
 export const LEGACY_SKIP_CAP = 8;
 const legacyParent = event =>
   event?.presentationId ?? event?.targetId ?? event?.completionId ?? event?.decisionId ?? null;
@@ -200,10 +201,11 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
   const skipped = new Set(); // 건너뛴 묶음(뿌리 번호)
   const ids = [];
   const conflict = error => error?.status === 409 && error?.code === 'EVENT_CONFLICT';
+  let finishing = false; // 포기한 뒤 마저 보내는 중 — 걸린 묶음은 건너뛰되 몫(cap)은 더 세지 않는다
   // 묶음을 건너뛴다 — cap을 넘으면 옛 꼴 몫 전체를 건너뛴다('gave-up').
   const skip = roots => {
     for (const id of roots) skipped.add(id);
-    return skipped.size > cap ? 'gave-up' : 'ok';
+    return !finishing && skipped.size > cap ? 'gave-up' : 'ok';
   };
   // 한 묶음을 보낸다 — 받았으면 'ok', 409 EVENT_CONFLICT면 걸린 옛 꼴 묶음을 가려 건너뛰고, 그 밖의 실패는 'fail'.
   async function send(batch) {
@@ -233,8 +235,11 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
     const first = await send(live.filter(event => half.has(root.get(event.id))));
     return first === 'ok' ? send(live.filter(event => !half.has(root.get(event.id)))) : first;
   }
-  // 포기한 뒤 — 이미 보낸 묶음(건너뛴 것 말고)의 남은 사건을 같은 자르기로 마저 보낸다. 실패하면 실패(표지 없이 다음에 다시).
+  // 포기한 뒤 — 이미 보낸 묶음(건너뛴 것 말고)의 남은 사건을 같은 자르기로 마저 보낸다. 409 EVENT_CONFLICT는 보낼 때처럼 걸린 묶음만
+  // 건너뛰고(이미 포기했으니 몫은 더 세지 않는다) 나머지를 보낸다 — 실패로 돌리면 다시 옮겨도 같은 차례라 그 옮기기가 영영 실패했다(Fable
+  // 5.2 합친 끝 판 넘친 #23 — 머리는 받았는데 자식이 걸리는 묶음). 그 밖의 실패는 실패(표지 없이 다음에 다시).
   async function finish() {
+    finishing = true;
     const sent = new Set(ids);
     const started = new Set(ids.map(id => root.get(id)));
     const rest = ordered.filter(
@@ -242,25 +247,17 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
     );
     let part = [];
     let used = 0;
-    const flush = async () => {
-      if (!part.length) return true;
-      try {
-        if ((await post(part))?.ok !== true) return false;
-      } catch {
-        return false;
-      }
-      ids.push(...part.map(event => event.id));
-      part = [];
-      used = 0;
-      return true;
-    };
     for (const event of rest) {
       const n = encoder.encode(JSON.stringify(event)).length;
-      if ((part.length >= limit || (part.length && used + n > bytes)) && !(await flush())) return 'fail';
+      if (part.length >= limit || (part.length && used + n > bytes)) {
+        if ((await send(part)) !== 'ok') return 'fail';
+        part = [];
+        used = 0;
+      }
       part.push(event);
       used += n;
     }
-    return (await flush()) ? 'gave-up' : 'fail';
+    return part.length && (await send(part)) !== 'ok' ? 'fail' : 'gave-up';
   }
   const done = async step => {
     const end = step === 'gave-up' ? await finish() : step;
@@ -383,6 +380,26 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
 // 첫 답 수(물음의 「답 N개」 — 지금 판 guestLearningEvents와 같은 셈): 옛 꼴 · 2판 모두 첫 시도의 답.
 const firstAnswers = events =>
   events.filter(event => event?.type === 'practice.attempted' && event.attemptNo === 1).length;
+// 생활 경험(world-life — life-items.mjs LIFE_GAME_ID)의 몫 { attempts, events } — 물음은 생활 레슨의 답을 생활 줄에 센다(짧은 진단 · 연습
+// 줄에 넣으면 생활 레슨만 한 손님에게 같은 답이 다른 이름으로 두 줄에 섰다 — Fable 5.2 합친 끝 판 넘친 #8). 2판은 판 번호(set.<경험>.… — §19
+// M9)와 판 결정 · 마침의 경험 이름(<경험>.set), 옛 꼴은 결정의 경험 이름으로 가리고, 딸린 사건은 부모(제시 · 결정 · 마침 · 제외 대상)를 따른다.
+const LIFE_GAME = 'world-life';
+const lifeOwn = event =>
+  event?.experienceId === LIFE_GAME ||
+  event?.experienceId === `${LIFE_GAME}.set` ||
+  (typeof event?.setId === 'string' && event.setId.startsWith(`set.${LIFE_GAME}.`));
+function lifeShare(events) {
+  const byId = new Map(events.map(event => [event?.id, event]));
+  const life = events.filter(event => {
+    const seen = new Set();
+    for (let at = event; at && !seen.has(at); at = byId.get(legacyParent(at))) {
+      if (lifeOwn(at)) return true;
+      seen.add(at);
+    }
+    return false;
+  });
+  return { attempts: firstAnswers(life), events: life.length };
+}
 
 const OLD = code => ({ path: 'old', code });
 const GUEST = Object.freeze({ path: 'guest' });
@@ -820,16 +837,19 @@ export function createAtlasNext({
   }
   // 면(짧은 연습 · 생활)의 계정 코치 — 판을 정해 그 판의 코치를 연다. 여는 사이에 판을 다시 정했으면(그 판의 코치는 닫혔다 — 여는 길 자신이
   // 첫 받기에서 다시 정한 것 포함) 한 번만 다시 정한다(되풀이하면 세대가 이어 바뀌는 동안 끝나지 않는다). 견줄 세대는 planNow가 마지막으로
-  // 판을 정하기 직전의 것이다(자기가 다시 정한 판까지 버리지 않게).
+  // 판을 정하기 직전의 것이다(자기가 다시 정한 판까지 버리지 않게). 판이 거듭 바뀌어 못 정한 물음(planNow가 null · 두 번 다 세대가 바뀜)이
+  // 지금 판으로 가는 것도 계기에 센다(PATH_CHANGING — 4-8에서 얼마나 밟는지 본다, Fable 5.2 합친 끝 판 넘친 #24).
   async function faceCoach(banks, gameId, since) {
     for (let tries = 0; tries < 2; tries += 1) {
       const now = await planNow();
       if (disposed) return null;
+      if (!now) note('load', { ok: false, code: 'PATH_CHANGING' });
       if (!now || now.plan.path === 'old') return answered(null, since);
       const made = await coachFor(now.plan, banks, gameId, now.at);
       if (disposed) return null;
       if (now.at === generation) return answered(made, since);
     }
+    note('load', { ok: false, code: 'PATH_CHANGING' });
     return answered(null, since);
   }
 
@@ -937,7 +957,9 @@ export function createAtlasNext({
     //   watermarks: { others, all } — 지금 판의 기준 시각(남이 다녀간 때 · 자기 결정까지), pick(legacy) — 옛 꼴 후보 가운데 지금 판 규칙
     //   (device-records.mjs pickGuestLearning)으로 고른 것.
     // 돌려줌: null — 새 길이 아니다(지금 판 물음) · { failed: true } — 새 길인데 엔진 · 저장소를 못 열었다(학습 줄 없이 묻고 기준을 올리지
-    //   않는다) · { attempts, move(), keep(), note(mark), close() } — move()는 { ok, … }(옛 꼴은 옛 POST로, 받았다는 답이 아니면 표지 없이).
+    //   않는다) · { attempts, events, life, move(), keep(), note(mark), close() } — attempts는 짧은 진단 · 연습의 첫 답 수, life는 생활
+    //   경험의 { attempts, events }(물음의 생활 줄이 센다 — 넘친 #8), events는 옮길 사건 전체. move()는 { ok, … }(옛 꼴은 옛 POST로, 받았다는
+    //   답이 아니면 표지 없이).
     async guestMove({ watermarks = {}, pick = events => events } = {}) {
       if (!account || disposed) return null;
       const now = await planNow();
@@ -966,6 +988,7 @@ export function createAtlasNext({
         if (!aside) return NOTHING_TO_MOVE();
         const found = await aside.plan(watermarks);
         const legacy = pick(found.legacy);
+        const life = lifeShare([...legacy, ...found.current]);
         const line = plan.line;
         const move = () =>
           aside.move({
@@ -989,8 +1012,9 @@ export function createAtlasNext({
           });
         const held = aside;
         return {
-          attempts: firstAnswers(legacy) + firstAnswers(found.current),
+          attempts: firstAnswers(legacy) + firstAnswers(found.current) - life.attempts,
           events: legacy.length + found.current.length,
+          life,
           move,
           keep: () => held.keep(),
           note: mark => held.note(mark),

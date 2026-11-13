@@ -407,7 +407,10 @@ export function createSync({
   function pull({ force = false } = {}) {
     if (!canGet() || !carrier().get) return Promise.resolve(null);
     if (state.pulling) return state.pulling;
-    if (!force && clock() - state.lastPull < PULL_GAP_MS) return Promise.resolve(null);
+    // 간격이 음수면(고치지 않은 기기 시계가 문서가 열린 동안 뒤로 갔다 — 틀리게 앞서 있던 시계를 OS가 맞춤) 「5분 안」으로 치지 않고 받는다 —
+    // 뒤로 간 만큼 + 5분 동안 화면 복귀 받기가 돌지 않았다(Fable 5.2 합친 끝 판 넘친 #17).
+    const gap = clock() - state.lastPull;
+    if (!force && gap >= 0 && gap < PULL_GAP_MS) return Promise.resolve(null);
     const before = state.lastPull;
     state.lastPull = clock();
     // 차례를 못 얻어(다른 탭이 쥠) 받지 못했으면 받은 것으로 치지 않는다 — 첫 받기는 잠시 뒤 다시(카본 끝 판 D).

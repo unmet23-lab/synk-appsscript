@@ -756,4 +756,29 @@ export const RECORD_MUTANTS = [
     '      if (state.local.key == null) void saveLocal();\n',
     '',
   ],
+  // ── Fable 5.2 합친 끝 판(11-13) — 고친 자리를 지키는 시험이 없던 둘(넘친 #15)과 옛 꼴 제시의 계열 → 능력(넘친 #16) ──
+  [
+    R,
+    '받기',
+    '받은 답(ack)의 offsetMs를 읽은 것으로 서버 시각을 받았다고 친다(다시 연 기록부가 서버 답 없이 옛 차이로 치운다 — Fable 5.2 합친 끝 판 넘친 #15 ① R2)',
+    LOG,
+    '  if (Number.isFinite(value.offsetMs)) state.clock.sync(now() + value.offsetMs);',
+    '  if (Number.isFinite(value.offsetMs)) {\n    state.clock.sync(now() + value.offsetMs);\n    state.serverTimed = true;\n  }',
+  ],
+  [
+    R,
+    '손님',
+    '열쇠 없는 손님 요약을 저장만 다시 걸지 않고 다시 접는다(설계 주인 조건 「접지는 않고 저장만」 — Fable 5.2 합친 끝 판 넘친 #15 ③ G7)',
+    LOG,
+    '      if (state.local.key == null) void saveLocal();\n      return;\n',
+    '      if (state.local.key != null) return;\n',
+  ],
+  [
+    R,
+    '기기',
+    '얹기의 계열 → 능력 표가 기기가 든 옛 꼴 제시(measure)를 읽지 않는다(색인 · 요약에 없는 계열의 능력 줄을 기다림 없이 낸다 — Fable 5.2 합친 끝 판 넘친 #16)',
+    OWN,
+    '    else if (\n      event.type === EVENT_TYPES.presented &&\n      event.measure?.familyKey &&\n      event.measure?.skillId\n    )\n      add(event.measure.familyKey, [event.measure.skillId]);\n',
+    '',
+  ],
 ];

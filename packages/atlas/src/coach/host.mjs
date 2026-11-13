@@ -125,6 +125,7 @@ function createHost({
   if (map) index.add(map);
   const pending = new Map(); // 사건 번호 → 접기 사건(아직 저장이 안 끝난 내 답 · 본인 말)
   const issuing = new Map(); // 사건 번호 → 「낸 것」 줄(아직 저장이 안 끝난 내 제시)
+  const saving = new Map(); // 사건 번호 → 사건(아직 저장이 안 끝난 내 쓰기 — 접기 사건을 다시 지을 때, refold)
   const inflight = new Set(); // 아직 저장이 안 끝난 쓰기(stored 약속)
   const listeners = new Set();
   const state = {
@@ -219,7 +220,9 @@ function createHost({
     const row = issued ? issued(made.event) : null;
     if (folded) pending.set(id, folded);
     if (row) issuing.set(id, row);
+    saving.set(id, made.event);
     const stored = made.stored.then(ok => {
+      saving.delete(id);
       pending.delete(id);
       issuing.delete(id);
       if (ok) {
@@ -343,6 +346,17 @@ function createHost({
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    // 아직 저장이 안 끝난 내 사건의 접기 사건을 다시 짓는다(fold: 사건 → 접기 사건 목록, 비면 얹지 않는다) — 저장하는 사이 같은 묶음의 앞
+    // 형제가 실패하거나 제외가 오면 처음 접은 값이 낡는다(Fable 5.2 합친 끝 판 넘친 #13). 저장이 끝난 사건은 건너뛴다 — 기록부 보기가 접었다.
+    // 돌려주는 값 = 아직 저장 중이라 다시 지었나.
+    refold(id, fold) {
+      const event = saving.get(id);
+      if (!event) return false;
+      const folded = fold(event);
+      if (folded?.length) pending.set(id, folded);
+      else pending.delete(id);
+      return true;
     },
     // 코치가 쓰는 보기 — 기록부 보기 위에 아직 저장이 안 끝난 내 답 · 본인 말을 시각 순으로 얹는다.
     view() {

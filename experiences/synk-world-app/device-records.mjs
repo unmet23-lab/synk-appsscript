@@ -243,12 +243,15 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
  const rows=[];
  if(plan?.hangul)rows.push({label:T.hangulRow,value:hangulLine(plan.hangul.summary,T)});
  if(plan?.answer)rows.push({label:T.answerRow,value:plan.answer.answer==='new'?T.answerNew:T.answerReads});
- const counts=plan?.life?.counts;
+ const counts=plan?.life?.counts,atlasLife=plan?.atlas?.life;
  if(counts&&(counts.lessons||counts.reviews||counts.days))rows.push({label:T.lifeRow,value:[counts.lessons?T.lessons(counts.lessons):'',counts.reviews?T.reviews(counts.reviews):'',!counts.lessons&&counts.days?T.days(counts.days):''].filter(Boolean).join(' · ')});
+ // 새 길 손님 저장소의 생활 경험 사건은 생활 진도 줄이 없을 때만 그 수로 생활 줄에 선다(답 없이 본 문항 · 생활 진도를 옮기지 않는 셸 — 넘친 #8).
+ else if(atlasLife?.events)rows.push({label:T.lifeRow,value:atlasLife.attempts?T.answers(atlasLife.attempts):T.started});
  if(plan?.learning?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.learning.attempts)});
  // 새 길은 첫 답 수로 — 답이 없는 사건(제시 · 판 결정 · 장부 · 본인 말 · 제외, R11)만 있어도 물으니 「연습을 시작했어요」로(요약 칸이 비던 것 — 카본 끝 판 둘째 B).
+ // 생활 경험(world-life)의 답 · 사건은 위 생활 줄이 센다 — 생활 레슨만 한 손님에게 같은 답이 「짧은 진단·연습」 이름으로 또 서던 것(Fable 5.2 합친 끝 판 넘친 #8).
  if(plan?.atlas?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.atlas.attempts)});
- else if(plan?.atlas?.events)rows.push({label:T.learningRow,value:T.started});
+ else if((plan?.atlas?.events||0)>(atlasLife?.events||0))rows.push({label:T.learningRow,value:T.started});
  if(counts?.profile)rows.push({label:T.profileRow,value:T.profileValue});
  const notes=[];
  if(plan?.kept.hangul)notes.push(T.keptHangul);
@@ -305,7 +308,9 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   const entry=accountEntry(readDevice(storage),owner),retryCloud=!!port&&entry?.decision==='moved'&&entry.cloud!==true;
   let plan=null;try{plan=planDeviceRecords({storage,learning:learningStatus(),accountAnswer:accountAnswer(),hangulPort:port,accountId:owner,life:typeof importLife==='function',learningLog:!atlas&&typeof importLearning==='function',retryCloud});}catch{plan=null;}
   const usable=!!atlas&&!atlas.failed&&typeof atlas.move==='function';
-  if(usable&&atlas.events>0)plan={...(plan??{hangul:null,answer:null,life:null,learning:null,after:deviceWatermark(storage,owner),kept:{hangul:false,answer:false}}),atlas:{attempts:atlas.attempts||0,events:atlas.events}};
+  // 생활 경험의 몫(guestMove의 life — 생활 줄이 센다, 넘친 #8)은 꼴이 맞을 때만 싣는다.
+  const lifePart=recordObject(atlas?.life)&&Number.isSafeInteger(atlas.life.events)&&atlas.life.events>0?{life:{attempts:Number.isSafeInteger(atlas.life.attempts)&&atlas.life.attempts>0?atlas.life.attempts:0,events:atlas.life.events}}:{};
+  if(usable&&atlas.events>0)plan={...(plan??{hangul:null,answer:null,life:null,learning:null,after:deviceWatermark(storage,owner),kept:{hangul:false,answer:false}}),atlas:{attempts:atlas.attempts||0,events:atlas.events,...lifePart}};
   if(plan&&atlas?.failed)plan.atlasFailed=true;
   // 이 계정이 이 기기에 있었다는 사실은 기준 시각을 읽은 뒤에 남긴다(그래야 이 계정 자신의 기록은 빠지지 않는다). 새 길은 손님 저장소에도(되는 만큼만).
   noteDeviceAccount(storage,owner,now());

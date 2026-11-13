@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { rng } from '../support/seeds.mjs';
 import { subject } from '../support/subject.mjs';
-import { bankOf, clock, fakeMap, memoryPort, PARAMS } from './support.mjs';
+import { bankOf, clock, fakeMap, memoryPort, openCoach, PARAMS } from './support.mjs';
 
 const { acquireHost, releaseHost } = await subject('coach/host.mjs');
 const { createSession } = await subject('coach/session.mjs');
@@ -273,6 +273,182 @@ test('제시는 그대로인데 첫 답만 제외해도 그 답이 낳은 만남
   w.session.rebuild();
   assert.equal(w.session.learner.met.get(familyKey), met, '뒤 답 뒤에도 그 만남이 남는다');
   w.close();
+});
+
+test('「처음이다」인 제시의 답을 제외해도 그 만남은 남는다 — 같은 계열 다음 답은 첫 만남이 아니다(n0 · streak0), 손님 · 보기 못 얹음 둘 다 · 다시 세워도(Fable 5.2 합친 끝 판 F10)', async () => {
+  for (const waiting of [false, true]) {
+    const label = waiting ? '보기 못 얹음' : '손님';
+    const w = await sessionOn({ seed: 42, tag: `excluded-next-${waiting}`, waiting });
+    w.session.choose(w.items, { set: { length: 6 } });
+    const [first, second] = w.items; // 같은 계열 · 같은 능력의 두 문항
+    const { skillId, familyKey } = w.map.item(first);
+    assert.equal(w.map.item(second).familyKey, familyKey);
+    const pid = w.session.present(first, { seen: false }); // firstExposure 참 — 장부 만남이 없다
+    assert.equal((await w.port.read()).at(-1).value.event.firstExposure, true);
+    w.time.advance(1000);
+    const answered = w.session.answer(pid, { correct: true, assessable: true });
+    assert.equal(await answered.stored, true);
+    const met = w.session.learner.met.get(familyKey);
+    assert.ok(met !== undefined, `${label}: 첫 답의 만남`);
+    assert.equal(await w.session.exclude(answered.event.id).stored, true);
+    await settle();
+    assert.equal(w.session.learner.met.get(familyKey), met, `${label}: 제외해도 만남은 남는다`);
+    w.time.advance(1000);
+    const next = w.session.present(second, {});
+    w.time.advance(1000);
+    const out = w.session.answer(next, { correct: true, assessable: true });
+    const notFirst = where => {
+      const line = w.session.learner.ability.get(skillId);
+      assert.equal(line?.n ?? 0, 0, `${label} ${where}: 다음 답은 첫 만남이 아니다 — n0`);
+      assert.equal(line?.streak ?? 0, 0, `${label} ${where}: streak0`);
+      assert.equal(w.session.learner.met.get(familyKey), met, `${label} ${where}: 같은 첫 만남`);
+    };
+    notFirst('판 안');
+    assert.equal(await out.stored, true);
+    await settle();
+    notFirst('저장 뒤');
+    w.session.rebuild();
+    notFirst('다시 세운 뒤');
+    w.close();
+  }
+});
+
+test('제외된 제시에 늦게 온 답은 거둔 답이다 — θ · n · 기억 줄을 세우지 않고 만남만 남는다(판 안 · 저장 전 보기 · 다시 세워도), 손님 · 보기 못 얹음 둘 다(Fable 5.2 합친 끝 판 F10)', async () => {
+  for (const waiting of [false, true]) {
+    const label = waiting ? '보기 못 얹음' : '손님';
+    const w = await sessionOn({ seed: 43, tag: `late-answer-${waiting}`, waiting });
+    w.session.choose(w.items, { set: { length: 6 } });
+    const item = w.items[0];
+    const { skillId, familyKey, units } = w.map.item(item);
+    const pid = w.session.present(item, { seen: false });
+    await settle();
+    assert.equal(await w.session.exclude(pid).stored, true);
+    await settle();
+    w.time.advance(1000);
+    const out = w.session.answer(pid, { correct: true, assessable: true });
+    assert.equal(out.grade, null, `${label}: 거둔 답에는 등급이 없다`);
+    const gone = (learner, where) => {
+      const line = learner.ability.get(skillId);
+      assert.equal(line?.n ?? 0, 0, `${label} ${where}: 능력 n0`);
+      assert.equal(line?.theta ?? 0, 0, `${label} ${where}: θ 그대로`);
+      for (const unit of units)
+        assert.equal(learner.memory.has(unit), false, `${label} ${where}: 기억 줄 없음(${unit})`);
+      assert.ok(learner.met.has(familyKey), `${label} ${where}: 만남은 남는다`);
+    };
+    gone(w.session.learner, '판 안');
+    if (!waiting) gone(w.host.view(), '저장 전 보기');
+    assert.equal(await out.stored, true);
+    await settle();
+    gone(w.session.learner, '저장 뒤 판 안');
+    w.session.rebuild();
+    gone(w.session.learner, '다시 세운 뒤');
+    assert.equal(
+      w.session.learner.session.blank.has(item.itemKey),
+      false,
+      `${label}: 판의 blank에 닿지 않는다`,
+    );
+    w.close();
+  }
+});
+
+// 쓰기를 고르는 그릇 — 사건 쓰기만 차례대로: fail()이면 다음 한 번이 실패, hold()면 다음 한 번을 돌려준 함수를 부를 때까지 붙든다.
+function steeredPort(port) {
+  const plan = [];
+  return {
+    ...port,
+    async append(values) {
+      const step = values.some(value => value.kind === 'event') ? plan.shift() : undefined;
+      if (step === 'fail') throw new Error('quota');
+      if (step) await step;
+      return port.append(values);
+    },
+    fail() {
+      plan.push('fail');
+    },
+    hold() {
+      let release = null;
+      plan.push(new Promise(resolve => (release = resolve)));
+      return () => release();
+    },
+  };
+}
+
+// 형제가 늦게 실패하는 손님 코치 한 판 — sibling: 'delivery' · 'help' · null(형제를 쓰지 않은 기준 판), audio: 소리가 있어야 하는 문항인가.
+// 실패를 안 뒤 답이 저장되기 전(window)과 답이 저장된 뒤(after)에 고르기 · 요약을 찍는다. 모든 판이 같은 시각 · 같은 씨앗이라 기록부에 든
+// 사건이 같으면 찍은 값도 같다.
+async function siblingRun(sibling, audio) {
+  const items = bankOf(rng(51));
+  const time = clock();
+  const port = steeredPort(memoryPort());
+  const { coach } = await openCoach({ items, port, time });
+  // 고를 후보는 답한 문항과 능력이 같은 문항들 — 능력 줄(θ)이 다르면 예상 성공 확률이 갈린다
+  const skill = items[0].skillId;
+  const candidates = items.filter(item => item.skillId === skill && item !== items[0]);
+  const snap = () => {
+    const picked = coach.recommend(candidates, { set: { length: 6 } });
+    const { skills, units } = coach.summary();
+    return {
+      picked: {
+        status: picked.status,
+        itemKey: picked.selected?.itemKey ?? null,
+        tier: picked.tier,
+        target: picked.target,
+        code: picked.why?.code ?? null,
+        expected: picked.expected,
+      },
+      skills: skills.map(({ id, theta, n, streak, level }) => ({ id, theta, n, streak, level })),
+      units: units.map(({ unit, sittings, lapses, dueAt }) => ({ unit, sittings, lapses, dueAt })),
+    };
+  };
+  coach.recommend(candidates, { set: { length: 6 } });
+  const pid = coach.present({ ...items[0], audioRequired: audio });
+  await settle();
+  if (sibling) {
+    port.fail();
+    if (sibling === 'delivery') coach.delivery(pid, { audio: 'completed' });
+    else coach.help(pid, 'hint');
+  }
+  const release = sibling ? port.hold() : () => {};
+  time.advance(1000);
+  const out = coach.answer(pid, { correct: true, assessable: true });
+  await settle();
+  await settle();
+  const window = sibling ? snap() : null; // 형제의 실패를 안 뒤 · 답은 아직 저장 중
+  release();
+  assert.equal(await out.stored, true);
+  await settle();
+  const after = snap();
+  coach.dispose();
+  return { window, after };
+}
+
+test('형제(전달 · 도움) 저장이 답보다 늦게 실패해도 답이 저장된 뒤 판 안 고르기의 이유 · 요약의 능력이 기록부 값과 같다 — 전달은 실패를 안 그때부터(손님, Fable 5.2 합친 끝 판 넘친 #13)', async () => {
+  // 전달 — 소리가 있어야 하는 문항이라 전달이 실패하면 그 답은 판정 못 한 답이다(형제를 쓰지 않은 판과 기록부가 같다)
+  const unheard = await siblingRun(null, true);
+  const delivery = await siblingRun('delivery', true);
+  assert.deepEqual(
+    delivery.window,
+    unheard.after,
+    '전달 실패를 안 뒤 · 답이 저장되기 전 — 호스트가 저장 중인 답을 지금 거름으로 다시 접었다(판정 못 한 답)',
+  );
+  assert.deepEqual(delivery.after, unheard.after, '전달 실패 · 답 저장 뒤 — 기록부 값');
+  // 도움 — 도움이 실패하면 그 답은 혼자 맞힌 첫 답이다
+  const solo = await siblingRun(null, false);
+  const help = await siblingRun('help', false);
+  assert.deepEqual(
+    help.after,
+    solo.after,
+    '도움 실패 · 답 저장 뒤 — 혼자 맞힌 첫 답(기록부가 실패한 도움의 만남을 답의 만남으로 바꾼 값)',
+  );
+  assert.ok(
+    solo.after.skills.some(line => line.n === 1),
+    '기준 판은 능력 줄을 세웠다(가르는 값)',
+  );
+  assert.equal(
+    unheard.after.skills.length,
+    0,
+    '판정 못 한 답은 능력 줄을 세우지 않는다(가르는 값)',
+  );
 });
 
 test('저장에 실패한 제시는 판의 낸 수에 들지 않는다 — 판 길이를 다 채우기 전에 새 판이 열리지 않는다(카본 끝 판 둘째 E2)', async () => {

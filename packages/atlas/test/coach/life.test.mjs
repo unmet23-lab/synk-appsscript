@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { PACKAGE_ROOT, subject } from '../support/subject.mjs';
-import { clock, createCoach, memoryPort } from './support.mjs';
+import { clock, createCoach, memoryPort, PARAMS } from './support.mjs';
 
 const DAY = 86_400_000;
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -16,6 +16,7 @@ const MAP_DATA = {
 // 생활 원고의 첫 인사(「안녕하세요.」) — 생활 단위 하나를 싣는 고르는 꼴 문항.
 const HELLO = 'life.greetings-expressions-hello';
 const { openMap } = await subject('map/index.mjs');
+const { acquireHost, installHostMaker, releaseHost } = await subject('coach/host.mjs');
 // 태그 없는 생활 문항(계열 단위로만 기억이 선다 — §19-0) — 지도에서 찾는다.
 const UNTAGGED = openMap(MAP_DATA)
   .items('world-life')
@@ -95,7 +96,7 @@ test('itemUnits(itemKey) — 지도 문항의 단위를 이름 · 갈래와 함�
   );
 });
 
-test('요약 단위 줄의 dueAt — 마지막 자리 + 다음 간격(혼자 맞힌 고르기 약 1.3일 · 놓침 6시간), 그때를 지나면 돌아온 것(F)', async () => {
+test('요약 단위 줄의 dueAt — 마지막 자리 + 다음 간격(혼자 맞힌 고르기 약 1.3일 · 놓침 6시간), 시간이 흘러도 그대로, 그때를 지나면 돌아온 것(F · Fable 5.2 합친 끝 판 넘친 #14)', async () => {
   const { coach, time } = await lifeCoach();
   const pid = coach.present({ itemKey: HELLO });
   const out = coach.answer(pid, { correct: true, assessable: true });
@@ -109,6 +110,11 @@ test('요약 단위 줄의 dueAt — 마지막 자리 + 다음 간격(혼자 맞
   time.advance(Math.ceil(line.dueAt - time.t) + 1000);
   const later = coach.summary().units[0];
   assert.equal(later.due, true, '다음 때를 지나면 돌아온 것');
+  assert.equal(
+    later.dueAt,
+    line.dueAt,
+    '시간이 흘러도 다음 때는 그대로 — 볼 때마다 「지금 + 간격」으로 밀리지 않는다(Fable 5.2 합친 끝 판 넘친 #14)',
+  );
   assert.deepEqual(
     coach.due().map(row => row.unit),
     ['ko.life.greet-hello'],
@@ -132,4 +138,48 @@ test('요약의 storage.waiting — 보기가 얹을 수 있으면 거짓(손님
   assert.equal(storage.waiting, false);
   assert.equal(storage.base, true);
   coach.dispose();
+});
+
+test('요약의 storage.waiting은 보기가 통째로 못 얹을 때만 참 — 줄마다 기다림(waitUnits · waitSkills)만 있는 보기에서는 거짓(Fable 5.2 합친 끝 판 넘친 #14)', async () => {
+  // 같은 손님 저장소를 연 두 탭 — B의 시계가 10분 뒤라(5분 넘게 앞선 다른 탭 시각은 따라가지 않는다) B가 저장 중인 답이 A의 답보다 앞에 선다
+  const port = memoryPort();
+  stores += 1;
+  const key = `synk-atlas:world-life-wait-${process.pid}-${stores}`;
+  const tab = () => {
+    const top = { location: { origin: 'https://world.test' } };
+    top.parent = top;
+    installHostMaker(top, { openPort: () => port });
+    return top;
+  };
+  const [topA, topB] = [tab(), tab()];
+  const ahead = clock();
+  const behind = clock(ahead.t - 10 * 60_000);
+  const open = (time, scope) =>
+    createCoach({
+      gameId: 'world-life',
+      mapData: MAP_DATA,
+      dayOffset: 540,
+      scope,
+      host: { guest: true, key, now: time.now },
+    });
+  const a = open(ahead, topA);
+  await a.ready;
+  const b = open(behind, topB);
+  await b.ready;
+  await a.answer(a.present({ itemKey: HELLO }), { correct: true, assessable: true }).stored;
+  const hostB = await acquireHost({ key, params: PARAMS, now: behind.now, guest: true }, topB);
+  await hostB.refresh(); // A의 답을 꼬리로 읽는다
+  const late = b.answer(b.present({ itemKey: HELLO }), { correct: true, assessable: true });
+  const view = hostB.view();
+  assert.equal(view.waitAll, false);
+  assert.ok(view.waitUnits.size + view.waitSkills.size > 0, '줄마다 기다림이 있다');
+  assert.equal(
+    b.summary().storage.waiting,
+    false,
+    '줄 기다림만 있으면 거짓 — 돌아온 복습 전체를 「확인 중」으로 두지 않는다',
+  );
+  assert.equal(await late.stored, true);
+  releaseHost(hostB);
+  a.dispose();
+  b.dispose();
 });

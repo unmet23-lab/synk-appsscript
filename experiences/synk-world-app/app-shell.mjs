@@ -40,15 +40,19 @@ const atlasNextGuestOn=atlasNextOn&&connection.features?.atlasNextGuest===true;
 // 계정 길(단계 4 ④ — 단계4_계획 §18-2 · §18-5): 운영은 계정을 다시 읽는 world-account의 prepareAtlasTrail, 리허설은 리허설 서버의 trail
 // (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
- let made=null,loading=null,disposed=false;const reopeners=new Set();
- const trailOf=m=>owner==='guest'?null:operating?()=>account.prepareAtlasTrail():m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if((client.snapshot?.accountId||'guest')===owner)client.expire?.();}});
- const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
+ // gaveOld: 입구 모듈을 못 받아 면(생활 판정 · 짧은 연습)에 지금 판을 줬다 — 다음에 받으면 판이 풀렸다고 알린다(입구는 제가 서기 전의 일을 몰라
+ // 알리지 않아, 짧은 연습은 새 길인데 생활 판정 · 홈 칩 · 알림은 지금 판에 남았다 — Fable 5.2 합친 끝 판 F9). early: 받기 전의 계기(50개까지 — 입구가 서면 흘려보낸다).
+ let made=null,loading=null,disposed=false,gaveOld=false;const reopeners=new Set(),early=[];
+ // 리허설 나르개의 401은 그 나르개를 만든 로그인의 세대에서만 로그인으로 보낸다 — 로그아웃 뒤 같은 합성 계정으로 다시 들어온 새 로그인을 앞 로그인의
+ // 늦은 401이 로그인 화면으로 돌리지 않게(Fable 5.2 합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
+ const trailOf=m=>{if(owner==='guest')return null;if(operating)return()=>account.prepareAtlasTrail();const generation=client.generation;return m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if(client.generation===generation&&(client.snapshot?.accountId||'guest')===owner)client.expire?.();}});};
+ const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
   // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
   async lifeCoach(){if(disposed)return null;const entry=await load();return disposed?null:entry.lifeCoach();},
   // 지금 판으로 정했던 판이 풀렸을 때(지금 판 → 새 길일 수 있음) — 생활 · 홈이 판을 다시 묻는다(단계4_계획 §19-3 7). 끊는 함수를 돌려준다.
   reopened(fn){if(disposed||typeof fn!=='function')return()=>{};reopeners.add(fn);return()=>reopeners.delete(fn);},
-  note:(kind,outcome)=>{if(made&&!disposed)made.note(kind,outcome);},
+  note:(kind,outcome)=>{if(disposed)return;if(made)made.note(kind,outcome);else if(early.length<50)early.push([kind,outcome]);},
   retired:(coach,fn)=>made&&!disposed?made.retired(coach,fn):()=>{},
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
@@ -934,7 +938,10 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();(action==='quickplay'?play:action==='profile'?profile:action==='about'?about:action==='photo'?photo:action==='town'||nav==='town'?town:wardrobe)();
  }
 },true);
-document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
+document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');
+ // 서버는 바뀌었는데 뒤 확인만 실패했거나 · 다른 기기가 먼저 바꿨으면(REVISION_CONFLICT) 체크 · 판 번호가 서버와 어긋난 채 남아 다시 눌러도 계속 실패했다 —
+ // 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(Fable 5.2 합친 끝 판 넘친 #12). 다시 읽기도 못 하면 되돌린 값 그대로.
+ void account.refreshLearning?.().then(()=>{if(screen==='world-profile')profile();},()=>{});}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
 window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
 window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});

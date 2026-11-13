@@ -4,7 +4,19 @@ const storage=()=>{const data=new Map();return{getItem:k=>data.get(k)||null,setI
 const snapshot=(accountId='a',revision=1)=>({ok:true,accountId,revision,avatar:{characterId:'mongle',slots:{body:'',neck:''}},inventory:[]});
 const response=(data,status=200)=>({ok:status===200,status,json:async()=>data});
 test('logout invalidates slow decoded responses',async()=>{let release;const decoded=new Promise(r=>release=r);const client=new WorldClient({storage:storage(),fetcher:async url=>url.endsWith('logout')?response({ok:true}):{ok:true,status:200,json:()=>decoded}});const request=client.refresh();await new Promise(r=>setTimeout(r,0));await client.logout();release(snapshot());await assert.rejects(request,{code:'STALE_RESPONSE'});assert.equal(client.snapshot,null);});
-test('expire() — 401과 같은 일: 로그인으로 돌아가고 세대를 올려 늦은 답을 버린다(리허설 Atlas 나르개의 401 — Fable 5.2 끝 판 둘째 넘친 #9)',async()=>{const client=new WorldClient({storage:storage(),fetcher:async()=>response({error:{code:'AUTH_REQUIRED'}},401)});client.adopt(snapshot());const before=client.generation;let seen=0;client.subscribe?.(()=>{seen+=1;});client.expire();assert.equal(client.status,'sign-in');assert.equal(client.snapshot,null);assert.equal(client.generation,before+1);const again=new WorldClient({storage:storage(),fetcher:async()=>response({error:{code:'AUTH_REQUIRED'}},401)});again.adopt(snapshot());await assert.rejects(again.request('rehearsal/status'),{status:401});assert.equal(again.status,'sign-in','요청의 401도 같은 길');});
+// 401 뒤에는 셸이 세션이 끝난 것을 알고(알림 한 번), 죽은 Bearer · 보낼 차림을 남기지 않는다 — 직접 부른 expire()와 요청의 401 모두(Fable 5.2 합친 끝 판 넘친 #21 · #27).
+test('expire() — 401과 같은 일: 로그인으로 돌아가고 세대를 올려 늦은 답을 버리며, 알림 한 번 · 토큰 · 보낼 차림을 비운다(리허설 Atlas 나르개의 401 — Fable 5.2 끝 판 둘째 넘친 #9 · 합친 끝 판 넘친 #21 · #27)',async()=>{
+  const signedIn=onChange=>{const client=new WorldClient({storage:storage(),onChange,fetcher:async()=>response({error:{code:'AUTH_REQUIRED'}},401)});client.adopt(snapshot());client.accessToken='synthetic-token';client.pending={requestId:'outfit-1',slots:{body:'',neck:''},expectedRevision:1};return client;};
+  for(const how of ['expire','request']){
+    let seen=0;const client=signedIn(()=>{seen+=1;});const before=client.generation,notified=seen;
+    if(how==='expire')client.expire();else await assert.rejects(client.request('rehearsal/status'),{status:401});
+    assert.equal(client.status,'sign-in',`${how}: 로그인으로`);assert.equal(client.snapshot,null,how);
+    assert.equal(client.generation,before+1,`${how}: 세대를 올려 늦은 답을 버린다`);
+    assert.equal(client.accessToken,null,`${how}: 죽은 토큰으로 다시 보내지 않는다`);
+    assert.equal(client.pending,null,`${how}: 보낼 차림을 남기지 않는다`);
+    assert.equal(seen-notified,1,`${how}: 셸(onClientChange)에 한 번 알린다`);
+  }
+});
 test('server snapshot revision never moves backward',()=>{const client=new WorldClient({storage:storage()});client.adopt(snapshot('a',5));client.adopt(snapshot('a',3));assert.equal(client.snapshot.revision,5);assert.throws(()=>client.adopt(snapshot('b',9)),{code:'ACCOUNT_MISMATCH'});});
 
 test('appearance broadcasts only invalidate distinct server state and can be disabled for a receiving bridge',()=>{

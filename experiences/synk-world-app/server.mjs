@@ -33,6 +33,7 @@ const sessions=new Map();
 let speakingHost=null;
 // Atlas 새 기록 길 리허설(재설계 단계 4 ④ — 단계4_계획 §18-2 11): 합성 계정마다 메모리에서 talk와 같은 검사 · 같은 서버 접기로 답한다(rehearsal-trail.mjs).
 // 엔진은 SYNK_ATLAS_DEV_OUT의 묶음(브라우저가 받는 판), 없으면 패키지 원천. 스위치는 SYNK_WORLD_ATLAS_TRAIL(기본 on · off · player-a 같은 쉼표 목록).
+// 처음 판 파일은 자료 폴더에 묶는다(town과 같은 꼴) — 저장소 폴더에 하나면 다른 자료 폴더로 함께 켠 리허설 서버가 서로의 판을 덮었다(Fable 5.2 합친 끝 판 넘친 #25).
 let trailHost=null;
 const trailRoutes=new Set(['rehearsal/trail','rehearsal/trail-clear','rehearsal/trail-account','rehearsal/trail-control','rehearsal/trail-legacy']);
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
@@ -75,7 +76,7 @@ const server=http.createServer(async(req,res)=>{
    if(suffix==='rehearsal/logout'&&req.method==='POST'){const token=requestToken(request),cookie=cookieToken(request);sessions.delete(token);return json(res,200,{ok:true},token===cookie?{'Set-Cookie':`${sessionCookieName(request)}=; HttpOnly; SameSite=Strict; Path=/api/world; Max-Age=0`}:{});}
    if(trailRoutes.has(suffix)){
     const account=identity(request);
-    trailHost??=import('./rehearsal-trail.mjs').then(m=>m.openRehearsalTrail({root,devOut:process.env.SYNK_ATLAS_DEV_OUT||null,trailSwitch:process.env.SYNK_WORLD_ATLAS_TRAIL,keys:ids,stateFile:path.join(root,'.local','rehearsal-trail-revision.json')})).catch(error=>{trailHost=null;throw error;});
+    trailHost??=import('./rehearsal-trail.mjs').then(m=>m.openRehearsalTrail({root,devOut:process.env.SYNK_ATLAS_DEV_OUT||null,trailSwitch:process.env.SYNK_WORLD_ATLAS_TRAIL,keys:ids,stateFile:`${dataDir}-trail-revision.json`})).catch(error=>{trailHost=null;throw error;});
     const reply=await(await trailHost).handle({account,path:suffix.slice('rehearsal/'.length),method:req.method,query:url.searchParams,body:raw,headers});
     return json(res,reply.status,reply.body);
    }

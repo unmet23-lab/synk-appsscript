@@ -222,6 +222,73 @@ test('겹친 확인 — 뒤에 시작한 확인이 있으면 앞의 확인은 �
  assert.equal(f.invalidations(),0);
 });
 
+// 가짜 load가 붙들리기 전의 값을 쥐고(낡은 읽기) 서버를 바꾼 뒤 풀어야 「값은 뒤 확인이 적는다」를 잰다 — 풀릴 때 지금 값을 다시 읽는 가짜로는
+// 앞의 확인이 제 읽기를 그대로 적어도 같은 답이 나왔다(Fable 5.2 합친 끝 판 넘친 #3).
+test('겹친 확인 — 낡은 앞 읽기는 계정에 서지 않는다: 값은 뒤 확인이 적고, 앞의 약속은 뒤 읽기가 끝나기 전에 풀리지 않는다(Fable 5.2 합친 끝 판 넘친 #3)',async()=>{
+ const gates=new Map();let learning={enabled:true,revision:2},loads=0;
+ const record=()=>({ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}],learning:{...learning},capabilities:{learningSync:true}});
+ const f=fixture({accountFactory:()=>({
+  load:async()=>{const n=++loads,taken=record();if(gates.has(n))await gates.get(n).promise;return taken;}, // 읽은 값을 쥐고 붙들린다
+  setLearning:async enabled=>{learning={enabled,revision:learning.revision+1};return {ok:true};},
+  revokeSession:async()=>({refreshRevoked:true}),
+  trail:{get:async()=>({summary:null,serverTime:0}),post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0})}})});
+ assert.equal(await f.client.restore(),true); // 읽기 1
+ const settle=promise=>{const out={done:false};promise.then(value=>{out.done=true;out.value=value;},error=>{out.done=true;out.error=error;});return out;};
+ // ① 앞 읽기(켬 · 판 2)가 붙들린 사이 토글이 서버를 바꾸고 뒤 읽기(끔 · 판 3)가 먼저 끝난다 — 낡은 앞 읽기가 돌아와도 계정 값은 판 3
+ gates.set(2,deferred());
+ const front=settle(f.account.prepareAtlasTrail()); // 읽기 2 — 바뀌기 전 값을 쥐고 붙들린다
+ while(loads<2)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(await f.account.setLearning(false,2),{enabled:false,revision:3}); // 읽기 3
+ gates.get(2).resolve();
+ while(!front.done)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(front.error,undefined,'앞의 줄 읽기는 지지 않는다');
+ assert.deepEqual(front.value.learning,{enabled:false,revision:3},'앞의 줄도 뒤 확인의 값');
+ assert.deepEqual(f.account.preferences(),{enabled:false,revision:3},'낡은 앞 읽기가 계정 값을 되돌리지 않는다');
+ // ② 앞 · 뒤 읽기가 모두 붙들린 채 앞이 먼저 돌아온다 — 앞의 약속은 뒤 읽기가 끝날 때까지 풀리지 않는다
+ gates.set(4,deferred());gates.set(5,deferred());
+ const older=settle(f.account.prepareAtlasTrail()); // 읽기 4(끔 · 판 3)
+ while(loads<4)await new Promise(resolve=>setTimeout(resolve,0));
+ const toggled=settle(f.account.setLearning(true,3)); // 서버를 바꾸고 읽기 5(켬 · 판 4)
+ while(loads<5)await new Promise(resolve=>setTimeout(resolve,0));
+ gates.get(4).resolve();
+ for(let i=0;i<5;i+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(older.done,false,'뒤 읽기가 끝나기 전에는 앞의 약속이 풀리지 않는다');
+ assert.deepEqual(f.account.preferences(),{enabled:false,revision:3},'아직 뒤 확인 앞 — 앞의 낡은 읽기를 적지 않는다');
+ gates.get(5).resolve();
+ while(!older.done||!toggled.done)await new Promise(resolve=>setTimeout(resolve,0));
+ assert.deepEqual(toggled.value,{enabled:true,revision:4});
+ assert.deepEqual(older.value?.learning,{enabled:true,revision:4},'앞의 줄은 뒤 확인의 값');
+ assert.deepEqual(f.account.preferences(),{enabled:true,revision:4});
+ assert.equal(f.invalidations(),0);
+});
+
+// 학습 기록 토글이 실패한 뒤 셸은 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(app-shell change 듣개 — Fable 5.2 합친 끝 판 넘친 #12) — 그 다시 읽기.
+test('학습 기록 토글 실패 뒤 다시 읽기 — POST는 됐는데 뒤 확인이 실패했거나 다른 기기가 먼저 바꿨으면 refreshLearning이 서버 값을 돌려주고, 인증 오류면 세션을 닫는다(Fable 5.2 합친 끝 판 넘친 #12)',async()=>{
+ let learning={enabled:true,revision:2},failLoad=null;
+ const record=()=>({ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}],learning:{...learning},capabilities:{learningSync:true}});
+ const f=fixture({accountFactory:()=>({
+  load:async()=>{if(failLoad){const error=failLoad;failLoad=null;throw error;}return record();},
+  setLearning:async enabled=>{learning={enabled,revision:learning.revision+1};return {ok:true};},
+  revokeSession:async()=>({refreshRevoked:true}),
+  trail:{get:async()=>({summary:null,serverTime:0}),post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0})}})});
+ assert.equal(await f.client.restore(),true);
+ // ① POST는 됐는데 뒤 확인이 네트워크로 실패 — 계정 값은 앞 값(판 2), 서버는 판 3
+ failLoad=Object.assign(Error('network'),{code:'NETWORK_UNAVAILABLE'});
+ await assert.rejects(f.account.setLearning(false,2),{code:'NETWORK_UNAVAILABLE'});
+ assert.deepEqual(f.account.preferences(),{enabled:true,revision:2},'확인이 실패해 계정 값은 앞 값 — 시트가 이 값으로 남으면 다시 눌러도 판이 어긋난다');
+ assert.deepEqual(await f.account.refreshLearning(),{enabled:false,revision:3},'다시 읽으면 서버 값');
+ assert.deepEqual(f.account.preferences(),{enabled:false,revision:3});
+ // ② 다른 기기가 먼저 바꿈 — 다시 읽으면 그 값
+ learning={enabled:true,revision:4};
+ assert.deepEqual(await f.account.refreshLearning(),{enabled:true,revision:4});
+ assert.equal(f.invalidations(),0,'일시 실패 · 다른 기기의 바꿈은 세션을 닫지 않는다');
+ // ③ 다시 읽기도 실패하면 던진다(셸은 되돌린 값 그대로 둔다) — 인증 오류면 세션을 닫는다
+ failLoad=Object.assign(Error('auth'),{code:'AUTH_REQUIRED'});
+ await assert.rejects(f.account.refreshLearning(),{code:'AUTH_REQUIRED'});
+ assert.ok(f.invalidations()>=1,'인증 오류면 세션을 닫는다');
+ await assert.rejects(f.account.refreshLearning(),'닫힌 뒤에는 읽지 않는다');
+});
+
 test('a slower old game launch cannot install or dispose its newer replacement',async()=>{
  const held=deferred(),f=gameFixture({load:async(n,record)=>n===2?held.promise:record()}),target={};await f.client.restore();
  const old=f.account.prepareGame({target,storage:f.cache});

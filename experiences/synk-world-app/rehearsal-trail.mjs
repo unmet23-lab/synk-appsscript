@@ -517,8 +517,9 @@ export function createRehearsalTrail({
 
 // 리허설 서버가 부르는 입구 — 엔진은 SYNK_ATLAS_DEV_OUT의 묶음(브라우저가 받는 것과 같은 판)과 그 판의 전체 색인(map/index.json),
 // 없으면 패키지 원천(packages/atlas/src · map/index.json)으로 연다.
-// stateFile: 마지막으로 내준 판을 적는 파일(리허설 서버의 .local) — 켤 때 max(켠 시각의 초, 적은 판 + 1)로 시작한다. 켠 시각만으로는 앞 서버에서
-// 판을 k번 올린 뒤 k초 안에 다시 켜면 새 판이 기기의 판보다 작거나 같아, 기기가 앞 서버 때의 저장소를 그대로 열었다(넘친 #10).
+// stateFile: 마지막으로 내준 판을 적는 파일(리허설 서버의 자료 폴더 옆 — server.mjs `${dataDir}-trail-revision.json`, Fable 5.2 합친 끝 판
+// 넘친 #25) — 켤 때 max(켠 시각의 초, 적은 판 + 1)로 시작한다. 켠 시각만으로는 앞 서버에서 판을 k번 올린 뒤 k초 안에 다시 켜면 새 판이 기기의
+// 판보다 작거나 같아, 기기가 앞 서버 때의 저장소를 그대로 열었다(넘친 #10).
 export async function openRehearsalTrail({ root, devOut = null, trailSwitch, keys, stateFile = null }) {
   let atlas;
   let indexFile;
@@ -540,21 +541,24 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
   // 켤 때마다 큰 판으로 시작한다(켠 시각의 초) — 서버를 다시 켜면 메모리 계정이 사라지는데 판이 1로 돌아가, 같은 브라우저의 기기가 앞 사본
   // (계정 · 판 1)을 그대로 열고 옛 받은 표지와 새 서버 차례가 어긋나 「답이 사라진다」처럼 보였다. 판이 오르면 기기는 새 저장소를 열고 앞 판
   // 사본을 버린다(coach/stores.mjs dropEarlier — Fable 5.2 끝 판 넘친 #9).
-  let highest = 0;
-  if (stateFile)
+  // 적은 판 — 처음 켬 · 깨졌거나 못 읽은 파일은 0(켠 시각으로 시작한다).
+  const saved = () => {
     try {
-      const saved = JSON.parse(fs.readFileSync(stateFile, 'utf8'))?.revision;
-      if (Number.isSafeInteger(saved) && saved > 0) highest = saved;
+      const value = JSON.parse(fs.readFileSync(stateFile, 'utf8'))?.revision;
+      return Number.isSafeInteger(value) && value > 0 ? value : 0;
     } catch {
-      // 처음 켬 · 읽지 못함 — 켠 시각으로 시작한다
+      return 0;
     }
+  };
+  let highest = stateFile ? saved() : 0;
   const onRevision = stateFile
     ? revision => {
         if (revision <= highest) return;
         // 쓴 뒤에 올린다 — 한 번 못 쓰면 같은 판(뒤 계정의 처음 판)이 다시 쓴다(카본 합친 끝 판 B3). 폴더는 서버가 만들지만(server.mjs) 이 함수만
-        // 부르는 길에서도 서게.
+        // 부르는 길에서도 서게. 쓸 때 파일을 다시 읽어 큰 판을 둔다 — 같은 파일을 쓰는 다른 서버가 더 큰 판을 적었으면 나중에 쓴 쪽의 낮은 판이
+        // 남아, 다시 켠 서버가 제가 내준 판 이하로 시작했다(Fable 5.2 합친 끝 판 넘친 #25).
         fs.mkdirSync(path.dirname(stateFile), { recursive: true });
-        fs.writeFileSync(stateFile, JSON.stringify({ revision }));
+        fs.writeFileSync(stateFile, JSON.stringify({ revision: Math.max(saved(), revision) }));
         highest = revision;
       }
     : null;

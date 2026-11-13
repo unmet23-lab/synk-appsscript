@@ -424,7 +424,7 @@ export function createCoach(options = {}) {
 
     // 첫 받기(GET)의 결과를 한도 안에서 기다린다(계획 §18-5-5 G4) — 처음인 기기의 판 정하기가 쓴다. coach.ready는 받기를 기다리지
     // 않는다(요약이 있는 기기는 오프라인으로 바로 선다). { ok, base, kind?, code? } — ok: 받기가 됐다, base: 이 기기에 그 계정 · 그 동의
-    // 판의 요약이 있다, kind: 못 받은 갈래(offline · switch · account · auth · other · timeout). 손님은 곧 { ok: true, base: true }.
+    // 판의 요약이 있다, kind: 못 받은 갈래(offline · switch · account · auth · other · timeout). 손님은 곧 { ok: true, guest: true, base: true }.
     async synced(wait = SYNC_WAIT_MS) {
       live();
       const result = await state.host.firstPull(wait);

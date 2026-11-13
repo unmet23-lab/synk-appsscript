@@ -390,6 +390,8 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const client=clientFor(expected);
    try{await client.setLearning(enabled,expectedRevision);guard(expected);await verify(expected);guard(expected);return this.preferences();}
    catch(error){if(authErrors.has(error.code)){clear();forgetSession();}throw error;}},
+  // 학습 기록 설정을 바꾸려다 실패한 뒤 — 계정을 한 번 다시 읽어 지금 값을 돌려준다(셸이 시트의 체크 · 판 번호를 서버와 맞춘다, Fable 5.2 합친 끝 판 넘친 #12).
+  async refreshLearning(){const expected=epoch;guard(expected);if(!owner)throw changed();try{await verify(expected);guard(expected);return this.preferences();}catch(error){if(authErrors.has(error.code)){clear();forgetSession();}throw error;}},
   async enrollmentRequest(operation,body){if(!['preview','claim'].includes(operation))throw new TypeError('Unknown enrollment operation');const response=await request(`enrollment/${operation}`,{method:'POST',body:JSON.stringify(body)});const data=await response.json();if(!response.ok||data.ok===false)throw Object.assign(Error(data.error?.message||'반 정보를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'),{code:data.error?.code||'ENROLLMENT_UNAVAILABLE',status:response.status});return data;},
   stop(){clear();closed=true;unsubscribe?.();unsubscribe=null;}});
 }

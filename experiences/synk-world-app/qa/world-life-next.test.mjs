@@ -10,7 +10,7 @@ import { lifeAssessable, lifeItem } from '../life-items.mjs';
 import { createLifeProgress } from '../life-progress.mjs';
 import { lessonSlot, reviewSlot } from '../life-trail.mjs';
 import { buildWorldLearningCandidates } from '../world-learning-plan.mjs';
-import { createLifeNext, lifeDue, lifeUnitsOf, watchLifeDue } from '../world-life-next.mjs';
+import { createLifeNext, lifeDue, lifeUnitsOf, stuckBook, watchLifeDue } from '../world-life-next.mjs';
 
 const DAY = 86_400_000;
 const HOUR = 3_600_000;
@@ -35,25 +35,50 @@ function memoryStorage() {
 }
 
 // ── lifeDue ──
-const review = (id, { lessonId = 'L', questionId = id, lastAt = T0 } = {}) => ({
-  id: `${id}-transfer`,
-  questionId,
-  lessonId,
-  packId: 'p',
-  skillId: 's',
-  dueAt: lastAt + DAY,
-  lastAt,
-  streak: 0,
-  lapses: 0,
-  intervalDays: 1,
-});
+// 진도(life-progress.mjs)가 적는 복습 기록 그대로: 본문항 답(at) — 놓침(틀림 · 직접 연 도움)이면 lapses 1 · streak 0 · 1분 뒤, 아니면 하루 뒤.
+// lastAt이 at보다 뒤면 그때 새 장면 복습에 답했다 — reviewed 'alone'(기본: 혼자 맞힘 — streak 1 · 하루 뒤) · 'missed'(틀림 · 도움 — lapses +1 · 1분 뒤).
+const MINUTE = 60_000;
+function review(id, { lessonId = 'L', questionId = id, at = T0, correct = true, helped = false, helpSource, lastAt = at, reviewed = 'alone' } = {}) {
+  const difficult = !correct || (helped && helpSource !== 'setting');
+  const r = {
+    id: `${id}-transfer`,
+    questionId,
+    lessonId,
+    packId: 'p',
+    skillId: 's',
+    dueAt: at + (difficult ? MINUTE : DAY),
+    lastAt: at,
+    streak: 0,
+    lapses: difficult ? 1 : 0,
+    intervalDays: difficult ? 0 : 1,
+  };
+  if (lastAt > at) {
+    const missed = reviewed === 'missed';
+    r.streak = missed ? 0 : r.streak + 1;
+    r.lapses += missed ? 1 : 0;
+    r.intervalDays = missed ? 0 : 1;
+    r.dueAt = lastAt + (missed ? MINUTE : DAY);
+    r.lastAt = lastAt;
+  }
+  return r;
+}
+// cleared: 그 레슨을 다시 하기로 열어 본문항 답이 비워졌다(진도의 복습 기록은 그대로 — F2).
 function snapshotOf(rows) {
   const lessons = {};
   const reviews = {};
   for (const row of rows) {
-    const r = review(row.q, { lessonId: row.lesson ?? 'L', lastAt: row.lastAt ?? row.at });
+    const r = review(row.q, {
+      lessonId: row.lesson ?? 'L',
+      at: row.at,
+      correct: row.correct ?? true,
+      helped: row.helped ?? false,
+      helpSource: row.helpSource,
+      lastAt: row.lastAt ?? row.at,
+      reviewed: row.reviewed,
+    });
     reviews[r.id] = r;
     lessons[r.lessonId] ??= { answers: {} };
+    if (row.cleared) continue;
     lessons[r.lessonId].answers[row.q] = {
       correct: row.correct ?? true,
       helped: row.helped ?? false,
@@ -65,24 +90,89 @@ function snapshotOf(rows) {
 }
 const unitsFrom = table => r => table[r.questionId ?? r.id.replace(/-transfer$/, '')] ?? [];
 
-test('lifeDue ① 방금 놓친 것 — 틀렸거나 직접 도움을 연 본문항의 복습은 새 장면으로 한 번 답할 때까지 남고, 돌아온 때는 그 답 시각이다(설정 도움은 아님 · L6)', () => {
+test('lifeDue ① 방금 놓친 것 — 틀렸거나 직접 도움을 연 본문항의 복습은 혼자 맞힐 때까지 남고, 돌아온 때는 진도의 값(놓친 답 1분 뒤)이다(설정 도움은 아님 · L6 · Fable F1)', () => {
   const snapshot = snapshotOf([
     { q: 'a', at: T0, correct: false },
     { q: 'b', at: T0 + 10, correct: true, helped: true },
     { q: 'c', at: T0, correct: true, helped: true, helpSource: 'setting' },
     { q: 'd', at: T0, correct: false, lastAt: T0 + 60_000 },
   ]);
-  const out = lifeDue({ snapshot, unitsOf: unitsFrom({ a: ['ko.life.x'] }), now: T0 + 1000 });
-  assert.deepEqual(out.ids, ['a-transfer', 'b-transfer'], 'd는 이미 새 장면으로 답했다');
+  const units = unitsFrom({ a: ['ko.life.x'] });
+  // 1분 안 — 아직 돌아오지 않았고 「곧 돌아올 표현」 · 다음 때에 든다(지금 판과 같은 「조금 뒤」)
+  const soon = lifeDue({ snapshot, unitsOf: units, now: T0 + 1000 });
+  assert.deepEqual(soon.ids, []);
+  assert.deepEqual(
+    soon.upcoming.map(row => [row.id, row.at]),
+    [
+      ['a-transfer', T0 + MINUTE],
+      ['b-transfer', T0 + 10 + MINUTE],
+    ],
+  );
+  assert.equal(soon.nextAt, T0 + MINUTE);
+  const out = lifeDue({ snapshot, unitsOf: units, now: T0 + 2 * MINUTE });
+  assert.deepEqual(out.ids, ['a-transfer', 'b-transfer'], 'd는 새 장면에서 혼자 맞혔다');
   assert.deepEqual(
     out.items.map(item => [item.why, item.at]),
     [
-      ['soon', T0],
-      ['soon', T0 + 10],
+      ['soon', T0 + MINUTE],
+      ['soon', T0 + 10 + MINUTE],
     ],
   );
-  assert.deepEqual(out.times, [T0, T0 + 10], '알림은 돌아온 때(고정 시각)로 가른다');
+  assert.deepEqual(out.times, [T0 + MINUTE, T0 + 10 + MINUTE], '알림은 돌아온 때(고정 시각)로 가른다');
   assert.equal(out.nextAt, null, '앞으로 열릴 것이 없으면 다음 때도 없다');
+});
+
+test('lifeDue ① — 새 장면 복습을 틀리거나 도움 받고 답해도 혼자 맞힐 때까지 「조금 뒤」 다시 돌아온다(단위 있는 것 · 없는 것 · 다른 단위에 놓침이 적힌 것 — Fable 5.2 합친 끝 판 F1)', () => {
+  const rows = [
+    // 본문항을 놓친 뒤 새 장면 복습도 틀림 — 생활 단위 있음 · 엔진 기억 줄 없음(놓침이 다른 단위에 적힘)
+    { q: 'a', at: T0, correct: false, lastAt: T0 + HOUR, reviewed: 'missed' },
+    // 생활 단위 없는 복습 — 본문항은 맞혔고 복습을 도움 받고 답함
+    { q: 'b', at: T0, lastAt: T0 + HOUR, reviewed: 'missed' },
+    // 혼자 맞힌 복습 — 빠진다
+    { q: 'c', at: T0, correct: false, lastAt: T0 + HOUR, reviewed: 'alone' },
+  ];
+  const units = unitsFrom({ a: ['ko.life.x'], c: ['ko.life.y'] });
+  const memory = [{ unit: 'ko.life.y', lastAt: T0 + HOUR, dueAt: T0 + HOUR + 1.3 * DAY }];
+  const back = lifeDue({ snapshot: snapshotOf(rows), unitsOf: units, memory, now: T0 + HOUR + 2 * MINUTE });
+  assert.deepEqual(back.ids, ['a-transfer', 'b-transfer'], '틀린 복습 둘은 곧 다시 — 혼자 맞힌 c는 빠짐');
+  assert.ok(back.items.every(item => item.why === 'soon' && item.at === T0 + HOUR + MINUTE), '돌아온 때는 진도의 값(그 답 1분 뒤)');
+  assert.deepEqual(back.stuck, [], '놓친 것은 붙들 뿐 stuck이 아니다');
+  // 열흘 뒤에도 그대로 — 혼자 맞힐 때까지
+  const later = lifeDue({ snapshot: snapshotOf(rows), unitsOf: units, memory, now: T0 + 10 * DAY });
+  assert.deepEqual(later.ids.slice(0, 2), ['a-transfer', 'b-transfer']);
+  // 그 단위가 엔진의 돌아온 것(③)에도 걸리면 ①로 한 번
+  const both = lifeDue({
+    snapshot: snapshotOf([...rows, { q: 'd', at: T0 }]),
+    unitsOf: unitsFrom({ a: ['ko.life.x'], c: ['ko.life.y'], d: ['ko.life.x'] }),
+    memory: [...memory, { unit: 'ko.life.x', lastAt: T0, dueAt: T0 + DAY }],
+    due: [{ unit: 'ko.life.x' }],
+    now: T0 + 2 * DAY,
+  });
+  assert.deepEqual(
+    both.items.map(item => [item.id, item.why]),
+    [
+      ['a-transfer', 'soon'],
+      ['b-transfer', 'soon'],
+    ],
+    'x는 ①의 a로 한 번 — 같은 단위의 d를 ③으로 또 세지 않는다',
+  );
+});
+
+test('lifeDue — 레슨을 다시 하기로 열어 본문항 답이 비워져도 ① · ② 대기는 그대로다(진도의 복습 기록으로 읽는다 — Fable 5.2 합친 끝 판 F2)', () => {
+  const rows = [
+    { q: 'a', at: T0, correct: false },
+    { q: 'b', at: T0 },
+    { q: 'c', at: T0, lastAt: T0 + 2 * DAY },
+  ];
+  const units = unitsFrom({ a: ['ko.life.x'], b: ['ko.life.y'], c: ['ko.life.z'] });
+  for (const now of [T0 + DAY / 2, T0 + DAY + 1000, T0 + 3 * DAY]) {
+    const kept = lifeDue({ snapshot: snapshotOf(rows), unitsOf: units, now });
+    const cleared = lifeDue({ snapshot: snapshotOf(rows.map(row => ({ ...row, cleared: true }))), unitsOf: units, now });
+    assert.deepEqual(cleared, kept, `다시 하기를 열기만 한 판정이 앞과 같다(${(now - T0) / DAY}일)`);
+  }
+  const after = lifeDue({ snapshot: snapshotOf(rows.map(row => ({ ...row, cleared: true }))), unitsOf: units, now: T0 + DAY + 1000 });
+  assert.deepEqual(after.ids, ['a-transfer', 'b-transfer'], '놓친 a는 ①, 처음인 b는 하루 뒤 다리로');
+  assert.deepEqual(after.stuck, ['c-transfer'], '혼자 맞혔는데 기억 줄이 없는 c는 그대로 stuck(받아들인 틈)');
 });
 
 test('lifeDue ①은 놓친 문항마다 — 같은 생활 단위의 놓친 복습 둘은 둘(결과 화면 soon 묶음과 같은 수), 그 단위는 ② 다리 · ③ 엔진에서 다시 세지 않는다(GPT 합친 끝 판 GC3)', () => {
@@ -153,7 +243,7 @@ test('lifeDue ③ 돌아온 단위마다 복습 하나 — 안 답한 것 → �
   assert.deepEqual(
     out.items.map(item => [item.why, item.at]),
     [
-      ['soon', T0],
+      ['soon', T0 + MINUTE],
       ['due', T0 + DAY],
       ['due', T0 + 2 * DAY],
     ],
@@ -874,4 +964,433 @@ test('한 바퀴(진짜 엔진 · 진짜 진도) — 확인 중 → 엔진, 틀�
   watcher.dispose();
   assert.equal(watcher.nextAt(missed.review.id), null, '닫은 뒤에는 모름');
   coach.dispose();
+});
+
+// ── Fable 5.2 합친 끝 판(atlas-redesign-stage4-acct-life-final-20261113) 처리 ──
+test('lifeDue 전수 — 원고의 복습을 하나씩 본문항 · 새 장면 둘 다 틀려도 모두 「조금 뒤」(1분 뒤) 돌아오고, 혼자 맞히면 빠진다 — 안 돌아오는 복습 0(Fable 5.2 합친 끝 판 F1)', () => {
+  const all = LESSONS.flatMap(lesson => lesson.questions.map(question => ({ lesson, question })));
+  assert.ok(all.length >= 60, `원고의 복습 ${all.length}개`);
+  const wrong = [];
+  for (const { lesson, question } of all) {
+    let at = T0;
+    const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => at });
+    progress.summary([], LESSONS);
+    progress.startLesson(lesson);
+    progress.recordAnswer({ lessonId: lesson.id, questionId: question.id, correct: false });
+    const id = question.review.id;
+    // 생활 단위가 없는 것으로 본다 — ①은 진도 기록만 읽어 단위 · 기억 줄과 상관없이 돌아와야 한다
+    const back = now => lifeDue({ snapshot: progress.exportSnapshot(), lessons: LESSONS, unitsOf: () => [], now }).ids.includes(id);
+    at += 2 * MINUTE;
+    if (!back(at)) wrong.push(`${id}: 본문항을 놓친 2분 뒤`);
+    const run = progress.startReview(1, id, null, { ids: [id] });
+    progress.answerReview({ id, runId: run.id, correct: false });
+    if (back(at + 30_000)) wrong.push(`${id}: 틀린 복습이 1분 안에 돌아옴`);
+    for (const later of [2 * MINUTE, 7 * HOUR, 2 * DAY, 30 * DAY]) if (!back(at + later)) wrong.push(`${id}: 틀린 복습 ${later / MINUTE}분 뒤`);
+    at += 2 * MINUTE;
+    const again = progress.startReview(1, id, null, { ids: [id] });
+    progress.answerReview({ id, runId: again.id, correct: true });
+    if (back(at + 2 * MINUTE)) wrong.push(`${id}: 혼자 맞힌 뒤에도 남음`);
+  }
+  assert.deepEqual(wrong, []);
+});
+
+test('lifeDue — 진짜 진도: 마친 레슨을 다시 하기로 열기만 해도 놓친 것(①) · 다리 대기(②)는 앞과 같다(Fable 5.2 합친 끝 판 F2)', () => {
+  let at = T0;
+  const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => at });
+  progress.summary([], LESSONS);
+  const lesson = LESSONS.find(candidate => candidate.questions.length >= 3 && !candidate.id.startsWith('cafe'));
+  progress.startLesson(lesson);
+  lesson.questions.forEach((question, index) =>
+    progress.recordAnswer({ lessonId: lesson.id, questionId: question.id, correct: index !== 0 }),
+  );
+  progress.finishLesson(lesson.id);
+  const unitOf = new Map(lesson.questions.map((question, index) => [question.review.id, [`ko.life.f2-${index}`]]));
+  const judge = now => lifeDue({ snapshot: progress.exportSnapshot(), lessons: LESSONS, unitsOf: review => unitOf.get(review.id) ?? [], now });
+  at += 2 * MINUTE;
+  const before = [judge(at), judge(T0 + DAY + MINUTE), judge(T0 + 3 * DAY)];
+  assert.deepEqual(before[0].ids, [lesson.questions[0].review.id], '놓친 것은 곧');
+  assert.deepEqual(
+    before[0].upcoming.map(row => row.id).sort(),
+    lesson.questions.slice(1).map(q => q.review.id).sort(),
+    '맞힌 것은 다리 대기',
+  );
+  // 다시 하기를 연다 — 진도는 그 레슨의 본문항 답을 비운다(복습 기록은 그대로)
+  const replay = progress.startLesson(lesson, { replay: true });
+  assert.deepEqual(replay.answers, {}, '다시 하기는 본문항 답을 비운다');
+  assert.deepEqual([judge(at), judge(T0 + DAY + MINUTE), judge(T0 + 3 * DAY)], before, '판정은 열기 전과 같다');
+});
+
+// 기본 판이 낡아(30분 쉼 · 새벽 4시) 앞 제시 번호를 놓은 코치 — gone에 든 번호로 도움 · 소리 · 답을 부르면 PRESENTATION_GONE으로 던진다.
+function staleCoach() {
+  const coach = fakeCoach();
+  const gone = new Set();
+  const guard = (name, fn) => (pid, ...rest) => {
+    if (gone.has(pid)) {
+      coach.calls.push([`${name}:gone`, pid]);
+      throw Object.assign(new Error('Atlas coach: 끝났거나 모르는 제시다'), { code: 'PRESENTATION_GONE' });
+    }
+    return fn(pid, ...rest);
+  };
+  return { ...coach, gone, help: guard('help', coach.help), delivery: guard('delivery', coach.delivery), answer: guard('answer', coach.answer) };
+}
+
+test('판 겉 — 코치가 앞 제시를 놓았으면(PRESENTATION_GONE) 그 문항을 다시 보이고(처음 아님) 앞 도움을 다시 실은 뒤 답 · 소리를 잇는다, 다른 오류는 잇지 않는다(Fable 5.2 합친 끝 판 F4)', async () => {
+  const coach = staleCoach();
+  const notes = [];
+  const surface = createLifeNext({
+    coach: () => coach,
+    snapshot: () => null,
+    assessable: () => true,
+    note: (kind, outcome) => notes.push([kind, outcome.code]),
+  });
+  surface.shown('a', item('life.a'));
+  surface.help('a', 'explanation');
+  await settle();
+  await settle();
+  coach.gone.add('p1'); // 31분 쉼 뒤 다른 제시가 서며 기본 판이 새로 열렸다
+  surface.answer('a', { correct: true, helped: true, helpBy: 'user' });
+  assert.deepEqual(coach.calls.slice(2), [
+    ['answer:gone', 'p1'],
+    ['present', 'life.a', false],
+    ['help', 'p2', 'explanation'],
+    ['answer', 'p2', true, true, null],
+    ['help', 'p2', 'answer'],
+  ]);
+  assert.deepEqual(notes, [['save', 'LIFE_REPRESENTED']], '다시 보여 이은 수는 따로 센다');
+  // 소리(카페 직원 말)도 같은 길
+  surface.shown('b', item('life.b'));
+  coach.gone.add('p3');
+  surface.delivery('b', 'completed');
+  assert.deepEqual(coach.calls.slice(-3), [
+    ['delivery:gone', 'p3'],
+    ['present', 'life.b', false],
+    ['delivery', 'p4', 'completed'],
+  ]);
+  // 다른 오류는 다시 보이지 않고 그대로 계기에
+  const broken = fakeCoach();
+  const brokenNotes = [];
+  broken.answer = () => {
+    throw Object.assign(new Error('저장소'), { code: 'STORAGE_ERROR' });
+  };
+  const other = createLifeNext({ coach: () => broken, snapshot: () => null, note: (kind, outcome) => brokenNotes.push(outcome.code) });
+  other.shown('c', item('life.c'));
+  other.answer('c', { correct: true });
+  await settle();
+  await settle();
+  assert.equal(broken.calls.filter(call => call[0] === 'present').length, 1, '다시 보이지 않는다');
+  assert.deepEqual(brokenNotes, ['STORAGE_ERROR']);
+});
+
+test('판 겉 — 시도를 열 때(prepare) 코치를 청해 판 바뀜을 듣는다: 첫 문항 전에 판이 바뀌어도 화면에 알린다(Fable 5.2 합친 끝 판 F7)', async () => {
+  const coach = fakeCoach();
+  let retire = null;
+  let closed = 0;
+  const surface = createLifeNext({
+    coach: () => coach,
+    watch: (_, fn) => {
+      retire = fn;
+      return () => {};
+    },
+    onRetired: () => (closed += 1),
+  });
+  surface.prepare();
+  await settle();
+  await settle();
+  assert.equal(typeof retire, 'function', '보임 전에 판 바뀜을 듣는다');
+  assert.equal(coach.calls.length, 0, '청하기만 — 아무것도 보이지 않는다');
+  retire();
+  assert.equal(closed, 1, '첫 문항 전의 판 바뀜도 화면에 알린다');
+  surface.dispose();
+  surface.prepare();
+  await settle();
+  assert.equal(surface.metrics().coach, 'none', '닫은 겉은 청하지 않는다');
+});
+
+test('판 겉 — 끝자리: 도움 없는 슬롯의 도움 받은 답 앞에 해설 · 답 뒤 도움과 두 번째 답은 버림 · 닫은 뒤 · 코치 약속 거절 뒤 다시 받기 · 판이 바뀐 뒤 늦게 온 코치(넘친 #4)', async () => {
+  const coach = fakeCoach();
+  const surface = createLifeNext({ coach: () => coach, snapshot: () => null, assessable: () => true });
+  surface.shown('a', item('life.a'));
+  surface.answer('a', { correct: true, helped: true, helpBy: 'user' });
+  surface.help('a', 'hint');
+  surface.answer('a', { correct: false });
+  await settle();
+  await settle();
+  assert.deepEqual(
+    coach.calls,
+    [
+      ['present', 'life.a', false],
+      ['help', 'p1', 'explanation'],
+      ['answer', 'p1', true, true, null],
+      ['help', 'p1', 'answer'],
+    ],
+    '도움 받은 답은 해설을 앞에 적고, 답 뒤의 도움 · 두 번째 답은 적지 않는다',
+  );
+  surface.shown('b', item('life.b'));
+  surface.answer('b', { correct: true, helped: true, helpBy: 'setting' });
+  assert.deepEqual(
+    coach.calls.slice(4),
+    [
+      ['present', 'life.b', false],
+      ['help', 'p2', 'explanation'],
+      ['answer', 'p2', true, true, 'demo'],
+      ['help', 'p2', 'answer'],
+    ],
+    '설정이 편 도움의 답은 해설 + 시범 답',
+  );
+  surface.dispose();
+  assert.equal(surface.shown('c', item('life.c')), null);
+  assert.equal(coach.calls.length, 8, '닫은 뒤에는 아무것도 적지 않는다');
+  // 코치 약속이 거절되면 그 일은 버리고(계기) 다음 일에서 다시 청한다
+  let attempt = 0;
+  const later = fakeCoach();
+  const notes = [];
+  const retry = createLifeNext({
+    coach: () => (++attempt === 1 ? Promise.reject(Error('엔진')) : later),
+    snapshot: () => null,
+    note: (kind, outcome) => notes.push(outcome.code),
+  });
+  retry.shown('a', item('life.a'));
+  await settle();
+  await settle();
+  assert.deepEqual(notes, ['LIFE_COACH_FAILED']);
+  retry.shown('b', item('life.b'));
+  await settle();
+  await settle();
+  assert.deepEqual(later.calls.map(call => call[1]), ['life.b'], '거절 뒤 다시 청해 다음 일을 적는다');
+  // 판이 바뀐 뒤 늦게 온 앞 약속은 받지 않는다
+  const holds = [];
+  let retire = null;
+  const late = createLifeNext({
+    coach: () => new Promise(r => holds.push(r)),
+    watch: (_, fn) => {
+      retire = fn;
+      return () => {};
+    },
+    snapshot: () => null,
+  });
+  late.shown('a', item('life.a'));
+  await settle(); // 코치는 다음 차례에 청한다
+  const ready = fakeCoach();
+  holds[0](ready);
+  await settle();
+  await settle();
+  late.shown('b', item('life.b'));
+  retire(); // 판이 바뀜 — 슬롯을 비우고 다음 일에서 새 코치를 청한다
+  late.shown('c', item('life.c'));
+  await settle();
+  await settle();
+  const fresh = fakeCoach();
+  holds[1](fresh);
+  await settle();
+  await settle();
+  assert.deepEqual(ready.calls.map(call => call[1]), ['life.a', 'life.b'], '앞 판의 일은 앞 코치에');
+  assert.deepEqual(fresh.calls.map(call => call[1]), ['life.c'], '판이 바뀐 뒤의 일은 새 코치에만');
+});
+
+// 생활 단위를 문항 열쇠로 돌려주는 코치(판정 넣기 시험)
+function unitCoach(map) {
+  const coach = dueCoach();
+  coach.itemUnits = key => (map.get(key) ?? []).map(unit => ({ kind: 'life', unit }));
+  return coach;
+}
+
+test('판정 넣기 — LIFE_BRIDGE_STUCK은 방금 적힌 복습 답을 세지 않고(판 겉이 코치에 넘기는 중), 정말 줄이 안 선 복습만 이 기기 · 주인에서 한 번 센다(Fable 5.2 합친 끝 판 F8)', async () => {
+  let at = T0;
+  let progress = null;
+  progress = createLifeProgress({
+    owner: 'guest',
+    mode: 'local',
+    storage: memoryStorage(),
+    now: () => at,
+    // 셸처럼 — 진도가 저장을 알리면 요약을 그린다(판정을 잰다)
+    onChange: () => progress?.summary([], LESSONS),
+  });
+  progress.summary([], LESSONS);
+  const lesson = LESSONS.find(candidate => candidate.questions.length >= 2 && !candidate.id.startsWith('cafe'));
+  const [q1, q2] = lesson.questions;
+  const keyOf = question => lifeItem({ lesson, question, review: true }).itemKey;
+  const coach = unitCoach(
+    new Map([
+      [keyOf(q1), ['ko.life.s1']],
+      [keyOf(q2), ['ko.life.s2']],
+    ]),
+  );
+  const notes = [];
+  const seen = new Set();
+  const noted = { has: id => seen.has(id), add: id => seen.add(id) };
+  const watcher = watchLifeDue({
+    open: async () => coach,
+    progress,
+    lessons: LESSONS,
+    note: (kind, outcome) => notes.push(outcome.code),
+    noted,
+    timers: fakeTimers(),
+  });
+  await settle();
+  await settle();
+  progress.startLesson(lesson);
+  progress.recordAnswer({ lessonId: lesson.id, questionId: q1.id, correct: true });
+  progress.recordAnswer({ lessonId: lesson.id, questionId: q2.id, correct: true });
+  at = T0 + DAY + MINUTE;
+  assert.deepEqual(
+    watcher.judge(progress.exportSnapshot(), at).ids.sort(),
+    [q1.review.id, q2.review.id].sort(),
+    '다리로 둘이 열린다',
+  );
+  // ① 정상 다리 복습 — 진도의 저장 알림(onChange)이 코치에 답이 가기 전에 판정을 잰다
+  const run = progress.startReview(2, null, null, { ids: [q1.review.id, q2.review.id] });
+  progress.answerReview({ id: q1.review.id, runId: run.id, correct: true });
+  assert.deepEqual(notes, [], '방금 적힌 답은 세지 않는다');
+  coach.state.units.push({ unit: 'ko.life.s1', lastAt: at, dueAt: at + 1.3 * DAY }); // 판 겉이 코치에 넘겨 줄이 섰다
+  // ② 줄이 끝내 안 서는 복습(답이 버려짐)
+  progress.answerReview({ id: q2.review.id, runId: run.id, correct: true });
+  at += 3 * MINUTE;
+  watcher.judge(progress.exportSnapshot(), at);
+  watcher.judge(progress.exportSnapshot(), at + MINUTE);
+  assert.deepEqual(notes, ['LIFE_BRIDGE_STUCK'], '정말 줄이 안 선 복습 하나만 한 번');
+  // 다른 문서(새 감시)라도 이 기기 · 주인에서 이미 센 복습은 다시 세지 않는다
+  const next = watchLifeDue({
+    open: async () => coach,
+    progress,
+    lessons: LESSONS,
+    note: (kind, outcome) => notes.push(outcome.code),
+    noted,
+    timers: fakeTimers(),
+  });
+  await settle();
+  await settle();
+  next.judge(progress.exportSnapshot(), at + 2 * MINUTE);
+  assert.deepEqual(notes, ['LIFE_BRIDGE_STUCK'], '문서마다 다시 세지 않는다');
+  next.dispose();
+  watcher.dispose();
+  // 기본 장부는 주인마다 · 저장소에 — 같은 주인의 다른 장부가 읽는다
+  const storage = memoryStorage();
+  stuckBook('acct-1', storage).add('r-1');
+  assert.equal(stuckBook('acct-1', storage).has('r-1'), true);
+  assert.equal(stuckBook('acct-2', storage).has('r-1'), false, '주인마다 따로');
+  assert.equal(stuckBook('acct-1', { getItem: () => '{깨짐', setItem() {} }).has('r-1'), false, '못 읽으면 빈 장부');
+});
+
+test('판정 넣기 — 끝자리: 지금 판의 판정은 null(확인 중이 아님) · 묻는 사이 온 알림 뒤 다시 물어도 지금 판이면 한 번 더 묻고 멈춘다 · 아직 복습 안 한 것은 stuck이 아니다 · 다리는 하루가 되는 그 순간 · 앞으로 열릴 것은 6개까지(넘친 #4)', async () => {
+  const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => T0 });
+  progress.summary([], LESSONS);
+  let asked = 0;
+  let notify = null;
+  let hold = null;
+  const watcher = watchLifeDue({
+    open: () => {
+      asked += 1;
+      return asked === 1 ? new Promise(r => (hold = () => r(null))) : Promise.resolve(null);
+    },
+    reopened: fn => {
+      notify = fn;
+      return () => {};
+    },
+    progress,
+    lessons: LESSONS,
+    timers: fakeTimers(),
+  });
+  await settle(); // 코치는 다음 차례에 연다
+  notify(); // 확인 중에 온 「판이 풀렸다」
+  hold();
+  for (let i = 0; i < 6; i += 1) await settle();
+  assert.equal(watcher.state(), 'old');
+  assert.equal(asked, 2, '한 번 더 묻고 — 또 지금 판이면 멈춘다');
+  assert.equal(watcher.judge({ reviews: {} }, T0), null, '지금 판의 판정은 null(셸의 홈 후보 · 알림 입력이 지금 판 갈래로 간다)');
+  watcher.dispose();
+  // 판정의 끝자리
+  const fresh = snapshotOf([{ q: 'a', at: T0 }]);
+  const units = unitsFrom({ a: ['ko.life.x'] });
+  assert.deepEqual(lifeDue({ snapshot: fresh, unitsOf: units, now: T0 + DAY - 1 }).ids, [], '하루가 되기 전');
+  assert.deepEqual(lifeDue({ snapshot: fresh, unitsOf: units, now: T0 + DAY }).ids, ['a-transfer'], '하루가 되는 그 순간 다리');
+  assert.deepEqual(lifeDue({ snapshot: fresh, unitsOf: units, now: T0 + 3 * DAY }).stuck, [], '아직 복습 안 한 것은 stuck이 아니다');
+  const many = snapshotOf(Array.from({ length: 9 }, (_, i) => ({ q: `m${i}`, at: T0 + i })));
+  const out = lifeDue({ snapshot: many, unitsOf: r => [`ko.life.${r.questionId}`], now: T0 + 1000 });
+  assert.equal(out.upcoming.length, 6, '「곧 돌아올 표현」은 6개까지');
+  assert.equal(out.times.length, 9, '알림의 때는 모두');
+});
+
+test('판 겉 × 진짜 엔진 — 문항을 연 채 31분 쉬거나 새벽 4시를 넘긴 뒤 다른 제시가 서도 그 문항의 답이 엔진에 남는다(다시 보이고 잇기 · 직접 연 도움도 다시 — Fable 5.2 합친 끝 판 F4)', async () => {
+  const cases = [
+    // [이름, 시작 시각, 쉰 시간, 직접 연 도움]
+    ['31분 쉼 · 직접 연 해설 뒤 답', T0 + 3 * HOUR, 31 * MINUTE, true],
+    ['서울 03:50 → 04:05(새벽 4시)', Date.parse('2026-11-13T18:50:00.000Z'), 15 * MINUTE, false],
+  ];
+  for (const [label, start, gap, asked] of cases) {
+    let now = start;
+    const coach = await realCoach(() => now);
+    const answers = [];
+    const spy = Object.fromEntries(
+      Object.entries(coach).map(([name, value]) => [name, typeof value === 'function' ? value.bind(coach) : value]),
+    );
+    spy.answer = (pid, result) => {
+      const out = coach.answer(pid, result);
+      answers.push({ pid, out });
+      return out;
+    };
+    const presented = [];
+    spy.present = (candidate, context) => {
+      const pid = coach.present(candidate, context);
+      presented.push(pid);
+      return pid;
+    };
+    const notes = [];
+    const mains = LESSONS.flatMap(lesson =>
+      lesson.questions
+        .filter(question => Array.isArray(question.choices))
+        .map(question => ({ lesson, question, item: lifeItem({ lesson, question }) })),
+    ).filter(row => lifeAssessable(row.item) && !row.item.confounded && lifeUnits(coach, row.item).length);
+    const [a, b] = [mains[0], mains.find(row => lifeUnits(coach, row.item).every(unit => !lifeUnits(coach, mains[0].item).includes(unit)))];
+    assert.ok(a && b, `${label}: 단위가 다른 문항 둘`);
+    const surface = createLifeNext({
+      coach: () => spy,
+      snapshot: () => ({ lessons: {}, reviews: {}, daily: { days: {} } }),
+      note: (kind, outcome) => notes.push(outcome.code),
+    });
+    surface.shown('a', a.item);
+    if (asked) surface.help('a', 'explanation');
+    await settle();
+    await settle();
+    now += gap;
+    surface.shown('b', b.item); // 쉬고 돌아와 다른 문항이 먼저 보인다 — 코치의 기본 판이 새로 열린다
+    await settle();
+    surface.answer('a', {
+      correct: true,
+      choiceId: a.question.answerId,
+      correctId: a.question.answerId,
+      ...(asked ? { helped: true, helpBy: 'user' } : {}),
+    });
+    await until(() => answers.length === 1);
+    await answers[0].out.stored;
+    assert.notEqual(answers[0].pid, presented[0], `${label}: 답은 다시 보인 제시에`);
+    assert.deepEqual(notes, ['LIFE_REPRESENTED'], `${label}: 다시 보여 이은 수만 계기에(답을 버린 계기 없음)`);
+    const [unit] = lifeUnits(coach, a.item);
+    const line = lineOf(coach, unit);
+    assert.ok(line, `${label}: 그 단위에 기억 줄이 선다`);
+    const days = (line.dueAt - line.lastAt) / DAY;
+    if (asked) assert.ok(days > 0.2 && days < 0.3, `${label}: 앞 제시에 연 해설이 다시 실려 놓침(6시간) — ${days}일`);
+    else assert.ok(days > 1.2 && days < 1.4, `${label}: 혼자 맞힘 — ${days}일`);
+    coach.dispose();
+  }
+});
+
+test('lifeDue ① — 때가 아직인 ①(놓친 답 1분 안)도 그 단위를 센다: 같은 단위의 다른 복습을 ③ 엔진 · ② 다리로 그 사이에 열지 않는다(①로 한 번 — GC3 · Fable F1)', () => {
+  const rows = [
+    { q: 'a', at: T0, correct: false }, // 방금 놓침 — 단위 x, 1분 뒤 돌아온다
+    { q: 'd', at: T0 - 3 * DAY, lastAt: T0 - 2 * DAY }, // 혼자 맞힌 같은 단위 x의 다른 장면 — x가 돌아왔다
+    { q: 'b', at: T0 + 10, correct: false }, // 방금 놓침 — 단위 z
+    { q: 'f', at: T0 - 2 * DAY }, // 처음인 같은 단위 z(기억 줄 없음) — 다리의 하루가 지났다
+  ];
+  const units = unitsFrom({ a: ['ko.life.x'], d: ['ko.life.x'], b: ['ko.life.z'], f: ['ko.life.z'] });
+  const memory = [{ unit: 'ko.life.x', lastAt: T0 - 2 * DAY, dueAt: T0 - DAY }];
+  const due = [{ unit: 'ko.life.x' }];
+  const pending = lifeDue({ snapshot: snapshotOf(rows), unitsOf: units, memory, due, now: T0 + 30_000 });
+  assert.deepEqual(pending.ids, [], '1분 안에는 x · z의 다른 장면을 열지 않는다');
+  assert.deepEqual(
+    pending.upcoming.map(row => row.id),
+    ['a-transfer', 'b-transfer'],
+    '놓친 둘이 곧 돌아온다',
+  );
+  const back = lifeDue({ snapshot: snapshotOf(rows), unitsOf: units, memory, due, now: T0 + 2 * MINUTE });
+  assert.deepEqual(back.ids, ['a-transfer', 'b-transfer'], '1분 뒤 — ①로 한 번씩, d · f는 그 단위를 또 세지 않는다');
 });

@@ -392,7 +392,26 @@ function guestStep(w) {
     w.fire(markAs(tab, mark, mark === 'logout' ? null : pick(w.random, ['A', 'B'])));
   }
 }
-// 끝 — 2판 답은 요약 · 밀린 것 꼭 한쪽 · 기다리지 않는 줄 = 새로 읽은 보기 · 다시 접은 보기 · 옮길 계획이 새로 읽은 것과 같다.
+// 사건만 옮긴 깨끗한 포트의 통째 접기 — 요약 · 표지 없이 사건으로만 다시 접은 참값. 새로 연 기록부의 보기는 탭과 같은 얹기(요약 + 밀린
+// 것)를 써 그 얹기의 어긋남을 못 본다(Fable 5.2 합친 끝 판 넘친 #16).
+async function cleanFold(w, index = w.index) {
+  const clean = memoryPort();
+  const events = (await w.base.read()).filter(row => row.value.kind === 'event');
+  if (events.length) await clean.append(events.map(row => row.value));
+  const record = await openRecord({
+    port: clean,
+    guest: true,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => w.clock,
+    tag: 'cleanxxx',
+  });
+  return record.view();
+}
+
+// 끝 — 2판 답은 요약 · 밀린 것 꼭 한쪽 · 기다리지 않는 줄 = 새로 읽은 보기 = 사건만 옮긴 포트의 통째 접기 · 다시 접은 보기도 둘과 같다 ·
+// 옮길 계획이 새로 읽은 것과 같다.
 async function guestFinal(w) {
   const fresh = await openRecord({
     port: w.base,
@@ -404,6 +423,7 @@ async function guestFinal(w) {
     tag: 'freshxxx',
   });
   const answers = (await w.base.read()).filter(row => row.value.event?.schema === 2);
+  const truth = await cleanFold(w);
   for (const tab of w.tabs) {
     const label = `씨앗 ${w.seed} 탭 ${tab.i}`;
     const until = tab.record.summary.foldedUntil;
@@ -416,8 +436,14 @@ async function guestFinal(w) {
     const view = tab.record.view();
     const want = fresh.view();
     if (!view.waitAll && !want.waitAll) sameLines(view, want, label);
+    if (!view.waitAll) sameLines(view, truth, `${label} 통째 접기`);
     await tab.record.refold();
     assert.equal(linesOf(tab.record.view()), linesOf(fresh.view()), `${label}: 다시 접은 보기`);
+    assert.equal(
+      linesOf(tab.record.view()),
+      linesOf(truth),
+      `${label}: 다시 접은 보기 = 통째 접기`,
+    );
     for (const account of ['A', 'B']) samePlans(tab.record, fresh, account, label);
   }
 }
@@ -452,6 +478,90 @@ async function guestRun(seed, { tabsN = 2, steps = 60 } = {}) {
   await guestFinal(w);
 }
 
-test('① 손님 기록부 둘 · 셋 · 한 포트(자물쇠 없음) — 옛 기록 · 장부를 겹쳐 옮기고 표지가 끼어도, 2판 답은 요약 · 밀린 것 꼭 한쪽 · 기다리지 않는 줄 = 새로 읽은 보기 · 다시 접은 보기 · 옮길 계획이 같다(§18-5-1 R10 · F6)', async () => {
+test('① 손님 기록부 둘 · 셋 · 한 포트(자물쇠 없음) — 옛 기록 · 장부를 겹쳐 옮기고 표지가 끼어도, 2판 답은 요약 · 밀린 것 꼭 한쪽 · 기다리지 않는 줄 = 새로 읽은 보기 = 사건만 옮긴 포트의 통째 접기 · 다시 접은 보기 · 옮길 계획이 같다(§18-5-1 R10 · F6 · Fable 5.2 합친 끝 판 넘친 #16)', async () => {
   for (let seed = 1; seed <= 60; seed += 1) await guestRun(seed, { tabsN: seed % 3 ? 2 : 3 });
+});
+
+// 임의 탐침 씨앗 333 · 942의 꼴을 고정한 장면(Fable 5.2 합친 끝 판 넘친 #16): 색인(계열 → 능력 표 없음) · 요약에 없는 계열의 옛 꼴 답이 있고,
+// 그 앞에 서는 옮겨 온 장부(record.carried — after 없음, 어떤 만남보다 먼저)가 있다. 손님 탭이 이것을 꼬리로만 읽은 동안 그 능력 줄은
+// 기다림이다 — 장부가 첫 만남을 가져가 옛 꼴 답은 혼자 맞힌 첫 답이 아니다. 얹기는 기기가 든 옛 꼴 제시의 measure로 그 능력을 안다.
+test('색인 · 요약에 없는 계열의 옛 꼴 답 앞에 옮겨 온 장부가 서면 꼬리로만 읽은 손님 탭은 그 능력 줄을 기다린다 — 다시 접으면 통째 접기와 같다(씨앗 333의 꼴, Fable 5.2 합친 끝 판 넘친 #16)', async () => {
+  const w = { base: memoryPort(), clock: T0 + 3_600_000 };
+  const index = { edition: 'index-a', lookup: () => null }; // familySkills 없는 색인 — 옛 꼴 문항도 색인에 없다
+  const open = (tag, port = w.base) =>
+    openRecord({ port, guest: true, memory, params: PARAMS, index, now: () => w.clock, tag });
+  // 옮기는 탭의 손님 요약 저장은 실패한다 — 읽는 탭이 옛 꼴 답까지 접은 그 요약을 받지 못해 그 답을 밀린 것으로 든다(씨앗 333에서는 저장
+  // 차례의 틈)
+  const noLocal = {
+    ...w.base,
+    append: values =>
+      values.some(value => value.kind === 'local')
+        ? Promise.reject(new Error('local quota'))
+        : w.base.append(values),
+  };
+  const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
+  const at = m => new Date(T0 + m * 60_000).toISOString();
+  const legacy = (id, m, type, fields) => ({
+    schema: 1,
+    id,
+    scope,
+    at: at(m),
+    recordedAt: at(m),
+    type,
+    ...fields,
+  });
+  const skill = 'ko.listening.detail';
+  const measure = {
+    skillId: skill,
+    modality: 'listening',
+    difficulty: 1,
+    familyKey: 'fam9',
+    audioRequired: false,
+    confounded: false,
+    responseFormat: 'single-choice',
+  };
+  const decided = legacy('old1', 0, 'decision.made', {
+    experienceId: 'game',
+    variant: 'standard',
+    policy: 'x',
+    evidence: [],
+  });
+  const shown = legacy('old2', 1, 'practice.presented', {
+    decisionId: 'old1',
+    taskId: 'task',
+    taskVersion: 'v1',
+    itemKey: 'old-item',
+    conceptIds: [skill],
+    firstExposure: true,
+    measure,
+  });
+  const answered = legacy('old3', 2, 'practice.attempted', {
+    presentationId: 'old2',
+    attemptNo: 1,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  const mover = await open('moverxxx', noLocal);
+  await mover.importLegacy(legacyToImport([decided, shown], id => mover.has(id)));
+  // 읽는 탭 — 답 없는 옛 제시까지 접은 요약으로 선다(그 계열의 줄이 요약에 없다)
+  const reader = await open('readerxx');
+  assert.equal(reader.summary.lines.family.has('fam9'), false, '요약에 그 계열이 없다');
+  // 다른 탭이 그 제시의 옛 꼴 답과 그 계열의 장부를 옮겨 쓴다
+  await mover.importLegacy(legacyToImport([decided, shown, answered], id => mover.has(id)));
+  const carried = mover.add(EVENT_TYPES.carried, { families: { fam9: 1 }, items: {}, after: null });
+  assert.equal(await carried.stored, true);
+  await reader.refresh(); // 꼬리로만 읽는다 — 다시 접지 않는다
+  assert.equal(reader.pending().has('old3'), true, '옛 꼴 답은 밀린 것이다(요약에 없다)');
+  const view = reader.view();
+  const truth = await cleanFold(w, index);
+  assert.equal(view.waitAll, false);
+  assert.equal(
+    view.waitSkills.has(skill),
+    true,
+    '그 능력 줄은 기다린다(장부가 첫 만남을 가져갔다)',
+  );
+  sameLines(view, truth, '기다리지 않는 줄 = 통째 접기');
+  assert.equal(truth.ability.get(skill)?.n ?? 0, 0, '참값 — 옛 꼴 답은 혼자 맞힌 첫 답이 아니다');
+  await reader.refold();
+  assert.equal(linesOf(reader.view()), linesOf(truth), '다시 접으면 통째 접기와 같다');
 });

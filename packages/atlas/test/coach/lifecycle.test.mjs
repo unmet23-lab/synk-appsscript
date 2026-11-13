@@ -807,6 +807,30 @@ test('닫은 판의 제시 번호에는 답을 받지 않는다(GPT GC4)', async
   coach.dispose();
 });
 
+test('낡은 기본 판(30분 쉼 · 새벽 4시)의 앞 제시 번호에 답하면 코드 PRESENTATION_GONE으로 던진다 — 생활 판 겉이 글자 대신 코드로 가려 그 문항을 다시 보인다(Fable 5.2 합친 끝 판 F4)', async () => {
+  const items = bankOf(rng(16));
+  const gone = { code: 'PRESENTATION_GONE', message: /끝났거나 모르는 제시/ };
+  // 30분 쉼 — 판 없이 연 기본 판이 낡아 다음 제시가 새 기본 판을 연다
+  const idle = clock();
+  const a = coachOn({ items, time: idle, port: memoryPort(), key: keyOf('gone-idle') });
+  await a.ready;
+  const early = a.present(items[0]);
+  idle.advance(30 * 60_000);
+  a.present(items[1]);
+  assert.throws(() => a.answer(early, { correct: true, assessable: true }), gone, '30분 쉰 뒤');
+  a.dispose();
+  // 새벽 4시 — 쉰 시간은 짧아도(15분) 기기 하루가 바뀌었다
+  const dawn = clock(Date.UTC(2026, 10, 11, 3, 50, 0));
+  const b = coachOn({ items, time: dawn, port: memoryPort(), key: keyOf('gone-dawn') });
+  await b.ready;
+  const night = b.present(items[0]);
+  dawn.advance(15 * 60_000); // 04:05 — 새 하루
+  b.present(items[1]);
+  assert.throws(() => b.answer(night, { correct: true, assessable: true }), gone, '새벽 4시 뒤');
+  assert.throws(() => b.help(night, 'hint'), gone, '도움 · 전달도 같은 코드');
+  b.dispose();
+});
+
 test('계정 호스트는 한 묶음(256) 넘게 남은 사건을 이어서 올린다(GPT GC3)', async () => {
   const items = bankOf(rng(15), { items: 140, units: 60 });
   const time = clock();
@@ -913,7 +937,7 @@ const seoulCoach = (words, time, tag) =>
     host: { guest: true, port: memoryPort(), key: keyOf(tag), now: time.now },
   });
 
-test('며칠 만에는 기기 하루로 센다 — 서울 아침에 놓친 말은 그날 오후엔 0일(수 없는 줄), 다음 날 새벽 5시엔 1일(Fable 5.2 끝 판 둘째 넘친 #7)', async () => {
+test('며칠 만에는 기기 하루로 센다 — 서울 아침에 놓친 말은 그날 오후 · 다음 날 새벽 2시엔 0일(수 없는 줄), 새벽 5시엔 1일(Fable 5.2 끝 판 둘째 넘친 #7 · 합친 끝 판 넘친 #30)', async () => {
   const words = seoulWords(4);
   const time = clock(Date.UTC(2026, 10, 11, 0, 0, 0)); // 서울 11-11 09:00
   const coach = seoulCoach(words, time, 'seoul-days');
@@ -929,7 +953,18 @@ test('며칠 만에는 기기 하루로 센다 — 서울 아침에 놓친 말�
   const picked = coach.recommend(words, { set: { length: 4, newLimit: 0 } });
   assert.equal(picked.selected?.itemKey, words[0].itemKey);
   assert.equal(picked.why.slots.days, 0, '이유의 날 수 — 같은 하루는 0(「오늘 놓친 …」)');
-  time.advance(13 * HOUR); // 서울 11-12 05:00 — 새 하루
+  // 서울 11-12 02:00 — 달력은 바뀌었어도 기기 하루(새벽 4시 경계)는 그대로다. 오후 시각에서는 offset 부호를 뒤집거나 자정 경계로 세도
+  // 0이 나와 시험이 조용했다(Fable 5.2 합친 끝 판 넘친 #30 — 변형 E3b · E5)
+  time.advance(10 * HOUR);
+  assert.equal(
+    coach.due().find(row => row.unit === unit)?.days,
+    0,
+    '다음 날 02:00도 같은 하루 — 0',
+  );
+  const late = coach.recommend(words, { set: { length: 4, newLimit: 0 } });
+  assert.equal(late.selected?.itemKey, words[0].itemKey);
+  assert.equal(late.why.slots.days, 0, '이유 줄의 날 수도 0(새벽 2시는 아직 그 하루)');
+  time.advance(3 * HOUR); // 서울 11-12 05:00 — 새 하루
   assert.equal(coach.due().find(row => row.unit === unit)?.days, 1, '다음 날 새벽 5시엔 1일');
   coach.dispose();
 });

@@ -170,6 +170,42 @@ test('native town requests retain class binding and refuse revision rollback',as
  revision=2;await assert.rejects(f.client.request('town/state'),{code:'TOWN_SNAPSHOT_CHANGED'});
 });
 
+// 겹친 확인(F3)의 PC 앱 길 — 앞의 확인은 뒤 확인의 답을 기다리고(지지 않는다), 그사이 계정이 바뀌면 둘 다 ACCOUNT_CHANGED이고 새 계정 값만 선다(Fable 5.2 합친 끝 판 넘친 #3).
+test('native overlapping verification waits for the later read, and an account switch in between rejects both (Fable 5.2 합친 끝 판 넘친 #3)',async t=>{
+ const gates=new Map(),learningOf=new Map([[A,{enabled:false,revision:1}],[B,{enabled:true,revision:7}]]);let loads=0;
+ const f=fixture({request:async(operation,params,source)=>{
+  const id=source.account?.synk_user_id;
+  if(operation==='load'){const n=++loads,taken={...record(id),learning:{...learningOf.get(id)}};if(gates.has(n))await gates.get(n).promise;return taken;} // 읽은 값을 쥐고 붙들린다
+  if(operation==='setLearning'){learningOf.set(id,{enabled:params.enabled,revision:learningOf.get(id).revision+1});return {ok:true};}
+  return undefined;
+ }});t.after(()=>f.account.stop());
+ const settle=promise=>promise.then(value=>({ok:true,value}),error=>({ok:false,code:error?.code}));
+ const turn=()=>new Promise(resolve=>setImmediate(resolve));
+ await f.client.restore(); // 읽기 1
+ // ① 앞의 확인(생활 진도 통로)이 붙든 읽기를 들고 있는 사이 토글의 확인이 먼저 끝난다 — 앞은 지지 않고 뒤의 값으로 선다
+ gates.set(2,deferred());
+ const front=settle(f.account.prepareLifeProgress({storage:f.cache,target:{}})); // 읽기 2(끔 · 판 1)
+ while(loads<2)await turn();
+ assert.deepEqual(await f.account.setLearning(true,1),{enabled:true,revision:2}); // 읽기 3
+ gates.get(2).resolve();
+ const opened=await front;
+ assert.equal(opened.ok,true,`앞의 확인은 지지 않는다(${opened.code})`);
+ assert.deepEqual(f.account.preferences(),{enabled:true,revision:2},'낡은 앞 읽기가 계정 값을 되돌리지 않는다');
+ // ② 앞 · 뒤 확인이 겹친 사이 계정이 B로 바뀐다 — 둘 다 ACCOUNT_CHANGED, B의 값만 선다
+ gates.set(4,deferred());gates.set(5,deferred());
+ const older=settle(f.account.prepareLifeProgress({storage:f.cache,target:{}})); // 읽기 4
+ while(loads<4)await turn();
+ const later=settle(f.account.setLearning(false,2)); // 읽기 5
+ while(loads<5)await turn();
+ gates.get(4).resolve();for(let i=0;i<5;i+=1)await turn(); // 앞이 뒤를 받아 기다린다
+ f.emit(signed(B,2));await turn();
+ assert.equal(await f.client.restore(),true,'B로 다시 연다');
+ gates.get(5).resolve(); // 뒤 읽기가 이제 돌아온다
+ assert.deepEqual([await older,await later],[{ok:false,code:'ACCOUNT_CHANGED'},{ok:false,code:'ACCOUNT_CHANGED'}],'앞 계정의 겹친 확인은 둘 다 진다');
+ assert.equal(f.account.identity().accountId,B);
+ assert.deepEqual(f.account.preferences(),{enabled:true,revision:7},'새 계정의 값만 선다');
+});
+
 test('native subscription is released on stop and cannot reopen a disposed WORLD',async()=>{
  const f=fixture();await f.client.restore();f.account.stop();assert.equal(f.unsubscribed(),1);
  f.emit(signed(B,2));await new Promise(resolve=>setImmediate(resolve));assert.equal(f.connected(),0);

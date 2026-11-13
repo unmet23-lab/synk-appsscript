@@ -810,7 +810,7 @@ test('손님 두 탭 — 꼬리를 안 읽은 탭이 다시 접어도 다른 탭
   assert.ok(reopened.view().memory.has('uA'), '다시 열어도 A의 답이 있다');
 });
 
-test('서버 시각은 시계를 맞춘 뒤에만 받은 것으로 친다 — 첫 받기의 덧붙이기가 실패하면 치우지 않는다(A6 · 카본 끝 판 둘째 F1)', async () => {
+test('서버 시각은 시계를 맞춘 뒤에만 받은 것으로 친다 — 첫 받기의 덧붙이기가 실패하면 치우지 않는다, 저장된 받은 답(offsetMs)을 읽은 것으로도 켜지 않는다(A6 · 카본 끝 판 둘째 F1 · Fable 5.2 합친 끝 판 넘친 #15 ①)', async () => {
   const inner = memoryPort();
   let fails = 1;
   const port = {
@@ -824,6 +824,9 @@ test('서버 시각은 시계를 맞춘 뒤에만 받은 것으로 친다 — �
     },
   };
   const rec = await openRecord({ port, revision: 1, memory, params: PARAMS, index, now: () => T0 });
+  const open = () =>
+    openRecord({ port: inner, revision: 1, memory, params: PARAMS, index, now: () => T0 });
+  const other = await open(); // 같은 저장소를 연 다른 탭
   const base = { edition: rec.edition(), lines: [], full: true, issued: [] };
   await assert.rejects(
     rec.receive({ summary: { ...base, lineSeq: 1, foldedUntil: 1 }, serverTime: T0 - 3_600_000 }),
@@ -834,6 +837,16 @@ test('서버 시각은 시계를 맞춘 뒤에만 받은 것으로 친다 — �
     serverTime: T0 - 3_600_000,
   });
   assert.equal(rec.compactDue(), true, '받은 뒤에는 치운다');
+  // 다른 탭이 쓴 받은 답(ack · offsetMs)을 읽은 것으로는 켜지 않는다 — 서버 답 없이 저장돼 있던 옛 차이로 치우지 않게(설계 주인 결정 4)
+  assert.ok(
+    (await inner.read()).some(
+      row => row.value.kind === 'ack' && Number.isFinite(row.value.offsetMs),
+    ),
+    '저장소에 서버 시각 차이를 실은 받은 답이 있다',
+  );
+  assert.equal((await open()).compactDue(), false, '그 저장소를 다시 연 기록부');
+  await other.refresh();
+  assert.equal(other.compactDue(), false, '다른 기록부가 쓴 받은 답을 꼬리로 읽은 기록부');
 });
 
 test('앞 요약 행 지우기만 실패하면 받은 답은 그대로 서고 계기에만 따로 남는다 — 남은 행은 다음 새 요약을 받을 때 지운다(카본 끝 판 둘째 F2)', async () => {

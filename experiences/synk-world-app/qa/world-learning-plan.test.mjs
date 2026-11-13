@@ -217,6 +217,27 @@ test('생활 레슨: 혼자 잘 풀수록 진도가 밀리지 않는다 — 첫 
  assert.equal(more.selected.route,'lesson','최근 혼자 수행한 칸을 겨누는 레슨도 진도 순서로 앞');
 });
 
+// 판정(due) 없이 부르는 지금 판 갈래(12/10까지 라이브 — 4-2 앞 ae3a3f2c7과 같은 식): 때가 된 복습만 · dueAt 차례(같으면 id) · reviewAt은 가장 이른 dueAt.
+// now를 dueAt과 같게 두면 reviewAt이 지금 시각이어도 가르지 못한다 — 돌아온 지 한참 된 복습 둘로 잰다(Fable 5.2 합친 끝 판 넘친 #10).
+test('지금 판(판정 없음)의 복습 후보 — 돌아온 지 한참 된 복습 둘은 dueAt 차례(id 차례가 아니다)이고 reviewAt은 가장 이른 dueAt이다(Fable 5.2 합친 끝 판 넘친 #10)',()=>{
+ const DAY=86400000,progress=empty(),lesson=LESSONS[0],[first,second]=lesson.questions;
+ assert.ok(first.review.id.localeCompare(second.review.id)<0,'id 차례로는 첫 문항이 앞');
+ progress.lessons[lesson.id]={startedAt:NOW-6*DAY,completedAt:NOW-5*DAY,answers:{},questionIds:lesson.questions.map(q=>q.id)};
+ const row=(q,dueAt)=>({id:q.review.id,questionId:q.id,lessonId:lesson.id,packId:lesson.packId,skillId:q.skillId,dueAt,lastAt:dueAt-DAY,streak:1,lapses:0,intervalDays:1});
+ progress.reviews[first.review.id]=row(first,NOW-2*DAY);
+ progress.reviews[second.review.id]=row(second,NOW-3*DAY);
+ const before=JSON.stringify(progress);
+ const candidate=buildWorldLearningCandidates({progress,now:NOW}).find(c=>c.route==='review');
+ assert.deepEqual(candidate.reviewIds,[second.review.id,first.review.id],'dueAt이 이른 것부터(id 차례와 반대)');
+ assert.equal(candidate.reviewAt,new Date(NOW-3*DAY).toISOString(),'reviewAt은 가장 이른 dueAt — 지금 시각이 아니다');
+ const chosen=plan({progress});
+ assert.equal(chosen.selected.route,'review');
+ assert.deepEqual([chosen.selected.reviewIds,chosen.selected.reviewAt],[[second.review.id,first.review.id],new Date(NOW-3*DAY).toISOString()],'계획이 고른 후보도 같은 차례 · 같은 때');
+ assert.equal(JSON.stringify(progress),before);
+ progress.reviews[second.review.id].dueAt=NOW-2*DAY;
+ assert.deepEqual(buildWorldLearningCandidates({progress,now:NOW}).find(c=>c.route==='review').reviewIds,[first.review.id,second.review.id],'때가 같으면 id 차례');
+});
+
 test('생활 레슨: 틀린 답이 있는 확인 중 칸은 당기고(같은 줄 안에서 점수로 앞섬), 틀림 없는 확인 중 칸은 당기지 않는다(FA3)',()=>{
  const wrong=makeCoach();answerLesson(wrong,'greetings-expressions',{correct:index=>index!==0});
  const cell=wrong.summary().skills.find(s=>s.id==='ko.reading.vocabulary').levels[1].formats['single-choice'];

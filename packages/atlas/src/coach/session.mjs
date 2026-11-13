@@ -117,7 +117,8 @@ function attemptFields(pid, attemptNo, verdict, result) {
 // (만남 · 도움 표시 그대로 — 설계 §5-2 「제외는 만났다는 사실을 지우지 않는다」), 제외된 전달 뒤의 소리는 「아직」이다(Fable 5.2 끝 판 둘째
 // 넘친 #16 — 둘을 한 표로 「없던 것」으로 접어 답을 낼 때 이미 기록부와 갈렸다). 판 일지를 다시 돌릴 때도 지금 거름으로 이것을 다시
 // 부른다 — 처음 접은 값(도움 · 답을 봤나 · 판정할 수 있나)은 그 뒤 앞 자식이 실패 · 제외되면 낡는다(GPT · 카본 끝 판 둘째 E). 제외 접기
-// 사건(exclude)은 내지 않는다 — 제외된 답 · 제시는 판 일지에서 빠진다(kept).
+// 사건(exclude)은 내지 않고, 그것이 거두는 답(제외된 답 · 제외된 제시의 답)은 거둔 답(gone — 기기 얹기 overlay와 같은 꼴, 만남만 남는다)으로
+// 낸다 — 제외는 만났다는 사실을 지우지 않는다(설계 §5-2, Fable 5.2 합친 끝 판 F10).
 function foldsOf(group, event, index, { failed, excluded }) {
   const at = group.children.findIndex(entry => entry.event.id === event.id);
   const before = (at < 0 ? group.children : group.children.slice(0, at)).filter(
@@ -131,9 +132,11 @@ function foldsOf(group, event, index, { failed, excluded }) {
   const exclusions = [...excluded.values()].filter(entry => members.has(entry.event.targetId));
   const fold = children => foldEventsOf({ source: group.source, children, exclusions }, index);
   const had = new Set(fold(before).map(made => made.id));
-  return fold([...before, entryOf(event)]).filter(
-    made => !had.has(made.id) && made.kind !== 'exclude',
-  );
+  const folds = fold([...before, entryOf(event)]);
+  const gone = new Set(folds.filter(made => made.kind === 'exclude').map(made => made.ref));
+  return folds
+    .filter(made => !had.has(made.id) && made.kind !== 'exclude')
+    .map(made => (gone.has(made.id) ? { ...made, gone: true } : made));
 }
 
 // 닫은 판의 기록 자리가 아직 기록하지 않았고 지금 쓰는 중도 아닌가 — 같은 판을 두 번 기록하지 않는다(아르곤 끝 판 C7 · GPT 최종 GC2).
@@ -153,6 +156,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     chosen: new Map(),
     groups: new Map(),
     own: new Set(), // 이 코치가 쓴 사건 번호 — 같은 문서 다른 코치의 쓰기만 다시 세우기를 부른다
+    recheck: new Set(), // 다시 세울 때 저장 중이던 내 답 · 도움 — 저장이 끝나면(written) 한 번 더 세운다(repend)
     closed: null, // 닫은 판의 기록 자리 { setId, recorded, writing, decision }
     lastAt: 0,
     tag: coachTag(),
@@ -208,28 +212,25 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   };
 
   // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다). 답 · 도움은 지금 거름
-  // (실패 · 제외)으로 그 제시 묶음을 다시 접어 돌린다(foldsOf — 장부 만남 · 앞 도움이 빠져 첫 도움이 된 도움까지).
-  // meetings: 만남 접기만(답 접기는 빼고) — 제외된 답의 줄(아래 metOnly).
-  function replay(tmp, op, { meetings = false } = {}) {
+  // (실패 · 제외)으로 그 제시 묶음을 다시 접어 돌린다(foldsOf — 장부 만남 · 앞 도움이 빠져 첫 도움이 된 도움 · 거둔 답까지).
+  function replay(tmp, op) {
     if (op.kind === 'present') present(tmp, op.row, params);
     else if (op.kind === 'say') say(tmp, memory, op.unit, op.say, op.at, params);
     else if (op.kind === 'answer' || op.kind === 'help')
-      for (const fold of refolds(op, meetings)) apply(tmp, fold);
+      for (const fold of refolds(op)) apply(tmp, fold);
   }
-  // 그 제시 묶음을 지금 거름으로 다시 접어 이 줄의 사건이 더하는 접기 사건들(meetings면 만남만).
-  function refolds(op, meetings) {
+  // 그 제시 묶음을 지금 거름으로 다시 접어 이 줄의 사건이 더하는 접기 사건들.
+  function refolds(op) {
     const group = s.groups.get(op.parent);
     const event = group?.children.find(entry => entry.event.id === op.eventId)?.event;
-    if (!event) return [];
-    const folds = foldsOf(group, event, host.index, s);
-    return meetings ? folds.filter(fold => fold.kind !== 'answer') : folds;
+    return event ? foldsOf(group, event, host.index, s) : [];
   }
-  // 접기 사건 하나를 학습자에 얹는다 — 답은 두뇌의 record(판의 「다시」 · 만난 단위까지), 도움 만남 · 장부 만남은 기기 얹기 그대로.
+  // 접기 사건 하나를 학습자에 얹는다 — 답은 두뇌의 record(판의 「다시」 · 만난 단위까지), 도움 만남 · 장부 만남 · 거둔 답은 기기 얹기 그대로
+  // (거둔 답은 만남만 — 판의 「다시」 · blank · 만난 단위에 닿지 않는다, Fable 5.2 합친 끝 판 F10). 돌려주는 값의 grade는 기억에 적힌 등급이다.
   function apply(learner, fold) {
-    if (fold.kind === 'answer')
+    if (fold.kind === 'answer' && !fold.gone)
       return record(learner, memory, fold.item, { ...fold.answer, id: fold.id }, fold.at, params);
-    applyOwn(learner, fold, memory, params, host.index);
-    return null;
+    return applyOwn(learner, fold, memory, params, host.index);
   }
 
   // 판 일지에 남는 줄 — 저장이 실패한 줄과 그 자식은 빠진다. 제외된 답 · 제시(제시면 그 답까지) · 본인 말도 빠진다(계획 §3-7 「제외도
@@ -239,15 +240,15 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     if (op.kind === 'help') return true;
     return !s.excluded.has(op.eventId) && !s.excluded.has(op.parent);
   };
-  // 제시는 그대로인데 제외된 답 — 일지에서는 빠지지만(낸 수 · 놓친 답에 안 든다) 다시 세울 때 그 답이 낳은 만남 접기(장부 만남 · 거둔 답의
-  // 만남)는 다시 돌린다(설계 §5-2 「제외는 만났다는 사실을 지우지 않는다」). 통째로 건너뛰면 뒤 사건의 foldsOf가 그 만남을 앞 몫(had)으로
-  // 빼 판 학습자에서 만남이 사라졌다(카본 합친 끝 판 D1).
+  // 제외된 답과 제외된 제시에 온 답 — 일지에서는 빠지지만(낸 수 · 놓친 답에 안 든다) 다시 세울 때 그 줄을 다시 돌린다. foldsOf가 그 답을
+  // 거둔 답(만남만)으로 내므로 장부 만남 · 그 답의 만남이 남고 판의 「다시」 · blank에는 닿지 않는다(설계 §5-2 「제외는 만났다는 사실을 지우지
+  // 않는다」). 통째로 건너뛰면 뒤 사건의 foldsOf가 그 만남을 앞 몫(had)으로 빼거나(카본 합친 끝 판 D1), 장부 만남이 없는 제시(「처음이다」)면
+  // 판 학습자에서 그 계열의 만남이 사라져 같은 계열의 뒤 답이 첫 만남으로 섰다(Fable 5.2 합친 끝 판 F10).
   const metOnly = op =>
     op.kind === 'answer' &&
     !s.failed.has(op.eventId) &&
     !s.failed.has(op.parent) &&
-    s.excluded.has(op.eventId) &&
-    !s.excluded.has(op.parent);
+    (s.excluded.has(op.eventId) || s.excluded.has(op.parent));
 
   // 제외된 사건 — 어느 코치 · 탭이 제외했든(기록부가 든 제외 사건의 대상, GPT GC2). 다시 세울 때마다 기록부에서 새로 읽는다(저장이 실패한
   // 제외는 없던 것).
@@ -305,18 +306,33 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     }
   }
 
+  // 아직 저장 중인 내 답 · 도움의 접기 사건을 지금 거름으로 다시 접어 호스트에 갈아 끼운다. 처음 접은 값(도움을 봤나 · 판정할 수 있나 ·
+  // 거둔 답인가)은 저장하는 사이 같은 묶음의 앞 형제(전달 · 도움)가 실패하거나 제외가 오면 낡는다 — 그대로 두면 다시 세운 판이 호스트 보기에서
+  // 받는 기억 · 능력 · 만남이 그 낡은 값이고, 곧이어 온 내 답의 written은 판을 다시 세우지 않아 답이 저장된 뒤에도 판 안이 다음 다시 세우기까지
+  // 낡았다(Fable 5.2 합친 끝 판 넘친 #13). 저장이 끝난 사건은 호스트가 건너뛴다(기록부 보기가 이미 바로 접었다). 갈아 끼운 사건은 저장이
+  // 끝나면 한 번 더 세운다(recheck) — 기록부는 실패한 도움의 만남을 그 판의 메모리에 두었다가 답이 저장되면 그 답의 만남으로 바꿔, 저장 전에
+  // 얹은 값과 첫 만남이 갈린다.
+  function repend() {
+    for (const group of s.groups.values())
+      for (const { event } of group.children)
+        if (
+          (event.type === EVENT_TYPES.attempted || event.type === EVENT_TYPES.helped) &&
+          host.refold(event.id, made => foldsOf(group, made, host.index, s))
+        )
+          s.recheck.add(event.id);
+  }
+
   // 판 상태를 세운다 — 판을 열 때(일지가 빈) · 바깥이 바뀔 때 같은 길이다.
   function build() {
+    markExcluded();
+    repend();
     const fresh = host.view();
     // 보기가 아무것도 얹지 못하는 동안은 판을 열 때의 사본 위에 일지를 통째로(기억까지) 다시 돌린다.
     const waiting = fresh.waitAll === true;
-    markExcluded();
     const tmp = learnerOf(copyView(waiting ? s.open.base : fresh));
     tmp.log = issuedLog();
     startSession(tmp, s.open.now, params, s.open.opts);
-    for (const op of s.journal)
-      if (kept(op)) replay(tmp, op);
-      else if (metOnly(op)) replay(tmp, op, { meetings: true });
+    for (const op of s.journal) if (kept(op) || metOnly(op)) replay(tmp, op);
     dropStated(tmp.session, fresh);
     s.learner = {
       ...(waiting ? tmp : fresh),
@@ -337,8 +353,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   // 다시 세우기가 던지면 앞 상태를 두고 계기에 남긴다 — 듣는 함수가 던져 그 판이 뒤의 소식(저장 실패 등)을 못 듣는 일이 없게(N2).
   const unsubscribe = host.subscribe(note => {
     if (note.kind === 'failed') s.failed.add(note.id);
-    // 같은 문서 다른 코치의 쓰기만 — 내 쓰기는 이미 판에 들었다.
-    if (note.kind === 'written' && s.own.has(note.id)) return;
+    // 같은 문서 다른 코치의 쓰기만 — 내 쓰기는 이미 판에 들었다. 다시 세울 때 저장 중이던 내 사건(recheck)만 저장이 끝나면 한 번 더 세운다.
+    const again = s.recheck.delete(note.id);
+    if (note.kind === 'written' && s.own.has(note.id) && !again) return;
     if (note.kind === 'offline') return;
     try {
       rebuild();
@@ -441,9 +458,14 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       return event.id;
     },
 
+    // 끝났거나 모르는 제시(닫은 판 · 낡아 새로 연 기본 판 · 다른 판의 번호)는 코드 PRESENTATION_GONE으로 던진다 — 생활 판 겉이 글자 대신
+    // 코드로 가려 그 문항을 다시 보이고 답을 잇는다(Fable 5.2 합친 끝 판 F4).
     group(pid) {
       const group = s.groups.get(pid);
-      if (!group) throw new Error('Atlas coach: 끝났거나 모르는 제시다');
+      if (!group)
+        throw Object.assign(new Error('Atlas coach: 끝났거나 모르는 제시다'), {
+          code: 'PRESENTATION_GONE',
+        });
       return group;
     },
 
@@ -499,6 +521,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       group.attempts += 1;
       const fold = folds.find(one => one.id === made.event.id);
       // 장부 만남(제품이 「처음이 아니다」라고 한 제시의 첫 만남)을 답보다 먼저 얹는다 — 기록부 · 서버 접기와 같은 첫 만남(카본 끝 판 둘째 E).
+      // 이미 제외된 제시에 늦게 온 답은 거둔 답이다 — 호스트 pending · 판 안에 만남만 얹고 등급은 없다(Fable 5.2 합친 끝 판 F10).
       for (const prior of folds) if (prior !== fold) apply(s.learner, prior);
       const answer = { ...fold.answer, id: fold.id };
       const out = apply(s.learner, fold);

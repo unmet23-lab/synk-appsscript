@@ -190,7 +190,7 @@ test('손님 요약 사본은 접은 뒤 든 사건이 없으면 다시 접지 �
   assert.equal(locals, count + 1, '읽은 새 사건이 있으면 다시 접어 한 번 쓴다');
 });
 
-test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 저장을 한 번 더 건다 — 다시 접지는 않는다(Fable 5.2 끝 판 둘째 F4 · 설계 주인 조건)', async () => {
+test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 저장을 한 번 더 건다 — 다시 접지는 않는다(Fable 5.2 끝 판 둘째 F4 · 설계 주인 조건 · 합친 끝 판 넘친 #15 ③)', async () => {
   const inner = memoryPort();
   let fail = false;
   let locals = 0;
@@ -207,16 +207,21 @@ test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 
       return inner.append(values);
     },
   };
-  const rec = await guest(port, { tag: 'retryaaa' });
+  // 접기를 센다 — 다시 접으면 제시마다 문항 색인을 읽는다(index.lookup). 요약 쓰기 수만 세면 「접고 저장」과 「저장만」이 같다
+  let lookups = 0;
+  const counting = { edition: index.edition, lookup: key => ((lookups += 1), index.lookup(key)) };
+  const rec = await guest(port, { tag: 'retryaaa', index: counting });
   await practise(rec, items[3]);
   const before = locals;
   fail = true;
   await rec.refold(); // 새 답을 접고 저장이 실패한다(계기 LOCAL_SUMMARY)
   await rec.localSaved();
   assert.equal(locals, before, '실패한 저장');
+  const folds = lookups;
   await rec.refold(); // 새 사건 없음 — 접지는 않고 저장만 다시
   await rec.localSaved();
   assert.equal(locals, before + 1, '실패한 저장을 refold가 다시 건다');
+  assert.equal(lookups, folds, '다시 접지는 않는다 — 색인을 읽지 않았다');
 });
 
 test('치우기는 이 세션에 서버 시각을 받은 뒤에만, 하루 한 번(A6)', async () => {

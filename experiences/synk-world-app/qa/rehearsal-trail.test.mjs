@@ -285,3 +285,28 @@ test('처음 판 파일 — 폴더가 없어도 만들어 적고, 한 번 못 �
   fs.rmSync(dir,{recursive:true,force:true});
  }
 });
+
+test('처음 판 파일 — 같은 파일을 쓰는 서버 둘이면 쓸 때 큰 판을 두어, 나중에 쓴 쪽의 낮은 판이 남지 않고 다시 켠 서버가 뒤로 가지 않는다 · 서버는 그 파일을 자료 폴더에 묶는다(Fable 5.2 합친 끝 판 넘친 #25)',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rehearsal-trail-two-'));
+ const stateFile=path.join(dir,'revision.json');
+ const root=new URL('../',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1');
+ const open=()=>openRehearsalTrail({root,devOut:null,stateFile});
+ const ask=(trail,p,{method='GET',body}={})=>trail.handle({account:A,path:p,method,query:new URLSearchParams(''),
+  body:body===undefined?undefined:Buffer.from(JSON.stringify(body)),headers:HEADERS});
+ const revisionOf=async trail=>(await ask(trail,'trail-account')).body.learning.revision;
+ const bump=async(trail,n)=>{for(let i=0;i<n;i+=1)await ask(trail,'trail-control',{method:'POST',body:{action:'revision'}});};
+ try{
+  const one=await open(),two=await open(); // 같은 파일로 함께 켠 리허설 서버 둘
+  await revisionOf(one);await bump(one,6);const high=await revisionOf(one);
+  await revisionOf(two);await bump(two,1); // 둘째가 나중에 더 낮은 판을 적으려 한다
+  assert.equal(JSON.parse(fs.readFileSync(stateFile,'utf8')).revision,high,'파일에는 큰 판이 남는다');
+  const again=await revisionOf(await open()); // 첫째를 다시 켠다
+  assert.ok(again>high,`다시 켠 서버의 처음 판(${again})이 첫째가 내준 판(${high})보다 크다`);
+ }finally{
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+ // 서버(server.mjs)는 처음 판 파일을 자료 폴더(SYNK_WORLD_DATA_DIR)에 묶는다 — 저장소 폴더에 하나면 다른 자료 폴더로 켠 서버끼리 덮는다
+ const server=fs.readFileSync(new URL('../server.mjs',import.meta.url),'utf8');
+ assert.match(server,/stateFile:`\$\{dataDir\}-trail-revision\.json`/,'처음 판 파일은 자료 폴더에 묶는다');
+ assert.doesNotMatch(server,/rehearsal-trail-revision\.json/,'저장소 폴더의 공용 파일을 쓰지 않는다');
+});

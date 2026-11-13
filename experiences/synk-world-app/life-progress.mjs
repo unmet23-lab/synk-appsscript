@@ -218,12 +218,17 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  function judged(){if(!dueSource)return null;let value;try{value=dueSource(state,now());}catch{value=undefined;}if(value===null)return null;if(value?.state==='engine'&&Array.isArray(value.ids))return {...value,ids:value.ids.filter(id=>state.reviews[id])};return {state:'checking',ids:[],nextAt:null,times:[],upcoming:[]};}
  // given: 이미 잰 판정(summary — 한 요약 안에서 판정을 한 번만 잰다, 두 번 재면 그 사이 경계 · 상태가 바뀌어 수와 목록이 갈렸다, 카본 합친 끝 판 B4).
  function dueReviews(limit=100,horizon=now(),given=undefined){check();const engine=given===undefined?judged():given;if(engine)return engine.ids.slice(0,Math.max(0,Math.min(100,limit))).map(id=>clone(state.reviews[id]));return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
+ // 새 길(판정을 넣은 문서): 앞선 학습일에 연 복습 판이 답 없는 문항에 도움 표시(pendingHelp — 그날의 안내 연습 · 미리 본 도움)를 들고 있으면
+ // 그 판을 잇지 않고 새 판을 연다 — 날을 넘겨 오늘의 혼자 맞힘이 도움 받은 답으로 적혀, 홈 튜터의 「다시 살필 표현」이 풀리지 않았다(Fable 5.2
+ // 합친 끝 판 F3 — 튜터 안내 연습이 연 1문항 판을 답 없이 두면 나던 꼴). 그날 연 도움은 그날 판에서 그대로다. 지금 판(판정 없음)은 앞과 같이 잇는다.
+ // 새 길은 판정(judged)이 있을 때다 — 판정이 null(이 문서는 지금 판으로 정해짐)이면 4-2 앞과 같이 앞선 날 판을 그대로 잇는다.
+ function staleHelp(run=state.activeReview,at=now(),engine=judged()){return !!engine&&!!run&&dailyTime(run.startedAt)&&dailyTime(at)&&lifeDayKey(run.startedAt)!==lifeDayKey(at)&&run.ids.some(id=>!run.answers[id]&&run.pendingHelp?.[id]===true);}
  // soon: a lesson result may open its just-missed expressions in a new scene right away. Those are
  // due at most a minute after the answer, so only reviews coming due within that minute are added.
  // ids(새 길): 고른 복습을 그대로 연다 — 간격 거르기를 건너뛴다(튜터 「이 표현 같이 연습」 · 레슨 결과의 「새 장면으로 다시 보기」).
  function startReview(limit=6,preferredId=null,allowedIds=null,{soon=false,ids:chosen=null}={}){
   check();const existing=state.activeReview;
-  if(existing&&existing.ids.some(id=>!existing.answers[id]))return clone(existing);
+  if(existing&&existing.ids.some(id=>!existing.answers[id])&&!staleHelp(existing))return clone(existing);
   if(allowedIds!==null&&(!Array.isArray(allowedIds)||allowedIds.length>100||new Set(allowedIds).size!==allowedIds.length||allowedIds.some(id=>!safeId(id)||!state.reviews[id])))throw TypeError('Invalid review selection');
   if(chosen!==null&&(!Array.isArray(chosen)||!chosen.length||chosen.length>100||new Set(chosen).size!==chosen.length||chosen.some(id=>!safeId(id)||!state.reviews[id])))throw TypeError('Invalid review selection');
   if(soon&&allowedIds===null&&chosen===null)throw TypeError('An early review needs its expressions');
@@ -232,9 +237,12 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state),ids=due.slice(0,Math.max(0,Math.min(100,limit))).map(v=>v.id);if(!ids.length)return null;
   next.activeReview={id:uuid(),startedAt:now(),ids,answers:{},pendingHelp:{}};commit(next);return clone(next.activeReview);
  }
- function markReviewHelp(id){
+ // seenAt: 화면이 그 표현을 보여 준 때(life-ui exposedTransfers) — 새 길에서는 앞선 학습일에 본 것을 오늘 판의 도움으로 잇지 않는다(staleHelp와
+ // 같은 날 경계 — 문서를 연 채 날을 넘기면 어제 본 표현이 오늘 새 판에 도움으로 다시 붙어 혼자 맞힌 답이 도움 받은 답으로 적혔다, Fable 5.2 합친 끝 판 F3).
+ function markReviewHelp(id,{seenAt}={}){
   check();const run=state.activeReview;if(!run||!run.ids.includes(id))throw TypeError('Invalid review help');
   if(run.answers[id]||run.pendingHelp?.[id])return clone(run);
+  if(seenAt!==undefined&&judged()&&!(dailyTime(seenAt)&&dailyTime(now())&&lifeDayKey(seenAt)===lifeDayKey(now())))return clone(run);
   const next=clone(state);next.activeReview.pendingHelp={...(next.activeReview.pendingHelp||{}),[id]:true};commit(next);return clone(next.activeReview);
  }
  function answerReview({id,reviewId,questionId,correct,helped=false,runId}={}){
@@ -380,8 +388,10 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const resume=!!active&&Object.keys(state.lessons[active.id]?.answers||{}).length>0;
   return {owner,completed,total,allCompleted:total>0&&completed===total,nextLesson:next?{...next,progress:lessonState(next.id)}:null,resume,
    cafe:{completed:visits.filter(l=>state.lessons[l.id]?.completedAt!=null).length,total:visits.length,nextNumber:next&&isCafeLesson(next.id)?CAFE_LESSON_IDS.indexOf(next.id)+1:null},
-   dueCount:due.length,dueExpressions:engine?due.length:dueExpressionCount(due),dueReviews:due.slice(0,6),nextReviewAt:engine?engine.nextAt??null:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
-   ...(engine?{dueState:engine.state,dueIds:[...engine.ids],dueTimes:[...(engine.times??[])],dueUpcoming:(engine.upcoming??[]).map(row=>({...row}))}:{}),
+   // 화면이 말하는 「돌아온 표현 N개」는 새 길에서도 표현 글로 묶은 수다 — 같은 표현을 두 레슨에서 놓치면 장면(문항)은 둘이어도 목록 줄 · 표현은 하나(Fable 5.2 합친 끝 판 F5).
+   dueCount:due.length,dueExpressions:dueExpressionCount(due),dueReviews:due.slice(0,6),nextReviewAt:engine?engine.nextAt??null:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
+   // dueRenew: 다음 복습은 새 판으로 열린다(staleHelp — 홈 튜터가 「오늘은 네가 먼저」를 고를 때 읽는다).
+   ...(engine?{dueState:engine.state,dueIds:[...engine.ids],dueTimes:[...(engine.times??[])],dueUpcoming:(engine.upcoming??[]).map(row=>({...row})),dueRenew:staleHelp(state.activeReview,now(),engine)}:{}),
    packs:packs.map(pack=>{const ids=(pack.lessons||[]).map(value=>typeof value==='string'?value:value.id);return {id:pack.id,completed:ids.filter(id=>state.lessons[id]?.completedAt!=null).length,total:ids.length};}),status:status()};
  }
  async function flush(){

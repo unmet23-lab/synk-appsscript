@@ -216,3 +216,26 @@ test('invalid review selections are rejected without creating a run or modifying
  }
  assert.equal(p.startReview(6,null,[]),null);assert.deepEqual(p.exportSnapshot(),before);
 });
+// 새 길(판정이 있을 때)에서만 학습일 경계를 넘긴 도움을 오늘 판에 잇지 않는다 — 판정이 없는 문서(라이브)와 지금 판으로 정해진 문서(판정 null)는
+// 4-2 앞과 같이 앞선 날 판을 그대로 잇고 어제 본 표현도 도움으로 단다(Fable 5.2 합친 끝 판 F3 — 문서를 연 채 날을 넘긴 차례 포함).
+test('앞선 날의 도움(남은 판 · 본 표현)은 새 길 판정이 있을 때만 오늘 판에 잇지 않는다 — 판정 없음 · 지금 판(null)은 4-2 앞과 같다(Fable 5.2 합친 끝 판 F3)',()=>{
+ const DAY=86400000;
+ const sources=[['판정 없음',null,false],['지금 판(null)',()=>null,false],['엔진',state=>({state:'engine',ids:Object.keys(state.reviews),nextAt:null,times:[],upcoming:[]}),true]];
+ for(const [label,source,next] of sources){
+  // ① 앞선 날 판 — 안내 연습이 연 1문항 판에 답 없이 남은 도움 표시
+  const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});if(source)p.setDueSource(source);
+  const q=lessons[0].questions[0],id=q.review.id;p.startLesson(lessons[0]);p.recordAnswer({lessonId:lessons[0].id,questionId:q.id,correct:false});
+  const first=p.startReview(1,id,null,{ids:[id]});p.markReviewHelp(id);
+  clock.advance(DAY);
+  assert.equal(p.summary(packs).dueRenew,next?true:undefined,`${label}: 요약의 dueRenew`);
+  const again=p.startReview(1,id,null,{ids:[id]});
+  assert.equal(again.id===first.id,!next,`${label}: ${next?'새 판':'앞선 날 판을 그대로 잇는다'}`);
+  assert.equal(again.pendingHelp?.[id]===true,!next,`${label}: 앞선 날의 도움 표시`);
+  // ② 어제 본 표현(화면 exposedTransfers의 때) — 오늘 새로 연 판에 도움으로 다는가
+  const c2=options(),p2=createLifeProgress({storage:storage(),now:c2.now});if(source)p2.setDueSource(source);
+  p2.startLesson(lessons[0]);p2.recordAnswer({lessonId:lessons[0].id,questionId:q.id,correct:false});
+  const seen=c2.now();c2.advance(DAY);p2.startReview(1,id,null,{ids:[id]});
+  assert.equal(p2.markReviewHelp(id,{seenAt:seen}).pendingHelp?.[id]===true,!next,`${label}: 어제 본 표현`);
+  assert.equal(p2.markReviewHelp(id,{seenAt:c2.now()}).pendingHelp?.[id],true,`${label}: 오늘 본 표현은 도움`);
+ }
+});

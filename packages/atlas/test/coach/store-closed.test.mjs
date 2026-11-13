@@ -7,9 +7,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { rng } from '../support/seeds.mjs';
 import { subject } from '../support/subject.mjs';
-import { bankOf, clock, createCoach, fakeMap, memoryPort, STEP } from './support.mjs';
+import { bankOf, clock, createCoach, fakeMap, memoryPort, PARAMS, STEP } from './support.mjs';
 
-const { installHostMaker } = await subject('coach/host.mjs');
+const { acquireHost, installHostMaker, releaseHost } = await subject('coach/host.mjs');
 const { createSync } = await subject('coach/sync.mjs');
 const { createServer } = await import('../support/trail-sync.mjs');
 
@@ -322,6 +322,67 @@ test('화면 복귀 받기 간격은 서버 시각으로 고치지 않은 시계
   sync.visible();
   await flush();
   assert.equal(gets, 2, '5분 안이면 받지 않는다');
+});
+
+test('기기 시계가 뒤로 가면(틀리게 앞서 있던 시계를 OS가 맞춤) 화면 복귀 받기를 「5분 안」으로 치지 않고 받는다 — 음수 간격(Fable 5.2 합친 끝 판 넘친 #17)', async () => {
+  let device = 1_800_000_000_000;
+  let gets = 0;
+  const { sync } = syncOn({
+    fail: () => null,
+    now: () => device,
+    clock: () => device,
+    get: async () => {
+      gets += 1;
+      return { summary: null, serverTime: device };
+    },
+  });
+  await sync.first();
+  assert.equal(gets, 1);
+  device -= 3_600_000; // 첫 받기 뒤 기기 시계가 1시간 뒤로
+  sync.visible();
+  await flush();
+  assert.equal(gets, 2, '간격이 음수면 받는다(뒤로 간 만큼 + 5분을 기다리지 않는다)');
+  device += 60_000;
+  sync.visible();
+  await flush();
+  assert.equal(gets, 2, '받은 뒤로는 그 시계로 다시 5분');
+});
+
+test('호스트는 동기에 서버 시각으로 고치지 않은 시계를 넘긴다 — 첫 받기의 서버 시각이 10분 앞서도 1분 뒤 받기는 5분 안이고 5분 뒤에 받는다(진짜 호스트, Fable 5.2 합친 끝 판 넘친 #15 ②)', async () => {
+  const time = clock();
+  let gets = 0;
+  const transport = {
+    post: async events => ({
+      accepted: events.map((event, i) => ({ id: event.id, seq: i + 1 })),
+      clamped: [],
+      rejected: [],
+    }),
+    get: async () => {
+      gets += 1;
+      return { summary: null, serverTime: time.t + 10 * 60_000 }; // 서버 시각이 기기보다 10분 앞선다
+    },
+  };
+  const host = await acquireHost({
+    key: keyOf('raw-clock'),
+    port: memoryPort(),
+    params: PARAMS,
+    now: time.now,
+    guest: false,
+    account: 'acct-raw-clock',
+    revision: 1,
+    transport,
+  });
+  assert.equal((await host.firstPull(1000)).ok, true);
+  await sleep(10); // 첫 받기가 다 끝나 받는 중(pulling)이 풀리기를 기다린다 — 그 사이 pull()은 그 받기를 돌려준다
+  assert.equal(gets, 1, '열 때 받았다');
+  assert.ok(host.now() - time.t >= 9 * 60_000, '고친 시계는 서버 시각을 따른다');
+  time.advance(60_000);
+  await host.pull();
+  assert.equal(gets, 1, '고치지 않은 시계로 1분 — 5분 안이라 받지 않는다(고친 시계로 재면 11분)');
+  time.advance(4 * 60_000);
+  await host.pull();
+  assert.equal(gets, 2, '5분 뒤에는 받는다');
+  releaseHost(host);
 });
 
 test('쓰기 막힘(WRITES_DISABLED)은 긴 간격으로 다시 보내 본다 — 문이 열리면 같은 동기가 올리고, 또 막히면 또 알린다(Fable 5.2 끝 판 넘친 #3)', async t => {

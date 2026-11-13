@@ -195,3 +195,41 @@ test('「한글 기록 이어 가기」 판: 표의 records.*가 판의 모든 �
   else assert.doesNotMatch(visible,/[가-힣]/,`${code}: 판에 한국어가 남지 않는다`);
  }
 });
+
+// Atlas 새 길의 옮기기 물음(world-atlas-next.mjs guestMove)은 생활 경험(world-life)의 답 · 사건을 life로 따로 준다 — 물음은 그것을 생활 줄에 세고
+// 「짧은 진단·연습」 줄에는 짧은 진단 · 연습만 센다(생활 레슨만 한 손님에게 같은 답이 그 이름으로 또 서던 것 — Fable 5.2 합친 끝 판 넘친 #8).
+test('옮기기 물음: 새 길에서 생활 레슨만 한 손님은 생활 줄만 서고, 「짧은 진단·연습」 줄은 짧은 진단 · 연습의 답만 센다(세 언어 — Fable 5.2 합친 끝 판 넘친 #8)',async()=>{
+ const {DEVICE_RECORDS_TEXT,GUEST_LIFE_KEY,createDeviceRecordsOffer}=await import('../device-records.mjs');
+ const keys=Object.keys(DEVICE_RECORDS_TEXT);
+ const textFor=code=>()=>Object.fromEntries(keys.map(key=>[key,typeof DEVICE_RECORDS_TEXT[key]==='function'?(n,m)=>lang.t(`records.${key}`,{n,m},code):lang.t(`records.${key}`,null,code)]));
+ const AT=Date.parse('2026-11-12T01:00:00.000Z');
+ // 손님 생활 진도 — 레슨 하나(답 셋) · 복습 셋(새 길 생활 코치로 푼 그 레슨)
+ const lessonLife=()=>JSON.stringify({version:1,owner:'guest',revision:1,activeLessonId:null,activeReview:null,
+  lessons:{'greetings-expressions':{startedAt:AT,completedAt:AT+40_000,answers:{q1:{at:AT+8_000},q2:{at:AT+16_000},q3:{at:AT+24_000}}}},
+  reviews:{'q1-transfer':{lessonId:'greetings-expressions',lastAt:AT+8_000},'q2-transfer':{lessonId:'greetings-expressions',lastAt:AT+16_000},'q3-transfer':{lessonId:'greetings-expressions',lastAt:AT+24_000}}});
+ const plain=text=>text.replace(/&(amp|lt|gt|quot|#39);/g,(_,name)=>({amp:'&',lt:'<',gt:'>',quot:'"','#39':"'"})[name]);
+ // 물음을 띄워 요약 칸(굵은 글)의 줄을 읽고 닫는다 — atlas는 guestMove가 돌려주는 꼴
+ const ask=async(code,{life,found})=>{
+  const storage=memory();if(life)storage.setItem(GUEST_LIFE_KEY,life);
+  const shown=[];
+  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>null,accountAnswer:()=>null,setAccountAnswer:async()=>{},present:view=>shown.push(view),close(){},
+   text:textFor(code),importLife:async()=>({}),defer:fn=>fn(),atlasWait:1000});
+  const asked=offer.offer({owner:OWNER,generation:1},{atlas:async()=>({...found,move:async()=>({ok:true}),keep:async()=>1,note:async()=>true,close(){}})});
+  for(let turn=0;!shown.length;turn+=1){if(turn>500)throw Error('물음이 뜨지 않았다');await new Promise(resolve=>setTimeout(resolve,0));}
+  shown[0].onClose();await asked;
+  return shown[0].html.match(/<strong>(.*?)<\/strong>/s)[1].split('<br>').map(plain);
+ };
+ for(const code of ['ko','en','mn']){
+  const life=lang.t('records.lifeRow',null,code),learning=lang.t('records.learningRow',null,code);
+  // ① 생활 레슨만 — 새 길 사건 아홉(제시 · 첫 답 · 도움 셋씩)은 모두 생활 몫
+  const only=await ask(code,{life:lessonLife(),found:{attempts:0,events:9,life:{attempts:3,events:9}}});
+  assert.deepEqual(only,[`${life} · ${lang.t('records.lessons',{n:1},code)} · ${lang.t('records.reviews',{n:3},code)}`],`${code}: 생활 줄 하나 — 「${learning}」 줄이 서지 않는다`);
+  // ② 생활 문항을 답 없이 보기만 했다(생활 진도에는 옮길 레슨이 없다) — 생활 줄이 「연습을 시작했어요」로 선다(빈 요약이 아니다)
+  const seen=await ask(code,{found:{attempts:0,events:3,life:{attempts:0,events:3}}});
+  assert.deepEqual(seen,[`${life} · ${lang.t('records.started',null,code)}`],`${code}: 생활 줄로`);
+  // ③ 생활 레슨 + 짧은 연습 둘 — 짧은 진단 · 연습 줄은 그 답만
+  const both=await ask(code,{life:lessonLife(),found:{attempts:2,events:15,life:{attempts:3,events:9}}});
+  assert.deepEqual(both,[`${life} · ${lang.t('records.lessons',{n:1},code)} · ${lang.t('records.reviews',{n:3},code)}`,`${learning} · ${lang.t('records.answers',{n:2},code)}`]);
+  if(code!=='ko')for(const rows of [only,seen,both])assert.doesNotMatch(rows.join(' '),/[가-힣]/,`${code}: 한국어가 남지 않는다`);
+ }
+});

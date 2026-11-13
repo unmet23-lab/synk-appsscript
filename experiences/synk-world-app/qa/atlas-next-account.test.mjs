@@ -8,9 +8,12 @@ import * as atlas from '../../../packages/atlas/src/index.mjs';
 import {createAtlasNext,rehearsalTrail,postLegacyBatches,askSwitch,NEXT_MARK,LEGACY_KEY} from '../world-atlas-next.mjs';
 import {createRehearsalTrail} from '../rehearsal-trail.mjs';
 import {createPracticeNextSession} from '../world-practice-next.mjs';
-import {watchLifeDue} from '../world-life-next.mjs';
+import {watchLifeDue,createLifeNext} from '../world-life-next.mjs';
 import {bankItems} from '../world-topik-items.mjs';
 import {allowedPlays,nextPlay} from '../world-exam-form.mjs';
+import {LESSONS} from '../life-content.mjs';
+import {lifeItem} from '../life-items.mjs';
+import {lessonSlot} from '../life-trail.mjs';
 
 const POOL=[{itemKey:'topik-items.x1'}];
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
@@ -1233,4 +1236,356 @@ test('끝 판 둘째 GC2 — 기기 길을 다시 읽는 사이 판을 다시 �
  }finally{
   if(realIdb)Object.defineProperty(globalThis,'indexedDB',realIdb);else delete globalThis.indexedDB;
  }
+});
+
+// ── Fable 5.2 합친 끝 판 넘친 지적의 시험 빈자리(#1 · #2 · #8 · #22 · #23 · #24) ─────────────────────────────────────
+// 은행이 늘 실패하는 코치(생활 은행 등) — ready가 거절된다(만들 때만 거절을 만들어 처리 안 된 거절로 남지 않게).
+const refusedCoach=()=>{const ready=Promise.reject(Object.assign(Error('bank'),{code:'BANK'}));ready.catch(()=>{});return fakeCoach({ready});};
+
+test('입구를 닫으면 받은 코치를 닫고, ready가 거절된 코치 · 여는 사이에 닫은 코치도 한 번씩 닫는다(Fable 5.2 합친 끝 판 넘친 #1)',async()=>{
+ // ① 받은 코치(짧은 연습 · 생활) — 셸이 입구를 버리면(주인 바뀜) 떠난 주인의 코치 · 호스트가 열린 채 남지 않는다
+ const {opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-d1',storage:memoryStorage(),trail:accountLine().trail,load,health:recorder()});
+ const practice=await next.practiceCoach(POOL),life=await next.lifeCoach();
+ assert.ok(practice&&life&&practice!==life);
+ next.dispose();await tick();
+ assert.deepEqual(opened.map(made=>made.disposed),[1,1],'입구를 닫으면 받은 코치를 닫는다');
+ // ② ready가 거절되는 코치(은행 실패) — 이번은 지금 판이고 그 코치는 닫는다
+ const failing=fakeLoader(refusedCoach);
+ const n2=createAtlasNext({owner:'acct-d2',storage:memoryStorage(),trail:accountLine().trail,load:failing.load,health:recorder()});
+ assert.equal(await n2.practiceCoach(POOL),null);
+ assert.equal(failing.opened[0].disposed,1,'준비를 못 한 코치를 닫는다');
+ n2.dispose();await tick();
+ assert.equal(failing.opened[0].disposed,1,'두 번 닫지 않는다');
+ // ③ 코치가 열리는 사이(ready를 붙든 채) 입구를 닫는다 — 풀린 뒤 그 코치는 닫히고 면은 받지 않는다(손님 · 올리는 길)
+ for(const owner of ['guest','acct-d3']){
+  let release;const gate=new Promise(resolve=>{release=resolve;});
+  const slow=fakeLoader(()=>fakeCoach({ready:gate}));
+  const n3=createAtlasNext({owner,storage:memoryStorage([[NEXT_MARK+'acct-d3','{"went":true}']]),trail:accountLine().trail,load:slow.load,health:recorder()});
+  const asking=n3.practiceCoach(POOL);
+  await until(()=>slow.opened.length===1);
+  n3.dispose();release();
+  assert.equal(await asking,null,`${owner}: 닫은 입구는 코치를 돌려주지 않는다`);
+  await tick();
+  assert.equal(slow.opened[0].disposed,1,`${owner}: 여는 사이에 닫은 코치는 풀린 뒤 한 번 닫는다`);
+ }
+});
+
+test('알림을 받고 다시 물어 또 지금 판을 받은 면도 그 뒤의 새 길을 듣는다 — 지금 판을 줄 때마다 알림 표시를 되돌린다(Fable 5.2 합친 끝 판 넘친 #2 ①)',async()=>{
+ const line=accountLine();const real=line.trail;let down=true;
+ line.trail=async()=>{if(down)throw fail(0,'NETWORK',{retryable:true});return real();};
+ let release;const held=new Promise(resolve=>{release=resolve;});
+ // 생활 은행은 늘 실패한다 · 짧은 연습 코치는 준비를 붙든다 — 「정해짐」 알림이 생활에 먼저 닿는다
+ const {load}=fakeLoader(options=>options.gameId==='world-life'?refusedCoach():fakeCoach({ready:held}));
+ const next=createAtlasNext({owner:'acct-n06',storage:memoryStorage(),trail:()=>line.trail(),load,health:recorder()});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ try{
+  assert.equal(await next.practiceCoach(POOL),null,'계정을 못 읽어 지금 판');
+  down=false;
+  const practice=next.practiceCoach(POOL); // 계정이 읽혀 새 길로 정해진다 — 코치는 아직 준비 중
+  await until(()=>heard.length===1);
+  assert.deepEqual(heard,['decided']);
+  assert.equal(await next.lifeCoach(),null,'알림을 받은 생활이 다시 물어 또 지금 판(은행 실패)');
+  assert.deepEqual(heard,['decided'],'묻는 사이 더 풀린 것이 없으면 알리지 않는다');
+  release();
+  assert.ok(await practice,'짧은 연습은 새 길');
+  assert.deepEqual(heard,['decided','opened'],'지금 판을 다시 받은 면이 있으니 새 길 코치에 또 알린다');
+  // 다시 정한 뒤에도 같다
+  assert.equal(await next.lifeCoach(),null);
+  next.redecide('account');
+  assert.ok(await next.practiceCoach(POOL));
+  assert.deepEqual(heard,['decided','opened','opened'],'다시 정한 뒤의 새 길도 알린다');
+ }finally{next.dispose();}
+});
+
+test('생활을 여는 사이 판이 두 번 바뀌어 지금 판을 준 면도 적어 두어 그 뒤의 새 길 코치에 알리고, 까닭은 계기(PATH_CHANGING)에 남긴다(Fable 5.2 합친 끝 판 넘친 #2 ② · #24)',async()=>{
+ const gates=[];
+ const {opened,load}=fakeLoader(options=>options.gameId==='world-life'?fakeCoach({ready:new Promise(resolve=>gates.push(resolve))}):fakeCoach());
+ const health=recorder();
+ const next=createAtlasNext({owner:'acct-g27',storage:memoryStorage(),trail:accountLine().trail,load,health});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ try{
+  const life=next.lifeCoach();
+  for(let i=0;i<2;i+=1){await until(()=>gates.length===i+1);next.redecide('account');gates[i]();}
+  assert.equal(await life,null,'두 번 다 여는 사이 판이 바뀌어 이번은 지금 판(한 번만 다시 정한다)');
+  assert.deepEqual(opened.map(made=>made.disposed),[1,1],'앞 판 코치 둘은 닫았다');
+  assert.ok(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='PATH_CHANGING'),'지금 판으로 간 까닭은 계기에');
+  assert.deepEqual(heard,[]);
+  assert.ok(await next.practiceCoach(POOL),'짧은 연습은 새 길');
+  assert.deepEqual(heard,['opened'],'지금 판을 준 면이 있으니 새 길 코치에 알린다');
+ }finally{next.dispose();}
+});
+
+test('면이 판을 묻는 사이 다른 면이 새 길을 받고 그 면은 다시 정한 지금 판(꺼짐 표지)을 받으면 준 직후 알린다(Fable 5.2 합친 끝 판 넘친 #2 ③)',async()=>{
+ const line=accountLine({get:async()=>{throw fail(403,'FEATURE_DISABLED');}}); // 스위치는 꺼진 채(다시 묻기도 꺼짐)
+ const gates=[];
+ const {load}=fakeLoader(options=>options.gameId==='world-life'?fakeCoach({ready:new Promise(resolve=>gates.push(resolve))}):fakeCoach());
+ const storage=memoryStorage();
+ const next=createAtlasNext({owner:'acct-n12',storage,trail:line.trail,load,health:recorder()});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ try{
+  const life=next.lifeCoach(); // 생활이 판을 묻는다 — 코치 준비를 붙든다
+  await until(()=>gates.length===1);
+  const practice=await next.practiceCoach(POOL);
+  assert.ok(practice,'짧은 연습은 처음 정한 새 길');
+  assert.deepEqual(heard,[],'처음 정한 새 길은 알릴 일이 아니다');
+  practice.options.host.onAccount({kind:'switch',code:'FEATURE_DISABLED',status:403}); // 꺼짐 — 표지를 쓰고 다시 정한다
+  gates[0]();
+  assert.equal(await life,null,'다시 정한 판은 꺼짐 표지로 지금 판');
+  assert.equal(markOf(storage,'acct-n12').off,true);
+  assert.deepEqual(heard,['loosened'],'묻는 사이 다른 면이 새 길을 받았으니 지금 판을 준 직후 알린다');
+ }finally{next.dispose();}
+});
+
+test('판이 거듭 바뀌어 판을 못 정하면 — 연습은 이번만 지금 판(계기 PATH_CHANGING), 옮기기 물음은 「못 셈」(Fable 5.2 합친 끝 판 넘친 #24 · #22 ⑤)',async()=>{
+ const line=accountLine();let holds=0;const gates=[];
+ const trail=async()=>{if(holds>0){holds-=1;await new Promise(resolve=>gates.push(resolve));}return line.trail();};
+ const health=recorder(),{opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-ch',storage:memoryStorage(),trail,load,health});
+ // 계정을 읽는 사이마다 판을 다시 정한다(세 번 — 정하기는 세 번까지)
+ const churn=async start=>{gates.length=0;holds=3;const asking=start();for(let i=0;i<3;i+=1){await until(()=>gates.length===i+1);next.redecide('account');gates[i]();}return asking;};
+ try{
+  assert.equal(await churn(()=>next.practiceCoach(POOL)),null,'정하는 사이 판이 거듭 바뀌면 이번은 지금 판');
+  assert.ok(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='PATH_CHANGING'),'까닭은 계기에');
+  assert.equal(opened.length,0,'코치는 열지 않았다');
+  assert.deepEqual(await churn(()=>next.guestMove({watermarks:{}})),{failed:true},'옮기기 물음은 못 셈 — 기준 시각을 올리지 않는다');
+  assert.ok(await next.practiceCoach(POOL),'판이 가라앉으면 새 길');
+ }finally{next.dispose();}
+});
+
+test('앞 세대의 다시 확인이 늦게 인증 실패(401)로 끝나도 새 판의 코치를 닫지 않는다(Fable 5.2 합친 끝 판 넘친 #22 ①)',async()=>{
+ const line=accountLine();let hold=false,release=()=>{};
+ const trail=async()=>{if(hold){hold=false;await new Promise(resolve=>{release=resolve;});throw fail(401,'AUTH_REQUIRED');}return line.trail();};
+ const {load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-g15',storage:memoryStorage([[NEXT_MARK+'acct-g15','{"went":true}']]),trail,load,health:recorder()});
+ try{
+  const a=await next.practiceCoach(POOL);
+  hold=true;
+  a.options.host.onAccount({kind:'writes',code:'WRITES_DISABLED',status:403}); // 쓰기 다시 확인 — 계정 읽기를 붙든다
+  a.options.host.onAccount({kind:'account',code:'REVISION_CONFLICT',status:409}); // 그사이 판 알림 — 다시 정한다
+  await until(()=>a.disposed===1);
+  const b=await next.practiceCoach(POOL);
+  assert.ok(b&&b!==a,'새 판의 코치');
+  release(); // 붙든 앞 세대의 다시 확인이 이제 인증 실패로 끝난다
+  for(let i=0;i<5;i++)await tick();
+  assert.equal(b.disposed,0,'앞 세대의 늦은 실패는 새 판의 코치를 닫지 않는다');
+  assert.equal(await next.practiceCoach(POOL),b);
+ }finally{next.dispose();}
+});
+
+test('앞 세대의 늦은 판 정하기는 새 세대의 길을 건드리지 않는다 — 계정이 아직 안 읽히는 동안 「풀렸다」고 알리지 않는다(Fable 5.2 합친 끝 판 넘친 #22 ②)',async()=>{
+ const line=accountLine();const real=line.trail;let down=true,hold=false,release=()=>{};
+ line.trail=async()=>{if(hold){hold=false;await new Promise(resolve=>{release=resolve;});return real();}if(down)throw fail(0,'NETWORK',{retryable:true});return real();};
+ const {load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-g17',storage:memoryStorage(),trail:()=>line.trail(),load,health:recorder()});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ try{
+  assert.equal(await next.practiceCoach(POOL),null,'계정을 못 읽어 지금 판');
+  hold=true;
+  const late=next.practiceCoach(POOL); // 이 읽기는 붙들린 채 늦게 새 길로 읽힌다(앞 세대가 된다)
+  await until(()=>!hold);
+  next.redecide('account');
+  assert.equal(await next.lifeCoach(),null,'새 세대는 아직 계정을 못 읽어 지금 판');
+  release();
+  assert.equal(await late,null,'늦게 온 앞 세대의 판은 버리고 지금 세대로 — 아직 지금 판');
+  assert.deepEqual(heard,[],'계정이 아직 안 읽히는 동안 알리지 않는다');
+  down=false;
+  assert.ok(await next.practiceCoach(POOL),'계정이 읽히면 새 길');
+  assert.deepEqual(heard,['decided'],'그때 한 번 알린다');
+ }finally{next.dispose();}
+});
+
+test('앞 세대의 늦게 실패한 판 정하기는 새 세대의 정한 판을 비우지 않는다 — 다음 연습이 계정을 또 읽지 않는다(Fable 5.2 합친 끝 판 넘친 #22 ③)',async()=>{
+ const line=accountLine();let hold=false,release=()=>{};
+ const trail=async()=>{if(hold){hold=false;await new Promise(resolve=>{release=resolve;});throw fail(0,'NETWORK',{retryable:true});}return line.trail();};
+ const {opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-g18',storage:memoryStorage([[NEXT_MARK+'acct-g18','{"went":true}']]),trail,load,health:recorder()});
+ try{
+  hold=true;
+  const late=next.practiceCoach(POOL); // 이 판 정하기는 늦게 실패한다(앞 세대가 된다)
+  await until(()=>!hold);
+  next.redecide('account');
+  const coach=await next.practiceCoach(POOL);
+  assert.ok(coach,'새 세대는 새 길');
+  const reads=line.reads;
+  release();
+  assert.equal(await late,coach,'늦게 실패한 앞 세대 대신 지금 세대의 코치');
+  assert.equal(await next.practiceCoach(POOL),coach);
+  assert.equal(line.reads,reads,'정한 판을 그대로 쓴다 — 늦은 실패가 비우지 않았다');
+  assert.equal(opened.length,1);
+ }finally{next.dispose();}
+});
+
+test('앞 세대의 늦은 스위치 다시 묻기(켜짐)는 새 세대의 정한 판을 비우지 않는다(Fable 5.2 합친 끝 판 넘친 #22 ④)',async()=>{
+ const storage=memoryStorage([[NEXT_MARK+'acct-g20',JSON.stringify({off:true})]]);
+ const line=accountLine();let hold=false,release=()=>{};
+ line.get=async()=>{if(hold){hold=false;await new Promise(resolve=>{release=resolve;});}return {summary:null,serverTime:0};};
+ const {load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-g20',storage,trail:line.trail,load,health:recorder(),switchAskMs:5000});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ try{
+  hold=true;
+  assert.equal(await next.practiceCoach(POOL),null,'꺼짐 표지 — 지금 판(뒤에서 다시 묻기는 붙들린다)');
+  await until(()=>!hold);
+  next.redecide('account');
+  assert.equal(await next.practiceCoach(POOL),null,'새 세대도 꺼짐 표지로 지금 판 — 이번 다시 묻기는 켜짐');
+  await until(()=>heard.includes('switch'));
+  const coach=await next.practiceCoach(POOL);
+  assert.ok(coach,'켜졌으니 새 길');
+  const reads=line.reads;
+  release(); // 앞 세대의 다시 묻기가 이제 켜짐으로 끝난다
+  for(let i=0;i<5;i++)await tick();
+  assert.equal(await next.practiceCoach(POOL),coach);
+  assert.equal(line.reads,reads,'정한 판을 그대로 쓴다 — 앞 세대의 다시 묻기가 비우지 않았다');
+  assert.deepEqual(heard,['switch']);
+ }finally{next.dispose();}
+});
+
+test('손님 생활 코치는 경험 world-life · 은행 world-life로 연다 — 판 번호 · 도움 contentRef · 단계 5 판 비교가 읽는다(Fable 5.2 합친 끝 판 넘친 #22 ⑥)',async()=>{
+ const {load}=fakeLoader();
+ const guest=createAtlasNext({owner:'guest',storage:memoryStorage(),load,health:recorder()});
+ try{
+  const life=await guest.lifeCoach(),practice=await guest.practiceCoach(POOL);
+  assert.equal(life.options.gameId,'world-life');assert.deepEqual(life.options.banks,['world-life']);
+  assert.equal(life.options.host.guest,true);
+  assert.equal(practice.options.gameId,'world-practice');assert.notEqual(life,practice);
+ }finally{guest.dispose();}
+});
+
+test('첫 받기가 판 · 동의 갈래로 실패하면(진짜 호스트처럼 셸 알림이 먼저) 한 번 다시 정해 오른 판의 코치를 주고 표지도 오른 판이다(Fable 5.2 합친 끝 판 넘친 #22 ⑦)',async()=>{
+ // 계정을 읽은 직후 다른 기기가 판을 올렸다(409) · 동의를 껐다(판이 함께 오른다 — 기기 길로)
+ for(const [name,change,code,path] of [['판 오름',line=>{line.revision=2;},'REVISION_CONFLICT','upload'],['동의 끔',line=>{line.enabled=false;line.revision=2;},'LEARNING_DISABLED','device']]){
+  const storage=memoryStorage(),line=accountLine(),health=recorder();
+  let first=true;
+  const {opened,load}=fakeLoader(()=>{
+   const made=fakeCoach();const plain=made.synced;
+   made.synced=async ms=>{
+    if(!first)return plain(ms);
+    first=false;made.syncedCalls+=1;change(line);
+    made.options.host.onAccount({kind:'account',code,status:code==='LEARNING_DISABLED'?403:409,revision:2});
+    return {ok:false,kind:'account',code};
+   };
+   return made;});
+  const next=createAtlasNext({owner:'acct-fp',storage,trail:line.trail,load,health});
+  try{
+   const coach=await next.practiceCoach(POOL);
+   assert.ok(coach,`${name}: 지금 판으로 떨어지지 않는다`);
+   assert.deepEqual(opened.map(made=>[made.options.host.revision,made.disposed]),[[1,1],[2,0]],`${name}: 앞 판 코치는 닫고 오른 판의 코치를 준다`);
+   assert.equal(coach,opened[1]);
+   assert.equal(coach.options.host.guest,path==='device'?true:undefined,`${name}: ${path} 길`);
+   assert.deepEqual(markOf(storage,'acct-fp'),{went:true,path,revision:2},`${name}: 표지도 오른 판`);
+   assert.equal(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.ok===false),false,`${name}: 앞 판 첫 받기의 실패는 지금 판의 계기가 아니다`);
+  }finally{next.dispose();}
+ }
+});
+
+test('옛 POST 포기 뒤 마저 보내기 — 걸린 자식이 있어도 그 묶음만 건너뛰고 끝나며(되풀이해도 같다), 한 묶음을 넘으면 자르고, 중간 실패 · 이 묶음에 없는 번호를 짚은 409는 실패(Fable 5.2 합친 끝 판 넘친 #23)',async()=>{
+ const at=n=>`2026-11-01T00:00:${String(n).padStart(2,'0')}.000Z`;
+ const tree=r=>[{id:`d${r}`,type:'decision.made',at:at(r)},{id:`p${r}`,type:'practice.presented',decisionId:`d${r}`,at:at(r+10)},
+  {id:`a${r}`,type:'practice.attempted',presentationId:`p${r}`,at:at(r+20)}];
+ const conflict=(extra={})=>Object.assign(Error('EVENT_CONFLICT'),{status:409,code:'EVENT_CONFLICT',...extra});
+ // ① 머리는 받았는데 자식(답)이 다른 판으로 서버에 있는 묶음이 마저 보낼 몫에도 있다 — 포기 뒤에도 걸린 묶음만 건너뛴다
+ const four=[1,2,3,4].flatMap(tree);
+ const onServer=new Set(['a2','a3']);
+ for(let round=0;round<2;round+=1){
+  const posts=[];
+  const got=await postLegacyBatches(four,async batch=>{posts.push(batch.map(e=>e.id));if(batch.some(e=>onServer.has(e.id)))throw conflict();return {ok:true};},{limit:4,cap:0});
+  assert.deepEqual([got.ok,got.gaveUp,got.skipped],[true,true,2],`${round+1}번째: 포기한 뒤에도 끝난다(영영 실패하지 않는다)`);
+  assert.deepEqual([...got.ids].sort(),['a1','a4','d1','d2','d3','d4','p1','p2','p3','p4'],'걸린 묶음의 자식만 빠진다');
+ }
+ // ② 마저 보낼 몫이 한 묶음(한도)을 넘으면 잘라 보내고, 중간 묶음이 실패하면 실패(표지 없이 다음에 다시)
+ const six=[0,1,2,3,4,5].flatMap(tree);
+ const parts=[];
+ const cut=await postLegacyBatches(six,async batch=>{parts.push(batch.map(e=>e.id));if(batch.some(e=>e.id==='a0'))throw conflict();return {ok:true};},{limit:4,cap:0});
+ assert.deepEqual([cut.ok,cut.gaveUp,cut.skipped],[true,true,1]);
+ assert.ok(parts.every(batch=>batch.length<=4),'마저 보낼 때도 한도로 자른다');
+ assert.deepEqual([...cut.ids].sort(),['a1','a2','a3','a4','a5','d0','d1','d2','d3','d4','d5','p0','p1','p2','p3','p4','p5']);
+ const lost=await postLegacyBatches(six,async batch=>{if(batch.some(e=>e.id==='a0'))throw conflict();if(batch.some(e=>e.id==='a2'))throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});return {ok:true};},{limit:4,cap:0});
+ assert.equal(lost.ok,false,'마저 보내다 중간 묶음이 실패하면 실패');
+ // ③ 이 묶음에 없는 번호를 짚은 409 — 되풀이하지 않고 실패
+ let calls=0;
+ const stray=await postLegacyBatches(tree(7),async()=>{calls+=1;if(calls>20)throw Object.assign(Error('NETWORK'),{code:'NETWORK'});throw conflict({ids:['zz']});});
+ assert.equal(stray.ok,false);
+ assert.equal(calls,1,'짚은 번호가 이 묶음에 없으면 다시 보내지 않는다');
+});
+
+test('옮기기 물음 — 생활 경험(world-life)의 답 · 사건은 따로 센다: 새 길에서 생활 레슨만 한 손님의 짧은 진단 · 연습 답은 0이고, 짧은 연습을 더 하면 그 답만 짧은 진단 · 연습 몫(Fable 5.2 합친 끝 판 넘친 #8)',{timeout:60_000},async()=>{
+ let now=Date.UTC(2026,10,12,1,0,0);
+ const time={now:()=>now,advance:ms=>{now+=ms;}};
+ const index=atlas.openMap({index:MAP_DATA.index}).foldIndex;
+ const server=createRehearsalTrail({atlas,index,now:time.now,warn:()=>{}});
+ const fetcher=async(url,init={})=>{
+  const u=new URL(url,'http://local');
+  const reply=await server.handle({account:{id:A_ID},path:u.pathname.replace('/api/world/rehearsal/',''),method:init.method??'GET',query:u.searchParams,
+   body:init.body?Buffer.from(init.body):undefined,headers:new Headers(init.headers)});
+  return {ok:reply.status<400,status:reply.status,json:async()=>reply.body};
+ };
+ const ports=new Map(),portOf=key=>{if(!ports.has(key))ports.set(key,atlas.memoryPort());return ports.get(key);};
+ const keyOf=host=>host.key??(host.guest?atlas.storeName({}):atlas.storeName({account:host.account,revision:host.revision}));
+ const load=async()=>({SynkAtlas:{load:async()=>atlas},coach:options=>{
+  const made=atlas.createCoach({...options,mapData:MAP_DATA,dayOffset:540,host:{...options.host,port:portOf(keyOf(options.host)),now:time.now}});
+  const wrapped=Object.fromEntries(Object.entries(made).map(([name,value])=>[name,typeof value==='function'?value.bind(made):value]));
+  wrapped.guestRecords=opts=>made.guestRecords({...opts,...(ports.has(atlas.storeName({}))?{port:ports.get(atlas.storeName({}))}:{})});
+  return wrapped;
+ }});
+ const storage=memoryStorage();
+ // 손님: 새 길 생활 코치(판 겉)로 첫 레슨의 문항을 푼다 — 짧은 진단 · 짧은 연습은 하지 않는다
+ const guest=createAtlasNext({owner:'guest',storage,load,health:recorder()});
+ const surface=createLifeNext({coach:()=>guest.lifeCoach(),watch:(made,fn)=>guest.retired(made,fn)});
+ const lesson=LESSONS[0];
+ for(const question of lesson.questions){
+  const slot=lessonSlot('attempt-1',question.id);
+  surface.shown(slot,lifeItem({lesson,question}));time.advance(8_000);
+  surface.answer(slot,{correct:true,choiceId:question.answerId,correctId:question.answerId});time.advance(8_000);
+ }
+ await until(()=>surface.metrics().answered===lesson.questions.length&&surface.metrics().queued===0);
+ const firstTries=async()=>(await portOf(atlas.storeName({})).read()).filter(row=>row.value?.kind==='event'&&row.value.event.type==='practice.attempted').length;
+ await until(async()=>await firstTries()===lesson.questions.length);
+ surface.dispose();guest.dispose();
+ const asked=async()=>{
+  const next=createAtlasNext({owner:A_ID,storage,trail:rehearsalTrail({fetcher}),load,health:recorder()});
+  try{
+   const found=await next.guestMove({watermarks:{others:0,all:0},pick:events=>events});
+   found.close();
+   return {attempts:found.attempts,events:found.events,life:found.life};
+  }finally{next.dispose();}
+ };
+ const lifeOnly=await asked();
+ assert.equal(lifeOnly.attempts,0,'짧은 진단 · 연습의 답은 없다');
+ assert.deepEqual(lifeOnly.life,{attempts:lesson.questions.length,events:lifeOnly.events},'생활 레슨의 답 · 사건은 모두 생활 몫');
+ // 손님이 짧은 연습 둘을 더 한다 — 그 답만 짧은 진단 · 연습 몫이고 생활 몫은 그대로
+ const again=createAtlasNext({owner:'guest',storage,load,health:recorder()});
+ const coach=await again.practiceCoach(READING);
+ const session=createPracticeNextSession({plays:{allowedPlays,nextPlay},coach,pool:READING,length:2});
+ while(session.next()){if(!session.current.heard)session.delivery('completed');session.answer(session.current.item.correctId);time.advance(30_000);}
+ await session.settled();
+ again.dispose();
+ const mixed=await asked();
+ assert.equal(mixed.attempts,2,'짧은 연습의 첫 답만');
+ assert.deepEqual(mixed.life,lifeOnly.life,'생활 몫은 그대로');
+ assert.ok(mixed.events>lifeOnly.events,'옮길 사건 전체는 둘을 합친다');
+});
+
+test('옮기기 물음 — 생활 몫은 옛 꼴(옛 거울 결정의 경험 world-life) · 2판(판 번호 set.world-life.… · 판 결정 world-life.set) 모두 부모를 따라 가린다(Fable 5.2 합친 끝 판 넘친 #8)',async()=>{
+ const legacy=[
+  {id:'ld1',type:'decision.made',experienceId:'world-life'},{id:'lp1',type:'practice.presented',decisionId:'ld1'},{id:'la1',type:'practice.attempted',presentationId:'lp1',attemptNo:1},
+  {id:'ld2',type:'decision.made',experienceId:'world-practice'},{id:'lp2',type:'practice.presented',decisionId:'ld2'},{id:'la2',type:'practice.attempted',presentationId:'lp2',attemptNo:1},
+ ];
+ const current=[
+  {id:'c1',type:'practice.presented',setId:'set.world-life.1.t.1'},{id:'c2',type:'practice.attempted',presentationId:'c1',attemptNo:1},
+  {id:'c3',type:'practice.helped',presentationId:'c1'},{id:'c4',type:'record.excluded',targetId:'c2'},
+  {id:'c5',type:'decision.made',experienceId:'world-life.set',setId:'set.world-life.1.t.1'},{id:'c6',type:'experience.completed',decisionId:'c5',experienceId:'world-life.set'},
+  {id:'c7',type:'practice.presented',setId:'set.world-practice.2.t.1'},{id:'c8',type:'practice.attempted',presentationId:'c7',attemptNo:1},
+  {id:'c9',type:'practice.attempted',presentationId:'c7',attemptNo:2},{id:'c10',type:'unit.stated',unit:'u-1',say:'known'},
+ ];
+ const aside={plan:async()=>({legacy,current,until:9,touches:new Map()}),move:async()=>({ok:true}),keep:async()=>1,note:async()=>true,close(){}};
+ const {load}=fakeLoader(()=>fakeCoach({guestRecords:async()=>aside}));
+ const next=createAtlasNext({owner:'acct-life8',storage:memoryStorage(),trail:accountLine().trail,load,health:recorder()});
+ try{
+  const found=await next.guestMove({watermarks:{},pick:events=>events});
+  assert.deepEqual(found.life,{attempts:2,events:9},'생활 몫 — 옛 꼴 묶음 셋 · 2판 판 사건 여섯(도움 · 제외 · 판 결정 · 마침 포함)');
+  assert.equal(found.attempts,2,'짧은 진단 · 연습의 첫 답만(옛 꼴 하나 · 2판 하나 — 둘째 시도는 세지 않는다)');
+  assert.equal(found.events,16,'옮길 사건은 모두');
+  found.close();
+ }finally{next.dispose();}
 });
