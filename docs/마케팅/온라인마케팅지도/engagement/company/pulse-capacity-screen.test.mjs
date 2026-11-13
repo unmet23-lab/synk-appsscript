@@ -241,7 +241,8 @@ test('직원: 스위치 상태는 화면으로 돌아올 때 · 새로 불러올
   assert.match(app,/async function recheckStaffIntake\(\{force=false\}=\{\}\)\{\r?\n  if\(s\.mode!=='staff'\|\|!s\.user\|\|demo\|\|!s\.staffIntake\|\|!force&&\(busy\|\|loading\|\|Date\.now\(\)-staffIntakeAt<30000\)\)return;/);
   assert.ok(app.includes('if(s.project){await loadProject(s.project.id);await recheckStaffIntake({force:true});}else if(s.user)await loadWorkspace();'),'프로젝트를 연 채 새로 불러올 때도 읽는다');
   assert.match(app,/async function intakeSave\(body,message,form=null\)\{if\(busy\|\|loading\|\|s\.mode!=='staff'\)return;const key=form\?draftKey\(form\):'',revision=drafts\.get\(key\)\?\.revision;/);
-  assert.ok(app.includes('staffIntakeAt=Date.now();if(key)clearDraft(key,revision);render();notice(message);'),'성공하면 폼 글을 지운다');
+  assert.ok(app.includes("staffIntakeAt=Date.now();if(key)clearDraft(key,revision);else for(const k of drafts.keys())if(k.endsWith(':intake-pause:'))drafts.delete(k);render();notice(message);"),'성공하면 폼 글을 지우고, 쉬는 중 고치기 칸을 연 채 「다시 받기」를 눌러도 쉬기 칸 글을 남기지 않는다(Fable F2)');
+  assert.ok(read('views.mjs').includes('<form data-form="intake-pause">'),'쉬기 폼에는 data-id가 없어 쓰던 글의 열쇠가 「…:intake-pause:」로 끝난다');
   assert.match(app,/if\(type==='intake-pause'\)\{await intakeSave\(\{open:false,[^}]*\},'[^']*',form\);return;\}/);
   const staffCss=read('staff.css'),narrowStaff=staffCss.slice(staffCss.indexOf('@media (max-width:820px){'));
   assert.ok(narrowStaff.includes('html.is-staff .staff-intake{order:6;margin-left:auto}'),'휴대폰 폭에서도 스위치를 숨기지 않고 띠 첫 줄 오른쪽에 둔다(작업실 11-13)');

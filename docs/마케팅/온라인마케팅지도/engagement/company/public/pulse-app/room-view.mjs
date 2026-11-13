@@ -350,7 +350,8 @@ export function deskQueue(projects=[],when=value=>value){
 // 단계는 손님 방의 다섯과 같되 직원은 의뢰서를 쓰지 않으니 「확인」부터, 영상 확인과 납품은 나눈다(누가 움직일지가 다르다).
 export const STAFF_STAGES=Object.freeze([{id:'check',name:'확인'},{id:'draft',name:'1차안'},{id:'make',name:'제작'},{id:'review',name:'영상 확인'},{id:'deliver',name:'납품'}]);
 const STAFF_STAGE_OF={...STAGE_OF,write:'check',review:'review',deliver:'deliver',done:'deliver'};
-// 옛 흐름(의뢰서 없이 직원이 만든) 프로젝트는 단계 칸(stage)만 안다. 시안 확인은 손님 차례, 그 앞은 우리 차례로 본다.
+// 옛 흐름(의뢰서 없이 직원이 만든) 프로젝트는 단계 칸(stage)만 안다. 차례는 프로젝트 안 현황과 같은 판정(legacyTurn — views.mjs가 넘긴다)을 먼저 쓰고,
+// 그 판정이 없거나 읽지 못하면 시안 확인은 손님 차례, 그 앞은 우리 차례로 본다. 최종 전달은 늘 끝(수령 확인 전의 옛 납품이 손님 차례로 쌓이지 않게).
 const LEGACY_STAGE={received:'check',planning:'draft',producing:'make',review:'review',delivered:'deliver'};
 const LEGACY_STATE={received:'접수',planning:'내용 · 일정 협의',producing:'제작 중',review:'시안 확인 중',delivered:'최종 전달'};
 const LEGACY_TURN={received:'us',planning:'us',producing:'us',review:'them',delivered:'done'};
@@ -365,13 +366,14 @@ function staffPicture(p,stage){
   const pick=stage==='check'?theirs[0]||ours[0]:ours[0]||theirs[0];
   return pick?{src:mediaOf(p,pick),mine:pick.author!=='customer'}:null;
 }
-export function staffBoard(projects=[],now=Date.now()){
+const legacyTurnOf=(p,legacyTurn)=>{if(p.stage==='delivered')return 'done';try{const turn=legacyTurn?.(p);if(['us','them','done'].includes(turn))return turn;}catch{}return LEGACY_TURN[p.stage]||'us';};
+export function staffBoard(projects=[],now=Date.now(),{legacyTurn=null}={}){
   const today=kstDay(now),rows={fresh:[],ours:[],theirs:[],done:[],archived:[]};
   for(const p of projects){
     const r=p.studio?.request&&p.studio.request.status!=='retired'?p.studio.request:null,a=r?.answers||{};
     const state=r?roomState(p):'',archived=p.stage==='archived';
     const stage=r?STAFF_STAGE_OF[state]||'check':LEGACY_STAGE[p.stage]||'check';
-    const turn=archived?'archived':r?(ROOM_COPY[state]?.turn==='us'?'us':ROOM_COPY[state]?.turn==='done'?'done':'them'):LEGACY_TURN[p.stage]||'us';
+    const turn=archived?'archived':r?(ROOM_COPY[state]?.turn==='us'?'us':ROOM_COPY[state]?.turn==='done'?'done':'them'):legacyTurnOf(p,legacyTurn);
     const due=/^\d{4}-\d{2}-\d{2}$/.test(p.dueDate||'')?p.dueDate:'',left=due?dayGap(today,due):null;
     const moved=Date.parse(p.updatedAt||p.createdAt||''),waited=Number.isFinite(moved)?Math.max(0,dayGap(kstDay(moved),today)):null;
     const missing=r&&state==='check'?deskChecks(p).filter(check=>!check.ok):[];

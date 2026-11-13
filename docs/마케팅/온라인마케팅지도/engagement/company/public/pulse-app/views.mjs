@@ -134,15 +134,18 @@ function staffAgo(at,now=Date.now()){
 const staffDue=item=>item.left===null||item.turn==='done'?'':item.left<0?`${-item.left}일 지남`:item.left===0?'오늘 전달':`D-${item.left}`;
 const STAGE_SHORT={check:'확인',draft:'1차안',make:'제작',review:'영상',deliver:'납품'};
 function staffCard(item){
-  const due=staffDue(item),pic=item.picture?`<img src="${esc(item.picture.src)}" alt="" loading="lazy" decoding="async">`:`<span class="staff-pic-none" aria-hidden="true">${esc([...item.title.trim()][0]||'')}</span>`;
+  const due=staffDue(item),pic=item.picture?`<img src="${esc(item.picture.src)}" alt="" loading="lazy" decoding="async" data-staff-pic>`:`<span class="staff-pic-none" aria-hidden="true">${esc([...item.title.trim()][0]||'')}</span>`;
   const turn=item.turn==='us'?`<span class="staff-turn is-us"><i aria-hidden="true"></i><span><b>우리 차례</b> · ${esc(item.fresh?'의뢰서를 확인할 차례':item.state)}</span></span>`:item.turn==='done'?`<span class="staff-turn is-done"><i aria-hidden="true"></i><span><b>끝</b> · ${esc(item.state)}</span></span>`:`<span class="staff-turn is-them"><i aria-hidden="true"></i><span><b>손님 차례 · ${item.waited?`${item.waited}일째`:'오늘'}</b> · ${esc(item.state)}</span></span>`;
   const line=item.fresh?(item.missing.length?`빠진 것 ${item.missing.length} · ${item.missing[0]}`:'자동 점검 · 빠진 것 없음'):item.note;
   const received=item.fresh?staffAgo(item.at):'',who=[esc(item.who),received?esc(received+' 접수'):'',item.number?`<span class="mono">${esc(item.number)}</span>`:''].filter(Boolean).join(' · ');
   return `<button type="button" class="project-tile staff-card is-${item.turn}${item.fresh?' is-fresh':''}" data-action="open-project" data-id="${esc(item.id)}"><span class="staff-pic">${pic}${item.fresh?'<span class="staff-flag">새 의뢰</span>':''}${due?`<span class="staff-due${item.left<=2?' is-hot':''}">${due}</span>`:''}</span><span class="staff-card-t">${esc(item.title)}</span>${who?`<span class="staff-card-w">${who}</span>`:''}${turn}${line?`<span class="staff-card-note">${esc(line)}</span>`:''}</button>`;
 }
 const newProjectForm=()=>`<section class="staff-sheet" aria-label="새 프로젝트"><div class="staff-sheet-copy"><h2>새 프로젝트</h2><p>의뢰서 없이 직접 만드는 프로젝트예요. 만든 뒤 자료를 올리고 고객에게 초대 링크를 보내요.</p></div><form class="staff-sheet-form project-create" data-form="new-project">${field('프로젝트 이름','title','','text',{required:true,max:160,placeholder:'예: 여름 신제품 30초 광고'})}${field('고객 이름 또는 회사','customerName','','text',{required:true,max:100})}${field('무엇을 함께 만들까요?','summary','','textarea',{placeholder:'이번 광고의 목적과 전달할 내용을 적어 주세요.'})}<div class="button-row">${submit('프로젝트 만들기')}${btn('취소','cancel-new')}</div></form></section>`;
+// 옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이 말하는 차례와 같게(turnOf · nextDecision — 직원 화면이라 최종 준비 갈래로 읽는다).
+const STAFF_TURN={team:'us',customer:'them',done:'done'};
+const staffLegacyTurn=p=>STAFF_TURN[turnOf({project:p,demo:false,mode:'staff'},nextDecision(p,true))];
 export function picker(s){
-  const projects=s.workspace?.projects||[],b=staffBoard(projects),intake=intakeParts(s),canWrite=!!s.workspace?.canWrite;
+  const projects=s.workspace?.projects||[],b=staffBoard(projects,Date.now(),{legacyTurn:staffLegacyTurn}),intake=intakeParts(s),canWrite=!!s.workspace?.canWrite;
   // 끝난 프로젝트는 2주 동안만 납품 칸에 남기고, 그 뒤는 보관과 함께 접는다(칸이 끝없이 길어지지 않게).
   const recent=item=>item.turn!=='done'||(item.waited??99)<=14,cols=b.stages.map(stage=>({...stage,items:stage.items.filter(recent)}));
   const older=b.done.filter(item=>!recent(item)),folded=[...older,...b.archived];

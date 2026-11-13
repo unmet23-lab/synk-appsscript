@@ -96,6 +96,25 @@ test('끝난 프로젝트는 2주 동안만 납품 칸에, 그 뒤는 접기로'
   assert.match(html,/<b>끝난 프로젝트 1<\/b> · 보관 0/);
 });
 
+test('옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이 말하는 차례와 같다(제작 설계 확인 · 시안 의견), 최종 전달은 끝',t=>{
+  t.mock.timers.enable({apis:['Date'],now:NOW});
+  const preview={id:'v1',kind:'preview',at:ago(3)};
+  const projects=[
+    legacyProject('plan','producing'), // 제작 설계를 아직 손님이 확인하지 않았다 → 손님 차례(프로젝트 안 「● 고객 차례 | 제작 설계」와 같게)
+    {...legacyProject('look','review'),versions:[preview]}, // 새 시안을 손님이 볼 차례
+    {...legacyProject('fix','review'),versions:[preview],messages:[{id:'m1',author:'customer',action:'feedback',resolved:false,versionId:'v1',at:ago(2)}]}, // 손님 의견을 우리가 고칠 차례
+    legacyProject('sent','delivered'),
+  ];
+  const html=picker({mode:'staff',user:{id:'u'},workspace:{projects,canWrite:true}});
+  const turn=id=>html.match(new RegExp(`class="project-tile staff-card is-(\\w+)[^"]*" data-action="open-project" data-id="${id}"`))?.[1];
+  assert.deepEqual(['plan','look','fix','sent'].map(turn),['them','them','us','done']);
+  // 판정이 없거나 깨지면 단계 칸으로(시안 확인은 손님, 그 앞은 우리), 최종 전달은 판정과 상관없이 끝
+  assert.equal(staffBoard([legacyProject('a','producing')],NOW).ours[0].id,'a');
+  assert.equal(staffBoard([legacyProject('a','producing')],NOW,{legacyTurn:()=>{throw new Error('x');}}).ours[0].id,'a');
+  assert.equal(staffBoard([legacyProject('a','producing')],NOW,{legacyTurn:()=>'them'}).theirs[0].id,'a');
+  assert.equal(staffBoard([legacyProject('a','delivered')],NOW,{legacyTurn:()=>'them'}).done[0].id,'a');
+});
+
 test('머리 띠: 갈 곳 셋과 지금 자리, 알림 숫자는 글 · 숫자로 나눠 그린다',()=>{
   const base={mode:'staff',user:{id:'u',name:'김하늘'},live:{unreadCount:4}};
   const home=header(base);
@@ -124,6 +143,15 @@ test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 
   const rules=css.replace(/\/\*[\s\S]*?\*\//g,'').match(/[^{}]+(?=\{)/g).map(x=>x.trim()).filter(x=>x&&!x.startsWith('@'));
   assert.ok(rules.length>100,'규칙을 다 읽었다');
   for(const rule of rules)for(const one of selectors(rule))assert.match(one,/^html\.is-staff\b/,`직원 화면 밖으로 새지 않는다: ${one}`);
+  // 13px로 올리는 것은 옛 판에서 12px이던 둘뿐 — 본문 크기를 물려받던 다른 .desk-at(브랜드 · 인물 설명 · 경고)은 줄이지 않는다(Fable F1).
+  assert.ok(css.includes('html.is-staff .desk-pay .desk-at,html.is-staff .desk-progress .desk-at{font-size:13px}'));
+  assert.doesNotMatch(css,/html\.is-staff \.desk \.desk-at\{/);
+  // 휴대폰 알림 서랍은 화면 왼쪽 끝부터(app.css 640px 아래의 left:8px을 덮는다 — Fable F5).
+  assert.ok(css.includes('html.is-staff .notification-panel{top:0;left:0;width:100vw;'));
+  // 카드 그림은 다시 그릴 때 같은 주소의 옛 노드를 옮겨 쓴다(직원 매체는 no-store — Fable F4).
+  assert.match(picker({mode:'staff',user:{id:'u'},workspace:{projects:[requestProject('p')],canWrite:true}}),/<img src="\/api\/client-projects\/p\/studio\/media\/front-p" alt="" loading="lazy" decoding="async" data-staff-pic>/);
+  assert.ok(app.includes("staffPics=s.mode==='staff'&&!s.project?new Map(Array.from(main.querySelectorAll('img[data-staff-pic]')).map(node=>[node.getAttribute('src'),node])):null;"));
+  assert.ok(app.includes("if(staffPics?.size)for(const fresh of main.querySelectorAll('img[data-staff-pic]')){const old=staffPics.get(fresh.getAttribute('src'));if(old){staffPics.delete(fresh.getAttribute('src'));fresh.replaceWith(old);}}"));
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),sw=read('sw.js');
   assert.ok(server.includes("'film-legacy.css','staff.css'])files['/pulse-app/'+file]"),'서버가 staff.css를 내준다');
   assert.ok(sw.includes("BASE+'staff.css'"),'오프라인 셸에 staff.css');
