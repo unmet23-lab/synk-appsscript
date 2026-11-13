@@ -16371,10 +16371,14 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     return Object.values(state.reviews).filter((v) => v.dueAt <= horizon).sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id)).slice(0, Math.max(0, Math.min(100, limit))).map(clone2);
   }
   const freshHelp = (marked, at) => dailyTime(marked) && dailyTime(at) && (lifeDayKey(marked) === lifeDayKey(at) || Math.abs(at - marked) <= HELP_FRESH);
+  const helpTimes = (run) => {
+    const value = run?.pendingHelpAt;
+    return value && typeof value === "object" && !Array.isArray(value) ? value : null;
+  };
   function helpNow(run, id, at = now(), engine = judged()) {
     if (run?.pendingHelp?.[id] !== true) return false;
     if (!engine) return true;
-    const marked = run.pendingHelpAt?.[id];
+    const marked = helpTimes(run)?.[id];
     return !dailyTime(marked) || freshHelp(marked, at);
   }
   function helpExpired(run, engine) {
@@ -16410,14 +16414,36 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const run = state.activeReview;
     if (!run || !run.ids.includes(id)) throw TypeError("Invalid review help");
     if (run.answers[id]) return clone2(run);
-    const engine = judged(), at = now();
-    if (seenAt !== void 0 && engine && !freshHelp(seenAt, at)) return clone2(run);
-    if (helpNow(run, id, at, engine)) return clone2(run);
+    const engine = judged(), at = now(), marked = run.pendingHelp?.[id] === true, before = helpTimes(run)?.[id];
+    if (!engine) {
+      if (marked && before === void 0) return clone2(run);
+      const next2 = clone2(state);
+      next2.activeReview.pendingHelp = { ...next2.activeReview.pendingHelp || {}, [id]: true };
+      if (before !== void 0) delete helpTimes(next2.activeReview)[id];
+      commit(next2);
+      return clone2(next2.activeReview);
+    }
+    if (seenAt !== void 0 && !freshHelp(seenAt, at)) return clone2(run);
+    const seen = seenAt !== void 0 ? seenAt : at, kept = marked && dailyTime(before) && freshHelp(before, at), last = kept ? Math.max(before, seen) : seen;
+    if (kept && (last === before || lifeDayKey(before) === lifeDayKey(last + HELP_FRESH))) return clone2(run);
     const next = clone2(state);
     next.activeReview.pendingHelp = { ...next.activeReview.pendingHelp || {}, [id]: true };
-    if (engine) next.activeReview.pendingHelpAt = { ...next.activeReview.pendingHelpAt || {}, [id]: at };
+    next.activeReview.pendingHelpAt = { ...helpTimes(next.activeReview) || {}, [id]: last };
     commit(next);
     return clone2(next.activeReview);
+  }
+  function dropStaleHelp(id) {
+    check3();
+    const run = state.activeReview;
+    if (!run || !run.ids.includes(id) || run.answers[id] || run.pendingHelp?.[id] !== true) return false;
+    const engine = judged();
+    if (!engine || helpNow(run, id, now(), engine)) return false;
+    const next = clone2(state);
+    delete next.activeReview.pendingHelp[id];
+    const times = helpTimes(next.activeReview);
+    if (times) delete times[id];
+    commit(next);
+    return true;
   }
   function answerReview({ id, reviewId, questionId, correct, helped = false, runId } = {}) {
     check3();
@@ -16677,6 +16703,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     startReview,
     markReviewHelp,
     reviewHelped,
+    dropStaleHelp,
     answerReview,
     recordGuidedPractice,
     markDayComplete,
@@ -18233,8 +18260,19 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
     const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q3) => q3.id === record2.questionId), q2 = original.review;
     if (!lastFeedback) {
+      let stale = false;
+      try {
+        stale = getProgress().dropStaleHelp(id);
+      } catch {
+        stale = false;
+      }
+      if (stale) trail.release(reviewSlot2(run.id, id));
       helped = getProgress().reviewHelped(id);
       helpBy = helped ? "user" : null;
+      if (helped) try {
+        getProgress().markReviewHelp(id);
+      } catch {
+      }
     }
     context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q2 };
     if (!lastFeedback) trail.shown(reviewSlot2(run.id, id), engineItem(l, original, true), { helped });

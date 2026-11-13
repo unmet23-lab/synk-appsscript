@@ -313,3 +313,99 @@ test('하던 판은 오늘 새로 열 문항이 없어도 잇고 · 판정 없�
   assert.equal(p.exportSnapshot().activeReview.answers[id].helped,true);
  }
 });
+
+// Fable 5.2 다시 지음 다시 검수 F1(P2): 새 길 → 지금 판 → 새 길로 오가는 문서에서, 지금 판일 때 다시 본 도움은 그 표시의 앞선 때를 걷어
+// 같은 날 새 길로 돌아와도 도움이다(때 없는 표시). 때 칸이 없는 표시(라이브 · 지금 판에서 단 것)를 다시 보면 4-2 앞과 같이 아무것도 쓰지 않는다.
+test('새 길 → 지금 판 → 새 길 왕복: 지금 판에서 다시 본 도움은 앞선 때를 걷어 같은 날 새 길에서도 도움 · 때 없는 표시는 다시 봐도 쓰지 않는다(Fable 다시 검수 F1)',()=>{
+ const DAY=86400000,MINUTE=60000;
+ const q=lessons[0].questions[0],id=q.review.id;
+ {
+  let mode='engine';
+  const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});
+  p.setDueSource(state=>mode===null?null:engineAll(state));
+  p.startLesson(lessons[0]);p.recordAnswer({lessonId:lessons[0].id,questionId:q.id,correct:false});
+  const first=p.startReview(1,id,null,{ids:[id]});p.markReviewHelp(id); // 새 길에서 단 표시 — 때가 든다
+  assert.equal(typeof p.exportSnapshot().activeReview.pendingHelpAt?.[id],'number');
+  clock.advance(DAY);mode=null; // 오늘 문서는 지금 판(코치 받기 실패 — 판정 null)
+  assert.equal(p.reviewHelped(id),true,'지금 판에서는 표시가 있으면 도움');
+  p.markReviewHelp(id); // 오늘 그 해설을 다시 봤다
+  assert.equal(p.exportSnapshot().activeReview.pendingHelpAt?.[id],undefined,'앞선 때를 걷는다');
+  assert.equal(p.exportSnapshot().activeReview.pendingHelp[id],true,'표시는 그대로');
+  clock.advance(5*MINUTE);mode='engine'; // 같은 날 입구가 새 길을 준다
+  assert.equal(p.reviewHelped(id),true,'때 없는 표시 — 도움');
+  assert.equal(p.summary(packs).helpExpired,false);
+  p.answerReview({id,correct:true,runId:first.id});
+  assert.equal(p.exportSnapshot().activeReview.answers[id].helped,true,'그 답은 도움 받은 답');
+  assert.equal(p.exportSnapshot().reviews[id].streak,0);
+ }
+ for(const [label,source] of [['판정 없음',null],['지금 판(null)',()=>null]]){
+  // 때 칸이 없는 표시를 다시 보면 4-2 앞과 같이 쓰지 않는다
+  const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});if(source)p.setDueSource(source);
+  p.startLesson(lessons[0]);p.recordAnswer({lessonId:lessons[0].id,questionId:q.id,correct:false});
+  p.startReview(1,id,null,{ids:[id]});p.markReviewHelp(id);
+  const before=JSON.stringify(p.exportSnapshot());
+  clock.advance(DAY);p.markReviewHelp(id);
+  assert.equal(JSON.stringify(p.exportSnapshot()),before,`${label}: 쓰지 않는다`);
+  assert.equal(p.exportSnapshot().activeReview.pendingHelpAt,undefined,`${label}: 때 칸이 생기지 않는다`);
+ }
+});
+
+// GPT 다시 검수 GA2 · GA3: 새 길에서 표시의 때는 그 도움을 마지막으로 본 때다 — 같은 날 다시 본 도움도 자정 30분 보호를 받고(10:00 표시 → 23:55 다시 봄 →
+// 다음 날 00:03 답), 이미 든 때가 그 30분 너머까지 같은 학습일로 덮으면 쓰지 않는다. 때 없는 표시도 새 길에서 다시 보면 때를 들고, 본 표현은 그 본 때로 든다.
+// 지금 도움이 아닌 표시는 dropStaleHelp가 걷는다(새 길만 — 판정이 없거나 null이면 걷지 않고 쓰지도 않는다).
+test('새 길에서 다시 본 도움은 마지막으로 본 때로 — 같은 날 다시 봐도 자정 30분 보호 · 덮이면 쓰지 않음 · 때 없는 표시도 때를 든다 · 본 표현은 본 때로 · 앞선 때의 표시는 새 길에서만 걷는다(GPT 다시 검수 GA2 · GA3)',()=>{
+ const DAY=86400000,HOUR=3600000,MINUTE=60000;
+ const q=lessons[0].questions[0],id=q.review.id;
+ const kst=hm=>Date.parse(`1970-01-01T${hm}:00+09:00`);
+ const open=(source,clock)=>{const p=createLifeProgress({storage:storage(),now:clock.now});if(source)p.setDueSource(source);
+  p.startLesson(lessons[0]);p.recordAnswer({lessonId:lessons[0].id,questionId:q.id,correct:false});p.startReview(1,id,null,{ids:[id]});return p;};
+ {
+  const clock=options(),p=open(engineAll,clock);
+  clock.advance(kst('10:00')-clock.now());p.markReviewHelp(id); // 10:00 표시
+  const ten=JSON.stringify(p.exportSnapshot());
+  clock.advance(5*HOUR);p.markReviewHelp(id); // 15:00 다시 봄 — 그날 끝까지 이미 덮는다
+  assert.equal(JSON.stringify(p.exportSnapshot()),ten,'덮이면 쓰지 않는다');
+  clock.advance(kst('23:55')-clock.now());p.markReviewHelp(id); // 23:55 다시 봄
+  assert.equal(p.exportSnapshot().activeReview.pendingHelpAt[id],kst('23:55'),'자정 30분 안을 덮으려 때를 새로 든다');
+  clock.advance(8*MINUTE); // 다음 날 00:03
+  assert.equal(p.reviewHelped(id),true,'8분 전에 본 도움');
+  assert.equal(p.summary(packs).helpExpired,false);
+  p.answerReview({id,correct:true,runId:p.exportSnapshot().activeReview.id});
+  assert.equal(p.exportSnapshot().activeReview.answers[id].helped,true,'도움 받은 답');
+  assert.equal(p.exportSnapshot().reviews[id].streak,0);
+ }
+ {
+  let mode=null;const clock=options(),p=open(state=>mode===null?null:engineAll(state),clock);
+  p.markReviewHelp(id); // 지금 판에서 단 표시 — 때 없음
+  assert.equal(p.exportSnapshot().activeReview.pendingHelpAt?.[id],undefined);
+  mode='engine';clock.advance(MINUTE);p.markReviewHelp(id); // 새 길에서 다시 봄
+  assert.equal(p.exportSnapshot().activeReview.pendingHelpAt[id],clock.now(),'때 없는 표시도 새 길에서 다시 보면 그 때를 든다');
+  clock.advance(DAY);
+  assert.equal(p.reviewHelped(id),false,'다음 날에는 도움이 아니다');
+ }
+ {
+  const clock=options(),p=open(engineAll,clock);
+  clock.advance(kst('23:50')-clock.now());const seenAt=clock.now(); // 안내 연습에서 그 표현을 본 때
+  clock.advance(25*MINUTE); // 다음 날 00:15 — 복습을 연다
+  p.markReviewHelp(id,{seenAt});
+  assert.equal(p.exportSnapshot().activeReview.pendingHelpAt[id],seenAt,'본 표현은 본 때로 든다');
+  assert.equal(p.reviewHelped(id),true,'25분 전에 본 도움');
+  clock.advance(10*MINUTE); // 00:25 — 본 때로부터 35분 · 다른 학습일
+  assert.equal(p.reviewHelped(id),false,'본 때로부터 30분 밖');
+ }
+ for(const [label,source,drops] of [['판정 없음',null,false],['지금 판(null)',()=>null,false],['엔진',engineAll,true]]){
+  const clock=options(),p=open(source,clock);
+  p.markReviewHelp(id);
+  assert.equal(p.dropStaleHelp(id),false,`${label}: 지금 도움인 표시는 걷지 않는다`);
+  clock.advance(DAY);
+  const before=JSON.stringify(p.exportSnapshot());
+  assert.equal(p.dropStaleHelp(id),drops,label);
+  if(drops){
+   const run=p.exportSnapshot().activeReview;
+   assert.equal(run.pendingHelp[id],undefined,'표시를 걷는다');
+   assert.equal(run.pendingHelpAt?.[id],undefined,'때도 걷는다');
+   assert.equal(p.summary(packs).helpExpired,false);
+   assert.equal(p.dropStaleHelp(id),false,'한 번만');
+  }else assert.equal(JSON.stringify(p.exportSnapshot()),before,`${label}: 쓰지 않는다(4-2 앞)`);
+ }
+});

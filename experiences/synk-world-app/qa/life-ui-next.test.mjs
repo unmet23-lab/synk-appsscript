@@ -121,6 +121,7 @@ const checking = progress => progress.setDueSource(() => ({ state: 'checking' })
 function recorder(name, log) {
   const shown = [];
   const answers = [];
+  const released = [];
   return {
     shown: (...args) => {
       shown.push(args[0]);
@@ -135,11 +136,15 @@ function recorder(name, log) {
       return null;
     },
     guided: () => log.push(`${name}:guided`),
-    release() {},
+    release: key => {
+      released.push(key);
+      log.push(`${name}:release`);
+    },
     metrics: () => ({ slots: shown.length, presented: 0, answered: answers.length }),
     dispose() {},
     seen: shown,
     answers,
+    released,
   };
 }
 // life-ui-off.test.mjs의 lifeOn 틀 — 이 파일은 늘 입구(learning.next)를 넘긴다. 판(state.now)은 시험이 바꾼다: 'engine' · 'checking' · 'old'.
@@ -889,6 +894,145 @@ test('F3 (다) 같은 문서에서 날을 넘김 — 어제 안내 연습에서 
     assert.equal(after.activeReview.answers[missed.review.id].helped, false, '혼자 맞힌 답');
     assert.equal(after.reviews[missed.review.id].streak, 1);
     assert.notEqual(tutorPick(w, progress).kind, 'difficult', '어려운 표현에서 벗어남');
+  } finally {
+    w.ui.dispose();
+  }
+});
+
+// GPT 다시 검수 GA3 — 문서를 연 채 날을 넘겨 이은 복습 판: 어제 그 문항에서 해설을 열고 답 없이 떠났다가 오늘 다시 열면, 앞선 때의 표시를 걷고
+// 기록부의 앞 칸(어제 해설이 붙은 제시)을 놓은 뒤 새로 보인다 — 제품 · Atlas 모두 혼자 맞힘. 같은 날 다시 열면 놓지 않는다.
+test('GA3 — 같은 문서에서 날을 넘겨 이은 복습 판: 어제 연 해설의 표시를 걷고 기록부 앞 칸을 놓아 새로 보인다(제품 · Atlas 모두 혼자 맞힘) · 같은 날 다시 열면 그대로', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = freshProgress();
+  engine(progress, { unitsOf: () => [] });
+  const lesson = lessonById('greetings-expressions');
+  const missed = lesson.questions[0];
+  const w = lifeOn({ progress });
+  try {
+    playLesson(w, lesson, { wrong: [0] });
+    goHome(w);
+    t0.mock.timers.tick(2 * MINUTE);
+    w.ui.reviewStart();
+    const run = progress.exportSnapshot().activeReview;
+    assert.ok(run?.ids.includes(missed.review.id), '놓친 표현의 복습이 열렸다');
+    const slot = `${run.id}:${missed.review.id}`;
+    press({ 'data-life-help': '' }); // 해설을 연다 — 표시
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelp[missed.review.id], true);
+    w.ui.review(); // 답하지 않고 복습 첫 화면으로(문서는 그대로)
+    w.ui.reviewStart(); // 같은 날 다시 연다
+    assert.deepEqual(w.newTrail.released, [], '같은 날에는 기록부 칸을 그대로');
+    assert.equal(progress.reviewHelped(missed.review.id), true);
+    w.ui.review();
+    t0.mock.timers.tick(DAY); // 다음 날 — 문서는 그대로 열려 있다
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.equal(progress.exportSnapshot().activeReview.id, run.id, '하던 판을 잇는다');
+    assert.deepEqual(w.newTrail.released, [slot], '앞선 때의 표시를 걷고 그 문항의 기록부 칸을 놓는다');
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelp?.[missed.review.id], undefined, '제품 표시도 걷는다');
+    assert.equal(progress.reviewHelped(missed.review.id), false);
+    playReview(w);
+    const answer = w.newTrail.answers.at(-1);
+    assert.equal(answer.slot, slot);
+    assert.equal(answer.helped, false, 'Atlas에 가는 답도 혼자 맞힘');
+    assert.equal(progress.exportSnapshot().activeReview.answers[missed.review.id].helped, false, '제품도 혼자 맞힘');
+    assert.deepEqual(w.newTrail.released, [slot], '한 번만 놓는다');
+  } finally {
+    w.ui.dispose();
+  }
+});
+
+// Fable 5.2 설계 검토 D1 — 다시 연 복습 문항이 해설을 펼쳐 보이면(지금 도움인 표시) 그 본 때를 진도에 알린다. 단추를 다시 누르지 않아도
+// 표시의 때가 마지막으로 본 때로 오른다: (A1) 10:00 해설 → 23:55 다시 열어 본 해설 → 다음 날 00:03 답, (A2) 어제 새 길 표시 → 오늘 지금 판에서
+// 다시 열어 본 해설 → 5분 뒤 새 길에서 답, (B1) 23:50 안내 연습 → 00:15 복습을 열어 본 해설 → 00:25 답 — 모두 도움 받은 답이고 칸을 놓지 않는다.
+const kstOn = hm => Date.parse(`2026-11-13T${hm}:00+09:00`);
+function missedReview(t0, startAt, state = { now: 'engine' }) {
+  t0.mock.timers.enable({ apis: ['Date'], now: startAt });
+  const progress = freshProgress();
+  const judge = engine(progress, { unitsOf: () => [] });
+  const lesson = lessonById('greetings-expressions');
+  const missed = lesson.questions[0];
+  const w = lifeOn({ progress, state });
+  playLesson(w, lesson, { wrong: [0] });
+  goHome(w);
+  t0.mock.timers.tick(2 * MINUTE);
+  w.ui.reviewStart();
+  assert.ok(progress.exportSnapshot().activeReview?.ids.includes(missed.review.id), '놓친 표현의 복습이 열렸다');
+  return { progress, judge, missed, id: missed.review.id, w };
+}
+test('D1 (A1) — 10:00에 연 해설을 23:55에 다시 열어 보면(단추 안 누름) 본 때가 23:55로 올라 다음 날 00:03 답도 도움 받은 답이다', t0 => {
+  const { progress, id, w } = missedReview(t0, kstOn('09:50'));
+  try {
+    t0.mock.timers.tick(kstOn('10:00') - Date.now());
+    press({ 'data-life-help': '' });
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt[id], kstOn('10:00'));
+    w.ui.review();
+    t0.mock.timers.tick(kstOn('23:55') - Date.now());
+    w.ui.refresh();
+    w.ui.reviewStart(); // 다시 연다 — 해설이 펼쳐 보인다
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt[id], kstOn('23:55'), '펼쳐 보인 해설의 본 때');
+    w.ui.review();
+    t0.mock.timers.tick(8 * MINUTE); // 다음 날 00:03
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.deepEqual(w.newTrail.released, [], '8분 전에 본 도움 — 칸을 놓지 않는다');
+    assert.equal(progress.reviewHelped(id), true);
+    playReview(w);
+    assert.equal(progress.exportSnapshot().activeReview.answers[id].helped, true, '도움 받은 답');
+    assert.equal(progress.exportSnapshot().reviews[id].streak, 0);
+    assert.equal(w.newTrail.answers.at(-1).helped, true, 'Atlas에도 도움 받은 답');
+  } finally {
+    w.ui.dispose();
+  }
+});
+test('D1 (A2) — 어제 새 길에서 단 표시를 오늘 지금 판에서 다시 열어 보면 그 때를 걷고, 5분 뒤 새 길에서 답해도 도움 받은 답이다', t0 => {
+  const state = { now: 'engine' };
+  const { progress, judge, id, w } = missedReview(t0, kstOn('09:50'), state);
+  try {
+    press({ 'data-life-help': '' }); // 새 길에서 단 표시 — 때가 든다
+    assert.equal(typeof progress.exportSnapshot().activeReview.pendingHelpAt[id], 'number');
+    w.ui.review();
+    t0.mock.timers.tick(DAY);
+    state.now = 'old';
+    progress.setDueSource(() => null); // 오늘 문서는 지금 판
+    w.ui.refresh();
+    w.ui.reviewStart(); // 지금 판에서 다시 연다 — 표시가 곧 도움이라 해설이 펼쳐 보인다
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt?.[id], undefined, '지금 판에서 본 도움은 앞선 때를 걷는다');
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelp[id], true, '표시는 그대로');
+    w.ui.review();
+    t0.mock.timers.tick(5 * MINUTE);
+    state.now = 'engine';
+    judge.on(); // 같은 날 새 길로
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.deepEqual(w.newTrail.released, [], '칸을 놓지 않는다');
+    assert.equal(progress.reviewHelped(id), true);
+    playReview(w);
+    assert.equal(progress.exportSnapshot().activeReview.answers[id].helped, true, '도움 받은 답');
+    assert.equal(progress.exportSnapshot().reviews[id].streak, 0);
+  } finally {
+    w.ui.dispose();
+  }
+});
+test('D1 (B1) — 23:50 안내 연습에서 본 표현의 복습을 00:15에 열어 보면 본 때가 00:15로 올라 00:25에도 도움이다', t0 => {
+  const { progress, id, missed, w } = missedReview(t0, kstOn('23:40'));
+  try {
+    w.ui.review();
+    t0.mock.timers.tick(kstOn('23:50') - Date.now());
+    w.ui.refresh();
+    assert.equal(w.practice()(missed.id), true, '홈 「이 표현 같이 연습」');
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt[id], kstOn('23:50'));
+    t0.mock.timers.tick(25 * MINUTE); // 다음 날 00:15
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt[id], kstOn('23:50') + 25 * MINUTE, '펼쳐 보인 해설의 본 때(00:15)');
+    w.ui.review();
+    t0.mock.timers.tick(10 * MINUTE); // 00:25 — 안내 연습에서 35분
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.equal(progress.reviewHelped(id), true, '10분 전에 본 해설');
+    assert.deepEqual(w.newTrail.released, []);
+    playReview(w);
+    assert.equal(progress.exportSnapshot().activeReview.answers[id].helped, true, '도움 받은 답');
   } finally {
     w.ui.dispose();
   }

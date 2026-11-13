@@ -545,7 +545,13 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    paint(t('life.reviewResultTitle'),`<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print('review')}<small class="life-poster-label">RESULT · REVIEW</small><strong class="life-poster-word">${t('life.reviewDoneWord')}</strong><h3 class="life-poster-sub">${t('life.reviewMet',{n:items.length||run.ids.length})}</h3></section>${learnedList(items,t('life.reviewedList'),listHead(),items.some(i=>i.tone==='ok')?t('life.reviewSpacing'):'')}</div><div class="life-actions"><button class="felt-button" data-life-home>${t('life.toTown')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.nextLesson')}</button></div>`,{type:'life-review-complete',tutorPhase:'complete'});
    celebrate();return;
   }
-  const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){helped=getProgress().reviewHelped(id);helpBy=helped?'user':null;}
+  const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){
+   // 새 길: 앞선 때의 도움 표시는 지금 도움이 아니다 — 보이기 전에 그 표시를 걷고, 걷었으면 기록부의 앞 칸(그 도움이 붙은 제시)을 놓아 새로 보인다
+   // (문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 칸을 다시 써 Atlas에 어제 해설이 붙은 답으로 남았다 — GPT 다시 검수 GA3). 같은 날이면 그대로다.
+   let stale=false;try{stale=getProgress().dropStaleHelp(id);}catch{stale=false;}if(stale)trail.release(reviewSlot(run.id,id));
+   // 지금 도움인 표시면 해설이 펼쳐 보인다 — 그 본 때를 진도에 알린다(표시의 때 = 마지막으로 본 때: 단추를 다시 누르지 않고 다시 열어 본 해설도 —
+   // 10:00 해설을 23:55에 다시 열어 보고 00:03에 답하면 도움 받은 답, Fable 5.2 설계 검토 D1). 지금 판 · 라이브의 때 없는 표시면 쓰지 않는다.
+   helped=getProgress().reviewHelped(id);helpBy=helped?'user':null;if(helped)try{getProgress().markReviewHelp(id);}catch{/* 표시는 그대로 — 답이 그 도움을 싣는다 */}}
   context={lessonId:l.id,phase:'review',questionIndex:index,reviewId:id,reviewQuestion:q};
   // 거울: 답하지 않은 새 상황 복습이 보였다(미리 본 도움이 있으면 그 도움도).
   if(!lastFeedback)trail.shown(reviewSlot(run.id,id),engineItem(l,original,true),{helped});

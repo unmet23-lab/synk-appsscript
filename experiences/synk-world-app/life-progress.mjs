@@ -222,7 +222,8 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  // 같은 학습일이거나 30분 안일 때만 도움이고, 때가 없는 표시(판정 없이 단 것)는 도움으로 친다 — 판의 날 하나로 가르면 하던 판을 버리거나 오늘 본
  // 도움을 지웠다(Fable 5.2 합친 끝 판 F3 → GPT GA1 → Fable 확인 검수, 같은 자리 세 회차 뒤 설계를 다시).
  const freshHelp=(marked,at)=>dailyTime(marked)&&dailyTime(at)&&(lifeDayKey(marked)===lifeDayKey(at)||Math.abs(at-marked)<=HELP_FRESH);
- function helpNow(run,id,at=now(),engine=judged()){if(run?.pendingHelp?.[id]!==true)return false;if(!engine)return true;const marked=run.pendingHelpAt?.[id];return !dailyTime(marked)||freshHelp(marked,at);}
+ const helpTimes=run=>{const value=run?.pendingHelpAt;return value&&typeof value==='object'&&!Array.isArray(value)?value:null;};
+ function helpNow(run,id,at=now(),engine=judged()){if(run?.pendingHelp?.[id]!==true)return false;if(!engine)return true;const marked=helpTimes(run)?.[id];return !dailyTime(marked)||freshHelp(marked,at);}
  // 첫 남은 복습의 도움 표시가 지금 도움이 아니다(앞선 때의 표시) — 홈 튜터가 「오늘은 네가 먼저」를 고를 때 읽는다.
  function helpExpired(run,engine){const first=run?.ids.find(id=>!run.answers[id]);return !!first&&run.pendingHelp?.[first]===true&&!helpNow(run,first,now(),engine);}
  function reviewHelped(id){check();const run=state.activeReview;return !!run&&run.ids.includes(id)&&helpNow(run,id);}
@@ -240,17 +241,38 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state),ids=due.slice(0,Math.max(0,Math.min(100,limit))).map(v=>v.id);if(!ids.length)return null;
   next.activeReview={id:uuid(),startedAt:now(),ids,answers:{},pendingHelp:{}};commit(next);return clone(next.activeReview);
  }
- // seenAt: 화면이 그 표현을 보여 준 때(life-ui exposedTransfers) — 새 길은 같은 학습일이거나 30분 안에 본 것만 도움으로 단다(문서를 연 채 날을
- // 넘긴 차례, Fable 5.2 합친 끝 판 F3). 새 길은 표시마다 그 때를 함께 든다(pendingHelpAt — 판정이 없으면 쓰지 않는다, 판의 startedAt은 그대로).
+ // seenAt: 화면이 그 표현을 보여 준 때(life-ui exposedTransfers). 도움 표시는 판정이 있을 때(새 길)만 표시마다 때를 든다(pendingHelpAt — 판의 startedAt은 그대로).
+ // · 판정이 없거나 null(지금 판): 표시가 있으면 도움이다(4-2 앞). 새 길을 거쳐 때가 든 표시를 다시 보면 그 때를 걷어 「때 없는 표시 = 도움」으로 되돌린다 —
+ //   새 길 → 지금 판 → 새 길로 오가면 오늘 본 도움이 앞선 때로 읽혔다(Fable 5.2 다시 지음 다시 검수 F1 · GPT GA1). 때 칸은 새 길을 거친 기록에만 있어
+ //   라이브의 쓰기는 4-2 앞 그대로다.
+ // · 새 길: 표시의 때는 그 도움을 마지막으로 본 때다 — 본 표현은 그 본 때(seenAt)로, 그 밖에는 지금으로 든다. 같은 날 다시 봐도 때를 새로 들어야 자정 30분
+ //   보호가 선다(10:00 표시 → 23:55 다시 봄 → 다음 날 00:03 답, GPT GA2). 이미 든 때가 지금 도움이고 새 때의 30분 너머까지 같은 학습일로 덮으면 쓰지 않는다.
+ //   같은 학습일이거나 30분 안이 아닌 본 표현은 달지 않는다(문서를 연 채 날을 넘긴 차례, Fable 5.2 합친 끝 판 F3).
  function markReviewHelp(id,{seenAt}={}){
   check();const run=state.activeReview;if(!run||!run.ids.includes(id))throw TypeError('Invalid review help');
   if(run.answers[id])return clone(run);
-  const engine=judged(),at=now();
-  if(seenAt!==undefined&&engine&&!freshHelp(seenAt,at))return clone(run);
-  if(helpNow(run,id,at,engine))return clone(run);
+  const engine=judged(),at=now(),marked=run.pendingHelp?.[id]===true,before=helpTimes(run)?.[id];
+  if(!engine){
+   if(marked&&before===undefined)return clone(run);
+   const next=clone(state);next.activeReview.pendingHelp={...(next.activeReview.pendingHelp||{}),[id]:true};
+   if(before!==undefined)delete helpTimes(next.activeReview)[id];
+   commit(next);return clone(next.activeReview);
+  }
+  if(seenAt!==undefined&&!freshHelp(seenAt,at))return clone(run);
+  const seen=seenAt!==undefined?seenAt:at,kept=marked&&dailyTime(before)&&freshHelp(before,at),last=kept?Math.max(before,seen):seen;
+  if(kept&&(last===before||lifeDayKey(before)===lifeDayKey(last+HELP_FRESH)))return clone(run);
   const next=clone(state);next.activeReview.pendingHelp={...(next.activeReview.pendingHelp||{}),[id]:true};
-  if(engine)next.activeReview.pendingHelpAt={...(next.activeReview.pendingHelpAt||{}),[id]:at};
+  next.activeReview.pendingHelpAt={...(helpTimes(next.activeReview)||{}),[id]:last};
   commit(next);return clone(next.activeReview);
+ }
+ // 새 길: 지금 도움이 아닌 표시(앞선 때)를 걷는다 — 화면이 그 복습 문항을 보일 때 부르고, 걷었으면 기록부의 앞 칸(그 도움이 붙은 제시)을 놓아
+ // 제품 · Atlas가 함께 「도움 없음」에서 다시 시작한다 — 문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 기록부 칸을 다시 써, 제품은 혼자 맞힘인데
+ // Atlas에는 어제 해설이 붙은 답으로 남았다(GPT 다시 검수 GA3). 판정이 없거나 null이면 표시는 늘 도움이라 걷지 않는다(4-2 앞). 걷었으면 참.
+ function dropStaleHelp(id){
+  check();const run=state.activeReview;if(!run||!run.ids.includes(id)||run.answers[id]||run.pendingHelp?.[id]!==true)return false;
+  const engine=judged();if(!engine||helpNow(run,id,now(),engine))return false;
+  const next=clone(state);delete next.activeReview.pendingHelp[id];const times=helpTimes(next.activeReview);if(times)delete times[id];
+  commit(next);return true;
  }
  function answerReview({id,reviewId,questionId,correct,helped=false,runId}={}){
   check();const run=state.activeReview,keyId=id||reviewId||run?.ids.find(id=>state.reviews[id].questionId===questionId);
@@ -404,7 +426,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({arrival,setArrival,key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,reviewHelped,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,displayLanguage,setDisplayLanguage,importRecords,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
+ const api=Object.freeze({arrival,setArrival,key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,reviewHelped,dropStaleHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,hangulReading,setHangulReading,displayLanguage,setDisplayLanguage,importRecords,learningProfile,learningProfileValues,updateLearningProfile,clearLearningProfile,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register,
   // 새 길의 판정을 넣는다(app-shell — 깃발이 켜진 문서만). null이면 지금 판으로 돌아간다. 판정이 바뀌면 화면에 알린다.
   setDueSource(source){dueSource=typeof source==='function'?source:null;emit();}});
