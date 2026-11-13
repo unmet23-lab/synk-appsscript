@@ -25,7 +25,7 @@ function imageFiles(){
     const sources=JSON.parse(line.slice(5)).slice(0,-1);
     for(const source of sources){
       // Dockerfile.dockerignore keeps validation and preview programs out of the image.
-      if(source.endsWith('/*.mjs')){const folder=source.slice(0,-5);for(const path of tracked){const name=path.slice(folder.length);if(path.startsWith(folder)&&!name.includes('/')&&name.endsWith('.mjs')&&!/\.test\.mjs$|^verify-|^preview-/.test(name)&&(!name.endsWith('-check.mjs')||['publication-link-check.mjs','client-delivery-check.mjs'].includes(name)))files.add(path);}}
+      if(source.endsWith('/*.mjs')){const folder=source.slice(0,-5);for(const path of tracked){const name=path.slice(folder.length);if(path.startsWith(folder)&&!name.includes('/')&&name.endsWith('.mjs')&&!/\.test\.mjs$|-test-context\.mjs$|^verify-|^preview-/.test(name)&&(!name.endsWith('-check.mjs')||['publication-link-check.mjs','client-delivery-check.mjs'].includes(name)))files.add(path);}}
       else if(tracked.has(source))files.add(source);
       else for(const path of tracked)if(path.startsWith(source+'/'))files.add(path);
     }
@@ -34,6 +34,8 @@ function imageFiles(){
 }
 test('no server module imports, requires or reads a file the static set would carry',()=>{
   const files=imageFiles(),staticFiles=new Set([...files].filter(isStatic)),problems=[];
+  assert.match(readFileSync(join(here,'Dockerfile.dockerignore'),'utf8'),/^docs\/마케팅\/온라인마케팅지도\/engagement\/company\/\*-test-context\.mjs$/m);
+  assert.equal(files.has(C+'/workspace-access-test-context.mjs'),false,'client VM helpers are excluded from the actual runtime image');
   assert.ok(staticFiles.size>200,'policy covers the screen files');
   for(const module of [...files].filter(path=>/\.(?:mjs|js|cjs)$/.test(path)&&!staticFiles.has(path)&&!/\.test\.mjs$/.test(path))){
     const source=readFileSync(join(repository,module),'utf8');
