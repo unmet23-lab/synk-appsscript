@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {buildMissedSpot,missDirection,entryRule,MISSED_SPOT_POLICY} from '../experiences/synk-world-app/world-missed-spot.mjs';
+import {buildMissedSpot,missDirection,missedEntryRule as entryRule,MISSED_SPOT_POLICY,renderMissedSpot,placeMissedSpot} from '../experiences/synk-world-app/world-missed-spot.mjs';
 import {buildPositionMap} from '../experiences/synk-world-app/world-position.mjs';
 import * as plan from '../experiences/synk-world-app/world-exam-plan.mjs';
 import {caseMetadata} from '../experiences/entry-check/learning.mjs';
@@ -156,12 +156,15 @@ test('안내문 줄은 그 시각에 적용되는 줄이다(알림으로 더해�
 import {createPositionView} from '../experiences/synk-world-app/world-position-ui.mjs';
 import STRINGS from '../experiences/brand-opening/world-strings.mjs';
 import {t as tr,hasString,formatDate} from '../experiences/brand-opening/world-lang.mjs';
-const views=Object.fromEntries(['ko','en','mn'].map(lang=>[lang,createPositionView({t:(key,vars)=>tr(key,vars,lang),has:hasString,formatDate:(at,options)=>formatDate(at,options,lang)})]));
+const helpers=lang=>({t:(key,vars)=>tr(key,vars,lang),has:hasString,formatDate:(at,options)=>formatDate(at,options,lang)});
+const views=Object.fromEntries(['ko','en','mn'].map(lang=>[lang,createPositionView(helpers(lang))]));
+// showBoard와 같은 길: 판 HTML(계정 묶음의 renderPositionBoard)에 카드를 끼운다.
+const boardWith=(lang,{map,card,practice=null})=>placeMissedSpot(views[lang].renderPositionBoard({map,practice}),renderMissedSpot(card,{...helpers(lang),practice}),card?.target?.skillId);
 
 test('화면: 판 맨 위 카드 한 장 — 좁혀 보면 두 줄 · 다시 만나기 · 범례, 같은 항목은 「먼저 볼 항목」에서 뺀다',()=>{
  const run=play([RECORDED.first,RECORDED.second]);
  const {map,card}=cardOf(run,{homework:[{skillId:NEG,shortage:false}],practiceOpen:()=>true});
- const html=views.ko.renderPositionBoard({map,missed:card,practice:id=>id===NEG?{route:'practice',skillId:id}:null});
+ const html=boardWith('ko',{map,card,practice:id=>id===NEG?{route:'practice',skillId:id}:null});
  assert.match(html,/data-position-missed="ko\.reading\.negation"/);
  assert.ok(html.indexOf('data-position-missed')<html.indexOf('wpos-group'),'카드는 항목 판보다 위');
  assert.ok(html.includes('손님 4명 중 2명 놓침'));
@@ -187,7 +190,7 @@ test('화면: 영어 · 몽골어 판도 같은 줄을 그리고, 안내문 줄�
  const run=play([RECORDED.first,RECORDED.second]);
  const {map,card}=cardOf(run,{homework:[{skillId:NEG,shortage:false}],practiceOpen:()=>true});
  for(const lang of ['en','mn']){
-  const html=views[lang].renderPositionBoard({map,missed:card});
+  const html=boardWith(lang,{map,card});
   assert.match(html,/<span class="wmis-line" lang="ko">「음식은 가지고 들어갈 수 없습니다\. 물은 괜찮습니다\.」<\/span>/);
   assert.ok(html.includes(tr('position.missed.direction.let-in',{},lang)));
   assert.ok(html.includes(tr('position.missed.count.guest',{n:4,wrong:2},lang)));
@@ -220,4 +223,15 @@ test('입구: 손님 기기 기록에 시연 근무 둘이 있으면 「내 위�
  const html=panels.at(-1).html;
  assert.match(html,/data-position-missed="ko\.reading\.negation"/);
  for(const text of ['손님 4명 중 2명 놓침','「음식은 가지고 들어갈 수 없습니다. 물은 괜찮습니다.」','막아야 할 손님을 들여보냄','바로 다음 같은 규칙 손님 2명 · 1명 혼자 맞힘','같은 종류 새 손님을 혼자 막음'])assert.ok(html.includes(text),text);
+});
+
+test('끼우기: 카드가 짚은 항목만 「먼저 볼 항목」에서 빼고 나머지 줄은 둔다 · 자리를 못 찾으면 판 그대로',()=>{
+ const board='<div class="wpos"><p class="wpos-intro">x</p><section class="wpos-attention" data-position-attention><h3>먼저</h3><ul><li data-skill="a"><span>A</span></li><li data-skill="b"><span>B</span><button>연습</button></li></ul></section><section class="wpos-diagnostic" data-diagnostic="ready"></section><section class="wpos-group" data-domain="listening"></section></div>';
+ const out=placeMissedSpot(board,'<section class="wpos-missed">CARD</section>','a');
+ assert.ok(out.indexOf('CARD')<out.indexOf('data-position-attention'));
+ assert.doesNotMatch(out,/data-skill="a"/);assert.match(out,/<li data-skill="b"><span>B<\/span><button>연습<\/button><\/li>/);
+ const only=placeMissedSpot(board.replace(/<li data-skill="b">.*?<\/li>/,''),'<section class="wpos-missed">CARD</section>','a');
+ assert.doesNotMatch(only,/data-position-attention/);assert.ok(only.indexOf('CARD')<only.indexOf('wpos-diagnostic'));
+ assert.equal(placeMissedSpot('<div>no anchors</div>','<section>CARD</section>','a'),'<div>no anchors</div>');
+ assert.equal(placeMissedSpot(board,'','a'),board);
 });

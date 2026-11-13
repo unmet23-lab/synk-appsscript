@@ -34,6 +34,8 @@ function rewrite(text,relative=''){
  // 옷 가게(11-05)의 끌기 부품은 WORLD 사본 안 play-common/에 싣는다 — 그 한 줄만 바꾼다(다른 모듈의 ../play-common은 묶음에 들어 있다).
  if(relative==='me2-shop.mjs'){const from="'../play-common/drag-rail.js'";if(text.split(from).length!==2)throw Error('Me2 shop drag-rail import changed');text=text.replace(from,"'./play-common/drag-rail.js'");}
  if(!relative.includes('/'))text=text.replaceAll('../brand-opening/','./brand-opening/');
+ // 놓친 곳 카드는 원천에서 형제 폴더 ../entry-check/를 부른다 — 공개본에서는 그 게임 사본이 /world/entry-check/에 있다.
+ if(relative==='world-missed-spot.mjs'){const from="from '../entry-check/";if(text.split(from).length!==4)throw Error('Missed-spot entry-check imports changed');text=text.replaceAll(from,"from './entry-check/");}
  // All mounted standalone games/assets live beneath this public WORLD path.
  text=text.replace(/(["'`])\/(scene-assets|[a-zA-Z0-9_-]+\.mjs|engine|korean-runner|korean-rhythm|hangul-stage|brand-opening|world-town-client\.mjs)(?=[/"'`])/g,(_,quote,folder)=>quote+config.basePath+folder);
  return text;
@@ -121,7 +123,8 @@ copyTree(home,'',(source,relative)=>!relative.endsWith('.html'));
 const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
-for(const name of ['world-learning-followups.mjs','world-followup-items.json'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+// 놓친 곳 카드(11-14): 「내 위치」 판에 셸이 끼우는 묶음 밖 모듈 — 입장 검사 원고 · 규칙을 그 게임 사본(./entry-check/)에서 읽는다(rewrite).
+for(const name of ['world-learning-followups.mjs','world-followup-items.json','world-missed-spot.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 // Atlas 새 길(재설계 단계 4, 기능 atlasNext): 셸이 기능이 켜졌을 때만 부르는 입구 · 짧은 연습 새 판. 공개 설정에서는 꺼져 있어(operating-mode.mjs
 // REHEARSAL_ONLY) 불리지 않지만, 셸이 가리키는 파일이라 묶음에 싣는다 — 엔진 판(/atlas/<판>/)과 입구는 4-8에서 공개한다.
 for(const name of ['world-atlas-next.mjs','world-practice-next.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);

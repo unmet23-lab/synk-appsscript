@@ -8087,7 +8087,7 @@ var require_trail2 = __commonJS({
         const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
         const arms = new Map(visible.filter((e) => e.type === "decision.made").map((e) => [e.id, e.arm ?? null]));
         const provenance = /* @__PURE__ */ new Map(), traces = /* @__PURE__ */ new Map();
-        visible.forEach((event, index2) => {
+        visible.forEach((event, index) => {
           if (event.type === TYPES[0]) provenance.set(event.id, event);
           const p = provenance.get(event.presentationId);
           if (event.type !== TYPES[1] && event.type !== TYPES[2] || !p) return;
@@ -8095,7 +8095,7 @@ var require_trail2 = __commonJS({
             if (!traces.has(traceKey)) traces.set(traceKey, /* @__PURE__ */ new Map());
             const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? "attempt" : event.level === "answer" ? "answer" : "help";
             const earlier = trace.get(kind);
-            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index2), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
+            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
           }
         });
         const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
@@ -8103,7 +8103,7 @@ var require_trail2 = __commonJS({
           if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict: verdict2 });
         };
         let excludedAttempts = 0;
-        visible.forEach((event, index2) => {
+        visible.forEach((event, index) => {
           if (event.type === TYPES[3]) {
             audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
             return;
@@ -8144,7 +8144,7 @@ var require_trail2 = __commonJS({
           const earlier = (kinds) => traceKeys(p).some((traceKey) => kinds.some((kind) => {
             if (foldedBefore(prior, traceKey, kind)) return true;
             const first = traces.get(traceKey)?.get(kind);
-            return first && (first.index < index2 || first.at < at);
+            return first && (first.index < index || first.at < at);
           }));
           const proof = audioByPresentation.get(p.id);
           const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
@@ -8263,15 +8263,15 @@ var require_trail2 = __commonJS({
         };
       }
       const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
-      const record3 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+      const record2 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
       const frozen = (r) => Object.freeze({ ...copy3(r), conceptIds: Object.freeze([...r.conceptIds]) });
       function openHistory(stored, pending = []) {
-        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record3) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
-        const pendingOk = Array.isArray(pending) && pending.every(record3);
-        const records = [], index2 = /* @__PURE__ */ new Set();
+        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record2) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+        const pendingOk = Array.isArray(pending) && pending.every(record2);
+        const records = [], index = /* @__PURE__ */ new Set();
         if (readable) {
-          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index2.has(r.itemKey)) {
-            index2.add(r.itemKey);
+          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
+            index.add(r.itemKey);
             records.push(frozen(r));
           }
         }
@@ -8280,16 +8280,16 @@ var require_trail2 = __commonJS({
           readable,
           partial,
           records: Object.freeze(records),
-          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index2.has(itemKey) ? false : partial ? null : true
+          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
         });
       }
-      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record3);
+      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record2);
       function remember(history, summary) {
         if (!opened(history)) throw new TypeError("Trail: open the history first");
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history.readable) return null;
         const known = new Set(history.records.map((r) => r.itemKey));
-        const added = summary.met.filter((r) => record3(r) && !known.has(r.itemKey));
+        const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
         return { records: [...history.records, ...added].map(copy3), partial: history.partial };
       }
       function createPracticeOutcomeIndex(summary) {
@@ -8774,15 +8774,15 @@ var require_engine2 = __commonJS({
             setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
             continue;
           }
-          const turn = (index2) => (index2 - round % options.length + options.length) % options.length;
+          const turn = (index) => (index - round % options.length + options.length) % options.length;
           if (!adapted) {
-            const option = content ? options.find((_, index2) => turn(index2) === 0) : options.find((item) => item.id === lever.default) || options[0];
+            const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
             setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
             continue;
           }
           const before = last ? picked(last, lever.id) : void 0;
           const tallies = new Map(lever.learn ? options.map((option) => [option.id, tally(lever.id, option.id)]) : []);
-          const ranked = options.map((option, index2) => {
+          const ranked = options.map((option, index) => {
             const notes = [], proof = [];
             let score = 0, basis = null;
             if (c.goal && option.goals?.includes(c.goal)) {
@@ -8808,7 +8808,7 @@ var require_engine2 = __commonJS({
                 score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t3.s + t3.f);
               }
             }
-            return { option, score, notes, proof, basis, order: content ? turn(index2) : index2 };
+            return { option, score, notes, proof, basis, order: content ? turn(index) : index };
           }).sort((a, b) => b.score - a.score || a.order - b.order);
           const best = ranked[0], answered = [...tallies.values()].filter((t3) => t3.proof.length);
           if (answered.length && !best.basis) {
@@ -8855,7 +8855,7 @@ var require_engine2 = __commonJS({
             return log;
           }
         };
-        const index2 = (entry) => {
+        const index = (entry) => {
           if (entry.type === "practice.attempted") {
             const stats = lookup.attempts(entry.presentationId);
             attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
@@ -8865,7 +8865,7 @@ var require_engine2 = __commonJS({
         const store = (event) => {
           if (admitted.has(event)) {
             byId.set(event.id, event);
-            index2(event);
+            index(event);
             log.push(event);
             frozen = null;
             return;
@@ -8876,7 +8876,7 @@ var require_engine2 = __commonJS({
           else freeze(entry);
           admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
           byId.set(entry.id, entry);
-          index2(entry);
+          index(entry);
           log.push(entry);
           frozen = null;
         };
@@ -8886,7 +8886,7 @@ var require_engine2 = __commonJS({
         }
         let sequence = 0;
         const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        const record3 = (body) => {
+        const record2 = (body) => {
           const at = clock2(), event = { ...body, schema: 1, scope: copy3(scope), id: nextId(), at, recordedAt: at };
           if (admitWith(lookup, event)) store(event);
           return copy3(event);
@@ -8894,14 +8894,14 @@ var require_engine2 = __commonJS({
         return {
           events: () => copy3(log),
           snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
-          set: (field, value, until = null) => record3({ type: "context.set", field, value, until }),
-          observe: (signal) => record3({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
-          respond: (line, value) => record3({ type: "estimate.responded", line, value }),
+          set: (field, value, until = null) => record2({ type: "context.set", field, value, until }),
+          observe: (signal) => record2({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+          respond: (line, value) => record2({ type: "estimate.responded", line, value }),
           plan: (experienceId, candidates, options = {}) => {
             const levers = options.levers || [];
             const decision = decide({ events: log, scope, at: clock2(), experienceId, candidates, levers, explore });
             if (decision.status !== "ready") return decision;
-            const recorded = record3({
+            const recorded = record2({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
@@ -8924,14 +8924,14 @@ var require_engine2 = __commonJS({
           complete: (decision) => {
             if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
             const existing = completions.get(decision.id);
-            return existing ? copy3(existing) : record3({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            return existing ? copy3(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value, decisionId) => record3({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
+          feedback: (completionId, value, decisionId) => record2({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
           practice: (kind, fields) => {
             if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record3({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            return record2({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
-          outcome: (decisionId, result) => record3({
+          outcome: (decisionId, result) => record2({
             type: "outcome.observed",
             decisionId,
             measure: result?.measure,
@@ -8941,7 +8941,7 @@ var require_engine2 = __commonJS({
             assisted: result?.assisted ?? null,
             ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
           }),
-          exclude: (targetId) => record3({ type: "record.excluded", targetId }),
+          exclude: (targetId) => record2({ type: "record.excluded", targetId }),
           clear: () => {
             log = [];
             frozen = null;
@@ -10047,7 +10047,7 @@ var require_learning = __commonJS({
       const ids = /* @__PURE__ */ new Set(), skills = new Map(profile.skills.map((s) => [s.id, s])), now = Date.parse(profile.asOf);
       const content = new Map((profile.concepts || []).map((c) => [c.id, c.status]));
       const history = { task: /* @__PURE__ */ new Map(), item: /* @__PURE__ */ new Map(), family: /* @__PURE__ */ new Map() };
-      for (const [index2, presentation] of presentations.entries()) {
+      for (const [index, presentation] of presentations.entries()) {
         for (const [kind, key] of [
           ["task", presentation.taskId],
           ["item", presentation.itemKey],
@@ -10055,7 +10055,7 @@ var require_learning = __commonJS({
         ]) {
           if (!key) continue;
           if (!history[kind].has(key)) history[kind].set(key, []);
-          history[kind].get(key).push(index2);
+          history[kind].get(key).push(index);
         }
       }
       const weight = /* @__PURE__ */ new Map();
@@ -10083,13 +10083,13 @@ var require_learning = __commonJS({
           ...history.item.get(candidate.itemKey) || [],
           ...history.family.get(candidate.familyKey || candidate.itemKey) || []
         ]);
-        const count = [...previous].reduce((n, index2) => n + (weight.get(index2) || 1), 0);
+        const count = [...previous].reduce((n, index) => n + (weight.get(index) || 1), 0);
         const family = candidate.familyKey || candidate.itemKey;
         const seen = candidate.familyKeys ? candidate.familyKeys.every((key) => history.family.has(key)) : typeof family === "string" && history.family.has(family);
-        const times = [...previous].filter((index2) => typeof index2 === "number").map((index2) => Date.parse(presentations[index2]?.at)), timed = times.every(Number.isFinite);
+        const times = [...previous].filter((index) => typeof index === "number").map((index) => Date.parse(presentations[index]?.at)), timed = times.every(Number.isFinite);
         const retry = !candidate.familyKeys && seen && count === 1 && states.some((state) => state.missed?.includes(family));
-        const lastFour = [...previous].some((index2) => typeof index2 === "number" && index2 >= presentations.length - 4);
-        const waiting = retry && (timed ? times.some((time4) => now - time4 < RETRY.gapMs) : lastFour), due = retry && !waiting, shownAt = timed ? times[0] : Math.max(-1, ...[...previous].filter((index2) => typeof index2 === "number"));
+        const lastFour = [...previous].some((index) => typeof index === "number" && index >= presentations.length - 4);
+        const waiting = retry && (timed ? times.some((time4) => now - time4 < RETRY.gapMs) : lastFour), due = retry && !waiting, shownAt = timed ? times[0] : Math.max(-1, ...[...previous].filter((index) => typeof index === "number"));
         const immediate = !due && lastFour;
         const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every((id) => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === "recent-independent");
         const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
@@ -10280,9 +10280,9 @@ var require_learning_pages = __commonJS({
       const value = JSON.parse(text2);
       if (Array.isArray(value)) return value;
       if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure();
-      const string = (index2) => {
-        if (!Number.isInteger(index2) || index2 < 0 || index2 >= value.strings.length) throw failure();
-        return value.strings[index2];
+      const string = (index) => {
+        if (!Number.isInteger(index) || index < 0 || index >= value.strings.length) throw failure();
+        return value.strings[index];
       };
       function unpack(entry, depth = 0) {
         if (depth > 64) throw failure();
@@ -10308,7 +10308,7 @@ var require_learning_pages = __commonJS({
       const writers = `${key}.writer.`;
       const keys = () => {
         if (typeof storage.key !== "function" || !Number.isSafeInteger(storage.length) || storage.length < 0) return null;
-        return Array.from({ length: storage.length }, (_, index2) => storage.key(index2)).filter((name) => typeof name === "string").sort();
+        return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter((name) => typeof name === "string").sort();
       };
       let root = null, decodedRaw = null;
       const validKey = (name) => typeof name === "string" && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
@@ -11212,7 +11212,7 @@ var require_flow = __commonJS({
           const items = input.items;
           if (!items || typeof items !== "object" || Object.keys(items).some((key) => !["levels", "weight", "start"].includes(key))) fail2("invalid item levels");
           const levels = items.levels ?? [1, 2, 3], start2 = items.start ?? 0, weight = items.weight ?? 2;
-          if (!Array.isArray(levels) || levels.length < 2 || levels.length > 6 || !levels.every((level, index2) => Number.isInteger(level) && (index2 === 0 || level > levels[index2 - 1])) || !Number.isInteger(start2) || start2 < 0 || start2 >= levels.length || !within(weight, 0.25, 4)) fail2("invalid item levels");
+          if (!Array.isArray(levels) || levels.length < 2 || levels.length > 6 || !levels.every((level, index) => Number.isInteger(level) && (index === 0 || level > levels[index - 1])) || !Number.isInteger(start2) || start2 < 0 || start2 >= levels.length || !within(weight, 0.25, 4)) fail2("invalid item levels");
           spec.items = { levels: [...levels], weight, start: start2 };
           spec.knobs.push({ id: ITEM, values: [...levels], start: start2, weight, kind: "content", follows: null, label: "item difficulty" });
         }
@@ -11242,8 +11242,8 @@ var require_flow = __commonJS({
         if (memory == null || typeof memory !== "object" || memory.v !== 2 || memory.content !== spec.id || memory.specVersion !== spec.version || !estimate(memory.estimates?.content) || !estimate(memory.estimates?.pace) || typeof memory.at !== "string" || !Number.isFinite(Date.parse(memory.at)) || !memory.indices || typeof memory.indices !== "object" || !Array.isArray(memory.latencies) || memory.latencies.length > LATENCIES || !memory.latencies.every((ms) => within(ms, 0, 6e5))) return null;
         const indices = {};
         for (const knob of spec.knobs) {
-          const index2 = memory.indices[knob.id];
-          indices[knob.id] = Number.isInteger(index2) && index2 >= 0 && index2 < knob.values.length ? index2 : knob.start;
+          const index = memory.indices[knob.id];
+          indices[knob.id] = Number.isInteger(index) && index >= 0 && index < knob.values.length ? index : knob.start;
         }
         return { estimates: copy3(memory.estimates), at: memory.at, indices, latencies: [...memory.latencies] };
       }
@@ -11253,14 +11253,14 @@ var require_flow = __commonJS({
         const skills = skillIds.map((skill2) => summary.skills.find((s) => s.id === skill2));
         if (skills.some((skill2) => !skill2)) return null;
         let level = spec.items.start;
-        for (let index2 = spec.items.start; index2 < spec.items.levels.length - 1; index2 += 1) {
-          const authored = spec.items.levels[index2];
+        for (let index = spec.items.start; index < spec.items.levels.length - 1; index += 1) {
+          const authored = spec.items.levels[index];
           const steady = skills.every((skill2) => {
             const formats = skill2.levels?.[authored]?.formats;
             return !!formats && Object.hasOwn(formats, responseFormat) && formats[responseFormat].status === "recent-independent";
           });
           if (!steady) break;
-          level = index2 + 1;
+          level = index + 1;
         }
         if (level === spec.items.start) return null;
         const indices = { ...defaults(spec), [ITEM]: level };
@@ -11281,8 +11281,8 @@ var require_flow = __commonJS({
         const support = presentation.support ?? "choose", knobs = {};
         for (const knob of spec.knobs) {
           if (knob.follows === "declared") {
-            const index2 = FOLLOWED.includes(knob.id) && presentation[knob.id] != null ? knob.values.indexOf(presentation[knob.id]) : -1;
-            if (index2 >= 0) knobs[knob.id] = index2;
+            const index = FOLLOWED.includes(knob.id) && presentation[knob.id] != null ? knob.values.indexOf(presentation[knob.id]) : -1;
+            if (index >= 0) knobs[knob.id] = index;
           } else if (knob.kind === "support" && support !== "choose") knobs[knob.id] = support === "step" ? 0 : knob.values.length - 1;
         }
         return { knobs };
@@ -11296,9 +11296,9 @@ var require_flow = __commonJS({
         if (!declared || typeof declared !== "object" || Array.isArray(declared) || Object.keys(declared).some((key) => !["mode", "knobs"].includes(key))) fail2("declared must be { mode, knobs }");
         const mode = declared.mode ?? "auto", locks = { ...declared.knobs ?? {} };
         if (!MODES.includes(mode)) fail2("invalid declared mode");
-        for (const [knobId, index2] of Object.entries(locks)) {
+        for (const [knobId, index] of Object.entries(locks)) {
           const knob = spec.knobs.find((k) => k.id === knobId);
-          if (!knob || !Number.isInteger(index2) || index2 < 0 || index2 >= knob.values.length) fail2(`invalid declared knob ${knobId}`);
+          if (!knob || !Number.isInteger(index) || index < 0 || index >= knob.values.length) fail2(`invalid declared knob ${knobId}`);
         }
         if (condition !== null && !CONDITIONS.includes(condition)) fail2("invalid condition");
         if (!["adapted", "baseline"].includes(arm)) fail2("invalid arm");
@@ -12179,7 +12179,7 @@ var require_game_learning = __commonJS({
       const rememberSaved = () => {
         lastSavedState = savedState();
       };
-      const unchangedPaged = () => lastSavedState && savedState().every((value, index2) => value === lastSavedState[index2]);
+      const unchangedPaged = () => lastSavedState && savedState().every((value, index) => value === lastSavedState[index]);
       const decode = (raw) => {
         if (raw == null) return null;
         const value = pages ? pages.decode(raw) : JSON.parse(raw);
@@ -12768,7 +12768,7 @@ var require_game_learning = __commonJS({
             return unavailable("incomplete-history");
           }
           if (!saved.durable || saved.ledger?.adjusted) return unavailable("incomplete-history");
-          const events = saved.log, positions = new Map(events.map((event, index2) => [event.id, index2]));
+          const events = saved.log, positions = new Map(events.map((event, index) => [event.id, index]));
           const byId = new Map(events.map((event) => [event.id, event]));
           const sourceEvent = byId.get(sourceAttemptId), targetEvent = byId.get(targetAttemptId);
           if (sourceEvent?.type !== "practice.attempted" || targetEvent?.type !== "practice.attempted") return unavailable("missing-attempt");
@@ -13265,16 +13265,16 @@ var require_ask = __commonJS({
           const chances = probabilities(q2);
           const outcomes = /* @__PURE__ */ Object.create(null);
           let impact = 0, expectedGain = 0;
-          q2.options.forEach((option, index2) => {
+          q2.options.forEach((option, index) => {
             const scenario = { ...answers, [about]: owns(option, "value") ? option.value : option.id };
             const decided = decide({ ...scenario });
             outcomes[option.id] = decided;
-            impact += chances[index2] * difference(current, decided);
-            if (valued && chances[index2] > 0) {
+            impact += chances[index] * difference(current, decided);
+            if (valued && chances[index] > 0) {
               const context = { answers: scenario, question: q2, option };
               const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
               if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
-              expectedGain += chances[index2] * gain;
+              expectedGain += chances[index] * gain;
             }
           });
           const distinct = new Set(Object.values(outcomes).map(canonical)).size;
@@ -13413,7 +13413,7 @@ var require_game_browser = __commonJS({
 });
 
 // experiences/synk-world-app/life-content.mjs
-var choices = (texts) => texts.map((text2, index2) => ({ id: ["a", "b", "c"][index2], text: text2 }));
+var choices = (texts) => texts.map((text2, index) => ({ id: ["a", "b", "c"][index], text: text2 }));
 var scene = (speaker, text2) => ({ speaker, text: text2 });
 var expression = (id, korean, meaning) => ({ id, korean, meaning });
 var transfer = (prompt, context, texts, answerId, explanation) => ({
@@ -14003,17 +14003,17 @@ function resumeCafe(state, lessonId = state.id || CAFE_LESSON_ID) {
   const result = { version: lessonId === CAFE_COMPOSE_ID ? 2 : 1, step: 0, phase: "welcome", choiceId: null, seat: "window", ...lessonId === CAFE_COMPOSE_ID ? { order: { drink: null, temperature: null, count: null } } : {} };
   const questions = lessonById(lessonId).questions;
   const firstWrong = questions.findIndex((q3) => state.answers[q3.id] && !state.answers[q3.id].correct);
-  const lastAnswered = questions.reduce((last, q3, index3) => state.answers[q3.id] ? index3 : last, -1);
-  const index2 = firstWrong < 0 ? lastAnswered : firstWrong;
-  if (index2 < 0) return result;
-  const q2 = questions[index2], answer = state.answers[q2.id], known = q2.choices.some((c) => c.id === answer.choiceId);
+  const lastAnswered = questions.reduce((last, q3, index2) => state.answers[q3.id] ? index2 : last, -1);
+  const index = firstWrong < 0 ? lastAnswered : firstWrong;
+  if (index < 0) return result;
+  const q2 = questions[index], answer = state.answers[q2.id], known = q2.choices.some((c) => c.id === answer.choiceId);
   if (lessonId === CAFE_COMPOSE_ID) {
     const first = state.answers[questions[0].id], sent = first?.order;
-    if (!isCafeOrder(sent, { complete: true }) || first.choiceId !== orderChoice(sent) || index2 > 0 && first.choiceId !== questions[0].answerId) return result;
+    if (!isCafeOrder(sent, { complete: true }) || first.choiceId !== orderChoice(sent) || index > 0 && first.choiceId !== questions[0].answerId) return result;
     result.order = clone(sent);
-    if (!known) return { ...result, step: index2, phase: "choose" };
+    if (!known) return { ...result, step: index, phase: "choose" };
   }
-  result.step = index2;
+  result.step = index;
   result.choiceId = known ? answer.choiceId : q2.answerId;
   result.phase = result.choiceId === q2.answerId ? "response" : "repair";
   return result;
@@ -14235,7 +14235,7 @@ var require_trail = __commonJS2({
         const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
         const arms = new Map(visible.filter((e) => e.type === "decision.made").map((e) => [e.id, e.arm ?? null]));
         const provenance = /* @__PURE__ */ new Map(), traces = /* @__PURE__ */ new Map();
-        visible.forEach((event, index2) => {
+        visible.forEach((event, index) => {
           if (event.type === TYPES[0]) provenance.set(event.id, event);
           const p = provenance.get(event.presentationId);
           if (event.type !== TYPES[1] && event.type !== TYPES[2] || !p) return;
@@ -14243,7 +14243,7 @@ var require_trail = __commonJS2({
             if (!traces.has(traceKey)) traces.set(traceKey, /* @__PURE__ */ new Map());
             const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? "attempt" : event.level === "answer" ? "answer" : "help";
             const earlier = trace.get(kind);
-            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index2), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
+            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
           }
         });
         const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
@@ -14251,7 +14251,7 @@ var require_trail = __commonJS2({
           if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict: verdict2 });
         };
         let excludedAttempts = 0;
-        visible.forEach((event, index2) => {
+        visible.forEach((event, index) => {
           if (event.type === TYPES[3]) {
             audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
             return;
@@ -14292,7 +14292,7 @@ var require_trail = __commonJS2({
           const earlier = (kinds) => traceKeys(p).some((traceKey) => kinds.some((kind) => {
             if (foldedBefore(prior, traceKey, kind)) return true;
             const first = traces.get(traceKey)?.get(kind);
-            return first && (first.index < index2 || first.at < at);
+            return first && (first.index < index || first.at < at);
           }));
           const proof = audioByPresentation.get(p.id);
           const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
@@ -14411,15 +14411,15 @@ var require_trail = __commonJS2({
         };
       }
       const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
-      const record3 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+      const record2 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
       const frozen = (r) => Object.freeze({ ...copy3(r), conceptIds: Object.freeze([...r.conceptIds]) });
       function openHistory(stored, pending = []) {
-        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record3) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
-        const pendingOk = Array.isArray(pending) && pending.every(record3);
-        const records = [], index2 = /* @__PURE__ */ new Set();
+        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record2) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+        const pendingOk = Array.isArray(pending) && pending.every(record2);
+        const records = [], index = /* @__PURE__ */ new Set();
         if (readable) {
-          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index2.has(r.itemKey)) {
-            index2.add(r.itemKey);
+          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
+            index.add(r.itemKey);
             records.push(frozen(r));
           }
         }
@@ -14428,16 +14428,16 @@ var require_trail = __commonJS2({
           readable,
           partial,
           records: Object.freeze(records),
-          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index2.has(itemKey) ? false : partial ? null : true
+          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
         });
       }
-      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record3);
+      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record2);
       function remember(history, summary) {
         if (!opened(history)) throw new TypeError("Trail: open the history first");
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history.readable) return null;
         const known = new Set(history.records.map((r) => r.itemKey));
-        const added = summary.met.filter((r) => record3(r) && !known.has(r.itemKey));
+        const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
         return { records: [...history.records, ...added].map(copy3), partial: history.partial };
       }
       function createPracticeOutcomeIndex(summary) {
@@ -14920,15 +14920,15 @@ var require_engine = __commonJS2({
             setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
             continue;
           }
-          const turn = (index2) => (index2 - round % options.length + options.length) % options.length;
+          const turn = (index) => (index - round % options.length + options.length) % options.length;
           if (!adapted) {
-            const option = content ? options.find((_, index2) => turn(index2) === 0) : options.find((item) => item.id === lever.default) || options[0];
+            const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
             setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
             continue;
           }
           const before = last ? picked(last, lever.id) : void 0;
           const tallies = new Map(lever.learn ? options.map((option) => [option.id, tally(lever.id, option.id)]) : []);
-          const ranked = options.map((option, index2) => {
+          const ranked = options.map((option, index) => {
             const notes = [], proof = [];
             let score = 0, basis = null;
             if (c.goal && option.goals?.includes(c.goal)) {
@@ -14954,7 +14954,7 @@ var require_engine = __commonJS2({
                 score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t3.s + t3.f);
               }
             }
-            return { option, score, notes, proof, basis, order: content ? turn(index2) : index2 };
+            return { option, score, notes, proof, basis, order: content ? turn(index) : index };
           }).sort((a, b) => b.score - a.score || a.order - b.order);
           const best = ranked[0], answered = [...tallies.values()].filter((t3) => t3.proof.length);
           if (answered.length && !best.basis) {
@@ -15001,7 +15001,7 @@ var require_engine = __commonJS2({
             return log;
           }
         };
-        const index2 = (entry) => {
+        const index = (entry) => {
           if (entry.type === "practice.attempted") {
             const stats = lookup.attempts(entry.presentationId);
             attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
@@ -15011,7 +15011,7 @@ var require_engine = __commonJS2({
         const store = (event) => {
           if (admitted.has(event)) {
             byId.set(event.id, event);
-            index2(event);
+            index(event);
             log.push(event);
             frozen = null;
             return;
@@ -15022,7 +15022,7 @@ var require_engine = __commonJS2({
           else freeze(entry);
           admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
           byId.set(entry.id, entry);
-          index2(entry);
+          index(entry);
           log.push(entry);
           frozen = null;
         };
@@ -15032,7 +15032,7 @@ var require_engine = __commonJS2({
         }
         let sequence = 0;
         const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        const record3 = (body) => {
+        const record2 = (body) => {
           const at = clock2(), event = { ...body, schema: 1, scope: copy3(scope), id: nextId(), at, recordedAt: at };
           if (admitWith(lookup, event)) store(event);
           return copy3(event);
@@ -15040,14 +15040,14 @@ var require_engine = __commonJS2({
         return {
           events: () => copy3(log),
           snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
-          set: (field, value, until = null) => record3({ type: "context.set", field, value, until }),
-          observe: (signal) => record3({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
-          respond: (line, value) => record3({ type: "estimate.responded", line, value }),
+          set: (field, value, until = null) => record2({ type: "context.set", field, value, until }),
+          observe: (signal) => record2({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+          respond: (line, value) => record2({ type: "estimate.responded", line, value }),
           plan: (experienceId, candidates, options = {}) => {
             const levers = options.levers || [];
             const decision = decide({ events: log, scope, at: clock2(), experienceId, candidates, levers, explore });
             if (decision.status !== "ready") return decision;
-            const recorded = record3({
+            const recorded = record2({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
@@ -15070,14 +15070,14 @@ var require_engine = __commonJS2({
           complete: (decision) => {
             if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
             const existing = completions.get(decision.id);
-            return existing ? copy3(existing) : record3({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            return existing ? copy3(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value, decisionId) => record3({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
+          feedback: (completionId, value, decisionId) => record2({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
           practice: (kind, fields) => {
             if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record3({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            return record2({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
-          outcome: (decisionId, result) => record3({
+          outcome: (decisionId, result) => record2({
             type: "outcome.observed",
             decisionId,
             measure: result?.measure,
@@ -15087,7 +15087,7 @@ var require_engine = __commonJS2({
             assisted: result?.assisted ?? null,
             ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
           }),
-          exclude: (targetId) => record3({ type: "record.excluded", targetId }),
+          exclude: (targetId) => record2({ type: "record.excluded", targetId }),
           clear: () => {
             log = [];
             frozen = null;
@@ -15428,8 +15428,8 @@ var require_personalization = __commonJS2({
       const fail2 = (message) => {
         throw new TypeError(`Personalization: ${message}`);
       };
-      const record3 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
-      const exact2 = (value, keys) => record3(value) && Object.keys(value).every((key) => keys.includes(key));
+      const record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+      const exact2 = (value, keys) => record2(value) && Object.keys(value).every((key) => keys.includes(key));
       const token = (value, max = 48) => typeof value === "string" && new RegExp(`^[a-zA-Z0-9_.-]{1,${max}}$`).test(value);
       function instant(at) {
         if (typeof at !== "string" || !Number.isFinite(Date.parse(at)) || new Date(at).toISOString() !== at) fail2("use an explicit ISO UTC time");
@@ -15713,7 +15713,7 @@ var require_personalization = __commonJS2({
       }
       const PREFERENCE_VERSION = "core-preference-context-1";
       const preferenceToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value) && !["__proto__", "prototype", "constructor"].includes(value);
-      const canonical = (value) => JSON.stringify(value, (_key, item) => record3(item) ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item);
+      const canonical = (value) => JSON.stringify(value, (_key, item) => record2(item) ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item);
       const PREFERENCE_KEYS = Object.freeze({
         set: ["field", "value", "duration"],
         withdraw: ["field", "duration"],
@@ -15744,7 +15744,7 @@ var require_personalization = __commonJS2({
         };
         const isValue = (field, value) => field.kind === "enum" ? field.values.includes(value) : field.kind === "boolean" ? typeof value === "boolean" : typeof value === "number" && Number.isFinite(value) && value >= field.range[0] && value <= field.range[1];
         for (const event of events) {
-          if (!record3(event) || !Object.hasOwn(PREFERENCE_KEYS, event.kind)) fail2("invalid preference event kind");
+          if (!record2(event) || !Object.hasOwn(PREFERENCE_KEYS, event.kind)) fail2("invalid preference event kind");
           const keys = [...preferenceBase, ...PREFERENCE_KEYS[event.kind]];
           if (!exact2(event, [...keys, ...preferenceOptional(event.kind)]) || keys.some((key) => !Object.hasOwn(event, key)) || event.version !== PREFERENCE_VERSION || !preferenceToken(event.id) || !preferenceToken(event.encounterId)) fail2("invalid preference event");
           checkScope(event.scope);
@@ -15851,7 +15851,7 @@ var require_personalization = __commonJS2({
         if (!exact2(input, ["contract", "scope", "events", "encounterId", "at", "domainScope"])) fail2("unsupported preference bridge input");
         const { contract, scope, events = [], encounterId, at, domainScope } = input;
         checkScope(scope);
-        if (!record3(domainScope) || domainScope.subject !== scope.personId || domainScope.domain !== scope.domain) fail2("foreign preference bridge subject or domain");
+        if (!record2(domainScope) || domainScope.subject !== scope.personId || domainScope.domain !== scope.domain) fail2("foreign preference bridge subject or domain");
         const domain = getDomain();
         if (!domain?.understand) fail2("load Core domain capability first");
         domain.understand({ contract, scope: domainScope, observations: [], at });
@@ -15895,7 +15895,7 @@ var require_personalization = __commonJS2({
         return copy3({ observations, layers, understanding, lineage });
       }
       function recordPreference(input = {}) {
-        if (!record3(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail2("invalid preference action");
+        if (!record2(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail2("invalid preference action");
         const { contract, scope, encounterId, at, id, kind, events = [] } = input;
         const extraKeys = PREFERENCE_KEYS[kind], optionalKeys = preferenceOptional(kind), keys = ["contract", "scope", "events", "encounterId", "at", "id", "kind", ...extraKeys, ...optionalKeys];
         if (!exact2(input, keys)) fail2("unsupported preference action input");
@@ -16400,8 +16400,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const engine = chosen === null ? judged() : null;
     const due = chosen !== null ? chosen.map((id) => clone2(state.reviews[id])) : engine ? soon && allowedIds !== null ? allowedIds.map((id) => clone2(state.reviews[id])) : dueReviews(100).filter((row) => allowedIds === null || allowedIds.includes(row.id)) : dueReviews(100, now() + (soon ? MINUTE : 0)).filter((row) => allowedIds === null || allowedIds.includes(row.id));
     if (preferredId) {
-      const index2 = due.findIndex((r) => r.id === preferredId);
-      if (index2 > 0) due.unshift(...due.splice(index2, 1));
+      const index = due.findIndex((r) => r.id === preferredId);
+      if (index > 0) due.unshift(...due.splice(index, 1));
     }
     const next = clone2(state), ids = due.slice(0, Math.max(0, Math.min(100, limit))).map((v) => v.id);
     if (!ids.length) return null;
@@ -16628,8 +16628,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     commit(next, { preserveDaily: true });
     return result();
   }
-  function reviewExpression(record3) {
-    const lesson2 = lessons.get(record3.lessonId), question2 = lesson2?.questions?.find((value) => value.id === record3.questionId);
+  function reviewExpression(record2) {
+    const lesson2 = lessons.get(record2.lessonId), question2 = lesson2?.questions?.find((value) => value.id === record2.questionId);
     return lesson2?.expressions?.find((value) => value.id === question2?.expressionId)?.korean || question2?.choices?.find((value) => value.id === question2.answerId)?.text || "";
   }
   function dueExpressionCount(due) {
@@ -16945,17 +16945,17 @@ import { storyVoice } from "../world-sound.mjs";
 var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var expressionKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
 function storyLineMarkup(text2, expressions = []) {
-  const source = String(text2 ?? ""), keys = expressions.map((e, index2) => ({ index: index2, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
+  const source = String(text2 ?? ""), keys = expressions.map((e, index) => ({ index, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
   const marks = [];
   for (const match of source.matchAll(/‘([^‘’]{1,80})’/g)) {
     const inner = match[1], hit = keys.find((k) => inner.includes(k.key) || k.key.includes(inner));
     marks.push({ start: match.index + 1, end: match.index + 1 + inner.length, index: hit ? hit.index : null });
   }
-  for (const { index: index2, key } of keys) {
+  for (const { index, key } of keys) {
     let from = 0, at;
     while ((at = source.indexOf(key, from)) >= 0) {
       from = at + key.length;
-      if (!marks.some((m) => at < m.end && at + key.length > m.start)) marks.push({ start: at, end: at + key.length, index: index2 });
+      if (!marks.some((m) => at < m.end && at + key.length > m.start)) marks.push({ start: at, end: at + key.length, index });
     }
   }
   marks.sort((a, b) => a.start - b.start);
@@ -17557,11 +17557,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     companion?.update(tutorState());
   } });
   void speech.prepare();
-  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index2) => {
+  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index) => {
     if (!companion?.openGuide) return;
     play("open");
     haptic("tap");
-    companion.openGuide({ expression: index2 });
+    companion.openGuide({ expression: index });
   }, reduced: () => !!home.state?.reduced });
   const summary = () => getProgress().summary(PACKS, LESSONS);
   const preferences = () => {
@@ -17633,12 +17633,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     try {
       const p = getProgress(), s = p.status();
       if (["loading", "conflict", "unreadable"].includes(s.phase) || s.rejected) return false;
-      const snapshot = p.exportSnapshot(), record3 = Object.values(snapshot.reviews).find((r) => r.questionId === id);
-      if (!record3 || record3.lapses <= 0 || record3.streak !== 0) return false;
-      exposedTransfers.set(record3.id, Date.now());
-      guideTransfer(record3.questionId);
-      const run = summary().dueState === "engine" ? p.startReview(1, record3.id, null, { ids: [record3.id] }) : record3.dueAt <= Date.now() ? p.startReview(6, record3.id) : snapshot.activeReview;
-      if (run?.ids.includes(record3.id) && !run.answers[record3.id]) p.markReviewHelp(record3.id);
+      const snapshot = p.exportSnapshot(), record2 = Object.values(snapshot.reviews).find((r) => r.questionId === id);
+      if (!record2 || record2.lapses <= 0 || record2.streak !== 0) return false;
+      exposedTransfers.set(record2.id, Date.now());
+      guideTransfer(record2.questionId);
+      const run = summary().dueState === "engine" ? p.startReview(1, record2.id, null, { ids: [record2.id] }) : record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
+      if (run?.ids.includes(record2.id) && !run.answers[record2.id]) p.markReviewHelp(record2.id);
       return true;
     } catch {
       return false;
@@ -17866,17 +17866,17 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return status === "completed" ? "completed" : status === "started" ? "started" : "new";
   };
   const packDone = (pack2) => pack2.lessons.filter((l) => getProgress().lessonState(l.id).status === "completed").length;
-  function packCard(pack2, index2, current = null) {
+  function packCard(pack2, index, current = null) {
     const done = packDone(pack2), total = pack2.lessons.length, started = pack2.lessons.some((l) => stateOf(l.id) === "started"), [word, label] = packWords[pack2.id] || [pack2.title, pack2.id.toUpperCase()];
     const state = done === total ? "done" : done || started ? "active" : "new", now = pack2.id === current;
     const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
-    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index2 % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index2 + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
+    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
   function nowPoster(s) {
     const lesson2 = s.nextLesson;
     if (lesson2 && (s.resume || !s.dueCount)) {
-      const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index2 = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
-      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}</span>${meter(index2, total, `${pad(index2 + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+      const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
+      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
     }
     if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small><strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` };
     const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "";
@@ -17928,9 +17928,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     place = id === "cafe" ? "cafe" : "life";
     context = null;
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt) || s.dueState === "checking" && Object.keys(p.exportSnapshot().reviews || {}).length > 0, activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
-    const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index2 = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
+    const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
     const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="${t("life.cafeAlt")}" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status === "started" ? "life.continue" : nextVisit.number === 1 ? "life.cafeEnter" : "life.cafeNext")} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? t("life.visited", { done: visited, total: CAFE_VISITS.length }) : t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index2 + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
     reviewMark = reviewSign(s);
     paint(packTitle(value), `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>${t("life.toPacks")}</button>${hasReviews ? `<button class="quiet-button" data-life-review>${t("life.seeReviews")}</button>` : ""}</div>`, { screen: `pack:${id}`, ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
@@ -18183,9 +18183,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (shown && ticket === generation) home.toast(t("life.savingProgress"));
     });
   }
-  function reviewOrigin(record3, snapshot = getProgress().exportSnapshot()) {
-    const at = snapshot.lessons[record3.lessonId]?.answers?.[record3.questionId]?.at ?? record3.lastAt;
-    return [ago(at), placeAt(record3.packId)].filter(Boolean).join(" \xB7 ");
+  function reviewOrigin(record2, snapshot = getProgress().exportSnapshot()) {
+    const at = snapshot.lessons[record2.lessonId]?.answers?.[record2.questionId]?.at ?? record2.lastAt;
+    return [ago(at), placeAt(record2.packId)].filter(Boolean).join(" \xB7 ");
   }
   function review({ again = false } = {}) {
     if (!ensureReadable()) return;
@@ -18253,8 +18253,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const run = getProgress().exportSnapshot().activeReview;
     if (!run) return review();
     reviewRun = run;
-    const index2 = run.ids.findIndex((id2) => !run.answers[id2]);
-    if (index2 < 0) {
+    const index = run.ids.findIndex((id2) => !run.answers[id2]);
+    if (index < 0) {
       summary();
       const snapshot = getProgress().exportSnapshot(), items = reviewRowsByExpression(run.ids.map((id2) => {
         const r = snapshot.reviews[id2], l2 = lessonById(r?.lessonId), q3 = l2?.questions.find((x) => x.id === r.questionId), a = run.answers[id2], alone = !!(a && a.correct && !a.helped);
@@ -18264,7 +18264,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       celebrate();
       return;
     }
-    const id = run.ids[index2], record3 = getProgress().exportSnapshot().reviews[id], l = lessonById(record3.lessonId), original = l.questions.find((q3) => q3.id === record3.questionId), q2 = original.review;
+    const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q3) => q3.id === record2.questionId), q2 = original.review;
     if (!lastFeedback) {
       const marked = run.pendingHelp?.[id] === true;
       try {
@@ -18279,9 +18279,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       } catch {
       }
     }
-    context = { lessonId: l.id, phase: "review", questionIndex: index2, reviewId: id, reviewQuestion: q2 };
+    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q2 };
     if (!lastFeedback) trail.shown(reviewSlot2(run.id, id), engineItem(l, original, true), { helped });
-    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index2}">${progressLine(index2 + (lastFeedback ? 1 : 0), run.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(packTitle(packById(record3.packId))) })}</span><span><b class="life-count">${index2 + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q2, lastFeedback, { packId: record3.packId, origin: t("life.reviewOrigin", { origin: reviewOrigin(record3) }), rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
+    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(packTitle(packById(record2.packId))) })}</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q2, lastFeedback, { packId: record2.packId, origin: t("life.reviewOrigin", { origin: reviewOrigin(record2) }), rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
   function chooseReview(id) {
@@ -18292,8 +18292,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     helpBy = helped ? "user" : null;
     lastFeedback = { question: q2, choiceId: id, correct, helped, helpBy };
     mirrorAnswer(slot, saved, { ...stored, choiceId: id }, q2.answerId);
-    const record3 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q2, lastFeedback, { packId: record3?.packId, origin: record3 ? t("life.reviewOrigin", { origin: reviewOrigin(record3) }) : "", rest: restLine(`review:${context.reviewId}`) });
-    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(record3 ? packTitle(packById(record3.packId)) : t("life.everydayKorean")) })}</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
+    const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q2, lastFeedback, { packId: record2?.packId, origin: record2 ? t("life.reviewOrigin", { origin: reviewOrigin(record2) }) : "", rest: restLine(`review:${context.reviewId}`) });
+    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(record2 ? packTitle(packById(record2.packId)) : t("life.everydayKorean")) })}</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
     judge(correct);
   }
@@ -18504,35 +18504,35 @@ function familyTable() {
       main: !review || sameChoices(question2) ? question2.id : null
     });
   }
-  const parent = rows2.map((_, index2) => index2), first = /* @__PURE__ */ new Map();
-  const find = (index2) => {
-    while (parent[index2] !== index2) {
-      parent[index2] = parent[parent[index2]];
-      index2 = parent[index2];
+  const parent = rows2.map((_, index) => index), first = /* @__PURE__ */ new Map();
+  const find = (index) => {
+    while (parent[index] !== index) {
+      parent[index] = parent[parent[index]];
+      index = parent[index];
     }
-    return index2;
+    return index;
   };
-  const link = (name, index2) => {
+  const link = (name, index) => {
     if (!first.has(name)) {
-      first.set(name, index2);
+      first.set(name, index);
       return;
     }
-    const a = find(first.get(name)), b = find(index2);
+    const a = find(first.get(name)), b = find(index);
     if (a !== b) parent[Math.max(a, b)] = Math.min(a, b);
   };
-  rows2.forEach((row, index2) => {
-    if (row.answer) link(`answer:${row.answer}`, index2);
-    if (row.knowledge) link(`expression:${row.expression}`, index2);
-    if (row.main) link(`main:${row.main}`, index2);
+  rows2.forEach((row, index) => {
+    if (row.answer) link(`answer:${row.answer}`, index);
+    if (row.knowledge) link(`expression:${row.expression}`, index);
+    if (row.main) link(`main:${row.main}`, index);
   });
   const naming = /* @__PURE__ */ new Map();
-  rows2.forEach((row, index2) => {
-    const root = find(index2);
+  rows2.forEach((row, index) => {
+    const root = find(index);
     if (!naming.has(root)) naming.set(root, null);
     if (row.knowledge && naming.get(root) === null) naming.set(root, `life.expr.${row.expression}`);
   });
-  FAMILY = new Map(rows2.map((row, index2) => {
-    const root = find(index2);
+  FAMILY = new Map(rows2.map((row, index) => {
+    const root = find(index);
     return [row.key, naming.get(root) || `life.ans.${fingerprint(rows2[root].answer)}`];
   }));
   return FAMILY;
@@ -18623,11 +18623,11 @@ function productMet(item, snapshot) {
       if (main || run && run.completedAt != null) return true;
       continue;
     }
-    const record3 = reviews[`${member.questionId}-transfer`];
+    const record2 = reviews[`${member.questionId}-transfer`];
     if (snapshot.activeReview?.answers?.[`${member.questionId}-transfer`]) return true;
     if (guided(member.questionId)) return true;
-    if (!record3) continue;
-    if (record3.streak > 0 || !main || replay || Number.isFinite(record3.lastAt) && record3.lastAt > main.at) return true;
+    if (!record2) continue;
+    if (record2.streak > 0 || !main || replay || Number.isFinite(record2.lastAt) && record2.lastAt > main.at) return true;
   }
   return false;
 }
@@ -19431,7 +19431,7 @@ var LISTENING_CHECKS = Object.freeze([
   ...check3,
   steps: Object.freeze(check3.steps),
   choices: Object.freeze(check3.choices),
-  choiceIds: Object.freeze(check3.choices.map((_choice, index2) => `runner-${check3.id}-option-${index2 + 1}`))
+  choiceIds: Object.freeze(check3.choices.map((_choice, index) => `runner-${check3.id}-option-${index + 1}`))
 })));
 var CORRECTIONS = Object.freeze({
   "check-star-middle": [null, "\uC67C\uCABD\uC774 \uC544\uB2C8\uB77C \uBCC4\uC774 \uC788\uB294 \uAC00\uC6B4\uB370 \uAE38\uC774\uC5D0\uC694.", "\uC624\uB978\uCABD\uC774 \uC544\uB2C8\uB77C \uBCC4\uC774 \uC788\uB294 \uAC00\uC6B4\uB370 \uAE38\uC774\uC5D0\uC694."],
@@ -22938,8 +22938,8 @@ function examPhase(date, now) {
 function recheckWeek(date, weekStart) {
   const { phase, weeks } = examPhase(date, weekStart);
   if (phase === "past") return false;
-  const index2 = weeks === null ? Math.floor((weekStart + KST) / (7 * DAY3)) : weeks;
-  return index2 % (EXAM_PLAN_POLICY.recheckEvery[phase] || 4) === 0;
+  const index = weeks === null ? Math.floor((weekStart + KST) / (7 * DAY3)) : weeks;
+  return index % (EXAM_PLAN_POLICY.recheckEvery[phase] || 4) === 0;
 }
 var planAnswered = (event) => event?.type === "practice.attempted" && event.attemptNo === 1 && (event.verdict === "correct" || event.verdict === "incorrect");
 function weekActivity({ events = [], progress: progress2 = null, week, extra = [] } = {}) {
@@ -23309,38 +23309,38 @@ var OFF_WHY = Object.freeze({ door: "\uC804\uC5D0 \u2018\uB0B4\uB9AC\uC2E4 \uBB3
 var PLAY_UNLOCKS = Object.freeze({
   // 게시판 해독(11-04, 설계 board-decode/설계.md 7절): 이야기가 아니라 실력 기록으로 열린다 — 가장 최근 TOPIK II 첫 답 6개 가운데 4개(싱크타운 입장 길 ②와 같은 말).
   // 그 수는 오답으로 도로 떨어질 수 있어, 한 번 「새로 열림」을 본 놀이는 닫지 않는다(sticky). 잠김 글은 「이야기에서 열려요」가 아니다(lockOnly).
-  board: Object.freeze({ where: "play.locked.level", lockOnly: true, sticky: true, open: (record3) => record3.topik2Near === true }),
+  board: Object.freeze({ where: "play.locked.level", lockOnly: true, sticky: true, open: (record2) => record2.topik2Near === true }),
   // 주문 폭주: 싱크타운 카페 알바 시작에서 열린다. 지금 앱의 싱크타운 카페 이야기는 첫 방문(cafe-apply) 하나라 그 완료를 기록으로 읽는다 —
   // 1화 뒤 카페 알바 장면이 생기면 그 장면의 기록으로 바꾼다.
-  order: Object.freeze({ where: "play.where.cafe", open: (record3) => record3.cafeVisits >= 1 }),
+  order: Object.freeze({ where: "play.where.cafe", open: (record2) => record2.cafeVisits >= 1 }),
   // 입장 검사(11-04): 축제 · 콘서트 입장 스태프 알바에서 열린다. 그 회차가 아직 없어, 가장 가까운 이야기 기록인 싱크타운 카페 첫 방문(알바 지원)으로 연다 —
   // 축제 스태프 회차가 생기면 그 기록으로 옮긴다.
-  entry: Object.freeze({ where: "play.where.cafe", open: (record3) => record3.cafeVisits >= 1 }),
+  entry: Object.freeze({ where: "play.where.cafe", open: (record2) => record2.cafeVisits >= 1 }),
   // 말의 리듬: 지금은 늘 열려 있다(11-04 캠퍼스 판 겉까지 마침). 축제 무대 연습 · 아이돌 꿈 연습실 회차가 생기면 그 기록과 화면 글 키로 이 자리에 한 줄:
   // rhythm: Object.freeze({ where: 'play.where.festival', open: (record) => record.festivalRehearsals >= 1 }),
   // 빈칸 베기(11-04): 이야기 자리는 중간고사 전날 밤 도서관(3급 뼈대 U08). 그 회차가 아직 없어 가장 가까운 공부 기록 — 레슨 한 번 — 으로 열고,
   // 카페 첫 방문을 먼저 한 학생도 막지 않는다(엄격하게 막지 않는다). 중간고사 회차가 생기면 그 기록으로 옮긴다.
-  blank: Object.freeze({ where: "play.where.lesson", open: (record3) => record3.lessons >= 1 || record3.cafeVisits >= 1 }),
+  blank: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 || record2.cafeVisits >= 1 }),
   // 찰칵 낱말(11-04): 드라마 1화 기록이 아직 홈에 없어, 이름표를 읽고 찾는 이야기(greetings-story)가 든 첫 묶음 「처음 만난 날」을 두 강 이상 들으면 연다.
   // 강 순서를 강제하지 않아 그 강이라는 보장은 없지만, 엄격하게 막지 않는 임시 자리다. 1화 기록이 홈에 오면 그 기록으로 옮긴다.
-  snap: Object.freeze({ where: "play.where.stories", open: (record3) => record3.greetingLessons >= 2 }),
+  snap: Object.freeze({ where: "play.where.stories", open: (record2) => record2.greetingLessons >= 2 }),
   // MT 바닷가 자전거 레이스(11-04, 설계 korean-racing/qa/world-mt-20261104/설계.md): 동아리 MT 회차가 아직 없어 가장 가까운 이야기 기록으로 연다 —
   // 지도 찾기 이야기(거꾸로 든 지도) 한 번. MT 회차가 생기면 그 회차의 기록으로 바꾼다.
-  racing: Object.freeze({ where: "play.where.directions", open: (record3) => record3.directionsDone >= 1 }),
+  racing: Object.freeze({ where: "play.where.directions", open: (record2) => record2.directionsDone >= 1 }),
   // 말 랠리(11-04, 설계 talk-rally/qa/world-campus-20261104/설계.md): 동아리 탁구 회차가 아직 없어 빈칸 베기와 같이 가장 가까운 공부 기록 — 레슨 한 번(카페 첫 방문을 먼저 한 학생도 막지 않는다). 그 회차가 생기면 그 기록으로 옮긴다.
-  rally: Object.freeze({ where: "play.where.lesson", open: (record3) => record3.lessons >= 1 || record3.cafeVisits >= 1 }),
+  rally: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 || record2.cafeVisits >= 1 }),
   // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
   // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
-  subway: Object.freeze({ where: "play.where.lesson", open: (record3) => record3.lessons >= 1 })
+  subway: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 })
 });
 var PLAY_REPLACED_BY = Object.freeze({ runner: "subway" });
-function playState(id, record3, seen = null) {
+function playState(id, record2, seen = null) {
   const rule = PLAY_UNLOCKS[id];
   if (!rule) return { open: true };
   if (rule.sticky && Array.isArray(seen) && seen.includes(id)) return { open: true };
   let open = false;
   try {
-    open = !!record3 && rule.open(record3) === true;
+    open = !!record2 && rule.open(record2) === true;
   } catch {
     open = false;
   }
@@ -23412,10 +23412,10 @@ function presentationFor(settings) {
   };
 }
 var lessonMinutes = (lesson2) => lesson2.id === "cafe-compose" ? 4 : lesson2.type === "story" ? 3 : 2;
-function lessonCandidate(lesson2, index2, settings) {
+function lessonCandidate(lesson2, index, settings) {
   const cafe = lesson2.id === "cafe-apply" || lesson2.id.startsWith("cafe-visit-") || lesson2.id === "cafe-compose";
   return {
-    id: `world.life.${String(index2 + 1).padStart(2, "0")}.${lesson2.packId}`,
+    id: `world.life.${String(index + 1).padStart(2, "0")}.${lesson2.packId}`,
     label: lesson2.title,
     route: "lesson",
     lessonId: lesson2.id,
@@ -23455,9 +23455,9 @@ function practiceNeed(review, progress2, now) {
 }
 function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {}, now = Date.now(), openGames = null, due = null } = {}) {
   const at = clock(now), source = record(progress2) ? progress2 : {}, candidates = [];
-  PACKS.forEach((pack, index2) => {
+  PACKS.forEach((pack, index) => {
     const next = pack.lessons.find((lesson2) => !time3(source.lessons?.[lesson2.id]?.completedAt));
-    if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index2, settings));
+    if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index, settings));
   });
   const dueIds = record(due) ? due.state === "engine" && Array.isArray(due.ids) ? due.ids : [] : null;
   const reviews = dueIds ? verifiedReviews(source).filter((review) => dueIds.includes(review.id)) : verifiedReviews(source).filter((review) => review.dueAt <= at && review.lastAt <= at);
@@ -23586,8 +23586,8 @@ function resumeCandidates(progress2, settings, now) {
   const stage = record(saved?.stage) ? saved.stage : null;
   const moved = !!stage && (stage.phase === "story" || stage.phase === "questions" || stage.sceneIndex > 0 || stage.questionIndex > 0);
   if (lesson2 && saved && (answered || moved) && time3(saved.startedAt) && saved.startedAt <= now) {
-    const index2 = PACKS.findIndex((pack) => pack.id === lesson2.packId);
-    result.push({ ...lessonCandidate(lesson2, index2, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
+    const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
+    result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
   const session = progress2?.activeReview;
   if (!session || !Array.isArray(session.ids) || !time3(session.startedAt) || session.startedAt > now) return result;
@@ -23747,6 +23747,1309 @@ function advisoryRows({ targets = [], summary, lookup, supply = {} } = {}) {
     }
   }
   return out.slice(0, 3);
+}
+
+// experiences/entry-check/content.mjs
+var CAST = {
+  bear: { name: "\uAE40\uBCF4\uB9AC", label: "\uACF0", age: 21, scale: 1, img: "assets/cast/bear.webp" },
+  raccoon: { name: "\uB098\uAD6C\uB9AC", label: "\uB108\uAD6C\uB9AC", age: 45, scale: 0.98, img: "assets/cast/raccoon.webp" },
+  rabbit: { name: "\uBC15\uD1A0\uC21C", label: "\uD1A0\uB07C", age: 72, scale: 0.9, img: "assets/cast/rabbit.webp" },
+  fox: { name: "\uC5EC\uC6B0\uC9C4", label: "\uC5EC\uC6B0", age: 31, scale: 1, img: "assets/cast/fox.webp" },
+  squirrel: { name: "\uB3C4\uB2E4\uBBF8", label: "\uB2E4\uB78C\uC950", age: 6, scale: 0.64, img: "assets/cast/squirrel.webp" },
+  hedgehog: { name: "\uACE0\uB3C4\uCE58", label: "\uACE0\uC2B4\uB3C4\uCE58", age: 9, scale: 0.72, img: "assets/cast/hedgehog.webp" },
+  penguin: { name: "\uB0A8\uCF69\uC774", label: "\uD3AD\uADC4", age: 24, scale: 0.9, img: "assets/cast/penguin.webp" },
+  ducks: { name: "\uC624\uC21C", label: "\uC624\uB9AC", age: 34, scale: 0.94, img: "assets/cast/ducks.webp", wide: true },
+  otter: { name: "\uC218\uB2EC\uC218", label: "\uC218\uB2EC", age: 62, scale: 0.92, img: "assets/cast/otter.webp" },
+  deer: { name: "\uB178\uB098\uB798", label: "\uC0AC\uC2B4", age: 26, scale: 1.04, img: "assets/cast/deer.webp" },
+  panda: { name: "\uC774\uB2E8\uBE44", label: "\uD310\uB2E4", age: 15, scale: 0.9, img: "assets/cast/panda.webp" },
+  sheep: { name: "\uC591\uC19C\uC774", label: "\uC591", age: 22, scale: 0.94, img: "assets/cast/sheep.webp" }
+};
+var ITEMS = {
+  "swim-cap": "\uC218\uC601 \uBAA8\uC790",
+  "water-bottle": "\uBB3C\uBCD1",
+  gimbap: "\uAE40\uBC25",
+  snack: "\uACFC\uC790",
+  towel: "\uC218\uAC74",
+  "swim-ring": "\uD29C\uBE0C",
+  "library-card": "\uB3C4\uC11C\uAD00 \uCE74\uB4DC",
+  "pool-card": "\uC218\uC601\uC7A5 \uCE74\uB4DC",
+  book: "\uCC45",
+  "coffee-lid": "\uCEE4\uD53C(\uB69C\uAED1 \uC788\uC74C)",
+  "coffee-open": "\uCEE4\uD53C(\uB69C\uAED1 \uC5C6\uC74C)",
+  camera: "\uCE74\uBA54\uB77C",
+  phone: "\uD734\uB300\uD3F0",
+  purse: "\uC791\uC740 \uAC00\uBC29",
+  "picnic-mat": "\uB3D7\uC790\uB9AC",
+  chair: "\uC811\uC774\uC2DD \uC758\uC790",
+  umbrella: "\uC6B0\uC0B0"
+};
+var R = (id, text2, skill2, short) => ({ id, text: text2, skill: skill2, short });
+var doc = (title, rows2, kind = "ticket") => ({ title, rows: rows2, kind });
+var VENUES = [
+  {
+    id: "pool",
+    day: 1,
+    name: "\uD558\uB298 \uC218\uC601\uC7A5",
+    scene: "pool",
+    band: "lapis",
+    date: "8\uC6D4 6\uC77C \uC218\uC694\uC77C",
+    briefing: "\uC624\uB298\uC774 \uCCAB \uADFC\uBB34\uC608\uC694. \uC548\uB0B4\uBB38\uC740 \uC138 \uC904\uBFD0\uC774\uB2C8\uAE4C \uAC71\uC815\uD558\uC9C0 \uB9C8\uC138\uC694. \uC190\uB2D8\uC758 \uD45C\uC640 \uC9D0\uC744 \uC548\uB0B4\uBB38\uACFC \uD558\uB098\uC529 \uB9DE\uCDB0 \uBD10\uC694.",
+    notice: {
+      kind: "\uC774\uC6A9 \uC548\uB0B4",
+      title: "\uD558\uB298 \uC218\uC601\uC7A5 \uC774\uC6A9 \uC548\uB0B4",
+      rules: [
+        R("cap", "\uC218\uC601 \uBAA8\uC790\uB97C \uAF2D \uC368\uC57C \uD569\uB2C8\uB2E4.", "ko.reading.detail", "\uC218\uC601 \uBAA8\uC790"),
+        R("food", "\uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uC74C\uC2DD"),
+        R("kid", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uC5B4\uB978\uACFC \uD568\uAED8 \uB4E4\uC5B4\uC640\uC57C \uD569\uB2C8\uB2E4.", "ko.reading.condition", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774")
+      ]
+    },
+    cases: [
+      {
+        id: "pool-01",
+        at: "14:02",
+        who: "bear",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 21\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "towel"],
+        line: "\uC548\uB155\uD558\uC138\uC694! \uC218\uC601\uD558\uB7EC \uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "items",
+        evidence: ["cap"],
+        why: "\uC218\uC601 \uBAA8\uC790\uAC00 \uC788\uC5B4\uC694. \uC74C\uC2DD\uB3C4 \uC5C6\uC5B4\uC694. \uADF8\uB798\uC11C \uD1B5\uACFC\uC608\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694! \uADF8\uB7FC \uC2DC\uC6D0\uD558\uAC8C \uD55C\uBC88 \uC218\uC601\uD574 \uBCFC\uAC8C\uC694!",
+        oops: "\uBCF4\uB9AC \uC528\uAC00 \uACE0\uAC1C\uB97C \uAC38\uC6C3\uD588\uC5B4\uC694. \u201C\uBAA8\uC790\uB3C4 \uC788\uACE0 \uC74C\uC2DD\uB3C4 \uC5C6\uB294\uB370\u2026 \uC65C \uC548 \uB3FC\uC694?\u201D"
+      },
+      {
+        id: "pool-09",
+        at: "14:04",
+        who: "panda",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC774\uB2E8\uBE44"], ["\uAD6C\uBD84", "\uD559\uC0DD \xB7 15\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["towel", "water-bottle"],
+        line: "\uC218\uAC74\uACFC \uBB3C\uC740 \uC788\uC5B4\uC694. \uC218\uC601 \uBAA8\uC790\uB294 \uC5C6\uC5B4\uC694.",
+        answer: "cap",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "items",
+        evidence: ["cap"],
+        why: "\uC218\uC601 \uBAA8\uC790\uB294 \uAF2D \uC368\uC57C \uD574\uC694. \uADF8\uB7F0\uB370 \uB2E8\uBE44 \uC528 \uC9D0\uC5D0\uB294 \uBAA8\uC790\uAC00 \uC5C6\uC5B4\uC694. \uBB3C\uBCD1\uC740 \uC788\uC9C0\uB9CC \uC548\uB0B4\uBB38\uC5D0 \u201C\uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 \uC74C\uC2DD \uB54C\uBB38\uC5D0 \uB3CC\uB824\uBCF4\uB0B4\uB294 \uAC83\uC740 \uC544\uB2C8\uC5D0\uC694.",
+        reply: "\uC544, \uBAA8\uC790! \uC9D1\uC5D0 \uAC00\uC11C \uAC00\uC838\uC62C\uAC8C\uC694.",
+        oops: "\uB2E8\uBE44 \uC528\uB294 \uBAA8\uC790 \uC5C6\uC774 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uBAA8\uC790\uB97C \uBE4C\uB9AC\uB7EC \uB2E4\uC2DC \uBC16\uC73C\uB85C \uB098\uC654\uC5B4\uC694."
+      },
+      {
+        id: "pool-12",
+        at: "14:05",
+        who: "fox",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 31\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "towel"],
+        line: "\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uC4F0\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "items",
+        evidence: ["cap"],
+        why: "\uC9D0\uC5D0 \uC218\uC601 \uBAA8\uC790\uAC00 \uC788\uACE0 \u201C\uC4F0\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC74C\uC2DD\uC740 \uC5C6\uACE0, \uC785\uC7A5\uAD8C\uC5D0 \u201C\uC5B4\uB978 \xB7 31\uC0B4\u201D\uC774\uB77C\uACE0 \uB418\uC5B4 \uC788\uC5B4\uC11C \uC5B4\uB9B0\uC774 \uADDC\uCE59\uACFC\uB3C4 \uC0C1\uAD00\uC5C6\uC5B4\uC694. \uADF8\uB798\uC11C \uB4E4\uC5EC\uBCF4\uB0B4\uBA74 \uB3FC\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC900\uBE44 \uC6B4\uB3D9\uBD80\uD130 \uD558\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        oops: "\uC6B0\uC9C4 \uC528\uAC00 \uC9D0 \uC18D\uC758 \uBAA8\uC790\uB97C \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "pool-02",
+        at: "14:06",
+        who: "raccoon",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB098\uAD6C\uB9AC"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 45\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "gimbap"],
+        line: "\uC810\uC2EC\uC740 \uC218\uC601\uC7A5 \uC548\uC5D0\uC11C \uBA39\uC744 \uAC70\uC608\uC694.",
+        answer: "food",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["food"],
+        why: "\uAE40\uBC25\uC740 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uC544\uC774\uACE0, \uAE5C\uBE61\uD588\uB124. \uAE40\uBC25\uC740 \uBC16\uC5D0\uC11C \uBA39\uACE0 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uAD6C\uB9AC \uC528\uAC00 \uBB3C\uAC00\uC5D0\uC11C \uBAB0\uB798 \uAE40\uBC25\uC744 \uBA39\uB2E4\uAC00 \uC548\uC804 \uC694\uC6D0\uC5D0\uAC8C \uB531 \uAC78\uB838\uC5B4\uC694!"
+      },
+      {
+        id: "pool-10",
+        at: "14:09",
+        who: "deer",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 26\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "snack"],
+        line: "\uACFC\uC790\uB294 \uC218\uC601\uD55C \uB2E4\uC74C\uC5D0 \uBA39\uC744\uAC8C\uC694.",
+        answer: "food",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["food"],
+        why: "\uB098\uC911\uC5D0 \uBA39\uC5B4\uB3C4 \uACFC\uC790\uB294 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uADF8\uB7FC \uACFC\uC790\uB294 \uC0AC\uBB3C\uD568\uC5D0 \uB123\uC5B4 \uB458\uAC8C\uC694.",
+        oops: "\uB098\uB798 \uC528\uAC00 \uACFC\uC790\uB97C \uB4E4\uACE0 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uC548\uC804 \uC694\uC6D0\uACFC \uD568\uAED8 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
+      },
+      {
+        id: "pool-13",
+        at: "14:10",
+        who: "sheep",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC591\uC19C\uC774"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 22\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "towel"],
+        line: "\uACFC\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uC654\uC5B4\uC694. \uC218\uC601 \uBAA8\uC790\uC640 \uC218\uAC74\uB9CC \uAC00\uC838\uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC19C\uC774 \uC528\uB294 \uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uACE0 22\uC0B4 \uC5B4\uB978\uC774\uC5D0\uC694. \uACFC\uC790\uB294 \u201C\uBC16\uC5D0 \uB450\uACE0 \uC654\uC5B4\uC694\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 \uC74C\uC2DD \uADDC\uCE59\uB3C4 \uC9C0\uCF1C\uC694. \uADF8\uB798\uC11C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694! \uACFC\uC790\uB294 \uC218\uC601\uD558\uACE0 \uB098\uC11C \uBA39\uC744\uB798\uC694.",
+        oops: "\uC19C\uC774 \uC528\uAC00 \uAC00\uBC29\uC744 \uD65C\uC9DD \uC5F4\uC5B4 \uBCF4\uC5EC \uC92C\uC5B4\uC694. \u201C\uACFC\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uC654\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "pool-03",
+        at: "14:11",
+        who: "rabbit",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 72\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "water-bottle"],
+        line: "\uBB3C\uC740 \uAC00\uC9C0\uACE0 \uAC00\uB3C4 \uB418\uC9C0\uC694?",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBBF8\uB044\uB7EC\uC6B0\uB2C8\uAE4C \uCC9C\uCC9C\uD788 \uAC78\uC5B4\uAC08\uAC8C\uC694.",
+        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uC548\uB0B4\uBB38\uC744 \uC190\uAC00\uB77D\uC73C\uB85C \uC9DA\uC5C8\uC5B4\uC694. \u201C\uC5EC\uAE30, \uBB3C\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC796\uC544\uC694.\u201D"
+      },
+      {
+        id: "pool-11",
+        at: "14:13",
+        who: "otter",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 62\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "water-bottle"],
+        line: "\uBB3C \uD55C \uBCD1\uB9CC \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC548\uB0B4\uBB38\uC5D0\uC11C \u201C\uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uBAA8\uC790\uAC00 \uC788\uACE0 \uC74C\uC2DD\uC740 \uC5C6\uC5B4\uC694. \uB2EC\uC218 \uC528\uB294 62\uC0B4 \uC5B4\uB978\uC774\uB77C\uC11C \uC5B4\uB9B0\uC774 \uADDC\uCE59\uACFC\uB3C4 \uC0C1\uAD00\uC5C6\uC5B4\uC694.",
+        reply: "\uD5C8\uD5C8, \uBB3C \uB9C8\uC2DC\uBA74\uC11C \uC26C\uC5C4\uC26C\uC5C4 \uC218\uC601\uD560\uAC8C\uC694.",
+        oops: "\uB2EC\uC218 \uD560\uC544\uBC84\uC9C0\uAC00 \uC548\uB0B4\uBB38\uC744 \uC9DA\uC5C8\uC5B4\uC694. \u201C\uD5C8\uD5C8, \uBB3C\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "pool-04",
+        at: "14:15",
+        who: "fox",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 31\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["towel", "water-bottle"],
+        line: "\uBAA8\uC790\uB294 \uC9D1\uC5D0 \uB450\uACE0 \uC654\uC5B4\uC694. \uADF8\uB0E5 \uB4E4\uC5B4\uAC00\uB3C4 \uB418\uC9C0\uC694?",
+        answer: "cap",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "line",
+        evidence: ["cap"],
+        why: "\uC218\uC601 \uBAA8\uC790\uB97C \uAF2D \uC368\uC57C \uD574\uC694. \uC6B0\uC9C4 \uC528\uB294 \uBAA8\uC790\uAC00 \uC5C6\uC5B4\uC694.",
+        reply: "\uC544, \uADF8\uB807\uAD70\uC694. \uB9E4\uC810\uC5D0\uC11C \uBAA8\uC790\uB97C \uD558\uB098 \uC0B4\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uBAA8\uC790 \uC5C6\uC774 \uB4E4\uC5B4\uAC04 \uC6B0\uC9C4 \uC528\uAC00 \uC548\uC804 \uC694\uC6D0\uC758 \uD638\uB8E8\uB77C\uAE30 \uC18C\uB9AC\uC5D0 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
+      },
+      {
+        id: "pool-14",
+        at: "14:17",
+        who: "bear",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 21\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "towel"],
+        line: "\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uB4E4\uC5B4\uAC00\uAE30 \uC804\uC5D0 \uC4F8\uAC8C\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "items",
+        evidence: ["cap"],
+        why: "\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uACE0 \uC74C\uC2DD\uC740 \uC5C6\uC5B4\uC694. \uADF8\uB9AC\uACE0 \u201C\uC5B4\uB978 \xB7 21\uC0B4\u201D\uC774\uB77C\uC11C \uC5B4\uB978\uACFC \uD568\uAED8 \uC624\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694. \uBAA8\uC790\uB9CC \uC4F0\uBA74 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBAA8\uC790\uB97C \uC4F0\uACE0 \uC900\uBE44\uD560\uAC8C\uC694.",
+        oops: "\uBCF4\uB9AC \uC528\uAC00 \uC9D0\uC5D0\uC11C \uC218\uC601 \uBAA8\uC790\uB97C \uAEBC\uB0B4 \uD754\uB4E4\uC5C8\uC5B4\uC694. \u201C\uC5EC\uAE30 \uC788\uC5B4\uC694!\u201D"
+      },
+      {
+        id: "pool-05",
+        at: "14:20",
+        who: "squirrel",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB3C4\uB2E4\uBBF8"], ["\uAD6C\uBD84", "\uC5B4\uB9B0\uC774 \xB7 6\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "swim-ring"],
+        line: "\uC544\uBE60\uB294 \uC8FC\uCC28\uC7A5\uC5D0 \uC788\uC5B4\uC694. \uC800 \uBA3C\uC800 \uB4E4\uC5B4\uAC08\uAC8C\uC694!",
+        answer: "kid",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["kid"],
+        why: "\uB2E4\uBBF8\uB294 6\uC0B4\uC774\uC5D0\uC694. 7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uC5B4\uB978\uACFC \uD568\uAED8 \uB4E4\uC5B4\uC640\uC57C \uD574\uC694.",
+        reply: "\uB124! \uC544\uBE60 \uB370\uB9AC\uACE0 \uC62C\uAC8C\uC694!",
+        oops: "\uB2E4\uBBF8\uAC00 \uD63C\uC790 \uBB3C\uAC00\uB85C \uB2EC\uB824\uAC00\uC11C, \uC548\uC804 \uC694\uC6D0\uC774 \uAE5C\uC9DD \uB180\uB77C \uB6F0\uC5B4\uC654\uC5B4\uC694."
+      },
+      {
+        id: "pool-06",
+        at: "14:24",
+        who: "hedgehog",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uACE0\uB3C4\uCE58"], ["\uAD6C\uBD84", "\uC5B4\uB9B0\uC774 \xB7 9\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "towel"],
+        line: "\uC800 \uD63C\uC790 \uC654\uC5B4\uC694. \uC544\uD649 \uC0B4\uC774\uC5D0\uC694!",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["kid"],
+        why: "\uC5B4\uB978\uACFC \uD568\uAED8 \uC640\uC57C \uD558\uB294 \uAC74 7\uC0B4 \uC774\uD558\uC608\uC694. \uB3C4\uCE58\uB294 9\uC0B4\uC774\uB77C \uD63C\uC790 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uC57C\uD638! \uACE0\uB9C8\uC6CC\uC694!",
+        oops: "\uB3C4\uCE58\uAC00 \uD45C\uB97C \uBC88\uCA4D \uB4E4\uC5B4 \uBCF4\uC600\uC5B4\uC694. \u201C\uC800\uB294 \uC544\uD649 \uC0B4\uC778\uB370\uC694?\u201D"
+      },
+      {
+        id: "pool-07",
+        at: "14:29",
+        who: "penguin",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 24\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: ["swim-cap", "water-bottle", "snack"],
+        line: "\uBB3C\uB9CC \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694.",
+        answer: "food",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "\uBB3C\uC740 \uAD1C\uCC2E\uC9C0\uB9CC \uACFC\uC790\uB294 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC9D0\uC5D0 \uACFC\uC790\uAC00 \uC788\uC5B4\uC694.",
+        reply: "\uC557, \uACFC\uC790\uAC00 \uB4E4\uC5B4 \uC788\uC5C8\uB124\uC694. \uB9E1\uACA8 \uB458\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uCF69\uC774 \uC528\uAC00 \uBB3C\uAC00\uC5D0\uC11C \uACFC\uC790 \uBD09\uC9C0\uB97C \uB72F\uB2E4\uAC00 \uC548\uC804 \uC694\uC6D0\uACFC \uB208\uC774 \uB531 \uB9C8\uC8FC\uCCE4\uC5B4\uC694."
+      },
+      {
+        id: "pool-08",
+        at: "14:33",
+        who: "ducks",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC624\uC21C \uC678 1\uBA85"], ["\uAD6C\uBD84", "\uC5B4\uB978 1\uBA85 \xB7 \uC5B4\uB9B0\uC774 1\uBA85(5\uC0B4)"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
+        items: [["swim-cap", 2], "swim-ring"],
+        line: "\uC544\uC774\uC640 \uAC19\uC774 \uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "doc",
+        evidence: ["kid"],
+        why: "5\uC0B4 \uC544\uC774\uAC00 \uC5B4\uB978\uACFC \uD568\uAED8 \uC654\uC5B4\uC694. \uBAA8\uC790\uB3C4 \uB450 \uAC1C \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC544\uC774 \uC190\uC744 \uAF2D \uC7A1\uC744\uAC8C\uC694.",
+        oops: "\uC544\uAE30 \uC624\uB9AC\uAC00 \uC6B8\uBA39\uC600\uC5B4\uC694. \u201C\uC5C4\uB9C8\uB791 \uAC19\uC774 \uC654\uB294\uB370\uC694!\u201D"
+      }
+    ]
+  },
+  {
+    id: "library",
+    day: 2,
+    name: "\uBCC4\uBE5B \uB3C4\uC11C\uAD00",
+    scene: "library",
+    band: "coral",
+    date: "8\uC6D4 7\uC77C \uBAA9\uC694\uC77C",
+    briefing: "\uC624\uB298\uC740 \uB3C4\uC11C\uAD00\uC774 \uC77C\uCC0D \uBB38\uC744 \uB2EB\uB294 \uB0A0\uC774\uC5D0\uC694. \uC2DC\uACC4\uB97C \uC790\uC8FC \uBCF4\uACE0, \uCE74\uB4DC\uC5D0 \uC801\uD78C \uC774\uB984\uB3C4 \uAF2D \uD655\uC778\uD574\uC694.",
+    notice: {
+      kind: "\uC774\uC6A9 \uC548\uB0B4",
+      title: "\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uC774\uC6A9 \uC548\uB0B4",
+      rules: [
+        R("card", "\uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC57C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uB2E4\uB978 \uC0AC\uB78C\uC758 \uCE74\uB4DC\uB294 \uC4F8 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", "ko.reading.detail", "\uB3C4\uC11C\uAD00 \uCE74\uB4DC"),
+        R("food", "\uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.condition", "\uC74C\uC2DD\xB7\uB69C\uAED1 \uC5C6\uB294 \uC74C\uB8CC"),
+        R("time", "\uC624\uB298\uC740 \uC624\uD6C4 6\uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uC2B5\uB2C8\uB2E4. \uC624\uD6C4 5\uC2DC 30\uBD84\uBD80\uD130\uB294 \uB4E4\uC5B4\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", "ko.reading.detail", "5\uC2DC 30\uBD84\uBD80\uD130 \uC785\uC7A5 \uC548 \uB428")
+      ]
+    },
+    cases: [
+      {
+        id: "library-01",
+        at: "16:52",
+        who: "bear",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uCE74\uB4DC \uBC88\uD638", "2041-0715"]], "card"),
+        items: ["book"],
+        line: "\uCC45\uC744 \uB3CC\uB824\uC8FC\uB7EC \uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "doc",
+        evidence: ["card"],
+        why: "\uBCF4\uB9AC \uC528\uC758 \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC694. \uC2DC\uAC04\uB3C4 \uAD1C\uCC2E\uC544\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uB2E4\uC74C \uCC45\uB3C4 \uBE4C\uB824 \uAC08\uAC8C\uC694.",
+        oops: "\uBCF4\uB9AC \uC528\uAC00 \uCE74\uB4DC\uB97C \uB2E4\uC2DC \uB0B4\uBC00\uC5C8\uC5B4\uC694. \u201C\uC774\uAC70 \uC81C \uCE74\uB4DC \uB9DE\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "library-02",
+        at: "16:57",
+        who: "raccoon",
+        doc: null,
+        items: ["book"],
+        line: "\uCE74\uB4DC\uB294 \uC9D1\uC5D0 \uC788\uC5B4\uC694. \uC624\uB298\uB9CC \uADF8\uB0E5 \uB4E4\uC5B4\uAC00\uBA74 \uC548 \uB3FC\uC694?",
+        answer: "card",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "line",
+        evidence: ["card"],
+        why: "\uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC57C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694. \uAD6C\uB9AC \uC528\uB294 \uCE74\uB4DC\uAC00 \uC5C6\uC5B4\uC694.",
+        reply: "\uADF8\uB7FC 1\uCE35\uC5D0\uC11C \uCE74\uB4DC\uB97C \uC0C8\uB85C \uB9CC\uB4E4\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uAD00\uC7A5\uB2D8\uC774 \u201C\uCE74\uB4DC \uC5C6\uC774 \uB4E4\uC5B4\uC628 \uBD84 \uACC4\uC138\uC694?\u201D \uD558\uACE0 \uCC3E\uC73C\uB7EC \uB098\uC654\uC5B4\uC694."
+      },
+      {
+        id: "library-10",
+        at: "16:59",
+        who: "deer",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uCE74\uB4DC \uBC88\uD638", "L-1026"]], "card"),
+        items: ["book"],
+        line: "\uC81C \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uCC45\uC744 \uBE4C\uB9AC\uACE0 \uC2F6\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 1,
+        look: "doc",
+        evidence: ["card"],
+        why: "\uB098\uB798 \uC528 \uC774\uB984\uC774 \uC801\uD78C \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uACE0, \uC9D0\uC740 \uCC45\uBFD0\uC774\uC5D0\uC694. \uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 59\uBD84\uC774\uB77C \uC544\uC9C1 \uC624\uD6C4 5\uC2DC 30\uBD84 \uC804\uC774\uC5B4\uC11C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBE4C\uB9B4 \uCC45\uC744 \uCC3E\uC544\uBCFC\uAC8C\uC694.",
+        oops: "\uB098\uB798 \uC528\uAC00 \uCE74\uB4DC\uB97C \uB2E4\uC2DC \uBCF4\uC5EC \uC92C\uC5B4\uC694. \u201C\uC81C \uC774\uB984, \uC5EC\uAE30 \uC788\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "library-03",
+        at: "17:01",
+        who: "rabbit",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uCE74\uB4DC \uBC88\uD638", "1953-0402"]], "card"),
+        items: ["coffee-lid"],
+        line: "\uCEE4\uD53C\uB294 \uB69C\uAED1\uC744 \uAF2D \uB2EB\uC558\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uC544\uC694. \uD560\uBA38\uB2C8 \uCEE4\uD53C\uC5D0\uB294 \uB69C\uAED1\uC774 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC870\uC6A9\uD788 \uC77D\uB2E4 \uAC08\uAC8C\uC694.",
+        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uCEF5 \uB69C\uAED1\uC744 \uD1A1\uD1A1 \uB450\uB4DC\uB838\uC5B4\uC694. \u201C\uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC796\uC544\uC694.\u201D"
+      },
+      {
+        id: "library-04",
+        at: "17:06",
+        who: "fox",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uCE74\uB4DC \uBC88\uD638", "1994-1120"]], "card"),
+        items: ["coffee-open", "book"],
+        line: "\uCEE4\uD53C \uD55C \uC794\uB9CC \uB4E4\uACE0 \uAC08\uAC8C\uC694.",
+        answer: "food",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC5B4\uC57C \uD574\uC694. \uC6B0\uC9C4 \uC528 \uCEE4\uD53C\uC5D0\uB294 \uB69C\uAED1\uC774 \uC5C6\uC5B4\uC694.",
+        reply: "\uC544, \uB69C\uAED1\uC744 \uBC1B\uC544 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uC6B0\uC9C4 \uC528\uAC00 \uCC45 \uC704\uC5D0 \uCEE4\uD53C\uB97C \uC3DF\uC558\uC5B4\uC694!"
+      },
+      {
+        id: "library-11",
+        at: "17:08",
+        who: "penguin",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uCE74\uB4DC \uBC88\uD638", "L-1124"]], "card"),
+        items: ["coffee-lid", "book"],
+        line: "\uCEE4\uD53C\uC5D0 \uB69C\uAED1\uC744 \uB2EB\uC558\uC5B4\uC694. \uC774\uB300\uB85C \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC00\uB3C4 \uB418\uC9C0\uC694?",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uC544\uC694. \uCF69\uC774 \uC528 \uCEE4\uD53C\uC5D0\uB294 \uB69C\uAED1\uC774 \uC788\uACE0, \uC74C\uC2DD\uB3C4 \uC5C6\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC870\uC2EC\uD574\uC11C \uB4E4\uACE0 \uAC08\uAC8C\uC694.",
+        oops: "\uCF69\uC774 \uC528\uAC00 \uCEF5 \uB69C\uAED1\uC744 \uBCF4\uC5EC \uC8FC\uBA70 \uC548\uB0B4\uBB38\uC744 \uC18C\uB9AC \uB0B4\uC5B4 \uC77D\uC5C8\uC5B4\uC694."
+      },
+      {
+        id: "library-05",
+        at: "17:10",
+        who: "squirrel",
+        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uD68C\uC6D0 \uCE74\uB4DC", [["\uC774\uB984", "\uB3C4\uB2E4\uBBF8"], ["\uCE74\uB4DC \uBC88\uD638", "S-0612"]], "pool-card"),
+        items: [],
+        line: "\uC774 \uCE74\uB4DC\uB3C4 \uB418\uC9C0\uC694? \uC81C \uCE74\uB4DC\uC608\uC694!",
+        answer: "card",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["card"],
+        why: "\uC774\uAC74 \uC218\uC601\uC7A5 \uCE74\uB4DC\uC608\uC694. \uB3C4\uC11C\uAD00\uC5D0\uB294 \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC57C \uD574\uC694.",
+        reply: "\uC544, \uC218\uC601\uC7A5 \uCE74\uB4DC\uC600\uB124\uC694. \uC5C4\uB9C8\uB791 \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uB97C \uB9CC\uB4E4\uAC8C\uC694.",
+        oops: "\uB2E4\uBBF8\uAC00 \uC218\uC601\uC7A5 \uCE74\uB4DC\uB97C \uB0B4\uBC00\uC790, \uC0AC\uC11C \uC120\uC0DD\uB2D8\uC774 \uC6C3\uC74C\uC744 \uAFB9 \uCC38\uC558\uC5B4\uC694."
+      },
+      {
+        id: "library-06",
+        at: "17:14",
+        who: "penguin",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uCE74\uB4DC \uBC88\uD638", "2002-0311"]], "card"),
+        items: ["gimbap"],
+        line: "\uBC30\uAC00 \uACE0\uD30C\uC11C \uAE40\uBC25\uC744 \uC0C0\uC5B4\uC694.",
+        answer: "food",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["food"],
+        why: "\uAE40\uBC25\uC740 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uC544, \uBC30\uACE0\uD508\uB370\u2026 \uBC16\uC5D0\uC11C \uBA39\uACE0 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uC870\uC6A9\uD55C \uB3C4\uC11C\uAD00\uC5D0 \uACE0\uC18C\uD55C \uAE40\uBC25 \uB0C4\uC0C8\uAC00 \uD37C\uC84C\uC5B4\uC694."
+      },
+      {
+        id: "library-07",
+        at: "17:19",
+        who: "panda",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uC774\uB2E8\uC544"], ["\uCE74\uB4DC \uBC88\uD638", "2008-0923"]], "card"),
+        items: ["book"],
+        line: "\uC774 \uCE74\uB4DC\uB294 \uC5B8\uB2C8 \uAC70\uC608\uC694. \uAD1C\uCC2E\uC9C0\uC694?",
+        answer: "card",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["card"],
+        why: "\uCE74\uB4DC\uC758 \uC774\uB984\uC740 \uC774\uB2E8\uC544\uC608\uC694. \uB2E4\uB978 \uC0AC\uB78C\uC758 \uCE74\uB4DC\uB294 \uC4F8 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uC8C4\uC1A1\uD574\uC694\u2026 \uC81C \uCE74\uB4DC\uB97C \uB9CC\uB4E4\uC5B4 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uB2E8\uBE44\uC758 \uC5B8\uB2C8\uAC00 \u201C\uB0B4 \uCE74\uB4DC \uC5B4\uB514 \uAC14\uC9C0?\u201D \uD558\uBA70 \uB3C4\uC11C\uAD00\uC5D0 \uC654\uC5B4\uC694."
+      },
+      {
+        id: "library-08",
+        at: "17:26",
+        who: "hedgehog",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uACE0\uB3C4\uCE58"], ["\uCE74\uB4DC \uBC88\uD638", "2017-0505"]], "card"),
+        items: ["book"],
+        line: "\uC219\uC81C\uD560 \uCC45\uC744 \uBE4C\uB9AC\uACE0 \uC2F6\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "clock",
+        evidence: ["time"],
+        why: "\uC9C0\uAE08\uC740 5\uC2DC 26\uBD84\uC774\uC5D0\uC694. 5\uC2DC 30\uBD84 \uC804\uC774\uB77C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694! \uBE68\uB9AC \uACE0\uB97C\uAC8C\uC694.",
+        oops: "\uB3C4\uCE58\uAC00 \uC2DC\uACC4\uB97C \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C\uC544\uC9C1 5\uC2DC 30\uBD84 \uC804\uC778\uB370\uC694?\u201D"
+      },
+      {
+        id: "library-09",
+        at: "17:34",
+        who: "otter",
+        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uCE74\uB4DC \uBC88\uD638", "1964-0101"]], "card"),
+        items: ["book"],
+        line: "\uC7A0\uAE50\uC774\uBA74 \uB3FC\uC694. \uCC45\uB9CC \uBE4C\uB9B4\uAC8C\uC694.",
+        answer: "time",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "clock",
+        evidence: ["time"],
+        why: "\uC9C0\uAE08\uC740 5\uC2DC 34\uBD84\uC774\uC5D0\uC694. 5\uC2DC 30\uBD84\uBD80\uD130\uB294 \uB4E4\uC5B4\uC62C \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uD5C8\uD5C8, \uADF8\uB7FC \uB0B4\uC77C \uC77C\uCC0D \uC62C\uAC8C\uC694.",
+        oops: "\uC9C1\uC6D0\uC774 \uBB38\uC744 \uB2EB\uC73C\uB824\uB2E4, \uCC45\uC7A5 \uC0AC\uC774\uC758 \uD560\uC544\uBC84\uC9C0\uB97C \uCC3E\uB290\uB77C \uB2A6\uAC8C \uD1F4\uADFC\uD588\uC5B4\uC694."
+      }
+    ]
+  },
+  {
+    id: "museum",
+    day: 3,
+    name: "\uBC14\uB78C \uBBF8\uC220\uAD00",
+    scene: "museum",
+    band: "lapis",
+    date: "8\uC6D4 8\uC77C \uAE08\uC694\uC77C",
+    briefing: "\uC624\uB298\uC740 \uD2B9\uBCC4 \uC804\uC2DC\uAC00 \uC5F4\uB824\uC11C \uC190\uB2D8\uC774 \uB9CE\uC544\uC694. \uD45C\uC758 \uC885\uB958\uC640 \uB098\uC774, \uADF8\uB9AC\uACE0 \uC785\uC7A5 \uC2DC\uAC04\uC744 \uC798 \uBD10\uC694.",
+    notice: {
+      kind: "\uD2B9\uBCC4 \uC804\uC2DC",
+      title: "\uBC14\uB78C \uBBF8\uC220\uAD00 \u300C\uBC14\uB2E4\uC758 \uC0C9\u300D \uC548\uB0B4",
+      rules: [
+        R("time", "\uAD00\uB78C\uC740 \uC624\uD6C4 6\uC2DC\uAE4C\uC9C0\uC785\uB2C8\uB2E4. \uC785\uC7A5\uC740 \uC624\uD6C4 5\uC2DC\uAE4C\uC9C0\uB9CC \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.", "ko.reading.detail", "\uC785\uC7A5\uC740 5\uC2DC\uAE4C\uC9C0"),
+        R("camera", "\uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uCE74\uBA54\uB77C"),
+        R("fee", "\uC5B4\uB9B0\uC774 \uD45C\uB294 13\uC0B4 \uC774\uD558\uB9CC \uC4F8 \uC218 \uC788\uC2B5\uB2C8\uB2E4. 65\uC0B4 \uC774\uC0C1\uC740 \uBB34\uB8CC\uC785\uB2C8\uB2E4.", "ko.reading.condition", "\uD45C\uC640 \uB098\uC774")
+      ]
+    },
+    cases: [
+      {
+        id: "museum-01",
+        at: "16:22",
+        who: "deer",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "26\uC0B4"]]),
+        items: ["phone", "purse"],
+        line: "\uC0AC\uC9C4\uC740 \uC548 \uCC0D\uC744\uAC8C\uC694. \uD734\uB300\uD3F0\uB9CC \uC788\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "items",
+        evidence: ["camera"],
+        why: "\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC544\uC694. \uCE74\uBA54\uB77C\uB294 \uC5C6\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBC14\uB2E4 \uADF8\uB9BC\uC744 \uCC9C\uCC9C\uD788 \uBCFC\uAC8C\uC694.",
+        oops: "\uB098\uB798 \uC528\uAC00 \uD734\uB300\uD3F0\uC744 \uB4E4\uC5B4 \uBCF4\uC600\uC5B4\uC694. \u201C\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "museum-09",
+        at: "16:24",
+        who: "fox",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "31\uC0B4"]]),
+        items: ["phone", "purse"],
+        line: "\uAC00\uBC29\uC5D0\uB294 \uD734\uB300\uD3F0\uB9CC \uC788\uC5B4\uC694. \uC804\uD654\uB97C \uB044\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "items",
+        evidence: ["camera"],
+        why: "\uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 24\uBD84\uC774\uB77C \uC785\uC7A5 \uB9C8\uAC10\uC778 \uC624\uD6C4 5\uC2DC \uC804\uC774\uC5D0\uC694. \uC548\uB0B4\uBB38\uC5D0\uC11C \u201C\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uACE0, \uC6B0\uC9C4 \uC528 \uC9D0\uC5D0\uB294 \uCE74\uBA54\uB77C\uAC00 \uC5C6\uC5B4\uC694. 31\uC0B4\uC774\uB77C \uC5B4\uB978 \uD45C\uB3C4 \uB9DE\uC73C\uB2C8 \uB4E4\uC5EC\uBCF4\uB0B4\uBA74 \uB3FC\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC804\uD654\uB294 \uAEBC \uB450\uACE0 \uC870\uC6A9\uD788 \uBCFC\uAC8C\uC694.",
+        oops: "\uC6B0\uC9C4 \uC528\uAC00 \uD734\uB300\uD3F0\uC744 \uBCF4\uC5EC \uC8FC\uBA70 \uC548\uB0B4\uBB38\uC758 \u201C\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB97C \uAC00\uB9AC\uCF30\uC5B4\uC694."
+      },
+      {
+        id: "museum-02",
+        at: "16:27",
+        who: "sheep",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC591\uC19C\uC774"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "22\uC0B4"]]),
+        items: ["camera", "purse"],
+        line: "\uBC14\uB2E4 \uADF8\uB9BC\uC744 \uAF2D \uCC0D\uACE0 \uC2F6\uC5B4\uC694!",
+        answer: "camera",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["camera"],
+        why: "\uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uC544\uC27D\uC9C0\uB9CC \uCE74\uBA54\uB77C\uB294 \uBCF4\uAD00\uD568\uC5D0 \uB9E1\uAE38\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uC804\uC2DC\uC2E4\uC5D0\uC11C \uCC30\uCE75! \uC18C\uB9AC\uAC00 \uB098\uC11C \uBAA8\uB450 \uB3CC\uC544\uBD24\uC5B4\uC694."
+      },
+      {
+        id: "museum-10",
+        at: "16:29",
+        who: "penguin",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "24\uC0B4"]]),
+        items: ["camera", "purse"],
+        line: "\uCE74\uBA54\uB77C\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uC804\uC2DC\uB97C \uBCF4\uACE0 \uC2F6\uC5B4\uC694.",
+        answer: "camera",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["camera"],
+        why: "\uC548\uB0B4\uBB38\uC5D0\uC11C \uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uB2E4\uACE0 \uD588\uC5B4\uC694. \uCF69\uC774 \uC528 \uC9D0\uC5D0 \uCE74\uBA54\uB77C\uAC00 \uC788\uC5B4\uC694. \uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 29\uBD84\uC774\uB77C \uC785\uC7A5 \uC2DC\uAC04\uC740 \uAD1C\uCC2E\uACE0, 24\uC0B4\uC774\uB77C \uC5B4\uB978 \uD45C\uB3C4 \uB9DE\uC544\uC694.",
+        reply: "\uC544\uC27D\uB2E4\u2026 \uCE74\uBA54\uB77C\uB294 \uBCF4\uAD00\uD568\uC5D0 \uB9E1\uAE30\uACE0 \uC62C\uAC8C\uC694.",
+        oops: "\uCF69\uC774 \uC528\uAC00 \uCE74\uBA54\uB77C\uB97C \uBA54\uACE0 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uC9C1\uC6D0\uACFC \uD568\uAED8 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
+      },
+      {
+        id: "museum-03",
+        at: "16:32",
+        who: "panda",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC774\uB2E8\uBE44"], ["\uD45C", "\uC5B4\uB9B0\uC774"], ["\uB098\uC774", "15\uC0B4"]]),
+        items: [],
+        line: "\uC800\uB294 \uC911\uD559\uC0DD\uC774\uC5D0\uC694. \uC5B4\uB9B0\uC774 \uD45C\uB85C \uC0C0\uC5B4\uC694.",
+        answer: "fee",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["fee"],
+        why: "\uC5B4\uB9B0\uC774 \uD45C\uB294 13\uC0B4 \uC774\uD558\uB9CC \uC4F8 \uC218 \uC788\uC5B4\uC694. \uB2E8\uBE44\uB294 15\uC0B4\uC774\uC5D0\uC694.",
+        reply: "\uC544, \uC5B4\uB978 \uD45C\uB85C \uBC14\uAFD4 \uC62C\uAC8C\uC694.",
+        oops: "\uB9E4\uD45C\uC18C \uC9C1\uC6D0\uC774 \uB2EC\uB824\uC640\uC11C \uB2E8\uBE44\uC758 \uD45C\uB97C \uBC14\uAFD4 \uC92C\uC5B4\uC694."
+      },
+      {
+        id: "museum-11",
+        at: "16:34",
+        who: "bear",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "21\uC0B4"]]),
+        items: [],
+        line: "\uC800\uB294 \uC2A4\uBB3C\uD55C \uC0B4\uC774\uC5D0\uC694. \uC5B4\uB978 \uD45C\uB97C \uC0C0\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["fee"],
+        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uC785\uC7A5\uC740 \uC624\uD6C4 5\uC2DC\uAE4C\uC9C0\uB9CC \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uB294\uB370 \uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 34\uBD84\uC774\uB77C \uC544\uC9C1 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694. \uC5B4\uB9B0\uC774 \uD45C\uB294 13\uC0B4 \uC774\uD558\uB9CC \uC4F0\uB294\uB370, \uBCF4\uB9AC \uC528\uB294 21\uC0B4\uC774\uACE0 \uC5B4\uB978 \uD45C\uB97C \uAC00\uC9C0\uACE0 \uC788\uC5B4\uC11C \uD45C\uB3C4 \uB9DE\uC544\uC694. \uBCF4\uC5EC \uC900 \uC9D0\uC774 \uC5C6\uC73C\uB2C8 \uCE74\uBA54\uB77C\uB3C4 \uC5C6\uC5B4\uC694. \uADF8\uB798\uC11C \uB4E4\uC5EC\uBCF4\uB0B4\uBA74 \uB3FC\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uD45C\uB97C \uC798 \uCC59\uACA8 \uB458\uAC8C\uC694.",
+        oops: "\uBCF4\uB9AC \uC528\uAC00 \uD45C\uB97C \uB2E4\uC2DC \uBCF4\uC5EC \uC92C\uC5B4\uC694. \u201C\uC5B4\uB978 \uD45C \uB9DE\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "museum-04",
+        at: "16:37",
+        who: "rabbit",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uD45C", "\uBB34\uB8CC"], ["\uB098\uC774", "72\uC0B4"]]),
+        items: [],
+        line: "\uD560\uBA38\uB2C8\uB294 \uBB34\uB8CC\uC9C0\uC694?",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "doc",
+        evidence: ["fee"],
+        why: "65\uC0B4 \uC774\uC0C1\uC740 \uBB34\uB8CC\uC608\uC694. \uD560\uBA38\uB2C8\uB294 72\uC0B4\uC774\uC5D0\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC80A\uC744 \uB54C \uBC14\uB2E4\uB97C \uB9CE\uC774 \uBD24\uC5B4\uC694.",
+        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uC548\uB0B4\uBB38\uC744 \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C65\uC0B4 \uC774\uC0C1\uC740 \uBB34\uB8CC\uB77C\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.\u201D"
+      },
+      {
+        id: "museum-05",
+        at: "16:43",
+        who: "otter",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uD45C", "\uBB34\uB8CC"], ["\uB098\uC774", "62\uC0B4"]]),
+        items: [],
+        line: "\uC800\uB3C4 \uD560\uC544\uBC84\uC9C0\uC778\uB370, \uBB34\uB8CC\uC9C0\uC694?",
+        answer: "fee",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["fee"],
+        why: "\uBB34\uB8CC\uB294 65\uC0B4 \uC774\uC0C1\uC774\uC5D0\uC694. \uB2EC\uC218 \uD560\uC544\uBC84\uC9C0\uB294 62\uC0B4\uC774\uC5D0\uC694.",
+        reply: "\uD5C8\uD5C8, 3\uB144\uB9CC \uB354 \uAE30\uB2E4\uB9B4\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uB9E4\uD45C\uC18C \uC9C1\uC6D0\uC774 \u201C\uD560\uC544\uBC84\uC9C0, \uD45C\uB97C \uC0AC\uC154\uC57C \uD574\uC694!\u201D \uD558\uACE0 \uB530\uB77C\uC654\uC5B4\uC694."
+      },
+      {
+        id: "museum-06",
+        at: "16:48",
+        who: "hedgehog",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uACE0\uB3C4\uCE58"], ["\uD45C", "\uC5B4\uB9B0\uC774"], ["\uB098\uC774", "9\uC0B4"]]),
+        items: [],
+        line: "\uC5C4\uB9C8\uAC00 \uD45C\uB97C \uC0AC \uC92C\uC5B4\uC694!",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "doc",
+        evidence: ["fee"],
+        why: "\uB3C4\uCE58\uB294 9\uC0B4\uC774\uB77C \uC5B4\uB9B0\uC774 \uD45C\uB97C \uC4F8 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694! \uD070 \uACE0\uB798 \uADF8\uB9BC\uBD80\uD130 \uBCFC\uB798\uC694.",
+        oops: "\uB3C4\uCE58\uAC00 \uD45C\uB97C \uAF2D \uC950\uC5C8\uC5B4\uC694. \u201C\uC800\uB294 \uC544\uD649 \uC0B4\uC778\uB370\uC694?\u201D"
+      },
+      {
+        id: "museum-07",
+        at: "16:55",
+        who: "raccoon",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uB098\uAD6C\uB9AC"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "45\uC0B4"]]),
+        items: ["camera", "phone"],
+        line: "\uCE74\uBA54\uB77C\uB294 \uAC00\uBC29\uC5D0 \uB123\uC744\uAC8C\uC694. \uC548 \uCC0D\uC73C\uBA74 \uB418\uC9C0\uC694?",
+        answer: "camera",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "items",
+        evidence: ["camera"],
+        why: "\uCC0D\uC9C0 \uC54A\uC544\uB3C4 \uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uC54C\uACA0\uC5B4\uC694. \uBCF4\uAD00\uD568\uC5D0 \uB123\uACE0 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uAD6C\uB9AC \uC528\uAC00 \uADF8\uB9BC \uC55E\uC5D0\uC11C \uAC00\uBC29 \uC18D \uCE74\uBA54\uB77C\uB97C \uC2AC\uCA4D \uAEBC\uB0C8\uC5B4\uC694."
+      },
+      {
+        id: "museum-08",
+        at: "17:04",
+        who: "bear",
+        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "21\uC0B4"]]),
+        items: ["phone"],
+        line: "\uC804\uC2DC\uB97C \uBCF4\uB7EC \uC654\uC5B4\uC694. \uC544\uC9C1 \uAD1C\uCC2E\uC9C0\uC694?",
+        answer: "time",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "clock",
+        evidence: ["time"],
+        why: "\uC9C0\uAE08\uC740 5\uC2DC 4\uBD84\uC774\uC5D0\uC694. \uC785\uC7A5\uC740 5\uC2DC\uAE4C\uC9C0\uB9CC \uD560 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uC544\uC26C\uC6CC\uC694. \uB0B4\uC77C\uC740 \uC77C\uCC0D \uC62C\uAC8C\uC694.",
+        oops: "\uBCF4\uB9AC \uC528\uAC00 \uB4E4\uC5B4\uAC00\uC790\uB9C8\uC790 \uC9C1\uC6D0\uC774 \uBD88\uB7EC \uC138\uC6E0\uC5B4\uC694. \u201C\uC785\uC7A5 \uC2DC\uAC04\uC774 \uC9C0\uB0AC\uC5B4\uC694!\u201D"
+      }
+    ]
+  },
+  {
+    id: "concert",
+    day: 4,
+    name: "\uB178\uC744 \uACF5\uC6D0 \uC74C\uC545\uD68C",
+    scene: "concert",
+    band: "butter",
+    date: "8\uC6D4 10\uC77C \uC77C\uC694\uC77C",
+    briefing: "\uC5B4\uC81C \uBE44\uAC00 \uC640\uC11C \uC74C\uC545\uD68C\uAC00 \uD558\uB8E8 \uBBF8\uB904\uC84C\uC5B4\uC694. \uADFC\uBB34 \uC911\uC5D0 \uC0C8 \uC54C\uB9BC\uC774 \uC62C \uC218\uB3C4 \uC788\uC73C\uB2C8 \uAF2D \uC77D\uC5B4\uC694.",
+    notice: {
+      kind: "\uACF5\uC5F0 \uC548\uB0B4",
+      title: "\uB178\uC744 \uACF5\uC6D0 \uC5EC\uB984 \uC74C\uC545\uD68C",
+      rules: [
+        R("date", "\uBE44 \uB54C\uBB38\uC5D0 \uC74C\uC545\uD68C\uAC00 8\uC6D4 10\uC77C(\uC77C)\uB85C \uBC14\uB00C\uC5C8\uC2B5\uB2C8\uB2E4. 8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uB0A0\uC9DC"),
+        R("chair", "\uB3D7\uC790\uB9AC\uB294 \uAC00\uC9C0\uACE0 \uC640\uB3C4 \uB429\uB2C8\uB2E4. \uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uC758\uC790"),
+        R("kid", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC640\uC57C \uD569\uB2C8\uB2E4.", "ko.reading.condition", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774")
+      ]
+    },
+    memo: {
+      at: "18:25",
+      rule: R("food", "\uC9C0\uAE08\uBD80\uD130 \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uC74C\uC2DD(\uC54C\uB9BC)"),
+      title: "6\uC2DC 25\uBD84 \uC54C\uB9BC",
+      from: "\uACF5\uC6D0 \uAD00\uB9AC\uC2E4"
+    },
+    cases: [
+      {
+        id: "concert-01",
+        at: "18:03",
+        who: "sheep",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC591\uC19C\uC774"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["picnic-mat"],
+        line: "\uC5B4\uC81C \uBE44\uAC00 \uC640\uC11C \uC624\uB298 \uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["date"],
+        why: "\uC74C\uC545\uD68C\uAC00 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uACE0, 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694! \uC55E\uC790\uB9AC\uC5D0 \uB3D7\uC790\uB9AC\uB97C \uD3BC\uAC8C\uC694.",
+        oops: "\uC19C\uC774 \uC528\uAC00 \uC548\uB0B4\uBB38\uC744 \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.\u201D"
+      },
+      {
+        id: "concert-10",
+        at: "18:05",
+        who: "deer",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["picnic-mat"],
+        line: "\uD45C\uC5D0\uB294 9\uC77C\uC774\uB77C\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694. 10\uC77C\uB85C \uBC14\uB010 \uC74C\uC545\uD68C\uC5D0\uB3C4 \uC4F8 \uC218 \uC788\uC9C0\uC694?",
+        answer: "pass",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["date"],
+        why: "\uC74C\uC545\uD68C \uB0A0\uC9DC\uB294 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uC9C0\uB9CC \uC548\uB0B4\uBB38\uC5D0\uC11C 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uB2E4\uACE0 \uD588\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uD45C\uB97C \uBC14\uAFC0 \uD544\uC694\uAC00 \uC5C6\uB124\uC694.",
+        oops: "\uB098\uB798 \uC528\uAC00 \uC548\uB0B4\uBB38\uC758 \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB97C \uC9DA\uC5C8\uC5B4\uC694."
+      },
+      {
+        id: "concert-02",
+        at: "18:08",
+        who: "fox",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["chair"],
+        line: "\uC758\uC790\uC5D0 \uC549\uC544\uC11C \uBCF4\uACE0 \uC2F6\uC5B4\uC694.",
+        answer: "chair",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["chair"],
+        why: "\uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC5B4\uC694. \uB3D7\uC790\uB9AC\uB294 \uAD1C\uCC2E\uC544\uC694.",
+        reply: "\uADF8\uB7FC \uC758\uC790\uB294 \uCC28\uC5D0 \uB450\uACE0 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uC6B0\uC9C4 \uC528 \uC758\uC790 \uB54C\uBB38\uC5D0 \uB4B7\uC0AC\uB78C\uC774 \uBB34\uB300\uB97C \uBABB \uBD24\uC5B4\uC694."
+      },
+      {
+        id: "concert-11",
+        at: "18:10",
+        who: "panda",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC774\uB2E8\uBE44"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["chair"],
+        line: "\uC758\uC790\uB97C \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694. \uACF5\uC5F0\uC744 \uBCF4\uACE0 \uC2F6\uC5B4\uC694.",
+        answer: "chair",
+        skill: "ko.reading.negation",
+        difficulty: 1,
+        look: "items",
+        evidence: ["chair"],
+        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uB2E8\uBE44 \uC528 \uC9D0\uC5D0 \uC811\uC774\uC2DD \uC758\uC790\uAC00 \uC788\uC73C\uB2C8 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694. \uC74C\uC545\uD68C \uB0A0\uC9DC\uB294 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uC9C0\uB9CC \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 \uB0A0\uC9DC\uB294 \uBB38\uC81C\uAC00 \uC544\uB2C8\uC5D0\uC694.",
+        reply: "\uC758\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uB3D7\uC790\uB9AC\uB97C \uAC00\uC838\uC62C\uAC8C\uC694.",
+        oops: "\uB2E8\uBE44 \uC528\uAC00 \uB4E4\uACE0 \uC628 \uC758\uC790 \uB54C\uBB38\uC5D0 \uB4B7\uC0AC\uB78C\uC774 \uBB34\uB300\uB97C \uBABB \uBD24\uC5B4\uC694."
+      },
+      {
+        id: "concert-03",
+        at: "18:13",
+        who: "penguin",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uB0A0\uC9DC", "8\uC6D4 16\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: [],
+        line: "\uC624\uB298 \uC74C\uC545\uD68C \uB9DE\uC9C0\uC694?",
+        answer: "date",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["date"],
+        why: "\uCF69\uC774 \uC528 \uD45C\uB294 8\uC6D4 16\uC77C \uD45C\uC608\uC694. \uC624\uB298 \uC74C\uC545\uD68C\uB294 8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC640\uC694.",
+        reply: "\uC557, \uB2E4\uC74C \uC8FC \uD45C\uC600\uB124\uC694! \uB2E4\uC74C \uC8FC\uC5D0 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uCF69\uC774 \uC528\uAC00 \uC549\uC740 \uC790\uB9AC\uC5D0 \uC9C4\uC9DC \uC8FC\uC778\uC774 \uB098\uD0C0\uB0AC\uC5B4\uC694."
+      },
+      {
+        id: "concert-12",
+        at: "18:16",
+        who: "rabbit",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uB0A0\uC9DC", "8\uC6D4 2\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["picnic-mat"],
+        line: "\uD1A0\uC694\uC77C \uC74C\uC545\uD68C \uD45C\uC608\uC694. \uB4E4\uC5B4\uAC00\uB3C4 \uB3FC\uC694?",
+        answer: "date",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["date"],
+        why: "\uD1A0\uC21C \uC528 \uD45C\uC758 \uB0A0\uC9DC\uB294 8\uC6D4 2\uC77C\uC774\uC5D0\uC694. \uC548\uB0B4\uBB38\uC5D0 \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 8\uC6D4 2\uC77C \uD45C\uB85C\uB294 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694. \uAC19\uC740 \uD1A0\uC694\uC77C\uC774\uC5B4\uB3C4 \uB0A0\uC9DC\uAC00 \uB2EC\uB77C\uC694. \uC9D0\uC740 \uB3D7\uC790\uB9AC\uB77C\uC11C \uAD1C\uCC2E\uC9C0\uB9CC \uD45C \uB0A0\uC9DC \uB54C\uBB38\uC5D0 \uB3CC\uB824\uBCF4\uB0B4\uC57C \uD574\uC694.",
+        reply: "\uC5B4\uBA38, \uC9C0\uB09C\uC8FC \uD45C\uB97C \uAC00\uC9C0\uACE0 \uC654\uB124\uC694. \uC9D1\uC5D0 \uAC00\uC11C 9\uC77C \uD45C\uB97C \uCC3E\uC544\uBCFC\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, 9\uC77C \uD45C\uB97C \uAC00\uC9C4 \uC190\uB2D8\uC774 \uC640\uC11C \uD1A0\uC21C \uC528\uAC00 \uC549\uC740 \uC790\uB9AC\uB97C \uCC3E\uC558\uC5B4\uC694."
+      },
+      {
+        id: "concert-04",
+        at: "18:19",
+        who: "bear",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["snack", "picnic-mat"],
+        line: "\uACFC\uC790 \uBA39\uC73C\uBA74\uC11C \uB4E4\uC744 \uAC70\uC608\uC694.",
+        answer: "pass",
+        skill: "ko.reading.detail",
+        difficulty: 2,
+        look: "items",
+        evidence: ["chair"],
+        why: "\uB3D7\uC790\uB9AC\uB294 \uAC00\uC9C0\uACE0 \uC640\uB3C4 \uB3FC\uC694. \uC774\uB54C\uB294 \uC544\uC9C1 \uC74C\uC2DD \uC54C\uB9BC\uC774 \uC624\uAE30 \uC804\uC774\uC5D0\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694! \uCE5C\uAD6C\uB791 \uB098\uB220 \uBA39\uC744\uAC8C\uC694.",
+        oops: "\uBCF4\uB9AC \uC528\uAC00 \uC548\uB0B4\uBB38\uC744 \uB2E4\uC2DC \uC77D\uC5C8\uC5B4\uC694. \u201C\uACFC\uC790 \uC774\uC57C\uAE30\uB294 \uC5C6\uB294\uB370\uC694?\u201D"
+      },
+      {
+        id: "concert-05",
+        at: "18:28",
+        who: "raccoon",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB098\uAD6C\uB9AC"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["gimbap", "picnic-mat"],
+        line: "\uAE40\uBC25 \uB3C4\uC2DC\uB77D\uC744 \uC2F8 \uC654\uC5B4\uC694.",
+        answer: "food",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "6\uC2DC 25\uBD84\uC5D0 \uC628 \uC54C\uB9BC\uBD80\uD130\uB294 \uC74C\uC2DD\uC744 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uC544\uC774\uACE0, \uADF8\uB7FC \uC5EC\uAE30\uC11C \uB2E4 \uBA39\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uBC29\uC1A1\uC774 \uB098\uC654\uC5B4\uC694. \u201C\uAE40\uBC25\uC744 \uB4DC\uC2DC\uB294 \uC190\uB2D8, \uAD00\uB9AC\uC2E4\uB85C \uC640 \uC8FC\uC138\uC694.\u201D"
+      },
+      {
+        id: "concert-13",
+        at: "18:30",
+        who: "fox",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["snack", "picnic-mat"],
+        line: "\uC0C8 \uC54C\uB9BC\uC774 \uC654\uB124\uC694. \uACFC\uC790\uB97C \uAC00\uC838\uC654\uB294\uB370 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC00\uB3C4 \uB3FC\uC694?",
+        answer: "food",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uC9C0\uAE08\uBD80\uD130 \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC6B0\uC9C4 \uC528 \uC9D0\uC5D0 \uC788\uB294 \uACFC\uC790\uB3C4 \uC74C\uC2DD\uC774\uB77C \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694. \uB0A0\uC9DC\uB294 \uBC14\uB00C\uC5C8\uC9C0\uB9CC \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uC11C \uBB38\uC81C\uAC00 \uC544\uB2C8\uC5D0\uC694.",
+        reply: "\uC544, \uADF8\uB807\uAD70\uC694. \uACFC\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        oops: "\uC6B0\uC9C4 \uC528\uAC00 \uACFC\uC790\uB97C \uB4E4\uACE0 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uC9C1\uC6D0\uC774 \uBCF4\uC5EC \uC900 \uC54C\uB9BC\uC744 \uC77D\uACE0 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
+      },
+      {
+        id: "concert-06",
+        at: "18:33",
+        who: "rabbit",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["water-bottle", "picnic-mat"],
+        line: "\uBB3C \uD55C \uBCD1\uB9CC \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "items",
+        evidence: ["food"],
+        why: "\uC74C\uC2DD\uC740 \uC548 \uB418\uC9C0\uB9CC \uBB3C\uC740 \uAD1C\uCC2E\uC544\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uB178\uB798\uB97C \uB4E4\uC73C\uBA74 \uC80A\uC5B4\uC9C0\uB294 \uAC83 \uAC19\uC544\uC694.",
+        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uC54C\uB9BC\uC744 \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C\uBB3C\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.\u201D"
+      },
+      {
+        id: "concert-07",
+        at: "18:38",
+        who: "squirrel",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB3C4\uB2E4\uBBF8"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB9B0\uC774 \xB7 6\uC0B4"]]),
+        items: [],
+        line: "\uC5B8\uB2C8\uB294 \uB2E4\uC74C \uBC84\uC2A4\uB85C \uC640\uC694. \uBA3C\uC800 \uB4E4\uC5B4\uAC08\uAC8C\uC694!",
+        answer: "kid",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["kid"],
+        why: "\uB2E4\uBBF8\uB294 6\uC0B4\uC774\uC5D0\uC694. 7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC640\uC57C \uD574\uC694.",
+        reply: "\uB124, \uC5B8\uB2C8 \uC624\uBA74 \uAC19\uC774 \uB4E4\uC5B4\uAC08\uAC8C\uC694!",
+        oops: "\uB2E4\uBBF8\uAC00 \uD63C\uC790 \uC0AC\uB78C\uB4E4 \uC0AC\uC774\uB85C \uB4E4\uC5B4\uAC00\uC11C \uC5B8\uB2C8\uAC00 \uD55C\uCC38 \uCC3E\uC558\uC5B4\uC694."
+      },
+      {
+        id: "concert-14",
+        at: "18:41",
+        who: "ducks",
+        followupOnly: true,
+        textOnly: true,
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC624\uC21C \uC678 1\uBA85"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978 1\uBA85 \xB7 \uC5B4\uB9B0\uC774 1\uBA85(7\uC0B4)"]]),
+        items: ["picnic-mat", "water-bottle"],
+        line: "\uC544\uC774\uB294 \uC77C\uACF1 \uC0B4\uC774\uACE0 \uC800\uB294 \uC5C4\uB9C8\uC608\uC694. \uD568\uAED8 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 2,
+        look: "doc",
+        evidence: ["kid"],
+        why: "\uC74C\uC545\uD68C\uB294 8\uC6D4 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uC9C0\uB9CC \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC9D0\uC740 \uB3D7\uC790\uB9AC\uC640 \uBB3C\uC774\uB77C\uC11C \uAD1C\uCC2E\uC544\uC694. 7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC640\uC57C \uD558\uB294\uB370, 7\uC0B4 \uC544\uC774\uAC00 \uC5C4\uB9C8\uC640 \uD568\uAED8 \uC654\uC73C\uB2C8 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC544\uC774 \uC190\uC744 \uC7A1\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
+        oops: "\uC624\uC21C \uC528\uAC00 \uC544\uC774 \uC190\uC744 \uB4E4\uC5B4 \uBCF4\uC600\uC5B4\uC694. \u201C\uC5C4\uB9C8\uB791 \uAC19\uC774 \uC654\uC5B4\uC694.\u201D"
+      },
+      {
+        id: "concert-08",
+        at: "18:44",
+        who: "ducks",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC624\uC21C \uC678 1\uBA85"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978 1\uBA85 \xB7 \uC5B4\uB9B0\uC774 1\uBA85(5\uC0B4)"]]),
+        items: ["picnic-mat"],
+        line: "\uC544\uC774\uB791 \uB3D7\uC790\uB9AC\uC5D0 \uC549\uC544\uC11C \uBCFC\uAC8C\uC694.",
+        answer: "pass",
+        skill: "ko.reading.condition",
+        difficulty: 1,
+        look: "doc",
+        evidence: ["kid"],
+        why: "5\uC0B4 \uC544\uC774\uAC00 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC654\uC5B4\uC694. \uB3D7\uC790\uB9AC\uB3C4 \uAD1C\uCC2E\uC544\uC694.",
+        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC544\uC774\uAC00 \uB178\uB798\uB97C \uC88B\uC544\uD574\uC694.",
+        oops: "\uC544\uAE30 \uC624\uB9AC\uAC00 \uC5C4\uB9C8 \uB0A0\uAC1C\uB97C \uAF2D \uC7A1\uC558\uC5B4\uC694. \u201C\uC5C4\uB9C8\uB791 \uAC19\uC774 \uC654\uC5B4\uC694!\u201D"
+      },
+      {
+        id: "concert-09",
+        at: "18:50",
+        who: "otter",
+        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
+        items: ["chair"],
+        line: "\uC544\uC8FC \uC791\uC740 \uC758\uC790\uC608\uC694. \uAD1C\uCC2E\uC9C0\uC694?",
+        answer: "chair",
+        skill: "ko.reading.negation",
+        difficulty: 2,
+        look: "items",
+        evidence: ["chair"],
+        why: "\uC791\uC544\uB3C4 \uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC5B4\uC694.",
+        reply: "\uD5C8\uD5C8, \uADF8\uB7FC \uB3D7\uC790\uB9AC\uB97C \uBE4C\uB824 \uC62C\uAC8C\uC694.",
+        oops: "\uC7A0\uC2DC \uB4A4, \uD560\uC544\uBC84\uC9C0 \uC758\uC790\uAC00 \uB2E4\uB978 \uC190\uB2D8\uB4E4\uC758 \uAE38\uC744 \uB9C9\uC558\uC5B4\uC694."
+      }
+    ]
+  }
+];
+
+// experiences/entry-check/learning.mjs
+var GAME_ID2 = "entry-check";
+var FORMAT2 = "single-choice";
+var RULE_GRAMMAR = Object.freeze({
+  "pool.cap": ["G403"],
+  "pool.food": ["G402"],
+  "pool.kid": ["G212", "G403"],
+  "library.card": ["G402"],
+  "library.food": ["G402", "G401"],
+  "library.time": ["G212", "S104", "G402"],
+  "museum.time": ["G212", "S105", "S107", "G402"],
+  "museum.camera": ["G402"],
+  "museum.fee": ["G212", "S107", "G402"],
+  "concert.date": ["G212", "G402"],
+  "concert.chair": ["G505", "G402"],
+  "concert.kid": ["G212", "G403"],
+  "concert.food": ["S104", "G402"]
+});
+var CASE_GRAMMAR = new Map(VENUES.flatMap((v) => v.cases.map((c) => [c.id, [...new Set(c.evidence.flatMap((r) => RULE_GRAMMAR[`${v.id}.${r}`] || []))]])));
+var ITEM_VERSION3 = Object.freeze({ "concert-12": 3, "pool-14": 2 });
+var LANGUAGE_DIFFICULTY = 2;
+function caseMetadata(c) {
+  const family = `${GAME_ID2}.${c.id}.v1`, key = `${GAME_ID2}.${c.id}.v${ITEM_VERSION3[c.id] || 1}`;
+  return {
+    id: `${GAME_ID2}.${c.id}`,
+    itemKey: key,
+    familyKey: family,
+    skillId: c.skill,
+    difficulty: LANGUAGE_DIFFICULTY,
+    modality: "reading",
+    responseFormat: FORMAT2,
+    audioRequired: false,
+    confounded: false,
+    conceptIds: [...CASE_GRAMMAR.get(c.id) || []]
+  };
+}
+var RETURN_PATTERNS4 = Object.freeze({
+  detail: { skillId: "ko.reading.detail", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uD45C\uB098 \uC9D0\uC758 \uC138\uBD80 \uB0B4\uC6A9\uC744 \uC548\uB0B4\uBB38\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
+  negation: { skillId: "ko.reading.negation", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uBD80\uC815 \uD45C\uD604\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
+  condition: { skillId: "ko.reading.condition", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uC870\uAC74\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." }
+});
+var ALL_CASES = VENUES.flatMap((v) => v.cases.map((c) => ({ venue: v, c })));
+var CASE_OF_FAMILY = new Map(ALL_CASES.map(({ c }) => [caseMetadata(c).familyKey, c]));
+
+// experiences/entry-check/core.mjs
+var minutes = (t3) => {
+  const [h, m] = String(t3).split(":").map(Number);
+  return h * 60 + m;
+};
+function koreanTime(t3) {
+  const [h, m] = String(t3).split(":").map(Number);
+  const half = h < 12 ? "\uC624\uC804" : "\uC624\uD6C4";
+  const hour = h % 12 || 12;
+  return `${half} ${hour}\uC2DC${m ? ` ${m}\uBD84` : ""}`;
+}
+var memoActive = (venue, at) => !!venue.memo && minutes(at) >= minutes(venue.memo.at);
+function activeRules(venue, at) {
+  return memoActive(venue, at) ? [...venue.notice.rules, venue.memo.rule] : [...venue.notice.rules];
+}
+var choicesFor = (venue, at) => ["pass", ...activeRules(venue, at).map((r) => r.id)];
+
+// experiences/synk-world-app/world-missed-spot.mjs
+var MISSED_SPOT_POLICY = Object.freeze({
+  version: "world-missed-spot-1",
+  // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
+  sittingGapMs: 30 * 6e4,
+  // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
+  narrowMin: 2,
+  practiceGame: "world-practice"
+});
+var msRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var MS_OPTION = /^(pass|reject-[a-z]+)$/;
+var MS_ENTRY = /* @__PURE__ */ new Map();
+for (const venue of VENUES) for (const item of venue.cases) {
+  const meta = caseMetadata(item), row = { venue, item, meta };
+  MS_ENTRY.set(meta.itemKey, row);
+  MS_ENTRY.set(meta.familyKey, row);
+}
+var missedEntryOf = (key) => MS_ENTRY.get(key) || null;
+function missedEntryRule(venue, item) {
+  const id = item.answer !== "pass" ? item.answer : item.evidence?.[0];
+  const rule = id ? activeRules(venue, item.at).find((row) => row.id === id) : null;
+  return rule ? { ruleId: rule.id, text: rule.text } : null;
+}
+function missDirection(choice) {
+  if (!msRecord(choice) || !MS_OPTION.test(choice.selectedId || "") || !MS_OPTION.test(choice.correctId || "") || choice.selectedId === choice.correctId) return null;
+  if (choice.selectedId === "pass") return "let-in";
+  if (choice.correctId === "pass") return "turned-away";
+  return "wrong-rule";
+}
+function msIndex(events) {
+  const list = Array.isArray(events) ? events : [], shown = /* @__PURE__ */ new Map(), first = /* @__PURE__ */ new Map(), attempt = /* @__PURE__ */ new Map(), experience = /* @__PURE__ */ new Map(), order2 = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
+  list.forEach((event, at) => {
+    if (!msRecord(event)) return;
+    order2.set(event.id, at);
+    if (event.type === "decision.made") experience.set(event.id, event.experienceId);
+    else if (event.type === "practice.presented") shown.set(event.id, event);
+    else if (event.type === "msRecord.excluded" && event.targetId) excluded.add(event.targetId);
+    else if (event.type === "practice.attempted") {
+      attempt.set(event.id, event);
+      if (event.attemptNo === 1 && !first.has(event.presentationId)) first.set(event.presentationId, event);
+    }
+  });
+  const ordered = [...shown.values()].sort((a, b) => order2.get(a.id) - order2.get(b.id)), firstSight = /* @__PURE__ */ new Map();
+  for (const presentation of ordered) for (const key of [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean)) if (!firstSight.has(key)) firstSight.set(key, presentation.id);
+  return {
+    shown,
+    first,
+    attempt,
+    excluded,
+    order: order2,
+    ordered,
+    expOf: (presentation) => experience.get(presentation?.decisionId) ?? null,
+    // 그 문항(또는 계열)을 이 제시보다 먼저 본 적이 없나 — 처음 보는 손님이었는지.
+    fresh: (presentation) => [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean).every((key) => firstSight.get(key) === presentation.id)
+  };
+}
+function msSittings(ix, policy) {
+  const rows2 = [];
+  let sitting = -1, prev = null;
+  for (const presentation of ix.ordered) {
+    if (ix.expOf(presentation) !== GAME_ID2) continue;
+    const entry = missedEntryOf(presentation.itemKey);
+    if (!entry) continue;
+    const at = Date.parse(presentation.at);
+    if (!prev || prev.entry.venue.id !== entry.venue.id || minutes(entry.item.at) <= minutes(prev.entry.item.at) || !Number.isFinite(at) || !Number.isFinite(prev.at) || at - prev.at > policy.sittingGapMs) sitting += 1;
+    const row = { presentation, entry, at, sitting, attempt: ix.first.get(presentation.id) || null };
+    rows2.push(row);
+    prev = row;
+  }
+  return rows2;
+}
+function msCoreEvidence(summary, skillId) {
+  const skill2 = (Array.isArray(summary?.skills) ? summary.skills : []).find((row) => row?.id === skillId), ids = /* @__PURE__ */ new Set();
+  if (!skill2) return ids;
+  for (const level of Object.values(msRecord(skill2.levels) ? skill2.levels : {})) for (const cell of Object.values(msRecord(level?.formats) ? level.formats : {})) for (const id of cell?.evidence || []) ids.add(id);
+  if (skill2.status !== "supported") for (const id of [...skill2.evidence || [], ...skill2.reasonEvidence || []]) ids.add(id);
+  return ids;
+}
+function msMajority(rows2, keyOf, { of, min }) {
+  const groups = /* @__PURE__ */ new Map();
+  rows2.forEach((row, rank) => {
+    const key = keyOf(row);
+    if (key == null) return;
+    const hit = groups.get(key) || { key, rows: [], rank, items: /* @__PURE__ */ new Set() };
+    hit.rows.push(row);
+    hit.items.add(row.itemKey);
+    groups.set(key, hit);
+  });
+  const top = [...groups.values()].sort((a, b) => b.rows.length - a.rows.length || a.rank - b.rank)[0];
+  return top && top.items.size >= min && top.rows.length * 2 > of ? top : null;
+}
+function msSpotStep({ missed, rows: rows2, skillId, independent }) {
+  const at = new Map(rows2.map((row, position) => [row.presentation.id, position])), guests = /* @__PURE__ */ new Map();
+  for (const presentationId of missed) {
+    let position = at.get(presentationId);
+    if (position == null) continue;
+    let source = rows2[position];
+    while (position + 1 < rows2.length) {
+      const next = rows2[position + 1];
+      if (next.sitting !== source.sitting || next.entry.meta.skillId !== skillId || !next.attempt) break;
+      if (!guests.has(next.presentation.id)) guests.set(next.presentation.id, { row: next, sameRule: [...next.entry.item.evidence].sort().join("|") === [...source.entry.item.evidence].sort().join("|") });
+      if (next.attempt.verdict !== "incorrect") break;
+      position += 1;
+      source = next;
+    }
+  }
+  if (!guests.size) return null;
+  const list = [...guests.values()];
+  return {
+    step: "spot",
+    state: "done",
+    guests: list.length,
+    right: list.filter(({ row }) => row.attempt.verdict === "correct" && independent.has(row.attempt.id)).length,
+    sameRule: list.every((row) => row.sameRule),
+    at: list.at(-1).row.attempt.at,
+    eventIds: list.map(({ row }) => row.attempt.id)
+  };
+}
+function msLaterStep({ rows: rows2, missedSittings, skillId, independent, ix }) {
+  if (!rows2.length || !missedSittings.length) return null;
+  const last = Math.max(...missedSittings);
+  const guest = rows2.find((row) => row.sitting > last && row.entry.meta.skillId === skillId && !row.entry.item.followupOnly && row.attempt && ix.fresh(row.presentation));
+  if (guest) {
+    const verdict2 = guest.attempt.verdict, alone = independent.has(guest.attempt.id);
+    return {
+      step: "again",
+      state: "done",
+      result: verdict2 === "correct" ? alone ? "correct" : "assisted" : verdict2 === "incorrect" ? "incorrect" : "other",
+      answer: guest.entry.item.answer === "pass" ? "pass" : "reject",
+      at: guest.attempt.at,
+      eventIds: [guest.attempt.id]
+    };
+  }
+  const seen = /* @__PURE__ */ new Set();
+  for (const presentation of ix.shown.values()) {
+    seen.add(presentation.itemKey);
+    if (presentation.measure?.familyKey) seen.add(presentation.measure.familyKey);
+  }
+  const left = VENUES.reduce((n, venue) => n + venue.cases.filter((item) => {
+    const meta = caseMetadata(item);
+    return !item.followupOnly && item.skill === skillId && !seen.has(meta.itemKey) && !seen.has(meta.familyKey);
+  }).length, 0);
+  return left ? { step: "again", state: "planned", left } : null;
+}
+function msPracticeStep({ skillId, since, ix, independent, homework, policy }) {
+  const done = [];
+  for (const [presentationId, attempt] of ix.first) {
+    const presentation = ix.shown.get(presentationId);
+    if (ix.expOf(presentation) !== policy.practiceGame || presentation?.measure?.skillId !== skillId || !independent.has(attempt.id) || ix.excluded.has(attempt.id)) continue;
+    if (Date.parse(attempt.at) > since && ["correct", "incorrect"].includes(attempt.verdict)) done.push(attempt);
+  }
+  if (done.length) return { step: "practice", state: "done", n: done.length, right: done.filter((row2) => row2.verdict === "correct").length, at: done.map((row2) => row2.at).sort().at(-1), eventIds: done.map((row2) => row2.id) };
+  const row = (Array.isArray(homework) ? homework : []).find((value) => value?.skillId === skillId);
+  return row && !row.shortage ? { step: "homework", state: "planned" } : null;
+}
+function msDelayedStep({ skillId, projection, practiceOpen, now }) {
+  const all = (Array.isArray(projection?.items) ? projection.items : []).filter((row) => row?.gameId === "world-practice" && row.measure?.skillId === skillId && ["d1", "d7", "d30"].includes(row.window));
+  const latest = all.map((row) => row.sourceAt).filter((value) => Number.isFinite(Date.parse(value))).sort().at(-1);
+  const rows2 = latest ? all.filter((row) => row.sourceAt === latest) : all;
+  if (rows2.length) {
+    const due = rows2.find((row) => row.status === "due"), observed = rows2.filter((row) => row.status === "observed").length;
+    const upcoming = rows2.filter((row) => row.status === "not_due" && Number.isFinite(Date.parse(row.dueAt)) && Date.parse(row.dueAt) >= now).sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt))[0];
+    return { step: "delayed", state: observed ? "done" : "planned", observed, due: !!due, window: (due || upcoming)?.window ?? null, dueAt: upcoming?.dueAt ?? null };
+  }
+  return practiceOpen ? { step: "delayed", state: "planned", observed: 0, due: false, window: null, dueAt: null } : null;
+}
+function buildMissedSpot({ map, summary = null, events = [], homework = null, projection = null, practiceOpen = () => false, now = Date.now(), policy = MISSED_SPOT_POLICY } = {}) {
+  if (!msRecord(map) || !Array.isArray(map.skills) || map.evidenceComplete !== true) return null;
+  const skills = new Map(map.skills.map((skill3) => [skill3.id, skill3]));
+  let skill2 = null, missed = [];
+  for (const id of Array.isArray(map.attention) ? map.attention : []) {
+    const row = skills.get(id), misses = (row?.evidence || []).filter((value) => value.verdict === "incorrect" && value.independent);
+    if (misses.length) {
+      skill2 = row;
+      missed = misses;
+      break;
+    }
+  }
+  if (!skill2) return null;
+  const ix = msIndex(events), independent = msCoreEvidence(summary, skill2.id);
+  for (const row of skill2.evidence) if (row.independent) independent.add(row.eventId);
+  const guests = !skill2.folded && skill2.evidence.length > 0 && skill2.evidence.every((row) => missedEntryOf(row.itemKey));
+  const narrow = [{ layer: "skill", skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status, count: skill2.incorrect, of: skill2.n, unit: guests ? "guest" : "try" }];
+  const of = missed.length, detail = missed.map((row) => ({ ...row, entry: missedEntryOf(row.itemKey), choice: ix.attempt.get(row.eventId)?.choice }));
+  const line = msMajority(detail, (row) => row.entry ? missedEntryRule(row.entry.venue, row.entry.item)?.text ?? null : null, { of, min: policy.narrowMin });
+  if (line) {
+    const top = line.rows[0], rule = missedEntryRule(top.entry.venue, top.entry.item);
+    narrow.push({ layer: "line", venueId: top.entry.venue.id, venue: top.entry.venue.name, ruleId: rule.ruleId, text: rule.text, count: line.rows.length, of });
+  }
+  const way = msMajority(detail, (row) => row.entry ? missDirection(row.choice) : null, { of, min: policy.narrowMin });
+  if (way) narrow.push({ layer: "direction", direction: way.key, count: way.rows.length, of });
+  const rows2 = msSittings(ix, policy), inGame = detail.filter((row) => row.experienceId === GAME_ID2).map((row) => ix.attempt.get(row.eventId)?.presentationId).filter(Boolean);
+  const missedSittings = rows2.filter((row) => inGame.includes(row.presentation.id)).map((row) => row.sitting);
+  const firstMiss = Math.min(...missed.map((row) => Date.parse(row.at)).filter(Number.isFinite));
+  let open = false;
+  try {
+    open = practiceOpen(skill2.id) === true;
+  } catch {
+    open = false;
+  }
+  const again = [
+    msSpotStep({ missed: inGame, rows: rows2, skillId: skill2.id, independent }),
+    msLaterStep({ rows: rows2, missedSittings, skillId: skill2.id, independent, ix }),
+    msPracticeStep({ skillId: skill2.id, since: Number.isFinite(firstMiss) ? firstMiss : -Infinity, ix, independent, homework, policy }),
+    msDelayedStep({ skillId: skill2.id, projection, practiceOpen: open, now })
+  ].filter(Boolean);
+  return {
+    policy: policy.version,
+    kind: "topik",
+    target: { skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status },
+    narrow,
+    again,
+    evidence: missed.map((row) => row.eventId),
+    grade: null,
+    abilityClaim: false,
+    learningEffectClaim: false
+  };
+}
+var msEscape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var MS_STEPS = Object.freeze(["spot", "again", "practice", "homework", "delayed"]);
+function renderMissedSpot(card, { t: t3, has = () => true, formatDate: formatDate3 = null, practice = null } = {}) {
+  if (!card || card.kind !== "topik" || typeof t3 !== "function") return "";
+  const head = card.narrow.find((row) => row.layer === "skill");
+  if (!head) return "";
+  const day = (value) => {
+    const at = Date.parse(value);
+    if (!Number.isFinite(at)) return "";
+    return formatDate3 ? formatDate3(at, { month: "short", day: "numeric" }) : new Date(at + 9 * 36e5).toISOString().slice(5, 10);
+  };
+  const id = card.target.skillId, name = has(`position.skill.${id}`) ? t3(`position.skill.${id}`) : String(card.target.label || id);
+  const exam = t3(card.target.exam === "topik2" ? "goal.exam.type.topik2" : "goal.exam.type.topik1"), domain = t3(card.target.domain === "listening" ? "position.domain.listening" : "position.domain.reading");
+  const count = head.count === 1 && head.of === 1 ? t3("position.missed.count.once") : t3(head.unit === "guest" ? "position.missed.count.guest" : "position.missed.count.try", { n: head.of, wrong: head.count });
+  const share = (row) => t3(row.count === row.of ? "position.missed.share.all" : "position.missed.share.some", { n: row.count, of: row.of });
+  const stepText = (row) => {
+    if (row.step === "spot") {
+      const main = t3(row.sameRule ? "position.missed.spot.sameRule" : "position.missed.spot.sameKind", { n: row.guests });
+      return row.right ? `${main} \xB7 ${t3("position.missed.spot.right", { n: row.right })}` : main;
+    }
+    if (row.step === "again") {
+      if (row.state === "planned") return t3("position.missed.again.left", { n: row.left });
+      return t3(row.result === "correct" ? row.answer === "reject" ? "position.missed.again.reject" : "position.missed.again.correct" : row.result === "assisted" ? "position.missed.again.assisted" : row.result === "incorrect" ? "position.missed.again.incorrect" : "position.missed.again.other");
+    }
+    if (row.step === "practice") return t3("position.missed.practice.done", { n: row.n, right: row.right });
+    if (row.step === "homework") return t3("position.missed.homework.planned");
+    if (row.step === "delayed") return row.due ? t3("position.missed.delayed.due") : row.dueAt ? t3("position.missed.delayed.next", { date: day(row.dueAt) }) : row.observed ? t3("position.missed.delayed.observed", { n: row.observed }) : t3("position.missed.delayed.planned");
+    return "";
+  };
+  const stepName = (row) => t3(row.step === "spot" ? "position.missed.step.spot" : row.step === "again" ? "position.missed.step.again" : row.step === "practice" ? "position.missed.step.practice" : row.step === "homework" ? "position.missed.step.homework" : "position.missed.step.delayed");
+  const layers = card.narrow.filter((row) => row.layer === "line" || row.layer === "direction").map((row) => {
+    const body = row.layer === "line" ? `<span class="wmis-line" lang="ko">\u300C${msEscape(row.text)}\u300D</span>` : `<span>${msEscape(t3(row.direction === "let-in" ? "position.missed.direction.let-in" : row.direction === "turned-away" ? "position.missed.direction.turned-away" : "position.missed.direction.wrong-rule"))}</span>`;
+    return `<div data-layer="${row.layer}"><dt>${msEscape(t3(row.layer === "line" ? "position.missed.layer.line" : "position.missed.layer.direction"))}</dt><dd>${body}<small>${msEscape(share(row))}</small></dd></div>`;
+  }).join("");
+  const rows2 = card.again.filter((row) => MS_STEPS.includes(row.step));
+  const steps = rows2.map((row) => `<li data-step="${row.step}" data-state="${row.state === "done" ? "done" : "planned"}"><i class="wmis-dot" aria-hidden="true"></i><span class="wmis-step">${msEscape(stepName(row))}</span><span class="wmis-what">${msEscape(stepText(row))}</span></li>`).join("");
+  const states = new Set(rows2.map((row) => row.state === "done" ? "done" : "planned"));
+  const legend = steps ? `<p class="wmis-legend">${["done", "planned"].filter((state) => states.has(state)).map((state) => `<span data-state="${state}"><i class="wmis-dot" aria-hidden="true"></i>${msEscape(t3(state === "done" ? "position.missed.legend.done" : "position.missed.legend.planned"))}</span>`).join("")}</p>` : "";
+  let route = null;
+  try {
+    route = practice?.(id) || null;
+  } catch {
+    route = null;
+  }
+  const button = route ? `<button class="quiet-button wpos-practice" type="button" data-position-practice="${msEscape(id)}">${msEscape(route.route === "game" && route.gameId && has(`plan.game.${route.gameId}`) ? t3(`plan.game.${route.gameId}`) : t3("position.practice.start"))} <span aria-hidden="true">\u2192</span></button>` : "";
+  return `<section class="wpos-missed" data-position-missed="${msEscape(id)}" aria-labelledby="wpos-missed-title"><p class="life-section-label">MISSED SPOT</p><h3 id="wpos-missed-title">${msEscape(t3("position.missed.title"))}</h3><div class="wmis-head"><small class="wmis-exam">${msEscape(exam)} \xB7 ${msEscape(domain)}</small><strong class="wmis-skill">${msEscape(name)}</strong><span class="wmis-count"><i class="w-led alert" aria-hidden="true"></i>${msEscape(count)}</span></div>${layers ? `<dl class="wmis-narrow" aria-label="${msEscape(t3("position.missed.narrow"))}">${layers}</dl>` : ""}${steps ? `<p class="wmis-sub">${msEscape(t3("position.missed.again"))}</p><ol class="wmis-again">${steps}</ol>${legend}` : ""}${button}</section>`;
+}
+function placeMissedSpot(board, cardHtml, skillId = null) {
+  if (typeof board !== "string" || !cardHtml) return board;
+  let out = board;
+  if (skillId) {
+    const open = out.indexOf('<section class="wpos-attention" data-position-attention>');
+    if (open >= 0) {
+      const close = out.indexOf("</section>", open) + "</section>".length, section = out.slice(open, close);
+      const item = `<li data-skill="${msEscape(skillId)}">`, at2 = section.indexOf(item);
+      if (at2 >= 0) {
+        const end = section.indexOf("</li>", at2) + "</li>".length, trimmed = section.slice(0, at2) + section.slice(end);
+        out = out.slice(0, open) + (/<li data-skill="/.test(trimmed) ? trimmed : "") + out.slice(close);
+      }
+    }
+  }
+  const anchors = ['<section class="wpos-attention"', '<section class="wpos-diagnostic"', '<section class="wpos-group"'].map((mark) => out.indexOf(mark)).filter((at2) => at2 >= 0);
+  if (!anchors.length) return board;
+  const at = Math.min(...anchors);
+  return out.slice(0, at) + cardHtml + out.slice(at);
 }
 
 // experiences/synk-world-app/life-followups.mjs
@@ -24668,7 +25971,7 @@ function createWorldEducation({
       scope = getProgress().status().scoped ? "account" : "device";
     } catch {
     }
-    let missed = null;
+    let board = view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, practice: (id) => routes.get(id) || null });
     try {
       let projection = null;
       try {
@@ -24676,11 +25979,11 @@ function createWorldEducation({
       } catch {
         projection = null;
       }
-      missed = position.missedSpot?.({ map, summary, events, homework: current?.examPlan?.homework ?? null, projection, practiceOpen: (id) => routes.get(id)?.route === "practice", now: Date.now() }) || null;
+      const missed = buildMissedSpot({ map, summary, events, homework: current?.examPlan?.homework ?? null, projection, practiceOpen: (id) => routes.get(id)?.route === "practice", now: Date.now() });
+      if (missed) board = placeMissedSpot(board, renderMissedSpot(missed, { t: t2, has: hasString2, formatDate: formatDate2, practice: (id) => routes.get(id) || null }), missed.target.skillId);
     } catch {
-      missed = null;
     }
-    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, missed, practice: (id) => routes.get(id) || null }), PANEL);
+    home.showPanel(t2("position.title"), board, PANEL);
     const root = panelNode("[data-position-board]");
     if (root && position.followups) {
       void loadFollowupBank();
@@ -26111,8 +27414,8 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
   const part = () => parts[partIndex] || null;
   const deadline = (row) => row.startedAt === null ? null : row.startedAt + row.minutes * 6e4;
   const condition = (row, item) => presentCondition(item, { content: MOCK_POLICY.gameId, extra: { form: examId, composition: MOCK_POLICY.composition, section: row.section, minutes: row.minutes, timed: true } });
-  function show(row, index2) {
-    const cell = row.cells[index2];
+  function show(row, index) {
+    const cell = row.cells[index];
     if (!cell.pid) {
       cell.pid = coach.present(efMeasure(cell.item), condition(row, cell.item));
       cell.shownAt = clock2();
@@ -26125,7 +27428,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
   }
   const setRange = (row, cell) => {
     if (!cell.item.setId) return null;
-    const at = row.cells.map((entry, index2) => entry.item.setId === cell.item.setId ? index2 : -1).filter((index2) => index2 >= 0);
+    const at = row.cells.map((entry, index) => entry.item.setId === cell.item.setId ? index : -1).filter((index) => index >= 0);
     return at.length > 1 ? { first: at[0] + 1, last: at[at.length - 1] + 1 } : null;
   };
   function expire() {
@@ -26186,12 +27489,12 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
       return view();
     },
     // 같은 영역 안에서 다른 문항으로(번호). 처음 여는 문항은 그때 기록한다.
-    go(index2) {
+    go(index) {
       expire();
       const row = part();
-      if (!row || row.startedAt === null || row.ended !== null || !Number.isInteger(index2) || index2 < 0 || index2 >= row.cells.length) return view();
-      cursor = index2;
-      show(row, index2);
+      if (!row || row.startedAt === null || row.ended !== null || !Number.isInteger(index) || index < 0 || index >= row.cells.length) return view();
+      cursor = index;
+      show(row, index);
       return view();
     },
     // 실제 재생기의 결과만 받는다(재생을 눌렀다는 것만으로 들었다고 하지 않는다). 허용 횟수를 넘긴 재생은 받지 않는다.
@@ -26581,10 +27884,10 @@ function posPlayableItem(row) {
 function createDiagnosticSession({ coach, items } = {}) {
   if (!coach || ["present", "delivery", "help", "answer"].some((name) => typeof coach[name] !== "function") || !Array.isArray(items)) throw TypeError("WORLD diagnostic needs the learning coach and its items");
   const queue = items.map(posPlayableItem), results = [];
-  let index2 = -1, current = null, stopped = false;
+  let index = -1, current = null, stopped = false;
   const listening = (item) => item.audioRequired ?? item.modality === "listening";
   const view = () => current && {
-    index: index2,
+    index,
     total: queue.length,
     item: current.item,
     heard: current.heard,
@@ -26627,12 +27930,12 @@ function createDiagnosticSession({ coach, items } = {}) {
     next() {
       if (stopped) return null;
       if (current && !current.answered) throw Error("WORLD diagnostic: answer or skip the current item first");
-      index2 += 1;
-      if (index2 >= queue.length) {
+      index += 1;
+      if (index >= queue.length) {
         current = null;
         return null;
       }
-      const item = queue[index2];
+      const item = queue[index];
       current = {
         item,
         pid: coach.present(posMeasureOf(item), presentCondition(item, { content: "world-diagnostic" })),
@@ -26761,14 +28064,14 @@ function estimateGate({ evidence = [], asOf, policy = ESTIMATE_POLICY, form = "t
 }
 
 // experiences/blank-slice/content.mjs
-var SKILL_LABEL = {
+var SKILL_LABEL2 = {
   "ko.reading.vocabulary": "\uB0B1\uB9D0 \uB73B \uC77D\uAE30",
   "ko.reading.grammar": "\uC870\uC0AC\xB7\uBB38\uD615 \uC77D\uAE30"
 };
 var V = "ko.reading.vocabulary";
 var G = "ko.reading.grammar";
 var I = (id, text2, options, skill2, kind, difficulty, why) => ({ id, text: text2, options, answer: options[0], skill: skill2, kind, difficulty, why });
-var ITEMS = [
+var ITEMS2 = [
   I("p01", "\uC800\uB294 \uC544\uCE68\uC5D0 \uBE75{} \uBA39\uC5B4\uC694.", ["\uC744", "\uC5D0", "\uC774", "\uACFC"], G, "particle", 1, "\uBB34\uC5C7\uC744 \uBA39\uB294\uC9C0 \uB9D0\uD560 \uB54C\uB294 \u2018\uC744/\uB97C\u2019\uC744 \uBD99\uC5EC\uC694. \u2018\uBE75\u2019\uC740 \uBC1B\uCE68\uC774 \uC788\uC5B4\uC11C \u2018\uBE75\uC744\u2019\uC774\uC5D0\uC694."),
   I("v01", "\uBAA9\uC774 \uB9D0\uB77C\uC694. {}\uC744 \uB9C8\uC2DC\uACE0 \uC2F6\uC5B4\uC694.", ["\uBB3C", "\uBE75", "\uC637", "\uCC45"], V, "noun", 1, "\uBAA9\uC774 \uB9C8\uB97C \uB54C\uB294 \uBB3C\uC744 \uB9C8\uC154\uC694. \uBE75\uC740 \uBA39\uACE0, \uC637\uC740 \uC785\uACE0, \uCC45\uC740 \uC77D\uC5B4\uC694."),
   I("p02", "\uD559\uAD50{} \uCE5C\uAD6C\uB97C \uB9CC\uB098\uC694.", ["\uC5D0\uC11C", "\uC5D0", "\uB97C", "\uC640"], G, "particle", 1, "\uBB34\uC5C7\uC744 \uD558\uB294 \uC7A5\uC18C \uB4A4\uC5D0\uB294 \u2018\uC5D0\uC11C\u2019\uB97C \uBD99\uC5EC\uC694. \uCE5C\uAD6C\uB97C \uB9CC\uB098\uB294 \uACF3\uC774 \uD559\uAD50\uB2C8\uAE4C \u2018\uD559\uAD50\uC5D0\uC11C\u2019\uC608\uC694."),
@@ -26809,8 +28112,8 @@ var ITEMS = [
 var PRACTICE = I("practice", "\uC800\uB294 \uB9E4\uC77C \uC544\uCE68\uC5D0 {}\uB97C \uB9C8\uC154\uC694.", ["\uC6B0\uC720", "\uC758\uC790", "\uBC14\uC9C0", "\uBAA8\uC790"], V, "noun", 1, "\uBCF4\uAE30 \uC911\uC5D0\uC11C \uB9C8\uC2E4 \uC218 \uC788\uB294 \uAC83\uC740 \uC6B0\uC720\uC608\uC694.");
 
 // experiences/blank-slice/learning.mjs
-var GAME_ID2 = "blank-slice";
-var FORMAT2 = "single-choice";
+var GAME_ID3 = "blank-slice";
+var FORMAT3 = "single-choice";
 var GRAMMAR = Object.freeze({
   p01: "G203",
   p02: "G207",
@@ -26831,7 +28134,7 @@ var GRAMMAR = Object.freeze({
   e10: "G501",
   p06: "G203"
 });
-var ITEM_VERSION3 = Object.freeze({ v06: 3, v07: 3, e01: 3, e08: 3, e02: 2, e07: 2, e06: 2, v08: 2 });
+var ITEM_VERSION4 = Object.freeze({ v06: 3, v07: 3, e01: 3, e08: 3, e02: 2, e07: 2, e06: 2, v08: 2 });
 var WORD = Object.freeze({
   v01: "w0011",
   v02: "w0301",
@@ -26851,21 +28154,21 @@ var WORD = Object.freeze({
 });
 var conceptsOf = (id) => GRAMMAR[id] ? [GRAMMAR[id]] : WORD[id] ? [`ko.word.${WORD[id]}`] : [];
 function itemMetadata(item) {
-  const family = `${GAME_ID2}.${item.id}.v1`, key = `${GAME_ID2}.${item.id}.v${ITEM_VERSION3[item.id] || 1}`;
+  const family = `${GAME_ID3}.${item.id}.v1`, key = `${GAME_ID3}.${item.id}.v${ITEM_VERSION4[item.id] || 1}`;
   return {
-    id: `${GAME_ID2}.${item.id}`,
+    id: `${GAME_ID3}.${item.id}`,
     itemKey: key,
     familyKey: family,
     skillId: item.skill,
     difficulty: item.difficulty,
     modality: "reading",
-    responseFormat: FORMAT2,
+    responseFormat: FORMAT3,
     audioRequired: false,
     confounded: false,
     conceptIds: conceptsOf(item.id)
   };
 }
-var RETURN_PATTERNS4 = Object.freeze({
+var RETURN_PATTERNS5 = Object.freeze({
   particle: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB0B1\uB9D0 \uB4A4\uC5D0 \uBD99\uB294 \uC870\uC0AC\uB97C \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uBE48\uCE78 \uC55E\uB4A4 \uB9D0\uC744 \uD568\uAED8 \uC77D\uC5B4 \uBCF4\uC138\uC694." },
   ending: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uBB38\uC7A5 \uB05D\uC774\uB098 \uC911\uAC04\uC758 \uBB38\uD615\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uBB38\uC7A5 \uC804\uCCB4\uC758 \uB73B\uC744 \uC77D\uACE0 \uACE8\uB77C \uBCF4\uC138\uC694." },
   connector: { minEvidence: 2, why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB450 \uBB38\uC7A5\uC744 \uC787\uB294 \uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uC55E\uB4A4 \uBB38\uC7A5\uC774 \uC5B4\uB5A4 \uAD00\uACC4\uC778\uC9C0 \uC77D\uC5B4 \uBCF4\uC138\uC694." },
@@ -26873,8 +28176,8 @@ var RETURN_PATTERNS4 = Object.freeze({
   predicate: { why: "\uC9C0\uB09C \uD310\uC5D0\uC11C \uB3D9\uC791\uC774\uB098 \uC0C1\uD0DC\uB97C \uB098\uD0C0\uB0B4\uB294 \uB0B1\uB9D0\uC744 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC774\uBC88 \uCCAB \uBB38\uC7A5\uB3C4 \uADF8\uB7F0 \uBB38\uC7A5\uC774\uC5D0\uC694. \uC55E\uB4A4 \uB9D0\uC5D0\uC11C \uB2E8\uC11C\uB97C \uCC3E\uC544 \uBCF4\uC138\uC694." }
 });
 var PATTERN_OF_KIND = Object.freeze({ particle: "particle", ending: "ending", connector: "connector", noun: "noun", verb: "predicate", adjective: "predicate" });
-var ITEM_OF_FAMILY = new Map(ITEMS.map((x) => [itemMetadata(x).familyKey, x]));
-var LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL).map((id) => [id, [...new Set(ITEMS.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
+var ITEM_OF_FAMILY = new Map(ITEMS2.map((x) => [itemMetadata(x).familyKey, x]));
+var LEVELS = Object.fromEntries(Object.keys(SKILL_LABEL2).map((id) => [id, [...new Set(ITEMS2.filter((x) => x.skill === id).map((x) => x.difficulty))].sort((a, b) => a - b)]));
 
 // experiences/synk-town/understanding.mjs
 var READING_CHECKS = Object.freeze([
@@ -27183,7 +28486,7 @@ var READING_CHECKS = Object.freeze([
     explanation: "\u201C\uADF8\uBD84\uC5D0\uAC8C \uC815\uB9D0 \uAC10\uC0AC\uD569\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uADF8\uB798\uC11C \uB3C4\uC640\uC900 \uC0AC\uB78C\uC5D0\uAC8C \uACE0\uB9C8\uC6B4 \uB9C8\uC74C\uC744 \uC804\uD558\uB294 \uAE00\uC774\uC5D0\uC694. \uBCD1\uC6D0\uC5D0\uB294 \u201C\uBE68\uB9AC \uAC14\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uACE0, \uCC28\uB294 \uB2E4\uC74C\uC5D0 \uB9C8\uC2DC\uACE0 \uC2F6\uB2E4\uACE0 \uD588\uC73C\uB2C8 \uC544\uC9C1 \uAC19\uC774 \uB9C8\uC2DC\uC9C0 \uC54A\uC558\uC5B4\uC694."
   }
 ]);
-var ITEM_VERSION4 = Object.freeze({
+var ITEM_VERSION5 = Object.freeze({
   "town-reading-place": 2,
   "town-reading-negation": 2,
   "town-detail-lost": 2,
@@ -27203,7 +28506,7 @@ var ITEM_VERSION4 = Object.freeze({
 function readingMetadata(item) {
   return {
     id: item.id,
-    itemKey: `synk-town.reading-check.${item.id}.v${ITEM_VERSION4[item.id] || 1}`,
+    itemKey: `synk-town.reading-check.${item.id}.v${ITEM_VERSION5[item.id] || 1}`,
     familyKey: `synk-town.reading-check.${item.id}.v1`,
     skillId: `ko.reading.${item.skill}`,
     difficulty: item.difficulty ?? 1,
@@ -27213,1024 +28516,6 @@ function readingMetadata(item) {
     confounded: false
   };
 }
-
-// experiences/entry-check/content.mjs
-var CAST = {
-  bear: { name: "\uAE40\uBCF4\uB9AC", label: "\uACF0", age: 21, scale: 1, img: "assets/cast/bear.webp" },
-  raccoon: { name: "\uB098\uAD6C\uB9AC", label: "\uB108\uAD6C\uB9AC", age: 45, scale: 0.98, img: "assets/cast/raccoon.webp" },
-  rabbit: { name: "\uBC15\uD1A0\uC21C", label: "\uD1A0\uB07C", age: 72, scale: 0.9, img: "assets/cast/rabbit.webp" },
-  fox: { name: "\uC5EC\uC6B0\uC9C4", label: "\uC5EC\uC6B0", age: 31, scale: 1, img: "assets/cast/fox.webp" },
-  squirrel: { name: "\uB3C4\uB2E4\uBBF8", label: "\uB2E4\uB78C\uC950", age: 6, scale: 0.64, img: "assets/cast/squirrel.webp" },
-  hedgehog: { name: "\uACE0\uB3C4\uCE58", label: "\uACE0\uC2B4\uB3C4\uCE58", age: 9, scale: 0.72, img: "assets/cast/hedgehog.webp" },
-  penguin: { name: "\uB0A8\uCF69\uC774", label: "\uD3AD\uADC4", age: 24, scale: 0.9, img: "assets/cast/penguin.webp" },
-  ducks: { name: "\uC624\uC21C", label: "\uC624\uB9AC", age: 34, scale: 0.94, img: "assets/cast/ducks.webp", wide: true },
-  otter: { name: "\uC218\uB2EC\uC218", label: "\uC218\uB2EC", age: 62, scale: 0.92, img: "assets/cast/otter.webp" },
-  deer: { name: "\uB178\uB098\uB798", label: "\uC0AC\uC2B4", age: 26, scale: 1.04, img: "assets/cast/deer.webp" },
-  panda: { name: "\uC774\uB2E8\uBE44", label: "\uD310\uB2E4", age: 15, scale: 0.9, img: "assets/cast/panda.webp" },
-  sheep: { name: "\uC591\uC19C\uC774", label: "\uC591", age: 22, scale: 0.94, img: "assets/cast/sheep.webp" }
-};
-var ITEMS2 = {
-  "swim-cap": "\uC218\uC601 \uBAA8\uC790",
-  "water-bottle": "\uBB3C\uBCD1",
-  gimbap: "\uAE40\uBC25",
-  snack: "\uACFC\uC790",
-  towel: "\uC218\uAC74",
-  "swim-ring": "\uD29C\uBE0C",
-  "library-card": "\uB3C4\uC11C\uAD00 \uCE74\uB4DC",
-  "pool-card": "\uC218\uC601\uC7A5 \uCE74\uB4DC",
-  book: "\uCC45",
-  "coffee-lid": "\uCEE4\uD53C(\uB69C\uAED1 \uC788\uC74C)",
-  "coffee-open": "\uCEE4\uD53C(\uB69C\uAED1 \uC5C6\uC74C)",
-  camera: "\uCE74\uBA54\uB77C",
-  phone: "\uD734\uB300\uD3F0",
-  purse: "\uC791\uC740 \uAC00\uBC29",
-  "picnic-mat": "\uB3D7\uC790\uB9AC",
-  chair: "\uC811\uC774\uC2DD \uC758\uC790",
-  umbrella: "\uC6B0\uC0B0"
-};
-var R = (id, text2, skill2, short) => ({ id, text: text2, skill: skill2, short });
-var doc = (title, rows2, kind = "ticket") => ({ title, rows: rows2, kind });
-var VENUES = [
-  {
-    id: "pool",
-    day: 1,
-    name: "\uD558\uB298 \uC218\uC601\uC7A5",
-    scene: "pool",
-    band: "lapis",
-    date: "8\uC6D4 6\uC77C \uC218\uC694\uC77C",
-    briefing: "\uC624\uB298\uC774 \uCCAB \uADFC\uBB34\uC608\uC694. \uC548\uB0B4\uBB38\uC740 \uC138 \uC904\uBFD0\uC774\uB2C8\uAE4C \uAC71\uC815\uD558\uC9C0 \uB9C8\uC138\uC694. \uC190\uB2D8\uC758 \uD45C\uC640 \uC9D0\uC744 \uC548\uB0B4\uBB38\uACFC \uD558\uB098\uC529 \uB9DE\uCDB0 \uBD10\uC694.",
-    notice: {
-      kind: "\uC774\uC6A9 \uC548\uB0B4",
-      title: "\uD558\uB298 \uC218\uC601\uC7A5 \uC774\uC6A9 \uC548\uB0B4",
-      rules: [
-        R("cap", "\uC218\uC601 \uBAA8\uC790\uB97C \uAF2D \uC368\uC57C \uD569\uB2C8\uB2E4.", "ko.reading.detail", "\uC218\uC601 \uBAA8\uC790"),
-        R("food", "\uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uC74C\uC2DD"),
-        R("kid", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uC5B4\uB978\uACFC \uD568\uAED8 \uB4E4\uC5B4\uC640\uC57C \uD569\uB2C8\uB2E4.", "ko.reading.condition", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774")
-      ]
-    },
-    cases: [
-      {
-        id: "pool-01",
-        at: "14:02",
-        who: "bear",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 21\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "towel"],
-        line: "\uC548\uB155\uD558\uC138\uC694! \uC218\uC601\uD558\uB7EC \uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "items",
-        evidence: ["cap"],
-        why: "\uC218\uC601 \uBAA8\uC790\uAC00 \uC788\uC5B4\uC694. \uC74C\uC2DD\uB3C4 \uC5C6\uC5B4\uC694. \uADF8\uB798\uC11C \uD1B5\uACFC\uC608\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694! \uADF8\uB7FC \uC2DC\uC6D0\uD558\uAC8C \uD55C\uBC88 \uC218\uC601\uD574 \uBCFC\uAC8C\uC694!",
-        oops: "\uBCF4\uB9AC \uC528\uAC00 \uACE0\uAC1C\uB97C \uAC38\uC6C3\uD588\uC5B4\uC694. \u201C\uBAA8\uC790\uB3C4 \uC788\uACE0 \uC74C\uC2DD\uB3C4 \uC5C6\uB294\uB370\u2026 \uC65C \uC548 \uB3FC\uC694?\u201D"
-      },
-      {
-        id: "pool-09",
-        at: "14:04",
-        who: "panda",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC774\uB2E8\uBE44"], ["\uAD6C\uBD84", "\uD559\uC0DD \xB7 15\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["towel", "water-bottle"],
-        line: "\uC218\uAC74\uACFC \uBB3C\uC740 \uC788\uC5B4\uC694. \uC218\uC601 \uBAA8\uC790\uB294 \uC5C6\uC5B4\uC694.",
-        answer: "cap",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "items",
-        evidence: ["cap"],
-        why: "\uC218\uC601 \uBAA8\uC790\uB294 \uAF2D \uC368\uC57C \uD574\uC694. \uADF8\uB7F0\uB370 \uB2E8\uBE44 \uC528 \uC9D0\uC5D0\uB294 \uBAA8\uC790\uAC00 \uC5C6\uC5B4\uC694. \uBB3C\uBCD1\uC740 \uC788\uC9C0\uB9CC \uC548\uB0B4\uBB38\uC5D0 \u201C\uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 \uC74C\uC2DD \uB54C\uBB38\uC5D0 \uB3CC\uB824\uBCF4\uB0B4\uB294 \uAC83\uC740 \uC544\uB2C8\uC5D0\uC694.",
-        reply: "\uC544, \uBAA8\uC790! \uC9D1\uC5D0 \uAC00\uC11C \uAC00\uC838\uC62C\uAC8C\uC694.",
-        oops: "\uB2E8\uBE44 \uC528\uB294 \uBAA8\uC790 \uC5C6\uC774 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uBAA8\uC790\uB97C \uBE4C\uB9AC\uB7EC \uB2E4\uC2DC \uBC16\uC73C\uB85C \uB098\uC654\uC5B4\uC694."
-      },
-      {
-        id: "pool-12",
-        at: "14:05",
-        who: "fox",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 31\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "towel"],
-        line: "\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uC4F0\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "items",
-        evidence: ["cap"],
-        why: "\uC9D0\uC5D0 \uC218\uC601 \uBAA8\uC790\uAC00 \uC788\uACE0 \u201C\uC4F0\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC74C\uC2DD\uC740 \uC5C6\uACE0, \uC785\uC7A5\uAD8C\uC5D0 \u201C\uC5B4\uB978 \xB7 31\uC0B4\u201D\uC774\uB77C\uACE0 \uB418\uC5B4 \uC788\uC5B4\uC11C \uC5B4\uB9B0\uC774 \uADDC\uCE59\uACFC\uB3C4 \uC0C1\uAD00\uC5C6\uC5B4\uC694. \uADF8\uB798\uC11C \uB4E4\uC5EC\uBCF4\uB0B4\uBA74 \uB3FC\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC900\uBE44 \uC6B4\uB3D9\uBD80\uD130 \uD558\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        oops: "\uC6B0\uC9C4 \uC528\uAC00 \uC9D0 \uC18D\uC758 \uBAA8\uC790\uB97C \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "pool-02",
-        at: "14:06",
-        who: "raccoon",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB098\uAD6C\uB9AC"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 45\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "gimbap"],
-        line: "\uC810\uC2EC\uC740 \uC218\uC601\uC7A5 \uC548\uC5D0\uC11C \uBA39\uC744 \uAC70\uC608\uC694.",
-        answer: "food",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["food"],
-        why: "\uAE40\uBC25\uC740 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uC544\uC774\uACE0, \uAE5C\uBE61\uD588\uB124. \uAE40\uBC25\uC740 \uBC16\uC5D0\uC11C \uBA39\uACE0 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uAD6C\uB9AC \uC528\uAC00 \uBB3C\uAC00\uC5D0\uC11C \uBAB0\uB798 \uAE40\uBC25\uC744 \uBA39\uB2E4\uAC00 \uC548\uC804 \uC694\uC6D0\uC5D0\uAC8C \uB531 \uAC78\uB838\uC5B4\uC694!"
-      },
-      {
-        id: "pool-10",
-        at: "14:09",
-        who: "deer",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 26\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "snack"],
-        line: "\uACFC\uC790\uB294 \uC218\uC601\uD55C \uB2E4\uC74C\uC5D0 \uBA39\uC744\uAC8C\uC694.",
-        answer: "food",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["food"],
-        why: "\uB098\uC911\uC5D0 \uBA39\uC5B4\uB3C4 \uACFC\uC790\uB294 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uADF8\uB7FC \uACFC\uC790\uB294 \uC0AC\uBB3C\uD568\uC5D0 \uB123\uC5B4 \uB458\uAC8C\uC694.",
-        oops: "\uB098\uB798 \uC528\uAC00 \uACFC\uC790\uB97C \uB4E4\uACE0 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uC548\uC804 \uC694\uC6D0\uACFC \uD568\uAED8 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
-      },
-      {
-        id: "pool-13",
-        at: "14:10",
-        who: "sheep",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC591\uC19C\uC774"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 22\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "towel"],
-        line: "\uACFC\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uC654\uC5B4\uC694. \uC218\uC601 \uBAA8\uC790\uC640 \uC218\uAC74\uB9CC \uAC00\uC838\uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC19C\uC774 \uC528\uB294 \uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uACE0 22\uC0B4 \uC5B4\uB978\uC774\uC5D0\uC694. \uACFC\uC790\uB294 \u201C\uBC16\uC5D0 \uB450\uACE0 \uC654\uC5B4\uC694\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 \uC74C\uC2DD \uADDC\uCE59\uB3C4 \uC9C0\uCF1C\uC694. \uADF8\uB798\uC11C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694! \uACFC\uC790\uB294 \uC218\uC601\uD558\uACE0 \uB098\uC11C \uBA39\uC744\uB798\uC694.",
-        oops: "\uC19C\uC774 \uC528\uAC00 \uAC00\uBC29\uC744 \uD65C\uC9DD \uC5F4\uC5B4 \uBCF4\uC5EC \uC92C\uC5B4\uC694. \u201C\uACFC\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uC654\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "pool-03",
-        at: "14:11",
-        who: "rabbit",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 72\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "water-bottle"],
-        line: "\uBB3C\uC740 \uAC00\uC9C0\uACE0 \uAC00\uB3C4 \uB418\uC9C0\uC694?",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBBF8\uB044\uB7EC\uC6B0\uB2C8\uAE4C \uCC9C\uCC9C\uD788 \uAC78\uC5B4\uAC08\uAC8C\uC694.",
-        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uC548\uB0B4\uBB38\uC744 \uC190\uAC00\uB77D\uC73C\uB85C \uC9DA\uC5C8\uC5B4\uC694. \u201C\uC5EC\uAE30, \uBB3C\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC796\uC544\uC694.\u201D"
-      },
-      {
-        id: "pool-11",
-        at: "14:13",
-        who: "otter",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 62\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "water-bottle"],
-        line: "\uBB3C \uD55C \uBCD1\uB9CC \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC548\uB0B4\uBB38\uC5D0\uC11C \u201C\uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uBAA8\uC790\uAC00 \uC788\uACE0 \uC74C\uC2DD\uC740 \uC5C6\uC5B4\uC694. \uB2EC\uC218 \uC528\uB294 62\uC0B4 \uC5B4\uB978\uC774\uB77C\uC11C \uC5B4\uB9B0\uC774 \uADDC\uCE59\uACFC\uB3C4 \uC0C1\uAD00\uC5C6\uC5B4\uC694.",
-        reply: "\uD5C8\uD5C8, \uBB3C \uB9C8\uC2DC\uBA74\uC11C \uC26C\uC5C4\uC26C\uC5C4 \uC218\uC601\uD560\uAC8C\uC694.",
-        oops: "\uB2EC\uC218 \uD560\uC544\uBC84\uC9C0\uAC00 \uC548\uB0B4\uBB38\uC744 \uC9DA\uC5C8\uC5B4\uC694. \u201C\uD5C8\uD5C8, \uBB3C\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "pool-04",
-        at: "14:15",
-        who: "fox",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 31\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["towel", "water-bottle"],
-        line: "\uBAA8\uC790\uB294 \uC9D1\uC5D0 \uB450\uACE0 \uC654\uC5B4\uC694. \uADF8\uB0E5 \uB4E4\uC5B4\uAC00\uB3C4 \uB418\uC9C0\uC694?",
-        answer: "cap",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "line",
-        evidence: ["cap"],
-        why: "\uC218\uC601 \uBAA8\uC790\uB97C \uAF2D \uC368\uC57C \uD574\uC694. \uC6B0\uC9C4 \uC528\uB294 \uBAA8\uC790\uAC00 \uC5C6\uC5B4\uC694.",
-        reply: "\uC544, \uADF8\uB807\uAD70\uC694. \uB9E4\uC810\uC5D0\uC11C \uBAA8\uC790\uB97C \uD558\uB098 \uC0B4\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uBAA8\uC790 \uC5C6\uC774 \uB4E4\uC5B4\uAC04 \uC6B0\uC9C4 \uC528\uAC00 \uC548\uC804 \uC694\uC6D0\uC758 \uD638\uB8E8\uB77C\uAE30 \uC18C\uB9AC\uC5D0 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
-      },
-      {
-        id: "pool-14",
-        at: "14:17",
-        who: "bear",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 21\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "towel"],
-        line: "\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uB4E4\uC5B4\uAC00\uAE30 \uC804\uC5D0 \uC4F8\uAC8C\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "items",
-        evidence: ["cap"],
-        why: "\uC218\uC601 \uBAA8\uC790\uB97C \uAC00\uC838\uC654\uACE0 \uC74C\uC2DD\uC740 \uC5C6\uC5B4\uC694. \uADF8\uB9AC\uACE0 \u201C\uC5B4\uB978 \xB7 21\uC0B4\u201D\uC774\uB77C\uC11C \uC5B4\uB978\uACFC \uD568\uAED8 \uC624\uC9C0 \uC54A\uC544\uB3C4 \uB3FC\uC694. \uBAA8\uC790\uB9CC \uC4F0\uBA74 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBAA8\uC790\uB97C \uC4F0\uACE0 \uC900\uBE44\uD560\uAC8C\uC694.",
-        oops: "\uBCF4\uB9AC \uC528\uAC00 \uC9D0\uC5D0\uC11C \uC218\uC601 \uBAA8\uC790\uB97C \uAEBC\uB0B4 \uD754\uB4E4\uC5C8\uC5B4\uC694. \u201C\uC5EC\uAE30 \uC788\uC5B4\uC694!\u201D"
-      },
-      {
-        id: "pool-05",
-        at: "14:20",
-        who: "squirrel",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB3C4\uB2E4\uBBF8"], ["\uAD6C\uBD84", "\uC5B4\uB9B0\uC774 \xB7 6\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "swim-ring"],
-        line: "\uC544\uBE60\uB294 \uC8FC\uCC28\uC7A5\uC5D0 \uC788\uC5B4\uC694. \uC800 \uBA3C\uC800 \uB4E4\uC5B4\uAC08\uAC8C\uC694!",
-        answer: "kid",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["kid"],
-        why: "\uB2E4\uBBF8\uB294 6\uC0B4\uC774\uC5D0\uC694. 7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uC5B4\uB978\uACFC \uD568\uAED8 \uB4E4\uC5B4\uC640\uC57C \uD574\uC694.",
-        reply: "\uB124! \uC544\uBE60 \uB370\uB9AC\uACE0 \uC62C\uAC8C\uC694!",
-        oops: "\uB2E4\uBBF8\uAC00 \uD63C\uC790 \uBB3C\uAC00\uB85C \uB2EC\uB824\uAC00\uC11C, \uC548\uC804 \uC694\uC6D0\uC774 \uAE5C\uC9DD \uB180\uB77C \uB6F0\uC5B4\uC654\uC5B4\uC694."
-      },
-      {
-        id: "pool-06",
-        at: "14:24",
-        who: "hedgehog",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uACE0\uB3C4\uCE58"], ["\uAD6C\uBD84", "\uC5B4\uB9B0\uC774 \xB7 9\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "towel"],
-        line: "\uC800 \uD63C\uC790 \uC654\uC5B4\uC694. \uC544\uD649 \uC0B4\uC774\uC5D0\uC694!",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["kid"],
-        why: "\uC5B4\uB978\uACFC \uD568\uAED8 \uC640\uC57C \uD558\uB294 \uAC74 7\uC0B4 \uC774\uD558\uC608\uC694. \uB3C4\uCE58\uB294 9\uC0B4\uC774\uB77C \uD63C\uC790 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uC57C\uD638! \uACE0\uB9C8\uC6CC\uC694!",
-        oops: "\uB3C4\uCE58\uAC00 \uD45C\uB97C \uBC88\uCA4D \uB4E4\uC5B4 \uBCF4\uC600\uC5B4\uC694. \u201C\uC800\uB294 \uC544\uD649 \uC0B4\uC778\uB370\uC694?\u201D"
-      },
-      {
-        id: "pool-07",
-        at: "14:29",
-        who: "penguin",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uAD6C\uBD84", "\uC5B4\uB978 \xB7 24\uC0B4"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: ["swim-cap", "water-bottle", "snack"],
-        line: "\uBB3C\uB9CC \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694.",
-        answer: "food",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "\uBB3C\uC740 \uAD1C\uCC2E\uC9C0\uB9CC \uACFC\uC790\uB294 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC9D0\uC5D0 \uACFC\uC790\uAC00 \uC788\uC5B4\uC694.",
-        reply: "\uC557, \uACFC\uC790\uAC00 \uB4E4\uC5B4 \uC788\uC5C8\uB124\uC694. \uB9E1\uACA8 \uB458\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uCF69\uC774 \uC528\uAC00 \uBB3C\uAC00\uC5D0\uC11C \uACFC\uC790 \uBD09\uC9C0\uB97C \uB72F\uB2E4\uAC00 \uC548\uC804 \uC694\uC6D0\uACFC \uB208\uC774 \uB531 \uB9C8\uC8FC\uCCE4\uC5B4\uC694."
-      },
-      {
-        id: "pool-08",
-        at: "14:33",
-        who: "ducks",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC624\uC21C \uC678 1\uBA85"], ["\uAD6C\uBD84", "\uC5B4\uB978 1\uBA85 \xB7 \uC5B4\uB9B0\uC774 1\uBA85(5\uC0B4)"], ["\uB0A0\uC9DC", "8\uC6D4 6\uC77C"]]),
-        items: [["swim-cap", 2], "swim-ring"],
-        line: "\uC544\uC774\uC640 \uAC19\uC774 \uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "doc",
-        evidence: ["kid"],
-        why: "5\uC0B4 \uC544\uC774\uAC00 \uC5B4\uB978\uACFC \uD568\uAED8 \uC654\uC5B4\uC694. \uBAA8\uC790\uB3C4 \uB450 \uAC1C \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC544\uC774 \uC190\uC744 \uAF2D \uC7A1\uC744\uAC8C\uC694.",
-        oops: "\uC544\uAE30 \uC624\uB9AC\uAC00 \uC6B8\uBA39\uC600\uC5B4\uC694. \u201C\uC5C4\uB9C8\uB791 \uAC19\uC774 \uC654\uB294\uB370\uC694!\u201D"
-      }
-    ]
-  },
-  {
-    id: "library",
-    day: 2,
-    name: "\uBCC4\uBE5B \uB3C4\uC11C\uAD00",
-    scene: "library",
-    band: "coral",
-    date: "8\uC6D4 7\uC77C \uBAA9\uC694\uC77C",
-    briefing: "\uC624\uB298\uC740 \uB3C4\uC11C\uAD00\uC774 \uC77C\uCC0D \uBB38\uC744 \uB2EB\uB294 \uB0A0\uC774\uC5D0\uC694. \uC2DC\uACC4\uB97C \uC790\uC8FC \uBCF4\uACE0, \uCE74\uB4DC\uC5D0 \uC801\uD78C \uC774\uB984\uB3C4 \uAF2D \uD655\uC778\uD574\uC694.",
-    notice: {
-      kind: "\uC774\uC6A9 \uC548\uB0B4",
-      title: "\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uC774\uC6A9 \uC548\uB0B4",
-      rules: [
-        R("card", "\uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC57C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uB2E4\uB978 \uC0AC\uB78C\uC758 \uCE74\uB4DC\uB294 \uC4F8 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", "ko.reading.detail", "\uB3C4\uC11C\uAD00 \uCE74\uB4DC"),
-        R("food", "\uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.condition", "\uC74C\uC2DD\xB7\uB69C\uAED1 \uC5C6\uB294 \uC74C\uB8CC"),
-        R("time", "\uC624\uB298\uC740 \uC624\uD6C4 6\uC2DC\uC5D0 \uBB38\uC744 \uB2EB\uC2B5\uB2C8\uB2E4. \uC624\uD6C4 5\uC2DC 30\uBD84\uBD80\uD130\uB294 \uB4E4\uC5B4\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", "ko.reading.detail", "5\uC2DC 30\uBD84\uBD80\uD130 \uC785\uC7A5 \uC548 \uB428")
-      ]
-    },
-    cases: [
-      {
-        id: "library-01",
-        at: "16:52",
-        who: "bear",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uCE74\uB4DC \uBC88\uD638", "2041-0715"]], "card"),
-        items: ["book"],
-        line: "\uCC45\uC744 \uB3CC\uB824\uC8FC\uB7EC \uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "doc",
-        evidence: ["card"],
-        why: "\uBCF4\uB9AC \uC528\uC758 \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC694. \uC2DC\uAC04\uB3C4 \uAD1C\uCC2E\uC544\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uB2E4\uC74C \uCC45\uB3C4 \uBE4C\uB824 \uAC08\uAC8C\uC694.",
-        oops: "\uBCF4\uB9AC \uC528\uAC00 \uCE74\uB4DC\uB97C \uB2E4\uC2DC \uB0B4\uBC00\uC5C8\uC5B4\uC694. \u201C\uC774\uAC70 \uC81C \uCE74\uB4DC \uB9DE\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "library-02",
-        at: "16:57",
-        who: "raccoon",
-        doc: null,
-        items: ["book"],
-        line: "\uCE74\uB4DC\uB294 \uC9D1\uC5D0 \uC788\uC5B4\uC694. \uC624\uB298\uB9CC \uADF8\uB0E5 \uB4E4\uC5B4\uAC00\uBA74 \uC548 \uB3FC\uC694?",
-        answer: "card",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "line",
-        evidence: ["card"],
-        why: "\uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC57C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694. \uAD6C\uB9AC \uC528\uB294 \uCE74\uB4DC\uAC00 \uC5C6\uC5B4\uC694.",
-        reply: "\uADF8\uB7FC 1\uCE35\uC5D0\uC11C \uCE74\uB4DC\uB97C \uC0C8\uB85C \uB9CC\uB4E4\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uAD00\uC7A5\uB2D8\uC774 \u201C\uCE74\uB4DC \uC5C6\uC774 \uB4E4\uC5B4\uC628 \uBD84 \uACC4\uC138\uC694?\u201D \uD558\uACE0 \uCC3E\uC73C\uB7EC \uB098\uC654\uC5B4\uC694."
-      },
-      {
-        id: "library-10",
-        at: "16:59",
-        who: "deer",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uCE74\uB4DC \uBC88\uD638", "L-1026"]], "card"),
-        items: ["book"],
-        line: "\uC81C \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uCC45\uC744 \uBE4C\uB9AC\uACE0 \uC2F6\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 1,
-        look: "doc",
-        evidence: ["card"],
-        why: "\uB098\uB798 \uC528 \uC774\uB984\uC774 \uC801\uD78C \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uACE0, \uC9D0\uC740 \uCC45\uBFD0\uC774\uC5D0\uC694. \uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 59\uBD84\uC774\uB77C \uC544\uC9C1 \uC624\uD6C4 5\uC2DC 30\uBD84 \uC804\uC774\uC5B4\uC11C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBE4C\uB9B4 \uCC45\uC744 \uCC3E\uC544\uBCFC\uAC8C\uC694.",
-        oops: "\uB098\uB798 \uC528\uAC00 \uCE74\uB4DC\uB97C \uB2E4\uC2DC \uBCF4\uC5EC \uC92C\uC5B4\uC694. \u201C\uC81C \uC774\uB984, \uC5EC\uAE30 \uC788\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "library-03",
-        at: "17:01",
-        who: "rabbit",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uCE74\uB4DC \uBC88\uD638", "1953-0402"]], "card"),
-        items: ["coffee-lid"],
-        line: "\uCEE4\uD53C\uB294 \uB69C\uAED1\uC744 \uAF2D \uB2EB\uC558\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uC544\uC694. \uD560\uBA38\uB2C8 \uCEE4\uD53C\uC5D0\uB294 \uB69C\uAED1\uC774 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC870\uC6A9\uD788 \uC77D\uB2E4 \uAC08\uAC8C\uC694.",
-        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uCEF5 \uB69C\uAED1\uC744 \uD1A1\uD1A1 \uB450\uB4DC\uB838\uC5B4\uC694. \u201C\uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC796\uC544\uC694.\u201D"
-      },
-      {
-        id: "library-04",
-        at: "17:06",
-        who: "fox",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uCE74\uB4DC \uBC88\uD638", "1994-1120"]], "card"),
-        items: ["coffee-open", "book"],
-        line: "\uCEE4\uD53C \uD55C \uC794\uB9CC \uB4E4\uACE0 \uAC08\uAC8C\uC694.",
-        answer: "food",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC5B4\uC57C \uD574\uC694. \uC6B0\uC9C4 \uC528 \uCEE4\uD53C\uC5D0\uB294 \uB69C\uAED1\uC774 \uC5C6\uC5B4\uC694.",
-        reply: "\uC544, \uB69C\uAED1\uC744 \uBC1B\uC544 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uC6B0\uC9C4 \uC528\uAC00 \uCC45 \uC704\uC5D0 \uCEE4\uD53C\uB97C \uC3DF\uC558\uC5B4\uC694!"
-      },
-      {
-        id: "library-11",
-        at: "17:08",
-        who: "penguin",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uCE74\uB4DC \uBC88\uD638", "L-1124"]], "card"),
-        items: ["coffee-lid", "book"],
-        line: "\uCEE4\uD53C\uC5D0 \uB69C\uAED1\uC744 \uB2EB\uC558\uC5B4\uC694. \uC774\uB300\uB85C \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC00\uB3C4 \uB418\uC9C0\uC694?",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC74C\uB8CC\uB294 \uB69C\uAED1\uC774 \uC788\uC73C\uBA74 \uAD1C\uCC2E\uC544\uC694. \uCF69\uC774 \uC528 \uCEE4\uD53C\uC5D0\uB294 \uB69C\uAED1\uC774 \uC788\uACE0, \uC74C\uC2DD\uB3C4 \uC5C6\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC870\uC2EC\uD574\uC11C \uB4E4\uACE0 \uAC08\uAC8C\uC694.",
-        oops: "\uCF69\uC774 \uC528\uAC00 \uCEF5 \uB69C\uAED1\uC744 \uBCF4\uC5EC \uC8FC\uBA70 \uC548\uB0B4\uBB38\uC744 \uC18C\uB9AC \uB0B4\uC5B4 \uC77D\uC5C8\uC5B4\uC694."
-      },
-      {
-        id: "library-05",
-        at: "17:10",
-        who: "squirrel",
-        doc: doc("\uD558\uB298 \uC218\uC601\uC7A5 \uD68C\uC6D0 \uCE74\uB4DC", [["\uC774\uB984", "\uB3C4\uB2E4\uBBF8"], ["\uCE74\uB4DC \uBC88\uD638", "S-0612"]], "pool-card"),
-        items: [],
-        line: "\uC774 \uCE74\uB4DC\uB3C4 \uB418\uC9C0\uC694? \uC81C \uCE74\uB4DC\uC608\uC694!",
-        answer: "card",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["card"],
-        why: "\uC774\uAC74 \uC218\uC601\uC7A5 \uCE74\uB4DC\uC608\uC694. \uB3C4\uC11C\uAD00\uC5D0\uB294 \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uAC00 \uC788\uC5B4\uC57C \uD574\uC694.",
-        reply: "\uC544, \uC218\uC601\uC7A5 \uCE74\uB4DC\uC600\uB124\uC694. \uC5C4\uB9C8\uB791 \uB3C4\uC11C\uAD00 \uCE74\uB4DC\uB97C \uB9CC\uB4E4\uAC8C\uC694.",
-        oops: "\uB2E4\uBBF8\uAC00 \uC218\uC601\uC7A5 \uCE74\uB4DC\uB97C \uB0B4\uBC00\uC790, \uC0AC\uC11C \uC120\uC0DD\uB2D8\uC774 \uC6C3\uC74C\uC744 \uAFB9 \uCC38\uC558\uC5B4\uC694."
-      },
-      {
-        id: "library-06",
-        at: "17:14",
-        who: "penguin",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uCE74\uB4DC \uBC88\uD638", "2002-0311"]], "card"),
-        items: ["gimbap"],
-        line: "\uBC30\uAC00 \uACE0\uD30C\uC11C \uAE40\uBC25\uC744 \uC0C0\uC5B4\uC694.",
-        answer: "food",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["food"],
-        why: "\uAE40\uBC25\uC740 \uC74C\uC2DD\uC774\uC5D0\uC694. \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uC544, \uBC30\uACE0\uD508\uB370\u2026 \uBC16\uC5D0\uC11C \uBA39\uACE0 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uC870\uC6A9\uD55C \uB3C4\uC11C\uAD00\uC5D0 \uACE0\uC18C\uD55C \uAE40\uBC25 \uB0C4\uC0C8\uAC00 \uD37C\uC84C\uC5B4\uC694."
-      },
-      {
-        id: "library-07",
-        at: "17:19",
-        who: "panda",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uC774\uB2E8\uC544"], ["\uCE74\uB4DC \uBC88\uD638", "2008-0923"]], "card"),
-        items: ["book"],
-        line: "\uC774 \uCE74\uB4DC\uB294 \uC5B8\uB2C8 \uAC70\uC608\uC694. \uAD1C\uCC2E\uC9C0\uC694?",
-        answer: "card",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["card"],
-        why: "\uCE74\uB4DC\uC758 \uC774\uB984\uC740 \uC774\uB2E8\uC544\uC608\uC694. \uB2E4\uB978 \uC0AC\uB78C\uC758 \uCE74\uB4DC\uB294 \uC4F8 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uC8C4\uC1A1\uD574\uC694\u2026 \uC81C \uCE74\uB4DC\uB97C \uB9CC\uB4E4\uC5B4 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uB2E8\uBE44\uC758 \uC5B8\uB2C8\uAC00 \u201C\uB0B4 \uCE74\uB4DC \uC5B4\uB514 \uAC14\uC9C0?\u201D \uD558\uBA70 \uB3C4\uC11C\uAD00\uC5D0 \uC654\uC5B4\uC694."
-      },
-      {
-        id: "library-08",
-        at: "17:26",
-        who: "hedgehog",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uACE0\uB3C4\uCE58"], ["\uCE74\uB4DC \uBC88\uD638", "2017-0505"]], "card"),
-        items: ["book"],
-        line: "\uC219\uC81C\uD560 \uCC45\uC744 \uBE4C\uB9AC\uACE0 \uC2F6\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "clock",
-        evidence: ["time"],
-        why: "\uC9C0\uAE08\uC740 5\uC2DC 26\uBD84\uC774\uC5D0\uC694. 5\uC2DC 30\uBD84 \uC804\uC774\uB77C \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694! \uBE68\uB9AC \uACE0\uB97C\uAC8C\uC694.",
-        oops: "\uB3C4\uCE58\uAC00 \uC2DC\uACC4\uB97C \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C\uC544\uC9C1 5\uC2DC 30\uBD84 \uC804\uC778\uB370\uC694?\u201D"
-      },
-      {
-        id: "library-09",
-        at: "17:34",
-        who: "otter",
-        doc: doc("\uBCC4\uBE5B \uB3C4\uC11C\uAD00 \uCE74\uB4DC", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uCE74\uB4DC \uBC88\uD638", "1964-0101"]], "card"),
-        items: ["book"],
-        line: "\uC7A0\uAE50\uC774\uBA74 \uB3FC\uC694. \uCC45\uB9CC \uBE4C\uB9B4\uAC8C\uC694.",
-        answer: "time",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "clock",
-        evidence: ["time"],
-        why: "\uC9C0\uAE08\uC740 5\uC2DC 34\uBD84\uC774\uC5D0\uC694. 5\uC2DC 30\uBD84\uBD80\uD130\uB294 \uB4E4\uC5B4\uC62C \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uD5C8\uD5C8, \uADF8\uB7FC \uB0B4\uC77C \uC77C\uCC0D \uC62C\uAC8C\uC694.",
-        oops: "\uC9C1\uC6D0\uC774 \uBB38\uC744 \uB2EB\uC73C\uB824\uB2E4, \uCC45\uC7A5 \uC0AC\uC774\uC758 \uD560\uC544\uBC84\uC9C0\uB97C \uCC3E\uB290\uB77C \uB2A6\uAC8C \uD1F4\uADFC\uD588\uC5B4\uC694."
-      }
-    ]
-  },
-  {
-    id: "museum",
-    day: 3,
-    name: "\uBC14\uB78C \uBBF8\uC220\uAD00",
-    scene: "museum",
-    band: "lapis",
-    date: "8\uC6D4 8\uC77C \uAE08\uC694\uC77C",
-    briefing: "\uC624\uB298\uC740 \uD2B9\uBCC4 \uC804\uC2DC\uAC00 \uC5F4\uB824\uC11C \uC190\uB2D8\uC774 \uB9CE\uC544\uC694. \uD45C\uC758 \uC885\uB958\uC640 \uB098\uC774, \uADF8\uB9AC\uACE0 \uC785\uC7A5 \uC2DC\uAC04\uC744 \uC798 \uBD10\uC694.",
-    notice: {
-      kind: "\uD2B9\uBCC4 \uC804\uC2DC",
-      title: "\uBC14\uB78C \uBBF8\uC220\uAD00 \u300C\uBC14\uB2E4\uC758 \uC0C9\u300D \uC548\uB0B4",
-      rules: [
-        R("time", "\uAD00\uB78C\uC740 \uC624\uD6C4 6\uC2DC\uAE4C\uC9C0\uC785\uB2C8\uB2E4. \uC785\uC7A5\uC740 \uC624\uD6C4 5\uC2DC\uAE4C\uC9C0\uB9CC \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4.", "ko.reading.detail", "\uC785\uC7A5\uC740 5\uC2DC\uAE4C\uC9C0"),
-        R("camera", "\uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uCE74\uBA54\uB77C"),
-        R("fee", "\uC5B4\uB9B0\uC774 \uD45C\uB294 13\uC0B4 \uC774\uD558\uB9CC \uC4F8 \uC218 \uC788\uC2B5\uB2C8\uB2E4. 65\uC0B4 \uC774\uC0C1\uC740 \uBB34\uB8CC\uC785\uB2C8\uB2E4.", "ko.reading.condition", "\uD45C\uC640 \uB098\uC774")
-      ]
-    },
-    cases: [
-      {
-        id: "museum-01",
-        at: "16:22",
-        who: "deer",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "26\uC0B4"]]),
-        items: ["phone", "purse"],
-        line: "\uC0AC\uC9C4\uC740 \uC548 \uCC0D\uC744\uAC8C\uC694. \uD734\uB300\uD3F0\uB9CC \uC788\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "items",
-        evidence: ["camera"],
-        why: "\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC544\uC694. \uCE74\uBA54\uB77C\uB294 \uC5C6\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uBC14\uB2E4 \uADF8\uB9BC\uC744 \uCC9C\uCC9C\uD788 \uBCFC\uAC8C\uC694.",
-        oops: "\uB098\uB798 \uC528\uAC00 \uD734\uB300\uD3F0\uC744 \uB4E4\uC5B4 \uBCF4\uC600\uC5B4\uC694. \u201C\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "museum-09",
-        at: "16:24",
-        who: "fox",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "31\uC0B4"]]),
-        items: ["phone", "purse"],
-        line: "\uAC00\uBC29\uC5D0\uB294 \uD734\uB300\uD3F0\uB9CC \uC788\uC5B4\uC694. \uC804\uD654\uB97C \uB044\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "items",
-        evidence: ["camera"],
-        why: "\uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 24\uBD84\uC774\uB77C \uC785\uC7A5 \uB9C8\uAC10\uC778 \uC624\uD6C4 5\uC2DC \uC804\uC774\uC5D0\uC694. \uC548\uB0B4\uBB38\uC5D0\uC11C \u201C\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uACE0, \uC6B0\uC9C4 \uC528 \uC9D0\uC5D0\uB294 \uCE74\uBA54\uB77C\uAC00 \uC5C6\uC5B4\uC694. 31\uC0B4\uC774\uB77C \uC5B4\uB978 \uD45C\uB3C4 \uB9DE\uC73C\uB2C8 \uB4E4\uC5EC\uBCF4\uB0B4\uBA74 \uB3FC\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC804\uD654\uB294 \uAEBC \uB450\uACE0 \uC870\uC6A9\uD788 \uBCFC\uAC8C\uC694.",
-        oops: "\uC6B0\uC9C4 \uC528\uAC00 \uD734\uB300\uD3F0\uC744 \uBCF4\uC5EC \uC8FC\uBA70 \uC548\uB0B4\uBB38\uC758 \u201C\uD734\uB300\uD3F0\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4\u201D\uB97C \uAC00\uB9AC\uCF30\uC5B4\uC694."
-      },
-      {
-        id: "museum-02",
-        at: "16:27",
-        who: "sheep",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC591\uC19C\uC774"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "22\uC0B4"]]),
-        items: ["camera", "purse"],
-        line: "\uBC14\uB2E4 \uADF8\uB9BC\uC744 \uAF2D \uCC0D\uACE0 \uC2F6\uC5B4\uC694!",
-        answer: "camera",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["camera"],
-        why: "\uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uC544\uC27D\uC9C0\uB9CC \uCE74\uBA54\uB77C\uB294 \uBCF4\uAD00\uD568\uC5D0 \uB9E1\uAE38\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uC804\uC2DC\uC2E4\uC5D0\uC11C \uCC30\uCE75! \uC18C\uB9AC\uAC00 \uB098\uC11C \uBAA8\uB450 \uB3CC\uC544\uBD24\uC5B4\uC694."
-      },
-      {
-        id: "museum-10",
-        at: "16:29",
-        who: "penguin",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "24\uC0B4"]]),
-        items: ["camera", "purse"],
-        line: "\uCE74\uBA54\uB77C\uB97C \uAC00\uC838\uC654\uC5B4\uC694. \uC804\uC2DC\uB97C \uBCF4\uACE0 \uC2F6\uC5B4\uC694.",
-        answer: "camera",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["camera"],
-        why: "\uC548\uB0B4\uBB38\uC5D0\uC11C \uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uB2E4\uACE0 \uD588\uC5B4\uC694. \uCF69\uC774 \uC528 \uC9D0\uC5D0 \uCE74\uBA54\uB77C\uAC00 \uC788\uC5B4\uC694. \uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 29\uBD84\uC774\uB77C \uC785\uC7A5 \uC2DC\uAC04\uC740 \uAD1C\uCC2E\uACE0, 24\uC0B4\uC774\uB77C \uC5B4\uB978 \uD45C\uB3C4 \uB9DE\uC544\uC694.",
-        reply: "\uC544\uC27D\uB2E4\u2026 \uCE74\uBA54\uB77C\uB294 \uBCF4\uAD00\uD568\uC5D0 \uB9E1\uAE30\uACE0 \uC62C\uAC8C\uC694.",
-        oops: "\uCF69\uC774 \uC528\uAC00 \uCE74\uBA54\uB77C\uB97C \uBA54\uACE0 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uC9C1\uC6D0\uACFC \uD568\uAED8 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
-      },
-      {
-        id: "museum-03",
-        at: "16:32",
-        who: "panda",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC774\uB2E8\uBE44"], ["\uD45C", "\uC5B4\uB9B0\uC774"], ["\uB098\uC774", "15\uC0B4"]]),
-        items: [],
-        line: "\uC800\uB294 \uC911\uD559\uC0DD\uC774\uC5D0\uC694. \uC5B4\uB9B0\uC774 \uD45C\uB85C \uC0C0\uC5B4\uC694.",
-        answer: "fee",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["fee"],
-        why: "\uC5B4\uB9B0\uC774 \uD45C\uB294 13\uC0B4 \uC774\uD558\uB9CC \uC4F8 \uC218 \uC788\uC5B4\uC694. \uB2E8\uBE44\uB294 15\uC0B4\uC774\uC5D0\uC694.",
-        reply: "\uC544, \uC5B4\uB978 \uD45C\uB85C \uBC14\uAFD4 \uC62C\uAC8C\uC694.",
-        oops: "\uB9E4\uD45C\uC18C \uC9C1\uC6D0\uC774 \uB2EC\uB824\uC640\uC11C \uB2E8\uBE44\uC758 \uD45C\uB97C \uBC14\uAFD4 \uC92C\uC5B4\uC694."
-      },
-      {
-        id: "museum-11",
-        at: "16:34",
-        who: "bear",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "21\uC0B4"]]),
-        items: [],
-        line: "\uC800\uB294 \uC2A4\uBB3C\uD55C \uC0B4\uC774\uC5D0\uC694. \uC5B4\uB978 \uD45C\uB97C \uC0C0\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["fee"],
-        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uC785\uC7A5\uC740 \uC624\uD6C4 5\uC2DC\uAE4C\uC9C0\uB9CC \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uB294\uB370 \uC9C0\uAE08\uC740 \uC624\uD6C4 4\uC2DC 34\uBD84\uC774\uB77C \uC544\uC9C1 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694. \uC5B4\uB9B0\uC774 \uD45C\uB294 13\uC0B4 \uC774\uD558\uB9CC \uC4F0\uB294\uB370, \uBCF4\uB9AC \uC528\uB294 21\uC0B4\uC774\uACE0 \uC5B4\uB978 \uD45C\uB97C \uAC00\uC9C0\uACE0 \uC788\uC5B4\uC11C \uD45C\uB3C4 \uB9DE\uC544\uC694. \uBCF4\uC5EC \uC900 \uC9D0\uC774 \uC5C6\uC73C\uB2C8 \uCE74\uBA54\uB77C\uB3C4 \uC5C6\uC5B4\uC694. \uADF8\uB798\uC11C \uB4E4\uC5EC\uBCF4\uB0B4\uBA74 \uB3FC\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uD45C\uB97C \uC798 \uCC59\uACA8 \uB458\uAC8C\uC694.",
-        oops: "\uBCF4\uB9AC \uC528\uAC00 \uD45C\uB97C \uB2E4\uC2DC \uBCF4\uC5EC \uC92C\uC5B4\uC694. \u201C\uC5B4\uB978 \uD45C \uB9DE\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "museum-04",
-        at: "16:37",
-        who: "rabbit",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uD45C", "\uBB34\uB8CC"], ["\uB098\uC774", "72\uC0B4"]]),
-        items: [],
-        line: "\uD560\uBA38\uB2C8\uB294 \uBB34\uB8CC\uC9C0\uC694?",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "doc",
-        evidence: ["fee"],
-        why: "65\uC0B4 \uC774\uC0C1\uC740 \uBB34\uB8CC\uC608\uC694. \uD560\uBA38\uB2C8\uB294 72\uC0B4\uC774\uC5D0\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC80A\uC744 \uB54C \uBC14\uB2E4\uB97C \uB9CE\uC774 \uBD24\uC5B4\uC694.",
-        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uC548\uB0B4\uBB38\uC744 \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C65\uC0B4 \uC774\uC0C1\uC740 \uBB34\uB8CC\uB77C\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.\u201D"
-      },
-      {
-        id: "museum-05",
-        at: "16:43",
-        who: "otter",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uD45C", "\uBB34\uB8CC"], ["\uB098\uC774", "62\uC0B4"]]),
-        items: [],
-        line: "\uC800\uB3C4 \uD560\uC544\uBC84\uC9C0\uC778\uB370, \uBB34\uB8CC\uC9C0\uC694?",
-        answer: "fee",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["fee"],
-        why: "\uBB34\uB8CC\uB294 65\uC0B4 \uC774\uC0C1\uC774\uC5D0\uC694. \uB2EC\uC218 \uD560\uC544\uBC84\uC9C0\uB294 62\uC0B4\uC774\uC5D0\uC694.",
-        reply: "\uD5C8\uD5C8, 3\uB144\uB9CC \uB354 \uAE30\uB2E4\uB9B4\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uB9E4\uD45C\uC18C \uC9C1\uC6D0\uC774 \u201C\uD560\uC544\uBC84\uC9C0, \uD45C\uB97C \uC0AC\uC154\uC57C \uD574\uC694!\u201D \uD558\uACE0 \uB530\uB77C\uC654\uC5B4\uC694."
-      },
-      {
-        id: "museum-06",
-        at: "16:48",
-        who: "hedgehog",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uACE0\uB3C4\uCE58"], ["\uD45C", "\uC5B4\uB9B0\uC774"], ["\uB098\uC774", "9\uC0B4"]]),
-        items: [],
-        line: "\uC5C4\uB9C8\uAC00 \uD45C\uB97C \uC0AC \uC92C\uC5B4\uC694!",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "doc",
-        evidence: ["fee"],
-        why: "\uB3C4\uCE58\uB294 9\uC0B4\uC774\uB77C \uC5B4\uB9B0\uC774 \uD45C\uB97C \uC4F8 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694! \uD070 \uACE0\uB798 \uADF8\uB9BC\uBD80\uD130 \uBCFC\uB798\uC694.",
-        oops: "\uB3C4\uCE58\uAC00 \uD45C\uB97C \uAF2D \uC950\uC5C8\uC5B4\uC694. \u201C\uC800\uB294 \uC544\uD649 \uC0B4\uC778\uB370\uC694?\u201D"
-      },
-      {
-        id: "museum-07",
-        at: "16:55",
-        who: "raccoon",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uB098\uAD6C\uB9AC"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "45\uC0B4"]]),
-        items: ["camera", "phone"],
-        line: "\uCE74\uBA54\uB77C\uB294 \uAC00\uBC29\uC5D0 \uB123\uC744\uAC8C\uC694. \uC548 \uCC0D\uC73C\uBA74 \uB418\uC9C0\uC694?",
-        answer: "camera",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "items",
-        evidence: ["camera"],
-        why: "\uCC0D\uC9C0 \uC54A\uC544\uB3C4 \uCE74\uBA54\uB77C\uB294 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uC54C\uACA0\uC5B4\uC694. \uBCF4\uAD00\uD568\uC5D0 \uB123\uACE0 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uAD6C\uB9AC \uC528\uAC00 \uADF8\uB9BC \uC55E\uC5D0\uC11C \uAC00\uBC29 \uC18D \uCE74\uBA54\uB77C\uB97C \uC2AC\uCA4D \uAEBC\uB0C8\uC5B4\uC694."
-      },
-      {
-        id: "museum-08",
-        at: "17:04",
-        who: "bear",
-        doc: doc("\uBC14\uB78C \uBBF8\uC220\uAD00 \uAD00\uB78C\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uD45C", "\uC5B4\uB978"], ["\uB098\uC774", "21\uC0B4"]]),
-        items: ["phone"],
-        line: "\uC804\uC2DC\uB97C \uBCF4\uB7EC \uC654\uC5B4\uC694. \uC544\uC9C1 \uAD1C\uCC2E\uC9C0\uC694?",
-        answer: "time",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "clock",
-        evidence: ["time"],
-        why: "\uC9C0\uAE08\uC740 5\uC2DC 4\uBD84\uC774\uC5D0\uC694. \uC785\uC7A5\uC740 5\uC2DC\uAE4C\uC9C0\uB9CC \uD560 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uC544\uC26C\uC6CC\uC694. \uB0B4\uC77C\uC740 \uC77C\uCC0D \uC62C\uAC8C\uC694.",
-        oops: "\uBCF4\uB9AC \uC528\uAC00 \uB4E4\uC5B4\uAC00\uC790\uB9C8\uC790 \uC9C1\uC6D0\uC774 \uBD88\uB7EC \uC138\uC6E0\uC5B4\uC694. \u201C\uC785\uC7A5 \uC2DC\uAC04\uC774 \uC9C0\uB0AC\uC5B4\uC694!\u201D"
-      }
-    ]
-  },
-  {
-    id: "concert",
-    day: 4,
-    name: "\uB178\uC744 \uACF5\uC6D0 \uC74C\uC545\uD68C",
-    scene: "concert",
-    band: "butter",
-    date: "8\uC6D4 10\uC77C \uC77C\uC694\uC77C",
-    briefing: "\uC5B4\uC81C \uBE44\uAC00 \uC640\uC11C \uC74C\uC545\uD68C\uAC00 \uD558\uB8E8 \uBBF8\uB904\uC84C\uC5B4\uC694. \uADFC\uBB34 \uC911\uC5D0 \uC0C8 \uC54C\uB9BC\uC774 \uC62C \uC218\uB3C4 \uC788\uC73C\uB2C8 \uAF2D \uC77D\uC5B4\uC694.",
-    notice: {
-      kind: "\uACF5\uC5F0 \uC548\uB0B4",
-      title: "\uB178\uC744 \uACF5\uC6D0 \uC5EC\uB984 \uC74C\uC545\uD68C",
-      rules: [
-        R("date", "\uBE44 \uB54C\uBB38\uC5D0 \uC74C\uC545\uD68C\uAC00 8\uC6D4 10\uC77C(\uC77C)\uB85C \uBC14\uB00C\uC5C8\uC2B5\uB2C8\uB2E4. 8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uB0A0\uC9DC"),
-        R("chair", "\uB3D7\uC790\uB9AC\uB294 \uAC00\uC9C0\uACE0 \uC640\uB3C4 \uB429\uB2C8\uB2E4. \uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uC758\uC790"),
-        R("kid", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC640\uC57C \uD569\uB2C8\uB2E4.", "ko.reading.condition", "7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774")
-      ]
-    },
-    memo: {
-      at: "18:25",
-      rule: R("food", "\uC9C0\uAE08\uBD80\uD130 \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uBB3C\uC740 \uAD1C\uCC2E\uC2B5\uB2C8\uB2E4.", "ko.reading.negation", "\uC74C\uC2DD(\uC54C\uB9BC)"),
-      title: "6\uC2DC 25\uBD84 \uC54C\uB9BC",
-      from: "\uACF5\uC6D0 \uAD00\uB9AC\uC2E4"
-    },
-    cases: [
-      {
-        id: "concert-01",
-        at: "18:03",
-        who: "sheep",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC591\uC19C\uC774"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["picnic-mat"],
-        line: "\uC5B4\uC81C \uBE44\uAC00 \uC640\uC11C \uC624\uB298 \uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["date"],
-        why: "\uC74C\uC545\uD68C\uAC00 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uACE0, 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694! \uC55E\uC790\uB9AC\uC5D0 \uB3D7\uC790\uB9AC\uB97C \uD3BC\uAC8C\uC694.",
-        oops: "\uC19C\uC774 \uC528\uAC00 \uC548\uB0B4\uBB38\uC744 \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.\u201D"
-      },
-      {
-        id: "concert-10",
-        at: "18:05",
-        who: "deer",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB178\uB098\uB798"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["picnic-mat"],
-        line: "\uD45C\uC5D0\uB294 9\uC77C\uC774\uB77C\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694. 10\uC77C\uB85C \uBC14\uB010 \uC74C\uC545\uD68C\uC5D0\uB3C4 \uC4F8 \uC218 \uC788\uC9C0\uC694?",
-        answer: "pass",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["date"],
-        why: "\uC74C\uC545\uD68C \uB0A0\uC9DC\uB294 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uC9C0\uB9CC \uC548\uB0B4\uBB38\uC5D0\uC11C 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uB2E4\uACE0 \uD588\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uD45C\uB97C \uBC14\uAFC0 \uD544\uC694\uAC00 \uC5C6\uB124\uC694.",
-        oops: "\uB098\uB798 \uC528\uAC00 \uC548\uB0B4\uBB38\uC758 \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB97C \uC9DA\uC5C8\uC5B4\uC694."
-      },
-      {
-        id: "concert-02",
-        at: "18:08",
-        who: "fox",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["chair"],
-        line: "\uC758\uC790\uC5D0 \uC549\uC544\uC11C \uBCF4\uACE0 \uC2F6\uC5B4\uC694.",
-        answer: "chair",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["chair"],
-        why: "\uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC5B4\uC694. \uB3D7\uC790\uB9AC\uB294 \uAD1C\uCC2E\uC544\uC694.",
-        reply: "\uADF8\uB7FC \uC758\uC790\uB294 \uCC28\uC5D0 \uB450\uACE0 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uC6B0\uC9C4 \uC528 \uC758\uC790 \uB54C\uBB38\uC5D0 \uB4B7\uC0AC\uB78C\uC774 \uBB34\uB300\uB97C \uBABB \uBD24\uC5B4\uC694."
-      },
-      {
-        id: "concert-11",
-        at: "18:10",
-        who: "panda",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC774\uB2E8\uBE44"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["chair"],
-        line: "\uC758\uC790\uB97C \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694. \uACF5\uC5F0\uC744 \uBCF4\uACE0 \uC2F6\uC5B4\uC694.",
-        answer: "chair",
-        skill: "ko.reading.negation",
-        difficulty: 1,
-        look: "items",
-        evidence: ["chair"],
-        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uB2E8\uBE44 \uC528 \uC9D0\uC5D0 \uC811\uC774\uC2DD \uC758\uC790\uAC00 \uC788\uC73C\uB2C8 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694. \uC74C\uC545\uD68C \uB0A0\uC9DC\uB294 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uC9C0\uB9CC \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 \uB0A0\uC9DC\uB294 \uBB38\uC81C\uAC00 \uC544\uB2C8\uC5D0\uC694.",
-        reply: "\uC758\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uB3D7\uC790\uB9AC\uB97C \uAC00\uC838\uC62C\uAC8C\uC694.",
-        oops: "\uB2E8\uBE44 \uC528\uAC00 \uB4E4\uACE0 \uC628 \uC758\uC790 \uB54C\uBB38\uC5D0 \uB4B7\uC0AC\uB78C\uC774 \uBB34\uB300\uB97C \uBABB \uBD24\uC5B4\uC694."
-      },
-      {
-        id: "concert-03",
-        at: "18:13",
-        who: "penguin",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB0A8\uCF69\uC774"], ["\uB0A0\uC9DC", "8\uC6D4 16\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: [],
-        line: "\uC624\uB298 \uC74C\uC545\uD68C \uB9DE\uC9C0\uC694?",
-        answer: "date",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["date"],
-        why: "\uCF69\uC774 \uC528 \uD45C\uB294 8\uC6D4 16\uC77C \uD45C\uC608\uC694. \uC624\uB298 \uC74C\uC545\uD68C\uB294 8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC640\uC694.",
-        reply: "\uC557, \uB2E4\uC74C \uC8FC \uD45C\uC600\uB124\uC694! \uB2E4\uC74C \uC8FC\uC5D0 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uCF69\uC774 \uC528\uAC00 \uC549\uC740 \uC790\uB9AC\uC5D0 \uC9C4\uC9DC \uC8FC\uC778\uC774 \uB098\uD0C0\uB0AC\uC5B4\uC694."
-      },
-      {
-        id: "concert-12",
-        at: "18:16",
-        who: "rabbit",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uB0A0\uC9DC", "8\uC6D4 2\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["picnic-mat"],
-        line: "\uD1A0\uC694\uC77C \uC74C\uC545\uD68C \uD45C\uC608\uC694. \uB4E4\uC5B4\uAC00\uB3C4 \uB3FC\uC694?",
-        answer: "date",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["date"],
-        why: "\uD1A0\uC21C \uC528 \uD45C\uC758 \uB0A0\uC9DC\uB294 8\uC6D4 2\uC77C\uC774\uC5D0\uC694. \uC548\uB0B4\uBB38\uC5D0 \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC73C\uB2C8 8\uC6D4 2\uC77C \uD45C\uB85C\uB294 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694. \uAC19\uC740 \uD1A0\uC694\uC77C\uC774\uC5B4\uB3C4 \uB0A0\uC9DC\uAC00 \uB2EC\uB77C\uC694. \uC9D0\uC740 \uB3D7\uC790\uB9AC\uB77C\uC11C \uAD1C\uCC2E\uC9C0\uB9CC \uD45C \uB0A0\uC9DC \uB54C\uBB38\uC5D0 \uB3CC\uB824\uBCF4\uB0B4\uC57C \uD574\uC694.",
-        reply: "\uC5B4\uBA38, \uC9C0\uB09C\uC8FC \uD45C\uB97C \uAC00\uC9C0\uACE0 \uC654\uB124\uC694. \uC9D1\uC5D0 \uAC00\uC11C 9\uC77C \uD45C\uB97C \uCC3E\uC544\uBCFC\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, 9\uC77C \uD45C\uB97C \uAC00\uC9C4 \uC190\uB2D8\uC774 \uC640\uC11C \uD1A0\uC21C \uC528\uAC00 \uC549\uC740 \uC790\uB9AC\uB97C \uCC3E\uC558\uC5B4\uC694."
-      },
-      {
-        id: "concert-04",
-        at: "18:19",
-        who: "bear",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uAE40\uBCF4\uB9AC"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["snack", "picnic-mat"],
-        line: "\uACFC\uC790 \uBA39\uC73C\uBA74\uC11C \uB4E4\uC744 \uAC70\uC608\uC694.",
-        answer: "pass",
-        skill: "ko.reading.detail",
-        difficulty: 2,
-        look: "items",
-        evidence: ["chair"],
-        why: "\uB3D7\uC790\uB9AC\uB294 \uAC00\uC9C0\uACE0 \uC640\uB3C4 \uB3FC\uC694. \uC774\uB54C\uB294 \uC544\uC9C1 \uC74C\uC2DD \uC54C\uB9BC\uC774 \uC624\uAE30 \uC804\uC774\uC5D0\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694! \uCE5C\uAD6C\uB791 \uB098\uB220 \uBA39\uC744\uAC8C\uC694.",
-        oops: "\uBCF4\uB9AC \uC528\uAC00 \uC548\uB0B4\uBB38\uC744 \uB2E4\uC2DC \uC77D\uC5C8\uC5B4\uC694. \u201C\uACFC\uC790 \uC774\uC57C\uAE30\uB294 \uC5C6\uB294\uB370\uC694?\u201D"
-      },
-      {
-        id: "concert-05",
-        at: "18:28",
-        who: "raccoon",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB098\uAD6C\uB9AC"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["gimbap", "picnic-mat"],
-        line: "\uAE40\uBC25 \uB3C4\uC2DC\uB77D\uC744 \uC2F8 \uC654\uC5B4\uC694.",
-        answer: "food",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "6\uC2DC 25\uBD84\uC5D0 \uC628 \uC54C\uB9BC\uBD80\uD130\uB294 \uC74C\uC2DD\uC744 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uC544\uC774\uACE0, \uADF8\uB7FC \uC5EC\uAE30\uC11C \uB2E4 \uBA39\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uBC29\uC1A1\uC774 \uB098\uC654\uC5B4\uC694. \u201C\uAE40\uBC25\uC744 \uB4DC\uC2DC\uB294 \uC190\uB2D8, \uAD00\uB9AC\uC2E4\uB85C \uC640 \uC8FC\uC138\uC694.\u201D"
-      },
-      {
-        id: "concert-13",
-        at: "18:30",
-        who: "fox",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC5EC\uC6B0\uC9C4"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["snack", "picnic-mat"],
-        line: "\uC0C8 \uC54C\uB9BC\uC774 \uC654\uB124\uC694. \uACFC\uC790\uB97C \uAC00\uC838\uC654\uB294\uB370 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC00\uB3C4 \uB3FC\uC694?",
-        answer: "food",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC548\uB0B4\uBB38\uC5D0 \u201C\uC9C0\uAE08\uBD80\uD130 \uC74C\uC2DD\uC740 \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC6B0\uC9C4 \uC528 \uC9D0\uC5D0 \uC788\uB294 \uACFC\uC790\uB3C4 \uC74C\uC2DD\uC774\uB77C \uAC00\uC9C0\uACE0 \uB4E4\uC5B4\uAC08 \uC218 \uC5C6\uC5B4\uC694. \uB0A0\uC9DC\uB294 \uBC14\uB00C\uC5C8\uC9C0\uB9CC \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uC11C \uBB38\uC81C\uAC00 \uC544\uB2C8\uC5D0\uC694.",
-        reply: "\uC544, \uADF8\uB807\uAD70\uC694. \uACFC\uC790\uB294 \uBC16\uC5D0 \uB450\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        oops: "\uC6B0\uC9C4 \uC528\uAC00 \uACFC\uC790\uB97C \uB4E4\uACE0 \uB4E4\uC5B4\uAC14\uB2E4\uAC00, \uC9C1\uC6D0\uC774 \uBCF4\uC5EC \uC900 \uC54C\uB9BC\uC744 \uC77D\uACE0 \uB2E4\uC2DC \uB098\uC654\uC5B4\uC694."
-      },
-      {
-        id: "concert-06",
-        at: "18:33",
-        who: "rabbit",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uBC15\uD1A0\uC21C"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["water-bottle", "picnic-mat"],
-        line: "\uBB3C \uD55C \uBCD1\uB9CC \uAC00\uC9C0\uACE0 \uC654\uC5B4\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "items",
-        evidence: ["food"],
-        why: "\uC74C\uC2DD\uC740 \uC548 \uB418\uC9C0\uB9CC \uBB3C\uC740 \uAD1C\uCC2E\uC544\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uB178\uB798\uB97C \uB4E4\uC73C\uBA74 \uC80A\uC5B4\uC9C0\uB294 \uAC83 \uAC19\uC544\uC694.",
-        oops: "\uD1A0\uC21C \uD560\uBA38\uB2C8\uAC00 \uC54C\uB9BC\uC744 \uAC00\uB9AC\uCF30\uC5B4\uC694. \u201C\uBB3C\uC740 \uAD1C\uCC2E\uB2E4\uACE0 \uC4F0\uC5EC \uC788\uC5B4\uC694.\u201D"
-      },
-      {
-        id: "concert-07",
-        at: "18:38",
-        who: "squirrel",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uB3C4\uB2E4\uBBF8"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB9B0\uC774 \xB7 6\uC0B4"]]),
-        items: [],
-        line: "\uC5B8\uB2C8\uB294 \uB2E4\uC74C \uBC84\uC2A4\uB85C \uC640\uC694. \uBA3C\uC800 \uB4E4\uC5B4\uAC08\uAC8C\uC694!",
-        answer: "kid",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["kid"],
-        why: "\uB2E4\uBBF8\uB294 6\uC0B4\uC774\uC5D0\uC694. 7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC640\uC57C \uD574\uC694.",
-        reply: "\uB124, \uC5B8\uB2C8 \uC624\uBA74 \uAC19\uC774 \uB4E4\uC5B4\uAC08\uAC8C\uC694!",
-        oops: "\uB2E4\uBBF8\uAC00 \uD63C\uC790 \uC0AC\uB78C\uB4E4 \uC0AC\uC774\uB85C \uB4E4\uC5B4\uAC00\uC11C \uC5B8\uB2C8\uAC00 \uD55C\uCC38 \uCC3E\uC558\uC5B4\uC694."
-      },
-      {
-        id: "concert-14",
-        at: "18:41",
-        who: "ducks",
-        followupOnly: true,
-        textOnly: true,
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC624\uC21C \uC678 1\uBA85"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978 1\uBA85 \xB7 \uC5B4\uB9B0\uC774 1\uBA85(7\uC0B4)"]]),
-        items: ["picnic-mat", "water-bottle"],
-        line: "\uC544\uC774\uB294 \uC77C\uACF1 \uC0B4\uC774\uACE0 \uC800\uB294 \uC5C4\uB9C8\uC608\uC694. \uD568\uAED8 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 2,
-        look: "doc",
-        evidence: ["kid"],
-        why: "\uC74C\uC545\uD68C\uB294 8\uC6D4 10\uC77C\uB85C \uBC14\uB00C\uC5C8\uC9C0\uB9CC \u201C8\uC6D4 9\uC77C \uD45C\uB85C \uB4E4\uC5B4\uC62C \uC218 \uC788\uC2B5\uB2C8\uB2E4\u201D\uB77C\uACE0 \uD588\uC5B4\uC694. \uC9D0\uC740 \uB3D7\uC790\uB9AC\uC640 \uBB3C\uC774\uB77C\uC11C \uAD1C\uCC2E\uC544\uC694. 7\uC0B4 \uC774\uD558 \uC5B4\uB9B0\uC774\uB294 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC640\uC57C \uD558\uB294\uB370, 7\uC0B4 \uC544\uC774\uAC00 \uC5C4\uB9C8\uC640 \uD568\uAED8 \uC654\uC73C\uB2C8 \uB4E4\uC5B4\uAC08 \uC218 \uC788\uC5B4\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC544\uC774 \uC190\uC744 \uC7A1\uACE0 \uB4E4\uC5B4\uAC08\uAC8C\uC694.",
-        oops: "\uC624\uC21C \uC528\uAC00 \uC544\uC774 \uC190\uC744 \uB4E4\uC5B4 \uBCF4\uC600\uC5B4\uC694. \u201C\uC5C4\uB9C8\uB791 \uAC19\uC774 \uC654\uC5B4\uC694.\u201D"
-      },
-      {
-        id: "concert-08",
-        at: "18:44",
-        who: "ducks",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC624\uC21C \uC678 1\uBA85"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978 1\uBA85 \xB7 \uC5B4\uB9B0\uC774 1\uBA85(5\uC0B4)"]]),
-        items: ["picnic-mat"],
-        line: "\uC544\uC774\uB791 \uB3D7\uC790\uB9AC\uC5D0 \uC549\uC544\uC11C \uBCFC\uAC8C\uC694.",
-        answer: "pass",
-        skill: "ko.reading.condition",
-        difficulty: 1,
-        look: "doc",
-        evidence: ["kid"],
-        why: "5\uC0B4 \uC544\uC774\uAC00 \uBCF4\uD638\uC790\uC640 \uD568\uAED8 \uC654\uC5B4\uC694. \uB3D7\uC790\uB9AC\uB3C4 \uAD1C\uCC2E\uC544\uC694.",
-        reply: "\uACE0\uB9C8\uC6CC\uC694. \uC544\uC774\uAC00 \uB178\uB798\uB97C \uC88B\uC544\uD574\uC694.",
-        oops: "\uC544\uAE30 \uC624\uB9AC\uAC00 \uC5C4\uB9C8 \uB0A0\uAC1C\uB97C \uAF2D \uC7A1\uC558\uC5B4\uC694. \u201C\uC5C4\uB9C8\uB791 \uAC19\uC774 \uC654\uC5B4\uC694!\u201D"
-      },
-      {
-        id: "concert-09",
-        at: "18:50",
-        who: "otter",
-        doc: doc("\uC5EC\uB984 \uC74C\uC545\uD68C \uC785\uC7A5\uAD8C", [["\uC774\uB984", "\uC218\uB2EC\uC218"], ["\uB0A0\uC9DC", "8\uC6D4 9\uC77C \uD1A0\uC694\uC77C"], ["\uAD6C\uBD84", "\uC5B4\uB978"]]),
-        items: ["chair"],
-        line: "\uC544\uC8FC \uC791\uC740 \uC758\uC790\uC608\uC694. \uAD1C\uCC2E\uC9C0\uC694?",
-        answer: "chair",
-        skill: "ko.reading.negation",
-        difficulty: 2,
-        look: "items",
-        evidence: ["chair"],
-        why: "\uC791\uC544\uB3C4 \uC758\uC790\uB294 \uAC00\uC9C0\uACE0 \uC62C \uC218 \uC5C6\uC5B4\uC694.",
-        reply: "\uD5C8\uD5C8, \uADF8\uB7FC \uB3D7\uC790\uB9AC\uB97C \uBE4C\uB824 \uC62C\uAC8C\uC694.",
-        oops: "\uC7A0\uC2DC \uB4A4, \uD560\uC544\uBC84\uC9C0 \uC758\uC790\uAC00 \uB2E4\uB978 \uC190\uB2D8\uB4E4\uC758 \uAE38\uC744 \uB9C9\uC558\uC5B4\uC694."
-      }
-    ]
-  }
-];
-
-// experiences/entry-check/learning.mjs
-var GAME_ID3 = "entry-check";
-var FORMAT3 = "single-choice";
-var RULE_GRAMMAR = Object.freeze({
-  "pool.cap": ["G403"],
-  "pool.food": ["G402"],
-  "pool.kid": ["G212", "G403"],
-  "library.card": ["G402"],
-  "library.food": ["G402", "G401"],
-  "library.time": ["G212", "S104", "G402"],
-  "museum.time": ["G212", "S105", "S107", "G402"],
-  "museum.camera": ["G402"],
-  "museum.fee": ["G212", "S107", "G402"],
-  "concert.date": ["G212", "G402"],
-  "concert.chair": ["G505", "G402"],
-  "concert.kid": ["G212", "G403"],
-  "concert.food": ["S104", "G402"]
-});
-var CASE_GRAMMAR = new Map(VENUES.flatMap((v) => v.cases.map((c) => [c.id, [...new Set(c.evidence.flatMap((r) => RULE_GRAMMAR[`${v.id}.${r}`] || []))]])));
-var ITEM_VERSION5 = Object.freeze({ "concert-12": 3, "pool-14": 2 });
-var LANGUAGE_DIFFICULTY = 2;
-function caseMetadata(c) {
-  const family = `${GAME_ID3}.${c.id}.v1`, key = `${GAME_ID3}.${c.id}.v${ITEM_VERSION5[c.id] || 1}`;
-  return {
-    id: `${GAME_ID3}.${c.id}`,
-    itemKey: key,
-    familyKey: family,
-    skillId: c.skill,
-    difficulty: LANGUAGE_DIFFICULTY,
-    modality: "reading",
-    responseFormat: FORMAT3,
-    audioRequired: false,
-    confounded: false,
-    conceptIds: [...CASE_GRAMMAR.get(c.id) || []]
-  };
-}
-var RETURN_PATTERNS5 = Object.freeze({
-  detail: { skillId: "ko.reading.detail", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uD45C\uB098 \uC9D0\uC758 \uC138\uBD80 \uB0B4\uC6A9\uC744 \uC548\uB0B4\uBB38\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
-  negation: { skillId: "ko.reading.negation", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uBD80\uC815 \uD45C\uD604\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." },
-  condition: { skillId: "ko.reading.condition", why: "\uC9C0\uB09C \uADFC\uBB34\uC5D0\uC11C \uC548\uB0B4\uBB38\uC758 \uC870\uAC74\uC744 \uC190\uB2D8\uACFC \uB9DE\uCD94\uB294 \uAC78 \uB193\uCE5C \uC801\uC774 \uC788\uC5B4\uC694.", next: "\uC624\uB298 \uADFC\uBB34\uC5D0\uB3C4 \uADF8\uB7F0 \uC190\uB2D8\uC774 \uC640\uC694. \uC548\uB0B4\uBB38\uC744 \uD55C \uC904\uC529 \uB2E4 \uC77D\uACE0 \uB3C4\uC7A5\uC744 \uCC0D\uC5B4 \uBCF4\uC138\uC694." }
-});
-var ALL_CASES = VENUES.flatMap((v) => v.cases.map((c) => ({ venue: v, c })));
-var CASE_OF_FAMILY = new Map(ALL_CASES.map(({ c }) => [caseMetadata(c).familyKey, c]));
-
-// experiences/entry-check/core.mjs
-var minutes = (t3) => {
-  const [h, m] = String(t3).split(":").map(Number);
-  return h * 60 + m;
-};
-function koreanTime(t3) {
-  const [h, m] = String(t3).split(":").map(Number);
-  const half = h < 12 ? "\uC624\uC804" : "\uC624\uD6C4";
-  const hour = h % 12 || 12;
-  return `${half} ${hour}\uC2DC${m ? ` ${m}\uBD84` : ""}`;
-}
-var memoActive = (venue, at) => !!venue.memo && minutes(at) >= minutes(venue.memo.at);
-function activeRules(venue, at) {
-  return memoActive(venue, at) ? [...venue.notice.rules, venue.memo.rule] : [...venue.notice.rules];
-}
-var choicesFor = (venue, at) => ["pass", ...activeRules(venue, at).map((r) => r.id)];
 
 // experiences/synk-world-app/world-diagnostic-racing.mjs
 var DIAG_RACING_WORDS = Object.freeze([
@@ -28282,7 +28567,7 @@ function diagRunnerItems() {
       audio: `korean-runner/assets/voice/${item.id}.mp3`,
       prompt: null,
       question: null,
-      choices: item.choices.map((label, index2) => ({ id: item.choiceIds[index2], label })),
+      choices: item.choices.map((label, index) => ({ id: item.choiceIds[index], label })),
       correctId: item.choiceIds[item.correct],
       explanation: item.explanation,
       label: diagShort(item.text)
@@ -28290,9 +28575,9 @@ function diagRunnerItems() {
   });
 }
 function diagRhythmItems() {
-  return TRACKS.flatMap((track) => track.questions.map((question2, index2) => {
-    const family = rhythmItem(track.id, { sourceIndex: index2 }).familyKey, variant = diagSeeded(family)() < 0.5 ? 0 : 1;
-    const meta = rhythmItem(track.id, { sourceIndex: index2, variant }), voice = NARRATION[`t${track.id}q${index2}v${variant}`], claim = question2.claims[variant];
+  return TRACKS.flatMap((track) => track.questions.map((question2, index) => {
+    const family = rhythmItem(track.id, { sourceIndex: index }).familyKey, variant = diagSeeded(family)() < 0.5 ? 0 : 1;
+    const meta = rhythmItem(track.id, { sourceIndex: index, variant }), voice = NARRATION[`t${track.id}q${index}v${variant}`], claim = question2.claims[variant];
     if (!voice) return null;
     const o = "korean-rhythm.o", x = "korean-rhythm.x";
     return {
@@ -28309,9 +28594,9 @@ function diagRhythmItems() {
   }).filter(Boolean));
 }
 function diagBlankItems() {
-  return ITEMS.map((item) => {
-    const meta = itemMetadata(item), ids = item.options.map((_, index2) => `blank-slice.${item.id}.option-${index2}`);
-    const order2 = diagArrange(meta.itemKey, item.options.map((label, index2) => ({ id: ids[index2], label })));
+  return ITEMS2.map((item) => {
+    const meta = itemMetadata(item), ids = item.options.map((_, index) => `blank-slice.${item.id}.option-${index}`);
+    const order2 = diagArrange(meta.itemKey, item.options.map((label, index) => ({ id: ids[index], label })));
     return {
       ...meta,
       source: "blank-slice",
@@ -28333,7 +28618,7 @@ function diagTownItems() {
     audio: null,
     prompt: item.passage,
     question: item.question,
-    choices: item.choices.map((label, index2) => ({ id: `option-${index2}`, label })),
+    choices: item.choices.map((label, index) => ({ id: `option-${index}`, label })),
     correctId: `option-${item.correct}`,
     explanation: item.explanation,
     label: diagShort(item.question)
@@ -28342,7 +28627,7 @@ function diagTownItems() {
 function diagEntryItems() {
   return VENUES.flatMap((venue) => venue.cases.filter((item) => item.textOnly).map((item) => {
     const meta = caseMetadata(item), rules = activeRules(venue, item.at), id = (choice) => choice === "pass" ? "pass" : `reject-${choice}`;
-    const bag = (item.items || []).map((entry) => Array.isArray(entry) ? `${ITEMS2[entry[0]] || entry[0]} ${entry[1]}\uAC1C` : ITEMS2[entry] || entry);
+    const bag = (item.items || []).map((entry) => Array.isArray(entry) ? `${ITEMS[entry[0]] || entry[0]} ${entry[1]}\uAC1C` : ITEMS[entry] || entry);
     return {
       ...meta,
       source: "entry-check",
@@ -28490,48 +28775,8 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const note = noteText(skill2.note);
     return `<details class="wpos-skill" data-skill="${posEscape(skill2.id)}" data-cell="${posEscape(skill2.cell)}" data-status="${posEscape(skill2.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill2))}${note ? `<small class="wpos-skill-note" data-note="${posEscape(skill2.note.kind)}">${posEscape(note)}</small>` : ""}</span><span class="wpos-chip" data-tone="${POS_LED[skill2.cell] || "idle"}">${posLed(POS_LED[skill2.cell])}${posEscape(t3(`position.cell.${skill2.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t3(`position.status.${skill2.status}`))}</p><p class="wpos-evidence-title">${posEscape(t3("position.evidence.title"))}</p>${evidenceRows(skill2, catalog)}${uncountedRows(skill2, catalog, assessable)}${helpedRows(skill2, catalog)}${practiceButton(skill2.id, practice)}</div></details>`;
   }
-  const MISSED_STEPS = Object.freeze(["spot", "again", "practice", "homework", "delayed"]);
-  function missedCount(row) {
-    if (row.count === 1 && row.of === 1) return t3("position.missed.count.once");
-    return t3(row.unit === "guest" ? "position.missed.count.guest" : "position.missed.count.try", { n: row.of, wrong: row.count });
-  }
-  const missedShare = (row) => t3(row.count === row.of ? "position.missed.share.all" : "position.missed.share.some", { n: row.count, of: row.of });
-  function missedStepText(row) {
-    if (row.step === "spot") {
-      const main = t3(row.sameRule ? "position.missed.spot.sameRule" : "position.missed.spot.sameKind", { n: row.guests });
-      return row.right ? `${main} \xB7 ${t3("position.missed.spot.right", { n: row.right })}` : main;
-    }
-    if (row.step === "again") {
-      if (row.state === "planned") return t3("position.missed.again.left", { n: row.left });
-      const key = row.result === "correct" ? row.answer === "reject" ? "reject" : "correct" : ["assisted", "incorrect"].includes(row.result) ? row.result : "other";
-      return t3(`position.missed.again.${key}`);
-    }
-    if (row.step === "practice") return t3("position.missed.practice.done", { n: row.n, right: row.right });
-    if (row.step === "homework") return t3("position.missed.homework.planned");
-    if (row.step === "delayed") {
-      if (row.due) return t3("position.missed.delayed.due");
-      if (row.dueAt) return t3("position.missed.delayed.next", { date: day(row.dueAt) });
-      if (row.observed) return t3("position.missed.delayed.observed", { n: row.observed });
-      return t3("position.missed.delayed.planned");
-    }
-    return "";
-  }
-  function missedBlock(card, practice) {
-    if (!card || card.kind !== "topik") return "";
-    const head = card.narrow.find((row) => row.layer === "skill");
-    if (!head) return "";
-    const exam = t3(card.target.exam === "topik2" ? "goal.exam.type.topik2" : "goal.exam.type.topik1"), domain = t3(card.target.domain === "listening" ? "position.domain.listening" : "position.domain.reading");
-    const layers = card.narrow.filter((row) => row.layer !== "skill").map((row) => {
-      const body = row.layer === "line" ? `<span class="wmis-line" lang="ko">\u300C${posEscape(row.text)}\u300D</span>` : `<span>${posEscape(t3(`position.missed.direction.${row.direction}`))}</span>`;
-      return `<div data-layer="${posEscape(row.layer)}"><dt>${posEscape(t3(`position.missed.layer.${row.layer}`))}</dt><dd>${body}<small>${posEscape(missedShare(row))}</small></dd></div>`;
-    }).join("");
-    const steps = card.again.filter((row) => MISSED_STEPS.includes(row.step)).map((row) => `<li data-step="${posEscape(row.step)}" data-state="${row.state === "done" ? "done" : "planned"}"><i class="wmis-dot" aria-hidden="true"></i><span class="wmis-step">${posEscape(t3(`position.missed.step.${row.step}`))}</span><span class="wmis-what">${posEscape(missedStepText(row))}</span></li>`).join("");
-    const states = new Set(card.again.map((row) => row.state === "done" ? "done" : "planned"));
-    const legend = steps ? `<p class="wmis-legend">${["done", "planned"].filter((state) => states.has(state)).map((state) => `<span data-state="${state}"><i class="wmis-dot" aria-hidden="true"></i>${posEscape(t3(`position.missed.legend.${state}`))}</span>`).join("")}</p>` : "";
-    return `<section class="wpos-missed" data-position-missed="${posEscape(card.target.skillId)}" aria-labelledby="wpos-missed-title"><p class="life-section-label">MISSED SPOT</p><h3 id="wpos-missed-title">${posEscape(t3("position.missed.title"))}</h3><div class="wmis-head"><small class="wmis-exam">${posEscape(exam)} \xB7 ${posEscape(domain)}</small><strong class="wmis-skill">${posEscape(skillName({ id: card.target.skillId, label: card.target.label }))}</strong><span class="wmis-count">${posLed("alert")}${posEscape(missedCount(head))}</span></div>${layers ? `<dl class="wmis-narrow" aria-label="${posEscape(t3("position.missed.narrow"))}">${layers}</dl>` : ""}${steps ? `<p class="wmis-sub">${posEscape(t3("position.missed.again"))}</p><ol class="wmis-again">${steps}</ol>${legend}` : ""}${practiceButton(card.target.skillId, practice)}</section>`;
-  }
-  function attentionBlock(map, practice, skip = null) {
-    const rows2 = (map.attention || []).filter((id) => id !== skip).map((id) => map.skills.find((skill2) => skill2.id === id)).filter(Boolean);
+  function attentionBlock(map, practice) {
+    const rows2 = (map.attention || []).map((id) => map.skills.find((skill2) => skill2.id === id)).filter(Boolean);
     if (!rows2.length) return "";
     return `<section class="wpos-attention" data-position-attention><p class="life-section-label">LOOK FIRST</p><h3>${posEscape(t3("position.attention.title"))}</h3><p class="wpos-note">${posEscape(t3("position.attention.note"))}</p><ul>${rows2.map((skill2) => `<li data-skill="${posEscape(skill2.id)}"><span class="wpos-attention-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(noteText(skill2.note))}</small></span>${practiceButton(skill2.id, practice)}</li>`).join("")}</ul></section>`;
   }
@@ -28572,7 +28817,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(ask)}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
   }
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
-  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [], assessable = null, missed = null } = {}) {
+  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [], assessable = null } = {}) {
     const exam = map.exam === "topik2" ? "topik2" : "topik1";
     const summary = t3(exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total });
     const groups = ["listening", "reading"].map((domain) => {
@@ -28582,7 +28827,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     }).join("");
     const writingBlock = exam === "topik2" ? `<section class="wpos-group" data-domain="writing"><h3>${posEscape(t3("plan.area.writing"))}</h3><p class="wpos-note">${posEscape(t3("position.writing.note"))}</p>${writing ? `<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "";
     const counts = POS_CELLS.map((cell) => `<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t3(`position.cell.${cell}`))}</span></li>`).join("");
-    return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t3("position.title"), summary)}${examSwitch(exam, exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t3("position.intro"))}</p>${map.evidenceComplete ? "" : `<p class="wpos-note" data-position-incomplete>${posEscape(t3("position.incomplete"))}</p>`}${missedBlock(missed, practice)}${attentionBlock(map, practice, missed?.kind === "topik" ? missed.target.skillId : null)}${diagnosticBlock(map, plan, { done: diagnosed })}${groups}${writingBlock}${estimateBlock(gate, mock)}${scope ? `<p class="wpos-scope">${posEscape(t3(scope === "account" ? "position.scope.account" : "position.scope.device"))}</p>` : ""}</div>`;
+    return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t3("position.title"), summary)}${examSwitch(exam, exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t3("position.intro"))}</p>${map.evidenceComplete ? "" : `<p class="wpos-note" data-position-incomplete>${posEscape(t3("position.incomplete"))}</p>`}${attentionBlock(map, practice)}${diagnosticBlock(map, plan, { done: diagnosed })}${groups}${writingBlock}${estimateBlock(gate, mock)}${scope ? `<p class="wpos-scope">${posEscape(t3(scope === "account" ? "position.scope.account" : "position.scope.device"))}</p>` : ""}</div>`;
   }
   function renderHangulBoard({ stage = null } = {}) {
     const known = !!stage && Number.isInteger(stage.met) && Number.isInteger(stage.total) && stage.total > 0;
@@ -28721,7 +28966,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
   function renderMockItem({ view, playing = false, notice = "", confirm = false, parts = [] } = {}) {
     const item = view.item, listening = item.modality === "listening", last = view.partIndex + 1 >= view.parts;
     const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-mock-choice="${posEscape(choice.id)}"${choice.id === view.choiceId ? ' data-state="chosen" aria-pressed="true"' : ' aria-pressed="false"'}${view.heard && !view.answered ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
-    const palette = view.marks.map((mark, index2) => `<button type="button" class="wmock-number" data-mock-go="${index2}" data-mark="${mark}"${index2 === view.index ? ' aria-current="step"' : ""} aria-label="${posEscape(t3(`mock.mark.${mark}`, { n: index2 + 1 }))}">${index2 + 1}</button>`).join("");
+    const palette = view.marks.map((mark, index) => `<button type="button" class="wmock-number" data-mock-go="${index}" data-mark="${mark}"${index === view.index ? ' aria-current="step"' : ""} aria-label="${posEscape(t3(`mock.mark.${mark}`, { n: index + 1 }))}">${index + 1}</button>`).join("");
     const allowed = view.plays?.allowed, heard = view.plays?.completed || 0;
     const elsewhere = playing && Number.isInteger(view.sounding) && view.sounding !== view.index;
     const playNote = elsewhere ? t3("mock.playingOther", { n: view.sounding + 1 }) : playing ? t3("position.diagnostic.playing") : view.audio === "failed" && !view.heard ? t3("position.diagnostic.audioFailed") : Number.isInteger(allowed) ? heard >= allowed ? t3("mock.plays.done") : t3("mock.plays.left", { heard, allowed }) : "";
@@ -29145,9 +29390,9 @@ function createPracticeSession({ coach, items } = {}) {
     return item;
   });
   const results = [];
-  let index2 = -1, current = null, stopped = false;
+  let index = -1, current = null, stopped = false;
   const view = () => current && {
-    index: index2,
+    index,
     total: queue.length,
     item: current.item,
     answered: current.answered,
@@ -29189,12 +29434,12 @@ function createPracticeSession({ coach, items } = {}) {
     next() {
       if (stopped) return null;
       if (current && !current.answered) throw Error("WORLD practice: answer or skip the current item first");
-      index2 += 1;
-      if (index2 >= queue.length) {
+      index += 1;
+      if (index >= queue.length) {
         current = null;
         return null;
       }
-      const item = queue[index2], listening = prListening(item);
+      const item = queue[index], listening = prListening(item);
       current = {
         item,
         pid: coach.present(prMeasure(item), presentCondition(item, { content: "world-practice" })),
@@ -29272,7 +29517,7 @@ var SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;
 function bankItem(row) {
   if (!tiRecord(row) || typeof row.id !== "string" || !Number.isInteger(row.rev) || typeof row.family !== "string" || !SKILL.test(row.skillId || "") || !["listening", "reading"].includes(row.section) || row.skillId.split(".")[1] !== row.section || ![1, 2, 3].includes(row.difficulty) || !Array.isArray(row.choices) || row.choices.length < 2 || !Number.isInteger(row.answer) || row.answer < 0 || row.answer >= row.choices.length) return null;
   if (row.section === "listening" && (!tiRecord(row.audio) || typeof row.audio.file !== "string")) return null;
-  const itemKey = `topik-items.${row.id}.v${row.rev}`, ids = row.choices.map((_, index2) => `${itemKey}.option-${index2}`);
+  const itemKey = `topik-items.${row.id}.v${row.rev}`, ids = row.choices.map((_, index) => `${itemKey}.option-${index}`);
   const opening = row.passage || (Array.isArray(row.script) ? row.script.map((line) => line.text).join(" ") : "") || row.question;
   return Object.freeze({
     id: row.id,
@@ -29299,7 +29544,7 @@ function bankItem(row) {
     prompt: row.passage || null,
     script: Array.isArray(row.script) ? Object.freeze(row.script.map((line) => Object.freeze({ speaker: line.speaker, text: line.text }))) : null,
     question: row.question,
-    choices: Object.freeze(row.choices.map((label, index2) => Object.freeze({ id: ids[index2], label }))),
+    choices: Object.freeze(row.choices.map((label, index) => Object.freeze({ id: ids[index], label }))),
     correctId: ids[row.answer],
     explanation: Object.freeze({ ...row.explanation }),
     choiceNotes: Object.freeze([...row.choiceNotes || []]),
@@ -29381,225 +29626,6 @@ function createTopikBank({ fetcher = (...args) => globalThis.fetch(...args) } = 
   });
 }
 
-// experiences/synk-world-app/world-missed-spot.mjs
-var MISSED_SPOT_POLICY = Object.freeze({
-  version: "world-missed-spot-1",
-  // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
-  sittingGapMs: 30 * 6e4,
-  // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
-  narrowMin: 2,
-  practiceGame: "world-practice"
-});
-var record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-var OPTION = /^(pass|reject-[a-z]+)$/;
-var ENTRY = /* @__PURE__ */ new Map();
-for (const venue of VENUES) for (const item of venue.cases) {
-  const meta = caseMetadata(item), row = { venue, item, meta };
-  ENTRY.set(meta.itemKey, row);
-  ENTRY.set(meta.familyKey, row);
-}
-var entryOf = (key) => ENTRY.get(key) || null;
-function entryRule(venue, item) {
-  const id = item.answer !== "pass" ? item.answer : item.evidence?.[0];
-  const rule = id ? activeRules(venue, item.at).find((row) => row.id === id) : null;
-  return rule ? { ruleId: rule.id, text: rule.text } : null;
-}
-function missDirection(choice) {
-  if (!record2(choice) || !OPTION.test(choice.selectedId || "") || !OPTION.test(choice.correctId || "") || choice.selectedId === choice.correctId) return null;
-  if (choice.selectedId === "pass") return "let-in";
-  if (choice.correctId === "pass") return "turned-away";
-  return "wrong-rule";
-}
-function index(events) {
-  const list = Array.isArray(events) ? events : [], shown = /* @__PURE__ */ new Map(), first = /* @__PURE__ */ new Map(), attempt = /* @__PURE__ */ new Map(), experience = /* @__PURE__ */ new Map(), order2 = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
-  list.forEach((event, at) => {
-    if (!record2(event)) return;
-    order2.set(event.id, at);
-    if (event.type === "decision.made") experience.set(event.id, event.experienceId);
-    else if (event.type === "practice.presented") shown.set(event.id, event);
-    else if (event.type === "record.excluded" && event.targetId) excluded.add(event.targetId);
-    else if (event.type === "practice.attempted") {
-      attempt.set(event.id, event);
-      if (event.attemptNo === 1 && !first.has(event.presentationId)) first.set(event.presentationId, event);
-    }
-  });
-  const ordered = [...shown.values()].sort((a, b) => order2.get(a.id) - order2.get(b.id)), firstSight = /* @__PURE__ */ new Map();
-  for (const presentation of ordered) for (const key of [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean)) if (!firstSight.has(key)) firstSight.set(key, presentation.id);
-  return {
-    shown,
-    first,
-    attempt,
-    excluded,
-    order: order2,
-    ordered,
-    expOf: (presentation) => experience.get(presentation?.decisionId) ?? null,
-    // 그 문항(또는 계열)을 이 제시보다 먼저 본 적이 없나 — 처음 보는 손님이었는지.
-    fresh: (presentation) => [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean).every((key) => firstSight.get(key) === presentation.id)
-  };
-}
-function entrySittings(ix, policy) {
-  const rows2 = [];
-  let sitting = -1, prev = null;
-  for (const presentation of ix.ordered) {
-    if (ix.expOf(presentation) !== GAME_ID3) continue;
-    const entry = entryOf(presentation.itemKey);
-    if (!entry) continue;
-    const at = Date.parse(presentation.at);
-    if (!prev || prev.entry.venue.id !== entry.venue.id || minutes(entry.item.at) <= minutes(prev.entry.item.at) || !Number.isFinite(at) || !Number.isFinite(prev.at) || at - prev.at > policy.sittingGapMs) sitting += 1;
-    const row = { presentation, entry, at, sitting, attempt: ix.first.get(presentation.id) || null };
-    rows2.push(row);
-    prev = row;
-  }
-  return rows2;
-}
-function coreEvidence(summary, skillId) {
-  const skill2 = (Array.isArray(summary?.skills) ? summary.skills : []).find((row) => row?.id === skillId), ids = /* @__PURE__ */ new Set();
-  if (!skill2) return ids;
-  for (const level of Object.values(record2(skill2.levels) ? skill2.levels : {})) for (const cell of Object.values(record2(level?.formats) ? level.formats : {})) for (const id of cell?.evidence || []) ids.add(id);
-  if (skill2.status !== "supported") for (const id of [...skill2.evidence || [], ...skill2.reasonEvidence || []]) ids.add(id);
-  return ids;
-}
-function majority(rows2, keyOf, { of, min }) {
-  const groups = /* @__PURE__ */ new Map();
-  rows2.forEach((row, rank) => {
-    const key = keyOf(row);
-    if (key == null) return;
-    const hit = groups.get(key) || { key, rows: [], rank, items: /* @__PURE__ */ new Set() };
-    hit.rows.push(row);
-    hit.items.add(row.itemKey);
-    groups.set(key, hit);
-  });
-  const top = [...groups.values()].sort((a, b) => b.rows.length - a.rows.length || a.rank - b.rank)[0];
-  return top && top.items.size >= min && top.rows.length * 2 > of ? top : null;
-}
-function spotStep({ missed, rows: rows2, skillId, independent }) {
-  const at = new Map(rows2.map((row, position) => [row.presentation.id, position])), guests = /* @__PURE__ */ new Map();
-  for (const presentationId of missed) {
-    let position = at.get(presentationId);
-    if (position == null) continue;
-    let source = rows2[position];
-    while (position + 1 < rows2.length) {
-      const next = rows2[position + 1];
-      if (next.sitting !== source.sitting || next.entry.meta.skillId !== skillId || !next.attempt) break;
-      if (!guests.has(next.presentation.id)) guests.set(next.presentation.id, { row: next, sameRule: [...next.entry.item.evidence].sort().join("|") === [...source.entry.item.evidence].sort().join("|") });
-      if (next.attempt.verdict !== "incorrect") break;
-      position += 1;
-      source = next;
-    }
-  }
-  if (!guests.size) return null;
-  const list = [...guests.values()];
-  return {
-    step: "spot",
-    state: "done",
-    guests: list.length,
-    right: list.filter(({ row }) => row.attempt.verdict === "correct" && independent.has(row.attempt.id)).length,
-    sameRule: list.every((row) => row.sameRule),
-    at: list.at(-1).row.attempt.at,
-    eventIds: list.map(({ row }) => row.attempt.id)
-  };
-}
-function laterGameStep({ rows: rows2, missedSittings, skillId, independent, ix }) {
-  if (!rows2.length || !missedSittings.length) return null;
-  const last = Math.max(...missedSittings);
-  const guest = rows2.find((row) => row.sitting > last && row.entry.meta.skillId === skillId && !row.entry.item.followupOnly && row.attempt && ix.fresh(row.presentation));
-  if (guest) {
-    const verdict2 = guest.attempt.verdict, alone = independent.has(guest.attempt.id);
-    return {
-      step: "again",
-      state: "done",
-      result: verdict2 === "correct" ? alone ? "correct" : "assisted" : verdict2 === "incorrect" ? "incorrect" : "other",
-      answer: guest.entry.item.answer === "pass" ? "pass" : "reject",
-      at: guest.attempt.at,
-      eventIds: [guest.attempt.id]
-    };
-  }
-  const seen = /* @__PURE__ */ new Set();
-  for (const presentation of ix.shown.values()) {
-    seen.add(presentation.itemKey);
-    if (presentation.measure?.familyKey) seen.add(presentation.measure.familyKey);
-  }
-  const left = VENUES.reduce((n, venue) => n + venue.cases.filter((item) => {
-    const meta = caseMetadata(item);
-    return !item.followupOnly && item.skill === skillId && !seen.has(meta.itemKey) && !seen.has(meta.familyKey);
-  }).length, 0);
-  return left ? { step: "again", state: "planned", left } : null;
-}
-function practiceStep({ skillId, since, ix, independent, homework, policy }) {
-  const done = [];
-  for (const [presentationId, attempt] of ix.first) {
-    const presentation = ix.shown.get(presentationId);
-    if (ix.expOf(presentation) !== policy.practiceGame || presentation?.measure?.skillId !== skillId || !independent.has(attempt.id) || ix.excluded.has(attempt.id)) continue;
-    if (Date.parse(attempt.at) > since && ["correct", "incorrect"].includes(attempt.verdict)) done.push(attempt);
-  }
-  if (done.length) return { step: "practice", state: "done", n: done.length, right: done.filter((row2) => row2.verdict === "correct").length, at: done.map((row2) => row2.at).sort().at(-1), eventIds: done.map((row2) => row2.id) };
-  const row = (Array.isArray(homework) ? homework : []).find((value) => value?.skillId === skillId);
-  return row && !row.shortage ? { step: "homework", state: "planned" } : null;
-}
-function delayedStep({ skillId, projection, practiceOpen, now }) {
-  const all = (Array.isArray(projection?.items) ? projection.items : []).filter((row) => row?.gameId === "world-practice" && row.measure?.skillId === skillId && ["d1", "d7", "d30"].includes(row.window));
-  const latest = all.map((row) => row.sourceAt).filter((value) => Number.isFinite(Date.parse(value))).sort().at(-1);
-  const rows2 = latest ? all.filter((row) => row.sourceAt === latest) : all;
-  if (rows2.length) {
-    const due = rows2.find((row) => row.status === "due"), observed = rows2.filter((row) => row.status === "observed").length;
-    const upcoming = rows2.filter((row) => row.status === "not_due" && Number.isFinite(Date.parse(row.dueAt)) && Date.parse(row.dueAt) >= now).sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt))[0];
-    return { step: "delayed", state: observed ? "done" : "planned", observed, due: !!due, window: (due || upcoming)?.window ?? null, dueAt: upcoming?.dueAt ?? null };
-  }
-  return practiceOpen ? { step: "delayed", state: "planned", observed: 0, due: false, window: null, dueAt: null } : null;
-}
-function buildMissedSpot({ map, summary = null, events = [], homework = null, projection = null, practiceOpen = () => false, now = Date.now(), policy = MISSED_SPOT_POLICY } = {}) {
-  if (!record2(map) || !Array.isArray(map.skills) || map.evidenceComplete !== true) return null;
-  const skills = new Map(map.skills.map((skill3) => [skill3.id, skill3]));
-  let skill2 = null, missed = [];
-  for (const id of Array.isArray(map.attention) ? map.attention : []) {
-    const row = skills.get(id), misses = (row?.evidence || []).filter((value) => value.verdict === "incorrect" && value.independent);
-    if (misses.length) {
-      skill2 = row;
-      missed = misses;
-      break;
-    }
-  }
-  if (!skill2) return null;
-  const ix = index(events), independent = coreEvidence(summary, skill2.id);
-  for (const row of skill2.evidence) if (row.independent) independent.add(row.eventId);
-  const guests = !skill2.folded && skill2.evidence.length > 0 && skill2.evidence.every((row) => entryOf(row.itemKey));
-  const narrow = [{ layer: "skill", skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status, count: skill2.incorrect, of: skill2.n, unit: guests ? "guest" : "try" }];
-  const of = missed.length, detail = missed.map((row) => ({ ...row, entry: entryOf(row.itemKey), choice: ix.attempt.get(row.eventId)?.choice }));
-  const line = majority(detail, (row) => row.entry ? entryRule(row.entry.venue, row.entry.item)?.text ?? null : null, { of, min: policy.narrowMin });
-  if (line) {
-    const top = line.rows[0], rule = entryRule(top.entry.venue, top.entry.item);
-    narrow.push({ layer: "line", venueId: top.entry.venue.id, venue: top.entry.venue.name, ruleId: rule.ruleId, text: rule.text, count: line.rows.length, of });
-  }
-  const way = majority(detail, (row) => row.entry ? missDirection(row.choice) : null, { of, min: policy.narrowMin });
-  if (way) narrow.push({ layer: "direction", direction: way.key, count: way.rows.length, of });
-  const rows2 = entrySittings(ix, policy), inGame = detail.filter((row) => row.experienceId === GAME_ID3).map((row) => ix.attempt.get(row.eventId)?.presentationId).filter(Boolean);
-  const missedSittings = rows2.filter((row) => inGame.includes(row.presentation.id)).map((row) => row.sitting);
-  const firstMiss = Math.min(...missed.map((row) => Date.parse(row.at)).filter(Number.isFinite));
-  let open = false;
-  try {
-    open = practiceOpen(skill2.id) === true;
-  } catch {
-    open = false;
-  }
-  const again = [
-    spotStep({ missed: inGame, rows: rows2, skillId: skill2.id, independent }),
-    laterGameStep({ rows: rows2, missedSittings, skillId: skill2.id, independent, ix }),
-    practiceStep({ skillId: skill2.id, since: Number.isFinite(firstMiss) ? firstMiss : -Infinity, ix, independent, homework, policy }),
-    delayedStep({ skillId: skill2.id, projection, practiceOpen: open, now })
-  ].filter(Boolean);
-  return {
-    policy: policy.version,
-    kind: "topik",
-    target: { skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status },
-    narrow,
-    again,
-    evidence: missed.map((row) => row.eventId),
-    grade: null,
-    abilityClaim: false,
-    learningEffectClaim: false
-  };
-}
-
 // experiences/synk-world-app/world-position-kit.mjs
 var followupBank = createTopikBank();
 var topik = createTopikBank();
@@ -29644,9 +29670,7 @@ var worldPosition = Object.freeze({
   }, get forms() {
     return topik.forms;
   } }),
-  checkCandidate: positionCheckCandidate,
-  // 놓친 곳 카드(11-14, world-missed-spot.mjs) — 판 맨 위 한 장. 읽기 전용(새 판정 · 저장 없음).
-  missedSpot: buildMissedSpot
+  checkCandidate: positionCheckCandidate
 });
 
 // experiences/synk-world-app/life-standalone-entry.mjs

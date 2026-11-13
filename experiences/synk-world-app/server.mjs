@@ -119,7 +119,7 @@ const server=http.createServer(async(req,res)=>{
   else if(['/me2-photo.mjs','/me2-photo.css','/me2-photo-consent.json','/vendor/face-api/face-api.esm.js','/vendor/face-api/tiny_face_detector_model.bin','/vendor/face-api/tiny_face_detector_model-weights_manifest.json'].includes(pathname)||/^\/me2-assets\/[a-z0-9-]+\.webp$/.test(pathname))base=root;
   // Preview-only route (10-14 redesign worktree): the games import ../social-conversion.mjs (shared trial tracking, in progress elsewhere).
   else if(pathname==='/social-conversion.mjs'){base=path.resolve(root,'..');}
-  else if(['/world-learning-followups.mjs','/world-followup-items.json'].includes(pathname))base=root;
+  else if(['/world-learning-followups.mjs','/world-followup-items.json','/world-missed-spot.mjs'].includes(pathname))base=root;
   // Atlas 새 길(단계 4, 기능 atlasNext — 리허설만): 엔진 입구 · 판 묶음은 SYNK_ATLAS_DEV_OUT(node packages/atlas/tools/build.mjs --out <폴더>의 그 폴더)에서,
   // 짧은 연습 새 판 모듈은 이 폴더에서. 공개 사이트에서는 /atlas/가 엔진 공개(4-8)로 생긴다.
   else if(pathname.startsWith('/atlas/')&&mode==='rehearsal'&&process.env.SYNK_ATLAS_DEV_OUT){base=path.resolve(process.env.SYNK_ATLAS_DEV_OUT);}

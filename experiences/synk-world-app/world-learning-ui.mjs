@@ -1,5 +1,6 @@
 import {t,tMessage,hasString,formatDate,currentLang} from '../brand-opening/world-lang.mjs';
 import {followupRows,advisoryRows} from './world-learning-followups.mjs';
+import {buildMissedSpot,renderMissedSpot,placeMissedSpot} from './world-missed-spot.mjs';
 import {lifeFollowupRows} from './life-followups.mjs';
 import {lessonById} from './life-content.mjs';
 import {lifeTutorExpression} from '../brand-opening/life-tutor-lines.mjs';
@@ -540,13 +541,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const scroller=keepScroll?panelNode('[data-position-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
   const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged,summary,events}=positionData(coachNow,id=>routes.has(id));
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
-  // 놓친 곳 카드(11-14): 같은 기록(Core 요약 · Trail)과 이번 주 계획 숙제(시험 목표가 있을 때) · 짧은 연습의 다시 확인 투영만 읽는다. 못 세우면 카드 없이 판을 연다.
-  let missed=null;
+  let board=view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,practice:id=>routes.get(id)||null});
+  // 놓친 곳 카드(11-14, world-missed-spot.mjs): 같은 기록(Core 요약 · Trail)과 이번 주 계획 숙제(시험 목표가 있을 때) · 짧은 연습의 다시 확인 투영만 읽는다.
+  // 판(계정 묶음) 밖 모듈이라 판 HTML에 끼운다. 못 세우면 카드 없이 판을 연다.
   try{
    let projection=null;try{projection=readPracticeCoach()?.followups?.()||null;}catch{projection=null;}
-   missed=position.missedSpot?.({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',now:Date.now()})||null;
-  }catch{missed=null;}
-  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,missed,practice:id=>routes.get(id)||null}),PANEL);
+   const missed=buildMissedSpot({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',now:Date.now()});
+   if(missed)board=placeMissedSpot(board,renderMissedSpot(missed,{t,has:hasString,formatDate,practice:id=>routes.get(id)||null}),missed.target.skillId);
+  }catch{/* the board opens without the card */}
+  home.showPanel(t('position.title'),board,PANEL);
   const root=panelNode('[data-position-board]');
   if(root&&position.followups){
    void loadFollowupBank();const delayed=delayedRows(),life=lifeDelayedRows();
