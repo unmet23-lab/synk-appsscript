@@ -229,6 +229,8 @@
 - 다시 확인: `atlas-transit-racing-return-1105`는 중단 영수증을 유지한 뒤 Fable 완독 답(complete=true, missing=[])과 공식 확인 통과·실제 CLI 종료 0을 얻었다. 미완료 첫 실행은 통과 횟수에서 뺐다.
 
 ### Fable 주간 몫이 100%면 검수 키 통로(`크레딧실행.js 중계 --model claude-fable-5-1`)도 429 `model_requires_usage_credits`다 — Fable 최종은 초기화를 기다린다 (2026-11-10 Claude)
+> **현재 기준(2026-11-13 사용자 정정):** 아래 초기화 대기·다른 계정 사용 기록은 당시 경과다. 이제 Fable 한도 시 [승인된 Opus 대체](../AI_계정과_크레딧.md#fable-quota-fallback)로 자동 검수한다. 프론트 Claude 검수는 [사용 가능 계정 정보](../AI_계정과_크레딧.md#frontend-review-accounts)를 참고하며 특정 계정으로 고정하지 않는다. 모델·계정 정보는 그 원문을 따른다.
+
 - 증상: Atlas 결함 다섯 끝 판의 Fable 최종을 Agent(model: fable)로 보내자 「You've reached your Fable limit」로 바로 끝났다(계정 주간 Fable 100%, 전체 70%). `SYNK_CLAUDE_KEYS=~/SYNK_보안/클로드_키목록_검수.json node tools/크레딧실행.js 중계 -- -p … --model claude-fable-5-1`로 한 낱말 시험을 보내도 같은 429 · `api_error: model_requires_usage_credits`였다.
 - 원인: 이 PC의 Fable은 구독 주간 몫 아니면 추가 사용 크레딧(유료)으로만 돈다. 검수 키 목록의 프로모 · 한도 크레딧은 Fable을 열지 않았다.
 - 고침: 추가 사용 크레딧은 켜지 않는다(돈). 운영 원칙대로 학생 · 교사 · 고객 화면의 Fable 최종은 초기화 뒤에 마치고 그 전에는 공개하지 않는다 — `get_usage`의 「Weekly · Fable」 resetsAt을 트랙 · 설계에 적는다. 엔진 생성물이 master에 들어가면 다른 세션의 게임 공개에 섞여 나갈 수 있어 push도 그때까지 미뤘다(가지에 로컬 커밋 + 공용 `.tmp` 패치 사본).
