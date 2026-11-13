@@ -24,7 +24,8 @@ const 안전한이름 = (이름) => String(이름 || '파일').replace(/[\\/:*?"
 function 의뢰줄(project) {
   const r = project.studio?.request;
   if (!r) return null;
-  return { 번호: r.number, 상태: r.status, 제목: project.title, 고객: project.customerName, 받은때: r.submittedAt || '', 메모: (r.notes || []).length, 판: (r.rounds || []).length, id: project.id, revision: project.revision };
+  // 단계: 프로젝트의 단계(received · planning · … · archived). 보관(archived)된 프로젝트는 서버가 메모를 받지 않는다 — 1차 확인이 이것으로 거른다.
+  return { 번호: r.number, 상태: r.status, 단계: project.stage || '', 제목: project.title, 고객: project.customerName, 받은때: r.submittedAt || '', 메모: (r.notes || []).length, 판: (r.rounds || []).length, id: project.id, revision: project.revision };
 }
 async function 목록(ws) {
   const { projects = [] } = await ws.get('/api/client-projects');
@@ -125,7 +126,7 @@ async function main(argv) {
   const [명령, 번호, 파일] = argv;
   const { connect } = require('./작업실예약.js');
   const ws = await connect();
-  if (명령 === '목록') { for (const row of await 목록(ws)) console.log(`${row.번호}  ${row.상태.padEnd(9)}  ${row.제목}  (${row.고객})  메모 ${row.메모} · 판 ${row.판}`); return; }
+  if (명령 === '목록') { for (const row of await 목록(ws)) console.log(`${row.번호}  ${row.상태.padEnd(9)}  ${row.제목}  (${row.고객})  메모 ${row.메모} · 판 ${row.판}${row.단계 === 'archived' ? ' · 보관' : ''}`); return; }
   if (명령 === '받기') { const r = await 받기(ws, 번호); console.log(`${r.파일}개 받음 → ${r.방}`); return; }
   if (명령 === '메모') { await 메모(ws, 번호, JSON.parse(fs.readFileSync(파일, 'utf8'))); console.log('올렸습니다'); return; }
   if (명령 === '묻기') { await 묻기(ws, 번호, JSON.parse(fs.readFileSync(파일, 'utf8')).items); console.log('물었습니다'); return; }
