@@ -795,69 +795,34 @@ test('나누기: 최상위·권한 우회 모드 세션은 보내지 않고 직�
   assert.equal(칸(우회에서, 거절뒤그대로.sessionId), '보냄', '지난 거절은 다른 모드 세션이 보낸 글이었을 수 있다');
 });
 
-test('나누기: 5시간 한도 여유만큼만 앞 차례부터 깨우고, 나머지는 건너뛰지 않고 한도대기로 남긴다', () => {
+test('나누기: 사용량과 상관없이 깨울 세션은 모두 보낸다 — 마감 → 끊김(최근 것부터) → 쉼 차례로(11-13 「나눠깨우지마」)', () => {
   const 끊김 = (덧) => 기록({ error: 'API Error', errorAt: 지금 - 30 * 분, ...덧 });
   const 큰끊김 = 끊김({ title: '큰 끊김', lastActivityAt: 지금 - 30 * 분 });
   const 작은끊김 = 끊김({ title: '작은 끊김', lastActivityAt: 지금 - 40 * 분 });
   const 쉼 = 기록({ title: '쉼', lastActivityAt: 지금 - 20 * 분 });
   const 마감쉼 = 기록({ title: '공모전 접수 마감 10-21', lastActivityAt: 지금 - 50 * 분 });
+  const 영상마감 = 기록({ title: '영상 마감 처리', lastActivityAt: 지금 - 6 * 60 * 분 });
   const 일하는 = 기록({ title: '일하는 중' });
   const 문맥들 = new Map([
     [큰끊김.sessionId, 90 * 만],
     [작은끊김.sessionId, 10 * 만],
     [쉼.sessionId, 50 * 만],
-    [마감쉼.sessionId, 30 * 만],
   ]);
-  const 모두 = [큰끊김, 작은끊김, 쉼, 마감쉼, 일하는];
-  const 공통 = { 문맥들, busy: [일하는.sessionId] };
-  /* 몫(%) = 문맥 × 6 ÷ 200만: 큰 끊김 2.7, 작은 끊김 0.5(가장 작은 몫), 쉼 1.5, 마감 0.9. 차례: 마감 → 끊김(최근 것부터) → 쉼. */
-  const 넉넉 = 판(모두, new Map(), { ...공통, 한도: { 사용: 20 } });
-  assert.deepEqual(넉넉.보냄.map((s) => s.제목), ['공모전 접수 마감 10-21', '큰 끊김', '작은 끊김', '쉼']);
-  assert.equal(넉넉.한도대기.length, 0);
-  assert.deepEqual(넉넉.한도, { 사용: 20, 여유: 80, 남길: 12, 보낸몫: 5.6, 미룸: 0 });
-  assert.equal(넉넉.보냄[1].문맥, '90만');
-  assert.equal(넉넉.보냄[1].몫, 2.7);
-  assert.equal(넉넉.보냄[0].마감, true);
-
-  /* 사용 84 → 여유 16 − 남길 12(유호님·이 세션 10 + 일하는 세션 하나 2) = 4: 마감 0.9 + 큰 끊김 2.7까지. */
-  const 빠듯 = 판(모두, new Map(), { ...공통, 한도: { 사용: 84, 풀림: Date.parse('2026-10-20T16:40:00Z') } });
-  assert.deepEqual(빠듯.보냄.map((s) => s.제목), ['공모전 접수 마감 10-21', '큰 끊김']);
-  assert.deepEqual(빠듯.한도대기.map((s) => s.제목), ['작은 끊김', '쉼'], '들어가지 않는 세션이 나오면 뒤는 작아도 앞지르지 않고 미룬다');
-  assert.equal(빠듯.한도.미룸, 2);
-  assert.equal(빠듯.한도.풀림, '10-21 01:40');
-
-  const 바닥 = 판(모두, new Map(), { ...공통, 한도: { 사용: 100 } });
-  assert.equal(바닥.보냄.length, 0);
-  assert.equal(바닥.한도대기.length, 4, '한도가 바닥이면 모두 미루되 하나도 버리지 않는다');
-
-  const 모름 = 판(모두, new Map(), 공통);
-  assert.equal(모름.한도, null, '한도를 안 주면 나눠 깨우지 않는다');
-  assert.equal(모름.보냄.length, 4);
+  /* 옛 한도 옵션을 넘겨도(사용 100%) 나누지 않는다. */
+  const r = 판([큰끊김, 작은끊김, 쉼, 마감쉼, 영상마감, 일하는], new Map(), { 문맥들, busy: [일하는.sessionId], 한도: { 사용: 100 } });
+  assert.deepEqual(
+    r.보냄.map((s) => s.제목),
+    ['공모전 접수 마감 10-21', '큰 끊김', '작은 끊김', '쉼', '영상 마감 처리'],
+    '날짜 없는 「마감」은 마감이 아니다',
+  );
+  assert.equal(r.보냄[0].마감, true);
+  assert.equal(r.보냄[1].문맥, '90만');
+  assert.equal(r.보냄[1].몫, undefined, '몫(한도 어림)은 더 붙이지 않는다');
+  assert.equal(r.한도대기, undefined, '한도대기 칸은 없다');
+  assert.equal(r.한도, undefined);
 });
 
-test('나누기: 지난번에 한도로 미룬 세션은 같은 무리 안에서 먼저 깨운다(마감·끊긴 세션이 늘 앞)', () => {
-  const 끊김 = (덧) => 기록({ error: 'API Error', errorAt: 지금 - 30 * 분, ...덧 });
-  const 새끊김 = 끊김({ title: '새 끊김', lastActivityAt: 지금 - 20 * 분 });
-  const 미룬끊김 = 끊김({ title: '미룬 끊김', lastActivityAt: 지금 - 3 * 60 * 분 });
-  const 미룬쉼 = 기록({ title: '미룬 쉼', lastActivityAt: 지금 - 4 * 60 * 분 });
-  const 새쉼 = 기록({ title: '새 쉼', lastActivityAt: 지금 - 30 * 분 });
-  const 마감 = 기록({
-    title: '재도전 계획서',
-    postTurnSummary: { status_category: 'review_ready', status_detail: '기한 10-21 23:59', needs_action: '' },
-    lastActivityAt: 지금 - 5 * 60 * 분,
-  });
-  const 지난미룸 = new Map([
-    [미룬끊김.sessionId, 지금 - 5 * 60 * 분],
-    [미룬쉼.sessionId, 지금 - 5 * 60 * 분],
-  ]);
-  const 영상마감 = 기록({ title: '영상 마감 처리', lastActivityAt: 지금 - 6 * 60 * 분 });
-  const r = 판([새끊김, 미룬끊김, 미룬쉼, 새쉼, 마감, 영상마감], new Map(), { 지난미룸 });
-  assert.deepEqual(r.보냄.map((s) => s.제목), ['재도전 계획서', '미룬 끊김', '새 끊김', '미룬 쉼', '새 쉼', '영상 마감 처리'], '날짜 없는 「마감」은 마감이 아니다');
-  assert.equal(r.보냄[1].지난번미룸, '10-20 14:30');
-  assert.equal(r.보냄[2].지난번미룸, undefined);
-});
-
-test('원문 끝: 마지막 실제 응답의 문맥 크기와 마지막 보고 글, 세션 몫 어림', () => {
+test('원문 끝: 마지막 실제 응답의 문맥 크기와 마지막 보고 글', () => {
   const 쓴답 = {
     type: 'assistant',
     timestamp: new Date(지금 - 70 * 분).toISOString(),
@@ -893,9 +858,6 @@ test('원문 끝: 마지막 실제 응답의 문맥 크기와 마지막 보고 �
   assert.equal(고르기.마지막보고([쓴답, 도구부름(), 도구결과(보정), 답('No response requested.')]).글, '남은 일은 없습니다.');
   assert.equal(고르기.마지막보고([쓴답, 도구부름(), 도구결과('ok')]).온전, false, '읽은 범위에 차례를 연 글이 없으면 온전하지 않다');
   assert.deepEqual(고르기.마지막보고([사람('해 줘')]), { 글: '', 온전: true, uuid: '' });
-  assert.equal(고르기.세션몫(70 * 만), 2.1);
-  assert.equal(고르기.세션몫(0), 1.8, '문맥을 모르면 60만으로 친다');
-  assert.equal(고르기.세션몫(5 * 만), 0.5, '아무리 작아도 0.5');
 });
 
 test('보고걸림: 남은 일이 없다고 밝힌 보고만 깨끗, 남은 일·미확인·유호님 할 일·앞으로 할 일·질문·끝맺음 없음은 걸림', () => {
@@ -1005,9 +967,9 @@ test('실행: 기록·원문 폴더를 읽어 칸을 나누고, --busy·이 세�
   assert.equal(결과.보냄.find((s) => s.제목 === '재시작').워크트리, true);
   assert.equal(결과.지금, new Date(지금).toISOString(), '고른 시각 — 4단계 받았나의 --보낸때로 넘긴다');
   assert.ok(결과.알림.some((a) => a.includes('원문을 못 찾은 세션 2개')), JSON.stringify(결과.알림));
-  assert.ok(결과.알림.some((a) => a.includes('5시간 한도를 넘겨받지 않아')), '--한도가 없으면 나눠 깨우지 않았다고 알린다');
-  assert.equal(결과.한도, null);
-  assert.equal(결과.기억, null, '--기록으로 돌리면 --미룸파일 없이는 미룸 파일을 읽지도 쓰지도 않는다');
+  assert.ok(!결과.알림.some((a) => a.includes('한도')), '한도 알림은 없다(나눠 깨우지 않는다)');
+  assert.equal(결과.한도, undefined);
+  assert.equal(결과.기억, undefined, '미룸 파일은 없다');
 
   const 바쁨 = 고르기.실행(['--self', 나.sessionId, '--busy', `${한도.sessionId},${재시작.sessionId.slice(6, 14)}`, ...공통], {});
   assert.deepEqual(바쁨.일하는중.map((s) => s.제목).sort(), ['재시작', '한도']);
@@ -1110,75 +1072,43 @@ const 응답 = (문맥, 시각) => ({
   },
 });
 
-test('실행: 한도로 미룬 세션은 보고(한도대기)와 미룸 파일에 남고, 다음 /이어서에서 먼저 깨운다', (t) => {
+test('실행: 옛 --한도·--한도풀림을 넘겨도 멈추지 않고 모두 깨우며, 미룸 파일을 쓰지 않는다', (t) => {
   const 바탕 = 임시폴더();
   t.after(() => fs.rmSync(바탕, { recursive: true, force: true }));
   const 기록폴더 = path.join(바탕, 'sessions', 'acct', 'org');
   const 원문뿌리 = path.join(바탕, 'projects');
-  const 미룸파일 = path.join(바탕, 'state', '이어서_미룸.json');
+  const 설정 = path.join(바탕, 'config');
   fs.mkdirSync(기록폴더, { recursive: true });
   const 나 = 기록({ title: '이어서 실행' });
   const 앞 = 기록({ title: '앞 끊김', error: 'API Error', errorAt: 지금 - 30 * 분, lastActivityAt: 지금 - 30 * 분 });
   const 뒤 = 기록({ title: '뒤 끊김', error: 'API Error', errorAt: 지금 - 40 * 분, lastActivityAt: 지금 - 40 * 분 });
-  const 쓰기 = (r) => fs.writeFileSync(path.join(기록폴더, `${r.sessionId}.json`), JSON.stringify(r));
-  [나, 앞, 뒤].forEach(쓰기);
+  for (const r of [나, 앞, 뒤]) fs.writeFileSync(path.join(기록폴더, `${r.sessionId}.json`), JSON.stringify(r));
   원문쓰기(원문뿌리, 앞, [사람('해 줘'), 응답(50 * 만, 지금 - 31 * 분), 답('API Error: 500', 지금 - 30 * 분, { isApiErrorMessage: true })]);
   원문쓰기(원문뿌리, 뒤, [사람('해 줘'), 응답(50 * 만, 지금 - 41 * 분), 답('API Error: 500', 지금 - 40 * 분, { isApiErrorMessage: true })]);
-  const 공통 = ['--self', 나.sessionId, '--busy', '', '--기록', 기록폴더, '--원문', 원문뿌리, '--미룸파일', 미룸파일];
+  const 공통 = ['--self', 나.sessionId, '--busy', '', '--기록', 기록폴더, '--원문', 원문뿌리, '--지금', new Date(지금).toISOString()];
 
-  /* 몫은 문맥 50만이라 1.5씩. 사용 88 → 여유 12 − 남길 10 = 2: 앞 하나만 깨운다. */
-  const 첫 = 고르기.실행([...공통, '--지금', new Date(지금).toISOString(), '--한도', '88', '--한도풀림', '2026-10-20T16:40:00.168Z'], {});
-  assert.equal(첫.ok, true, JSON.stringify(첫));
-  assert.deepEqual(첫.보냄.map((s) => s.제목), ['앞 끊김']);
-  assert.deepEqual(첫.한도대기.map((s) => s.제목), ['뒤 끊김'], '미룬 세션이 보고에 남는다');
-  assert.equal(첫.한도대기[0].이유, '오류로 끊김', '미뤄도 깨울 까닭은 그대로다');
-  assert.equal(첫.한도.풀림, '10-21 01:40');
-  assert.ok(첫.알림.some((a) => a.includes('1개는 한도가 풀린 뒤 /이어서를 다시 치면 깨웁니다')), JSON.stringify(첫.알림));
-  assert.deepEqual(첫.기억, { 파일: 미룸파일, 지난번: 0, 이번: 1 });
-  assert.deepEqual(JSON.parse(fs.readFileSync(미룸파일, 'utf8')).미룸.map((s) => s.id), [뒤.sessionId], '미룬 세션을 파일에 적어 둔다');
-
-  /* 같은 /이어서의 다시 고르기(1분 뒤)에서는 방금 미룬 세션을 앞세우지 않는다 — 차례가 뒤집히지 않는다. */
-  const 다시 = 고르기.실행([...공통, '--지금', new Date(지금 + 분).toISOString(), '--한도', '88'], {});
-  assert.deepEqual(다시.보냄.map((s) => s.제목), ['앞 끊김']);
-  assert.equal(JSON.parse(fs.readFileSync(미룸파일, 'utf8')).미룸[0].미룬때, new Date(지금).toISOString(), '처음 미룬 때를 그대로 둔다');
-
-  /* 다음 실행: 앞 세션이 그새 다시 일하다 더 최근에 끊겼어도, 지난번에 미룬 뒤 세션을 먼저 깨운다. */
-  Object.assign(앞, { errorAt: 지금 + 50 * 분, lastActivityAt: 지금 + 50 * 분 });
-  쓰기(앞);
-  const 나중 = new Date(지금 + 60 * 분).toISOString();
-  const 둘째 = 고르기.실행([...공통, '--지금', 나중, '--한도', '88'], {});
-  assert.deepEqual(둘째.보냄.map((s) => s.제목), ['뒤 끊김'], '지난번에 미룬 세션을 먼저 깨운다');
-  assert.equal(둘째.보냄[0].지난번미룸, '10-20 19:30');
-  assert.deepEqual(둘째.한도대기.map((s) => s.제목), ['앞 끊김']);
-  assert.deepEqual(둘째.기억, { 파일: 미룸파일, 지난번: 1, 이번: 1 });
-  assert.deepEqual(
-    JSON.parse(fs.readFileSync(미룸파일, 'utf8')).미룸.map((s) => s.id),
-    [앞.sessionId],
-    '이번에 깨운 세션은 빠지고 이번에 미룬 세션이 남는다',
-  );
-
-  /* 여유가 넉넉하면 다 깨우고 미룸 파일을 비운다. */
-  const 셋째 = 고르기.실행([...공통, '--지금', 나중, '--한도', '5'], {});
-  assert.equal(셋째.한도대기.length, 0);
-  assert.deepEqual(셋째.보냄.map((s) => s.제목), ['앞 끊김', '뒤 끊김']);
-  assert.deepEqual(JSON.parse(fs.readFileSync(미룸파일, 'utf8')).미룸, []);
+  /* 예전이면 사용 88%에서 앞 하나만 깨우고 뒤를 미뤘다. */
+  const 옛인자 = 고르기.실행([...공통, '--한도', '88', '--한도풀림', '2026-10-20T16:40:00.168Z'], { CLAUDE_CONFIG_DIR: 설정 });
+  assert.equal(옛인자.ok, true, JSON.stringify(옛인자));
+  assert.deepEqual(옛인자.보냄.map((s) => s.제목), ['앞 끊김', '뒤 끊김']);
+  assert.equal(옛인자.보냄[0].문맥, '50만');
+  assert.ok(옛인자.알림.some((a) => a.includes('--한도는 11-13부터 쓰지 않습니다')), JSON.stringify(옛인자.알림));
+  assert.equal(fs.existsSync(path.join(설정, '이어서_미룸.json')), false, '미룸 파일을 만들지 않는다');
+  const 빠짐 = 고르기.실행([...공통, '--한도', '--전부'], {});
+  assert.equal(빠짐.ok, true, '값이 빠진 --한도는 다음 인자를 먹지 않는다');
+  assert.deepEqual(빠짐.보냄.map((s) => s.제목), ['앞 끊김', '뒤 끊김']);
+  assert.throws(() => 고르기.실행([...공통, '--미룸파일', path.join(바탕, 'x.json')], {}), /모르는 인자: --미룸파일/);
 });
 
-test('실행: --한도 값이 이상하면 나눠 깨우지 않고 알리고, 우회 모드에서 치면 최상위·우회 세션에도 보낸다고 알린다', (t) => {
+test('실행: 우회 모드에서 치면 최상위·우회 세션에도 보낸다고 알리고, 자동 모드에서는 직접입력으로 뺀다', (t) => {
   const 바탕 = 임시폴더();
   t.after(() => fs.rmSync(바탕, { recursive: true, force: true }));
   const 나 = 기록({ title: '이어서 실행' });
   const 우회 = 기록({ title: '최상위 우회', permissionMode: 'bypassPermissions', error: 'API Error', errorAt: 지금 - 30 * 분 });
   for (const r of [나, 우회]) fs.writeFileSync(path.join(바탕, `${r.sessionId}.json`), JSON.stringify(r));
   const 기본 = ['--self', 나.sessionId, '--busy', '', '--기록', 바탕, '--원문', path.join(바탕, 'p'), '--지금', new Date(지금).toISOString()];
-  const 이상 = 고르기.실행([...기본, '--한도', '많이'], {});
-  assert.ok(이상.알림.some((a) => a.includes('--한도 값을 읽지 못해 나눠 깨우지 않았습니다: 많이')), JSON.stringify(이상.알림));
-  assert.equal(이상.한도, null);
-  const 빠짐 = 고르기.실행([...기본, '--한도', '--전부'], {});
-  assert.ok(빠짐.알림.some((a) => a.includes('(빈 값)')), '값이 빠진 --한도는 다음 인자를 먹지 않는다');
-  const 자동에서 = 고르기.실행([...기본, '--내모드', 'auto', '--한도', '30%'], {});
+  const 자동에서 = 고르기.실행([...기본, '--내모드', 'auto'], {});
   assert.equal(칸(자동에서, 우회.sessionId), '직접입력');
-  assert.equal(자동에서.한도.사용, 30);
   const 우회에서 = 고르기.실행([...기본, '--내모드', 'bypassPermissions'], {});
   assert.equal(칸(우회에서, 우회.sessionId), '보냄');
   assert.ok(
