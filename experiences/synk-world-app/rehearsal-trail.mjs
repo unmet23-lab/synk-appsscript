@@ -551,8 +551,11 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
   const onRevision = stateFile
     ? revision => {
         if (revision <= highest) return;
-        highest = revision;
+        // 쓴 뒤에 올린다 — 한 번 못 쓰면 같은 판(뒤 계정의 처음 판)이 다시 쓴다(카본 합친 끝 판 B3). 폴더는 서버가 만들지만(server.mjs) 이 함수만
+        // 부르는 길에서도 서게.
+        fs.mkdirSync(path.dirname(stateFile), { recursive: true });
         fs.writeFileSync(stateFile, JSON.stringify({ revision }));
+        highest = revision;
       }
     : null;
   return createRehearsalTrail({

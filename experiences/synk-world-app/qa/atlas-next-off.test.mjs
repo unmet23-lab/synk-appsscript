@@ -27,6 +27,8 @@ test('셸은 기능이 켜졌을 때만 새 길 입구를 동적으로 부르고
  assert.match(shell,/const atlasNextGuestOn=atlasNextOn&&connection\.features\?\.atlasNextGuest===true;/);
  assert.match(shell,/const atlasNext=atlasNextOn&&\(owner!=='guest'\|\|atlasNextGuestOn\)\?keep\('atlasNext',lazyAtlasNext\(owner\)\):null;/);
  assert.match(shell,/const lifeDue=atlasNext&&progress&&/);
+ // 생활 화면은 시도마다 그때의 판으로 기록부를 고른다 — 셸이 감시의 판(엔진 · 확인 중 · 지금 판)을 넘긴다(GPT · 카본 합친 끝 판 GB2 · B1).
+ assert.match(shell,/const lifeNext=lifeDue\?\{[^}]*state:\(\)=>lifeDue\.state\(\)\}/);
  assert.match(shell,/\n  atlasNext,\r?\n/,'학습 화면에도 같은 입구');
  assert.equal(shell.match(/import\(['"]\.\/world-atlas-next\.mjs['"]\)/g)?.length,1,'새 길 입구를 부르는 곳은 lazyAtlasNext 하나');
  for(const file of ['app-shell.mjs','world-learning-ui.mjs','world-position-ui.mjs','world-reading-practice.mjs','operating-mode.mjs'])

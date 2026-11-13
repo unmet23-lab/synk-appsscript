@@ -16363,9 +16363,9 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     if (value?.state === "engine" && Array.isArray(value.ids)) return { ...value, ids: value.ids.filter((id) => state.reviews[id]) };
     return { state: "checking", ids: [], nextAt: null, times: [], upcoming: [] };
   }
-  function dueReviews(limit = 100, horizon = now()) {
+  function dueReviews(limit = 100, horizon = now(), given = void 0) {
     check3();
-    const engine = judged();
+    const engine = given === void 0 ? judged() : given;
     if (engine) return engine.ids.slice(0, Math.max(0, Math.min(100, limit))).map((id) => clone2(state.reviews[id]));
     return Object.values(state.reviews).filter((v) => v.dueAt <= horizon).sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id)).slice(0, Math.max(0, Math.min(100, limit))).map(clone2);
   }
@@ -16598,7 +16598,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const latest = Object.entries(state.lessons).filter(([id, run]) => lessons.has(id) && run.completedAt !== null).reduce((last, [id, run]) => !last || run.completedAt >= last.at ? { id, at: run.completedAt } : last, null);
     const cafeNext = latest && isCafeLesson(latest.id) ? nextVisit || ordered.find((l) => l.packId === "cafe" && state.lessons[l.id]?.completedAt == null) : null;
     const next = active || cafeNext || ordered.find((lesson2) => state.lessons[lesson2.id]?.completedAt == null) || null;
-    const engine = judged(), due = dueReviews(), total = ordered.length, completed = ordered.filter((lesson2) => state.lessons[lesson2.id]?.completedAt != null).length;
+    const engine = judged(), due = dueReviews(100, now(), engine), total = ordered.length, completed = ordered.filter((lesson2) => state.lessons[lesson2.id]?.completedAt != null).length;
     const resume = !!active && Object.keys(state.lessons[active.id]?.answers || {}).length > 0;
     return {
       owner,
@@ -17380,23 +17380,57 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp", "--life-print-position": "world-felt/complete.webp", "--life-print-hangul": "world-felt/hangul.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null, viewPhase = null;
+  let screenView = null, reviewMark = null, context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, helpBy = null, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null, viewPhase = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
   const life = learning2?.life && typeof learning2.life.createLifeTrail === "function" ? learning2.life : null;
   const nextPath = learning2?.next && typeof life?.createLifeNext === "function" ? learning2.next : null;
-  const trail = nextPath ? life.createLifeNext({ coach: () => nextPath.coach(), watch: (made, fn) => nextPath.retired(made, fn), snapshot: () => getProgress().exportSnapshot(), note: (axis, detail) => nextPath.note?.(axis, detail), onRetired: () => retiredClose() }) : life ? life.createLifeTrail({ coach: () => {
+  const pathNow = () => {
+    if (!nextPath) return "old";
+    let value = null;
+    try {
+      value = nextPath.state?.() ?? null;
+    } catch {
+      value = null;
+    }
+    return value === "engine" ? "engine" : value === "old" || value === "disposed" ? "old" : "checking";
+  };
+  const oldTrail = life ? life.createLifeTrail({ coach: () => {
     try {
       return learning2?.coach?.() || null;
     } catch {
       return null;
     }
   }, snapshot: () => getProgress().exportSnapshot() }) : NO_TRAIL;
+  const newTrail = nextPath ? life.createLifeNext({ coach: () => nextPath.coach(), watch: (made, fn) => nextPath.retired(made, fn), snapshot: () => getProgress().exportSnapshot(), note: (axis, detail) => nextPath.note?.(axis, detail), onRetired: () => retiredClose() }) : null;
+  let attemptTrail = null;
+  const pickTrail = () => newTrail && pathNow() !== "old" ? newTrail : oldTrail;
+  const via = () => attemptTrail ?? pickTrail();
+  const trail = newTrail ? Object.freeze({
+    shown: (...a) => via().shown(...a),
+    help: (...a) => via().help(...a),
+    delivery: (...a) => via().delivery(...a),
+    answer: (...a) => via().answer(...a),
+    guided: (...a) => via().guided(...a),
+    release: (...a) => via().release(...a),
+    metrics: () => ({ ...via().metrics(), path: pathNow(), record: via() === newTrail ? "next" : "old" }),
+    dispose() {
+      newTrail.dispose();
+      oldTrail.dispose();
+    }
+  }) : oldTrail;
   const lessonSlot2 = (attempt, id) => life ? life.lessonSlot(attempt, id) : null, reviewSlot2 = (run, id) => life ? life.reviewSlot(run, id) : null;
   const prepareLearning = () => {
-    if (nextPath) return;
+    const path = pathNow();
+    attemptTrail = newTrail && path !== "old" ? newTrail : oldTrail;
+    if (path !== "old") return;
     try {
       void learning2?.prepare?.();
+    } catch {
+    }
+    if (nextPath) try {
+      void Promise.resolve(nextPath.coach()).catch(() => {
+      });
     } catch {
     }
   };
@@ -17491,10 +17525,15 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   };
   const photo = (speaker, size = "") => friends[speaker] ? `<img class="life-friend ${size}" src="${asset("home/" + friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">` : "";
   const cut = (speaker) => friends[speaker] ? `<img class="life-friend" src="${asset("tutors/" + friends[speaker].cut + "-\uAE30\uBCF8.webp")}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">` : "";
+  const reviewSign = (s) => [s.dueState ?? "", s.dueCount, (s.dueIds || []).join(","), s.nextReviewAt ?? ""].join("|");
   function updateHome() {
     if (ended) return;
     try {
       const value = summary();
+      if (nextPath && screenView === "review" && shown && !rendering && reviewMark !== reviewSign(value)) {
+        review({ again: true });
+        return;
+      }
       home.updateLearning?.(value, { snapshot: getProgress().exportSnapshot(), lessons: LESSONS, preparePractice: prepareHomePractice, completePractice: completeTutorPractice, finishDay: finishTutorDay });
       onSummary(value);
     } catch {
@@ -17517,7 +17556,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (!record2 || record2.lapses <= 0 || record2.streak !== 0) return false;
       exposedTransfers.add(record2.id);
       guideTransfer(record2.questionId);
-      const run = nextPath ? p.startReview(1, record2.id, null, { ids: [record2.id] }) : record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
+      const run = pathNow() === "engine" ? p.startReview(1, record2.id, null, { ids: [record2.id] }) : record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
       if (run?.ids.includes(record2.id) && !run.answers[record2.id]) p.markReviewHelp(record2.id);
       return true;
     } catch {
@@ -17586,8 +17625,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (context.phase !== "review") guideTransfer(id);
   }
   const retryButton = (q2) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q2.id)}">${t("life.tutorRetry")}</button>` : "";
-  function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null, tutorPhase = null } = {}) {
+  function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null, tutorPhase = null, screen = null } = {}) {
     viewPhase = tutorPhase;
+    screenView = screen;
     const scroll = keepScroll && shown ? content.scrollTop : 0;
     story.stop();
     generation++;
@@ -17629,7 +17669,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     shown = true;
     content.scrollTop = scroll;
     content.dataset.reduced = String(!!home.state?.reduced);
-    content.querySelector(focus)?.focus({ preventScroll: true });
+    if (focus) content.querySelector(focus)?.focus({ preventScroll: true });
     updateHome();
     decorate(type, keepScroll);
   }
@@ -18045,7 +18085,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const at = snapshot.lessons[record2.lessonId]?.answers?.[record2.questionId]?.at ?? record2.lastAt;
     return [ago(at), placeAt(record2.packId)].filter(Boolean).join(" \xB7 ");
   }
-  function review() {
+  function review({ again = false } = {}) {
     if (!ensureReadable()) return;
     place = "life";
     context = null;
@@ -18053,7 +18093,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     helped = false;
     helpBy = null;
     reviewRun = null;
-    const s = summary(), future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot(), checking = s.dueState === "checking";
+    const s = summary();
+    reviewMark = reviewSign(s);
+    const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot(), checking = s.dueState === "checking";
     const items = reviewRowsByExpression(s.dueReviews.map((r) => {
       const l = lessonById(r.lessonId), q2 = l?.questions.find((x) => x.id === r.questionId);
       return { korean: expressionOf(l, q2).korean, origin: reviewOrigin(r, snapshot) };
@@ -18082,7 +18124,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     paint(t("life.reviewTitle"), `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(backCount(s))}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? t("life.reviewWordCount", { n: backCount(s) }) : t(future || checking ? "life.reviewWordNext" : "life.reviewWordNone")}</h3><p class="life-poster-sub">${s.dueCount ? s.dueCount > s.dueReviews.length ? t("life.reviewSubFirst", { n: s.dueReviews.length }) : t("life.reviewSubScenes", { n: s.dueCount }) : checking ? t("life.reviewChecking") : future ? t("life.reviewSubOpens", { date: escape2(future) }) : t("life.reviewSubNone")}</p></section>${items.length ? `<section class="life-review-list" aria-label="${t("life.backWord")}"><p class="life-section-label${listHead()}">${t(s.dueCount > s.dueReviews.length ? "life.reviewFirstList" : "life.backWord")}</p>${backList.origin ? `<p class="life-review-origin">${escape2(backList.origin)}</p>` : ""}<ul>${backList.rows.map((i) => {
       const note = [i.origin, i.scenes > 1 ? t("life.reviewScenes", { n: i.scenes }) : ""].filter(Boolean).join(" \xB7 ");
       return `<li><strong lang="ko">${escape2(i.korean)}</strong>${note ? `<small>${escape2(note)}</small>` : ""}</li>`;
-    }).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label${listHead()}">${t("life.comingBack")}</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review", tutorPhase: s.dueCount ? "reviewDue" : future || checking ? "reviewNext" : "reviewEmpty" });
+    }).join("")}</ul></section>` : ""}${upcoming.length ? `<section class="life-review-list" data-upcoming aria-label="${t("life.comingBack")}"><p class="life-section-label${listHead()}">${t("life.comingBack")}</p><ul>${upcoming.map((i) => `<li><strong lang="ko">${escape2(i.korean)}</strong><small>${escape2(i.when)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? `<button class="felt-button" data-life-review-start>${t("life.reviewStart")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>${t("life.doNextLesson")}</button>` : `<button class="felt-button" data-life-next>${t("life.doNextLesson")} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>${t("life.toTown")}</button>`}</div>`, { type: "life-review", tutorPhase: s.dueCount ? "reviewDue" : future || checking ? "reviewNext" : "reviewEmpty", screen: "review", ...again ? { keepScroll: true, focus: null } : {} });
   }
   const backSoon = (id) => {
     if (!nextPath) return false;
@@ -18847,13 +18889,18 @@ function lifeDue({ snapshot, lessons = [], unitsOf, memory = [], due = [], now =
     const dueAt = lines.get(row.unit)?.dueAt;
     take(candidates[0], row.unit, "due", Number.isFinite(dueAt) ? dueAt : now);
   }
+  const past = (line) => typeof line.due === "boolean" ? line.due : line.dueAt <= now;
   const dueNow = new Set((due ?? []).map((row) => row.unit));
   const upcoming = [...bridging];
+  const picked = new Set(bridging.map((row) => row.id));
   for (const [unit, line] of lines) {
-    if (counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || line.dueAt <= now) continue;
-    const candidates = reviews.filter((review) => unitsByReview.get(review.id).includes(unit));
+    if (counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || past(line)) continue;
+    const candidates = reviews.filter(
+      (review) => !picked.has(review.id) && unitsByReview.get(review.id).includes(unit)
+    );
     if (!candidates.length) continue;
     candidates.sort(pickOrder);
+    picked.add(candidates[0].id);
     upcoming.push({ id: candidates[0].id, unit, at: line.dueAt });
   }
   upcoming.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
@@ -18903,6 +18950,7 @@ function watchLifeDue({
   let unitsOf = null;
   let opening = Promise.resolve(null);
   let asking = null;
+  let again = false;
   let phase = "checking";
   let generation = 0;
   let disposed = false;
@@ -18960,6 +19008,7 @@ function watchLifeDue({
     coach = made;
     unitsOf = lifeUnitsOf(made, lessons);
     phase = "engine";
+    again = false;
     unwatch = quiet(
       () => retired(made, () => {
         if (!disposed && at === generation) attach();
@@ -18978,6 +19027,7 @@ function watchLifeDue({
     coach = null;
     unitsOf = null;
     asking = null;
+    again = false;
     phase = "checking";
     wait = every;
     quiet(() => progress2.setDueSource(source));
@@ -18986,11 +19036,16 @@ function watchLifeDue({
       if (!usable(made)) {
         phase = "old";
         quiet(() => progress2.setDueSource(null));
-        return null;
+        return settleOld();
       }
       return adopt(made, at);
     });
     return opening;
+  }
+  function settleOld() {
+    if (!again || disposed || phase !== "old") return null;
+    again = false;
+    return reask();
   }
   function reask() {
     if (disposed || phase !== "old") return opening;
@@ -18998,7 +19053,8 @@ function watchLifeDue({
     const at = generation;
     const pending = Promise.resolve().then(() => open()).catch(() => null).then((made) => {
       if (asking === pending) asking = null;
-      if (disposed || at !== generation || phase !== "old" || !usable(made)) return null;
+      if (disposed || at !== generation || phase !== "old") return null;
+      if (!usable(made)) return settleOld();
       return adopt(made, at);
     });
     asking = pending;
@@ -19007,7 +19063,9 @@ function watchLifeDue({
   }
   const unreopen = quiet(
     () => reopened(() => {
-      if (!disposed && phase === "old") void reask();
+      if (disposed || phase === "engine") return;
+      if (phase === "old" && !asking) void reask();
+      else again = true;
     })
   ) ?? (() => {
   });

@@ -264,3 +264,24 @@ test('켤 때의 처음 판(openRehearsalTrail) — 켠 시각 이상이고 그 
   fs.rmSync(dir,{recursive:true,force:true});
  }
 });
+
+test('처음 판 파일 — 폴더가 없어도 만들어 적고, 한 번 못 쓰면 같은 판이 다시 와도 다시 쓴다(카본 합친 끝 판 B3)',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rehearsal-trail-b3-'));
+ const stateFile=path.join(dir,'nested','revision.json');
+ const root=new URL('../',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1');
+ const ask=(trail,account,p)=>trail.handle({account,path:p,method:'GET',query:new URLSearchParams(''),headers:HEADERS});
+ try{
+  // 적을 자리를 폴더로 막아 둔다 — 첫 계정의 판은 못 쓴다
+  fs.mkdirSync(stateFile,{recursive:true});
+  const trail=await openRehearsalTrail({root,devOut:null,stateFile});
+  const first=(await ask(trail,{id:'acct-b3-1'},'trail-account')).body.learning.revision;
+  assert.equal(fs.statSync(stateFile).isDirectory(),true,'못 썼다');
+  fs.rmSync(path.dirname(stateFile),{recursive:true,force:true}); // 적을 폴더째 없앤다 — 쓸 때 만들어야 한다
+  // 다음 계정도 같은 처음 판 — 이번에는 쓴다(앞에서 못 쓴 판을 「이미 적음」으로 막지 않는다)
+  const second=(await ask(trail,{id:'acct-b3-2'},'trail-account')).body.learning.revision;
+  assert.equal(second,first);
+  assert.equal(JSON.parse(fs.readFileSync(stateFile,'utf8')).revision,first,'같은 판을 다시 적었다');
+ }finally{
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+});

@@ -216,7 +216,8 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  let dueSource=null;
  // 판정이 null이면 지금 판(이 문서는 지금 판으로 정해짐 · 판정을 거둠), 던지거나 엔진 꼴이 아니면 확인 중.
  function judged(){if(!dueSource)return null;let value;try{value=dueSource(state,now());}catch{value=undefined;}if(value===null)return null;if(value?.state==='engine'&&Array.isArray(value.ids))return {...value,ids:value.ids.filter(id=>state.reviews[id])};return {state:'checking',ids:[],nextAt:null,times:[],upcoming:[]};}
- function dueReviews(limit=100,horizon=now()){check();const engine=judged();if(engine)return engine.ids.slice(0,Math.max(0,Math.min(100,limit))).map(id=>clone(state.reviews[id]));return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
+ // given: 이미 잰 판정(summary — 한 요약 안에서 판정을 한 번만 잰다, 두 번 재면 그 사이 경계 · 상태가 바뀌어 수와 목록이 갈렸다, 카본 합친 끝 판 B4).
+ function dueReviews(limit=100,horizon=now(),given=undefined){check();const engine=given===undefined?judged():given;if(engine)return engine.ids.slice(0,Math.max(0,Math.min(100,limit))).map(id=>clone(state.reviews[id]));return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
  // soon: a lesson result may open its just-missed expressions in a new scene right away. Those are
  // due at most a minute after the answer, so only reviews coming due within that minute are added.
  // ids(새 길): 고른 복습을 그대로 연다 — 간격 거르기를 건너뛴다(튜터 「이 표현 같이 연습」 · 레슨 결과의 「새 장면으로 다시 보기」).
@@ -373,7 +374,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   // the player back to the first untouched pack. Existing record IDs stay intact.
   const cafeNext=latest&&isCafeLesson(latest.id)?nextVisit||ordered.find(l=>l.packId==='cafe'&&state.lessons[l.id]?.completedAt==null):null;
   const next=active||cafeNext||ordered.find(lesson=>state.lessons[lesson.id]?.completedAt==null)||null;
-  const engine=judged(),due=dueReviews(),total=ordered.length,completed=ordered.filter(lesson=>state.lessons[lesson.id]?.completedAt!=null).length;
+  const engine=judged(),due=dueReviews(100,now(),engine),total=ordered.length,completed=ordered.filter(lesson=>state.lessons[lesson.id]?.completedAt!=null).length;
   // Only a lesson with an answered question is 「하던 자리」. One merely opened stays the next lesson,
   // but a returned review is not hidden behind it.
   const resume=!!active&&Object.keys(state.lessons[active.id]?.answers||{}).length>0;

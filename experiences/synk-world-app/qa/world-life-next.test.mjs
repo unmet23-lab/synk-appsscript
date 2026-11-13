@@ -85,6 +85,19 @@ test('lifeDue ① 방금 놓친 것 — 틀렸거나 직접 도움을 연 본문
   assert.equal(out.nextAt, null, '앞으로 열릴 것이 없으면 다음 때도 없다');
 });
 
+test('lifeDue ①은 놓친 문항마다 — 같은 생활 단위의 놓친 복습 둘은 둘(결과 화면 soon 묶음과 같은 수), 그 단위는 ② 다리 · ③ 엔진에서 다시 세지 않는다(GPT 합친 끝 판 GC3)', () => {
+  const snapshot = snapshotOf([
+    { q: 'a', at: T0, correct: false },
+    { q: 'b', at: T0 + 10, correct: false },
+    { q: 'c', at: T0 + 20 },
+  ]);
+  const units = unitsFrom({ a: ['ko.life.x'], b: ['ko.life.x'], c: ['ko.life.x'] });
+  const out = lifeDue({ snapshot, unitsOf: units, due: [{ unit: 'ko.life.x' }], now: T0 + DAY + 1000 });
+  assert.deepEqual(out.ids, ['a-transfer', 'b-transfer'], '놓친 둘은 둘 — 같은 단위의 맞힌 c는 다리 · 엔진에서 또 세지 않는다');
+  assert.ok(out.items.every(item => item.why === 'soon'));
+  assert.deepEqual(out.upcoming, [], '그 단위는 앞으로 열릴 것에도 다시 들지 않는다');
+});
+
 test('lifeDue ② 처음 만나는 장면 — 기억 줄 없는 생활 단위의 복습은 본문항 하루 뒤 한 번, 단위마다 하나, 한 번 답하면 다시 안 연다(E · L3)', () => {
   const rows = [
     { q: 'a', at: T0 },
@@ -331,6 +344,29 @@ test('진도 — 넣은 판정이 없으면 지금 판 그대로, 넣으면 그 
   assert.equal(progress.summary([], LESSONS).dueState, undefined, 'null이면 지금 판으로');
 });
 
+test('진도 요약은 판정을 한 번만 잰다 — 한 요약 안의 수 · 목록 · 다음 때가 같은 판정이다(카본 합친 끝 판 B4)', () => {
+  const at = T0;
+  const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => at });
+  progress.summary([], LESSONS);
+  const lesson = LESSONS[0];
+  progress.startLesson(lesson);
+  const [q1] = lesson.questions;
+  progress.recordAnswer({ lessonId: lesson.id, questionId: q1.id, correct: false });
+  let calls = 0;
+  // 잴 때마다 갈리는 판정(그 사이 경계를 넘거나 상태가 바뀐 것과 같다)
+  progress.setDueSource(() => {
+    calls += 1;
+    return calls % 2
+      ? { state: 'engine', ids: [q1.review.id], nextAt: null, times: [at], upcoming: [] }
+      : { state: 'engine', ids: [], nextAt: at + DAY, times: [at + DAY], upcoming: [] };
+  });
+  calls = 0;
+  const s = progress.summary([], LESSONS);
+  assert.equal(calls, 1, '한 요약에 한 번');
+  assert.equal(s.dueCount, s.dueIds.length, '수와 목록이 같은 판정');
+  assert.deepEqual(s.dueReviews.map(r => r.id), s.dueIds);
+});
+
 // ── 판정을 읽는 자리(홈 튜터 · 홈 후보) ──
 function greetedProgress(owner) {
   const clock = { at: T0 };
@@ -529,6 +565,99 @@ test('판정 넣기 — 지금 판도 붙들지 않는다: 화면이 코치를 �
   assert.equal(asked, 3, '엔진이면 알림에도 다시 묻지 않는다(판이 바뀌면 retired가 다시 받는다)');
   watcher.dispose();
   assert.equal(listeners.size, 0, '닫으면 듣기를 끊는다');
+});
+
+test('판정 넣기 — 묻는 사이(확인 중 · 다시 묻는 중)에 온 「판이 풀렸다」 알림은 버리지 않는다: 그 물음이 지금 판으로 끝나면 한 번 더 묻는다(GPT · 카본 합친 끝 판 GC4 · C3 ①)', async () => {
+  const coach = dueCoach();
+  const listeners = new Set();
+  const reopened = fn => {
+    listeners.add(fn);
+    return () => listeners.delete(fn);
+  };
+  const tell = () => {
+    for (const fn of [...listeners]) fn({ reason: 'opened' });
+  };
+  // ① 확인 중 — 문서 시작의 물음이 아직 안 끝났을 때 알림이 온다
+  {
+    const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => T0 });
+    progress.summary([], LESSONS);
+    const answers = [];
+    let asked = 0;
+    const open = () => {
+      asked += 1;
+      return new Promise(resolve => answers.push(resolve));
+    };
+    const watcher = watchLifeDue({ open, reopened, progress, lessons: LESSONS, timers: fakeTimers() });
+    await settle();
+    assert.equal(watcher.state(), 'checking');
+    tell();
+    answers[0](null); // 처음 물음은 지금 판으로 끝났다(생활 은행을 못 받음)
+    await until(() => asked === 2);
+    answers[1](coach);
+    await until(() => watcher.state() === 'engine');
+    assert.equal(await watcher.coach(), coach, '알림을 버리지 않아 새 길로 갔다');
+    watcher.dispose();
+  }
+  // ② 지금 판에서 다시 묻는 중 — 화면이 청한 물음이 도는 동안 알림이 온다
+  {
+    const progress = createLifeProgress({ owner: 'guest', mode: 'local', storage: memoryStorage(), now: () => T0 });
+    progress.summary([], LESSONS);
+    const answers = [];
+    let asked = 0;
+    const open = () => {
+      asked += 1;
+      if (asked === 1) return Promise.resolve(null);
+      return new Promise(resolve => answers.push(resolve));
+    };
+    const watcher = watchLifeDue({ open, reopened, progress, lessons: LESSONS, timers: fakeTimers() });
+    await settle();
+    await settle();
+    assert.equal(watcher.state(), 'old');
+    const asking = watcher.coach(); // 화면이 청함 — 다시 묻는 중
+    await until(() => asked === 2);
+    tell(); // 묻는 중에 온 알림
+    answers[0](null); // 그 물음은 지금 판으로 끝났다
+    await until(() => asked === 3);
+    answers[1](coach);
+    await until(() => watcher.state() === 'engine');
+    assert.equal(await asking, coach, '화면이 청한 물음도 한 번 더 물은 답(새 길)까지 이어 받는다');
+    assert.equal(await watcher.coach(), coach, '한 번 더 물어 새 길로 갔다');
+    watcher.dispose();
+  }
+});
+
+test('lifeDue — 때가 지났나는 호스트 판정(요약 줄 due)으로 — 기기 시계가 앞서도 호스트로 아직이면 「앞으로 열릴 것」에 남고, 호스트로 지났는데 목록에 없으면 그대로 세지 않으며, 단위가 둘인 복습은 한 번만 든다(카본 합친 끝 판 C4)', () => {
+  const now = T0 + 5 * DAY;
+  const snapshot = snapshotOf([
+    { q: 'a', at: T0, lastAt: T0 + DAY + 1 },
+    { q: 'b', at: T0, lastAt: T0 + DAY + 1 },
+    { q: 'c', at: T0, lastAt: T0 + DAY + 1 },
+  ]);
+  const units = unitsFrom({ a: ['life:u1', 'life:u2'], b: ['life:u3'], c: ['life:u4'] });
+  const out = lifeDue({
+    snapshot,
+    lessons: [],
+    unitsOf: units,
+    memory: [
+      { unit: 'life:u1', lastAt: T0, dueAt: now + DAY, due: false },
+      { unit: 'life:u2', lastAt: T0, dueAt: now + 2 * DAY, due: false },
+      { unit: 'life:u3', lastAt: T0, dueAt: now - 60_000, due: false }, // 기기 시계로는 지났지만 호스트(서버 시각)로는 아직 — due()에 없다
+      { unit: 'life:u4', lastAt: T0, dueAt: now - DAY, due: true }, // 호스트로도 지났는데 돌아온 목록에 없다 — 세지 않는다
+    ],
+    due: [],
+    now,
+  });
+  assert.deepEqual(out.items, [], '지금 열 것은 없다');
+  assert.deepEqual(
+    out.upcoming.map(row => [row.id, row.unit]),
+    [
+      ['b-transfer', 'life:u3'],
+      ['a-transfer', 'life:u1'],
+    ],
+    '지난 dueAt의 단위도 남고, 단위가 둘인 복습 a는 한 번만',
+  );
+  assert.equal(out.nextAt, now - 60_000, '다음 때는 그 단위(곧 열린다)');
+  assert.deepEqual(out.times, [now - 60_000, now + DAY], '알림의 때도 복습마다 한 번');
 });
 
 // ── 진짜 엔진 코치(손님 저장소 · 메모리 포트) ──

@@ -14,8 +14,9 @@ const count = (text, token) => (text.match(new RegExp(`\\b${token}\\b`, 'g')) ??
 const PINNED = {
   // 엔진 기억 줄의 다음 돌아올 때(코치 요약 units[].dueAt — F)와 판정의 때만. 진도 기록의 간격은 읽지 않는다(아래 따로 확인).
   'synk-world-app/world-life-next.mjs': { why: '엔진 기억 줄 · 판정의 때', counts: null },
-  // dueAt: 튜터 「이 표현 같이 연습」의 지금 판 갈래(1) · 「곧 돌아올 표현」의 지금 판 갈래(5). nextReviewAt: 진도 요약의 칸 — 새 길은 판정의 다음 때.
-  'synk-world-app/life-ui.mjs': { counts: { dueAt: 6, nextReviewAt: 8 } },
+  // dueAt: 튜터 「이 표현 같이 연습」의 지금 판 갈래(1) · 「곧 돌아올 표현」의 지금 판 갈래(5). nextReviewAt: 진도 요약의 칸 — 새 길은 판정의 다음 때
+  // (복습 첫 화면의 판정 표지 reviewSign 1 포함 — 판정이 바뀌면 그 화면을 다시 그린다, GPT 합친 끝 판 GB1).
+  'synk-world-app/life-ui.mjs': { counts: { dueAt: 6, nextReviewAt: 9 } },
   // isBack의 지금 판 갈래(1) · 주석(1).
   'brand-opening/home-tutor-lines.mjs': { counts: { dueAt: 2 } },
   // 기록 꼴 확인(verifiedReviews 1) · 주석(1) · 지금 판 갈래(거르기 · 차례 · reviewAt — 4).

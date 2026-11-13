@@ -84,7 +84,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 흰 인화지에 붙인 펠트 사진(assets/world-felt). 한 화면에 같은 사진은 한 번만 쓴다.
  const print=(name,className='')=>`<span class="w-print ${className}" aria-hidden="true"><img src="${asset('world-felt/'+name+'.webp')}" alt="" width="640" height="640" decoding="async"></span>`;
  // helpBy: 지금 문제의 도움을 누가 열었나. 'setting'은 「한 단계씩 도움받기」가 답하기 전에 스스로 펼친 것, 'user'는 사람이 연 것.
- let context=null,shown=false,rendering=false,ended=false,reviewRun=null,lastFeedback=null,helped=false,helpBy=null,generation=0,timer,cafeRun=null,cafeView='',companion=null,place='life',signClip=null,viewPhase=null;
+ let screenView=null,reviewMark=null,context=null,shown=false,rendering=false,ended=false,reviewRun=null,lastFeedback=null,helped=false,helpBy=null,generation=0,timer,cafeRun=null,cafeView='',companion=null,place='life',signClip=null,viewPhase=null;
  const practised=new Set();
  const exposedTransfers=new Set();
  // 배움의 거울(Atlas × WORLD D, 11-08 — life-trail.mjs): 문항이 보이고 · 도움이 열리고 · 소리가 들리고 · 첫 답을 낸 순간을 Trail practice로 남긴다.
@@ -92,14 +92,24 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 거울 부품(learning.life = worldLearning.life, life-trail.mjs)은 계정 묶음이 넘긴다 — 이 화면 모듈은 브라우저가 묶지 않고 바로 읽으므로
  // Strata(CJS) · 검수 판정(JSON)을 직접 부르지 않는다. 부품이 없으면 거울 없이 레슨만 간다.
  const life=learning?.life&&typeof learning.life.createLifeTrail==='function'?learning.life:null;
- // 새 길(atlasNext — 4-2, 단계 4 §19-1 ①): 셸이 learning.next를 넘긴 문서는 새 판 겉(world-life-next.mjs)이 새 코치(은행 world-life)로 적고
- // 옛 거울은 만들지 않는다(한 답을 두 기록부에 쓰지 않는다). 판이 바뀌어 코치가 닫히면 이 화면도 안내 한 줄과 함께 닫는다.
+ // 새 길(atlasNext — 4-2, 단계 4 §19-1 ①): 셸이 learning.next를 넘긴 문서는 새 판 겉(world-life-next.mjs)이 새 코치(은행 world-life)로 적는다.
+ // 판이 바뀌어 코치가 닫히면 이 화면도 안내 한 줄과 함께 닫는다. 입구가 있어도 판은 문서 동안 바뀐다(엔진 · 확인 중 · 지금 판 — 서버 스위치가
+ // 꺼진 계정 · 엔진을 못 받은 연습은 지금 판) — 레슨 · 복습 · 안내 연습을 열 때마다 그때의 판으로 이번 시도의 기록부를 고른다: 새 길 · 확인 중이면
+ // 새 판 겉(확인 중에는 쌓아 두었다가 코치가 서면 흘려보낸다), 지금 판이면 옛 거울과 옛 코치 준비(GPT · 카본 합친 끝 판 GB2 · B1). 한 시도의
+ // 보임 · 답은 한 기록부에만 간다(한 답을 두 기록부에 쓰지 않는다).
  const nextPath=learning?.next&&typeof life?.createLifeNext==='function'?learning.next:null;
- const trail=nextPath?life.createLifeNext({coach:()=>nextPath.coach(),watch:(made,fn)=>nextPath.retired(made,fn),snapshot:()=>getProgress().exportSnapshot(),note:(axis,detail)=>nextPath.note?.(axis,detail),onRetired:()=>retiredClose()})
-  :life?life.createLifeTrail({coach:()=>{try{return learning?.coach?.()||null;}catch{return null;}},snapshot:()=>getProgress().exportSnapshot()}):NO_TRAIL;
+ const pathNow=()=>{if(!nextPath)return 'old';let value=null;try{value=nextPath.state?.()??null;}catch{value=null;}return value==='engine'?'engine':value==='old'||value==='disposed'?'old':'checking';};
+ const oldTrail=life?life.createLifeTrail({coach:()=>{try{return learning?.coach?.()||null;}catch{return null;}},snapshot:()=>getProgress().exportSnapshot()}):NO_TRAIL;
+ const newTrail=nextPath?life.createLifeNext({coach:()=>nextPath.coach(),watch:(made,fn)=>nextPath.retired(made,fn),snapshot:()=>getProgress().exportSnapshot(),note:(axis,detail)=>nextPath.note?.(axis,detail),onRetired:()=>retiredClose()}):null;
+ let attemptTrail=null; // 이번 시도의 기록부 — 시도를 열 때(beginAttempt) 정한다. 열기 전의 일은 그때의 판으로.
+ const pickTrail=()=>newTrail&&pathNow()!=='old'?newTrail:oldTrail;
+ const via=()=>attemptTrail??pickTrail();
+ const trail=newTrail?Object.freeze({shown:(...a)=>via().shown(...a),help:(...a)=>via().help(...a),delivery:(...a)=>via().delivery(...a),answer:(...a)=>via().answer(...a),guided:(...a)=>via().guided(...a),release:(...a)=>via().release(...a),
+  metrics:()=>({...via().metrics(),path:pathNow(),record:via()===newTrail?'next':'old'}),dispose(){newTrail.dispose();oldTrail.dispose();}}):oldTrail;
  const lessonSlot=(attempt,id)=>life?life.lessonSlot(attempt,id):null,reviewSlot=(run,id)=>life?life.reviewSlot(run,id):null;
- // 새 길은 옛 코치를 준비하지 않는다 — 생활 코치는 셸이 문서 시작 때 연다(§19-1 ⑤ M7).
- const prepareLearning=()=>{if(nextPath)return;try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}};
+ // 시도를 연다 — 그때의 판으로 기록부를 정한다(위). 지금 판이면 옛 코치를 준비하고(새 길 · 확인 중이면 하지 않는다 — 생활 코치는 셸이 문서
+ // 시작 때 연다, §19-1 ⑤ M7) 입구에 판을 다시 묻는다(§19-3 7 — 열 때마다 묻는다, 새 길이 되면 다음 시도부터).
+ const prepareLearning=()=>{const path=pathNow();attemptTrail=newTrail&&path!=='old'?newTrail:oldTrail;if(path!=='old')return;try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}if(nextPath)try{void Promise.resolve(nextPath.coach()).catch(()=>{});}catch{/* 다음 시도에 다시 묻는다 */}};
  // 판이 바뀌어 생활 코치가 닫혔다(새 길) — 열린 레슨 · 복습 화면이면 안내 한 줄과 함께 닫는다(진도는 남아 다시 열면 이어진다, §19-1 ①).
  function retiredClose(){if(ended||!shown)return;try{void getProgress().flush().catch(()=>{});}catch{}home.closePanel();updateHome();home.toast(t('life.next.changed'));}
  const engineItem=(lesson,question,review=false)=>life?life.lifeItem({lesson,question,review}):null;
@@ -141,7 +151,11 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const positionCount=()=>{let n=null;try{n=positionTotal?.();}catch{}return Number.isInteger(n)&&n>0?n:16;};
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
  const cut=speaker=>friends[speaker]?`<img class="life-friend" src="${asset('tutors/'+friends[speaker].cut+'-기본.webp')}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">`:'';
- function updateHome(){if(ended)return;try{const value=summary();home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}
+ // 복습 첫 화면이 열려 있으면 그린 때의 판정 표지(확인 중 · 엔진 · 수 · 목록 · 다음 때) — 판정이 바뀌면 그 화면을 다시 그린다. 진도가 바뀌면
+ // 셸이 홈만 새로 그려, 확인 중에 연 복습 화면이 엔진이 서도 「확인 중」으로 남던 것(GPT 합친 끝 판 GB1). 새 길 입구가 있는 문서에서만 —
+ // 지금 판(입구 없음 · 라이브)은 12/10까지 그대로라, 15초마다 홈을 새로 해도 열린 복습 화면은 다시 그리지 않는다.
+ const reviewSign=s=>[s.dueState??'',s.dueCount,(s.dueIds||[]).join(','),s.nextReviewAt??''].join('|');
+ function updateHome(){if(ended)return;try{const value=summary();if(nextPath&&screenView==='review'&&shown&&!rendering&&reviewMark!==reviewSign(value)){review({again:true});return;}home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}
  function completeTutorPractice(questionId,tutorId){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');return getProgress().recordGuidedPractice({questionId,tutorId});}
  function finishTutorDay(){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');return getProgress().markDayComplete();}
  function prepareHomePractice(id){
@@ -151,8 +165,9 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    const snapshot=p.exportSnapshot(),record=Object.values(snapshot.reviews).find(r=>r.questionId===id);
    if(!record||record.lapses<=0||record.streak!==0)return false;
    exposedTransfers.add(record.id);guideTransfer(record.questionId);
-   // 새 길은 그 표현 하나만 연다(간격 · 판정을 건너뜀 — 제품 간격표로 고른 복습 판을 만들지 않는다, §19-1 ⑤ M5).
-   const run=nextPath?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
+   // 새 길(엔진 판정)은 그 표현 하나만 연다(간격 · 판정을 건너뜀 — 제품 간격표로 고른 복습 판을 만들지 않는다, §19-1 ⑤ M5). 확인 중 · 지금 판이면
+   // 지금 판 규칙 그대로(돌아올 때가 안 된 표현의 복습을 만들지 않는다 — 카본 합친 끝 판 B2).
+   const run=pathNow()==='engine'?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
    // Seeing this same transfer before finishing an active review is assistance.
    if(run?.ids.includes(record.id)&&!run.answers[record.id])p.markReviewHelp(record.id);
    return true;
@@ -190,8 +205,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   trail.help(currentSlot(),'explanation');if(context.phase!=='review')guideTransfer(id);
  }
  const retryButton=q=>home.mountLifeTutor&&home.tutor?.().tutor?`<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">${t('life.tutorRetry')}</button>`:'';
- function paint(title,html,{type='life-library',focus='.life-heading',eyebrow='LIFE IN KOREA',keepScroll=false,tutorSlot=null,tutorPhase=null}={}){
-  viewPhase=tutorPhase;
+ function paint(title,html,{type='life-library',focus='.life-heading',eyebrow='LIFE IN KOREA',keepScroll=false,tutorSlot=null,tutorPhase=null,screen=null}={}){
+  viewPhase=tutorPhase;screenView=screen;
   // 집중 판은 내용 영역이 스크롤된다. 같은 장면을 다시 그릴 때(낱말 고르기 등)만 자리를 지키고, 새 장면은 맨 위에서 시작한다.
   const scroll=keepScroll&&shown?content.scrollTop:0;
   story.stop();generation++;rendering=true;show(title,html+statusLine(),{type,eyebrow,nav:'play'});
@@ -200,7 +215,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   // 이야기 장면에서는 튜터 띠를 사진 위 작은 「표현 도움」 알약으로 접는다(장면이 주인공). 문제·결과 화면은 그대로 띠.
   if(tutorSlot&&tutor?.element){const slot=content.querySelector(tutorSlot);if(slot){tutor.element.dataset.layout='scene';slot.append(tutor.element);}}
   home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){speech.stop();story.stop();signClip?.pause();signClip=null;shown=false;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
-  rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);content.querySelector(focus)?.focus({preventScroll:true});updateHome();
+  rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);if(focus)content.querySelector(focus)?.focus({preventScroll:true});updateHome();
   decorate(type,keepScroll);
  }
  // 10-17 움직임(유호님 「시안에 있는 움직임 전부 앱에 넣어 줘」): 라벨 타이핑 · 포스터 잉크 · 인화지 툭 놓기/손가락 따라 기울기 · 지금 팩 바느질 · 숫자 굴림
@@ -478,7 +493,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const at=snapshot.lessons[record.lessonId]?.answers?.[record.questionId]?.at??record.lastAt;
   return [ago(at),placeAt(record.packId)].filter(Boolean).join(' · ');
  }
- function review(){if(!ensureReadable())return;place='life';context=null;lastFeedback=null;helped=false;helpBy=null;reviewRun=null;const s=summary(),future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'',snapshot=getProgress().exportSnapshot(),checking=s.dueState==='checking';
+ // again: 판정이 바뀌어 열린 화면을 다시 그린다(자리 · 초점은 그대로).
+ function review({again=false}={}){if(!ensureReadable())return;place='life';context=null;lastFeedback=null;helped=false;helpBy=null;reviewRun=null;const s=summary();reviewMark=reviewSign(s);const future=Number.isFinite(s.nextReviewAt)?whenOf(s,s.nextReviewAt):'',snapshot=getProgress().exportSnapshot(),checking=s.dueState==='checking';
   const items=reviewRowsByExpression(s.dueReviews.map(r=>{const l=lessonById(r.lessonId),q=l?.questions.find(x=>x.id===r.questionId);return {korean:expressionOf(l,q).korean,origin:reviewOrigin(r,snapshot)};}));
   const backList=reviewListShape(items);
   // 아직 열린 복습이 없으면 곧 돌아올 표현과 그때를 보인다 — 포스터 한 장만 남은 빈 화면이 「잊을 때쯤 다시」를 가렸다(11-08 프론트 검수).
@@ -503,7 +519,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
     if(upcoming.length>=6)break;
    }
   }
-  paint(t('life.reviewTitle'),`<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print('review')}<small class="life-poster-label">REVIEW${s.dueCount?` · ${pad(backCount(s))}`:''}</small><h3 class="life-poster-word">${s.dueCount?t('life.reviewWordCount',{n:backCount(s)}):t(future||checking?'life.reviewWordNext':'life.reviewWordNone')}</h3><p class="life-poster-sub">${s.dueCount?s.dueCount>s.dueReviews.length?t('life.reviewSubFirst',{n:s.dueReviews.length}):t('life.reviewSubScenes',{n:s.dueCount}):checking?t('life.reviewChecking'):future?t('life.reviewSubOpens',{date:escape(future)}):t('life.reviewSubNone')}</p></section>${items.length?`<section class="life-review-list" aria-label="${t('life.backWord')}"><p class="life-section-label${listHead()}">${t(s.dueCount>s.dueReviews.length?'life.reviewFirstList':'life.backWord')}</p>${backList.origin?`<p class="life-review-origin">${escape(backList.origin)}</p>`:''}<ul>${backList.rows.map(i=>{const note=[i.origin,i.scenes>1?t('life.reviewScenes',{n:i.scenes}):''].filter(Boolean).join(' · ');return `<li><strong lang="ko">${escape(i.korean)}</strong>${note?`<small>${escape(note)}</small>`:''}</li>`;}).join('')}</ul></section>`:''}${upcoming.length?`<section class="life-review-list" data-upcoming aria-label="${t('life.comingBack')}"><p class="life-section-label${listHead()}">${t('life.comingBack')}</p><ul>${upcoming.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.when)}</small></li>`).join('')}</ul></section>`:''}${restLine('review')}</div><div class="life-actions">${s.dueCount?`<button class="felt-button" data-life-review-start>${t('life.reviewStart')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.doNextLesson')}</button>`:`<button class="felt-button" data-life-next>${t('life.doNextLesson')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-home>${t('life.toTown')}</button>`}</div>`,{type:'life-review',tutorPhase:s.dueCount?'reviewDue':future||checking?'reviewNext':'reviewEmpty'});
+  paint(t('life.reviewTitle'),`<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print('review')}<small class="life-poster-label">REVIEW${s.dueCount?` · ${pad(backCount(s))}`:''}</small><h3 class="life-poster-word">${s.dueCount?t('life.reviewWordCount',{n:backCount(s)}):t(future||checking?'life.reviewWordNext':'life.reviewWordNone')}</h3><p class="life-poster-sub">${s.dueCount?s.dueCount>s.dueReviews.length?t('life.reviewSubFirst',{n:s.dueReviews.length}):t('life.reviewSubScenes',{n:s.dueCount}):checking?t('life.reviewChecking'):future?t('life.reviewSubOpens',{date:escape(future)}):t('life.reviewSubNone')}</p></section>${items.length?`<section class="life-review-list" aria-label="${t('life.backWord')}"><p class="life-section-label${listHead()}">${t(s.dueCount>s.dueReviews.length?'life.reviewFirstList':'life.backWord')}</p>${backList.origin?`<p class="life-review-origin">${escape(backList.origin)}</p>`:''}<ul>${backList.rows.map(i=>{const note=[i.origin,i.scenes>1?t('life.reviewScenes',{n:i.scenes}):''].filter(Boolean).join(' · ');return `<li><strong lang="ko">${escape(i.korean)}</strong>${note?`<small>${escape(note)}</small>`:''}</li>`;}).join('')}</ul></section>`:''}${upcoming.length?`<section class="life-review-list" data-upcoming aria-label="${t('life.comingBack')}"><p class="life-section-label${listHead()}">${t('life.comingBack')}</p><ul>${upcoming.map(i=>`<li><strong lang="ko">${escape(i.korean)}</strong><small>${escape(i.when)}</small></li>`).join('')}</ul></section>`:''}${restLine('review')}</div><div class="life-actions">${s.dueCount?`<button class="felt-button" data-life-review-start>${t('life.reviewStart')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.doNextLesson')}</button>`:`<button class="felt-button" data-life-next>${t('life.doNextLesson')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-home>${t('life.toTown')}</button>`}</div>`,{type:'life-review',tutorPhase:s.dueCount?'reviewDue':future||checking?'reviewNext':'reviewEmpty',screen:'review',...(again?{keepScroll:true,focus:null}:{})});
  }
  // 새 길: 그 복습의 생활 단위가 하루 안에 다시 돌아오는가(엔진의 다음 돌아올 때 — 모르면 아니다, §19-1 ④ M4). 지금 판은 늘 아니다(글 그대로).
  const backSoon=id=>{if(!nextPath)return false;let at=null;try{at=nextPath.nextAt?.(id)??null;}catch{at=null;}return Number.isFinite(at)&&at<=Date.now()+86400000;};

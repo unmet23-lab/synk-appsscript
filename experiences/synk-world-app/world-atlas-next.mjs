@@ -294,9 +294,23 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
 // 클라이언트를 지나지 않아 아무도 받지 않았다 — 세션이 끝난 뒤 안내 없이 기기에만 쌓였다(Fable 5.2 끝 판 둘째 넘친 #9).
 export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args), headers = () => ({}), owner = () => null, onAuth = null } = {}) {
   const changed = () => Object.assign(new Error('ACCOUNT_CHANGED'), { code: 'ACCOUNT_CHANGED' });
+  // 401은 주인이 그대로일 때만 셸에 알린다(로그인으로) — 앞 계정의 늦은 요청이 새 세션까지 로그인 화면으로 돌리지 않게(GPT · 카본 합친 끝 판
+  // GC1 · C5). 주인이 바뀌었으면 그 답은 ACCOUNT_CHANGED로 버린다.
   async function call(path, { method = 'GET', body } = {}, from = undefined) {
     if (from !== undefined && owner() !== from) throw changed();
-    const data = await send(path, { method, body });
+    let data;
+    try {
+      data = await send(path, { method, body });
+    } catch (error) {
+      if (from !== undefined && owner() !== from) throw changed();
+      if (error?.status === 401)
+        try {
+          onAuth?.();
+        } catch {
+          // 셸의 정리는 실패를 던지는 것을 막지 않는다
+        }
+      throw error;
+    }
     if (from !== undefined && owner() !== from) throw changed();
     return data;
   }
@@ -327,12 +341,6 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
     if (!response.ok || data?.ok === false) {
       const status = response.status;
       const code = (typeof data?.error === 'string' ? data.error : data?.error?.code) || 'SERVER_UNAVAILABLE';
-      if (status === 401)
-        try {
-          onAuth?.();
-        } catch {
-          // 셸의 정리는 실패를 던지는 것을 막지 않는다
-        }
       throw Object.assign(new Error(code), {
         code,
         status,
@@ -408,6 +416,7 @@ export function createAtlasNext({
   // 같은 저장소의 호스트를 나눠 쓰므로 기록은 하나다.
   const coaches = new Map();
   const watchers = new Map(); // 코치 → 판을 다시 정해 닫을 때 부를 함수들(연습 화면이 안내 한 줄과 함께 닫힌다)
+  const gone = new WeakMap(); // 판을 다시 정해 닫은 코치 → 그 까닭
   let disposed = false;
   let generation = 0; // 판을 다시 정할 때마다 오른다 — 앞 판에서 열기 시작한 코치는 돌려주지 않는다
   let decided = null; // 계정의 판(약속) — 다시 정하면 비운다
@@ -421,7 +430,11 @@ export function createAtlasNext({
   let lastPath = null;
   let gave = null; // 면에 마지막으로 준 판 — 'old'(지금 판) · 'next'(새 길 코치)
   let told = false; // 지금 판을 준 뒤 이미 알렸다
+  // 판이 풀린 횟수(알렸든 안 알렸든) — 면이 판을 묻는 사이에 풀렸는데(아직 지금 판을 주기 전이라 알림이 버려짐) 그 면이 낡은 지금 판을
+  // 주면, 준 직후 알린다(카본 합친 끝 판 C3 ②).
+  let loosened = 0;
   function reopen(reason) {
+    loosened += 1;
     if (disposed || gave !== 'old' || told) return;
     told = true;
     for (const fn of [...reopeners])
@@ -431,13 +444,15 @@ export function createAtlasNext({
         // 한 화면의 실패가 다른 화면의 다시 묻기를 막지 않는다
       }
   }
-  // 면에 준 판을 적는다(practiceCoach · lifeCoach가 돌려주는 값) — 지금 판 뒤의 새 길이면 알린다(위 규칙).
-  function answered(made) {
+  // 면에 준 판을 적는다(practiceCoach · lifeCoach가 돌려주는 값) — 지금 판 뒤의 새 길이면 알린다(위 규칙). since: 그 면이 묻기 시작할 때의
+  // loosened — 묻는 사이에 판이 풀렸으면 지금 판을 준 직후 알린다.
+  function answered(made, since = loosened) {
     if (disposed) return made;
     const was = gave;
     if (!made) {
       gave = 'old';
       told = false;
+      if (since !== loosened) reopen('loosened');
       return made;
     }
     if (was === 'old') reopen('opened');
@@ -685,6 +700,7 @@ export function createAtlasNext({
     for (const opening of open)
       void opening.then(made => {
         if (!made) return;
+        gone.set(made, reason); // 닫은 뒤에 건 retired도 울린다 — 닫히기 직전에 그 코치를 받은 면이 영영 모르지 않게(카본 합친 끝 판 C2)
         for (const fn of [...(watchers.get(made) ?? [])])
           try {
             fn({ reason });
@@ -795,8 +811,23 @@ export function createAtlasNext({
       });
       coaches.set(key, opening);
     }
-    // 준비되는 사이에 닫혔으면 돌려주지 않는다 — 그 코치는 dispose()가 닫는다(떠난 화면의 코치 · 호스트가 남지 않게).
-    return coaches.get(key).then(made => (disposed ? null : made));
+    // 준비되는 사이에 닫혔으면 돌려주지 않는다 — 그 코치는 dispose()가 닫는다(떠난 화면의 코치 · 호스트가 남지 않게). 받는 사이에 판을 다시
+    // 정했으면(앞 세대 — 이미 연 코치를 다시 쓰는 길도) 그 코치는 retire가 닫으니 돌려주지 않는다(GPT · 카본 합친 끝 판 GC2 · C1 · C2).
+    return coaches.get(key).then(made => (disposed || at !== generation ? null : made));
+  }
+  // 면(짧은 연습 · 생활)의 계정 코치 — 판을 정해 그 판의 코치를 연다. 여는 사이에 판을 다시 정했으면(그 판의 코치는 닫혔다 — 여는 길 자신이
+  // 첫 받기에서 다시 정한 것 포함) 한 번만 다시 정한다(되풀이하면 세대가 이어 바뀌는 동안 끝나지 않는다). 견줄 세대는 planNow가 마지막으로
+  // 판을 정하기 직전의 것이다(자기가 다시 정한 판까지 버리지 않게).
+  async function faceCoach(banks, gameId, since) {
+    for (let tries = 0; tries < 2; tries += 1) {
+      const now = await planNow();
+      if (disposed) return null;
+      if (!now || now.plan.path === 'old') return answered(null, since);
+      const made = await coachFor(now.plan, banks, gameId, now.at);
+      if (disposed) return null;
+      if (now.at === generation) return answered(made, since);
+    }
+    return answered(null, since);
   }
 
   // 지금 세대의 판(계정) → { plan, at } · 못 정하면 null(이번은 지금 판). 기다리는 사이(계정 읽기 · 엔진 받기) 판을 다시 정했으면 앞 판을
@@ -849,11 +880,9 @@ export function createAtlasNext({
     // 짧은 연습의 코치 — 손님은 손님 저장소, 계정은 정한 판의 저장소. 지금 판이면 null. 한 번 연 코치는 다시 쓴다.
     async practiceCoach(pool) {
       if (disposed) return null;
-      if (!account) return answered(await coachFor(GUEST, banksOf(pool)));
-      const now = await planNow();
-      if (disposed) return null;
-      if (!now || now.plan.path === 'old') return answered(null);
-      return answered(await coachFor(now.plan, banksOf(pool), 'world-practice', now.at));
+      const since = loosened;
+      if (!account) return answered(await coachFor(GUEST, banksOf(pool)), since);
+      return faceCoach(banksOf(pool), 'world-practice', since);
     },
     // 셸이 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 판을 다시 정한다(연 코치를 닫고 다음 연습이 계정을 다시 읽는다). 다른 기기에서 바뀐
     // 것만 올리기의 답으로 안다(넘친 #18 — 앞 판 코치로 연 다음 연습의 첫 답이 앞 판 저장소에만 남아 버려지던 것).
@@ -864,11 +893,9 @@ export function createAtlasNext({
     // 새 길 문서의 시작 때 셸이 미리 연다(M7 — 「돌아온 복습」 판정이 홈의 첫 그림부터 엔진을 읽게). 지금 판이면 null.
     async lifeCoach() {
       if (disposed) return null;
-      if (!account) return answered(await coachFor(GUEST, LIFE_BANKS, 'world-life'));
-      const now = await planNow();
-      if (disposed) return null;
-      if (!now || now.plan.path === 'old') return answered(null);
-      return answered(await coachFor(now.plan, LIFE_BANKS, 'world-life', now.at));
+      const since = loosened;
+      if (!account) return answered(await coachFor(GUEST, LIFE_BANKS, 'world-life'), since);
+      return faceCoach(LIFE_BANKS, 'world-life', since);
     },
     // 지금 판을 준 뒤 새 길이 될 수 있을 때(판이 풀림 · 지금 판 뒤 새 길 코치를 줌) 부를 함수 — 생활 · 홈이 판을 다시 묻는다(§19-3 7 — 까닭을
     // 세지 않는다, 계정 · 손님 모두). retired(새 길 → 다시 정함)의 짝이다. 돌려준 함수로 끊는다.
@@ -879,7 +906,23 @@ export function createAtlasNext({
     },
     // 판을 다시 정해 그 코치를 닫을 때 부를 함수(연습 화면이 안내 한 줄과 함께 닫히게). 돌려준 함수로 끊는다.
     retired(made, fn) {
-      if (!made || typeof fn !== 'function') return () => {};
+      if (!made || typeof fn !== 'function' || disposed) return () => {};
+      // 이미 판을 다시 정해 닫은 코치 — 곧바로(다음 차례에) 알린다. 닫히기 직전에 그 코치를 받은 면이 닫힌 코치를 붙들고 남지 않게(카본 C2).
+      if (gone.has(made)) {
+        const reason = gone.get(made);
+        let live = true;
+        queueMicrotask(() => {
+          if (!live || disposed) return;
+          try {
+            fn({ reason });
+          } catch {
+            // 화면의 정리는 다른 화면의 알림을 막지 않는다
+          }
+        });
+        return () => {
+          live = false;
+        };
+      }
       if (!watchers.has(made)) watchers.set(made, new Set());
       watchers.get(made).add(fn);
       return () => watchers.get(made)?.delete(fn);

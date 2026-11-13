@@ -8,6 +8,7 @@ import * as atlas from '../../../packages/atlas/src/index.mjs';
 import {createAtlasNext,rehearsalTrail,postLegacyBatches,askSwitch,NEXT_MARK,LEGACY_KEY} from '../world-atlas-next.mjs';
 import {createRehearsalTrail} from '../rehearsal-trail.mjs';
 import {createPracticeNextSession} from '../world-practice-next.mjs';
+import {watchLifeDue} from '../world-life-next.mjs';
 import {bankItems} from '../world-topik-items.mjs';
 import {allowedPlays,nextPlay} from '../world-exam-form.mjs';
 
@@ -386,17 +387,22 @@ test('알림 갈래 — 스위치 꺼짐은 표지와 닫기(다음은 지금 �
  n2.dispose();
 });
 
-test('여는 사이에 판을 다시 정하면 앞 판에서 열던 코치는 돌려주지 않고 닫는다',async()=>{
+test('여는 사이에 판을 다시 정하면 앞 판에서 열던 코치는 돌려주지 않고 닫는다 — 그 면은 한 번 다시 정해 그 판의 코치를 받는다(지금 판으로 떨어지지 않는다, 카본 합친 끝 판 C1)',async()=>{
  let release;const slow=new Promise(resolve=>{release=resolve;});
  const line=accountLine();
- const {load}=fakeLoader(options=>fakeCoach({ready:options.banks.includes('entry-check')?slow:Promise.resolve()}));
+ const {opened,load}=fakeLoader(options=>fakeCoach({ready:options.banks.includes('entry-check')?slow:Promise.resolve()}));
  const next=createAtlasNext({owner:'acct-13',storage:memoryStorage([[NEXT_MARK+'acct-13','{"went":true}']]),trail:line.trail,load,health:recorder()});
  const first=await next.practiceCoach(POOL);
  const pending=next.practiceCoach([{itemKey:'entry-check.x1'}]);
  await until(()=>true);await tick();
  first.options.host.onAccount({kind:'account',code:'LEARNING_DISABLED',status:403});
  release();
- assert.equal(await pending,null);
+ const got=await pending;
+ const checks=opened.filter(made=>made.options.banks.includes('entry-check'));
+ assert.equal(checks.length,2,'다시 정한 판으로 한 번 더 열었다');
+ assert.equal(checks[0].disposed,1,'앞 판에서 열던 코치는 닫았다');
+ assert.equal(got,checks[1],'앞 판 코치가 아니라 다시 정한 판의 코치');
+ assert.equal(got.disposed,0);
  next.dispose();
 });
 
@@ -795,6 +801,104 @@ test('한 바퀴 — 손님 연습 → 계정 첫 받기로 새 길 → 손님 �
  next.dispose();
 });
 
+test('생활 코치를 여는 사이 판을 다시 정하면 앞 판 코치는 닫고 한 번만 다시 정해 새 판 코치를 준다 — 이번 생활이 지금 판으로 떨어지지 않는다(GPT · 카본 합친 끝 판 GC2 · C1)',async()=>{
+ let release;const gate=new Promise(resolve=>{release=resolve;});
+ const line=accountLine(),{opened,load}=fakeLoader(()=>fakeCoach({ready:opened.length?Promise.resolve():gate}));
+ const next=createAtlasNext({owner:'acct-gc2o',storage:memoryStorage(),trail:line.trail,load,health:recorder()});
+ const asking=next.lifeCoach();
+ await until(()=>opened.length===1);
+ next.redecide('account'); // 여는 사이 — 설정 토글 등
+ release();
+ const coach=await asking;
+ assert.ok(coach,'지금 판으로 떨어지지 않는다');
+ assert.equal(coach,opened[1],'다시 정한 판의 코치');
+ assert.equal(opened[0].disposed,1,'앞 판 코치는 닫혔다');
+ assert.equal(line.reads,2,'다시 정하기는 한 번');
+ next.dispose();
+});
+
+test('옮기기 물음 — 표지로 연 판을 다시 읽는 사이 판을 다시 정하면 앞 판(미확인)으로 「못 셈」하지 않고 다시 정해 센다(GPT 끝 판 둘째 GC2 · 합친 끝 판 C1)',async()=>{
+ const storage=memoryStorage([[NEXT_MARK+'acct-gm',JSON.stringify({went:true,path:'upload',revision:3})]]);
+ const line=accountLine({revision:3});const real=line.trail;let down=true,gate=null,release=()=>{};
+ line.trail=async()=>{if(down)throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});if(gate)await gate;return real();};
+ const next=createAtlasNext({owner:'acct-gm',storage,trail:()=>line.trail(),load:fakeLoader().load,health:recorder()});
+ assert.ok(await next.practiceCoach(POOL),'오프라인 — 표지의 판으로 새 길(미확인)');
+ down=false;gate=new Promise(resolve=>{release=()=>{gate=null;resolve();};});
+ const asking=next.guestMove({watermarks:{}});
+ await tick();await tick();
+ next.redecide('account'); // 다시 읽는 사이 — 설정 토글 등
+ release();
+ const answer=await asking;
+ assert.notDeepEqual(answer,{failed:true},'앞 판(미확인)으로 「못 셈」하지 않는다');
+ assert.equal(answer?.none,true,'다시 정한 판으로 센다(이 기기엔 옮길 것 없음)');
+ next.dispose();
+});
+
+test('판을 다시 정해 이미 닫은 코치에 건 retired도 울린다 — 닫히기 직전에 그 코치를 받은 면이 닫힌 코치를 붙들지 않는다(카본 합친 끝 판 C2)',async()=>{
+ const line=accountLine(),{opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-c2',storage:memoryStorage(),trail:line.trail,load,health:recorder()});
+ const coach=await next.lifeCoach();
+ assert.equal(coach,opened[0]);
+ next.redecide('account');
+ await tick();
+ assert.equal(coach.disposed,1,'판을 다시 정해 닫았다');
+ const heard=[];
+ next.retired(coach,detail=>heard.push(detail.reason));
+ const off=next.retired(coach,()=>heard.push('끊음'));off();
+ await tick();
+ assert.deepEqual(heard,['account'],'닫은 뒤에 건 알림도 그 까닭으로 울리고, 끊은 알림은 울리지 않는다');
+ next.dispose();
+});
+
+test('생활 코치를 받은 직후 판을 다시 정해도 판정은 닫힌 코치를 붙들지 않고 새 판 코치로 간다(GPT · 카본 합친 끝 판 GC2 · C1 · C2)',async()=>{
+ const line=accountLine();
+ const {opened,load}=fakeLoader(()=>{const made=fakeCoach({base:true});made.summary=()=>{if(made.disposed)throw Object.assign(Error('DISPOSED'),{code:'DISPOSED'});return {storage:{base:true}};};made.due=()=>[];made.itemUnits=()=>[];return made;});
+ const next=createAtlasNext({owner:'acct-gc2',storage:memoryStorage(),trail:line.trail,load,health:recorder()});
+ let first=true;
+ const w=watchLifeDue({open:()=>next.lifeCoach().then(made=>{if(first&&made){first=false;next.redecide('account');}return made;}),
+  retired:(made,fn)=>next.retired(made,fn),reopened:fn=>next.reopened(fn),progress:{setDueSource(){}},lessons:[]});
+ const coach=await until(async()=>{const made=await w.coach();return made&&made!==opened[0]?made:null;},3000);
+ assert.equal(opened[0].disposed,1,'앞 판 코치는 닫혔다');
+ assert.equal(coach.disposed,0,'새 판 코치');
+ assert.equal(w.state(),'engine');
+ w.dispose();next.dispose();
+});
+
+test('리허설 나르개의 늦은 401은 주인이 그대로일 때만 셸에 알린다 — 앞 계정의 늦은 요청이 새 세션을 로그인으로 돌리지 않는다(GPT · 카본 합친 끝 판 GC1 · C5)',async()=>{
+ let who='acct-a',auths=0,release;const gate=new Promise(resolve=>{release=resolve;});
+ const account={ok:true,status:200,json:async()=>({learning:{enabled:true,revision:1},capabilities:{learningSync:true}})};
+ const denied=()=>({ok:false,status:401,json:async()=>({error:'AUTH_REQUIRED'})});
+ const fetcher=async url=>{if(String(url).includes('trail-account'))return account;await gate;return denied();};
+ const line=await rehearsalTrail({fetcher,owner:()=>who,onAuth:()=>{auths+=1;}})();
+ const late=line.transport(1).get(null);
+ who='acct-b';release();
+ await assert.rejects(late,{code:'ACCOUNT_CHANGED'},'주인이 바뀌었으면 그 답은 버린다');
+ assert.equal(auths,0,'앞 계정의 늦은 401은 셸에 알리지 않는다');
+ const same=rehearsalTrail({fetcher:async()=>denied(),owner:()=>who,onAuth:()=>{auths+=1;}});
+ await assert.rejects(same(),{status:401});
+ assert.equal(auths,1,'주인이 그대로인 401은 셸에 알린다(로그인으로)');
+});
+
+test('면이 판을 묻는 사이 판이 풀렸으면(다른 면이 지금 판 뒤 새 길을 받음) 그 면이 지금 판을 준 직후 다시 알린다(카본 합친 끝 판 C3 ②)',async()=>{
+ const line=accountLine();const real=line.trail;let down=true;
+ line.trail=async()=>{if(down)throw Object.assign(Error('NETWORK'),{code:'NETWORK',retryable:true});return real();};
+ let fail;const lifeReady=new Promise((resolve,reject)=>{fail=reject;});lifeReady.catch(()=>{});
+ const {load}=fakeLoader(options=>fakeCoach(options.gameId==='world-life'?{ready:lifeReady}:{}));
+ const next=createAtlasNext({owner:'acct-c3',storage:memoryStorage(),trail:()=>line.trail(),load,health:recorder()});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ assert.equal(await next.practiceCoach(POOL),null,'계정을 못 읽어 지금 판');
+ down=false;
+ const life=next.lifeCoach(); // 생활 은행이 늦게 실패한다
+ await until(()=>line.reads>=1); // 생활이 판을 정했다(은행은 아직)
+ await tick();
+ assert.ok(await next.practiceCoach(POOL),'짧은 연습은 새 길');
+ assert.deepEqual(heard,['decided'],'지금 판 뒤 새 길로 정해진 순간 한 번 알렸다(그 뒤 새 길 코치는 또 알리지 않는다)');
+ fail(Object.assign(Error('bank'),{code:'BANK'}));
+ assert.equal(await life,null,'생활은 은행을 못 받아 이번은 지금 판');
+ assert.deepEqual(heard,['decided','loosened'],'생활이 묻는 사이 판이 풀렸으니 지금 판을 준 직후 다시 알린다');
+ next.dispose();
+});
+
 test('한 바퀴 — 켠 계정이 오프라인으로 다시 열어도 새 길이고 어제 단위가 보인다 · 푼 답은 그 판 저장소에 쌓였다가 온라인이면 올라가고, 판이 올랐으면 다시 정한다(계획 §6 시험 문장 · Fable 5.2 끝 판 둘째 F5)',{timeout:60_000},async()=>{
  let now=Date.UTC(2026,10,12,1,0,0);
  const time={now:()=>now,advance:ms=>{now+=ms;}};
@@ -906,18 +1010,20 @@ test('끝 판 둘째 GC1 — 늦게 준비된 앞 판 코치는 표지를 앞 �
  assert.equal(second.options.host.revision,2);
  assert.deepEqual(markOf(storage,'acct-g1'),{went:true,path:'upload',revision:2});
  release();
- assert.equal(await pending,null,'앞 판 코치는 돌려주지 않는다');
+ assert.equal(await pending,second,'앞 판 코치는 돌려주지 않고, 한 번 다시 정해 판 2 코치를 준다(카본 합친 끝 판 C1)');
  assert.equal(opened[0].disposed,1);
  assert.deepEqual(markOf(storage,'acct-g1'),{went:true,path:'upload',revision:2},'표지는 판 2 그대로');
  // 처음인 기기의 첫 받기가 늦게 끝나도 앞 판이면 표지를 쓰지 않는다
  const s2=memoryStorage(),l2=accountLine({revision:1});
- let done;const late=new Promise(resolve=>{done=resolve;});
- const n2=createAtlasNext({owner:'acct-g1b',storage:s2,trail:l2.trail,load:fakeLoader(()=>fakeCoach({synced:late})).load,health:recorder()});
+ let done;const late=new Promise(resolve=>{done=resolve;});let made2=0;
+ // 앞 판 코치의 첫 받기만 늦게 꺼짐을 알린다 — 다시 정한 판의 코치는 받는다
+ const n2=createAtlasNext({owner:'acct-g1b',storage:s2,trail:l2.trail,load:fakeLoader(()=>fakeCoach({synced:made2++===0?late:{ok:true,base:true}})).load,health:recorder()});
  const waiting=n2.practiceCoach(POOL);
  await until(()=>l2.reads===1);await tick();
  n2.redecide('account');done({ok:false,kind:'switch',code:'FEATURE_DISABLED'});
- assert.equal(await waiting,null);
- assert.deepEqual(markOf(s2,'acct-g1b'),{},'앞 판의 첫 받기가 늦게 알린 꺼짐은 표지에 쓰지 않는다');
+ assert.ok(await waiting,'앞 판의 늦은 첫 받기 대신 한 번 다시 정한 판으로 연다(카본 합친 끝 판 C1)');
+ assert.notEqual(markOf(s2,'acct-g1b').off,true,'앞 판의 첫 받기가 늦게 알린 꺼짐은 표지에 쓰지 않는다');
+ assert.deepEqual(markOf(s2,'acct-g1b'),{went:true,path:'upload',revision:1},'표지는 다시 정한 판의 첫 받기가 쓴 것');
  // 기기 길 — 스위치를 묻는 사이 판을 다시 정하면 앞 판은 표지(기기 길 · 꺼짐)를 쓰지 않는다
  for(const late of [{},fail(403,'FEATURE_DISABLED')]){
   const s3=memoryStorage();let held=null;

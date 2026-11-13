@@ -247,6 +247,34 @@ test('제외한 도움의 만남은 다시 세워도 남는다 — 보기가 못
   w.close();
 });
 
+test('제시는 그대로인데 첫 답만 제외해도 그 답이 낳은 만남은 다시 세워도 남는다 — 보기가 못 얹는 동안 뒤 답이 그 만남을 앞 몫으로 빼지 않는다(카본 합친 끝 판 D1)', async () => {
+  const w = await sessionOn({ seed: 41, tag: 'answer-excluded-wait', waiting: true });
+  w.session.choose(w.items, { set: { length: 4 } });
+  assert.equal(w.host.view().waitAll, true, '보기가 아무것도 얹지 못하는 동안');
+  const item = w.items[0];
+  const { familyKey } = w.map.item(item);
+  const pid = w.session.present(item, { firstExposure: false });
+  w.time.advance(1000);
+  const first = w.session.answer(pid, { correct: false, assessable: true });
+  assert.equal(await first.stored, true);
+  const met = w.session.learner.met.get(familyKey);
+  assert.ok(met !== undefined, '장부 만남 뒤의 첫 답 — 판 안의 만남');
+  assert.equal(await w.session.exclude(first.event.id).stored, true);
+  await settle();
+  w.session.rebuild();
+  assert.equal(
+    w.session.learner.met.get(familyKey),
+    met,
+    '제외는 만났다는 사실을 지우지 않는다 — 다시 세워도 같은 첫 만남',
+  );
+  w.time.advance(1000);
+  const second = w.session.answer(pid, { correct: true, assessable: true });
+  assert.equal(await second.stored, true);
+  w.session.rebuild();
+  assert.equal(w.session.learner.met.get(familyKey), met, '뒤 답 뒤에도 그 만남이 남는다');
+  w.close();
+});
+
 test('저장에 실패한 제시는 판의 낸 수에 들지 않는다 — 판 길이를 다 채우기 전에 새 판이 열리지 않는다(카본 끝 판 둘째 E2)', async () => {
   const w = await sessionOn({ seed: 35, tag: 'served' });
   const set = { length: 3 };

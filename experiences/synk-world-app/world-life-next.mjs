@@ -230,7 +230,10 @@ export function createLifeNext({
 // lifeDue = ① 방금 놓친 것(그 레슨 시도에서 틀렸거나 사람이 직접 도움을 연 문항의 복습 — 새 장면으로 한 번 답할 때까지)
 //         + ② 처음 만나는 장면(복습의 생활 단위에 엔진 기억 줄이 없고 본문항 첫 답에서 하루가 지난 것 — 단위마다 하나, 한 번만)
 //         + ③ 돌아온 단위마다 복습 하나(엔진 due — 아직 답하지 않은 것 → 마지막 답이 가장 오래된 것 → 원고 차례).
-// 한 단위가 둘 이상에 걸리면 한 번만 센다(①이 먼저). 생활 단위가 없는 복습(19개)은 ①로만 돌아온다(설계 주인 A (가)).
+// ①은 놓친 문항마다(결과 화면 soon 묶음과 같은 수 — 같은 단위의 놓친 복습 둘은 둘), ② · ③은 단위마다 하나. 한 단위가 ①과 ② · ③에
+// 함께 걸리면 ①로 한 번만 센다(①이 먼저 — GPT 합친 끝 판 GC3). 생활 단위가 없는 복습(19개)은 ①로만 돌아온다(설계 주인 A (가)).
+// ②는 본문항 답 뒤 아직 복습을 안 한 것만 받는다 — 복습까지 이미 답한 표현(지금 판 문서 · 옛 진도)이나 첫 복습 답이 버려진 표현은
+// 기억 줄이 없어도 다시 열지 않고 stuck(계기)으로만 남는다(받아들인 틈 — 카본 합친 끝 판 A1, 4-8 켜기 전에 메움: 계획 §2 4-8 줄).
 //   snapshot — 진도 exportSnapshot() · lessons — LESSONS(원고 차례) · unitsOf(review) — 그 복습 문항의 지도 생활 단위들
 //   memory — 코치 summary().units(기억 줄이 있는 단위: unit → { lastAt, dueAt }) · due — 코치 due()(돌아온 단위, 기억률 낮은 차례)
 // 돌려줌: { items: [{ id, unit, why, at }], ids, nextAt, times, upcoming: [{ id, unit, at }], stuck }
@@ -304,13 +307,21 @@ export function lifeDue({ snapshot, lessons = [], unitsOf, memory = [], due = []
     take(candidates[0], row.unit, 'due', Number.isFinite(dueAt) ? dueAt : now);
   }
   // 앞으로 열릴 때 — 열 수 있는 복습이 있는 생활 단위의 다음 돌아올 때(F) · 다리의 하루. 단위마다 그때 열릴 복습 하나(upcoming).
+  // 때가 지났나는 호스트 판정(요약 줄의 due — 서버로 맞춘 시각으로 잰 것)으로 잰다. 기기 시계로 재면 기기가 서버보다 앞설 때 그 사이의
+  // 단위가 지금 것(due()는 호스트 시계)에도 앞으로의 것에도 없어 날짜 · 알림에서 사라졌다. 판정이 없는 줄만 기기 시계로. 지났는데 돌아온
+  // 목록에 없는 단위는 그대로 세지 않는다(위 규칙). 한 복습은 한 번만 — 단위가 여럿인 복습이 두 번 들지 않게(카본 합친 끝 판 C4).
+  const past = line => (typeof line.due === 'boolean' ? line.due : line.dueAt <= now);
   const dueNow = new Set((due ?? []).map(row => row.unit));
   const upcoming = [...bridging];
+  const picked = new Set(bridging.map(row => row.id));
   for (const [unit, line] of lines) {
-    if (counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || line.dueAt <= now) continue;
-    const candidates = reviews.filter(review => unitsByReview.get(review.id).includes(unit));
+    if (counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || past(line)) continue;
+    const candidates = reviews.filter(
+      review => !picked.has(review.id) && unitsByReview.get(review.id).includes(unit),
+    );
     if (!candidates.length) continue;
     candidates.sort(pickOrder);
+    picked.add(candidates[0].id);
     upcoming.push({ id: candidates[0].id, unit, at: line.dueAt });
   }
   upcoming.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
@@ -380,6 +391,9 @@ export function watchLifeDue({
   let unitsOf = null;
   let opening = Promise.resolve(null);
   let asking = null; // 지금 판에서 다시 묻는 중(그동안은 지금 판 그대로 그린다)
+  // 묻는 사이(확인 중 · 다시 묻는 중)에 판이 풀렸다는 알림이 왔다 — 그 물음이 지금 판으로 끝나면 한 번 더 묻는다(알림을 버리면 입구는 이미
+  // 새 길을 줬다고 보고 다시 알리지 않아 생활 판정이 지금 판에 남았다 — GPT · 카본 합친 끝 판 GC4 · C3 ①).
+  let again = false;
   let phase = 'checking'; // 'checking' | 'engine' | 'old'
   let generation = 0;
   let disposed = false;
@@ -444,6 +458,7 @@ export function watchLifeDue({
     coach = made;
     unitsOf = lifeUnitsOf(made, lessons);
     phase = 'engine';
+    again = false;
     unwatch =
       quiet(() =>
         retired(made, () => {
@@ -461,6 +476,7 @@ export function watchLifeDue({
     coach = null;
     unitsOf = null;
     asking = null;
+    again = false;
     phase = 'checking';
     wait = every;
     quiet(() => progress.setDueSource(source));
@@ -472,11 +488,17 @@ export function watchLifeDue({
         if (!usable(made)) {
           phase = 'old';
           quiet(() => progress.setDueSource(null));
-          return null;
+          return settleOld();
         }
         return adopt(made, at);
       });
     return opening;
+  }
+  // 물음이 지금 판으로 끝났다 — 묻는 사이에 판이 풀렸다는 알림이 왔으면 한 번 더 묻는다.
+  function settleOld() {
+    if (!again || disposed || phase !== 'old') return null;
+    again = false;
+    return reask();
   }
   // 지금 판에서 판을 다시 묻는다(§19-3 7) — 묻는 동안은 지금 판 그대로(진도 간격), 새 길이면 엔진 판정을 넣는다. 겹친 물음은 한 번.
   function reask() {
@@ -488,7 +510,8 @@ export function watchLifeDue({
       .catch(() => null)
       .then(made => {
         if (asking === pending) asking = null;
-        if (disposed || at !== generation || phase !== 'old' || !usable(made)) return null;
+        if (disposed || at !== generation || phase !== 'old') return null;
+        if (!usable(made)) return settleOld();
         return adopt(made, at);
       });
     asking = pending;
@@ -498,7 +521,9 @@ export function watchLifeDue({
   const unreopen =
     quiet(() =>
       reopened(() => {
-        if (!disposed && phase === 'old') void reask();
+        if (disposed || phase === 'engine') return;
+        if (phase === 'old' && !asking) void reask();
+        else again = true; // 확인 중 · 다시 묻는 중 — 그 물음이 지금 판으로 끝나면 한 번 더
       }),
     ) ?? (() => {});
   attach();

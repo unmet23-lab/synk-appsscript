@@ -209,14 +209,20 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
 
   // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다). 답 · 도움은 지금 거름
   // (실패 · 제외)으로 그 제시 묶음을 다시 접어 돌린다(foldsOf — 장부 만남 · 앞 도움이 빠져 첫 도움이 된 도움까지).
-  function replay(tmp, op) {
+  // meetings: 만남 접기만(답 접기는 빼고) — 제외된 답의 줄(아래 metOnly).
+  function replay(tmp, op, { meetings = false } = {}) {
     if (op.kind === 'present') present(tmp, op.row, params);
     else if (op.kind === 'say') say(tmp, memory, op.unit, op.say, op.at, params);
-    else if (op.kind === 'answer' || op.kind === 'help') {
-      const group = s.groups.get(op.parent);
-      const event = group?.children.find(entry => entry.event.id === op.eventId)?.event;
-      if (event) for (const fold of foldsOf(group, event, host.index, s)) apply(tmp, fold);
-    }
+    else if (op.kind === 'answer' || op.kind === 'help')
+      for (const fold of refolds(op, meetings)) apply(tmp, fold);
+  }
+  // 그 제시 묶음을 지금 거름으로 다시 접어 이 줄의 사건이 더하는 접기 사건들(meetings면 만남만).
+  function refolds(op, meetings) {
+    const group = s.groups.get(op.parent);
+    const event = group?.children.find(entry => entry.event.id === op.eventId)?.event;
+    if (!event) return [];
+    const folds = foldsOf(group, event, host.index, s);
+    return meetings ? folds.filter(fold => fold.kind !== 'answer') : folds;
   }
   // 접기 사건 하나를 학습자에 얹는다 — 답은 두뇌의 record(판의 「다시」 · 만난 단위까지), 도움 만남 · 장부 만남은 기기 얹기 그대로.
   function apply(learner, fold) {
@@ -233,6 +239,15 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     if (op.kind === 'help') return true;
     return !s.excluded.has(op.eventId) && !s.excluded.has(op.parent);
   };
+  // 제시는 그대로인데 제외된 답 — 일지에서는 빠지지만(낸 수 · 놓친 답에 안 든다) 다시 세울 때 그 답이 낳은 만남 접기(장부 만남 · 거둔 답의
+  // 만남)는 다시 돌린다(설계 §5-2 「제외는 만났다는 사실을 지우지 않는다」). 통째로 건너뛰면 뒤 사건의 foldsOf가 그 만남을 앞 몫(had)으로
+  // 빼 판 학습자에서 만남이 사라졌다(카본 합친 끝 판 D1).
+  const metOnly = op =>
+    op.kind === 'answer' &&
+    !s.failed.has(op.eventId) &&
+    !s.failed.has(op.parent) &&
+    s.excluded.has(op.eventId) &&
+    !s.excluded.has(op.parent);
 
   // 제외된 사건 — 어느 코치 · 탭이 제외했든(기록부가 든 제외 사건의 대상, GPT GC2). 다시 세울 때마다 기록부에서 새로 읽는다(저장이 실패한
   // 제외는 없던 것).
@@ -299,7 +314,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     const tmp = learnerOf(copyView(waiting ? s.open.base : fresh));
     tmp.log = issuedLog();
     startSession(tmp, s.open.now, params, s.open.opts);
-    for (const op of s.journal) if (kept(op)) replay(tmp, op);
+    for (const op of s.journal)
+      if (kept(op)) replay(tmp, op);
+      else if (metOnly(op)) replay(tmp, op, { meetings: true });
     dropStated(tmp.session, fresh);
     s.learner = {
       ...(waiting ? tmp : fresh),
