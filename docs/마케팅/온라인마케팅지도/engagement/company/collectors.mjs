@@ -23,12 +23,13 @@ export const PLATFORM_CAPABILITIES = Object.freeze([
 ]);
 
 export class CollectorError extends Error {
-  constructor(code, message, { retryable = false, status = null } = {}) {
+  constructor(code, message, { retryable = false, status = null, reason = null } = {}) {
     super(message);
     this.name = 'CollectorError';
     this.code = code;
     this.retryable = retryable;
     this.status = status;
+    this.reason = reason;
   }
 }
 
@@ -160,7 +161,7 @@ function apiError(status, apiCode, transient = false) {
   // 업무별 한도 800xx로 알린다. 이것을 인증 오류로 읽으면 「재연결 필요」로 자동 수집이 멈춘다(10-20).
   if (status === 429 || ['4', '17', '32', '613'].includes(codes) || /^800\d\d$/.test(codes) || /quota|rate.?limit|too.?many|limit.?exceeded/.test(codes)) return new CollectorError('RATE_LIMITED', '플랫폼 호출 한도에 걸렸어요. 적어도 24시간 뒤에 다시 시도해요.', { retryable: true, status });
   if (status === 401 || status === 403 || ['102', '190', '200'].includes(codes) || /access.token|access_token|unauthor|permission|oauth|scope/.test(codes)) return new CollectorError('AUTH_REQUIRED', '연결이 만료됐거나 권한이 모자라요. 채널 카드에서 계정을 다시 연결해 주세요.', { status });
-  if (status === 404) return new CollectorError('CHANNEL_NOT_FOUND', '플랫폼에서 이 채널이나 콘텐츠를 찾지 못했어요. 주소가 맞는지 봐 주세요.', { status });
+  if (status === 404) return new CollectorError('CHANNEL_NOT_FOUND', '플랫폼에서 이 채널이나 콘텐츠를 찾지 못했어요. 주소가 맞는지 봐 주세요.', { status, reason: apiCode === 'playlistNotFound' ? 'playlistNotFound' : null });
   // Meta는 일시 오류에 is_transient:true를 붙인다. 영구 오류로 굳히지 않고 재시도한다.
   return new CollectorError('API_ERROR', '플랫폼이 수집 요청을 처리하지 못했어요. 연결과 플랫폼 상태를 봐 주세요.', { retryable: status >= 500 || transient, status });
 }
@@ -244,7 +245,16 @@ async function youtube(channel, credentials, request, recent) {
   const uploads = item.contentDetails?.relatedPlaylists?.uploads;
   if (uploads) {
     do {
-      const list = await api('playlistItems', { part: 'contentDetails', playlistId: uploads, maxResults: 50, pageToken: token });
+      let list;
+      try { list = await api('playlistItems', { part: 'contentDetails', playlistId: uploads, maxResults: 50, pageToken: token }); }
+      catch (error) {
+        // A verified empty channel may not have an uploads playlist yet. Other missing resources and unknown counts remain errors.
+        if (pages === 0 && number(item.statistics?.videoCount) === 0 && error.code === 'CHANNEL_NOT_FOUND' && error.status === 404 && error.reason === 'playlistNotFound') {
+          warnings.push('공개 영상이 0개이고 업로드 목록이 아직 없어 채널 수치만 기록했어요.');
+          break;
+        }
+        throw error;
+      }
       pages++;
       if (!Array.isArray(list.items)) throw new CollectorError('INVALID_RESPONSE', 'YouTube 콘텐츠 목록을 받지 못했어요.');
       for (const entry of list.items) {
