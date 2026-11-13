@@ -10,6 +10,8 @@ const Scene: React.FC = () => <Film scene />;
 export const RemotionRoot: React.FC = () => (
   <>
     <Composition id="e37-en" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{}} />
+    <Composition id="e37-zhs" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{ loc: 'zhs' as const }} />
+    <Composition id="e37-my" component={Film} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{ loc: 'my' as const }} />
     <Composition id="e37-scene" component={Scene} durationInFrames={TOTAL_FRAMES} fps={FPS} width={1080} height={1920} />
   </>
 );

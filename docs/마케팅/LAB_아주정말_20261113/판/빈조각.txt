@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed, studio product photo on a pure plain white background, soft even light from the front, very soft shadows only.
+
+Twelve separate blank felt tiles laid out flat in a neat grid of 3 columns × 4 rows, with generous white space between them (no tile touches another tile or the picture edge). Each tile is a thick, soft rounded rectangle of needle-felted wool, wider than tall, photographed straight from the front. Tile colors alternate: cream, mint green, butter yellow, sky blue, pale pink, cream, mint green, butter yellow, sky blue, pale pink, cream, mint green.
+
+Every tile is completely blank — plain felt with no stitching, no letters, no marks, no text, numbers or symbols anywhere.

@@ -32,8 +32,7 @@ for ko, en in {'방1': 'room1', '방2': 'room2', '방3': 'room3'}.items():
 
 # 낱말 조각 — 줄 순서: 아주 정말 진짜 / 완전 매우 너무 / 엄청 되게 무척 / 굉장히 몹시 대단히
 낱말 = ['아주', '정말', '진짜', '완전', '매우', '너무', '엄청', '되게', '무척', '굉장히', '몹시', '대단히']
-src = 마지막('조각')
-if src:
+def 오리기(src, 접두, 이름표=None):
     im = Image.open(src).convert('RGB')
     a = np.asarray(im).astype(np.int16)
     mx, mn = a.max(axis=2), a.min(axis=2)
@@ -60,6 +59,13 @@ if src:
         mask = mask.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.2))
         tile = im.crop((x0, y0, x1, y1)).convert('RGBA')
         tile.putalpha(mask)
-        이름 = f'w{i + 1:02d}'
+        이름 = f'{접두}{i + 1:02d}'
         tile.save(os.path.join(밖, 이름 + '.png'))
-        print(이름, 낱말[i], tile.size)
+        print(이름, 이름표[i] if 이름표 else '', tile.size)
+
+
+if 마지막('조각'):
+    오리기(마지막('조각'), 'w', 낱말)
+# 쏟아지는 조각은 글 없는 빈 조각(이해 시험 v3 — 시험관 둘이 「작은 조각 글을 못 읽음」을 세 판 내리 짚음)
+if 마지막('빈조각'):
+    오리기(마지막('빈조각'), 'b')
