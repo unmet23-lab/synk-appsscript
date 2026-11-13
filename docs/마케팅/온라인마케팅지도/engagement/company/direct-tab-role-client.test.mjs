@@ -23,16 +23,16 @@ function fixture({role,search}){
   return {state,seen,run:code=>vm.runInContext(code,context)};
 }
 
-test('a direct team or settings link opens that screen once the role is known',async()=>{
-  for(const [role,search,tab] of [['admin','?tab=members','members'],['manager','?tab=members','members'],['admin','?tab=settings','settings']]){
+test('every signed-in role can open the people directory and only an administrator can open settings',async()=>{
+  for(const [role,search,tab] of [['admin','?tab=members','members'],['manager','?tab=members','members'],['member','?tab=members','members'],['viewer','?tab=members','members'],['admin','?tab=settings','settings']]){
     const f=fixture({role,search});await f.run('initialize()');
     assert.equal(f.state.tab,tab,`${role} ${search}`);assert.equal(f.seen.tabAtLoad,tab,'the first paint and URL sync already use the requested screen');
     assert.equal(f.state.requestedView,null);
   }
 });
 
-test('roles without access stay on the home screen as before',async()=>{
-  for(const [role,search] of [['member','?tab=members'],['viewer','?tab=members'],['manager','?tab=settings'],['member','?tab=settings']]){
+test('roles without settings access stay on the home screen as before',async()=>{
+  for(const [role,search] of [['manager','?tab=settings'],['member','?tab=settings'],['viewer','?tab=settings']]){
     const f=fixture({role,search});await f.run('initialize()');assert.equal(f.state.tab,'home',`${role} ${search}`);
   }
 });

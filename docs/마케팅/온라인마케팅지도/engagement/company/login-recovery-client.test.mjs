@@ -6,6 +6,7 @@ import vm from 'node:vm';
 
 // 2026-10-23 로그인 되찾기 화면: 재설정 링크는 플랫폼·SYNK 입구보다 먼저 열리고, 쓴 뒤에는 아이디를 채운 로그인으로 돌아간다.
 const source=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
+const organizationSource=readFileSync(new URL('./public/member-organization.js',import.meta.url),'utf8');
 const between=(start,end)=>{const from=source.indexOf(start),to=source.indexOf(end,from+start.length);assert.ok(from>=0&&to>from,start);return source.slice(from,to);};
 const initializeSource=between('async function initialize()','async function loadState()');
 const recoverySource=between('const untilFormatter','function shell(content)');
@@ -59,9 +60,16 @@ test('the reset form names the account for password managers and asks twice for 
 
 test('only an administrator sees the reset button, never on an administrator or a stopped crew',()=>{
   const members=[{id:'a',name:'관리자',email:'a@example.test',role:'admin',active:true},{id:'m',name:'크루',email:'m@example.test',role:'member',active:true},{id:'s',name:'멈춤',email:'s@example.test',role:'viewer',active:false}];
-  const render=role=>{const context=workspaceClientContext({state:{user:{id:role==='admin'?'a':'m',role},data:{members,teams:[],channels:[],deployment:{}}},escape:value=>String(value??''),icon:()=>'',roleLabel:value=>value,number:String,isAdmin:()=>role==='admin',canManageTeam:()=>true,empty:()=>'',pageHeading:()=>'',button:(text,action,glyph,classes,attrs='')=>`<button data-action="${action}" ${attrs}>${text}</button>`});vm.runInContext(membersSource,context);return vm.runInContext('membersPage()',context);};
+  const render=role=>{
+    const details=[];
+    const context=workspaceClientContext({state:{user:{id:role==='admin'?'a':'m',role},data:{members,teams:[],channels:[],deployment:{}}},escape:value=>String(value??''),icon:()=>'',roleLabel:value=>value,number:String,isAdmin:()=>role==='admin',canManageTeam:()=>['admin','manager'].includes(role),empty:()=>'',pageHeading:()=>'',button:(text,action,glyph,classes,attrs='')=>`<button data-action="${action}" ${attrs}>${text}</button>`,document:{addEventListener(){}},overlay:{querySelector:()=>null},modal:(_title,_description,body)=>details.push(body)});
+    vm.runInContext(membersSource+'\n'+organizationSource,context);
+    assert.match(vm.runInContext('membersPage()',context),/사람·조직/);
+    for(const member of members)vm.runInContext(`organizationDetail(${JSON.stringify(member.id)})`,context);
+    return details.join('\n');
+  };
   const admin=render('admin');assert.equal((admin.match(/data-action="member-password-reset"/g)||[]).length,1);assert.match(admin,/data-action="member-password-reset" data-id="m"/);
-  assert.doesNotMatch(render('manager'),/member-password-reset/);
+  for(const role of ['manager','member','viewer'])assert.doesNotMatch(render(role),/member-password-reset/);
 });
 
 test('without a password the form does not ask for the current one; with one it does, and an administrator is sent to the operator',()=>{
