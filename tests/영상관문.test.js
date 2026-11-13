@@ -119,7 +119,7 @@ test('준비 · 기록만 Sonnet이고, 검수자는 모델을 정하지 않아 
   const { 부름 } = await 돌리기({ 훑기답: l => (l.startsWith('컷 전수') ? [지적('C1', 'P1', '영상만')] : []), 반박답: () => ({ 답: '맞음' }) });
   for (const b of 부름) {
     if (b.opts.phase === '준비' || b.opts.phase === '기록') assert.equal(b.opts.model, 'sonnet', b.opts.label);
-    else assert.equal(b.opts.model, undefined, `${b.opts.label}가 모델을 정했다 — Agent의 「fable」은 5.1로 간다`);
+    else assert.equal(b.opts.model, undefined, `${b.opts.label}가 모델을 정했다 — 관문 검수자는 Fable 5.2 검수 세션의 모델을 그대로 물려받아야 한다`);
   }
   assert.ok(부름.some(b => b.opts.phase === '반박'));
 });

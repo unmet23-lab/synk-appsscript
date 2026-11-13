@@ -45,7 +45,8 @@ const 모름재시도 = 하루;
 
 // 일반 단가(USD / 100만 토큰). 추정용이며 청구서가 아니다. 캐시 단가는 따로 셈하지 않는다.
 const 단가 = Object.freeze({
-  'claude-fable-5-1': [10, 50],
+  'claude-fable-5-2': [8, 40],
+  'claude-fable-5-1': [10, 50], // 지난 기록의 어림에만 쓴다 — 새 요청은 아래 막은모델이 거절한다
   'claude-opus-5-5': [4, 20],
   'claude-sonnet-5-5': [2, 10],
   'claude-haiku-5-5': [0.1, 0.5],
@@ -200,8 +201,8 @@ function 누적USD(키, 기록) {
 
 // 2026-11-10 공식 Vision: 28px patch, 고해상도 장당 최대 4,784 visual tokens.
 // https://platform.claude.com/docs/en/build-with-claude/vision
-// https://platform.claude.com/docs/en/models/fable-5-1/overview (입력 $10/MTok, 출력 $50/MTok)
-// Fable 5.1의 정적 PNG base64만 8,192토큰/장으로 더 넉넉히 예약한다. 다른 모델·입력은 기존대로 닫는다.
+// https://platform.claude.com/docs/en/models/fable-5-2/overview (입력 $8/MTok, 출력 $40/MTok · 5.1과 같은 토크나이저)
+// Fable 5.2의 정적 PNG base64만 8,192토큰/장으로 더 넉넉히 예약한다(11-13부터 — 11-10엔 5.1). 다른 모델·입력은 기존대로 닫는다.
 // API보다 좁은 자체 입력 경계: 20장, 각 base64 5MiB, 합 20MiB, 한 변 1..8000px, 비인터레이스 PNG.
 const PNG상한 = Object.freeze({ 장수: 20, base64: 5 * 1024 * 1024, 합: 20 * 1024 * 1024, 변: 8000, 토큰: 8192 });
 const CRC표 = Array.from({ length: 256 }, (_, n) => {
@@ -245,7 +246,7 @@ function PNG맞음(data) {
 
 function PNG입력어림(params, 글) {
   const 허용요청 = new Set(['model', 'max_tokens', 'messages', 'system', 'thinking', 'output_config', 'temperature', 'top_k', 'top_p', 'metadata', 'stop_sequences', 'stream', 'cache_control']);
-  if (params.model !== 'claude-fable-5-1' || !Number.isInteger(params.max_tokens) || params.max_tokens > 128000
+  if (params.model !== 'claude-fable-5-2' || !Number.isInteger(params.max_tokens) || params.max_tokens > 128000
     || Object.keys(params).some(key => !허용요청.has(key))) return null;
   const 복사 = JSON.parse(글);
   let 장수 = 0, 합 = 0;
@@ -353,9 +354,11 @@ function 크레딧부족(http, body) {
   return http >= 400 && http < 500 && /credit balance is too low/i.test(String(body?.error?.message ?? ''));
 }
 
-// 캐시 읽기 단가는 입력 단가의 배수다(공식 가격, 10-20 claude-api 참고: Opus 5.5 $0.20/MTok = 0.05배, Fable 5.1 0.025배, 그 밖 0.1배).
+// 캐시 읽기 단가는 입력 단가의 배수다(공식 가격, 10-20 · 11-13 claude-api 참고: Opus 5.5 $0.20/MTok = 0.05배, Fable 5.2 $0.20 · 5.1 $0.25 = 0.025배, 그 밖 0.1배).
 // 캐시 쓰기는 5분 1.25배·1시간 2배, 배치(Message Batches)는 모든 토큰이 반값이다.
-const 캐시읽기배수 = Object.freeze({ 'claude-opus-5-5': 0.05, 'claude-fable-5-1': 0.025 });
+const 캐시읽기배수 = Object.freeze({ 'claude-opus-5-5': 0.05, 'claude-fable-5-2': 0.025, 'claude-fable-5-1': 0.025 });
+// Fable은 5.2로만 보낸다(유호님 11-11 「앞으로 필요한 모든 페이블 검수는 5.1에서 5.2로」 · 11-13 「5.1이 아닌 5.2가 쓰여야」).
+const 막은모델 = Object.freeze({ 'claude-fable-5-1': 'Fable은 5.2(claude-fable-5-2)로만 보낸다 — claude-fable-5-1 요청은 거절한다' });
 function 추정USD(model, usage, { 배치 = false } = {}) {
   const 표 = 단가[model];
   if (!표 || !usage || !Number.isFinite(usage.input_tokens) || !Number.isFinite(usage.output_tokens)) return null;
@@ -379,6 +382,7 @@ function 오류(code, 메시지, 덧붙임 = {}) {
  */
 async function 보내기(본문, 옵션 = {}) {
   if (!본문 || typeof 본문 !== 'object' || typeof 본문.model !== 'string') throw new Error('요청 본문에 model이 없다');
+  if (Object.hasOwn(막은모델, 본문.model)) throw 오류('클로드키_막은모델', 막은모델[본문.model], { model: 본문.model });
   const { 목록경로, 상태경로, 기록경로 } = 경로들(옵션);
   const 보낼것 = 옵션.fetch || globalThis.fetch;
   const 지금 = 옵션.지금 || new Date();
@@ -592,6 +596,7 @@ async function 배치보내기(요청들, 옵션 = {}) {
   for (const r of 요청들) {
     if (!r || typeof r.custom_id !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(r.custom_id) || 아이디.has(r.custom_id)) throw new Error(`custom_id 꼴·중복: ${r?.custom_id}`);
     if (!r.params || typeof r.params.model !== 'string') throw new Error(`${r.custom_id}: params.model이 없다`);
+    if (Object.hasOwn(막은모델, r.params.model)) throw 오류('클로드키_막은모델', `${r.custom_id}: ${막은모델[r.params.model]}`, { model: r.params.model });
     아이디.add(r.custom_id);
   }
   const { 기록경로 } = 경로들(옵션);

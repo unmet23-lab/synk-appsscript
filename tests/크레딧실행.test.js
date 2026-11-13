@@ -442,6 +442,21 @@ test('크레딧 전용 설정 폴더에는 유호님 설정의 autoMode·permiss
   } finally { fs.rmSync(방, { recursive: true, force: true }); }
 });
 
+test('「fable」 별칭을 5.2에 묶는 env 하나만 크레딧 전용 설정 폴더로 옮긴다(다른 env는 빠진다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-credit-cfg-'));
+  try {
+    const 사용자 = path.join(방, 'user-settings.json');
+    fs.writeFileSync(사용자, JSON.stringify({ permissions: { defaultMode: 'auto' },
+      env: { ANTHROPIC_DEFAULT_FABLE_MODEL: 'claude-fable-5-2', ANTHROPIC_API_KEY: 'sk-ant-test-x', OTHER: '1' } }));
+    const 폴더 = 실행기.설정폴더준비(path.join(방, 'cfg'), 사용자);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(폴더, 'settings.json'), 'utf8')),
+      { permissions: { defaultMode: 'auto' }, env: { ANTHROPIC_DEFAULT_FABLE_MODEL: 'claude-fable-5-2' } });
+    fs.writeFileSync(사용자, JSON.stringify({ env: { ANTHROPIC_DEFAULT_FABLE_MODEL: 'opus; rm -rf /' } }));
+    const 이상 = 실행기.설정폴더준비(path.join(방, 'cfg2'), 사용자);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(이상, 'settings.json'), 'utf8')), {}, 'Fable 모델 id 꼴이 아니면 옮기지 않는다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
 test('텔레그램 승인 훅만은 크레딧 전용 설정 폴더로 옮긴다(다른 훅은 그대로 빠진다)', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-credit-cfg-'));
   try {

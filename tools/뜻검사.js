@@ -323,8 +323,8 @@ function 부르는법(밖, 시험관) {
   return 시험관.map((s) => (s === 'gpt'
     ? `  gpt    → node tools/codex계정.js exec --skip-git-repo-check -C <빈 폴더> -s read-only -o "${path.join(밖, '답_gpt.md')}" - < "${q}"`
     : s === 'fable'
-      // Fable은 5.2로만(유호님 11-11) — Agent model: fable은 5.1로 간다
-      ? `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Fable 5.2 하위 에이전트(세션 모델이 claude-fable-5-2인 세션에서 model을 비워 띄움 — model: fable은 5.1이라 안 씀)에게 질문.md 내용을 그대로 주고, 최종 답을 ${path.join(밖, `답_${s}.md`)}에 넣는다`
+      // Fable은 5.2로만(유호님 11-11 · 11-13) — 이 PC의 Claude 설정이 「fable」 별칭을 claude-fable-5-2로 묶는다
+      ? `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Fable 5.2 하위 에이전트(Agent model: fable — 설정이 claude-fable-5-2로 묶음, 답 기록의 model 칸이 claude-fable-5-2인지 확인)에게 질문.md 내용을 그대로 주고, 최종 답을 ${path.join(밖, `답_${s}.md`)}에 넣는다`
       : `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Agent(model: ${s})에게 질문.md 내용을 그대로 주고, 최종 답을 ${path.join(밖, `답_${s}.md`)}에 넣는다`)).join('\n');
 }
 

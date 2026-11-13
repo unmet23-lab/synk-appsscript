@@ -55,6 +55,10 @@ function 설정폴더준비(폴더 = process.env.SYNK_CREDIT_CONFIG_DIR || path.
   // 자동 모드에 막힌 단계를 폰에서 잇는 훅만은 옮긴다(헤르메스가 크레딧으로 띄운 실행도 같은 알림·이어 가기를 받게).
   const 승인훅 = require('./텔레그램승인.js').승인훅만(원본.hooks);
   if (승인훅) 옮길것.hooks = 승인훅;
+  // 「fable」 별칭을 5.2에 묶는 값 하나만 옮긴다(유호님 11-11 · 11-13 「Fable은 5.2로만」) — 크레딧 실행의 `--model fable` · Agent model fable도 5.2로.
+  // 다른 env 값(자격 · 경로)은 옮기지 않는다.
+  const 페이블 = 원본.env?.ANTHROPIC_DEFAULT_FABLE_MODEL;
+  if (typeof 페이블 === 'string' && /^claude-fable-\d+(-\d+)?$/.test(페이블)) 옮길것.env = { ANTHROPIC_DEFAULT_FABLE_MODEL: 페이블 };
   const 파일 = path.join(폴더, 'settings.json');
   const 새글 = JSON.stringify(옮길것, null, 2) + '\n';
   if (!fs.existsSync(파일) || fs.readFileSync(파일, 'utf8') !== 새글) fs.writeFileSync(파일, 새글);

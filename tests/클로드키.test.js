@@ -513,7 +513,7 @@ function 시험PNG({ width = 1, height = 1, ihdrLength = 13, interlace = 0, extr
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), ...chunks]);
 }
 function 그림요청(data = 시험PNG().toString('base64')) {
-  return { model: 'claude-fable-5-1', max_tokens: 16, messages: [{ role: 'user', content: [
+  return { model: 'claude-fable-5-2', max_tokens: 16, messages: [{ role: 'user', content: [
     { type: 'image', source: { type: 'base64', media_type: 'image/png', data } },
     { type: 'text', text: '이 화면을 검수해 주세요.' },
   ] }] };
@@ -523,14 +523,14 @@ test('Fable PNG는 원문을 바꾸지 않고 장당 8192토큰·UTF-8 전체 �
   const 요청 = 그림요청(), 원문 = JSON.stringify(요청);
   const 비용 = 클로드.요청어림USD(요청);
   assert.ok(Number.isFinite(비용));
-  assert.ok(비용 > (8192 * 10 + 16 * 50) / 1e6);
+  assert.ok(비용 > (8192 * 8 + 16 * 40) / 1e6);
   assert.equal(JSON.stringify(요청), 원문);
   const 추가 = structuredClone(요청); 추가.messages[0].content[1].extra = '가'.repeat(1000);
-  assert.ok(클로드.요청어림USD(추가) - 비용 >= 3000 * 10 / 1e6);
+  assert.ok(클로드.요청어림USD(추가) - 비용 >= 3000 * 8 / 1e6);
   const 캐시 = structuredClone(요청); 캐시.messages[0].content[0].cache_control = { type: 'ephemeral', ttl: '1h' };
-  assert.ok(클로드.요청어림USD(캐시) >= 8192 * 2 * 10 / 1e6 + 16 * 50 / 1e6);
+  assert.ok(클로드.요청어림USD(캐시) >= 8192 * 2 * 8 / 1e6 + 16 * 40 / 1e6);
   const 기본캐시 = structuredClone(요청); 기본캐시.cache_control = { type: 'ephemeral' };
-  assert.ok(클로드.요청어림USD(기본캐시) >= 8192 * 1.25 * 10 / 1e6 + 16 * 50 / 1e6);
+  assert.ok(클로드.요청어림USD(기본캐시) >= 8192 * 1.25 * 8 / 1e6 + 16 * 40 / 1e6);
   const 스무장 = 그림요청(); 스무장.messages[0].content = Array(20).fill(스무장.messages[0].content[0]);
   assert.ok(Number.isFinite(클로드.요청어림USD(스무장)));
   스무장.messages[0].content.push(스무장.messages[0].content[0]);
@@ -560,7 +560,7 @@ test('PNG의 깨진 base64·BOM·서명·CRC·청크·IHDR·크기·APNG·초과
 
 test('그림은 exact Fable 모델과 직접 user PNG 외 URL·file·PDF·도구·추가 비용 옵션을 계속 거절한다', () => {
   const 바꾸기 = [
-    q => { q.model = 'claude-opus-5-5'; }, q => { q.model = 'claude-fable-5-1-latest'; },
+    q => { q.model = 'claude-opus-5-5'; }, q => { q.model = 'claude-fable-5-2-latest'; }, q => { q.model = 'claude-fable-5-1'; },
     q => { q.model = 'unknown'; }, q => { q.max_tokens = 128001; }, q => { q.max_tokens = 1.5; },
     q => { q.messages[0].role = 'assistant'; }, q => { q.messages[0].content[0].source.type = 'url'; },
     q => { q.messages[0].content[0].source = { type: 'file', file_id: 'file_test' }; },
@@ -573,6 +573,16 @@ test('그림은 exact Fable 모델과 직접 user PNG 외 URL·file·PDF·도구
     q => { q.messages[0].content = [{ type: 'tool_result', tool_use_id: 'test', content: [q.messages[0].content[0]] }]; },
   ];
   for (const 바꿈 of 바꾸기) { const 요청 = 그림요청(); 바꿈(요청); assert.equal(클로드.요청어림USD(요청), Infinity, String(바꿈)); }
+});
+
+test('Fable 5.1 요청은 키를 고르기 전에 거절한다 — 보내기 · 배치보내기 모두(11-13 「5.1이 아닌 5.2가 쓰여야」)', async () => {
+  let 불림 = 0;
+  const 막힌fetch = async () => { 불림++; throw new Error('보내면 안 된다'); };
+  await assert.rejects(클로드.보내기({ ...본문, model: 'claude-fable-5-1' }, { fetch: 막힌fetch, 지금 }), { code: '클로드키_막은모델', model: 'claude-fable-5-1' });
+  await assert.rejects(클로드.배치보내기([{ custom_id: 'a1', params: { ...본문, model: 'claude-fable-5-1' } }], { fetch: 막힌fetch }), { code: '클로드키_막은모델' });
+  assert.equal(불림, 0);
+  assert.ok(Number.isFinite(클로드.요청어림USD({ ...본문, model: 'claude-fable-5-2' })), '5.2는 단가가 있어 어림이 된다');
+  assert.equal(클로드.추정USD('claude-fable-5-2', { input_tokens: 1e6, output_tokens: 1e6 }), 48);
 });
 
 test('PNG도 잔액 예약을 거치며 원본을 보내고 결과 모름의 상한 비용을 보존한다', async () => {
