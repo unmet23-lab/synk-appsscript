@@ -6,14 +6,22 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
-import { buildToday, buildAfter, readTurns, TAEO_LINES, dayKey } from '../experiences/drama/pilot/today/plan.mjs';
-import { POOL, AGAIN_PAIR, NEW_ORDER } from '../experiences/drama/pilot/today/content.mjs';
+import { buildToday, buildAfter, readTurns, TAEO_LINES, dayKey, dayStart } from '../experiences/drama/pilot/today/plan.mjs';
+import { POOL, AGAIN_PAIR, NEW_ORDER, YO_LINES } from '../experiences/drama/pilot/today/content.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lesson = JSON.parse(fs.readFileSync(path.join(ROOT, 'experiences/drama/pilot/world-lesson.json'), 'utf8')).lesson;
-// 오늘 아침 9시(기기 시각) — 심는 기록은 이보다 앞서고, 엔진 시계(지금)보다도 앞선다.
-const morning = () => { const d = new Date(); d.setHours(9, 0, 0, 0); return Math.min(d.getTime(), Date.now() - 60000); };
+// 오늘 학습일 아침 9시(기기 시각) — 심는 기록은 이보다 앞서고, 엔진 시계(지금)보다도 앞선다. 학습일이 막 바뀐 때(새벽 4시 뒤 40분 안)면
+// 그 앞 학습일 끝으로 물러난다(끝 화면 시험은 31분 전에 누른 것으로 짓는다 — 둘이 한 학습일에 들게).
+const morning = () => { const now = Date.now(), s = dayStart(now); return now - s < 40 * 60000 ? s - 60000 : Math.min(s + 5 * 3600000, now - 60000); };
+// 화면에 나가는 글에는 촬영장 말이 없다(설계 세션 11-14 — 스토리형 앱, 처음 보는 사람이 못 알아듣는다).
+const STUDIO = /테이크|통과|노트/;
+function visible(today, after = null) {
+ const out = [today.line?.text, today.empty?.text, ...today.items.flatMap((x) => [x.title, x.why.text, x.why.next])];
+ if (after) out.push(...after.changed.flatMap((c) => [c.what, c.before, c.after]), ...after.tomorrow.flatMap((x) => [x.title, x.when]));
+ return out.filter(Boolean);
+}
 
 function contract(today) {
  assert.equal(today.speaker, 'taeo');
@@ -34,14 +42,18 @@ test('기록 A(어제 6번 줄 끝맺음 노트 · B 안 함 · 입장 검사 �
  const r = await read(w, lesson);
  contract(r.today);
  const [again, fresh, check] = r.today.items;
- assert.equal(r.today.line.code, 'again.ending.yesterday');
+ // 태오는 그 장면의 일을 되부른다 — 6번 줄은 '요' 줄이라 끝맺음이면 「끝에 '요'까지요」가 붙는다.
+ assert.equal(r.today.line.code, 'again.call.s1e01-6.yo');
+ assert.equal(r.today.line.text, "길 잃었다고 했죠? 그 얘기, 오늘 한 번 더 해 봐요. 끝에 '요'까지요.");
+ assert.equal(r.today.line.media, null);
  assert.equal(again.kind, 'again');
  assert.deepEqual(again.open, { type: 'situation', lineId: AGAIN_PAIR['s1e01-6'] });
- assert.equal(again.why.code, 'again.ending.fixed');
+ assert.equal(again.why.code, 'again.ending.yo.fixed');
  assert.equal(again.why.evidence.lineId, 's1e01-6');
  assert.equal(again.why.evidence.notes, 3);
  assert.equal(again.why.evidence.coached, true);
- assert.equal(again.why.text, "어제 「…한참 헤맸어요」에서 끝 '요' 노트를 받았어요. 테이크 2에서는 통과했어요.");
+ assert.equal(again.why.text, '어제 「…한참 헤맸어요」의 끝이 반말로 들렸어요. 그 자리에서 다시 말해 해냈어요.');
+ for (const t of visible(r.today)) assert.ok(!STUDIO.test(t), t);
  // 근거 시각이 실제 기록의 마지막 노트 시도와 같다.
  const turns = readTurns(r.events).filter((t) => t.lineId === 's1e01-6' && t.phase === 'scene');
  assert.equal(Date.parse(again.why.evidence.at), turns.at(-1).attempts.at(-1).at);
@@ -60,7 +72,11 @@ test('기록 B(8일 전 장면 · B 혼자 해냄) → 새 대사 + C, 기록 F(
  contract(b.today);
  assert.equal(b.delayedDue, true);
  assert.deepEqual(b.today.items.map((x) => x.why.code), ['new.pool.like', 'check.delayed']);
+ // 「새로 할 것」은 한국어 상황 글만으로 서는 줄(t7 · t3)이 앞이다.
+ assert.deepEqual(NEW_ORDER.slice(0, 2), ['s1e01-t7', 's1e01-t3']);
  assert.equal(b.today.items[0].open.lineId, NEW_ORDER[0]);
+ assert.equal(b.today.line.code, 'new.situation');
+ for (const t of visible(b.today)) assert.ok(!STUDIO.test(t), t);
  assert.equal(b.today.items[1].why.text, STR.ko.delayedLead);
  assert.equal(b.today.items[1].why.evidence.days, 8);
  const f = await read(await world({ scenario: 'F', now: morning() }), lesson);
@@ -79,18 +95,98 @@ test('근거가 없으면 줄을 내지 않는다 — 기록 없음 · 다른 �
   ev('practice.attempted', 'a1', { presentationId: 'p1', attemptNo: 1, verdict: 'unassessed', choice: { selectedId: 'note-ending', correctId: 'pass' } }),
  ];
  const t1 = buildToday({ events: base, lesson, now, tzOffsetMin: 540 });
- assert.equal(t1.items[0].why.code, 'again.ending');
+ assert.equal(t1.items[0].why.code, 'again.ending.yo');
  // 그 시도를 「제가 한 말과 달라요」로 뺐으면 노트가 없다 → 다시 만날 말이 없다.
  const t2 = buildToday({ events: [...base, ev('record.excluded', 'x1', { targetId: 'a1' })], lesson, now, tzOffsetMin: 540 });
  assert.ok(!t2.items.some((x) => x.kind === 'again'));
  // 다른 게임(입장 검사)의 기록만으로는 드라마 줄을 짓지 않는다.
  const other = base.map((e) => (e.type === 'decision.made' ? { ...e, experienceId: 'entry-check' } : e));
  assert.equal(buildToday({ events: other, lesson, now, tzOffsetMin: 540 }).firstDay, true);
- // 시간 낱말: 이틀 전이면 「지난번」.
+ // 시간 낱말: 이틀 전이면 「지난번」. 태오 한 줄은 시간 낱말 없이 장면을 되부른다.
  const t3 = buildToday({ events: base, lesson, now: now + 86400000, tzOffsetMin: 540 });
- assert.equal(t3.line.code, 'again.ending.before');
+ assert.equal(t3.line.code, 'again.call.s1e01-6.yo');
  assert.match(t3.items[0].why.text, /^지난번 /);
  assert.equal(dayKey(now, 540), '2026-11-15');
+});
+
+// 손으로 짓는 사건 목록(서울 시각) — 차례마다 보임 하나, 시도는 판정 갈래로.
+function events(spec) {
+ const out = [{ type: 'decision.made', id: 'd1', experienceId: 'drama-s1', at: spec[0].at }];
+ spec.forEach((x, i) => {
+  out.push({ type: 'practice.presented', id: `p${i}`, decisionId: 'd1', taskId: `drama-s1.${x.phase}.${x.line}`, itemKey: x.line, at: x.at });
+  (x.tries || []).forEach((c, j) => out.push({ type: 'practice.attempted', id: `a${i}.${j}`, presentationId: `p${i}`, attemptNo: j + 1, verdict: 'unassessed', choice: { selectedId: c, correctId: 'pass' }, at: new Date(Date.parse(x.at) + (j + 1) * 1000).toISOString() }));
+ });
+ return out;
+}
+const kst = (s) => new Date(Date.parse(`${s}+09:00`)).toISOString();
+
+test('학습일은 새벽 4시에 바뀐다 — 밤 1시 반 기록은 3시엔 「오늘」, 4시 반엔 「어제」', () => {
+ const ev = events([{ phase: 'scene', line: 's1e01-6', at: kst('2026-11-15T01:30:00'), tries: ['note-ending'] }]);
+ assert.equal(dayKey(Date.parse(kst('2026-11-15T03:59:00')), 540), '2026-11-14');
+ assert.equal(dayKey(Date.parse(kst('2026-11-15T04:00:00')), 540), '2026-11-15');
+ assert.equal(buildToday({ events: ev, lesson, now: Date.parse(kst('2026-11-15T03:00:00')), tzOffsetMin: 540 }).firstDay, true);
+ const t = buildToday({ events: ev, lesson, now: Date.parse(kst('2026-11-15T04:30:00')), tzOffsetMin: 540 });
+ assert.equal(t.firstDay, false);
+ assert.match(t.items[0].why.text, /^어제 /);
+});
+
+test('「했어요」는 말한 기록으로만 센다 — 카드만 열고 나간 줄은 한 것이 아니다', () => {
+ const now = Date.parse(kst('2026-11-15T09:00:00'));
+ // 6번 줄만 말하고 7번 줄은 열기만 했다 → 「3줄 가운데 1줄까지」.
+ const one = buildToday({ events: events([
+  { phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00'), tries: ['pass'] },
+  { phase: 'scene', line: 's1e01-7', at: kst('2026-11-14T21:02:00') },
+ ]), lesson, now, tzOffsetMin: 540 });
+ const scene = one.items.find((x) => x.open.type === 'scene');
+ assert.equal(scene.why.code, 'new.scene');
+ assert.equal(scene.why.text, '어제 1화 장면에서 3줄 가운데 1줄까지 했어요.');
+ assert.deepEqual(scene.why.evidence.spoken, ['s1e01-6']);
+ assert.equal(one.line.code, 'new.scene');
+ // 아무 줄도 말하지 않고 열기만 했다 → 「열었어요」(한 줄 수를 말하지 않는다).
+ const none = buildToday({ events: events([{ phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00') }]), lesson, now, tzOffsetMin: 540 });
+ assert.equal(none.items[0].why.code, 'new.scene.opened');
+ assert.equal(none.items[0].why.text, '어제 1화 장면을 열었어요.');
+ // 장면 줄 셋을 다 말했고 B는 열기만 했다 → B는 아직 안 한 것(다시 권한다).
+ const allSaid = [
+  { phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00'), tries: ['pass'] },
+  { phase: 'scene', line: 's1e01-7', at: kst('2026-11-14T21:01:00'), tries: ['pass'] },
+  { phase: 'scene', line: 's1e01-8', at: kst('2026-11-14T21:02:00'), tries: ['pass'] },
+ ];
+ const b = buildToday({ events: events([...allSaid, { phase: 'transfer', line: 's1e01-t9', at: kst('2026-11-14T21:05:00') }]), lesson, now, tzOffsetMin: 540 });
+ assert.equal(b.items[0].why.code, 'new.transfer');
+ assert.equal(b.line.code, 'new.situation');
+});
+
+test('같은 날 같은 말하기가 둘 서지 않는다 — 7번(묻기)이 다시 만날 말이면 새로 할 것은 묻기가 아닌 줄', () => {
+ const now = Date.parse(kst('2026-11-15T09:00:00'));
+ const t = buildToday({ events: events([
+  { phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00'), tries: ['pass'] },
+  { phase: 'scene', line: 's1e01-7', at: kst('2026-11-14T21:01:00'), tries: ['note-missing'] },
+  { phase: 'scene', line: 's1e01-8', at: kst('2026-11-14T21:02:00'), tries: ['pass'] },
+ ]), lesson, now, tzOffsetMin: 540 });
+ const [again, fresh] = t.items;
+ assert.equal(again.open.lineId, AGAIN_PAIR['s1e01-7']);
+ assert.equal(again.why.text, '어제 「…어디에 있는지 아세요」에서 꼭 들어갈 말 하나가 안 들렸어요.');
+ // 끝맺음이 아니면 「'요'」 변형이 붙지 않는다.
+ assert.equal(t.line.code, 'again.call.s1e01-7');
+ const ask = lesson.scene.find((x) => x.id === 's1e01-7').skill;
+ assert.notEqual(fresh.open.lineId, lesson.transfer.id);
+ assert.notEqual(POOL.find((x) => x.id === fresh.open.lineId)?.skill, ask);
+ for (const x of visible(t)) assert.ok(!STUDIO.test(x), x);
+});
+
+test("「'요'」 말은 내용 표에서 '요' 줄로 적은 줄에만 — 그 밖의 줄은 일반 문장", () => {
+ const now = Date.parse(kst('2026-11-15T09:00:00'));
+ const extra = { id: 's1e01-x', type: 'student', skill: 'ko.speaking.explain', text: '저는 몽골에서 왔습니다.' };
+ assert.ok(!YO_LINES.includes(extra.id));
+ const L = { ...lesson, scene: [...lesson.scene, extra] };
+ const t = buildToday({ events: events([{ phase: 'scene', line: extra.id, at: kst('2026-11-14T21:00:00'), tries: ['note-ending'] }]), lesson: L, now, tzOffsetMin: 540 });
+ const again = t.items.find((x) => x.kind === 'again');
+ assert.equal(again.why.code, 'again.ending');
+ assert.match(again.why.text, /의 끝맺음이 대사와 다르게 들렸어요\.$/);
+ assert.ok(!/'요'|반말/.test(again.why.text));
+ assert.equal(t.line.code, 'again.retake');
+ assert.ok(!/'요'/.test(t.line.text));
 });
 
 test('끝 화면: 오늘 해낸 것만 전후로, 내일은 같은 규칙을 내일 날짜로 돌린 결과', async () => {
@@ -103,7 +199,11 @@ test('끝 화면: 오늘 해낸 것만 전후로, 내일은 같은 규칙을 내
  const again = await read(w, lesson);
  const after = buildAfter({ events: again.events, lesson, start: r.today, startAt: done.startAt, now: w.now, entryAfter: again.entry, entryTarget: done.entryTarget, strings: STR.ko });
  assert.deepEqual(after.changed.map((c) => c.what), ["끝 '요'", '같은 과 다른 선배에게 길 묻기', '세부 내용 맞추기']);
- assert.equal(after.changed[0].before, '어제 「…한참 헤맸어요」 노트');
+ assert.equal(after.changed[0].before, '어제 「…한참 헤맸어요」 끝이 반말로 들림');
+ // 입장 검사 전 글은 근거 그대로(그 놓침이 한 근무 안이라는 근거는 없다).
+ const entry = r.today.items.find((x) => x.open.type === 'game').why.evidence;
+ assert.equal(after.changed[2].before, `최근 ${entry.seen}번 가운데 ${entry.misses}번 놓침`);
+ for (const t of visible(r.today, after)) assert.ok(!STUDIO.test(t), t);
  const next = buildToday({ events: again.events, lesson, now: w.now + 86400000, entry: again.entry, strings: STR.ko });
  assert.deepEqual(after.tomorrow.filter((x) => x.when === '내일').map((x) => x.title), next.items.map((x) => x.title));
  assert.ok(after.tomorrow.some((x) => x.when === '7일 뒤'));

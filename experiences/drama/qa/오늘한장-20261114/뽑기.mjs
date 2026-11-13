@@ -90,7 +90,10 @@ if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || proc
  const args = process.argv.slice(2);
  const scenario = args.find((a) => /^[A-Z]$/.test(a)) || 'A';
  const i = args.indexOf('--now');
- const now = i >= 0 ? Date.parse(args[i + 1]) : Date.now();
+ // 끝 꼴(--after)은 31분 전에 누른 것으로 짓는다 — 학습일이 막 바뀐 때(새벽 4시 뒤 40분 안)면 그 앞 학습일 끝으로 물러나 둘이 한 학습일에 들게.
+ const { dayStart } = await import('../../pilot/today/plan.mjs');
+ const raw = i >= 0 ? Date.parse(args[i + 1]) : Date.now();
+ const now = raw - dayStart(raw) < 40 * 60000 ? dayStart(raw) - 60000 : raw;
  const lesson = JSON.parse(fs.readFileSync(path.join(ROOT, 'experiences/drama/pilot/world-lesson.json'), 'utf8')).lesson;
  const w = await world({ scenario, now: args.includes('--after') ? now - 31 * 60000 : now });
  w.lesson = lesson;

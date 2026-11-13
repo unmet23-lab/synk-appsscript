@@ -5,7 +5,7 @@
 // 입장 검사는 드라마 틀 밖이라 부모 창 통로(SYNKTodayHost.open)로 연다 — 지금은 시연 대역(qa/오늘한장-20261114/오늘시험.mjs)에만 있다.
 // 중간에 나가도(창을 닫거나 다른 게임으로 가도) 버튼을 누른 때의 「오늘」과 한 차례가 이 탭(sessionStorage)에 남아 다시 열면 이어진다.
 // 목소리: 태오 한 줄은 녹음 길이 정해질 때까지 글로만(자막 결) 보인다 — 듣는 고리 영상(손 인사)은 있는 것을 쓴다.
-import { buildToday, buildAfter, dayKey } from './plan.mjs';
+import { buildToday, buildAfter, dayKey, dayStart, proofLine as proof } from './plan.mjs';
 import { poolItem, TEXT } from './content.mjs';
 import { findLearningHost, readEvents, readDelayed, readEntry } from './gather.mjs';
 import { STR } from '../strings.mjs';
@@ -136,6 +136,13 @@ export async function start(ctx) {
   document.body.append(root);
   T.root = root;
   root.querySelectorAll('[data-card]').forEach((c) => c.addEventListener('click', () => c.classList.toggle('open')));
+  // 태오 한 줄을 구운 영상이 있으면 소리 내어 한 번 — 막히거나 끝나면 듣는 고리로 돌아간다.
+  const say = root.querySelector('video[data-say]');
+  if (say) {
+   const loop = () => { say.removeAttribute('data-say'); say.muted = true; say.loop = true; say.src = assets().listenLoop; say.play().catch(() => {}); };
+   say.addEventListener('ended', loop, { once: true });
+   say.play().catch(loop);
+  }
   const caps = [...root.querySelectorAll('[data-pick]')], panes = [...root.querySelectorAll('[data-pane]')];
   const pick = (k) => { caps.forEach((c, j) => c.classList.toggle('on', j === k)); panes.forEach((p, j) => { p.hidden = j !== k; }); };
   caps.forEach((c) => c.addEventListener('click', () => pick(Number(c.dataset.pick))));
@@ -144,23 +151,25 @@ export async function start(ctx) {
   root.querySelector('[data-go]')?.focus({ preventScroll: true });
  }
  const assets = () => ({ ...{ listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp' }, ...(lesson.assets || {}) });
- function stage(video) {
+ function stage(video, media = null) {
   const a = assets();
-  return `<div class="td-stage">${video ? `<video src="${esc(a.listenLoop)}" poster="${esc(a.poster)}" autoplay muted loop playsinline></video>` : `<img src="${esc(a.poster)}" alt="">`}<div class="td-shade"></div><div class="td-grain"></div></div>`;
+  const v = media?.video ? `<video src="${esc(media.video)}" poster="${esc(a.poster)}" playsinline data-say></video>`
+   : `<video src="${esc(a.listenLoop)}" poster="${esc(a.poster)}" autoplay muted loop playsinline></video>`;
+  return `<div class="td-stage">${video ? v : `<img src="${esc(a.poster)}" alt="">`}<div class="td-shade"></div><div class="td-grain"></div></div>`;
  }
  function viewToday(t, { resume = false, empty = false } = {}) {
-  const tag = dateTag(Date.now());
+  const tag = dateTag(dayStart(Date.now())); // 학습일 날짜(새벽 4시 전이면 전날)
   const line = `<section class="td-talk"><span class="td-who mono">Taeo</span><p class="td-line">${words(t.line?.text || t.empty?.text || '')}</p></section>`;
-  if (empty) return `${stage(true)}<header class="td-top"><span class="td-tag mono">${tag}</span></header><div class="td-right"><div class="td-top-d"><span class="td-tag mono">${tag}</span></div>${line}
+  if (empty) return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag mono">${tag}</span></header><div class="td-right"><div class="td-top-d"><span class="td-tag mono">${tag}</span></div>${line}
    <p class="td-why td-empty">${esc(t.empty?.text || '')}</p><button type="button" class="td-go" data-episode>1화 처음부터</button></div>`;
   const go = `<button type="button" class="td-go rise" data-go style="animation-delay:${420 + t.items.length * 60}ms"><span class="td-play"></span>${resume ? '이어서' : '오늘 시작'} <span class="td-min">· ${t.minutes}분</span></button>`;
   if (look === 'b') {
-   return `${stage(true)}<header class="td-top"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta mono">${t.items.length} steps · ${t.minutes} min</span></header>
+   return `${stage(true, t.line?.media)}<header class="td-top"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta mono">${t.items.length} steps · ${t.minutes} min</span></header>
    <div class="td-right"><div class="td-top-d"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta mono">${tag} · ${t.minutes} min</span></div>
    ${line}<article class="td-card td-focus rise" style="animation-delay:420ms">${t.items.map((it, i) => `<div data-pane ${i ? 'hidden' : ''}>${head(it, i)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof on">${esc(proof(it))}</p></div>`).join('')}</article>
    <div class="td-next rise" style="animation-delay:480ms">${t.items.map((it, i) => `<button type="button" class="td-cap${i ? '' : ' on'}" data-pick="${i}"><span class="mono">0${i + 1}</span>${esc(it.title)}</button>`).join('')}</div>${go}</div>`;
   }
-  return `${stage(true)}<header class="td-top"><span class="td-tag mono">${tag}</span></header>
+  return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag mono">${tag}</span></header>
   <div class="td-right"><div class="td-top-d"><span class="td-tag mono">${tag}</span></div>${line}
   <section class="td-deck">${t.items.map((it, i) => `<button type="button" class="td-card td-item rise" data-card style="animation-delay:${420 + i * 60}ms">${head(it, null)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof">${esc(proof(it))}</p></button>`).join('')}${go}</section></div>`;
  }
@@ -188,18 +197,6 @@ const yo = (s) => esc(s).replace(/&#39;요&#39;/g, '<em class="td-yo">\'요\'</e
 const words = (s) => String(s).split(' ').map((w, i) => `<span class="w" style="animation-delay:${120 + i * 70}ms">${yo(w)}</span>`).join(' ');
 const head = (it, i) => `<div class="td-eyebrow">${i != null ? `<span class="mono">0${i + 1}</span>` : ''}<span>${KIND[it.kind]}</span><span class="mono td-end">${it.minutes} min</span></div>`;
 function dateTag(ms) { const d = new Date(ms); return `Today · ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`; }
-// 누르면 펼치는 근거 한 줄 — 기록의 사실을 사람 말로(앱이 본 것).
-function proof(it) {
- const e = it.why.evidence;
- const at = (iso) => { const d = new Date(iso); const hh = d.getHours(); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${hh < 12 ? '오전' : hh < 18 ? '오후' : '밤'} ${hh % 12 || 12}시`; };
- if (it.kind === 'again') return `${at(e.at)} · 1화 ${String(e.lineId).split('-').pop()}번 줄 · 같은 노트 ${e.notes}번${e.coached ? ' · 코치 노트' : ''}${e.retakePass ? ' · 테이크 2 통과' : ''}`;
- if (it.why.code === 'new.transfer') return e.likeAt ? `${at(e.likeAt)} · 1화 7번 줄을 말함 · 이 상황은 아직 안 봄` : '이 상황은 아직 안 봄';
- if (it.why.code === 'new.scene') return `${at(e.at)} · 본 줄 ${e.seen.length}개`;
- if (it.why.code.startsWith('new.pool')) return '이 상황은 아직 안 봄';
- if (it.why.code === 'check.delayed') return e.days != null ? `${e.days}일 전 새 상황에서 혼자 해 봄 · 7~10일 뒤 한 번` : '7~10일 뒤 한 번';
- if (it.why.code.startsWith('check.entry')) return `입장 검사 · 최근 ${e.seen}명 가운데 ${e.misses}명 놓침 · 오늘 근무에 그런 손님 한 명`;
- return '';
-}
 function css() {
  if (document.querySelector('link[data-today]')) return Promise.resolve();
  return new Promise((res) => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./today.css', import.meta.url).href; l.dataset.today = '1'; l.onload = l.onerror = res; document.head.append(l); });

@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { proofLine as proof } from '../../pilot/today/plan.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../../..');
@@ -144,16 +145,7 @@ const yo = (s) => esc(s).replace(/&#39;요&#39;|'요'/g, "<em class=\"yo\">'요'
 const words = (s) => String(s).split(' ').map((w, i) => `<span class="w" style="animation-delay:${120 + i * 70}ms">${yo(w)}</span>`).join(' ');
 const KIND = { again: '다시 만날 말', new: '새로 할 것', check: '확인할 곳' };
 const DATE_TAG = (iso) => { const d = new Date(iso); return `TODAY · ${['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][d.getDay()]} ${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`; };
-// 근거 한 줄(누르면 펼침) — 기록의 사실을 사람 말로.
-function proof(item) {
- const e = item.why.evidence, t = (iso) => { const d = new Date(iso); const h = d.getHours(); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${h < 12 ? '오전' : h < 18 ? '오후' : '밤'} ${h % 12 || 12}시`; };
- if (item.kind === 'again') return `${t(e.at)} · 1화 ${e.lineId.split('-').pop()}번 줄 · 같은 노트 ${e.notes}번${e.coached ? ' · 코치 노트' : ''}${e.retakePass ? ' · 테이크 2 통과' : ''}`;
- if (item.why.code === 'new.transfer') return `${t(e.likeAt)} · 1화 7번 줄을 말함 · 이 상황은 아직 안 봄`;
- if (item.why.code.startsWith('new.pool')) return '이 상황은 아직 안 봄';
- if (item.why.code === 'check.delayed') return `${e.days}일 전 새 상황에서 혼자 해 봄 · 7~10일 뒤 한 번`;
- if (item.why.code.startsWith('check.entry')) return `입장 검사 · 최근 ${e.seen}명 가운데 ${e.misses}명 놓침 · 오늘 근무에 그런 손님 한 명`;
- return '';
-}
+// 근거 한 줄(누르면 펼침)은 화면과 같은 함수(plan.mjs proofLine).
 const items = (t) => t.items;
 
 function todayA(t, tag) {

@@ -4,11 +4,14 @@
 // Node(시험 · 시안 값 뽑기)와 브라우저(WORLD 대역 부모 창) 둘 다에서 돈다.
 
 const DAY = 86400000;
-// 시각: day(며칠 전 날짜, 1 = 어제) + hour(그날 기기 시각)로 적거나, daysAgo(지금으로부터 며칠 전)로 적는다. 지금보다 늦으면 지금 1분 전으로.
+const DAY_START_HOUR = 4; // pilot/today/plan.mjs와 같다 — 학습일은 새벽 4시에 바뀐다.
+// 시각: day(며칠 전 학습일, 1 = 어제) + hour(그날 기기 시각, 4시 전이면 그 학습일의 밤 — 다음 달력 날짜)로 적거나,
+// daysAgo(지금으로부터 며칠 전)로 적는다. 지금보다 늦으면 지금 1분 전으로.
 function when(now, t) {
  if (t.day == null) return now - t.daysAgo * DAY;
- const d = new Date(now); d.setHours(0, 0, 0, 0);
- return Math.min(d.getTime() - t.day * DAY + (t.hour ?? 21) * 3600000, now - 60000);
+ const d = new Date(now - DAY_START_HOUR * 3600000); d.setHours(0, 0, 0, 0);
+ const h = t.hour ?? 21;
+ return Math.min(d.getTime() - t.day * DAY + (h < DAY_START_HOUR ? h + 24 : h) * 3600000, now - 60000);
 }
 // 판정 갈래 → 기록기가 받는 테이크 결과(talk take 응답의 꼴). 장면 · 테이크 2는 판정 없음(correct null), 새 상황 첫 판정은 서버 trail이 정한다.
 const take = (choice, { solo = null } = {}) => {
