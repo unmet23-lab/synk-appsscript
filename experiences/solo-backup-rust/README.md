@@ -49,6 +49,7 @@ Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리
 Windows x64, MSVC 빌드 도구, Rust MSVC 도구 모음, Node, WebView2가 필요하다. 이 시험판은 Rust 1.99.1·Node 26.13.0으로 빌드했다. Cargo.lock을 사용한다.
 
 ```powershell
+npm ci --ignore-scripts --prefix experiences/solo-backup-rust          # 고정한 Tauri CLI 2.12.4
 npm ci --ignore-scripts --prefix experiences/solo-backup-rust/engine
 ./experiences/solo-backup-rust/scripts/build.ps1 `
   -ResticPath C:\build-input\restic.exe `
@@ -57,7 +58,7 @@ npm ci --ignore-scripts --prefix experiences/solo-backup-rust/engine
   -PublicOAuthClient C:\build-input\recovery-client.json
 ```
 
-출력 폴더는 새 경로여야 한다. restic은 기존 엔진이 고정한 SHA-256과 일치해야 한다. `PublicOAuthClient`에는 배포 가능한 데스크톱 OAuth 클라이언트 설정만 넣으며 개인 토큰은 넣지 않는다. 빌드 스크립트가 Node·restic·워커·의존성을 묶고 리소스 목록 해시를 실행 파일에 고정한다. `WorkBackupRust.exe`(화면 앱) · `WorkBackupRun.exe`(회차 실행기, 11-12부터)와 `resources` 폴더를 함께 옮긴다. 산출물과 자격 파일은 Git에 넣지 않는다.
+출력 폴더는 새 경로여야 한다. restic은 기존 엔진이 고정한 SHA-256과 일치해야 한다. `PublicOAuthClient`에는 배포 가능한 데스크톱 OAuth 클라이언트 설정만 넣으며 개인 토큰은 넣지 않는다. 빌드 스크립트가 Node·restic·워커·의존성을 묶고 리소스 목록 해시를 실행 파일에 고정한 뒤, `tauri build`로 두 실행 파일과 컴퓨터 전체 NSIS 설치기(`SynkWorkBackup-0.7.0-setup.exe`, 11-13부터 — [설계 4.2 「컴퓨터 전체 설치」](STAGE1_DESIGN.md#컴퓨터-전체-설치))를 만든다. 설치기의 틀은 Tauri 원본(`src-tauri/nsis/upstream-installer.nsi`, 해시 고정)에 `scripts/nsis-template.cjs`의 여섯 곳만 바꾼 것이고, 설치 · 지우기 때 `src-tauri/nsis/hooks.nsh`가 `WorkBackupRun.exe --install` · `--uninstall`을 부른다. 영수증(`build-receipt.json`)에 실행 파일 둘 · 설치기 · 자원 목록 해시가 남는다. 설치 · 지우기 끝까지는 CI `workbackup-clean-windows`가 깨끗한 Windows에서 본다. 산출물과 자격 파일은 Git에 넣지 않는다.
 
 `InventoryBinDirectory`는 절대 경로의 `release` 폴더로 지정한다. 스크립트가 해당 target에 현재 진단기·계획기 소스를 `--locked`로 빌드한 뒤 묶는다. 상대 빌드 경로는 이번 판의 검증 범위 밖이다.
 

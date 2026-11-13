@@ -86,6 +86,17 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   const { SOLO_BACKUP_TEST_STATE, ...noState } = env;
   assert.equal(await runExe(['--run', 'hourly', '--test-mode'], noState), 70);
   assert.equal(lines(state).length, 5);
+  // While the installer's marker is beside the executable a run ends at once and records nothing; one older than
+  // 30 minutes (an interrupted install) no longer stops it (review GA3 — src-tauri/nsis/hooks.nsh).
+  const installed = path.join(root, 'installed'), copy = path.join(installed, 'WorkBackupRun.exe'), marker = path.join(installed, '.installing');
+  fs.mkdirSync(installed); fs.copyFileSync(exe, copy); fs.writeFileSync(marker, '');
+  const started = Date.now();
+  assert.equal(await run(copy, ['--run', 'manual', '--test-mode'], env, 60000), 0);
+  assert.ok(Date.now() - started < 30000, 'ends at once');
+  assert.equal(lines(state).length, 5, 'nothing recorded while installing');
+  const stale = new Date(Date.now() - 31 * 60000); fs.utimesSync(marker, stale, stale);
+  assert.equal(await run(copy, ['--run', 'manual', '--test-mode'], env, 240000), 0);
+  assert.equal(lines(state)[5].outcome, 'complete', 'a stale marker does not stop a run');
 
   const text = fs.readFileSync(path.join(state, 'runs.jsonl'), 'utf8');
   for (const p of [root, data, repo, keys, os.homedir()]) {

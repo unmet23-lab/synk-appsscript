@@ -8,8 +8,14 @@
 //! Exit codes: 0 run recorded (including skipped, not due, busy, partial),
 //! 2 a profile's backup failed, 1 the run itself failed, 64 bad arguments,
 //! 70 no usable state folder (nothing can be recorded).
+//!
+//! The installer also runs it, elevated, for the machine setup (4.2 「컴퓨터 전체 설치」):
+//! `--install` makes the run-task folder, `--uninstall` removes every user's run tasks of this
+//! installation (both: one JSON line out; exit 0 done, 1 failed, 77 not elevated), `--open-app`
+//! opens the window app as the person at the desktop at the end of an install. While the
+//! installer's marker is in this folder, a run ends at once with exit 0 (`platform::installing`).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use backup_native::{bundle, platform, power, runlog, secret, worker::Worker};
+use backup_native::{bundle, platform, power, runlog, schedule, secret, worker::Worker};
 use serde_json::{json, Map, Value};
 use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Instant, SystemTime, UNIX_EPOCH}};
 
@@ -39,6 +45,30 @@ fn parse(argv: &[String]) -> Result<Args, String> {
     let trigger = trigger.ok_or("INVALID_ARGUMENT")?;
     if trigger == "test" && !test { return Err("TEST_MODE_REQUIRED".into()); }
     Ok(Args { trigger, test })
+}
+
+/// `--install` / `--uninstall`: the installer's machine setup, with its administrator token only.
+/// Needs no state folder, lock or resources (an uninstall works on a damaged install too).
+fn machine(mode: &str) -> i32 {
+    if mode == "--open-app" {
+        let app = std::env::current_exe().map(|exe| exe.with_file_name("WorkBackup.exe"));
+        return match app.map_err(|_| "EXECUTABLE".to_string()).and_then(|app| platform::open_as_shell_user(&app)) {
+            Ok(()) => 0,
+            Err(error) => { println!("{}", json!({ "ok": false, "error": error })); 1 }
+        };
+    }
+    if !platform::elevated() { println!("{}", json!({ "ok": false, "error": "NOT_ELEVATED" })); return 77; }
+    let result = if mode == "--install" {
+        schedule::prepare_folder().map(|security| (true, json!({ "ok": true, "folder": schedule::FOLDER, "security": security })))
+    } else {
+        // What could not be removed is counted and the rest still goes; the uninstaller logs a failure.
+        std::env::current_exe().map_err(|_| "EXECUTABLE".to_string()).and_then(|exe| schedule::remove_installation(&exe))
+            .map(|removal| (removal.failed == 0, json!({ "ok": removal.failed == 0, "removal": removal })))
+    };
+    match result {
+        Ok((ok, value)) => { println!("{value}"); if ok { 0 } else { 1 } }
+        Err(error) => { println!("{}", json!({ "ok": false, "error": error })); 1 }
+    }
 }
 
 fn epoch_ms() -> u64 { SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0) }
@@ -150,7 +180,10 @@ fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, l
 fn run() -> i32 {
     let (clock, started) = (Instant::now(), epoch_ms());
     let argv: Vec<String> = std::env::args().skip(1).collect();
+    if let [mode] = argv.as_slice() { if ["--install", "--uninstall", "--open-app"].contains(&mode.as_str()) { return machine(mode); } }
     let Ok(args) = parse(&argv) else { return 64 };
+    // An install or uninstall is replacing this folder's files: end before holding any of them (review GA3).
+    if std::env::current_exe().ok().and_then(|exe| exe.parent().map(platform::installing)).unwrap_or(false) { return 0; }
     if args.trigger != "manual" { below_normal(); }
     let Ok((root, lock)) = platform::open_state(args.test) else { return 70 };
     let mut line = json!({"v": 1, "trigger": args.trigger, "start": iso(started)});
@@ -191,7 +224,8 @@ fn main() { std::process::exit(run()); }
         assert_eq!(parse(&args(&["--run", "hourly"])), Ok(Args { trigger: "hourly", test: false }));
         assert_eq!(parse(&args(&["--test-mode", "--run", "test"])), Ok(Args { trigger: "test", test: true }));
         assert_eq!(parse(&args(&["--run", "test"])), Err("TEST_MODE_REQUIRED".into()));
-        for bad in [&["--run"][..], &["--run", "daily"], &["--run", "hourly", "--run", "wake"], &["hourly"], &[], &["--run", "manual", "--background"]] {
+        for bad in [&["--run"][..], &["--run", "daily"], &["--run", "hourly", "--run", "wake"], &["hourly"], &[], &["--run", "manual", "--background"],
+                    &["--install"], &["--uninstall"], &["--open-app"], &["--run", "hourly", "--install"]] {
             assert!(parse(&args(bad)).is_err(), "{bad:?}");
         }
     }

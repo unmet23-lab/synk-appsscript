@@ -12,5 +12,14 @@
       "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost; base-uri 'none'; form-action 'none'"
     }
   },
-  "bundle": { "active": false, "targets": "all", "icon": [] }
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "SYNK",
+    "icon": ["icons/icon.ico"],
+    "windows": {
+      "allowDowngrades": false,
+      "nsis": { "installMode": "perMachine", "languages": ["Korean"] }
+    }
+  }
 }

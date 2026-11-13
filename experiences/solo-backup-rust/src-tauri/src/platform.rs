@@ -113,6 +113,82 @@ impl InstanceSignal {
 impl Drop for InstanceSignal{fn drop(&mut self){unsafe{CloseHandle(self.0);}}}
 fn signal_existing(root:&Path){let name=signal_name(root);let event=unsafe{OpenEventW(EVENT_MODIFY_STATE,0,name.as_ptr())};if !event.is_null(){unsafe{SetEvent(event);CloseHandle(event);}}}
 
+/// The installer's marker in the install folder (administrators-only writes). While it is there and fresh a
+/// scheduled run ends at once, so no run of the version being replaced starts and holds its files during an
+/// install or an uninstall (review GA3). One an interrupted install leaves stops mattering after 30 minutes.
+pub const INSTALLING: &str = ".installing";
+pub const INSTALLING_FOR: std::time::Duration = std::time::Duration::from_secs(30 * 60);
+pub fn installing(dir: &Path) -> bool {
+    fs::metadata(dir.join(INSTALLING)).and_then(|m| m.modified()).ok().and_then(|at| at.elapsed().ok()).is_some_and(|age| age < INSTALLING_FOR)
+}
+
+/// Starts `app` as the person at the desktop at normal privilege: with the token of the shell window's
+/// process, from the installer's administrator process (the Chromium / Aaron Margosis way, as
+/// nsis_tauri_utils::RunAsUser does). Unlike RunAsUser it never falls back to starting the app from this
+/// process when the shell's token cannot (review GA4) — then the app is simply not opened. Not elevated,
+/// it starts the app as this process already is.
+pub fn open_as_shell_user(app: &Path) -> Result<(), String> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Foundation::{GetLastError, LUID};
+    use windows_sys::Win32::Security::{AdjustTokenPrivileges, DuplicateTokenEx, LookupPrivilegeValueW, SecurityAnonymous, TokenPrimary, LUID_AND_ATTRIBUTES, SE_PRIVILEGE_ENABLED,
+        TOKEN_ADJUST_DEFAULT, TOKEN_ADJUST_PRIVILEGES, TOKEN_ADJUST_SESSIONID, TOKEN_ASSIGN_PRIMARY, TOKEN_DUPLICATE, TOKEN_PRIVILEGES, TOKEN_QUERY};
+    use windows_sys::Win32::System::Threading::{CreateProcessWithTokenW, GetCurrentProcess, OpenProcess, OpenProcessToken, PROCESS_INFORMATION, PROCESS_QUERY_LIMITED_INFORMATION, STARTUPINFOW};
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetShellWindow, GetWindowThreadProcessId};
+    if !elevated() { return std::process::Command::new(app).spawn().map(|_| ()).map_err(|_| "OPEN_START".into()); }
+    struct Owned(HANDLE);
+    impl Drop for Owned { fn drop(&mut self) { if !self.0.is_null() { unsafe { CloseHandle(self.0); } } } }
+    let wide = |s: &std::ffi::OsStr| s.encode_wide().chain([0]).collect::<Vec<u16>>();
+    unsafe {
+        let shell = GetShellWindow();
+        let mut pid = 0u32;
+        if shell.is_null() || GetWindowThreadProcessId(shell, &mut pid) == 0 || pid == 0 { return Err("OPEN_NO_SHELL".into()); }
+        let process = Owned(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid));
+        if process.0.is_null() { return Err("OPEN_SHELL_PROCESS".into()); }
+        // CreateProcessWithTokenW needs SeImpersonatePrivilege enabled in this (administrator) token.
+        let mut own: HANDLE = ptr::null_mut();
+        if OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &mut own) == 0 { return Err("OPEN_PRIVILEGE".into()); }
+        let own = Owned(own);
+        let mut luid = LUID { LowPart: 0, HighPart: 0 };
+        let name: Vec<u16> = "SeImpersonatePrivilege".encode_utf16().chain([0]).collect();
+        if LookupPrivilegeValueW(ptr::null(), name.as_ptr(), &mut luid) == 0 { return Err("OPEN_PRIVILEGE".into()); }
+        let privileges = TOKEN_PRIVILEGES { PrivilegeCount: 1, Privileges: [LUID_AND_ATTRIBUTES { Luid: luid, Attributes: SE_PRIVILEGE_ENABLED }] };
+        if AdjustTokenPrivileges(own.0, 0, &privileges, 0, ptr::null_mut(), ptr::null_mut()) == 0 || GetLastError() != 0 { return Err("OPEN_PRIVILEGE".into()); }
+        let mut token: HANDLE = ptr::null_mut();
+        if OpenProcessToken(process.0, TOKEN_QUERY | TOKEN_DUPLICATE, &mut token) == 0 { return Err("OPEN_SHELL_TOKEN".into()); }
+        let token = Owned(token);
+        let mut primary: HANDLE = ptr::null_mut();
+        if DuplicateTokenEx(token.0, TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID, ptr::null(), SecurityAnonymous, TokenPrimary, &mut primary) == 0 {
+            return Err("OPEN_SHELL_TOKEN".into());
+        }
+        let primary = Owned(primary);
+        let application = wide(app.as_os_str());
+        let mut quoted = std::ffi::OsString::from("\"");
+        quoted.push(app.as_os_str()); quoted.push("\"");
+        let mut command = wide(&quoted);
+        let startup = STARTUPINFOW { cb: std::mem::size_of::<STARTUPINFOW>() as u32, ..std::mem::zeroed() };
+        let mut info: PROCESS_INFORMATION = std::mem::zeroed();
+        if CreateProcessWithTokenW(primary.0, 0, application.as_ptr(), command.as_mut_ptr(), 0, ptr::null(), ptr::null(), &startup, &mut info) == 0 {
+            return Err(format!("OPEN_START:{}", GetLastError()));
+        }
+        CloseHandle(info.hProcess); CloseHandle(info.hThread);
+    }
+    Ok(())
+}
+
+/// Whether this process runs with an elevated administrator token (the installer's machine setup).
+pub fn elevated() -> bool {
+    use windows_sys::Win32::{Security::{GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY}, System::Threading::{GetCurrentProcess, OpenProcessToken}};
+    unsafe {
+        let mut token: HANDLE = ptr::null_mut();
+        if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) == 0 { return false; }
+        let mut elevation = TOKEN_ELEVATION { TokenIsElevated: 0 };
+        let mut size = 0u32;
+        let ok = GetTokenInformation(token, TokenElevation, &mut elevation as *mut _ as *mut _, std::mem::size_of::<TOKEN_ELEVATION>() as u32, &mut size) != 0;
+        CloseHandle(token);
+        ok && elevation.TokenIsElevated != 0
+    }
+}
+
 pub fn oauth_allowed(value: &str) -> bool {
     url::Url::parse(value).is_ok_and(|u| u.scheme()=="https" && u.host_str()==Some("accounts.google.com") && u.port().is_none()
         && u.username().is_empty() && u.password().is_none() && u.path()=="/o/oauth2/v2/auth")
@@ -165,6 +241,19 @@ impl Drop for ProcessJob { fn drop(&mut self) { unsafe { CloseHandle(self.0); } 
 
 #[cfg(test)] mod tests {
     use super::*;
+    #[test] fn installing_marker_is_fresh_for_half_an_hour() {
+        let dir = std::env::temp_dir().join(format!("swb-installing-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir); fs::create_dir_all(&dir).unwrap();
+        assert!(!installing(&dir));
+        let marker = File::create(dir.join(INSTALLING)).unwrap();
+        assert!(installing(&dir));
+        let old = std::time::SystemTime::now() - INSTALLING_FOR - std::time::Duration::from_secs(60);
+        marker.set_modified(old).unwrap();
+        assert!(!installing(&dir), "a marker an interrupted install left stops mattering");
+        marker.set_modified(std::time::SystemTime::now() + std::time::Duration::from_secs(3600)).unwrap();
+        assert!(!installing(&dir), "a marker from the future (clock change) does not block runs");
+        drop(marker); let _ = fs::remove_dir_all(&dir);
+    }
     #[test] fn paths_are_isolated() {
         assert!(overlap(Path::new(r"C:\Users\Work"),Path::new(r"c:\users\work\state")));
         assert!(!overlap(Path::new(r"C:\Work"),Path::new(r"C:\Worker")));

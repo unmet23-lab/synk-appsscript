@@ -1,0 +1,109 @@
+name: workbackup-clean-windows
+
+# 업무 백업 1단계의 깨끗한 Windows 연습(experiences/solo-backup-rust/STAGE1_DESIGN.md 4.11). 첫 갈래는 컴퓨터 전체
+# 설치기(4.2 「컴퓨터 전체 설치」): 배포 판과 NSIS 설치기를 이 원천에서 빌드해, 관리자로 조용히 설치 → 파일(빌드 영수증 ·
+# 자원 목록 해시) · 설치 폴더 권한 · 지우기 등록 · 시작 메뉴 바로 가기와 알림 식별자 · 바탕 화면 바로 가기 없음 · 회차 작업
+# 폴더와 권한 → 표준 사용자가 그 폴더에 회차 작업 넷을 등록하고 컴퓨터 설정은 못 함 → 같은 판 다시 설치해도 작업이 남음 →
+# 지우기가 모든 사용자의 작업 · 폴더 · 바로 가기 · 등록 · 파일을 치우고 사용자 상태는 남김(test-support/installer-check.ps1).
+# 합성 자료뿐이고 비밀값을 쓰지 않는다. 운영자 PC에는 설치하지 않는다(이 PC 시험 설치는 유호님 확인 묶음).
+on:
+  push:
+    paths:
+      - 'experiences/solo-backup-rust/**'
+      - '!experiences/solo-backup-rust/**/*.md'
+      - '!experiences/solo-backup-rust/ui-mockups/**'
+      - 'experiences/solo-backup/ui/**'
+      - '.github/workflows/workbackup-clean-windows.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '23 18 * * 0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbackup-clean-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    if: ${{ github.event.repository.private == false || vars.SYNK_HOSTED_CI == 'on' }}
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /experiences/solo-backup-rust/
+            !/experiences/solo-backup-rust/ui-mockups/
+            /experiences/solo-backup/ui/
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      # cargo cannot list package files inside a non-cone sparse git tree, so build from a plain copy.
+      - name: copy the sources out of the sparse checkout
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'src'
+          New-Item -ItemType Directory -Force -Path (Join-Path $src 'experiences/solo-backup') | Out-Null
+          Copy-Item -Recurse -LiteralPath 'experiences/solo-backup-rust' -Destination (Join-Path $src 'experiences/solo-backup-rust')
+          # The window UI (its tray icon included) is all the build reads from the original app; the engine is a copy here.
+          Copy-Item -Recurse -LiteralPath 'experiences/solo-backup/ui' -Destination (Join-Path $src 'experiences/solo-backup/ui')
+          "SWB_APP=$(Join-Path $src 'experiences/solo-backup-rust')" >> $env:GITHUB_ENV
+      - name: install the Tauri CLI and the engine dependency from their lock files
+        shell: pwsh
+        run: |
+          npm ci --prefix $env:SWB_APP --ignore-scripts --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw 'Tauri CLI install failed' }
+          npm ci --prefix (Join-Path $env:SWB_APP 'engine') --ignore-scripts --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw 'engine dependency install failed' }
+      # The zip hash pins the official release; stage-resources checks the exe hash again.
+      - name: download the pinned restic
+        shell: pwsh
+        run: |
+          $folder = Join-Path $env:RUNNER_TEMP 'restic'
+          New-Item -ItemType Directory -Force -Path $folder | Out-Null
+          $zip = Join-Path $folder 'restic.zip'
+          Invoke-WebRequest -Uri 'https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip' -OutFile $zip -MaximumRetryCount 3 -RetryIntervalSec 5
+          if ((Get-FileHash -Algorithm SHA256 -Path $zip).Hash -ne 'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d') { throw 'restic ZIP SHA-256 mismatch' }
+          Expand-Archive -Path $zip -DestinationPath $folder
+          "SWB_RESTIC=$(Join-Path $folder 'restic_0.19.1_windows_amd64.exe')" >> $env:GITHUB_ENV
+      - name: restore the Rust dependency builds
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~\.cargo\registry
+            ~\.cargo\git
+            ${{ runner.temp }}\wb-target
+            ${{ runner.temp }}\wb-inventory
+          key: workbackup-install-v1-${{ hashFiles('experiences/solo-backup-rust/src-tauri/Cargo.lock', 'experiences/solo-backup-rust/inventory/Cargo.lock') }}
+      - name: build the release and its installer from these sources
+        shell: pwsh
+        run: |
+          & (Join-Path $env:SWB_APP 'scripts/build.ps1') -ResticPath $env:SWB_RESTIC -OutputDirectory (Join-Path $env:RUNNER_TEMP 'wb-out') `
+            -InventoryBinDirectory (Join-Path $env:RUNNER_TEMP 'wb-inventory/release') -TargetDirectory (Join-Path $env:RUNNER_TEMP 'wb-target')
+      - name: build the schedule probe (registers a user's runs the way the app does)
+        shell: pwsh
+        run: |
+          $env:CARGO_TARGET_DIR = Join-Path $env:RUNNER_TEMP 'wb-target'
+          cargo build --locked --example schedule_probe --manifest-path (Join-Path $env:SWB_APP 'src-tauri/Cargo.toml')
+          if ($LASTEXITCODE -ne 0) { throw 'schedule probe build failed' }
+      - name: install, check, register as a standard user, install again, uninstall, check
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'wb-out'
+          $setup = @(Get-ChildItem -LiteralPath $out -Filter '*-setup.exe')
+          if ($setup.Count -ne 1) { throw "expected one installer in the build output, found $($setup.Count)" }
+          & (Join-Path $env:SWB_APP 'test-support/installer-check.ps1') -Setup $setup[0].FullName -Receipt (Join-Path $out 'build-receipt.json') `
+            -Probe (Join-Path $env:RUNNER_TEMP 'wb-target/debug/examples/schedule_probe.exe') -Work (Join-Path $env:RUNNER_TEMP 'install-check')
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workbackup-install
+          path: |
+            ${{ runner.temp }}/wb-out/build-receipt.json
+            ${{ runner.temp }}/install-check/*.json
+          if-no-files-found: warn

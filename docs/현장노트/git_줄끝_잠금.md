@@ -704,6 +704,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 래퍼 한도를 도구의 한도보다 넉넉히(`timeout 2700`) 주고 한 번만 백그라운드로 돌린다. 거절(origin이 그새 움직임)은 도구가 스스로 한 번 다시 한다(「그새 origin이 움직여 1번 다시」). 이미 도는 것이 끊긴 반복이면 내 프로세스만 골라 멈춘다(`Get-CimInstance Win32_Process`로 명령줄 · 시작 시각 확인 — 다른 세션의 바로올리기를 죽이지 않는다).
 - 다시 확인: 출력 첫 줄이 `[올림]`이고 `관련 시험 통과 — N/N · <초>` 줄이 있다(11-11 밤 183/183 · 606초).
 
+### 바쁜 PC에서 무관한 `tests/ci-wide-dependencies.test.js`가 시간 제한으로 깨져 바로올리기가 멈춘다 — 혼자 돌려 통과면 `--시험건너뜀` (2026-11-13 Claude)
+- 증상: 업무 백업 0.7.0을 올리는 `--실행`이 관련 시험 46개로 900초를 다 쓰고 「✗ either missing media executable triggers bounded installation and verifies both tools › ffprobe (tests/ci-wide-dependencies.test.js:107)」로 멈췄고, 다시 돌리니 같은 시험의 ffmpeg 갈래로 또 멈췄다(자리 기다림 1377초). 바꾼 경로(`experiences/solo-backup-rust` · 트랙)와 무관한, wide CI의 미디어 도구 설치를 흉내 내는 시험이다.
+- 원인: 다른 세션의 올리기 · 빌드가 겹쳐 CPU가 85%일 때 그 시험의 짧은 시간 제한이 넘어간다. 혼자 돌리면 10/10 통과한다.
+- 고침: `CI=1 node --test --test-reporter=tap tests/ci-wide-dependencies.test.js`를 혼자 돌려 다 통과하면, 내 변경의 시험을 따로 돌린 숫자와 함께 `--시험건너뜀 "<그 시험 · 혼자 통과 · 내 시험 숫자>"`를 붙여 다시 올린다(까닭이 커밋 메시지에 남는다). 내 빌드처럼 무거운 일은 올리기가 끝날 때까지 멈춰 둔다.
+- 다시 확인: 세 번째 실행이 `[올림]` · `origin 확인 ✓`(`86814ae98`), 곧이어 무거운 일 없이 올린 다음 push는 관련 시험 245/245 · 71초(`aec62269b`).
+
 ### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
 - 증상: 11-04 19시대에 `git fetch` · `ls-remote` · `바로올리기 따라가기`가 `git@github.com: Permission denied (publickey).`로 끝났다. 같은 키로 `ssh -T git@github.com`이 몇 초 간격으로 「Hi unmet23-lab!」와 실패를 번갈아 냈고, `ssh -v`에는 `Offering public key` 뒤 `Authentications that can continue`만 남았다. 바로 앞 시각까지 같은 명령이 됐다.
 - 원인: 이 PC의 키 · 권한 · 설정은 그대로였고(키 ACL은 본인 `(R)` 하나), 그 시각 githubstatus.com의 Git Operations · Actions가 `degraded_performance`였다. GitHub이 까닭을 따로 밝힌 것은 아니어서, 확인한 것은 「같은 키가 번갈아 받아들여지고 그때 GitHub이 성능 저하였다」까지다.

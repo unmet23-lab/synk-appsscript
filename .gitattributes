@@ -21,6 +21,9 @@ experiences/path-vr/models/whisper-base/*.json text eol=lf
 experiences/path-vr/models/whisper-base/*.txt text eol=lf
 experiences/path-vr/models/whisper-base/*.md text eol=lf
 
+# 업무 백업 설치기: Tauri NSIS 틀을 고치지 않은 채 두고 해시로 고정한다(scripts/nsis-template.cjs) — 윈도우 체크아웃도 같은 바이트.
+experiences/solo-backup-rust/src-tauri/nsis/upstream-installer.nsi text eol=lf
+
 # 생성 지면은 생성기와 같은 LF를 사용해 내용 없는 차이를 막는다.
 docs/이해대장.html text eol=lf
 

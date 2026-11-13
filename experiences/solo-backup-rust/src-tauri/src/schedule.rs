@@ -10,15 +10,17 @@
 //! the run executable ends restic itself before that. Runs that overlap across the
 //! four tasks meet at the engine lock and the second one records 「바쁨」.
 //!
-//! The tasks live in `\SYNK 업무 백업` when the installer made that folder writable for
-//! users; otherwise in the root folder (the user's name in the task name keeps users
-//! apart there). Registration never needs administrator rights.
-use std::path::Path;
+//! The tasks live in `\SYNK 업무 백업` when the installer made that folder (Administrators
+//! own it — one a standard user made first under that name is never used); otherwise in the
+//! root folder (the user's name in the task name keeps users apart there). Registration never needs administrator rights. The installer makes the
+//! folder (`prepare_folder`) and the uninstaller removes every user's tasks of that
+//! installation (`remove_installation`), both as an administrator (4.2 「컴퓨터 전체 설치」).
+use std::{mem::ManuallyDrop, path::Path};
 use windows::core::BSTR;
 use windows::Win32::Foundation::{RPC_E_CHANGED_MODE, VARIANT_TRUE};
 use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED};
-use windows::Win32::System::TaskScheduler::{IRegisteredTask, ITaskFolder, ITaskService, TaskScheduler, TASK_CREATE_OR_UPDATE, TASK_LOGON_INTERACTIVE_TOKEN};
-use windows::Win32::System::Variant::VARIANT;
+use windows::Win32::System::TaskScheduler::{IRegisteredTask, ITaskFolder, ITaskService, TaskScheduler, TASK_CREATE_OR_UPDATE, TASK_ENUM_HIDDEN, TASK_LOGON_INTERACTIVE_TOKEN};
+use windows::Win32::System::Variant::{VariantClear, VARIANT, VARIANT_0, VARIANT_0_0, VARIANT_0_0_0, VT_BSTR, VT_I4};
 
 pub const FOLDER: &str = "\\SYNK 업무 백업";
 const ROOT: &str = "\\";
@@ -101,6 +103,18 @@ fn service() -> Result<ITaskService, String> {
     Ok(service)
 }
 fn folder(service: &ITaskService, path: &str) -> Option<ITaskFolder> { unsafe { service.GetFolder(&BSTR::from(path)) }.ok() }
+/// Whether Task Scheduler reads the folder's owner back as Administrators or SYSTEM. Only an administrator can
+/// make such a folder (a standard user cannot give an object another owner), so this is the installer's folder.
+/// One a standard user made first under the same name stays theirs: Task Scheduler refuses an administrator every
+/// change to it — its permission, its owner, deleting it or a task in it (11-13 clean-Windows probe) — so it is
+/// never used for anyone's runs.
+fn trusted(folder: &ITaskFolder) -> bool {
+    unsafe { folder.GetSecurityDescriptor(OWNER_SECURITY_INFORMATION) }.is_ok_and(|s| owned_by_administrators(&s.to_string()))
+}
+/// Where runs are registered, in order: the product folder when it is the installer's, then the root folder.
+fn places(service: &ITaskService) -> Vec<(&'static str, ITaskFolder)> {
+    [FOLDER, ROOT].into_iter().filter_map(|path| folder(service, path).filter(|f| path == ROOT || trusted(f)).map(|f| (path, f))).collect()
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct Placement { pub folder: String, pub tasks: Vec<String> }
@@ -170,7 +184,8 @@ fn delete_owned(folder: &ITaskFolder, name: &str, sid: &str) -> Result<(), Strin
 }
 
 /// Registers (or updates) the four tasks for the current user. Tries the product folder
-/// first and falls back to the root folder when that folder is missing or refuses. A set
+/// first and falls back to the root folder when that folder is missing, is not the installer's
+/// (`trusted`) or refuses. A set
 /// that fails half-way puts every task back as it was — earlier ones in their old XML,
 /// new ones removed (review GA5) — and a same-named task of another account stops it.
 pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placement, String> {
@@ -178,8 +193,7 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
     let service = service()?;
         let xmls: Vec<(String, String)> = Trigger::ALL.iter().map(|t| Ok((task_name(user, sid, *t), task_xml(*t, exe, sid, start)?))).collect::<Result<_, String>>()?;
     let mut last = String::from("SCHEDULE_FOLDER");
-    for path in [FOLDER, ROOT] {
-        let Some(target) = folder(&service, path) else { continue };
+    for (path, target) in places(&service) {
         let mut done: Vec<(String, Option<String>)> = Vec::new();
         let mut failed = None;
         for (name, xml) in &xmls {
@@ -193,7 +207,8 @@ pub fn register(exe: &Path, user: &str, sid: &str, start: &str) -> Result<Placem
         match failed {
             None => {
                 // One place only: copies left in the other place (from a registration before the
-                // installer made the folder, or before it refused) would start every run twice.
+                // installer made the folder, before it refused, or in a folder that is not the
+                // installer's) would start every run twice.
                 for other in [FOLDER, ROOT].into_iter().filter(|p| *p != path) {
                     if let Some(old) = folder(&service, other) { for (name, _) in &done { let _ = delete_owned(&old, name, sid); } }
                 }
@@ -231,14 +246,13 @@ pub fn locations(user: &str, sid: &str) -> Result<Vec<String>, String> {
         Ok([FOLDER, ROOT].into_iter().filter(|path| folder(&service, path).is_some_and(|f| Trigger::ALL.iter().any(|t| task(&f, &task_name(user, sid, *t)).is_some_and(|x| owned(&x, sid))))).map(String::from).collect())
 }
 
-/// True when all four tasks exist in one place, run as this account, are enabled and
-/// start this executable with their own trigger argument.
+/// True when all four tasks exist in one place runs may be registered in (`places`), run as
+/// this account, are enabled and start this executable with their own trigger argument.
 pub fn registered(exe: &Path, user: &str, sid: &str) -> Result<bool, String> {
     let _com = Com::init()?;
     let service = service()?;
         let command = exe.to_str().ok_or("SCHEDULE_PATH")?.trim_start_matches(r"\\?\").to_string();
-    for path in [FOLDER, ROOT] {
-        let Some(target) = folder(&service, path) else { continue };
+    for (_, target) in places(&service) {
         let all = Trigger::ALL.iter().all(|t| {
             let Some(task) = task(&target, &task_name(user, sid, *t)) else { return false };
             let enabled = unsafe { task.Enabled() }.is_ok_and(|v| v == VARIANT_TRUE);
@@ -249,6 +263,118 @@ pub fn registered(exe: &Path, user: &str, sid: &str) -> Result<bool, String> {
         if all { return Ok(true); }
     }
     Ok(false)
+}
+
+/// What the installer gives the run-task folder — exactly what T2 measured (11-13): administrators
+/// and SYSTEM full, signed-in users read · write · run, so each user adds and removes their own tasks.
+pub const FOLDER_SDDL: &str = "D:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GRGWGX;;;AU)";
+/// The same with Administrators as owner, set again on the installer's own folder at every install. A folder a
+/// standard user made first cannot be given this — Task Scheduler refuses it — and is left to them (`trusted`).
+const FOLDER_OWNED_SDDL: &str = "O:BAD:(A;;FA;;;BA)(A;;FA;;;SY)(A;;GRGWGX;;;AU)";
+const OWNER_SECURITY_INFORMATION: i32 = 1;
+const DACL_SECURITY_INFORMATION: i32 = 4;
+/// Whether a folder's owner, as Task Scheduler reads it back, is Administrators or SYSTEM.
+fn owned_by_administrators(sddl: &str) -> bool {
+    let Some(rest) = sddl.strip_prefix("O:") else { return false };
+    // The owner runs to the next part marker (a SID such as S-1-5-18 has no colon after its S).
+    let end = ["G:", "D:", "S:"].iter().filter_map(|marker| rest.find(marker)).min().unwrap_or(rest.len());
+    matches!(&rest[..end], "BA" | "SY" | "S-1-5-32-544" | "S-1-5-18")
+}
+
+/// A string or number VARIANT for the calls that take one, cleared on drop.
+struct Var(VARIANT);
+impl Var {
+    fn text(value: &str) -> Self { Self::of(VT_BSTR, VARIANT_0_0_0 { bstrVal: ManuallyDrop::new(BSTR::from(value)) }) }
+    fn number(value: i32) -> Self { Self::of(VT_I4, VARIANT_0_0_0 { lVal: value }) }
+    fn of(vt: windows::Win32::System::Variant::VARENUM, value: VARIANT_0_0_0) -> Self {
+        Var(VARIANT { Anonymous: VARIANT_0 { Anonymous: ManuallyDrop::new(VARIANT_0_0 { vt, wReserved1: 0, wReserved2: 0, wReserved3: 0, Anonymous: value }) } })
+    }
+}
+impl Drop for Var { fn drop(&mut self) { unsafe { let _ = VariantClear(&mut self.0); } } }
+
+/// Whether `name` is a run-task name as `task_name` makes it: 「회차 - <account> - <trigger> · <6 hex>」.
+pub fn is_run_task_name(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix("회차 - ") else { return false };
+    let Some((head, tag)) = rest.rsplit_once(" · ") else { return false };
+    tag.len() == 6 && tag.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        && Trigger::ALL.iter().any(|t| head.strip_suffix(t.label()).and_then(|h| h.strip_suffix(" - ")).is_some_and(|account| !account.trim().is_empty()))
+}
+
+/// The installer, as an administrator: makes `\SYNK 업무 백업` (as T2 did), then — for that folder or the
+/// installer's own one already there — sets Administrators as owner and FOLDER_SDDL as permission, and checks
+/// both as Task Scheduler reads them back. Returns that reading. A folder a standard user made first is left
+/// alone (SCHEDULE_FOLDER_NOT_OURS — the install goes on, and runs use the root folder, `places`).
+pub fn prepare_folder() -> Result<String, String> {
+    let _com = Com::init()?;
+    let service = service()?;
+    let made = match folder(&service, FOLDER) {
+        Some(existing) if !trusted(&existing) => return Err("SCHEDULE_FOLDER_NOT_OURS".into()),
+        Some(existing) => existing,
+        None => {
+            let root = folder(&service, ROOT).ok_or("SCHEDULE_FOLDER")?;
+            let sddl = Var::text(FOLDER_SDDL);
+            unsafe { root.CreateFolder(&BSTR::from(FOLDER.trim_start_matches('\\')), &sddl.0) }.map_err(|e| format!("SCHEDULE_FOLDER_CREATE:{:#x}", e.code().0))?
+        }
+    };
+    unsafe { made.SetSecurityDescriptor(&BSTR::from(FOLDER_OWNED_SDDL), 0) }.map_err(|e| format!("SCHEDULE_FOLDER_ACL:{:#x}", e.code().0))?;
+    let read = unsafe { made.GetSecurityDescriptor(OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION) }.map(|s| s.to_string()).map_err(|e| format!("SCHEDULE_FOLDER_READ:{:#x}", e.code().0))?;
+    if !owned_by_administrators(&read) { return Err(format!("SCHEDULE_FOLDER_OWNER:{read}")); }
+    if !read.contains(";;;AU)") { return Err(format!("SCHEDULE_FOLDER_ACL:{read}")); }
+    Ok(read)
+}
+
+/// What the uninstaller removed: run tasks (every user's), tasks of anything else left in the
+/// folder, and whether the folder itself went.
+#[derive(Debug, Default, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Removal { pub removed: usize, pub others: usize, pub failed: usize, pub folder_removed: bool, pub folder_not_ours: bool }
+
+/// The uninstaller, as an administrator: every user's run tasks that start `exe` (this
+/// installation's run executable) with `--run <trigger>` — in the product folder and in the root,
+/// the fallback — are stopped and deleted, then the folder once nothing else is in it. A task that
+/// starts anything else is left alone, whatever its name. A folder a standard user made first
+/// under the product's name was never used (`places`) and is left to them. A place or task that
+/// cannot be read or removed is counted in `failed` and the rest still goes.
+pub fn remove_installation(exe: &Path) -> Result<Removal, String> {
+    let _com = Com::init()?;
+    let service = service()?;
+    let mut out = Removal { folder_not_ours: folder(&service, FOLDER).is_some_and(|f| !trusted(&f)), ..Removal::default() };
+    for (path, place) in places(&service) {
+        let Some((tasks, count)) = unsafe { place.GetTasks(TASK_ENUM_HIDDEN.0) }.ok().and_then(|t| unsafe { t.Count() }.ok().map(|n| (t, n))) else {
+            out.failed += 1;
+            continue;
+        };
+        let mut ours = Vec::new();
+        for i in 1..=count {
+            let Ok(task) = (unsafe { tasks.get_Item(&Var::number(i).0) }) else { continue };
+            let name = unsafe { task.Name() }.map(|n| n.to_string()).unwrap_or_default();
+            if is_run_task_name(&name) && starts(&task, exe) { ours.push((name, task)); } else if path == FOLDER { out.others += 1; }
+        }
+        for (name, task) in ours {
+            // A run still going is ended by Task Scheduler; its job object takes the worker and restic with it.
+            let _ = unsafe { task.Stop(0) };
+            match unsafe { place.DeleteTask(&BSTR::from(name.as_str()), 0) } { Ok(()) => out.removed += 1, Err(_) => out.failed += 1 }
+        }
+    }
+    if let Some(place) = folder(&service, FOLDER).filter(trusted) {
+        let tasks = unsafe { place.GetTasks(TASK_ENUM_HIDDEN.0).and_then(|t| t.Count()) }.unwrap_or(1);
+        let folders = unsafe { place.GetFolders(0).and_then(|f| f.Count()) }.unwrap_or(1);
+        if tasks == 0 && folders == 0 {
+            let deleted = folder(&service, ROOT).is_some_and(|root| unsafe { root.DeleteFolder(&BSTR::from(FOLDER.trim_start_matches('\\')), 0) }.is_ok());
+            if deleted { out.folder_removed = true } else { out.failed += 1 }
+        }
+    }
+    Ok(out)
+}
+
+/// Whether a task's action starts `exe` (however its path is spelled) with `--run <trigger>`.
+fn starts(task: &IRegisteredTask, exe: &Path) -> bool {
+    let xml = unsafe { task.Xml() }.map(|x| x.to_string()).unwrap_or_default();
+    let Some(command) = element(&xml, "Command") else { return false };
+    let command = Path::new(command.trim().trim_matches('"'));
+    let same = |a: &Path, b: &Path| crate::platform::key_path(a) == crate::platform::key_path(b);
+    (same(command, exe) || std::fs::canonicalize(command).ok().zip(std::fs::canonicalize(exe).ok()).is_some_and(|(a, b)| same(&a, &b)))
+        && element(&xml, "Arguments").is_some_and(|a| Trigger::ALL.iter().any(|t| a.trim() == format!("--run {}", t.arg())))
 }
 
 /// The signed-in user's SID from the process token (never from environment variables).
@@ -285,6 +411,15 @@ pub fn local_now() -> String {
 #[cfg(test)] mod tests {
     use super::*;
     const SID: &str = "S-1-5-21-1111111111-2222222222-3333333333-1001";
+    #[test] fn folder_owner_is_read_from_the_sddl() {
+        for ok in ["O:BAG:SYD:(A;;FA;;;BA)", "O:SYD:(A;;FA;;;SY)", "O:S-1-5-32-544D:(A;;FA;;;BA)", "O:BA"] { assert!(owned_by_administrators(ok), "{ok}"); }
+        for bad in ["O:S-1-5-21-1-2-3-1001D:(A;;FA;;;BA)", "D:(A;;FA;;;BA)", "O:AUD:(A;;FA;;;AU)", "O:BUD:", ""] { assert!(!owned_by_administrators(bad), "{bad}"); }
+    }
+    #[test] fn run_task_names_are_recognised() {
+        for t in Trigger::ALL { assert!(is_run_task_name(&task_name("유호", SID, t)), "{t:?}"); assert!(is_run_task_name(&task_name("a - b", SID, t))); }
+        for other in ["회차 - 유호 - 매시간", "회차 - 유호 - 매일 · abcdef", "회차 -  - 매시간 · abcdef", "회차 - 유호 - 매시간 · ABCDEF",
+                      "회차 - 유호 - 매시간 · abcde", "백업 - 유호 - 매시간 · abcdef", "회차 - 유호 - 매시간 · abcdefa"] { assert!(!is_run_task_name(other), "{other}"); }
+    }
     #[test] fn names_drop_forbidden_characters() {
         let name = task_name("유호", SID, Trigger::Wake);
         assert!(name.starts_with("회차 - 유호 - 깨어남 · ") && name.chars().count() == "회차 - 유호 - 깨어남 · ".chars().count() + 6, "{name}");

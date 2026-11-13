@@ -5,6 +5,8 @@ edition = "2021"
 rust-version = "1.90"
 publish = false
 autobins = false
+# The window app; tauri build bundles WorkBackupRun beside it.
+default-run = "WorkBackup"
 
 [lib]
 name = "backup_native"

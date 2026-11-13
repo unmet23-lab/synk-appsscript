@@ -146,6 +146,9 @@ fn run()->Result<(),String>{
     let test=args.contains(&"--test-mode".into());let smoke_mode=args.contains(&"--smoke".into());
     if smoke_mode&&!test{return Err("TEST_MODE_REQUIRED".into());}
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
+    // An install or uninstall is replacing this folder's files: open nothing and hold none of them (review GA1 · GA3).
+    // The installer opens the app itself once it is done.
+    if exe.parent().is_some_and(platform::installing){return Err("INSTALLING".into());}
     let resources=if cfg!(debug_assertions){std::env::var_os("SWB_RESOURCES").map(PathBuf::from).unwrap_or(exe.parent().unwrap().join("resources"))}else{exe.parent().unwrap().join("resources")};
     backup_native::bundle::verify(&resources,&[])?;
     let (root,lock)=platform::state_root(test)?;
@@ -197,7 +200,7 @@ fn run()->Result<(),String>{
     Ok(())
 }
 fn main(){if let Err(code)=run(){
-    if code=="ALREADY_RUNNING"&&!std::env::args().any(|a|a=="--test-mode"||a=="--smoke"){return;}
+    if (code=="ALREADY_RUNNING"||code=="INSTALLING")&&!std::env::args().any(|a|a=="--test-mode"||a=="--smoke"){return;}
     eprintln!("{code}");
     if !std::env::args().any(|a|a=="--test-mode"||a=="--migration-preview") {rfd::MessageDialog::new().set_title("업무 백업을 시작하지 못했습니다").set_description(code).show();}
     std::process::exit(1);

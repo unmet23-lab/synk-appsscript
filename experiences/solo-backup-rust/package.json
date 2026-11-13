@@ -3,6 +3,15 @@
   "version": "0.7.0",
   "private": true,
   "description": "Rust/Tauri Windows host with the existing verified backup compatibility engine",
-  "scripts": { "stage:ui": "node scripts/stage-ui.cjs", "test": "node --test tests/*.test.cjs", "test:integration": "node --test test-support/startup-read.check.cjs" },
-  "engines": { "node": ">=22" }
+  "scripts": {
+    "stage:ui": "node scripts/stage-ui.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "test:integration": "node --test test-support/startup-read.check.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.4"
+  }
 }
