@@ -108,7 +108,11 @@ const hex64 = v => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v);
 function noArmedTrue(value, at) {
   if (!value || typeof value !== 'object') return;
   for (const [k, v] of Object.entries(value)) {
-    if (/armed/i.test(k) && !/disarmed/i.test(k) && (v === null || typeof v !== 'object')) a.equal(v, false, 'HA_REST_ARMED_VALUE ' + at + '.' + k);
+    if (/armed/i.test(k) && !/disarmed/i.test(k) && (v === null || typeof v !== 'object')) {
+      // These two fields are proof verdicts, not armed state. Only the exact raw-proof path has this meaning.
+      const disarmPredicate = at === '$controllerStop.disarm.verdict.checks' && (k === 'armedFalse' || k === 'liveArmedFalse');
+      a.equal(v, disarmPredicate, (disarmPredicate ? 'HA_REST_ARMED_PREDICATE ' : 'HA_REST_ARMED_VALUE ') + at + '.' + k);
+    }
     noArmedTrue(v, at + '.' + k);
   }
 }

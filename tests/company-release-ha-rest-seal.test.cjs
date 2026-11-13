@@ -62,7 +62,7 @@ function restRelease(temp, name, { parentRelease, armed, mutate = {}, value = 1 
   if (mutate.disarm) mutate.disarm(disarm);
   const disarmRaw = R.encode(disarm), checks = Object.fromEntries(['releasePinned', 'primaryVmIdentity', 'primaryNatIsPin', 'staticAddressBound', 'lbAbsent', 'dnsOnPrimaryEverywhere', 'directHealthReady', 'directRoot200', 'publicHealthReady', 'nodeIdentity', 'nodeRelease', 'nodeCurrentIsRelease', 'nodePlanDisarmedSameRelease', 'containersExact', 'containersRunning', 'companyContainerHealthy', 'controlIdle'].map(k => [k, true]));
   const stop = { schema: 'synk-ha-rest65/v1', at: '2026-11-14T03:05:00.000Z', mode: 'controller-stop', run: true, remoteWrites: 1,
-    disarm: { file: 'C:/x/disarm-proof.json', sha256: R.sha(disarmRaw), verdict: { ok: true, failed: [] } },
+    disarm: { file: 'C:/x/disarm-proof.json', sha256: R.sha(disarmRaw), verdict: { ok: true, failed: [], checks: { schema: true, fresh: true, status: true, armedFalse: true, liveArmedFalse: true, loadedPlanProven: true, planRelease: true, ownerPrimary: true } } },
     before: { status: 'RUNNING' },
     preflight: { readings: { release: manifestSha256, vm: { natIp: '10.0.0.1', status: 'RUNNING' }, lb: { fr: null, bs: null, hc: null, addr: null },
       dns: { servers: { a: ['10.0.0.1'], b: ['10.0.0.1'] } }, direct: { health: { status: 200, ready: true }, root: { status: 200 } }, public: { status: 200, ready: true },
@@ -142,6 +142,16 @@ test('the raw controller-plan proof must be disarmed on this release', t => {
 test('armed:true anywhere in the record or raw files is refused', t => {
   for (const edit of [r => { r.armedAfter = true; }, r => { r.armedBefore = true; }, r => { r.extra = { nested: { armed: true } }; }]) refused(t, { rest: edit }, /HA_REST_ARMED/);
   refused(t, { stop: s => { s.preflight.readings.node.planArmed = true; } }, /HA_REST_ARMED_VALUE|HA_REST_STOP_NODE/);
+  refused(t, { stop: s => { s.controllerLive = { armed: true }; } }, /HA_REST_ARMED_VALUE/);
+});
+
+test('actual disarm verdict predicates must succeed and do not excuse armed state or the same names elsewhere', t => {
+  // Every successful fixture above includes both true predicates from the real controller-stop receipt.
+  for (const key of ['armedFalse', 'liveArmedFalse']) {
+    refused(t, { stop: s => { s.disarm.verdict.checks[key] = false; } }, /HA_REST_ARMED_PREDICATE/);
+    refused(t, { rest: r => { r.extra = { [key]: true }; } }, /HA_REST_ARMED_VALUE/);
+  }
+  refused(t, { stop: s => { s.disarm.verdict.checks.armed = true; } }, /HA_REST_ARMED_VALUE/);
 });
 
 test('the last armed pair is the real pair, re-verified with the existing verifiers; a rest seal posing as the armed pair is refused without recursion', t => {
