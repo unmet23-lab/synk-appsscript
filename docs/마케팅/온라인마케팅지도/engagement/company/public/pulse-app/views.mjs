@@ -142,8 +142,9 @@ function staffCard(item){
 }
 const newProjectForm=()=>`<section class="staff-sheet" aria-label="새 프로젝트"><div class="staff-sheet-copy"><h2>새 프로젝트</h2><p>의뢰서 없이 직접 만드는 프로젝트예요. 만든 뒤 자료를 올리고 고객에게 초대 링크를 보내요.</p></div><form class="staff-sheet-form project-create" data-form="new-project">${field('프로젝트 이름','title','','text',{required:true,max:160,placeholder:'예: 여름 신제품 30초 광고'})}${field('고객 이름 또는 회사','customerName','','text',{required:true,max:100})}${field('무엇을 함께 만들까요?','summary','','textarea',{placeholder:'이번 광고의 목적과 전달할 내용을 적어 주세요.'})}<div class="button-row">${submit('프로젝트 만들기')}${btn('취소','cancel-new')}</div></form></section>`;
 // 옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이 말하는 차례와 같게(turnOf · nextDecision — 직원 화면이라 최종 준비 갈래로 읽는다).
+// 다만 제작 설계를 아직 쓰지 않은 갈래는 손님에게 나간 요청이 없으므로 판정을 비워 단계 표(우리 차례)로 돌린다 — 막 만든 프로젝트가 「손님 차례」로 빠지지 않게.
 const STAFF_TURN={team:'us',customer:'them',done:'done'};
-const staffLegacyTurn=p=>STAFF_TURN[turnOf({project:p,demo:false,mode:'staff'},nextDecision(p,true))];
+const staffLegacyTurn=p=>{const next=nextDecision(p,true);return next.title==='광고에서 남길 한 가지부터 맞춰요'?undefined:STAFF_TURN[turnOf({project:p,demo:false,mode:'staff'},next)];};
 export function picker(s){
   const projects=s.workspace?.projects||[],b=staffBoard(projects,Date.now(),{legacyTurn:staffLegacyTurn}),intake=intakeParts(s),canWrite=!!s.workspace?.canWrite;
   // 끝난 프로젝트는 2주 동안만 납품 칸에 남기고, 그 뒤는 보관과 함께 접는다(칸이 끝없이 길어지지 않게).

@@ -96,18 +96,22 @@ test('끝난 프로젝트는 2주 동안만 납품 칸에, 그 뒤는 접기로'
   assert.match(html,/<b>끝난 프로젝트 1<\/b> · 보관 0/);
 });
 
-test('옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이 말하는 차례와 같다(제작 설계 확인 · 시안 의견), 최종 전달은 끝',t=>{
+test('옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이 말하는 차례와 같다(제작 설계 확인 · 시안 의견), 설계 전은 우리 차례, 최종 전달은 끝',t=>{
   t.mock.timers.enable({apis:['Date'],now:NOW});
   const preview={id:'v1',kind:'preview',at:ago(3)};
+  const strategy=asked=>({studio:{strategy:{revision:1,data:{primaryPromise:'한 가지',evidence1:'근거',desiredAction:'행동'},request:asked?{strategyRevision:1,at:ago(4)}:null,confirmation:null,history:[]}}});
   const projects=[
-    legacyProject('plan','producing'), // 제작 설계를 아직 손님이 확인하지 않았다 → 손님 차례(프로젝트 안 「● 고객 차례 | 제작 설계」와 같게)
+    legacyProject('blank','received',{updatedAt:ago(120)}), // 제작 설계를 아직 안 썼다 — 손님에게 나간 요청이 없으니 우리 차례(Fable FA1)
+    {...legacyProject('drafting','planning'),...strategy(false)}, // 설계를 다듬는 중(확인 요청 전) → 우리 차례
+    {...legacyProject('asked','producing'),...strategy(true)}, // 설계 확인을 손님에게 부탁했다 → 손님 차례(프로젝트 안 「● 고객 차례 | 제작 설계」와 같게)
     {...legacyProject('look','review'),versions:[preview]}, // 새 시안을 손님이 볼 차례
     {...legacyProject('fix','review'),versions:[preview],messages:[{id:'m1',author:'customer',action:'feedback',resolved:false,versionId:'v1',at:ago(2)}]}, // 손님 의견을 우리가 고칠 차례
     legacyProject('sent','delivered'),
   ];
   const html=picker({mode:'staff',user:{id:'u'},workspace:{projects,canWrite:true}});
   const turn=id=>html.match(new RegExp(`class="project-tile staff-card is-(\\w+)[^"]*" data-action="open-project" data-id="${id}"`))?.[1];
-  assert.deepEqual(['plan','look','fix','sent'].map(turn),['them','them','us','done']);
+  assert.deepEqual(['blank','drafting','asked','look','fix','sent'].map(turn),['us','us','them','them','us','done']);
+  assert.match(html,/<p class="staff-meter[^"]*"><b>3<\/b><span>우리 차례<small>/,'큰 숫자 「우리 차례」는 설계 전 · 다듬는 중 · 고칠 차례 셋');
   // 판정이 없거나 깨지면 단계 칸으로(시안 확인은 손님, 그 앞은 우리), 최종 전달은 판정과 상관없이 끝
   assert.equal(staffBoard([legacyProject('a','producing')],NOW).ours[0].id,'a');
   assert.equal(staffBoard([legacyProject('a','producing')],NOW,{legacyTurn:()=>{throw new Error('x');}}).ours[0].id,'a');
@@ -150,7 +154,7 @@ test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 
   assert.ok(css.includes('html.is-staff .notification-panel{top:0;left:0;width:100vw;'));
   // 카드 그림은 다시 그릴 때 같은 주소의 옛 노드를 옮겨 쓴다(직원 매체는 no-store — Fable F4).
   assert.match(picker({mode:'staff',user:{id:'u'},workspace:{projects:[requestProject('p')],canWrite:true}}),/<img src="\/api\/client-projects\/p\/studio\/media\/front-p" alt="" loading="lazy" decoding="async" data-staff-pic>/);
-  assert.ok(app.includes("staffPics=s.mode==='staff'&&!s.project?new Map(Array.from(main.querySelectorAll('img[data-staff-pic]')).map(node=>[node.getAttribute('src'),node])):null;"));
+  assert.ok(app.includes("staffPics=s.mode==='staff'&&!s.project?new Map(Array.from(main.querySelectorAll('img[data-staff-pic]')).filter(node=>!node.hidden&&(!node.complete||node.naturalWidth>0)).map(node=>[node.getAttribute('src'),node])):null;"),'받기에 실패한 그림은 옮기지 않고 다시 받는다(Fable FA2)');
   assert.ok(app.includes("if(staffPics?.size)for(const fresh of main.querySelectorAll('img[data-staff-pic]')){const old=staffPics.get(fresh.getAttribute('src'));if(old){staffPics.delete(fresh.getAttribute('src'));fresh.replaceWith(old);}}"));
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),sw=read('sw.js');
   assert.ok(server.includes("'film-legacy.css','staff.css'])files['/pulse-app/'+file]"),'서버가 staff.css를 내준다');
