@@ -330,6 +330,46 @@ test('채점 --판정 「줄」 — 둘이 같이 짚은 모름줄을 원본 · 
   assert.equal(M.채점하기(밖, { 사람판정: JSON.parse(fs.readFileSync(판정, 'utf8')) }).채점.결과, '고칠 것');
 });
 
+test('채점 --판정 「줄」 갈래 「틀」 · 여럿 — 인사 카드 · 끝 카드 박자처럼 판본 틀이 붙이는 장면은 「틀」로, 까닭이 갈래마다 다르면 목록으로 내리고 기록은 「전제 · 틀」 한 글(11-14 「사층F」 고침 다시 검수 P2)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편 } = 판본글만들기(방);
+  const 밖 = path.join(방, '밖');
+  조용히(() => M.main(['판본', 편, 'TH', '--밖', 밖]));
+  const 재료 = JSON.parse(fs.readFileSync(path.join(밖, '재료.json'), 'utf8'));
+  재료.딱지경고 = [];
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료));
+  const 좋은 = { 요약: '배꼽이 빠지다는 너무 웃긴다는 뜻', 풀기: [{ 문제: 1, 고름: 'A' }], 유일: [{ 문제: 1, 또있음: null }], 웃음: { 웃김: true, 줄: [3] } };
+  const 줄1 = 재료.줄.find((z) => z.번호 === 1).id;
+  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답({ ...좋은, 모름줄: [{ 줄: 1, 까닭: '1초 남짓이라 못 읽었다' }] }));
+  const 채점 = (갈래) => M.채점하기(밖, { 사람판정: { 줄: { [줄1]: { 갈래, 까닭: '인사 카드 길이는 판본 틀 · 인사 카드 정본이 정한다' } } } }).채점;
+  // 셋째 갈래 「틀」 — 확인할 것으로 내리고 판정줄 · 찾음에 그대로 남는다
+  const 틀 = 채점('틀');
+  assert.equal(틀.결과, '확인할 것');
+  assert.deepEqual(틀.판정줄.map((x) => [x.줄, x.갈래]), [[줄1, '틀']]);
+  assert.equal(틀.찾음.find((f) => f.줄 === 줄1).판정, '틀');
+  // 갈래 하나는 앞과 같은 글로 남는다(옛 판정 파일 · 기록 그대로)
+  assert.deepEqual(채점('원본').판정줄.map((x) => x.갈래), ['원본']);
+  assert.deepEqual(채점(['원본']).판정줄.map((x) => x.갈래), ['원본']);
+  // 여럿 — 적은 차례대로 「 · 」로 이은 한 글
+  const 여럿 = 채점(['전제', '틀']);
+  assert.equal(여럿.결과, '확인할 것');
+  assert.deepEqual(여럿.판정줄.map((x) => x.갈래), ['전제 · 틀']);
+  assert.match(여럿.찾음.find((f) => f.줄 === 줄1).말, /판정 「전제 · 틀」/);
+  // 빈 목록 · 겹침 · 셋 밖의 갈래가 하나라도 섞이면 · 글이 아니면 내리지 않는다(고칠 것 그대로)
+  for (const 나쁜 of [[], ['틀', '틀'], ['전제', '취향'], [1], '전제 · 틀', null, { 갈래: '틀' }]) {
+    const c = 채점(나쁜);
+    assert.equal(c.결과, '고칠 것', JSON.stringify(나쁜));
+    assert.equal(c.판정줄, undefined, JSON.stringify(나쁜));
+  }
+  // 기록도 같은 글 — 눈확인을 거쳐 통과
+  const 판정 = path.join(방, '판정.json');
+  fs.writeFileSync(판정, JSON.stringify({ 줄: { [줄1]: { 갈래: ['전제', '틀'], 까닭: '한글을 못 읽음 + 인사 카드 길이' } } }));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--판정', 판정, '--기록', '--눈확인', '틀 · 전제 지적 — 판본 글로 못 고친다'])), 0);
+  const 검수 = JSON.parse(fs.readFileSync(path.join(편, '게시', '준비.json'), 'utf8')).돌림.판본.TH.검수.뜻;
+  assert.equal(검수.결과, '통과');
+  assert.deepEqual(검수.판정줄.map((x) => [x.줄, x.갈래, x.짚은수]), [[줄1, '전제 · 틀', 재료.시험관.length]]);
+});
+
 test('재료 — 글에 줄 바꿈이 있으면 「 / 」가 줄 바꿈 자리라고 알린다(빗금을 화면 결함으로 짚지 않게)', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
   const 줄 = [
