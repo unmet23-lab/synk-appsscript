@@ -239,7 +239,7 @@ test('보관 규칙 화면 최종 검수 F1 ~ F3(11-11): 의뢰서 인물 안내
 test('묶음: 손님 오프라인 목록에 내 모델 모듈(직원 브랜드 데스크는 빼고), 서버가 두 모듈을 내준다',()=>{
   const sw=read('sw.js');
   assert.match(sw,/FILES\.push\(BASE\+'my-models\.mjs'\);/);assert.doesNotMatch(sw,/'brand-desk-view\.mjs'/);
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v57-staff-board-20261113';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v58-request-tabs-20261113';/);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
   assert.match(server,/'persona-view\.mjs','my-models\.mjs','brand-desk-view\.mjs','boot-locale\.js'\]\)files\['\/pulse-app\/'\+file\]/);
 });

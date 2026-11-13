@@ -48,6 +48,8 @@ export const revisionNote=pkg=>!pkg?.days?'':pkg.photo?t('사진이 나온 뒤 {
 const LOGO={id:'logo',label:k('로고 파일'),need:true,accept:'image/*,.svg,.ai,.eps,.pdf',why:k('끝 화면과 자막에 그대로 얹어요. AI · SVG가 가장 좋고, 배경이 없는 PNG도 괜찮아요.'),kind:'logo'};
 const USE={id:'use',label:k('쓰는 모습'),accept:'image/*,video/*',why:k('여는 법, 쓰는 법이 틀리면 장면을 다시 만들어야 해요. 찍어 둔 게 없으면 한 줄로 적어 주세요.'),note:k('예) 뚜껑을 돌려 열고 손등에 펴 발라요')};
 const ETC={id:'etc',label:k('그 밖에 보낼 자료'),accept:'image/*,video/*,.svg,.ai,.eps,.pdf,.ppt,.pptx',why:k('상세페이지, 회사 소개서, 지난 광고처럼 도움이 될 것 같은 건 뭐든 좋아요.'),multiple:true};
+// 소리 파일(11-13 의뢰서 탭): 있으면만 받는다 — 없으면 영상에 맞춰 새로 만든다. 서버는 소리 파일(MP3 · WAV · M4A · AAC)을 내려받기 전용으로 받는다.
+const SOUND={id:'sound',label:k('브랜드 음악 · 로고 소리'),accept:'audio/*,video/*',why:k('늘 쓰시는 음악이나 끝에 나오는 로고 소리가 있으면 그대로 써요. 없으면 영상에 맞춰 새로 만들어요.'),kind:'sound',multiple:true};
 export const SLOTS=Object.freeze({
   product:[
     {id:'front',label:k('제품 정면 사진'),need:true,accept:'image/*',why:k('화면에 나오는 제품은 AI로 그리지 않고 이 사진으로 합성해요.'),kind:'photo',multiple:true},
@@ -55,6 +57,7 @@ export const SLOTS=Object.freeze({
     LOGO,
     {id:'label',label:k('라벨 · 패키지 인쇄 파일'),accept:'image/*,.svg,.ai,.eps,.pdf',why:k('있으면 제품 위 글자가 훨씬 또렷해요.'),kind:'logo'},
     USE,
+    SOUND,
     ETC,
   ],
   wear:[
@@ -62,24 +65,28 @@ export const SLOTS=Object.freeze({
     {id:'detail',label:k('원단 · 로고 · 디테일 사진'),need:true,accept:'image/*',why:k('가까이 찍는 컷에서 질감과 디테일이 달라지지 않게 해요.'),kind:'photo',multiple:true},
     LOGO,
     {...USE,label:k('입거나 쓰는 모습'),why:k('입는 법, 드는 법이 틀리면 장면을 다시 만들어야 해요. 찍어 둔 게 없으면 한 줄로 적어 주세요.'),note:k('예) 앞을 열어 가볍게 걸쳐 입어요')},
+    SOUND,
     ETC,
   ],
   app:[
     {id:'screens',label:k('앱 화면 캡처 · 녹화'),need:true,accept:'image/*,video/*',why:k('앱 화면도 그리지 않고 실제 화면을 얹어요. 보여 주고 싶은 화면을 순서대로 넣어 주세요.'),multiple:true},
     {...LOGO,label:k('로고 · 앱 아이콘')},
     {...USE,label:k('쓰는 순서'),why:k('어떤 순서로 쓰는지 알아야 화면을 맞게 보여 드려요. 녹화가 없으면 한 줄로 적어 주세요.'),note:k('예) 사진을 올리면 3초 뒤 결과가 떠요')},
+    SOUND,
     ETC,
   ],
   place:[
     {id:'space',label:k('공간 · 서비스 사진'),need:true,accept:'image/*,video/*',why:k('실제 공간의 분위기와 구조를 장면의 기준으로 삼아요. 석 장 이상이면 좋아요.'),kind:'photo',multiple:true},
     LOGO,
     {id:'menu',label:k('대표 메뉴 · 서비스 사진'),accept:'image/*',why:k('화면에 크게 보일 대표 장면이에요.'),kind:'photo',multiple:true},
+    SOUND,
     ETC,
   ],
   brand:[
     LOGO,
     {id:'guide',label:k('브랜드 가이드 · 회사 소개서'),accept:'image/*,.pdf,.ppt,.pptx',why:k('색과 글꼴, 쓰는 말이 정해져 있으면 그대로 따라요.'),multiple:true},
     {id:'scene',label:k('대표 사진 · 지난 광고'),accept:'image/*,video/*',why:k('지금까지의 결을 이어 갈지 바꿀지 판단할 수 있어요.'),multiple:true},
+    SOUND,
     ETC,
   ],
 });
@@ -120,6 +127,31 @@ export const WIN=Object.freeze([
   // 11-09: 「이야기로 여운을」 예시는 도담중공업(끝의 노을 · 「이 아이를 보냅니다」 12초, 소리 없음)으로 — 매진 임박은 웃음으로 이기는 편이라 여운의 예로는 어긋났다.
   {id:'story',label:k('이야기로 여운을'),note:k('끝까지 보게 하고, 끝에서 마음이 움직여요.'),work:k('도담중공업'),poster:'./assets/request/w-dodam.webp',film:'./assets/request/film-dodam.mp4',kind:k('1분 1초 · 16:9'),ratio:'16:9'},
   {id:'impact',label:k('한 장면의 임팩트로'),note:k('한 번 보면 잊히지 않는 그림 하나로 이겨요.'),work:'霜の肌理',poster:'./assets/request/w-gift-sphere.webp',film:'./assets/request/film-gift.mp4',kind:k('15초 · 9:16'),ratio:'9:16'},
+  // 셋째 길 「웃음」(11-13 의뢰서 탭). 예시는 「매진 임박」(홈쇼핑 × 공포 코미디)의 자막 없는 화면 판 12초다.
+  {id:'laugh',label:k('웃음으로 퍼지게'),note:k('보다가 웃고, 친구에게 보내고 싶어져요.'),work:k('매진 임박'),poster:'./assets/request/w-maejin-laugh.webp',film:'./assets/request/film-maejin-laugh.mp4',kind:k('1분 15초 · 16:9'),ratio:'16:9'},
+]);
+// 얼마나 과감하게(11-13). 고르지 않으면 저희가 제안한다. 무엇을 고르든 제품 사실과 피할 말은 지킨다. ID는 서버 pulse-requests.mjs BOLDS와 같다.
+export const BOLD=Object.freeze([
+  {id:'safe',label:k('정석대로'),note:k('이 업종 광고가 익숙하게 쓰는 장면 안에서, 제품을 정확하고 보기 좋게 보여 드려요.')},
+  {id:'twist',label:k('조금 다르게'),note:k('같은 업종 광고가 잘 하지 않는 장면을 하나 넣어요. 방향 두 안 가운데 하나는 정석으로 함께 보내 드려요.')},
+  {id:'wild',label:k('확 다르게'),note:k('말이 안 되는 설정까지 가 봐요. 그래도 제품 사실과 피할 말은 그대로 지켜요.')},
+]);
+// 광고에 꼭 붙여야 하는 표시가 있는 업종(11-13). 저장값은 언어와 상관없는 ID이고(서버 NOTICES와 같다 — 여기에 「해당 없어요」 none · 「잘 모르겠어요」 unsure가 더 있다),
+// 광고할 것의 종류마다 자주 해당하는 것만 꺼내 보인다. 법으로 정한 목록이 아니라 묻기 위한 갈래다 — 실제 표시 · 심의는 담당자가 확인한다.
+export const NOTICES=Object.freeze([
+  {id:'health-food',label:k('건강기능식품')},{id:'alcohol',label:k('주류')},{id:'functional-cosmetic',label:k('기능성 화장품')},{id:'beauty-device',label:k('미용 기기')},
+  {id:'medical-device',label:k('의료기기')},{id:'sanitizer',label:k('살균 · 소독 제품')},{id:'kids',label:k('어린이 제품')},{id:'finance',label:k('금융 · 투자')},
+  {id:'game',label:k('게임')},{id:'clinic',label:k('병의원')},{id:'academy',label:k('학원')},{id:'medical-pharma',label:k('의료 · 제약')},
+]);
+export const NOTICE_KINDS=Object.freeze({food:['health-food','alcohol'],beauty:['functional-cosmetic','beauty-device'],living:['medical-device','sanitizer'],fashion:['kids'],app:['finance','game'],place:['clinic','academy'],brand:['finance','medical-pharma']});
+export const noticeLabel=id=>NOTICES.find(item=>item.id===id)?.label||'';
+// 표시 업종을 골랐는가(「해당 없어요」 · 「잘 모르겠어요」 · 빈 값은 아니다).
+export const noticeOn=a=>!!noticeLabel(a.notice);
+// 목소리(11-13). 「모델이 직접」은 사람이 나올 때만 보인다. ID는 서버 VOICES와 같다.
+export const VOICES=Object.freeze([
+  {id:'narration',label:k('내레이션이 이끌어요'),note:k('화면 밖 목소리가 처음부터 끝까지 이끌어요. 대사는 글 콘티에서 먼저 보여 드려요.')},
+  {id:'model',label:k('모델이 직접 말해요'),note:k('모델이 카메라를 보고 말해요. 입 모양이 보이는 컷이라 대사는 짧게 가요.')},
+  {id:'none',label:k('말 없이 음악과 자막으로'),note:k('소리를 끄고 보는 곳에 잘 맞아요. 음악과 화면 글자로 전해요.')},
 ]);
 // 참고 광고의 좋았던 곳: 서버 허용 목록(pulse-requests.mjs POINTS)과 같은 한국어 값이다(보일 때만 번역).
 export const REFERENCE_POINTS=Object.freeze([k('전개 · 구성'),k('색감 · 빛'),k('카메라 · 속도'),k('모델 연기'),k('소리 · 음악')]);
@@ -168,9 +200,9 @@ export const emptyAnswers=()=>({
   name:'',kind:'',channels:[],paid:false,package:'',
   slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',
   audience:'',oneThing:'',action:'',
-  screenText:'',avoid:[],avoidNote:'',facts:'',
-  win:'',refs:[{url:'',points:[],why:''}],avoidFeel:'',
-  models:[],modelChoice:'',hair:'',outfit:'',
+  screenText:'',avoid:[],avoidNote:'',facts:'',notice:'',noticeText:'',
+  win:'',bold:'',refs:[{url:'',points:[],why:''}],avoidFeel:'',
+  models:[],modelChoice:'',hair:'',outfit:'',voice:'',
   date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,
   contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',
   personaRequest:{kind:'',look:'',use:'',keep:'',relation:'',consentWay:''},
@@ -179,7 +211,8 @@ export const emptyAnswers=()=>({
 // 이 칸을 모르는 옛 서버도 자동 저장을 거절하지 않게. 서버는 빠진 칸을 빈 값으로 채우므로 지운 값도 그대로 전해진다.
 // 판 3의 맞춤 인물 요청(personaRequest)도 같다 — 칸이 모두 비어 있으면 보내지 않는다.
 // 옷(outfit, 11-10)은 의뢰서가 아니라 방향을 고를 때 받는 칸이라 의뢰서에서는 늘 비어 있다 — 같은 규칙으로 보내지 않는다.
-const LATER_FIELDS=['hair','outfit','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+// 의뢰서 탭(11-13)의 과감함 · 꼭 붙일 표시 · 고지 문구 · 목소리도 같다.
+const LATER_FIELDS=['bold','notice','noticeText','voice','hair','outfit','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
 const blank=value=>value===''||value==null||Array.isArray(value)&&!value.length||typeof value==='object'&&!Array.isArray(value)&&Object.values(value).every(item=>item===''||item==null);
 // 이미지 원본 점검(브라우저에서 바로). 막지 않고, 어느 컷에 어떤 영향이 있는지만 말한다. 글은 부를 때의 언어다(화면은 그릴 때마다 다시 부른다).
 export function photoAdvice(width,height,kind){
@@ -217,11 +250,14 @@ export function briefRows(a){
     {key:k('보고 나서'),step:'message',value:a.action&&ACTIONS.find(item=>item.id===a.action)?t(ACTIONS.find(item=>item.id===a.action).label):undefined,missing:a.action?'':k('저희가 제안해요')},
     {key:k('화면 글자'),step:'words',value:a.screenText,missing:a.screenText?'':k('제품 이름만 얹어요')},
     {key:k('피할 말'),step:'words',value:[...a.avoid.map(claimText),a.avoidNote].filter(Boolean).join(', '),missing:(a.avoid.length||a.avoidNote)?'':k('없음')},
+    {key:k('꼭 붙일 표시'),step:'words',value:a.notice==='none'?t('해당 없음'):a.notice==='unsure'?t('잘 모르겠어요 · 저희가 확인해요'):noticeOn(a)?[t(noticeLabel(a.notice)),a.noticeText].filter(Boolean).join(' · '):'',missing:a.notice?'':k('저희가 확인해요')},
     {key:k('자랑할 사실'),step:'words',value:a.facts,missing:a.facts?'':k('없음')},
     {key:k('무엇으로'),step:'feel',value:win&&t(win),missing:win?'':k('저희가 제안해요')},
+    {key:k('얼마나 과감하게'),step:'feel',value:BOLD.find(item=>item.id===a.bold)?t(BOLD.find(item=>item.id===a.bold).label):undefined,missing:a.bold?'':k('저희가 제안해요')},
     {key:k('참고 광고'),step:'feel',value:refs,missing:refs?'':k('없음')},
     // 내 모델 다시 쓰기(판 4): 내 모델 화면에서 붙인 인물이면 그 이름(화면에만 있는 a.personaPick), 서버 답만 있으면(고객 방 · 직원 확인) 「내 모델 다시 쓰기」.
     {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
+    {key:k('목소리'),step:'model',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')},
     {key:k('받고 싶은 날'),step:'contact',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
     {key:k('최종 확인'),step:'contact',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
     {key:k('연락처'),step:'contact',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},

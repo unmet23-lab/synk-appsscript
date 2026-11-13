@@ -49,15 +49,19 @@ export const REQUEST_KINDS=['food','beauty','fashion','living','app','place','br
 export const REQUEST_CHANNELS=['shorts','youtube','store','screen'];
 export const REQUEST_PACKAGES=['s15','s30','s60','corp','photo','ask'];
 // 모델 정하는 법: 추천 · 사람 없이 · 새 전용 인물(custom) · 이미 있는 전용 인물(persona). 언어와 상관없는 ID다.
-const ACTIONS=['buy','install','visit','ask','remember'],WINS=['story','impact','ask'],APPROVERS=['one','many'],MODEL_CHOICES=MODEL_CHOICE_KINDS;
+const ACTIONS=['buy','install','visit','ask','remember'],WINS=['story','impact','laugh','ask'],APPROVERS=['one','many'],MODEL_CHOICES=MODEL_CHOICE_KINDS;
+// 의뢰서 탭(2026-11-13 — 더하기만): 얼마나 과감하게 · 광고에 꼭 붙일 표시가 있는 업종(none 해당 없음 · unsure 잘 모름) · 목소리. 화면 request-data.mjs의 BOLD · NOTICES · VOICES와 같은 ID다.
+const BOLDS=['safe','twist','wild'],VOICES=['narration','model','none'];
+const NOTICE_LABEL={'health-food':'건강기능식품',alcohol:'주류','functional-cosmetic':'기능성 화장품','beauty-device':'미용 기기','medical-device':'의료기기',sanitizer:'살균 · 소독 제품',kids:'어린이 제품',finance:'금융 · 투자',game:'게임',clinic:'병의원',academy:'학원','medical-pharma':'의료 · 제약'};
+const NOTICES=[...Object.keys(NOTICE_LABEL),'none','unsure'];
 const POINTS=['전개 · 구성','색감 · 빛','카메라 · 속도','모델 연기','소리 · 음악'];
-export const REQUEST_SLOTS=['front','side','logo','label','use','detail','screens','space','menu','guide','scene','etc'];
+export const REQUEST_SLOTS=['front','side','logo','label','use','detail','screens','space','menu','guide','scene','sound','etc'];
 // 초안만 받는 인물 사진 칸(판 3): 접수 뒤 프로젝트 길(receiveProjectFile)은 이 칸을 받지 않는다 — 인물 사진이 프로젝트 자료(초대 링크로 열림)로 가면 안 된다.
 const DRAFT_SLOTS=[...REQUEST_SLOTS,...PERSONA_SLOTS];
 // 다국어 · 전용 인물 판 1(2026-11-09, 기획 12-2 「답 구조」 — 더하기만): 고른 모델의 헤어(캐스팅북 헤어 1 · 2 · 3), 소통 언어,
 // 납품 언어, 대상 나라(ISO 두 글자), 견적을 보일 통화(표시만 — 값과 결제는 원화 그대로). 옛 화면이 안 보내면 빈 값으로 채운다.
 // 옷(outfit, 2026-11-10 옷 · 머리 고르기): 고른 모델의 옷 세 벌(fullbody 기본 옷 · look-1 · look-2). 의뢰서에는 칸이 없고 방향을 고를 때 받는다.
-const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','win','refs','avoidFeel','models','modelChoice','hair','outfit','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
+const ANSWER_FIELDS=['name','kind','channels','paid','package','slots','size','useNote','pageUrl','driveUrl','audience','oneThing','action','screenText','avoid','avoidNote','facts','notice','noticeText','win','bold','refs','avoidFeel','models','modelChoice','hair','outfit','voice','date','dateFree','approver','approverName','contactName','company','email','phone','consent','rights','contactLocale','outputLocales','targetMarket','quoteCurrency','personaRequest'];
 const MODEL_IDS=CASTING_MODELS.map(model=>model.id);
 const HAIRS=HAIR_IDS,OUTFITS=OUTFIT_IDS,CURRENCIES=['KRW','USD','JPY','EUR'];
 // 맞춤 인물 요청(판 3, modelChoice custom일 때만 쓰인다): 인물 종류, 원하는 인상 · 나이대 · 헤어와 참고할 점, 원하는 쓰임, 이번만 / 다음 광고에도,
@@ -71,7 +75,7 @@ function personaRequestOf(value){
 }
 const markets=value=>{const out=many(value,null,8,2);if(out.some(code=>!/^[A-Z]{2}$/.test(code)))throw fail('고른 값을 확인해 주세요.');return out;};
 
-export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',win:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',outfit:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest()};}
+export function emptyRequestAnswers(){return {name:'',kind:'',channels:[],paid:false,package:'',slots:{},size:'',useNote:'',pageUrl:'',driveUrl:'',audience:'',oneThing:'',action:'',screenText:'',avoid:[],avoidNote:'',facts:'',notice:'',noticeText:'',win:'',bold:'',refs:[],avoidFeel:'',models:[],modelChoice:'',hair:'',outfit:'',voice:'',date:'',dateFree:false,approver:'',approverName:'',contactName:'',company:'',email:'',phone:'',consent:false,rights:false,contactLocale:'',outputLocales:[],targetMarket:[],quoteCurrency:'',personaRequest:emptyPersonaRequest()};}
 // 저장(strict 아님)은 길이 · 제어문자 · 고르는 값만 본다. 칸을 쓰는 중에 형식 때문에 자동 저장이 끊기면 안 된다.
 // 형식(메일 · 번호 · 주소 · 날짜)은 보낼 때 본다. 파일 목록은 서버가 쥐고, 답에서는 「지금 없어요」 표시만 받는다.
 export function normalizeRequestAnswers(input,{strict=false}={}){
@@ -82,20 +86,26 @@ export function normalizeRequestAnswers(input,{strict=false}={}){
   const email=text(input.email,254);if(strict&&email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw fail('이메일 주소를 확인해 주세요.');
   // 점으로 나눈 번호(010.1234.5678 · +1 415.555.0134)도 받는다 — 국내 명함 · 북미에서 흔한 꼴인데 보내기 단계에서 거절되던 것(11-11 판 6 시나리오 12).
   const phone=text(input.phone,30);if(strict&&phone&&!/^[0-9+\-(). ]{7,30}$/.test(phone))throw fail('휴대폰 번호를 확인해 주세요.');
+  // 「모델이 직접 말해요」는 사람이 나올 때만 뜻이 있다 — 「사람 없이」와 함께 오면 목소리를 비운다(화면도 같은 규칙).
+  const modelChoice=one(input.modelChoice,MODEL_CHOICES),voice=one(input.voice,VOICES);
   return {
     name:text(input.name,120),kind:one(input.kind,REQUEST_KINDS),channels:many(input.channels,REQUEST_CHANNELS),paid:input.paid===true,package:one(input.package,REQUEST_PACKAGES),
     slots,size:text(input.size,120),useNote:text(input.useNote,200),pageUrl:link(input.pageUrl,strict,'제품 페이지 주소를 확인해 주세요.'),driveUrl:link(input.driveUrl,strict,'드라이브 주소를 확인해 주세요.'),
     audience:text(input.audience,300),oneThing:text(input.oneThing,300),action:one(input.action,ACTIONS),
-    screenText:text(input.screenText,300),avoid:many(input.avoid,null,12,40),avoidNote:text(input.avoidNote,300),facts:text(input.facts,300),
-    win:one(input.win,WINS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice:one(input.modelChoice,MODEL_CHOICES),hair:one(input.hair,HAIRS),outfit:one(input.outfit,OUTFITS),
+    screenText:text(input.screenText,300),avoid:many(input.avoid,null,12,40),avoidNote:text(input.avoidNote,300),facts:text(input.facts,300),notice:one(input.notice,NOTICES),noticeText:text(input.noticeText,300),
+    win:one(input.win,WINS),bold:one(input.bold,BOLDS),refs,avoidFeel:text(input.avoidFeel,200),models:many(input.models,MODEL_IDS,2),modelChoice,hair:one(input.hair,HAIRS),outfit:one(input.outfit,OUTFITS),voice:modelChoice==='none'&&voice==='model'?'':voice,
     date,dateFree:input.dateFree===true,approver:one(input.approver,APPROVERS),approverName:text(input.approverName,80),contactName:text(input.contactName,80),company:text(input.company,100),email,phone,consent:input.consent===true,rights:input.rights===true,
     contactLocale:one(input.contactLocale,LOCALES),outputLocales:many(input.outputLocales,LOCALES,LOCALES.length,8),targetMarket:markets(input.targetMarket),quoteCurrency:one(input.quoteCurrency,CURRENCIES),personaRequest:personaRequestOf(input.personaRequest),
   };
 }
 // 업로드 형식. 화면에 바로 띄우는 것은 서명을 재서 확인한 PNG · JPEG · MP4 · WebM뿐이고, 나머지는 내려받기 전용으로만 둔다.
+// 소리(MP3 · WAV · M4A · AAC, 2026-11-13 의뢰서의 「브랜드 음악 · 로고 소리」 칸)도 내려받기 전용이다 — 화면에서 틀지 않는다.
 const INLINE={'image/png':'png','image/jpeg':'jpg','video/mp4':'mp4','video/webm':'webm'};
-const ATTACHMENT=/\.(webp|heic|heif|svg|ai|eps|pdf|ppt|pptx|mov)$/i;
+const ATTACHMENT=/\.(webp|heic|heif|svg|ai|eps|pdf|ppt|pptx|mov|mp3|wav|m4a|aac)$/i;
 const ftyp=head=>head.length>=12&&head.subarray(4,8).toString('ascii')==='ftyp';
+// MPEG 소리 프레임 머리: 동기 11비트 뒤의 판(01은 없는 값) · 계층(II · III만 — 00은 ADTS, 11은 0xFF 0xFE로 시작하는 UTF-16 글과 겹친다) · 비트율(1111 없음) · 표본율(11 없음)까지 본다.
+// 형식을 속인 파일을 거르는 확인일 뿐이고, 안전은 내려받기 전용으로만 내주는 데서 지킨다.
+const mpegFrame=head=>head.length>=3&&head[0]===0xff&&(head[1]&0xe0)===0xe0&&(head[1]&0x18)!==0x08&&[0x02,0x04].includes(head[1]&0x06)&&(head[2]&0xf0)!==0xf0&&(head[2]&0x0c)!==0x0c;
 const SIGNATURES={
   webp:head=>head.subarray(0,4).toString('ascii')==='RIFF'&&head.subarray(8,12).toString('ascii')==='WEBP',
   heic:ftyp,heif:ftyp,mov:head=>ftyp(head)||['moov','mdat','wide','free'].includes(head.subarray(4,8).toString('ascii')),
@@ -105,12 +115,17 @@ const SIGNATURES={
   eps:head=>head.subarray(0,5).toString('ascii')==='%!PS-'||head.subarray(0,4).equals(Buffer.from([0xc5,0xd0,0xd3,0xc6])),
   pptx:head=>head.subarray(0,2).toString('ascii')==='PK',
   ppt:head=>head.subarray(0,4).equals(Buffer.from([0xd0,0xcf,0x11,0xe0])),
+  // MP3는 ID3 머리나 MPEG 소리 프레임 머리, AAC는 ADTS 머리(계층 00 · 표본율 칸 0~12), WAV는 RIFF…WAVE, M4A는 ftyp.
+  mp3:head=>head.subarray(0,3).toString('ascii')==='ID3'||mpegFrame(head),
+  aac:head=>head.length>=3&&head[0]===0xff&&(head[1]&0xf6)===0xf0&&((head[2]>>2)&0x0f)<=12,
+  wav:head=>head.subarray(0,4).toString('ascii')==='RIFF'&&head.subarray(8,12).toString('ascii')==='WAVE',
+  m4a:ftyp,
 };
 export function requestFileKind(mimeType,fileName){
   const name=String(fileName||'');
   if(INLINE[mimeType]){const extension=INLINE[mimeType],suffix=name.split('.').pop().toLowerCase();if([extension,...(extension==='jpg'?['jpeg']:[])].includes(suffix))return {inline:true,extension};}
   const attachment=ATTACHMENT.exec(name);if(attachment)return {inline:false,extension:'intake',type:attachment[1].toLowerCase()};
-  throw fail('이 형식은 받을 수 없어요. 사진(JPG · PNG), 영상(MP4), 로고(AI · SVG · PDF) 같은 파일로 보내 주시거나 드라이브 링크를 적어 주세요.',415);
+  throw fail('이 형식은 받을 수 없어요. 사진(JPG · PNG), 영상(MP4), 로고(AI · SVG · PDF), 소리(MP3 · WAV · M4A) 같은 파일로 보내 주시거나 드라이브 링크를 적어 주세요.',415);
 }
 // 인물 사진: 화면에 띄우는 JPG · PNG, 또는 휴대폰 사진 HEIC · WebP(내려받기 전용 — 직원이 바꿔 판으로 올린다). 영상 · 문서는 받지 않는다.
 export function personaFileKind(mimeType,fileName){
@@ -802,7 +817,10 @@ function chooseDirection(studio,request,proposal,{option,modelId,note,status,now
 const CHANNEL_MAP={shorts:['instagram','tiktok','youtube'],youtube:['youtube','website'],store:['website'],screen:['offline']};
 const PACKAGE_SECONDS={s15:15,s30:30,s60:60,corp:30};
 const OBJECTIVE={buy:'sales',install:'sales',visit:'sales',ask:'sales',remember:'brand'};
-const WIN_LABEL={story:'이야기로 여운을',impact:'한 장면의 임팩트로',ask:'맡김'};
+const WIN_LABEL={story:'이야기로 여운을',impact:'한 장면의 임팩트로',laugh:'웃음으로 퍼지게',ask:'맡김'};
+const BOLD_LABEL={safe:'정석대로',twist:'조금 다르게',wild:'확 다르게'},VOICE_LABEL={narration:'내레이션',model:'모델이 직접 말함',none:'말 없이 음악과 자막'};
+// 꼭 붙일 표시: 「해당 없어요」는 줄을 만들지 않고, 「잘 모르겠어요」는 담당자가 확인할 일로 적는다. 고지 문구는 표시 업종을 골랐을 때만 붙인다.
+const noticeLine=a=>!a.notice||a.notice==='none'?'':a.notice==='unsure'?'꼭 붙일 표시: 손님이 잘 모름 — 확인 필요':`꼭 붙일 표시: ${[NOTICE_LABEL[a.notice],a.noticeText].filter(Boolean).join(' · ')}`;
 export function carryToStrategy(strategy,a,stamp){
   const data={...strategy.data},put=(key,value)=>{if(value&&(data[key]===undefined||data[key]===''||data[key]===null||Array.isArray(data[key])&&!data[key].length))data[key]=value;};
   put('product',a.name);put('audience',a.audience);put('primaryPromise',a.oneThing);put('evidence1',a.facts);
@@ -812,7 +830,7 @@ export function carryToStrategy(strategy,a,stamp){
   put('durationSeconds',PACKAGE_SECONDS[a.package]||null);put('distribution',a.paid?'paid':'');
   put('screenCopy',a.screenText);put('destinationUrl',/^https:\/\//.test(a.pageUrl||'')?a.pageUrl:'');put('proposedDeadline',a.date);
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' — ')).filter(Boolean);
-  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean);
+  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean);
   put('notes',lines.join('\n').slice(0,3000));
   // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
   const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];

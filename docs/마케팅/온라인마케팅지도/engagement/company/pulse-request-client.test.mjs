@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {normalizeRequestAnswers,REQUEST_SLOTS,REQUEST_KINDS,REQUEST_CHANNELS,REQUEST_PACKAGES} from './pulse-requests.mjs';
-import {emptyAnswers,answersFromServer,answersForServer,briefRows,price,SLOTS,KINDS,CHANNELS,PACKAGES,MODEL_LINES,DRAFT_FILES_GONE} from './public/pulse-app/request-data.mjs';
+import {emptyAnswers,answersFromServer,answersForServer,briefRows,price,SLOTS,KINDS,CHANNELS,PACKAGES,MODEL_LINES,DRAFT_FILES_GONE,WIN,BOLD,VOICES,NOTICES,NOTICE_KINDS,noticeLabel} from './public/pulse-app/request-data.mjs';
 import {publicBackend} from './public/pulse-app/request-backend.mjs';
 import {roomRail} from './public/pulse-app/film-views.mjs';
 import {roomState,roomStage,roomModel,draftModel,deskChecks,deskModel,usesRoom,ROOM_COPY,ROOM_STAGES} from './public/pulse-app/room-view.mjs';
@@ -12,7 +12,7 @@ import {deskView} from './public/pulse-app/desk-view.mjs';
 import {deskQueue} from './public/pulse-app/room-view.mjs';
 
 // 화면과 서버가 같은 말을 쓰는지. 어긋나면 자동 저장이 조용히 끊기거나 이어 쓰기에서 답이 사라진다(Fable 설계 검토 P1-3 · P1-4).
-const full=()=>({...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],paid:true,package:'s15',slots:{logo:{none:true,files:[]},front:{files:[{id:'a',slot:'front',fileName:'a.png'}]}},size:'355ml',useNote:'뚜껑을 돌려요',pageUrl:'https://example.com/a',driveUrl:'https://example.com/d',audience:'20대',oneThing:'맛이 바뀐다',action:'buy',screenText:'톡',avoid:['갈증 해소'],avoidNote:'경쟁사',facts:'12만 개',win:'impact',refs:[{url:'https://youtu.be/x',points:['색감 · 빛'],why:'끝 장면'}],avoidFeel:'홈쇼핑',models:['M06','F02'],modelChoice:'',date:'2026-11-21',dateFree:false,approver:'many',approverName:'대표님',contactName:'김합성',company:'합성 음료',email:'a@pulse-synthetic.test',phone:'010-0000-0000',consent:true,rights:true});
+const full=()=>({...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],paid:true,package:'s15',slots:{logo:{none:true,files:[]},front:{files:[{id:'a',slot:'front',fileName:'a.png'}]}},size:'355ml',useNote:'뚜껑을 돌려요',pageUrl:'https://example.com/a',driveUrl:'https://example.com/d',audience:'20대',oneThing:'맛이 바뀐다',action:'buy',screenText:'톡',avoid:['갈증 해소'],avoidNote:'경쟁사',facts:'12만 개',notice:'alcohol',noticeText:'경고 문구',win:'impact',bold:'twist',voice:'narration',refs:[{url:'https://youtu.be/x',points:['색감 · 빛'],why:'끝 장면'}],avoidFeel:'홈쇼핑',models:['M06','F02'],modelChoice:'',date:'2026-11-21',dateFree:false,approver:'many',approverName:'대표님',contactName:'김합성',company:'합성 음료',email:'a@pulse-synthetic.test',phone:'010-0000-0000',consent:true,rights:true});
 
 test('the server accepts every field and every choice the page can send',()=>{
   assert.doesNotThrow(()=>normalizeRequestAnswers(answersForServer(emptyAnswers())));
@@ -22,6 +22,28 @@ test('the server accepts every field and every choice the page can send',()=>{
   for(const item of PACKAGES)assert.ok(REQUEST_PACKAGES.includes(item.id),item.id);
   for(const slot of Object.values(SLOTS).flat())assert.ok(REQUEST_SLOTS.includes(slot.id),slot.id);
   for(const model of CASTING_MODELS)assert.ok(MODEL_LINES[model.id],model.id);
+});
+// 의뢰서 탭(11-13): 화면이 고르게 하는 값은 서버가 받는 ID와 같고, 고른 것은 의뢰서 한 장에 줄로 보인다.
+test('request tabs: every new choice the page offers is one the server keeps, and the brief shows what was picked',()=>{
+  const sent=answersForServer(emptyAnswers());
+  for(const key of ['bold','notice','noticeText','voice'])assert.equal(key in sent,false,key+' is not sent while empty, so a server that does not know it still saves');
+  for(const item of WIN)assert.equal(normalizeRequestAnswers({...sent,win:item.id}).win,item.id);
+  for(const item of BOLD)assert.equal(normalizeRequestAnswers({...sent,bold:item.id}).bold,item.id);
+  for(const item of VOICES)assert.equal(normalizeRequestAnswers({...sent,voice:item.id}).voice,item.id);
+  for(const id of [...NOTICES.map(item=>item.id),'none','unsure'])assert.equal(normalizeRequestAnswers({...sent,notice:id}).notice,id);
+  for(const kind of KINDS)assert.ok(NOTICE_KINDS[kind.id]?.length,kind.id+' has its own notice chips');
+  for(const id of Object.values(NOTICE_KINDS).flat())assert.ok(noticeLabel(id),id);
+  for(const [group,slots]of Object.entries(SLOTS))assert.ok(slots.some(slot=>slot.id==='sound'),group+' offers the sound slot');
+  const picked={...emptyAnswers(),kind:'beauty',win:'laugh',bold:'twist',notice:'functional-cosmetic',noticeText:'심의필 제2026-0000호',voice:'narration'};
+  assert.deepEqual(['win','bold','notice','noticeText','voice'].map(key=>answersForServer(picked)[key]),['laugh','twist','functional-cosmetic','심의필 제2026-0000호','narration']);
+  const row=(a,key)=>briefRows(a).find(item=>item.key===key);
+  assert.equal(row(picked,'무엇으로').value,'웃음으로 퍼지게');
+  assert.equal(row(picked,'얼마나 과감하게').value,'조금 다르게');
+  assert.equal(row(picked,'꼭 붙일 표시').value,'기능성 화장품 · 심의필 제2026-0000호');
+  assert.equal(row(picked,'목소리').value,'내레이션이 이끌어요');
+  assert.equal(row({...picked,notice:'none'},'꼭 붙일 표시').value,'해당 없음','the wording a customer typed earlier is not shown once they say it does not apply');
+  assert.equal(row({...picked,notice:'unsure'},'꼭 붙일 표시').value,'잘 모르겠어요 · 저희가 확인해요');
+  for(const key of ['얼마나 과감하게','꼭 붙일 표시','목소리']){const empty=row(emptyAnswers(),key);assert.ok(empty.missing&&!empty.value,key+' says what happens when left empty');}
 });
 test('answers survive leaving and coming back: page, server, page, server',()=>{
   const once=normalizeRequestAnswers(answersForServer(full()));

@@ -4,7 +4,7 @@ import {mkdtemp,mkdir,rename,rm,stat,readdir,utimes,writeFile} from 'node:fs/pro
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {createCompanyApp} from './server.mjs';
-import {normalizeRequestAnswers,requestFileKind,REQUEST_LIMITS,carryToStrategy} from './pulse-requests.mjs';
+import {normalizeRequestAnswers,requestFileKind,validRequestFile,REQUEST_LIMITS,carryToStrategy} from './pulse-requests.mjs';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
 const answers=(extra={})=>({name:'오미톡 오미자 스파클링',kind:'food',channels:['shorts'],package:'s15',audience:'운동 끝나고 목마른 20대',oneThing:'한 캔에 맛이 다섯 번 바뀐다',action:'buy',screenText:'다섯 가지 맛, 톡.',avoid:['갈증 해소'],win:'impact',refs:[{url:'https://youtu.be/example',points:['카메라 · 속도'],why:''}],models:['M06'],date:'2026-11-21',approver:'one',contactName:'김합성',company:'합성 음료',email:'buyer@pulse-synthetic.test',consent:true,rights:true,...extra});
@@ -59,8 +59,48 @@ test('only signature-checked images and videos are served inline; everything els
   assert.deepEqual(requestFileKind('application/pdf','brand.pdf'),{inline:false,extension:'intake',type:'pdf'});
   assert.deepEqual(requestFileKind('image/heic','photo.HEIC'),{inline:false,extension:'intake',type:'heic'});
   assert.throws(()=>requestFileKind('application/x-iwork','deck.key'),/받을 수 없어요/);
-  assert.throws(()=>requestFileKind('audio/mpeg','voice.mp3'),/받을 수 없어요/);
+  assert.throws(()=>requestFileKind('audio/x-ms-wma','voice.wma'),/받을 수 없어요/);
   assert.throws(()=>requestFileKind('application/x-msdownload','setup.exe'),/받을 수 없어요/);
+});
+// 의뢰서 탭(11-13): 새 답 칸 넷과 웃음 길은 ID로만 받고, 옛 화면이 안 보내면 빈 값이다. 소리 파일은 내려받기 전용으로만 받는다.
+test('request tabs: boldness, required notices, voice and the laugh route are kept as ids, and old screens that send none still pass',()=>{
+  const clean=normalizeRequestAnswers(answers({win:'laugh',bold:'twist',notice:'functional-cosmetic',noticeText:'심의필 제2026-0000호',voice:'narration',slots:{sound:{none:true}}}));
+  assert.deepEqual([clean.win,clean.bold,clean.notice,clean.noticeText,clean.voice],['laugh','twist','functional-cosmetic','심의필 제2026-0000호','narration']);
+  assert.deepEqual(clean.slots,{sound:{none:true}});
+  const old=normalizeRequestAnswers(answers());assert.deepEqual([old.bold,old.notice,old.noticeText,old.voice],['','','','']);
+  for(const extra of [{bold:'loud'},{notice:'주류'},{voice:'robot'},{win:'funny'}])assert.throws(()=>normalizeRequestAnswers(answers(extra)),/고른 값/,JSON.stringify(extra));
+  for(const notice of ['none','unsure','alcohol','medical-pharma'])assert.equal(normalizeRequestAnswers(answers({notice})).notice,notice);
+  assert.throws(()=>normalizeRequestAnswers(answers({noticeText:'가'.repeat(301)})),/길이/);
+  // 「모델이 직접 말해요」는 사람이 나올 때만 뜻이 있다: 「사람 없이」와 함께 오면 목소리를 비우고, 다른 짝은 그대로 둔다.
+  assert.equal(normalizeRequestAnswers(answers({models:[],modelChoice:'none',voice:'model'})).voice,'');
+  assert.equal(normalizeRequestAnswers(answers({models:[],modelChoice:'none',voice:'narration'})).voice,'narration');
+  assert.equal(normalizeRequestAnswers(answers({voice:'model'})).voice,'model');
+});
+test('request tabs: sound files are downloads only and their first bytes are checked',()=>{
+  assert.deepEqual(requestFileKind('audio/mpeg','jingle.mp3'),{inline:false,extension:'intake',type:'mp3'});
+  for(const [name,type]of [['logo-sound.WAV','wav'],['memo.m4a','m4a'],['bed.aac','aac']])assert.deepEqual(requestFileKind('',name),{inline:false,extension:'intake',type});
+  const sound=(type,bytes)=>validRequestFile({inline:false,extension:'intake',type},'',Buffer.from(bytes));
+  assert.equal(sound('mp3',[0x49,0x44,0x33,4,0,0]),true,'ID3 tag');
+  assert.equal(sound('mp3',[0xff,0xfb,0x90,0x64]),true,'MPEG-1 Layer III frame');
+  assert.equal(sound('mp3',[0xff,0xf3,0x48,0xc4]),true,'MPEG-2 Layer III frame');
+  assert.equal(sound('mp3',[0xff,0xfe,0x41,0x00]),false,'UTF-16 text is not an MP3');
+  assert.equal(sound('mp3',[0xff,0xf1,0x50,0x80]),false,'ADTS is AAC, not MP3');
+  assert.equal(sound('mp3',[0xff,0xd8,0xff,0xe0]),false,'a JPEG renamed to .mp3');
+  assert.equal(sound('aac',[0xff,0xf1,0x50,0x80]),true);
+  assert.equal(sound('aac',[0xff,0xfb,0x90,0x64]),false);
+  assert.equal(sound('wav',[...Buffer.from('RIFF'),0,0,0,0,...Buffer.from('WAVE')]),true);
+  assert.equal(sound('wav',[...Buffer.from('RIFF'),0,0,0,0,...Buffer.from('WEBP')]),false);
+  assert.equal(sound('m4a',[0,0,0,0x20,...Buffer.from('ftypM4A ')]),true);
+  assert.equal(sound('m4a',Buffer.from('not sound at all')),false);
+});
+test('request tabs: what the customer picked reaches the staff notes, and 「해당 없어요」 adds no line',()=>{
+  const notes=extra=>carryToStrategy({revision:1,data:{castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]},normalizeRequestAnswers(answers(extra)),{at:'2026-11-13T12:00:00.000Z',author:'staff',authorName:'담당자',authorId:'u'}).data.notes;
+  const full=notes({win:'laugh',bold:'wild',voice:'none',notice:'alcohol',noticeText:'지나친 음주는 건강에 해롭습니다'});
+  assert.match(full,/무엇으로 이길지: 웃음으로 퍼지게/);assert.match(full,/얼마나 과감하게: 확 다르게/);assert.match(full,/목소리: 말 없이 음악과 자막/);
+  assert.match(full,/꼭 붙일 표시: 주류 · 지나친 음주는 건강에 해롭습니다/);
+  assert.match(notes({notice:'unsure',noticeText:'남은 글'}),/꼭 붙일 표시: 손님이 잘 모름 — 확인 필요/);
+  assert.doesNotMatch(notes({notice:'none',noticeText:'남은 글'}),/꼭 붙일 표시/);
+  assert.doesNotMatch(notes({}),/얼마나 과감하게|목소리|꼭 붙일 표시/);
 });
 test('confirming carries answers into the production design without overwriting what staff wrote',()=>{
   const strategy={revision:1,data:{primaryPromise:'담당자가 쓴 문장',castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]};
@@ -126,17 +166,22 @@ test('public writes need the same origin, the draft csrf and a live draft',async
   assert.equal(none.status,200,'asking whether a draft exists is not an error');
   assert.equal(none.data.draft,null);
 });
-test('honeypot, sound files, fake signatures and oversized declarations are refused',async t=>{
+test('honeypot, unknown formats, fake signatures and oversized declarations are refused; a real sound file comes in as a download',async t=>{
   const f=await fixture(t);
   assert.equal((await f.call('/pulse/api/request/start',{body:{website:'spam'}})).status,400);
   const draft=await f.start();
-  assert.equal((await f.upload(draft.csrf,{bytes:Buffer.from('ID3aaaaaaaaaaa'),type:'audio/mpeg',name:'voice.mp3'})).status,415);
+  assert.equal((await f.upload(draft.csrf,{bytes:Buffer.from('synthetic wma'),type:'audio/x-ms-wma',name:'voice.wma'})).status,415);
+  assert.equal((await f.upload(draft.csrf,{bytes:Buffer.from('not sound at all'),type:'audio/mpeg',name:'jingle.mp3',slot:'sound'})).status,415,'a sound name needs a sound signature');
   assert.equal((await f.upload(draft.csrf,{bytes:Buffer.from('not a png at all'),name:'fake.png'})).status,415);
   assert.equal((await f.upload(draft.csrf,{name:'mismatch.jpg'})).status,415);
   assert.equal((await f.call('/pulse/api/request/media',{raw:png,csrf:draft.csrf,headers:{'Content-Type':'image/png','X-File-Name':'a.png','X-Request-Slot':'bad-slot'}})).status,400);
   assert.equal((await f.upload(draft.csrf,{bytes:Buffer.from('MZ not a document'),type:'application/pdf',name:'brand.pdf',slot:'logo'})).status,415,'attachments are signature-checked too');
   const left=await readdir(join(f.options.dataDir,'pulse-request-media'));assert.equal(left.length,0,'refused uploads leave nothing behind');
   assert.equal((await f.upload(draft.csrf,{bytes:Buffer.from('%PDF-1.7 synthetic'),type:'application/pdf',name:'brand.pdf',slot:'logo'})).status,201);
+  const sound=await f.upload(draft.csrf,{bytes:Buffer.concat([Buffer.from('ID3'),Buffer.alloc(64)]),type:'audio/mpeg',name:'jingle.mp3',slot:'sound'});
+  assert.equal(sound.status,201,JSON.stringify(sound.data));
+  assert.deepEqual([sound.data.file.slot,sound.data.file.inline,sound.data.file.mimeType],['sound',false,'application/octet-stream'],'sound is kept as a download, never played from the page');
+  assert.equal((await f.call('/pulse/api/request/media/'+sound.data.file.id)).status,404,'and is not served back to the page');
 });
 test('a full disk stops uploads before they are written',async t=>{
   const f=await fixture(t,{pulseRequestFreeBytes:async()=>REQUEST_LIMITS.minimumFreeBytes-1}),draft=await f.start();
