@@ -137,7 +137,14 @@ pack = sys.argv[2]
 b = [x for x in 크레딧내기.boards(pack) if x["id"] == "C2"][0]
 print(json.dumps({"자리": 크레딧내기.media(pack, b)[1], "글": 크레딧내기.prompt(pack, b)[:140], "모드": 드리미나내기.mode(b) if hasattr(드리미나내기, "mode") else None}, ensure_ascii=False))
 `;
-  const m = spawnSync('python', ['-I', '-X', 'utf8', '-c', py, 굽기폴더, path.join(편, '꾸러미')], { encoding: 'utf8' });
+  // import 때 읽는 캔버스 값만 가짜로 둔다. Linux · Windows 모두 실제 로그인 홈을 보지 않는다.
+  const 시험홈 = path.join(편, '시험홈');
+  const 캔버스폴더 = path.join(시험홈, '.ai-tools', 'dreamina-canvas');
+  fs.mkdirSync(캔버스폴더, { recursive: true });
+  fs.writeFileSync(path.join(캔버스폴더, '캔버스.txt'), 'test-canvas-not-a-real-project', 'utf8');
+  const m = spawnSync('python', ['-I', '-X', 'utf8', '-c', py, 굽기폴더, path.join(편, '꾸러미')], {
+    encoding: 'utf8', env: { ...process.env, HOME: 시험홈, USERPROFILE: 시험홈 }
+  });
   assert.equal(m.status, 0, m.stderr);
   const 읽음 = JSON.parse(m.stdout.trim().split('\n').pop());
   assert.deepEqual(읽음.자리, ['start_image', 'end_image', 'image', 'audio']);
