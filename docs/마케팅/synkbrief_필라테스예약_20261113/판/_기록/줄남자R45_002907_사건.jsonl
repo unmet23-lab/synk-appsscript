@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d586-e4c4-7910-b940-b1207e277a24"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to create the still with the reference identities and the requested camera angle.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":145343,"cached_input_tokens":123136,"cache_write_input_tokens":0,"output_tokens":1578,"reasoning_output_tokens":448}}

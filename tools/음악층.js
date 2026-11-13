@@ -43,6 +43,14 @@ function 첫컴포지션(rootTsx) {
   return ids.find((id) => !/scene/i.test(id)) || ids[0] || null;
 }
 
+// 11-14: 사본의 node_modules는 공용 부품 폴더로 이은 junction이라, 통째 fs.rmSync가 그 자리에서 EPERM을 내고 멈췄다(끝정리 실패 → 다음 실행의 첫 지우기도 막힘).
+// junction만 rmdir로 먼저 끊고(가리키는 부품은 건드리지 않는다) 나머지를 지운다.
+function 사본지우기(dir) {
+  const nm = path.join(dir, 'node_modules');
+  try { if (fs.lstatSync(nm).isSymbolicLink()) fs.rmdirSync(nm); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+  fs.rmSync(dir, { recursive: true, force: true });
+}
+
 function 복사(src, dst) {
   fs.mkdirSync(dst, { recursive: true });
   for (const e of fs.readdirSync(src, { withFileTypes: true })) {
@@ -114,7 +122,7 @@ function main(argv) {
   const comp = o.comp || 첫컴포지션(path.join(원본, 'src', 'Root.tsx'));
   if (!comp) throw new Error('컴포지션 id를 못 찾았다 — --comp로 준다');
   const 사본 = path.join(os.tmpdir(), 'synk-음악층', path.basename(편));
-  fs.rmSync(사본, { recursive: true, force: true });
+  사본지우기(사본);
   try {
     복사(원본, 사본);
     fs.symlinkSync(fs.realpathSync(path.join(원본, 'node_modules')), path.join(사본, 'node_modules'), 'junction');
@@ -139,7 +147,7 @@ function main(argv) {
     }
     return 결과.꺼짐.length ? 1 : 0;
   } finally {
-    if (!o.남김) fs.rmSync(사본, { recursive: true, force: true });
+    if (!o.남김) 사본지우기(사본);
   }
 }
 
