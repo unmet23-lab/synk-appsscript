@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # B43 마감(B44 판을 옮김): 렌더(섞은 소리) → 통합 −14.5 LUFS · 봉우리 −1.5 dBFS로 맞춘 master.wav → 그 한 줄만 깔아 다시 렌더(PCM에서 바로 AAC 384k).
+# 11-13: 조용한 편이라 기본 320k로 담으면 실제 317kbps(게시 하한 320 아래) — 마감 판만 --audio-bitrate 384k(현장 노트 영상 11-04).
 #   bash scripts/마감.sh <판 이름> <마스터.mp4>      (remotion 폴더에서)
 set -e
 N=$1; OUT=$2
@@ -10,7 +11,7 @@ I=$(meas out/${N}_raw.mp4); G=$(python -c "print(round(-14.5-($I),2))")
 ffmpeg -v error -y -i out/${N}_raw.mp4 -vn -af "volume=${G}dB,alimiter=limit=0.84:level=false:attack=1:release=60" -ar 48000 -c:a pcm_s24le public/master.wav
 I2=$(meas public/master.wav); G2=$(python -c "print(round($G+(-14.5-($I2)),2))")
 ffmpeg -v error -y -i out/${N}_raw.mp4 -vn -af "volume=${G2}dB,alimiter=limit=0.84:level=false:attack=1:release=60" -ar 48000 -c:a pcm_s24le public/master.wav
-REMOTION_MASTER=1 npx remotion render src/index.ts b43 out/${N}_m.mp4 --concurrency 6 2>&1 | tail -1
+REMOTION_MASTER=1 npx remotion render src/index.ts b43 out/${N}_m.mp4 --concurrency 6 --audio-bitrate 384k 2>&1 | tail -1
 ffmpeg -v error -y -i out/${N}_raw.mp4 -i out/${N}_m.mp4 -map 0:v -map 1:a -c copy -movflags +faststart "$OUT"
 rm -f public/master.wav
 ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of csv=p=0 "$OUT"

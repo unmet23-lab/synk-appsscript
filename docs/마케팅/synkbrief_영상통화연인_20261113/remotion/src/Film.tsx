@@ -84,7 +84,7 @@ const Label: React.FC = () => {
   const f = useCurrentFrame();
   const end = f >= sec(S.end);
   const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : 1;
-  return <div style={{ position: 'absolute', left: X, top: 300, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · 실제 사건을 바탕으로 한 장면이에요' : '재연 · 인물은 모두 AI 가상 인물 · 상황은 각색'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 300, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · 실제 사건을 바탕으로 한 장면이에요' : '재연 장면이에요 · 상황은 각색'}</div>;
 };
 
 export const Film: React.FC = () => {
