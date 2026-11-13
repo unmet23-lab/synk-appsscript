@@ -262,3 +262,27 @@ test('최근 창(30일)을 넘긴 옛 오답만 남으면 카드가 없다',()=>
  const summary=game.summary(),events=game.events(),map=buildPositionMap({summary,events});
  assert.equal(buildMissedSpot({map,summary,events,now:at}),null);
 });
+
+test('1 · 7 · 30일 줄: 지금 · 다가올 창이 있으면 ○(확인한 수도 함께), 확인만 남으면 ●, 확인 없이 다 지났으면 줄 없음(카본 A1)',()=>{
+ const run=play([RECORDED.first,RECORDED.second]),now=run.now,DAY=86400000;
+ const item=(window,status,dueAt)=>({gameId:'world-practice',measure:{skillId:NEG},window,status,dueAt:new Date(dueAt).toISOString(),sourceAt:'2026-11-14T00:00:00.000Z'});
+ const at=(...rows)=>step(cardOf(run,{projection:{items:rows},now}).card,'delayed');
+ let row=at(item('d1','observed',now-DAY),item('d7','not_due',now+5*DAY),item('d30','not_due',now+28*DAY));
+ assert.equal(row.state,'planned');assert.equal(row.observed,1);assert.equal(row.due,false);assert.ok(row.dueAt);
+ const html=renderMissedSpot(cardOf(run,{projection:{items:[item('d1','observed',now-DAY),item('d7','not_due',now+5*DAY)]},now}).card,helpers('ko'));
+ assert.match(html,/1번 다시 확인함 · .+ 다시 확인 · 아래 「시간을 두고 다시 확인」/);
+ row=at(item('d1','observed',now-30*DAY),item('d7','observed',now-25*DAY),item('d30','observed',now-DAY));
+ assert.equal(row.state,'done');assert.equal(row.observed,3);
+ row=at(item('d1','observed',now-6*DAY),item('d7','due',now-DAY),item('d30','not_due',now+20*DAY));
+ assert.equal(row.state,'planned');assert.equal(row.due,true);assert.equal(row.dueAt,null);
+ assert.equal(at(item('d1','missed',now-30*DAY),item('d7','unavailable',now-25*DAY),item('d30','missed',now-DAY)),null);
+});
+
+test('화면: 다시 만나기 줄의 점은 상태를 읽어 준다 · 영어 새 문항 하나는 단수(카본 A3 · A4)',()=>{
+ const {card}=cardOf(play([RECORDED.first,RECORDED.second]),{homework:[{skillId:NEG,shortage:false}]});
+ const html=renderMissedSpot(card,helpers('ko'));
+ assert.match(html,/<li data-step="spot" data-state="done"><i class="wmis-dot" role="img" aria-label="기록에 있는 일"><\/i>/);
+ assert.match(html,/<li data-step="homework" data-state="planned"><i class="wmis-dot" role="img" aria-label="다음 차례"><\/i>/);
+ assert.equal(tr('position.missed.practice.done',{n:1,right:1},'en'),'1 new question · 1 right on your own');
+ assert.equal(tr('position.missed.practice.done',{n:3,right:2},'en'),'3 new questions · 2 right on your own');
+});

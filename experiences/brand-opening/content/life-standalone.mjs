@@ -24929,7 +24929,8 @@ function msDelayedStep({ skillId, projection, practiceOpen, now }) {
   if (rows2.length) {
     const due = rows2.find((row) => row.status === "due"), observed = rows2.filter((row) => row.status === "observed").length;
     const upcoming = rows2.filter((row) => row.status === "not_due" && Number.isFinite(Date.parse(row.dueAt)) && Date.parse(row.dueAt) >= now).sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt))[0];
-    return { step: "delayed", state: observed ? "done" : "planned", observed, due: !!due, window: (due || upcoming)?.window ?? null, dueAt: upcoming?.dueAt ?? null };
+    if (!due && !upcoming && !observed) return null;
+    return { step: "delayed", state: due || upcoming ? "planned" : "done", observed, due: !!due, window: (due || upcoming)?.window ?? null, dueAt: due ? null : upcoming?.dueAt ?? null };
   }
   return practiceOpen ? { step: "delayed", state: "planned", observed: 0, due: false, window: null, dueAt: null } : null;
 }
@@ -25011,7 +25012,11 @@ function renderMissedSpot(card, { t: t3, has = () => true, formatDate: formatDat
     }
     if (row.step === "practice") return t3("position.missed.practice.done", { n: row.n, right: row.right });
     if (row.step === "homework") return t3("position.missed.homework.planned");
-    if (row.step === "delayed") return row.due ? t3("position.missed.delayed.due") : row.dueAt ? t3("position.missed.delayed.next", { date: day(row.dueAt) }) : row.observed ? t3("position.missed.delayed.observed", { n: row.observed }) : t3("position.missed.delayed.planned");
+    if (row.step === "delayed") {
+      const next = row.due ? t3("position.missed.delayed.due") : row.dueAt ? t3("position.missed.delayed.next", { date: day(row.dueAt) }) : "";
+      const done = row.observed ? t3("position.missed.delayed.observed", { n: row.observed }) : "";
+      return [done, next].filter(Boolean).join(" \xB7 ") || t3("position.missed.delayed.planned");
+    }
     return "";
   };
   const stepName = (row) => t3(row.step === "spot" ? "position.missed.step.spot" : row.step === "again" ? "position.missed.step.again" : row.step === "practice" ? "position.missed.step.practice" : row.step === "homework" ? "position.missed.step.homework" : "position.missed.step.delayed");
@@ -25020,7 +25025,7 @@ function renderMissedSpot(card, { t: t3, has = () => true, formatDate: formatDat
     return `<div data-layer="${row.layer}"><dt>${msEscape(t3(row.layer === "line" ? "position.missed.layer.line" : "position.missed.layer.direction"))}</dt><dd>${body}<small>${msEscape(share(row))}</small></dd></div>`;
   }).join("");
   const rows2 = card.again.filter((row) => MS_STEPS.includes(row.step));
-  const steps = rows2.map((row) => `<li data-step="${row.step}" data-state="${row.state === "done" ? "done" : "planned"}"><i class="wmis-dot" aria-hidden="true"></i><span class="wmis-step">${msEscape(stepName(row))}</span><span class="wmis-what">${msEscape(stepText(row))}</span></li>`).join("");
+  const steps = rows2.map((row) => `<li data-step="${row.step}" data-state="${row.state === "done" ? "done" : "planned"}"><i class="wmis-dot" role="img" aria-label="${msEscape(t3(row.state === "done" ? "position.missed.legend.done" : "position.missed.legend.planned"))}"></i><span class="wmis-step">${msEscape(stepName(row))}</span><span class="wmis-what">${msEscape(stepText(row))}</span></li>`).join("");
   const states = new Set(rows2.map((row) => row.state === "done" ? "done" : "planned"));
   const legend = steps ? `<p class="wmis-legend">${["done", "planned"].filter((state) => states.has(state)).map((state) => `<span data-state="${state}"><i class="wmis-dot" aria-hidden="true"></i>${msEscape(t3(state === "done" ? "position.missed.legend.done" : "position.missed.legend.planned"))}</span>`).join("")}</p>` : "";
   let route = null;

@@ -553,7 +553,7 @@ export default {
  'position.missed.again.incorrect':{ko:'같은 종류 새 손님 · 다시 놓침',en:'New guest of the same kind · missed again',mn:'Ижил төрлийн шинэ зочин · дахин алдсан'},
  'position.missed.again.other':{ko:'같은 종류 새 손님을 만남',en:'Met a new guest of the same kind',mn:'Ижил төрлийн шинэ зочинтой уулзсан'},
  'position.missed.again.left':{ko:'같은 종류 새 손님 {n}명이 아직 남아 있어요',en:{one:'1 new guest of the same kind not met yet',other:'{n} new guests of the same kind not met yet'},mn:'Ижил төрлийн шинэ зочин: {n} үлдсэн'},
- 'position.missed.practice.done':{ko:'새 문항 {n}개 · {right}개 혼자 맞힘',en:'{n} new questions · {right} right on your own',mn:'Шинэ асуулт: {n} · бие даан зөв хариулсан: {right}'},
+ 'position.missed.practice.done':{ko:'새 문항 {n}개 · {right}개 혼자 맞힘',en:{one:'1 new question · {right} right on your own',other:'{n} new questions · {right} right on your own'},mn:'Шинэ асуулт: {n} · бие даан зөв хариулсан: {right}'},
  'position.missed.homework.planned':{ko:'이 항목 새 문항',en:'New questions on this skill',mn:'Энэ чадварын шинэ асуулт'},
  'position.missed.delayed.planned':{ko:'짧은 연습 첫 답부터 새 문항으로 다시 확인',en:'New questions, timed from your first short-practice answer',mn:'Богино дасгалын анхны хариултаас эхлэн шинэ асуултаар дахин шалгана'},
  'position.missed.delayed.due':{ko:'지금 확인할 수 있어요 · 아래 「시간을 두고 다시 확인」',en:'Ready to check now · see “Check again after a break” below',mn:'Одоо шалгах боломжтой · доорх «Хэсэг хугацааны дараа дахин шалгах» хэсэгт'},

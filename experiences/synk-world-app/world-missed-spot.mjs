@@ -155,7 +155,10 @@ function msDelayedStep({skillId,projection,practiceOpen,now}){
  if(rows.length){
   const due=rows.find(row=>row.status==='due'),observed=rows.filter(row=>row.status==='observed').length;
   const upcoming=rows.filter(row=>row.status==='not_due'&&Number.isFinite(Date.parse(row.dueAt))&&Date.parse(row.dueAt)>=now).sort((a,b)=>Date.parse(a.dueAt)-Date.parse(b.dueAt))[0];
-  return {step:'delayed',state:observed?'done':'planned',observed,due:!!due,window:(due||upcoming)?.window??null,dueAt:upcoming?.dueAt??null};
+  // 지금 확인할 창이나 다가올 창이 있으면 다음 차례(○ — 이미 확인한 수는 글에 함께), 남은 창 없이 확인한 것만 있으면 기록에 있는 일(●).
+  // 확인 없이 창이 다 지났으면(기간 지남 · 판단 보류) 이 줄을 두지 않는다 — 판의 「시간을 두고 다시 확인」 카드가 창마다 보인다(카본 A1).
+  if(!due&&!upcoming&&!observed)return null;
+  return {step:'delayed',state:due||upcoming?'planned':'done',observed,due:!!due,window:(due||upcoming)?.window??null,dueAt:due?null:upcoming?.dueAt??null};
  }
  return practiceOpen?{step:'delayed',state:'planned',observed:0,due:false,window:null,dueAt:null}:null;
 }
@@ -229,7 +232,11 @@ export function renderMissedSpot(card,{t,has=()=>true,formatDate=null,practice=n
   }
   if(row.step==='practice')return t('position.missed.practice.done',{n:row.n,right:row.right});
   if(row.step==='homework')return t('position.missed.homework.planned');
-  if(row.step==='delayed')return row.due?t('position.missed.delayed.due'):row.dueAt?t('position.missed.delayed.next',{date:day(row.dueAt)}):row.observed?t('position.missed.delayed.observed',{n:row.observed}):t('position.missed.delayed.planned');
+  if(row.step==='delayed'){
+   const next=row.due?t('position.missed.delayed.due'):row.dueAt?t('position.missed.delayed.next',{date:day(row.dueAt)}):'';
+   const done=row.observed?t('position.missed.delayed.observed',{n:row.observed}):'';
+   return [done,next].filter(Boolean).join(' · ')||t('position.missed.delayed.planned');
+  }
   return '';
  };
  const stepName=row=>t(row.step==='spot'?'position.missed.step.spot':row.step==='again'?'position.missed.step.again':row.step==='practice'?'position.missed.step.practice':row.step==='homework'?'position.missed.step.homework':'position.missed.step.delayed');
@@ -239,7 +246,7 @@ export function renderMissedSpot(card,{t,has=()=>true,formatDate=null,practice=n
   return `<div data-layer="${row.layer}"><dt>${msEscape(t(row.layer==='line'?'position.missed.layer.line':'position.missed.layer.direction'))}</dt><dd>${body}<small>${msEscape(share(row))}</small></dd></div>`;
  }).join('');
  const rows=card.again.filter(row=>MS_STEPS.includes(row.step));
- const steps=rows.map(row=>`<li data-step="${row.step}" data-state="${row.state==='done'?'done':'planned'}"><i class="wmis-dot" aria-hidden="true"></i><span class="wmis-step">${msEscape(stepName(row))}</span><span class="wmis-what">${msEscape(stepText(row))}</span></li>`).join('');
+ const steps=rows.map(row=>`<li data-step="${row.step}" data-state="${row.state==='done'?'done':'planned'}"><i class="wmis-dot" role="img" aria-label="${msEscape(t(row.state==='done'?'position.missed.legend.done':'position.missed.legend.planned'))}"></i><span class="wmis-step">${msEscape(stepName(row))}</span><span class="wmis-what">${msEscape(stepText(row))}</span></li>`).join('');
  const states=new Set(rows.map(row=>row.state==='done'?'done':'planned'));
  const legend=steps?`<p class="wmis-legend">${['done','planned'].filter(state=>states.has(state)).map(state=>`<span data-state="${state}"><i class="wmis-dot" aria-hidden="true"></i>${msEscape(t(state==='done'?'position.missed.legend.done':'position.missed.legend.planned'))}</span>`).join('')}</p>`:'';
  let route=null;try{route=practice?.(id)||null;}catch{route=null;}
