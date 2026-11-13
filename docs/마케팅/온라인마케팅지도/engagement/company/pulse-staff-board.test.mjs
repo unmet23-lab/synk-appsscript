@@ -112,6 +112,14 @@ test('옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이
   const turn=id=>html.match(new RegExp(`class="project-tile staff-card is-(\\w+)[^"]*" data-action="open-project" data-id="${id}"`))?.[1];
   assert.deepEqual(['blank','drafting','asked','look','fix','sent'].map(turn),['us','us','them','them','us','done']);
   assert.match(html,/<p class="staff-meter[^"]*"><b>3<\/b><span>우리 차례<small>/,'큰 숫자 「우리 차례」는 설계 전 · 다듬는 중 · 고칠 차례 셋');
+  // 설계 전이라도 손님에게 보낸 확인 요청이 답을 기다리면 손님 차례 — 납품 규격 확인 · 준비 자료(Fable -3 P3)
+  const pending=picker({mode:'staff',user:{id:'u'},workspace:{canWrite:true,projects:[
+    {...legacyProject('specs','planning'),studio:{deliverables:{revision:2,request:{deliverableRevision:2,at:ago(5)},confirmation:{deliverableRevision:1}}}},
+    {...legacyProject('kick','received'),kickoff:{enabled:true,status:'waiting'}},
+    {...legacyProject('specs-done','planning'),studio:{deliverables:{revision:2,request:{deliverableRevision:2},confirmation:{deliverableRevision:2}}}},
+  ]}});
+  const pendingTurn=id=>pending.match(new RegExp(`class="project-tile staff-card is-(\\w+)[^"]*" data-action="open-project" data-id="${id}"`))?.[1];
+  assert.deepEqual(['specs','kick','specs-done'].map(pendingTurn),['them','them','us'],'손님이 이미 확인한 납품 규격은 기다림이 아니다');
   // 판정이 없거나 깨지면 단계 칸으로(시안 확인은 손님, 그 앞은 우리), 최종 전달은 판정과 상관없이 끝
   assert.equal(staffBoard([legacyProject('a','producing')],NOW).ours[0].id,'a');
   assert.equal(staffBoard([legacyProject('a','producing')],NOW,{legacyTurn:()=>{throw new Error('x');}}).ours[0].id,'a');
