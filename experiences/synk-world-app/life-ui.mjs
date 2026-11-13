@@ -545,7 +545,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    paint(t('life.reviewResultTitle'),`<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print('review')}<small class="life-poster-label">RESULT · REVIEW</small><strong class="life-poster-word">${t('life.reviewDoneWord')}</strong><h3 class="life-poster-sub">${t('life.reviewMet',{n:items.length||run.ids.length})}</h3></section>${learnedList(items,t('life.reviewedList'),listHead(),items.some(i=>i.tone==='ok')?t('life.reviewSpacing'):'')}</div><div class="life-actions"><button class="felt-button" data-life-home>${t('life.toTown')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-next>${t('life.nextLesson')}</button></div>`,{type:'life-review-complete',tutorPhase:'complete'});
    celebrate();return;
   }
-  const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){helped=run.pendingHelp?.[id]===true;helpBy=helped?'user':null;}
+  const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){helped=getProgress().reviewHelped(id);helpBy=helped?'user':null;}
   context={lessonId:l.id,phase:'review',questionIndex:index,reviewId:id,reviewQuestion:q};
   // 거울: 답하지 않은 새 상황 복습이 보였다(미리 본 도움이 있으면 그 도움도).
   if(!lastFeedback)trail.shown(reviewSlot(run.id,id),engineItem(l,original,true),{helped});

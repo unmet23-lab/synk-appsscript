@@ -16069,6 +16069,7 @@ var LIFE_PROGRESS_VERSION = 1;
 var MINUTE = 6e4;
 var DAY = 864e5;
 var INTERVALS = [1, 3, 7, 14, 30];
+var HELP_FRESH = 30 * MINUTE;
 var clone2 = (value) => JSON.parse(JSON.stringify(value));
 var fail = (code, message) => Object.assign(new Error(message || code), { code });
 var safeId = (value) => typeof value === "string" && /^[a-z0-9][a-z0-9_-]{0,119}$/i.test(value);
@@ -16369,13 +16370,26 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     if (engine) return engine.ids.slice(0, Math.max(0, Math.min(100, limit))).map((id) => clone2(state.reviews[id]));
     return Object.values(state.reviews).filter((v) => v.dueAt <= horizon).sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id)).slice(0, Math.max(0, Math.min(100, limit))).map(clone2);
   }
-  function staleHelp(run = state.activeReview, at = now(), engine = judged()) {
-    return !!engine && !!run && dailyTime(run.startedAt) && dailyTime(at) && lifeDayKey(run.startedAt) !== lifeDayKey(at) && run.ids.some((id) => !run.answers[id] && run.pendingHelp?.[id] === true);
+  const freshHelp = (marked, at) => dailyTime(marked) && dailyTime(at) && (lifeDayKey(marked) === lifeDayKey(at) || Math.abs(at - marked) <= HELP_FRESH);
+  function helpNow(run, id, at = now(), engine = judged()) {
+    if (run?.pendingHelp?.[id] !== true) return false;
+    if (!engine) return true;
+    const marked = run.pendingHelpAt?.[id];
+    return !dailyTime(marked) || freshHelp(marked, at);
+  }
+  function helpExpired(run, engine) {
+    const first = run?.ids.find((id) => !run.answers[id]);
+    return !!first && run.pendingHelp?.[first] === true && !helpNow(run, first, now(), engine);
+  }
+  function reviewHelped(id) {
+    check3();
+    const run = state.activeReview;
+    return !!run && run.ids.includes(id) && helpNow(run, id);
   }
   function startReview(limit = 6, preferredId = null, allowedIds = null, { soon = false, ids: chosen = null } = {}) {
     check3();
     const existing = state.activeReview;
-    if (existing && existing.ids.some((id) => !existing.answers[id]) && !staleHelp(existing)) return clone2(existing);
+    if (existing && existing.ids.some((id) => !existing.answers[id])) return clone2(existing);
     if (allowedIds !== null && (!Array.isArray(allowedIds) || allowedIds.length > 100 || new Set(allowedIds).size !== allowedIds.length || allowedIds.some((id) => !safeId(id) || !state.reviews[id]))) throw TypeError("Invalid review selection");
     if (chosen !== null && (!Array.isArray(chosen) || !chosen.length || chosen.length > 100 || new Set(chosen).size !== chosen.length || chosen.some((id) => !safeId(id) || !state.reviews[id]))) throw TypeError("Invalid review selection");
     if (soon && allowedIds === null && chosen === null) throw TypeError("An early review needs its expressions");
@@ -16397,15 +16411,11 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     if (!run || !run.ids.includes(id)) throw TypeError("Invalid review help");
     if (run.answers[id]) return clone2(run);
     const engine = judged(), at = now();
-    if (seenAt !== void 0 && engine && !(dailyTime(seenAt) && dailyTime(at) && lifeDayKey(seenAt) === lifeDayKey(at))) return clone2(run);
-    const moved = !!engine && dailyTime(run.startedAt) && dailyTime(at) && lifeDayKey(run.startedAt) !== lifeDayKey(at);
-    if (!moved && run.pendingHelp?.[id]) return clone2(run);
+    if (seenAt !== void 0 && engine && !freshHelp(seenAt, at)) return clone2(run);
+    if (helpNow(run, id, at, engine)) return clone2(run);
     const next = clone2(state);
-    if (moved) {
-      next.activeReview.startedAt = at;
-      next.activeReview.pendingHelp = {};
-    }
     next.activeReview.pendingHelp = { ...next.activeReview.pendingHelp || {}, [id]: true };
+    if (engine) next.activeReview.pendingHelpAt = { ...next.activeReview.pendingHelpAt || {}, [id]: at };
     commit(next);
     return clone2(next.activeReview);
   }
@@ -16415,7 +16425,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     if (!run || runId && run.id !== runId || !run.ids.includes(keyId) || typeof correct !== "boolean" || typeof helped !== "boolean") throw TypeError("Invalid review answer");
     if (run.answers[keyId]) return { duplicate: true, done: run.ids.every((id2) => run.answers[id2]), remaining: run.ids.filter((id2) => !run.answers[id2]).length };
     const at = now(), guided = dailyTime(at) && state.daily?.days[lifeDayKey(at)]?.items[state.reviews[keyId].questionId]?.guidedAt !== void 0;
-    helped = helped || run.pendingHelp?.[keyId] === true || guided;
+    helped = helped || helpNow(run, keyId, at) || guided;
     const next = clone2(state), review = next.reviews[keyId], difficult = !correct || helped;
     review.streak = difficult ? 0 : review.streak + 1;
     review.lapses += difficult ? 1 : 0;
@@ -16624,8 +16634,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       dueExpressions: dueExpressionCount(due),
       dueReviews: due.slice(0, 6),
       nextReviewAt: engine ? engine.nextAt ?? null : Object.values(state.reviews).length ? Math.min(...Object.values(state.reviews).map((v) => v.dueAt)) : null,
-      // dueRenew: 다음 복습은 새 판으로 열린다(staleHelp — 홈 튜터가 「오늘은 네가 먼저」를 고를 때 읽는다).
-      ...engine ? { dueState: engine.state, dueIds: [...engine.ids], dueTimes: [...engine.times ?? []], dueUpcoming: (engine.upcoming ?? []).map((row) => ({ ...row })), dueRenew: staleHelp(state.activeReview, now(), engine) } : {},
+      ...engine ? { dueState: engine.state, dueIds: [...engine.ids], dueTimes: [...engine.times ?? []], dueUpcoming: (engine.upcoming ?? []).map((row) => ({ ...row })), helpExpired: helpExpired(state.activeReview, engine) } : {},
       packs: packs.map((pack) => {
         const ids = (pack.lessons || []).map((value) => typeof value === "string" ? value : value.id);
         return { id: pack.id, completed: ids.filter((id) => state.lessons[id]?.completedAt != null).length, total: ids.length };
@@ -16667,6 +16676,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     dueReviews,
     startReview,
     markReviewHelp,
+    reviewHelped,
     answerReview,
     recordGuidedPractice,
     markDayComplete,
@@ -18223,7 +18233,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
     const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q3) => q3.id === record2.questionId), q2 = original.review;
     if (!lastFeedback) {
-      helped = run.pendingHelp?.[id] === true;
+      helped = getProgress().reviewHelped(id);
       helpBy = helped ? "user" : null;
     }
     context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q2 };

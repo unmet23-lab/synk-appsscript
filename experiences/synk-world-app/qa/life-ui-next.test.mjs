@@ -1,6 +1,6 @@
 // 새 길(셸이 learning.next를 넘긴 문서 — 4-2)의 생활 화면을 진짜 판정(world-life-next.mjs lifeDue)과 함께 돌려, Fable 5.2 합친 끝 판
 // (atlas-redesign-stage4-acct-life-final-20261113)에서 고친 동작을 못박는다 — lifeDue ①(놓친 복습은 혼자 맞힐 때까지 · 그 답 1분 뒤) ·
-// F3(앞선 날의 도움 판은 새 판으로 — 요약 dueRenew · 홈 튜터 tryAlone) · F5(돌아온 표현 수는 표현 글로 묶은 수) · F7(새 판 겉 prepare() ·
+// F3(앞선 날의 도움은 오늘 도움이 아니다 — 하던 판은 잇고, 요약 helpExpired · 홈 튜터 tryAlone) · F5(돌아온 표현 수는 표현 글로 묶은 수) · F7(새 판 겉 prepare() ·
 // 판이 바뀌면 첫 문항 전 화면도 닫힘) · 넘친 #6(튜터 창이 열려 있으면 다시 그리기를 미룸 · 허브 · 팩은 엔진으로 서는 때 한 번 · 초점은 같은
 // 생활 단추로) · #7(확인 중 복습 첫 화면은 튜터 단계 없음) · #5 · #9(새 길 화면 글 — 날까지만 · 「하루 안에 한 번 더」 · 확인 중 · 설정 도움의
 // helpBy). 틀은 life-ui-off.test.mjs(가짜 문서 · 클릭 듣개 · press · playLesson · playReview · node:test의 Date 흉내)이고, 홈은 실제
@@ -393,8 +393,8 @@ test('lifeDue ① — 놓친 복습(lapses > 0 · streak 0)은 혼자 맞힐 때
 });
 
 // F3 한 바퀴 — 레슨에서 한 문항을 놓치고 → 2분 뒤 홈 튜터 「다시 살필 표현」(difficult) → 홈 「이 표현 같이 연습」이 그 표현 하나의 판(도움
-// 표시)을 열고 → 안내 연습 성공을 적고 그 판은 답하지 않는다 → 다음 날 문서를 다시 열면 요약 dueRenew · 홈 튜터 「오늘은 네가 먼저」(recall ·
-// tryAlone)이고 복습은 새 판(도움 표시 없음)으로 열려 혼자 맞힌 답이 그대로 적힌다(streak 1) → 홈 튜터가 더는 「다시 살필 표현」이 아니다.
+// 표시)을 열고 → 안내 연습 성공을 적고 그 판은 답하지 않는다 → 다음 날 문서를 다시 열면 요약 helpExpired · 홈 튜터 「오늘은 네가 먼저」(recall ·
+// tryAlone)이고 복습은 하던 판을 잇되 앞선 날 표시는 오늘 도움이 아니라 혼자 맞힌 답이 그대로 적힌다(streak 1) → 홈 튜터가 더는 「다시 살필 표현」이 아니다.
 function helpedDayThenAlone(t0, { unit }) {
   t0.mock.timers.enable({ apis: ['Date'], now: START });
   const progress = freshProgress();
@@ -431,7 +431,7 @@ function helpedDayThenAlone(t0, { unit }) {
     assert.deepEqual(helpedRun.ids, [missed.review.id], '그 표현 하나의 판');
     assert.deepEqual(helpedRun.pendingHelp, { [missed.review.id]: true }, '미리 본 도움 표시');
     assert.equal(w.complete()(missed.id, 'marin').duplicate, false, '안내 연습 성공을 적는다');
-    assert.equal(w.ui.summary().dueRenew, false, '같은 날에는 그 판을 잇는다(dueRenew 아님)');
+    assert.equal(w.ui.summary().helpExpired, false, '같은 날에는 그 도움이 지금 도움이다(helpExpired 아님)');
     assert.equal(progress.startReview().id, helpedRun.id, '같은 날 — 그 판 그대로');
   } finally {
     w.ui.dispose();
@@ -446,7 +446,7 @@ function helpedDayThenAlone(t0, { unit }) {
   w = lifeOn({ progress });
   try {
     const s = w.ui.summary();
-    assert.equal(s.dueRenew, true, '요약 dueRenew — 앞선 날의 도움 판은 새 판으로');
+    assert.equal(s.helpExpired, true, '요약 helpExpired — 앞선 날의 도움은 오늘 도움이 아니다');
     assert.deepEqual(s.dueIds, [missed.review.id], unit ? '①이 그 단위를 센다 — ③이 다른 장면으로 바꾸지 않는다' : '놓친 것이 돌아왔다');
     const recall = tutorPick(w, progress);
     assert.deepEqual([recall.kind, recall.id, recall.memory?.tryAlone], ['recall', missed.id, true], '홈 튜터 — 오늘은 네가 먼저(tryAlone)');
@@ -454,8 +454,9 @@ function helpedDayThenAlone(t0, { unit }) {
     w.ui.reviewStart();
     assert.equal(tally(w, 'next:prepare') - prepared, 1, 'F7 — 복습도 새 판 겉으로 열면 prepare()');
     const run = progress.exportSnapshot().activeReview;
-    assert.notEqual(run.id, helpedRun.id, '앞선 날의 판을 잇지 않고 새 판');
-    assert.deepEqual([run.ids, run.pendingHelp], [[missed.review.id], {}], '새 판에는 도움 표시가 없다');
+    assert.equal(run.id, helpedRun.id, '하던 판을 그대로 잇는다');
+    assert.deepEqual(run.ids, [missed.review.id]);
+    assert.equal(progress.reviewHelped(missed.review.id), false, '앞선 날의 도움 표시는 오늘 도움이 아니다');
     playReview(w);
     assert.equal(progress.exportSnapshot().activeReview.answers[missed.review.id].helped, false, '혼자 맞힌 답 그대로');
     assert.equal(progress.exportSnapshot().reviews[missed.review.id].streak, 1, '그 기록 streak 1');
@@ -470,15 +471,15 @@ function helpedDayThenAlone(t0, { unit }) {
   }
 }
 
-test('F3 (가) 장면이 셋인 생활 단위 — 앞선 날 안내 연습이 연 도움 판은 다음 날 새 판으로: dueRenew · 홈 튜터 tryAlone · 혼자 맞힘 streak 1 · 그 뒤 ③은 다른 장면(Fable 5.2 합친 끝 판 F3)', t0 => {
+test('F3 (가) 장면이 셋인 생활 단위 — 앞선 날 안내 연습의 도움은 다음 날 도움이 아니다(판은 잇는다): helpExpired · 홈 튜터 tryAlone · 혼자 맞힘 streak 1 · 그 뒤 ③은 다른 장면(Fable 5.2 합친 끝 판 F3)', t0 => {
   helpedDayThenAlone(t0, { unit: true });
 });
 
-test('F3 (나) 생활 단위 없는 복습 — 앞선 날 안내 연습이 연 도움 판은 다음 날 새 판으로: dueRenew · 홈 튜터 tryAlone · 혼자 맞힘 streak 1(Fable 5.2 합친 끝 판 F3)', t0 => {
+test('F3 (나) 생활 단위 없는 복습 — 앞선 날 안내 연습의 도움은 다음 날 도움이 아니다(판은 잇는다): helpExpired · 홈 튜터 tryAlone · 혼자 맞힘 streak 1(Fable 5.2 합친 끝 판 F3)', t0 => {
   helpedDayThenAlone(t0, { unit: false });
 });
 
-test('F3 맞은편 — 판정을 넣지 않은 진도(입구는 있고 지금 판)는 앞선 날의 도움 판을 그대로 잇는다 — 요약에 dueRenew가 없다(4-2 앞과 같다)', t0 => {
+test('F3 맞은편 — 판정을 넣지 않은 진도(입구는 있고 지금 판)는 앞선 날의 도움 판을 그대로 잇고 그 표시는 도움이다 — 요약에 helpExpired가 없다(4-2 앞과 같다)', t0 => {
   t0.mock.timers.enable({ apis: ['Date'], now: START });
   const progress = freshProgress();
   const lesson = lessonById('greetings-expressions');
@@ -499,7 +500,7 @@ test('F3 맞은편 — 판정을 넣지 않은 진도(입구는 있고 지금 �
   t0.mock.timers.tick(DAY);
   w = lifeOn({ progress, state });
   try {
-    assert.ok(!('dueRenew' in w.ui.summary()), '지금 판 요약에는 dueRenew가 없다');
+    assert.ok(!('helpExpired' in w.ui.summary()), '지금 판 요약에는 helpExpired가 없다');
     w.ui.reviewStart();
     assert.equal(progress.exportSnapshot().activeReview.id, helped.id, '앞선 날의 판을 잇는다');
     playReview(w);
@@ -858,7 +859,7 @@ test("넘친 #9 — 「한 단계씩 도움받기」(presentation support: step)
   }
 });
 
-test('F3 (다) 같은 문서에서 날을 넘김 — 어제 안내 연습에서 본 표현은 오늘 새 판의 도움이 아니다: 새 판에 도움 표시 없음 · 혼자 맞힘 · 튜터가 「어려운 표현」으로 돌아가지 않음(화면 exposedTransfers의 때 → 진도 markReviewHelp seenAt)', t0 => {
+test('F3 (다) 같은 문서에서 날을 넘김 — 어제 안내 연습에서 본 표현은 오늘 도움이 아니다: 하던 판을 잇되 그 표시는 도움이 아님 · 혼자 맞힘 · 튜터가 「어려운 표현」으로 돌아가지 않음(화면 exposedTransfers의 때 → 진도 markReviewHelp seenAt)', t0 => {
   t0.mock.timers.enable({ apis: ['Date'], now: START });
   const progress = freshProgress();
   engine(progress, { unitsOf: () => [] });
@@ -875,14 +876,14 @@ test('F3 (다) 같은 문서에서 날을 넘김 — 어제 안내 연습에서 
     assert.equal(helped.pendingHelp[missed.review.id], true, '같은 날 안내 연습이 연 판에는 도움 표시');
     t0.mock.timers.tick(DAY); // 문서는 그대로 열려 있다
     w.ui.refresh();
-    assert.equal(w.ui.summary().dueRenew, true);
+    assert.equal(w.ui.summary().helpExpired, true);
     const recall = tutorPick(w, progress);
     assert.equal(recall.kind, 'recall');
     assert.equal(recall.memory?.tryAlone, true);
     w.ui.reviewStart();
     const run = progress.exportSnapshot().activeReview;
-    assert.notEqual(run.id, helped.id, '새 판');
-    assert.deepEqual(run.pendingHelp, {}, '어제 본 표현은 오늘 판의 도움이 아니다');
+    assert.equal(run.id, helped.id, '하던 판을 잇는다');
+    assert.equal(progress.reviewHelped(missed.review.id), false, '어제 본 표현은 오늘 판의 도움이 아니다');
     playReview(w);
     const after = progress.exportSnapshot();
     assert.equal(after.activeReview.answers[missed.review.id].helped, false, '혼자 맞힌 답');

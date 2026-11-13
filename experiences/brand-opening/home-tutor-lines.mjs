@@ -27,8 +27,8 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
  const returning=known.find(r=>r.questionId===previous?.id&&isBack(r)&&!practisedToday(r));
  if(returning&&['guided','assisted'].includes(previous.kind)&&!days.today.count){
   const run=snapshot.activeReview,firstPending=run?.ids.find(id=>!run.answers[id]);
-  // 새 길에서 앞선 날의 판이 도움 표시를 들고 있으면 다음 복습은 새 판이다(진도 요약 dueRenew — Fable 5.2 합친 끝 판 F3): 판이 없을 때처럼 먼저 혼자.
-  return {kind:'recall',id:returning.questionId,title:returning.title,command:'review',label:'오늘의 복습 시작',memory:{...memory,tryAlone:!firstPending||summary.dueRenew===true||firstPending===returning.id&&!run.pendingHelp?.[returning.id]}};
+  // 새 길에서 첫 남은 복습의 도움 표시가 앞선 때의 것이면(진도 요약 helpExpired — Fable 5.2 합친 끝 판 F3) 그 도움은 지금 도움이 아니다: 먼저 혼자.
+  return {kind:'recall',id:returning.questionId,title:returning.title,command:'review',label:'오늘의 복습 시작',memory:{...memory,tryAlone:!firstPending||summary.helpExpired===true||firstPending===returning.id&&!run.pendingHelp?.[returning.id]}};
  }
  const difficult=known.filter(r=>r.lapses>0&&r.streak===0&&practised.get(r.questionId)!==r.lastAt&&!practisedToday(r))
   .sort((a,b)=>Number(isBack(b))-Number(isBack(a))||b.lastAt-a.lastAt||a.id.localeCompare(b.id))[0];
