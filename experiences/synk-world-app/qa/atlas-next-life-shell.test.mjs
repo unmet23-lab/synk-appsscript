@@ -190,3 +190,35 @@ test('셸 입구 겉(원문) — 리허설 나르개의 401은 그 나르개를 
  const guest=fakeEntry(),visitor=lazyShell({operating:false,loadEntry:()=>Promise.resolve(guest.module)})('guest');
  await visitor.practiceCoach([]);assert.equal(guest.seen.options.trail,null);
 });
+
+// 학습 기록 토글(원문 change 듣개) — 저장이 실패하면 계정을 한 번 다시 읽고, 다시 읽기가 끝날 때까지 토글을 잠근다(먼저 풀면 옛 체크 · 판 번호로
+// 다시 눌러 또 실패했다 — 카본 Fable 처리 다시 검수 A1). 다시 읽기가 끝나면 프로필을 다시 그린다(넘친 #12).
+test('학습 기록 토글 실패 — 계정 다시 읽기가 끝날 때까지 토글을 잠그고, 끝나면 풀고 프로필을 다시 그린다(셸 원문 change 듣개 · 카본 A1 · 넘친 #12)',async()=>{
+ const shell=fs.readFileSync(new URL('../app-shell.mjs',import.meta.url),'utf8');
+ const head="document.addEventListener('change',";
+ const start=shell.indexOf(head);
+ assert.ok(start>0,'change 듣개');
+ const end=shell.indexOf('\n',shell.indexOf("control.disabled=false;});});",start));
+ const body=shell.slice(start+head.length,shell.lastIndexOf(');',end));
+ let release;
+ const refreshed=new Promise(resolve=>{release=resolve;});
+ const calls=[];
+ const account={
+  setLearning:async()=>{throw Object.assign(new Error('뒤 확인 실패'),{code:'NETWORK'});},
+  refreshLearning:()=>{calls.push('refresh');return refreshed;},
+ };
+ const control={checked:true,disabled:false,dataset:{revision:'3'},matches:selector=>selector==='[data-world-learning]'};
+ const listen=new Function('account','life','client','home','errorText','profile','town','screen',`'use strict';return (${body});`)(
+  account,{owner:'acct-1',atlasNext:{redecide:()=>calls.push('redecide')}},{snapshot:{accountId:'acct-1'}},
+  {toast:()=>calls.push('toast')},error=>error.message,()=>calls.push('profile'),()=>{},'world-profile');
+ listen({target:control});
+ assert.equal(control.disabled,true,'누르면 잠근다');
+ for(let i=0;i<5;i+=1)await Promise.resolve();
+ assert.deepEqual(calls,['toast','redecide','refresh'],'실패를 알리고 판을 다시 정하고 계정을 다시 읽는다');
+ assert.equal(control.checked,false,'되돌린 값');
+ assert.equal(control.disabled,true,'다시 읽기가 끝나기 전에는 잠근 채');
+ release({enabled:false,revision:4});
+ for(let i=0;i<5;i+=1)await Promise.resolve();
+ assert.equal(control.disabled,false,'다시 읽은 뒤 푼다');
+ assert.deepEqual(calls.slice(3),['profile'],'서버 값으로 프로필을 다시 그린다');
+});

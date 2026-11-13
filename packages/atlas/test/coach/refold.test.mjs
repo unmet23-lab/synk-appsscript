@@ -451,6 +451,82 @@ test('형제(전달 · 도움) 저장이 답보다 늦게 실패해도 답이 �
   );
 });
 
+// 이 호스트에서 저장 실패가 난 뒤의 내 답 · 도움은 저장이 끝날 때 판을 한 번 더 세운다 — 기록부가 실패한 답의 계열을 메모리 만남 표에 들고
+// 있어, 답할 때 판 안은 그 계열을 만난 것으로(첫 만남 아님 · n 0) 얹고 저장된 뒤 보기는 그 답을 첫 만남(n 1)으로 접는다. 깃발은 호스트에
+// 두고 저장 성공으로 끄지 않는다(설계 주인 결정 6 · Fable 5.2 합친 끝 판 넘친 #13의 남은 반쪽).
+async function afterFailure({ tag, newSet = false, between = false, help = false }) {
+  const w = await sessionOn({ seed: 41, tag });
+  const [a, b] = w.items; // 같은 계열(t.f0) · 같은 능력
+  const { skillId, familyKey } = w.map.item(a);
+  assert.equal(w.map.item(b).familyKey, familyKey);
+  const other = w.items.find(item => w.map.item(item).skillId !== skillId);
+  const set = { length: 8 };
+  w.session.choose(w.items, { set });
+  const p0 = w.session.present(a, {});
+  await w.host.settled();
+  w.time.advance(1000);
+  w.port.arm();
+  assert.equal(
+    await w.session.answer(p0, { correct: true, assessable: true }).stored,
+    false,
+    '앞 답의 저장이 실패한다',
+  );
+  await settle();
+  if (between) {
+    // 실패 뒤 성공한 쓰기 — 다른 능력의 문항을 내고 답한다(깃발이 성공으로 꺼지면 안 된다)
+    w.time.advance(1000);
+    const px = w.session.present(other, {});
+    w.time.advance(1000);
+    assert.equal(await w.session.answer(px, { correct: true, assessable: true }).stored, true);
+    await settle();
+  }
+  if (newSet) {
+    w.session.close();
+    w.time.advance(1000);
+    w.session.choose(w.items, { set: { ...set, more: true } });
+  }
+  w.time.advance(1000);
+  const p1 = w.session.present(b, {});
+  w.time.advance(1000);
+  const made = help
+    ? w.session.help(p1, 'explanation')
+    : w.session.answer(p1, { correct: true, assessable: true });
+  assert.equal(await made.stored, true);
+  await settle();
+  await settle();
+  const pick = learner => ({
+    ability: learner.ability.get(skillId) ?? null,
+    met: learner.met.get(familyKey) ?? null,
+  });
+  const inner = pick(w.session.learner);
+  const view = pick(w.host.view());
+  w.close();
+  return { inner, view };
+}
+
+test('저장 실패 뒤 같은 계열의 답 — 같은 판: 답이 저장되면 판 안의 능력 · 만남이 기록부 보기와 같다(첫 만남 n 1, 설계 주인 결정 6 · 넘친 #13)', async () => {
+  const { inner, view } = await afterFailure({ tag: 'fail-same' });
+  assert.equal(view.ability?.n, 1, '저장된 뒤 보기 — 그 답이 첫 만남(가르는 값)');
+  assert.deepEqual(inner, view, '판 안 = 기록부 보기');
+});
+
+test('저장 실패 뒤 같은 계열의 답 — 판을 닫고 새 판에서 답해도 판 안이 기록부 보기와 같다(판의 실패 표는 새 판에서 비워지고 호스트 깃발이 남는다, 넘친 #13)', async () => {
+  const { inner, view } = await afterFailure({ tag: 'fail-new', newSet: true });
+  assert.equal(view.ability?.n, 1);
+  assert.deepEqual(inner, view);
+});
+
+test('저장 실패 뒤 다른 계열의 성공한 답이 낀 뒤에도 같은 계열의 답은 판 안이 기록부 보기와 같다 — 깃발은 저장 성공으로 꺼지지 않는다(넘친 #13)', async () => {
+  const { inner, view } = await afterFailure({ tag: 'fail-between', between: true });
+  assert.equal(view.ability?.n, 1);
+  assert.deepEqual(inner, view);
+});
+
+test('저장 실패 뒤 같은 계열의 도움 — 도움이 저장되면 판 안의 만남이 기록부 보기와 같다(넘친 #13)', async () => {
+  const { inner, view } = await afterFailure({ tag: 'fail-help', help: true });
+  assert.deepEqual(inner, view);
+});
+
 test('저장에 실패한 제시는 판의 낸 수에 들지 않는다 — 판 길이를 다 채우기 전에 새 판이 열리지 않는다(카본 끝 판 둘째 E2)', async () => {
   const w = await sessionOn({ seed: 35, tag: 'served' });
   const set = { length: 3 };

@@ -212,8 +212,11 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   trail.help(currentSlot(),'explanation');if(context.phase!=='review')guideTransfer(id);
  }
  const retryButton=q=>home.mountLifeTutor&&home.tutor?.().tutor?`<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">${t('life.tutorRetry')}</button>`:'';
- // 다시 그리기(again) 전 초점이 있던 생활 단추 — 판을 다시 열면 닫기 단추로 초점이 옮겨 가 엔터가 화면을 닫았다(넘친 #6). 같은 data-life-* 단추로 되돌린다.
- const focusedKey=()=>{try{const el=document.activeElement;if(!el||el===document.body||!content.contains?.(el))return null;const name=[...(el.attributes||[])].map(a=>a.name).find(n=>n.startsWith('data-life-'));return name?`[${name}]`:null;}catch{return null;}};
+ // 다시 그리기(again) 전 초점이 있던 생활 단추 — 판을 다시 열면 닫기 단추로 초점이 옮겨 가 엔터가 화면을 닫았다(넘친 #6). 같은 data-life-* 단추로 되돌린다:
+ // 속성 이름 · 값을 들고, 다시 그린 판에서 그 이름의 단추 가운데 값이 같은 것 먼저(레슨 · 팩 목록처럼 이름이 같은 단추가 여럿 — 카본 Fable 처리 다시
+ // 검수 A2), 없으면 그 이름의 첫 단추. 값은 선택자에 넣지 않고 견준다(따옴표 · 역슬래시를 거르지 않아도 된다).
+ const focusedKey=()=>{try{const el=document.activeElement;if(!el||el===document.body||!content.contains?.(el))return null;const attr=[...(el.attributes||[])].find(a=>a.name.startsWith('data-life-'));return attr?{name:attr.name,value:attr.value??''}:null;}catch{return null;}};
+ const refocus=key=>{try{const list=[...(content.querySelectorAll?.(`[${key.name}]`)||[])];const target=(key.value?list.find(el=>el.getAttribute?.(key.name)===key.value):null)||list[0];target?.focus({preventScroll:true});}catch{/* 초점은 덤이다 */}};
  function paint(title,html,{type='life-library',focus='.life-heading',eyebrow='LIFE IN KOREA',keepScroll=false,tutorSlot=null,tutorPhase=null,screen=null,keepFocus=null}={}){
   viewPhase=tutorPhase;screenView=screen;
   // 집중 판은 내용 영역이 스크롤된다. 같은 장면을 다시 그릴 때(낱말 고르기 등)만 자리를 지키고, 새 장면은 맨 위에서 시작한다.
@@ -224,7 +227,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   // 이야기 장면에서는 튜터 띠를 사진 위 작은 「표현 도움」 알약으로 접는다(장면이 주인공). 문제·결과 화면은 그대로 띠.
   if(tutorSlot&&tutor?.element){const slot=content.querySelector(tutorSlot);if(slot){tutor.element.dataset.layout='scene';slot.append(tutor.element);}}
   home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){speech.stop();story.stop();signClip?.pause();signClip=null;shown=false;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
-  rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);if(focus)content.querySelector(focus)?.focus({preventScroll:true});else if(keepFocus)content.querySelector(keepFocus)?.focus({preventScroll:true});updateHome();
+  rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);if(focus)content.querySelector(focus)?.focus({preventScroll:true});else if(keepFocus)refocus(keepFocus);updateHome();
   decorate(type,keepScroll);
  }
  // 10-17 움직임(유호님 「시안에 있는 움직임 전부 앱에 넣어 줘」): 라벨 타이핑 · 포스터 잉크 · 인화지 툭 놓기/손가락 따라 기울기 · 지금 팩 바느질 · 숫자 굴림

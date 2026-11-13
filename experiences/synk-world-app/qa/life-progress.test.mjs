@@ -239,3 +239,36 @@ test('앞선 날의 도움(남은 판 · 본 표현)은 새 길 판정이 있을
   assert.equal(p2.markReviewHelp(id,{seenAt:c2.now()}).pendingHelp?.[id],true,`${label}: 오늘 본 표현은 도움`);
  }
 });
+
+// 새 길에서 어제 연 판을 오늘 이어 풀다 본 도움은 오늘 것이다 — 도움을 달 때 판의 날을 오늘로 옮기고(앞선 날 표시는 비움), 다시 열어도 그 판을
+// 잇고 그 답은 도움 받은 답이다. 판정이 없으면(라이브) 4-2 앞 그대로(GPT Fable 처리 다시 검수 GA1).
+test('어제 연 복습 판을 오늘 이어 풀다 본 도움은 다시 열어도 남는다 — 새 길은 판의 날을 오늘로 옮기고 앞선 날 표시만 비운다, 판정이 없으면 4-2 앞 그대로(GPT GA1)',()=>{
+ const DAY=86400000;
+ const engineSource=state=>({state:'engine',ids:Object.keys(state.reviews),nextAt:null,times:[],upcoming:[]});
+ for(const [label,source] of [['판정 없음',null],['엔진',engineSource]]){
+  const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});if(source)p.setDueSource(source);
+  const [q1,q2]=lessons[0].questions,[id1,id2]=[q1.review.id,q2.review.id];
+  p.startLesson(lessons[0]);p.recordAnswer({lessonId:lessons[0].id,questionId:q1.id,correct:false});p.recordAnswer({lessonId:lessons[0].id,questionId:q2.id,correct:false});
+  const first=p.startReview(2,id1,null,{ids:[id1,id2]});
+  clock.advance(DAY); // 어제 연 판 — 도움 없이 다음 날 이어 연다
+  const resumed=p.startReview(2,id1,null,{ids:[id1,id2]});
+  assert.equal(resumed.id,first.id,`${label}: 도움 표시가 없으면 앞선 날 판을 잇는다`);
+  p.markReviewHelp(id1); // 오늘 해설을 봤다
+  const reopened=p.startReview(2,id1,null,{ids:[id1,id2]}); // 닫았다 다시 연다
+  assert.equal(reopened.id,first.id,`${label}: 오늘 본 도움이 있는 판을 그대로 잇는다`);
+  assert.equal(reopened.pendingHelp?.[id1],true,`${label}: 오늘 본 도움 표시가 남는다`);
+  p.answerReview({id:id1,correct:true,runId:reopened.id});
+  assert.equal(p.exportSnapshot().activeReview.answers[id1].helped,true,`${label}: 그 답은 도움 받은 답`);
+ }
+ // 문서를 연 채 날을 넘김 — 어제 단 표시가 남은 판에 오늘 다른 문항의 도움을 달면 어제 표시는 비우고 오늘 표시만(새 길만)
+ for(const [label,source,next] of [['판정 없음',null,false],['엔진',engineSource,true]]){
+  const clock=options(),p=createLifeProgress({storage:storage(),now:clock.now});if(source)p.setDueSource(source);
+  const [q1,q2]=lessons[0].questions,[id1,id2]=[q1.review.id,q2.review.id];
+  p.startLesson(lessons[0]);p.recordAnswer({lessonId:lessons[0].id,questionId:q1.id,correct:false});p.recordAnswer({lessonId:lessons[0].id,questionId:q2.id,correct:false});
+  const run=p.startReview(2,id1,null,{ids:[id1,id2]});p.markReviewHelp(id1);
+  clock.advance(DAY);
+  const marked=p.markReviewHelp(id2);
+  assert.deepEqual(marked.pendingHelp,next?{[id2]:true}:{[id1]:true,[id2]:true},`${label}: 표시`);
+  assert.equal(marked.startedAt===run.startedAt,!next,`${label}: ${next?'판의 날을 오늘로':'판의 날 그대로'}`);
+ }
+});

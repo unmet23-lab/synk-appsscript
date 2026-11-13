@@ -427,19 +427,32 @@ export function lifeUnitsOf(coach, lessons) {
 const STUCK_GRACE = 120_000;
 // LIFE_BRIDGE_STUCK을 이미 센 복습 — 이 기기 · 이 주인에서 한 번(F8). 복습 번호만 담는다(학습자 신원 · 답은 없다, 진도 기록 밖의 열쇠라
 // 진도의 저장 꼴은 그대로다). 저장소를 못 쓰면 이 문서 동안만 센다.
-export function stuckBook(owner, storage = globalThis.localStorage) {
-  const key = `synk.life.stuck.v1:${encodeURIComponent(String(owner ?? 'guest'))}`;
-  let ids = new Set();
+// 저장소는 부를 때마다 읽는다 — 같은 기기의 다른 탭이 그 사이 센 것도 본다(만들 때 한 번만 읽으면 탭마다 한 번씩 세었다, GPT Fable 처리 다시
+// 검수 GC3). 저장소에 닿는 것 자체가 던지는 문서(막힌 저장소 · 보안 오류 — localStorage 속성 읽기가 던진다)는 이 문서 동안만 메모리에(GC2).
+const localStore = () => {
   try {
-    const list = JSON.parse(storage?.getItem?.(key) ?? '[]');
-    if (Array.isArray(list)) ids = new Set(list.filter(id => typeof id === 'string').slice(-400));
-  } catch {}
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
+  }
+};
+export function stuckBook(owner, storage = localStore()) {
+  const key = `synk.life.stuck.v1:${encodeURIComponent(String(owner ?? 'guest'))}`;
+  const mine = new Set(); // 이 문서가 센 것 — 저장소를 못 읽거나 못 써도 이 문서 안에서는 한 번
+  const stored = () => {
+    try {
+      const list = JSON.parse(storage?.getItem?.(key) ?? '[]');
+      return Array.isArray(list) ? list.filter(id => typeof id === 'string').slice(-400) : [];
+    } catch {
+      return [];
+    }
+  };
   return Object.freeze({
-    has: id => ids.has(id),
+    has: id => mine.has(id) || stored().includes(id),
     add(id) {
-      ids.add(id);
+      mine.add(id);
       try {
-        storage?.setItem?.(key, JSON.stringify([...ids].slice(-400)));
+        storage?.setItem?.(key, JSON.stringify([...new Set([...stored(), id])].slice(-400)));
       } catch {}
     },
   });

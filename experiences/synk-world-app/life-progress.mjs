@@ -239,11 +239,18 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  }
  // seenAt: 화면이 그 표현을 보여 준 때(life-ui exposedTransfers) — 새 길에서는 앞선 학습일에 본 것을 오늘 판의 도움으로 잇지 않는다(staleHelp와
  // 같은 날 경계 — 문서를 연 채 날을 넘기면 어제 본 표현이 오늘 새 판에 도움으로 다시 붙어 혼자 맞힌 답이 도움 받은 답으로 적혔다, Fable 5.2 합친 끝 판 F3).
+ // 새 길에서 판의 날(startedAt — staleHelp가 「앞선 날의 도움」을 가르는 날)이 오늘이 아니면, 도움을 달 때 그 판의 앞선 날 표시를 비우고 판의 날을
+ // 오늘로 옮긴다 — 어제 연 판을 오늘 이어 풀다 본 도움은 오늘 것이다(판의 날로만 가르면 다시 열 때 오늘 본 도움까지 지워져 도움 받은 답이
+ // 혼자 맞힘으로 적혔다, GPT Fable 처리 다시 검수 GA1). 저장 꼴은 그대로(판의 startedAt만 옮김), 판정이 없거나 null이면 4-2 앞과 같다.
  function markReviewHelp(id,{seenAt}={}){
   check();const run=state.activeReview;if(!run||!run.ids.includes(id))throw TypeError('Invalid review help');
-  if(run.answers[id]||run.pendingHelp?.[id])return clone(run);
-  if(seenAt!==undefined&&judged()&&!(dailyTime(seenAt)&&dailyTime(now())&&lifeDayKey(seenAt)===lifeDayKey(now())))return clone(run);
-  const next=clone(state);next.activeReview.pendingHelp={...(next.activeReview.pendingHelp||{}),[id]:true};commit(next);return clone(next.activeReview);
+  if(run.answers[id])return clone(run);
+  const engine=judged(),at=now();
+  if(seenAt!==undefined&&engine&&!(dailyTime(seenAt)&&dailyTime(at)&&lifeDayKey(seenAt)===lifeDayKey(at)))return clone(run);
+  const moved=!!engine&&dailyTime(run.startedAt)&&dailyTime(at)&&lifeDayKey(run.startedAt)!==lifeDayKey(at);
+  if(!moved&&run.pendingHelp?.[id])return clone(run);
+  const next=clone(state);if(moved){next.activeReview.startedAt=at;next.activeReview.pendingHelp={};}
+  next.activeReview.pendingHelp={...(next.activeReview.pendingHelp||{}),[id]:true};commit(next);return clone(next.activeReview);
  }
  function answerReview({id,reviewId,questionId,correct,helped=false,runId}={}){
   check();const run=state.activeReview,keyId=id||reviewId||run?.ids.find(id=>state.reviews[id].questionId===questionId);

@@ -827,7 +827,8 @@ test('낡은 기본 판(30분 쉼 · 새벽 4시)의 앞 제시 번호에 답하
   dawn.advance(15 * 60_000); // 04:05 — 새 하루
   b.present(items[1]);
   assert.throws(() => b.answer(night, { correct: true, assessable: true }), gone, '새벽 4시 뒤');
-  assert.throws(() => b.help(night, 'hint'), gone, '도움 · 전달도 같은 코드');
+  assert.throws(() => b.help(night, 'hint'), gone, '도움도 같은 코드');
+  assert.throws(() => b.delivery(night, { audio: 'completed' }), gone, '전달도 같은 코드');
   b.dispose();
 });
 

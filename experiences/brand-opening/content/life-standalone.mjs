@@ -16395,9 +16395,16 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     check3();
     const run = state.activeReview;
     if (!run || !run.ids.includes(id)) throw TypeError("Invalid review help");
-    if (run.answers[id] || run.pendingHelp?.[id]) return clone2(run);
-    if (seenAt !== void 0 && judged() && !(dailyTime(seenAt) && dailyTime(now()) && lifeDayKey(seenAt) === lifeDayKey(now()))) return clone2(run);
+    if (run.answers[id]) return clone2(run);
+    const engine = judged(), at = now();
+    if (seenAt !== void 0 && engine && !(dailyTime(seenAt) && dailyTime(at) && lifeDayKey(seenAt) === lifeDayKey(at))) return clone2(run);
+    const moved = !!engine && dailyTime(run.startedAt) && dailyTime(at) && lifeDayKey(run.startedAt) !== lifeDayKey(at);
+    if (!moved && run.pendingHelp?.[id]) return clone2(run);
     const next = clone2(state);
+    if (moved) {
+      next.activeReview.startedAt = at;
+      next.activeReview.pendingHelp = {};
+    }
     next.activeReview.pendingHelp = { ...next.activeReview.pendingHelp || {}, [id]: true };
     commit(next);
     return clone2(next.activeReview);
@@ -17660,10 +17667,18 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     try {
       const el = document.activeElement;
       if (!el || el === document.body || !content.contains?.(el)) return null;
-      const name = [...el.attributes || []].map((a) => a.name).find((n) => n.startsWith("data-life-"));
-      return name ? `[${name}]` : null;
+      const attr = [...el.attributes || []].find((a) => a.name.startsWith("data-life-"));
+      return attr ? { name: attr.name, value: attr.value ?? "" } : null;
     } catch {
       return null;
+    }
+  };
+  const refocus = (key) => {
+    try {
+      const list = [...content.querySelectorAll?.(`[${key.name}]`) || []];
+      const target = (key.value ? list.find((el) => el.getAttribute?.(key.name) === key.value) : null) || list[0];
+      target?.focus({ preventScroll: true });
+    } catch {
     }
   };
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null, tutorPhase = null, screen = null, keepFocus = null } = {}) {
@@ -17711,7 +17726,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     content.scrollTop = scroll;
     content.dataset.reduced = String(!!home.state?.reduced);
     if (focus) content.querySelector(focus)?.focus({ preventScroll: true });
-    else if (keepFocus) content.querySelector(keepFocus)?.focus({ preventScroll: true });
+    else if (keepFocus) refocus(keepFocus);
     updateHome();
     decorate(type, keepScroll);
   }
@@ -19006,20 +19021,30 @@ function lifeUnitsOf(coach, lessons) {
   };
 }
 var STUCK_GRACE = 12e4;
-function stuckBook(owner, storage = globalThis.localStorage) {
-  const key = `synk.life.stuck.v1:${encodeURIComponent(String(owner ?? "guest"))}`;
-  let ids = /* @__PURE__ */ new Set();
+var localStore = () => {
   try {
-    const list = JSON.parse(storage?.getItem?.(key) ?? "[]");
-    if (Array.isArray(list)) ids = new Set(list.filter((id) => typeof id === "string").slice(-400));
+    return globalThis.localStorage ?? null;
   } catch {
+    return null;
   }
+};
+function stuckBook(owner, storage = localStore()) {
+  const key = `synk.life.stuck.v1:${encodeURIComponent(String(owner ?? "guest"))}`;
+  const mine = /* @__PURE__ */ new Set();
+  const stored = () => {
+    try {
+      const list = JSON.parse(storage?.getItem?.(key) ?? "[]");
+      return Array.isArray(list) ? list.filter((id) => typeof id === "string").slice(-400) : [];
+    } catch {
+      return [];
+    }
+  };
   return Object.freeze({
-    has: (id) => ids.has(id),
+    has: (id) => mine.has(id) || stored().includes(id),
     add(id) {
-      ids.add(id);
+      mine.add(id);
       try {
-        storage?.setItem?.(key, JSON.stringify([...ids].slice(-400)));
+        storage?.setItem?.(key, JSON.stringify([.../* @__PURE__ */ new Set([...stored(), id])].slice(-400)));
       } catch {
       }
     }

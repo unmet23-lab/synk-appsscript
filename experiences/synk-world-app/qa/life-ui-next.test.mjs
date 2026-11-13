@@ -27,16 +27,29 @@ const node = () => ({
   focus() {},
 });
 const panel = { ...node(), open: true };
-// 초점을 받은 선택자(넘친 #6 — 다시 그린 뒤 같은 생활 단추로). 화면은 그린 글만 보므로 찾기는 생활 단추(data-life-*) · 머리 · 문제 제목만
-// 찾아지는 것으로 두고, 판 안의 요소인지는 inPanel 표지로 가린다(content.contains).
+// 초점을 받은 단추(넘친 #6 — 다시 그린 뒤 같은 생활 단추로). 찾기는 마지막으로 그린 판의 글(painted)에 있는 것만 — 생활 단추(data-life-*,
+// 값까지) · 머리 · 문제 제목 — 돌려준다(그린 글에 없는 단추를 늘 돌려주면 단추가 사라진 회귀를 못 잡는다, 카본 Fable 처리 다시 검수 B1).
+// 초점은 [이름] · [이름="값"] 꼴로 적고, 판 안의 요소인지는 inPanel 표지로 가린다(content.contains).
 const focused = [];
+let painted = '';
+const attrsOf = name =>
+  [...painted.matchAll(new RegExp(`\\s${name}(?:="([^"]*)")?(?=[\\s>])`, 'g'))].map(match => match[1] ?? '');
 const content = {
   ...node(),
   contains: element => element?.inPanel === true,
   querySelector: selector =>
-    /^(?:\[data-life-[a-z-]+\]|\.life-heading|\.life-question-title)$/.test(selector)
+    /^\.(?:life-heading|life-question-title)$/.test(selector) && painted.includes(selector.slice(1))
       ? { ...node(), focus: () => focused.push(selector) }
       : null,
+  querySelectorAll: selector => {
+    const name = /^\[(data-life-[a-z-]+)\]$/.exec(selector)?.[1];
+    if (!name) return [];
+    return attrsOf(name).map(value => ({
+      ...node(),
+      getAttribute: key => (key === name ? value : null),
+      focus: () => focused.push(value ? `[${name}="${value}"]` : `[${name}]`),
+    }));
+  },
 };
 // 누르기는 문서에 걸린 click 듣개로 간다(생활 화면이 document.addEventListener('click')로 단추를 받는다). 닫힌 화면은 듣개를 뗀다.
 globalThis.document = {
@@ -155,6 +168,7 @@ function lifeOn({ progress, state = { now: 'engine' }, nextAt = () => null, pres
     showPanel: (title, html) => {
       drop();
       shows.push({ title, html });
+      painted = html;
     },
     closePanel() {
       counts.closes += 1;
@@ -653,26 +667,35 @@ test('넘친 #6 · #7 — 확인 중에 연 복습 첫 화면: 튜터 단계 없
     document.activeElement = null;
 
     // 확인 중에 연 허브 · 팩 — 엔진으로 서는 때 한 번 다시 그리고, 그 뒤 판정이 또 바뀌어도 다시 그리지 않는다(#6)
-    for (const [label, open, keep] of [
+    // 이름이 같은 단추가 여럿(팩의 레슨 목록)이면 값까지 같은 단추로 — 첫 레슨 단추로 가면 엔터가 다른 레슨을 열었다(카본 A2 · GPT GA2)
+    const secondLesson = 'greetings-story';
+    for (const [label, open, keep, value = '', first = false] of [
       ['허브', () => w.ui.packs(), '[data-life-stories]'],
       ['팩', () => w.ui.pack('greetings'), '[data-life-packs]'],
+      ['팩 · 둘째 레슨', () => w.ui.pack('greetings'), '[data-life-lesson]', secondLesson],
+      // 같은 값의 단추가 다시 그린 판에 없으면 같은 이름의 첫 단추로(닫기 단추로 옮겨 가지 않는다)
+      ['팩 · 없는 레슨', () => w.ui.pack('greetings'), '[data-life-lesson]', 'gone-lesson', true],
     ]) {
       state.now = 'checking';
       checking(progress);
       open();
       const opened = w.shows.length;
       const title = last(w);
-      if (label === '팩') assert.ok(title.includes(t('life.seeReviews')), '확인 중 팩 화면에도 「복습 보기」');
+      if (label.startsWith('팩')) assert.ok(title.includes(t('life.seeReviews')), '확인 중 팩 화면에도 「복습 보기」');
       else assert.ok(!title.includes('REVIEW · '), '확인 중 허브에는 복습 포스터가 없다');
       w.ui.refresh();
       assert.equal(w.shows.length, opened, `${label}: 확인 중 그대로면 다시 그리지 않는다`);
       state.now = 'engine';
       judge.on();
-      document.activeElement = { inPanel: true, attributes: [{ name: keep.slice(1, -1) }] };
+      const name = keep.slice(1, -1);
+      if (value && !first) assert.ok(attrsOf(name).indexOf(value) > 0, `${label}: 시험의 단추는 같은 이름의 첫 단추가 아니다(가르는 값)`);
+      if (first) assert.equal(attrsOf(name).indexOf(value), -1, `${label}: 그 값의 단추는 판에 없다(가르는 값)`);
+      document.activeElement = { inPanel: true, attributes: [{ name: 'class', value: 'life-card' }, { name, value }] };
       focused.length = 0;
       w.ui.refresh();
       assert.equal(w.shows.length, opened + 1, `${label}: 엔진으로 서면 한 번 다시 그린다`);
-      assert.deepEqual(focused, [keep], `${label}: 초점은 같은 생활 단추로`);
+      const expected = first ? `[${name}="${attrsOf(name)[0]}"]` : value ? `[${name}="${value}"]` : keep;
+      assert.deepEqual(focused, [expected], `${label}: 초점은 같은 생활 단추로`);
       if (label === '허브') assert.equal(posterLabel(last(w)), 'REVIEW · 01', '허브: 돌아온 복습 포스터');
       else assert.ok(last(w).includes(t('life.seeReviews')));
       document.activeElement = null;

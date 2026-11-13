@@ -310,3 +310,42 @@ test('처음 판 파일 — 같은 파일을 쓰는 서버 둘이면 쓸 때 큰
  assert.match(server,/stateFile:`\$\{dataDir\}-trail-revision\.json`/,'처음 판 파일은 자료 폴더에 묶는다');
  assert.doesNotMatch(server,/rehearsal-trail-revision\.json/,'저장소 폴더의 공용 파일을 쓰지 않는다');
 });
+
+// 다른 서버 프로세스가 잠금(<파일>.lock)을 쥔 동안에는 그 쓰기가 끝나기를 기다렸다가 파일을 다시 읽어 큰 판을 둔다 — 읽고 쓰는 사이에 다른
+// 서버의 큰 판이 끼어 낮은 판으로 덮이지 않는다. 오래된 잠금(주인이 죽음)은 치우고 쓴다(GPT Fable 처리 다시 검수 GC1).
+test('처음 판 파일 — 다른 서버가 잠금을 쥔 동안 기다렸다 그 서버가 적은 큰 판을 덮지 않는다 · 오래된 잠금은 치운다(GPT GC1)',async()=>{
+ const {Worker}=await import('node:worker_threads');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rehearsal-trail-lock-'));
+ const stateFile=path.join(dir,'revision.json'),lock=`${stateFile}.lock`;
+ const root=new URL('../',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1');
+ const ask=(trail,p,{method='GET',body}={})=>trail.handle({account:A,path:p,method,query:new URLSearchParams(''),
+  body:body===undefined?undefined:Buffer.from(JSON.stringify(body)),headers:HEADERS});
+ const revisionOf=async trail=>(await ask(trail,'trail-account')).body.learning.revision;
+ try{
+  const trail=await openRehearsalTrail({root,devOut:null,stateFile});
+  const first=await revisionOf(trail);
+  // 다른 서버(일꾼 스레드)가 잠금을 쥐고 300ms 뒤 더 큰 판을 적고 놓는다 — 이 서버의 다음 판 쓰기는 그 사이에 시작한다
+  const high=first+1000;
+  fs.mkdirSync(lock);
+  const other=new Worker(`const fs=require('node:fs');const {stateFile,lock,high}=require('node:worker_threads').workerData;
+setTimeout(()=>{fs.writeFileSync(stateFile,JSON.stringify({revision:high}));fs.rmdirSync(lock);},300);`,{eval:true,workerData:{stateFile,lock,high}});
+  const started=Date.now();
+  await ask(trail,'trail-control',{method:'POST',body:{action:'revision'}});
+  assert.ok(Date.now()-started>=250,'잠금이 풀릴 때까지 기다렸다');
+  await new Promise(resolve=>other.once('exit',resolve));
+  assert.equal(JSON.parse(fs.readFileSync(stateFile,'utf8')).revision,high,'다른 서버가 적은 큰 판을 덮지 않았다');
+  assert.equal(fs.existsSync(lock),false,'잠금을 놓았다');
+  // 오래된 잠금 — 주인이 죽어 남은 잠금은 치우고 바로 쓴다
+  fs.mkdirSync(lock);
+  const old=new Date(Date.now()-60_000);fs.utimesSync(lock,old,old);
+  const before=Date.now();
+  const opened=await openRehearsalTrail({root,devOut:null,stateFile});
+  const next=await revisionOf(opened);
+  assert.ok(next>high,'다시 켠 서버는 큰 판 뒤에서 시작한다');
+  assert.ok(Date.now()-before<1500,'오래된 잠금은 기다리지 않는다');
+  assert.equal(JSON.parse(fs.readFileSync(stateFile,'utf8')).revision,next);
+  assert.equal(fs.existsSync(lock),false);
+ }finally{
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+});

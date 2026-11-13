@@ -550,6 +550,41 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
       return 0;
     }
   };
+  // 읽기 · 쓰기를 옆 잠금 폴더(`<파일>.lock` — 만들기는 한 쪽만 된다)로 묶는다. 같은 파일을 쓰는 다른 서버 프로세스가 그 사이 더 큰 판을
+  // 적어도 덮지 않는다(읽고 쓰는 사이에 끼면 나중에 쓴 쪽의 낮은 판이 남았다 — GPT Fable 처리 다시 검수 GC1). 10초 넘은 잠금은 주인이
+  // 죽은 것으로 치우고, 2초 안에 못 잡으면 잠금 없이 쓴다(리허설 서버가 멈추지 않게).
+  const LOCK_STALE_MS = 10_000;
+  const LOCK_WAIT_MS = 2_000;
+  const pause = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  const locked = fn => {
+    const lock = `${stateFile}.lock`;
+    const deadline = Date.now() + LOCK_WAIT_MS;
+    let held = false;
+    while (!held) {
+      try {
+        fs.mkdirSync(lock);
+        held = true;
+      } catch (error) {
+        if (error?.code !== 'EEXIST') break;
+        try {
+          if (Date.now() - fs.statSync(lock).mtimeMs > LOCK_STALE_MS) {
+            fs.rmdirSync(lock);
+            continue;
+          }
+        } catch {}
+        if (Date.now() > deadline) break;
+        pause(5);
+      }
+    }
+    try {
+      return fn();
+    } finally {
+      if (held)
+        try {
+          fs.rmdirSync(lock);
+        } catch {}
+    }
+  };
   let highest = stateFile ? saved() : 0;
   const onRevision = stateFile
     ? revision => {
@@ -558,7 +593,7 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
         // 부르는 길에서도 서게. 쓸 때 파일을 다시 읽어 큰 판을 둔다 — 같은 파일을 쓰는 다른 서버가 더 큰 판을 적었으면 나중에 쓴 쪽의 낮은 판이
         // 남아, 다시 켠 서버가 제가 내준 판 이하로 시작했다(Fable 5.2 합친 끝 판 넘친 #25).
         fs.mkdirSync(path.dirname(stateFile), { recursive: true });
-        fs.writeFileSync(stateFile, JSON.stringify({ revision: Math.max(saved(), revision) }));
+        locked(() => fs.writeFileSync(stateFile, JSON.stringify({ revision: Math.max(saved(), revision) })));
         highest = revision;
       }
     : null;

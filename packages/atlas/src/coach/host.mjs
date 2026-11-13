@@ -136,6 +136,10 @@ function createHost({
     storeGone: false, // 저장소 연결이 닫혔다고 알렸다(호스트마다 한 번 — F5)
     carry: null, // 옛 기록 옮기기의 약속 — 호스트당 하나(계획 §16 ③)
     unsaved: false, // 저장 실패가 이어지는 중(받기를 한 번 강제했다 — F5)
+    // 이 호스트(= 이 기록부)에서 저장 실패가 한 번이라도 났다 — 성공으로 끄지 않는다. 기록부는 실패한 답 · 도움의 계열을 메모리 만남 표에
+    // 사는 동안 들고 있어(판을 새로 열어도), 그 뒤 같은 계열의 내 답은 판 안에서 첫 만남이 아닌 것으로 얹히고 저장된 뒤 보기에서는 첫 만남이
+    // 된다 — 판(session)이 그 답 · 도움의 저장이 끝날 때 한 번 다시 세운다(설계 주인 결정 6 · Fable 5.2 합친 끝 판 넘친 #13의 남은 반쪽).
+    failedOnce: false,
   };
   // 듣는 함수마다 감싼다 — 하나(사라진 틀의 판 등)가 던져도 쓰기의 stored가 거절로 바뀌거나 뒤 판들이 소식을 놓치지 않는다.
   // 던진 듣는 함수를 지우지 않는다 — 일시적인 오류 하나가 그 판을 영영 귀먹게 하지 않게(N2). 듣는 함수는 그 판이 닫힐 때 빠진다.
@@ -235,6 +239,7 @@ function createHost({
         // 셸이 판을 다시 정한다(저장이 됐을 때만 올리기를 잡아, 그 답을 받을 일이 없었다 — Fable 5.2 끝 판 F5). 실패가 이어지는 동안은 한 번.
         if (!guest && !state.closed && !state.unsaved) void sync.pull({ force: true });
         state.unsaved = true;
+        state.failedOnce = true;
         tell('failed', { id });
       }
       return ok;
@@ -374,6 +379,8 @@ function createHost({
       for (const [id, row] of issuing) rows.set(id, row);
       return [...rows.values()];
     },
+    // 이 호스트에서 저장 실패가 한 번이라도 났나(state.failedOnce — 판이 그 뒤 내 답 · 도움을 저장 뒤 한 번 더 세운다).
+    failedOnce: () => state.failedOnce,
     pendingCount: () => pending.size + issuing.size,
     // 지금까지의 쓰기가 다 끝나면 풀린다(성공 · 실패와 상관없이 — 기록부가 부모를 기다리는 자식까지).
     settled: () => Promise.allSettled([...inflight]).then(() => state.trail.saved()),

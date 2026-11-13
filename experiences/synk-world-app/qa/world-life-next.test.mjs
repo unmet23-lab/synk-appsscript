@@ -1269,6 +1269,33 @@ test('판정 넣기 — LIFE_BRIDGE_STUCK은 방금 적힌 복습 답을 세지 
   assert.equal(stuckBook('acct-1', storage).has('r-1'), true);
   assert.equal(stuckBook('acct-2', storage).has('r-1'), false, '주인마다 따로');
   assert.equal(stuckBook('acct-1', { getItem: () => '{깨짐', setItem() {} }).has('r-1'), false, '못 읽으면 빈 장부');
+  // 다른 탭 — 먼저 만든 장부도 그 뒤 다른 장부가 센 것을 본다(만들 때 한 번만 읽으면 탭마다 한 번씩 세었다, GPT Fable 처리 다시 검수 GC3)
+  const tabA = stuckBook('acct-1', storage);
+  const tabB = stuckBook('acct-1', storage);
+  tabA.add('r-2');
+  assert.equal(tabB.has('r-2'), true, '다른 탭이 센 것');
+  tabB.add('r-3');
+  assert.equal(tabA.has('r-3'), true);
+  assert.equal(tabA.has('r-1'), true, '앞서 센 것도 그대로(덮어쓰지 않는다)');
+  // 저장소에 닿는 것 자체가 던지는 문서 — 기본 장부 · 감시가 서고, 이 문서 안에서는 한 번만 센다(GC2)
+  const had = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    get() {
+      throw new Error('SecurityError');
+    },
+  });
+  try {
+    const blocked = stuckBook('acct-1');
+    assert.equal(blocked.has('r-4'), false);
+    blocked.add('r-4');
+    assert.equal(blocked.has('r-4'), true, '이 문서 안에서는 한 번');
+    const guarded = watchLifeDue({ open: () => Promise.resolve(null), progress, lessons: LESSONS, timers: fakeTimers() });
+    guarded.dispose();
+  } finally {
+    if (had) Object.defineProperty(globalThis, 'localStorage', had);
+    else delete globalThis.localStorage;
+  }
 });
 
 test('판정 넣기 — 끝자리: 지금 판의 판정은 null(확인 중이 아님) · 묻는 사이 온 알림 뒤 다시 물어도 지금 판이면 한 번 더 묻고 멈춘다 · 아직 복습 안 한 것은 stuck이 아니다 · 다리는 하루가 되는 그 순간 · 앞으로 열릴 것은 6개까지(넘친 #4)', async () => {

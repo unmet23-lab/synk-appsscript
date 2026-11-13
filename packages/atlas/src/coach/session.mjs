@@ -156,7 +156,8 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     chosen: new Map(),
     groups: new Map(),
     own: new Set(), // 이 코치가 쓴 사건 번호 — 같은 문서 다른 코치의 쓰기만 다시 세우기를 부른다
-    recheck: new Set(), // 다시 세울 때 저장 중이던 내 답 · 도움 — 저장이 끝나면(written) 한 번 더 세운다(repend)
+    // 저장이 끝나면(written) 한 번 더 세울 내 답 · 도움 — 다시 세울 때 저장 중이던 것(repend), 이 호스트에서 저장 실패가 난 뒤의 것(host.failedOnce)
+    recheck: new Set(),
     closed: null, // 닫은 판의 기록 자리 { setId, recorded, writing, decision }
     lastAt: 0,
     tag: coachTag(),
@@ -487,6 +488,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
           return folds.length ? folds : null;
         },
       });
+      // 이 호스트에서 저장 실패가 난 뒤의 도움은 저장이 끝날 때 한 번 더 세운다 — 기록부가 실패한 쓰기의 만남을 들고 있어 판 안에 얹은 값과
+      // 저장된 뒤 보기의 첫 만남이 갈린다(설계 주인 결정 6 · 넘친 #13의 남은 반쪽).
+      if (host.failedOnce()) s.recheck.add(event.id);
       for (const fold of folds) apply(s.learner, fold);
       // 판 일지에는 도움마다 — 보기가 아무것도 얹지 못하는 동안 다시 세워도(일지를 판을 열 때의 사본에 다시 돌림) 이 도움의 만남 · 능력이
       // 사라지지 않고(카본 끝 판 D), 앞 도움이 실패하면 이 도움이 첫 도움으로 선다(카본 끝 판 둘째 E). 이 도움이 실패하면 다른 줄처럼
@@ -517,6 +521,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
           return folds;
         },
       });
+      // 이 호스트에서 저장 실패가 난 뒤의 답도 저장이 끝날 때 한 번 더 세운다(위 help와 같은 까닭 — 답할 때 판 안은 실패 만남이 든 met으로
+      // 첫 만남이 아니고, 저장된 뒤 보기는 이 답이 첫 만남이다).
+      if (host.failedOnce()) s.recheck.add(made.event.id);
       group.children.push(entryOf(made.event));
       group.attempts += 1;
       const fold = folds.find(one => one.id === made.event.id);
