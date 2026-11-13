@@ -133,7 +133,7 @@ export const WIN=Object.freeze([
 // 얼마나 과감하게(11-13). 고르지 않으면 저희가 제안한다. 무엇을 고르든 제품 사실과 피할 말은 지킨다. ID는 서버 pulse-requests.mjs BOLDS와 같다.
 export const BOLD=Object.freeze([
   {id:'safe',label:k('정석대로'),note:k('이 업종 광고가 익숙하게 쓰는 장면 안에서, 제품을 정확하고 보기 좋게 보여 드려요.')},
-  {id:'twist',label:k('조금 다르게'),note:k('같은 업종 광고가 잘 하지 않는 장면을 하나 넣어요. 방향 두 안 가운데 하나는 정석으로 함께 보내 드려요.')},
+  {id:'twist',label:k('조금 다르게'),note:k('같은 업종 광고가 잘 하지 않는 장면을 하나 넣어요. 방향 두 안 가운데 하나는 정석으로 함께 보내 드려요.'),photoNote:k('같은 업종 광고가 잘 하지 않는 장면을 하나 넣어요.')},
   {id:'wild',label:k('확 다르게'),note:k('말이 안 되는 설정까지 가 봐요. 그래도 제품 사실과 피할 말은 그대로 지켜요.')},
 ]);
 // 광고에 꼭 붙여야 하는 표시가 있는 업종(11-13). 저장값은 언어와 상관없는 ID이고(서버 NOTICES와 같다 — 여기에 「해당 없어요」 none · 「잘 모르겠어요」 unsure가 더 있다),
@@ -257,7 +257,7 @@ export function briefRows(a){
     {key:k('참고 광고'),step:'feel',value:refs,missing:refs?'':k('없음')},
     // 내 모델 다시 쓰기(판 4): 내 모델 화면에서 붙인 인물이면 그 이름(화면에만 있는 a.personaPick), 서버 답만 있으면(고객 방 · 직원 확인) 「내 모델 다시 쓰기」.
     {key:k('모델'),step:'model',value:a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물 요청 · {kind}',{kind:personaKindLabel(a)}):a.modelChoice==='persona'?(a.personaPick?.name?t('내 모델 · {name}',{name:a.personaPick.name}):t('내 모델 다시 쓰기')):modelList(a),missing:(a.models.length||a.modelChoice)?'':k('저희가 제안해요')},
-    {key:k('목소리'),step:'model',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')},
+    ...(pkg?.photo?[]:[{key:k('목소리'),step:'model',value:VOICES.find(item=>item.id===a.voice)?t(VOICES.find(item=>item.id===a.voice).label):undefined,missing:a.voice?'':k('저희가 제안해요')}]),
     {key:k('받고 싶은 날'),step:'contact',value:a.dateFree?t('정해진 날짜 없음'):a.date,missing:(a.date||a.dateFree)?'':k('미정')},
     {key:k('최종 확인'),step:'contact',value:a.approver==='one'?t('의뢰하신 분'):a.approver==='many'?(a.approverName?t('여러 명 · 최종 {name}',{name:a.approverName}):t('여러 명')):'',missing:a.approver?'':k('미정')},
     {key:k('연락처'),step:'contact',value:[a.contactName,a.company,a.email,a.phone].filter(Boolean).join(' · '),missing:a.contactName&&(a.email||a.phone)?'':k('성함과 이메일이나 휴대폰이 있어야 연락드릴 수 있어요')},
@@ -273,6 +273,7 @@ export function answersFromServer(stored={},files=[],previewOf=()=>''){
 }
 export function answersForServer(answers){
   const out={};for(const key of Object.keys(emptyAnswers()))if(!(LATER_FIELDS.includes(key)&&blank(answers[key])))out[key]=answers[key];
+  if(pkgOf(answers)?.photo)delete out.voice;
   const slots={};for(const [key,value]of Object.entries(answers.slots||{}))if(value?.none)slots[key]={none:true};
   return {...out,slots,refs:(answers.refs||[]).filter(ref=>ref.url||ref.points?.length||ref.why)};
 }

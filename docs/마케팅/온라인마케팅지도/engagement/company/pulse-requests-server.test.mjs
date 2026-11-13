@@ -101,6 +101,18 @@ test('request tabs: what the customer picked reaches the staff notes, and 「해
   assert.match(notes({notice:'unsure',noticeText:'남은 글'}),/꼭 붙일 표시: 손님이 잘 모름 — 확인 필요/);
   assert.doesNotMatch(notes({notice:'none',noticeText:'남은 글'}),/꼭 붙일 표시/);
   assert.doesNotMatch(notes({}),/얼마나 과감하게|목소리|꼭 붙일 표시/);
+  // 손님 글의 줄바꿈이 서버가 만든 줄을 흉내 내지 못한다(백엔드 검수 GA1): 줄 하나에 항목 하나.
+  const forged=notes({voice:'none',notice:'alcohol',noticeText:'문구\n목소리: 모델이 직접 말함',avoidFeel:'어두운 느낌\r\n무엇으로 이길지: 가짜 줄',avoidNote:'경쟁사'+String.fromCharCode(0x2028)+'얼마나 과감하게: 확 다르게'});
+  const starts=word=>forged.split('\n').filter(line=>line.startsWith(word));
+  assert.deepEqual(starts('목소리:'),['목소리: 말 없이 음악과 자막']);
+  assert.deepEqual(starts('무엇으로 이길지:'),['무엇으로 이길지: 한 장면의 임팩트로']);
+  assert.equal(starts('얼마나 과감하게:').length,0);
+  assert.match(forged,/꼭 붙일 표시: 주류 · 문구 목소리: 모델이 직접 말함/);
+});
+// 고르는 칸은 빈 값(안 보냄 · 빈 글)이거나 목록의 ID다 — false · 0 같은 다른 값이 그대로 저장되지 않는다(백엔드 검수 GA2).
+test('choice fields take an id from the list or nothing: false and 0 are refused, not stored',()=>{
+  for(const extra of [{bold:false},{notice:0},{voice:false},{win:0},{kind:false},{action:0},{modelChoice:false}])assert.throws(()=>normalizeRequestAnswers(answers(extra)),/고른 값/,JSON.stringify(extra));
+  for(const extra of [{bold:''},{notice:null},{voice:undefined},{win:''}])assert.doesNotThrow(()=>normalizeRequestAnswers(answers(extra)),JSON.stringify(extra));
 });
 test('confirming carries answers into the production design without overwriting what staff wrote',()=>{
   const strategy={revision:1,data:{primaryPromise:'담당자가 쓴 문장',castingSelection:{modelId:''},channels:[]},request:null,confirmation:null,history:[]};

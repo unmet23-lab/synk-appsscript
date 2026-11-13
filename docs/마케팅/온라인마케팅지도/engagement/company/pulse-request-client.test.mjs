@@ -45,6 +45,32 @@ test('request tabs: every new choice the page offers is one the server keeps, an
   assert.equal(row({...picked,notice:'unsure'},'꼭 붙일 표시').value,'잘 모르겠어요 · 저희가 확인해요');
   for(const key of ['얼마나 과감하게','꼭 붙일 표시','목소리']){const empty=row(emptyAnswers(),key);assert.ok(empty.missing&&!empty.value,key+' says what happens when left empty');}
 });
+// 사진 상품(photo)에는 소리가 없다: 목소리 줄을 만들지 않고, 영상 구성에서 골라 둔 목소리는 보내지 않는다(11-14 화면 최종 검수 2).
+test('request tabs: a photo order has no voice — no brief line, nothing sent, and the boldness note drops the two-directions promise',async()=>{
+  const film={...emptyAnswers(),package:'s15',voice:'narration',bold:'twist'},photo={...film,package:'photo'};
+  assert.ok(briefRows(film).some(row=>row.key==='목소리'));
+  assert.equal(briefRows(photo).some(row=>row.key==='목소리'),false);
+  assert.equal(answersForServer(film).voice,'narration');
+  assert.equal('voice' in answersForServer(photo),false);
+  assert.doesNotThrow(()=>normalizeRequestAnswers(answersForServer(photo)));
+  assert.ok(BOLD.find(item=>item.id==='twist').photoNote&&!/두 안/.test(BOLD.find(item=>item.id==='twist').photoNote));
+  const flow=await readFile(new URL('./public/pulse-app/request-flow.mjs',import.meta.url),'utf8');
+  assert.ok(flow.includes("const voiceBlock=a=>pkgOf(a)?.photo?'':"),'no voice question for photos');
+  assert.ok(flow.includes("const group=slotsFor(a.kind),slots=group.filter(slot=>slot.id!=='sound'||!pkgOf(a)?.photo||filesOf(a,slot.id).length);"),'no sound slot for photos, unless a sound file is already there to see and remove');
+  // 걸러 낸 배열은 늘 새 배열이라, 제품 묶음의 크기 칸은 거르기 전 묶음으로 정한다(11-14 다시 검수 P1: 크기 칸이 모든 구성에서 사라졌다).
+  assert.ok(flow.includes("(group===slotsFor('food')?field({bind:'size',"),'the size field still shows for product kinds');
+  assert.equal(flow.includes("slots===slotsFor("),false,'never compare a filtered list by identity');
+  const css=await readFile(new URL('./public/pulse-app/film.css',import.meta.url),'utf8');
+  assert.ok(css.includes('.sx-q[data-step=words] .sx-q-view:has([data-notice-line]:not([hidden]))>.sx-q-cap{display:none}'),'the caption gives way to the notice line on narrow screens');
+});
+// 「사람 없이」에서 숨긴 「모델이 직접 말해요」 칩은 사람이 다시 나오게 되면(모델 카드를 고르거나 다른 칩으로 바꾸면) 돌아와야 한다(11-13 화면 검수 A1).
+test('request tabs: the voice chips are redrawn whenever who appears changes',async()=>{
+  const flow=await readFile(new URL('./public/pulse-app/request-flow.mjs',import.meta.url),'utf8');
+  const handler=name=>flow.split('\n').find(line=>line.trimStart().startsWith(name+'(el){'))||'';
+  assert.match(handler('model'),/a\.modelChoice='';dropPick\(\);swapDetail\(\);redrawVoice\(\);/,'picking a model card brings the chip back');
+  assert.match(handler('modelchoice'),/swapDetail\(\);redrawVoice\(\);/);
+  assert.match(handler('modelchoice'),/if\(a\.modelChoice==='none'&&a\.voice==='model'\)a\.voice='';/,'「사람 없이」 clears a voice only a person can give');
+});
 test('answers survive leaving and coming back: page, server, page, server',()=>{
   const once=normalizeRequestAnswers(answersForServer(full()));
   const files=[{id:'a',slot:'front',fileName:'a.png',inline:true}];

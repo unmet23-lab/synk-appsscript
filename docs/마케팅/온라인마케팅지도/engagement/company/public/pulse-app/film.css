@@ -476,6 +476,8 @@ img[data-cap]{--cap-k:1.47;margin:auto;max-width:calc(var(--cap-w) * var(--cap-k
 .sx-q-frame .sx-q-notice{position:absolute;left:0;right:0;bottom:0;margin:0;padding:.55em .9em .7em;text-align:center;color:rgba(255,255,255,.86);background:linear-gradient(to top,rgba(0,0,0,.62),rgba(0,0,0,0));font-size:clamp(11px,.9vw,13px);line-height:1.45;letter-spacing:0;white-space:pre-line}
 .sx-q-frame .sx-q-notice[hidden]{display:none}
 [data-notice-more]>.sx-q-hint{display:block;margin-top:.7rem}[data-notice-more]>.sx-field{margin-top:1.1rem}
+/* 고르기 전에는 설명 줄이 자리를 차지하지 않는다(.sx-q-hint의 display:block이 hidden을 이긴다) */
+[data-bold-note][hidden],[data-voice-note][hidden]{display:none}
 .sx-q-where{position:absolute;inset:0;display:grid;place-items:center}
 .sx-q-where>.sx-q-fill{object-position:0% 50%}
 .sx-q-finder{position:relative;z-index:1;aspect-ratio:9/16;height:78%;justify-self:end;margin-right:10%;box-shadow:0 0 0 1px var(--sx-ink),0 0 0 100vmax rgba(0,0,0,.66);transition:aspect-ratio .6s var(--sx-out)}
@@ -604,6 +606,8 @@ img[data-cap]{--cap-k:1.47;margin:auto;max-width:calc(var(--cap-w) * var(--cap-k
   .sx-q-foot{order:3;position:sticky;bottom:0;padding:10px var(--sx-m) calc(env(safe-area-inset-bottom) + 10px)}
   .sx-q-foot .sx-go{flex:1;min-width:0}
   .sx-q-cap{top:auto;bottom:10px;right:auto;left:var(--sx-m);max-width:calc(100% - 2*var(--sx-m));text-align:left}
+  /* 글자 화면: 고지 문구 자리가 보이면 밑줄 글을 뺀다 — 좁은 화면에서는 둘이 틀 바닥의 같은 자리에 온다. */
+  .sx-q[data-step=words] .sx-q-view:has([data-notice-line]:not([hidden]))>.sx-q-cap{display:none}
   /* 예시 작품 단계: 글줄은 왼쪽, 멈춤 단추는 같은 줄 오른쪽 — 글줄이 단추 앞에서 접힌다. */
   .sx-q-view>.sx-film-hold{bottom:10px}
   .sx-q[data-step=feel] .sx-q-cap{max-width:calc(100% - 2*var(--sx-m) - 96px)}

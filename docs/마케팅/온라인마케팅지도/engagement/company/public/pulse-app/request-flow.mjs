@@ -112,14 +112,14 @@ const contactLocaleView=a=>{
 const contactLocaleRow=a=>offeredLocales().length>1&&LANG_NAMES[a.contactLocale]?[{key:k('안내 · 메일 언어'),step:'contact',value:LANG_NAMES[a.contactLocale],missing:'',lang:htmlLang(a.contactLocale)}]:[];
 
 // ── 의뢰서 탭(11-13): 과감함 · 꼭 붙일 표시 · 목소리. 모두 눌러 고르고, 고르지 않아도 넘어간다. ──
-const boldNote=a=>{const note=BOLD.find(item=>item.id===a.bold)?.note;return note?t(note):'';};
+const boldNote=a=>{const item=BOLD.find(item=>item.id===a.bold),note=pkgOf(a)?.photo&&item?.photoNote||item?.note;return note?t(note):'';};
 const boldBlock=a=>`<div class="sx-sub" data-in><span class="sx-small">${esc(t('얼마나 과감하게 갈까요? · 선택'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('얼마나 과감하게'))}">${BOLD.map(item=>chip(t(item.label),a.bold===item.id,`data-do="bold" data-id="${item.id}"`)).join('')}</div><small class="sx-small sx-q-hint" data-bold-note${boldNote(a)?'':' hidden'}>${esc(boldNote(a))}</small></div>`;
 const noticeMore=a=>a.notice==='unsure'?`<small class="sx-small sx-q-hint">${esc(t('괜찮아요. 저희가 확인해 보고, 필요하면 그때 여쭤볼게요.'))}</small>`:!noticeOn(a)?'':`<small class="sx-small sx-q-hint">${esc(t('표시나 심의가 따로 정해진 업종이에요. 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리고, 최종 문구는 확인을 받아요.'))}</small>${field({bind:'noticeText',label:t('이미 쓰시는 고지 문구 · 심의 번호 · 선택'),value:a.noticeText,placeholder:t('예) 늘 넣으시는 안내 문구, 받아 두신 심의 번호'),max:300})}`;
 // 광고할 것의 종류에 맞는 갈래만 보인다. 종류를 바꾸기 전에 고른 갈래는 맨 앞에 그대로 둔다(고른 것이 안 보이면 풀 수도 없다).
 const noticeIds=a=>{const ids=NOTICE_KINDS[a.kind]||NOTICE_KINDS.brand;return noticeOn(a)&&!ids.includes(a.notice)?[a.notice,...ids]:ids;};
 const noticeBlock=a=>`<div class="sx-sub" data-in><span class="sx-small">${esc(t('광고에 꼭 붙여야 하는 표시가 있는 업종인가요?'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('꼭 붙일 표시'))}">${[...noticeIds(a).map(id=>[id,t(noticeLabel(id))]),['none',t('해당 없어요')],['unsure',t('잘 모르겠어요')]].map(([id,label])=>chip(label,a.notice===id,`data-do="notice" data-id="${esc(id)}"`)).join('')}</div><div data-notice-more>${noticeMore(a)}</div></div>`;
 const voiceNote=a=>{const note=VOICES.find(item=>item.id===a.voice)?.note;return note?t(note):'';};
-const voiceBlock=a=>`<div class="sx-sub" data-in data-voice-block><span class="sx-small">${esc(t('목소리는 어떻게 할까요? · 선택'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('목소리'))}">${VOICES.filter(item=>item.id!=='model'||a.modelChoice!=='none').map(item=>chip(t(item.label),a.voice===item.id,`data-do="voice" data-id="${item.id}"`)).join('')}</div><small class="sx-small sx-q-hint" data-voice-note${voiceNote(a)?'':' hidden'}>${esc(voiceNote(a))}</small></div>`;
+const voiceBlock=a=>pkgOf(a)?.photo?'':`<div class="sx-sub" data-in data-voice-block><span class="sx-small">${esc(t('목소리는 어떻게 할까요? · 선택'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('목소리'))}">${VOICES.filter(item=>item.id!=='model'||a.modelChoice!=='none').map(item=>chip(t(item.label),a.voice===item.id,`data-do="voice" data-id="${item.id}"`)).join('')}</div><small class="sx-small sx-q-hint" data-voice-note${voiceNote(a)?'':' hidden'}>${esc(voiceNote(a))}</small></div>`;
 
 const views={
   what(a,step,i,n){
@@ -134,11 +134,12 @@ const views={
       `<label class="sx-tick" data-in><input type="checkbox" data-bind="paid" ${a.paid?'checked':''}><span>${esc(t('광고비를 써서 돌릴 거예요'))}</span><small class="sx-small">${esc(t('심사에 필요한 표시와 규격까지 함께 챙겨 드려요.'))}</small></label>`);
   },
   files(a,step,i,n){
-    const slots=slotsFor(a.kind);
+    // 사진 상품에는 소리 파일 칸을 두지 않는다 — 이미 올린 소리 파일이 있으면 볼 수 있고 지울 수 있게 남긴다. 크기 칸은 거르기 전 묶음으로 정한다(걸러 낸 배열은 늘 새 배열이다).
+    const group=slotsFor(a.kind),slots=group.filter(slot=>slot.id!=='sound'||!pkgOf(a)?.photo||filesOf(a,slot.id).length);
     return ask(step,i,n,t('이것만 보내 주세요'),t('제품 · 로고 · 글자는 AI로 다시 그리지 않고 보내 주신 파일을 그대로 얹어요. 그래서 원본이 중요해요. 지금 없는 건 나중에 보내도 돼요.'),
       `<div class="sx-slots">${slots.map(slotView.bind(null,a)).join('')}</div>`+
       field({bind:'pageUrl',label:t('제품 · 서비스 페이지 주소'),value:a.pageUrl,placeholder:'https://',help:t('여기 적힌 내용은 다시 적지 않으셔도 돼요.'),type:'url',max:1000})+
-      (slots===slotsFor('food')?field({bind:'size',label:t('손에 들면 어느 정도 크기인가요?'),value:a.size,placeholder:t('예) 355ml 캔, 손바닥 안에 들어와요'),max:120}):'')+
+      (group===slotsFor('food')?field({bind:'size',label:t('손에 들면 어느 정도 크기인가요?'),value:a.size,placeholder:t('예) 355ml 캔, 손바닥 안에 들어와요'),max:120}):'')+
       field({bind:'driveUrl',label:t('파일이 크면 드라이브 링크로'),value:a.driveUrl,placeholder:'https://',type:'url',max:1000}));
   },
   message(a,step,i,n){
@@ -260,7 +261,7 @@ function slateRows(a){
   if(a.win)rows.push([k('무엇으로'),t(WIN.find(item=>item.id===a.win)?.label||k('맡길게요'))]);
   if(BOLD.find(item=>item.id===a.bold))rows.push([k('과감함'),t(BOLD.find(item=>item.id===a.bold).label)]);
   if(a.models.length||a.modelChoice)rows.push([k('모델'),a.modelChoice==='none'?t('사람 없이 제품만'):a.modelChoice==='ask'?t('추천해 주세요'):a.modelChoice==='custom'?t('맞춤 인물'):a.modelChoice==='persona'?pickedLabel(a):a.models.map(modelOf).filter(Boolean).map(nameOf).join(', ')]);
-  if(VOICES.find(item=>item.id===a.voice))rows.push([k('목소리'),t(VOICES.find(item=>item.id===a.voice).label)]);
+  if(!pkg?.photo&&VOICES.find(item=>item.id===a.voice))rows.push([k('목소리'),t(VOICES.find(item=>item.id===a.voice).label)]);
   if(a.date||a.dateFree)rows.push([k('받고 싶은 날'),a.dateFree?t('미정'):a.date]);
   return rows;
 }
@@ -445,7 +446,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     voice(el){a.voice=a.voice===el.dataset.id?'':el.dataset.id;form.querySelectorAll('[data-do="voice"]').forEach(item=>setChip(item,item.dataset.id===a.voice));const note=$('[data-voice-note]');if(note){note.textContent=voiceNote(a);note.hidden=!voiceNote(a);}renderSlate();saved();},
     refpoint(el){const ref=a.refs[0];toggleIn(ref.points,el.dataset.id);setChip(el,ref.points.includes(el.dataset.id));saved();},
     allmodels(){allModels=!allModels;renderMonitor('model');$('.sx-cast')?.focus({preventScroll:true});},
-    model(el){toggleIn(a.models,el.dataset.id,2);a.modelChoice='';dropPick();swapDetail();host.querySelectorAll('[data-do="model"]').forEach(item=>{const on=a.models.includes(item.dataset.id);item.classList.toggle('is-on',on);item.setAttribute('aria-pressed',on?'true':'false');const mark=item.querySelector('.sx-cast-mark');if(mark)mark.textContent=on?String(a.models.indexOf(item.dataset.id)+1):'';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,false));showModel(el.dataset.id);renderSlate();saved();},
+    model(el){toggleIn(a.models,el.dataset.id,2);a.modelChoice='';dropPick();swapDetail();redrawVoice();host.querySelectorAll('[data-do="model"]').forEach(item=>{const on=a.models.includes(item.dataset.id);item.classList.toggle('is-on',on);item.setAttribute('aria-pressed',on?'true':'false');const mark=item.querySelector('.sx-cast-mark');if(mark)mark.textContent=on?String(a.models.indexOf(item.dataset.id)+1):'';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,false));showModel(el.dataset.id);renderSlate();saved();},
     // 붙인 「내 모델」 칩은 다시 눌러도 꺼지지 않는다 — 끄면 붙임이 풀려 의뢰서 안에서는 되돌릴 길이 없다(판 4 화면 최종 검수 F1). 다른 칩 · 모델을 고를 때만 푼다.
     modelchoice(el){if(el.dataset.id==='persona'&&a.modelChoice==='persona')return;a.modelChoice=a.modelChoice===el.dataset.id?'':el.dataset.id;a.models=[];if(a.modelChoice!=='persona')dropPick();if(a.modelChoice==='none'&&a.voice==='model')a.voice='';host.querySelectorAll('[data-do="model"]').forEach(item=>{item.classList.remove('is-on');item.setAttribute('aria-pressed','false');item.querySelector('.sx-cast-mark').textContent='';});form.querySelectorAll('[data-do="modelchoice"]').forEach(item=>setChip(item,item.dataset.id===a.modelChoice));swapDetail();redrawVoice();showChoice();renderSlate();saved();},
     // 맞춤 인물 요청 칸(판 3). 종류를 바꾸면 묻는 칸이 달라져 그 칸만 다시 그리고 누른 단추에 초점을 둔다.

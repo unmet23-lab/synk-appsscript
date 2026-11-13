@@ -42,7 +42,8 @@ function link(value,strict,message){
   if(!['https:','http:'].includes(parsed.protocol)||parsed.username||parsed.password)throw fail(message);
   return parsed.href;
 }
-const one=(value,list)=>{const found=value===undefined||value===null?'':value;if(found&&!list.includes(found))throw fail('고른 값을 확인해 주세요.');return found;};
+// 빈 값은 안 보냄(undefined · null)과 빈 글뿐이다 — false · 0처럼 목록 밖의 다른 값은 거절한다(11-13 백엔드 검수 GA2: 그대로 저장되던 것).
+const one=(value,list)=>{const found=value===undefined||value===null?'':value;if(found!==''&&!list.includes(found))throw fail('고른 값을 확인해 주세요.');return found;};
 function many(value,list,max=list?.length??8,itemMax=40){if(value===undefined||value===null)return [];if(!Array.isArray(value)||value.length>max)throw fail('고른 값을 확인해 주세요.');const out=[...new Set(value.map(item=>text(item,itemMax)))].filter(Boolean);if(list&&out.some(item=>!list.includes(item)))throw fail('고른 값을 확인해 주세요.');return out;}
 
 export const REQUEST_KINDS=['food','beauty','fashion','living','app','place','brand'];
@@ -839,6 +840,8 @@ const PACKAGE_SECONDS={s15:15,s30:30,s60:60,corp:30};
 const OBJECTIVE={buy:'sales',install:'sales',visit:'sales',ask:'sales',remember:'brand'};
 const WIN_LABEL={story:'이야기로 여운을',impact:'한 장면의 임팩트로',laugh:'웃음으로 퍼지게',ask:'맡김'};
 const BOLD_LABEL={safe:'정석대로',twist:'조금 다르게',wild:'확 다르게'},VOICE_LABEL={narration:'내레이션',model:'모델이 직접 말함',none:'말 없이 음악과 자막'};
+// 메모의 한 줄은 「항목: 값」 하나다. 손님이 쓴 글에 줄바꿈이 있으면 그 뒤가 서버가 만든 다른 줄처럼 보이므로(11-13 백엔드 검수 GA1) 줄을 나누는 공백을 빈칸 하나로 잇는다.
+const oneLine=value=>String(value).replace(/\s*[^\S \t]+\s*/g,' ');
 // 꼭 붙일 표시: 「해당 없어요」는 줄을 만들지 않고, 「잘 모르겠어요」는 담당자가 확인할 일로 적는다. 고지 문구는 표시 업종을 골랐을 때만 붙인다.
 const noticeLine=a=>!a.notice||a.notice==='none'?'':a.notice==='unsure'?'꼭 붙일 표시: 손님이 잘 모름 — 확인 필요':`꼭 붙일 표시: ${[NOTICE_LABEL[a.notice],a.noticeText].filter(Boolean).join(' · ')}`;
 export function carryToStrategy(strategy,a,stamp){
@@ -850,7 +853,7 @@ export function carryToStrategy(strategy,a,stamp){
   put('durationSeconds',PACKAGE_SECONDS[a.package]||null);put('distribution',a.paid?'paid':'');
   put('screenCopy',a.screenText);put('destinationUrl',/^https:\/\//.test(a.pageUrl||'')?a.pageUrl:'');put('proposedDeadline',a.date);
   const refs=(a.refs||[]).map(ref=>[ref.url,(ref.points||[]).join(', '),ref.why].filter(Boolean).join(' — ')).filter(Boolean);
-  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean);
+  const lines=[a.win&&`무엇으로 이길지: ${WIN_LABEL[a.win]}`,a.bold&&`얼마나 과감하게: ${BOLD_LABEL[a.bold]}`,a.voice&&`목소리: ${VOICE_LABEL[a.voice]}`,noticeLine(a),refs.length&&`참고 광고: ${refs.join(' / ')}`,a.avoidFeel&&`피할 느낌: ${a.avoidFeel}`,[...(a.avoid||[]),a.avoidNote].filter(Boolean).length&&`피할 말: ${[...(a.avoid||[]),a.avoidNote].filter(Boolean).join(', ')}`,a.models?.[1]&&`함께 고민 중인 모델: ${a.models[1]}`,a.size&&`크기: ${a.size}`,a.useNote&&`쓰는 법: ${a.useNote}`,a.driveUrl&&`드라이브: ${a.driveUrl}`,a.approver==='many'&&`여러 명이 확인${a.approverName?` · 최종 ${a.approverName}`:''}`].filter(Boolean).map(oneLine);
   put('notes',lines.join('\n').slice(0,3000));
   // 고른 모델의 헤어는 그 모델이 제작 설계의 모델일 때만 옮긴다(헤어 1 · 2 · 3은 모델마다 다르다). 전용 인물이 붙어 있으면 카탈로그 모델을 넣지 않는다.
   const casting={...data.castingSelection};if(a.models?.[0]&&!casting.modelId&&!personaRefOf(casting.personaRef))casting.modelId=a.models[0];
