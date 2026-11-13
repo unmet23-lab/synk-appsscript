@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { VENUES, SHIFT_SIZE, CAST } from './content.mjs';
 import { composeShift, choicesFor, minutes, validateContent } from './core.mjs';
-import { answerPayload, caseMetadata } from './learning.mjs';
+import { answerPayload, caseMetadata, missedPractice } from './learning.mjs';
+import { readFileSync } from 'node:fs';
 import { choiceId, choiceCorrection, immediateCheck } from './correction.mjs';
 const require = createRequire(import.meta.url), { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
 const map = createMap(require('../../strata/maps/topik-i.json'));
@@ -175,4 +176,69 @@ test('the same skill with another measured expression never claims the same rule
   const queue = [original, candidate], venue = { ...pool, cases: queue };
   const plan = immediateCheck({ venue, queue, index: 0, item: original, coach: { exposure: () => ({ seen: false }), events: () => [] } });
   assert.equal(plan.status, 'new'); assert.match(plan.line, /규칙·표현은 달라질 수/); assert.doesNotMatch(plan.line, /같은 안내 규칙/);
+});
+
+// 재방문 맞춤: 근무 전 안내가 「오늘 근무에도 그런 손님이 와요」라고 약속한 손님은 확인 손님에게 자리를 내주지 않는다.
+// (2026-11-14 공개본 재현: 목소리를 켠 도서관 근무에서 library-02 읽어 주기가 도움으로 남아 library-10이 끼고 약속한 library-06이 빠졌다.)
+const library = VENUES.find(v => v.id === 'library'), libraryCase = id => library.cases.find(c => c.id === id);
+test('the return-practice guest promised in the briefing survives a voice-read (replay-helped) line clue', () => {
+  const g = coach();
+  let queue = composeShift(pool, { firstTime: true });
+  for (let index = 0; index < queue.length; index++) {
+    const item = queue[index], miss = item.skill === 'ko.reading.negation', result = exposed(g, item, !miss);
+    if (miss || result.assisted) queue = immediateCheck({ venue: pool, queue, index, item, coach: g }).queue;
+  }
+  const plan = missedPractice(g, ['library']);
+  assert.equal(plan?.target.id, 'library-06', 'two missed negation guests promise a fresh negation guest in the library');
+  const shift = composeShift(library, { ranked: [plan.target.id] }), index = shift.findIndex(c => c.id === 'library-02');
+  assert.ok(shift.some(c => c.id === 'library-06')); assert.ok(index >= 0 && index < shift.findIndex(c => c.id === 'library-06'));
+  for (const previous of shift.slice(0, index)) exposed(g, previous, true);
+  // app.mjs: a line clue read aloud with the voice on is recorded as replay help, so even a correct stamp asks for a confirmation.
+  const item = shift[index], pid = g.present(caseMetadata(item)); g.help(pid, 'replay');
+  const read = g.answer(pid, answerPayload(true, { selectedId: choiceId(item.answer), correctId: choiceId(item.answer) }));
+  assert.equal(read.assisted, true);
+  const unguarded = immediateCheck({ venue: library, queue: shift, index, item, coach: g });
+  assert.ok(!unguarded.queue.some(c => c.id === 'library-06'), 'the hazard: without the guard the promised guest is the slot given up');
+  const checked = immediateCheck({ venue: library, queue: shift, index, item, coach: g, keepIds: [plan.target.id] });
+  assert.equal(checked.status, 'new'); assert.equal(checked.item.id, 'library-10'); assert.equal(checked.queue[index + 1].id, 'library-10');
+  assert.ok(checked.queue.some(c => c.id === 'library-06'), 'the promised guest still comes');
+  assert.equal(checked.queue.length, shift.length); assert.deepEqual(checked.queue.slice(0, index + 1), shift.slice(0, index + 1));
+  assert.ok(checked.queue.every((row, i) => !i || minutes(checked.queue[i - 1].at) < minutes(row.at)));
+  for (const answer of new Set(shift.map(c => c.answer))) assert.ok(checked.queue.some(c => c.answer === answer));
+});
+
+test('in every venue a promised guest survives even if every guest before it is wrong', () => {
+  const unseen = { exposure: () => ({ seen: false }), events: () => [] };
+  let hazards = 0;
+  for (const venue of VENUES) for (const target of venue.cases.filter(c => !c.followupOnly)) {
+    const shift = composeShift(venue, { ranked: [target.id] });
+    assert.ok(shift.includes(target), `${target.id} is in the shift it was promised for`);
+    for (const guard of [false, true]) {
+      let queue = shift;
+      for (let index = 0; index < queue.length && queue[index] !== target; index++) {
+        const plan = immediateCheck({ venue, queue, index, item: queue[index], coach: unseen, keepIds: guard ? [target.id] : [] });
+        assert.equal(plan.queue.length, shift.length);
+        queue = plan.queue;
+      }
+      if (guard) assert.ok(queue.includes(target), `${venue.id}: ${target.id} is not given up for a confirmation`);
+      else if (!queue.includes(target)) hazards++;
+    }
+  }
+  assert.ok(hazards > 0, 'the sweep reaches shifts where an unguarded confirmation would drop the promised guest');
+});
+
+test('when only the promised slot could go, no confirmation is inserted', () => {
+  const queue = ['pool-01', 'pool-02', 'pool-04', 'pool-06'].map(find), item = find('pool-02'), unseen = { exposure: () => ({ seen: false }), events: () => [] };
+  assert.equal(immediateCheck({ venue: pool, queue, index: 1, item, coach: unseen }).status, 'new');
+  const plan = immediateCheck({ venue: pool, queue, index: 1, item, coach: unseen, keepIds: ['pool-06'] });
+  assert.equal(plan.status, 'unavailable'); assert.equal(plan.item, null); assert.deepEqual(plan.queue, queue);
+});
+
+test('the game passes the promised return-practice guest to every immediate confirmation', () => {
+  const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8');
+  // Count every call separately from the guarded ones, so a later call whose arguments contain `}` cannot slip past.
+  const calls = source.split(/\bimmediateCheck\(/).length - 1;
+  const guarded = (source.match(/\bimmediateCheck\(\{[\s\S]*?keepIds:\s*\[state\.returnPlan\?\.target\?\.id\]/g) || []).length;
+  assert.ok(calls > 0);
+  assert.equal(guarded, calls, 'every immediateCheck call passes the promised guest');
 });

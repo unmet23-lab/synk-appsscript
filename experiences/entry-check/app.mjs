@@ -477,7 +477,9 @@ async function decide(choice, e) {
   state.results.push({ caseId: item.id, who: item.who, choice, expected: item.answer, correct: result.correct, skill: item.skill,
     hinted: cur.hint > 0, guided: !!cur.guided, independent: !!rec?.independent, recheck: cur.recheck });
   if (!state.drill && !tut.on && !runClosed() && (!result.correct || cur.hint > 0 || cur.guided || rec?.assisted === true)) {
-    cur.followup = immediateCheck({ venue: v, queue: state.queue, index: state.index, item, coach, assignment: assignment(), seenIds: [...assignmentSeen] });
+    // 안내가 약속한 재방문 맞춤 손님은 확인 손님 자리로 내주지 않는다(내줄 다른 자리가 없으면 확인 손님을 끼우지 않는다).
+    cur.followup = immediateCheck({ venue: v, queue: state.queue, index: state.index, item, coach, assignment: assignment(), seenIds: [...assignmentSeen],
+      keepIds: [state.returnPlan?.target?.id] });
     state.queue = cur.followup.queue;
     if (cur.followup.item) state.checkNotice = { id: cur.followup.item.id, line: cur.followup.line,
       status: cur.followup.status, sourceAttemptId: rec?.eventId || null };

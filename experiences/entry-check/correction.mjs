@@ -37,8 +37,11 @@ function preservesShift(venue, before, after, targeted) {
   return true;
 }
 
-/** Replace one remaining slot or move an existing slot; never add an attempt to the shift. */
-export function immediateCheck({ venue, queue, index, item, coach, assignment = null, seenIds = [] }) {
+/** Replace one remaining slot or move an existing slot; never add an attempt to the shift.
+ * keepIds: remaining guests the shift already promised (the return-practice guest named in the briefing). They are never
+ * the slot given up; when no other slot can go, no confirmation is inserted. */
+export function immediateCheck({ venue, queue, index, item, coach, assignment = null, seenIds = [], keepIds = [] }) {
+  const keep = new Set(keepIds.filter(Boolean));
   const none = (status, line) => ({ status, queue, item: null, line });
   if (index >= queue.length - 1) return none('round-end', '이번 근무의 마지막 손님이었어요. 근무를 마치면 다음 연습을 볼 수 있어요.');
   const measure = caseMetadata(item), prefix = queue.slice(0, index + 1), remaining = queue.slice(index + 1);
@@ -67,7 +70,10 @@ export function immediateCheck({ venue, queue, index, item, coach, assignment = 
     if (rest.some(row => minutes(row.at) <= minutes(candidate.at))) continue;
     const proposed = [];
     if (remaining.some(row => row.id === candidate.id)) proposed.push([...prefix, candidate, ...rest]);
-    else for (let remove = rest.length - 1; remove >= 0; remove--) proposed.push([...prefix, candidate, ...rest.filter((_, position) => position !== remove)]);
+    else for (let remove = rest.length - 1; remove >= 0; remove--) {
+      if (keep.has(rest[remove].id)) continue;
+      proposed.push([...prefix, candidate, ...rest.filter((_, position) => position !== remove)]);
+    }
     const revised = proposed.find(next => preservesShift(venue, queue, next, !!assignment));
     if (!revised) continue;
     return { status: 'new', queue: revised, item: candidate, line: strong
