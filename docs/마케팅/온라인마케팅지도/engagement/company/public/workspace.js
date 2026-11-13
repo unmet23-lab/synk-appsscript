@@ -4,14 +4,14 @@
 const workspaceModule={userId:null,host:null,frame:null,ready:false,loadTimer:null,loadGeneration:0,loadDelayed:false,loadRetries:0,loadStartedAt:null,share:null,open:null,summary:null,timer:null,unreadTimer:null,observer:null,slot:null,preload:false,messengerView:'list',voice:null,voiceTimer:null,voiceProbe:0};
 const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',history:'전체 추이',content:'콘텐츠 기획'};
 // 레일(11-06 새 판): 오늘 · 메신저 · 작업실 · SNS · 수업. 셋째 값은 빠른 검색 목록의 icon() 이름, 레일 그림은 workspaceRailGlyph.
-const workspacePrimaryTabs=[['home','오늘','clock'],['messenger','메신저','chat'],['workroom','작업실','bookmark'],['social','SNS','calendar'],['teaching','LAB 수업','users'],['path','PATH 업무','users'],['lectures','SHIFT 강의','calendar']];
+const workspacePrimaryTabs=[['home','오늘','clock'],['messenger','메신저','chat'],['workroom','작업실','bookmark'],['social','SNS','calendar'],['members','사람','users'],['teaching','LAB 수업','users'],['path','PATH 업무','users'],['lectures','SHIFT 강의','calendar']];
 // One application frame for every workspace; only its contextual menu changes.
 function workspaceHasContextMenu(){return typeof state!=='undefined'&&['workroom','social'].includes(workspacePrimaryView());}
 function workspaceSidebarExpanded(){if(!workspaceHasContextMenu())return false;return window.matchMedia('(max-width:700px)').matches?Boolean(state.workspaceSidebarOpen):!state.workspaceSidebarCollapsed;}
 function workspaceGlyph(kind){return kind==='search'?'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>':'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';}
 function workspaceContextMenu(){
   const view=workspacePrimaryView(),link=(id,label,glyph,action='tab',attrs='',active=false)=>`<button type="button" class="nav-item ${active?'active':''}" data-action="${action}" ${attrs||`data-tab="${id}"`} aria-current="${active?'page':'false'}" ${typeof isDemoMode==='function'&&isDemoMode()&&action==='marketing-section'&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요"':''}>${icon(glyph)}<span>${escape(label)}</span>${id==='messenger'?'<b class="messenger-unread nav-count" hidden></b>':''}</button>`;
-  let title={home:'홈',workroom:'내 작업실',handbook:'회사 안내',marketing:'마케팅',messenger:'메신저',members:'팀·크루',settings:'설정'}[view]||'워크스페이스',items='',extra='';
+  let title={home:'홈',workroom:'내 작업실',handbook:'회사 안내',marketing:'마케팅',messenger:'메신저',members:'사람·조직',settings:'설정'}[view]||'워크스페이스',items='',extra='';
   if(view==='workroom'){
     items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['pages','내 관리 페이지','link']].filter(([id])=>waWorkroomViews().includes(id)).map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)+(id==='tools'&&typeof wr!=='undefined'&&wr.view==='tools'&&typeof makerToolsSubnav==='function'?makerToolsSubnav():'')).join('');
     extra=link('tasks','내 할 일','calendar','marin-workroom-panel','data-panel="tasks"')+link('saved','저장한 메시지','bookmark','marin-workroom-panel','data-panel="saved"')+link('profile','내 업무 카드','users','marin-profile')+(waFeature('social')?link('results','SNS 성과','chart','social-view','data-view="results"'):'')+(waFeature('feedback')?`<a class="nav-item" href="/trial-feedback/">${icon('chart')}<span>체험 의견 결과</span></a>`:'');
@@ -28,7 +28,7 @@ function workspaceContextMenu(){
 }
 function workspaceRailGlyph(kind){
   const paths={home:'<circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/>',messenger:'<path d="M20 12.5a7.5 7.5 0 0 1-11 6.6L4 20l1-4.3A7.5 7.5 0 1 1 20 12.5Z"/>',workroom:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/>',social:'<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/>',teaching:'<circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M15 6.2a3 3 0 0 1 0 5.6M17.5 14.6c1.6.6 2.7 2 3 4.4"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>'};
-  return `<svg class="rail-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[({path:'teaching',lectures:'social'})[kind]||kind]||paths.home}</svg>`;
+  return `<svg class="rail-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[({path:'teaching',lectures:'social',members:'teaching'})[kind]||kind]||paths.home}</svg>`;
 }
 function workspaceFeltIcon(view){
   const file={home:'sticker-check.webp',workroom:'laptop-felt.webp',teaching:'sticker-book.webp',handbook:'sticker-book.webp',marketing:'sticker-search.webp',messenger:'sticker-envelope.webp',members:'sticker-person.webp',settings:'sticker-adapt.webp'}[view]||'sticker-search.webp';
@@ -78,7 +78,7 @@ window.addEventListener('resize',syncWorkspaceSidebar);
 const workspaceMarketingTabs=[['mine','내 현황','grid'],['team','팀 현황','users'],['all','전체 현황','grid'],['content','콘텐츠 기획','bookmark'],['channels','채널·수집','link']];
 function isMarketingWorkspace(){return ['overview','analysis','history','content'].includes(state.tab);}
 function workspacePrimaryView(){return isMarketingWorkspace()?'social':state.tab;}
-function workspaceUtilityTabs(){return [['handbook','회사 안내','info'],...(canManageTeam()?[['members','팀·크루','users']]:[]),...(isAdmin()?[['settings','설정','settings']]:[])];}
+function workspaceUtilityTabs(){return [['handbook','회사 안내','info'],...(isAdmin()?[['settings','설정','settings']]:[])];}
 function marketingScope(){return state.scope==='mine'?'mine':state.scope==='team'||state.scope==='all'&&state.teamId?'team':state.scope==='all'?'all':'mine';}
 function marketingScopeTitle(){return {mine:'내 현황',team:'팀 현황',all:'전체 현황'}[marketingScope()];}
 function resetGrowthHistoryRange(){state.historyRange='all';state.historyStart='';state.historyEnd='';state.historyDate='';}
@@ -415,7 +415,7 @@ window.addEventListener('message',event=>{
   if(type==='messenger:open-received'){if(event.data.requestId===workspaceModule.open?.requestId)workspaceModule.open=null;return;}
   if(type==='messenger:share-received'){if(event.data.requestId===workspaceModule.share?.requestId)workspaceModule.share=null;return;}
   if(type==='messenger:unread'){clearTimeout(workspaceModule.unreadTimer);workspaceModule.unreadTimer=setTimeout(()=>void refreshWorkspaceSummary(),400);return;}
-  if(type==='messenger:team'){if(canManageTeam()){state.tab='members';render();}return;}
+  if(type==='messenger:team'){state.tab='members';render();return;}
   if(type==='messenger:auth-expired'){
     state.user=null;state.data=null;state.report=null;state.authMode='login';state.hypeRequest++;state.hype=null;
     if(typeof resetContentWorkspace==='function')resetContentWorkspace();if(typeof resetStudioWorkspace==='function')resetStudioWorkspace();

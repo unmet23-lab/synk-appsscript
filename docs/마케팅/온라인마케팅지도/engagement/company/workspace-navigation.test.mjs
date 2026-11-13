@@ -189,17 +189,19 @@ test('resize before the app state script loads does not break workspace initiali
   f.context.state=f.state;f.state.tab='home';assert.doesNotThrow(()=>f.resize());
 });
 
-test('legacy navigation keeps daily work and role scoped management',()=>{
-  for(const [role,count] of [['admin',3],['manager',2],['member',1],['viewer',1]]){
-    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','teaching']);
+test('people remains available within the server member scope for every signed-in role',()=>{
+  for(const [role,count] of [['admin',2],['manager',1],['member',1],['viewer',1]]){
+    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
+    f.run("selectWorkspaceView('members');syncWorkspaceLocation()");
+    assert.equal(f.state.tab,'members');assert.equal(f.location.searchParams.get('tab'),'members');
   }
 });
 
 test('server computed admin access includes all company tabs',()=>{
   const f=fixture('admin');f.state.user.workspaceAccess=workspaceAccess({...f.state.user,active:true});
-  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','teaching','path','lectures']);
-  assert.equal(f.run('workspaceUtilityTabs().length'),3);
+  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching','path','lectures']);
+  assert.equal(f.run('workspaceUtilityTabs().length'),2);
 });
 
 test('teaching has a canonical direct entry without leaking marketing filters into classroom links',()=>{
@@ -321,11 +323,11 @@ test('assigned company features filter navigation and reject deep links; concurr
   const f=fixture('member');
   f.state.user.workspaceAccess=workspaceAccess({role:'member',active:true,workspaceProfile:{memberships:[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}],duties:[],revision:1}});
   f.state.data={workspaceCatalog:{companies:WORKSPACE_COMPANIES,duties:WORKSPACE_DUTIES}};
-  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','lectures']);
+  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','members','lectures']);
   f.run("selectWorkspaceView('teaching')");assert.equal(f.state.tab,'home');
   f.run("selectWorkspaceView('social')");assert.equal(f.state.tab,'home');
   f.run("selectWorkspaceView('lectures')");assert.equal(f.state.tab,'lectures');
-  f.run("wa.company='SHIFT'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','lectures']);
-  f.run("wa.company='PULSE'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom']);
+  f.run("wa.company='SHIFT'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','members','lectures']);
+  f.run("wa.company='PULSE'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','members']);
   f.run("selectWorkspaceView('lectures')");assert.equal(f.state.tab,'lectures');assert.equal(f.run('wa.company'),'all');
 });

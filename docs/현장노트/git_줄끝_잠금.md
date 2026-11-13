@@ -756,6 +756,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 다시 확인: `node tools/sync-atlas.js --all --check --local`이 `"ok": true`, `node tools/check-account-bundles.js`가 넷 모두 ok.
 - 추가 실측(2026-11-01 GPT): 드라마 시범의 새 워크트리도 node_modules가 없어 `바로올리기` 관련 시험의 `공개.test.js`에서 `Cannot find module 'parse5'`가 났다(첫 회502/511, push 안 됨). 오류 뒤 해당 시험 프로세스만 남아 끝나지 않아 PID·부모 PID·시험 경로를 대조해 그 프로세스만 끝내고 실패 요약 로그를 보존했다(임시 TAP 전문은 도구가 종료 시 지워 보존하지 못함). 이 작업본에서는 junction 대신 기존 lock의 `npm ci --no-fund --no-audit`로9개를 설치했다. package.json·lock은 바뀌지 않았다. `require('parse5').parse`와 `esbuild.transformSync`가 정상임을 확인한 뒤 같은 반영 명령으로 관련 시험을 다시 돌린다(시험을 빼거나 실패를 통과로 바꾸지 않음).
 
+- 추가 실측(2026-11-13 GPT): 등록 작업본 70개 중 C: 24개에서 조사한 playwright·parse5·odiff-bin 중 하나 이상을 못 찾았고 D: 26개는 모두 찾았다(보관·시험 작업본 포함). 직원 조직 작업본의 공개 importmap/CSP 시험은 parse5 누락으로 0/10, 공용은 10/10이었다. package·lock·시험·핵심 모듈 바이트 일치 확인 뒤 해당 작업본에만 node_modules junction을 두자 같은 소스로 10/10이 됐다. 드라이브 문자보다 부모 경로의 의존성 준비를 먼저 확인한다. [재점검 근거](../_ops/코드구조_전수조사_20261023/재점검_20261113.md).
+
 - 덧붙임(2026-11-10 Claude): `바로올리기` 짝 검사도 같은 까닭으로 Study 묶음을 「오류」로 막는다(`world-strings.mjs`를 고친 커밋). 링크를 둔 채 지어 보니 내용 변화 없이 줄끝만 달랐다 — 링크를 올리기 동안만 두고 끝나면 PowerShell `[System.IO.Directory]::Delete(<링크>, $false)`로 링크만 끊는다(PowerShell 도구는 `cmd /c rmdir`을 시스템 경로 지우기로 보고 명령째 막는다). 끊은 뒤 공용 `node_modules/esbuild`가 그대로인지 본다.
 
 ### Atlas 원천과 계정 호스트를 함께 고친 뒤 `sync-atlas`를 먼저 돌리면 드라마 시범 묶음에 옛 호스트가 남는다 — `check-account-bundles --build` 뒤 `sync-atlas`를 한 번 더 (2026-11-10 Claude)
@@ -1015,6 +1017,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 원인: 내기 도구 · 검사는 그 작업본의 파일을 그 자리에서 import한다. Edit 한 번이 곧 반영이라, 여러 번에 나눠 고치는 사이의 중간 판(규칙을 다듬기 전 · 부르는 줄만 먼저 들어간 판)도 그대로 돈다.
 - 고침: 내기 도구 · 검사 · 훅처럼 다른 세션의 관문이 되는 파일은 워크트리에서 고쳐 시험을 지난 뒤 올린다(공용 작업본에서 시작한 세션은 사본으로 옮겨서). 공용 작업본에서 고쳐야 하면 새 함수 · 표 파일을 먼저 넣고 부르는 줄을 맨 나중에 넣는다 — 이번에는 그 순서라 깨진 중간 판은 없었지만, 실물 대조로 풀기 전의 규칙(초록 판 · 앞옆 빛도 걸던 판)이 40분쯤 돌았다.
 - 다시 확인: 고치는 동안 `git status --short -- <그 도구>`가 M인 채로 다른 세션의 편 폴더 파일이 바뀌는지 본다.
+
+### worktree-hygiene가 정상 중첩 저장소의 미추적 디렉터리 레코드를 거절한다 (2026-11-13 GPT)
+- 증상: 공용 작업본에서 `node tools/worktree-hygiene.js --json`이 incomplete·invalid-output으로 끝나 집계가 null이다.
+- 원인: Git porcelain -z는 중첩 저장소를 `?? nested-repo/\0`으로 반환하는데, validGitPath가 끝 슬래시의 빈 경로 조각까지 거절한다. 실제 중첩 작업본 네 곳의 레코드와 단일 합성 레코드로 재현했다.
+- 고침: 막다른 길 기록. 이번 진단에서는 도구를 변경하지 않았다. 미추적 디렉터리만 허용하면서 절대·상위 경로 거절을 유지하고 파일/디렉터리 집계를 구분할 후속이다. 파일을 지워 진단을 통과시키지 않는다.
+- 다시 확인: 정상 중첩 저장소를 가진 격리 Git fixture에서 parseStatus를 호출하고, 실제 공용 집계가 incomplete로 남는지 확인한다. [상세](../_ops/코드구조_전수조사_20261023/재점검_20261113.md).
 
 ## 이력 훑기
 

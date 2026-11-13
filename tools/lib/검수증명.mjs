@@ -123,6 +123,9 @@ export const Atlas작업ID = 'atlas-world-learning-20261028';
 // 11-09 이번 Workspace 다음 할 일 연결만 GPT 구현·독립 GPT 검수로 진행한다.
 export const Workspace다음할일작업ID = 'workspace-next-action-20261109';
 export const Workspace다음할일원문 = Object.freeze({ implementationReview: '구현과 검토는 이번 세션에서는 니가 다 해. 허용할게' });
+// 11-13 직원 조직 기능 한정 사용자 승인. 다른 작업의 작성·검수 정책은 유지한다.
+export const Workspace조직작업ID = 'workspace-organization-20261113';
+export const Workspace조직원문 = Object.freeze({ implementationReview: '이번 작업은 GPT가 설계·구현·검토 진행' });
 // 같은 날 후속 지시: 구현뿐 아니라 현재 Codex의 직접 검수와 마감도 승인했다.
 export const 사이트점검단독작업ID = 'site-audit-self-review-20261110';
 export const 사이트점검단독원문 = Object.freeze({ implementation: '이번 수정은 GPT가 직접 진행', review: '너 혼자 직접 검수하고 진행해' });
@@ -281,6 +284,17 @@ function Workspace다음할일범위맞나(scope, p, role, 종류, author) {
   return scope === Workspace다음할일작업ID && role === '소스' && author === 'GPT'
     && Workspace다음할일원천[종류]?.has(p);
 }
+const Workspace조직원천 = {
+  화면: new Set(['public/member-organization.js', 'public/member-organization.css', 'public/workspace-access.js', 'public/app.js', 'public/workspace.js', 'public/index.html', 'workspace-navigation.test.mjs', 'qa/verify-member-organization.mjs'].map(p => Workspace다음할일회사 + p)),
+  백엔드: new Set([
+    ...['member-organization.mjs', 'organization.mjs', 'server.mjs', 'server-member-organization.test.mjs'].map(p => Workspace다음할일회사 + p),
+    'tools/lib/검수증명.mjs', 'tests/검수Workspace조직.test.mjs',
+  ]),
+};
+function Workspace조직범위맞나(scope, p, role, 종류, author) {
+  return scope === Workspace조직작업ID && role === '소스' && author === 'GPT'
+    && Workspace조직원천[종류]?.has(p);
+}
 const 사이트점검경로계약 = new Set([
   '.github/site-check/check.mjs', '.github/site-check/redirect-contract.mjs', '.github/site-check/redirect-contract.test.mjs',
 ]);
@@ -304,16 +318,18 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
   const 최적화 = 단독 && 지정.taskId === 'optimization-security-20261028';
   const PATH비공개 = 단독 && 지정.taskId === PATH비공개작업ID;
   const Workspace다음할일 = 단독 && 지정.taskId === Workspace다음할일작업ID;
+  const Workspace조직 = 단독 && 지정.taskId === Workspace조직작업ID;
   const 사이트점검단독 = 단독 && 지정.taskId === 사이트점검단독작업ID;
   const AI마켓 = 단독 && 지정.taskId === AI마켓작업ID;
   const 검수자 = AI마켓 && o.종류 === '화면' ? ['아르곤'] : 단독 ? ['GPT'] : 지정검수자, 최종 = 단독 ? 'GPT' : 'Claude';
-  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (AI마켓 ? AI마켓작업ID : atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : Workspace다음할일 ? Workspace다음할일작업ID : 사이트점검단독 ? 사이트점검단독작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
-    || 정규해시(지정.userStatements) !== 정규해시(AI마켓 ? AI마켓원문 : atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : Workspace다음할일 ? Workspace다음할일원문 : 사이트점검단독 ? 사이트점검단독원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
+  if (지정.version !== (단독 ? 2 : 1) || 지정.taskId !== (AI마켓 ? AI마켓작업ID : atlas ? Atlas작업ID : 최적화 ? 'optimization-security-20261028' : PATH비공개 ? PATH비공개작업ID : Workspace다음할일 ? Workspace다음할일작업ID : Workspace조직 ? Workspace조직작업ID : 사이트점검단독 ? 사이트점검단독작업ID : 단독 ? 'spaghetti-finish-20261026' : 지정작업)
+    || 정규해시(지정.userStatements) !== 정규해시(AI마켓 ? AI마켓원문 : atlas ? Atlas작업원문 : 최적화 ? 최적화검수원문 : PATH비공개 ? PATH비공개원문 : Workspace다음할일 ? Workspace다음할일원문 : Workspace조직 ? Workspace조직원문 : 사이트점검단독 ? 사이트점검단독원문 : 단독 ? 단독검수원문 : 사용자지정원문)) throw new Error('사용자지정 작업 ID·직접 사용자 원문이 승인 범위와 다르다');
   if (사이트점검단독 && (!files.length || files.some(f => f.옛경로 || !['A', 'M'].includes(f.상태)) || candidate && candidate.종류 !== 'synk.im')) throw new Error('사이트 점검 단독 검수는 정확한 추가·수정 원천과 synk.im 후보만 지원한다 — 삭제·이름 변경·후보 단독 불가');
   if (atlas && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('Atlas 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   if (PATH비공개 && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('PATH 비공개 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   // 회사 배포는 이 원천 증명을 기존 릴리스 결속으로 잇는다. 다른 공개 후보 권한은 열지 않는다.
   if (Workspace다음할일 && (candidate || 지정.candidate !== null || files.some(f => f.옛경로 || !['A', 'M'].includes(f.상태)))) throw new Error('Workspace 다음 할 일 사용자지정은 추가·수정 원천만 지원한다 — 배포 후보·삭제·이름 변경 불가');
+  if (Workspace조직 && (candidate || 지정.candidate !== null || files.some(f => f.옛경로 || !['A', 'M'].includes(f.상태)))) throw new Error('Workspace 조직 사용자지정은 추가·수정 원천만 지원한다 — 배포 후보·삭제·이름 변경 불가');
   if (AI마켓 && files.some(f => f.옛경로 || /^[DR]/.test(f.상태 || ''))) throw new Error('AI 마켓 사용자지정은 원천 삭제·이름 변경을 허용하지 않는다');
   const 아르곤대체 = AI마켓 && o.종류 === '화면';
   if (정규해시(지정.requiredReviewers) !== 정규해시(검수자) || 지정.finalReviewer !== 최종 || 지정.allowFallback !== 아르곤대체) throw new Error(`사용자지정은 묶음별 ${검수자.join('·')}와 최종 전체 ${최종} 판정이 필요하며 ${아르곤대체 ? '실제 아르곤 한도·로그인 막힘만 독립 GPT가 대신한다' : '대체를 허용하지 않는다'}`);
@@ -325,7 +341,7 @@ function 사용자지정정책(o, files, candidate, 판 = 3) {
       const match = expected.find(f => f.path === row.path);
       if (seen.has(row.path) || !['GPT', 'Claude', 'GPT+Claude', '기계생성'].includes(row.author)
         || AI마켓 && !['GPT', ...(role === '배포 후보' ? ['기계생성'] : [])].includes(row.author)
-        || !(AI마켓 ? AI마켓범위맞나(row.scope, row.path, role, o.종류) : atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : Workspace다음할일 ? Workspace다음할일범위맞나(row.scope, row.path, role, o.종류, row.author) : 사이트점검단독 ? 사이트점검단독범위맞나(row.scope, row.path, role, o.종류, row.author) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
+        || !(AI마켓 ? AI마켓범위맞나(row.scope, row.path, role, o.종류) : atlas ? Atlas범위맞나(row.scope, row.path, role) : 최적화 ? 최적화범위맞나(row.scope, row.path, role, match?.kind) : PATH비공개 ? PATH비공개범위맞나(row.scope, row.path, role, match?.kind) : Workspace다음할일 ? Workspace다음할일범위맞나(row.scope, row.path, role, o.종류, row.author) : Workspace조직 ? Workspace조직범위맞나(row.scope, row.path, role, o.종류, row.author) : 사이트점검단독 ? 사이트점검단독범위맞나(row.scope, row.path, role, o.종류, row.author) : 단독 ? 단독범위맞나(row.scope, row.path, role) : 지정범위맞나(row.scope, row.path))) throw new Error(`사용자지정 범위·작성자 오류: ${row.path}`);
       seen.add(row.path);
       if (!단독 && row.author.includes('GPT') && !GPT화면경로[row.scope]?.test(row.path)) throw new Error(`GPT 화면 사용자 승인 밖 경로: ${row.path}`);
       if (!match || !/^[a-f0-9]{64}$/.test(row.sha256 || '') || row.sha256 !== match.sha256) throw new Error(`사용자지정 ${role} SHA 불일치: ${row.path}`);

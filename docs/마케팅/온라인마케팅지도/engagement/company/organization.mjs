@@ -1,5 +1,6 @@
 import {hasWorkspaceFeature,workspaceAccess} from './workspace-access.mjs';
 import { randomUUID } from 'node:crypto';
+import { memberOrganization } from './member-organization.mjs';
 
 export const ORGANIZATION_ROLES = Object.freeze(['admin', 'manager', 'member', 'viewer']);
 const roles = new Set(ORGANIZATION_ROLES);
@@ -23,8 +24,8 @@ export function canManageOwners(user, channel) {
   return validUser(user) && !!channel && (user.role === 'admin' || (user.role === 'manager' && sameTeam(user, channel)));
 }
 
-function safeMember(user, full) {
-  const result = {id:user.id, name:user.name, role:user.role, teamId:teamOf(user), active:user.active !== false, workspaceAccess:workspaceAccess(user)};
+function safeMember(store, user, full) {
+  const result = {id:user.id, name:user.name, role:user.role, teamId:teamOf(user), active:user.active !== false, workspaceAccess:workspaceAccess(user), organization:memberOrganization(store,user.id)};
   if (full) {
     if (typeof user.email === 'string') result.email = user.email;
     if (typeof user.createdAt === 'string') result.createdAt = user.createdAt;
@@ -35,11 +36,11 @@ function safeMember(user, full) {
 export function visibleMembers(store, user) {
   if (!validUser(user)) return [];
   const members = store.all('users');
-  if (user.role === 'admin') return members.map(member => safeMember(member, true));
-  if (user.role === 'manager') return members.filter(member => member.id === user.id || sameTeam(user, member)).map(member => safeMember(member, true));
+  if (user.role === 'admin') return members.map(member => safeMember(store, member, true));
+  if (user.role === 'manager') return members.filter(member => member.id === user.id || sameTeam(user, member)).map(member => safeMember(store, member, true));
   const visibleOwnerIds = new Set(store.all('channels').filter(channel => canReadChannel(user, channel)).flatMap(channel => Array.isArray(channel.ownerIds) ? channel.ownerIds : []));
   visibleOwnerIds.add(user.id);
-  return members.filter(member => visibleOwnerIds.has(member.id)).map(member => safeMember(member, member.id === user.id));
+  return members.filter(member => visibleOwnerIds.has(member.id)).map(member => safeMember(store, member, member.id === user.id));
 }
 
 function instant(value, label = '적용 시각') {
