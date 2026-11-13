@@ -104,6 +104,15 @@ export const Film: React.FC = () => {
           {!MASTER && c.a ? <Audio src={staticFile(c.a.src)} trimBefore={sec(c.a.start)} volume={c.a.vol ?? 1} /> : !MASTER && c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
+      {/* v13(11-13 Fable 컷 전수 「9.00초 「멈추라고!!」 외침 꼬리가 컷에서 −10 → −29dB로 잘림」): tail — 그 컷 소리만 컷 뒤로 조금 더 흘리며 줄인다(B39 Film.tsx와 같은 꼴) */}
+      {!MASTER && CUTS.filter((c) => c.tail && c.audio && !c.a && /\.mp4$/.test(c.src)).map((c, i) => {
+        const len = sec(c.to + (c.tail ?? 0)) - sec(c.to);
+        return (
+          <Sequence key={`tail${i}`} from={sec(c.to)} durationInFrames={len}>
+            <Audio src={staticFile(c.src)} trimBefore={sec(c.start) + sec(c.to) - sec(c.from)} volume={(fr) => (c.audio ?? 1) * interpolate(fr, [0, len], [1, 0], clamp)} />
+          </Sequence>
+        );
+      })}
       <Shade />
 
       {LINES.map((l, i) => {
@@ -116,9 +125,9 @@ export const Film: React.FC = () => {
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
       {/* 배경음(일레븐랩스 연주곡 — 피치카토 긴장 → 9초부터 추격). 복도 질주(S.dash)에서 올라오고, 전원선을 뽑는 S.plug에 뚝 끊긴다 — 끝 칸은 방 소리 · 해설만(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.dash - 0.3), sec(S.dash + 0.4), sec(S.plug - 0.05), sec(S.plug + 0.04)], [0.06, 0.1, 0.1, 0.16, 0.16, 0], clamp)} />
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.dash - 0.3), sec(S.dash + 0.4), sec(S.plug - 0.05), sec(S.plug + 0.04)], [0.07, 0.12, 0.12, 0.27, 0.27, 0], clamp)} />
       {/* 아침 집 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
-      <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
+      <Audio src={staticFile('sfx/room.wav')} volume={(fr) => interpolate(fr, [sec(S.plug), sec(S.plug + 0.3), sec(S.room + 0.8)], [0.05, 0.1, 0.3], clamp)} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
       {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
       </>}
