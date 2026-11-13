@@ -346,9 +346,14 @@ pub fn remove_installation(exe: &Path) -> Result<Removal, String> {
         };
         let mut ours = Vec::new();
         for i in 1..=count {
-            let Ok(task) = (unsafe { tasks.get_Item(&Var::number(i).0) }) else { continue };
-            let name = unsafe { task.Name() }.map(|n| n.to_string()).unwrap_or_default();
-            if is_run_task_name(&name) && starts(&task, exe) { ours.push((name, task)); } else if path == FOLDER { out.others += 1; }
+            // A task that cannot be read may be one of ours: it is counted, never taken as someone else's (카본 끝판 C1).
+            let Some((task, name)) = unsafe { tasks.get_Item(&Var::number(i).0) }.ok()
+                .and_then(|task| unsafe { task.Name() }.ok().map(|n| (task, n.to_string()))) else { out.failed += 1; continue };
+            match is_run_task_name(&name).then(|| starts(&task, exe)) {
+                Some(Some(true)) => ours.push((name, task)),
+                Some(None) => out.failed += 1,
+                _ => if path == FOLDER { out.others += 1 },
+            }
         }
         for (name, task) in ours {
             // A run still going is ended by Task Scheduler; its job object takes the worker and restic with it.
@@ -367,14 +372,19 @@ pub fn remove_installation(exe: &Path) -> Result<Removal, String> {
     Ok(out)
 }
 
-/// Whether a task's action starts `exe` (however its path is spelled) with `--run <trigger>`.
-fn starts(task: &IRegisteredTask, exe: &Path) -> bool {
-    let xml = unsafe { task.Xml() }.map(|x| x.to_string()).unwrap_or_default();
-    let Some(command) = element(&xml, "Command") else { return false };
+/// Whether a task's action starts `exe` (however its path is spelled) with `--run <trigger>`;
+/// `None` when its definition cannot be read.
+fn starts(task: &IRegisteredTask, exe: &Path) -> Option<bool> {
+    let xml = unsafe { task.Xml() }.ok()?.to_string();
+    Some(action_starts(&xml, exe))
+}
+
+fn action_starts(xml: &str, exe: &Path) -> bool {
+    let Some(command) = element(xml, "Command") else { return false };
     let command = Path::new(command.trim().trim_matches('"'));
     let same = |a: &Path, b: &Path| crate::platform::key_path(a) == crate::platform::key_path(b);
     (same(command, exe) || std::fs::canonicalize(command).ok().zip(std::fs::canonicalize(exe).ok()).is_some_and(|(a, b)| same(&a, &b)))
-        && element(&xml, "Arguments").is_some_and(|a| Trigger::ALL.iter().any(|t| a.trim() == format!("--run {}", t.arg())))
+        && element(xml, "Arguments").is_some_and(|a| Trigger::ALL.iter().any(|t| a.trim() == format!("--run {}", t.arg())))
 }
 
 /// The signed-in user's SID from the process token (never from environment variables).
@@ -455,6 +465,16 @@ pub fn local_now() -> String {
         assert_eq!(element("<Arguments>--run hourly</Arguments>", "Arguments").as_deref(), Some("--run hourly"));
         assert_eq!(element("<Command>a &amp;lt; b</Command>", "Command").as_deref(), Some("a &lt; b"), "decoded once");
         assert_eq!(element("<Other/>", "Command"), None);
+    }
+    #[test] fn the_uninstaller_knows_its_own_tasks_by_their_action() {
+        let exe = Path::new(r"C:\Program Files\SYNK 업무 백업\WorkBackupRun.exe");
+        for t in Trigger::ALL { assert!(action_starts(&task_xml(t, exe, SID, "2026-11-12T22:00:00").unwrap(), exe), "{t:?}"); }
+        let xml = task_xml(Trigger::Hourly, exe, SID, "2026-11-12T22:00:00").unwrap();
+        assert!(action_starts(&xml, Path::new(r"c:\program files\synk 업무 백업\workbackuprun.exe")), "spelled in another case");
+        assert!(!action_starts(&xml, Path::new(r"C:\Other\WorkBackupRun.exe")), "another installation's executable");
+        assert!(!action_starts(&xml.replace("--run hourly", "--run hourly --x"), exe), "other arguments");
+        assert!(!action_starts(&xml.replace("--run hourly", "--install"), exe), "not a run");
+        assert!(!action_starts("", exe), "no action at all");
     }
     #[test] fn xml_refuses_bad_inputs() {
         let exe = Path::new(r"C:\Program Files\SYNK WorkBackup\WorkBackupRun.exe");

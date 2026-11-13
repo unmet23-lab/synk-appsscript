@@ -255,9 +255,10 @@ Expect (-not (FolderExists)) 'the run-task folder is gone'
 Expect (-not (Test-Path -LiteralPath $startMenu)) 'Start menu shortcut gone'
 Expect (-not (Test-Path -LiteralPath $uninstallKey)) 'uninstall entry gone'
 Expect (-not (Test-Path -LiteralPath $locationKey)) 'recorded install location gone'
-# Run in place, the uninstaller cannot delete itself or its folder; everything else must be gone.
-$left = @(Get-ChildItem -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { -not $_.PSIsContainer -and $_.Name -ne 'uninstall.exe' })
-Expect ($left.Count -eq 0) "installed files gone ($($left.Count) left: $(@($left | Select-Object -First 5 | ForEach-Object FullName) -join ', '))"
+# Run in place, the uninstaller cannot delete itself or its folder; everything else must be gone — empty folders too,
+# or a real uninstall (not in place) could not remove the install folder at the end (카본 끝판 C2).
+$left = @(Get-ChildItem -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne $uninstaller })
+Expect ($left.Count -eq 0) "installed files and folders gone ($($left.Count) left: $(@($left | Select-Object -First 5 | ForEach-Object FullName) -join ', '))"
 Remove-Item -LiteralPath $dir -Recurse -Force
 Expect (Test-Path -LiteralPath $marker) 'user state stays'
 

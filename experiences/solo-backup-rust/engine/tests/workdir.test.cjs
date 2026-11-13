@@ -7,9 +7,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { Profiles } = require('../src/profiles.cjs');
+const { execFileSync } = require('node:child_process');
+const { Profiles, appFolders } = require('../src/profiles.cjs');
 const { BackupEngine } = require('../src/engine.cjs');
-const { RecommendedEngine } = require('../src/recommended.cjs');
+const { RecommendedBackup, RecommendedEngine } = require('../src/recommended.cjs');
 const b2 = require('../src/b2.cjs');
 
 const options = { resticPath: 'unused', secretStore: {}, runner: async () => ({ code: 0, stdout: '', stderr: '' }) };
@@ -66,4 +67,70 @@ test('no target, key file or restore may land in the work folder', async (t) => 
   const recTemp = path.join(recommended.workDir, 'temp');
   await assert.rejects(recommended.initialize({ sources: [source] }, { parent: recTemp }), /분리된 백업 위치/);
   assert.deepEqual(await fs.readdir(recTemp), [], 'no recommended-… repository was made in the work folder');
+});
+
+// 카본 끝판 A1: the recommended backup's own engine refuses its whole folder, its work folder and every protected
+// place by itself — not only its vault — when it makes a repository and when it restores.
+test('the recommended engine refuses the recommended folders and every protected place on its own', async (t) => {
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'swb-recforbid-'));
+  t.after(() => fs.rm(base, { recursive: true, force: true }));
+  const root = path.join(base, 'state', 'recommended'), workRoot = path.join(base, 'local', 'recommended'), other = path.join(base, 'other-app');
+  const m = new RecommendedBackup({ root, workRoot, resticPath: 'unused', secretStore: {}, protectedPaths: [other] });
+  const open = RecommendedEngine.prototype.open;
+  RecommendedEngine.prototype.open = async function () {}; // the engine as made, without restic
+  try { await m.makeEngine('local'); } finally { RecommendedEngine.prototype.open = open; }
+  assert.deepEqual(m.engine.forbiddenPaths.map((p) => path.resolve(p)), [root, workRoot, other].map((p) => path.resolve(p)));
+
+  const source = path.join(base, 'source'), sibling = path.join(workRoot, 'cloud-vault', 'temp');
+  await fs.mkdir(source, { recursive: true }); await fs.mkdir(sibling, { recursive: true });
+  const engine = new RecommendedEngine({ stateDir: path.join(root, 'vault'), workDir: path.join(workRoot, 'vault'), forbiddenPaths: [root, workRoot], ...options });
+  await engine.open();
+  await assert.rejects(engine.initialize({ sources: [source] }, { parent: sibling }), /분리된 백업 위치/);
+  assert.deepEqual(await fs.readdir(sibling), [], 'no recommended-… repository next to the vault either');
+  assert.ok(engine.forbidden().includes(workRoot), 'a restore is refused there as well (restoreWhole checks forbidden())');
+});
+
+// 카본 끝판 A2: a root given by an 8.3 short name (a TEMP on some PCs and runners) is spelled out like the engines'
+// folders, and a place is compared as written and as it really is.
+test('roots given by a short name are the real folders, and a place inside them is refused by either name', {
+  skip: process.platform !== 'win32' && 'Windows 8.3 이름을 보는 시험 — Windows에서만',
+}, async (t) => {
+  const base = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'swb-shortname-')));
+  t.after(() => fs.rm(base, { recursive: true, force: true }));
+  const longRoot = path.join(base, 'StateFolderWithALongName'), longWork = path.join(base, 'LocalFolderWithALongName');
+  await fs.mkdir(longRoot); await fs.mkdir(longWork);
+  // cmd's own quoting, given as is (Node's escaping of the inner quotes is not cmd's).
+  const short = (p) => execFileSync('cmd.exe', ['/d', '/s', '/c', `"for %I in ("${p}") do @echo %~sI"`], { encoding: 'utf8', windowsVerbatimArguments: true }).trim();
+  const shortRoot = short(longRoot), shortWork = short(longWork);
+  if (shortRoot.toLowerCase() === longRoot.toLowerCase()) return t.skip('이 드라이브는 8.3 이름을 만들지 않는다');
+  const profiles = new Profiles({ root: shortRoot, workRoot: shortWork, ...options });
+  await profiles.open();
+  assert.equal(profiles.root.toLowerCase(), longRoot.toLowerCase());
+  assert.equal(profiles.workRoot.toLowerCase(), longWork.toLowerCase());
+  assert.throws(() => profiles.assertOutput(path.join(longWork, 'vault', 'temp')), /분리된 위치/, 'the long name of a place in the work root');
+  const inside = path.join(longRoot, 'PlaceInsideTheState'); await fs.mkdir(inside);
+  assert.throws(() => profiles.assertOutput(path.join(short(longRoot), 'PlaceInsideTheState')), /분리된 위치/, 'the short name of a place in the state');
+  profiles.assertOutput(path.join(base, 'elsewhere'));
+});
+
+// 카본 끝판 B1: with a root of its own (test mode), the worker still keeps every version's folders — 0.5.0, the
+// 0.6.1 trial and the installed 0.7.0's state and cache — off-limits for sources, targets and restores.
+test('every version\'s folders stay off-limits when the root is elsewhere', async (t) => {
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'swb-appfolders-'));
+  t.after(() => fs.rm(base, { recursive: true, force: true }));
+  const env = { APPDATA: path.join(base, 'Roaming'), LOCALAPPDATA: path.join(base, 'Local') };
+  const folders = appFolders(path.join(base, 'test-state'), env);
+  assert.deepEqual(folders, [path.join(env.APPDATA, 'SoloWorkBackup'), path.join(env.APPDATA, 'SoloWorkBackupRustBeta'),
+    path.join(env.APPDATA, 'SynkWorkBackup'), path.join(env.LOCALAPPDATA, 'SynkWorkBackup')]);
+  for (const folder of folders) await fs.mkdir(path.join(folder, 'inside'), { recursive: true });
+  const profiles = new Profiles({ root: path.join(base, 'test-state'), workRoot: path.join(base, 'test-local'), protectedPaths: folders, ...options });
+  await profiles.open();
+  for (const folder of folders) {
+    assert.throws(() => profiles.assertOutput(path.join(folder, 'inside')), /분리된 위치/, folder);
+    for (const engine of Object.values(profiles.engines)) assert.ok(engine.forbidden().includes(path.resolve(folder)), folder);
+  }
+  await fs.mkdir(path.join(base, 'target'));
+  await assert.rejects(profiles.engines.local.setup({ sources: [path.join(folders[2], 'inside')], parent: path.join(base, 'target') }), /겹/, 'the installed state as a source');
+  assert.deepEqual(await fs.readdir(path.join(base, 'target')), [], 'nothing was made for it');
+  assert.deepEqual(appFolders(path.join(base, 'x', 'SynkWorkBackup'), {}).slice(0, 1), [path.join(base, 'x', 'SoloWorkBackup')], 'without APPDATA: next to the root');
 });

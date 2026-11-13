@@ -3,7 +3,7 @@
 // native adapter and awaited startup setter differ; the backup engine is shared.
 const fs = require('node:fs/promises'), path = require('node:path');
 const engineRoot = process.env.SWB_ENGINE_ROOT || path.resolve(__dirname, '../engine');
-const { Profiles } = require(path.join(engineRoot, 'src/profiles.cjs'));
+const { Profiles, appFolders } = require(path.join(engineRoot, 'src/profiles.cjs'));
 const { parseKit } = require(path.join(engineRoot, 'src/engine.cjs'));
 const { RecoveryService } = require(path.join(engineRoot, 'src/recovery-service.cjs'));
 const { clientConfig } = require(path.join(engineRoot, 'src/recovery-auth.cjs'));
@@ -19,7 +19,8 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     encrypt: async value => Buffer.from(await host('secret.encrypt', [value]), 'base64'),
     decrypt: async bytes => host('secret.decrypt', [bytes.toString('base64')])
   };
-  const profiles = new Profiles({root, workRoot, resticPath, secretStore}); await profiles.open();
+  // Every version's own folders stay off-limits even when this run has a root of its own (test mode — 카본 끝판 B1).
+  const profiles = new Profiles({root, workRoot, resticPath, secretStore, protectedPaths: appFolders(root)}); await profiles.open();
   let client = null;
   if (clientPath) client = clientConfig(JSON.parse(await fs.readFile(clientPath, 'utf8')));
   const shell = {
@@ -42,7 +43,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
   launchAtLogin = await host('startup.read', []);
   const recommended = new RecommendedBackup({root:path.join(root,'recommended'),workRoot:workRoot?path.join(workRoot,'recommended'):null,resticPath,secretStore,
     plannerPath:path.join(path.dirname(resticPath),'WorkBackupPlanner.exe'),inventoryPath:path.join(path.dirname(resticPath),'WorkBackupInventory.exe'),
-    protectedPaths:[root,...(workRoot?[workRoot]:[]),...['SoloWorkBackup','SoloWorkBackupRustBeta'].map(n=>path.join(process.env.APPDATA||path.dirname(root),n)),...Object.values(profiles.engines).flatMap(e=>e.config&&!e.isCloud()?[e.config.repository]:[])],
+    protectedPaths:[root,...(workRoot?[workRoot]:[]),...appFolders(root),...Object.values(profiles.engines).flatMap(e=>e.config&&!e.isCloud()?[e.config.repository]:[])],
     registerStartup:()=>setStartup(true),cloudContext:()=>{
       const source=profiles.engines.b2,account=recovery.getState();
       return {ready:source.config?.mode==='backup'&&!source.config.readOnly&&!!source.cloudCredentials&&account.connected&&account.readKeyReady,
