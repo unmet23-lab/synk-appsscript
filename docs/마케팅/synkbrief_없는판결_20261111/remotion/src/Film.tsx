@@ -96,6 +96,15 @@ export const Film: React.FC = () => {
           {!MASTER && c.a ? <Audio src={staticFile(c.a.src)} trimBefore={sec(c.a.start)} volume={c.a.vol ?? 1} /> : !MASTER && c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} playbackRate={c.rate ?? 1} /> : null}
         </Sequence>
       ))}
+      {/* v16: tail — 그 컷 소리만 컷 뒤로 조금 더 흘리며 줄인다(말꼬리가 컷에서 툭 끊기지 않게) */}
+      {!MASTER && CUTS.filter((c) => c.tail && c.audio && !c.a && /\.mp4$/.test(c.src)).map((c, i) => {
+        const len = sec(c.to + (c.tail ?? 0)) - sec(c.to);
+        return (
+          <Sequence key={`tail${i}`} from={sec(c.to)} durationInFrames={len}>
+            <Audio src={staticFile(c.src)} trimBefore={sec(c.start) + sec(c.to) - sec(c.from)} volume={(fr) => (c.audio ?? 1) * interpolate(fr, [0, len], [1, 0], clamp)} />
+          </Sequence>
+        );
+      })}
       <Shade />
 
       {LINES.map((l, i) => {
