@@ -1,5 +1,17 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="social66-20261114"></a>
+## 빈 YouTube 채널 오류 수정과 전체 재수집 — 회사 이미지 판 66 (2026-11-14 운영 반영)
+
+- 봉인 65 위에 소유 커밋 `58ebb0014ae54e55b314d7dfe73926f4d6c7422a`의 수집기와 회귀 시험만 합쳤다. 채널 자체가 확인되고 공개 영상 수가 실제 0이며 첫 업로드 목록이 playlistNotFound 404인 경우만 정상 빈 목록으로 받는다. 나머지 오류와 계정 불일치는 그대로 실패다. 소스 차이 2파일·실행 차이 1파일, 원천 1,582·이미지 1,259·선택 시험 281.
+- 제품 manifest `4d34eb63b82f5d367b3f6ec050b82e45a5994e3bc75e235c940064db3be1de8c`, 실행 이미지 `sha256:09546d039e1eaa129c96139449a7e415a7abb044a7da234bb13dc548f41906ea`. 로컬 4,071/4,071 · 실제 Linux 4,071/4,071 + 호환 2/2 · 공개 482/482 통과. GPT 전체 읽기와 Claude 첫·끝 판 P0/P1 0. 사용자 지시로 Fable은 호출하지 않았다.
+- 원격 inert 결과를 가져오다 난 `fetch failed` 원본을 보존하고, 같은 실행이 끝낸 결과 다섯 파일을 읽어 결속했다. 원격 QA를 재실행하지 않았다. 실제 1,081,186,542B 백업 완료 뒤 04:18~04:28 KST 배포·사후 검증을 마쳤다. 배포 `3d9478c43119068270b5665a91dcbb78` complete, 두 노드 FINALIZE, 복구 없음. 쓰기 전 보존과 스키마 불변은 확인했으며 앱 시작 뒤 세션 표의 정상 활동까지 바이트 동일하다고 주장하지 않는다.
+- **37개 전체 재수집 성공·실패 0(04:32 KST):** PULSE·yuhokorean·몽글몽글 세 빈 채널의 잘못된 CHANNEL_NOT_FOUND·재연결·재시도 표시가 없어졌다. 04:36 실제 현황은 collectOk 37 / collectTotal 40, failed·needsReconnect·overdue 모두 0. 관리 71·등록 40·미등록 31, 등록된 미수집 3개는 현재 통계 수집기 없는 Threads·X·LinkedIn이다. 지표별 제공 여부·기간 부족은 [계정 성과 원문](ACCOUNT-METRICS.md)의 최종 운영 대조를 따른다. 09:00·21:00 KST 설정과 기존 게시 연결 7개를 유지했다.
+- **HA 쉬기 유지:** 감시기는 배포에만 켰다가 다시 정지했다(TERMINATED). 정지 뒤 5분 공개·직접 경로·DNS·주 노드 314표본, 실패 0. 재무장·승인 봉인·LB 변경은 없다. 완료 폴더 `.tmp/company-completed-4d34eb63-20261114`, 봉인 SHA `64bd91ca3ab5e716bcc34d60c07f0d0585dba0d32cc3b861bc7de18df450ddfc`; 부모 쉬기 봉인은 65 `c7d9a578…`, 마지막 무장 쌍은 64 그대로다. 봉인 재검증은 역사 검증이며 현재 운영 확인은 별도 runtime/public/stop 증거로 마쳤다.
+- **디스크 교체 뒤 배포 실측:** 공개 첫 실패→다음 정상 184.851초(첫→마지막 실패 182.7초), 부팅 디스크 IO 점유 추정 15.6초·평균 IO 지연 0.41ms·데이터 읽기 8.59GB. 교체 전 판65는 각각 331.9초·200.4초·4.4ms·8.53GB였다. 이번 두 실행의 관측 비교이며 작업 조건이 완전히 같지 않아 모든 배포의 개선율로 일반화하지 않는다. 자료 `.tmp/company-primary-boot-balanced-20261114/measure-p66-after-boot-1794598456709.json`.
+- 원본: `.tmp/company-social66-release-20261114/deployment`의 runtime-live-postcheck·public-verification·backup-status, `.tmp/company-social66-carry-20261114/ha66`의 disarm-proof·controller-stop, 같은 carry의 `seal66-result.json`·`root-progress.json`. 첫 오류와 원본은 보존했다. 66 차례를 해제했으며 다음 판은 공용 배포 순서의 67 예약을 따른다.
+
+
 <a id="social65-20261114"></a>
 ## 계정 지도·사업 속성·기간 성과·하루 두 번 수집 — 회사 이미지 판 65 (2026-11-14 운영 반영)
 
