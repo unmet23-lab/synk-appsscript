@@ -19,7 +19,7 @@ async function stage({node,restic,output,client,inventoryBin}) {
   for(const name of ['package.json','package-lock.json','THIRD_PARTY_NOTICES.txt'])await put('engine/'+name,await fs.readFile(path.join(engine,name)));
   await tree(path.join(engine,'node_modules'),'engine/node_modules');
   if(client&&client!=='--none'){const value=JSON.parse(await fs.readFile(client,'utf8'));const {clientConfig}=require(path.join(engine,'src/recovery-auth.cjs'));const publicClient=clientConfig(value);await put('recovery-client.json',Buffer.from(JSON.stringify({installed:publicClient})));}
-  const manifest={version:1,appVersion:'0.6.1-rust-beta.1',resticVersion:'0.19.1',files};
+  const manifest={version:1,appVersion:'0.7.0',resticVersion:'0.19.1',files};
   await fs.writeFile(path.join(output,'manifest.json'),JSON.stringify(manifest,null,2),{flag:'wx'});
   return {output,files:Object.keys(files).length,bytes:Object.values(files).reduce((sum,f)=>sum+f.size,0),manifestSha256:hash(Buffer.from(JSON.stringify(manifest,null,2)))};
 }

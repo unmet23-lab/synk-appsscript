@@ -69,7 +69,8 @@ fn run_tasks_registered(app:&Path,test:bool)->Result<bool,String>{
     schedule::registered(&run_exe(app),&schedule::account_label(&sid),&sid)
 }
 /// Registers or removes the run tasks. A test or unpackaged build never touches Task
-/// Scheduler. Registering also removes the Windows Run entry earlier betas used.
+/// Scheduler. 0.7.0 does not touch the Windows Run entry of the 0.6.1 beta (4.1: it neither
+/// reads nor writes the earlier apps' state).
 fn set_run_tasks(app:&Path,enabled:bool,test:bool,packaged:bool)->Result<bool,String>{
     if test||!packaged{return Err("STARTUP_TEST_DISABLED".into());}
     let (run,sid)=(run_exe(app),schedule::current_sid()?);
@@ -77,7 +78,6 @@ fn set_run_tasks(app:&Path,enabled:bool,test:bool,packaged:bool)->Result<bool,St
     if enabled{
         if !run.is_file(){return Err("RUN_EXE_MISSING".into());}
         schedule::register(&run,&user,&sid,&schedule::local_now())?;
-        let _=platform::startup_set(app,false,false,true);
     }else{schedule::remove(&user,&sid)?;}
     let active=schedule::registered(&run,&user,&sid)?;
     if active!=enabled{return Err("SCHEDULE_NOT_APPLIED".into());}
@@ -133,12 +133,16 @@ async fn smoke(app:tauri::AppHandle,report:PathBuf)->Result<(),String>{
 
 fn run()->Result<(),String>{
     let args:Vec<String>=std::env::args().skip(1).collect();
+    // The test, smoke and 0.5.0 preview switches exist in debug builds only (STAGE1_DESIGN.md 4.2 「알림」);
+    // a release build takes nothing but --background.
+    #[cfg(debug_assertions)]
     if args.len()==2&&args[0]=="--migration-preview" {
         let source=PathBuf::from(std::env::var_os("APPDATA").ok_or("STATE_ROOT")?).join("SoloWorkBackup");
         backup_native::migration::cloud_preview(&source,Path::new(&args[1]))?;
         return Ok(());
     }
-    if args.iter().any(|a|!["--background","--test-mode","--smoke"].contains(&a.as_str())){return Err("INVALID_ARGUMENT".into());}
+    let switches:&[&str]=if cfg!(debug_assertions){&["--background","--test-mode","--smoke"]}else{&["--background"]};
+    if args.iter().any(|a|!switches.contains(&a.as_str())){return Err("INVALID_ARGUMENT".into());}
     let test=args.contains(&"--test-mode".into());let smoke_mode=args.contains(&"--smoke".into());
     if smoke_mode&&!test{return Err("TEST_MODE_REQUIRED".into());}
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
@@ -174,7 +178,7 @@ fn run()->Result<(),String>{
             let exit=tauri::menu::MenuItem::with_id(app,"exit","앱 종료 (자동 백업 중지)",true,None::<&str>)?;
             let menu=tauri::menu::Menu::with_items(app,&[&open,&exit])?;
             let icon=tauri::image::Image::from_bytes(include_bytes!("../../dist/tray.png"))?;
-            tauri::tray::TrayIconBuilder::new().icon(icon).tooltip("업무 백업 · 시험판").menu(&menu)
+            tauri::tray::TrayIconBuilder::new().icon(icon).tooltip("업무 백업").menu(&menu)
                 .on_menu_event(|app,event|{if event.id.as_ref()=="open"{show(app);}else if event.id.as_ref()=="exit"{shutdown(app.clone());}})
                 .on_tray_icon_event(|tray,event|{if matches!(event,tauri::tray::TrayIconEvent::DoubleClick{..}){show(tray.app_handle());}}).build(app)?;
         }

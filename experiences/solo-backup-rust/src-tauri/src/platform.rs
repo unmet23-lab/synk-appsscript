@@ -1,13 +1,14 @@
 use fs2::FileExt;
 use std::{fs::{self, File, OpenOptions}, path::{Path, PathBuf}, os::windows::{fs::MetadataExt, io::AsRawHandle}, ptr};
-use winreg::{RegKey, enums::*};
 use windows_sys::Win32::{Foundation::{CloseHandle, HANDLE}, System::JobObjects::*};
 use windows_sys::Win32::System::Threading::{CreateEventW,OpenEventW,SetEvent,WaitForSingleObject,EVENT_MODIFY_STATE};
 use sha2::{Digest,Sha256};
 
-pub const RUN_NAME: &str = "SoloWorkBackupRustBeta";
-const RUN: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-const APPROVED: &str = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
+/// 0.7.0's own folder name (STAGE1_DESIGN.md 4.1 · 5.1): settings, credentials and records in
+/// %APPDATA%\SynkWorkBackup; restic's cache and temporary files in %LOCALAPPDATA%\SynkWorkBackup.
+pub const PRODUCT_DIR: &str = "SynkWorkBackup";
+/// The 0.5.0 app's and the 0.6.1 beta's state, which 0.7.0 neither reads nor writes.
+const EARLIER: [&str; 2] = ["SoloWorkBackup", "SoloWorkBackupRustBeta"];
 
 pub fn key_path(path: &Path) -> String { path.to_string_lossy().trim_start_matches(r"\\?\").replace('/', "\\").trim_end_matches('\\').to_lowercase() }
 pub fn worker_path(path:&Path)->Result<PathBuf,String>{
@@ -19,8 +20,29 @@ pub fn overlap(a: &Path, b: &Path) -> bool {
     let a = key_path(a); let b = key_path(b);
     a == b || a.starts_with(&(b.clone()+"\\")) || b.starts_with(&(a+"\\"))
 }
-fn root_allowed(path:&Path,appdata:&Path,test:bool)->bool{
-    !overlap(path,&appdata.join("SoloWorkBackup"))&&(!test||!overlap(path,&appdata.join("SoloWorkBackupRustBeta")))
+/// The roaming and local profile folders the app's two folders live in.
+struct Places { appdata: PathBuf, local: PathBuf }
+impl Places {
+    fn from_env() -> Result<Self, String> {
+        let var = |name: &str| std::env::var_os(name).map(PathBuf::from).filter(|p| p.is_absolute()).ok_or_else(|| String::from("STATE_ROOT"));
+        Ok(Self { appdata: var("APPDATA")?, local: var("LOCALAPPDATA")? })
+    }
+    /// What an app folder may not overlap: the earlier apps' state (in every mode) and, for a test,
+    /// 0.7.0's own two folders. Each as written and at its real location (review GA1 · GA3).
+    fn protected(&self, test: bool) -> Vec<PathBuf> {
+        let mut list: Vec<PathBuf> = EARLIER.iter().map(|name| self.appdata.join(name)).collect();
+        if test { list.push(self.appdata.join(PRODUCT_DIR)); list.push(self.local.join(PRODUCT_DIR)); }
+        list.into_iter().flat_map(|path| { let real = real_path(&path); std::iter::once(path).chain(real) }).collect()
+    }
+}
+/// `path` with its deepest existing ancestor resolved (junctions, links, short names): where a folder
+/// there is, or would be created. `None` when no ancestor resolves or a part is `..`.
+fn real_path(path: &Path) -> Option<PathBuf> {
+    let mut rest = Vec::new(); let mut cursor = path;
+    loop {
+        if let Ok(found) = fs::canonicalize(cursor) { return Some(rest.iter().rev().fold(found, |out, part| out.join(part))); }
+        rest.push(cursor.file_name()?.to_os_string()); cursor = cursor.parent()?;
+    }
 }
 /// The two locks of STAGE1_DESIGN.md 4.1. The window app holds `ui.lock` while it is open
 /// (one window). Whoever runs restic or writes settings holds `engine.lock`: the run
@@ -44,19 +66,30 @@ pub fn open_state(test: bool) -> Result<(PathBuf, Option<File>), String> {
 }
 /// The checked state folder, in the plain local-drive spelling the worker receives.
 pub fn state_dir(test: bool) -> Result<PathBuf, String> {
-    let appdata = std::env::var_os("APPDATA").ok_or("STATE_ROOT")?;
-    let production = PathBuf::from(&appdata).join("SoloWorkBackup");
+    let places = Places::from_env()?;
     let requested = if test { PathBuf::from(std::env::var_os("SOLO_BACKUP_TEST_STATE").ok_or("TEST_STATE_REQUIRED")?) }
-        else { PathBuf::from(&appdata).join("SoloWorkBackupRustBeta") };
-    if !requested.is_absolute() || !root_allowed(&requested,Path::new(&appdata),test) { return Err("PRODUCTION_STATE_FORBIDDEN".into()); }
-    fs::create_dir_all(&requested).map_err(|_| "STATE_ROOT")?;
-    let root = fs::canonicalize(&requested).map_err(|_| "STATE_ROOT")?;
-    let protected = fs::canonicalize(&production).unwrap_or(production);
-    let real_appdata=fs::canonicalize(Path::new(&appdata)).map_err(|_|"STATE_ROOT")?;
-    if overlap(&root, &protected) || !root_allowed(&root,&real_appdata,test) || fs::symlink_metadata(&requested).map_err(|_| "STATE_ROOT")?.file_attributes() & 0x400 != 0 { return Err("PRODUCTION_STATE_FORBIDDEN".into()); }
-    // std::fs::canonicalize returns extended-length syntax on Windows. The
-    // existing engine deliberately rejects device/UNC inputs; pass the same
-    // checked local drive spelling it receives from an Electron folder picker.
+        else { places.appdata.join(PRODUCT_DIR) };
+    checked_dir(&requested, &places, test)
+}
+/// restic's cache and temporary files (STAGE1_DESIGN.md 5.1): %LOCALAPPDATA%\SynkWorkBackup, kept out
+/// of the roaming profile, or a `local` folder inside a test state. Checked like the state folder.
+pub fn cache_dir(root: &Path, test: bool) -> Result<PathBuf, String> {
+    let places = Places::from_env()?;
+    let requested = if test { root.join("local") } else { places.local.join(PRODUCT_DIR) };
+    checked_dir(&requested, &places, test)
+}
+/// Creates and checks one of the app's folders: absolute, outside the earlier apps' state (and, for a
+/// test, outside 0.7.0's own folders too) both where it is written and where it really lands, not a
+/// reparse point. The real location is checked before anything is created and again after.
+fn checked_dir(requested: &Path, places: &Places, test: bool) -> Result<PathBuf, String> {
+    let protected = places.protected(test);
+    let hits = |path: &Path| protected.iter().any(|p| overlap(path, p));
+    if !requested.is_absolute() || hits(requested) || real_path(requested).is_none_or(|planned| hits(&planned)) { return Err("PRODUCTION_STATE_FORBIDDEN".into()); }
+    fs::create_dir_all(requested).map_err(|_| "STATE_ROOT")?;
+    let root = fs::canonicalize(requested).map_err(|_| "STATE_ROOT")?;
+    if hits(&root) || fs::symlink_metadata(requested).map_err(|_| "STATE_ROOT")?.file_attributes() & 0x400 != 0 { return Err("PRODUCTION_STATE_FORBIDDEN".into()); }
+    // std::fs::canonicalize returns extended-length syntax on Windows. The engine rejects
+    // device/UNC inputs; pass the checked local drive spelling it expects.
     worker_path(&root)
 }
 /// Takes the lock file `name` in the state folder without waiting. `None` when another
@@ -69,7 +102,7 @@ pub fn try_lock(root: &Path, name: &str) -> Result<Option<File>, String> {
     Ok(if lock.try_lock_exclusive().is_err() { None } else { Some(lock) })
 }
 
-fn signal_name(root:&Path)->Vec<u16>{format!("Local\\SoloWorkBackupRustBeta-{:x}",Sha256::digest(key_path(root).as_bytes())).encode_utf16().chain([0]).collect()}
+fn signal_name(root:&Path)->Vec<u16>{format!("Local\\SynkWorkBackup-{:x}",Sha256::digest(key_path(root).as_bytes())).encode_utf16().chain([0]).collect()}
 pub struct InstanceSignal(HANDLE);
 unsafe impl Send for InstanceSignal {}
 unsafe impl Sync for InstanceSignal {}
@@ -79,31 +112,6 @@ impl InstanceSignal {
 }
 impl Drop for InstanceSignal{fn drop(&mut self){unsafe{CloseHandle(self.0);}}}
 fn signal_existing(root:&Path){let name=signal_name(root);let event=unsafe{OpenEventW(EVENT_MODIFY_STATE,0,name.as_ptr())};if !event.is_null(){unsafe{SetEvent(event);CloseHandle(event);}}}
-
-pub fn startup_command(exe: &Path) -> Result<String, String> {
-    let text = exe.to_str().ok_or("STARTUP_PATH")?;
-    if !exe.is_absolute() || text.contains(['"','\r','\n']) { return Err("STARTUP_PATH".into()); }
-    Ok(format!("\"{}\" --background", text.trim_start_matches(r"\\?\")))
-}
-fn approved_enabled(bytes: Option<Vec<u8>>) -> bool { bytes.is_none_or(|b| b.len() >= 12 && matches!(b[0], 2 | 6)) }
-pub fn startup_read(exe: &Path, test: bool) -> Result<bool, String> {
-    if test { return Ok(false); }
-    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    let expected = startup_command(exe)?;
-    let current = hkcu.open_subkey(RUN).ok().and_then(|k| k.get_value::<String,_>(RUN_NAME).ok());
-    let approval = hkcu.open_subkey(APPROVED).ok().and_then(|k| k.get_raw_value(RUN_NAME).ok()).map(|v| v.bytes);
-    Ok(current.as_deref() == Some(expected.as_str()) && approved_enabled(approval))
-}
-pub fn startup_set(exe: &Path, enabled: bool, test: bool, packaged: bool) -> Result<bool, String> {
-    if test || !packaged { return Err("STARTUP_TEST_DISABLED".into()); }
-    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    let (run,_) = hkcu.create_subkey(RUN).map_err(|_| "STARTUP_FAILED")?;
-    if enabled { run.set_value(RUN_NAME, &startup_command(exe)?).map_err(|_| "STARTUP_FAILED")?; }
-    else { match run.delete_value(RUN_NAME) { Ok(()) => (), Err(e) if e.kind()==std::io::ErrorKind::NotFound => (), Err(_) => return Err("STARTUP_FAILED".into()) } }
-    let active = startup_read(exe, false)?;
-    if active != enabled { return Err("STARTUP_DISABLED_BY_WINDOWS".into()); }
-    Ok(active)
-}
 
 pub fn oauth_allowed(value: &str) -> bool {
     url::Url::parse(value).is_ok_and(|u| u.scheme()=="https" && u.host_str()==Some("accounts.google.com") && u.port().is_none()
@@ -157,20 +165,37 @@ impl Drop for ProcessJob { fn drop(&mut self) { unsafe { CloseHandle(self.0); } 
 
 #[cfg(test)] mod tests {
     use super::*;
-    #[test] fn paths_and_startup_are_isolated() {
-        assert_eq!(RUN_NAME,"SoloWorkBackupRustBeta");
-        assert_eq!(startup_command(Path::new(r"C:\Program Files\업무\WorkBackupRust.exe")).unwrap(), "\"C:\\Program Files\\업무\\WorkBackupRust.exe\" --background");
-        assert!(startup_set(Path::new(r"C:\test.exe"),true,true,true).is_err());
+    #[test] fn paths_are_isolated() {
         assert!(overlap(Path::new(r"C:\Users\Work"),Path::new(r"c:\users\work\state")));
         assert!(!overlap(Path::new(r"C:\Work"),Path::new(r"C:\Worker")));
         assert_eq!(worker_path(Path::new(r"\\?\C:\Work\state")).unwrap(),PathBuf::from(r"C:\Work\state"));
         assert!(worker_path(Path::new(r"\\?\UNC\server\state")).is_err());
-        let appdata=Path::new(r"C:\Users\fixture\AppData\Roaming");
-        assert!(!root_allowed(&appdata.join("SoloWorkBackupRustBeta"),appdata,true));
-        assert!(!root_allowed(&appdata.join("SoloWorkBackupRustBeta/child"),appdata,true));
-        assert!(!root_allowed(appdata,appdata,true));
-        assert!(root_allowed(&appdata.join("SoloWorkBackupRustBeta"),appdata,false));
-        assert!(!approved_enabled(Some(vec![3;12]))); assert!(!approved_enabled(Some(vec![2])));
+        let base=std::env::temp_dir().join(format!("swb-places-{}",std::process::id()));let _=fs::remove_dir_all(&base);
+        let places=Places{appdata:base.join("Roaming"),local:base.join("Local")};fs::create_dir_all(&places.appdata).unwrap();
+        let junction=|link:&Path,target:&Path|{fs::create_dir_all(target).unwrap();assert!(std::process::Command::new("cmd").arg("/c").arg("mklink").arg("/J").arg(link).arg(target).output().unwrap().status.success());};
+        let refused=|path:&Path,test:bool|checked_dir(path,&places,test)==Err("PRODUCTION_STATE_FORBIDDEN".into());
+        // 0.7.0 neither reads nor writes the 0.5.0 app's or the 0.6.1 beta's state, in any mode.
+        for earlier in ["SoloWorkBackup","SoloWorkBackupRustBeta","SoloWorkBackupRustBeta/child"] {
+            assert!(refused(&places.appdata.join(earlier),false),"{earlier}");
+            assert!(refused(&places.appdata.join(earlier),true),"{earlier}");
+        }
+        assert!(refused(&places.appdata,false)&&refused(&places.appdata,true));
+        assert!(refused(&places.appdata.join(PRODUCT_DIR),true),"a test never uses 0.7.0's own folder");
+        assert!(refused(&places.local.join(PRODUCT_DIR).join("x"),true));
+        // GA1: the production folder moved elsewhere and joined back. A test may not use where it really is.
+        junction(&places.appdata.join(PRODUCT_DIR),&base.join("moved"));
+        assert!(refused(&base.join("moved"),true)&&refused(&base.join("moved").join("child"),true));
+        // A path that would land inside protected state through a junction is refused before anything is made there.
+        junction(&base.join("link"),&places.appdata.join("SoloWorkBackupRustBeta"));
+        assert!(refused(&base.join("link").join("x"),false)&&!places.appdata.join("SoloWorkBackupRustBeta").join("x").exists());
+        // GA3: the local profile folder joined into the 0.6.1 beta's state. The cache may not land there.
+        junction(&places.local,&places.appdata.join("SoloWorkBackupRustBeta"));
+        assert!(refused(&places.local.join(PRODUCT_DIR),false)&&!places.appdata.join("SoloWorkBackupRustBeta").join(PRODUCT_DIR).exists());
+        // What is allowed: a fresh production folder, and a test folder of its own.
+        fs::remove_dir(places.appdata.join(PRODUCT_DIR)).unwrap();
+        assert!(checked_dir(&places.appdata.join(PRODUCT_DIR),&places,false).is_ok());
+        assert!(checked_dir(&base.join("test-state"),&places,true).is_ok());
+        let _=fs::remove_dir_all(&base);
     }
     #[test] fn oauth_is_exact_origin() {
         assert!(oauth_allowed("https://accounts.google.com/o/oauth2/v2/auth?state=test"));

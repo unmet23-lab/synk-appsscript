@@ -1,6 +1,6 @@
 [package]
 name = "solo-work-backup-rust"
-version = "0.6.1-beta.1"
+version = "0.7.0"
 edition = "2021"
 rust-version = "1.90"
 publish = false
@@ -11,7 +11,7 @@ name = "backup_native"
 path = "src/lib.rs"
 
 [[bin]]
-name = "WorkBackupRust"
+name = "WorkBackup"
 path = "src/main.rs"
 
 [[bin]]
@@ -33,7 +33,6 @@ zeroize = "1"
 fs2 = "0.4"
 rfd = { version = "0.18", features = ["common-controls-v6"] }
 url = "2"
-winreg = "0.55"
 windows = { version = "0.62", features = ["Networking_Connectivity", "Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Variant", "Win32_System_TaskScheduler"] }
 windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Cryptography", "Win32_Security_Authorization", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Memory", "Win32_System_Power", "Win32_System_SystemInformation", "Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 

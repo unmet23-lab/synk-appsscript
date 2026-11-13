@@ -1,4 +1,4 @@
-# 업무 백업 Rust 시험판 설계 (solo-backup-rust)
+# 업무 백업 Rust/Tauri 설계 (solo-backup-rust)
 
 ## 범위
 - 위치는 experiences/solo-backup-rust. 원본 ../solo-backup은 읽기만 하며 바꾸지 않는다. 2026-11-12부터 엔진은 이 폴더의 `engine/`(0.5.0을 바이트 그대로 갈라 온 것)을 묶고, 상품화 1단계의 고침은 [1단계 설계](STAGE1_DESIGN.md)를 따른다.
@@ -26,7 +26,7 @@
 - 회차 실행기 `WorkBackupRun.exe --run <계기>`(11-12, [1단계 설계](STAGE1_DESIGN.md) 4.2): 같은 리소스 · 같은 통신으로 워커를 회차 모드(`SWB_MODE=run`, `worker/runner.cjs`)로 띄워 `$run` 한 번만 하고 끝난다. Tauri를 링크하지 않고 창 · 대화상자를 띄우지 않는다. 상태 잠금을 못 잡으면 「바쁨」만 적고 끝나며 화면 앱을 깨우지 않는다. 쉼 판단(배터리 30% 아래 · 절전 · 종량 회선)은 Rust가 하고, 직접 누른 회차(`manual`)는 쉬지 않는다. 회차마다 `runs.jsonl`에 한 줄(정해 둔 칸만 — 경로 · 파일 이름 · 비밀 없음, 1MB마다 돌려 씀), 도는 동안 `progress.json`(종류 · 단계 · 퍼센트만). 리소스 확인은 restic.exe를 크기만 보고 해시는 엔진에 맡긴다(엔진이 고정 SHA-256으로 워커마다 확인). 잠금은 둘이다(11-13): 화면 앱은 떠 있는 동안 `ui.lock`(창 하나), restic을 돌리거나 설정을 쓰는 쪽만 `engine.lock` — 실행기는 회차 동안, 화면 앱은 작업 동안 호스트 호출(`engine.lock` · `engine.unlock`)로 쥐고, 쥘 때마다 설정을 디스크에서 다시 읽고(`reload`), 「지금 백업」 같은 작업은 끝날 때까지 쥔다. 그래서 창이 열려 있어도 회차가 돌고, 회차 중 창의 조작은 「예약 백업이 도는 중」으로 미뤄지며 진행은 `progress.json`으로 「예약 백업 · 단계」를 보인다. 화면 앱의 30초 자체 예약은 없앴고, 봉투 재확인은 엔진 잠금을 쥔 때만 돈다(검토 N5). 「자동 실행 등록」(`startup.read` · `startup.set`)은 Windows Run 대신 계기별 회차 작업 넷([`schedule.rs`](src-tauri/src/schedule.rs))을 읽고 만들며, 만들 때 옛 시험판의 Run 항목을 지운다(시험 · 디버그 빌드는 등록하지 않는다).
 
 ## 상태 분리와 이전
-- 상태 폴더는 SoloWorkBackupRustBeta다. 11-13부터 Run 항목은 쓰지 않고(작업 스케줄러 회차 작업), 옛 시험판이 남긴 항목은 회차 작업을 등록할 때 지운다.
+- 0.7.0(11-13)부터 상태 폴더는 `%APPDATA%\SynkWorkBackup`, restic 캐시 · 임시는 `%LOCALAPPDATA%\SynkWorkBackup`(호스트가 `SWB_CACHE_ROOT`로 워커에 넘기고 엔진의 `workDir`가 받는다 — 주지 않으면 예전처럼 상태 폴더 안). 0.5.0 · 0.6.1 시험판의 상태 폴더는 어느 모드에서도 거절하고, 시험 상태는 0.7.0 폴더도 쓰지 못한다. Windows Run 항목은 읽지도 쓰지도 않는다(회차는 작업 스케줄러). 배포 판은 `--background`만 받고, `--test-mode` · `--smoke` · `--migration-preview`는 디버그 빌드에만 있다.
 - 운영 데이터의 자동 이전·전환은 없다.
 - 선택형 1회 읽기 전용 이전 복사: 먼저 정확한 Electron fixture로 v10 AES-GCM+DPAPI 복호화를 검증한다. 새 격리 사본에만 쓰고 복구 전용 모드를 강제하며 자동 실행과 원격 변경을 하지 않는다. 기존 읽기 전용 restic --no-lock 보호를 유지한다.
 
@@ -44,7 +44,7 @@
 ## 단계 경계
 - 이번 단계는 셸 교체와 호환 워커까지다. 네이티브 엔진 이식은 후속 단계다.
 - 측정된 성능 주장은 하지 않는다.
-- Windows 패키지 SemVer는 0.6.1-beta.1이고 화면의 0.6.1-rust-beta.1은 Rust 시험판 계열을 표시한다. 같은 시험판이며 일반 고객 배포 전 버전 표기를 통일한다.
+- 판은 0.7.0(Cargo · tauri.conf · 화면 · 자원 목록이 같은 숫자), 식별자는 `im.synk.workbackup`이다. 0.6.1-beta.1 · 0.6.1-rust-beta.1은 앞 시험판이다.
 
 ## 0.6.1 추천 자료 연결의 구현 경계
 

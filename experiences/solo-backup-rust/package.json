@@ -1,6 +1,6 @@
 {
   "name": "solo-work-backup-rust",
-  "version": "0.6.1-rust-beta.1",
+  "version": "0.7.0",
   "private": true,
   "description": "Rust/Tauri Windows host with the existing verified backup compatibility engine",
   "scripts": { "stage:ui": "node scripts/stage-ui.cjs", "test": "node --test tests/*.test.cjs", "test:integration": "node --test test-support/startup-read.check.cjs" },

@@ -1,8 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "업무 백업 Rust 시험판",
-  "version": "0.6.1-beta.1",
-  "identifier": "im.synk.workbackup.rustbeta",
+  "productName": "SYNK 업무 백업",
+  "mainBinaryName": "WorkBackup",
+  "version": "0.7.0",
+  "identifier": "im.synk.workbackup",
   "build": { "frontendDist": "../dist" },
   "app": {
     "withGlobalTauri": true,

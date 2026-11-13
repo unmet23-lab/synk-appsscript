@@ -57,7 +57,7 @@ class RecommendedEngine extends BackupEngine {
       if(this.isCloud()){
         if(!connection)throw Error('이 Rust 앱의 클라우드 탭에서 백업용 연결을 먼저 준비해 주세요.');
         provider=b2.provider({endpoint:connection.endpoint,bucket:connection.bucket,prefix:`work-backup/${vaultId}`},vaultId);this.cloudCredentials=b2.credentials(connection.credentials);await this.probe(provider,this.cloudCredentials,{now:this.now()});repository=b2.repository(provider,vaultId);
-      }else{parent=await directory(parent);if(plan.sources.some(s=>overlap(s,parent))||overlap(parent,this.stateDir))throw Error('원본과 분리된 백업 위치가 필요합니다.');repository=path.join(parent,`recommended-${vaultId}`);await fs.mkdir(repository);}
+      }else{parent=await directory(parent);if(plan.sources.some(s=>overlap(s,parent))||this.own().some(p=>overlap(parent,p)))throw Error('원본과 분리된 백업 위치가 필요합니다.');repository=path.join(parent,`recommended-${vaultId}`);await fs.mkdir(repository);}
       await this.storeCredential(this.secret,this.cloudCredentials);
       this.config={schema:1,mode:'backup',vaultId,repository,repositoryId:null,...(provider?{provider}:{}),sources:plan.sources,automatic:false,recoverySaved:false,lastBackup:null,health:null,lastError:null,recommended:true};await this.save();
       await this.run(['init']);const info=JSON.parse(await this.run(['cat','config']));if(!/^[a-f0-9]{64}$/.test(info.id))throw Error('추천 저장소 확인에 실패했습니다.');this.config.repositoryId=info.id;await this.save();
@@ -96,7 +96,7 @@ class RecommendedEngine extends BackupEngine {
 }
 async function restoreWhole(engine,parent,snapshot){
     await engine.identity();await engine.assertNoRemoteMaintenance();parent=await directory(parent);
-    if([...engine.config.sources,engine.stateDir,...(!engine.isCloud()?[engine.config.repository]:[])].some(p=>overlap(p,parent)))throw Error('원본·설정·저장소와 분리된 복구 위치가 필요합니다.');
+    if([...engine.config.sources,...engine.own(),...(!engine.isCloud()?[engine.config.repository]:[])].some(p=>overlap(p,parent)))throw Error('원본·설정·저장소와 분리된 복구 위치가 필요합니다.');
     snapshot ||= (await engine.snapshots([VERIFIED]))[0];if(!snapshot?.tags?.includes(VERIFIED))throw Error('검증을 마친 추천 백업이 없습니다.');
     if(!Array.isArray(snapshot.paths)||snapshot.paths.length>200||snapshot.paths.some(p=>typeof p!=='string'||!path.isAbsolute(p)||overlap(p,parent)))throw Error('백업에 기록된 원래 경로와 분리된 위치가 필요합니다.');
     let manifest;await engine.run(['ls','--json','--recursive',snapshot.id],{consumeStdout:async stream=>{manifest=await readManifest(stream,parent);}});
@@ -108,9 +108,9 @@ async function restoreWhole(engine,parent,snapshot){
     const receipt={...proof,path:target,snapshotId:snapshot.id,at:new Date(engine.now()).toISOString(),verification:'all-file-SHA256-against-authenticated-stream',applicationConsistent:false};await fs.writeFile(path.join(target,'업무복구-확인.json'),JSON.stringify(receipt,null,2),{flag:'wx'});engine.config.lastRestore=receipt;await engine.save();return receipt;
 }
 class RecommendedBackup {
-  constructor({root,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths=[],cloudContext,registerStartup,scan=native}){Object.assign(this,{root:path.resolve(root),resticPath,secretStore,plannerPath,inventoryPath,protectedPaths,cloudContext,registerStartup,scan});this.busy=false;this.error=null;this.preview=null;this.engine=null;this.closing=false;this.onChange=()=>{};}
+  constructor({root,workRoot=null,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths=[],cloudContext,registerStartup,scan=native}){Object.assign(this,{root:path.resolve(root),workRoot:workRoot?path.resolve(workRoot):null,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths,cloudContext,registerStartup,scan});this.busy=false;this.error=null;this.preview=null;this.engine=null;this.closing=false;this.onChange=()=>{};}
   async open(){await fs.mkdir(this.root,{recursive:true});await directory(this.root);try{this.saved=JSON.parse(await fs.readFile(path.join(this.root,'plan.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw Error('추천 백업 설정을 읽지 못했습니다.');}try{const p=JSON.parse(await fs.readFile(path.join(this.root,'preview.json'),'utf8'));const {hash,...body}=p.preview;if(digest(body)!==hash)throw Error('preview_changed');this.preview=p.preview;this.request=p.request;}catch(e){if(e.code!=='ENOENT')this.error='추천 목록을 다시 찾아 주세요.';}if(this.saved){const {hash,...body}=this.saved.permit;if(digest(body)!==hash)throw Error('승인 기록이 바뀌었습니다.');await this.makeEngine(this.saved.permit.destination);}this.timer=setInterval(()=>{void this.tick();},30000);this.timer.unref?.();}
-  async makeEngine(kind){this.engine=new RecommendedEngine({stateDir:path.join(this.root,'vault'),resticPath:this.resticPath,secretStore:this.secretStore,providerType:kind});await this.engine.open();this.engine.on('state',()=>this.onChange());}
+  async makeEngine(kind){this.engine=new RecommendedEngine({stateDir:path.join(this.root,'vault'),workDir:this.workRoot?path.join(this.workRoot,'vault'):null,resticPath:this.resticPath,secretStore:this.secretStore,providerType:kind});await this.engine.open();this.engine.on('state',()=>this.onChange());}
   state(){const e=this.engine;return {busy:this.busy,stage:e?.job?.stage||this.stage||null,error:this.error||e?.config?.lastError||null,preview:this.preview?{...this.preview,exclusions:this.preview.exclusions.slice(0,100),exclusionCount:this.preview.exclusions.length}:null,configured:!!e?.config?.lastBackup,needsApproval:!!this.preview&&!!this.saved&&this.preview.hash!==this.saved.permit.planHash,destination:e?.providerType||null,automatic:!!e?.config?.automatic,lastBackup:e?.config?.lastBackup||null,lastRestore:e?.config?.lastRestore||null,storedBytes:e?.config?.storedBytes||0,cloudReady:false,cloudDeferred:true,price:estimate(0)};}
   async acquireLock(){
     const file=path.join(this.root,'operation.lock');

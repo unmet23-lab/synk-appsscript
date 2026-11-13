@@ -26,7 +26,7 @@ impl Worker {
         for name in ["SYSTEMROOT","WINDIR","USERPROFILE","APPDATA","LOCALAPPDATA","TEMP","TMP","USERDOMAIN","USERNAME"] {
             if let Some(value) = std::env::var_os(name) { command.env(name,value); }
         }
-        command.env("SWB_ROOT",root).env("SWB_RESTIC",resources.join("restic.exe")).env("SWB_ENGINE_ROOT",resources.join("engine"))
+        command.env("SWB_ROOT",root).env("SWB_CACHE_ROOT",crate::platform::cache_dir(root,test)?).env("SWB_RESTIC",resources.join("restic.exe")).env("SWB_ENGINE_ROOT",resources.join("engine"))
             .env("SWB_TEST",if test {"1"}else{"0"}).creation_flags(0x08000000).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
         let client = resources.join("recovery-client.json"); if client.is_file() { command.env("SWB_CLIENT",client); }
         if run { command.env("SWB_MODE","run"); }

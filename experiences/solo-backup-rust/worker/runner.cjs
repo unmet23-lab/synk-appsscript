@@ -11,12 +11,12 @@ const { Profiles } = require(path.join(engineRoot, 'src/profiles.cjs'));
 const SKIP = new Set(['battery', 'saver', 'metered']);
 const TRIGGERS = new Set(['hourly', 'logon', 'wake', 'unlock', 'manual', 'test']);
 
-async function createRunner({ host, root, resticPath, publish = () => {} }) {
+async function createRunner({ host, root, workRoot = null, resticPath, publish = () => {} }) {
   const secretStore = {
     encrypt: async value => Buffer.from(await host('secret.encrypt', [value]), 'base64'),
     decrypt: async bytes => host('secret.decrypt', [bytes.toString('base64')])
   };
-  const profiles = new Profiles({ root, resticPath, secretStore });
+  const profiles = new Profiles({ root, workRoot, resticPath, secretStore });
   await profiles.open();
   // progress.json for the window: job kind, stage and percent per profile — no
   // paths or settings leave the worker in run mode.

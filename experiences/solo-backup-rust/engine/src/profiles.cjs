@@ -4,11 +4,14 @@ const { EventEmitter } = require('node:events');
 const { BackupEngine } = require('./engine.cjs');
 const { overlap } = require('./paths.cjs');
 class Profiles extends EventEmitter {
-  constructor({ root, ...options }) {
+  constructor({ root, workRoot = null, ...options }) {
     super(); this.root = path.resolve(root); this.profile = 'local'; this.closing = false;
+    // restic's cache and temporary files per profile, outside the roaming state when the host gives a local root.
+    this.workRoot = workRoot ? path.resolve(workRoot) : null;
+    const work = (name) => this.workRoot ? path.join(this.workRoot, name) : null;
     this.engines = {
-      local: new BackupEngine({ ...options, stateDir: path.join(this.root, 'vault'), providerType: 'local', intervalMs: 900000 }),
-      b2: new BackupEngine({ ...options, stateDir: path.join(this.root, 'cloud-vault'), providerType: 'b2', intervalMs: 3600000 })
+      local: new BackupEngine({ ...options, stateDir: path.join(this.root, 'vault'), workDir: work('vault'), providerType: 'local', intervalMs: 900000 }),
+      b2: new BackupEngine({ ...options, stateDir: path.join(this.root, 'cloud-vault'), workDir: work('cloud-vault'), providerType: 'b2', intervalMs: 3600000 })
     };
     this.selections = { local: { sources: [], target: null }, b2: { sources: [], target: null } };
     for (const engine of Object.values(this.engines)) engine.on('state', () => { this.boundaries(); this.emit('state', this.getState()); });
@@ -17,8 +20,9 @@ class Profiles extends EventEmitter {
   get current() { return this.engines[this.profile]; }
   get selection() { return this.selections[this.profile]; }
   boundaries() {
-    this.engines.local.forbiddenPaths = [this.root];
-    this.engines.b2.forbiddenPaths = [this.root, ...(this.engines.local.config ? [this.engines.local.config.repository] : [])];
+    const own = [this.root, ...(this.workRoot ? [this.workRoot] : [])];
+    this.engines.local.forbiddenPaths = own;
+    this.engines.b2.forbiddenPaths = [...own, ...(this.engines.local.config ? [this.engines.local.config.repository] : [])];
   }
   async open() {
     for (const [name, engine] of Object.entries(this.engines)) {
@@ -41,7 +45,7 @@ class Profiles extends EventEmitter {
     return { ...this.current.getState(), profile: this.profile, selection: { sources: [...this.selection.sources], target: this.selection.target }, profiles };
   }
   assertOutput(parent) {
-    const protectedPaths = [this.root];
+    const protectedPaths = [this.root, ...(this.workRoot ? [this.workRoot] : [])];
     for (const e of Object.values(this.engines)) if (e.config) protectedPaths.push(...e.config.sources, ...(e.isCloud() ? [] : [e.config.repository]));
     if (protectedPaths.some(p => overlap(parent, p))) throw new Error('모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.');
   }

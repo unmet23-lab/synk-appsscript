@@ -34,10 +34,11 @@ function redact(message, secrets = []) {
   for (const value of values) result = result.split(value).join('[비밀값]');
   return result.slice(0, 1600);
 }
-function childOptions(p, key, stateDir, parentEnv, password) {
+// `workDir` holds restic's cache and temporary files (the state folder unless the host gives a local one).
+function childOptions(p, key, workDir, parentEnv, password) {
   const path = require('node:path'); const env = {};
   for (const [k, v] of Object.entries(parentEnv)) if (/^(SystemRoot|WINDIR|PATH|USERPROFILE|LOCALAPPDATA|APPDATA)$/i.test(k)) env[k] = v;
-  Object.assign(env, { RESTIC_PASSWORD: password, RESTIC_PROGRESS_FPS: '1', RESTIC_CACHE_DIR: path.join(stateDir, 'cache'), TEMP: path.join(stateDir, 'temp'), TMP: path.join(stateDir, 'temp') });
+  Object.assign(env, { RESTIC_PASSWORD: password, RESTIC_PROGRESS_FPS: '1', RESTIC_CACHE_DIR: path.join(workDir, 'cache'), TEMP: path.join(workDir, 'temp'), TMP: path.join(workDir, 'temp') });
   const args = [];
   if (p?.type === 'b2') {
     const region = HOST.exec(new URL(endpoint(p.endpoint)).hostname)[1];

@@ -750,7 +750,7 @@ dependencies = [
  "rustc_version",
  "toml 1.2.1+spec-1.1.0",
  "vswhom",
- "winreg 0.56.0",
+ "winreg",
 ]
 
 [[package]]
@@ -3059,7 +3059,7 @@ dependencies = [
 
 [[package]]
 name = "solo-work-backup-rust"
-version = "0.6.1-beta.1"
+version = "0.7.0"
 dependencies = [
  "aes-gcm",
  "base64 0.22.1",
@@ -3074,7 +3074,6 @@ dependencies = [
  "url",
  "windows",
  "windows-sys 0.59.0",
- "winreg 0.55.0",
  "zeroize",
 ]
 
@@ -4530,16 +4529,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "winreg"
-version = "0.55.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb5a765337c50e9ec252c2069be9bf91c7df47afb103b642ba3a53bf8101be97"
-dependencies = [
- "cfg-if",
- "windows-sys 0.59.0",
 ]
 
 [[package]]

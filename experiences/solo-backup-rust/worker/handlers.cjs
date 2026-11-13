@@ -12,14 +12,14 @@ const fileSelection = require(path.join(engineRoot, 'src/restore-select.cjs'));
 const { RecommendedBackup } = require(path.join(engineRoot, 'src/recommended.cjs'));
 const contract = require('../contract/methods.json');
 
-async function createApplication({ host, root, resticPath, clientPath, publish, testMode = false }) {
+async function createApplication({ host, root, workRoot = null, resticPath, clientPath, publish, testMode = false }) {
   let closing = false, dialogBusy = false, launchAtLogin = false;
   const window = null, handlers = new Map();
   const secretStore = {
     encrypt: async value => Buffer.from(await host('secret.encrypt', [value]), 'base64'),
     decrypt: async bytes => host('secret.decrypt', [bytes.toString('base64')])
   };
-  const profiles = new Profiles({root, resticPath, secretStore}); await profiles.open();
+  const profiles = new Profiles({root, workRoot, resticPath, secretStore}); await profiles.open();
   let client = null;
   if (clientPath) client = clientConfig(JSON.parse(await fs.readFile(clientPath, 'utf8')));
   const shell = {
@@ -40,9 +40,9 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
     openExternal: url => { const u = new URL(url); if (u.origin !== 'https://accounts.google.com' || u.pathname !== '/o/oauth2/v2/auth') throw new Error('허용되지 않은 로그인 주소입니다.'); return shell.openExternal(url); }});
   await recovery.open();
   launchAtLogin = await host('startup.read', []);
-  const recommended = new RecommendedBackup({root:path.join(root,'recommended'),resticPath,secretStore,
+  const recommended = new RecommendedBackup({root:path.join(root,'recommended'),workRoot:workRoot?path.join(workRoot,'recommended'):null,resticPath,secretStore,
     plannerPath:path.join(path.dirname(resticPath),'WorkBackupPlanner.exe'),inventoryPath:path.join(path.dirname(resticPath),'WorkBackupInventory.exe'),
-    protectedPaths:[root,...['SoloWorkBackup','SoloWorkBackupRustBeta'].map(n=>path.join(process.env.APPDATA||path.dirname(root),n)),...Object.values(profiles.engines).flatMap(e=>e.config&&!e.isCloud()?[e.config.repository]:[])],
+    protectedPaths:[root,...(workRoot?[workRoot]:[]),...['SoloWorkBackup','SoloWorkBackupRustBeta'].map(n=>path.join(process.env.APPDATA||path.dirname(root),n)),...Object.values(profiles.engines).flatMap(e=>e.config&&!e.isCloud()?[e.config.repository]:[])],
     registerStartup:()=>setStartup(true),cloudContext:()=>{
       const source=profiles.engines.b2,account=recovery.getState();
       return {ready:source.config?.mode==='backup'&&!source.config.readOnly&&!!source.cloudCredentials&&account.connected&&account.readKeyReady,
@@ -54,7 +54,7 @@ async function createApplication({ host, root, resticPath, clientPath, publish, 
     }});
   await recommended.open();recommended.onChange=()=>push();
   function state() {
-    const value = {...profiles.getState(), version:'0.6.1-rust-beta.1', recovery:recovery.getState(), launchAtLogin,recommended:recommended.state()};
+    const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), launchAtLogin,recommended:recommended.state()};
     withRun(value);
     return {...value, protection:protection(value,{startupRegistered:launchAtLogin})};
   }

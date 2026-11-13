@@ -52,9 +52,12 @@ function parseKit(text) {
   return kit;
 }
 class BackupEngine extends EventEmitter {
-  constructor({ stateDir, resticPath, secretStore, runner = null, now = () => Date.now(), intervalMs = 900000, providerType = 'local', forbiddenPaths = [], probe = b2.probeBucket }) {
+  constructor({ stateDir, workDir = null, resticPath, secretStore, runner = null, now = () => Date.now(), intervalMs = 900000, providerType = 'local', forbiddenPaths = [], probe = b2.probeBucket }) {
     super();
     this.stateDir = path.resolve(stateDir); this.resticPath = resticPath; this.secretStore = secretStore;
+    // restic's cache and temporary files: a separate local folder when the host gives one
+    // (%LOCALAPPDATA%\SynkWorkBackup — STAGE1_DESIGN.md 5.1), else inside the state folder.
+    this.workDir = workDir ? path.resolve(workDir) : null;
     this.runner = runner; this.now = now; this.intervalMs = intervalMs;
     this.providerType = providerType; this.cloudCredentials = null; this.connection = null; this.transientSecrets = []; this.probe = probe; this.forbiddenPaths = forbiddenPaths;
     this.config = null; this.secret = null; this.job = null; this.child = null; this.stopping = false; this.lastAttempt = 0;
@@ -63,8 +66,10 @@ class BackupEngine extends EventEmitter {
   async open() {
     await fs.mkdir(this.stateDir, { recursive: true });
     this.stateDir = await directory(this.stateDir);
-    await fs.mkdir(path.join(this.stateDir, 'cache'), { recursive: true });
-    await fs.mkdir(path.join(this.stateDir, 'temp'), { recursive: true });
+    if (this.workDir) { await fs.mkdir(this.workDir, { recursive: true }); this.workDir = await directory(this.workDir); }
+    else this.workDir = this.stateDir;
+    await fs.mkdir(path.join(this.workDir, 'cache'), { recursive: true });
+    await fs.mkdir(path.join(this.workDir, 'temp'), { recursive: true });
     if (!this.runner) await verifyRestic(this.resticPath);
     // The stamp is taken before reading: a run that writes in between leaves a newer file
     // than the stamp, so the next reload reads it (review GA2). It is recorded before the
@@ -143,7 +148,10 @@ class BackupEngine extends EventEmitter {
     if (info.id !== this.config.repositoryId) throw new Error('복구 전용 키와 저장소가 다릅니다.');
     await this.run(['snapshots', '--json'], options);
   }
-  forbidden() { return [this.stateDir, ...this.forbiddenPaths, ...(!this.isCloud() && this.config ? [this.config.repository] : [])]; }
+  // The app's own folders for this engine: the state, and the work folder when it is a separate one
+  // (review GA2 — no source, target or restore may land in either).
+  own() { return this.workDir && this.workDir !== this.stateDir ? [this.stateDir, this.workDir] : [this.stateDir]; }
+  forbidden() { return [...this.own(), ...this.forbiddenPaths, ...(!this.isCloud() && this.config ? [this.config.repository] : [])]; }
   async storeCredential(password, credentials = this.cloudCredentials) {
     this.discardCatalog();
     const value = this.isCloud() ? JSON.stringify({ version: 2, password, ...b2.credentials(credentials) }) : password;
@@ -207,7 +215,7 @@ class BackupEngine extends EventEmitter {
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
   async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly } = {}) {
     if (this.stopping && !this.job) throw new Error('앱을 종료하고 있습니다. 이전 정상 백업은 유지됩니다.');
-    const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.stateDir, process.env, password);
+    const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.workDir || this.stateDir, process.env, password);
     if (readOnly) {
       const permitted = ['snapshots', 'ls', 'dump'].includes(args[0]) || (args[0] === 'cat' && ['config', 'lock'].includes(args[1])) || (args[0] === 'list' && args[1] === 'locks');
       if (!permitted) throw new Error('복구 전용 연결에서는 백업·전체 점검·삭제를 실행할 수 없습니다.');
@@ -258,7 +266,7 @@ class BackupEngine extends EventEmitter {
       if (this.config.repository !== b2.repository(this.config.provider, this.config.vaultId)) throw new Error('클라우드 저장소 경로가 바뀌었습니다.');
     } else {
       const real = await directory(this.config.repository);
-      if ([this.stateDir, ...this.forbiddenPaths].some(p => overlap(real, p))) throw new Error('백업 경로와 앱 보관 경로가 겹칩니다.');
+      if ([...this.own(), ...this.forbiddenPaths].some(p => overlap(real, p))) throw new Error('백업 경로와 앱 보관 경로가 겹칩니다.');
     }
     const info = json(await this.run(['cat', 'config'], { timeoutMs: 60000 }));
     if (info.id !== this.config.repositoryId) throw new Error('다른 저장소가 연결되어 있습니다. 원래 백업 드라이브를 연결해 주세요.');
@@ -275,8 +283,8 @@ class BackupEngine extends EventEmitter {
       if (this.config?.repositoryId) throw new Error('이 앱에는 이미 백업 저장소가 연결되어 있습니다.');
       if (!this.config) {
         const target = await directory(parent);
-        if ([this.stateDir, ...this.forbiddenPaths].some(p => overlap(target, p))) throw new Error('앱 설정과 분리된 백업 폴더를 선택해 주세요.');
-        const checked = await validateSources(sources, [target, this.stateDir, ...this.forbiddenPaths]);
+        if ([...this.own(), ...this.forbiddenPaths].some(p => overlap(target, p))) throw new Error('앱 설정과 분리된 백업 폴더를 선택해 주세요.');
+        const checked = await validateSources(sources, [target, ...this.own(), ...this.forbiddenPaths]);
         const vaultId = crypto.randomUUID();
         const repository = path.join(target, `work-backup-${vaultId}`);
         this.secret = crypto.randomBytes(32).toString('base64url');
@@ -284,7 +292,7 @@ class BackupEngine extends EventEmitter {
         this.config = { schema: 1, mode: 'backup', vaultId, repository, repositoryId: null, sources: checked, automatic: false, recoverySaved: false, lastBackup: null, health: null, lastError: null, warning: null };
         await this.save(); // Persist credentials and initialization journal before creating the encrypted repository.
       }
-      await validateSources(this.config.sources, [path.dirname(this.config.repository), this.stateDir, ...this.forbiddenPaths]);
+      await validateSources(this.config.sources, [path.dirname(this.config.repository), ...this.own(), ...this.forbiddenPaths]);
       await fs.mkdir(this.config.repository, { recursive: true });
       await directory(this.config.repository);
       this.stage('암호화 저장소 준비 중');
@@ -371,7 +379,7 @@ class BackupEngine extends EventEmitter {
       this.transientSecrets = [kit.password, credentials?.keyId, credentials?.applicationKey];
       if (kit.type !== this.providerType) throw new Error('복구 키와 맞는 로컬·클라우드 탭을 선택해 주세요.');
       const target = this.isCloud() ? kit.repository : await directory(repository);
-      if (!this.isCloud() && [this.stateDir, ...this.forbiddenPaths].some(p => overlap(target, p))) throw new Error('앱 폴더와 분리된 백업 저장소를 선택해 주세요.');
+      if (!this.isCloud() && [...this.own(), ...this.forbiddenPaths].some(p => overlap(target, p))) throw new Error('앱 폴더와 분리된 백업 저장소를 선택해 주세요.');
       if (readOnly && !this.isCloud()) throw new Error('읽기 전용 연결은 클라우드에서 지원합니다.');
       const options = { repository: target, password: kit.password, provider: kit.provider, credentials: this.isCloud() ? b2.credentials(credentials) : null, timeoutMs: 60000, readOnly };
       const info = json(await this.run(['cat', 'config'], options));

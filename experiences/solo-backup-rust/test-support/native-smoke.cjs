@@ -3,7 +3,7 @@ const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('n
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 (async()=>{
  const executable=process.argv[2],parent=process.argv[3];
- assert.ok(executable&&path.isAbsolute(executable)&&parent&&path.isAbsolute(parent),'Usage: node native-smoke.cjs <absolute WorkBackupRust.exe> <existing scratch folder>');
+ assert.ok(executable&&path.isAbsolute(executable)&&parent&&path.isAbsolute(parent),'Usage: node native-smoke.cjs <absolute debug WorkBackup.exe> <existing scratch folder>');
  const root=await fs.mkdtemp(path.join(parent,'native-smoke-'));
  for(const n of ['sources/sub','store','keys','restores','state'])await fs.mkdir(path.join(root,n),{recursive:true});
  const samples={'hello.txt':Buffer.from('Rust backup parity\n한글 업무 파일\n'),'sub/data.json':Buffer.from('{"same":true,"version":1}'),'binary.bin':crypto.randomBytes(65536)};

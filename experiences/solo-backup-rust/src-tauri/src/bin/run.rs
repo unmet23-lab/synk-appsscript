@@ -31,7 +31,8 @@ fn parse(argv: &[String]) -> Result<Args, String> {
                 let value = argv.get(i + 1).ok_or("INVALID_ARGUMENT")?;
                 trigger = Some(*TRIGGERS.iter().find(|t| **t == value.as_str()).ok_or("INVALID_ARGUMENT")?); i += 2;
             }
-            "--test-mode" if !test => { test = true; i += 1; }
+            // A release build has no test mode (STAGE1_DESIGN.md 4.2 「알림」).
+            "--test-mode" if !test && cfg!(debug_assertions) => { test = true; i += 1; }
             _ => return Err("INVALID_ARGUMENT".into()),
         }
     }

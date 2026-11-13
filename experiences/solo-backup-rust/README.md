@@ -1,10 +1,10 @@
-# 업무 백업 Rust 시험판
+# 업무 백업 (Rust/Tauri)
 
 > **2026-11-11 살림 확정** ([결정](../../docs/_ops/결정.md)). 0.5.0 정기 백업과 이 시험판을 이어 간다. 상품으로 팔기 전에 세 가지를 먼저 푼다. ① 연 99달러 개인 백업보다 높게 받을 근거 ② 유호님이 아닌 둘째 사용자가 말해 주는, 무료 동기화 도구와 다른 점 ③ 남의 업무 자료를 맡을 때의 책임(보안 사고·복구 실패).
 >
 > **2026-11-12:** 유호님 요청으로 0.5.0 정기 백업과 Windows 시작 등록을 껐다. B2 사본과 Google 복구 정보는 그대로 있다. 상품화 순서와 단계마다 넘을 관문은 [상품화 로드맵](ROADMAP.md)에 있다.
 
-Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리를 Rust/Tauri로 옮긴 **0.6.1-rust-beta.1**이다. 백업 엔진은 검증된 [0.5.0](../solo-backup/README.md)의 Node 모듈과 restic을 함께 넣는다. 엔진 전체를 Rust로 다시 쓴 버전은 아니다. 11-12부터 그 엔진은 이 폴더의 [`engine/`](engine/README.md)으로 갈라 와 묶고(0.5.0은 동결), 상품화 1단계의 고침은 거기에만 한다.
+Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리를 Rust/Tauri로 옮긴 판이다. 11-13부터 상품화 1단계의 이름표 **0.7.0**(식별자 `im.synk.workbackup`, 화면 앱 `WorkBackup.exe`)으로 0.6.1-rust-beta.1의 뒤를 잇되, 상태는 따로 둔다. 백업 엔진은 검증된 [0.5.0](../solo-backup/README.md)의 Node 모듈과 restic을 함께 넣는다. 엔진 전체를 Rust로 다시 쓴 버전은 아니다. 11-12부터 그 엔진은 이 폴더의 [`engine/`](engine/README.md)으로 갈라 와 묶고(0.5.0은 동결), 상품화 1단계의 고침은 거기에만 한다.
 
 기존 화면과 폴더 선택 → 보호 시작 → 상태 확인 → 전체/선택 복구 흐름을 유지한다. 사용자가 Node나 Rust를 설치할 필요는 없다. 실행에 필요한 Microsoft Edge WebView2는 별도 시스템 구성 요소다.
 
@@ -40,7 +40,7 @@ Windows 앱의 창·트레이·시작 등록·암호 보관·프로세스 관리
 | 통신 | 상속된 표준 입출력, 메서드 허용 목록, 메시지·대기 수 제한 |
 | 중복 실행·프로세스 종료 | Windows 파일 잠금과 Job Object |
 
-기본 상태 폴더는 `%APPDATA%\SoloWorkBackupRustBeta`다. 자동 백업은 11-13부터 작업 스케줄러의 회차 작업 넷(매시간 · 로그온 · 깨어남 · 잠금 해제 → `WorkBackupRun.exe`)이 돌리고, 예전의 시작 등록 `SoloWorkBackupRustBeta`는 쓰지 않는다(등록할 때 지운다). 기존 `%APPDATA%\SoloWorkBackup`과 분리한다. 복구 전용 모드는 네이티브와 워커 양쪽에서 백업·자격 변경을 차단한다. 워커가 죽으면 작업을 실패로 알리고 자동 재실행·재전송하지 않는다.
+0.7.0의 상태 폴더는 `%APPDATA%\SynkWorkBackup`(설정 · 자격 · 기록), restic 캐시 · 임시는 `%LOCALAPPDATA%\SynkWorkBackup`이다([1단계 설계](STAGE1_DESIGN.md) 4.1 · 5.1). 0.5.0(`%APPDATA%\SoloWorkBackup`) · 0.6.1 시험판(`%APPDATA%\SoloWorkBackupRustBeta`)의 상태와 시험판의 Windows 시작 등록은 읽지도 쓰지도 않는다. 자동 백업은 작업 스케줄러의 회차 작업 넷(매시간 · 로그온 · 깨어남 · 잠금 해제 → `WorkBackupRun.exe`)이 돌린다. 복구 전용 모드는 네이티브와 워커 양쪽에서 백업·자격 변경을 차단한다. 워커가 죽으면 작업을 실패로 알리고 자동 재실행·재전송하지 않는다.
 
 로컬 DPAPI만으로 다른 PC에서 복구할 수 있는 것은 아니다. 별도 복구 키 또는 기존 Google 계정 복구가 필요하다. 이번 복구 전용 사본은 기존 원격 복구 보관을 대체하지 않는다. Google 서비스 코드와 화면은 포함되어 있으나, Rust 앱에서의 새 Google 로그인은 이번 실제 계정 시험 범위에 포함되지 않는다.
 
@@ -75,9 +75,9 @@ $env:SWB_LEGACY_FIXTURE = $env:SWB_FIXTURE_OUTPUT
 $env:SWB_NODE_EXE = (Get-Command node.exe).Source
 cargo test --locked --manifest-path experiences/solo-backup-rust/src-tauri/Cargo.toml
 
-# 실제 배포용 EXE로 합성 파일 백업·전체/선택 복구와 SHA-256을 확인한다.
+# 디버그 빌드 EXE로 합성 파일 백업·전체/선택 복구와 SHA-256을 확인한다(0.7.0 배포 판은 --test-mode · --smoke를 받지 않는다).
 node experiences/solo-backup-rust/test-support/native-smoke.cjs `
-  C:\build-output\work-backup-rust\WorkBackupRust.exe C:\test-output
+  C:\build-target\debug\WorkBackup.exe C:\test-output
 
 # 회차 실행기(디버그 빌드): 꺼짐 · 지금 백업 · 잠금 보유 · 옮기기 중단 · 잘못된 인자와 기록에 경로가 없는지.
 $env:SWB_RUN_EXE = 'C:\build-target\debug\WorkBackupRun.exe'
@@ -90,10 +90,10 @@ node experiences/solo-backup-rust/test-support/t7-runner.cjs `
 
 합성 자료가 없으면 암호 호환 시험을 건너뛰지 않고 실패한다. `--test-mode`는 별도 `SOLO_BACKUP_TEST_STATE`가 필요하며 운영 상태 폴더·시작 등록·외부 URL 열기를 거부한다. 실제 B2 시험은 운영자가 준비한 읽기 전용 사본에서만 수행했다. 상세 결과와 확인하지 않은 범위는 [QA](QA.md), 채택한 기존 제품 기능은 [조사](../solo-backup/RESEARCH.md)에 있다.
 
-## 운영자용 읽기 전용 이전
+## 운영자용 읽기 전용 이전(0.6.1 시험판 · 디버그 빌드만)
 
 ```powershell
-WorkBackupRust.exe --migration-preview C:\test-output\new-cloud-copy
+WorkBackup.exe --migration-preview C:\test-output\new-cloud-copy   # 디버그 빌드에만 있다 — 0.7.0은 0.5.0 저장소를 읽지 않는다
 ```
 
 기존 앱의 암호·복구 자료를 읽고, 확인된 B2 읽기 키로 새 사본을 만든다. 출력은 260자 미만의 일반 절대 경로를 사용한다. 입력 파일 전후 해시가 다르거나 출력이 이미 있으면 거부한다. 임시 형제 폴더를 완성한 뒤 덮어쓰기 없는 이름 변경으로 공개한다. 실패한 임시 자료는 진단을 위해 남기며 자동 삭제하지 않는다. 이 명령은 운영 백업의 담당 앱을 전환하지 않는다.

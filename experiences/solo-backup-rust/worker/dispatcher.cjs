@@ -29,7 +29,7 @@ async function message(value){
     // Scheduled-run mode: profile engines only, one `$run` per boot (runner.cjs).
     if(booting||runner)throw Error('DUPLICATE_BOOT');booting=true;
     const {createRunner}=require('./runner.cjs');
-    runner=await createRunner({host,root:process.env.SWB_ROOT,resticPath:process.env.SWB_RESTIC,publish:state=>send({event:'state',value:state})});
+    runner=await createRunner({host,root:process.env.SWB_ROOT,workRoot:process.env.SWB_CACHE_ROOT||null,resticPath:process.env.SWB_RESTIC,publish:state=>send({event:'state',value:state})});
     send({id:value.id,ok:true,value:{mode:'run'}});return;
   }
   if(value.method==='$run'){
@@ -48,7 +48,7 @@ async function message(value){
   if(value.method==='$boot'){
     if(booting||application)throw Error('DUPLICATE_BOOT');booting=true;
     const {createApplication}=require('./handlers.cjs');
-    application=await createApplication({host,root:process.env.SWB_ROOT,resticPath:process.env.SWB_RESTIC,clientPath:process.env.SWB_CLIENT||null,testMode:process.env.SWB_TEST==='1',publish:state=>send({event:'state',value:state})});
+    application=await createApplication({host,root:process.env.SWB_ROOT,workRoot:process.env.SWB_CACHE_ROOT||null,resticPath:process.env.SWB_RESTIC,clientPath:process.env.SWB_CLIENT||null,testMode:process.env.SWB_TEST==='1',publish:state=>send({event:'state',value:state})});
     send({id:value.id,ok:true,value:application.state()});return;
   }
   if(!application)throw Error('NOT_READY');
