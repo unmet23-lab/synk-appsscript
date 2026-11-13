@@ -7,6 +7,7 @@ import {readFileSync} from 'node:fs';
 globalThis.location??=new URL('http://localhost/pulse-app/?mode=staff');
 const {staffBoard,STAFF_STAGES}=await import('./public/pulse-app/room-view.mjs');
 const {picker,header}=await import('./public/pulse-app/views.mjs');
+const {buildClientKickoff}=await import('./client-kickoff.mjs');
 const appDir=new URL('./public/pulse-app/',import.meta.url);
 const read=name=>readFileSync(new URL(name,appDir),'utf8');
 
@@ -112,14 +113,20 @@ test('옛 흐름 카드의 차례는 그 프로젝트를 열었을 때 현황이
   const turn=id=>html.match(new RegExp(`class="project-tile staff-card is-(\\w+)[^"]*" data-action="open-project" data-id="${id}"`))?.[1];
   assert.deepEqual(['blank','drafting','asked','look','fix','sent'].map(turn),['us','us','them','them','us','done']);
   assert.match(html,/<p class="staff-meter[^"]*"><b>3<\/b><span>우리 차례<small>/,'큰 숫자 「우리 차례」는 설계 전 · 다듬는 중 · 고칠 차례 셋');
-  // 설계 전이라도 손님에게 보낸 확인 요청이 답을 기다리면 손님 차례 — 납품 규격 확인 · 준비 자료(Fable -3 P3)
+  // 설계 전이라도 손님에게 보낸 확인 요청이 답을 기다리면 손님 차례 — 납품 규격 확인 · 준비 자료(Fable -3 P3).
+  // 준비 자료는 서버가 직원 목록에 싣는 buildClientKickoff 결과 그대로 넣는다 — 설계 전이면 status가 늘 waiting이라 꼭 받을 자료가 안 온 것만 센다(Fable -4 P2).
+  const kickoffRow=(id,requirements,assets=[])=>{const row={...legacyProject(id,'received'),terms:'조건',dueDate:day(10),studio:{assets},kickoffPlan:{enabled:true,requirements}};return {...row,kickoff:buildClientKickoff(row,{now:new Date(NOW).toISOString()})};};
+  const photo={id:'r1',label:'제품 사진',required:true,sourceKey:'asset:a1'};
+  const kickNone=kickoffRow('kick-none',[]),kickMissing=kickoffRow('kick-missing',[photo]),kickSent=kickoffRow('kick-sent',[photo],[asset('a1','customer')]);
+  assert.equal(kickNone.kickoff.status,'waiting','설계 전이면 요청 자료가 없어도 waiting(설계 · 확인 칸) — 그래서 status로 판정하지 않는다');
+  assert.deepEqual([kickMissing,kickSent].map(p=>p.kickoff.requirements[0].status),['missing','received']);
   const pending=picker({mode:'staff',user:{id:'u'},workspace:{canWrite:true,projects:[
     {...legacyProject('specs','planning'),studio:{deliverables:{revision:2,request:{deliverableRevision:2,at:ago(5)},confirmation:{deliverableRevision:1}}}},
-    {...legacyProject('kick','received'),kickoff:{enabled:true,status:'waiting'}},
     {...legacyProject('specs-done','planning'),studio:{deliverables:{revision:2,request:{deliverableRevision:2},confirmation:{deliverableRevision:2}}}},
+    kickMissing,kickSent,kickNone,
   ]}});
   const pendingTurn=id=>pending.match(new RegExp(`class="project-tile staff-card is-(\\w+)[^"]*" data-action="open-project" data-id="${id}"`))?.[1];
-  assert.deepEqual(['specs','kick','specs-done'].map(pendingTurn),['them','them','us'],'손님이 이미 확인한 납품 규격은 기다림이 아니다');
+  assert.deepEqual(['specs','specs-done','kick-missing','kick-sent','kick-none'].map(pendingTurn),['them','us','them','us','us'],'손님이 확인한 규격 · 보낸 자료 · 요청 없는 준비 자료는 기다림이 아니다');
   // 판정이 없거나 깨지면 단계 칸으로(시안 확인은 손님, 그 앞은 우리), 최종 전달은 판정과 상관없이 끝
   assert.equal(staffBoard([legacyProject('a','producing')],NOW).ours[0].id,'a');
   assert.equal(staffBoard([legacyProject('a','producing')],NOW,{legacyTurn:()=>{throw new Error('x');}}).ours[0].id,'a');
