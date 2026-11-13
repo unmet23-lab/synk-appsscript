@@ -69,6 +69,9 @@ function startLang() {
  return deviceLang();
 }
 const firstLang = startLang();
+// 「오늘」 한 장(11-14, experiences/drama/qa/오늘한장-20261114): 주소에 ?today=1이 있을 때만 — 둘째 날부터 첫 화면 대신 오늘 할 것(today/)을 보인다.
+// 깃발이 없으면 today/를 불러오지 않고 아래 갈래(S.today)도 비어 있어 지금 흐름 그대로다. 공개 빌드는 today/를 싣지 않는다.
+const TODAY = (() => { try { return new URLSearchParams(location.search).get('today') === '1'; } catch { return false; } })();
 const savedLang = () => { try { return localStorage.getItem('synk.world.lang'); } catch { return null; } };
 const S = {
  lang: firstLang,
@@ -442,7 +445,11 @@ const worldBuild = document.documentElement.dataset.drama === 'world';
 // C(7~10일 뒤 처음 보는 문항, 설계 §17)는 시도 상태를 따로 둔다 — 같은 창에서 1화 새 상황을 먼저 냈거나 모범을 봤어도 C의 「혼자 해 봄」은 C만 본다.
 const W = { host: null, lesson: null, attempts: newAttemptState(), delayedAttempts: newAttemptState(), counts: new Map(), off: false, limit: false };
 const isDelayed = (lineId) => !!S.boot?.lesson?.delayed && S.boot.lesson.delayed.id === lineId;
-const attemptsFor = (lineId) => (isDelayed(lineId) ? W.delayedAttempts : W.attempts);
+// 「오늘」이 여는 처음 보는 대사(B · C가 아닌 줄)는 줄마다 시도 상태를 따로 둔다 — 「혼자 해 봄」은 그 줄만 본다. 깃발이 없으면 S.today가 없다.
+const todayLine = (lineId) => !!S.today?.item && S.today.item.id === lineId && !isDelayed(lineId) && S.boot?.lesson?.transfer?.id !== lineId;
+const attemptsFor = (lineId) => (isDelayed(lineId) ? W.delayedAttempts : todayLine(lineId) ? S.today.attempts(lineId) : W.attempts);
+// 새 상황 차례의 문항: C · 「오늘」 줄 · B.
+const transferOf = (lineId) => (isDelayed(lineId) ? S.boot.lesson.delayed : todayLine(lineId) ? S.today.item : S.boot.lesson.transfer);
 const inWorld = () => !!W.host;
 // 대사마다 녹음 상한: talk는 answerSec + 5초를 넘으면 too_long — 그보다 조금 먼저 멈춘다(recordOnce의 AUTO_STOP_MARGIN). 시범 서버는 20초.
 const maxSecondsFor = (item) => (inWorld() && Number.isInteger(item?.answerSec) ? item.answerSec + 5 : 20);
@@ -504,7 +511,7 @@ async function retryWorldStatus() {
 }
 
 async function sendTake(lineId, phase, take, s) {
- if (inWorld()) return sendTakeWorld(phase === 'transfer' ? (isDelayed(lineId) ? S.boot.lesson.delayed : S.boot.lesson.transfer) : studentItems().find((x) => x.id === lineId) || { id: lineId }, phase, take, s);
+ if (inWorld()) return sendTakeWorld(phase === 'transfer' ? transferOf(lineId) : studentItems().find((x) => x.id === lineId) || { id: lineId }, phase, take, s);
  const ac = new AbortController(); S.upload = ac;
  const onAbort = () => ac.abort(); s.signal.addEventListener('abort', onAbort, { once: true });
  const epoch = S.epoch;
@@ -746,7 +753,19 @@ async function boot() {
  document.documentElement.style.setProperty('--backdrop', `url("${a.backdrop}")`);
  const firstVideo = sceneItems().find((x) => x.video); if (firstVideo) { ui.reply.src = firstVideo.video; ui.reply.preload = 'auto'; }
  updateChip();
+ if (TODAY) return startToday();
  intro();
+}
+
+// 「오늘」(깃발 뒤): today/screen.mjs가 기록을 읽어 첫 화면 대신 오늘 할 것을 보이고, 차례마다 아래 장면 함수를 그대로 부른다.
+// 못 불러오거나 첫날(오늘 전 드라마 기록 없음)이면 지금 첫 화면으로 간다.
+async function startToday() {
+ let mod = null;
+ try { if (TODAY) mod = await import('./today/screen.mjs'); } catch { mod = null; }
+ if (!mod) return intro();
+ try { return await mod.start({ S, W, ui, h, tx, anim, panel, cardIn, subs, stageMode, slate, hideSlate, hideMic, orbMode, newScope, live, sleep, choose, setPhase, pushStill, celebrate,
+  intro, runScene, runTransfer, runRetake, sceneItems, studentItems, inWorld, newAttemptState, setupTrail }); }
+ catch { S.today = null; return intro(); }
 }
 
 // WORLD 공개본을 게임 틀 밖에서 바로 연 경우 — 계정 · 기록 · 받아쓰기가 없으니 WORLD에서 열게 한다.
@@ -978,7 +997,7 @@ function micWaitPanel() {
   sub: h('span', { class: 'mic-hint' }, h('span', { class: 'fine' }, tx('micPreparingHint')), h('button', { type: 'button', class: 'link', on: { click: () => stopRecorder(true) } }, tx('cancel'))) });
 }
 async function captureAndSend(item, ctx, s) {
- S.maxSeconds = maxSecondsFor(ctx.phase === 'transfer' ? (isDelayed(item.id) ? S.boot.lesson.delayed : S.boot.lesson.transfer) : item);
+ S.maxSeconds = maxSecondsFor(ctx.phase === 'transfer' ? transferOf(item.id) : item);
  micWaitPanel();
  let tick = null;
  const out = await recordOnce(s, { onStart: () => { if (live(s)) { tick = recordingPanel(s); startHeldLoop(); } }, onTick: (sec) => tick?.(sec) });
@@ -1218,29 +1237,31 @@ async function retakeResult(item, r) {
   if (!live(s) || v == null) return;
   if (v === 'same' || v === 'differs') { checked = v; r.selfCheck = v; R.selfCheck = v; if (v === 'differs') R.trail?.excludeLast(); continue; }
   if (v === 'again') return runRetake();
-  return runTransfer();
+  return S.today?.retake ? S.today.finish(null) : runTransfer(); // 「오늘」(깃발 뒤)에서 연 테이크 2면 다음 차례로
  }
 }
 
 /* ───────── 새 상황 ───────── */
 // kind: 'transfer'(장면 뒤 B) · 'delayed'(첫 화면의 C) · 'held'(첫 화면의 남겨 둔 B — 마치면 첫 화면으로).
 async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
- const delayed = kind === 'delayed', fromIntro = kind !== 'transfer';
+ // kind 'today'(깃발 뒤): 「오늘」이 고른 줄(S.today.item) — C면 C처럼, 아니면 그 줄의 새 상황. 마치면 「오늘」의 다음 차례로 간다.
+ const today = kind === 'today' && !!S.today?.item;
+ const delayed = kind === 'delayed' || (today && isDelayed(S.today.item.id)), fromIntro = kind !== 'transfer';
  const s = newScope(); S.step = 'transfer'; S.render = () => runTransfer(kind, { rerender: true });
  // tries: 녹음해 보낸 횟수(단추 모양용). spoke: 소리가 들린(또는 받아쓰기 없이 녹음한) 시도 수.
  // firstHinted: 첫 「말해 본 시도」가 시작될 때 모범이 공개돼 있었는지 — 첫 시도에서 한 번만 정하고 뒤 시도로 덮지 않는다.
- const slot = delayed ? 'delayedRun' : 'transfer';
+ const slot = delayed ? 'delayedRun' : today ? `today:${S.today.item.id}` : 'transfer';
  const T = S[slot] || (S[slot] = { tries: 0, spoke: 0, firstHinted: null, revealed: null, revealedBeforeFirst: false, last: null, selfCheck: null, unheard: 0 });
- T.fromIntro = fromIntro;
+ T.fromIntro = fromIntro; T.today = today;
  // C에 기록 없이 다시 들어오면 지난 안내(받아쓰기 꺼짐 · 다시 녹음 등)는 지우고 지금 상태로 새로 그린다 — 시도 수 · 모범 본 사실은 둔다(화면 검수 r2).
  // 언어 단추 · 동의 칩처럼 같은 화면을 다시 그릴 때(rerender)는 지금 안내와 「내 녹음 듣기」를 그대로 둔다.
  if (fromIntro && !rerender && !T.trail?.recorded) Object.assign(T, { last: null, lastTakeId: null, selfCheck: null, invalid: 0 });
  const markSpoken = (d) => {
   // 서버 take.hinted는 이전 실행(다시하기 전)의 모범 공개도 포함한다. 받아쓰기 없이 녹음한 경우는 이 창의 기억으로만 안다.
-  if (!T.spoke) T.firstHinted = d?.take ? (!!d.take.hinted || T.revealedBeforeFirst) : (!!T.revealed || (!delayed && S.revealedEver));
+  if (!T.spoke) T.firstHinted = d?.take ? (!!d.take.hinted || T.revealedBeforeFirst) : (!!T.revealed || (!delayed && !todayLine(tr.id) && S.revealedEver));
   T.spoke += 1;
  };
- const tr = delayed ? S.boot.lesson.delayed : S.boot.lesson.transfer;
+ const tr = today ? transferOf(S.today.item.id) : delayed ? S.boot.lesson.delayed : S.boot.lesson.transfer;
  stageMode('still'); subs(null); hideMic(); S.cardKey = null; panel();
  // 표지가 사라진 뒤에 카드가 올라온다(겹치지 않게).
  if (T.tries === 0 && !T.introShown) { T.introShown = true; slate(tx(delayed ? 'delayedTitle' : 'transferTitle'), { k: 'New situation', ms: 1200 }); await sleep(s, 1650); if (!live(s)) return; hideSlate(); }
@@ -1271,10 +1292,11 @@ async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
   if (!live(s) || v == null) return;
   // C · 남겨 둔 B를 마치면 첫 화면으로 — 기록이 남았으면 카드를 거둔다(Atlas가 그 문항을 본 것으로 안다), 아니면 카드가 남는다.
   if (v === 'finish') {
+   if (today) { S.trail?.flush(); return S.today.finish(T); }
    if (fromIntro) { if (T.trail?.recorded) { if (delayed) S.delayedDue = false; else S.pendingB = false; } S.trail?.flush(); return backToIntro(kind); }
    return wrap();
   }
-  if (v === 'later') return backToIntro(kind);
+  if (v === 'later') return today ? S.today.leave(T) : backToIntro(kind);
   if (v === 'held') return leaveHeld(T);
   if (v === 'hint') { await revealModel(s, T, tr); if (!live(s)) return; continue; }
   if (v === 'same' || v === 'differs') { T.selfCheck = v; if (v === 'differs') T.trail?.excludeLast(); continue; }
@@ -1318,6 +1340,7 @@ function heldPanel(s, T) {
 }
 // B를 쓰지 않고 떠난다 — 장면 뒤면 마침 화면(「남겨 뒀어요」), 첫 화면에서 왔으면 첫 화면. 첫 화면 카드는 기록으로 다시 정한다.
 function leaveHeld(T) {
+ if (T.today && S.today) return S.today.leave(T);
  T.deferred = true; S.pendingB = null; S.trail?.flush();
  return T.fromIntro ? backToIntro('held') : wrap();
 }
@@ -1350,9 +1373,9 @@ function transferPanel(s, tr, T) {
  else if (d) {
   const lines = [];
   if (T.selfCheck === 'differs') lines.push(h('p', { class: 'fine' }, tx('differsAck')));
-  else if (obs?.kind === 'pass') lines.push(h('p', { class: 'lead' }, tx('transferPass')));
+  else if (obs?.kind === 'pass') lines.push(h('p', { class: 'lead' }, (todayLine(tr.id) && S.today.text?.transferPass) || tx('transferPass')));
   // 새 상황에서는 모범을 열기 전 한국어 답 낱말을 보이지 않는다 — missing 노트는 낱말 없는 안내로.
-  else if (obs?.kind === 'note' && obs.note) { const a = obs.note.kind === 'missing' ? tx('transferMissing') : noteLines(obs.note)[0]; lines.push(h('p', { class: 'lead' }, a), h('p', { class: 'fine' }, tx('noteHedge'))); }
+  else if (obs?.kind === 'note' && obs.note) { const a = obs.note.kind === 'missing' ? (todayLine(tr.id) && S.today.text?.transferMissing) || tx('transferMissing') : noteLines(obs.note)[0]; lines.push(h('p', { class: 'lead' }, a), h('p', { class: 'fine' }, tx('noteHedge'))); }
   else lines.push(h('p', { class: 'lead' }, tx('transferPending')));
   outcome = h('div', { class: 'result' },
    d.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, d.transcript)) : null,
@@ -1398,7 +1421,9 @@ async function revealModel(s, T, tr = S.boot.lesson.transfer) {
  }
  const epoch = S.epoch;
  let r;
- if (inWorld()) { attemptsFor(tr.id).transferRevealed = true; r = { ok: true, data: isDelayed(tr.id) ? W.lesson.delayedReveal : W.lesson.reveal }; }
+ // 「오늘」이 연 처음 보는 대사의 모범은 그 줄의 원고 글이다(녹음 모범은 없다).
+ if (todayLine(tr.id)) { attemptsFor(tr.id).transferRevealed = true; r = { ok: true, data: { text: tr.text, modelAudio: null } }; }
+ else if (inWorld()) { attemptsFor(tr.id).transferRevealed = true; r = { ok: true, data: isDelayed(tr.id) ? W.lesson.delayedReveal : W.lesson.reveal }; }
  else { try { r = await api('/api/reveal', { method: 'POST', json: { lineId: tr.id }, signal: s.signal }); } catch { r = null; } }
  if (!live(s) || epoch !== S.epoch) return;
  if (!r?.ok || !r.data?.text) { await ask({ title: tx('apiDown'), buttons: [{ label: tx('close'), value: 'ok', primary: true }] }); return; }
@@ -1406,7 +1431,7 @@ async function revealModel(s, T, tr = S.boot.lesson.transfer) {
  T.revealed = { text: r.data.text, modelAudio: r.data.modelAudio || null };
  T.trail?.help('answer');
  if (!T.spoke) T.revealedBeforeFirst = true;
- if (!isDelayed(tr.id)) S.revealedEver = true;
+ if (!isDelayed(tr.id) && !todayLine(tr.id)) S.revealedEver = true;
 }
 
 /* ───────── 마침 ───────── */
