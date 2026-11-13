@@ -200,7 +200,7 @@ test('직원 첫 화면의 스위치: 서버가 알 때만 그리고, 바꾸는 
   assert.match(picker({...base,staffIntake:{state:'open',open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',reopened:'2026-11-13',canEdit:true}}),/11월 13일에 저절로 다시 열렸어요/);
   // 머리 띠: 스위치는 어느 직원 화면에서나 보인다(잊고 쉬어 둔 채 판매가 멈추지 않게). 쉬는 동안 「받는 중」은 그 자리에서 다시 받는다. 손님 머리 줄에는 없다.
   const headPaused=header({...base,staffIntake:{state:'paused',canEdit:true}});
-  assert.match(headPaused,/class="staff-intake is-paused"/);assert.match(headPaused,/aria-pressed="false" data-action="intake-open" data-mutate>받는 중</);assert.match(headPaused,/data-action="intake-sheet" aria-pressed="true"/);
+  assert.match(headPaused,/class="staff-intake is-paused"/);assert.match(headPaused,/aria-pressed="false" data-action="intake-open" data-mutate>받는 중</);assert.match(headPaused,/data-action="intake-sheet" aria-pressed="true" title="[^"]*">쉬기</);assert.doesNotMatch(headPaused,/aria-label="[^"]*">쉬기</,'보이는 글 「쉬기」가 단추 이름이다 — 음성 제어(카본 B5)');
   assert.match(header({...base,project:{id:'p'},staffIntake:{state:'paused',canEdit:true}}),/staff-intake is-paused/,'프로젝트를 연 화면에서도 보인다');
   const headCrew=header({...base,staffIntake:{state:'paused',canEdit:false}});
   assert.match(headCrew,/staff-intake is-readonly is-paused/);assert.match(headCrew,/접수 쉬는 중/);assert.doesNotMatch(headCrew,/data-action="intake-(open|sheet)"/);

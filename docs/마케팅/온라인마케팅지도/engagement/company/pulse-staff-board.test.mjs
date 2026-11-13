@@ -57,7 +57,8 @@ test('대표 그림: 확인 뒤에는 우리가 올린 가장 최근 그림, 없
   assert.equal(staffBoard([requestProject('w',{assets:[pdf]})],NOW).fresh[0].picture,null,'그림이 아닌 파일은 쓰지 않는다');
 });
 
-test('첫 화면: 숫자 셋 · 다섯 칸 · 카드는 옛 계약(open-project) 그대로, 손님 체험 큰 상자와 영문 꼬리표는 없다',()=>{
+test('첫 화면: 숫자 셋 · 다섯 칸 · 카드는 옛 계약(open-project) 그대로, 손님 체험 큰 상자와 영문 꼬리표는 없다',t=>{
+  t.mock.timers.enable({apis:['Date'],now:NOW}); // 화면은 지금 시각으로 D-n · 기다린 날을 센다 — 시험 날과 상관없이 같게(카본 B1)
   const projects=[requestProject('a'),legacyProject('make','producing',{dueDate:day(1),nextStep:'2번 컷 <다듬기>'}),legacyProject('wait','review',{updatedAt:ago(48)}),legacyProject('old','archived')];
   const html=picker({mode:'staff',user:{id:'u',name:'하늘'},workspace:{projects,canWrite:true}});
   assert.match(html,/class="project-picker staff-home"/);
@@ -78,12 +79,16 @@ test('첫 화면: 숫자 셋 · 다섯 칸 · 카드는 옛 계약(open-project)
   const picked=picker({mode:'staff',user:{id:'u'},staffStage:'review',workspace:{projects,canWrite:true}});
   assert.match(picked,/<div class="staff-board" data-stage="review">/);
   const none=picker({mode:'staff',user:{id:'u'},workspace:{projects:[],canWrite:true}});
-  assert.match(none,/아직 프로젝트가 없어요/);assert.doesNotMatch(none,/staff-board/,'빈 칸 다섯을 늘어놓지 않는다');
+  assert.match(none,/아직 프로젝트가 없어요/);assert.doesNotMatch(none,/staff-board/,'빈 칸 다섯을 늘어놓지 않는다');assert.match(none,/「새 프로젝트」를 눌러요/);
+  assert.doesNotMatch(picker({mode:'staff',user:{id:'u'},workspace:{projects:[],canWrite:false}}),/새 프로젝트/,'쓸 수 없는 크루에게 없는 단추를 가리키지 않는다(카본 B4)');
+  const noTime=picker({mode:'staff',user:{id:'u'},workspace:{projects:[requestProject('t',{submittedAt:''})],canWrite:true}});
+  assert.match(noTime,/<span class="staff-card-w">손님 t · <span class="mono">P-1113-T<\/span><\/span>/,'접수 시각을 못 읽으면 「접수」 조각을 뺀다(카본 B3)');
   const xss=picker({mode:'staff',user:{id:'u'},workspace:{projects:[{...legacyProject('q"><img','producing'),title:'<b>x</b>',customerName:'<i>'}],canWrite:true}});
   assert.doesNotMatch(xss,/<b>x<\/b>|<i>|data-id="q"><img/);
 });
 
-test('끝난 프로젝트는 2주 동안만 납품 칸에, 그 뒤는 접기로',()=>{
+test('끝난 프로젝트는 2주 동안만 납품 칸에, 그 뒤는 접기로',t=>{
+  t.mock.timers.enable({apis:['Date'],now:NOW});
   const done=(id,hours)=>({...legacyProject(id,'delivered',{updatedAt:ago(hours)})});
   const html=picker({mode:'staff',user:{id:'u'},workspace:{projects:[done('recent',24),done('past',24*20)],canWrite:true}});
   const column=html.slice(html.indexOf('data-col="deliver"'),html.indexOf('</section>',html.indexOf('data-col="deliver"')));
@@ -114,8 +119,11 @@ test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 
   assert.ok(app.includes("if(s.mode==='staff')badge.innerHTML=staffNotifyLabel(s.live.unreadCount||0);"));
   assert.ok(app.includes("...(staffMode?[new Promise(resolve=>{const link=document.createElement('link');link.rel='stylesheet';link.href='./staff.css';"),'staff.css는 직원 모드에서만 맨 끝에 붙인다');
   const css=read('staff.css');
-  for(const rule of css.replace(/\/\*[\s\S]*?\*\//g,'').match(/[^{}]+(?=\{)/g).map(x=>x.trim()).filter(x=>x&&!x.startsWith('@')))
-    assert.match(rule,/^html\.is-staff\b/,`직원 화면 밖으로 새지 않는다: ${rule}`);
+  // 선택자 목록은 괄호 밖 쉼표로 나눠 하나하나 본다 — 「html.is-staff .a,.b」의 .b가 새는 것까지(카본 B2).
+  const selectors=list=>{const out=[];let depth=0,part='';for(const ch of list){if(ch==='(')depth++;if(ch===')')depth--;if(ch===','&&!depth){out.push(part);part='';}else part+=ch;}out.push(part);return out.map(x=>x.trim()).filter(Boolean);};
+  const rules=css.replace(/\/\*[\s\S]*?\*\//g,'').match(/[^{}]+(?=\{)/g).map(x=>x.trim()).filter(x=>x&&!x.startsWith('@'));
+  assert.ok(rules.length>100,'규칙을 다 읽었다');
+  for(const rule of rules)for(const one of selectors(rule))assert.match(one,/^html\.is-staff\b/,`직원 화면 밖으로 새지 않는다: ${one}`);
   const server=readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),sw=read('sw.js');
   assert.ok(server.includes("'film-legacy.css','staff.css'])files['/pulse-app/'+file]"),'서버가 staff.css를 내준다');
   assert.ok(sw.includes("BASE+'staff.css'"),'오프라인 셸에 staff.css');
