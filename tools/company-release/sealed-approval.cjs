@@ -112,7 +112,7 @@ function verify(root, sealSha256, { completed, completedSealSha256 }, expect) {
   const sealRaw = R.read(path.join(root, SEAL), { sha256: sealSha256 }), s = JSON.parse(sealRaw);
   a.equal(s.schema, SCHEMA, 'APPROVAL_SEAL_SCHEMA');
   a.equal(s.completed && s.completed.sealSha256, completedSealSha256, 'APPROVAL_SEAL_COMPLETED_PIN');
-  const base = R.verify(completed, completedSealSha256), ev = base.seal.evidence;
+  const base = armedBase(R.verify(completed, completedSealSha256)), ev = base.seal.evidence;
   a.equal(s.release, base.manifestSha256, 'APPROVAL_SEAL_RELEASE');
   for (const k of ['approval', 'contract', 'postcheck', 'receipt']) a.equal(s[k] && s[k].sha256, ev[k].sha256, 'APPROVAL_SEAL_EVIDENCE ' + k);
   a.equal(s.result && s.result.path, RESULT, 'APPROVAL_SEAL_RESULT_PATH');
@@ -125,6 +125,10 @@ function verify(root, sealSha256, { completed, completedSealSha256 }, expect) {
   R.read(path.join(root, SEAL), { sha256: sealSha256 });
   return { result, seal: s, sealSha256, base };
 }
+
+/** HA 쉬기(무장 없이 완료) 보존본에는 무장 계약 · 사후 확인 · 승인 결과가 없다 — 승인 봉인 · 자식 재무장의 부모가 될 수 없다(명시 코드로 멈춘다). */
+function armedSeal(seal) { a.notEqual(seal.schema, R.REST_SCHEMA, 'HA_REST_RELEASE_HAS_NO_APPROVAL_RESULT'); return seal; }
+function armedBase(base) { armedSeal(base.seal); return base; }
 
 function sealedInputPath(PARENT, base) { return path.join(PARENT.completed.root, base.seal.evidence.approval.path); }
 
@@ -157,7 +161,7 @@ function anchors(PARENT) {
 
 /** 봉인 보존본의 검증기(부모 rearm/postcheck.cjs와 같은 바이트 — 보존본 봉인이 SHA로 고정). */
 function validator(PARENT) {
-  const seal = JSON.parse(R.read(path.join(PARENT.completed.root, 'completed-release.json'), { sha256: PARENT.completed.sealSha256 }));
+  const seal = armedSeal(JSON.parse(R.read(path.join(PARENT.completed.root, 'completed-release.json'), { sha256: PARENT.completed.sealSha256 })));
   const file = path.join(PARENT.completed.root, R.name(seal.evidence.validator.path));
   R.read(file, seal.evidence.validator);
   return require(file);
@@ -168,7 +172,7 @@ function validator(PARENT) {
  * 자식 재무장의 입력 그래프는 안쪽 걷기에서 이 핀을 따라가지 않는다(부모 재무장과 봉인 때 검증한 역사다). 핀으로 고정한 파일만 읽는다.
  */
 function history(PARENT) {
-  const seal = JSON.parse(R.read(path.join(PARENT.completed.root, 'completed-release.json'), { sha256: PARENT.completed.sealSha256 }));
+  const seal = armedSeal(JSON.parse(R.read(path.join(PARENT.completed.root, 'completed-release.json'), { sha256: PARENT.completed.sealSha256 })));
   const s = JSON.parse(R.read(path.join(PARENT.approval.root, SEAL), { sha256: PARENT.approval.sealSha256 }));
   a.ok(s.schema === SCHEMA && s.completed.sealSha256 === PARENT.completed.sealSha256 && s.release === seal.manifestSha256, 'APPROVAL_SEAL_COMPLETED_PIN');
   const docs = ['approval', 'contract', 'postcheck'].map(k => R.read(path.join(PARENT.completed.root, R.name(seal.evidence[k].path)), seal.evidence[k]));
@@ -199,7 +203,7 @@ function compute(modulePath, inputPath, timeoutMs = 30 * 60 * 1000) {
 function seal({ completed, completedSealSha256, module: mod, output, timeoutMs }) {
   a.ok([completed, output].every(p => typeof p === 'string' && path.isAbsolute(p)) && mod && typeof mod.path === 'string' && path.isAbsolute(mod.path), 'ABSOLUTE_INPUT_REQUIRED');
   a.ok(hex(completedSealSha256) && hex(mod.sha256), 'EXACT_PINS_REQUIRED');
-  const base = R.verify(completed, completedSealSha256), ev = base.seal.evidence;
+  const base = armedBase(R.verify(completed, completedSealSha256)), ev = base.seal.evidence;
   R.read(mod.path, mod);
   const computed = compute(mod.path, path.join(completed, ev.approval.path), timeoutMs);
   R.read(mod.path, mod); R.verify(completed, completedSealSha256);
