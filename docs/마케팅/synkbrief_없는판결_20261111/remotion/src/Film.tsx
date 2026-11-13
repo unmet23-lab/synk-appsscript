@@ -119,8 +119,8 @@ export const Film: React.FC = () => {
       {/* 낮은 현(보유곡에서 고른다 — bgm.mp3). 침묵 한 판과 고백(S.hold~S.look)에서 −6dB 안으로 내려앉았다 의뢰인이 보는 순간 돌아오고, 해설이 끝나는 S.quiet에 끊긴다 — 끝 두 컷은 의자 끄는 소리와 방 소리만(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
       <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(1.4), sec(S.hold - 0.4), sec(S.hold + 0.3), sec(S.look - 0.2), sec(S.look + 0.6), sec(S.quiet - 0.5), sec(S.quiet)], [0.05, 0.11, 0.11, 0.06, 0.06, 0.12, 0.12, 0], clamp)} />
       {/* 법정 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악을 낮추는 자리의 바탕 소리) */}
-      <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
-      {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
+      <Audio src={staticFile('sfx/room.wav')} volume={(fr) => interpolate(fr, [sec(S.quiet - 0.3), sec(S.quiet + 1.0)], [0.08, 0.13], clamp)} />
+      {VO.map((v, i) => <Sequence key={i} from={sec(v.t)} durationInFrames={v.d ? sec(v.d) : undefined}><Audio src={staticFile(`vo/${v.id}.wav`)} trimBefore={v.s ? sec(v.s) : undefined} /></Sequence>)}
       {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
       </>}
     </AbsoluteFill>
