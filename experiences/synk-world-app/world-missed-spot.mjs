@@ -50,7 +50,7 @@ function msIndex(events){
   order.set(event.id,at);
   if(event.type==='decision.made')experience.set(event.id,event.experienceId);
   else if(event.type==='practice.presented')shown.set(event.id,event);
-  else if(event.type==='msRecord.excluded'&&event.targetId)excluded.add(event.targetId);
+  else if(event.type==='record.excluded'&&event.targetId)excluded.add(event.targetId);
   else if(event.type==='practice.attempted'){attempt.set(event.id,event);if(event.attemptNo===1&&!first.has(event.presentationId))first.set(event.presentationId,event);}
  });
  const ordered=[...shown.values()].sort((a,b)=>order.get(a.id)-order.get(b.id)),firstSight=new Map();
@@ -170,10 +170,11 @@ export function buildMissedSpot({map,summary=null,events=[],homework=null,projec
  // 기록을 다 받지 못했으면 카드를 세우지 않는다(판은 열리고 「기록 일부」 줄을 단다 — 놓친 곳을 부분 기록으로 짚지 않는다).
  if(!msRecord(map)||!Array.isArray(map.skills)||map.evidenceComplete!==true)return null;
  const skills=new Map(map.skills.map(skill=>[skill.id,skill]));
- // 고르기: 「먼저 볼 항목」(Core 우선순위 순서) 가운데 도움 없이 처음 본 문항에 낸 첫 답의 틀림이 근거에 있는 첫 항목.
+ // 고르기: 「먼저 볼 항목」(Core 우선순위 순서) 가운데 도움 없이 처음 본 문항에 낸 첫 답의 틀림이 최근 창의 근거에 있는 첫 항목.
+ // 최근 창이 빈 「다시 볼 때」(근거가 옛 답 하나 · n 0)는 놓친 곳으로 짚지 않는다(atlas/learning.js — 그때 근거는 마지막 답 하나다).
  let skill=null,missed=[];
  for(const id of Array.isArray(map.attention)?map.attention:[]){
-  const row=skills.get(id),misses=(row?.evidence||[]).filter(value=>value.verdict==='incorrect'&&value.independent);
+  const row=skills.get(id),misses=row?.n>0?(row.evidence||[]).filter(value=>value.verdict==='incorrect'&&value.independent):[];
   if(misses.length){skill=row;missed=misses;break;}
  }
  if(!skill)return null;

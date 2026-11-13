@@ -235,3 +235,30 @@ test('끼우기: 카드가 짚은 항목만 「먼저 볼 항목」에서 빼고
  assert.equal(placeMissedSpot('<div>no anchors</div>','<section>CARD</section>','a'),'<div>no anchors</div>');
  assert.equal(placeMissedSpot(board,'','a'),board);
 });
+
+test('뺀 답(「제가 한 말과 달라요」 · record.excluded)은 카드 어느 칸에도 세지 않는다',()=>{
+ const run=play([RECORDED.first,RECORDED.second]);
+ // 짧은 연습 답이 아닌 입장 검사 오답 하나를 빼면 그 오답은 Core 근거에서 빠진다 — 카드는 Core를 그대로 따른다.
+ const miss=run.events.find(e=>e.type==='practice.attempted'&&e.verdict==='incorrect');
+ run.game.exclude(miss.id);
+ const summary=run.game.summary(),events=run.game.events();
+ const map=buildPositionMap({summary,events});
+ const card=buildMissedSpot({map,summary,events,now:run.now});
+ if(card){
+  assert.ok(!card.evidence.includes(miss.id));
+  assert.equal(layer(card,'line'),null,'한 번만 남은 오답으로 안내문 줄을 좁히지 않는다');
+ }
+});
+
+test('최근 창(30일)을 넘긴 옛 오답만 남으면 카드가 없다',()=>{
+ // 시각이 앞으로 흐르는 시계로 근무 둘을 두고, 40일 뒤 시각으로 Core 요약을 다시 읽는다(창은 지금 시각으로 자른다).
+ let at=Date.parse('2026-10-01T03:18:00+09:00');const memory=new Map();
+ const storage={getItem:key=>memory.has(key)?memory.get(key):null,setItem:(key,value)=>memory.set(key,String(value)),removeItem:key=>memory.delete(key)};
+ const game=createGame({gameId:'entry-check',map:createMap(worldMapData()),storage,clock:()=>new Date(at).toISOString()});
+ for(const line of [...RECORDED.first,...RECORDED.second]){const [id,picked,ok,how]=line.split(' '),item=CASES.get(id);at+=7000;const pid=game.present(caseMetadata(item));if(how==='도움')game.help(pid,'replay');
+  game.answer(pid,{correct:ok==='true',assessable:true,choice:{selectedId:option(picked),correctId:option(item.answer)}});}
+ assert.ok(cardOf({summary:game.summary(),events:game.events(),now:at}).card,'그날은 카드가 선다');
+ at+=40*86400000;
+ const summary=game.summary(),events=game.events(),map=buildPositionMap({summary,events});
+ assert.equal(buildMissedSpot({map,summary,events,now:at}),null);
+});

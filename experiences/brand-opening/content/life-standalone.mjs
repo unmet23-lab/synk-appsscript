@@ -24803,7 +24803,7 @@ function msIndex(events) {
     order2.set(event.id, at);
     if (event.type === "decision.made") experience.set(event.id, event.experienceId);
     else if (event.type === "practice.presented") shown.set(event.id, event);
-    else if (event.type === "msRecord.excluded" && event.targetId) excluded.add(event.targetId);
+    else if (event.type === "record.excluded" && event.targetId) excluded.add(event.targetId);
     else if (event.type === "practice.attempted") {
       attempt.set(event.id, event);
       if (event.attemptNo === 1 && !first.has(event.presentationId)) first.set(event.presentationId, event);
@@ -24938,7 +24938,7 @@ function buildMissedSpot({ map, summary = null, events = [], homework = null, pr
   const skills = new Map(map.skills.map((skill3) => [skill3.id, skill3]));
   let skill2 = null, missed = [];
   for (const id of Array.isArray(map.attention) ? map.attention : []) {
-    const row = skills.get(id), misses = (row?.evidence || []).filter((value) => value.verdict === "incorrect" && value.independent);
+    const row = skills.get(id), misses = row?.n > 0 ? (row.evidence || []).filter((value) => value.verdict === "incorrect" && value.independent) : [];
     if (misses.length) {
       skill2 = row;
       missed = misses;

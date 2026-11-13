@@ -2,6 +2,7 @@
 // 나머지는 지금 공개본 그대로(공개본은 바꾸지 않는다). 손님 기기 기록(synk.atlas.learning.*)에 시연 녹화의 입장 검사 근무 둘을 실제 엔진으로 심고,
 // 배우기 → 내 위치를 열어 카드 줄을 읽고 390 · 1440 캡처를 남긴다. 후보 폴더 없이 부르면 공개본 그대로를 본다(공개 뒤 확인).
 //   node experiences/synk-world-app/qa/놓친곳카드-20261114/후보시험.mjs [후보 폴더|-] [출력 폴더]
+// SYNK_RECORD_VIDEO=1이면 창마다 화면 녹화(webm)를 출력 폴더에 남긴다 — 판을 연 뒤 카드까지 천천히 내려가 4초 머문다(시연 영상용).
 import fs from 'node:fs';import path from 'node:path';import {createRequire} from 'node:module';
 import {worldLearning} from '../../world-learning-map.mjs';
 import {caseMetadata} from '../../../entry-check/learning.mjs';
@@ -31,7 +32,8 @@ function seed(){
 
 async function run(view,seeded){
  const browser=await chromium.launch({channel:'msedge',headless:true});
- const ctx=await browser.newContext({viewport:view,deviceScaleFactor:2,reducedMotion:'reduce'});
+ const record=process.env.SYNK_RECORD_VIDEO==='1';
+ const ctx=await browser.newContext({viewport:view,deviceScaleFactor:2,reducedMotion:'reduce',...(record?{recordVideo:{dir:OUT,size:view}}:{})});
  await ctx.addInitScript(data=>{try{if(!sessionStorage.getItem('__seeded')){for(const [k,v] of Object.entries(data))localStorage.setItem(k,v);sessionStorage.setItem('__seeded','1');}}catch{}},seeded);
  const page=await ctx.newPage();const errors=[],failed=[],fromCandidate=new Set();
  page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
@@ -56,6 +58,7 @@ async function run(view,seeded){
     before:!!c.compareDocumentPosition(document.querySelector('#panel-content .wpos-group'))&Node.DOCUMENT_POSITION_FOLLOWING,
     attentionHasSame:!!document.querySelector(`#panel-content [data-position-attention] li[data-skill="${c.dataset.positionMissed}"]`),
     overflow:document.documentElement.scrollWidth>innerWidth+1,cardWidth:Math.round(c.getBoundingClientRect().width)};});
+  if(out.card&&record){await sleep(1500);await page.evaluate(async()=>{const box=document.querySelector('#panel-content'),card=box?.querySelector('[data-position-missed]');if(!box||!card)return;const to=card.offsetTop-24,from=box.scrollTop;for(let i=1;i<=60;i++){box.scrollTop=from+(to-from)*i/60;await new Promise(r=>setTimeout(r,25));}});await sleep(4000);}
   if(out.card){await page.locator('#panel-content [data-position-missed]').scrollIntoViewIfNeeded();await sleep(500);
    await page.locator('#panel-content [data-position-missed]').screenshot({path:path.join(OUT,`카드-${view.width}.png`)});}
   await page.screenshot({path:path.join(OUT,`판-${view.width}.png`)});
