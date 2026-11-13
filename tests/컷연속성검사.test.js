@@ -152,6 +152,39 @@ test('지시문 낱말 — Astra · 아르곤 재현 문장 23개가 뜻대로 �
   assert.deepEqual(틀림, []);
 });
 
+test('지시문 낱말 — 켜진 불이 깜빡이면 걸림(점검표 61) · 닦는 컷에 닦인 결과가 없으면 주의(17)', { skip: !파이썬 && '파이썬 없음' }, () => {
+  // 11-13 서울로 애니: 「the blue deck lights twinkle」 한 줄에 난간 등 열한 개가 한꺼번에 두 번 꺼졌다 켜졌다(3.9초에 바뀜 73번 → 고친 판 1번),
+  //   와이퍼 컷은 닦인 결과를 안 써서 시작 그림에 구운 물방울이 그대로 남았다(유호님 「와이퍼에 물기가 안지워지고 그냥 통과하거든」). 둘 다 다시 굽기 30크레딧 · 12분씩 들었다.
+  const 재현 = [
+    // [지시문, 원하는 등급]
+    ['The blue deck lights twinkle along the railing as people stroll past.', ['걸림']],
+    ['Street lamps flicker above the empty road.', ['걸림']],
+    ['Neon signs blink in the rain.', ['걸림']],
+    ['난간의 파란 등이 반짝인다.', ['걸림']],
+    ['가로등이 깜빡이며 꺼졌다 켜진다.', ['걸림']],
+    // 지나가야 하는 꼴 — 켜진 채로 둔다고 못 박았거나, 빛이 아닌 것이 반짝인다
+    ['The blue railing lights come on over the first 1.2 s and then stay on; once lit, no lamp ever goes dark, blinks or dims.', []],
+    ['Every lamp glows steadily at the same brightness until the end.', []],
+    ['Snow glitters on the deck.', []],
+    ['Her eyes shimmer with tears.', []],
+    ['등은 끝까지 그대로 켜져 있다.', []],
+    // 닦는 컷
+    ['Close on the windshield from inside the bus. The wiper blade sweeps across the glass twice.', ['주의']],
+    ['She wipes away the fog with her sleeve.', ['주의']],
+    ['Each swing really wipes the glass, leaving a clean, clear fan-shaped band of glass right behind the blade.', []],
+    ['The wiper sweeps and the pane goes crystal clear behind it.', []],
+  ];
+  const dir = 임시();
+  const 파일 = 재현.map(([t], i) => 쓰기(dir, `w${String(i).padStart(2, '0')}.txt`, `ACTION: ${t}`));
+  const r = 돌리기(['지시문', ...파일]);
+  const 틀림 = [];
+  재현.forEach(([t, want], i) => {
+    const got = [...new Set(등급(r.항목들, '지시문', `w${String(i).padStart(2, '0')}`).filter((g) => g !== '통과'))].sort();
+    if (JSON.stringify(got) !== JSON.stringify([...want].sort())) 틀림.push(`${t} → ${got.join('·') || '없음'} (원함 ${want.join('·') || '없음'})`);
+  });
+  assert.deepEqual(틀림, []);
+});
+
 test('지시문 낱말 — 한국어: 「쪽지가 두 번 떨림」은 걸림, 「면접 또 떨어짐」 · 따옴표 안 「문 열게」는 아님', { skip: !파이썬 && '파이썬 없음' }, () => {
   const dir = 임시();
   const seq = { detail: [{ cut: 'A11', t: 0, dur: 1, keep: '두 번 노크 · 쪽지가 두 번 떨림' }, { cut: 'A5i', t: 1, dur: 1, line: '쪽지 「나 면접 또 떨어짐ㅋㅋ」' }, { cut: 'A12', t: 2, dur: 1, line: '파랑 「내일은 내가 문 열게」' }] };
@@ -530,6 +563,37 @@ test('옛 틀 — 틀이 없는 「문 앞」 컷순서는 걸림 · 확인 수�
   const r4 = 틀돌리기((s) => { s.한문장 = ''; }, ['--항목', '틀']);
   assert.equal(r4.코드, 1);
   assert.deepEqual([...new Set(r4.항목들.map((x) => x.항목))], ['틀']);
+});
+
+test('옛 틀 — 이웃한 두 컷이 같은 받은 영상을 잘라 붙이면 걸림(50), 사이에 다른 판을 끼운 되쓰기 · 같은판에 까닭을 적은 컷은 지나간다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  // 2026-11-13 synkbrief B44 최종 확인 미흡 — V4 한 판을 전체 → 1.15 → 1.3배로, V7 한 판을 1.0 → 1.2 → 1.4배로 이은 점프컷이 옛 틀이라 걸림 0으로 지나갔다
+  const dir = 임시();
+  const 표 = (detail) => 쓰기(dir, `옛틀_${Math.random().toString(36).slice(2)}.json`, JSON.stringify({ detail, 소품: [], 사건: [], 소리사건: [] }));
+  const 줄 = (cut, 영상, 더 = {}) => ({ cut, t: 0, dur: 1, 영상, ...더 });
+  const 편집 = (r) => r.항목들.filter((x) => x.항목 === '편집');
+  // B44 v12의 끝 10초 꼴(같은 V7 셋) — 둘째 · 셋째가 걸린다
+  const r1 = 돌리기([표([줄('c09', 'V4'), 줄('c10', 'V7'), 줄('c11', 'V7'), 줄('c12', 'V7')])]);
+  assert.equal(r1.코드, 1);
+  assert.deepEqual(편집(r1).map((x) => [x.컷, x.등급]), [['c11', '걸림'], ['c12', '걸림']]);
+  assert.match(편집(r1)[0].글, /앞 컷 c10과 같은 받은 영상 「V7」를 잇달아 잘라 붙였다\(50\).*같은판: "<까닭>"/);
+  // 「판」 칸도 같은 받은 영상으로 본다
+  assert.deepEqual(편집(돌리기([표([줄('A1', undefined, { 판: 'P1' }), 줄('A2', undefined, { 판: 'P1' })])])).map((x) => x.컷), ['A2']);
+  // 지나가는 것: 사이에 인서트를 끼운 되쓰기(B44 첫머리 V1 → V2 → V1) · 같은판 까닭 · 이어찍기 · 같은 컷 이름의 토막 · 영상 칸이 빈 컷
+  for (const detail of [
+    [줄('c01', 'V1'), 줄('c02', 'V2'), 줄('c03', 'V1'), 줄('c04', 'V2'), 줄('c05', 'V1')],
+    [줄('c10', 'V7'), 줄('c11', 'V7', { 같은판: '한 방을 둘로 자른 컷 — 사이에 위 표시만 바뀜' })],
+    [줄('c10', 'V7'), 줄('c11', 'V7', { 이어찍기: true })],
+    [줄('c10', 'V7'), 줄('c10', 'V7')],
+    [줄('A1'), 줄('A2')],
+  ]) {
+    const r = 돌리기([표(detail)]);
+    assert.deepEqual(편집(r), [], JSON.stringify(detail));
+    assert.equal(r.코드, 0, JSON.stringify(r.항목들.filter((x) => x.등급 === '걸림')));
+  }
+  // 같은판 true만으로는 밝힌 것이 아니다
+  assert.deepEqual(편집(돌리기([표([줄('c10', 'V7'), 줄('c11', 'V7', { 같은판: true })])])).map((x) => x.컷), ['c11']);
+  // --항목에 틀이 없으면 이 줄도 돌지 않는다
+  assert.deepEqual(편집(돌리기([표([줄('c10', 'V7'), 줄('c11', 'V7')]), '--항목', '소품,사건,소리'])), []);
 });
 
 // ───────── 지시문의 사람 연기 낱말(항목 「연기」) ─────────

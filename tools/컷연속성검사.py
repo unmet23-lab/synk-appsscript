@@ -127,6 +127,26 @@ def 행위자있나(문맥, 물건):
                       r"|\b(?:air|stairwell|room|hallway)\b[^.;]{0,20}\b(?:clear|still|empty|clean)\b|아무것도 (?:떨어지지|날리지|떠다니지)|눈(?:이|은) (?:없|오지 않|내리지 않)", re.I)
 
 
+# ───────── 켜진 불(점검표 61) · 닦는 컷(17) — 11-13 서울로 애니에서 둘 다 다시 굽게 만든 자리 ─────────
+# 61: 「the blue deck lights twinkle」 한 줄에 Omni가 난간 등 열한 개를 한꺼번에 1초씩 두 번 껐다 켰다(3.9초에 바뀜 73번).
+#     「once lit, no lamp ever goes dark, blinks or dims」로 다시 내자 바뀜 1번. 켜진 불은 켜진 채로 두고, 빛의 변화는 컷을 갈아서 만든다.
+불빛 = (r"(?:lamps?|lights?|lighting|bulbs?|lanterns?|lamp[- ]?posts?|street ?lamps?|street ?lights?|neon(?: signs?| tubes?)?|LEDs?|"
+       r"fairy lights?|deck lights?|railing lights?|window lights?|headlights?|tail ?lights?|candles?)")
+깜빡동사 = (r"(?:twinkl(?:e|es|ing)|flicker(?:s|ing)?|blink(?:s|ing)?|wink(?:s|ing)?|puls(?:e|es|ing)|strobe[sd]?|"
+          r"flash(?:es|ing)?|glimmer(?:s|ing)?|shimmer(?:s|ing)?|sputter(?:s|ing)?|gutter(?:s|ing)?|wax(?:es)? and wane[sd]?)")
+깜빡 = re.compile(rf"\b{불빛}\b[^.;,()—–]{{0,45}}?\b{깜빡동사}\b", re.I)
+깜빡_역 = re.compile(rf"\b{깜빡동사}\b[^.;,()—–]{{0,35}}?\b{불빛}\b", re.I)
+깜빡_한 = re.compile(r"(등|불빛|가로등|조명|전구|네온|촛불)[은는이가들]?[^.;,()]{0,20}(반짝|깜빡|깜박|명멸|껐다 ?켜|꺼졌다 ?켜)")
+깜빡부정 = re.compile(r"\b(?:no|never|nothing|without|none)\b[^.;]{0,40}\b(?:goes? dark|dims?|blinks?|flickers?|twinkles?|turns? off|switch(?:es)? off)\b"
+                  r"|\b(?:steady|steadily|constant|constantly|unchanging|evenly|stays? lit|stay lit|remains? lit|hold(?:s)? (?:the )?same brightness)\b"
+                  r"|꺼지지 않|반짝이지 않|깜빡이지 않|그대로 켜", re.I)
+# 17: 시작 그림에 구운 물방울 · 얼룩은 와이퍼가 지나가도 그대로 남는다 — 닦인 자리가 맑아진다고 써야 모델이 지운다(11-13 유호님 「와이퍼에 물기가 안지워지고 그냥 통과하거든」).
+닦기 = re.compile(r"\b(?:wipers?|windscreen wipers?|windshield wipers?|squeegees?|wipes? (?:across|over|away|clean)|rubs? (?:away|clean)|brushes? (?:away|off))\b|와이퍼|닦아|훔쳐", re.I)
+닦인결과 = re.compile(r"\b(?:clear|clears?|cleared|clearing|clean|cleans?|cleaned|spotless|streak[- ]free|crystal|transparent|unobstructed)\b"
+                  r"|\b(?:leav(?:es|ing)|reveal(?:s|ing)|open(?:s|ing) up)\b[^.;]{0,45}\b(?:band|arc|swath|strip|patch|view|glass|pane)\b"
+                  r"|맑아|말끔|깨끗", re.I)
+
+
 def 문장들(글):
     """마침표 · 물음표 · 줄바꿈으로 문장을 나눈다(지시문은 ACTION 한 줄에 세미콜론으로 사건을 잇는다 — 그래서 절은 따로 나눈다)."""
     return [s.strip() for s in re.split(r"(?<=[.!?。])\s+|\n+", 글) if s.strip()]
@@ -183,6 +203,16 @@ def 지시문검사(글, 실내=None):
                 else: out.append(("주의", "실내", f"실내 낱말이 있는 컷에 떨어지는 · 떠다니는 것 — 「{c[:90]}」(실내가 맞으면 뺀다 · 컷순서에 실내: true를 적으면 걸림으로 센다 · 점검표 37)"))
         if not 부정줄:
             out.append(("주의", "실내", "실내 컷인데 「Indoors: nothing falls or drifts anywhere」 같은 한 줄이 없다 — 그림의 작은 점을 모델이 눈 · 먼지로 움직인다(점검표 37)"))
+    # 불빛(걸림): 켜진 등 · 불빛이 반짝인다 · 깜빡인다 — 모델이 등을 한꺼번에 껐다 켠다(점검표 61)
+    for s in 문장목록:
+        for c in 절들(s):
+            if 깜빡부정.search(c):
+                continue
+            if 깜빡.search(c) or 깜빡_역.search(c) or 깜빡_한.search(c):
+                out.append(("걸림", "불빛", f"켜진 불이 깜빡인다 — 「{c[:90]}」(켜진 불은 켜진 채로 — 「once lit, no lamp ever goes dark, blinks or dims」 · 점검표 61)"))
+    # 닦기(주의): 와이퍼 · 손이 유리를 닦는데 닦인 자리가 맑아진다는 말이 없다 — 시작 그림에 구운 물방울이 그대로 남는다(점검표 17)
+    if 닦기.search(글) and not 닦인결과.search(글):
+        out.append(("주의", "닦기", "닦는 컷인데 닦인 자리가 맑아진다는 말이 없다 — 「each swing wipes the glass clear, leaving a clean band right behind the blade」처럼 결과를 쓴다(점검표 17)"))
     return out
 
 
@@ -1025,7 +1055,7 @@ def 지시문파일들(경로들):
 
 
 # ───────── 결과 모으기 ─────────
-항목순서 = ("틀", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "점", "고요", "지도", "빛")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다)
+항목순서 = ("틀", "편집", "소품", "사건", "소리", "지시문", "연기", "그림지시문", "점", "고요", "지도", "빛")   # 「연기」는 --지시문이 함께 내는 사람 연기 줄(따로 고르지 않는다) · 「편집」은 옛 틀 표의 같은 판 잇달아 자르기(틀 항목이 함께 낸다)
 기본항목 = ("틀", "소품", "사건", "소리", "지시문", "그림지시문", "점", "고요", "지도", "빛")
 
 
@@ -1481,6 +1511,23 @@ def 같은판밝힘(d):
     return isinstance(v, str) and bool(v.strip())
 
 
+def 옛틀잇단같은판(seq):
+    """옛 틀 컷순서(SNS 편 · detail에 「영상」이나 「판」) — 이웃한 두 컷이 같은 받은 영상을 잘라 붙였나(50) → [(컷, 글)].
+    2026-11-13 synkbrief B44 최종 확인 미흡: V7 한 판을 1.0 → 1.2 → 1.4배로, V4 한 판을 전체 → 1.15 → 1.3배로 잘라 이어
+    「같은 구도로 사람이 갑자기 커지는 점프컷」이 됐는데, 옛 틀은 T17(같은 시작 그림 · 같은 판)을 돌지 않아 걸림 0으로 지나갔다.
+    사이에 다른 판(인서트)을 끼운 되쓰기(V1 → V2 → V1)는 막지 않는다. 일부러 이은 컷은 같은판: "<까닭>"이나 이어찍기: true로 밝힌다."""
+    det = [d for d in seq.get("detail") or [] if isinstance(d, dict)]
+    out = []
+    for p, d in zip(det, det[1:]):
+        판 = lambda x: next((x[k].strip() for k in ("영상", "판") if isinstance(x.get(k), str) and x[k].strip()), None)
+        a, b = 판(p), 판(d)
+        if not a or a != b or p.get("cut") == d.get("cut") or 같은판밝힘(d) or d.get("이어찍기") is True: continue
+        out.append((d.get("cut", "?"), f"앞 컷 {p.get('cut', '?')}과 같은 받은 영상 「{b}」를 잇달아 잘라 붙였다(50) — 같은 판을 배율만 바꿔 이으면 "
+                    "사람이 갑자기 커지는 점프컷이다. 한 배율로 길게 두고 천천히 다가가거나, 사이에 각도가 다른 판(손 · 화면 · 다른 각도 근접)을 끼운다. "
+                    "한 방을 일부러 둘로 자른 컷이면 같은판: \"<까닭>\"을 적는다"))
+    return out
+
+
 def 시작그림검사(seq, 폴더=None, 그림폴더=None):
     """T17 — 서로 다른 두 컷이 같은 시작 그림 · 같은 받은 영상(판)을 쓰나(50) → [(등급, 컷, 글)].
     폴더(컷표가 있는 편 폴더)를 알면 칸에 적힌 파일을 읽어 이름이 달라도 같은 파일인지까지 보고, 그림폴더(--그림)를 주면 칸이 빈 컷은 <그림폴더>/<컷>.png로 견준다.
@@ -1685,7 +1732,10 @@ def 표검사(seq, r, 항목=기본항목, 간격=(0.6, 1.0), 영상=None, 폴�
     if "틀" in 항목:
         if 틀둘(seq): 틀검사(seq, r, 폴더, 그림폴더)
         # 알림은 끝 코드를 바꾸지 않는다. 항목 이름은 표빈칸과 같은 자리(소품 · 표)에 둔다 — 표가 빈 컷순서의 항목 묶음(소품 · 사건 · 소리)을 고정한 기존 시험을 깨지 않으려고
-        else: r.더함("소품", "표", "알림", "옛 틀 — 장면 · 구도 · 연기 · 끝 칸 검사 없음(틀 2로 옮기면 돈다)")
+        else:
+            r.더함("소품", "표", "알림", "옛 틀 — 장면 · 구도 · 연기 · 끝 칸 검사 없음(틀 2로 옮기면 돈다)")
+            # 같은 판 잇달아 자르기(50)만은 옛 틀에서도 본다 — 걸릴 때만 줄이 생겨 걸림 없는 옛 컷순서의 항목 수는 그대로다
+            for 컷, 글 in 옛틀잇단같은판(seq): r.더함("편집", 컷, "걸림", 글)
     if "소품" in 항목: 소품표검사(seq, r)
     if "사건" in 항목: 사건표검사(seq, r)
     if "소리" in 항목: 소리표검사(seq, r, 간격, 영상)
