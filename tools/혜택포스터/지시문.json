@@ -36,6 +36,13 @@
       "BG": "#E05C97",
       "BGNAME": "pink",
       "OBJECT": "a fortune-teller's crystal ball: a perfectly round deep lapis-blue felt ball (#2E4FA8) with small butter-yellow felt stars and one small butter-yellow crescent moon felted onto its surface, resting in a chunky butter-yellow felt cup stand on a round charcoal felt base."
+    },
+    {
+      "이름": "solio-object",
+      "쓰임": "SYNK SOLIO 대표 물건(플랫폼 내 홈 선반 · 솔리오 머리, 2026-11-13)",
+      "BG": "#F96859",
+      "BGNAME": "coral",
+      "OBJECT": "a small open-top tool caddy, the kind used to carry desk tools, made of deep lapis-blue felt (#3D6BC9) with rounded corners and a sturdy charcoal felt handle arching over the middle. Three small felt tools stand inside and peek out over the rim: a tiny semicircle gauge with a thick charcoal rim, a butter-yellow face and a charcoal needle; a small butter-yellow cloud with a tiny charcoal padlock stitched on it; and a butter-yellow pencil with a charcoal tip. The caddy is turned slightly so its front and one side show."
     }
   ]
 }

@@ -56,7 +56,7 @@ test('the first screen says one sentence about now, three counts and one white b
   assert.match(html, />혼자 해냄</);assert.match(html, />한 번 더</);assert.match(html, />다시 볼 때</);
   assert.doesNotMatch(html, />practice<|>review<|>recent-independent</);
   assert.doesNotMatch(html, /%|정답률|성장률|실력이 향상|줄었|급수입니다|성격 유형은 [^매]/);
-  assert.match(html, /href="#benefits"/);assert.match(html, /data-insight-action="account"[^>]*>내 정보·연결 설정/);
+  assert.match(html, /<a class="mi2-back" href="#account">[\s\S]*?내 계정<\/a>/);assert.match(html, /data-insight-action="account"[^>]*>내 정보·연결 설정/);
 });
 
 test('the comparison says 「늘었어요」 only for answers, independent answers and practice days, and never a fall', async () => {
@@ -158,7 +158,7 @@ test('loading, account and error states discard any stale report and expose the 
   for (const [status, action] of [['loading', null], ['signed-out', 'account'], ['unconfigured', 'account'], ['error', 'refresh']]) {
     const html = renderMemberInsight({ status, report: report(), message: '<b>오류</b>' }, { native: true });
     assert.doesNotMatch(html, /혼자 답한 횟수가|짧은 지시 듣기/);
-    assert.match(html, /data-view="benefits"/);assert.match(html, /id="benefit-title" tabindex="-1"/);
+    assert.match(html, /class="mi2-back" data-view="account"/);assert.match(html, /id="benefit-title" tabindex="-1"/);
     if (action) assert.ok(html.includes(`data-insight-action="${action}"`));
     else { assert.match(html, /aria-busy="true"/);assert.match(html, /role="status"/); }
     if (status === 'error') assert.match(html, /&lt;b&gt;오류&lt;\/b&gt;/);
@@ -440,11 +440,11 @@ test('dates use one shared formatter in Korea\'s calendar, and invalid dates are
 test('A shelf (2026-11-08): the head is a grey stage object, a Korean label and the title — no English tags, mono numbers or poster colours', async () => {
   const { renderMemberInsight } = await loaded;
   for (const state of [{ status: 'ready', report: report() }, { status: 'loading' }, { status: 'signed-out' }]) {
-    const html = renderMemberInsight(state, { poster: { art: './assets/member/benefit-insight.webp', label: '회원 혜택', badge: '로그인하면 바로', status: 'integrated' } });
-    assert.match(html, /<header class="mi2-poster"><img class="mi2-object" src="\.\/assets\/member\/benefit-insight\.webp" alt=""><div class="mi2-poster-top"><span class="mi2-eyebrow">회원 혜택<\/span>/);
+    const html = renderMemberInsight(state, { poster: { art: './assets/member/benefit-insight.webp', label: '맞춤 정보', badge: '로그인하면 바로', status: 'integrated' } });
+    assert.match(html, /<header class="mi2-poster"><img class="mi2-object" src="\.\/assets\/member\/benefit-insight\.webp" alt=""><div class="mi2-poster-top"><span class="mi2-eyebrow">맞춤 정보<\/span>/);
     assert.match(html, /<h1 id="benefit-title" tabindex="-1">내 성향<\/h1>/);
     assert.doesNotMatch(html, /SYNK FOR YOU|CHOSEN|>DONE<|30 DAYS|mi2-en/);
   }
   // A caller without a label gets the Korean one, never the old English tag.
-  assert.match(renderMemberInsight({ status: 'loading' }), /<span class="mi2-eyebrow">회원 혜택<\/span>/);
+  assert.match(renderMemberInsight({ status: 'loading' }), /<span class="mi2-eyebrow">맞춤 정보<\/span>/);
 });

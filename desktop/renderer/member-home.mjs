@@ -1,10 +1,12 @@
 import {APP_IDS,APPS,PAUSED_APP_IDS,statusLabel,appArt,josa} from './state.mjs';
-import {MEMBER_BENEFITS} from './benefits.mjs';
+import {SOLIO} from './solio.mjs';
 import {accountStorageKey,displayLibraryAppId,displayLibraryAppIds,projectLibraryPreferences} from './library.mjs';
 import {createDraftRecovery} from './draft-recovery.mjs';
 import {worldPhoneSection} from './world-phone.mjs';
 
 export const HOME_KEY='synk.platform.member-home.v1';
+// 홈 후보에서 「쓴 적이 있을 때만」 서는 앱 — 회원 혜택의 플레저(2026-11-13). 홈에 고정은 기존 즐겨찾기 그대로다.
+export const HOME_PINNED_ONLY=Object.freeze(['care']);
 const MAX_RECORDS=60;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clean=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
@@ -15,7 +17,7 @@ const activeApp=id=>id==='partners'?'pulse':id;
 const STORED_APP_IDS=[...APP_IDS,...PAUSED_APP_IDS];
 const icon=name=>'<svg class="i" aria-hidden="true"><use href="#i-'+name+'"/></svg>';
 const arrow=icon('arrow-right');
-// 3차 A 진열대(2026-11-08): 인사 → 두 줄 제목 → 회색 선반(이어서 열 앱 · 내 앱 · 회원 혜택) → 할 일 · 메모 1px 목록 → 바닥 한 줄.
+// 3차 A 진열대(2026-11-08): 인사 → 두 줄 제목 → 회색 선반(이어서 열 앱 · 내 앱 · 솔리오 — 11-13 회원 혜택 칸 대신) → 할 일 · 메모 1px 목록 → 바닥 한 줄.
 // 글 속 앱 이름은 제품 이름(영문 그대로)과 한글 이름을 섞지 않게 화면용 짧은 이름을 쓴다.
 const SPOKEN={world:'WORLD',messenger:'워크스페이스',teacher:'내 수업',path:'PATH',pulse:'PULSE',care:'플레저',fortune:'무료 운세'};
 const spoken=id=>SPOKEN[id]||APPS[id]?.short||'';
@@ -102,20 +104,25 @@ export function filterHomeRecords(records,query='',filter='all'){
 export function buildHomeModel({library,personal,prefs,clients=[],records=[],actions={}}){
   const allowed=displayLibraryAppIds(library);prefs=projectLibraryPreferences(prefs||{},library);
   const order=[...new Set([...(personal?.order||[]),...allowed])].filter(id=>allowed.includes(id));
-  const recent=order.filter(id=>stamp(prefs?.lastLaunch?.[id])).sort((a,b)=>prefs.lastLaunch[b]-prefs.lastLaunch[a]).slice(0,3).map(id=>({id,at:prefs.lastLaunch[id],...(prefs.launchEntries?.[id]&&prefs.launchEntries[id]!==id?{entryId:prefs.launchEntries[id]}:{})}));
+  // 홈 후보(2026-11-13 솔리오 판): 플레저(care)는 권한만으로는 첫 칸 · 인사 · 선반에 서지 않고, 즐겨찾기(홈에 고정) · 최근에 엶 · 안 끝낸 할 일 ·
+  // 이 창에서 고른 일 가운데 하나가 있을 때만 선다. order(메모 「연결할 앱」 · 권한 · 「적어 두기」)는 그대로 둔다.
+  const pendingAll=records.filter(row=>library?.appIds?.includes(row.entryId||row.appId)&&row.kind==='task'&&!row.done).map(row=>displayLibraryAppId(row.appId,library));
+  const used=id=>(prefs?.favorites||[]).includes(id)||stamp(prefs?.lastLaunch?.[id])||pendingAll.includes(id)||(!!personal?.sessionOnly&&personal.selected===id);
+  const homeOrder=order.filter(id=>!HOME_PINNED_ONLY.includes(id)||used(id));
+  const recent=homeOrder.filter(id=>stamp(prefs?.lastLaunch?.[id])).sort((a,b)=>prefs.lastLaunch[b]-prefs.lastLaunch[a]).slice(0,3).map(id=>({id,at:prefs.lastLaunch[id],...(prefs.launchEntries?.[id]&&prefs.launchEntries[id]!==id?{entryId:prefs.launchEntries[id]}:{})}));
   const visibleRecords=records.filter(row=>library?.appIds?.includes(row.entryId||row.appId)).map(row=>{const appId=displayLibraryAppId(row.appId,library);return {...row,appId,...(row.appId!==appId?{entryId:row.appId}:{})};});
   const tasks=visibleRecords.filter(row=>row.kind==='task'),pending=tasks.filter(row=>!row.done).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  const available=order.filter(id=>(Object.hasOwn(actions,id)?homeLaunchTarget(actions[id]):clients.some(row=>row.id===id&&row.canLaunch))||(id==='messenger'&&library.appIds.includes('teacher')&&homeLaunchTarget(actions.teacher)));
+  const available=homeOrder.filter(id=>(Object.hasOwn(actions,id)?homeLaunchTarget(actions[id]):clients.some(row=>row.id===id&&row.canLaunch))||(id==='messenger'&&library.appIds.includes('teacher')&&homeLaunchTarget(actions.teacher)));
   const pendingReady=pending.find(row=>available.includes(row.appId));
   const recentReady=recent.find(row=>available.includes(row.id));
-  const purposeChoice=personal?.sessionOnly&&allowed.includes(personal.selected)?personal.selected:null;
-  const first=purposeChoice||pendingReady?.appId||recentReady?.id||available[0]||pending.find(row=>allowed.includes(row.appId))?.appId||recent[0]?.id||order[0]||null;
+  const purposeChoice=personal?.sessionOnly&&homeOrder.includes(personal.selected)?personal.selected:null;
+  const first=purposeChoice||pendingReady?.appId||recentReady?.id||available[0]||pending.find(row=>homeOrder.includes(row.appId))?.appId||recent[0]?.id||homeOrder[0]||null;
   const nextTask=pending.find(row=>row.appId===first)||null;
   const firstEntry=nextTask?.entryId||recent.find(row=>row.id===first)?.entryId||(first==='messenger'&&!homeLaunchTarget(actions[first])&&library.appIds.includes('teacher')&&homeLaunchTarget(actions.teacher)?'teacher':first);
-  return {canSave:canSave(library),order,recent,first,firstEntry,nextTask,nextKind:nextTask?'task':recent.some(row=>row.id===first)?'recent':'start',available,favorites:[...new Set(prefs?.favorites||[])].filter(id=>order.includes(id)),tasks,notes:visibleRecords.filter(row=>row.kind==='note'),clients};
+  return {canSave:canSave(library),order,homeOrder,recent,first,firstEntry,nextTask,nextKind:nextTask?'task':recent.some(row=>row.id===first)?'recent':'start',available,favorites:[...new Set(prefs?.favorites||[])].filter(id=>homeOrder.includes(id)),tasks,notes:visibleRecords.filter(row=>row.kind==='note'),clients};
 }
 
-export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAccount,onBenefits,onBenefit,onLibrary,onUpdates,onToast,getAppAction=()=>null,onLaunch,onRetry,bridge=globalThis.synkDesktop}){
+export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAccount,onBenefits,onBenefit,onSolio,onLibrary,onUpdates,onToast,getAppAction=()=>null,onLaunch,onRetry,bridge=globalThis.synkDesktop}){
   const store=createHomeStore(storage);let formOpen=false,formKind='task',message='',lastOwner=null,draft=null,discardRequested=false,recordQuery='',recordFilter='all',recoveryCandidate=null;
   let renderQueued=false,disposed=false;
   function scheduleRecoveryRender(){
@@ -175,16 +182,14 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
       const go=direct?'<button class="text-link shelf-go" data-member-launch="'+entry+'" '+(pending?'disabled aria-busy="true"':'')+' aria-label="'+esc(APPS[id].name+(pending?' 여는 중':' '+verb))+'">'+esc(pending?'여는 중…':verb)+' '+icon(['pulse-app','public-web'].includes(action.action)?'arrow-up-right':'arrow-right')+'</button>':'<span class="shelf-go" aria-hidden="true">앱 소개 보기 '+arrow+'</span>';
       return '<li class="shelf-slot'+(lead?' is-lead':'')+'"><button class="shelf-item'+(lead?' is-lead':'')+'" data-member-app="'+id+'" aria-label="'+esc(APPS[id].name+' 앱 소개, '+meta)+'">'+stageArt(appArt(id))+'<span class="shelf-label"><span class="name">'+esc(APPS[id].name)+'</span><span class="desc">'+esc(desc)+'</span><span class="meta"><span class="dot" data-tone="'+homeTone(row)+'" aria-hidden="true"></span>'+esc(meta)+'</span></span></button><p class="shelf-action">'+go+'</p></li>';
     };
-    // 로그인한 회원에게 「로그인하면 바로」는 맞지 않아 「바로 보기」로(benefits.mjs 글은 웹과 같이 써서 그대로 둔다).
-    const benefitState=item=>snapshot.who&&item.statusLabel==='로그인하면 바로'?'바로 보기':item.statusLabel;
-    const benefitSlot=item=>'<li class="shelf-slot"><button class="shelf-item" data-member-benefit="'+item.id+'" aria-label="'+esc(item.name)+' 소개 보기, 회원 혜택 · '+esc(benefitState(item))+'">'+stageArt({src:'/assets/launcher/'+item.asset})+'<span class="shelf-label"><span class="name">'+esc(item.name)+'</span><span class="desc">'+esc(item.headline)+'</span><span class="meta">회원 혜택 · '+esc(benefitState(item))+'</span></span></button><p class="shelf-action"><span class="shelf-go" aria-hidden="true">보기 '+arrow+'</span></p></li>';
-    // 선반 넷: 첫 칸(1.7배)은 이어서 열 앱, 나머지는 내 앱(즐겨찾기 · 최근 순)과 회원 혜택.
-    const others=[...new Set([...model.favorites,...model.recent.map(row=>row.id),...model.order])].filter(id=>id!==model.first&&model.order.includes(id));
-    const benefits=MEMBER_BENEFITS.filter(item=>!model.order.includes(item.id));
-    const appsShown=app?[model.first,...others.slice(0,benefits.length?2:3)]:[];
-    const benefitsShown=benefits.slice(0,Math.max(0,4-appsShown.length));
-    const moreApps=app?Math.max(0,1+others.length-appsShown.length):0;
-    const shelf=loading||unavailable?'':'<ul class="shelf'+(app?'':' is-benefits-only')+'" aria-label="'+(app?'내 앱과 회원 혜택':'회원 혜택')+'">'+appsShown.map((id,index)=>appSlot(id,index===0)).join('')+benefitsShown.map(benefitSlot).join('')+'</ul>'+(moreApps?'<p class="shelf-more"><button class="text-link" data-member-library>내 앱 '+model.order.length+'개 모두 보기 '+arrow+'</button></p>':'');
+    // 솔리오 칸(2026-11-13): 회원 혜택 세 칸을 채우던 자리에 대표 앱 솔리오 한 칸을 늘 둔다(불러오는 중 · 실패 화면 제외).
+    // 앱이 없으면 첫 칸(큰 칸)이 솔리오다. 칸 전체가 솔리오 홈으로 간다 — 쓸 수 있는 기능(AI 구독 관리)과 준비 중인 것은 그 안에서 나눠 보인다.
+    const solioSlot=lead=>'<li class="shelf-slot'+(lead?' is-lead':'')+'"><button class="shelf-item'+(lead?' is-lead':'')+'" data-member-solio aria-label="'+esc(SOLIO.menu+' 열기, '+SOLIO.tagline)+'">'+stageArt({src:'/assets/launcher/'+SOLIO.asset})+'<span class="shelf-label"><span class="name">'+esc(SOLIO.menu)+'</span><span class="desc">'+esc(SOLIO.homeLine)+'</span><span class="meta"><span class="dot" data-tone="ok" aria-hidden="true"></span>'+esc(SOLIO.tagline)+'</span></span></button><p class="shelf-action"><span class="shelf-go" aria-hidden="true">솔리오 열기 '+arrow+'</span></p></li>';
+    // 선반: 첫 칸(1.7배)은 이어서 열 앱, 그다음 내 앱(즐겨찾기 · 최근 · 순서) 둘까지, 마지막은 솔리오. 칸 수에 맞춘 격자라 빈 회색을 남기지 않는다.
+    const others=[...new Set([...model.favorites,...model.recent.map(row=>row.id),...model.homeOrder])].filter(id=>id!==model.first&&model.homeOrder.includes(id));
+    const appsShown=app?[model.first,...others.slice(0,2)]:[];
+    const moreApps=app?Math.max(0,1+others.length-appsShown.length):0,shelfCount=appsShown.length+1;
+    const shelf=loading||unavailable?'':'<ul class="shelf count-'+shelfCount+'" aria-label="'+(app?'내 앱과 솔리오':'솔리오')+'">'+appsShown.map((id,index)=>appSlot(id,index===0)).join('')+solioSlot(!app)+'</ul>'+(moreApps?'<p class="shelf-more"><button class="text-link" data-member-library>내 앱 '+model.homeOrder.length+'개 모두 보기 '+arrow+'</button></p>':'');
     // 인사 → 두 줄 큰 제목. 글은 홈 모델(할 일 · 최근 · 고른 일 · 바로 열기)에서 나온다.
     const name=app?spoken(model.first):'',direct=!!app&&homeLaunchTarget(actions[model.firstEntry])&&!!onLaunch;
     // 고른 일에 맞는 앱이 목록에 있을 때만 「고른 일에 맞는 ○○」이라고 말한다(personal.matched — 2026-11-11, 「배우기」의 WORLD는 휴대폰 칸).
@@ -193,8 +198,8 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
     if(loading&&snapshot.library.phase==='signing-in'){busy=true;title='브라우저에서 로그인을';second='마쳐 주세요.';lead='<p class="hello-lead" role="status">기본 브라우저에 열린 SYNK ID 창에서 Google이나 이메일로 로그인한 뒤 「연결하기」를 누르면 여기로 돌아와요. 창이 안 보이면 오른쪽 위 「로그인 중」을 눌러 취소한 뒤 다시 해 주세요.</p>';}
     else if(loading){busy=true;title='내 앱을 불러오고 있어요.';second='잠시만 기다려 주세요.';lead='<p class="hello-lead" role="status">로그인 상태와 쓸 수 있는 앱을 불러오는 중이에요.</p>';}
     else if(unavailable){title='앱 목록을';second='불러오지 못했어요.';lead='<p class="hello-lead">인터넷 연결을 확인하고 다시 불러와 주세요. 다시 불러와도 이 PC에 남긴 메모는 그대로예요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-retry>다시 불러오기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
-    else if(!app&&worldOnPhone){title='한국어 공부는';second='휴대폰의 WORLD에서 해요.';lead='<p class="hello-lead">아래 QR을 휴대폰 카메라로 찍으면 바로 열려요. 회원 혜택은 이 PC에서 바로 써요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
-    else if(!app){title='아직 쓸 수 있는 앱이 없어요.';second='회원 혜택은 지금 바로 써요.';lead='<p class="hello-lead">학교나 회사에서 이 계정에 앱을 열어 주면 여기에 나와요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-benefits>회원 혜택 보기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
+    else if(!app&&worldOnPhone){title='한국어 공부는';second='휴대폰의 WORLD에서 해요.';lead='<p class="hello-lead">아래 QR을 휴대폰 카메라로 찍으면 바로 열려요.</p>';extra='<div class="hello-actions"><button class="text-link" data-member-account>계정 보기</button></div>';}
+    else if(!app){title='혼자 하는 사업이라면,';second='솔리오부터 열어 볼까요?';lead='<p class="hello-lead">AI 구독 관리는 지금 바로 쓰고, 백업·복구는 준비하고 있어요. 학교나 회사에서 이 계정에 앱을 열어 주면 여기에도 나와요.</p>';extra='<div class="hello-actions"><button class="solid-button" data-member-solio>솔리오 열기 '+arrow+'</button><button class="text-link" data-member-account>계정 보기</button></div>';}
     else if(guest){title='로그인 전에도';second=name+josa(name,'을','를')+' 둘러봐요.';extra='<div class="hello-actions"><button class="text-link" data-member-account>로그인하고 내 앱 보기</button></div>';}
     else if(active&&personal.matched===false&&personal.context==='student'){title='한국어 공부는';second='휴대폰의 WORLD에서 해요.';lead='<p class="hello-lead">아래 QR을 휴대폰 카메라로 찍으면 바로 열려요.</p>';}
     else if(model.nextKind==='task'){title=name+'에 남긴 할 일,';second='이어서 할까요?';}
@@ -253,7 +258,8 @@ export function mountMemberHome(root,{storage,getSnapshot,onApp,onPurpose,onAcco
     else if('memberRetryStorage' in data){message='';render();(root.querySelector('[data-member-retry-storage]')||root.querySelector('[data-member-add]'))?.focus({preventScroll:true});}
     else if('memberRetryRecovery' in data){const owner=getSnapshot().library.owner;void recovery.retry().then(()=>{if(!disposed&&getSnapshot().library.owner===owner)(root.querySelector('[data-member-retry-recovery]')||root.querySelector('[data-member-recover]')||root.querySelector('[name=title]')||root.querySelector('[data-member-add]'))?.focus({preventScroll:true});});}
     else if('memberAccount' in data)onAccount();
-    else if('memberBenefits' in data)onBenefits();
+    else if('memberSolio' in data)onSolio?.();
+    else if('memberBenefits' in data)onBenefits?.();
     else if(data.memberBenefit)(onBenefit||onBenefits)?.(data.memberBenefit);
     else if('memberLibrary' in data)onLibrary?.();
     else if('memberUpdates' in data)onUpdates?.();

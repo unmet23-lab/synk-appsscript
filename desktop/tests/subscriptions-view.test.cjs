@@ -178,7 +178,10 @@ test('this week lists unblocks, weekly resets of usable accounts and payments in
 
 test('platform navigation keeps the board route instead of dropping it',async()=>{
   const {normalizeRoute}=await import('../renderer/convenience-state.mjs');
-  assert.equal(normalizeRoute({view:'benefits',benefitId:'subscriptions'}).benefitId,'subscriptions');
+  // 2026-11-13 솔리오 판: 옛 회원 혜택 경로(저장된 마지막 화면 · 뒤로 가기)는 솔리오 「AI 구독 관리」로 옮겨 받는다.
+  assert.deepEqual(['view','section','benefitId'].map(key=>normalizeRoute({view:'benefits',benefitId:'subscriptions'})[key]),['solio','subscriptions',null]);
+  assert.equal(normalizeRoute({view:'solio',section:'subscriptions'}).section,'subscriptions');
+  assert.equal(normalizeRoute({view:'solio',section:'unknown'}).section,'home');
   assert.equal(normalizeRoute({view:'benefits',benefitId:'unknown'}).benefitId,null);
 });
 
@@ -224,7 +227,7 @@ test('the board asks members to sign in, then starts first-time members from one
   assert.match(el.innerHTML,/지금 쓸 계정/);assert.match(el.innerHTML,/data-roll="r-claude">96<small>%/);assert.match(el.innerHTML,/계정 1개 <span class="ms-soft">거의 다 씀<\/span>/);assert.match(el.innerHTML,/마지막 확인/);
   assert.ok(!el.innerHTML.includes('<script'));
   board.render(el,{signedIn:true,native:false});
-  assert.match(el.innerHTML,/PC 앱에서 쓰는 혜택이에요/);
+  assert.match(el.innerHTML,/PC 앱에서 쓰는 기능이에요/);assert.match(el.innerHTML,/위 메뉴 「솔리오」 → 「AI 구독 관리」/);assert.match(el.innerHTML,/class="ms-back" data-view="solio"/);
   board.dispose();
 });
 

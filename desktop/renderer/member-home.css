@@ -23,7 +23,10 @@
 /* 선반: 회색 띠 하나 위에 칸 넷. 칸마다 두 줄(칸 · 아래 행동 한 줄)을 subgrid로 맞춰 행동 줄 높이를 칸끼리 같게 둔다. */
 .shelf{position:relative;display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr;grid-auto-rows:auto;margin:0;padding:0;list-style:none}
 .shelf::before{content:"";position:absolute;left:0;right:0;top:0;height:var(--stage);background:var(--surface)}
-.shelf.is-benefits-only{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* 칸 수에 맞춘 격자(2026-11-13 솔리오 판 — 회원 혜택 세 칸으로 채우던 자리에 솔리오 한 칸): 빈 회색 칸을 남기지 않는다. */
+.shelf.count-1{grid-template-columns:minmax(0,1fr)}
+.shelf.count-2{grid-template-columns:1.7fr 1fr}
+.shelf.count-3{grid-template-columns:1.7fr 1fr 1fr}
 .shelf-slot{position:relative;display:grid;grid-row:span 2;grid-template-rows:subgrid;min-width:0}
 /* 첫 칸(큰 칸)은 행동 줄(「열기 →」)을 상태 줄 바로 아래 12px에 붙인다 — 나머지 세 칸만 subgrid로 행동 줄 높이를 맞춘다. */
 .shelf-slot.is-lead{grid-template-rows:auto 1fr}
@@ -129,6 +132,7 @@ button.shelf-go:hover:not(:disabled){text-decoration:underline;text-underline-of
   .shelf::-webkit-scrollbar{display:none}
   .shelf::before{display:none}
   .shelf-slot{flex:0 0 78%;scroll-snap-align:start;grid-row:auto;grid-template-rows:1fr auto}
+  .shelf.count-1 .shelf-slot{flex-basis:100%}
   .shelf-slot:not(.is-lead) .shelf-go{opacity:1;transform:none}
   .shelf-action{padding:8px 4px 0}
   .shelf .shelf-item{--stage:280px}

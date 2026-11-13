@@ -1,9 +1,10 @@
 import {createNavigation,searchCommands,trayShortcuts,notificationPreferences,isQuiet,installationEvents,safeDiagnostics} from './convenience-state.mjs';
 import {mountCareNotifications} from './care-notifications.mjs';
+import {SOLIO_SEARCH} from './solio.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=name=>`<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`;
-const VIEW_NAMES={home:'내 홈',library:'라이브러리',benefits:'회원 혜택',downloads:'설치·업데이트',settings:'설정',account:'내 계정'};
+const VIEW_NAMES={home:'내 홈',library:'라이브러리',solio:'솔리오',benefits:'회원 혜택',downloads:'설치·업데이트',settings:'설정',account:'내 계정',insight:'맞춤 정보'};
 
 export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,applyRoute,launchApp,onToast,getNotes,openNote,onFavorite,onMoveFavorite,onLibrarySearch,onDesktopPreferences=()=>{},takeLanding=()=>null}){
   const $=id=>document.getElementById(id),main=$('main');
@@ -42,9 +43,11 @@ export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,appl
     const snapshot=getSnapshot(),shortcut=trayShortcuts(snapshot.prefs,snapshot.appIds),ids=[...new Set([...shortcut.map(row=>row.id),...snapshot.appIds])];
     const appEntries=ids.map(id=>({title:apps[id].name,subtitle:shortcut.some(row=>row.id===id&&row.kind==='favorite')?'즐겨찾기 · 앱 열기':'앱 열기 또는 설치 상태 보기',keywords:[apps[id].short,apps[id].word,apps[id].keywords,id].join(' '),run:()=>launchApp(id)}));
     const routes=Object.entries(VIEW_NAMES).map(([id,title])=>({title,subtitle:'화면 이동',keywords:id,run:()=>nav.navigate({view:id})}));
+    // 솔리오 안 화면 · 옮긴 자리(AI 구독 관리 · 백업·복구 · 내 성향 · 플레저)도 옛 이름(계정판 · 회원 혜택)으로 찾아 새 자리로 간다(2026-11-13).
+    const places=SOLIO_SEARCH.filter(item=>item.id!=='solio').map(item=>({title:item.title,subtitle:item.where,keywords:item.words,run:()=>nav.navigate({...item.route})}));
     const options=settingRows().map(row=>({title:row.querySelector('h2')?.textContent||'',subtitle:'설정',keywords:row.querySelector('p')?.textContent||'',run:()=>focusSetting(row)}));
     const notes=(getNotes?.(query)||[]).slice(0,12).map(note=>({title:note.title,subtitle:`${note.source==='account'?'계정 메모':'이 PC 메모'} · ${apps[note.appId]?.name||'내 홈'}`,keywords:'메모 기록 '+note.title+' '+(note.body||''),run:()=>{nav.navigate({view:'home'});openNote?.(note);}}));
-    return [...appEntries,...routes,...notes,...options,...(onLibrarySearch?[{title:'앱 목록에서 찾기',subtitle:'라이브러리 검색과 필터',keywords:'즐겨찾기 설치됨 앱 목록 검색 필터',run:onLibrarySearch}]:[])];
+    return [...appEntries,...routes,...places,...notes,...options,...(onLibrarySearch?[{title:'앱 목록에서 찾기',subtitle:'라이브러리 검색과 필터',keywords:'즐겨찾기 설치됨 앱 목록 검색 필터',run:onLibrarySearch}]:[])];
   }
   function highlight(){const input=$('command-input');[...$('command-results').children].forEach((row,index)=>row.setAttribute('aria-selected',String(index===active)));if(active>=0){input.setAttribute('aria-activedescendant','command-result-'+active);$('command-result-'+active)?.scrollIntoView({block:'nearest'});}else input.removeAttribute('aria-activedescendant');}
   function renderResults(){results=searchCommands(entries($('command-input').value),$('command-input').value);active=results.length?0:-1;$('command-results').innerHTML=results.length?results.map((row,index)=>`<button type="button" tabindex="-1" role="option" id="command-result-${index}" data-result="${index}" aria-selected="${index===active}"><span><strong>${esc(row.title)}</strong><small>${esc(row.subtitle)}</small></span>${svg('arrow-right')}</button>`).join(''):'<p class="command-empty">찾는 항목이 없어요. 다른 말로 검색해 보세요.</p>';$('command-count').textContent=results.length+'개';highlight();}

@@ -1,43 +1,29 @@
+// 회원 혜택(오른쪽 프로필 → 회원 혜택). 2026-11-13 솔리오 판부터 플레저 하나다 — 내 성향은 「내 계정 → 맞춤 정보」(MEMBER_INSIGHT),
+// AI 구독 계정판은 「솔리오 → AI 구독 관리」(solio.mjs의 SOLIO_SUBSCRIPTIONS)로 옮겼다. 옛 경로는 solio.mjs의 SOLIO_LEGACY_BENEFITS가 잇는다.
 // Public product introductions are separate from account-bound app entitlements.
 // A catalogue entry never grants launch access or stores personal information.
 // 무료 운세는 다시 만드는 동안 목록에서 내려 두었다(2026-10-30). 앱 원천은 experiences/daily-fortune, 계정 저장·로그인 연결은 그대로다.
+// 맞춤 정보(내 계정 → 맞춤 정보)의 「내 성향」. 화면 · 데이터 · 동작은 그대로이고 자리만 옮겼다(desktop/renderer/member-insight-view.mjs).
+export const MEMBER_INSIGHT = Object.freeze({
+  id: 'insight',
+  name: '내 성향',
+  kicker: '내가 고른 것과 실제 학습 기록',
+  headline: '내가 고른 것과 실제로 한 것을 나눠서 봐요.',
+  description: '직접 고른 관심사·이용 방식과 WORLD 학습 기록을 나눠 보여 주고, 왜 그렇게 봤는지 근거도 보여 줘요.',
+  status: 'integrated',
+  statusLabel: '로그인하면 바로',
+  embedded: true,
+  asset: 'benefit-insight.webp',
+  alt: '책갈피 셋을 꽂은 남색 펠트 수첩과 노란 테 돋보기',
+  steps: [
+    { title: '내가 고른 것', body: '한국어를 배우는 이유, 편한 도움 방식처럼 직접 고른 것을 모아 봐요.' },
+    { title: '실제 학습 기록', body: '혼자 푼 답과 도움받은 답, 다시 연습할 항목을 나눠 봐요.' },
+    { title: '왜 이렇게 보나요?', body: '고른 정보와 기록에서 본 것을 나누고, 근거가 된 기록을 열어 봐요.' },
+  ],
+  availability: 'SYNK ID로 로그인하면 볼 수 있어요. 학습 기록 연결을 꺼 두면 직접 고른 배우는 이유만 보여요.',
+});
+
 export const MEMBER_BENEFITS = [
-  {
-    id: 'insight',
-    name: '내 성향',
-    kicker: '내가 고른 것과 실제 학습 기록',
-    headline: '내가 고른 것과 실제로 한 것을 나눠서 봐요.',
-    description: '직접 고른 관심사·이용 방식과 WORLD 학습 기록을 나눠 보여 주고, 왜 그렇게 봤는지 근거도 보여 줘요.',
-    status: 'integrated',
-    statusLabel: '로그인하면 바로',
-    embedded: true,
-    asset: 'benefit-insight.webp',
-    alt: '책갈피 셋을 꽂은 남색 펠트 수첩과 노란 테 돋보기',
-    steps: [
-      { title: '내가 고른 것', body: '한국어를 배우는 이유, 편한 도움 방식처럼 직접 고른 것을 모아 봐요.' },
-      { title: '실제 학습 기록', body: '혼자 푼 답과 도움받은 답, 다시 연습할 항목을 나눠 봐요.' },
-      { title: '왜 이렇게 보나요?', body: '고른 정보와 기록에서 본 것을 나누고, 근거가 된 기록을 열어 봐요.' },
-    ],
-    availability: 'SYNK ID로 로그인하면 볼 수 있어요. 학습 기록 연결을 꺼 두면 직접 고른 배우는 이유만 보여요.',
-  },
-  {
-    id: 'subscriptions',
-    name: 'AI 구독 계정판',
-    kicker: 'AI 구독 남은 양·결제일',
-    headline: 'AI 구독마다 이번 주에 남은 양을 보여 줘요.',
-    description: '연결한 AI 계정의 남은 사용량과 다시 채워지는 시각을 보고, 결제일과 구독료도 함께 챙겨요.',
-    status: 'integrated',
-    statusLabel: 'PC 앱 · 회원 무료',
-    embedded: true,
-    asset: 'benefit-subscriptions.webp',
-    alt: '남은 양을 가리키는 바늘이 달린 반원 펠트 계기판',
-    steps: [
-      { title: '지금 쓸 계정부터', body: '서비스마다 남은 게 가장 많은 계정을 먼저 보여 주고, 다 쓴 계정이 언제 풀리는지 가까운 순서로 알려 줘요.' },
-      { title: '한 번 눌러 전부 확인', body: '이 PC에 연결한 여러 계정을 공식 프로그램으로 한꺼번에 읽어요. 계정마다 로그아웃했다 다시 들어갈 필요가 없어요.' },
-      { title: '처음 연결은 따라 하기만', body: '설치 확인부터 로그인까지 단계마다 알려 줘요. 토큰 파일은 열지 않고, 각 서비스가 공식으로 알려 주는 숫자만 모아요.' },
-    ],
-    availability: 'SYNK ID로 로그인한 회원이 PC 앱에서 무료로 써요. 자동으로 읽을 계정은 해당 서비스의 공식 프로그램을 PC에 설치하거나 API 키를 넣어 연결해요. 자동 확인을 지원하지 않는 서비스도 구독료와 결제일을 직접 기록할 수 있어요. 기록은 이 PC에만 저장해요.',
-  },
   {
     id: 'care',
     name: '플레저',
@@ -56,7 +42,6 @@ export const MEMBER_BENEFITS = [
     ],
     availability: '웹(synk.im/care)에서 로그인 없이 무료로 시작해요. SYNK ID로 로그인하면 사람·일정·장부와 연락 기록을 계정에 보관해요. 창을 닫은 뒤에도 알림을 받으려면 Windows PC 앱 설정의 「플레저 PC 알림」을 켜 주세요.',
   },
-
 ];
 
 export function memberBenefit(id) {

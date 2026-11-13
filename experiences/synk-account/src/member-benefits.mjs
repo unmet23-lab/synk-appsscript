@@ -1,4 +1,4 @@
-import { MEMBER_BENEFITS, memberBenefit } from '../../../desktop/renderer/benefits.mjs';
+import { MEMBER_BENEFITS, MEMBER_INSIGHT, memberBenefit } from '../../../desktop/renderer/benefits.mjs';
 import { renderMemberInsight } from '../../../desktop/renderer/member-insight-view.mjs';
 import { shelfItem, shelfColumns } from './platform-shelf.mjs';
 
@@ -50,20 +50,26 @@ export function benefitCards(query = '', { signedIn = false } = {}) {
   return benefits.length ? `<ul class="shelf benefit-grid${shelfColumns(benefits.length)}" aria-label="회원 혜택">${benefits.map(item => benefitItem(item, { signedIn })).join('')}</ul>` : '<p class="benefit-empty">검색어에 맞는 회원 혜택이 없어요.</p>';
 }
 
-// 혜택 목록 첫머리: 선물 포스터 · 영문 꼬리표 없이 두 줄 제목(둘째 줄 회색)과 한 단락.
+// 혜택 목록 첫머리(2026-11-13 솔리오 판): 오른쪽 프로필 → 회원 혜택. 플레저 하나라 「세 가지」 글을 뺐다.
 export function benefitHero() {
-  return `<header class="page-heading benefit-title"><h1 id="benefit-heading">회원이면<br><span>모두 무료.</span></h1><p>내 성향, AI 구독 계정판, 플레저.<br>SYNK ID 하나로 셋 다 써요.</p><p class="small">세 가지 모두 무료예요. 플레저는 로그인 없이도 열려요.</p></header>`;
+  return `<header class="page-heading benefit-title"><h1 id="benefit-heading">회원 혜택</h1><p>SYNK ID 회원에게 무료로 여는 것이에요. 플레저는 웹(synk.im/care)에서 로그인 없이도 써요.</p></header>`;
 }
 
+// 옮긴 곳(2026-11-13): 내 성향 → 내 계정 › 맞춤 정보, AI 구독 계정판 → 솔리오 › AI 구독 관리.
 export function benefitsPage({ signedIn = false } = {}) {
-  return benefitHero() + `<section id="benefit-collection" class="benefit-collection" aria-labelledby="benefit-collection-title"><h2 id="benefit-collection-title" class="sr-only">세 가지 회원 혜택</h2>${benefitCards('', { signedIn })}</section>
-  <section class="benefit-promise" aria-labelledby="benefit-promise-title"><h2 id="benefit-promise-title">여는 곳은<br>혜택마다 달라요.</h2><div><p>플레저는 웹(synk.im)에서 바로 열려요. AI 구독 계정판은 PC 앱에서만 써요.</p><p>내 성향은 로그인하면 여기서 볼 수 있어요. 기록을 남기려면 열린 화면에서 같은 SYNK ID로 로그인해 주세요.</p><a class="link" href="./client.html?product=platform">SYNK ID 관리 ↗</a></div></section>`;
+  return benefitHero() + `<section id="benefit-collection" class="benefit-collection" aria-labelledby="benefit-collection-title"><h2 id="benefit-collection-title" class="sr-only">회원 혜택</h2>${benefitCards('', { signedIn })}</section>
+  <section class="benefit-moved" aria-labelledby="benefit-moved-title"><h2 id="benefit-moved-title">옮긴 곳</h2><ul class="rows"><li class="row"><a class="row-main" href="#account/insight">내 성향</a><span class="benefit-moved-where">내 계정 › 맞춤 정보로 옮겼어요.</span><a class="row-act link" href="#account/insight">맞춤 정보 열기 →</a></li><li class="row"><a class="row-main" href="#solio/subscriptions">AI 구독 계정판</a><span class="benefit-moved-where">솔리오 › AI 구독 관리로 이름을 바꿔 옮겼어요.</span><a class="row-act link" href="#solio/subscriptions">AI 구독 관리 열기 →</a></li></ul></section>`;
+}
+
+// 맞춤 정보(#account/insight, 2026-11-13): 회원 혜택에 있던 내 성향 화면 그대로(PC와 같은 member-insight-view). 머리 줄만 「맞춤 정보」, 뒤로 가기는 「내 계정」.
+// 이 모듈에 두는 까닭: 웹 묶음에서 내 성향 모듈의 자리(차례)를 앞 판과 같게 지켜 공개본에 바뀐 조각만 얹는다(qa/solio-20261113).
+export function solioInsightPage(insight, { signedIn = false } = {}) {
+  return renderMemberInsight(insight, { poster: { art: artPath(MEMBER_INSIGHT), label: '맞춤 정보', badge: signedIn ? '' : MEMBER_INSIGHT.statusLabel, status: MEMBER_INSIGHT.status } });
 }
 
 export function benefitDetail(id, base, { library = null, insight = { status: 'signed-out', report: null }, signedIn = false } = {}) {
   const item = memberBenefit(id);
-  // 내 성향 소개는 PC 앱과 함께 쓰는 화면(member-insight-view)이라 그 틀과 글을 그대로 쓴다.
-  if (id === 'insight' && item) return renderMemberInsight(insight, { poster: { art: artPath(item), label: '회원 혜택', badge: signedIn ? '' : item.statusLabel, status: item.status } });
+  // 내 성향은 2026-11-13부터 맞춤 정보(#account/insight, platform-solio.mjs)에서 그린다 — 옛 #benefits/insight는 그 주소로 바뀐다.
   if (!item) return '<div class="page-heading"><h1>찾는 회원 혜택이 없어요.</h1><p><a class="link" href="#benefits">회원 혜택으로 돌아가기 →</a></p></div>';
   const preview = localBenefitPreview(id, base), publicEntry = publicBenefitEntry(id);
   const saved = library?.saved?.includes(id), favorite = library?.favorites?.includes(id);
@@ -81,7 +87,7 @@ export function benefitDetail(id, base, { library = null, insight = { status: 's
       <p class="state">${item.status === 'integrated' || publicEntry ? '<span class="dot" aria-hidden="true"></span>' : ''}${item.statusLabel}</p>
       <p class="benefit-availability">${item.availability}</p>
       ${preview ? `<p class="benefit-local-note">「이 PC에서 열기」는 이 컴퓨터에서 켜 둔 ${item.name} 화면을 열어요. ${id === 'fortune' ? '로그인하지 않고 넣은 내용은 이 화면에만 남아요. 로그인한 뒤 저장하면 출생정보와 운세 기록이 계정에 남아요.' : '기본으로는 쓰는 동안만 남고, 기기에 저장할지는 앱에서 골라요.'}</p>` : ''}
-      ${library && !item.embedded ? `<section class="benefit-library" aria-label="기기 라이브러리"><div class="line-row"><div><strong>라이브러리에 담기</strong><p>이 기기에 바로가기만 저장해요. 앱 안의 기록과는 관계없어요.</p></div><div class="actions"><button class="sb-btn soft" data-action="save" data-id="${item.id}" aria-pressed="${!!saved}">${saved ? '라이브러리에서 빼기' : '라이브러리에 담기'}</button><button class="sb-btn soft" data-action="favorite" data-id="${item.id}" aria-pressed="${!!favorite}">${favorite ? '★ 즐겨찾기' : '☆ 즐겨찾기'}</button><a class="link" href="#library">내 라이브러리 →</a></div></div></section>` : ''}
+      ${library && !item.embedded ? `<section class="benefit-library" aria-label="기기 라이브러리"><div class="line-row"><div><strong>홈에 고정</strong><p>고정하면 내 홈 선반에 나와요. 라이브러리 즐겨찾기와 같아요.</p></div><div class="actions"><button class="sb-btn soft" data-action="favorite" data-id="${item.id}" aria-pressed="${!!favorite}">${favorite ? '★ 홈에 고정됨' : '☆ 홈에 고정'}</button></div></div><div class="line-row"><div><strong>라이브러리에 담기</strong><p>이 기기에 바로가기만 저장해요. 앱 안의 기록과는 관계없어요.</p></div><div class="actions"><button class="sb-btn soft" data-action="save" data-id="${item.id}" aria-pressed="${!!saved}">${saved ? '라이브러리에서 빼기' : '라이브러리에 담기'}</button><a class="link" href="#library">내 라이브러리 →</a></div></div></section>` : ''}
       <section class="info benefit-how"><h2>${item.status === 'planned' ? '준비하고 있는 것' : '이렇게 써요'}</h2><ol class="steps">${item.steps.map((step, index) => `<li><span class="step-number">0${index + 1}</span><div><h3>${step.title}</h3><p>${step.body}</p></div></li>`).join('')}</ol></section>
     </div>
   </div>

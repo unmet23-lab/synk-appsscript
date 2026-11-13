@@ -92,19 +92,22 @@ export function renderAccountPage(state) {
     + `<div class="setting-row"><div><h3>로그인 이메일</h3><p>로그인과 SYNK ID 메일을 받는 주소예요.${identity?.newEmail ? ` 새 이메일 ${esc(identity.newEmail)} 확인을 기다리고 있어요.` : ''}</p></div><div class="ap-actions"><strong class="ap-value">${esc(email || (identityError ? '불러오지 못함' : '불러오는 중'))}</strong><button class="ghost-button" type="button" aria-label="로그인 이메일 바꾸기, 브라우저에서 열려요" data-account-action="security" data-section="email"${disabled('security')}>바꾸기<svg class="i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></button></div></div>`
     + (identity?.createdAt ? `<div class="setting-row"><div><h3>가입한 날</h3></div><span class="ap-value">${esc(dayText(identity.createdAt))}</span></div>` : '')
     + `<div class="setting-row"><div><h3>소속</h3><p>${memberships.length ? esc(memberships.join(' / ')) : '학교·회사와 연결된 소속이 없어요.'}</p></div></div></div>`;
-  const security = `${section('02', 'SIGN-IN', '로그인과 보안')}<div class="settings-group">`
+  // 맞춤 정보(2026-11-13 솔리오 판): 회원 혜택에 있던 「내 성향」을 오른쪽 프로필 → 내 계정 → 맞춤 정보로 옮겼다. 화면 · 데이터 · 동작은 그대로이고,
+  // 솔리오 같은 다른 앱과 합치지 않는다. 여는 것은 런처의 「맞춤 정보」 화면(onInsight)이다.
+  const personal = `${section('02', 'PERSONAL', '맞춤 정보')}<div class="settings-group"><div class="setting-row"><div><h3>내 성향</h3><p>직접 고른 관심사 · 도움 방식과 WORLD 학습 기록을 나눠 봐요.</p></div><button class="ghost-button" type="button" aria-label="내 성향 보기" data-account-action="insight">보기<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div></div>`;
+  const security = `${section('03', 'SIGN-IN', '로그인과 보안')}<div class="settings-group">`
     + `<div class="setting-row"><div><h3>로그인 방법</h3><p>${methods.google && methods.email ? '이메일과 비밀번호, 또는 Google로 로그인해요.' : methods.google ? 'Google로 로그인해요. 비밀번호를 만들면 이메일로도 로그인할 수 있어요.' : 'Google 계정도 연결하면 Google로 로그인할 수 있어요.'}</p></div><div class="ap-chips">${methods.names.length ? methods.names.map(text => `<span class="ap-chip">${esc(text)}</span>`).join('') : `<span class="ap-chip">${identityError ? '불러오지 못함' : '불러오는 중'}</span>`}</div></div>`
     + `<div class="setting-row"><div><h3>비밀번호</h3><p>${methods.email || !methods.google ? '바꾸면 이 PC 앱을 포함해 다른 기기와 앱에서는 로그아웃돼요. 새 비밀번호로 다시 로그인해 주세요.' : 'Google로 가입한 계정이에요. 비밀번호를 만들면 이메일과 비밀번호로도 로그인할 수 있어요.'}</p></div><button class="ghost-button" type="button" aria-label="${methods.email || !methods.google ? '비밀번호 바꾸기' : '비밀번호 만들기'}, 브라우저에서 열려요" data-account-action="security" data-section="password"${disabled('security')}>${methods.email || !methods.google ? '비밀번호 바꾸기' : '비밀번호 만들기'}<svg class="i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></button></div>`
     + (methods.google || !identity ? '' : `<div class="setting-row"><div><h3>Google</h3><p>연결하면 다음부터 Google로 로그인해도 이 계정이 열려요.</p></div><button class="ghost-button" type="button" aria-label="Google 연결하기, 브라우저에서 열려요" data-account-action="security" data-section="google"${disabled('security')}>Google 연결하기<svg class="i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></button></div>`)
     + `</div><div class="quiet-note ap-browser-note"><strong>비밀번호와 로그인 이메일은 브라우저에서 바꿔요</strong><p>기본 브라우저의 SYNK ID 「로그인과 보안」이 열려요. PC 앱은 비밀번호를 받지 않아요.${email ? ` 브라우저에 다른 계정이 로그인돼 있을 수 있으니, 그 화면의 로그인 이메일이 ${esc(email)}인지 확인해 주세요.` : ''}</p></div>`;
   const rows = shown.map(row => `<div class="setting-row ap-session"><div><h3>${esc(row.name)}${row.current ? ' <span class="ap-current">이 PC</span>' : ''}</h3><p>${esc([row.label, row.seen ? `${row.seen}에 사용` : ''].filter(Boolean).join(' · ') || '사용 기록 없음')}</p></div><button class="ghost-button" type="button" data-account-action="${row.current ? 'sign-out' : 'revoke'}" data-session="${esc(row.id)}"${disabled('session:' + row.id)}>${row.current ? '로그아웃' : '로그아웃시키기'}</button></div>`).join('');
-  const sessionsBlock = `${section('03', 'SESSIONS', '로그인한 곳')}<div class="settings-group">${rows || '<div class="setting-row"><p>표시할 로그인 기록이 없어요.</p></div>'}${sessions.length > SESSIONS_SHOWN ? `<div class="setting-row"><button class="text-link" type="button" data-account-action="sessions-toggle">${allSessions ? '줄여 보기' : `${sessions.length - SESSIONS_SHOWN}곳 더 보기`}</button></div>` : ''}<div class="setting-row"><div><h3>모든 SYNK 앱에서 로그아웃</h3><p>이 PC와 다른 기기, 브라우저의 SYNK 로그인을 한 번에 끝내요.</p></div><button class="ghost-button" type="button" data-account-action="revoke-all"${disabled('revoke-all')}>모두 로그아웃</button></div></div>`;
+  const sessionsBlock = `${section('04', 'SESSIONS', '로그인한 곳')}<div class="settings-group">${rows || '<div class="setting-row"><p>표시할 로그인 기록이 없어요.</p></div>'}${sessions.length > SESSIONS_SHOWN ? `<div class="setting-row"><button class="text-link" type="button" data-account-action="sessions-toggle">${allSessions ? '줄여 보기' : `${sessions.length - SESSIONS_SHOWN}곳 더 보기`}</button></div>` : ''}<div class="setting-row"><div><h3>모든 SYNK 앱에서 로그아웃</h3><p>이 PC와 다른 기기, 브라우저의 SYNK 로그인을 한 번에 끝내요.</p></div><button class="ghost-button" type="button" data-account-action="revoke-all"${disabled('revoke-all')}>모두 로그아웃</button></div></div>`;
   const learningOn = data?.learning?.enabled === true, canEnable = data?.capabilities?.learningSync === true && !deleting;
-  const dataBlock = `${section('04', 'RECORDS', '학습 기록과 내 데이터')}<div class="settings-group">`
+  const dataBlock = `${section('05', 'RECORDS', '학습 기록과 내 데이터')}<div class="settings-group">`
     + `<div class="setting-row"><div><h3>학습 기록 연결</h3><p>${learningOn ? '켜져 있어요. 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요.' : canEnable ? '꺼져 있어요. 켜면 연습 기록을 계정에 저장해 다른 기기에서도 이어 가요.' : deleting ? '계정 삭제를 요청해서 켤 수 없어요. 요청을 취소하면 다시 켤 수 있어요.' : '지금은 켤 수 없어요. 이 기기에서 하는 연습은 그대로 할 수 있어요.'}</p></div><button class="ghost-button ap-switch" type="button" role="switch" aria-checked="${learningOn}" aria-label="학습 기록 연결" data-account-action="learning"${account && (learningOn || canEnable) ? disabled('learning') : ' disabled'}>${learningOn ? '켜짐' : '꺼짐'}</button></div>`
     + `<div class="setting-row"><div><h3>연습 기록 내려받기</h3><p>계정에 저장한 연습 기록과 내 정보, 마을 기록을 파일(JSON)로 받아요. 과제와 AI 기록은 들어 있지 않아요.</p></div><button class="ghost-button" type="button" data-account-action="export"${account ? disabled('export') : ' disabled'}>${busy.has('export') ? '준비 중…' : '내려받기'}</button></div></div>`;
-  // The sections count on from 04: the town's records (when the page has the card), then Workspace, then deletion.
-  const numbers = ['05', '06', '07'].slice(0, (town !== null) + !!workspace + 1), next = () => numbers.shift();
+  // The sections count on from 05: the town's records (when the page has the card), then Workspace, then deletion.
+  const numbers = ['06', '07', '08'].slice(0, (town !== null) + !!workspace + 1), next = () => numbers.shift();
   const townBlock = town !== null ? `${section(next(), 'TOWN', '마을 기록')}<div class="settings-group ap-town">${town}</div>` : '';
   const workspaceBlock = workspace ? `${section(next(), 'WORKSPACE', '연결된 서비스')}<div class="settings-group"><div class="setting-row"><div><h3>SYNK Workspace(작업실)</h3><p>작업실 계정은 SYNK ID와 따로예요. 작업실 로그인 비밀번호는 작업실의 「설정 → 내 로그인 비밀번호」에서 바꿔요.</p></div><button class="ghost-button" type="button" data-account-action="workspace">작업실 열기</button></div></div>` : '';
   const removal = `${section(next(), 'DELETE', '계정 지우기')}<div class="settings-group ap-danger-group">${deletion
@@ -112,10 +115,10 @@ export function renderAccountPage(state) {
     : deleting ? '<div class="setting-row"><div><h3>삭제를 처리하고 있어요</h3><p>늦어도 요청 후 30일 안에 계정과 기록을 지워요.</p></div></div>'
     : `<div class="setting-row"><div><h3>계정 지우기 요청</h3><p>요청하면 7일 동안은 취소할 수 있고, 그 뒤 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요.</p></div><button class="ghost-button ap-danger" type="button" data-account-action="delete-request"${account ? disabled('delete') : ' disabled'}>지우기 요청…</button></div>`}</div>`;
   const support = account ? `<details class="ap-support"><summary>문의할 때 쓰는 계정 번호</summary><p>hello@synk.im에 문의할 때 이 번호를 같이 적어 주세요.</p><code class="mono">${esc(account.synk_user_id)}</code></details>` : '';
-  return head + hero + note + failed + profile + security + sessionsBlock + dataBlock + townBlock + workspaceBlock + removal + support;
+  return head + hero + note + failed + profile + personal + security + sessionsBlock + dataBlock + townBlock + workspaceBlock + removal + support;
 }
 
-export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => [], onBack, onSignIn, onSignOut, onWorkspace, onAccountChanged = () => {}, toast = () => {}, now = Date.now, randomId = () => globalThis.crypto.randomUUID(), timeoutMs = 15000 } = {}) {
+export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => [], onBack, onSignIn, onSignOut, onWorkspace, onInsight, onAccountChanged = () => {}, toast = () => {}, now = Date.now, randomId = () => globalThis.crypto.randomUUID(), timeoutMs = 15000 } = {}) {
   let binding = '', epoch = 0, data = null, identity = null, loadError = '', identityError = false, loading = false, visible = false;
   let editingName = false, nameDraft = '', message = null, allSessions = false, deleteRequestId = null, securityOpenedAt = 0, openConfirm = null, townFocus = null;
   const busy = new Set();
@@ -225,6 +228,7 @@ export function mountAccountPage(root, { bridge, getIdentity, getAppIds = () => 
     retry: () => refresh(),
     'sessions-toggle': () => { allSessions = !allSessions;render(); },
     workspace: () => onWorkspace?.(),
+    insight: () => onInsight?.(),
     'name-edit': () => { editingName = true;nameDraft = data?.account?.profile?.display_name || getIdentity()?.account?.display_name || '';message = null;render(); },
     'name-cancel': () => { editingName = false;nameDraft = '';render(); },
     // Each 「바꾸기↗」 opens its own line of 「로그인과 보안」 (?view=security&focus=password|email|google).

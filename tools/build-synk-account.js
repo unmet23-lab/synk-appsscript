@@ -56,6 +56,8 @@ output('member-insight.css', fs.readFileSync(path.join(sourceRoot, 'desktop/rend
 for (const file of ['wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
 // 회원 혜택 포스터 물건은 웹에서 가장 크게 보이는 크기에 맞춘 판이다(이름은 데스크톱 앱과 같고, 데스크톱 앱은 원본을 쓴다).
 for (const id of ['gift', 'insight', 'subscriptions', 'care', 'fortune']) output(`assets/member/benefit-${id}.webp`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', `benefit-${id}.webp`)));
+// 솔리오(2026-11-13): 펠트 공구 바구니. 원본은 혜택물건/원판/solio-object.jpg, 데스크톱 앱은 혜택물건/solio-object.webp(960×1000)를 쓴다.
+output('assets/member/solio-object.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림/solio-object.webp')));
 for (const file of ['laptop-felt.webp', 'sticker-search.webp', 'sticker-person.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/마케팅/맞춤도구/assets', file)));
 output('assets/synk-logo.svg', fs.readFileSync(path.join(sourceRoot, 'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg')));
 // 다운로드 화면 「플랫폼」 포스터의 흰 펠트 synk(홈페이지 다운로드 창·설치 창과 같은 그림).

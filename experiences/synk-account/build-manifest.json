@@ -51,6 +51,7 @@
     "assets/member/benefit-subscriptions.webp": "21f9ab71db5823e9cb9c7e58120231f25f73aa32f3e508f2c9a97267b168fed8",
     "assets/member/benefit-care.webp": "de8981d2469f8649246f55c25ae8cbd28d2b83122f3d51fb33874d6395decb26",
     "assets/member/benefit-fortune.webp": "54e1283fef79c286fdee5aa2087dd654f2fc13513bfc97f7d5b4e4a108c6ca93",
+    "assets/member/solio-object.webp": "b038a16dee018a91f74d6b30bd199b536d46f9666e368895202011353c68eb85",
     "assets/laptop-felt.webp": "5c27f30d79aab097ea4f12867beb102afe08af4a82b31cb722f9ff3e320ee9b8",
     "assets/sticker-search.webp": "d08fd73c271ca539a9f5c754c067bd7b438875a136732989e5efe78cb6cb85c8",
     "assets/sticker-person.webp": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
@@ -65,7 +66,7 @@
     "dist/app.js": "efd3030a52b973cc977a5ec7140ec1e3c6ea9e8cd30d607f1dc93638a0a08014",
     "dist/client.js": "72e8137930e007e47ee99b7adca824f5409e892391c90e6438ace1f11b407487",
     "dist/preview.js": "eb4b413818195b509884a87b9de3cbcade8326c9f1f5337942f0d34c682db012",
-    "dist/platform.js": "9ed03d5d7005eb9bfa1b267bf386e7837ec2e5b69b34d303ea8ae5a751785c52",
+    "dist/platform.js": "dd0b17e589f1a8306c6621af07dd053843bf2c4c78d803d6a67afecc32eabc02",
     "dist/local-world.js": "e39af72ba5da66e4d9201269fbb060805a3441bc5dffdd8f8da721fbe5bb2085",
     "dist/teacher.js": "91254d7b3ea5fdc71776db7e9eb3642d768c7e01dfc6b96618e1b8521a7e7e0a",
     "preview.html": "7e54871fa237e9666f7e8e8c68e6374eb1ba4ab38a997d2a55b795f5d5f63a46"

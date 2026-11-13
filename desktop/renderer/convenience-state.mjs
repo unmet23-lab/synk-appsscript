@@ -1,9 +1,13 @@
-export const VIEWS=['home','library','benefits','downloads','settings','account'];
+import {solioMigrateRoute,solioSection} from './solio.mjs';
+// 2026-11-13 솔리오 판: 「솔리오」(section = 홈 · 백업·복구 · AI 구독 관리)와 「맞춤 정보」(내 성향)를 더했다. 회원 혜택(benefits)은 플레저 하나이고,
+// 옛 기록의 {view:'benefits',benefitId:'insight'|'subscriptions'}는 읽을 때 새 자리로 바꾼다(solioMigrateRoute).
+export const VIEWS=['home','library','solio','benefits','downloads','settings','account','insight'];
 export function normalizeRoute(value={},appIds=[]){
+  value=solioMigrateRoute(value);
   const view=VIEWS.includes(value?.view)?value.view:'home';
-  return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:['insight','subscriptions','care'].includes(value?.benefitId)?value.benefitId:null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};
+  return {view,appId:appIds.includes(value?.appId)?value.appId:null,detail:['overview','content','info'].includes(value?.detail)?value.detail:'overview',benefitId:view==='benefits'&&value?.benefitId==='care'?'care':null,section:view==='solio'?solioSection(value?.section):null,scroll:Math.max(0,Math.min(Number(value?.scroll)||0,100000)),pageScroll:Math.max(0,Math.min(Number(value?.pageScroll)||0,100000))};
 }
-const routeIdentity=route=>JSON.stringify([route.view,route.appId,route.detail,route.benefitId]);
+const routeIdentity=route=>JSON.stringify([route.view,route.appId,route.detail,route.benefitId,route.section]);
 export function createNavigation({storage,getAppIds=()=>[],read,apply,onChange=()=>{}}){
   let owner=null,entries=[],index=-1;
   const clean=value=>normalizeRoute(value,getAppIds());

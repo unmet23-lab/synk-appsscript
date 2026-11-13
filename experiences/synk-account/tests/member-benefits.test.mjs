@@ -1,3 +1,5 @@
+import { solioInsightPage } from '../src/platform-solio.mjs';
+import { benefitsPage } from '../src/member-benefits.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -23,13 +25,13 @@ test('fixed benefit demos are available only in a local HTTP preview', () => {
 test('benefits are discoverable without being treated as installed or entitled applications', () => {
   assert.deepEqual(filterBenefits('가족').map(v => v.id), []);
   assert.deepEqual(filterBenefits('거절').map(v => v.id), []);
-  assert.deepEqual(filterBenefits().map(v => v.id), ['insight', 'subscriptions', 'care']);
-  // The PC-only AI subscription board is discoverable on the web but has no web or local entry.
+  // 2026-11-13 솔리오 판: 회원 혜택은 플레저 하나 — 내 성향은 내 계정 › 맞춤 정보, AI 구독 계정판은 솔리오 › AI 구독 관리로 옮겼다(platform-solio 시험).
+  assert.deepEqual(filterBenefits().map(v => v.id), ['care']);
+  // The PC-only AI subscription board has no web or local entry.
   assert.equal(localBenefitPreview('subscriptions', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('subscriptions'), null);
-  // 칸 아래 행동 한 줄: PC 전용 구독 계정판은 PC 앱 받기로(웹에서 여는 길이 없다).
-  assert.match(benefitCards(), /benefit-subscriptions[\s\S]*?<a class="go-link benefit-link" href="#downloads">PC 앱 받기 →<\/a>/);
-  assert.deepEqual(filterBenefits('성향').map(v => v.id), ['insight']);
+  assert.doesNotMatch(benefitCards(), /benefit-subscriptions|benefit-insight/);
+  assert.deepEqual(filterBenefits('성향').map(v => v.id), []);
   assert.equal(localBenefitPreview('insight', 'http://localhost/'), null);
   assert.equal(publicBenefitEntry('insight'), null);
   assert.match(benefitDetail('care', 'http://localhost/'), /href="http:\/\/127\.0\.0\.1:4296\/"/);
@@ -76,29 +78,26 @@ test('paused free fortune has no catalogue, search, detail or entry link while i
   assert.match(benefitDetail('fortune', 'https://synk.im/account/'), /찾는 회원 혜택이 없어요/);
   assert.doesNotMatch(benefitDetail('care', 'https://synk.im/account/'), /benefit-fortune|synk\.im\/fortune/);
   assert.doesNotMatch(benefitCards() + benefitHero(), /운세|benefit-fortune/);
-  assert.match(benefitHero(), /셋 다 써요/);
+  assert.match(benefitHero(), /<h1 id="benefit-heading">회원 혜택<\/h1>/);assert.doesNotMatch(benefitHero(), /셋 다|세 가지|모두 무료/);
 });
 
 test('benefit detail reflects device save and favorite state without creating a launch or changing records', () => {
   const library = normalizeLibrary({ saved: ['care'], favorites: ['care'] });
   const before = structuredClone(library), html = benefitDetail('care', 'http://localhost/', { library });
   assert.match(html, /data-action="save" data-id="care" aria-pressed="true"/);
-  assert.match(html, /data-action="favorite" data-id="care" aria-pressed="true"/);
+  assert.match(html, /data-action="favorite" data-id="care" aria-pressed="true">★ 홈에 고정됨</);assert.match(html, /고정하면 내 홈 선반에 나와요/);
   assert.match(html, /이 기기에 바로가기만 저장/);assert.doesNotMatch(html, /data-action="launch"/);
   assert.deepEqual(library, before);assert.deepEqual(library.recent, []);
   assert.match(benefitDetail('care', 'http://localhost/', { library: normalizeLibrary() }), /data-action="save" data-id="care" aria-pressed="false"/);
-  // PC 앱 안 혜택(구독 계정판)은 기기 바로가기 목록에 없어 담기·즐겨찾기 단추를 내지 않는다.
-  assert.doesNotMatch(benefitDetail('subscriptions', 'http://localhost/', { library }), /data-action="(save|favorite)"/);
-  // 웹 소개는 PC 앱 받기(그 화면의 주 행동 — 검정 알약)로 잇고, 카드는 「내 성향 보기」가 아니라 소개로 간다(그 단추는 성향만).
-  assert.ok(benefitDetail('subscriptions', 'http://localhost/').includes('<a class="sb-btn" href="#downloads">PC 앱 받기 →</a>'));
-  assert.ok(benefitCards('계정판').includes('PC 앱 받기 →'));
-  assert.ok(!benefitCards('계정판').includes('내 성향 보기'));
-  // 웹에서 바로 여는 플레저는 칸 아래에서 공개 입구로 바로 열고, 내 성향은 이 화면의 소개로. 로그인한 사람에게는 「로그인하면 바로」 대신 「회원 혜택 · 바로 보기」.
+  assert.match(benefitDetail('care', 'http://localhost/', { library: normalizeLibrary() }), /data-action="favorite" data-id="care" aria-pressed="false">☆ 홈에 고정</);
+  // 옮긴 둘(구독 계정판 · 내 성향)은 회원 혜택 소개가 아니다 — 옛 #benefits/… 주소는 platform-solio가 새 주소로 바꾼다.
+  for (const id of ['subscriptions', 'insight']) { assert.match(benefitDetail(id, 'http://localhost/', { library }), /찾는 회원 혜택이 없어요/);assert.doesNotMatch(benefitDetail(id, 'http://localhost/', { library }), /data-action="(save|favorite)"/); }
+  // 웹에서 바로 여는 플레저는 칸 아래에서 공개 입구로 바로 연다.
   assert.match(benefitCards('플레저'), /<a class="go-link benefit-link" href="https:\/\/synk\.im\/care\/" data-web="care"[^>]*>웹에서 열기 ↗<\/a>/);
-  assert.match(benefitCards('성향'), /<a class="go-link benefit-link" href="#benefits\/insight">내 성향 보기 →<\/a>/);
-  assert.match(benefitCards('성향'), /로그인하면 바로/);
-  assert.match(benefitCards('성향', { signedIn: true }), /회원 혜택 · 바로 보기/);
-  assert.doesNotMatch(benefitCards('성향', { signedIn: true }), /로그인하면 바로/);
+  // 회원 혜택 첫 화면의 「옮긴 곳」 두 줄.
+  const page = benefitsPage();
+  assert.match(page, /<a class="row-act link" href="#account\/insight">맞춤 정보 열기 →<\/a>/);assert.match(page, /<a class="row-act link" href="#solio\/subscriptions">AI 구독 관리 열기 →<\/a>/);
+  assert.doesNotMatch(page, /benefit-promise|여는 곳은/);
 });
 
 test('preview server serves only named public benefit assets, not source modules or private files', () => {
@@ -113,18 +112,17 @@ test('web benefit shelf uses the PC felt objects, and every object the web draws
   const files = MEMBER_BENEFITS.map(item => item.asset);
   for (const item of MEMBER_BENEFITS) assert.ok(cards.includes(`<img class="benefit-object" src="./assets/member/${item.asset}"`), item.id);
   // A 진열대: 첫머리는 선물 포스터 · 영문 꼬리표 없이 두 줄 제목, 혜택은 회색 선반 칸에 선다.
-  assert.ok(benefitHero().includes('<h1 id="benefit-heading">회원이면<br><span>모두 무료.</span></h1>'));
+  assert.ok(benefitHero().includes('<h1 id="benefit-heading">회원 혜택</h1>'));
   assert.doesNotMatch(benefitHero(), /benefit-gift|SYNK FOR YOU|MEMBER BENEFITS/);
   assert.match(cards, /^<ul class="shelf benefit-grid cols-3" aria-label="회원 혜택">/);
   for (const file of files) {
     assert.ok(targetFor('/synk-account/assets/member/' + file), file);
     assert.ok(fs.existsSync(new URL('../assets/member/' + file, import.meta.url)), file);
   }
-  // 성향 소개도 PC 앱처럼 포스터(물건·번호 라벨·상태 스티커)를 받아 다른 소개 머리와 같은 틀로 연다.
-  const insight = benefitDetail('insight', 'https://synk.im/platform/');
+  // 맞춤 정보(내 성향)도 PC 앱처럼 포스터를 받아 연다 — 머리 꼬리표는 「맞춤 정보」, 뒤로 가기는 「내 계정」(#account).
+  const insight = solioInsightPage({ status: 'signed-out', report: null });
   assert.ok(insight.includes('<header class="mi2-poster"><img class="mi2-object" src="./assets/member/benefit-insight.webp"'));
-  // A 진열대: 머리 꼬리표는 PC와 같은 한글 「회원 혜택」(영문 · 번호 없음).
-  assert.ok(insight.includes('<span class="mi2-eyebrow">회원 혜택</span>'));
+  assert.ok(insight.includes('<span class="mi2-eyebrow">맞춤 정보</span>'));assert.ok(insight.includes('<a class="mi2-back" href="#account">'));
   assert.doesNotMatch(insight, /SYNK FOR YOU|mi2-en/);
   // 다른 혜택 소개는 앱 소개와 같은 7 : 5 — 회색 무대 위 물건 하나, 이름 · 한 줄 제목 · 위치 줄.
   const care = benefitDetail('care', 'https://synk.im/platform/');

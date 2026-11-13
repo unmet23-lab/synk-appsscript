@@ -3,7 +3,7 @@
    소개(상세)는 앱 소개와 같은 7 : 5 — 왼쪽 회색 무대 위 물건 하나, 오른쪽 글 · 단추 · 1px 줄 목록. 내 성향은 PC와 함께 쓰는 member-insight.css 그대로. */
 
 /* 혜택 목록 첫머리: 「회원이면 / 모두 무료.」 두 줄 56(PC 런처와 같은 크기 — 34는 목록 화면 제목만) */
-.benefit-title h1{max-width:12em;font-size:var(--t56);line-height:1.14;letter-spacing:-.01em}
+.benefit-title h1{max-width:12em;font-size:var(--t34);line-height:1.25}
 .benefit-title>p:not(.small){max-width:30em}
 
 /* 여는 곳 안내: 왼쪽 두 줄 제목, 오른쪽 글 */
@@ -11,6 +11,12 @@
 .benefit-promise h2{font-size:var(--t22);font-weight:600;line-height:1.35}
 .benefit-promise>div{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .benefit-promise p{font-size:var(--t15);color:var(--ink-2)}
+/* 옮긴 곳(2026-11-13): 내 성향 → 내 계정 › 맞춤 정보, AI 구독 계정판 → 솔리오 › AI 구독 관리. */
+.benefit-moved{margin-top:88px}
+.benefit-moved h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.benefit-moved .row-main{flex:0 0 200px}
+.benefit-moved-where{flex:1 1 240px;min-width:0;font-size:var(--t15);color:var(--ink-2)}
+.benefit-moved .row-act{margin-left:auto;font-size:var(--t15)}
 .benefit-empty{padding:18px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);font-size:var(--t15);color:var(--ink-3)}
 
 /* 혜택 소개 */
@@ -26,6 +32,8 @@
 .steps p{margin-top:4px;font-size:var(--t15);color:var(--ink-2)}
 
 @media (max-width:900px){
-  .benefit-title h1{font-size:var(--t34);line-height:1.22}
+  .benefit-title h1{line-height:1.22}
   .benefit-promise{grid-template-columns:1fr;margin-top:56px}
+  .benefit-moved{margin-top:56px}
+  .benefit-moved .row-main{flex:none}
 }

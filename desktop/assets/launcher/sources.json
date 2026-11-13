@@ -170,6 +170,12 @@
       "sha256": "88dec7684f6ed4c2bab41426351f8fea5a4764f18d86a1ff8f6daca142e37562"
     },
     {
+      "name": "solio-object.webp",
+      "source": "docs/디자인/플랫폼_시그널/혜택물건/solio-object.webp",
+      "bytes": 302266,
+      "sha256": "b08b5567209ca8f56562587f8d9c4937a8997dbbb79e3b705441c59e64779420"
+    },
+    {
       "name": "benefit-fortune.webp",
       "source": "docs/디자인/플랫폼_시그널/혜택물건/benefit-fortune.webp",
       "bytes": 277358,

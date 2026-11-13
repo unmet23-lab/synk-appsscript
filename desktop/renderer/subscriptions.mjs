@@ -1,4 +1,4 @@
-// AI 구독 계정판(회원 혜택) 화면. 읽기·로그인·저장은 데스크톱 본체(src/ai-subscriptions.cjs)가 하고,
+// AI 구독 관리(솔리오 — 2026-11-13 회원 혜택 「AI 구독 계정판」에서 옮김) 화면. 읽기·로그인·저장은 데스크톱 본체(src/ai-subscriptions.cjs)가 하고,
 // 이 파일은 받은 숫자를 두 화면으로 보여 준다(10-18 구조 개편: 한 겹에 한 질문).
 //  · 한눈에 보기: 손볼 계정(있을 때만) → 01 서비스마다 지금 쓸 계정 한 줄 → 02 다 쓴 계정이 다시 열리는 때(있을 때만)
 //    → 지난 7일 사용량(10-19, 기록 막대·그 전 평균과 차이·아끼는 팁) → 계정 관리·요금 입구
@@ -58,7 +58,7 @@ const CODE_TEXT = {
   KEY_CHECK_FAILED: 'Typecast 크레딧을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.',
   NETWORK: 'Typecast에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.',
   SECURE_STORAGE_UNAVAILABLE: '이 PC에서는 키를 안전하게 저장할 수 없어 연결하지 않았어요.',
-  BOARD_BUSY: '다른 프로그램이 계정판 파일을 잠깐 쓰고 있어요. 잠시 뒤 다시 시도해 주세요.',
+  BOARD_BUSY: '다른 프로그램이 AI 구독 관리 파일을 잠깐 쓰고 있어요. 잠시 뒤 다시 시도해 주세요.',
   NO_WORKSPACE: 'Higgsfield에서 쓸 작업공간이 골라져 있지 않아요. 터미널에서 「higgsfield workspace set」으로 고른 뒤 다시 시도해 주세요.',
 };
 const HELP = [
@@ -71,10 +71,10 @@ const HELP = [
   ['ChatGPT가 휴대폰 인증을 요구해요', 'OpenAI의 보안 절차예요. 브라우저 안내대로 휴대폰 인증을 마치면 Codex 로그인이 이어져요.'],
   ['Gemini 검은 창에서 막혔어요', '검은 창을 한 번 눌러 고른 뒤 Enter를 눌러요. 코드는 Ctrl+V 대신 검은 창 안에서 오른쪽 클릭으로 붙여 넣어요. 브라우저에서 계정을 고를 때 연결할 Google 계정을 눌러 주세요. 이미 다른 계정으로 로그인된 창이면 /logout을 치고 Enter, 이어서 /login을 치고 Enter를 누르면 로그인 화면이 나와요.'],
   ['연결을 끊고 싶어요', '계정 줄의 ⋯을 누르고 「지우기」를 두 번 누르면 이 앱이 만든 로그인 폴더까지 지워요. 기존 로그인을 가져온 계정은 목록에서만 빠져요.'],
-  ['Claude API 크레딧 남은 금액은 어디서 봐요?', 'Max · Ultra 요금제의 API 크레딧은 claude.ai 설정 › 결제의 API credits에서 Claude Console 조직을 연결해야 들어와요(구독 7일 뒤부터). 남은 금액과 만료 날짜는 그 계정으로 로그인한 브라우저에서 Claude Console(platform.claude.com) 결제 화면의 Promotional credits에 보여요. 계정판은 이 잔액을 읽는 공식 방법이 없어, 계정 줄 ⋯의 「API 크레딧」에 직접 넣어요.'],
-  ['GPT API 크레딧 남은 금액은 어디서 봐요?', 'Pro 요금제(Pro 100·200·500)의 API 크레딧은 ChatGPT 설정 › 결제에서 같은 메일의 OpenAI API 조직을 연결해야 들어와요(구독 7일 뒤부터, Plus는 받지 않아요). 남은 금액과 만료 날짜는 그 계정으로 로그인한 브라우저에서 OpenAI 플랫폼(platform.openai.com) 결제 › Credit grants 표의 BALANCE(앞 숫자)와 EXPIRES 칸에 보여요. ChatGPT·Codex 한도와는 따로라 Codex에는 쓰이지 않아요. 계정판은 이 잔액을 읽는 공식 방법이 없어, 계정 줄 ⋯의 「API 크레딧」에 직접 넣어요.'],
+  ['Claude API 크레딧 남은 금액은 어디서 봐요?', 'Max · Ultra 요금제의 API 크레딧은 claude.ai 설정 › 결제의 API credits에서 Claude Console 조직을 연결해야 들어와요(구독 7일 뒤부터). 남은 금액과 만료 날짜는 그 계정으로 로그인한 브라우저에서 Claude Console(platform.claude.com) 결제 화면의 Promotional credits에 보여요. AI 구독 관리는 이 잔액을 읽는 공식 방법이 없어, 계정 줄 ⋯의 「API 크레딧」에 직접 넣어요.'],
+  ['GPT API 크레딧 남은 금액은 어디서 봐요?', 'Pro 요금제(Pro 100·200·500)의 API 크레딧은 ChatGPT 설정 › 결제에서 같은 메일의 OpenAI API 조직을 연결해야 들어와요(구독 7일 뒤부터, Plus는 받지 않아요). 남은 금액과 만료 날짜는 그 계정으로 로그인한 브라우저에서 OpenAI 플랫폼(platform.openai.com) 결제 › Credit grants 표의 BALANCE(앞 숫자)와 EXPIRES 칸에 보여요. ChatGPT·Codex 한도와는 따로라 Codex에는 쓰이지 않아요. AI 구독 관리는 이 잔액을 읽는 공식 방법이 없어, 계정 줄 ⋯의 「API 크레딧」에 직접 넣어요.'],
   // Gemini(11-02): 요금제 등급 · Flow 크레딧 · Google Cloud(API) 크레딧. 사실은 AI Studio 안내(10-13 갱신) · Flow 도움말 · 한국 요금표를 11-02에 확인했다.
-  ['Gemini 크레딧(Flow · API)은 어디서 봐요?', 'Antigravity CLI는 Google AI 요금제 등급을 알려 주지 않아요. 먼저 Gemini 계정 줄 ⋯의 「요금·결제일」에서 요금제(Pro · Ultra 5x · Ultra 20x, 가족 공유로 받는 계정은 「가족 공유」)를 골라 주세요. Flow 크레딧은 요금제마다 매달 정해진 만큼(Ultra 20x는 25,000개) 결제 주기가 시작될 때 다시 차고, 남은 건 이월되지 않아요. 남은 개수와 다시 차는 때는 그 계정으로 로그인한 브라우저에서 Google Flow 오른쪽 위 프로필을 누르면 보여요. Gemini API에 쓰는 Google Cloud 크레딧은 Pro·Ultra 요금제에 매달 쌓이고(Ultra 20x는 $100) 받은 달마다 12개월 뒤 사라져요. 쓰려면 Google 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 하고, 남은 금액은 AI Studio 결제 화면에 보여요. 계정판은 둘 다 읽는 공식 방법이 없어, 계정 줄 ⋯의 「Flow 크레딧」 · 「API 크레딧」에 직접 넣어요.'],
+  ['Gemini 크레딧(Flow · API)은 어디서 봐요?', 'Antigravity CLI는 Google AI 요금제 등급을 알려 주지 않아요. 먼저 Gemini 계정 줄 ⋯의 「요금·결제일」에서 요금제(Pro · Ultra 5x · Ultra 20x, 가족 공유로 받는 계정은 「가족 공유」)를 골라 주세요. Flow 크레딧은 요금제마다 매달 정해진 만큼(Ultra 20x는 25,000개) 결제 주기가 시작될 때 다시 차고, 남은 건 이월되지 않아요. 남은 개수와 다시 차는 때는 그 계정으로 로그인한 브라우저에서 Google Flow 오른쪽 위 프로필을 누르면 보여요. Gemini API에 쓰는 Google Cloud 크레딧은 Pro·Ultra 요금제에 매달 쌓이고(Ultra 20x는 $100) 받은 달마다 12개월 뒤 사라져요. 쓰려면 Google 개발자 프로그램 가입과 AI Studio 선불 결제가 있어야 하고, 남은 금액은 AI Studio 결제 화면에 보여요. AI 구독 관리는 둘 다 읽는 공식 방법이 없어, 계정 줄 ⋯의 「Flow 크레딧」 · 「API 크레딧」에 직접 넣어요.'],
 ];
 
 // API 크레딧(Claude 10-28 · GPT 10-29 · Gemini 11-02)의 서비스별 글: 칸 이름 · 받는 요금제 · 크레딧이 들어오는 조직 · 남은 금액이 보이는 결제 화면 이름 · 여는 안내(HELP_LINKS 열쇠).
@@ -186,8 +186,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
 
   async function load(refreshTools = false) {
     if (!api) return;
-    try { const value = await api.snapshot({ refreshTools }); if (value?.ok) { take(value); loadError = null; } else loadError = CODE_TEXT[value?.code] || '계정판을 불러오지 못했어요.'; }
-    catch { loadError = '계정판을 불러오지 못했어요. 다시 시도해 주세요.'; }
+    try { const value = await api.snapshot({ refreshTools }); if (value?.ok) { take(value); loadError = null; } else loadError = CODE_TEXT[value?.code] || 'AI 구독 관리를 불러오지 못했어요.'; }
+    catch { loadError = 'AI 구독 관리를 불러오지 못했어요. 다시 시도해 주세요.'; }
     if (visible) paint();
   }
   async function act(name, task) {
@@ -329,10 +329,10 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
   // 지금 로그인되지 않은 Gemini 계정은 「다시 로그인」이 아니라 PC의 Antigravity를 그 계정으로 바꾸는 일이다(가이드가 /logout → /login을 안내한다).
   const reloginLabel = row => (row && AUTO[row.service]?.key ? '키 다시 넣기' : row?.state === 'elsewhere' ? (row.awayReason === 'none' ? '이 계정으로 로그인' : '이 계정으로 바꾸기') : '다시 로그인');
 
-  /* 머리(3차 A 진열대, 11-08): 내 성향 소개와 같은 짜임 — 왼쪽 회색 무대 위 물건 → 「회원 혜택 · 상태」 → 이름 56 → 한 줄 설명 → 상태 한 줄과 단추.
+  /* 머리(3차 A 진열대, 11-08): 내 성향 소개와 같은 짜임 — 왼쪽 회색 무대 위 물건 → 「솔리오 · 상태」(11-13 솔리오로 옮김) → 이름 56 → 한 줄 설명 → 상태 한 줄과 단추.
      본문(지금 쓸 계정 · 다음에 풀려요 · 하루 사용량 · 요금)은 오른쪽 칸에 1px 선 목록으로 놓는다(frame). */
   function frame(now, groups, body) {
-    return `<button type="button" class="ms-back" data-view="benefits">${arrowBack}회원 혜택 모두 보기</button><div class="ms-top">${hero(now, groups)}<div class="ms-stack">${body}</div></div>`;
+    return `<button type="button" class="ms-back" data-view="solio">${arrowBack}솔리오 홈</button><div class="ms-top">${hero(now, groups)}<div class="ms-stack">${body}</div></div>`;
   }
   function hero(now, groups) {
     const check = snapshot?.check, rows = snapshot?.rows || [], auto = rows.some(r => r.source === 'auto');
@@ -342,8 +342,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     let note;
     if (!context.native) note = 'SYNK Platform PC 앱에서 쓸 수 있어요.';
     else if (!context.signedIn) note = 'SYNK ID로 로그인하면 바로 시작할 수 있어요.';
-    else if (!snapshot && loadError) note = '계정판을 불러오지 못했어요.';
-    else if (!snapshot) note = '계정판을 준비하고 있어요…';
+    else if (!snapshot && loadError) note = 'AI 구독 관리를 불러오지 못했어요.';
+    else if (!snapshot) note = 'AI 구독 관리를 준비하고 있어요…';
     else if (snapshot.checking) note = `공식 프로그램으로 읽는 중이에요…${progress?.total ? ` <b class="ms-num">${progress.done}/${progress.total}</b>` : ''}`;
     else if (!rows.length) note = '연결한 계정 0개 · 계정 관리에서 연결해요.';
     else if (!total) note = '한도를 읽는 계정이 아직 없어요. 계정 관리에서 연결해요.';
@@ -358,8 +358,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
       ? `${rows.length ? `<button type="button" class="ms-button ms-button-primary" data-subs="check" ${busy || snapshot.checking || !auto ? 'disabled' : ''}>${snapshot.checking || busy === 'check' ? '확인 중…' : '지금 확인'}</button>` : ''}<button type="button" class="ms-button" data-subs="manage">계정 관리</button>`
       : context.native && !context.signedIn ? '<button type="button" class="ms-button ms-button-primary" data-insight-action="account">SYNK ID로 로그인</button>' : '';
     return `<header class="ms-hero${poster?.art ? ' has-art' : ''}">${poster?.art ? `<img class="ms-object" src="${esc(poster.art)}" alt="">` : ''}
-        <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || '회원 혜택')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
-        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">AI 구독 계정판</h1><p>AI 구독마다 얼마나 썼고 얼마나 남았는지 보여 줘요.</p></div>
+        <div class="ms-hero-top"><span class="ms-eyebrow">${esc(poster?.label || '솔리오')}</span>${poster?.badge ? `<span class="ms-badge${poster.status === 'integrated' ? ' is-integrated' : ''}"><span class="ms-led" aria-hidden="true"></span>${esc(poster.badge)}</span>` : ''}</div>
+        <div class="ms-hero-title"><h1 id="benefit-title" tabindex="-1">AI 구독 관리</h1><p>AI 구독마다 얼마나 썼고 얼마나 남았는지 보여 줘요.</p></div>
         <div class="ms-hero-note"><span class="ms-note">${note}</span><div class="ms-hero-actions">${actions}</div></div>
       </header>`;
   }
@@ -844,7 +844,7 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     const date = t ? `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}` : '', time = f?.until && f.until > now && !(t.getHours() === 23 && t.getMinutes() === 59) ? hm(f.until) : '';
     const grant = f?.grant ? `(${esc(planName(row.plan, row.service))} 매달 ${esc(credits(f.grant, true))}개)` : '';
     return `<form class="ms-form ms-pass-form ms-flow-form" data-subs-form="flow" data-id="${esc(row.id)}">
-      <p class="ms-wide ms-soft">Flow 크레딧은 Google AI 요금제에 매달 딸려 오는 영상·그림 만들기 크레딧이에요${grant}. 결제 주기가 시작될 때 다시 차고, 남은 건 이월되지 않아요. 계정판은 이 숫자를 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 Google Flow를 열고 오른쪽 위 프로필을 누르면 보이는 「Google Flow 크레딧 ○○개」와 「○월 ○일 오후 ○:○○에 초기화」를 넣어 주세요. <button type="button" class="ms-link" data-subs="help" data-link="flow-app" title="${esc(who)} 계정으로 로그인한 브라우저에서 열어 주세요">Flow 열기</button> · <button type="button" class="ms-link" data-subs="help" data-link="flow-credits">공식 안내</button></p>
+      <p class="ms-wide ms-soft">Flow 크레딧은 Google AI 요금제에 매달 딸려 오는 영상·그림 만들기 크레딧이에요${grant}. 결제 주기가 시작될 때 다시 차고, 남은 건 이월되지 않아요. AI 구독 관리는 이 숫자를 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 Google Flow를 열고 오른쪽 위 프로필을 누르면 보이는 「Google Flow 크레딧 ○○개」와 「○월 ○일 오후 ○:○○에 초기화」를 넣어 주세요. <button type="button" class="ms-link" data-subs="help" data-link="flow-app" title="${esc(who)} 계정으로 로그인한 브라우저에서 열어 주세요">Flow 열기</button> · <button type="button" class="ms-link" data-subs="help" data-link="flow-credits">공식 안내</button></p>
       <label>남은 Flow 크레딧<input name="flowCredit" type="number" min="0" max="10000000" step="1" inputmode="numeric" value="${f && f.left !== null && !f.refilled ? f.left : ''}" placeholder="${f?.grant ?? 25000}"></label>
       <label>다시 차는 날짜<input name="flowDate" type="date" value="${date}"></label>
       <label>다시 차는 시각(선택)<input name="flowTime" type="time" value="${time}"></label>
@@ -881,14 +881,14 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     // Gemini(11-02): 남은 금액만 받는다(받은 달마다 12개월씩 차례로 사라져 한 만료 날짜가 없다 — Fable 설계 검토 P1-1). 처음 쓰는 조건(개발자 프로그램 가입 · AI Studio 선불 결제)과
     // 그 크레딧을 결제 계정에 붙이는 개발자 프로그램 혜택 쪽을 같이 연다. AI Studio 결제 화면의 합계에는 선불로 넣은 돈도 섞여 그것은 빼고 넣는다.
     if (row.service === 'gemini') return `<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="${esc(row.id)}">
-      <p class="ms-wide ms-soft">Google AI Pro · Ultra 요금제에는 Gemini API(AI Studio)에 쓰는 Google Cloud 크레딧이 매달 쌓이고, 받은 달마다 12개월 뒤 사라져요. 처음 한 번은 Google 개발자 프로그램에 가입하고, AI Studio 결제에서 선불 결제를 만든 뒤 개발자 프로그램 혜택 쪽에서 그 결제 계정에 붙여야 써요(조건은 공식 안내). 계정판은 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 AI Studio 결제를 열고 보이는 크레딧 금액을 넣어 주세요. 선불로 넣은 돈은 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요. ${open} · <button type="button" class="ms-link" data-subs="help" data-link="gemini-dev-benefits">개발자 프로그램 혜택</button></p>
+      <p class="ms-wide ms-soft">Google AI Pro · Ultra 요금제에는 Gemini API(AI Studio)에 쓰는 Google Cloud 크레딧이 매달 쌓이고, 받은 달마다 12개월 뒤 사라져요. 처음 한 번은 Google 개발자 프로그램에 가입하고, AI Studio 결제에서 선불 결제를 만든 뒤 개발자 프로그램 혜택 쪽에서 그 결제 계정에 붙여야 써요(조건은 공식 안내). AI 구독 관리는 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 AI Studio 결제를 열고 보이는 크레딧 금액을 넣어 주세요. 선불로 넣은 돈은 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요. ${open} · <button type="button" class="ms-link" data-subs="help" data-link="gemini-dev-benefits">개발자 프로그램 혜택</button></p>
       <label>남은 크레딧(달러)<input name="apiCredit" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${a?.left ?? ''}" placeholder="${a?.grant ?? 100}"></label>
       <p class="ms-wide ms-soft">금액을 비우고 저장하면 넣은 값을 지워요.</p>
       <div class="ms-wide ms-form-actions"><button type="submit" class="ms-button ms-button-primary">저장</button><button type="button" class="ms-button" data-subs="api-edit" data-id="${esc(row.id)}">닫기</button></div>
     </form>`;
     const how = row.service === 'gpt'
-      ? `Pro 요금제에는 개발자용 OpenAI API에 쓰는 크레딧이 매달 따라와요. ChatGPT·Codex 한도와는 따로이고 Codex에는 쓰이지 않아요. 쓰지 않은 금액은 결제일에 사라져요. 계정판은 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 OpenAI 플랫폼(platform.openai.com) 결제 › Credit grants를 열고, 표의 BALANCE 앞 숫자(남은 금액)와 EXPIRES 날짜를 넣어 주세요. 표 위의 숫자는 쓴 금액이라 넣지 않고, 직접 산 크레딧도 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요.`
-      : `Max · Ultra 요금제에는 개발자용 Claude API에 쓰는 크레딧이 매달 따라와요. Claude Code·채팅 한도와는 따로이고, 쓰지 않은 금액은 결제일에 사라져요. 계정판은 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 Claude Console(platform.claude.com) 결제 화면을 열고 Promotional credits의 「API credit」으로 시작하는 줄에 보이는 금액과 만료 날짜를 넣어 주세요. 직접 산 잔액은 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요.`;
+      ? `Pro 요금제에는 개발자용 OpenAI API에 쓰는 크레딧이 매달 따라와요. ChatGPT·Codex 한도와는 따로이고 Codex에는 쓰이지 않아요. 쓰지 않은 금액은 결제일에 사라져요. AI 구독 관리는 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 OpenAI 플랫폼(platform.openai.com) 결제 › Credit grants를 열고, 표의 BALANCE 앞 숫자(남은 금액)와 EXPIRES 날짜를 넣어 주세요. 표 위의 숫자는 쓴 금액이라 넣지 않고, 직접 산 크레딧도 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요.`
+      : `Max · Ultra 요금제에는 개발자용 Claude API에 쓰는 크레딧이 매달 따라와요. Claude Code·채팅 한도와는 따로이고, 쓰지 않은 금액은 결제일에 사라져요. AI 구독 관리는 이 잔액을 읽을 수 없어서, <b>${esc(who)}</b> 계정으로 로그인한 브라우저에서 Claude Console(platform.claude.com) 결제 화면을 열고 Promotional credits의 「API credit」으로 시작하는 줄에 보이는 금액과 만료 날짜를 넣어 주세요. 직접 산 잔액은 빼요. 쓰는 만큼 줄어드니 가끔 다시 넣어 주세요.`;
     return `<form class="ms-form ms-pass-form ms-api-form" data-subs-form="api" data-id="${esc(row.id)}">
       <p class="ms-wide ms-soft">${how} ${open}</p>
       <label>남은 금액(달러)<input name="apiCredit" type="number" min="0" max="100000" step="0.01" inputmode="decimal" value="${a?.left ?? ''}" placeholder="${a?.grant ?? 200}"></label>
@@ -1141,8 +1141,8 @@ export function createSubscriptionsBoard({ bridge, toast = () => {}, poster = nu
     if (!container || !visible) return;
     const now = Date.now(), rows = snapshot?.rows || [], checkAt = snapshot?.check?.at || null, groups = serviceGroups(rows, now, checkAt);
     let html;
-    if (!context.native) html = frame(now, groups, section('01', 'PC 앱에서 쓰는 혜택이에요', '이 혜택은 회원 PC에 설치된 공식 프로그램으로 사용량을 읽기 때문에 SYNK Platform PC 앱에서만 열려요.', '<p class="ms-soft">PC 앱을 설치하고 SYNK ID로 로그인한 뒤 회원 혜택에서 열어 주세요.</p>'));
-    else if (!context.signedIn) html = frame(now, groups, section('01', '로그인하고 시작해요', '회원 무료 혜택이에요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>'));
+    if (!context.native) html = frame(now, groups, section('01', 'PC 앱에서 쓰는 기능이에요', '회원 PC에 설치된 공식 프로그램으로 사용량을 읽기 때문에 SYNK Platform PC 앱에서만 열려요.', '<p class="ms-soft">PC 앱을 설치하고 SYNK ID로 로그인한 뒤 위 메뉴 「솔리오」 → 「AI 구독 관리」에서 열어 주세요.</p>'));
+    else if (!context.signedIn) html = frame(now, groups, section('01', '로그인하고 시작해요', '회원이면 무료로 써요. 로그인 정보와 사용량 기록은 이 PC에만 저장돼요.', '<p class="ms-soft">「SYNK ID로 로그인」을 눌러 주세요. 처음이라면 창 오른쪽 위 「회원가입」부터 해요.</p>'));
     else if (loadError) html = frame(now, groups, section('01', '불러오지 못했어요', esc(loadError), '<button type="button" class="ms-button" data-subs="recheck-tools">다시 시도</button>'));
     else if (!snapshot) html = frame(now, groups, '');
     else if (ui.view === 'manage') html = manageView(now, rows);

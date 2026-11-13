@@ -179,7 +179,7 @@ test('home distinguishes checking, retry, guest and a member with no connected a
   home.render();assert.match(fixture.root.innerHTML,/aria-busy="true"/);assert.doesNotMatch(fixture.root.innerHTML,/data-member-retry/);
   library={status:'unavailable',owner:'a',appIds:[]};home.render();assert.match(fixture.root.innerHTML,/data-member-retry/);fixture.click({memberRetry:''});assert.equal(retried,1);
   library={status:'guest',owner:'anonymous-local',appIds:['pulse']};home.render();assert.match(fixture.root.innerHTML,/로그인하고 내 앱 보기/);assert.match(fixture.root.innerHTML,/id="world-phone"/);
-  library=member('a',[]);home.render();assert.match(fixture.root.innerHTML,/아직 쓸 수 있는 앱이 없어요/);assert.doesNotMatch(fixture.root.innerHTML,/id="member-record-form"/);
+  library=member('a',[]);home.render();assert.match(fixture.root.innerHTML,/솔리오부터 열어 볼까요\?/);assert.match(fixture.root.innerHTML,/학교나 회사에서 이 계정에 앱을 열어 주면 여기에도 나와요/);assert.match(fixture.root.innerHTML,/data-member-solio/);assert.doesNotMatch(fixture.root.innerHTML,/id="member-record-form"/);
 });
 
 test('purpose changes are temporary until the separate remember action is chosen',async()=>{

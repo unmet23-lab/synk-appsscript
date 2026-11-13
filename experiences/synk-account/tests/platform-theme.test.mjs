@@ -137,12 +137,15 @@ test('the menu is a text row in the 72px top bar, and a narrow window keeps it r
   assert.match(css, /\.topbar\{position:sticky;top:0;[^}]*height:72px/);
   assert.match(css, /\.topbar\.scrolled\{border-bottom-color:var\(--line\)\}/);
   const nav = html.match(/<nav class="main-nav"[^>]*>(.*?)<\/nav>/)[1];
-  assert.deepEqual([...nav.matchAll(/data-route="([a-z]+)"/g)].map(m => m[1]), ['home', 'discover', 'benefits', 'library', 'updates', 'downloads']);
+  assert.deepEqual([...nav.matchAll(/data-route="([a-z]+)"/g)].map(m => m[1]), ['home', 'discover', 'solio', 'library', 'updates', 'downloads']);
   const tabs = html.match(/<nav class="tabbar"[^>]*>(.*?)<\/nav>/)[1];
-  assert.deepEqual([...tabs.matchAll(/data-route="([a-z]+)"/g)].map(m => m[1]), ['home', 'discover', 'benefits', 'library']);
+  assert.deepEqual([...tabs.matchAll(/data-route="([a-z]+)"/g)].map(m => m[1]), ['home', 'discover', 'solio', 'library']);
   assert.match(tabs, /id="more-toggle" aria-expanded="false" aria-controls="more-menu"/);
   const more = html.match(/<div id="more-menu"[^>]*>(.*?)<\/div>/)[1];
-  for (const route of ['updates', 'downloads', 'settings', 'help']) assert.match(more, new RegExp('data-route="' + route + '"'));
+  // 회원 혜택은 2026-11-13부터 오른쪽 프로필 메뉴와 좁은 창 「더 보기」 · 바닥 줄에 있다.
+  for (const route of ['benefits', 'updates', 'downloads', 'settings', 'help']) assert.match(more, new RegExp('data-route="' + route + '"'));
+  const profile = html.match(/<div id="profile-menu" class="profile-menu" hidden>(.*?)<\/div>/)[1];
+  assert.deepEqual([...profile.matchAll(/href="([^"]+)"/g)].map(m => m[1]), ['#account', '#benefits', './client.html?product=platform']);
   const phone = css.slice(css.indexOf('@media (max-width:900px){'));
   assert.match(phone, /\.topbar\{grid-template-columns:auto 1fr;height:60px\}/);
   assert.match(phone, /\.main-nav\{display:none\}/);

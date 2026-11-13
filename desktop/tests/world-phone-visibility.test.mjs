@@ -93,7 +93,7 @@ test('a WORLD and member-benefit account lists the benefit only and its empty sh
 
 test('the account dialog says the same sentence before and after the launcher fills it, without WORLD',()=>{
   const html=readFileSync(new URL('../renderer/index.html',import.meta.url),'utf8'),launcher=readFileSync(new URL('../renderer/launcher.mjs',import.meta.url),'utf8');
-  const sentence='SYNK ID 하나로 Workspace·PULSE·회원 혜택을 써요.';
+  const sentence='SYNK ID 하나로 Workspace·PULSE·솔리오를 써요.';
   assert.ok(html.includes(`<p id="account-description">${sentence}</p>`));assert.ok(launcher.includes(`'${sentence}'`));
   assert.doesNotMatch(html.match(/<dialog id="account-dialog"[\s\S]*?<\/dialog>/)[0],/WORLD/);
 });

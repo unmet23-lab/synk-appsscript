@@ -13,6 +13,7 @@
 | `benefit-fortune.webp` | 873×1094 · 270KB | 399×500 · 69KB | |
 | `benefit-rehearsal.webp` | 793×1086 · 164KB | 365×500 · 43KB | |
 | `benefit-album.webp` | 895×1128 · 270KB | 397×500 · 63KB | |
+| `solio-object.webp` | 960×1000 · 302KB(PC `혜택물건/solio-object.webp`) | 480×500 · 81KB | 솔리오(2026-11-13) — 솔리오 홈 소개 머리 · 내 홈 칸. 코랄 바탕에서 구워 오렸고, 바닥 테의 코랄 기운(PC판 5,494 · 웹판 1,444픽셀, 아래 22%)만 빨강을 초록 값으로 낮췄다(알파 · 다른 픽셀 그대로) |
 
 일곱 장 1.9MB → 약 560KB. 필요한 크기는 [웹 포스터 확인](../../../../experiences/synk-account/qa/member-benefit-objects-20261017/README.md)의 `check.mjs`가 10가지 창(2560 2배 ~ 320 2배) × 회원 혜택·소개 여섯·홈·둘러보기·라이브러리에서 실제 그려진 크기 × 화면 배율로 잰 값이다.
 

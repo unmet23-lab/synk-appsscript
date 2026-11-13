@@ -3,7 +3,8 @@ import { publicBenefitEntry, localBenefitPreview } from './member-benefits.mjs';
 import { platformPublicEntry } from './platform-entry.mjs';
 import { messengerDestination, PATH_INTERVIEW_URL } from './applications.mjs';
 
-const pages = new Set(['home', 'benefits', 'discover', 'library', 'updates', 'downloads', 'settings', 'help', 'app']);
+// 2026-11-13 솔리오 판: 솔리오(#solio/…)와 내 계정(#account, 맞춤 정보 #account/insight)을 더했다. 옛 #benefits/insight · #benefits/subscriptions는 platform-solio.mjs가 새 주소로 바꾼다.
+const pages = new Set(['home', 'solio', 'benefits', 'account', 'discover', 'library', 'updates', 'downloads', 'settings', 'help', 'app']);
 export function platformRoute(hash = '') {
   const [path, search = ''] = hash.replace(/^#/, '').split('?');
   const [page = 'home', id] = path.split('/');

@@ -504,10 +504,11 @@ export function 정책만들기(o, files, { 판 = 정책판 } = {}) {
       ...(o.종류==='화면'?{페이블생략:'2026-10-28 이번 작업에 한한 직접 사용자 승인; 아르곤 재검수도 필수'}:{})};
   }
   const 작성자 = o.작성자 || 'Claude', 구독 = o.GPT구독 || '유지';
-  if (!['Claude', 'GPT'].includes(작성자)) throw new Error('--작성자는 Claude|GPT');
-  if (작성자 === 'GPT' && o.종류 === '화면' && !사이트점검) throw new Error('화면 구현은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
+  if (!['Claude', 'GPT', '카본'].includes(작성자)) throw new Error('--작성자는 Claude|GPT|카본');
+  if (작성자 === '카본' && (판 !== 6 || o.종류 !== '화면')) throw new Error('카본 작성자는 현재 판의 화면 구현에만 쓴다');
+  if (작성자 === 'GPT' && o.종류 === '화면' && !사이트점검) throw new Error('GPT 세션의 화면 구현은 카본, Claude 세션은 Claude 담당이다 — GPT 작성 화면 정책은 없다');
   if (!['유지', '종료'].includes(구독)) throw new Error('--GPT구독은 유지|종료');
-  if (구독 === '종료' && (!o.사유?.trim() || 작성자 === 'GPT')) throw new Error('GPT 구독 종료는 Claude 작업에서 --사유와 함께 명시한다');
+  if (구독 === '종료' && (!o.사유?.trim() || 작성자 !== 'Claude')) throw new Error('GPT 구독 종료는 Claude 작업에서 --사유와 함께 명시한다');
   // 화면 Fable 생략(2026-10-24 유호님): 그림·글·색만 바꾼 화면처럼 Fable이 볼 것이 적은 일은 아르곤만 받는다 — 까닭을 정책에 남긴다.
   // 아르곤이 한도·로그인으로 막히거나 아르곤 P0·P1을 고치면 Fable이 다시 들어온다(검수묶음.mjs 처음고리판정·사슬판정·집계하기).
   const 페이블생략 = o.페이블생략 == null ? null : String(o.페이블생략).trim();

@@ -103,7 +103,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   function connected(current,v){
     // 확인을 기다리는 사이에 취소·시간 초과로 끝났으면 줄을 더하지 않는다(그 계정 폴더는 이미 지워졌다).
     if(login!==current||['done','error','cancelled'].includes(current.stage))return;
-    try{rows();}catch{finishLogin(current,'error','계정판 파일을 잠깐 열지 못했어요. 잠시 뒤 다시 연결해 주세요.');return;}
+    try{rows();}catch{finishLogin(current,'error','AI 구독 관리 파일을 잠깐 열지 못했어요. 잠시 뒤 다시 연결해 주세요.');return;}
     // 새 폴더로 로그인했는데 이미 잘 읽히던 계정이 또 붙었다면, 브라우저에 남은 로그인으로 승인된 것이다. 겹쳐 넣지 않고 알린다.
     const signedIn=v.email?String(v.email).toLowerCase():null;
     const dup=signedIn&&current.folder&&rows().find(row=>row.source==='auto'&&row.service===current.service&&row.state==='ok'&&row.folder!==current.folder&&String(row.email||'').toLowerCase()===signedIn);

@@ -9,7 +9,7 @@ function diagnosticSummary(input,{environment={},account={}}={}){
     platform:choose(environment.platform,['win32','darwin','linux'],'browser'),arch:choose(environment.arch,['x64','arm64','ia32']),
     version:typeof version==='string'&&version.length<80&&/^\d+\.\d+\.\d+(?:[-.][a-zA-Z0-9.-]+)?$/.test(version)?version:'unknown',
     mode:choose(environment.mode,['development','release']),signedIn:account.signedIn===true,accountConfigured:account.configured===true,
-    online:input.online===true,view:choose(input.view,['home','library','benefits','downloads','settings'],'home'),
+    online:input.online===true,view:choose(input.view,['home','library','solio','benefits','downloads','settings','account','insight'],'home'),
     clients:input.clients.filter(row=>row&&typeof row==='object'&&typeof row.id==='string'&&Object.hasOwn(TRAY_APPS,row.id)).map(row=>({id:row.id,status:choose(row.status,['installed','not-installed','preview','planned','unavailable']),canLaunch:row.canLaunch===true,preparation:choose(row.preparation,['idle','preparing','ready','error','installer-opened','opening'])})),
   };
 }

@@ -258,10 +258,11 @@ function floor(vm, state) {
   return `<footer class="mi2-floor">${basis}${historyFold(vm, state)}${consent}</footer>`;
 }
 
-// 머리(A 진열대, 2026-11-08): 회색 무대 위 펠트 물건 → 회색 한 줄(「회원 혜택」 · 상태) → 제목 「내 성향」 56 → 한 줄 설명. 영문 꼬리표 · 번호는 두지 않는다.
+// 머리(A 진열대, 2026-11-08): 회색 무대 위 펠트 물건 → 회색 한 줄(「맞춤 정보」 · 상태) → 제목 「내 성향」 56 → 한 줄 설명. 영문 꼬리표 · 번호는 두지 않는다.
+// 2026-11-13 솔리오 판: 내 성향은 회원 혜택에서 「내 계정 → 맞춤 정보」로 옮겼다. 화면 · 데이터 · 동작은 그대로이고 머리 줄과 뒤로 가기만 새 자리를 말한다.
 function poster(value) {
   const art = value && typeof value.art === 'string' ? value.art : '';
-  return `<header class="mi2-poster">${art ? `<img class="mi2-object" src="${escape(art)}" alt="">` : ''}<div class="mi2-poster-top"><span class="mi2-eyebrow">${escape(text(value?.label, '회원 혜택'))}</span>${value?.badge ? `<span class="mi2-badge${value.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi2-badge-led" aria-hidden="true"></span>${escape(value.badge)}</span>` : ''}</div><div class="mi2-poster-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 실제로 한 것을 나눠서 봐요.</p></div></header>`;
+  return `<header class="mi2-poster">${art ? `<img class="mi2-object" src="${escape(art)}" alt="">` : ''}<div class="mi2-poster-top"><span class="mi2-eyebrow">${escape(text(value?.label, '맞춤 정보'))}</span>${value?.badge ? `<span class="mi2-badge${value.status === 'integrated' ? ' is-integrated' : ''}"><span class="mi2-badge-led" aria-hidden="true"></span>${escape(value.badge)}</span>` : ''}</div><div class="mi2-poster-title"><h1 id="benefit-title" tabindex="-1">내 성향</h1><p>내가 고른 것과 실제로 한 것을 나눠서 봐요.</p></div></header>`;
 }
 
 function notice(state, report) {
@@ -295,7 +296,7 @@ export function renderMemberInsight(state = {}, { native = false, poster: art = 
   state = state && typeof state === 'object' ? state : {};
   const report = state.status === 'ready' && state.report && typeof state.report === 'object' ? state.report : null;
   const status = report ? 'ready' : ['loading', 'signed-out', 'unconfigured', 'error'].includes(state.status) ? state.status : 'error';
-  const back = native ? `<button type="button" class="mi2-back" data-view="benefits">${arrow}회원 혜택 모두 보기</button>` : `<a class="mi2-back" href="#benefits">${arrow}회원 혜택 모두 보기</a>`;
+  const back = native ? `<button type="button" class="mi2-back" data-view="account">${arrow}내 계정</button>` : `<a class="mi2-back" href="#account">${arrow}내 계정</a>`;
   const head = poster(art);
   if (!report) return `<article class="member-insight mi2" data-insight-status="${status}" aria-labelledby="benefit-title"${status === 'loading' ? ' aria-busy="true"' : ''}>${back}${pendingBody({ ...state, status }, head)}</article>`;
   const vm = present(report, state);

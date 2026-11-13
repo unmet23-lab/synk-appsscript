@@ -566,6 +566,28 @@ test('응답 completeness: 빈 객체·누락·추가 seen은 실패, 정상 0�
   assert.throws(() => 페이블지적넣기({ 지적: [] }, {}), /응답 검증 실패/);
 });
 
+test('카본 작성 화면도 독립 아르곤·Fable과 최종 바이트 대조를 모두 요구한다', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const 정책 = 증명.정책만들기({ 종류: '화면', 작성자: '카본' }, []);
+  assert.deepEqual(정책.필수, ['아르곤', 'Fable']);
+  assert.equal(증명.대체순서(정책), null);
+  assert.throws(() => 증명.정책만들기({ 종류: '백엔드', 작성자: '카본' }, []), /화면 구현에만/);
+  assert.throws(() => 증명.정책만들기({ 종류: '화면', 작성자: '카본' }, [], { 판: 5 }), /현재 판/);
+  assert.throws(() => 증명.정책만들기({ 종류: '화면', 작성자: '카본', GPT구독: '종료', 사유: '시험' }, []), /Claude 작업/);
+  assert.deepEqual(증명.정책만들기({ 종류: '백엔드', 작성자: 'GPT' }, []).필수, ['GPT', 'Claude']);
+  const r = 임시저장소(t, { 'view.html': '<p>옛</p>\n' }); r.쓰기('view.html', '<p>새</p>\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'carbon-screen', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 작성자: '카본', 바탕: r.바탕 });
+  assert.equal(목록.정책.작성자, '카본');
+  assert.equal(api.검수확인(폴더).통과, false, '구현만으로 검수 통과가 아니다');
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  assert.equal(api.검수확인(폴더).통과, false, '독립 카본 검수 뒤에도 최종 검수가 필요하다');
+  const proof = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'))).증명;
+  api.페이블받기(폴더, final답(proof));
+  assert.equal(api.검수확인(폴더).통과, true);
+  r.쓰기('view.html', '<p>검수 뒤 바뀜</p>\n');
+  assert.equal(api.검수확인(폴더).통과, false, '카본 작성도 검수 뒤 바뀐 파일은 거절한다');
+});
+
 test('화면 아르곤 A→수정→Fable B는 정상, B 이후 수정·낡은 Fable 답은 실패', async t => {
   const api = await tool(), r = 임시저장소(t, { 'view.txt': 'a\n' }); r.쓰기('view.txt', 'b\n');
   const { 폴더, 목록 } = await api.준비하기({ 이름: 'screen', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕 });

@@ -362,6 +362,48 @@ main:focus,main:focus-visible{outline:none}
 .benefit-availability p{max-width:44em}
 .benefit-next{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
 .benefit-next .eyebrow{font-size:var(--t13);color:var(--ink-3)}
+/* 회원 혜택(2026-11-13 솔리오 판): 플레저 하나 + 옮긴 두 자리 줄 + 소개의 「홈에 고정」. */
+.benefits-head{padding-bottom:28px}
+.benefits-moved{margin-top:88px;padding-bottom:88px}
+.benefits-moved h2{font-size:var(--t22);font-weight:600}
+.benefits-moved .row span{flex:1;min-width:0}
+.benefits-moved .row .text-link{flex:none}
+.benefit-pin{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:20px}
+.benefit-pin .ghost-button{height:40px;padding:0 18px}
+.benefit-pin .ghost-button[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--ink)}
+.benefit-pin p,.benefit-pin-note{font-size:var(--t13);color:var(--ink-3)}
+.benefit-pin-note{margin-top:16px;max-width:44em}
+
+/* ── 솔리오(위 메뉴, 2026-11-13) ── 밑줄 글자 탭 · 7:5 소개 · 1px 줄 목록. 준비 중인 것에는 단추를 두지 않는다. */
+.solio-tabs{padding-top:40px}
+.solio-kicker{font-size:var(--t15);font-weight:600;color:var(--ink-3)}
+.solio-tab-row{margin-top:8px}
+.solio-tab-row button[aria-current=page]{color:var(--ink)}
+.solio-tab-row button[aria-current=page]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink)}
+.solio-home .app-text h1{font-family:var(--sans);letter-spacing:-.01em}
+.solio-contents{margin-top:48px}
+.solio-contents>h2{font-size:var(--t22);font-weight:600}
+.solio-rows{margin-top:16px;border-top:1px solid var(--ink)}
+.solio-rows li{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 0;border-bottom:1px solid var(--line)}
+.solio-rows li>div{min-width:0}
+.solio-rows li p{font-size:var(--t15);color:var(--ink-2)}
+.solio-rows li .text-link{flex:none}
+.solio-row-name{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-bottom:4px}
+.solio-row-name strong{font-size:var(--t17);font-weight:600;color:var(--ink)}
+.solio-state{display:inline-flex;align-items:center;gap:6px;font-size:var(--t13);font-weight:600;color:var(--ink-3)}
+.solio-state::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--led,var(--ok))}
+.solio-backup{padding-bottom:88px}
+.solio-backup .section-title p{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+#solio-subscriptions{padding-bottom:88px}
+
+/* 오른쪽 프로필 메뉴: 로그인한 회원의 계정 단추 아래에 펼친다. */
+.title-actions{position:relative}
+.profile-menu{position:absolute;z-index:40;top:calc(100% + 8px);right:0;width:240px;padding:8px;border-radius:16px;background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line),0 18px 48px rgba(0,0,0,.14);-webkit-app-region:no-drag;app-region:no-drag}
+.profile-menu-who{padding:8px 12px 6px;font-size:var(--t13);font-weight:600;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile-menu-who:empty{display:none}
+.profile-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border-radius:10px;text-align:left;font-size:var(--t15);font-weight:600}
+.profile-menu button:hover,.profile-menu button:focus-visible{background:var(--hover)}
+.profile-menu .profile-menu-out{margin-top:4px;color:var(--ink-2);box-shadow:inset 0 1px 0 var(--line);border-radius:0 0 10px 10px}
 
 /* ── 설치·업데이트 · 설정 ───────────────────────────── */
 .padded-view{padding-bottom:88px}
@@ -562,6 +604,9 @@ dialog .fine-print,.fine-print{margin-top:18px;font-size:var(--t13);color:var(--
   .benefits-promise{margin-top:56px;padding-bottom:40px}
   .rows .row{flex-direction:column;align-items:flex-start;gap:2px}
   .rows .row strong{flex:none}
+  .solio-tabs{padding-top:24px}
+  .solio-rows li{flex-direction:column;align-items:flex-start;gap:8px}
+  .benefits-moved{margin-top:56px;padding-bottom:56px}
   .download-row{grid-template-columns:64px minmax(0,1fr);gap:16px}
   .download-thumb{width:64px;height:64px}
   .download-actions{grid-column:1/-1}

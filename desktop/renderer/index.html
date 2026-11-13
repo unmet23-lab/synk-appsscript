@@ -38,6 +38,7 @@
   <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S10 9 12 9Zm0 0c2-4 6-4 6-1.5S14 9 12 9Z"/></symbol>
   <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9h-5v-6H9v6H4Z"/></symbol>
+  <symbol id="i-solio" viewBox="0 0 24 24"><rect x="3.5" y="8.5" width="17" height="11" rx="1.5"/><path d="M9 8.5v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3.5 13.5h17"/></symbol>
 </svg>
 <div class="launcher">
   <header class="titlebar" id="titlebar">
@@ -48,12 +49,14 @@
     <nav class="nav-links" aria-label="주 메뉴">
       <button data-view="home" class="active" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg><span>내 홈</span></button>
       <button data-view="library"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span>라이브러리</span></button>
-      <button data-view="benefits"><svg class="i" aria-hidden="true"><use href="#i-gift"/></svg><span class="nav-long">회원 혜택</span><span class="nav-short">혜택</span></button>
+      <button data-view="solio"><svg class="i" aria-hidden="true"><use href="#i-solio"/></svg><span>솔리오</span></button>
       <button data-view="downloads"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg><span class="nav-long">설치·업데이트</span><span class="nav-short">설치</span><span class="counter num" id="queue-count" hidden>0</span></button>
       <button data-view="settings"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg><span>설정</span></button>
     </nav>
     <div class="title-actions">
       <button class="account-button" id="account-button" aria-label="SYNK ID 로그인" data-signed-in="false"><span class="avatar" aria-hidden="true">S</span><span class="account-name" id="account-label">로그인</span></button>
+      <!-- 오른쪽 프로필 메뉴(2026-11-13 솔리오 판): 로그인한 회원이 계정 단추를 누르면 펼친다 — 내 계정(맞춤 정보는 그 안) · 회원 혜택 · 로그아웃. 로그인 전에는 계정 단추가 지금처럼 로그인을 연다. -->
+      <div class="profile-menu" id="profile-menu" hidden><p class="profile-menu-who" id="profile-menu-who"></p><button type="button" data-profile="account"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg>내 계정</button><button type="button" data-profile="benefits"><svg class="i" aria-hidden="true"><use href="#i-gift"/></svg>회원 혜택</button><button type="button" class="profile-menu-out" data-profile="sign-out">로그아웃</button></div>
       <button class="signup-button" id="signup-button" type="button" disabled>회원가입</button>
       <div class="window-actions" id="window-actions" hidden>
         <button data-window="minimize" aria-label="최소화"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
@@ -70,7 +73,7 @@
       <div class="library-grid-view" id="library-grid">
         <header class="page-head">
           <div class="page-head-copy"><p class="page-kicker" id="library-caption">내 라이브러리</p><h1 id="library-title">라이브러리</h1><p class="page-sub"><span class="sr" id="library-count">00</span><span id="library-access-note">이 계정의 앱을 불러오고 있어요.</span></p></div>
-          <label class="search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="앱·회원 혜택 찾기" aria-label="앱과 회원 혜택 찾기" autocomplete="off"></label>
+          <label class="search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="앱·솔리오·회원 혜택 찾기" aria-label="앱과 솔리오, 회원 혜택 찾기" autocomplete="off"></label>
         </header>
         <div class="filters" role="group" aria-label="라이브러리 필터"><button data-filter="all" aria-pressed="true">내 앱</button><button data-filter="installed" aria-pressed="false">설치됨</button><button data-filter="development" aria-pressed="false">바로 쓰기</button><button data-filter="planned" aria-pressed="false">준비 중</button><button data-filter="favorites" aria-pressed="false">즐겨찾기</button></div>
         <div class="personal-entry" id="personal-entry" hidden><div><strong id="personal-heading">앱 순서 정하기</strong><p id="personal-summary">하려는 일을 고르면 그 일에 맞는 앱이 먼저 나와요.</p></div><button class="text-link" id="personal-open">고르기</button></div>
@@ -78,7 +81,7 @@
         <div id="app-list" class="app-list shelf-grid"></div>
         <p class="empty-search" id="empty-search" hidden>보여 줄 앱이 없어요. 찾는 낱말이나 필터를 바꿔 보세요.</p>
         <p class="empty-search world-search-hint" id="world-search-hint" hidden>한국어 공부 앱 WORLD는 휴대폰에서 열어요. <button class="text-link" type="button" data-world-phone>내 홈의 QR 보기</button></p>
-        <div id="benefits-search" class="benefits-search" hidden aria-label="회원 혜택 검색 결과"></div>
+        <div id="benefits-search" class="benefits-search" hidden aria-label="솔리오와 회원 혜택 검색 결과"></div>
       </div>
       <div class="library-empty" id="library-empty" hidden aria-live="polite"><p class="page-kicker">라이브러리</p><h1 id="library-empty-title">내 앱을 불러오고 있어요</h1><p id="library-empty-description">잠시만 기다려 주세요.</p><div class="empty-actions"><button class="solid-button" id="library-account">계정 관리</button><button class="ghost-button" id="library-retry" hidden>다시 불러오기</button><button class="ghost-button" id="library-world-phone" type="button" data-world-phone hidden>내 홈의 QR 보기</button></div></div>
       <div id="app-detail" class="app-detail" hidden>
@@ -110,25 +113,30 @@
         </div>
       </div>
     </section>
+    <!-- 솔리오(2026-11-13): 주 메뉴 「회원 혜택」 자리. 위 탭(홈 · 백업·복구 · AI 구독 관리)과 두 그릇 — 홈 · 백업은 #solio-panel, AI 구독 관리는 #solio-subscriptions(계정판의 1분 다시 그리기가 홈을 덮지 않게 따로 둔다). -->
+    <section id="view-solio" class="view solio-view" aria-label="솔리오" hidden>
+      <nav class="solio-tabs" id="solio-tabs" aria-label="솔리오 메뉴"></nav>
+      <div id="solio-panel"></div>
+      <div id="solio-subscriptions" hidden></div>
+    </section>
+    <!-- 회원 혜택(오른쪽 프로필 → 회원 혜택): 플레저 하나와, 옮긴 두 자리로 가는 줄. 위 메뉴에는 없다(손님은 설정의 「회원 혜택」 줄). -->
     <section id="view-benefits" class="view benefits-view" aria-label="회원 혜택" hidden>
       <div id="benefits-overview">
-        <header class="page-hello">
-          <p class="who">회원 혜택 세 가지</p>
-          <h1 tabindex="-1" id="benefits-title">회원이면<br><span>모두 무료.</span></h1>
-          <p class="lead">내 성향, AI 구독 계정판, 플레저. SYNK ID 하나로 셋 다 써요. <span class="benefits-membership"><span class="dot" aria-hidden="true"></span>플레저는 로그인 없이도 돼요.</span></p>
-        </header>
+        <header class="page-head benefits-head"><div class="page-head-copy"><p class="page-kicker">SYNK ID</p><h1 tabindex="-1" id="benefits-title">회원 혜택</h1><p class="page-sub">SYNK ID 회원에게 무료로 여는 것이에요. 플레저는 웹(synk.im/care)에서 로그인 없이도 써요.</p></div></header>
         <ul class="shelf-grid benefits-grid" id="benefits-grid" aria-label="회원 혜택"></ul>
-        <section class="benefits-promise" aria-labelledby="benefits-where">
-          <h2 id="benefits-where">어디서 여나요</h2>
+        <section class="benefits-moved" aria-labelledby="benefits-moved-title">
+          <h2 id="benefits-moved-title">옮긴 곳</h2>
           <div class="rows">
-            <div class="row"><strong>플레저</strong><span>웹(synk.im)에서 바로 열려요.</span></div>
-            <div class="row"><strong>AI 구독 계정판</strong><span>이 PC 앱에서만 열려요.</span></div>
-            <div class="row"><strong>내 성향</strong><span>로그인하면 여기서 볼 수 있어요.</span></div>
+            <div class="row"><strong>내 성향</strong><span>내 계정 › 맞춤 정보로 옮겼어요.</span><button class="text-link" type="button" data-benefit="insight">맞춤 정보 열기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div>
+            <div class="row"><strong>AI 구독 계정판</strong><span>솔리오 › AI 구독 관리로 이름을 바꿔 옮겼어요.</span><button class="text-link" type="button" data-benefit="subscriptions">AI 구독 관리 열기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div>
           </div>
-          <p class="benefits-release-note">기록을 남기려면 열린 화면에서 같은 SYNK ID로 로그인해 주세요.</p>
         </section>
       </div>
       <div id="benefit-detail" hidden></div>
+    </section>
+    <!-- 맞춤 정보(오른쪽 프로필 → 내 계정 → 맞춤 정보): 회원 혜택에 있던 「내 성향」 화면 그대로. 뒤로 가기 「내 계정」은 화면 안(member-insight-view)에 있다. -->
+    <section id="view-insight" class="view padded-view insight-view" aria-label="맞춤 정보" hidden>
+      <div id="insight-detail"></div>
     </section>
     <section id="view-downloads" class="view padded-view" aria-labelledby="downloads-title" hidden>
       <div class="section-title"><div><p class="page-kicker">이 PC</p><h1 id="downloads-title">설치·업데이트</h1><p>Workspace를 이 PC에 설치하거나 업데이트해요. WORLD는 설치 없이 휴대폰 브라우저에서 열어요.</p></div><button class="ghost-button" id="refresh-downloads"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>다시 확인</button></div>
@@ -146,6 +154,7 @@
       </div>
       <div class="settings-group">
         <div class="setting-row"><div><h2>SYNK ID</h2><p id="settings-account">계정 상태 확인 중</p></div><button class="ghost-button" id="settings-login">내 계정</button></div>
+        <div class="setting-row"><div><h2>회원 혜택</h2><p>SYNK ID 회원에게 무료로 여는 것이에요 · 플레저</p></div><button class="ghost-button" type="button" data-view="benefits">보기</button></div>
         <div class="setting-row"><div><h2>버전</h2><p>Workspace는 따로 설치하는 앱이에요.</p></div><span class="num version-tag" id="platform-version">—</span></div>
         <div class="setting-row"><div><h2>보기 설정 되돌리기</h2><p>즐겨찾기, 화면 밀도, 마지막 실행 기록을 처음 상태로 되돌려요.</p></div><button class="ghost-button" id="reset-preferences">되돌리기</button></div>
       </div>
@@ -159,7 +168,7 @@
     <button id="footer-settings" aria-label="설정"><span>설정</span></button>
   </footer>
 </div>
-<dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="계정 창 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><svg class="dialog-mark" viewBox="0 0 560 328" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg><p class="dialog-kicker">SYNK ID</p><h2 id="account-title">SYNK 시작하기</h2><p id="account-description">SYNK ID 하나로 Workspace·PULSE·회원 혜택을 써요.</p><p class="account-recent" id="account-recent" hidden></p><div class="account-state" id="account-state" role="status"></div><button class="ghost-button" id="account-retry" type="button" hidden>저장된 로그인 다시 확인</button><button class="primary" id="sign-in" type="button">로그인</button><button class="ghost-button" id="sign-up" type="button" aria-describedby="signup-help" disabled>회원가입</button><p class="signup-help" id="signup-help">로그인도 회원가입도 브라우저의 SYNK ID 화면에서 해요. 거기서 Google과 이메일 중 하나를 골라요. 처음이면 「회원가입」으로 브라우저에서 가입한 뒤 「로그인」을 눌러 주세요.</p><button class="text-link" id="forgot-password" type="button">비밀번호를 잊었어요</button><button class="ghost-button" id="sign-out" hidden>로그아웃</button><button class="ghost-button" id="cancel-sign-in" hidden>로그인 취소</button><p class="fine-print">학습 기록과 회사 자료는 앱마다 따로 보관해요.</p></dialog>
+<dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="계정 창 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><svg class="dialog-mark" viewBox="0 0 560 328" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg><p class="dialog-kicker">SYNK ID</p><h2 id="account-title">SYNK 시작하기</h2><p id="account-description">SYNK ID 하나로 Workspace·PULSE·솔리오를 써요.</p><p class="account-recent" id="account-recent" hidden></p><div class="account-state" id="account-state" role="status"></div><button class="ghost-button" id="account-retry" type="button" hidden>저장된 로그인 다시 확인</button><button class="primary" id="sign-in" type="button">로그인</button><button class="ghost-button" id="sign-up" type="button" aria-describedby="signup-help" disabled>회원가입</button><p class="signup-help" id="signup-help">로그인도 회원가입도 브라우저의 SYNK ID 화면에서 해요. 거기서 Google과 이메일 중 하나를 골라요. 처음이면 「회원가입」으로 브라우저에서 가입한 뒤 「로그인」을 눌러 주세요.</p><button class="text-link" id="forgot-password" type="button">비밀번호를 잊었어요</button><button class="ghost-button" id="sign-out" hidden>로그아웃</button><button class="ghost-button" id="cancel-sign-in" hidden>로그인 취소</button><p class="fine-print">학습 기록과 회사 자료는 앱마다 따로 보관해요.</p></dialog>
 <dialog id="content-dialog" class="content-dialog" aria-labelledby="content-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="콘텐츠 창 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><img id="content-image" alt=""><div class="content-dialog-copy"><p class="dialog-kicker">WORLD 안의 놀이</p><h2 id="content-title"></h2><p id="content-description"></p><p class="fine-print">WORLD 앱의 「놀이」에서 할 수 있어요.</p><button class="ghost-button" id="content-go-world">앱 소개로 돌아가기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div></dialog>
 <div id="toast" class="toast" role="status" hidden></div>
 <dialog id="personal-dialog" class="personal-dialog" aria-labelledby="personal-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="맞춤 설정 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><p class="dialog-kicker">이 PC 설정 · 선택 사항</p><h2 id="personal-title">앱 순서와 보기</h2><p class="personal-intro">어떤 앱이 보일지는 계정 권한이 정해요. 여기서는 그 앱들의 순서와 보기 방식만 바꿔요. 이 PC에 계정마다 따로 저장돼요.</p><form id="personal-form">

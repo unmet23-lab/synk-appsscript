@@ -592,9 +592,46 @@ test('benefit preview needs both native capability and current server entitlemen
 
 test('benefit search opens a public detail without replacing authorized app selections',async()=>{
   const f=await fixture({initialAuth:account('student-search',['messenger'])});assert.equal(await f.ready,'true');
-  f.input('search','경조사');assert.equal(f.element('benefits-search').hidden,false);assert.match(f.element('benefits-search').innerHTML,/data-benefit="care"/);
-  await f.action({benefit:'care'});assert.equal(f.element('view-benefits').hidden,false);assert.match(f.element('benefit-detail').innerHTML,/오늘 연락할 사람과 다가오는 날을 먼저 알려 줘요/);assert.equal(f.element('breadcrumb-app').textContent,'SYNK Workspace');
+  f.input('search','경조사');assert.equal(f.element('benefits-search').hidden,false);assert.match(f.element('benefits-search').innerHTML,/data-solio-find="care"/);
+  await f.action({solioFind:'care'});assert.equal(f.element('view-benefits').hidden,false);assert.match(f.element('benefit-detail').innerHTML,/오늘 연락할 사람과 다가오는 날을 먼저 알려 줘요/);assert.equal(f.element('breadcrumb-app').textContent,'SYNK Workspace');
   f.input('search','');assert.equal(f.element('benefits-search').hidden,true);assert.deepEqual(f.ids(),['messenger']);
+});
+
+// 솔리오 판(2026-11-13): 위 메뉴 「솔리오」(홈 · 백업·복구 · AI 구독 관리), 내 성향은 내 계정 → 맞춤 정보, 회원 혜택은 오른쪽 프로필 → 회원 혜택(플레저).
+test('SOLIO sits in the top menu, the old benefit routes reach their new places and the profile menu holds account, benefits and sign-out',async t=>{
+  const f=await fixture({initialAuth:account('solio-member',['messenger','care'])});assert.equal(await f.ready,'true');
+  // AI 구독 관리 판(subscriptions.mjs)과 내 성향 초점 도우미는 이 하네스에서 렌더러 영역 밖 진짜 모듈로 돌므로, 읽는 document를 이 시험 동안 하네스 것으로 둔다.
+  const outer=Object.getOwnPropertyDescriptor(globalThis,'document');globalThis.document=f.document;Object.assign(f.element('insight-detail'),{ownerDocument:f.document,contains:()=>false});t.after(()=>{if(outer)Object.defineProperty(globalThis,'document',outer);else delete globalThis.document;});
+  await f.action({view:'solio'});assert.equal(f.view(),'solio');assert.equal(f.element('view-solio').hidden,false);assert.equal(f.element('view-benefits').hidden,true);
+  assert.match(f.element('solio-tabs').innerHTML,/data-solio-section="home" aria-current="page">홈/);
+  const home=f.element('solio-panel').innerHTML;assert.match(home,/id="solio-title"[^>]*>솔리오/);assert.match(home,/data-solio-section="subscriptions"/);assert.match(home,/백업·복구<\/strong><span class="solio-state" data-tone="planned">준비 중/);
+  await f.action({solioSection:'backup'});const backup=f.element('solio-panel').innerHTML;assert.match(backup,/id="solio-title"[^>]*>백업·복구/);
+  // 준비 중인 것에는 설치 · 신청 · 결제 같은 행동 단추가 없다.
+  assert.doesNotMatch(backup,/<button|<a /);
+  await f.action({solioSection:'subscriptions'});assert.equal(f.element('solio-panel').hidden,true);assert.equal(f.element('solio-subscriptions').hidden,false);assert.match(f.element('solio-subscriptions').innerHTML,/<h1 id="benefit-title" tabindex="-1">AI 구독 관리<\/h1>/);
+  // 옛 단추 · 경로: 구독 계정판 → 솔리오 AI 구독 관리, 내 성향 → 맞춤 정보. 떠난 화면의 개인 글은 비운다.
+  await f.action({view:'home'});assert.equal(f.element('solio-subscriptions').innerHTML,'');
+  await f.action({benefit:'subscriptions'});assert.equal(f.view(),'solio');assert.match(f.element('solio-tabs').innerHTML,/data-solio-section="subscriptions" aria-current="page"/);
+  await f.action({benefit:'insight'});assert.equal(f.view(),'insight');assert.equal(f.element('view-insight').hidden,false);assert.equal(f.element('solio-subscriptions').innerHTML,'');assert.match(f.element('insight-detail').innerHTML,/class="mi2-back" data-view="account"/);
+  await f.action({view:'benefits'});assert.equal(f.element('insight-detail').innerHTML,'');
+  assert.match(f.element('benefits-grid').innerHTML,/data-benefit="care"/);assert.doesNotMatch(f.element('benefits-grid').innerHTML,/data-benefit="(?:insight|subscriptions)"/);
+  // 오른쪽 프로필 메뉴: 로그인한 회원의 계정 단추가 펼치고, 항목 · Esc에 닫힌다.
+  await f.click('account-button');assert.equal(f.element('profile-menu').hidden,false);assert.equal(f.element('account-button').attributes.get('aria-expanded'),'true');assert.equal(f.element('profile-menu-who').textContent,'합성 solio-member 님');
+  await f.action({profile:'benefits'});assert.equal(f.element('profile-menu').hidden,true);assert.equal(f.view(),'benefits');
+  await f.click('account-button');f.element('profile-menu').handlers.get('keydown')({key:'Escape',preventDefault(){}});assert.equal(f.element('profile-menu').hidden,true);assert.equal(f.element('account-button').attributes.get('aria-expanded'),'false');
+  await f.click('account-button');await f.action({profile:'account'});assert.equal(f.view(),'account');assert.equal(f.element('profile-menu').hidden,true);
+});
+
+test('pinning PLEASURE to home only adds that favorite, needs the care grant, and guests still get the sign-in dialog from the account button',async()=>{
+  const f=await fixture({initialAuth:account('pin-member',['messenger','care'])});assert.equal(await f.ready,'true');
+  await f.action({benefit:'care'});assert.match(f.element('benefit-detail').innerHTML,/data-benefit-pin="care" aria-pressed="false"/);
+  const before=f.ids();await f.action({benefitPin:'care'});await settleLibrary();
+  assert.match(f.element('benefit-detail').innerHTML,/data-benefit-pin="care" aria-pressed="true"[^>]*>[\s\S]*?홈에 고정됨/);assert.deepEqual(f.ids(),before);
+  const prefs=JSON.parse([...f.storage.values()].find(value=>typeof value==='string'&&value.includes('"favorites"'))||'{}');assert.ok(Array.isArray(prefs.favorites)&&prefs.favorites.includes('care'),'care joins the favorites');
+  const denied=await fixture({initialAuth:account('pin-denied',['messenger'])});assert.equal(await denied.ready,'true');
+  await denied.action({benefit:'care'});assert.doesNotMatch(denied.element('benefit-detail').innerHTML,/data-benefit-pin/);assert.match(denied.element('benefit-detail').innerHTML,/PC 앱에서 플레저를 열 수 없어요/);
+  const guest=await fixture({initialAuth:{configured:true,status:'signed-out',signedIn:false}});assert.equal(await guest.ready,'true');
+  await guest.click('account-button');assert.equal(guest.element('profile-menu').hidden,true);assert.equal(guest.element('account-dialog').open,true);
 });
 
 test('paused free fortune stays out of the library, benefit list, search and previews even with a grant and capability',async()=>{
@@ -889,4 +926,53 @@ test('a WORLD-only learner gets the phone way in on an empty library, and a save
   assert.equal(g.element('recommendation').hidden,false);assert.match(g.element('recommendation').innerHTML,/data-world-phone/);assert.doesNotMatch(g.element('recommendation').innerHTML,/data-personal-app|SYNK Workspace/);assert.match(g.element('recommendation').innerHTML,/WORLD는 휴대폰에서 열어요/);assert.doesNotMatch(g.element('recommendation').innerHTML,/먼저 볼 만한 앱/);
   assert.match(g.element('personal-summary').textContent,/WORLD는 휴대폰에서/);assert.doesNotMatch(g.element('personal-summary').textContent,/고른 일에 맞춰/);
   await savePersonal(g,{context:'team'});assert.match(g.element('recommendation').innerHTML,/data-personal-app="messenger"/);
+});
+
+test('PLEASURE pin-denied notice appears only for a signed-in ready library, and async pin toggle updates the button in place so any focused node stays focused',async()=>{
+  for(const [label,initialAuth] of [
+    ['guest',signedOut],
+    ['restoring',{...signedOut,status:'restoring'}],
+    ['signing-in',{...signedOut,status:'signing-in'}],
+    ['auth-error',retryableConnectionError()],
+    ['signed-in-unavailable',account('pin-unavailable',['care'],{library:{status:'unavailable',appIds:[]}})],
+  ]){
+    const f=await fixture({initialAuth});assert.equal(await f.ready,'true',label);
+    await f.action({benefit:'care'});const html=f.element('benefit-detail').innerHTML;
+    assert.doesNotMatch(html,/data-benefit-pin/,label);
+    assert.doesNotMatch(html,/PC 앱에서 플레저를 열 수 없어요|benefit-pin-note/,label);
+  }
+  const denied=await fixture({initialAuth:account('pin-ready-denied',['messenger'])});assert.equal(await denied.ready,'true');
+  await denied.action({benefit:'care'});assert.match(denied.element('benefit-detail').innerHTML,/class="benefit-pin-note">이 계정에서는 PC 앱에서 플레저를 열 수 없어요/);
+
+  const f=await fixture({initialAuth:account('pin-focus',['messenger','care'])});assert.equal(await f.ready,'true');
+  const detail=f.element('benefit-detail'),parsed=new ContinuityElement('div'),baseAll=f.document.querySelectorAll;let html=detail.innerHTML||'',renders=0;
+  const sync=value=>{renders++;if(f.document.activeElement&&parsed.contains(f.document.activeElement))f.document.activeElement=null;parsed.innerHTML=value;for(const node of parsed.querySelectorAll('button,a,[tabindex]'))node.focus=()=>{f.document.activeElement=node;};};
+  sync(html);renders=0;
+  detail.querySelector=selector=>parsed.querySelector(selector);
+  f.element('benefit-title').focus=()=>{const title=parsed.querySelector('[id="benefit-title"]');if(title)f.document.activeElement=title;};
+  Object.defineProperty(detail,'innerHTML',{configurable:true,get:()=>html,set:value=>{html=String(value);sync(html);}});
+  f.document.querySelectorAll=selector=>selector==='[data-focus-key]'?parsed.querySelectorAll(selector):baseAll(selector);
+  const pinButton=()=>parsed.querySelector('[data-benefit-pin="care"]');
+
+  await f.action({benefit:'care'});
+  const firstPin=pinButton();assert.ok(firstPin);firstPin.focus();assert.equal(f.document.activeElement,firstPin);
+  const rendersBeforePin=renders;
+  await f.action(firstPin.dataset);await settleLibrary();
+  assert.equal(renders,rendersBeforePin);assert.equal(pinButton(),firstPin);
+  assert.equal(firstPin.getAttribute('aria-pressed'),'true');assert.match(firstPin.textContent,/홈에 고정됨/);assert.equal(f.document.activeElement,firstPin);
+
+  const backButton=parsed.querySelector('.benefit-back');assert.ok(backButton);assert.equal(parsed.contains(backButton),true);
+  firstPin.focus();const pendingMove=f.action(firstPin.dataset);backButton.focus();await pendingMove;await settleLibrary();
+  assert.equal(firstPin.getAttribute('aria-pressed'),'false');assert.match(firstPin.textContent,/홈에 고정$/);assert.equal(f.document.activeElement,backButton);
+
+  firstPin.focus();
+  const homeFocus={id:'member-home-title',dataset:{}};f.element('member-home-title').focus=()=>{f.document.activeElement=homeFocus;};
+  const pendingLeave=f.action(firstPin.dataset);await f.action({view:'home'});await pendingLeave;await settleLibrary();
+  assert.equal(f.view(),'home');assert.equal(f.document.activeElement,homeFocus);assert.equal(f.element('benefit-detail').innerHTML,'');
+
+  await f.action({benefit:'care'});
+  const titleNode=parsed.querySelector('[id="benefit-title"]');assert.ok(titleNode);assert.equal(parsed.contains(titleNode),true);assert.equal(f.document.activeElement,titleNode);
+  const rendersBeforeUnpin=renders;
+  await f.action({benefitPin:'care'});await settleLibrary();
+  assert.equal(renders,rendersBeforeUnpin);assert.equal(pinButton().getAttribute('aria-pressed'),'false');assert.equal(f.document.activeElement,titleNode);
 });
