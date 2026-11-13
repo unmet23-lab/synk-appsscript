@@ -17420,10 +17420,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
   }) : oldTrail;
   const lessonSlot2 = (attempt, id) => life ? life.lessonSlot(attempt, id) : null, reviewSlot2 = (run, id) => life ? life.reviewSlot(run, id) : null;
-  const prepareLearning = () => {
-    const path = pathNow();
-    attemptTrail = newTrail && path !== "old" ? newTrail : oldTrail;
-    if (path !== "old") return;
+  const prepareLearning = ({ keep = false } = {}) => {
+    if (!(keep && attemptTrail)) attemptTrail = newTrail && pathNow() !== "old" ? newTrail : oldTrail;
+    if (attemptTrail !== oldTrail) return;
     try {
       void learning2?.prepare?.();
     } catch {
@@ -17460,7 +17459,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return attempt && q2 ? lessonSlot2(attempt, q2.id) : null;
   }
   function guideTransfer(questionId) {
-    prepareLearning();
+    prepareLearning({ keep: Boolean(context) });
     const lesson2 = lessonOfQuestion(questionId), q2 = lesson2?.questions.find((x) => x.id === questionId);
     if (q2) trail.guided(engineItem(lesson2, q2, true));
   }
@@ -17556,7 +17555,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (!record2 || record2.lapses <= 0 || record2.streak !== 0) return false;
       exposedTransfers.add(record2.id);
       guideTransfer(record2.questionId);
-      const run = pathNow() === "engine" ? p.startReview(1, record2.id, null, { ids: [record2.id] }) : record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
+      const run = summary().dueState === "engine" ? p.startReview(1, record2.id, null, { ids: [record2.id] }) : record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
       if (run?.ids.includes(record2.id) && !run.answers[record2.id]) p.markReviewHelp(record2.id);
       return true;
     } catch {
@@ -18893,8 +18892,8 @@ function lifeDue({ snapshot, lessons = [], unitsOf, memory = [], due = [], now =
   const dueNow = new Set((due ?? []).map((row) => row.unit));
   const upcoming = [...bridging];
   const picked = new Set(bridging.map((row) => row.id));
-  for (const [unit, line] of lines) {
-    if (counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || past(line)) continue;
+  const ahead = [...lines].filter(([unit, line]) => !(counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || past(line))).sort((a, b) => a[1].dueAt - b[1].dueAt);
+  for (const [unit, line] of ahead) {
     const candidates = reviews.filter(
       (review) => !picked.has(review.id) && unitsByReview.get(review.id).includes(unit)
     );

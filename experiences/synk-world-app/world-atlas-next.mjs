@@ -456,6 +456,9 @@ export function createAtlasNext({
       return made;
     }
     if (was === 'old') reopen('opened');
+    // 지금 판 앞(문서 시작의 처음 정하기 · 새 길 그대로)에 준 새 길 코치도 센다 — 다른 면이 묻는 사이 이 면이 새 길을 받았으면 그 면이 지금
+    // 판을 준 직후 알린다(짧은 연습만 새 길로 가고 생활 판정이 알림 없이 지금 판에 남던 것 — 카본 처리 판 A2). 지금 판 뒤면 reopen이 센다.
+    else loosened += 1;
     gave = 'next';
     told = false;
     return made;

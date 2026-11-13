@@ -314,8 +314,12 @@ export function lifeDue({ snapshot, lessons = [], unitsOf, memory = [], due = []
   const dueNow = new Set((due ?? []).map(row => row.unit));
   const upcoming = [...bridging];
   const picked = new Set(bridging.map(row => row.id));
-  for (const [unit, line] of lines) {
-    if (counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || past(line)) continue;
+  // 이른 때부터 고른다 — 단위가 둘인 복습은 그 가운데 이른 때에 한 번 든다. 기억 줄 차례로 고르면 늦은 단위가 그 복습을 먼저 가져가 이른
+  // 때가 날짜 · 알림에서 빠졌다(카본 A1 · GPT GA3 처리 판). 다리(bridging)의 복습은 기억 줄 없는 단위만 실으므로 아래 후보와 겹치지 않는다.
+  const ahead = [...lines]
+    .filter(([unit, line]) => !(counted.has(unit) || dueNow.has(unit) || !Number.isFinite(line.dueAt) || past(line)))
+    .sort((a, b) => a[1].dueAt - b[1].dueAt);
+  for (const [unit, line] of ahead) {
     const candidates = reviews.filter(
       review => !picked.has(review.id) && unitsByReview.get(review.id).includes(unit),
     );

@@ -660,6 +660,29 @@ test('lifeDue — 때가 지났나는 호스트 판정(요약 줄 due)으로 —
   assert.deepEqual(out.times, [now - 60_000, now + DAY], '알림의 때도 복습마다 한 번');
 });
 
+test('lifeDue — 단위가 둘인 복습은 그 가운데 이른 때에 든다 — 기억 줄 차례가 늦은 단위를 앞에 둬도 다음 때 · 알림은 이른 때(카본 A1 · GPT GA3 처리 판)', () => {
+  const now = T0 + 5 * DAY;
+  const snapshot = snapshotOf([{ q: 'a', at: T0, lastAt: T0 + DAY + 1 }]);
+  const out = lifeDue({
+    snapshot,
+    lessons: [],
+    unitsOf: unitsFrom({ a: ['life:u1', 'life:u2'] }),
+    memory: [
+      { unit: 'life:u1', lastAt: T0, dueAt: now + 5 * DAY, due: false }, // 먼저 배워 간격이 는 단위 — 기억 줄 차례로는 앞
+      { unit: 'life:u2', lastAt: T0, dueAt: now + DAY, due: false },
+    ],
+    due: [],
+    now,
+  });
+  assert.deepEqual(
+    out.upcoming.map(row => [row.id, row.unit, row.at]),
+    [['a-transfer', 'life:u2', now + DAY]],
+    '그 복습이 열리는 때는 이른 단위의 때',
+  );
+  assert.equal(out.nextAt, now + DAY);
+  assert.deepEqual(out.times, [now + DAY], '알림도 이른 때 한 번');
+});
+
 // ── 진짜 엔진 코치(손님 저장소 · 메모리 포트) ──
 const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
 const MAP_DATA = {

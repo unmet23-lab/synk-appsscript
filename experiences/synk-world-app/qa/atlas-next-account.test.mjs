@@ -899,6 +899,24 @@ test('면이 판을 묻는 사이 판이 풀렸으면(다른 면이 지금 판 �
  next.dispose();
 });
 
+test('문서 시작 — 면이 판을 묻는 사이 다른 면이 새 길 코치를 처음 받았으면(지금 판을 준 적 없음) 그 면이 지금 판을 준 직후 알린다(카본 처리 판 A2)',async()=>{
+ const line=accountLine();
+ let fail;const lifeReady=new Promise((resolve,reject)=>{fail=reject;});lifeReady.catch(()=>{});
+ const {load}=fakeLoader(options=>fakeCoach(options.gameId==='world-life'?{ready:lifeReady}:{}));
+ const next=createAtlasNext({owner:'acct-a2',storage:memoryStorage(),trail:()=>line.trail(),load,health:recorder()});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ try{
+  const life=next.lifeCoach(); // 문서 시작 때 미리 연 생활 코치 — 은행이 늦게 실패한다
+  await until(()=>line.reads>=1);
+  await tick();
+  assert.ok(await next.practiceCoach(POOL),'짧은 연습은 처음 정한 새 길');
+  assert.deepEqual(heard,[],'처음 정한 새 길은 알릴 일이 아니다');
+  fail(Object.assign(Error('bank'),{code:'BANK'}));
+  assert.equal(await life,null,'생활은 은행을 못 받아 이번은 지금 판');
+  assert.deepEqual(heard,['loosened'],'생활이 묻는 사이 다른 면이 새 길을 받았으니 지금 판을 준 직후 알린다 — 짧은 연습만 새 길로 가고 생활 판정이 알림 없이 지금 판에 남지 않게');
+ }finally{next.dispose();} // 단정이 실패해도 입구를 닫는다(변형 실행에서 열린 채 남아 시험 프로세스가 멈췄다)
+});
+
 test('한 바퀴 — 켠 계정이 오프라인으로 다시 열어도 새 길이고 어제 단위가 보인다 · 푼 답은 그 판 저장소에 쌓였다가 온라인이면 올라가고, 판이 올랐으면 다시 정한다(계획 §6 시험 문장 · Fable 5.2 끝 판 둘째 F5)',{timeout:60_000},async()=>{
  let now=Date.UTC(2026,10,12,1,0,0);
  const time={now:()=>now,advance:ms=>{now+=ms;}};

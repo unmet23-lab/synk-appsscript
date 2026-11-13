@@ -90,13 +90,17 @@ function lifeOn({ progress, state = { now: 'old' }, entry = true }) {
   const counts = { prepare: 0, ask: 0 };
   const shows = [];
   let practice = null;
+  let tutor = null; // 화면이 튜터에 넘긴 것(레슨 안 「이 표현 같이 연습」 — onPreparePractice)
   const home = {
     showPanel: (title, html) => shows.push({ title, html }),
     closePanel() {},
     updateLearning: (value, options) => {
       practice = options?.preparePractice ?? practice;
     },
-    mountLifeTutor: () => null,
+    mountLifeTutor: options => {
+      tutor = options;
+      return null;
+    },
     attachPanelResource() {},
     toast() {},
     state: {},
@@ -134,7 +138,7 @@ function lifeOn({ progress, state = { now: 'old' }, entry = true }) {
         : {}),
     },
   });
-  return { ui, log, oldTrail, newTrail, counts, shows, practice: () => practice };
+  return { ui, log, oldTrail, newTrail, counts, shows, practice: () => practice, tutor: () => tutor };
 }
 
 test('지금 판으로 정해진 문서(새 길 입구는 있음)의 복습은 옛 거울에 적고 옛 코치를 준비하며 입구에 다시 묻는다 — 새 길이 되면 다음 시도부터 새 판 겉(카본 B1 · GPT GB2)', () => {
@@ -161,6 +165,23 @@ test('지금 판으로 정해진 문서(새 길 입구는 있음)의 복습은 �
   w.ui.dispose();
 });
 
+test('시도 가운데 판이 바뀌어도 그 시도의 기록부는 그대로 — 레슨 안 튜터 「이 표현 같이 연습」이 기록부를 다시 고르지 않는다(GPT 처리 판 GA1)', () => {
+  const { progress, lesson } = missedProgress(); // 첫 문항을 놓친 레슨 — 다시 열면 둘째 문항부터
+  progress.setDueSource(null);
+  const state = { now: 'old' };
+  const w = lifeOn({ progress, state });
+  w.ui.start(lesson.id);
+  assert.ok(w.log.includes('old:shown'), '지금 판으로 연 레슨의 문항은 옛 거울에');
+  const asked = w.counts.ask;
+  state.now = 'engine'; // 레슨 도중 입구가 새 길이 됨
+  const second = lesson.questions[1];
+  w.tutor().onPreparePractice(second.id);
+  assert.equal(w.ui.metrics().trail.record, 'old', '진행 중인 레슨의 기록부는 그대로');
+  assert.ok(w.log.includes('old:guided') && !w.log.includes('next:guided'), '안내 연습도 그 레슨의 기록부에');
+  assert.ok(w.counts.ask > asked, '지금 판으로 연 시도는 입구에 다시 묻는다(다음 시도부터 새 길)');
+  w.ui.dispose();
+});
+
 test('확인 중인 문서의 시도는 새 판 겉으로 — 코치가 서면 흘려보내고, 옛 코치는 준비하지 않는다', () => {
   const { progress } = missedProgress();
   progress.setDueSource(() => ({ state: 'checking' }));
@@ -175,10 +196,12 @@ test('확인 중인 문서의 시도는 새 판 겉으로 — 코치가 서면 �
 });
 
 test('홈 「이 표현 같이 연습」 — 엔진 판정일 때만 그 표현 하나를 간격 없이 열고, 지금 판 · 확인 중이면 돌아올 때가 안 된 표현의 복습을 만들지 않는다(카본 B2)', () => {
-  for (const [path, expected] of [
-    ['old', false],
-    ['checking', false],
-    ['engine', true],
+  // [입구의 판(감시 상태), 진도의 판정, 그 표현 하나를 여나] — 감시가 엔진이어도 저장소가 아직 얹지 못하면 판정은 확인 중(GPT 처리 판 GA2)
+  for (const [path, judged, expected] of [
+    ['old', 'old', false],
+    ['checking', 'checking', false],
+    ['engine', 'checking', false],
+    ['engine', 'engine', true],
   ]) {
     const { progress, question } = missedProgress();
     // 그 복습을 한 번 놓쳐 「어려운 표현」(lapses > 0 · streak 0)으로 — 다음 복습은 아직 오지 않았다
@@ -189,16 +212,16 @@ test('홈 「이 표현 같이 연습」 — 엔진 판정일 때만 그 표현 
     assert.ok(record.lapses > 0 && record.streak === 0, '어려운 표현');
     assert.ok(record.dueAt > Date.now(), '다음 복습은 아직');
     assert.equal(progress.exportSnapshot().activeReview?.ids?.some(x => !progress.exportSnapshot().activeReview.answers[x]) ?? false, false);
-    if (path === 'old') progress.setDueSource(null);
-    else if (path === 'checking') progress.setDueSource(() => ({ state: 'checking' }));
+    if (judged === 'old') progress.setDueSource(null);
+    else if (judged === 'checking') progress.setDueSource(() => ({ state: 'checking' }));
     else progress.setDueSource(() => ({ state: 'engine', ids: [], nextAt: null, times: [], upcoming: [] }));
     const w = lifeOn({ progress, state: { now: path } });
     w.ui.refresh();
     const prepare = w.practice();
     assert.equal(typeof prepare, 'function', '홈이 받은 연습 준비');
-    assert.equal(prepare(question.id), true, `${path}: 안내 연습은 연다`);
+    assert.equal(prepare(question.id), true, `${path} · ${judged}: 안내 연습은 연다`);
     const active = progress.exportSnapshot().activeReview;
-    assert.equal(Boolean(active?.ids?.includes(id) && !active.answers[id]), expected, `${path}: 복습 판을 만드는가`);
+    assert.equal(Boolean(active?.ids?.includes(id) && !active.answers[id]), expected, `${path} · ${judged}: 복습 판을 만드는가`);
     w.ui.dispose();
   }
 });

@@ -107,9 +107,11 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const trail=newTrail?Object.freeze({shown:(...a)=>via().shown(...a),help:(...a)=>via().help(...a),delivery:(...a)=>via().delivery(...a),answer:(...a)=>via().answer(...a),guided:(...a)=>via().guided(...a),release:(...a)=>via().release(...a),
   metrics:()=>({...via().metrics(),path:pathNow(),record:via()===newTrail?'next':'old'}),dispose(){newTrail.dispose();oldTrail.dispose();}}):oldTrail;
  const lessonSlot=(attempt,id)=>life?life.lessonSlot(attempt,id):null,reviewSlot=(run,id)=>life?life.reviewSlot(run,id):null;
- // 시도를 연다 — 그때의 판으로 기록부를 정한다(위). 지금 판이면 옛 코치를 준비하고(새 길 · 확인 중이면 하지 않는다 — 생활 코치는 셸이 문서
- // 시작 때 연다, §19-1 ⑤ M7) 입구에 판을 다시 묻는다(§19-3 7 — 열 때마다 묻는다, 새 길이 되면 다음 시도부터).
- const prepareLearning=()=>{const path=pathNow();attemptTrail=newTrail&&path!=='old'?newTrail:oldTrail;if(path!=='old')return;try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}if(nextPath)try{void Promise.resolve(nextPath.coach()).catch(()=>{});}catch{/* 다음 시도에 다시 묻는다 */}};
+ // 시도를 연다 — 그때의 판으로 기록부를 정한다(위). keep: 시도 가운데(레슨 · 카페 · 복습 문항이 열린 동안)의 안내 연습은 그 시도의 기록부를
+ // 그대로 쓴다 — 레슨 도중 판이 바뀌어 다시 고르면 본문항 보임은 앞 기록부에, 답은 뒤 기록부에 가 슬롯을 못 찾고 버려졌다(GPT 처리 판 GA1).
+ // 그 시도가 옛 거울이면 옛 코치를 준비하고(새 판 겉이면 하지 않는다 — 생활 코치는 셸이 문서 시작 때 연다, §19-1 ⑤ M7) 입구에 판을 다시
+ // 묻는다(§19-3 7 — 열 때마다 묻는다, 새 길이 되면 다음 시도부터). 입구가 없는 지금 판(라이브)은 늘 옛 거울 · 옛 코치 준비 — 4-2 앞과 같다.
+ const prepareLearning=({keep=false}={})=>{if(!(keep&&attemptTrail))attemptTrail=newTrail&&pathNow()!=='old'?newTrail:oldTrail;if(attemptTrail!==oldTrail)return;try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}if(nextPath)try{void Promise.resolve(nextPath.coach()).catch(()=>{});}catch{/* 다음 시도에 다시 묻는다 */}};
  // 판이 바뀌어 생활 코치가 닫혔다(새 길) — 열린 레슨 · 복습 화면이면 안내 한 줄과 함께 닫는다(진도는 남아 다시 열면 이어진다, §19-1 ①).
  function retiredClose(){if(ended||!shown)return;try{void getProgress().flush().catch(()=>{});}catch{}home.closePanel();updateHome();home.toast(t('life.next.changed'));}
  const engineItem=(lesson,question,review=false)=>life?life.lifeItem({lesson,question,review}):null;
@@ -123,7 +125,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   return attempt&&q?lessonSlot(attempt,q.id):null;
  }
  // 튜터 「이 표현 같이 연습」이 복습 원고를 미리 보인다 — 그 복습 문항을 「보임 + 도움」으로.
- function guideTransfer(questionId){prepareLearning();const lesson=lessonOfQuestion(questionId),q=lesson?.questions.find(x=>x.id===questionId);if(q)trail.guided(engineItem(lesson,q,true));}
+ function guideTransfer(questionId){prepareLearning({keep:Boolean(context)});const lesson=lessonOfQuestion(questionId),q=lesson?.questions.find(x=>x.id===questionId);if(q)trail.guided(engineItem(lesson,q,true));}
  // 제품이 새 첫 답으로 저장했을 때만(duplicate:false — 두 번째 탭 · 묵은 화면의 답은 남기지 않는다) 저장된 답 그대로 거울에 적는다.
  // 저장이 던지면 이 줄에 오지 않는다(레슨은 그 오류를 알린다).
  function mirrorAnswer(slot,saved,stored,correctId){
@@ -166,8 +168,9 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    if(!record||record.lapses<=0||record.streak!==0)return false;
    exposedTransfers.add(record.id);guideTransfer(record.questionId);
    // 새 길(엔진 판정)은 그 표현 하나만 연다(간격 · 판정을 건너뜀 — 제품 간격표로 고른 복습 판을 만들지 않는다, §19-1 ⑤ M5). 확인 중 · 지금 판이면
-   // 지금 판 규칙 그대로(돌아올 때가 안 된 표현의 복습을 만들지 않는다 — 카본 합친 끝 판 B2).
-   const run=pathNow()==='engine'?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
+   // 지금 판 규칙 그대로(돌아올 때가 안 된 표현의 복습을 만들지 않는다 — 카본 합친 끝 판 B2). 가르는 것은 진도의 판정(요약의 dueState)이다 —
+   // 입구(감시)가 엔진이어도 저장소가 아직 얹지 못한 동안 판정은 확인 중이다(GPT 처리 판 GA2).
+   const run=summary().dueState==='engine'?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
    // Seeing this same transfer before finishing an active review is assistance.
    if(run?.ids.includes(record.id)&&!run.answers[record.id])p.markReviewHelp(record.id);
    return true;
