@@ -1,0 +1,146 @@
+{
+ "설명": "PULSE 모델 유나(F01)를 같은 방 · 같은 자세 · 같은 옷에 두고 빛만 바꿔 구운 견본 여섯 장(2026-11-13). 빛 이름은 ../빛이름.json의 이름이고 보기 쪽 · 고르심 장부에 적은 표기와 같다(굽기 목록에서 다른 이름으로 부른 장은 「굽기목록의이름」에 따로). 「빛문장」은 그 장을 만든 지시문에서 빛을 정한 대목만 뽑은 것이고 「지시문」은 전문이다. 방 · 사람 대목은 그 편의 것으로 바꿔 쓴다.",
+ "엔진": "Gemini 웹(카본 · 사고 수준 높음) · 정사각 1:1 · 후보정 없음(틀 맞추는 자르기만)",
+ "참조": {
+  "Image 1 ~ 4": "유나 캐스팅북 사진 넷(대표 · 정면 · 왼쪽 · 오른쪽)",
+  "Image 5": "바탕 장 = A 밝은 창빛(3:4로 구운 장을 정사각으로 자른 것)"
+ },
+ "꼴": {
+  "편집": "Recreate Image 5 exactly … CHANGE ONLY THE LIGHT, and nothing else: (1)… — B · D · E · F",
+  "다시 짓기": "Image 5의 방 · 자세를 지키고 LIGHT 대목으로 빛을 통째로 바꾼다 — C(첫 벌)",
+  "바탕": "A — 3:4 바탕 장을 다듬은 맞춤 꼴(본은 앞 판의 장)"
+ },
+ "값뜻": "좌우 · 위아래 · 색 · 역광은 ../빛이름.json 「잣대뜻」, 닮음은 캐스팅북 유나 사진 넷과의 얼굴 닮음(그 넷끼리는 0.41 ~ 0.66)",
+ "심사뜻": "Fable 5.2 하위 에이전트 눈가림 심사의 점수(10점) · 판정. 같은 그림도 회차마다 판정이 바뀌었다 — 한 회차의 판정으로 다시 굽지 않는다",
+ "유호님판정": null,
+ "장": [
+  {
+   "글자": "A",
+   "빛이름": "High key + Window light",
+   "한글": "밝은 창빛",
+   "그림": "A_밝은창빛.jpg",
+   "한줄": "통유리로 드는 밝고 부드러운 낮빛. 방 전체가 환하고 그림자가 옅다.",
+   "값": {
+    "좌우": 0.354,
+    "위아래": -0.024,
+    "색": 0.8,
+    "역광": 0.79,
+    "닮음": 0.614
+   },
+   "심사": {
+    "5회차": "6.5 그대로 냄",
+    "6회차": "6.5 그대로 냄"
+   },
+   "알고쓸것": "바탕 장(다른 다섯의 Image 5). 가장 평범 — 얼굴에 창빛의 방향이 안 보여 기준 칸으로만 쓴다.",
+   "빛문장": null,
+   "지시문": "Create one still photograph, vertical 3:4 frame. Image 2 is the photo to recreate. Recreate Image 2 exactly: the same woman, the same pose and turn of her shoulders, the same direct gaze into the lens, the same hair, the same black satin slip dress and thin gold chain necklace, the same room with its window and the blurred city, the same soft daylight, colour, film grain and framing - the same picture, taken a moment later. Image 1 is a reference photo of the same woman, Yuna, used only for the details of her face named below. CHANGE ONLY THESE THINGS, and nothing else: (1) LAMP: the floor lamp at the right of the frame stands a little further back and further from the right edge of the frame, so its whole cream linen drum shade is inside the frame, a little smaller than in Image 2, with clear wall between the shade and the right edge of the frame and between the shade and her hair. (2) WALL: the wall behind her is one plain, continuous surface in a single even pale grey. The faint vertical line in the wall of Image 2, above her head toward the left edge of the frame, is gone, and the wall has the same tone on both sides of her head. (3) MOUTH: only her upper lip changes: it is slimmer, thinner than her lower lip, as in Image 1. Her lips stay closed and relaxed with level corners - the same calm mouth and expression as in Image 2. (4) SKIN: the small dark moles on her cheeks in Image 2 are gone - her cheeks are clear, with only the skin marks of Image 1. Skin marks only as in Image 1: no moles, no freckles. Her skin has the soft natural sheen of Image 1 on the tops of her cheekbones and along the bridge of her nose. Real skin texture stays, with fine pores - not airbrushed. (5) HAIR: on the side nearer the left edge of the frame, the hair that hangs behind her shoulder in Image 2 now falls in front of that shoulder: one long soft wave lies over the outer side of her bare upper arm, from the shoulder down to the bottom of the frame, so the bare arm that still shows is clearly narrower than her face. The dress strap and her collarbone stay uncovered, and the hair around her face stays exactly as in Image 2. (6) EDGE: the small patch of skin colour at the bottom right of the frame, between her black dress and her hair, in Image 2 is gone - there is only black satin and dark hair there. WHO: Yuna is 25 years old, an adult Korean woman - exactly the same person as in Image 2. Everything not listed above stays exactly as in Image 2: the shape of her face, her eyes and eyeliner, the look in her eyes, the position and size of her head in the frame, the window at the left edge of the frame, the colour of the wall, the light on her face and the soft out-of-focus background. NOT: she is the only person in the photo; no hands in the frame; no text, letters, logos or watermark. Photorealistic, fine analogue film grain."
+  },
+  {
+   "글자": "B",
+   "빛이름": "Hard light + Window light",
+   "굽기목록의이름": "Low key + Hard light",
+   "한글": "블라인드 틈 햇살 한 줄",
+   "그림": "B_블라인드틈_햇살한줄.jpg",
+   "한줄": "내린 블라인드 틈으로 든 낮은 해 한 줄이 눈을 가로지른다. 나머지는 그늘.",
+   "값": {
+    "좌우": 0.632,
+    "위아래": -0.13,
+    "색": 7.6,
+    "역광": 1.42,
+    "닮음": 0.482
+   },
+   "심사": {
+    "5회차": "8 그대로 냄",
+    "6회차": "7.5 고쳐서 냄"
+   },
+   "알고쓸것": "두 눈 사이 콧등이 하얗게 날아가고 눈동자가 호박색으로 뜬다. 블라인드 아래 유리가 열려 있어 「한 줄」의 까닭이 반만 선다. 대표 사진과 가장 먼 얼굴(닮음 0.48).",
+   "빛문장": "CHANGE ONLY THE LIGHT, and nothing else: (1) BLIND: it is late afternoon, but the room is dark: a dark grey blackout roller blind is lowered over the window at the left edge of the frame, down to just above her eye height. Below the blind the glass shows the shaded tower opposite, and between the bottom edge of the blind and the roofline of that tower there is one narrow sliver of bright sky. (2) LAMP: the floor lamp is switched off, its shade unlit. (3) BAND OF SUNLIGHT: through that sliver comes the only light: one hard, narrow band of low sunlight, warm white. It enters from the left of the frame and crosses her face at eye height: it lights both eyes, the whole of her nose down to its tip and her upper cheeks, crosses her hair on both sides of her face, and lands as a bright strip on the wall behind her at the right of the frame, a little lower there than on her face. Its two edges are straight and parallel, crisp on her skin and hair, and on the wall softened only by the lens blur. The skin inside the band keeps its texture and its natural colour - not blown out to white; a small hard catchlight in each eye. (4) DARK: outside the band the picture is dark but not empty: her forehead, mouth, jaw and shoulders are dim yet readable in neutral shadow, her lips keep their colour, the black satin catches a faint sheen, and the wall away from the strip is dark grey. The soft, even window light of Image 5 is gone. (5) FACE: only the light on her face changes. Her face has exactly the width, the soft full cheeks and the softly rounded jaw of Image 5, and her lips have the size they have in Image 5.",
+   "지시문": "Create one still photograph, square 1:1 frame. Image 5 is the photo to recreate. Recreate Image 5 exactly: the same woman, the same pose and turn of her shoulders, the same tilt of her head, the same direct gaze into the lens, the same expression, the same hair, the same black satin slip dress and thin gold chain necklace, the same room and the same framing: her head, the window at the left edge of the frame and the floor lamp at the right of the frame have the same size and the same places in the frame as in Image 5. It is the same picture, taken a moment later, in the late afternoon, with the blind lowered. Images 1 to 4 are reference photos of the same woman, Yuna: her face stays exactly this person. CHANGE ONLY THE LIGHT, and nothing else: (1) BLIND: it is late afternoon, but the room is dark: a dark grey blackout roller blind is lowered over the window at the left edge of the frame, down to just above her eye height. Below the blind the glass shows the shaded tower opposite, and between the bottom edge of the blind and the roofline of that tower there is one narrow sliver of bright sky. (2) LAMP: the floor lamp is switched off, its shade unlit. (3) BAND OF SUNLIGHT: through that sliver comes the only light: one hard, narrow band of low sunlight, warm white. It enters from the left of the frame and crosses her face at eye height: it lights both eyes, the whole of her nose down to its tip and her upper cheeks, crosses her hair on both sides of her face, and lands as a bright strip on the wall behind her at the right of the frame, a little lower there than on her face. Its two edges are straight and parallel, crisp on her skin and hair, and on the wall softened only by the lens blur. The skin inside the band keeps its texture and its natural colour - not blown out to white; a small hard catchlight in each eye. (4) DARK: outside the band the picture is dark but not empty: her forehead, mouth, jaw and shoulders are dim yet readable in neutral shadow, her lips keep their colour, the black satin catches a faint sheen, and the wall away from the strip is dark grey. The soft, even window light of Image 5 is gone. (5) FACE: only the light on her face changes. Her face has exactly the width, the soft full cheeks and the softly rounded jaw of Image 5, and her lips have the size they have in Image 5. WHO: Yuna is 25 years old, an adult Korean woman - exactly the same person as in Image 5 and Images 1 to 4. Skin marks only as in Image 5: no other moles, freckles or dark spots. Real skin texture stays, not airbrushed. Everything not listed above stays exactly as in Image 5: the shape of her face, the size and shape of her eyes and her eyeliner, her lips softly closed with no smile, her hair, the size and place of her head and shoulders in the frame, the window, the wall and the lamp, and the soft out-of-focus background. NOT: she is the only person in the photo; no hands in the frame; no text, letters, logos or watermark. Photorealistic, fine analogue film grain."
+  },
+  {
+   "글자": "C",
+   "빛이름": "Golden hour + Hard light",
+   "한글": "해 질 녘 직사광",
+   "그림": "C_해질녘_직사광.jpg",
+   "한줄": "낮고 따뜻한 해가 창으로 곧게 든다. 얼굴에 금빛과 또렷한 그림자, 벽에 햇빛 조각.",
+   "값": {
+    "좌우": 0.428,
+    "위아래": -0.025,
+    "색": 5.7,
+    "역광": 0.94,
+    "닮음": 0.587
+   },
+   "심사": {
+    "5회차": "7 고쳐서 냄",
+    "6회차": "7.5 그대로 냄(묶음 고름)"
+   },
+   "알고쓸것": "첫 벌이다 — 네 번 고쳐 구운 벌이 모두 이 장을 못 넘었다. 스탠드 갓 왼쪽 위에 볕이 걸치고 정수리에 볕 받은 잔머리가 솟는다. 창이 다른 장보다 넓게 잡혔다.",
+   "빛문장": "LIGHT (Golden hour, Hard light): late afternoon, minutes before sunset; the lamp is off. Unlike Image 5, the light is NOT soft daylight and NOT even. Low, direct, warm golden sunlight comes through the bare window at the left edge, whose glass is bright pale gold, and rakes across her from the left of the frame. It is hard light: the shadow of her nose falls with a sharp edge on the cheek nearer the right edge, the dress strap and the necklace throw thin crisp shadows on her skin, and her sunlit cheek, neck and shoulder are warm gold, the skin with a soft sheen, not oily. On the wall behind her at the right of the frame lies a bright patch of sunlight cut by the diagonal shadows of the window bars, and the shadow of her own head and shoulder falls inside that patch; the edges of these wall shadows are softened only by the lens blur. Shadows are deep and warm; her hair on the window side is lit bright gold; a clear warm catchlight in each eye.",
+   "지시문": "Create one still photograph: a close-up portrait for a Korean fragrance campaign, square 1:1 frame. Images 1 to 4 are reference photos of one woman, Yuna: her face and proportions come only from these. Image 5 is a photo of this same scene: keep the room, her pose, her expression, her hair, her outfit and the framing exactly as in Image 5 - the same picture, shot again under different light. The LIGHT below replaces the light of Image 5 completely: relight the whole scene from scratch as described, and keep no highlight, shadow, eye catchlight, wall brightness or colour of light from Image 5. SETTING (exactly as in Image 5): a high-rise city apartment in Seoul, softly out of focus behind her: one flat, smooth, pale cool-grey wall; at the far left edge of the frame, in the side wall that runs on toward the camera, a floor-to-ceiling window with a slim black frame and bare glass, the blurred city beyond it; by the wall behind her at the right of the frame stands a slim black floor lamp with a cream linen drum shade, the shade level with her cheek and jaw, wholly inside the frame with clear wall on both sides, exactly as in Image 5. LIGHT (Golden hour, Hard light): late afternoon, minutes before sunset; the lamp is off. Unlike Image 5, the light is NOT soft daylight and NOT even. Low, direct, warm golden sunlight comes through the bare window at the left edge, whose glass is bright pale gold, and rakes across her from the left of the frame. It is hard light: the shadow of her nose falls with a sharp edge on the cheek nearer the right edge, the dress strap and the necklace throw thin crisp shadows on her skin, and her sunlit cheek, neck and shoulder are warm gold, the skin with a soft sheen, not oily. On the wall behind her at the right of the frame lies a bright patch of sunlight cut by the diagonal shadows of the window bars, and the shadow of her own head and shoulder falls inside that patch; the edges of these wall shadows are softened only by the lens blur. Shadows are deep and warm; her hair on the window side is lit bright gold; a clear warm catchlight in each eye. WHO: Yuna is 25 years old, an adult Korean woman - exactly the same person as in Images 1 to 4: a small face with soft full cheeks and a softly rounded jaw, dark-brown almond eyes with upturned outer corners, a crisp thin black winged eyeliner, full lips in a soft rose-coral, light neutral skin with an even tone, with real skin texture as fine as in Image 1 (not airbrushed, not plastic). Skin marks only as in Image 5: no other moles, freckles or dark spots. Her very long dark-brown hair is arranged exactly as in Image 5. She wears the black satin slip dress with thin straps and the thin gold chain necklace of Image 5. MOMENT: her pose, the turn of her shoulders, the tilt of her head and her gaze are exactly those of Image 5, and her eyes keep exactly the size and shape they have in Image 5. Her expression is that of Image 5: composed, cool and self-assured - lips softly closed, no smile; a direct, steady gaze straight into the lens. FRAME: a close head-and-shoulders portrait, framed exactly as Image 5: the same square crop, with her head, the window and the lamp at the same size and in the same places in the frame. Camera at her eye level, 85mm portrait lens, wide aperture: her eyes and face are sharp; the wall, the window and the lamp melt into soft blur. Fine analogue film grain. NOT: she is the only person; no hands in the frame; no text, letters, logos or watermark; clear air - no haze, no drifting specks, no lens flare; no oily shine on her skin, and no blotches on her skin in the shadows; no patches or streaks of light other than what LIGHT describes. Photorealistic."
+  },
+  {
+   "글자": "D",
+   "빛이름": "Low key + Moonlight",
+   "한글": "달빛",
+   "그림": "D_달빛.jpg",
+   "한줄": "한밤, 창으로 든 차고 푸른 빛이 옆에서 비춘다. 먼 쪽 얼굴과 방은 어둠, 벽에 창 모양의 빛.",
+   "값": {
+    "좌우": 0.856,
+    "위아래": 0.016,
+    "색": 2.2,
+    "역광": 1.9,
+    "닮음": 0.589
+   },
+   "심사": {
+    "5회차": "7 그대로 냄",
+    "6회차": "7 고쳐서 냄"
+   },
+   "알고쓸것": "이마에 잔 빗금 같은 살결이 올라와 대표 사진보다 나이 들어 보인다. 창이 왼쪽 끝에 아주 좁게만 보인다.",
+   "빛문장": "CHANGE ONLY THE LIGHT, and nothing else: (1) NIGHT: it is deep night. The glass of the window at the left edge of the frame shows the night sky, a clear, luminous deep blue, above city towers whose windows are lit here and there. The window is exactly where it is in Image 5 and exactly as narrow. The wall directly beside the window is plain and unlit: near-black blue-grey, like the rest of the room. (2) LAMP: the floor lamp is switched off, its shade unlit and dark. (3) MOONLIGHT: the moonlight through the window is the only light: one hard, cool, silver-white, only faintly blue light from the left of the frame, from a little above her eye height. It lights the side of her face nearer the window - her forehead, her cheekbone, the bridge and side of her nose, her lips and her chin - and the hair, the neck and the bare shoulder on that side, with a cool silver edge on her hair. The shadow of her nose falls toward the right edge of the frame and the far side of her face sinks into deep shadow, where only her eye and the line of her cheek and jaw can still be read. Each eye holds one clear, bright catchlight. Her skin is as clear and smooth as in Image 5, and it keeps a little of its natural warm colour in the cool light; her lips keep their rose colour. Her expression is exactly as calm as in Image 5. (4) ROOM: the room is dark. On the wall behind her at the right of the frame lies one dim, cool patch of moonlight in the shape of the window - dimmer than the sky in the glass - and the shadow of her head and shoulder falls inside it; the rest of the wall is near-black blue-grey. Quiet, low key, high contrast. No daylight and no soft window light of Image 5 remain anywhere.",
+   "지시문": "Create one still photograph, square 1:1 frame. Image 5 is the photo to recreate. Recreate Image 5 exactly: the same woman, the same pose and turn of her shoulders, the same tilt of her head, the same direct gaze into the lens, the same expression, the same hair, the same black satin slip dress and thin gold chain necklace, the same room and the same framing: her head, the window at the left edge of the frame and the floor lamp at the right of the frame have the same size and the same places in the frame as in Image 5. It is the same picture, taken a moment later, deep in the night. Images 1 to 4 are reference photos of the same woman, Yuna: her face stays exactly this person. CHANGE ONLY THE LIGHT, and nothing else: (1) NIGHT: it is deep night. The glass of the window at the left edge of the frame shows the night sky, a clear, luminous deep blue, above city towers whose windows are lit here and there. The window is exactly where it is in Image 5 and exactly as narrow. The wall directly beside the window is plain and unlit: near-black blue-grey, like the rest of the room. (2) LAMP: the floor lamp is switched off, its shade unlit and dark. (3) MOONLIGHT: the moonlight through the window is the only light: one hard, cool, silver-white, only faintly blue light from the left of the frame, from a little above her eye height. It lights the side of her face nearer the window - her forehead, her cheekbone, the bridge and side of her nose, her lips and her chin - and the hair, the neck and the bare shoulder on that side, with a cool silver edge on her hair. The shadow of her nose falls toward the right edge of the frame and the far side of her face sinks into deep shadow, where only her eye and the line of her cheek and jaw can still be read. Each eye holds one clear, bright catchlight. Her skin is as clear and smooth as in Image 5, and it keeps a little of its natural warm colour in the cool light; her lips keep their rose colour. Her expression is exactly as calm as in Image 5. (4) ROOM: the room is dark. On the wall behind her at the right of the frame lies one dim, cool patch of moonlight in the shape of the window - dimmer than the sky in the glass - and the shadow of her head and shoulder falls inside it; the rest of the wall is near-black blue-grey. Quiet, low key, high contrast. No daylight and no soft window light of Image 5 remain anywhere. WHO: Yuna is 25 years old, an adult Korean woman - exactly the same person as in Image 5 and Images 1 to 4. Skin marks only as in Image 5: no other moles, freckles or dark spots. Real skin texture stays, not airbrushed. Everything not listed above stays exactly as in Image 5: the shape of her face, the size and shape of her eyes and her eyeliner, her lips softly closed with no smile, her hair, the size and place of her head and shoulders in the frame, the window, the wall and the lamp, and the soft out-of-focus background. NOT: she is the only person in the photo; no hands in the frame; no text, letters, logos or watermark. Photorealistic, fine analogue film grain."
+  },
+  {
+   "글자": "E",
+   "빛이름": "Neon light + Monochrome red",
+   "굽기목록의이름": "Neon light",
+   "한글": "네온 한 색(붉은)",
+   "그림": "E_네온한색.jpg",
+   "한줄": "거리의 붉은 네온이 얼굴 한쪽을 물들이고 반대쪽은 어둠. 다른 색의 빛은 없다.",
+   "값": {
+    "좌우": 0.552,
+    "위아래": 0.014,
+    "색": 28.1,
+    "역광": 1.98,
+    "닮음": 0.583
+   },
+   "심사": {
+    "5회차": "7.5 그대로 냄",
+    "6회차": "8 그대로 냄"
+   },
+   "알고쓸것": "두 회차 내리 가장 탈이 없던 장. 얼굴 먼 쪽 그늘이 살짝 잿빛. 창이 다른 장보다 넓게 잡혔다.",
+   "빛문장": "CHANGE ONLY THE LIGHT, and nothing else: (1) NIGHT: it is night in the city. The glass of the window at the left edge of the frame is dark, and the window is exactly as narrow as in Image 5. The neon of the street far below glows up into the glass as a few large, soft, out-of-focus discs of red light among small white city lights - blurred light only: nothing in the glass has an outline, a word, a letter or a symbol. (2) LAMP: the floor lamp is switched off, its shade unlit and dark. (3) NEON: that red neon light from the street is the only strong light. It comes through the window from the left of the frame and lights the side of her face nearer the window in clear, saturated red: her forehead, her cheek, the side of her nose and her lips on that side, like her neck and her bare shoulder on that side; her hair on that side carries a crisp red edge and the black satin catches a red sheen. Her skin is as clear and smooth as in Image 5. (4) SHADOW SIDE: the side of her face away from the window falls off into deep shadow. Only a faint, colourless glow from the dark room reaches it, just enough to read her eye, her cheek and her jaw on that side; there her skin is dim and neutral. The red light and the shadow meet along the ridge of her nose. (5) EYES: her eyes are exactly as open as in Image 5, clear and awake, each with one small bright catchlight. (6) ROOM: the wall behind her is a very dark neutral grey, almost black, with only a faint red tint near the window. No warm light and no brown tone anywhere: the only colour of light in the picture is red. No daylight and no soft window light of Image 5 remain anywhere.",
+   "지시문": "Create one still photograph, square 1:1 frame. Image 5 is the photo to recreate. Recreate Image 5 exactly: the same woman, the same pose and turn of her shoulders, the same tilt of her head, the same direct gaze into the lens, the same expression, the same hair, the same black satin slip dress and thin gold chain necklace, the same room and the same framing: her head, the window at the left edge of the frame and the floor lamp at the right of the frame have the same size and the same places in the frame as in Image 5. It is the same picture, taken a moment later, at night, in red neon light from the street. Images 1 to 4 are reference photos of the same woman, Yuna: her face stays exactly this person. CHANGE ONLY THE LIGHT, and nothing else: (1) NIGHT: it is night in the city. The glass of the window at the left edge of the frame is dark, and the window is exactly as narrow as in Image 5. The neon of the street far below glows up into the glass as a few large, soft, out-of-focus discs of red light among small white city lights - blurred light only: nothing in the glass has an outline, a word, a letter or a symbol. (2) LAMP: the floor lamp is switched off, its shade unlit and dark. (3) NEON: that red neon light from the street is the only strong light. It comes through the window from the left of the frame and lights the side of her face nearer the window in clear, saturated red: her forehead, her cheek, the side of her nose and her lips on that side, like her neck and her bare shoulder on that side; her hair on that side carries a crisp red edge and the black satin catches a red sheen. Her skin is as clear and smooth as in Image 5. (4) SHADOW SIDE: the side of her face away from the window falls off into deep shadow. Only a faint, colourless glow from the dark room reaches it, just enough to read her eye, her cheek and her jaw on that side; there her skin is dim and neutral. The red light and the shadow meet along the ridge of her nose. (5) EYES: her eyes are exactly as open as in Image 5, clear and awake, each with one small bright catchlight. (6) ROOM: the wall behind her is a very dark neutral grey, almost black, with only a faint red tint near the window. No warm light and no brown tone anywhere: the only colour of light in the picture is red. No daylight and no soft window light of Image 5 remain anywhere. WHO: Yuna is 25 years old, an adult Korean woman - exactly the same person as in Image 5 and Images 1 to 4. Skin marks only as in Image 5: no other moles, freckles or dark spots. Real skin texture stays, not airbrushed. Everything not listed above stays exactly as in Image 5: the shape of her face, the size and shape of her eyes and her eyeliner, her lips softly closed with no smile, her hair, the size and place of her head and shoulders in the frame, the window, the wall and the lamp, and the soft out-of-focus background. NOT: she is the only person in the photo; no hands in the frame; no text, letters, logos or watermark. Photorealistic, fine analogue film grain."
+  },
+  {
+   "글자": "F",
+   "빛이름": "Hard light (direct flash)",
+   "한글": "정면 플래시",
+   "그림": "F_정면플래시.jpg",
+   "한줄": "카메라에서 터뜨린 센 빛. 얼굴이 또렷하게 뜨고 방은 어둠으로 떨어진다.",
+   "값": {
+    "좌우": 0.129,
+    "위아래": 0.077,
+    "색": 0.6,
+    "역광": 3.45,
+    "닮음": 0.538
+   },
+   "심사": {
+    "5회차": "8 그대로 냄",
+    "6회차": "7 그대로 냄"
+   },
+   "알고쓸것": "목걸이 한쪽 가닥이 머리 옆에서 끊겨 보인다. 미간에 힘이 들어간 듯 표정이 굳고 이마 · 콧등이 번들거린다.",
+   "빛문장": "CHANGE ONLY THE LIGHT, and nothing else: (1) NIGHT: it is night. The glass of the window at the left edge of the frame is dark, with only a few small out-of-focus city lights in it; no daylight reaches the room. (2) LAMP: the floor lamp is switched off, its shade unlit. (3) FLASH: the only light is a small direct flash just above the camera lens. It lights her face, neck and shoulders frontally and crisply: clean skin with a soft sheen, not oily, with only a small highlight on the bridge of her nose; a thin hard-edged shadow under her nose and under her chin on her neck; one tiny pinpoint catchlight in the centre of each pupil. The black satin of her dress shows sharp highlights and the gold necklace glints. (4) WALL: the flash throws the shadow of her head and shoulder onto the wall behind her, offset toward the right edge of the frame and slightly down, its edge softened only by the lens blur. The flash falls off quickly: the wall is dim grey behind her and nearly black toward the corners of the frame. High contrast, crisp, saturated colour. No daylight and no soft window light of Image 5 remain anywhere.",
+   "지시문": "Create one still photograph, square 1:1 frame. Image 5 is the photo to recreate. Recreate Image 5 exactly: the same woman, the same pose and turn of her shoulders, the same tilt of her head, the same direct gaze into the lens, the same expression, the same hair, the same black satin slip dress and thin gold chain necklace, the same room and the same framing: her head, the window at the left edge of the frame and the floor lamp at the right of the frame have the same size and the same places in the frame as in Image 5. It is the same picture, taken a moment later, after dark, with the camera's flash. Images 1 to 4 are reference photos of the same woman, Yuna: her face stays exactly this person. CHANGE ONLY THE LIGHT, and nothing else: (1) NIGHT: it is night. The glass of the window at the left edge of the frame is dark, with only a few small out-of-focus city lights in it; no daylight reaches the room. (2) LAMP: the floor lamp is switched off, its shade unlit. (3) FLASH: the only light is a small direct flash just above the camera lens. It lights her face, neck and shoulders frontally and crisply: clean skin with a soft sheen, not oily, with only a small highlight on the bridge of her nose; a thin hard-edged shadow under her nose and under her chin on her neck; one tiny pinpoint catchlight in the centre of each pupil. The black satin of her dress shows sharp highlights and the gold necklace glints. (4) WALL: the flash throws the shadow of her head and shoulder onto the wall behind her, offset toward the right edge of the frame and slightly down, its edge softened only by the lens blur. The flash falls off quickly: the wall is dim grey behind her and nearly black toward the corners of the frame. High contrast, crisp, saturated colour. No daylight and no soft window light of Image 5 remain anywhere. WHO: Yuna is 25 years old, an adult Korean woman - exactly the same person as in Image 5 and Images 1 to 4. Skin marks only as in Image 5: no other moles, freckles or dark spots. Real skin texture stays, not airbrushed. Everything not listed above stays exactly as in Image 5: the shape of her face, the size and shape of her eyes and her eyeliner, her lips softly closed with no smile, her hair, the size and place of her head and shoulders in the frame, the window, the wall and the lamp, and the soft out-of-focus background. NOT: she is the only person in the photo; no hands in the frame; no text, letters, logos or watermark. Photorealistic, fine analogue film grain."
+  }
+ ]
+}
