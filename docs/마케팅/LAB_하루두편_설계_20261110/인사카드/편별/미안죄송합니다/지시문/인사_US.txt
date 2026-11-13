@@ -1,0 +1,25 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+A real handmade needle-felt diorama photographed with a macro lens, like a still from a stop-motion short film.
+
+Look reference: the THIRD attached image is an earlier still from this same series (the same Mongle, the same Statue of Liberty and crown, the same sky-blue felt and wood). Match its materials, colors, lighting and the design of the Statue of Liberty and crown. Do NOT copy Mongle's pose or expression from it.
+
+Set: a plain sky-blue wool felt backdrop (flat, clean, evenly lit) fills the upper part. A warm wooden tabletop fills the bottom 32% of the image; the front strip of the tabletop is empty wood, softly out of focus.
+
+Character — Mongle: the character in the SECOND attached image: a small coral-red needle-felted ghost-shaped blob with a wavy scalloped hem and one line of cream running stitch. Mongle has no arms, no legs, no hands.
+
+Action (one clear gag, readable in one second): Mongle is saying sorry to the Statue of Liberty with the deepest bow it can manage. ONE small needle-felted Statue of Liberty (mint-green wool, simple smooth shapes, torch raised, on a small cream pedestal) stands on the right, looking down at Mongle. On the left, Mongle — still wearing the very same mint-green felt spiked crown (seven short rays) — has bowed so far forward that its whole soft body is squashed low and wide on the tabletop, like a dumpling pressed flat, only about one third of its normal height, its face tilted down toward the wood. The crown, a little too big, has slipped forward and sits crooked on its head. Its eyes are squeezed shut in a sorry face: two short dark curved stitched lines instead of bead eyes, a small soft-pink blush patch on the cheek, a tiny wobbly frown, and ONE small light-blue felt sweat drop on its forehead. Flattened Mongle is about 40% of the image width and about 12% of the image height; the statue is about 26% of the image height.
+
+Lettering: handmade felt lettering appliqued flat onto the sky-blue felt backdrop like a handmade banner. Copy the FIRST attached image exactly — the same letters, the same order, the same three lines, the same letter shapes:
+   - Line 1: Sorry, — thick cream-white wool felt cut-out letters, with the comma.
+   - Line 2: 미국! — larger, thick coral-red wool felt cut-out letters, each backed by a slightly larger cream felt layer so every letter has a clean cream outline. Copy the Korean syllable blocks 미 and 국 stroke for stroke from the first image.
+   - Line 3: mi-guk — small letters hand-embroidered in cream thread (neat backstitch).
+   Tiny visible stitches hold the felt letters on the backdrop. The lettering block is centered horizontally and no wider than 56% of the image width. Its top edge is at about 25% of the image height and its bottom edge at about 41% — leave a generous band of plain sky-blue felt above it. Above the lettering there is only plain sky-blue felt.
+
+Layout: Mongle and the statue sit in the middle band of the image, between 48% and 69% of the image height — Mongle's face is clearly above 70% of the image height, and inside the central 76% of the width — clear empty margin on the left and right edges. They do not touch or overlap the lettering.
+
+Craft quality: tidy, deliberate craftsmanship. All surfaces are tightly felted and smooth with only a short soft fuzz; no long stray fibers, no swirl patterns, no busy texture. Big simple shapes with few details. Soft natural daylight from the upper left, gentle contact shadows on the wood.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. No clouds. Nothing else is added.

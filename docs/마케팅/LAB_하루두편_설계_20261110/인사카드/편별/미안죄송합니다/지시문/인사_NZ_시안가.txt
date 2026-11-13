@@ -1,0 +1,25 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+A real handmade needle-felt diorama photographed with a macro lens, like a still from a stop-motion short film.
+
+Look reference: the THIRD attached image is an earlier still from this same series (the same Mongle, the same kiwi bird, the same sky-blue felt and wood). Match its materials, colors, lighting and the kiwi bird's design. Do NOT copy its pose.
+
+Set: a plain sky-blue wool felt backdrop (flat, clean, evenly lit) fills the upper part. A warm wooden tabletop fills the bottom 28% of the image; the front strip of the tabletop is empty wood, softly out of focus.
+
+Character — Mongle: the character in the SECOND attached image: a small coral-red needle-felted ghost-shaped blob with a wavy scalloped hem and one line of cream running stitch. Mongle has no arms, no legs, no hands.
+
+Action (one clear gag, readable in one second): Mongle is saying sorry with the deepest bow it can manage — and the kiwi bird that lives on its head is still riding on top. Mongle has bowed so far forward that its whole soft body is squashed low and wide on the tabletop, like a dumpling pressed flat, only about one third of its normal height. Its face is tilted down toward the wood on the left side. Its eyes are squeezed shut in a sorry face: two short dark curved stitched lines instead of bead eyes, a small soft-pink blush patch on the cheek, a tiny wobbly frown, and ONE small light-blue felt sweat drop on its forehead. The scalloped hem with the cream running stitch spreads out flat on the wood. ONE small needle-felted kiwi bird (round fluffy brown body, long thin cream beak, tiny feet, no visible wings) is still perched on top of Mongle's flattened back, standing upright with its head tilted, looking straight down at Mongle with its long beak pointing down, as if deciding whether to accept the apology. Flattened Mongle is about 50% of the image width and about 12% of the image height; the kiwi standing on top is about 13% of the image height.
+
+Lettering: handmade felt lettering appliqued flat onto the sky-blue felt backdrop like a handmade banner. Copy the FIRST attached image exactly — the same letters, the same order, the same three lines, the same letter shapes:
+   - Line 1: Sorry, — thick cream-white wool felt cut-out letters, with the comma.
+   - Line 2: 뉴질랜드! — larger, thick coral-red wool felt cut-out letters, each backed by a slightly larger cream felt layer so every letter has a clean cream outline. Copy the Korean syllable blocks 뉴, 질, 랜 and 드 stroke for stroke from the first image.
+   - Line 3: nyu-jil-laen-deu — small letters hand-embroidered in cream thread (neat backstitch).
+   Tiny visible stitches hold the felt letters on the backdrop. The lettering block is centered horizontally and no wider than 64% of the image width. Its top edge is at about 18% of the image height and its bottom edge at about 36%. Above the lettering there is only plain sky-blue felt.
+
+Layout: Mongle and the kiwi bird sit in the middle band of the image, between 46% and 72% of the image height, and inside the central 76% of the width — clear empty margin on the left and right edges. They do not touch or overlap the lettering.
+
+Craft quality: tidy, deliberate craftsmanship. All surfaces are tightly felted and smooth with only a short soft fuzz; no long stray fibers, no swirl patterns, no busy texture. Big simple shapes with few details. Soft natural daylight from the upper left, gentle contact shadows on the wood.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. No clouds. Nothing else is added.
