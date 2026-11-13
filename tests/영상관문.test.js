@@ -165,6 +165,33 @@ test('Fable 5.2가 아닌 답이 섞이면 모델 확인이 거짓이고 알린�
   assert.ok(로그.some(l => /Fable 5\.2가 아닌 답/.test(l)));
   const 바름 = await 돌리기();
   assert.equal(바름.반환.모델확인.맞음, true);
+  assert.equal(바름.반환.모델확인.대체, '');
+});
+
+test('Fable 한도 대체(11-14): 한도 근거를 준 판만 Opus 5.5 답을 받고, 실제로 Opus가 답했을 때만 「대체 검수」로 남긴다', async () => {
+  // 근거 없이 Opus가 답하면 지금처럼 쓰지 않는다
+  const 근거없음 = await 돌리기({ 모델: 'claude-opus-5-5' });
+  assert.equal(근거없음.반환.모델확인.맞음, false);
+  assert.equal(근거없음.반환.모델확인.대체, '');
+  // 근거 + Opus 5.5 → 받고, 결과 · 로그에 대체 검수와 근거가 남는다
+  const 대체 = await 돌리기({ 모델: 'claude-opus-5-5', 덧: { 한도대체: 'get_usage 주간 Fable 96% · 11-14 05:10' } });
+  assert.equal(대체.반환.모델확인.맞음, true);
+  assert.match(대체.반환.모델확인.대체, /^Opus 5\.5 대체 검수 — 한도 근거: get_usage 주간 Fable 96%/);
+  assert.equal(대체.결과.모델확인.대체, 대체.반환.모델확인.대체, '기록에 넘긴 결과에도 같은 글이 있어야 보고.md에 적힌다');
+  assert.ok(대체.로그.some(l => /Opus 5\.5 대체 검수\(Fable 한도\)/.test(l)));
+  // 근거를 줬어도 Fable이 다 답했으면 대체 검수가 아니다
+  const 페이블 = await 돌리기({ 덧: { 한도대체: '옛 근거' } });
+  assert.equal(페이블.반환.모델확인.맞음, true);
+  assert.equal(페이블.반환.모델확인.대체, '');
+  assert.ok(!페이블.로그.some(l => /대체 검수/.test(l)));
+  // 근거를 줘도 그 밖의 모델(5.1 · Sonnet)은 받지 않고, 쓰지 않을 판에 대체 글을 남기지 않는다
+  for (const 모델 of ['claude-fable-5-1', 'claude-sonnet-5-5']) {
+    const 딴 = await 돌리기({ 모델, 덧: { 한도대체: '근거' } });
+    assert.equal(딴.반환.모델확인.맞음, false, 모델);
+    assert.equal(딴.반환.모델확인.대체, '', 모델);
+  }
+  // 빈 글 · 글이 아닌 값은 시작에서 멈춘다
+  for (const 값 of ['  ', true, 3]) await assert.rejects(돌리기({ 덧: { 한도대체: 값 } }), /한도 근거/, String(값));
 });
 
 test('결과 없는 관점 · 그림 없는 컷 · 판 도구가 못 만든 것은 빠짐에 남는다(조용히 덮지 않는다)', async () => {
@@ -209,7 +236,9 @@ test('스킬 두 장 · 판 도구 · synk-video 한 장 · 운영 원칙 · .gi
   for (const [이름, 관문] of [['굽기전검수', '굽기전'], ['마감작업', '마감']]) {
     const 글 = 읽기(`.claude/skills/${이름}/SKILL.md`);
     assert.match(글.split('---')[1] || '', new RegExp(`name: ${이름}`));
-    for (const 낱말 of ['claude-fable-5-2', '.claude/workflows/video-gate.js', 'tools/영상관문판.py', `관문: '${관문}'`, 'Fable 몫 초기화해 주세요', '보고.md']) {
+    // 11-14: Fable 한도면 「초기화해 주세요」를 여쭙지 않고 Opus 5.5로 같은 관문을 돈다(운영 원칙 「한도」) — 옛 문구가 되살아나면 막는다
+    assert.ok(!글.includes('Fable 몫 초기화해 주세요'), `${이름} 스킬에 옛 「Fable 몫 초기화해 주세요」가 남았다`);
+    for (const 낱말 of ['claude-fable-5-2', '.claude/workflows/video-gate.js', 'tools/영상관문판.py', `관문: '${관문}'`, 'claude-opus-5-5', '한도대체', '10% 아래', '보고.md']) {
       assert.ok(글.includes(낱말), `${이름} 스킬에 「${낱말}」이 없다`);
     }
   }

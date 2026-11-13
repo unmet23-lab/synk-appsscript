@@ -1,7 +1,7 @@
 export const meta = {
   name: 'video-gate',
   description: '영상 관문 — 굽기 전(시작 그림 · 지시문) 또는 마감(최종본)을 관점별 Fable 검수자가 나눠 보고 서로 반박해 컷별 고칠 표를 낸다',
-  whenToUse: '/굽기전검수 · /마감작업 스킬이 부른다. 세션 모델이 claude-fable-5-2인 검수 세션에서, tools/영상관문판.py로 판을 만든 뒤에만.',
+  whenToUse: '/굽기전검수 · /마감작업 스킬이 부른다. 세션 모델이 claude-fable-5-2인 검수 세션에서(Fable 한도면 claude-opus-5-5 세션 + args.한도대체), tools/영상관문판.py로 판을 만든 뒤에만.',
   phases: [
     { title: '준비', detail: '판목록 읽기', model: 'sonnet' },
     { title: '훑기', detail: '관점별 Fable 검수자 — 그림 30장 안쪽으로 나눔' },
@@ -13,7 +13,8 @@ export const meta = {
 
 // 영상 관문 워크플로(2026-11-12, Claude · 유호님 「둘 다 세팅」) — 쓰는 법은 .claude/skills/굽기전검수 · 마감작업 SKILL.md.
 // args: { 관문: '굽기전' | '마감', 편, 컷표, 출력, 판폴더(tools/영상관문판.py의 --출력), 최종?(마감), 그림지시문?, 꾸러미?,
-//         다시?: true, 컷?: ['C3', …](다시), 앞결과?: '<지난 결과.json>'(다시) }
+//         다시?: true, 컷?: ['C3', …](다시), 앞결과?: '<지난 결과.json>'(다시),
+//         한도대체?: '<Fable 한도 근거 — get_usage 값 · 오류 원문>'(운영 원칙 「Fable 한도 공통 대체」 — 이때만 claude-opus-5-5 답도 받는다) }
 // 판은 세션이 먼저 tools/영상관문판.py로 만든다 — 하위 에이전트가 오래 도는 명령을 백그라운드로 돌리면 깨어나지 않을 때가 있어서다(현장 노트 AI_CLI).
 
 const A = args || {}
@@ -25,6 +26,10 @@ if (관문 !== '굽기전' && 관문 !== '마감') throw new Error('args.관문�
 for (const k of ['편', '컷표', '출력', '판폴더']) if (!A[k]) throw new Error(`args.${k}가 없다`)
 if (관문 === '마감' && !A.최종) throw new Error('마감에는 args.최종(최종 mp4 경로)이 필요하다')
 if (다시 && !(Array.isArray(A.컷) && A.컷.length && A.앞결과)) throw new Error('다시 검수에는 args.컷(고친 컷 목록)과 args.앞결과(지난 결과.json)가 필요하다')
+// Fable이 사용량 한도로 막히면 Opus 5.5로 같은 관문을 돈다(2026-11-13 유호님 「페이블 한도때문에 안되면 오푸스 5.5로 자동으로 진행」 · 운영 원칙 「Fable 한도 공통 대체」).
+// 근거 글이 있어야 대체로 센다 — 근거 없이 다른 모델 답을 받으면 아래 모델 확인이 「쓰지 않는다」로 막는다.
+if (A.한도대체 !== undefined && !(typeof A.한도대체 === 'string' && A.한도대체.trim())) throw new Error('args.한도대체에는 Fable 한도 근거(get_usage 값 · 오류 원문)를 글로 적는다')
+const 한도대체 = typeof A.한도대체 === 'string' ? A.한도대체.trim() : ''
 
 const 메모 = `${A.출력}/메모`
 const 고칠곳 = 관문 === '마감'
@@ -443,9 +448,14 @@ const 컷별 = 판.컷.map(c => {
 const 셈판정 = {}
 for (const c of 컷별) 셈판정[c.판정] = (셈판정[c.판정] || 0) + 1
 const 모델들 = [...new Set(본모델.filter(Boolean))]
-const 어긋남 = 모델들.filter(m => !String(m).includes('fable-5-2'))
-const 모델확인 = { 맞음: 모델들.length > 0 && !어긋남.length, 본것: 모델들 }
-if (!모델확인.맞음) log(`⚠ Fable 5.2가 아닌 답이 섞였다(${어긋남.join(', ') || '모델을 적은 답 없음'}) — 이 결과는 쓰지 않는다`)
+const 받는모델 = 한도대체 ? ['fable-5-2', 'opus-5-5'] : ['fable-5-2']
+const 어긋남 = 모델들.filter(m => !받는모델.some(k => String(m).includes(k)))
+const 맞음 = 모델들.length > 0 && !어긋남.length
+// 「대체 검수」는 실제로 Opus 5.5가 답했고 결과를 쓸 수 있을 때만 적는다 — 근거 글만 넘어오고 Fable이 다 답한 판 · 쓰지 않을 판에는 남기지 않는다(11-14 카본 A3).
+const 대체함 = 맞음 && 모델들.some(m => String(m).includes('opus-5-5'))
+const 모델확인 = { 맞음, 본것: 모델들, 대체: 대체함 ? `Opus 5.5 대체 검수 — 한도 근거: ${한도대체}` : '' }
+if (!맞음) log(`⚠ ${한도대체 ? 'Fable 5.2 · Opus 5.5' : 'Fable 5.2'}가 아닌 답이 섞였다(${어긋남.join(', ') || '모델을 적은 답 없음'}) — 이 결과는 쓰지 않는다`)
+else if (대체함) log(`Opus 5.5 대체 검수(Fable 한도) — 본 모델: ${모델들.join(', ')} · 근거: ${한도대체}`)
 const 셈상태 = {}
 for (const f of 지적) 셈상태[f.상태] = (셈상태[f.상태] || 0) + 1
 
@@ -477,7 +487,7 @@ const 기록 = await agent(
 2) 같은 내용으로 ${A.출력}/보고.md를 아래 꼴로 쓴다. 지적 글은 그대로 옮기고, 없는 말을 보태지 않는다.
 
 # <컷표 「편」.「이름」> — ${관문} 관문${다시 ? ' 다시 검수' : ''}
-- 모델 확인: 맞음이면 「Fable 5.2 (claude-fable-5-2)」, 아니면 「⚠ 어긋남 — 이 결과는 쓰지 않는다: <본것>」
+- 모델 확인: 맞음이고 「대체」가 비었으면 「Fable 5.2 (claude-fable-5-2)」, 맞음이고 「대체」가 있으면 그 글 그대로 + 「 · 본 모델: <본것>」, 맞지 않으면 「⚠ 어긋남 — 이 결과는 쓰지 않는다: <본것>」
 - 지적 <요약.지적>개 — 유지 · 확인 · 기각 · 반박 안 함 개수, 컷 판정별 개수
 ## 컷별 표
 | 컷 | 판정 | 할 일(유지 지적 id · 고칠곳 · 고칠법) | 확인 | P2 · P3 |
