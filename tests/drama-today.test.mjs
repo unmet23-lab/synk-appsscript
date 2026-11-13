@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
 import { buildToday, buildAfter, readTurns, TAEO_LINES, dayKey, dayStart } from '../experiences/drama/pilot/today/plan.mjs';
-import { POOL, AGAIN_PAIR, NEW_ORDER, YO_LINES } from '../experiences/drama/pilot/today/content.mjs';
+import { POOL, AGAIN_PAIR, NEW_ORDER, YO_LINES, TAEO_CALL } from '../experiences/drama/pilot/today/content.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -44,7 +44,7 @@ test('기록 A(어제 6번 줄 끝맺음 노트 · B 안 함 · 입장 검사 �
  const [again, fresh, check] = r.today.items;
  // 태오는 그 장면의 일을 되부른다 — 6번 줄은 '요' 줄이라 끝맺음이면 「끝에 '요'까지요」가 붙는다.
  assert.equal(r.today.line.code, 'again.call.s1e01-6.yo');
- assert.equal(r.today.line.text, "길 잃었다고 했죠? 그 얘기, 오늘 한 번 더 해 봐요. 끝에 '요'까지요.");
+ assert.equal(r.today.line.text, "길 잃어서 헤맸다고 했죠? 오늘은 요즘 지내는 얘기를 해 봐요. 이번엔 끝에 '요'까지 붙여서요.");
  assert.equal(r.today.line.media, null);
  assert.equal(again.kind, 'again');
  assert.deepEqual(again.open, { type: 'situation', lineId: AGAIN_PAIR['s1e01-6'] });
@@ -52,7 +52,7 @@ test('기록 A(어제 6번 줄 끝맺음 노트 · B 안 함 · 입장 검사 �
  assert.equal(again.why.evidence.lineId, 's1e01-6');
  assert.equal(again.why.evidence.notes, 3);
  assert.equal(again.why.evidence.coached, true);
- assert.equal(again.why.text, '어제 「…한참 헤맸어요」의 끝이 반말로 들렸어요. 그 자리에서 다시 말해 해냈어요.');
+ assert.equal(again.why.text, '어제 「한참 헤맸어요」라고 할 때 끝이 반말처럼 들렸어요. 그 자리에서 다시 해서 고쳤어요.');
  for (const t of visible(r.today)) assert.ok(!STUDIO.test(t), t);
  // 근거 시각이 실제 기록의 마지막 노트 시도와 같다.
  const turns = readTurns(r.events).filter((t) => t.lineId === 's1e01-6' && t.phase === 'scene');
@@ -139,13 +139,13 @@ test('「했어요」는 말한 기록으로만 센다 — 카드만 열고 나�
  ]), lesson, now, tzOffsetMin: 540 });
  const scene = one.items.find((x) => x.open.type === 'scene');
  assert.equal(scene.why.code, 'new.scene');
- assert.equal(scene.why.text, '어제 1화 장면에서 3줄 가운데 1줄까지 했어요.');
+ assert.equal(scene.why.text, '어제 1화에서 내 대사 3개 중 1개까지 했어요.');
  assert.deepEqual(scene.why.evidence.spoken, ['s1e01-6']);
  assert.equal(one.line.code, 'new.scene');
  // 아무 줄도 말하지 않고 열기만 했다 → 「열었어요」(한 줄 수를 말하지 않는다).
  const none = buildToday({ events: events([{ phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00') }]), lesson, now, tzOffsetMin: 540 });
  assert.equal(none.items[0].why.code, 'new.scene.opened');
- assert.equal(none.items[0].why.text, '어제 1화 장면을 열었어요.');
+ assert.equal(none.items[0].why.text, '어제 1화를 열어 보기만 했어요.');
  // 장면 줄 셋을 다 말했고 B는 열기만 했다 → B는 아직 안 한 것(다시 권한다).
  const allSaid = [
   { phase: 'scene', line: 's1e01-6', at: kst('2026-11-14T21:00:00'), tries: ['pass'] },
@@ -166,7 +166,7 @@ test('같은 날 같은 말하기가 둘 서지 않는다 — 7번(묻기)이 �
  ]), lesson, now, tzOffsetMin: 540 });
  const [again, fresh] = t.items;
  assert.equal(again.open.lineId, AGAIN_PAIR['s1e01-7']);
- assert.equal(again.why.text, '어제 「…어디에 있는지 아세요」에서 꼭 들어갈 말 하나가 안 들렸어요.');
+ assert.equal(again.why.text, '어제 「어디에 있는지 아세요」라고 할 때 꼭 들어가야 할 말이 하나 빠졌어요.');
  // 끝맺음이 아니면 「'요'」 변형이 붙지 않는다.
  assert.equal(t.line.code, 'again.call.s1e01-7');
  const ask = lesson.scene.find((x) => x.id === 's1e01-7').skill;
@@ -183,7 +183,7 @@ test("「'요'」 말은 내용 표에서 '요' 줄로 적은 줄에만 — 그 
  const t = buildToday({ events: events([{ phase: 'scene', line: extra.id, at: kst('2026-11-14T21:00:00'), tries: ['note-ending'] }]), lesson: L, now, tzOffsetMin: 540 });
  const again = t.items.find((x) => x.kind === 'again');
  assert.equal(again.why.code, 'again.ending');
- assert.match(again.why.text, /의 끝맺음이 대사와 다르게 들렸어요\.$/);
+ assert.match(again.why.text, /라고 할 때 끝맺음이 대사와 다르게 들렸어요\.$/);
  assert.ok(!/'요'|반말/.test(again.why.text));
  assert.equal(t.line.code, 'again.retake');
  assert.ok(!/'요'/.test(t.line.text));
@@ -198,19 +198,34 @@ test('끝 화면: 오늘 해낸 것만 전후로, 내일은 같은 규칙을 내
  const done = await doToday(w, r.today, { minutesAgo: 30 });
  const again = await read(w, lesson);
  const after = buildAfter({ events: again.events, lesson, start: r.today, startAt: done.startAt, now: w.now, entryAfter: again.entry, entryTarget: done.entryTarget, strings: STR.ko });
- assert.deepEqual(after.changed.map((c) => c.what), ["끝 '요'", '같은 과 다른 선배에게 길 묻기', '세부 내용 맞추기']);
- assert.equal(after.changed[0].before, '어제 「…한참 헤맸어요」 끝이 반말로 들림');
+ assert.deepEqual(after.changed.map((c) => c.what), ["끝에 '요' 붙이기", '같은 과 다른 선배에게 길 묻기', '표와 짐의 세부 내용 확인']);
+ assert.equal(after.changed[0].before, '어제는 「한참 헤맸어요」의 끝이 반말처럼 들렸어요');
  // 입장 검사 전 글은 근거 그대로(그 놓침이 한 근무 안이라는 근거는 없다).
  const entry = r.today.items.find((x) => x.open.type === 'game').why.evidence;
- assert.equal(after.changed[2].before, `최근 ${entry.seen}번 가운데 ${entry.misses}번 놓침`);
+ assert.equal(after.changed[2].before, `최근 ${entry.seen}번 중 ${entry.misses}번 놓쳤어요`);
  for (const t of visible(r.today, after)) assert.ok(!STUDIO.test(t), t);
  const next = buildToday({ events: again.events, lesson, now: w.now + 86400000, entry: again.entry, strings: STR.ko });
  assert.deepEqual(after.tomorrow.filter((x) => x.when === '내일').map((x) => x.title), next.items.map((x) => x.title));
- assert.ok(after.tomorrow.some((x) => x.when === '7일 뒤'));
+ assert.ok(after.tomorrow.some((x) => x.when === '며칠 뒤'));
+ // 나중 확인 날짜는 바뀌는 중이라 숫자로 적지 않는다(「7일」과 「3일」이 같이 보이지 않게).
+ for (const t of visible(r.today, after)) assert.ok(!/7일|7~10일/.test(t), t);
  // 오늘 할 것을 다 했으면 같은 날 다시 열어도 그 줄은 다시 나오지 않는다.
  const reopen = buildToday({ events: again.events, lesson, now: w.now, entry: again.entry, strings: STR.ko });
  assert.ok(!reopen.items.some((x) => r.today.items.some((y) => y.open.lineId && y.open.lineId === x.open.lineId)));
  assert.ok(!reopen.items.some((x) => x.open.type === 'game'));
+});
+
+test('태오가 떠올리는 말은 그 줄이 여는 짝 상황에 맞춰 썼고, 짝 상황의 답 낱말이 없고, 말하는 길이가 6초 안이다', async () => {
+ const { dramaLines, readEpisodes } = await import('../tools/build-world-speaking-talk.mjs');
+ const lines = new Map(dramaLines(await readEpisodes()).map((l) => [l.id, l]));
+ for (const [id, call] of Object.entries(TAEO_CALL)) {
+  assert.equal(call.pair, AGAIN_PAIR[id], `${id}: 짝이 바뀌었다 — 태오 문장도 새 짝에 맞춰 고친다`);
+  const words = (lines.get(call.pair)?.spec?.keys || []).flatMap((k) => [k.word, ...(k.alts || [])]).filter((w) => w && w.length >= 2);
+  for (const w of words) assert.ok(!call.text.includes(w), `${id}: 짝 상황의 답 낱말 「${w}」가 태오 말에 있다`);
+  // 한국어 대화 빠르기 초당 6음절 안팎으로 어림 — 「이번엔 끝에 '요'까지 붙여서요.」를 붙여도 6초 안.
+  const syl = (`${call.text} 이번엔 끝에 요까지 붙여서요.`.match(/[가-힣]/g) || []).length;
+  assert.ok(syl / 6 <= 6, `${id}: ${syl}음절 — 6초를 넘는다`);
+ }
 });
 
 test('처음 보는 대사 표는 원고와 같고, 제목 · 한국어 상황 글에 답 낱말이 없다', async () => {
@@ -230,18 +245,4 @@ test('처음 보는 대사 표는 원고와 같고, 제목 · 한국어 상황 �
  assert.ok(!Object.values(AGAIN_PAIR).includes(lesson.transfer.id) && !Object.values(AGAIN_PAIR).includes(lesson.delayed.id));
 });
 
-test('깃발이 없으면 드라마는 그대로 — 「오늘」 모듈은 ?today=1일 때만 불러오고, 공개 빌드는 싣지 않는다', () => {
- const src = fs.readFileSync(path.join(ROOT, 'experiences/drama/pilot/pilot.mjs'), 'utf8');
- // 정적 import에 today가 없다(깃발 없이 받는 바이트 · 실행에 들지 않는다).
- for (const m of src.matchAll(/^import .+ from '([^']+)';$/gm)) assert.ok(!m[1].includes('today'), m[1]);
- // 깃발은 주소의 today=1 하나이고, 「오늘」로 가는 길은 그 깃발 뒤에만 있다.
- assert.ok(/const TODAY = .*get\('today'\) === '1'/.test(src), '깃발 줄이 없다');
- const loads = src.split('\n').filter((l) => /import\(/.test(l) && /today\//.test(l));
- assert.ok(loads.length >= 1);
- for (const l of loads) assert.ok(/if \(TODAY\)/.test(l), `「오늘」 모듈은 깃발 검사 안에서만 부른다: ${l.trim()}`);
- // 깃발이 없으면 S.today가 생기지 않는다 — S.today에 값을 넣는 곳은 today/ 모듈뿐(pilot.mjs는 비우기만).
- assert.ok(!/S\.today\s*=(?!=)\s*(?!null\b)\S/.test(src), 'pilot.mjs가 S.today를 세운다');
- // 공개 빌드가 드라마에서 싣는 파일 목록에 today/가 없다.
- const build = fs.readFileSync(path.join(ROOT, 'tools/build-world-app-public.mjs'), 'utf8');
- assert.ok(!/drama[^\n]*today/.test(build));
-});
+test('깃발이

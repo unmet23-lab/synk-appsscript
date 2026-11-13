@@ -1,6 +1,6 @@
 // 「오늘」 한 장 화면(11-14, 깃발 ?today=1 뒤 — pilot.mjs startToday가 부른다). 둘째 날부터 첫 화면 대신:
-//   태오가 한 줄 + 단추 하나(「오늘 시작 · N분」) + 세 줄(다시 만날 말 · 새로 할 것 · 확인할 곳)과 까닭 → 누르면 고르는 화면 없이 차례로 →
-//   끝나면 「오늘 기록」에 달라진 것(전 → 후)과 내일 돌아올 것.
+//   태오의 한마디 + 단추 하나(「오늘 시작 · N분」) + 오늘 할 것 세 가지(복습 · 오늘 공부 · 점검)와 그 이유 → 누르면 고르는 화면 없이 차례로 →
+//   끝나면 오늘 달라진 것(전 → 후)과 내일 할 것.
 // 값은 plan.mjs 계약(today · after)만 읽는다. 차례는 드라마 장면 함수를 그대로 부른다(새 상황 = runTransfer('today'), 장면 줄 다시 = runRetake).
 // 입장 검사는 드라마 틀 밖이라 부모 창 통로(SYNKTodayHost.open)로 연다 — 지금은 시연 대역(qa/오늘한장-20261114/오늘시험.mjs)에만 있다.
 // 중간에 나가도(창을 닫거나 다른 게임으로 가도) 버튼을 누른 때의 「오늘」과 한 차례가 이 탭(sessionStorage)에 남아 다시 열면 이어진다.
@@ -11,7 +11,7 @@ import { findLearningHost, readEvents, readDelayed, readEntry } from './gather.m
 import { STR } from '../strings.mjs';
 
 const RUN = 'synk.drama.today.run';
-const KIND = { again: '다시 만날 말', new: '새로 할 것', check: '확인할 곳' };
+const KIND = { again: '복습', new: '오늘 공부', check: '점검' };
 const store = {
  get() { try { const r = JSON.parse(sessionStorage.getItem(RUN) || 'null'); return r && r.day === dayKey(Date.now()) ? r : null; } catch { return null; } },
  set(r) { try { sessionStorage.setItem(RUN, JSON.stringify(r)); } catch { /* 이 탭만 — 못 남기면 처음부터 */ } },
@@ -159,32 +159,32 @@ export async function start(ctx) {
  }
  function viewToday(t, { resume = false, empty = false } = {}) {
   const tag = dateTag(dayStart(Date.now())); // 학습일 날짜(새벽 4시 전이면 전날)
-  const line = `<section class="td-talk"><span class="td-who mono">Taeo</span><p class="td-line">${words(t.line?.text || t.empty?.text || '')}</p></section>`;
-  if (empty) return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag mono">${tag}</span></header><div class="td-right"><div class="td-top-d"><span class="td-tag mono">${tag}</span></div>${line}
+  const line = `<section class="td-talk"><span class="td-who">태오</span><p class="td-line">${words(t.line?.text || t.empty?.text || '')}</p></section>`;
+  if (empty) return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag">${tag}</span></header><div class="td-right"><div class="td-top-d"><span class="td-tag">${tag}</span></div>${line}
    <p class="td-why td-empty">${esc(t.empty?.text || '')}</p><button type="button" class="td-go" data-episode>1화 처음부터</button></div>`;
   const go = `<button type="button" class="td-go rise" data-go style="animation-delay:${420 + t.items.length * 60}ms"><span class="td-play"></span>${resume ? '이어서' : '오늘 시작'} <span class="td-min">· ${t.minutes}분</span></button>`;
   if (look === 'b') {
-   return `${stage(true, t.line?.media)}<header class="td-top"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta mono">${t.items.length} steps · ${t.minutes} min</span></header>
-   <div class="td-right"><div class="td-top-d"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta mono">${tag} · ${t.minutes} min</span></div>
+   return `${stage(true, t.line?.media)}<header class="td-top"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta">${t.items.length}가지 · ${t.minutes}분</span></header>
+   <div class="td-right"><div class="td-top-d"><div class="td-rail">${t.items.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="td-meta">${tag} · ${t.minutes}분</span></div>
    ${line}<article class="td-card td-focus rise" style="animation-delay:420ms">${t.items.map((it, i) => `<div data-pane ${i ? 'hidden' : ''}>${head(it, i)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof on">${esc(proof(it))}</p></div>`).join('')}</article>
    <div class="td-next rise" style="animation-delay:480ms">${t.items.map((it, i) => `<button type="button" class="td-cap${i ? '' : ' on'}" data-pick="${i}"><span class="mono">0${i + 1}</span>${esc(it.title)}</button>`).join('')}</div>${go}</div>`;
   }
-  return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag mono">${tag}</span></header>
-  <div class="td-right"><div class="td-top-d"><span class="td-tag mono">${tag}</span></div>${line}
+  return `${stage(true, t.line?.media)}<header class="td-top"><span class="td-tag">${tag}</span></header>
+  <div class="td-right"><div class="td-top-d"><span class="td-tag">${tag}</span></div>${line}
   <section class="td-deck">${t.items.map((it, i) => `<button type="button" class="td-card td-item rise" data-card style="animation-delay:${420 + i * 60}ms">${head(it, null)}<h3>${esc(it.title)}</h3><p class="td-why">${yo(it.why.text)}</p><p class="td-proof">${esc(proof(it))}</p></button>`).join('')}${go}</section></div>`;
  }
  function viewAfter(a) {
-  const tm = a.tomorrow.length ? `<p class="td-sec rise" style="animation-delay:340ms">내일 돌아올 것</p><div class="td-tm rise" style="animation-delay:380ms">${a.tomorrow.map((x) => `<span><b>${esc(x.when)}</b>${esc(x.title)}</span>`).join('')}</div>` : '';
+  const tm = a.tomorrow.length ? `<p class="td-sec rise" style="animation-delay:340ms">내일 할 것</p><div class="td-tm rise" style="animation-delay:380ms">${a.tomorrow.map((x) => `<span><b>${esc(x.when)}</b>${esc(x.title)}</span>`).join('')}</div>` : '';
   const close = `<button type="button" class="td-go rise" data-close style="animation-delay:440ms">오늘은 여기까지</button>`;
-  const head = `<header class="td-top"><span class="td-tag mono">Today · done</span></header>`;
-  if (!a.changed.length) return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag mono">Today · done</span></div><section class="td-sheet"><h2 class="rise">오늘 기록</h2><p class="td-why rise">오늘 한 것이 기록에 남았어요.</p>${tm}${close}</section></div>`;
+  const head = `<header class="td-top"><span class="td-tag">오늘 공부 끝</span></header>`;
+  if (!a.changed.length) return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet"><h2 class="rise">오늘 기록</h2><p class="td-why rise">오늘 한 것이 기록에 남았어요.</p>${tm}${close}</section></div>`;
   if (look === 'b') {
    const [first, ...rest] = a.changed;
-   return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag mono">Today · done</span></div><section class="td-sheet">
+   return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet">
     <div class="td-hero rise"><p class="td-eyebrow">${yo(first.what)}</p><p class="td-before">${esc(first.before)}</p><p class="td-now">${esc(first.after)}</p></div>
     ${rest.length ? `<div class="td-mini rise" style="animation-delay:160ms">${rest.map((c) => `<span><i>✓</i>${esc(c.what)} · ${esc(c.after.replace(/^오늘 /, ''))}</span>`).join('')}</div>` : ''}${tm}${close}</section></div>`;
   }
-  return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag mono">Today · done</span></div><section class="td-sheet"><h2 class="rise">오늘 달라진 것</h2>
+  return `${stage(false)}${head}<div class="td-right td-after"><div class="td-top-d"><span class="td-tag">오늘 공부 끝</span></div><section class="td-sheet"><h2 class="rise">오늘 달라진 것</h2>
    ${a.changed.map((c, i) => `<div class="td-card td-chg rise" style="animation-delay:${120 + i * 60}ms"><p class="td-eyebrow">${yo(c.what)}</p><p class="td-before">${esc(c.before)}</p><p class="td-now">${esc(c.after)}</p></div>`).join('')}${tm}${close}</section></div>`;
  }
  return show();
@@ -195,8 +195,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 // '요' 강조는 뜻이 있는 자리 하나(따옴표 속 '요')만.
 const yo = (s) => esc(s).replace(/&#39;요&#39;/g, '<em class="td-yo">\'요\'</em>');
 const words = (s) => String(s).split(' ').map((w, i) => `<span class="w" style="animation-delay:${120 + i * 70}ms">${yo(w)}</span>`).join(' ');
-const head = (it, i) => `<div class="td-eyebrow">${i != null ? `<span class="mono">0${i + 1}</span>` : ''}<span>${KIND[it.kind]}</span><span class="mono td-end">${it.minutes} min</span></div>`;
-function dateTag(ms) { const d = new Date(ms); return `Today · ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`; }
+const head = (it, i) => `<div class="td-eyebrow">${i != null ? `<span class="mono">0${i + 1}</span>` : ''}<span>${KIND[it.kind]}</span><span class="td-end">${it.minutes}분</span></div>`;
+function dateTag(ms) { const d = new Date(ms); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일`; }
 function css() {
  if (document.querySelector('link[data-today]')) return Promise.resolve();
  return new Promise((res) => { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./today.css', import.meta.url).href; l.dataset.today = '1'; l.onload = l.onerror = res; document.head.append(l); });

@@ -44,12 +44,12 @@ em.yo{font-style:normal;color:var(--warm)}
 .stage .grain{position:absolute;inset:0;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
 .top{position:absolute;z-index:5;top:max(16px,env(safe-area-inset-top));left:20px;right:20px;display:flex;align-items:center;gap:10px}
 .top-d{display:none}
-.tag{font-size:10.5px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--edge)}
-.who{font-size:11px;color:rgba(255,255,255,.62)}
+.tag{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--edge)}
+.who{font-size:13px;font-weight:700;color:rgba(255,255,255,.7)}
 .line{margin:6px 0 0;font-weight:800;letter-spacing:-.035em;line-height:1.26;text-wrap:balance}
 .eyebrow{display:flex;align-items:baseline;gap:8px;font-size:12px;font-weight:700;color:var(--dim)}
 .eyebrow .mono{font-size:11px;font-weight:500;color:var(--muted)}
-.eyebrow .end{margin-left:auto}
+.eyebrow .end{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted)}
 h3{margin:4px 0 0;font-size:17px;font-weight:700;letter-spacing:-.025em;line-height:1.35}
 .why{margin:6px 0 0;font-size:13.5px;font-weight:400;line-height:1.5;color:var(--dim)}
 .proof{margin:10px 0 0;font-size:12px;color:var(--muted);display:none}
@@ -82,7 +82,7 @@ h3{margin:4px 0 0;font-size:17px;font-weight:700;letter-spacing:-.025em;line-hei
 .B .rail{display:flex;gap:4px;flex:1}
 .B .rail i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.22)}
 .B .rail i.on{background:#fff}
-.B .meta{font-size:10.5px;color:rgba(255,255,255,.7)}
+.B .meta{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.75)}
 .B .bottom{display:grid;gap:10px}
 .B .talk{padding:0 6px 6px}
 .B .line{font-size:26px}
@@ -127,7 +127,7 @@ h3{margin:4px 0 0;font-size:17px;font-weight:700;letter-spacing:-.025em;line-hei
  .A .talk,.B .talk{padding:0}
  .A .line,.B .line{font-size:44px;line-height:1.18;margin-bottom:18px}
  .B .line{font-size:52px}
- .who{font-size:12px}
+ .who{font-size:14px}
  .after .sheet{max-height:calc(100dvh - 96px)}
  .after h2{font-size:40px}
  .B .next{margin:0;padding:0;flex-wrap:wrap}
@@ -143,21 +143,21 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // '요' 강조: 태오 한 줄과 끝맺음 까닭 글의 따옴표 '요'만(뜻이 있는 자리 하나).
 const yo = (s) => esc(s).replace(/&#39;요&#39;|'요'/g, "<em class=\"yo\">'요'</em>");
 const words = (s) => String(s).split(' ').map((w, i) => `<span class="w" style="animation-delay:${120 + i * 70}ms">${yo(w)}</span>`).join(' ');
-const KIND = { again: '다시 만날 말', new: '새로 할 것', check: '확인할 곳' };
-const DATE_TAG = (iso) => { const d = new Date(iso); return `TODAY · ${['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][d.getDay()]} ${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`; };
+const KIND = { again: '복습', new: '오늘 공부', check: '점검' };
+const DATE_TAG = (iso) => { const d = new Date(iso); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일`; };
 // 근거 한 줄(누르면 펼침)은 화면과 같은 함수(plan.mjs proofLine).
 const items = (t) => t.items;
 
 function todayA(t, tag) {
  return `<main class="app A">
  <div class="stage"><video src="__LOOP__" poster="__STILL__" autoplay muted loop playsinline></video><div class="shade"></div><div class="grain"></div></div>
- <header class="top"><span class="tag mono">${DATE_TAG(t.asOf)}</span></header>
+ <header class="top"><span class="tag">${DATE_TAG(t.asOf)}</span></header>
  <div class="right">
- <div class="top-d"><span class="tag mono">${DATE_TAG(t.asOf)}</span></div>
- <section class="talk"><span class="who mono">Taeo</span><p class="line">${words(t.line.text)}</p></section>
+ <div class="top-d"><span class="tag">${DATE_TAG(t.asOf)}</span></div>
+ <section class="talk"><span class="who">태오</span><p class="line">${words(t.line.text)}</p></section>
  <section class="deck">
   ${items(t).map((it, i) => `<button type="button" class="card item rise" style="animation-delay:${420 + i * 60}ms" onclick="this.classList.toggle('open')">
-   <div class="eyebrow"><span>${KIND[it.kind]}</span><span class="mono end">${it.minutes} min</span></div>
+   <div class="eyebrow"><span>${KIND[it.kind]}</span><span class="end">${it.minutes}분</span></div>
    <h3>${esc(it.title)}</h3><p class="why">${yo(it.why.text)}</p><p class="proof">${esc(proof(it))}</p></button>`).join('')}
   <button type="button" class="go rise" style="animation-delay:${420 + t.items.length * 60}ms"><span class="play"></span>오늘 시작 <span class="min">· ${t.minutes}분</span></button>
  </section>
@@ -168,13 +168,13 @@ function todayB(t, tag) {
  const its = items(t);
  return `<main class="app B">
  <div class="stage"><video src="__LOOP__" poster="__STILL__" autoplay muted loop playsinline></video><div class="shade"></div><div class="grain"></div></div>
- <header class="top"><div class="rail">${its.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="meta mono">${its.length} steps · ${t.minutes} min</span></header>
+ <header class="top"><div class="rail">${its.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="meta">${its.length}가지 · ${t.minutes}분</span></header>
  <div class="right">
- <div class="top-d"><div class="rail">${its.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="meta mono">${DATE_TAG(t.asOf)} · ${t.minutes} min</span></div>
+ <div class="top-d"><div class="rail">${its.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div><span class="meta">${DATE_TAG(t.asOf)} · ${t.minutes}분</span></div>
  <section class="bottom">
-  <section class="talk"><span class="who mono">Taeo</span><p class="line">${words(t.line.text)}</p></section>
+  <section class="talk"><span class="who">태오</span><p class="line">${words(t.line.text)}</p></section>
   <article class="card focus rise" style="animation-delay:420ms" data-focus>
-   ${its.map((it, i) => `<div data-i="${i}" ${i ? 'hidden' : ''}><div class="eyebrow"><span class="mono">0${i + 1}</span><span>${KIND[it.kind]}</span><span class="mono end">${it.minutes} min</span></div>
+   ${its.map((it, i) => `<div data-i="${i}" ${i ? 'hidden' : ''}><div class="eyebrow"><span class="mono">0${i + 1}</span><span>${KIND[it.kind]}</span><span class="end">${it.minutes}분</span></div>
     <h3>${esc(it.title)}</h3><p class="why">${yo(it.why.text)}</p><p class="proof" style="display:block">${esc(proof(it))}</p></div>`).join('')}
   </article>
   <div class="next rise" style="animation-delay:480ms">${its.map((it, i) => `<button type="button" class="cap${i ? '' : ' on'}" data-pick="${i}"><span class="mono">0${i + 1}</span>${esc(it.title)}</button>`).join('')}</div>
@@ -192,11 +192,11 @@ addEventListener('keydown',e=>{const n=+e.key;if(n>=1&&n<=caps.length)pick(n-1);
 function afterA(t, a) {
  return `<main class="app after">
  <div class="stage"><img src="__STILL__" alt=""><div class="shade"></div><div class="grain"></div></div>
- <header class="top"><span class="tag mono">Today · done</span></header>
- <div class="right"><div class="top-d"><span class="tag mono">Today · done</span></div><section class="sheet">
+ <header class="top"><span class="tag">오늘 공부 끝</span></header>
+ <div class="right"><div class="top-d"><span class="tag">오늘 공부 끝</span></div><section class="sheet">
   <h2 class="rise">오늘 달라진 것</h2>
   ${a.changed.map((c, i) => `<div class="card chg rise" style="animation-delay:${120 + i * 60}ms"><div class="eyebrow"><span>${yo(c.what)}</span></div><p class="before">${esc(c.before)}</p><p class="now">${esc(c.after)}</p></div>`).join('')}
-  <p class="eyebrow sec rise" style="animation-delay:340ms"><span>내일 돌아올 것</span></p>
+  <p class="eyebrow sec rise" style="animation-delay:340ms"><span>내일 할 것</span></p>
   <div class="tm rise" style="animation-delay:380ms">${a.tomorrow.map((x) => `<span><b>${esc(x.when)}</b>${esc(x.title)}</span>`).join('')}</div>
   <button type="button" class="go rise" style="animation-delay:440ms">오늘은 여기까지</button>
  </section></div>
@@ -206,11 +206,11 @@ function afterB(t, a) {
  const [first, ...rest] = a.changed;
  return `<main class="app after Bafter">
  <div class="stage"><img src="__STILL__" alt=""><div class="shade"></div><div class="grain"></div></div>
- <header class="top"><span class="tag mono">Today · done</span></header>
- <div class="right"><div class="top-d"><span class="tag mono">Today · done</span></div><section class="sheet">
+ <header class="top"><span class="tag">오늘 공부 끝</span></header>
+ <div class="right"><div class="top-d"><span class="tag">오늘 공부 끝</span></div><section class="sheet">
   <div class="hero rise"><div class="eyebrow"><span>${yo(first.what)}</span></div><p class="before">${esc(first.before)}</p><p class="now">${esc(first.after)}</p></div>
   <div class="mini rise" style="animation-delay:160ms">${rest.map((c) => `<span><i>✓</i>${esc(c.what)} · ${esc(c.after.replace(/^오늘 /, ''))}</span>`).join('')}</div>
-  <p class="eyebrow sec rise" style="animation-delay:260ms"><span>내일 돌아올 것</span></p>
+  <p class="eyebrow sec rise" style="animation-delay:260ms"><span>내일 할 것</span></p>
   <div class="tm rise" style="animation-delay:300ms">${a.tomorrow.map((x) => `<span><b>${esc(x.when)}</b>${esc(x.title)}</span>`).join('')}</div>
   <button type="button" class="go rise" style="animation-delay:380ms">오늘은 여기까지</button>
  </section></div>

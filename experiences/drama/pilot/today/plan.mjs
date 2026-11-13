@@ -33,8 +33,9 @@ export function dayStart(ms) { const d = new Date(ms - DAY_START_HOUR * 3600000)
 const dayNumber = (key) => Math.round(Date.parse(`${key}T00:00:00Z`) / DAY);
 const daysBetween = (fromMs, toMs, tz) => dayNumber(dayKey(toMs, tz)) - dayNumber(dayKey(fromMs, tz));
 // 말 걸기 설계 3절: 시간 낱말은 학습일 차로 — 하루 전은 「어제」, 그 앞은 「지난번」.
-const whenWord = (fromMs, nowMs, tz) => (daysBetween(fromMs, nowMs, tz) === 1 ? '어제' : '지난번');
-const whenCode = (fromMs, nowMs, tz) => (daysBetween(fromMs, nowMs, tz) === 1 ? 'yesterday' : 'before');
+// 같은 학습일이면 「오늘」 — 같은 날 다시 열었을 때 오늘 한 일을 「지난번」이라 하지 않게.
+const whenWord = (fromMs, nowMs, tz) => { const d = daysBetween(fromMs, nowMs, tz); return d <= 0 ? '오늘' : d === 1 ? '어제' : '지난번'; };
+const whenCode = (fromMs, nowMs, tz) => { const d = daysBetween(fromMs, nowMs, tz); return d <= 0 ? 'today' : d === 1 ? 'yesterday' : 'before'; };
 // 받침으로 와/과 · 을/를 · 은/는.
 function josa(word, pair) {
  const c = String(word).replace(/[^가-힣]/g, '').slice(-1);
@@ -74,9 +75,9 @@ const spokeLine = (turns, lineId, phase = null) => spokenTurns(turns, lineId, ph
 // 걸린 것을 쉬운 말로 — 끝맺음을 「반말 · '요'」로 부르는 것은 내용 표에 '요' 줄로 적은 줄(YO_LINES)에서만.
 const isYo = (lineId) => YO_LINES.includes(lineId);
 function noteSaid(kind, lineId) {
- if (kind === 'ending') return isYo(lineId) ? '의 끝이 반말로 들렸어요.' : '의 끝맺음이 대사와 다르게 들렸어요.';
- if (kind === 'length') return '에서 말이 짧게 끝났어요.';
- return '에서 꼭 들어갈 말 하나가 안 들렸어요.';
+ if (kind === 'ending') return isYo(lineId) ? '라고 할 때 끝이 반말처럼 들렸어요.' : '라고 할 때 끝맺음이 대사와 다르게 들렸어요.';
+ if (kind === 'length') return '라고 할 때 말이 짧게 끝났어요.';
+ return '라고 할 때 꼭 들어가야 할 말이 하나 빠졌어요.';
 }
 
 /** 다시 만날 말: 장면 줄 가운데 마지막 판정이 노트인 줄(오늘 전 날). 코치 노트를 받은 줄 → 끝맺음 · 길이 · 빠진 말 → 늦은 노트 → 줄 차례. */
@@ -112,11 +113,11 @@ function againItem({ turns, scene, nowMs, tz, today }) {
  if (!c) return null;
  const kind = c.last.choice.slice(5), when = whenWord(c.noteAt, nowMs, tz), tail = lineTail(c.line.text, c.line.id);
  const yo = kind === 'ending' && isYo(c.line.id);
- const text = `${when} 「…${tail}」${noteSaid(kind, c.line.id)}${c.retakePass ? ' 그 자리에서 다시 말해 해냈어요.' : ''}`;
+ const text = `${when} 「${tail}」${noteSaid(kind, c.line.id)}${c.retakePass ? ' 그 자리에서 다시 해서 고쳤어요.' : ''}`;
  const situation = c.open.type === 'situation';
  return {
   kind: 'again',
-  title: situation ? c.pair.title : '1화 장면에서 그 줄 한 번 더',
+  title: situation ? c.pair.title : '1화에서 그 대사 한 번 더',
   why: { code: `again.${kind}${yo ? '.yo' : ''}${c.retakePass ? '.fixed' : ''}`, text,
    evidence: { lineId: c.line.id, skill: c.line.skill || null, choice: c.last.choice, at: new Date(c.noteAt).toISOString(), day: whenCode(c.noteAt, nowMs, tz), notes: c.notes, coached: c.coached, retakePass: c.retakePass, yo, attemptId: c.last.id } },
   minutes: situation ? MINUTES.situation : MINUTES.retake,
@@ -137,8 +138,8 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const lastAt = (sceneTurns.filter((t) => t.attempts.length).at(-1) || sceneTurns.at(-1))?.at;
   if (lastAt == null) return null;
   const when = whenWord(lastAt, nowMs, tz);
-  const text = spokenScene.length ? `${when} 1화 장면에서 ${scene.length}줄 가운데 ${spokenScene.length}줄까지 했어요.` : `${when} 1화 장면을 열었어요.`;
-  return { kind: 'new', title: '1화 장면 끝까지', minutes: MINUTES.scene, open: { type: 'scene' },
+  const text = spokenScene.length ? `${when} 1화에서 내 대사 ${scene.length}개 중 ${spokenScene.length}개까지 했어요.` : `${when} 1화를 열어 보기만 했어요.`;
+  return { kind: 'new', title: '1화 이어서 하기', minutes: MINUTES.scene, open: { type: 'scene' },
    why: { code: spokenScene.length ? 'new.scene' : 'new.scene.opened', text, evidence: { spoken: spokenScene.map((x) => x.id), at: new Date(lastAt).toISOString() } } };
  }
  const avoidSet = new Set(avoid);
@@ -147,7 +148,7 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const ask = scene.find((x) => x.skill === B.skill) || null;
   const at = ask ? spokenTurns(turns, ask.id, 'scene').at(-1)?.at : null;
   return { kind: 'new', title: '같은 과 다른 선배에게 길 묻기', minutes: MINUTES.situation, open: { type: 'situation', lineId: B.id, source: 'transfer' },
-   why: { code: 'new.transfer', text: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 선배에게 위치를 물어봤어요. 이번엔 처음 보는 선배에게, 다른 곳을.` : '장면 뒤에 오는 새 상황을 아직 안 했어요.',
+   why: { code: 'new.transfer', text: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 선배에게 도서관이 어디 있는지 물어봤죠. 오늘은 처음 보는 선배에게 다른 곳을 물어봐요.` : '1화 다음에 이어지는 새 상황이에요.',
     evidence: { lineId: B.id, spoken: false, skill: B.skill || null, like: ask?.id || null, likeAt: at != null ? new Date(at).toISOString() : null } } };
  }
  for (const id of NEW_ORDER) {
@@ -156,7 +157,7 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const like = scene.find((x) => x.id === item.like) || null;
   const tail = like ? lineTail(like.text, like.id) : '';
   const said = Boolean(like) && spokeLine(turns, like.id, 'scene');
-  const text = said ? `아직 안 해 본 상황이에요. 1화 「…${tail}」${josa(tail, '과/와')} 같은 말하기예요.` : '아직 안 해 본 상황이에요.';
+  const text = said ? `처음 해 보는 상황이에요. 1화의 「${tail}」${josa(tail, '과/와')} 비슷한 말이에요.` : '처음 해 보는 상황이에요.';
   return { kind: 'new', title: item.title, minutes: MINUTES.situation, open: { type: 'situation', lineId: id },
    why: { code: said ? 'new.pool.like' : 'new.pool', text, evidence: { lineId: id, spoken: false, skill: item.skill, like: said ? like.id : null } } };
  }
@@ -174,7 +175,7 @@ function checkItem({ turns, lesson, delayedDue, entry, nowMs, tz, today, entryTo
  }
  if (entry && !entryToday) {
   const v = entry.venue || {};
-  return { kind: 'check', title: v.name ? `입장 검사 · ${v.day}일차 ${v.name}` : '입장 검사 한 근무', minutes: MINUTES.entry, open: { type: 'game', game: 'entry', venueId: v.id || null },
+  return { kind: 'check', title: v.name ? `입장 검사 게임 · ${v.name} 근무` : '입장 검사 게임 한 판', minutes: MINUTES.entry, open: { type: 'game', game: 'entry', venueId: v.id || null },
    why: { code: `check.entry.${entry.patternId}`, text: entry.why, next: entry.next || null, evidence: { game: 'entry-check', patternId: entry.patternId, misses: entry.misses, seen: entry.seen, evidenceIds: entry.evidenceIds || [], targetId: entry.targetId || null, itemKey: entry.itemKey || null } } };
  }
  return null;
@@ -183,14 +184,14 @@ function checkItem({ turns, lesson, delayedDue, entry, nowMs, tz, today, entryTo
 // 태오 한 줄 — 드라마 장면의 사실만(입장 검사는 말하지 않는다). 사람이 나를 기억하고 말 거는 맛이 나게, 다시 만날 말은 그 장면의 일을
 // 되부른다(그 줄을 말한 기록이 있을 때만 — 다시 만날 말은 늘 판정된 시도가 있다). 틀은 정해 두고 빈칸이 없다(목소리 · 입 맞는 영상을 틀마다 미리 굽게).
 export const TAEO_LINES = Object.freeze({
- ...Object.fromEntries(Object.entries(TAEO_CALL).flatMap(([id, call]) => [[`again.call.${id}`, call], [`again.call.${id}.yo`, `${call} 끝에 '요'까지요.`]])),
- 'again.other': '그 말, 오늘 다른 데서 한 번 더 해 봐요.',
- 'again.retake': '그 말, 오늘은 장면에서 한 번 더 해 봐요.',
- 'new.scene': '하던 데서 이어서 가요.',
- 'new.situation': '1화 끝까지 했죠? 오늘은 새 상황이에요.',
- 'check.delayed': '지난번 그 말, 오늘은 처음 보는 데서 해요.',
- plain: '왔어요? 오늘은 짧게 가요.',
- empty: '오늘은 새로 할 게 없어요. 2화가 열리면 박람회부터예요.',
+ ...Object.fromEntries(Object.entries(TAEO_CALL).flatMap(([id, call]) => [[`again.call.${id}`, call.text], [`again.call.${id}.yo`, `${call.text} 이번엔 끝에 '요'까지 붙여서요.`]])),
+ 'again.other': '그때 했던 말, 오늘은 다른 곳에서 한 번 더 해 봐요.',
+ 'again.retake': '그때 했던 대사, 오늘 한 번 더 해 봐요.',
+ 'new.scene': '하던 데서 이어서 해요.',
+ 'new.situation': '1화는 끝까지 했죠? 오늘은 새로운 상황이에요.',
+ 'check.delayed': '며칠 전에 했던 말, 오늘은 처음 보는 곳에서 해 봐요.',
+ plain: '왔어요? 오늘은 짧게 해요.',
+ empty: '오늘은 새로 할 게 없어요. 2화가 열리면 동아리 박람회부터 해요.',
 });
 function taeoLine(items) {
  const first = items[0];
@@ -230,13 +231,13 @@ export function buildToday({ events, lesson, now = Date.now(), delayedDue = null
  if (check) items.push(check);
  const line = taeoLine(items);
  return { ...base, firstDay: false, line, minutes: items.reduce((s, x) => s + x.minutes, 0), items,
-  empty: items.length ? null : { code: 'empty', text: '오늘 할 것은 다 했어요. 2화가 열리면 여기에 이어서 보여요.' } };
+  empty: items.length ? null : { code: 'empty', text: '오늘 할 것은 다 했어요. 2화가 열리면 여기에 이어서 나와요.' } };
 }
 
 // 끝 화면 — 무엇이 · 어땠는데(전) → 오늘(후). 촬영장 말(노트 · 테이크) 없이.
-const NOTE_LABEL = { ending: '끝맺음', length: '말 길이', missing: '꼭 들어갈 말' };
-const NOTE_BEFORE = { ending: '끝맺음이 다르게 들림', length: '말이 짧게 끝남', missing: '꼭 들어갈 말이 안 들림' };
-const PATTERN_LABEL = { detail: '세부 내용 맞추기', negation: '부정 표현 맞추기', condition: '조건 맞추기' };
+const NOTE_LABEL = { ending: '끝맺음', length: '말 길이', missing: '빠진 말' };
+const NOTE_BEFORE = { ending: '의 끝맺음이 다르게 들렸어요', length: '라고 할 때 말이 짧게 끝났어요', missing: '라고 할 때 빠진 말이 있었어요' };
+const PATTERN_LABEL = { detail: '표와 짐의 세부 내용 확인', negation: '안내문의 부정 표현 확인', condition: '안내문의 조건 확인' };
 
 /**
  * 끝난 뒤 「오늘의 기록」에 더할 것. start: 버튼을 누를 때의 today(그때 근거를 그대로 쓴다), startAt: 누른 시각.
@@ -255,11 +256,11 @@ export function buildAfter({ events, lesson, start, startAt, now = Date.now(), d
     if (last?.choice !== 'pass') continue;
     const ev = item.why.evidence, scene = (lesson?.scene || []).find((x) => x.id === ev.lineId);
     const yo = item.note === 'ending' && ev.yo;
-    changed.push({ what: yo ? "끝 '요'" : NOTE_LABEL[item.note] || '그 줄', before: `${ev.day === 'yesterday' ? '어제' : '지난번'} 「…${lineTail(scene?.text, ev.lineId)}」 ${yo ? '끝이 반말로 들림' : NOTE_BEFORE[item.note] || ''}`.trim(), after: item.open.type === 'retake' ? '오늘 장면에서 해냄' : '오늘 처음 보는 상황에서 해냄' });
+    changed.push({ what: yo ? "끝에 '요' 붙이기" : NOTE_LABEL[item.note] || '그 대사', before: `${ev.day === 'yesterday' ? '어제는' : '지난번엔'} 「${lineTail(scene?.text, ev.lineId)}」${yo ? '의 끝이 반말처럼 들렸어요' : NOTE_BEFORE[item.note] || ''}`, after: item.open.type === 'retake' ? '오늘은 장면에서 해냈어요' : '오늘은 처음 보는 상황에서 해냈어요' });
    } else if (item.kind === 'new' && tried) {
-    changed.push({ what: item.title, before: '안 해 본 상황', after: last?.choice === 'pass' ? '처음 보는 상황에서 해냄' : '처음 보는 상황에서 말해 봄' });
+    changed.push({ what: item.title, before: '아직 안 해 본 상황이었어요', after: last?.choice === 'pass' ? '처음 보는 상황에서 해냈어요' : '처음 보는 상황에서 말해 봤어요' });
    } else if (item.kind === 'check' && last?.choice === 'pass') {
-    changed.push({ what: item.title, before: item.why.evidence.days != null ? `${item.why.evidence.days}일 전 새 상황` : '며칠 전 새 상황', after: '다른 곳에서도 해냄' });
+    changed.push({ what: item.title, before: item.why.evidence.days != null ? `${item.why.evidence.days}일 전에 새 상황에서 처음 해 봤어요` : '며칠 전에 새 상황에서 처음 해 봤어요', after: '오늘은 다른 곳에서도 해냈어요' });
    }
   } else if (item.open.type === 'scene') {
    // 오늘 말한 장면 줄이 있으면: 그 전까지 말한 줄 → 지금까지 말한 줄(모두면 「끝까지」).
@@ -268,41 +269,42 @@ export function buildAfter({ events, lesson, start, startAt, now = Date.now(), d
    const todaySpoken = scene.filter((x) => spokeLine(turns, x.id, 'scene')).map((x) => x.id);
    if (todaySpoken.length) {
     const all = new Set([...prior, ...todaySpoken]).size;
-    changed.push({ what: '1화 장면', before: prior.length ? `${scene.length}줄 가운데 ${prior.length}줄까지` : '장면을 열어 봄', after: all >= scene.length ? '오늘 끝까지' : `오늘 ${all}줄까지` });
+    changed.push({ what: '1화', before: prior.length ? `내 대사 ${scene.length}개 중 ${prior.length}개까지 했어요` : '열어 보기만 했어요', after: all >= scene.length ? '오늘 끝까지 했어요' : `오늘 ${all}개까지 했어요` });
    }
   } else if (item.open.type === 'game' && item.open.game === 'entry' && entryTarget?.itemKey) {
    const hit = entryHit(events, entryTarget.itemKey, startAt);
    // 그 놓침이 한 근무 안이라는 근거는 없다 — 근거 그대로 「최근 몇 번 가운데 몇 번」(설계 세션 11-14).
-   if (hit === true) changed.push({ what: PATTERN_LABEL[item.why.evidence.patternId] || '입장 검사', before: `최근 ${item.why.evidence.seen}번 가운데 ${item.why.evidence.misses}번 놓침`, after: '오늘 그런 손님을 맞힘' });
+   if (hit === true) changed.push({ what: PATTERN_LABEL[item.why.evidence.patternId] || '입장 검사 게임', before: `최근 ${item.why.evidence.seen}번 중 ${item.why.evidence.misses}번 놓쳤어요`, after: '오늘은 그런 손님을 맞혔어요' });
   }
  }
- // 내일 돌아올 것 = 같은 규칙을 내일 날짜로 다시 돌린 결과(지어내지 않는다) + 오늘 혼자 해 본 새 상황 B의 7일 뒤 확인.
+ // 내일 할 것 = 같은 규칙을 내일 날짜로 다시 돌린 결과(지어내지 않는다) + 오늘 혼자 해 본 새 상황 B의 나중 확인.
+ // 나중 확인이 며칠 뒤인지는 쓰지 않는다 — 유호님이 11-14 「3일로」 정해 다른 세션이 바꾸는 중이라, 숫자를 적으면 곧 틀린 말이 된다.
  const next = buildToday({ events, lesson, now: now + DAY, delayedDue: null, entry: entryAfter, strings, tzOffsetMin: tz });
  const tomorrow = next.items.map((x) => ({ kind: x.kind, title: x.title, when: '내일' }));
  const B = lesson?.transfer;
  const soloB = B && turns.some((t) => t.lineId === B.id && t.phase === 'transfer' && t.attempts.some((a) => a.verdict === 'correct' || a.verdict === 'incorrect'));
- if (soloB && lesson?.delayed) tomorrow.push({ kind: 'check', title: strings.delayedTitle || '지난번 그 말, 다른 곳에서', when: '7일 뒤' });
+ if (soloB && lesson?.delayed) tomorrow.push({ kind: 'check', title: strings.delayedTitle || '지난번 그 말, 다른 곳에서', when: '며칠 뒤' });
  return { changed, tomorrow };
 }
 
-// 누르면 펼치는 근거 한 줄 — 기록의 사실을 사람 말로(앱이 본 것). 촬영장 말(노트 · 테이크 · 통과) 없이. 시각은 기기 시간대.
-const NOTE_PROOF = { ending: '끝맺음이 다르게', length: '짧게 끝남', missing: '꼭 들어갈 말이 안 들림' };
+// 카드를 누르면 펼쳐지는 근거 — 앱이 기록에서 본 것을 평범한 문장으로. 시각은 기기 시간대.
+const NOTE_PROOF = { ending: '끝맺음이 다르게 들린 적이', length: '말이 짧게 끝난 적이', missing: '빠진 말이 있었던 적이' };
 export function proofLine(it) {
  const e = it.why.evidence;
  const at = (iso) => { const d = new Date(iso); const hh = d.getHours(); return `${d.getMonth() + 1}월 ${d.getDate()}일 ${hh < 12 ? '오전' : hh < 18 ? '오후' : '밤'} ${hh % 12 || 12}시`; };
- if (it.kind === 'again') return `${at(e.at)} · 1화 ${String(e.lineId).split('-').pop()}번 줄 · ${e.yo ? '끝이 반말로' : NOTE_PROOF[it.note] || '걸림'} ${e.notes}번${e.coached ? ' · 코치가 짚어 줌' : ''}${e.retakePass ? ' · 그 자리에서 다시 해냄' : ''}`;
- if (it.why.code === 'new.transfer') return e.likeAt ? `${at(e.likeAt)} · 1화 ${String(e.like).split('-').pop()}번 줄을 말함 · 이 상황은 아직 안 해 봄` : '이 상황은 아직 안 해 봄';
- if (it.why.code.startsWith('new.scene')) return `${at(e.at)} · 말한 줄 ${e.spoken.length}개`;
- if (it.why.code.startsWith('new.pool')) return '이 상황은 아직 안 해 봄';
- if (it.why.code === 'check.delayed') return e.days != null ? `${e.days}일 전 새 상황에서 혼자 해 봄 · 7~10일 뒤 한 번` : '7~10일 뒤 한 번';
- if (it.why.code.startsWith('check.entry')) return `입장 검사 · 최근 ${e.seen}번 가운데 ${e.misses}번 놓침 · 오늘 근무에 그런 손님 한 명`;
+ const nth = (id) => String(id).split('-').pop();
+ if (it.kind === 'again') {
+  const after = e.coached && e.retakePass ? ' 코치가 짚어 줬고, 그 자리에서 다시 해서 고쳤어요.' : e.coached ? ' 코치가 짚어 줬어요.' : e.retakePass ? ' 그 자리에서 다시 해서 고쳤어요.' : '';
+  return `${at(e.at)}, 1화 ${nth(e.lineId)}번째 대사에서 ${e.yo ? '끝이 반말처럼 들린 적이' : NOTE_PROOF[it.note] || '걸린 적이'} ${e.notes}번 있어요.${after}`;
+ }
+ if (it.why.code === 'new.transfer') return e.likeAt ? `${at(e.likeAt)}에 1화 ${nth(e.like)}번째 대사에서 길을 물어봤어요. 이 상황은 아직 안 해 봤어요.` : '이 상황은 아직 안 해 봤어요.';
+ if (it.why.code.startsWith('new.scene')) return `${at(e.at)}까지 내 대사 ${e.spoken.length}개를 말했어요.`;
+ if (it.why.code.startsWith('new.pool')) return '이 상황은 아직 안 해 봤어요.';
+ if (it.why.code === 'check.delayed') return e.days != null ? `${e.days}일 전에 새 상황을 혼자 해 봤어요. 이 확인은 한 번만 나와요.` : '이 확인은 한 번만 나와요.';
+ if (it.why.code.startsWith('check.entry')) return `입장 검사 게임에서 최근 ${e.seen}번 중 ${e.misses}번 놓쳤어요. 오늘 근무에 그런 손님이 한 명 와요.`;
  return '';
 }
 
 // 약속한 손님을 오늘 맞혔나: 그 손님(itemKey)의 보임 뒤 첫 시도의 판정. 없으면 null.
 function entryHit(events, itemKey, startAt) {
- const list = Array.isArray(events) ? events : [];
- const shown = list.filter((e) => e?.type === 'practice.presented' && e.itemKey === itemKey && Date.parse(e.at) >= startAt).map((e) => e.id);
- const first = list.filter((e) => e?.type === 'practice.attempted' && shown.includes(e.presentationId)).sort((a, b) => Date.parse(a.at) - Date.parse(b.at))[0];
- return first ? first.verdict === 'correct' : null;
-}
+ const list = Array.isArray(events)
