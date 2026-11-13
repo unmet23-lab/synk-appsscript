@@ -38,13 +38,13 @@ const DICT = {
   n3: ['내가 확인하고, 실제 제출은 공식 경로로 해요.', 'Review it yourself; submit only through official channels.'],
   resume: ['이어서 쓰기', 'Continue writing'], resumeS: ['작성 중 · 아직 확인하지 않았어요', 'Drafting · not reviewed yet'], viewPrep: ['내 준비 보기', 'View my preparation'],
   homeOpps: ['연습 예시', 'Practice examples'], demoSub: ['실제 기관이나 공고가 아니에요', 'Not real institutions or postings'],
-  offSub: ['새 창에서 열려요', 'Opens in a new tab'],
+  offSub: ['새 탭에서 열려요', 'Opens in a new tab'],
   jobsOff: ['채용 공고 연결을 준비하고 있어요. 지금 공고는 공식 사이트에서 확인해 주세요.', 'We are preparing to connect job listings. For current openings, please check the official sites.'],
   demoNote: ['연습용 예시예요. 실제 기관이나 공고가 아니니, 실제 정보는 공식 안내에서 확인하세요.', 'Practice examples only, not real institutions or postings. Check official sources for real details.'],
   tools: ['SYNK의 다른 체험', 'Other SYNK experiences'], official: ['공식 안내', 'Official links'], officialBadge: ['공식', 'Official'], demo: ['예시', 'Example'],
-  checked: ['확인일', 'Checked'], openNew: ['새 창에서 열기', 'opens in new tab'],
+  checked: ['확인일', 'Checked'], openNew: ['새 탭에서 열기', 'opens in new tab'],
   exploreTitle: ['기회 둘러보기', 'Explore opportunities'], exploreT2: ['공고와 연습 예시를 구분해서 봐요.', 'Real postings and practice examples, kept apart.'],
-  all: ['전체', 'All'], filter: ['목표로 거르기', 'Filter by goal'], practice: ['연습용 예시', 'Practice examples'],
+  all: ['전체', 'All'], filter: ['목표로 거르기', 'Filter by goal'], practice: ['연습 예시', 'Practice examples'],
   details: ['자세히', 'Details'], compareAdd: ['비교에 담기', 'Add to compare'], compareOn: ['비교 중', 'Comparing'], compareTitle: ['비교', 'Comparison'],
   compareMax: ['최대 3개까지 비교할 수 있어요.', 'You can compare up to 3.'], clearCompare: ['비교 비우기', 'Clear comparison'],
   requirements: ['준비할 내용', 'What to prepare'], prepareThis: ['이것 준비하기', 'Prepare for this'], backList: ['목록으로', 'Back to list'],
@@ -54,7 +54,7 @@ const DICT = {
   source: ['출처', 'Source'], srcK: ['지금 쓰는 준비', 'Now writing'], srcNote: ['연습용 예시예요. 실제 기관이나 공고가 아니에요.', 'A practice example, not a real institution or posting.'],
   liveNote: ['공식 채용 공고에서 가져왔어요. 조건은 원문에서 확인하세요.', 'From an official job posting. Check the original for conditions.'], reopen: ['다시 보기', 'View again'],
   edEyebrow: ['자료 준비', 'Prepare'], backPrep: ['내 준비', 'My preparation'],
-  body: ['내 답변', 'Your answer'], savedGuest: ['이 탭에만 저장돼요', 'Saved in this tab only'], savedAccount: ['계정과 동기화돼요', 'Syncs with your account'],
+  body: ['내 답변', 'Your answer'], savedGuest: ['이 탭에만 저장돼요', 'Stored only in this tab'], savedAccount: ['계정과 동기화돼요', 'Syncs with your account'],
   sealSlot: ['확인', 'Check'], confirmNote: ['준비 완료는 제출이 아니에요. 아무 곳에도 보내지 않아요.', 'Ready is not a submission. Nothing is sent anywhere.'],
   confirmCheck: ['내용을 직접 확인했고 실제 제출은 공식 경로로 한다는 것을 이해했어요', 'I reviewed this myself and understand real submission happens through official channels'],
   confirm: ['준비 완료로 표시', 'Mark as ready'], needBody: ['내용을 먼저 적어 주세요.', 'Please write something first.'], needCheck: ['확인 칸에 표시해 주세요.', 'Please tick the confirmation box.'],
@@ -74,7 +74,7 @@ const DICT = {
   reset: ['저장 데이터 초기화', 'Reset saved data'], resetAsk: ['읽을 수 없는 저장 데이터를 지우고 새로 시작할까요?', 'Delete unreadable saved data and start fresh?'],
   storeFail: ['이 탭에 저장하지 못했어요. 작성 내용은 화면에 남아 있어요.', 'Could not save in this tab. Your text stays on screen.'],
   pageAnn: ['페이지', 'page'],
-  toolsLead: ['공식 안내와 별개인 SYNK 페이지예요. 새 창에서 열리고 PATH 저장 내용과 분리돼요.', 'Separate SYNK pages, not official sources. They open in a new tab, apart from PATH data.']
+  toolsLead: ['공식 안내와 별개인 SYNK 페이지예요. 새 탭에서 열리고 PATH 저장 내용과 분리돼요.', 'Separate SYNK pages, not official sources. They open in a new tab, apart from PATH data.']
 };
 const t = (k) => (DICT[k] || [k, k])[state.lang === 'en' ? 1 : 0];
 const pick = (o) => (o ? o[state.lang] ?? o.ko : '');
@@ -138,7 +138,7 @@ const session = createPathSession({
 state = session.document()?.state || createInitialState('ko');
 hadDoc = !!session.document()?.state;
 
-const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION };
+const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false };
 activeOwner = ownerKey(); wasOnboarded = !!state.onboarded;
 
 function persist() { return commit(state); }
@@ -204,8 +204,8 @@ function hang(goal, { i = 0, slot = 'mid', radio = false, on = false, action = '
   const face = `<span class="pass-band" aria-hidden="true"></span><span class="pass-face" aria-hidden="true"><span class="pass-top"><span class="pass-brand">PATH</span><span class="pass-no">No.${CARD_NO[goal]}</span></span><span class="pass-symbol">${SYMBOL[goal]}</span><span class="pass-bottom">${bottom}</span></span><span class="pick-mark" aria-hidden="true">${ICON.check}</span>`;
   const card = radio
     ? `<button type="button" class="pass goal-choice" role="radio" aria-checked="${on}" tabindex="${on || (!S.draft?.primaryGoal && i === 0) ? 0 : -1}" data-action="pickGoal" data-id="${goal}" data-mode="${mode}" aria-label="${esc(`${pick(g.label)} — ${pick(g.description)}`)}">${face}</button>`
-    : action ? `<button type="button" class="pass" data-action="${action}" data-id="${goal}" data-mode="${mode}" aria-label="${esc(nm)}">${face}</button>`
-      : `<div class="pass" data-mode="${mode}" role="img" aria-label="${esc(nm)}">${face}</div>`;
+    : action ? `<button type="button" class="pass" data-action="${action}" data-id="${goal}" data-mode="${mode}" aria-label="${esc(ds ? `${nm} — ${ds}` : nm)}">${face}</button>`
+      : `<div class="pass" data-mode="${mode}" role="img" aria-label="${esc(ds ? `${nm} — ${ds}` : nm)}">${face}</div>`;
   return `<div class="hang${S.drop ? ' is-drop' : ''}${on ? ' is-on' : ''}" data-goal="${goal}" data-i="${i}" data-slot="${slot}"><div class="strap" aria-hidden="true"><span class="strap-print">PATH PATH PATH PATH PATH PATH PATH PATH</span></div>${CLIP}<div class="card-wrap"><span class="card-shadow" aria-hidden="true"></span>${card}</div></div>`;
 }
 const sec = (title, sub, body, cls = '') => `<section class="sec${cls ? ` ${cls}` : ''}"><div class="sec-h"><h2>${title}</h2>${sub ? `<span>${sub}</span>` : ''}</div>${body}</section>`;
@@ -260,9 +260,9 @@ function onboard() {
     const g = goalById(d.primaryGoal);
     return `<main class="ob" id="main"><div class="ob-title">${notices(true)}<h1 class="title page-title" id="q1" tabindex="-1"><span>${t('obT1')}</span> <span class="title-2">${t('obT2')}</span></h1></div>
 <div class="ob-lead"><p class="lead" id="ob-lead" aria-live="polite">${g ? `<b class="lead-pick">${esc(pick(g.label))}</b>${esc(pick(g.note))}` : t('obLead')}</p></div>
+<div class="stage ob-stage${d.primaryGoal ? ' has-pick' : ''}" role="radiogroup" aria-label="${t('q1')}"><div class="rod" aria-hidden="true"></div>${cards}</div>
 <div class="ob-actions"><button type="button" class="btn" data-action="finish"${d.primaryGoal ? '' : ' disabled'}>${t('startCard')} ${ICON.arrow}</button><button type="button" class="link" data-action="skip">${t('browse')}</button>${state.onboarded ? `<button type="button" class="link" data-action="cancelOnboard">${t('cancel')}</button>` : ''}</div>
-<p class="fine ob-fine">${t('obFine')}${d.primaryGoal ? ` <button type="button" class="link link-sm" data-action="step2">${t('fineTune')}</button>` : ''}</p>
-<div class="stage ob-stage${d.primaryGoal ? ' has-pick' : ''}" role="radiogroup" aria-label="${t('q1')}"><div class="rod" aria-hidden="true"></div>${cards}</div></main>`;
+<p class="fine ob-fine">${t('obFine')}${d.primaryGoal ? ` <button type="button" class="link link-sm" data-action="step2">${t('fineTune')}</button>` : ''}</p></main>`;
   }
   const g = goalById(d.primaryGoal);
   const chips = (list, key) => list.map((x) => `<button type="button" class="chip" aria-pressed="${d[key].includes(x.id)}" data-action="toggle" data-key="${key}" data-id="${x.id}">${esc(pick(x.label))}</button>`).join('');
@@ -277,7 +277,7 @@ function onboard() {
 /* ── 오늘: 매단 내 카드 + 도장 세 칸 ── */
 function stamps(states, descs) {
   const names = ['j1', 'j2', 'j3'];
-  return `<ol class="stamps" aria-label="${t('stampsLabel')}">${states.map((s, i) => `<li class="stamp is-${s}"${s === 'now' ? ' aria-current="step"' : ''}><span class="slot" aria-hidden="true">${s === 'done' ? seal(i) : s === 'now' ? t('sNow') : `<span class="slot-num">${i + 1}</span>`}</span><h3>${t(names[i])}<span class="stamp-state">${t(s === 'done' ? 'sDone' : s === 'now' ? 'sNow' : 'sNext')}</span></h3><p>${esc(descs[i])}</p></li>`).join('')}</ol>`;
+  return `<ol class="stamps" aria-label="${t('stampsLabel')}">${states.map((s, i) => `<li class="stamp is-${s}"${s === 'now' ? ' aria-current="step"' : ''}><span class="slot" aria-hidden="true">${s === 'done' ? seal(i) : s === 'now' ? t('sNow') : `<span class="slot-num">${i + 1}</span>`}</span><h3>${t(names[i])} <span class="stamp-state">${t(s === 'done' ? 'sDone' : s === 'now' ? 'sNow' : 'sNext')}</span></h3><p>${esc(descs[i])}</p></li>`).join('')}</ol>`;
 }
 function today() {
   const g = goalById(state.primaryGoal);
@@ -326,7 +326,7 @@ function explore() {
   let h = head(t('exploreTitle'), t('explore'), '', t('exploreT2'));
   h += `<div role="group" aria-label="${t('filter')}" class="chips filters">${filt}</div>`;
   if (['all', 'job', 'student'].includes(f)) h += renderJobs({ feed: jobsFeed.snapshot(), lang: state.lang, savedJobs: session.document()?.savedJobs || [], query: S.jobQueryText ?? S.jobQuery ?? '', board: S.jobBoard || 'all', onlySaved: !!S.onlySaved, page: S.jobPage || 0, canEdit: session.status().canEdit });
-  h += `<details class="practice"><summary><span>${t('practice')}</span><small>${t('demoSub')}</small></summary><p class="meta">${t('demoNote')}</p>`;
+  h += `<details class="practice"${S.practiceOpen ? ' open' : ''}><summary><span>${t('practice')}</span><small>${t('demoSub')}</small></summary><p class="meta">${t('demoNote')}</p>`;
   h += `<ul class="rows opp-rows">${list.map((o) => {
     const on = S.compare.includes(o.id);
     return `<li class="opp"><div class="opp-text"><b>${demoBadge(o)}${esc(pick(o.title))}</b><small>${esc(pick(o.summary))}</small></div><div class="opp-acts"><button type="button" class="btn-line" data-action="detail" data-id="${o.id}">${t('details')}</button><button type="button" class="chip" aria-pressed="${on}" data-action="compare" data-id="${o.id}"${full && !on ? ' disabled' : ''}>${on ? t('compareOn') : t('compareAdd')}</button></div></li>`;
@@ -368,7 +368,8 @@ function editor() {
   const o = task && oppById(task.sourceId);
   if (!o) return `<main class="content" id="main">${notices()}${head(t('missing'))}<button type="button" class="btn-line" data-action="nav" data-page="prepare">${t('prepare')}</button></main>`;
   const goal = goalById(task.goal) ? task.goal : 'job';
-  const signed = session.status().signedIn;
+  const st = session.status(), signed = st.signedIn;
+  const savedOk = st.canEdit && !st.error;
   let h = `<main class="ed" id="main"><aside class="stage ed-stage" aria-label="${t('source')}"><div class="rod" aria-hidden="true"></div>${hang(goal, { kicker: t('srcK'), name: pick(o.title), desc: '', mode: 'source' })}
 <div class="ed-src"><b>${t('source')}</b><p>${demoBadge(o)}<span>${esc(pick(o.title))}</span></p><small>${o.source === 'live' ? t('liveNote') : t('srcNote')}</small>${liveLink(o)}<button type="button" class="link" data-action="detail" data-id="${esc(o.id)}">${t('reopen')}</button></div></aside>
 <div class="ed-main">${notices(false, true)}<button type="button" class="back" data-action="nav" data-page="prepare">${ICON.back}${t('backPrep')}</button>
@@ -376,7 +377,7 @@ function editor() {
 <ol class="reqs" aria-label="${t('requirements')}">${o.requirements.map((r, i) => `<li><b>${i + 1}</b>${esc(pick(r))}</li>`).join('')}</ol>
 <section class="editor"><div class="field"><label for="body" class="field-label">${t('body')}</label>
 <textarea id="body" maxlength="6000" aria-describedby="body-hint edit-err" data-action="body"${S.error === 'needBody' ? ' aria-invalid="true"' : ''}>${esc(task.body)}</textarea>
-<div class="field-meta" id="body-hint"><span class="count" id="count">${countText(task.body)}</span><span class="saved">${ICON.check}${signed ? t('savedAccount') : t('savedGuest')}</span></div></div>
+<div class="field-meta" id="body-hint"><span class="count" id="count">${countText(task.body)}</span>${savedOk ? `<span class="saved">${ICON.check}${signed ? t('savedAccount') : t('savedGuest')}</span>` : ''}</div></div>
 <p id="task-status" class="task-status">${statusHtml(task)}</p>
 <label class="check"><input type="checkbox" id="ack"${task.confirmedAt ? ' checked' : ''}><span class="box" aria-hidden="true">${ICON.check}</span><span>${t('confirmCheck')}</span></label>
 <p id="edit-err" class="err" role="alert">${S.error ? t(S.error) : ''}</p>
@@ -502,10 +503,15 @@ const ACT = {
   },
   nav: (el) => go(el.dataset.page),
   setLang(el) {
-    if (!session.status().canEdit) { render(false); return; }
-    const ok = commit(updateProfile(state, { lang: el.dataset.id === 'en' ? 'en' : 'ko' }));
+    const id = el.dataset.id === 'en' ? 'en' : 'ko';
+    const back = () => {
+      const same = root.querySelector(`[data-action="setLang"][data-id="${id}"]`);
+      (same && same.offsetParent !== null ? same : root.querySelector('[data-action="setLang"][aria-pressed="false"]') || same)?.focus();
+    };
+    if (!session.status().canEdit) { render(false); back(); return; }
+    const ok = commit(updateProfile(state, { lang: id }));
     if (ok) S.flash = null;
-    render(false); root.querySelector('[data-action="setLang"][aria-pressed="false"]')?.focus(); if (ok) say(t('langLabel'));
+    render(false); back(); if (ok) say(t('langLabel'));
   },
   pickGoal(el) {
     if (!session.status().canEdit) return;
@@ -531,7 +537,7 @@ const ACT = {
     if (!commit(updateProfile(state, { ...S.draft, onboarded: true }))) { render(false); return; }
     S.step = 1; S.filter = state.primaryGoal || 'all'; S.help = state.primaryGoal || 'study'; go('today');
   },
-  exploreGoal(el) { S.filter = el.dataset.id; go('explore'); },
+  exploreGoal(el) { S.filter = el.dataset.id; S.practiceOpen = true; go('explore'); },
   filter(el) { S.filter = el.dataset.id; render(false); root.querySelector(`[data-action="filter"][data-id="${el.dataset.id}"]`)?.focus(); },
   compare(el) {
     const id = el.dataset.id, i = S.compare.indexOf(id);
@@ -686,6 +692,7 @@ root.addEventListener('click', (e) => {
   const fail = (err) => { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); };
   try { Promise.resolve(ACT[el.dataset.action](el)).catch(fail); } catch (err) { fail(err); }
 });
+root.addEventListener('toggle', (e) => { if (e.target?.classList?.contains('practice')) S.practiceOpen = !!e.target.open; }, true);
 root.addEventListener('compositionstart', (e) => {
   if (!root.contains(e.target)) return;
   if (compTimer) { clearTimeout(compTimer); compTimer = null; }
