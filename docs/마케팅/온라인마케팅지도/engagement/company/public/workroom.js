@@ -17,12 +17,13 @@ function wrIdentity(){
 function ensureWorkroom(){
   if(!state.user)return;wrIdentity();
   if(!wr.attempted&&!wr.loading)void loadWorkroom();
-  wrEnsureDaily();
-  if(typeof crEnsure==='function')crEnsure();
-  if(typeof makerToolsEnsure==='function')makerToolsEnsure();
-  if(typeof clientDeskEnsure==='function')clientDeskEnsure();
+  if(waFeature('production'))wrEnsureDaily();
+  if(waFeature('production')&&typeof crEnsure==='function')crEnsure();
+  if(waFeature('production')&&typeof makerToolsEnsure==='function')makerToolsEnsure();
+  if(waFeature('clients')&&typeof clientDeskEnsure==='function')clientDeskEnsure();
 }
 async function loadWorkroom(){
+  if(!waFeature('production')){wr.attempted=true;wr.loading=false;return;}
   const userId=state.user?.id;if(!userId)return;wr.userId=userId;const request=++wr.request;wr.loading=true;wr.attempted=true;wr.error='';
   if(state.tab==='workroom')render();
   const results=await Promise.allSettled([api('/api/workroom-guide'),api('/api/content-workspace')]);
@@ -36,6 +37,7 @@ const wrButton=(label,action,attrs='',classes='')=>button(label,'workroom-'+acti
 const wrExternal=(label,url)=>`<a class="btn small quiet" href="${escape(safeUrl(url))}" target="_blank" rel="noopener noreferrer">${escape(label)}${icon('external')}</a>`;
 function contentWorkroomPage(){
   wrIdentity();
+  if(!waWorkroomViews().includes(wr.view))wr.view=waWorkroomViews()[0]||'desk';
   const heading={desk:['제작 데스크','새 기획을 시작하거나 저장한 기획을 이어 써요.'],trends:['트렌드·레퍼런스','요즘 뜨는 것과 참고 자료에서 다음 기획을 찾아요.'],pages:['내 관리 페이지','맡은 페이지를 등록하고 연결을 확인해요.']}[wr.view]||['제작 데스크','새 기획을 시작하거나 저장한 기획을 이어 써요.'];
   return `<div class="wr-workroom">${['tools','clients'].includes(wr.view)?'':pageHeading('',heading[0],heading[1])}${wr.error&&!['trends','tools'].includes(wr.view)?`<div class="wr-error" role="alert">${escape(wr.error)} ${wrButton('다시 불러오기','refresh','','small')}</div>`:''}${wr.view==='clients'?clientDeskPanel():wr.view==='tools'?makerToolsPanel():wr.view==='pages'?wrPages():wr.view==='trends'?wrTrends():!wr.guide?`<section class="wr-loading" role="status"><span class="loading-line"></span><p>${wr.loading?'제작 자료를 불러오고 있어요.':'제작 자료를 아직 불러오지 못했어요.'}</p>${!wr.loading&&wr.attempted&&!wr.error?wrButton('다시 불러오기','refresh','','small'):''}</section>`:wrDesk()}</div>`;
 }

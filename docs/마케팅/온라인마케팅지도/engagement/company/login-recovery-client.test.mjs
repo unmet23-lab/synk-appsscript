@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -14,7 +15,7 @@ const reply=(data,status=200)=>({ok:status>=200&&status<300,status,json:async()=
 
 function fixture({fetch,user=null}={}){
   const calls=[],renders=[],replaced=[];
-  const context=vm.createContext({state:{user,csrf:'',authMode:'login',authToken:'',tab:'home'},URLSearchParams,Intl,Date,Number,String,Promise,
+  const context=workspaceClientContext({state:{user,csrf:'',authMode:'login',authToken:'',tab:'home'},URLSearchParams,Intl,Date,Number,String,Promise,
     location:{hash:'#reset=link-token-value',search:'',pathname:'/'},history:{replaceState:(a,b,url)=>replaced.push(url)},
     isDemoMode:()=>false,selectWorkspaceView(){},escape:value=>String(value??''),icon:()=>'',
     prepareSynkCompanyEntry:async()=>{calls.push('platform-entry');throw Error('the platform entry must not run before a reset link');},
@@ -58,13 +59,13 @@ test('the reset form names the account for password managers and asks twice for 
 
 test('only an administrator sees the reset button, never on an administrator or a stopped crew',()=>{
   const members=[{id:'a',name:'관리자',email:'a@example.test',role:'admin',active:true},{id:'m',name:'크루',email:'m@example.test',role:'member',active:true},{id:'s',name:'멈춤',email:'s@example.test',role:'viewer',active:false}];
-  const render=role=>{const context=vm.createContext({state:{user:{id:role==='admin'?'a':'m',role},data:{members,teams:[],channels:[],deployment:{}}},escape:value=>String(value??''),icon:()=>'',roleLabel:value=>value,number:String,isAdmin:()=>role==='admin',canManageTeam:()=>true,empty:()=>'',pageHeading:()=>'',button:(text,action,glyph,classes,attrs='')=>`<button data-action="${action}" ${attrs}>${text}</button>`});vm.runInContext(membersSource,context);return vm.runInContext('membersPage()',context);};
+  const render=role=>{const context=workspaceClientContext({state:{user:{id:role==='admin'?'a':'m',role},data:{members,teams:[],channels:[],deployment:{}}},escape:value=>String(value??''),icon:()=>'',roleLabel:value=>value,number:String,isAdmin:()=>role==='admin',canManageTeam:()=>true,empty:()=>'',pageHeading:()=>'',button:(text,action,glyph,classes,attrs='')=>`<button data-action="${action}" ${attrs}>${text}</button>`});vm.runInContext(membersSource,context);return vm.runInContext('membersPage()',context);};
   const admin=render('admin');assert.equal((admin.match(/data-action="member-password-reset"/g)||[]).length,1);assert.match(admin,/data-action="member-password-reset" data-id="m"/);
   assert.doesNotMatch(render('manager'),/member-password-reset/);
 });
 
 test('without a password the form does not ask for the current one; with one it does, and an administrator is sent to the operator',()=>{
-  let role='member';const context=vm.createContext({state:{user:{email:'crew@example.test'},passwordSet:false},escape:value=>String(value??''),overlay:null,$:()=>null,modal(){},api:async()=>({}),isAdmin:()=>role==='admin'});vm.runInContext(passwordSource,context);
+  let role='member';const context=workspaceClientContext({state:{user:{email:'crew@example.test'},passwordSet:false},escape:value=>String(value??''),overlay:null,$:()=>null,modal(){},api:async()=>({}),isAdmin:()=>role==='admin'});vm.runInContext(passwordSource,context);
   const without=vm.runInContext('passwordForm()',context);assert.doesNotMatch(without,/name="oldPassword"/);assert.match(without,/비밀번호 정하기/);
   context.state.passwordSet=true;const withOne=vm.runInContext('passwordForm()',context);assert.match(withOne,/name="oldPassword" type="password" required/);assert.match(withOne,/관리자에게 비밀번호 재설정 링크를 부탁해/);
   role='admin';const admin=vm.runInContext('passwordForm()',context);assert.match(admin,/운영 담당에게 「관리자 복구 링크」/);assert.doesNotMatch(admin,/관리자에게 비밀번호 재설정 링크/);

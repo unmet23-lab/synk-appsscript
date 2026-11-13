@@ -1,3 +1,4 @@
+import {hasWorkspaceFeature,workspaceAccess} from './workspace-access.mjs';
 import { randomUUID } from 'node:crypto';
 
 export const ORGANIZATION_ROLES = Object.freeze(['admin', 'manager', 'member', 'viewer']);
@@ -8,7 +9,7 @@ const owns = (user, channel) => Array.isArray(channel?.ownerIds) && channel.owne
 const sameTeam = (user, channel) => teamOf(user) !== null && teamOf(user) === teamOf(channel);
 
 export function canReadChannel(user, channel) {
-  if (!validUser(user) || !channel) return false;
+  if (!validUser(user) || !channel || !hasWorkspaceFeature(user,'social')) return false;
   if (user.role === 'admin') return true;
   if (owns(user, channel)) return true;
   return (user.role === 'manager' || user.role === 'viewer') && sameTeam(user, channel);
@@ -23,7 +24,7 @@ export function canManageOwners(user, channel) {
 }
 
 function safeMember(user, full) {
-  const result = {id:user.id, name:user.name, role:user.role, teamId:teamOf(user), active:user.active !== false};
+  const result = {id:user.id, name:user.name, role:user.role, teamId:teamOf(user), active:user.active !== false, workspaceAccess:workspaceAccess(user)};
   if (full) {
     if (typeof user.email === 'string') result.email = user.email;
     if (typeof user.createdAt === 'string') result.createdAt = user.createdAt;

@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -14,7 +15,7 @@ function fixture(){
   const state={user:{id:'author',role:'member'},tab:'content',scope:'mine',marketingView:'summary',data:{channels:[]},modalRequest:0,reportRequest:0};
   const location=new URL('http://localhost:4191/');
   const form=()=>({isConnected:true,values:{target:''},error:{textContent:''},submit:{disabled:false},querySelector(selector){return selector==='[type="submit"]'?this.submit:selector==='.form-error'?this.error:null;}});
-  const context=vm.createContext({state,location,URL,URLSearchParams,Intl,structuredClone,
+  const context=workspaceClientContext({state,location,URL,URLSearchParams,Intl,structuredClone,
     document:{addEventListener(type,fn){documentHandlers.set(type,[...(documentHandlers.get(type)||[]),fn]);},getElementById:()=>null,querySelector:selector=>selector==='[data-cp-review-share]'?currentForm:null},
     window:{addEventListener(type,fn){windowHandlers.set(type,[...(windowHandlers.get(type)||[]),fn]);},scrollTo(){},matchMedia:()=>({matches:false})},MutationObserver:class{observe(){}},
     history:{replaceState(_a,_b,url){location.href=new URL(url,location).href;}},crypto:{randomUUID:()=> 'share-request'},

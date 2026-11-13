@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -13,7 +14,7 @@ function fixture(href=initialUrl){
   const location={get href(){return address.href;},set href(value){address.href=new URL(value,address).href;navigations.push(address.href);},replace(value){address.href=new URL(value,address).href;navigations.push(address.href);},get origin(){return address.origin;},get pathname(){return address.pathname;},get search(){return address.search;},get hash(){return address.hash;}};
   const state={tab:'history',marketingView:'summary',scope:'team',teamId:'demo-team',user:{id:'demo-crew',role:'admin',name:'가상 크루',teamId:'demo-team'},data:{demo:{enabled:true,personaId:'crew-a',people:[]},channels:[]},report:{synthetic:true},reportRequest:1,authMode:'login',error:'',loading:false};
   const app={innerHTML:'',querySelectorAll:()=>[],contains:()=>false,querySelector:()=>null},document={activeElement:null,addEventListener:(type,handler,capture=false)=>handlers.push({type,handler,capture}),getElementById:()=>null,querySelector:()=>null};
-  const context=vm.createContext({state,app,document,location,URL,URLSearchParams,Intl,cp:{view:'library'},renderedTab:'history',window:{addEventListener(){},scrollTo(){},matchMedia:()=>({matches:false})},requestAnimationFrame:callback=>callback(),history:{replaceState(_a,_b,value){address.href=new URL(value,address).href;}},MutationObserver:class{observe(){}},crypto:{randomUUID:()=> 'test-share'},
+  const context=workspaceClientContext({state,app,document,location,URL,URLSearchParams,Intl,cp:{view:'library'},renderedTab:'history',window:{addEventListener(){},scrollTo(){},matchMedia:()=>({matches:false})},requestAnimationFrame:callback=>callback(),history:{replaceState(_a,_b,value){address.href=new URL(value,address).href;}},MutationObserver:class{observe(){}},crypto:{randomUUID:()=> 'test-share'},
     canManageTeam:()=>['admin','manager'].includes(state.user?.role),isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',
     icon:()=>'',searchIcon:()=>'',roleLabel:role=>role,busyRuns:()=>false,dateToday:()=> '2026-09-30',button:()=>'',notify:message=>notifications.push(message),shiftDate:(date,days)=>new Date(Date.parse(date)+days*86400000).toISOString().slice(0,10),
     render:()=>renders.push({tab:state.tab,userId:state.user?.id,demo:state.data?.demo?.enabled}),renderAuth:()=>renders.push({auth:true}),resetTeamOverview(){},startPolling:()=>polls++,reportTabs:()=>['overview','analysis','history'].includes(state.tab),loadReport:async()=>reports++,loadContentWorkspace:async()=>{throw new Error('messenger navigation must not load content');}});

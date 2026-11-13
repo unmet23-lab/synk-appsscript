@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -23,7 +24,7 @@ function fixture({url='http://localhost:4191/',storage=new Map()}={}){
   document.createElement=tag=>{const row=element(tag);created.push(row);return row;};document.body=element('body');
   for(const id of ['marin-input','marin-form','marin-conversation','messenger-module-slot']){const row=element(id==='marin-input'?'textarea':'section');row.id=id;nodes.set(id,row);}
   const sessionStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
-  const context=vm.createContext({state,document,location,URL,URLSearchParams,Intl,Date,sessionStorage,localStorage:sessionStorage,cp:{view:'library'},
+  const context=workspaceClientContext({state,document,location,URL,URLSearchParams,Intl,Date,sessionStorage,localStorage:sessionStorage,cp:{view:'library'},
     window:{addEventListener:(type,handler)=>windowHandlers.push({type,handler}),scrollTo(){},matchMedia:()=>({matches:false})},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href;}},MutationObserver:class{observe(){}},ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:callback=>callback(),clearInterval(){},clearTimeout:id=>timers.delete(id),setTimeout:(callback,delay=0)=>{const id=nextTimer++;timers.set(id,{callback,delay});return id;},crypto:{randomUUID:()=> 'test-id'},
     isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',canManageTeam:()=>['admin','manager'].includes(state.user?.role),icon:()=>'',button:()=>'',dateToday:()=> '2026-09-30',shiftDate:(date,days)=>new Date(Date.parse(date)+days*86400000).toISOString().slice(0,10),
     render:()=>renders.push({tab:state.tab,userId:state.user?.id}),notify:message=>notifications.push(message),api(path,body,method){return new Promise((resolve,reject)=>requests.push({path,body,method,resolve,reject}));},

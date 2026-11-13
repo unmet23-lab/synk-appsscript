@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -30,7 +31,7 @@ function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',s
       if(operation==='challenge')return {challenge:'synthetic-challenge'};
       if(operation==='exchange')currentMe={...currentMe,synkUserId:currentAuth.account.synk_user_id};
       if(operation==='logout')currentMe={user:null,csrfToken:'',synkUserId:null};return {ok:true};}};
-  const context=vm.createContext({window:{synkDesktop:desktop,addEventListener(){}},document,state,URL,URLSearchParams,app:content,overlay,
+  const context=workspaceClientContext({window:{synkDesktop:desktop,addEventListener(){}},document,state,URL,URLSearchParams,app:content,overlay,
     fetch:async(path,options)=>{calls.push({path,options});const result=onFetch?await onFetch(path,options,f):null;if(result)return {ok:(result.status||200)<400,status:result.status||200,json:async()=>result.data};const data=path==='/api/me'?(onMe?await onMe(f):currentMe):{user:currentMe.user,channels:['private-'+currentMe.user?.id]};return {ok:true,status:200,json:async()=>data};},
     location:{href:'https://workspace.synk.im/?tab=messenger',pathname:'/',search:'?tab=messenger',hash:'',replace:v=>moves.push(v),reload:()=>moves.push('reload')},history:{replaceState(){}},
     demoApiUrl:v=>v,isDemoMode:()=>false,selectWorkspaceView(){},initializeDemoRange(){},resetTeamOverview(){},normalizeMarketingScope(){},resetContentWorkspace(){},resetStudioWorkspace(){},closeModal(){overlay.innerHTML='';},

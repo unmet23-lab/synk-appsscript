@@ -1,3 +1,4 @@
+import {workspaceAccess} from './workspace-access.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -30,7 +31,7 @@ export async function passwordMatches(password, stored) {
 export function publicUser(user) {
   if (!user) return null;
   const {passwordHash:_,...safe} = user;
-  return safe;
+  return {...safe,workspaceAccess:workspaceAccess(user)};
 }
 // Kinds read by one field far more often than in full get a partial expression index per field (allWhere below).
 const INDEXED={socialPublishJobs:['postId','status','channelId']};

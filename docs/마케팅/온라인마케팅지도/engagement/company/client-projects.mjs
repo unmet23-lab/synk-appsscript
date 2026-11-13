@@ -1,3 +1,4 @@
+import {requireWorkspaceFeature} from './workspace-access.mjs';
 import {randomUUID,randomBytes,createHash} from 'node:crypto';
 import {withTranslation} from './pulse-translations.mjs';
 import {appendClientNotificationEvents} from './client-notifications.mjs';
@@ -40,7 +41,7 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   const devices=createPulseDeviceService({store,clock});
   const changeListeners=new Set();
   function subscribeChanges(listener){if(typeof listener!=='function')throw new TypeError('변경 알림 설정이 이상해요.');changeListeners.add(listener);return ()=>changeListeners.delete(listener);}
-  function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('읽기만 할 수 있는 계정이에요.',403);return live;}
+  function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);requireWorkspaceFeature(live,'clients');if(write&&live.role==='viewer')throw fail('읽기만 할 수 있는 계정이에요.',403);return live;}
   function allowed(user,row){return user.role==='admin'||row.ownerId===user.id||(row.reviewerId===user.id&&user.role!=='viewer'&&user.teamId&&user.teamId===row.teamId)||(['manager','viewer'].includes(user.role)&&user.teamId&&user.teamId===row.teamId);}
   // Filter before decoding large documents. Keep the original ACL as a final
   // check, and read the current user/rows each time (including raw SQL writers).

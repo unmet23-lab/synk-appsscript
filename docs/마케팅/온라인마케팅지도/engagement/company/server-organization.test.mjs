@@ -68,7 +68,7 @@ test('only admins manage teams and assignments; role changes revoke old employee
 
 test('invite role/team are applied from the invitation and cannot be overridden by signup input',async t=>{
   const {app,a,team,client}=await fixture(t);team('alpha');team('beta');
-  const invite=await a('/api/members/invite',{name:'Read Only',email:'readonly@example.test',role:'viewer',teamId:'alpha'});
+  const invite=await a('/api/members/invite',{name:'Read Only',email:'readonly@example.test',role:'viewer',teamId:'alpha',workspaceProfile:{memberships:[{company:'LAB',role:'teacher'}],duties:[]}});
   assert.equal(invite.status,201);
   const token=new URL(invite.data.inviteUrl).hash.slice('#invite='.length),guest=client(null);
   const joined=await guest('/api/join',{token,name:'Read Only',password,role:'admin',teamId:'beta'});

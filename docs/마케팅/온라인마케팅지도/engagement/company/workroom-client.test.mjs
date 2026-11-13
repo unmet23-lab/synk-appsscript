@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -7,7 +8,7 @@ const source=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8'
 function fixture({url='http://localhost:4191/?tab=workroom'}={}){
   const requests=[],storage=new Map(),handlers=new Map(),notifications=[],navigation=[],timers=new Map();let timerId=0;
   let renders=0;
-  const context=vm.createContext({
+  const context=workspaceClientContext({
     console,URL,URLSearchParams,location:new URL(url),Set,JSON,Promise,Intl,Date,
     state:{user:{id:'A',role:'member',name:'크루'},tab:'workroom',data:{channels:[]},modalRequest:0},
     document:{visibilityState:'visible',addEventListener(type,handler){handlers.set(type,handler);},querySelector(){return null;}},

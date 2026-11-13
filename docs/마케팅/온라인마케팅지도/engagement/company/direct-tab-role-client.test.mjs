@@ -1,3 +1,4 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -12,7 +13,7 @@ const slice=name=>{const start=app.indexOf(`function ${name}()`);return app.slic
 function fixture({role,search}){
   const location=new URL('http://localhost:4191/'+search),seen={};
   const state={user:null,tab:'home',marketingView:'summary',scope:'mine',teamId:'',reportRequest:0};
-  const context=vm.createContext({state,cp:{view:'library'},location,URL,URLSearchParams,
+  const context=workspaceClientContext({state,cp:{view:'library'},location,URL,URLSearchParams,
     canManageTeam:()=>['admin','manager'].includes(state.user?.role),isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',isDemoMode:()=>false,
     window:{addEventListener(){},scrollTo(){}},document:{hidden:false,addEventListener(){},getElementById(){return null;}},MutationObserver:class{observe(){}},
     history:{replaceState(_a,_b,value){location.href=new URL(value,location).href;}},render(){},icon:()=>'',
@@ -46,7 +47,7 @@ test('a signed-out visit keeps the request for the sign-in form and the login pa
 
 function emptyFixture(user,teams){
   const state={user,scope:'team',teamId:'',data:{teams}};
-  const context=vm.createContext({state,isAdmin:()=>state.user.role==='admin',isViewer:()=>state.user.role==='viewer',
+  const context=workspaceClientContext({state,isAdmin:()=>state.user.role==='admin',isViewer:()=>state.user.role==='viewer',
     button:(label,action,_icon,_kind,attrs='')=>`<button data-action="${action}" ${attrs}>${label}</button>`,empty:(title,text,actions)=>`<h3>${title}</h3><p>${text}</p>${actions}`});
   vm.runInContext(slice('marketingScopeEmpty'),context);return vm.runInContext('marketingScopeEmpty()',context);
 }

@@ -24,7 +24,7 @@ async function fixture(t,collector,extra={}){
 }
 test('invite only signup, one use tokens, staff isolation and forged requests',async t=>{
  const {app,client}=await fixture(t);const a=await client();
- const invite=await a('/api/members/invite',{name:'Employee',email:'staff@example.test'});assert.equal(invite.status,201);
+ const invite=await a('/api/members/invite',{name:'Employee',email:'staff@example.test',workspaceProfile:{memberships:[{company:'PULSE',role:'producer'}],duties:['social']}});assert.equal(invite.status,201);
  const joinToken=new URL(invite.data.inviteUrl).hash.slice('#invite='.length);
  const m=await client(null);assert.equal((await m('/api/join',{token:joinToken,name:'Employee',password:'staff-valid-password'})).status,201);
  assert.equal((await m('/api/join',{token:joinToken,name:'x',password:'staff-valid-password'})).status,403);

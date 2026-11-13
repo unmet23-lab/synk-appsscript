@@ -1,3 +1,4 @@
+import {requireWorkspaceFeature,hasWorkspaceFeature} from './workspace-access.mjs';
 import { randomUUID } from 'node:crypto';
 import { canReadChannel, canWriteChannel } from './organization.mjs';
 import { getContentCatalog, generateContentIdeas, renderBriefMarkdown } from './content-engine.mjs';
@@ -24,9 +25,9 @@ const recent=(value,since,until)=>Number.isFinite(Date.parse(value))&&Date.parse
 export function createContentService({store,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,isConnected=()=>false}){
   const searchCalls=new Map();
   const benchmarks=createBenchmarkService({store,clock,seriesIds:getContentCatalog().series.map(series=>series.id)});
-  function current(user){const active=user?.id&&store.get('users',user.id);if(!active?.active)throw fail('로그인 상태를 다시 확인해 주세요.',401);return active;}
+  function current(user){const active=user?.id&&store.get('users',user.id);if(!active?.active)throw fail('로그인 상태를 다시 확인해 주세요.',401);requireWorkspaceFeature(active,'production');return active;}
   function writable(user){user=current(user);if(user.role==='viewer')throw fail('보기 전용 계정이라 기획을 고치거나 검색할 수 없어요.',403);return user;}
-  function canRead(user,row){if(row.ownerId===user.id||user.role==='admin')return true;if(!row.channelId||!['manager','viewer'].includes(user.role)||!user.teamId)return false;const channel=store.get('channels',row.channelId);return !!channel&&channel.teamId===user.teamId&&canReadChannel(user,channel);}
+  function canRead(user,row){if(!hasWorkspaceFeature(user,'production'))return false;if(row.ownerId===user.id||user.role==='admin')return true;if(!row.channelId||!['manager','viewer'].includes(user.role)||!user.teamId)return false;const channel=store.get('channels',row.channelId);return !!channel&&channel.teamId===user.teamId&&canReadChannel(user,channel);}
   function getRow(kind,id,user){const row=store.get(kind,string(id,100,'기록 ID',true));if(!row||!canRead(user,row))throw fail(kind==='contentReferences'?'이 참고 자료를 찾지 못했어요. 새로고침해 주세요.':'이 기획을 찾지 못했어요. 새로고침해 주세요.',404);return row;}
   function channelFor(user,id){if(!id)return null;const channel=store.get('channels',string(id,100,'채널 ID',true));if(!channel||channel.active===false||!canWriteChannel(user,channel))throw fail('담당 채널을 찾지 못했어요. 새로고침한 뒤 다시 골라 주세요.',404);return channel;}
   function ownerName(row){return {...row,ownerName:store.get('users',row.ownerId)?.name||'이전 담당자'};}

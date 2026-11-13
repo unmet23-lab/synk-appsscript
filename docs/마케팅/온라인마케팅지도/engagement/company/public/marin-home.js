@@ -57,7 +57,7 @@ function marinNextHtml(){
 }
 function marinHomePage(){
   ensureMarinSession();ensureMarinNextSession();
-  return `<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><p>오늘의 업무</p><h1 id="next-heading">지금, 무엇부터 할까요?</h1><p>내 차례인 일에서 다음 행동을 골라드려요.</p></header><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div><details class="next-assistant" ${marinNext.asking?'open':''}><summary>마린에게 직접 묻기</summary>${marinConversationPage()}</details></section>`;
+  return `${waHome()}<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><p>오늘의 업무</p><h1 id="next-heading">지금, 무엇부터 할까요?</h1><p>내 차례인 일에서 다음 행동을 골라드려요.</p></header><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div><details class="next-assistant" ${marinNext.asking?'open':''}><summary>마린에게 직접 묻기</summary>${marinConversationPage()}</details></section>`;
 }
 function captureMarinNextView(){
   const root=document.getElementById('next-action');if(!root)return null;

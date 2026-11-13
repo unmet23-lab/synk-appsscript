@@ -1,3 +1,5 @@
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
+import {workspaceAccess,WORKSPACE_COMPANIES,WORKSPACE_DUTIES} from './workspace-access.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -9,7 +11,7 @@ const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'ut
 const workroomSource=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8');
 function fixture(role='admin'){
   const resizeHandlers=[],messageHandlers=[],windowHandlers=new Map(),documentHandlers=new Map(),state={user:{id:'tester',role},tab:'overview',marketingView:'summary',scope:'mine',teamId:'',reportRequest:0},cp={view:'library'},location=new URL('http://localhost:4191/');
-  const context=vm.createContext({state,cp,location,URL,URLSearchParams,
+  const context=workspaceClientContext({state,cp,location,URL,URLSearchParams,
     canManageTeam:()=>['admin','manager'].includes(state.user?.role),isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',
     window:{addEventListener(type,handler){if(type==='resize')resizeHandlers.push(handler);if(type==='message')messageHandlers.push(handler);windowHandlers.set(type,[...(windowHandlers.get(type)||[]),handler]);},scrollTo(){}},document:{hidden:false,addEventListener(type,handler){documentHandlers.set(type,[...(documentHandlers.get(type)||[]),handler]);},getElementById(){return null;}},
     MutationObserver:class{observe(){}},history:{replaceState(_a,_b,value){location.href=new URL(value,location).href;}},
@@ -135,7 +137,7 @@ test('resize before the app state script loads does not break workspace initiali
 
 test('only daily work is in primary navigation; management remains role scoped',()=>{
   for(const [role,count] of [['admin',3],['manager',2],['member',1],['viewer',1]]){
-    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspacePrimaryTabs.map(row=>row[0])')),['home','messenger','workroom','social','teaching']);
+    const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','teaching']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
   }
 });
@@ -252,4 +254,18 @@ test('old marketing entries open the SNS three screens; the demo address keeps t
   assert.match(html,/data-view="today"/);assert.match(html,/data-view="results"/);assert.match(html,/data-view="accounts"/);
   assert.doesNotMatch(html,/data-view="(compose|calendar|queue|bulk|inbox|settings|overview)"|내 현황|팀 현황|전체 현황|콘텐츠 기획|채널·수집/);
   menu.state.tab='workroom';assert.match(menu.run('workspaceContextMenu()'),/data-action="social-view" data-view="results"/);
+});
+
+
+test('assigned company features filter navigation and reject deep links; concurrent work can be narrowed',()=>{
+  const f=fixture('member');
+  f.state.user.workspaceAccess=workspaceAccess({role:'member',active:true,workspaceProfile:{memberships:[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}],duties:[],revision:1}});
+  f.state.data={workspaceCatalog:{companies:WORKSPACE_COMPANIES,duties:WORKSPACE_DUTIES}};
+  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','lectures']);
+  f.run("selectWorkspaceView('teaching')");assert.equal(f.state.tab,'home');
+  f.run("selectWorkspaceView('social')");assert.equal(f.state.tab,'home');
+  f.run("selectWorkspaceView('lectures')");assert.equal(f.state.tab,'lectures');
+  f.run("wa.company='SHIFT'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','lectures']);
+  f.run("wa.company='PULSE'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom']);
+  f.run("selectWorkspaceView('lectures')");assert.equal(f.state.tab,'lectures');assert.equal(f.run('wa.company'),'all');
 });
