@@ -129,24 +129,24 @@
   "lang": "fil",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "boss": "",
-  "scene": "",
+  "boss": "Boss",
+  "scene": "Nagkabanggaan kami ni boss. Natapon ang kape.",
   "sceneSize": 40,
-  "level": "",
+  "level": "Level {n}",
   "reads": [
-    "",
-    "",
-    ""
+    "mi-an",
+    "mi-an-hae-yo",
+    "joe-song-ham-ni-da"
   ],
   "means": [
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    ""
+    "Sorry na.",
+    "Pasensya na po.",
+    "Humihingi po ako\nng paumanhin.",
+    "SORRY PO TALAGA,\nBOSS!!!",
+    "Pero teka…",
+    "Bakit ako\nnagso-sorry?",
+    "Boss, IKAW ang\nbumangga!",
+    "At syempre, taasan\nmo sweldo ko."
   ],
   "meanSizes": [
     56,
@@ -159,23 +159,41 @@
     52
   ],
   "tags": [
-    "",
-    "",
-    "",
+    "barkada lang",
+    "magalang",
+    "teacher at boss ✓",
     "",
     "",
     "",
     "",
     ""
   ],
-  "endCard": "",
-  "endSize": 44,
-  "ask": "",
-  "askSize": 36,
+  "endCard": "Natapunan mo si boss?\n→ 죄송합니다.",
+  "endSize": 36,
+  "ask": "Sinong dapat sabihan ng 미안?",
+  "askSize": 33,
   "coverAt": 1.8,
   "hello": "",
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1.0
+  "helloSec": 1,
+  "_원문": {
+    "boss": "사장님",
+    "scene": "사장님이랑 나랑 부딪쳤다. 커피가 쏟아졌다.",
+    "level": "{n}단계",
+    "means.0": "미안.",
+    "means.1": "미안해요.",
+    "means.2": "사과드립니다.",
+    "means.3": "정말 죄송합니다,\n사장님!!!",
+    "means.4": "근데 잠깐…",
+    "means.5": "왜 내가\n사과하고 있어?",
+    "means.6": "사장님, 부딪친 건\n사장님이잖아!",
+    "means.7": "그리고 당연히\n내 월급 올려 줘.",
+    "tags.0": "친구끼리만",
+    "tags.1": "공손",
+    "tags.2": "선생님 · 사장님께 ✓",
+    "endCard": "사장님한테 쏟았다?\n→ 죄송합니다.",
+    "ask": "누구한테 미안이라고 해야 해?"
+  }
 }

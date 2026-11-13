@@ -64,6 +64,10 @@ test('상대 날짜 — 나라 판본의 말(21개 언어)과 꼬리 붙은 언�
   // 한자는 간체 · 번체 계정 둘 다(zh-Hans · zh-Hant → zh), 번체 꼴도 무늬에 있다
   assert.deepEqual(hit('今天学一句', 'zh-Hans'), ['今天']);
   assert.deepEqual(hit('這週你最需要哪一句？', 'zh-Hant'), ['這週']);
+  // 입말 꼴(11-14 판본 회차 — 「화날때」 대만판 這禮拜 · 말레이시아판 minggu ni가 그냥 지나갔다)
+  assert.deepEqual(hit('這禮拜你最需要哪一句？', 'zh-Hant'), ['這禮拜']);
+  assert.deepEqual(hit('Yang mana paling korang perlukan minggu ni?', 'ms'), ['minggu ni']);
+  assert.deepEqual(hit('Antara empat ni, yang mana paling korang perlukan?', 'ms'), [], '「empat ni」(이 넷)는 날짜가 아니다');
   // 잘못 잡지 않을 것 — 낱말 속 · 다른 뜻 · 다른 언어의 낱말 · 교재로 든 한국어
   assert.deepEqual(hit('¿El vecino pone música a las 3 de la mañana? Un hoyo en la calle', 'es'), [], 'mañana(아침) · hoyo 속 hoy');
   assert.deepEqual(hit('आज़ादी और आजकल', 'hi'), [], '낱말 속 आज');

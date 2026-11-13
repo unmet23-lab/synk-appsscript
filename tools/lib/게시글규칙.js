@@ -28,7 +28,8 @@ const RELATIVE = {
   ko: /(?<![가-힣])(그저께|그제(?!서야|야)|어제|오늘(?!날)|내일(?!배움)|모레|이번\s?주|지난\s?주|다음\s?주|이번\s?달|지난\s?달|다음\s?달|방금)/g,
   en: /\b(yesterday|today|tonight|tomorrow|this week|last week|next week|this month|last month|next month|just now)\b/gi,
   mn: /(өнөөдөр|өчигдөр|маргааш|уржигдар|нөгөөдөр|энэ долоо хоног|өнгөрсөн долоо хоног|ирэх долоо хоног)/gi,
-  zh: /(今天|昨天|明天|前天|后天|後天|今晚|本周|本週|上周|上週|下周|下週|这周|這週|这个星期|這個星期|这个月|這個月|刚刚|剛剛)/g,
+  // 這禮拜 · 這星期(대만 입말 「이번 주」)는 11-14 판본 회차가 「화날때」 대만판 고정 댓글에서 찾았다 — 무늬에 없어 지나갔다.
+  zh: /(今天|昨天|明天|前天|后天|後天|今晚|本周|本週|上周|上週|下周|下週|这周|這週|这个星期|這個星期|這禮拜|这礼拜|這星期|这星期|这个月|這個月|刚刚|剛剛)/g,
   my: /(ယနေ့|မနေ့က|မနက်ဖြန်|ဒီနေ့)/g,
   // 11-11 LAB 나라 판본(언어 21개) — 「화날때」 판본 열여섯의 고정 댓글 · 본문에 「이번 주 · 오늘」이 있었는데 규칙이 그 말들을 몰랐다(Fable 검수 P2).
   // 띄어 쓰지 않는 글자(태국 · 크메르 · 가나 · 한자)는 그대로 찾는다. 다른 뜻으로 잘못 잡힐 낱말(스페인어 mañana = 아침,
@@ -38,7 +39,8 @@ const RELATIVE = {
   es: 낱말('hoy(?! en d[ií]a)|ayer|anoche|esta noche|esta semana|la semana pasada|la pr[oó]xima semana|la semana que viene|este mes|el mes pasado'),
   pt: 낱말('hoje|ontem|amanh[ãa]|esta semana|essa semana|semana passada|semana que vem|pr[oó]xima semana|este m[eê]s|esse m[eê]s'),
   fil: 낱말('ngayong araw|ngayong linggo|ngayong buwan|ngayong gabi|kahapon|kagabi|noong nakaraang linggo|sa susunod na linggo'),
-  ms: 낱말('hari ini|semalam|esok|minggu ini|minggu lepas|minggu depan|bulan ini|malam ini'),
+  // 말레이 입말 줄임(minggu ni · hari ni …)도 본다 — 11-14 판본 회차가 「화날때」 말레이시아판 고정 댓글 「minggu ni」에서 찾았다.
+  ms: 낱말('hari ini|hari ni|semalam|esok|minggu ini|minggu ni|minggu lepas|minggu depan|bulan ini|bulan ni|malam ini|malam ni'),
   id: 낱말('hari ini|kemarin|besok|minggu ini|minggu lalu|minggu depan|bulan ini|malam ini'),
   ru: 낱말('сегодня|вчера|завтра|на этой неделе|на прошлой неделе|на следующей неделе|в этом месяце'),
   kk: 낱말('бүгін|кеше|ертең|осы аптада|өткен аптада|келесі аптада|осы айда'),
