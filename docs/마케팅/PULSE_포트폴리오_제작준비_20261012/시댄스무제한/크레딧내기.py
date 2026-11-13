@@ -18,6 +18,8 @@
 # 받은 영상: 받을곳/<판>.mp4(같은 판 둘째부터 __2 …) — 받을곳은 DAY 아래 꾸러미면 DAY/받음, 아니면 꾸러미 옆 받음/.
 #   기록은 받을곳/_받음.json(받기.py와 같은 꼴, 받은 판만)과 DAY/받음/_크레딧내기.json(실패 포함 — 받기.py가 이 판들을 건너뛰고 거래 내역에서 뺀다).
 #   받기.py와 같은 때에 돌리지 않는다(둘 다 _받음.json을 통째로 다시 쓴다).
+# 받은 뒤(11-14): 컷표(틀 2)가 있는 편은 낸 판을 받자마자 tools/받은뒤검사.py로 잰다(길이 · 비율 · 소리 줄기 · 사람 굳음 + 컷표의 받음 검사) —
+#   결과는 받을곳/_받은뒤검사.json과 화면의 「다시 낼 판」. 내기 결과는 바꾸지 않는다.
 # nsfw · 실패는 다시 내지 않고 알린다(현장노트 higgsfield 「같은 장면이 nsfw로 두 번 막힌다」).
 import json, os, re, shutil, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
@@ -173,6 +175,29 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
     표넘김 = 넘김 is None or "컷표" in 넘김
     print(f"걸림 {n['걸림']}개를 넘겨 낸다 — 까닭: {까닭}(장부의 「걸림무시」 칸에 남긴다)")
     return {b["id"]: 까닭 for pack, b in 판목록 if str(b["id"]) in 걸린판 or (표넘김 and 판의표.get(os.path.abspath(pack), (None, None))[0] in 걸린표)}
+
+
+def 받은뒤(pack, out, 컷표=None, 판ids=None, 더=None):
+    """받은 판을 바로 잰다(tools/받은뒤검사.py, 11-14) — 길이 · 비율 · 소리 줄기 · 사람 굳음과 컷표의 받음 검사. 크레딧내기 · 드리미나내기가 받은 직후 함께 쓴다.
+    컷표(틀 2)가 있는 편에서만 돈다(없으면 None). 판ids는 이번에 낸 판(소리만 쓰는 판은 빼고 준다) — 빈 목록이면 돌지 않는다.
+    내기 결과는 바꾸지 않는다: 검사의 끝 코드(0 통과 · 1 다시 낼 판 · 2 확인)를 돌려주고, 못 돌리면 한 줄로 알리고 None."""
+    경로 = 컷표 or 컷표찾기(pack)
+    if not 경로 or (판ids is not None and not 판ids):
+        return None
+    try:
+        if json.load(open(경로, encoding="utf-8-sig")).get("틀") != 2:
+            return None
+        from pathlib import Path
+        도구 = Path(__file__).resolve().parents[4] / "tools" / "받은뒤검사.py"
+        명령 = [sys.executable, "-X", "utf8", str(도구), os.path.dirname(os.path.abspath(경로)), "--컷표", 경로, "--꾸러미", pack, "--받음", out]
+        if 판ids:
+            명령 += ["--판", ",".join(dict.fromkeys(str(x) for x in 판ids))]
+        r = subprocess.run(명령 + list(더 or []), capture_output=True, text=True, encoding="utf-8")
+        print("\n" + (r.stdout.strip() or r.stderr.strip()[:400]), flush=True)
+        return r.returncode
+    except Exception as e:   # 받은 판은 이미 받았다 — 검사를 못 돌려도 내기를 깨뜨리지 않는다
+        print(f"\n받은 뒤 검사를 못 돌렸다({type(e).__name__}: {e}) — python -X utf8 tools/받은뒤검사.py <편 폴더>를 따로 돌린다", flush=True)
+        return None
 
 
 def home(acct):
@@ -337,6 +362,7 @@ def main():
     with ThreadPoolExecutor(conc) as ex:
         bad = [x for x in ex.map(lambda b: safe(acct, pack, out, b, price[b["길이"]]), todo[1:]) if x]
     print(f"\n끝 · 잔액 {bal} → {hf(acct, 'account', 'status').get('credits')} (견적 {total})" + (f" · 못 낸 판 {bad}" if bad else ""))
+    받은뒤(pack, out, table, [b["id"] for b in todo if not b.get("소리만") and b.get("방식") != "목소리 판"])   # 받은 판을 바로 잰다 — 굳은 판은 여기서 「다시 낼 판」으로 나온다
 
 
 if __name__ == "__main__":

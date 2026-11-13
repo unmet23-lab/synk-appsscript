@@ -22,7 +22,7 @@ import json, os, re, subprocess, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from 크레딧내기 import boards, PIC, 굽기전, 인자값, 무시쓰는법
+from 크레딧내기 import boards, PIC, 굽기전, 받은뒤, 인자값, 무시쓰는법
 
 IGNORED = {}   # 판 id → 까닭 — --걸림무시로 지시문 걸림을 넘겨 낸 판(장부의 「걸림무시」 칸)
 HOME = os.path.join(os.path.expanduser("~"), ".ai-tools", "dreamina-canvas")
@@ -307,6 +307,8 @@ def main():
     with ThreadPoolExecutor(conc) as ex:
         bad = [x for x in ex.map(lambda pb: safe(pb[0], out, pb[1]), todo) if x]
     print(f"\n끝 · 잔액 {bal} → {balance()} (견적 {total})" + (f" · 못 낸 판 {bad}" if bad else ""))
+    for p in dict.fromkeys(p for p, _ in todo):   # 받은 판을 바로 잰다(크레딧내기.받은뒤 — 컷표 틀 2가 있는 꾸러미만)
+        받은뒤(p, out, table, [b["id"] for q, b in todo if q == p and not b.get("소리만") and b.get("방식") != "목소리 판"])
 
 
 if __name__ == "__main__":

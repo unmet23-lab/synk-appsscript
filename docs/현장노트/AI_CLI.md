@@ -1362,6 +1362,12 @@
 - 다시 확인: `-c` 회차 답의 한계 칸에 「처음 · 끝 두 번 모두 묶음.json 12개 값과 같다」가 적혔고 새 지적은 P3 하나였다.
 - 11-13 덧붙임(Claude, `-d`): `-c` 결과에 맡긴 세션이 「닫음」을 보내 조율 세션을 바로 보관했는데, 맡긴 세션은 올리기 직전에 origin의 남의 화면 줄을 합쳐야 해서 `-d` 묶음을 만들고(11-12 19:12) 「닫음」을 거두는 글을 보냈다. 그 글은 보관보다 늦게 닿아 회차가 돌지 않았고(맡긴 세션의 말), 세션이 다시 열린 11-13 03:28에야 돌았다(지적 0 · 처음 · 끝 바이트 같음 · 여덟 시간 밀림). 맡기는 세션은 origin 합침과 올리기 전 확인까지 끝난 뒤에 「닫음」을 보낸다 — 검수를 대신 돌리는 세션은 「닫음」을 받으면 곧 보관되고, 보관된 세션은 뒤따라 온 글로 돌지 않는다.
 
+### 새로 쓴 에이전트 정의(`.claude/agents/<이름>.md`)는 쓴 그 턴에는 `subagent_type`으로 안 잡힌다 (2026-11-14 Claude)
+- 증상: 영상 단계 에이전트 `video-image-prompts.md`를 쓰고 같은 턴에 Agent 도구에 `subagent_type: video-image-prompts`를 주니 「Agent type 'video-image-prompts' not found. Available agents: … video-prompts …」. 같은 세션에서 먼저 쓴 `video-prompts`는 잡혀 있었다.
+- 원인: 에이전트 목록은 턴이 시작될 때 다시 읽힌다 — 그 턴이 끝나고 다음 턴이 열리자 「New agent types are now available」 알림과 함께 떴다. 파일을 쓴 턴 안에서는 목록이 그대로다.
+- 고침: 같은 턴에 꼭 돌려야 하면 `general-purpose`에 `model: opus`를 주고 글 첫 줄에 「`.claude/agents/<이름>.md`를 읽고 머리말 아래 본문을 그대로 따르라」를 쓴다 — 정의 글을 그대로 시험하는 길이기도 하다(이때 짚어 준 「정의 글이 모호한 곳」 다섯을 정의에 반영했다). 아니면 턴을 한 번 끝낸 뒤 이름으로 부른다.
+- 다시 확인: 정의를 쓴 뒤 Agent 도구의 오류 글에 뜨는 「Available agents」 목록에 그 이름이 있는지 본다. 이름으로 부른 에이전트의 모델은 `<세션 id>/subagents/agent-<id>.jsonl`의 `"model"` 칸(정의의 `model: opus` → `claude-opus-5-5`였다).
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.
