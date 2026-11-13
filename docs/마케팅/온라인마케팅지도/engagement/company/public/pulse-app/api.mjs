@@ -14,7 +14,12 @@ export const ERROR_CODE_TEXT=Object.freeze({SYNK_PULSE_FILE_MISSING:k('올린 �
   // 운영 조각 6-B: 영상 · 사진 제작 자리와 대기 자리가 모두 찼을 때 새 의뢰서 시작(409).
   SYNK_PULSE_INTAKE_FULL:k('지금은 예약이 찼어요. 자리가 나면 이 화면에서 다시 받아요.'),
   // 운영 조각 6-B: 자리 차례를 기다리는 건의 결제 요청을 자리 확인 없이 보냄(409 — 직원 결제 요청 창).
-  SYNK_PULSE_SEAT_WAIT:k('이 건은 아직 제작 자리 차례가 아니에요. 결제 요청 창을 닫고 다시 열면 자리 경고가 떠요 — 그걸 보고 보내 주세요.')});
+  SYNK_PULSE_SEAT_WAIT:k('이 건은 아직 제작 자리 차례가 아니에요. 결제 요청 창을 닫고 다시 열면 자리 경고가 떠요 — 그걸 보고 보내 주세요.'),
+  // 운영 조각 6-C: 알림 명단 등록(pulse-waitlist.mjs) — 그 사이 열림 · 메일 꺼짐 · 명단이 참(그 사이 쉬기로 바뀌면 위 INTAKE_PAUSED).
+  SYNK_PULSE_WAITLIST_OPEN:k('그 사이 자리가 났어요. 이 화면에서 바로 시작하실 수 있어요.'),
+  SYNK_PULSE_WAITLIST_OFF:k('지금은 메일 알림을 받을 수 없어요. 잠시 뒤 이 화면에서 다시 봐 주세요.'),
+  SYNK_PULSE_WAITLIST_FULL:k('알림 명단이 찼어요. 이 화면에서 자리를 다시 봐 주세요.'),
+  SYNK_PULSE_WAITLIST_BUSY:k('알림 요청이 많았어요. 한 시간쯤 뒤에 이 화면에서 다시 남겨 주세요.')});
 export const errorText=(message,code='')=>locale()==='ko'?message:Object.hasOwn(ERROR_CODE_TEXT,code)?t(ERROR_CODE_TEXT[code]):t(message);
 export const serverError=(result,status,fallback)=>{const message=typeof result?.error==='string'?result.error:result?.error?.message||fallback,code=typeof result?.code==='string'?result.code:'';return new PulseError(errorText(message,code),status,code);};
 // member(판 4): 고객 SYNK ID 회원 경로(/api/customer/*)는 직원 경로처럼 X-CSRF-Token을 쓴다. 보관 조건이 바뀐 409(SYNK_PULSE_REUSE_STALE)는 새 조건(offer)을 오류에 싣는다.

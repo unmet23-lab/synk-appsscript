@@ -57,6 +57,7 @@ import { createPulseMemberRoutes } from './pulse-workspace-routes.mjs';
 import { createProjectLocale } from './pulse-locale.mjs';
 import { createPulseMailService } from './pulse-mail.mjs';
 import { createPulseMailOpen } from './pulse-mail-open.mjs';
+import { createPulseWaitlist } from './pulse-waitlist.mjs';
 import { CASTING_MODELS } from './public/pulse-app/casting-catalog.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
@@ -246,6 +247,7 @@ export function createCompanyApp(options={}) {
   // 내 모델 증표(판 4): 주소(IP)마다 분당 30번.
   const pulseProofIp=createAttemptLimiter({limit:30,windowMs:60000,now:loginNow});
   // 메일 코드로 다시 열기(판 4): 주소(IP)마다 한 시간에 코드 요청 10번 · 틀린 확인 20번.
+  const waitlistIp=createAttemptLimiter({limit:10,windowMs:60*60000,now:loginNow});
   const mailOpenIp=createAttemptLimiter({limit:10,windowMs:60*60000,now:loginNow}),mailVerifyIp=createAttemptLimiter({limit:20,windowMs:60*60000,now:loginNow});
   const clock=()=>options.clock?.()||now();
   const content=createContentService({store,clock,fetchImpl:options.contentFetch,isConnected:hasConnection});
@@ -326,6 +328,9 @@ export function createCompanyApp(options={}) {
   const pulseLive=createPulseLiveService({store,clientProjects,clientNotifications,clock,localeOf:projectLocale,onChange:()=>{pulseLiveEvents?.changed();notifyPulseDevices();}});
   pulseMail=createPulseMailService({store,clock,localeOf:projectLocale,fetchImpl:options.pulseMailFetch||globalThis.fetch,notificationsFor:row=>pulseLive.customerPushNotifications(`pulse:${row.id}:${row.inviteRevision}`)});
   const pulseMailOpen=createPulseMailOpen({store,clientProjects,pulseMail,clock});
+  // 알림 명단(운영 조각 6-C): 대기까지 찬 동안 남긴 주소로, 자리가 나는 대로 남긴 차례로 한 통씩. 5분마다(메일 타이머와 같은 스위치).
+  const pulseWaitlist=createPulseWaitlist({store,pulseMail,capacity:pulseCapacity,clock});
+  let pulseWaitlistTimer=null;
   const pulseMailSchedule=options.pulseMailSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseMailTimer=null;
   pulseLiveEvents=createCreativeResearchEvents({resolveAccess(req){
@@ -896,7 +901,16 @@ export function createCompanyApp(options={}) {
     // 공개 첫 화면의 언어(다국어 판 2): 초대 · 의뢰 초안 없이 읽는다. 공개 메뉴 언어만 싣는다(스위치가 꺼져 있으면 한국어 하나).
     if(method==='GET'&&path==='/pulse/api/features'){if(url.search)throw httpError('주소를 확인해 주세요.');return send(res,200,{features:pulseFeatures.publicView()});}
     // 접수 상태(운영 조각 3): 누구나 읽는다 — 상태 · 다시 여는 날 · 담당자가 손님에게 적은 안내뿐이고 건수 · 이름은 없다. 손님마다 다르지 않아 잠깐 캐시해도 된다.
-    if(method==='GET'&&path==='/pulse/api/availability'){if(url.search)throw httpError('주소를 확인해 주세요.');res.writeHead(200,{...responseHeaders('application/json; charset=utf-8'),'Cache-Control':'public, max-age=30'});return res.end(JSON.stringify(pulseCapacity.publicView()));}
+    if(method==='GET'&&path==='/pulse/api/availability'){if(url.search)throw httpError('주소를 확인해 주세요.');res.writeHead(200,{...responseHeaders('application/json; charset=utf-8'),'Cache-Control':'public, max-age=30'});const view=pulseCapacity.publicView();return res.end(JSON.stringify(view.state==='full'&&pulseWaitlist.available()?{...view,notify:true}:view));}
+    // 알림 명단(운영 조각 6-C, pulse-waitlist.mjs): 대기까지 찬 동안 「열리면 메일로 알려 드릴까요?」 — 같은 출처 · 작은 몸통 · 주소(IP)마다 문턱, 늘 같은 답.
+    if(path==='/pulse/api/waitlist'){
+      if(method!=='POST')throw httpError('알림 요청을 받지 못했어요. 다시 시도해 주세요.',405);
+      if(req.headers.origin!==origin)throw httpError('PULSE 화면에서 다시 시도해 주세요.',403);
+      const input=await body(req,{maxBytes:2000,maxChars:1000});
+      // 문턱 글은 이 칸의 말로(공용 문턱 글은 「로그인 요청이 많습니다」 — 최종 화면 검수).
+      try{waitlistIp.reserve(clientAddress(req));}catch(error){if(error?.status===429)throw Object.assign(httpError('알림 요청이 많았어요. 한 시간쯤 뒤에 이 화면에서 다시 남겨 주세요.',429),{code:'SYNK_PULSE_WAITLIST_BUSY'});throw error;}
+      return send(res,200,pulseWaitlist.register(input));
+    }
     if(path==='/pulse/api/request'||path.startsWith('/pulse/api/request/')){
       const requestToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_request=([A-Za-z0-9_-]+)/)?.[1];
       const csrf=req.headers['x-pulse-csrf'],draftFile=path.match(/^\/pulse\/api\/request\/media\/([a-f0-9-]{36})$/);
@@ -2114,10 +2128,10 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pulseAutoReply.stop(),pulseMail.stop(),pulseMailOpen.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([dmRegistration.close(),websiteInquiries.close(),websiteInquiryTick,pulseAutoReply.stop(),pulseMail.stop(),pulseMailOpen.stop(),pulseWaitlist.stop(),socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{synkIdentity.dispose();customerIdentity.dispose();teaching.dispose();store.close();}
     })();
@@ -2145,7 +2159,7 @@ export function createCompanyApp(options={}) {
         if(automationHealthSchedule&&!stopRequested){automationHealthTimer=setInterval(scanAutomationHealthScheduled,60000);automationHealthTimer.unref();void scanAutomationHealthScheduled();}
         if(deliveryCheckSchedule&&!stopRequested){deliveryCheckTimer=setInterval(scanDeliveryChecks,60000);deliveryCheckTimer.unref();void scanDeliveryChecks();}
         if(socialSchedule&&!stopRequested){socialTimer=setInterval(scanSocialPublishing,15000);socialTimer.unref();void scanSocialPublishing();}
-        if(pulseMailSchedule&&!stopRequested){pulseMailTimer=setInterval(scanPulseMail,30000);pulseMailTimer.unref();void scanPulseMail();}
+        if(pulseMailSchedule&&!stopRequested){pulseMailTimer=setInterval(scanPulseMail,30000);pulseMailTimer.unref();void scanPulseMail();pulseWaitlistTimer=setInterval(()=>{void pulseWaitlist.tick().catch(()=>{});},5*60000);pulseWaitlistTimer.unref();}
         if(pulseAutoReplySchedule&&!stopRequested){pulseAutoReplyTimer=setInterval(scanPulseAutoReplies,15000);pulseAutoReplyTimer.unref();void scanPulseAutoReplies();pulseRequestTimer=setInterval(retirePulseRequests,6*3600000);pulseRequestTimer.unref();void pulseRequests.retireUnconfirmed({startup:true}).catch(()=>{});}
         ready=!stopRequested;
         if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
@@ -2154,8 +2168,8 @@ export function createCompanyApp(options={}) {
     })();
     return startTask;
   }
-  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,pulseRequests,pulseMail,pulseMailOpen,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
+  return {server,store,pulseRequests,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

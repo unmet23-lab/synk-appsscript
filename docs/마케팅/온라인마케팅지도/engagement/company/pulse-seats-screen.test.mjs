@@ -36,10 +36,10 @@ test('첫 화면: 대기까지 차면 「광고 의뢰하기」 두 자리에 �
     assert.doesNotMatch(slot.inner,/sx-paused-note/);
   }
   assert.match(one.inner,/data-entry="works"/,'1쪽 안내에는 완성 광고 보기');
-  assert.deepEqual(JSON.parse(one.key),['full','','ko']);
+  assert.deepEqual(JSON.parse(one.key),['full','','ko',false,'']);
   const dated=slots(entryView({paused:{...FULL,noticeDate:D(11,20)}}))[0];
   assert.match(dated.inner,/<p class="sx-small">11월 20일쯤 자리가 나요\. 그때 이 화면에서 바로 시작하실 수 있어요\.<\/p>/,'요일 없이 「○월 ○일쯤」');
-  assert.deepEqual(JSON.parse(dated.key),['full',D(11,20),'ko']);
+  assert.deepEqual(JSON.parse(dated.key),['full',D(11,20),'ko',false,'']);
   assert.match(slots(entryView({paused:{...FULL,noticeDate:'2026-02-30'}}))[0].inner,/자리가 나면 이 화면에서/,'달력에 없는 날은 날짜 없이');
   // 쓰던 의뢰서가 있으면 이어 쓰기 단추가 선다(보내기는 받는다).
   assert.deepEqual(starts(entryView({paused:FULL,resume:true})),[false,false]);
@@ -67,7 +67,7 @@ test('의뢰서 첫 질문의 한 줄: 찬 종류 · 결제 안내 무렵(모르
   assert.ok(app.includes("backend.seat=intake?.state==='queue'||intake?.state==='full'?{kinds:intake.kinds,noticeDate:intake.noticeDate}:null;"));
   assert.match(app,/if\(intake\?\.state==='full'&&!backend\.hasDraft\)\{if\(backend\.features\)await applyLocale\(backend\.features\);s\.intake=intake;s\.requestResume=false;.*?throw new PulseError\(t\('지금은 예약이 찼어요\. 자리가 나면 이 화면에서 다시 받아요\.'\),409,'SYNK_PULSE_INTAKE_FULL'\);\}/);
   // 공개 응답 읽기: 찬 종류는 video · photo만, 날짜는 YYYY-MM-DD만(다른 값은 빈 글자).
-  assert.ok(app.includes("if(result?.state==='queue'||result?.state==='full')return {state:result.state,kinds:(Array.isArray(result.kinds)?result.kinds:[]).filter(kind=>kind==='video'||kind==='photo'),noticeDate:typeof result.noticeDate==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(result.noticeDate)?result.noticeDate:''};"));
+  assert.ok(app.includes("if(result?.state==='queue'||result?.state==='full')return {state:result.state,kinds:(Array.isArray(result.kinds)?result.kinds:[]).filter(kind=>kind==='video'||kind==='photo'),noticeDate:typeof result.noticeDate==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(result.noticeDate)?result.noticeDate:'',...(result.state==='full'&&result.notify===true?{notify:true}:{})};"));
   assert.match(read('film.css'),/\.sx-q-seat\{/);
 });
 

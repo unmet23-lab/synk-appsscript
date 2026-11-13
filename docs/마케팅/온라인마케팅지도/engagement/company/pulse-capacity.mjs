@@ -74,6 +74,10 @@ export function capacityState(projects,{seats,held},now){
   }
   return out;
 }
+// 순수 함수: 새 의뢰서를 받을 수 있는 자리 수 = 남은 대기 자리 + 대기 없이 빈 제작 자리(대기까지 찬 종류만 있으면 두 몫 모두 0이라 저절로 0).
+export function openingsOf(s,kinds=['video','photo']){
+  return Math.max(0,s.queue.total-s.queue.used)+kinds.reduce((n,kind)=>n+Math.max(0,s[kind].total-s[kind].used-s[kind].waiting),0);
+}
 // 자리가 i번째(0부터)로 나는 날 — 받으실 날이 빈 차례거나 제작 중인 건보다 뒤면 ''.
 const noticeAt=(dues,i)=>i>=0&&i<dues.length?dues[i]:'';
 // 한 프로젝트(담당자가 확인했고 결제 전)의 자리: 앞선 대기까지 자리가 모자라면 {state:'queue', noticeDate}, 자리가 있으면 null.
@@ -175,5 +179,7 @@ export function createPulseCapacity({store,clock=()=>new Date().toISOString(),pr
   const full=()=>{const s=state();return KINDS.every(kind=>s[kind].state==='full');};
   const seatFor=row=>projectSeat(state(),row);
   const seatsNow=()=>summary(state());
-  return {read,settings,configure,configureSeats,configureHeld,publicView,paused,full,seatFor,seatsNow};
+  // 알림 명단(운영 조각 6-C)이 부를 수 있는 사람 수: 쉬는 중이거나 대기까지 찼으면 0, 아니면 남은 대기 자리 + 종류마다 빈 제작 자리.
+  const openings=()=>{if(paused())return 0;const s=state();return openingsOf(s,KINDS);};
+  return {read,settings,configure,configureSeats,configureHeld,publicView,paused,full,seatFor,seatsNow,openings};
 }

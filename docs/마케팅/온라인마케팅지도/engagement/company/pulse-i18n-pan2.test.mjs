@@ -36,7 +36,7 @@ test('서버 손님 문구: 한국어는 그대로, 영어는 사전에 빠짐�
   const photoBodies=[...live.matchAll(/const customerBodiesPhoto=\{([^\n]*)\};/g)][0][1],photoTexts=[...photoBodies.matchAll(/:'([^']+)'/g)].map(([,text])=>text);
   assert.equal(photoTexts.length,3);for(const text of photoTexts)assert.ok(Object.hasOwn(EN,text),'사진 본문 영어: '+text);
   // 죽은 키 0: 서버 사전의 한국어 문장은 서버 코드 어딘가에 따옴표 문자열로 있다.
-  const sources=['pulse-live.mjs','client-notifications.mjs','pulse-mail.mjs','client-projects.mjs'].map(name=>readFileSync(new URL('./'+name,import.meta.url),'utf8')).join('\n');
+  const sources=['pulse-live.mjs','client-notifications.mjs','pulse-mail.mjs','client-projects.mjs','pulse-waitlist.mjs'].map(name=>readFileSync(new URL('./'+name,import.meta.url),'utf8')).join('\n');
   // pulse-locale.mjs가 스스로 쓰는 키(담당자 · 다른 직원 표시 이름)는 사전 파일 밖에 따옴표로 없다.
   const SELF=['PULSE 담당자','PULSE 팀'],dead=Object.keys(EN).filter(key=>!SELF.includes(key)&&!sources.includes(`'${key}'`));
   assert.deepEqual(dead,[],'서버 코드에 없는 서버 사전 키');

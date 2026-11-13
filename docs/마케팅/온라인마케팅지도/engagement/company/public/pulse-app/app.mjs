@@ -107,7 +107,8 @@ const production=productionUI({s,mutate,studioAction,notice,remember,request,opt
 
 // 알림 글은 부르는 자리에서 번역해 넘긴다. 옛 체험(?demo=gift · coffee)은 한국어로만 돌아 그 바꿈 글은 번역하지 않는다.
 function notice(message){if(demo&&/의견을 보냈|고객에게|시안을 승인했/.test(message))message='체험 기록에 남겼어요.';const box=document.querySelector('#notice');box.textContent=message;box.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>box.hidden=true,6500);} // i18n-skip
-function remember(event){const field=event.target,form=field.closest?.('form[data-form]');if(!form||!field.name||['invite','login'].includes(form.dataset.form))return;const key=draftKey(form),entry=drafts.get(key)||{values:{},revision:0};if(form.dataset.form==='feedback'&&!entry.versionId){entry.versionId=s.versionId||latestPreview()?.id||'';if(entry.versionId)s.versionId=entry.versionId;if(form.elements.action)entry.values.action=form.elements.action.value;}entry.values[field.name]=field.type==='file'?Array.from(field.files||[]):field.type==='checkbox'?Array.from(form.elements).filter(el=>el.name===field.name&&el.checked).map(el=>el.value):field.value;if(form.dataset.form==='deliverables'){entry.deliverableRows=snapshotDeliverableRows(form);entry.values.deliverableRevision??=form.elements.deliverableRevision.value;}if(/^(round-|preview-)/.test(form.dataset.form))entry.boundData??={...form.dataset};entry.revision++;drafts.set(key,entry);if(form.dataset.form==='feedback'&&s.mode!=='staff'){const submit=form.querySelector('button[type=submit]');if(submit&&!busy)submit.disabled=!!(entry.versionId&&entry.versionId!==latestPreview()?.id&&entry.values.action!=='support');}}
+function hideNotice(){const box=document.querySelector('#notice');if(box)box.hidden=true;clearTimeout(noticeTimer);}
+function remember(event){const field=event.target,form=field.closest?.('form[data-form]');if(!form||!field.name||['invite','login','waitlist'].includes(form.dataset.form))return;const key=draftKey(form),entry=drafts.get(key)||{values:{},revision:0};if(form.dataset.form==='feedback'&&!entry.versionId){entry.versionId=s.versionId||latestPreview()?.id||'';if(entry.versionId)s.versionId=entry.versionId;if(form.elements.action)entry.values.action=form.elements.action.value;}entry.values[field.name]=field.type==='file'?Array.from(field.files||[]):field.type==='checkbox'?Array.from(form.elements).filter(el=>el.name===field.name&&el.checked).map(el=>el.value):field.value;if(form.dataset.form==='deliverables'){entry.deliverableRows=snapshotDeliverableRows(form);entry.values.deliverableRevision??=form.elements.deliverableRevision.value;}if(/^(round-|preview-)/.test(form.dataset.form))entry.boundData??={...form.dataset};entry.revision++;drafts.set(key,entry);if(form.dataset.form==='feedback'&&s.mode!=='staff'){const submit=form.querySelector('button[type=submit]');if(submit&&!busy)submit.disabled=!!(entry.versionId&&entry.versionId!==latestPreview()?.id&&entry.values.action!=='support');}}
 function restore(scope=document){for(const form of scope.querySelectorAll('form[data-form]')){const entry=drafts.get(draftKey(form));if(!entry)continue;if(entry.boundData){Object.assign(form.dataset,entry.boundData);addProductionDraftReset(form);}if(form.dataset.form==='deliverables'&&entry.deliverableRows){restoreDeliverableRows(form,entry.deliverableRows);addProductionDraftReset(form);}for(const [name,value] of Object.entries(entry.values)){const fields=Array.from(form.elements).filter(el=>el.name===name);for(const field of fields){if(field.type==='file'){try{const transfer=new DataTransfer();for(const file of value)transfer.items.add(file);field.files=transfer.files;}catch{}}else if(field.type==='checkbox')field.checked=Array.isArray(value)&&value.includes(field.value);else if(field.type==='radio')field.checked=field.value===value;else field.value=value;const details=field.closest('details');if(details)details.open=true;}}const details=form.closest('details');if(details)details.open=true;}}
 function clearDraft(key,revision){if(drafts.get(key)?.revision===revision)drafts.delete(key);}
 function setBusy(value){busy=value;document.documentElement.classList.toggle('is-busy',value);for(const button of document.querySelectorAll('button[type=submit],[data-mutate]')){if(value){if(button.dataset.wasDisabled===undefined)button.dataset.wasDisabled=String(button.disabled);button.disabled=true;}else if(button.dataset.wasDisabled!==undefined){button.disabled=button.dataset.wasDisabled==='true';delete button.dataset.wasDisabled;}}main.setAttribute('aria-busy',String(value));if(!value){scheduleApply();scheduleInviteNavigation();}}
@@ -150,14 +151,22 @@ async function checkResume(){if(resumeChecked||s.mode!=='customer'||demo||filmDe
 // kinds는 찬 종류(video · photo), noticeDate는 결제 안내 예정일(모르면 빈 글자).
 function intakeOf(result){
   if(result?.state==='paused')return {state:'paused',until:typeof result.until==='string'?result.until:'',note:typeof result.note==='string'?result.note:'',noteEn:typeof result.noteEn==='string'?result.noteEn:''};
-  if(result?.state==='queue'||result?.state==='full')return {state:result.state,kinds:(Array.isArray(result.kinds)?result.kinds:[]).filter(kind=>kind==='video'||kind==='photo'),noticeDate:typeof result.noticeDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(result.noticeDate)?result.noticeDate:''};
+  if(result?.state==='queue'||result?.state==='full')return {state:result.state,kinds:(Array.isArray(result.kinds)?result.kinds:[]).filter(kind=>kind==='video'||kind==='photo'),noticeDate:typeof result.noticeDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(result.noticeDate)?result.noticeDate:'',...(result.state==='full'&&result.notify===true?{notify:true}:{})};
   return {state:'open'};
 }
 // 첫 화면의 「광고 의뢰하기」 자리에 안내가 서는 상태: 쉬는 중 · 대기까지 참(film-home.mjs가 둘을 나눠 그린다).
-const intakeBlocked=intake=>intake?.state==='paused'||intake?.state==='full'?intake:null;
+// 알림 명단(운영 조각 6-C): 이번에 남긴 주소(waitlistDone)는 대기까지 찬 안내에 「알림을 걸어 두었어요」로 싣는다 — 다시 읽어 상태가 그대로면 칸이 다시 서지 않게.
+// 대기까지 찬 상태가 풀린 것을 한 번이라도 읽으면 지운다 — 그 사이 서버가 알리고 명단에서 지웠을 수 있어, 다시 찼을 때 지난 줄이 남지 않고 칸이 다시 선다(화면 검수 카본 A1).
+// 화면이 가려진 동안에는 묻지 않으니, 남긴 뒤 접수 상태를 15분 넘게 못 읽었으면(그 사이 열림 · 알림 · 다시 참이 지나갔을 수 있다) 화면으로 돌아올 때 줄 대신 칸을 다시 세운다.
+// 보이는 동안은 1분마다 읽으니 줄이 그대로 남는다(남긴 시각이 아니라 못 읽은 틈으로 잰다 — 다시 남겨도 같은 답, 최종 검수).
+// 알림 칸은 「보내지 않은 글」로 남기지 않는다(remember — 남긴 뒤 탭을 닫을 때 저장 안 됨 창이 뜨지 않게, 최종 검수).
+let waitlistDone='',waitlistDoneAt=0,waitlistRedraw=false,intakeSeenAt=0;
+const WAITLIST_DONE_MS=15*60000;
+const intakeBlocked=intake=>intake?.state==='paused'||intake?.state==='full'?(intake.state==='full'&&intake.notify&&waitlistDone?{...intake,notified:waitlistDone}:intake):null;
 let intakeRead=null,intakeReadAt=0;
-function readIntake({fresh=false}={}){if(!intakeRead||fresh||Date.now()-intakeReadAt>30000){intakeReadAt=Date.now();const read=networkRequest('/pulse/api/availability').then(intakeOf,()=>{if(intakeRead===read)intakeRead=null;return null;});intakeRead=read;}return intakeRead;}
-const intakeKey=intake=>intake?.state==='paused'?JSON.stringify([intake.until,intake.note,intake.noteEn]):intake?.state==='queue'||intake?.state==='full'?JSON.stringify([intake.state,intake.kinds,intake.noticeDate]):'';
+const intakeSeen=result=>{const intake=intakeOf(result);intakeSeenAt=Date.now();if(intake.state!=='full')waitlistDone='';return intake;};
+function readIntake({fresh=false}={}){if(!intakeRead||fresh||Date.now()-intakeReadAt>30000){intakeReadAt=Date.now();const read=networkRequest('/pulse/api/availability').then(intakeSeen,()=>{if(intakeRead===read)intakeRead=null;return null;});intakeRead=read;}return intakeRead;}
+const intakeKey=intake=>intake?.state==='paused'?JSON.stringify([intake.until,intake.note,intake.noteEn]):intake?.state==='queue'||intake?.state==='full'?JSON.stringify([intake.state,intake.kinds,intake.noticeDate,!!intake.notify]):'';
 // 쉬는 안내가 선 첫 화면은 다시 열렸는지 스스로 다시 묻는다 — 안내가 선 화면에는 시작 단추가 없어 새로 물을 계기가 없다(열어 둔 탭 · 다시 띄운 설치 앱이
 // 담당자가 다시 받거나 다시 여는 날이 지나도 「쉬어요」에 머물지 않게). 화면으로 돌아올 때 · 첫 화면을 다시 붙일 때 · 보이는 동안 1분마다 묻고, readIntake가 30초 안에는 다시 묻지 않는다.
 // 타이머는 안내가 서 있는 동안에만 돈다(열려 있는 화면은 아무것도 묻지 않는다).
@@ -166,9 +175,12 @@ function watchIntake(){clearTimeout(intakeTimer);intakeTimer=0;if(s.mode==='cust
 async function recheckIntake(){
   if(s.mode!=='customer'||demo||filmDemo||s.project||!entryHandle||!intakeBlocked(s.intake))return;
   if(document.hidden||flow||flowOpening){watchIntake();return;}
+  const since=Math.max(intakeSeenAt,waitlistDoneAt);
   const intake=await readIntake();
+  // 읽는 사이에 새로 남긴 주소(waitlistDoneAt이 since보다 뒤)는 낡음 판정에서 뺀다 — 느린 망에서 방금 남긴 줄이 지워지지 않게(최종 검수 P3).
+  if(waitlistDone&&waitlistDoneAt<=since&&intakeSeenAt-since>WAITLIST_DONE_MS){waitlistDone='';waitlistRedraw=true;}
   // 그릴 수 있을 때만 상태를 바꾼다 — 못 그리는 순간(글 칸에 초점 · 탭 숨김 · 대화상자)에 바꾸면 안내는 남은 채 다시 묻기(쉬는 상태일 때만 돈다)가 멈춘다. 그때는 다음 물음(1분 뒤 · 화면 복귀)에 맡긴다.
-  if(intake&&intakeKey(intake)!==intakeKey(s.intake)&&!s.project&&canApplyRemote()){s.intake=intake;render();}
+  if(intake&&(waitlistRedraw||intakeKey(intake)!==intakeKey(s.intake))&&!s.project&&canApplyRemote()){waitlistRedraw=false;s.intake=intake;render();}
   watchIntake();
 }
 // 의뢰 흐름 손님(고객 방). 머리 하나 · 묻기 하나 · 영상과 납품 한 화면은 이 손님에게만 — 옛 프로젝트 · 체험 · 직원은 옛 길 그대로.
@@ -781,6 +793,19 @@ function applyMailOpen(){const box=document.querySelector('[data-entry-mail]');i
 function mailOpenCheck(){if(demo||filmDemo||s.mode!=='customer')return;if(mailOpenAvailable!==null){applyMailOpen();return;}if(mailOpenChecking)return;mailOpenChecking=true;request('/pulse/api/mail-open').then(result=>{mailOpenChecking=false;mailOpenAvailable=!!result?.available;applyMailOpen();},()=>{mailOpenChecking=false;applyMailOpen();});}
 // 같은 폼이 주소 → 여섯 자리 → (둘 이상이면) 고르기로 넘어간다. 답 · 실패는 판 안 알림으로.
 function mailStep(form,name){form.dataset.step=name;form.querySelectorAll('[data-mail-step]').forEach(el=>{el.hidden=el.dataset.mailStep!==name;});const help=form.querySelector('[data-mail-help]');if(help)help.hidden=name!=='code';const go=form.querySelector('[data-mail-go]');if(go){go.textContent=name==='email'?t('코드 받기'):t('열기',null,'open');go.closest('button').hidden=name==='pick';}}
+// 알림 명단 등록(운영 조각 6-C): 대기까지 찬 첫 화면의 메일 한 칸. 이제 열려 있거나 메일이 꺼졌으면 접수 상태를 새로 읽어 그에 맞는 안내 · 시작 단추를 세운다.
+async function waitlistStep(form,values){
+  const email=String(values.email||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){notice(t('이메일 주소를 확인해 주세요.'));form.querySelector('[name=email]')?.focus();return;}
+  setBusy(true);
+  // 보내는 동안 단추가 잠겨 초점이 문서로 빠진다 — 끝나면 초점을 돌린다: 남겼으면 안내 자리(「알림을 걸어 두었어요」를 읽게),
+  // 못 남겼으면 칸이 그대로면 주소 칸, 그 사이 열려 안내가 숨었으면 같은 자리의 「광고 의뢰하기」, 쉬기 · 메일 꺼짐 안내로 바뀌었으면 그 안내 자리(카본 A2).
+  const slot=form.closest('[data-paused]');let back=null;
+  try{await request('/pulse/api/waitlist',{body:{email,locale:locale()==='en'?'en':'ko',website:values.website||''}});waitlistDone=email;waitlistDoneAt=Date.now();hideNotice();render();back=slot;}
+  catch(error){notice(error.message);if(error.code==='SYNK_PULSE_WAITLIST_OPEN'||error.code==='SYNK_PULSE_INTAKE_PAUSED'||error.code==='SYNK_PULSE_WAITLIST_OFF'){const intake=await readIntake({fresh:true});if(intake&&!s.project){s.intake=intake;render();}}
+    back=form.isConnected&&!slot?.hidden?form.querySelector('[name=email]'):slot?.hidden?document.querySelectorAll('[data-entry="start"]')[[...document.querySelectorAll('[data-paused]')].indexOf(slot)]:slot;}
+  finally{setBusy(false);back?.focus({preventScroll:true});}
+}
 async function mailOpenStep(form,values){
   const step=form.dataset.step||'email';setBusy(true);
   try{
@@ -816,6 +841,7 @@ document.addEventListener('play',event=>{if(event.target.matches('audio,video'))
 document.addEventListener('submit',async event=>{
   const form=event.target.closest('form[data-form]');if(!form)return;event.preventDefault();if(busy||loading)return;const type=form.dataset.form,values=Object.fromEntries(new FormData(form));
   if(type==='mail-open'){await mailOpenStep(form,values);return;}
+  if(type==='waitlist'){await waitlistStep(form,values);return;}
   if(s.mode==='staff'&&type.startsWith('brand-')){await brandSubmit(type,form,values);return;}
   if(type==='invite'){const invite=parseInvite(values.invite);if(!invite){s.entryError={title:k('초대 링크를 읽지 못했어요'),text:k('담당자에게 받은 링크 전체(https://… #invite=…)를 붙여 넣어 주세요.')};render();return;}const kept=keptDrafts;resetContext();keptDrafts=kept;booting=true;render();await start(invite);return;}
   if(type==='intake-pause'){await intakeSave({open:false,pausedUntil:String(values.pausedUntil||''),pauseNote:String(values.pauseNote||''),pauseNoteEn:String(values.pauseNoteEn||'')},'새 의뢰 접수를 쉬어요. 손님 화면에는 1~2분 안에 보여요.',form);return;} // i18n-skip

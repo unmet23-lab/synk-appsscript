@@ -110,6 +110,15 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-paused-works{justify-self:start;padding:8px 0 0}
 .sx-end .sx-paused{max-width:520px;padding:0;background:none}
 .sx-end .sx-paused-head{font-size:var(--sx-t2);padding-bottom:14px;margin-bottom:6px}
+/* 알림 명단(운영 조각 6-C): 대기까지 찬 안내 안의 메일 한 칸 — 칸과 단추를 한 줄에(다시 열기 칸과 같은 밑줄 칸), 좁으면 두 줄. */
+.sx-wait{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:end;margin-top:8px}
+.sx-wait label{display:grid;gap:6px;min-width:0}
+.sx-wait input{background:none;border:0;border-bottom:1px solid var(--sx-dim);padding:8px 0;font-size:15px;width:100%;min-width:0;outline-offset:6px;color:var(--sx-ink)}
+.sx-wait .sx-go{padding:8px 0}
+.sx-paused .sx-wait-note{grid-column:1/-1;color:var(--sx-dim)}
+.sx-wait-done{margin-top:8px}
+.sx-wait-jump{display:none}
+@media (max-width:419.98px){.sx-wait{grid-template-columns:minmax(0,1fr)}.sx-wait .sx-go{justify-self:start}}
 /* 작품 목록 */
 .sx-p.is-works{flex-direction:column;align-items:stretch;justify-content:flex-end;gap:18px}
 .sx-works-head{max-width:520px}
@@ -252,7 +261,9 @@ html.sx.view-entry .app-header{display:none!important}
      폭 380 미만에서는 날짜가 잘리지 않게 줄을 바꾸게 둔다 — 영어 날짜 줄은 내년 날짜(연도가 붙는다)면 335px까지라 콘텐츠 폭 320px(폭 360)에 안 든다. 한 줄에 드는 글은 높이가 그대로다. */
   .sx-hero-act .sx-paused{padding:0;background:none;gap:4px;height:52px;align-content:center;overflow:hidden}
   .sx-hero-act .sx-paused-head{padding:0;margin:0;border:0}
-  .sx-hero-act .sx-paused-note,.sx-hero-act .sx-paused-works{display:none}
+  .sx-hero-act .sx-paused-note,.sx-hero-act .sx-paused-works,.sx-hero-act .sx-wait,.sx-hero-act .sx-wait-done,.sx-hero-act .sx-paused-when{display:none}
+  .sx-hero-act .sx-wait-jump{display:inline-flex;justify-content:flex-start;gap:10px;padding:0;font-size:13px;font-weight:500;line-height:1.3}
+  .sx-hero-act .sx-wait-jump .sx-arw{width:28px;height:12px}
   .sx-hero-act .sx-paused .sx-small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   @media (max-width:379.98px){.sx-hero-act .sx-paused{height:auto;min-height:52px}.sx-hero-act .sx-paused .sx-small{white-space:normal}}
   .sx-credit{text-align:left;margin:0 0 4px;min-height:0}

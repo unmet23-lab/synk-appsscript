@@ -275,6 +275,7 @@ export default {
   "결제가 확인된 뒤에 제작을 시작할 수 있어요. 담당자가 결제를 확인하면 알려 드려요.":"Production can start once your payment is confirmed. We will let you know when your producer confirms it.",
   "제작을 시작하기 전에 취소 · 환불 안내를 확인해 주세요.":"Please read the cancellation and refund note before production starts.",
   "다시 열기 요청을 확인해 주세요.":"Please check the reopen request.",
+  "알림 요청을 받지 못했어요. 다시 시도해 주세요.":"We couldn’t process that request. Please try again.",
   "메일 주소와 여섯 자리 코드를 확인해 주세요.":"Check your email address and the six-digit code.",
   "코드가 맞지 않거나 시간이 지났어요. 새 코드를 받아 주세요.":"That code is wrong or has expired. Please get a new code.",
   "고르는 시간이 지났어요. 코드를 다시 받아 주세요.":"The time to choose has run out. Please get a code again.",
@@ -1859,6 +1860,15 @@ export default {
   "지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.":"We’ve paused new briefs for now. Once we resume, you can start right here.",
   "지금은 예약이 찼어요. 자리가 나면 이 화면에서 다시 받아요.":"We’re fully booked right now. Once a spot opens up, you can start a brief right here.",
   "이 건은 아직 제작 자리 차례가 아니에요. 결제 요청 창을 닫고 다시 열면 자리 경고가 떠요 — 그걸 보고 보내 주세요.":"This order isn’t up for a production spot yet. Close the payment request window and open it again to see the spot warning, then send it.",
+  // 운영 조각 6-C: 알림 명단(대기까지 찬 첫 화면).
+  "열리면 메일로 알려 드릴까요?":"Want an email when a spot opens up?",
+  "알려 주세요":"Notify me",
+  "자리가 나면 이 주소로 한 번만 보내 드리고, 그 뒤 주소는 지워요.":"We’ll email this address just once when a spot opens up, then delete it.",
+  "알림을 걸어 두었어요. 자리가 나면 {email} 주소로 한 번 보내 드려요.":"You’re on the list. We’ll send one email to {email} when a spot opens up.",
+  "그 사이 자리가 났어요. 이 화면에서 바로 시작하실 수 있어요.":"A spot just opened up. You can start right here.",
+  "지금은 메일 알림을 받을 수 없어요. 잠시 뒤 이 화면에서 다시 봐 주세요.":"Email notifications aren’t available right now. Please check back here in a bit.",
+  "알림 명단이 찼어요. 이 화면에서 자리를 다시 봐 주세요.":"The notification list is full. Please check back here for open spots.",
+  "알림 요청이 많았어요. 한 시간쯤 뒤에 이 화면에서 다시 남겨 주세요.":"We’re getting a lot of requests right now. Please try again in about an hour.",
   // 제작 자리 · 대기(운영 조각 6-B · 11-13): 첫 화면의 「예약이 찼어요」, 의뢰서 첫 질문 · 결제 카드 · 방향 제안의 한 줄, 날짜 없이 보낸 제안의 받으실 날
   "지금은 예약이 찼어요":"We’re fully booked right now",
   "{date}쯤 자리가 나요. 그때 이 화면에서 바로 시작하실 수 있어요.":"A spot should open up around {date}. Once it does, you can start right here.",

@@ -131,6 +131,11 @@ const EN=Object.freeze({
   '다음 할 일: 파일을 받아 보시고 「수령 확인 남기기」를 눌러 주세요.':'Next: download the files and press “Confirm receipt”.',
   '받으실 날({date})은 확인을 기다리는 날만큼 늦어져요.':'Your delivery date ({date}) moves by the days we wait for your reply.',
   '지금은 제작 자리가 차 있어 결제 안내는 자리가 나는 대로 드려요. 기간은 결제한 날부터 세요.':'Our production schedule is full right now, so we’ll send payment details as soon as a spot opens up. The timeline starts on the day you pay.',
+  // 알림 명단 메일(운영 조각 6-C, pulse-waitlist.mjs).
+  '〔SYNK PULSE〕 제작 자리가 났어요':'〔SYNK PULSE〕 A production spot just opened up',
+  '알려 달라고 하신 제작 자리가 났어요. 아래 주소에서 광고 의뢰서를 바로 시작하실 수 있어요.':'You asked us to let you know when a production spot opened up, and one just did. You can start your ad brief right away at the link below.',
+  '자리는 먼저 시작하신 분부터 차요.':'Spots are filled in the order people start.',
+  '이 알림은 한 번만 보내 드리고, 주소는 알림 명단에서 지웠어요.':'We send this notice only once, and we’ve removed your address from the notification list.',
   // 운영 조각 2-B(11-11): 담당자 답 메일(staff_reply) — 꼬리는 「앱에서 답해 주세요」(메일 답장은 앱 대화로 들어가지 않는다)
   '{title}, 담당자가 답을 남겼어요':'{title}: your producer replied',
   '보내 주신 말씀에 담당자가 답을 남겼어요. 앱의 「담당자와 나눈 말」에서 보실 수 있어요.':'Your producer has replied to your message. You’ll find the reply in the app under “Messages with your producer”.',

@@ -159,7 +159,7 @@ test('앱: 접수 상태는 공개 주소에서 읽고, 쉬는 중에 쓰던 초
   // 바로 의뢰 주소(?start=request&lang=en)는 화면 언어가 정해지기 전에 여기까지 온다 — 알림도 그 응답의 허락 언어로 말한다.
   assert.match(app,/if\(intake\?\.state==='paused'&&!backend\.hasDraft\)\{if\(backend\.features\)await applyLocale\(backend\.features\);/);
   // 운영 조각 6-B: 대기까지 찬 상태(full)도 같은 자리에 안내가 선다 — 쉬는 중 · 대기까지 참을 한 식(intakeBlocked)으로 본다.
-  assert.ok(app.includes("const intakeBlocked=intake=>intake?.state==='paused'||intake?.state==='full'?intake:null;"));
+  assert.ok(app.includes("const intakeBlocked=intake=>intake?.state==='paused'||intake?.state==='full'?(intake.state==='full'&&intake.notify&&waitlistDone?{...intake,notified:waitlistDone}:intake):null;"),'쉬는 중 · 대기까지 참(대기까지 찬 안내에는 이번에 남긴 알림 주소 — 운영 조각 6-C)');
   assert.match(app,/entryHandle\.update\(\{resume:!!s\.requestResume,paused:intakeBlocked\(s\.intake\),/);
   assert.match(api,/SYNK_PULSE_INTAKE_PAUSED:k\('지금은 잠시 접수를 쉬어요\. 다시 열리면 이 화면에서 바로 시작하실 수 있어요\.'\)/);
   // .sx-go의 display가 hidden 속성을 이기므로(같은 무게 · 뒤에 적힘) 숨김을 따로 적어야 단추가 사라진다.
@@ -214,7 +214,7 @@ test('직원 첫 화면의 스위치: 서버가 알 때만 그리고, 바꾸는 
 test('좁은 화면 1쪽의 쉬는 안내는 굵은 단추와 같은 높이 안 두 줄이다 — 글 묶음이 올라가 세로 쇼릴의 얼굴을 덮지 않게',()=>{
   const css=read('film.css'),narrow=css.slice(css.indexOf('@media (max-width:820px),(max-aspect-ratio:1/1){'));
   assert.ok(narrow.includes('.sx-hero-act .sx-paused{padding:0;background:none;gap:4px;height:52px;align-content:center;overflow:hidden}'),'단추(52px)와 같은 높이');
-  assert.ok(narrow.includes('.sx-hero-act .sx-paused-note,.sx-hero-act .sx-paused-works{display:none}'),'담당자 안내 · 작품 줄은 좁은 화면 1쪽에서 뺀다(끝 쪽 안내 · 위 작품 줄이 맡는다)');
+  assert.ok(narrow.includes('.sx-hero-act .sx-paused-note,.sx-hero-act .sx-paused-works,.sx-hero-act .sx-wait,.sx-hero-act .sx-wait-done,.sx-hero-act .sx-paused-when{display:none}'),'담당자 안내 · 작품 줄은 좁은 화면 1쪽에서 뺀다(끝 쪽 안내 · 위 작품 줄이 맡는다 — 알림 칸은 둘째 줄 대신 내려가는 단추로)');
   assert.ok(narrow.includes('.sx-hero-act .sx-paused-head{padding:0;margin:0;border:0}'));
   assert.ok(narrow.includes('@media (max-width:379.98px){.sx-hero-act .sx-paused{height:auto;min-height:52px}.sx-hero-act .sx-paused .sx-small{white-space:normal}}'),'폭 380 미만에서는 날짜를 자르지 않고 줄을 바꾼다(영어 · 내년 날짜는 폭 360에 한 줄로 안 든다)');
   // 굵은 단추의 높이가 바뀌면 이 값도 함께 바뀌어야 한다: 글 15px × 줄 1.2 + 위아래 17px씩 = 52px.
@@ -231,7 +231,7 @@ test('넓은 화면 1쪽의 안내 판은 「쇼릴 위 빈 곳」이 아니다 
 test('쉬는 안내가 선 채 열려 있던 화면은 다시 열렸는지 스스로 다시 묻는다(화면으로 돌아올 때 · 첫 화면을 다시 붙일 때 · 보이는 동안 1분마다)',()=>{
   const app=read('app.mjs');
   assert.match(app,/async function recheckIntake\(\)\{\r?\n  if\(s\.mode!=='customer'\|\|demo\|\|filmDemo\|\|s\.project\|\|!entryHandle\|\|!intakeBlocked\(s\.intake\)\)return;/,'안내가 서 있을 때만 묻는다(열려 있는 화면은 아무것도 묻지 않는다)');
-  assert.ok(app.includes('if(intake&&intakeKey(intake)!==intakeKey(s.intake)&&!s.project&&canApplyRemote()){s.intake=intake;render();}'),'그릴 수 있을 때만 상태를 바꾼다(못 그리면 쉬는 상태로 둔 채 다음 물음에 맡긴다 — 다시 묻기가 멈추지 않게)');
+  assert.ok(app.includes("if(intake&&(waitlistRedraw||intakeKey(intake)!==intakeKey(s.intake))&&!s.project&&canApplyRemote()){waitlistRedraw=false;s.intake=intake;render();}"),'그릴 수 있을 때만 상태를 바꾼다(못 그리면 쉬는 상태로 둔 채 다음 물음에 맡긴다 — 다시 묻기가 멈추지 않게)');
   assert.match(app,/function watchIntake\(\)\{clearTimeout\(intakeTimer\);intakeTimer=0;if\(s\.mode==='customer'&&!demo&&!filmDemo&&!s\.project&&intakeBlocked\(s\.intake\)\)intakeTimer=setTimeout\(\(\)=>\{intakeTimer=0;void recheckIntake\(\);\},60000\);\}/,'타이머는 안내가 서 있는 동안에만 돈다');
   assert.ok(app.includes('mailOpenCheck();modelsEntry();void recheckIntake();}checkResume();watchIntake();}'),'첫 화면을 다시 붙일 때도 묻는다');
   assert.ok(app.includes("window.addEventListener('focus',()=>{if(journalSeenLater)markJournalSeen();void recheckIntake();void recheckStaffIntake();});"));

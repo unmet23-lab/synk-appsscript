@@ -563,3 +563,58 @@ test('운영 조각 6-B 결제 요청(서버 검수 GA1): 자리 차례를 기�
   assert.equal(Object.hasOwn((await free.room()).project,'seat'),false);
   assert.equal((await free.act({action:'payment_request',amount:290000})).data.project.studio.request.payment.status,'requested');
 });
+
+// 운영 조각 6-C(설계 S2 「정원 · 예약」 알림 명단): 대기까지 찬 동안 「열리면 메일로 알려 드릴까요?」 — 실제 회사 서버 길.
+test('운영 조각 6-C 알림 명단: 메일이 켜진 full에만 notify · 같은 출처 · 늘 같은 답 · 자리가 나면 남긴 차례로 한 통(손님 언어) · 열린 뒤에는 409 · 접속 주소 문턱',async t=>{
+  const f=await fixture(t);
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:0,queue:0}})).status,200);
+  let view=(await f.call('/pulse/api/availability')).data;
+  assert.equal(view.state,'full');assert.equal(Object.hasOwn(view,'notify'),false,'메일이 꺼져 있으면 칸을 그리지 않는다');
+  const off=await f.call('/pulse/api/waitlist',{body:{email:'wait@pulse-synthetic.test'}});
+  assert.equal(off.status,409);assert.equal(off.data.code,'SYNK_PULSE_WAITLIST_OFF');
+  await f.connect();
+  view=(await f.call('/pulse/api/availability')).data;
+  assert.deepEqual(Object.keys(view).sort(),['kinds','noticeDate','notify','state'],'공개 응답에 명단 크기 · 주소가 없다');assert.equal(view.notify,true);
+  const base='http://127.0.0.1:'+f.app.server.address().port;
+  const foreign=await fetch(base+'/pulse/api/waitlist',{method:'POST',headers:{Origin:'https://evil.example','Content-Type':'application/json'},body:JSON.stringify({email:'x@pulse-synthetic.test'})});
+  assert.equal(foreign.status,403,'다른 출처는 받지 않는다');
+  assert.equal((await fetch(base+'/pulse/api/waitlist')).status,405,'POST만 받는다');
+  assert.equal((await f.call('/pulse/api/waitlist',{body:{email:'x'.repeat(2100)+'@pulse-synthetic.test'}})).status,413,'몸통은 작게(문턱 앞)');
+  assert.deepEqual((await f.call('/pulse/api/waitlist',{body:{email:'Wait@Pulse-Synthetic.test',locale:'en'}})).data,{ok:true});
+  assert.deepEqual((await f.call('/pulse/api/waitlist',{body:{email:'wait@pulse-synthetic.test'}})).data,{ok:true},'같은 주소도 같은 답');
+  assert.deepEqual((await f.call('/pulse/api/waitlist',{body:{email:'second@pulse-synthetic.test'}})).data,{ok:true});
+  assert.equal((await f.call('/pulse/api/waitlist',{body:{email:'third@pulse-synthetic.test',note:'메모'}})).status,400,'손님이 적은 글은 받지 않는다');
+  const rows=f.app.store.all('pulseWaitlist');
+  assert.equal(rows.length,2);assert.ok(rows.every(row=>row.state==='waiting'));
+  const before=f.fake.sent.length;
+  assert.equal((await f.app.pulseWaitlist.tick()).sent,0,'자리가 없으면 보내지 않는다');
+  // 영상 자리 하나가 난다 → 먼저 남긴 한 사람에게만, 그 사람이 고른 영어로.
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:1,photo:0,queue:0}})).status,200);
+  assert.deepEqual(await f.app.pulseWaitlist.tick(),{sent:1,waiting:1});
+  const mails=f.fake.sent.slice(before);
+  assert.equal(mails.length,1);assert.equal(mails[0].to,'wait@pulse-synthetic.test');
+  assert.equal(mails[0].subject,'〔SYNK PULSE〕 A production spot just opened up');assert.match(mails[0].body,/pulse-app\/\?start=request&lang=en/);
+  assert.equal(f.app.store.all('pulseWaitlist').find(row=>row.state==='sent').email,undefined,'보낸 뒤 주소 원문은 지운다');
+  assert.equal((await f.app.pulseWaitlist.tick()).sent,0,'같은 자리로 둘째를 부르지 않는다');
+  // 쉬는 동안은 자리가 나도 부르지 않고, 명단도 받지 않는다(「바로 시작」 대신 쉬기 안내) — 다시 열면 둘째에게.
+  assert.equal((await f.staff('/api/settings/pulse-capacity',{body:{open:false,pauseNote:'쉬어요'}})).status,200);
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:2,photo:0,queue:0}})).status,200);
+  assert.equal((await f.app.pulseWaitlist.tick()).sent,0,'쉬는 동안은 부르지 않는다');
+  const resting=await f.call('/pulse/api/waitlist',{body:{email:'rest@pulse-synthetic.test'}});
+  assert.equal(resting.status,409);assert.equal(resting.data.code,'SYNK_PULSE_INTAKE_PAUSED');
+  assert.equal((await f.staff('/api/settings/pulse-capacity',{body:{open:true}})).status,200);
+  assert.deepEqual(await f.app.pulseWaitlist.tick(),{sent:1,waiting:0},'다시 열면 남은 자리만큼 둘째에게');
+  assert.equal(f.fake.sent.at(-1).to,'second@pulse-synthetic.test');
+  // 열린 뒤 등록은 409(화면이 다시 읽어 시작 단추를 세운다), notify도 없다.
+  const late=await f.call('/pulse/api/waitlist',{body:{email:'late@pulse-synthetic.test'}});
+  assert.equal(late.status,409);assert.equal(late.data.code,'SYNK_PULSE_WAITLIST_OPEN');
+  assert.equal(Object.hasOwn((await f.call('/pulse/api/availability')).data,'notify'),false);
+  // 접속 주소마다 한 시간 열 번(지금까지 꺼짐 409 · 확인 셋 · 400 · 쉬기 409 · 열림 409 = 일곱 — 다른 출처 403 · GET 405 · 큰 몸통 413은 문턱 앞).
+  for(let i=0;i<3;i++)await f.call('/pulse/api/waitlist',{body:{email:`n${i}@pulse-synthetic.test`}});
+  const over=await f.call('/pulse/api/waitlist',{body:{email:'over@pulse-synthetic.test'}});
+  assert.equal(over.status,429);assert.equal(over.data.code,'SYNK_PULSE_WAITLIST_BUSY','이 칸의 문턱 글(로그인 글이 아니다)');
+  // 메일 일정이 켜진 서버(운영)는 5분마다 한 바퀴 돌고, 멈출 때 타이머를 끈다(시험 서버는 일정을 끄고 tick을 바로 부른다).
+  const serverSource=await readFile(new URL('./server.mjs',import.meta.url),'utf8');
+  assert.ok(serverSource.includes('pulseWaitlistTimer=setInterval(()=>{void pulseWaitlist.tick().catch(()=>{});},5*60000);pulseWaitlistTimer.unref();'),'5분 타이머');
+  assert.equal(serverSource.split('clearInterval(pulseWaitlistTimer)').length-1,2,'멈춤 두 길 모두 타이머를 끈다');
+});

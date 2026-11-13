@@ -182,8 +182,13 @@ const inviteForm=entryError=>`<div class="sx-invite" data-entry-invite ${entryEr
 const pausedNote=paused=>paused.state==='full'?'':String((locale()==='ko'?paused.note:paused.noteEn)||'').trim();
 const pausedHead=paused=>paused.state==='full'?t('지금은 예약이 찼어요'):t('지금은 잠시 접수를 쉬어요');
 const pausedWhen=paused=>paused.state==='full'?(paused.noticeDate&&aboutDay(paused.noticeDate)?t('{date}쯤 자리가 나요. 그때 이 화면에서 바로 시작하실 수 있어요.',{date:aboutDay(paused.noticeDate)}):t('자리가 나면 이 화면에서 바로 시작하실 수 있어요.')):paused.until?t('{date}부터 다시 받아요.',{date:day(paused.until)}):t('다시 열리면 이 화면에서 바로 시작하실 수 있어요.');
-const pausedInner=(paused,works)=>{const note=pausedNote(paused);return `<p class="sx-paused-head">${esc(pausedHead(paused))}</p><p class="sx-small">${esc(pausedWhen(paused))}</p>${note?`<p class="sx-small sx-paused-note">${esc(note)}</p>`:''}${works?`<button type="button" class="sx-go sx-paused-works" data-entry="works"><span>${esc(t('완성 광고 보기'))}</span>${arrow}</button>`:''}`;};
-const pausedKey=paused=>!paused?'':paused.state==='full'?JSON.stringify(['full',paused.noticeDate||'',locale()]):JSON.stringify([paused.until||'',paused.note||'',paused.noteEn||'',locale()]);
+// 알림 명단(운영 조각 6-C): 대기까지 찼고 메일이 켜져 있으면(서버 notify) 메일 한 칸, 남긴 뒤에는 「알림을 걸어 두었어요」 한 줄.
+const waitlistSlot=paused=>paused.state!=='full'||!paused.notify?'':paused.notified?`<p class="sx-small sx-wait-done" role="status">${esc(t('알림을 걸어 두었어요. 자리가 나면 {email} 주소로 한 번 보내 드려요.',{email:paused.notified}))}</p>`
+  :`<form class="sx-wait" data-form="waitlist" novalidate><label><span class="sx-small">${esc(t('열리면 메일로 알려 드릴까요?'))}</span><input name="email" type="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><input class="sx-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit" class="sx-go" data-mutate><span>${esc(t('알려 주세요'))}</span>${arrow}</button><p class="sx-small sx-wait-note">${esc(t('자리가 나면 이 주소로 한 번만 보내 드리고, 그 뒤 주소는 지워요.'))}</p></form>`;
+// 휴대폰 1쪽(두 줄 높이)은 칸 대신 둘째 줄을 끝 쪽 칸으로 내려가는 한 줄 단추로 바꾼다 — 1쪽에서 돌아서는 손님도 알림을 만나게(최종 검수). 넓은 화면에서는 숨는다.
+const waitJump=paused=>paused.state==='full'&&paused.notify&&!paused.notified;
+const pausedInner=(paused,works)=>{const note=pausedNote(paused),jump=waitJump(paused);return `<p class="sx-paused-head">${esc(pausedHead(paused))}</p><p class="sx-small${jump?' sx-paused-when':''}">${esc(pausedWhen(paused))}</p>${jump?`<button type="button" class="sx-go sx-wait-jump" data-entry="wait"><span>${esc(t('열리면 메일로 알려 드릴까요?'))}</span>${arrow}</button>`:''}${note?`<p class="sx-small sx-paused-note">${esc(note)}</p>`:''}${waitlistSlot(paused)}${works?`<button type="button" class="sx-go sx-paused-works" data-entry="works"><span>${esc(t('완성 광고 보기'))}</span>${arrow}</button>`:''}`;};
+const pausedKey=paused=>!paused?'':paused.state==='full'?JSON.stringify(['full',paused.noticeDate||'',locale(),!!paused.notify,paused.notified||'']):JSON.stringify([paused.until||'',paused.note||'',paused.noteEn||'',locale()]);
 // data-key: 처음부터 쉬는 채로 그려진 화면이 그 상태에서 시작하게(mountEntry) 그린 안내의 열쇠를 적어 둔다. tabindex: 단추가 사라질 때 초점을 받을 자리.
 const pausedSlot=(paused,works=false)=>`<div class="sx-paused" data-paused${works?' data-paused-works':''} data-in tabindex="-1" data-key="${esc(pausedKey(paused))}"${paused?'':' hidden'}>${paused?pausedInner(paused,works):''}</div>`;
 // 화면 읽기에 한 번 알릴 말(머리 한 줄 + 다시 여는 날). 눈에 보이는 안내 칸 둘이 아니라 늘 있는 칸 하나(data-paused-say)가 읽는다.
@@ -337,6 +342,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
     if(what==='start'){onStart?.();return;}
     if(what==='models'){onModels?.();return;}
     if(what==='works'){sections[1]?.scrollIntoView({behavior:smooth()});return;}
+    if(what==='wait'){const end=$('.sx-end');(end?.closest('.sx-p')||end)?.scrollIntoView({behavior:smooth()});$('.sx-end form[data-form="waitlist"] input[name="email"]')?.focus({preventScroll:true});return;}
     if(what==='open'){setInvite(invite.hidden,event.target.closest('[data-entry]'));return;}
     if(what==='close'){setInvite(false);return;}
     // 쇼릴 위 빈 곳을 누르면 그 작품을 소리와 함께.

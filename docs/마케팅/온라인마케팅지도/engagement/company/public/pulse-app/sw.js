@@ -59,7 +59,9 @@
 // v61(11-14): 의뢰서 글 두 곳(v60 위) — 권리 동의 줄에 「음악」, 첫 화면 약속 줄에 「웃음으로 퍼지게」(request-flow.mjs · film-home.mjs · i18n/en.mjs). 목록은 그대로이고 판만 올린다.
 // v62(11-14): 제작 자리 · 대기(운영 조각 6-B, v61 위) — 첫 화면의 「예약이 찼어요」, 의뢰서 첫 질문 · 결제 카드 · 방향 제안의 자리 한 줄, 직원 첫 화면의 자리 칸 · 결제 창 경고로
 // app.mjs · views.mjs · film-home.mjs · request-flow.mjs · room-view.mjs · film-views.mjs · api.mjs · film.css · staff.css · i18n/en.mjs · 글꼴 조각(와 목록 밖의 직원 결제 칸 모듈)이 바뀌었다. 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v62-seats-20261114';
+// v63(11-14): 알림 명단(운영 조각 6-C, v62 위) — 대기까지 찬 첫 화면 안내에 「열리면 메일로 알려 드릴까요?」 메일 한 칸 · 「알림을 걸어 두었어요」 한 줄로
+// film-home.mjs · app.mjs · api.mjs · film.css · i18n/en.mjs가 바뀌었다(글꼴 조각은 새 글자가 없어 그대로). 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v63-waitlist-20261114';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');
