@@ -18,6 +18,10 @@ const { execFileSync, spawnSync } = require('node:child_process');
 const 관문 = require('./lib/음악층관문.js');
 
 const 소리 = /\.(wav|mp3|m4a|aac|ogg)$/i;
+// 11-13 B47: 컷마다 동영상(제미나이 앱 등)에 든 소리를 그대로 까는 편(<Audio src="img/V1.mp4">)은 영상 파일의 소리가 「음악만」 렌더에 남아
+// 대사가 음악 빈 박을 덮고(곡 안 꺼짐을 놓침) 대사가 끝나는 자리를 꺼짐으로 잡았다(19.75초 「음악」 −25 → −46dB, 곡 자체는 −25 → −29).
+// 영상 파일도 그림은 그대로 두고 소리 줄만 같은 길이 무음으로 바꾼다.
+const 영상 = /\.(mp4|m4v|mov|webm)$/i;
 const 화질줄 = /setX264Preset|setVideoBitrate|setPixelFormat|setColorSpace|setVideoImageFormat|setCrf|setCodec|setJpegQuality/;
 
 function 인자(argv) {
@@ -48,13 +52,26 @@ function 복사(src, dst) {
   }
 }
 
-function 소리파일(dir) {
+function 소리파일(dir, 꼴 = 소리) {
   const out = [];
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) out.push(...소리파일(p)); else if (소리.test(e.name)) out.push(p);
+    if (e.isDirectory()) out.push(...소리파일(p, 꼴)); else if (꼴.test(e.name)) out.push(p);
   }
   return out;
+}
+
+// 영상 파일의 소리 줄만 같은 길이 무음으로(그림은 그대로 복사). 소리 줄이 없으면 그대로 둔다.
+function 영상무음(f) {
+  const j = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,sample_rate,channels:format=duration', '-of', 'json', f], { encoding: 'utf8' }));
+  const a = (j.streams || []).find((s) => s.codec_type === 'audio');
+  if (!a) return false;
+  const 길이 = Number(j.format?.duration) || 0.1, sr = Number(a.sample_rate) || 48000, ch = Number(a.channels) || 2;
+  const 임시 = `${f}.무음${path.extname(f)}`;
+  execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', f, '-f', 'lavfi', '-i', `anullsrc=r=${sr}:cl=${ch === 1 ? 'mono' : 'stereo'}`, '-map', '0:v?', '-map', '1:a',
+    '-c:v', 'copy', '-c:a', /\.webm$/i.test(f) ? 'libopus' : 'aac', '-t', String(길이), 임시]);
+  fs.renameSync(임시, f);
+  return true;
 }
 
 // 같은 길이 · 표본율 · 채널의 무음으로 바꾼다 — 길이가 바뀌면 소리 길이로 박자를 잡는 편의 시간표가 어긋난다
@@ -107,6 +124,7 @@ function main(argv) {
     렌더(사본, comp, 전체wav);
     const 음악상대 = path.relative(path.join(원본, 'public'), 음악);
     for (const f of 소리파일(path.join(사본, 'public'))) if (path.relative(path.join(사본, 'public'), f) !== 음악상대) 무음으로(f);
+    for (const f of 소리파일(path.join(사본, 'public'), 영상)) 영상무음(f);
     렌더(사본, comp, 음악wav);
     const 잰것 = 관문.재기(칸재기(음악wav), 칸재기(전체wav));
     const 결과 = { 만든때: new Date().toISOString(), comp, 음악: path.relative(편, 음악).split(path.sep).join('/'), ...잰것 };
