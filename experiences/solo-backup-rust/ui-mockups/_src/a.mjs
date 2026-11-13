@@ -225,9 +225,10 @@ h1.m{font-size:44px;line-height:1.18}
 .bars .pick{position:absolute;top:-6px;bottom:-8px;width:0;border-left:2px solid var(--ink)}
 .bars .pick span{position:absolute;top:40%;right:8px;font-size:13px;font-weight:700;white-space:nowrap}
 .ticks{display:grid;grid-template-columns:repeat(25,minmax(0,1fr));gap:5px;margin-top:8px;font-family:var(--num);font-size:13px;color:var(--ink-3)}
-.ticks span{visibility:hidden;text-align:center;white-space:nowrap}
+.ticks span{visibility:hidden;justify-self:center;white-space:nowrap}
 .ticks span.s{visibility:visible}
-.ticks span.d{visibility:visible;text-align:left;color:var(--ink);font-weight:600}
+.ticks span.d{visibility:visible;justify-self:start;color:var(--ink);font-weight:600}
+.ticks span.e{justify-self:end}
 .legend{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:16px;font-size:13px;color:var(--ink-3);line-height:1.55}
 .legend b{color:var(--ink);font-weight:600;white-space:nowrap}
 .why{font-size:13px;line-height:1.55;color:var(--ink-3);margin-top:6px}
@@ -626,7 +627,8 @@ S.restore = () => sp({
   kick: `가장 최근 판 · 오늘 ${D.last.ko}`,
   h1: '무엇을 되살릴까요?',
   sub: '고른 파일은 지키는 폴더 밖의 새 폴더에 되살립니다. 원래 파일은 그대로 두고, 되살린 뒤 백업과 같은지 하나하나 확인합니다.',
-  more: `${notes(['지난 24시간의 판은 모두 남아 있고, 붙들어 둔 판(찾을 수 없는 폴더 · 한꺼번에 지워지기 전)도 고를 수 있습니다.'])}<a class="lnk" href="#restore" style="margin-top:14px">다른 시각 판 고르기 ${ICON.rarr}</a>`,
+  // 화면 · 상품은 「최신 하나」(결정 11-12 — 내부 24시간은 약속이 아니고 「지난 판 고르기」는 유료 구간 후보). 꺼낼 수 있는 것은 붙들어 둔 판뿐(설계 4.2 · 4.4), 링크는 붙들어 둔 판이 있을 때만 보인다(Fable 다시 확인 R1)
+  more: `${notes(['붙들어 둔 판(찾을 수 없는 폴더 · 한꺼번에 지워지기 전)이 있으면 그 판에서도 꺼낼 수 있습니다.'])}<a class="lnk" href="#restore" style="margin-top:14px">붙들어 둔 판에서 꺼내기 ${ICON.rarr}</a>`,
   act: `<button class="btn btn-solid" type="button">고른 3개 되살리기</button><button class="btn btn-line" type="button">전체 ${D.total.files}개 되살리기</button>`,
   right: `<section class="sheet wide" aria-label="찾기">
     <h2>찾기</h2><p class="meta num">${D.total.files}개 가운데 · 오늘 ${D.last.ko} 판</p>
@@ -716,7 +718,7 @@ S['move-1'] = () => sp({
   sub: `「${D.move.from}」의 백업을 찾았습니다. 마지막 확인은 ${D.move.fromLast}, <span class="num keep">${D.total.files}개 · ${D.total.size}</span>입니다.`,
   more: notes([
     '이미 있는 파일은 덮어쓰지 않습니다. 내용이 다르면 「(복구본)」을 붙여 나란히 둡니다.',
-    `약 <b class="num">${D.move.waitMin}분</b> 걸립니다(지난 백업에서 잰 회선 속도로 어림 — 시작하면 다시 셉니다). 끊겨도 멈춘 곳부터 잇습니다.`,
+    `약 <b class="num">${D.move.waitMin}분</b> 걸립니다(지난 백업에서 잰 회선 속도로 어림했고, 시작하면 다시 셉니다). 끊겨도 멈춘 곳부터 잇습니다.`,
   ]),
   act: '<button class="btn btn-solid" type="button">이 자리로 옮겨 오기</button><p class="alt"><span>파일이 이 PC에 그대로 남아 있나요?</span><a class="lnk" href="#move-1">되살리지 않고 이어서 백업</a></p><span class="hint">Windows를 새로 깔아 파일이 비었거나 일부만 남았으면 누르지 마세요. 「이 자리로 옮겨 오기」로 채웁니다.</span>',
   right: `<div class="opts" role="radiogroup" aria-label="놓을 자리">
@@ -810,7 +812,8 @@ S['undo-1'] = () => {
     const hgt = v === 0 ? 0 : Math.max(1.4, (v / max) * 100);
     return `<div class="b ${hot ? 'hot' : ''} ${v === 0 ? 'z' : ''}" style="height:${hgt}%">${hot ? `<span class="v num${i === 8 ? ' side' : ''}">${v.toLocaleString('en-US')}</span>` : ''}${i === 7 ? '<span class="pick" style="left:-4px"><span>오후 2:59</span></span>' : ''}</div>`;
   }).join('');
-  const ticks = D.undoHours.map(([h], i) => `<span class="${T.day[i] ? 'd' : T.show.includes(i) ? 's' : ''}">${T.day[i] || h}</span>`).join('');
+  const last = D.undoHours.length - 1;
+  const ticks = D.undoHours.map(([h], i) => `<span class="${T.day[i] ? 'd' : T.show.includes(i) ? 's' : ''}${i === last ? ' e' : ''}">${T.day[i] || T.label[i] || h}</span>`).join('');
   return sp({
     cls: 'flow',
     head: top({ flow: '사고가 났을 때 되돌리기', step: 1, total: 3 }),
@@ -820,7 +823,7 @@ S['undo-1'] = () => {
     more: `<div class="box"><b>되돌릴 수 있는 날이 ${D.undo.daysLeft}일 남았습니다</b>지워진 묶음은 30일째부터 사라지기 시작해, 하루 여유를 두고 <span class="keep">${D.undo.until}</span>까지 되돌릴 수 있습니다.</div>`,
     act: '<button class="btn btn-solid" type="button">이 시각으로 미리 보기</button><a class="lnk" href="#undo-1">다른 시각 고르기</a>',
     right: `<section class="sheet wide" aria-label="시간마다 숨겨진 백업 묶음">
-      <h2>시간마다 숨겨진 백업 묶음</h2><p class="meta">11월 12일 8시 ~ 13일 8시 · SYNK 서버가 센 수</p>
+      <h2>시간마다 숨겨진 백업 묶음</h2><p class="meta">11월 12일 오전 8시 ~ 13일 오전 8시 · SYNK 서버가 센 수</p>
       <p class="why">백업은 작은 묶음으로 나눠 올리고, 지워진 묶음은 30일 동안 숨겨 둡니다.</p>
       <div class="chart"><div class="bars">${bars}</div><div class="ticks">${ticks}</div></div>
       <div class="legend"><span>평소에는 지난 판을 정리하며 한 시간에 수십 개씩 숨겨집니다.</span><b class="num">오후 3시~5시: ${D.undo.spike}개</b></div>
