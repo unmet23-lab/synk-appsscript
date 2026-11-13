@@ -33,7 +33,7 @@ function save(patch){if(state.replayOf)return;try{Promise.resolve(HOST?.save?.(p
 
 /* ══ 소리 ══ 곡 · 배경 소리는 오디오 요소 → 필터 → 버스, 짧은 소리는 미리 푼 버퍼, 단추 · 말소리는 WORLD 펠트 합성(world-sound.mjs와 같은 식) */
 const SND=(()=>{
-  let ctx=null,master,musicBus,ambBus,sfxBus,on=true;
+  let ctx=null,master,musicBus,ambBus,sfxBus,voBus,on=true;
   try{on=localStorage.getItem('synk.world.seoul.sound')!=='off';}catch{}
   const tracks={},bufs={},loops={},asked=new Set();
   // 짧은 소리는 풀어 둔다. 첫 탭에 쓰는 넷만 미리, 나머지는 시작한 뒤에(warmAll)
@@ -44,7 +44,8 @@ const SND=(()=>{
     if(ctx)return ctx;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;
     ctx=new AC({latencyHint:'interactive'});master=ctx.createGain();master.gain.value=on?1:0;master.connect(ctx.destination);
     musicBus=ctx.createGain();ambBus=ctx.createGain();sfxBus=ctx.createGain();musicBus.gain.value=.78;ambBus.gain.value=1;sfxBus.gain.value=.9;
-    [musicBus,ambBus,sfxBus].forEach(b=>b.connect(master));
+    voBus=ctx.createGain();voBus.gain.value=1;
+    [musicBus,ambBus,sfxBus,voBus].forEach(b=>b.connect(master));
     for(const k of ['sfx_crowd','amb_room','amb_clock','pix_whoosh_short'])load(k);
     track('bgm_anthem');
     return ctx;
@@ -87,6 +88,13 @@ const SND=(()=>{
   function muffle(name,yes,dur=1.2,{from=null}={}){const t=tracks[name];if(!t||!ctx)return;const now=ctx.currentTime;
     for(const [p,v,v0] of [[t.lp.frequency,yes?950:20000,yes?20000:950],[t.hp.frequency,yes?420:20,yes?20:420]]){p.cancelScheduledValues(now);p.setValueAtTime(from?v0:p.value,now);p.exponentialRampToValueAtTime(v,now+dur);}}
   function sfx(name,vol=1,when=0){const c=ensure();if(!c||!bufs[name])return;const s=c.createBufferSource(),g=c.createGain();s.buffer=bufs[name];g.gain.value=vol;s.connect(g);g.connect(sfxBus);s.start(c.currentTime+when);}
+  /* ── 목소리 줄(이름 쓰기 · 서하 응원, name-coach.mjs): 미리 풀어 두고 한 번에 한 줄만, 도는 동안 곡을 낮춘다. 아직 안 풀렸으면 그 줄은 건너뛴다(늦게 나오는 응원은 엇박) ── */
+  const vo={};let voNow=null;
+  function voWarm(url){const c=ensure();if(!c||vo[url])return;vo[url]=fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(a=>c.decodeAudioData(a)).then(b=>{vo[url]=b;return b;}).catch(()=>{delete vo[url];return null;});}
+  function hush(){if(!voNow||!ctx)return;const {s,g}=voNow;voNow=null;try{g.gain.setTargetAtTime(0,ctx.currentTime,.03);s.stop(ctx.currentTime+.15);}catch{}ramp(musicBus.gain,.78,.5);}
+  function speak(url,{vol=1}={}){const c=ensure();if(!c||c.state!=='running')return null;const b=vo[url];if(!(b instanceof AudioBuffer)){voWarm(url);return null;}
+    hush();const s=c.createBufferSource(),g=c.createGain();s.buffer=b;g.gain.value=vol;s.connect(g);g.connect(voBus);s.start();ramp(musicBus.gain,.4,.18);
+    const me={s,g};voNow=me;s.onended=()=>{if(voNow===me){voNow=null;ramp(musicBus.gain,.78,.6);}};return b.duration;}
   function toggle(){on=!on;try{localStorage.setItem('synk.world.seoul.sound',on?'on':'off');}catch{}if(ctx)ramp(master.gain,on?1:0,.25);return on;}
   /* ── 펠트 합성(world-sound.mjs FELT · storyVoice와 같은 식) ── */
   let nb=null;function noise(){if(!nb){const n=Math.floor(ctx.sampleRate*.6);nb=ctx.createBuffer(1,n,ctx.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}const s=ctx.createBufferSource();s.buffer=nb;return s;}
@@ -119,10 +127,13 @@ const SND=(()=>{
     // 카드 프린터: 모터가 한 번 밀 때마다 낮은 웅 + 롤러 사각, 다 나오면 딸깍
     feed(d,t){const lo=ctx.createBiquadFilter();lo.type='lowpass';lo.frequency.value=650;lo.connect(d);tone(lo,{type:'sawtooth',f:88*vary(.03),f2:104,glide:.22,t,peak:.2,att:.025,dec:.22});burst(d,{t,peak:.14,att:.04,dec:.2,filters:[['bandpass',1700*vary(.1),.8],['highpass',900]]});},
     eject(d,t){burst(d,{t,peak:.5,att:.001,dec:.022,filters:[['bandpass',2600,1.4]]});tone(d,{f:240,f2:150,glide:.05,t,peak:.08,att:.002,dec:.06});burst(d,{t:t+.03,peak:.2,att:.03,dec:.16,filters:[['bandpass',900,.7,2400,.15]]});},
+    // 이름 쓰기: 획을 하나 끝낼 때마다 한 음씩 올라가는 마림바(5음 음계) · 순서나 방향이 어긋나면 낮게 두 음(꾸중이 아니라 「어?」)
+    step(d,t,k=0){const P=[523.25,587.33,659.25,783.99,880],n=Math.max(0,k|0);marimba(d,t,P[n%5]*(n>=5?2:1),.6);},
+    nudge(d,t){marimba(d,t,392,.42);marimba(d,t+.12,329.63,.38);},
     tick(d,t){tone(d,{f:1480*vary(.02),t,peak:.04,att:.001,dec:.03});burst(d,{t,peak:.2,att:.0008,dec:.008,filters:[['bandpass',3000,1.2]]});}
   };
-  const LEVEL={pencil:.35,buzz:.5,stamp:.85,tap:.25,select:.3,page:.21,open:.44,ok:.4,done:.39,reward:.45,chime:.5,shutter:.6,heart:.9,tick:.32,focus:.32,feed:.5,eject:.5};
-  function felt(name){const c=ensure();if(!c||c.state!=='running'||!FELT[name])return;const o=c.createGain();o.gain.value=LEVEL[name]||.3;o.connect(sfxBus);FELT[name](o,c.currentTime+.005);}
+  const LEVEL={step:.42,nudge:.4,pencil:.35,buzz:.5,stamp:.85,tap:.25,select:.3,page:.21,open:.44,ok:.4,done:.39,reward:.45,chime:.5,shutter:.6,heart:.9,tick:.32,focus:.32,feed:.5,eject:.5};
+  function felt(name,arg){const c=ensure();if(!c||c.state!=='running'||!FELT[name])return;const o=c.createGain();o.gain.value=LEVEL[name]||.3;o.connect(sfxBus);FELT[name](o,c.currentTime+.005,arg);}
   /* ── 말소리 ── 글자의 모음으로 높이, 문장 끝 부호로 억양. 서하는 밝은 사인, 지호는 낮은 삼각파. 해설은 키보드 딸깍 */
   const JUNG=[2,3,2,3,0,3,0,3,-1,2,3,-1,-1,-3,0,3,-3,-3,-2,-2,5];
   const VOICE={officer:{base:208,type:'triangle',from:.97,glide:.03,att:.004,dec:.075,peak:.042,lp:1500,jit:10},seoha:{base:440,type:'sine',from:1.08,glide:.025,att:.003,dec:.065,peak:.034,lp:2300,harm:.22,jit:30},jiho:{base:262,type:'triangle',from:.94,glide:.03,att:.004,dec:.07,peak:.042,lp:1600,jit:18}};
@@ -139,7 +150,7 @@ const SND=(()=>{
       const low=ctx.createBiquadFilter();low.type='lowpass';low.frequency.value=p.lp;low.connect(sfxBus);
       tone(low,{type:p.type,f:f*p.from,f2:p.from!==1?f:0,glide:p.glide,t,peak:pk,att:p.att,dec});
       if(p.harm)tone(low,{type:'sine',f:f*2*p.from,f2:p.from!==1?f*2:0,glide:p.glide,t,peak:pk*p.harm,att:p.att,dec:dec*.6});};}
-  return {ensure,unlock,warmAll,stopAll(d=.6){for(const k of Object.keys(loops))stop(k,d);for(const k of Object.keys(tracks))stop(k,d);},play,level,stop,muffle,sfx,felt,voice,toggle,get on(){return on;},get ctx(){return ctx;},tracks,loops};
+  return {voWarm,speak,hush,ensure,unlock,warmAll,stopAll(d=.6){for(const k of Object.keys(loops))stop(k,d);for(const k of Object.keys(tracks))stop(k,d);},play,level,stop,muffle,sfx,felt,voice,toggle,get on(){return on;},get ctx(){return ctx;},tracks,loops};
 })();
 SND.ensure();
 $('#sndBtn').onclick=e=>{e.stopPropagation();const on=SND.toggle(),label=on?'소리 끄기':'소리 켜기';$('#sndBtn').dataset.lAria=label;$('#sndBtn').setAttribute('aria-label',L(label));$('#sndWave').style.display=on?'':'none';$('#sndOff').style.display=on?'none':'';};

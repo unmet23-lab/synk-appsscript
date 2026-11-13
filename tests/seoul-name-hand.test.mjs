@@ -153,3 +153,63 @@ test('Fable 다시 검수 FA2: 라틴으로 친 이름은 한글 후보의 한 �
  const k=hangulName('Bo Erdenechimeg').ko;assert.equal(calledName(k,'Bo Erdenechimeg'),'보');
  assert.equal(calledName('응우옌 호앙 민','응우옌 호앙 민'),'민');assert.equal(calledName('응우옌 티 민 아인','Nguyen Thi Minh Anh'),'아인');
 });
+
+// 겉 v2(11-14): 잉크 · 흐린 글씨 그리기의 순수 함수 — 판정은 이 파일을 보지 않는다
+test('잉크 겉 v2: 굵기 배수는 느리면 굵고 빠르면 가늘며 끝을 뺀다, 넓적 촉은 세로획이 가로획보다 굵다', async () => {
+ const {inkScale,resample,smooth,nibQuads,profile,shapeOf}=await import('../experiences/seoul-arrival/name-ink.mjs');
+ const line=(dx,dy,ms)=>Array.from({length:41},(_,i)=>[i*dx,i*dy,i*ms]);
+ const slow=inkScale(line(1,0,10),{thin:.3,lo:.6,hi:1,vref:.9,fin:false}),fast=inkScale(line(6,0,6),{thin:.3,lo:.6,hi:1,vref:.9,fin:false});
+ assert.ok(slow[20]>fast[20]+.15,`${slow[20]} ${fast[20]}`);
+ for(const k of [...slow,...fast])assert.ok(k>=.6-1e-9&&k<=1+1e-9);
+ const tap=inkScale(line(2,0,8),{taperOut:20,outTo:.2});assert.ok(tap.at(-1)<tap[20]*.4,'끝을 뺀다');
+ assert.ok(inkScale([[0,0],[2,0],[4,0]],{}).every(Number.isFinite),'시각 없는 점(학생증 서명)');
+ const r=resample([[0,0],[10,0],[10,10]],2);assert.equal(r.length,11);assert.deepEqual(r.at(-1),[10,10]);
+ const sm=smooth([[0,0,0],[1,5,1],[2,0,2],[3,5,3],[4,0,4]],2);assert.deepEqual(sm[0],[0,0,0]);assert.deepEqual(sm.at(-1),[4,0,4]);assert.ok(Math.abs(sm[2][1]-2)<1e-9);
+ const area=v=>Math.abs(v.reduce((a,[x1,y1],j)=>{const [x2,y2]=v[(j+1)%4];return a+x1*y2-x2*y1;},0)/2);
+ const width=(pts)=>nibQuads(pts,pts.map(()=>1),{h:6,a:.42}).reduce((a,v)=>a+area(v),0)/10;
+ assert.ok(width([[0,0],[10,0]])*1.8<width([[0,0],[0,10]]),'세로획이 가로획보다 굵다');
+ for(const q of nibQuads([[0,0],[10,0],[10,10],[0,10]],[1,1,1,1],{h:5}))assert.ok(q.reduce((a,[x1,y1],j)=>{const [x2,y2]=q[(j+1)%4];return a+x1*y2-x2*y1;},0)>=0,'감김 방향이 모두 같다');
+ for(const k of ['h','v','hv','vh','dl','dr','o','hdl','tick'])for(let s=0;s<=1;s+=.05){const v=profile(k,s);assert.ok(v>.15&&v<1.2,k+' '+s);}
+ assert.ok(profile('dl',1)<profile('dl',.05)*.4,'삐침은 끝을 뺀다');assert.ok(profile('dr',.85)>profile('dr',0)*1.8,'오른내림은 눌러 내린다');
+ const sh=shapeOf('h',[[0,0],[100,0]]);assert.equal(sh.p.length,sh.K.length);
+});
+
+// 서하 목소리 응원(11-14 유호님 「실수하면 나레이션으로 가이드 · 제대로 해도 응원 · 최종 점수와 같이 승부욕」): 줄 고르기 · 잔소리 막기 · 파일과 출처 · 번역
+import {VO,SETS,finalLine,weakTag,tier,createCoach} from '../experiences/seoul-arrival/name-coach.mjs';
+test('서하 응원: 점수 층 · 다시 쓴 판 · 꼬리표 · 줄 파일과 번역', () => {
+ assert.equal(finalLine({score:100,attempt:1}),'f100');
+ assert.equal(finalLine({score:94,attempt:1}),'ftop');
+ assert.equal(finalLine({score:84,attempt:1}),'fhi');   // 80점대는 「한 번 더 하면 백 점」(승부욕)
+ assert.equal(finalLine({score:70,attempt:1}),'fmid');
+ assert.equal(finalLine({score:40,attempt:1}),'flow');
+ assert.equal(finalLine({score:90,attempt:2,prev:82}),'rup');
+ assert.equal(finalLine({score:80,attempt:2,prev:82}),'rdown');
+ assert.equal(finalLine({score:82,attempt:3,prev:82}),'rdown');   // 같으면 「조금만 더」
+ assert.equal(finalLine({score:100,attempt:2,prev:100}),'r100');
+ assert.deepEqual([100,95,85,60].map(tier),['full','top','hi','mid']);
+ assert.equal(weakTag({ord:.5,dir:1,like:.98}),'순서');
+ assert.equal(weakTag({ord:1,dir:0,like:.99}),'방향');
+ assert.equal(weakTag({ord:1,dir:1,like:.7}),'모양');
+ assert.equal(weakTag({ord:1,dir:1,like:.97}),null);
+ const made=JSON.parse(fs.readFileSync(new URL('../experiences/seoul-arrival/qa/소리출처.json',import.meta.url),'utf8'));
+ for(const [id,text] of Object.entries(VO)){
+  assert.ok(fs.existsSync(new URL(`../experiences/seoul-arrival/assets/snd/vo_nt_${id}.mp3`,import.meta.url)),id);
+  assert.equal(made['vo_nt_'+id]?.글,text,`출처 글: ${id}`);
+  for(const lang of ['en','mn'])assert.ok(text in TEXT_TABLES.UI[lang],`${lang}: ${text}`);
+ }
+ for(const ids of Object.values(SETS))for(const id of ids)assert.ok(VO[id],id);
+});
+test('서하 응원: 바로잡기는 음절마다 두 번 · 1.8초 안에 다시 하지 않고, 칭찬은 돌아가며, 끝 줄은 끼어든다', () => {
+ let t=0;const played=[];const SND={speak:u=>{played.push(u.match(/vo_nt_(\w+)\.mp3/)[1]);return 1.2;},hush(){},voWarm(){}};
+ const c=createCoach({SND,now:()=>t});
+ assert.equal(c.fix('order').id,'o1');t+=500;
+ assert.equal(c.fix('dir'),null);          // 1.8초 안
+ t+=2000;assert.equal(c.fix('dir').id,'d1');t+=2000;
+ assert.equal(c.fix('order'),null);        // 이 음절에서 두 번 넘음
+ c.syllable();assert.equal(c.fix('order').id,'o2');
+ t+=200;assert.equal(c.praise(),null);     // 바로잡기가 도는 동안 칭찬은 끼어들지 않는다
+ t+=2000;assert.equal(c.praise().id,'g1');t+=2000;assert.equal(c.praise().id,'g2');
+ assert.equal(c.final({score:84,attempt:1}).id,'fhi');   // 칭찬이 도는 중이어도 끝 줄은 낸다
+ assert.equal(c.said,'fhi');
+ const quiet=createCoach({SND:{speak:()=>null}});assert.equal(quiet.praise(),null);   // 아직 안 풀린 줄 · 소리 없음은 건너뛴다
+});

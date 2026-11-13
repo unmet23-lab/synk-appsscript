@@ -149,20 +149,103 @@ p{text-wrap:pretty}
 .trace-hint{display:block;width:max-content;max-width:min(436px,calc(var(--appw,100vw) - 24px));margin-left:50%;transform:translateX(-50%);word-break:keep-all;text-wrap:balance}
 .trace-btns{width:max-content;margin-left:50%;transform:translateX(-50%)}
 .trace-skip{margin-top:12px;min-height:44px;padding:0 18px;border-radius:22px;font-size:14px;font-weight:600;color:var(--ink);background:var(--glass2);box-shadow:inset 0 0 0 1px var(--line2);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-/* 부스 · 이름 손글씨(설계 이름손글씨.md): 「가」 칸과 같은 종이 칸 위에 음절 줄을 더한다. 흐린 글씨는 글꼴이 아니라 획 모형으로 그린다(선배가 연필로 흐리게 써 둔 글씨) */
-.trace.nt{top:47%;width:min(76%,300px,calc(100vh - 236px))}
-.nt-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;width:max-content;max-width:min(436px,calc(var(--appw,100vw) - 24px));margin:10px 0 0 50%;transform:translateX(-50%)}
-.nt-cell{display:block;width:34px;height:34px;border-radius:8px;background:rgba(244,241,234,.92);box-shadow:inset 0 0 0 1px rgba(214,92,92,.28);transition:box-shadow .3s,transform .35s var(--sp-fast,ease-out)}
-.nt-cell.gap{margin-left:10px}
-.nt-cell.cur{box-shadow:inset 0 0 0 2px #D65C5C;transform:translateY(-2px)}
+/* 부스 · 이름 손글씨 겉 v2(11-14 유호님 「AI 티」 → 시안 A 「명부 한 장」): 신입생 명부 카드 한 장 위 원고지 칸에 넓적 촉으로 쓴다. 흐린 글씨 · 잉크는 획 모형에서 name-ink.mjs가 그린다(설계 이름손글씨.md 「겉 v2」) */
+.trace.nt{top:50%;width:min(88%,330px,calc(100dvh - 300px))}
+.nt-card{position:relative;padding:15px 15px 4px;text-align:left;color:#15171C;background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");border-radius:2px;box-shadow:0 1px 1px rgba(0,0,0,.08),0 10px 24px -8px rgba(0,0,0,.45),0 40px 70px -30px rgba(0,0,0,.7)}
+.nt-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:9px;border-bottom:1.5px solid #15171C}
+.nt-hd b{font-size:12.5px;font-weight:620;letter-spacing:-.01em}
+.nt-hd span{font:500 10.5px var(--mono);letter-spacing:.02em;color:#6A6F78}
+.nt-nb{position:relative;display:flex;align-items:center;gap:14px;padding:11px 0 12px}
+.nt-lab{flex:none;font-size:12px;font-weight:550;color:#6A6F78;letter-spacing:.06em}
+.nt-in{flex:none;margin-left:auto;padding-right:7px;font-size:11.5px;font-weight:500;color:#A2A7AF;letter-spacing:.04em}
+.nt-row{display:flex;flex-wrap:wrap;min-width:0;padding-left:1px}
+.nt-cell{display:block;width:32px;height:32px;margin:0 0 -1px -1px;box-shadow:inset 0 0 0 1px rgba(194,74,55,.5);transition:background .3s}
+.nt-cell.gap{margin-left:7px}
+.nt-cell.cur{background:rgba(194,74,55,.07)}
 .nt-cell svg{display:block;width:100%;height:100%}
-/* 「이대로 쓸게요」는 처음부터 자리를 차지하고 보이지만 않게 — 나타날 때 단추 줄이 접혀 칸이 위로 튀지 않게(화면 검수 F5) */
-.nt .trace-skip.off{visibility:hidden}
-.nt-guide{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .45s}
-.nt-guide.on{opacity:.22}
-.nt .trace-order{opacity:0}
-.nt .trace-order.on{opacity:1}
-.trace.nt.done .trace-order{opacity:0}
+.nt-seal{position:absolute;right:-3px;top:50%;width:42px;height:42px;margin-top:-21px;display:grid;place-items:center;align-content:center;background:#C24A37;color:#fff;font-style:normal;font-size:13.5px;font-weight:820;line-height:1.02;letter-spacing:0;box-shadow:inset 0 0 0 2px #C24A37,inset 0 0 0 3.2px rgba(255,255,255,.92);opacity:0;transform:rotate(-5deg) scale(1.7);pointer-events:none;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 2.1'/%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)'/%3E%3C/svg%3E") center/100% 100%;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 2.1'/%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)'/%3E%3C/svg%3E") center/100% 100%}
+.nt-seal b{display:block;font-weight:inherit}
+.trace.nt.done .nt-seal{animation:nt-stamp .34s cubic-bezier(.2,1.25,.4,1) .2s forwards}
+.trace.nt.done .nt-card{animation:nt-thud .34s ease-out .36s}
+@keyframes nt-stamp{0%{opacity:0;transform:rotate(-5deg) scale(1.7)}60%{opacity:1;transform:rotate(-5deg) scale(.95)}100%{opacity:.94;transform:rotate(-5deg) scale(1)}}
+@keyframes nt-thud{0%,100%{transform:none}35%{transform:translateY(1.5px) scale(.996)}}
+.nt-pad{position:relative;width:100%;aspect-ratio:1;touch-action:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M50 0V100M0 50H100' stroke='%23C24A37' stroke-opacity='.34' stroke-width='.6' stroke-dasharray='1.6 2.2' vector-effect='non-scaling-stroke' fill='none'/%3E%3C/svg%3E") center/100% 100% no-repeat;box-shadow:inset 0 0 0 1px rgba(194,74,55,.5)}
+.nt-pad canvas,.nt-pad svg{position:absolute;inset:0;width:100%;height:100%}
+.nt-guide{opacity:0;transition:opacity .45s}.nt-guide.on{opacity:1}
+.nt-order{z-index:2;pointer-events:none;overflow:visible;opacity:0;transition:opacity .4s}.nt-order.on{opacity:1}
+.trace.nt.done .nt-order{opacity:0}
+.trace.nt.done canvas{opacity:1}
+#ntInk{z-index:3}
+.nt-fly{position:absolute;z-index:6;transform-origin:0 0;pointer-events:none}
+.nto-route{fill:none;stroke:#C24A37;stroke-width:1.3;stroke-linecap:round;stroke-dasharray:.1 5;opacity:0;transition:opacity .3s}
+.nto-arrow{fill:none;stroke:#C24A37;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .3s}
+.nto-s.cur .nto-route{opacity:.75}.nto-s.cur .nto-arrow{opacity:.9}
+.nt-order.demo .nto-route,.nt-order.demo .nto-arrow{opacity:0!important}
+.nto-run{fill:none;stroke:#C24A37;stroke-width:2.4px;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.nto-n{fill:#C24A37;font:600 11px var(--sans);text-anchor:middle;dominant-baseline:central;letter-spacing:0;opacity:0;transition:opacity .3s}
+.nto-s.shown .nto-n{opacity:.4}.nto-s.shown.cur .nto-n{opacity:1}.nto-s.done .nto-n{opacity:0}
+.nto-nib{fill:#C24A37;opacity:0}
+.nt .trace-hint{display:flex;gap:10px;align-items:baseline;width:auto;max-width:none;min-height:56px;margin:0;padding:12px 2px 6px;transform:none;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;font-size:13.5px;font-weight:560;line-height:1.38;color:#1B1E25;text-align:left}
+.nt-cnt{flex:none;font:500 11px var(--mono);letter-spacing:.02em;color:#9A9FA8}.nt-cnt b{font-weight:500;color:#C24A37}
+.nt .trace-btns{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;width:auto;max-width:none;margin:2px 0 0;padding:10px 0 11px;transform:none;border-top:1px solid #ECEAE6}
+.nt .trace-skip{display:inline-flex;align-items:center;gap:5px;margin:0;min-height:40px;padding:0 10px 0 8px;border-radius:999px;background:none;box-shadow:inset 0 0 0 1px rgba(21,23,28,.18);-webkit-backdrop-filter:none;backdrop-filter:none;font-size:12px;font-weight:600;color:#262A32;white-space:nowrap}
+.nt .trace-skip svg{width:15px;height:15px;flex:none}
+/* 넘어가기는 카드 밖 사진 위 조용한 글 단추 — 카드 안은 쓰는 도구만(11-14 맹검 「주 동작 구분」) */
+.nt .trace-skip.nt-skip{display:flex;margin:12px auto 0;min-height:44px;padding:0 8px 0 12px;gap:2px;box-shadow:none;color:rgba(250,250,249,.76);font-size:13px}
+.trace.nt .trace-btns,.trace.nt .nt-skip{transition:opacity .3s}
+.trace.nt.done .trace-btns,.trace.nt.done .nt-skip{opacity:0;pointer-events:none}
+.nto-ok{fill:none;stroke:#2F6B4F;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .3s}
+.nto-s.done .nto-ok{opacity:.85}
+.nt-order.demo .nto-ok{opacity:0}
+.nt-card::before{content:"";position:absolute;inset:5px;border:1px solid rgba(21,23,28,.07);pointer-events:none}
+.nt .trace-skip:focus-visible{outline:2px solid #C24A37;outline-offset:-4px}
+/* 「이대로 쓸게요」는 칸 오른쪽 아래 귀퉁이에 뜬다 — 단추 줄 폭 · 카드 높이를 바꾸지 않아 칸이 튀지 않게(화면 검수 F5) */
+.nt .trace-skip.nt-ok{position:absolute;z-index:4;right:6px;bottom:6px;min-height:34px;padding:0 14px;border-radius:999px;background:#15171C;color:#fff;box-shadow:0 6px 16px -6px rgba(0,0,0,.45)}
+.nt .trace-skip.nt-ok.off{visibility:hidden}
+/* 다 쓴 뒤 비교(11-14 유호님 「제대로 쓴 글씨 · 직접 쓴 글씨 비교 … 다시하기」): 칸 자리에 바른 글씨 · 내 글씨(쓴 자리 · 크기 그대로, 뒤에 바른 글씨를 엷게) · 닮은 정도 */
+.nt-cmp{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:12px 14px 14px;background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");box-shadow:inset 0 0 0 1px rgba(194,74,55,.5);animation:nt-cmp-in .45s cubic-bezier(.16,1,.3,1)}
+.nt-cmp[hidden]{display:none}
+@keyframes nt-cmp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.nt-cmp-l{font-size:11.5px;font-weight:600;color:#6A6F78;letter-spacing:.02em}
+.nt-cmp-model,.nt-cmp-mine{display:flex;gap:6px}
+.nt-cmp-mine{margin-bottom:14px}
+.nt-cg{position:relative;display:block;flex:1 1 0;min-width:0;max-width:78px;aspect-ratio:1;box-shadow:inset 0 0 0 1px rgba(194,74,55,.32)}
+.nt-cg canvas{position:absolute;inset:0;width:100%;height:100%}
+.nt-cs{position:absolute;left:0;right:0;bottom:-16px;text-align:center;font:500 10.5px var(--mono);letter-spacing:.02em;color:#8A909A}
+.nt-cmp-s{display:flex;align-items:center;gap:10px;padding-top:6px;border-top:1px solid #ECEAE6}
+.nt-cmp-s span{font-size:12px;font-weight:600;color:#6A6F78}
+#ntScore{font:500 32px/1 var(--mono);letter-spacing:-.02em;color:#15171C;font-variant-numeric:tabular-nums}
+#ntDelta{font:600 13px var(--mono);font-style:normal;color:#C24A37}
+/* 점수 옆 디테일(11-14 유호님 「점수 옆에 응원하는 메세지나 이런 디테일」): 음절 점수 색 · 가장 아쉬운 곳 꼬리표 · 몇 번째 도전 · 최고 기록 표 · 점수가 다 오르면 한 번 튐 */
+.nt-cs.good{color:#2F6B4F}.nt-cs.low{color:#C24A37}
+.nt-cs em{margin-left:4px;padding:0 4px;border-radius:2px;font:600 9.5px/14px var(--sans);font-style:normal;letter-spacing:0;color:#C24A37;background:rgba(194,74,55,.09);vertical-align:1px}
+.nt-cmp-lr{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.nt-try{font:500 10.5px var(--mono);letter-spacing:.02em;color:#9A9FA8;white-space:nowrap}
+.nt-sl{display:grid;gap:3px;min-width:0}
+.nt-sd{display:flex;align-items:center;gap:7px;min-height:17px}
+.nt-sd:has(#ntDelta:empty):has(#ntRec:empty){display:none}
+.nt-cmp-s .nt-rec{font:500 10.5px var(--mono);letter-spacing:.02em;color:#9A9FA8;white-space:nowrap}
+.nt-best{display:inline-block;padding:2px 6px 1px;border:1.5px solid #C24A37;border-radius:2px;font:800 10.5px/1.2 var(--sans);letter-spacing:.04em;color:#C24A37;transform:rotate(-4deg);animation:nt-best .42s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes nt-best{0%{opacity:0;transform:rotate(-4deg) scale(1.8)}70%{opacity:1;transform:rotate(-4deg) scale(.94)}100%{transform:rotate(-4deg) scale(1)}}
+#ntScore.land{animation:nt-land .38s cubic-bezier(.2,1.4,.4,1)}
+@keyframes nt-land{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+/* 서하 말풍선: 점수 바로 아래(꼬리가 위 점수를 가리킴). 한국어 줄 + 학생 언어 번역, 목소리가 도는 동안 이름 옆 세 줄 물결 */
+.nt-say{position:relative;display:flex;gap:10px;align-items:flex-start;width:100%;padding:9px 12px 10px;border-radius:3px;background:#F4F1EC;animation:nt-say .32s cubic-bezier(.2,1,.4,1) both}
+.nt-say::before{content:"";position:absolute;left:22px;top:-6px;width:12px;height:12px;background:#F4F1EC;transform:rotate(45deg)}
+@keyframes nt-say{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.nt-who{position:relative;flex:none;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#C24A37;letter-spacing:.01em}
+.nt-who i{display:inline-block;width:11px;height:9px;background:linear-gradient(#C24A37,#C24A37) 0 50%/2px 40% no-repeat,linear-gradient(#C24A37,#C24A37) 50% 50%/2px 70% no-repeat,linear-gradient(#C24A37,#C24A37) 100% 50%/2px 40% no-repeat;opacity:0;transition:opacity .2s}
+.nt-who.talk i{opacity:.85;animation:nt-wave .5s ease-in-out infinite alternate}
+@keyframes nt-wave{from{background-size:2px 30%,2px 90%,2px 50%}to{background-size:2px 80%,2px 35%,2px 95%}}
+.nt-line{display:grid;gap:2px;min-width:0}
+.nt-line span{font-size:14px;font-weight:650;line-height:1.38;color:#15171C;word-break:keep-all}
+.nt-line small{font-size:12px;font-weight:500;line-height:1.35;color:#6A6F78}
+@media (prefers-reduced-motion:reduce){.nt-say,.nt-best,#ntScore.land{animation:none}.nt-who.talk i{animation:none}}
+.nt:not(.cmp) #ntRetry,.nt:not(.cmp) #ntKeep{display:none}
+.nt.cmp #ntOrderBtn,.nt.cmp #ntClear{display:none}
+.nt.cmp .nt-skip{visibility:hidden}
+.nt .trace-skip.nt-keep{flex:1 1 auto;justify-content:center;padding:0 16px;background:#15171C;color:#fff;box-shadow:none}
+.nt .trace-skip.nt-keep:focus-visible{outline-offset:2px}
 /* 학생증: 내가 쓴 이름 글씨 — 인쇄된 이름 오른쪽 빈자리에 볼펜 서명처럼 조금 기울여 얹는다(글줄을 더하거나 덮지 않게) */
 .id-sign{position:absolute;left:60%;right:16px;top:26%;height:30px;pointer-events:none;opacity:.9;transform:rotate(-3deg);transform-origin:0 50%}
 .id-info .nm .nm-ko,.id-info .nm small .nm-en,#idDept .dp-t{display:inline}
