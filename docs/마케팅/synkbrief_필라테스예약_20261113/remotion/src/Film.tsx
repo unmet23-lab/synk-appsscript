@@ -1,7 +1,7 @@
-// synkbrief B44 「메일 비서」 본편 — 새 방향 넷째 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 8pmlciY-FgA(형식만) 18.9초까지 원본 초 그대로 · 끝 칸만 길게.
-// 결(B39 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
-// 남자 · 해설은 흰, AI의 사과는 회색 · 버터는 한 곳(LINES의 butter) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
-// 그린 앱 화면 칸은 없다 — 폰 · 모니터 속은 시작 그림에 함께 구운 흐린 줄뿐이다.
+// synkbrief B47 「필라테스 예약」 본편 — 새 방향 편(재연 드라마 + 끝에 지키는 법 한 줄). 뼈대는 IzfvbmlOcNA(형식만) 30.4초까지 원본 박자 그대로 · 끝 칸만 길게.
+// 결(B44 Film.tsx의 장면 코드를 옮김 — 틀 파일은 tools/편틀 원천): 장면을 아래로 내리고 위는 같은 장면을 뒤집어 흐리게 · 위 그늘 위 큰 글자가 곧 말 ·
+// 남자 · 여자는 흰, AI 비서의 말은 회색 · 버터는 한 곳(LINES의 butter) · 컷이 1.035배에서 내려앉음 · SUIT 하나 · 마침표 없음 · 안전선 안(장부 「화면 결」).
+// 그린 앱 화면 칸은 없다 — 폰 속 「대기 3번」 · 「예약 취소됨」은 시작 그림에 함께 구운 글자다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from './lib/fonts';
@@ -92,7 +92,7 @@ const Label: React.FC = () => {
   const end = f >= sec(S.end);
   // v12(컷 전수 2 「5.0초 위 표시가 바로 바뀜」): 바뀌는 자리에서 4장 흐렸다가 다시 뜬다
   const o = end ? interpolate(f, [sec(S.end), sec(S.end) + 6], [0, 1], clamp) : interpolate(f, [sec(S.hook) - 4, sec(S.hook), sec(S.hook) + 4], [1, 0, 1], clamp);
-  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · 집 컴퓨터의 AI 비서에게 메일을 맡겼다가' : '재연 · 인물 · 상황은 각색'}</div>;
+  return <div style={{ position: 'absolute', left: X, top: 298, opacity: o, fontFamily: KO, fontWeight: 600, fontSize: 36, color: 'rgba(255,255,255,0.9)', letterSpacing: -0.3, textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>{end ? 'SYNK 브리핑' : f < sec(S.hook) ? '재연 · 호주에서 실제로 있었던 일' : '재연 · 인물 · 상황은 각색'}</div>;
 };
 
 export const Film: React.FC = () => {
@@ -115,9 +115,9 @@ export const Film: React.FC = () => {
       <Label />
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
-      {/* 배경음(일레븐랩스 연주곡 — 피치카토 긴장 → 9초부터 추격). 복도 질주(S.dash)에서 올라오고, 전원선을 뽑는 S.plug에 뚝 끊긴다 — 끝 칸은 방 소리 · 해설만(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.dash - 0.3), sec(S.dash + 0.4), sec(S.plug - 0.05), sec(S.plug + 0.04)], [0.06, 0.1, 0.1, 0.16, 0.16, 0], clamp)} />
-      {/* 아침 집 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
+      {/* 배경음(일레븐랩스 연주곡 — 살금살금 피치카토 · 나무 타악 · 뮤트 트럼펫). 반전(S.reveal)에서 조금 올라오고, 끝 줄을 속삭이기 직전(S.stop)에 끊는다 — 끝 줄은 스튜디오 공간 소리 위에서(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(S.stop - 0.25), sec(S.stop + 0.05)], [0.06, 0.1, 0.1, 0.14, 0.14, 0], clamp)} />
+      {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
       {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
