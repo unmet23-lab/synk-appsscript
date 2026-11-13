@@ -5,6 +5,9 @@ import {t,k,locale,intlLocale} from './i18n.mjs';
 // 값은 결정 10-29 정가의 「부터」만 쓴다. 기간 · 수정 횟수는 결정 11-07(가격표 · 크몽 상품 글과 같게)대로 보인다.
 // 다국어 판 2: 표의 글은 k('한국어')로 표시만 하고 값은 한국어 그대로 둔다(그리는 자리가 t(값)으로 옮긴다). 서버 허용 목록과 같은 저장값(REFERENCE_POINTS · 피할 말 칩)도 값은 그대로다.
 const shot=code=>`./assets/request/model-scene-${code}.webp`;
+// 모델 장면 사진의 두 판(작은 판 폭 960 · 큰 판 폭 1600, 같은 원본 · 같은 비율). 화소비가 높은 큰 화면만 큰 판을 받게 srcset으로 건다 — 의뢰서 큰 칸 · 첫 화면 3쪽 · 고객 방이 같이 쓴다.
+// 장면 사진이 아니면 빈 글(작품 포스터 · 손님 사진에는 큰 판이 없다).
+export const sceneSet=src=>/\/model-scene-[a-z]\d+\.webp$/.test(src)?`${src} 960w, ${src.replace(/\.webp$/,'-l.webp')} 1600w`:'';
 export const KINDS=Object.freeze([
   // 11-09: 업종마다 완성 광고가 있으면 그 작품 그림을 둔다(음료 오미톡 · 앱 모두의코스 · 기업 도담중공업 — 진열 정본 docs/마케팅/PULSE_포트폴리오_제작준비_20261012/진열). 없는 업종은 예시 장면 그대로.
   // 11-12: shotShape는 업종 그림의 꼴(tall 세로 9:16 · wide 가로 16:9 · scene 모델 장면 사진 폭 960). 늘리지 않고 꼴대로 놓는다 — 작품 그림은 큰 판이 없고(작품 원본 720p),

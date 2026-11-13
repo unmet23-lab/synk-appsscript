@@ -122,9 +122,9 @@ export function personaKeep(m,keep){
 }
 // 오른쪽 스크린(인물이 「지금 차례」일 때): 기준 얼굴 · 동작 시안 · 사용 확인의 기준 얼굴. 그릴 것이 없으면 ''(방의 스크린을 그대로 쓴다).
 export function personaScreen(m){
-  if(m?.card==='reference'&&m.reference?.assets?.[0])return `<img class="sx-q-fill" src="${esc(m.reference.assets[0].url)}" alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('{number}판 기준 얼굴',{number:m.number||1}))}</p>`;
+  if(m?.card==='reference'&&m.reference?.assets?.[0])return `<img class="sx-q-fill" src="${esc(m.reference.assets[0].url)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('{number}판 기준 얼굴',{number:m.number||1}))}</p>`;
   if(m?.card==='motion'){const clip=m.motion?.assets?.find(asset=>String(asset.mimeType).startsWith('video/'));if(clip)return `<video class="sx-q-fill" src="${esc(clip.url)}" muted loop playsinline preload="metadata" data-room-film aria-hidden="true"></video><p class="sx-small sx-room-cap">${esc(t('{number}판 동작 시안',{number:m.number||1}))}</p>`;}
-  if(m?.card==='usage'&&m.reference?.assets?.[0])return `<img class="sx-q-fill" src="${esc(m.reference.assets[0].url)}" alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(nameLine(m))}</p>`;
+  if(m?.card==='usage'&&m.reference?.assets?.[0])return `<img class="sx-q-fill" src="${esc(m.reference.assets[0].url)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(nameLine(m))}</p>`;
   return '';
 }
 // 일지 줄(판 3b 줄기에 인물 일을 한 줄씩). 서버가 내려 주는 code만 쓴다 — 손님 글 · 직원 메모 · 판 파일은 싣지 않는다. 지금 손님 차례를 연 줄에만 「열기」(고객 방)를 단다.

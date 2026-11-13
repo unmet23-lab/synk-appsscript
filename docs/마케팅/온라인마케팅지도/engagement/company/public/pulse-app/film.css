@@ -450,6 +450,18 @@ html.sx.view-entry .app-header{display:none!important}
 @media not all and (max-resolution:2.5dppx){.sx-q-fill[data-shot]{--shot-k:.49}}
 @media not all and (max-resolution:3dppx){.sx-q-fill[data-shot]{--shot-k:.3675}}
 @media not all and (max-resolution:4dppx){.sx-q-fill[data-shot]{--shot-k:.294}}
+/* 늘지 않게(11-13): data-cap 그림(손님 사진 · 내 모델 그림 · 큰 판이 모자란 예시 그림 · 장면 사진)은 받은 파일의 실제 화소(--cap-w · --cap-h — api.mjs capPixels가 적는다)
+   × 화소비 띠의 몫까지만 칸을 쓴다. 칸이 그보다 클 때만 그림 칸이 줄어 가운데에 서고 둘레는 그 칸의 어두운 바탕이다. 채우기(cover)는 그대로라 그 밖의 화면은 달라지지 않는다. */
+img[data-cap]{--cap-k:1.47;margin:auto;max-width:calc(var(--cap-w) * var(--cap-k));max-height:calc(var(--cap-h) * var(--cap-k))}
+@media not all and (max-resolution:1dppx){img[data-cap]{--cap-k:1.176}}
+@media not all and (max-resolution:1.25dppx){img[data-cap]{--cap-k:.98}}
+@media not all and (max-resolution:1.5dppx){img[data-cap]{--cap-k:.735}}
+@media not all and (max-resolution:2dppx){img[data-cap]{--cap-k:.588}}
+@media not all and (max-resolution:2.5dppx){img[data-cap]{--cap-k:.49}}
+@media not all and (max-resolution:3dppx){img[data-cap]{--cap-k:.3675}}
+@media not all and (max-resolution:4dppx){img[data-cap]{--cap-k:.294}}
+/* 칸을 채우던 흐름 속 그림은 그 칸 위에 겹쳐 놓아 위아래로도 가운데 선다(.sx-q-fill은 이미 겹쳐 있고, 받은 자료 격자의 그림은 격자 칸 안에서 가운데). */
+:is(.sx-casting-lead,.sx-q-how figure,.sx-pane-cast figure,.sx-mm-face,.sx-casting .sx-cast)>img[data-cap]{position:absolute;inset:0}
 /* 그림 위 글자는 검정 상자 대신 그늘 위 크레딧으로(의뢰 흐름 9절 5번). */
 .sx-q-screen::before{content:'';position:absolute;left:0;right:0;top:0;height:150px;background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,0));z-index:1;pointer-events:none}
 @media (max-width:860px){.sx-q-screen::after{content:'';position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(0deg,rgba(0,0,0,.6),rgba(0,0,0,0));z-index:1;pointer-events:none}}
@@ -602,7 +614,7 @@ html.sx.view-entry .app-header{display:none!important}
   .sx-q[data-step=model] .sx-q-foot{position:fixed;left:0;right:0;z-index:7}
   .sx-q[data-step=model] .sx-q-stage{padding-bottom:76px}
   .sx-wall,.sx-wall.is-plain{position:relative;inset:auto;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:calc((100vw - 2px)/3*1.2)}
-  .sx-casting{position:relative;inset:auto;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;padding-bottom:34px}
+  .sx-casting{position:relative;inset:auto;width:100%;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;padding-bottom:34px} /* 폭은 칸이 정한다 — 후보 사진이 칸 위에 겹쳐 놓이면(data-cap) 내용 폭이 없어 가운데 맞춤(.sx-q-view place-items)에 3px로 줄었다(11-13 Fable 5.2) */
   .sx-casting-lead{grid-row:auto;grid-column:1/-1;height:62vh;height:62dvh}
   .sx-casting .sx-cast{grid-column:auto;aspect-ratio:3/4}
   .sx-casting-all{right:0;bottom:4px;background:none}
@@ -1412,6 +1424,7 @@ html[lang="en"] .sx-q-line{grid-template-columns:100px minmax(0,1fr)}
 .sx-mm-paper.is-ask .sx-body{color:var(--sx-ink)}
 .sx-mm-paper-main{display:grid;grid-template-columns:minmax(180px,300px) minmax(0,1fr);gap:clamp(22px,4vw,56px);align-items:start;margin-top:8px}
 .sx-mm-paper-main figcaption{margin-top:10px;color:var(--sx-ink)}
+.sx-mm-paper-face{margin:0;min-width:0} /* 이름 줄은 얼굴 칸(3:4 · 넘침 자름) 밖 아래에 — 칸 안에 있으면 잘려 안 보였다(11-13 Fable 5.2) */
 .sx-mm-terms{margin:0;border-bottom:1px solid var(--sx-rule)}
 .sx-mm-terms div{display:grid;grid-template-columns:minmax(6em,9em) minmax(0,1fr);gap:16px;padding:12px 0;border-top:1px solid var(--sx-rule)}
 .sx-mm-terms dt{color:var(--sx-faint);padding-top:2px}

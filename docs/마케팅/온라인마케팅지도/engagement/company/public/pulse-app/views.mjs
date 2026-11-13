@@ -360,10 +360,10 @@ function overviewScreen(s,next){
   if(next.tab==='review'&&latest){const inner=clip(latest);if(inner)return `${inner}<p class="sx-small sx-room-cap">${esc(latest.label)}</p>`;}
   if(next.tab==='history'&&final){const inner=clip(final);if(inner)return `${inner}<p class="sx-small sx-room-cap">${esc(final.label)}</p>`;}
   const shown=item=>item.visibility!=='internal',concepts=(st.concepts||[]).filter(shown),sceneList=(st.scenes||[]).filter(shown);
-  if(next.tab==='concepts'){const c=concepts.find(item=>imageSource(item));if(c)return `<img class="sx-q-fill" src="${esc(imageSource(c))}" alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${concepts.length}개</p>`;}
+  if(next.tab==='concepts'){const c=concepts.find(item=>imageSource(item));if(c)return `<img class="sx-q-fill" src="${esc(imageSource(c))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">콘셉트 ${concepts.length}개</p>`;}
   const scene=sceneList.find(item=>imageSource(item));
-  if(scene)return `<img class="sx-q-fill" src="${esc(imageSource(scene))}" alt="" decoding="async"><p class="sx-small sx-room-cap">장면 ${sceneList.length}개. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
-  return `<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
+  if(scene)return `<img class="sx-q-fill" src="${esc(imageSource(scene))}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">장면 ${sceneList.length}개. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
+  return `<img class="sx-q-fill" src="./assets/request/w-gift-snow.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.</p>`;
 }
 function legacyOverview(s){
   const p=s.project,next=nextOf(s),turn=turnOf(s,next);
@@ -530,7 +530,7 @@ function askRoom(s){
         <form class="review-form sx-say is-open" data-form="feedback" id="review-feedback"><input type="hidden" name="action" value="support"><textarea name="text" rows="2" required maxlength="3000" placeholder="궁금한 점을 적어 주세요." aria-label="궁금한 점" data-grow></textarea><div class="sx-say-tools"><button type="submit" class="sx-go" data-mutate><span>문의 보내기</span>${arrow}</button></div><p class="sx-small">${s.demo?`체험 기록에만 남아요. 실제로 맡기거나 물어보려면 ${inquiryLink('sx-link')}`:'보내면 담당자에게 바로 보여요.'}</p></form>
         ${stepsOf(s,nextOf(s))}
       </div>
-      ${messages.length||(p.studio?.comments||[]).some(m=>m.targetType==='project')?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`}
+      ${messages.length||(p.studio?.comments||[]).some(m=>m.targetType==='project')?`<div class="sx-room-screen sx-ask-thread"><h2 class="sx-serif">문의와 답변</h2><div class="sx-thread">${messages.slice().reverse().map(threadRow).join('')}</div>${comments(p.studio?.comments||[],'project',null,s.notificationCommentId)}</div>`:`<div class="sx-room-screen"><img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p></div>`}
     </section>
   </div>`;
 }
@@ -551,7 +551,7 @@ function deliveryRoom(s){
         ${finals.length?`<p class="sx-small">파일이 열리지 않거나 다른 형식·길이가 필요하면 알려 주세요. ${lnk('담당자에게 묻기','tab','data-tab="review" data-scroll="inquiry"')}</p>`:''}
         ${stepsOf(s,next)}
       </div>
-      <div class="sx-room-screen${film?' sx-final':''}"${film?' data-final':''}>${film?`<video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div>`:'<img class="sx-q-fill" src="./assets/request/w-gift.webp" alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p>'}</div>
+      <div class="sx-room-screen${film?' sx-final':''}"${film?' data-final':''}>${film?`<video class="sx-q-fill" src="${esc(safeUrl(film.media.url,{media:true}))}" playsinline preload="metadata" data-film-player aria-label="${esc(film.label)}"></video><button type="button" class="sx-dr-play" data-film-toggle><i aria-hidden="true"></i><span>재생</span></button><div class="sx-final-bar"><span class="sx-no" data-final-time>0:00</span><div class="sx-final-line" data-final-line role="slider" tabindex="0" aria-label="재생 위치" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><i data-final-fill aria-hidden="true"></i></div><button type="button" class="sx-small" data-final-sound>소리 끄기</button><button type="button" class="sx-small" data-final-full>크게 보기</button></div>`:'<img class="sx-q-fill" src="./assets/request/w-gift.webp" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품</p>'}</div>
     </section>
     <section class="sx-legacy sx-history-paper">
       ${s.demo||s.example||!(st.deliverables?.revision||(st.deliverables?.items||[]).length)?'':deliverablesView(s,{readOnly:true})}

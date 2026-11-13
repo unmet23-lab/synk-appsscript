@@ -27,7 +27,8 @@ const kstDay=value=>{const at=Date.parse(value);return Number.isFinite(at)?new D
 const dateOf=value=>{const d=kstDay(value);return d?day(d):'';};
 const freshKey=()=>globalThis.crypto?.randomUUID?.()||Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)),value=>value.toString(16).padStart(2,'0')).join('');
 const nameOf=card=>card?.name||t('이름 없는 모델');
-const face=card=>card?.image?`<img src="${esc(card.image)}" alt="" loading="lazy" decoding="async">`:'';
+// 인물 그림은 크기를 모르는 그림이라 실제 화소의 1.47배까지만 칸을 쓴다(data-cap — api.mjs capPixels, 11-13).
+const face=card=>card?.image?`<img src="${esc(card.image)}" data-cap alt="" loading="lazy" decoding="async">`:'';
 const alertOf=st=>st.error?`<div class="sx-invite-alert sx-mm-alert" role="alert"><p>${esc(st.error)}</p></div>`:'';
 
 function gate(st){
@@ -89,7 +90,7 @@ function consent(st){
     [t('그만두는 법'),t('내 모델에서 언제든 다시 쓰기를 끄거나 삭제를 요청할 수 있어요.')],
     [t('백업'),t('지운 뒤에도 서버 백업 사본에는 최대 {months}개월 남았다가 차례로 지워져요. 오래 두는 별도 보관 사본에는 처음부터 넣지 않아요.',{months:Number(terms.backup?.maxMonths)||13})]].filter(([,value])=>value);
   return `<article class="sx-mm-paper"><p class="sx-kicker">${esc(first?t('보관 동의'):t('기한 연장'))} · ${esc(ws.name)}</p><h1 class="sx-display" tabindex="-1" data-mm-title>${esc(t('다음 광고에도 이 모델을 쓸까요?'))}</h1>
-    <div class="sx-mm-paper-main"><figure class="sx-mm-face ${card.image?'':'is-empty'}">${face(card)}<figcaption class="sx-small">${esc(nameOf(card))}</figcaption></figure>
+    <div class="sx-mm-paper-main"><figure class="sx-mm-paper-face"><div class="sx-mm-face ${card.image?'':'is-empty'}">${face(card)}</div><figcaption class="sx-small">${esc(nameOf(card))}</figcaption></figure>
     <dl class="sx-mm-terms">${rows.map(([key,value])=>`<div><dt class="sx-small">${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl></div>${alertOf(st)}
     <div class="sx-mm-paper-act"><button type="button" class="sx-go is-solid" data-mm-do="consent-go" ${st.busy?'disabled':''}><span>${esc(first?t('동의하고 보관'):t('동의하고 연장'))}</span>${arrow}</button><button type="button" class="sx-quiet" data-mm-do="back">${esc(t('내 모델로 돌아가기'))}</button></div></article>`;
 }

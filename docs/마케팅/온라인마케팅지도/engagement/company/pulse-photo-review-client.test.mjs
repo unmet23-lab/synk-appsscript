@@ -83,12 +83,12 @@ test('the room hangs the arrived photos where a film order plays its film, and t
   const review=project('photo',{versions:[shot('v1','1차 사진'),shot('v2','2차 사진')]}),info=roomModel(review);
   assert.equal(info.state,'review');assert.deepEqual(info.shots,[{src:'/pulse/api/media/v2',label:'2차 사진'}],'the latest preview only');assert.equal(info.film,null);
   const room=roomView(info);
-  assert.match(room,/<div class="sx-room-files is-shots" data-count="1"><img src="\/pulse\/api\/media\/v2" alt="2차 사진" decoding="async"><\/div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">사진 보기<\/span><\/button><p class="sx-small sx-room-cap">2차 사진<\/p>/);
+  assert.match(room,/<div class="sx-room-files is-shots" data-count="1"><img src="\/pulse\/api\/media\/v2" data-cap alt="2차 사진" decoding="async"><\/div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">사진 보기<\/span><\/button><p class="sx-small sx-room-cap">2차 사진<\/p>/);
   assert.doesNotMatch(room,/저희가 만든 광고의 한 장면이에요|w-gift/);
   const finals=[shot('v1','1차 사진','preview',{approvedAt:at}),...[1,2,3,4,5].map(n=>shot('f'+n,'완성 사진 '+n,'final',{guide:'안내',approvedPreviewId:'v1'}))];
   const delivered=project('photo',{stage:'delivered',versions:finals,extra:{closeout:{deliveryKey:'k1',canConfirm:true,files:[]}}});
   const got=roomModel(delivered);assert.equal(got.state,'deliver');assert.equal(got.shots.length,5);
-  assert.match(roomView(got),/<div class="sx-room-files is-shots" data-count="5">(<img src="\/pulse\/api\/media\/f\d" alt="완성 사진 \d" decoding="async">){5}<\/div>/);assert.match(roomView(got),/<p class="sx-small sx-room-cap">완성 사진 5장<\/p>/);
+  assert.match(roomView(got),/<div class="sx-room-files is-shots" data-count="5">(<img src="\/pulse\/api\/media\/f\d" data-cap alt="완성 사진 \d" decoding="async">){5}<\/div>/);assert.match(roomView(got),/<p class="sx-small sx-room-cap">완성 사진 5장<\/p>/);
   const closed=roomView(roomModel({...delivered,closeout:{deliveryKey:'k1',receipt:{confirmedAt:at},files:[]}}));
   assert.match(closed,/data-state="done"/);assert.match(closed,/같은 모델로 다음 사진을 이어 만들 수 있어요\. 담당자에게 알려 주세요/);assert.match(closed,/완성 사진 5장/);assert.doesNotMatch(closed,/자막 규격|다음 편/);
   // 그림 파일이 아닌 판(묶음 파일 · 링크)만 왔으면 걸 사진이 없다 — 전처럼 저희 작품의 한 장면.

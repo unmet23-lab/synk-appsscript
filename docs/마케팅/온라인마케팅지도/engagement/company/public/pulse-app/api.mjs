@@ -41,3 +41,28 @@ export const stamp=value=>{const date=new Date(value);if(!Number.isFinite(date.g
 export const day=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));if(!m)return String(value||'');const date=new Date(+m[1],+m[2]-1,+m[3]);if(date.getMonth()!==+m[2]-1)return String(value);if(locale()!=='ko')return new Intl.DateTimeFormat(intlLocale(locale()),{...(date.getFullYear()!==new Date().getFullYear()?{year:'numeric'}:{}),month:'short',day:'numeric',weekday:'short'}).format(date);const week='일월화수목금토'[date.getDay()];return (date.getFullYear()!==new Date().getFullYear()?date.getFullYear()+'년 ':'')+(date.getMonth()+1)+'월 '+date.getDate()+'일 ('+week+')';}; // i18n-skip
 export const keepDots=html=>String(html).replace(/([^\s<>]+·[^\s<>]+)/g,'<span class="nw">$1</span>');
 export const clock=value=>{const time=Math.max(0,Number(value)||0);return Math.floor(time/60)+':'+String(Math.floor(time%60)).padStart(2,'0');};
+// 그림을 실제 화소의 1.5배 넘게 늘리지 않는다(11-13): data-cap을 단 그림은 받은 파일(currentSrc)의 실제 화소를 --cap-w · --cap-h로 적고,
+// film.css가 칸을 「실제 화소 × 화소비 띠의 몫」 안으로 줄여 가운데 둔다(넘칠 때만 — 둘레는 그 칸의 어두운 바탕).
+// 손님 사진 · 내 모델 그림처럼 크기를 모르는 그림과, 큰 판이 모자란 예시 그림 · 장면 사진에 쓴다.
+// srcset 그림은 naturalWidth가 밀도로 나눈 값이라, 받은 판의 폭 표기(960w · 1600w)를 실제 폭으로 삼고 높이는 비율로 낸다.
+// srcset이 없으면 그 파일을 새 Image로 열어 잰다(받아 둔 파일이라 곧 온다) — 같은 img가 앞서 srcset 그림을 그렸다가 srcset을 떼고 src만 바꾸면
+// 크롬은 naturalWidth를 앞 판의 밀도로 나눈 채 돌려준다(11-13 Fable 5.2 — 손님 사진 640이 328로 적혀 칸이 반쯤으로 줄었다).
+export function capPixels(img){
+  const src=img?.currentSrc||img?.src;if(!src)return;
+  const put=(w,h)=>{if(!(w>0&&h>0)||(img.currentSrc||img.src)!==src)return;img.style.setProperty('--cap-w',`${Math.round(w)}px`);img.style.setProperty('--cap-h',`${Math.round(h)}px`);};
+  const set=img.getAttribute('srcset');
+  if(set){
+    const base=img.ownerDocument?.baseURI||globalThis.location?.href;
+    const real=set.split(',').map(item=>item.trim().split(/\s+/)).find(([url,w])=>/^\d+w$/.test(w||'')&&(()=>{try{return new URL(url,base).href===src;}catch{return false;}})());
+    if(real&&img.naturalWidth>0){const w=Number(real[1].slice(0,-1));put(w,img.naturalHeight*w/img.naturalWidth);return;}
+  }
+  const probe=new Image();probe.onload=()=>put(probe.naturalWidth,probe.naturalHeight);probe.src=src;
+}
+// 문서 전체에서 한 번 — 그림을 그리는 화면 모듈은 모두 이 파일을 먼저 읽으므로, 이 파일이 읽힐 때(무엇을 그리기 전) 듣기 시작한다.
+// load는 거품이 없어 붙잡기 단계로 듣는다. 이미 받아 둔 그림은 그 자리에서 잰다. 문서가 없는 곳(서버 · node 시험)에서는 아무것도 하지 않는다.
+export function watchPixelCaps(root=globalThis.document){
+  if(!root?.addEventListener||root.__pixelCaps)return;root.__pixelCaps=true;
+  root.addEventListener('load',event=>{const img=event.target;if(img?.tagName==='IMG'&&img.hasAttribute('data-cap'))capPixels(img);},true);
+  for(const img of root.querySelectorAll?.('img[data-cap]')||[])if(img.complete&&img.naturalWidth)capPixels(img);
+}
+watchPixelCaps();

@@ -50,8 +50,8 @@ test('every business picture says its shape, and the shape is the file’s own',
 
 test('the big portrait carries the shape on first paint and on every swap, and swaps only once the next picture is in',()=>{
   const flow=read('request-flow.mjs');
-  assert.ok(flow.includes('const portraitImg=src=>{const set=sceneSet(src),shape=set?\'\':shotShape(src);return `<img data-portrait src="${esc(src)}"${set?` srcset="${esc(set)}" sizes="${SCENE_SIZES}"`:\'\'}${shape?` data-shot="${shape}"`:\'\'} alt="" decoding="async">`;};'));
-  assert.ok(flow.includes("const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.src=src;"),'the shape changes with the src, not before it — the old photo is never drawn in the new shape; a picture with a large cut fills as before');
+  assert.ok(flow.includes('const portraitImg=src=>{const set=sceneSet(src),shape=set?\'\':shotShape(src);return `<img data-portrait src="${esc(src)}"${set?` srcset="${esc(set)}" sizes="${SCENE_SIZES}"`:\'\'}${shape?` data-shot="${shape}"`:\'\'}${set||shape?\'\':\' data-cap\'} alt="" decoding="async">`;};'));
+  assert.ok(flow.includes("const shape=set?'':shotShape(src);if(shape)img.dataset.shot=shape;else delete img.dataset.shot;img.toggleAttribute('data-cap',!set&&!shape);img.src=src;"),'the shape (and the pixel cap of a picture with neither a cut nor a shape) changes with the src, not before it — the old photo is never drawn in the new shape; a picture with a large cut fills as before');
   assert.ok(flow.includes("Promise.all([play(img,[{opacity:1},{opacity:.25}],{duration:120}).finished,next.decode?next.decode().catch(()=>{}):null]).then(()=>{if(swaps.get(img)!==token)return;"),'the swap waits for the next picture, and a later pick wins over an earlier one still loading');
   assert.ok(flow.includes("if(img.getAttribute('src')===src){if(pending){swaps.delete(img);play(img,[{opacity:.25},{opacity:1}],{duration:300});}return;}"),'going back to the picture already shown drops the pending swap and lifts the dimming');
 });
@@ -84,9 +84,10 @@ test('the first step’s screen shows the same picture whole, never past 1.47× 
   const flow=read('request-flow.mjs'),css=read('film.css');
   assert.ok(flow.includes("if(id==='what'){const kind=kindOf(a),src=kind?.shot||still('w-gift-sphere'),shape=shotShape(src);monSwap(`<img class=\"sx-q-fill\" data-still src=\"${esc(src)}\"${shape?` data-shot=\"${shape}\"`:''} alt=\"\">"),'the first paint carries the shape');
   assert.ok(flow.includes("kind(el){a.kind=el.dataset.id;setRows('kind',a.kind);crossfade($('[data-still]'),kindOf(a).shot);"),'changing the business swaps the picture (and its shape) through crossfade');
-  // 말 · 글자 단계의 광고 틀도 같은 그림이다 — 틀 비율이 달라도 자르지 않고 틀 안에 맞춘다. 손님이 올린 사진은 꼴이 없다(채우던 그대로).
+  // 말 · 글자 단계의 광고 틀도 같은 그림이다 — 틀 비율이 달라도 자르지 않고 틀 안에 맞춘다. 손님이 올린 사진 · 업종을 고르기 전 예시 그림은 꼴이 없다
+  // (채우던 그대로, 실제 화소의 1.47배까지만 칸을 쓴다 — data-cap, 11-13).
   assert.ok(flow.includes("const own=ownPhoto(a),shot=kindOf(a)?.shot,shape=own?'':shotShape(shot);"));
-  assert.ok(flow.includes("`<img class=\"sx-q-fill\" src=\"${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}\"${shape?` data-shot=\"${shape}\"`:''} alt=\"\">"));
+  assert.ok(flow.includes("`<img class=\"sx-q-fill\" src=\"${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}\"${shape?` data-shot=\"${shape}\"`:' data-cap'} alt=\"\">"));
   assert.ok(css.includes('.sx-q-screen:has(>.sx-q-view>.sx-q-fill[data-shot]){background:#000}'),'only a picture placed straight on the screen turns the screen black — an ad frame keeps its edge');
   // 휴대폰 첫 단계 띠(19dvh, Fable 5.2 P2): 세로 작품 · 모델 장면은 오른쪽에 붙고, 이름 글줄은 그 왼쪽 빈자리에만(그림 폭 ≤ 띠 높이 × .75).
   assert.ok(css.includes('  .sx-q[data-step=what] .sx-q-fill:is([data-shot=tall],[data-shot=scene]){margin-right:var(--sx-m);object-position:100% 50%}'));

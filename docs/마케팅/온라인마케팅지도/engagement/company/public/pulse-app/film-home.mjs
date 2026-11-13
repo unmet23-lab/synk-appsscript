@@ -5,11 +5,15 @@ import {FINISHED_FILMS,filmLine,filmNote,filmTitle} from './films-view.mjs';
 import {CASTING_BOOK_URL} from './casting-view.mjs';
 import {modelCard} from './room-view.mjs';
 import {reduced} from './motion.mjs';
+import {sceneSet} from './request-data.mjs';
 
 // 첫 화면(2026-11-05): 들어오자마자 작품이 화면 전부다. 쇼릴 위에 제목, 다음 쪽은 작품 이름, 그다음 세 번 확인 · 약속 · 진행 · 사람 · 끝.
 // 글은 승인 원고(docs/마케팅/PULSE_소개글_20261103/README.md 1절 · 5절)이고 낱말을 바꾸지 않는다. 짜임의 근거는 docs/마케팅/PULSE_프론트재구성_20261104/README.md.
 // CSP(style-src 'self') 안에서 돌도록 style 속성 글자를 쓰지 않고 CSSOM만 쓴다.
 const A='./assets/request/';
+// 3쪽 「세 번 확인」 창의 장면 사진(11-13): 화소비가 높은 큰 화면만 큰 판(폭 1600)을 받는다. sizes = cover로 그려지는 폭 ÷ 1.47 — 넓은 창은 창 폭(min(58%, 1400px))과
+// 창 높이 × 0.805(사진 비율) 가운데 큰 쪽, 세로 창(820px 이하 · 정사각보다 좁음)은 창 폭과 32vh × 0.805 가운데 큰 쪽. 큰 판으로도 모자란 화면(5K)은 data-cap이 칸을 줄인다.
+export const HOME_SCENE_SIZES='(max-width:820px) max(68.1vw,17.6vh), (max-aspect-ratio:1/1) max(68.1vw,17.6vh), max(min(39.5vw,953px),54.8vh)';
 const pad=value=>String(value).padStart(2,'0');
 export const arrow='<svg class="sx-arw" viewBox="0 0 40 16" aria-hidden="true"><path d="M0 8h38M31 1l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
 // 글은 승인 원고의 한국어를 그대로 두고(k — 번역 표시만) 그리는 자리에서 그 언어로 옮긴다(다국어 판 2).
@@ -205,7 +209,7 @@ const pages=({start,demoHref,paused=null})=>[
     <ol class="sx-check-list">${CHECK_THREE.map((text,i)=>`<li data-in><button type="button" data-check="${i}"><span class="sx-no">${i+1}/3</span><span class="sx-serif">${esc(t(text))}</span></button></li>`).join('')}</ol>
     <p class="sx-small" data-in>${esc(t('장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있고, 제품·로고·글자는 합성이라 달라지지 않아요.'))}</p></div>
     <div class="sx-check-stage" aria-hidden="true">
-      <div class="sx-pane sx-pane-cast is-on">${CHECK_CAST.map(modelCard).filter(Boolean).map(m=>`<figure><img data-src="${A}model-scene-${m.id.toLowerCase()}.webp" alt="" loading="lazy" decoding="async" width="960" height="1285"><figcaption class="sx-small"><b>${esc(t(m.name,null,'model'))}</b> ${esc(t(m.line))}</figcaption></figure>`).join('')}</div>
+      <div class="sx-pane sx-pane-cast is-on">${CHECK_CAST.map(modelCard).filter(Boolean).map(m=>`<figure><img data-src="${A}model-scene-${m.id.toLowerCase()}.webp" data-srcset="${sceneSet(`${A}model-scene-${m.id.toLowerCase()}.webp`)}" sizes="${HOME_SCENE_SIZES}" data-cap alt="" loading="lazy" decoding="async" width="960" height="1285"><figcaption class="sx-small"><b>${esc(t(m.name,null,'model'))}</b> ${esc(t(m.line))}</figcaption></figure>`).join('')}</div>
       <div class="sx-pane sx-pane-word"><p class="sx-serif sx-pane-one">${esc(t(CHECK_WORD.one))}</p><ol>${CHECK_WORD.rows.map(([at,text])=>`<li><span class="sx-no">${at}</span><span class="sx-small">${esc(t(text))}</span></li>`).join('')}</ol></div>
       <div class="sx-pane sx-pane-cuts">${Array.from({length:12},(_,i)=>`<img data-src="${A}sheet-gift-${pad(i+1)}.webp" alt="" loading="lazy" decoding="async" width="360" height="640">`).join('')}</div>
     </div>`},
@@ -250,7 +254,7 @@ export function mountEntry(root,{onStart,onInvite,onDemo,onModels,animate=true,d
   // 의뢰서 밑 첫 화면 그림 1.4MB가 의뢰서 그림과 같이 받아졌다). 느리지 않은 연결이면 문서 load 뒤 쉴 때 남은 그림을 다 붙여 둔다
   // (쪽 번호로 건너뛰어도 비지 않게 — 빠른 연결에서 보이는 것은 그대로다).
   let gone=false,idleTimer=0,onLoad=null;
-  const hydrate=node=>{if(!node||gone)return;for(const img of node.querySelectorAll('img[data-src]')){img.src=img.dataset.src;img.removeAttribute('data-src');}};
+  const hydrate=node=>{if(!node||gone)return;for(const img of node.querySelectorAll('img[data-src]')){if(img.dataset.srcset){img.srcset=img.dataset.srcset;img.removeAttribute('data-srcset');}img.src=img.dataset.src;img.removeAttribute('data-src');}};
   const warm=i=>{if(hold||i<0)return;for(let k=i;k<=i+2&&k<list.length;k++)hydrate(layers.get(list[k].layer));hydrate(sections[i]);hydrate(sections[i+1]);};
   const warmAll=()=>{if(!hold&&!slowData())hydrate(host);};
   const later=()=>{clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(typeof requestIdleCallback==='function')requestIdleCallback(warmAll,{timeout:4000});else warmAll();},1200);};

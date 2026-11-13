@@ -1,7 +1,7 @@
 import {esc,stamp} from './api.mjs';
 import {t,k} from './i18n.mjs';
 import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
-import {MODEL_LINES,MODEL_PICKS} from './request-data.mjs';
+import {MODEL_LINES,MODEL_PICKS,sceneSet} from './request-data.mjs';
 import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard,roomTab,lookOf,lookLine} from './room-view.mjs';
 import {FINISHED_FILMS,filmNote,filmTitle} from './films-view.mjs';
 import {revealWords,riseAll,rise,play,reduced} from './motion.mjs';
@@ -16,6 +16,11 @@ const pad=(value,size=2)=>String(value).padStart(size,'0');
 const secs=value=>t('{sec}초',{sec:Number(value).toFixed(value%1?2:0)});
 const cutName=(index,cut,react='',photo=false)=>{const vars={n:index+1,sec:cut.seconds.toFixed(1)};if(photo)return react==='ok'?t('{n}번째 장, 좋아요',vars):react==='fix'?t('{n}번째 장, 고칠 곳 있음',vars):t('{n}번째 장',vars);return react==='ok'?t('{n}번 컷, {sec}초, 좋아요',vars):react==='fix'?t('{n}번 컷, {sec}초, 고칠 곳 있음',vars):t('{n}번 컷, {sec}초',vars);};
 const modelScene=id=>`${ASSET}model-scene-${String(id).toLowerCase()}.webp`;
+// 고객 방 큰 스크린의 장면 사진(11-13): 화소비가 높은 큰 화면만 큰 판(폭 1600)을 받는다. sizes = cover로 그려지는 폭 ÷ 1.47 —
+// 넓은 창은 스크린 폭(창의 54%)과 창 높이 × 0.805(사진 비율) 가운데 큰 쪽, 세로 창(820px 이하 · 정사각보다 좁음)은 창 폭과 32vh × 0.805 가운데 큰 쪽.
+// 큰 판으로도 모자란 화면(5K 같은)과 스크린의 다른 그림(예시 그림 · 받은 자료 · 소식 그림)은 data-cap이 칸을 실제 화소의 1.47배 안으로 줄인다(api.mjs capPixels).
+export const ROOM_SCENE_SIZES='(max-width:820px) max(68.1vw,17.6vh), (max-aspect-ratio:1/1) max(68.1vw,17.6vh), max(36.8vw,54.8vh)';
+const roomScene=src=>{const set=sceneSet(src);return `<img class="sx-q-fill" src="${esc(src)}"${set?` srcset="${esc(set)}" sizes="${ROOM_SCENE_SIZES}"`:''} data-cap alt="">`;};
 const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.image;
 // 모델 이름 · 한 줄은 카탈로그 한국어를 그리는 자리에서 번역한다.
 const nameOf=name=>t(name,null,'model');
@@ -97,21 +102,21 @@ export const journalAsk=(cls='')=>`<button type="button" class="sx-quiet sx-j-as
 // news: 맞춤 인물 카드가 「지금 차례」인 방(머리 「내 차례」)에서는 인물 그림이 없을 때 이리 떨어져도 소식 그림을 띄우지 않는다(운영 조각 4 화면 검수 F2).
 function roomScreen(p,{news=true}={}){
   // 저희 차례에 담당자가 올린 작업 소식 그림(운영 조각 4): 예시 · 지난 판 그림보다 앞에, 완성본이 아니라는 말과 함께. 「소식 보기」는 일지의 그 줄로.
-  if(news&&p.news?.pictures?.length){const pics=p.news.pictures;return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
-  if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
-  if(p.state==='model'&&p.proposal)return `<img class="sx-q-fill" src="${esc(modelScene(p.proposal.id))}" alt=""><p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
+  if(news&&p.news?.pictures?.length){const pics=p.news.pictures;return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
+  if(p.state==='prepare'&&p.direction?.chosen?.src)return `<img class="sx-q-fill" src="${esc(p.direction.chosen.src)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
+  if(p.state==='model'&&p.proposal)return `${roomScene(modelScene(p.proposal.id))}<p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   if(p.film)return `<video class="sx-q-fill" src="${esc(p.film.src)}" muted loop playsinline preload="metadata" data-room-film aria-label="${esc(p.film.label)}"></video><button type="button" class="sx-room-play" data-room-go="${esc(p.film.go)}"><span class="sr">${esc(t('{label} 보기',{label:p.film.label}))}</span></button><p class="sx-small sx-room-cap">${esc(p.film.label)}</p>`;
   // 사진 상품(2026-11-12): 도착한 사진 · 완성 사진을 그대로 건다(영상 상품이 도착한 영상을 트는 자리) — 저희 작품의 예시 대신 손님 사진. 누르면 사진 확인 화면으로.
-  if(p.shots?.length)return `<div class="sx-room-files is-shots" data-count="${Math.min(p.shots.length,6)}">${p.shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(p.shots.length>1?t('완성 사진 {count}장',{count:p.shots.length}):p.shots[0].label)}</p>`;
+  if(p.shots?.length)return `<div class="sx-room-files is-shots" data-count="${Math.min(p.shots.length,6)}">${p.shots.slice(0,6).map(shot=>`<img src="${esc(shot.src)}" data-cap alt="${esc(shot.label)}" decoding="async">`).join('')}</div><button type="button" class="sx-room-play" data-room-go="review"><span class="sr">${esc(t('사진 보기'))}</span></button><p class="sx-small sx-room-cap">${esc(p.shots.length>1?t('완성 사진 {count}장',{count:p.shots.length}):p.shots[0].label)}</p>`;
   const cuts=p.draft?.cuts||[];
   const pictured=cuts.filter(cut=>cut.src);
   if(pictured.length)return `<div class="sx-room-cuts" data-count="${Math.min(pictured.length,12)}">${pictured.slice(0,12).map(cut=>`<img src="${esc(cut.src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><p class="sx-small sx-room-cap">${esc(p.photo?t('첫 장 {round}판 · {count}장',{round:String(p.draft.round),count:cuts.length}):t('{round}판 · {count}컷. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.',{round:String(p.draft.round),count:cuts.length}))}</p>`;
   if(cuts.length)return `<div class="sx-room-word"><p class="sx-serif">${esc(p.draft.oneLine)}</p><ol>${cuts.slice(0,4).map((cut,i)=>`<li><span class="sx-no">${pad(i+1)}</span><span class="sx-small">${esc(cut.what)}</span></li>`).join('')}</ol></div>`;
-  if(p.files.length)return `<div class="sx-room-files" data-count="${Math.min(p.files.length,6)}">${p.files.slice(0,6).map(file=>`<img src="${esc(file.src)}" alt="" decoding="async">`).join('')}</div>`;
+  if(p.files.length)return `<div class="sx-room-files" data-count="${Math.min(p.files.length,6)}">${p.files.slice(0,6).map(file=>`<img src="${esc(file.src)}" data-cap alt="" decoding="async">`).join('')}</div>`;
   // 사진 상품에는 영상 · 장면 이미지를 받는다고 말하지 않는다 — 같은 그림을 저희 작품의 한 장면으로만 소개한다.
   const own=k('저희가 만든 광고의 한 장면이에요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품');
   const next=['make','review','deliver','done'].includes(p.state)?['w-gift',p.photo?own:k('완성 영상의 예시예요. 「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품')]:['w-gift-snow',p.photo?own:k('다음에 받으실 장면 이미지의 예시예요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.')];
-  return `<img class="sx-q-fill" src="${ASSET}${next[0]}.webp" alt=""><p class="sx-small sx-room-cap">${esc(t(next[1]))}</p>`;
+  return `<img class="sx-q-fill" src="${ASSET}${next[0]}.webp" data-cap alt=""><p class="sx-small sx-room-cap">${esc(t(next[1]))}</p>`;
 }
 // ── 방향과 모델(영상 전 확인 1/3, 2026-11-07) ──
 // 시안 docs/마케팅/PULSE_방향제안_20261106/시안 그대로: 그림 둘이 양쪽 끝까지, 가운데 설명 한 장, 고른 쪽만 색. 휴대폰은 안내 → 두 그림 나란히 → 설명.

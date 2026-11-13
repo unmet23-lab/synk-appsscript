@@ -35,7 +35,8 @@ test('on a big monitor the cast photos of the three checks stay under the stretc
   const tall=Number(narrow.match(/\.sx-check-stage\{flex:none;width:100%;height:(\d+)vh;/)[1])/100;
   const stageOf=({w,h})=>w>820&&w>h?[Math.min((1-share)*w,cap),h]:[w,tall*h];
   const pane=entryView({}).match(/<div class="sx-pane sx-pane-cast[^"]*">([\s\S]*?)<\/div>/)[1];
-  const photos=[...pane.matchAll(/model-scene-[a-z]\d+\.webp/g)].map(found=>found[0]);
+  // 사람마다 그림 한 장(data-src) — 11-13부터 data-srcset에 같은 이름 · 큰 판이 함께 적힌다(고해상도 화면은 큰 판, tests/pulse-pixel-cap-scale.test.mjs).
+  const photos=[...pane.matchAll(/data-src="[^"]*\/(model-scene-[a-z]\d+\.webp)"/g)].map(found=>found[1]);
   assert.equal(photos.length,4,'four people take turns on the stage');
   for(const name of photos){
     const [nw,nh]=webpSize(readFileSync(new URL(`assets/request/${name}`,appDir)));
