@@ -112,6 +112,7 @@
 - 스로틀은 아니다. 대기열 최대 0.81, 초당 최고 933 IOPS로 명목 30 IOPS를 넘는 버스트가 났다. 몫은 IO 하나당 지연 3.8~4.7ms에서 온다(같은 VM의 pd-balanced는 한가할 때 0.8ms).
 - pd-balanced로 바꾸면(월 $2.08 → $5.20) 끊김이 약 230~290초가 될 것으로 추정한다(실측 아님).
 - 바꾸려면 주 노드를 멈춰야 한다. 길은 셋이다: 안 바꿈 / 다음 판 교체 창에 끼움 / 따로 정비 창. 데이터 디스크(이미 pd-balanced 50GiB)도 판마다 7~8GB를 읽으며 상한 근처(초당 160~170MB)를 찍는다.
+- **판 65 교체 창 맨 앞에서 바꾼다(11-14, 유호님 앞 조율 창 「65 때 바꿔」 — 월 +$3.12):** 도구 `.tmp/company-primary-boot-balanced-20261114/boot-swap.cjs`(미리 스냅숏 → 정지 → 마지막 스냅숏 → pd-balanced 디스크 → 바꿔 끼우기 → 켜기, 안 되면 저절로 옛 디스크로) · 재기 `outage-measure.cjs`(이 절의 숫자를 판 64 자료로 다시 돌려 같은 값). 검수 GPT `company-boot-balanced-20261114` 3건 반영 → `-b` 0. 65 길 안의 자리 · 승인 문장 · 되돌림 · 재는 법은 순서 문서(`.tmp/company-ha-release-order-20261020.md`) 절 「65에 실을 것 — 주 노드 부팅 디스크 pd-balanced」. 옛 디스크 · 스냅숏은 남기고, 지우기는 65가 안정된 뒤 여쭌다. 65 실측은 이 아래에 적는다.
 
 **도구 · 기록과 검수:**
 - 도구 · 결과 JSON: `.tmp/company-ha-rest-20261113/`(`deployment/disarm-rest.cjs` — 일꾼 `disarm-operator.cjs`는 판 64와 바이트 같음 `c92cf3f8…`; `ha-rest.cjs`).
