@@ -349,3 +349,62 @@ setTimeout(()=>{fs.writeFileSync(stateFile,JSON.stringify({revision:high}));fs.r
   fs.rmSync(dir,{recursive:true,force:true});
  }
 });
+
+// 낡은 잠금 치우기는 한 번에 한 쪽만(<파일>.lock.break) — 다른 쪽이 치우는 중이면 낡은 잠금도 지우지 않고 기다리고, 치우는 표지 안에서 다시 봐
+// 그새 새로 잡힌 잠금은 지우지 않는다. 치우다 죽은 쪽의 표지는 잠금을 쥔 쪽이 걷는다(GPT 다시 검수 GA1).
+test('처음 판 파일 — 낡은 잠금 치우기는 한 번에 한 쪽만 · 표지 안에서 다시 봐 새로 잡힌 잠금은 지우지 않는다 · 죽은 치우개의 표지는 잠금을 쥔 쪽이 걷는다(GPT 다시 검수 GA1)',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rehearsal-trail-break-'));
+ const stateFile=path.join(dir,'revision.json'),lock=`${stateFile}.lock`,breaking=`${lock}.break`;
+ const root=new URL('../',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1');
+ const ask=(trail,p,{method='GET',body}={})=>trail.handle({account:A,path:p,method,query:new URLSearchParams(''),
+  body:body===undefined?undefined:Buffer.from(JSON.stringify(body)),headers:HEADERS});
+ const revisionOf=async trail=>(await ask(trail,'trail-account')).body.learning.revision;
+ const bump=trail=>ask(trail,'trail-control',{method:'POST',body:{action:'revision'}});
+ const age=(file,ms)=>{const at=new Date(Date.now()-ms);fs.utimesSync(file,at,at);};
+ const written=()=>JSON.parse(fs.readFileSync(stateFile,'utf8')).revision;
+ const realStat=fs.statSync;
+ try{
+  const trail=await openRehearsalTrail({root,devOut:null,stateFile});
+  await revisionOf(trail);
+  // ① 다른 쪽이 치우는 중(살아 있는 표지) — 낡은 잠금이어도 지우지 않고, 기다리다 잠금 없이 쓴다(리허설 서버는 멈추지 않는다)
+  fs.mkdirSync(lock);age(lock,60_000);fs.mkdirSync(breaking);
+  let started=Date.now();await bump(trail);
+  assert.ok(Date.now()-started>=1500,'치우는 쪽이 있으면 기다렸다');
+  assert.equal(fs.existsSync(lock),true,'표지 없이 낡은 잠금을 지우지 않았다');
+  assert.equal(fs.existsSync(breaking),true,'남의 표지는 걷지 않았다');
+  const afterOne=written();
+  fs.rmdirSync(breaking);fs.rmdirSync(lock);
+  // ② 처음 볼 때 낡았던 잠금이 표지를 잡은 뒤에는 새것(그새 다른 쪽이 치우고 다시 잡음) — 지우지 않는다
+  fs.mkdirSync(lock);
+  let first=true;
+  fs.statSync=function(target,...rest){const stat=realStat.call(this,target,...rest);if(first&&path.resolve(String(target))===path.resolve(lock)){first=false;return {...stat,mtimeMs:Date.now()-60_000};}return stat;};
+  try{started=Date.now();await bump(trail);}finally{fs.statSync=realStat;}
+  assert.equal(first,false,'낡은 것으로 한 번 보였다');
+  assert.ok(Date.now()-started>=1500,'새로 잡힌 잠금은 기다렸다');
+  assert.equal(fs.existsSync(lock),true,'표지 안에서 다시 보고 새 잠금은 지우지 않았다');
+  assert.equal(fs.existsSync(breaking),false,'제 표지는 놓았다');
+  assert.ok(written()>afterOne,'기다린 뒤 썼다');
+  fs.rmdirSync(lock);
+  // ③ 치우다 죽은 쪽의 표지(낡음)만 남았으면 잠금을 쥔 쪽이 걷는다 — 다음 낡은 잠금도 치울 수 있게
+  fs.mkdirSync(breaking);age(breaking,60_000);
+  started=Date.now();await bump(trail);
+  assert.ok(Date.now()-started<1500,'잠금은 바로 잡았다');
+  assert.equal(fs.existsSync(breaking),false,'죽은 표지를 걷었다');
+  assert.equal(fs.existsSync(lock),false,'잠금을 놓았다');
+  // 낡은 잠금 하나만이면 표지를 잡고 치운 뒤 바로 쓴다(GC1 그대로)
+  fs.mkdirSync(lock);age(lock,60_000);
+  const before=written();started=Date.now();await bump(trail);
+  assert.ok(Date.now()-started<1500,'낡은 잠금은 기다리지 않는다');
+  assert.ok(written()>before);
+  assert.equal(fs.existsSync(lock),false);assert.equal(fs.existsSync(breaking),false);
+  // 살아 있는 표지(다른 쪽이 치우는 중)는 잠금을 쥔 쪽도 걷지 않는다
+  fs.mkdirSync(breaking);
+  started=Date.now();await bump(trail);
+  assert.ok(Date.now()-started<1500,'잠금은 바로 잡았다');
+  assert.equal(fs.existsSync(breaking),true,'살아 있는 표지는 두었다');
+  fs.rmdirSync(breaking);
+ }finally{
+  fs.statSync=realStat;
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+});

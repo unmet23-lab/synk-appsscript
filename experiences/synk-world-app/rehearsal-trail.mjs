@@ -553,11 +553,15 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
   // 읽기 · 쓰기를 옆 잠금 폴더(`<파일>.lock` — 만들기는 한 쪽만 된다)로 묶는다. 같은 파일을 쓰는 다른 서버 프로세스가 그 사이 더 큰 판을
   // 적어도 덮지 않는다(읽고 쓰는 사이에 끼면 나중에 쓴 쪽의 낮은 판이 남았다 — GPT Fable 처리 다시 검수 GC1). 10초 넘은 잠금은 주인이
   // 죽은 것으로 치우고, 2초 안에 못 잡으면 잠금 없이 쓴다(리허설 서버가 멈추지 않게).
+  // 치우기는 한 번에 한 쪽만(`<파일>.lock.break`) 하고 그 안에서 다시 봐 그때도 낡았을 때만 지운다 — 둘이 같이 치우면 한쪽이 상대가 새로
+  // 잡은 잠금을 지웠다(GPT 다시 검수 GA1). 치우다 죽은 쪽의 표지는 잠금을 쥔 쪽만 걷는다.
   const LOCK_STALE_MS = 10_000;
   const LOCK_WAIT_MS = 2_000;
   const pause = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  const stale = dir => Date.now() - fs.statSync(dir).mtimeMs > LOCK_STALE_MS;
   const locked = fn => {
     const lock = `${stateFile}.lock`;
+    const breaking = `${lock}.break`;
     const deadline = Date.now() + LOCK_WAIT_MS;
     let held = false;
     while (!held) {
@@ -567,8 +571,13 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
       } catch (error) {
         if (error?.code !== 'EEXIST') break;
         try {
-          if (Date.now() - fs.statSync(lock).mtimeMs > LOCK_STALE_MS) {
-            fs.rmdirSync(lock);
+          if (stale(lock)) {
+            fs.mkdirSync(breaking);
+            try {
+              if (stale(lock)) fs.rmdirSync(lock);
+            } finally {
+              fs.rmdirSync(breaking);
+            }
             continue;
           }
         } catch {}
@@ -577,6 +586,10 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
       }
     }
     try {
+      if (held)
+        try {
+          if (stale(breaking)) fs.rmdirSync(breaking);
+        } catch {}
       return fn();
     } finally {
       if (held)
