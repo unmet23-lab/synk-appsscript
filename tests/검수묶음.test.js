@@ -930,6 +930,18 @@ process.stdin.on('end', () => {
   assert.equal(기본.home, null, '계정을 안 주면 본 계정(~/.codex) — 밖의 CODEX_HOME을 따르지 않는다');
   assert.ok(기본.a.includes('model_reasoning_effort="max"'), '수준을 안 주면 GPT검수의 추론(max)');
   assert.equal(기본.a[기본.a.indexOf('-m') + 1], 'gpt-6.1-sol');
+  // 한 회차만 다른 모델로(SYNK_GPT_REVIEW_MODEL) — 부른 모델이 -m과 결과의 모델 칸에 그대로 남고, 기본값은 바뀌지 않는다
+  const 옛모델 = process.env.SYNK_GPT_REVIEW_MODEL;
+  t.after(() => { if (옛모델 === undefined) delete process.env.SYNK_GPT_REVIEW_MODEL; else process.env.SYNK_GPT_REVIEW_MODEL = 옛모델; });
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  const 바꿈 = await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
+  assert.equal(바꿈.selectedModel, 'gpt-6-astra-max · 본 계정(~/.codex)');
+  const 바꿈기록 = JSON.parse(fs.readFileSync(기록, 'utf8'));
+  assert.equal(바꿈기록.a[바꿈기록.a.indexOf('-m') + 1], 'gpt-6-astra');
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /모델 이름 꼴이 아니다/);
+  delete process.env.SYNK_GPT_REVIEW_MODEL;
+  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' }, '기본값은 그대로다');
   process.env.FAKE_CODEX = 'limit';
   await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /quota/);
   process.env.FAKE_CODEX = 'login';

@@ -938,6 +938,8 @@ const require코덱스 = () => require('./codex계정.js');
 // 기록 380여 건을 견주니 sol·max가 반영된 P0·P1을 100KB당 가장 많이 잡았고(1.42 · astra xhigh 1.25 · astra medium 0.47),
 // 굽기 장부 Pro의 주간 몫은 1회 0.08% 안팎으로 astra xhigh(0.1~0.3%)보다 적었다 — Pro 하나로 주 500회를 감당하는 쪽(결정 표 11-11).
 // 앱 설정과 떼어 두었으니 앱 기본값을 바꿔도 검수는 그대로다. --수준은 이 추론만 바꾼다.
+// 한 회차만 다른 모델로 볼 때(유호님이 그 회차의 모델을 정했을 때 — 11-14 「아스트라로 진행해」)는 환경변수 SYNK_GPT_REVIEW_MODEL=gpt-6-astra로 부른다.
+// 기본값은 바뀌지 않고, 결과의 「모델」 칸에는 실제로 부른 모델이 남는다. 모델 이름 꼴이 아니면 부르지 않고 멈춘다.
 export const GPT검수 = Object.freeze({ 모델: 'gpt-6.1-sol', 추론: 'max' });
 const 추론들 = ['minimal', 'low', 'medium', 'high', 'xhigh', 'ultra', 'max'];
 const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초, 11-04~11 max 회차 가운데 가장 긴 것이 26분(astra 1,573초 · sol 1,097초) — 큰 묶음의 여유
@@ -999,7 +1001,9 @@ function codex실행(args, 입력, timeoutMs, home = null) {
 export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs = GPT제한분 * 60_000, 계정 = { 이름: null, home: null } }) {
   const { 코덱스오류, 한도문구, 로그인문구 } = require코덱스();
   if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
-  const 모델 = GPT검수.모델, 추론 = thinking || GPT검수.추론;
+  const 바꿈모델 = (process.env.SYNK_GPT_REVIEW_MODEL || '').trim();
+  if (바꿈모델 && !/^gpt-[a-z0-9][a-z0-9.-]{0,40}$/.test(바꿈모델)) throw new Error(`SYNK_GPT_REVIEW_MODEL이 모델 이름 꼴이 아니다: ${바꿈모델.slice(0, 60)}`);
+  const 모델 = 바꿈모델 || GPT검수.모델, 추론 = thinking || GPT검수.추론;
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gpt-review-'));
   try {
     const 빈 = path.join(임시, 'empty'), 꼴파일 = path.join(임시, 'schema.json'), 답파일 = path.join(임시, 'answer.json');
