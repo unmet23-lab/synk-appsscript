@@ -1,17 +1,17 @@
 {
  "tool": "tools/나레이션굽기.mjs",
- "id": "m1",
- "text": "강철?!",
- "dur": 0.577,
+ "id": "k2",
+ "text": "달!",
+ "dur": 0.425,
  "words": [
   {
-   "text": "강철?!",
+   "text": "달!",
    "start": 0.02,
-   "end": 0.577
+   "end": 0.081
   }
  ],
  "source": {
-  "key": "02d77d9d067570e9713aa415e60431ce",
+  "key": "3417d6ee075a12a36aa603dd64a599d9",
   "voice": {
    "id": "tc_666a9871abcf27a5169850d0",
    "name": "소진"
@@ -19,10 +19,10 @@
   "settings": {
    "model": "ssfm-v30",
    "lang": "ko",
-   "emotion": "normal",
+   "emotion": "happy",
    "intensity": 1,
    "tempo": 1,
-   "seed": 7,
+   "seed": 1113,
    "lufs": -17,
    "voiceId": "tc_666a9871abcf27a5169850d0"
   },
@@ -35,6 +35,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 448
+  "topPitchHz": 321
  }
 }

@@ -15,7 +15,7 @@
   "seed": 1113,
   "lufs": -17
  },
- "made": "2026-11-13T06:38:56.981Z",
+ "made": "2026-11-13T09:48:51.236Z",
  "lines": [
   {
    "id": "p1",
@@ -45,12 +45,48 @@
    "words": 2
   },
   {
-   "id": "m1",
-   "text": "강철?!",
-   "dur": 0.577,
-   "syllablesPerSec": 3.47,
-   "src": "m1.wav",
-   "key": "02d77d9d067570e9713aa415e60431ce",
+   "id": "p5",
+   "text": "몽글 씨?",
+   "dur": 0.698,
+   "syllablesPerSec": 4.3,
+   "src": "p5.wav",
+   "key": "5f48ba3fb2e2cc8fac6fbd1df4484186",
+   "words": 2
+  },
+  {
+   "id": "k1",
+   "text": "해!",
+   "dur": 0.357,
+   "syllablesPerSec": 2.8,
+   "src": "k1.wav",
+   "key": "c0fac0ec42fc8c8a74fd54b4dcd58868",
+   "words": 1
+  },
+  {
+   "id": "k2",
+   "text": "달!",
+   "dur": 0.425,
+   "syllablesPerSec": 2.35,
+   "src": "k2.wav",
+   "key": "3417d6ee075a12a36aa603dd64a599d9",
+   "words": 1
+  },
+  {
+   "id": "k3",
+   "text": "강철!",
+   "dur": 0.63,
+   "syllablesPerSec": 3.17,
+   "src": "k3.wav",
+   "key": "1f636d1156422f88985c8e892f6d0624",
+   "words": 1
+  },
+  {
+   "id": "k4",
+   "text": "몽글몽글!",
+   "dur": 1.185,
+   "syllablesPerSec": 3.38,
+   "src": "k4.wav",
+   "key": "4a2d225ead5468329722f1c45c09be45",
    "words": 1
   }
  ]

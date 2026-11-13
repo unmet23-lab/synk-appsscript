@@ -105,6 +105,16 @@ t = 판(0.08)
 t = 판(0.35)
 쓰기('whoosh.wav', 띠(rng.standard_normal(len(t)), 500, 4500) * np.sin(np.pi * t / 0.35) ** 2, 0.4)
 
+# 똑딱 — 「체첵 씨?」에 아무도 대답이 없는 어색한 틈(작은 나무 소리)
+t = 판(0.12)
+쓰기('tick.wav', 띠(rng.standard_normal(len(t)), 1800, 5200) * np.exp(-t * 70) + np.sin(2 * np.pi * 2400 * t) * np.exp(-t * 90) * 0.4, 0.35)
+
+# 뽀옹 — 몽글 둘레에 폭신한 구름이 피어오름(부드러운 바람 덩이 + 올라가는 둥근 음)
+t = 판(0.9)
+뭉게 = 저역(rng.standard_normal(len(t)), 900) * np.sin(np.pi * np.minimum(1, t / 0.9)) ** 1.5
+둥 = np.sin(2 * np.pi * np.cumsum(260 + 380 * (t / 0.9) ** 0.7) / SR) * np.exp(-t * 3.2) * np.minimum(1, t / 0.04)
+쓰기('puff.wav', 뭉게 * 0.7 + 둥 * 0.6, 0.5)
+
 # 음악 — 보유곡 「밝은_052」 30.5초부터 17초
 뿌리 = os.path.abspath(os.path.join(여기, '..', '..', '..', '..'))
 원곡 = os.path.join(뿌리, 'docs', '홍보물', 'BGM', '밝은_052.wav')
