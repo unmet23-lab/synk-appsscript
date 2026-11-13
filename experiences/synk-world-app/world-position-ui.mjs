@@ -85,9 +85,55 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const note=noteText(skill.note);
   return `<details class="wpos-skill" data-skill="${posEscape(skill.id)}" data-cell="${posEscape(skill.cell)}" data-status="${posEscape(skill.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill))}${note?`<small class="wpos-skill-note" data-note="${posEscape(skill.note.kind)}">${posEscape(note)}</small>`:''}</span><span class="wpos-chip" data-tone="${POS_LED[skill.cell]||'idle'}">${posLed(POS_LED[skill.cell])}${posEscape(t(`position.cell.${skill.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t(`position.status.${skill.status}`))}</p><p class="wpos-evidence-title">${posEscape(t('position.evidence.title'))}</p>${evidenceRows(skill,catalog)}${uncountedRows(skill,catalog,assessable)}${helpedRows(skill,catalog)}${practiceButton(skill.id,practice)}</div></details>`;
  }
+ // 「놓친 곳 카드」(world-missed-spot.mjs buildMissedSpot): 놓친 곳 하나를 좁혀 짚고(항목 → 안내문 줄 → 놓친 방향), 그 뒤 다시 만난 일(●)과
+ // 다음 차례(○)를 한 줄씩. 판단은 하지 않고 카드 값을 그대로 그린다. 안내문 줄은 학습 내용이라 한국어 원문이다(lang="ko").
+ // 칸에 「앱이 알렸다 · 올 것이다」를 쓰지 않는다 — ○는 지금 기록 · 계획에 잡힌 것만(Fable 설계 검토 11-14).
+ const MISSED_STEPS=Object.freeze(['spot','again','practice','homework','delayed']);
+ function missedCount(row){
+  if(row.count===1&&row.of===1)return t('position.missed.count.once');
+  return t(row.unit==='guest'?'position.missed.count.guest':'position.missed.count.try',{n:row.of,wrong:row.count});
+ }
+ const missedShare=row=>t(row.count===row.of?'position.missed.share.all':'position.missed.share.some',{n:row.count,of:row.of});
+ function missedStepText(row){
+  if(row.step==='spot'){
+   const main=t(row.sameRule?'position.missed.spot.sameRule':'position.missed.spot.sameKind',{n:row.guests});
+   return row.right?`${main} · ${t('position.missed.spot.right',{n:row.right})}`:main;
+  }
+  if(row.step==='again'){
+   if(row.state==='planned')return t('position.missed.again.left',{n:row.left});
+   const key=row.result==='correct'?row.answer==='reject'?'reject':'correct':['assisted','incorrect'].includes(row.result)?row.result:'other';
+   return t(`position.missed.again.${key}`);
+  }
+  if(row.step==='practice')return t('position.missed.practice.done',{n:row.n,right:row.right});
+  if(row.step==='homework')return t('position.missed.homework.planned');
+  if(row.step==='delayed'){
+   if(row.due)return t('position.missed.delayed.due');
+   if(row.dueAt)return t('position.missed.delayed.next',{date:day(row.dueAt)});
+   if(row.observed)return t('position.missed.delayed.observed',{n:row.observed});
+   return t('position.missed.delayed.planned');
+  }
+  return '';
+ }
+ function missedBlock(card,practice){
+  if(!card||card.kind!=='topik')return '';
+  const head=card.narrow.find(row=>row.layer==='skill');if(!head)return '';
+  const exam=t(card.target.exam==='topik2'?'goal.exam.type.topik2':'goal.exam.type.topik1'),domain=t(card.target.domain==='listening'?'position.domain.listening':'position.domain.reading');
+  const layers=card.narrow.filter(row=>row.layer!=='skill').map(row=>{
+   const body=row.layer==='line'?`<span class="wmis-line" lang="ko">「${posEscape(row.text)}」</span>`:`<span>${posEscape(t(`position.missed.direction.${row.direction}`))}</span>`;
+   return `<div data-layer="${posEscape(row.layer)}"><dt>${posEscape(t(`position.missed.layer.${row.layer}`))}</dt><dd>${body}<small>${posEscape(missedShare(row))}</small></dd></div>`;
+  }).join('');
+  const steps=card.again.filter(row=>MISSED_STEPS.includes(row.step)).map(row=>`<li data-step="${posEscape(row.step)}" data-state="${row.state==='done'?'done':'planned'}"><i class="wmis-dot" aria-hidden="true"></i><span class="wmis-step">${posEscape(t(`position.missed.step.${row.step}`))}</span><span class="wmis-what">${posEscape(missedStepText(row))}</span></li>`).join('');
+  const states=new Set(card.again.map(row=>row.state==='done'?'done':'planned'));
+  const legend=steps?`<p class="wmis-legend">${['done','planned'].filter(state=>states.has(state)).map(state=>`<span data-state="${state}"><i class="wmis-dot" aria-hidden="true"></i>${posEscape(t(`position.missed.legend.${state}`))}</span>`).join('')}</p>`:'';
+  return `<section class="wpos-missed" data-position-missed="${posEscape(card.target.skillId)}" aria-labelledby="wpos-missed-title"><p class="life-section-label">MISSED SPOT</p><h3 id="wpos-missed-title">${posEscape(t('position.missed.title'))}</h3>`
+   +`<div class="wmis-head"><small class="wmis-exam">${posEscape(exam)} · ${posEscape(domain)}</small><strong class="wmis-skill">${posEscape(skillName({id:card.target.skillId,label:card.target.label}))}</strong><span class="wmis-count">${posLed('alert')}${posEscape(missedCount(head))}</span></div>`
+   +`${layers?`<dl class="wmis-narrow" aria-label="${posEscape(t('position.missed.narrow'))}">${layers}</dl>`:''}`
+   +`${steps?`<p class="wmis-sub">${posEscape(t('position.missed.again'))}</p><ol class="wmis-again">${steps}</ol>${legend}`:''}${practiceButton(card.target.skillId,practice)}</section>`;
+ }
  // 「먼저 볼 항목」(최대 3, world-position.mjs posAttention): 틀린 답이 있거나 다시 볼 때가 된 항목. 약점 낙인이 아니다.
- function attentionBlock(map,practice){
-  const rows=(map.attention||[]).map(id=>map.skills.find(skill=>skill.id===id)).filter(Boolean);
+ // skip: 놓친 곳 카드가 이미 크게 짚은 항목 — 바로 아래에서 같은 줄을 되풀이하지 않는다.
+ function attentionBlock(map,practice,skip=null){
+  const rows=(map.attention||[]).filter(id=>id!==skip).map(id=>map.skills.find(skill=>skill.id===id)).filter(Boolean);
   if(!rows.length)return '';
   return `<section class="wpos-attention" data-position-attention><p class="life-section-label">LOOK FIRST</p><h3>${posEscape(t('position.attention.title'))}</h3><p class="wpos-note">${posEscape(t('position.attention.note'))}</p><ul>${rows.map(skill=>`<li data-skill="${posEscape(skill.id)}"><span class="wpos-attention-copy"><strong>${posEscape(skillName(skill))}</strong><small>${posEscape(noteText(skill.note))}</small></span>${practiceButton(skill.id,practice)}</li>`).join('')}</ul></section>`;
  }
@@ -148,7 +194,8 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // assessable(itemKey): 세지 않은 답의 까닭을 가를 문항 판정 자격(uncountedRows).
  // bridged: TOPIK II 문항이 아직 없어 이번 주 계획이 TOPIK I 항목으로 세는 영역(world-exam-plan progress[영역].basis와 같은 판단) — TOPIK II 판에서
  // 그 영역에 한 줄로 알려, 판(TOPIK II 항목)과 계획(TOPIK I 항목)의 수가 왜 다른지 보이게 한다.
- function renderPositionBoard({map,plan=null,gate=null,mock=null,catalog=null,diagnosed=false,scope=null,practice=null,exams=null,writing=false,bridged=[],assessable=null}={}){
+ // missed: 놓친 곳 카드(world-missed-spot.mjs buildMissedSpot 결과, 없으면 null) — 칸 수 아래 · 「먼저 볼 항목」 위.
+ function renderPositionBoard({map,plan=null,gate=null,mock=null,catalog=null,diagnosed=false,scope=null,practice=null,exams=null,writing=false,bridged=[],assessable=null,missed=null}={}){
   const exam=map.exam==='topik2'?'topik2':'topik1';
   const summary=t(exam==='topik2'?'position.summary.topik2':'position.summary',{...map.counts,total:map.total});
   const groups=['listening','reading'].map(domain=>{
@@ -159,7 +206,7 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   // TOPIK II 쓰기: 자동으로 맞음·틀림을 매기지 않아 항목 칸에 넣지 않고, 쓰기 연습(③)으로 가는 줄만 둔다.
   const writingBlock=exam==='topik2'?`<section class="wpos-group" data-domain="writing"><h3>${posEscape(t('plan.area.writing'))}</h3><p class="wpos-note">${posEscape(t('position.writing.note'))}</p>${writing?`<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t('writing.title'))} <span aria-hidden="true">→</span></button>`:''}</section>`:'';
   const counts=POS_CELLS.map(cell=>`<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t(`position.cell.${cell}`))}</span></li>`).join('');
-  return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t('position.title'),summary)}${examSwitch(exam,exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t('position.intro'))}</p>${map.evidenceComplete?'':`<p class="wpos-note" data-position-incomplete>${posEscape(t('position.incomplete'))}</p>`}${attentionBlock(map,practice)}${diagnosticBlock(map,plan,{done:diagnosed})}${groups}${writingBlock}${estimateBlock(gate,mock)}${scope?`<p class="wpos-scope">${posEscape(t(scope==='account'?'position.scope.account':'position.scope.device'))}</p>`:''}</div>`;
+  return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t('position.title'),summary)}${examSwitch(exam,exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t('position.intro'))}</p>${map.evidenceComplete?'':`<p class="wpos-note" data-position-incomplete>${posEscape(t('position.incomplete'))}</p>`}${missedBlock(missed,practice)}${attentionBlock(map,practice,missed?.kind==='topik'?missed.target.skillId:null)}${diagnosticBlock(map,plan,{done:diagnosed})}${groups}${writingBlock}${estimateBlock(gate,mock)}${scope?`<p class="wpos-scope">${posEscape(t(scope==='account'?'position.scope.account':'position.scope.device'))}</p>`:''}</div>`;
  }
 
  // 한글 만나기 졸업 전: 항목 지도 대신 한글 진도. stage: hangulStageProgress 결과(모르면 null)

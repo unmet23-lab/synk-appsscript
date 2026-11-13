@@ -727,6 +727,31 @@ html[lang=ko] :is(.wpos-run-skill,.wpos-change>.life-section-label){font-family:
 
 /* ── 10-20 TOPIK 맞춤: 칸 아래 한 줄 · 먼저 볼 항목 · 해설 · 읽기 짧은 연습 · 이번 주 계획 ── */
 .wpos-skill-note{display:block;margin-top:2px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3);text-wrap:pretty}
+/* 놓친 곳 카드(11-14, world-missed-spot.mjs): 머리(시험 · 영역 → 항목 → 놓친 수) → 좁혀 보면(안내문 줄 · 놓친 방향, 이름 칸 + 내용 칸) →
+   다시 만나기(● 기록에 있는 일 · ○ 다음 차례 — 점 · 단계 · 내용 세 칸 한 줄씩) → 범례 · 단추. 이름 칸은 몽골어처럼 긴 말이면 34%까지 접는다. */
+.wpos-missed{display:grid;gap:10px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge);min-width:0}
+.wpos .wpos-missed>:is(.life-section-label,h3){margin:0}
+.wpos .wpos-missed>h3{font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.wmis-head{display:grid;gap:3px;min-width:0}
+.wmis-exam{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.wmis-skill{font-size:17px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere;text-wrap:balance}
+.wmis-count{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:14.5px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-alert-text)}
+.wmis-narrow{display:grid;grid-template-columns:fit-content(34%) minmax(0,1fr);column-gap:14px;margin:2px 0 0;padding:0}
+.wmis-narrow>div{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;row-gap:4px;padding:10px 0;border-top:1px solid var(--w-line)}
+.wmis-narrow dt{min-width:4.5em;font-size:13px;line-height:1.55;font-weight:var(--wt-label);color:var(--w-ink-3);overflow-wrap:anywhere}
+.wmis-narrow dd{display:grid;gap:3px;margin:0;min-width:0;font-size:15px;line-height:1.5;font-weight:var(--wt-strong);color:var(--w-ink);overflow-wrap:anywhere;text-wrap:pretty}
+.wmis-narrow dd>small{font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-alert-text)}
+.wmis-sub{margin:6px 0 0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.wmis-again{display:grid;grid-template-columns:12px fit-content(34%) minmax(0,1fr);column-gap:10px;margin:0;padding:0;list-style:none}
+.wmis-again>li{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:start;row-gap:4px;padding:9px 0;border-top:1px solid var(--w-line)}
+.wmis-dot{display:inline-block;flex-shrink:0;width:9px;height:9px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--w-ink-2);background:transparent}
+.wmis-again>li>.wmis-dot{margin-top:6px}
+:is(.wmis-again>li,.wmis-legend>span)[data-state=done] .wmis-dot{border-color:var(--w-ink);background:var(--w-ink)}
+.wmis-step{min-width:4.5em;font-size:13.5px;line-height:1.45;font-weight:var(--wt-label);color:var(--w-ink-2);overflow-wrap:anywhere}
+.wmis-what{min-width:0;font-size:14.5px;line-height:1.5;color:var(--w-ink);overflow-wrap:anywhere;text-wrap:pretty}
+.wmis-again>li[data-state=planned] .wmis-what{color:var(--w-ink-2)}
+.wmis-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;font-size:12.5px;line-height:1.5;color:var(--w-ink-3)}
+.wmis-legend>span{display:inline-flex;align-items:center;gap:6px}
 .wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach{display:grid;gap:8px;padding:16px 16px 18px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
 .wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks,.wplan-reach)>:is(.life-section-label,h3){margin:0}
 .wpos :is(.wpos-attention,.wplan-week,.wplan-next,.wplan-checks)>h3{font-size:18px;line-height:1.35;font-weight:var(--wt-title);letter-spacing:var(--track-title)}

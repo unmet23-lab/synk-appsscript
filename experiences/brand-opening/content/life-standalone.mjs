@@ -8087,7 +8087,7 @@ var require_trail2 = __commonJS({
         const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
         const arms = new Map(visible.filter((e) => e.type === "decision.made").map((e) => [e.id, e.arm ?? null]));
         const provenance = /* @__PURE__ */ new Map(), traces = /* @__PURE__ */ new Map();
-        visible.forEach((event, index) => {
+        visible.forEach((event, index2) => {
           if (event.type === TYPES[0]) provenance.set(event.id, event);
           const p = provenance.get(event.presentationId);
           if (event.type !== TYPES[1] && event.type !== TYPES[2] || !p) return;
@@ -8095,7 +8095,7 @@ var require_trail2 = __commonJS({
             if (!traces.has(traceKey)) traces.set(traceKey, /* @__PURE__ */ new Map());
             const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? "attempt" : event.level === "answer" ? "answer" : "help";
             const earlier = trace.get(kind);
-            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
+            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index2), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
           }
         });
         const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
@@ -8103,7 +8103,7 @@ var require_trail2 = __commonJS({
           if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict: verdict2 });
         };
         let excludedAttempts = 0;
-        visible.forEach((event, index) => {
+        visible.forEach((event, index2) => {
           if (event.type === TYPES[3]) {
             audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
             return;
@@ -8144,7 +8144,7 @@ var require_trail2 = __commonJS({
           const earlier = (kinds) => traceKeys(p).some((traceKey) => kinds.some((kind) => {
             if (foldedBefore(prior, traceKey, kind)) return true;
             const first = traces.get(traceKey)?.get(kind);
-            return first && (first.index < index || first.at < at);
+            return first && (first.index < index2 || first.at < at);
           }));
           const proof = audioByPresentation.get(p.id);
           const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
@@ -8263,15 +8263,15 @@ var require_trail2 = __commonJS({
         };
       }
       const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
-      const record2 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+      const record3 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
       const frozen = (r) => Object.freeze({ ...copy3(r), conceptIds: Object.freeze([...r.conceptIds]) });
       function openHistory(stored, pending = []) {
-        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record2) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
-        const pendingOk = Array.isArray(pending) && pending.every(record2);
-        const records = [], index = /* @__PURE__ */ new Set();
+        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record3) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+        const pendingOk = Array.isArray(pending) && pending.every(record3);
+        const records = [], index2 = /* @__PURE__ */ new Set();
         if (readable) {
-          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
-            index.add(r.itemKey);
+          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index2.has(r.itemKey)) {
+            index2.add(r.itemKey);
             records.push(frozen(r));
           }
         }
@@ -8280,16 +8280,16 @@ var require_trail2 = __commonJS({
           readable,
           partial,
           records: Object.freeze(records),
-          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
+          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index2.has(itemKey) ? false : partial ? null : true
         });
       }
-      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record2);
+      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record3);
       function remember(history, summary) {
         if (!opened(history)) throw new TypeError("Trail: open the history first");
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history.readable) return null;
         const known = new Set(history.records.map((r) => r.itemKey));
-        const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
+        const added = summary.met.filter((r) => record3(r) && !known.has(r.itemKey));
         return { records: [...history.records, ...added].map(copy3), partial: history.partial };
       }
       function createPracticeOutcomeIndex(summary) {
@@ -8774,15 +8774,15 @@ var require_engine2 = __commonJS({
             setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
             continue;
           }
-          const turn = (index) => (index - round % options.length + options.length) % options.length;
+          const turn = (index2) => (index2 - round % options.length + options.length) % options.length;
           if (!adapted) {
-            const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
+            const option = content ? options.find((_, index2) => turn(index2) === 0) : options.find((item) => item.id === lever.default) || options[0];
             setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
             continue;
           }
           const before = last ? picked(last, lever.id) : void 0;
           const tallies = new Map(lever.learn ? options.map((option) => [option.id, tally(lever.id, option.id)]) : []);
-          const ranked = options.map((option, index) => {
+          const ranked = options.map((option, index2) => {
             const notes = [], proof = [];
             let score = 0, basis = null;
             if (c.goal && option.goals?.includes(c.goal)) {
@@ -8808,7 +8808,7 @@ var require_engine2 = __commonJS({
                 score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t3.s + t3.f);
               }
             }
-            return { option, score, notes, proof, basis, order: content ? turn(index) : index };
+            return { option, score, notes, proof, basis, order: content ? turn(index2) : index2 };
           }).sort((a, b) => b.score - a.score || a.order - b.order);
           const best = ranked[0], answered = [...tallies.values()].filter((t3) => t3.proof.length);
           if (answered.length && !best.basis) {
@@ -8855,7 +8855,7 @@ var require_engine2 = __commonJS({
             return log;
           }
         };
-        const index = (entry) => {
+        const index2 = (entry) => {
           if (entry.type === "practice.attempted") {
             const stats = lookup.attempts(entry.presentationId);
             attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
@@ -8865,7 +8865,7 @@ var require_engine2 = __commonJS({
         const store = (event) => {
           if (admitted.has(event)) {
             byId.set(event.id, event);
-            index(event);
+            index2(event);
             log.push(event);
             frozen = null;
             return;
@@ -8876,7 +8876,7 @@ var require_engine2 = __commonJS({
           else freeze(entry);
           admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
           byId.set(entry.id, entry);
-          index(entry);
+          index2(entry);
           log.push(entry);
           frozen = null;
         };
@@ -8886,7 +8886,7 @@ var require_engine2 = __commonJS({
         }
         let sequence = 0;
         const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        const record2 = (body) => {
+        const record3 = (body) => {
           const at = clock2(), event = { ...body, schema: 1, scope: copy3(scope), id: nextId(), at, recordedAt: at };
           if (admitWith(lookup, event)) store(event);
           return copy3(event);
@@ -8894,14 +8894,14 @@ var require_engine2 = __commonJS({
         return {
           events: () => copy3(log),
           snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
-          set: (field, value, until = null) => record2({ type: "context.set", field, value, until }),
-          observe: (signal) => record2({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
-          respond: (line, value) => record2({ type: "estimate.responded", line, value }),
+          set: (field, value, until = null) => record3({ type: "context.set", field, value, until }),
+          observe: (signal) => record3({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+          respond: (line, value) => record3({ type: "estimate.responded", line, value }),
           plan: (experienceId, candidates, options = {}) => {
             const levers = options.levers || [];
             const decision = decide({ events: log, scope, at: clock2(), experienceId, candidates, levers, explore });
             if (decision.status !== "ready") return decision;
-            const recorded = record2({
+            const recorded = record3({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
@@ -8924,14 +8924,14 @@ var require_engine2 = __commonJS({
           complete: (decision) => {
             if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
             const existing = completions.get(decision.id);
-            return existing ? copy3(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            return existing ? copy3(existing) : record3({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value, decisionId) => record2({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
+          feedback: (completionId, value, decisionId) => record3({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
           practice: (kind, fields) => {
             if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record2({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            return record3({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
-          outcome: (decisionId, result) => record2({
+          outcome: (decisionId, result) => record3({
             type: "outcome.observed",
             decisionId,
             measure: result?.measure,
@@ -8941,7 +8941,7 @@ var require_engine2 = __commonJS({
             assisted: result?.assisted ?? null,
             ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
           }),
-          exclude: (targetId) => record2({ type: "record.excluded", targetId }),
+          exclude: (targetId) => record3({ type: "record.excluded", targetId }),
           clear: () => {
             log = [];
             frozen = null;
@@ -10047,7 +10047,7 @@ var require_learning = __commonJS({
       const ids = /* @__PURE__ */ new Set(), skills = new Map(profile.skills.map((s) => [s.id, s])), now = Date.parse(profile.asOf);
       const content = new Map((profile.concepts || []).map((c) => [c.id, c.status]));
       const history = { task: /* @__PURE__ */ new Map(), item: /* @__PURE__ */ new Map(), family: /* @__PURE__ */ new Map() };
-      for (const [index, presentation] of presentations.entries()) {
+      for (const [index2, presentation] of presentations.entries()) {
         for (const [kind, key] of [
           ["task", presentation.taskId],
           ["item", presentation.itemKey],
@@ -10055,7 +10055,7 @@ var require_learning = __commonJS({
         ]) {
           if (!key) continue;
           if (!history[kind].has(key)) history[kind].set(key, []);
-          history[kind].get(key).push(index);
+          history[kind].get(key).push(index2);
         }
       }
       const weight = /* @__PURE__ */ new Map();
@@ -10083,13 +10083,13 @@ var require_learning = __commonJS({
           ...history.item.get(candidate.itemKey) || [],
           ...history.family.get(candidate.familyKey || candidate.itemKey) || []
         ]);
-        const count = [...previous].reduce((n, index) => n + (weight.get(index) || 1), 0);
+        const count = [...previous].reduce((n, index2) => n + (weight.get(index2) || 1), 0);
         const family = candidate.familyKey || candidate.itemKey;
         const seen = candidate.familyKeys ? candidate.familyKeys.every((key) => history.family.has(key)) : typeof family === "string" && history.family.has(family);
-        const times = [...previous].filter((index) => typeof index === "number").map((index) => Date.parse(presentations[index]?.at)), timed = times.every(Number.isFinite);
+        const times = [...previous].filter((index2) => typeof index2 === "number").map((index2) => Date.parse(presentations[index2]?.at)), timed = times.every(Number.isFinite);
         const retry = !candidate.familyKeys && seen && count === 1 && states.some((state) => state.missed?.includes(family));
-        const lastFour = [...previous].some((index) => typeof index === "number" && index >= presentations.length - 4);
-        const waiting = retry && (timed ? times.some((time4) => now - time4 < RETRY.gapMs) : lastFour), due = retry && !waiting, shownAt = timed ? times[0] : Math.max(-1, ...[...previous].filter((index) => typeof index === "number"));
+        const lastFour = [...previous].some((index2) => typeof index2 === "number" && index2 >= presentations.length - 4);
+        const waiting = retry && (timed ? times.some((time4) => now - time4 < RETRY.gapMs) : lastFour), due = retry && !waiting, shownAt = timed ? times[0] : Math.max(-1, ...[...previous].filter((index2) => typeof index2 === "number"));
         const immediate = !due && lastFour;
         const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every((id) => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === "recent-independent");
         const lift = Math.max(0, ...(candidate.conceptIds || []).map((id) => CONTENT_LIFT[content.get(id)] || 0));
@@ -10280,9 +10280,9 @@ var require_learning_pages = __commonJS({
       const value = JSON.parse(text2);
       if (Array.isArray(value)) return value;
       if (!value || value.codec !== 1 || Object.keys(value).some((k) => !["codec", "strings", "entries"].includes(k)) || !Array.isArray(value.strings) || !value.strings.every((s) => typeof s === "string") || !Array.isArray(value.entries)) throw failure();
-      const string = (index) => {
-        if (!Number.isInteger(index) || index < 0 || index >= value.strings.length) throw failure();
-        return value.strings[index];
+      const string = (index2) => {
+        if (!Number.isInteger(index2) || index2 < 0 || index2 >= value.strings.length) throw failure();
+        return value.strings[index2];
       };
       function unpack(entry, depth = 0) {
         if (depth > 64) throw failure();
@@ -10308,7 +10308,7 @@ var require_learning_pages = __commonJS({
       const writers = `${key}.writer.`;
       const keys = () => {
         if (typeof storage.key !== "function" || !Number.isSafeInteger(storage.length) || storage.length < 0) return null;
-        return Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter((name) => typeof name === "string").sort();
+        return Array.from({ length: storage.length }, (_, index2) => storage.key(index2)).filter((name) => typeof name === "string").sort();
       };
       let root = null, decodedRaw = null;
       const validKey = (name) => typeof name === "string" && name.startsWith(prefix) && /^[a-zA-Z0-9_.:-]+$/.test(name.slice(prefix.length));
@@ -11212,7 +11212,7 @@ var require_flow = __commonJS({
           const items = input.items;
           if (!items || typeof items !== "object" || Object.keys(items).some((key) => !["levels", "weight", "start"].includes(key))) fail2("invalid item levels");
           const levels = items.levels ?? [1, 2, 3], start2 = items.start ?? 0, weight = items.weight ?? 2;
-          if (!Array.isArray(levels) || levels.length < 2 || levels.length > 6 || !levels.every((level, index) => Number.isInteger(level) && (index === 0 || level > levels[index - 1])) || !Number.isInteger(start2) || start2 < 0 || start2 >= levels.length || !within(weight, 0.25, 4)) fail2("invalid item levels");
+          if (!Array.isArray(levels) || levels.length < 2 || levels.length > 6 || !levels.every((level, index2) => Number.isInteger(level) && (index2 === 0 || level > levels[index2 - 1])) || !Number.isInteger(start2) || start2 < 0 || start2 >= levels.length || !within(weight, 0.25, 4)) fail2("invalid item levels");
           spec.items = { levels: [...levels], weight, start: start2 };
           spec.knobs.push({ id: ITEM, values: [...levels], start: start2, weight, kind: "content", follows: null, label: "item difficulty" });
         }
@@ -11242,8 +11242,8 @@ var require_flow = __commonJS({
         if (memory == null || typeof memory !== "object" || memory.v !== 2 || memory.content !== spec.id || memory.specVersion !== spec.version || !estimate(memory.estimates?.content) || !estimate(memory.estimates?.pace) || typeof memory.at !== "string" || !Number.isFinite(Date.parse(memory.at)) || !memory.indices || typeof memory.indices !== "object" || !Array.isArray(memory.latencies) || memory.latencies.length > LATENCIES || !memory.latencies.every((ms) => within(ms, 0, 6e5))) return null;
         const indices = {};
         for (const knob of spec.knobs) {
-          const index = memory.indices[knob.id];
-          indices[knob.id] = Number.isInteger(index) && index >= 0 && index < knob.values.length ? index : knob.start;
+          const index2 = memory.indices[knob.id];
+          indices[knob.id] = Number.isInteger(index2) && index2 >= 0 && index2 < knob.values.length ? index2 : knob.start;
         }
         return { estimates: copy3(memory.estimates), at: memory.at, indices, latencies: [...memory.latencies] };
       }
@@ -11253,14 +11253,14 @@ var require_flow = __commonJS({
         const skills = skillIds.map((skill2) => summary.skills.find((s) => s.id === skill2));
         if (skills.some((skill2) => !skill2)) return null;
         let level = spec.items.start;
-        for (let index = spec.items.start; index < spec.items.levels.length - 1; index += 1) {
-          const authored = spec.items.levels[index];
+        for (let index2 = spec.items.start; index2 < spec.items.levels.length - 1; index2 += 1) {
+          const authored = spec.items.levels[index2];
           const steady = skills.every((skill2) => {
             const formats = skill2.levels?.[authored]?.formats;
             return !!formats && Object.hasOwn(formats, responseFormat) && formats[responseFormat].status === "recent-independent";
           });
           if (!steady) break;
-          level = index + 1;
+          level = index2 + 1;
         }
         if (level === spec.items.start) return null;
         const indices = { ...defaults(spec), [ITEM]: level };
@@ -11281,8 +11281,8 @@ var require_flow = __commonJS({
         const support = presentation.support ?? "choose", knobs = {};
         for (const knob of spec.knobs) {
           if (knob.follows === "declared") {
-            const index = FOLLOWED.includes(knob.id) && presentation[knob.id] != null ? knob.values.indexOf(presentation[knob.id]) : -1;
-            if (index >= 0) knobs[knob.id] = index;
+            const index2 = FOLLOWED.includes(knob.id) && presentation[knob.id] != null ? knob.values.indexOf(presentation[knob.id]) : -1;
+            if (index2 >= 0) knobs[knob.id] = index2;
           } else if (knob.kind === "support" && support !== "choose") knobs[knob.id] = support === "step" ? 0 : knob.values.length - 1;
         }
         return { knobs };
@@ -11296,9 +11296,9 @@ var require_flow = __commonJS({
         if (!declared || typeof declared !== "object" || Array.isArray(declared) || Object.keys(declared).some((key) => !["mode", "knobs"].includes(key))) fail2("declared must be { mode, knobs }");
         const mode = declared.mode ?? "auto", locks = { ...declared.knobs ?? {} };
         if (!MODES.includes(mode)) fail2("invalid declared mode");
-        for (const [knobId, index] of Object.entries(locks)) {
+        for (const [knobId, index2] of Object.entries(locks)) {
           const knob = spec.knobs.find((k) => k.id === knobId);
-          if (!knob || !Number.isInteger(index) || index < 0 || index >= knob.values.length) fail2(`invalid declared knob ${knobId}`);
+          if (!knob || !Number.isInteger(index2) || index2 < 0 || index2 >= knob.values.length) fail2(`invalid declared knob ${knobId}`);
         }
         if (condition !== null && !CONDITIONS.includes(condition)) fail2("invalid condition");
         if (!["adapted", "baseline"].includes(arm)) fail2("invalid arm");
@@ -12179,7 +12179,7 @@ var require_game_learning = __commonJS({
       const rememberSaved = () => {
         lastSavedState = savedState();
       };
-      const unchangedPaged = () => lastSavedState && savedState().every((value, index) => value === lastSavedState[index]);
+      const unchangedPaged = () => lastSavedState && savedState().every((value, index2) => value === lastSavedState[index2]);
       const decode = (raw) => {
         if (raw == null) return null;
         const value = pages ? pages.decode(raw) : JSON.parse(raw);
@@ -12768,7 +12768,7 @@ var require_game_learning = __commonJS({
             return unavailable("incomplete-history");
           }
           if (!saved.durable || saved.ledger?.adjusted) return unavailable("incomplete-history");
-          const events = saved.log, positions = new Map(events.map((event, index) => [event.id, index]));
+          const events = saved.log, positions = new Map(events.map((event, index2) => [event.id, index2]));
           const byId = new Map(events.map((event) => [event.id, event]));
           const sourceEvent = byId.get(sourceAttemptId), targetEvent = byId.get(targetAttemptId);
           if (sourceEvent?.type !== "practice.attempted" || targetEvent?.type !== "practice.attempted") return unavailable("missing-attempt");
@@ -13265,16 +13265,16 @@ var require_ask = __commonJS({
           const chances = probabilities(q2);
           const outcomes = /* @__PURE__ */ Object.create(null);
           let impact = 0, expectedGain = 0;
-          q2.options.forEach((option, index) => {
+          q2.options.forEach((option, index2) => {
             const scenario = { ...answers, [about]: owns(option, "value") ? option.value : option.id };
             const decided = decide({ ...scenario });
             outcomes[option.id] = decided;
-            impact += chances[index] * difference(current, decided);
-            if (valued && chances[index] > 0) {
+            impact += chances[index2] * difference(current, decided);
+            if (valued && chances[index2] > 0) {
               const context = { answers: scenario, question: q2, option };
               const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
               if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
-              expectedGain += chances[index] * gain;
+              expectedGain += chances[index2] * gain;
             }
           });
           const distinct = new Set(Object.values(outcomes).map(canonical)).size;
@@ -13413,7 +13413,7 @@ var require_game_browser = __commonJS({
 });
 
 // experiences/synk-world-app/life-content.mjs
-var choices = (texts) => texts.map((text2, index) => ({ id: ["a", "b", "c"][index], text: text2 }));
+var choices = (texts) => texts.map((text2, index2) => ({ id: ["a", "b", "c"][index2], text: text2 }));
 var scene = (speaker, text2) => ({ speaker, text: text2 });
 var expression = (id, korean, meaning) => ({ id, korean, meaning });
 var transfer = (prompt, context, texts, answerId, explanation) => ({
@@ -14003,17 +14003,17 @@ function resumeCafe(state, lessonId = state.id || CAFE_LESSON_ID) {
   const result = { version: lessonId === CAFE_COMPOSE_ID ? 2 : 1, step: 0, phase: "welcome", choiceId: null, seat: "window", ...lessonId === CAFE_COMPOSE_ID ? { order: { drink: null, temperature: null, count: null } } : {} };
   const questions = lessonById(lessonId).questions;
   const firstWrong = questions.findIndex((q3) => state.answers[q3.id] && !state.answers[q3.id].correct);
-  const lastAnswered = questions.reduce((last, q3, index2) => state.answers[q3.id] ? index2 : last, -1);
-  const index = firstWrong < 0 ? lastAnswered : firstWrong;
-  if (index < 0) return result;
-  const q2 = questions[index], answer = state.answers[q2.id], known = q2.choices.some((c) => c.id === answer.choiceId);
+  const lastAnswered = questions.reduce((last, q3, index3) => state.answers[q3.id] ? index3 : last, -1);
+  const index2 = firstWrong < 0 ? lastAnswered : firstWrong;
+  if (index2 < 0) return result;
+  const q2 = questions[index2], answer = state.answers[q2.id], known = q2.choices.some((c) => c.id === answer.choiceId);
   if (lessonId === CAFE_COMPOSE_ID) {
     const first = state.answers[questions[0].id], sent = first?.order;
-    if (!isCafeOrder(sent, { complete: true }) || first.choiceId !== orderChoice(sent) || index > 0 && first.choiceId !== questions[0].answerId) return result;
+    if (!isCafeOrder(sent, { complete: true }) || first.choiceId !== orderChoice(sent) || index2 > 0 && first.choiceId !== questions[0].answerId) return result;
     result.order = clone(sent);
-    if (!known) return { ...result, step: index, phase: "choose" };
+    if (!known) return { ...result, step: index2, phase: "choose" };
   }
-  result.step = index;
+  result.step = index2;
   result.choiceId = known ? answer.choiceId : q2.answerId;
   result.phase = result.choiceId === q2.answerId ? "response" : "repair";
   return result;
@@ -14235,7 +14235,7 @@ var require_trail = __commonJS2({
         const excluded = new Set(visible.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
         const arms = new Map(visible.filter((e) => e.type === "decision.made").map((e) => [e.id, e.arm ?? null]));
         const provenance = /* @__PURE__ */ new Map(), traces = /* @__PURE__ */ new Map();
-        visible.forEach((event, index) => {
+        visible.forEach((event, index2) => {
           if (event.type === TYPES[0]) provenance.set(event.id, event);
           const p = provenance.get(event.presentationId);
           if (event.type !== TYPES[1] && event.type !== TYPES[2] || !p) return;
@@ -14243,7 +14243,7 @@ var require_trail = __commonJS2({
             if (!traces.has(traceKey)) traces.set(traceKey, /* @__PURE__ */ new Map());
             const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? "attempt" : event.level === "answer" ? "answer" : "help";
             const earlier = trace.get(kind);
-            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
+            trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index2), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
           }
         });
         const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
@@ -14251,7 +14251,7 @@ var require_trail = __commonJS2({
           if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict: verdict2 });
         };
         let excludedAttempts = 0;
-        visible.forEach((event, index) => {
+        visible.forEach((event, index2) => {
           if (event.type === TYPES[3]) {
             audioByPresentation.set(event.presentationId, { event, value: excluded.has(event.id) ? "pending" : event.audio });
             return;
@@ -14292,7 +14292,7 @@ var require_trail = __commonJS2({
           const earlier = (kinds) => traceKeys(p).some((traceKey) => kinds.some((kind) => {
             if (foldedBefore(prior, traceKey, kind)) return true;
             const first = traces.get(traceKey)?.get(kind);
-            return first && (first.index < index || first.at < at);
+            return first && (first.index < index2 || first.at < at);
           }));
           const proof = audioByPresentation.get(p.id);
           const audio = proof && atOf(proof.event) <= at && recordedOf(proof.event) <= recordedOf(event) ? proof.value : "pending", j = judge(event, p, earlier, audio);
@@ -14411,15 +14411,15 @@ var require_trail = __commonJS2({
         };
       }
       const RECORD = ["itemKey", "conceptIds", "at", "verdict"];
-      const record2 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
+      const record3 = (r) => !!r && typeof r === "object" && Object.keys(r).length === RECORD.length && RECORD.every((k) => Object.hasOwn(r, k)) && id(r.itemKey) && uniqueList(r.conceptIds, id, 32) && typeof r.at === "string" && Number.isFinite(Date.parse(r.at)) && (r.verdict === null || VERDICTS.includes(r.verdict));
       const frozen = (r) => Object.freeze({ ...copy3(r), conceptIds: Object.freeze([...r.conceptIds]) });
       function openHistory(stored, pending = []) {
-        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record2) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
-        const pendingOk = Array.isArray(pending) && pending.every(record2);
-        const records = [], index = /* @__PURE__ */ new Set();
+        const readable = !!stored && typeof stored === "object" && Array.isArray(stored.records) && typeof stored.partial === "boolean" && stored.records.every(record3) && new Set(stored.records.map((r) => r.itemKey)).size === stored.records.length;
+        const pendingOk = Array.isArray(pending) && pending.every(record3);
+        const records = [], index2 = /* @__PURE__ */ new Set();
         if (readable) {
-          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index.has(r.itemKey)) {
-            index.add(r.itemKey);
+          for (const r of [...stored.records, ...pendingOk ? pending : []]) if (!index2.has(r.itemKey)) {
+            index2.add(r.itemKey);
             records.push(frozen(r));
           }
         }
@@ -14428,16 +14428,16 @@ var require_trail = __commonJS2({
           readable,
           partial,
           records: Object.freeze(records),
-          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index.has(itemKey) ? false : partial ? null : true
+          firstExposure: (itemKey) => !readable || !id(itemKey) ? null : index2.has(itemKey) ? false : partial ? null : true
         });
       }
-      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record2);
+      const opened = (history) => !!history && typeof history.firstExposure === "function" && typeof history.readable === "boolean" && Array.isArray(history.records) && typeof history.partial === "boolean" && history.records.every(record3);
       function remember(history, summary) {
         if (!opened(history)) throw new TypeError("Trail: open the history first");
         if (!summary || summary.version !== VERSION || !Array.isArray(summary.met)) throw new TypeError("Trail: use a practice summary");
         if (!history.readable) return null;
         const known = new Set(history.records.map((r) => r.itemKey));
-        const added = summary.met.filter((r) => record2(r) && !known.has(r.itemKey));
+        const added = summary.met.filter((r) => record3(r) && !known.has(r.itemKey));
         return { records: [...history.records, ...added].map(copy3), partial: history.partial };
       }
       function createPracticeOutcomeIndex(summary) {
@@ -14920,15 +14920,15 @@ var require_engine = __commonJS2({
             setOwn(bundle, lever.id, { option: declared.id, basis: "declared", reasons: [`declared.${lever.follows}`], evidence: [state.evidence[lever.follows]] });
             continue;
           }
-          const turn = (index) => (index - round % options.length + options.length) % options.length;
+          const turn = (index2) => (index2 - round % options.length + options.length) % options.length;
           if (!adapted) {
-            const option = content ? options.find((_, index) => turn(index) === 0) : options.find((item) => item.id === lever.default) || options[0];
+            const option = content ? options.find((_, index2) => turn(index2) === 0) : options.find((item) => item.id === lever.default) || options[0];
             setOwn(bundle, lever.id, { option: option.id, basis: "baseline", reasons: ["arm.baseline"], evidence: [] });
             continue;
           }
           const before = last ? picked(last, lever.id) : void 0;
           const tallies = new Map(lever.learn ? options.map((option) => [option.id, tally(lever.id, option.id)]) : []);
-          const ranked = options.map((option, index) => {
+          const ranked = options.map((option, index2) => {
             const notes = [], proof = [];
             let score = 0, basis = null;
             if (c.goal && option.goals?.includes(c.goal)) {
@@ -14954,7 +14954,7 @@ var require_engine = __commonJS2({
                 score += 3 * a / (a + b) + 1 / Math.sqrt(1 + t3.s + t3.f);
               }
             }
-            return { option, score, notes, proof, basis, order: content ? turn(index) : index };
+            return { option, score, notes, proof, basis, order: content ? turn(index2) : index2 };
           }).sort((a, b) => b.score - a.score || a.order - b.order);
           const best = ranked[0], answered = [...tallies.values()].filter((t3) => t3.proof.length);
           if (answered.length && !best.basis) {
@@ -15001,7 +15001,7 @@ var require_engine = __commonJS2({
             return log;
           }
         };
-        const index = (entry) => {
+        const index2 = (entry) => {
           if (entry.type === "practice.attempted") {
             const stats = lookup.attempts(entry.presentationId);
             attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
@@ -15011,7 +15011,7 @@ var require_engine = __commonJS2({
         const store = (event) => {
           if (admitted.has(event)) {
             byId.set(event.id, event);
-            index(event);
+            index2(event);
             log.push(event);
             frozen = null;
             return;
@@ -15022,7 +15022,7 @@ var require_engine = __commonJS2({
           else freeze(entry);
           admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
           byId.set(entry.id, entry);
-          index(entry);
+          index2(entry);
           log.push(entry);
           frozen = null;
         };
@@ -15032,7 +15032,7 @@ var require_engine = __commonJS2({
         }
         let sequence = 0;
         const nextId = id || (() => `a${Date.now().toString(36)}-${(++sequence).toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
-        const record2 = (body) => {
+        const record3 = (body) => {
           const at = clock2(), event = { ...body, schema: 1, scope: copy3(scope), id: nextId(), at, recordedAt: at };
           if (admitWith(lookup, event)) store(event);
           return copy3(event);
@@ -15040,14 +15040,14 @@ var require_engine = __commonJS2({
         return {
           events: () => copy3(log),
           snapshot: () => frozen || (frozen = Object.freeze(log.slice())),
-          set: (field, value, until = null) => record2({ type: "context.set", field, value, until }),
-          observe: (signal) => record2({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
-          respond: (line, value) => record2({ type: "estimate.responded", line, value }),
+          set: (field, value, until = null) => record3({ type: "context.set", field, value, until }),
+          observe: (signal) => record3({ type: "signal.observed", kind: signal?.kind, key: signal?.key, strength: signal?.strength, n: signal?.n, assisted: signal?.assisted ?? null, until: signal?.until ?? null, refs: signal?.refs ?? [] }),
+          respond: (line, value) => record3({ type: "estimate.responded", line, value }),
           plan: (experienceId, candidates, options = {}) => {
             const levers = options.levers || [];
             const decision = decide({ events: log, scope, at: clock2(), experienceId, candidates, levers, explore });
             if (decision.status !== "ready") return decision;
-            const recorded = record2({
+            const recorded = record3({
               type: "decision.made",
               experienceId,
               variant: decision.selected.id,
@@ -15070,14 +15070,14 @@ var require_engine = __commonJS2({
           complete: (decision) => {
             if (!decision || decision.status !== "ready" || scopeKey(decision.scope) !== scopeKey(scope)) throw new Error("Atlas: invalid decision");
             const existing = completions.get(decision.id);
-            return existing ? copy3(existing) : record2({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
+            return existing ? copy3(existing) : record3({ type: "experience.completed", decisionId: decision.id, experienceId: decision.experienceId, variant: decision.selected.id });
           },
-          feedback: (completionId, value, decisionId) => record2({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
+          feedback: (completionId, value, decisionId) => record3({ type: "feedback.given", completionId, value, ...decisionId !== void 0 ? { decisionId } : {} }),
           practice: (kind, fields) => {
             if (!fields || typeof fields !== "object" || Array.isArray(fields) || typeof kind !== "string") throw new TypeError("Atlas: invalid practice fields");
-            return record2({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
+            return record3({ ...fields, type: kind.startsWith("practice.") ? kind : `practice.${kind}` });
           },
-          outcome: (decisionId, result) => record2({
+          outcome: (decisionId, result) => record3({
             type: "outcome.observed",
             decisionId,
             measure: result?.measure,
@@ -15087,7 +15087,7 @@ var require_engine = __commonJS2({
             assisted: result?.assisted ?? null,
             ...result?.attemptId != null || result?.targetLine != null ? { attemptId: result?.attemptId, targetLine: result?.targetLine } : {}
           }),
-          exclude: (targetId) => record2({ type: "record.excluded", targetId }),
+          exclude: (targetId) => record3({ type: "record.excluded", targetId }),
           clear: () => {
             log = [];
             frozen = null;
@@ -15428,8 +15428,8 @@ var require_personalization = __commonJS2({
       const fail2 = (message) => {
         throw new TypeError(`Personalization: ${message}`);
       };
-      const record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
-      const exact2 = (value, keys) => record2(value) && Object.keys(value).every((key) => keys.includes(key));
+      const record3 = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+      const exact2 = (value, keys) => record3(value) && Object.keys(value).every((key) => keys.includes(key));
       const token = (value, max = 48) => typeof value === "string" && new RegExp(`^[a-zA-Z0-9_.-]{1,${max}}$`).test(value);
       function instant(at) {
         if (typeof at !== "string" || !Number.isFinite(Date.parse(at)) || new Date(at).toISOString() !== at) fail2("use an explicit ISO UTC time");
@@ -15713,7 +15713,7 @@ var require_personalization = __commonJS2({
       }
       const PREFERENCE_VERSION = "core-preference-context-1";
       const preferenceToken = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value) && !["__proto__", "prototype", "constructor"].includes(value);
-      const canonical = (value) => JSON.stringify(value, (_key, item) => record2(item) ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item);
+      const canonical = (value) => JSON.stringify(value, (_key, item) => record3(item) ? Object.fromEntries(Object.keys(item).sort().map((key) => [key, item[key]])) : item);
       const PREFERENCE_KEYS = Object.freeze({
         set: ["field", "value", "duration"],
         withdraw: ["field", "duration"],
@@ -15744,7 +15744,7 @@ var require_personalization = __commonJS2({
         };
         const isValue = (field, value) => field.kind === "enum" ? field.values.includes(value) : field.kind === "boolean" ? typeof value === "boolean" : typeof value === "number" && Number.isFinite(value) && value >= field.range[0] && value <= field.range[1];
         for (const event of events) {
-          if (!record2(event) || !Object.hasOwn(PREFERENCE_KEYS, event.kind)) fail2("invalid preference event kind");
+          if (!record3(event) || !Object.hasOwn(PREFERENCE_KEYS, event.kind)) fail2("invalid preference event kind");
           const keys = [...preferenceBase, ...PREFERENCE_KEYS[event.kind]];
           if (!exact2(event, [...keys, ...preferenceOptional(event.kind)]) || keys.some((key) => !Object.hasOwn(event, key)) || event.version !== PREFERENCE_VERSION || !preferenceToken(event.id) || !preferenceToken(event.encounterId)) fail2("invalid preference event");
           checkScope(event.scope);
@@ -15851,7 +15851,7 @@ var require_personalization = __commonJS2({
         if (!exact2(input, ["contract", "scope", "events", "encounterId", "at", "domainScope"])) fail2("unsupported preference bridge input");
         const { contract, scope, events = [], encounterId, at, domainScope } = input;
         checkScope(scope);
-        if (!record2(domainScope) || domainScope.subject !== scope.personId || domainScope.domain !== scope.domain) fail2("foreign preference bridge subject or domain");
+        if (!record3(domainScope) || domainScope.subject !== scope.personId || domainScope.domain !== scope.domain) fail2("foreign preference bridge subject or domain");
         const domain = getDomain();
         if (!domain?.understand) fail2("load Core domain capability first");
         domain.understand({ contract, scope: domainScope, observations: [], at });
@@ -15895,7 +15895,7 @@ var require_personalization = __commonJS2({
         return copy3({ observations, layers, understanding, lineage });
       }
       function recordPreference(input = {}) {
-        if (!record2(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail2("invalid preference action");
+        if (!record3(input) || !Object.hasOwn(PREFERENCE_KEYS, input.kind)) fail2("invalid preference action");
         const { contract, scope, encounterId, at, id, kind, events = [] } = input;
         const extraKeys = PREFERENCE_KEYS[kind], optionalKeys = preferenceOptional(kind), keys = ["contract", "scope", "events", "encounterId", "at", "id", "kind", ...extraKeys, ...optionalKeys];
         if (!exact2(input, keys)) fail2("unsupported preference action input");
@@ -16400,8 +16400,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const engine = chosen === null ? judged() : null;
     const due = chosen !== null ? chosen.map((id) => clone2(state.reviews[id])) : engine ? soon && allowedIds !== null ? allowedIds.map((id) => clone2(state.reviews[id])) : dueReviews(100).filter((row) => allowedIds === null || allowedIds.includes(row.id)) : dueReviews(100, now() + (soon ? MINUTE : 0)).filter((row) => allowedIds === null || allowedIds.includes(row.id));
     if (preferredId) {
-      const index = due.findIndex((r) => r.id === preferredId);
-      if (index > 0) due.unshift(...due.splice(index, 1));
+      const index2 = due.findIndex((r) => r.id === preferredId);
+      if (index2 > 0) due.unshift(...due.splice(index2, 1));
     }
     const next = clone2(state), ids = due.slice(0, Math.max(0, Math.min(100, limit))).map((v) => v.id);
     if (!ids.length) return null;
@@ -16628,8 +16628,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     commit(next, { preserveDaily: true });
     return result();
   }
-  function reviewExpression(record2) {
-    const lesson2 = lessons.get(record2.lessonId), question2 = lesson2?.questions?.find((value) => value.id === record2.questionId);
+  function reviewExpression(record3) {
+    const lesson2 = lessons.get(record3.lessonId), question2 = lesson2?.questions?.find((value) => value.id === record3.questionId);
     return lesson2?.expressions?.find((value) => value.id === question2?.expressionId)?.korean || question2?.choices?.find((value) => value.id === question2.answerId)?.text || "";
   }
   function dueExpressionCount(due) {
@@ -16945,17 +16945,17 @@ import { storyVoice } from "../world-sound.mjs";
 var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var expressionKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
 function storyLineMarkup(text2, expressions = []) {
-  const source = String(text2 ?? ""), keys = expressions.map((e, index) => ({ index, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
+  const source = String(text2 ?? ""), keys = expressions.map((e, index2) => ({ index: index2, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
   const marks = [];
   for (const match of source.matchAll(/‘([^‘’]{1,80})’/g)) {
     const inner = match[1], hit = keys.find((k) => inner.includes(k.key) || k.key.includes(inner));
     marks.push({ start: match.index + 1, end: match.index + 1 + inner.length, index: hit ? hit.index : null });
   }
-  for (const { index, key } of keys) {
+  for (const { index: index2, key } of keys) {
     let from = 0, at;
     while ((at = source.indexOf(key, from)) >= 0) {
       from = at + key.length;
-      if (!marks.some((m) => at < m.end && at + key.length > m.start)) marks.push({ start: at, end: at + key.length, index });
+      if (!marks.some((m) => at < m.end && at + key.length > m.start)) marks.push({ start: at, end: at + key.length, index: index2 });
     }
   }
   marks.sort((a, b) => a.start - b.start);
@@ -17557,11 +17557,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     companion?.update(tutorState());
   } });
   void speech.prepare();
-  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index) => {
+  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index2) => {
     if (!companion?.openGuide) return;
     play("open");
     haptic("tap");
-    companion.openGuide({ expression: index });
+    companion.openGuide({ expression: index2 });
   }, reduced: () => !!home.state?.reduced });
   const summary = () => getProgress().summary(PACKS, LESSONS);
   const preferences = () => {
@@ -17633,12 +17633,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     try {
       const p = getProgress(), s = p.status();
       if (["loading", "conflict", "unreadable"].includes(s.phase) || s.rejected) return false;
-      const snapshot = p.exportSnapshot(), record2 = Object.values(snapshot.reviews).find((r) => r.questionId === id);
-      if (!record2 || record2.lapses <= 0 || record2.streak !== 0) return false;
-      exposedTransfers.set(record2.id, Date.now());
-      guideTransfer(record2.questionId);
-      const run = summary().dueState === "engine" ? p.startReview(1, record2.id, null, { ids: [record2.id] }) : record2.dueAt <= Date.now() ? p.startReview(6, record2.id) : snapshot.activeReview;
-      if (run?.ids.includes(record2.id) && !run.answers[record2.id]) p.markReviewHelp(record2.id);
+      const snapshot = p.exportSnapshot(), record3 = Object.values(snapshot.reviews).find((r) => r.questionId === id);
+      if (!record3 || record3.lapses <= 0 || record3.streak !== 0) return false;
+      exposedTransfers.set(record3.id, Date.now());
+      guideTransfer(record3.questionId);
+      const run = summary().dueState === "engine" ? p.startReview(1, record3.id, null, { ids: [record3.id] }) : record3.dueAt <= Date.now() ? p.startReview(6, record3.id) : snapshot.activeReview;
+      if (run?.ids.includes(record3.id) && !run.answers[record3.id]) p.markReviewHelp(record3.id);
       return true;
     } catch {
       return false;
@@ -17866,17 +17866,17 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return status === "completed" ? "completed" : status === "started" ? "started" : "new";
   };
   const packDone = (pack2) => pack2.lessons.filter((l) => getProgress().lessonState(l.id).status === "completed").length;
-  function packCard(pack2, index, current = null) {
+  function packCard(pack2, index2, current = null) {
     const done = packDone(pack2), total = pack2.lessons.length, started = pack2.lessons.some((l) => stateOf(l.id) === "started"), [word, label] = packWords[pack2.id] || [pack2.title, pack2.id.toUpperCase()];
     const state = done === total ? "done" : done || started ? "active" : "new", now = pack2.id === current;
     const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? `<span class="life-pack-done"><i class="w-led ok"></i>${t("life.allDone")}</span>` : meter(done, total);
-    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
+    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index2 % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(t(state === "done" ? "life.packCard.done" : "life.packCard", { title: packTitle(pack2), subtitle: packSub(pack2), done, total }))}">${now ? `<span class="life-pack-now"><i class="w-led ok"></i>${t("life.currentPack")}</span>` : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index2 + 1)} \xB7 ${label}</small><strong class="life-pack-word" lang="ko">${escape2(word)}</strong><span class="life-pack-title">${escape2(packTitle(pack2))}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
   function nowPoster(s) {
     const lesson2 = s.nextLesson;
     if (lesson2 && (s.resume || !s.dueCount)) {
-      const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
-      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
+      const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index2 = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
+      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word" lang="ko">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(packTitle(pack2))} \xB7 ${phaseName(lesson2.type)}</span>${meter(index2, total, `${pad(index2 + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${t(started ? "life.continue" : "life.start")} <span aria-hidden="true">\u2192</span></button></section>` };
     }
     if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="${t("life.upNext")}">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(backCount(s))}</small><strong class="life-poster-word">${t("life.backWord")}</strong><span class="life-poster-sub">${t("life.backSub", { n: backCount(s) })}</span><button class="felt-button" data-life-review>${t("life.reviewNow")} <span aria-hidden="true">\u2192</span></button></section>` };
     const future = Number.isFinite(s.nextReviewAt) ? whenOf(s, s.nextReviewAt) : "";
@@ -17928,9 +17928,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     place = id === "cafe" ? "cafe" : "life";
     context = null;
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt) || s.dueState === "checking" && Object.keys(p.exportSnapshot().reviews || {}).length > 0, activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
-    const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
+    const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index2 = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
     const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="${t("life.cafeAlt")}" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${t(p.lessonState(nextVisit.id).status === "started" ? "life.continue" : nextVisit.number === 1 ? "life.cafeEnter" : "life.cafeNext")} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="${t("life.cafeVisits")}"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? t("life.visited", { done: visited, total: CAFE_VISITS.length }) : t("life.visitsCount", { n: CAFE_VISITS.length })}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">${t("life.cafeBefore")}</small></div><p class="life-pack-description">${escape2(packSub(value))}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index2 + 1)} \xB7 ${label}</small><strong class="life-poster-word" lang="ko" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(packTitle(value))} \xB7 ${escape2(packSub(value))}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
     reviewMark = reviewSign(s);
     paint(packTitle(value), `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>${t("life.toPacks")}</button>${hasReviews ? `<button class="quiet-button" data-life-review>${t("life.seeReviews")}</button>` : ""}</div>`, { screen: `pack:${id}`, ...again ? { keepScroll: true, focus: null, keepFocus: focusedKey() } : {} });
@@ -18183,9 +18183,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (shown && ticket === generation) home.toast(t("life.savingProgress"));
     });
   }
-  function reviewOrigin(record2, snapshot = getProgress().exportSnapshot()) {
-    const at = snapshot.lessons[record2.lessonId]?.answers?.[record2.questionId]?.at ?? record2.lastAt;
-    return [ago(at), placeAt(record2.packId)].filter(Boolean).join(" \xB7 ");
+  function reviewOrigin(record3, snapshot = getProgress().exportSnapshot()) {
+    const at = snapshot.lessons[record3.lessonId]?.answers?.[record3.questionId]?.at ?? record3.lastAt;
+    return [ago(at), placeAt(record3.packId)].filter(Boolean).join(" \xB7 ");
   }
   function review({ again = false } = {}) {
     if (!ensureReadable()) return;
@@ -18253,8 +18253,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const run = getProgress().exportSnapshot().activeReview;
     if (!run) return review();
     reviewRun = run;
-    const index = run.ids.findIndex((id2) => !run.answers[id2]);
-    if (index < 0) {
+    const index2 = run.ids.findIndex((id2) => !run.answers[id2]);
+    if (index2 < 0) {
       summary();
       const snapshot = getProgress().exportSnapshot(), items = reviewRowsByExpression(run.ids.map((id2) => {
         const r = snapshot.reviews[id2], l2 = lessonById(r?.lessonId), q3 = l2?.questions.find((x) => x.id === r.questionId), a = run.answers[id2], alone = !!(a && a.correct && !a.helped);
@@ -18264,7 +18264,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       celebrate();
       return;
     }
-    const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q3) => q3.id === record2.questionId), q2 = original.review;
+    const id = run.ids[index2], record3 = getProgress().exportSnapshot().reviews[id], l = lessonById(record3.lessonId), original = l.questions.find((q3) => q3.id === record3.questionId), q2 = original.review;
     if (!lastFeedback) {
       const marked = run.pendingHelp?.[id] === true;
       try {
@@ -18279,9 +18279,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       } catch {
       }
     }
-    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q2 };
+    context = { lessonId: l.id, phase: "review", questionIndex: index2, reviewId: id, reviewQuestion: q2 };
     if (!lastFeedback) trail.shown(reviewSlot2(run.id, id), engineItem(l, original, true), { helped });
-    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(packTitle(packById(record2.packId))) })}</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q2, lastFeedback, { packId: record2.packId, origin: t("life.reviewOrigin", { origin: reviewOrigin(record2) }), rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
+    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index2}">${progressLine(index2 + (lastFeedback ? 1 : 0), run.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(packTitle(packById(record3.packId))) })}</span><span><b class="life-count">${index2 + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q2, lastFeedback, { packId: record3.packId, origin: t("life.reviewOrigin", { origin: reviewOrigin(record3) }), rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
   function chooseReview(id) {
@@ -18292,8 +18292,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     helpBy = helped ? "user" : null;
     lastFeedback = { question: q2, choiceId: id, correct, helped, helpBy };
     mirrorAnswer(slot, saved, { ...stored, choiceId: id }, q2.answerId);
-    const record2 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q2, lastFeedback, { packId: record2?.packId, origin: record2 ? t("life.reviewOrigin", { origin: reviewOrigin(record2) }) : "", rest: restLine(`review:${context.reviewId}`) });
-    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(record2 ? packTitle(packById(record2.packId)) : t("life.everydayKorean")) })}</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
+    const record3 = p.exportSnapshot().reviews[context.reviewId], html = questionMarkup(q2, lastFeedback, { packId: record3?.packId, origin: record3 ? t("life.reviewOrigin", { origin: reviewOrigin(record3) }) : "", rest: restLine(`review:${context.reviewId}`) });
+    paint(t("life.reviewTitle"), `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>${t("life.reviewHeader", { pack: escape2(record3 ? packTitle(packById(record3.packId)) : t("life.everydayKorean")) })}</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
     judge(correct);
   }
@@ -18504,35 +18504,35 @@ function familyTable() {
       main: !review || sameChoices(question2) ? question2.id : null
     });
   }
-  const parent = rows2.map((_, index) => index), first = /* @__PURE__ */ new Map();
-  const find = (index) => {
-    while (parent[index] !== index) {
-      parent[index] = parent[parent[index]];
-      index = parent[index];
+  const parent = rows2.map((_, index2) => index2), first = /* @__PURE__ */ new Map();
+  const find = (index2) => {
+    while (parent[index2] !== index2) {
+      parent[index2] = parent[parent[index2]];
+      index2 = parent[index2];
     }
-    return index;
+    return index2;
   };
-  const link = (name, index) => {
+  const link = (name, index2) => {
     if (!first.has(name)) {
-      first.set(name, index);
+      first.set(name, index2);
       return;
     }
-    const a = find(first.get(name)), b = find(index);
+    const a = find(first.get(name)), b = find(index2);
     if (a !== b) parent[Math.max(a, b)] = Math.min(a, b);
   };
-  rows2.forEach((row, index) => {
-    if (row.answer) link(`answer:${row.answer}`, index);
-    if (row.knowledge) link(`expression:${row.expression}`, index);
-    if (row.main) link(`main:${row.main}`, index);
+  rows2.forEach((row, index2) => {
+    if (row.answer) link(`answer:${row.answer}`, index2);
+    if (row.knowledge) link(`expression:${row.expression}`, index2);
+    if (row.main) link(`main:${row.main}`, index2);
   });
   const naming = /* @__PURE__ */ new Map();
-  rows2.forEach((row, index) => {
-    const root = find(index);
+  rows2.forEach((row, index2) => {
+    const root = find(index2);
     if (!naming.has(root)) naming.set(root, null);
     if (row.knowledge && naming.get(root) === null) naming.set(root, `life.expr.${row.expression}`);
   });
-  FAMILY = new Map(rows2.map((row, index) => {
-    const root = find(index);
+  FAMILY = new Map(rows2.map((row, index2) => {
+    const root = find(index2);
     return [row.key, naming.get(root) || `life.ans.${fingerprint(rows2[root].answer)}`];
   }));
   return FAMILY;
@@ -18623,11 +18623,11 @@ function productMet(item, snapshot) {
       if (main || run && run.completedAt != null) return true;
       continue;
     }
-    const record2 = reviews[`${member.questionId}-transfer`];
+    const record3 = reviews[`${member.questionId}-transfer`];
     if (snapshot.activeReview?.answers?.[`${member.questionId}-transfer`]) return true;
     if (guided(member.questionId)) return true;
-    if (!record2) continue;
-    if (record2.streak > 0 || !main || replay || Number.isFinite(record2.lastAt) && record2.lastAt > main.at) return true;
+    if (!record3) continue;
+    if (record3.streak > 0 || !main || replay || Number.isFinite(record3.lastAt) && record3.lastAt > main.at) return true;
   }
   return false;
 }
@@ -19431,7 +19431,7 @@ var LISTENING_CHECKS = Object.freeze([
   ...check3,
   steps: Object.freeze(check3.steps),
   choices: Object.freeze(check3.choices),
-  choiceIds: Object.freeze(check3.choices.map((_choice, index) => `runner-${check3.id}-option-${index + 1}`))
+  choiceIds: Object.freeze(check3.choices.map((_choice, index2) => `runner-${check3.id}-option-${index2 + 1}`))
 })));
 var CORRECTIONS = Object.freeze({
   "check-star-middle": [null, "\uC67C\uCABD\uC774 \uC544\uB2C8\uB77C \uBCC4\uC774 \uC788\uB294 \uAC00\uC6B4\uB370 \uAE38\uC774\uC5D0\uC694.", "\uC624\uB978\uCABD\uC774 \uC544\uB2C8\uB77C \uBCC4\uC774 \uC788\uB294 \uAC00\uC6B4\uB370 \uAE38\uC774\uC5D0\uC694."],
@@ -22938,8 +22938,8 @@ function examPhase(date, now) {
 function recheckWeek(date, weekStart) {
   const { phase, weeks } = examPhase(date, weekStart);
   if (phase === "past") return false;
-  const index = weeks === null ? Math.floor((weekStart + KST) / (7 * DAY3)) : weeks;
-  return index % (EXAM_PLAN_POLICY.recheckEvery[phase] || 4) === 0;
+  const index2 = weeks === null ? Math.floor((weekStart + KST) / (7 * DAY3)) : weeks;
+  return index2 % (EXAM_PLAN_POLICY.recheckEvery[phase] || 4) === 0;
 }
 var planAnswered = (event) => event?.type === "practice.attempted" && event.attemptNo === 1 && (event.verdict === "correct" || event.verdict === "incorrect");
 function weekActivity({ events = [], progress: progress2 = null, week, extra = [] } = {}) {
@@ -23309,38 +23309,38 @@ var OFF_WHY = Object.freeze({ door: "\uC804\uC5D0 \u2018\uB0B4\uB9AC\uC2E4 \uBB3
 var PLAY_UNLOCKS = Object.freeze({
   // 게시판 해독(11-04, 설계 board-decode/설계.md 7절): 이야기가 아니라 실력 기록으로 열린다 — 가장 최근 TOPIK II 첫 답 6개 가운데 4개(싱크타운 입장 길 ②와 같은 말).
   // 그 수는 오답으로 도로 떨어질 수 있어, 한 번 「새로 열림」을 본 놀이는 닫지 않는다(sticky). 잠김 글은 「이야기에서 열려요」가 아니다(lockOnly).
-  board: Object.freeze({ where: "play.locked.level", lockOnly: true, sticky: true, open: (record2) => record2.topik2Near === true }),
+  board: Object.freeze({ where: "play.locked.level", lockOnly: true, sticky: true, open: (record3) => record3.topik2Near === true }),
   // 주문 폭주: 싱크타운 카페 알바 시작에서 열린다. 지금 앱의 싱크타운 카페 이야기는 첫 방문(cafe-apply) 하나라 그 완료를 기록으로 읽는다 —
   // 1화 뒤 카페 알바 장면이 생기면 그 장면의 기록으로 바꾼다.
-  order: Object.freeze({ where: "play.where.cafe", open: (record2) => record2.cafeVisits >= 1 }),
+  order: Object.freeze({ where: "play.where.cafe", open: (record3) => record3.cafeVisits >= 1 }),
   // 입장 검사(11-04): 축제 · 콘서트 입장 스태프 알바에서 열린다. 그 회차가 아직 없어, 가장 가까운 이야기 기록인 싱크타운 카페 첫 방문(알바 지원)으로 연다 —
   // 축제 스태프 회차가 생기면 그 기록으로 옮긴다.
-  entry: Object.freeze({ where: "play.where.cafe", open: (record2) => record2.cafeVisits >= 1 }),
+  entry: Object.freeze({ where: "play.where.cafe", open: (record3) => record3.cafeVisits >= 1 }),
   // 말의 리듬: 지금은 늘 열려 있다(11-04 캠퍼스 판 겉까지 마침). 축제 무대 연습 · 아이돌 꿈 연습실 회차가 생기면 그 기록과 화면 글 키로 이 자리에 한 줄:
   // rhythm: Object.freeze({ where: 'play.where.festival', open: (record) => record.festivalRehearsals >= 1 }),
   // 빈칸 베기(11-04): 이야기 자리는 중간고사 전날 밤 도서관(3급 뼈대 U08). 그 회차가 아직 없어 가장 가까운 공부 기록 — 레슨 한 번 — 으로 열고,
   // 카페 첫 방문을 먼저 한 학생도 막지 않는다(엄격하게 막지 않는다). 중간고사 회차가 생기면 그 기록으로 옮긴다.
-  blank: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 || record2.cafeVisits >= 1 }),
+  blank: Object.freeze({ where: "play.where.lesson", open: (record3) => record3.lessons >= 1 || record3.cafeVisits >= 1 }),
   // 찰칵 낱말(11-04): 드라마 1화 기록이 아직 홈에 없어, 이름표를 읽고 찾는 이야기(greetings-story)가 든 첫 묶음 「처음 만난 날」을 두 강 이상 들으면 연다.
   // 강 순서를 강제하지 않아 그 강이라는 보장은 없지만, 엄격하게 막지 않는 임시 자리다. 1화 기록이 홈에 오면 그 기록으로 옮긴다.
-  snap: Object.freeze({ where: "play.where.stories", open: (record2) => record2.greetingLessons >= 2 }),
+  snap: Object.freeze({ where: "play.where.stories", open: (record3) => record3.greetingLessons >= 2 }),
   // MT 바닷가 자전거 레이스(11-04, 설계 korean-racing/qa/world-mt-20261104/설계.md): 동아리 MT 회차가 아직 없어 가장 가까운 이야기 기록으로 연다 —
   // 지도 찾기 이야기(거꾸로 든 지도) 한 번. MT 회차가 생기면 그 회차의 기록으로 바꾼다.
-  racing: Object.freeze({ where: "play.where.directions", open: (record2) => record2.directionsDone >= 1 }),
+  racing: Object.freeze({ where: "play.where.directions", open: (record3) => record3.directionsDone >= 1 }),
   // 말 랠리(11-04, 설계 talk-rally/qa/world-campus-20261104/설계.md): 동아리 탁구 회차가 아직 없어 빈칸 베기와 같이 가장 가까운 공부 기록 — 레슨 한 번(카페 첫 방문을 먼저 한 학생도 막지 않는다). 그 회차가 생기면 그 기록으로 옮긴다.
-  rally: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 || record2.cafeVisits >= 1 }),
+  rally: Object.freeze({ where: "play.where.lesson", open: (record3) => record3.lessons >= 1 || record3.cafeVisits >= 1 }),
   // 환승 러시: 이야기 자리는 1화 아침인데 드라마 기록이 생활 요약에 없어, 가장 가까운 이야기 기록인 레슨 하나를 마침으로 연다(설계 9절) —
   // 1화에 등굣길 장면이 생기면 그 기록으로 바꾼다.
-  subway: Object.freeze({ where: "play.where.lesson", open: (record2) => record2.lessons >= 1 })
+  subway: Object.freeze({ where: "play.where.lesson", open: (record3) => record3.lessons >= 1 })
 });
 var PLAY_REPLACED_BY = Object.freeze({ runner: "subway" });
-function playState(id, record2, seen = null) {
+function playState(id, record3, seen = null) {
   const rule = PLAY_UNLOCKS[id];
   if (!rule) return { open: true };
   if (rule.sticky && Array.isArray(seen) && seen.includes(id)) return { open: true };
   let open = false;
   try {
-    open = !!record2 && rule.open(record2) === true;
+    open = !!record3 && rule.open(record3) === true;
   } catch {
     open = false;
   }
@@ -23412,10 +23412,10 @@ function presentationFor(settings) {
   };
 }
 var lessonMinutes = (lesson2) => lesson2.id === "cafe-compose" ? 4 : lesson2.type === "story" ? 3 : 2;
-function lessonCandidate(lesson2, index, settings) {
+function lessonCandidate(lesson2, index2, settings) {
   const cafe = lesson2.id === "cafe-apply" || lesson2.id.startsWith("cafe-visit-") || lesson2.id === "cafe-compose";
   return {
-    id: `world.life.${String(index + 1).padStart(2, "0")}.${lesson2.packId}`,
+    id: `world.life.${String(index2 + 1).padStart(2, "0")}.${lesson2.packId}`,
     label: lesson2.title,
     route: "lesson",
     lessonId: lesson2.id,
@@ -23455,9 +23455,9 @@ function practiceNeed(review, progress2, now) {
 }
 function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {}, now = Date.now(), openGames = null, due = null } = {}) {
   const at = clock(now), source = record(progress2) ? progress2 : {}, candidates = [];
-  PACKS.forEach((pack, index) => {
+  PACKS.forEach((pack, index2) => {
     const next = pack.lessons.find((lesson2) => !time3(source.lessons?.[lesson2.id]?.completedAt));
-    if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index, settings));
+    if (next) candidates.push(lessonCandidate(knownLessons.get(next.id), index2, settings));
   });
   const dueIds = record(due) ? due.state === "engine" && Array.isArray(due.ids) ? due.ids : [] : null;
   const reviews = dueIds ? verifiedReviews(source).filter((review) => dueIds.includes(review.id)) : verifiedReviews(source).filter((review) => review.dueAt <= at && review.lastAt <= at);
@@ -23586,8 +23586,8 @@ function resumeCandidates(progress2, settings, now) {
   const stage = record(saved?.stage) ? saved.stage : null;
   const moved = !!stage && (stage.phase === "story" || stage.phase === "questions" || stage.sceneIndex > 0 || stage.questionIndex > 0);
   if (lesson2 && saved && (answered || moved) && time3(saved.startedAt) && saved.startedAt <= now) {
-    const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
-    result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
+    const index2 = PACKS.findIndex((pack) => pack.id === lesson2.packId);
+    result.push({ ...lessonCandidate(lesson2, index2, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
   const session = progress2?.activeReview;
   if (!session || !Array.isArray(session.ids) || !time3(session.startedAt) || session.startedAt > now) return result;
@@ -24630,7 +24630,7 @@ function createWorldEducation({
     const writing = exam === "topik2" && writingList().length > 0;
     const two2 = topik2Domains(), exams = studentExam(values) === "topik2" || two2.listening || two2.reading ? ["topik1", "topik2"] : null;
     const bridged = exam === "topik2" ? ["listening", "reading"].filter((domain) => !two2[domain]) : [];
-    return { map, plan, gate, mock, exam, writing, exams, bridged, summary };
+    return { map, plan, gate, mock, exam, writing, exams, bridged, summary, events };
   }
   let lifeItemIndex = null;
   function lifeItemOf(itemKey) {
@@ -24662,13 +24662,25 @@ function createWorldEducation({
     check3();
     refresh();
     const scroller = keepScroll ? panelNode("[data-position-board]")?.closest?.("#panel-content") : null, scrollTop = scroller?.scrollTop || 0;
-    const routes = practiceRoutes(coachNow), { map, plan, gate, mock, exam, writing, exams, bridged, summary } = positionData(coachNow, (id) => routes.has(id));
+    const routes = practiceRoutes(coachNow), { map, plan, gate, mock, exam, writing, exams, bridged, summary, events } = positionData(coachNow, (id) => routes.has(id));
     let scope = null;
     try {
       scope = getProgress().status().scoped ? "account" : "device";
     } catch {
     }
-    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, practice: (id) => routes.get(id) || null }), PANEL);
+    let missed = null;
+    try {
+      let projection = null;
+      try {
+        projection = readPracticeCoach()?.followups?.() || null;
+      } catch {
+        projection = null;
+      }
+      missed = position.missedSpot?.({ map, summary, events, homework: current?.examPlan?.homework ?? null, projection, practiceOpen: (id) => routes.get(id)?.route === "practice", now: Date.now() }) || null;
+    } catch {
+      missed = null;
+    }
+    home.showPanel(t2("position.title"), view.renderPositionBoard({ map, plan, gate, mock, exams, writing, bridged, catalog: itemExcerpt, assessable: itemAssessable, diagnosed, scope, missed, practice: (id) => routes.get(id) || null }), PANEL);
     const root = panelNode("[data-position-board]");
     if (root && position.followups) {
       void loadFollowupBank();
@@ -26099,8 +26111,8 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
   const part = () => parts[partIndex] || null;
   const deadline = (row) => row.startedAt === null ? null : row.startedAt + row.minutes * 6e4;
   const condition = (row, item) => presentCondition(item, { content: MOCK_POLICY.gameId, extra: { form: examId, composition: MOCK_POLICY.composition, section: row.section, minutes: row.minutes, timed: true } });
-  function show(row, index) {
-    const cell = row.cells[index];
+  function show(row, index2) {
+    const cell = row.cells[index2];
     if (!cell.pid) {
       cell.pid = coach.present(efMeasure(cell.item), condition(row, cell.item));
       cell.shownAt = clock2();
@@ -26113,7 +26125,7 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
   }
   const setRange = (row, cell) => {
     if (!cell.item.setId) return null;
-    const at = row.cells.map((entry, index) => entry.item.setId === cell.item.setId ? index : -1).filter((index) => index >= 0);
+    const at = row.cells.map((entry, index2) => entry.item.setId === cell.item.setId ? index2 : -1).filter((index2) => index2 >= 0);
     return at.length > 1 ? { first: at[0] + 1, last: at[at.length - 1] + 1 } : null;
   };
   function expire() {
@@ -26174,12 +26186,12 @@ function createMockSession({ coach, sections = [], exam, clock: clock2 = () => D
       return view();
     },
     // 같은 영역 안에서 다른 문항으로(번호). 처음 여는 문항은 그때 기록한다.
-    go(index) {
+    go(index2) {
       expire();
       const row = part();
-      if (!row || row.startedAt === null || row.ended !== null || !Number.isInteger(index) || index < 0 || index >= row.cells.length) return view();
-      cursor = index;
-      show(row, index);
+      if (!row || row.startedAt === null || row.ended !== null || !Number.isInteger(index2) || index2 < 0 || index2 >= row.cells.length) return view();
+      cursor = index2;
+      show(row, index2);
       return view();
     },
     // 실제 재생기의 결과만 받는다(재생을 눌렀다는 것만으로 들었다고 하지 않는다). 허용 횟수를 넘긴 재생은 받지 않는다.
@@ -26569,10 +26581,10 @@ function posPlayableItem(row) {
 function createDiagnosticSession({ coach, items } = {}) {
   if (!coach || ["present", "delivery", "help", "answer"].some((name) => typeof coach[name] !== "function") || !Array.isArray(items)) throw TypeError("WORLD diagnostic needs the learning coach and its items");
   const queue = items.map(posPlayableItem), results = [];
-  let index = -1, current = null, stopped = false;
+  let index2 = -1, current = null, stopped = false;
   const listening = (item) => item.audioRequired ?? item.modality === "listening";
   const view = () => current && {
-    index,
+    index: index2,
     total: queue.length,
     item: current.item,
     heard: current.heard,
@@ -26615,12 +26627,12 @@ function createDiagnosticSession({ coach, items } = {}) {
     next() {
       if (stopped) return null;
       if (current && !current.answered) throw Error("WORLD diagnostic: answer or skip the current item first");
-      index += 1;
-      if (index >= queue.length) {
+      index2 += 1;
+      if (index2 >= queue.length) {
         current = null;
         return null;
       }
-      const item = queue[index];
+      const item = queue[index2];
       current = {
         item,
         pid: coach.present(posMeasureOf(item), presentCondition(item, { content: "world-diagnostic" })),
@@ -28270,7 +28282,7 @@ function diagRunnerItems() {
       audio: `korean-runner/assets/voice/${item.id}.mp3`,
       prompt: null,
       question: null,
-      choices: item.choices.map((label, index) => ({ id: item.choiceIds[index], label })),
+      choices: item.choices.map((label, index2) => ({ id: item.choiceIds[index2], label })),
       correctId: item.choiceIds[item.correct],
       explanation: item.explanation,
       label: diagShort(item.text)
@@ -28278,9 +28290,9 @@ function diagRunnerItems() {
   });
 }
 function diagRhythmItems() {
-  return TRACKS.flatMap((track) => track.questions.map((question2, index) => {
-    const family = rhythmItem(track.id, { sourceIndex: index }).familyKey, variant = diagSeeded(family)() < 0.5 ? 0 : 1;
-    const meta = rhythmItem(track.id, { sourceIndex: index, variant }), voice = NARRATION[`t${track.id}q${index}v${variant}`], claim = question2.claims[variant];
+  return TRACKS.flatMap((track) => track.questions.map((question2, index2) => {
+    const family = rhythmItem(track.id, { sourceIndex: index2 }).familyKey, variant = diagSeeded(family)() < 0.5 ? 0 : 1;
+    const meta = rhythmItem(track.id, { sourceIndex: index2, variant }), voice = NARRATION[`t${track.id}q${index2}v${variant}`], claim = question2.claims[variant];
     if (!voice) return null;
     const o = "korean-rhythm.o", x = "korean-rhythm.x";
     return {
@@ -28298,8 +28310,8 @@ function diagRhythmItems() {
 }
 function diagBlankItems() {
   return ITEMS.map((item) => {
-    const meta = itemMetadata(item), ids = item.options.map((_, index) => `blank-slice.${item.id}.option-${index}`);
-    const order2 = diagArrange(meta.itemKey, item.options.map((label, index) => ({ id: ids[index], label })));
+    const meta = itemMetadata(item), ids = item.options.map((_, index2) => `blank-slice.${item.id}.option-${index2}`);
+    const order2 = diagArrange(meta.itemKey, item.options.map((label, index2) => ({ id: ids[index2], label })));
     return {
       ...meta,
       source: "blank-slice",
@@ -28321,7 +28333,7 @@ function diagTownItems() {
     audio: null,
     prompt: item.passage,
     question: item.question,
-    choices: item.choices.map((label, index) => ({ id: `option-${index}`, label })),
+    choices: item.choices.map((label, index2) => ({ id: `option-${index2}`, label })),
     correctId: `option-${item.correct}`,
     explanation: item.explanation,
     label: diagShort(item.question)
@@ -28478,8 +28490,48 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     const note = noteText(skill2.note);
     return `<details class="wpos-skill" data-skill="${posEscape(skill2.id)}" data-cell="${posEscape(skill2.cell)}" data-status="${posEscape(skill2.status)}"><summary><span class="wpos-skill-name">${posEscape(skillName(skill2))}${note ? `<small class="wpos-skill-note" data-note="${posEscape(skill2.note.kind)}">${posEscape(note)}</small>` : ""}</span><span class="wpos-chip" data-tone="${POS_LED[skill2.cell] || "idle"}">${posLed(POS_LED[skill2.cell])}${posEscape(t3(`position.cell.${skill2.cell}`))}</span></summary><div class="wpos-skill-body"><p class="wpos-status">${posEscape(t3(`position.status.${skill2.status}`))}</p><p class="wpos-evidence-title">${posEscape(t3("position.evidence.title"))}</p>${evidenceRows(skill2, catalog)}${uncountedRows(skill2, catalog, assessable)}${helpedRows(skill2, catalog)}${practiceButton(skill2.id, practice)}</div></details>`;
   }
-  function attentionBlock(map, practice) {
-    const rows2 = (map.attention || []).map((id) => map.skills.find((skill2) => skill2.id === id)).filter(Boolean);
+  const MISSED_STEPS = Object.freeze(["spot", "again", "practice", "homework", "delayed"]);
+  function missedCount(row) {
+    if (row.count === 1 && row.of === 1) return t3("position.missed.count.once");
+    return t3(row.unit === "guest" ? "position.missed.count.guest" : "position.missed.count.try", { n: row.of, wrong: row.count });
+  }
+  const missedShare = (row) => t3(row.count === row.of ? "position.missed.share.all" : "position.missed.share.some", { n: row.count, of: row.of });
+  function missedStepText(row) {
+    if (row.step === "spot") {
+      const main = t3(row.sameRule ? "position.missed.spot.sameRule" : "position.missed.spot.sameKind", { n: row.guests });
+      return row.right ? `${main} \xB7 ${t3("position.missed.spot.right", { n: row.right })}` : main;
+    }
+    if (row.step === "again") {
+      if (row.state === "planned") return t3("position.missed.again.left", { n: row.left });
+      const key = row.result === "correct" ? row.answer === "reject" ? "reject" : "correct" : ["assisted", "incorrect"].includes(row.result) ? row.result : "other";
+      return t3(`position.missed.again.${key}`);
+    }
+    if (row.step === "practice") return t3("position.missed.practice.done", { n: row.n, right: row.right });
+    if (row.step === "homework") return t3("position.missed.homework.planned");
+    if (row.step === "delayed") {
+      if (row.due) return t3("position.missed.delayed.due");
+      if (row.dueAt) return t3("position.missed.delayed.next", { date: day(row.dueAt) });
+      if (row.observed) return t3("position.missed.delayed.observed", { n: row.observed });
+      return t3("position.missed.delayed.planned");
+    }
+    return "";
+  }
+  function missedBlock(card, practice) {
+    if (!card || card.kind !== "topik") return "";
+    const head = card.narrow.find((row) => row.layer === "skill");
+    if (!head) return "";
+    const exam = t3(card.target.exam === "topik2" ? "goal.exam.type.topik2" : "goal.exam.type.topik1"), domain = t3(card.target.domain === "listening" ? "position.domain.listening" : "position.domain.reading");
+    const layers = card.narrow.filter((row) => row.layer !== "skill").map((row) => {
+      const body = row.layer === "line" ? `<span class="wmis-line" lang="ko">\u300C${posEscape(row.text)}\u300D</span>` : `<span>${posEscape(t3(`position.missed.direction.${row.direction}`))}</span>`;
+      return `<div data-layer="${posEscape(row.layer)}"><dt>${posEscape(t3(`position.missed.layer.${row.layer}`))}</dt><dd>${body}<small>${posEscape(missedShare(row))}</small></dd></div>`;
+    }).join("");
+    const steps = card.again.filter((row) => MISSED_STEPS.includes(row.step)).map((row) => `<li data-step="${posEscape(row.step)}" data-state="${row.state === "done" ? "done" : "planned"}"><i class="wmis-dot" aria-hidden="true"></i><span class="wmis-step">${posEscape(t3(`position.missed.step.${row.step}`))}</span><span class="wmis-what">${posEscape(missedStepText(row))}</span></li>`).join("");
+    const states = new Set(card.again.map((row) => row.state === "done" ? "done" : "planned"));
+    const legend = steps ? `<p class="wmis-legend">${["done", "planned"].filter((state) => states.has(state)).map((state) => `<span data-state="${state}"><i class="wmis-dot" aria-hidden="true"></i>${posEscape(t3(`position.missed.legend.${state}`))}</span>`).join("")}</p>` : "";
+    return `<section class="wpos-missed" data-position-missed="${posEscape(card.target.skillId)}" aria-labelledby="wpos-missed-title"><p class="life-section-label">MISSED SPOT</p><h3 id="wpos-missed-title">${posEscape(t3("position.missed.title"))}</h3><div class="wmis-head"><small class="wmis-exam">${posEscape(exam)} \xB7 ${posEscape(domain)}</small><strong class="wmis-skill">${posEscape(skillName({ id: card.target.skillId, label: card.target.label }))}</strong><span class="wmis-count">${posLed("alert")}${posEscape(missedCount(head))}</span></div>${layers ? `<dl class="wmis-narrow" aria-label="${posEscape(t3("position.missed.narrow"))}">${layers}</dl>` : ""}${steps ? `<p class="wmis-sub">${posEscape(t3("position.missed.again"))}</p><ol class="wmis-again">${steps}</ol>${legend}` : ""}${practiceButton(card.target.skillId, practice)}</section>`;
+  }
+  function attentionBlock(map, practice, skip = null) {
+    const rows2 = (map.attention || []).filter((id) => id !== skip).map((id) => map.skills.find((skill2) => skill2.id === id)).filter(Boolean);
     if (!rows2.length) return "";
     return `<section class="wpos-attention" data-position-attention><p class="life-section-label">LOOK FIRST</p><h3>${posEscape(t3("position.attention.title"))}</h3><p class="wpos-note">${posEscape(t3("position.attention.note"))}</p><ul>${rows2.map((skill2) => `<li data-skill="${posEscape(skill2.id)}"><span class="wpos-attention-copy"><strong>${posEscape(skillName(skill2))}</strong><small>${posEscape(noteText(skill2.note))}</small></span>${practiceButton(skill2.id, practice)}</li>`).join("")}</ul></section>`;
   }
@@ -28520,7 +28572,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     return `<section class="wpos-response" data-set-response-box data-kind="${posEscape(response.kind)}"><p class="wpos-response-ask" id="wpos-response-ask" role="status">${posEscape(ask)}</p><div class="wpos-response-choices" role="group" aria-labelledby="wpos-response-ask">${pills}</div><p class="wpos-note" data-set-response-status role="status">${posEscape(status)}</p></section>`;
   }
   const poster = (word, sub, { print = "position", label = "MY POSITION" } = {}) => `<div class="life-poster wpos-poster"><span class="w-print wpos-print" data-print="${print}" aria-hidden="true"><i></i></span><small class="life-poster-label">${label}</small><strong class="life-poster-word">${posEscape(word)}</strong><p class="life-poster-sub">${posEscape(sub)}</p></div>`;
-  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [], assessable = null } = {}) {
+  function renderPositionBoard({ map, plan = null, gate = null, mock = null, catalog = null, diagnosed = false, scope = null, practice = null, exams = null, writing = false, bridged = [], assessable = null, missed = null } = {}) {
     const exam = map.exam === "topik2" ? "topik2" : "topik1";
     const summary = t3(exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total });
     const groups = ["listening", "reading"].map((domain) => {
@@ -28530,7 +28582,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
     }).join("");
     const writingBlock = exam === "topik2" ? `<section class="wpos-group" data-domain="writing"><h3>${posEscape(t3("plan.area.writing"))}</h3><p class="wpos-note">${posEscape(t3("position.writing.note"))}</p>${writing ? `<button class="quiet-button wpos-practice" type="button" data-position-writing>${posEscape(t3("writing.title"))} <span aria-hidden="true">\u2192</span></button>` : ""}</section>` : "";
     const counts = POS_CELLS.map((cell) => `<li data-cell="${cell}">${posLed(POS_LED[cell])}<strong>${map.counts[cell]}</strong><span>${posEscape(t3(`position.cell.${cell}`))}</span></li>`).join("");
-    return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t3("position.title"), summary)}${examSwitch(exam, exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t3("position.intro"))}</p>${map.evidenceComplete ? "" : `<p class="wpos-note" data-position-incomplete>${posEscape(t3("position.incomplete"))}</p>`}${attentionBlock(map, practice)}${diagnosticBlock(map, plan, { done: diagnosed })}${groups}${writingBlock}${estimateBlock(gate, mock)}${scope ? `<p class="wpos-scope">${posEscape(t3(scope === "account" ? "position.scope.account" : "position.scope.device"))}</p>` : ""}</div>`;
+    return `<div class="wpos life-heading" data-position-board data-exam="${exam}" tabindex="-1">${poster(t3("position.title"), summary)}${examSwitch(exam, exams)}<ul class="wpos-counts" aria-label="${posEscape(summary)}">${counts}</ul><p class="wpos-intro">${posEscape(t3("position.intro"))}</p>${map.evidenceComplete ? "" : `<p class="wpos-note" data-position-incomplete>${posEscape(t3("position.incomplete"))}</p>`}${missedBlock(missed, practice)}${attentionBlock(map, practice, missed?.kind === "topik" ? missed.target.skillId : null)}${diagnosticBlock(map, plan, { done: diagnosed })}${groups}${writingBlock}${estimateBlock(gate, mock)}${scope ? `<p class="wpos-scope">${posEscape(t3(scope === "account" ? "position.scope.account" : "position.scope.device"))}</p>` : ""}</div>`;
   }
   function renderHangulBoard({ stage = null } = {}) {
     const known = !!stage && Number.isInteger(stage.met) && Number.isInteger(stage.total) && stage.total > 0;
@@ -28669,7 +28721,7 @@ function createPositionView({ t: t3, has = () => true, formatDate: formatDate3 =
   function renderMockItem({ view, playing = false, notice = "", confirm = false, parts = [] } = {}) {
     const item = view.item, listening = item.modality === "listening", last = view.partIndex + 1 >= view.parts;
     const choices2 = item.choices.map((choice) => `<button class="wpos-choice" type="button" data-mock-choice="${posEscape(choice.id)}"${choice.id === view.choiceId ? ' data-state="chosen" aria-pressed="true"' : ' aria-pressed="false"'}${view.heard && !view.answered ? "" : " disabled"}>${posEscape(choice.label)}</button>`).join("");
-    const palette = view.marks.map((mark, index) => `<button type="button" class="wmock-number" data-mock-go="${index}" data-mark="${mark}"${index === view.index ? ' aria-current="step"' : ""} aria-label="${posEscape(t3(`mock.mark.${mark}`, { n: index + 1 }))}">${index + 1}</button>`).join("");
+    const palette = view.marks.map((mark, index2) => `<button type="button" class="wmock-number" data-mock-go="${index2}" data-mark="${mark}"${index2 === view.index ? ' aria-current="step"' : ""} aria-label="${posEscape(t3(`mock.mark.${mark}`, { n: index2 + 1 }))}">${index2 + 1}</button>`).join("");
     const allowed = view.plays?.allowed, heard = view.plays?.completed || 0;
     const elsewhere = playing && Number.isInteger(view.sounding) && view.sounding !== view.index;
     const playNote = elsewhere ? t3("mock.playingOther", { n: view.sounding + 1 }) : playing ? t3("position.diagnostic.playing") : view.audio === "failed" && !view.heard ? t3("position.diagnostic.audioFailed") : Number.isInteger(allowed) ? heard >= allowed ? t3("mock.plays.done") : t3("mock.plays.left", { heard, allowed }) : "";
@@ -29093,9 +29145,9 @@ function createPracticeSession({ coach, items } = {}) {
     return item;
   });
   const results = [];
-  let index = -1, current = null, stopped = false;
+  let index2 = -1, current = null, stopped = false;
   const view = () => current && {
-    index,
+    index: index2,
     total: queue.length,
     item: current.item,
     answered: current.answered,
@@ -29137,12 +29189,12 @@ function createPracticeSession({ coach, items } = {}) {
     next() {
       if (stopped) return null;
       if (current && !current.answered) throw Error("WORLD practice: answer or skip the current item first");
-      index += 1;
-      if (index >= queue.length) {
+      index2 += 1;
+      if (index2 >= queue.length) {
         current = null;
         return null;
       }
-      const item = queue[index], listening = prListening(item);
+      const item = queue[index2], listening = prListening(item);
       current = {
         item,
         pid: coach.present(prMeasure(item), presentCondition(item, { content: "world-practice" })),
@@ -29220,7 +29272,7 @@ var SKILL = /^ko2?\.(listening|reading)\.[a-z]+$/;
 function bankItem(row) {
   if (!tiRecord(row) || typeof row.id !== "string" || !Number.isInteger(row.rev) || typeof row.family !== "string" || !SKILL.test(row.skillId || "") || !["listening", "reading"].includes(row.section) || row.skillId.split(".")[1] !== row.section || ![1, 2, 3].includes(row.difficulty) || !Array.isArray(row.choices) || row.choices.length < 2 || !Number.isInteger(row.answer) || row.answer < 0 || row.answer >= row.choices.length) return null;
   if (row.section === "listening" && (!tiRecord(row.audio) || typeof row.audio.file !== "string")) return null;
-  const itemKey = `topik-items.${row.id}.v${row.rev}`, ids = row.choices.map((_, index) => `${itemKey}.option-${index}`);
+  const itemKey = `topik-items.${row.id}.v${row.rev}`, ids = row.choices.map((_, index2) => `${itemKey}.option-${index2}`);
   const opening = row.passage || (Array.isArray(row.script) ? row.script.map((line) => line.text).join(" ") : "") || row.question;
   return Object.freeze({
     id: row.id,
@@ -29247,7 +29299,7 @@ function bankItem(row) {
     prompt: row.passage || null,
     script: Array.isArray(row.script) ? Object.freeze(row.script.map((line) => Object.freeze({ speaker: line.speaker, text: line.text }))) : null,
     question: row.question,
-    choices: Object.freeze(row.choices.map((label, index) => Object.freeze({ id: ids[index], label }))),
+    choices: Object.freeze(row.choices.map((label, index2) => Object.freeze({ id: ids[index2], label }))),
     correctId: ids[row.answer],
     explanation: Object.freeze({ ...row.explanation }),
     choiceNotes: Object.freeze([...row.choiceNotes || []]),
@@ -29329,6 +29381,225 @@ function createTopikBank({ fetcher = (...args) => globalThis.fetch(...args) } = 
   });
 }
 
+// experiences/synk-world-app/world-missed-spot.mjs
+var MISSED_SPOT_POLICY = Object.freeze({
+  version: "world-missed-spot-1",
+  // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
+  sittingGapMs: 30 * 6e4,
+  // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
+  narrowMin: 2,
+  practiceGame: "world-practice"
+});
+var record2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var OPTION = /^(pass|reject-[a-z]+)$/;
+var ENTRY = /* @__PURE__ */ new Map();
+for (const venue of VENUES) for (const item of venue.cases) {
+  const meta = caseMetadata(item), row = { venue, item, meta };
+  ENTRY.set(meta.itemKey, row);
+  ENTRY.set(meta.familyKey, row);
+}
+var entryOf = (key) => ENTRY.get(key) || null;
+function entryRule(venue, item) {
+  const id = item.answer !== "pass" ? item.answer : item.evidence?.[0];
+  const rule = id ? activeRules(venue, item.at).find((row) => row.id === id) : null;
+  return rule ? { ruleId: rule.id, text: rule.text } : null;
+}
+function missDirection(choice) {
+  if (!record2(choice) || !OPTION.test(choice.selectedId || "") || !OPTION.test(choice.correctId || "") || choice.selectedId === choice.correctId) return null;
+  if (choice.selectedId === "pass") return "let-in";
+  if (choice.correctId === "pass") return "turned-away";
+  return "wrong-rule";
+}
+function index(events) {
+  const list = Array.isArray(events) ? events : [], shown = /* @__PURE__ */ new Map(), first = /* @__PURE__ */ new Map(), attempt = /* @__PURE__ */ new Map(), experience = /* @__PURE__ */ new Map(), order2 = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
+  list.forEach((event, at) => {
+    if (!record2(event)) return;
+    order2.set(event.id, at);
+    if (event.type === "decision.made") experience.set(event.id, event.experienceId);
+    else if (event.type === "practice.presented") shown.set(event.id, event);
+    else if (event.type === "record.excluded" && event.targetId) excluded.add(event.targetId);
+    else if (event.type === "practice.attempted") {
+      attempt.set(event.id, event);
+      if (event.attemptNo === 1 && !first.has(event.presentationId)) first.set(event.presentationId, event);
+    }
+  });
+  const ordered = [...shown.values()].sort((a, b) => order2.get(a.id) - order2.get(b.id)), firstSight = /* @__PURE__ */ new Map();
+  for (const presentation of ordered) for (const key of [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean)) if (!firstSight.has(key)) firstSight.set(key, presentation.id);
+  return {
+    shown,
+    first,
+    attempt,
+    excluded,
+    order: order2,
+    ordered,
+    expOf: (presentation) => experience.get(presentation?.decisionId) ?? null,
+    // 그 문항(또는 계열)을 이 제시보다 먼저 본 적이 없나 — 처음 보는 손님이었는지.
+    fresh: (presentation) => [presentation.itemKey, presentation.measure?.familyKey].filter(Boolean).every((key) => firstSight.get(key) === presentation.id)
+  };
+}
+function entrySittings(ix, policy) {
+  const rows2 = [];
+  let sitting = -1, prev = null;
+  for (const presentation of ix.ordered) {
+    if (ix.expOf(presentation) !== GAME_ID3) continue;
+    const entry = entryOf(presentation.itemKey);
+    if (!entry) continue;
+    const at = Date.parse(presentation.at);
+    if (!prev || prev.entry.venue.id !== entry.venue.id || minutes(entry.item.at) <= minutes(prev.entry.item.at) || !Number.isFinite(at) || !Number.isFinite(prev.at) || at - prev.at > policy.sittingGapMs) sitting += 1;
+    const row = { presentation, entry, at, sitting, attempt: ix.first.get(presentation.id) || null };
+    rows2.push(row);
+    prev = row;
+  }
+  return rows2;
+}
+function coreEvidence(summary, skillId) {
+  const skill2 = (Array.isArray(summary?.skills) ? summary.skills : []).find((row) => row?.id === skillId), ids = /* @__PURE__ */ new Set();
+  if (!skill2) return ids;
+  for (const level of Object.values(record2(skill2.levels) ? skill2.levels : {})) for (const cell of Object.values(record2(level?.formats) ? level.formats : {})) for (const id of cell?.evidence || []) ids.add(id);
+  if (skill2.status !== "supported") for (const id of [...skill2.evidence || [], ...skill2.reasonEvidence || []]) ids.add(id);
+  return ids;
+}
+function majority(rows2, keyOf, { of, min }) {
+  const groups = /* @__PURE__ */ new Map();
+  rows2.forEach((row, rank) => {
+    const key = keyOf(row);
+    if (key == null) return;
+    const hit = groups.get(key) || { key, rows: [], rank, items: /* @__PURE__ */ new Set() };
+    hit.rows.push(row);
+    hit.items.add(row.itemKey);
+    groups.set(key, hit);
+  });
+  const top = [...groups.values()].sort((a, b) => b.rows.length - a.rows.length || a.rank - b.rank)[0];
+  return top && top.items.size >= min && top.rows.length * 2 > of ? top : null;
+}
+function spotStep({ missed, rows: rows2, skillId, independent }) {
+  const at = new Map(rows2.map((row, position) => [row.presentation.id, position])), guests = /* @__PURE__ */ new Map();
+  for (const presentationId of missed) {
+    let position = at.get(presentationId);
+    if (position == null) continue;
+    let source = rows2[position];
+    while (position + 1 < rows2.length) {
+      const next = rows2[position + 1];
+      if (next.sitting !== source.sitting || next.entry.meta.skillId !== skillId || !next.attempt) break;
+      if (!guests.has(next.presentation.id)) guests.set(next.presentation.id, { row: next, sameRule: [...next.entry.item.evidence].sort().join("|") === [...source.entry.item.evidence].sort().join("|") });
+      if (next.attempt.verdict !== "incorrect") break;
+      position += 1;
+      source = next;
+    }
+  }
+  if (!guests.size) return null;
+  const list = [...guests.values()];
+  return {
+    step: "spot",
+    state: "done",
+    guests: list.length,
+    right: list.filter(({ row }) => row.attempt.verdict === "correct" && independent.has(row.attempt.id)).length,
+    sameRule: list.every((row) => row.sameRule),
+    at: list.at(-1).row.attempt.at,
+    eventIds: list.map(({ row }) => row.attempt.id)
+  };
+}
+function laterGameStep({ rows: rows2, missedSittings, skillId, independent, ix }) {
+  if (!rows2.length || !missedSittings.length) return null;
+  const last = Math.max(...missedSittings);
+  const guest = rows2.find((row) => row.sitting > last && row.entry.meta.skillId === skillId && !row.entry.item.followupOnly && row.attempt && ix.fresh(row.presentation));
+  if (guest) {
+    const verdict2 = guest.attempt.verdict, alone = independent.has(guest.attempt.id);
+    return {
+      step: "again",
+      state: "done",
+      result: verdict2 === "correct" ? alone ? "correct" : "assisted" : verdict2 === "incorrect" ? "incorrect" : "other",
+      answer: guest.entry.item.answer === "pass" ? "pass" : "reject",
+      at: guest.attempt.at,
+      eventIds: [guest.attempt.id]
+    };
+  }
+  const seen = /* @__PURE__ */ new Set();
+  for (const presentation of ix.shown.values()) {
+    seen.add(presentation.itemKey);
+    if (presentation.measure?.familyKey) seen.add(presentation.measure.familyKey);
+  }
+  const left = VENUES.reduce((n, venue) => n + venue.cases.filter((item) => {
+    const meta = caseMetadata(item);
+    return !item.followupOnly && item.skill === skillId && !seen.has(meta.itemKey) && !seen.has(meta.familyKey);
+  }).length, 0);
+  return left ? { step: "again", state: "planned", left } : null;
+}
+function practiceStep({ skillId, since, ix, independent, homework, policy }) {
+  const done = [];
+  for (const [presentationId, attempt] of ix.first) {
+    const presentation = ix.shown.get(presentationId);
+    if (ix.expOf(presentation) !== policy.practiceGame || presentation?.measure?.skillId !== skillId || !independent.has(attempt.id) || ix.excluded.has(attempt.id)) continue;
+    if (Date.parse(attempt.at) > since && ["correct", "incorrect"].includes(attempt.verdict)) done.push(attempt);
+  }
+  if (done.length) return { step: "practice", state: "done", n: done.length, right: done.filter((row2) => row2.verdict === "correct").length, at: done.map((row2) => row2.at).sort().at(-1), eventIds: done.map((row2) => row2.id) };
+  const row = (Array.isArray(homework) ? homework : []).find((value) => value?.skillId === skillId);
+  return row && !row.shortage ? { step: "homework", state: "planned" } : null;
+}
+function delayedStep({ skillId, projection, practiceOpen, now }) {
+  const all = (Array.isArray(projection?.items) ? projection.items : []).filter((row) => row?.gameId === "world-practice" && row.measure?.skillId === skillId && ["d1", "d7", "d30"].includes(row.window));
+  const latest = all.map((row) => row.sourceAt).filter((value) => Number.isFinite(Date.parse(value))).sort().at(-1);
+  const rows2 = latest ? all.filter((row) => row.sourceAt === latest) : all;
+  if (rows2.length) {
+    const due = rows2.find((row) => row.status === "due"), observed = rows2.filter((row) => row.status === "observed").length;
+    const upcoming = rows2.filter((row) => row.status === "not_due" && Number.isFinite(Date.parse(row.dueAt)) && Date.parse(row.dueAt) >= now).sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt))[0];
+    return { step: "delayed", state: observed ? "done" : "planned", observed, due: !!due, window: (due || upcoming)?.window ?? null, dueAt: upcoming?.dueAt ?? null };
+  }
+  return practiceOpen ? { step: "delayed", state: "planned", observed: 0, due: false, window: null, dueAt: null } : null;
+}
+function buildMissedSpot({ map, summary = null, events = [], homework = null, projection = null, practiceOpen = () => false, now = Date.now(), policy = MISSED_SPOT_POLICY } = {}) {
+  if (!record2(map) || !Array.isArray(map.skills) || map.evidenceComplete !== true) return null;
+  const skills = new Map(map.skills.map((skill3) => [skill3.id, skill3]));
+  let skill2 = null, missed = [];
+  for (const id of Array.isArray(map.attention) ? map.attention : []) {
+    const row = skills.get(id), misses = (row?.evidence || []).filter((value) => value.verdict === "incorrect" && value.independent);
+    if (misses.length) {
+      skill2 = row;
+      missed = misses;
+      break;
+    }
+  }
+  if (!skill2) return null;
+  const ix = index(events), independent = coreEvidence(summary, skill2.id);
+  for (const row of skill2.evidence) if (row.independent) independent.add(row.eventId);
+  const guests = !skill2.folded && skill2.evidence.length > 0 && skill2.evidence.every((row) => entryOf(row.itemKey));
+  const narrow = [{ layer: "skill", skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status, count: skill2.incorrect, of: skill2.n, unit: guests ? "guest" : "try" }];
+  const of = missed.length, detail = missed.map((row) => ({ ...row, entry: entryOf(row.itemKey), choice: ix.attempt.get(row.eventId)?.choice }));
+  const line = majority(detail, (row) => row.entry ? entryRule(row.entry.venue, row.entry.item)?.text ?? null : null, { of, min: policy.narrowMin });
+  if (line) {
+    const top = line.rows[0], rule = entryRule(top.entry.venue, top.entry.item);
+    narrow.push({ layer: "line", venueId: top.entry.venue.id, venue: top.entry.venue.name, ruleId: rule.ruleId, text: rule.text, count: line.rows.length, of });
+  }
+  const way = majority(detail, (row) => row.entry ? missDirection(row.choice) : null, { of, min: policy.narrowMin });
+  if (way) narrow.push({ layer: "direction", direction: way.key, count: way.rows.length, of });
+  const rows2 = entrySittings(ix, policy), inGame = detail.filter((row) => row.experienceId === GAME_ID3).map((row) => ix.attempt.get(row.eventId)?.presentationId).filter(Boolean);
+  const missedSittings = rows2.filter((row) => inGame.includes(row.presentation.id)).map((row) => row.sitting);
+  const firstMiss = Math.min(...missed.map((row) => Date.parse(row.at)).filter(Number.isFinite));
+  let open = false;
+  try {
+    open = practiceOpen(skill2.id) === true;
+  } catch {
+    open = false;
+  }
+  const again = [
+    spotStep({ missed: inGame, rows: rows2, skillId: skill2.id, independent }),
+    laterGameStep({ rows: rows2, missedSittings, skillId: skill2.id, independent, ix }),
+    practiceStep({ skillId: skill2.id, since: Number.isFinite(firstMiss) ? firstMiss : -Infinity, ix, independent, homework, policy }),
+    delayedStep({ skillId: skill2.id, projection, practiceOpen: open, now })
+  ].filter(Boolean);
+  return {
+    policy: policy.version,
+    kind: "topik",
+    target: { skillId: skill2.id, label: skill2.label, domain: skill2.domain, exam: map.exam, status: skill2.status },
+    narrow,
+    again,
+    evidence: missed.map((row) => row.eventId),
+    grade: null,
+    abilityClaim: false,
+    learningEffectClaim: false
+  };
+}
+
 // experiences/synk-world-app/world-position-kit.mjs
 var followupBank = createTopikBank();
 var topik = createTopikBank();
@@ -29373,7 +29644,9 @@ var worldPosition = Object.freeze({
   }, get forms() {
     return topik.forms;
   } }),
-  checkCandidate: positionCheckCandidate
+  checkCandidate: positionCheckCandidate,
+  // 놓친 곳 카드(11-14, world-missed-spot.mjs) — 판 맨 위 한 장. 읽기 전용(새 판정 · 저장 없음).
+  missedSpot: buildMissedSpot
 });
 
 // experiences/synk-world-app/life-standalone-entry.mjs

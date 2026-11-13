@@ -516,7 +516,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const two=topik2Domains(),exams=studentExam(values)==='topik2'||two.listening||two.reading?['topik1','topik2']:null;
   // TOPIK II 판: TOPIK II 문항이 아직 없는 영역은 이번 주 계획이 TOPIK I 항목으로 센다(계획의 available.topik2와 같은 판단) — 판이 그 영역에 알린다.
   const bridged=exam==='topik2'?['listening','reading'].filter(domain=>!two[domain]):[];
-  return {map,plan,gate,mock,exam,writing,exams,bridged,summary};
+  return {map,plan,gate,mock,exam,writing,exams,bridged,summary,events};
  }
  // 근거 줄의 생활 문항: 문항 첫머리(그 문항의 표현)와 판정 자격 — 문항 묶음(position.label)에 없는 문항이다. 생활 부품이 없는 옛 묶음이면 둘 다 없다.
  let lifeItemIndex=null;
@@ -538,9 +538,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 듣기 항목의 「이 항목 연습하기」는 지금 추천 후보에서 찾으므로 판을 그리기 전에 추천을 새로 세운다(10-21 검수).
   refresh();
   const scroller=keepScroll?panelNode('[data-position-board]')?.closest?.('#panel-content'):null,scrollTop=scroller?.scrollTop||0;
-  const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged,summary}=positionData(coachNow,id=>routes.has(id));
+  const routes=practiceRoutes(coachNow),{map,plan,gate,mock,exam,writing,exams,bridged,summary,events}=positionData(coachNow,id=>routes.has(id));
   let scope=null;try{scope=getProgress().status().scoped?'account':'device';}catch{}
-  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,practice:id=>routes.get(id)||null}),PANEL);
+  // 놓친 곳 카드(11-14): 같은 기록(Core 요약 · Trail)과 이번 주 계획 숙제(시험 목표가 있을 때) · 짧은 연습의 다시 확인 투영만 읽는다. 못 세우면 카드 없이 판을 연다.
+  let missed=null;
+  try{
+   let projection=null;try{projection=readPracticeCoach()?.followups?.()||null;}catch{projection=null;}
+   missed=position.missedSpot?.({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',now:Date.now()})||null;
+  }catch{missed=null;}
+  home.showPanel(t('position.title'),view.renderPositionBoard({map,plan,gate,mock,exams,writing,bridged,catalog:itemExcerpt,assessable:itemAssessable,diagnosed,scope,missed,practice:id=>routes.get(id)||null}),PANEL);
   const root=panelNode('[data-position-board]');
   if(root&&position.followups){
    void loadFollowupBank();const delayed=delayedRows(),life=lifeDelayedRows();

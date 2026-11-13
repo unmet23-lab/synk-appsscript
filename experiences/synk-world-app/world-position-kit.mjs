@@ -19,6 +19,7 @@ import {createTopikBank} from './world-topik-items.mjs';
 import {positionCheckCandidate} from './world-learning-plan.mjs';
 import {supplementalItems} from '../korean-rhythm/supplemental.mjs';
 import {worldMap} from './world-learning-map.mjs';
+import {buildMissedSpot} from './world-missed-spot.mjs';
 const followupBank=createTopikBank();
 
 const topik=createTopikBank();
@@ -53,4 +54,6 @@ export const worldPosition=Object.freeze({...core,
  practice:Object.freeze({...reading,get pool(){return pools().practice;}}),
  exam:Object.freeze({...exam}),
  mock:Object.freeze({...examForm,get pool(){return pools().mock;},get forms(){return topik.forms;}}),
- checkCandidate:positionCheckCandidate});
+ checkCandidate:positionCheckCandidate,
+ // 놓친 곳 카드(11-14, world-missed-spot.mjs) — 판 맨 위 한 장. 읽기 전용(새 판정 · 저장 없음).
+ missedSpot:buildMissedSpot});
