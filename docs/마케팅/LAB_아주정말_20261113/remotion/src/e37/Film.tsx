@@ -122,17 +122,18 @@ const Tile: React.FC<{ t: number; img: string; at: number; to: [number, number];
   let blur = 0;
   if (p >= 1) y += 6 * Math.sin((t - at) * 2.6);
   if (t >= fall) {
-    const q = interpolate(t, [fall, fall + 0.5], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+    // 떨어지는 조각은 비치지 않는 실물로 빠르게 떨어져 더미에 닿는 순간 사라진다(미학 맹검 GPT C080 「반투명 페이드가 스티커 같다」) — 흐림은 움직임 흐림만
+    const q = interpolate(t, [fall, fall + 0.28], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
     x = lerp(x, land[0], q);
     y = lerp(y, land[1], q);
     s = lerp(size, size * 0.42, q);
     r = rot + 160 * q * (rnd(at, 3) > 0.5 ? 1 : -1);
-    o = interpolate(t, [fall, fall + 0.14], [1, 0], clamp);
-    blur = 3 * q;
+    o = t < fall + 0.28 ? 1 : 0;
+    blur = 4 * q;
   }
   // 뜻 줄은 조각이 자리 잡기 전부터(이해 시험 v4 — 넷 다 「무척 · 엄청 뜻이 안 보임」), 떨어지기 시작하면 바로 지운다
   // (떨어지는 조각을 따라 내려가면 아래 조각의 뜻 줄과 겹친다 — v8 9.3초 「매우」 · 「엄청」)
-  const ra = read ? interpolate(t, [at + 0.12, at + 0.28, fall, fall + 0.1], [0, 1, 1, 0], clamp) : 0;
+  const ra = read && t < fall ? interpolate(t, [at + 0.12, at + 0.28], [0, 1], clamp) : 0; // 떨어지는 순간 끊는다(흐린 잔상 없이)
   return (
     <>
       <Img src={staticFile(`img/${img}.png`)} style={{ position: 'absolute', left: x - TILE_W / 2, top: y - 115, width: TILE_W, transform: `scale(${s}) rotate(${r}deg)`, transformOrigin: '50% 50%', opacity: o, filter: `blur(${blur}px) drop-shadow(0 10px 14px rgba(20,10,6,0.55))` }} />
@@ -203,7 +204,8 @@ const Rain: React.FC<{ t: number }> = ({ t }) => {
         const y = lerp(700, groundY, q * q);
         const s = 0.32 + 0.16 * rnd(i, 4);
         const r = (rnd(i, 6) - 0.5) * 220 * q;
-        const o = interpolate(q, [0, 0.12, 0.85, 1], [0, 1, 1, 0]);
+        // 비치지 않게 — 아주 짧게 나타나고 바닥에 닿으면 사라진다(미학 맹검 GPT C077 「조각이 서로 비침」)
+        const o = interpolate(q, [0, 0.04], [0, 1], clamp);
         return <Img key={i} src={staticFile(`img/b${String((i % 12) + 1).padStart(2, '0')}.png`)} style={{ position: 'absolute', left: x - TILE_W / 2, top: y - 115, width: TILE_W, transform: `scale(${s}) rotate(${r}deg)`, opacity: o, filter: 'blur(0.8px) drop-shadow(0 6px 8px rgba(20,10,6,0.5))' }} />;
       })}
     </>
