@@ -172,16 +172,17 @@
   "endSize": 44,
   "ask": "Is 미안 ever enough?",
   "askSize": 36,
-  "coverAt": 2.9,
-  "hello": "Hello",
+  "coverAt": 3.1,
+  "hello": "Sorry,",
   "helloName": "캐나다!",
   "helloRead": "kae-na-da",
-  "helloVo": "Hello, 캐나다!",
-  "helloSec": 1.1,
+  "helloVo": "Sorry, 캐나다!",
+  "helloSec": 1.3,
   "_원문": {
     "scene": "사장님과 내가 부딪쳤다. 커피도 부딪쳤다.",
     "endCard": "사장님과 부딪쳤다?\n→ 죄송합니다.",
     "ask": "미안으로 충분할 때가 있어?",
-    "means.7": "당연히 내 월급도 올려 줘야지."
+    "means.7": "당연히 내 월급도 올려 줘야지.",
+    "hello": "미안해"
   }
 }

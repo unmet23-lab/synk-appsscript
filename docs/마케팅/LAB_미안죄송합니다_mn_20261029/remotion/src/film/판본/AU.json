@@ -172,17 +172,18 @@
   "endSize": 44,
   "ask": "Would you risk a 미안?",
   "askSize": 36,
-  "coverAt": 2.95,
-  "hello": "Hello",
+  "coverAt": 3.2,
+  "hello": "Sorry,",
   "helloName": "호주!",
   "helloRead": "ho-ju",
-  "helloVo": "Hello, 호주!",
-  "helloSec": 1.15,
+  "helloVo": "Sorry, 호주!",
+  "helloSec": 1.4,
   "_원문": {
     "scene": "사장님과 충돌. 플랫 화이트가 쓰러졌다.",
     "endCard": "사장님한테 쏟았다?\n→ 죄송합니다.",
     "ask": "너라면 미안이라고 해 볼래?",
     "tags.0": "친구에게만",
-    "means.7": "당연히 내 급여도 올려 줘야지."
+    "means.7": "당연히 내 급여도 올려 줘야지.",
+    "hello": "미안해"
   }
 }
