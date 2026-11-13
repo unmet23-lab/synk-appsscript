@@ -196,8 +196,11 @@ function renderItem(it, links, soon) {
   const defaults = new Map(it.블록.flatMap((b) => blanksOf(b.본문)).map((x) => [x.name, x.value]));
   const fields = Object.entries(it.빈칸 || {}).map(([name, note], k) => {
     const value = defaults.get(name) || '';
+    // 설명이 「한 줄에 …」로 시작하는 빈칸은 여러 줄 목록을 받는다 — 한 줄 칸(input)은 붙여 넣은 줄바꿈을 지운다(11-13 검수 y46-prompts-1113 A1)
+    const attrs = `id="${it.id}-f${k + 1}" data-blank="${esc(name)}" placeholder="${esc(value || name)}" autocomplete="off" autocapitalize="off" spellcheck="false"`;
+    const box = /^한 줄에/.test(note) ? `<textarea ${attrs} rows="4"></textarea>` : `<input ${attrs} type="text">`;
     return `<label class="field" for="${it.id}-f${k + 1}"><span class="name">${esc(name)}</span><span class="note">${esc(note)}${value ? ` 비워 두면 「${esc(value)}」` : ''}</span>`
-      + `<input id="${it.id}-f${k + 1}" type="text" data-blank="${esc(name)}" placeholder="${esc(value || name)}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>`;
+      + `${box}</label>`;
   }).join('');
   const fill = fields ? `<div class="fill"><p class="fill-title">빈칸 채우기 <span>선택 · 채운 대로 복사돼요. 이 화면 밖으로 보내거나 저장하지 않아요</span></p>${fields}</div>` : '';
   // 영상 주소가 없으면(블로그 글만 먼저 공개된 때도) 공개일과 채널을 보이고, 블로그 글은 뒤에 따로 붙인다.
@@ -301,8 +304,9 @@ h1 span{color:var(--ink-3)}
 .field{display:grid;gap:4px}
 .field .name{font-size:14px;font-weight:650;color:var(--blank-ink)}
 .field .note{font-size:13.5px;line-height:1.5;color:var(--ink-3)}
-.field input{width:100%;min-height:46px;padding:0 14px;border:0;border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink);font:500 16px/1.4 var(--sans)}
-.field input::placeholder{color:var(--ink-4)}
+.field input,.field textarea{width:100%;min-height:46px;padding:0 14px;border:0;border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink);font:500 16px/1.4 var(--sans)}
+.field textarea{display:block;min-height:120px;padding:12px 14px;resize:vertical}
+.field input::placeholder,.field textarea::placeholder{color:var(--ink-4)}
 .block{margin:16px 0 0;padding:16px;border-radius:18px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
 .block-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .block h3{margin:0;font:500 12px/1.3 var(--mono);letter-spacing:.08em;color:var(--ink-3)}
@@ -354,7 +358,7 @@ const SCRIPT = `
   if(moved&&location.hash){var t=document.getElementById(location.hash.slice(1));if(t)t.scrollIntoView()}
   document.querySelectorAll('.item').forEach(function(item){
     var marks=item.querySelectorAll('mark.blank');
-    item.querySelectorAll('input[data-blank]').forEach(function(input){
+    item.querySelectorAll('input[data-blank],textarea[data-blank]').forEach(function(input){
       input.addEventListener('input',function(){
         var name=input.getAttribute('data-blank'),v=input.value.trim();
         marks.forEach(function(m){if(m.getAttribute('data-blank')===name){

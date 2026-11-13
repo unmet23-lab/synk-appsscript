@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1117,
+  "lufs": -17
+ },
+ "made": "2026-11-13T08:43:13.836Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "AI가 고친 결제 화면, 자동 시험은 전부 통과했어요.",
+   "dur": 2.871,
+   "syllablesPerSec": 6.62,
+   "src": "V1.wav",
+   "key": "22a6cb38d53718ba1bca2cc2dfe14b21",
+   "words": 8
+  },
+  {
+   "id": "V2",
+   "text": "그런데 손님이 보는 결제 화면이, 39만 5천 원을 40만 원으로 띄우고 있었어요.",
+   "dur": 4.393,
+   "syllablesPerSec": 6.37,
+   "src": "V2.wav",
+   "key": "2f4a922c8e3a9ea21689a52368a27c90",
+   "words": 12
+  },
+  {
+   "id": "V3",
+   "text": "만 원 단위로 반올림을 해 버린 거예요. 그날 실제 화면에 나가 있었는데, 손님 받기 전이라 다행이었죠.",
+   "dur": 5.049,
+   "syllablesPerSec": 7.92,
+   "src": "V3.wav",
+   "key": "9520207d5bc54bc93ba5dd6aaab2d234",
+   "words": 16
+  },
+  {
+   "id": "V4",
+   "text": "시험엔 이 값이 없었어요. 39만 5천 원을 넣어 보니까, 바로 틀리더라고요.",
+   "dur": 4.199,
+   "syllablesPerSec": 6.43,
+   "src": "V4.wav",
+   "key": "06b9c47d5f80f8c26e58e3ae84b52646",
+   "words": 11
+  },
+  {
+   "id": "V5",
+   "text": "그래서 돈이 나오는 화면을 맡길 땐, 이 한 줄을 꼭 붙이세요. 반올림하지 말고, 끝자리 있는 값으로 화면을 찍어 보여 줘.",
+   "dur": 5.637,
+   "syllablesPerSec": 8.16,
+   "src": "V5.wav",
+   "key": "6f85eba74142b47e405bd7b7df8fd92f",
+   "words": 20
+  },
+  {
+   "id": "V6",
+   "text": "이제 손님 화면에도, 39만 5천 원 그대로 떠요.",
+   "dur": 2.92,
+   "syllablesPerSec": 5.48,
+   "src": "V6.wav",
+   "key": "cfca26d4e4cad731689eb53be3763937",
+   "words": 8
+  }
+ ]
+}

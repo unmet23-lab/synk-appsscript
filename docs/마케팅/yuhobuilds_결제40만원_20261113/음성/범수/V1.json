@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI가 고친 결제 화면, 자동 시험은 전부 통과했어요.",
+ "dur": 2.871,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.364
+  },
+  {
+   "text": "고친",
+   "start": 0.403,
+   "end": 0.627
+  },
+  {
+   "text": "결제",
+   "start": 0.681,
+   "end": 0.892
+  },
+  {
+   "text": "화면,",
+   "start": 0.972,
+   "end": 1.196
+  },
+  {
+   "text": "자동",
+   "start": 1.421,
+   "end": 1.646
+  },
+  {
+   "text": "시험은",
+   "start": 1.686,
+   "end": 1.924
+  },
+  {
+   "text": "전부",
+   "start": 1.964,
+   "end": 2.148
+  },
+  {
+   "text": "통과했어요.",
+   "start": 2.188,
+   "end": 2.871
+  }
+ ],
+ "source": {
+  "key": "22a6cb38d53718ba1bca2cc2dfe14b21",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1117,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

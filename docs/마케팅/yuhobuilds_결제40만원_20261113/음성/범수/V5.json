@@ -1,0 +1,135 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "그래서 돈이 나오는 화면을 맡길 땐, 이 한 줄을 꼭 붙이세요. 반올림하지 말고, 끝자리 있는 값으로 화면을 찍어 보여 줘.",
+ "dur": 5.637,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.21
+  },
+  {
+   "text": "돈이",
+   "start": 0.28,
+   "end": 0.445
+  },
+  {
+   "text": "나오는",
+   "start": 0.48,
+   "end": 0.705
+  },
+  {
+   "text": "화면을",
+   "start": 0.74,
+   "end": 0.988
+  },
+  {
+   "text": "맡길",
+   "start": 1.023,
+   "end": 1.235
+  },
+  {
+   "text": "땐,",
+   "start": 1.283,
+   "end": 1.495
+  },
+  {
+   "text": "이",
+   "start": 1.861,
+   "end": 1.872
+  },
+  {
+   "text": "한",
+   "start": 1.931,
+   "end": 2.014
+  },
+  {
+   "text": "줄을",
+   "start": 2.05,
+   "end": 2.179
+  },
+  {
+   "text": "꼭",
+   "start": 2.214,
+   "end": 2.297
+  },
+  {
+   "text": "붙이세요.",
+   "start": 2.332,
+   "end": 2.722
+  },
+  {
+   "text": "반올림하지",
+   "start": 3.016,
+   "end": 3.476
+  },
+  {
+   "text": "말고,",
+   "start": 3.511,
+   "end": 3.712
+  },
+  {
+   "text": "끝자리",
+   "start": 3.925,
+   "end": 4.208
+  },
+  {
+   "text": "있는",
+   "start": 4.243,
+   "end": 4.373
+  },
+  {
+   "text": "값으로",
+   "start": 4.42,
+   "end": 4.68
+  },
+  {
+   "text": "화면을",
+   "start": 4.739,
+   "end": 5.01
+  },
+  {
+   "text": "찍어",
+   "start": 5.046,
+   "end": 5.199
+  },
+  {
+   "text": "보여",
+   "start": 5.246,
+   "end": 5.375
+  },
+  {
+   "text": "줘.",
+   "start": 5.411,
+   "end": 5.637
+  }
+ ],
+ "source": {
+  "key": "6f85eba74142b47e405bd7b7df8fd92f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1117,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}

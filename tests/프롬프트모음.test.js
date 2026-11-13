@@ -39,6 +39,15 @@ test('빈칸·확인·종류·id를 본다', () => {
   assert.deepEqual(page.checkPrompts({ 항목: [] }), ['「항목」이 비었다']);
 });
 
+test('「한 줄에 …」 빈칸은 여러 줄 칸 — 한 줄 칸은 붙여 넣은 줄바꿈을 지운다(11-13 검수 A1)', () => {
+  const it = item({ 블록: [{ 종류: '프롬프트', '넣는 곳': '채팅 AI', 본문: '내 목록:\n【내 목록】' }], 빈칸: { '내 목록': '한 줄에 한 편씩 — 예: 버스 편 | 불합격' } });
+  const one = item({ id: 'one-line' });
+  const html = page.renderPage({ 항목: [it, one] }, { now: Date.parse('2026-10-24T09:00+09:00') });
+  assert.match(html, /<textarea id="still-time-f1" data-blank="내 목록"[^>]*rows="4"><\/textarea>/);
+  assert.match(html, /<input id="one-line-f1" data-blank="내 영상 파일"[^>]*type="text">/);
+  assert.match(html, /querySelectorAll\('input\[data-blank\],textarea\[data-blank\]'\)/, '여러 줄 칸도 본문 빈칸을 바꾼다');
+});
+
 test('기본값 빈칸 【이름=기본값】 — 화면엔 기본값, 블록마다 기본값이 다르면 막는다', () => {
   const it = item({ 블록: [{ 종류: '프롬프트', '넣는 곳': '코딩 AI', 본문: '【재는 간격(초)=60】초 뒤에 다시 재 줘' }], 빈칸: { '재는 간격(초)': '두 번 재는 사이' } });
   assert.deepEqual(page.checkPrompts({ 항목: [it] }), []);

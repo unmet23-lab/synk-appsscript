@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "시험엔 이 값이 없었어요. 39만 5천 원을 넣어 보니까, 바로 틀리더라고요.",
+ "dur": 4.199,
+ "words": [
+  {
+   "text": "시험엔",
+   "start": 0.02,
+   "end": 0.334
+  },
+  {
+   "text": "이",
+   "start": 0.405,
+   "end": 0.419
+  },
+  {
+   "text": "값이",
+   "start": 0.462,
+   "end": 0.633
+  },
+  {
+   "text": "없었어요.",
+   "start": 0.676,
+   "end": 1.09
+  },
+  {
+   "text": "39만",
+   "start": 1.447,
+   "end": 1.904
+  },
+  {
+   "text": "5천",
+   "start": 1.947,
+   "end": 2.103
+  },
+  {
+   "text": "원을",
+   "start": 2.16,
+   "end": 2.317
+  },
+  {
+   "text": "넣어",
+   "start": 2.36,
+   "end": 2.489
+  },
+  {
+   "text": "보니까,",
+   "start": 2.531,
+   "end": 2.83
+  },
+  {
+   "text": "바로",
+   "start": 3.202,
+   "end": 3.388
+  },
+  {
+   "text": "틀리더라고요.",
+   "start": 3.43,
+   "end": 4.187
+  }
+ ],
+ "source": {
+  "key": "06b9c47d5f80f8c26e58e3ae84b52646",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1117,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}

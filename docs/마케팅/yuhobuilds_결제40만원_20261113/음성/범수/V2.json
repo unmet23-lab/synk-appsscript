@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "그런데 손님이 보는 결제 화면이, 39만 5천 원을 40만 원으로 띄우고 있었어요.",
+ "dur": 4.393,
+ "words": [
+  {
+   "text": "그런데",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "손님이",
+   "start": 0.486,
+   "end": 0.788
+  },
+  {
+   "text": "보는",
+   "start": 0.83,
+   "end": 1.021
+  },
+  {
+   "text": "결제",
+   "start": 1.062,
+   "end": 1.282
+  },
+  {
+   "text": "화면이,",
+   "start": 1.364,
+   "end": 1.583
+  },
+  {
+   "text": "39만",
+   "start": 1.968,
+   "end": 2.461
+  },
+  {
+   "text": "5천",
+   "start": 2.516,
+   "end": 2.681
+  },
+  {
+   "text": "원을",
+   "start": 2.722,
+   "end": 2.914
+  },
+  {
+   "text": "40만",
+   "start": 2.997,
+   "end": 3.339
+  },
+  {
+   "text": "원으로",
+   "start": 3.381,
+   "end": 3.558
+  },
+  {
+   "text": "띄우고",
+   "start": 3.6,
+   "end": 3.847
+  },
+  {
+   "text": "있었어요.",
+   "start": 3.888,
+   "end": 4.393
+  }
+ ],
+ "source": {
+  "key": "2f4a922c8e3a9ea21689a52368a27c90",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1117,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}

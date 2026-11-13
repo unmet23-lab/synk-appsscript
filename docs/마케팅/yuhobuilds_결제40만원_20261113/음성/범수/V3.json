@@ -1,0 +1,115 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "만 원 단위로 반올림을 해 버린 거예요. 그날 실제 화면에 나가 있었는데, 손님 받기 전이라 다행이었죠.",
+ "dur": 5.049,
+ "words": [
+  {
+   "text": "만",
+   "start": 0.03,
+   "end": 0.157
+  },
+  {
+   "text": "원",
+   "start": 0.195,
+   "end": 0.272
+  },
+  {
+   "text": "단위로",
+   "start": 0.31,
+   "end": 0.54
+  },
+  {
+   "text": "반올림을",
+   "start": 0.579,
+   "end": 0.975
+  },
+  {
+   "text": "해",
+   "start": 1.013,
+   "end": 1.051
+  },
+  {
+   "text": "버린",
+   "start": 1.09,
+   "end": 1.269
+  },
+  {
+   "text": "거예요.",
+   "start": 1.308,
+   "end": 1.55
+  },
+  {
+   "text": "그날",
+   "start": 1.984,
+   "end": 2.176
+  },
+  {
+   "text": "실제",
+   "start": 2.214,
+   "end": 2.393
+  },
+  {
+   "text": "화면에",
+   "start": 2.431,
+   "end": 2.636
+  },
+  {
+   "text": "나가",
+   "start": 2.674,
+   "end": 2.827
+  },
+  {
+   "text": "있었는데,",
+   "start": 2.866,
+   "end": 3.223
+  },
+  {
+   "text": "손님",
+   "start": 3.581,
+   "end": 3.811
+  },
+  {
+   "text": "받기",
+   "start": 3.85,
+   "end": 4.015
+  },
+  {
+   "text": "전이라",
+   "start": 4.053,
+   "end": 4.296
+  },
+  {
+   "text": "다행이었죠.",
+   "start": 4.335,
+   "end": 5.049
+  }
+ ],
+ "source": {
+  "key": "9520207d5bc54bc93ba5dd6aaab2d234",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1117,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.07,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

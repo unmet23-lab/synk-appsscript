@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "이제 손님 화면에도, 39만 5천 원 그대로 떠요.",
+ "dur": 2.92,
+ "words": [
+  {
+   "text": "이제",
+   "start": 0.02,
+   "end": 0.144
+  },
+  {
+   "text": "손님",
+   "start": 0.206,
+   "end": 0.456
+  },
+  {
+   "text": "화면에도,",
+   "start": 0.503,
+   "end": 0.892
+  },
+  {
+   "text": "39만",
+   "start": 1.389,
+   "end": 1.871
+  },
+  {
+   "text": "5천",
+   "start": 1.918,
+   "end": 2.09
+  },
+  {
+   "text": "원",
+   "start": 2.137,
+   "end": 2.199
+  },
+  {
+   "text": "그대로",
+   "start": 2.245,
+   "end": 2.463
+  },
+  {
+   "text": "떠요.",
+   "start": 2.509,
+   "end": 2.92
+  }
+ ],
+ "source": {
+  "key": "cfca26d4e4cad731689eb53be3763937",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1117,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.03,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}
