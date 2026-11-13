@@ -57,6 +57,8 @@ test('only admin can issue or assign; pending invitations expire, revoke, and re
   const input={name:'Invitee',email:'invitee@example.test',workspaceProfile:profile('LAB')};
   assert.equal((await ordinary('/api/members/invite',input)).status,403);
   assert.equal((await a('/api/members/invite',{...input,workspaceProfile:undefined})).status,400);
+  assert.equal((await a('/api/members/invite',{...input,email:'invitee@@example.test'})).status,400);
+  assert.equal(app.store.all('workspaceInvites').length,0);
   let result=await a('/api/members/invite',input);assert.equal(result.status,201);
   assert.equal((await a('/api/members/invite',input)).status,409);
   assert.equal((await a('/api/workspace-invites/'+result.data.id+'/revoke',{})).status,200);
@@ -93,6 +95,8 @@ test('company work is isolated by company and owner, with revision conflicts and
   assert.equal((await two('/api/company-work/SHIFT/'+row.id,{...row,status:'done'})).status,403);
   assert.equal((await one('/api/company-work/SHIFT/'+row.id,{...row,revision:0})).status,409);
   assert.equal((await one('/api/company-work/SHIFT/'+row.id,{...row,status:'done'})).status,200);
+  const next=await one('/api/company-work/SHIFT',{title:'다음 강의 준비',date:'2026-12-01'});
+  assert.deepEqual((await one('/api/company-work/SHIFT')).data.items.map(item=>item.id),[next.data.item.id,row.id]);
   assert.equal((await one('/api/company-work/SHIFT',{title:'bad date',date:'2026-02-30'})).status,400);
   assert.equal((await client(add('viewer','viewer',profile('SHIFT')))('/api/company-work/SHIFT',{title:'denied'})).status,403);
 });
@@ -111,4 +115,29 @@ test('service calls used by shared cards recheck assigned features even with a s
   assert.throws(()=>content.reviewShare(user,draft.id,[]),{status:403});
   assert.throws(()=>content.reviewRestore(user,draft.id,[]),{status:403});
   assert.throws(()=>clients.workspace(user),{status:403});
+});
+
+test('client assignments require current capabilities and public requests fall back to an eligible admin',async t=>{
+  const {app,add,admin,a}=await fixture(t),clients=createClientProjectsService({store:app.store});
+  const producer=add('producer','member',profile('PULSE')),shift=add('shift','member',profile('SHIFT'));
+  const delegated=add('delegated','member',{...profile('LAB'),duties:['clients']}),viewer=add('viewer','viewer',profile('PULSE'));
+  for(const user of [producer,shift,delegated,viewer])app.store.put('users',user.id,{...user,teamId:'synthetic-team'});
+  const workspace=clients.workspace(admin);
+  for(const list of [workspace.members,workspace.reviewers]){
+    assert.ok(list.some(user=>user.id===producer.id));assert.ok(list.some(user=>user.id===delegated.id));
+    assert.ok(!list.some(user=>user.id===shift.id));assert.ok(!list.some(user=>user.id===viewer.id));
+  }
+  const input={title:'합성 고객 의뢰',customerName:'합성 고객'};
+  assert.throws(()=>clients.save(admin,{...input,ownerId:shift.id}),{status:403});
+  assert.throws(()=>clients.save(admin,{...input,ownerId:producer.id,reviewerId:shift.id}),{status:403});
+  const existing=clients.save(admin,{...input,ownerId:producer.id,reviewerId:delegated.id}).project;
+  app.store.put('pulseRequestSettings','main',{ownerId:producer.id});
+  const result=await a('/api/members/'+producer.id+'/workspace-profile',{revision:1,workspaceProfile:profile('SHIFT')});
+  assert.equal(result.status,200);assert.equal(result.data.warnings.length,2);
+  assert.equal(app.store.get('clientProjects',existing.id).ownerId,producer.id,'existing assignments are preserved for admin review');
+  for(const ownerId of [undefined,producer.id,shift.id,viewer.id]){
+    const incoming=clients.createFromRequest({...input,ownerId});
+    assert.equal(incoming.project.ownerId,admin.id);assert.ok(clients.project(admin,incoming.project.id));
+  }
+  assert.equal(clients.createFromRequest({...input,ownerId:delegated.id}).project.ownerId,delegated.id);
 });

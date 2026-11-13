@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {hash} from './store.mjs';
-import {WORKSPACE_COMPANIES,WORKSPACE_DUTIES,WORKSPACE_MENU_CLASSIFICATION,normalizeWorkspaceProfile,workspaceAccess} from './workspace-access.mjs';
+import {WORKSPACE_COMPANIES,WORKSPACE_DUTIES,WORKSPACE_MENU_CLASSIFICATION,normalizeWorkspaceProfile,workspaceAccess,hasWorkspaceFeature} from './workspace-access.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status,code:'WORKSPACE_ACCESS'});
 export function createWorkspaceAccessService({store,clock=()=>new Date().toISOString()}){
@@ -18,14 +18,19 @@ export function createWorkspaceAccessService({store,clock=()=>new Date().toISOSt
       store.put('users',id,updated);
       if(id===by.id&&sessionHash)store.db.prepare('DELETE FROM tokens WHERE userId=? AND hash<>?').run(id,sessionHash);else store.revokeUser(id);
       audit(by,'workspace-profile-updated',id,{before:target.workspaceProfile||null,after:updated.workspaceProfile});
-      return {access:workspaceAccess(updated)};
+      const warnings=[];
+      if(hasWorkspaceFeature(target,'clients')&&!hasWorkspaceFeature(updated,'clients')){
+        if(store.get('pulseRequestSettings','main')?.ownerId===id)warnings.push('이 직원에게 지정된 새 고객 의뢰는 관리자에게 배정돼요.');
+        if(store.all('clientProjects').some(row=>row.stage!=='archived'&&(row.ownerId===id||row.reviewerId===id)))warnings.push('기존 고객 업무의 담당자·검토자를 다시 지정해 주세요. 이 직원은 이제 고객 업무를 열 수 없어요.');
+      }
+      return {access:workspaceAccess(updated),warnings};
     });
   }
   function issue(actor,input){
     const by=admin(actor),profile=normalizeWorkspaceProfile(input.workspaceProfile);
     const email=typeof input.email==='string'?input.email.trim().toLowerCase():'',name=typeof input.name==='string'?input.name.trim():'';
     const role=input.role||'member',teamId=input.teamId||null;
-    if(email.length>254||!/^\S+@[^\s@]+\.[^\s@]+$/.test(email)||!name||name.length>80)throw fail('초대할 직원의 이름과 이메일을 확인해 주세요.');
+    if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!name||name.length>80)throw fail('초대할 직원의 이름과 이메일을 확인해 주세요.');
     if(!['manager','member','viewer'].includes(role))throw fail('직원 접근 권한을 골라 주세요.');
     if(teamId&&!store.get('teams',teamId)?.active||role==='manager'&&!teamId)throw fail('운영 중인 소속 팀을 골라 주세요.');
     return store.transaction(()=>{

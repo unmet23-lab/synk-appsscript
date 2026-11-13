@@ -15,7 +15,7 @@ export function createCompanyWork({store,clock=()=>new Date().toISOString()}){
   const allowed=(user,row)=>row.ownerId===user.id||manager(user,row.company);
   function workspace(actor,company){
     const user=current(actor,company);
-    return {company,title:definitions[company].title,canWrite:user.role!=='viewer',items:store.all('companyWork').filter(row=>row.company===company&&allowed(user,row)).sort((a,b)=>a.status.localeCompare(b.status)||(a.date||'9999').localeCompare(b.date||'9999')||b.updatedAt.localeCompare(a.updatedAt)).map(row=>({...row,ownerName:store.get('users',row.ownerId)?.name||'담당자'}))};
+    return {company,title:definitions[company].title,canWrite:user.role!=='viewer',items:store.all('companyWork').filter(row=>row.company===company&&allowed(user,row)).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||(a.date||'9999').localeCompare(b.date||'9999')||b.updatedAt.localeCompare(a.updatedAt)).map(row=>({...row,ownerName:store.get('users',row.ownerId)?.name||'담당자'}))};
   }
   function save(actor,company,id,input){
     return store.transaction(()=>{

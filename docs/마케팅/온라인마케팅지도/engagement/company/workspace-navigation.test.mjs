@@ -9,6 +9,60 @@ const source=readFileSync(new URL('./public/workspace.js',import.meta.url),'utf8
 const teamOverviewSource=readFileSync(new URL('./public/team-overview.js',import.meta.url),'utf8');
 const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'utf8');
 const workroomSource=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8');
+const accessSource=readFileSync(new URL('./public/workspace-access.js',import.meta.url),'utf8');
+
+function accessFormFixture(){
+  const handlers=new Map(),calls=[],notifications=[],state={user:null,tab:'lectures'};
+  let response={},failure=null;
+  const context=vm.createContext({state,URL,URLSearchParams,location:new URL('https://workspace.example.test/'),
+    document:{addEventListener(type,handler){handlers.set(type,handler);}},
+    FormData:class extends URLSearchParams{constructor(form){super(form.fields);}},
+    api:async(path,input)=>{calls.push({path,input});if(failure)throw failure;return response;},
+    renderAuth(){},closeModal(){},loadState:async()=>{},renderBackground(){},notify:message=>notifications.push(message),
+  });
+  vm.runInContext(accessSource,context);
+  return {calls,notifications,state,respond:value=>{response=value;},reject:error=>{failure=error;},
+    run:script=>vm.runInContext(script,context),
+    async submit(kind,fields,dataset={}){
+      const submit={disabled:false},error={textContent:''},form={fields,dataset:{form:kind,...dataset},isConnected:true,querySelector:selector=>selector==='[type="submit"]'?submit:error};
+      handlers.get('submit')({target:form,preventDefault(){},stopImmediatePropagation(){}});
+      await new Promise(resolve=>setImmediate(resolve));return {submit,error};
+    },
+  };
+}
+
+test('invite form parses raw codes and links and enters join only after server inspection succeeds',async()=>{
+  const token='synthetic-invitation-token-1234567890';
+  for(const code of [token,'https://workspace.example.test/#invite='+token]){
+    const f=accessFormFixture();f.respond({memberships:[{company:'SHIFT',role:'instructor'}]});
+    const form=await f.submit('wa-code',{code:' '+code+' '});
+    assert.equal(f.calls[0].path,'/api/workspace-invite/inspect');assert.equal(f.calls[0].input.token,token);
+    assert.equal(f.state.authMode,'join');assert.equal(f.state.authToken,token);assert.equal(form.submit.disabled,false);
+  }
+  const invalid=accessFormFixture(),bad=await invalid.submit('wa-code',{code:'bad-code'});
+  assert.equal(invalid.calls.length,0);assert.match(bad.error.textContent,/다시 확인/);assert.equal(invalid.state.authMode,undefined);
+  const revoked=accessFormFixture();revoked.reject(new Error('취소된 초대예요.'));
+  const denied=await revoked.submit('wa-code',{code:token});assert.equal(denied.error.textContent,'취소된 초대예요.');assert.equal(revoked.state.authMode,undefined);
+});
+
+test('member form submits concurrent roles with a revision and displays assignment warnings',async()=>{
+  const f=accessFormFixture();f.respond({warnings:['기존 고객 업무의 담당자를 다시 지정해 주세요.']});
+  const fields=[['waCompany','SHIFT'],['waRole_SHIFT','instructor'],['waCompany','PULSE'],['waRole_PULSE','producer'],['waDuty','social']];
+  await f.submit('wa-member',fields,{id:'synthetic-member',revision:'3'});
+  assert.equal(f.calls[0].path,'/api/members/synthetic-member/workspace-profile');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.calls[0].input)),{revision:3,workspaceProfile:{memberships:[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}],duties:['social']}});
+  assert.match(f.notifications[0],/담당자를 다시 지정/);
+});
+
+test('lecture form saves company and revision then refreshes its list; failures remain editable',async()=>{
+  const f=accessFormFixture();f.respond({items:[]});
+  await f.submit('wa-work',{title:'합성 강의',date:'2026-12-01',note:'준비',status:'open'},{id:'synthetic-lecture',company:'SHIFT',revision:'4'});
+  assert.equal(f.calls[0].path,'/api/company-work/SHIFT/synthetic-lecture');assert.equal(f.calls[0].input.revision,4);
+  assert.equal(f.calls[1].path,'/api/company-work/SHIFT');assert.equal(f.notifications[0],'저장했어요.');
+  f.reject(new Error('다른 사람이 수정했어요.'));const failed=await f.submit('wa-work',{title:'합성 강의'},{id:'synthetic-lecture',company:'SHIFT',revision:'4'});
+  assert.equal(failed.error.textContent,'다른 사람이 수정했어요.');assert.equal(failed.submit.disabled,false);assert.equal(f.notifications.length,1);
+});
+
 function fixture(role='admin'){
   const resizeHandlers=[],messageHandlers=[],windowHandlers=new Map(),documentHandlers=new Map(),state={user:{id:'tester',role},tab:'overview',marketingView:'summary',scope:'mine',teamId:'',reportRequest:0},cp={view:'library'},location=new URL('http://localhost:4191/');
   const context=workspaceClientContext({state,cp,location,URL,URLSearchParams,
@@ -135,11 +189,17 @@ test('resize before the app state script loads does not break workspace initiali
   f.context.state=f.state;f.state.tab='home';assert.doesNotThrow(()=>f.resize());
 });
 
-test('only daily work is in primary navigation; management remains role scoped',()=>{
+test('legacy navigation keeps daily work and role scoped management',()=>{
   for(const [role,count] of [['admin',3],['manager',2],['member',1],['viewer',1]]){
     const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','teaching']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
   }
+});
+
+test('server computed admin access includes all company tabs',()=>{
+  const f=fixture('admin');f.state.user.workspaceAccess=workspaceAccess({...f.state.user,active:true});
+  assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','teaching','path','lectures']);
+  assert.equal(f.run('workspaceUtilityTabs().length'),3);
 });
 
 test('teaching has a canonical direct entry without leaking marketing filters into classroom links',()=>{

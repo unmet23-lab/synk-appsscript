@@ -130,7 +130,7 @@ document.addEventListener('submit',event=>{
       if(!/^[A-Za-z0-9_-]{32,200}$/.test(token))throw new Error('받은 초대 코드나 링크를 다시 확인해 주세요.');
       const details=await api('/api/workspace-invite/inspect',{token});wa.inviteToken=token;wa.invite=details;wa.inviteError='';state.authMode='join';state.authToken=token;renderAuth();
     }else if(form.dataset.form==='wa-member'){
-      await api('/api/members/'+encodeURIComponent(form.dataset.id)+'/workspace-profile',{revision:Number(form.dataset.revision),workspaceProfile:waReadFields(form)});closeModal();await loadState();notify('회사와 담당 업무를 저장했어요.');
+      const result=await api('/api/members/'+encodeURIComponent(form.dataset.id)+'/workspace-profile',{revision:Number(form.dataset.revision),workspaceProfile:waReadFields(form)});closeModal();await loadState();notify(result.warnings?.length?result.warnings.join(' '):'회사와 담당 업무를 저장했어요.');
     }else if(form.dataset.form==='wa-work'){
       await api('/api/company-work/'+form.dataset.company+(form.dataset.id?'/'+encodeURIComponent(form.dataset.id):''),{...values,revision:Number(form.dataset.revision)});closeModal();await waLoadWork();notify('저장했어요.');
     }
