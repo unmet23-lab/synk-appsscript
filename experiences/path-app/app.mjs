@@ -28,8 +28,9 @@ const DICT = {
   myCard: ['내 카드', 'Your card'], changeCard: ['카드 바꾸기', 'Change card'], pickCard: ['카드 고르기', 'Pick a card'], nextStep: ['다음 한 걸음', 'Next step'],
   hNone1: ['오늘은 여기부터예요.', 'Start here today.'], hNone2: ['기회를 둘러보고 하나를 골라요.', 'Browse and pick one to prepare.'],
   hDraft1: ['첫 도장을 받았어요.', 'You got your first stamp.'], hDraft2: ['이제 자료를 준비할 차례예요.', 'Now it’s time to prepare your materials.'],
-  hDone1: ['도장 세 개를 모두 받았어요.', 'All three stamps collected.'], hDone2: ['실제 제출은 공식 경로에서 해요.', 'Submit only through official channels.'],
-  nT1: ['어디서부터 시작할까요?', 'Where would you like to start?'], nT2: ['카드를 누르면 맞는 예시가 열려요.', 'Tap a card to open matching examples.'],
+  hDone1: ['도장 세 개를 모두 받았어요.', 'All three stamps collected.'], hDone2: ['이제 공식 창구에 낼 차례예요.', 'Now it’s time to submit through the official channel.'],
+  doneNext: ['다른 기회도 하나 더 준비해 볼까요?', 'Prepare for one more opportunity?'],
+  nT1: ['어디서부터 시작할까요?', 'Where would you like to start?'], nT2: ['하나를 고르면 맞는 예시가 열려요.', 'Pick one to open matching examples.'],
   stampsLabel: ['준비의 세 칸', 'Three steps'], sDone: ['마침', 'Done'], sNow: ['지금', 'Now'], sNext: ['다음', 'Next'],
   j1: ['기회 찾기', 'Find opportunities'], j2: ['자료 준비', 'Prepare materials'], j3: ['직접 확인', 'Check it yourself'],
   n1: ['실제 정보와 연습용 예시를 구분해 둘러봐요.', 'Browse real information and practice examples, clearly labeled.'],
@@ -52,7 +53,7 @@ const DICT = {
   open: ['열기', 'Open'], draft: ['작성 중', 'Drafting'], done: ['준비 완료 · 미제출', 'Ready · Not submitted'],
   source: ['출처', 'Source'], srcK: ['지금 쓰는 준비', 'Now writing'], srcNote: ['연습용 예시예요. 실제 기관이나 공고가 아니에요.', 'A practice example, not a real institution or posting.'],
   liveNote: ['공식 채용 공고에서 가져왔어요. 조건은 원문에서 확인하세요.', 'From an official job posting. Check the original for conditions.'], reopen: ['다시 보기', 'View again'],
-  edEyebrow: ['자료 준비 · 두 번째 칸', 'Prepare · step two'], backPrep: ['내 준비', 'My preparation'],
+  edEyebrow: ['자료 준비', 'Prepare'], backPrep: ['내 준비', 'My preparation'],
   body: ['내 답변', 'Your answer'], savedGuest: ['이 탭에만 저장돼요', 'Saved in this tab only'], savedAccount: ['계정과 동기화돼요', 'Syncs with your account'],
   sealSlot: ['확인', 'Check'], confirmNote: ['준비 완료는 제출이 아니에요. 아무 곳에도 보내지 않아요.', 'Ready is not a submission. Nothing is sent anywhere.'],
   confirmCheck: ['내용을 직접 확인했고 실제 제출은 공식 경로로 한다는 것을 이해했어요', 'I reviewed this myself and understand real submission happens through official channels'],
@@ -64,7 +65,7 @@ const DICT = {
   helpLead: ['공식 기관에 물어볼 질문을 정리해요. 답을 대신 판단하지 않아요.', 'Draft a question for official sources. PATH does not judge answers.'],
   topic: ['주제', 'Topic'], general: ['일반 체류 안내', 'General stay info'], template: ['질문 틀', 'Question template'], copy: ['복사하기', 'Copy'],
   copied: ['복사했어요.', 'Copied.'], copyFail: ['복사하지 못했어요. 아래 글을 직접 선택해 복사하세요.', 'Copy failed. Select the text below and copy it manually.'],
-  profileTitle: ['내 정보', 'Profile'], profileT2: ['카드 · 언어 · 저장 방식', 'Card, language and storage'], goal: ['내 카드', 'Your card'], none: ['고르지 않음', 'Not selected'], lang: ['언어', 'Language'],
+  profileTitle: ['내 정보', 'Profile'], profileT2: ['계정 · 카드 · 언어 · 저장', 'Account, card, language and storage'], goal: ['내 카드', 'Your card'], none: ['고르지 않음', 'Not selected'], lang: ['언어', 'Language'],
   changeGoal: ['카드 바꾸기', 'Change card'], storage: ['저장 방식', 'Storage'],
   storageText: ['로그인하지 않으면 작성 내용은 이 탭에만 저장돼요. 로그인하면 이 탭의 자료를 계정으로 가져올지, 계정에 저장된 자료를 쓸지 고를 수 있어요. 공용 기기라면 사용 후 데이터를 지워 주세요.', 'Without signing in, drafts are saved only in this tab. When you sign in, you can choose to import this tab’s data into your account or use the data saved in your account. On a shared device, clear the data when you are done.'],
   deleteFail: ['저장된 데이터를 지우지 못했어요. 지금 상태는 그대로 두었어요.', 'Could not delete saved data. Your current state was kept as is.'],
@@ -176,7 +177,7 @@ const ICON = {
   check: svg(20, 2.4, '<path d="m5 10.4 3.2 3.1L15 6.6"/>')
 };
 const TAB_ICON = {
-  today: svg(24, 1.6, '<rect x="6.5" y="3" width="11" height="18" rx="2"/><path d="M10 6.2h4"/>'),
+  today: svg(24, 1.6, '<rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10.2h16M8.5 3.5v4M15.5 3.5v4"/><path d="M11.9 14.9h.2" stroke-width="2.6"/>'),
   explore: svg(24, 1.6, '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>'),
   prepare: svg(24, 1.6, '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
   help: svg(24, 1.6, '<path d="M4.5 5.5h15v10h-8l-4 3.5v-3.5h-3z"/><path d="M10.4 8.9a1.7 1.7 0 1 1 2.3 1.6c-.5.2-.7.6-.7 1.1M12 13.4v.1"/>'),
@@ -185,15 +186,15 @@ const TAB_ICON = {
 const SYMBOL = {
   study: svg(48, 1.6, '<rect x="11" y="3.5" width="26" height="41" rx="13"/><rect x="15.5" y="8" width="17" height="32" rx="8.5"/><path d="M15.6 16.8h16.8"/><path d="M24 16.8v2.6"/><path d="M16 32.4c4.6-3 11.2-4.6 16.2-2.9"/><circle cx="27.6" cy="24.2" r="1.7"/>'),
   student: svg(48, 1.6, '<path d="M24 14.2c-4.7-3.3-11.1-4-17.2-2.7v24.4c6.1-1.3 12.5-.6 17.2 2.7 4.7-3.3 11.1-4 17.2-2.7V11.5c-6.1-1.3-12.5-.6-17.2 2.7z"/><path d="M24 14.2v24.4"/><path d="M11.2 18.6c3-.4 6.1 0 8.6 1M11.2 23.6c3-.4 6.1 0 8.6 1M28.2 19.6c2.5-1 5.6-1.4 8.6-1"/>'),
-  job: svg(48, 1.6, '<path d="M15.5 3.5 24 13l8.5-9.5"/><rect x="21" y="12.2" width="6" height="5" rx="1.2"/><rect x="11.5" y="17.2" width="25" height="27.3" rx="3.2"/><path d="M21 21.4h6"/><rect x="16.2" y="26.2" width="7.6" height="9.2" rx="1"/><path d="M27.6 28.4h4.6M27.6 32.4h4.6"/>')
+  job: svg(48, 1.6, '<rect x="6.5" y="15.5" width="35" height="25" rx="3.6"/><path d="M18 15.5v-3.4a2.6 2.6 0 0 1 2.6-2.6h6.8a2.6 2.6 0 0 1 2.6 2.6v3.4"/><path d="M6.5 26.5h13.5M28 26.5h13.5"/><rect x="20" y="23.6" width="8" height="6" rx="1.4"/>')
 };
 const CARD_NO = { study: '01', student: '02', job: '03' };
 const CLIP = '<svg class="clip" viewBox="0 0 22 38" aria-hidden="true" focusable="false"><path d="M5.5 0h11v6.6a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2z" fill="url(#metal)"/><path d="M7.4 2.2h7.2" stroke="rgba(0,0,0,.18)" stroke-width=".8"/><circle cx="11" cy="12.6" r="3.8" fill="none" stroke="url(#metal)" stroke-width="2"/><rect x="9" y="16.1" width="4" height="4.6" rx="1.2" fill="url(#metal)"/><path d="M11 20.6v6.1a4.6 4.6 0 1 0 4.6-4.6" fill="none" stroke="url(#metal)" stroke-width="2.2" stroke-linecap="round"/></svg>';
-function seal() {
+function seal(n = 0) {
   const txt = state.lang === 'en'
     ? '<text x="60" y="69" text-anchor="middle" font-family="Inter Tight, SUIT Variable, sans-serif" font-weight="800" font-size="25" letter-spacing="1" fill="#c43a2b">DONE</text>'
     : '<text x="60" y="56" text-anchor="middle" font-family="SUIT Variable, sans-serif" font-weight="800" font-size="27" fill="#c43a2b">완</text><text x="60" y="86" text-anchor="middle" font-family="SUIT Variable, sans-serif" font-weight="800" font-size="27" fill="#c43a2b">료</text>';
-  return `<svg class="seal" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g filter="url(#ink)"><circle cx="60" cy="60" r="52.5" fill="none" stroke="#c43a2b" stroke-width="5.6"/><circle cx="60" cy="60" r="45" fill="none" stroke="#c43a2b" stroke-width="1.4"/>${txt}</g></svg>`;
+  return `<svg class="seal" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g filter="url(#ink${n % 3 ? n % 3 + 1 : ''})"><circle cx="60" cy="60" r="52.5" fill="none" stroke="#c43a2b" stroke-width="5.6"/><circle cx="60" cy="60" r="45" fill="none" stroke="#c43a2b" stroke-width="1.4"/>${txt}</g></svg>`;
 }
 // 매단 카드 한 장. radio = 첫 실행의 고르기 단추, action = 누르면 그 일을 하는 카드, 둘 다 없으면 보기만 하는 카드
 function hang(goal, { i = 0, slot = 'mid', radio = false, on = false, action = '', kicker = '', name = '', desc = null, mode = 'goal' } = {}) {
@@ -238,7 +239,7 @@ ${main}${nav ? `<nav class="tabbar" aria-label="${t('navLabel')}">${bar}</nav>` 
 function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor'); }
 
 // quiet = 첫 실행에서는 「로그인하지 않은 상태」 안내를 빼고(첫 화면을 카드에 양보), 오류 · 저장 실패 · 막힘만 보인다
-function notices(quiet = false) {
+function notices(quiet = false, noFlash = false) {
   const accSt = session.status();
   blocked = !!accSt.guestBlocked;
   storageError = accSt.error?.code === 'LOCAL_STORAGE_UNAVAILABLE';
@@ -247,7 +248,7 @@ function notices(quiet = false) {
   let h = guestStore || (quiet && plainGuest) ? '' : (renderAccountNotice(accSt, state.lang) || '');
   if (blocked) h += `<div class="notice error" role="alert"><p>${t('blocked')}</p><div class="actions"><button type="button" class="secondary" data-action="reset">${t('reset')}</button></div></div>`;
   h += `<div id="store-note" class="notice error" role="status"${storageError ? '' : ' hidden'}><span>${t('storeFail')}</span>${guestStore ? ` <button type="button" class="text-button" data-action="accountRetry">${accL('다시 시도', 'Retry')}</button>` : ''}</div>`;
-  if (S.flash) h += `<div id="flash" class="notice" role="status">${S.flash}</div>`;
+  if (S.flash && !noFlash) h += `<div id="flash" class="notice" role="status">${S.flash}</div>`;
   return `<div class="notices">${h}</div>`;
 }
 
@@ -255,16 +256,13 @@ function notices(quiet = false) {
 function onboard() {
   const d = S.draft;
   if (S.step === 1) {
-    const center = d.primaryGoal || 'student';
-    const rest = GOALS.map((g) => g.id).filter((id) => id !== center);
-    const slotOf = (id) => (id === center ? 'mid' : id === rest[0] ? 'left' : 'right');
-    const cards = GOALS.map((g, i) => hang(g.id, { i, slot: slotOf(g.id), radio: true, on: d.primaryGoal === g.id })).join('');
+    const cards = GOALS.map((g, i) => hang(g.id, { i, slot: ['left', 'mid', 'right'][i], radio: true, on: d.primaryGoal === g.id })).join('');
     const g = goalById(d.primaryGoal);
     return `<main class="ob" id="main"><div class="ob-title">${notices(true)}<h1 class="title page-title" id="q1" tabindex="-1"><span>${t('obT1')}</span> <span class="title-2">${t('obT2')}</span></h1></div>
-<div class="ob-lead"><p class="lead">${t('obLead')}</p></div>
+<div class="ob-lead"><p class="lead" id="ob-lead" aria-live="polite">${g ? `<b class="lead-pick">${esc(pick(g.label))}</b>${esc(pick(g.note))}` : t('obLead')}</p></div>
 <div class="ob-actions"><button type="button" class="btn" data-action="finish"${d.primaryGoal ? '' : ' disabled'}>${t('startCard')} ${ICON.arrow}</button><button type="button" class="link" data-action="skip">${t('browse')}</button>${state.onboarded ? `<button type="button" class="link" data-action="cancelOnboard">${t('cancel')}</button>` : ''}</div>
 <p class="fine ob-fine">${t('obFine')}${d.primaryGoal ? ` <button type="button" class="link link-sm" data-action="step2">${t('fineTune')}</button>` : ''}</p>
-<div class="stage ob-stage${d.primaryGoal ? ' has-pick' : ''}" role="radiogroup" aria-label="${t('q1')}"><div class="rod" aria-hidden="true"></div>${cards}<div class="ob-note"><b>${t('picked')}</b><p>${g ? esc(pick(g.note)) : t('obHint')}</p></div></div></main>`;
+<div class="stage ob-stage${d.primaryGoal ? ' has-pick' : ''}" role="radiogroup" aria-label="${t('q1')}"><div class="rod" aria-hidden="true"></div>${cards}</div></main>`;
   }
   const g = goalById(d.primaryGoal);
   const chips = (list, key) => list.map((x) => `<button type="button" class="chip" aria-pressed="${d[key].includes(x.id)}" data-action="toggle" data-key="${key}" data-id="${x.id}">${esc(pick(x.label))}</button>`).join('');
@@ -279,7 +277,7 @@ function onboard() {
 /* ── 오늘: 매단 내 카드 + 도장 세 칸 ── */
 function stamps(states, descs) {
   const names = ['j1', 'j2', 'j3'];
-  return `<ol class="stamps" aria-label="${t('stampsLabel')}">${states.map((s, i) => `<li class="stamp is-${s}"${s === 'now' ? ' aria-current="step"' : ''}><span class="slot" aria-hidden="true">${s === 'done' ? seal() : s === 'now' ? t('sNow') : `<span class="slot-num">${i + 1}</span>`}</span><h3>${t(names[i])}<span class="stamp-state">${t(s === 'done' ? 'sDone' : s === 'now' ? 'sNow' : 'sNext')}</span></h3><p>${esc(descs[i])}</p></li>`).join('')}</ol>`;
+  return `<ol class="stamps" aria-label="${t('stampsLabel')}">${states.map((s, i) => `<li class="stamp is-${s}"${s === 'now' ? ' aria-current="step"' : ''}><span class="slot" aria-hidden="true">${s === 'done' ? seal(i) : s === 'now' ? t('sNow') : `<span class="slot-num">${i + 1}</span>`}</span><h3>${t(names[i])}<span class="stamp-state">${t(s === 'done' ? 'sDone' : s === 'now' ? 'sNow' : 'sNext')}</span></h3><p>${esc(descs[i])}</p></li>`).join('')}</ol>`;
 }
 function today() {
   const g = goalById(state.primaryGoal);
@@ -287,7 +285,7 @@ function today() {
     const cards = GOALS.map((x, i) => hang(x.id, { i, slot: ['left', 'mid', 'right'][i], action: 'exploreGoal' })).join('');
     return `<main class="home" id="main"><aside class="stage home-stage is-three" aria-label="${t('pickCard')}"><div class="rod" aria-hidden="true"></div>${cards}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('pickCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${t('nT1')}</span> <span class="title-2">${t('nT2')}</span></h1>
-${stamps(['now', 'next', 'next'], [t('n1'), t('n2'), t('n3')])}
+<ul class="goal-list">${GOALS.map((x) => `<li><button type="button" class="goal-row" data-action="exploreGoal" data-id="${x.id}"><span class="goal-sym" data-goal="${x.id}">${SYMBOL[x.id]}</span><span class="goal-txt"><b>${esc(pick(x.label))}</b><small>${esc(pick(x.description))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`).join('')}</ul>
 <div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
   }
   const mine = state.tasks.filter((x) => x.goal === g.id);
@@ -301,13 +299,13 @@ ${stamps(['now', 'next', 'next'], [t('n1'), t('n2'), t('n3')])}
     const so = oppById(task.sourceId);
     card = `<section class="resume" aria-label="${t('resume')}"><div><span class="resume-k">${t('resume')}</span><span class="resume-t">${so ? `${demoBadge(so)}${esc(pick(so.title))}` : t('missing')}</span><span class="resume-s"><i aria-hidden="true"></i>${t('resumeS')}</span></div><button type="button" class="btn" data-action="openTask" data-id="${esc(task.id)}">${t('resume')} ${ICON.arrow}</button></section>`;
   } else if (allDone) {
-    card = `<section class="resume is-done"><div><span class="resume-k">${t('nextStep')}</span><span class="resume-t">${t('hDone2')}</span><span class="resume-s">${t('confirmNote')}</span></div><div class="resume-acts"><button type="button" class="btn" data-action="exploreGoal" data-id="${g.id}">${t('exploreMore')} ${ICON.arrow}</button><button type="button" class="link" data-action="nav" data-page="prepare">${t('viewPrep')}</button></div></section>`;
+    card = `<section class="resume is-done"><div><span class="resume-k">${t('nextStep')}</span><span class="resume-t">${t('doneNext')}</span></div><div class="resume-acts"><button type="button" class="btn" data-action="exploreGoal" data-id="${g.id}">${t('exploreMore')} ${ICON.arrow}</button><button type="button" class="link" data-action="nav" data-page="prepare">${t('viewPrep')}</button></div></section>`;
   } else {
-    card = `<section class="resume"><div><span class="resume-k">${t('nextStep')}</span><span class="resume-t">${esc(pick(g.homeTitle))}</span><span class="resume-s">${esc(pick(g.steps[0]))}</span></div><button type="button" class="btn" data-action="exploreGoal" data-id="${g.id}">${esc(pick(g.homeAction))} ${ICON.arrow}</button></section>`;
+    card = `<section class="resume is-start"><div><span class="resume-k">${t('nextStep')}</span><span class="resume-t">${esc(pick(g.homeTitle))}</span><span class="resume-s">${esc(pick(g.steps[0]))}</span></div><button type="button" class="btn" data-action="exploreGoal" data-id="${g.id}">${esc(pick(g.homeAction))} ${ICON.arrow}</button></section>`;
   }
   const opps = OPPORTUNITIES.filter((o) => o.goal === g.id).slice(0, 2);
   const off = g.id === 'job' && jobsFeed.snapshot().status === 'disabled' ? `<p class="off"><i aria-hidden="true"></i>${t('jobsOff')}</p>` : '';
-  return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: allDone ? t('myCard') : t('nextStep'), name: pick(g.homeTitle), mode: 'next' })}<div class="home-cap"><div><b>${t('myCard')}</b><span>${esc(pick(g.label))}</span></div><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
+  return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: t('myCard'), mode: 'next' })}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${h1a}</span> <span class="title-2">${h1b}</span></h1>
 ${stamps(st, g.steps.map(pick))}${card}
 <div class="home-grid">${sec(t('homeOpps'), t('demoSub'), `<ul class="rows">${opps.map(oppRow).join('')}</ul>`)}${sec(t('official'), t('offSub'), officialList(g.id) + off)}</div></div></main>`;
@@ -373,7 +371,7 @@ function editor() {
   const signed = session.status().signedIn;
   let h = `<main class="ed" id="main"><aside class="stage ed-stage" aria-label="${t('source')}"><div class="rod" aria-hidden="true"></div>${hang(goal, { kicker: t('srcK'), name: pick(o.title), desc: '', mode: 'source' })}
 <div class="ed-src"><b>${t('source')}</b><p>${demoBadge(o)}<span>${esc(pick(o.title))}</span></p><small>${o.source === 'live' ? t('liveNote') : t('srcNote')}</small>${liveLink(o)}<button type="button" class="link" data-action="detail" data-id="${esc(o.id)}">${t('reopen')}</button></div></aside>
-<div class="ed-main">${notices()}<button type="button" class="back" data-action="nav" data-page="prepare">${ICON.back}${t('backPrep')}</button>
+<div class="ed-main">${notices(false, true)}<button type="button" class="back" data-action="nav" data-page="prepare">${ICON.back}${t('backPrep')}</button>
 <p class="eyebrow">${t('edEyebrow')}</p><h1 class="title page-title" tabindex="-1"><span>${esc(pick(o.prompt))}</span></h1>
 <ol class="reqs" aria-label="${t('requirements')}">${o.requirements.map((r, i) => `<li><b>${i + 1}</b>${esc(pick(r))}</li>`).join('')}</ol>
 <section class="editor"><div class="field"><label for="body" class="field-label">${t('body')}</label>
@@ -383,7 +381,7 @@ function editor() {
 <label class="check"><input type="checkbox" id="ack"${task.confirmedAt ? ' checked' : ''}><span class="box" aria-hidden="true">${ICON.check}</span><span>${t('confirmCheck')}</span></label>
 <p id="edit-err" class="err" role="alert">${S.error ? t(S.error) : ''}</p>
 <div class="confirm-row"><button type="button" class="btn" data-action="confirm">${t('confirm')}</button><span class="slot slot-sm${task.confirmedAt ? ' is-sealed' : ''}" id="seal-slot" aria-hidden="true">${task.confirmedAt ? seal() : t('sealSlot')}</span></div>
-<p class="fine">${t('confirmNote')}</p></section>`;
+${S.flash ? `<div id="flash" class="notice flash-inline" role="status">${S.flash}</div>` : ''}<p class="fine">${t('confirmNote')}</p></section>`;
   if (task.confirmedAt) {
     const nx = getNextTask(state);
     h += `<div id="confirmed-result" class="result"><div class="sec-h"><h2>${t('result')}</h2>${demoBadge(o)}</div><div class="result-body">${esc(task.body)}</div>
@@ -416,7 +414,7 @@ function profile() {
 <section class="settings-group"><h2>${t('goal')}</h2><p>${g ? esc(pick(g.label)) : t('none')}</p><button type="button" class="btn-line" data-action="changeGoal">${t('changeGoal')}</button></section>
 <section class="settings-group"><h2>${t('location')}</h2><p>${t(state.location || 'unknown')}</p></section>
 <section class="settings-group"><h2>${t('lang')}</h2><p>${state.lang === 'en' ? 'English' : '한국어'}</p></section>
-<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line" data-action="clear">${t('clear')}</button>`}</section></div>`;
+<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}</section></div>`;
 }
 
 const PAGES = { today, explore, detail, prepare, editor, help, profile };
