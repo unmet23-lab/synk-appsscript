@@ -959,6 +959,38 @@ function missedReview(t0, startAt, state = { now: 'engine' }) {
   assert.ok(progress.exportSnapshot().activeReview?.ids.includes(missed.review.id), '놓친 표현의 복습이 열렸다');
   return { progress, judge, missed, id: missed.review.id, w };
 }
+// 카본 끝 판 A1 — 홈 튜터의 「오늘은 네가 먼저」(tryAlone)는 추천하는 표현이 판의 첫 남은 복습일 때만 그 표시의 만료(요약 helpExpired)를 읽는다.
+// 두 문항을 놓친 판 [r1, r2]에서 r1 해설을 열고(앞선 날에 만료) · r2는 Q2 안내 연습으로 표시한 뒤 다음 날 홈을 열면, 추천은 Q2(안내 연습)인데
+// 첫 남은 복습은 r1이다 — r1의 만료가 Q2의 「네가 먼저」가 되면 안 된다(4-2 앞과 같이 tryAlone 거짓). 같은 판에서 Q2가 첫 남은 복습이 되면 그 표시로 읽는다.
+test('카본 끝 판 A1 — 홈 튜터 tryAlone은 추천 표현이 첫 남은 복습일 때만 그 표시의 만료를 읽는다(다른 문항의 만료로 「네가 먼저」가 되지 않음)', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const progress = freshProgress();
+  engine(progress, { unitsOf: () => [] });
+  const lesson = lessonById('greetings-expressions');
+  const [q1, q2] = lesson.questions;
+  const w = lifeOn({ progress });
+  try {
+    playLesson(w, lesson, { wrong: [0, 1] });
+    goHome(w);
+    t0.mock.timers.tick(2 * MINUTE);
+    w.ui.reviewStart();
+    const run = progress.exportSnapshot().activeReview;
+    assert.deepEqual(run.ids.slice(0, 2), [q1.review.id, q2.review.id], '판 [r1, r2]');
+    press({ 'data-life-help': '' }); // r1 해설 — 표시
+    w.ui.review(); // 답하지 않고 복습 첫 화면으로
+    assert.equal(w.practice()(q2.id), true, '홈 「이 표현 같이 연습」 — Q2');
+    w.complete()(q2.id, 'marin');
+    t0.mock.timers.tick(DAY); // 다음 날 — r1 표시는 앞선 때
+    w.ui.refresh();
+    assert.equal(w.ui.summary().helpExpired, true, '첫 남은 복습(r1)의 표시는 만료');
+    const pick = tutorPick(w, progress);
+    assert.deepEqual([pick.kind, pick.id], ['recall', q2.id], '추천은 Q2(앞선 날 안내 연습)');
+    assert.equal(progress.exportSnapshot().activeReview.ids.find(id => !progress.exportSnapshot().activeReview.answers[id]), q1.review.id, '첫 남은 복습은 r1');
+    assert.equal(pick.memory?.tryAlone, false, 'r1의 만료로 Q2에 「오늘은 네가 먼저」를 내지 않는다');
+  } finally {
+    w.ui.dispose();
+  }
+});
 // GPT 2판 다시 검수 GA1 — 판 왕복: 지금 판 23:22 해설(옛 거울 칸에 도움) → 23:23 새 길에서 이음(펼쳐 보인 해설 — 때 23:23) → 다음 날 00:23 새 길에서
 // 앞선 때의 표시를 걷음 → 00:24 지금 판에서 답. 걷을 때 두 기록부의 칸을 함께 놓아 옛 거울도 새 칸(새 제시)에 helped false 답을 적는다 — 잣대는
 // 「답이 붙는 제시의 도움 = 제품 helped」다(옛 Trail의 assisted는 문항 · 계열 이력이라 잣대가 아니다 — life-trail.test.mjs의 진짜 옛 코치 시험, Fable 5.2 설계 확인 고1).

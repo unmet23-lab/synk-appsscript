@@ -27,8 +27,10 @@ export function homeTutorRecommendation({owner,summary,snapshot,lessons=[],pract
  const returning=known.find(r=>r.questionId===previous?.id&&isBack(r)&&!practisedToday(r));
  if(returning&&['guided','assisted'].includes(previous.kind)&&!days.today.count){
   const run=snapshot.activeReview,firstPending=run?.ids.find(id=>!run.answers[id]);
-  // 새 길에서 첫 남은 복습의 도움 표시가 앞선 때의 것이면(진도 요약 helpExpired — Fable 5.2 합친 끝 판 F3) 그 도움은 지금 도움이 아니다: 먼저 혼자.
-  return {kind:'recall',id:returning.questionId,title:returning.title,command:'review',label:'오늘의 복습 시작',memory:{...memory,tryAlone:!firstPending||summary.helpExpired===true||firstPending===returning.id&&!run.pendingHelp?.[returning.id]}};
+  // 추천하는 표현이 판의 첫 남은 복습이고 그 도움 표시가 없거나 앞선 때의 것이면(새 길 — 진도 요약 helpExpired, Fable 5.2 합친 끝 판 F3) 먼저 혼자.
+  // 하던 판은 늘 이으므로 첫 남은 복습이 다른 문항이면 그 문항의 만료로 「네가 먼저」를 내지 않는다(카본 끝 판 A1 — 4-2 앞과 같이 거짓). 지금 판 · 라이브의
+  // 요약에는 helpExpired가 없어 4-2 앞 식 그대로다.
+  return {kind:'recall',id:returning.questionId,title:returning.title,command:'review',label:'오늘의 복습 시작',memory:{...memory,tryAlone:!firstPending||firstPending===returning.id&&(!run.pendingHelp?.[returning.id]||summary.helpExpired===true)}};
  }
  const difficult=known.filter(r=>r.lapses>0&&r.streak===0&&practised.get(r.questionId)!==r.lastAt&&!practisedToday(r))
   .sort((a,b)=>Number(isBack(b))-Number(isBack(a))||b.lastAt-a.lastAt||a.id.localeCompare(b.id))[0];
