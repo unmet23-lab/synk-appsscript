@@ -553,6 +553,9 @@ const 새주인쓰기 = (폴더, 주인) => { fs.mkdirSync(폴더, { recursive: 
 const 묵히기 = (폴더, 분 = 5) => { const t = new Date(Date.now() - 분 * 60_000); fs.utimesSync(폴더, t, t); };
 const 주인읽기 = (폴더) => JSON.parse(fs.readFileSync(path.join(폴더, 'owner.json'), 'utf8'));
 const 잠시 = (ms) => new Promise((r) => setTimeout(r, ms));
+// 찍힌 줄이 처음 무늬에 맞은 때 — 잠금시험이 모으는 console.log를 감싸 { 때 }에 적는다(잠금시험이 끝에 원래대로 되돌린다). 실행기가 뜨고 꺼지는
+// 시간(바쁜 PC에서 수 초 ~ 25초, 11-13 실측)이 아니라 부르는 쪽이 정한 · 받은 순간으로 재려고 쓴다
+const 찍힌때 = (무늬) => { const 본 = { 때: 0 }; const 찍기 = console.log; console.log = (...a) => { if (!본.때 && 무늬.test(a.join(' '))) 본.때 = Date.now(); 찍기(...a); }; return 본; };
 // 살아 있는데 아무것도 안 하는 주인 — 11-08 pid 25504처럼 잠금만 쥐고 있다
 const 산주인 = () => spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
 // 잠금 폴더 · 차례 폴더(막힘 기록 README.md · 줄 주인 owner.txt)를 임시로 두고, 출력은 모아 넘긴다 — 끝나면 설정 · 환경을 되돌린다
@@ -1062,14 +1065,22 @@ test('올리기 상한(주인 쪽) — 보내기 앞에 못 닿으면 실행기�
     const 사진 = 쓰기(dir, '컷.jpg');
     const 작업 = (prompt, 이름) => 웹.작업만들기({ files: [사진], prompt, out: `${이름}.md` }, dir, 이름);
     const 멈춤 = 작업('멈춤', '멈춤답');
+    const 끈 = 찍힌때(/실행기를 끄고 올리기 잠금을 푼다/);
     const t0 = Date.now();
     const r = await 웹.한건(멈춤, 1, '보내기', 'acct', [멈춤], { 이름: 'argonweb-t' });
     assert.equal(r.결과, '올리기 시간 넘김', JSON.stringify(r));
     assert.match(r.까닭, /상한 \d+분 안에 보내기 앞까지 못 갔다 — 실행기를 끄고 잠금을 풀었다\(보내지 않음/);
-    assert.ok(Date.now() - t0 < 20_000, `상한 + 여유 뒤 바로 끝난다(${Date.now() - t0}ms)`);
+    // 끄는 때는 부르는 쪽 시계라 바빠도 0.9~1초(11-13 실측). 끈 뒤 끝나기까지(taskkill · 관 닫힘)는 바쁜 PC에서 1.8~25초라(한 번에 재면 20초를
+    // 넘겨 깨졌다) 따로 넉넉히 — 나무끄기 30초 한도 + 관이 안 닫힐 때 15초를 넘지 않는다
+    assert.ok(끈.때 && 끈.때 - t0 < 10_000, `상한 + 여유(0.9초) 뒤 곧 끈다(${끈.때 - t0}ms)`);
+    assert.ok(Date.now() - 끈.때 < 60_000, `끈 뒤 곧 끝난다(${Date.now() - 끈.때}ms)`);
     assert.equal(fs.existsSync(웹.설정.폴더), false, '잠금을 풀었다');
     assert.equal(fs.existsSync(웹.표시경로(멈춤.out)), false, '보냄 표시가 없다 — 다시 보내도 된다');
     assert.ok(찍힘.some((l) => /올리기 시간 넘김 — 상한 \d\d:\d\d까지 보내기 앞에 못 가 실행기를 끄고/.test(l)), 찍힘.join('\n'));
+    // 누르기 직전에 푸는 건 — 끄는 때(상한 + 끄기여유)를 가짜 ego가 뜨는 시간보다 한참 뒤로(실제 값 60초). 바쁜 PC에서는 cmd.exe → node가 뜨는 데만
+    // 0.5~5초라(11-13 실측 · 한가할 때 0.06~0.26초) 상한 + 0.3초 안에 표시를 못 써 「올리기 시간 넘김」이 됐다(관련 시험 전체 실행에서만 깨짐).
+    // 상한(0.6초)은 그대로라 풀 때 늘 「상한 - 1초」 뒤 — 표시를 보고 넘김으로 안 치는 갈래를 그대로 본다
+    웹.설정.끄기여유 = 60_000;
     const 누름 = 작업('누름', '누름답');
     const r2 = await 웹.한건(누름, 1, '보내기', 'acct', [누름], { 이름: 'argonweb-t' });
     assert.equal(r2.결과, '받음', JSON.stringify(r2));
@@ -1089,14 +1100,18 @@ test('올리기 상한(주인 쪽) — 보내기 앞에 못 닿으면 실행기�
 
 test('올리기 상한(주인 쪽) — 스크립트가 마감에 스스로 그만두면 끄지 않고 「올리기 시간 넘김」, 마감 즈음 제 까닭으로 실패한 건은 「실패」 그대로(한 번 다시 한다)', async () => {
   await 잠금시험(async (dir, 찍힘) => {
-    Object.assign(웹.설정, { 에고: 가짜에고(dir), 상한: 500, 끄기여유: 2000 });
+    // 끄기여유는 실제 값(60초) — 가짜 ego가 늦게 떠도(바쁜 PC에서 0.5~5초, 11-13 실측) 스스로 풀기 전에 끄지 않게. 2초였을 때는 마감 + 2초 안에 못 떠
+    // 꺼지거나(까닭이 바뀜 · 늦은실패가 「올리기 시간 넘김」) 1.8초 단언이 뜨는 시간을 쟀다. 끄기여유를 안 기다렸는지는 스크립트가 실패 줄을 찍고 푼 뒤
+    // 그 절반 안에 끝났는지로 본다(그 사이는 바빠도 0.7~3.4초)
+    Object.assign(웹.설정, { 에고: 가짜에고(dir), 상한: 500, 끄기여유: 60_000 });
     const 사진 = 쓰기(dir, '컷.jpg');
     const 작업 = (prompt) => 웹.작업만들기({ files: [사진], prompt, out: `${prompt}답.md` }, dir, prompt);
-    const t0 = Date.now();
+    const 받음 = 찍힌때(/"kind":"올리기넘김"/);
     const 감시 = await 웹.한건(작업('감시'), 1, '보내기', 'acct', [], { 이름: 'argonweb-t' });
+    const 끝 = Date.now();
     assert.equal(감시.결과, '올리기 시간 넘김', JSON.stringify(감시));
     assert.match(감시.까닭, /마감까지 보내기 앞에 못 닿음/, '스크립트가 찍은 까닭 그대로');
-    assert.ok(Date.now() - t0 < 1800, `끄기여유(2초)를 기다리지 않았다 — 스크립트가 풀자 바로(${Date.now() - t0}ms)`);
+    assert.ok(받음.때 && 끝 - 받음.때 < 웹.설정.끄기여유 / 2, `끄기여유(60초)를 기다리지 않았다 — 스크립트가 풀자 바로(실패 줄을 받고 ${끝 - 받음.때}ms)`);
     assert.ok(!찍힘.some((l) => /실행기를 끄고 올리기 잠금을 푼다/.test(l)), '실행기를 끄지 않았다');
     const 늦은실패 = await 웹.한건(작업('늦은실패'), 1, '보내기', 'acct', [], { 이름: 'argonweb-t' });
     assert.equal(늦은실패.결과, '실패', `마감 뒤에 풀렸어도 제 까닭(모드 단추)이 있으면 실패 — ${JSON.stringify(늦은실패)}`);
@@ -1123,7 +1138,10 @@ test('올리기 시간 넘김 — 묶음을 멈추고(남은 건은 「안 함�
 
 // 페이지 스크립트를 가짜 ego 전역(listTaskSpaces · taskSpace)으로 돌린다 — 늦음 = { 공간 ms, 탭 ms }만큼 그 호출이 늦게 돌아오고, 첫 화면 이동은 영영 안 끝난다.
 // 잠금 폴더는 잠금열쇠로 쥐어 두고 스크립트에는 열쇠를 준다. 돌아온 뒤 { 실패 줄, 닫은 탭 수, 탭 목록 · 이동 · 파일 넣기 부른 수, 보냄 표시 }
-const 페이지돌려 = async ({ 열쇠, 잠금열쇠, 마감뒤 = 250, 늦음 = {}, 기다림 = 1500 }) => {
+// 마감(JOB.upload.deadline)은 페이지 글을 만들고 몸을 컴파일한 뒤 돌리기 직전에 정해 globalThis.JOB으로 넣는다(스크립트는 첫 줄의 JOB을 돌 때 읽는다) — 준비 때
+// 0.25초로 정하면 바쁜 PC에서 파일 읽기 · 컴파일만으로 마감을 넘겨 탭을 받기 전에 끝났다(닫을 탭 없음 · 11-13, 굶을 땐 한 번에 3.5초). 그래도 굶는 틈이 있어
+// 1.5초. 기다림은 탭을 닫거나 스크립트가 끝나면 바로 그치니 넉넉히 — 1.5초였을 때 바쁜 PC에서 늦게 받은 탭을 닫기 전에 그쳤다
+const 페이지돌려 = async ({ 열쇠, 잠금열쇠, 마감뒤 = 1500, 늦음 = {}, 기다림 = 마감뒤 + 10_000 }) => {
   const AsyncFunction = (async () => {}).constructor;
   const 앞 = { listTaskSpaces: globalThis.listTaskSpaces, taskSpace: globalThis.taskSpace, log: console.log };
   const dir = 임시();
@@ -1143,7 +1161,13 @@ const 페이지돌려 = async ({ 열쇠, 잠금열쇠, 마감뒤 = 250, 늦음 =
   console.log = (x) => { 찍힘.push(String(x)); };
   let 끝 = false;
   try {
-    new AsyncFunction(웹.페이지글(job, 1, '보내기', 'acct'))().catch(() => {}).finally(() => { 끝 = true; });
+    const 글 = 웹.페이지글(job, 1, '보내기', 'acct');
+    const 첫줄 = 글.indexOf('\n');
+    const 몸 = new AsyncFunction(글.slice(첫줄 + 1));
+    const JOB = JSON.parse(글.slice(0, 첫줄).replace(/^globalThis\.JOB = /, '').replace(/;$/, ''));
+    JOB.upload.deadline = Date.now() + 마감뒤;
+    globalThis.JOB = JOB;
+    몸().catch(() => {}).finally(() => { 끝 = true; });
     for (let t = 0; t < 기다림 && !끝 && !(셈.닫음 && 찍힘.length); t += 20) await 잠시(20);
     await 잠시(60);
   } finally { globalThis.listTaskSpaces = 앞.listTaskSpaces; globalThis.taskSpace = 앞.taskSpace; console.log = 앞.log; delete globalThis.JOB; }
@@ -1167,7 +1191,8 @@ test('페이지 스크립트(올리기 마감) — 공간 열기 · 탭 목록�
   assert.equal(공간늦음.실패 && 공간늦음.실패.kind, '올리기넘김');
   assert.deepEqual([공간늦음.탭목록, 공간늦음.이동, 공간늦음.파일넣기], [0, 0, 0], '공간이 늦게 열려도 빈 탭을 고르지 않는다');
   assert.equal(fs.existsSync(공간늦음.lock), false);
-  const 탭늦음 = await 페이지돌려({ 열쇠: 'k1', 잠금열쇠: 'k1', 마감뒤: 150, 늦음: { 탭: 450 } });
+  // 탭 목록은 마감 전에 부르고 마감 뒤에 받는다 — 0.15초 마감은 바쁜 PC에서 탭 목록을 부르기도 전에 울려 받은 탭이 없었다(11-13). 공간 늦음은 마감이 언제 와도 같다
+  const 탭늦음 = await 페이지돌려({ 열쇠: 'k1', 잠금열쇠: 'k1', 마감뒤: 1500, 늦음: { 탭: 2500 } });
   assert.equal(탭늦음.실패 && 탭늦음.실패.kind, '올리기넘김');
   assert.deepEqual([탭늦음.이동, 탭늦음.파일넣기], [0, 0], '빈 탭이 늦게 와도 첫 화면으로 옮기지 않는다');
   assert.ok(탭늦음.닫음 >= 1, '늦게 받은 탭은 맨 끝 finally가 닫는다');
