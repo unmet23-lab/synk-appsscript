@@ -7,3 +7,4 @@ pub mod bundle;
 pub mod power;
 pub mod runlog;
 pub mod schedule;
+pub mod notify;

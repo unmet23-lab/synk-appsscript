@@ -15,14 +15,14 @@
 //! opens the window app as the person at the desktop at the end of an install. While the
 //! installer's marker is in this folder, a run ends at once with exit 0 (`platform::installing`).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use backup_native::{bundle, platform, power, runlog, schedule, secret, worker::Worker};
+use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, worker::Worker};
 use serde_json::{json, Map, Value};
 use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Instant, SystemTime, UNIX_EPOCH}};
 
 const TRIGGERS: [&str; 6] = ["hourly", "logon", "wake", "unlock", "manual", "test"];
 /// Per-profile fields copied into runs.jsonl. Everything else the worker sends
 /// back stays out, so no file name, path or secret reaches the record.
-const FIELDS: [&str; 13] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock"];
+const FIELDS: [&str; 15] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic"];
 /// The run's overall result is its most notable profile result.
 const ORDER: [&str; 7] = ["failed", "partial", "fill", "busy", "complete", "not-due", "skipped"];
 
@@ -139,6 +139,33 @@ fn record_profiles(result: &Value, started: u64, line: &mut Value) -> &'static s
     overall
 }
 
+/// What this run can judge of 2.2 from its profile records, for the profiles that back up on their own
+/// (`automatic`): the first backup — one of them has a backup — and 「사흘 넘게」. Off, read-only and paused
+/// are the person's choice and are not judged; a profile that never backed up has no age to judge. The first
+/// backup is judged from the state, not from this run's new snapshot, so a notice that could not be shown is
+/// tried again by the next run (GPT workbackup-notify GB2) and a backup made by hand with automatic off is not
+/// told as 「이제 매시간 저절로 지킵니다」.
+fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static str>) {
+    let (mut found, mut judged) = (Vec::new(), Vec::new());
+    let all: Vec<&Value> = profiles.as_object().map(|p| p.values().collect()).unwrap_or_default();
+    let chosen = |p: &Value| p["outcome"] == "skipped" && ["read-only", "paused"].contains(&p["reason"].as_str().unwrap_or(""));
+    let watched: Vec<&Value> = all.into_iter().filter(|p| p["automatic"] == true && !chosen(p)).collect();
+    if watched.iter().any(|p| p["lastBackupMs"].is_u64()) { found.push(notify::first_backup()); }
+    if !watched.is_empty() {
+        judged.push("stale");
+        if let Some(p) = watched.iter().find(|p| p["lastBackupMs"].as_u64().is_some_and(|at| now.saturating_sub(at) > notify::STALE_MS)) {
+            let cause = match (p["outcome"].as_str(), p["reason"].as_str()) {
+                (Some("skipped"), Some("metered")) => "metered",
+                (Some("skipped"), Some("battery" | "saver")) => "battery",
+                (Some("skipped"), Some("clock")) => "clock",
+                _ => "",
+            };
+            found.push(notify::stale(cause));
+        }
+    }
+    (found, judged)
+}
+
 /// Runs with the state lock held. The worker owns the lock from its start; the
 /// caller keeps the worker alive until runs.jsonl is written.
 fn execute(args: &Args, root: &Path, lock: File, clock: Instant, started: u64, line: &mut Value, keep: &mut Option<Arc<Worker>>, writing: Arc<Mutex<bool>>) -> Result<i32, String> {
@@ -206,6 +233,13 @@ fn run() -> i32 {
             code
         }
     };
+    // A test run keeps the ledger as a real one would, without showing anything.
+    if line["profiles"].is_object() {
+        let (found, judged) = problems(&line["profiles"], epoch_ms());
+        let today: String = schedule::local_now().chars().take(10).collect();
+        let records = notify::deliver(&root, &found, &judged, &today, |n| if args.test { Ok(()) } else { notify::show(n) });
+        if !records.is_empty() { line["notify"] = json!(records); }
+    }
     line["end"] = json!(iso(epoch_ms()));
     line["ms"] = json!(clock.elapsed().as_millis() as u64);
     line["exit"] = json!(code);
@@ -250,6 +284,40 @@ fn main() { std::process::exit(run()); }
         assert!(!line.to_string().contains("C:\\\\"), "no paths in the record");
         let failed = json!({"profiles": {"local": {"outcome": "partial"}, "b2": {"outcome": "failed", "exitCode": 1}}});
         assert_eq!(record_profiles(&failed, 0, &mut json!({})), "failed");
+    }
+    #[test] fn problems_come_from_the_records_of_profiles_meant_to_run() {
+        let now = 10 * notify::STALE_MS;
+        let old = now - notify::STALE_MS - 1;
+        let names = |found: &[notify::Notice]| found.iter().map(|n| (n.problem, n.body)).collect::<Vec<_>>();
+        let first = ("first-backup", notify::first_backup().body);
+        let (found, judged) = problems(&json!({"local": {"outcome": "complete", "newSnapshot": true, "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!((names(&found), judged), (vec![first], vec!["stale"]));
+        // From the state: a later run with no new snapshot still finds it (the ledger keeps it to once).
+        let (found, _) = problems(&json!({"local": {"outcome": "not-due", "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!(names(&found), [first]);
+        // A backup made by hand with automatic off is not 「이제 매시간 저절로 지킵니다」, nor judged at all.
+        let (found, judged) = problems(&json!({"local": {"outcome": "complete", "newSnapshot": true, "lastBackupMs": now}}), now);
+        assert!(found.is_empty() && judged.is_empty());
+        // Three days exactly is not yet 「사흘 넘게」.
+        let (found, _) = problems(&json!({"local": {"outcome": "failed", "automatic": true, "lastBackupMs": now - notify::STALE_MS}}), now);
+        assert_eq!(names(&found), [first]);
+        for (record, body) in [(json!({"outcome": "failed", "exitCode": 1, "automatic": true, "lastBackupMs": old}), notify::stale("").body),
+                               (json!({"outcome": "skipped", "reason": "metered", "automatic": true, "lastBackupMs": old}), notify::stale("metered").body),
+                               (json!({"outcome": "skipped", "reason": "saver", "automatic": true, "lastBackupMs": old}), notify::stale("battery").body),
+                               (json!({"outcome": "skipped", "reason": "clock", "automatic": true, "lastBackupMs": old}), notify::stale("clock").body),
+                               (json!({"outcome": "busy", "reason": "job", "automatic": true, "lastBackupMs": old}), notify::stale("").body),
+                               (json!({"outcome": "skipped", "reason": "credential", "automatic": true, "lastBackupMs": old}), notify::stale("").body)] {
+            let (found, judged) = problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}, "b2": record}), now);
+            assert_eq!((names(&found), judged), (vec![first, ("stale", body)], vec!["stale"]), "{record}");
+        }
+        // The person's choice is not judged at all, so an earlier record is kept, not cleared.
+        for (reason, automatic) in [("off", false), ("not-configured", false), ("read-only", true), ("paused", true)] {
+            let (found, judged) = problems(&json!({"b2": {"outcome": "skipped", "reason": reason, "automatic": automatic, "lastBackupMs": old}}), now);
+            assert!(found.is_empty() && judged.is_empty(), "{reason}");
+        }
+        let (found, judged) = problems(&json!({"local": {"outcome": "failed", "automatic": true}}), now);
+        assert!(found.is_empty() && judged == ["stale"], "never backed up: judged, and nothing to show");
+        assert_eq!(problems(&Value::Null, now), (vec![], vec![]));
     }
     #[test] fn progress_is_only_kind_stage_percent() {
         let value = json!({"profiles": {"local": {"kind": "backup", "stage": "작업 파일 백업 중", "percent": 42.5, "sources": ["C:\\x"]}, "b2": null}});

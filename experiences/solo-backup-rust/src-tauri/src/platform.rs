@@ -49,6 +49,8 @@ fn real_path(path: &Path) -> Option<PathBuf> {
 /// executable for a whole run, the window app only while one of its operations runs.
 pub const UI_LOCK: &str = "ui.lock";
 pub const ENGINE_LOCK: &str = "engine.lock";
+/// The notification ledger's own lock: the window app and a run read, show and write it one at a time.
+pub const NOTIFY_LOCK: &str = "notify.lock";
 
 /// The window app: the checked state folder and the window lock. A second window wakes
 /// the first one and ends.
@@ -95,7 +97,7 @@ fn checked_dir(requested: &Path, places: &Places, test: bool) -> Result<PathBuf,
 /// Takes the lock file `name` in the state folder without waiting. `None` when another
 /// process holds it. The lock lasts while the returned file (or a clone of it) is open.
 pub fn try_lock(root: &Path, name: &str) -> Result<Option<File>, String> {
-    if ![UI_LOCK, ENGINE_LOCK].contains(&name) { return Err("STATE_LOCK".into()); }
+    if ![UI_LOCK, ENGINE_LOCK, NOTIFY_LOCK].contains(&name) { return Err("STATE_LOCK".into()); }
     let lockpath = root.join(name);
     if fs::symlink_metadata(&lockpath).is_ok_and(|m| m.file_attributes() & 0x400 != 0) { return Err("STATE_ROOT".into()); }
     let lock = OpenOptions::new().read(true).write(true).create(true).truncate(false).open(lockpath).map_err(|_| "STATE_LOCK")?;

@@ -89,6 +89,11 @@ $aumid = $shell.Namespace((Split-Path -Parent $startMenu)).ParseName((Split-Path
 if (-not $aumid -and (Get-Command Get-StartApps -ErrorAction SilentlyContinue)) { $aumid = @(Get-StartApps | Where-Object { $_.Name -eq $product })[0].AppID }
 Expect ($aumid -eq $identity) "the shortcut carries the notification identity ($aumid)"
 Expect (-not (Test-Path -LiteralPath $commonDesktop)) 'no desktop shortcut'
+# A click on a notification opens synk-workbackup:open?topic=… in the window app (4.2 「알림」).
+$scheme = 'HKLM:\SOFTWARE\Classes\synk-workbackup'
+$command = (Get-ItemProperty -LiteralPath "$scheme\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
+Expect ($command -ceq ('"{0}" "%1"' -f (Join-Path $dir 'WorkBackup.exe'))) "the open address starts the window app ($command)"
+Expect ($null -ne (Get-ItemProperty -LiteralPath $scheme -Name 'URL Protocol' -ErrorAction SilentlyContinue)) 'the open address is a URL protocol'
 Expect (FolderExists) 'run-task folder made by the installer'
 # What the installer's own --install left, read before anything here runs it again: the installer only logs a
 # failed --install, so a rerun first would mend the folder and hide that failure (re-review c GA1).
@@ -255,6 +260,7 @@ Expect (-not (FolderExists)) 'the run-task folder is gone'
 Expect (-not (Test-Path -LiteralPath $startMenu)) 'Start menu shortcut gone'
 Expect (-not (Test-Path -LiteralPath $uninstallKey)) 'uninstall entry gone'
 Expect (-not (Test-Path -LiteralPath $locationKey)) 'recorded install location gone'
+Expect (-not (Test-Path -LiteralPath $scheme)) 'the open address gone'
 # Run in place, the uninstaller cannot delete itself or its folder; everything else must be gone — empty folders too,
 # or a real uninstall (not in place) could not remove the install folder at the end (카본 끝판 C2).
 $left = @(Get-ChildItem -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.FullName -ne $uninstaller })

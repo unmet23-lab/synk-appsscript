@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use backup_native::{platform, protocol, schedule, secret, worker::Worker};
+use backup_native::{notify, platform, protocol, schedule, secret, worker::Worker};
 use serde_json::{json,Value};
 use std::{collections::VecDeque, fs, io::Write, path::{Path,PathBuf}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}};
 use tauri::{Emitter,Manager};
@@ -105,6 +105,27 @@ fn shutdown(app:tauri::AppHandle){
     let state=app.state::<AppState>();if state.closing.swap(true,Ordering::SeqCst){return;}
     let worker=state.worker.clone();tauri::async_runtime::spawn(async move{let result=worker.stop().await;app.exit(if result.is_ok(){0}else{1});});
 }
+/// 「첫 백업이 끝남(한 번)」 (STAGE1_DESIGN.md 2.2). The first backup usually ends in the window's own job, often
+/// after the window was closed to the tray: the notice shows only while the window is hidden, and an open window
+/// counts as having shown it, so a later run does not repeat it. One that could not be shown is left to the next
+/// run, which judges it from the state (bin/run.rs `problems`).
+struct FirstBackup{root:PathBuf,test:bool,app:tauri::AppHandle,had:Mutex<Option<bool>>}
+impl FirstBackup{
+    fn observe(&self,value:&Value){
+        let has=value["profiles"].as_object().is_some_and(|p|p.values().any(|s|s["automatic"]==true&&s["lastBackup"]["id"].is_string()));
+        let mut had=self.had.lock().unwrap();
+        let new=*had==Some(false)&&has;
+        if had.is_none()||has{*had=Some(has);}
+        drop(had);
+        if !new{return;}
+        let visible=self.app.get_webview_window("main").and_then(|w|w.is_visible().ok()).unwrap_or(false);
+        let (root,test)=(self.root.clone(),self.test);
+        std::thread::spawn(move||{
+            let today:String=schedule::local_now().chars().take(10).collect();
+            notify::deliver(&root,&[notify::first_backup()],&[],&today,|n|if test||visible{Ok(())}else{notify::show(n)});
+        });
+    }
+}
 fn show(app:&tauri::AppHandle){if let Some(window)=app.get_webview_window("main"){let _=window.unminimize();let _=window.show();let _=window.set_focus();}}
 fn active(value:&Value)->bool{value["profiles"].as_object().is_some_and(|p|p.values().any(|s|s["automatic"]==true||!s["job"].is_null()))}
 
@@ -134,7 +155,7 @@ async fn smoke(app:tauri::AppHandle,report:PathBuf)->Result<(),String>{
 fn run()->Result<(),String>{
     let args:Vec<String>=std::env::args().skip(1).collect();
     // The test, smoke and 0.5.0 preview switches exist in debug builds only (STAGE1_DESIGN.md 4.2 「알림」);
-    // a release build takes nothing but --background.
+    // a release build takes nothing but --background, or one open address.
     #[cfg(debug_assertions)]
     if args.len()==2&&args[0]=="--migration-preview" {
         let source=PathBuf::from(std::env::var_os("APPDATA").ok_or("STATE_ROOT")?).join("SoloWorkBackup");
@@ -142,7 +163,10 @@ fn run()->Result<(),String>{
         return Ok(());
     }
     let switches:&[&str]=if cfg!(debug_assertions){&["--background","--test-mode","--smoke"]}else{&["--background"]};
-    if args.iter().any(|a|!switches.contains(&a.as_str())){return Err("INVALID_ARGUMENT".into());}
+    // A notification's click is exactly one open address and nothing else (4.2 「알림」). Every notice so far opens the
+    // status screen, which is the window itself; a topic's own screen comes with the new screens (4.12).
+    let opened=matches!(args.as_slice(),[one] if notify::topic_of(one).is_some());
+    if !opened&&args.iter().any(|a|!switches.contains(&a.as_str())){return Err("INVALID_ARGUMENT".into());}
     let test=args.contains(&"--test-mode".into());let smoke_mode=args.contains(&"--smoke".into());
     if smoke_mode&&!test{return Err("TEST_MODE_REQUIRED".into());}
     let exe=std::env::current_exe().map_err(|_|"EXECUTABLE")?;
@@ -161,7 +185,9 @@ fn run()->Result<(),String>{
     let app=tauri::Builder::default().invoke_handler(tauri::generate_handler![backup_call]).setup(move|app|{
         let handle=app.handle().clone();let publish_handle=handle.clone();let published=current.clone();
         let failure_handle=handle.clone();let failure_root=root.clone();
+        let first=Arc::new(FirstBackup{root:root.clone(),test,app:handle.clone(),had:Mutex::new(None)});let first_seen=first.clone();
         let worker=Worker::start(&resources,&root,lock,test,false,Arc::new(move|name,args|native.call(name,args)),Arc::new(move|value|{
+            first_seen.observe(&value);
             *published.lock().unwrap()=value.clone();let _=publish_handle.emit("backup:state",value);
         }),Arc::new(move|code|{
             let _=fs::write(failure_root.join("native-error.txt"),code);
@@ -169,6 +195,7 @@ fn run()->Result<(),String>{
             failure_handle.exit(1);
         })).map_err(std::io::Error::other)?;
         let initial=tauri::async_runtime::block_on(worker.call("$boot",json!([]),120000)).map_err(std::io::Error::other)?;
+        first.observe(&initial);
         *current.lock().unwrap()=initial.clone();
         app.manage(AppState{worker,current:current.clone(),closing:AtomicBool::new(false)});
         tauri::WebviewWindowBuilder::new(app,"main",tauri::WebviewUrl::App("index.html".into()))

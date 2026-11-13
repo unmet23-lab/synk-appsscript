@@ -4,7 +4,7 @@ const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('n
 const {spawn}=require('node:child_process');
 const {StringDecoder}=require('node:string_decoder');
 const {BackupEngine,parseKit}=require('./engine.cjs');
-const {directory,contains,overlap,atomic}=require('./paths.cjs');
+const {directory,contains,overlap,atomic,spellings}=require('./paths.cjs');
 const {readManifest,extractVerified}=require('./restore-tar.cjs');
 const {selectSample,consumeSample}=require('./probe.cjs');
 const b2=require('./b2.cjs');
@@ -109,7 +109,10 @@ async function restoreWhole(engine,parent,snapshot){
 }
 class RecommendedBackup {
   constructor({root,workRoot=null,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths=[],cloudContext,registerStartup,scan=native}){Object.assign(this,{root:path.resolve(root),workRoot:workRoot?path.resolve(workRoot):null,resticPath,secretStore,plannerPath,inventoryPath,protectedPaths,cloudContext,registerStartup,scan});this.busy=false;this.error=null;this.preview=null;this.engine=null;this.closing=false;this.onChange=()=>{};}
-  async open(){await fs.mkdir(this.root,{recursive:true});await directory(this.root);try{this.saved=JSON.parse(await fs.readFile(path.join(this.root,'plan.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw Error('추천 백업 설정을 읽지 못했습니다.');}try{const p=JSON.parse(await fs.readFile(path.join(this.root,'preview.json'),'utf8'));const {hash,...body}=p.preview;if(digest(body)!==hash)throw Error('preview_changed');this.preview=p.preview;this.request=p.request;}catch(e){if(e.code!=='ENOENT')this.error='추천 목록을 다시 찾아 주세요.';}if(this.saved){const {hash,...body}=this.saved.permit;if(digest(body)!==hash)throw Error('승인 기록이 바뀌었습니다.');await this.makeEngine(this.saved.permit.destination);}this.timer=setInterval(()=>{void this.tick();},30000);this.timer.unref?.();}
+  // The folders as they really are, like the profiles' (an 8.3 short root would miss a place chosen by its real path — GPT GA1).
+  async open(){await fs.mkdir(this.root,{recursive:true});this.root=await directory(this.root);
+    if(this.workRoot){await fs.mkdir(this.workRoot,{recursive:true});this.workRoot=await directory(this.workRoot);}
+    this.protectedPaths=await spellings(this.protectedPaths);try{this.saved=JSON.parse(await fs.readFile(path.join(this.root,'plan.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw Error('추천 백업 설정을 읽지 못했습니다.');}try{const p=JSON.parse(await fs.readFile(path.join(this.root,'preview.json'),'utf8'));const {hash,...body}=p.preview;if(digest(body)!==hash)throw Error('preview_changed');this.preview=p.preview;this.request=p.request;}catch(e){if(e.code!=='ENOENT')this.error='추천 목록을 다시 찾아 주세요.';}if(this.saved){const {hash,...body}=this.saved.permit;if(digest(body)!==hash)throw Error('승인 기록이 바뀌었습니다.');await this.makeEngine(this.saved.permit.destination);}this.timer=setInterval(()=>{void this.tick();},30000);this.timer.unref?.();}
   async makeEngine(kind){this.engine=new RecommendedEngine({stateDir:path.join(this.root,'vault'),workDir:this.workRoot?path.join(this.workRoot,'vault'):null,resticPath:this.resticPath,secretStore:this.secretStore,providerType:kind,
     // The engine refuses the whole recommended folder, its work folder and every protected place on its own too (카본 끝판 A1).
     forbiddenPaths:[this.root,...(this.workRoot?[this.workRoot]:[]),...this.protectedPaths]});await this.engine.open();this.engine.on('state',()=>this.onChange());}

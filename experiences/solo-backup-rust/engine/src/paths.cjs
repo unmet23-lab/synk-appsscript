@@ -38,4 +38,14 @@ async function validateSources(sources, forbidden) {
   }
   return result;
 }
-module.exports = { directory, overlap, contains, normalized, atomic, validateSources };
+/** Each place as given and, when it exists, as it really is (an 8.3 short name spelled out), so a place chosen
+ *  by its real path still meets it (GPT workbackup-notify GA1). */
+async function spellings(list) {
+  const out = [];
+  for (const p of list) {
+    const given = path.resolve(p); if (!out.includes(given)) out.push(given);
+    try { const real = await fs.realpath(given); if (!out.includes(real)) out.push(real); } catch { }
+  }
+  return out;
+}
+module.exports = { directory, overlap, contains, normalized, atomic, validateSources, spellings };

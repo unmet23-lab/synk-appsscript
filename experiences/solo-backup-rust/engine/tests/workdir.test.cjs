@@ -116,6 +116,25 @@ test('roots given by a short name are the real folders, and a place inside them 
   const inside = path.join(longRoot, 'PlaceInsideTheState'); await fs.mkdir(inside);
   assert.throws(() => profiles.assertOutput(path.join(short(longRoot), 'PlaceInsideTheState')), /분리된 위치/, 'the short name of a place in the state');
   profiles.assertOutput(path.join(base, 'elsewhere'));
+
+  // The recommended backup spells its folders out too, and keeps a protected place given short as it really is (GPT GA1).
+  const recRoot = path.join(longRoot, 'recommended'), recWork = path.join(longWork, 'recommended'), other = path.join(base, 'OtherAppFolderLongName');
+  await fs.mkdir(recRoot); await fs.mkdir(recWork); await fs.mkdir(other);
+  const rb = new RecommendedBackup({ root: short(recRoot), workRoot: short(recWork), resticPath: 'unused', secretStore: {}, protectedPaths: [short(other)] });
+  await rb.open(); clearInterval(rb.timer);
+  assert.equal(rb.root.toLowerCase(), recRoot.toLowerCase());
+  assert.equal(rb.workRoot.toLowerCase(), recWork.toLowerCase());
+  assert.ok(rb.protectedPaths.some((p) => p.toLowerCase() === other.toLowerCase()), 'the protected place as it really is');
+  const open = RecommendedEngine.prototype.open;
+  RecommendedEngine.prototype.open = async function () {}; // the engine as made, without restic
+  try { await rb.makeEngine('local'); } finally { RecommendedEngine.prototype.open = open; }
+  const source = path.join(base, 'SourceFolderLongName'); await fs.mkdir(source);
+  const engine = new RecommendedEngine({ stateDir: path.join(rb.root, 'vault'), workDir: path.join(rb.workRoot, 'vault'), forbiddenPaths: rb.engine.forbiddenPaths, ...options });
+  await engine.open();
+  for (const parent of [path.join(recWork, 'cloud-vault', 'temp'), path.join(other, 'inside')]) {
+    await fs.mkdir(parent, { recursive: true });
+    await assert.rejects(engine.initialize({ sources: [source] }, { parent }), /분리된 백업 위치/, parent);
+  }
 });
 
 // 카본 끝판 B1: with a root of its own (test mode), the worker still keeps every version's folders — 0.5.0, the

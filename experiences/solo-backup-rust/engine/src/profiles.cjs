@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { BackupEngine } = require('./engine.cjs');
-const { overlap, directory } = require('./paths.cjs');
+const { overlap, directory, spellings } = require('./paths.cjs');
 
 // Every version's own folders on this PC: 0.5.0 and the 0.6.1 trial (0.7.0 never reads or writes them) and
 // the installed 0.7.0's state and cache. A worker with a root of its own (test mode) must not reach them
@@ -42,6 +42,7 @@ class Profiles extends EventEmitter {
     // runners) is spelled out, so a place picked by its long name is still seen inside it (카본 끝판 A2).
     await fs.promises.mkdir(this.root, { recursive: true }); this.root = await directory(this.root);
     if (this.workRoot) { await fs.promises.mkdir(this.workRoot, { recursive: true }); this.workRoot = await directory(this.workRoot); }
+    this.protectedPaths = await spellings(this.protectedPaths);
     for (const [name, engine] of Object.entries(this.engines)) {
       try { await engine.open(); } catch (e) { if (e.code !== 'RECOVERY_REQUIRED') throw e; }
       if (engine.config && !engine.config.repositoryId) this.selections[name] = { sources: [...engine.config.sources], target: name === 'local' ? path.dirname(engine.config.repository) : null };
