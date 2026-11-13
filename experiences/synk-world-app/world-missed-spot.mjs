@@ -5,7 +5,7 @@
 // 게임 원고(입장 검사 안내문 규칙), 이번 주 계획 숙제, Temper 다시 확인 줄만 읽는다. 급수 · 합격 · 점수 환산을 만들지 않는다.
 // 「약점」이 아니라 「놓친 곳 · 다음에 볼 자리」다(학습기준 §7-3 — 학생의 영구 특성으로 만들지 않는다). 화면 글은 없다(world-strings.mjs의 position.missed.*).
 // 사다리 칸은 기록에 남은 일(done)과 지금 기록 · 계획에 있는 다음(planned)만 쓴다 — 「앱이 알렸다 · 넣었다 · 올 것이다」는 쓰지 않는다
-// (Fable 설계 검토 11-14 P1 ①②: 근무 · 안내는 Trail에 남지 않고, 맞춤 손님은 과제 · 근무지 · 잠금에 따라 안 올 수 있다).
+// (설계 검토 11-14 P1 ①②: 근무 · 안내는 Trail에 남지 않고, 맞춤 손님은 과제 · 근무지 · 잠금에 따라 안 올 수 있다).
 //
 // 카드 뼈대(두 종류 공용 — 드라마 「말하기 기록」은 같은 꼴로 옮긴다, 설계.md):
 //  { policy, kind:'topik'|'speaking', target, narrow:[{layer,…,count?,of?}], again:[{step,state,at?,dueAt?,…}], evidence:[eventId], grade:null, abilityClaim:false }
@@ -61,7 +61,7 @@ function msIndex(events){
 }
 
 // 입장 검사 게임(경험 entry-check)의 제시를 기록 순서로. sitting: 근무지가 같고 · 손님 도착 시각(원고 at)이 늘고 · 30분 안에 이어진 묶음 번호.
-// 근무 안의 손님은 도착 시각이 늘 는다(correction.mjs preservesShift) — 화면은 이 묶음을 「근무」라 부르지 않는다(Fable 설계 검토 P2 ④).
+// 근무 안의 손님은 도착 시각이 늘 늘어난다(correction.mjs preservesShift) — 화면은 이 묶음을 「근무」라 부르지 않는다(설계 검토 P2 ④).
 function msSittings(ix,policy){
  const rows=[];let sitting=-1,prev=null;
  for(const presentation of ix.ordered){
@@ -181,7 +181,7 @@ export function buildMissedSpot({map,summary=null,events=[],homework=null,projec
  for(const row of skill.evidence)if(row.independent)independent.add(row.eventId);
  const guests=!skill.folded&&skill.evidence.length>0&&skill.evidence.every(row=>missedEntryOf(row.itemKey));
  const narrow=[{layer:'skill',skillId:skill.id,label:skill.label,domain:skill.domain,exam:map.exam,status:skill.status,count:skill.incorrect,of:skill.n,unit:guests?'guest':'try'}];
- // 좁혀 짚기: 놓친 근거 수(of)를 그대로 분모로 — 입장 검사 밖 근거 · 고른 답이 없는 근거는 그 값에 들지 않을 뿐 분모에서 빠지지 않는다(Fable P2 ⑥).
+ // 좁혀 짚기: 놓친 근거 수(of)를 그대로 분모로 — 입장 검사 밖 근거 · 고른 답이 없는 근거는 그 값에 들지 않을 뿐 분모에서 빠지지 않는다(설계 검토 P2 ⑥).
  const of=missed.length,detail=missed.map(row=>({...row,entry:missedEntryOf(row.itemKey),choice:ix.attempt.get(row.eventId)?.choice}));
  const line=msMajority(detail,row=>row.entry?missedEntryRule(row.entry.venue,row.entry.item)?.text??null:null,{of,min:policy.narrowMin});
  if(line){const top=line.rows[0],rule=missedEntryRule(top.entry.venue,top.entry.item);narrow.push({layer:'line',venueId:top.entry.venue.id,venue:top.entry.venue.name,ruleId:rule.ruleId,text:rule.text,count:line.rows.length,of});}
@@ -205,7 +205,7 @@ export function buildMissedSpot({map,summary=null,events=[],homework=null,projec
 // 「내 위치」 판(world-position-ui.mjs renderPositionBoard — 계정 묶음 안)을 건드리지 않고, 판 HTML에 카드 한 장을 끼운다(world-learning-ui.mjs showBoard).
 // 계정 묶음은 공개본이 원천 빌드와 짜임이 달라 덧대기 어렵다 — 카드는 묶음 밖 모듈 하나로 둔다(11-14).
 // 판단은 하지 않고 카드 값을 그대로 그린다. 안내문 줄은 학습 내용이라 한국어 원문이다(lang="ko"). 화면 글은 world-strings.mjs의 position.missed.*.
-// 칸에 「앱이 알렸다 · 올 것이다」를 쓰지 않는다 — ○는 지금 기록 · 계획에 잡힌 것만(Fable 설계 검토 11-14).
+// 칸에 「앱이 알렸다 · 올 것이다」를 쓰지 않는다 — ○는 지금 기록 · 계획에 잡힌 것만(설계 검토 11-14).
 const msEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MS_STEPS=Object.freeze(['spot','again','practice','homework','delayed']);
 /**
@@ -250,7 +250,7 @@ export function renderMissedSpot(card,{t,has=()=>true,formatDate=null,practice=n
 }
 
 // 판 HTML(renderPositionBoard)에 카드를 끼운다: 칸 수 · 안내 줄 아래, 「먼저 볼 항목」 · 짧은 진단 · 항목 판보다 위. 카드가 짚은 항목은
-// 바로 아래 「먼저 볼 항목」에서 뺀다(같은 줄을 되풀이하지 않음 — 그 항목뿐이면 그 칸째 뺀다, Fable P2 ⑨). 자리를 못 찾으면 판 그대로.
+// 바로 아래 「먼저 볼 항목」에서 뺀다(같은 줄을 되풀이하지 않음 — 그 항목뿐이면 그 칸째 뺀다, 설계 검토 P2 ⑨). 자리를 못 찾으면 판 그대로.
 export function placeMissedSpot(board,cardHtml,skillId=null){
  if(typeof board!=='string'||!cardHtml)return board;
  let out=board;

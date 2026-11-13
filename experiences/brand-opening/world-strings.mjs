@@ -525,7 +525,7 @@ export default {
  'position.practice.start':{ko:'이 항목 연습하기',en:'Practice this skill',mn:'Энэ чадварыг давтах'},
  'position.attention.title':{ko:'먼저 볼 항목',en:'Look at these first',mn:'Эхлээд харах чадварууд'},
  // 놓친 곳 카드(11-14, world-missed-spot.mjs): 놓친 곳 하나를 좁혀 짚고 그 뒤 다시 만난 일(●) · 다음 차례(○). 「약점」이라 부르지 않는다(학습기준 §7-3).
- // ○ 줄은 지금 기록 · 계획에 잡힌 것만 말한다 — 「앱이 알렸다 · 올 것이다」는 쓰지 않는다(Fable 설계 검토).
+ // ○ 줄은 지금 기록 · 계획에 잡힌 것만 말한다 — 「앱이 알렸다 · 올 것이다」는 쓰지 않는다(설계 검토 11-14).
  'position.missed.title':{ko:'놓친 곳',en:'Where it slipped',mn:'Алдсан хэсэг'},
  'position.missed.count.guest':{ko:'손님 {n}명 중 {wrong}명 놓침',en:'Missed {wrong} of {n} guests',mn:'Зочин: {n}, алдсан: {wrong}'},
  'position.missed.count.try':{ko:'{n}번 중 {wrong}번 놓침',en:'Missed {wrong} of {n} tries',mn:'Оролдлого: {n}, алдсан: {wrong}'},
