@@ -298,6 +298,46 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     await engine.backupNow();
     assert.equal(engine.config.lastPartial, null, 'a complete backup clears it');
   });
+  await t.test('「지금 상태」: a newer partial backup restores with what it read, and what it could not read comes from the earlier one (4.2)', async () => {
+    const before = engine.config.lastBackup;
+    const changed = Buffer.from('부분 판에만 든 새 내용'), older = content['binary.dat'];
+    // A folder no complete backup has: only the partial one holds it (GPT GA1).
+    const third = path.join(root, '세 번째 작업'); await fs.mkdir(third); await fs.writeFile(path.join(third, 'only-here.txt'), 'only in the partial backup');
+    engine.config.sources = [...engine.config.sources, third];
+    await fs.writeFile(path.join(source, '한글 문서.txt'), changed);
+    // Changed and then held: restic must read it and cannot. One held file is new, so no backup has it.
+    const held = path.join(source, 'binary.dat'), fresh = path.join(source, 'new-and-held.pst');
+    await fs.writeFile(held, crypto.randomBytes(20000)); await fs.writeFile(fresh, 'new and held');
+    const holder = spawn('powershell.exe', ['-NoProfile', '-Command', `$a=[IO.File]::Open('${held}','Open','ReadWrite','None'); $b=[IO.File]::Open('${fresh}','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $a.Close(); $b.Close()`], { stdio: ['pipe', 'pipe', 'inherit'] });
+    await new Promise((resolve) => holder.stdout.once('data', resolve));
+    try {
+      await engine.backupNow();
+      assert.equal(engine.config.lastPartial.unreadable, 2);
+      assert.equal(engine.config.lastBackup.id, before.id);
+      await engine.restoreLatest({ parent: restore });
+    } finally {
+      holder.stdin.end('\n'); await new Promise((resolve) => holder.once('exit', resolve));
+      // Whatever the checks below find, the next subtests start from the source as it now is.
+      content['한글 문서.txt'] = changed; content['binary.dat'] = await fs.readFile(held); await fs.rm(fresh, { force: true });
+    }
+    const mapping = JSON.parse(await fs.readFile(path.join(engine.config.lastRestore.path, '복구경로.json'), 'utf8'));
+    const entry = mapping.find(m => m.original === engine.config.sources[0]);
+    assert.equal(entry.backupAt, engine.config.lastPartial.at, 'from the newer partial backup');
+    assert.deepEqual(entry.fromEarlier, [{ path: 'binary.dat', backupAt: before.at }]);
+    assert.deepEqual(entry.inNoBackup, ['new-and-held.pst']);
+    const folder = path.join(engine.config.lastRestore.path, entry.restoredFolder);
+    assert.equal(digest(await fs.readFile(path.join(folder, '한글 문서.txt'))), digest(changed), 'what it read is the newer content');
+    assert.equal(digest(await fs.readFile(path.join(folder, 'binary.dat'))), digest(older), 'what it could not read, from the earlier backup');
+    await assert.rejects(fs.access(path.join(folder, 'new-and-held.pst')));
+    assert.equal(engine.config.lastRestore.fromEarlier, 1);
+    assert.equal(engine.config.lastRestore.inNone, 1);
+    const only = mapping.find(m => m.original === engine.config.sources[2]);
+    assert.equal(only.backupAt, engine.config.lastPartial.at, 'a folder only the partial backup holds comes from it');
+    assert.equal(await fs.readFile(path.join(engine.config.lastRestore.path, only.restoredFolder, 'only-here.txt'), 'utf8'), 'only in the partial backup');
+    assert.equal(mapping.length, 3);
+    await engine.backupNow();
+    assert.equal(engine.config.lastPartial, null);
+  });
   await t.test('real pack corruption fails a full data check and disables pruning', async () => {
     const packs = (await files(path.join(engine.config.repository, 'data'))).filter(p => /^[a-f0-9]{64}$/.test(path.basename(p)));
     assert.ok(packs.length); const handle = await fs.open(packs[0], 'r+'); await handle.write(Buffer.from('CORRUPTED-FIXTURE'), 0, 17, 0); await handle.close();

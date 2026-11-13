@@ -402,3 +402,41 @@ test('partial snapshots from before the complete place stay while that place is 
   assert.equal((await engine.runOnce({})).outcome, 'complete');
   assert.deepEqual(snapshots.map(s => s.id), [engine.config.lastBackup.id], 'a backup that reads everything ends it');
 });
+
+// 끝판 카본 workbackup-missing-20261114-b-끝판 A1: a folder no backup has read whole goes missing.
+test('a missing folder whose complete place is a partial snapshot keeps the partial ones before it', async () => {
+  const { engine, fail, advance, snapshots, more } = await fixture({ folders: 2 });
+  await engine.setAutomatic(true);
+  const second = engine.config.sources[1];
+  fail.backup = 3; fail.items = [`${second}\\b1.pst`];
+  await engine.runOnce({});
+  // As the previous version left it: partial with its list, no complete place.
+  const old = snapshots.find(s => s.tags.includes('partial'));
+  old.tags = old.tags.filter(t => t !== VERIFIED); engine.config.lastBackup = null;
+  const oldList = snapshots.find(s => s.tags.includes('meta')).id;
+  advance(2 * DAY);
+  await engine.runOnce({});
+  const place = engine.config.lastBackup.id;
+  fail.backup = null; fail.items = [];
+  await fs.rm(more[0], { recursive: true });
+  advance(61 * 60000);
+  assert.equal((await engine.runOnce({})).missing, 1);
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  const left = snapshots.map(s => s.id);
+  assert.ok(left.includes(place) && left.includes(old.id) && left.includes(oldList), 'b1.pst is only in the old one');
+});
+
+// 끝판 카본 A2: a recommended-backup snapshot is neither the latest complete one here, nor kept, nor forgotten.
+test('retain leaves recommended-backup snapshots alone and does not take one for the latest', async () => {
+  const { engine, advance, snapshots } = await fixture();
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const foreign = { id: 'f'.repeat(64), time: new Date(Date.now() + 10 * DAY).toISOString(), hostname: engine.config.vaultId, paths: ['C:\\elsewhere'], tags: ['solo-work-backup-v1', `vault:${engine.config.vaultId}`, VERIFIED, 'recommended-verified-v1'] };
+  const past = { ...foreign, id: 'e'.repeat(64), time: new Date(Date.now() - 10 * DAY).toISOString() };
+  snapshots.push(foreign, past);
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  assert.equal(engine.config.warning, null, 'cleaned up, not held back');
+  assert.deepEqual(snapshots.map(s => s.id).sort(), [engine.config.lastBackup.id, foreign.id, past.id].sort());
+});

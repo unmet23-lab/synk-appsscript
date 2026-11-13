@@ -6,7 +6,7 @@ const { spawn } = require('node:child_process');
 const { EventEmitter } = require('node:events');
 const { StringDecoder } = require('node:string_decoder');
 const { ProcessOutput } = require('./process-output.cjs');
-const { extractVerified, readManifest } = require('./restore-tar.cjs');
+const { extractVerified, readManifest, entryPath } = require('./restore-tar.cjs');
 const { directory, overlap, atomic, validateSources } = require('./paths.cjs');
 const b2 = require('./b2.cjs');
 const { normalizeProtection, schedule, time } = require('./protection.cjs');
@@ -22,6 +22,49 @@ const holds = (snapshot, folder) => Array.isArray(snapshot?.paths) && snapshot.p
 /** Each backed-up folder once, in the order first met. */
 const foldersOf = snapshots => snapshots.flatMap(s => Array.isArray(s.paths) ? s.paths : []).filter((p, i, all) => typeof p === 'string' && all.findIndex(q => same(q, p)) === i);
 const missingWarning = missing => missing.length ? `백업할 폴더 ${missing.length}개를 찾을 수 없어 그 폴더를 빼고 백업했습니다. 외장 드라이브라면 다시 연결해 주세요. 그 폴더가 든 이전 백업은 지우지 않습니다.` : null;
+/** A partial snapshot's list snapshots: the meta ones with its run tag. */
+const listsIn = (all, s) => { const run = s.tags.find(t => t.startsWith('run:')); return run ? all.filter(x => x.tags.includes(run) && x.tags.includes('meta')) : []; };
+/** Where `item` (a path restic reported) is inside `folder`, with forward slashes; null when it is not inside. */
+const inside = (folder, item) => {
+  const base = folder.replace(/[\\/]+$/, '');
+  if (typeof item !== 'string' || item.length <= base.length + 1 || item.slice(0, base.length).toLowerCase() !== base.toLowerCase() || !/[\\/]/.test(item[base.length])) return null;
+  return item.slice(base.length + 1).replace(/[\\/]+/g, '/').replace(/\/$/, '') || null;
+};
+/** 「지금 상태」 (4.2): of the paths a backup could not read (`wanted`, inside its folder; `manifest` is what it holds),
+ *  what comes from the earlier backups `seen` (newest first: { had, blind, cut, selector, at } — `blind` what that one
+ *  could not read itself). File by file, the first earlier backup that has the file gives it; the first that could
+ *  read where it would be and does not have it shows it was gone by then, so no older copy comes back. A folder it
+ *  could not read is gathered the same way, file by file — an earlier partial one may lack some of its files too
+ *  (GPT workbackup-nowstate GA2). A path no backup has is told in `notFound`. */
+function gatherEarlier(wanted, manifest, seen) {
+  const extra = [], notFound = [], folders = [], taken = new Set();
+  const covered = (blind, rel) => { const parts = rel.toLowerCase().split('/'); for (let i = 1; i <= parts.length; i++) if (blind.has(parts.slice(0, i).join('/'))) return true; return false; };
+  const pick = rel => {
+    for (const e of seen) {
+      const node = e.had.nodes.get(rel.toLowerCase());
+      if (node?.type === 'file') return { e, node };
+      if (!e.cut && !covered(e.blind, rel)) return null;
+    }
+    return null;
+  };
+  const take = rel => {
+    const k = rel.toLowerCase(), got = pick(rel);
+    if (got && !taken.has(k) && !manifest.nodes.has(k)) { taken.add(k); extra.push({ selector: got.e.selector, name: got.node.name, size: got.node.size, backupAt: got.e.at }); }
+    return !!got;
+  };
+  for (const rel of wanted) {
+    const k = rel.toLowerCase();
+    if (manifest.nodes.get(k)?.type === 'file') continue;
+    const kind = seen.map(e => e.had.nodes.get(k)?.type).find(Boolean);
+    if (kind === 'dir') {
+      folders.push(rel);
+      const files = new Set();
+      for (const e of seen) for (const n of e.had.nodes.values()) if (n.type === 'file' && n.name.toLowerCase().startsWith(k + '/')) files.add(n.name);
+      for (const file of files) take(file);
+    } else if (!kind || !take(rel)) notFound.push(rel);
+  }
+  return { extra, notFound, folders };
+}
 /** The run record's count of folders not found, when there were any. */
 const gone = n => n > 0 ? { missing: n } : {};
 /** Unreadable items kept for a partial snapshot's list; past this the list says it is cut short. */
@@ -568,6 +611,17 @@ class BackupEngine extends EventEmitter {
     await validateSources(present, this.forbidden());
     return { present, missing };
   }
+  /** What a partial snapshot could not read: its list snapshot read whole (a plain dump keeps only the tail). */
+  async unreadableList(meta) {
+    const decoder = new StringDecoder('utf8'); let text = '';
+    await this.run(['dump', meta.id, '/workbackup-unreadable.json'], { timeoutMs: 600000, consumeStdout: async input => {
+      for await (const chunk of input) { text += decoder.write(chunk); if (text.length > 64 * 1024 * 1024) throw new Error('읽지 못한 파일 목록이 너무 큽니다.'); }
+      text += decoder.end();
+    } });
+    const list = json(text);
+    if (list?.v !== 1 || !Array.isArray(list.unreadable) || list.unreadable.some(p => typeof p !== 'string') || typeof list.cut !== 'boolean') throw new Error('읽지 못한 파일 목록의 형식을 확인하지 못했습니다.');
+    return list;
+  }
   async fullCheck() {
     this.stage('전체 데이터 점검 중 — 큰 백업은 오래 걸릴 수 있습니다');
     try {
@@ -629,15 +683,17 @@ class BackupEngine extends EventEmitter {
       if (!Number.isFinite(age) || age < -300000 || age > 30 * DAY) throw new Error('최근 전체 점검과 서버 시간을 확인한 뒤 정리합니다.');
     }
     const all = await this.snapshots(); // Tag edits change IDs, so enumerate immediately before exact-ID deletion.
-    const verified = all.filter(s => s.tags.includes(VERIFIED));
+    // A recommended-backup snapshot is not this one's to keep or forget, as restoreLatest does not mix it in (끝판 카본 A2).
+    const mine = s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1');
+    const verified = all.filter(s => s.tags.includes(VERIFIED) && !s.tags.includes('recommended-verified-v1'));
     const latest = verified[0];
     if (!latest || latest.id !== this.config.lastBackup?.id) throw new Error('가장 최근 백업 번호가 바뀌었습니다.');
     // Kept: the latest complete snapshot, and — when newer — the newest partial one with its list (meta, same run tag),
     // so the files read since are not lost while one stays locked (4.2). Older partial and list snapshots go after 24 h.
     const keep = new Set([latest.id]);
     // A partial snapshot without exactly one list is never counted, so it cannot push out a good one (GPT GA1).
-    const listsOf = s => { const run = s.tags.find(t => t.startsWith('run:')); return run ? all.filter(x => x.tags.includes(run) && x.tags.includes('meta')) : []; };
-    const own = all.filter(s => s.hostname === this.config.vaultId);
+    const listsOf = s => listsIn(all, s);
+    const own = all.filter(mine);
     const listed = s => s.tags.includes('partial') && listsOf(s).length === 1;
     const hold = s => { keep.add(s.id); if (s.tags.includes('partial')) for (const list of listsOf(s)) keep.add(list.id); };
     hold(latest);
@@ -655,8 +711,11 @@ class BackupEngine extends EventEmitter {
       const complete = own.find(s => s.tags.includes(VERIFIED) && holds(s, folder)), newer = own.find(s => listed(s) && holds(s, folder));
       if (complete) hold(complete);
       if (newer && (!complete || Date.parse(newer.time) > Date.parse(complete.time))) hold(newer);
+      // No backup has read all of it yet (its complete place is a partial snapshot, or there is none): the partial
+      // ones before that place stay too, as for the whole vault above (끝판 카본 A1).
+      if (!complete || complete.tags.includes('partial')) for (const s of own) if (listed(s) && holds(s, folder) && (!complete || Date.parse(s.time) < Date.parse(complete.time))) hold(s);
     }
-    const ids = all.filter(s => !keep.has(s.id) && s.hostname === this.config.vaultId && now - Date.parse(s.time) > DAY).map(s => s.id);
+    const ids = all.filter(s => !keep.has(s.id) && mine(s) && now - Date.parse(s.time) > DAY).map(s => s.id);
     if (!ids.length) return;
     this.stage('24시간이 지난 이전 백업 정리 중');
     for (let i = 0; i < ids.length; i += 100) await this.run(['forget', ...ids.slice(i, i + 100)]);
@@ -689,11 +748,31 @@ class BackupEngine extends EventEmitter {
       const sets = latest.paths.map(original => ({ snapshot: latest, original }));
       for (const folder of foldersOf(complete)) if (!sets.some(set => same(set.original, folder))) sets.push({ snapshot: complete.find(s => holds(s, folder)), original: folder });
       if (sets.length > 30 || sets.some(set => !sane(set.snapshot))) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
-      let target;
+      let target, fromEarlier = 0, inNone = 0;
       try {
         this.stage('복구할 파일 목록 확인 중');
+        // 「지금 상태」 (4.2): a folder that a partial snapshot newer than the complete place holds comes from it — what
+        // it read is newer — and each file it could not read from the newest earlier backup that has it (the ones
+        // retain() keeps). Its list must be whole; a cut one leaves the complete place as before.
+        const own = (await this.snapshots()).filter(s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1'));
+        const listed = own.filter(s => s.tags.includes('partial') && listsIn(own, s).length === 1);
+        const lists = new Map(), listOf = async s => { if (!lists.has(s.id)) lists.set(s.id, await this.unreadableList(listsIn(own, s)[0])); return lists.get(s.id); };
+        const newer = listed.find(s => Date.parse(s.time) > Date.parse(latest.time) && sane(s));
+        if (newer) {
+          // A folder only it holds (not there when the complete one was made) comes from it whatever its list (GPT GA1).
+          for (const folder of newer.paths) if (!sets.some(set => same(set.original, folder))) sets.push({ snapshot: newer, original: folder });
+          if (!(await listOf(newer)).cut) for (const set of sets) if (holds(newer, set.original)) set.snapshot = newer;
+          if (sets.length > 30) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
+        }
+        for (const set of sets) {
+          if (!set.snapshot.tags.includes('partial') || listsIn(own, set.snapshot).length !== 1) continue;
+          const list = await listOf(set.snapshot);
+          set.cut = list.cut;
+          set.wanted = [...new Set(list.unreadable.map(item => inside(set.original, item)).filter(Boolean))];
+          set.earlier = own.filter(s => s.id !== set.snapshot.id && Date.parse(s.time) < Date.parse(set.snapshot.time) && (s.tags.includes(VERIFIED) || listed.includes(s)) && holds(s, set.original) && sane(s));
+        }
         const plans = [];
-        for (const [index, { snapshot, original }] of sets.entries()) {
+        for (const [index, { snapshot, original, wanted = [], earlier = [], cut = false }] of sets.entries()) {
           const subtree = '/' + original.replace(/^([A-Za-z]):/, '$1').replaceAll('\\', '/').replace(/\/+$/, '');
           const selector = `${snapshot.id}:${subtree}`;
           let manifest;
@@ -701,10 +780,20 @@ class BackupEngine extends EventEmitter {
           // before a destination is created. List every node, including hardlinks.
           await this.run(['ls', '--json', '--recursive', selector], { consumeStdout: async stream => { manifest = await readManifest(stream, base); } });
           const name = `${String(index + 1).padStart(2, '0')}-${path.win32.basename(original).replace(/[<>:"/\\|?*]/g, '_') || '드라이브'}`;
-          plans.push({ original, selector, name, manifest, backupAt: snapshot.time });
+          // What it could not read: from the earlier backups that hold this folder, file by file (gatherEarlier).
+          const seen = [];
+          if (wanted.length) for (const s of earlier) {
+            const from = `${s.id}:${subtree}`;
+            let had;
+            await this.run(['ls', '--json', '--recursive', from], { consumeStdout: async stream => { had = await readManifest(stream, base); } });
+            const list = s.tags.includes('partial') ? await listOf(s) : null;
+            seen.push({ selector: from, at: s.time, had, cut: !!list?.cut, blind: new Set((list?.unreadable || []).map(item => inside(original, item)).filter(Boolean).map(rel => rel.toLowerCase())) });
+          }
+          const { extra, notFound, folders } = gatherEarlier(wanted, manifest, seen);
+          plans.push({ original, selector, name, manifest, backupAt: snapshot.time, extra, notFound, folders, cut });
         }
         const space = await fs.statfs(base, { bigint: true });
-        const required = plans.reduce((sum, p) => sum + [...p.manifest.nodes.values()].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 0n), 16n * 1024n * 1024n);
+        const required = plans.reduce((sum, p) => sum + [...p.manifest.nodes.values(), ...p.extra].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 0n), 16n * 1024n * 1024n);
         if (required > space.bavail * space.bsize) throw new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.');
         target = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`);
         await fs.mkdir(target); // Exclusive new empty directory; never restore into original paths.
@@ -712,10 +801,21 @@ class BackupEngine extends EventEmitter {
         // Export authenticated contents rather than original SID/DACL metadata. Each
         // selected subtree is extracted into fresh files and verified after writing.
         const mapping = [];
-        for (const { original, selector, name, manifest, backupAt } of plans) {
+        for (const { original, selector, name, manifest, backupAt, extra, notFound, folders, cut } of plans) {
           const destination = path.join(target, name); await fs.mkdir(destination);
           await this.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: stream => extractVerified(stream, destination, manifest) });
-          mapping.push({ original, restoredFolder: name, backupAt });
+          if (extra.length) this.stage('읽지 못했던 파일을 이전 백업에서 가져오는 중');
+          for (const file of extra) {
+            const into = entryPath(destination, file.name);
+            await fs.mkdir(path.dirname(into), { recursive: true });
+            let written;
+            await this.run(['dump', file.selector, '/' + file.name], { consumeStdout: async input => { written = await selection.writeFileStream(input, into, file.size, destination); } });
+            if (!written || written.bytes !== file.size) throw new Error('이전 백업에서 가져온 파일의 크기가 기록과 다릅니다.');
+          }
+          fromEarlier += extra.length; inNone += notFound.length;
+          mapping.push({ original, restoredFolder: name, backupAt,
+            ...(extra.length ? { fromEarlier: extra.map(f => ({ path: f.name, backupAt: f.backupAt })) } : {}),
+            ...(folders.length ? { foldersFromEarlier: folders } : {}), ...(notFound.length ? { inNoBackup: notFound } : {}), ...(cut ? { listCut: true } : {}) });
         }
         await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify(mapping, null, 2), { flag: 'wx' });
       }
@@ -724,7 +824,7 @@ class BackupEngine extends EventEmitter {
         await this.save();
         throw new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`);
       }
-      this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString() }; await this.save();
+      this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString(), fromEarlier, inNone }; await this.save();
       return this.getState();
     });
   }
@@ -927,4 +1027,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems };
+module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier };
