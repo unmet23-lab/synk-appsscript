@@ -74,6 +74,12 @@ from pathlib import Path
 반응_바람 = re.compile(rf"\b(?:wind|breeze|draft|draught|gust)s?\b[^.;]{{0,60}}?\b{반응물건}\b", re.I)
 반응_한 = re.compile(r"(쪽지|종이|포스트잇|커튼|블라인드|낙엽|잎|꽃잎|깃발|사진|편지|포스터|리본)[은는이가의들]?[^.;,()]{0,20}(떨(?!어)|흔들|나부|펄럭|들썩|흩날|팔랑|파르르)")   # 「떨어짐」(떨어지다)은 떨림이 아니다
 따옴 = re.compile(r"「[^」]*」|“[^”]*”|\"[^\"]*\"|'[^']*'")
+# 11-13 B43 V9 「휴대폰이 자기 혼자 들썩이는거」: 진동은 영상 모델이 폰째 튀는 동작으로 그린다 — 폰 진동 · 울림은 소리 줄과 사람 반응으로만(점검표 38 · 원칙 4)
+폰낱말 = r"(?:휴대폰|핸드폰|스마트폰|(?<!헤드)(?<!이어)폰)"   # 헤드폰 · 이어폰은 아니다
+폰진동_한 = re.compile(폰낱말 + r"[은는이가의도]?[^.;,()]{0,20}?(부르르|진동(?:하|이 ?울|이 ?오)|떨(?!어)|들썩|덜덜|드르르)")
+# 영어: 「the phone vibrates · buzzes · hops on the table」
+폰진동 = re.compile(r"\b(?:phones?|smartphones?|cell ?phones?|mobiles?)\b[^.;,()—–]{0,40}?\b(?:vibrat\w*|buzz(?:es|ing)?|judders?|juddering|jitters?|jittering|trembles?|trembling|shakes?|shaking|rattles?|rattling|hops?|hopping|jumps?|jumping)\b", re.I)
+소리줄_한 = re.compile(r"^\s*(?:소리|효과음|목소리)\s*[:：]")   # 한국어 소리 줄(「소리: 폰 진동 두 번」)은 화면 동작이 아니다
 큰물건 = r"(?:doors?|gates?|windows?|drawers?|cupboards?|cabinets?|lids?|shutters?|hatch(?:es)?|panels?)"
 자율동사 = (r"(?:opens?|opening|closes?|closing|shuts?|shutting|swings?|swinging|drifts?|drifting|creaks?|creaking|slides?|sliding|moves?|moving|"
            r"begins? to (?:swing|open|close|move)|starts? to (?:swing|open|close|move)|falls? (?:open|shut)|eases? (?:open|shut)|inches? (?:open|shut)|wider|more open|further open)")
@@ -166,7 +172,7 @@ def 지시문검사(글, 실내=None):
     밝힌실내 = 실내 is True or (실내 is None and bool(명시실내.search(글)))
     짐작실내 = not 밝힌실내 and 실내 is None and bool(실내낱말.search(글))
     # 물건 규칙은 소리 · 목소리 줄(SOUND: · VOICE: — 줄 단위로 뺀다, 문장을 나눈 뒤가 아니라)에는 걸지 않는다 — 「the soft thud of the door shutting」은 소리 묘사다
-    물건글 = "\n".join(l for l in 글.split("\n") if not 소리줄표식.match(l))
+    물건글 = "\n".join(l for l in 글.split("\n") if not 소리줄표식.match(l) and not 소리줄_한.match(l))
     물건문장 = 문장들(물건글)
     for si, s in enumerate(물건문장):
         문맥 = (물건문장[si - 1] + " " if si > 0 else "") + s   # 행위자는 이 문장과 바로 앞 문장에서(「she turns the brass knob. At 1.0 s the door swings open」)
@@ -177,6 +183,9 @@ def 지시문검사(글, 실내=None):
             if 명시자율.search(c) and 큰물건절:
                 out.append(("걸림", "물건", f"큰 물건이 저 혼자 움직인다 — 「{c[:90]}」(문 · 창은 손으로만 움직이고 그 뒤로 그대로 · 점검표 35 · 38)")); continue
             if 큰물건절 and (자동문.search(c) or (k > 0 and 자동문.search(절목록[k - 1]))): continue   # 엘리베이터 · 지하철 · 자동문은 저 혼자 닫히는 것이 맞다 — 그 절이나 바로 앞 절에 그 낱말이 있을 때만
+            pm = 폰진동_한.search(c) or 폰진동.search(c)
+            if pm and not 신체.search(c[pm.start():pm.end() + 14]):
+                out.append(("걸림", "물건", f"휴대폰이 진동으로 떨린다 — 「{c[:90]}」(영상 모델은 폰째 들썩이게 그린다 · 진동은 소리 줄과 손 · 눈의 반응으로만, 화면 줄엔 「폰은 납작하게 붙어 한 번도 들리거나 흔들리지 않는다」 · 점검표 38)")); continue
             m = 반응.search(c) or 반응_역.search(c) or 반응_한.search(c) or 반응_바람.search(c)
             if m and 신체.search(c[m.start():m.end() + 14]): m = None   # 「the letter … her hands tremble」 · 「envelope from her shaking hand」는 사람
             if m:

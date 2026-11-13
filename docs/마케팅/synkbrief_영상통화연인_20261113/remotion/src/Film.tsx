@@ -113,7 +113,7 @@ export const Film: React.FC = () => {
       {/* 바탕 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
-      {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
+      {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} trimBefore={sec(s.start ?? 0)} volume={s.vol} /></Sequence>)}
       </>}
     </AbsoluteFill>
   );
