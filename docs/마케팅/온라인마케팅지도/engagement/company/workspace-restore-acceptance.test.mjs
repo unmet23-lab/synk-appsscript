@@ -185,8 +185,59 @@ test('a list-only server backup is accepted only after its studio media is hydra
   assert.deepEqual((await accept(listOnly)).issues,['REFERENCED_MEDIA_MISSING']);
   await mkdir(join(listOnly,'company','studio-media'));await writeFile(join(listOnly,'company','studio-media',f.media),'synthetic-media');
   const hydrated=await accept(listOnly);assert.equal(hydrated.status,'candidate-matches-declared-baseline',JSON.stringify(hydrated));
+  // Equivalent snapshots have distinct retention receipt bytes (backup time,
+  // list mode and manifest digest); those do not change the restored payload.
+  assert.notDeepEqual(await readFile(join(listOnly,'media-retention.json')),await readFile(join(baseline,'media-retention.json')));
+  for(const mode of ['missing','digest','classification','legacy','binding','schema','createdAt','without-list']){
+    const candidate=await f.clone('retention-'+mode,baseline),file=join(candidate,'media-retention.json');
+    const retention=JSON.parse(await readFile(file,'utf8'));
+    if(mode==='missing')await rm(file);
+    else if(mode==='binding'){const manifest=JSON.parse(await readFile(join(candidate,'integration-manifest.json'),'utf8'));manifest.mediaRetention='other.json';await writeFile(join(candidate,'integration-manifest.json'),JSON.stringify(manifest));}
+    else if(mode==='without-list'){const manifest=JSON.parse(await readFile(join(candidate,'integration-manifest.json'),'utf8'));delete manifest.mediaManifest;delete manifest.mediaBytesIncluded;await writeFile(join(candidate,'integration-manifest.json'),JSON.stringify(manifest));await rm(join(candidate,'media-manifest.json'));}
+    else{if(mode==='digest')retention.manifestSha256='0'.repeat(64);if(mode==='classification')retention.noVault=['f'.repeat(64)];if(mode==='legacy')retention.legacyDeleted++;if(mode==='schema')retention.schema='wrong-schema';if(mode==='createdAt')retention.createdAt='2000-01-01T00:00:00Z';await writeFile(file,JSON.stringify(retention));}
+    const before=await hashes(candidate),rejected=await accept(candidate);assert.deepEqual(rejected.issues,['MEDIA_RETENTION_INVALID'],mode);assert.deepEqual(await hashes(candidate),before,'invalid retention cannot alter the source');
+  }
   await writeFile(join(listOnly,'company','studio-media',f.media),'synthetic-MEDIA');
   assert.deepEqual((await accept(listOnly)).issues,['MEDIA_LIST_BYTES_MISMATCH']);
   const broken=await f.clone('list-broken',baseline);await rm(join(broken,'media-manifest.json'));
   assert.deepEqual((await accept(broken)).issues,['MEDIA_LIST_INVALID']);
+});
+
+async function removeRetention(directory){
+  const file=join(directory,'integration-manifest.json'),manifest=JSON.parse(await readFile(file,'utf8'));
+  delete manifest.mediaRetention;
+  await writeFile(file,JSON.stringify(manifest));
+  await rm(join(directory,'media-retention.json'));
+}
+
+test('removing retention metadata and its manifest reference from either side rejects before copying',async t=>{
+  const f=await fixture(t),complete=await backupWorkspace({destination:join(f.root,'retention-present'),companyDataDir:f.companyDir,media:'both'});
+  const missing=await f.clone('retention-absent',complete);await removeRetention(missing);
+  for(const [name,candidateDirectory,baselineDirectory] of [['candidate',missing,complete],['baseline',complete,missing]]){
+    const candidateBefore=await hashes(candidateDirectory),baselineBefore=await hashes(baselineDirectory),destination=join(f.root,'should-not-prepare-'+name);
+    const rejected=await acceptWorkspaceRestore({candidateDirectory,baselineDirectory,freshnessEvidence:await f.evidence(baselineDirectory),destination});
+    assert.deepEqual(rejected.issues,['MEDIA_RETENTION_PRESENCE_DIFFERS'],name);
+    assert.equal(rejected.candidateMatchesDeclaredBaseline,false);assert.equal(rejected.preparedIsolatedCopy,false);
+    assert.equal(rejected.sourceFilesUnchanged,true);assert.equal(rejected.productionTrafficAllowed,false);
+    await assert.rejects(access(destination),{code:'ENOENT'});
+    assert.deepEqual(await hashes(candidateDirectory),candidateBefore);assert.deepEqual(await hashes(baselineDirectory),baselineBefore);
+  }
+});
+
+test('legacy backups without retention on both sides remain compatible and still reject changed payloads',async t=>{
+  const f=await fixture(t),listed=await backupWorkspace({destination:join(f.root,'legacy-listed-source'),companyDataDir:f.companyDir,media:'both'});
+  const baseline=await f.clone('legacy-listed-baseline',listed),candidate=await f.clone('legacy-listed-candidate',listed);
+  await removeRetention(baseline);await removeRetention(candidate);
+  const listedBefore=await hashes(candidate),listedBaselineBefore=await hashes(baseline);
+  const accept=async()=>acceptWorkspaceRestore({candidateDirectory:candidate,baselineDirectory:baseline,freshnessEvidence:await f.evidence(baseline)});
+  const accepted=await accept();assert.equal(accepted.status,'candidate-matches-declared-baseline',JSON.stringify(accepted));
+  assert.equal(accepted.sourceFilesUnchanged,true);assert.deepEqual(await hashes(candidate),listedBefore);assert.deepEqual(await hashes(baseline),listedBaselineBefore);
+  await writeFile(join(candidate,'company','studio-media',f.media),'tampered legacy-listed payload');
+  const tamperedBefore=await hashes(candidate);assert.deepEqual((await accept()).issues,['MEDIA_LIST_BYTES_MISMATCH']);assert.deepEqual(await hashes(candidate),tamperedBefore);
+  // The original copy-mode format has neither media manifest nor retention.
+  assert.equal((await f.accept()).status,'candidate-matches-declared-baseline');
+  await writeFile(join(f.latestCandidate,'company','studio-media',f.media),'tampered copy-mode payload');
+  const copyBefore=await hashes(f.latestCandidate),copyRejected=await f.accept();
+  assert.deepEqual(copyRejected.issues,['BACKUP_PAYLOAD_FILES_DIFFER']);assert.equal(copyRejected.sourceFilesUnchanged,true);
+  assert.deepEqual(await hashes(f.latestCandidate),copyBefore);
 });

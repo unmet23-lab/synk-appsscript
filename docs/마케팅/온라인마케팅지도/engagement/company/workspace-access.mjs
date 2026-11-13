@@ -30,12 +30,18 @@ export function normalizeWorkspaceProfile(input,{allowEmpty=false}={}){
   return {version:1,memberships,duties:WORKSPACE_DUTIES.filter(row=>input.duties.includes(row.id)).map(row=>row.id)};
 }
 
-export function workspaceAccess(user){
-  if(!user||user.active===false)return {configured:false,revision:0,memberships:[],duties:[],features:[],companies:[],admin:false,legacy:false};
-  const admin=user.role==='admin',raw=user.workspaceProfile,configured=Object.hasOwn(user,'workspaceProfile');
+// Stored assignment metadata remains editable after an account is stopped.
+// It must not be used as proof of effective access.
+export function workspaceProfileState(user){
+  const raw=user?.workspaceProfile,configured=!!user&&Object.hasOwn(user,'workspaceProfile');
   let profile;
   try{profile=configured?normalizeWorkspaceProfile(raw,{allowEmpty:true}):null;}catch{profile={memberships:[],duties:[]};}
   const memberships=profile?.memberships||[],duties=profile?.duties||[];
+  return {configured,revision:Number.isSafeInteger(raw?.revision)?raw.revision:0,memberships,duties};
+}
+export function workspaceAccess(user){
+  if(!user||user.active===false)return {configured:false,revision:0,memberships:[],duties:[],features:[],companies:[],admin:false,legacy:false};
+  const admin=user.role==='admin',{configured,revision,memberships,duties}=workspaceProfileState(user);
   const features=new Set(admin?featureIds:[]);
   for(const member of memberships){
     const company=WORKSPACE_COMPANIES.find(row=>row.id===member.company);
@@ -46,7 +52,7 @@ export function workspaceAccess(user){
     }
   }
   for(const duty of duties)for(const feature of WORKSPACE_DUTIES.find(row=>row.id===duty).features)features.add(feature);
-  return {configured,legacy:!configured,revision:Number.isSafeInteger(raw?.revision)?raw.revision:0,admin,memberships,duties,features:[...features],companies:admin?WORKSPACE_COMPANIES.map(row=>row.id):memberships.map(row=>row.company)};
+  return {configured,legacy:!configured,revision,admin,memberships,duties,features:[...features],companies:admin?WORKSPACE_COMPANIES.map(row=>row.id):memberships.map(row=>row.company)};
 }
 export function hasWorkspaceFeature(user,feature){
   const access=workspaceAccess(user);

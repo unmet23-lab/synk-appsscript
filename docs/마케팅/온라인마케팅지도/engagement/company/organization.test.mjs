@@ -57,6 +57,23 @@ test('member listings limit scope and never expose credentials or coworkers emai
   assert.deepEqual(visibleMembers(store,{...users[0],active:false}),[]);
 });
 
+test('owner management requires current social access while legacy and admin permissions remain compatible',()=>{
+  const target=channel('social',['person'],'alpha'),profile=duties=>({version:1,memberships:[{company:'LAB',role:'teacher'}],duties});
+  for(const [person,expected] of [
+    [user('person','manager','alpha'),true],
+    [{...user('person','manager','alpha'),workspaceProfile:profile(['social'])},true],
+    [{...user('person','manager','alpha'),workspaceProfile:profile(['pages'])},true],
+    [{...user('person','manager','alpha'),workspaceProfile:profile([])},false],
+    [{...user('person','manager','alpha'),workspaceProfile:null},false],
+    [{...user('person','admin'),workspaceProfile:profile([])},true],
+    [{...user('person','admin'),workspaceProfile:profile([]),active:false},false],
+  ]){
+    assert.equal(canReadChannel(person,target),expected);
+    assert.equal(canWriteChannel(person,target),expected);
+    assert.equal(canManageOwners(person,target),expected);
+  }
+});
+
 test('migration is idempotent and never infers ownership before its baseline',async t=>{
   const store=await fixture(t),c=channel('first',['old-owner'],'alpha'),at='2026-09-27T09:00:00.000Z';
   const baseline=seedOwnership(store,c,at);

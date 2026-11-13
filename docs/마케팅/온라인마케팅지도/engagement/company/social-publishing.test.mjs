@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,rm} from 'node:fs/promises';
+import {mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
+import {createHash,randomUUID} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {Store} from './store.mjs';
 import {createSocialPublishingService} from './social-publishing.mjs';
+import {createSocialMarketingService} from './social-marketing.mjs';
 
 async function fixture(t,providerOptions={}){
   const directory=await mkdtemp(join(tmpdir(),'synk-social-publish-')),store=new Store(directory),users={};
@@ -92,6 +94,53 @@ test('current permissions and connection identity are enforced at execution and 
   f.store.put('users',f.users.manager.id,{...f.users.manager,role:'viewer'});await f.service.tick();assert.equal(f.sends.length,0);assert.equal(f.store.get('socialPublishJobs',job.id).status,'failed');
   f.store.put('users',f.users.manager.id,f.users.manager);f.store.put('channels','yt',{...f.store.get('channels','yt'),connectionVersion:2});
   await assert.rejects(f.service.jobAction(f.users.manager,job.id,{action:'reschedule',scheduledAt:f.now()}),{status:409});
+});
+
+const socialProfile=duties=>({version:1,memberships:[{company:'LAB',role:'teacher'}],duties});
+function setSocialDuties(f,user,duties){return f.store.put('users',user.id,{...f.store.get('users',user.id),workspaceProfile:socialProfile(duties)});}
+
+test('revoking social access blocks an admin handoff of a reservation made by that publisher',async t=>{
+  const f=await fixture(t);setSocialDuties(f,f.users.manager,['social']);
+  const post=f.approve(f.create()),[job]=f.schedule(post);
+  assert.equal(f.service.handoff(f.users.admin,job.id).job.id,job.id);
+  setSocialDuties(f,f.users.manager,[]);
+  assert.throws(()=>f.service.handoff(f.users.admin,job.id),{status:403});
+  assert.equal(f.sends.length,0);
+});
+
+test('revoking social access after scheduling prevents the real publishing service tick from sending',async t=>{
+  const f=await fixture(t);setSocialDuties(f,f.users.manager,['social']);
+  const post=f.approve(f.create()),[job]=f.schedule(post);setSocialDuties(f,f.users.manager,[]);
+  await f.service.tick();
+  assert.equal(f.sends.length,0);assert.equal(f.outcomes.length,0);
+  const saved=f.store.get('socialPublishJobs',job.id);assert.equal(saved.status,'failed');assert.equal(saved.errorCode,'PERMISSION_OR_VERSION_CHANGED');
+  assert.equal(saved.attempts,0);assert.equal(saved.definitiveFailure,true);
+});
+
+test('revoking social access also blocks approved media download through a retained handoff',async t=>{
+  const f=await fixture(t);setSocialDuties(f,f.users.manager,['social']);
+  const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlS8AAAAASUVORK5CYII=','base64');
+  const sha256=createHash('sha256').update(bytes).digest('hex'),diskName=randomUUID()+'.png';
+  await mkdir(join(f.directory,'studio-media'));await writeFile(join(f.directory,'studio-media',diskName),bytes);
+  f.store.put('socialMedia','approved-file',{id:'approved-file',ownerId:f.users.writer.id,teamId:'a',mimeType:'image/png',fileName:'approved.png',diskName,byteSize:bytes.length,sha256});
+  const ref={id:'approved-file',assetId:'approved-file',url:'/api/social/media/approved-file',type:'image',mimeType:'image/png',sha256};
+  const post=f.approve(f.create({variants:[{channelId:'ig',text:'승인 이미지',format:'post',media:[ref]}]})),[job]=f.schedule(post);
+  const context=f.service.handoff(f.users.admin,job.id),marketing=createSocialMarketingService({store:f.store,clock:f.now});
+  assert.deepEqual((await marketing.downloadHandoff(f.users.admin,ref,context)).bytes,bytes);
+  setSocialDuties(f,f.users.manager,[]);
+  await assert.rejects(marketing.downloadHandoff(f.users.admin,ref,context),{status:403});
+  assert.equal(f.sends.length,0);
+});
+
+test('legacy managers, assigned social managers and administrators retain publishing and handoff',async t=>{
+  for(const kind of ['legacy-manager','assigned-manager','admin'])await t.test(kind,async t=>{
+    const f=await fixture(t),actor=kind==='admin'?f.users.admin:f.users.manager;
+    if(kind!=='legacy-manager')setSocialDuties(f,actor,kind==='admin'?[]:['social']);
+    const draft=f.create(),post=f.service.action(actor,draft.id,{revision:draft.revision,action:'approve'}).post;
+    const [job]=f.service.action(actor,post.id,{revision:post.revision,action:'schedule',scheduledAt:f.now()}).jobs;
+    assert.equal(f.service.handoff(f.users.admin,job.id).job.id,job.id);
+    await f.service.tick();assert.equal(f.sends.length,1);assert.equal(f.store.get('socialPublishJobs',job.id).status,'published');
+  });
 });
 
 test('global pause is visible and a missed reservation requires an explicit user decision',async t=>{

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {buildGrowthHistory} from './growth-history.mjs';
+import {workspaceClientContext} from './workspace-access-test-context.mjs';
 
 const read=name=>readFileSync(new URL('./public/'+name,import.meta.url),'utf8');
 const app=read('app.js');
@@ -15,7 +16,7 @@ function fixture({scope='mine',demo=false,role='admin',today='2026-09-30'}={}){
   const handlers=[],requests=[],calls={hype:0,renders:0};
   const state={user:{id:'u',role,teamId:'team-a'},data:{teams:[{id:'team-a',name:'내 팀'},{id:'team-b',name:'다른 팀'}],channels:[{id:'c',teamId:'team-a',owners:[{id:'u'}]}],...(demo?{demo:{enabled:true,anchorDate:'2026-08-19'}}:{})},tab:'overview',marketingView:'summary',scope,teamId:scope==='team'?'team-a':'',start:'2026-05-02',end:'2026-05-08',range:'custom',metric:'views',report:null,reportRequest:0,ownerId:'',platform:'',channel:'',analysisView:'daily',homeExtrasOpen:false};
   const location=new URL('http://localhost:4191/'+(demo?'?demo=1&persona=a':''));
-  const context=vm.createContext({state,location,URL,URLSearchParams,Intl,cp:{view:'library'},
+  const context=workspaceClientContext({state,location,URL,URLSearchParams,Intl,cp:{view:'library'},
     isAdmin:()=>state.user?.role==='admin',canManageTeam:()=>['admin','manager'].includes(state.user?.role),isViewer:()=>state.user?.role==='viewer',
     dateToday:()=>today,shiftDate:(date,days)=>new Date(Date.parse(date+'T00:00:00Z')+days*86400000).toISOString().slice(0,10),
     api:async url=>{requests.push(url);return url.startsWith('/api/team-overview')?{teams:[]}:report();},

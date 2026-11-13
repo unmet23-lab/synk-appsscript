@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-/* 시스템대장 — 「지금 무엇이 갖춰져 있나」(docs/시스템_대장.md 정본)를 지키고, 바탕화면 두 장으로 굽는다.
+/* 시스템대장 — 「지금 무엇이 갖춰져 있나」(docs/시스템_대장.md 정본)를 지킨다.
  *
  * 왜 있나 (2026-08-05 유호님: "새 기능 추가하거나 구축할 때마다 기록을 남기는 시스템을 만들고 싶어"):
  *   기록은 이미 넘쳤다 — 버전 이력 131항목·커밋 979개·보드 아카이브. 전부 개발자 언어라 유호님이 못 연다.
  *   그래서 새 장부를 만들지 않고 **채번 게이트(bump-version --종류)가 대외 언어 한 줄을 강제로 받게** 했고,
- *   이 도구는 그 정본을 두 장(내부판=전 구역+기술 상세 / 대외판=(대외) 구역만)으로 렌더한다.
+ *   처음에는 그 정본을 두 장으로 렌더했다. 현재는 정본 검사·기입을 맡는다.
  *   시간순 일지가 아니라 **현재형 부품 목록**이다 — 유호님이 실제로 묻는 것은 "언제 했나"가 아니라
  *   "내가 지금 뭘 갖고 있나"다(몽골 검수자 채용·투자자·파트너 설명 전부 이 질문).
  *
  * 사용법:
  *   node tools/시스템대장.js --check    정본 표 형식 검증(repo 파일만 보며 실제 가동 상태는 증명하지 않는다)
- *   node tools/시스템대장.js --render   바탕화면 SYNK_지도 에 내부판·대외판 HTML+PDF 굽기(+README 표)
+ *   --render 는 폐기된 명령이다(지도대장.js 삭제 뒤 연결할 렌더러 없음). 정본 Markdown을 읽는다.
  *
  * 기입은 이 CLI 가 아니라 bump-version 이 한다(잊을 수 있는 통로는 통로가 아니다):
  *   node tools/bump-version.js --desc "…" --종류 신설 --시스템 "이름" --한줄 "…" --구역 "접수·상담"
@@ -19,8 +19,7 @@
  *     예외로 여기 있는 유일한 기입 경로 = **소급 등재**(이미 라이브인데 대장에 줄이 없던 것).
  *     코드가 안 바뀌니 태울 번호가 없어 채번을 안 한다 — 새로 만드는 것에 쓰면 안 된다.
  *
- * ⚠ 렌더는 repo 밖(바탕화면)을 쓰므로 CI·클라우드엔 폴더가 없다 — 그때는 통과가 아니라 skip 으로
- *   드러낸다(지도대장과 같은 원칙). PDF 폰트 게이트(--mono 맨 앞 Consolas)도 지도대장 것을 그대로 진다.
+ * --render 요청은 출력물을 만들지 않고 종료 2로 실패한다. 생성 함수는 기존 호출 호환을 위해 남긴다.
  */
 'use strict';
 const fs = require('fs');
@@ -339,20 +338,12 @@ function 대외HTML(파싱결과, { 날짜, 도장 }) {
 
 /* ── CLI ────────────────────────────────────────────────────────────────── */
 
-function 오늘() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
-
-function 정본도장() {
-  try {
-    const { execFileSync } = require('child_process');
-    return execFileSync('git', ['-c', 'core.quotepath=false', 'log', '-1', '--format=%h', '--', 'docs/시스템_대장.md'],
-      { cwd: ROOT, encoding: 'utf8' }).trim() || null;
-  } catch (_) { return null; }
-}
-
 function main(argv) {
+  if (argv.includes('--render')) {
+    console.error('--render는 더 이상 지원하지 않습니다. 출력물을 만들지 않았습니다.');
+    console.error('정본: docs/시스템_대장.md · 형식 검사: node tools/시스템대장.js --check');
+    return 2;
+  }
   const md = fs.readFileSync(대장경로(), 'utf8');
   const p = 파싱(md);
   const 문제 = 검증(p);
@@ -378,41 +369,7 @@ function main(argv) {
     return 0;
   }
 
-  if (argv.includes('--render')) {
-    if (문제.length) { 문제.forEach((m) => console.error('✗ ' + m)); console.error('깨진 정본은 굽지 않는다 — 위부터 고쳐라'); return 1; }
-    const 지도대장 = require('./지도대장.js');
-    const dir = 지도대장.지도폴더();
-    if (!fs.existsSync(dir)) {
-      console.log(`[시스템대장] skip — 지도 폴더가 없다: ${dir} (CI·클라우드 세션. 통과가 아니라 미실행이다)`);
-      return 0;
-    }
-    let 이력 = '';
-    try { 이력 = fs.readFileSync(이력경로(), 'utf8'); } catch (_) {}
-    const 도장 = 정본도장();
-    if (!도장) console.error('⚠ 정본이 아직 커밋 안 됐다 — 도장 없이 굽는다(커밋 후 다시 --render 하면 도장이 박힌다)');
-    const 메타 = { 날짜: 오늘(), 도장 };
-    const 쌍 = [
-      [`${메타.날짜}_시스템_대장.html`, 내부HTML(p, 이력제목맵(이력), 메타)],
-      [`${메타.날짜}_SYNK_시스템_한장.html`, 대외HTML(p, 메타)],
-    ];
-    let 실패 = 0;
-    for (const [이름, html] of 쌍) {
-      const hp = path.join(dir, 이름);
-      fs.writeFileSync(hp, html, 'utf8');
-      const r = 지도대장.굽기(hp);
-      if (r.ok) console.log(`✅ ${이름} + PDF (${r.크기.toLocaleString()} 바이트 · 폰트 ${r.폰트.length}종)`);
-      else { 실패 += 1; console.error(`🔴 ${이름} — ${r.이유}`); }
-    }
-    // 낡은 스냅샷 안내(삭제는 사람 몫 — 지우셔도 됩니다가 폴더 규칙이다)
-    const 구판 = fs.readdirSync(dir).filter((f) =>
-      /^\d{4}-\d{2}-\d{2}_(시스템_대장|SYNK_시스템_한장)\.(html|pdf)$/.test(f) && !f.startsWith(메타.날짜));
-    if (구판.length) console.log(`ℹ 낡은 스냅샷 ${구판.length}개가 남아 있다(지워도 된다): ${구판.join(', ')}`);
-    const 훑 = 지도대장.훑기(dir);
-    지도대장.리드미갱신(dir, 훑.지도들);
-    return 실패 ? 1 : 0;
-  }
-
-  console.log('사용법: node tools/시스템대장.js --check | --render');
+  console.log('사용법: node tools/시스템대장.js --check | --소급 --구역 … --시스템 … --한줄 … --시작 …');
   return 문제.length ? 1 : 0;
 }
 

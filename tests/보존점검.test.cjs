@@ -14,6 +14,25 @@ test('ledger aliases, siblings, unknown sources and external links stay distinct
   assert.equal(parsed.cases[0].references[2].unresolved,true);
   assert.equal(parsed.cases[0].references[4].external,true);
 });
+test('D drive app worktrees remain temporary while similarly named archive paths do not',t=>{
+  const root=fixture(t),ledger=path.join(root,'ledger.md');
+  const references=[
+    ['C:/Users/fixture/.claude/worktrees/session/result.png',true],
+    ['D:/SYNK-worktrees/SYNK-appsscript/session/result.png',true],
+    ['d:\\synk-worktrees\\synk-appsscript\\session\\result.png',true],
+    ['D:/SYNK-worktrees/SYNK-appsscript',true],
+    ['D:/archive/SYNK-worktrees/SYNK-appsscript/result.png',false],
+    ['D:/SYNK-worktrees/SYNK-appsscript-archive/result.png',false],
+    ['D:/SYNK-worktrees/SYNK-appsscript/../archive/result.png',false],
+    ['D:/SYNK-archive/result.png',false],
+  ];
+  for(const [reference,temporary] of references){
+    const text='### S01 · fixture\n- **결과물:** `'+reference+'`\n';
+    const result=parseLedger(text,{root,ledger}).cases[0].references[0];
+    assert.equal(result.temporary,temporary,reference);
+    assert.ok(result.absolute);
+  }
+});
 test('local receipts never become current remote proof; detects changed, missing and secret paths',async t=>{
   const root=fixture(t),ledger=path.join(root,'ledger.md'),media=path.join(root,'docs/art');fs.mkdirSync(media,{recursive:true});
   fs.writeFileSync(path.join(media,'one.png'),'approved');fs.writeFileSync(path.join(media,'two.png'),'changed');

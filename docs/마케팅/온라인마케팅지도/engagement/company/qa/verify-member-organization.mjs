@@ -7,6 +7,7 @@ import { join, resolve } from 'node:path';
 import { createServer } from 'node:net';
 import { createCompanyApp } from '../server.mjs';
 import { saveMemberOrganization } from '../member-organization.mjs';
+import { organizationDeadline, finishOrganizationQa } from './member-organization-support.mjs';
 import { 크롬환경 } from '../../../../../../tools/lib/크롬조종.js';
 
 const require = createRequire(import.meta.url);
@@ -19,7 +20,10 @@ const port = probe.address().port;
 await new Promise(resolve => probe.close(resolve));
 const app = createCompanyApp({ dataDir: directory, port, allowTestHost: true, schedule: false });
 const report = { checks: [], errors: [], screenshots: [] };
-let browser;
+let browser,failure;
+const heldRequestReleases=[];
+function heldRequest(){let release;const promise=new Promise(resolve=>{release=resolve;});heldRequestReleases.push(release);return {promise,release};}
+const visibleIds=page=>page.locator('.org-table tbody [data-org-action="detail"]').evaluateAll(elements=>elements.map(element=>element.dataset.id).sort());
 function check(label, value = true) { assert.ok(value, label); report.checks.push(label); }
 try {
   await mkdir(output, { recursive: true });
@@ -30,7 +34,7 @@ try {
   const manager = person('manager', '검증 교육 팀장', 'manager', 'learning');
   const pulse = person('pulse', '검증 영상 담당', 'member', 'production');
   const path = person('path', '검증 여행 담당');
-  const inactive = person('inactive', '검증 이전 직원');
+  const inactive = person('inactive', '검증 이전 직원', 'member', 'production');
   const escaped = person('escaped', '검증 <img src=x onerror=alert(1)>');
   const seed = (who, brands, jobTitle, responsibilities) => {
     const roles={LAB:'teacher',SHIFT:'instructor',PULSE:'producer',PATH:'counselor'};
@@ -41,12 +45,13 @@ try {
   seed(manager, ['LAB', 'SHIFT'], '교육 기획', '강의 기획과 수업 운영 지원');
   seed(pulse, ['PULSE'], '영상 제작', '촬영 및 편집 · 고객 수정 요청 확인');
   seed(path, ['PATH'], '여행 안내', '여행 일정과 현지 안내');
-  seed(inactive, ['PULSE'], '이전 업무', '현재 이용하지 않는 계정');
-  app.store.put('users', inactive.id, { ...app.store.get('users', inactive.id), active: false });
+  seed(inactive, ['PULSE'], '', '현재 이용하지 않는 계정');
+  const inactiveUser=app.store.get('users',inactive.id);
+  app.store.put('users', inactive.id, { ...inactiveUser, active: false,workspaceProfile:{...inactiveUser.workspaceProfile,revision:7} });
   const address = await app.start(), base = `http://127.0.0.1:${address.port}`;
   browser = await chromium.launch({ headless: true, executablePath: process.env.MESSENGER_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', env: 크롬환경() });
-  async function session(user, viewport = { width: 1440, height: 1000 }) {
-    const context = await browser.newContext({ viewport });
+  async function session(user, viewport = { width: 1440, height: 1000 }, options = {}) {
+    const context = await browser.newContext({ viewport,...options });
     await context.addCookies([{ name: 'synk_company_session', value: app.store.mint('session', user.id, { csrfToken: 'org-browser-csrf' }, 30), url: base }]);
     const page = await context.newPage();
     page.on('pageerror', error => report.errors.push(error.message));
@@ -56,12 +61,35 @@ try {
     return { context, page };
   }
   const { context, page } = await session(admin);
+  async function reloadDetail(){
+    const previous=await page.locator('[data-org-form]').elementHandle();
+    await page.locator('[data-org-action="reload-detail"]').click();
+    await page.waitForFunction(form=>!form.isConnected,previous);await previous.dispose();
+  }
+  async function saveDetail(id){
+    const url=`/api/members/${id}/organization`;
+    const request=page.waitForRequest(request=>request.url().endsWith(url)&&request.method()==='POST');
+    const response=page.waitForResponse(response=>response.url().endsWith(url)&&response.request().method()==='POST');
+    await page.locator('[data-org-form] [type="submit"]').click();
+    const sent=(await request).postDataJSON(),received=await response;
+    assert.equal(received.status(),200,await received.text());
+    await page.locator('[data-org-form]').waitFor({state:'hidden'});return sent;
+  }
+  async function incompleteIs(expected,pressed,ids){
+    const button=page.locator('[data-org-action="incomplete"]');
+    assert.equal(await button.textContent(),`업무 정보 미완성 ${expected}`);
+    assert.equal(await button.getAttribute('aria-pressed'),String(pressed));
+    if(ids)assert.deepEqual(await visibleIds(page),ids.map(person=>person.id).sort());
+  }
   check('direct URL opens the organization screen', await page.locator('.org-heading h1').textContent() === '사람·조직');
   check('main navigation exposes People', await page.locator('.workspace-rail [data-tab="members"]').count() === 1);
   check('active people are counted once despite multiple brands', await page.locator('.org-heading p strong').textContent() === '6명');
   check('brand count includes shared responsibilities', (await page.locator('.org-brand-card[data-brand="LAB"] strong').textContent()).startsWith('2'));
   check('inactive people are excluded by default', await page.locator('.org-table tbody tr').count() === 6);
   check('employee names cannot inject markup', await page.locator('.org-table img').count() === 0);
+  check('company cards expose a named accessibility group',await page.getByRole('group',{name:'소속 회사로 직원 찾기',exact:true}).count()===1);
+  assert.equal(await page.evaluate(()=>organizationNormalizeText('첫째\r\n둘째\r셋째')),'첫째\n둘째\n셋째');
+  check('line endings normalize without literal backslash corruption');
   await page.locator('.org-brand-card[data-brand="LAB"]').click();
   check('brand filter finds both LAB staff', await page.locator('.org-table tbody tr').count() === 2);
   const search = page.locator('[data-org-filter="query"]');
@@ -78,6 +106,28 @@ try {
   await page.locator('[data-org-filter="team"]').selectOption('all');
   await page.locator('[data-org-filter="status"]').selectOption('inactive');
   check('inactive filter retains historical assignments', await page.locator('.org-table tbody tr').count() === 1 && (await page.locator('.org-table').textContent()).includes('검증 이전 직원'));
+  await incompleteIs(1,false,[inactive]);
+  await page.locator('[data-org-action="incomplete"]').click();await incompleteIs(1,true,[inactive]);
+  check('inactive incomplete count agrees with the selected rows');
+  await page.locator('[data-org-filter="status"]').selectOption('all');await incompleteIs(3,true,[admin,inactive,escaped]);
+  await page.locator('.org-brand-card[data-brand="PULSE"]').click();await incompleteIs(1,true,[inactive]);
+  check('incomplete count respects company filters without counting the toggle itself');
+  await page.locator('[data-org-filter="team"]').selectOption('learning');await incompleteIs(0,true,[]);
+  await page.locator('[data-org-filter="team"]').selectOption('production');await incompleteIs(1,true,[inactive]);
+  await search.fill('영상');await incompleteIs(0,true,[]);
+  await page.locator('[data-org-action="incomplete"]').click();await incompleteIs(0,false,[pulse]);
+  check('team and search filters update count, rows and incomplete toggle together');
+  await search.fill('이전');await incompleteIs(1,false,[inactive]);
+  await page.locator(`[data-org-action="detail"][data-id="${inactive.id}"]`).click();
+  check('inactive detail displays its saved company role',(await page.locator('.org-profile-summary').textContent()).includes('PULSE · 제작 담당'));
+  await page.locator('.org-account-management summary').click();await page.locator('[data-action="wa-member"]').click();
+  assert.equal(await page.locator('[data-form="wa-member"]').getAttribute('data-revision'),'7');
+  assert.equal(await page.locator('[name="waCompany"][value="PULSE"]').isChecked(),true);
+  assert.equal(await page.locator('[name="waRole_PULSE"]').inputValue(),'producer');
+  check('inactive company editor retains saved assignments and revision seven');
+  await page.locator('[data-action="close-modal"]').first().click();
+  await search.fill('');await page.locator('[data-org-filter="team"]').selectOption('all');
+  await page.locator('[data-org-action="brand"][data-brand="all"]').click();
   await page.locator('[data-org-filter="status"]').selectOption('active');
   await page.locator('[data-org-action="incomplete"]').click();
   check('missing information is actionable', await page.locator('.org-table tbody tr').count() === 2);
@@ -86,34 +136,31 @@ try {
   check('description editor cannot independently change company assignments', await page.locator('[data-org-form] input[name="brands"]').count() === 0);
   await page.locator('[name="jobTitle"]').fill('운영 총괄');
   await page.locator('[name="responsibilities"]').fill('브랜드 운영과 담당 업무 조율');
-  let releaseState, sawState, releaseSave, sawSave;
-  const stateReadHeld = new Promise(resolve => { sawState = resolve; });
-  const stateReadRelease = new Promise(resolve => { releaseState = resolve; });
+  const stateReadHeld=heldRequest(),stateReadRelease=heldRequest();
   let heldState = false;
   await page.route('**/api/state', async route => {
     if (heldState) return route.continue();
     heldState = true;
-    const response = await route.fetch(); sawState();
-    await stateReadRelease; await route.fulfill({ response });
+    const response = await route.fetch(); stateReadHeld.release();
+    await stateReadRelease.promise; await route.fulfill({ response });
   });
   const oldRefresh = page.evaluate(() => loadState());
-  await stateReadHeld;
-  const saveHeld = new Promise(resolve => { sawSave = resolve; });
-  const saveRelease = new Promise(resolve => { releaseSave = resolve; });
+  await organizationDeadline(stateReadHeld.promise,'pre-save state response');
+  const saveHeld=heldRequest(),saveRelease=heldRequest();
   await page.route(`**/api/members/${admin.id}/organization`, async route => {
-    const response = await route.fetch(); sawSave();
-    await saveRelease; await route.fulfill({ response });
+    const response = await route.fetch(); saveHeld.release();
+    await saveRelease.promise; await route.fulfill({ response });
   });
   const savedResponse = page.waitForResponse(response => response.url().endsWith(`/api/members/${admin.id}/organization`) && response.request().method() === 'POST');
   await page.locator('[data-org-form] [type="submit"]').click();
-  await saveHeld;
+  await organizationDeadline(saveHeld.promise,'first save response');
   check('pending save does not accept edits it cannot save', await page.locator('[data-org-form]').evaluate(form => Array.from(form.elements).every(element => element.disabled)));
-  releaseSave();
+  saveRelease.release();
   const savedHttp = await savedResponse;
   assert.equal(savedHttp.status(), 200, await savedHttp.text());
   await page.locator('[data-org-form]').waitFor({ state: 'hidden' });
   check('saving updates the directory', (await page.locator('.org-table').textContent()).includes('운영 총괄'));
-  releaseState(); await oldRefresh;
+  stateReadRelease.release(); await organizationDeadline(oldRefresh,'pre-save refresh completion');
   check('a pre-save state response cannot roll back a successful save', (await page.locator('.org-table').textContent()).includes('운영 총괄'));
   await page.unroute('**/api/state');
   await page.unroute(`**/api/members/${admin.id}/organization`);
@@ -121,26 +168,32 @@ try {
   check('saved assignments survive reload', (await page.locator('.org-table').textContent()).includes('운영 총괄'));
   await page.locator(`[data-org-action="detail"][data-id="${admin.id}"]`).click();
   check('account identity remains visible before account actions', (await page.locator('.org-profile-summary').textContent()).includes(admin.email));
-  let releaseOlderSave, sawOlderSave;
-  const olderSaved = new Promise(resolve => { sawOlderSave = resolve; });
-  const olderSaveRelease = new Promise(resolve => { releaseOlderSave = resolve; });
+  const olderSaved=heldRequest(),olderSaveRelease=heldRequest();
   await page.route(`**/api/members/${admin.id}/organization`, async route => {
-    const response = await route.fetch(); sawOlderSave();
-    await olderSaveRelease; await route.fulfill({ response });
+    const response = await route.fetch(); olderSaved.release();
+    await olderSaveRelease.promise; await route.fulfill({ response });
   });
   await page.locator('[name="jobTitle"]').fill('지연된 첫 저장');
   await page.locator('[data-org-form] [type="submit"]').click();
-  await olderSaved;
+  await organizationDeadline(olderSaved.promise,'delayed older save response');
   const prior = app.store.get('memberOrganization', admin.id);
   saveMemberOrganization(app.store,admin,admin.id,{jobTitle:'다른 관리자 최신 저장',responsibilities:'최신 서버 정보',expectedRevision:prior.revision});
   await page.locator('[data-action="close-modal"]').click();
   await page.locator('[data-org-action="refresh"]').click();
   await page.waitForFunction(() => document.querySelector('.org-table')?.textContent.includes('다른 관리자 최신 저장'));
+  const canonicalStateHeld=heldRequest(),canonicalStateRelease=heldRequest();
+  await page.route('**/api/state',async route=>{
+    const response=await route.fetch();canonicalStateHeld.release();
+    await canonicalStateRelease.promise;await route.fulfill({response});
+  });
   const refreshAfterDelayedSave = page.waitForResponse(response => response.url().endsWith('/api/state'));
-  releaseOlderSave();
+  olderSaveRelease.release();
+  await organizationDeadline(canonicalStateHeld.promise,'automatic canonical GET after delayed save');
+  check('a delayed earlier POST cannot replace newer data before its automatic GET returns',(await page.locator('.org-table').textContent()).includes('다른 관리자 최신 저장'));
+  canonicalStateRelease.release();
   await refreshAfterDelayedSave;
+  await page.unroute('**/api/state');
   await page.unroute(`**/api/members/${admin.id}/organization`);
-  await page.evaluate(() => loadState({quiet:true}));
   check('a delayed earlier save cannot replace another administrators newer update', (await page.locator('.org-table').textContent()).includes('다른 관리자 최신 저장'));
   await page.locator(`[data-org-action="detail"][data-id="${admin.id}"]`).click();
   const current = app.store.get('memberOrganization', admin.id);
@@ -149,18 +202,78 @@ try {
   await page.locator('[data-org-form] [type="submit"]').click();
   await page.locator('[data-org-form] .form-error').filter({ hasText: '다른 곳에서' }).waitFor();
   check('conflict preserves the editor and never overwrites newer data', app.store.get('memberOrganization', admin.id).jobTitle === '최신 운영 역할');
-  let releaseReload, sawReload;
-  const reloadHeld = new Promise(resolve => { sawReload = resolve; });
-  const reloadRelease = new Promise(resolve => { releaseReload = resolve; });
-  await page.route('**/api/state',async route => { const response=await route.fetch();sawReload();await reloadRelease;await route.fulfill({response}); });
+  const reloadHeld=heldRequest(),reloadRelease=heldRequest();
+  await page.route('**/api/state',async route => { const response=await route.fetch();reloadHeld.release();await reloadRelease.promise;await route.fulfill({response}); });
   await page.locator('[data-org-action="reload-detail"]').click();
-  await reloadHeld;
+  await organizationDeadline(reloadHeld.promise,'conflicting detail reload');
   check('reload cannot discard typing accepted during the request', await page.locator('[data-org-form]').evaluate(form=>Array.from(form.elements).every(element=>element.disabled)));
-  releaseReload();
-  await page.locator('.org-conflict').waitFor();
+  reloadRelease.release();
+  await page.locator('[data-org-conflict]').waitFor();
   await page.unroute('**/api/state');
-  check('explicit reload shows the current version', await page.locator('[name="jobTitle"]').inputValue() === '최신 운영 역할');
-  await page.locator('[data-action="close-modal"]').click();
+  check('conflicting reload preserves the draft and shows the latest server information',await page.locator('[name="jobTitle"]').inputValue()==='오래된 폼의 수정'&&(await page.locator('[data-org-conflict]').textContent()).includes('최신 운영 역할'));
+  assert.equal(await page.locator('[data-org-form] [type="submit"]').isDisabled(),true);
+  const beforeChoice=app.store.get('memberOrganization',admin.id);
+  await page.locator('[data-org-form]').dispatchEvent('submit');
+  await page.locator('[data-org-form] .form-error').filter({hasText:'먼저 골라'}).waitFor();
+  assert.deepEqual(app.store.get('memberOrganization',admin.id),beforeChoice);
+  check('pending conflict cannot save or silently adopt the newer revision');
+  await page.setViewportSize({width:390,height:844});
+  await page.waitForFunction(()=>{const toast=document.querySelector('#toast');return !toast||getComputedStyle(toast).opacity==='0';});
+  await page.screenshot({path:join(output,'conflict-390.png'),fullPage:true});report.screenshots.push('conflict-390.png');
+  check('mobile conflict choices have no horizontal overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.querySelector('.modal').scrollWidth<=document.querySelector('.modal').clientWidth));
+  await page.locator('[data-org-action="keep-draft"]').click();
+  const kept=await saveDetail(admin.id);
+  assert.equal(kept.expectedRevision,beforeChoice.revision);
+  assert.equal(app.store.get('memberOrganization',admin.id).jobTitle,'오래된 폼의 수정');
+  check('explicitly keeping the draft saves against the reviewed latest revision');
+  await page.locator(`[data-org-action="detail"][data-id="${admin.id}"]`).click();
+  const beforeLatest=app.store.get('memberOrganization',admin.id);
+  saveMemberOrganization(app.store,admin,admin.id,{jobTitle:'다음 최신 역할',responsibilities:'서버의 첫 줄\n서버의 둘째 줄',expectedRevision:beforeLatest.revision});
+  await page.locator('[name="jobTitle"]').fill('보류한 초안');await page.locator('[name="responsibilities"]').fill('초안의 첫 줄\n초안의 둘째 줄');
+  await reloadDetail();await page.locator('[data-org-conflict]').waitFor();
+  assert.equal(await page.locator('[name="responsibilities"]').inputValue(),'초안의 첫 줄\n초안의 둘째 줄');
+  await page.locator('[data-org-action="apply-latest"]').click();
+  assert.equal(await page.locator('[name="jobTitle"]').inputValue(),'다음 최신 역할');
+  assert.equal(await page.locator('[name="responsibilities"]').inputValue(),'서버의 첫 줄\n서버의 둘째 줄');
+  const latestRevision=app.store.get('memberOrganization',admin.id).revision;
+  const applied=await saveDetail(admin.id);assert.equal(applied.expectedRevision,latestRevision);
+  assert.equal(app.store.get('memberOrganization',admin.id).jobTitle,'다음 최신 역할');
+  check('explicit latest-value choice replaces both fields before saving its revision');
+  await page.locator(`[data-org-action="detail"][data-id="${lab.id}"]`).click();
+  const unchanged=app.store.get('memberOrganization',lab.id);
+  await page.locator('[name="jobTitle"]').fill('새 교육 역할');await page.locator('[name="responsibilities"]').fill('보존할 첫 줄\n보존할 둘째 줄');
+  await reloadDetail();
+  assert.equal(await page.locator('[name="jobTitle"]').inputValue(),'새 교육 역할');
+  assert.equal(await page.locator('[name="responsibilities"]').inputValue(),'보존할 첫 줄\n보존할 둘째 줄');
+  assert.equal(await page.locator('[data-org-conflict]').count(),0);
+  assert.deepEqual(app.store.get('memberOrganization',lab.id),unchanged);
+  const unchangedSave=await saveDetail(lab.id);assert.equal(unchangedSave.expectedRevision,unchanged.revision);
+  check('unchanged-server reload preserves a multiline draft and saves with the original revision');
+  await page.locator(`[data-org-action="detail"][data-id="${lab.id}"]`).click();
+  const otherModalHeld=heldRequest(),otherModalRelease=heldRequest();
+  await page.route('**/api/state',async route=>{const response=await route.fetch();otherModalHeld.release();await otherModalRelease.promise;await route.fulfill({response});});
+  await page.locator('[name="jobTitle"]').fill('닫힌 화면의 초안');
+  await page.locator('[data-org-action="reload-detail"]').click();await organizationDeadline(otherModalHeld.promise,'reload before opening another employee');
+  await page.locator('[data-action="close-modal"]').first().click();
+  await page.locator(`[data-org-action="detail"][data-id="${path.id}"]`).click();
+  const pathBefore=await page.locator('[name="jobTitle"]').inputValue();
+  const oldModalResponse=page.waitForResponse(response=>response.url().endsWith('/api/state'));
+  otherModalRelease.release();await oldModalResponse;
+  await page.waitForFunction(()=>document.querySelector('[data-org-form]')?.elements.namedItem('jobTitle')?.disabled===false);
+  assert.equal(await page.locator('[data-org-form]').getAttribute('data-id'),path.id);
+  assert.equal(await page.locator('[name="jobTitle"]').inputValue(),pathBefore);
+  check('late detail reload cannot replace a different employees open editor');
+  await page.unroute('**/api/state');
+  await page.locator('[name="jobTitle"]').fill('연결 오류 뒤 남길 초안');
+  await page.route('**/api/state',route=>route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({error:'합성 새로고침 실패'})}));
+  await page.locator('[data-org-action="reload-detail"]').click();
+  await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('합성 새로고침 실패'));
+  assert.equal(await page.locator('[name="jobTitle"]').inputValue(),'연결 오류 뒤 남길 초안');
+  assert.equal(await page.locator('[data-org-form]').evaluate(form=>Array.from(form.elements).every(element=>!element.disabled)),true);
+  await page.unroute('**/api/state');await reloadDetail();
+  assert.equal(await page.locator('[name="jobTitle"]').inputValue(),'연결 오류 뒤 남길 초안');
+  check('failed detail reload preserves the draft, unlocks controls and can be retried');
+  await page.locator('[data-action="close-modal"]').first().click();
   await page.locator(`[data-org-action="detail"][data-id="${pulse.id}"]`).click();
   await page.locator('.org-account-management summary').click();
   await page.locator('[data-action="wa-member"]').click();
@@ -172,12 +285,19 @@ try {
   assert.equal((await assigned).status(),200);
   await page.locator('[data-form="wa-member"]').waitFor({state:'hidden'});
   await page.waitForFunction(id=>document.querySelector(`[data-org-action="detail"][data-id="${id}"]`)?.closest('tr')?.textContent.includes('SHIFT'),pulse.id);
-  check('company editor and directory use the same membership', app.store.get('users',pulse.id).workspaceProfile.memberships[0].company==='SHIFT' && !Object.hasOwn(app.store.get('memberOrganization',pulse.id),'brands'));
+  const directoryCompanies=await page.locator(`[data-org-action="detail"][data-id="${pulse.id}"]`).evaluate(element=>Array.from(element.closest('tr').querySelectorAll('.org-badge[data-brand]'),badge=>badge.dataset.brand).sort());
+  assert.deepEqual(directoryCompanies,['SHIFT']);
+  assert.deepEqual(app.store.get('users',pulse.id).workspaceProfile.memberships,[{company:'SHIFT',role:'instructor'}]);
+  check('company editor and directory use exactly the same membership without the previous company',!Object.hasOwn(app.store.get('memberOrganization',pulse.id),'brands'));
+  await page.waitForFunction(()=>{const toast=document.querySelector('#toast');return !toast||getComputedStyle(toast).opacity==='0';});
   for (const [width, height] of [[1440,1000],[390,844],[844,390]]) {
     await page.setViewportSize({ width, height });
     await page.screenshot({ path: join(output, `directory-${width}x${height}.png`), fullPage: true });
     report.screenshots.push(`directory-${width}x${height}.png`);
     check(`no horizontal overflow at ${width}x${height}`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    const lastDetail=page.locator('.org-table tbody [data-org-action="detail"]').last();
+    await lastDetail.scrollIntoViewIfNeeded();
+    check(`the last employee remains reachable at ${width}x${height}`,await lastDetail.evaluate(element=>{const box=element.getBoundingClientRect();return element.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));}));
     await page.locator('.workspace-rail button[data-tab="home"]').click();
     await page.locator('.organization-page').waitFor({state:'hidden'});
     await page.locator('.workspace-rail [data-tab="members"]').click();
@@ -189,20 +309,52 @@ try {
   check('mobile editor has no overflow', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector('.modal').scrollWidth <= document.querySelector('.modal').clientWidth));
   await context.close();
   const leadSession = await session(manager);
-  check('team lead sees only own team', await leadSession.page.locator('.org-table tbody tr').count() === 2);
+  assert.deepEqual(await visibleIds(leadSession.page),[manager.id,lab.id].sort());
+  check('team lead sees exactly own team and no employee from another team');
   await leadSession.page.locator(`[data-org-action="detail"][data-id="${manager.id}"]`).click();
   check('team lead cannot edit work information', await leadSession.page.locator('[data-org-form]').count() === 0 && await leadSession.page.locator('.org-read-profile').count() === 1);
   await leadSession.context.close();
   const staffSession = await session(lab);
-  check('employee has the same directory entry within existing scope', await staffSession.page.locator('.org-table tbody tr').count() === 1);
+  assert.deepEqual(await visibleIds(staffSession.page),[lab.id]);
+  check('employee sees exactly the permitted directory entry');
   await staffSession.page.locator('[data-org-action="detail"]').click();
   check('employee profile is read only', await staffSession.page.locator('[data-org-form]').count() === 0 && await staffSession.page.locator('.org-read-profile').count() === 1);
   await staffSession.context.close();
+  const turkishSession=await session(admin,{width:390,height:844},{locale:'tr-TR'});
+  assert.equal(await turkishSession.page.evaluate(()=>navigator.language),'tr-TR');
+  for(const query of ['shift','SHIFT']){
+    await turkishSession.page.locator('[data-org-filter="query"]').fill(query);
+    assert.deepEqual(await visibleIds(turkishSession.page),[manager.id,pulse.id].sort());
+  }
+  check('Turkish locale finds the same SHIFT employees with either search case');
+  await turkishSession.context.close();
+  const signedOut=await session(admin);
+  await signedOut.page.locator(`[data-org-action="detail"][data-id="${lab.id}"]`).click();
+  await signedOut.page.locator('[name="jobTitle"]').fill('이전 로그인에서 작성한 초안');
+  const authHeld=heldRequest(),authRelease=heldRequest();
+  await signedOut.page.route('**/api/state',async route=>{const response=await route.fetch();authHeld.release();await authRelease.promise;await route.fulfill({response});});
+  await signedOut.page.locator('[data-org-action="reload-detail"]').click();await organizationDeadline(authHeld.promise,'detail reload before sign-out');
+  await signedOut.page.locator('[data-action="close-modal"]').first().click();
+  await signedOut.page.locator('[data-action="marin-account"]').click();await signedOut.page.locator('[data-action="logout"]').click();
+  await signedOut.page.waitForFunction(()=>state.user===null&&document.querySelector('[data-org-form]')===null);
+  const authResponse=signedOut.page.waitForResponse(response=>response.url().endsWith('/api/state'));
+  authRelease.release();await authResponse;
+  await signedOut.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  assert.equal(await signedOut.page.locator('.organization-page').count(),0);
+  assert.equal(await signedOut.page.locator('[data-org-form]').count(),0);
+  assert.equal(await signedOut.page.evaluate(()=>state.user),null);
+  check('late reload after real sign-out cannot restore the directory or old editor');
+  await signedOut.context.close();
   check('no browser runtime errors', report.errors.length === 0);
+} catch(error){
+  failure=error;report.failure={name:error.name,message:error.message};
 } finally {
-  await writeFile(join(output, 'report.json'), JSON.stringify(report, null, 2));
-  if (browser) await browser.close();
-  await app.stop();
-  await rm(directory, { recursive: true, force: true });
+  for(const release of heldRequestReleases)release();
+  await finishOrganizationQa({failure,
+    writeReport:()=>writeFile(join(output,'report.json'),JSON.stringify(report,null,2)),
+    closeBrowser:async()=>{if(browser)await browser.close();},
+    stopApp:()=>app.stop(),
+    removeDirectory:()=>rm(directory,{recursive:true,force:true})
+  });
 }
 console.log(JSON.stringify({ checks: report.checks.length, errors: report.errors, output }, null, 2));

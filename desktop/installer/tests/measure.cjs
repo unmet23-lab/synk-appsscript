@@ -10,12 +10,24 @@ const sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest
 const json=(file,value)=>fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');
 function run(file,args,timeout=120000){const result=cp.spawnSync(file,args,{encoding:'utf8',windowsHide:true,timeout,maxBuffer:8e6});assert(!result.error&&result.status===0,String(result.error||result.stdout||result.stderr));return result.stdout;}
 function files(root,relative=''){return fs.readdirSync(path.join(root,relative),{withFileTypes:true}).flatMap(e=>{const member=path.posix.join(relative,e.name);assert(!e.isSymbolicLink(),'Symlinks prohibited');return e.isDirectory()?files(root,member):[{path:member,bytes:fs.statSync(path.join(root,member)).size,sha256:sha(path.join(root,member))}];});}
+function stagePayloadFile(original,target,expected,io=fs){
+  let method='hardlink';
+  try{io.linkSync(original,target);}
+  catch(error){
+    if(error.code!=='EXDEV')throw error;
+    // Worktree and payload may be on different drives. Never rename the source
+    // or overwrite another run's target when a hard link cannot cross volumes.
+    io.copyFileSync(original,target,fs.constants.COPYFILE_EXCL);method='copy';
+  }
+  assert(io.statSync(target).size===expected.bytes&&crypto.createHash('sha256').update(io.readFileSync(target)).digest('hex')===expected.sha256,'Staged payload differs from original manifest');
+  return method;
+}
 async function main(){
   assert(process.platform==='win32'&&get('payload'),'Windows and --payload required');
   const original=path.resolve(get('payload')),originalFiles=files(original),token=crypto.randomUUID().replaceAll('-','').slice(0,12),name='SYNKSignalMeasure'+token;
   const directory=path.join(repo,'.tmp','signal-installer-measure-'+token),payload=path.join(directory,'payload'),project=path.join(directory,'project'),guid=crypto.randomUUID();
   assert(!fs.existsSync(directory),'Preserve previous evidence');fs.mkdirSync(payload,{recursive:true});fs.mkdirSync(project);
-  for(const file of originalFiles){const target=path.join(payload,file.path==='SYNKPlatformPreview.exe'?name+'.exe':file.path);fs.mkdirSync(path.dirname(target),{recursive:true});fs.linkSync(path.join(original,file.path),target);}
+  for(const file of originalFiles){const target=path.join(payload,file.path==='SYNKPlatformPreview.exe'?name+'.exe':file.path);fs.mkdirSync(path.dirname(target),{recursive:true});stagePayloadFile(path.join(original,file.path),target,file);}
   json(path.join(project,'package.json'),{name:name.toLowerCase(),version:'0.0.1',author:'SYNK',main:'index.js',description:'Isolated real-payload install timing fixture'});fs.writeFileSync(path.join(project,'index.js'),'// never executed\n');
   const dependencies=createRequire(path.join(path.resolve(get('builder')||path.join(repo,'.tmp/platform-performance-20261012/policy/.github/desktop-preview')),'package.json'));
   const {build,Platform,Arch}=dependencies('electron-builder');
@@ -34,4 +46,5 @@ async function main(){
   for(const child of ['payload','backend']){const target=path.resolve(directory,child);assert(target.startsWith(path.resolve(repo,'.tmp')+path.sep)&&path.dirname(target)===directory&&!fs.lstatSync(target).isSymbolicLink(),'Unsafe cleanup target');fs.rmSync(target,{recursive:true,force:false});}
   console.log(JSON.stringify({ok:evidence.ok,report:path.join(directory,'measurement.json'),runs:evidence.runs}));
 }
-main().catch(error=>{console.error(error.stack||error);process.exitCode=1;});
+module.exports={stagePayloadFile};
+if(require.main===module)main().catch(error=>{console.error(error.stack||error);process.exitCode=1;});

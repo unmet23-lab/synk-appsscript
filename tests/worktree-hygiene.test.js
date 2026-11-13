@@ -113,6 +113,30 @@ test('fixture aggregation is read-only, bounded, and does not output filenames o
   assert.ok(!serialized.includes('수정 대상'));
 });
 
+test('an embedded repository directory is accepted without claiming its files were counted', () => {
+  const repo = path.join(temporary, 'repo');
+  init(repo);
+  init(path.join(repo, 'nested repository'));
+  file(repo, 'new.txt', 'outside nested repo');
+  const before = git(repo, ['status', '--porcelain=v1', '-z', '--untracked-files=all']);
+  assert.ok(before.includes('?? nested repository/\0'));
+  assert.deepEqual(parseStatus(Buffer.from('?? nested repository/\0')), [
+    { code: '??', name: 'nested repository/', directory: true },
+  ]);
+  const report = collect({ repo });
+  assert.equal(report.status, 'observed');
+  assert.equal(report.untracked.entries, 2);
+  assert.equal(report.untracked.files, 1);
+  assert.equal(report.untracked.directoryEntries, 1);
+  assert.deepEqual(report.untracked.byKind, { document: 1 });
+  assert.equal(report.untracked.byDirectory.reduce((n, row) => n + row.files, 0), 1);
+  assert.equal(before, git(repo, ['status', '--porcelain=v1', '-z', '--untracked-files=all']));
+  assert.ok(!JSON.stringify(report).includes('nested repository'));
+  for (const value of ['?? /\0', '?? /absolute/\0', '?? ../escape/\0', '?? nested//\0', ' M nested/\0', 'R  target\0nested/\0']) {
+    assert.throws(() => parseStatus(Buffer.from(value)), /invalid-output/, value);
+  }
+});
+
 test('private runtime detection requires a folder context and remains only a candidate', () => {
   assert.equal(privateRuntimeFolder('tmp/browser-profile/Cache/file.bin'), 'tmp/browser-profile');
   assert.equal(privateRuntimeFolder('assets/browser-icon.png'), null);

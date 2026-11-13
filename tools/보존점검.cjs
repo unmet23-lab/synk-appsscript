@@ -132,7 +132,10 @@ function resolveReference(raw,{root,ledger,aliases,base,markdown=false}){
   }
   else return {unresolved:true};
   if(SECRET.test(candidate))return {excluded:true};
-  return {absolute:path.resolve(candidate),temporary:/(^|[\\/])(?:\.tmp|tmp|temp|scratchpad|worktrees)([\\/]|$)/i.test(candidate)};
+  // Claude app worktrees moved here on 2026-11-09. Match the actual root, not
+  // every directory whose name happens to contain "worktrees".
+  const appWorktree=/^D:[\\/]SYNK-worktrees[\\/]SYNK-appsscript(?:[\\/]|$)/i.test(path.win32.normalize(candidate));
+  return {absolute:path.resolve(candidate),temporary:appWorktree||/(^|[\\/])(?:\.tmp|tmp|temp|scratchpad|worktrees)([\\/]|$)/i.test(candidate)};
 }
 function parseLedger(text,{root=ROOT,ledger=path.join(root,LEDGER)}={}){
   const aliases=aliasesFrom(text,root),cases=[];let current;

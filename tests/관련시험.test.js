@@ -101,6 +101,35 @@ test('고르기 — 조건부 등록부에 적힌 시험 파일 · 등록부 폴
   assert.deepEqual(고름(['tests/등록된.test.js', 'tools/conditional-qa/guard.cjs'], 저장소(t, 없는)).시험, ['tests/등록된.test.js']);
 });
 
+test('고르기 — 넓은 CI의 회사·PC·경험·도구·루트 시험을 같은 분모로 고른다', (t) => {
+  const 회사 = 'docs/마케팅/온라인마케팅지도/engagement/company';
+  const 대상 = [
+    'tests/module.test.mjs', 'tests/module.test.cjs',
+    `${회사}/direct-tab-role-client.test.mjs`, `${회사}/nested/server.test.js`,
+    'desktop/tests/client.test.cjs', 'desktop/tests/client.test.mjs',
+    'experiences/example/server.test.mjs', 'tools/example/check.test.cjs',
+  ];
+  const 제외 = ['tests/helper.mjs', 'tests/nested/outside.test.mjs', 'desktop/tests/not-ci.test.js',
+    'desktop/installer/tests/measure.cjs', `${회사}/fixture.mjs`, `${회사}/node_modules/a/skip.test.mjs`];
+  const root = 저장소(t, Object.fromEntries([...대상, ...제외].map(p => [p, '// related-product-module.mjs\n'])));
+  const 넓은 = require('../tools/ci넓은시험.js');
+  const 실제 = [...new Set(Object.keys(넓은.묶음들).flatMap(묶음 => 넓은.목록(묶음, root)))].sort();
+  assert.deepEqual(관련.CI시험목록(root).sort(), 실제, 'wide CI inventory and pre-push candidates must agree');
+  assert.deepEqual(실제, [...대상].sort());
+  const 직접 = 관련.고르기({root,바뀐:[...대상, ...제외],지도:null});
+  assert.deepEqual(직접.시험,[...대상].sort());
+  assert.ok(대상.every(p=>직접.까닭[p]==='바꾼 시험'));
+  const 소스 = 관련.고르기({root,바뀐:[`${회사}/related-product-module.mjs`],지도:null});
+  assert.deepEqual(소스.시험,[...대상].sort(), 'wide tests are also eligible for source-text matching');
+  const 새것 = `${회사}/new-directory.test.mjs`;
+  fs.writeFileSync(path.join(root,새것),'// first push\n');
+  const 새판 = 관련.고르기({root,바뀐:[새것,'docs/_ops/트랙.md'],지도:null});
+  assert.deepEqual(새판.시험,[새것]);
+  assert.equal(새판.까닭[새것],'바꾼 시험','untracked new wide test must run before its first commit');
+  fs.unlinkSync(path.join(root,대상[0]));
+  assert.ok(!관련.고르기({root,바뀐:[대상[0]],지도:null}).시험.includes(대상[0]),'deleted tests are not runnable');
+});
+
 test('고르기 — 지도: 읽은 파일 · 나열한 폴더(새 파일) · git ls-files 무늬로 고른다', (t) => {
   const root = 저장소(t, { 'tests/자.test.js': '// 이름을 안 부르는 자\n', 'tests/딴.test.js': '//\n' });
   const 지도 = { run: 42, 시험: {
@@ -209,6 +238,26 @@ test('돌리기 — 고른 시험을 TAP으로 돌리고 깨진 시험 이름·�
   assert.equal(깨짐.실패수, 1);
   assert.deepEqual(깨짐.실패.map((x) => [x.이름, x.위치]), [['일부러 깨짐', 'tests/깨짐.test.js:2']]);
   assert.deepEqual(관련.돌리기({ root, 시험: [] }), { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 });
+});
+
+test('돌리기 — 넓은 CI와 같은 120초 개별 한도를 Node 실행 인자로 전달한다', (t) => {
+  const root = 저장소(t, {
+    'desktop/tests/한도.test.cjs': "require('node:test')('개별 한도', () => {});\n",
+  });
+  // Node가 자식 시험의 execArgv에서는 test-runner 인자를 빼므로 실제 spawn 경계에서 잡고 그대로 실행한다.
+  const 파일 = require.resolve('../tools/관련시험.js'), 안require = require('node:module').createRequire(파일), 모듈 = { exports: {} };
+  let 실행;
+  require('node:vm').runInNewContext(fs.readFileSync(파일, 'utf8'), {
+    require: id => id === 'node:child_process' ? { spawnSync: (명령, 인자, 설정) => { 실행 = { 명령, 인자, 설정 }; return spawnSync(명령, 인자, 설정); } } : 안require(id),
+    module: 모듈, __dirname: path.dirname(파일), __filename: 파일, process, Buffer, console,
+  });
+  const r = 모듈.exports.돌리기({ root, 시험: ['desktop/tests/한도.test.cjs'], 자리: false });
+  assert.equal(r.통과함, true, JSON.stringify(r));
+  assert.equal(r.통과, 1);
+  assert.equal(실행.명령, process.execPath);
+  assert.equal(실행.인자.filter(a => a.startsWith('--test-timeout=')).join(), '--test-timeout=120000');
+  assert.ok(실행.인자.indexOf('--test-timeout=120000') < 실행.인자.indexOf('desktop/tests/한도.test.cjs'));
+  assert.equal(실행.설정.timeout, 15 * 60e3, '전체 한도는 그대로다');
 });
 
 test('돌리기 — 한도를 넘기면 시간넘김을 남기고, 그때까지 깨진 것이 없을 때만 시간만넘김이다(10-22)', (t) => {

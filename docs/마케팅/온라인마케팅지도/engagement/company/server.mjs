@@ -1697,15 +1697,20 @@ export function createCompanyApp(options={}) {
       if(cancelHandoff){const c=channelFor(user,cancelHandoff[1],'write');if(!canManageOwners(user,c))throw httpError('담당자 바꾸기는 관리자나 팀장만 취소할 수 있어요.',403);const h=pending(c);if(h)store.transaction(()=>{store.put('handoffs',h.id,{...h,status:'cancelled',cancelledAt:clock(),cancelledBy:user.id});store.put('channels',c.id,{...c,pendingHandoffId:null});audit(user,'handoff-cancelled',c.id);});return send(res,200,{ok:true});}
       const publicCollection=path.match(/^\/api\/channels\/([^/]+)\/public-collection$/);
       if(publicCollection){
-        admin(user);const c=channelFor(user,publicCollection[1],'write');
-        if(c.platform!=='youtube'||c.active===false)throw httpError('운영 중인 YouTube 채널의 공개 통계에만 연결할 수 있어요.');
-        const reader=store.secret('collection:youtube-public');
-        if(!reader?.accessToken||!reader.refreshToken||!reader.clientId||!reader.clientSecret||!store.get('users',reader.connectedBy)?.active)throw httpError('기존 공개 통계 조회 연결을 먼저 확인해 주세요.',409);
-        if(reader.channelIds?.includes(c.id)&&!c.collectionDisabled)return send(res,200,{channel:safeChannel(c,user),scope:'public-statistics-only'});
-        // 기존 리더의 credential binding은 그대로 유지한다. 조회 중에는 allowlist도 바꾸지 않는다.
-        if(store.all('channels').some(row=>reader.channelIds?.includes(row.id)&&row.status==='collecting'))throw httpError('공개 통계 수집이 진행 중이에요. 끝난 뒤 연결해 주세요.',409);
-        store.transaction(()=>{store.setSecret('collection:youtube-public',{...reader,channelIds:[...new Set([...(reader.channelIds||[]),c.id])]});store.put('channels',c.id,{...c,status:'ready',collectionDisabled:false,connectionVersion:(c.connectionVersion||0)+1});audit(user,'public-collection-connected',c.id);});
-        return send(res,200,{channel:safeChannel(store.get('channels',c.id),user),scope:'public-statistics-only'});
+        admin(user);
+        const result=store.transaction(()=>{
+          const c=channelFor(user,publicCollection[1],'write');
+          if(c.platform!=='youtube'||c.active===false)throw httpError('운영 중인 YouTube 채널의 공개 통계에만 연결할 수 있어요.');
+          const reader=store.secret('collection:youtube-public');
+          if(!reader?.accessToken||!reader.refreshToken||!reader.clientId||!reader.clientSecret||!store.get('users',reader.connectedBy)?.active)throw httpError('기존 공개 통계 조회 연결을 먼저 확인해 주세요.',409);
+          if(reader.channelIds?.includes(c.id)&&!c.collectionDisabled)return {channel:safeChannel(c,user),scope:'public-statistics-only'};
+          // 기존 리더와 새 대상 모두 조회 중에는 연결 상태와 allowlist를 바꾸지 않는다.
+          if(c.status==='collecting'||store.all('channels').some(row=>reader.channelIds?.includes(row.id)&&row.status==='collecting'))throw httpError('공개 통계 수집이 진행 중이에요. 끝난 뒤 연결해 주세요.',409);
+          store.setSecret('collection:youtube-public',{...reader,channelIds:[...new Set([...(reader.channelIds||[]),c.id])]});
+          store.put('channels',c.id,{...c,...COLLECTION_RESET,collectionDisabled:false,connectionVersion:(c.connectionVersion||0)+1});audit(user,'public-collection-connected',c.id);
+          return {channel:safeChannel(store.get('channels',c.id),user),scope:'public-statistics-only'};
+        });
+        return send(res,200,result);
       }
       const cm=path.match(/^\/api\/channels\/([^/]+)\/(collect|connection|owners|archive|disconnect|details)$/);
       if(cm){const c=channelFor(user,cm[1],'write');if(cm[2]==='collect')return send(res,202,enqueueCollection(user,c));

@@ -58,6 +58,14 @@ test('admin can bind existing public statistics reader without creating owner or
  app.store.put('channels','existing',{id:'existing',platform:'youtube',active:true,status:'collecting',ownerIds:[staff.id]});
  assert.equal((await a(`/api/channels/${c.id}/public-collection`,{})).status,409,'do not invalidate a reader while another channel collects');
  app.store.put('channels','existing',{...app.store.get('channels','existing'),status:'success'});
+ const targetBefore=app.store.get('channels',c.id),readerBefore=app.store.secret('collection:youtube-public'),auditBefore=app.store.all('audit');
+ app.store.put('channels',c.id,{...targetBefore,status:'collecting',connectionVersion:9});
+ const collectingTarget=app.store.get('channels',c.id);
+ assert.equal((await a(`/api/channels/${c.id}/public-collection`,{})).status,409,'a collecting target outside the current reader allowlist cannot be rebound');
+ assert.deepEqual(app.store.get('channels',c.id),collectingTarget);
+ assert.deepEqual(app.store.secret('collection:youtube-public'),readerBefore);
+ assert.deepEqual(app.store.all('audit'),auditBefore);
+ app.store.put('channels',c.id,targetBefore);
  const r=await a(`/api/channels/${c.id}/public-collection`,{});
  assert.equal(r.status,200);assert.equal(r.data.scope,'public-statistics-only');assert.equal(r.data.channel.connected,true);
  assert.doesNotMatch(JSON.stringify(r.data),/private-public-reader|private-refresh|private-client/);

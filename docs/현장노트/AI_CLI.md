@@ -1749,6 +1749,12 @@
 - 10-23 GPT 확인: 사용자가 검수할 Claude 계정을 지정하면 SYNK Desktop 계정판의 기존 `AiSubscriptions/accounts/claude-…` 프로필도 먼저 확인한다(`desktop/src/ai-subscriptions.cjs`의 `CLAUDE_CONFIG_DIR` 경로). 검수 자식 프로세스에만 그 경로를 주고 공식 `claude auth status --json`의 실제 이메일을 대조하면 기본 로그인·다른 세션을 바꾸지 않고 기존 구독으로 실행할 수 있다. 프로필에 모델 설정이 없으면 사용자의 기존 모델·추론 설정을 실행 인자로 보존한다. 자격 파일의 토큰은 열거나 출력하지 않는다.
 - 같은 날 도구를 끈 검수 답변에도 「직접 파일을 읽고 시험했다」는 설명이 섞였다. 실행 기록과 맞지 않는 설명은 증거로 쓰지 않고, 실제 시험 TAP·파일 SHA와 코드 지적을 따로 대조한다. 후속 검수에는 제공된 입력만 읽는다는 점과 입력 SHA·끝 표식·답 길이를 명시한다.
 
+### 도구 없는 Claude 검수의 XML 흉내를 실제 파일 읽기·시험으로 세면 안 된다 (2026-11-14 GPT)
+- 증상: `--tools '' --max-turns 1`로 보낸 검수 답 본문에 `<invoke>`·`<function_results>`와 실행하지 않은 명령·결과가 섞였다. 종료0이나 마지막 JSON만으로 독립 검수의 실제 실행을 증명할 수 없었다.
+- 원인: 일반 글로 나온 호출 모양은 공식 CLI의 `tool_use`·`tool_result` 사건이 아니다. 도구를 끈 요청에 파일을 읽었다는 주장이 섞인 회차는 무효로 분리했다.
+- 고침: 원시 실패 답을 보존하고 공식 CLI의 `--safe-mode`, 실제 읽기 전용 `--tools Read,Grep,Glob`·동일 `--allowedTools`, `--permission-mode dontAsk`, `--strict-mcp-config`, 검수 도구의 `답꼴`을 넘기는 `--json-schema`로 다시 호출했다. 새 실행기를 만들거나 쓰기·셸 권한을 열지 않는다. 현재 작업본이 바뀌었으면 frozen packet과 해당 내용 보관본을 기준으로 읽게 한다.
+- 다시 확인: Workspace 관문·접근 검수에서 실제 Read/Grep/Glob 사건, Opus 5.5 모델 기록, 성공 result의 `structured_output`, 입력 SHA·seen·끝 표식을 대조하고 `검수받기`로 접수했다. 턴 제한 종료는 통과로 세지 않고 같은 세션을 이어 마감했으며, 전달한 TAP과 직접 시험 실행을 구분했다.
+
 ### 진행 중인 Claude `stream-json` 기록의 마지막 줄을 읽으면 JSON 구문 오류가 난다 (2026-10-31 GPT)
 - 증상: 검수 CLI가 정상 실행 중인데 기록을 읽는 Python에서 `Unterminated string`이 나고, 다음 파싱에서는 `message`에 `.get()`을 써 `str` 오류가 났다.
 - 원인: 파일을 읽는 순간 마지막 JSON 한 줄이 아직 다 쓰이지 않았다. 이벤트의 `message`도 항상 객체는 아니며 권한 오류 등에서는 문자열이다.

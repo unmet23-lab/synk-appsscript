@@ -21,8 +21,9 @@
  *      그 경로는 ② 지도의 「읽음」과, 지도가 모르는 시험(지도를 못 받았거나 지도 뒤에 생긴 시험)이면 records-check.yml이 도는
  *      시험으로 고른다 — 기록 전용 경로를 실제로 읽는 시험은 그 목록에 있어야 CI가 초록이다(읽기 대조 ②, tools/ci읽기대조.cjs).
  *   ④ 조건부 등록부(11-12): tools/conditional-qa/cases.json에 적힌 시험 파일 · 그 폴더 · conditional-qa.yml을 바꾸면 등록을 보는
- *      tests/conditional-qa.test.cjs를 같이 고른다. 그 시험은 .cjs라 wide-tests에서만 돌아 ①~③의 후보(syntax-check의 tests/*.test.js)에
- *      없다 — PC에만 있는 도구로 도는 시험을 등록 없이 넣은 push가 세 번(11-09 · 11-10 · 11-11) syntax-check를 20 · 31 · 33회 빨갛게 했다.
+ *      tests/conditional-qa.test.cjs를 같이 고른다. ①~③의 후보에는 syntax-check와 ci넓은시험의 모든 묶음이 들어가며,
+ *      이 규칙은 조건부 등록의 연결을 추가한다 — PC에만 있는 도구로 도는 시험을 등록 없이 넣은 push가 세 번(11-09 · 11-10 · 11-11)
+ *      syntax-check를 20 · 31 · 33회 빨갛게 했다.
  *   기록 전용 경로만 바꾼 push는 고르지 않는다 — CI도 그 push에는 무거운 검사를 안 띄운다(records-check가 돈다).
  * 돌리기: node --test --test-reporter=tap. 워크트리에서는 CI=1이다(git 밖 로컬 자료를 읽는 시험이 건너뛴다 — 현장노트 시험_화면확인).
  *   공용 작업본에서는 주지 않는다. 이번 push로 처음 들어가는 파일은 SYNK_새파일로 넘긴다(git ls-files로 훑는 시험이 보게, 10-22).
@@ -73,11 +74,21 @@ function CI시험무늬(root) {
 }
 const 무늬식 = (무늬) => new RegExp('^' + 무늬.replace(/[.+^$()|\\]/g, '\\$&').replace(/\*/g, '[^/]*') + '$');
 
-/** CI가 도는 시험 파일 — 추적되고 지금 디스크에 있는 것. */
-function CI시험목록(root) {
+/** 확장자·제품 목록을 복제하지 않고 넓은 CI 실행기의 실제 묶음 판정과 합친다. */
+function CI시험판정(root) {
   const 식들 = CI시험무늬(root).map(무늬식);
-  const 목록 = git(root, ['-c', 'core.quotepath=false', 'ls-files', '-z', '--', 'tests']);
-  return (목록 || '').split('\0').filter((p) => p && 식들.some((식) => 식.test(p)) && fs.existsSync(path.join(root, p)));
+  const 넓은 = Object.values(require('./ci넓은시험.js').묶음들);
+  return (p) => !뺄경로(p) && !p.split('/').some((part) => part === '..' || part === '.') &&
+    (식들.some((식) => 식.test(p)) || 넓은.some((맞음) => 맞음(p)));
+}
+function 시험파일있나(root, p) {
+  try { return fs.statSync(path.join(root, p)).isFile(); } catch { return false; }
+}
+
+/** CI가 도는 시험 파일 — 추적되고 지금 디스크에 있는 것. */
+function CI시험목록(root, 맞음 = CI시험판정(root)) {
+  const 목록 = git(root, ['-c', 'core.quotepath=false', 'ls-files', '-z']);
+  return (목록 || '').split('\0').filter((p) => p && 맞음(p) && 시험파일있나(root, p));
 }
 
 /** 조건부 등록부에 적힌 시험 파일들 — 등록부를 못 읽으면 null(그 파일로는 고르지 않는다). */
@@ -251,13 +262,13 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
   if (기록전용인가(root, 경로들)) return { 시험: [], 까닭: {}, 기록전용: true, 지도: null };
   const 쓸지도 = 지도 === undefined ? 지도읽기(root, { 받기 }) : 지도;
   // 같은 push로 처음 올리는 시험 파일은 아직 추적되지 않는다 — CI 무늬에 맞고 디스크에 있으면 시험으로 센다.
-  const 무늬들 = CI시험무늬(root).map(무늬식);
-  const 새시험 = 경로들.filter((p) => 무늬들.some((식) => 식.test(p)) && fs.existsSync(path.join(root, p)));
-  const 시험들 = [...new Set([...CI시험목록(root), ...새시험])];
+  const 맞음 = CI시험판정(root);
+  const 새시험 = 경로들.filter((p) => 맞음(p) && 시험파일있나(root, p));
+  const 시험들 = [...new Set([...CI시험목록(root, 맞음), ...새시험])];
   const 까닭 = {};
   const 고름 = (t, 왜) => { if (!까닭[t]) 까닭[t] = 왜; };
   for (const p of 경로들) if (시험들.includes(p)) 고름(p, '바꾼 시험');
-  // ④ 조건부 등록부가 보는 파일(머리 주석) — 등록 시험은 CI 시험 무늬 밖이라 여기서 따로 고른다.
+  // ④ 조건부 등록부가 보는 파일(머리 주석) — 직접 변경 외의 등록 연결도 고른다.
   if (fs.existsSync(path.join(root, 등록시험))) {
     const 등록 = 등록부파일들(root);
     const 걸린 = 경로들.find((p) => p === 등록시험 || p === 등록흐름 || p.startsWith('tools/conditional-qa/') || (등록 && 등록.has(p)));
@@ -462,7 +473,8 @@ function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, �
   const 시작 = Date.now();
   let r;
   try {
-    r = spawnSync(process.execPath, ['--test', `--test-concurrency=${동시}`, '--test-reporter=tap', `--test-reporter-destination=${tap}`, ...시험],
+    // 넓은 CI와 같은 개별 한도: 걸린 제품 시험이 뒤에 기다리는 시험의 자리를 계속 쥐지 않게 한다.
+    r = spawnSync(process.execPath, ['--test', '--test-timeout=120000', `--test-concurrency=${동시}`, '--test-reporter=tap', `--test-reporter-destination=${tap}`, ...시험],
       { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: 한도ms, maxBuffer: 64 << 20 });
   } finally {
     if (잡음) 잡음.놓기();

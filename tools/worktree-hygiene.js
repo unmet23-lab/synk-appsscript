@@ -110,9 +110,10 @@ function decodeUtf8(buffer) {
   }
 }
 
-function validGitPath(name) {
+function validGitPath(name, directory = false) {
   if (typeof name !== 'string' || !name || name.length >= MAX_PATH_CHARS || name.includes('\0')) return false;
   if (name.startsWith('/') || /^[A-Za-z]:[\\/]/.test(name)) return false;
+  if (directory && name.endsWith('/')) name = name.slice(0, -1);
   return !name.split('/').some(part => !part || part === '..');
 }
 
@@ -126,8 +127,12 @@ function parseStatus(buffer) {
     if (!field || field.length < 4 || field[2] !== ' ') throw new Error('invalid-output');
     const code = field.slice(0, 2);
     const name = field.slice(3);
-    if (!validGitPath(name)) throw new Error('invalid-output');
+    // Even --untracked-files=all reports an embedded repository as one directory.
+    // Only ?? records may use that terminating slash; rename paths stay files.
+    const directory = code === '??' && name.endsWith('/');
+    if (!validGitPath(name, directory)) throw new Error('invalid-output');
     const record = { code, name };
+    if (directory) record.directory = true;
     // In porcelain v1 -z, rename/copy is: "XY destination\0source\0".
     if (/[RC]/.test(code)) {
       const from = fields[++i];
@@ -250,11 +255,12 @@ function trackedSummary(records) {
 
 function untrackedSummary(records) {
   const untracked = records.filter(record => record.code === '??');
+  const files = untracked.filter(record => !record.directory);
   const directories = new Map();
   const kinds = new Map();
   const privateFolders = new Map();
   let privateFiles = 0;
-  for (const record of untracked) {
+  for (const record of files) {
     increment(kinds, fileKind(record.name));
     const privateFolder = privateRuntimeFolder(record.name);
     if (privateFolder) {
@@ -274,6 +280,8 @@ function untrackedSummary(records) {
       category: 'browser-profile-or-cache' }));
   return {
     entries: untracked.length,
+    files: files.length,
+    directoryEntries: untracked.length - files.length,
     byDirectory: visibleDirectories,
     omittedDirectories: {
       directories: hiddenDirectories.length,
@@ -342,7 +350,7 @@ function render(report) {
   return [
     `[작업본 위생 · ${report.observedAt}] 읽기 전용 집계`,
     `추적 변경 ${report.tracked.entries} (스테이징 ${report.tracked.staged}, 작업 폴더 ${report.tracked.worktree}, rename/copy ${report.tracked.renamedOrCopied}, 충돌 ${report.tracked.conflicts})`,
-    `미추적 ${report.untracked.entries} | 종류: ${kinds}`,
+    `미추적 항목 ${report.untracked.entries} (파일 ${report.untracked.files}, 펼치지 않은 폴더 ${report.untracked.directoryEntries}) | 파일 종류: ${kinds}`,
     `큰 폴더(파일 수, 최대 ${MAX_DIRECTORY_ROWS}개): ${directories}`,
     `private runtime 후보: 폴더 ${privateRuntime.folders}, 파일 ${privateRuntime.files} (경로 비공개; 삭제·재생성 판정 아님)`,
     '이름·확장자는 목록화 단서일 뿐이며 원본/산출물, 폐기 가능성, 재생성 가능성을 확인하지 않습니다.',

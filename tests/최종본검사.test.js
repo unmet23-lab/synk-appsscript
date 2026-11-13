@@ -54,6 +54,6 @@ test('사람 움직임 모듈을 못 찾으면 굳음만 「못잼」, 앞서 �
 
 test('없는 파일은 끝 코드 2와 오류 한 줄', () => {
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, path.join(os.tmpdir(), '없는영상.mp4'), '--json'], { encoding: 'utf8', timeout: 60000 });
-  assert.equal(r.status, 2);
+  assert.equal(r.status, 2, r.stderr || r.error?.message);
   assert.ok(JSON.parse(r.stdout).오류);
 });

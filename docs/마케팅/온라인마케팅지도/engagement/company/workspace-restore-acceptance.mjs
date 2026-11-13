@@ -5,7 +5,7 @@ import {readFile,writeFile,mkdir,cp,lstat,readdir,realpath} from 'node:fs/promis
 import {createHash,createDecipheriv,timingSafeEqual} from 'node:crypto';
 import {join,resolve,relative,sep,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {workspaceMediaNames} from './workspace-media.mjs';
+import {workspaceMediaNames,personaMediaNameSet,personaRetainedSha} from './workspace-media.mjs';
 
 const sha=value=>createHash('sha256').update(value).digest('hex');
 const serial=value=>JSON.stringify(value,(_,item)=>typeof item==='bigint'?{$integer:String(item)}:item);
@@ -81,7 +81,7 @@ async function snapshot(directory){
   const manifest=JSON.parse(await readFile(join(root,'integration-manifest.json'),'utf8'));
   if(!object(manifest)||manifest.version!==1||manifest.company!=='company'||manifest.messenger!=='messenger'||!validDate(manifest.createdAt)||!Array.isArray(manifest.identityLinks))throw issue('INTEGRATION_MANIFEST_INVALID');
   const key=await readFile(join(root,'company','encryption.key'));if(key.length!==32)throw issue('ENCRYPTION_KEY_INVALID');
-  let company,messenger;
+  let company,messenger,retentionValidated=false;
   try{
     company=database(join(root,'company','company.sqlite'));messenger=database(join(root,'messenger','messenger.sqlite'));
     const practices=practiceRows(company,key);
@@ -101,12 +101,24 @@ async function snapshot(directory){
     // backup passes only after backup-media.py hydrate put the bodies back; then the list
     // must name exactly the referenced files and match their bytes.
     if(before.has('media-manifest.json')||manifest.mediaManifest!==undefined){
-      let list;try{list=JSON.parse(await readFile(join(root,'media-manifest.json'),'utf8'));}catch{throw issue('MEDIA_LIST_INVALID');}
+      let list,listBytes;try{listBytes=await readFile(join(root,'media-manifest.json'));list=JSON.parse(listBytes);}catch{throw issue('MEDIA_LIST_INVALID');}
       if(!object(list)||list.schema!=='synk-workspace-media/v1'||typeof list.bytesIncluded!=='boolean'||!Array.isArray(list.files)||list.files.length!==media.length||manifest.mediaManifest!=='media-manifest.json'||manifest.mediaBytesIncluded!==list.bytesIncluded)throw issue('MEDIA_LIST_INVALID');
       const names=new Set(media);
       for(const file of list.files){if(!object(file)||!names.delete(file.diskName)||typeof file.sha256!=='string'||before.get(join('company','studio-media',file.diskName))!==file.sha256)throw issue('MEDIA_LIST_BYTES_MISMATCH');}
+      // Retention is backup metadata, not restored payload: its time and manifest
+      // hash differ between equivalent copy/list backups. Validate its binding and
+      // privacy classification against this snapshot before excluding its bytes.
+      if(before.has('media-retention.json')||manifest.mediaRetention!==undefined){
+        let retention;try{retention=JSON.parse(await readFile(join(root,'media-retention.json'),'utf8'));}catch{throw issue('MEDIA_RETENTION_INVALID');}
+        const personaNames=personaMediaNameSet(company.db),retained=personaRetainedSha(company.db);
+        const noVault=[...new Set(list.files.filter(file=>personaNames.has(file.diskName)||retained.sha.has(file.sha256)).map(file=>file.sha256))].sort();
+        if(manifest.mediaRetention!=='media-retention.json'||!object(retention)||retention.schema!=='synk-workspace-media-retention/v1'||retention.createdAt!==list.createdAt||retention.manifestSha256!==sha(listBytes)||retention.legacyDeleted!==retained.legacy||serial(retention.noVault)!==serial(noVault))throw issue('MEDIA_RETENTION_INVALID');
+        retentionValidated=true;
+      }
+    }else if(before.has('media-retention.json')||manifest.mediaRetention!==undefined){
+      throw issue('MEDIA_RETENTION_INVALID');
     }
-    return {root,before,manifest,key,company,messenger,practices};
+    return {root,before,manifest,key,company,messenger,practices,retentionValidated};
   }catch(error){company?.db.close();messenger?.db.close();throw error;}
 }
 function freshness(evidence,baseline){
@@ -135,8 +147,11 @@ export async function acceptWorkspaceRestore({candidateDirectory,baselineDirecto
     if(!sameDatabase(candidate.company,baseline.company))report.issues.push('COMPANY_DATABASE_DIFFERS');
     if(!sameDatabase(candidate.messenger,baseline.messenger))report.issues.push('MESSENGER_DATABASE_DIFFERS');
     if(serial(candidate.manifest.identityLinks)!==serial(baseline.manifest.identityLinks))report.issues.push('IDENTITY_LINKS_DIFFER');
+    // Older backups can lack retention metadata on both sides. Removing both
+    // the file and its manifest reference from only one side must not erase it.
+    if(candidate.retentionValidated!==baseline.retentionValidated)report.issues.push('MEDIA_RETENTION_PRESENCE_DIFFERS');
     // File hashes stay in memory: no encryption-key/credential/content hashes in reports.
-    const relativeFiles=s=>new Map([...s.before].filter(([name])=>!['COMPLETE','RESTORE.txt','integration-manifest.json','media-manifest.json',join('company','company.sqlite'),join('messenger','messenger.sqlite')].includes(name)&&!/\.sqlite-(wal|shm)$/i.test(name)));
+    const relativeFiles=s=>new Map([...s.before].filter(([name])=>!['COMPLETE','RESTORE.txt','integration-manifest.json','media-manifest.json','media-retention.json',join('company','company.sqlite'),join('messenger','messenger.sqlite')].includes(name)&&!/\.sqlite-(wal|shm)$/i.test(name)));
     if(!sameFiles(relativeFiles(candidate),relativeFiles(baseline)))report.issues.push('BACKUP_PAYLOAD_FILES_DIFFER');
     report.sourceFilesUnchanged=sameFiles(candidate.before,await files(candidate.root))&&sameFiles(baseline.before,await files(baseline.root));
     if(!report.sourceFilesUnchanged)report.issues.push('SOURCE_CHANGED_DURING_ACCEPTANCE');

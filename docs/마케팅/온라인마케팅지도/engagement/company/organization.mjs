@@ -1,4 +1,4 @@
-import {hasWorkspaceFeature,workspaceAccess} from './workspace-access.mjs';
+import {hasWorkspaceFeature,workspaceAccess,workspaceProfileState} from './workspace-access.mjs';
 import { randomUUID } from 'node:crypto';
 import { memberOrganization } from './member-organization.mjs';
 
@@ -21,11 +21,13 @@ export function canWriteChannel(user, channel) {
 }
 
 export function canManageOwners(user, channel) {
-  return validUser(user) && !!channel && (user.role === 'admin' || (user.role === 'manager' && sameTeam(user, channel)));
+  return validUser(user) && !!channel && hasWorkspaceFeature(user,'social') && (user.role === 'admin' || (user.role === 'manager' && sameTeam(user, channel)));
 }
 
 function safeMember(store, user, full) {
-  const result = {id:user.id, name:user.name, role:user.role, teamId:teamOf(user), active:user.active !== false, workspaceAccess:workspaceAccess(user), organization:memberOrganization(store,user.id)};
+  const profile = workspaceProfileState(user);
+  const access = full ? {...workspaceAccess(user),...profile} : {configured:profile.configured,memberships:profile.memberships};
+  const result = {id:user.id, name:user.name, role:user.role, teamId:teamOf(user), active:user.active !== false, workspaceAccess:access, organization:memberOrganization(store,user.id)};
   if (full) {
     if (typeof user.email === 'string') result.email = user.email;
     if (typeof user.createdAt === 'string') result.createdAt = user.createdAt;

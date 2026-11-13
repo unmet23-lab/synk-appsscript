@@ -72,15 +72,21 @@ test('directory reads canonical memberships and saving descriptions never change
 });
 
 test('existing member visibility is preserved; matching brands never grant visibility', async t => {
-  const { a, employee, team, client } = await fixture(t);
+  const { app, a, employee, team, client } = await fixture(t);
   team('alpha'); team('beta');
-  const lead = employee('lead', 'manager', 'alpha'), own = employee('own', 'member', 'alpha'), other = employee('other', 'member', 'beta');
-  for (const person of [lead, own, other]) assert.equal((await a(route(person), { ...initial, jobTitle: person.name })).status, 200);
+  const lead = employee('lead', 'manager', 'alpha'), own = employee('own', 'member', 'alpha'), other = employee('other', 'member', 'beta'), viewer = employee('viewer', 'viewer', 'alpha');
+  for (const person of [lead, own, other, viewer]) {
+    app.store.put('users',person.id,{...app.store.get('users',person.id),workspaceProfile:{memberships:[{company:'PULSE',role:'producer'}],duties:[],revision:1}});
+    assert.equal((await a(route(person), { ...initial, jobTitle: person.name })).status, 200);
+  }
   const teamState = await client(lead)('/api/state');
-  assert.deepEqual(new Set(teamState.data.members.map(row => row.id)), new Set([lead.id, own.id]));
+  assert.deepEqual(new Set(teamState.data.members.map(row => row.id)), new Set([lead.id, own.id, viewer.id]));
+  for(const row of teamState.data.members)assert.deepEqual(row.organization.brands,['PULSE']);
   const memberState = await client(own)('/api/state');
   assert.deepEqual(memberState.data.members.map(row => row.id), [own.id]);
   assert.ok(!JSON.stringify(memberState.data.members).includes(other.id));
+  assert.deepEqual((await client(other)('/api/state')).data.members.map(row=>row.id),[other.id]);
+  assert.deepEqual((await client(viewer)('/api/state')).data.members.map(row=>row.id),[viewer.id]);
 });
 
 test('manager, member, viewer and anonymous requests cannot edit organization metadata', async t => {

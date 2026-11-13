@@ -20,11 +20,12 @@ export function createCompanyWork({store,clock=()=>new Date().toISOString()}){
   function save(actor,company,id,input){
     return store.transaction(()=>{
       const user=current(actor,company,true),before=id?store.get('companyWork',id):null;
+      if(!input||typeof input!=='object'||Array.isArray(input))throw fail('제목·일정·진행 상태를 확인해 주세요.');
       if(id&&(!before||before.company!==company||!allowed(user,before)))throw fail('이 업무를 수정할 수 없어요.',403);
       if(before&&input.revision!==before.revision)throw fail('그사이 업무가 바뀌었어요. 새로 불러와 주세요.',409);
-      const title=typeof input.title==='string'?input.title.trim():'',note=typeof input.note==='string'?input.note.trim():'',date=input.date||'',status=input.status||'open';
-      if(!title||title.length>160||note.length>2000||!['open','done'].includes(status)||typeof date!=='string'||date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date))throw fail('제목·일정·진행 상태를 확인해 주세요.');
-      const at=clock(),row={id:before?.id||randomUUID(),company,ownerId:before?.ownerId||user.id,title,note,date,status,revision:(before?.revision||0)+1,createdAt:before?.createdAt||at,updatedAt:at};
+      const title=typeof input.title==='string'?input.title.trim():'',note=input.note===undefined?(before?.note??''):input.note,date=input.date===undefined?(before?.date??''):input.date,status=input.status===undefined?(before?.status??'open'):input.status;
+      if(!title||title.length>160||typeof note!=='string'||note.length>2000||!['open','done'].includes(status)||typeof date!=='string'||date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date))throw fail('제목·일정·진행 상태를 확인해 주세요.');
+      const at=clock(),row={id:before?.id||randomUUID(),company,ownerId:before?.ownerId||user.id,title,note:note.trim(),date,status,revision:(before?.revision||0)+1,createdAt:before?.createdAt||at,updatedAt:at};
       store.put('companyWork',row.id,row);
       const auditId=randomUUID();store.put('audit',auditId,{id:auditId,userId:user.id,action:before?'company-work-updated':'company-work-created',subject:row.id,company,at});
       return {item:row};

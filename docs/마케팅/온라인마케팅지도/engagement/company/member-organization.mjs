@@ -42,12 +42,14 @@ export function saveMemberOrganization(store, actor, userId, input, { clock = ()
     responsibilities: field(input.responsibilities, '맡은 일', 600),
   };
   return store.transaction(() => {
+    const currentActor = store.get('users', actor.id);
+    if (!currentActor || currentActor.active === false || currentActor.role !== 'admin') throw fail('업무 정보는 관리자만 정할 수 있어요.', 403);
     if (!store.get('users', userId)) throw fail('직원을 찾지 못했어요. 목록을 새로고침해 주세요.', 404);
     const before = memberOrganization(store, userId);
     if (before.revision !== input.expectedRevision) throw fail('다른 곳에서 업무 정보가 바뀌었어요. 최신 내용을 확인한 뒤 다시 수정해 주세요.', 409);
     const organization = { ...details, revision: randomUUID(), updatedAt: clock() };
     store.put(kind, userId, { id: userId, ...organization });
-    audit(actor, 'member-organization-updated', userId, {});
+    audit(currentActor, 'member-organization-updated', userId, {});
     return { organization: memberOrganization(store, userId) };
   });
 }

@@ -223,6 +223,7 @@
 !docs/디자인/SNS키트/assets/felt-laptop.webp
 # Keep validation and local preview programs out of the runtime image.
 docs/마케팅/온라인마케팅지도/engagement/company/*.test.mjs
+docs/마케팅/온라인마케팅지도/engagement/company/*-test-context.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/verify-*.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/preview-*.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/*-check.mjs
