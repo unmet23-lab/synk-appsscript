@@ -90,10 +90,11 @@ export const World: React.FC<{ tl: TL; mark?: number }> = ({ tl, mark = 0 }) => 
           scr = 1 - prog(f, sortAt(p, tl), 8);
         } else if (p.last) {
           const t = prog(f, tl.last - 24, 24, IN);
-          x = px + (1 - t) * 90;
-          y = mix(py0 - 560, py0, t);
-          w = mix(WALL.size * 2.4, PILE.w, t * t);
-          h = mix(WALL.size * 2.4, PILE.h, t * t);
+          // 11-13 최종 확인 「떨어지는 포스트잇이 제목을 가림」 — 머리 글 아래 높이에서, 더미 바로 위로만 떨어진다
+          x = px + (1 - t) * 40;
+          y = mix(py0 - 60, py0, t);
+          w = mix(WALL.size * 1.4, PILE.w, t * t);
+          h = mix(WALL.size * 1.4, PILE.h, t * t);
           rot = mix(-26, pr, t);
           o = f >= tl.last - 24 ? 1 : 0;
           scr = 1 - t;
@@ -121,7 +122,7 @@ export const World: React.FC<{ tl: TL; mark?: number }> = ({ tl, mark = 0 }) => 
             w = mix(w, CARD.size, k);
             h = mix(h, CARD.size, k);
             rot = mix(rot, (rnd(p.i, 14) - 0.5) * 6, k);
-            color = mixColor(color, '#FFFFFF', k);
+            color = mixColor(color, NOTE_HI, k);
             q = prog(f, tl.cards + p.g * 1.3 + 9, 7);
             sc *= 1 - 0.12 * Math.sin(Math.PI * k);
           }
@@ -160,7 +161,7 @@ export const World: React.FC<{ tl: TL; mark?: number }> = ({ tl, mark = 0 }) => 
               </div>
             ) : null}
             {q > 0 ? (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 900, fontSize: 84, color: INK, opacity: q, border: `3px solid ${INK}`, borderRadius: 3, boxSizing: 'border-box' }}>?</div>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 900, fontSize: 84, color: INK, opacity: q }}>?</div>
             ) : null}
           </div>
         );

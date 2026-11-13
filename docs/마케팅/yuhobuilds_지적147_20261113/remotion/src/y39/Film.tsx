@@ -1,10 +1,12 @@
 // Y39 본편 — 원본 3Wo7N1FpLas(37.8초 · 17칸)의 컷 초를 따른다. 숫자는 11-08 실제 묶음 표(data.ts).
-// 무대는 처음부터 끝까지 쪽지 벽 하나 — 벽 147장 → 다시 읽힘 → 실제 표 → 20더미(279번) → 가장 높은 더미 38 → 기획 81 → 질문 카드 → 끝.
+// 무대는 처음부터 끝까지 쪽지 벽 하나 — 벽 147장 → 다시 읽힘 → 그날 표 → 20더미(147 → 279번) → 가장 높은 더미 38 → 기획 81 → 질문 쪽지 → 끝(저장할 한 장).
+// 11-13 20시 최종 확인 미흡 고침: 끝을 저장할 한 장으로(멈춘 「?」 카드 · 위 작은 글 대신) · 표는 내부 번호 없이 위 네 줄을 크게 · 질문 카드를 흰 카드 대신 노란 쪽지로 ·
+// 「이길 한 가지」(내부 말) 대신 같은 묶음의 질문 「한 문장으로 무슨 말을 하나?」 · 떨어지는 쪽지가 머리 글 자리를 안 지나게 · 26초대 빈 장 없앰 · 147 → 279를 세는 큰 숫자.
 import React from 'react';
 import { Audio } from '@remotion/media';
-import { AbsoluteFill, Img, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Sequence, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from '../lib/fonts';
-import { IN, IN_OUT, clamp, mix, prog } from '../lib/motion';
+import { IN_OUT, clamp, mix, prog } from '../lib/motion';
 import { GROUPS, REAL } from './data';
 import { INK, NEVER, NOTE, NOTE_HI, PILE, TL, WALL_BG, World, countIn, pileX } from './World';
 
@@ -15,6 +17,7 @@ export const TOTAL = F(37.8);
 // 원본 컷 · 박자 초(오마주.json)
 export const CUT = [0, 1.4, 5.5, 6.4, 7.5, 8.5, 10.5, 15.5, 16.5, 17.0, 21.7, 24.1, 25.9, 28.3, 30.1, 32.2];
 const END = 32.2;
+const PRESS = 35.4; // 끝 소리 한 방(올리기 전 검사 「끝 2.5초가 방 소리뿐」 · 점검표 2)
 
 export const VO: { id: string; at: number }[] = [
   { id: 'V1', at: 0.35 },
@@ -26,7 +29,7 @@ export const VO: { id: string; at: number }[] = [
   { id: 'V7', at: 32.5 },
 ];
 
-export const MAIN: TL = { enter: -40, sort: F(10.7), sortLen: F(2.2), rep: F(13.1), repLen: F(2.2), last: F(18.8), pale: F(21.7), merge: F(24.1), collapse: F(26.0), cards: F(26.7) };
+export const MAIN: TL = { enter: -40, sort: F(10.7), sortLen: F(2.2), rep: F(13.1), repLen: F(2.2), last: F(18.8), pale: F(21.7), merge: F(24.1), collapse: F(25.9), cards: F(26.05) };
 const ENDTL: TL = { enter: -200, sort: -400, sortLen: 40, rep: -200, repLen: 40, last: -100, pale: NEVER, merge: NEVER, collapse: NEVER, cards: NEVER };
 
 /** 위 큰 글 — 줄 단위로 28px 올라오며 나타남. 밝은 벽 위 먹색 글. */
@@ -80,20 +83,67 @@ const BigNote: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   );
 };
 
-/** 실제 묶음 표 캡처(공개 문서 화면 그대로) — 증거 한 컷. */
+/** 그날 AI가 만든 묶음 표의 위 네 줄 — 원천(되풀이지적_원인_20261108.md 「한눈에」)의 순위 · 묶음 · 되풀이 · 주 원인 단계를 내부 번호 없이 줄여 크게. */
+const TOP4: { name: string; n: number; stage: string }[] = [
+  { name: '화면이 낡은 틀 · AI 템플릿 같다', n: 38, stage: '기획' },
+  { name: '목소리가 AI 같다 · 따로 논다', n: 22, stage: '소리' },
+  { name: '글자를 마지막에 기본 글꼴로 얹었다', n: 21, stage: '편집' },
+  { name: '볼 이유가 없다', n: 21, stage: '기획' },
+];
 const TableShot: React.FC<{ from: number; to: number }> = ({ from, to }) => {
   const f = useCurrentFrame();
   if (f < from || f >= to) return null;
   const p = prog(f, from, 9);
-  const s = prog(f, from, to - from, (x) => x);
+  const live = (f - from) / (to - from);
   return (
-    <div style={{ position: 'absolute', left: 90, top: 560, width: 860, height: 1180, overflow: 'hidden', borderRadius: 14, transform: `rotate(${mix(3, -1.6, p)}deg) translateY(${(1 - p) * 120}px)`, opacity: p, boxShadow: '0 40px 80px rgba(30,20,0,0.45)' }}>
-      <Img src={staticFile('table2.png')} style={{ width: 860, transform: `translateY(${-s * 150}px)` }} />
+    <div style={{ position: 'absolute', left: 74, top: 520, width: 846, fontFamily: KO, color: '#F4F1EA', background: INK, borderRadius: 22, padding: '30px 40px 18px', boxSizing: 'border-box', transform: `rotate(${mix(2.4, -1.2, p)}deg) translateY(${(1 - p) * 110}px) scale(${1 + 0.035 * live})`, transformOrigin: '30% 40%', opacity: p, boxShadow: '0 40px 80px rgba(30,20,0,0.42)' }}>
+      <div style={{ display: 'flex', fontWeight: 700, fontSize: 34, letterSpacing: -0.6, color: 'rgba(244,241,234,0.55)', paddingBottom: 12, borderBottom: '2px solid rgba(244,241,234,0.25)' }}>
+        <div style={{ flex: 1 }}>묶음 · 처음 생긴 단계</div>
+        <div>되풀이</div>
+      </div>
+      {TOP4.map((r, i) => {
+        const q = prog(f, from + 4 + i * 3, 6);
+        return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', height: 168, borderBottom: i < 3 ? '2px solid rgba(244,241,234,0.14)' : 'none', opacity: q, transform: `translateY(${(1 - q) * 16}px)` }}>
+            <div style={{ width: 54, fontWeight: 800, fontSize: 40, color: 'rgba(244,241,234,0.5)' }}>{i + 1}</div>
+            <div style={{ flex: 1, paddingRight: 24 }}>
+              <div style={{ fontWeight: 800, fontSize: 44, lineHeight: 1.18, letterSpacing: -1.2, wordBreak: 'keep-all' }}>{r.name}</div>
+              <div style={{ marginTop: 8, fontWeight: 700, fontSize: 32, letterSpacing: -0.6, color: r.stage === '기획' ? NOTE : 'rgba(244,241,234,0.55)' }}>{r.stage}</div>
+            </div>
+            <div style={{ fontWeight: 900, fontSize: 76, letterSpacing: -2, fontVariantNumeric: 'tabular-nums', color: i === 0 ? NOTE : '#F4F1EA' }}>{r.n}</div>
+          </div>
+        );
+      })}
+      <div style={{ marginTop: 6, fontWeight: 700, fontSize: 30, letterSpacing: -0.4, color: 'rgba(244,241,234,0.5)' }}>묶음 20개 가운데 위 네 줄</div>
     </div>
   );
 };
 
-/** 질문 카드 한 장 — 흰 종이에 먹 글. */
+/** 147 → 279 — 더미에 「같은 말을 또 한 것」이 얹히는 대로 세는 큰 숫자(13.0~15.5초 다리). */
+const RepCount: React.FC<{ from: number; to: number }> = ({ from, to }) => {
+  const f = useCurrentFrame();
+  if (f < from || f >= to) return null;
+  const p = prog(f, from, 6);
+  const out = 1 - prog(f, to - 3, 3);
+  // 더미에 또 한 말이 얹히는 동안(MAIN.rep) 147에서 279까지 센다 — 서른여덟 번째 장(18.8초)은 다음 장면에서 떨어지지만 279번에 든다
+  const n = REAL.notes + Math.round((REAL.repeats - REAL.notes) * prog(f, MAIN.rep, MAIN.repLen - 12, (x) => x));
+  const done = n >= REAL.repeats;
+  const num = (
+    <>
+      {n}
+      <span style={{ fontSize: 80, letterSpacing: -2, marginLeft: 8 }}>번</span>
+    </>
+  );
+  return (
+    <div style={{ position: 'absolute', left: 460, top: 700, fontFamily: KO, color: INK, opacity: p * out, transform: `translateY(${(1 - p) * 24}px)` }}>
+      <div style={{ fontWeight: 800, fontSize: 50, letterSpacing: -1.4 }}>지적 {REAL.notes}개에</div>
+      <div style={{ fontWeight: 800, fontSize: 50, letterSpacing: -1.4 }}>같은 말을 또 한 것까지</div>
+      <div style={{ fontWeight: 900, fontSize: 190, lineHeight: 1.04, letterSpacing: -8, fontVariantNumeric: 'tabular-nums' }}>{done ? <U>{num}</U> : num}</div>
+    </div>
+  );
+};
+
+/** 질문 쪽지 한 장 — 벽의 쪽지와 같은 노란 종이에 테이프(흰 카드 · 굵은 테 대신). */
 const QCard: React.FC<{ from: number; to: number; text: string[]; tilt: number }> = ({ from, to, text, tilt }) => {
   const f = useCurrentFrame();
   if (f < from || f >= to) return null;
@@ -101,50 +151,49 @@ const QCard: React.FC<{ from: number; to: number; text: string[]; tilt: number }
   const out = 1 - prog(f, to - 3, 3);
   const live = (f - from) / (to - from);
   return (
-    <div style={{ position: 'absolute', left: 110, top: 760 - live * 46, width: 860, height: 560, background: '#FFFFFF', border: `5px solid ${INK}`, borderRadius: 8, boxSizing: 'border-box', boxShadow: '0 36px 70px rgba(30,20,0,0.35)', transform: `rotate(${mix(tilt * 4, tilt, p) - live * tilt * 1.4}deg) scale(${mix(0.72, 1, p) * (1 + 0.09 * live)})`, opacity: p * out, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 64px', fontFamily: KO, color: INK }}>
-      <div style={{ fontWeight: 700, fontSize: 44, letterSpacing: -0.8, opacity: 0.6, marginBottom: 18 }}>만들기 전에</div>
-      {text.map((l, i) => (
-        <div key={i} style={{ fontWeight: 800, fontSize: 86, lineHeight: 1.18, letterSpacing: -2.5 }}>{l}</div>
-      ))}
+    <div style={{ position: 'absolute', left: 130, top: 740 - live * 46, width: 820, height: 600, transform: `rotate(${mix(tilt * 4, tilt, p) - live * tilt * 1.4}deg) scale(${mix(0.72, 1, p) * (1 + 0.09 * live)})`, opacity: p * out }}>
+      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(170deg, ${NOTE_HI} 0%, ${NOTE} 72%)`, borderRadius: 4, boxShadow: '0 36px 60px rgba(70,50,0,0.32), 0 2px 0 rgba(255,255,255,0.45) inset' }} />
+      <div style={{ position: 'absolute', left: 300, top: -26, width: 220, height: 58, background: 'rgba(255,255,255,0.55)', transform: 'rotate(-3deg)', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }} />
+      <div style={{ position: 'absolute', left: 64, right: 56, top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', fontFamily: KO, color: INK }}>
+        <div style={{ fontWeight: 700, fontSize: 44, letterSpacing: -0.8, opacity: 0.62, marginBottom: 18 }}>만들기 전에</div>
+        {text.map((l, i) => (
+          <div key={i} style={{ fontWeight: 800, fontSize: 88, lineHeight: 1.18, letterSpacing: -2.6 }}>{l}</div>
+        ))}
+      </div>
     </div>
   );
 };
 
-/** 끝 — 떨어지던 쪽지가 더미에 닿기 전에 질문 카드로 뒤집힌다(세계 좌표). */
-const EndNote: React.FC<{ from: number }> = ({ from }) => {
+/** 끝 — 저장할 한 장(장부 머리말 「끝은 저장할 한 장」): 노란 쪽지 한 장에 그대로 따라 하는 3단계. 요청문 전체는 게시 글에. */
+const SAVE_STEPS = ['지난 대화에서 내 지적만 뽑기', '같은 뿌리끼리 묶고 횟수 세기', '묶음마다 만들기 전 질문 하나'];
+const SaveNote: React.FC<{ from: number }> = ({ from }) => {
   const f = useCurrentFrame();
   if (f < from) return null;
-  const fall = prog(f, from, 15, IN);
-  const flip = prog(f, from + 17, 14, IN_OUT);
-  const x = mix(pileX(0) + 100, pileX(0) + 14, fall) + flip * 230;
-  const y = mix(60, 500, fall) + flip * 330;
-  const size = mix(76, 190, flip);
-  const sx = Math.abs(Math.cos(Math.PI * flip));
-  const white = flip > 0.5;
-  const hover = Math.sin((f - from) / 9) * 5 * flip;
+  const land = prog(f, from, 14, IN_OUT);
+  const live = f - from;
+  const hover = Math.sin(live / 20) * 4 * land;
+  const sway = Math.sin(live / 27) * 0.6 * land;
+  const push = 1 + 0.03 * prog(f, from + 14, Math.max(1, TOTAL - from - 14), (x) => x);
+  const pd = f - F(PRESS);
+  const press = pd >= 0 && pd < 8 ? Math.sin((Math.PI * pd) / 8) : 0;
   return (
-    <div style={{ position: 'absolute', left: x - size / 2, top: y - size / 2 + hover, width: size, height: size, transform: `rotate(${mix(-22, -4, fall) + flip * 8}deg) scaleX(${Math.max(0.04, sx)})`, background: white ? '#FFFFFF' : `linear-gradient(165deg, ${NOTE_HI}, ${NOTE} 70%)`, border: white ? `4px solid ${INK}` : 'none', boxSizing: 'border-box', borderRadius: 4, boxShadow: '0 18px 30px rgba(50,35,0,0.32)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 900, fontSize: 120, color: INK }}>
-      {white ? '?' : null}
-    </div>
-  );
-};
-
-/** 끝 글 — 그대로 시킬 한 요청(번호 목록 없이 — 지난 편 끝과 다르게). */
-const SaveLines: React.FC<{ from: number }> = ({ from }) => {
-  const f = useCurrentFrame();
-  if (f < from) return null;
-  const line = (i: number, a: React.ReactNode) => {
-    const p = prog(f, from + i, 6);
-    return (
-      <div style={{ fontWeight: 800, fontSize: 68, lineHeight: 1.2, letterSpacing: -2, opacity: p, transform: `translateY(${(1 - p) * 20}px)` }}>{a}</div>
-    );
-  };
-  return (
-    <div style={{ position: 'absolute', left: 74, right: 120, top: 282, fontFamily: KO, color: INK }}>
-      <div style={{ fontWeight: 800, fontSize: 44, letterSpacing: -1.1, opacity: prog(f, from, 8) * 0.7, marginBottom: 8 }}>AI한테 그대로 시켜 보세요</div>
-      {line(0, '“내가 한 지적을 모아서')}
-      {line(1, '같은 원인끼리 묶고')}
-      {line(2, <><U>만들기 전 질문</U>으로 바꿔 줘”</>)}
+    <div style={{ position: 'absolute', left: 104, top: 560 + hover, width: 872, height: 720, opacity: Math.min(1, land * 1.6), transform: `translate(${(1 - land) * 220}px, ${(1 - land) * 520}px) rotate(${mix(14, -1.6, land) + sway}deg) scale(${mix(0.35, 1, land) * push * (1 - 0.025 * press)})`, transformOrigin: '50% 40%' }}>
+      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(168deg, ${NOTE_HI} 0%, ${NOTE} 70%)`, borderRadius: 4, boxShadow: '0 44px 70px rgba(70,50,0,0.34), 0 2px 0 rgba(255,255,255,0.45) inset' }} />
+      <div style={{ position: 'absolute', left: 330, top: -28, width: 220, height: 60, background: 'rgba(255,255,255,0.55)', transform: 'rotate(2deg)', boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }} />
+      <div style={{ position: 'absolute', left: 60, right: 52, top: 64, fontFamily: KO, color: INK }}>
+        <div style={{ fontWeight: 700, fontSize: 40, letterSpacing: -0.8, opacity: 0.62 * prog(f, from + 12, 8) }}>저장 · AI한테 그대로 시켜 보세요</div>
+        <div style={{ height: 3, background: 'rgba(21,20,15,0.22)', margin: '22px 0 12px', opacity: prog(f, from + 12, 8) }} />
+        {SAVE_STEPS.map((t, i) => {
+          const q = prog(f, from + 18 + i * 9, 7);
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'baseline', marginTop: 34, opacity: q, transform: `translateX(${(1 - q) * -18}px)` }}>
+              <div style={{ width: 70, fontWeight: 900, fontSize: 60, letterSpacing: -1 }}>{i + 1}</div>
+              <div style={{ fontWeight: 800, fontSize: 58, lineHeight: 1.2, letterSpacing: -1.8, wordBreak: 'keep-all' }}>{i === 2 ? <>묶음마다 <U>만들기 전 질문</U> 하나</> : t}</div>
+            </div>
+          );
+        })}
+        <div style={{ marginTop: 44, fontWeight: 700, fontSize: 36, letterSpacing: -0.6, opacity: 0.6 * prog(f, from + 46, 8) }}>요청문 전체는 글에 적어 두었어요</div>
+      </div>
     </div>
   );
 };
@@ -169,7 +218,7 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean }> = ({ bgm = true,
   const shake = shakeD >= 0 && shakeD < 5 ? (1 - shakeD / 5) * 6 * Math.sin(shakeD * 2.4) : 0;
   const tallShot = cam === TALL;
   const pop = Math.max(0, 1 - Math.abs(f - MAIN.last - 3) / 5);
-  const dim = t >= 8.5 && t < 10.5 ? Math.min(prog(f, F(8.5), 6), 1 - prog(f, F(10.5) - 5, 5)) : t >= 28.3 && t < END ? prog(f, F(28.3), 6) : 0;
+  const dim = t >= 8.5 && t < 10.5 ? Math.min(prog(f, F(8.5), 6), 1 - prog(f, F(10.5) - 5, 5)) : t >= 28.3 && t < END ? prog(f, F(28.3), 6) : t >= END ? prog(f, F(END), 10) : 0;
   const scanP = interpolate(f, [F(6.4), F(8.35)], [0, 1], clamp);
   const brO = t >= 24.1 && t < 25.95 ? prog(f, MAIN.merge + 10, 6) * (1 - prog(f, F(25.95) - 4, 4)) : 0;
   const mark = t >= 20 && t < 21.7 ? prog(f, F(20.0) + 3, 6) : 0;
@@ -189,7 +238,6 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean }> = ({ bgm = true,
               네 더미
             </div>
           ) : null}
-          {isEnd ? <EndNote from={F(33.25)} /> : null}
         </AbsoluteFill>
       </AbsoluteFill>
 
@@ -201,10 +249,11 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean }> = ({ bgm = true,
       <Head from={0} to={F(5.5)} lines={['AI한테 한 지적', '전부 모았다']} />
       <BigNote from={F(2.5)} to={F(5.5)} />
       <Head from={F(5.5)} to={F(8.5)} lines={['영상 · 화면 만든 대화 224개', 'AI한테 다시 읽혔다']} size={78} step={F(0.9)} />
-      <Head from={F(8.5)} to={F(10.5)} lines={['그날 나온 실제 표']} />
+      <Head from={F(8.5)} to={F(10.5)} lines={['그날 AI가 만든 표']} />
       <TableShot from={F(8.5)} to={F(10.5)} />
       <Head from={F(10.5)} to={F(13.0)} lines={['같은 원인끼리', '묶었더니']} />
-      <Head from={F(13.0)} to={F(15.5)} lines={['20더미', <span key="s" style={{ fontSize: 62, letterSpacing: -1.6 }}>같은 지적을 또 한 것까지 <U>279번</U></span>]} />
+      <Head from={F(13.0)} to={F(15.5)} lines={['20더미로 쌓였다']} />
+      <RepCount from={F(13.0)} to={F(15.5)} />
       <Head from={F(15.5)} to={F(20.0)} lines={['제일 높은 더미']} />
       {tallShot && !isEnd ? (
         <div style={{ position: 'absolute', left: 300, top: 650, fontFamily: KO, color: INK }}>
@@ -222,11 +271,12 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean }> = ({ bgm = true,
       <Head from={F(24.1)} to={F(25.9)} lines={['만들기도 전인 기획', <span key="s" style={{ fontSize: 70, letterSpacing: -1.8 }}>279번 가운데 <U>81번</U></span>]} />
       <Head from={F(25.9)} to={F(28.3)} lines={['그래서 지적을', '만들기 전 질문으로']} />
       <Head from={F(28.3)} to={F(END)} lines={['만들기 전에 묻는 질문']} />
-      <QCard from={F(28.3)} to={F(30.1)} text={['이 영상이 이길', '한 가지는?']} tilt={-2} />
+      <QCard from={F(28.3)} to={F(30.1)} text={['한 문장으로', '무슨 말을 하나?']} tilt={-2} />
       <QCard from={F(30.1)} to={F(END)} text={['참고할 화면 셋과', '나란히 놓고 봤나?']} tilt={1.6} />
-      <SaveLines from={F(END)} />
+      <SaveNote from={F(END) + 6} />
+      <Head from={F(END)} to={TOTAL + 1} lines={['같은 잔소리 또 한다면', '한번 모아서 묶어 보세요']} size={76} step={F(0.5)} />
 
-      {bgm ? <Audio src={staticFile('bgm.wav')} volume={0.2} /> : null}
+      {bgm ? <Audio src={staticFile('bgm.wav')} volume={(fr) => 0.2 + 0.3 * prog(fr, F(35.3), F(0.6))} /> : null}
       {voice
         ? VO.map((v) => (
             <Sequence key={v.id} from={F(v.at)}>
@@ -246,7 +296,7 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean }> = ({ bgm = true,
               <Audio src={staticFile('sfx/tok.wav')} volume={0.95} />
             </Sequence>
           ))}
-          {[5.5, 6.4, 10.7, 15.5, 20.0, 24.1, END, 33.25].map((s) => (
+          {[5.5, 6.4, 10.7, 15.5, 20.0, 24.1, END].map((s) => (
             <Sequence key={`s${s}`} from={F(s)}>
               <Audio src={staticFile('sfx/swish.wav')} volume={0.55} />
             </Sequence>
@@ -262,12 +312,23 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean }> = ({ bgm = true,
             </Sequence>
           ))}
           {Array.from({ length: 8 }, (_, i) => (
-            <Sequence key={`c${i}`} from={F(26.8) + i * 4}>
+            <Sequence key={`c${i}`} from={F(26.3) + i * 4}>
+              <Audio src={staticFile('sfx/tick2.wav')} volume={0.4} />
+            </Sequence>
+          ))}
+          <Sequence from={F(END) + 6 + 14}>
+            <Audio src={staticFile('sfx/tok.wav')} volume={0.8} />
+          </Sequence>
+          {[0, 1, 2].map((i) => (
+            <Sequence key={`n${i}`} from={F(END) + 6 + 18 + i * 9}>
               <Audio src={staticFile('sfx/tick2.wav')} volume={0.4} />
             </Sequence>
           ))}
           <Sequence from={F(33.85)}>
             <Audio src={staticFile('sfx/calm.wav')} volume={0.8} />
+          </Sequence>
+          <Sequence from={F(PRESS)}>
+            <Audio src={staticFile('sfx/tok.wav')} volume={0.9} />
           </Sequence>
         </>
       ) : null}
