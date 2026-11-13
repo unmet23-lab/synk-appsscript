@@ -111,7 +111,18 @@ export function pickGuestLearning(list,{after=0}={}){
  for(const event of events)if(event.type==='feedback.given'&&keep.has(event.completionId))keep.add(event.id);
  for(const event of events)if(event.type==='record.excluded'&&keep.has(event.targetId))keep.add(event.id);
  const moved=events.filter(event=>keep.has(event.id));
- return {events:moved,attempts:moved.filter(event=>event.type==='practice.attempted'&&event.attemptNo===1).length};
+ const life=lifeShareOf(moved);
+ return {events:moved,attempts:firstAnswers(moved),...(life.events?{life}:{})};
+}
+const firstAnswers=list=>list.filter(event=>event.type==='practice.attempted'&&event.attemptNo===1).length;
+// 생활 경험(world-life)의 몫 { attempts, events } — 새 길 world-atlas-next.mjs lifeShare와 같은 규칙(경험 이름 · 판 번호, 딸린 사건은 부모를 따른다).
+const LIFE_GAME='world-life';
+const lifeParent=event=>event?.presentationId??event?.targetId??event?.completionId??event?.decisionId??null;
+const lifeOwn=event=>event?.experienceId===LIFE_GAME||event?.experienceId===`${LIFE_GAME}.set`||typeof event?.setId==='string'&&event.setId.startsWith(`set.${LIFE_GAME}.`);
+function lifeShareOf(list){
+ const byId=new Map(list.map(event=>[event.id,event]));
+ const life=list.filter(event=>{const seen=new Set();for(let at=event;at&&!seen.has(at);at=byId.get(lifeParent(at))){if(lifeOwn(at))return true;seen.add(at);}return false;});
+ return {attempts:firstAnswers(life),events:life.length};
 }
 // ── 손님 생활 진도(레슨·복습·하루 기록·학습 목표)에서 기준 시각 뒤의 것 ──
 const EXAM_FIELDS=['examType','targetGrade','examDate','examMode','weeklyMinutes'];
@@ -243,11 +254,13 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
  const rows=[];
  if(plan?.hangul)rows.push({label:T.hangulRow,value:hangulLine(plan.hangul.summary,T)});
  if(plan?.answer)rows.push({label:T.answerRow,value:plan.answer.answer==='new'?T.answerNew:T.answerReads});
- const counts=plan?.life?.counts,atlasLife=plan?.atlas?.life;
+ const counts=plan?.life?.counts,atlasLife=plan?.atlas?.life,oldLife=plan?.learning?.life;
  if(counts&&(counts.lessons||counts.reviews||counts.days))rows.push({label:T.lifeRow,value:[counts.lessons?T.lessons(counts.lessons):'',counts.reviews?T.reviews(counts.reviews):'',!counts.lessons&&counts.days?T.days(counts.days):''].filter(Boolean).join(' · ')});
- // 새 길 손님 저장소의 생활 경험 사건은 생활 진도 줄이 없을 때만 그 수로 생활 줄에 선다(답 없이 본 문항 · 생활 진도를 옮기지 않는 셸 — 넘친 #8).
+ // 생활 경험 사건(새 길 손님 저장소 · 지금 판 옛 생활 거울)은 생활 진도 줄이 없을 때만 그 수로 생활 줄에 선다(넘친 #8 · 설계 주인 결정 6 ②).
  else if(atlasLife?.events)rows.push({label:T.lifeRow,value:atlasLife.attempts?T.answers(atlasLife.attempts):T.started});
- if(plan?.learning?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.learning.attempts)});
+ else if(oldLife?.events)rows.push({label:T.lifeRow,value:oldLife.attempts?T.answers(oldLife.attempts):T.started});
+ const learningAnswers=(plan?.learning?.attempts||0)-(oldLife?.attempts||0);
+ if(learningAnswers>0)rows.push({label:T.learningRow,value:T.answers(learningAnswers)});
  // 새 길은 첫 답 수로 — 답이 없는 사건(제시 · 판 결정 · 장부 · 본인 말 · 제외, R11)만 있어도 물으니 「연습을 시작했어요」로(요약 칸이 비던 것 — 카본 끝 판 둘째 B).
  // 생활 경험(world-life)의 답 · 사건은 위 생활 줄이 센다 — 생활 레슨만 한 손님에게 같은 답이 「짧은 진단·연습」 이름으로 또 서던 것(Fable 5.2 합친 끝 판 넘친 #8).
  if(plan?.atlas?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.atlas.attempts)});

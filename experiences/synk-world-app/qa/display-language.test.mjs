@@ -233,3 +233,59 @@ test('옮기기 물음: 새 길에서 생활 레슨만 한 손님은 생활 줄�
   if(code!=='ko')for(const rows of [only,seen,both])assert.doesNotMatch(rows.join(' '),/[가-힣]/,`${code}: 한국어가 남지 않는다`);
  }
 });
+
+// 지금 판(입구 없는 문서)의 옮기기 물음도 새 길 #8과 같은 세 갈래다 — 옛 학습 기록의 생활 거울 몫은 생활 진도 줄이 있으면 또 세지 않고,
+// 없으면 생활 줄에 그 수로, 「짧은 진단·연습」 줄은 생활 경험이 아닌 첫 답만(0이면 줄 없음). 옮기는 사건 목록은 그대로(설계 주인 결정 6 ②).
+test('옮기기 물음(지금 판): 옛 학습 기록의 생활 거울 답은 생활 줄이 세고 「짧은 진단·연습」 줄은 그 밖의 첫 답만 센다 — 옮기는 사건은 그대로(세 언어 · 설계 주인 결정 6 ②)',async()=>{
+ const {DEVICE_RECORDS_TEXT,GUEST_LIFE_KEY,GUEST_LEARNING_KEY,createDeviceRecordsOffer,planDeviceRecords}=await import('../device-records.mjs');
+ const keys=Object.keys(DEVICE_RECORDS_TEXT);
+ const textFor=code=>()=>Object.fromEntries(keys.map(key=>[key,typeof DEVICE_RECORDS_TEXT[key]==='function'?(n,m)=>lang.t(`records.${key}`,{n,m},code):lang.t(`records.${key}`,null,code)]));
+ const AT=Date.parse('2026-11-12T01:00:00.000Z');
+ const iso=ms=>new Date(AT+ms).toISOString();
+ const lessonLife=()=>JSON.stringify({version:1,owner:'guest',revision:1,activeLessonId:null,activeReview:null,
+  lessons:{'greetings-expressions':{startedAt:AT,completedAt:AT+40_000,answers:{q1:{at:AT+8_000},q2:{at:AT+16_000},q3:{at:AT+24_000}}}},
+  reviews:{'q1-transfer':{lessonId:'greetings-expressions',lastAt:AT+8_000},'q2-transfer':{lessonId:'greetings-expressions',lastAt:AT+16_000},'q3-transfer':{lessonId:'greetings-expressions',lastAt:AT+24_000}}});
+ // 옛 생활 거울 — 결정(경험 world-life) 하나에 문항 셋 · 첫 답 셋, 첫 답이 아닌 두 번째 시도 하나, 한 판 마침 결정(world-life.set)과 그 마침
+ const mirror=[{id:'dl',type:'decision.made',at:iso(1_000),experienceId:'world-life'},
+  ...[1,2,3].flatMap(i=>[{id:`pl${i}`,type:'practice.presented',at:iso(1_000+i*10),decisionId:'dl'},{id:`al${i}`,type:'practice.attempted',at:iso(1_005+i*10),presentationId:`pl${i}`,attemptNo:1}]),
+  {id:'al1b',type:'practice.attempted',at:iso(1_100),presentationId:'pl1',attemptNo:2},
+  {id:'sl',type:'decision.made',at:iso(1_500),experienceId:'world-life.set'},{id:'cl',type:'experience.completed',at:iso(1_600),decisionId:'sl'}];
+ // 짧은 진단 · 연습 — 결정(다른 경험) 하나에 문항 둘 · 첫 답 둘
+ const practice=[{id:'dp',type:'decision.made',at:iso(2_000),experienceId:'world-practice'},
+  ...[1,2].flatMap(i=>[{id:`pp${i}`,type:'practice.presented',at:iso(2_000+i*10),decisionId:'dp'},{id:`ap${i}`,type:'practice.attempted',at:iso(2_005+i*10),presentationId:`pp${i}`,attemptNo:1}])];
+ const plain=text=>text.replace(/&(amp|lt|gt|quot|#39);/g,(_,name)=>({amp:'&',lt:'<',gt:'>',quot:'"','#39':"'"})[name]);
+ const storeOf=({life,events})=>{const storage=memory();if(life)storage.setItem(GUEST_LIFE_KEY,life);if(events)storage.setItem(GUEST_LEARNING_KEY,JSON.stringify({version:1,events}));return storage;};
+ // 물음을 띄워 요약 칸(굵은 글)의 줄을 읽고 닫는다 — 입구 없는 문서(atlas 없음 · 옛 학습 기록 옮기기)
+ const ask=async(code,found)=>{
+  const storage=storeOf(found);
+  const shown=[];
+  const offer=createDeviceRecordsOffer({storage,learningStatus:()=>null,accountAnswer:()=>null,setAccountAnswer:async()=>{},present:view=>shown.push(view),close(){},
+   text:textFor(code),importLife:async()=>({}),importLearning:async()=>({}),defer:fn=>fn()});
+  const asked=offer.offer({owner:OWNER,generation:1});
+  for(let turn=0;!shown.length;turn+=1){if(turn>500)throw Error('물음이 뜨지 않았다');await new Promise(resolve=>setTimeout(resolve,0));}
+  shown[0].onClose();await asked;
+  return shown[0].html.match(/<strong>(.*?)<\/strong>/s)[1].split('<br>').map(plain);
+ };
+ for(const code of ['ko','en','mn']){
+  const life=lang.t('records.lifeRow',null,code),learning=lang.t('records.learningRow',null,code);
+  const lifeLine=`${life} · ${lang.t('records.lessons',{n:1},code)} · ${lang.t('records.reviews',{n:3},code)}`;
+  // ① 생활 레슨만 — 거울의 답 셋은 생활 줄이 센다(「짧은 진단·연습」 줄이 서지 않는다)
+  assert.deepEqual(await ask(code,{life:lessonLife(),events:mirror}),[lifeLine],`${code}: 생활 줄 하나`);
+  // ② 둘 다 — 「짧은 진단·연습」 줄은 그 답 둘만
+  assert.deepEqual(await ask(code,{life:lessonLife(),events:[...mirror,...practice]}),[lifeLine,`${learning} · ${lang.t('records.answers',{n:2},code)}`],`${code}: 둘 다`);
+  // ③ 짧은 진단 · 연습만 — 앞과 같다
+  assert.deepEqual(await ask(code,{events:practice}),[`${learning} · ${lang.t('records.answers',{n:2},code)}`],`${code}: 연습만`);
+  // ④ 생활 진도 없이 거울 사건만 — 생활 줄에 첫 답 수로
+  assert.deepEqual(await ask(code,{events:mirror}),[`${life} · ${lang.t('records.answers',{n:3},code)}`],`${code}: 거울만`);
+ }
+ // 옮기는 사건 목록은 그대로 — 거울 · 연습 사건 모두(요약 줄만 바뀐다)
+ const plan=planDeviceRecords({storage:storeOf({life:lessonLife(),events:[...mirror,...practice]}),accountId:OWNER,life:true,learningLog:true});
+ assert.deepEqual(plan.learning.events.map(event=>event.id).sort(),[...mirror,...practice].map(event=>event.id).sort());
+ assert.equal(plan.learning.attempts,5,'첫 답 수(옮기는 몫)는 그대로');
+ assert.deepEqual(plan.learning.life,{attempts:3,events:10});
+ // 새 길 lifeShare와 같은 규칙 — 판 번호(set.world-life.…)만 든 2판 사건도 생활 몫으로 가린다
+ const {pickGuestLearning}=await import('../device-records.mjs');
+ const set='set.world-life.1.t.1';
+ assert.deepEqual(pickGuestLearning([{id:'d2',type:'decision.made',at:iso(3_000),experienceId:'world-life.set',setId:set},{id:'p2',type:'practice.presented',at:iso(3_010),setId:set},
+  {id:'a2',type:'practice.attempted',at:iso(3_020),presentationId:'p2',attemptNo:1}]).life,{attempts:1,events:3});
+});
