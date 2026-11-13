@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p1",
+ "text": "나란 씨?",
+ "dur": 0.643,
+ "words": [
+  {
+   "text": "나란",
+   "start": 0.02,
+   "end": 0.283
+  },
+  {
+   "text": "씨?",
+   "start": 0.344,
+   "end": 0.643
+  }
+ ],
+ "source": {
+  "key": "3e27a320c1a0454c313f748f1cbb63d8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

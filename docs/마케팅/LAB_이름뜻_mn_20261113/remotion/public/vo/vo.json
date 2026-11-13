@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1113,
+  "lufs": -17
+ },
+ "made": "2026-11-13T06:38:56.981Z",
+ "lines": [
+  {
+   "id": "p1",
+   "text": "나란 씨?",
+   "dur": 0.643,
+   "syllablesPerSec": 4.67,
+   "src": "p1.wav",
+   "key": "3e27a320c1a0454c313f748f1cbb63d8",
+   "words": 2
+  },
+  {
+   "id": "p2",
+   "text": "사라 씨?",
+   "dur": 0.624,
+   "syllablesPerSec": 4.81,
+   "src": "p2.wav",
+   "key": "0e0c76fbd492678903cb956447d1b621",
+   "words": 2
+  },
+  {
+   "id": "p3",
+   "text": "볼드 씨?",
+   "dur": 0.634,
+   "syllablesPerSec": 4.73,
+   "src": "p3.wav",
+   "key": "461bdc3059339f957ecf8e3258d95677",
+   "words": 2
+  },
+  {
+   "id": "m1",
+   "text": "강철?!",
+   "dur": 0.577,
+   "syllablesPerSec": 3.47,
+   "src": "m1.wav",
+   "key": "02d77d9d067570e9713aa415e60431ce",
+   "words": 1
+  }
+ ]
+}

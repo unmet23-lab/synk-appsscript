@@ -1,0 +1,42 @@
+{
+  "note": "LAB 몽골 M36 「이름 뜻」 — 한국어 줄만(몽골어는 화면 글). 교수 = 범수(M32 「수고하세요」 교수와 같은 목소리), 몽글 = 소진(세기 1.0 — 11-11 「몽글이 말할 땐 소진」). 굽기: node tools/나레이션굽기.mjs docs/마케팅/LAB_이름뜻_mn_20261113/음성/계획.json --굽기",
+  "voice": {
+    "id": "tc_5c3c52cb5827e00008dd7f3b",
+    "name": "범수"
+  },
+  "defaults": {
+    "model": "ssfm-v30",
+    "lang": "ko",
+    "emotion": "normal",
+    "intensity": 1,
+    "tempo": 1,
+    "seed": 1113,
+    "lufs": -17
+  },
+  "out": "../remotion/public/vo",
+  "trim": "both",
+  "lines": [
+    {
+      "id": "p1",
+      "text": "나란 씨?"
+    },
+    {
+      "id": "p2",
+      "text": "사라 씨?"
+    },
+    {
+      "id": "p3",
+      "text": "볼드 씨?"
+    },
+    {
+      "id": "m1",
+      "text": "강철?!",
+      "voice": {
+        "id": "tc_666a9871abcf27a5169850d0",
+        "name": "소진"
+      },
+      "emotion": "normal",
+      "seed": 7
+    }
+  ]
+}

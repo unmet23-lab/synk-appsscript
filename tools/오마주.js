@@ -258,7 +258,12 @@ function forArgon(dir, info) {
 function grab(file, at, w, h, label, out) {
   const vf = `scale=${w}:${h}:force_original_aspect_ratio=decrease,pad=${w}:${h}:(ow-iw)/2:(oh-ih)/2:color=black,`
     + `drawtext=fontfile='${FONT}':text='${label}':x=6:y=6:fontsize=20:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=5`;
-  ffmpeg(['-ss', Math.max(0, at).toFixed(3), '-i', file, '-vf', vf, '-frames:v', '1', out], `${label} 장면`);
+  // 초당 장 수가 낮은 영상(6fps 슬라이드 꼴)은 끝 칸 시각(길이 − 0.15초)이 마지막 프레임의 시작 뒤라 한 장도 안 나온다 — 조금씩 앞으로 당겨 다시 뽑는다(11-13)
+  for (const back of [0, 0.2, 0.5, 1]) {
+    ffmpeg(['-y', '-ss', Math.max(0, at - back).toFixed(3), '-i', file, '-vf', vf, '-frames:v', '1', out], `${label} 장면`);
+    if (fs.existsSync(out)) return;
+  }
+  throw new Error(`${label} 장면을 못 뽑았다(${at.toFixed(2)}초)`);
 }
 
 function tile(pngs, cols, out) {

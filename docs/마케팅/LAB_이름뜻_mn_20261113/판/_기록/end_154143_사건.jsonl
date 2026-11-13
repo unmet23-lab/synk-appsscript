@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d3a4-0ca8-78d2-a4e8-b9aa42cac32d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to update the expressions and poses while preserving the scene, framing, and name cards.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":187383,"cached_input_tokens":161024,"cache_write_input_tokens":0,"output_tokens":1505,"reasoning_output_tokens":105}}

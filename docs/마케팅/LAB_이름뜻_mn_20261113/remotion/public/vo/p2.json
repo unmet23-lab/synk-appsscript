@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p2",
+ "text": "사라 씨?",
+ "dur": 0.624,
+ "words": [
+  {
+   "text": "사라",
+   "start": 0.02,
+   "end": 0.223
+  },
+  {
+   "text": "씨?",
+   "start": 0.304,
+   "end": 0.624
+  }
+ ],
+ "source": {
+  "key": "0e0c76fbd492678903cb956447d1b621",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 173
+ }
+}

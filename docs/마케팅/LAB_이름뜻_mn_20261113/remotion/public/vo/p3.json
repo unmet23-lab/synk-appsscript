@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "p3",
+ "text": "볼드 씨?",
+ "dur": 0.634,
+ "words": [
+  {
+   "text": "볼드",
+   "start": 0.02,
+   "end": 0.307
+  },
+  {
+   "text": "씨?",
+   "start": 0.368,
+   "end": 0.634
+  }
+ ],
+ "source": {
+  "key": "461bdc3059339f957ecf8e3258d95677",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1113,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}
