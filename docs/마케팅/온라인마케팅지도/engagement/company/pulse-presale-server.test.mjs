@@ -74,7 +74,7 @@ async function fixture(t){
     }
     return {id,number:sent.data.number,open:()=>call('/pulse/api/open',{body:{invite:sent.data.invite}}),get row(){return row;},set row(value){row=value;},act,room,customerCall,customerAct,upload,refresh:async()=>{row=(await staff('/api/client-projects/'+id+'/studio')).data.project;return row;}};
   }
-  return {app,call,staff,fake,jar,connect,order,advance:minutes=>{offset+=minutes*60000;}};
+  return {app,call,staff,fake,jar,connect,order,advance:minutes=>{offset+=minutes*60000;},now:()=>Date.now()+offset};
 }
 const scene=(extra={})=>({action:'save_scene',title:'컷 1',description:'벤치 위 캔',narration:'',screenText:'',duration:3,visibility:'customer',...extra});
 
@@ -379,4 +379,83 @@ test('결제 줄: 깨진 이력은 줄마다 걸러 내리고(종류 · 때 · �
   assert.deepEqual(trail,[{kind:'requested',at},{kind:'cancelled',at,amount:290000},{kind:'confirmed',at}],'범위 밖 값 · 글자 값 · 빈 받으실 날 · 취소 줄의 받으실 날은 빼고, 담당자 이름 · 까닭 · 주문 번호도 없다');
   put([null,{kind:'refunded',at},{kind:'requested',at:''}]);
   assert.equal(Object.hasOwn((await o.room()).project.studio.request,'paymentTrail'),false);
+});
+
+// 운영 조각 6-A(설계 S2 「받으실 날 고치기」): 결제를 확인한 뒤 담당자가 받으실 날을 까닭과 함께 고친다 — 손님 일지 · 알림 · 메일, 메모는 직원만.
+test('운영 조각 6-A 받으실 날 고치기: 확인한 결제만 · 까닭 넷 · 같은 날 · 범위 · 손님 보기 허용 목록 · 알림 · 메일 · 환불 뒤 · 납품 뒤 · 스무 번',async t=>{
+  const f=await fixture(t);await f.connect();const o=await f.order();
+  const day=days=>new Date(f.now()+9*3600000+days*86400000).toISOString().slice(0,10);
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});
+  await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_request',amount:290000});
+  await o.act({action:'due_change',dueDate:day(30),reason:'waiting'},409);   // 결제 요청만 — 확인 전
+  await o.act({action:'payment_confirm',ref:'KMONG-DUE-1'});
+  const first=o.row.studio.request.payment.dueDate;assert.match(first,/^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(o.row.studio.request.dueChange,true,'직원 보기는 이 서버가 받으실 날 고치기를 안다고 알린다');
+  assert.equal((await o.customerCall({action:'due_change',dueDate:day(30),reason:'waiting'})).status,403,'손님은 못 고친다');
+  await o.act({action:'due_change',dueDate:day(30)},400);                      // 까닭 없음
+  await o.act({action:'due_change',dueDate:day(30),reason:'late'},400);        // 모르는 까닭
+  await o.act({action:'due_change',dueDate:first,reason:'waiting'},400);       // 같은 날
+  await o.act({action:'due_change',dueDate:day(-1),reason:'waiting'},400);     // 지난 날
+  await o.act({action:'due_change',dueDate:day(121),reason:'waiting'},400);    // 120일 넘음
+  await o.act({action:'due_change',dueDate:'2026-02-30',reason:'waiting'},400);// 없는 날
+  await o.act({action:'due_change',dueDate:day(30),reason:'waiting',note:7},400);
+  await o.act({action:'due_change',dueDate:day(30),reason:'scope',note:'손님 3차 수정 요청 — 내부 메모'});
+  const log=o.row.studio.request.paymentLog.at(-1);
+  assert.deepEqual({...log,at:'',by:''},{kind:'due_changed',at:'',by:'',from:first,dueDate:day(30),reason:'scope',note:'손님 3차 수정 요청 — 내부 메모'});
+  assert.equal(o.row.studio.request.payment.dueDate,day(30));assert.ok(o.row.studio.request.payment.dueChangedAt);
+  // 손님 보기: 받으실 날 · 고친 때만 더 내리고, 일지 줄은 종류 · 때 · 새 날 · 앞 날 · 까닭만. 메모 · 담당자 이름 · 주문 번호는 없다.
+  const room=await o.room(),request=room.project.studio.request;
+  assert.deepEqual(Object.keys(request.payment).sort(),['amount','confirmedAt','dueChangedAt','dueDate','requestedAt','status']);
+  assert.equal(request.payment.dueDate,day(30));
+  const line=request.paymentTrail.at(-1);
+  assert.deepEqual(Object.keys(line).sort(),['at','dueDate','from','kind','reason']);assert.deepEqual([line.kind,line.dueDate,line.from,line.reason],['due_changed',day(30),first,'scope']);
+  assert.equal(JSON.stringify(room).includes('내부 메모'),false,'담당자 메모는 손님에게 안 내려간다');assert.equal(JSON.stringify(room).includes('KMONG-DUE-1'),false);
+  const events=()=>f.app.store.get('clientProjects',o.id).notificationEvents.filter(event=>event.audiences?.includes('customer')&&event.type==='due_changed');
+  assert.equal(events().length,1,'손님 알림 하나');
+  // 메일: 3분 묶음 뒤 한 통 — 새 날과 까닭 문장, 메모는 없다.
+  const before=f.fake.sent.length;
+  f.advance(1);await f.app.pulseMail.tick();f.advance(3);await f.app.pulseMail.tick();
+  const mails=f.fake.sent.slice(before).filter(mail=>mail.subject.includes('받으실 날이 바뀌었어요'));
+  assert.equal(mails.length,1,JSON.stringify(f.fake.sent.slice(before).map(mail=>mail.subject)));
+  const [y,m,d]=day(30).split('-').map(Number);
+  assert.match(mails[0].body,new RegExp(`받으실 날을 ${m}월 ${d}일로 다시 정했어요\\. 고칠 범위가 바뀌어 날을 다시 잡았어요\\.`));
+  assert.doesNotMatch(mails[0].body,/내부 메모|KMONG/);
+  // 같은 결제 이력 안에서 스무 번까지(앞에서 한 번 고쳤다 — 열아홉 번 더, 그다음은 409).
+  for(let i=0;i<19;i++)await o.act({action:'due_change',dueDate:day(31+i),reason:'agreed'});
+  await o.act({action:'due_change',dueDate:day(60),reason:'agreed'},409);
+  // 환불(취소)한 결제는 고치지 않는다.
+  await o.act({action:'payment_cancel',note:'환불'});
+  await o.act({action:'due_change',dueDate:day(61),reason:'ours'},409);
+});
+
+// GPT 서버 검수 GA1: 고친 뒤 3분 묶음 안에 환불 · 다시 결제 확인을 하면, 앞 결제의 고침 사건이 새 결제의 날에 옛 까닭을 붙여 나가지 않는다.
+test('운영 조각 6-A 받으실 날 고치기 · GA1: 고친 뒤 3분 안에 환불 · 다시 확인하면 받으실 날 메일은 안 나간다',async t=>{
+  const f=await fixture(t);await f.connect();const o=await f.order();
+  const day=days=>new Date(f.now()+9*3600000+days*86400000).toISOString().slice(0,10);
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});
+  await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_confirm'});
+  await o.act({action:'due_change',dueDate:day(30),reason:'ours'});
+  await o.act({action:'payment_cancel',note:'환불'});await o.act({action:'payment_request',amount:290000});await o.act({action:'payment_confirm'});
+  const before=f.fake.sent.length;
+  f.advance(1);await f.app.pulseMail.tick();f.advance(3);await f.app.pulseMail.tick();
+  assert.equal(f.fake.sent.slice(before).filter(mail=>mail.subject.includes('받으실 날이 바뀌었어요')).length,0,JSON.stringify(f.fake.sent.slice(before).map(mail=>mail.subject)));
+  const line=f.app.store.all('pulseMailOutbox').find(item=>item.moment==='due_changed');
+  assert.deepEqual([line?.state,line?.reason],['skipped','acted']);
+});
+
+test('운영 조각 6-A 받으실 날 고치기: 납품한 프로젝트는 409, 취소 줄 뒤에도 앞 결제 줄은 그대로',async t=>{
+  const f=await fixture(t),o=await f.order();
+  const day=days=>new Date(f.now()+9*3600000+days*86400000).toISOString().slice(0,10);
+  await o.act(scene());await o.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});
+  await o.customerAct({action:'approve_draft',round:1});
+  await o.act({action:'payment_confirm'});
+  // 깨진 이력 줄(달력에 없는 날 · 꼴이 틀린 앞 날)은 손님 일지로 내리지 않고, 앞 날만 깨졌으면 앞 날 칸만 뺀다.
+  const stored=f.app.store.get('clientProjects',o.id),log=stored.studio.request.paymentLog;
+  f.app.store.put('clientProjects',o.id,{...stored,studio:{...stored.studio,request:{...stored.studio.request,paymentLog:[...log,{kind:'due_changed',at:new Date(f.now()).toISOString(),by:'x',dueDate:'2026-13-40',reason:'ours'},{kind:'due_changed',at:new Date(f.now()).toISOString(),by:'x',from:'2026-02-30',dueDate:day(41),reason:'ours'}]}}});
+  const trail=(await o.room()).project.studio.request.paymentTrail.filter(entry=>entry.kind==='due_changed');
+  assert.deepEqual(trail.map(entry=>[entry.dueDate,entry.from??null]),[[day(41),null]]);
+  const row=f.app.store.get('clientProjects',o.id);f.app.store.put('clientProjects',o.id,{...row,stage:'delivered'});
+  const late=await o.act({action:'due_change',dueDate:day(40),reason:'ours'},409);assert.match(JSON.stringify(late.data),/납품을 마친 프로젝트/);
 });

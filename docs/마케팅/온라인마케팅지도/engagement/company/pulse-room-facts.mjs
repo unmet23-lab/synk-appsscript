@@ -92,7 +92,7 @@ const longDay=day=>{const [y,m,d]=String(day||'').split('-').map(Number);return 
 function dueOf(r,pkg){
   if(!r.submittedAt||!r.answers?.package)return '';
   const due=r.directionProposal?.dueDate,paidDue=r.payment?.status==='confirmed'?r.payment.dueDate||'':'',paying=roomPayState(r)&&pkg?.days;
-  if(paidDue)return `${longDay(paidDue)} · 결제 확인 때 정한 날`;
+  if(paidDue)return r.payment.dueChangedAt?`${longDay(paidDue)} · 담당자가 다시 정한 날`:`${longDay(paidDue)} · 결제 확인 때 정한 날`;
   if(paying)return `결제한 날부터 ${pkg.days}일`;
   if(due)return `${longDay(due)} · 방향 제안에 적힌 날`;
   if(pkg?.days)return pkg.photo?`자료가 다 모인 날부터 ${pkg.days}일`:`자료가 다 모인 날부터 ${pkg.days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요`;

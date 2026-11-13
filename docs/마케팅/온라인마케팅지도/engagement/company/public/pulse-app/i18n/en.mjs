@@ -109,6 +109,7 @@ export default {
   '{date} · 방향 제안에 적힌 날':'{date} · as set in the proposal',
   '자료가 다 모인 날부터 {days}일':'{days} days once we have every file',
   '{date} · 결제 확인 때 정한 날':'{date} · set when we confirmed your payment',
+  '{date} · 담당자가 다시 정한 날':'{date} · new date set by your producer',
   '결제한 날부터 {days}일':'{days} days from your payment',
   '자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요':'{days} days once we have every file · the exact date comes with your direction proposal',
   '구성에 맞춰 함께 정해요':'Set together, based on the package',
@@ -1861,6 +1862,13 @@ export default {
   "크몽 결제 요청을 보냈어요 · {amount}":"sent a payment request on Kmong · {amount}",
   [`journal${C}결제를 확인했어요`]:"confirmed your payment",
   "결제를 확인했어요 · 받으실 날 {date}":"confirmed your payment · delivery on {date}",
+  // 운영 조각 6-A: 받으실 날 고침 줄(이름이 앞에 서는 일지 줄 — 동사로 시작)과 그 까닭(due 문맥).
+  "받으실 날을 {date}로 다시 정했어요":"set a new delivery date: {date}",
+  "받으실 날을 {date}로 다시 정했어요 · {why}":"set a new delivery date: {date} · {why}",
+  [`due${C}확인을 기다린 날만큼`]:"pushed back by the number of days we waited for your reply",
+  [`due${C}고칠 범위가 바뀌어서`]:"because the scope of the revisions changed",
+  [`due${C}말씀 나눈 날로`]:"to match the date we agreed on with you",
+  [`due${C}저희 쪽 사정으로`]:"because of scheduling on our side",
   "결제를 취소했어요":"cancelled the payment",
   "결제 요청을 취소했어요":"cancelled the payment request",
   // 작업 소식(운영 조각 4 · 11-12): 일지 소식 줄(담당자 이름 뒤 — 동사로 시작) · 그림 아래 안내 · 저희 차례 큰 그림 칸 · 「말만 보기」 거르개(room-view.mjs · film-views.mjs)

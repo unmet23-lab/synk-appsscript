@@ -462,12 +462,12 @@ const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation','kind'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note','outfit','hair'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
   propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither','outfit','hair'],
-  payment_request:['amount'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],
+  payment_request:['amount'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],due_change:['dueDate','reason','note'],
   // 작업 소식(운영 조각 4 · 설계 S1): 직원만 — 초안 쓰기 · 공개 · 거두기. 동작은 pulse-progress.mjs.
   ...PROGRESS_FIELDS,
 };
 export const requestActions=action=>Object.hasOwn(FIELDS,action)?FIELDS[action]:undefined;
-const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel','progress_save','progress_post','progress_withdraw'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
+const STAFF_ONLY=['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','settle_direction','request_contact','payment_request','payment_confirm','payment_cancel','due_change','progress_save','progress_post','progress_withdraw'],CUSTOMER_ONLY=['request_answer','answer_model','request_save','request_submit','submit_draft_review','approve_draft','answer_direction'];
 // 카탈로그 모델로 정할 때는 붙어 있던 전용 인물 참조를 뗀다(「카탈로그로 바꿀 때만 교체」 — 기획 12-2 「선택 값」).
 // 옷 · 머리(2026-11-10): 값은 모델마다 다르다(머리 2는 그 모델의 헤어 2). 모델이 바뀌면 옛 모델의 값을 비우고, 손님이 이번에 보낸 값(look)만 쓴다.
 // 방향 고르기 · 직원 정리 · 글 콘티의 「다른 모델로 바꾸기」가 모두 이 한 자리를 지난다(설계 검토 1).
@@ -510,6 +510,13 @@ function assertCasting(casting,personas,row,{start=false}={}){
 // 결제(판 4, 결정 11-10 D2): 결제는 크몽에서 받고 담당자가 앱에 적는다 — 요청함(requested) → 확인함(confirmed) · 취소(cancelled).
 // 장면 이미지 판 보내기 · 제작 시작 승인 · 의뢰 흐름 시안 올리기는 확인함만 통과한다. 사진 상품은 첫 장을 승인하기 전의 판은 결제 없이 오간다(첫 장이 방향 확인 몫).
 const PACKAGE_DAYS={s15:10,s30:14,s60:21,photo:3};
+// 받으실 날 고치기(운영 조각 6-A · 설계 S2): 결제를 확인한 뒤에는 받으실 날을 고칠 길이 없었는데, 메일은 「확인을 기다리는 날만큼 늦어져요」라고 말한다.
+// 담당자가 날과 까닭(정해 둔 넷 — 손님에게는 손님 언어의 문장으로 보인다)을 골라 고치고, 메모(note)는 직원만 본다.
+// 이력은 결제 이력에 due_changed 줄로 쌓인다(앞 날 from · 새 날 dueDate · 까닭 reason). 손님 일지 · 앱 알림 · 메일(due_changed 순간)이 이 줄에서 나온다.
+export const DUE_REASONS=Object.freeze(['waiting','scope','agreed','ours']);
+const DUE_CHANGE_LIMIT=20,DAY=/^\d{4}-\d{2}-\d{2}$/;
+// 달력에 있는 날만 손님 보기에 내린다(꼴이 맞아도 「2026-13-40」은 뺀다 — 깨진 이력 문서).
+const realDay=day=>typeof day==='string'&&DAY.test(day)&&Number.isFinite(Date.parse(day+'T00:00:00Z'))&&new Date(Date.parse(day+'T00:00:00Z')).toISOString().slice(0,10)===day;
 export const requestPaid=request=>request?.payment?.status==='confirmed';
 // 결제 이력(2026-11-11 운영판 설계 S4): payment는 지금 상태 하나라, 취소한 뒤 다시 요청하면 앞 기록(취소 까닭 · 때)이 지워진다.
 // 요청 · 확인 · 취소를 덮지 않고 paymentLog에 쌓는다 — 쓰는 자리는 logPayment 하나다(추가만, 고치거나 지우지 않는다).
@@ -525,8 +532,9 @@ function seedPaymentLog(payment){
   return log;
 }
 export const paymentLogOf=request=>Array.isArray(request?.paymentLog)?request.paymentLog:seedPaymentLog(request?.payment);
-// 손님 일지에 오르는 결제 줄의 종류(requestView paymentTrail). 환불 · 받으실 날 고침처럼 뒤에 더할 종류는 화면이 그 문장을 가진 뒤에 여기 넣는다.
-const PAYMENT_TRAIL_KINDS=['requested','confirmed','cancelled'];
+// 손님 일지에 오르는 결제 줄의 종류(requestView paymentTrail). 환불처럼 뒤에 더할 종류는 화면이 그 문장을 가진 뒤에 여기 넣는다.
+// due_changed(받으실 날 고침 · 운영 조각 6-A): 옛 화면은 모르는 종류를 거르므로 먼저 실어도 깨지지 않는다.
+const PAYMENT_TRAIL_KINDS=['requested','confirmed','cancelled','due_changed'];
 // opens: 새 결제를 여는 줄(요청, 또는 요청 없이 바로 하는 확인)만 상한에 걸린다. 이미 열린 결제를 닫는 줄(요청한 결제의 확인 · 취소 · 환불)은
 // 가득 차도 적는다 — 막으면 환불한 결제가 「확인함」으로 남아 제작 문턱이 열린 채가 된다(GPT 검수 GA1). 그래서 길이는 상한을 둘까지 넘을 수 있다.
 function logPayment(request,entry,{opens=false}={}){
@@ -710,6 +718,18 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     }
     return;
   }
+  // 받으실 날 고치기(운영 조각 6-A): 확인한 결제의 받으실 날만. 납품 · 보관한 뒤나 취소(환불)한 결제는 고치지 않는다.
+  // 같은 날로는 고치지 않고(손님에게 뜻 없는 알림 · 메일), 한 결제 이력 안에서 스무 번까지(결제 이력 상한이 이 줄로 차지 않게).
+  if(action==='due_change'){
+    if(!requestPaid(request))throw fail('결제를 확인한 뒤에 받으실 날을 고칠 수 있어요.',409);
+    if(['delivered','archived'].includes(row.stage))throw fail('납품을 마친 프로젝트는 받으실 날을 고치지 않아요.',409);
+    if(!DUE_REASONS.includes(input.reason))throw fail('받으실 날을 고친 까닭을 골라 주세요.');
+    const dueDate=kstDay(input.dueDate,now),from=realDay(request.payment.dueDate)?request.payment.dueDate:'',note=text(input.note,300);
+    if(dueDate===from)throw fail('지금 받으실 날과 같아요. 바꿀 날을 골라 주세요.');
+    if(paymentLogOf(request).filter(entry=>entry?.kind==='due_changed').length>=DUE_CHANGE_LIMIT)throw fail('받으실 날은 스무 번까지 고칠 수 있어요. 더 고쳐야 하면 관리자에게 알려 주세요.',409);
+    studio.request={...request,payment:{...request.payment,dueDate,dueChangedAt:now},paymentLog:logPayment(request,{kind:'due_changed',at:now,by:stamp.authorName,...(from?{from}:{}),dueDate,reason:input.reason,...(note?{note}:{})})};
+    return;
+  }
   // 결제 뒤 전액 환불(D3) · 크몽 자동 취소(24시간 무응답)를 적는다. 취소 뒤에는 결제를 다시 요청할 수 있다.
   if(action==='payment_cancel'){
     if(!request.payment||request.payment.status==='cancelled')throw fail('취소할 결제가 없어요.',409);
@@ -855,14 +875,18 @@ export function requestView(studio,{staff=false}={}){
   // modelProposalLooks(2026-11-12 사진 상품): 이 서버가 모델 답(answer_model)의 outfit · hair를 안다 — 화면은 이것이 있을 때만 모델 제안 카드에 그 줄을 그리고 칸을 보낸다.
   // paymentLedger: 이 서버가 결제 이력을 쌓고 payment_confirm의 amount · channel · net을 안다 — 직원 화면은 이것이 있을 때만 그 칸을 보낸다.
   // progressFeed: 이 서버가 작업 소식(progress_save · progress_post · progress_withdraw, 그림 올리기의 x-studio-purpose: progress)을 안다 — 직원 화면은 이것이 있을 때만 「소식 올리기」를 그린다.
-  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,modelProposalLooks:true,paymentLedger:true,progressFeed:true};
-  // 결제는 상태 · 때 · 값 · 받으실 날만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
-  if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{})};}
+  // dueChange: 이 서버가 받으실 날 고치기(due_change)를 안다 — 직원 화면은 이것이 있을 때만 「받으실 날 고치기」를 그린다.
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,modelProposalLooks:true,paymentLedger:true,progressFeed:true,dueChange:true};
+  // 결제는 상태 · 때 · 값 · 받으실 날 · 받으실 날을 고친 때만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
+  if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate,dueChangedAt}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{}),...(dueChangedAt?{dueChangedAt}:{})};}
   // paymentTrail(운영 조각 2 · 11-11): 일지의 결제 줄 — 다시 요청해도 앞 요청 · 취소 줄이 남게 이력에서 만든다.
   // 허용 목록으로 종류 · 때 · 값 · (확인 줄의) 받으실 날만 담는다. 담당자 이름 · 크몽 주문 번호 · 취소 까닭 · 받은 곳 · 실수령은 내리지 않는다.
   // 결제가 한 번도 없었으면 싣지 않는다. 옛 서버에는 이 칸이 없어 화면이 payment의 때로 대신 그린다(room-view.mjs journalModel).
   // 때를 읽을 수 없는 줄(빈 값 · 깨진 값)은 내리지 않는다(카본 끝판 검수 A1).
-  const trail=paymentLogOf(request).filter(entry=>PAYMENT_TRAIL_KINDS.includes(entry?.kind)&&typeof entry.at==='string'&&Number.isFinite(Date.parse(entry.at))).map(entry=>({kind:entry.kind,at:entry.at,...(paymentAmount(entry.amount)?{amount:entry.amount}:{}),...(entry.kind==='confirmed'&&typeof entry.dueDate==='string'&&entry.dueDate?{dueDate:entry.dueDate}:{})}));
+  // 받으실 날 고침 줄(due_changed)은 종류 · 때 · 새 날 · 앞 날 · 까닭(정해 둔 넷)만 — 담당자 메모는 내리지 않는다. 새 날을 읽을 수 없는 줄은 뺀다.
+  const trail=paymentLogOf(request).filter(entry=>PAYMENT_TRAIL_KINDS.includes(entry?.kind)&&typeof entry.at==='string'&&Number.isFinite(Date.parse(entry.at))&&(entry.kind!=='due_changed'||realDay(entry.dueDate))).map(entry=>entry.kind==='due_changed'
+    ?{kind:entry.kind,at:entry.at,dueDate:entry.dueDate,...(realDay(entry.from)?{from:entry.from}:{}),...(DUE_REASONS.includes(entry.reason)?{reason:entry.reason}:{})}
+    :{kind:entry.kind,at:entry.at,...(paymentAmount(entry.amount)?{amount:entry.amount}:{}),...(entry.kind==='confirmed'&&typeof entry.dueDate==='string'&&entry.dueDate?{dueDate:entry.dueDate}:{})});
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
   // 작업 소식: 올린 것만 {id, at, stage?, text, assets}로(pulse-progress.mjs progressCustomerView) request.progress 자리에 싣는다. 하나도 없으면 칸을 싣지 않는다.
   const shown=progressCustomerView(studio);

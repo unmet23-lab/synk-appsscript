@@ -6,7 +6,7 @@ const arrow='<span class="arw" aria-hidden="true">→</span>';
 const line=(label,action,extra='')=>`<button type="button" class="btn-line" data-action="${action}" ${extra}>${esc(label)}</button>`;
 const main=(label,action)=>`<button type="button" class="btn-main" data-action="${action}"><span>${esc(label)}</span>${arrow}</button>`;
 // 메일 알림 한 줄(판 2): 연결 · 받는 곳 · 순간마다 마지막 상태. 「Gmail에 넘김」까지만 안다 — 도착 · 반송은 founder@ 받은편지함에서 본다.
-const MAIL_MOMENT={request_received:'접수 확인',request_asked:'되묻기',direction_proposed:'방향 제안',draft_ready:'글 콘티',payment_requested:'결제 안내',images_ready:'장면 이미지',preview_ready:'영상 확인',final_ready:'납품',staff_reply:'담당자 답'};
+const MAIL_MOMENT={request_received:'접수 확인',request_asked:'되묻기',direction_proposed:'방향 제안',draft_ready:'글 콘티',payment_requested:'결제 안내',images_ready:'장면 이미지',preview_ready:'영상 확인',final_ready:'납품',staff_reply:'담당자 답',due_changed:'받으실 날 고침'};
 const MAIL_MOMENT_PHOTO={images_ready:'첫 장',preview_ready:'사진 확인'};
 const mailAt=at=>{const ms=Date.parse(at);if(!Number.isFinite(ms))return '';const k=new Date(ms+9*3600000).toISOString();return `${Number(k.slice(5,7))}/${Number(k.slice(8,10))} ${k.slice(11,16)}`;};
 function mailMoment(item){
@@ -117,8 +117,9 @@ function paymentBlock(r){
   // 결제 상태를 아는 서버(paymentFlow)에서만 — 옛 서버에는 결제 동작이 없다.
   if(!r.paymentFlow||!r.confirmed&&r.status!=='confirmed')return '';
   const p=r.payment;
-  const state=!p?(r.payWaiting?'손님 화면에 결제 안내가 떠 있어요 · 크몽 문의(접수 번호)가 오면 결제 요청을 보내요':'결제 안내 전 · 손님이 글 콘티(사진은 첫 장)를 승인하면 결제 안내가 떠요'):p.status==='requested'?`크몽 결제 요청 보냄 · ${won(p.amount)} · ${mailAt(p.requestedAt)}`:p.status==='confirmed'?`결제 확인 · ${mailAt(p.confirmedAt)}${p.ref?` · ${p.ref}`:''}${p.dueDate?` · 받으실 날 ${p.dueDate}`:''}`:`결제 취소 · ${mailAt(p.cancelledAt)}${p.note?` · ${p.note}`:''}`;
-  const buttons=p?.status==='confirmed'?line('결제 취소 적기','desk-pay-cancel'):line(p?.status==='requested'?'결제 요청 다시 적기':'크몽에 결제 요청 보냄','desk-pay-request')+line('결제 확인','desk-pay-confirm')+(p?.status==='requested'?line('결제 취소 적기','desk-pay-cancel'):'');
+  const state=!p?(r.payWaiting?'손님 화면에 결제 안내가 떠 있어요 · 크몽 문의(접수 번호)가 오면 결제 요청을 보내요':'결제 안내 전 · 손님이 글 콘티(사진은 첫 장)를 승인하면 결제 안내가 떠요'):p.status==='requested'?`크몽 결제 요청 보냄 · ${won(p.amount)} · ${mailAt(p.requestedAt)}`:p.status==='confirmed'?`결제 확인 · ${mailAt(p.confirmedAt)}${p.ref?` · ${p.ref}`:''}${p.dueDate?` · 받으실 날 ${p.dueDate}${p.dueChangedAt?' (다시 정함)':''}`:''}`:`결제 취소 · ${mailAt(p.cancelledAt)}${p.note?` · ${p.note}`:''}`;
+  // 받으실 날 고치기(운영 조각 6-A): 확인한 결제에서만, 이 서버가 안다고 알릴 때만(dueChange).
+  const buttons=p?.status==='confirmed'?(r.dueChange?line('받으실 날 고치기','desk-due'):'')+line('결제 취소 적기','desk-pay-cancel'):line(p?.status==='requested'?'결제 요청 다시 적기':'크몽에 결제 요청 보냄','desk-pay-request')+line('결제 확인','desk-pay-confirm')+(p?.status==='requested'?line('결제 취소 적기','desk-pay-cancel'):'');
   return `<section class="desk-pay"><h2>결제 · 크몽</h2><p class="desk-sum"><i class="led ${p?.status==='confirmed'?'is-ok':'is-wait'}"></i> ${esc(state)}</p><p class="desk-at">${r.photo?'첫 장은 결제 전에도 보내요. 첫 장을 승인받은 뒤의 판과 시안은 결제를 확인한 뒤에 보내요.':'장면 이미지 판과 시안은 결제를 확인한 뒤에 보내요.'} 크몽에서는 손님 문의(접수 번호)에 안전결제요청을 보내고, 결제가 들어오면 「결제 확인」을 눌러요.</p><div class="desk-pay-act">${buttons}</div></section>`;
 }
 // 작업 소식(운영 조각 4): 제작 중 화면을 손님에게 — 초안으로 저장하고 「손님에게 올리기」를 눌러야 보인다(공개는 늘 사람이). 서버가 안다고 알릴 때만(progressFeed).

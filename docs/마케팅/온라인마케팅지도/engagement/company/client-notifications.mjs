@@ -19,6 +19,8 @@ const kstDayOf=value=>{const at=Date.parse(value);return Number.isFinite(at)?new
 const retentionNoticeText=event=>`${event.personaName?`맞춤 인물 「${event.personaName}」`:'맞춤 인물'}을 ${kstDayOf(event.deleteAt)||'곧'} 지워요 — 제작으로 이어지지 않은 채 진행이 멈춰 있어요. 이어 가려면 이 프로젝트에 기록을 남겨 주세요(보관한 프로젝트는 보관을 풀면 돼요).`;
 // 결제(판 4): 담당자가 크몽 결제를 요청 · 확인 · 취소했을 때 손님에게. 손님 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
+// 받으실 날 고치기(운영 조각 6-A): 담당자가 확인한 결제의 받으실 날을 고쳤을 때 손님에게(앱 안 · 기기 알림 · 메일 순간 due_changed).
+titles.due_changed='받으실 날이 바뀌었어요';
 // 작업 소식(운영 조각 4): 담당자가 소식을 올렸을 때 손님에게(앱 안 · 기기 알림만 — 메일 순간이 아니다). 거두면 손님 알림함에서 빠진다(pulse-live.mjs).
 titles.progress_posted='작업 중인 화면이 올라왔어요';
 // 의뢰서 흐름(2026-11-04): 새 의뢰 → 내부 확인 → 되묻기 · 모델 → 1차안. 고객 쪽 본문은 pulse-live.mjs customerBodies.
@@ -112,6 +114,7 @@ export function appendClientNotificationEvents(previous,row){
       if(action==='payment_request')add('payment_requested',String(row.revision),['customer'],{tab:'overview'});
       if(action==='payment_confirm')add('payment_confirmed',String(row.revision),['customer'],{tab:'overview'});
       if(action==='payment_cancel')add('payment_cancelled',String(row.revision),['customer'],{tab:'overview'});
+      if(action==='due_change')add('due_changed',String(row.revision),['customer'],{tab:'overview'});
       // 작업 소식: 이번에 올린(전에는 올리지 않았던) 소식마다 하나. progressId로 일지의 그 줄과 짝짓고, 거둔 소식의 알림은 손님 보기에서 빠진다.
       if(action==='progress_post'){const was=new Map(progressOf(before).map(item=>[item.id,item.state]));for(const item of progressOf(studio))if(item.state==='posted'&&was.get(item.id)!=='posted')add('progress_posted',item.id,['customer'],{tab:'overview',progressId:item.id});}
       if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy',strategyRevision:studio.strategy?.revision});

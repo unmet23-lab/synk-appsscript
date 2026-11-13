@@ -254,6 +254,7 @@ test('고객 방 일치: 상태 · 단계 · 차례 표시 · 제목 · 왼쪽 �
     '결제 요청 취소':project({rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'cancelled',requestedAt:T(4),cancelledAt:T(5),amount:290000}}),
     '결제 확인':project({directionProposal:direction({status:'chosen',chosenId:'o1'}),rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'confirmed',requestedAt:T(4),confirmedAt:T(5),amount:290000,dueDate:'2026-11-22'}}),
     '제작':project({approvedAt:T(6),payment:{status:'confirmed',confirmedAt:T(5),dueDate:'2026-11-22'}},{stage:'producing'}),
+    '제작 · 받으실 날 고침':project({approvedAt:T(6),payment:{status:'confirmed',confirmedAt:T(5),dueDate:'2026-11-29',dueChangedAt:T(7)}},{stage:'producing'}),   // 운영 조각 6-A
     '제작 · 사진':project({answers:photo,approvedAt:T(6)},{stage:'producing'}),
     '첫 장 옴 · 사진':project({answers:photo,rounds:[round('images')]}),
     '첫 장 고치는 중 · 사진':project({answers:photo,rounds:[round('images',{feedbackAt:T(3)})]}),

@@ -135,6 +135,17 @@ const EN=Object.freeze({
   '보내 주신 말씀에 담당자가 답을 남겼어요. 앱의 「담당자와 나눈 말」에서 보실 수 있어요.':'Your producer has replied to your message. You’ll find the reply in the app under “Messages with your producer”.',
   '다음 할 일: 답을 읽어 보시고, 더 궁금한 점이 있으면 앱에서 답해 주세요.':'Next: read the reply, and if you have more questions, reply in the app.',
   '이 메일은 담당자 답 알림이에요. 대화가 한곳에 남도록 답은 앱에서 해 주세요.':'This is a notification that your producer has replied. Please reply in the app so the whole conversation stays in one place.',
+  // 운영 조각 6-A(11-13): 받으실 날 고침 — 앱 알림 · 메일(due_changed)
+  '받으실 날이 바뀌었어요':'Your delivery date has changed',
+  '담당자가 받으실 날을 다시 정했어요. 바뀐 날과 까닭을 확인해 주세요.':'Your producer has set a new delivery date. Take a look at the new date and the reason.',
+  '{title}, 받으실 날이 바뀌었어요':'{title}: new delivery date',
+  '받으실 날을 {date}로 다시 정했어요.':'We’ve set a new delivery date: {date}.',
+  '담당자가 받으실 날을 다시 정했어요. 바뀐 날은 앱에서 보실 수 있어요.':'Your producer has set a new delivery date. You’ll find it in the app.',
+  '확인을 기다린 날만큼 날을 옮겼어요.':'It was pushed back by the number of days we waited for your reply.',
+  '고칠 범위가 바뀌어 날을 다시 잡았어요.':'The scope of the revisions changed, so we rescheduled.',
+  '말씀 나눈 날로 맞췄어요.':'It now matches the date we agreed on with you.',
+  '저희 쪽 사정으로 날을 다시 잡았어요. 양해 부탁드려요.':'We had to reschedule on our side. Thank you for your understanding.',
+  '다음 할 일: 따로 하실 일은 없어요.':'Next: there’s nothing you need to do.',
 });
 export const SERVER_DICTIONARIES=Object.freeze({en:EN});
 // 서버 문구를 그 언어로. 사전에 없거나 한국어면 원문.

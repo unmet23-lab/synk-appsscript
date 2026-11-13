@@ -8,7 +8,8 @@ import {serverText} from './pulse-locale.mjs';
 // 담당자 답(staff_reply — 운영 조각 2-B · 11-11 설계 S1 ③): 손님 차례는 아니지만 손님이 물은 것에 담당자가 답한 순간 하나만 더한다.
 // 자동 안내(auto_reply)는 메일을 보내지 않는다. 앱에서 이미 읽었거나 그 뒤 손님이 앱에서 글을 남겼으면 보내지 않고(pulseMailActed), 3분 안의 답은 한 통으로 묶는다(fill).
 // 이 순간이 함에 남은 채 서버를 조각 1 전 판으로 되돌리면 옛 조립기가 던진다 — 조각 1(조립 실패는 그 줄만 failed)이 운영에 오른 다음 판부터 싣는다.
-export const PULSE_MAIL_MOMENTS=Object.freeze(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply']);
+// 받으실 날 고침(due_changed — 운영 조각 6-A): 확인한 결제의 받으실 날을 담당자가 고친 순간. 손님 차례는 아니지만 약속한 날이 바뀌므로 알린다.
+export const PULSE_MAIL_MOMENTS=Object.freeze(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply','due_changed']);
 // 처음 여덟 순간 뒤에 더한 순간은, 메일이 켜진 서버에 그 판이 오를 때 지난 사건(켠 뒤 ~ 그 판 전 — 옛 판은 순간이 아니라 함에 넣지 않았다)이
 // 한꺼번에 함에 들어 오래된 답 메일이 몰려 나가지 않게, 이 서버가 그 순간을 처음 알게 된 때(서비스가 뜬 때) 뒤의 사건만 받는다(카본 끝판 검수 A1).
 const FIRST_MOMENTS=new Set(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready']);
@@ -71,6 +72,10 @@ export function pulseMailActed(row,moment,latest){
   if(moment==='payment_requested')return request.payment?.status!=='requested';
   if(moment==='draft_ready'||moment==='images_ready'){const round=Number(String(latest?.id).split(':').at(-1)),entry=request.rounds?.[round-1];return !!(entry?.feedbackAt||entry?.approvedAt);}
   if(moment==='staff_reply')return staffReplySeen(row,latest);
+  // 받으실 날 고침: 그 뒤 결제를 취소(환불)했으면 보낼 날이 없다. 3분 안에 또 고쳤으면 한 통으로 묶여 지금 날을 보낸다.
+  // 지금 결제(마지막 확인) 뒤의 고침만 — 고친 뒤 3분 안에 환불 · 다시 확인했으면 그 사건은 앞 결제의 것이라 보내지 않는다(GPT 검수 GA1).
+  // 날은 달력에 있는 날만(깨진 저장 값으로 조립이 던지거나 다른 날로 보정되어 나가지 않게 — GA2).
+  if(moment==='due_changed'){const pay=request.payment||{};return pay.status!=='confirmed'||!pay.dueChangedAt||!currentDueChange(request)||!realDueDay(pay.dueDate)||String(latest?.createdAt||'')<String(pay.confirmedAt||'');}
   const versionId=latest?.versionId;if(!versionId)return false;
   if(moment==='preview_ready')return !!(row.versions||[]).find(version=>version.id===versionId)?.approvedAt||(row.messages||[]).some(message=>message.author==='customer'&&message.versionId===versionId);
   if(moment==='final_ready')return (row.deliveryReceipts||[]).some(entry=>entry.versionIds?.includes(versionId));
@@ -116,6 +121,13 @@ const dueOf=request=>request?.payment?.status==='confirmed'&&request.payment.due
 const dayText=(day,loc)=>new Intl.DateTimeFormat(loc==='ko'?'ko-KR':'en-US',{month:'long',day:'numeric',timeZone:'UTC'}).format(new Date(day+'T00:00:00Z'));
 const won=(amount,loc)=>loc==='ko'?(amount%10000===0?`${amount/10000}만 원`:`${amount.toLocaleString('ko-KR')}원`):`KRW ${amount.toLocaleString('en-US')}`;
 const WAITING=new Set(['request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready']);
+// 받으실 날 고침 메일의 까닭 문장(pulse-requests.mjs DUE_REASONS와 같은 넷). 결제 이력의 마지막 고침 줄에서 읽고, 모르는 값이면 문장 없이 보낸다.
+const DUE_DAY=/^\d{4}-\d{2}-\d{2}$/;
+const realDueDay=day=>typeof day==='string'&&DUE_DAY.test(day)&&Number.isFinite(Date.parse(day+'T00:00:00Z'))&&new Date(Date.parse(day+'T00:00:00Z')).toISOString().slice(0,10)===day;
+// 지금 결제의 마지막 고침 줄: 이력을 뒤에서부터 읽어 확인 줄을 만나기 전의 due_changed 하나(없으면 null) — 앞 결제의 고침 까닭을 다시 확인한 결제에 붙이지 않는다(GA1).
+const currentDueChange=request=>{const log=Array.isArray(request?.paymentLog)?request.paymentLog:[];for(let i=log.length-1;i>=0;i--){if(log[i]?.kind==='confirmed')return null;if(log[i]?.kind==='due_changed')return log[i];}return null;};
+const DUE_REASON_TEXT={waiting:'확인을 기다린 날만큼 날을 옮겼어요.',scope:'고칠 범위가 바뀌어 날을 다시 잡았어요.',agreed:'말씀 나눈 날로 맞췄어요.',ours:'저희 쪽 사정으로 날을 다시 잡았어요. 양해 부탁드려요.'};
+const lastDueReason=request=>{const entry=currentDueChange(request);return Object.hasOwn(DUE_REASON_TEXT,entry?.reason??'')?entry.reason:'';};
 // loc: 프로젝트 소통 언어(다국어 판 2, pulse-locale.mjs). 문장은 통째로 서버 사전 키이고 한국어는 지금 글자 그대로다.
 // latest: 그 메일의 마지막 알림 사건(판 순간에서 어느 판인지 본다). 접수 확인에는 없다.
 export function pulseMailCompose(row,moment,loc='ko',latest=null){
@@ -140,6 +152,8 @@ export function pulseMailCompose(row,moment,loc='ko',latest=null){
     final_ready:[tx('{title} 최종 파일이 준비됐어요',{title}),tx('최종 파일을 받아 보시고 사용 안내를 확인한 뒤 수령 확인을 남겨 주세요.'),tx('다음 할 일: 파일을 받아 보시고 「수령 확인 남기기」를 눌러 주세요.')],
     // 담당자 답(운영 조각 2-B): 답 글은 메일에 넣지 않는다(다른 순간처럼 앱으로 부른다 — 번역 · 고친 글이 앱 한곳에 있다).
     staff_reply:[tx('{title}, 담당자가 답을 남겼어요',{title}),tx('보내 주신 말씀에 담당자가 답을 남겼어요. 앱의 「담당자와 나눈 말」에서 보실 수 있어요.'),tx('다음 할 일: 답을 읽어 보시고, 더 궁금한 점이 있으면 앱에서 답해 주세요.')],
+    // 받으실 날 고침(운영 조각 6-A): 지금 받으실 날 + 까닭 한 문장. 날을 읽을 수 없으면 날 없이 앱으로 부른다(보낼 때는 pulseMailActed가 먼저 거른다).
+    due_changed:[tx('{title}, 받으실 날이 바뀌었어요',{title}),[realDueDay(request.payment?.dueDate)?tx('받으실 날을 {date}로 다시 정했어요.',{date:dayText(request.payment.dueDate,loc)}):tx('담당자가 받으실 날을 다시 정했어요. 바뀐 날은 앱에서 보실 수 있어요.'),...(lastDueReason(request)?[tx(DUE_REASON_TEXT[lastDueReason(request)])]:[])].join(' '),tx('다음 할 일: 따로 하실 일은 없어요.')],
   }[moment];
   if(!copy)throw fail('메일 순간을 확인해 주세요.',500);
   const due=WAITING.has(moment)?dueOf(request):'';

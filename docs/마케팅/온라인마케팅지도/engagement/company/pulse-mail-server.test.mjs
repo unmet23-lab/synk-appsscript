@@ -81,7 +81,7 @@ test('메일 알림 · 회사 서버 길: 관리자만 켜고, 방향 제안 한
 
   // 손님 보기: 켜짐 · 가린 주소, 담당자 연락 칸 없음
   let room=(await f.call('/pulse/api/project')).data;
-  assert.deepEqual(room.project.mail,{mailOn:true,mailTo:'b***@pulse-synthetic.test',moments:['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply']});
+  assert.deepEqual(room.project.mail,{mailOn:true,mailTo:'b***@pulse-synthetic.test',moments:['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply','due_changed']});
   // 담당자 주소 고치기: 직원만 · 주소 꼴 · 연락처 줄 함께, 손님 보기에는 contact 없음
   assert.equal((await f.staff('/api/client-projects/'+id+'/studio',{body:{revision:row.revision,action:'request_contact',email:'not-mail'}})).status,400);
   assert.equal((await f.call('/pulse/api/studio',{body:{revision:room.project.revision,action:'request_contact',email:'x@pulse-synthetic.test'},csrf:room.csrf})).status,403);
