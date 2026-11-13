@@ -107,6 +107,9 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const trail=newTrail?Object.freeze({shown:(...a)=>via().shown(...a),help:(...a)=>via().help(...a),delivery:(...a)=>via().delivery(...a),answer:(...a)=>via().answer(...a),guided:(...a)=>via().guided(...a),release:(...a)=>via().release(...a),
   metrics:()=>({...via().metrics(),path:pathNow(),record:via()===newTrail?'next':'old'}),dispose(){newTrail.dispose();oldTrail.dispose();}}):oldTrail;
  const lessonSlot=(attempt,id)=>life?life.lessonSlot(attempt,id):null,reviewSlot=(run,id)=>life?life.reviewSlot(run,id):null;
+ // 진도가 앞선 때의 도움 표시를 걷었으면 그 문항의 칸을 두 기록부(옛 거울 · 새 판 겉) 모두에서 놓는다 — 표시는 두 판이 함께 쓰는 진도에 있어, 지금 쓰는
+ // 기록부만 놓으면 판을 오간 뒤 다른 기록부가 어제 도움이 붙은 칸을 다시 썼다(지금 판 23:22 해설 → 새 길 → 다음 날 새 길에서 걷음 → 지금 판 답, GPT 2판 다시 검수 GA1).
+ const releaseReview=key=>{for(const each of new Set([oldTrail,newTrail]))if(each)try{each.release(key);}catch{/* 다음 보임이 새 칸을 연다 */}};
  // 시도를 연다 — 그때의 판으로 기록부를 정한다(위). keep: 시도 가운데(레슨 · 카페 · 복습 문항이 열린 동안)의 안내 연습은 그 시도의 기록부를
  // 그대로 쓴다 — 레슨 도중 판이 바뀌어 다시 고르면 본문항 보임은 앞 기록부에, 답은 뒤 기록부에 가 슬롯을 못 찾고 버려졌다(GPT 처리 판 GA1).
  // 그 시도가 옛 거울이면 옛 코치를 준비하고(새 판 겉이면 하지 않는다 — 생활 코치는 셸이 문서 시작 때 연다, §19-1 ⑤ M7) 입구에 판을 다시
@@ -546,12 +549,16 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    celebrate();return;
   }
   const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){
-   // 새 길: 앞선 때의 도움 표시는 지금 도움이 아니다 — 보이기 전에 그 표시를 걷고, 걷었으면 기록부의 앞 칸(그 도움이 붙은 제시)을 놓아 새로 보인다
-   // (문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 칸을 다시 써 Atlas에 어제 해설이 붙은 답으로 남았다 — GPT 다시 검수 GA3). 같은 날이면 그대로다.
-   let stale=false;try{stale=getProgress().dropStaleHelp(id);}catch{stale=false;}if(stale)trail.release(reviewSlot(run.id,id));
+   // 새 길: 앞선 때의 도움 표시는 지금 도움이 아니다 — 보이기 전에 그 표시를 걷고, 표시가 있었는데 지금 도움이 아니면 두 기록부의 앞 칸(그 도움이 붙은
+   // 제시)을 놓아 새로 보인다(문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 칸을 다시 써 Atlas에 어제 해설이 붙은 답으로 남았다 — GPT 다시 검수 GA3).
+   // 놓기는 걷기 쓰기의 성공이 아니라 「표시 있음 · 지금 도움 아님」으로 가른다 — 걷기가 저장 충돌로 던져도 놓는다(Fable 5.2 설계 확인 고2). 같은 날이면
+   // 그대로이고, 판정이 없으면(지금 판 · 라이브) 표시가 곧 도움이라 놓지 않는다. 지키는 것은 「답이 붙는 제시의 도움 = 제품 helped」다(옛 Trail의
+   // assisted는 문항 · 계열의 이력이라 이 잣대가 아니다 — 설계 확인 고1).
+   const marked=run.pendingHelp?.[id]===true;try{getProgress().dropStaleHelp(id);}catch{/* 걷기가 던져도 아래가 칸을 놓는다 */}
+   helped=getProgress().reviewHelped(id);helpBy=helped?'user':null;if(marked&&!helped)releaseReview(reviewSlot(run.id,id));
    // 지금 도움인 표시면 해설이 펼쳐 보인다 — 그 본 때를 진도에 알린다(표시의 때 = 마지막으로 본 때: 단추를 다시 누르지 않고 다시 열어 본 해설도 —
    // 10:00 해설을 23:55에 다시 열어 보고 00:03에 답하면 도움 받은 답, Fable 5.2 설계 검토 D1). 지금 판 · 라이브의 때 없는 표시면 쓰지 않는다.
-   helped=getProgress().reviewHelped(id);helpBy=helped?'user':null;if(helped)try{getProgress().markReviewHelp(id);}catch{/* 표시는 그대로 — 답이 그 도움을 싣는다 */}}
+   if(helped)try{getProgress().markReviewHelp(id);}catch{/* 표시는 그대로 — 답이 그 도움을 싣는다 */}}
   context={lessonId:l.id,phase:'review',questionIndex:index,reviewId:id,reviewQuestion:q};
   // 거울: 답하지 않은 새 상황 복습이 보였다(미리 본 도움이 있으면 그 도움도).
   if(!lastFeedback)trail.shown(reviewSlot(run.id,id),engineItem(l,original,true),{helped});

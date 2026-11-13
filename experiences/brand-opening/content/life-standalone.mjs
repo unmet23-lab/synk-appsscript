@@ -17470,6 +17470,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
   }) : oldTrail;
   const lessonSlot2 = (attempt, id) => life ? life.lessonSlot(attempt, id) : null, reviewSlot2 = (run, id) => life ? life.reviewSlot(run, id) : null;
+  const releaseReview = (key) => {
+    for (const each of /* @__PURE__ */ new Set([oldTrail, newTrail])) if (each) try {
+      each.release(key);
+    } catch {
+    }
+  };
   const prepareLearning = ({ keep = false } = {}) => {
     if (!(keep && attemptTrail)) attemptTrail = newTrail && pathNow() !== "old" ? newTrail : oldTrail;
     if (attemptTrail !== oldTrail) {
@@ -18260,15 +18266,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
     const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q3) => q3.id === record2.questionId), q2 = original.review;
     if (!lastFeedback) {
-      let stale = false;
+      const marked = run.pendingHelp?.[id] === true;
       try {
-        stale = getProgress().dropStaleHelp(id);
+        getProgress().dropStaleHelp(id);
       } catch {
-        stale = false;
       }
-      if (stale) trail.release(reviewSlot2(run.id, id));
       helped = getProgress().reviewHelped(id);
       helpBy = helped ? "user" : null;
+      if (marked && !helped) releaseReview(reviewSlot2(run.id, id));
       if (helped) try {
         getProgress().markReviewHelp(id);
       } catch {

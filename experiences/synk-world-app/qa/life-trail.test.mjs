@@ -292,6 +292,38 @@ test('판과 코치: 계정이 바뀌어 옛 거울을 버리면 늦은 사건�
  assert.equal(f.coach.events().filter(e=>e.type==='practice.delivery').length,1);
 });
 
+// 도움 표시 2c(Fable 5.2 설계 확인 고1): 복습 칸을 놓고 새로 보이면 그 답이 붙는 제시에는 앞 도움이 없다 — 생활 도움 표시의 불변식 잣대는 「답이
+// 붙는 제시의 도움 = 제품 helped」다. 옛 Trail의 assisted는 문항 · 계열의 이력(앞선 도움 · 정답 봄)이라 놓아도 참이고, 도움을 한 번도 안 연 보통
+// 복습도 본문항 답(정답 봄) 뒤에는 참이다 — 라이브가 오늘도 내는 값이고 옛 Trail은 관문 2로 그대로 둔다.
+test('복습 칸을 놓고 새로 보이면 답이 붙는 제시에 앞 도움이 없다 — 옛 Trail assisted는 문항 이력이라 놓아도 참, 도움 없는 보통 복습도 본문항 답 뒤엔 참(도움 표시 2c · Fable 설계 확인 고1)', () => {
+ const lesson=lessonById('greetings-expressions'),q=lesson.questions[0],item=lifeItem({lesson,question:q,review:true});
+ const scene=({help,release,mainFirst=false})=>{
+  const f=fixture(),key=reviewSlot('run-1',q.review.id);
+  if(mainFirst){const run=f.lesson(lesson.id);f.show(run,q);f.answer(run,q,{correct:false});f.advance(2*MINUTE);}
+  f.trail.shown(key,item);if(help)f.trail.help(key,'explanation');
+  f.advance(62*MINUTE);
+  if(release)f.trail.release(key);
+  f.trail.shown(key,item,{helped:false});
+  f.trail.answer(key,{correct:true,choiceId:q.review.answerId,correctId:q.review.answerId,helped:false});
+  const attempt=f.attempts().filter(a=>a.itemKey===item.itemKey).at(-1);
+  const helps=f.coach.events().filter(e=>e.presentationId===attempt.presentationId&&e.level&&e.level!=='answer').map(e=>e.level);
+  return {attempt,help:helps,presented:f.presented().filter(e=>e.itemKey===item.itemKey).length};
+ };
+ // ① 놓지 않으면(2판) 답이 앞 제시에 붙어 어제 해설이 그 제시의 도움이다
+ const kept=scene({help:true,release:false});
+ assert.equal(kept.presented,1);
+ assert.deepEqual(kept.help,['explanation']);
+ // ② 놓고 새로 보이면(2c) 답이 붙는 새 제시에는 도움이 없다 — 그래도 옛 Trail의 assisted는 참(어제 해설이 그 문항에 남음)
+ const released=scene({help:true,release:true});
+ assert.equal(released.presented,2,'새 제시가 선다');
+ assert.deepEqual(released.help,[],'답이 붙는 제시에 도움 사건 없음');
+ assert.equal(released.attempt.assisted,true,'옛 Trail은 문항 이력으로 읽는다 — 잣대가 아니다');
+ // ③ 도움을 한 번도 안 연 보통 복습도 본문항 답(정답 봄) 뒤에는 옛 Trail assisted 참 — 라이브와 같은 값
+ const plain=scene({help:false,release:false,mainFirst:true});
+ assert.deepEqual(plain.help,[]);
+ assert.equal(plain.attempt.assisted,true);
+});
+
 test('Temper 재확인: 같은 칸의 정답이 바뀐 복습을 다음 날 풀면 1일 짝(observed · 혼자 맞힘)', () => {
  const f=fixture(),run=f.lesson('cafe-expressions'),order=q('cafe-expressions','cafe-expressions-order');
  f.show(run,order);f.answer(run,order);

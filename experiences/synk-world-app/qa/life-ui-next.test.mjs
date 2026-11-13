@@ -959,6 +959,93 @@ function missedReview(t0, startAt, state = { now: 'engine' }) {
   assert.ok(progress.exportSnapshot().activeReview?.ids.includes(missed.review.id), '놓친 표현의 복습이 열렸다');
   return { progress, judge, missed, id: missed.review.id, w };
 }
+// GPT 2판 다시 검수 GA1 — 판 왕복: 지금 판 23:22 해설(옛 거울 칸에 도움) → 23:23 새 길에서 이음(펼쳐 보인 해설 — 때 23:23) → 다음 날 00:23 새 길에서
+// 앞선 때의 표시를 걷음 → 00:24 지금 판에서 답. 걷을 때 두 기록부의 칸을 함께 놓아 옛 거울도 새 칸(새 제시)에 helped false 답을 적는다 — 잣대는
+// 「답이 붙는 제시의 도움 = 제품 helped」다(옛 Trail의 assisted는 문항 · 계열 이력이라 잣대가 아니다 — life-trail.test.mjs의 진짜 옛 코치 시험, Fable 5.2 설계 확인 고1).
+test('GA3 판 왕복 — 지금 판에서 연 해설 → 새 길에서 이음 → 다음 날 새 길에서 걷음 → 지금 판에서 답: 걷을 때 두 기록부의 칸을 함께 놓는다(제품 helped false · 옛 거울에 넘긴 답도 helped false — 답이 붙는 제시에 앞 도움 없음)', t0 => {
+  const state = { now: 'engine' };
+  const { progress, judge, id, w } = missedReview(t0, kstOn('23:18'), state);
+  try {
+    const run = progress.exportSnapshot().activeReview;
+    const slot = `${run.id}:${id}`;
+    w.ui.review();
+    t0.mock.timers.tick(kstOn('23:22') - Date.now());
+    state.now = 'old';
+    progress.setDueSource(() => null);
+    w.ui.refresh();
+    w.ui.reviewStart(); // 지금 판에서 연다
+    press({ 'data-life-help': '' }); // 해설 — 옛 거울 칸에 도움 · 때 없는 표시
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt?.[id], undefined);
+    w.ui.review();
+    t0.mock.timers.tick(MINUTE); // 23:23 새 길
+    state.now = 'engine';
+    judge.on();
+    w.ui.refresh();
+    w.ui.reviewStart(); // 새 길에서 잇는다 — 펼쳐 보인 해설의 때
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelpAt[id], kstOn('23:23'));
+    w.ui.review();
+    t0.mock.timers.tick(HOUR); // 다음 날 00:23 — 앞선 때
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.equal(progress.exportSnapshot().activeReview.pendingHelp?.[id], undefined, '표시를 걷는다');
+    assert.deepEqual(w.newTrail.released, [slot], '새 판 겉의 칸을 놓는다');
+    assert.deepEqual(w.oldTrail.released, [slot], '옛 거울의 칸도 놓는다');
+    w.ui.review();
+    t0.mock.timers.tick(MINUTE); // 00:24 지금 판
+    state.now = 'old';
+    progress.setDueSource(() => null);
+    w.ui.refresh();
+    w.ui.reviewStart();
+    playReview(w);
+    assert.equal(progress.exportSnapshot().activeReview.answers[id].helped, false, '제품은 혼자 맞힘');
+    assert.equal(w.oldTrail.answers.at(-1).slot, slot);
+    assert.equal(w.oldTrail.answers.at(-1).helped, false, '옛 거울에 넘긴 답도 helped false — 답이 붙는 새 칸에 앞 도움 없음');
+    assert.deepEqual(w.oldTrail.released, [slot], '한 번만 놓는다');
+  } finally {
+    w.ui.dispose();
+  }
+});
+// Fable 5.2 설계 확인 고2 — 걷기 쓰기가 던져도(저장 충돌) 표시가 앞선 때면 두 기록부의 칸을 놓는다(놓기는 「표시 있음 · 지금 도움 아님」으로 가른다).
+test('고2 — 걷기(dropStaleHelp)가 저장 충돌로 던져도 표시가 앞선 때면 두 기록부의 칸을 놓고, 답은 제품 · 기록부 모두 helped false', t0 => {
+  t0.mock.timers.enable({ apis: ['Date'], now: START });
+  const real = freshProgress();
+  let conflict = false;
+  const progress = {
+    ...real,
+    dropStaleHelp(id) {
+      if (conflict) throw Object.assign(new Error('REVISION_CONFLICT'), { code: 'REVISION_CONFLICT' });
+      return real.dropStaleHelp(id);
+    },
+  };
+  engine(real, { unitsOf: () => [] });
+  const lesson = lessonById('greetings-expressions');
+  const missed = lesson.questions[0];
+  const id = missed.review.id;
+  const w = lifeOn({ progress });
+  try {
+    playLesson(w, lesson, { wrong: [0] });
+    goHome(w);
+    t0.mock.timers.tick(2 * MINUTE);
+    w.ui.reviewStart();
+    const run = real.exportSnapshot().activeReview;
+    const slot = `${run.id}:${id}`;
+    press({ 'data-life-help': '' });
+    w.ui.review();
+    t0.mock.timers.tick(DAY);
+    conflict = true; // 다음 날 — 걷기 쓰기가 던진다
+    w.ui.refresh();
+    w.ui.reviewStart();
+    assert.equal(real.exportSnapshot().activeReview.pendingHelp[id], true, '걷기는 실패해 표시가 남았다');
+    assert.deepEqual(w.newTrail.released, [slot], '그래도 새 판 겉의 칸을 놓는다');
+    assert.deepEqual(w.oldTrail.released, [slot], '옛 거울의 칸도 놓는다');
+    playReview(w);
+    assert.equal(real.exportSnapshot().activeReview.answers[id].helped, false, '제품은 helped false(앞선 때의 표시)');
+    assert.equal(w.newTrail.answers.at(-1).slot, slot);
+    assert.equal(w.newTrail.answers.at(-1).helped, false, '기록부에 넘긴 답도 helped false');
+  } finally {
+    w.ui.dispose();
+  }
+});
 test('D1 (A1) — 10:00에 연 해설을 23:55에 다시 열어 보면(단추 안 누름) 본 때가 23:55로 올라 다음 날 00:03 답도 도움 받은 답이다', t0 => {
   const { progress, id, w } = missedReview(t0, kstOn('09:50'));
   try {
