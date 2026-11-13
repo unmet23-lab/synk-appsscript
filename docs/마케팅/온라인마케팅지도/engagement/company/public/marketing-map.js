@@ -122,9 +122,14 @@ function mmSvg(D,v,code){
 // 계정 한 줄. withOps면(관리자 화면에서 운영 자료가 왔을 때) 확보한 계정마다 로그인 · 게시 · 수집을 따로 적는다.
 // 다른 사업의 계정이 이 보기에 연계로 들어오면(PATH 보기의 LAB 계정 등) 사업 표지를 단다 — 이 사업의 실적으로 읽히지 않게.
 function mmAccount(a,{ops=null,withOps=false,showBusiness=false,brand='',showCountry=false}={}){
-  const sub=a.secured?(a.url?`<a href="${mmEsc(a.url)}" target="_blank" rel="noopener noreferrer">${mmEsc(a.handle||a.url)}</a>`:mmEsc(a.handle||'확보')):mmEsc([a.state,a.note].filter(Boolean).join(' · '));
+  const baseSub=a.secured?(a.url?`<a href="${mmEsc(a.url)}" target="_blank" rel="noopener noreferrer">${mmEsc(a.handle||a.url)}</a>`:mmEsc(a.handle||'확보')):mmEsc([a.state,a.note].filter(Boolean).join(' · '));
+  const purpose=a.purpose&&a.purpose!==a.note?mmEsc(a.purpose):'';
+  const sub=purpose?(baseSub?`${baseSub} · ${purpose}`:purpose):baseSub;
+  const linked=mmArr(a.secondaryBusinesses).filter(b=>b&&b!==a.business);
+  const bizLabel=brand&&a.business!==brand?`${a.business} 계정`:a.business==='SYNK'?'SYNK 공통':a.business;
   const tags=[
-    a.business&&(showBusiness||brand&&a.business!==brand)?`<span class="mm-tag" data-business="${mmEsc(a.business)}">${mmEsc(brand&&a.business!==brand?`${a.business} 계정`:a.business)}</span>`:'',
+    a.business&&(showBusiness||a.business==='SYNK'||brand&&a.business!==brand)?`<span class="mm-tag" data-business="${mmEsc(a.business)}">${mmEsc(bizLabel)}</span>`:'',
+    linked.length?`<span class="mm-tag is-track">연계 ${mmEsc(linked.join('·'))}</span>`:'',
     showCountry?`<span class="mm-tag is-track">${mmEsc(a.country||'나라 미정')}</span>`:'',
     a.contentTrack&&a.contentTrack!==a.business?`<span class="mm-tag is-track">${mmEsc(a.contentTrack)}</span>`:'',
     a.shared?'<span class="mm-tag is-track">공통</span>':''
@@ -201,15 +206,16 @@ function mmPlanText(p){
   const name=p.title||p.name||p.label||p.handle||p.platform||'이름 없는 계획';
   return {name,sub:[p.business,p.contentTrack&&p.contentTrack!==p.business?p.contentTrack:'',p.platform&&p.platform!==name?p.platform:'',p.market||p.country||p.region,p.when||p.timing||p.phase,p.state||p.status,p.note].filter(Boolean).join(' · ')};
 }
-// 전체 보기 오른쪽 칸: 사업별 계정 목록(나라 불명 포함) + 장기 계획(실계정 수에 더하지 않음).
+// 전체 보기 오른쪽 칸: 사업별 확보 계정 목록(나라 불명 포함) + 미확보 계획/보류(확보 수에서 제외) + 장기 계획.
 function mmAllList(all,business,opts){
-  const accounts=mmArr(all.accounts),groups=[...MM_BUSINESS,'미분류'].filter(b=>accounts.some(a=>mmBusinessOf(a)===b));
+  const accounts=mmArr(all.accounts),securedAll=accounts.filter(a=>a.secured),unsecuredAll=accounts.filter(a=>!a.secured);
+  const groups=[...MM_BUSINESS,'미분류'].filter(b=>accounts.some(a=>mmBusinessOf(a)===b));
   const picked=groups.includes(business)?business:'';
   const chip=(value,label,count)=>`<button type="button" data-mm-action="business" data-value="${mmEsc(value)}" aria-pressed="${picked===value}">${value?`<i class="mm-dot" data-business="${mmEsc(value)}" aria-hidden="true"></i>`:''}${mmEsc(label)} <span class="mm-tnum">${count}</span></button>`;
-  let html=`<section class="mm-sec"><h2 class="mm-sec-title">계정 <span class="mm-num">${accounts.length}</span></h2><p class="mm-note">주 사업으로 나눠요. 콘텐츠 트랙(YUHO · yuhokorean · 몽글몽글)은 계정 이름 옆 작은 글씨예요. 나라가 정해지지 않은 계정도 여기 있어요.</p><div class="mm-chips" role="group" aria-label="사업으로 거르기">${chip('','전체',accounts.length)}${groups.map(b=>chip(b,b,accounts.filter(a=>mmBusinessOf(a)===b).length)).join('')}</div></section>`;
+  let html=`<section class="mm-sec"><h2 class="mm-sec-title">확보한 계정 <span class="mm-num">${securedAll.length}</span></h2><p class="mm-note">주 사업으로 나누고 연계 사업 · 홍보 목적을 함께 적어요. 콘텐츠 트랙(YUHO · yuhokorean · 몽글몽글)은 이름 옆 표지예요.${unsecuredAll.length?` 미개설 계획 · 보류 ${unsecuredAll.length}개는 확보 계정 수에 넣지 않고 사업 아래에 따로 적어요.`:''}</p><div class="mm-chips" role="group" aria-label="사업으로 거르기">${chip('','전체',securedAll.length)}${groups.map(b=>chip(b,b,securedAll.filter(a=>mmBusinessOf(a)===b).length)).join('')}</div></section>`;
   for(const b of picked?[picked]:groups){
-    const list=accounts.filter(a=>mmBusinessOf(a)===b).slice().sort((x,y)=>(y.secured?1:0)-(x.secured?1:0)),held=list.filter(a=>a.secured).length;
-    html+=`<section class="mm-sec"><h3 class="mm-sec-title"><i class="mm-dot" data-business="${mmEsc(b)}" aria-hidden="true"></i>${mmEsc(b)} <span class="mm-num">${held}/${list.length}</span></h3><div class="mm-rows">${mmAccounts(list,'',{...opts,showBusiness:false,showCountry:true})}</div></section>`;
+    const list=accounts.filter(a=>mmBusinessOf(a)===b),held=list.filter(a=>a.secured),todo=list.filter(a=>!a.secured);
+    html+=`<section class="mm-sec"><h3 class="mm-sec-title"><i class="mm-dot" data-business="${mmEsc(b)}" aria-hidden="true"></i>${mmEsc(b)} <span class="mm-num">${held.length}</span></h3><div class="mm-rows">${mmAccounts(held,'확보한 계정이 없어요.',{...opts,showBusiness:false,showCountry:true})}</div>${todo.length?`<p class="mm-region">계획 · 보류(확보 수 제외) ${todo.length}</p><div class="mm-rows">${mmAccounts(todo,'',{...opts,showBusiness:false,showCountry:true})}</div>`:''}</section>`;
   }
   const plans=mmArr(all.plans);
   if(plans.length)html+=`<section class="mm-sec"><details class="mm-plans"><summary><span class="mm-sec-title">장기 계획 <span class="mm-num">${plans.length}</span></span><span class="mm-note">아직 만들지 않은 계정 계획이에요. 위 계정 수에 더하지 않아요.</span></summary><div class="mm-rows">${plans.map(p=>{const t=mmPlanText(p);return `<div class="mm-acc"><span class="mm-led off" aria-hidden="true"></span><span class="mm-acc-name">${mmEsc(t.name)}</span><span class="mm-acc-sub">${mmEsc(t.sub)}</span></div>`;}).join('')}</div></details></section>`;

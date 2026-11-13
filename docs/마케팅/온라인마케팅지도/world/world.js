@@ -197,6 +197,8 @@ function renderHead() {
     tab.tabIndex = on ? 0 : -1;
   }
   $('#stage').setAttribute('aria-labelledby', 'tab-' + state.view);
+  const legendTarget = $('[data-slot="legend-target"]');
+  if (legendTarget) legendTarget.textContent = view.brand === 'PULSE' ? '타깃 시장' : '준비 중';
   const when = formatKst(state.world.generatedAt);
   $('[data-slot="foot"]').textContent = (when ? `계정 원장 ${when} 기준` : '계정 원장 기준') +
     (state.world.targetsUpdatedAt ? ` · PULSE 타깃 ${state.world.targetsUpdatedAt.slice(5).replace('-', '월 ')}일 정리` : '');
@@ -233,34 +235,48 @@ function opsRows(op) {
   const login = !L?.state ? '기록 미확인' : L.state === 'verified' ? `확인됨${L.observedAt ? ' · ' + loginAt : ''}${L.scope ? ' · ' + L.scope : ''}`
     : L.state === 'login-required' ? `로그인 필요${L.scope ? ' · ' + L.scope : ''}${L.observedAt ? ' · ' + loginAt + ' 확인' : ''}`
     : L.state === 'historical' ? `예전 기록만 있음${L.observedAt ? ' · ' + loginAt : ''} · 다시 확인 전` : '기록 미확인';
-  const pub = !P ? '기록 미확인' : [P.publishedCount ? `${P.omittedPublishedCount ? '최근 근거 게시' : '게시'} ${P.publishedCount}건${P.lastPublishedAt ? `(마지막 ${when(P.lastPublishedAt)})` : ''}${P.omittedPublishedCount ? ` · 그 전 게시 ${P.omittedPublishedCount}건은 따로(이 수에 안 넣음)` : ''}` : '', P.scheduledCount ? `예약 ${P.scheduledCount}건${P.nextScheduledAt ? `(다음 ${when(P.nextScheduledAt)})` : ''}` : '', P.pendingConfirmationCount ? `게시 확인 대기 ${P.pendingConfirmationCount}건` : ''].filter(Boolean).join(' · ') + (Date.parse(P.nextScheduledAt || '') <= Date.now() ? ' · 그 예약 시각이 지나 게시 확인 필요' : '') + (P.checkedAt && (P.publishedCount || P.scheduledCount || P.pendingConfirmationCount) ? ` · ${when(P.checkedAt)} 기준` : '') + (P.basis && (P.publishedCount || P.scheduledCount) ? ` — ${P.basis}` : '') || (P.checkedAt && P.publishedCount === 0 && P.scheduledCount === 0 ? `작업실 게시 · 예약 없음 · ${when(P.checkedAt)} 확인` : '기록 미확인');
+  const pubParts = !P ? [] : [
+    P.publishedCount ? `${P.omittedPublishedCount ? '최근 근거 게시' : '게시'} ${P.publishedCount.toLocaleString('ko-KR')}건${P.lastPublishedAt ? `(마지막 ${when(P.lastPublishedAt)})` : ''}${P.omittedPublishedCount ? ` · 그 전 게시 ${P.omittedPublishedCount.toLocaleString('ko-KR')}건은 따로(이 수에 안 넣음)` : ''}` : '',
+    P.scheduledCount ? `예약 ${P.scheduledCount}건${P.nextScheduledAt ? `(다음 ${when(P.nextScheduledAt)})` : ''}` : '',
+    P.pendingConfirmationCount ? `게시 확인 대기 ${P.pendingConfirmationCount}건` : ''
+  ].filter(Boolean);
+  const nextMs = Date.parse(P?.nextScheduledAt || '');
+  const pub = !P ? '기록 미확인' : pubParts.length
+    ? pubParts.join(' · ') + (Number.isFinite(nextMs) && nextMs <= Date.now() ? ' · 그 예약 시각이 지나 게시 확인 필요' : '') + (P.checkedAt ? ` · ${when(P.checkedAt)} 기준` : '') + (P.basis && (P.publishedCount || P.scheduledCount) ? ` — ${P.basis}` : '')
+    : (P.checkedAt && P.publishedCount === 0 && P.scheduledCount === 0 ? `작업실 게시 · 예약 없음 · ${when(P.checkedAt)} 확인` : '기록 미확인');
   // 수집 토큰은 서버 이름(collection-policy.mjs · account-catalog.mjs) → 한국어. 모르는 토큰은 영어 대신 「수집 상태 미확인」.
   const method = ({'official-api':'공식 API','creator-export-or-manual':'관리자 통계 · 직접 기록',server:'작업실 서버 수집','public-api':'공개 API','vk-api':'VK API','public-page':'공개 화면 읽기','screen-only':'화면으로만 확인'})[C?.method] || '';
   const col = !C?.state ? '기록 미확인' : `${({success:'오늘 수집 완료',partial:'오늘 일부만 수집',collecting:'수집 중',scheduled:'수집 시각 전',overdue:'이번 수집 전','retry-scheduled':'다시 시도 예정',paused:'자동 수집 꺼짐',failed:'수집 실패','needs-reconnect':'다시 연결해야 함','needs-connection':'연결해야 함',unsupported:'자동 수집 안 됨',archived:'보관됨','not-managed':'운영 대상 아님','not-registered':'수집 채널 미등록',unknown:'수집 상태 미확인',historical:'예전 기록만 있음'})[C.state] || '수집 상태 미확인'}${method ? ' · ' + method : ''}${C.checkedAt ? ' · 마지막 수집 ' + when(C.checkedAt) : ''}`;
-  return `<dl class="ops">${[['브라우저 로그인', login], ['게시', pub], ['수집', col]].map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  return `<dl class="ops">${[['브라우저 로그인', login, L?.state], ['게시', pub, ''], ['수집', col, C?.state]].map(([k, v, s]) => `<div${s ? ` data-state="${esc(s)}"` : ''}><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
 }
 function accRows(accounts, empty = '아직 계정이 없어요.', { brand = '', showCountry = false } = {}) {
   if (!accounts.length) return empty ? `<p class="empty">${esc(empty)}</p>` : '';
   return accounts.map(a => {
-    const sub = a.secured
+    const baseSub = a.secured
       ? (a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.handle || a.url)}</a>` : esc(a.handle || '확보'))
       : esc([a.state, a.note].filter(Boolean).join(' · '));
-    const tags = (a.business && brand && a.business !== brand ? `<span class="tag">${esc(a.business)} 계정</span>` : '')
+    const purpose = a.purpose && a.purpose !== a.note ? esc(a.purpose) : '';
+    const sub = purpose ? (baseSub ? `${baseSub} · ${purpose}` : purpose) : baseSub;
+    const linked = Array.isArray(a.secondaryBusinesses) ? a.secondaryBusinesses.filter(b => b && b !== a.business) : [];
+    const bizLabel = brand && a.business !== brand ? `${a.business} 계정` : a.business === 'SYNK' ? 'SYNK 공통' : a.business;
+    const tags = (a.business && (a.business === 'SYNK' || (brand && a.business !== brand)) ? `<span class="tag">${esc(bizLabel)}</span>` : '')
+      + (linked.length ? `<span class="tag track">연계 ${esc(linked.join('·'))}</span>` : '')
       + (a.contentTrack && a.contentTrack !== a.business ? `<span class="tag track">${esc(a.contentTrack)}</span>` : '')
       + (a.shared ? '<span class="tag track">공통</span>' : '')
       + (showCountry ? `<span class="tag track">${esc(a.country || '나라 미정')}</span>` : '');
     return `<div class="acc"><span class="led${a.secured ? '' : ' off'}" aria-hidden="true"></span><span class="acc-name">${esc(a.platform)}${tags}</span><span class="acc-sub">${sub}</span>${a.secured ? opsRows(a.operations) : ''}</div>`;
   }).join('');
 }
-// 전체 보기 오른쪽 칸: 사업별 계정(나라 불명 포함) + 장기 계획(실계정 수에 더하지 않음)
+// 전체 보기 오른쪽 칸: 사업별 확보 계정(나라 불명 포함) + 미확보 계획/보류(확보 수에서 제외) + 장기 계획
 function renderAll(view) {
-  const accounts = view.all.accounts || [], biz = a => BUSINESS.includes(a.business) ? a.business : '미분류';
+  const accounts = view.all.accounts || [], securedAll = accounts.filter(a => a.secured), unsecuredAll = accounts.filter(a => !a.secured);
+  const biz = a => BUSINESS.includes(a.business) ? a.business : '미분류';
   const groups = [...BUSINESS, '미분류'].filter(b => accounts.some(a => biz(a) === b)), picked = groups.includes(state.business) ? state.business : '';
   const chip = (value, label, n) => `<button type="button" data-business="${esc(value)}" aria-pressed="${picked === value}">${value ? `<i class="biz-dot" data-business="${esc(value)}"></i>` : ''}${esc(label)} <span class="num">${n}</span></button>`;
-  let html = `<section class="pane-sec"><h2 class="sec-title">계정 <span class="num">${accounts.length}</span></h2><p class="sec-note">주 사업으로 나눠요. 콘텐츠 트랙은 계정 이름 옆 작은 글씨예요. 나라가 정해지지 않은 계정도 여기 있어요.</p><div class="chips">${chip('', '전체', accounts.length)}${groups.map(b => chip(b, b, accounts.filter(a => biz(a) === b).length)).join('')}</div></section>`;
+  let html = `<section class="pane-sec"><h2 class="sec-title">확보한 계정 <span class="num">${securedAll.length}</span></h2><p class="sec-note">주 사업으로 나누고 연계 사업 · 홍보 목적을 함께 적어요.${unsecuredAll.length ? ` 미개설 계획 · 보류 ${unsecuredAll.length}개는 확보 계정 수에 넣지 않고 사업 아래에 따로 적어요.` : ''}</p><div class="chips">${chip('', '전체', securedAll.length)}${groups.map(b => chip(b, b, securedAll.filter(a => biz(a) === b).length)).join('')}</div></section>`;
   for (const b of picked ? [picked] : groups) {
-    const list = accounts.filter(a => biz(a) === b).sort((x, y) => (y.secured ? 1 : 0) - (x.secured ? 1 : 0));
-    html += `<section class="pane-sec"><h3 class="sec-title"><i class="biz-dot" data-business="${esc(b)}"></i>${esc(b)} <span class="num">${list.filter(a => a.secured).length}/${list.length}</span></h3><div class="rows">${accRows(list, '', { showCountry: true })}</div></section>`;
+    const list = accounts.filter(a => biz(a) === b), held = list.filter(a => a.secured), todo = list.filter(a => !a.secured);
+    html += `<section class="pane-sec"><h3 class="sec-title"><i class="biz-dot" data-business="${esc(b)}"></i>${esc(b)} <span class="num">${held.length}</span></h3><div class="rows">${accRows(held, '확보한 계정이 없어요.', { showCountry: true })}</div>${todo.length ? `<p class="region">계획 · 보류(확보 수 제외) ${todo.length}</p><div class="rows">${accRows(todo, '', { showCountry: true })}</div>` : ''}</section>`;
   }
   const plans = view.all.plans || [];
   if (plans.length) html += `<section class="pane-sec"><details class="plans"><summary><span class="sec-title">장기 계획 <span class="num">${plans.length}</span></span><span class="sec-note">아직 만들지 않은 계정 계획이에요. 위 계정 수에 더하지 않아요.</span></summary><div class="rows">${plans.map(p => `<div class="acc"><span class="led off" aria-hidden="true"></span><span class="acc-name">${esc(p.title || p.name || p.platform || '계획')}</span><span class="acc-sub">${esc([p.business, p.contentTrack !== p.business ? p.contentTrack : '', p.market || p.country, p.state, p.note].filter(Boolean).join(' · '))}</span></div>`).join('')}</div></details></section>`;
@@ -282,7 +298,7 @@ function renderList() {
     if (view.sharedNote) html += `<p class="sec-note">${esc(view.sharedNote)}</p>`;
     html += '</section>';
   }
-  html += `<section class="pane-sec"><h2 class="sec-title"><span class="sw sw-target" aria-hidden="true"></span>준비 중 <span class="num">${target.length}</span></h2>`;
+  html += `<section class="pane-sec"><h2 class="sec-title"><span class="sw sw-target" aria-hidden="true"></span>${view.brand === 'PULSE' ? '타깃 시장(준비)' : '준비 중'} <span class="num">${target.length}</span></h2>`;
   html += target.length ? `<div class="rows">${countRows(target, view.countries.length > 10)}</div>` : '<p class="sec-note">준비 중인 나라는 없어요.</p>';
   html += '</section>';
   return html;
@@ -447,7 +463,7 @@ function counts() {
   for (const id of VIEWS) {
     if (!hasView(id)) continue;
     const s = id === 'all' ? null : state.world[id].summary;
-    const text = id === 'all' ? String(state.world.all.summary?.managed ?? state.world.all.accounts.length) : s.target ? `${s.active} · ${s.target}` : String(s.active);
+    const text = id === 'all' ? String(state.world.all.summary?.managed ?? state.world.all.accounts.filter(a => a.secured).length) : s.target ? `${s.active} · ${s.target}` : String(s.active);
     for (const el of document.querySelectorAll(`.seg [data-count="${id}"]`)) el.textContent = text;
   }
 }

@@ -68,14 +68,23 @@ test('PULSE 나라의 공통 계정(accountRefs)은 확보로 세고 한 번만 
   assert.doesNotMatch(au, /만들 계정/, '공통 계정으로 채운 나라는 새 계정 계획이 없다');
 });
 
-test('전체 보기: 사업별로 묶고 장기 계획은 따로 · 계정 수에 더하지 않는다', () => {
+test('전체 보기: 사업별로 묶고 미개설 계획·장기 계획은 확보 계정 수에 더하지 않는다 · 연계 사업·목적 표시', () => {
   const { mmPage, mmAllView } = screen();
   const D = fixture();
   const html = mmPage(D, 'all', null);
   assert.match(html, /관리 중<\/span><strong>5<small>개/);
   assert.match(html, /장기 계획 <span class="mm-num">1<\/span>/);
-  assert.match(html, /계정 <span class="mm-num">6<\/span>/, '계정 수는 계정 목록 길이(장기 계획 제외)');
+  assert.match(html, /확보한 계정 <span class="mm-num">5<\/span>/, '미개설 계획 계정은 실제 확보 계정 수에 넣지 않는다');
+  assert.match(html, /계획 · 보류\(확보 수 제외\) 1/, '미개설 계획은 사업 아래에 따로 분리');
   assert.match(html, /나라 미정/, '나라 없는 계정은 「나라 미정」으로');
+  const rich = fixture();
+  rich.all.accounts.push(acc('yuhokorean-ig', 'LAB', 'Instagram', true, { contentTrack: 'yuhokorean', purpose: '한국어 학습 표현·숏폼' }));
+  rich.all.accounts.find(a => a.id === 'yuho-linkedin-primary').secondaryBusinesses = ['LAB', 'SHIFT', 'PULSE', 'PATH'];
+  const richHtml = mmPage(rich, 'all', null);
+  assert.match(richHtml, /SYNK 공통/);
+  assert.match(richHtml, /연계 LAB·SHIFT·PULSE·PATH/);
+  assert.match(richHtml, /yuhokorean/);
+  assert.match(richHtml, /한국어 학습 표현·숏폼/);
   const lab = mmPage(D, 'all', null, { business: 'SHIFT' });
   assert.doesNotMatch(lab.split('<aside')[1], /@lab-vn-yt/, '사업 거르기');
   const kr = mmAllView(D).countries.find(c => c.code === 'KR');

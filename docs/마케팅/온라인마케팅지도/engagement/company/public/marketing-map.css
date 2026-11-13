@@ -63,7 +63,7 @@
 :root .synk-workspace .sw-simple .mm-tip{position:absolute;z-index:3;pointer-events:none;padding:8px 12px;border-radius:10px;background:var(--ss-ink);color:#fff;font-size:13px;line-height:1.45;white-space:nowrap;transform:translate(-50%,calc(-100% - 14px))}
 :root .synk-workspace .sw-simple .mm-tip b{display:block;font-size:14.5px;font-weight:var(--w-strong)}
 
-:root .synk-workspace .sw-simple .mm-pane{border-left:1px solid var(--ss-line);overflow:auto;overscroll-behavior:contain}
+:root .synk-workspace .sw-simple .mm-pane{border-left:1px solid var(--ss-line);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--ss-line-2) transparent}
 :root .synk-workspace .sw-simple .mm-sec{padding:18px 20px}
 :root .synk-workspace .sw-simple .mm-sec+.mm-sec{border-top:1px solid var(--ss-line)}
 :root .synk-workspace .sw-simple .mm-sec-title{display:flex;align-items:center;gap:8px;font-family:var(--ss-sans);font-size:15px;font-weight:var(--w-title);color:var(--ss-ink)}
@@ -112,8 +112,9 @@
 :root .synk-workspace .sw-simple .mm-ops>div{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:10px;font-size:13px;line-height:1.45}
 :root .synk-workspace .sw-simple .mm-ops dt{color:var(--ss-ink-4);white-space:nowrap}
 :root .synk-workspace .sw-simple .mm-ops dd{margin:0;color:var(--ss-ink-2);overflow-wrap:anywhere}
-:root .synk-workspace .sw-simple .mm-ops>div[data-state="verified"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="active"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="ok"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-green);vertical-align:2px}
-:root .synk-workspace .sw-simple .mm-ops>div[data-state="login-required"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="failed"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-reconnect"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-coral,#E5484D);vertical-align:2px}
+:root .synk-workspace .sw-simple .mm-ops>div[data-state="verified"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="success"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-green);vertical-align:2px}
+:root .synk-workspace .sw-simple .mm-ops>div[data-state="partial"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="overdue"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="retry-scheduled"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="historical"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-butter,#F5C445);vertical-align:2px}
+:root .synk-workspace .sw-simple .mm-ops>div[data-state="login-required"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="failed"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-reconnect"] dd::before,:root .synk-workspace .sw-simple .mm-ops>div[data-state="needs-connection"] dd::before{content:"";display:inline-block;width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ss-coral,#E5484D);vertical-align:2px}
 :root .synk-workspace .sw-simple .mm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 :root .synk-workspace .sw-simple .mm-chips button{display:inline-flex;align-items:center;gap:6px;height:30px;min-height:0;padding:0 12px;border:0;border-radius:999px;background:var(--ss-surface);box-shadow:none;font-size:13px;font-weight:var(--w-strong);color:var(--ss-ink-3)}
 :root .synk-workspace .sw-simple .mm-chips button[aria-pressed="true"]{background:var(--ss-paper);color:var(--ss-ink);box-shadow:inset 0 0 0 1px var(--ss-line-2)}
@@ -133,7 +134,9 @@
 }
 @media (max-width:700px){
   :root .synk-workspace .sw-simple .mm-head{grid-template-columns:minmax(0,1fr)}
-  :root .synk-workspace .sw-simple .mm-switch{justify-self:start;border-radius:20px}
+  :root .synk-workspace .sw-simple .mm-switch{justify-self:start;gap:6px;padding:0;background:none;border-radius:0}
+  :root .synk-workspace .sw-simple .mm-switch button{height:34px;padding:0 13px;background:var(--ss-surface)}
+  :root .synk-workspace .sw-simple .mm-switch button[aria-pressed="true"]{background:var(--ss-paper);box-shadow:inset 0 0 0 1.5px var(--ss-ink)}
   :root .synk-workspace .sw-simple .mm-box{padding:14px 0 48px}
   :root .synk-workspace .sw-simple .mm-scroll{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   :root .synk-workspace .sw-simple .mm-scroll::-webkit-scrollbar{display:none}

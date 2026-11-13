@@ -31,7 +31,12 @@ test('서버 설정을 사실대로 보인다: hoursKst가 있으면 그대로, 
   assert.equal(selected(old, 'hourKst2'), '', '둘째 시각은 「없음」');
   assert.match(old, /지금 서버 설정은 하루 한 번이에요/);
   assert.match(old, /<option value="" selected>없음 · 하루 한 번<\/option>/);
-  assert.doesNotMatch(two + old, /\sstyle=/, 'CSP: style 속성 없음');
+  const withNext = settingsHoursFields({ enabled: true, hoursKst: [9, 21], nextAt: '2026-11-13T12:00:00.000Z' });
+  assert.match(withNext, /다음 전체 수집 예정: 11월 13일 21:00 \(한국 시간\)/);
+  const paused = settingsHoursFields({ enabled: false, hoursKst: [9, 21], nextAt: '2026-11-13T12:00:00.000Z' });
+  assert.match(paused, /지금 자동 수집이 꺼져 있어요\./);
+  assert.doesNotMatch(paused, /다음 전체 수집 예정/);
+  assert.doesNotMatch(two + old + withNext + paused, /\sstyle=/, 'CSP: style 속성 없음');
 });
 
 test('저장은 hoursKst 배열을 보낸다: 없음 → 한 번, 같은 시각 → 한 번, 순서는 오름차순', () => {

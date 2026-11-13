@@ -208,9 +208,10 @@ function ssPerfSummary(report,key){
   const m=report?.metrics?.[key];
   if(!m)return null;
   const period=m.period||{},pc=m.periodComparison||null;
-  const rate=pc&&pc.complete&&pc.reason==null?ssNum(pc.rate):null;
-  // matchedRate(11-13): 세 경계일 기록이 다 있는 일부 대상만의 실제 증감률. 전체 비교(rate)가 없고 이유가 「일부 대상」일 때만 쓰고, 일부라는 것을 크게 밝힌다.
-  const matchedRate=pc&&rate===null&&pc.reason==='partial-coverage'?ssNum(pc.matchedRate):null;
+  const prevZero=pc&&(pc.previous===0||ssNum(pc.previous)===0);
+  const rate=pc&&!prevZero&&pc.complete&&pc.reason==null?ssNum(pc.rate):null;
+  // matchedRate(11-13): 세 경계일 기록이 다 있는 일부 대상만의 실제 증감률. 전체 비교(rate)가 없고 이유가 「일부 대상」이며 이전 기간이 0이 아닐 때만 쓰고, 일부라는 것을 크게 밝힌다.
+  const matchedRate=pc&&!prevZero&&rate===null&&pc.reason==='partial-coverage'?ssNum(pc.matchedRate):null;
   return {
     delta:ssNum(period.delta),count:period.count||0,eligible:period.eligible||0,complete:!!period.complete,
     cumulative:ssNum(m.latest),cumulativeCount:m.latestCount??m.count??0,stale:m.stale||0,
@@ -287,16 +288,20 @@ function ssPerfBlock(perf,D){
       const full=C&&C.rate!==null&&C.rate!==undefined,part=!full&&C&&C.matchedRate!==null&&C.matchedRate!==undefined;
       const rateText=full?pct(C.rate):part?pct(C.matchedRate):'—';
       const cover=(c,e)=>e?`대상 ${ssN(c)}/${ssN(e)}`:'대상 없음';
+      const partialTag=C?.reason==='partial-coverage'?(C.eligible?`일부 대상만 ${ssN(C.count)}/${ssN(C.eligible)}`:'일부 대상만'):'';
+      const hasPair=C&&C.current!==null&&C.previous!==null;
+      const compSub=part?`비교 가능한 ${ssN(C.count)}/${ssN(C.eligible)}개 기준 · 이번 ${ssSigned(C.current)} · 이전 ${ssSigned(C.previous)} · 전체 계정 성장이 아니에요`:C?C.reason?`${SS_PERF_REASON[C.reason]||C.reason}${hasPair?`${C.eligible?` · 비교 가능한 ${ssN(C.count)}/${ssN(C.eligible)}개 기준`:''} · 이번 ${ssSigned(C.current)} · 이전 ${ssSigned(C.previous)}`:''}`:`같은 대상 ${ssN(C.count)}개 · 이번 ${ssSigned(C.current)} · 이전 ${ssSigned(C.previous)}`:'비교 자료가 아직 없어요';
+      const cumSub=metric==='followers'?'기간 증가가 아니라 지금 값이에요':S.cumulative===null?'수집된 게시물 누적 기록이 아직 없어요':`기간 증가가 아니라 ${ssMdShort(range?.end)}까지 쌓인 합(${metric==='views'?'플랫폼 전체 총조회 아님':'플랫폼 전체 총합 아님'}) · 게시물 ${ssN(S.cumulativeCount)}개${S.stale?` · 그중 ${ssN(S.stale)}개는 그 전 기록`:''}`;
       const cells=[
         [`${days}일 동안 늘어난 ${label}`,S.delta===null?'—':ssSigned(S.delta),S.delta===null?'두 끝날 모두 기록이 있는 대상이 없어요':`${cover(S.count,S.eligible)}${S.complete?'':' · 일부만'}`],
-        [`이전 ${days}일과 비교`,rateText,part?`비교 가능한 ${ssN(C.count)}/${ssN(C.eligible)}개 기준 · 이번 ${ssSigned(C.current)} · 이전 ${ssSigned(C.previous)} · 전체 계정 성장이 아니에요`:C?C.reason?SS_PERF_REASON[C.reason]||C.reason:`같은 대상 ${ssN(C.count)}개 · 이번 ${ssSigned(C.current)} · 이전 ${ssSigned(C.previous)}`:'비교 자료가 아직 없어요',part?'일부 대상만':''],
-        [metric==='followers'?'지금 팔로워(계정 합)':`게시물 누적 ${label}(지금까지)`,S.cumulative===null?'—':ssN(S.cumulative),metric==='followers'?'기간 증가가 아니라 지금 값이에요':`기간 증가가 아니라 ${ssMdShort(range?.end)}까지 쌓인 합 · 게시물 ${ssN(S.cumulativeCount)}개${S.stale?` · 그중 ${ssN(S.stale)}개는 그 전 기록`:''}`]
+        [`이전 ${days}일과 비교`,rateText,compSub,partialTag],
+        [metric==='followers'?'지금 팔로워(계정 합)':`게시물 누적 ${label}(지금까지)`,S.cumulative===null?'—':ssN(S.cumulative),cumSub]
       ];
       const table=`<details class="ss-perf-table"><summary>날짜별 숫자 표로 보기</summary><div class="ss-detail"><table><thead><tr><th>날짜</th><th>이번 기간 하루 증가</th><th>비교 대상</th><th>이전 기간 날짜</th><th>이전 하루 증가</th></tr></thead><tbody>${cur.map((c,i)=>{const p=prev[i]||{};return `<tr><td>${ssEsc(ssMd(c.date))}</td><td${c.value===null?' class="is-dash"':''}>${c.value===null?'기록 없음':ssEsc(ssSigned(c.value))}</td><td>${ssEsc(cover(c.count,c.eligible))}</td><td>${ssEsc(p.date?ssMd(p.date):'')}</td><td${p.value===null||p.value===undefined?' class="is-dash"':''}>${p.value===null||p.value===undefined?'기록 없음':ssEsc(ssSigned(p.value))}</td></tr>`;}).join('')}</tbody></table></div></details>`;
       // 공개 통계만 연결한 YouTube는 수집 기록을 30일만 보관해(기존 보존 정책) 60·90일 비교가 쌓이지 않는다 — YouTube가 대상에 들 때만 한 번 알린다(전체 계정 제한이 아님).
       const ytInScope=kind==='platform'?value==='youtube':kind==='channel'?accounts.some(a=>a.channelId===value&&a.platform==='youtube'):kind==='business'||!kind?accounts.some(a=>a.platform==='youtube'):false;
       const ytNote=days>=60&&ytInScope?'공개 통계만 연결한 YouTube는 기록을 30일만 보관해서, 그보다 오래된 비교에는 채널 소유자 인증이 필요해요(기록이 없는 날은 비워 둬요).':'';
-      const notes=[metric==='reach'?'도달은 게시물마다 받은 도달을 더한 것이라 서로 다른 사람 수가 아니에요.':'',metric==='followers'?'팔로워는 계정 숫자예요. 게시물 숫자와 더하지 않아요.':'',ytNote,'하루 증가는 그날과 전날 모두 기록이 있는 대상만 더해요. 기록이 없는 날은 선을 끊고 0으로 메우지 않아요. 플랫폼이 숫자를 고치면 줄어들 수도 있어요.'].filter(Boolean);
+      const notes=[metric==='views'?'기간 동안 늘어난 조회, 수집한 최근 게시물의 누적 조회, 플랫폼 채널 전체 총조회는 서로 다른 숫자예요.':'',metric==='reach'?'도달은 게시물마다 받은 도달을 더한 것이라 서로 다른 사람 수가 아니에요.':'',metric==='followers'?'팔로워는 계정 숫자예요. 게시물 숫자와 더하지 않아요.':'',ytNote,'하루 증가는 그날과 전날 모두 기록이 있는 대상만 더해요. 기록이 없는 날은 선을 끊고 0으로 메우지 않아요. 플랫폼이 숫자를 고치면 줄어들 수도 있어요.'].filter(Boolean);
       body=unassignedNote+`<div class="ss-perf-cells">${cells.map(([k,v,s,tag],i)=>`<div class="ss-perf-cell${i===0?' is-main':''}${tag?' is-partial':''}"><span>${ssEsc(k)}${tag?`<em class="ss-perf-tag">${ssEsc(tag)}</em>`:''}</span><strong class="ss-perf-num">${ssEsc(v)}</strong><small>${ssEsc(s)}</small></div>`).join('')}</div>`
         +`<div class="ss-perf-plot"><ul class="ss-perf-legend" aria-label="선 안내"><li><i class="ss-perf-key is-cur" aria-hidden="true"></i>이번 ${days}일 · 하루 증가</li><li><i class="ss-perf-key is-prev" aria-hidden="true"></i>이전 ${days}일</li></ul>${ssPerfChart(cur,prev,{label})}<div class="ss-perf-tip" role="status" hidden></div></div>`
         +table+`<p class="ss-foot">${ssEsc(notes.join(' '))}</p>`;
@@ -319,7 +324,8 @@ function ssAccounts(D){
   const countryViews=measured.length?measured.reduce((s,a)=>s+a.views30,0):null;
   const viewsText=countryViews===null?'— (조회 수를 아직 못 받았어요)':`${ssN(countryViews)}회${missing?`(${missing}곳은 조회 수 미측정이라 뺌)`:''}`;
   const head='<div class="ss-acc-head"><span>계정</span><span>게시</span><span>수집</span><span title="최근 30일에 올린 게시물 수 · 그 게시물들의 지금까지 누적 조회(기간 동안 늘어난 조회가 아님)">30일 게시 · 누적 조회</span><span class="is-r">마지막</span></div>';
-  const blocks=['유호','브리핑','LAB','회사'].map(b=>{
+  const brandOrder=[...new Set(['유호','브리핑','LAB','SHIFT','PULSE','PATH','SYNK','회사',...A.filter(a=>!a.country).map(a=>a.brand||'회사')])];
+  const blocks=brandOrder.map(b=>{
     const list=A.filter(a=>(a.brand||'회사')===b&&!a.country).sort(order),extra=b==='LAB'?country:[];
     if(!list.length&&!extra.length)return '';
     const fold=extra.length?`<details class="ss-fold" id="ss-country"><summary><span class="ss-what">나라별 계정 ${ssN(extra.length)}개</span><span class="ss-hint">${ssEsc(`최근 30일 게시물 누적 조회 ${viewsText}`)}</span></summary><div class="ss-country-list">${extra.slice().sort(order).map(ssAccRow).join('')}</div></details>`:'';
@@ -328,8 +334,8 @@ function ssAccounts(D){
   const auto=A.filter(a=>a.publish==='자동 게시').length,app=A.filter(a=>a.publish==='앱에서 직접').length,off=A.filter(a=>a.collect==='수집 안 함').length,stopped=A.filter(a=>a.collect==='수집 멈춤').length;
   const cPosts=country.reduce((s,a)=>s+(a.posts30||0),0),cLast=country.map(a=>a.lastPost).filter(Boolean).sort();
   const cRange=cLast.length?(cLast[0]===cLast.at(-1)?ssMdShort(cLast[0]):`${ssMdShort(cLast[0])}~${ssMdShort(cLast.at(-1))}`):'';
-  const decide=country.length?`<div class="ss-task is-first"><div><div class="ss-task-label">${ssDot()}정할 것</div><b>${ssEsc(`나라별 LAB 계정 ${country.length}개 · 최근 30일 게시물의 누적 조회 ${viewsText}`)}</b><p>${ssEsc(`${cPosts?`30일 동안 ${cPosts}편 올렸어요${cRange?`(마지막 게시 ${cRange})`:''}`:'30일 동안 올린 게시가 없어요'}. 이 숫자는 나라별 계정만이에요 — 본 LAB 계정은 위 LAB 목록에 따로 있고, 기간 동안 늘어난 조회는 성과 장의 「기간 성과」에서 봐요. 계속 둘지 정해 주세요.`)}</p></div><button class="ss-btn" type="button" data-ss-action="country">계정 보기</button></div>`:'';
-  return ssHead({title:'계정',lede:'계정마다 자동으로 올라가는지, 30일 동안 얼마나 봤는지 보여 줘요.',poster:ssPoster({label:'SYNK SOCIAL · ACCOUNTS',stats:[[ssN(A.length),'계정'],[ssN(auto),'자동 게시']],word:'계정',art:'accounts'})})
+  const decide=country.length?`<div class="ss-task is-first"><div><div class="ss-task-label">${ssDot()}정할 것</div><b>${ssEsc(`나라별 LAB 계정 ${country.length}개 · 최근 30일 게시물의 누적 조회 ${viewsText}`)}</b><p>${ssEsc(`${cPosts?`30일 동안 ${cPosts}편 올렸어요${cRange?`(마지막 게시 ${cRange})`:''}`:'30일 동안 올린 게시가 없어요'}. 이 숫자는 나라별 계정만이에요 — 본 LAB 계정은 아래 LAB 목록에 따로 있고, 기간 동안 늘어난 조회는 성과 장의 「기간 성과」에서 봐요. 계속 둘지 정해 주세요.`)}</p></div><button class="ss-btn" type="button" data-ss-action="country">계정 보기</button></div>`:'';
+  return ssHead({title:'계정',lede:'계정마다 자동 게시·수집 상태와 최근 30일 게시물의 누적 조회를 보여 줘요.',poster:ssPoster({label:'SYNK SOCIAL · ACCOUNTS',stats:[[ssN(A.length),'계정'],[ssN(auto),'자동 게시']],word:'계정',art:'accounts'})})
     +ssMeter([['자동 게시',ssUnit(auto,'개'),'green','자동'],['앱에서 직접',ssUnit(app,'개'),'butter','앱 직접'],['나라별',ssUnit(country.length,'개'),undefined,'나라별'],stopped?['수집 멈춤',ssUnit(stopped,'개'),'coral','멈춤']:['수집 안 함',ssUnit(off,'개'),undefined,'수집 안 함']])
     +decide+blocks;
 }

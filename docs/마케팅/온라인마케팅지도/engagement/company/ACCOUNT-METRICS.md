@@ -62,3 +62,9 @@ node tools/계정성과점검.js
 2026-11-13에 [Buffer Analyze](https://buffer.com/analyze), [Metricool 기간 비교](https://help.metricool.com/how-comparison-periods-work-in-your-metrics-yj8tx), [shadcn 차트](https://ui.shadcn.com/charts/area)를 확인했다. 기간 선택, 이번/이전 값, 갱신 시각, 단순 격자와 툴팁을 기존 Workspace 색·글꼴 안에서 적용한다. 7/30/60/90일, 사업/플랫폼/계정 선택, 실선과 이전 기간 점선, 숫자 표를 제공하며 빠진 날짜의 선을 끊는다. Dribbble은 접근 실패, Mobbin은 로그인 필요라 원문을 확인했다고 보고하지 않는다.
 
 공식 지표 계약: [YouTube Analytics](https://developers.google.com/youtube/analytics/reference/reports/query), [Instagram Insights](https://developers.facebook.com/documentation/instagram-platform/insights), [TikTok 영상 목록](https://developers.tiktok.com/doc/tiktok-api-v2-video-list/), [Telegram 통계](https://core.telegram.org/api/stats). 제공 범위와 승인 상태는 계정별 실제 응답으로 다시 확인한다.
+
+## 2026-11-14 화면 마감 확인
+
+카본이 주 사업·연계 사업·홍보 목적 표시, 확보 계정과 계획 분리, 부분 비교 N/M·이전 0 처리, 명시한 SNS 해시 경로 유지, 실제 다음 수집 시각 표시를 마감했다. GPT가 바뀐 파일을 읽고 관련 189개 시험과 공식 DataApp 빌드를 확인했다. Workspace 미리보기의 지도·성과·부분 비교·계정 1440/390에서 가로 넘침·깨진 그림·실패 글꼴·기록된 화면 오류가 없었고, 09/21시와 기존 하루 한 번 설정을 각각 확인했다. 예시 성과 숫자는 미리보기로 표시했으며 운영 실적으로 사용하지 않았다.
+
+11-14 00:21 KST 운영 읽기 대조는 관리 71·등록 40·수집 연결 32로 같았다. 기존 계산 방식의 LAB 최근 30일 게시물 누적 조회는 281,389회(본 LAB 네 계정 263,469 포함)였으며, 이것을 30일 동안 발생한 조회수로 바꾸어 부르지 않는다. 라이브 반영·추가 연결 결과는 다음 운영 기록에 별도로 남긴다.

@@ -81,15 +81,20 @@ test('전체 비교가 없고 일부 대상만 비교되면 matchedRate를 「�
   const withPc = pc => { const r = report(); r.metrics.views.periodComparison = pc; return { days: 30, metric: 'views', target: '', status: 'ready', current: r, previous: report() }; };
   const part = ssPerfBlock(withPc({ current: 90, previous: 60, delta: 30, rate: null, matchedRate: 50, count: 18, eligible: 26, complete: false, reason: 'partial-coverage' }), D);
   assert.match(part, /▲ 50%/);
-  assert.match(part, /class="ss-perf-tag">일부 대상만</);
+  assert.match(part, /class="ss-perf-tag">일부 대상만 18\/26</);
   assert.match(part, /비교 가능한 18\/26개 기준 · 이번 \+90 · 이전 \+60 · 전체 계정 성장이 아니에요/);
-  // 숫자 고침 · 이전 0은 서버가 matchedRate를 null로 준다 — 화면도 내지 않는다(이유 문구).
+  // 숫자 고침 · 이전 0은 서버가 matchedRate를 null로 준다 — 화면도 %를 내지 않고 이번·이전 실제값만 밝힌다.
   for (const reason of ['counter-correction', 'zero-previous']) {
     const html = ssPerfBlock(withPc({ current: 5, previous: 0, rate: null, matchedRate: 77, count: 1, eligible: 2, complete: false, reason }), D);
     assert.doesNotMatch(html, /77%|일부 대상만/, reason);
+    assert.match(html, /이번 \+5 · 이전 0/, reason);
   }
-  // matchedRate가 null이면 예전처럼 이유만.
-  assert.match(ssPerfBlock(withPc({ current: 1, previous: 2, rate: null, matchedRate: null, count: 1, eligible: 2, complete: false, reason: 'partial-coverage' }), D), /일부 대상만 두 기간 기록이 있어 %는 내지 않아요/);
+  const zeroComplete = ssPerfBlock(withPc({ current: 10, previous: 0, delta: 10, rate: 99, count: 2, eligible: 2, complete: true, reason: null }), D);
+  assert.doesNotMatch(zeroComplete, /99%|▲|▼/, '이전 0이면 어떤 경우에도 퍼센트를 만들지 않는다');
+  // matchedRate가 null인 부분 비교도 「일부 대상만 N/M」 표지와 이번·이전 실제값을 함께 붙인다.
+  const noRatePart = ssPerfBlock(withPc({ current: 1, previous: 2, rate: null, matchedRate: null, count: 1, eligible: 2, complete: false, reason: 'partial-coverage' }), D);
+  assert.match(noRatePart, /class="ss-perf-tag">일부 대상만 1\/2</);
+  assert.match(noRatePart, /일부 대상만 두 기간 기록이 있어 %는 내지 않아요 · 비교 가능한 1\/2개 기준 · 이번 \+1 · 이전 \+2/);
   // 구형 응답(matchedRate 없음 · 완전 비교)은 그대로 rate.
   const old = ssPerfBlock(withPc({ current: 120, previous: 80, delta: 40, rate: 50, count: 2, eligible: 2, complete: true, reason: null }), D);
   assert.match(old, /▲ 50%/);
@@ -143,9 +148,11 @@ test('수집 줄: 마지막 성공 · 범위 · 일부 실패 · 하루 수집 �
 test('휴대폰 탭도 지도가 맨 앞 · 계정 장의 30일 숫자는 「게시물 누적 조회」라고 쓴다', () => {
   const { SNS_SIMPLE_VIEWS, ssAccounts } = screen();
   assert.equal(SNS_SIMPLE_VIEWS[0][0], 'map');
-  const html = ssAccounts({ accounts: [{ brand: 'LAB', country: true, platform: 'youtube', handle: '@vn', posts30: 2, views30: 1234 }] });
+  const html = ssAccounts({ accounts: [{ brand: 'LAB', country: true, platform: 'youtube', handle: '@vn', posts30: 2, views30: 1234 }, { brand: 'SHIFT', country: false, platform: 'instagram', handle: '@shift', posts30: 4, views30: 560 }] });
   assert.match(html, /최근 30일 게시물의 누적 조회 1,234회/);
-  assert.doesNotMatch(html, /30일 조회가 다 합쳐/);
+  assert.match(html, /@shift/, '새 사업 분류(SHIFT · PULSE · PATH · SYNK) 계정을 누락하지 않는다');
+  assert.match(html, /아래 LAB 목록에 따로 있고/);
+  assert.doesNotMatch(html, /30일 조회가 다 합쳐|30일 동안 얼마나 봤는지/);
   // 서버가 조회를 못 받은 계정(views30: null)은 0으로 더하지 않고 빠진 수를 밝힌다.
   const partial = ssAccounts({ accounts: [{ brand: 'LAB', country: true, platform: 'youtube', handle: '@vn', posts30: 2, views30: 1234 }, { brand: 'LAB', country: true, platform: 'tiktok', handle: '@vn2', posts30: 1, views30: null }] });
   assert.match(partial, /누적 조회 1,234회\(1곳은 조회 수 미측정이라 뺌\)/);
