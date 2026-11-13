@@ -156,9 +156,9 @@ function msDelayedStep({skillId,projection,practiceOpen,followupOpen,now}){
   const due=rows.find(row=>row.status==='due'),observed=rows.filter(row=>row.status==='observed').length;
   const upcoming=rows.filter(row=>row.status==='not_due'&&Number.isFinite(Date.parse(row.dueAt))&&Date.parse(row.dueAt)>=now).sort((a,b)=>Date.parse(a.dueAt)-Date.parse(b.dueAt))[0];
   // 지금 확인할 창이나 다가올 창이 있으면 다음 차례(○ — 이미 확인한 수는 글에 함께), 남은 창 없이 확인한 것만 있으면 기록에 있는 일(●).
-  // 확인 없이 창이 다 지났으면(기간 지남 · 판단 보류) 이 줄을 두지 않는다 — 판의 「시간을 두고 다시 확인」 카드가 창마다 보인다(카본 A1).
+  // 확인 없이 창이 다 지났으면(기간 지남 · 판단 보류) 이 줄을 두지 않는다 — 판의 「시간을 두고 다시 확인」 카드가 창마다 보인다(검수 A1).
   if(!due&&!upcoming&&!observed)return null;
-  // 지금 확인할 창이어도 맞는 새 문항이 없을 수 있다 — 판의 「시간을 두고 다시 확인」이 그 줄에 문항을 붙였을 때만 「지금 확인할 수 있어요」(GPT GA2).
+  // 지금 확인할 창이어도 맞는 새 문항이 없을 수 있다 — 판의 「시간을 두고 다시 확인」이 그 줄에 문항을 붙였을 때만 「지금 확인할 수 있어요」(검수 GA2).
   let open=false;if(due){try{open=followupOpen?.(due.id)===true;}catch{open=false;}}
   return {step:'delayed',state:due||upcoming?'planned':'done',observed,due:!!due,open,window:(due||upcoming)?.window??null,dueAt:due?null:upcoming?.dueAt??null};
  }
