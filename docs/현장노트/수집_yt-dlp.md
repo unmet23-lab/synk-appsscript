@@ -36,6 +36,7 @@
 - [틱톡 프로필이 「Unable to extract secondary user ID」로 실패한다 — 흉내내기(curl_cffi)가 없어서다](#틱톡-프로필이-unable-to-extract-secondary-user-id로-실패한다--흉내내기curl_cffi가-없어서다-2026-10-25-claude)
 - [Data API 영상 길이는 yt-dlp보다 1초 길게(올림) 온다](#data-api-영상-길이는-yt-dlp보다-1초-길게올림-온다--꼭-3분인-쇼츠가-181초가-되어-3분-넘음으로-빠질-수-있다-2026-10-25-claude)
 - [Data API로는 숫자가 읽히는데 yt-dlp 받기는 「This video is not available」로 끝난다](#data-api로는-숫자가-읽히는데-yt-dlp-받기는-this-video-is-not-available로-끝난다--api의-지역-제한-칸은-비어-있다-2026-10-26-claude)
+- [어린이용 쇼츠가 「This video is not available」로 끝난다 — JS 실행기가 없어 n 풀기가 실패한 것이다](#어린이용ebs-키즈-쇼츠가-this-video-is-not-available로-끝난다--js-실행기가-없어-n-풀기가-실패한-것이다---js-runtimes-node---remote-components-ejsgithub로-받힌다-2026-11-13-claude)
 - [댓글 · 검색도 Data API로 읽으면 유튜브 차례(잠금)가 필요 없다](#댓글--검색도-data-api로-읽으면-유튜브-차례잠금가-필요-없다--댓글은-commentthreads1단위-검색은-searchlist100단위라-꼭-필요한-것만-2026-10-26-claude)
 - [인스타 공개 계정의 글 숫자는 웹 API를 직접 부르면 429 — ego에서 그 페이지가 받는 응답을 읽는다](#인스타-공개-계정의-글-숫자는-웹-api를-직접-부르면-429--ego에서-그-페이지가-받는-응답을-읽는다-2026-10-23-claude)
 - [인스타 릴스의 재생 수는 릴스 페이지에 없고, 그 계정 릴스 탭의 graphql 응답(`play_count`)에만 있다](#인스타-릴스의-재생-수는-릴스-페이지에-없고-그-계정-릴스-탭의-graphql-응답play_count에만-있다-2026-10-25-claude)
@@ -103,6 +104,12 @@
 - 원인: 틱톡 추출기가 브라우저 흉내내기를 하려는데 쓸 대상이 없다는 경고(「attempting impersonation, but no impersonate target is available」)를 내고, 흉내내기 없이 받은 페이지에 사용자 ID가 없다 — 같은 서버 · 같은 계정을 몇 분 뒤 흉내내기 든 판으로 부르니 됐다. 데이터센터 IP에서 훨씬 잦다. PC의 pip yt-dlp에도 curl_cffi가 없는데, PC의 가끔 실패도 같은 까닭인지는 아직 시험하지 않았다.
 - 고침: curl_cffi가 든 공식 단독 실행판(`yt-dlp_linux` · `yt-dlp_linux.zip`, 2026.10.21, 릴리스의 `SHA2-256SUMS`와 대조)으로 바꾸자 서버에서 여섯 번 다 됐다. 한 파일 꼴은 부를 때마다 몸을 풀어 시작에 1.5초가 들고, 풀어 둔 꼴(`.zip`)은 0.8초다. PC는 pip 판에 curl_cffi를 더했다(`python -m pip install "yt-dlp[curl-cffi]==2026.8.19"` — curl_cffi 0.16.3, 판은 그대로). 그 뒤 10-24에 실패한 계정 셋 중 둘이 읽혔고(첫 호출은 25초, 다음부터 3~8초), 10-25 수요 스캔은 27곳 중 21곳(10-24 19곳)이었다 — 흉내내기로도 다 풀리지는 않는다.
 - 다시 확인: `yt-dlp --ignore-config --list-impersonate-targets`에 `curl_cffi`가 쓸 수 있는 대상으로 나오면 흉내내기를 쓸 수 있다(PC의 pip 판은 모두 「unavailable」).
+
+### 어린이용(EBS 키즈) 쇼츠가 「This video is not available」로 끝난다 — JS 실행기가 없어 n 풀기가 실패한 것이다, `--js-runtimes node --remote-components ejs:github`로 받힌다 (2026-11-13 Claude)
+- 증상: 11-13 synkbrief B47 오마주 원본 IzfvbmlOcNA(EBS 키즈 「위기 탈출 넘버원」 · 684만)를 `node tools/오마주.js 분해 <주소>`로 받자 「No supported JavaScript runtime could be found … ERROR: This video is not available」로 끝났다. oEmbed(`https://www.youtube.com/oembed?url=…`)는 200 · 제목이 왔고, `--extractor-args youtube:player_client=tv_embedded,web_embedded`로 바꿔도 「n challenge solving failed … Only images are available」였다.
+- 원인: 이 PC의 yt-dlp(2026.08.19)가 쓰는 JS 실행기가 deno뿐인데 deno가 없어, 이 영상의 서명(n) 풀기가 실패해 영상 꼴이 하나도 안 남는다. 메시지는 지역 제한(위 10-26 절)과 같아 헷갈린다.
+- 고침: 유튜브 차례를 잡고 `yt-dlp --js-runtimes node --remote-components ejs:github -f "bv*[height<=1280]+ba/b" --merge-output-format mp4 -o "<공용 작업본>/.tmp/오마주/<ID>/원본.%(ext)s" <주소>`로 받은 뒤(5초), `오마주.js 분해 <받은 mp4> --주소 <원본 주소> --편 … --갈래 …`로 잰다. `--remote-components ejs:github`는 yt-dlp 공식 저장소의 풀이 스크립트를 받아 쓴다.
+- 다시 확인: 다음에 「not available」이 나오면 먼저 oEmbed로 영상이 살아 있는지 보고, 살아 있으면 이 두 깃발로 한 번 부른다. 자주 나오면 `오마주.js`의 yt-dlp 호출에 두 깃발을 넣는다(이번엔 도구를 고치지 않았다).
 
 ## YouTube Data API
 

@@ -1,0 +1,9 @@
+{"type":"thread.started","thread_id":"01a1d3a8-5393-7a33-a168-5c36e44471fa"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"이미지 생성 스킬을 사용해 두 사람의 인상을 유지하고, 남자의 정확한 왼쪽 옆모습과 요청하신 구도로 만들겠습니다.\n"}}
+{"type":"error","message":"Reconnecting... 2/5 (stream disconnected before completion: 알려진 호스트가 없습니다. (os error 11001))"}
+{"type":"error","message":"Reconnecting... 3/5 (stream disconnected before completion: 알려진 호스트가 없습니다. (os error 11001))"}
+{"type":"error","message":"Reconnecting... 4/5 (stream disconnected before completion: 알려진 호스트가 없습니다. (os error 11001))"}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"왼쪽 눈 밑의 점, 오른쪽 어깨의 가방 끈, 화면 안 얼굴 높이를 더 정확히 맞추겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":249245,"cached_input_tokens":212352,"cache_write_input_tokens":0,"output_tokens":3086,"reasoning_output_tokens":712}}
