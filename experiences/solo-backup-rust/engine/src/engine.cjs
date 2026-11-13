@@ -16,6 +16,19 @@ const selection = require('./restore-select.cjs');
 const APP = 'solo-work-backup-v1';
 const VERIFIED = 'complete-structure-checked';
 const DAY = 86400000;
+/** Unreadable items kept for a partial snapshot's list; past this the list says it is cut short. */
+const UNREADABLE_MAX = 200000;
+/** restic's JSON error lines, however they are split into chunks: each `item` goes to onItem. A line past
+ *  4 MB is not held — onItem(null) says an item may be lost, so the list is marked cut (GPT GA4). */
+function errorItems(onItem) {
+  let rest = '';
+  const lines = text => {
+    const all = (rest + text).split('\n'); rest = all.pop();
+    if (rest.length > 4194304) { rest = ''; onItem(null); }
+    for (const line of all) { let m = null; try { m = JSON.parse(line); } catch { } if (m?.message_type === 'error' && typeof m.item === 'string' && m.item) onItem(m.item); }
+  };
+  return { push: lines, end: () => lines('\n') };
+}
 // Exit 11 (another process holds the repository lock) is shown as this notice, not as an error;
 // the next operation that succeeds clears it (review B2).
 const BUSY_WARNING = '다른 작업이 백업 저장소를 쓰는 중이라 이번 작업은 하지 못했습니다. 잠시 뒤 다시 해 주세요. 자동 백업은 다음 회차에 다시 합니다.';
@@ -129,7 +142,7 @@ class BackupEngine extends EventEmitter {
       providerType: this.providerType, provider: c?.provider || null, initializing: !!c && !c.repositoryId,
       cloudConnection: this.isCloud() && c && !c.repositoryId && this.cloudCredentials ? { endpoint: c.provider.endpoint, bucket: c.provider.bucket } : !c && this.connection ? { endpoint: this.connection.endpoint, bucket: this.connection.bucket } : null,
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
-      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null,
+      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null,
       lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
@@ -213,7 +226,7 @@ class BackupEngine extends EventEmitter {
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
-  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly } = {}) {
+  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly, onErrorItem = null, stdinText = null } = {}) {
     if (this.stopping && !this.job) throw new Error('앱을 종료하고 있습니다. 이전 정상 백업은 유지됩니다.');
     const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.workDir || this.stateDir, process.env, password);
     if (readOnly) {
@@ -222,10 +235,11 @@ class BackupEngine extends EventEmitter {
       providerArgs.push('--no-lock');
     }
     if (this.resticStartedAt === null) this.resticStartedAt = Date.now();
-    if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs });
+    if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs, onErrorItem, stdinText });
     return new Promise((resolve, reject) => {
-      const child = spawn(this.resticPath, ['--repo', repository, ...providerArgs, '--retry-lock', '10s', ...args], { env, windowsHide: true, shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+      const child = spawn(this.resticPath, ['--repo', repository, ...providerArgs, '--retry-lock', '10s', ...args], { env, windowsHide: true, shell: false, stdio: [stdinText === null ? 'ignore' : 'pipe', 'pipe', 'pipe'] });
       this.child = child;
+      if (stdinText !== null) { child.stdin.on('error', () => {}); child.stdin.end(stdinText); }
       let errors = '', timedOut = false, overflow = false, lastProgress = 0, consumerError = null, forceStop;
       const capture = new ProcessOutput({ structured: ['cat', 'snapshots', 'stats'].includes(args[0]), overflow: () => { overflow = true; child.kill(); }, progress: percent => { if (Date.now() - lastProgress >= 1000 || percent === 100) { lastProgress = Date.now(); this.stage(this.job?.stage, percent); } } });
       const errorDecoder = new StringDecoder('utf8');
@@ -240,13 +254,15 @@ class BackupEngine extends EventEmitter {
       }) : Promise.resolve();
       if (!consumeStdout) child.stdout.on('data', b => capture.accept(b));
       child.stdout.on('error', () => {});
-      child.stderr.on('data', b => { errors = (errors + errorDecoder.write(b)).slice(-12000); });
+      // Every unreadable item from restic's JSON error lines, however many — the tail kept below is only for the message.
+      const items = onErrorItem ? errorItems(onErrorItem) : null;
+      child.stderr.on('data', b => { const text = errorDecoder.write(b); items?.push(text); errors = (errors + text).slice(-12000); });
       child.once('error', e => { consumerError ||= e; child.stdout.destroy(e); });
       child.once('close', async (code, signal) => {
         clearTimeout(timer); clearTimeout(forceStop); this.child = null;
         if (code !== 0 || signal) child.stdout.destroy(new Error('백업 엔진의 출력이 중단되었습니다.'));
         await consumed;
-        const output = capture.end(); errors += errorDecoder.end();
+        const output = capture.end(); const tail = errorDecoder.end(); items?.push(tail); items?.end(); errors += tail;
         if (consumerError) return reject(consumerError);
         if (timedOut || overflow || signal) return reject(new Error(timedOut ? '작업 시간이 길어 중단되었습니다. 다음 실행 때 다시 시도합니다.' : '작업이 중단되었습니다. 이전 정상 백업은 유지됩니다.'));
         if (code !== 0) {
@@ -459,20 +475,52 @@ class BackupEngine extends EventEmitter {
       const runTag = `run:${crypto.randomUUID()}`;
       this.stage('작업 파일 백업 중');
       // OneDrive online-only files would be downloaded by reading them; OneDrive keeps them (4.2 step 7, review GA1).
-      await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...this.config.sources]);
+      // Exit 3 (some files could not be read) still saves the snapshot. With the list U of what was not read, it is kept
+      // as a partial one (4.2 「완료본 · 부분 판 · 채움 판」); without a list it stays pending and goes as before.
+      const unreadable = []; let partial = false, cut = false;
+      try {
+        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...this.config.sources],
+          { onErrorItem: item => { if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true; } });
+      } catch (e) {
+        if (e.exitCode !== 3 || !unreadable.length) throw e;
+        partial = true;
+      }
       const pending = await this.snapshots([runTag, 'pending']);
       if (pending.length !== 1) throw new Error('새 백업을 정확하게 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
+      if (partial) {
+        // The list goes in first, as this run's meta snapshot; only then is the snapshot marked partial — so a partial
+        // snapshot always has its list, and one left without (a run that died in between) stays pending (4.2 「순서」).
+        this.stage('읽지 못한 파일 목록 저장 중');
+        await this.run(['backup', '--stdin', '--stdin-filename', 'workbackup-unreadable.json', '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},meta`],
+          { stdinText: JSON.stringify({ v: 1, unreadable, cut }) });
+        if ((await this.snapshots([runTag, 'meta'])).length !== 1) throw new Error('읽지 못한 파일 목록을 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
+      }
       this.stage('저장 구조 확인 중');
       try { await this.run(['check'], { timeoutMs: 1800000 }); }
       catch (e) { if (e.exitCode !== 11) this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '저장소 점검이 끝나지 않았습니다. 기존 백업의 현재 무결성도 보장하지 않습니다.' }; throw e; }
-      this.stage('백업 완료 기록 중');
-      await this.run(['tag', '--add', VERIFIED, '--remove', 'pending', pending[0].id]);
-      const promoted = await this.snapshots([runTag, VERIFIED]);
-      if (promoted.length !== 1) throw new Error('백업 완료 기록을 확인하지 못했습니다.');
-      const s = promoted[0];
-      this.config.lastBackup = { id: s.id, at: s.time, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
-      this.lastSummary = s.summary || null;
-      this.config.warning = null; await this.save();
+      if (partial) {
+        // A partial snapshot never takes the complete one's place: the last complete backup stays what a restore uses.
+        this.stage('부분 백업 기록 중');
+        await this.run(['tag', '--add', 'partial', '--remove', 'pending', pending[0].id]);
+        const marked = await this.snapshots([runTag, 'partial']);
+        if (marked.length !== 1) throw new Error('부분 백업 기록을 확인하지 못했습니다.');
+        const s = marked[0];
+        this.config.lastPartial = { id: s.id, at: s.time, unreadable: unreadable.length, cut, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
+        this.lastSummary = s.summary || null; this.lastRun = 'partial';
+        // No promise that an earlier backup holds them: a file made since the last complete one is in none (GPT GA2).
+        this.config.warning = `다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`;
+        await this.save();
+      } else {
+        this.stage('백업 완료 기록 중');
+        await this.run(['tag', '--add', VERIFIED, '--remove', 'pending', pending[0].id]);
+        const promoted = await this.snapshots([runTag, VERIFIED]);
+        if (promoted.length !== 1) throw new Error('백업 완료 기록을 확인하지 못했습니다.');
+        const s = promoted[0];
+        this.config.lastBackup = { id: s.id, at: s.time, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
+        this.config.lastPartial = null;
+        this.lastSummary = s.summary || null; this.lastRun = 'complete';
+        this.config.warning = null; await this.save();
+      }
       let busy = false;
       if (!this.config.health || this.config.health.status !== 'ok' || this.now() - Date.parse(this.config.health.checkedAt) >= (this.isCloud() ? 30 : 1) * DAY) {
         try { await this.fullCheck(); }
@@ -552,7 +600,14 @@ class BackupEngine extends EventEmitter {
     const verified = all.filter(s => s.tags.includes(VERIFIED));
     const latest = verified[0];
     if (!latest || latest.id !== this.config.lastBackup?.id) throw new Error('가장 최근 백업 번호가 바뀌었습니다.');
-    const ids = all.filter(s => s.id !== latest.id && s.hostname === this.config.vaultId && now - Date.parse(s.time) > DAY).map(s => s.id);
+    // Kept: the latest complete snapshot, and — when newer — the newest partial one with its list (meta, same run tag),
+    // so the files read since are not lost while one stays locked (4.2). Older partial and list snapshots go after 24 h.
+    const keep = new Set([latest.id]);
+    // A partial snapshot without exactly one list is never counted, so it cannot push out a good one (GPT GA1).
+    const listsOf = s => { const run = s.tags.find(t => t.startsWith('run:')); return run ? all.filter(x => x.tags.includes(run) && x.tags.includes('meta')) : []; };
+    const partial = all.find(s => s.tags.includes('partial') && s.hostname === this.config.vaultId && listsOf(s).length === 1);
+    if (partial && Date.parse(partial.time) > Date.parse(latest.time)) { keep.add(partial.id); keep.add(listsOf(partial)[0].id); }
+    const ids = all.filter(s => !keep.has(s.id) && s.hostname === this.config.vaultId && now - Date.parse(s.time) > DAY).map(s => s.id);
     if (!ids.length) return;
     this.stage('24시간이 지난 이전 백업 정리 중');
     for (let i = 0; i < ids.length; i += 100) await this.run(['forget', ...ids.slice(i, i + 100)]);
@@ -791,8 +846,14 @@ class BackupEngine extends EventEmitter {
     const unlock = await this.unlockStale();
     const before = c.lastBackup?.id || null, started = this.now();
     try {
+      this.lastRun = null;
       await this.backupNow();
       const s = this.config.lastBackup, sum = this.lastSummary || {}, num = v => Number.isFinite(v) ? v : null;
+      if (this.lastRun === 'partial') {
+        const p = this.config.lastPartial;
+        return { outcome: 'partial', unreadable: p?.unreadable ?? null, unlock, durationMs: this.now() - started, newSnapshot: true, files: p?.files ?? null, bytes: p?.bytes ?? null,
+          filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
+      }
       return { outcome: 'complete', unlock, durationMs: this.now() - started, newSnapshot: !!s?.id && s.id !== before, files: s?.files ?? null, bytes: s?.bytes ?? null,
         filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
     } catch (e) {
@@ -810,4 +871,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit };
+module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems };

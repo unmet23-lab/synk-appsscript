@@ -37,10 +37,11 @@ async function createRunner({ host, root, workRoot = null, resticPath, publish =
         // A run started by the person ("지금 백업") is the only forced one; the
         // scheduler never forces.
         const results = await profiles.runOnce({ skipCloud, force: trigger === 'manual' });
-        // When each profile last backed up, as a time only: the run executable judges 「사흘 넘게」 from it (2.2).
+        // When each profile last backed up — a partial snapshot counts — as a time only: the run executable judges
+        // 「사흘 넘게」 from it (2.2).
         for (const [name, engine] of Object.entries(profiles.engines)) {
-          const at = Date.parse(engine.config?.lastBackup?.at);
-          if (results[name] && Number.isFinite(at)) results[name].lastBackupMs = at;
+          const at = Math.max(Date.parse(engine.config?.lastBackup?.at) || 0, Date.parse(engine.config?.lastPartial?.at) || 0);
+          if (results[name] && at > 0) results[name].lastBackupMs = at;
           if (results[name] && engine.config?.automatic) results[name].automatic = true;
         }
         // maxRSS is this worker's peak working set in KB (the T7 measure, 4.3).

@@ -22,7 +22,7 @@ use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{In
 const TRIGGERS: [&str; 6] = ["hourly", "logon", "wake", "unlock", "manual", "test"];
 /// Per-profile fields copied into runs.jsonl. Everything else the worker sends
 /// back stays out, so no file name, path or secret reaches the record.
-const FIELDS: [&str; 15] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic"];
+const FIELDS: [&str; 16] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic", "unreadable"];
 /// The run's overall result is its most notable profile result.
 const ORDER: [&str; 7] = ["failed", "partial", "fill", "busy", "complete", "not-due", "skipped"];
 
@@ -154,6 +154,11 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
     let set_aside = all.iter().any(|p| p["outcome"] == "skipped" && ["off", "read-only", "paused"].contains(&p["reason"].as_str().unwrap_or("")));
     let watched: Vec<&Value> = all.into_iter().filter(|p| p["automatic"] == true && !chosen(p)).collect();
     if watched.iter().any(|p| p["lastBackupMs"].is_u64()) { found.push(notify::first_backup()); }
+    // 「몇 파일만 못 지킴」: a partial snapshot this run kept (its count is there only when its list was saved). A run
+    // that backed up every profile it watches completely has it resolved.
+    if watched.iter().any(|p| p["outcome"] == "partial" && p["unreadable"].is_u64()) { found.push(notify::partial()); }
+    let backed_up = |p: &Value| p["outcome"] == "complete" || (p["outcome"] == "partial" && p["unreadable"].is_u64());
+    if !watched.is_empty() && !set_aside && watched.iter().all(|p| backed_up(p)) { judged.push("partial"); }
     if !watched.is_empty() {
         if !set_aside { judged.push("stale"); }
         // Late: three days past the last backup, or stopped for the clock with the clock behind that backup — such a
@@ -301,7 +306,7 @@ fn main() { std::process::exit(run()); }
         let names = |found: &[notify::Notice]| found.iter().map(|n| (n.problem, n.body)).collect::<Vec<_>>();
         let first = ("first-backup", notify::first_backup().body);
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "newSnapshot": true, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first], vec!["stale"]));
+        assert_eq!((names(&found), judged), (vec![first], vec!["partial", "stale"]));
         // From the state: a later run with no new snapshot still finds it (the ledger keeps it to once).
         let (found, _) = problems(&json!({"local": {"outcome": "not-due", "automatic": true, "lastBackupMs": now}}), now);
         assert_eq!(names(&found), [first]);
@@ -343,8 +348,17 @@ fn main() { std::process::exit(run()); }
                                                    "b2": {"outcome": "skipped", "reason": reason, "automatic": reason != "off", "lastBackupMs": old}}), now);
             assert!(judged.is_empty() && names(&found) == [first], "{reason}");
         }
+        // A partial snapshot kept with its list is told; one without (exit 3, no list) is not; complete runs resolve it.
+        let (found, judged) = problems(&json!({"local": {"outcome": "partial", "unreadable": 2, "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body)], vec!["partial", "stale"]));
+        // Exit 3 with no list kept: nothing to tell, and not a backup that could resolve it (GPT GA3).
+        let (found, judged) = problems(&json!({"local": {"outcome": "partial", "exitCode": 3, "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!((names(&found), judged), (vec![first], vec!["stale"]));
+        let (_, judged) = problems(&json!({"local": {"outcome": "not-due", "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!(judged, ["stale"], "a run that did not back up cannot say the partial one is resolved");
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "automatic": true}}), now);
         assert!(found.is_empty() && judged == ["stale"], "never backed up: judged, and nothing to show");
+        assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "stale"]);
         assert_eq!(problems(&Value::Null, now), (vec![], vec![]));
     }
     #[test] fn progress_is_only_kind_stage_percent() {

@@ -14,7 +14,7 @@ pub const LEDGER: &str = "notify.json";
 pub const TOPICS: [&str; 8] = ["status", "folders", "changes", "devices", "restore", "space", "signin", "update"];
 /// Problems shown once ever rather than once a day.
 const ONCE: [&str; 1] = ["first-backup"];
-const PROBLEMS: [&str; 2] = ["first-backup", "stale"];
+const PROBLEMS: [&str; 3] = ["first-backup", "stale", "partial"];
 /// 「사흘 넘게」 (2.2).
 pub const STALE_MS: u64 = 72 * 3_600_000;
 
@@ -29,6 +29,11 @@ pub fn first_backup() -> Notice {
     Notice { problem: "first-backup", topic: "status", title: "첫 백업이 끝났습니다", body: "이제 매시간 저절로 지킵니다.", action: None }
 }
 /// No backup for three days while the PC is on. `cause` is what this run waited on, when it knows.
+/// 「몇 파일만 못 지킴」 (2.2). No promise that an earlier backup holds those files — one made since the last complete
+/// backup is in none (GPT workbackup-partial GA2); closing the program is the one thing to do.
+pub fn partial() -> Notice {
+    Notice { problem: "partial", topic: "status", title: "몇 파일을 백업하지 못했습니다", body: "다른 프로그램이 쓰는 중인 파일은 이번 백업에 담기지 않았습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.", action: None }
+}
 /// A clock behind the last backup cannot count three days, so that one is told as it is.
 pub fn stale(cause: &str) -> Notice {
     let (title, body) = match cause {
@@ -151,6 +156,7 @@ fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: &str, 
         assert!(xml.contains("<text>a&lt;b&gt;&amp;&quot;c&apos;</text><text>x &amp; y</text>"));
         assert!(xml.contains(r#"<action content="확인&lt;" activationType="protocol" arguments="synk-workbackup:open?topic=status"/>"#));
         assert!(!toast_xml(&first_backup()).contains("<actions>"), "the first-backup notice has nothing to do");
+        assert!(!toast_xml(&partial()).contains("<actions>"), "nor has the partial one");
         for cause in ["metered", "battery", "clock", "", "failed"] { let n = stale(cause); assert_eq!((n.problem, n.topic, n.action), ("stale", "status", Some("확인하기"))); }
     }
     #[test] fn the_same_problem_once_a_day_and_once_only_notices_once_ever() {

@@ -5,6 +5,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
+const { spawn } = require('node:child_process');
 const { BackupEngine, VERIFIED, DAY } = require('../src/engine.cjs');
 const { overlap, directory } = require('../src/paths.cjs');
 const resticPath = process.env.SOLO_BACKUP_RESTIC;
@@ -244,6 +245,30 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     await assert.rejects(closing.checkRepository(), /진행 중인 작업/);
     await Promise.all([running, stopped]); assert.equal(closing.job, null); assert.equal(closing.child, null);
     await engine.checkRepository();
+  });
+  await t.test('a file another program holds without sharing makes a partial snapshot with its list; the complete backup stays (4.2)', async () => {
+    // restic 0.19.1, measured 11-14: exit 3, a JSON error line on stderr with the file as `item`, and a snapshot of the rest.
+    const held = path.join(source, 'held-by-another-program.pst');
+    await fs.writeFile(held, 'opened without sharing');
+    const holder = spawn('powershell.exe', ['-NoProfile', '-Command', `$f=[IO.File]::Open('${held}','Open','ReadWrite','None'); 'held'; [Console]::In.ReadLine() | Out-Null; $f.Close()`], { stdio: ['pipe', 'pipe', 'inherit'] });
+    await new Promise((resolve) => holder.stdout.once('data', resolve));
+    const before = engine.config.lastBackup.id;
+    try { await engine.backupNow(); } finally { holder.stdin.end('\n'); await new Promise((resolve) => holder.once('exit', resolve)); }
+    assert.equal(engine.config.lastBackup.id, before, 'the complete backup stays the one restored');
+    assert.equal(engine.config.lastPartial.unreadable, 1);
+    assert.match(engine.config.warning, /파일 1개를 이번 백업에 담지 못했습니다/);
+    const [partial] = await engine.snapshots(['partial']);
+    assert.equal(partial.id, engine.config.lastPartial.id);
+    const run = partial.tags.find((tag) => tag.startsWith('run:'));
+    const lists = await engine.snapshots([run, 'meta']);
+    assert.equal(lists.length, 1, 'its list, saved before it was marked partial');
+    const list = JSON.parse(await engine.run(['dump', lists[0].id, '/workbackup-unreadable.json']));
+    assert.deepEqual(list.unreadable.map((p) => path.basename(p)), ['held-by-another-program.pst']);
+    const names = (await engine.run(['ls', '--json', partial.id])).split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l)).filter((n) => n.type === 'file').map((n) => path.basename(n.path));
+    assert.ok(!names.includes('held-by-another-program.pst') && names.length > 0, 'the rest of the files are in it');
+    await fs.rm(held);
+    await engine.backupNow();
+    assert.equal(engine.config.lastPartial, null, 'a complete backup clears it');
   });
   await t.test('real pack corruption fails a full data check and disables pruning', async () => {
     const packs = (await files(path.join(engine.config.repository, 'data'))).filter(p => /^[a-f0-9]{64}$/.test(path.basename(p)));
