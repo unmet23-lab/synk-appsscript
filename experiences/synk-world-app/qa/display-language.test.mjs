@@ -235,8 +235,9 @@ test('옮기기 물음: 새 길에서 생활 레슨만 한 손님은 생활 줄�
 });
 
 // 지금 판(입구 없는 문서)의 옮기기 물음도 새 길 #8과 같은 세 갈래다 — 옛 학습 기록의 생활 거울 몫은 생활 진도 줄이 있으면 또 세지 않고,
-// 없으면 생활 줄에 그 수로, 「짧은 진단·연습」 줄은 생활 경험이 아닌 첫 답만(0이면 줄 없음). 옮기는 사건 목록은 그대로(설계 주인 결정 6 ②).
-test('옮기기 물음(지금 판): 옛 학습 기록의 생활 거울 답은 생활 줄이 세고 「짧은 진단·연습」 줄은 그 밖의 첫 답만 센다 — 옮기는 사건은 그대로(세 언어 · 설계 주인 결정 6 ②)',async()=>{
+// 없으면 생활 줄에 그 수로, 「짧은 진단·연습」 줄은 생활 경험이 아닌 첫 답만 — 그 답이 0이어도 생활 몫 밖의 사건(보기만)이 있으면 새 길처럼
+// 「연습을 시작했어요」(결정 6 ② 끝 판 Fable 5.2 F1). 옮기는 사건 목록은 그대로(설계 주인 결정 6 ②).
+test('옮기기 물음(지금 판): 옛 학습 기록의 생활 거울 답은 생활 줄이 세고 「짧은 진단·연습」 줄은 그 밖의 첫 답만 센다 · 보기만이면 「연습을 시작했어요」 — 옮기는 사건은 그대로(세 언어 · 설계 주인 결정 6 ②)',async()=>{
  const {DEVICE_RECORDS_TEXT,GUEST_LIFE_KEY,GUEST_LEARNING_KEY,createDeviceRecordsOffer,planDeviceRecords}=await import('../device-records.mjs');
  const keys=Object.keys(DEVICE_RECORDS_TEXT);
  const textFor=code=>()=>Object.fromEntries(keys.map(key=>[key,typeof DEVICE_RECORDS_TEXT[key]==='function'?(n,m)=>lang.t(`records.${key}`,{n,m},code):lang.t(`records.${key}`,null,code)]));
@@ -253,6 +254,8 @@ test('옮기기 물음(지금 판): 옛 학습 기록의 생활 거울 답은 �
  // 짧은 진단 · 연습 — 결정(다른 경험) 하나에 문항 둘 · 첫 답 둘
  const practice=[{id:'dp',type:'decision.made',at:iso(2_000),experienceId:'world-practice'},
   ...[1,2].flatMap(i=>[{id:`pp${i}`,type:'practice.presented',at:iso(2_000+i*10),decisionId:'dp'},{id:`ap${i}`,type:'practice.attempted',at:iso(2_005+i*10),presentationId:`pp${i}`,attemptNo:1}])];
+ // 짧은 진단 · 연습을 보기만 — 결정(다른 경험) 하나에 문항 하나 · 답 없음
+ const shownOnly=[{id:'dq',type:'decision.made',at:iso(4_000),experienceId:'world-practice'},{id:'pq1',type:'practice.presented',at:iso(4_010),decisionId:'dq'}];
  const plain=text=>text.replace(/&(amp|lt|gt|quot|#39);/g,(_,name)=>({amp:'&',lt:'<',gt:'>',quot:'"','#39':"'"})[name]);
  const storeOf=({life,events})=>{const storage=memory();if(life)storage.setItem(GUEST_LIFE_KEY,life);if(events)storage.setItem(GUEST_LEARNING_KEY,JSON.stringify({version:1,events}));return storage;};
  // 물음을 띄워 요약 칸(굵은 글)의 줄을 읽고 닫는다 — 입구 없는 문서(atlas 없음 · 옛 학습 기록 옮기기)
@@ -277,6 +280,13 @@ test('옮기기 물음(지금 판): 옛 학습 기록의 생활 거울 답은 �
   assert.deepEqual(await ask(code,{events:practice}),[`${learning} · ${lang.t('records.answers',{n:2},code)}`],`${code}: 연습만`);
   // ④ 생활 진도 없이 거울 사건만 — 생활 줄에 첫 답 수로
   assert.deepEqual(await ask(code,{events:mirror}),[`${life} · ${lang.t('records.answers',{n:3},code)}`],`${code}: 거울만`);
+  // ⑤ 짧은 연습을 보기만(첫 답 0) — 「짧은 진단·연습」 줄이 「연습을 시작했어요」로 선다(요약 칸이 비던 것 — 바탕 판부터, 결정 6 ② 끝 판 Fable 5.2 F1)
+  const started=lang.t('records.started',null,code);
+  assert.deepEqual(await ask(code,{events:shownOnly}),[`${learning} · ${started}`],`${code}: 보기만`);
+  // ⑥ 거울 답 + 연습 보기만 — 생활 줄은 거울의 첫 답, 「짧은 진단·연습」 줄은 「연습을 시작했어요」
+  assert.deepEqual(await ask(code,{events:[...mirror,...shownOnly]}),[`${life} · ${lang.t('records.answers',{n:3},code)}`,`${learning} · ${started}`],`${code}: 거울 + 보기만`);
+  // ⑦ 생활 진도 + 거울 + 연습 보기만 — 생활 줄은 진도로, 「짧은 진단·연습」 줄은 「연습을 시작했어요」(거울 몫은 또 세지 않는다)
+  assert.deepEqual(await ask(code,{life:lessonLife(),events:[...mirror,...shownOnly]}),[lifeLine,`${learning} · ${started}`],`${code}: 진도 + 거울 + 보기만`);
  }
  // 옮기는 사건 목록은 그대로 — 거울 · 연습 사건 모두(요약 줄만 바뀐다)
  const plan=planDeviceRecords({storage:storeOf({life:lessonLife(),events:[...mirror,...practice]}),accountId:OWNER,life:true,learningLog:true});

@@ -261,6 +261,8 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
  else if(oldLife?.events)rows.push({label:T.lifeRow,value:oldLife.attempts?T.answers(oldLife.attempts):T.started});
  const learningAnswers=(plan?.learning?.attempts||0)-(oldLife?.attempts||0);
  if(learningAnswers>0)rows.push({label:T.learningRow,value:T.answers(learningAnswers)});
+ // 첫 답이 없어도 생활 몫 밖의 사건(제시만 · 판 결정)이 있으면 새 길처럼 「연습을 시작했어요」로 — 보기만 하고 로그인하면 요약 칸이 비던 것(바탕 판부터, 결정 6 ② 끝 판 Fable 5.2 F1).
+ else if((plan?.learning?.events?.length||0)>(oldLife?.events||0))rows.push({label:T.learningRow,value:T.started});
  // 새 길은 첫 답 수로 — 답이 없는 사건(제시 · 판 결정 · 장부 · 본인 말 · 제외, R11)만 있어도 물으니 「연습을 시작했어요」로(요약 칸이 비던 것 — 카본 끝 판 둘째 B).
  // 생활 경험(world-life)의 답 · 사건은 위 생활 줄이 센다 — 생활 레슨만 한 손님에게 같은 답이 「짧은 진단·연습」 이름으로 또 서던 것(Fable 5.2 합친 끝 판 넘친 #8).
  if(plan?.atlas?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.atlas.attempts)});
