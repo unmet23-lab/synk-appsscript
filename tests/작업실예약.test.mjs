@@ -65,6 +65,8 @@ async function fixture(t, { options = ALL_OPTIONS } = {}) {
   // 예약·오디오 시험의 정상 입력도 현재 미학 관문을 만족해야 한다. 실제 편의 검수 기록은 쓰지 않는다.
   fs.writeFileSync(path.join(dir, '게시', '미학맹검.json'), JSON.stringify({ 만든때: new Date().toISOString(),
     낱장: [{ 번호: '01', 판정: '그대로 냄', 점수: 8 }], 빠짐: [] }));
+  // 11-13 최종 확인(컷 전수) 관문 — 정상 입력은 통과 기록이 있는 편이다(막힘은 아래 시험이 따로 본다)
+  require('../tools/lib/최종확인.js').write(묶음.load(dir), '통과', '시험 — 컷 전수 통과', { 독립검수: '시험 — 맥락 없는 눈 통과' });
 
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   let at = new Date().toISOString();
@@ -228,6 +230,39 @@ test('서버가 아직 유튜브 언어 칸·인스타 AI 표시를 못 보내�
   assert.deepEqual(loose.map((r) => r.eligible), [true, true, false]);
   assert.equal('language' in loose[1].variant.options, false);
   assert.equal('madeWithAi' in loose[0].variant.options, false);
+});
+
+test('SNS 두 브랜드 편은 최종 확인(컷 전수) 통과 기록이 없거나 미흡이거나 그 뒤 영상이 바뀌면 등록하지 않는다(11-13)', async (t) => {
+  const f = await fixture(t);
+  const 확인 = require('../tools/lib/최종확인.js');
+  const workspace = await f.ws.get('/api/social/workspace');
+  const reasons = () => f.예약.planBundle(묶음.load(f.dir), workspace, {}).filter((r) => r.channel).map((r) => r.reasons.join(' '));
+  assert.ok(reasons().every((r) => !/최종 확인/.test(r)), '통과 기록이 있으면 막지 않는다');
+  const prepFile = path.join(f.dir, '게시', '준비.json');
+  fs.writeFileSync(prepFile, JSON.stringify({ ...JSON.parse(fs.readFileSync(prepFile, 'utf8')), 작업실등록: true }));
+  const root = path.join(f.root, 'docs', '마케팅');
+  assert.deepEqual(f.예약.readyFolders(root).map((d) => path.basename(d)), ['yuhobuilds_시험_20261021']);
+  fs.rmSync(확인.recordFile({ dir: f.dir }));
+  assert.ok(reasons().every((r) => /최종 확인\(컷 전수\) 통과 기록이 없다/.test(r)));
+  assert.deepEqual(f.예약.readyFolders(root), [], '최종 확인 전 편은 대기열에 넣지 않는다');
+  확인.write(묶음.load(f.dir), '미흡', '끝 3초 약함');
+  assert.ok(reasons().every((r) => /「미흡」/.test(r) && /끝 3초 약함/.test(r)));
+  assert.deepEqual(f.예약.readyFolders(root), []);
+  확인.write(묶음.load(f.dir), '통과', '다시 봄', { 독립검수: 'Fable 5.2 — 다시 구울 컷 없음' });
+  const video = path.join(f.dir, 'remotion', 'out', 'a_final.mp4');
+  fs.appendFileSync(video, Buffer.from([0]));
+  assert.ok(reasons().every((r) => /최종 확인 뒤 영상이 바뀌었다/.test(r)));
+  // 통과에는 맥락 없는 독립 검수가 꼭 — 쓰기에서 막고, 손으로 쓴 옛 꼴 기록(독립검수 없음)도 등록을 막는다
+  assert.throws(() => 확인.write(묶음.load(f.dir), '통과', '봄'), /독립검수/);
+  fs.writeFileSync(확인.recordFile({ dir: f.dir }), JSON.stringify({ 결과: '통과', 메모: '봄', 파일: [] }));
+  assert.ok(reasons().every((r) => /독립 검수가 없다/.test(r)));
+  // 관문 밖: LAB 편 · 슬롯이 관문 시작 전인 편
+  const prep = JSON.parse(fs.readFileSync(prepFile, 'utf8'));
+  assert.equal(확인.problem({ ...묶음.load(f.dir), prep: { ...prep, 브랜드: 'LAB' } }), null);
+  const before = { ...prep, 슬롯: '2026-11-13', 판: prep.판.map((p) => ({ ...p, 시각: '2026-11-13T21:00:00+09:00' })) };
+  assert.equal(확인.problem({ ...묶음.load(f.dir), prep: before }), null);
+  // 슬롯은 그대로 두고 판 시각만 관문 뒤로 옮긴 편은 관문에 든다
+  assert.notEqual(확인.problem({ ...묶음.load(f.dir), prep: { ...prep, 슬롯: '2026-11-13' } }), null);
 });
 
 test('검사 뒤 영상이 바뀌거나 「고칠 것」이 남으면 등록하지 않는다', async (t) => {

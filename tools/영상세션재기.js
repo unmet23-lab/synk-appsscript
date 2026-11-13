@@ -12,7 +12,7 @@
  * 읽는 것: %USERPROFILE%/.claude/projects/<이 저장소 · 그 워크트리>/*.jsonl — 읽기만 한다. 사람 말 · 도구 결과의 내용은 찍지 않고 수만 센다.
  * 세는 것(세션마다):
  *   압축    — 「This session is being continued from a previous conversation」로 문맥이 다시 시작된 횟수. 압축 앞에 읽은 규칙은 그 뒤 문맥에 없다.
- *   스킬    — synk-video 스킬을 부른 횟수, 「압축뒤」는 압축 뒤 다시 부른 문맥 수 / 압축 수.
+ *   스킬    — synk-video 스킬을 부른 횟수(11-13부터 압축 뒤 훅 tools/압축뒤입구.js가 한 장을 넣은 것도 센다), 「압축뒤」는 압축 뒤 다시 부른 문맥 수 / 압축 수.
  *   읽음    — 지시문 틀(영상양식/지시문_틀.md · 옛 굽기 시트 47~61줄) · 제작 규칙 · 슬롭 점검표를 연 횟수.
  *   검사    — 컷연속성검사 · 꾸러미점검 · 편집전점검 · 사람움직임 · 미학맹검을 돌린 횟수.
  *   제출    — 크레딧내기 · 드리미나내기 `--실행` 명령 수. 「규칙」 = 그 문맥(마지막 압축 뒤) 안에 스킬 호출이나 지시문 틀 읽기가 있던 제출,
@@ -56,6 +56,8 @@ async function 한세션(파일) {
     try { o = JSON.parse(줄); } catch { continue; }
     const ts = o.timestamp;
     if (ts) { if (!시작) 시작 = ts; 끝 = ts; }
+    // 11-13 압축 뒤 훅(tools/압축뒤입구.js)이 한 장을 넣은 것도 「스킬을 다시 부름」으로 센다 — 하네스가 넣어 세션이 Skill을 부르지 않는다
+    if (!o.isSidechain && o.type === 'attachment' && o.attachment && o.attachment.type === 'hook_additional_context' && 줄.includes('압축 뒤 영상 입구')) { 일.push({ ts, 꼴: '스킬' }); continue; }
     if (o.isSidechain || !o.message) continue;
     const c = o.message.content;
     if (o.type === 'user') {

@@ -25,6 +25,8 @@
  * 서버로 보내는 판: 인스타 릴스(@yuhobuilds·@synkbrief·@synk.mn)와 유튜브 쇼츠(@yuhobuilds·@synkbrief·@synkkorean) 가운데 작업실에
  * 자동 게시로 연결된 계정만. 못 보내는 판(페이스북 페이지 영상·샤오훙수·틱톡·네이버·티스토리, 연결 전 계정)은 지금처럼 14시 게시 세션이 크롬으로 한다.
  * 올리기 전 검사(tools/올리기전검사.js)가 「고칠 것」 없이 끝났고 그 뒤 영상이 바뀌지 않았어야 등록한다.
+ * 11-13부터 SNS 두 브랜드(synkbrief · yuhobuilds, 슬롯 11-14부터) 편은 최종 확인(컷 전수) 통과 기록(게시/최종확인.json — tools/최종확인.js)이 있고
+ * 그 뒤 영상이 그대로여야 등록한다. 14시 게시 회차가 그 확인 없이 여섯 편을 승인 · 예약했던 일(11-13) 때문이다.
  * 서버가 아직 못 보내는 칸이 있으면 그 판은 등록하지 않는다: 유튜브 언어 칸(서버 옵션 language — 다음 회사 릴리스), 인스타 AI 정보 표시(madeWithAi),
  * 인스타 첫 댓글(서버가 못 단다 — 캡션에 넣는다). 각각 --언어없이 · --AI표시없이 · --첫댓글빼고로 알고 넘길 수 있다.
  * 유튜브 고정 댓글과 표지 그림은 서버가 못 한다 — 게시결과.json 「후속」에 남긴다. 고정 댓글은 그날 20:52 스레드 예약 작업이 ego로 달고(11-03), 표지는 첫 화면. 인스타 표지는 판의 「표지시각」(초)이 있으면 그 장면.
@@ -37,6 +39,7 @@ const { Readable } = require('node:stream');
 const { createHash } = require('node:crypto');
 const { probeUploadTracks, probeUploadProblemSync, uploadBitrateProblem, hasInspectionHash } = require('./lib/upload-audio-bitrate.cjs');
 const 묶음 = require('./lib/게시묶음.js');
+const 최종확인 = require('./lib/최종확인.js');
 const { 공용작업본 } = require('./lib/공용작업본.js');
 const 헤르메스 = require('./lib/헤르메스보내기.js');
 const 실패알림 = require('./lib/등록실패알림.js');
@@ -197,6 +200,8 @@ function planBundle(bundle, workspace, opts = {}) {
   const channels = workspace.channels || [];
   const rows = [];
   const fileChecks = new Map();
+  // 11-13 최종 확인(컷 전수) 관문 — SNS 두 브랜드 편은 통과 기록이 있고 그 뒤 영상이 그대로여야 등록한다(tools/lib/최종확인.js)
+  const finalProblem = 최종확인.problem(bundle);
   for (const plate of 묶음.plates(bundle)) {
     const row = { account: plate.account, platform: plate.platform, time: plate.time, eligible: false, reasons: [], notes: [], plate };
     rows.push(row);
@@ -217,6 +222,7 @@ function planBundle(bundle, workspace, opts = {}) {
     if (!fileChecks.has(rel)) fileChecks.set(rel, checkedFile(prep, rel, v.path));
     const unchecked = fileChecks.get(rel);
     if (unchecked) row.reasons.push(unchecked);
+    if (finalProblem) row.reasons.push(finalProblem);
     const at = Date.parse(plate.time || '');
     if (!Number.isFinite(at)) row.reasons.push('시각이 없다');
     else if (at < Date.now() + 10 * 60000) row.reasons.push('시각이 10분 안이거나 지났다 — 슬롯을 옮긴다');
@@ -559,7 +565,8 @@ function readyFolders(root) {
     if (!fs.existsSync(path.join(dir, '게시', '준비.json')) || fs.existsSync(path.join(dir, '게시', '작업실.json')) || fs.existsSync(cancelMarker({ dir }))) continue;
     try {
       const prep = 묶음.readJson(path.join(dir, '게시', '준비.json'));
-      if (prep.작업실등록 === true && READY_STATE.test(String(prep.상태 || '')) && prep.검사 && prep.검사.결과 !== '고칠 것') out.push(dir);
+      if (prep.작업실등록 === true && READY_STATE.test(String(prep.상태 || '')) && prep.검사 && prep.검사.결과 !== '고칠 것'
+        && !(최종확인.required(prep) && 최종확인.read({ dir })?.결과 !== '통과')) out.push(dir); // 최종 확인 전 편은 대기열에 넣지 않는다(11-13)
     } catch { /* 깨진 준비.json은 건너뛴다 — 예약큐가 보인다 */ }
   }
   return out;

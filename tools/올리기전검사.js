@@ -49,6 +49,10 @@
  *      음악이 꺼지는 자리(가운데보다 6dB 넘게 낮은 채 0.75초 넘게 · 그 안에 10dB 넘게 꺼진 칸)가 있으면 고칠 것(「음악꺼짐판단」에 까닭이 있으면 확인할 것),
  *      얇아짐 · 음악 바닥이 전체보다 12dB 넘게 작음은 확인할 것. 11-09부터 만든 편은 잰 기록이 없으면 고칠 것(못 재면 「음악층못함」) —
  *      11-08 유호님 「백그라운드 뮤직 … 중간중간 좀 빠져있는데」: 보유곡 밝은_052를 16초부터 자른 편마다 13~14초에 곡 안 빈 마디가 들어갔다
+ *   ⑳ 최종본(11-13, tools/최종본검사.py · 판정 tools/lib/최종본관문.js) — 재연 · 진행자 편(synkbrief · yuhobuilds · 「사람편」, 슬롯 11-14부터)의 최종본
+ *      하나에서 컷마다 사람 굳음(사람움직임 0.12 아래) · 이웃 컷이 같은 판을 배율만 바꿔 이음은 고칠 것, 같은 구도 이음 · 멀리 떨어진 같은 그림 ·
+ *      컷 안 1.5초 멎음 · 끝 2초 넘게 방 소리뿐 · 끝 컷을 잘라 키운 흐림은 확인할 것. 일부러 둔 자리는 준비.json 「최종본판단」에 까닭(고칠 것 → 확인할 것).
+ *      11-13 유호님 「실수한것들이나 검수에서 지적받은부분들 … 반영되고있어 ?」 → 「응, 고쳐」 — 이 지적들이 B38 · B39 · 메일비서에서 마지막 컷 전수에서야 잡혔다
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -69,6 +73,7 @@ const 오마주 = require('./오마주.js');
 const 반복 = require('./무대반복.js');
 const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
+const { finalCutFindings } = require('./lib/최종본관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
 const 장부 = require('./게시장부.js');
@@ -1104,6 +1109,7 @@ async function run(dir, opts = {}) {
   const 판본영상 = Object.values(prep.돌림?.판본 || {}).map((v) => v && v.파일 && 미디어경로(path.resolve(bundle.dir, v.파일))).filter(Boolean);
   findings.push(...aestheticFindings(bundle, [...videos.keys()], { 판본영상 }));
   findings.push(...musicLayerFindings(bundle, [...videos.keys()]));
+  findings.push(...finalCutFindings(bundle, [...videos.keys()], { save: !opts.noSave }));
   let repeat = { findings: [], summary: null };
   try { repeat = 반복.repeatFindings(bundle, plates, { skipOcr: opts.skipOcr, work: out }); } catch (error) {
     add(LOOK, 'repeat-failed', '지난 편', `지난 편 되풀이를 못 봤다(${error.message}) — 첫 · 끝 장면과 끝 줄을 지난 두 편과 눈으로 견준다`);
