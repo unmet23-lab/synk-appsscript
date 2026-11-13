@@ -7,6 +7,7 @@
 #
 #   python -X utf8 tools/받은뒤검사.py <편 폴더> [--받음 <폴더>] [--꾸러미 <폴더>] [--컷표 <파일>] [--판 C1,C2b] [--연속성안함] [--json]
 #     끝 코드: 0 통과 · 1 걸림(다시 낼 판이 있다) · 2 확인(눈으로 볼 것 — 얼굴 극접사 · 못 잰 판 · 어느 컷인지 모르는 판 · 아직 안 받은 판).
+#     통과(0)는 「받음 폴더의 영상을 모두 쟀고 걸린 것이 없다」는 뜻이다 — 하나라도 재지 않았으면(어느 판에도 안 맞는 영상 · 꾸러미의 깨진 줄) 확인이다.
 #     끝 코드 · 다시 낼 판 · 쓸 판 · 걸림 수 · 확인 수는 늘 **받은 판 전체**에서 셈한다 — --판으로 일부만 잰 회차도 앞 회차에 남은 다시 낼 판이 있으면 1이다.
 #     (아직 안 받은 판만은 물어본 판일 때 끝 코드에 든다 — 시험 묶음만 낸 회차에서 아직 안 낸 판은 볼 것이 아니다.)
 #
@@ -24,6 +25,8 @@
 #          어느 구간이든 0.12 아래(「카메라만 · 사람 굳음」 · 「멈춘 화면」)면 걸림 — 숨기지 말고 연기 박자를 고친 지시문으로 다시 낸다(원칙 2).
 #          얼굴 극접사(「가까움」)는 값이 부풀어 확인 — 1/8초 띠를 눈으로 본다. 구간 안에 1초 넘게 굳은 창이 있으면 주의로 그 초를 적는다.
 #          사람 움직임 도구를 못 부르면(모델 · 라이브러리 없음) 그 항목만 「못 잼」 확인으로 남기고 나머지는 낸다.
+#   꾸러미 _순서.json의 잘못된 줄(id 없음) · 겹친 id · 어느 판에도 안 맞는 받은 영상도 확인이다 — 조용히 버리면 아무것도 재지 않고 통과로 끝난다.
+#   컷표 「인물」 칸이 목록이 아닌 줄(깨진 칸)은 사람이 있는 것으로 보고 잰다.
 #   못 재는 판은 통과로 두지 않는다 — 어느 컷의 판인지 모르는 판(꾸러미의 판 이름 · "컷"이 컷표와 안 맞음) · in · out이 없는 컷의 판은 확인이고 「쓸판」에 넣지 않는다.
 # 쓰는 것
 #   <받음>/_받은뒤검사.json   판 파일마다 잰 값과 판정, 「다시낼판」(쓸 수 있는 파일이 하나도 없는 판), 「쓸판」(판마다 걸림 없는 파일 가운데 사람 값이 가장 큰 것),
@@ -169,20 +172,25 @@ def 컷줄모음(seq):
 
 
 def 판표(seq, 꾸러미):
-    """→ [{id, 컷(컷표에 있는 것), 모르는컷(꾸러미가 이었는데 컷표에 없는 것), 소리, 소리만}] — 꾸러미 _순서.json이 있으면 그 판들, 없으면 컷표의 컷"""
+    """→ ([{id, 컷(컷표에 있는 것), 모르는컷(꾸러미가 이었는데 컷표에 없는 것), 소리, 소리만}], 탈 [글]) — 꾸러미 _순서.json이 있으면 그 판들, 없으면 컷표의 컷.
+    탈 = 버릴 수밖에 없는 줄(id 없음 · 겹친 id) — 조용히 버리지 않고 확인으로 낸다"""
     컷들 = list(dict.fromkeys(d["cut"] for d in 컷줄모음(seq)))
     순서 = Path(꾸러미) / "_순서.json" if 꾸러미 else None
     if not (순서 and 순서.is_file()):
-        return [{"id": c, "컷": [c], "모르는컷": [], "소리": None, "소리만": False} for c in 컷들]
+        return [{"id": c, "컷": [c], "모르는컷": [], "소리": None, "소리만": False} for c in 컷들], []
     try:
         줄들 = json.loads(순서.read_text(encoding="utf-8-sig"))
         if not isinstance(줄들, list):
             raise ValueError("판 목록(배열)이 아니다")
     except Exception as e:   # noqa: BLE001
         raise SystemExit(f"꾸러미 _순서.json을 읽지 못했다({순서}): {e}")
-    out, 본 = [], set()
-    for b in 줄들:
-        if not isinstance(b, dict) or not isinstance(b.get("id"), str) or not b["id"].strip() or b["id"] in 본:
+    out, 본, 탈 = [], set(), []
+    for n, b in enumerate(줄들, 1):
+        if not isinstance(b, dict) or not isinstance(b.get("id"), str) or not b["id"].strip():
+            탈.append(f"꾸러미 _순서.json {n}번째 줄에 판 id가 없다 — 그 줄의 판은 재지 않았다(꾸러미를 다시 짓는다)")
+            continue
+        if b["id"] in 본:
+            탈.append(f"꾸러미 _순서.json에 판 id 「{b['id']}」가 두 번 나온다({n}번째 줄) — 뒤 줄의 컷 · 소리 조건은 보지 않았다(꾸러미를 다시 짓는다)")
             continue
         판id = b["id"]
         본.add(판id)
@@ -192,7 +200,7 @@ def 판표(seq, 꾸러미):
             컷 = [판id]
         out.append({"id": 판id, "컷": 컷, "모르는컷": [c for c in 적힌 if c not in 컷들], "소리": b.get("소리"),
                     "소리만": b.get("소리만") is True or b.get("방식") == "목소리 판"})
-    return out
+    return out, 탈
 
 
 def 줄의판(d):
@@ -217,7 +225,8 @@ def 구간모으기(rows):
         a, b = d.get("in"), d.get("out")
         if all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in (a, b)) and b > a >= 0:
             k = (float(a), float(b))
-            구간[k] = 구간.get(k, False) or bool(글목록(d.get("인물")))
+            인물 = d.get("인물")   # 목록이 아니게 깨진 칸("수아" · {"수아": 1})은 사람이 있는 것으로 본다 — 사람 검사를 건너뛰는 쪽으로 읽지 않는다
+            구간[k] = 구간.get(k, False) or (bool(글목록(인물)) if isinstance(인물, list) or 인물 is None else True)
         elif d["cut"] not in 못읽은:
             못읽은.append(d["cut"])
     return [[a, b, 사람] for (a, b), 사람 in sorted(구간.items())], 못읽은
@@ -333,7 +342,7 @@ def main(argv=None):
     for d in 컷줄모음(seq):
         첫줄.setdefault(d["cut"], d)
     편비율 = (seq.get("편") or {}).get("비율") if isinstance(seq.get("편"), dict) else None
-    모든판 = 판표(seq, 꾸러미)
+    모든판, 꾸러미탈 = 판표(seq, 꾸러미)
     전체판 = [p for p in 모든판 if not p["소리만"]]
     if o["판"] is not None:
         모르는 = [x for x in o["판"] if x not in {p["id"] for p in 전체판}]
@@ -368,6 +377,7 @@ def main(argv=None):
         if p["소리만"]:
             맞은파일.update(f.name for f in 파일들 if re.fullmatch(re.escape(p["id"]) + r"(?:__\d+)?\.mp4", f.name))
     남는파일 = [f.name for f in 파일들 if f.name not in 맞은파일]
+    # 어느 판에도 안 맞는 영상은 재지 않았다 — 꾸러미에서 그 판이 빠졌거나 줄이 깨졌거나 이름이 틀렸다. 재지 않은 것이 있으면 통과로 두지 않는다(확인)
     다시낼판, 쓸판, 못잰판 = [], {}, []
     for 판id, v in 결과판.items():
         좋은 = [f for f in v["파일"] if not f["걸림"]]
@@ -393,12 +403,14 @@ def main(argv=None):
                 이을것.append(f'{c}: 쓸 판이 {이름}이면 컷표 그 컷에 "판": "{이름}"을 적는다')
     연속코드, 연속줄 = (None, []) if o["연속성안함"] or not 결과판 else 연속성(컷표, 받음)
     걸림수 = sum(len(f["걸림"]) for v in 결과판.values() for f in v["파일"]) + sum(1 for x in 연속줄 if x["등급"] == "걸림")
-    확인수 = sum(len(f["확인"]) for v in 결과판.values() for f in v["파일"]) + sum(1 for x in 연속줄 if x["등급"] == "확인") + len(안잰판)
+    확인수 = (sum(len(f["확인"]) for v in 결과판.values() for f in v["파일"]) + sum(1 for x in 연속줄 if x["등급"] == "확인") + len(안잰판)
+           + len(꾸러미탈) + len(남는파일))
     # 아직 없는 판은 물어본 판만 끝 코드에 든다 — 시험 묶음 두세 판만 낸 회차(--판)에서 아직 안 낸 나머지 판은 볼 것이 아니다(기록 「아직없는판」에는 모두 적는다)
     물은없는판 = 없는판 if o["판"] is None else [x for x in 없는판 if x in o["판"]]
     끝 = 1 if 다시낼판 or any(x["등급"] == "걸림" for x in 연속줄) else (2 if 확인수 or 물은없는판 or 못잰판 else 0)
     기록 = {"때": datetime.now(timezone.utc).isoformat(timespec="seconds"), "컷표": 컷표.name, "판": 결과판, "다시낼판": 다시낼판, "쓸판": 쓸판,
-            "못잰판": 못잰판, "아직없는판": 없는판, "안잰판": 안잰판, "이번에잰판": 잰판, "남는파일": 남는파일, "이을것": 이을것,
+            "못잰판": 못잰판, "아직없는판": 없는판, "안잰판": 안잰판, "이번에잰판": 잰판, "남는파일": 남는파일,
+            "꾸러미탈": 꾸러미탈, "이을것": 이을것,
             "연속성": {"끝코드": 연속코드, "줄": 연속줄}, "걸림수": 걸림수, "확인수": 확인수, "끝코드": 끝}
     if 받음.is_dir() and (결과판 or 자리.is_file()):   # 잰 판이 없어도 앞 기록이 있으면 고쳐 쓴다 — 무효가 된 옛 통과 기록(쓸판 · 끝코드 0)을 남기지 않는다
         자리.write_text(json.dumps(기록, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
@@ -423,18 +435,20 @@ def main(argv=None):
         print(f"  {'✗' if x['등급'] == '걸림' else '?'} [{x.get('항목')}] {x.get('컷')}: {x.get('글')}")
     for 글 in 이을것:
         print(f"  · {글}")
+    for 글 in 꾸러미탈:
+        print(f"  ? {글}")
+    if 남는파일:
+        print(f"  ? 어느 판에도 안 맞는 영상 {len(남는파일)}개는 재지 않았다: {' · '.join(남는파일[:6])}{' …' if len(남는파일) > 6 else ''} — 꾸러미 _순서.json의 판 이름과 견주고, 이 편의 판이 아니면 받음 폴더 밖으로 옮긴다")
     if 안잰판:
         print(f"  ? 받은 파일은 있는데 잰 값이 없는 판 {len(안잰판)}: {' · '.join(안잰판)} — 이번에 고르지 않았고 앞 기록도 못 쓴다(파일이나 쓰는 구간이 바뀌었다). --판 없이 다시 돌린다")
-    if 남는파일:
-        print(f"  · 어느 판에도 안 맞는 영상 {len(남는파일)}개는 재지 않았다: {' · '.join(남는파일[:6])}{' …' if len(남는파일) > 6 else ''}")
     if 다시낼판:
         앞것 = [x for x in 다시낼판 if x not in 잰판]
         print(f"다시 낼 판 {len(다시낼판)}: {' · '.join(다시낼판)}" + (f"(앞 회차에서 남은 것: {' · '.join(앞것)})" if 앞것 else "")
               + " — 지시문(영상지시문/<판>.txt)을 고쳐 꾸러미를 다시 지은 뒤 그 판 id로 낸다")
     elif 결과판:
         print("걸림 없음" + (f" · 확인 {확인수}건은 눈으로 본다" if 확인수 else "") + (f" · 못 잰 판 {' · '.join(못잰판)}" if 못잰판 else ""))
-    elif 안잰판:
-        print("이번에 잰 판이 없다 — 위 판은 잰 값이 없으니 통과가 아니다")
+    elif 안잰판 or 꾸러미탈 or 남는파일:
+        print("이번에 잰 판이 없다 — 위에 적은 것은 잰 값이 없으니 통과가 아니다")
     else:
         print("받은 판이 없다")
     return 끝

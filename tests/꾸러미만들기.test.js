@@ -93,7 +93,9 @@ test('--실행 — 지시문 틀의 편 폴더 꼴로 쓰고, 지은 꾸러미�
     assert.equal(fs.readFileSync(path.join(편, '꾸러미', b.폴더, '1_시작.png'), 'utf8'), `가짜 그림 ${b.id}`);
   }
   const 표식 = JSON.parse(fs.readFileSync(path.join(편, '꾸러미', '_만든것.json'), 'utf8'));
-  assert.deepEqual(표식.폴더['001_C1'], ['지시문.txt', '1_시작.png']);
+  assert.deepEqual(Object.keys(표식.폴더['001_C1']).sort(), ['1_시작.png', '지시문.txt']);
+  assert.match(표식.폴더['001_C1']['지시문.txt'], /^[0-9a-f]{16}$/, '표식에는 파일마다 내용 지문을 적는다');
+  assert.match(표식.순서, /^[0-9a-f]{16}$/);
   // 내기 도구의 굽기 전 관문 — 꾸러미 한 층 위의 컷표를 스스로 찾아 표 검사 · 빛 문장 대조까지 돈다
   const g = spawnSync('python', ['-I', '-X', 'utf8', path.join(픽스처, '굽기전_시험.py'), '함수', path.join(편, '꾸러미')], { encoding: 'utf8', maxBuffer: 1 << 24 });
   assert.equal(g.status, 0, g.stdout + g.stderr);
@@ -239,7 +241,7 @@ test('손으로 만든 꾸러미는 --덮어쓰기 없이 건드리지 않고, �
   assert.deepEqual(순서(편).map(b => b.id), ['C1', 'C2']);
   assert.deepEqual(r.결과.지움, ['004_C4']);
   assert.equal(fs.existsSync(path.join(pack, '004_C4')), false);
-  assert.match(r.결과.남김.join('\n'), /003_C3 — 이 도구가 넣지 않은 파일이 있어 지우지 않았다\(메모\.txt\)/);
+  assert.match(r.결과.남김.join('\n'), /003_C3 — 이 도구가 넣지 않았거나 쓴 뒤 바뀐 파일이 있어 지우지 않았다\(메모\.txt\)/);
   assert.ok(fs.existsSync(path.join(pack, '003_C3', '메모.txt')));
 });
 // ── 11-14 GPT 검수 뒤 — 지우기 · 덮어쓰기가 이 도구가 만든 것을 넘지 않는다 ─────────────────────────────────
@@ -252,7 +254,10 @@ test('믿을 수 없는 표식(_만든것.json) — 빈 것 · 폴더가 null ·
     { 도구: 'tools/꾸러미만들기.py', 폴더: { '..': ['지시문.txt', '컷표.json'] } },
     { 도구: 'tools/꾸러미만들기.py', 폴더: { 'C:..': ['지시문.txt'] } },
     { 도구: 'tools/꾸러미만들기.py', 폴더: { '001_C1': ['..\\..\\컷표.json'] } },
-    { 도구: 'tools/꾸러미만들기.py', 폴더: { '../영상지시문': ['C1.txt'] } }];
+    { 도구: 'tools/꾸러미만들기.py', 폴더: { '../영상지시문': ['C1.txt'] } },
+    { 도구: 'tools/꾸러미만들기.py', 폴더: { '001_C1': ['지시문.txt', '1_시작.png'] } },            // 옛 꼴(이름 목록) — 지문이 없으면 무엇이 이 도구가 쓴 그대로인지 알 수 없다
+    { 도구: 'tools/꾸러미만들기.py', 폴더: { '001_C1': { '지시문.txt': '아무 글' } } },                // 지문 꼴이 아니다
+    { 도구: 'tools/꾸러미만들기.py', 순서: 'x', 폴더: { '001_C1': { '지시문.txt': '0123456789abcdef' } } }];
   for (const 표식 of 표식들) {
     const 편 = 편만들기();
     const pack = path.join(편, '꾸러미');
@@ -298,7 +303,7 @@ test('이 도구가 넣지 않은 같은 이름 파일 · 폴더는 덮지 않�
   const 앞C3글 = fs.readFileSync(path.join(pack, '003_C3', '지시문.txt'), 'utf8');
   const 막힘 = 돌리기(편, ['--실행']);
   assert.equal(막힘.코드, 1, 막힘.stdout);
-  assert.match(막힘.stderr, /이 도구가 넣지 않은 것과 이름이 겹친다\(003_C3\/2_끝\.png · 004_C4\/\)/);
+  assert.match(막힘.stderr, /이 도구가 쓴 그대로가 아닌 것과 이름이 겹친다 — 003_C3\/2_끝\.png\(이 도구가 넣지 않았다\) · 004_C4\/\(이 도구가 만들지 않았다\)/);
   assert.equal(fs.readFileSync(path.join(pack, '003_C3', '2_끝.png'), 'utf8'), '손으로 넣은 끝 그림');
   assert.equal(fs.readFileSync(path.join(pack, '004_C4', '지시문.txt'), 'utf8'), '손으로 쓴 C4');
   assert.equal(fs.readFileSync(path.join(pack, '_순서.json'), 'utf8'), 앞순서, '멈췄는데 _순서.json이 바뀌었다');
@@ -325,7 +330,7 @@ test('안 쓰게 된 판 폴더는 적어 둔 파일만 지운다 — 하위 폴
   fs.rmSync(path.join(편, '영상지시문', 'C3.txt'));
   const r = 돌리기(편, ['--실행']);
   assert.deepEqual(r.결과.지움, ['003_C3']);
-  assert.match(r.결과.남김.join('\n'), /004_C4 — 이 도구가 넣지 않은 파일이 있어 지우지 않았다\(손폴더\)/);
+  assert.match(r.결과.남김.join('\n'), /004_C4 — 이 도구가 넣지 않았거나 쓴 뒤 바뀐 파일이 있어 지우지 않았다\(손폴더\)/);
   assert.equal(fs.readFileSync(path.join(pack, '004_C4', '손폴더', '원본.psd'), 'utf8'), '손 자료');
   assert.ok(fs.existsSync(path.join(pack, '004_C4', '지시문.txt')), '남긴 폴더에서는 아무것도 지우지 않는다');
 });
@@ -390,4 +395,162 @@ test('손으로 준 「길이」가 여러 줄이면 모두 보고 가장 큰 �
   const b = 돌리기(이은편((seq, 편) => { 컷(seq, 'C1').길이 = 9;
     fs.writeFileSync(path.join(편, '영상지시문', '_판.json'), JSON.stringify({ X7: { 컷: ['C1', 'C4'], 길이: 7 } }), 'utf8'); }));
   assert.equal(판(b.결과.판, 'X7').길이, 7);
+});
+// ── 11-14 GPT 다시 검수 뒤 — 정션 · 링크 ────────────────────────────────────────────────────────────
+// 판 폴더가 윈도우 정션(다른 폴더를 가리키는 폴더)이면 그 안의 파일은 가리킨 곳의 것이다. is_symlink()에 안 걸리고 가리킨 곳이 같은 꾸러미 안이면
+// 풀어 본 부모도 같아, 표식에 적힌 이름과 같은 손 파일이 지워지거나 덮였다.
+const 정션 = (가리킬곳, 자리) => fs.symlinkSync(가리킬곳, 자리, 'junction');   // 윈도우는 관리자 권한 없이 정션, 다른 곳은 폴더 링크
+
+test('정션 · 링크로 바뀐 판 폴더는 이 도구의 것이 아니다 — 안 쓰는 판이어도 그 안을 지우지 않고, 쓰는 판이면 쓰기 전에 멈춘다', 건너뜀, () => {
+  const 편 = 편만들기();
+  const pack = path.join(편, '꾸러미');
+  assert.equal(돌리기(편, ['--실행']).코드, 0);
+  // 손으로 둔 원본 폴더 — 표식에 적힌 이름과 같은 파일만 있다(「적어 둔 파일만 있는 폴더」로 보이는 꼴)
+  const 손원본 = path.join(pack, '손원본');
+  fs.mkdirSync(손원본);
+  fs.writeFileSync(path.join(손원본, '지시문.txt'), '손으로 쓴 원본 지시문', 'utf8');
+  fs.writeFileSync(path.join(손원본, '1_시작.png'), '손으로 둔 원본 그림');
+  // ① 안 쓰게 된 판(C4)의 폴더가 손원본을 가리키는 정션으로 바뀌었다
+  fs.rmSync(path.join(pack, '004_C4'), { recursive: true });
+  정션(손원본, path.join(pack, '004_C4'));
+  fs.rmSync(path.join(편, '영상지시문', 'C4.txt'));
+  const r = 돌리기(편, ['--실행']);
+  assert.equal(r.코드, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(path.join(손원본, '지시문.txt'), 'utf8'), '손으로 쓴 원본 지시문', '정션을 통해 손 파일이 지워졌다');
+  assert.equal(fs.readFileSync(path.join(손원본, '1_시작.png'), 'utf8'), '손으로 둔 원본 그림');
+  assert.deepEqual(r.결과.지움, []);
+  assert.match(r.결과.남김.join('\n'), /004_C4 — 링크 · 정션이라 건드리지 않았다/);
+  // ② 쓰는 판(C3)의 폴더가 정션으로 바뀌었다 — 그 안에 쓰면 손원본이 덮인다. 쓰기 전에 멈추고 아무것도 바꾸지 않는다
+  fs.rmSync(path.join(pack, '003_C3'), { recursive: true });
+  정션(손원본, path.join(pack, '003_C3'));
+  const 앞순서 = fs.readFileSync(path.join(pack, '_순서.json'), 'utf8');
+  const 막힘 = 돌리기(편, ['--실행']);
+  assert.equal(막힘.코드, 1, 막힘.stdout);
+  assert.match(막힘.stderr, /이름이 겹친다 — 003_C3\/\(링크 · 정션이다\)/);
+  assert.equal(fs.readFileSync(path.join(손원본, '지시문.txt'), 'utf8'), '손으로 쓴 원본 지시문', '정션을 통해 손 파일이 덮였다');
+  assert.equal(fs.readFileSync(path.join(pack, '_순서.json'), 'utf8'), 앞순서);
+  // --덮어쓰기: 정션째 _앞<번호>/로 옮기고(가리킨 곳은 그대로) 진짜 폴더를 새로 짓는다
+  const 덮음 = 돌리기(편, ['--실행', '--덮어쓰기']);
+  assert.equal(덮음.코드, 0, 덮음.stdout + 덮음.stderr);
+  assert.equal(fs.readFileSync(path.join(손원본, '지시문.txt'), 'utf8'), '손으로 쓴 원본 지시문');
+  assert.equal(fs.readFileSync(path.join(손원본, '1_시작.png'), 'utf8'), '손으로 둔 원본 그림');
+  assert.ok(fs.lstatSync(path.join(pack, '003_C3')).isDirectory() && !fs.lstatSync(path.join(pack, '003_C3')).isSymbolicLink(), '새 판 폴더는 진짜 폴더다');
+  assert.equal(fs.readFileSync(path.join(pack, '003_C3', '1_시작.png'), 'utf8'), '가짜 그림 C3');
+  assert.match(덮음.결과.옮김.join('\n'), /003_C3\/ → _앞1\//);
+});
+
+test('링크로 바뀐 관리 파일 · _순서.json에는 쓰지 않는다 — 가리킨 곳(꾸러미 밖)이 덮이지 않게 멈춘다', 건너뜀, (t) => {
+  const 편 = 편만들기();
+  const pack = path.join(편, '꾸러미');
+  assert.equal(돌리기(편, ['--실행']).코드, 0);
+  const 밖 = path.join(편, '밖의_원본.txt');
+  fs.writeFileSync(밖, '꾸러미 밖의 손 파일', 'utf8');
+  fs.rmSync(path.join(pack, '001_C1', '지시문.txt'));
+  try { fs.symlinkSync(밖, path.join(pack, '001_C1', '지시문.txt'), 'file'); } catch (e) { return t.skip(`파일 링크를 만들 권한이 없다(${e.code})`); }
+  const 막힘 = 돌리기(편, ['--실행']);
+  assert.equal(막힘.코드, 1, 막힘.stdout);
+  assert.match(막힘.stderr, /이름이 겹친다 — 001_C1\/지시문\.txt\(링크다\)/);
+  assert.equal(fs.readFileSync(밖, 'utf8'), '꾸러미 밖의 손 파일', '링크를 통해 꾸러미 밖 파일이 덮였다');
+  // _순서.json이 링크면 손 꾸러미로 본다
+  fs.rmSync(path.join(pack, '001_C1', '지시문.txt'));
+  fs.writeFileSync(path.join(pack, '001_C1', '지시문.txt'), 글.C1, 'utf8');
+  fs.rmSync(path.join(pack, '_순서.json'));
+  fs.symlinkSync(밖, path.join(pack, '_순서.json'), 'file');
+  const 막힘2 = 돌리기(편, ['--실행']);
+  assert.equal(막힘2.코드, 1, 막힘2.stdout);
+  assert.match(막힘2.stderr, /이름이 겹친다 — _순서\.json\(링크다\)/);
+  assert.equal(fs.readFileSync(밖, 'utf8'), '꾸러미 밖의 손 파일');
+  assert.equal(돌리기(편, ['--실행', '--덮어쓰기']).코드, 0);
+  assert.equal(fs.readFileSync(밖, 'utf8'), '꾸러미 밖의 손 파일', '--덮어쓰기여도 링크째 옮길 뿐 가리킨 곳은 그대로다');
+  assert.ok(!fs.lstatSync(path.join(pack, '_순서.json')).isSymbolicLink());
+});
+test('쓰기는 새 파일을 써서 이름을 바꿔 끼운다 — 하드 링크로 이어진 꾸러미 밖 파일의 내용은 바뀌지 않는다', 건너뜀, () => {
+  const 편 = 편만들기();
+  const pack = path.join(편, '꾸러미');
+  assert.equal(돌리기(편, ['--실행']).코드, 0);
+  // 이 도구가 쓴 파일을 꾸러미 밖에서 하드 링크로 같이 쥐고 있다(같은 내용을 나눠 가진 다른 이름) — 그 자리를 열어 덮으면 밖의 이름으로 봐도 내용이 바뀐다
+  const 밖지시문 = path.join(편, '밖에서_쥔_지시문.txt'), 밖순서 = path.join(편, '밖에서_쥔_순서.json');
+  fs.linkSync(path.join(pack, '001_C1', '지시문.txt'), 밖지시문);
+  fs.linkSync(path.join(pack, '_순서.json'), 밖순서);
+  const 앞순서 = fs.readFileSync(밖순서, 'utf8');
+  // 원고를 고쳐 다시 짓는다 — 판 길이도 바뀌게 컷표의 쓰는 구간을 늘린다
+  fs.writeFileSync(path.join(편, '영상지시문', 'C1.txt'), 글.C1 + '\nPHYSICS: the pot stays exactly where she set it.', 'utf8');
+  const 표 = path.join(편, '컷표.json');
+  const seq = JSON.parse(fs.readFileSync(표, 'utf8'));
+  seq.detail.find(d => d.cut === 'C1').out = 6.5;
+  fs.writeFileSync(표, JSON.stringify(seq), 'utf8');
+  const r = 돌리기(편, ['--실행']);
+  assert.equal(r.결과.쓴것, true, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(밖지시문, 'utf8'), 글.C1, '하드 링크를 통해 꾸러미 밖 이름의 내용이 바뀌었다');
+  assert.equal(fs.readFileSync(밖순서, 'utf8'), 앞순서, '하드 링크를 통해 꾸러미 밖 이름의 _순서.json이 바뀌었다');
+  assert.match(fs.readFileSync(path.join(pack, '001_C1', '지시문.txt'), 'utf8'), /PHYSICS: the pot stays/);
+  assert.equal(판(순서(편), 'C1').길이, 7);
+  assert.deepEqual(fs.readdirSync(path.join(pack, '001_C1')).sort(), ['1_시작.png', '지시문.txt'], '쓰다 만 임시 파일이 남지 않는다');
+});
+
+test('꾸러미 안에서 손으로 고친 관리 파일 · _순서.json은 덮지 않는다 — 이름이 같아도 쓴 그대로가 아니면 멈춘다', 건너뜀, () => {
+  const 편 = 편만들기();
+  const pack = path.join(편, '꾸러미');
+  assert.equal(돌리기(편, ['--실행']).코드, 0);
+  assert.equal(돌리기(편, ['--실행']).코드, 0, '아무것도 안 바꾸고 다시 돌리면 그대로 지나간다');
+  // 꾸러미 안의 지시문을 손으로 고쳤다(원고 영상지시문/C2.txt가 아니라) — 다시 지으면 그 고침이 사라진다
+  const 손고침 = 글.C2 + '\n(꾸러미 안에서 손으로 덧붙인 줄)';
+  fs.writeFileSync(path.join(pack, '002_C2', '지시문.txt'), 손고침, 'utf8');
+  const 막힘 = 돌리기(편, ['--실행']);
+  assert.equal(막힘.코드, 1, 막힘.stdout);
+  assert.match(막힘.stderr, /이름이 겹친다 — 002_C2\/지시문\.txt\(쓴 뒤 바뀌었다\)/);
+  assert.match(막힘.stderr, /꾸러미 안에서 손으로 고친 것은 영상지시문 · 컷표로 옮긴 뒤 다시 돌린다/);
+  assert.equal(fs.readFileSync(path.join(pack, '002_C2', '지시문.txt'), 'utf8'), 손고침);
+  // 그 고침을 원고로 옮기면(꾸러미의 내용 = 새로 쓸 내용) 잃을 것이 없으니 지나간다
+  fs.writeFileSync(path.join(편, '영상지시문', 'C2.txt'), 손고침, 'utf8');
+  assert.equal(돌리기(편, ['--실행']).코드, 0);
+  // _순서.json의 길이를 손으로 고쳤다
+  const 순서파일 = path.join(pack, '_순서.json');
+  const 손순서 = fs.readFileSync(순서파일, 'utf8').replace('"길이": 5', '"길이": 9');
+  fs.writeFileSync(순서파일, 손순서, 'utf8');
+  const 막힘2 = 돌리기(편, ['--실행']);
+  assert.equal(막힘2.코드, 1, 막힘2.stdout);
+  assert.match(막힘2.stderr, /이름이 겹친다 — _순서\.json\(쓴 뒤 바뀌었다\)/);
+  assert.equal(fs.readFileSync(순서파일, 'utf8'), 손순서);
+  // --덮어쓰기: 손으로 고친 판을 _앞1/로 옮기고 새로 쓴다
+  const 덮음 = 돌리기(편, ['--실행', '--덮어쓰기']);
+  assert.equal(덮음.코드, 0, 덮음.stdout + 덮음.stderr);
+  assert.equal(fs.readFileSync(path.join(pack, '_앞1', '_순서.json'), 'utf8'), 손순서);
+  assert.equal(판(순서(편), 'C1').길이, 5);
+  // 이번 판에는 안 쓰는 관리 파일도 쓴 뒤 바뀌었으면 지우지 않고 알린다
+  const 표 = path.join(편, '컷표.json');
+  const seq = JSON.parse(fs.readFileSync(표, 'utf8'));
+  seq.detail.find(d => d.cut === 'C3').끝그림 = '정지/C4.png';
+  fs.writeFileSync(표, JSON.stringify(seq), 'utf8');
+  fs.writeFileSync(path.join(편, '영상지시문', 'C3.txt'), 글.C3.replace('first frame of this video.', 'first frame of this video. @이미지 2 is the exact last frame.'), 'utf8');
+  assert.equal(돌리기(편, ['--실행']).코드, 0);
+  fs.writeFileSync(path.join(pack, '003_C3', '2_끝.png'), '손으로 바꾼 끝 그림');
+  delete seq.detail.find(d => d.cut === 'C3').끝그림;
+  fs.writeFileSync(표, JSON.stringify(seq), 'utf8');
+  fs.writeFileSync(path.join(편, '영상지시문', 'C3.txt'), 글.C3, 'utf8');
+  const r = 돌리기(편, ['--실행']);
+  assert.equal(r.코드, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(path.join(pack, '003_C3', '2_끝.png'), 'utf8'), '손으로 바꾼 끝 그림');
+  assert.match(r.결과.남김.join('\n'), /003_C3\/2_끝\.png — 쓴 뒤 바뀌어 지우지 않았다/);
+});
+
+test('임시 파일은 배타적으로 새로 만든다 — 같은 이름으로 미리 있던 파일(꾸러미 밖 하드 링크)을 열어 덮지 않는다', 건너뜀, () => {
+  const 뿌리폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-pack-tmp-'));
+  const py = `
+import importlib.util, os, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("꾸러미", sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+뿌리 = Path(sys.argv[2]); 판 = 뿌리 / "판"; 판.mkdir()
+밖 = 뿌리 / "밖의_원본.txt"; 밖.write_text("꾸러미 밖의 손 파일", encoding="utf-8")
+자리 = 판 / "지시문.txt"
+미리 = 판 / f"지시문.txt.쓰는중-{os.getpid()}"   # 예전 판이 쓰던 예측할 수 있는 임시 이름 — 밖의 원본과 하드 링크로 이어 둔다
+os.link(밖, 미리)
+m.바꿔쓰기(자리, "새 지시문".encode("utf-8"))
+print(자리.read_text(encoding="utf-8"), "|", 밖.read_text(encoding="utf-8"), "|", 미리.read_text(encoding="utf-8"), "|", sorted(x.name.split("-")[0] for x in 판.iterdir()))
+`;
+  const r = spawnSync('python', ['-I', '-X', 'utf8', '-c', py, 도구, 뿌리폴더], { encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(r.stdout.trim(), "새 지시문 | 꾸러미 밖의 손 파일 | 꾸러미 밖의 손 파일 | ['지시문.txt', '지시문.txt.쓰는중']");
+  fs.rmSync(뿌리폴더, { recursive: true, force: true });
 });

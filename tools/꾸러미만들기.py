@@ -25,12 +25,16 @@
 #                                  지시문의 @이미지 N은 시작 · 끝 · 참고 차례, @오디오 N은 목소리 차례다)
 #   <편>/꾸러미/_만든것.json       이 도구가 만든 폴더 · 파일 목록. 다시 돌리면 이 목록에 있는 것만 고치고 지운다.
 #
-# 지우기 · 덮어쓰기 — 이 도구가 만든 것만(11-14 GPT 검수 뒤 다시 지음)
-#   · 쓰기 전에 충돌을 모두 먼저 본다. 멈출 때는 아무것도 바꾸지 않는다.
-#   · _만든것.json이 없거나 이 도구의 표식이 아닌데(도구 이름 · 꼴 · 이름마다 경로 글자 검사) 꾸러미 폴더에 무언가 있으면 손으로 만든 꾸러미다 → 멈춘다.
-#   · 판 폴더 · 파일이 「이 도구가 넣지 않은 것」과 이름이 겹쳐도 멈춘다(손으로 넣은 2_끝.png 위에 새 끝 그림을 덮지 않는다).
-#   · --덮어쓰기: 겹치는 것과 앞 _순서.json을 지우지 않고 꾸러미 안 _앞<번호>/ 로 옮긴 뒤 짓는다.
-#   · 이제 안 쓰는 판 폴더는 적어 둔 파일만 하나씩 지우고 빈 폴더만 걷는다(폴더 통째 지우기는 하지 않는다) — 손으로 넣은 파일 · 하위 폴더가 있으면 남긴다.
+# 지우기 · 덮어쓰기 — 이 도구가 쓴 그대로인 것만(11-14 GPT · 카본 검수 네 회차 뒤의 기준)
+#   · _만든것.json(표식)에 판 폴더마다 파일 이름 → 내용 지문, 그리고 _순서.json의 지문을 적는다. 다시 돌릴 때 **이름이 표식에 있고 내용이 그 지문 그대로인
+#     진짜 파일**만 이 도구의 것이다 — 그것만 덮거나 지운다. 이름이 같아도 쓴 뒤 바뀐 파일(꾸러미 안에서 손으로 고친 지시문 · _순서.json)은 덮지 않는다.
+#   · 쓰기 전에 충돌을 모두 먼저 본다. 멈출 때는 아무것도 바꾸지 않는다. 충돌 = 이 도구의 것이 아닌데 쓸 자리에 있는 것:
+#     표식에 없는 폴더 · 파일, 쓴 뒤 바뀐 파일, 링크 · 윈도우 정션(다른 곳을 가리키는 폴더), 링크로 바뀐 파일. (이미 새 내용과 같은 파일은 충돌이 아니다.)
+#   · 표식이 없거나 이 도구의 표식이 아닌데(도구 이름 · 꼴 · 이름마다 경로 글자 · 지문 꼴 검사) 꾸러미 폴더에 무언가 있으면 손으로 만든 꾸러미다 → 멈춘다.
+#   · --덮어쓰기: 충돌한 것과 앞 _순서.json · 표식을 지우지 않고 꾸러미 안 _앞<번호>/ 로 이름만 바꿔 옮긴 뒤 짓는다(정션은 정션째 — 가리킨 곳은 그대로).
+#   · 쓰기는 같은 폴더에 배타적으로 만든 임시 파일에 쓰고 이름을 바꿔 끼운다 — 그 자리의 파일이나 예측할 수 있는 이름을 열어 덮지 않으므로
+#     링크 · 하드 링크로 이어진 꾸러미 밖 파일의 내용은 바뀌지 않는다.
+#   · 이제 안 쓰는 판 폴더는 이 도구의 파일만 하나씩 지우고 빈 폴더만 걷는다(폴더 통째 지우기는 하지 않는다) — 다른 것이 하나라도 있으면 폴더째 남기고 알린다.
 #   · 표식의 이름은 꾸러미 폴더 바로 아래 것만 받는다(「..」 · 「C:..」 · 경로 구분 글자는 표식 전체를 믿지 않는다).
 #
 # 정하는 법
@@ -47,7 +51,6 @@ import json
 import math
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -115,6 +118,48 @@ def 직계(부모, 이름):
         return (부모 / 이름).resolve().parent == 부모.resolve()
     except OSError:
         return False
+
+
+def 진짜폴더(d):
+    """꾸러미 바로 아래의 진짜 폴더인가 — 링크 · 윈도우 정션(재분석 지점)처럼 다른 곳을 가리키는 폴더는 아니다.
+    정션은 is_symlink()에 안 걸리고 resolve()가 가리킨 곳으로 풀려, 가리킨 곳이 같은 꾸러미 안이면 「직계」도 지나간다."""
+    try:
+        if not d.is_dir() or d.is_symlink():
+            return False
+        if getattr(os.lstat(d), "st_file_attributes", 0) & 0x400:   # FILE_ATTRIBUTE_REPARSE_POINT — 정션 · 폴더 링크
+            return False
+        return d.resolve() == d.parent.resolve() / d.name            # 풀어 본 자리가 적힌 자리와 같다(어디로도 넘어가지 않는다)
+    except OSError:
+        return False
+
+
+def 진짜파일(f):
+    """링크가 아닌 보통 파일인가 — 링크로 바뀐 파일에 쓰면 가리킨 곳(꾸러미 밖일 수 있다)이 덮인다"""
+    try:
+        return f.is_file() and not f.is_symlink() and not getattr(os.lstat(f), "st_file_attributes", 0) & 0x400
+    except OSError:
+        return False
+
+
+def 바꿔쓰기(자리, 바이트):
+    """자리에 바이트를 쓴다 — 같은 폴더에 **배타적으로 새로 만든** 임시 파일에 쓰고 이름을 바꿔 끼운다.
+    그 자리의 파일도, 예측할 수 있는 이름의 임시 파일도 열어 덮지 않는다(같은 이름이 이미 있으면 mkstemp가 다른 이름을 고른다) —
+    링크(가리킨 곳) · 하드 링크(같은 내용을 나눠 가진 다른 이름)로 이어진 꾸러미 밖 파일은 바뀌지 않는다. 치우는 것은 이번 호출이 만든 임시 파일뿐이다."""
+    fd, 임시 = tempfile.mkstemp(dir=str(자리.parent), prefix=자리.name + ".쓰는중-")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(바이트)
+        os.replace(임시, 자리)
+    except BaseException:
+        try:
+            os.unlink(임시)
+        except OSError:
+            pass
+        raise
+
+
+def 바이트지문(바이트):
+    return hashlib.sha256(바이트).hexdigest()[:16]
 
 
 def 쓰는구간들(rows):
@@ -360,8 +405,11 @@ def 순서줄(판들):
     return 줄
 
 
+지문꼴 = re.compile(r"[0-9a-f]{16}")
+
+
 def 표식읽기(파일):
-    """_만든것.json → {폴더: [파일…]} | None(이 도구의 표식이 아니다 · 깨졌다 · 이름에 경로 글자가 있다)"""
+    """_만든것.json → {"폴더": {폴더: {파일: 지문}}, "순서": 지문 | None} | None(이 도구의 표식이 아니다 · 깨졌다 · 이름에 경로 글자가 있다 · 지문 꼴이 아니다)"""
     try:
         j = json.loads(파일.read_text(encoding="utf-8"))
     except Exception:   # noqa: BLE001
@@ -370,89 +418,122 @@ def 표식읽기(파일):
     if not isinstance(폴더, dict):
         return None
     for k, v in 폴더.items():
-        if not 안전한이름(k) or not isinstance(v, list) or any(not 안전한이름(x) for x in v):
+        if not 안전한이름(k) or not isinstance(v, dict) or any(not 안전한이름(x) or not isinstance(h, str) or not 지문꼴.fullmatch(h) for x, h in v.items()):
             return None
-    return 폴더
+    순서 = j.get("순서")
+    if 순서 is not None and not (isinstance(순서, str) and 지문꼴.fullmatch(순서)):
+        return None
+    return {"폴더": 폴더, "순서": 순서}
+
+
+def 내것(f, 적힌지문):
+    """이 도구가 쓴 그대로인 파일인가 — 표식에 지문이 적혀 있고, 링크가 아닌 보통 파일이며, 내용이 그 지문 그대로다"""
+    try:
+        return bool(적힌지문) and 진짜파일(f) and 지문(f) == 적힌지문
+    except OSError:
+        return False
 
 
 def 짓기(대상, 판들, 원천, 덮어쓰기):
-    """대상 폴더에 꾸러미를 쓴다 → (남긴 것 [글], 지운 것 [폴더], 옮긴 것 [글]). 쓰기 전에 충돌을 모두 먼저 본다 — 멈출 때는 아무것도 바꾸지 않는다."""
+    """대상 폴더에 꾸러미를 쓴다 → (남긴 것 [글], 지운 것 [폴더], 옮긴 것 [글]). 쓰기 전에 충돌을 모두 먼저 본다 — 멈출 때는 아무것도 바꾸지 않는다.
+    덮거나 지우는 것은 「이 도구가 쓴 그대로인 파일」(표식의 지문과 같은 진짜 파일)뿐이다."""
     순서파일, 표식파일 = 대상 / "_순서.json", 대상 / 표식
+    있다 = lambda f: f.exists() or f.is_symlink()   # noqa: E731 — 깨진 링크도 「있다」
     있던것 = sorted(x.name for x in 대상.iterdir()) if 대상.is_dir() else []
-    앞 = 표식읽기(표식파일) if 표식파일.is_file() else None
+    앞 = 표식읽기(표식파일) if 진짜파일(표식파일) else None
     손꾸러미 = 앞 is None and bool(있던것)   # 표식이 없거나 믿을 수 없는데 폴더에 무언가 있다
-    앞 = 앞 or {}
-    충돌 = []   # (폴더, 파일 | None) — 이 도구가 넣지 않은 것과 이름이 겹친다
+    앞폴더 = (앞 or {}).get("폴더") or {}
+    # 쓸 것을 먼저 다 만든다(바이트) — 무엇을 쓸지 알아야 「이미 새 내용과 같은 파일」을 충돌에서 뺄 수 있다
+    쓸것 = {}   # 폴더 → {파일 이름: 바이트}
     for p in 판들:
         if not 직계(대상 if 대상.is_dir() else 대상.parent, p["폴더"]):
             raise SystemExit(f"[멈춤] 판 폴더 이름을 쓸 수 없다: {p['폴더']!r} — 아무것도 바꾸지 않았다")
-        d = 대상 / p["폴더"]
-        if not (d.exists() or d.is_symlink()):
+        쓸것[p["폴더"]] = {"지시문.txt": p["글"].replace("\r\n", "\n").encode("utf-8"), **{새: 원.read_bytes() for 새, 원 in p["파일들"]}}
+    새순서 = (json.dumps(순서줄(판들), ensure_ascii=False, indent=1) + "\n").encode("utf-8")
+    충돌 = []   # (폴더 | None, 파일 | None, 까닭) — 이 도구의 것이 아닌데 쓸 자리에 있는 것
+    if 앞 is not None and 있다(순서파일) and not 내것(순서파일, 앞["순서"]) and not (진짜파일(순서파일) and 순서파일.read_bytes() == 새순서):
+        충돌.append((None, "_순서.json", "쓴 뒤 바뀌었다" if 진짜파일(순서파일) else "링크다"))
+    for 폴더, 파일들 in 쓸것.items():
+        d = 대상 / 폴더
+        if not 있다(d):
             continue
-        if not d.is_dir() or d.is_symlink() or p["폴더"] not in 앞:
-            충돌.append((p["폴더"], None))
+        if not 진짜폴더(d):
+            충돌.append((폴더, None, "링크 · 정션이다"))
             continue
-        for 새 in ["지시문.txt"] + [새 for 새, _ in p["파일들"]]:
-            if ((d / 새).exists() or (d / 새).is_symlink()) and 새 not in 앞[p["폴더"]]:
-                충돌.append((p["폴더"], 새))
+        if 폴더 not in 앞폴더:
+            충돌.append((폴더, None, "이 도구가 만들지 않았다"))
+            continue
+        for 새, 바이트 in 파일들.items():
+            f = d / 새
+            if not 있다(f) or 내것(f, 앞폴더[폴더].get(새)):
+                continue
+            if 진짜파일(f) and f.read_bytes() == 바이트:
+                continue   # 이미 새 내용과 같다 — 잃을 것이 없다
+            충돌.append((폴더, 새, "이 도구가 넣지 않았다" if 새 not in 앞폴더[폴더] else "쓴 뒤 바뀌었다" if 진짜파일(f) else "링크다"))
     if (손꾸러미 or 충돌) and not 덮어쓰기:
         까닭 = []
         if 손꾸러미:
             까닭.append(f"이 도구가 만든 꾸러미가 아니다({표식}이 없거나 이 도구의 표식이 아닌데 폴더에 {len(있던것)}개가 있다)")
         if 충돌:
-            까닭.append("이 도구가 넣지 않은 것과 이름이 겹친다(" + " · ".join(f"{a}/{b}" if b else f"{a}/" for a, b in 충돌[:6]) + (" …" if len(충돌) > 6 else "") + ")")
-        raise SystemExit(f"[멈춤] {대상} — {' / '.join(까닭)} — 아무것도 바꾸지 않았다. 그 위에 지으려면 --덮어쓰기(겹치는 것과 앞 _순서.json은 지우지 않고 꾸러미 안 _앞<번호>/ 로 옮긴다)")
+            글 = " · ".join(f"{(a + '/') if a else ''}{b or ''}({c})" for a, b, c in 충돌[:6]) + (" …" if len(충돌) > 6 else "")
+            까닭.append(f"이 도구가 쓴 그대로가 아닌 것과 이름이 겹친다 — {글}")
+        raise SystemExit(f"[멈춤] {대상} — {' / '.join(까닭)} — 아무것도 바꾸지 않았다. 꾸러미 안에서 손으로 고친 것은 영상지시문 · 컷표로 옮긴 뒤 다시 돌린다. "
+                         f"그대로 그 위에 지으려면 --덮어쓰기(겹치는 것과 앞 _순서.json은 지우지 않고 꾸러미 안 _앞<번호>/ 로 옮긴다)")
     대상.mkdir(parents=True, exist_ok=True)
     옮김 = []
-    if 손꾸러미 or 충돌:   # --덮어쓰기 — 지우지 않고 옮긴다
+    if 손꾸러미 or 충돌:   # --덮어쓰기 — 지우지 않고 이름만 바꿔 옮긴다(안 되면 멈춘다 — 복사한 뒤 지우는 길로 넘어가지 않는다)
         n = 1
-        while (대상 / f"_앞{n}").exists():
+        while 있다(대상 / f"_앞{n}"):
             n += 1
         보관 = 대상 / f"_앞{n}"
         보관.mkdir()
-        if 손꾸러미:
-            for 이름 in ("_순서.json", 표식):
-                if (대상 / 이름).is_file():
-                    shutil.move(str(대상 / 이름), str(보관 / 이름))
-                    옮김.append(f"{이름} → {보관.name}/")
-        for 폴더, 파일 in 충돌:
-            if 파일 is None:
-                shutil.move(str(대상 / 폴더), str(보관 / 폴더))
+        옮길 = [(None, 이름) for 이름 in ("_순서.json", 표식) if 손꾸러미 and 있다(대상 / 이름)] + [(a, b) for a, b, _ in 충돌]
+        for 폴더, 파일 in dict.fromkeys(옮길):
+            if 폴더 is None:
+                os.rename(대상 / 파일, 보관 / 파일)
+                옮김.append(f"{파일} → {보관.name}/")
+            elif 파일 is None:
+                os.rename(대상 / 폴더, 보관 / 폴더)
                 옮김.append(f"{폴더}/ → {보관.name}/")
             else:
                 (보관 / 폴더).mkdir(exist_ok=True)
-                shutil.move(str(대상 / 폴더 / 파일), str(보관 / 폴더 / 파일))
+                os.rename(대상 / 폴더 / 파일, 보관 / 폴더 / 파일)
                 옮김.append(f"{폴더}/{파일} → {보관.name}/{폴더}/")
     남김, 지움, 새표 = [], [], {}
-    지금폴더 = {p["폴더"] for p in 판들}
-    for 폴더, 파일들 in 앞.items():   # 앞에 이 도구가 만들었고 이제 안 쓰는 폴더 — 적어 둔 파일만 지우고 빈 폴더만 걷는다
-        if 폴더 in 지금폴더 or not 직계(대상, 폴더):
+    for 폴더, 적힌 in 앞폴더.items():   # 앞에 이 도구가 만들었고 이제 안 쓰는 폴더 — 이 도구의 파일만 있을 때 그 파일들을 지우고 빈 폴더를 걷는다
+        if 폴더 in 쓸것 or not 직계(대상, 폴더):
             continue
         d = 대상 / 폴더
-        if not d.is_dir() or d.is_symlink():
+        if not 있다(d):
             continue
-        남 = sorted(f.name for f in d.iterdir() if f.name not in set(파일들) or not f.is_file() or f.is_symlink())
+        if not 진짜폴더(d):   # 정션 · 링크로 바뀐 폴더 — 그 안의 파일은 가리킨 곳의 것이다
+            남김.append(f"{폴더} — 링크 · 정션이라 건드리지 않았다(가리킨 곳의 파일은 이 도구의 것이 아니다)")
+            continue
+        남 = sorted(f.name for f in d.iterdir() if not 내것(f, 적힌.get(f.name)))
         if 남:
-            남김.append(f"{폴더} — 이 도구가 넣지 않은 파일이 있어 지우지 않았다({' · '.join(남[:4])})")
+            남김.append(f"{폴더} — 이 도구가 넣지 않았거나 쓴 뒤 바뀐 파일이 있어 지우지 않았다({' · '.join(남[:4])})")
             continue
         for f in list(d.iterdir()):
             f.unlink()
         d.rmdir()
         지움.append(폴더)
-    for p in 판들:
-        d = 대상 / p["폴더"]
+    for 폴더, 파일들 in 쓸것.items():
+        d = 대상 / 폴더
         d.mkdir(exist_ok=True)
-        쓸 = ["지시문.txt"] + [새 for 새, _ in p["파일들"]]
-        for 옛 in 앞.get(p["폴더"]) or []:   # 앞에 넣었고 이번에는 안 넣는 파일(끝 그림을 뺀 판 등)
-            if 옛 not in 쓸 and 직계(d, 옛) and (d / 옛).is_file() and not (d / 옛).is_symlink():
+        적힌 = 앞폴더.get(폴더) or {}
+        for 옛, 옛지문 in 적힌.items():   # 앞에 넣었고 이번에는 안 넣는 파일(끝 그림을 뺀 판 등) — 쓴 그대로일 때만 지운다
+            if 옛 in 파일들 or not 직계(d, 옛) or not 있다(d / 옛):
+                continue
+            if 내것(d / 옛, 옛지문):
                 (d / 옛).unlink()
-        (d / "지시문.txt").write_text(p["글"].replace("\r\n", "\n"), encoding="utf-8", newline="\n")
-        for 새, 원 in p["파일들"]:
-            if not (d / 새).is_file() or 지문(d / 새) != 지문(원):
-                shutil.copyfile(원, d / 새)
-        새표[p["폴더"]] = 쓸
-    순서파일.write_text(json.dumps(순서줄(판들), ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
-    표식파일.write_text(json.dumps({"도구": 도구이름, "원천": 원천, "폴더": 새표}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+            else:
+                남김.append(f"{폴더}/{옛} — 쓴 뒤 바뀌어 지우지 않았다(이번 판에는 안 쓰는 파일이다)")
+        for 새, 바이트 in 파일들.items():
+            if not (진짜파일(d / 새) and (d / 새).read_bytes() == 바이트):
+                바꿔쓰기(d / 새, 바이트)
+        새표[폴더] = {새: 바이트지문(바이트) for 새, 바이트 in 파일들.items()}
+    바꿔쓰기(순서파일, 새순서)
+    바꿔쓰기(표식파일, (json.dumps({"도구": 도구이름, "원천": 원천, "순서": 바이트지문(새순서), "폴더": 새표}, ensure_ascii=False, indent=1) + "\n").encode("utf-8"))
     return 남김, 지움, 옮김
 
 
