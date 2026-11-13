@@ -638,6 +638,13 @@
 - 함께 잰 것: 무료 「자동 모드」로 한 장 8~40초, 지시문의 「화면 비율: 세로 9:16」을 따라 768×1376(안 쓰면 1408×768). **약 7~8장 만에 「한도가 재설정되는 대로 이미지를 더 생성할 수 있습니다」** — 다시 차는 시각은 못 봤다. 모든 그림 오른쪽 아래에 반짝이(✦), 반짝이가 있는 그림을 참고로 붙이면 둘로 늘기도 했다. 무료 계정 대화가 사이드바에 늦게 뜨고 대화 주소로 다시 열면 새 채팅으로 갈 때가 있어, 만들기와 받기를 같은 탭에서 끝냈다.
 - 다시 확인: 인물 · 제품 · 시작 그림 넷을 이 길로 받아 머리 바이트 `89504e47`(PNG) · `ffd8ffe0`(JPEG), 크기 1408×768 · 768×1376.
 
+### 줄 공간이 「사람에게 넘김」으로 남으면 그 줄을 잡는 보내기가 모두 「task space … with the user」로 실패하고 줄은 안 꺼진다 — 공간 목록에서 그 공간 탭을 보고, sorry가 풀렸으면 되잡는다 (2026-11-13 Claude)
+- 증상: 11-13 08:57~09:18 b 줄(unmet25 `/u/8`)을 잡은 `아르곤웹.js 보내기` 여섯 번이 모두 30~100초 만에 `Error: task.listTabs: Control of this task space is with the user, either through task.handOff() or a takeover in the browser, so browser commands are paused.`로 보내기 전에 실패했다. 같은 시각 a · c · d · e 줄은 답을 받았다. 두 번 이어 실패한 미학맹검은 줄을 다시 섰지만 「읽기」로만 서서(보낸 적이 없다) 답 없음 · 막힘(종료 2)으로 끝났다.
+- 원인: b 줄 공간 `synk-argon-web-p7-b`(ego 공간 144번)이 `ownership: agentDelegatedToUser`였고 그 탭은 08:02의 구글 로봇 확인(sorry) 화면이었다. 오류 문구에 sorry · 로봇이 없어 `아르곤웹.js`가 줄을 끄지 않았고, 차례는 b 줄을 계속 나눠 줬다.
+- 고침: `listTaskSpaces()`에서 그 공간(이름 `synk-argon-web-p7-<키>`)의 `ownership` · `recentTabTitles`를 봤다 → `차례.py gemini 끄기 b "<까닭>"`으로 그 줄만 끄고 → `takeOverTaskSpace(144)`(번호는 `id`)로 되잡아 탭을 찍었다(sorry, 시각 08:02). 같은 탭에서 `https://gemini.google.com/u/8/app`을 한 번 열자 입력 칸과 unmet25 계정이 그대로 보였다(저절로 풀림) → `차례.py gemini 켜기 b`. 그 뒤 b 줄에서 다른 세션 보내기가 다시 돌았다. 다시 열어도 sorry면 그 공간을 `handOff()`로 넘기고 창 이름을 유호님께 알린다(위 「로봇이 아닙니다」 절).
+- 고칠 것(공용 도구, 따로 맡김): `아르곤웹.js`가 이 오류를 받으면 그 줄 공간의 `ownership` · 탭 주소를 보고 sorry면 그 줄만 끄기, 미학맹검이 「보내기 전 실패」로 멈춘 묶음을 「읽기」가 아니라 다시 「보내기」로 서게 하기.
+- 다시 확인: `차례.py gemini 쓰임 1`에서 b 줄 건이 「받음」으로 나오는지, `listTaskSpaces()`에 `agentDelegatedToUser`인 `synk-argon-web-*` 공간이 없는지.
+
 ## 결과물
 
 ### 프로가 참조 얼굴에서 더 멀어진다

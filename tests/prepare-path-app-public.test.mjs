@@ -29,7 +29,7 @@ before(async () => {
   await fs.writeFile(path.join(app, 'styles.css'), "@font-face{font-family:SUIT;src:url('/assets/SUIT-Variable.woff2')} body{color:#123}");
   await fs.writeFile(path.join(app, '.env'), 'DO_NOT_SHIP_SECRET_FIXTURE');
   await fs.writeFile(path.join(app, 'server.mjs'), 'DO_NOT_SHIP_SERVER_FIXTURE');
-  for (const name of ['SUIT/SUIT-Variable.woff2', '플랫폼_웹/InterTight-Regular.woff2', 'SUIT/LICENSE_OFL.txt', 'InterTight/OFL.txt']) {
+  for (const name of ['SUIT/SUIT-Variable.woff2', '플랫폼_웹/InterTight-Regular.woff2', 'SUIT/LICENSE_OFL.txt', 'InterTight/OFL.txt', '플랫폼_웹/InterTight-Medium.woff2', '플랫폼_웹/InterTight-SemiBold.woff2', '플랫폼_웹/DMMono-Medium.woff2', 'DM_Mono/OFL.txt']) {
     const target = path.join(fixture, 'docs/브랜드_폰트', name);
     await fs.mkdir(path.dirname(target), { recursive: true });
     await fs.copyFile(path.join(ROOT, 'docs/브랜드_폰트', name), target);
@@ -72,7 +72,7 @@ test('public config contains only PATH identity and HTML uses fixed CSP and hash
   assert.doesNotMatch(html, /unsafe-inline|unsafe-eval/);
   for (const [, name, hash] of html.matchAll(/(?:src|href)="\.\/([^"?]+)\?v=([a-f0-9]+)"/g)) assert.equal(sha(await fs.readFile(path.join(built.output, name))), hash);
   assert.match(await fs.readFile(path.join(built.output, 'styles.css'), 'utf8'), /url\('\.\/assets\/SUIT-Variable\.woff2'\)/);
-  for (const name of ['SUIT-LICENSE.txt', 'InterTight-LICENSE.txt']) assert.match(await fs.readFile(path.join(built.output, 'assets', name), 'utf8'), /SIL OPEN FONT LICENSE/i);
+  for (const name of ['SUIT-LICENSE.txt', 'InterTight-LICENSE.txt', 'DMMono-LICENSE.txt']) assert.match(await fs.readFile(path.join(built.output, 'assets', name), 'utf8'), /SIL OPEN FONT LICENSE/i);
 });
 
 test('wrong callbacks, reused clients and secret configuration are refused before output', async () => {

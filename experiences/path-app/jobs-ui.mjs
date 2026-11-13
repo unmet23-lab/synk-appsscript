@@ -165,7 +165,7 @@ export function createJobsFeed({ fetcher = fetch, configUrl = './config.json', o
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const T = {
   ko: {
-    h: '한국근무공고', refresh: '새로고침', loading: '불러오는 중…', search: '검색', query: '공고 검색', all: '전체 회사',
+    h: '한국 근무 공고', refresh: '새로고침', loading: '불러오는 중…', search: '검색', query: '공고 검색', all: '전체 회사',
     company: '회사', saved: '저장한 공고만', note: '회사 채용 페이지에서 직접 가져온 공고입니다. 외국인 지원 가능 여부나 비자 지원을 보장하지 않습니다. 마감일은 제공되지 않습니다.',
     fetched: '가져온 시각', updated: '공고 수정일', prepare: '지원 준비', save: '저장', remove: '저장 해제', open: '원문 공고',
     fresh: '최신', stale: '캐시됨', errorS: '실패', unconfigured: '공고 서버가 설정되지 않았습니다.',

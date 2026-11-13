@@ -7,12 +7,16 @@ import { bundlePathApp, validatePathConfig, pathContentSecurityPolicy } from '..
 const APP_ROOT = fileURLToPath(new URL('./', import.meta.url));
 const FONT_ROOT = new URL('../../docs/브랜드_폰트/', import.meta.url);
 
-// Inter Tight is the approved static Regular (400) file, not a variable font.
+// Inter Tight is served as approved static files (Regular 400, Medium 500, SemiBold 600 basic Latin), not a variable font.
 export const FONT_FILES = Object.freeze({
   '/assets/SUIT-Variable.woff2': new URL('SUIT/SUIT-Variable.woff2', FONT_ROOT),
   '/assets/InterTight.woff2': new URL('플랫폼_웹/InterTight-Regular.woff2', FONT_ROOT),
   '/assets/SUIT-LICENSE.txt': new URL('SUIT/LICENSE_OFL.txt', FONT_ROOT),
   '/assets/InterTight-LICENSE.txt': new URL('InterTight/OFL.txt', FONT_ROOT),
+  '/assets/InterTight-Medium.woff2': new URL('플랫폼_웹/InterTight-Medium.woff2', FONT_ROOT),
+  '/assets/InterTight-SemiBold.woff2': new URL('플랫폼_웹/InterTight-SemiBold.woff2', FONT_ROOT),
+  '/assets/DMMono-Medium.woff2': new URL('플랫폼_웹/DMMono-Medium.woff2', FONT_ROOT),
+  '/assets/DMMono-LICENSE.txt': new URL('DM_Mono/OFL.txt', FONT_ROOT),
 });
 
 const HEADERS = Object.freeze({

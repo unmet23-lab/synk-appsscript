@@ -16,6 +16,10 @@ const FONTS = Object.freeze({
   'assets/InterTight.woff2': 'docs/브랜드_폰트/플랫폼_웹/InterTight-Regular.woff2',
   'assets/SUIT-LICENSE.txt': 'docs/브랜드_폰트/SUIT/LICENSE_OFL.txt',
   'assets/InterTight-LICENSE.txt': 'docs/브랜드_폰트/InterTight/OFL.txt',
+  'assets/InterTight-Medium.woff2': 'docs/브랜드_폰트/플랫폼_웹/InterTight-Medium.woff2',
+  'assets/InterTight-SemiBold.woff2': 'docs/브랜드_폰트/플랫폼_웹/InterTight-SemiBold.woff2',
+  'assets/DMMono-Medium.woff2': 'docs/브랜드_폰트/플랫폼_웹/DMMono-Medium.woff2',
+  'assets/DMMono-LICENSE.txt': 'docs/브랜드_폰트/DM_Mono/OFL.txt',
 });
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const slash = value => value.replaceAll('\\', '/');

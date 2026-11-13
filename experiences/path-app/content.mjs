@@ -6,7 +6,13 @@ export const GOALS = [
     id: 'study',
     label: { ko: '해외에서 한국을 준비해요', en: 'Preparing for Korea from abroad' },
     description: { ko: '학교·유학', en: 'Schools · study abroad' },
-    homeTitle: { ko: '한국 유학, 과정 비교부터 시작해요', en: 'Start by comparing study programs in Korea' },
+    homeTitle: { ko: '과정을 비교하고 지원 자료를 준비해요', en: 'Compare programs and prepare your application' },
+    note: { ko: '학교와 과정을 비교하고, 지원 서류와 물어볼 질문을 정리하는 화면으로 시작해요.', en: 'Start by comparing schools and programs, then organize documents and questions.' },
+    steps: [
+      { ko: '학교 · 과정 예시를 둘러보고 비교해요.', en: 'Browse and compare school and program examples.' },
+      { ko: '지원 이유와 학업 경험을 내 말로 적어 두어요.', en: 'Write your reasons and study background in your own words.' },
+      { ko: '내가 확인하고, 실제 지원은 학교의 공식 창구로 해요.', en: 'Review it yourself; apply through the school’s official channel.' }
+    ],
     homeAction: { ko: '과정 비교하기', en: 'Compare programs' },
     defaultLocation: 'abroad',
     interests: [
@@ -21,6 +27,12 @@ export const GOALS = [
     label: { ko: '한국에서 유학 중이에요', en: 'Studying in Korea now' },
     description: { ko: '생활·졸업', en: 'Campus life · graduation' },
     homeTitle: { ko: '학교생활과 졸업 이후를 함께 준비해요', en: 'Plan campus life and what comes after graduation' },
+    note: { ko: '학교생활과 졸업 이후를 함께 준비하는 화면으로 시작해요.', en: 'Start with campus life and what comes after graduation.' },
+    steps: [
+      { ko: '학교생활 · 졸업 준비 예시를 둘러봐요.', en: 'Browse campus life and graduation examples.' },
+      { ko: '남은 학기 계획과 물어볼 질문을 적어 두어요.', en: 'Write your remaining-term plan and questions.' },
+      { ko: '내가 확인하고, 실제 요건은 학교에 직접 확인해요.', en: 'Review it yourself and confirm requirements with your school.' }
+    ],
     homeAction: { ko: '준비할 것 고르기', en: 'Pick what to prepare' },
     defaultLocation: 'korea',
     interests: [
@@ -35,6 +47,12 @@ export const GOALS = [
     label: { ko: '취업을 준비하고 있어요', en: 'Preparing for a job' },
     description: { ko: '공고·지원·면접', en: 'Postings · applications · interviews' },
     homeTitle: { ko: '공고를 비교하고 지원 자료를 준비해요', en: 'Compare postings and prepare your application' },
+    note: { ko: '공고와 연습 예시를 비교하고, 지원 자료를 내 말로 준비하는 화면으로 시작해요.', en: 'Start by comparing postings and practice examples, then prepare your materials in your own words.' },
+    steps: [
+      { ko: '공고와 연습 예시를 구분해 둘러보고 비교해요.', en: 'Browse real postings and practice examples, clearly labeled.' },
+      { ko: '내 말로 답변 초안을 적어 두어요.', en: 'Draft your answers in your own words.' },
+      { ko: '내가 확인하고, 실제 제출은 공식 경로로 해요.', en: 'Review it yourself; submit only through official channels.' }
+    ],
     homeAction: { ko: '공고 비교하기', en: 'Compare postings' },
     defaultLocation: 'unknown',
     interests: [
