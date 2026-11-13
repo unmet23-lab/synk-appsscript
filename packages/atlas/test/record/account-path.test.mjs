@@ -106,6 +106,42 @@ test('unsent의 skip — 같은 제시의 답 하나를 건너뛰면 그 뒤 답
   assert.equal(record.unsent(256).length, 6, '건너뛰기는 버리지 않는다');
 });
 
+test('unsent의 skip — 건너뛴 도움 · 전달의 제시는 그 뒤 자식(도움 · 답 · 그 제외)도 이번엔 보내지 않는다 · 앞 자식과 다른 제시는 간다(Fable 5.2 끝 판 둘째 넘친 #1 — 설계 주인 결정 3 §2 ②)', async () => {
+  const record = await account();
+  const p = record.add(EVENT_TYPES.presented, presented());
+  const d = record.add(EVENT_TYPES.delivery, { presentationId: p.event.id, audio: 'completed' });
+  const h = record.add(EVENT_TYPES.helped, {
+    presentationId: p.event.id,
+    helpId: 'hint',
+    level: 'cue',
+    contentRef: 'w.hint',
+  });
+  const a1 = record.add(EVENT_TYPES.attempted, answer(p.event.id, 'incorrect', 1));
+  const x = record.add(EVENT_TYPES.excluded, { targetId: a1.event.id });
+  const a2 = record.add(EVENT_TYPES.attempted, answer(p.event.id, 'correct', 2));
+  const q = record.add(EVENT_TYPES.presented, presented());
+  const b1 = record.add(EVENT_TYPES.attempted, answer(q.event.id, 'correct', 1));
+  await record.saved();
+  for (const made of [p, d, h, a1, x, a2, q, b1]) assert.equal(await made.stored, true);
+  assert.deepEqual(
+    record
+      .unsent(256, new Set([h.event.id]))
+      .map(e => e.id)
+      .sort(),
+    [p.event.id, d.event.id, q.event.id, b1.event.id].sort(),
+    '건너뛴 도움 없이 뒤 답이 올라가면 서버 요약에 혼자 맞힌 답으로 굳는다 — 그 제시의 뒤 자식은 이번엔 가지 않는다',
+  );
+  assert.deepEqual(
+    record
+      .unsent(256, new Set([d.event.id]))
+      .map(e => e.id)
+      .sort(),
+    [p.event.id, q.event.id, b1.event.id].sort(),
+    '전달을 건너뛰어도 같다',
+  );
+  assert.equal(record.unsent(256).length, 8, '건너뛰기는 버리지 않는다');
+});
+
 test('같은 제시의 둘째 답은 앞 답에 기대어 쓴다 — 앞 답이 저장되지 못했으면 쓰지 않고, 저장 중이면 기다린다(§18-4 H1)', async () => {
   const health = createHealth();
   const port = memoryPort();

@@ -32,8 +32,8 @@ export const SELF_TEST = [
     '실행기',
     'Vellum이 다른 언어로 물러선다',
     'src/vellum/index.mjs',
-    '  const row = TABLE[lang]?.[code];',
-    '  const row = TABLE[lang]?.[code] ?? TABLE.en?.[code] ?? TABLE.ko[code];',
+    '  const row = own(own(TABLE, lang), code);',
+    '  const row = own(own(TABLE, lang), code) ?? own(TABLE.en, code) ?? own(TABLE.ko, code);',
   ],
 ];
 

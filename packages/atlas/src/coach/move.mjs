@@ -64,13 +64,19 @@ export async function moveGuest(guest, target, { watermarks = {}, postLegacy = n
   return { ok: true, legacy: legacyIds.length, current: added.length, until: plan.until };
 }
 
-// 「이 기기에만 두기」 — 지금 읽은 자리까지는 Z에게 다시 묻지 않는다(두기 표지 · until).
+// 「이 기기에만 두기」 — 지금 읽은 자리까지는 Z에게 다시 묻지 않는다(두기 표지 · until). 못 쓰면(차례 · 저장 실패) 계기에 남기고 실패를
+// 그대로 돌려준다 — 셸은 결정만 남기고 다음 로그인에 다시 센다(계기에도 없던 것 — Fable 5.2 끝 판 둘째 넘친 #5).
 export async function keepGuest(guest, { account }) {
-  return guest.turn('move', async () => {
-    await guest.trail.refresh();
-    const until = guest.trail.record.guestUpload(0, { account }).until;
-    return guest.trail.record.mark({ mark: 'kept', account, until });
-  });
+  try {
+    return await guest.turn('move', async () => {
+      await guest.trail.refresh();
+      const until = guest.trail.record.guestUpload(0, { account }).until;
+      return guest.trail.record.mark({ mark: 'kept', account, until });
+    });
+  } catch (error) {
+    guest.note?.('save', { ok: false, code: 'GUEST_MARK', dependent: true });
+    throw error;
+  }
 }
 
 // 되는 만큼만 쓰는 표지 — 계정이 이 기기에 다녀감(visited) · 로그아웃(logout). 쓰기 실패는 계기에만(로그인 · 로그아웃을 막지 않는다).

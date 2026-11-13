@@ -75,7 +75,7 @@ const server=http.createServer(async(req,res)=>{
    if(suffix==='rehearsal/logout'&&req.method==='POST'){const token=requestToken(request),cookie=cookieToken(request);sessions.delete(token);return json(res,200,{ok:true},token===cookie?{'Set-Cookie':`${sessionCookieName(request)}=; HttpOnly; SameSite=Strict; Path=/api/world; Max-Age=0`}:{});}
    if(trailRoutes.has(suffix)){
     const account=identity(request);
-    trailHost??=import('./rehearsal-trail.mjs').then(m=>m.openRehearsalTrail({root,devOut:process.env.SYNK_ATLAS_DEV_OUT||null,trailSwitch:process.env.SYNK_WORLD_ATLAS_TRAIL,keys:ids})).catch(error=>{trailHost=null;throw error;});
+    trailHost??=import('./rehearsal-trail.mjs').then(m=>m.openRehearsalTrail({root,devOut:process.env.SYNK_ATLAS_DEV_OUT||null,trailSwitch:process.env.SYNK_WORLD_ATLAS_TRAIL,keys:ids,stateFile:path.join(root,'.local','rehearsal-trail-revision.json')})).catch(error=>{trailHost=null;throw error;});
     const reply=await(await trailHost).handle({account,path:suffix.slice('rehearsal/'.length),method:req.method,query:url.searchParams,body:raw,headers});
     return json(res,reply.status,reply.body);
    }

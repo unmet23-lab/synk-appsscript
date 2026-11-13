@@ -226,12 +226,24 @@ export function createRehearsalTrail({
   cap = atlas.FOLD_CAP,
   warn = message => console.warn(message),
   firstRevision = 1, // 합성 계정을 처음 만들 때의 판(서버를 켤 때 openRehearsalTrail이 켠 시각으로 준다 — 넘친 #9)
+  onRevision = null, // 판을 내줄 때마다(계정을 만들 때 · 오를 때) — openRehearsalTrail이 마지막 판을 적어 다음 켤 때 그 뒤부터 시작한다(넘친 #10)
 }) {
   const params = atlas.PARAMS;
   const memory = atlas.createMemory(params);
   const edition = atlas.foldEdition(params, index);
   const switchOn = switchOf(trailSwitch, keys);
   const accounts = new Map();
+  const issued = revision => {
+    try {
+      onRevision?.(revision);
+    } catch {
+      // 적어 두기 실패는 리허설을 막지 않는다
+    }
+  };
+  const bump = entry => {
+    entry.revision += 1;
+    issued(entry.revision);
+  };
 
   function accountOf(id) {
     let entry = accounts.get(id);
@@ -246,6 +258,7 @@ export function createRehearsalTrail({
         lane: Promise.resolve(),
       };
       accounts.set(id, entry);
+      issued(entry.revision);
     }
     return entry;
   }
@@ -413,10 +426,10 @@ export function createRehearsalTrail({
   function control(entry, body) {
     if (!plain(body) || typeof body.action !== 'string') fail(400, 'INVALID_ACTION');
     const flag = body.enabled;
-    if (body.action === 'revision' && Object.keys(body).length === 1) entry.revision += 1;
+    if (body.action === 'revision' && Object.keys(body).length === 1) bump(entry);
     else if (typeof flag !== 'boolean' || Object.keys(body).length !== 2) fail(400, 'INVALID_ACTION');
     else if (body.action === 'consent') {
-      if (entry.enabled !== flag) entry.revision += 1;
+      if (entry.enabled !== flag) bump(entry);
       entry.enabled = flag;
     } else if (body.action === 'writes') entry.writes = flag;
     else if (body.action === 'switch') entry.on = flag;
@@ -459,7 +472,7 @@ export function createRehearsalTrail({
         fail(400, 'INVALID_ACTION');
       if (body.revision !== entry.revision) fail(409, 'REVISION_CONFLICT', { revision: entry.revision });
       const cleared = entry.store.clear();
-      entry.revision += 1;
+      bump(entry);
       return { ok: true, learning: learningOf(entry), revision: entry.revision, ...cleared };
     }
     if (method === 'GET') {
@@ -504,7 +517,9 @@ export function createRehearsalTrail({
 
 // 리허설 서버가 부르는 입구 — 엔진은 SYNK_ATLAS_DEV_OUT의 묶음(브라우저가 받는 것과 같은 판)과 그 판의 전체 색인(map/index.json),
 // 없으면 패키지 원천(packages/atlas/src · map/index.json)으로 연다.
-export async function openRehearsalTrail({ root, devOut = null, trailSwitch, keys }) {
+// stateFile: 마지막으로 내준 판을 적는 파일(리허설 서버의 .local) — 켤 때 max(켠 시각의 초, 적은 판 + 1)로 시작한다. 켠 시각만으로는 앞 서버에서
+// 판을 k번 올린 뒤 k초 안에 다시 켜면 새 판이 기기의 판보다 작거나 같아, 기기가 앞 서버 때의 저장소를 그대로 열었다(넘친 #10).
+export async function openRehearsalTrail({ root, devOut = null, trailSwitch, keys, stateFile = null }) {
   let atlas;
   let indexFile;
   if (devOut) {
@@ -525,5 +540,27 @@ export async function openRehearsalTrail({ root, devOut = null, trailSwitch, key
   // 켤 때마다 큰 판으로 시작한다(켠 시각의 초) — 서버를 다시 켜면 메모리 계정이 사라지는데 판이 1로 돌아가, 같은 브라우저의 기기가 앞 사본
   // (계정 · 판 1)을 그대로 열고 옛 받은 표지와 새 서버 차례가 어긋나 「답이 사라진다」처럼 보였다. 판이 오르면 기기는 새 저장소를 열고 앞 판
   // 사본을 버린다(coach/stores.mjs dropEarlier — Fable 5.2 끝 판 넘친 #9).
-  return createRehearsalTrail({ atlas, index, trailSwitch, keys, firstRevision: Math.max(1, Math.floor(Date.now() / 1000)) });
+  let highest = 0;
+  if (stateFile)
+    try {
+      const saved = JSON.parse(fs.readFileSync(stateFile, 'utf8'))?.revision;
+      if (Number.isSafeInteger(saved) && saved > 0) highest = saved;
+    } catch {
+      // 처음 켬 · 읽지 못함 — 켠 시각으로 시작한다
+    }
+  const onRevision = stateFile
+    ? revision => {
+        if (revision <= highest) return;
+        highest = revision;
+        fs.writeFileSync(stateFile, JSON.stringify({ revision }));
+      }
+    : null;
+  return createRehearsalTrail({
+    atlas,
+    index,
+    trailSwitch,
+    keys,
+    firstRevision: Math.max(1, Math.floor(Date.now() / 1000), highest + 1),
+    onRevision,
+  });
 }

@@ -175,3 +175,16 @@ test('못 얻는 일이 이어져 차례 없이 갈 때도 청하는 사이 닫�
   assert.equal(ran, false, '닫힌 호스트에서 일하지 않는다');
   release();
 });
+
+test('잠금을 받은 뒤 콜백이 돌기 전에 닫히면 그 일은 하지 않는다 — 받은 잠금은 거둘 수 없다(카본 끝 판 둘째 E5)', async () => {
+  const locks = fakeLocks();
+  const turn = createTurn({ name: 's', locks, jobs: SHORT });
+  let ran = false;
+  const job = turn('upload', async () => {
+    ran = true;
+  });
+  turn.close(); // 잠금은 이미 받았고 콜백만 차례를 기다린다
+  await assert.rejects(job, { code: 'TURN_BUSY' });
+  assert.equal(ran, false, '닫힌 호스트에서 일하지 않는다');
+  assert.equal(locks.held('s'), false, '받은 잠금은 놓는다');
+});

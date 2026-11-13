@@ -23716,7 +23716,7 @@ function createWorldEducation({
         node.outerHTML = view.renderSetResponse({ kind, value: chosen, failed: failed2 });
         box.querySelector(`[data-set-response="${value}"]`)?.focus?.({ preventScroll: true });
       }
-      if (next2 && !failed2 && kind === "short") nextShort = chosen;
+      if (!failed2 && kind === "short") nextShort = next2 ? chosen : null;
       const again = kind === "short" ? box.querySelector("[data-practice-again]") : null;
       if (again) again.innerHTML = next2 ? `${escape3(t2("practice.next.again", { n: practiceLength() }))} <span aria-hidden="true">\u2192</span>` : `${escape3(t2("practice.again", { n: Math.min(more, practiceLength()) }))} <span aria-hidden="true">\u2192</span>`;
     });

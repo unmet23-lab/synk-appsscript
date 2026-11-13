@@ -91,11 +91,19 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const old=session,promise=(async()=>{const next=await requestToken(config,{grant_type:'refresh_token',client_id:config.clients.world.clientId,refresh_token:old.refresh_token},fetcher);guard(expected);save({...next,refresh_token:next.refresh_token||old.refresh_token});return session.access_token;})();
   refreshing=promise;try{return await promise;}finally{if(refreshing===promise)refreshing=null;}
  }
+ // 겹친 확인 — 뒤에 시작한 확인(같은 로그인)이 있으면 앞의 확인은 던지지 않고 그 답을 기다린다(뒤 확인이 더 늦게 읽어 새 값이다). 뒤에서
+ // 도는 계정 줄 읽기(Atlas 입구)가 설정의 학습 기록 토글 · 게임 열기의 확인을 ACCOUNT_CHANGED로 떨어뜨려 서버는 바뀌었는데 화면이 되돌아가던
+ // 것(Fable 5.2 끝 판 둘째 F3). 앞의 일이 뒤의 일을 덮지 않는 것은 그대로다 — 값은 뒤 확인이 적고, 늦은 게임 열기 등은 제 차례 수로 진다.
+ let latestVerify=null;
  async function verify(expected){
   guard(expected);if(!session)return false;const read=++verification;
+  const running=readVerified(expected,read);latestVerify={read,epoch:expected,running};return running;
+ }
+ async function readVerified(expected,read){
   if(!native&&session.expires_at<=now()+30000){await renew(expected);guard(expected);}
   const client=clientFor(expected);
-  const data=await client.load();guard(expected);if(read!==verification)throw changed();
+  const data=await client.load();guard(expected);
+  if(read!==verification){const later=latestVerify;if(later&&later.epoch===expected&&later.read>read)return later.running;throw changed();}
   const id=data.account?.synk_user_id;
   if(data.ok!==true||typeof id!=='string'||!id||data.account.status!=='active')throw Object.assign(Error('이 SYNK ID는 지금 쓸 수 없어요. 다른 계정으로 로그인해 주세요.'),{code:'ACCOUNT_UNAVAILABLE'});
   if(!native)entry.assertAccount(id);if(owner&&id!==owner||native&&id!==nativeAccountId){clear();throw changed();}owner=id;
@@ -197,7 +205,8 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const check=()=>{guard(expected);if(owner!==id)throw changed();};
   const wrap=fn=>async input=>{check();try{const value=await fn(input);check();return value;}catch(error){if(expected===epoch&&trailAuthFailed(error)){clear();forgetSession();}throw error;}};
   const get=wrap(input=>client.trail.get(input)),post=wrap(input=>client.trail.post(input)),legacy=typeof client.learning?.post==='function'?wrap(input=>client.learning.post(input)):null;
-  return Object.freeze({learning:Object.freeze({enabled:prefs.enabled,revision:prefs.revision}),learningSync:currentAccount.capabilities?.learningSync===true,
+  // account: 이 줄의 주인 — 입구(world-atlas-next.mjs readLine)가 제 주인과 견준다(세션이 바뀐 뒤 앞 계정 입구가 읽어도 새 계정 줄을 쓰지 않게).
+ return Object.freeze({account:id,learning:Object.freeze({enabled:prefs.enabled,revision:prefs.revision}),learningSync:currentAccount.capabilities?.learningSync===true,
    transport:revision=>Object.freeze({get:since=>get({revision,since}),post:(events,since)=>post({revision,events,since})}),
    postLegacy:legacy?events=>legacy({revision:prefs.revision,events}):null});
  }

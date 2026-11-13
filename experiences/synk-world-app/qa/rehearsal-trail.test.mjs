@@ -5,7 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as atlas from '../../../packages/atlas/src/index.mjs';
-import {createRehearsalTrail} from '../rehearsal-trail.mjs';
+import os from 'node:os';
+import path from 'node:path';
+import {createRehearsalTrail,openRehearsalTrail} from '../rehearsal-trail.mjs';
 
 const index=atlas.openMap({index:JSON.parse(fs.readFileSync(new URL('../../../packages/atlas/map/index.json',import.meta.url),'utf8'))}).foldIndex;
 const T0=Date.parse('2026-11-12T00:00:00.000Z');
@@ -231,4 +233,34 @@ test('옛 POST 흉내는 받은 판을 적는다 — 동의를 껐다 켜 판이
  assert.equal((await call('trail-legacy',{method:'POST',body:{revision,events:legacyTrio('r2')}})).status,200,'새 번호는 새 판으로 받는다');
  const later=setup({firstRevision:1_762_900_000});
  assert.equal((await later.call('trail-account')).body.learning.revision,1_762_900_000,'켤 때 준 처음 판으로 합성 계정을 만든다');
+});
+
+test('켤 때의 처음 판(openRehearsalTrail) — 켠 시각 이상이고 그 판으로 GET · POST가 되며, 앞 서버에서 판을 올린 뒤 곧 다시 켜도 뒤로 가지 않는다(Fable 5.2 끝 판 둘째 넘친 #10 · #11)',async()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rehearsal-trail-'));
+ const stateFile=path.join(dir,'revision.json');
+ const root=new URL('../',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1');
+ const open=()=>openRehearsalTrail({root,devOut:null,stateFile});
+ const ask=(trail,p,{method='GET',query='',body}={})=>trail.handle({account:A,path:p,method,query:new URLSearchParams(query),
+  body:body===undefined?undefined:Buffer.from(JSON.stringify(body)),headers:HEADERS});
+ try{
+  const before=Math.floor(Date.now()/1000);
+  const first=await open();
+  const revision=(await ask(first,'trail-account')).body.learning.revision;
+  assert.ok(revision>=before,'켠 시각의 초 이상');
+  assert.equal((await ask(first,'trail',{query:`revision=${revision}`})).status,200,'그 판으로 받기');
+  const post=await ask(first,'trail',{method:'POST',body:{revision,events:[stated(revision)]}});
+  assert.equal(post.status,200,JSON.stringify(post.body));
+  // 앞 서버에서 판을 여러 번 올린다(동의 왕복 +2 · 비우기 +1 · 판만 올리기 +1)
+  await ask(first,'trail-control',{method:'POST',body:{action:'consent',enabled:false}});
+  await ask(first,'trail-control',{method:'POST',body:{action:'consent',enabled:true}});
+  for(let i=0;i<5;i+=1)await ask(first,'trail-control',{method:'POST',body:{action:'revision'}});
+  const raised=(await ask(first,'trail-account')).body.learning.revision;
+  assert.equal(raised,revision+7);
+  // 곧 다시 켠다(같은 초 안) — 새 서버의 처음 판은 앞 서버가 내준 마지막 판보다 크다
+  const second=await open();
+  const again=(await ask(second,'trail-account')).body.learning.revision;
+  assert.ok(again>raised,`다시 켠 서버의 처음 판(${again})이 앞 서버의 판(${raised})보다 크다`);
+ }finally{
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
 });

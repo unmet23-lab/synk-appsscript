@@ -34,9 +34,11 @@ export class WorldClient {
     if(generation!==this.generation)throw Object.assign(Error('STALE_RESPONSE'),{code:'STALE_RESPONSE'});
     const data=await response.json();
     if(generation!==this.generation)throw Object.assign(Error('STALE_RESPONSE'),{code:'STALE_RESPONSE'});
-    if(!response.ok){const code=(typeof data.error==='string'?data.error:data.error?.code)||'SERVER_UNAVAILABLE';if(response.status===401){this.status='sign-in';this.snapshot=null;this.pending=null;this.accessToken=null;this.generation++;this.emit();}throw Object.assign(Error(data.message||code),{code,status:response.status,revision:data.revision});}
+    if(!response.ok){const code=(typeof data.error==='string'?data.error:data.error?.code)||'SERVER_UNAVAILABLE';if(response.status===401)this.expire();throw Object.assign(Error(data.message||code),{code,status:response.status,revision:data.revision});}
     return data;
   }
+  // 세션이 끝났다(401) — 로그인으로 돌아간다. 이 클라이언트를 지나지 않는 요청(리허설의 Atlas 나르개)도 401이면 이것을 부른다(넘친 #9).
+  expire(){this.status='sign-in';this.snapshot=null;this.pending=null;this.accessToken=null;this.generation++;this.emit();}
   adopt(data){
     if(!data?.accountId)return data;
     if(this.snapshot&&data.accountId!==this.snapshot.accountId)throw Object.assign(Error('ACCOUNT_MISMATCH'),{code:'ACCOUNT_MISMATCH'});

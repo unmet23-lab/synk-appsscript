@@ -810,6 +810,74 @@ test('손님 두 탭 — 꼬리를 안 읽은 탭이 다시 접어도 다른 탭
   assert.ok(reopened.view().memory.has('uA'), '다시 열어도 A의 답이 있다');
 });
 
+test('서버 시각은 시계를 맞춘 뒤에만 받은 것으로 친다 — 첫 받기의 덧붙이기가 실패하면 치우지 않는다(A6 · 카본 끝 판 둘째 F1)', async () => {
+  const inner = memoryPort();
+  let fails = 1;
+  const port = {
+    ...inner,
+    async append(values) {
+      if (fails > 0) {
+        fails -= 1;
+        throw new Error('quota');
+      }
+      return inner.append(values);
+    },
+  };
+  const rec = await openRecord({ port, revision: 1, memory, params: PARAMS, index, now: () => T0 });
+  const base = { edition: rec.edition(), lines: [], full: true, issued: [] };
+  await assert.rejects(
+    rec.receive({ summary: { ...base, lineSeq: 1, foldedUntil: 1 }, serverTime: T0 - 3_600_000 }),
+  );
+  assert.equal(rec.compactDue(), false, '시계를 못 맞췄다 — 치우지 않는다');
+  await rec.receive({
+    summary: { ...base, lineSeq: 2, foldedUntil: 2 },
+    serverTime: T0 - 3_600_000,
+  });
+  assert.equal(rec.compactDue(), true, '받은 뒤에는 치운다');
+});
+
+test('앞 요약 행 지우기만 실패하면 받은 답은 그대로 서고 계기에만 따로 남는다 — 남은 행은 다음 새 요약을 받을 때 지운다(카본 끝 판 둘째 F2)', async () => {
+  const inner = memoryPort();
+  let fails = 0;
+  const port = {
+    ...inner,
+    async remove(keys) {
+      if (fails > 0) {
+        fails -= 1;
+        throw new Error('closing');
+      }
+      return inner.remove(keys);
+    },
+  };
+  const health = createHealth();
+  const rec = await openRecord({
+    port,
+    revision: 1,
+    memory,
+    params: PARAMS,
+    index,
+    now: () => T0,
+    health,
+  });
+  const base = { edition: rec.edition(), lines: [], full: true, issued: [] };
+  await rec.receive({ summary: { ...base, lineSeq: 1, foldedUntil: 1 } });
+  fails = 1;
+  const view = await rec.receive({ summary: { ...base, lineSeq: 2, foldedUntil: 2 } });
+  assert.ok(view, '던지지 않고 요약을 돌려준다');
+  assert.equal(rec.summary.foldedUntil, 2, '새 요약이 섰다');
+  assert.equal(
+    health.snapshot().save.codes.SUMMARY_DROP,
+    1,
+    '지우기 실패는 사건 저장 실패와 따로 센다',
+  );
+  assert.equal(health.snapshot().save.codes.STORAGE_ERROR, undefined);
+  const before = (await inner.read()).filter(row => row.value.kind === 'summary');
+  assert.equal(before.length, 2, '앞 행이 남았다');
+  await rec.receive({ summary: { ...base, lineSeq: 3, foldedUntil: 3 } });
+  const after = (await inner.read()).filter(row => row.value.kind === 'summary');
+  assert.equal(after.length, 1, '다음 새 요약을 받을 때 앞의 두 행을 모두 지운다');
+});
+
 test('같은 판 묶음 · 같은 갱신 차례의 요약 가운데 덜 접힌 늦은 요약은 쓰지 않는다 — 「낸 것」이 뒤로 가지 않게, 다시 열어도(GPT 끝 판 GC2)', async () => {
   const port = memoryPort();
   const open = () =>

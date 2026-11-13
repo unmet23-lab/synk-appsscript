@@ -371,6 +371,8 @@ export function createCoach(options = {}) {
           aside: true,
           guest: true,
           params,
+          // 계정 코치의 계기 — 옆으로 연 손님 저장소의 실패(다녀감 표지 · 옛 기록 옮기기 · 저장)도 셸의 계기에 남게(카본 끝 판 둘째 D).
+          health: state.host.health ?? null,
           legacy,
           map: state.map,
           now: options.host?.now,

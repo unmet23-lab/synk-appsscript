@@ -890,6 +890,74 @@ test('plan()은 코치의 하루 경계(현지 새벽 4시)로 하루 한도를 
   coach.dispose();
 });
 
+// 서울(+540)의 하루 — 새벽 4시 경계 · 기기 시간대(Fable 5.2 끝 판 둘째 넘친 #7: UTC로 되돌려도 시험이 조용하던 자리).
+const seoulWords = n =>
+  Array.from({ length: n }, (_, i) =>
+    Object.freeze({
+      itemKey: `sz.i${i}`,
+      familyKey: `sz.f${i}`,
+      skillId: 'ko.reading.sz',
+      difficulty: 1,
+      responseFormat: 'single-choice',
+      units: Object.freeze([`ko.word.sz${i}`]),
+      order: i,
+      modality: 'reading',
+    }),
+  );
+const seoulCoach = (words, time, tag) =>
+  createCoach({
+    gameId: 'seoul',
+    map: fakeMap(words),
+    seed: 's',
+    dayOffset: 540,
+    host: { guest: true, port: memoryPort(), key: keyOf(tag), now: time.now },
+  });
+
+test('며칠 만에는 기기 하루로 센다 — 서울 아침에 놓친 말은 그날 오후엔 0일(수 없는 줄), 다음 날 새벽 5시엔 1일(Fable 5.2 끝 판 둘째 넘친 #7)', async () => {
+  const words = seoulWords(4);
+  const time = clock(Date.UTC(2026, 10, 11, 0, 0, 0)); // 서울 11-11 09:00
+  const coach = seoulCoach(words, time, 'seoul-days');
+  await coach.ready;
+  coach.recommend(words, { set: { length: 4, newLimit: 4 } });
+  await coach.answer(coach.present(words[0]), { correct: false, assessable: true }).stored;
+  coach.close?.();
+  time.advance(7 * HOUR); // 서울 16:00 — 같은 하루(UTC 경계로 재면 다른 하루)
+  const unit = words[0].units[0];
+  const today = coach.due().find(row => row.unit === unit);
+  assert.ok(today, '놓친 말이 돌아왔다');
+  assert.equal(today.days, 0, 'due()의 날 수 — 같은 하루는 0');
+  const picked = coach.recommend(words, { set: { length: 4, newLimit: 0 } });
+  assert.equal(picked.selected?.itemKey, words[0].itemKey);
+  assert.equal(picked.why.slots.days, 0, '이유의 날 수 — 같은 하루는 0(「오늘 놓친 …」)');
+  time.advance(13 * HOUR); // 서울 11-12 05:00 — 새 하루
+  assert.equal(coach.due().find(row => row.unit === unit)?.days, 1, '다음 날 새벽 5시엔 1일');
+  coach.dispose();
+});
+
+test('판 안 고르기의 하루 한도도 기기 하루로 — 서울 새벽 3시에 새것을 낸 뒤 5시 판은 새 하루의 한도로 선다(Fable 5.2 끝 판 둘째 넘친 #7)', async () => {
+  const words = seoulWords(40);
+  const time = clock(Date.UTC(2026, 10, 10, 18, 0, 0)); // 서울 11-11 03:00 — 서울로는 11-10의 하루
+  const coach = seoulCoach(words, time, 'seoul-limit');
+  await coach.ready;
+  const run = async () => {
+    coach.recommend(words, { set: { length: 30, newLimit: 12 } });
+    let fresh = 0;
+    for (let step = 0; step < 30; step += 1) {
+      const picked = coach.recommend(words);
+      if (picked.status !== 'ready' || picked.tier !== 2) break;
+      await coach.answer(coach.present(picked.selected), { correct: true, assessable: true })
+        .stored;
+      fresh += 1;
+      time.advance(1000);
+    }
+    return fresh;
+  };
+  assert.equal(await run(), 12, '새벽 3시 판 — 판 한도 12');
+  time.advance(2 * HOUR); // 서울 05:00 — 새 하루(UTC 경계로 재면 아직 같은 하루)
+  assert.equal(await run(), 12, '새 하루의 한도 20에서 판 한도 12 — 앞 하루의 남은 8이 아니다');
+  coach.dispose();
+});
+
 test('답보다 앞선 도움도 그 제시의 만남이다 — 첫 만남 판정은 그 제시 안에서(아르곤 끝 판 C2)', async () => {
   const items = bankOf(rng(17));
   const time = clock();

@@ -5,9 +5,12 @@ import {readConfig} from '../synk-account/src/core.mjs';
 // 처리방침 문장을 게시하고 서버 스위치 SYNK_WORLD_PUSH_ENABLED를 켠 뒤 켠다. 서버 스위치는 그 뒤로도 비상 끄기로 남는다).
 // atlasNext: Atlas 재설계 단계 4의 새 길(코치 3판 · 엔진이 고르는 짧은 연습 — docs/_ops/qa/atlas-redesign-20261110/단계4_계획.md §6).
 // 짓는 동안은 리허설 개발 서버에서만 켠다(SYNK_WORLD_FEATURES=atlasNext). 사용자에게 켜는 것은 WORLD의 모든 면이 새 길을 다 지은 뒤(4-8)다.
-const FEATURES=Object.freeze(['worldFeedback','worldPush','atlasNext']);
-// 공개(account) 설정에는 아직 넘기지 않는 이름 — 4-8에서 이 줄을 거둔다.
-const REHEARSAL_ONLY=new Set(['atlasNext']);
+// atlasNextGuest: 손님(로그인 전)에게도 새 길(기기가 원천인 손님 저장소)을 준다 — atlasNext가 켜졌을 때만 뜻이 있다. 계정은 서버 스위치
+// (SYNK_ATLAS_TRAIL)로 일부부터 켜고, 손님은 이 깃발로 따로 켠다(단계4_계획 §6 스위치 세 겹 — 없으면 atlasNext를 공개 설정에 넘기는 순간
+// 손님 전원이 새 길이었다, Fable 5.2 끝 판 둘째 F1 · 설계 주인 11-13). 리허설에서 손님 새 길을 보려면 SYNK_WORLD_FEATURES=atlasNext,atlasNextGuest.
+const FEATURES=Object.freeze(['worldFeedback','worldPush','atlasNext','atlasNextGuest']);
+// 공개(account) 설정에는 아직 넘기지 않는 이름 — 4-8에서 이 줄을 거둔다(손님 깃발은 계정 카나리를 본 뒤 따로).
+const REHEARSAL_ONLY=new Set(['atlasNext','atlasNextGuest']);
 function publicFeatures(value){
  const on=FEATURES.filter(name=>value?.features?.[name]===true&&(value.mode==='rehearsal'||!REHEARSAL_ONLY.has(name)));
  return on.length?{features:Object.fromEntries(on.map(name=>[name,true]))}:{};

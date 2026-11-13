@@ -22,12 +22,24 @@ test('셸은 기능이 켜졌을 때만 새 길 입구를 동적으로 부르고
  assert.match(shell,/const atlasNextOn=connection\.features\?\.atlasNext===true;/);
  // 기능이 꺼지면 null — 켜졌을 때만 주인 수명(keep)에 걸어 둔 새 길 입구를 넘긴다(주인이 바뀌면 닫힌다, 화면 검수 카본 A6).
  // 4-2(§19-1 ⑤ M7): 입구는 생활 화면보다 먼저 서고, 생활 판정(lifeDue)도 입구가 있을 때만 — 꺼진 판은 판정을 넣지 않아 지금 판 그대로다.
- assert.match(shell,/const atlasNext=atlasNextOn\?keep\('atlasNext',lazyAtlasNext\(owner\)\):null;/);
+ // 손님 깃발(atlasNextGuest)이 꺼져 있으면 손님 주인은 atlasNext가 켜져도 입구가 없다(null — 아래 꺼진 판의 짧은 연습과 같은 길: 새 길 모듈 ·
+ // IndexedDB 0건, Fable 5.2 끝 판 둘째 F1).
+ assert.match(shell,/const atlasNextGuestOn=atlasNextOn&&connection\.features\?\.atlasNextGuest===true;/);
+ assert.match(shell,/const atlasNext=atlasNextOn&&\(owner!=='guest'\|\|atlasNextGuestOn\)\?keep\('atlasNext',lazyAtlasNext\(owner\)\):null;/);
  assert.match(shell,/const lifeDue=atlasNext&&progress&&/);
  assert.match(shell,/\n  atlasNext,\r?\n/,'학습 화면에도 같은 입구');
  assert.equal(shell.match(/import\(['"]\.\/world-atlas-next\.mjs['"]\)/g)?.length,1,'새 길 입구를 부르는 곳은 lazyAtlasNext 하나');
  for(const file of ['app-shell.mjs','world-learning-ui.mjs','world-position-ui.mjs','world-reading-practice.mjs','operating-mode.mjs'])
   assert.doesNotMatch(read(file),/^import[^;]*(world-atlas-next|world-practice-next|\/atlas\/)/m,`${file}이 새 길을 정적으로 부르지 않는다`);
+});
+
+test('손님 깃발 — 설정 거름은 atlasNextGuest를 알고 리허설에서만 넘기며, atlasNext 없이 손님 깃발만으로는 셸이 입구를 주지 않는다',async()=>{
+ const {publicWorldConfig}=await import('../operating-mode.mjs');
+ assert.deepEqual(publicWorldConfig({mode:'rehearsal',features:{atlasNext:true}}).features,{atlasNext:true},'손님 깃발 없이 켜면 계정만');
+ assert.deepEqual(publicWorldConfig({mode:'rehearsal',features:{atlasNext:true,atlasNextGuest:true}}).features,{atlasNext:true,atlasNextGuest:true});
+ assert.deepEqual(publicWorldConfig({mode:'rehearsal',features:{atlasNext:true,atlasNextGuest:false}}).features,{atlasNext:true});
+ const shell=read('app-shell.mjs');
+ assert.match(shell,/const atlasNextGuestOn=atlasNextOn&&/,'손님 깃발은 atlasNext가 켜졌을 때만 뜻이 있다');
 });
 
 test('지금 판 연습 모듈은 바이트 그대로다(전환 뒤 지우기 4-9까지)',()=>{

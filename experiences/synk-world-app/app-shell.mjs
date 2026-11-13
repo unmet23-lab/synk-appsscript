@@ -33,13 +33,15 @@ const responsesOn=connection.features?.worldFeedback===true;
 // Atlas 새 길(재설계 단계 4, 기능 atlasNext — 리허설만 켠다, operating-mode.mjs): 켜졌을 때만 새 길 입구(world-atlas-next.mjs)를 처음 쓸 때 받는다.
 // 꺼지면 이 입구도 엔진(/atlas/loader.mjs)도 받지 않는다(단계4_계획 §6).
 const atlasNextOn=connection.features?.atlasNext===true;
+// 손님 깃발(atlasNextGuest — operating-mode.mjs): 꺼져 있으면 손님 주인에게는 새 길 입구를 주지 않는다(손님은 지금 판 — 계정만 새 길).
+const atlasNextGuestOn=atlasNextOn&&connection.features?.atlasNextGuest===true;
 // 받기는 한 번(동시에 불러도 같은 약속), 받는 사이에 닫히면 받은 것을 바로 닫는다 — 주인이 바뀌어 생활 기록을 버릴 때(keep) 떠난 주인의
 // 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 카본 A6). 받기가 실패하면 다음에 다시 받는다.
 // 계정 길(단계 4 ④ — 단계4_계획 §18-2 · §18-5): 운영은 계정을 다시 읽는 world-account의 prepareAtlasTrail, 리허설은 리허설 서버의 trail
 // (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
  let made=null,loading=null,disposed=false;const reopeners=new Set();
- const trailOf=m=>owner==='guest'?null:operating?()=>account.prepareAtlasTrail():m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest'});
+ const trailOf=m=>owner==='guest'?null:operating?()=>account.prepareAtlasTrail():m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if((client.snapshot?.accountId||'guest')===owner)client.expire?.();}});
  const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{const key=`position.skill.${id}`;return hasString(key)?t(key):null;},trail:trailOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed)made.dispose();return made;},error=>{loading=null;throw error;});
  return {async practiceCoach(pool){if(disposed)return null;const entry=await load();return disposed?null:entry.practiceCoach(pool);},createPracticeNextSession:(...args)=>made.createPracticeNextSession(...args),
   // 생활 화면의 코치(4-2 — 은행 world-life, 단계4_계획 §19-1 ①). 지금 판이면 null.
@@ -381,7 +383,7 @@ function mountLifeLearning({owner,progress,keep}){
  // Atlas 새 길(기능 atlasNext — 4-2 생활, 단계4_계획 §19-1 ① · ⑤): 입구를 생활 화면보다 먼저 세운다. 문서 시작 때 생활 코치를 열어(M7 — 홈의 첫 그림을
  // 막지 않는다) 진도에 「돌아온 복습」 판정을 넣고(world-life-next watchLifeDue — 홈 칩 · 튜터 · 홈 후보 · 알림이 같은 목록을 읽는다), 생활 화면은 옛 거울 대신
  // 새 판 겉으로 적는다(learning.next). 꺼진 판은 입구 · 엔진을 받지 않는다(지금 판 그대로).
- const atlasNext=atlasNextOn?keep('atlasNext',lazyAtlasNext(owner)):null;
+ const atlasNext=atlasNextOn&&(owner!=='guest'||atlasNextGuestOn)?keep('atlasNext',lazyAtlasNext(owner)):null;
  const lifeDue=atlasNext&&progress&&typeof worldLearning.life.watchLifeDue==='function'?keep('lifeDue',worldLearning.life.watchLifeDue({open:()=>atlasNext.lifeCoach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),reopened:fn=>atlasNext.reopened(fn),progress,lessons:LESSONS,note:(kind,outcome)=>atlasNext.note(kind,outcome)})):null;
  const lifeNext=lifeDue?{coach:()=>lifeDue.coach(),retired:(coach,fn)=>atlasNext.retired(coach,fn),note:(kind,outcome)=>atlasNext.note(kind,outcome),nextAt:id=>lifeDue.nextAt(id)}:null;
  // 입장 때 준비한 한글 옮기기 통로도 이 생활 기록에 딸린다. 계정 변경·다시 세우기·pagehide에서 함께 버린다.
@@ -932,7 +934,7 @@ document.addEventListener('click',event=>{
   event.preventDefault();event.stopImmediatePropagation();(action==='quickplay'?play:action==='profile'?profile:action==='about'?about:action==='photo'?photo:action==='town'||nav==='town'?town:wardrobe)();
  }
 },true);
-document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
+document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
 window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
 window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});

@@ -44,11 +44,14 @@ const waitSkill = (view, id) => {
   restore(view.ability, id, view.base?.ability);
 };
 // 어느 줄에 닿는지 알 수 없는 사건이 밀려 있으면 아무것도 얹지 않는다 — 요약 그대로 두고 서버가 다시 접은 요약을 기다린다.
+// 이번 얹기에서 내 사건이 첫 만남을 정한 계열(mine)도 비운다 — mine은 met과 한 몸이다. 남기면 판 사본(코치 copyView — waitAll을 끄고 mine을
+// 옮김)에서 요약의 만남 시각과 같은 시각의 답이 「내 앞 사건이 정한 첫 만남」으로 읽혀 기다리지 않았다(카본 끝 판 둘째 E4 · 설계 주인 11-13).
 const waitEverything = view => {
   view.waitAll = true;
   view.memory = new Map(view.base?.memory);
   view.ability = new Map(view.base?.ability);
   view.met = new Map(view.base?.met);
+  view.mine.clear();
 };
 
 // 사건 하나가 적히는 줄(단위 · 능력). 제외를 만들 때 기기가 이것을 대기열의 그 제외 옆에 적어 둔다 —

@@ -152,6 +152,24 @@ test('다른 탭(뒤 판 엔진)이 저장소 꼴을 올리려 하면 이 연결
   assert.equal(fake.db.closed, 1);
 });
 
+test('닫아 비켜 줄 때 onClosed를 한 번 알린다 — 알림이 던져도 연결은 닫힌다(F5 고리의 첫 마디 · Fable 5.2 끝 판 둘째 넘친 #3)', async () => {
+  const fake = fakeIndexedDB();
+  let told = 0;
+  await idbPort('t', { indexedDB: fake, onClosed: () => (told += 1) });
+  fake.db.onversionchange();
+  assert.equal(told, 1, '호스트가 셸에 알리게 한 번');
+  assert.equal(fake.db.closed, 1);
+  const loud = fakeIndexedDB();
+  await idbPort('t2', {
+    indexedDB: loud,
+    onClosed: () => {
+      throw new Error('알림 실패');
+    },
+  });
+  assert.doesNotThrow(() => loud.db.onversionchange());
+  assert.equal(loud.db.closed, 1, '알림이 던져도 닫힌다');
+});
+
 // 시간 한도를 둔다 — 거절하지 않는 판에서는 열기가 끝나지 않아 시험이 멈춘다(그 판을 잡아야 하는 시험이다).
 test('열기가 다른 연결에 막히면 한도 뒤 STORAGE_FAILED로 거절하고, 늦게 열린 연결은 바로 닫는다(G3 — coach.ready가 멈추지 않게)', {
   timeout: 5000,

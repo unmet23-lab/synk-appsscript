@@ -524,3 +524,13 @@ test('새 길 물음 — 다른 줄(한글)은 옮겼어도 새 길 옮기기가
  assert.ok(f.shown(),'물음은 열려 있다');
  f.shown().onClose();await pending;
 });
+
+test('새 길 물음 — 답이 없는 새 길 사건(제시 · 판 결정 · 장부 · 본인 말 · 제외)만 있어도 물으니 학습 줄을 「연습을 시작했어요」로 보인다(카본 끝 판 둘째 B)',async()=>{
+ const found=atlasFound({attempts:0,events:3}),f=atlasOffer({found});
+ const pending=f.offer.offer({owner:ACCOUNT},{atlas:f.atlas});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.ok(f.shown().html.includes(`${DEVICE_RECORDS_TEXT.learningRow} · ${DEVICE_RECORDS_TEXT.started}`),'요약 칸이 비지 않는다');
+ assert.deepEqual(describeDeviceRecords({atlas:{attempts:0,events:3},kept:{}}).rows,[{label:DEVICE_RECORDS_TEXT.learningRow,value:DEVICE_RECORDS_TEXT.started}]);
+ assert.deepEqual(describeDeviceRecords({atlas:{attempts:2,events:5},kept:{}}).rows,[{label:DEVICE_RECORDS_TEXT.learningRow,value:DEVICE_RECORDS_TEXT.answers(2)}],'답이 있으면 답 수');
+ assert.equal(await f.offer.choose('keep',{owner:ACCOUNT}),'kept');await pending;
+});

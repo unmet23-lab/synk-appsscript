@@ -50,7 +50,7 @@ function stage(){
  box.trigger=selector=>{const fn=once.get(selector);assert.ok(fn,`${selector} 단추가 이어져 있다`);once.delete(selector);fn();};
  return box;
 }
-function setup({owner='account-a',responses=true,audio='off',values={}}={}){
+function setup({owner='account-a',responses=true,audio='off',values={},atlasNext=null}={}){
  const panels=[],toasts=[],storage=memory();let now=Date.parse('2026-10-22T03:00:00Z'),box=null;
  const progress={owner,learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>({audio,...values}),
   status:()=>({phase:'synced',rejected:false,scoped:owner!=='guest',message:''}),exportSnapshot:()=>({}),flush:async()=>{},hangulReading:()=>({answer:'reads'})};
@@ -60,7 +60,7 @@ function setup({owner='account-a',responses=true,audio='off',values={}}={}){
  const target={localStorage:storage,addEventListener(){},removeEventListener(){},setTimeout,
   document:{querySelector:selector=>/data-(practice|position|mock)-stage/.test(selector)?box:null},...(owner==='guest'?{}:{SYNKLearningHost:host})};
  const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},
-  position:worldPosition,responses,target});
+  position:worldPosition,responses,target,...(atlasNext?{atlasNext}:{})});
  const events=()=>JSON.parse(storage.getItem(KEY)||'{"events":[]}').events;
  return {education,panels,toasts,storage,events,box:()=>box,tick:ms=>{now+=ms;}};
 }
@@ -206,4 +206,23 @@ test('새 화면 글은 세 언어 모두 있고 영어·몽골어에는 한글�
   for(const lang of ['en','mn'])assert.doesNotMatch(String(row[lang]),/[가-힣]/,`${key}.${lang}`);
  }
  assert.deepEqual(['helpful','not_fit','too_much','want_more'].map(value=>STRINGS[`response.value.${value}`].en),['Good','Not for me','Too much','I want more']);
+});
+
+test('새 판 끝 화면에서 고른 길이 응답은 지금 판 끝 화면에서 다시 고르면 비운다 — 방금 지금 판에서 고른 응답이 다음 길이를 정한다(카본 끝 판 둘째 C)',async()=>{
+ let nextOn=true;const fed=[];
+ const nextCoach={finishSet:()=>'set.next.1',feedback:(set,value)=>{fed.push([set,value]);return {id:`r-${value}`};}};
+ const quiet={current:null,next:()=>null,preHelp(){},answer(){},unknown(){},skip(){},replay:()=>null,delivery(){},stop(){},results:()=>[],settled:async()=>[],freshLeft:()=>3,ending:{kind:'done'}};
+ const env=setup({atlasNext:{practiceCoach:async()=>nextOn?nextCoach:null,createPracticeNextSession:()=>quiet}});
+ env.tick(60000);
+ const [skillId]=freshestSkill(env);
+ await env.education.practice(skillId);
+ for(let tick=0;tick<400&&!env.box()?.html.includes('data-practice-done');tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ env.box().press('data-set-response','too_much');
+ assert.deepEqual(fed,[['set.next.1','too_much']],'새 판 응답은 새 코치에');
+ nextOn=false;
+ let run=await runPractice(env);
+ assert.equal(run.total,3,'새 판에서 고른 많았어요가 다음 판 길이');
+ run.box.press('data-set-response','want_more');
+ run=await runPractice(env);
+ assert.equal(run.total,Math.min(7,freshestSkillCount(env,run)),'지금 판에서 고른 더 하고 싶어요가 길이를 정한다');
 });

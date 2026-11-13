@@ -66,6 +66,9 @@ export function createTurn({
         granted = true;
         clearTimeout(timer);
         state.waiting.delete(controller);
+        // 이미 받은 잠금의 콜백이 차례를 기다리는 사이 닫혔다 — 받은 잠금은 거둘 수 없어 콜백이 돈다. 닫힌 호스트에서 일하지 않는다(freely와
+        // 같은 거름 — 카본 끝 판 둘째 E).
+        if (state.closed) throw turnBusy(job);
         state.misses.delete(job);
         return inside(work);
       });

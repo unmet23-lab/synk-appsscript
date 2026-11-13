@@ -246,7 +246,9 @@ export function describeDeviceRecords(plan,T=DEVICE_RECORDS_TEXT){
  const counts=plan?.life?.counts;
  if(counts&&(counts.lessons||counts.reviews||counts.days))rows.push({label:T.lifeRow,value:[counts.lessons?T.lessons(counts.lessons):'',counts.reviews?T.reviews(counts.reviews):'',!counts.lessons&&counts.days?T.days(counts.days):''].filter(Boolean).join(' · ')});
  if(plan?.learning?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.learning.attempts)});
+ // 새 길은 첫 답 수로 — 답이 없는 사건(제시 · 판 결정 · 장부 · 본인 말 · 제외, R11)만 있어도 물으니 「연습을 시작했어요」로(요약 칸이 비던 것 — 카본 끝 판 둘째 B).
  if(plan?.atlas?.attempts)rows.push({label:T.learningRow,value:T.answers(plan.atlas.attempts)});
+ else if(plan?.atlas?.events)rows.push({label:T.learningRow,value:T.started});
  if(counts?.profile)rows.push({label:T.profileRow,value:T.profileValue});
  const notes=[];
  if(plan?.kept.hangul)notes.push(T.keptHangul);
@@ -331,7 +333,7 @@ export function createDeviceRecordsOffer({storage=globalThis.localStorage,learni
   const through=job.plan.atlasFailed?job.plan.after:job.startedAt;
   if(choice==='keep'){
    // 새 길: 두기 표지를 먼저(손님 저장소 — R8). 못 쓰면 결정만 남는다 — 고를 때 둘을 다 지나야 하므로 넘치지 않는다.
-   if(job.atlas&&job.plan.atlas){try{await job.atlas.keep();}catch{/* 계기는 엔진이 남긴다 */}if(current!==job)return null;}
+   if(job.atlas&&job.plan.atlas){try{await job.atlas.keep();}catch{/* 계기는 엔진이 남긴다(GUEST_MARK — 다음 로그인에 다시 센다) */}if(current!==job)return null;}
    // 앞 「옮기기」가 일부만 해냈으면 서버가 받은 만큼은 옮긴 것으로 남긴다. 서버 확인을 못 한 것만 있으면 고른 대로 「두기」로 남기되,
    // 계정에 이미 더한 것이 있다고 알린다(그것은 다음 저장 때 올라간다 — 「옮기지 않았다」고도, 「옮겼다」고도 하지 않는다).
    if(movedSoFar()){saveDeviceRecordsDecision(storage,job.owner,'moved',now(),{cloud:cloudDone(),through,moved:{...carry.moved,at:now()}});return done(job,'moved',T.partly);}

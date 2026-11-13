@@ -441,6 +441,39 @@ const said = (id, at, item, correct = true) => ({
   },
 });
 
+test('⑳ 기기 얹기 — 아무것도 얹지 못하게 되면(닿는 줄 모르는 제외) 이번 얹기에서 정한 첫 만남 표(mine)도 비운다 — 판 사본에서 요약의 첫 만남과 같은 시각의 답은 기다린다(카본 끝 판 둘째 E4)', () => {
+  const item = level(1, 60, { units: ['u.e4'] });
+  const other = 'ko.reading.detail';
+  const sibling = { ...item, itemKey: 'other', skillId: other }; // 같은 계열 · 다른 능력
+  const summary = { memory: new Map(), ability: new Map(), met: new Map([[item.familyKey, T0]]) };
+  const index = { familySkills: new Map() }; // 색인이 그 계열을 모른다 — 답마다 그 능력만 기다린다
+  // 내 앞 답(요약의 첫 만남보다 이름 — 첫 만남을 내 쪽으로 정한다) 뒤 닿는 줄을 모르는 제외 — 아무것도 얹지 못한다
+  const own = [
+    said('p1', T0 - 60_000, item),
+    { kind: 'exclude', id: 'x1', at: T0 - 30_000, ref: 'gone' },
+  ];
+  const view = overlay(summary, own, memory, PARAMS, index);
+  assert.equal(view.waitAll, true);
+  assert.equal(view.met.get(item.familyKey), T0, '만남 표는 요약 값으로');
+  assert.equal(view.mine.size, 0, '이번 얹기의 첫 만남 표도 비운다 — met과 한 몸');
+  // 판 사본(코치 copyView — waitAll을 끄고 표를 옮김)
+  const copy = {
+    ...view,
+    waitAll: false,
+    memory: new Map(view.memory),
+    ability: new Map(view.ability),
+    met: new Map(view.met),
+    waitUnits: new Set(view.waitUnits),
+    waitSkills: new Set(view.waitSkills),
+    mine: new Set(view.mine),
+  };
+  applyOwn(copy, said('p2', T0, sibling), memory, PARAMS, index);
+  assert.ok(
+    copy.waitSkills.has(other),
+    '요약의 첫 만남과 같은 시각의 답은 첫 만남을 바꿀 수 있어 기다린다',
+  );
+});
+
 test('㉑ 아무것도 얹지 못하는 보기(waitAll)에는 뒤에 오는 내 사건도 얹지 않는다 — 판 상태가 쓸 판정만 돌려준다(GA1)', () => {
   const a = word('wa', 0);
   const b = word('wb', 1);

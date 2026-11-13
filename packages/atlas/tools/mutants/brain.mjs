@@ -812,4 +812,12 @@ export const BRAIN_MUTANTS = [
     '  const dayOf = at => Math.floor((at + offset * MINUTE - dayStartHour * HOUR) / DAY);',
     '  const dayOf = at => Math.round(at / DAY);',
   ],
+  [
+    P,
+    '기기 얹기',
+    '아무것도 얹지 못하게 되어도 이번 얹기의 첫 만남 표(mine)를 남긴다(판 사본에서 요약과 같은 시각의 답이 기다리지 않는다 — 카본 끝 판 둘째 E4)',
+    DEVICE,
+    '  view.mine.clear();\n',
+    '',
+  ],
 ];

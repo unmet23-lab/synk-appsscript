@@ -36,9 +36,12 @@ function cases() {
     for (const [reviews, misses, days] of [
       [1, 1, 1],
       [5, 3, 3],
+      [1, 1, 0], // 같은 하루 — 날 수를 말하지 않는 줄(Fable 5.2 끝 판 둘째 넘친 #7)
+      [4, 2, 0],
     ])
       out.push({ code: 'unit.shaky', slots: { unit, reviews, misses, days }, name, id: unit });
     out.push({ code: 'unit.due', slots: { unit, days: 8 }, name, id: unit });
+    out.push({ code: 'unit.due', slots: { unit, days: 0 }, name, id: unit });
     out.push({ code: 'unit.new', slots: { unit }, name, id: unit });
     out.push({
       code: 'skill.up',
@@ -277,4 +280,72 @@ test('같은 하루(기기 새벽 4시 경계)에 돌아온 말은 날 수를 �
     '지난번에 놓친 「은행」, 2일 만에 다시 만나요.',
     '하루를 넘기면 날 수를 그대로',
   );
+});
+
+test('상속한 열쇠로는 표를 읽지 않는다 — constructor · toString 같은 언어 · 종류는 없는 것, 눈높이 · 말하는 사람은 물러선다(카본 끝 판 둘째 G1)', () => {
+  const why = { code: 'unit.new', slots: { unit: 'ko.word.x' } };
+  const plain = render(why, { label });
+  assert.ok(plain);
+  assert.equal(
+    render(why, { level: 'constructor', speaker: 'caller', label }),
+    plain,
+    '모르는 눈높이 · 말하는 사람은 standard · default로',
+  );
+  assert.equal(render(why, { level: 'toString', label }), plain);
+  assert.equal(
+    render({ code: 'toString' }, { level: 'caller', label }),
+    null,
+    '상속한 종류는 없는 종류',
+  );
+  assert.equal(render({ code: '__proto__' }, { label }), null);
+  assert.equal(render(why, { lang: 'constructor', label }), null, '상속한 언어는 없는 언어');
+});
+
+test('수 칸이 비었거나 음수 · 정수가 아니면 문장을 짓지 않는다 — 날 수가 빠져 「오늘」로 읽히거나 「undefined번」이 박히지 않게(카본 끝 판 둘째 G2)', () => {
+  for (const lang of LANGS) {
+    const opts = { lang, label };
+    assert.equal(
+      render({ code: 'unit.due', slots: { unit: 'u' } }, opts),
+      null,
+      `${lang} 날 수 없음`,
+    );
+    assert.equal(
+      render({ code: 'unit.due', slots: { unit: 'u', days: -1 } }, opts),
+      null,
+      `${lang} 음수`,
+    );
+    assert.equal(
+      render({ code: 'unit.due', slots: { unit: 'u', days: 1.5 } }, opts),
+      null,
+      `${lang} 정수 아님`,
+    );
+    assert.equal(
+      render({ code: 'unit.shaky', slots: { unit: 'u', days: 2, reviews: 3 } }, opts),
+      null,
+      `${lang} 놓친 수 없음`,
+    );
+    assert.equal(
+      render({ code: 'unit.shaky', slots: { unit: 'u', days: 2, misses: 1 } }, opts),
+      null,
+      `${lang} 만난 수 없음`,
+    );
+    assert.equal(
+      render({ code: 'skill.up', slots: { skill: 's', streak: Number.NaN } }, opts),
+      null,
+      `${lang} NaN`,
+    );
+    assert.equal(
+      render({ code: 'pace.breather', slots: { unit: 'u' } }, opts),
+      null,
+      `${lang} 놓친 수 없음`,
+    );
+    assert.ok(
+      render({ code: 'unit.due', slots: { unit: 'u', days: 0 } }, opts),
+      `${lang} 같은 하루(0)는 짓는다`,
+    );
+    assert.ok(
+      render({ code: 'unit.shaky', slots: { unit: 'u', days: 2, reviews: 1, misses: 1 } }, opts),
+      `${lang} 바른 칸`,
+    );
+  }
 });

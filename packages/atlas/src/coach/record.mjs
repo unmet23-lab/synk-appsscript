@@ -16,22 +16,15 @@ const entriesOf = events =>
     atMs: Date.parse(event.at),
   }));
 
-// 그 계열의 만남(답 · 도움 · 장부 만남)이 드는 묶음만 — 그 계열의 제시와 그 자식 · 제외, 옮겨 온 장부.
-function familyEntries(entries, family, index) {
-  const shows = new Set(
-    entries
-      .filter(({ event }) => event.type === EVENT_TYPES.presented)
-      .filter(({ event }) => itemOf(event, index)?.familyKey === family)
-      .map(({ event }) => event.id),
-  );
-  const kept = new Set(shows);
-  for (const { event } of entries) if (shows.has(event.presentationId)) kept.add(event.id);
-  return entries.filter(
-    ({ event }) =>
-      kept.has(event.id) ||
-      event.type === EVENT_TYPES.carried ||
-      (event.type === EVENT_TYPES.excluded && kept.has(event.targetId)),
-  );
+// 그 계열의 만남(답 · 도움 · 장부 만남)이 드는 묶음만 — 그 계열의 제시 묶음과 옮겨 온 장부. 묶음은 기록 전체로 짓는다(어댑터 groupsOf —
+// 전체 접기와 같은 근거): 계열 사건만 먼저 고르면 옛 꼴 결정과 그것을 겨눈 제외(그 결정의 제시들 답을 통째로 거둔다)가 빠져, 거둔 답이
+// 첫 혼자 답으로 섰다(GPT 끝 판 둘째 E).
+function familyGroups(entries, family, index) {
+  return [...groupsOf(entries)].filter(([, group]) => {
+    const event = group.source.event;
+    if (event.type === EVENT_TYPES.carried) return true;
+    return event.type === EVENT_TYPES.presented && itemOf(event, index)?.familyKey === family;
+  });
 }
 
 // 측정용 첫 만남(계획 §16 ② — Fable 5.2 D1 · D6). 그 계열의 만난 표 시각(at)에 선 만남 가운데 접기의 차례(시각 → 사건 번호, fold/order.mjs
@@ -39,10 +32,9 @@ function familyEntries(entries, family, index) {
 // 만남의 차례는 어댑터(groupsOf · foldEventsOf)가 짓는 만남으로 짠다 — 도움 · 장부 만남 · 옛 꼴 사건의 차례가 접기와 같다.
 // 그 시각의 만남이 기록부에 없으면 null(요약으로 접힌 옛 만남 — 이 제시의 것이 아니다).
 function leadAt(record, family, at, index) {
-  const entries = familyEntries(entriesOf(record.heldEvents()), family, index);
   const folds = [];
   const sourceOf = new Map();
-  for (const [source, group] of groupsOf(entries))
+  for (const [source, group] of familyGroups(entriesOf(record.heldEvents()), family, index))
     for (const fold of foldEventsOf(group, index)) {
       folds.push(fold);
       sourceOf.set(fold.id, source);

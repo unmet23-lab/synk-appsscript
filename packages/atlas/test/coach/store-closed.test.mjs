@@ -204,7 +204,7 @@ test('제품이 준 포트는 호스트가 닫지 않는다 — 호스트가 연
 });
 
 // 동기 하나를 가짜 기록부 · 나르개로 — 타이머만 가짜로 돌린다.
-function syncOn({ fail }) {
+function syncOn({ fail, now, clock, get = async () => ({ summary: null, serverTime: 0 }) }) {
   const events = [
     { schema: 2, id: 'e1', type: 'practice.presented', at: '2026-11-13T00:00:00.000Z' },
   ];
@@ -232,13 +232,15 @@ function syncOn({ fail }) {
         if (error) throw error;
         return { accepted: batch.map(event => ({ id: event.id, seq: 1 })) };
       },
-      get: async () => ({ summary: null, serverTime: 0 }),
+      get,
     }),
     note: () => {},
     tell: () => {},
     announce: () => {},
     onAccount: detail => notes.push(detail.kind),
     writesRetryMs: 300_000,
+    ...(now ? { now } : {}),
+    ...(clock ? { clock } : {}),
   });
   return { sync, posts, notes, acked };
 }
@@ -273,6 +275,53 @@ test('물러서는 중에 답이 이어져도 걸린 다시 보내기 기한을 
   t.mock.timers.tick(1_500);
   await flush();
   assert.ok(acked.has('e1'), '다시 온라인이면 곧 올라간다');
+});
+
+test('물러서는 중 받기(GET)가 되면 걸린 긴 기한을 버리고 곧 다시 보낸다 — 화면만 다시 본 사람의 판이 5분 기한까지 기기에만 남지 않는다(Fable 5.2 끝 판 둘째 넘친 #17)', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let down = true;
+  const { sync, posts, acked } = syncOn({
+    fail: () => (down ? fault(503, 'SERVICE_UNAVAILABLE') : null),
+  });
+  sync.schedule();
+  for (const wait of [1_500, 5_000, 15_000, 60_000]) {
+    t.mock.timers.tick(wait);
+    await flush();
+  }
+  assert.equal(posts.length, 4, '네 번 실패 — 다음 기한은 300초 뒤');
+  down = false;
+  sync.visible(); // 화면이 다시 보인다 — 받기가 된다
+  await flush();
+  t.mock.timers.tick(1_500);
+  await flush();
+  assert.equal(posts.length, 5, '받기가 되면 1.5초 뒤 다시 보낸다(300초를 기다리지 않는다)');
+  assert.ok(acked.has('e1'));
+});
+
+test('화면 복귀 받기 간격은 서버 시각으로 고치지 않은 시계로 잰다 — 기기 시계가 10분 앞서도 5분 뒤 다시 받는다(Fable 5.2 끝 판 둘째 넘친 #18)', async () => {
+  let device = 1_800_000_000_000;
+  let offset = 0;
+  let gets = 0;
+  const { sync } = syncOn({
+    fail: () => null,
+    now: () => device + offset, // 서버 시각으로 고친 시계 — 첫 받기 뒤 10분 뒤로 간다
+    clock: () => device,
+    get: async () => {
+      gets += 1;
+      offset = -600_000;
+      return { summary: null, serverTime: device - 600_000 };
+    },
+  });
+  await sync.first();
+  assert.equal(gets, 1);
+  device += 5 * 60_000;
+  sync.visible();
+  await flush();
+  assert.equal(gets, 2, '5분 뒤 화면이 다시 보이면 받는다');
+  device += 60_000;
+  sync.visible();
+  await flush();
+  assert.equal(gets, 2, '5분 안이면 받지 않는다');
 });
 
 test('쓰기 막힘(WRITES_DISABLED)은 긴 간격으로 다시 보내 본다 — 문이 열리면 같은 동기가 올리고, 또 막히면 또 알린다(Fable 5.2 끝 판 넘친 #3)', async t => {

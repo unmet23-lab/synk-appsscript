@@ -93,18 +93,22 @@ function expectedFor(record, server, index) {
   }
   return linesOfGroups(groupsOf(entries), { memory, params: PARAMS, index });
 }
-function checkView(record, server, index, label) {
+// strict: 답이 사라지지 않는 판(lost 0) — 「받은 표지 없이 이미 접힌」 밀린 사건은 받은 표지를 잃은 것이라 실패다(넘친 #2 — 그 상태를
+// 어림으로 건너뛰면 받은 표지를 잃는 경합의 주 증상을 못 본다).
+function checkView(record, server, index, label, strict = false) {
   const view = record.view();
   if (view.waitAll) return;
   // 답이 사라져 「받은 표지 없이 이미 접힌」 사건이 있는 동안은 어림이다(다음 올리기가 받은 표지를 준다) — 견주지 않는다.
   const until = record.summary?.foldedUntil ?? 0;
   const seqOf = new Map(server.server.log().map(row => [row.event.id, row.seq]));
-  if (
-    [...record.pending()].some(
-      id => seqOf.has(id) && seqOf.get(id) <= until && record.acked(id) === undefined,
-    )
-  )
-    return;
+  const unacked = [...record.pending()].filter(
+    id => seqOf.has(id) && seqOf.get(id) <= until && record.acked(id) === undefined,
+  );
+  if (unacked.length && strict)
+    assert.fail(
+      `${label}: 답이 사라지지 않았는데 받은 표지 없이 접힌 밀린 사건 ${unacked.join(', ')}`,
+    );
+  if (unacked.length) return;
   const want = expectedFor(record, server, index);
   sameMap(view.memory, want.unit, view.waitUnits, `${label}: 단위`);
   sameMap(view.ability, want.skill, view.waitSkills, `${label}: 능력`);
@@ -220,7 +224,7 @@ async function accountMidCheck(w, step) {
   );
   for (const t of w.tabs) {
     await t.record.refresh();
-    checkView(t.record, w.server, w.index, `씨앗 ${w.seed} 걸음 ${step} 탭 ${t.i}`);
+    checkView(t.record, w.server, w.index, `씨앗 ${w.seed} 걸음 ${step} 탭 ${t.i}`, w.lost === 0);
     for (const event of t.record.unsent(Number.POSITIVE_INFINITY))
       assert.equal(acked.has(event.id), false, `씨앗 ${w.seed}: 받은 ${event.id}가 대기열에`);
   }
@@ -290,6 +294,11 @@ async function accountRun(seed, { tabsN = 2, steps = 80, lost = 0.2 } = {}) {
   await accountDrain(w);
   await accountFinal(w);
 }
+
+test('② 답이 사라지지 않는 계정 기록부 둘 · 셋 — 받은 표지 없이 접힌 밀린 사건이 한 번도 없다(받은 표지를 잃는 경합을 잡는다 — Fable 5.2 끝 판 둘째 넘친 #2)', async () => {
+  for (let seed = 1; seed <= 20; seed += 1)
+    await accountRun(seed, { tabsN: seed % 2 ? 2 : 3, lost: 0 });
+});
 
 test('② 계정 기록부 둘 · 셋 · 한 포트(자물쇠 없음) — 올리기 · 받기 · 치우기 · 꼬리 읽기 · 탭 다시 열기가 겹치고 답이 사라져도, 기다리지 않는 줄 = 서버 접기 · 끝 보기 = 새로 읽은 보기 = 서버 전체 접기 · 만든 사건이 모두 서버에(§18-5-6 · F6)', async () => {
   for (let seed = 1; seed <= 40; seed += 1) await accountRun(seed, { tabsN: seed % 2 ? 2 : 3 });

@@ -7,7 +7,7 @@ import { rng } from '../support/seeds.mjs';
 import { subject } from '../support/subject.mjs';
 import { bankOf, clock, createCoach, fakeMap, memoryPort, PARAMS, STEP } from './support.mjs';
 
-const { installHostMaker } = await subject('coach/host.mjs');
+const { acquireHost, installHostMaker, releaseHost } = await subject('coach/host.mjs');
 const { storeName } = await subject('record/port.mjs');
 const { UPLOAD_DELAY_MS } = await subject('coach/sync.mjs');
 const { createServer } = await import('../support/trail-sync.mjs');
@@ -403,4 +403,98 @@ test('닫은 손잡이 · 닫은 코치에서는 옮기지 않고, 손님 기록
   await assert.rejects(opening, { code: 'DISPOSED' });
   await sleep(0);
   assert.equal(w.top.__synkAtlasHosts.has(storeName({})), false, '손님 저장소 자리가 남지 않는다');
+});
+
+test('「두기」 표지를 못 쓰면 계기에 남기고 실패를 그대로 돌려준다(Fable 5.2 끝 판 둘째 넘친 #5)', async () => {
+  const w = world(62);
+  const notes = [];
+  const health = { note: (kind, outcome) => notes.push([kind, outcome]) };
+  const a = open(w, {
+    guest: false,
+    account: 'acct-k1',
+    revision: 1,
+    key: storeName({ account: 'acct-k1', revision: 1 }),
+    port: memoryPort(),
+    transport: w.route,
+    health,
+  });
+  await a.ready;
+  const recs = await a.guestRecords({ port: w.guestPort });
+  w.guestPort.failNext(new Error('quota'));
+  await assert.rejects(recs.keep());
+  w.guestPort.heal();
+  assert.ok(
+    notes.some(([kind, outcome]) => kind === 'save' && outcome.code === 'GUEST_MARK'),
+    '두기 표지 쓰기 실패는 계기에',
+  );
+  recs.close();
+  a.dispose();
+});
+
+test('계정 코치가 옆으로 연 손님 저장소는 셸의 계기를 받는다 — 계기 없이 이미 열린 손님 저장소에도 걸고, 셸이 건 계기는 덮지 않는다(카본 끝 판 둘째 D1)', async () => {
+  const w = world(61);
+  const health = { note() {} };
+  const accountOf = account =>
+    open(w, {
+      guest: false,
+      account,
+      revision: 1,
+      key: storeName({ account, revision: 1 }),
+      port: memoryPort(),
+      transport: w.route,
+      health,
+    });
+  // 같은 창의 손님 저장소 호스트를 옆으로 잠깐 받아 계기를 본다(등록부는 저장소마다 호스트 하나)
+  const peek = async () => {
+    const host = await acquireHost(
+      {
+        key: storeName({}),
+        aside: true,
+        guest: true,
+        params: PARAMS,
+        port: w.guestPort,
+        map: w.map,
+      },
+      w.top,
+    );
+    const seen = host.health ?? null;
+    releaseHost(host);
+    return seen;
+  };
+  // ㉠ 손님 저장소를 처음 여는 옆 받기 — 계정 코치의 계기로 연다
+  const a = accountOf('acct-h1');
+  await a.ready;
+  const recs = await a.guestRecords({ port: w.guestPort });
+  assert.equal(await peek(), health, '옆으로 연 손님 저장소의 계기 = 계정 코치의 계기');
+  recs.close();
+  a.dispose();
+  // ㉡ 계기 없이 이미 열린 손님 저장소 — 옆 받기가 계기를 건다
+  const bare = await acquireHost(
+    { key: storeName({}), aside: true, guest: true, params: PARAMS, port: w.guestPort, map: w.map },
+    w.top,
+  );
+  assert.equal(bare.health ?? null, null, '계기 없이 연 손님 저장소');
+  const b = accountOf('acct-h2');
+  await b.ready;
+  const recsB = await b.guestRecords({ port: w.guestPort });
+  assert.equal(bare.health, health, '옆 받기가 계기를 건다');
+  recsB.close();
+  b.dispose();
+  releaseHost(bare);
+  // ㉢ 셸 손님 코치가 건 계기는 덮지 않는다
+  const shellHealth = { note() {} };
+  const shell = open(w, {
+    guest: true,
+    key: storeName({}),
+    port: w.guestPort,
+    health: shellHealth,
+  });
+  await shell.ready;
+  const c = accountOf('acct-h3');
+  await c.ready;
+  const recsC = await c.guestRecords({ port: w.guestPort });
+  assert.equal(await peek(), shellHealth, '셸의 계기 그대로');
+  recsC.close();
+  c.dispose();
+  shell.dispose();
 });

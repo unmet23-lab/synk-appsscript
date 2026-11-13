@@ -124,7 +124,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const ask=node.querySelector?.('#wpos-response-ask'),status=node.querySelector?.('[data-set-response-status]');
    if(text&&ask&&status){ask.textContent=text.ask;status.textContent=text.status;for(const pill of node.querySelectorAll('[data-set-response]'))pill.setAttribute('aria-pressed',pill.dataset.setResponse===chosen?'true':'false');}
    else{node.outerHTML=view.renderSetResponse({kind,value:chosen,failed});box.querySelector(`[data-set-response="${value}"]`)?.focus?.({preventScroll:true});}
-   if(next&&!failed&&kind==='short')nextShort=chosen;
+   // 새 판 끝 화면에서 고른 응답은 다음 새 판의 길이 — 지금 판 끝 화면에서 고르면 비운다(지금 판 코치의 마지막 응답이 길이를 정한다: 앞 새 판
+   // 응답이 방금 지금 판에서 고른 것을 가리던 것, 카본 끝 판 둘째 C).
+   if(!failed&&kind==='short')nextShort=next?chosen:null;
    const again=kind==='short'?box.querySelector('[data-practice-again]'):null;
    if(again)again.innerHTML=next?`${escape(t('practice.next.again',{n:practiceLength()}))} <span aria-hidden="true">→</span>`
     :`${escape(t('practice.again',{n:Math.min(more,practiceLength())}))} <span aria-hidden="true">→</span>`;

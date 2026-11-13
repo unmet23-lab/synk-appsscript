@@ -9,7 +9,8 @@
 // 기록 꼴(포트의 값): { kind: 'event', event, touches? } · { kind: 'ack', acks: [[id, seq]], clamped, dropped, summary?, offsetMs? }
 //                    · { kind: 'local', summary, until }(손님이 스스로 접은 요약 — until = 그 요약에 든 마지막 포트 열쇠)
 //                    · { kind: 'mark', mark, account?, revision?, until?, ids?, at }(손님 저장소의 경계 표지 — 단계 4 §18-5-3: 옮김 ·
-//                      두기 · 로그아웃 · 있었음. 옮김 표지의 ids는 그때 실제로 옮긴 2판 사건 번호)
+//                      두기 · 로그아웃 · 있었음. 옮김 표지의 ids는 그때 실제로 옮긴 2판 번호(함께 간 2판 제외 포함) + 옛 POST로 실제로 보낸
+//                      옛 꼴 번호 — move.mjs)
 //   치우기의 합친 표지는 swept: { at }를 싣는다 — 다른 탭은 꼬리에서 그것을 만나면 포트를 통째로 다시 읽는다(단계 4 §18-5-5 A6).
 //   파생 기록(손님 요약 · 치우기 · 옮기기)을 쓰는 일은 호스트의 차례(src/coach/turn.mjs) 안에서 한다 — 기록부가 스스로 차례를
 //   청하는 곳은 차례 밖에서 시작된 손님 요약 저장 하나뿐이고(exclusive), 호스트가 「차례 안」으로 둔 동안에는 다시 청하지 않는다
@@ -297,7 +298,8 @@ function edgeOf(mark, account) {
 export const keyEdge = (marks, account) =>
   marks.reduce((edge, mark) => Math.max(edge, edgeOf(mark, account)), 0);
 
-// Z가 이 판(revision)으로 실제로 옮겨 간 2판 사건 번호 — 옮김 표지의 ids. 경계 뒤에 덧붙은 자식 · 제외가 그 안의 사건을 겨누면 함께
+// Z가 이 판(revision)으로 실제로 옮겨 간 번호 — 옮김 표지의 ids(실제로 옮긴 2판 번호(함께 간 2판 제외 포함) + 옛 POST로 실제로 보낸 옛 꼴
+// 번호). 경계 뒤에 덧붙은 자식 · 제외가 그 안의 사건을 겨누면 함께
 // 옮긴다(R11 — 옮긴 뒤 다른 탭이 이어 낸 답, 그 뒤의 제외). 숫자 상한(until)으로 재면 그 자리 안이지만 옮기지 않은 사건(로그아웃 ·
 // 남의 표지 앞 · 두기 · 옛 판)을 겨눈 제외까지 Z에게 갔고, 옮긴 부모 뒤에 달린 답은 아예 가지 않았다(GPT 끝 판 GE1 · 카본 E1).
 // 판이 오르면(비움) 앞 판에 옮긴 것은 서버에 없으니 세지 않는다. ids 없는 옛 표지(리허설 저장소)는 아무것도 따라가지 않는다.
@@ -405,9 +407,18 @@ export function createRecord({
     await refresh();
     const until = state.readKey;
     const items = [...state.held.values()].filter(item => item.key <= until);
-    // 판 묶음(두뇌 · 색인 · 기록 규칙)이 바뀌었으면 든 사건으로 다시 접는다(아르곤 끝 판 D2).
-    if (state.local && state.local.until >= until && state.local.summary?.edition === edition())
+    // 접은 뒤에 든 사건이 없고 판 묶음(두뇌 · 색인 · 기록 규칙 — 아르곤 끝 판 D2)이 같으면 다시 접지 않는다. 「접은 자리가 읽은 자리 이상」으로
+    // 견주면 저장된 요약 기록의 열쇠가 늘 그 요약의 until보다 커서(접은 뒤에 덧붙는다) 영영 거짓이라, 열 때마다 · refold마다 든 사건 전부를
+    // 다시 접고 요약 기록을 새로 썼다(Fable 5.2 끝 판 둘째 F4 · 설계 주인 11-13). 앞 저장이 실패했거나 차례를 못 얻어 건너뛴 요약(key 없음)이면
+    // 접지는 않고 저장만 한 번 더 건다 — refold가 그 다시 시도 자리다(설계 주인 조건).
+    if (
+      state.local &&
+      state.local.summary?.edition === edition() &&
+      !items.some(item => item.key > state.local.until)
+    ) {
+      if (state.local.key == null) void saveLocal();
       return;
+    }
     const lines = linesOfGroups(groupsOf(items.map(entryOf)), { memory, params, index });
     const floor = now() - ISSUED_KEEP_MS;
     const issued = items
@@ -647,19 +658,31 @@ export function createRecord({
       summary = null,
       serverTime = null,
     }) {
-      if (Number.isFinite(serverTime)) state.serverTimed = true;
+      // 서버 시각을 받은 것(serverTimed — 치우기는 그 뒤에만, A6)은 시계를 실제로 맞춘 뒤에 켠다. 먼저 켜면 덧붙이기가 일시 실패했을 때
+      // 시계는 안 맞췄는데 켜져, 앞선 기기 시계로 치우거나 미래의 치운 시각이 남았다(카본 끝 판 둘째 F1 · 설계 주인 11-13).
       const next = nextSummary(state, summary);
       // 달라진 것이 없는 답(받은 표지 · 누른 것 · 버린 것 · 새 요약이 없는 GET)은 기록을 쓰지 않는다 — 빈 표지가 쌓이고 다른 탭을
       // 깨웠다(단계 4 §18-5-5 B5). 서버 시각과의 차이만 이 기록부의 시계에 맞춘다.
       if (!accepted.length && !clamped.length && !rejected.length && !next) {
-        if (Number.isFinite(serverTime)) state.clock.sync(serverTime);
+        if (Number.isFinite(serverTime)) {
+          state.clock.sync(serverTime);
+          state.serverTimed = true;
+        }
         return baseOf(state);
       }
       const values = answerValues({ accepted, clamped, rejected, serverTime, next }, now);
       const keys = await port.append(values);
-      values.forEach((value, i) => accept({ key: keys[i], value }));
-      if (next) await dropRows(state.summaryRows, state.summaryKey);
+      values.forEach((value, i) => accept({ key: keys[i], value })); // 서버 시각을 실은 표지가 시계를 맞춘다(takeAck)
+      if (Number.isFinite(serverTime)) state.serverTimed = true;
       if (rejected.length) noteSave(health, false, rejectedCode);
+      // 앞 요약 행 지우기만 실패하면(정리 트랜잭션의 일시 오류 · 닫힘) 이미 덧붙이고 얹은 답을 실패로 올리지 않는다 — 계기에만 따로 남기고,
+      // 남은 행은 다음 새 요약을 받을 때 지운다(지우기는 remove가 된 뒤에만 rows에서 뺀다 — 카본 끝 판 둘째 F2 · 설계 주인 11-13).
+      if (next)
+        try {
+          await dropRows(state.summaryRows, state.summaryKey);
+        } catch {
+          noteSave(health, false, 'SUMMARY_DROP');
+        }
       return baseOf(state);
     },
 
@@ -761,7 +784,8 @@ export function createRecord({
     // 제외의 닿는 줄 메모(touches)를 함께 낸다. until은 이 계획을 고른 읽은 자리(옮김 표지에 적는다) — 고르는 것도 읽은 자리까지만이다
     // (내 덧붙이기는 읽은 자리를 올리지 않는다 — 고른 것보다 작은 until이 적히면 다음에 같은 것을 또 고른다, A4와 같은 규칙). 부르는 쪽이
     // 꼬리부터 읽는다(move.mjs). watermarks: { others, all } — 남이 다녀간 기준 시각 · 자기 결정까지 든 기준 시각(제품의 deviceWatermark).
-    // 옮긴 뒤에는 move.mjs가 current의 번호를 옮김 표지(ids)에 적는다 — 다음 고르기에서 경계 뒤 자식 · 제외가 그 부모를 따라간다.
+    // 옮긴 뒤에는 move.mjs가 실제로 옮긴 2판 번호(함께 간 2판 제외 포함)와 옛 POST로 실제로 보낸 옛 꼴 번호를 옮김 표지(ids)에 적는다 —
+    // 다음 고르기에서 경계 뒤 자식 · 제외가 그 부모를 따라간다.
     guestUpload(accountRevision, { account = null, watermarks = {} } = {}) {
       const until = state.readKey;
       const items = [...state.held.values()]

@@ -33,7 +33,7 @@ test('atlasNext는 리허설에서만 켜지고 공개 설정에는 넘어가지
  assert.deepEqual(publicWorldConfig({mode:'rehearsal',features:{atlasNext:true}}).features,{atlasNext:true});
  const live=publicWorldConfig({mode:'account',basePath:'/world/',account:config,features:{atlasNext:true,worldFeedback:true}},'https://world.example.test/world/');
  assert.deepEqual(live.features,{worldFeedback:true});
- assert.equal('features' in publicWorldConfig({mode:'account',basePath:'/world/',account:config,features:{atlasNext:true}},'https://world.example.test/world/'),false);
+ assert.equal('features' in publicWorldConfig({mode:'account',basePath:'/world/',account:config,features:{atlasNext:true,atlasNextGuest:true}},'https://world.example.test/world/'),false,'공개 설정에는 새 길 · 손님 깃발 모두 아직 넘기지 않는다');
 });
 test('operating WORLD restores verified SYNK ID and never calls synthetic session or cookie routes',async()=>{
  const f=fixture();assert.equal(await f.client.restore(),true);assert.equal(f.client.snapshot.accountId,A);assert.equal(f.client.accessToken,null);
@@ -202,6 +202,26 @@ test('embedded games require verified ID and keep official progress/outbox and c
  assert.throws(()=>play.storage(),{code:'ACCOUNT_CHANGED'});assert.equal(handle.status().disposed,true);
 });
 
+test('겹친 확인 — 뒤에 시작한 확인이 있으면 앞의 확인은 던지지 않고 그 답을 기다린다: 학습 기록 토글 · 겹친 계정 줄 읽기(Fable 5.2 끝 판 둘째 F3)',async()=>{
+ const held=deferred();let learning={enabled:true,revision:2},loads=0;
+ const record=()=>({ok:true,account:{synk_user_id:A,status:'active'},sessions:[{id:'session-a',current:true,revoked:false}],learning,capabilities:{learningSync:true}});
+ const f=fixture({accountFactory:()=>({
+  load:async()=>{loads++;return loads===2?held.promise.then(record):record();},
+  setLearning:async enabled=>{learning={enabled,revision:learning.revision+1};return {ok:true};},
+  revokeSession:async()=>({refreshRevoked:true}),
+  trail:{get:async()=>({summary:null,serverTime:0}),post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0})}})});
+ assert.equal(await f.client.restore(),true);
+ const toggled=f.account.setLearning(false,2); // 서버를 바꾼 뒤의 확인(2번째 읽기)이 붙들린다
+ while(loads<2)await new Promise(resolve=>setTimeout(resolve,0));
+ const line=await f.account.prepareAtlasTrail(); // 그사이 뒤에서 계정 줄을 읽는다(3번째 읽기)
+ assert.deepEqual(line.learning,{enabled:false,revision:3});
+ held.resolve();
+ assert.deepEqual(await toggled,{enabled:false,revision:3},'앞의 토글은 지지 않고 새 값을 돌려준다(서버와 화면이 갈리지 않는다)');
+ const [a,b]=await Promise.all([f.account.prepareAtlasTrail(),f.account.prepareAtlasTrail()]);
+ assert.equal(a.learning.revision,3,'겹친 계정 줄 읽기도 앞의 것이 지지 않는다');assert.equal(b.learning.revision,3);
+ assert.equal(f.invalidations(),0);
+});
+
 test('a slower old game launch cannot install or dispose its newer replacement',async()=>{
  const held=deferred(),f=gameFixture({load:async(n,record)=>n===2?held.promise:record()}),target={};await f.client.restore();
  const old=f.account.prepareGame({target,storage:f.cache});
@@ -274,6 +294,7 @@ test('Atlas 나르개(trail GET · POST · 옛 POST)는 진짜 인증 실패(401
  assert.equal(await f.client.restore(),true);
  const line=await f.account.prepareAtlasTrail();
  assert.deepEqual(line.learning,{enabled:true,revision:2});
+ assert.equal(line.account,A,'줄에 주인을 싣는다 — 입구가 제 주인과 견준다(카본 끝 판 둘째 C)');
  for(const error of [fault(413,'ACCOUNT_UNAVAILABLE'),fault(403,'PRODUCT_FORBIDDEN'),fault(404,'ACCOUNT_UNAVAILABLE'),fault(426,'CONTRACT_UNSUPPORTED')]){
   next=error;
   await assert.rejects(line.transport(2).post([],null),{code:error.code});

@@ -195,6 +195,7 @@ function createHost({
     onAccount: detail => onAccount?.(detail),
     turn,
     now: () => (state.trail ? state.trail.now() : Date.now()),
+    clock: now ?? (() => Date.now()), // 받기 간격은 서버 시각으로 고치지 않은 시계로(넘친 #18)
   });
   const upload = () => (guest ? null : sync.upload());
   const schedule = () => {
@@ -346,7 +347,8 @@ function createHost({
     // 코치가 쓰는 보기 — 기록부 보기 위에 아직 저장이 안 끝난 내 답 · 본인 말을 시각 순으로 얹는다.
     view() {
       const view = state.trail.view();
-      for (const event of [...pending.values()].sort(byTime))
+      // 한 사건이 접기 사건 여럿을 낼 수 있다(제품이 「처음이 아니다」라고 한 제시의 첫 만남 — 장부 만남과 그 답, coach/session.mjs foldsOf).
+      for (const event of [...pending.values()].flat().sort(byTime))
         applyOwn(view, event, memory, params, index);
       return view;
     },
@@ -589,6 +591,9 @@ async function acquireHere(scope, options, openPort) {
     // 셸만 문서 호스트를 세운다 — 틀이 넘긴 것 · 옆으로 연 것 · 같은 창에서 문서 호스트를 받는 코치(document)는 셸이 아니다.
     if (options.fromFrame !== true && options.aside !== true && options.document !== true)
       shellTakes(registry, entry, host, options);
+    // 옆으로 연 저장소가 이미 열려 있었는데 계기가 없으면 옆으로 연 코치의 계기를 건다 — 셸의 계기는 덮지 않는다(카본 끝 판 둘째 D).
+    else if (options.fromFrame !== true && options.aside === true && options.health && !host.health)
+      host.take({ health: options.health });
     // 옛 기록 옮기기의 약속 — 셸이든 틀이든 받는 코치는 모두 그 끝을 기다린다(계획 §16 ③ · D4 ㉡).
     await host.carried();
     return host;

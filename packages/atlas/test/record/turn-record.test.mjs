@@ -152,6 +152,73 @@ test('판 묶음이 다른 손님 요약(다른 판 엔진의 탭)은 받지도 
   assert.equal(mine.summary.edition, mine.edition());
 });
 
+test('손님 요약 사본은 접은 뒤 든 사건이 없으면 다시 접지 않는다 — refold · 다시 열기마다 요약 기록을 새로 쓰지 않고, 다른 탭 사건을 읽으면 한 번 접는다(Fable 5.2 끝 판 둘째 F4)', async () => {
+  const inner = memoryPort();
+  let locals = 0;
+  const port = {
+    ...inner,
+    async append(values) {
+      locals += values.filter(value => value.kind === 'local').length;
+      return inner.append(values);
+    },
+  };
+  const first = await guest(port, { tag: 'fourfold' });
+  await practise(first, items[1]);
+  await first.refold();
+  await first.localSaved();
+  const keysOf = async () =>
+    (await inner.read()).filter(row => row.value.kind === 'local').map(row => row.key);
+  const saved = await keysOf();
+  assert.equal(saved.length, 1);
+  const count = locals;
+  for (let i = 0; i < 5; i += 1) {
+    await first.refold();
+    await first.localSaved();
+  }
+  assert.equal(locals, count, '새 사건 없이 refold해도 요약 기록을 쓰지 않는다');
+  for (let i = 0; i < 3; i += 1) {
+    const again = await guest(port, { tag: `rpn${i}aaaa` });
+    await again.refold();
+    await again.localSaved();
+  }
+  assert.equal(locals, count, '다시 열어도 쓰지 않는다');
+  assert.deepEqual(await keysOf(), saved, '요약 기록의 열쇠가 그대로');
+  const other = await guest(port, { tag: 'otheraaa' });
+  await practise(other, items[2]);
+  await first.refold();
+  await first.localSaved();
+  assert.equal(locals, count + 1, '읽은 새 사건이 있으면 다시 접어 한 번 쓴다');
+});
+
+test('손님 요약 저장이 실패했으면 새 사건이 없어도 refold가 저장을 한 번 더 건다 — 다시 접지는 않는다(Fable 5.2 끝 판 둘째 F4 · 설계 주인 조건)', async () => {
+  const inner = memoryPort();
+  let fail = false;
+  let locals = 0;
+  const port = {
+    ...inner,
+    async append(values) {
+      if (values.some(value => value.kind === 'local')) {
+        if (fail) {
+          fail = false;
+          throw new Error('quota');
+        }
+        locals += 1;
+      }
+      return inner.append(values);
+    },
+  };
+  const rec = await guest(port, { tag: 'retryaaa' });
+  await practise(rec, items[3]);
+  const before = locals;
+  fail = true;
+  await rec.refold(); // 새 답을 접고 저장이 실패한다(계기 LOCAL_SUMMARY)
+  await rec.localSaved();
+  assert.equal(locals, before, '실패한 저장');
+  await rec.refold(); // 새 사건 없음 — 접지는 않고 저장만 다시
+  await rec.localSaved();
+  assert.equal(locals, before + 1, '실패한 저장을 refold가 다시 건다');
+});
+
 test('치우기는 이 세션에 서버 시각을 받은 뒤에만, 하루 한 번(A6)', async () => {
   const random = rng(11);
   const server = createServer({ random, index });

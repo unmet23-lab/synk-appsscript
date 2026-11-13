@@ -15,6 +15,25 @@ export const SPEAKERS = Object.freeze(['default', 'marin', 'kkamong', 'mongle'])
 
 // 언어마다 줄 묶음. 영어 · 몽골어는 그 화면이 열릴 때 세 겹 대조를 거쳐 들어온다(단계 4 계획 §4) — 영어는 WORLD 짧은 연습(4-1)의 종류부터.
 const TABLE = Object.freeze({ ko: KO, en: EN, mn: MN });
+// 표의 제 열쇠만 읽는다 — 상속한 열쇠(constructor · toString …)로 함수 · 접근자를 건드려 던지지 않게(카본 끝 판 둘째 G1).
+const own = (object, key) =>
+  object != null && typeof key === 'string' && Object.hasOwn(object, key) ? object[key] : undefined;
+
+// 문장에 드는 수 칸과 그 하한 — 정수가 그 하한 이상일 때만 짓는다. 없거나 음수 · 정수가 아니면 null(날 수가 빠져 「오늘」로 읽히거나
+// 「undefined번」 · 「-1일」이 박히던 것, 카본 끝 판 둘째 G2). 고르기(reason/index.mjs)는 늘 채워 내므로 바뀌는 것은 꼴이 깨진 이유뿐이다.
+const COUNTS = Object.freeze({
+  'unit.shaky': Object.freeze({ days: 0, reviews: 1, misses: 1 }),
+  'unit.due': Object.freeze({ days: 0 }),
+  'skill.up': Object.freeze({ streak: 1 }),
+  'pace.breather': Object.freeze({ misses: 1 }),
+});
+const counted = why => {
+  const need = own(COUNTS, why.code);
+  if (!need) return true;
+  return Object.entries(need).every(
+    ([slot, min]) => Number.isInteger(why.slots?.[slot]) && why.slots[slot] >= min,
+  );
+};
 
 // 문장이 가리키는 것의 id가 든 근거 칸.
 const SUBJECT_SLOT = Object.freeze({
@@ -54,13 +73,15 @@ const hash = text => {
 // 물러서기 차례: 그 눈높이의 그 말하는 사람 → 그 눈높이의 default → standard의 그 말하는 사람 → standard의 default. 빈 목록도 없는 것으로
 // 본다 — 한 눈높이에 다른 말하는 사람 줄만 있어도 standard로 물러선다(카본 끝 판 C1). 언어는 물러서지 않는다.
 function templatesOf(code, { lang, level, speaker }) {
-  const row = TABLE[lang]?.[code];
+  const row = own(own(TABLE, lang), code);
   if (!row) return null;
+  const at = own(row, level);
+  const standard = own(row, 'standard');
   const tries = [
-    row[level]?.[speaker],
-    row[level]?.default,
-    row.standard?.[speaker],
-    row.standard?.default,
+    own(at, speaker),
+    own(at, 'default'),
+    own(standard, speaker),
+    own(standard, 'default'),
   ];
   return tries.find(list => Array.isArray(list) && list.length) ?? null;
 }
@@ -79,6 +100,7 @@ export function render(
   { lang = 'ko', level = 'standard', speaker = 'default', label = id => id, day = 0 } = {},
 ) {
   if (!why?.code) return null;
+  if (!counted(why)) return null;
   const list = templatesOf(why.code, { lang, level, speaker });
   if (!list) return null;
   const name = nameOf(why, label);

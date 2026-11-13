@@ -108,12 +108,32 @@ function attemptFields(pid, attemptNo, verdict, result) {
   };
 }
 
-// 그 제시의 묶음(제시 + 전달 · 도움 · 답)을 어댑터로 접어 이 사건의 접기 사건을 꺼낸다.
-// skip: 저장이 실패했거나 제외된 사건 번호 — 기록부 · 서버 접기처럼 그 사건(도움 등)이 없던 것으로 접는다(아르곤 끝 판 C6).
-function foldOf(group, event, index, skip = new Set()) {
-  const children = [...group.children.filter(entry => !skip.has(entry.event.id)), entryOf(event)];
-  const folds = foldEventsOf({ source: group.source, children, exclusions: [] }, index);
-  return folds.find(fold => fold.id === event.id) ?? null;
+// 그 제시의 묶음(제시 + 전달 · 도움 · 답)에서 이 사건이 더하는 접기 사건들 — 그 사건까지 접은 것에서 그 사건 앞까지 접은 것을 뺀다(어댑터
+// foldEventsOf — 기기 얹기 · 서버 접기와 같은 값). 이 사건이 그 제시의 첫 만남이면 제품이 「처음이 아니다」라고 한 제시의 장부 만남(어댑터
+// priorOf)이 그 앞에 든다 — 그것을 버려 판 안의 학습자만 그 답을 첫 만남으로 세던 것(카본 끝 판 둘째 E). 도움 둘째 · 첫 답 뒤 도움 · 전달은
+// 접기 사건이 없다(빈 목록).
+// 거름 둘(marks): failed — 저장이 실패한 사건 번호. 기록부에 없는 사건이라 묶음에서 뺀다(그 도움 · 전달은 없던 것, 아르곤 끝 판 C6).
+// excluded — 제외된 사건 번호 → 그 제외 사건. 기록부에 든 사건이라 빼지 않고 제외로 넘겨 어댑터가 뜻대로 접는다 — 제외된 도움도 도움이고
+// (만남 · 도움 표시 그대로 — 설계 §5-2 「제외는 만났다는 사실을 지우지 않는다」), 제외된 전달 뒤의 소리는 「아직」이다(Fable 5.2 끝 판 둘째
+// 넘친 #16 — 둘을 한 표로 「없던 것」으로 접어 답을 낼 때 이미 기록부와 갈렸다). 판 일지를 다시 돌릴 때도 지금 거름으로 이것을 다시
+// 부른다 — 처음 접은 값(도움 · 답을 봤나 · 판정할 수 있나)은 그 뒤 앞 자식이 실패 · 제외되면 낡는다(GPT · 카본 끝 판 둘째 E). 제외 접기
+// 사건(exclude)은 내지 않는다 — 제외된 답 · 제시는 판 일지에서 빠진다(kept).
+function foldsOf(group, event, index, { failed, excluded }) {
+  const at = group.children.findIndex(entry => entry.event.id === event.id);
+  const before = (at < 0 ? group.children : group.children.slice(0, at)).filter(
+    entry => !failed.has(entry.event.id),
+  );
+  const members = new Set([
+    group.source.event.id,
+    event.id,
+    ...before.map(entry => entry.event.id),
+  ]);
+  const exclusions = [...excluded.values()].filter(entry => members.has(entry.event.targetId));
+  const fold = children => foldEventsOf({ source: group.source, children, exclusions }, index);
+  const had = new Set(fold(before).map(made => made.id));
+  return fold([...before, entryOf(event)]).filter(
+    made => !had.has(made.id) && made.kind !== 'exclude',
+  );
 }
 
 // 닫은 판의 기록 자리가 아직 기록하지 않았고 지금 쓰는 중도 아닌가 — 같은 판을 두 번 기록하지 않는다(아르곤 끝 판 C7 · GPT 최종 GC2).
@@ -126,7 +146,8 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     learner: null,
     open: null,
     journal: [],
-    failed: new Set(),
+    failed: new Set(), // 저장이 실패한 사건 번호
+    excluded: new Map(), // 제외된 내 사건 번호 → 그 제외 사건(기록부가 든 것)
     setId: null,
     setSeq: 0,
     chosen: new Map(),
@@ -150,6 +171,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     };
     s.journal = [];
     s.failed.clear();
+    s.excluded.clear();
     s.chosen.clear();
     s.groups.clear(); // 앞 판의 제시 번호는 이 판에서 받지 않는다(GPT GC4)
     s.lastAt = now;
@@ -164,7 +186,9 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
   const aged = now =>
     dayKey(now, params, dayOffset) !== s.learner.day.key || now - s.lastAt >= DEFAULT_SET_IDLE_MS;
   const stale = now => Boolean(s.open?.fallback) && aged(now);
-  const served = () => s.journal.filter(op => op.kind === 'present').length;
+  // 이 판에 낸 수 — 저장에 실패했거나 제외된 제시는 판 상태(build)에서 빠지므로 여기서도 세지 않는다(카본 끝 판 둘째 E — 판 길이를 다
+  // 채우기 전에 새 판이 열리던 것).
+  const served = () => s.journal.filter(op => op.kind === 'present' && kept(op)).length;
 
   const ensure = () => {
     const now = host.now();
@@ -183,21 +207,45 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     return count > 0 && count < length && !aged(host.now());
   };
 
-  // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다).
+  // 일지 한 줄을 판 상태에 다시 돌린다(기억은 버리는 사본이라 두 번 얹혀도 상관없다 — 기억은 호스트 보기에서 온다). 답 · 도움은 지금 거름
+  // (실패 · 제외)으로 그 제시 묶음을 다시 접어 돌린다(foldsOf — 장부 만남 · 앞 도움이 빠져 첫 도움이 된 도움까지).
   function replay(tmp, op) {
     if (op.kind === 'present') present(tmp, op.row, params);
-    else if (op.kind === 'answer') record(tmp, memory, op.item, op.answer, op.at, params);
     else if (op.kind === 'say') say(tmp, memory, op.unit, op.say, op.at, params);
-    else if (op.kind === 'help') applyOwn(tmp, op.own, memory, params, host.index);
+    else if (op.kind === 'answer' || op.kind === 'help') {
+      const group = s.groups.get(op.parent);
+      const event = group?.children.find(entry => entry.event.id === op.eventId)?.event;
+      if (event) for (const fold of foldsOf(group, event, host.index, s)) apply(tmp, fold);
+    }
+  }
+  // 접기 사건 하나를 학습자에 얹는다 — 답은 두뇌의 record(판의 「다시」 · 만난 단위까지), 도움 만남 · 장부 만남은 기기 얹기 그대로.
+  function apply(learner, fold) {
+    if (fold.kind === 'answer')
+      return record(learner, memory, fold.item, { ...fold.answer, id: fold.id }, fold.at, params);
+    applyOwn(learner, fold, memory, params, host.index);
+    return null;
   }
 
-  const kept = op => !s.failed.has(op.eventId) && !s.failed.has(op.parent);
+  // 판 일지에 남는 줄 — 저장이 실패한 줄과 그 자식은 빠진다. 제외된 답 · 제시(제시면 그 답까지) · 본인 말도 빠진다(계획 §3-7 「제외도
+  // 같다」). 도움은 제외돼도 남는다 — 기록부가 도움으로 세는 만남이다(foldsOf의 거름).
+  const kept = op => {
+    if (s.failed.has(op.eventId) || s.failed.has(op.parent)) return false;
+    if (op.kind === 'help') return true;
+    return !s.excluded.has(op.eventId) && !s.excluded.has(op.parent);
+  };
 
-  // 제외된 사건 — 어느 코치 · 탭이 제외했든(기록부가 든 제외 사건의 대상). 일지에서 빼서 판 상태에서도 없던 것으로(GPT GC2).
+  // 제외된 사건 — 어느 코치 · 탭이 제외했든(기록부가 든 제외 사건의 대상, GPT GC2). 다시 세울 때마다 기록부에서 새로 읽는다(저장이 실패한
+  // 제외는 없던 것).
   function markExcluded() {
+    s.excluded.clear();
     for (const event of host.trail.heldEvents())
-      if (event.type === EVENT_TYPES.excluded && s.own.has(event.targetId))
-        s.failed.add(event.targetId);
+      if (
+        event.type === EVENT_TYPES.excluded &&
+        s.own.has(event.targetId) &&
+        !s.failed.has(event.id) &&
+        !s.excluded.has(event.targetId)
+      )
+        s.excluded.set(event.targetId, entryOf(event));
   }
 
   // 판의 「낸 것」(하루 한도 · 새것 몫 — 계획 §16 ①). 다시 세울 때마다 지금 호스트의 것 전부를 다시 받고(서버 요약으로 온 다른 기기 줄 ·
@@ -312,7 +360,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         !session.blank.has(row.item.itemKey),
     );
     const held = rows.find(row => row.held)?.held ?? null;
-    const servedDue = s.journal.some(op => op.kind === 'present' && op.row.tier === 1);
+    const servedDue = s.journal.some(op => op.kind === 'present' && kept(op) && op.row.tier === 1);
     return { limited, held, servedDue };
   }
 
@@ -385,26 +433,26 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     help(pid, kind) {
       const group = this.group(pid);
       if (!HELP_KINDS.includes(kind)) throw new TypeError('Atlas coach: 도움의 종류가 아니다');
-      // 저장에 실패했거나 제외된 도움은 없던 일 — 그 뒤의 도움이 첫 도움이다(접기 foldOf와 같은 거름, 카본 끝 판 B3).
-      const first = !group.children.some(
-        entry => entry.event.type === EVENT_TYPES.helped && !s.failed.has(entry.event.id),
-      );
       const fields = {
         presentationId: pid,
         helpId: kind,
         level: HELP_LEVELS[kind] ?? 'cue',
         contentRef: `${gameId}.${kind}`,
       };
-      const fold = first ? event => foldOf(group, event, host.index, s.failed) : null;
-      const { event, stored } = write(EVENT_TYPES.helped, fields, { fold });
-      // 첫 답 뒤에 본 도움(되짚기)은 접기 사건이 없다 — 어댑터가 도움 만남을 세우지 않는다(설계 §3-3 · Fable 5.2 최종 F1).
-      const own = first ? foldOf(group, event, host.index, s.failed) : null;
-      if (own) {
-        applyOwn(s.learner, own, memory, params, host.index);
-        // 판 일지에도 — 보기가 아무것도 얹지 못하는 동안 다시 세우면(일지를 판을 열 때의 사본에 다시 돌림) 이 도움의 만남 · 능력이
-        // 사라지지 않게(카본 끝 판 D). 저장이 실패하거나 제외되면 다른 줄처럼 빠진다(kept).
-        s.journal.push({ kind: 'help', eventId: event.id, parent: pid, own });
-      }
+      // 저장에 실패한 도움은 없던 일 — 그 뒤의 도움이 첫 도움이다(접기와 같은 거름, 카본 끝 판 B3). 제외된 도움은 도움이다(기록부와 같게 —
+      // 넘친 #16). 첫 답 뒤에 본 도움(되짚기) · 둘째 도움은 접기 사건이 없다 — 어댑터가 도움 만남을 세우지 않는다(설계 §3-3 · Fable 5.2 최종 F1).
+      let folds = [];
+      const { event, stored } = write(EVENT_TYPES.helped, fields, {
+        fold: made => {
+          folds = foldsOf(group, made, host.index, s);
+          return folds.length ? folds : null;
+        },
+      });
+      for (const fold of folds) apply(s.learner, fold);
+      // 판 일지에는 도움마다 — 보기가 아무것도 얹지 못하는 동안 다시 세워도(일지를 판을 열 때의 사본에 다시 돌림) 이 도움의 만남 · 능력이
+      // 사라지지 않고(카본 끝 판 D), 앞 도움이 실패하면 이 도움이 첫 도움으로 선다(카본 끝 판 둘째 E). 이 도움이 실패하면 다른 줄처럼
+      // 빠진다(kept).
+      s.journal.push({ kind: 'help', eventId: event.id, parent: pid });
       group.children.push(entryOf(event));
       return { event, stored };
     },
@@ -423,17 +471,20 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         throw new TypeError('Atlas coach: 같은 제시의 답은 차례대로다');
       const verdict = verdictOf(result, group.item);
       const fields = attemptFields(pid, attemptNo, verdict, result);
-      let fold = null;
+      let folds = [];
       const made = write(EVENT_TYPES.attempted, fields, {
         fold: event => {
-          fold = foldOf(group, event, host.index, s.failed);
-          return fold;
+          folds = foldsOf(group, event, host.index, s);
+          return folds;
         },
       });
       group.children.push(entryOf(made.event));
       group.attempts += 1;
+      const fold = folds.find(one => one.id === made.event.id);
+      // 장부 만남(제품이 「처음이 아니다」라고 한 제시의 첫 만남)을 답보다 먼저 얹는다 — 기록부 · 서버 접기와 같은 첫 만남(카본 끝 판 둘째 E).
+      for (const prior of folds) if (prior !== fold) apply(s.learner, prior);
       const answer = { ...fold.answer, id: fold.id };
-      const out = record(s.learner, memory, fold.item, answer, fold.at, params);
+      const out = apply(s.learner, fold);
       s.journal.push({
         kind: 'answer',
         eventId: made.event.id,

@@ -112,6 +112,9 @@ export function createSync({
   writesRetryMs = WRITES_RETRY_MS,
   turn = (_job, work) => work(),
   now = () => Date.now(),
+  // 간격을 재는 시계 — 서버 시각으로 고치지 않은 기기 시계(호스트가 준다). 받기 간격을 고친 시계(now)로 재면 첫 받기로 서버와의 차이가 설 때
+  // 시계가 한 번에 움직여, 기기 시계가 앞선 기기에서는 앞선 만큼 + 5분 동안 화면 복귀 받기가 돌지 않았다(Fable 5.2 끝 판 둘째 넘친 #18).
+  clock = now,
 }) {
   const state = {
     closed: false,
@@ -382,7 +385,15 @@ export function createSync({
       summary: answer?.summary ?? null,
       serverTime: answer?.serverTime ?? null,
     });
+    const backing = state.failures > 0;
     state.failures = 0;
+    // 물러서는 중이었으면 걸린 긴 기한(60초 · 300초)을 버리고 곧 다시 보낸다 — 서버가 돌아온 것을 받기로 안 뒤에도 그 기한을 끝까지 기다려,
+    // 판을 끝내고 화면만 다시 본 사람이 그 안에 탭을 닫으면 그 판이 다음 방문까지 서버에 없었다(Fable 5.2 끝 판 둘째 넘친 #17).
+    if (backing) {
+      clearTimeout(state.timer);
+      state.timer = null;
+      schedule();
+    }
     if (trail().summary() !== before) {
       announce();
       tell('receive');
@@ -396,9 +407,9 @@ export function createSync({
   function pull({ force = false } = {}) {
     if (!canGet() || !carrier().get) return Promise.resolve(null);
     if (state.pulling) return state.pulling;
-    if (!force && now() - state.lastPull < PULL_GAP_MS) return Promise.resolve(null);
+    if (!force && clock() - state.lastPull < PULL_GAP_MS) return Promise.resolve(null);
     const before = state.lastPull;
-    state.lastPull = now();
+    state.lastPull = clock();
     // 차례를 못 얻어(다른 탭이 쥠) 받지 못했으면 받은 것으로 치지 않는다 — 첫 받기는 잠시 뒤 다시(카본 끝 판 D).
     const missedTurn = () => {
       state.lastPull = before;
