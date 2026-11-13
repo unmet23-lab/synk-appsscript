@@ -12,11 +12,12 @@ import { IN_OUT, mix, prog } from '../lib/motion';
 
 export const FPS = 30;
 export const F = (s: number) => Math.round(s * FPS);
-export const LEN = 29.0;
+export const LEN = 29.2;
 export const TOTAL = F(LEN);
 
 // 시간표(초) — 목소리 낱말 시각(음성/범수/V*.json)에 맞춤
-export const T = { hero: 3.3, drop: 3.75, hit: 6.4, real: 7.95, push: 8.45, day: 9.9, tests: 13.3, typeIn: 14.8, wrong: 16.7, line: 18.25, quote: 21.35, q2: 22.25, q3: 23.35, ex: 22.85, after: 24.15, card: 24.3, r1: 24.6, r2: 24.8, r3: 25.0, hit2: 25.67, same: 26.55 };
+// 11-13 21시 최종 확인 미흡 고침: V5를 「끝자리가 서로 다른 값으로」로 다시 구워(6.60초) 17.95초에 놓고, 요청 글은 말보다 먼저 18.2~20.6초에 쳐진다(빈 상자 2.9초 없앰)
+export const T = { hero: 3.3, drop: 3.75, hit: 6.4, real: 7.95, push: 8.45, day: 9.9, tests: 13.3, typeIn: 14.8, wrong: 16.7, line: 17.8, type: 17.95, typeEnd: 20.5, u2: 22.5, ex: 23.0, after: 24.65, card: 24.65, r1: 24.85, r2: 25.0, r3: 25.15, hit2: 26.17, same: 27.05 };
 export const HERO = { from: 3.3, len: 4.6 };
 export const CUT = [0, T.hero, T.real, T.tests, T.line, T.after];
 export const VO: { id: string; at: number }[] = [
@@ -24,8 +25,8 @@ export const VO: { id: string; at: number }[] = [
   { id: 'V2', at: 3.4 },
   { id: 'V3', at: 8.05 },
   { id: 'V4', at: 13.4 },
-  { id: 'V5', at: 18.4 },
-  { id: 'V6', at: 24.3 },
+  { id: 'V5', at: 17.95 },
+  { id: 'V6', at: 24.8 },
 ];
 
 const BLACK = '#050506';
@@ -49,7 +50,7 @@ const Head: React.FC<{ f: number; from: number; to: number; lines: React.ReactNo
   return (
     <div style={{ position: 'absolute', left: 74, width: 846, top: 286, fontFamily: KO, fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color }}>
       {lines.map((l, i) => {
-        const p = from <= 0 && i === 0 ? 1 : prog(f, from + i * step, i === 0 ? 4 : 7);
+        const p = i === 0 ? 1 : prog(f, from + i * step, 7);
         return (
           <div key={i} style={{ opacity: p * out, transform: `translateY(${(1 - p) * 28}px)` }}>
             {l}
@@ -143,85 +144,100 @@ const Tests: React.FC<{ f: number; to: number }> = ({ f, to }) => {
   );
 };
 
-/** 시험에 넣은 값 — 390,000 · 290,000 · 395,500은 있었고 395,000은 없었다. */
+/** 시험에 넣은 값 — 390,000 · 290,000 · 395,500은 있었고 395,000은 없었다. 값마다 끝자리 단위를 붙여 「천 원 단위만 빠졌다」가 보이게(11-13 최종 확인). */
 const Cases: React.FC<{ f: number; from: number; typeIn: number; wrong: number; to: number }> = ({ f, from, typeIn, wrong, to }) => {
   if (f < from || f >= to) return null;
   const out = 1 - prog(f, to - 4, 4);
-  const rows: { a: string; b: string }[] = [
-    { a: '390,000원', b: '39만원' },
-    { a: '290,000원', b: '29만원' },
-    { a: '395,500원', b: '395,500원' },
+  const rows: { a: string; b: string; k: string }[] = [
+    { a: '390,000원', b: '39만원', k: '만 원 단위' },
+    { a: '290,000원', b: '29만원', k: '만 원 단위' },
+    { a: '395,500원', b: '395,500원', k: '백 원 단위' },
   ];
   const typed = '395,000원';
   const tp = prog(f, typeIn, 16, (x) => x);
   const arrow = prog(f, typeIn + 20, 8);
   const bad = prog(f, wrong, 6);
-  const why = prog(f, wrong + 5, 8);
+  const why = prog(f, wrong + 3, 6);
   const sd = f - wrong;
   const shake = sd >= 0 && sd < 9 ? (1 - sd / 9) * 12 * Math.sin(sd * 2.4) : 0;
   const breathe = 0.5 + 0.5 * Math.sin(f / 5);
-  const cell = (k: number): React.CSSProperties => ({ height: 146, display: 'flex', alignItems: 'center', borderBottom: '2px solid rgba(23,25,29,0.14)', opacity: prog(f, from + 4 + k * 7, 7), transform: `translateY(${(1 - prog(f, from + 4 + k * 7, 7)) * 16}px)` });
+  const kind = (t: string, hot = false): React.ReactNode => (
+    <div style={{ fontWeight: 700, fontSize: 32, letterSpacing: -0.6, color: hot ? INK_D : GREY_D, marginTop: 4 }}>{hot ? <U>{t}</U> : t}</div>
+  );
+  const cell = (k: number): React.CSSProperties => ({ height: 146, display: 'flex', alignItems: 'center', borderBottom: '2px solid rgba(23,25,29,0.14)', opacity: prog(f, from - 1 + k * 3, 4), transform: `translateY(${(1 - prog(f, from - 1 + k * 3, 4)) * 16}px)` });
   return (
     <div style={{ position: 'absolute', left: 74, width: 812, top: 590, fontFamily: KO, color: INK_D, opacity: out }}>
-      <div style={{ display: 'flex', fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: GREY_D, opacity: prog(f, from + 2, 8), paddingBottom: 10, borderBottom: '3px solid rgba(23,25,29,0.5)' }}>
+      <div style={{ display: 'flex', fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: GREY_D, paddingBottom: 10, borderBottom: '3px solid rgba(23,25,29,0.5)' }}>
         <div style={{ width: 400 }}>시험에 넣은 값</div>
         <div>화면에 뜬 값</div>
       </div>
       {rows.map((r, k) => (
         <div key={k} style={cell(k)}>
-          <div style={{ width: 400, fontWeight: 800, fontSize: 62, letterSpacing: -1.6 }}>{r.a}</div>
+          <div style={{ width: 400 }}>
+            <div style={{ fontWeight: 800, fontSize: 62, letterSpacing: -1.6, lineHeight: 1.05 }}>{r.a}</div>
+            {kind(r.k)}
+          </div>
           <div style={{ flex: 1, fontWeight: 800, fontSize: 62, letterSpacing: -1.6 }}>{r.b}</div>
-          <Mark p={prog(f, from + 10 + k * 6, 7)} kind="ok" color={INK_D} size={58} />
+          <Mark p={prog(f, from + 8 + k * 5, 7)} kind="ok" color={INK_D} size={58} />
         </div>
       ))}
-      <div style={{ ...cell(3), transform: `translate(${shake}px, ${(1 - prog(f, from + 25, 7)) * 16}px)` }}>
-        <div style={{ width: 400, height: 96, display: 'flex', alignItems: 'center', boxSizing: 'border-box', border: tp > 0 ? 'none' : `3px dashed rgba(23,25,29,${0.3 + 0.3 * breathe})`, borderRadius: 12, paddingLeft: tp > 0 ? 0 : 22, fontWeight: 800, fontSize: 62, letterSpacing: -1.6 }}>
-          {tp > 0 ? (
-            <span style={{ borderBottom: '4px dashed rgba(23,25,29,0.45)' }}>{typed.slice(0, Math.max(1, Math.round(typed.length * tp)))}</span>
-          ) : (
-            <span style={{ fontSize: 40, color: GREY_D, fontWeight: 700 }}>없음</span>
-          )}
+      <div style={{ ...cell(3), transform: `translate(${shake}px, ${(1 - prog(f, from + 13, 6)) * 16}px)` }}>
+        <div style={{ width: 400 }}>
+          <div style={{ width: 360, height: 76, display: 'flex', alignItems: 'center', boxSizing: 'border-box', border: tp > 0 ? 'none' : `3px dashed rgba(23,25,29,${0.3 + 0.3 * breathe})`, borderRadius: 12, paddingLeft: tp > 0 ? 0 : 20, fontWeight: 800, fontSize: 62, letterSpacing: -1.6 }}>
+            {tp > 0 ? (
+              <span style={{ borderBottom: '4px dashed rgba(23,25,29,0.45)' }}>{typed.slice(0, Math.max(1, Math.round(typed.length * tp)))}</span>
+            ) : (
+              <span style={{ fontSize: 54, color: GREY_D, fontWeight: 800, letterSpacing: -1.2 }}>없음</span>
+            )}
+          </div>
+          {kind('천 원 단위', tp > 0)}
         </div>
         <div style={{ flex: 1, fontWeight: 800, fontSize: 62, letterSpacing: -1.6, opacity: arrow }}>
           {bad > 0 ? <span style={{ opacity: bad, fontSize: 70 }}><U w={bad}>40만원</U></span> : <span style={{ opacity: 0.35 }}>?</span>}
         </div>
         <Mark p={bad} kind="no" color={INK_D} size={72} />
       </div>
-      <div style={{ marginTop: 26, fontWeight: 700, fontSize: 40, letterSpacing: -1, color: INK_D, whiteSpace: 'nowrap', opacity: why, transform: `translateY(${(1 - why) * 14}px)` }}>
-        395,000원을 만 원 단위로 줄이다 반올림해 40만원
+      <div style={{ marginTop: 24, fontWeight: 800, fontSize: 42, lineHeight: 1.22, letterSpacing: -1, color: INK_D, opacity: why, transform: `translateY(${(1 - why) * 14}px)` }}>
+        천 원 단위로 끝나는 값만
+        <br />
+        만 원으로 줄이다 반올림해 40만원
       </div>
     </div>
   );
 };
 
-/** 한 줄 — AI에게 보낼 글 칸에 돈이 나오는 화면을 맡길 때 붙이는 요청이 쳐진다. */
+/** 한 줄 — AI에게 보낼 글 칸에 돈이 나오는 화면을 맡길 때 붙이는 요청이 말보다 먼저 쳐진다(11-13 최종 확인 「빈 상자와 커서만 2.9초」 고침). */
+const QUOTE_LINES = ['“반올림하지 말고,', '끝자리가 서로 다른', '값으로 화면을', '찍어 보여 줘”'];
 const Quote: React.FC<{ f: number; from: number; to: number }> = ({ f, from, to }) => {
   if (f < from || f >= to) return null;
-  const quote = F(T.quote);
   const out = 1 - prog(f, to - 4, 4);
-  const box = prog(f, from + 4, 10);
-  const lines: { at: number; node: React.ReactNode }[] = [
-    { at: quote, node: '“반올림하지 말고,' },
-    { at: F(T.q2), node: <span key="u"><U w={prog(f, F(T.q2) + 4, 10)}>끝자리 있는 값</U>으로</span> },
-    { at: F(T.q3), node: '화면을 찍어 보여 줘”' },
-  ];
-  const caret = f < quote && Math.floor(f / 8) % 2 === 0;
+  const box = prog(f, from, 6);
+  const total = QUOTE_LINES.reduce((a, l) => a + l.length, 0);
+  const typed = Math.round(total * prog(f, F(T.type), F(T.typeEnd - T.type), (x) => x));
+  const typing = f >= F(T.type) && f < F(T.typeEnd) + 4;
+  const caretOn = Math.floor(f / 8) % 2 === 0;
+  const u = prog(f, F(T.u2), 10);
+  let left = typed;
+  const shown = QUOTE_LINES.map((l) => {
+    const n = Math.max(0, Math.min(l.length, left));
+    left -= l.length;
+    return l.slice(0, n);
+  });
+  const caretLine = Math.min(QUOTE_LINES.length - 1, shown.findIndex((x, i) => x.length < QUOTE_LINES[i].length) === -1 ? QUOTE_LINES.length - 1 : shown.findIndex((x, i) => x.length < QUOTE_LINES[i].length));
+  const caret = <span style={{ fontWeight: 400, opacity: typing || caretOn ? 1 : 0, marginLeft: 2 }}>|</span>;
   return (
     <div style={{ position: 'absolute', left: 60, width: 860, top: 600, height: 700, fontFamily: KO, color: INK_D, opacity: out * box, transform: `translateY(${(1 - box) * 24}px)` }}>
       <div style={{ position: 'absolute', inset: 0, borderRadius: 30, border: '3px solid rgba(23,25,29,0.16)', background: 'rgba(255,255,255,0.78)', boxSizing: 'border-box', boxShadow: '0 22px 46px rgba(0,0,0,0.08)' }} />
       <div style={{ position: 'absolute', left: 44, top: 38, fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: GREY_D }}>AI에게 보낼 글</div>
-      <div style={{ position: 'absolute', left: 44, top: 118, width: 790 }}>
-        {f < quote ? <div style={{ fontWeight: 400, fontSize: 80, opacity: caret ? 1 : 0 }}>|</div> : null}
-        {lines.map((l, i) => {
-          const p = prog(f, l.at, 8);
-          return (
-            <div key={i} style={{ fontWeight: 800, fontSize: 80, lineHeight: 1.26, letterSpacing: -2.4, opacity: p, transform: `translateY(${(1 - p) * 24}px)` }}>
-              {l.node}
-            </div>
-          );
-        })}
+      <div style={{ position: 'absolute', left: 44, top: 112, width: 790 }}>
+        {shown.map((l, i) => (
+          <div key={i} style={{ fontWeight: 800, fontSize: 76, lineHeight: 1.24, letterSpacing: -2.2, minHeight: 94 }}>
+            {i === 1 && l.length === QUOTE_LINES[1].length ? <U w={u}>{l}</U> : i === 2 && l.length > 0 ? <><U w={u}>{l.slice(0, 1)}</U>{l.slice(1)}</> : l}
+            {i === caretLine && f >= F(T.type) - 12 ? caret : null}
+          </div>
+        ))}
       </div>
-      <div style={{ position: 'absolute', left: 44, bottom: 44, fontWeight: 700, fontSize: 42, letterSpacing: -1, color: GREY_D, opacity: prog(f, F(T.ex), 10) }}>예) 395,000 · 105,000 · 15,000</div>
+      <div style={{ position: 'absolute', left: 44, bottom: 40, fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: GREY_D, opacity: prog(f, F(T.ex), 10) }}>예) 390,000 · 395,000 · 395,500 · 12,345</div>
     </div>
   );
 };
@@ -230,14 +246,14 @@ const Quote: React.FC<{ f: number; from: number; to: number }> = ({ f, from, to 
 const EndCard: React.FC<{ f: number; from: number }> = ({ f, from }) => {
   if (f < from) return null;
   const S = 0.74;
-  const card = prog(f, F(T.card), 8);
+  const card = prog(f, F(T.card) - 1, 3);
   const line = prog(f, F(T.hit2) + 2, 8);
   const glow = prog(f, F(T.hit2) + 2, 14);
-  const paper = prog(f, F(T.r1) - 6, 10);
+  const paper = prog(f, F(T.card), 6);
   const rows = [
     { at: F(T.r1), n: '1', text: '돈 표시는 반올림하지 않기' },
-    { at: F(T.r2), n: '2', text: '끝자리 있는 값으로 화면 찍어 보기' },
-    { at: F(T.r3), n: '3', text: '시험에도 그 값 넣기' },
+    { at: F(T.r2), n: '2', text: '끝자리가 서로 다른 값으로 화면 찍기' },
+    { at: F(T.r3), n: '3', text: '시험에도 그 값들 넣기' },
   ];
   const total = prog(f, F(T.hit2), 8);
   const teeth = 26;
@@ -256,7 +272,10 @@ const EndCard: React.FC<{ f: number; from: number }> = ({ f, from }) => {
       </div>
       <div style={{ position: 'absolute', left: 64, top: 968, width: 836, height: 458, opacity: paper, transform: `translateY(${(1 - paper) * 40}px)`, filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.10))' }}>
         <div style={{ position: 'absolute', inset: 0, background: '#FFFEFA', clipPath: `polygon(${zig})` }} />
-        <div style={{ position: 'absolute', left: 40, top: 26, fontWeight: 700, fontSize: 36, letterSpacing: -0.8, color: GREY_D }}>저장 · 돈 화면을 AI에게 맡길 때</div>
+        <div style={{ position: 'absolute', left: 40, top: 22, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontWeight: 800, fontSize: 32, letterSpacing: -0.6, background: BUTTER, color: INK_D, padding: '4px 14px', borderRadius: 8 }}>저장</span>
+          <span style={{ fontWeight: 800, fontSize: 40, letterSpacing: -1, color: INK_D }}>돈 화면을 AI에게 맡길 때</span>
+        </div>
         <div style={{ ...dash, top: 86 }} />
         {rows.map((r, i) => {
           const p = prog(f, r.at, 6);
@@ -305,12 +324,12 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
   const pull = 1 + 0.035 * kick * kick;
 
   // C: 손님 휴대폰 결제 화면(고치기 전) — 값 칸만 밝히고(나머지 글은 어둡게) 그 칸으로 다가감
-  const push = prog(f, F(T.push), F(4.6), IN_OUT);
-  const ps = mix(1.15, 2.0, push);
+  const push = prog(f, F(T.real), F(T.tests - T.real), (x) => x);
+  const ps = mix(1.1, 1.7, push);
   const fx = 128;
   const fy = 1712;
-  const ptx = mix(300 - 1.15 * fx, 300 - 2.0 * fx, push);
-  const pty = mix(1240 - 1.15 * fy, 1080 - 2.0 * fy, push);
+  const ptx = mix(300 - 1.1 * fx, 300 - 1.7 * fx, push);
+  const pty = mix(1240 - 1.1 * fy, 1080 - 1.7 * fy, push);
   const hole = { x: 30, y: 1640, w: 315, h: 150 };
   const dim = 1;
 
@@ -323,8 +342,11 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
         {scene === 'C' ? (
           <>
             <Img src={staticFile('shots/old_phone.jpg')} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1996, transformOrigin: '0 0', transform: `translate(${ptx}px, ${pty}px) scale(${ps})` }} />
-            <div style={{ position: 'absolute', left: ptx + ps * hole.x, top: pty + ps * hole.y, width: ps * hole.w, height: ps * hole.h, borderRadius: 16, boxShadow: `0 0 0 4000px rgba(5,5,6,${0.9 * dim})` }} />
+            <div style={{ position: 'absolute', left: ptx + ps * hole.x, top: pty + ps * hole.y, width: ps * hole.w, height: ps * hole.h, borderRadius: 16, boxShadow: `0 0 0 4000px rgba(5,5,6,${0.78 * dim})` }} />
             <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 940, background: `linear-gradient(to bottom, ${BLACK} 0px, ${BLACK} 780px, rgba(5,5,6,0) 940px)` }} />
+            {/* 11-13 최종 확인 「오른쪽 잘림」 — 가림을 밝힌 만큼 잘린 앱 글이 안전선 밖에서 읽히지 않게 오른쪽 · 아래 가장자리를 녹인다 */}
+            <div style={{ position: 'absolute', top: 0, bottom: 0, right: -60, width: 360, background: `linear-gradient(to left, ${BLACK} 0px, ${BLACK} 210px, rgba(5,5,6,0) 360px)` }} />
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: -60, height: 620, background: `linear-gradient(to top, ${BLACK} 0px, ${BLACK} 460px, rgba(5,5,6,0) 620px)` }} />
             <div style={{ position: 'absolute', left: 74, top: 560, width: 846, fontFamily: KO, fontWeight: 700, fontSize: 40, lineHeight: 1.2, letterSpacing: -0.8, color: '#9A968C', opacity: prog(f, F(T.real) + 6, 10) }}>
               예시 의뢰로 다시 띄운 실제 앱 화면
               <br />
@@ -346,7 +368,7 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
           <Head f={f} from={F(T.day)} to={F(T.tests)} lines={['그날 실제 화면에 나갔다', '손님 받기 전이었다']} size={80} step={F(0.6)} color={INK} />
           <Head f={f} from={F(T.tests)} to={F(T.typeIn)} lines={['시험엔', '이 값이 없었다']} />
           <Head f={f} from={F(T.typeIn)} to={F(T.line)} lines={['넣어 보니', '바로 틀렸다']} step={F(1.7)} />
-          <Head f={f} from={F(T.line)} to={F(T.after)} lines={['돈이 나오는 화면을 맡길 땐', '이 한 줄을 붙이세요']} size={76} step={F(1.4)} />
+          <Head f={f} from={F(T.line)} to={F(T.after)} lines={['돈이 나오는 화면을 맡길 땐', '이 한 줄을 붙이세요']} size={76} step={F(2.0)} />
           <Head f={f} from={F(T.after)} to={TOTAL + 1} lines={['이제 손님 화면에도', <span key="u"><U w={prog(f, F(T.same), 10)}>395,000원</U> 그대로</span>]} size={84} step={F(1.3)} />
         </>
       ) : null}
@@ -393,6 +415,11 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
               <Sequence from={at(T.wrong)}>
                 <Audio src={staticFile('sfx/thud.wav')} volume={0.8} />
               </Sequence>
+              {Array.from({ length: 16 }, (_, i) => (
+                <Sequence key={`q${i}`} from={at(T.type + (i * (T.typeEnd - T.type)) / 16)}>
+                  <Audio src={staticFile(i % 2 ? 'sfx/tick.wav' : 'sfx/tick2.wav')} volume={0.16} />
+                </Sequence>
+              ))}
               {[T.r1, T.r2, T.r3].map((s) => (
                 <Sequence key={`r${s}`} from={at(s)}>
                   <Audio src={staticFile('sfx/tick2.wav')} volume={0.28} />

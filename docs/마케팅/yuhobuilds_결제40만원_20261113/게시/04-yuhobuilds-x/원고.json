@@ -9,5 +9,5 @@
   "platform": "x",
   "account": "@yuhobuilds",
   "format": "video-post",
-  "caption": "AI가 고친 결제 화면, 자동 시험은 전부 통과.\n그런데 손님 화면엔 395,000원이 「40만원」으로 떴어요. 시험에 그런 값이 없었거든요.\n돈 화면을 맡길 땐 한 줄: 「반올림하지 말고, 끝자리 있는 값으로 화면을 찍어 보여 줘.」\n요청문 전체: https://synk.im/prompts/#money-screen-exact-price"
+  "caption": "AI가 고친 결제 화면, 자동 시험은 전부 통과.\n그런데 손님 화면엔 395,000원이 「40만원」으로 떴어요. 시험에 천 원 단위로 끝나는 값이 없었거든요.\n돈 화면을 맡길 땐 한 줄: 「반올림하지 말고, 끝자리가 서로 다른 값으로 화면을 찍어 보여 줘.」\n요청문 전체: https://synk.im/prompts/#money-screen-exact-price"
 }
