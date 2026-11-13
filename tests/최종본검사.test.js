@@ -12,6 +12,10 @@ const { execFileSync, spawnSync } = require('node:child_process');
 
 const tool = path.join(__dirname, '..', 'tools', '최종본검사.py');
 const py = process.env.SYNK_PYTHON || 'python';
+// CI의 문법 검사 작업에는 ffmpeg · OpenCV가 없다 — 그때는 건너뛴다(tests/컷연속성검사.test.js와 같은 꼴)
+const 그림라이브러리 = spawnSync(py, ['-I', '-X', 'utf8', '-c', 'import numpy, cv2'], { encoding: 'utf8' }).status === 0;
+const ffmpeg = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' }).status === 0 && spawnSync('ffprobe', ['-version'], { encoding: 'utf8' }).status === 0;
+const 없음 = !(그림라이브러리 && ffmpeg) && `${그림라이브러리 ? '' : 'numpy · cv2 '}${ffmpeg ? '' : 'ffmpeg '}없음`;
 const lastJson = (out) => JSON.parse(out.trim().split(/\r?\n/).filter((l) => l.startsWith('{')).pop());
 
 function synthetic(t) {
@@ -26,7 +30,7 @@ function synthetic(t) {
   return video;
 }
 
-test('같은 그림을 잘라 키운 이음은 「같은판」, 다른 그림 이음은 걸지 않고, 소리가 먼저 끝나 끝이 조용하면 「끝소리」', (t) => {
+test('같은 그림을 잘라 키운 이음은 「같은판」, 다른 그림 이음은 걸지 않고, 소리가 먼저 끝나 끝이 조용하면 「끝소리」', { skip: 없음 }, (t) => {
   const video = synthetic(t);
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '같은판,되풀이,끝', '--json'], { encoding: 'utf8', timeout: 300000 });
   assert.equal(r.status, 1, r.stderr);
@@ -42,7 +46,7 @@ test('같은 그림을 잘라 키운 이음은 「같은판」, 다른 그림 �
   assert.equal(j.못잼, undefined);
 });
 
-test('사람 움직임 모듈을 못 찾으면 굳음만 「못잼」, 앞서 잰 같은판은 그대로 낸다', (t) => {
+test('사람 움직임 모듈을 못 찾으면 굳음만 「못잼」, 앞서 잰 같은판은 그대로 낸다', { skip: 없음 }, (t) => {
   const video = synthetic(t);
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '같은판,굳음', '--json'],
     { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_MOTION_PY: path.join(os.tmpdir(), '없는_사람움직임.py') } });
@@ -52,7 +56,7 @@ test('사람 움직임 모듈을 못 찾으면 굳음만 「못잼」, 앞서 �
   assert.deepEqual(j.못잼.map((m) => m.항목), ['굳음']);
 });
 
-test('없는 파일은 끝 코드 2와 오류 한 줄', () => {
+test('없는 파일은 끝 코드 2와 오류 한 줄', { skip: 없음 }, () => {
   const r = spawnSync(py, ['-I', '-X', 'utf8', tool, path.join(os.tmpdir(), '없는영상.mp4'), '--json'], { encoding: 'utf8', timeout: 60000 });
   assert.equal(r.status, 2, r.stderr || r.error?.message);
   assert.ok(JSON.parse(r.stdout).오류);
