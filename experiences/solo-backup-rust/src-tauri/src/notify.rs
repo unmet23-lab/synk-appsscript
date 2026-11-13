@@ -14,7 +14,7 @@ pub const LEDGER: &str = "notify.json";
 pub const TOPICS: [&str; 8] = ["status", "folders", "changes", "devices", "restore", "space", "signin", "update"];
 /// Problems shown once ever rather than once a day.
 const ONCE: [&str; 1] = ["first-backup"];
-const PROBLEMS: [&str; 3] = ["first-backup", "stale", "partial"];
+const PROBLEMS: [&str; 4] = ["first-backup", "stale", "partial", "missing"];
 /// 「사흘 넘게」 (2.2).
 pub const STALE_MS: u64 = 72 * 3_600_000;
 
@@ -33,6 +33,11 @@ pub fn first_backup() -> Notice {
 /// backup is in none (GPT workbackup-partial GA2); closing the program is the one thing to do.
 pub fn partial() -> Notice {
     Notice { problem: "partial", topic: "status", title: "몇 파일을 백업하지 못했습니다", body: "다른 프로그램이 쓰는 중인 파일은 이번 백업에 담기지 않았습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.", action: None }
+}
+/// 「폴더를 찾을 수 없음」 (4.2 「사라진 원본 폴더」): the folders that are there go on being backed up and the
+/// backups that hold the missing one are kept. True also when none could be found (the run then failed).
+pub fn missing() -> Notice {
+    Notice { problem: "missing", topic: "folders", title: "백업할 폴더를 찾을 수 없습니다", body: "외장 드라이브라면 다시 연결해 주세요. 찾을 수 있는 폴더는 계속 백업하고, 그 폴더가 든 이전 백업은 지우지 않습니다.", action: Some("확인하기") }
 }
 /// A clock behind the last backup cannot count three days, so that one is told as it is.
 pub fn stale(cause: &str) -> Notice {

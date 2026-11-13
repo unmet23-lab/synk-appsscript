@@ -7,26 +7,27 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
-const { BackupEngine, VERIFIED, errorItems } = require('../src/engine.cjs');
+const { BackupEngine, VERIFIED, DAY, errorItems } = require('../src/engine.cjs');
 const secretStore = { encrypt: text => Buffer.from('fixture-only:' + text), decrypt: bytes => bytes.toString().slice(13) };
 
-async function fixture({ provider = 'local' } = {}) {
+async function fixture({ provider = 'local', folders = 1 } = {}) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-runonce-'));
   const source = path.join(root, 'source'), target = path.join(root, 'target'), keys = path.join(root, 'keys');
-  await Promise.all([source, target, keys].map(p => fs.mkdir(p)));
+  const more = Array.from({ length: folders - 1 }, (_, i) => path.join(root, `source${i + 2}`));
+  await Promise.all([source, target, keys, ...more].map(p => fs.mkdir(p)));
   await fs.writeFile(path.join(source, 'work.txt'), 'hello');
   let now = Date.now(); const calls = [], snapshots = [], seen = {}, stdin = []; const fail = { backup: null, check: null, readData: null, items: [], list: null };
   const repositoryId = 'd'.repeat(64);
   const engine = new BackupEngine({ stateDir: path.join(root, 'state'), resticPath: 'fixture', secretStore, now: () => now, intervalMs: 3600000, runner: async (args, opts = {}) => {
     calls.push(args.includes('--stdin') ? 'backup-list' : args[0]); seen[args[0]] = args;
-    const tagged = () => snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
+    const tagged = () => snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, paths: ['/workbackup-unreadable.json'], tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
     // The list of a partial snapshot: its own stdin snapshot (4.2 「완료본 · 부분 판 · 채움 판」).
     if (args[0] === 'backup' && args.includes('--stdin')) { if (fail.list) throw Object.assign(new Error('fixture list'), { exitCode: fail.list }); stdin.push(opts.stdinText); if (!fail.listGhost) tagged(); return ''; }
     if (args[0] === 'cat') return JSON.stringify({ id: repositoryId });
     if (args[0] === 'backup') {
       // A real exit 3 (some files unreadable) still writes a pending snapshot (review B5).
       if (fail.backup && fail.backup !== 3) throw Object.assign(new Error('fixture backup'), { exitCode: fail.backup });
-      snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
+      snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, paths: args.slice(args.indexOf('--') + 1), tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
       if (fail.backup === 3) { for (const item of fail.items) opts.onErrorItem?.(item); throw Object.assign(new Error('fixture partial'), { exitCode: 3 }); }
       return '';
     }
@@ -43,10 +44,10 @@ async function fixture({ provider = 'local' } = {}) {
   } });
   await engine.open();
   if (provider === 'local') {
-    await engine.setup({ sources: [source], parent: target });
+    await engine.setup({ sources: [source, ...more], parent: target });
     await engine.saveRecoveryKit(path.join(keys, 'kit.json'));
   }
-  return { engine, calls, fail, seen, snapshots, stdin, advance: ms => { now += ms; }, root };
+  return { engine, calls, fail, seen, snapshots, stdin, more, advance: ms => { now += ms; }, root };
 }
 
 test('not configured, off and read-only are skipped without running restic', async () => {
@@ -268,4 +269,136 @@ test('when the full data check finds the repository busy, the sample restore and
   assert.equal((await engine.runOnce({})).outcome, 'complete');
   assert.deepEqual(calls.filter(c => ['forget', 'prune', 'dump'].includes(c)), []);
   assert.match(engine.config.warning, /전체 데이터 점검은 다음 회차로/);
+});
+
+// 4.2 「사라진 원본 폴더」: a chosen folder that is not there (an unplugged drive, a folder moved or deleted).
+test('a folder that cannot be found is left out; the others are backed up and the backups that hold it are kept', async () => {
+  const { engine, seen, advance, snapshots, more } = await fixture({ folders: 2 });
+  const [first, second] = engine.config.sources;
+  await engine.setAutomatic(true);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  const held = snapshots.at(-1).id;
+  await fs.rm(more[0], { recursive: true });
+  advance(61 * 60000);
+  const r = await engine.runOnce({});
+  assert.equal(r.outcome, 'complete');
+  assert.equal(r.missing, 1);
+  assert.deepEqual(seen.backup.slice(seen.backup.indexOf('--') + 1), [first], 'only the folder that is there');
+  assert.equal(engine.config.lastBackup.id, snapshots.at(-1).id);
+  assert.deepEqual(engine.getState().missingSources, [second]);
+  assert.match(engine.config.warning, /폴더 1개를 찾을 수 없어 그 폴더를 빼고 백업했습니다/);
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).missing, 1);
+  assert.deepEqual(snapshots.map(s => s.id).sort(), [held, engine.config.lastBackup.id].sort(), 'the newest backup and the last one that has the missing folder');
+  await fs.mkdir(more[0]);
+  advance(2 * DAY);
+  const back = await engine.runOnce({});
+  assert.equal(back.outcome, 'complete');
+  assert.equal(back.missing, undefined);
+  assert.equal(engine.config.warning, null);
+  assert.deepEqual(engine.getState().missingSources, []);
+  assert.deepEqual(snapshots.map(s => s.id), [engine.config.lastBackup.id], 'found again: the hold goes');
+});
+
+test('with no chosen folder there the run fails, deletes nothing and says how many are missing', async () => {
+  const { engine, snapshots, advance } = await fixture();
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const before = snapshots.map(s => s.id);
+  await fs.rm(engine.config.sources[0], { recursive: true });
+  advance(2 * DAY);
+  const r = await engine.runOnce({});
+  assert.equal(r.outcome, 'failed');
+  assert.equal(r.missing, 1);
+  assert.deepEqual(snapshots.map(s => s.id), before);
+  assert.match(engine.config.lastError, /백업할 폴더를 모두 찾을 수 없습니다/);
+});
+
+test('only "not there" leaves a folder out: one that cannot be looked at, or is now a file, still stops the run', async () => {
+  const { engine, snapshots, advance, more } = await fixture({ folders: 2 });
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const before = snapshots.length;
+  const fsp = require('node:fs/promises'), lstat = fsp.lstat, second = engine.config.sources[1];
+  fsp.lstat = async (p, ...rest) => { if (p === second) throw Object.assign(new Error('fixture denied'), { code: 'EPERM' }); return lstat(p, ...rest); };
+  advance(61 * 60000);
+  let r;
+  try { r = await engine.runOnce({}); } finally { fsp.lstat = lstat; }
+  assert.equal(r.outcome, 'failed');
+  assert.equal(r.missing, undefined);
+  await fs.rm(more[0], { recursive: true });
+  await fs.writeFile(more[0], 'now a file');
+  advance(61 * 60000);
+  r = await engine.runOnce({});
+  assert.equal(r.outcome, 'failed');
+  assert.equal(r.missing, undefined);
+  assert.equal(snapshots.length, before);
+});
+
+test('a missing folder keeps the newest complete backup that has it and, when newer, the newest partial one with its list', async () => {
+  const { engine, fail, advance, snapshots, more } = await fixture({ folders: 2 });
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const complete = snapshots.at(-1).id;
+  advance(61 * 60000); fail.backup = 3; fail.items = ['C:\\work\\mail.pst'];
+  assert.equal((await engine.runOnce({})).outcome, 'partial');
+  const partial = engine.config.lastPartial.id, list = snapshots.find(s => s.tags.includes('meta')).id;
+  fail.backup = null; fail.items = [];
+  await fs.rm(more[0], { recursive: true });
+  advance(61 * 60000);
+  assert.equal((await engine.runOnce({})).missing, 1);
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).missing, 1);
+  assert.deepEqual(snapshots.map(s => s.id).sort(), [engine.config.lastBackup.id, complete, partial, list].sort());
+});
+
+// 끝판 카본 A1 · A2: the first backup is partial (a program kept a file open) and there is no complete one yet.
+test('with no complete backup yet, a partial one takes its place — restorable, kept with its list; a later one does not', async () => {
+  const { engine, fail, advance, snapshots } = await fixture();
+  await engine.setAutomatic(true);
+  fail.backup = 3; fail.items = ['C:\\work\\mail.pst'];
+  const r = await engine.runOnce({});
+  assert.equal(r.outcome, 'partial');
+  const first = snapshots.find(s => s.tags.includes('partial'));
+  assert.ok(first.tags.includes(VERIFIED), 'what a restore uses');
+  assert.equal(engine.config.lastBackup.id, first.id);
+  assert.equal(engine.config.lastPartial.id, first.id);
+  assert.match(engine.config.warning, /파일 1개를 이번 백업에 담지 못했습니다/, 'its own warning, not a held-back cleanup');
+  const firstList = snapshots.find(s => s.tags.includes('meta')).id;
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).outcome, 'partial');
+  const second = engine.config.lastPartial.id;
+  assert.notEqual(second, first.id);
+  assert.equal(engine.config.lastBackup.id, first.id, 'a later partial one does not take the place');
+  assert.ok(!snapshots.find(s => s.id === second).tags.includes(VERIFIED));
+  const secondList = snapshots.filter(s => s.tags.includes('meta')).map(s => s.id).find(id => id !== firstList);
+  assert.deepEqual(snapshots.map(s => s.id).sort(), [first.id, firstList, second, secondList].sort(), 'both kept, each with its list');
+  fail.backup = null; fail.items = [];
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  assert.deepEqual(snapshots.map(s => s.id), [engine.config.lastBackup.id], 'a complete one takes over and the rest go');
+});
+
+// GPT workbackup-missing GA1: a vault left by the previous version — partial snapshots with their lists, no complete one.
+test('partial snapshots from before the complete place stay while that place is itself partial', async () => {
+  const { engine, fail, advance, snapshots } = await fixture();
+  await engine.setAutomatic(true);
+  fail.backup = 3; fail.items = ['C:\\work\\a.pst'];
+  await engine.runOnce({});
+  // As the previous version left it: partial, its list, and no complete place.
+  const old = snapshots.find(s => s.tags.includes('partial'));
+  old.tags = old.tags.filter(t => t !== VERIFIED); engine.config.lastBackup = null;
+  const oldList = snapshots.find(s => s.tags.includes('meta')).id;
+  advance(2 * DAY); fail.items = ['C:\\work\\b.pst'];
+  assert.equal((await engine.runOnce({})).outcome, 'partial');
+  const place = engine.config.lastBackup.id;
+  assert.notEqual(place, old.id);
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).outcome, 'partial');
+  assert.ok(snapshots.some(s => s.id === old.id) && snapshots.some(s => s.id === oldList), 'b.pst is only in the old one: it stays with its list');
+  assert.ok(snapshots.some(s => s.id === place));
+  fail.backup = null; fail.items = [];
+  advance(2 * DAY);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  assert.deepEqual(snapshots.map(s => s.id), [engine.config.lastBackup.id], 'a backup that reads everything ends it');
 });

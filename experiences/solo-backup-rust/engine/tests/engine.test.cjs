@@ -125,7 +125,8 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
   await t.test('missing source, partial exit and check failure never replace last complete backup', async () => {
     const run = engine.run;
     engine.config.sources = [path.join(root, 'missing')];
-    await assert.rejects(engine.backupNow(), /ENOENT/); assert.equal(engine.config.lastBackup.id, lastGood);
+    await assert.rejects(engine.backupNow(), /백업할 폴더를 모두 찾을 수 없습니다/); assert.equal(engine.config.lastBackup.id, lastGood);
+    assert.deepEqual(engine.getState().missingSources, [path.join(root, 'missing')]);
     engine.config.sources = [source];
     engine.run = async function (args, options) { const output = await run.call(this, args, options); if (args[0] === 'backup') { const e = new Error('일부 파일을 읽지 못했습니다.'); e.exitCode = 3; throw e; } return output; };
     await assert.rejects(engine.backupNow(), /일부 파일/); assert.equal(engine.config.lastBackup.id, lastGood);
@@ -183,15 +184,13 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     const second = path.join(root, '두 번째 작업'); await fs.mkdir(second);
     await fs.writeFile(path.join(second, 'original.dat'), crypto.randomBytes(65536));
     await fs.link(path.join(second, 'original.dat'), path.join(second, 'hardlink.dat'));
-    const sources = engine.config.sources;
-    engine.config.sources = [...sources, second];
+    engine.config.sources = [...engine.config.sources, second];
     await engine.backupNow(); await engine.restoreLatest({ parent: restore });
     const mapping = JSON.parse(await fs.readFile(path.join(engine.config.lastRestore.path, '복구경로.json'), 'utf8'));
     const folder = path.join(engine.config.lastRestore.path, mapping.find(m => m.original === second).restoredFolder);
     assert.equal(digest(await fs.readFile(path.join(folder, 'original.dat'))), digest(await fs.readFile(path.join(folder, 'hardlink.dat'))));
     assert.notEqual((await fs.stat(path.join(folder, 'original.dat'))).ino, (await fs.stat(path.join(folder, 'hardlink.dat'))).ino);
     assert.ok(!(await files(engine.config.lastRestore.path)).some(p => /\.(zip|tar)$/.test(p)));
-    engine.config.sources = sources;
   });
   await t.test('a failing streaming consumer settles the child and allows a subsequent repository check', async () => {
     const latest = (await engine.snapshots([VERIFIED]))[0];
@@ -229,6 +228,35 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     assert.equal(remaining.length, 1);
     assert.equal(remaining[0].id, engine.config.lastBackup.id);
     await engine.restoreLatest({ parent: restore });
+  });
+  await t.test('a folder that cannot be found is left out; the backup that holds it is kept and restored with the rest (4.2)', async () => {
+    const second = path.join(root, '두 번째 작업'), away = path.join(root, '빼 둔 드라이브');
+    assert.equal(engine.config.sources.length, 2);
+    const held = engine.config.lastBackup.id, original = digest(await fs.readFile(path.join(second, 'original.dat')));
+    await fs.rename(second, away);
+    try {
+      await engine.backupNow();
+      const [latest] = await engine.snapshots([VERIFIED]);
+      assert.equal(latest.id, engine.config.lastBackup.id);
+      assert.notEqual(latest.id, held);
+      assert.deepEqual(latest.paths, [engine.config.sources[0]], 'restic records only the folder that is there');
+      assert.deepEqual(engine.getState().missingSources, [engine.config.sources[1]]);
+      assert.match(engine.config.warning, /폴더 1개를 찾을 수 없어/);
+      clock += 3 * DAY; await engine.backupNow();
+      const kept = await engine.snapshots();
+      assert.equal(kept.length, 2);
+      assert.ok(kept.some(s => s.id === held), 'the last backup with the missing folder stays');
+      await engine.restoreLatest({ parent: restore });
+      const mapping = JSON.parse(await fs.readFile(path.join(engine.config.lastRestore.path, '복구경로.json'), 'utf8'));
+      const old = mapping.find(m => m.original === engine.config.sources[1]);
+      assert.equal(old.backupAt, kept.find(s => s.id === held).time, 'from the backup that has it, and says when');
+      assert.equal(digest(await fs.readFile(path.join(engine.config.lastRestore.path, old.restoredFolder, 'original.dat'))), original);
+      assert.equal(mapping.length, 2);
+    } finally { await fs.rename(away, second); }
+    await engine.backupNow();
+    assert.deepEqual(engine.getState().missingSources, []);
+    clock += 3 * DAY; await engine.backupNow();
+    assert.equal((await engine.snapshots()).length, 1, 'found again: the hold goes');
   });
   await t.test('scheduler waits for interval and does not overlap an active job', async () => {
     await engine.setAutomatic(true); let calls = 0; const backup = engine.backupNow;

@@ -16,6 +16,14 @@ const selection = require('./restore-select.cjs');
 const APP = 'solo-work-backup-v1';
 const VERIFIED = 'complete-structure-checked';
 const DAY = 86400000;
+/** Folder paths compare as Windows does, without regard to case. */
+const same = (a, b) => typeof a === 'string' && typeof b === 'string' && a.replace(/[\\/]+$/, '').toLowerCase() === b.replace(/[\\/]+$/, '').toLowerCase();
+const holds = (snapshot, folder) => Array.isArray(snapshot?.paths) && snapshot.paths.some(p => same(p, folder));
+/** Each backed-up folder once, in the order first met. */
+const foldersOf = snapshots => snapshots.flatMap(s => Array.isArray(s.paths) ? s.paths : []).filter((p, i, all) => typeof p === 'string' && all.findIndex(q => same(q, p)) === i);
+const missingWarning = missing => missing.length ? `백업할 폴더 ${missing.length}개를 찾을 수 없어 그 폴더를 빼고 백업했습니다. 외장 드라이브라면 다시 연결해 주세요. 그 폴더가 든 이전 백업은 지우지 않습니다.` : null;
+/** The run record's count of folders not found, when there were any. */
+const gone = n => n > 0 ? { missing: n } : {};
 /** Unreadable items kept for a partial snapshot's list; past this the list says it is cut short. */
 const UNREADABLE_MAX = 200000;
 /** restic's JSON error lines, however they are split into chunks: each `item` goes to onItem. A line past
@@ -142,7 +150,7 @@ class BackupEngine extends EventEmitter {
       providerType: this.providerType, provider: c?.provider || null, initializing: !!c && !c.repositoryId,
       cloudConnection: this.isCloud() && c && !c.repositoryId && this.cloudCredentials ? { endpoint: c.provider.endpoint, bucket: c.provider.bucket } : !c && this.connection ? { endpoint: this.connection.endpoint, bucket: this.connection.bucket } : null,
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
-      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null,
+      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, missingSources: c?.missingSources || [],
       lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
@@ -471,7 +479,7 @@ class BackupEngine extends EventEmitter {
       this.lastAttempt = this.now();
       this.config.lastAttemptAt = new Date(this.lastAttempt).toISOString(); await this.save();
       await this.identity();
-      await validateSources(this.config.sources, this.forbidden());
+      const { present, missing } = await this.sourcesNow();
       const runTag = `run:${crypto.randomUUID()}`;
       this.stage('작업 파일 백업 중');
       // OneDrive online-only files would be downloaded by reading them; OneDrive keeps them (4.2 step 7, review GA1).
@@ -479,7 +487,7 @@ class BackupEngine extends EventEmitter {
       // as a partial one (4.2 「완료본 · 부분 판 · 채움 판」); without a list it stays pending and goes as before.
       const unreadable = []; let partial = false, cut = false;
       try {
-        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...this.config.sources],
+        await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
           { onErrorItem: item => { if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true; } });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
@@ -499,16 +507,24 @@ class BackupEngine extends EventEmitter {
       try { await this.run(['check'], { timeoutMs: 1800000 }); }
       catch (e) { if (e.exitCode !== 11) this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '저장소 점검이 끝나지 않았습니다. 기존 백업의 현재 무결성도 보장하지 않습니다.' }; throw e; }
       if (partial) {
-        // A partial snapshot never takes the complete one's place: the last complete backup stays what a restore uses.
+        // A partial snapshot does not take the complete one's place: the last complete backup stays what a restore uses.
+        // With none yet, what it could not read is in no backup at all, so it is the best there is and takes that place
+        // until a complete one comes (4.2 「한 번도 읽힌 적 없는 파일」; 끝판 카본 A1 · A2 — else nothing to restore,
+        // 「첫 백업이 끝났습니다」 with nothing to restore, and no 「사흘 넘게」).
+        const first = !this.config.lastBackup;
         this.stage('부분 백업 기록 중');
-        await this.run(['tag', '--add', 'partial', '--remove', 'pending', pending[0].id]);
+        await this.run(['tag', '--add', 'partial', ...(first ? ['--add', VERIFIED] : []), '--remove', 'pending', pending[0].id]);
         const marked = await this.snapshots([runTag, 'partial']);
         if (marked.length !== 1) throw new Error('부분 백업 기록을 확인하지 못했습니다.');
         const s = marked[0];
         this.config.lastPartial = { id: s.id, at: s.time, unreadable: unreadable.length, cut, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
+        if (first) {
+          if (!s.tags.includes(VERIFIED)) throw new Error('부분 백업 기록을 확인하지 못했습니다.');
+          this.config.lastBackup = { id: s.id, at: s.time, files: this.config.lastPartial.files, bytes: this.config.lastPartial.bytes };
+        }
         this.lastSummary = s.summary || null; this.lastRun = 'partial';
         // No promise that an earlier backup holds them: a file made since the last complete one is in none (GPT GA2).
-        this.config.warning = `다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`;
+        this.config.warning = [`다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`, missingWarning(missing)].filter(Boolean).join(' ');
         await this.save();
       } else {
         this.stage('백업 완료 기록 중');
@@ -519,7 +535,7 @@ class BackupEngine extends EventEmitter {
         this.config.lastBackup = { id: s.id, at: s.time, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
         this.config.lastPartial = null;
         this.lastSummary = s.summary || null; this.lastRun = 'complete';
-        this.config.warning = null; await this.save();
+        this.config.warning = missingWarning(missing); await this.save();
       }
       let busy = false;
       if (!this.config.health || this.config.health.status !== 'ok' || this.now() - Date.parse(this.config.health.checkedAt) >= (this.isCloud() ? 30 : 1) * DAY) {
@@ -535,6 +551,22 @@ class BackupEngine extends EventEmitter {
         }
       }
       await this.save(); return this.getState();
+  }
+  /** The chosen folders that are there now. One that is gone — an unplugged drive, a folder moved or deleted — is
+   *  left out of this backup, and the backups that hold it are kept (retain) and restored (restoreLatest); with
+   *  none there the run fails as before (4.2 「사라진 원본 폴더」). Only "not there" counts: a folder that is there
+   *  but cannot be read, or is no longer a plain folder, still stops the run. */
+  async sourcesNow() {
+    const present = [], missing = [];
+    for (const source of this.config.sources) {
+      try { await fs.lstat(source); present.push(source); }
+      catch (e) { if (e.code !== 'ENOENT') throw e; missing.push(source); }
+    }
+    this.lastMissing = missing.length;
+    this.config.missingSources = missing.length ? missing : null;
+    if (!present.length) throw new Error('백업할 폴더를 모두 찾을 수 없습니다. 외장 드라이브라면 다시 연결해 주세요. 그 폴더가 든 이전 백업은 지우지 않습니다.');
+    await validateSources(present, this.forbidden());
+    return { present, missing };
   }
   async fullCheck() {
     this.stage('전체 데이터 점검 중 — 큰 백업은 오래 걸릴 수 있습니다');
@@ -605,8 +637,25 @@ class BackupEngine extends EventEmitter {
     const keep = new Set([latest.id]);
     // A partial snapshot without exactly one list is never counted, so it cannot push out a good one (GPT GA1).
     const listsOf = s => { const run = s.tags.find(t => t.startsWith('run:')); return run ? all.filter(x => x.tags.includes(run) && x.tags.includes('meta')) : []; };
-    const partial = all.find(s => s.tags.includes('partial') && s.hostname === this.config.vaultId && listsOf(s).length === 1);
-    if (partial && Date.parse(partial.time) > Date.parse(latest.time)) { keep.add(partial.id); keep.add(listsOf(partial)[0].id); }
+    const own = all.filter(s => s.hostname === this.config.vaultId);
+    const listed = s => s.tags.includes('partial') && listsOf(s).length === 1;
+    const hold = s => { keep.add(s.id); if (s.tags.includes('partial')) for (const list of listsOf(s)) keep.add(list.id); };
+    hold(latest);
+    // While the complete place is itself a partial snapshot (no backup has read everything yet), the listed partial
+    // snapshots before it stay too: a file only they hold — one the later ones could not read — is in no other. This
+    // is the vault whose first backups were partial under the previous version (GPT workbackup-missing GA1); a
+    // backup that reads everything ends it, and then what is in none of its files is gone from the source.
+    if (latest.tags.includes('partial')) for (const s of own) if (listed(s) && Date.parse(s.time) < Date.parse(latest.time)) hold(s);
+    const partial = own.find(listed);
+    if (partial && Date.parse(partial.time) > Date.parse(latest.time)) hold(partial);
+    // A folder the latest complete snapshot lacks (it could not be found) keeps, the same way, the newest complete
+    // snapshot that has it and — when newer — the newest partial one: an unplugged drive's only backup stays (4.2).
+    for (const folder of foldersOf(own.filter(s => s.tags.includes(VERIFIED) || listed(s)))) {
+      if (holds(latest, folder)) continue;
+      const complete = own.find(s => s.tags.includes(VERIFIED) && holds(s, folder)), newer = own.find(s => listed(s) && holds(s, folder));
+      if (complete) hold(complete);
+      if (newer && (!complete || Date.parse(newer.time) > Date.parse(complete.time))) hold(newer);
+    }
     const ids = all.filter(s => !keep.has(s.id) && s.hostname === this.config.vaultId && now - Date.parse(s.time) > DAY).map(s => s.id);
     if (!ids.length) return;
     this.stage('24시간이 지난 이전 백업 정리 중');
@@ -632,20 +681,27 @@ class BackupEngine extends EventEmitter {
         await require('./recommended.cjs').restoreWhole(this, base, latest);
         return this.getState();
       }
-      if (!Array.isArray(latest.paths) || !latest.paths.length || latest.paths.length > 30 || latest.paths.some(p => typeof p !== 'string' || !/^[A-Za-z]:[\\/]/.test(p) || p.split(/[\\/]/).some(part => part === '..' || part === '.'))) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
+      const sane = s => Array.isArray(s.paths) && s.paths.length && s.paths.length <= 30 && !s.paths.some(p => typeof p !== 'string' || !/^[A-Za-z]:[\\/]/.test(p) || p.split(/[\\/]/).some(part => part === '..' || part === '.'));
+      if (!sane(latest)) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
+      // A folder missing from the latest backup comes from the newest complete one that has it — the backups retain()
+      // keeps for it (4.2 「사라진 원본 폴더」); 복구경로.json says from when.
+      const complete = (await this.snapshots([VERIFIED])).filter(s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1'));
+      const sets = latest.paths.map(original => ({ snapshot: latest, original }));
+      for (const folder of foldersOf(complete)) if (!sets.some(set => same(set.original, folder))) sets.push({ snapshot: complete.find(s => holds(s, folder)), original: folder });
+      if (sets.length > 30 || sets.some(set => !sane(set.snapshot))) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
       let target;
       try {
         this.stage('복구할 파일 목록 확인 중');
         const plans = [];
-        for (const [index, original] of latest.paths.entries()) {
+        for (const [index, { snapshot, original }] of sets.entries()) {
           const subtree = '/' + original.replace(/^([A-Za-z]):/, '$1').replaceAll('\\', '/').replace(/\/+$/, '');
-          const selector = `${latest.id}:${subtree}`;
+          const selector = `${snapshot.id}:${subtree}`;
           let manifest;
           // A subtree selector resolves only directories. File sources fail here,
           // before a destination is created. List every node, including hardlinks.
           await this.run(['ls', '--json', '--recursive', selector], { consumeStdout: async stream => { manifest = await readManifest(stream, base); } });
           const name = `${String(index + 1).padStart(2, '0')}-${path.win32.basename(original).replace(/[<>:"/\\|?*]/g, '_') || '드라이브'}`;
-          plans.push({ original, selector, name, manifest });
+          plans.push({ original, selector, name, manifest, backupAt: snapshot.time });
         }
         const space = await fs.statfs(base, { bigint: true });
         const required = plans.reduce((sum, p) => sum + [...p.manifest.nodes.values()].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 0n), 16n * 1024n * 1024n);
@@ -656,10 +712,10 @@ class BackupEngine extends EventEmitter {
         // Export authenticated contents rather than original SID/DACL metadata. Each
         // selected subtree is extracted into fresh files and verified after writing.
         const mapping = [];
-        for (const { original, selector, name, manifest } of plans) {
+        for (const { original, selector, name, manifest, backupAt } of plans) {
           const destination = path.join(target, name); await fs.mkdir(destination);
           await this.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: stream => extractVerified(stream, destination, manifest) });
-          mapping.push({ original, restoredFolder: name });
+          mapping.push({ original, restoredFolder: name, backupAt });
         }
         await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify(mapping, null, 2), { flag: 'wx' });
       }
@@ -846,19 +902,19 @@ class BackupEngine extends EventEmitter {
     const unlock = await this.unlockStale();
     const before = c.lastBackup?.id || null, started = this.now();
     try {
-      this.lastRun = null;
+      this.lastRun = null; this.lastMissing = 0;
       await this.backupNow();
       const s = this.config.lastBackup, sum = this.lastSummary || {}, num = v => Number.isFinite(v) ? v : null;
       if (this.lastRun === 'partial') {
         const p = this.config.lastPartial;
-        return { outcome: 'partial', unreadable: p?.unreadable ?? null, unlock, durationMs: this.now() - started, newSnapshot: true, files: p?.files ?? null, bytes: p?.bytes ?? null,
+        return { outcome: 'partial', unreadable: p?.unreadable ?? null, ...gone(this.lastMissing), unlock, durationMs: this.now() - started, newSnapshot: true, files: p?.files ?? null, bytes: p?.bytes ?? null,
           filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
       }
-      return { outcome: 'complete', unlock, durationMs: this.now() - started, newSnapshot: !!s?.id && s.id !== before, files: s?.files ?? null, bytes: s?.bytes ?? null,
+      return { outcome: 'complete', ...gone(this.lastMissing), unlock, durationMs: this.now() - started, newSnapshot: !!s?.id && s.id !== before, files: s?.files ?? null, bytes: s?.bytes ?? null,
         filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
     } catch (e) {
       const exitCode = e.exitCode ?? null;
-      return { outcome: exitCode === 11 ? 'busy' : exitCode === 3 ? 'partial' : 'failed', exitCode, unlock, durationMs: this.now() - started, resticStartedAt: this.resticStartedAt };
+      return { outcome: exitCode === 11 ? 'busy' : exitCode === 3 ? 'partial' : 'failed', exitCode, ...gone(this.lastMissing), unlock, durationMs: this.now() - started, resticStartedAt: this.resticStartedAt };
     }
   }
   startScheduler(pollMs = 30000) { this.stopScheduler(); this.timer = setInterval(() => { void this.tick(); }, pollMs); this.timer.unref?.(); }

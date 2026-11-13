@@ -52,7 +52,7 @@ function appWorker(stateDir, { restic, dialogs = [] }) {
 /** Local profile: sources → data, repository under repoParent, recovery kit in keyFile. */
 async function setupLocal({ state, restic, data, repoParent, keyFile }) {
   const app = appWorker(state, { restic, dialogs: [
-    { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
+    { method: 'dialog.open', value: { canceled: false, filePaths: [].concat(data) } },
     { method: 'dialog.open', value: { canceled: false, filePaths: [repoParent] } },
     { method: 'dialog.save', value: { canceled: false, filePath: keyFile } }] });
   if ((await app.call('$boot')).ok !== true) throw Error('BOOT');

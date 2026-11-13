@@ -36,14 +36,16 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-runexe-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const data = path.join(root, 'data'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state'), inventory = path.join(root, 'inventory');
-  for (const d of [data, repo, keys, state, inventory]) fs.mkdirSync(d, { recursive: true });
+  // An empty second folder, taken away at the end (4.2 「사라진 원본 폴더」).
+  const spare = path.join(root, 'spare');
+  for (const d of [data, spare, repo, keys, state, inventory]) fs.mkdirSync(d, { recursive: true });
   fs.writeFileSync(path.join(data, '보고서.txt'), 'stage 1 run executable');
   // The run executable does not start the inventory tools; stand-ins keep the manifest whole.
   for (const name of ['WorkBackupInventory.exe', 'WorkBackupPlanner.exe']) fs.writeFileSync(path.join(inventory, name), 'stand-in');
   const resources = path.join(root, 'resources');
   await stage({ node: process.execPath, restic, output: resources, client: '--none', inventoryBin: inventory });
 
-  await setupLocal({ state, restic, data, repoParent: repo, keyFile: path.join(keys, 'recovery.json') });
+  await setupLocal({ state, restic, data: [data, spare], repoParent: repo, keyFile: path.join(keys, 'recovery.json') });
 
   const env = { ...process.env, SOLO_BACKUP_TEST_STATE: state, SWB_RESOURCES: resources };
   // Scheduler run with automatic off: recorded as skipped, no backup.
@@ -116,10 +118,17 @@ test('WorkBackupRun.exe: off → skipped, manual → complete, held lock → bus
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(state, 'notify.json'), 'utf8')), { v: 1, days: {}, once: ['first-backup'] });
   assert.equal(await runExe(['--run', 'hourly', '--test-mode'], env), 0);
   assert.equal(lines(state)[7].notify, undefined, 'told once, and a fresh backup is not stale');
+  // A chosen folder taken away: the run backs up the one that is there, counts the other and tells it.
+  fs.rmSync(spare, { recursive: true });
+  assert.equal(await runExe(['--run', 'manual', '--test-mode'], env), 0);
+  const gone = lines(state)[8];
+  assert.equal(gone.profiles.local.outcome, 'complete', JSON.stringify(gone));
+  assert.equal(gone.profiles.local.missing, 1);
+  assert.deepEqual(gone.notify, [{ problem: 'missing', shown: true }]);
 
   const text = fs.readFileSync(path.join(state, 'runs.jsonl'), 'utf8');
   for (const p of [root, data, repo, keys, os.homedir()]) {
     for (const form of [p, p.replaceAll(path.sep, '/')]) assert.ok(!text.includes(JSON.stringify(form).slice(1, -1)) && !text.includes(form), 'no path in runs.jsonl');
   }
-  for (const name of ['보고서.txt', 'recovery.json', path.basename(root)]) assert.ok(!text.includes(name), 'no file or folder name in runs.jsonl');
+  for (const name of ['보고서.txt', 'recovery.json', 'spare', path.basename(root)]) assert.ok(!text.includes(name), 'no file or folder name in runs.jsonl');
 });
