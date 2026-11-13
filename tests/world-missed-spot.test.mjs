@@ -286,3 +286,14 @@ test('화면: 다시 만나기 줄의 점은 상태를 읽어 준다 · 영어 �
  assert.equal(tr('position.missed.practice.done',{n:1,right:1},'en'),'1 new question · 1 right on your own');
  assert.equal(tr('position.missed.practice.done',{n:3,right:2},'en'),'3 new questions · 2 right on your own');
 });
+
+test('지금 확인할 창이어도 맞는 새 문항이 없으면 「확인할 수 있어요」라고 하지 않는다(GPT GA2)',()=>{
+ const run=play([RECORDED.first,RECORDED.second]),now=run.now,DAY=86400000;
+ const items=[{id:'x:d1',gameId:'world-practice',measure:{skillId:NEG},window:'d1',status:'observed',dueAt:new Date(now-6*DAY).toISOString(),sourceAt:'2026-11-14T00:00:00.000Z'},
+  {id:'x:d7',gameId:'world-practice',measure:{skillId:NEG},window:'d7',status:'due',dueAt:new Date(now-DAY).toISOString(),sourceAt:'2026-11-14T00:00:00.000Z'}];
+ const without=cardOf(run,{projection:{items},now}).card,withItem=cardOf(run,{projection:{items},followupOpen:id=>id==='x:d7',now}).card;
+ assert.equal(step(without,'delayed').open,false);assert.equal(step(withItem,'delayed').open,true);
+ const a=renderMissedSpot(without,helpers('ko')),b=renderMissedSpot(withItem,helpers('ko'));
+ assert.match(a,/1번 다시 확인함 · 확인할 때예요/);assert.doesNotMatch(a,/지금 확인할 수 있어요/);
+ assert.match(b,/1번 다시 확인함 · 지금 확인할 수 있어요/);
+});

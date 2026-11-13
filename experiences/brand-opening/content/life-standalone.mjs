@@ -24922,7 +24922,7 @@ function msPracticeStep({ skillId, since, ix, independent, homework, policy }) {
   const row = (Array.isArray(homework) ? homework : []).find((value) => value?.skillId === skillId);
   return row && !row.shortage ? { step: "homework", state: "planned" } : null;
 }
-function msDelayedStep({ skillId, projection, practiceOpen, now }) {
+function msDelayedStep({ skillId, projection, practiceOpen, followupOpen, now }) {
   const all = (Array.isArray(projection?.items) ? projection.items : []).filter((row) => row?.gameId === "world-practice" && row.measure?.skillId === skillId && ["d1", "d7", "d30"].includes(row.window));
   const latest = all.map((row) => row.sourceAt).filter((value) => Number.isFinite(Date.parse(value))).sort().at(-1);
   const rows2 = latest ? all.filter((row) => row.sourceAt === latest) : all;
@@ -24930,11 +24930,19 @@ function msDelayedStep({ skillId, projection, practiceOpen, now }) {
     const due = rows2.find((row) => row.status === "due"), observed = rows2.filter((row) => row.status === "observed").length;
     const upcoming = rows2.filter((row) => row.status === "not_due" && Number.isFinite(Date.parse(row.dueAt)) && Date.parse(row.dueAt) >= now).sort((a, b) => Date.parse(a.dueAt) - Date.parse(b.dueAt))[0];
     if (!due && !upcoming && !observed) return null;
-    return { step: "delayed", state: due || upcoming ? "planned" : "done", observed, due: !!due, window: (due || upcoming)?.window ?? null, dueAt: due ? null : upcoming?.dueAt ?? null };
+    let open = false;
+    if (due) {
+      try {
+        open = followupOpen?.(due.id) === true;
+      } catch {
+        open = false;
+      }
+    }
+    return { step: "delayed", state: due || upcoming ? "planned" : "done", observed, due: !!due, open, window: (due || upcoming)?.window ?? null, dueAt: due ? null : upcoming?.dueAt ?? null };
   }
   return practiceOpen ? { step: "delayed", state: "planned", observed: 0, due: false, window: null, dueAt: null } : null;
 }
-function buildMissedSpot({ map, summary = null, events = [], homework = null, projection = null, practiceOpen = () => false, now = Date.now(), policy = MISSED_SPOT_POLICY } = {}) {
+function buildMissedSpot({ map, summary = null, events = [], homework = null, projection = null, practiceOpen = () => false, followupOpen = () => null, now = Date.now(), policy = MISSED_SPOT_POLICY } = {}) {
   if (!msRecord(map) || !Array.isArray(map.skills) || map.evidenceComplete !== true) return null;
   const skills = new Map(map.skills.map((skill3) => [skill3.id, skill3]));
   let skill2 = null, missed = [];
@@ -24972,7 +24980,7 @@ function buildMissedSpot({ map, summary = null, events = [], homework = null, pr
     msSpotStep({ missed: inGame, rows: rows2, skillId: skill2.id, independent }),
     msLaterStep({ rows: rows2, missedSittings, skillId: skill2.id, independent, ix }),
     msPracticeStep({ skillId: skill2.id, since: Number.isFinite(firstMiss) ? firstMiss : -Infinity, ix, independent, homework, policy }),
-    msDelayedStep({ skillId: skill2.id, projection, practiceOpen: open, now })
+    msDelayedStep({ skillId: skill2.id, projection, practiceOpen: open, followupOpen, now })
   ].filter(Boolean);
   return {
     policy: policy.version,
@@ -25013,7 +25021,7 @@ function renderMissedSpot(card, { t: t3, has = () => true, formatDate: formatDat
     if (row.step === "practice") return t3("position.missed.practice.done", { n: row.n, right: row.right });
     if (row.step === "homework") return t3("position.missed.homework.planned");
     if (row.step === "delayed") {
-      const next = row.due ? t3("position.missed.delayed.due") : row.dueAt ? t3("position.missed.delayed.next", { date: day(row.dueAt) }) : "";
+      const next = row.due ? t3(row.open ? "position.missed.delayed.due" : "position.missed.delayed.dueCheck") : row.dueAt ? t3("position.missed.delayed.next", { date: day(row.dueAt) }) : "";
       const done = row.observed ? t3("position.missed.delayed.observed", { n: row.observed }) : "";
       return [done, next].filter(Boolean).join(" \xB7 ") || t3("position.missed.delayed.planned");
     }
@@ -25984,7 +25992,25 @@ function createWorldEducation({
       } catch {
         projection = null;
       }
-      const missed = buildMissedSpot({ map, summary, events, homework: current?.examPlan?.homework ?? null, projection, practiceOpen: (id) => routes.get(id)?.route === "practice", now: Date.now() });
+      let delayed = null;
+      try {
+        delayed = delayedRows();
+      } catch {
+        delayed = null;
+      }
+      const missed = buildMissedSpot({
+        map,
+        summary,
+        events,
+        homework: current?.examPlan?.homework ?? null,
+        projection,
+        practiceOpen: (id) => routes.get(id)?.route === "practice",
+        followupOpen: (id) => {
+          const row = delayed?.rows?.find((value) => value.id === id);
+          return row ? row.status === "due" && row.available === true : null;
+        },
+        now: Date.now()
+      });
       if (missed) board = placeMissedSpot(board, renderMissedSpot(missed, { t: t2, has: hasString2, formatDate: formatDate2, practice: (id) => routes.get(id) || null }), missed.target.skillId);
     } catch {
     }

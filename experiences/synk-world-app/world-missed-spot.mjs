@@ -147,7 +147,7 @@ function msPracticeStep({skillId,since,ix,independent,homework,policy}){
 // 1 · 7 · 30일: Temper 다시 확인(Core 요약의 followups 투영 — 짧은 연습 답만)의 그 항목 줄 한 칸 요약. 창은 그 칸의 짧은 연습 첫 답 기준이다
 // (temper.js FOLLOWUP — 놓친 날 기준이 아니다). 판에 같은 줄의 1 · 7 · 30 카드가 따로 있으니 여기서는 지금 상태 한 칸만.
 // 기준 답이 아직 없으면 그 항목 짧은 연습을 지금 열 수 있을 때만 「짧은 연습 첫 답부터」.
-function msDelayedStep({skillId,projection,practiceOpen,now}){
+function msDelayedStep({skillId,projection,practiceOpen,followupOpen,now}){
  const all=(Array.isArray(projection?.items)?projection.items:[]).filter(row=>row?.gameId==='world-practice'&&row.measure?.skillId===skillId&&['d1','d7','d30'].includes(row.window));
  // 기준 답이 여럿이면(난도 · 형식 칸 또는 45일 뒤 새 주기) 가장 최근 기준 답의 세 창만.
  const latest=all.map(row=>row.sourceAt).filter(value=>Number.isFinite(Date.parse(value))).sort().at(-1);
@@ -158,7 +158,9 @@ function msDelayedStep({skillId,projection,practiceOpen,now}){
   // 지금 확인할 창이나 다가올 창이 있으면 다음 차례(○ — 이미 확인한 수는 글에 함께), 남은 창 없이 확인한 것만 있으면 기록에 있는 일(●).
   // 확인 없이 창이 다 지났으면(기간 지남 · 판단 보류) 이 줄을 두지 않는다 — 판의 「시간을 두고 다시 확인」 카드가 창마다 보인다(카본 A1).
   if(!due&&!upcoming&&!observed)return null;
-  return {step:'delayed',state:due||upcoming?'planned':'done',observed,due:!!due,window:(due||upcoming)?.window??null,dueAt:due?null:upcoming?.dueAt??null};
+  // 지금 확인할 창이어도 맞는 새 문항이 없을 수 있다 — 판의 「시간을 두고 다시 확인」이 그 줄에 문항을 붙였을 때만 「지금 확인할 수 있어요」(GPT GA2).
+  let open=false;if(due){try{open=followupOpen?.(due.id)===true;}catch{open=false;}}
+  return {step:'delayed',state:due||upcoming?'planned':'done',observed,due:!!due,open,window:(due||upcoming)?.window??null,dueAt:due?null:upcoming?.dueAt??null};
  }
  return practiceOpen?{step:'delayed',state:'planned',observed:0,due:false,window:null,dueAt:null}:null;
 }
@@ -167,9 +169,9 @@ function msDelayedStep({skillId,projection,practiceOpen,now}){
  * 「놓친 곳 카드」 한 장, 없으면 null.
  * map: buildPositionMap 결과(판과 같은 시험) · summary · events: 같은 코치의 Core 요약과 Trail 사건 ·
  * homework: 이번 주 계획 숙제 줄(시험 목표가 없으면 null) · projection: 짧은 연습 코치의 followups() 투영(없으면 null) ·
- * practiceOpen(skillId): 그 항목에 지금 낼 짧은 연습 새 문항이 있는지 · now: 지금(ms).
+ * practiceOpen(skillId): 그 항목에 지금 낼 짧은 연습 새 문항이 있는지 · followupOpen(줄 id): 그 다시 확인 줄에 지금 낼 새 문항이 있는지(world-learning-followups.mjs followupRows의 available) · now: 지금(ms).
  */
-export function buildMissedSpot({map,summary=null,events=[],homework=null,projection=null,practiceOpen=()=>false,now=Date.now(),policy=MISSED_SPOT_POLICY}={}){
+export function buildMissedSpot({map,summary=null,events=[],homework=null,projection=null,practiceOpen=()=>false,followupOpen=()=>null,now=Date.now(),policy=MISSED_SPOT_POLICY}={}){
  // 기록을 다 받지 못했으면 카드를 세우지 않는다(판은 열리고 「기록 일부」 줄을 단다 — 놓친 곳을 부분 기록으로 짚지 않는다).
  if(!msRecord(map)||!Array.isArray(map.skills)||map.evidenceComplete!==true)return null;
  const skills=new Map(map.skills.map(skill=>[skill.id,skill]));
@@ -199,7 +201,7 @@ export function buildMissedSpot({map,summary=null,events=[],homework=null,projec
   msSpotStep({missed:inGame,rows,skillId:skill.id,independent}),
   msLaterStep({rows,missedSittings,skillId:skill.id,independent,ix}),
   msPracticeStep({skillId:skill.id,since:Number.isFinite(firstMiss)?firstMiss:-Infinity,ix,independent,homework,policy}),
-  msDelayedStep({skillId:skill.id,projection,practiceOpen:open,now}),
+  msDelayedStep({skillId:skill.id,projection,practiceOpen:open,followupOpen,now}),
  ].filter(Boolean);
  return {policy:policy.version,kind:'topik',target:{skillId:skill.id,label:skill.label,domain:skill.domain,exam:map.exam,status:skill.status},narrow,again,
   evidence:missed.map(row=>row.eventId),grade:null,abilityClaim:false,learningEffectClaim:false};
@@ -233,7 +235,7 @@ export function renderMissedSpot(card,{t,has=()=>true,formatDate=null,practice=n
   if(row.step==='practice')return t('position.missed.practice.done',{n:row.n,right:row.right});
   if(row.step==='homework')return t('position.missed.homework.planned');
   if(row.step==='delayed'){
-   const next=row.due?t('position.missed.delayed.due'):row.dueAt?t('position.missed.delayed.next',{date:day(row.dueAt)}):'';
+   const next=row.due?t(row.open?'position.missed.delayed.due':'position.missed.delayed.dueCheck'):row.dueAt?t('position.missed.delayed.next',{date:day(row.dueAt)}):'';
    const done=row.observed?t('position.missed.delayed.observed',{n:row.observed}):'';
    return [done,next].filter(Boolean).join(' · ')||t('position.missed.delayed.planned');
   }

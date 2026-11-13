@@ -546,7 +546,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 판(계정 묶음) 밖 모듈이라 판 HTML에 끼운다. 못 세우면 카드 없이 판을 연다.
   try{
    let projection=null;try{projection=readPracticeCoach()?.followups?.()||null;}catch{projection=null;}
-   const missed=buildMissedSpot({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',now:Date.now()});
+   let delayed=null;try{delayed=delayedRows();}catch{delayed=null;}
+   const missed=buildMissedSpot({map,summary,events,homework:current?.examPlan?.homework??null,projection,practiceOpen:id=>routes.get(id)?.route==='practice',
+    followupOpen:id=>{const row=delayed?.rows?.find(value=>value.id===id);return row?row.status==='due'&&row.available===true:null;},now:Date.now()});
    if(missed)board=placeMissedSpot(board,renderMissedSpot(missed,{t,has:hasString,formatDate,practice:id=>routes.get(id)||null}),missed.target.skillId);
   }catch{/* the board opens without the card */}
   home.showPanel(t('position.title'),board,PANEL);

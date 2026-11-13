@@ -557,6 +557,7 @@ export default {
  'position.missed.homework.planned':{ko:'이 항목 새 문항',en:'New questions on this skill',mn:'Энэ чадварын шинэ асуулт'},
  'position.missed.delayed.planned':{ko:'짧은 연습 첫 답부터 새 문항으로 다시 확인',en:'New questions, timed from your first short-practice answer',mn:'Богино дасгалын анхны хариултаас эхлэн шинэ асуултаар дахин шалгана'},
  'position.missed.delayed.due':{ko:'지금 확인할 수 있어요 · 아래 「시간을 두고 다시 확인」',en:'Ready to check now · see “Check again after a break” below',mn:'Одоо шалгах боломжтой · доорх «Хэсэг хугацааны дараа дахин шалгах» хэсэгт'},
+ 'position.missed.delayed.dueCheck':{ko:'확인할 때예요 · 아래 「시간을 두고 다시 확인」',en:'Due for a check · see “Check again after a break” below',mn:'Шалгах хугацаа болсон · доорх «Хэсэг хугацааны дараа дахин шалгах» хэсэгт'},
  'position.missed.delayed.next':{ko:'{date} 다시 확인 · 아래 「시간을 두고 다시 확인」',en:'Next check {date} · see “Check again after a break” below',mn:'Дараагийн шалгалт {date} · доорх «Хэсэг хугацааны дараа дахин шалгах» хэсэгт'},
  'position.missed.delayed.observed':{ko:'{n}번 다시 확인함',en:{one:'Rechecked once',other:'Rechecked {n} times'},mn:'Дахин шалгасан: {n}'},
  'position.missed.legend.done':{ko:'기록에 있는 일',en:'In your record',mn:'Хийсэн'},
