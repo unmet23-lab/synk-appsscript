@@ -157,9 +157,11 @@ export function pulseMailCompose(row,moment,loc='ko',latest=null){
   }[moment];
   if(!copy)throw fail('메일 순간을 확인해 주세요.',500);
   const due=WAITING.has(moment)?dueOf(request):'';
+  // 운영 조각 6-B: 자리가 모자란 때 날짜 없이 보낸 방향 제안(seat 'queue')은 그 까닭을 한 줄 — 보낼 때 굳힌 값만 읽는다(볼 때마다 따지지 않는다).
+  const queued=moment==='direction_proposed'&&request.directionProposal?.seat==='queue'&&!request.directionProposal?.dueDate;
   // 꼬리: 담당자 답 메일은 「앱에서 답해 주세요」 — 메일 답장은 앱 대화로 들어가지 않는다(설계 S1 ③).
   const tail=moment==='staff_reply'?tx('이 메일은 담당자 답 알림이에요. 대화가 한곳에 남도록 답은 앱에서 해 주세요.'):tx('이 메일은 보내 주신 의뢰의 진행 알림이에요. 궁금한 점은 이 메일에 답장해 주세요.');
-  return {subject:tx('〔SYNK PULSE〕 {subject}',{subject:copy[0]}),body:[who?tx('{who}님, SYNK PULSE입니다.',{who}):tx('안녕하세요, SYNK PULSE입니다.'),'',copy[1],copy[2],...(due?[tx('받으실 날({date})은 확인을 기다리는 날만큼 늦어져요.',{date:dayText(due,loc)})]:[]),'',...links,'',tail].join('\n')};
+  return {subject:tx('〔SYNK PULSE〕 {subject}',{subject:copy[0]}),body:[who?tx('{who}님, SYNK PULSE입니다.',{who}):tx('안녕하세요, SYNK PULSE입니다.'),'',copy[1],copy[2],...(due?[tx('받으실 날({date})은 확인을 기다리는 날만큼 늦어져요.',{date:dayText(due,loc)})]:[]),...(queued?[tx('지금은 제작 자리가 차 있어 결제 안내는 자리가 나는 대로 드려요. 기간은 결제한 날부터 세요.')]:[]),'',...links,'',tail].join('\n')};
 }
 
 export function createPulseMailService({store,notificationsFor,clock=()=>new Date().toISOString(),fetchImpl=globalThis.fetch,emergencyStop=()=>process.env.SYNK_PULSE_MAIL_STOP==='1',log=()=>{},localeOf=()=>'ko'}={}){

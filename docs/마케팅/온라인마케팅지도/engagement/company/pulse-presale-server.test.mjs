@@ -459,3 +459,107 @@ test('운영 조각 6-A 받으실 날 고치기: 납품한 프로젝트는 409, 
   const row=f.app.store.get('clientProjects',o.id);f.app.store.put('clientProjects',o.id,{...row,stage:'delivered'});
   const late=await o.act({action:'due_change',dueDate:day(40),reason:'ours'},409);assert.match(JSON.stringify(late.data),/납품을 마친 프로젝트/);
 });
+
+// 운영 조각 6-B(설계 S2 「정원 · 예약」): 제작 자리 · 대기 — 설정 길(관리자 · 감사 기록), 영상 · 사진이 모두 대기까지 차면 새 의뢰서 시작만 409,
+// 자리가 모자란 때 보낸 방향 제안은 날짜 없이 굳히고(seat:'queue'), 손님 · 직원 보기에 그 프로젝트의 자리 · 직원에게 종류별 자리 수.
+async function confirmedOnly(f,extra={}){
+  const draft=(await f.call('/pulse/api/request/start',{body:{}})).data.draft;
+  const sent=await f.call('/pulse/api/request/submit',{body:{answers:{...ANSWERS,...extra}},csrf:draft.csrf});assert.equal(sent.status,201,JSON.stringify(sent.data));
+  const id=sent.data.projectId,path='/api/client-projects/'+id+'/studio';
+  const act=async(body,expected=200)=>{const row=(await f.staff(path)).data.project;const result=await f.staff(path,{body:{revision:row.revision,...body}});assert.equal(result.status,expected,JSON.stringify(result.data));return result;};
+  await act({action:'request_confirm'});
+  const upload=async name=>{const row=(await f.staff(path)).data.project;return (await f.staff(path+'/media',{raw:png,headers:{'Content-Type':'image/png','X-File-Name':name,'X-Project-Revision':String(row.revision)}})).data.project.studio.assets.at(-1).id;};
+  return {id,path,act,upload,room:async()=>(await f.call('/pulse/api/project')).data,staffRow:async()=>(await f.staff(path)).data.project};
+}
+const directionBody=(a,b,extra={})=>({action:'propose_direction',lead:'두 방향으로 나눴어요.',options:[{name:'아니, 잠깐',sentence:'맛을 설명하려다 말을 다섯 번 바꿔요.',flow:[{at:'0:00',text:'경기가 끝나고'}],why:'대사로 풀려요.',assetId:a,recommended:true},{name:'톡',sentence:'한 모금에 톡.',flow:[{at:'0:00',text:'캔을 따고'}],why:'짧아요.',assetId:b}],modelId:'M06',price:290000,revisions:2,...extra});
+
+test('운영 조각 6-B 제작 자리: 설정 길은 관리자 · 감사 기록, 쉬기와 자리 몫이 서로 안 지워짐, 공개 응답은 상태 · 찬 종류 · 날짜만',async t=>{
+  const f=await fixture(t);
+  const audits=kind=>f.app.store.all('audit').filter(row=>row.action===kind);
+  let r=await f.staff('/api/settings/pulse-capacity');
+  assert.deepEqual([r.data.seats,r.data.held,r.data.seatsNow.video],[{video:3,photo:5,queue:6},[],{state:'open',used:0,total:3,waiting:0}]);
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:1,photo:1}})).status,400);
+  r=await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:2,queue:4}});assert.equal(r.status,200,JSON.stringify(r.data));
+  assert.deepEqual(audits('pulse-capacity-seats').at(-1).seats,{video:0,photo:2,queue:4});
+  r=await f.staff('/api/settings/pulse-capacity/held',{body:{add:{kind:'photo',note:'옛 흐름 사진 건'}}});assert.equal(r.status,200);
+  const heldId=r.data.held[0].id;assert.equal(audits('pulse-capacity-held').at(-1).added.note,'옛 흐름 사진 건');
+  assert.equal((await f.staff('/api/settings/pulse-capacity',{body:{open:false,pauseNote:'쉬어요'}})).status,200);
+  r=await f.staff('/api/settings/pulse-capacity');assert.deepEqual([r.data.state,r.data.seats.photo,r.data.held.length],['paused',2,1],'쉬기를 저장해도 자리 몫이 남는다');
+  assert.equal((await f.staff('/api/settings/pulse-capacity',{body:{open:true}})).status,200);
+  const pub=await f.call('/pulse/api/availability');
+  assert.deepEqual(pub.data,{state:'queue',kinds:['video'],noticeDate:''},'영상 자리 0 — 받을 수는 있고(대기) 날짜를 셀 재료가 없다');
+  r=await f.staff('/api/settings/pulse-capacity/held',{body:{remove:heldId}});assert.equal(r.data.held.length,0);assert.equal(audits('pulse-capacity-held').at(-1).removed.id,heldId);
+});
+
+test('운영 조각 6-B 새 의뢰서 막기: 영상 · 사진 모두 대기까지 차면 시작만 409(SYNK_PULSE_INTAKE_FULL), 쓰던 초안은 그대로 보낸다',async t=>{
+  const f=await fixture(t);
+  const early=(await f.call('/pulse/api/request/start',{body:{}})).data.draft;
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:0,queue:0}})).status,200);
+  assert.deepEqual((await f.call('/pulse/api/availability')).data,{state:'full',kinds:['video','photo'],noticeDate:''});
+  const blocked=await f.call('/pulse/api/request/start',{body:{}});
+  assert.equal(blocked.status,409);assert.equal(blocked.data.code,'SYNK_PULSE_INTAKE_FULL');
+  const sent=await f.call('/pulse/api/request/submit',{body:{answers:ANSWERS},csrf:early.csrf});
+  assert.equal(sent.status,201,'다 쓴 손님을 보내기에서 거절하지 않는다');
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:1,queue:0}})).status,200);
+  assert.equal((await f.call('/pulse/api/request/start',{body:{}})).status,201,'사진 자리가 하나라도 있으면 시작은 연다');
+});
+
+test('운영 조각 6-B 방향 제안: 자리가 모자라면 날짜 없이 받고 seat:queue로 굳히며, 손님 · 직원 보기에 자리 · 자리 수가 실린다 — 자리가 있으면 날짜가 꼭 든다',async t=>{
+  const f=await fixture(t);
+  const open=await confirmedOnly(f);
+  const a=await open.upload('a.png'),b=await open.upload('b.png');
+  await open.act(directionBody(a,b),400);   // 자리가 있으면 받으실 날이 꼭 든다
+  let room=await open.room();
+  assert.equal(Object.hasOwn(room.project,'seat'),false,'자리가 있는 손님 보기에는 자리 칸이 없다');
+  assert.deepEqual((await open.staffRow()).seats.video,{state:'open',used:0,total:3,waiting:1});
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:5,queue:6}})).status,200);
+  room=await open.room();assert.deepEqual(room.project.seat,{state:'queue',noticeDate:''});
+  const sent=await open.act(directionBody(a,b));
+  const proposal=sent.data.project.studio.request.directionProposal;
+  assert.deepEqual([proposal.dueDate,proposal.seat],['','queue'],'보내는 순간의 자리를 굳힌다');
+  room=await open.room();assert.deepEqual([room.project.studio.request.directionProposal.dueDate,room.project.studio.request.directionProposal.seat],['','queue']);
+  // 굳힌 뒤 자리가 나도 제안은 그대로(볼 때마다 따지지 않는다), 손님 보기의 자리 칸만 사라진다.
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:3,photo:5,queue:6}})).status,200);
+  room=await open.room();
+  assert.equal(room.project.studio.request.directionProposal.seat,'queue');assert.equal(Object.hasOwn(room.project,'seat'),false);
+  // 자리가 모자라도 담당자가 날짜를 적으면 그 날로 약속한다(굳힘 없음).
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:5,queue:6}})).status,200);
+  const other=await confirmedOnly(f,{name:'다른 탄산수'});
+  const c=await other.upload('c.png'),d=await other.upload('d.png');
+  const day=new Date(f.now()+9*3600000+20*86400000).toISOString().slice(0,10);
+  const dated=(await other.act(directionBody(c,d,{dueDate:day}))).data.project.studio.request.directionProposal;
+  assert.deepEqual([dated.dueDate,Object.hasOwn(dated,'seat')],[day,false]);
+});
+
+test('운영 조각 6-B 방향 제안(화면 검수 Fable F1): 기간이 정해지지 않은 구성(기업 · 추천)은 자리 대기여도 받으실 날이 꼭 든다 — 비운 날로 굳히지 않는다',async t=>{
+  const f=await fixture(t);
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:5,queue:6}})).status,200);
+  for(const pkg of ['corp','ask']){
+    const one=await confirmedOnly(f,{name:'기업 건 '+pkg,package:pkg});
+    assert.deepEqual((await one.room()).project.seat,{state:'queue',noticeDate:''},pkg+' 자리 대기');
+    const a=await one.upload('a.png'),b=await one.upload('b.png');
+    await one.act(directionBody(a,b),400);
+    const day=new Date(f.now()+9*3600000+20*86400000).toISOString().slice(0,10);
+    const sent=(await one.act(directionBody(a,b,{dueDate:day}))).data.project.studio.request.directionProposal;
+    assert.deepEqual([sent.dueDate,Object.hasOwn(sent,'seat')],[day,false],pkg);
+  }
+});
+
+test('운영 조각 6-B 결제 요청(서버 검수 GA1): 자리 차례를 기다리는 건은 자리 경고를 본 확인(overSeat:true)이 있어야 받는다 — 막지는 않고(설계 S2 담당자 판단), 자리가 있으면 확인 없이 그대로',async t=>{
+  const f=await fixture(t);
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:5,queue:6}})).status,200);
+  const waiting=await confirmedOnly(f);
+  assert.deepEqual((await waiting.room()).project.seat,{state:'queue',noticeDate:''});
+  const refused=await waiting.act({action:'payment_request',amount:290000},409);
+  assert.match(refused.data.error,/아직 제작 자리 차례가 아니에요/);assert.equal(refused.data.code,'SYNK_PULSE_SEAT_WAIT','화면이 판 번호 충돌과 가르는 코드');
+  assert.equal((await waiting.staffRow()).studio.request.payment,undefined,'거절하면 결제 칸이 생기지 않는다');
+  await waiting.act({action:'payment_request',amount:290000,overSeat:'1'},400);
+  await waiting.act({action:'payment_request',amount:290000,overSeat:false},400);
+  const sent=await waiting.act({action:'payment_request',amount:290000,overSeat:true});
+  assert.equal(sent.data.project.studio.request.payment.status,'requested','담당자가 경고를 보고 보내면 받는다');
+  // 자리가 있으면 확인 없이 받는다(앞 판 그대로).
+  assert.equal((await f.staff('/api/settings/pulse-capacity/seats',{body:{video:3,photo:5,queue:6}})).status,200);
+  const free=await confirmedOnly(f,{name:'다른 탄산수'});
+  assert.equal(Object.hasOwn((await free.room()).project,'seat'),false);
+  assert.equal((await free.act({action:'payment_request',amount:290000})).data.project.studio.request.payment.status,'requested');
+});

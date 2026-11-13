@@ -288,10 +288,12 @@ export function createCompanyApp(options={}) {
   }
   // 판 2 메일 알림: 서비스는 고객 알림 투영(pulseLive)이 생긴 뒤 만든다 — 그 전에는 손님 · 직원 보기에 메일 칸이 없다.
   let pulseMail=null;
-  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
   // 접수 멈춤 스위치(운영 조각 3): 쉬는 동안에는 새 의뢰서 시작만 막는다(pulse-capacity.mjs).
+  // 제작 자리 · 대기(운영 조각 6-B): 영상 · 사진이 모두 대기까지 차면 새 의뢰서 시작을 막고(intakeFull), 손님 · 직원 보기에 그 프로젝트의 자리(seat)를,
+  // 방향 제안에는 보내는 순간의 자리를 굳힌다(pulse-studio.mjs seats → pulse-requests.mjs propose_direction).
   const pulseCapacity=createPulseCapacity({store,clock});
-  const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces,intakePaused:()=>pulseCapacity.paused()});
+  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,seats:pulseCapacity,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
+  const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces,intakePaused:()=>pulseCapacity.paused(),intakeFull:()=>pulseCapacity.full()});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
   const pulseAutoReply=createPulseAutoReplyService({store,clientProjects,snapshot:id=>pulseStudio.customerSnapshot(id),clock,localeOf:projectLocale,fetchImpl:options.pulseAutoReplyFetch||globalThis.fetch});
@@ -1730,6 +1732,9 @@ export function createCompanyApp(options={}) {
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
       if(path==='/api/settings/pulse-features'){const result=pulseFeatures.configure(user,input);audit(user,'pulse-features-settings','pulse-features',{publicLocales:result.publicLocales,projectLocales:result.projectLocales,personaRequest:result.personaRequest,personaReal:result.personaReal,myModels:result.myModels});return send(res,200,result);}
       if(path==='/api/settings/pulse-capacity'){const result=pulseCapacity.configure(user,input);audit(user,'pulse-capacity-settings','pulse-capacity',{open:result.open,pausedUntil:result.pausedUntil,pauseNote:result.pauseNote,pauseNoteEn:result.pauseNoteEn});return send(res,200,result);}
+      // 제작 자리 수 · 손으로 잡은 자리(운영 조각 6-B): 관리자만 · CSRF · 감사 기록(손으로 잡은 자리의 메모는 기록에 남긴다 — 직원만 보는 칸).
+      if(path==='/api/settings/pulse-capacity/seats'){const result=pulseCapacity.configureSeats(user,input);audit(user,'pulse-capacity-seats','pulse-capacity',{seats:result.seats});return send(res,200,result);}
+      if(path==='/api/settings/pulse-capacity/held'){const before=pulseCapacity.settings(user).held,result=pulseCapacity.configureHeld(user,input);audit(user,'pulse-capacity-held','pulse-capacity',input?.add?{added:result.held.find(item=>!before.some(old=>old.id===item.id))||null}:{removed:before.find(item=>item.id===input?.remove)||null});return send(res,200,result);}
       if(path==='/api/settings/provider'){admin(user);if(!['youtube','instagram','facebook','tiktok'].includes(input.platform))throw httpError('지원하지 않는 플랫폼이에요.');const cfg=store.secret('provider:'+input.platform)||{};for(const key of ['clientId','clientSecret','apiKey'])if(input[key])cfg[key]=text(input[key],16000);store.setSecret('provider:'+input.platform,cfg);audit(user,'provider-config',input.platform);return send(res,200,{ok:true});}
       if(path==='/api/import-legacy')return send(res,200,await importLegacy(user));
       throw httpError('요청을 찾을 수 없습니다.',404);

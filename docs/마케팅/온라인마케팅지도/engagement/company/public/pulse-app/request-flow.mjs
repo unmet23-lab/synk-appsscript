@@ -1,4 +1,4 @@
-import {esc,dropSrcset} from './api.mjs';
+import {esc,dropSrcset,aboutDay} from './api.mjs';
 import {t,k,locale,intlLocale,htmlLang} from './i18n.mjs';
 import {localeMenu,offeredLocales,LOCALE_EVENT} from './locale-menu.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
@@ -266,6 +266,9 @@ function slateRows(a){
   return rows;
 }
 
+// 제작 자리가 찬 동안(운영 조각 6-B — 앱이 공개 접수 상태로 정한 backend.seat): 첫 질문에 한 줄. 의뢰서는 그대로 받고 결제 안내가 미뤄진다.
+// 찬 종류가 하나면 그 종류를 말한다(손님은 아직 무엇을 고를지 정하지 않았다). 날짜는 결제 안내 예정일 — 모르면 「자리가 나는 대로」.
+export const seatText=seat=>{const kinds=seat.kinds||[],what=kinds.length===1?(kinds[0]==='photo'?t('지금은 사진 제작 자리가 차 있어요.'):t('지금은 영상 제작 자리가 차 있어요.')):t('지금은 제작 자리가 차 있어요.'),when=aboutDay(seat.noticeDate);return `${what} ${when?t('의뢰서는 그대로 받고, 결제 안내는 {date}쯤 드려요.',{date:when}):t('의뢰서는 그대로 받고, 결제 안내는 자리가 나는 대로 드려요.')}`;};
 export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const a=backend.answers||emptyAnswers();if(!a.refs?.length)a.refs=[{url:'',points:[],why:''}];
   // 맞춤 인물 스위치(판 3, 서버가 허락한 값 — request-backend). 꺼져 있으면 저장돼 있던 「맞춤 인물」 고름은 비운다(서버가 보내기를 409로 막는다).
@@ -279,6 +282,8 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   a.personaPick=a.modelChoice==='persona'?backend.personaPick||null:null;
   if(ctx.flags.request&&a.personaRequest.kind==='real'&&!ctx.flags.real)a.personaRequest.kind='virtual';
   let index=Math.max(0,STEPS.findIndex(step=>step.id===backend.step));
+  // 제작 자리 한 줄은 이번에 열어 처음 서는 단계에 — 쓰던 의뢰서는 저장된 단계에서 열린다(6-B 화면 최종 검수 F2).
+  const seatAt=index;
   let busy=false,saveTimer=0,saving=null,saveAgain=false,sent=null,closed=false;
   root.innerHTML=`<div class="sx-q" data-step="">
     <header class="sx-q-top"><a class="sx-logo" href="./" data-do="exit" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a>
@@ -339,6 +344,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     showError('');
     if(s.id==='contact'||s.id==='review')defaultContactLocale();
     form.innerHTML=views[s.id](a,s,index,STEPS.length,ctx);
+    if(index===seatAt&&backend.seat)(form.querySelector('.sx-q-lead')||form.querySelector('[data-title]'))?.insertAdjacentHTML('afterend',`<p class="sx-small sx-q-seat" data-seat data-in>${esc(seatText(backend.seat))}</p>`);
     // 휴대폰은 질문 칸이 아니라 바깥 칸(.sx-q-stage)이 스크롤된다 — 단계를 바꾸면 그것도 처음으로(모델 단계에서 내린 채 「이전」을 누르면 제목이 위 막대 밑에 있었다).
     form.scrollTop=0;$('.sx-q-ask').scrollTop=0;$('.sx-q-stage').scrollTop=0;
     const title=form.querySelector('[data-title]');

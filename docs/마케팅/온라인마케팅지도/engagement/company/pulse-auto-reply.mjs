@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import {customerRoomFacts,roomPayHow,roomStageName} from './pulse-room-facts.mjs';
+import {customerRoomFacts,roomPayHow,roomSeatLine,roomStageName} from './pulse-room-facts.mjs';
 
 // PULSE 고객 문의 자동 안내(2026-10-19, 유호님 「…노트북이 꺼져있어도 24시간 양질의 답변을 하도록…」).
 // 고객이 PULSE에 문의(support)를 남기면 회사 서버가 그 프로젝트에서 고객에게 이미 보이는 사실만 Claude에 넘겨
@@ -48,6 +48,7 @@ export const PULSE_AUTO_REPLY_SYSTEM=`당신은 영상 제작 스튜디오 PULSE
   - 「의뢰.지금」은 고객 화면이 지금 보여 주는 차례와 안내입니다. 지금 누구 차례인지, 고객이 무엇을 하면 되는지, 다음에 무엇이 오는지는 이것을 근거로 답합니다. 「의뢰.담당자안내」는 담당자가 따로 적어 둔 글이라, 지금 차례와 어긋나면 지금 차례를 따릅니다.
   - 받으실 날은 「의뢰.받으실날」에 적힌 그대로 말합니다.
   - 결제는 크몽에서 합니다. 결제 상태는 「의뢰.결제」만 근거로 말하고, 결제하는 법을 물으면 「의뢰.결제.방법」대로 안내합니다. 결제가 들어왔는지 확인해 달라는 요청, 환불, 금액 · 결제 방법을 바꾸는 일은 담당자에게 넘깁니다.
+  - 「의뢰.결제.제작자리」가 있으면 제작 자리가 찬 동안 결제 요청이 미뤄진다는 뜻입니다. 결제 안내가 언제 가는지는 그 줄 그대로 말하고, 더 이른 때를 약속하지 않습니다.
   - 남은 수정 횟수는 「의뢰.수정」에 적힌 수 그대로 말합니다.
   - 「의뢰.작업소식」은 담당자가 올린 작업 중 화면 소식입니다. 완성본이 아니라고 여기고 말합니다.
 
@@ -68,22 +69,23 @@ const PROGRESS_SHOWN=5;
 const won=value=>`${Number(value).toLocaleString('ko-KR')}원`;
 // 결제: 손님 보기의 결제 칸(상태 · 때 · 값 · 받으실 날)에서. 취소는 무엇을 취소했는지 가른다 — 확인한 결제의 취소(환불)와 결제 요청의 취소(낸 돈 없음).
 // 결제를 확인하기 전에는 결제하는 법(고객 방 결제 카드 글 — 크몽 「문의하기」로 접수 번호 → 담당자 결제 요청 → 결제)을 함께 넣는다.
-function paymentFacts(r,state,photo){
+// seat(운영 조각 6-B): 이 건이 제작 자리 차례를 기다리면 결제 요청을 미룬다는 것과 결제 카드의 자리 한 줄을 넣는다 — 대기 손님에게 「지금 결제하세요」로 답하지 않게(6-B 서버 검수 GA2).
+function paymentFacts(r,state,photo,seat){
   const pay=r.payment&&typeof r.payment==='object'?r.payment:null,amount=Number.isSafeInteger(pay?.amount)&&pay.amount>0?won(pay.amount):'';
-  const at=(label,value)=>kstTime(value)?{[label]:kstTime(value)}:{},how={방법:roomPayHow(photo)};
+  const at=(label,value)=>kstTime(value)?{[label]:kstTime(value)}:{},how={방법:roomPayHow(photo)},wait=seat?{제작자리:roomSeatLine(seat)}:{};
   if(!pay||!['requested','confirmed','cancelled'].includes(pay.status)){
-    if(state==='pay')return {상태:'결제할 차례예요. 담당자의 크몽 결제 요청은 아직 가지 않았어요.',...how};
+    if(state==='pay')return seat?{상태:'결제할 차례지만 지금은 제작 자리가 차 있어, 담당자의 크몽 결제 요청은 자리가 나는 대로 가요. 그 전에 크몽 「문의하기」로 접수 번호를 보내 두면 바로 이어져요.',...wait,...how}:{상태:'결제할 차례예요. 담당자의 크몽 결제 요청은 아직 가지 않았어요.',...how};
     // 「아직 결제 전」은 결제 차례 앞(영상은 글 콘티를, 사진은 첫 장을 아직 확인하지 않음)일 때만 말한다. 결제 기록 없이 그 뒤로 간 옛 의뢰
     // (글 콘티 확인 기록만 판에 남은 것 · 장면 이미지 판이 온 것 · 제작 · 납품)는 결제를 말하지 않는다 — 모르는 것을 「결제 전」으로 짐작하지 않게(조각 5 끝 판 카본 A1).
     const rounds=Array.isArray(r.rounds)?r.rounds:[];
     const past=photo?rounds.some(round=>round?.kind==='images'&&round.approvedAt):!!r.scriptApprovedAt||rounds.some(round=>round?.kind==='images'||round?.kind==='script'&&round.approvedAt);
     if(past||['make','review','deliver','done'].includes(state))return null;
-    return {상태:photo?'아직 결제 전이에요. 첫 장을 확인하신 뒤 크몽 결제를 안내해 드려요.':'아직 결제 전이에요. 글 콘티를 확인하신 뒤 크몽 결제를 안내해 드려요.',...how};
+    return {상태:photo?'아직 결제 전이에요. 첫 장을 확인하신 뒤 크몽 결제를 안내해 드려요.':'아직 결제 전이에요. 글 콘티를 확인하신 뒤 크몽 결제를 안내해 드려요.',...wait,...how};
   }
   const money=amount?{금액:amount}:{};
   if(pay.status==='requested')return {상태:'크몽 결제 요청을 보냈고, 아직 결제 확인 전이에요.',...money,...at('요청한때',pay.requestedAt),...how};
   if(pay.status==='confirmed')return {상태:'결제를 확인했어요.',...money,...at('확인한때',pay.confirmedAt)};
-  return pay.confirmedAt?{상태:'확인했던 결제를 취소했어요. 환불과 다시 진행은 담당자가 안내해요.',...money,...at('취소한때',pay.cancelledAt)}:{상태:'결제 요청을 취소했어요. 결제된 돈은 없어요.',...at('취소한때',pay.cancelledAt),...how};
+  return pay.confirmedAt?{상태:'확인했던 결제를 취소했어요. 환불과 다시 진행은 담당자가 안내해요.',...money,...at('취소한때',pay.cancelledAt)}:{상태:'결제 요청을 취소했어요. 결제된 돈은 없어요.',...at('취소한때',pay.cancelledAt),...wait,...how};
 }
 // 남은 수정: 고객 화면(feedback-rounds-view.mjs)과 같은 셈 — 정한 횟수는 방향 제안에 적힌 것, 없으면 패키지 것. 시안에 보낸 의견 묶음 하나가 한 회.
 function revisionFacts(total,st){
@@ -100,7 +102,7 @@ function progressFacts(r,photo){
 }
 function requestFacts(p){
   const room=customerRoomFacts(p);if(!room)return null;
-  const r=p.studio.request,pkg=room.pkg,pay=paymentFacts(r,room.state,room.photo),fix=revisionFacts(room.revisions,p.studio||{}),news=progressFacts(r,room.photo),note=typeof p.nextStep==='string'?p.nextStep.trim():'';
+  const r=p.studio.request,pkg=room.pkg,pay=paymentFacts(r,room.state,room.photo,room.seat),fix=revisionFacts(room.revisions,p.studio||{}),news=progressFacts(r,room.photo),note=typeof p.nextStep==='string'?p.nextStep.trim():'';
   return {
     ...(room.number?{접수번호:room.number}:{}),...(pkg?{상품:room.photo?`사진 · ${pkg.title}`:`${pkg.label} 영상 · ${pkg.title}`}:{}),
     지금:{단계:room.stage,차례:TURN[room.turn]||'',화면제목:room.title,화면안내:room.text},

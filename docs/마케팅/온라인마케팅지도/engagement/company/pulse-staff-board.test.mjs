@@ -153,7 +153,7 @@ test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 
   assert.ok(app.includes("if(s.project||s.brands)withLeave(async()=>{resetContext();try{await loadWorkspace();}catch(error){notice(error.message);}openSheet();});else openSheet();"),'다른 화면이면 쓰던 글을 물은 뒤 첫 화면으로 돌아가 연다');
   assert.ok(app.includes("if(action==='staff-stage'){s.staffStage=button.dataset.stage||'';render();return;}"));
   assert.ok(app.includes("s.staffIntake=['open','paused'].includes(result?.state)?result:null;s.intakeSheet=false;"),'저장하면 쉬기 칸을 닫는다');
-  assert.ok(app.includes('castingCodeSave=null;s.brands=null;s.intakeSheet=false;}'),'다른 화면으로 가면 쉬기 칸은 닫힌다');
+  assert.ok(app.includes('castingCodeSave=null;s.brands=null;s.intakeSheet=false;s.seatsSheet=false;}'),'다른 화면으로 가면 쉬기 칸 · 자리 칸은 닫힌다');
   assert.ok(app.includes("if(s.mode==='staff')badge.innerHTML=staffNotifyLabel(s.live.unreadCount||0);"));
   assert.ok(app.includes("...(staffMode?[new Promise(resolve=>{const link=document.createElement('link');link.rel='stylesheet';link.href='./staff.css';"),'staff.css는 직원 모드에서만 맨 끝에 붙인다');
   const css=read('staff.css');

@@ -137,7 +137,7 @@ test('the staff desk names a photo order in photo words, and a film order as bef
   assert.match(dialogContent('desk-pay-cancel',{photo:true}),/첫 장 뒤의 판 · 시안을 다시 보내려면/);assert.match(dialogContent('desk-pay-cancel',{}),/장면 이미지 · 시안을 다시 보내려면/);
   const app=read('app.mjs');
   assert.match(app,/openDialog\('desk-progress',\{\.\.\.trOf\(\),\.\.\.\(model\.photo\?\{photo:true\}:\{\}\),/);
-  assert.match(app,/if\(action==='desk-pay-request'\|\|action==='desk-pay-confirm'\|\|action==='desk-pay-cancel'\)\{[^\n]*openDialog\(action,\{number:model\.number,amount:model\.payAmount,dueDate:model\.payDays\?kst\.toISOString\(\)\.slice\(0,10\):'',\.\.\.\(model\.photo\?\{photo:true\}:\{\}\)\}\);/,'the three payment dialogs — request, confirm, cancel — open from one line and all carry the photo mark');
+  assert.match(app,/if\(action==='desk-pay-request'\|\|action==='desk-pay-confirm'\|\|action==='desk-pay-cancel'\)\{[^\n]*openDialog\(action,\{number:model\.number,amount:model\.payAmount,dueDate:model\.payDays\?kst\.toISOString\(\)\.slice\(0,10\):'',\.\.\.\(model\.photo\?\{photo:true\}:\{\}\),\.\.\.\(model\.seat&&action==='desk-pay-request'\?\{seatWarn:/,'the three payment dialogs — request, confirm, cancel — open from one line and all carry the photo mark');
   // 결제를 확인한 뒤의 알림: 사진 의뢰에 「장면 이미지 판」을 말하지 않는다.
   assert.match(app,/message:s\.project\?\.studio\?\.request\?\.answers\?\.package==='photo'\?'결제를 확인했어요\. 첫 장을 이미 승인받았으면 제작을 시작해요\.':'결제를 확인했어요\. 장면 이미지 판을 보낼 수 있어요\.',after:closeDialog/);
 });

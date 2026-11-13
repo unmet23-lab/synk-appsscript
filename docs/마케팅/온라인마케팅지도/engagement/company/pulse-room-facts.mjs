@@ -65,12 +65,13 @@ export function roomStateOf(p){
   return 'check';
 }
 // 그 상태의 왼쪽 글(film-views.mjs copyBase — 방향을 고른 뒤 · 두 번째 제안도 거절한 뒤 · 사진 상품 · 결제 상태로 글이 갈린다). 메일 꼬리 · 맞춤 인물 카드는 넣지 않는다.
-function copyOf(state,r,photo){
+function copyOf(state,r,photo,seat){
   const pay=r.payment?.status||'',d=r.directionProposal;
   const chosen=!!d&&Array.isArray(d.options)&&d.options.some(option=>option?.id===d.chosenId),last=!!d&&d.round>=2,options=Array.isArray(d?.options)?d.options.length:0;
   if(state==='pay'){
     if(pay==='cancelled')return {turn:'you',title:'결제가 취소됐어요',text:'다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료와 글 콘티는 그대로 있어요.'};
     if(pay==='requested')return {turn:'you',title:'크몽에서 결제해 주세요',text:photo?'크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 나머지 장을 만들어요.':'크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 장면 이미지를 만들기 시작해요.'};
+    if(seat)return {turn:'you',title:photo?'첫 장을 확인해 주셨어요':'글 콘티를 확인해 주셨어요',text:'지금은 제작 자리가 차 있어 결제 요청은 자리가 나는 대로 보내 드려요. 그 전에 크몽에서 「문의하기」로 접수 번호를 보내 두시면 바로 이어져요.'};
     if(photo)return {turn:'you',title:'첫 장을 확인해 주셨어요',text:'이제 크몽에서 결제해 주세요. 결제가 확인되면 나머지 장을 만들어요.'};
   }
   if(state==='prepare-images'&&pay==='confirmed')return {turn:'us',title:'결제를 확인했어요',text:'확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.'};
@@ -89,14 +90,20 @@ function copyOf(state,r,photo){
 const longDay=day=>{const [y,m,d]=String(day||'').split('-').map(Number);return y?`${m}월 ${d}일`:'';};
 // 받으실 날(room-view.mjs roomBrief의 「받으실 날」 줄): 결제를 확인했으면 그때 정한 날, 결제 차례면 「결제한 날부터 N일」, 방향 제안이 오면 거기 적힌 날, 그 밖에는 패키지 기간.
 // 고객 방은 보낸 의뢰서에 「길이 · 구성」 줄이 있을 때(패키지를 골랐을 때)만 이 줄을 세운다.
-function dueOf(r,pkg){
+// seat: 이 건이 지금도 자리 차례를 기다리면(손님 보기 project.seat) 날 없이 굳힌 제안에 「결제 안내는 자리가 나는 대로」를 붙인다 — 자리가 났으면 기간만(room-view.mjs roomBrief, 6-B 카본 A1).
+function dueOf(r,pkg,seat=null){
   if(!r.submittedAt||!r.answers?.package)return '';
   const due=r.directionProposal?.dueDate,paidDue=r.payment?.status==='confirmed'?r.payment.dueDate||'':'',paying=roomPayState(r)&&pkg?.days;
   if(paidDue)return r.payment.dueChangedAt?`${longDay(paidDue)} · 담당자가 다시 정한 날`:`${longDay(paidDue)} · 결제 확인 때 정한 날`;
   if(paying)return `결제한 날부터 ${pkg.days}일`;
   if(due)return `${longDay(due)} · 방향 제안에 적힌 날`;
+  if(r.directionProposal?.seat==='queue'&&pkg?.days)return seat?`결제한 날부터 ${pkg.days}일 · 결제 안내는 자리가 나는 대로 드려요`:`결제한 날부터 ${pkg.days}일`;
   if(pkg?.days)return pkg.photo?`자료가 다 모인 날부터 ${pkg.days}일`:`자료가 다 모인 날부터 ${pkg.days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요`;
   return '구성에 맞춰 함께 정해요';
+}
+// 결제 카드의 자리 한 줄(film-views.mjs payCard — 결제 요청 전 · 이 건이 제작 자리 차례를 기다릴 때).
+export function roomSeatLine(seat){
+  return seat?.noticeDate?`지금은 제작 자리가 차 있어요. 결제 안내는 ${longDay(seat.noticeDate)}쯤 드려요.`:'지금은 제작 자리가 차 있어요. 결제 안내는 자리가 나는 대로 드려요.';
 }
 // 결제하는 법(결제 카드 film-views.mjs payCard): 영상은 「결제 · 취소 · 증빙」의 결제 글 그대로, 사진은 결제 카드의 세 걸음(사진 글)을 이은 것.
 export function roomPayHow(photo){
@@ -104,12 +111,14 @@ export function roomPayHow(photo){
     :'결제는 크몽에서 해요. 글 콘티를 보시고 승인하신 뒤 크몽 상품에서 「문의하기」로 접수 번호를 보내 주시면, 담당자가 같은 값 · 기간 · 수정 횟수의 결제 요청을 보내 드려요. 결제가 확인되면 장면 이미지를 만들기 시작해요. 글 콘티까지는 값을 받지 않아요.';
 }
 // 손님 보기 하나에서 고객 방이 보이는 것. 의뢰서가 없는 프로젝트면 null.
+// seat: 손님 보기의 project.seat(운영 조각 6-B — 이 건이 제작 자리 차례를 기다릴 때만, room-view.mjs payModel과 같은 조건).
 export function customerRoomFacts(p){
   const r=requestOf(p);if(!r)return null;
-  const state=roomStateOf(p),pkg=Object.hasOwn(ROOM_PACKAGES,r.answers?.package??'')?ROOM_PACKAGES[r.answers.package]:null,photo=r.answers?.package==='photo',copy=copyOf(state,r,photo);
+  const seat=p?.seat?.state==='queue'?{noticeDate:/^\d{4}-\d{2}-\d{2}$/.test(p.seat.noticeDate||'')?p.seat.noticeDate:''}:null;
+  const state=roomStateOf(p),pkg=Object.hasOwn(ROOM_PACKAGES,r.answers?.package??'')?ROOM_PACKAGES[r.answers.package]:null,photo=r.answers?.package==='photo',copy=copyOf(state,r,photo,seat);
   // 정한 수정 횟수: 방향 제안에 적힌 것, 없으면 패키지 것(feedback-rounds-view.mjs · room-view.mjs payModel과 같은 값).
   const proposed=r.directionProposal?.revisions,revisions=Number.isSafeInteger(proposed)?proposed:pkg?.revisions??null;
   // 접수 번호: 고객 방 머리 · 결제 카드에 보이는 번호(크몽 「문의하기」에 손님이 보낸다).
   const number=typeof r.number==='string'&&/^P-[0-9A-Z-]{4,20}$/.test(r.number)?r.number:'';
-  return {state,stage:(photo?PHOTO_STAGE_NAMES:ROOM_STAGE_NAMES)[STAGE_OF[state]||'check'],turn:copy.turn,title:copy.title,text:copy.text,photo,pkg,due:dueOf(r,pkg),revisions,number};
+  return {state,stage:(photo?PHOTO_STAGE_NAMES:ROOM_STAGE_NAMES)[STAGE_OF[state]||'check'],turn:copy.turn,title:copy.title,text:copy.text,photo,pkg,due:dueOf(r,pkg,seat),revisions,number,seat};
 }

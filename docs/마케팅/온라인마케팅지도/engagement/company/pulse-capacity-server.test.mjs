@@ -55,7 +55,7 @@ test('기본은 열림이다 — 공개 응답은 상태 하나뿐이고 잠깐 
 test('관리자만 접수를 쉬고 다시 열며, 바꿀 때마다 감사 기록이 남는다',async t=>{
   const f=await fixture(t,{clock:()=>'2026-11-11T03:00:00.000Z'});
   const read=await f.staff('/api/settings/pulse-capacity');
-  assert.equal(read.status,200);assert.deepEqual(read.data,{open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',state:'open',reopened:'',canEdit:true,updatedAt:null,updatedBy:null});
+  assert.equal(read.status,200);assert.deepEqual(read.data,{open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',state:'open',reopened:'',seats:{video:3,photo:5,queue:6},held:[],seatsNow:{video:{state:'open',used:0,total:3,waiting:0},photo:{state:'open',used:0,total:5,waiting:0},queue:{used:0,total:6}},canEdit:true,updatedAt:null,updatedBy:null});
   // 크루는 상태를 읽을 수 있지만(손님에게 보이는 값과 같다) 바꾸지 못하고, 누가 바꿨는지는 받지 않는다.
   const crew=await f.staff('/api/settings/pulse-capacity',{session:f.memberToken,csrf:'crew-csrf'});
   assert.equal(crew.status,200);assert.equal(crew.data.canEdit,false);assert.equal(Object.hasOwn(crew.data,'updatedBy'),false);
@@ -69,10 +69,10 @@ test('관리자만 접수를 쉬고 다시 열며, 바꿀 때마다 감사 기�
   assert.equal((await f.call('/pulse/api/availability')).data.state,'open','거절된 변경은 접수를 닫지 않는다');
   const paused=await f.pause({pausedUntil:'2026-11-12',pauseNote:'  촬영이 몰려 잠시 쉬어요.  ',pauseNoteEn:'We are fully booked for now.'});
   assert.equal(paused.status,200,paused.text);
-  assert.deepEqual({...paused.data,updatedAt:null},{open:false,pausedUntil:'2026-11-12',pauseNote:'촬영이 몰려 잠시 쉬어요.',pauseNoteEn:'We are fully booked for now.',state:'paused',reopened:'',canEdit:true,updatedAt:null,updatedBy:f.owner.id});
+  assert.deepEqual({...paused.data,updatedAt:null},{open:false,pausedUntil:'2026-11-12',pauseNote:'촬영이 몰려 잠시 쉬어요.',pauseNoteEn:'We are fully booked for now.',state:'paused',reopened:'',seats:{video:3,photo:5,queue:6},held:[],seatsNow:{video:{state:'open',used:0,total:3,waiting:0},photo:{state:'open',used:0,total:5,waiting:0},queue:{used:0,total:6}},canEdit:true,updatedAt:null,updatedBy:f.owner.id});
   assert.equal(f.audits().length,1);assert.equal(f.audits()[0].userId,f.owner.id);assert.equal(f.audits()[0].open,false);assert.equal(f.audits()[0].pausedUntil,'2026-11-12');assert.equal(f.audits()[0].pauseNote,'촬영이 몰려 잠시 쉬어요.');
   const reopened=await f.reopen();
-  assert.equal(reopened.status,200);assert.deepEqual({...reopened.data,updatedAt:null,updatedBy:null},{open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',state:'open',reopened:'',canEdit:true,updatedAt:null,updatedBy:null},'열면 쉬는 안내는 지운다');
+  assert.equal(reopened.status,200);assert.deepEqual({...reopened.data,updatedAt:null,updatedBy:null},{open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',state:'open',reopened:'',seats:{video:3,photo:5,queue:6},held:[],seatsNow:{video:{state:'open',used:0,total:3,waiting:0},photo:{state:'open',used:0,total:5,waiting:0},queue:{used:0,total:6}},canEdit:true,updatedAt:null,updatedBy:null},'열면 쉬는 안내는 지운다');
   assert.deepEqual({...f.app.store.get('pulseCapacity','main'),updatedAt:null,updatedBy:null},{open:true,pausedUntil:'',pauseNote:'',pauseNoteEn:'',updatedAt:null,updatedBy:null},'저장 문서에도 지난 안내가 남지 않는다');
   assert.equal(f.audits().length,2);assert.equal(f.audits().find(row=>row.open===true).pauseNote,'');
   assert.deepEqual((await f.call('/pulse/api/availability')).data,{state:'open'});

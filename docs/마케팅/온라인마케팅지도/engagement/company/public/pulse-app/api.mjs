@@ -10,7 +10,11 @@ export const ERROR_CODE_TEXT=Object.freeze({SYNK_PULSE_FILE_MISSING:k('올린 �
   SYNK_PULSE_MODEL_PAUSED:k('사용 중지된 모델이에요. 담당자가 중지를 먼저 풀고, 그 뒤 보관 동의를 새로 하셔야 다시 써요.'),SYNK_PULSE_REUSE_UNAVAILABLE:k('지금은 이 모델의 보관을 정할 수 없어요. 내 모델을 새로 불러와 주세요.'),SYNK_PULSE_REUSE_STALE:k('보관 조건이 바뀌었어요. 새 조건을 보고 다시 확인해 주세요.'),
   SYNK_PULSE_CLAIM_STALE:k('손님이 다시 요청해야 해요. 초대 링크가 바뀌었거나 닫힌 프로젝트예요.'),SYNK_PULSE_CONSENT_SCOPE:k('당사자 동의 범위 밖이에요. 새 당사자 동의를 받은 뒤 확인해 주세요.'),SYNK_PULSE_PERSONA_REFERENCED:k('이 인물을 쓰는 끝나지 않은 프로젝트나 의뢰가 있어요. 그 일을 먼저 끝내거나 정리해 주세요.'),
   // 접수를 쉬는 동안의 새 의뢰서 시작(pulse-requests.mjs start).
-  SYNK_PULSE_INTAKE_PAUSED:k('지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.')});
+  SYNK_PULSE_INTAKE_PAUSED:k('지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.'),
+  // 운영 조각 6-B: 영상 · 사진 제작 자리와 대기 자리가 모두 찼을 때 새 의뢰서 시작(409).
+  SYNK_PULSE_INTAKE_FULL:k('지금은 예약이 찼어요. 자리가 나면 이 화면에서 다시 받아요.'),
+  // 운영 조각 6-B: 자리 차례를 기다리는 건의 결제 요청을 자리 확인 없이 보냄(409 — 직원 결제 요청 창).
+  SYNK_PULSE_SEAT_WAIT:k('이 건은 아직 제작 자리 차례가 아니에요. 결제 요청 창을 닫고 다시 열면 자리 경고가 떠요 — 그걸 보고 보내 주세요.')});
 export const errorText=(message,code='')=>locale()==='ko'?message:Object.hasOwn(ERROR_CODE_TEXT,code)?t(ERROR_CODE_TEXT[code]):t(message);
 export const serverError=(result,status,fallback)=>{const message=typeof result?.error==='string'?result.error:result?.error?.message||fallback,code=typeof result?.code==='string'?result.code:'';return new PulseError(errorText(message,code),status,code);};
 // member(판 4): 고객 SYNK ID 회원 경로(/api/customer/*)는 직원 경로처럼 X-CSRF-Token을 쓴다. 보관 조건이 바뀐 409(SYNK_PULSE_REUSE_STALE)는 새 조건(offer)을 오류에 싣는다.
@@ -39,6 +43,8 @@ export const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;'
 export const stamp=value=>{const date=new Date(value);if(!Number.isFinite(date.getTime()))return '';const year=date.getFullYear()!==new Date().getFullYear();return new Intl.DateTimeFormat(intlLocale(locale()),{...(year?{year:'numeric'}:{}),month:'long',day:'numeric',hour:'numeric',minute:'2-digit'}).format(date);};
 // 날짜만 있는 값(YYYY-MM-DD)은 「10월 31일 (금)」. 형식이 다르면 받은 글자를 그대로 둔다. 한국어 꼴의 글자(요일 · 년 · 월 · 일)는 번역할 문장이 아니다 — 다른 언어는 같은 줄의 Intl 갈래.
 export const day=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));if(!m)return String(value||'');const date=new Date(+m[1],+m[2]-1,+m[3]);if(date.getMonth()!==+m[2]-1)return String(value);if(locale()!=='ko')return new Intl.DateTimeFormat(intlLocale(locale()),{...(date.getFullYear()!==new Date().getFullYear()?{year:'numeric'}:{}),month:'short',day:'numeric',weekday:'short'}).format(date);const week='일월화수목금토'[date.getDay()];return (date.getFullYear()!==new Date().getFullYear()?date.getFullYear()+'년 ':'')+(date.getMonth()+1)+'월 '+date.getDate()+'일 ('+week+')';}; // i18n-skip
+// 어림 날짜(운영 조각 6-B 「○일쯤」): 요일 없이 달 · 날만 — 「11월 20일」 · 영어 「Nov 20」. 해가 다르면 해를 붙인다. 읽을 수 없는 날은 빈 글자.
+export const aboutDay=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));if(!m)return '';const date=new Date(+m[1],+m[2]-1,+m[3]);if(date.getMonth()!==+m[2]-1)return '';const other=date.getFullYear()!==new Date().getFullYear();if(locale()!=='ko')return new Intl.DateTimeFormat(intlLocale(locale()),{...(other?{year:'numeric'}:{}),month:'short',day:'numeric'}).format(date);return (other?date.getFullYear()+'년 ':'')+(date.getMonth()+1)+'월 '+date.getDate()+'일';}; // i18n-skip
 export const keepDots=html=>String(html).replace(/([^\s<>]+·[^\s<>]+)/g,'<span class="nw">$1</span>');
 export const clock=value=>{const time=Math.max(0,Number(value)||0);return Math.floor(time/60)+':'+String(Math.floor(time%60)).padStart(2,'0');};
 // 그림을 실제 화소의 1.5배 넘게 늘리지 않는다(11-13): data-cap을 단 그림은 받은 파일(currentSrc)의 실제 화소를 --cap-w · --cap-h로 적고,

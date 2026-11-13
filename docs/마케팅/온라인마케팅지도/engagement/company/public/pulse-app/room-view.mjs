@@ -103,14 +103,15 @@ const screenFilm=(p,state)=>{const version=state==='deliver'||state==='done'?fin
 const screenShots=(p,state)=>(state==='review'?previews(p).slice(-1):state==='deliver'||state==='done'?finals(p):[]).filter(version=>version.media?.mimeType?.startsWith('image/')&&version.media.url).map(version=>({src:version.media.url,label:version.label}));
 // 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
 // 「길이 · 구성」은 briefRows의 줄 이름과 견주는 값이라 번역하지 않는다(보일 때는 roomPaper가 옮긴다).
-function roomBrief(r,answers){
+// waiting: 이 건이 지금도 제작 자리 차례를 기다리는지(서버가 실은 project.seat) — 날 없이 굳힌 제안이어도 자리가 났으면 「결제 안내는 자리가 나는 대로」를 붙이지 않는다(6-B 카본 A1).
+function roomBrief(r,answers,waiting=false){
   const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성'); // i18n-skip
   // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
   // 방향 제안이 오면 거기 적힌 날 하나만 보인다(같은 화면에 날짜 둘이 서지 않게 — 설계 검토 9).
   // 판 4(화면 검수 F1): 결제를 확인한 뒤에는 그때 정한 날(payment.dueDate — 결제일 + 기간, 담당자가 고칠 수 있음), 결제 차례에는 날짜 대신 결제 카드와 같은 「결제한 날부터 N일」.
   const due=r.directionProposal?.dueDate,paidDue=r.payment?.status==='confirmed'?r.payment.dueDate||'':'',paying=payState(r)&&pkg?.days;
   // 담당자가 결제 뒤 받으실 날을 고쳤으면(운영 조각 6-A · payment.dueChangedAt) 「다시 정한 날」로 — 결제 확인 때 정한 날이 아니다.
-  if(r.submittedAt&&at>=0)rows.splice(at+1,0,[k('받으실 날'),paidDue?(r.payment.dueChangedAt?t('{date} · 담당자가 다시 정한 날',{date:longDay(paidDue)}):t('{date} · 결제 확인 때 정한 날',{date:longDay(paidDue)})):paying?t('결제한 날부터 {days}일',{days:pkg.days}):due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
+  if(r.submittedAt&&at>=0)rows.splice(at+1,0,[k('받으실 날'),paidDue?(r.payment.dueChangedAt?t('{date} · 담당자가 다시 정한 날',{date:longDay(paidDue)}):t('{date} · 결제 확인 때 정한 날',{date:longDay(paidDue)})):paying?t('결제한 날부터 {days}일',{days:pkg.days}):due?t('{date} · 방향 제안에 적힌 날',{date:longDay(due)}):r.directionProposal?.seat==='queue'&&pkg?.days?(waiting?t('결제한 날부터 {days}일 · 결제 안내는 자리가 나는 대로 드려요',{days:pkg.days}):t('결제한 날부터 {days}일',{days:pkg.days})):pkg?.days?(pkg.photo?t('자료가 다 모인 날부터 {days}일',{days:pkg.days}):t('자료가 다 모인 날부터 {days}일 · 날짜는 방향을 보내 드릴 때 알려 드려요',{days:pkg.days})):t('구성에 맞춰 함께 정해요')]);
   return rows;
 }
 export function roomModel(p){
@@ -129,7 +130,7 @@ export function roomModel(p){
   const proposal=proposed?{...proposed,note:r.modelProposal.note||'',...(proposalLooks?{looks:true,key:`${proposed.id}:${r.modelProposal.at||''}`,look:(look=>({outfit:look.outfit,hair:look.hair}))(answers.models?.[0]===proposed.id?lookOf(proposed.id,answers):lookOf(''))}:{})}:null,direction=directionModel(p);
   return {
     state,stage:roomStage(state),photo:answers.package==='photo',options:r?.directionProposal?.options?.length||0,title:p?.title||'',number:r?.number||'',manager:p?.ownerName||t('PULSE 담당자'),hasRound:!!lastRound(r),lastKind:lastRound(r)?.kind||'',
-    brief:r?roomBrief(r,answers):[],
+    brief:r?roomBrief(r,answers,p?.seat?.state==='queue'):[],
     files,others,proposal,direction,asks:(r?.asks||[]).filter(ask=>ask.status==='open'),answered:(r?.asks||[]).filter(ask=>ask.status==='answered'),canEdit:!!r&&r.status!=='confirmed',
     draft:['script','images','revise','prepare-images'].includes(state)?draftModel(p):null,film:screenFilm(p,state),...(shots.length?{shots}:{}),
     // 메일 알림이 실제로 나갈 때만 가린 주소(서버가 정함). 꺼져 있으면 화면에 메일 말이 없다.
@@ -151,7 +152,9 @@ export function payModel(p){
   const a=r.answers||{},pkg=pkgOf(a),pay=r.payment||null,d=r.directionProposal;
   const amount=Number.isSafeInteger(pay?.amount)?pay.amount:Number.isSafeInteger(d?.price)?d.price:pkg?Math.round(pkg.price*10000):null;
   const requested=Date.parse(pay?.requestedAt||'');
-  return {status:pay?.status||'',requestedDay:Number.isFinite(requested)?longDay(new Date(requested+9*3600000).toISOString().slice(0,10)):'',price:amount?won(amount):'',days:pkg?.days||null,revisions:d?.revisions??pkg?.revisions??null,number:r.number||'',photo:a.package==='photo'};
+  // seat(운영 조각 6-B): 담당자가 확인했고 결제 전인데 제작 자리가 모자랄 때만 서버가 싣는다 — 결제 카드에 「결제 안내는 ○일쯤」 한 줄.
+  const seat=p?.seat?.state==='queue'?{noticeDay:longDay(p.seat.noticeDate)}:null;
+  return {status:pay?.status||'',requestedDay:Number.isFinite(requested)?longDay(new Date(requested+9*3600000).toISOString().slice(0,10)):'',price:amount?won(amount):'',days:pkg?.days||null,revisions:d?.revisions??pkg?.revisions??null,number:r.number||'',photo:a.package==='photo',seat};
 }
 // 방향 제안(영상 전 확인 1/3)을 화면 자료로. 그림 · 견본은 손님 보기의 자산 주소, 값 · 기간은 제안에 적힌 것(손님이 실제로 내는 값 · 정한 날).
 const assetById=(p,id)=>(p?.studio?.assets||[]).find(asset=>asset.id===id);
@@ -175,7 +178,8 @@ export function directionModel(p){
   const look=looks&&a.models?.[0]===d.modelId?lookOf(d.modelId,a):lookOf('');
   const picked=d.modelId&&d.look&&modelLooks(d.modelId)?lookOf(d.modelId,d.look):null;
   return {round:d.round,status:d.status,lead:d.lead||'',options,chosen,note:d.answer||'',model:d.modelId?modelCard(d.modelId):null,noModel:!d.modelId,kind:a.kind||'',
-    price:won(d.price),due:longDay(d.dueDate),dueDate:d.dueDate||'',revisions:d.revisions,title:p?.title||'',line:[pkg?t(pkg.label):'',channelText({channels:a.channels||[]})].filter(Boolean).join(' · '),gets:pkg?.gets||'',photo:!!pkg?.photo,
+    // 자리가 모자란 때 보낸 제안(seat 'queue', 운영 조각 6-B)은 날짜 없이 「결제한 날부터 N일」 — 보내는 순간의 상태로 굳힌 값만 읽는다.
+    price:won(d.price),due:!d.dueDate&&d.seat==='queue'&&pkg?.days?t('결제한 날부터 {days}일',{days:pkg.days}):longDay(d.dueDate),dueDate:d.dueDate||'',queued:!d.dueDate&&d.seat==='queue',seatNote:!d.dueDate&&d.seat==='queue'&&p?.seat?.state==='queue',revisions:d.revisions,title:p?.title||'',line:[pkg?t(pkg.label):'',channelText({channels:a.channels||[]})].filter(Boolean).join(' · '),gets:pkg?.gets||'',photo:!!pkg?.photo,
     canPick,last:d.round>=2,looks,look:{outfit:look.outfit,hair:look.hair},picked};
 }
 export function draftModel(p){
@@ -429,13 +433,15 @@ export function deskChecks(p){
   const st=p.studio?.strategy;if(st?.request&&Number(st.request.strategyRevision)===Number(st.revision)&&Number(st.confirmation?.strategyRevision)!==Number(st.revision))checks.push({ok:false,label:'고객 방에는 제작 설계 확인이 보이지 않아요',note:'물을 것은 「빠진 것 다시 묻기」로 보내 주세요.'});
   return checks;
 }
+// 직원 화면(한국어만)의 결제 안내 때 — 손님 결제 카드 줄과 같은 말(「11월 20일쯤」 · 「자리가 나는 대로」, 6-B 카본 A2).
+const seatWhen=day=>{const m=/^\d{4}-(\d{2})-(\d{2})$/.exec(day||'');return m?`${Number(m[1])}월 ${Number(m[2])}일쯤`:'자리가 나는 대로';}; // i18n-skip
 export function deskModel(p){
   const r=requestOf(p);if(!r)return null;
   const note=(r.notes||[]).at(-1)||null,assets=p?.studio?.assets||[],a=r.answers||{},proposal=r.modelProposal,direction=r.directionProposal;
   const canDirect=r.status==='confirmed'&&!(r.rounds||[]).length&&a.package!=='photo'&&(!direction||direction.status==='open'||direction.status==='declined'&&direction.round<2);
   return {id:p.id,number:r.number,status:r.status,at:r.submittedAt||'',title:p.title,contact:p.contact||'',mail:p.mail||null,brief:briefRows(filled(r)).map(row=>[row.key,row.missing==='없음'?'없음':row.missing?`비어 있음 — ${row.missing}`:row.value]),files:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author==='customer').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),staffFiles:assets.filter(asset=>asset.mimeType?.startsWith('image/')&&asset.author!=='customer'&&asset.purpose!=='progress').map(asset=>({src:assetUrl(asset),label:asset.fileName,size:''})),payment:r.payment||null,
     // 작업 소식(운영 조각 4): 서버가 안다고 알릴 때만(progressFeed). 소식마다 붙인 그림(직원 주소) · 소식 전용 그림 수(40장 상한).
-    progressFeed:!!r.progressFeed,progress:(Array.isArray(r.progress)?r.progress:[]).map(item=>({id:item.id,state:item.state,stage:item.stage||'',text:item.text||'',at:item.at||'',postedAt:item.postedAt||'',withdrawnAt:item.withdrawnAt||'',pictures:(item.assets||[]).map(id=>assets.find(asset=>asset.id===id)).filter(asset=>asset&&assetUrl(asset)).map(asset=>({id:asset.id,src:assetUrl(asset)}))})),progressUsed:assets.filter(asset=>asset.purpose==='progress').length,paymentFlow:!!r.paymentFlow,dueChange:!!r.dueChange,payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||'',
+    progressFeed:!!r.progressFeed,progress:(Array.isArray(r.progress)?r.progress:[]).map(item=>({id:item.id,state:item.state,stage:item.stage||'',text:item.text||'',at:item.at||'',postedAt:item.postedAt||'',withdrawnAt:item.withdrawnAt||'',pictures:(item.assets||[]).map(id=>assets.find(asset=>asset.id===id)).filter(asset=>asset&&assetUrl(asset)).map(asset=>({id:asset.id,src:assetUrl(asset)}))})),progressUsed:assets.filter(asset=>asset.purpose==='progress').length,paymentFlow:!!r.paymentFlow,dueChange:!!r.dueChange&&!['delivered','archived'].includes(p?.stage),seat:p?.seat?.state==='queue'?{noticeDate:p.seat.noticeDate||'',when:seatWhen(p.seat.noticeDate)}:null,seats:p?.seats||null,seatKind:a.package==='photo'?'photo':'video',payWaiting:payState(r),payAmount:Number.isSafeInteger(r.payment?.amount)?r.payment.amount:Number.isSafeInteger(direction?.price)?direction.price:pkgOf(a)?Math.round(pkgOf(a).price*10000):null,payDays:pkgOf(a)?.days||null,attachments:[...assets.filter(asset=>!asset.mimeType?.startsWith('image/')&&assetUrl(asset)).map(asset=>({id:asset.id,label:asset.fileName,url:assetUrl(asset)})),...(p.intake?.files||[]).map(file=>({id:file.id,label:file.fileName,url:`/api/client-projects/${p.id}/intake-files/${file.id}`}))],checks:deskChecks(p),note,asks:r.asks||[],rounds:r.rounds||[],modelProposal:proposal?{...proposal,modelName:modelCard(proposal.modelId)?.name||'',
       // 옷 · 머리(11-12): 손님이 모델을 정하며 고른 값(modelProposal.look). 하나라도 골랐을 때만 한 줄.
       ...(proposal.status==='accepted'&&proposal.look&&modelLooks(proposal.modelId)?(look=>look.outfit||look.hair?{lookText:`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`}:{})(lookOf(proposal.modelId,proposal.look)):{})}:null,needsModel:!direction&&!canDirect&&!a.models?.length&&!MODEL_OPTIONAL_CHOICES.includes(a.modelChoice)&&proposal?.status!=='accepted'&&proposal?.status!=='open',confirmed:r.status==='confirmed',
     direction:direction?{round:direction.round,status:direction.status,names:direction.options.map(option=>option.name),chosen:direction.options.find(option=>option.id===direction.chosenId)?.name||'',answer:direction.answer||'',options:direction.options.map(option=>({id:option.id,name:option.name})),

@@ -158,7 +158,9 @@ test('앱: 접수 상태는 공개 주소에서 읽고, 쉬는 중에 쓰던 초
   assert.match(backend,/hasDraft:!!draft&&\(draft\.status!=='draft'\|\|resumableDraft\(draft\)\),/);
   // 바로 의뢰 주소(?start=request&lang=en)는 화면 언어가 정해지기 전에 여기까지 온다 — 알림도 그 응답의 허락 언어로 말한다.
   assert.match(app,/if\(intake\?\.state==='paused'&&!backend\.hasDraft\)\{if\(backend\.features\)await applyLocale\(backend\.features\);/);
-  assert.match(app,/entryHandle\.update\(\{resume:!!s\.requestResume,paused:s\.intake\?\.state==='paused'\?s\.intake:null,/);
+  // 운영 조각 6-B: 대기까지 찬 상태(full)도 같은 자리에 안내가 선다 — 쉬는 중 · 대기까지 참을 한 식(intakeBlocked)으로 본다.
+  assert.ok(app.includes("const intakeBlocked=intake=>intake?.state==='paused'||intake?.state==='full'?intake:null;"));
+  assert.match(app,/entryHandle\.update\(\{resume:!!s\.requestResume,paused:intakeBlocked\(s\.intake\),/);
   assert.match(api,/SYNK_PULSE_INTAKE_PAUSED:k\('지금은 잠시 접수를 쉬어요\. 다시 열리면 이 화면에서 바로 시작하실 수 있어요\.'\)/);
   // .sx-go의 display가 hidden 속성을 이기므로(같은 무게 · 뒤에 적힘) 숨김을 따로 적어야 단추가 사라진다.
   assert.ok(css.includes('.sx-home [data-entry="start"][hidden]{display:none}'));
@@ -228,9 +230,9 @@ test('넓은 화면 1쪽의 안내 판은 「쇼릴 위 빈 곳」이 아니다 
 
 test('쉬는 안내가 선 채 열려 있던 화면은 다시 열렸는지 스스로 다시 묻는다(화면으로 돌아올 때 · 첫 화면을 다시 붙일 때 · 보이는 동안 1분마다)',()=>{
   const app=read('app.mjs');
-  assert.match(app,/async function recheckIntake\(\)\{\r?\n  if\(s\.mode!=='customer'\|\|demo\|\|filmDemo\|\|s\.project\|\|!entryHandle\|\|s\.intake\?\.state!=='paused'\)return;/,'안내가 서 있을 때만 묻는다(열려 있는 화면은 아무것도 묻지 않는다)');
+  assert.match(app,/async function recheckIntake\(\)\{\r?\n  if\(s\.mode!=='customer'\|\|demo\|\|filmDemo\|\|s\.project\|\|!entryHandle\|\|!intakeBlocked\(s\.intake\)\)return;/,'안내가 서 있을 때만 묻는다(열려 있는 화면은 아무것도 묻지 않는다)');
   assert.ok(app.includes('if(intake&&intakeKey(intake)!==intakeKey(s.intake)&&!s.project&&canApplyRemote()){s.intake=intake;render();}'),'그릴 수 있을 때만 상태를 바꾼다(못 그리면 쉬는 상태로 둔 채 다음 물음에 맡긴다 — 다시 묻기가 멈추지 않게)');
-  assert.match(app,/function watchIntake\(\)\{clearTimeout\(intakeTimer\);intakeTimer=0;if\(s\.mode==='customer'&&!demo&&!filmDemo&&!s\.project&&s\.intake\?\.state==='paused'\)intakeTimer=setTimeout\(\(\)=>\{intakeTimer=0;void recheckIntake\(\);\},60000\);\}/,'타이머는 안내가 서 있는 동안에만 돈다');
+  assert.match(app,/function watchIntake\(\)\{clearTimeout\(intakeTimer\);intakeTimer=0;if\(s\.mode==='customer'&&!demo&&!filmDemo&&!s\.project&&intakeBlocked\(s\.intake\)\)intakeTimer=setTimeout\(\(\)=>\{intakeTimer=0;void recheckIntake\(\);\},60000\);\}/,'타이머는 안내가 서 있는 동안에만 돈다');
   assert.ok(app.includes('mailOpenCheck();modelsEntry();void recheckIntake();}checkResume();watchIntake();}'),'첫 화면을 다시 붙일 때도 묻는다');
   assert.ok(app.includes("window.addEventListener('focus',()=>{if(journalSeenLater)markJournalSeen();void recheckIntake();void recheckStaffIntake();});"));
   assert.ok(app.includes("document.addEventListener('visibilitychange',()=>{if(!document.hidden&&journalSeenLater)markJournalSeen();if(!document.hidden){void recheckIntake();void recheckStaffIntake();}});"));

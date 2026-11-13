@@ -126,7 +126,7 @@ const withRo=name=>{const last=String(name).trim().replace(/[^0-9A-Za-z가-힣]+
 // 고르는 단추 글: 「아니, 잠깐」으로 정하고 글 콘티 받기.
 const goLabel=name=>t('「{name}」{ro} 정하고 글 콘티 받기',{name,ro:withRo(name)});
 // 값 · 받으실 날 · 수정(방향 화면과 고른 방향 칸이 같이 쓴다).
-const termsOf=d=>`<dl class="sx-dp-kv"><div><dt class="sx-small">${esc(t('값'))}</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">${esc(t('받으실 날'))}</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">${esc(t('수정'))}</dt><dd class="sx-serif">${esc(t('{count}회',{count:d.revisions},'revisions'))}</dd></div></dl>`;
+const termsOf=d=>`<dl class="sx-dp-kv${d.queued?' is-queued':''}"><div><dt class="sx-small">${esc(t('값'))}</dt><dd class="sx-serif">${esc(d.price)}</dd></div><div><dt class="sx-small">${esc(t('받으실 날'))}</dt><dd class="sx-serif">${esc(d.due)}</dd></div><div><dt class="sx-small">${esc(t('수정'))}</dt><dd class="sx-serif">${esc(t('{count}회',{count:d.revisions},'revisions'))}</dd></div></dl>${d.seatNote?`<p class="sx-small sx-dp-seat">${esc(t('제작 자리가 차 있어 결제 안내는 자리가 나는 대로 드려요.'))}</p>`:''}`;
 const PLAY_MARK='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 0.5 9.5 5 2 9.5z"/></svg>',STOP_MARK='<svg viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8"/></svg>';
 function dpDetail(o,on){
   return `<div class="sx-dp-detail" data-dp-detail="${esc(o.id)}" ${on?'':'hidden'}><h1 class="sx-serif sx-dp-title" tabindex="-1">${esc(o.name)}</h1><p class="sx-serif sx-dp-sentence">${esc(o.sentence)}</p><ol class="sx-dp-flow">${o.flow.map(line=>`<li><span class="sx-no">${esc(line.at)}</span><span class="sx-body">${esc(line.text)}</span></li>`).join('')}</ol>${o.why?`<p class="sx-small sx-dp-why">${esc(o.why)}</p>`:''}${o.film?`<button type="button" class="sx-dp-taste" data-dp-film="taste" aria-pressed="false"><span class="sx-dp-taste-mark">${PLAY_MARK}</span><span><b data-dp-taste-label>${esc(t('미리 움직여 보기'))}</b><span class="sx-small">${esc(t('{note} · 소리 있음',{note:o.filmNote||t('이 방향의 첫 판')}))}</span></span></button>`:''}</div>`;
@@ -375,6 +375,8 @@ function copyBase(p){
     const pay=p.pay||{};
     if(pay.status==='cancelled')return {turn:'you',title:k('결제가 취소됐어요'),text:p.photo?k('다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료는 그대로 있어요.'):k('다시 진행하시려면 담당자에게 알려 주세요. 보내 주신 자료와 글 콘티는 그대로 있어요.')};
     if(pay.status==='requested')return {turn:'you',title:k('크몽에서 결제해 주세요'),text:p.photo?k('크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 나머지 장을 만들어요.'):k('크몽 메시지로 결제 요청을 보내 드렸어요. 결제가 확인되면 장면 이미지를 만들기 시작해요.')};
+    // 제작 자리 차례를 기다리는 건(운영 조각 6-B · 서버가 실은 project.seat): 「이제 결제해 주세요」 대신 결제 요청이 자리가 나는 대로 온다는 말(결제 카드 한 줄과 같은 뜻).
+    if(pay.seat)return {turn:'you',title:p.photo?k('첫 장을 확인해 주셨어요'):k('글 콘티를 확인해 주셨어요'),text:k('지금은 제작 자리가 차 있어 결제 요청은 자리가 나는 대로 보내 드려요. 그 전에 크몽에서 「문의하기」로 접수 번호를 보내 두시면 바로 이어져요.')};
     if(p.photo)return {turn:'you',title:k('첫 장을 확인해 주셨어요'),text:k('이제 크몽에서 결제해 주세요. 결제가 확인되면 나머지 장을 만들어요.')};
   }
   if(p.state==='prepare-images'&&p.pay?.status==='confirmed')return {turn:'us',title:k('결제를 확인했어요'),text:k('확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.')};
@@ -400,6 +402,7 @@ function payCard(p){
   return `<section class="sx-pay" data-room-in aria-label="${esc(t('결제 안내'))}">
     ${terms.length?`<dl class="sx-pay-terms">${terms.map(([key,value])=>`<div><dt class="sx-small">${esc(key)}</dt><dd class="sx-serif">${esc(value)}</dd></div>`).join('')}</dl>`:''}
     <p class="sx-small sx-pay-fee">${esc(pay.days?t('기간은 결제한 날부터 세요. 크몽 결제 때 크몽 구매 수수료가 더해지고, 부가세는 따로 받지 않아요.'):t('크몽 결제 때 크몽 구매 수수료가 더해지고, 부가세는 따로 받지 않아요.'))}</p>
+    ${pay.seat&&!requested&&pay.status!=='confirmed'?`<p class="sx-small sx-pay-seat" data-seat>${esc(pay.seat.noticeDay?t('지금은 제작 자리가 차 있어요. 결제 안내는 {date}쯤 드려요.',{date:pay.seat.noticeDay}):t('지금은 제작 자리가 차 있어요. 결제 안내는 자리가 나는 대로 드려요.'))}</p>`:''}
     <ol class="sx-pay-steps sx-body">
       <li class="${requested?'is-done':''}"><span>${esc(t('크몽 상품에서 「문의하기」로 접수 번호를 보내 주세요'))}</span>${pay.number?` <b class="sx-no">${esc(pay.number)}</b> <button type="button" class="sx-quiet" data-room-do="copy-number" data-number="${esc(pay.number)}">${esc(t('번호 복사'))}</button>`:''}</li>
       <li class="${requested?'is-done':''}"><span>${esc(requested&&when?t('담당자가 결제 요청을 보냈어요 · {day}',{day:when}):t('담당자가 같은 값 · 기간 · 수정 횟수로 결제 요청을 보내 드려요'))}</span></li>

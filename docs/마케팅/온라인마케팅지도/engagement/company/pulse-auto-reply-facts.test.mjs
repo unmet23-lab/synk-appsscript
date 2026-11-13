@@ -252,6 +252,14 @@ test('고객 방 일치: 상태 · 단계 · 차례 표시 · 제목 · 왼쪽 �
     '결제 요청 · 사진':project({answers:photo,rounds:[round('images',{approvedAt:T(3)})],payment:{status:'requested',requestedAt:T(4),amount:99000}}),
     '결제 차례 · 사진':project({answers:photo,rounds:[round('images',{approvedAt:T(3)})]}),
     '결제 요청 취소':project({rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'cancelled',requestedAt:T(4),cancelledAt:T(5),amount:290000}}),
+    // 운영 조각 6-B: 이 건이 제작 자리 차례를 기다림(손님 보기 project.seat) — 결제 차례 글이 「이제 결제해 주세요」가 아니다(서버 검수 GA2).
+    '결제 차례 · 자리 대기':project({directionProposal:direction({status:'chosen',chosenId:'o1'}),rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3)},{seat:{state:'queue',noticeDate:'2026-11-20'}}),
+    '결제 차례 · 사진 · 자리 대기':project({answers:photo,rounds:[round('images',{approvedAt:T(3)})]},{seat:{state:'queue',noticeDate:''}}),
+    '결제 요청 · 자리 대기':project({rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'requested',requestedAt:T(4),amount:290000}},{seat:{state:'queue',noticeDate:''}}),
+    '결제 요청 취소 · 자리 대기':project({rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'cancelled',requestedAt:T(4),cancelledAt:T(5),amount:290000}},{seat:{state:'queue',noticeDate:''}}),
+    '날짜 없이 굳힌 방향 제안':project({directionProposal:direction({dueDate:'',seat:'queue'})},{seat:{state:'queue',noticeDate:''}}),
+    '날짜 없이 굳힌 방향 제안 · 그 뒤 자리가 남':project({directionProposal:direction({dueDate:'',seat:'queue'})}),   // 6-B 카본 A1 — 기간만
+    '날짜 없이 굳힌 방향 고른 뒤 · 자리가 남':project({directionProposal:direction({dueDate:'',seat:'queue',status:'chosen',chosenId:'o1'})}),
     '결제 확인':project({directionProposal:direction({status:'chosen',chosenId:'o1'}),rounds:[round('script',{approvedAt:T(3)})],scriptApprovedAt:T(3),payment:{status:'confirmed',requestedAt:T(4),confirmedAt:T(5),amount:290000,dueDate:'2026-11-22'}}),
     '제작':project({approvedAt:T(6),payment:{status:'confirmed',confirmedAt:T(5),dueDate:'2026-11-22'}},{stage:'producing'}),
     '제작 · 받으실 날 고침':project({approvedAt:T(6),payment:{status:'confirmed',confirmedAt:T(5),dueDate:'2026-11-29',dueChangedAt:T(7)}},{stage:'producing'}),   // 운영 조각 6-A
@@ -288,6 +296,50 @@ test('고객 방 일치: 상태 · 단계 · 차례 표시 · 제목 · 왼쪽 �
   assert.equal(customerRoomFacts({studio:{}}),null);assert.equal(customerRoomFacts(null),null);
   // 패키지 표는 자기 칸만 읽는다(끝 판 카본 P2 A1 — 「constructor」 같은 이름이 함수 객체를 패키지로 잡지 않게).
   for(const name of ['constructor','toString','__proto__']){const got=customerRoomFacts(project({answers:{...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],package:name}}));assert.equal(got.pkg,null,name);assert.equal(got.revisions,null,name);}
+});
+
+test('제작 자리 대기(운영 조각 6-B · 서버 검수 GA2): 결제 차례여도 결제 요청이 자리가 나는 대로 간다는 사실 — 결제 카드 줄 그대로, 요청을 보낸 뒤 · 자리가 있으면 없다',()=>{
+  const queue=noticeDate=>({seat:{state:'queue',noticeDate}});
+  const req={directionProposal:{round:1,status:'chosen',chosenId:'o1',options:[{id:'o1',name:'가'}],price:290000,dueDate:'2026-11-24',revisions:2},rounds:[{round:1,kind:'script',sentAt:T(2),approvedAt:T(3),scenes:[]}],scriptApprovedAt:T(3)};
+  const dated=facts(project(req,queue('2026-11-20')));
+  assert.equal(dated.의뢰.지금.화면안내,'지금은 제작 자리가 차 있어 결제 요청은 자리가 나는 대로 보내 드려요. 그 전에 크몽에서 「문의하기」로 접수 번호를 보내 두시면 바로 이어져요.');
+  assert.match(dated.의뢰.결제.상태,/^결제할 차례지만 지금은 제작 자리가 차 있어, 담당자의 크몽 결제 요청은 자리가 나는 대로 가요\./);
+  assert.equal(dated.의뢰.결제.제작자리,'지금은 제작 자리가 차 있어요. 결제 안내는 11월 20일쯤 드려요.');
+  assert.ok(unescape(roomView(roomModel(project(req,queue('2026-11-20'))),{bar:false})).includes(dated.의뢰.결제.제작자리),'결제 카드에 보이는 줄 그대로');
+  assert.equal(dated.의뢰.결제.방법,roomPayHow(false),'접수 번호를 먼저 보내 두는 법은 그대로');
+  assert.equal(facts(project(req,queue(''))).의뢰.결제.제작자리,'지금은 제작 자리가 차 있어요. 결제 안내는 자리가 나는 대로 드려요.');
+  assert.equal(facts(project(req,queue('11월쯤'))).의뢰.결제.제작자리,'지금은 제작 자리가 차 있어요. 결제 안내는 자리가 나는 대로 드려요.','날짜 꼴이 아니면 날짜를 말하지 않는다');
+  // 결제 차례 앞(방향을 고른 뒤)에도 결제 칸에 같은 줄.
+  const before=facts(project({directionProposal:req.directionProposal},queue('')));
+  assert.match(before.의뢰.결제.상태,/^아직 결제 전이에요/);assert.equal(before.의뢰.결제.제작자리,'지금은 제작 자리가 차 있어요. 결제 안내는 자리가 나는 대로 드려요.');
+  // 결제 요청을 보낸 뒤 · 자리가 있으면(seat 없음 · queue 아님) 줄도 대기 글도 없다.
+  const requested=facts(project({...req,payment:{status:'requested',requestedAt:T(4),amount:290000}},queue('')));
+  assert.equal(requested.의뢰.결제.제작자리,undefined);assert.equal(requested.의뢰.지금.화면제목,'크몽에서 결제해 주세요');
+  for(const extra of [{},{seat:{state:'open'}},{seat:null}]){const got=facts(project(req,extra));assert.equal(got.의뢰.결제.제작자리,undefined);assert.match(got.의뢰.결제.상태,/^결제할 차례예요/);}
+  assert.match(PULSE_AUTO_REPLY_SYSTEM,/「의뢰\.결제\.제작자리」가 있으면 제작 자리가 찬 동안 결제 요청이 미뤄진다는 뜻입니다\. 결제 안내가 언제 가는지는 그 줄 그대로 말하고, 더 이른 때를 약속하지 않습니다\./);
+});
+
+test('실제 회사 서버 길(운영 조각 6-B · 서버 검수 GA2): 영상 제작 자리가 없으면 자동 안내의 근거(손님 보기)에도 자리 대기가 실려 결제 차례 글 · 결제 칸이 고객 방과 같다',async t=>{
+  const f=await fixture(t);
+  await f.act({action:'request_confirm'});
+  const seats=await f.staff('/api/settings/pulse-capacity/seats',{body:{video:0,photo:5,queue:6}});assert.equal(seats.status,200,JSON.stringify(seats.data));
+  const a=await f.upload('a.png'),b=await f.upload('b.png');
+  const option=(assetId,name)=>({name,sentence:'맛을 설명하려다 말을 다섯 번 바꿔요.',flow:[{at:'0:00',text:'경기가 끝나고'}],why:'대사로 풀려요.',assetId,recommended:name==='아니, 잠깐'});
+  await f.act({action:'propose_direction',lead:'두 방향으로 나눴어요.',options:[option(a,'아니, 잠깐'),option(b,'톡')],modelId:'M06',price:290000,revisions:2});
+  assert.equal(f.row.studio.request.directionProposal.seat,'queue');
+  await f.customerAct({action:'answer_direction',optionId:(await f.room()).project.studio.request.directionProposal.options[0].id});
+  await f.enable();
+  await f.act(scene());await f.act({action:'send_draft',oneLine:'운동 끝 첫 모금',note:'',kind:'script'});await f.customerAct({action:'approve_draft',round:1});
+  const waiting=await f.ask('결제는 어떻게 해요?');
+  assert.equal(waiting.model.state,'pay');assert.deepEqual(waiting.screen.seat,{state:'queue',noticeDate:''});sameAsScreen(waiting);
+  assert.equal(waiting.facts.의뢰.지금.화면안내,'지금은 제작 자리가 차 있어 결제 요청은 자리가 나는 대로 보내 드려요. 그 전에 크몽에서 「문의하기」로 접수 번호를 보내 두시면 바로 이어져요.');
+  assert.doesNotMatch(waiting.raw,/이제 크몽에서 결제해 주세요/);
+  assert.equal(waiting.facts.의뢰.결제.제작자리,'지금은 제작 자리가 차 있어요. 결제 안내는 자리가 나는 대로 드려요.');assert.ok(waiting.html.includes(waiting.facts.의뢰.결제.제작자리));
+  // 담당자가 자리 경고를 보고 결제 요청을 보내면(막지 않는다 — 설계 S2, 확인 overSeat는 GA1) 자리 줄 없이 「크몽에서 결제해 주세요」.
+  await f.act({action:'payment_request',amount:290000},409);
+  await f.act({action:'payment_request',amount:290000,overSeat:true});
+  const requested=await f.ask('결제 요청 받았어요');
+  sameAsScreen(requested);assert.equal(requested.facts.의뢰.지금.화면제목,'크몽에서 결제해 주세요');assert.equal(requested.facts.의뢰.결제.제작자리,undefined);
 });
 
 test('서버 규칙 모듈은 화면 파일을 가져오지 않는다(정적 묶음 교체로 서버 동작이 바뀌지 않게)',async()=>{

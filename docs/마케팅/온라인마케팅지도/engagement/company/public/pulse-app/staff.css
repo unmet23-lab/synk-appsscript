@@ -180,6 +180,18 @@ html.is-staff .login-wrap .eyebrow{font-family:var(--st-sans);font-size:13px;fon
 
 /* ── 프로젝트 안(의뢰 확인) — 한글 13px 아래 글 · 36px 아래 누르는 자리만 맞춘다(짜임은 슬레이트 판 그대로) ── */
 html.is-staff .desk-pay .desk-at,html.is-staff .desk-progress .desk-at{font-size:13px}
+/* 제작 자리(운영 조각 6-B): 첫 화면 큰 숫자 아래 한 줄 · 자리 고치기 칸 · 결제 칸 줄 · 창 경고 */
+html.is-staff .staff-seats{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:14px 0 0;font-size:13px;color:var(--st-ink-56)}
+html.is-staff .staff-seats .button{height:30px;min-height:0;padding:0 12px;font-size:13px}
+html.is-staff .staff-held{margin-top:18px;padding-top:16px;border-top:1px solid var(--st-line)}
+html.is-staff .staff-held h3{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--st-ink)}
+html.is-staff .staff-held ul{display:grid;gap:6px;margin:0 0 12px;padding:0;list-style:none}
+html.is-staff .staff-held li{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--st-ink)}
+html.is-staff .staff-held li .button{height:30px;min-height:0;padding:0 12px;font-size:13px}
+html.is-staff .staff-held>p{margin:0 0 12px;font-size:13px;color:var(--st-ink-56)}
+html.is-staff .staff-home .field select{width:100%;min-height:42px;padding:0 12px;background:#fff;border:1px solid var(--st-line);color:var(--st-ink);font:400 14px var(--st-sans)}
+html.is-staff .desk-pay .desk-seat.is-wait{color:var(--st-berry);font-weight:600}
+html.is-staff .desk-seat-warn{margin:8px 0 12px;padding:10px 12px;background:var(--check-wash);border-left:3px solid var(--st-berry);color:var(--st-ink)}
 html.is-staff .desk-links .btn-text{display:inline-flex;align-items:center;min-height:36px}
 html.is-staff .desk-mail-edit>summary{display:inline-flex;align-items:center;min-height:36px}
 

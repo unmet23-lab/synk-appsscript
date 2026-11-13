@@ -52,9 +52,14 @@
 // v57(11-13): 직원 작업실 다시 짓기(B안 「제작 보드」, v56 위) — 직원 머리 띠 · 첫 화면 보드 · 쉬기 칸으로 views.mjs · room-view.mjs · app.mjs가 바뀌고 직원 화면만 싣는 staff.css를 목록에 더했다.
 // v58(11-13): 의뢰서 탭(v57 위) — 느낌 화면의 「웃음으로 퍼지게」 · 과감함, 전할 말 화면의 꼭 붙일 표시, 모델 화면의 목소리, 준비물의 소리 파일 칸으로
 // request-data.mjs · request-flow.mjs · film.css · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다(예시 영상 · 그림은 화면이 받을 때 받는다).
+// v59(11-13): 받으실 날 고치기(운영 조각 6-A, v58 위) — 직원 결제 칸의 「받으실 날 고치기」 창, 손님 방의 받으실 날 줄 · 일지 줄로
+// views.mjs · 직원 결제 칸 모듈(목록 밖) · room-view.mjs · app.mjs · i18n/en.mjs가 바뀌었다. 목록은 그대로이고 판만 올린다.
 // v60(11-14): 의뢰서 탭 화면 검수 뒤 고침(v59 위) — 사진 상품에는 목소리 · 소리 파일 칸을 그리지 않고, 좁은 화면의 고지 문구 자리가 밑줄 글과 겹치지 않으며,
 // 영어의 표시 · 심의 낱말을 맞췄다(request-data.mjs · request-flow.mjs · film.css · i18n/en.mjs). 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v61-request-copy-20261114';
+// v61(11-14): 의뢰서 글 두 곳(v60 위) — 권리 동의 줄에 「음악」, 첫 화면 약속 줄에 「웃음으로 퍼지게」(request-flow.mjs · film-home.mjs · i18n/en.mjs). 목록은 그대로이고 판만 올린다.
+// v62(11-14): 제작 자리 · 대기(운영 조각 6-B, v61 위) — 첫 화면의 「예약이 찼어요」, 의뢰서 첫 질문 · 결제 카드 · 방향 제안의 자리 한 줄, 직원 첫 화면의 자리 칸 · 결제 창 경고로
+// app.mjs · views.mjs · film-home.mjs · request-flow.mjs · room-view.mjs · film-views.mjs · api.mjs · film.css · staff.css · i18n/en.mjs · 글꼴 조각(와 목록 밖의 직원 결제 칸 모듈)이 바뀌었다. 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v62-seats-20261114';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

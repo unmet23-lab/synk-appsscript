@@ -1,4 +1,4 @@
-import {esc,day} from './api.mjs';
+import {esc,day,aboutDay} from './api.mjs';
 import {t,k,locale} from './i18n.mjs';
 import {localeMenu} from './locale-menu.mjs';
 import {FINISHED_FILMS,filmLine,filmNote,filmTitle} from './films-view.mjs';
@@ -178,13 +178,16 @@ const inviteForm=entryError=>`<div class="sx-invite" data-entry-invite ${entryEr
 // 접수를 쉬는 동안(운영 조각 3 · 2026-11-11, 서버 pulse-capacity.mjs): 「광고 의뢰하기」 자리에 안내가 선다 — 머리 한 줄,
 // 그 아래 다시 여는 날과 담당자가 적은 안내. 열려 있거나 쓰던 의뢰서가 있으면(이어 쓰기는 쉬는 동안에도 된다) 아무것도 더하지 않는다.
 // 담당자 글은 그 언어로 적은 것만 보인다(영어 화면에 한국어 글을 내지 않는다). 완성 광고 보기는 그대로이고, 1쪽 안내에는 작품 쪽으로 가는 줄을 하나 둔다.
-const pausedNote=paused=>String((locale()==='ko'?paused.note:paused.noteEn)||'').trim();
-const pausedInner=(paused,works)=>{const note=pausedNote(paused);return `<p class="sx-paused-head">${esc(t('지금은 잠시 접수를 쉬어요'))}</p><p class="sx-small">${esc(paused.until?t('{date}부터 다시 받아요.',{date:day(paused.until)}):t('다시 열리면 이 화면에서 바로 시작하실 수 있어요.'))}</p>${note?`<p class="sx-small sx-paused-note">${esc(note)}</p>`:''}${works?`<button type="button" class="sx-go sx-paused-works" data-entry="works"><span>${esc(t('완성 광고 보기'))}</span>${arrow}</button>`:''}`;};
-const pausedKey=paused=>paused?JSON.stringify([paused.until||'',paused.note||'',paused.noteEn||'',locale()]):'';
+// 대기까지 찬 동안(운영 조각 6-B · state 'full')도 같은 자리에 안내가 선다 — 머리 한 줄과 자리가 날 무렵(모르면 날짜 없이). 담당자 글은 없다.
+const pausedNote=paused=>paused.state==='full'?'':String((locale()==='ko'?paused.note:paused.noteEn)||'').trim();
+const pausedHead=paused=>paused.state==='full'?t('지금은 예약이 찼어요'):t('지금은 잠시 접수를 쉬어요');
+const pausedWhen=paused=>paused.state==='full'?(paused.noticeDate&&aboutDay(paused.noticeDate)?t('{date}쯤 자리가 나요. 그때 이 화면에서 바로 시작하실 수 있어요.',{date:aboutDay(paused.noticeDate)}):t('자리가 나면 이 화면에서 바로 시작하실 수 있어요.')):paused.until?t('{date}부터 다시 받아요.',{date:day(paused.until)}):t('다시 열리면 이 화면에서 바로 시작하실 수 있어요.');
+const pausedInner=(paused,works)=>{const note=pausedNote(paused);return `<p class="sx-paused-head">${esc(pausedHead(paused))}</p><p class="sx-small">${esc(pausedWhen(paused))}</p>${note?`<p class="sx-small sx-paused-note">${esc(note)}</p>`:''}${works?`<button type="button" class="sx-go sx-paused-works" data-entry="works"><span>${esc(t('완성 광고 보기'))}</span>${arrow}</button>`:''}`;};
+const pausedKey=paused=>!paused?'':paused.state==='full'?JSON.stringify(['full',paused.noticeDate||'',locale()]):JSON.stringify([paused.until||'',paused.note||'',paused.noteEn||'',locale()]);
 // data-key: 처음부터 쉬는 채로 그려진 화면이 그 상태에서 시작하게(mountEntry) 그린 안내의 열쇠를 적어 둔다. tabindex: 단추가 사라질 때 초점을 받을 자리.
 const pausedSlot=(paused,works=false)=>`<div class="sx-paused" data-paused${works?' data-paused-works':''} data-in tabindex="-1" data-key="${esc(pausedKey(paused))}"${paused?'':' hidden'}>${paused?pausedInner(paused,works):''}</div>`;
 // 화면 읽기에 한 번 알릴 말(머리 한 줄 + 다시 여는 날). 눈에 보이는 안내 칸 둘이 아니라 늘 있는 칸 하나(data-paused-say)가 읽는다.
-const pausedSay=paused=>`${t('지금은 잠시 접수를 쉬어요')}. ${paused.until?t('{date}부터 다시 받아요.',{date:day(paused.until)}):t('다시 열리면 이 화면에서 바로 시작하실 수 있어요.')}`;
+const pausedSay=paused=>`${pausedHead(paused)}. ${pausedWhen(paused)}`;
 // 접수 상태를 이미 그려진 첫 화면에 옮긴다 — mountEntry의 update가 부른다(앱은 첫 화면을 그린 뒤에 접수 상태를 읽는다). state는 {resume,paused,key}이고
 // 같은 안내는 다시 그리지 않는다(읽던 자리 · 초점을 지킨다). 쓰던 의뢰서가 있으면 쉬는 중이어도 단추(이어 쓰기)를 둔다.
 // 단추와 안내는 같은 차례로 짝을 이룬다(1쪽 · 끝 쪽). 사라지는 쪽에 초점이 있었으면 그 자리에 새로 선 쪽으로 옮긴다(초점이 문서 처음으로 떨어지지 않게).

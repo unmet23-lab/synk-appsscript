@@ -149,7 +149,7 @@ export function requestSummaryRows(a,files=[],personaFiles=null){
 
 // personas: 인물 서비스(pulse-personas.mjs createPersonaService — 스위치 확인 · 인물 만들기). 없으면 맞춤 인물 요청을 받지 않는다.
 // workspaces: 고객 브랜드 서비스(pulse-workspaces.mjs — 판 4 내 모델 다시 쓰기의 붙임 검사 · 담당자). 없으면 다시 쓰기 의뢰를 받지 않는다.
-export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null,workspaces=null,intakePaused=null}){
+export function createPulseRequests({store,clientProjects,clock=()=>new Date().toISOString(),freeBytes,personas=null,workspaces=null,intakePaused=null,intakeFull=null}){
   const directory=()=>resolve(store.directory,'pulse-request-media'),media=()=>resolve(store.directory,'studio-media');
   const inDraft=name=>{if(!/^[a-f0-9-]{36}\.(?:part|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(directory(),name);if(dirname(path)!==directory())throw fail('파일 경로를 확인해 주세요.',404);return path;};
   const inMedia=name=>{if(!/^[a-f0-9-]{36}\.(?:upload|mp4|webm|png|jpg|intake)$/.test(name))throw fail('파일 경로를 확인해 주세요.',404);const path=resolve(media(),name);if(dirname(path)!==media())throw fail('파일 경로를 확인해 주세요.',404);return path;};
@@ -187,6 +187,8 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
     if(!object(input)||input.website)throw fail('의뢰서 요청을 확인해 주세요.');
     // 접수를 쉬는 동안(운영 조각 3, pulse-capacity.mjs): 막는 자리는 새 초안을 여는 여기 하나뿐이다. 쓰던 초안의 저장 · 보내기 · 10분 재전송은 이 길을 지나지 않는다.
     if(intakePaused?.())throw fail('지금은 잠시 접수를 쉬어요. 다시 열리면 이 화면에서 바로 시작하실 수 있어요.',409,'SYNK_PULSE_INTAKE_PAUSED');
+    // 제작 자리 · 대기가 모두 찼을 때(운영 조각 6-B): 새로 쓰기 시작만 막는다 — 쓰던 초안의 보내기 · 10분 재전송은 그대로 받는다(대기로).
+    if(intakeFull?.())throw fail('지금은 예약이 찼어요. 자리가 나면 이 화면에서 다시 받아요.',409,'SYNK_PULSE_INTAKE_FULL');
     count('start:'+digest(client),1,REQUEST_LIMITS.startsPerHourByClient,3600000);
     if(recent(24).length>=REQUEST_LIMITS.startsPerDay)throw busy();
     const at=clock(),id=randomUUID(),csrf=randomBytes(24).toString('base64url');
@@ -463,7 +465,7 @@ const FIELDS={
   request_note:['note'],request_ask:['items'],request_confirm:[],propose_model:['modelId','note','translation'],send_draft:['oneLine','note','translation','kind'],
   request_answer:['askId','text','fileId'],answer_model:['accept','modelId','note','outfit','hair'],request_save:['answers'],request_submit:['answers'],submit_draft_review:['round','items'],approve_draft:['round','terms'],
   propose_direction:['lead','options','modelId','price','dueDate','revisions','translation'],request_contact:['email','mailOff'],settle_direction:['optionId','note'],answer_direction:['optionId','modelId','note','neither','outfit','hair'],
-  payment_request:['amount'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],due_change:['dueDate','reason','note'],
+  payment_request:['amount','overSeat'],payment_confirm:['ref','dueDate','amount','channel','net'],payment_cancel:['note'],due_change:['dueDate','reason','note'],
   // 작업 소식(운영 조각 4 · 설계 S1): 직원만 — 초안 쓰기 · 공개 · 거두기. 동작은 pulse-progress.mjs.
   ...PROGRESS_FIELDS,
 };
@@ -546,7 +548,8 @@ function logPayment(request,entry,{opens=false}={}){
 const photoPackage=request=>request?.answers?.package==='photo';
 const photoSheetApproved=request=>photoPackage(request)&&(request.rounds||[]).some(round=>round.kind==='images'&&round.approvedAt);
 // locale: 이 프로젝트의 소통 언어(pulse-locale.mjs). 한국어가 아니면 손님에게 보일 직원 글은 번역을 함께 받아야 보낸다(pulse-translations.mjs).
-export function applyRequestAction({studio,row,input,staff,stamp,personas,locale='ko'}){
+// seat(운영 조각 6-B): 그 프로젝트의 지금 자리(pulse-capacity.mjs seatFor — 자리가 모자라면 {state:'queue', noticeDate}, 있으면 null). 방향 제안이 보내는 순간에 굳힌다.
+export function applyRequestAction({studio,row,input,staff,stamp,personas,locale='ko',seat=null}){
   const action=input.action,now=stamp.at;
   if(STAFF_ONLY.includes(action)&&!staff)throw fail('담당자 화면에서만 할 수 있어요.',403);
   if(CUSTOMER_ONLY.includes(action)&&staff)throw fail('고객 화면에서만 할 수 있어요.',403);
@@ -646,9 +649,13 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     const price=input.price,revisions=input.revisions;
     if(!Number.isSafeInteger(price)||price<10000||price>100000000)throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
     if(!Number.isSafeInteger(revisions)||revisions<0||revisions>9)throw fail('수정 횟수를 확인해 주세요.');
-    const dueDate=kstDay(input.dueDate,now);
+    // 받으실 날: 제작 자리가 모자란 때(대기) 보낸 제안은 날짜 없이도 받는다 — 결제 안내가 미뤄지면 적은 날이 거짓이 되므로 「결제한 날부터 N일」로 보이게
+    // 제안에 seat:'queue'를 굳혀 둔다(볼 때마다 따지면 다른 손님의 결제에 따라 약속 날짜가 생겼다 사라진다 — 설계 S2 「언제쯤」). 자리가 있으면 전처럼 날짜가 꼭 든다.
+    // 기간이 정해진 구성(PACKAGE_DAYS)만 — 기업 · 추천 구성은 「결제한 날부터 N일」로 보일 기간이 없어 대기여도 날이 꼭 든다(6-B 화면 Fable F1).
+    const waiting=typeof seat==='function'&&Object.hasOwn(PACKAGE_DAYS,request.answers?.package??'')?seat(row):null,undated=!!waiting&&(input.dueDate===undefined||input.dueDate===null||input.dueDate==='');
+    const dueDate=undated?'':kstDay(input.dueDate,now);
     const declined=prev?.status==='declined';
-    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),ids:prev.options.map(option=>option.id),answer:prev.answer||'',...(prev.at?{at:prev.at}:{}),...(prev.by?{by:prev.by}:{}),...(prev.answeredAt?{answeredAt:prev.answeredAt}:{})}}:prev?.prior?{prior:prev.prior}:{})};
+    const proposal={round:declined?prev.round+1:prev?.round||1,status:'open',at:now,by:stamp.authorName,lead:text(input.lead,200),options:directionOptions(input.options,studio),...(modelId?{modelId}:{}),price,dueDate,...(undated?{seat:'queue'}:{}),revisions,...(declined?{prior:{round:prev.round,names:prev.options.map(option=>option.name),ids:prev.options.map(option=>option.id),answer:prev.answer||'',...(prev.at?{at:prev.at}:{}),...(prev.by?{by:prev.by}:{}),...(prev.answeredAt?{answeredAt:prev.answeredAt}:{})}}:prev?.prior?{prior:prev.prior}:{})};
     // 영어 프로젝트: 리드 · 안마다 이름 · 한 문장 · 흐름 · 이유 · 움직임 견본 메모의 영어를 같은 순서로 함께 받는다(input.translation.options[i]).
     const said=inlineObject(input.translation,['lead','options']),saidOptions=Array.isArray(said.options)?said.options:[];
     if(said.options!==undefined&&(!Array.isArray(said.options)||said.options.length>proposal.options.length))throw fail('번역 칸을 확인해 주세요.');
@@ -689,6 +696,10 @@ export function applyRequestAction({studio,row,input,staff,stamp,personas,locale
     if(requestPaid(request))throw fail('결제를 이미 확인했어요.',409);
     const amount=input.amount;
     if(!paymentAmount(amount))throw fail('값은 원 단위로 1만 원에서 1억 원 사이로 적어 주세요.');
+    // 제작 자리 차례를 기다리는 건(운영 조각 6-B): 설계 S2대로 막지는 않지만(담당자 판단) 자리 경고를 띄운 결제 요청 창이 보낸 확인(overSeat)이 있어야 받는다 —
+    // 경고를 모르는 옛 화면 · 다른 길로 대기 손님에게 결제 안내가 먼저 나가지 않게(서버 검수 GA1).
+    if(input.overSeat!==undefined&&input.overSeat!==true)throw fail('자리 확인 값을 확인해 주세요.');
+    if(typeof seat==='function'&&seat(row)&&input.overSeat!==true)throw fail('이 건은 아직 제작 자리 차례가 아니에요. 결제 요청 창을 닫고 다시 열면 자리 경고가 떠요 — 그걸 보고 보내 주세요.',409,'SYNK_PULSE_SEAT_WAIT');
     studio.request={...request,payment:{status:'requested',requestedAt:now,requestedBy:stamp.authorName,amount},paymentLog:logPayment(request,{kind:'requested',at:now,by:stamp.authorName,amount},{opens:true})};
     return;
   }
