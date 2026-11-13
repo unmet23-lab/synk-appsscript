@@ -14,7 +14,7 @@ const HERE=path.dirname(fileURLToPath(import.meta.url)),DIST=path.join(HERE,'../
 const require=createRequire(import.meta.url);let playwright;try{playwright=require('playwright');}catch{playwright=require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}
 const content=JSON.parse(fs.readFileSync(path.join(HERE,'../content/ending-53.json'),'utf8'));
 const fixture=JSON.stringify({version:1,topic:content.topic,items:content.items.map(({review,...i})=>({...i,review:{status:'passed'}}))});
-const TYPES={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.woff2':'font/woff2'};
+const TYPES={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.woff2':'font/woff2','.svg':'image/svg+xml'};
 let fail={items:false};
 function serve(){return new Promise(res=>{const s=http.createServer((req,r)=>{const u=new URL(req.url,'http://x');
  if(req.method!=='GET'){r.writeHead(405).end();return;}
@@ -41,7 +41,7 @@ test('한국어 공부: 처음 → 쓰기 → 확인 → 연습 → 다른 자�
  assert.ok(fs.existsSync(path.join(DIST,'index.html')),'먼저 build.mjs');
  fs.mkdirSync(OUT,{recursive:true});
  const server=await serve(),base=`http://127.0.0.1:${server.address().port}/study/`;
- const browser=await playwright.chromium.launch({channel:'msedge',headless:true});
+ const browser=await playwright.chromium.launch({channel:'msedge',headless:true});{const nc=browser.newContext.bind(browser);browser.newContext=(o={})=>nc({reducedMotion:'reduce',...o});} // 캡처가 장면 들어오는 움직임 도중을 찍지 않게(11-14 Fable F3)
  const report={measures:[],requests:[],errors:[],scenes:[]};
  try{
   for(const [w,h,lang] of [[390,844,'ko'],[1440,900,'ko'],[390,844,'en'],[390,844,'mn']]){
@@ -107,7 +107,7 @@ const PART='중고 거래 앱 이용자가 늘었다. 2020년에는 300만 명�
 const MIXED='중고 거래 앱 이용자가 늘었다. 2020년에는 300만 명이었습니다. 2024년에는 1,200만 명으로 늘었습니다. 이용자가 늘어난 이유는 두 가지이다.';
 test('형태 갈래·적용 갈래가 실제 화면을 지나고, 깨진 저장 장면은 다시 정한다', {timeout:240000}, async()=>{
  const server=await serve(),base=`http://127.0.0.1:${server.address().port}/study/`;
- const browser=await playwright.chromium.launch({channel:'msedge',headless:true}),errors=[];
+ const browser=await playwright.chromium.launch({channel:'msedge',headless:true}),errors=[];{const nc=browser.newContext.bind(browser);browser.newContext=(o={})=>nc({reducedMotion:'reduce',...o});} // 캡처가 장면 들어오는 움직임 도중을 찍지 않게(11-14 Fable F3 · FA1)
  const sceneOf=page=>page.evaluate(()=>JSON.parse(localStorage.getItem(`synk.study.v2:${localStorage.getItem('synk.study.slot')||'guest'}`)||'{}').scene);
  try{
   for(const branch of ['forms','apply']){

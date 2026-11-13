@@ -15,9 +15,9 @@ test('의미 튜터 화면: 확인 정오답별 안내 → 적용 → 내 글 �
    res.end(JSON.stringify({ok:true,status:'ok',accountId:ACCOUNT,feedback:f}));return;
   }
   const rel=u.pathname.replace(/^\/study\//,''),file=path.resolve(DIST,rel||'index.html');if(!u.pathname.startsWith('/study/')||!file.startsWith(DIST+path.sep)||!fs.existsSync(file)){res.writeHead(404).end();return;}
-  res.setHeader('content-type',({'.js':'text/javascript','.css':'text/css','.json':'application/json','.html':'text/html','.woff2':'font/woff2'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));
+  res.setHeader('content-type',({'.js':'text/javascript','.css':'text/css','.json':'application/json','.html':'text/html','.woff2':'font/woff2','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));
  });await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- const browser=await playwright.chromium.launch({channel:'msedge',headless:true});
+ const browser=await playwright.chromium.launch({channel:'msedge',headless:true});{const nc=browser.newContext.bind(browser);browser.newContext=(o={})=>nc({reducedMotion:'reduce',...o});} // 캡처가 장면 들어오는 움직임 도중을 찍지 않게(11-14 Fable F3)
  try{
   for(const [width,pick,lang] of [[390,'a','ko'],[1440,'b','ko'],[390,'b','en'],[1440,'a','en'],[390,'a','mn'],[1440,'b','mn']]){
    const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
