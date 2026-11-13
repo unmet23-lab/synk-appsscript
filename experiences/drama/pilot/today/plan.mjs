@@ -307,4 +307,8 @@ export function proofLine(it) {
 
 // 약속한 손님을 오늘 맞혔나: 그 손님(itemKey)의 보임 뒤 첫 시도의 판정. 없으면 null.
 function entryHit(events, itemKey, startAt) {
- const list = Array.isArray(events)
+ const list = Array.isArray(events) ? events : [];
+ const shown = list.filter((e) => e?.type === 'practice.presented' && e.itemKey === itemKey && Date.parse(e.at) >= startAt).map((e) => e.id);
+ const first = list.filter((e) => e?.type === 'practice.attempted' && shown.includes(e.presentationId)).sort((a, b) => Date.parse(a.at) - Date.parse(b.at))[0];
+ return first ? first.verdict === 'correct' : null;
+}

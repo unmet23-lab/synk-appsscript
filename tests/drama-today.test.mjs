@@ -245,4 +245,18 @@ test('처음 보는 대사 표는 원고와 같고, 제목 · 한국어 상황 �
  assert.ok(!Object.values(AGAIN_PAIR).includes(lesson.transfer.id) && !Object.values(AGAIN_PAIR).includes(lesson.delayed.id));
 });
 
-test('깃발이
+test('깃발이 없으면 드라마는 그대로 — 「오늘」 모듈은 ?today=1일 때만 불러오고, 공개 빌드는 싣지 않는다', () => {
+ const src = fs.readFileSync(path.join(ROOT, 'experiences/drama/pilot/pilot.mjs'), 'utf8');
+ // 정적 import에 today가 없다(깃발 없이 받는 바이트 · 실행에 들지 않는다).
+ for (const m of src.matchAll(/^import .+ from '([^']+)';$/gm)) assert.ok(!m[1].includes('today'), m[1]);
+ // 깃발은 주소의 today=1 하나이고, 「오늘」로 가는 길은 그 깃발 뒤에만 있다.
+ assert.ok(/const TODAY = .*get\('today'\) === '1'/.test(src), '깃발 줄이 없다');
+ const loads = src.split('\n').filter((l) => /import\(/.test(l) && /today\//.test(l));
+ assert.ok(loads.length >= 1);
+ for (const l of loads) assert.ok(/if \(TODAY\)/.test(l), `「오늘」 모듈은 깃발 검사 안에서만 부른다: ${l.trim()}`);
+ // 깃발이 없으면 S.today가 생기지 않는다 — S.today에 값을 넣는 곳은 today/ 모듈뿐(pilot.mjs는 비우기만).
+ assert.ok(!/S\.today\s*=(?!=)\s*(?!null\b)\S/.test(src), 'pilot.mjs가 S.today를 세운다');
+ // 공개 빌드가 드라마에서 싣는 파일 목록에 today/가 없다.
+ const build = fs.readFileSync(path.join(ROOT, 'tools/build-world-app-public.mjs'), 'utf8');
+ assert.ok(!/drama[^\n]*today/.test(build));
+});

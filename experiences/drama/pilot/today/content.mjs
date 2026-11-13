@@ -25,7 +25,7 @@ export const YO_LINES = Object.freeze(['s1e01-6', 's1e01-7', 's1e01-8']);
 export const TAEO_CALL = Object.freeze({
  's1e01-6': { pair: 's1e01-t3', text: '길 잃어서 헤맸다고 했죠? 오늘은 요즘 지내는 얘기를 해 봐요.' },
  's1e01-7': { pair: 's1e01-t4', text: '도서관은 잘 찾았어요? 오늘은 다른 곳을 물어봐요.' },
- 's1e01-8': { pair: 's1e01-t7', text: '저한테 고맙다고 했었죠? 오늘은 다른 분께 고마운 마음을 전해 봐요.' },
+ 's1e01-8': { pair: 's1e01-t7', text: '고맙다고 했죠? 오늘은 다른 분께 고마움을 전해 봐요.' },
 });
 
 // 태오 한 줄의 목소리 · 입 맞는 영상을 끼울 자리 — 틀 code(plan.mjs TAEO_LINES) → { video, audio }(drama/pilot 기준 경로).
@@ -63,4 +63,10 @@ export const TEXT = Object.freeze({
  transferMissing: '받아 적은 글에서는 이 상황에 필요한 말이 다 보이지 않았어요. 위 상황을 다시 읽고 한 번 더 말해 보거나, 모범을 볼 수 있어요.',
 });
 
-// 장�
+// 장면 줄을 까닭 글에 짧게 부를 때: 「…한참 헤맸어요」. 정해 둔 꼬리가 없으면 끝 두 어절.
+export const TAILS = Object.freeze({ 's1e01-6': '한참 헤맸어요', 's1e01-7': '어디에 있는지 아세요', 's1e01-8': '덕분에 살았어요' });
+export function lineTail(text, id = null) {
+ if (id && TAILS[id]) return TAILS[id];
+ const words = String(text || '').replace(/[.!?。]+$/u, '').trim().split(/\s+/);
+ return words.slice(-2).join(' ');
+}
