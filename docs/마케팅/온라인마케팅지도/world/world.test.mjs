@@ -31,7 +31,7 @@ test('지도 모양은 남극을 뺀 나라 경계를 한 장으로 갖는다', 
 test('LAB 나라는 원장의 나라 행과 같고, 확보 수는 원장의 계정 상태 그대로다', () => {
   const rows = data.queries.countries.rows.filter(r => r.brand === 'LAB');
   assert.equal(world.lab.countries.length, rows.length);
-  const channels = data.queries.channels.rows.filter(r => r.brand === 'LAB');
+  const channels = data.queries.channels.rows.filter(r => r.business === 'LAB');
   for (const c of world.lab.countries) {
     assert.ok(c.onMap, c.code + ' 지도에 있음');
     const mine = channels.filter(r => r.country === c.name);
@@ -42,7 +42,8 @@ test('LAB 나라는 원장의 나라 행과 같고, 확보 수는 원장의 계�
   }
   const s = world.lab.summary;
   assert.equal(s.active + s.target, rows.length);
-  assert.equal(s.secured, world.lab.countries.reduce((n, c) => n + c.secured, 0));
+  assert.equal(s.secured, world.lab.countries.reduce((n, c) => n + c.secured, 0)+world.lab.shared.filter(a=>a.secured).length);
+  assert.equal(world.lab.shared.filter(a=>a.contentTrack==='yuhokorean').length,5);
 });
 
 test('LAB 목록은 지역 순서로 묶이고 모든 나라가 지역을 갖는다', () => {
@@ -65,17 +66,24 @@ test('PULSE는 타깃 파일의 나라를 그대로 칠하고 한국에 공통 �
   const kr = world.pulse.countries.find(c => c.code === 'KR');
   assert.equal(kr.status, 'active');
   assert.equal(kr.name, '한국');
-  const pulseRows = data.queries.channels.rows.filter(r => r.brand === 'PULSE');
-  assert.equal(world.pulse.shared.length + kr.accounts.filter(a => a.secured).length, pulseRows.filter(r => SECURED.has(r.accountStatus)).length);
+  const pulseRows = data.queries.channels.rows.filter(r => r.business === 'PULSE');
+  assert.equal(world.pulse.summary.primary,pulseRows.filter(r=>SECURED.has(r.accountStatus)).length);
+  assert.equal(world.pulse.summary.secured,8,'7 PULSE and 1 shared representative account, deduplicated across countries');
   for (const c of world.pulse.countries.filter(x => x.status === 'target')) {
-    assert.equal(c.secured, 0, c.code + ' 준비 중 나라는 확보 계정이 없다');
-    assert.ok(c.accounts.every(a => a.state === '계정 계획' && !a.url));
+    if(c.code==='JP'){assert.equal(c.secured,0);assert.ok(c.accounts.every(a=>a.state==='계정 계획'&&!a.url));}
+    else {assert.equal(c.secured,2);assert.deepEqual(c.accounts.map(a=>a.id).sort(),['pulse-tiktok','yuho-linkedin-primary']);assert.ok(c.accounts.every(a=>a.secured&&a.shared));}
   }
 });
 
-test('머리 문장은 받침에 맞는 조사와 원장 숫자를 쓴다', () => {
+test('머리 문장은 받침에 맞는 조사와 원장 숫자를 쓴다 · 계정 확보를 게시 운영처럼 쓰지 않는다', () => {
   const lab = headline(world.lab);
-  assert.match(lab.first, /^LAB은 \d+개국에서$/);
+  assert.match(lab.first, /^LAB은 \d+개국에$/);
+  assert.match(lab.second, /계정/);
+  for (const view of [world.lab, world.pulse, world.shift, world.path].filter(Boolean)) {
+    const h = headline(view);
+    assert.doesNotMatch(h.first + h.second, /운영/, view.brand + ': 계정 확보를 「운영」으로 쓰지 않는다');
+  }
+  assert.match(headline(world.pulse).second, /타깃 시장/);
   const pulse = headline(world.pulse);
   assert.match(pulse.first, /^PULSE는 /);
   assert.match(pulse.second, new RegExp(world.pulse.summary.target + '개국'));

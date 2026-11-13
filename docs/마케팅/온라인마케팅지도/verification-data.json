@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2026-11-13T09:46:39.861Z",
+  "generatedAt": "2026-11-13T13:00:05.664Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
-    "latestContent": "2026-09-27"
+    "latestContent": "2026-09-27",
+    "accountObservations": "2026-11-13"
   },
   "counts": {
     "operating": 37,
@@ -18,18 +19,27 @@
     "identities": 28,
     "activeManagedChannels": 71,
     "loginStatusCounts": {
-      "confirmed": 55,
-      "switch-only": 6,
-      "partial": 10,
-      "missing": 0,
-      "not-created": 0,
-      "excluded": 0
+      "historical": 52,
+      "verified": 18,
+      "login-required": 1
     }
   },
   "files": [
     {
       "file": "inputs/login-audit.json",
       "sha256": "cf88cfe8922fe2e0c63e2ee8babed7d51c6f15c4f3972b505cc146812e4d1a32"
+    },
+    {
+      "file": "inputs/account-observations.json",
+      "sha256": "716c88064ee43bce1773e1111b85b1bd29c1668abab612ff0315e7498c01019c"
+    },
+    {
+      "file": "inputs/pulse-targets.json",
+      "sha256": "6093c78d084ac653b36bf0fdca6faa9b69bc44c1618dc095e2895c3f6a62ec46"
+    },
+    {
+      "file": "../계정_사업속성.json",
+      "sha256": "18e083ac104900954855a781ebcc7c1734858be3b3c594d4b2ba93bdca927955"
     },
     {
       "file": "inputs/upload-plan.json",

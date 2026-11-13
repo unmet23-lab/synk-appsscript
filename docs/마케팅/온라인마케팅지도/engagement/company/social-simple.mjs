@@ -4,9 +4,11 @@
 // 시각은 화면용 한국 시각 'YYYY-MM-DD HH:MM'으로 낸다. 댓글 본문·작성자·토큰·검토 링크는 내보내지 않는다.
 // 무거운 성과 보고서(report — 수집 기록 전부)는 쓰지 않는다: 최근 31일 게시물과 그 게시물의 마지막 숫자만 열쇠로 읽는다.
 
+import {classifiedChannel,buildAccountMap} from './account-catalog.mjs';
+import {nextCollectionAt} from './collection-policy.mjs';
 export const DIGEST_KIND='socialRepoDigest',DIGEST_ID='current';
 const KST=9*3600000,DAY=86400000,HOUR=3600000;
-export const DIGEST_LIMITS=Object.freeze({bytes:262144,episodes:200,plates:24,judgments:500,accounts:120,excludedUrls:200,text:300,url:2000});
+export const DIGEST_LIMITS=Object.freeze({bytes:524288,episodes:200,plates:24,judgments:500,accounts:120,excludedUrls:200,text:300,url:2000});
 const STATES=new Set(['승인 대기','예약됨','게시됨','실패','보류']);
 const METHODS=new Set(['작업실','Meta 예약','API 예약','직접 예약','유호님 직접']);
 const BRANDS=new Set(['유호','브리핑','LAB','회사']);
@@ -69,8 +71,23 @@ export function validateDigest(input,{now}){
   const count=v=>Number.isInteger(v)&&v>=0&&v<=100000?v:0;
   const source=input.source&&typeof input.source==='object'?input.source:{};
   const excludedUrls=list(input.excluded?.urls,DIGEST_LIMITS.excludedUrls,'뺀 주소').map(url).filter(Boolean);
+  let accountMap=null;
+  if(input.accountMap){
+    const mapTime=iso(input.accountMap.generatedAt);
+    if(!mapTime||Date.parse(mapTime)>nowMs+5*60000)throw fail('계정 관측 시각을 확인해 주세요.');
+    accountMap={generatedAt:mapTime,accounts:keep(list(input.accountMap.accounts,120,'계정 현황'),a=>{
+      if(!id(a?.id))return null;
+      const login=a.operations?.login||{},publication=a.operations?.publication||{};
+      const observedAt=iso(login.observedAt);
+      const screen=publication.screenObservation;
+      const currentState=['verified','login-required'].includes(login.state);
+      return {id:a.id,operations:{login:{state:['verified','login-required','historical','unknown'].includes(login.state)&&(!currentState||observedAt)&&(!observedAt||Date.parse(observedAt)<=nowMs+5*60000)?login.state:'unknown',observedAt,observedDateOnly:login.observedDateOnly===true,browser:text(login.browser,150),method:text(login.method,150),scope:text(login.scope,300)},
+        publication:{omittedPublishedCount:count(publication.omittedPublishedCount),receipts:keep(list(publication.receipts,600,'게시 근거'),r=>['게시됨','예약됨','승인 대기'].includes(r?.state)?{episode:text(r.episode,120),state:r.state,at:iso(r.at),observedAt:iso(r.observedAt),url:url(r.url),jobId:id(r.jobId)}:null),
+          screenObservation:screen?{observedAt:iso(screen.observedAt),scope:text(screen.scope,150),totalNotes:Number.isInteger(screen.totalNotes)?screen.totalNotes:null,scheduledDates:(Array.isArray(screen.scheduledDates)?screen.scheduledDates:[]).slice(0,10).map(day).filter(Boolean),timeZone:text(screen.timeZone,60),note:text(screen.note)}:null}}};
+    })};
+  }
   return {v:1,generatedAt:new Date(at).toISOString(),today:day(input.today),source:{tool:'편요약',commit:typeof source.commit==='string'&&/^[0-9a-f]{7,40}$/.test(source.commit)?source.commit:null,commitAt:iso(source.commitAt)},
-    accounts,episodes,judgments,excluded:{운영시험:count(input.excluded?.운영시험),작품:count(input.excluded?.작품),urls:excludedUrls},dropped};
+    accounts,accountMap,episodes,judgments,excluded:{운영시험:count(input.excluded?.운영시험),작품:count(input.excluded?.작품),urls:excludedUrls},dropped};
 }
 
 // ── 세 장 조합(순수 함수) ──
@@ -78,7 +95,8 @@ export function validateDigest(input,{now}){
 // jobs: publishing.summary 예약 작업, postTitles: {postId:title}, thumbs: {postId:{src,kind}}, recent: 최근 31일 수집 게시물(+views),
 // performance: 게시 성과 관측 항목, inbox: 줄인 댓글({channelId,open,remoteCreatedAt,collectorPostId}), commentPosts: {postId:{title,url}},
 // providerRows·healthRows: 자동 게시 연결, digest: 받은 편 요약(없으면 null), isAdmin: 서버 채널이 없는 계정의 판을 보일지.
-export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},collectHourKst=null,jobs=[],postTitles={},thumbs={},recent=[],performance=[],inbox=[],commentPosts={},providerRows=[],healthRows=[],digest=null}){
+export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},collectHourKst=null,collectHoursKst,jobs=[],accountMapJobs=jobs,postTitles={},thumbs={},recent=[],performance=[],inbox=[],commentPosts={},providerRows=[],healthRows=[],digest=null}){
+  channels=channels.map(c=>classifiedChannel(c));
   const nowMs=Date.parse(now),today=kstDay(nowMs),yesterday=addDays(today,-1),since=addDays(today,-7);
   const channelById=new Map(channels.map(c=>[c.id,c]));
   const channelOf=(platform,handle)=>channels.find(c=>c.platform===platform&&norm(c.handle)&&norm(c.handle)===norm(handle))||null;
@@ -86,7 +104,7 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},c
   const accountOf=channel=>accounts.find(a=>a.platform===channel.platform&&norm(a.handle)&&norm(a.handle)===norm(channel.handle))||null;
   const brandOf=channel=>{const a=accountOf(channel);if(a)return a.brand;const h=norm(channel.handle);return /yuhobuilds/.test(h)?'유호':/synkbrief/.test(h)?'브리핑':/^SYNK LAB/.test(channel.displayName||'')||/^synk(lab|korean|\.mn|world)/.test(h)?'LAB':'회사';};
   // 나라별 LAB 부계정 = 채널 이름이 「SYNK LAB <나라>」인 것(본 계정 「SYNK LAB | Learn Korean」은 빼고) — 시안 규칙 그대로.
-  const countryOf=channel=>/^SYNK LAB [A-Z]/.test(channel.displayName||'')&&!/Learn Korean/.test(channel.displayName||'');
+  const countryOf=channel=>channel.accountId?/^lab-[a-z]{2}-/.test(channel.accountId):/^SYNK LAB [A-Z]/.test(channel.displayName||'')&&!/Learn Korean/.test(channel.displayName||'');
   const plateFace=(channel,fallback={})=>({platform:channel?.platform||fallback.platform,handle:channel?atHandle(channel.platform,channel.handle):atHandle(fallback.platform,fallback.handle)});
   const recentByKey=new Map(),recentByChannel=new Map();
   for(const p of recent){const k=postKey(channelById.get(p.channelId)?.platform,p.url);if(k)recentByKey.set(k,p);if(!recentByChannel.has(p.channelId))recentByChannel.set(p.channelId,[]);recentByChannel.get(p.channelId).push(p);}
@@ -176,9 +194,9 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},c
   // 6) 수집 한 줄
   const offPlatforms=[...new Set((collection.items||[]).filter(i=>i.status==='unsupported').map(i=>channelById.get(i.channelId)?.platform).filter(Boolean))];
   const numbersAt=recent.map(r=>r.lastSeenAt).filter(Boolean).sort().at(-1)||null;
-  // 다음 수집 = 정해 둔 시각(한국 시각)이 오늘 아직 안 왔으면 오늘, 지났으면 내일. 자동 수집이 꺼져 있으면 비운다.
-  const hourOk=Number.isInteger(collectHourKst)&&collectHourKst>=0&&collectHourKst<=23,todaySlot=hourOk?Date.parse(`${today}T${String(collectHourKst).padStart(2,'0')}:00:00+09:00`):null;
-  const nextAt=hourOk?kst(nowMs<todaySlot?todaySlot:todaySlot+DAY):null;
+  // 상세 일정과 건강 요약은 같은 다음 슬롯을 표시한다. 꺼진 일정은 비운다.
+  const nextScheduled=collectHourKst===null?null:nextCollectionAt({at:now,hourKst:collectHourKst,hoursKst:collectHoursKst});
+  const nextAt=nextScheduled?kst(nextScheduled):null;
   const health={collectOk:collection.successToday??0,collectTotal:collection.total??channels.length,failed:collection.failed??0,needsReconnect:collection.needsReconnect??0,overdue:collection.overdue??0,collectedAt:collection.lastSuccessAt?kst(collection.lastSuccessAt):null,nextAt,offPlatforms,numbersAt:numbersAt?kst(numbersAt):null};
 
   // 7) 성과 — 최근 7일 게시된 판, 판마다 24·72시간 관측과 장부 배수(견줄 편 4개부터)
@@ -221,13 +239,18 @@ export function buildSocialSimple({now,isAdmin=false,channels=[],collection={},c
     let connectUrl=null;try{const u=new URL(row?.connectUrl||'','https://workspace.invalid');if(u.origin==='https://workspace.invalid'&&u.pathname==='/api/oauth/'+c.platform+'/start'&&u.searchParams.get('channelId')===c.id&&u.searchParams.get('publishing')==='1')connectUrl=u.pathname+u.search;}catch{}
     const fix=item&&['reconnect','connect'].includes(item.action)?{kind:'collect',message:item.label||'수집 연결을 다시 해야 해요'}:row?.supported&&row.enabled&&!row.connected?{kind:'publish',message:'게시 권한을 다시 연결해야 해요',connectUrl}:null;
     const brand=brandOf(c),name=String(c.displayName||'');
-    return {channelId:c.id,platform:c.platform,handle:atHandle(c.platform,c.handle),name:name==='유호'&&brand!=='유호'?'':name,brand,country:countryOf(c),publish,collect,posts30:mine.length,views30:mine.reduce((s,p)=>s+(Number(p.views)||0),0),lastPost:last?kstDay(Date.parse(last)):null,fix};
+    const known=mine.filter(p=>typeof p.views==='number'&&Number.isFinite(p.views));
+    return {channelId:c.id,accountId:c.accountId,business:c.business,contentTrack:c.contentTrack,platform:c.platform,handle:atHandle(c.platform,c.handle),name:name==='유호'&&brand!=='유호'?'':name,brand,country:countryOf(c),publish,collect,posts30:mine.length,
+      views30:known.length?known.reduce((s,p)=>s+p.views,0):null,views30Basis:'최근 30일에 게시한 콘텐츠의 최신 누적 조회수 · 해당 기간 발생 조회수 아님',views30Known:known.length,views30Eligible:mine.length,
+      lastPost:last?kstDay(Date.parse(last)):null,fix};
   });
 
   const digestAge=digest?Math.max(0,Math.round((nowMs-Date.parse(digest.generatedAt))/60000)):null;
   return {generatedAt:new Date(nowMs).toISOString(),today,digest:digest?{generatedAt:digest.generatedAt,ageMinutes:digestAge,commitAt:digest.source?.commitAt||null}:null,
     review,problems,tonight,held,upcoming,yesterday:yesterdayRows,comments,health,
-    results:{since,list,excluded:{운영시험:digest?.excluded?.운영시험||0,작품:digest?.excluded?.작품||0}},accounts:accountsOut};
+    results:{since,list,excluded:{운영시험:digest?.excluded?.운영시험||0,작품:digest?.excluded?.작품||0}},accounts:accountsOut,
+    ...(isAdmin?{accountMap:buildAccountMap({channels,jobs:accountMapJobs,collection,digest,now})}:{}),
+    collectionSchedule:{enabled:collectHourKst!==null,hoursKst:collectHoursKst|| (collectHourKst===null?[]:[collectHourKst]),timeZone:'Asia/Seoul',nextAt:collectHourKst===null?null:nextCollectionAt({at:now,hourKst:collectHourKst,hoursKst:collectHoursKst})}};
 }
 function guessPlatform(url){try{const h=new URL(url).hostname.replace(/^www\./,'');return /youtube|youtu\.be/.test(h)?'youtube':/instagram/.test(h)?'instagram':/facebook/.test(h)?'facebook':/tiktok/.test(h)?'tiktok':null;}catch{return null;}}
 
@@ -262,6 +285,7 @@ export function createSocialSimple({store,publishing,marketing,provider,clock=()
   }
   function saveDigest(user,input){
     user=current(user,true);const now=clock(),digest=validateDigest(input,{now});
+    if(user.role!=='admin')throw fail('관리자만 저장소 계정 현황을 반영할 수 있어요.',403);
     return store.transaction(()=>{
       const old=store.get(DIGEST_KIND,DIGEST_ID);
       if(old&&Date.parse(digest.generatedAt)<Date.parse(old.generatedAt)-STALE_DIGEST)throw fail('이미 더 새 편 요약이 있어요.',409);
@@ -290,7 +314,8 @@ export function createSocialSimple({store,publishing,marketing,provider,clock=()
     const providerRows=(provider?.settings?.(user)?.channels||[]).filter(r=>allowed.has(r.channelId));
     const healthRows=(provider?.health?.(user)?.channels||[]).filter(r=>allowed.has(r.channelId));
     const digest=store.get(DIGEST_KIND,DIGEST_ID)||null,schedule=store.get('settings','company');
-    return buildSocialSimple({now,isAdmin:user.role==='admin',channels:visible,collection,collectHourKst:schedule&&schedule.enabled!==false?Number(schedule.hourKst):null,jobs,postTitles,thumbs,recent,performance:performance.filter(e=>allowed.has(e.channelId)),inbox,commentPosts,providerRows,healthRows,digest});
+    const accountMapJobs=user.role==='admin'?sql("SELECT id,json_extract(body,'$.channelId') AS channelId,json_extract(body,'$.status') AS status,json_extract(body,'$.publishedAt') AS publishedAt,json_extract(body,'$.scheduledAt') AS scheduledAt,json_extract(body,'$.publicationUrl') AS publicationUrl FROM documents WHERE kind='socialPublishJobs'").all():jobs;
+    return buildSocialSimple({now,isAdmin:user.role==='admin',channels:visible,collection,collectHourKst:schedule&&schedule.enabled!==false?Number(schedule.hourKst):null,collectHoursKst:schedule?.hoursKst,jobs,accountMapJobs,postTitles,thumbs,recent,performance:performance.filter(e=>allowed.has(e.channelId)),inbox,commentPosts,providerRows,healthRows,digest});
   }
   return {workspace,saveDigest};
 }

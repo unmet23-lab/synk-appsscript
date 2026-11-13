@@ -1,0 +1,1040 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-13",
+  "definition": "business는 주 홍보 사업, contentTrack은 콘텐츠 이름. SYNK는 회사 공통 계정이며 보조 사업에 중복 합산하지 않는다. 새 계정은 목적·근거를 적기 전 지도 생성이 실패한다.",
+  "accounts": {
+    "lab-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "LAB",
+      "purpose": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유",
+      "classificationBasis": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [
+        "PATH"
+      ],
+      "contentTrack": "LAB",
+      "purpose": "몽골어권 한국어 학습 릴스·카드·수업 소식",
+      "classificationBasis": "몽골어권 한국어 학습 릴스·카드·수업 소식. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "짧은 한국어 학습 영상",
+      "classificationBasis": "짧은 한국어 학습 영상. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-facebook": {
+      "business": "LAB",
+      "secondaryBusinesses": [
+        "PATH"
+      ],
+      "contentTrack": "LAB",
+      "purpose": "학습 자료·수업·과정 안내. 성인·보호자도 포함",
+      "classificationBasis": "학습 자료·수업·과정 안내. 성인·보호자도 포함. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-telegram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "LAB 자료·수업·교재·학습 앱 소식 채널",
+      "classificationBasis": "LAB 자료·수업·교재·학습 앱 소식 채널. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-youtube": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "SYNK를 만드는 유호의 실제 회사 제작 과정·본편 영상",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-instagram": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 제작 과정과 결과를 보여 주는 릴스·이미지",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-tiktok": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 제작 과정과 결과를 보여 주는 짧은 영상",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-threads": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "작업 중 생각·시도·질문과 대화",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuho-linkedin-primary": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 개인 경력·제작 경험·기관·기업 협업. 최종 운영 개인 프로필",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-x": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 짧은 작업 기록과 결과 공유",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-behance": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "SHIFT"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 완성 디자인·브랜딩 포트폴리오. 현재 SHIFT 작업 중심",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-naver-clip": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "네이버 내 유호의 짧은 제작 영상",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-telegram": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "SHIFT"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호·SHIFT 협업 연락용 개인 프로필. 공개 발행 채널 아님",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synkbrief-youtube": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "최신 AI 소식·GitHub 스킬·도구 추천·실무 활용 영상",
+      "classificationBasis": "최신 AI 소식·GitHub 스킬·도구 추천·실무 활용 영상. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synkbrief-instagram": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "AI 소식·스킬·도구 추천과 활용법 릴스·카드",
+      "classificationBasis": "AI 소식·스킬·도구 추천과 활용법 릴스·카드. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synkbrief-tiktok": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "AI 소식·스킬·도구 추천과 활용법의 짧은 영상",
+      "classificationBasis": "AI 소식·스킬·도구 추천과 활용법의 짧은 영상. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "shift-naverblog": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 검색형 제작 기록·AI 활용 설명. 기존 SHIFT 레지스트리 ID 보존",
+      "classificationBasis": "유호의 검색형 제작 기록·AI 활용 설명. 기존 SHIFT 레지스트리 ID 보존. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "shift-tistory": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 제작 과정·방법·실제 적용기. 기존 SHIFT 레지스트리 ID 보존",
+      "classificationBasis": "유호의 제작 과정·방법·실제 적용기. 기존 SHIFT 레지스트리 ID 보존. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "shift-pinterest": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "브랜드·웹·콘텐츠 디자인 발견과 포트폴리오 유입",
+      "classificationBasis": "브랜드·웹·콘텐츠 디자인 발견과 포트폴리오 유입. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "shift-kakao": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "기업·기관 AI 교육·컨설팅·브랜딩 안내 및 문의",
+      "classificationBasis": "기업·기관 AI 교육·컨설팅·브랜딩 안내 및 문의. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synk-linkedin-company": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "SYNK",
+      "purpose": "SYNK 회사 소개·완성물·대외 협업. 회사 ID 143833958",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synklab-substack": {
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT"
+      ],
+      "contentTrack": "SYNK",
+      "purpose": "공통 뉴스레터. 발행 공간과 작성자 @synklab을 한 계정으로 계산",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synk-instagram": {
+      "business": "SYNK",
+      "secondaryBusinesses": [],
+      "contentTrack": "SYNK",
+      "purpose": "SYNK 본체 Instagram 개설 제외(2026-11-09 사용자 결정)",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "synkbrief-threads": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "SHIFT 정보 Threads 준비 자리. 목표 @synkbrief 개설 보류",
+      "classificationBasis": "SHIFT 정보 Threads 준비 자리. 목표 @synkbrief 개설 보류. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhobuilds-linkedin": {
+      "business": "SYNK",
+      "secondaryBusinesses": [],
+      "contentTrack": "YUHO",
+      "purpose": "기존 중복 LinkedIn 개인 프로필. 운영 제외이며 삭제 완료가 아님",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "pulse-youtube": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 작품·영상 채널. 소유자 관리 화면 확인, 게시·자동화 미검증",
+      "classificationBasis": "PULSE 작품·영상 채널. 소유자 관리 화면 확인, 게시·자동화 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "pulse-instagram": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+      "classificationBasis": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "pulse-facebook": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+      "classificationBasis": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "pulse-tiktok": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 영어 공통 계정(호주·싱가포르·영국·미국). 소유자 편집 화면 확인, 게시 연결 미검증",
+      "classificationBasis": "PULSE 영어 공통 계정(호주·싱가포르·영국·미국). 소유자 편집 화면 확인, 게시 연결 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "yuhokorean-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "yuhokorean-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "yuhokorean-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "yuhokorean-facebook": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "yuhokorean-threads": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "shift-class-naverblog": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "SHIFT 수업 블로그",
+      "classificationBasis": "SHIFT 수업 블로그. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "pulse-naverblog": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 제작·포트폴리오 블로그",
+      "classificationBasis": "PULSE 제작·포트폴리오 블로그. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "politics-youtube": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "몽글몽글",
+      "purpose": "몽글몽글 정치 채널",
+      "classificationBasis": "몽글몽글 정치 채널. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "politics-facebook": {
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "몽글몽글",
+      "purpose": "몽글몽글 정치 채널",
+      "classificationBasis": "몽글몽글 정치 채널. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ]
+    },
+    "shift-brunch": {
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "브런치 프로필 · 작가 승인 별도",
+      "classificationBasis": "브런치 프로필 · 작가 승인 별도. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-vn-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-vn-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-cn-douyin": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-cn-xiaohongshu": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-jp-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-jp-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-uz-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-uz-telegram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-tw-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-tw-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-mm-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-mm-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-th-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-th-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-id-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-id-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-ru-vk": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-ru-rutube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-in-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-in-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-kz-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-kz-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-np-facebook": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-np-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-kg-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-kg-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-kh-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-kh-facebook": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-us-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-us-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-ph-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-ph-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-lk-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-lk-facebook": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-au-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-au-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-py-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-py-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-nz-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-nz-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-my-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-my-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-ca-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-ca-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-mx-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-mx-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-br-instagram": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-br-youtube": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    },
+    "lab-br-tiktok": {
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ]
+    }
+  }
+}

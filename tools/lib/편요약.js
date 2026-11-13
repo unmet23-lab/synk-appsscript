@@ -1,4 +1,6 @@
 'use strict';
+const {rowOf}=require('../게시장부.js');
+const {accountMapOf}=require('./계정현황.js');
 /* 편 요약(2026-10-24) — 저장소만 아는 편 기록을 회사 작업실 SNS·마케팅 화면(오늘·성과·계정)이 읽을 한 장으로 줄인다.
  *
  * 서버는 자기 예약 작업(작업실 예약)과 수집한 공개 게시물만 안다. Meta Business Suite·스튜디오·크롬으로 건 예약, 10-22 보류 편,
@@ -181,7 +183,9 @@ function build({ repo, now = Date.now(), commit = null } = {}) {
     const result = readJson(path.join(dir, '게시', '게시결과.json'));
     if (!prep && !result && !ledgerFolders.has(folder)) continue;
     const plates = [];
-    for (const p of result?.판 || []) {
+    const latestRows=[...new Set((result?.판||[]).map(p=>p.계정))].map(id=>rowOf(result.판,id)).filter(Boolean);
+    for (const p of latestRows) {
+      if(['취소됨','지움','보류'].includes(p.상태)&&p.상태!=='보류')continue;
       const account = byKey.get(p.계정);
       if (!account) continue; // SNS 네 곳 밖(블로그·샤오훙수 등)
       const at = isoOf(p.시각);
@@ -213,7 +217,7 @@ function build({ repo, now = Date.now(), commit = null } = {}) {
   }
   return {
     v: VERSION, generatedAt: new Date(nowMs).toISOString(), today, source: { tool: '편요약', commit: commit && /^[0-9a-f]{7,40}$/.test(commit) ? commit : null },
-    accounts, episodes: episodes.slice(-LIMITS.episodes),
+    accounts, accountMap:accountMapOf(repo,nowMs), episodes: episodes.slice(-LIMITS.episodes),
     judgments: ledger.judgments.map(({ folder, account, ...rest }) => ({ ...rest, account })), excluded: ledger.excluded,
   };
 }

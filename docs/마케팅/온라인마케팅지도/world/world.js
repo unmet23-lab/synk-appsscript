@@ -6,7 +6,11 @@ const $ = sel => document.querySelector(sel);
 const esc = text => String(text ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const ARROW_LEFT = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
 
-const state = { view: 'lab', code: null, world: null, geo: null, paths: new Map() };
+// 11-13: 사업 넷(LAB · SHIFT · PULSE · PATH)과 「전체」. 모델(model.mjs)이 내지 않은 보기는 단추를 숨긴다.
+const VIEWS = ['lab', 'shift', 'pulse', 'path', 'all'];
+const BUSINESS = ['LAB', 'SHIFT', 'PULSE', 'PATH', 'SYNK'];
+const state = { view: 'lab', code: null, world: null, geo: null, paths: new Map(), business: '', allView: null };
+const hasView = id => id === 'all' ? Array.isArray(state.world?.all?.accounts) : Array.isArray(state.world?.[id]?.countries);
 
 function remembered() {
   try { return localStorage.getItem('synk.map.view'); } catch { return null; }
@@ -17,7 +21,7 @@ function remember(view) {
 
 function readHash() {
   const [view, code] = location.hash.replace(/^#/, '').split('/');
-  return { view: view === 'pulse' || view === 'lab' ? view : null, code: code ? code.toUpperCase() : null };
+  return { view: VIEWS.includes(view) ? view : null, code: code ? code.toUpperCase() : null };
 }
 function writeHash() {
   const next = '#' + state.view + (state.code ? '/' + state.code : '');
@@ -54,8 +58,31 @@ function drawLand() {
   land.appendChild(frag);
 }
 
+// 전체 보기의 지도: 사업별 보기의 나라를 코드로 합친다(나라가 있는 계정만 칠하고, 같은 계정은 id로 한 번만).
+function allView() {
+  if (state.allView) return state.allView;
+  const by = new Map();
+  for (const id of ['lab', 'shift', 'pulse', 'path'].filter(hasView)) {
+    const view = state.world[id];
+    for (const c of view.countries) {
+      const row = by.get(c.code) || { code: c.code, name: c.name, center: c.center, small: c.small, area: c.area, status: 'target', accounts: [], businesses: [], lines: [] };
+      if (c.status === 'active') row.status = 'active';
+      if (!row.businesses.includes(view.brand)) row.businesses.push(view.brand);
+      for (const a of c.accounts) if (!row.accounts.some(x => x.id && x.id === a.id)) row.accounts.push(a);
+      by.set(c.code, row);
+    }
+  }
+  const countries = [...by.values()].map(c => ({ ...c, role: c.businesses.join(' · '), secured: c.accounts.filter(a => a.secured).length, planned: c.accounts.length }));
+  const s = state.world.all.summary || {};
+  state.allView = { brand: 'ALL', name: '전체 계정', what: '네 사업 · 회사 공통', countries, shared: [], all: state.world.all,
+    summary: { active: countries.filter(c => c.status === 'active').length, target: countries.filter(c => c.status === 'target').length, secured: s.managed ?? 0, planned: (s.managed ?? 0) + (s.planned ?? 0) } };
+  return state.allView;
+}
+// 색 active = 그 나라에 계정을 확보함(게시 중이라는 뜻 아님). PULSE의 target은 「타깃 시장」.
+const statusLabel = (c, brand) => c.status === 'active' ? '계정 있음' : brand === 'PULSE' ? '타깃 시장' : '준비 중';
 function current() {
-  return state.view === 'pulse' ? state.world.pulse : state.world.lab;
+  if (state.view === 'all' && hasView('all')) return allView();
+  return hasView(state.view) ? state.world[state.view] : state.world.lab;
 }
 function countryOf(code) {
   return current().countries.find(c => c.code === code) || null;
@@ -73,7 +100,7 @@ function paint() {
     if (c) {
       p.setAttribute('tabindex', '0');
       p.setAttribute('role', 'button');
-      p.setAttribute('aria-label', `${c.name} · ${c.status === 'active' ? '운영 중' : '준비 중'}`);
+      p.setAttribute('aria-label', `${c.name} · ${statusLabel(c, view.brand)}`);
     } else {
       p.removeAttribute('tabindex');
       p.removeAttribute('role');
@@ -94,7 +121,7 @@ const LABEL_NUDGE = { KR: [-1, 0, 'end'], JP: [1, 0, 'start'], PH: [1, 0, 'start
 function drawLabels(view) {
   const layer = $('#labels');
   layer.textContent = '';
-  if (view.countries.length > 10) return;
+  if (view.countries.length > 10 || !view.countries.length) return;
   const scale = ($('#map').getBoundingClientRect().width || state.geo.w) / state.geo.w;
   const size = 13 / scale;
   for (const c of view.countries) {
@@ -134,7 +161,7 @@ function drawMarks(view) {
       dot.dataset.code = c.code;
       marks.appendChild(dot);
     }
-    if (view.brand === 'PULSE' && c.status === 'active') {
+    if (view.brand !== 'LAB' && view.brand !== 'ALL' && view.countries.length <= 10 && c.status === 'active') {
       for (const cls of ['ring', 'ring r2']) {
         const ring = document.createElementNS(SVG, 'circle');
         ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 22);
@@ -152,18 +179,19 @@ function stat(label, value, small = '') {
 
 function renderHead() {
   const view = current();
-  const head = headline(view);
-  document.body.classList.toggle('v-pulse', state.view === 'pulse');
-  document.body.classList.toggle('v-lab', state.view === 'lab');
+  const head = view.brand === 'ALL' ? { first: '네 사업과 회사 공통 계정을', second: '한 번에 봐요. 장기 계획은 따로 세요.' } : headline(view);
+  for (const id of VIEWS) document.body.classList.toggle('v-' + id, state.view === id);
   $('[data-slot="eyebrow"]').textContent = `${view.name} · ${view.what}`;
   $('[data-slot="h1a"]').textContent = head.first;
   $('[data-slot="h1b"]').textContent = head.second;
   const s = view.summary;
-  $('[data-slot="stats"]').innerHTML =
-    stat('운영 중', s.active, '개국') +
-    stat('준비 중', s.target, '개국') +
-    stat(view.brand === 'PULSE' ? '확보 / 계획한 계정' : '확보 / 계획한 계정', s.secured, ` / ${s.planned}`);
+  const all = view.all?.summary;
+  $('[data-slot="stats"]').innerHTML = all
+    ? stat('관리 중', all.managed ?? '—', '개') + stat('확장 계획', all.planned ?? '—', '개') + stat('제외 · 보류', all.excluded ?? '—', '개') + stat('장기 계획', all.longTermPlans ?? '—', '개')
+    : stat('계정 있는 나라', s.active, '개국') + stat(view.brand === 'PULSE' ? '타깃 시장' : '준비 중', s.target, '개국') + stat(s.shared ? `확보 / 계획(연계 ${s.shared})` : '확보 / 계획한 계정', s.secured, ` / ${s.planned}`)
+      + (s.primary === 0 && s.shared ? stat('이 사업 계정', 0, '개') : '');
   for (const tab of document.querySelectorAll('.seg-item')) {
+    tab.hidden = !hasView(tab.dataset.view);
     const on = tab.dataset.view === state.view;
     tab.setAttribute('aria-selected', String(on));
     tab.tabIndex = on ? 0 : -1;
@@ -190,14 +218,53 @@ function countRows(list, grouped = false) {
   }).join('');
 }
 
-function accRows(accounts, empty = '아직 계정이 없어요.') {
-  if (!accounts.length) return `<p class="empty">${esc(empty)}</p>`;
+// 운영 상태(로컬 원장 조합값): 브라우저 로그인 · 게시 · 수집 API를 따로. 칸이 없으면 「기록 미확인」 — 실패로 단정하지 않는다.
+function when(value) {
+  const s = String(value || '');
+  if (/T/.test(s)) return formatKst(s) || '';
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}:\d{2}))?/);
+  return m ? `${Number(m[2])}월 ${Number(m[3])}일${m[4] ? ' ' + m[4] : ''}` : '';
+}
+function opsRows(op) {
+  if (!op) return '<dl class="ops"><div><dt>운영 상태</dt><dd>기록 미확인</dd></div></dl>';
+  const L = op.login, P = op.publication, C = op.collection;
+  // 날짜만 확인한 로그인 기록은 시각 없이 날짜만(observedAt ISO 앞 10자).
+  const loginAt = L?.observedAt ? when(L.observedDateOnly === true ? String(L.observedAt).slice(0, 10) : L.observedAt) : '';
+  const login = !L?.state ? '기록 미확인' : L.state === 'verified' ? `확인됨${L.observedAt ? ' · ' + loginAt : ''}${L.scope ? ' · ' + L.scope : ''}`
+    : L.state === 'login-required' ? `로그인 필요${L.scope ? ' · ' + L.scope : ''}${L.observedAt ? ' · ' + loginAt + ' 확인' : ''}`
+    : L.state === 'historical' ? `예전 기록만 있음${L.observedAt ? ' · ' + loginAt : ''} · 다시 확인 전` : '기록 미확인';
+  const pub = !P ? '기록 미확인' : [P.publishedCount ? `${P.omittedPublishedCount ? '최근 근거 게시' : '게시'} ${P.publishedCount}건${P.lastPublishedAt ? `(마지막 ${when(P.lastPublishedAt)})` : ''}${P.omittedPublishedCount ? ` · 그 전 게시 ${P.omittedPublishedCount}건은 따로(이 수에 안 넣음)` : ''}` : '', P.scheduledCount ? `예약 ${P.scheduledCount}건${P.nextScheduledAt ? `(다음 ${when(P.nextScheduledAt)})` : ''}` : '', P.pendingConfirmationCount ? `게시 확인 대기 ${P.pendingConfirmationCount}건` : ''].filter(Boolean).join(' · ') + (Date.parse(P.nextScheduledAt || '') <= Date.now() ? ' · 그 예약 시각이 지나 게시 확인 필요' : '') + (P.checkedAt && (P.publishedCount || P.scheduledCount || P.pendingConfirmationCount) ? ` · ${when(P.checkedAt)} 기준` : '') + (P.basis && (P.publishedCount || P.scheduledCount) ? ` — ${P.basis}` : '') || (P.checkedAt && P.publishedCount === 0 && P.scheduledCount === 0 ? `작업실 게시 · 예약 없음 · ${when(P.checkedAt)} 확인` : '기록 미확인');
+  // 수집 토큰은 서버 이름(collection-policy.mjs · account-catalog.mjs) → 한국어. 모르는 토큰은 영어 대신 「수집 상태 미확인」.
+  const method = ({'official-api':'공식 API','creator-export-or-manual':'관리자 통계 · 직접 기록',server:'작업실 서버 수집','public-api':'공개 API','vk-api':'VK API','public-page':'공개 화면 읽기','screen-only':'화면으로만 확인'})[C?.method] || '';
+  const col = !C?.state ? '기록 미확인' : `${({success:'오늘 수집 완료',partial:'오늘 일부만 수집',collecting:'수집 중',scheduled:'수집 시각 전',overdue:'이번 수집 전','retry-scheduled':'다시 시도 예정',paused:'자동 수집 꺼짐',failed:'수집 실패','needs-reconnect':'다시 연결해야 함','needs-connection':'연결해야 함',unsupported:'자동 수집 안 됨',archived:'보관됨','not-managed':'운영 대상 아님','not-registered':'수집 채널 미등록',unknown:'수집 상태 미확인',historical:'예전 기록만 있음'})[C.state] || '수집 상태 미확인'}${method ? ' · ' + method : ''}${C.checkedAt ? ' · 마지막 수집 ' + when(C.checkedAt) : ''}`;
+  return `<dl class="ops">${[['브라우저 로그인', login], ['게시', pub], ['수집', col]].map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+}
+function accRows(accounts, empty = '아직 계정이 없어요.', { brand = '', showCountry = false } = {}) {
+  if (!accounts.length) return empty ? `<p class="empty">${esc(empty)}</p>` : '';
   return accounts.map(a => {
     const sub = a.secured
       ? (a.url ? `<a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.handle || a.url)}</a>` : esc(a.handle || '확보'))
       : esc([a.state, a.note].filter(Boolean).join(' · '));
-    return `<div class="acc"><span class="led${a.secured ? '' : ' off'}" aria-hidden="true"></span><span class="acc-name">${esc(a.platform)}</span><span class="acc-sub">${sub}</span></div>`;
+    const tags = (a.business && brand && a.business !== brand ? `<span class="tag">${esc(a.business)} 계정</span>` : '')
+      + (a.contentTrack && a.contentTrack !== a.business ? `<span class="tag track">${esc(a.contentTrack)}</span>` : '')
+      + (a.shared ? '<span class="tag track">공통</span>' : '')
+      + (showCountry ? `<span class="tag track">${esc(a.country || '나라 미정')}</span>` : '');
+    return `<div class="acc"><span class="led${a.secured ? '' : ' off'}" aria-hidden="true"></span><span class="acc-name">${esc(a.platform)}${tags}</span><span class="acc-sub">${sub}</span>${a.secured ? opsRows(a.operations) : ''}</div>`;
   }).join('');
+}
+// 전체 보기 오른쪽 칸: 사업별 계정(나라 불명 포함) + 장기 계획(실계정 수에 더하지 않음)
+function renderAll(view) {
+  const accounts = view.all.accounts || [], biz = a => BUSINESS.includes(a.business) ? a.business : '미분류';
+  const groups = [...BUSINESS, '미분류'].filter(b => accounts.some(a => biz(a) === b)), picked = groups.includes(state.business) ? state.business : '';
+  const chip = (value, label, n) => `<button type="button" data-business="${esc(value)}" aria-pressed="${picked === value}">${value ? `<i class="biz-dot" data-business="${esc(value)}"></i>` : ''}${esc(label)} <span class="num">${n}</span></button>`;
+  let html = `<section class="pane-sec"><h2 class="sec-title">계정 <span class="num">${accounts.length}</span></h2><p class="sec-note">주 사업으로 나눠요. 콘텐츠 트랙은 계정 이름 옆 작은 글씨예요. 나라가 정해지지 않은 계정도 여기 있어요.</p><div class="chips">${chip('', '전체', accounts.length)}${groups.map(b => chip(b, b, accounts.filter(a => biz(a) === b).length)).join('')}</div></section>`;
+  for (const b of picked ? [picked] : groups) {
+    const list = accounts.filter(a => biz(a) === b).sort((x, y) => (y.secured ? 1 : 0) - (x.secured ? 1 : 0));
+    html += `<section class="pane-sec"><h3 class="sec-title"><i class="biz-dot" data-business="${esc(b)}"></i>${esc(b)} <span class="num">${list.filter(a => a.secured).length}/${list.length}</span></h3><div class="rows">${accRows(list, '', { showCountry: true })}</div></section>`;
+  }
+  const plans = view.all.plans || [];
+  if (plans.length) html += `<section class="pane-sec"><details class="plans"><summary><span class="sec-title">장기 계획 <span class="num">${plans.length}</span></span><span class="sec-note">아직 만들지 않은 계정 계획이에요. 위 계정 수에 더하지 않아요.</span></summary><div class="rows">${plans.map(p => `<div class="acc"><span class="led off" aria-hidden="true"></span><span class="acc-name">${esc(p.title || p.name || p.platform || '계획')}</span><span class="acc-sub">${esc([p.business, p.contentTrack !== p.business ? p.contentTrack : '', p.market || p.country, p.state, p.note].filter(Boolean).join(' · '))}</span></div>`).join('')}</div></details></section>`;
+  return html;
 }
 
 function renderList() {
@@ -205,17 +272,18 @@ function renderList() {
   const active = view.countries.filter(c => c.status === 'active');
   const target = view.countries.filter(c => c.status === 'target');
   let html = '';
-  html += `<section class="pane-sec"><h2 class="sec-title"><span class="sw sw-active" aria-hidden="true"></span>운영 중 <span class="num">${active.length}</span></h2>`;
-  html += active.length ? `<div class="rows">${countRows(active, view.countries.length > 10)}</div>` : '<p class="sec-note">아직 운영하는 나라가 없어요.</p>';
+  html += `<section class="pane-sec"><h2 class="sec-title"><span class="sw sw-active" aria-hidden="true"></span>계정이 있는 나라 <span class="num">${active.length}</span></h2>`;
+  html += active.length ? `<div class="rows">${countRows(active, view.countries.length > 10)}</div>` : '<p class="sec-note">아직 계정이 있는 나라가 없어요.</p>';
+  html += '<p class="sec-note">계정을 확보한 나라예요. 실제로 게시하는지는 계정마다 게시 기록에서 봐요.</p>';
   html += '</section>';
-  if (view.brand === 'PULSE' && view.shared.length) {
+  if (view.shared?.length) {
     html += `<section class="pane-sec"><h2 class="sec-title">나라를 나누지 않은 계정 <span class="num">${view.shared.length}</span></h2>`;
-    html += `<div class="rows">${accRows(view.shared)}</div>`;
+    html += `<div class="rows">${accRows(view.shared, '', { brand: view.brand })}</div>`;
     if (view.sharedNote) html += `<p class="sec-note">${esc(view.sharedNote)}</p>`;
     html += '</section>';
   }
   html += `<section class="pane-sec"><h2 class="sec-title"><span class="sw sw-target" aria-hidden="true"></span>준비 중 <span class="num">${target.length}</span></h2>`;
-  html += target.length ? `<div class="rows">${countRows(target, view.countries.length > 10)}</div>` : '<p class="sec-note">준비 중인 나라는 없어요. 모든 타깃 나라에 계정이 하나 이상 있어요.</p>';
+  html += target.length ? `<div class="rows">${countRows(target, view.countries.length > 10)}</div>` : '<p class="sec-note">준비 중인 나라는 없어요.</p>';
   html += '</section>';
   return html;
 }
@@ -223,7 +291,7 @@ function renderList() {
 function renderDetail(c) {
   const view = current();
   const pills = [
-    `<span class="pill"><span class="led${c.status === 'active' ? '' : ' off'}"></span>${c.status === 'active' ? '운영 중' : '준비 중'}</span>`,
+    `<span class="pill"><span class="led${c.status === 'active' ? '' : ' off'}"></span>${statusLabel(c, view.brand)}</span>`,
     c.planned ? `<span class="pill num">계정 ${c.secured}/${c.planned}</span>` : '',
     c.role ? `<span class="pill">${esc(c.role)}</span>` : '',
     c.verdict ? `<span class="pill pill-verdict" data-verdict="${esc(c.verdict)}">검토 · ${esc(c.verdict)}</span>` : '',
@@ -235,9 +303,12 @@ function renderDetail(c) {
     <div class="pills">${pills}</div>
     ${c.why ? `<p class="why">${esc(c.why)}</p>` : ''}
   </section>`;
-  html += `<section class="pane-sec"><h3 class="sec-title">${view.brand === 'PULSE' && c.status !== 'active' ? '만들 계정(제안)' : '계정'}</h3><div class="rows">${accRows(c.accounts, view.brand === 'PULSE' ? '이 나라용 계정은 새로 만들지 않아요 — 공통 계정이 닿아요.' : '아직 계정이 없어요.')}</div></section>`;
-  if (c.sharedHere && view.shared.length) {
-    html += `<section class="pane-sec"><h3 class="sec-title">여기서 운영하는 공통 계정</h3><div class="rows">${accRows(view.shared)}</div></section>`;
+  // 공통 계정이 이 나라에 닿는 것(accountRefs → shared)은 계정으로, 아직 없는 자리는 「만들 계정(계획)」으로 나눈다.
+  const held = c.accounts.filter(a => a.secured), todo = c.accounts.filter(a => !a.secured), brand = view.brand === 'ALL' ? '' : view.brand;
+  html += `<section class="pane-sec"><h3 class="sec-title">계정 <span class="num">${held.length}</span></h3><div class="rows">${accRows(held, view.brand === 'PULSE' && !todo.length ? '이 나라용 계정은 새로 만들지 않아요 — 공통 계정이 닿아요.' : '아직 확보한 계정이 없어요.', { brand })}</div></section>`;
+  if (todo.length) html += `<section class="pane-sec"><h3 class="sec-title">만들 계정(계획) <span class="num">${todo.length}</span></h3><div class="rows">${accRows(todo, '', { brand })}</div></section>`;
+  if (c.sharedHere && view.shared?.length && !c.accounts.some(a => a.shared)) {
+    html += `<section class="pane-sec"><h3 class="sec-title">이 나라에 닿는 공통 계정</h3><div class="rows">${accRows(view.shared)}</div></section>`;
   }
   if (c.lines?.length) {
     html += `<section class="pane-sec"><h3 class="sec-title">게시</h3><dl class="facts">${c.lines.map(l => `<div class="fact"><dt>${esc(l.label)}</dt><dd>${esc(l.text)}</dd></div>`).join('')}</dl></section>`;
@@ -251,7 +322,8 @@ function renderDetail(c) {
 function renderPane() {
   const pane = $('#pane');
   const c = state.code ? countryOf(state.code) : null;
-  pane.innerHTML = c ? renderDetail(c) : renderList();
+  const view = current();
+  pane.innerHTML = c ? renderDetail(c) : view.brand === 'ALL' ? renderAll(view) : renderList();
   pane.scrollTop = 0;
 }
 
@@ -279,7 +351,7 @@ function select(code) {
 }
 
 function setView(view) {
-  if (view === state.view) return;
+  if (view === state.view || !hasView(view)) return;
   state.view = view;
   remember(view);
   if (state.code && !countryOf(state.code)) state.code = null;
@@ -293,7 +365,7 @@ function showTip(code, event) {
   if (!c) return hideTip();
   const box = $('.map-box').getBoundingClientRect();
   const el = tip();
-  el.innerHTML = `<b>${esc(c.name)}</b>${c.status === 'active' ? '운영 중' : '준비 중'} · ${c.planned ? `계정 ${c.secured}/${c.planned}` : esc(c.verdict ? '검토 · ' + c.verdict : '새 계정 없음')}`;
+  el.innerHTML = `<b>${esc(c.name)}</b>${statusLabel(c, current().brand)} · ${c.planned ? `계정 ${c.secured}/${c.planned}` : esc(c.verdict ? '검토 · ' + c.verdict : '새 계정 없음')}`;
   el.hidden = false;
   let x, y;
   if (event && 'clientX' in event && event.clientX) { x = event.clientX - box.left; y = event.clientY - box.top; }
@@ -329,7 +401,9 @@ function bind() {
   $('#pane').addEventListener('click', event => {
     const row = event.target.closest('.row[data-code]');
     if (row) return select(row.dataset.code);
-    if (event.target.closest('[data-back]')) select(null);
+    if (event.target.closest('[data-back]')) return select(null);
+    const chip = event.target.closest('.chips [data-business]');
+    if (chip) { state.business = chip.dataset.business || ''; renderPane(); }
   });
   const segs = document.querySelectorAll('.seg');
   for (const seg of segs) {
@@ -340,14 +414,15 @@ function bind() {
     seg.addEventListener('keydown', event => {
       if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
       event.preventDefault();
-      setView(state.view === 'lab' ? 'pulse' : 'lab');
+      const ids = VIEWS.filter(hasView), at = ids.indexOf(state.view);
+      setView(ids[(at + (event.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length]);
       seg.querySelector(`[data-view="${state.view}"]`)?.focus();
     });
   }
   document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); select(null); window.scrollTo({ top: 0, behavior: 'smooth' }); });
   window.addEventListener('hashchange', () => {
     const { view, code } = readHash();
-    if (view) state.view = view;
+    if (view && hasView(view)) state.view = view;
     state.code = code;
     render();
   });
@@ -369,11 +444,12 @@ function mobileTabs() {
 }
 
 function counts() {
-  const { lab, pulse } = state.world;
-  document.querySelector('.top [data-count="lab"]').textContent = lab.summary.active;
-  document.querySelector('.top [data-count="pulse"]').textContent = pulse.summary.active + ' · ' + pulse.summary.target;
-  for (const el of document.querySelectorAll('.seg.inline [data-count="lab"]')) el.textContent = lab.summary.active;
-  for (const el of document.querySelectorAll('.seg.inline [data-count="pulse"]')) el.textContent = pulse.summary.active + ' · ' + pulse.summary.target;
+  for (const id of VIEWS) {
+    if (!hasView(id)) continue;
+    const s = id === 'all' ? null : state.world[id].summary;
+    const text = id === 'all' ? String(state.world.all.summary?.managed ?? state.world.all.accounts.length) : s.target ? `${s.active} · ${s.target}` : String(s.active);
+    for (const el of document.querySelectorAll(`.seg [data-count="${id}"]`)) el.textContent = text;
+  }
 }
 
 function centerMobileMap() {
@@ -396,7 +472,8 @@ async function start() {
     return;
   }
   const hash = readHash();
-  state.view = hash.view || (remembered() === 'pulse' ? 'pulse' : 'lab');
+  const saved = remembered();
+  state.view = [hash.view, saved, 'lab'].find(id => id && hasView(id)) || 'lab';
   state.code = hash.code;
   drawLand();
   mobileTabs();

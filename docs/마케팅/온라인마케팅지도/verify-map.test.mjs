@@ -38,7 +38,16 @@ const identityIds = loginAudit.identities.map(row => row.id);
 test('account search intersects the current rows and searches Korean platform names and login routes', () => {
   const index = createSearchIndex(channels, channelSearchFields);
   assert.deepEqual(searchRows(channels,index,'  ＹＵＨＯＫＯＲＥＡＮ 인스타  ').map(row=>row.id),['yuhokorean-instagram']);
-  assert.deepEqual(searchRows(channels,index,'PROFILE 2 Behance').map(row=>row.id),['yuhobuilds-behance']);
+  // 11-13 최신 원장: 로그인 경로(Adobe · Google)와 지금 확인한 브라우저 프로필 이름으로 찾는다. 증거 없는 옛 Profile 2 경로는 Behance에 남지 않는다.
+  assert.deepEqual(searchRows(channels,index,'Adobe Behance').map(row=>row.id),['yuhobuilds-behance']);
+  // 검색은 칸마다 부분 일치라 「3」 같은 짧은 칸은 날짜(…13)에도 걸린다 — 프로필은 실제 경로의 고유한 말로 찾는다.
+  // 11-13 실제 경로: yuhokorean 인스타 = Aside 4번째 yuhokorean 프로필(Profile 3), LAB 본 인스타 = Ego Profile 5.
+  assert.equal(channels.find(row=>row.id==='yuhokorean-instagram').loginBrowser,'Aside · 4번째 yuhokorean 프로필(Profile 3)');
+  assert.equal(channels.find(row=>row.id==='lab-instagram').loginBrowser,'Ego · Profile 5');
+  assert.deepEqual(searchRows(channels,index,'Aside 4번째 인스타').map(row=>row.id),['yuhokorean-instagram']);
+  const ego5=searchRows(channels,index,'Ego Profile 5 인스타').map(row=>row.id);
+  assert.ok(ego5.includes('lab-instagram')&&!ego5.includes('yuhokorean-instagram'),ego5.join(','));
+  assert.doesNotMatch(channels.find(row=>row.id==='yuhobuilds-behance').loginBrowser,/Profile 2/);
   assert.deepEqual(searchRows(channels.filter(row=>row.brand==='LAB'),index,'yuhokorean 인스타'),[]);
   assert.equal(searchRows(channels,index,'  '),channels);
   assert.deepEqual(searchRows(channels,index,'no-such-channel'),[]);
@@ -58,10 +67,26 @@ test('the selected detail always belongs to the searched and filtered rows', () 
 });
 
 test('login overview counts only managed channels and keeps partial and switch-only distinct', () => {
-  assert.equal(managedChannels(channels).length,71);
-  assert.deepEqual(Object.fromEntries(loginSummary(channels).map(row=>[row.id,row.value])),{confirmed:55,'switch-only':6,partial:10,missing:0});
+  const managed=managedChannels(channels);
+  assert.equal(managed.length,71);
+  // 11-13 최신 조합값: 경로 확인 60 · 전환만 4 · 보완 필요 7. 요약은 행의 loginMappingStatus를 그대로 센 값과 같아야 한다.
+  const summary=Object.fromEntries(loginSummary(channels).map(row=>[row.id,row.value]));
+  assert.deepEqual(summary,{confirmed:60,'switch-only':4,partial:7,missing:0});
+  for(const [id,value] of Object.entries(summary))assert.equal(value,managed.filter(row=>row.loginMappingStatus===id).length,id);
   assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),71);
-  assert.ok(loginSummary(channels.filter(row=>row.accountStatus==='planned')).every(row=>row.value===0));
+  // 미생성 계획 15곳: 로그인 경로를 지어내지 않는다(연결 없음 · 상태 unknown · 관측 시각 없음).
+  assert.equal(planned.length,15);
+  assert.ok(loginSummary(planned).every(row=>row.value===0));
+  for(const row of planned){
+    assert.equal(row.loginMappingStatus,'not-created',row.id);
+    assert.equal(row.loginAlias,null,row.id);
+    assert.equal(row.operations.login.state,'unknown',row.id);
+    assert.equal(row.operations.login.observedAt,null,row.id);
+  }
+  // 제외 · 보류 3곳(제외 · 보류된 기존 · 개설 미룸)은 관리 대상 수와 로그인 요약에 들어가지 않고, 로그인도 unknown으로 둔다.
+  const held=channels.filter(row=>['excluded','excluded-existing','creation-deferred'].includes(row.accountStatus));
+  assert.deepEqual(sorted(held.map(row=>row.id)),['synk-instagram','synkbrief-threads','yuhobuilds-linkedin']);
+  assert.ok(held.every(row=>!managed.includes(row)&&row.operations.login.state==='unknown'));
 });
 
 test('brand navigation opens its own channels and clears stale destination cuts', () => {
@@ -74,7 +99,21 @@ test('brand navigation opens its own channels and clears stale destination cuts'
 
 test('login filters and connection search use audited values without changing the inventory', () => {
   assert.deepEqual(dashboard.filters.find(row=>row.id==='loginState'),{id:'loginState',label:'로그인 확인 상태',field:'loginStatusLabel',defaultValue:'all',queryIds:['channels']});
-  assert.equal(channels.filter(row=>row.loginStatusLabel==='일부 확인 · 보완 필요').length,10);
+  // 화면 거르기 라벨은 운영 상태(operations.login.state)와 한 쌍으로만 나온다 — 옛 확인을 지금 확인으로, 미확인을 실패로 바꾸지 않는다.
+  const labelOf={historical:'이전 확인 기록 · 현재 미재검증',verified:'로그인 확인','login-required':'확인한 프로필에서 로그인 필요',unknown:'현재 로그인 미확인'};
+  const counts={};for(const row of channels)counts[row.loginStatusLabel]=(counts[row.loginStatusLabel]||0)+1;
+  assert.deepEqual(counts,{'이전 확인 기록 · 현재 미재검증':52,'로그인 확인':18,'확인한 프로필에서 로그인 필요':1,'현재 로그인 미확인':18});
+  for(const row of channels){
+    const login=row.operations?.login;
+    assert.ok(login&&labelOf[login.state],row.id);
+    assert.equal(row.loginStatusLabel,labelOf[login.state],row.id);
+    if(['historical','verified','login-required'].includes(login.state))assert.ok(Number.isFinite(Date.parse(login.observedAt)),`${row.id}: 확인 시각 없는 확인`);
+    if(login.state==='unknown')assert.ok(!managedChannels([row]).length,`${row.id}: 관리 계정을 미확인으로 두지 않는다`);
+  }
+  // 로그인 필요는 확인한 프로필 범위로만(전체 로그아웃으로 넓히지 않음).
+  const required=channels.filter(row=>row.operations.login.state==='login-required');
+  assert.deepEqual(required.map(row=>row.id),['yuhobuilds-x']);
+  assert.match(required[0].operations.login.scope,/확인한 두 프로필/);
   const identities=rows('identities');
   const index=createSearchIndex(identities,identitySearchFields);
   assert.deepEqual(searchRows(identities,index,'Behance').map(row=>row.id),['adobe-owner']);
@@ -146,7 +185,7 @@ test('49 expansion slots reconcile to 34 confirmed accounts and 15 unconfirmed p
     const row = matches[0];
     assert.equal(row.brand, 'LAB');
     assert.equal(row.country, country.name);
-    assert.equal(row.publicationEvidence, null);
+    assert.deepEqual(row.publicationEvidence, row.operations.publication.receipts.length ? row.operations.publication.receipts : null);
     if (registry.accounts[row.id]) {
       assert.equal(row.accountStatus, 'confirmed-expansion');
       assert.equal(row.channelScope, '확장 확보');
@@ -193,7 +232,7 @@ test('source account identity, login routing and profile evidence codes are pres
     assert.equal(output.profileStatusCode, source.profileStatus);
     assert.deepEqual(output.sharedBrands, source.sharedBrands);
     assert.deepEqual(output.sourcePaths, source.sourcePaths);
-    assert.equal(output.publicationEvidence, null);
+    assert.deepEqual(output.publicationEvidence, output.operations.publication.receipts.length ? output.operations.publication.receipts : null);
   }
 });
 
@@ -215,7 +254,7 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
 
 test('14 older concepts remain intact and two newer video review copies are tracked before publishing', () => {
   assert.deepEqual(sorted(production.contents.map(row => row.id)), sorted(contentIds));
-  assert.deepEqual(rows('contents').slice(0,14), production.contents);
+  assert.deepEqual(rows('contents').slice(0,14), production.contents.map(row=>({...row,recordScope:'historical',publishStatus:`과거 제작 기록: ${row.publishStatus || '해당 문서 참조'}`})));
   assert.equal(rows('contents').length,25);
   const lines = rows('contents').filter(row => String(row.id).startsWith('CL-'));
   assert.equal(lines.length, 9);
@@ -309,7 +348,9 @@ test('confirmed account details follow the latest ledgers without promoting an i
   const vk=channels.find(row=>row.id==='lab-ru-vk');
   assert.equal(vk.accountStatus,'confirmed-expansion');
   assert.equal(vk.publicUrl,'https://vk.ru/synklab_ru');
-  assert.equal(vk.loginMappingStatus,'partial');
+  assert.equal(vk.loginMappingStatus,'confirmed');
+  assert.equal(vk.operations.login.state,'verified');
+  assert.equal(vk.loginBrowser,'Ego · Profile 5');
 });
 
 test('all declared sourcePaths and dashboard source files exist within the repository', () => {
@@ -375,11 +416,10 @@ test('every registry account and supplemental channel has one explicit login aud
 test('login route confidence reconciles without claiming that every session is live', () => {
   const active=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
   assert.equal(active.length,71);
-  const expected={confirmed:55,'switch-only':6,partial:10,missing:0};
-  for (const [state,count] of Object.entries(expected)) assert.equal(active.filter(row=>row.loginMappingStatus===state).length,count,state);
+  assert.equal(active.filter(row=>['confirmed','switch-only','partial','missing'].includes(row.loginMappingStatus)).length,active.length);
   assert.deepEqual(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id),[]);
-  assert.equal(active.filter(row=>row.platform==='YouTube' && row.loginEvidenceAt==='2026-11-09').length,24);
-  for (const id of ['lab-th-tiktok','lab-kz-tiktok','lab-mx-tiktok']) assert.match(channels.find(row=>row.id===id).loginSessionStatus,/로그아웃/);
+  assert.ok(active.some(row=>row.operations.login.state==='historical'),'old evidence does not claim a live session');
+  for (const id of ['lab-th-tiktok','lab-kz-tiktok','lab-mx-tiktok']) { const row=channels.find(row=>row.id===id); assert.equal(row.operations.login.state,'verified'); assert.match(row.loginEvidenceAt,/2026-11-12/); assert.doesNotMatch(row.loginSessionStatus,/로그아웃/); }
 });
 
 test('parent administrators, account switching, and unknown identifiers remain distinct', () => {
@@ -389,8 +429,8 @@ test('parent administrators, account switching, and unknown identifiers remain d
   assert.notEqual(get('yuhokorean-tiktok').loginIdentityRef,get('yuhokorean-youtube').loginIdentityRef);
   assert.match(get('yuhokorean-tiktok').loginBrowser,/Aside.*4번째/);
   assert.equal(get('pulse-instagram').loginMappingStatus,'switch-only');
-  assert.equal(get('lab-jp-instagram').loginMappingStatus,'switch-only');
-  assert.equal(get('lab-uz-instagram').loginMappingStatus,'switch-only');
+  assert.equal(get('lab-jp-instagram').loginMappingStatus,'confirmed');
+  assert.equal(get('lab-uz-instagram').loginMappingStatus,'confirmed');
   assert.equal(get('shift-naverblog').loginIdentityRef,'naver-main');
   assert.equal(get('pulse-naverblog').loginIdentityRef,'naver-pulse');
   assert.equal(get('pulse-tiktok').loginIdentityRef,'tiktok-pulse-email');

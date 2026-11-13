@@ -46,6 +46,37 @@ test('bulk URL validation, duplicates, shared ownership and deactivation',async 
  assert.equal((await a('/api/analytics')).data.channels.length,1);
  await a(`/api/members/${u.id}/status`,{active:false});assert.equal((await m('/api/state')).status,401);
 });
+
+test('admin can bind existing public statistics reader without creating owner or publishing credentials',async t=>{
+ const {app,client}=await fixture(t,async c=>({channel:{externalId:c.externalId},posts:[],coverage:{status:'complete',ownerAuthorized:false}}));const a=await client();
+ const staff=app.store.createUser({name:'Staff',email:'public-reader-staff@example.test',password:'staff-valid-password',role:'member'});
+ const c=(await a('/api/channels',{urls:'https://www.youtube.com/@yuhokorean',ownerId:staff.id})).data.added[0];
+ const m=await client(staff.email,'staff-valid-password');
+ assert.equal((await m(`/api/channels/${c.id}/public-collection`,{})).status,403);
+ assert.equal((await a(`/api/channels/${c.id}/public-collection`,{})).status,409,'missing shared reader is not silently provisioned');
+ app.store.setSecret('collection:youtube-public',{accessToken:'private-public-reader',refreshToken:'private-refresh',clientId:'client',clientSecret:'private-client',connectedBy:app.store.all('users').find(u=>u.role==='admin').id,channelIds:['existing'],expiresAt:new Date(Date.now()+3600000).toISOString()});
+ app.store.put('channels','existing',{id:'existing',platform:'youtube',active:true,status:'collecting',ownerIds:[staff.id]});
+ assert.equal((await a(`/api/channels/${c.id}/public-collection`,{})).status,409,'do not invalidate a reader while another channel collects');
+ app.store.put('channels','existing',{...app.store.get('channels','existing'),status:'success'});
+ const r=await a(`/api/channels/${c.id}/public-collection`,{});
+ assert.equal(r.status,200);assert.equal(r.data.scope,'public-statistics-only');assert.equal(r.data.channel.connected,true);
+ assert.doesNotMatch(JSON.stringify(r.data),/private-public-reader|private-refresh|private-client/);
+ assert.equal(app.store.secret('channel:'+c.id),null);
+ assert.deepEqual(app.store.secret('collection:youtube-public').channelIds,['existing',c.id]);
+ const version=app.store.get('channels',c.id).connectionVersion;
+ assert.equal((await a(`/api/channels/${c.id}/public-collection`,{})).status,200);
+ assert.equal(app.store.get('channels',c.id).connectionVersion,version);
+ assert.deepEqual(app.store.secret('collection:youtube-public').channelIds,['existing',c.id],'binding is idempotent');
+ const other=(await a('/api/channels',{urls:'https://www.instagram.com/yuhokorean/'})).data.added[0];
+ assert.equal((await a(`/api/channels/${other.id}/public-collection`,{})).status,400);
+ const report=await a('/api/analytics?business=LAB');assert.equal(report.data.scope.business,'LAB');assert.equal(report.data.channels.length,2);
+ assert.equal((await a('/api/analytics?business=SHIFT')).data.channels.length,0);
+ assert.equal((await a('/api/settings',{enabled:true,hoursKst:[9,21]})).status,200);
+ assert.deepEqual((await a('/api/state')).data.schedule.hoursKst,[9,21]);
+ assert.equal((await a('/api/settings',{hourKst:10})).status,200);assert.deepEqual((await a('/api/state')).data.schedule.hoursKst,[10,21]);
+ assert.equal((await a('/api/analytics?business=LAB')).data.unassignedChannelCount,1);
+ assert.equal((await a('/api/settings',{enabled:true,hoursKst:[9,24]})).status,400);
+});
 test('collector stores real zero/null, no first-observation growth, day drilldown and idempotency',async t=>{
  let views=100;const collect=async()=>({channel:{externalId:'channel1',displayName:'Channel One',followers:0,views:views},posts:[{externalId:'video1',url:'https://www.youtube.com/watch?v=video1',title:'One',publishedAt:'2026-01-01T00:00:00Z',metrics:{views,likes:0,comments:3,shares:null,saves:null,reach:null}}],coverage:{status:'complete',ownerAuthorized:false},warnings:[]});
  const {app,client}=await fixture(t,collect);const a=await client();const c=(await a('/api/channels',{urls:'https://youtube.com/@hello'})).data.added[0];

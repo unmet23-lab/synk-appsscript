@@ -16,7 +16,7 @@ const root = join(here, '..');
 export const WORKSPACE_MAP_FILE = join(root, 'engagement', 'company', 'public', 'marketing-map.json');
 
 // 미확보 계정은 주소 · 핸들을 내지 않는다(원장 모양이 바뀌어도 공개 파일에 예정 주소가 새지 않게).
-const account = a => { const secured = Boolean(a.secured); return { platform: a.platform, handle: secured ? a.handle || null : null, url: secured ? a.url || null : null, secured, state: a.state, note: a.note || null }; };
+const account = a => { const secured = Boolean(a.secured); return { id:a.id, business:a.business, secondaryBusinesses:a.secondaryBusinesses || [], contentTrack:a.contentTrack, purpose:a.purpose || null, accountStatus:a.accountStatus, country:a.country || null, shared:a.shared===true, platform: a.platform, handle: secured ? a.handle || null : null, url: secured ? a.url || null : null, secured, state: a.state, note: a.note || null }; };
 
 function country(c, brand) {
   return {
@@ -59,7 +59,8 @@ export function buildWorkspaceMap({ data, targets, geo }) {
     generatedAt: world.generatedAt,
     targetsUpdatedAt: world.targetsUpdatedAt,
     geo: { w: geo.w, h: geo.h, source: geo.source, countries: geo.countries.map(c => ({ a2: c.a2, d: c.d })) },
-    views: { lab: view(world.lab), pulse: view(world.pulse) }
+    views: { lab: view(world.lab), pulse: view(world.pulse), shift:view(world.shift), path:view(world.path) },
+    all: {accounts:world.all.accounts.map(account), plans:world.all.plans.map(p=>({id:p.id,business:p.business,contentTrack:p.contentTrack,platform:p.platform,state:p.state,note:p.note})),summary:world.all.summary}
   };
 }
 

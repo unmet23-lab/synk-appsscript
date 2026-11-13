@@ -99,7 +99,7 @@ test('results show ledger multiples only from four comparable posts and keep pen
 
 test('accounts read brand and country from the digest and blank a channel name that belongs to another brand',()=>{
   const D=base(),tt=D.accounts.find(a=>a.channelId==='c-tt'),yt=D.accounts.find(a=>a.channelId==='c-yt'),ig=D.accounts.find(a=>a.channelId==='c-ig');
-  assert.deepEqual([tt.brand,tt.country,tt.name,tt.publish],['LAB',false,'','앱에서 직접'],'이름이 「유호」인 미얀마 틱톡은 나라별 아님(시안 규칙) · 이름은 비움');
+  assert.deepEqual([tt.brand,tt.country,tt.name,tt.publish],['LAB',true,'','앱에서 직접'],'표시 이름이 달라도 원장 ID로 연결된 미얀마 계정은 나라별 계정이다');
   const mx=buildSocialSimple({now:NOW,channels:[{id:'mx',platform:'youtube',handle:'synklabmexico',displayName:'SYNK LAB México | Coreano divertido',status:'success'},{id:'mn',platform:'youtube',handle:'synkkorean',displayName:'SYNK LAB | Learn Korean',status:'success'}]}).accounts;
   assert.deepEqual(mx.map(a=>a.country),[true,false]);
   assert.deepEqual([yt.publish,yt.posts30,yt.views30,yt.lastPost],['자동 게시',1,1214,'2026-10-23']);
@@ -175,7 +175,7 @@ test('digest validation rejects other shapes, sizes and old times and drops brok
   assert.throws(()=>validateDigest({v:2},{now:NOW}),{status:400});
   assert.throws(()=>validateDigest({...digest(),generatedAt:'2026-10-20T00:00:00.000Z'},{now:NOW}),{status:400});
   assert.throws(()=>validateDigest({...digest(),episodes:Array.from({length:201},(_,i)=>({key:'e'+i}))},{now:NOW}),{status:413});
-  assert.throws(()=>validateDigest({...digest(),padding:'x'.repeat(270000)},{now:NOW}),{status:413});
+  assert.throws(()=>validateDigest({...digest(),padding:'x'.repeat(530000)},{now:NOW}),{status:413});
   const d=validateDigest({...digest(),judgments:[{url:'http://insecure.example/x',point:'24h'},{url:YT,point:'7d'},...digest().judgments]},{now:NOW});
   assert.equal(d.judgments.length,2);assert.equal(d.dropped,2);assert.equal(d.episodes.length,6);
   assert.equal(validateDigest({...digest(),episodes:[{key:'../x',plates:[]}]},{now:NOW}).episodes.length,0);
@@ -204,4 +204,13 @@ test('HTTP: admins store the repo digest quietly, viewers cannot, and an older d
   assert.equal(r.data.digest.ageMinutes,16);assert.deepEqual(r.data.held.map(g=>g.title),['멈춘 시간']);
   assert.equal(r.data.accounts.length,4);
   const viewerView=await f.api(f.viewer,'/api/social/simple');assert.equal(viewerView.status,200);
+});
+
+test('HTTP: a hidden cancelled server job overrides a stale reservation in the account map',async t=>{
+ const f=await serverFixture(t);
+ f.app.store.put('socialPublishJobs','cancelled-hidden',{id:'cancelled-hidden',channelId:'hidden',status:'cancelled',scheduledAt:'2026-10-25T12:00:00Z',snapshot:{secret:'must-not-leak'}});
+ const d=digest();d.accountMap={generatedAt:d.generatedAt,accounts:[{id:'lab-youtube',operations:{login:{state:'verified',observedAt:null},publication:{receipts:[{jobId:'cancelled-hidden',state:'예약됨',at:'2026-10-25T12:00:00Z'}]}}}]};
+ assert.equal((await f.api(f.admin,'/api/social/repo-digest',d)).status,200);
+ const r=await f.api(f.admin,'/api/social/simple'),a=r.data.accountMap.accounts.find(a=>a.id==='lab-youtube');
+ assert.equal(a.operations.publication.scheduledCount,0);assert.equal(a.operations.login.state,'unknown');assert.ok(!JSON.stringify(r.data).includes('must-not-leak'));
 });

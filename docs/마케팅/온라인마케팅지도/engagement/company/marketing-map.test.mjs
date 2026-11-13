@@ -36,9 +36,12 @@ test('작업실 지도 자료에는 로그인 정보 · 이메일이 없다(공�
   assert.doesNotMatch(text, /loginAlias|loginIdentity|loginMethod|unmet\d+|synk\.yuh|비밀번호|password/i);
   // 이메일 꼴은 도메인과 상관없이 없어야 한다(핸들 「@synkpulse」 · 주소 「…com/@synklab.vn」은 @ 앞에 이름 칸이 없어 걸리지 않는다).
   assert.doesNotMatch(text, /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/, '이메일 주소');
-  // 나라별 계정과 나라를 나누지 않은 공통 계정 모두 같은 여섯 칸만, 미확보면 주소 · 핸들 없음.
-  for (const view of Object.values(shipped.views)) for (const a of [...view.shared, ...view.countries.flatMap(c => c.accounts)]) {
-    assert.deepEqual(Object.keys(a).sort(), ['handle', 'note', 'platform', 'secured', 'state', 'url']);
+  // 공개 허용 속성만. 관리자 로그인·운영 관측은 인증 API에서만 합친다.
+  const publicKeys=['id','business','secondaryBusinesses','contentTrack','purpose','accountStatus','country','shared','handle','note','platform','secured','state','url'].sort();
+  const allRows=[...Object.values(shipped.views).flatMap(view=>[...view.shared,...view.countries.flatMap(c=>c.accounts)]),...shipped.all.accounts];
+  for (const a of allRows) {
+    assert.deepEqual(Object.keys(a).sort(), publicKeys);
+    assert.equal(a.operations,undefined);
     if (!a.secured) { assert.equal(a.url, null, '미확보 계정에 주소를 지어내지 않는다'); assert.equal(a.handle, null); }
   }
 });

@@ -1,13 +1,14 @@
 import React from 'react';
 import { DataComponent, DataTable, Filters, Section, SortableItem, SortableRegion, useDataApp, useDashboardTabs } from '../../data-app-public.jsx';
-import { createSearchIndex, searchRows, visibleChannel, channelSearchFields, identitySearchFields, managedChannels, loginSummary, brandChannelView } from './account-view.mjs';
+import { createSearchIndex, searchRows, visibleChannel, channelSearchFields, identitySearchFields, managedChannels, loginSummary, brandChannelView, operationLabels } from './account-view.mjs';
 import './marketing-map.css';
 // The shell keeps a saved tab label unless it is listed in previousLabels, so every generated country-count label is listed.
 const countryTabLabels = ['LAB · 국가별', ...Array.from({ length: 200 }, (_, n) => `LAB · ${n + 1}개국`)];
 const baseTabs = [
   { id: 'overview', label: '회사·브랜드', filterIds: [] },
   { id: 'countries', label: 'LAB · 국가별', filterIds: ['country'], focusFields: ['countryCode'], previousLabels: countryTabLabels },
-  { id: 'channels', label: '전체 채널', filterIds: ['brand', 'channelCountry', 'channelScope', 'platform', 'loginState'], focusFields: ['channelId'] },
+  // 11-13: 회사별 거르기는 주 사업(business). 콘텐츠 트랙(brand) 거르기는 그대로 둔다 — 두 축이 다르다.
+  { id: 'channels', label: '전체 채널', filterIds: ['business', 'brand', 'channelCountry', 'channelScope', 'platform', 'loginState'], focusFields: ['channelId'] },
   { id: 'content', label: '콘텐츠 제작', filterIds: ['contentBrand'] },
   { id: 'accounts', label: '로그인·권한', filterIds: [] }
 ];
@@ -131,6 +132,9 @@ export function DashboardContent() {
       <Section id="next-actions-heading" title="이어서 할 일">
         <EvidenceTable id="next-actions" queryId="tasks" title="작업 대기 목록" rows={rows('tasks')} columns={[{field:'brand',label:'구분'},{field:'country',label:'국가·범위'},{field:'title',label:'작업'},status('state','상태'),{field:'nextAction',label:'다음 행동'}]}/>
       </Section>
+      {queries.plans && <Section id="long-term-plans-heading" title={`장기 계획 ${rows('plans').length}개 · 실계정 수에 더하지 않음`}>
+        <EvidenceTable id="long-term-plans" queryId="plans" title="아직 만들지 않은 계정 계획" rows={rows('plans')} columns={[{field:'business',label:'주 사업'},{field:'contentTrack',label:'콘텐츠 트랙'},{field:'platform',label:'플랫폼'},status('state','상태'),{field:'note',label:'메모'}]}/>
+      </Section>}
       <p className="mm-footnote">지도 자료 갱신: {koDate(snapshot.generatedAt)} · 계정 기록의 가장 최근 근거는 {koDate(latestAccountEvidence)}입니다. 이번 갱신에서 SNS 실시간 조회는 하지 않았습니다.</p>
     </>}
     {tab.id === 'countries' && <>
@@ -156,7 +160,7 @@ export function DashboardContent() {
       <div ref={rosterRef} tabIndex={-1} className="mm-inspection-anchor" aria-label="채널 목록">
       <Section id="channel-roster-heading" title="채널별 진행 상황" spacing="content">
         <EvidenceTable id="channel-roster" queryId="channels" title="계정·프로필·게시 현황" rows={channelRows} searchable={false} selectedRowKey={selectedChannel?.id} onRowSelect={showChannel} rowActionLabel={row => `${row.platform} ${row.handle || row.id} 상세 보기`} columns={[
-          {field:'brand',label:'브랜드·트랙'},{field:'country',label:'국가·범위'},{field:'platform',label:'플랫폼'},{field:'handle',label:'계정',renderCell:LinkCell},status('channelScope','운영 분류'),status('loginStatusLabel','로그인 경로'),status('profileStatus','소개'),status('publishStatus','콘텐츠 게시'),{field:'nextAction',label:'다음 행동'}
+          {field:'business',label:'주 사업'},{field:'contentTrack',label:'콘텐츠 트랙'},{field:'country',label:'국가·범위'},{field:'platform',label:'플랫폼'},{field:'handle',label:'계정',renderCell:LinkCell},status('channelScope','운영 분류'),status('loginStatusLabel','로그인 경로'),{field:'publishStatus',label:'게시·예약(작업실 기록)',renderCell:(value,row)=><span className="mm-cell-detail">{row.operations?.publication ? operationLabels(row).publication : value || '기록 미확인'}</span>},status('profileStatus','소개'),{field:'nextAction',label:'다음 행동'}
         ]}/>
       </Section>
       </div>
@@ -164,12 +168,12 @@ export function DashboardContent() {
       {selectedChannel && <div ref={detailRef} tabIndex={-1} className="mm-inspection-anchor" aria-label={`${selectedChannel.platform} ${selectedChannel.handle || selectedChannel.id} 상세`}>
       <Section id="channel-detail-heading" title="선택한 채널의 확인 근거">
         <DataComponent id="channel-detail" queryId="channels" title={`${selectedChannel.platform} · ${selectedChannel.handle || selectedChannel.id}`} kind="custom" variant="card" displayRows={[selectedChannel]} sourceRows={[selectedChannel]}>
-          <div className="mm-detail-top" data-reviewed-rows><span>{selectedChannel.brand} · {selectedChannel.country}</span><button className="mm-action" onClick={() => { rosterRef.current?.focus({preventScroll:true}); rosterRef.current?.scrollIntoView({block:'start'}); }}>목록으로 돌아가기 ↑</button></div>
+          <div className="mm-detail-top" data-reviewed-rows><span>{selectedChannel.business || selectedChannel.brand}{selectedChannel.contentTrack && selectedChannel.contentTrack !== selectedChannel.business ? ` · 트랙 ${selectedChannel.contentTrack}` : ''} · {selectedChannel.country}</span><button className="mm-action" onClick={() => { rosterRef.current?.focus({preventScroll:true}); rosterRef.current?.scrollIntoView({block:'start'}); }}>목록으로 돌아가기 ↑</button></div>
           <DetailFields items={[
-            ['로그인 연결',selectedChannel.loginAlias || (selectedChannel.accountStatus === 'planned' ? '미개설 · 로그인 없음' : '미확인')],['로그인 방식',selectedChannel.loginMethod],['브라우저·프로필',selectedChannel.loginBrowser],['확인 상태',selectedChannel.loginStatusLabel],['로그인 근거 날짜',selectedChannel.loginEvidenceAt],['세션 확인 범위',selectedChannel.loginSessionStatus],['연결 주의사항',selectedChannel.loginCaveat || '없음'],['다음 행동',selectedChannel.nextAction]
+            ['브라우저 로그인(직접 확인)',operationLabels(selectedChannel).login],['게시·예약(작업실 기록)',operationLabels(selectedChannel).publication],['수집',operationLabels(selectedChannel).collection],['로그인 연결',selectedChannel.loginAlias || (selectedChannel.accountStatus === 'planned' ? '미개설 · 로그인 없음' : '미확인')],['로그인 방식',selectedChannel.loginMethod],['브라우저·프로필',selectedChannel.loginBrowser],['확인 상태',selectedChannel.loginStatusLabel],['로그인 근거 날짜',selectedChannel.operations?.login?.observedDateOnly===true?String(selectedChannel.loginEvidenceAt||'').slice(0,10)+' (날짜만 확인)':selectedChannel.loginEvidenceAt],['세션 확인 범위',selectedChannel.loginSessionStatus],['연결 주의사항',selectedChannel.loginCaveat || '없음'],['다음 행동',selectedChannel.nextAction]
           ]}/>
           <details className="mm-evidence-details"><summary>프로필·디자인·기록 근거 보기</summary><DetailFields items={[
-            ['용도',selectedChannel.channelRole],['프로필',selectedChannel.profileStatus],['디자인',selectedChannel.coverStatus],['확인 범위',selectedChannel.verificationScope || '계정별 원장 기록'],['프로필 근거 날짜',selectedChannel.lastEvidenceAt],['공유 브랜드',selectedChannel.sharedLabel || '없음'],['기록 위치',[...new Set([...(selectedChannel.sourcePaths || []),...(selectedChannel.loginSourcePaths || [])])].join('\n')]
+            ['주 사업',selectedChannel.business],['보조 사업',(selectedChannel.secondaryBusinesses || []).join(' · ') || '없음'],['분류 근거',selectedChannel.classificationBasis],['용도',selectedChannel.purpose || selectedChannel.channelRole],['프로필',selectedChannel.profileStatus],['디자인',selectedChannel.coverStatus],['확인 범위',selectedChannel.verificationScope || '계정별 원장 기록'],['프로필 근거 날짜',selectedChannel.lastEvidenceAt],['공유 브랜드',selectedChannel.sharedLabel || '없음'],['기록 위치',[...new Set([...(selectedChannel.sourcePaths || []),...(selectedChannel.loginSourcePaths || [])])].join('\n')]
           ]}/></details>
         </DataComponent>
       </Section></div>}

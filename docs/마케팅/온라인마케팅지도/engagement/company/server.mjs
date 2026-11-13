@@ -13,7 +13,8 @@ import { analyze, companyOverview, analyticsCsv, shiftDate, dateRange, METRICS, 
 import { providers, createAuthorization, exchangeCode, refreshCredentials, verifyYouTubePublishingConnection } from './oauth.mjs';
 import {createMetaConnectionService,verifyMetaConnection,hasVerifiedMetaComments,metaCommentScopes} from './meta-connection.mjs';
 import { canReadChannel,canWriteChannel,canManageOwners,visibleMembers,seedOwnership,recordOwnershipChange,ownerAt } from './organization.mjs';
-import { planFailure,shouldCollect,collectionHealth,recentPolicyChannel,recentNextCheckAt,shouldCollectRecent,RECENT_INTERVAL_MINUTES } from './collection-policy.mjs';
+import { planFailure,shouldCollect,collectionHealth,collectionHours,recentPolicyChannel,recentNextCheckAt,shouldCollectRecent,RECENT_INTERVAL_MINUTES } from './collection-policy.mjs';
+import {classifiedChannel} from './account-catalog.mjs';
 import { recordsForOwner } from './ownership-report.mjs';
 import { buildHypeFeed } from './hype.mjs';
 import { createContentService } from './content-service.mjs';
@@ -457,7 +458,7 @@ export function createCompanyApp(options={}) {
   const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
   const socialSimple=createSocialSimple({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,clock});
   // SNS·마케팅 간편판(10-24) — 세 장이 서버에서 더 읽는 사실: 보이는 채널·수집 상태·게시 성과 관측(채널 비교 셈 없이 — 무거운 report는 쓰지 않는다).
-  const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
+  const socialSimpleSources=user=>{const channels=visibleChannels(user).map(c=>safeChannel(c,user)),schedule=store.get('settings','company');return {channels,collection:collectionHealth(channels,{at:clock(),hourKst:schedule.hourKst,hoursKst:schedule.hoursKst,enabled:schedule.enabled}),performance:postPerformance.observations(user).entries};};
   const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
@@ -649,13 +650,13 @@ export function createCompanyApp(options={}) {
     })};
   }
   function reportSource(user,query,end,{overview=false}={}){
-    const all=scopedChannels(user,query);const ownerId=['admin','manager'].includes(user.role)?query.get('ownerId'):null;
-    const candidates=all.filter(c=>(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel')));
+    const all=scopedChannels(user,query).map(c=>classifiedChannel(c));const ownerId=['admin','manager'].includes(user.role)?query.get('ownerId'):null;
+    const candidates=all.filter(c=>(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel'))&&(!query.get('business')||c.business===query.get('business'))&&(!query.get('country')||c.country===query.get('country')));
     // The overview and selected report share one read and one expiry cutoff.
     const events=store.all('ownershipEvents'),overviewData=overview?records(all):null,raw=overviewData?selectRecords(overviewData,candidates):records(candidates);
     const selected=ownerId?recordsForOwner(raw,candidates,events,ownerId,end):{records:raw,channels:candidates};
     const channels=selected.channels;
-    const catalog={channels:channels.map(c=>({...c,ready:true,brand:c.displayName,handle:c.handle||'',publicUrl:c.canonicalUrl,country:''}))};
+    const catalog={channels:channels.map(c=>({...c,ready:true,brand:c.displayName,handle:c.handle||'',publicUrl:c.canonicalUrl}))};
     return {all,ownerId,events,channels,catalog,data:selected.records,overviewData};
   }
   function contentLeaders(user,query){
@@ -666,7 +667,8 @@ export function createCompanyApp(options={}) {
   function report(user,query,day=false){
     const end=query.get('date')||query.get('end')||today();const start=day?end:query.get('start')||shiftDate(end,-29);
     dateRange(start,end);if(end>today())throw httpError('오늘 뒤 날짜는 볼 수 없어요.');
-    const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end});
+    const {all,ownerId,events,catalog,data,overviewData}=reportSource(user,query,end,{overview:true}),result=analyze(data,catalog,{start,end,business:query.get('business')||'',country:query.get('country')||''});
+    result.unassignedChannelCount=all.filter(c=>c.business==='UNASSIGNED'&&(!query.get('platform')||c.platform===query.get('platform'))&&(!query.get('channel')||c.id===query.get('channel'))).length;
     if(query.get('growth')==='1')result.growth=buildGrowthSummary(data,catalog,{asOf:end});
     if(query.get('history')==='1')result.history=buildGrowthHistory(data,catalog,{asOf:end,selectionStart:query.get('historyStart')||undefined,selectionEnd:query.get('historyEnd')||undefined});
     const groups=result.groups('channel');
@@ -810,7 +812,7 @@ export function createCompanyApp(options={}) {
     if(backgroundJobsEnabled&&(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch))dailyTrends.tick(at).catch(()=>{});
     const settings=store.get('settings','company');if(!settings.enabled)return;
     for(const c of store.all('channels')){
-      const policy={at,enabled:settings.enabled,hourKst:settings.hourKst,connected:hasConnection(c)};
+      const policy={at,enabled:settings.enabled,hourKst:settings.hourKst,hoursKst:settings.hoursKst,connected:hasConnection(c)};
       try{
         // 최근 수집의 실패가 하루 전체 수집까지 막지 않는다(10-20: 한 번 영구·인증 실패로 분류되면 두 수집이 모두 멈췄다).
         // 플랫폼 한도에 걸린 동안만 전체 수집도 한도가 풀릴 때까지 기다린다.
@@ -828,7 +830,7 @@ export function createCompanyApp(options={}) {
     const settings=store.get('settings','company'),safe=channels.map(c=>({...c,connected:hasConnection(c)}));
     const connected=safe.filter(c=>c.connected),busy=connected.filter(c=>inflight.has(c.id));
     const backoffs=connected.flatMap(c=>{const failure=c.recentFailureKind?recentPolicyChannel(c):c;return failure.failureKind?[{channelId:c.id,kind:failure.failureKind,code:failure.failureCode||null,nextRetryAt:failure.nextRetryAt||null,requiresReconnect:failure.requiresReconnect===true}]:[];});
-    const next=connected.flatMap(c=>{const due=recentNextCheckAt(c,{at,enabled:settings.enabled,hourKst:settings.hourKst,connected:true});return due?[due]:settings.enabled&&c.nextRetryAt&&!c.requiresReconnect?[new Date(Math.max(Date.parse(at),Date.parse(c.nextRetryAt))).toISOString()]:[];});
+    const next=connected.flatMap(c=>{const due=recentNextCheckAt(c,{at,enabled:settings.enabled,hourKst:settings.hourKst,hoursKst:settings.hoursKst,connected:true});return due?[due]:settings.enabled&&c.nextRetryAt&&!c.requiresReconnect?[new Date(Math.max(Date.parse(at),Date.parse(c.nextRetryAt))).toISOString()]:[];});
     const checked=connected.map(c=>c.recentLastCollectedAt||c.lastCollectedAt).filter(x=>x&&Number.isFinite(Date.parse(x))&&Date.parse(x)<=Date.parse(at));
     return {...buildHypeFeed({channels:safe,posts,observations,users:visibleMembers(store,user),now:at}),collection:{intervalMinutes:RECENT_INTERVAL_MINUTES,activeChannels:channels.length,connectedChannels:connected.length,waitingChannels:connected.filter(c=>!c.recentLastCollectedAt&&!c.lastCollectedAt).length,collectingChannels:busy.length,partialChannels:connected.filter(c=>c.recentCoverage?.status==='partial').length,backoffChannels:backoffs.length,failedChannels:backoffs.filter(x=>!x.nextRetryAt).length,nextCheckAt:next.length?next.sort()[0]:null,lastCheckedAt:checked.length?checked.sort().at(-1):null,enabled:settings.enabled===true,backoffs}};
   }
@@ -1674,6 +1676,18 @@ export function createCompanyApp(options={}) {
       }
       const cancelHandoff=path.match(/^\/api\/channels\/([^/]+)\/handoff\/cancel$/);
       if(cancelHandoff){const c=channelFor(user,cancelHandoff[1],'write');if(!canManageOwners(user,c))throw httpError('담당자 바꾸기는 관리자나 팀장만 취소할 수 있어요.',403);const h=pending(c);if(h)store.transaction(()=>{store.put('handoffs',h.id,{...h,status:'cancelled',cancelledAt:clock(),cancelledBy:user.id});store.put('channels',c.id,{...c,pendingHandoffId:null});audit(user,'handoff-cancelled',c.id);});return send(res,200,{ok:true});}
+      const publicCollection=path.match(/^\/api\/channels\/([^/]+)\/public-collection$/);
+      if(publicCollection){
+        admin(user);const c=channelFor(user,publicCollection[1],'write');
+        if(c.platform!=='youtube'||c.active===false)throw httpError('운영 중인 YouTube 채널의 공개 통계에만 연결할 수 있어요.');
+        const reader=store.secret('collection:youtube-public');
+        if(!reader?.accessToken||!reader.refreshToken||!reader.clientId||!reader.clientSecret||!store.get('users',reader.connectedBy)?.active)throw httpError('기존 공개 통계 조회 연결을 먼저 확인해 주세요.',409);
+        if(reader.channelIds?.includes(c.id)&&!c.collectionDisabled)return send(res,200,{channel:safeChannel(c,user),scope:'public-statistics-only'});
+        // 기존 리더의 credential binding은 그대로 유지한다. 조회 중에는 allowlist도 바꾸지 않는다.
+        if(store.all('channels').some(row=>reader.channelIds?.includes(row.id)&&row.status==='collecting'))throw httpError('공개 통계 수집이 진행 중이에요. 끝난 뒤 연결해 주세요.',409);
+        store.transaction(()=>{store.setSecret('collection:youtube-public',{...reader,channelIds:[...new Set([...(reader.channelIds||[]),c.id])]});store.put('channels',c.id,{...c,status:'ready',collectionDisabled:false,connectionVersion:(c.connectionVersion||0)+1});audit(user,'public-collection-connected',c.id);});
+        return send(res,200,{channel:safeChannel(store.get('channels',c.id),user),scope:'public-statistics-only'});
+      }
       const cm=path.match(/^\/api\/channels\/([^/]+)\/(collect|connection|owners|archive|disconnect|details)$/);
       if(cm){const c=channelFor(user,cm[1],'write');if(cm[2]==='collect')return send(res,202,enqueueCollection(user,c));
         if(cm[2]==='owners')return send(res,200,changeOwners(user,c,input));
@@ -1707,7 +1721,7 @@ export function createCompanyApp(options={}) {
       }
       const member=path.match(/^\/api\/members\/([^/]+)\/status$/);
       if(member){admin(user);const target=store.get('users',member[1]);if(!target||target.id===user.id||target.role==='admin')throw httpError('이 크루의 이용 상태는 바꿀 수 없어요.');store.put('users',target.id,{...target,active:input.active===true});store.revokeUser(target.id);if(input.active!==true)for(const c of store.all('channels'))if(connection(c)?.connectedBy===target.id)disconnectChannel(c);audit(user,'member-status',target.id);return send(res,200,{ok:true});}
-      if(path==='/api/settings'){admin(user);const hour=Number(input.hourKst);if(!Number.isInteger(hour)||hour<0||hour>23)throw httpError('수집 시각은 0~23시 가운데서 골라 주세요.');store.put('settings','company',{...store.get('settings','company'),hourKst:hour,enabled:input.enabled===true,companyName:text(input.companyName,80)||store.get('settings','company').companyName});return send(res,200,{ok:true});}
+      if(path==='/api/settings'){admin(user);const current=store.get('settings','company'),hour=Number(input.hourKst??current.hourKst);let hours;try{hours=collectionHours({hourKst:hour,hoursKst:input.hoursKst??(current.hoursKst?.length?[hour,...current.hoursKst.slice(1)]:undefined)});}catch{throw httpError('수집 시각은 0~23시에서 하루 한 번 또는 두 번 골라 주세요.');}store.put('settings','company',{...current,hourKst:hours[0],hoursKst:hours,enabled:input.enabled===undefined?current.enabled:input.enabled===true,companyName:text(input.companyName,80)||current.companyName});return send(res,200,{ok:true,hoursKst:hours});}
       if(path==='/api/settings/pulse-mail'){const result=pulseMail.configure(user,input);audit(user,'pulse-mail-settings','pulse-mail',{enabled:result.enabled,requested:result.requested,relayChanged:input?.relayUrl!==undefined});return send(res,200,result);}
       if(path==='/api/settings/pulse-mail/ping'){const result=await pulseMail.ping(user);audit(user,'pulse-mail-ping','pulse-mail',{state:result.connection?.state||null,code:result.connection?.code||null});return send(res,200,result);}
       if(path==='/api/settings/pulse-auto-reply'){const result=pulseAutoReply.configure(user,input);audit(user,'pulse-auto-reply-settings','pulse-auto-reply',{enabled:result.enabled,keyChanged:input?.apiKey!==undefined,dailyUsd:result.dailyUsd,monthlyUsd:result.monthlyUsd,perProjectDaily:result.perProjectDaily});return send(res,200,result);}
@@ -1954,7 +1968,7 @@ export function createCompanyApp(options={}) {
         const channels=visibleChannels(user),ids=new Set(channels.map(c=>c.id)),members=visibleMembers(store,user),teamIds=new Set([...channels.map(c=>c.teamId),user.teamId]),schedule=store.get('settings','company');
         const teams=store.all('teams').filter(t=>user.role==='admin'||teamIds.has(t.id)).map(t=>({...t,memberCount:members.filter(u=>u.teamId===t.id&&u.active).length,channelCount:channels.filter(c=>c.teamId===t.id&&c.active).length}));
         const safe=channels.map(c=>safeChannel(c,user));
-        return send(res,200,{user:publicUser(user),permissions:permissions(user),workspaceCatalog:workspaceProfiles.catalog(user),teams,companyName:schedule.companyName,members,channels:safe,collection:collectionHealth(safe,{at:clock(),hourKst:schedule.hourKst,enabled:schedule.enabled}),capabilities:PLATFORM_CAPABILITIES,oauthProviders:providerStates(),schedule,pulseAutoReply:user.role==='admin'?pulseAutoReply.settings(user):null,runs:store.latestIn('runs','channelId',ids,'startedAt',100),deployment:{localOnly:isLocalHost(host),origin,serverMustStayRunning:true},legacyImportAvailable:user.role==='admin'&&existsSync(join(here,'../../dashboard/src/data.json')),demoAvailable:user.role==='admin'&&demo.available()});
+        return send(res,200,{user:publicUser(user),permissions:permissions(user),workspaceCatalog:workspaceProfiles.catalog(user),teams,companyName:schedule.companyName,members,channels:safe,collection:collectionHealth(safe,{at:clock(),hourKst:schedule.hourKst,hoursKst:schedule.hoursKst,enabled:schedule.enabled}),capabilities:PLATFORM_CAPABILITIES,oauthProviders:providerStates(),schedule,pulseAutoReply:user.role==='admin'?pulseAutoReply.settings(user):null,runs:store.latestIn('runs','channelId',ids,'startedAt',100),deployment:{localOnly:isLocalHost(host),origin,serverMustStayRunning:true},legacyImportAvailable:user.role==='admin'&&existsSync(join(here,'../../dashboard/src/data.json')),demoAvailable:user.role==='admin'&&demo.available()});
       }
       const historyRoute=path.match(/^\/api\/channels\/([^/]+)\/history$/);
       if(historyRoute){const c=channelFor(user,historyRoute[1]),events=store.all('ownershipEvents').filter(e=>e.channelId===c.id).sort((a,b)=>a.effectiveAt.localeCompare(b.effectiveAt)||(a.sequence||0)-(b.sequence||0)).map(e=>({...e,beforeOwners:namedUsers(e.beforeOwnerIds),afterOwners:namedUsers(e.afterOwnerIds),actor:e.actorId?namedUsers([e.actorId])[0]:null}));return send(res,200,{events,handoffs:store.all('handoffs').filter(h=>h.channelId===c.id).map(h=>({...h,fromOwners:namedUsers(h.fromOwnerIds),toOwners:namedUsers(h.toOwnerIds)})),baselineAt:events.find(e=>e.baseline)?.effectiveAt||null});}

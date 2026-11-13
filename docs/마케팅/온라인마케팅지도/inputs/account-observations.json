@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-13",
+  "accounts": {
+    "lab-cn-xiaohongshu": {
+      "login": {
+        "state": "verified",
+        "observedAt": "2026-11-13",
+        "browser": "Ego · Profile 5",
+        "scope": "creator.rednote.com 소유자 관리 화면에서 대상 계정·노트 23개·11월 13일과 14일 예약 확인. 일반 rednote.com 공개 페이지의 로그인 요구와 구분."
+      },
+      "publication": {
+        "observedAt": "2026-11-13",
+        "scope": "창작자 노트 관리 화면",
+        "totalNotes": 23,
+        "scheduledDates": [
+          "2026-11-13",
+          "2026-11-14"
+        ],
+        "timeZone": "Asia/Shanghai",
+        "note": "예약 기록이며 실제 게시 완료 확인이 아님"
+      }
+    },
+    "yuho-linkedin-primary": {
+      "login": {
+        "state": "verified",
+        "observedAt": "2026-11-13",
+        "browser": "Ego · Profile 7",
+        "scope": "LinkedIn 본인 양유호 프로필 및 SYNK 관리자 화면 확인"
+      }
+    },
+    "synk-linkedin-company": {
+      "login": {
+        "state": "verified",
+        "observedAt": "2026-11-13",
+        "browser": "Ego · Profile 7",
+        "scope": "LinkedIn 본인 양유호 세션에서 SYNK 회사 관리자 접근 확인"
+      }
+    },
+    "yuhobuilds-x": {
+      "login": {
+        "state": "login-required",
+        "observedAt": "2026-11-13",
+        "browser": "Ego · Profile 5 / Profile 7",
+        "scope": "확인한 두 프로필에서 X 로그인 화면. 다른 프로필·모바일 앱의 로그인 상태까지 확인한 것은 아님"
+      }
+    }
+  }
+}

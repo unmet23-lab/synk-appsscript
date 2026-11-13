@@ -58,7 +58,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, purpose TEXT NOT NULL, userId TEXT, body TEXT NOT NULL, expiresAt TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS token_expiry ON tokens(expiresAt);`);
     for(const [kind,fields] of Object.entries(INDEXED))for(const field of fields)this.db.exec(`CREATE INDEX IF NOT EXISTS documents_${kind}_${field} ON documents(json_extract(body,'$.${field}')) WHERE kind='${kind}'`);
-    if(!this.get('settings','company'))this.put('settings','company',{companyName:'SYNK',enabled:true,hourKst:9});
+    if(!this.get('settings','company'))this.put('settings','company',{companyName:'SYNK',enabled:true,hourKst:9,hoursKst:[9,21]});
     this.#statement('DELETE FROM tokens WHERE expiresAt < ?').run(now());
   }
   // readScope(fn): during one synchronous build, repeated get/all of a document skip SQLite. Only the stored

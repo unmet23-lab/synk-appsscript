@@ -74,13 +74,39 @@ function stats(src, key, start, end, days) {
   const baseline = shiftDate(start, -1);
   const previousStart = shiftDate(start, -days);
   return { ...point(src, key, end), day: compare(src, key, shiftDate(end, -1), end),
-    period: compare(src, key, baseline, end), previousPeriod: compare(src, key, shiftDate(previousStart, -1), baseline) };
+    period: compare(src, key, baseline, end), previousPeriod: compare(src, key, shiftDate(previousStart, -1), baseline),
+    periodComparison: comparePeriods(src, key, shiftDate(previousStart, -1), baseline, end) };
+}
+// Both periods use exactly the same population and all three boundaries. A
+// missing observation is never a zero; only a not-yet-published post is zero.
+// period.rate above is growth over a cumulative baseline, NOT week over week.
+export function comparePeriods(src, key, previousBaseDate, baseDate, endDate) {
+  const entities = src.entities.filter(row => !src.isPost || row.publishedDate <= endDate);
+  let current = 0, previous = 0, count = 0;
+  for (const entity of entities) {
+    const rows = src.index.get(entity.id);
+    const dates = [previousBaseDate, baseDate, endDate];
+    const samples = dates.map(date => src.isPost && entity.publishedDate > date && !entity.requiresRecordedBaseline
+      ? { value: 0, synthetic: true } : { value: rows?.get(date)?.[key], group: rows?.get(date)?.comparisonGroup });
+    if (samples.some(sample => !known(sample.value))) continue;
+    const recorded = samples.filter(sample => !sample.synthetic);
+    if (recorded.some(sample => sample.group !== recorded[0]?.group)) continue;
+    previous += samples[1].value - samples[0].value;
+    current += samples[2].value - samples[1].value;
+    count++;
+  }
+  const complete = entities.length > 0 && count === entities.length;
+  const reason = !count ? 'missing-baseline' : !complete ? 'partial-coverage' : previous < 0 || current < 0 ? 'counter-correction' : previous === 0 ? 'zero-previous' : null;
+  return { current: count ? current : null, previous: count ? previous : null,
+    delta: count ? current - previous : null, rate: reason === null ? (current - previous) / previous * 100 : null,
+    matchedRate: count && previous > 0 && current >= 0 ? (current - previous) / previous * 100 : null,
+    count, eligible: entities.length, complete, reason, previousBaseDate, baseDate, endDate };
 }
 export function analyze(records, catalog, options) {
-  const { start, end, brand = '', channel = '', platform = '', country = '' } = options;
+  const { start, end, brand = '', business = '', channel = '', platform = '', country = '' } = options;
   const dates = dateRange(start, end);
   const channels = catalog.channels.filter(row => row.ready && (!brand || row.brand === brand) && (!channel || row.id === channel)
-    && (!platform || row.platform === platform) && (!country || row.country === country));
+    && (!platform || row.platform === platform) && (!country || row.country === country) && (!business || row.business === business));
   const channelIds = new Set(channels.map(row => row.id));
   const posts = records.posts.filter(row => channelIds.has(row.channelId) && row.publishedDate <= end);
   const postIndex = indexRows(records.snapshots, 'postId');
@@ -109,7 +135,7 @@ export function analyze(records, catalog, options) {
     });
   };
   return { start, end, dates, channels, posts, metrics, daily, byPost, groups,
-    scope: { brand, channel, platform, country },
+    scope: { brand, business, channel, platform, country },
     newPosts: posts.filter(row => row.publishedDate >= start).length };
 }
 export function analyticsCsv(report, dimension = 'channel') {

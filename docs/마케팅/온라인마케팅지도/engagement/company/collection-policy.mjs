@@ -39,11 +39,25 @@ const supported = channel => SUPPORTED.has(String(channel.platform || '').toLowe
 const count = value => Number.isInteger(value) && value >= 0 ? Math.min(value, RETRY_DELAYS.length) : 0;
 const connected = (channel, explicit) => !channel.collectionDisabled && (typeof explicit === 'boolean' ? explicit : channel.connected === true);
 
-function context({ at = new Date().toISOString(), enabled = true, hourKst = 9 } = {}) {
+export function collectionHours({hourKst = 9, hoursKst} = {}) {
+  const hours = hoursKst === undefined ? [hourKst] : hoursKst;
+  if (!Array.isArray(hours) || !hours.length || hours.length > 2 || hours.some(h => !Number.isInteger(h) || h < 0 || h > 23)) throw new RangeError('수집 시각은 한국 시간 0~23시에서 하루 한 번 또는 두 번이어야 합니다.');
+  return [...new Set(hours)].sort((a,b)=>a-b);
+}
+function context({ at = new Date().toISOString(), enabled = true, hourKst = 9, hoursKst } = {}) {
   const time = timestamp(at);
   if (time === null) throw new TypeError('수집 기준 시각은 올바른 날짜·시간이어야 합니다.');
   if (!Number.isInteger(hourKst) || hourKst < 0 || hourKst > 23) throw new RangeError('수집 시각은 한국 시간 0~23시여야 합니다.');
-  return { at: new Date(time).toISOString(), time, day: kstDay(time), enabled: enabled === true, hourKst };
+  const hours = collectionHours({hourKst,hoursKst});
+  const midnight = Date.parse(kstDay(time)+'T00:00:00Z')-KST_OFFSET;
+  const slot = hours.filter(h => h <= kstHour(time)).at(-1);
+  return { at: new Date(time).toISOString(), time, day: kstDay(time), enabled: enabled === true, hourKst: hours[0], hoursKst:hours, slotAt:slot===undefined?null:midnight+slot*60*MINUTE };
+}
+export function nextCollectionAt(options = {}) {
+  const ctx=context(options);
+  if(!ctx.enabled)return null;
+  const midnight=Date.parse(ctx.day+'T00:00:00Z')-KST_OFFSET;
+  return new Date(ctx.hoursKst.map(h=>midnight+h*60*MINUTE).find(t=>t>ctx.time) ?? midnight+86400000+ctx.hoursKst[0]*60*MINUTE).toISOString();
 }
 
 function safeCode(error) {
@@ -97,17 +111,19 @@ export function shouldCollect(channel = {}, options = {}) {
   const failed = currentFailure(channel);
   if (failed && (channel.requiresReconnect || channel.failureKind === 'auth' || channel.failureKind === 'permanent')) return false;
   const collectedAt = timestamp(channel.lastCollectedAt);
-  if (collectedAt !== null && (collectedAt > ctx.time || kstDay(collectedAt) === ctx.day)) return false;
+  if (collectedAt !== null && (collectedAt > ctx.time || (ctx.hoursKst.length===1 ? kstDay(collectedAt)===ctx.day : ctx.slotAt !== null && collectedAt >= ctx.slotAt))) return false;
   const nextRetry = timestamp(channel.nextRetryAt);
   if (failed && channel.nextRetryAt) {
     if (nextRetry === null || !['transient', 'rate-limit'].includes(channel.failureKind) || count(channel.retryCount) < 1) return false;
     return nextRetry <= ctx.time;
   }
-  if (kstHour(ctx.time) < ctx.hourKst) return false;
+  if (ctx.slotAt === null) return false;
   const attemptedAt = timestamp(channel.lastAttemptAt);
   const failedAt = timestamp(channel.lastFailureAt);
   if (failed && channel.failureKind === 'rate-limit' && failedAt !== null && ctx.time < failedAt + RATE_LIMIT_DELAY_MINUTES * MINUTE) return false;
-  if (attemptedAt !== null && (attemptedAt > ctx.time || kstDay(attemptedAt) === ctx.day)) return false;
+  if (attemptedAt !== null && attemptedAt >= ctx.slotAt) return false;
+  // Exhausted recovery stays capped for the day; a second full-scan slot cannot
+  // reset the retry budget or evade a platform limit.
   if (failed && failedAt !== null && (failedAt > ctx.time || kstDay(failedAt) === ctx.day)) return false;
   return true;
 }
@@ -188,7 +204,7 @@ function healthItem(channel, ctx) {
     return show('failed', '수집 실패', reason, channel.failureKind === 'rate-limit' ? 'wait' : 'collect');
   }
   if (!ctx.enabled) return show('paused', '자동 수집 꺼짐', '자동 수집이 꺼져 있어요. 필요할 때 직접 수집해 주세요.', 'collect');
-  if (shouldCollect(channel, { at: ctx.at, enabled: ctx.enabled, hourKst: ctx.hourKst, connected: connected(channel) })) return show('overdue', '오늘 수집 전', '수집 시각이 지났는데 오늘 기록이 아직 없어요. 다음 점검 때 다시 봐요.', 'collect');
+  if (shouldCollect(channel, { at: ctx.at, enabled: ctx.enabled, hoursKst:ctx.hoursKst, connected: connected(channel) })) return show('overdue', '이번 수집 전', '이번 수집 시각이 지났고 다음 점검에서 다시 모아요. 이전 수집 기록은 남아 있어요.', 'collect');
   return show('scheduled', '수집 시각 전', '정해 둔 수집 시각을 기다리고 있어요. 그 전까지 오늘 수치는 비어 있어요.', 'wait');
 }
 
@@ -206,6 +222,7 @@ export function collectionHealth(channels = [], options = {}) {
     return collected !== null && collected <= ctx.time && (channel.status === 'success' || channel.lastCollectionStatus === 'success' || channel.coverage?.status === 'complete') ? collected : null;
   }).filter(value => value !== null);
   return {
+    hoursKst:ctx.hoursKst, nextCollectionAt:nextCollectionAt(options),
     total: rows.length, active: rows.filter(active).length,
     supported: rows.filter(channel => active(channel) && supported(channel)).length,
     connected: rows.filter(channel => active(channel) && supported(channel) && connected(channel)).length,

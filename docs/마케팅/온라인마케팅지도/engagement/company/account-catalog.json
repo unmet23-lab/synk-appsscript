@@ -1,0 +1,1994 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-13T13:00:05.664Z",
+  "sourceAt": "2026-11-10",
+  "accounts": [
+    {
+      "id": "lab-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "LAB",
+      "purpose": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유",
+      "classificationBasis": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synkkorean",
+      "publicUrl": "https://www.youtube.com/@synkkorean",
+      "externalId": "UCmZplYKuNHLPng4iL2AbLLg",
+      "country": "몽골",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "lab-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [
+        "PATH"
+      ],
+      "contentTrack": "LAB",
+      "purpose": "몽골어권 한국어 학습 릴스·카드·수업 소식",
+      "classificationBasis": "몽골어권 한국어 학습 릴스·카드·수업 소식. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": "@synk.mn",
+      "publicUrl": "https://www.instagram.com/synk.mn/",
+      "externalId": null,
+      "country": "몽골",
+      "countryCode": "MN",
+      "accountStatus": "operating"
+    },
+    {
+      "id": "lab-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "짧은 한국어 학습 영상",
+      "classificationBasis": "짧은 한국어 학습 영상. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synk.mn",
+      "publicUrl": "https://www.tiktok.com/@synk.mn",
+      "externalId": null,
+      "country": "몽골",
+      "countryCode": "MN",
+      "accountStatus": "operating"
+    },
+    {
+      "id": "lab-facebook",
+      "business": "LAB",
+      "secondaryBusinesses": [
+        "PATH"
+      ],
+      "contentTrack": "LAB",
+      "purpose": "학습 자료·수업·과정 안내. 성인·보호자도 포함",
+      "classificationBasis": "학습 자료·수업·과정 안내. 성인·보호자도 포함. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "facebook",
+      "handle": "synkworld",
+      "publicUrl": "https://www.facebook.com/synkworld",
+      "externalId": null,
+      "country": "몽골",
+      "countryCode": "MN",
+      "accountStatus": "operating"
+    },
+    {
+      "id": "lab-telegram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "LAB 자료·수업·교재·학습 앱 소식 채널",
+      "classificationBasis": "LAB 자료·수업·교재·학습 앱 소식 채널. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "telegram",
+      "handle": "@synkmn",
+      "publicUrl": "https://t.me/synkmn",
+      "externalId": null,
+      "country": "몽골",
+      "countryCode": "MN",
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-youtube",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "SYNK를 만드는 유호의 실제 회사 제작 과정·본편 영상",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.youtube.com/@yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-instagram",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 제작 과정과 결과를 보여 주는 릴스·이미지",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.instagram.com/yuhobuilds/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-tiktok",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 제작 과정과 결과를 보여 주는 짧은 영상",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.tiktok.com/@yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-threads",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "작업 중 생각·시도·질문과 대화",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "threads",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.threads.com/@yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuho-linkedin-primary",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 개인 경력·제작 경험·기관·기업 협업. 최종 운영 개인 프로필",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "linkedin",
+      "handle": "양유호",
+      "publicUrl": "https://www.linkedin.com/in/유호-양-5800b8433/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-x",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 짧은 작업 기록과 결과 공유",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "x",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://x.com/yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-behance",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "SHIFT"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 완성 디자인·브랜딩 포트폴리오. 현재 SHIFT 작업 중심",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "behance",
+      "handle": "yuhobuilds",
+      "publicUrl": "https://www.behance.net/yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-naver-clip",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "네이버 내 유호의 짧은 제작 영상",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "naver-clip",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://clip.naver.com/@yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhobuilds-telegram",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "SHIFT"
+      ],
+      "contentTrack": "YUHO",
+      "purpose": "유호·SHIFT 협업 연락용 개인 프로필. 공개 발행 채널 아님",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "telegram",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://t.me/yuhobuilds",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating-contact"
+    },
+    {
+      "id": "synkbrief-youtube",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "최신 AI 소식·GitHub 스킬·도구 추천·실무 활용 영상",
+      "classificationBasis": "최신 AI 소식·GitHub 스킬·도구 추천·실무 활용 영상. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synkbrief",
+      "publicUrl": "https://www.youtube.com/@synkbrief",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "synkbrief-instagram",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "AI 소식·스킬·도구 추천과 활용법 릴스·카드",
+      "classificationBasis": "AI 소식·스킬·도구 추천과 활용법 릴스·카드. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": "@synkbrief",
+      "publicUrl": "https://www.instagram.com/synkbrief/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "synkbrief-tiktok",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "AI 소식·스킬·도구 추천과 활용법의 짧은 영상",
+      "classificationBasis": "AI 소식·스킬·도구 추천과 활용법의 짧은 영상. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synkbrief",
+      "publicUrl": "https://www.tiktok.com/@synkbrief",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "shift-naverblog",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 검색형 제작 기록·AI 활용 설명. 기존 SHIFT 레지스트리 ID 보존",
+      "classificationBasis": "유호의 검색형 제작 기록·AI 활용 설명. 기존 SHIFT 레지스트리 ID 보존. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "naver-blog",
+      "handle": "synkshift",
+      "publicUrl": "https://blog.naver.com/synkshift",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "shift-tistory",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "YUHO",
+      "purpose": "유호의 제작 과정·방법·실제 적용기. 기존 SHIFT 레지스트리 ID 보존",
+      "classificationBasis": "유호의 제작 과정·방법·실제 적용기. 기존 SHIFT 레지스트리 ID 보존. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tistory",
+      "handle": "yuhobuilds.tistory.com",
+      "publicUrl": "https://yuhobuilds.tistory.com/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "shift-pinterest",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "브랜드·웹·콘텐츠 디자인 발견과 포트폴리오 유입",
+      "classificationBasis": "브랜드·웹·콘텐츠 디자인 발견과 포트폴리오 유입. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "pinterest",
+      "handle": "synkshift",
+      "publicUrl": "https://www.pinterest.com/synkshift/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "shift-kakao",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "기업·기관 AI 교육·컨설팅·브랜딩 안내 및 문의",
+      "classificationBasis": "기업·기관 AI 교육·컨설팅·브랜딩 안내 및 문의. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "kakao-channel",
+      "handle": "synkshift",
+      "publicUrl": "https://pf.kakao.com/_kvlrX",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "synk-linkedin-company",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ],
+      "contentTrack": "SYNK",
+      "purpose": "SYNK 회사 소개·완성물·대외 협업. 회사 ID 143833958",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "linkedin",
+      "handle": "synk-im",
+      "publicUrl": "https://www.linkedin.com/company/synk-im/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "synklab-substack",
+      "business": "SYNK",
+      "secondaryBusinesses": [
+        "LAB",
+        "SHIFT"
+      ],
+      "contentTrack": "SYNK",
+      "purpose": "공통 뉴스레터. 발행 공간과 작성자 @synklab을 한 계정으로 계산",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "substack",
+      "handle": "synklab.substack.com",
+      "publicUrl": "https://synklab.substack.com/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "synk-instagram",
+      "business": "SYNK",
+      "secondaryBusinesses": [],
+      "contentTrack": "SYNK",
+      "purpose": "SYNK 본체 Instagram 개설 제외(2026-11-09 사용자 결정)",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "excluded"
+    },
+    {
+      "id": "synkbrief-threads",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "synkbrief",
+      "purpose": "SHIFT 정보 Threads 준비 자리. 목표 @synkbrief 개설 보류",
+      "classificationBasis": "SHIFT 정보 Threads 준비 자리. 목표 @synkbrief 개설 보류. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "threads",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "creation-deferred"
+    },
+    {
+      "id": "yuhobuilds-linkedin",
+      "business": "SYNK",
+      "secondaryBusinesses": [],
+      "contentTrack": "YUHO",
+      "purpose": "기존 중복 LinkedIn 개인 프로필. 운영 제외이며 삭제 완료가 아님",
+      "classificationBasis": "기존 회사·대표 공통 운영 목적 유지. 사업별 공유 연결은 보조 속성으로 분리.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "linkedin",
+      "handle": "yuhobuilds",
+      "publicUrl": "https://www.linkedin.com/in/yuhobuilds/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "excluded-existing"
+    },
+    {
+      "id": "pulse-youtube",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 작품·영상 채널. 소유자 관리 화면 확인, 게시·자동화 미검증",
+      "classificationBasis": "PULSE 작품·영상 채널. 소유자 관리 화면 확인, 게시·자동화 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.youtube.com/@synkpulse",
+      "externalId": "UCvCOJtdC-JgotRgAsbdNFBg",
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "pulse-instagram",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+      "classificationBasis": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.instagram.com/synkpulse/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "pulse-facebook",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증",
+      "classificationBasis": "PULSE 브랜드 계정. 소유자 관리 화면 확인, 게시 연결 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "facebook",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.facebook.com/synkpulse",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "pulse-tiktok",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 영어 공통 계정(호주·싱가포르·영국·미국). 소유자 편집 화면 확인, 게시 연결 미검증",
+      "classificationBasis": "PULSE 영어 공통 계정(호주·싱가포르·영국·미국). 소유자 편집 화면 확인, 게시 연결 미검증. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synkpulse",
+      "publicUrl": "https://www.tiktok.com/@synkpulse",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhokorean-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "youtube",
+      "handle": "@yuhokorean",
+      "publicUrl": "https://www.youtube.com/@yuhokorean",
+      "externalId": null,
+      "country": "글로벌·yuhokorean",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhokorean-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "instagram",
+      "handle": "@yuhokorean",
+      "publicUrl": "https://www.instagram.com/yuhokorean/",
+      "externalId": null,
+      "country": "글로벌·yuhokorean",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhokorean-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@yuhokorean",
+      "publicUrl": "https://www.tiktok.com/@yuhokorean",
+      "externalId": null,
+      "country": "글로벌·yuhokorean",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhokorean-facebook",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "facebook",
+      "handle": "Yuhokorean",
+      "publicUrl": "https://www.facebook.com/profile.php?id=61596244437180",
+      "externalId": null,
+      "country": "글로벌·yuhokorean",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "yuhokorean-threads",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "yuhokorean",
+      "purpose": "유호의 글로벌 한국어 학습 콘텐츠를 통한 LAB 교육 유입",
+      "classificationBasis": "한국어 교육 소개 및 YouTube·Instagram·Facebook 교육 카테고리 설정 기록에 따른 LAB 배정. 취업·정착 목적의 PATH 전용 계정이라는 근거는 없음.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "threads",
+      "handle": "@yuhokorean",
+      "publicUrl": "https://www.threads.com/@yuhokorean",
+      "externalId": null,
+      "country": "글로벌·yuhokorean",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "shift-class-naverblog",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "SHIFT 수업 블로그",
+      "classificationBasis": "SHIFT 수업 블로그. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "naverblog",
+      "handle": "shiftclass",
+      "publicUrl": "https://blog.naver.com/shiftclass",
+      "externalId": null,
+      "country": "한국",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "pulse-naverblog",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 제작·포트폴리오 블로그",
+      "classificationBasis": "PULSE 제작·포트폴리오 블로그. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "naverblog",
+      "handle": "daily_with_247",
+      "publicUrl": "https://blog.naver.com/daily_with_247",
+      "externalId": null,
+      "country": "한국",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "politics-youtube",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "몽글몽글",
+      "purpose": "몽글몽글 정치 채널",
+      "classificationBasis": "몽글몽글 정치 채널. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "youtube",
+      "handle": "@몽글몽글정치",
+      "publicUrl": "https://www.youtube.com/channel/UCyzxe5mPrqvAzseYzyyKeoQ",
+      "externalId": null,
+      "country": "한국",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "politics-facebook",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "몽글몽글",
+      "purpose": "몽글몽글 정치 채널",
+      "classificationBasis": "몽글몽글 정치 채널. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/새브랜드_계정세팅_20261103.md"
+      ],
+      "platform": "facebook",
+      "handle": "몽글몽글",
+      "publicUrl": "https://www.facebook.com/profile.php?id=61596409163072",
+      "externalId": null,
+      "country": "한국",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "shift-brunch",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "브런치 프로필 · 작가 승인 별도",
+      "classificationBasis": "브런치 프로필 · 작가 승인 별도. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "brunch",
+      "handle": "양유호",
+      "publicUrl": "https://brunch.co.kr/@@j0BM",
+      "externalId": null,
+      "country": "한국",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "lab-vn-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synklab.vn",
+      "publicUrl": "https://www.tiktok.com/@synklab.vn",
+      "externalId": null,
+      "country": "베트남",
+      "countryCode": "VN",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-vn-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabvietnam",
+      "publicUrl": "https://www.youtube.com/@synklabvietnam",
+      "externalId": "UC7NbBUofc_ZK5qCSjzbUzGQ",
+      "country": "베트남",
+      "countryCode": "VN",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-cn-douyin",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "douyin",
+      "handle": "39504393074",
+      "publicUrl": null,
+      "externalId": null,
+      "country": "중국",
+      "countryCode": "CN",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-cn-xiaohongshu",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "xiaohongshu",
+      "handle": "rednote ID 94512834104",
+      "publicUrl": "https://www.rednote.com/user/profile/6ab10807000000000301d12f",
+      "externalId": "6ab10807000000000301d12f",
+      "country": "중국",
+      "countryCode": "CN",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-jp-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabjapan",
+      "publicUrl": "https://www.youtube.com/@synklabjapan",
+      "externalId": "UCXpX-UiwswwUqoQkRVdJyow",
+      "country": "일본",
+      "countryCode": "JP",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-jp-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": "@synk.jp",
+      "publicUrl": "https://www.instagram.com/synk.jp/",
+      "externalId": null,
+      "country": "일본",
+      "countryCode": "JP",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-uz-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": "@synklab.uz",
+      "publicUrl": "https://www.instagram.com/synklab.uz/",
+      "externalId": null,
+      "country": "우즈베키스탄",
+      "countryCode": "UZ",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-uz-telegram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "telegram",
+      "handle": "@synklab_uz",
+      "publicUrl": "https://t.me/synklab_uz",
+      "externalId": null,
+      "country": "우즈베키스탄",
+      "countryCode": "UZ",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-tw-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "대만",
+      "countryCode": "TW",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-tw-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabtaiwan",
+      "publicUrl": "https://www.youtube.com/@synklabtaiwan",
+      "externalId": "UC3BeJKEOQ-wqLf93N_vIGqg",
+      "country": "대만",
+      "countryCode": "TW",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-mm-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synklab.mm",
+      "publicUrl": "https://www.tiktok.com/@synklab.mm",
+      "externalId": null,
+      "country": "미얀마",
+      "countryCode": "MM",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-mm-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabmyanmar",
+      "publicUrl": "https://www.youtube.com/@synklabmyanmar",
+      "externalId": "UCEbtgcX5zd6jX8r1o9iIgdw",
+      "country": "미얀마",
+      "countryCode": "MM",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-th-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synklab.th",
+      "publicUrl": "https://www.tiktok.com/@synklab.th",
+      "externalId": null,
+      "country": "태국",
+      "countryCode": "TH",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-th-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabthailand",
+      "publicUrl": "https://www.youtube.com/@synklabthailand",
+      "externalId": "UCyGr1LIjHGp_lZTtq-48EdA",
+      "country": "태국",
+      "countryCode": "TH",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-id-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synklab.id",
+      "publicUrl": "https://www.tiktok.com/@synklab.id",
+      "externalId": null,
+      "country": "인도네시아",
+      "countryCode": "ID",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-id-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabindonesia",
+      "publicUrl": "https://www.youtube.com/@synklabindonesia",
+      "externalId": "UC2hBQHVItJj6-YC_qsP7stQ",
+      "country": "인도네시아",
+      "countryCode": "ID",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-ru-vk",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "vk",
+      "handle": "synklab_ru",
+      "publicUrl": "https://vk.ru/synklab_ru",
+      "externalId": null,
+      "country": "러시아",
+      "countryCode": "RU",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-ru-rutube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "rutube",
+      "handle": null,
+      "publicUrl": "https://rutube.ru/channel/81398864/",
+      "externalId": "81398864",
+      "country": "러시아",
+      "countryCode": "RU",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-in-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabindia",
+      "publicUrl": "https://www.youtube.com/@synklabindia",
+      "externalId": "UCgpWbvOtTCz5TIrZ9yf-96A",
+      "country": "인도",
+      "countryCode": "IN",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-in-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "인도",
+      "countryCode": "IN",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-kz-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "카자흐스탄",
+      "countryCode": "KZ",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-kz-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synklab.kz",
+      "publicUrl": "https://www.tiktok.com/@synklab.kz",
+      "externalId": null,
+      "country": "카자흐스탄",
+      "countryCode": "KZ",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-np-facebook",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "facebook",
+      "handle": "@synklab.np",
+      "publicUrl": "https://www.facebook.com/synklab.np/",
+      "externalId": null,
+      "country": "네팔",
+      "countryCode": "NP",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-np-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "네팔",
+      "countryCode": "NP",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-kg-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "키르기스스탄",
+      "countryCode": "KG",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-kg-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabkyrgyzstan",
+      "publicUrl": "https://www.youtube.com/@synklabkyrgyzstan",
+      "externalId": "UC9bdSh8r5iAtQS1r8_jS2hQ",
+      "country": "키르기스스탄",
+      "countryCode": "KG",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-kh-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "캄보디아",
+      "countryCode": "KH",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-kh-facebook",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "facebook",
+      "handle": null,
+      "publicUrl": "https://www.facebook.com/profile.php?id=61594726675164",
+      "externalId": null,
+      "country": "캄보디아",
+      "countryCode": "KH",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-us-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabusa",
+      "publicUrl": "https://www.youtube.com/@synklabusa",
+      "externalId": "UCWpKsFuvNi0LfUeYirNrRww",
+      "country": "미국",
+      "countryCode": "US",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-us-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "미국",
+      "countryCode": "US",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-ph-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "필리핀",
+      "countryCode": "PH",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-ph-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabphilippines",
+      "publicUrl": "https://www.youtube.com/@synklabphilippines",
+      "externalId": "UCojw4LpKyelcfgniVxng-Ew",
+      "country": "필리핀",
+      "countryCode": "PH",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-lk-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabsrilanka",
+      "publicUrl": "https://www.youtube.com/@synklabsrilanka",
+      "externalId": "UCoz4Uv4iE6Dd4cNe-C1eXng",
+      "country": "스리랑카",
+      "countryCode": "LK",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-lk-facebook",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "facebook",
+      "handle": null,
+      "publicUrl": "https://www.facebook.com/profile.php?id=61594274084966",
+      "externalId": null,
+      "country": "스리랑카",
+      "countryCode": "LK",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-au-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabaustralia",
+      "publicUrl": "https://www.youtube.com/@synklabaustralia",
+      "externalId": "UCSTmpu2wPZYimD3jkXzr3aQ",
+      "country": "호주",
+      "countryCode": "AU",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-au-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "호주",
+      "countryCode": "AU",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-py-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "파라과이",
+      "countryCode": "PY",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-py-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabparaguay",
+      "publicUrl": "https://www.youtube.com/@synklabparaguay",
+      "externalId": "UCyYm3TWZQWliVyHF_dc3Tbg",
+      "country": "파라과이",
+      "countryCode": "PY",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-nz-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabnewzealand",
+      "publicUrl": "https://www.youtube.com/@synklabnewzealand",
+      "externalId": "UCN0hYfLSOCuaIc_f0QW2Iww",
+      "country": "뉴질랜드",
+      "countryCode": "NZ",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-nz-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "뉴질랜드",
+      "countryCode": "NZ",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-my-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "말레이시아",
+      "countryCode": "MY",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-my-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabmalaysia",
+      "publicUrl": "https://www.youtube.com/@synklabmalaysia",
+      "externalId": "UCyZ4fygi4pMnNRgUrcNqnAQ",
+      "country": "말레이시아",
+      "countryCode": "MY",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-ca-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabcanada",
+      "publicUrl": "https://www.youtube.com/@synklabcanada",
+      "externalId": "UCtw3xrupij61YVBR_IgBVUQ",
+      "country": "캐나다",
+      "countryCode": "CA",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-ca-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "캐나다",
+      "countryCode": "CA",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-mx-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabmexico",
+      "publicUrl": "https://www.youtube.com/channel/UCgVd9xnRPn28UaaRFxR0ARQ",
+      "externalId": "UCgVd9xnRPn28UaaRFxR0ARQ",
+      "country": "멕시코",
+      "countryCode": "MX",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-mx-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": "@synklab.mx",
+      "publicUrl": "https://www.tiktok.com/@synklab.mx",
+      "externalId": null,
+      "country": "멕시코",
+      "countryCode": "MX",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-br-instagram",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "브라질",
+      "countryCode": "BR",
+      "accountStatus": "planned"
+    },
+    {
+      "id": "lab-br-youtube",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "youtube",
+      "handle": "@synklabbrasil",
+      "publicUrl": "https://www.youtube.com/channel/UCe5MsB-r8rbtoabKluoJcig",
+      "externalId": "UCe5MsB-r8rbtoabKluoJcig",
+      "country": "브라질",
+      "countryCode": "BR",
+      "accountStatus": "confirmed-expansion"
+    },
+    {
+      "id": "lab-br-tiktok",
+      "business": "LAB",
+      "secondaryBusinesses": [],
+      "contentTrack": "LAB",
+      "purpose": "현지 한국어 학습 콘텐츠",
+      "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
+      "classificationSourcePaths": [
+        "docs/마케팅_정본.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "platform": "tiktok",
+      "handle": null,
+      "publicUrl": null,
+      "externalId": null,
+      "country": "브라질",
+      "countryCode": "BR",
+      "accountStatus": "planned"
+    }
+  ],
+  "plans": [
+    {
+      "id": "other-plan-2",
+      "brand": "PULSE",
+      "platform": "Naver Clip",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "PULSE",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-3",
+      "brand": "PULSE",
+      "platform": "Pinterest",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "PULSE",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-4",
+      "brand": "PULSE",
+      "platform": "note",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "PULSE",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-5",
+      "brand": "PULSE",
+      "platform": "Tumblr",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "PULSE",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-6",
+      "brand": "PULSE",
+      "platform": "Bilibili",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "PULSE",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-7",
+      "brand": "몽글몽글",
+      "platform": "Instagram",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "몽글몽글",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-8",
+      "brand": "몽글몽글",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "몽글몽글",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-9",
+      "brand": "마린마린",
+      "platform": "YouTube",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "마린마린",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-10",
+      "brand": "마린마린",
+      "platform": "Facebook",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "마린마린",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-11",
+      "brand": "마린마린",
+      "platform": "Instagram",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "마린마린",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-12",
+      "brand": "마린마린",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "마린마린",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-13",
+      "brand": "까몽까몽",
+      "platform": "YouTube",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "까몽까몽",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-14",
+      "brand": "까몽까몽",
+      "platform": "Facebook",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "까몽까몽",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-15",
+      "brand": "까몽까몽",
+      "platform": "Instagram",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "까몽까몽",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-16",
+      "brand": "까몽까몽",
+      "platform": "TikTok",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "PULSE",
+      "contentTrack": "까몽까몽",
+      "state": "장기 계획 · 개설 미확인"
+    },
+    {
+      "id": "other-plan-17",
+      "brand": "LAB 일본",
+      "platform": "LINE",
+      "accountStatus": "planned-unconfirmed",
+      "loginStatusLabel": "미개설 · 로그인 미배정",
+      "lastEvidenceAt": "2026-11-04",
+      "sourcePaths": [
+        "docs/마케팅/로그인경로_점검_20261109.md"
+      ],
+      "note": "11-04 별도 계획 기록. 현재 LAB 잔여 15곳과 구분; 즉시 가입 지시 아님",
+      "business": "LAB",
+      "contentTrack": "LAB 일본",
+      "state": "장기 계획 · 개설 미확인"
+    }
+  ]
+}

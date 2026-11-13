@@ -2,11 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
+import accountState from '../../../tools/lib/계정현황.js';
 // 줄끝(CRLF/LF)은 체크아웃마다 달라지므로 원자료는 LF로 맞춘 바이트로 잰다(Windows 작업본과 리눅스·CI가 같은 값을 낸다).
 const sourceHash = bytes => crypto.createHash('sha256').update(bytes.toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex');
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(dir,'../../..');
+const accountContext = accountState.loadAccountContext(repo);
 const read = name => JSON.parse(fs.readFileSync(path.join(dir,name),'utf8').replace(/^\uFEFF/,''));
 const plan = read('inputs/plan.json');
 const inventory = read('inputs/existing-accounts.json');
@@ -132,8 +134,9 @@ const newSlots = proposal.channels.map(slot => {
 const channels = [...existing,...newSlots].map(row => {
   const login = loginAudit.accounts[row.id];
   if (!login) throw new Error(`로그인 경로 점검 누락: ${row.id}`);
-  return {...row,...login};
+  return accountState.decorateAccount({...row,...login}, accountContext);
 });
+const longTermPlans = loginAudit.otherPlanned.map(row => ({...row, business: row.brand.startsWith('LAB') ? 'LAB' : 'PULSE', contentTrack: row.brand, state: '장기 계획 · 개설 미확인'}));
 // 현지 시각(그날)을 한국 시각으로 — 서머타임은 IANA 시간대가 맡는다
 const zonedParts = (ms, timeZone) => Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).formatToParts(new Date(ms)).filter(p => p.type !== 'literal').map(p => [p.type,Number(p.value)]));
 const localToKst = (timeZone, hhmm, date = uploadPlan.asOf) => {
@@ -183,14 +186,15 @@ const tasks = [
   {id:'task-lab-daily',brand:'LAB',country:`LAB ${labLedger.length}계정 · ${countries.length}개국`,title:'하루 두 편 업로드(현지 21:00 퀴즈 · 13:00 이야기)',state:uploadPlan.status,nextAction:`매일 흐름 ${labLedger.filter(row => row.dailyLine).length}/${labLedger.length}곳 · ${uploadPlan.bufferDays}일 비축 · ${uploadPlan.rotation}`},
   ...uploadPlan.bundles.map(bundle => ({id:`task-lab-${bundle.id}`,brand:'LAB',country:`업로드 묶음 ${bundle.id}`,title:bundle.title,state:bundle.state,nextAction:bundle.next})),
   {id:'task-mn',brand:'LAB',country:'몽골',title:'기존 5개 채널 하루 두 편 운영',state:'운영 중 — 13:00 칸 멈춤 기준 11-20 판정',nextAction:uploadPlan.countries.MN.current},
-  {id:'task-global',brand:'LAB',country:`몽골 외 ${countries.length-1}개국`,title:`확장 ${unconfirmedExpansionCount}곳 개설·생성 확인`,state:`${expansion.length}곳 확보 · ${unconfirmedExpansionCount}곳 미확인`,nextAction:'Instagram 8곳은 간격 두기, TikTok 7곳은 사용자 요청으로 가입 보류. 별도 장기 계획 17곳과 구분'},
+  {id:'task-global',brand:'LAB',country:`몽골 외 ${countries.length-1}개국`,title:`확장 ${unconfirmedExpansionCount}곳 개설·생성 확인`,state:`${expansion.length}곳 확보 · ${unconfirmedExpansionCount}곳 미확인`,nextAction:`개설 미확인 자리는 실제 계정과 분리. 별도 장기 계획 ${longTermPlans.length}곳과 구분하며 즉시 가입 지시가 아님`},
   {id:'task-rednote',brand:'LAB',country:'중국',title:'rednote LAB 프로필',state:'본인 계정 확인 · 프로필 미완',nextAction:'앱 편집 화면에서 이름·소개·까몽 사진 반영 후 확인'},
-  {id:'task-access',brand:'공통',country:`관리 채널 ${loginAudit.counts.activeExisting}곳`,title:'로그인 경로 전체 대조',state:`경로 확인 ${loginAudit.counts.byStatus.confirmed} · 전환만 ${loginAudit.counts.byStatus['switch-only']} · 일부 확인 ${loginAudit.counts.byStatus.partial} · 미확인 ${loginAudit.counts.byStatus.missing}`,nextAction:'계정별 방식·브라우저·근거 날짜 참조. 부족한 ID와 복구 수단을 현재 접속 때 추가 확인'},
+  {id:'task-access',brand:'공통',country:`등록 항목 ${channels.length}곳`,title:'계정별 현재 근거 확인',state:`최근 로그인 확인 ${channels.filter(r=>r.operations.login.state==='verified').length} · 로그인 필요 관측 ${channels.filter(r=>r.operations.login.state==='login-required').length}`,nextAction:'계정별 확인 시각과 프로필 범위 참조. 오래된 기록·미확인을 로그아웃이나 계정 없음으로 해석하지 않음'},
   {id:'task-clip',brand:'YUHO',country:'한국',title:'Naver Clip 소개 / 블로그 모바일 배경',state:'사용자 보류',nextAction:'각 채널에 콘텐츠를 업로드할 때 처리'},
   {id:'task-videos',brand:'YUHO·SHIFT',country:'한국',title:'yuhobuilds·synkbrief 검토 영상',state:'로컬 제작 · 게시 전',nextAction:'음성·최종 검토 후 채널별 게시 패키지와 실제 게시 확인'},
   {id:'task-face',brand:'LAB·YUHO',country:'다른 세션',title:'기존 출연 영상 L1·S1',state:'제작 결과 미확인',nextAction:'별도 영상의 실제 촬영·편집 결과 확인'},
   {id:'task-app',brand:'LAB',country:`${countries.length}개국`,title:'학습 앱 국가별 출시',state:'계획 · 출시 미확인',nextAction:'SNS 운영과 별도로 스토어·언어·접속·정책 조건 확인'}
 ];
+for (const row of tasks.filter(row => ['task-videos','task-face'].includes(row.id))) Object.assign(row, {title:`과거 제작 기록 · ${row.title}`, state:'2026-09 기록 · 현재 할 일 아님', nextAction:'개별 콘텐츠의 과거 이력. 최근 게시·예약은 계정 운영 상태에서 확인'});
 const summary = [
   {id:'existing',label:'기존 운영·확보 대상',value:operating.length,unit:'채널',note:'기존 26곳 + 별도 기록에서 누락된 10곳 · 게시 연결 활성화 아님'},
   {id:'lab-secured',label:'LAB 확장 확보',value:expansion.length,unit:'곳',note:`YouTube ${confirmedYouTubeCount} + 기타 SNS ${confirmedSocialCount} · 게시 수 아님`},
@@ -205,12 +209,14 @@ const contents = [...production.contents,
   ,...contentLines.lines
 ];
 const identities = loginAudit.identities;
-const baseFiles=['docs/마케팅/sns-계정.json','docs/마케팅/SNS_계정_전체목록_20260919.md','docs/마케팅/프로필최신화_20260919/반영_v6.json','docs/마케팅/프로필최신화_20260919/실행상태.json','docs/마케팅/온라인마케팅지도/inputs/login-audit.json','docs/마케팅/로그인경로_점검_20261109.md'];
+for (const row of contents) { row.recordScope='historical'; row.publishStatus=`과거 제작 기록: ${row.publishStatus || '해당 문서 참조'}`; }
+const baseFiles=['docs/마케팅/sns-계정.json','docs/마케팅/계정_사업속성.json','docs/마케팅/온라인마케팅지도/inputs/account-observations.json','docs/마케팅/SNS_계정_전체목록_20260919.md','docs/마케팅/프로필최신화_20260919/반영_v6.json','docs/마케팅/프로필최신화_20260919/실행상태.json','docs/마케팅/온라인마케팅지도/inputs/login-audit.json','docs/마케팅/로그인경로_점검_20261109.md'];
 const expansionFiles=['docs/마케팅/온라인마케팅지도/account-setup-proposal.json','docs/마케팅/온라인마케팅지도/intl-social/execution-20260920.json','docs/마케팅/온라인마케팅지도/intl-youtube/publication.json','docs/마케팅/온라인마케팅지도/jp-vn-profile/publication.json',brMxRecordPath];
 const generatedAt=new Date().toISOString();
 function query(label,rows,files,definitions=[]){return {rows,source:{label,files,executedAt:generatedAt,classification:'로컬 계정·제작 기록 및 확장 계획',filters:[`전체 실시간 SNS 조회 아님 · ${loginAudit.freshVerification}`],metricDefinitions:definitions,caveats:['미확인은 0·미존재·실패가 아니다.','계정 확보·프로필 확인·콘텐츠 제작·게시·성과는 별도 상태다.'],evidenceFlow:[{title:'입력 자료',detail:files.join(' / ')},{title:'대조 방법',detail:`기존 ${existing.length}행과 확장 ${newSlots.length}자리를 ID로 대조하고 확인된 ${expansion.length}곳만 확보로 표시. ${countries.length}개국 계획은 LAB에만 연결.`}]},methods:[{language:'javascript',code:'docs/마케팅/온라인마케팅지도/build-map.mjs — 로컬 계정 레지스트리·실행 원장·제작 기록과 국가 계획을 ID로 대조해 화면 자료를 생성'}]};}
 const snapshot={id:original.id,surface:'dashboard',title:'SYNK 온라인 마케팅 지도',generatedAt,status:'reviewed-local-records',buildStatus:process.argv.includes('--complete')?'complete':'updating',exportPreferences:{selected:null,destinations:[]},
   filters:[
+    {id:'business',label:'홍보 사업',field:'business',defaultValue:'all',queryIds:['channels']},
     {id:'brand',label:'브랜드·트랙',field:'brand',defaultValue:'all',queryIds:['channels']},
     {id:'country',label:'LAB 국가',field:'country',defaultValue:'all',queryIds:['countries']},
     {id:'channelCountry',label:'국가·범위',field:'country',defaultValue:'all',queryIds:['channels']},
@@ -219,6 +225,7 @@ const snapshot={id:original.id,surface:'dashboard',title:'SYNK 온라인 마케�
     {id:'loginState',label:'로그인 확인 상태',field:'loginStatusLabel',defaultValue:'all',queryIds:['channels']},
     {id:'contentBrand',label:'콘텐츠 브랜드',field:'brand',defaultValue:'all',queryIds:['contents']}
   ],queries:{
+    plans:query('실제 계정과 분리한 장기 개설 계획',longTermPlans,['docs/마케팅/온라인마케팅지도/inputs/login-audit.json']),
     brands:query('회사·브랜드 원문과 확보 계정의 탐색 분류',brands,['docs/마케팅_정본.md',...baseFiles,...expansionFiles],[{label:'기존 운영 채널',definition:'정규화 원장의 기존 운영 36곳을 주 분류에 한 번씩 집계한다. YUHO·yuhokorean·몽글몽글은 탐색용 콘텐츠 트랙이며 새 법인 생성이 아니다.'},{label:'확장 확보',definition:`몽골 외 LAB ${newSlots.length}자리 중 계정 레지스트리에 실재 확인된 ${expansion.length}곳. 게시·성과 수가 아니다.`},{label:'공유 연결',definition:'LAB YouTube의 PULSE 라디오 공유와 SYNK Substack의 LAB·SHIFT 공유만 집계한다.'}]),
     summary:query('기존 운영 대상과 LAB 확장 확인 상태',summary,[...baseFiles,...expansionFiles],[{label:'LAB 전체 계획',definition:`${countries.length}개국 우선 ${plannedPlatformSlots}자리 + 몽골 추가 3자리 = ${plannedPlatformSlots+3}자리. 그중 기존 몽골 5자리, 확장 확보 ${expansion.length}자리, 확장 미확인 ${unconfirmedExpansionCount}자리.`}]),
     countries:query(`LAB ${countries.length}개국별 확보 상태와 제작 계획`,countries,['docs/마케팅/온라인마케팅지도/inputs/content-status.json','docs/마케팅/온라인마케팅지도/inputs/upload-plan.json','docs/마케팅/LAB_하루두편_설계_20261110/README.md',...expansionFiles]),
@@ -236,6 +243,10 @@ assert(social.counts.created+social.counts.notCreated===28 && social.channels.le
 assert(newSlots.filter(row=>row.accountStatus==='confirmed-expansion').length===expansion.length && newSlots.filter(row=>row.accountStatus==='planned').length===unconfirmedExpansionCount,'확장 확보·미확인 집계 불일치');
 assert(channels.filter(row=>row.country==='몽골').length===5,'몽골 기존 5개 보존 실패');
 assert(new Set(channels.map(row=>row.id)).size===channels.length,'채널 ID 중복');
+for(const id of Object.keys(registry.accounts)){
+  accountState.classification(accountContext.assignments,id);
+  assert(channels.some(row=>row.id===id),`원장 계정이 지도 입력에서 빠졌습니다: ${id} — 계정 목록·로그인 원장을 함께 갱신하세요.`);
+}
 assert(contents.length===16+contentLines.lines.length && contentLines.lines.length===9,'콘텐츠 원고·제작 기록 16개 + 콘텐츠 라인 9개 대조 실패');
 assert(channels.length===loginAudit.counts.channelRows && channels.length===Object.keys(loginAudit.accounts).length,'로그인 경로 전체 범위 불일치');
 assert(new Set(identities.map(row=>row.id)).size===identities.length && channels.every(row=>!row.loginIdentityRef || identities.some(identity=>identity.id===row.loginIdentityRef)),'로그인 연결 누락 또는 중복');
@@ -243,7 +254,18 @@ assert(channels.filter(row=>row.accountStatus==='planned').every(row=>row.brand=
 assert(newSlots.filter(row=>row.platform==='YouTube' && row.accountStatus==='confirmed-expansion').length===confirmedYouTubeCount && confirmedYouTubeCount===youtube.completionAudit.newChannelsComplete+jpVnYoutube.channels.length+brMxYoutube.length,'YouTube 확장 확보 대조 실패');
 for(const file of new Set(inventory.accounts.flatMap(row=>row.sourcePaths)))assert(fs.existsSync(path.join(repo,file)),`원자료 없음: ${file}`);
 fs.writeFileSync(path.join(dir,'dashboard/src/data.json'),JSON.stringify(snapshot,null,2)+'\n');
-const manifest={generatedAt,sourceAsOf:{registry:registry.updatedAt,social:social.asOf,latestContent:'2026-09-27'},counts:{operating:operating.length,mongolia:5,plannedCountries:countries.length,prioritySlots:plannedPlatformSlots,newSlots:newSlots.length,expansionConfirmed:expansion.length,expansionUnconfirmed:unconfirmedExpansionCount,channelRows:channels.length,contents:contents.length,identities:identities.length,activeManagedChannels:loginAudit.counts.activeExisting,loginStatusCounts:loginAudit.counts.byStatus},files:['inputs/login-audit.json','inputs/upload-plan.json','../로그인경로_점검_20261109.md','inputs/plan.json','inputs/existing-accounts.json','inputs/content-status.json','inputs/content-lines.json','../콘텐츠_운영체계_20260927.md','account-setup-proposal.json','../sns-계정.json','../SNS_계정_전체목록_20260919.md','../프로필최신화_20260919/반영_v6.json','intl-social/execution-20260920.json','intl-youtube/publication.json','jp-vn-profile/publication.json','../yuhobuilds_1편_쇼츠수정_20260922/README.md','../synkbrief_회의메모_20260921/video-v12/README.md','../프로필_클로드판_20261002/개설기록_브라질멕시코.json'].map(file=>({file,sha256:sourceHash(fs.readFileSync(path.join(dir,file)))}))};
+// Server-only static catalogue has no credentials or login paths. Live observations
+// arrive in the authenticated repo digest and are never written to public assets.
+const catalogue = {version:1,generatedAt,sourceAt:registry.updatedAt,accounts:channels.map(row=>({
+  id:row.id,business:row.business,secondaryBusinesses:row.secondaryBusinesses,contentTrack:row.contentTrack,purpose:row.purpose,
+  classificationBasis:row.classificationBasis,classificationSourcePaths:row.classificationSourcePaths,
+  platform:registry.accounts[row.id]?.platform || inventory.accounts.find(a=>a.id===row.id)?.platform || row.platform.toLowerCase(),
+  handle:row.handle,publicUrl:row.publicUrl,externalId:registry.accounts[row.id]?.channelId || registry.accounts[row.id]?.expectedChannelId || registry.accounts[row.id]?.profileId || null,
+  country:row.country,countryCode:row.countryCode,accountStatus:row.accountStatus
+})),plans:longTermPlans};
+fs.writeFileSync(path.join(dir,'engagement/company/account-catalog.json'),JSON.stringify(catalogue,null,2)+'\n');
+const currentManaged=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
+const manifest={generatedAt,sourceAsOf:{registry:registry.updatedAt,social:social.asOf,latestContent:'2026-09-27',accountObservations:accountContext.observations.updatedAt||null},counts:{operating:operating.length,mongolia:5,plannedCountries:countries.length,prioritySlots:plannedPlatformSlots,newSlots:newSlots.length,expansionConfirmed:expansion.length,expansionUnconfirmed:unconfirmedExpansionCount,channelRows:channels.length,contents:contents.length,identities:identities.length,activeManagedChannels:currentManaged.length,loginStatusCounts:currentManaged.reduce((counts,row)=>{const state=row.operations.login.state;counts[state]=(counts[state]||0)+1;return counts;},{})},files:['inputs/login-audit.json','inputs/account-observations.json','inputs/pulse-targets.json','../계정_사업속성.json','inputs/upload-plan.json','../로그인경로_점검_20261109.md','inputs/plan.json','inputs/existing-accounts.json','inputs/content-status.json','inputs/content-lines.json','../콘텐츠_운영체계_20260927.md','account-setup-proposal.json','../sns-계정.json','../SNS_계정_전체목록_20260919.md','../프로필최신화_20260919/반영_v6.json','intl-social/execution-20260920.json','intl-youtube/publication.json','jp-vn-profile/publication.json','../yuhobuilds_1편_쇼츠수정_20260922/README.md','../synkbrief_회의메모_20260921/video-v12/README.md','../프로필_클로드판_20261002/개설기록_브라질멕시코.json'].map(file=>({file,sha256:sourceHash(fs.readFileSync(path.join(dir,file)))}))};
 fs.writeFileSync(path.join(dir,'verification-data.json'),JSON.stringify(manifest,null,2)+'\n');
 console.log(JSON.stringify(manifest.counts));
 // 11-11: 작업실 SNS · 나라 지도 자료(engagement/company/public/marketing-map.json)도 같은 원장으로 다시 쓴다 — 운영에는 화면 묶음 바꿔 끼우기로 싣는다.
