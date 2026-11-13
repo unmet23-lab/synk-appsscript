@@ -34,7 +34,10 @@ export const CUTS: CutT[] = [
   { from: 18.3, to: 20.7, src: V(7), start: 2.0, crop: F, drift: 0, a: { src: 'img/V5.mp4', start: 5.0, vol: 1.0 } },
   { from: 20.7, to: 24.5, src: V(6), start: 2.95, crop: F, audio: 1.0, drift: 0, low: 150 },
   // 결 — 다시 택시 안: 또 걸려 온 그 얼굴 · 폰을 집어 한참 보다 내려놓음 → 엎어 놓은 폰과 손(끝 그림 · 새던 빛이 꺼짐)
-  { from: 24.5, to: 28.9, src: V(8), start: 3.5, crop: F, audio: 1.0, drift: 0 },
+  // 11-13 20시 최종 확인 미흡(끝 택시 기사가 다른 사람) → V8 다시(시작 그림 택시끝_201134 — 뿌리 얼굴 기사얼굴_010055_1 + 머리만 흐린 옛 구도).
+  // 새 V8: 진동 0.25~1.5 · 2.25~3.75, 손을 뻗음 4.3 · 폰을 뺌 4.5~5.3 · 들고 봄 5.5~7.2 · 내림 7.25~7.5(7.6부터는 화면이 위로 놓임 — 안 씀).
+  // 3.05~7.45: 울림 → 집어 들고 봄 → 내리는 중에 엎은 폰(V9)으로 넘김.
+  { from: 24.5, to: 28.9, src: V(8), start: 3.05, crop: F, audio: 1.0, drift: 0 },
   { from: 28.9, to: 32.7, src: V(9), start: 0.6, crop: F, audio: 1.0, drift: 0, low: 0 },
 ];
 
@@ -59,4 +62,7 @@ export const VO: { id: string; t: number }[] = [
   { id: 'n1', t: 12.7 }, { id: 'n2', t: 22.45 }, { id: 'n3', t: 28.6 },
 ];
 
-export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [];
+// 새 V8은 폰을 든 뒤 진동이 멎는다 — 들고 보는 동안(「그 뒤에도 전화는 왔어요」)도 전화가 울리게 같은 영상의 첫 진동(0.25~1.5)을 26.7초에 다시 깐다. dur는 프레임.
+export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [
+  { t: 26.7, vol: 0.8, src: 'img/V8.mp4', dur: 38 },
+];
