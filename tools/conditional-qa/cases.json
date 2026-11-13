@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 135,
+  "expectedCount": 136,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1082,6 +1082,14 @@
       "id": "S135",
       "file": "experiences/solo-backup/tests/recommended.test.cjs",
       "name": "native plan -> append-only backup -> fresh independent restore, original and earlier snapshots retained",
+      "group": "업무 백업 추천 자료 — 계획기와 실제 restic",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S136",
+      "file": "experiences/solo-backup/tests/recommended.test.cjs",
+      "name": "recommendations remove overlap and visibly exclude sensitive/manual/cache paths",
       "group": "업무 백업 추천 자료 — 계획기와 실제 restic",
       "route": "windows",
       "profile": "default"

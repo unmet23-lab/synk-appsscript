@@ -9,7 +9,7 @@ test('cost approval binds scope, price and storage cap; incomplete scans never u
  const input={planHash:'a',destination:'b2',maxBytes:2e9,monthlyUSD:1};const a=approval(plan,input);
  assert.notEqual(a.hash,approval(plan,{...input,maxBytes:3e9}).hash);assert.throws(()=>approval({...plan,complete:false},input));assert.throws(()=>approval(plan,{...input,planHash:'stale'}));assert.throws(()=>approval(plan,{...input,maxBytes:1}));assert.ok(estimate(1e12).month12USD>estimate(1e12).month1USD);
 });
-test('recommendations remove overlap and visibly exclude sensitive/manual/cache paths',()=>{
+test('recommendations remove overlap and visibly exclude sensitive/manual/cache paths',{skip:process.platform!=='win32'&&'Windows 경로 규칙을 보는 시험 — GitHub Windows에서 돈다(tools/conditional-qa S136)'},()=>{
  const rows=[['C:\\work','irreplaceable'],['C:\\work\\sub','ai_settings'],['C:\\work\\secrets','credential_location'],['C:\\manual','external_manual']];
  const p=candidates({scan_complete:false,candidates:rows.map(([raw,category])=>({path:{raw},category,state:'present'}))},['C:\\state']);
  assert.deepEqual(p.sources,['C:\\work']);assert.ok(p.exclusions.includes('C:\\work\\secrets'));assert.equal(p.discoveryComplete,false);assert.deepEqual(p.manual,['C:\\manual']);

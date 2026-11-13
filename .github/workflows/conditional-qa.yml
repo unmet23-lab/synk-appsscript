@@ -78,7 +78,7 @@ jobs:
           Invoke-WebRequest -Uri 'https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip' -OutFile $zip -MaximumRetryCount 3 -RetryIntervalSec 5
           if ((Get-FileHash -Algorithm SHA256 -Path $zip).Hash -ne 'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d') { throw 'restic ZIP SHA-256 mismatch' }
           Expand-Archive -Path $zip -DestinationPath $folder
-      # S129–S135 — the work backup Stage 1 fork (its own engine, the run executable WorkBackupRun.exe and the window
+      # S129–S136 — the work backup Stage 1 fork (its own engine, the run executable WorkBackupRun.exe and the window
       # lock) and the recommended-files planner both engines call. Only the two executables are cached, keyed by every
       # tracked file they are built from, so a push that does not touch them restores them in seconds; on a miss they are
       # built here from these sources. A missing executable is red, never a skip (tools/conditional-qa/README.md).
