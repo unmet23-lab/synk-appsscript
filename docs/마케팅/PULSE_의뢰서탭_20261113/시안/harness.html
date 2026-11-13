@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko" class="sx">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>PULSE 의뢰서 탭 시안</title>
+  <link rel="stylesheet" href="./film.css" id="film-css">
+  <script>if(location.pathname.startsWith('/after/'))document.write('<link rel="stylesheet" href="./extra.css">');</script>
+</head>
+<body>
+  <div id="request-root"></div>
+  <script type="module">
+    // 운영 서버 없이 의뢰서 화면만 띄운다. 답은 이 화면 메모리에만 있고 어디에도 보내지 않는다.
+    //   ?step=feel|words|model|files|review  어느 화면부터   ?kind=food|beauty|…  업종   ?set={"win":"laugh",…}  미리 채울 답
+    const p=new URLSearchParams(location.search);
+    const {mountRequestFlow}=await import('./request-flow.mjs');
+    const {emptyAnswers}=await import('./request-data.mjs');
+    const a=emptyAnswers();
+    Object.assign(a,{name:'오미톡 오미자 스파클링',kind:p.get('kind')||'food',channels:['shorts'],package:'s15',pageUrl:'',
+      audience:'운동 끝나고 목마른 20대',oneThing:'한 캔에 맛이 다섯 번 바뀐다',action:'buy',screenText:'다섯 가지 맛, 톡.\n11월 편의점 출시'});
+    try{Object.assign(a,JSON.parse(p.get('set')||'{}'));}catch{}
+    const backend={answers:a,step:p.get('step')||'feel',features:null,personaPhotos:true,personaFlags:()=>({request:false,real:false,models:false}),
+      async save(){},async remove(){},async submit(){return {number:'P-0000-TEST',at:new Date().toISOString(),link:''};},
+      async upload(slot,file,onProgress){onProgress?.(1);return {id:`f${Date.now()}`,fileName:file.name,mimeType:file.type,inline:false,preview:''};}};
+    window.__flow=mountRequestFlow(document.querySelector('#request-root'),{backend,onRoom(){},onExit(){}});
+    window.__answers=a;
+  </script>
+</body>
+</html>

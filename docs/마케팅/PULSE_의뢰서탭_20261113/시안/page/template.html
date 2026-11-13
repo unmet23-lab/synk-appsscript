@@ -1,0 +1,181 @@
+<title>의뢰서 탭 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&display=swap">
+<style>
+  /* 짜임: 한 줄 요약 → 세 가지 한눈에 → 화면마다 「바꾼 뒤 / 지금」 그림과 고르는 값 표 → 알고 가실 것 → 정하실 것 하나. 색은 PULSE 앱의 검정 · 종이색 · 장밋빛 표식에서. */
+  :root{
+    --bg:#f6f5f6; --surface:#ffffff; --ink:#151316; --muted:#67626a; --line:#dedbdf; --accent:#a82d49; --accent-ink:#ffffff; --chip:#eceaed; --frame:#0b0a0b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0c0b0c; --surface:#161416; --ink:#f1edf0; --muted:#a29ca3; --line:#322e33; --accent:#e56b86; --accent-ink:#140d0f; --chip:#232024; --frame:#000; color-scheme:dark }
+  }
+  :root[data-theme="dark"]{ --bg:#0c0b0c; --surface:#161416; --ink:#f1edf0; --muted:#a29ca3; --line:#322e33; --accent:#e56b86; --accent-ink:#140d0f; --chip:#232024; --frame:#000; color-scheme:dark }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Noto Sans KR",sans-serif;font-size:16px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+  .wrap{max-width:1120px;margin:0 auto;padding-block:48px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  h1,h2{font-family:"Noto Serif KR","Nanum Myeongjo","Batang",serif;font-weight:500;letter-spacing:-.01em;text-wrap:balance;margin:0}
+  h1{font-size:clamp(30px,5vw,52px);line-height:1.18}
+  h2{font-size:clamp(23px,3.2vw,32px);line-height:1.3}
+  h3{font-size:16px;font-weight:700;margin:0}
+  p{margin:0;max-width:66ch}
+  .eyebrow{font-size:13px;letter-spacing:.08em;color:var(--accent);font-weight:700;margin-bottom:14px}
+  .lead{font-size:clamp(17px,1.9vw,20px);line-height:1.65;margin-top:20px;max-width:60ch}
+  .note{color:var(--muted);font-size:14.5px;margin-top:10px}
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:36px}
+  .three a{display:flex;flex-direction:column;gap:8px;padding:20px 20px 22px;background:var(--surface);border:1px solid var(--line);border-radius:10px;color:inherit;text-decoration:none;min-width:0}
+  .three a:hover{border-color:var(--accent)}
+  .three .no{font-size:13px;color:var(--accent);font-weight:700}
+  .three b{font-size:17px;line-height:1.45}
+  .three span{color:var(--muted);font-size:14.5px;line-height:1.6}
+  section{margin-top:84px;display:flex;flex-direction:column;gap:22px;min-width:0}
+  .where{font-size:13.5px;color:var(--muted)}
+  .where b{color:var(--accent);font-weight:700;margin-right:8px}
+  figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+  .shot{background:var(--frame);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .shot img{display:block;width:100%;height:auto;max-width:100%}
+  figcaption{color:var(--muted);font-size:14px;max-width:70ch}
+  .toggle{display:inline-flex;align-self:flex-start;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface);gap:2px}
+  .toggle button{font:inherit;font-size:14px;line-height:1;padding:9px 16px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer}
+  .toggle button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .toggle button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+  th,td{text-align:left;vertical-align:top;padding:12px 16px;border-bottom:1px solid var(--line)}
+  tr:last-child td{border-bottom:0}
+  th{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+  td:first-child{white-space:nowrap;font-weight:700}
+  .chip{display:inline-block;padding:2px 9px;margin:2px 4px 2px 0;border-radius:4px;background:var(--chip);font-size:13.5px;white-space:nowrap}
+  .phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;align-items:start}
+  .phones figure .shot{border-radius:18px}
+  ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:10px;max-width:70ch}
+  li::marker{color:var(--accent)}
+  .ask{margin-top:84px;padding:28px 26px 30px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;display:flex;flex-direction:column;gap:12px}
+  .ask h2{font-size:clamp(21px,2.6vw,27px)}
+  .narrow{display:none}
+  @media (max-width:720px){ .shot.pc{overflow-x:auto} .shot.pc img{width:900px;max-width:none} .narrow{display:block} }
+  @media (max-width:520px){ section{margin-top:64px} .wrap{padding-block:32px 72px} }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">PULSE 의뢰서 · 2026-11-13 시안</p>
+  <h1>눌러서 고르는 칸 셋을 더합니다</h1>
+  <p class="lead">손님에게 글로 더 묻지 않습니다. 의뢰서는 아홉 화면 그대로이고, 새 칸은 모두 고르지 않아도 넘어갑니다.</p>
+  <p class="note">아래 그림은 그림판 시안이 아니라, 지금 의뢰서 코드에 실제로 얹어 띄운 화면을 찍은 것입니다. 운영에는 아직 반영하지 않았습니다.</p>
+  <p class="note narrow">큰 화면 그림은 그림 안에서 옆으로 밀어 볼 수 있습니다.</p>
+
+  <div class="three">
+    <a href="#feel"><span class="no">하나 · 느낌 화면</span><b>「웃음으로 퍼지게」와 「얼마나 과감하게」</b><span>제작 규칙은 이기는 길을 여운 · 임팩트 · 웃음 셋으로 보는데, 의뢰서에는 둘만 있었습니다.</span></a>
+    <a href="#notice"><span class="no">둘 · 전할 말 화면</span><b>「꼭 붙여야 하는 표시가 있는 업종인가요?」</b><span>지금은 피할 말만 받습니다. 표시가 필요한 업종인지 한 번 누르게 합니다.</span></a>
+    <a href="#sound"><span class="no">셋 · 모델 · 준비물 화면</span><b>목소리 고르기와 소리 파일 칸</b><span>소리에 대해서는 지금 아무것도 받지 않습니다.</span></a>
+  </div>
+
+  <section id="feel">
+    <p class="where"><b>하나</b>여섯째 화면 「무엇으로 오래 남을까요?」</p>
+    <h2>웃음이 셋째 길로 들어가고, 얼마나 과감하게 갈지 누릅니다</h2>
+    <p>「웃음으로 퍼지게」를 누르면 오른쪽 모니터에 「매진 임박」 12초가 돕니다. 그 아래 칩 셋 가운데 하나를 누르면 그 뜻이 한 줄로 나타납니다.</p>
+    <figure data-swap>
+      <div class="toggle" role="group" aria-label="바꾸기 전과 뒤">
+        <button type="button" data-show="after" aria-pressed="true">바꾼 뒤</button><button type="button" data-show="before" aria-pressed="false">지금</button>
+      </div>
+      <div class="shot pc"><img data-side="after" src="{{feel-after-pc}}" alt="바꾼 뒤의 느낌 화면. 넷째 줄 「웃음으로 퍼지게」가 골라져 있고 모니터에 세 사람이 우는 「매진 임박」 장면이 나온다. 아래에 「정석대로 · 조금 다르게 · 확 다르게」 칩이 있다."><img data-side="before" src="{{feel-before-pc}}" alt="지금의 느낌 화면. 「이야기로 여운을」 「한 장면의 임팩트로」 「맡길게요」 세 줄만 있다." hidden></div>
+      <figcaption>「조금 다르게」를 고른 모습입니다. 고르기 전에는 설명 줄이 보이지 않습니다.</figcaption>
+    </figure>
+    <div class="scroll"><table>
+      <tr><th>고르는 값</th><th>손님에게 보이는 한 줄</th><th>제작에서 달라지는 것(제안)</th></tr>
+      <tr><td>정석대로</td><td>이 업종 광고가 익숙하게 쓰는 장면 안에서, 제품을 정확하고 보기 좋게 보여 드려요.</td><td>방향 두 안 모두 업종의 익숙한 문법 안에서 냅니다.</td></tr>
+      <tr><td>조금 다르게</td><td>같은 업종 광고가 잘 하지 않는 장면을 하나 넣어요. 방향 두 안 가운데 하나는 정석으로 함께 보내 드려요.</td><td>한 안은 정석, 한 안은 한 군데를 비튼 안으로 냅니다.</td></tr>
+      <tr><td>확 다르게</td><td>말이 안 되는 설정까지 가 봐요. 그래도 제품 사실과 피할 말은 그대로 지켜요.</td><td>컨셉 후보를 넓게 뽑고 두 안 모두 비튼 쪽에서 고릅니다.</td></tr>
+      <tr><td>고르지 않음</td><td>설명 줄 없음. 보내기 전 확인에 「저희가 제안해요」.</td><td>지금처럼 제품을 보고 정합니다.</td></tr>
+    </table></div>
+  </section>
+
+  <section id="notice">
+    <p class="where"><b>둘</b>다섯째 화면 「화면에 정확히 나와야 할 글자가 있나요?」</p>
+    <h2>표시가 정해진 업종인지 한 번 누릅니다</h2>
+    <p>어떤 문구가 필요한지는 묻지 않습니다. 손님이 모르는 경우가 많기 때문입니다. 해당하는 업종인지만 받고, 문구와 자리는 저희가 1차안에 넣어 보여 드립니다. 고르면 모니터의 광고 틀 아래에 「고지 문구가 들어갈 자리」가 나타납니다.</p>
+    <figure data-swap>
+      <div class="toggle" role="group" aria-label="바꾸기 전과 뒤">
+        <button type="button" data-show="after" aria-pressed="true">바꾼 뒤</button><button type="button" data-show="before" aria-pressed="false">지금</button>
+      </div>
+      <div class="shot pc"><img data-side="after" src="{{words-after-pc}}" alt="바꾼 뒤의 전할 말 화면. 피할 말 아래에 「광고에 꼭 붙여야 하는 표시가 있는 업종인가요?」와 칩 「기능성 화장품 · 미용 기기 · 해당 없어요 · 잘 모르겠어요」가 있고, 「기능성 화장품」을 골라 안내 한 줄과 선택 칸이 열려 있다."><img data-side="before" src="{{words-before-pc}}" alt="지금의 전할 말 화면. 화면 글자, 피할 말 칩, 그 밖에 피할 말, 자랑해도 되는 사실 칸이 있다." hidden></div>
+      <figcaption>화장품 손님이 「기능성 화장품」을 고른 모습입니다. 「잘 모르겠어요」를 고르면 「괜찮아요. 저희가 확인해 보고, 필요하면 그때 여쭤볼게요.」가 나옵니다.</figcaption>
+    </figure>
+    <div class="scroll"><table>
+      <tr><th>손님이 고른 종류</th><th>꺼내 보이는 칩</th></tr>
+      <tr><td>음료 · 식품</td><td><span class="chip">건강기능식품</span><span class="chip">주류</span></td></tr>
+      <tr><td>화장품 · 뷰티</td><td><span class="chip">기능성 화장품</span><span class="chip">미용 기기</span></td></tr>
+      <tr><td>생활용품 · 가전</td><td><span class="chip">의료기기</span><span class="chip">살균 · 소독 제품</span></td></tr>
+      <tr><td>패션 · 잡화</td><td><span class="chip">어린이 제품</span></td></tr>
+      <tr><td>앱 · 웹 서비스</td><td><span class="chip">금융 · 투자</span><span class="chip">게임</span></td></tr>
+      <tr><td>매장 · 공간 · 서비스</td><td><span class="chip">병의원</span><span class="chip">학원</span></td></tr>
+      <tr><td>브랜드 · 기업 전체</td><td><span class="chip">금융 · 투자</span><span class="chip">의료 · 제약</span></td></tr>
+      <tr><td>어느 종류든</td><td><span class="chip">해당 없어요</span><span class="chip">잘 모르겠어요</span></td></tr>
+    </table></div>
+    <p class="note">이 목록은 제가 고른 초안이고 법률 검토를 거친 것이 아닙니다. 더하거나 뺄 업종이 있으면 말씀해 주세요.</p>
+  </section>
+
+  <section id="sound">
+    <p class="where"><b>셋</b>일곱째 화면 「누가 나올까요?」와 셋째 화면 「이것만 보내 주세요」</p>
+    <h2>누가 말하는지 누르고, 쓰던 소리가 있으면 올립니다</h2>
+    <p>모델을 고르는 화면 아래에 목소리 칩 셋이 생깁니다. 「사람 없이 제품만」을 고르면 「모델이 직접 말해요」는 사라집니다. 준비물 화면에는 「브랜드 음악 · 로고 소리」 칸이 「있으면」으로 하나 더 생깁니다.</p>
+    <figure>
+      <div class="shot pc"><img src="{{model-after-pc}}" alt="모델 화면. 고른 모델 이름 아래에 「목소리는 어떻게 할까요? · 선택」과 칩 「내레이션이 이끌어요 · 모델이 직접 말해요 · 말 없이 음악과 자막으로」가 있고 첫째가 골라져 있다."></div>
+      <figcaption>「내레이션이 이끌어요」를 고른 모습입니다.</figcaption>
+    </figure>
+    <div class="scroll"><table>
+      <tr><th>고르는 값</th><th>손님에게 보이는 한 줄</th></tr>
+      <tr><td>내레이션이 이끌어요</td><td>화면 밖 목소리가 처음부터 끝까지 이끌어요. 대사는 글 콘티에서 먼저 보여 드려요.</td></tr>
+      <tr><td>모델이 직접 말해요</td><td>모델이 카메라를 보고 말해요. 입 모양이 보이는 컷이라 대사는 짧게 가요.</td></tr>
+      <tr><td>말 없이 음악과 자막으로</td><td>소리를 끄고 보는 곳에 잘 맞아요. 음악과 화면 글자로 전해요.</td></tr>
+    </table></div>
+    <figure>
+      <div class="shot pc"><img src="{{files-after-pc}}" alt="준비물 화면. 「쓰는 모습」과 「그 밖에 보낼 자료」 사이에 「브랜드 음악 · 로고 소리 · 있으면」 칸이 있다."></div>
+      <figcaption>준비물 화면의 새 칸입니다. 소리 파일과 영상 파일을 받습니다.</figcaption>
+    </figure>
+  </section>
+
+  <section id="review">
+    <p class="where"><b>확인</b>아홉째 화면 「이대로 보낼까요?」</p>
+    <h2>보내기 전 확인에 세 줄이 생깁니다</h2>
+    <p>「꼭 붙일 표시」 「얼마나 과감하게」 「목소리」입니다. 비워 두면 그 자리에 「저희가 제안해요」 또는 「저희가 확인해요」가 적힙니다.</p>
+    <figure><div class="shot pc"><img src="{{review-after-pc}}" alt="보내기 전 확인 화면. 「꼭 붙일 표시 기능성 화장품」 「얼마나 과감하게 조금 다르게」 「목소리 내레이션이 이끌어요」 줄이 보인다."></div></figure>
+  </section>
+
+  <section id="phone">
+    <p class="where"><b>휴대폰</b>390 × 844</p>
+    <h2>휴대폰에서도 같은 순서로 놓입니다</h2>
+    <div class="phones">
+      <figure><div class="shot"><img src="{{feel-after-phone-top}}" alt="휴대폰의 느낌 화면 위쪽. 「매진 임박」 영상 아래에 네 줄이 있다."></div><figcaption>느낌 · 위쪽</figcaption></figure>
+      <figure><div class="shot"><img src="{{feel-after-phone}}" alt="휴대폰의 느낌 화면 가운데. 과감함 칩 셋과 설명 한 줄."></div><figcaption>느낌 · 과감함</figcaption></figure>
+      <figure><div class="shot"><img src="{{words-after-phone}}" alt="휴대폰의 전할 말 화면. 꼭 붙일 표시 칩과 안내, 선택 칸."></div><figcaption>전할 말 · 표시</figcaption></figure>
+      <figure><div class="shot"><img src="{{model-after-phone}}" alt="휴대폰의 모델 화면. 목소리 칩 셋."></div><figcaption>모델 · 목소리</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="know">
+    <p class="where"><b>알고 가실 것</b></p>
+    <h2>길어지는 만큼과 새로 생기는 약속</h2>
+    <ul>
+      <li><b>화면이 조금 길어집니다.</b> 작은 노트북 창(1440 × 900)에서 느낌 화면이 84픽셀, 전할 말 화면이 57픽셀 길어져, 맨 아래 선택 칸 하나가 스크롤 아래로 내려갑니다. 모델 화면은 그대로 한 화면에 들어옵니다.</li>
+      <li><b>웃음 예시 영상은 새로 잘랐습니다.</b> 「매진 임박」 완성본의 자막 없는 화면 판에서 5초~17초 구간입니다(1280 × 720). 다른 구간이나 다른 작품이 낫다고 보시면 바꿉니다.</li>
+      <li><b>약속이 하나 생깁니다.</b> 표시가 필요한 업종을 고른 손님에게 「들어갈 문구와 자리를 1차안에 함께 넣어 보여 드린다」고 말하게 됩니다.</li>
+      <li><b>반영에는 회사 서버 릴리스가 한 번 필요합니다.</b> 서버가 새 칸 넷과 소리 파일을 받게 고치고, 영어 화면 글을 옮기고, 접수 뒤 1차 확인과 직원 화면이 이 값을 읽게 한 뒤 검수를 거칩니다.</li>
+    </ul>
+  </section>
+
+  <div class="ask">
+    <h2>이대로 반영할까요?</h2>
+    <p>바꾸고 싶은 낱말(예: 「확 다르게」)이나 빼고 싶은 칸이 있으면 그것만 말씀해 주세요. 그대로면 「반영해」 한마디면 됩니다.</p>
+  </div>
+</div>
+
+<script>
+  for (const fig of document.querySelectorAll('[data-swap]')) {
+    fig.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-show]');
+      if (!button) return;
+      for (const other of fig.querySelectorAll('button[data-show]')) other.setAttribute('aria-pressed', other === button ? 'true' : 'false');
+      for (const img of fig.querySelectorAll('img[data-side]')) img.hidden = img.dataset.side !== button.dataset.show;
+    });
+  }
+</script>
