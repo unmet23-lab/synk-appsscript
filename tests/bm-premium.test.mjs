@@ -200,5 +200,6 @@ test('11-09 direction base: automation stays out of the base run but its prices 
   // 넘는 달은 모두 2027-08 전이라 운영 계획으로 돌린 비교 값과 이 계산(시장 몫 방식)의 넘친 시간 합이 같다
   close(R.recalc1110.heavy.overSum, heavy.rows.filter((x) => x.m >= '2026-11' && x.m <= '2027-12').reduce((a, x) => a + x.hours.fixedOver, 0));
   assert.equal(heavy.rows.find((x) => x.m === '2027-01').shift.lectures, 0, '무겁게 보면 2027-01 직접 출강이 서지 않는다');
-  assert.deepEqual(R.recalc1110.heavyDrop.map((x) => x.m), ['2027-01', '2027-03']);
+  // [11-14 유호님 「여기서 다 바꿔」] 온라인 반을 첫 기수부터 강사가 맡아(대표 월 30시간이 빠짐) 2027-03은 상한 아래로 내려왔다
+  assert.deepEqual(R.recalc1110.heavyDrop.map((x) => x.m), ['2027-01']);
 });

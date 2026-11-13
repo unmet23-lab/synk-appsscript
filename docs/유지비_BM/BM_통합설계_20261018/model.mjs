@@ -507,7 +507,7 @@ function run(inp, scName, opts = {}) {
     // ② LAB 밖 몽골 학생: 그달 울란바토르에서 새로 한국 유학을 가는 사람(LAB에서 간 사람은 뺌) 가운데 extShare
     let admExt = ubLive ? Math.max(0, mk.ubNew / 12 - admLab) * step(P.extShare[scName], m) * pm : 0;
     if (opts.pathShare) { // [10-19 세 지표] 그 나라 한 해 새 한국 유학생의 pathShare(10%)를 PATH가 맡는다. LAB에서 가는 학생을 먼저 세고 나머지는 LAB 밖
-      const total = ubLive ? (mk.countryNew / 12) * opts.pathShare * pm : 0;
+      const total = ubLive && m >= (P.shareFrom || P.startUB) ? (mk.countryNew / 12) * opts.pathShare * pm : 0; // [11-14] 몫 계약은 shareFrom부터(몽골 2028-03)
       admLab = Math.min(admLab, total); admExt = total - admLab;
     }
     const plansExt = ubLive ? step(P.externalPlansPerMonth, m) * sc.volume : 0; // 유학 준비 계획(입구 상품). 계획에서 계약으로 가는 사람은 ②에 들어 있다
@@ -545,7 +545,8 @@ function run(inp, scName, opts = {}) {
     path_.travelKRW = !CO && m >= P.travelAffiliateKRW.from ? P.travelAffiliateKRW.v * sc.volume : 0;
     // 상담 담당: 일 시간(계약 25시간 · 진학 · 취업 준비 · 온라인 상담)을 월 monthHours(140시간)로 나눠 반일 단위로 늘린다. 세 명이 넘으면 여덟 명마다 팀장 한 명
     const CS = P.counselor;
-    const csFrom = opts.pathShare && P.startUB < CS.halfFrom ? P.startUB : CS.halfFrom; // [페이블 5차] 세 지표는 상담을 여는 달부터 상담 담당
+    const shareStart = P.shareFrom && P.shareFrom > P.startUB ? P.shareFrom : P.startUB; // [11-14] 몫 계약을 여는 달
+    const csFrom = opts.pathShare && shareStart < CS.halfFrom ? shareStart : CS.halfFrom; // [페이블 5차] 세 지표는 상담을 여는 달부터 상담 담당
     const pathHoursTotal = path_.admissions * P.hoursPerAdmission + plansExt * (P.planHours ?? 3) + singles * (P.singles?.hours || 0) + tN * T.hours + careerN * P.careerHours + onN * P.online.hours;
     const pathFte = m >= csFrom && pathHoursTotal > 0 ? Math.max(0.5, Math.ceil((pathHoursTotal / CS.monthHours) * 2 - 1e-9) / 2) : 0;
     const pathLeads = pathFte > CS.leadAtFte ? Math.max(1, Math.ceil(pathFte / (CS.leadSpan || Infinity))) : 0; // [페이블 4차] 세 명이 넘을 때 · [10-19] 여덟 명마다 한 명
@@ -1169,8 +1170,9 @@ const lastY = planHz.years[planHz.years.length - 1];
 const withHz = (inp) => { inp.timeline = { ...inp.timeline, end: planHz.end }; return inp; };
 function runPlan(name, extra = {}) {
   const plan = base.plans[name];
-  const { newOnly, all, ...rest } = extra; // 유학 몫 견주기: newOnly = 둘째 나라부터의 몫, all = 모든 나라의 몫
-  const runs = plan.countries.map((c, k) => { const ps = all ?? (k > 0 && newOnly != null ? newOnly : FILL.pathShare); return { c, res: run(withHz(k === 0 ? clone(base) : countryInp(c)), '기본', { ...FILL, ...rest, pathShare: ps, countryOnly: k > 0, plan }) }; });
+  const { newOnly, all, mnFull, ...rest } = extra; // 유학 몫 견주기: newOnly = 둘째 나라부터의 몫, all = 모든 나라의 몫
+  const MN = mnFull ? {} : (base.targets.mnStart || {}); // [11-14 유호님] 몽골은 D안(빌린 교실 먼저). mnFull = 처음부터 직영 4실 80%(개원 관문 비교)
+  const runs = plan.countries.map((c, k) => { const ps = all ?? (k > 0 && newOnly != null ? newOnly : FILL.pathShare); return { c, res: run(withHz(k === 0 ? clone(base) : countryInp(c)), '기본', { ...FILL, ...(k === 0 ? MN : {}), ...rest, pathShare: ps, countryOnly: k > 0, plan }) }; });
   const rows = runs[0].res.rows.map((r0, i) => {
     const parts = runs.map(({ c, res }) => ({ c, r: res.rows[i] }));
     const sum = (f) => parts.reduce((a, q) => a + f(q.r), 0);
@@ -1218,7 +1220,7 @@ const planChecks = (base.pathShareChecks || []).map((ck) => ({ label: ck.label, 
 const opGate = base.lab.opGate && opPlans ? (() => {
   const OG = base.lab.opGate; const L = base.lab; const A = L.acquisition; const P = base.path;
   const conv = A.leadToStudent['기본'];
-  const op80 = opPlans['보수적']; const mnRows = op80.rows;
+  const op80 = runPlan('보수적', { newOnly: base.opPlan.newPathShare, mnFull: true }); const mnRows = op80.rows; // [11-14] 관문은 처음부터 직영 4실로 열 때의 비교(운영 계획은 D안)
   const rowAt = (m) => { const r = mnRows.find((x) => x.m === m); if (!r) throw new Error(`opGate: ${m} 줄 없음`); return r.parts[0].r; };
   const target = rowAt(L.openMonth).lab.newStudents; // 개원 달 새 등록(4실 정원 × labFill)
   const leads = target / conv;
@@ -1249,16 +1251,16 @@ const opGate = base.lab.opGate && opPlans ? (() => {
   const t = L.other.adTest; let testMonths = 0; for (let m = t.from; m <= t.to; m = addMonths(m, 1)) testMonths += 1;
   const adTestLeads = { months: testMonths, perMonth: t.mnt / leadCostCap, total: testMonths * t.mnt / leadCostCap };
   // 광고비를 실제로 앞당겨 다시 센 판: 2027-04 말 현금이 줄어 공사 때 모자라는 돈과 현금 바닥이 함께 바뀐다 [페이블 8차 P1]
-  const early = runPlan('보수적', { newOnly: base.opPlan.newPathShare, adShift: adTotalMNT });
+  const early = runPlan('보수적', { newOnly: base.opPlan.newPathShare, adShift: adTotalMNT, mnFull: true });
   const fdiOf = (r) => r.runs[0].res.fdi || {};
   const pick = (r) => ({ ebitda: Object.fromEntries([2027, 2028, 2029].map((y) => [y, r.years[y].ebitda])), need: r.need, minCash: r.minCash, minCashMonth: r.minCashMonth, contracts2028: r.years[2028].path.contracts, labProfit2028: r.years[2028].lab.profit, cashBeforeBuild: fdiOf(r).cashBefore });
-  const fill = OG.fillChecks.map((x) => ({ labFill: x, ...pick(runPlan('보수적', { newOnly: base.opPlan.newPathShare, labFill: x })) }));
-  const both = { ...OG.bothHalf, ...pick(runPlan('보수적', { newOnly: base.opPlan.newPathShare, labFill: OG.bothHalf.labFill, all: OG.bothHalf.pathShare })) };
+  const fill = OG.fillChecks.map((x) => ({ labFill: x, ...pick(runPlan('보수적', { newOnly: base.opPlan.newPathShare, labFill: x, mnFull: true })) }));
+  const both = { ...OG.bothHalf, ...pick(runPlan('보수적', { newOnly: base.opPlan.newPathShare, labFill: OG.bothHalf.labFill, all: OG.bothHalf.pathShare, mnFull: true })) };
   // 유학 관문: 상담을 연 첫 석 달(전체 계약) · 재원생 입학 지원을 연 첫 석 달(재원생 계약) [페이블 8차 P2-7 · P3-7]
   const pathSum = (from, f) => { let s = 0; let m = from; for (let i = 0; i < OG.pathFirstMonths; i++) { s += f(rowAt(m).path); m = addMonths(m, 1); } return s; };
   const endOf = (from) => addMonths(from, OG.pathFirstMonths - 1);
   const pathGate = {
-    first: { from: P.startUB, to: endOf(P.startUB), contracts: pathSum(P.startUB, (p) => p.admissions), fte: rowAt(P.startUB).path.fte, lead: rowAt(P.startUB).path.lead },
+    first: (() => { const f0 = P.shareFrom && P.shareFrom > P.startUB ? P.shareFrom : P.startUB; return { from: f0, to: endOf(f0), contracts: pathSum(f0, (p) => p.admissions), fte: rowAt(f0).path.fte, lead: rowAt(f0).path.lead }; })(), // [11-14] 몫 계약을 여는 달부터
     second: { from: P.labConvFrom, to: endOf(P.labConvFrom), contracts: pathSum(P.labConvFrom, (p) => p.admissions), labContracts: pathSum(P.labConvFrom, (p) => p.admLab || 0) },
   };
   return { target, conv, leads, months: lw.months, wSum: lw.sum, seatEq, rooms, bandMin, checks, trialMonths, leadCostCap, leadCostAlarm, adTotalMNT, adBeforeOpenMNT, adBeforeKRW: adBeforeOpenMNT / base.fx.mntPerKrw, adTestLeads,
