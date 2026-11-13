@@ -106,9 +106,10 @@ fn shutdown(app:tauri::AppHandle){
     let worker=state.worker.clone();tauri::async_runtime::spawn(async move{let result=worker.stop().await;app.exit(if result.is_ok(){0}else{1});});
 }
 /// 「첫 백업이 끝남(한 번)」 (STAGE1_DESIGN.md 2.2). The first backup usually ends in the window's own job, often
-/// after the window was closed to the tray: the notice shows only while the window is hidden, and an open window
-/// counts as having shown it, so a later run does not repeat it. One that could not be shown is left to the next
-/// run, which judges it from the state (bin/run.rs `problems`).
+/// after the window was closed to the tray or put aside: the notice shows unless the window is in front of the
+/// person — shown, not minimized and focused (a minimized window is still 「visible」 to Windows — 끝판 b B1) — and a
+/// window in front counts as having shown it, so a later run does not repeat it. One that could not be shown is
+/// left to the next run, which judges it from the state (bin/run.rs `problems`).
 struct FirstBackup{root:PathBuf,test:bool,app:tauri::AppHandle,had:Mutex<Option<bool>>}
 impl FirstBackup{
     fn observe(&self,value:&Value){
@@ -118,11 +119,11 @@ impl FirstBackup{
         if had.is_none()||has{*had=Some(has);}
         drop(had);
         if !new{return;}
-        let visible=self.app.get_webview_window("main").and_then(|w|w.is_visible().ok()).unwrap_or(false);
+        let seen=self.app.get_webview_window("main").is_some_and(|w|w.is_visible().unwrap_or(false)&&!w.is_minimized().unwrap_or(true)&&w.is_focused().unwrap_or(false));
         let (root,test)=(self.root.clone(),self.test);
         std::thread::spawn(move||{
             let today:String=schedule::local_now().chars().take(10).collect();
-            notify::deliver(&root,&[notify::first_backup()],&[],&today,|n|if test||visible{Ok(())}else{notify::show(n)});
+            notify::deliver(&root,&[notify::first_backup()],&[],&today,|n|if test||seen{Ok(())}else{notify::show(n)});
         });
     }
 }

@@ -115,6 +115,7 @@ test('roots given by a short name are the real folders, and a place inside them 
   assert.throws(() => profiles.assertOutput(path.join(longWork, 'vault', 'temp')), /분리된 위치/, 'the long name of a place in the work root');
   const inside = path.join(longRoot, 'PlaceInsideTheState'); await fs.mkdir(inside);
   assert.throws(() => profiles.assertOutput(path.join(short(longRoot), 'PlaceInsideTheState')), /분리된 위치/, 'the short name of a place in the state');
+  assert.throws(() => profiles.assertOutput(path.join(short(longWork), 'NotMadeYet', 'Deeper')), /분리된 위치/, 'a place not made yet under a short name (끝판 b A1)');
   profiles.assertOutput(path.join(base, 'elsewhere'));
 
   // The recommended backup spells its folders out too, and keeps a protected place given short as it really is (GPT GA1).

@@ -149,17 +149,27 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
     let (mut found, mut judged) = (Vec::new(), Vec::new());
     let all: Vec<&Value> = profiles.as_object().map(|p| p.values().collect()).unwrap_or_default();
     let chosen = |p: &Value| p["outcome"] == "skipped" && ["read-only", "paused"].contains(&p["reason"].as_str().unwrap_or(""));
+    // A profile the person set aside (off · paused · read-only) may be the one a notice was about: while there is one,
+    // the problem is not judged resolved and its record stays (끝판 b B4).
+    let set_aside = all.iter().any(|p| p["outcome"] == "skipped" && ["off", "read-only", "paused"].contains(&p["reason"].as_str().unwrap_or("")));
     let watched: Vec<&Value> = all.into_iter().filter(|p| p["automatic"] == true && !chosen(p)).collect();
     if watched.iter().any(|p| p["lastBackupMs"].is_u64()) { found.push(notify::first_backup()); }
     if !watched.is_empty() {
-        judged.push("stale");
-        if let Some(p) = watched.iter().find(|p| p["lastBackupMs"].as_u64().is_some_and(|at| now.saturating_sub(at) > notify::STALE_MS)) {
-            let cause = match (p["outcome"].as_str(), p["reason"].as_str()) {
-                (Some("skipped"), Some("metered")) => "metered",
-                (Some("skipped"), Some("battery" | "saver")) => "battery",
-                (Some("skipped"), Some("clock")) => "clock",
-                _ => "",
-            };
+        if !set_aside { judged.push("stale"); }
+        // Late: three days past the last backup, or stopped for the clock with the clock behind that backup — such a
+        // clock cannot count the three days (끝판 b A2).
+        let late: Vec<&Value> = watched.iter().copied().filter(|p| p["lastBackupMs"].as_u64().is_some_and(|at|
+            now.saturating_sub(at) > notify::STALE_MS || (now < at && p["reason"] == "clock"))).collect();
+        let waiting = |p: &Value| match (p["outcome"].as_str(), p["reason"].as_str()) {
+            (Some("skipped"), Some("metered")) => Some("metered"),
+            (Some("skipped"), Some("battery" | "saver")) => Some("battery"),
+            (Some("skipped"), Some("clock")) => Some("clock"),
+            _ => None,
+        };
+        if !late.is_empty() {
+            // One late profile with no known wait (a failure) makes it 「확인하기」: a wait never hides a failure (끝판 b A3).
+            let causes: Vec<Option<&str>> = late.iter().map(|p| waiting(p)).collect();
+            let cause = if causes.contains(&None) { "" } else { ["clock", "metered", "battery"].into_iter().find(|c| causes.contains(&Some(*c))).unwrap_or("") };
             found.push(notify::stale(cause));
         }
     }
@@ -314,6 +324,24 @@ fn main() { std::process::exit(run()); }
         for (reason, automatic) in [("off", false), ("not-configured", false), ("read-only", true), ("paused", true)] {
             let (found, judged) = problems(&json!({"b2": {"outcome": "skipped", "reason": reason, "automatic": automatic, "lastBackupMs": old}}), now);
             assert!(found.is_empty() && judged.is_empty(), "{reason}");
+        }
+        // A clock behind the last backup: told at once (끝판 b A2).
+        let (found, _) = problems(&json!({"local": {"outcome": "skipped", "reason": "clock", "automatic": true, "lastBackupMs": now + 1_000}}), now);
+        assert_eq!(names(&found), [first, ("stale", notify::stale("clock").body)]);
+        // Both late: a failure is told as 「확인하기」 whatever the other waits on; waits alone, the clock first (끝판 b A3).
+        for (local, b2, cause) in [(json!({"outcome": "failed"}), json!({"outcome": "skipped", "reason": "metered"}), ""),
+                                   (json!({"outcome": "skipped", "reason": "clock"}), json!({"outcome": "skipped", "reason": "metered"}), "clock"),
+                                   (json!({"outcome": "busy", "reason": "job"}), json!({"outcome": "skipped", "reason": "battery"}), "")] {
+            let mut profiles = json!({"local": local, "b2": b2});
+            for p in ["local", "b2"] { profiles[p]["automatic"] = json!(true); profiles[p]["lastBackupMs"] = json!(old); }
+            let (found, _) = problems(&profiles, now);
+            assert_eq!(names(&found), [first, ("stale", notify::stale(cause).body)], "{profiles}");
+        }
+        // A profile set aside keeps the record: a healthy other profile does not make the problem resolved (끝판 b B4).
+        for reason in ["off", "paused", "read-only"] {
+            let (found, judged) = problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now},
+                                                   "b2": {"outcome": "skipped", "reason": reason, "automatic": reason != "off", "lastBackupMs": old}}), now);
+            assert!(judged.is_empty() && names(&found) == [first], "{reason}");
         }
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "automatic": true}}), now);
         assert!(found.is_empty() && judged == ["stale"], "never backed up: judged, and nothing to show");

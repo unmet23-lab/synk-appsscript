@@ -29,14 +29,15 @@ pub fn first_backup() -> Notice {
     Notice { problem: "first-backup", topic: "status", title: "첫 백업이 끝났습니다", body: "이제 매시간 저절로 지킵니다.", action: None }
 }
 /// No backup for three days while the PC is on. `cause` is what this run waited on, when it knows.
+/// A clock behind the last backup cannot count three days, so that one is told as it is.
 pub fn stale(cause: &str) -> Notice {
-    let body = match cause {
-        "metered" => "데이터 요금제 회선이라 클라우드 백업을 쉬고 있습니다. 다른 회선에 연결되면 이어집니다.",
-        "battery" => "배터리로 쓰는 동안 클라우드 백업을 쉬고 있습니다. 전원을 연결하면 이어집니다.",
-        "clock" => "PC 시계가 맞지 않아 백업을 멈췄습니다. 시계를 확인해 주세요.",
-        _ => "무엇이 막혔는지 확인해 주세요.",
+    let (title, body) = match cause {
+        "metered" => ("사흘 넘게 백업하지 못했습니다", "데이터 요금제 회선이라 클라우드 백업을 쉬고 있습니다. 다른 회선에 연결되면 이어집니다."),
+        "battery" => ("사흘 넘게 백업하지 못했습니다", "배터리로 쓰는 동안 클라우드 백업을 쉬고 있습니다. 전원을 연결하면 이어집니다."),
+        "clock" => ("PC 시계가 맞지 않아 백업을 멈췄습니다", "시계를 맞추면 이어집니다. 시계를 확인해 주세요."),
+        _ => ("사흘 넘게 백업하지 못했습니다", "무엇이 막혔는지 확인해 주세요."),
     };
-    Notice { problem: "stale", topic: "status", title: "사흘 넘게 백업하지 못했습니다", body, action: Some("확인하기") }
+    Notice { problem: "stale", topic: "status", title, body, action: Some("확인하기") }
 }
 
 fn escape(text: &str) -> String {

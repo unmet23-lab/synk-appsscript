@@ -68,9 +68,14 @@ class Profiles extends EventEmitter {
       protectedPaths.push(...e.own());
       if (e.config) protectedPaths.push(...e.config.sources, ...(e.isCloud() ? [] : [e.config.repository]));
     }
-    // As written and as the folder really is (an 8.3 short name and the like spelled out — 카본 끝판 A2).
+    // As written and as the folder really is (an 8.3 short name and the like spelled out — 카본 끝판 A2); a place not
+    // made yet is its nearest existing folder as it really is, plus the rest (끝판 b A1).
     const spellings = [parent];
-    try { spellings.push(fs.realpathSync.native(parent)); } catch { /* not there (yet): as written */ }
+    for (let base = path.resolve(parent), rest = []; ;) {
+      try { spellings.push(path.join(fs.realpathSync.native(base), ...rest)); break; } catch { }
+      const up = path.dirname(base); if (up === base) break;
+      rest.unshift(path.basename(base)); base = up;
+    }
     if (spellings.some(s => protectedPaths.some(p => overlap(s, p)))) throw new Error('모든 작업 폴더·백업 저장소·앱 설정과 분리된 위치를 선택해 주세요.');
   }
   assertLocalTarget(parent) {
