@@ -90,27 +90,27 @@
     },
     {
       "계정": "lab-ca-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-12T13:00:00-05:00",
       "지문": "28744fd113c0b5672a6960baff75b36c3caac54c26b07a829d79769822aaf512",
       "방법": "ego(Profile 7) 스튜디오 — 11-11 22시 게시 회차가 고친 판본(뜻 · 글자 검사 다시 통과)으로 다시 걸었다. 11-11 저녁 유호님 「내려 줘」로 내린 옛 영상 A1tOS4eSZwc(비공개)는 지우지 않고 그대로. 스크립트 C:/Users/q1212/ego/plates-20261111-2200/ytall.mjs · run.sh",
       "게시물ID": "wjbJkFHsk54",
       "주소": "https://youtube.com/shorts/wjbJkFHsk54",
-      "확인": "예약 한국 시각 2026-11-13 03:00 = 현지 13:00(2026-11-12) · 스튜디오 예약 창 「2026. 11. 13. 오전 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Canada | Korean Made Fun」 목록 「예약됨 2026. 11. 13.」 · 글 첫 줄 「Rough day? Vent in Korean with these 4 words 😤 #learnkorean」 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "11-13 14:5x 로그인 없이 공개 확인 — youtube.com/shorts/wjbJkFHsk54 공개(oEmbed 200 · isPrivate false · isUnlisted false · 재생 OK) · 채널 「SYNK LAB Canada | Korean Made Fun」 · 공개 시각 2026-11-12T18:00:01Z = 한국 11-13 03:00 = 현지 11-12 13:00 · 받은 판 28.7초 · 소리 −14.8 LUFS · 1.2초 넘는 무음 0 · 화면 띠 8장 영어 글 · 스튜디오 「공개 상태 공개 · 동영상 언어 영어」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-11T13:40:00.722Z"
+      "기록시각": "2026-11-13T05:52:29.569Z"
     },
     {
       "계정": "lab-mx-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-12T13:00:00-06:00",
       "지문": "c5adfecbeeb55d0f8156f3dba7873fc28d0be640370fa40cc35b8bdaaf9662d0",
       "방법": "ego",
       "게시물ID": "f5O3PcmDcis",
       "주소": "https://youtube.com/shorts/f5O3PcmDcis",
-      "확인": "예약 한국 시각 2026-11-13 04:00 = 현지 13:00(2026-11-12) · 스튜디오 예약 창 「2026. 11. 13. 오전 4:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB México | Coreano divertido」 목록 「예약됨 2026. 11. 13.」 · 글 첫 줄 「4 palabras en coreano para cuando te enojas 😤 (pero no frente a tu jefe) #aprendecoreano」 · 동영상 언어 스페인어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "11-13 14:5x 로그인 없이 공개 확인 — youtube.com/shorts/f5O3PcmDcis 공개(oEmbed 200 · isPrivate false · isUnlisted false · 재생 OK) · 채널 「SYNK LAB México | Coreano divertido」 · 공개 시각 2026-11-12T19:00:05Z = 한국 11-13 04:00 = 현지 11-12 13:00 · 받은 판 28.7초 · 소리 −14.8 LUFS · 1.2초 넘는 무음 0 · 화면 띠 8장 스페인어 글 · 스튜디오 「공개 상태 공개 · 동영상 언어 스페인어」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-11T05:24:23.651Z"
+      "기록시각": "2026-11-13T05:52:29.685Z"
     },
     {
       "계정": "lab-us-youtube",
@@ -162,6 +162,19 @@
       "확인": "예약 한국 시각 2026-11-15 01:00 = 현지 13:00(2026-11-14) · 스튜디오 예약 창 「2026. 11. 15. 오전 1:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Paraguay | Coreano divertido」 목록 「예약됨 2026. 11. 15.」 · 글 첫 줄 「¿Día pesado? 4 frases en coreano para desahogarte 😤 #aprendecoreano」 · 동영상 언어 스페인어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
       "기록시각": "2026-11-12T16:29:32.820Z"
+    },
+    {
+      "계정": "lab-au-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-16T13:00:00+11:00",
+      "지문": "dd71fb7a710bfa5f122155bd2fe7058470a5cd562ceb07eb5664ff4325ad25b7",
+      "게시글지문": "e6b90882b6e90a3d0a297dc811d4759507d1b201bde02d5893bd83bb5f918971",
+      "방법": "ego",
+      "게시물ID": "Ia3tXbTZsJI",
+      "주소": "https://youtube.com/shorts/Ia3tXbTZsJI",
+      "확인": "예약 한국 시각 2026-11-16 11:00 = 현지 13:00(2026-11-16) · 스튜디오 예약 창 「2026. 11. 16. 오전 11:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Australia | Korean Made Fun」 목록 「예약됨 2026. 11. 16.」 · 글 첫 줄 「Having a shocker of a day? Say it in Korean 😤 #learnkorean」 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-13T06:07:40.214Z"
     }
   ]
 }
