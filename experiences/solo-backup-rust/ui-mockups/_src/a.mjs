@@ -604,7 +604,7 @@ S['start-3'] = () => sp({
   sub: '창을 닫아도 됩니다. 끝나면 알려 드립니다.',
   more: `<div class="pbar" role="progressbar" aria-valuenow="31" aria-valuemin="0" aria-valuemax="100"><i style="width:31%"></i></div>${notes([
     '전원이 연결돼 있는 동안은 절전 모드로 들어가지 않습니다.',
-    '첫 백업 뒤로는 매시간 · 로그인 직후 · 깨어난 직후에 바뀐 것만 올립니다.',
+    '첫 백업 뒤로는 매시간 바뀐 것만 올립니다. 꺼져 있어 놓친 시간은 로그인 · 깨어난 뒤에 채웁니다.',
   ]).replace('class="notes"', 'class="notes" style="margin-top:24px"')}`,
   act: '<button class="btn btn-line" type="button">창 닫기</button>',
   right: receipt({
@@ -614,7 +614,7 @@ S['start-3'] = () => sp({
     <div class="steps">
       <div class="st done"><span class="k">${ICON.check}</span><h3>내 클라우드 자리 만들기</h3></div>
       <div class="st done"><span class="k">${ICON.check}</span><h3>복구 정보를 내 Google 계정에 맡기기</h3><p>맡긴 뒤 다시 받아 열리는지까지 봤습니다.</p></div>
-      <div class="st done"><span class="k">${ICON.check}</span><h3>매시간 저절로 돌게 등록하기</h3><p>앱을 닫아도 Windows가 띄웁니다.</p></div>
+      <div class="st done"><span class="k">${ICON.check}</span><h3>매시간 저절로 돌게 등록하기</h3><p>창을 닫아도 매시간 뒤에서 조용히 돕니다.</p></div>
       <div class="st now"><span class="k num">4</span><h3>첫 백업 · 올리는 중 <span class="num">31%</span></h3><p class="num">5.7GB / ${D.total.size} · 약 17분 남음</p></div>
     </div>`,
   }),
@@ -687,11 +687,14 @@ S['move-0'] = () => sp({
   kick: `${D.device} · 새 PC로 옮기기 전에`,
   h1: '새 PC에서<br><span class="soft">세 걸음이면 됩니다.</span>', h1Cls: 'm',
   sub: '새 PC에 업무 백업을 깔고 같은 Google 계정으로 시작하면, 이 PC의 마지막 판을 찾아 옮겨 옵니다.',
+  // 열어 둔 프로그램이 쥔 파일은 닫아야 담기고(설계 4.2), 지키는 폴더 밖 · 공동인증서는 백업에 없다 — 옛 PC를 정리하기 전에 알린다(카본 2차 3)
   more: notes([
-    '옮기기 직전에 「지금 한 번 더 백업」을 누르면 방금 고친 파일까지 갑니다.',
-    '새 PC가 이어 받으면 이 PC는 백업을 쉽니다. 그 전까지는 지금처럼 매시간 지킵니다.',
+    '옮기기 직전에 열어 둔 프로그램(Outlook 등)을 모두 닫고 「지금 한 번 더 백업」을 누르면, 방금 고친 파일까지 갑니다.',
+    '지키는 네 곳 밖의 자료와 공동인증서는 백업에 없습니다. 옛 PC를 정리하기 전에 직접 옮기세요.',
+    '새 PC가 이어 받기 전까지 이 PC는 지금처럼 매시간 지킵니다.',
   ]),
-  act: '<button class="btn btn-solid" type="button">지금 한 번 더 백업</button><p class="alt"><span>Google 계정 없이 옮기려면</span><a class="lnk" href="#code">복구 코드 만들기</a></p>',
+  // 복구 코드에는 읽기 열쇠만 있어 파일만 옮겨 온다 — 이어서 백업하려면 Google 로그인(개통)이 든다(설계 4.5 · 4.8 · 카본 2차 2)
+  act: '<button class="btn btn-solid" type="button">지금 한 번 더 백업</button><p class="alt"><span>Google 계정에 들어갈 수 없나요?</span><a class="lnk" href="#code">복구 코드 만들기</a></p><span class="hint">복구 코드로는 새 PC에 파일만 옮겨 옵니다. 이어서 백업하려면 Google 로그인이 필요합니다.</span>',
   right: `<section class="sheet" aria-label="새 PC에서 할 일">
     <h2>새 PC에서 할 일</h2><p class="meta">이 PC는 그대로 두고, 새 PC에서 합니다</p>
     <div class="steps" style="margin-top:16px">
@@ -718,7 +721,7 @@ S['move-1'] = () => sp({
   act: '<button class="btn btn-solid" type="button">이 자리로 옮겨 오기</button><p class="alt"><span>파일이 이 PC에 그대로 남아 있나요?</span><a class="lnk" href="#move-1">되살리지 않고 이어서 백업</a></p><span class="hint">Windows를 새로 깔아 파일이 비었거나 일부만 남았으면 누르지 마세요. 「이 자리로 옮겨 오기」로 채웁니다.</span>',
   right: `<div class="opts" role="radiogroup" aria-label="놓을 자리">
     ${opt(true, '원래 자리', '이 PC의 문서 · 바탕화면 · 사진은 OneDrive 밖이라 그대로 놓습니다.', [['문서', '이 PC의 문서'], ['바탕화면', '이 PC의 바탕화면'], ['사진', '이 PC의 사진'], ['D:\\Projects', 'D:\\Projects']])}
-    ${opt(false, 'OneDrive 밖 새 폴더', '문서 폴더가 OneDrive 안에 있는 PC에 권합니다.', [['폴더 네 곳', D.move.newFolder]])}
+    ${opt(false, 'OneDrive 밖 새 폴더', '문서 폴더가 OneDrive 안이면 권합니다. 옮겨 올 양이 OneDrive 남은 공간을 넘으면 동기화가 멈출 수 있습니다.', [['폴더 네 곳', D.move.newFolder]])}
     <p class="room num">이 PC 남은 공간 ${D.move.room} · 옮겨 올 것 ${D.total.size}</p>
   </div>`,
 });
@@ -769,6 +772,11 @@ S['move-3'] = () => sp({
     ${D.move.skippedList.map((s) => `<div class="row sm"><span>${s}</span><b>연결 폴더</b></div>`).join('')}
     <p class="pf-t" style="margin:4px 0 2px 14px">${D.move.skippedWhy}</p>
     ${row('합계', `${D.total.files}개`, 'tot')}
+    <div class="hr"></div>
+    <p class="pf-k">따로 둔 자동 실행 파일 ${D.move.autorun}개</p>
+    ${D.move.autorunList.map(([w, n]) => `<div class="row sm"><span>${w}</span><b>${n}</b></div>`).join('')}
+    <p class="pf-t" style="margin:4px 0 0 14px">놓은 곳: ${D.move.autorunTo}</p>
+    <div class="lk" style="margin:6px 0 0 14px"><a class="lnk" href="#move-3">폴더 열기 ${ICON.rarr}</a></div>
     <div class="hr"></div>
     <p class="pf-k">옛 노트북 백업이 남아 있는 까닭</p>
     <p class="pf-t" style="margin-top:4px">건너뛴 것이 있어 바로 정리하지 않습니다. 필요 없으면 설정 › 내 기기에서 「나머지는 필요 없음」을 누르세요.</p>`,
@@ -824,8 +832,9 @@ S['undo-2'] = () => sp({
   cls: 'flow',
   head: top({ flow: '사고가 났을 때 되돌리기', step: 2, total: 3 }),
   kick: '미리 보기',
-  h1: `${D.undo.versionKo}로<br><span class="soft">되돌립니다.</span>`, h1Cls: 'm',
-  sub: '클라우드 백업만 되돌립니다. 이 PC의 파일은 그대로 둡니다.',
+  // 제목은 고른 시각 T, 종이는 그 시각의 가장 최근 판(설계 2.5 「그 시각의 완료본」) — 둘을 섞어 쓰지 않는다(카본 2차 5)
+  h1: `${D.undo.pickShortKo}로<br><span class="soft">되돌립니다.</span>`, h1Cls: 'm',
+  sub: '클라우드 백업만 그 시각으로 되돌리고, 이 PC의 파일은 그대로 둡니다.',
   more: `<div class="steps" style="max-width:33em">
     <div class="st"><span class="k num">1</span><h3>이 계정의 모든 기기 연결을 새 것으로 바꿉니다</h3><p>이 PC만 새 연결을 받습니다. 누가 연결 열쇠를 가져갔을 수도 있어서입니다. 전에 받은 복구 코드도 쓸 수 없게 되어, 끝나면 새로 만듭니다.</p></div>
     <div class="st"><span class="k num">2</span><h3>그 시각의 백업을 다시 보이게 합니다</h3><p>지우는 것은 없습니다. 도중에 끊겨도 다시 누르면 이어서 합니다.</p></div>
@@ -833,7 +842,7 @@ S['undo-2'] = () => sp({
   </div>`,
   act: `<button class="btn btn-solid" type="button">${ICON.google}Google로 확인하고 되돌리기</button><span class="hint">누르면 Google 로그인을 한 번 더 합니다.</span>`,
   right: receipt({
-    title: '되돌릴 판', sub: `${D.undo.versionKo} 판`, ghosts: false,
+    title: '그 시각의 가장 최근 판', sub: `${D.undo.versionKo} 판`, ghosts: false,
     body: `<div class="hr"></div>
     ${D.folders.map((f, i) => row(f.name, `${D.undo.byFolder[i]}개`, 'sm')).join('')}
     ${row('합계', `${D.undo.files}개 · ${D.undo.size}`, 'tot')}
@@ -842,7 +851,7 @@ S['undo-2'] = () => sp({
     <p class="pf-t" style="margin:6px 0 0">숨겨진 묶음이 많아 지금 상태로는 열리지 않습니다.</p>
     <div class="hr"></div>
     <p class="pf-k">이 PC가 감염됐을 수 있으면</p>
-    <p class="pf-t" style="margin-top:4px">Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요.</p>
+    <p class="pf-t" style="margin-top:4px">먼저 치료하거나 깨끗한 다른 PC에서 되돌리세요. 같은 사용자 권한의 프로그램은 새 Google 로그인도 읽습니다. 그다음 Google에서 이 PC를 로그아웃하고 「업무 백업」 접근을 지운 뒤 다시 로그인하세요.</p>
     <div class="lk" style="margin:8px 0 6px"><a class="lnk" href="#undo-2">Google 기기 관리 ${ICON.ext}</a><a class="lnk" href="#undo-2">연결된 앱 ${ICON.ext}</a></div>`,
   }),
 });
@@ -851,7 +860,7 @@ S['undo-3'] = () => sp({
   cls: 'flow',
   head: top({ flow: '사고가 났을 때 되돌리기', step: 3, total: 3, back: false }),
   kick: '되돌렸습니다 · 자동 백업 멈춤',
-  h1: `${D.undo.versionKo}로<br><span class="soft">되돌렸습니다.</span>`, h1Cls: 'm',
+  h1: `${D.undo.pickShortKo}로<br><span class="soft">되돌렸습니다.</span>`, h1Cls: 'm',
   sub: '자동 백업과 정리를 멈춰 두었습니다. 먼저 필요한 파일을 새 폴더로 꺼내 확인하세요.',
   more: notes([
     '<b>파일 꺼내기</b>는 되돌린 판에서 필요한 파일을 새 폴더로 꺼냅니다. 이 PC의 파일은 건드리지 않습니다.',
@@ -863,15 +872,15 @@ S['undo-3'] = () => sp({
     title: '되돌리기 확인서', ghosts: false,
     st: stamp('되돌림', 'warn'),
     body: `<div class="hr"></div>
-    ${row('되돌린 판', D.undo.versionKo)}
-    ${row('파일', `${D.undo.files}개`)}
+    ${row('되돌린 시각', D.undo.pickShortKo)}
+    ${row('그때 가장 최근 판', `${D.undo.versionKo} · ${D.undo.files}개`)}
     ${row('이 PC의 파일', '그대로')}
     ${row('기기 연결', '새로 바꿈 · 이 PC만')}
     ${row('알림', '모든 기기 · 메일')}
     ${row('자동 백업', '고를 때까지 멈춤')}
     <div class="hr"></div>
     <p class="pf-k">다음 할 일</p>
-    <p class="pf-t" style="margin-top:4px">새 복구 코드를 만들어 두세요. 전에 받은 코드는 이제 쓸 수 없습니다.</p>
+    <p class="pf-t" style="margin-top:4px">새 복구 코드를 만들어 두세요. 전에 받은 코드는 이제 쓸 수 없습니다. 이 PC가 감염됐을 수 있으면 치료한 뒤에 만드세요.</p>
     <div class="lk" style="margin:8px 0 6px"><a class="lnk" href="#code">새 복구 코드 만들기 ${ICON.rarr}</a></div>`,
   }),
 });
@@ -903,10 +912,11 @@ S['lost-2'] = () => sp({
   h1: 'Google에서도<br><span class="soft">그 노트북을 내보내세요.</span>', h1Cls: 'm',
   sub: '백업 연결은 끊었습니다. 그 노트북에 남은 Google 로그인도 끊어야 합니다.',
   more: `<div class="steps" style="max-width:33em">
-    <div class="st now"><span class="k num">1</span><h3>Google 기기 관리에서 「${D.device}」 로그아웃</h3><p>훔쳐 갔을 수 있으면 Google 비밀번호도 바꾸세요.</p></div>
-    <div class="st now"><span class="k num">2</span><h3>연결된 앱에서 「업무 백업」 접근 지우기</h3><p>이 PC도 함께 로그아웃되고, 앱은 그것으로 다 지웠는지 압니다.</p></div>
+    <div class="st now"><span class="k num">1</span><h3>Google 기기 관리에서 「${D.device}」 로그아웃</h3><p>훔쳐 갔을 수 있으면 Google 비밀번호도 바꾸세요.</p><div class="lk"><a class="lnk" href="#lost-2">Google 기기 관리 열기 ${ICON.ext}</a></div></div>
+    <div class="st now"><span class="k num">2</span><h3>연결된 앱에서 「업무 백업」 접근 지우기</h3><p>1번을 마친 뒤에 지웁니다. 이 PC도 함께 로그아웃됩니다.</p><div class="lk"><a class="lnk" href="#lost-2">연결된 앱 열기 ${ICON.ext}</a></div></div>
   </div>`,
-  act: `<button class="btn btn-solid" type="button">Google 기기 관리 열기 ${ICON.ext}</button><button class="btn btn-line" type="button">연결된 앱 열기 ${ICON.ext}</button><span class="hint">둘 다 마치면 다시 로그인 · 새 복구 코드 만들기로 넘어갑니다. 그 전에는 새 복구 정보를 맡기지 않습니다.</span>`,
+  // 앱은 2번(이 PC의 Google 토큰이 끊김)만 알아챈다 — 1번은 알 수 없어 확인을 받고, 그 전에는 새 복구 정보를 맡기지 않는다(카본 2차 1 · 설계 2.4의 3 · 4)
+  act: `<button class="btn btn-solid" type="button">두 걸음을 마쳤습니다 · 다시 로그인</button><span class="hint">2번은 앱이 알아채지만 1번은 알 수 없어 여기서 확인을 받습니다. 누르기 전에는 새 복구 정보를 맡기지 않습니다.</span>`,
   right: receipt({
     title: '분실 신고 확인서', ghosts: false,
     st: stamp('신고', 'warn'),
@@ -918,7 +928,8 @@ S['lost-2'] = () => sp({
     ${row('전에 받은 복구 코드', '쓸 수 없음')}
     ${row('백업', '그대로')}
     <div class="hr"></div>
-    ${row('Google 로그인 끊기', '기다림')}
+    ${row('Google에서 로그아웃', '기다림')}
+    ${row('「업무 백업」 접근 지우기', '기다림')}
     ${row('새 복구 코드', '그다음')}`,
   }),
 });
@@ -946,8 +957,8 @@ S.web = () => `<div class="web">
     <div class="wtop">${MARK}<span>${D.app}</span></div>
     <div><p class="kick">새 기기 연결</p><h1 class="m">이 계정에<br>새 기기가 연결됐습니다.</h1>
       <p class="sub">내가 한 일이 아니면 바로 끊으세요. 끊으면 SYNK 서버가 그 기기의 백업 연결을 지우고, 전에 받은 복구 코드도 쓸 수 없게 합니다.</p></div>
-    <div class="act"><button class="btn btn-solid" type="button">${ICON.google}Google로 확인하고 끊기</button><button class="btn btn-line" type="button">내가 한 일이 맞음</button>
-      <span class="hint">이 링크만으로는 끊지 않습니다. 계정 주인인지 Google 로그인으로 확인합니다.</span></div>
+    <div class="act"><button class="btn btn-solid" type="button">${ICON.google}Google로 확인하고 끊기</button>
+      <span class="hint">내가 연결한 기기가 맞다면 아무것도 하지 않고 이 창을 닫으세요. 이 링크만으로는 끊지 않고, 계정 주인인지 Google 로그인으로 확인합니다.</span></div>
     <div class="box"><b>끊은 뒤 Google에서도 내보내세요</b>그 기기를 이은 사람은 내 Google 계정에 들어간 사람입니다. Google 비밀번호를 바꾸고, 그 기기를 로그아웃한 뒤 「업무 백업」 접근을 지우세요. 그대로 두면 새로 맡길 복구 정보까지 읽을 수 있습니다. 「${D.device}」${pp(D.device, '은/는')} 다시 로그인한 뒤 새 복구 코드를 권합니다.
       <div class="lk" style="margin-top:10px"><a class="lnk" href="#web">Google 기기 관리 ${ICON.ext}</a><a class="lnk" href="#web">연결된 앱 ${ICON.ext}</a></div></div>
     <a class="lnk" href="#lost">기기를 잃어버렸나요? 분실 신고 ${ICON.rarr}</a>

@@ -88,6 +88,9 @@ export const D = {
     skippedList: ['문서 › 내 음악', '문서 › 내 사진', '문서 › 내 비디오', '사진 › 휴대폰 사진'],
     skippedWhy: '다른 곳을 가리키는 연결 폴더라 백업에 내용이 없습니다.',
     autorun: '2',
+    // 저절로 실행되는 자리의 파일은 원래 자리 대신 따로 둔 폴더로(설계 4.6) — 무엇을 어디에 두었는지 확인서에 적는다(카본 2차 4)
+    autorunList: [['시작프로그램', '작업 동기화.lnk'], ['PowerShell 프로필', 'profile.ps1']],
+    autorunTo: '다운로드 › 옮겨 오기에서 따로 둔 파일',
     newFolder: 'C:\\옮겨 온 업무 자료',
     room: 'C: 212GB · D: 820GB', // 설계 2.3 「되살릴 자리 … 용량과 함께」
   },
@@ -113,6 +116,7 @@ export const D = {
   undo: {
     detectKo: '11월 12일 오후 3시 무렵',
     pickKo: '11월 12일 오후 2시 59분',
+    pickShortKo: '11월 12일 오후 2:59', // 되돌리는 시각 T(제목) — 그 시각의 가장 최근 판(versionKo)과 따로 적는다(카본 2차 5)
     pickH24: '14:59',
     versionKo: '11월 12일 오후 2:02',
     versionH24: '11. 12. 14:02',
@@ -185,7 +189,7 @@ export const DRAWER = [
     group: '되찾는 길',
     rows: [
       { name: '복구 코드', value: '아직 없음 · Google 계정에 못 들어갈 때 쓰는 종이 한 장', act: '만들기', nudge: true, to: 'code' },
-      { name: '내 기기', value: '작업 노트북(이 PC) · 백업하는 기기. 잃어버리면 다른 PC나 휴대폰의 메일 링크에서 분실 신고합니다', act: null },
+      { name: '내 기기', value: '작업 노트북(이 PC) · 백업하는 기기. 잃어버리면 다른 PC의 이 서랍이나, 기기를 처음 연결할 때 받은 메일의 링크에서 분실 신고합니다', act: null },
       { name: '사고가 났을 때 되돌리기', value: '29일 안이면 그 시각으로 되돌립니다', act: '되돌리기', to: 'undo-1' },
     ],
   },
@@ -196,7 +200,7 @@ export const DRAWER = [
       { name: '시범 측정', value: '백업 · 알림 · 설치 결과 숫자를 보냅니다(파일 이름 · 경로 · 내용 없이)', act: '보내는 내용 보기' },
       { name: '업데이트', value: '0.7.0 · 최신', act: null },
       { name: '도움 요청', value: '보낼 내용을 먼저 보여 드립니다', act: '쓰기' },
-      { name: '계정', value: 'studio@example.com · Google 2단계 인증을 켜 두세요', act: '로그아웃' },
+      { name: '계정', value: 'studio@example.com · Google 2단계 인증을 켜 두세요', act: null }, // 「로그아웃」은 설계에 없고 백업을 멈추는 일이라 두지 않는다(카본 2차 8)
     ],
   },
 ];
