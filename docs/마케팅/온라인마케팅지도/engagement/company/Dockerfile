@@ -39,6 +39,7 @@ COPY ["docs/마케팅/온라인마케팅지도/engagement/analytics.mjs","/works
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/*.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/pdfkit.cjs","docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/SUIT-Regular.otf","docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/SUIT-OFL.txt","docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/THIRD-PARTY-LICENSES.txt","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.json","docs/마케팅/온라인마케팅지도/engagement/company/content-catalog.json","docs/마케팅/온라인마케팅지도/engagement/company/benchmark-upload-template.json","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/account-catalog.json","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/account-catalog.json"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs"]
