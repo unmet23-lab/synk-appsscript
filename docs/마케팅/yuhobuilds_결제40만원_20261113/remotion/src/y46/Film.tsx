@@ -18,7 +18,7 @@ export const TOTAL = F(LEN);
 // 시간표(초) — 목소리 낱말 시각(음성/범수/V*.json)에 맞춤
 // 11-13 21시 최종 확인 미흡 고침: V5를 「끝자리가 서로 다른 값으로」로 다시 구워(6.60초) 17.95초에 놓고, 요청 글은 말보다 먼저 쳐진다(빈 상자 2.9초 없앰)
 // 11-13 23시 최종 확인 다시 미흡 고침: 표 아래 까닭 한 줄이 1.5초 넘게 머물게 표 장면을 1초 늘림(18.8초까지) — 그 뒤는 모두 +1초, 30.0초. 배경음은 17.45초에서 두 박을 이어 붙임(기획.md)
-export const T = { hero: 3.3, drop: 3.75, hit: 6.4, real: 7.95, day: 9.9, tests: 13.3, typeIn: 14.8, wrong: 16.7, line: 18.8, type: 18.95, typeEnd: 21.5, u2: 23.5, ex: 21.8, after: 25.65, card: 25.65, r1: 25.85, r2: 26.0, r3: 26.15, hit2: 27.17, same: 28.05 };
+export const T = { hero: 3.3, drop: 3.75, hit: 6.4, real: 7.95, day: 9.9, tests: 13.3, typeIn: 14.8, wrong: 16.7, line: 18.8, type: 21.6, typeEnd: 25.3, u2: 24.3, ex: 23.6, after: 25.65, card: 25.65, r1: 25.85, r2: 26.0, r3: 26.15, hit2: 27.17, same: 28.05 };
 export const HERO = { from: 3.3, len: 4.6 };
 export const CUT = [0, T.hero, T.real, T.tests, T.line, T.after];
 export const VO: { id: string; at: number }[] = [
@@ -31,7 +31,6 @@ export const VO: { id: string; at: number }[] = [
 ];
 
 const BLACK = '#050506';
-const INK = '#F4F1EA';
 const CREAM = '#F3F0EA';
 const INK_D = '#17191D';
 const BUTTER = '#F5C445';
@@ -161,7 +160,11 @@ const Cases: React.FC<{ f: number; from: number; typeIn: number; wrong: number; 
   const arrow = prog(f, typeIn + 20, 8);
   const bad = prog(f, wrong, 6);
   const why = prog(f, wrong + 2, 5);
-  const whyU = prog(f, F(17.6), 10);
+  const whyU = prog(f, F(17.4), 10);
+  const w2 = prog(f, F(17.3), 5);
+  const w3 = prog(f, F(17.8), 6);
+  const pop = f >= F(17.8) && f < F(17.8) + 10 ? 1 - (f - F(17.8)) / 10 : 0;
+  const hi = prog(f, F(18.2), 9);
   const sd = f - wrong;
   const shake = sd >= 0 && sd < 9 ? (1 - sd / 9) * 12 * Math.sin(sd * 2.4) : 0;
   const breathe = 0.5 + 0.5 * Math.sin(f / 5);
@@ -194,62 +197,103 @@ const Cases: React.FC<{ f: number; from: number; typeIn: number; wrong: number; 
               <span style={{ fontSize: 54, color: GREY_D, fontWeight: 800, letterSpacing: -1.2 }}>없음</span>
             )}
           </div>
-          {kind('천 원 단위', tp > 0)}
+          <div style={{ display: 'inline-block', marginTop: 6, backgroundImage: `linear-gradient(rgba(245,196,69,0.55), rgba(245,196,69,0.55))`, backgroundRepeat: 'no-repeat', backgroundSize: `${hi * 100}% 100%`, borderRadius: 6 }}>{kind('천 원 단위', tp > 0)}</div>
         </div>
         <div style={{ flex: 1, fontWeight: 800, fontSize: 62, letterSpacing: -1.6, opacity: arrow }}>
-          {bad > 0 ? <span style={{ opacity: bad, fontSize: 70 }}><U w={bad}>40만원</U></span> : <span style={{ opacity: 0.35 }}>?</span>}
+          {bad > 0 ? <span style={{ opacity: bad, fontSize: 70 }}><U w={bad}>40만원</U></span> : <span style={{ fontSize: 70, color: GREY_D, opacity: 0.65 + 0.35 * breathe }}>?</span>}
         </div>
         <Mark p={bad} kind="no" color={INK_D} size={72} />
       </div>
       <div style={{ marginTop: 44, fontWeight: 800, fontSize: 60, lineHeight: 1.1, letterSpacing: -1.6, color: INK_D, opacity: why, transform: `translateY(${(1 - why) * 14}px)` }}>
-        39.5만원을 <U w={whyU}>반올림</U>해 40만원
+        <span>39.5만원을 </span>
+        <span style={{ opacity: w2 }}>
+          <U w={whyU}>반올림</U>해{' '}
+        </span>
+        <span style={{ display: 'inline-block', opacity: w3, transform: `scale(${1 + 0.14 * pop})`, transformOrigin: '0% 70%' }}>40만원</span>
       </div>
     </div>
   );
 };
 
-/** 그날 실제 화면 — 예시 의뢰로 다시 띄운 실제 앱 화면(고치기 전 코드, 1080×1996 캡처)을 읽히는 밝기로 통째 보이고,
- *  내려가 「값 40만원」 칸을 짚는다 → 「이제 크몽에서 결제해 주세요」까지 넓혀 비춘다 → 다시 값 칸.
- *  11-13 23시 최종 확인 「8~13초 5.1초가 사실상 검은 화면 · 오른쪽 잘림 · 8초의 뭉개진 큰 글자」 고침 — 키우지 않고 카드 안에서 내려가며 짚는다.
+/** 그날 실제 화면 — 예시 의뢰로 다시 띄운 실제 앱 화면(고치기 전 코드, 1080×1996 캡처)을 크림 무대 위 검은 카드로 그대로(누르지 않고) 보이고,
+ *  카드의 「값 40만원」 칸 자리에서 같은 화면을 크게 다시 찍은 값 칸(shots/old_val.png — 앞 장면과 같은 찍기)이 돋보기처럼 화면 폭 3분의 2(698px)로 커져 그 줄을 덮는다(위 「결제해 주세요」 문장은 보인 채).
+ *  11-13 23시 · 11-14 0시 최종 확인 「어둡다 · 작다 · 9.5초 뒤 3.5초 정지 · 8.0 · 13.2초 밝기가 딱 끊김」 고침 —
+ *  무대를 크림으로(앞뒤 장면과 같은 밝기), 9.05초부터 0.6~0.8초마다 한 가지씩(테 → 큰 칸 → 밑줄 → +5,000원 → 결제 문장 밑줄 → 반짝)과 큰 칸이 천천히 다가감.
  *  캡처 좌표(원본 화소): 문장 1442~1479(「…주세요.」 끝 x 518) · 값 이름 1658~1688 · 값 1712~1758(「40만원」 x 58~193). */
 const RealScreen: React.FC<{ f: number }> = ({ f }) => {
   const k = 800 / 1020; // 원본 x 30~1050을 카드 폭 800에
+  const CARD = { left: 74, top: 660, w: 800, h: 482 };
+  const LS = 0.8;
+  const LENS = { left: 74, top: 975, w: 872 * LS, h: 404 * LS };
   const card = prog(f, F(T.real), 6);
-  // 1초 동안 내려간 뒤에도 장면 끝까지 아주 천천히 더 내려간다(올리기 전 검사 「11~13초 정지」 — 원본 바닥 1996을 넘지 않게 1090까지)
-  const s = mix(520, 1020, prog(f, F(T.real) + 3, F(1.0), IN_OUT)) + 70 * prog(f, F(9.05), F(T.tests - 9.05), (x) => x);
-  const c = (sx: number, sy: number) => ({ x: (sx - 30) * k, y: (sy - s) * k });
-  const A = { x0: 40, y0: 1644, x1: 224, y1: 1772 };
-  const B = { x0: 40, y0: 1428, x1: 1040, y1: 1772 };
-  const grow = prog(f, F(10.7), 14, IN_OUT) * (1 - prog(f, F(12.3), 12, IN_OUT));
-  const p0 = c(mix(A.x0, B.x0, grow), mix(A.y0, B.y0, grow));
-  const p1 = c(mix(A.x1, B.x1, grow), mix(A.y1, B.y1, grow));
-  const dim = prog(f, F(9.1), 12);
-  const box = prog(f, F(9.1), 12);
-  const a0 = c(A.x0, A.y0);
-  const a1 = c(A.x1, A.y1);
-  const ul = prog(f, F(11.0), 10) * (1 - prog(f, F(12.3), 8));
+  const s = mix(700, 1160, prog(f, F(T.real) + 2, F(1.05), IN_OUT));
+  const c = (sx: number, sy: number) => ({ x: CARD.left + (sx - 30) * k, y: CARD.top + (sy - s) * k });
+  const a0 = c(40, 1644);
+  const a1 = c(224, 1772);
+  const box = prog(f, F(9.05), 10);
+  const lens = prog(f, F(9.4), 10);
+  const grow = mix(1, 1.05, prog(f, F(9.9), F(T.tests - 9.9), (x) => x));
+  const bar = prog(f, F(10.3), 8);
+  const tag = prog(f, F(10.9), 8);
+  const ul = prog(f, F(11.7), 10);
   const u0 = c(58, 1488);
   const beat = (s0: number) => (f >= F(s0) && f < F(s0) + 16 ? 1 - (f - F(s0)) / 16 : 0);
-  const pulse = Math.max(beat(9.5), beat(12.7));
+  const pulse = beat(12.5);
+  // 돋보기가 커져 나오는 자리 = 카드의 값 칸 가운데(큰 칸 왼쪽 위 기준)
+  const ox = (a0.x + a1.x) / 2 - LENS.left;
+  const oy = (a0.y + a1.y) / 2 - LENS.top;
   return (
     <>
-      <div style={{ position: 'absolute', left: 74, top: 566, width: 846, fontFamily: KO, fontWeight: 700, fontSize: 40, lineHeight: 1.2, letterSpacing: -0.8, color: '#B9B5AB', opacity: prog(f, F(T.real) + 4, 8) }}>
+      <div style={{ position: 'absolute', left: 74, top: 540, width: 846, fontFamily: KO, fontWeight: 700, fontSize: 36, lineHeight: 1.22, letterSpacing: -0.6, color: '#5C5952', opacity: prog(f, F(T.real) + 3, 8) }}>
         예시 의뢰로 다시 띄운 실제 앱 화면
         <br />
         고치기 전 코드
       </div>
-      <div style={{ position: 'absolute', left: 74, top: 700, width: 800, height: 704, borderRadius: 28, overflow: 'hidden', background: '#000', border: '2px solid rgba(244,241,234,0.24)', boxSizing: 'border-box', opacity: card, transform: `translateY(${(1 - card) * 30}px)` }}>
+      <div style={{ position: 'absolute', left: CARD.left, top: CARD.top, width: CARD.w, height: CARD.h, borderRadius: 26, overflow: 'hidden', background: '#000', boxShadow: '0 22px 46px rgba(0,0,0,0.18)', opacity: card, transform: `translateY(${(1 - card) * 30}px)` }}>
         <Img src={staticFile('shots/old_phone.jpg')} style={{ position: 'absolute', left: -30 * k, top: -s * k, width: 1080 * k, height: 1996 * k }} />
-        <div style={{ position: 'absolute', left: p0.x, top: p0.y, width: p1.x - p0.x, height: p1.y - p0.y, borderRadius: 14, boxShadow: `0 0 0 2000px rgba(5,5,6,${0.5 * dim})` }} />
-        <div style={{ position: 'absolute', left: u0.x, top: u0.y, width: (518 - 58) * k * ul, height: 6, borderRadius: 3, background: BUTTER }} />
-        <svg width={800} height={704} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
-          <rect x={a0.x} y={a0.y} width={a1.x - a0.x} height={a1.y - a0.y} rx={14} fill="none" stroke={BUTTER} strokeWidth={6 + 3 * pulse} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - box} style={{ filter: pulse > 0 ? `drop-shadow(0 0 ${20 * pulse}px rgba(245,196,69,0.85))` : undefined }} />
-        </svg>
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 70, background: 'linear-gradient(to top, #000 0px, rgba(0,0,0,0) 70px)' }} />
+        <div style={{ position: 'absolute', left: u0.x - CARD.left, top: u0.y - CARD.top, width: (518 - 58) * k * ul, height: 6, borderRadius: 3, background: BUTTER }} />
+      </div>
+      {/* 카드의 값 칸 테 — 카드 아래 가장자리에 닿으니 카드 밖에 그린다(큰 칸이 커지며 덮는다) */}
+      <svg width={1080} height={1920} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
+        <rect x={a0.x} y={a0.y} width={a1.x - a0.x} height={a1.y - a0.y} rx={14} fill="none" stroke={BUTTER} strokeWidth={6 + 3 * pulse} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - box} />
+      </svg>
+      {/* 같은 화면의 값 칸을 크게(화면 폭 3분의 2) — 값 칸 자리에서 커져 나온다 */}
+      <div style={{ position: 'absolute', left: LENS.left, top: LENS.top, width: LENS.w, height: LENS.h, borderRadius: 22, overflow: 'hidden', background: BLACK, opacity: lens, transform: `scale(${(0.22 + 0.78 * lens) * grow})`, transformOrigin: `${ox}px ${oy}px`, boxShadow: `0 0 0 ${5 + 3 * pulse}px ${BUTTER}, 0 22px 44px rgba(0,0,0,0.22)${pulse > 0 ? `, 0 0 ${40 * pulse}px ${8 * pulse}px rgba(245,196,69,0.55)` : ''}` }}>
+        <Img src={staticFile('shots/old_val.png')} style={{ position: 'absolute', left: 22 * LS, top: 10 * LS, width: 832 * LS, height: 335 * LS }} />
+        <div style={{ position: 'absolute', left: 28 * LS, top: 350 * LS, height: 9, borderRadius: 5, width: 410 * LS * bar, background: BUTTER }} />
+        <div style={{ position: 'absolute', left: 474 * LS, top: 220 * LS, fontFamily: KO, fontWeight: 800, fontSize: 56, letterSpacing: -1.4, color: BUTTER, opacity: tag, transform: `translateX(${(1 - tag) * -16}px)` }}>+5,000원</div>
       </div>
     </>
   );
 };
+
+// 11-14 새벽(최종 확인 「요청 글이 말보다 0.8초 먼저 다 찍히고 3.6초 정지」): 말이 「돈이 나오는 화면을 맡길 땐」을 하는 동안 상자엔 흔한 맡기는 글(BASE)이 먼저 쳐지고,
+// 「이 한 줄을 꼭 붙이세요」에 「+ 붙일 한 줄」 칩, 붙일 한 줄은 말에 맞춰 — 「“반올림하지 말고,」 21.6~22.6 · 「끝자리가 서로 다른」 23.3~24.1 · 「값으로 화면을」 24.15~24.65 · 「찍어 보여 줘”」 24.7~25.3 (말보다 0.2~0.8초 앞)
+// (첫 판은 첫 줄을 19.3~22.4초 천천히 쳤는데 한 글자씩으로는 화면이 거의 안 바뀌어 올리기 전 검사가 21~23초를 정지로 잡았다)
+const BASE = '결제 화면 금액 표시 고쳐 줘.';
+const BASE_AT = { from: 19.2, to: 20.1 };
+const CHIP_AT = 21.15;
+const TYPE_KEYS: [number, number][] = [[21.6, 0], [22.6, 10], [23.3, 10], [24.1, 20], [24.15, 20], [24.65, 27], [24.7, 27], [25.3, 35]];
+const typedAt = (t: number): number => {
+  if (t <= TYPE_KEYS[0][0]) return 0;
+  for (let i = 1; i < TYPE_KEYS.length; i++) {
+    const [t0, n0] = TYPE_KEYS[i - 1];
+    const [t1, n1] = TYPE_KEYS[i];
+    if (t <= t1) return n0 + ((n1 - n0) * (t - t0)) / Math.max(1e-6, t1 - t0);
+  }
+  return TYPE_KEYS[TYPE_KEYS.length - 1][1];
+};
+const TYPE_TICKS: number[] = (() => {
+  const out: number[] = [];
+  let last = 0;
+  for (let fr = F(21.5); fr <= F(25.4); fr++) {
+    const n = Math.floor(typedAt(fr / FPS));
+    if (n > last && n % 2 === 1) out.push(fr / FPS);
+    last = Math.max(last, n);
+  }
+  for (let i = 0; i < 6; i++) out.push(BASE_AT.from + ((BASE_AT.to - BASE_AT.from) * i) / 6);
+  return out.sort((a, b) => a - b);
+})();
 
 /** 한 줄 — AI에게 보낼 글 칸에 돈이 나오는 화면을 맡길 때 붙이는 요청이 말보다 먼저 쳐진다(11-13 최종 확인 「빈 상자와 커서만 2.9초」 고침). */
 const QUOTE_LINES = ['“반올림하지 말고,', '끝자리가 서로 다른', '값으로 화면을', '찍어 보여 줘”'];
@@ -258,7 +302,7 @@ const Quote: React.FC<{ f: number; from: number; to: number }> = ({ f, from, to 
   const out = 1 - prog(f, to - 4, 4);
   const box = prog(f, from, 6);
   const total = QUOTE_LINES.reduce((a, l) => a + l.length, 0);
-  const typed = Math.round(total * prog(f, F(T.type), F(T.typeEnd - T.type), (x) => x));
+  const typed = Math.round(Math.min(total, typedAt(f / FPS)));
   const typing = f >= F(T.type) && f < F(T.typeEnd) + 4;
   const caretOn = Math.floor(f / 8) % 2 === 0;
   const u = prog(f, F(T.u2), 10);
@@ -270,11 +314,27 @@ const Quote: React.FC<{ f: number; from: number; to: number }> = ({ f, from, to 
   });
   const caretLine = Math.min(QUOTE_LINES.length - 1, shown.findIndex((x, i) => x.length < QUOTE_LINES[i].length) === -1 ? QUOTE_LINES.length - 1 : shown.findIndex((x, i) => x.length < QUOTE_LINES[i].length));
   const caret = <span style={{ fontWeight: 400, opacity: typing || caretOn ? 1 : 0, marginLeft: 2 }}>|</span>;
+  const bp = prog(f, F(BASE_AT.from), F(BASE_AT.to - BASE_AT.from), (x) => x);
+  const baseShown = BASE.slice(0, Math.round(BASE.length * bp));
+  const chip = prog(f, F(CHIP_AT), 7);
+  const chipPop = f >= F(CHIP_AT) && f < F(CHIP_AT) + 10 ? 1 - (f - F(CHIP_AT)) / 10 : 0;
+  // 상자는 쳐지는 글에 맞춰 늘어난다(대화 입력칸처럼) — 맡기는 글만 있을 땐 작게, 줄이 시작될 때마다 한 줄씩, 예시 값 줄이 뜨면 그만큼
+  // 줄 i가 열리는 때 = 커서가 그 줄로 넘어가는 때(앞 줄을 다 친 때) — 커서가 상자 밖에 찍히지 않게
+  const lineAt = (i: number) => {
+    const cum = QUOTE_LINES.slice(0, i).reduce((a, l) => a + l.length, 0);
+    return (TYPE_KEYS.find(([, n]) => n >= cum) ?? [T.type, 0])[0];
+  };
+  const boxH = 262 + 120 * prog(f, F(T.type) - 14, 6) + [1, 2, 3].reduce((a, i) => a + 94 * prog(f, F(lineAt(i)) - 2, 6), 0) + 150 * prog(f, F(T.ex), 8);
   return (
-    <div style={{ position: 'absolute', left: 60, width: 860, top: 600, height: 700, fontFamily: KO, color: INK_D, opacity: out * box, transform: `translateY(${(1 - box) * 24}px)` }}>
+    <div style={{ position: 'absolute', left: 60, width: 860, top: 600, height: boxH, fontFamily: KO, color: INK_D, opacity: out * box, transform: `translateY(${(1 - box) * 24}px)` }}>
       <div style={{ position: 'absolute', inset: 0, borderRadius: 30, border: '3px solid rgba(23,25,29,0.16)', background: 'rgba(255,255,255,0.78)', boxSizing: 'border-box', boxShadow: '0 22px 46px rgba(0,0,0,0.08)' }} />
       <div style={{ position: 'absolute', left: 44, top: 38, fontWeight: 700, fontSize: 40, letterSpacing: -0.8, color: GREY_D }}>AI에게 보낼 글</div>
-      <div style={{ position: 'absolute', left: 44, top: 112, width: 790 }}>
+      <div style={{ position: 'absolute', left: 44, top: 98, fontWeight: 700, fontSize: 52, letterSpacing: -1.2, color: '#4F4C45' }}>
+        {baseShown}
+        {f >= F(BASE_AT.from) && f < F(T.type) - 12 ? <span style={{ fontWeight: 400, opacity: f < F(BASE_AT.to) + 4 || caretOn ? 1 : 0, marginLeft: 2 }}>|</span> : null}
+      </div>
+      <div style={{ position: 'absolute', left: 44, top: 180, opacity: chip, transform: `scale(${(0.8 + 0.2 * chip) * (1 + 0.08 * chipPop)})`, transformOrigin: '0% 50%', fontWeight: 800, fontSize: 36, letterSpacing: -0.6, background: BUTTER, color: INK_D, padding: '4px 16px', borderRadius: 8 }}>+ 붙일 한 줄</div>
+      <div style={{ position: 'absolute', left: 44, top: 246, width: 790 }}>
         {shown.map((l, i) => (
           <div key={i} style={{ fontWeight: 800, fontSize: 76, lineHeight: 1.24, letterSpacing: -2.2, minHeight: 94 }}>
             {i === 1 && l.length === QUOTE_LINES[1].length ? <U w={u}>{l}</U> : i === 2 && l.length > 0 ? <><U w={u}>{l.slice(0, 1)}</U>{l.slice(1)}</> : l}
@@ -282,7 +342,7 @@ const Quote: React.FC<{ f: number; from: number; to: number }> = ({ f, from, to 
           </div>
         ))}
       </div>
-      {/* 11-13 23시 최종 확인 「예시 값 줄이 작고 흐린데 1.5초만」 — 쳐지기가 끝난 21.8초부터 두 줄로 크고 짙게(3.7초) */}
+      {/* 11-13 23시 최종 확인 「예시 값 줄이 작고 흐린데 1.5초만」 — 두 줄로 크고 짙게, 11-14부터 말 「끝자리가」(23.5초)에 맞춰 */}
       <div style={{ position: 'absolute', left: 44, bottom: 36, fontWeight: 800, fontSize: 46, lineHeight: 1.2, letterSpacing: -1, color: '#4F4C45', opacity: prog(f, F(T.ex), 10), transform: `translateY(${(1 - prog(f, F(T.ex), 10)) * 12}px)` }}>
         예) 390,000 · 395,000
         <br />
@@ -296,7 +356,8 @@ const Quote: React.FC<{ f: number; from: number; to: number }> = ({ f, from, to 
 const EndCard: React.FC<{ f: number; from: number }> = ({ f, from }) => {
   if (f < from) return null;
   // 11-13 23시 최종 확인 「끝 저장 카드 글자가 화면에서 가장 작다」 — 위 화면 조각을 줄이고(0.74 → 0.6) 그 자리만큼 영수증 글을 키운다(아래 1428px 밑은 앱 단추 자리라 쓰지 않음)
-  const S = 0.6;
+  // 11-14 0시 최종 확인 「3번 「그 값들」이 가리키는 게 없다」 — 2번 아래에 예시 값 줄을 넣으려 위 화면 조각을 0.5배로
+  const S = 0.5;
   const card = prog(f, F(T.card) - 1, 3);
   const line = prog(f, F(T.hit2) + 2, 8);
   const glow = prog(f, F(T.hit2) + 2, 14);
@@ -316,12 +377,12 @@ const EndCard: React.FC<{ f: number; from: number }> = ({ f, from }) => {
         <Img src={staticFile('shots/new_val.png')} style={{ position: 'absolute', left: 22 * S, top: 10 * S, width: 832 * S, height: 335 * S }} />
         <div style={{ position: 'absolute', left: 28 * S, top: 350 * S, height: 8, borderRadius: 4, width: 650 * S * line, background: BUTTER, boxShadow: glow > 0 ? `0 0 ${30 * glow}px ${5 * glow}px rgba(245,196,69,0.45)` : undefined }} />
       </div>
-      <div style={{ position: 'absolute', left: 74, top: 802, fontWeight: 700, fontSize: 36, lineHeight: 1.22, letterSpacing: -0.6, color: '#5C5952', opacity: card }}>
+      <div style={{ position: 'absolute', left: 74, top: 762, fontWeight: 700, fontSize: 36, lineHeight: 1.22, letterSpacing: -0.6, color: '#5C5952', opacity: card }}>
         손님 결제 화면 · 고친 코드
         <br />
         예시 의뢰로 다시 띄운 실제 앱 화면
       </div>
-      <div style={{ position: 'absolute', left: 58, top: 904, width: 858, height: 522, opacity: paper, transform: `translateY(${(1 - paper) * 40}px)`, filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.10))' }}>
+      <div style={{ position: 'absolute', left: 58, top: 866, width: 858, height: 560, opacity: paper, transform: `translateY(${(1 - paper) * 40}px)`, filter: 'drop-shadow(0 16px 26px rgba(0,0,0,0.10))' }}>
         <div style={{ position: 'absolute', inset: 0, background: '#FFFEFA', clipPath: `polygon(${zig})` }} />
         <div style={{ position: 'absolute', left: 38, top: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontWeight: 800, fontSize: 36, letterSpacing: -0.6, background: BUTTER, color: INK_D, padding: '4px 16px', borderRadius: 8 }}>저장</span>
@@ -331,14 +392,15 @@ const EndCard: React.FC<{ f: number; from: number }> = ({ f, from }) => {
         {rows.map((r, i) => {
           const p = prog(f, r.at, 6);
           return (
-            <div key={i} style={{ position: 'absolute', left: 38, top: 118 + i * 82, display: 'flex', alignItems: 'baseline', opacity: p, transform: `translateX(${(1 - p) * -16}px)` }}>
+            <div key={i} style={{ position: 'absolute', left: 38, top: 118 + i * 82 + (i === 2 ? 28 : 0), display: 'flex', alignItems: 'baseline', opacity: p, transform: `translateX(${(1 - p) * -16}px)` }}>
               <div style={{ width: 46, fontWeight: 800, fontSize: 42, color: GREY_D, fontVariantNumeric: 'tabular-nums' }}>{r.n}</div>
               <div style={{ fontWeight: 800, fontSize: 49, letterSpacing: -1.5 }}>{r.text}</div>
             </div>
           );
         })}
-        <div style={{ ...dash, top: 372 }} />
-        <div style={{ position: 'absolute', left: 38, right: 44, top: 384, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', opacity: total }}>
+        <div style={{ position: 'absolute', left: 84, top: 266, fontWeight: 800, fontSize: 36, letterSpacing: -0.6, color: '#4F4C45', opacity: prog(f, F(T.r2) + 4, 6) }}>예) 390,000 · 395,000 · 395,500 · 12,345</div>
+        <div style={{ ...dash, top: 400 }} />
+        <div style={{ position: 'absolute', left: 38, right: 44, top: 412, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', opacity: total }}>
           <div style={{ fontWeight: 800, fontSize: 40, letterSpacing: -0.8, color: '#4F4C45' }}>넣은 값과 화면 값 차이</div>
           <div style={{ fontWeight: 800, fontSize: 84, letterSpacing: -2, transform: `scale(${1 + 0.12 * (1 - total)})`, transformOrigin: '100% 60%' }}><U w={total}>0원</U></div>
         </div>
@@ -354,7 +416,6 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
   const at = (s: number) => F(s) - OFF;
 
   const scene = t < T.hero ? 'A' : t < T.real ? 'B' : t < T.tests ? 'C' : t < T.line ? 'D' : t < T.after ? 'E' : 'F';
-  const dark = scene === 'C';
 
   // 컷마다 아주 천천히 다가감 + 들어올 때 1.035배 당김(화면 결 ④)
   let ci = 0;
@@ -375,9 +436,10 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
   }, 0);
   const pull = 1 + 0.035 * kick * kick;
 
+  // 11-14 0시: 실제 화면 장면도 크림 무대(8.0 · 13.2초 밝기가 딱 끊기던 것 없앰)
   return (
-    <AbsoluteFill style={{ background: dark ? BLACK : CREAM }}>
-      {!dark ? <AbsoluteFill style={{ background: `radial-gradient(620px 980px at ${lx}px 900px, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)` }} /> : null}
+    <AbsoluteFill style={{ background: CREAM }}>
+      <AbsoluteFill style={{ background: `radial-gradient(620px 980px at ${lx}px 900px, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%)` }} />
       <AbsoluteFill style={{ transform: `translate(${pan}px, ${rise}px) scale(${drift * pull})`, transformOrigin: '7% 55%' }}>
         {scene === 'A' ? <Tests f={f} to={F(T.hero)} /> : null}
         {scene === 'B' ? <Price f={f} from={F(T.hero)} drop={F(T.drop)} hit={F(T.hit)} to={F(T.real)} src="shots/old_val.png" mark="bad" /> : null}
@@ -392,8 +454,8 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
           <Head f={f} from={0} to={F(T.hero)} lines={['AI가 고친 결제 화면', '자동 시험은?']} size={88} step={F(0.5)} />
           <Head f={f} from={F(T.hero)} to={F(T.hit)} lines={['손님이 보는 결제 화면']} size={84} />
           <Head f={f} from={F(T.hit)} to={F(T.real)} lines={['손님 화면엔', <span key="u"><U>5천 원 더 비싸게</U></span>]} size={84} step={6} />
-          <Head f={f} from={F(T.real)} to={F(T.day)} lines={['만 원 단위로', '반올림해 버렸다']} color={INK} />
-          <Head f={f} from={F(T.day)} to={F(T.tests)} lines={['그날 실제 화면에 나갔다', '손님 받기 전이었다']} size={80} step={F(0.6)} color={INK} />
+          <Head f={f} from={F(T.real)} to={F(T.day)} lines={['만 원 단위로', '반올림해 버렸다']} />
+          <Head f={f} from={F(T.day)} to={F(T.tests)} lines={['그날 실제 화면에 나갔다', '손님 받기 전이었다']} size={80} step={F(0.6)} />
           <Head f={f} from={F(T.tests)} to={F(T.typeIn)} lines={['시험엔', '이 값이 없었다']} />
           <Head f={f} from={F(T.typeIn)} to={F(T.line)} lines={['넣어 보니', '바로 틀렸다']} step={F(1.7)} />
           <Head f={f} from={F(T.line)} to={F(T.after)} lines={['돈이 나오는 화면을 맡길 땐', '이 한 줄을 붙이세요']} size={76} step={F(2.0)} />
@@ -436,7 +498,7 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
                 </Sequence>
               ))}
               {/* 실제 화면 — 값 칸을 짚을 때 · 결제 문장 밑줄 · 다시 값 칸 */}
-              {[9.1, 11.0, 12.7].map((s) => (
+              {[9.05, 10.3, 10.9, 11.7, 12.5, 17.3, 17.8, 18.2, CHIP_AT].map((s) => (
                 <Sequence key={`p${s}`} from={at(s)}>
                   <Audio src={staticFile('sfx/tick.wav')} volume={0.26} />
                 </Sequence>
@@ -449,8 +511,8 @@ export const Film: React.FC<{ bgm?: boolean; voice?: boolean; bare?: boolean }> 
               <Sequence from={at(T.wrong)}>
                 <Audio src={staticFile('sfx/thud.wav')} volume={0.8} />
               </Sequence>
-              {Array.from({ length: 16 }, (_, i) => (
-                <Sequence key={`q${i}`} from={at(T.type + (i * (T.typeEnd - T.type)) / 16)}>
+              {TYPE_TICKS.map((s, i) => (
+                <Sequence key={`q${i}`} from={at(s)}>
                   <Audio src={staticFile(i % 2 ? 'sfx/tick.wav' : 'sfx/tick2.wav')} volume={0.16} />
                 </Sequence>
               ))}
