@@ -930,6 +930,58 @@ test('틀 2 + --그림지시문 — 장소 · 빛 · 인물 줄이 표 그대로
   assert.deepEqual(r4.항목들.filter((x) => x.항목 === '그림지시문').map((x) => x.등급), ['알림']);
 });
 
+test('틀 2 + --그림지시문 — 두 단계(그림단계 맨얼굴) 컷은 맨얼굴묘사로 견주고, <컷>_끝 · <컷>_가운데도 같은 규칙, _로 시작하는 공통 편집 지시문은 알림', { skip: !파이썬 && '파이썬 없음' }, () => {
+  // 「Still」(2026-11-15): 은색 칠 얼굴은 맨얼굴 판을 먼저 굽고 칠만 입히는 두 단계라, 1단계 지시문에는 칠 문장이 없다
+  const dir = 임시();
+  const 맨 = 'Sua is 28 years old - the same woman as in the reference, in this first pass with no stage make-up at all.';
+  const 고침 = (s) => { s.인물.수아.맨얼굴묘사 = 맨; 컷(s, 'C1').그림단계 = '맨얼굴'; };
+  const 표 = 틀읽기(); 고침(표);
+  const 맨글 = (d) => 표대로그림글(표, d).replace(표.인물.수아.묘사, 맨);
+  const 폴더 = path.join(dir, '두단계'); fs.mkdirSync(폴더);
+  for (const d of 표.detail) 쓰기(폴더, `${d.cut}.txt`, d.cut === 'C1' ? 맨글(d) : 표대로그림글(표, d));
+  쓰기(폴더, 'C1_끝.txt', 맨글(컷(표, 'C1')));
+  쓰기(폴더, 'C2_가운데.txt', 표대로그림글(표, 컷(표, 'C2')));
+  쓰기(폴더, 'C2_끝.txt', 표대로그림글(표, 컷(표, 'C2'), { 옷: false }));
+  쓰기(폴더, '_칠입히기.txt', `Edit [IMG1]. Only change: ${표.인물.수아.묘사}`);
+  const r = 틀돌리기(고침, ['--그림지시문', 폴더], dir);
+  const 그림 = (이름) => r.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 이름).map((x) => `${x.등급}: ${x.글}`);
+  assert.deepEqual(그림('C1'), ['통과: 장소 · 빛 · 인물 줄이 표 그대로']);
+  assert.deepEqual(그림('C1_끝'), ['통과: 장소 · 빛 · 인물 줄이 표 그대로']);
+  assert.deepEqual(그림('C2_가운데'), ['통과: 장소 · 빛 · 인물 줄이 표 그대로']);
+  assert.match(그림('C2_끝')[0], /^걸림: 인물 「수아」의 옷 문장이 글자 그대로 들어 있지 않다/);
+  assert.match(그림('_칠입히기')[0], /^알림: 편 공통 지시문\(컷과 견주지 않는다\)/);
+  assert.equal(r.코드, 1);
+  // 맨얼굴 컷에 칠한 묘사를 그대로 넣으면 맨얼굴묘사가 빠졌다고 걸린다
+  const 폴더2 = path.join(dir, '칠한채'); fs.mkdirSync(폴더2);
+  for (const d of 표.detail) 쓰기(폴더2, `${d.cut}.txt`, 표대로그림글(표, d));
+  const r2 = 틀돌리기(고침, ['--그림지시문', 폴더2], dir);
+  assert.match(r2.항목들.find((x) => x.항목 === '그림지시문' && x.컷 === 'C1').글, /인물 「수아」의 맨얼굴묘사 문장이 글자 그대로 들어 있지 않다/);
+  // 컷 도중에 들어오는 사람은 시작 그림에 없다 — 「그림인물」이 빈 목록이면 시작 그림은 그 사람 줄 없이 통과하고, 끝 그림은 「끝그림인물」(없으면 「인물」)로 본다
+  const 고침3 = (s) => { 컷(s, 'C2').그림인물 = []; };
+  const 표3 = 틀읽기(); 고침3(표3);
+  const 폴더3 = path.join(dir, '들어옴'); fs.mkdirSync(폴더3);
+  for (const d of 표3.detail) 쓰기(폴더3, `${d.cut}.txt`, d.cut === 'C2' ? 표대로그림글({ ...표3, 인물: {} }, { ...d, 인물: [] }) : 표대로그림글(표3, d));
+  쓰기(폴더3, 'C2_끝.txt', 표대로그림글({ ...표3, 인물: {} }, { ...컷(표3, 'C2'), 인물: [] }));
+  const r3 = 틀돌리기(고침3, ['--그림지시문', 폴더3], dir);
+  const 그림3 = (이름) => r3.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 이름).map((x) => x.등급);
+  assert.deepEqual(그림3('C2'), ['통과']);
+  assert.deepEqual(그림3('C2_끝'), ['걸림']);
+  // 표의 장소 문장 속 소품 낱말(넓은 그림 기준)은 지시문을 쓴 사람의 말이 아니라 확인을 띄우지 않는다
+  const 고침4 = (s) => { s.장면.부엌밤.장소 += ' Clean bowls are stacked on a shelf by the window.'; };
+  const 표4 = 틀읽기(); 고침4(표4);
+  const 폴더4 = path.join(dir, '장소낱말'); fs.mkdirSync(폴더4);
+  for (const d of 표4.detail) 쓰기(폴더4, `${d.cut}.txt`, 표대로그림글(표4, d));
+  쓰기(폴더4, 'C4_끝.txt', 표대로그림글(표4, 컷(표4, 'C4'), { 더: ['A second bowl appears beside it.'] }).replace(표4.소품.빈그릇.생김새, ''));
+  const r4 = 틀돌리기(고침4, ['--그림지시문', 폴더4], dir);
+  const 확인4 = r4.항목들.filter((x) => x.항목 === '그림지시문' && x.등급 === '확인').map((x) => x.컷);
+  assert.deepEqual(확인4, [], JSON.stringify(r4.항목들.filter((x) => x.항목 === '그림지시문')));
+  assert.match(r4.항목들.find((x) => x.항목 === '그림지시문' && x.컷 === 'C4_끝').글, /소품 「빈그릇」의 생김새/);
+  // 컷 도중에 화면을 떠나는 소품은 「끝소품」에 적으면 끝 그림에서는 생김새를 요구하지 않는다
+  const r5 = 틀돌리기((s) => { 고침4(s); 컷(s, 'C4').끝소품 = { 빈그릇: '화면밖' }; }, ['--그림지시문', 폴더4], dir);
+  // 걸림은 없어지고, 화면 밖이라 적은 그릇을 지시문이 다시 부르면(A second bowl …) 확인이 남는다
+  assert.deepEqual(r5.항목들.filter((x) => x.항목 === '그림지시문' && x.컷 === 'C4_끝').map((x) => x.등급), ['통과', '확인']);
+});
+
 // ───────── 내기 도구(크레딧내기.py · 드리미나내기.py)의 굽기 전 검사 — 계정 · 잔액 · 네트워크 없이, --실행 없이 ─────────
 const 굽기전 = (...args) => spawnSync('python', ['-I', '-X', 'utf8', path.join(픽스처, '굽기전_시험.py'), ...args], { encoding: 'utf8', maxBuffer: 1 << 24 });
 const 굳은글 = 지시문글({ 연기: 'at about 0.4 s she stands perfectly still by the stove, expressionless.' });

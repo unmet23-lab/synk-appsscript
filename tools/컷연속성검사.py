@@ -1850,9 +1850,15 @@ def 그림지시문항목(seq, r, 경로들):
     덮인낱말 = {w for x in 소품줄.values() for w in x["낱말"]}
     줄없는탈것 = {w: 낱말정규식([w]) for w in _탈것낱말 if w not in 덮인낱말}
     탈것색 = {}   # 표에 줄이 없는 탈것 낱말 → {컷: 그 컷의 지시문에서 그 낱말에 붙은 색}
+    짝들 = []   # (견줄 이름, 컷 줄, 파일) — 시작 그림 <컷>.txt는 꼭 있어야 하고, 끝 · 가운데 그림 <컷>_끝.txt · <컷>_가운데.txt는 있으면 같은 규칙으로 본다
     for cut in 컷들:
         d = next(x for x in det if x["cut"] == cut); f = 파일.get(cut)
-        if f is None or not f.exists():
+        짝들.append((cut, d, f if f is not None and f.exists() else None))
+        for 꼬리 in ("_가운데", "_끝"):
+            g = 파일.get(f"{cut}{꼬리}")
+            if g is not None and g.exists(): 짝들.append((f"{cut}{꼬리}", d, g))
+    for cut, d, f in 짝들:
+        if f is None:
             r.더함("그림지시문", cut, "주의", f"이미지 지시문 파일이 없다: {cut}.txt"); continue
         원문 = f.read_text(encoding="utf-8")
         쓴파일.add(f); 글 = 한칸(원문); 빠짐 = []
@@ -1860,20 +1866,30 @@ def 그림지시문항목(seq, r, 경로들):
         for k in ("장소", "빛"):
             v = (장면 or {}).get(k) if isinstance(장면, dict) else None
             if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"장면 「{d.get('장면')}」의 {k}")
-        for 누구 in (d.get("인물") if isinstance(d.get("인물"), list) else []):
+        맨얼굴 = d.get("그림단계") == "맨얼굴"   # 칠한 얼굴을 두 단계로 굽는 컷 — 1단계 판은 인물의 「맨얼굴묘사」로 견주고, 칠은 편 공통 편집 지시문(_로 시작하는 파일)이 맡는다
+        # 그 그림에 실제로 나오는 사람 — 컷 도중에 들어오는 사람은 시작 그림에 없다(「그림인물」), 끝 그림은 「끝그림인물」. 없으면 컷의 「인물」
+        칸 = "끝그림인물" if cut.endswith("_끝") else ("그림인물" if not cut.endswith("_가운데") else None)
+        사람들 = d.get(칸) if 칸 and isinstance(d.get(칸), list) else d.get("인물")
+        for 누구 in (사람들 if isinstance(사람들, list) else []):
             p = 인물표.get(누구) if isinstance(누구, str) else None
             for k in ("묘사", "옷"):
-                v = p.get(k) if isinstance(p, dict) else None
-                if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"인물 「{누구}」의 {k}")
+                kk = "맨얼굴묘사" if (k == "묘사" and 맨얼굴 and isinstance(p, dict) and not 빈칸(p.get("맨얼굴묘사"))) else k
+                v = p.get(kk) if isinstance(p, dict) else None
+                if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"인물 「{누구}」의 {kk}")
         # 소품: 표에 그 컷에 나온다고 적은 소품은 생김새 문장이 글자 그대로(인물 옷과 같은 대조). 색은 표의 생김새 줄을 걷어 낸 나머지 글에서 그 이름씨에 붙은 것만 본다
         나머지 = 원문
         for pat in 생김새걷기: 나머지 = pat.sub(" ", 나머지)
+        for k in ("장소", "빛"):   # 표의 장소 · 빛 문장은 넓은 그림 기준이라 클로즈업에도 그대로 들어간다 — 그 안의 소품 낱말은 지시문을 쓴 사람의 말이 아니다
+            v = (장면 or {}).get(k) if isinstance(장면, dict) else None
+            if not 빈칸(v): 나머지 = re.sub(r"\s+".join(re.escape(w) for w in 한칸(v).split()), " ", 나머지)
         그대로 = {이름: not 빈칸(x["생김새"]) and 한칸(x["생김새"]) in 글 for 이름, x in 소품줄.items()}
         확인들 = []
+        끝칸 = d.get("끝소품") if cut.endswith("_끝") and isinstance(d.get("끝소품"), dict) else {}   # 컷 도중에 화면을 떠나거나 들어오는 소품 — 끝 그림만 따로 적는다
+        나오나 = lambda 이름: (끝칸[이름] not in _소품없음) if 이름 in 끝칸 else d["cut"] in 나옴.get(이름, [])
         for 이름, x in 소품줄.items():
             짝 = [n for n, y in 소품줄.items() if y["낱말"] & x["낱말"]]   # 같은 낱말로 부르는 줄(빨간 차 · 파란 차)은 색을 함께 받아 준다
             색, 구절, n = 붙은색들(나머지, x["정규식"])
-            if cut in 나옴.get(이름, []):
+            if 나오나(이름):   # 끝 · 가운데 그림도 그 컷의 소품 칸으로 본다(끝 그림은 「끝소품」이 있으면 그것으로)
                 if not 그대로[이름] and not 빈칸(x["생김새"]): 빠짐.append(f"소품 「{이름}」의 생김새")
             elif n and not any(그대로[k] for k in 짝):
                 확인들.append(f"지시문에 「{x['정규식'].search(나머지).group(0)}」이(가) 나오는데 소품 「{이름}」의 생김새 문장이 없다 — 이 컷에 나오면 표의 생김새 줄을 그대로 쓰고 컷의 「소품」 칸에도 적는다(51)")
@@ -1881,7 +1897,7 @@ def 그림지시문항목(seq, r, 경로들):
             if 색 - 허용:
                 확인들.append(f"소품 「{이름}」에 표에 없는 색 「{' · '.join(sorted(색 - 허용))}」 — 「{구절[0]}」(표의 색: {' · '.join(sorted(허용)) or '없음'}). 같은 {이름}이면 색을 따로 적지 않고 표의 생김새 줄만 쓴다(51)")
         for w, pat in 줄없는탈것.items():
-            색, _, n = 붙은색들(원문, pat)
+            색, _, n = 붙은색들(나머지, pat)   # 장소 · 빛 문장 속 탈것은 모든 컷에 같은 글이라 색이 갈릴 수 없다
             if n: 탈것색.setdefault(w, {})[cut] = 색
         if 빠짐: r.더함("그림지시문", cut, "걸림", f"{' · '.join(빠짐)} 문장이 글자 그대로 들어 있지 않다 — 이미지 지시문은 표의 장소 · 빛 · 인물 · 소품 줄을 그대로 쓴다(G11 · 51)")
         else: r.더함("그림지시문", cut, "통과", "장소 · 빛 · 인물 줄이 표 그대로")
@@ -1896,7 +1912,9 @@ def 그림지시문항목(seq, r, 경로들):
         else:
             r.더함("그림지시문", "표", "주의", f"탈것 「{w}」이(가) 그림 지시문 {len(컷색)}컷({' · '.join(list(컷색)[:6])}{' …' if len(컷색) > 6 else ''})에 나오는데 소품 표에 줄이 없다 — 같은 탈것이면 {한줄}(색을 안 적은 컷은 모델이 색을 지어낸다 · 51)")
     for f in dict.fromkeys(파일.values()):
-        if f not in 쓴파일 and f.exists(): r.더함("그림지시문", f.stem, "주의", f"컷표에 없는 컷 이름의 지시문 파일: {f.name}")
+        if f in 쓴파일 or not f.exists(): continue
+        if f.stem.startswith("_"): r.더함("그림지시문", f.stem, "알림", f"편 공통 지시문(컷과 견주지 않는다): {f.name}")
+        else: r.더함("그림지시문", f.stem, "주의", f"컷표에 없는 컷 이름의 지시문 파일: {f.name}")
 
 
 # ───────── 그림 · 영상 재기 ─────────

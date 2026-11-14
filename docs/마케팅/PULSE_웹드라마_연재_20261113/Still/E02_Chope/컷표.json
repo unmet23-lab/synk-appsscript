@@ -28,8 +28,10 @@
   "인물": {
     "지호": {
       "묘사": "Ji-ho is 29 - a mature adult Korean man, the same man as in the reference images: slim oval face, defined jawline, straight nose bridge, eyes with a subtle inner double eyelid. As a living statue his face, ears, neck and hands are covered in a thin layer of metallic silver body paint - thin enough that the structure of his face and the fine texture of his skin show through; his eyes are not painted - the whites and irises are natural, clear and moist.",
+      "맨얼굴묘사": "Ji-ho is 29 - a mature adult Korean man, the same man as in the reference images: slim oval face, defined jawline, straight nose bridge, eyes with a subtle inner double eyelid. He is in his living-statue costume, and his hands are already covered in a thin layer of metallic silver body paint, but in this first pass his face, ears and neck are still bare, natural skin with no paint at all; his eyes are clear and moist.",
       "옷": "A silver-painted fedora and an old-fashioned three-piece suit, shirt, tie and leather shoes, all painted the same satin metallic silver.",
       "기준그림": "ref/인물_지호_은색.png",
+      "맨얼굴기준그림": "ref/인물_지호_맨얼굴.png",
       "설정": {
         "믿음": "사람들 앞에서 입을 열면 또 무너진다 — 서울의 무대에서 대사를 잊고 굳은 뒤로",
         "버릇": "관객 앞에서는 사람다운 움직임을 숨긴다. 꼭 움직여야 하면 아주 느리고 마디마다 끊기는 동상의 기계 동작으로 한다. 사람처럼 매끄럽게 움직이는 것은 아무도 안 볼 때뿐이다(3화의 구조는 몸 전체가 사람처럼 빠르게 움직이는 반사 동작이라 이것과 속도와 몸 쓰임이 다르다). 이와 따로, 폰 렌즈가 가까이 오면 눈이 저도 모르게 짧게 비켜 가고 짧은 숨을 한 번 삼키며, 그때 그의 귀에만 빈 극장의 울림이 작게 깔린다(소리로만 — 1화보다 2화가 조금 크고 3화에서 가장 크다. 까닭은 5~7화)",
@@ -387,7 +389,8 @@
         "도시락": "아주머니 손에",
         "일정판": "화면밖",
         "물병": "지호 손에"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C02",
@@ -487,7 +490,8 @@
         "도시락": "아주머니 손에",
         "일정판": "화면밖",
         "물병": "지호 손에"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C04",
@@ -596,7 +600,8 @@
       },
       "소품행동": {
         "물병": "왼손에서 상자 발치 팁 깡통 옆에 내려놓는다(0.5~1.0s) — 이 뒤로 그의 손에 물병은 없다"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C06",
@@ -648,7 +653,8 @@
         "도시락": "아주머니 손에",
         "일정판": "화면밖",
         "물병": "화면밖"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C07",
@@ -880,7 +886,8 @@
         "도시락": "아주머니 손에",
         "일정판": "화면밖",
         "물병": "상자 발치"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C11",
@@ -924,7 +931,8 @@
         "도시락": "화면밖",
         "일정판": "화면밖",
         "물병": "화면밖"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C12",
@@ -1123,7 +1131,8 @@
         "도시락": "화면밖",
         "일정판": "화면밖",
         "물병": "화면밖"
-      }
+      },
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C16",
@@ -1271,7 +1280,8 @@
         "도시락": "아주머니 손에",
         "일정판": "화면밖",
         "물병": "화면밖"
-      }
+      },
+      "그림단계": "맨얼굴"
     }
   ],
   "소리사건": [

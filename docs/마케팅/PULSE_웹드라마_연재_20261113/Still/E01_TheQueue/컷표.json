@@ -49,8 +49,10 @@
   "인물": {
     "지호": {
       "묘사": "Ji-ho is 29 - a mature adult Korean man, the same man as in the reference images: slim oval face, defined jawline, straight nose bridge, eyes with a subtle inner double eyelid. As a living statue his face, ears, neck and hands are covered in a thin layer of metallic silver body paint - thin enough that the structure of his face and the fine texture of his skin show through; his eyes are not painted - the whites and irises are natural, clear and moist.",
+      "맨얼굴묘사": "Ji-ho is 29 - a mature adult Korean man, the same man as in the reference images: slim oval face, defined jawline, straight nose bridge, eyes with a subtle inner double eyelid. He is in his living-statue costume, and his hands are already covered in a thin layer of metallic silver body paint, but in this first pass his face, ears and neck are still bare, natural skin with no paint at all; his eyes are clear and moist.",
       "옷": "A silver-painted fedora and an old-fashioned three-piece suit, shirt, tie and leather shoes, all painted the same satin metallic silver.",
       "기준그림": "ref/인물_지호_은색.png",
+      "맨얼굴기준그림": "ref/인물_지호_맨얼굴.png",
       "설정": {
         "믿음": "사람들 앞에서 입을 열면 또 무너진다 — 서울의 무대에서 대사를 잊고 굳은 뒤로",
         "버릇": "들킬 것 같으면 숨을 참고 눈만 피한다. 관객 앞에서는 사람다운 움직임을 숨긴다(공통 21) — 꼭 움직여야 하면 「살아 있는 동상」의 기계 동작(아주 느리고 마디마다 끊기는 절과 손짓)으로 하고, 그 밖에는 눈동자와 입꼬리만 쓴다. 사람처럼 매끄럽게 움직이는 것은 아무도 안 볼 때뿐이다. 렌즈가 가까이 오면 공연 규칙과 따로 몸이 먼저 반응한다 — 공연 자세의 몸은 그대로 두고 눈이 짧게 비켜 가고 숨을 삼키며, 거의 들리지 않는 빈 극장의 울림이 깔린다(공통 19 · 22)",
@@ -362,7 +364,8 @@
       "소품행동": {
         "컵": "로지 왼손이 위로 편 빈 은색 손바닥에 올려놓고, 손등 아래에서 받쳐 올리며 손가락을 컵 쪽으로 접어 감싸게 한다(0.6~2.4s)"
       },
-      "실외": true
+      "실외": true,
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C02",
@@ -482,7 +485,8 @@
         "일정판": "화면밖",
         "수건": "화면밖"
       },
-      "실외": true
+      "실외": true,
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C04",
@@ -630,7 +634,8 @@
       "소품행동": {
         "컵": "손대지 않은 채 다 식었다 — 김이 없고, 오래 쥔 그의 은색 손가락 자국이 컵 겉에 묻었다"
       },
-      "실외": true
+      "실외": true,
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C07",
@@ -822,7 +827,8 @@
         "일정판": "화면밖",
         "수건": "화면밖"
       },
-      "실외": true
+      "실외": true,
+      "그림단계": "맨얼굴"
     },
     {
       "cut": "C11",

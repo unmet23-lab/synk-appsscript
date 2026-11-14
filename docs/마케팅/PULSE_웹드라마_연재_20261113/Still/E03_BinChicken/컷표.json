@@ -28,6 +28,8 @@
   "인물": {
     "지호": {
       "묘사": "Ji-ho is 29 - a mature adult Korean man, the same man as in the reference images: slim oval face, defined jawline, straight nose bridge, eyes with a subtle inner double eyelid. As a living statue his face, ears, neck and hands are covered in a thin layer of metallic silver body paint - thin enough that the structure of his face and the fine texture of his skin show through; his eyes are not painted - the whites and irises are natural, clear and moist.",
+      "맨얼굴묘사": "Ji-ho is 29 - a mature adult Korean man, the same man as in the reference images: slim oval face, defined jawline, straight nose bridge, eyes with a subtle inner double eyelid. He is in his living-statue costume, and his hands are already covered in a thin layer of metallic silver body paint, but in this first pass his face, ears and neck are still bare, natural skin with no paint at all; his eyes are clear and moist.",
+      "맨얼굴기준그림": "ref/인물_지호_맨얼굴.png",
       "옷": "A silver-painted fedora and an old-fashioned three-piece suit, shirt, tie and leather shoes, all painted the same satin metallic silver.",
       "기준그림": "ref/인물_지호_은색.png",
       "설정": {
@@ -245,6 +247,8 @@
     },
     {
       "cut": "C05", "t": 10.0, "dur": 3.0, "in": 0.5, "out": 3.5, "band": "승",
+      "그림인물": [],
+      "끝소품": {"따오기": "화면밖"},
       "시작그림": "정지/C05.png",
       "끝그림": "정지/C05_끝.png",
       "line": "바닥 높이 — 따오기가 뱉은 튜브가 돌바닥을 굴러 쓰레기통 뒤 구석으로 들어가고, 쫓아온 로지의 운동화가 선다",
@@ -267,6 +271,7 @@
     },
     {
       "cut": "C06", "t": 13.0, "dur": 1.2, "in": 0.5, "out": 1.7, "band": "승",
+      "그림단계": "맨얼굴",
       "시작그림": "정지/C06.png",
       "끝그림": "정지/C06_끝.png",
       "line": "동상의 눈 극접사 — 얼굴은 그대로이고 눈동자만 아래로 내려가 한 번 깜빡인다",
@@ -335,6 +340,7 @@
     },
     {
       "cut": "C09", "t": 20.5, "dur": 1.0, "in": 0.5, "out": 1.5, "band": "전",
+      "그림단계": "맨얼굴",
       "시작그림": "정지/C09.png",
       "끝그림": "정지/C09_끝.png",
       "line": "삽입 — 손바닥을 위로 편 동상의 몸 전체가 사람처럼 빠르게 반사로 움직여, 한 다리가 상자 아래 계단으로 쑥 내려간다",
@@ -385,6 +391,7 @@
     },
     {
       "cut": "C11", "t": 26.5, "dur": 3.0, "in": 0.5, "out": 3.5, "band": "전",
+      "그림단계": "맨얼굴",
       "시작그림": "정지/C11.png",
       "끝그림": "정지/C11_끝.png",
       "line": "동상 극접사 — 사방에서 겨눈 렌즈, 비켜 간 눈동자 앞에 또 렌즈, 광장 소리가 빠진 1.5초에 무대 조명처럼 번지는 렌즈 반사와 넘어가는 목울대(자라난 겁)",
@@ -457,10 +464,10 @@
       "시작그림": "정지/C13c.png",
       "line": "봉지 소리에 달려든 따오기의 길고 검은 부리와 목이 화면으로 쑥 들어와 선글라스 남자의 감자튀김을 채 간다 — 비명과 웃음에 폰들이 따오기 쪽으로 돌아간다",
       "장면": "부두낮", "인물": ["부두사람들"], "실외": true,
-      "구도": "허리 위 · 사람들 쪽에서 · 화면 가운데 옆모습의 선글라스 남자 — 한 손으로 폰을 동상 쪽으로 들고, 다른 손은 허리 높이에 감자튀김 상자를 들고 있다 — 그 옆 흐린 엄마 · 화면 오른쪽 아래는 비어 있다(부리가 들어올 자리)",
+      "구도": "허리 위 · 사람들 쪽에서 · 화면 가운데 옆모습의 선글라스 남자 — 한 손으로 폰을 동상 쪽으로 들고, 다른 손은 허리 높이에 감자튀김 상자를 들고 있다 — 그 옆 흐린 엄마 · 화면 오른쪽 아래에 따오기의 부리와 목이 반쯤 들어와 있다",
       "카메라": "0.5~2.5s(쓰는 구간, 컷 2.0초) 고정",
       "연기": [
-        { "t": 0.6, "무엇": "화면 오른쪽 아래에서 따오기의 길고 검은 부리와 털 없는 검은 목이 쑥 들어와 남자 손의 감자튀김 상자를 물고 채 간다 — 부리와 목은 화면 안에 보이고, 몸통은 화면 밖이다" },
+        { "t": 0.6, "무엇": "화면 오른쪽 아래에 반쯤 들어와 있던 따오기의 길고 검은 부리와 털 없는 검은 목이 남자 손의 감자튀김 상자를 물고 채 간다 — 부리와 목은 화면 안에 보이고, 몸통은 화면 밖이다" },
         { "t": 0.9, "무엇": "남자가 짧게 비명을 지르며 빈손을 든 채 펄쩍 물러선다" },
         { "t": 1.6, "무엇": "끝 모습 — 둘레에서 웃음이 터지고, 엄마와 남자의 폰이 화면 오른쪽(달아나는 따오기 쪽)으로 돌아간다" }
       ],
@@ -469,7 +476,7 @@
       "소품": { "상자": "화면밖", "시식대": "화면밖", "선크림": "화면밖", "폰": "화면밖", "따오기": "감자튀김 상자를 물고 달아남", "과자봉지": "화면밖", "일정판": "화면밖", "감자튀김": "따오기 부리에" },
       "소품행동": {
         "감자튀김": "따오기가 부리로 물어 남자 손에서 채 간다 — 부리와 목은 화면 안에 보인다(0.6~0.9s)",
-        "따오기": "화면 오른쪽 아래에서 부리와 목을 쑥 들이밀어 감자튀김 상자를 물고 화면 밖으로 빠진다(0.6~1.1s)"
+        "따오기": "첫 장부터 화면 오른쪽 아래에 부리와 목이 반쯤 들어와 있다가, 감자튀김 상자를 물고 화면 밖으로 빠진다(0.5~1.1s)"
       }
     },
     {
@@ -490,6 +497,7 @@
     },
     {
       "cut": "C14", "t": 40.0, "dur": 2.5, "in": 0.5, "out": 3.0, "band": "전",
+      "그림단계": "맨얼굴",
       "시작그림": "정지/C14.png",
       "끝그림": "정지/C14_끝.png",
       "line": "폰들이 따오기를 쫓는 사이 그가 한 걸음에 상자 위로 올라서고, 눈을 길게 감았다 뜬다",
@@ -519,7 +527,7 @@
       ],
       "넘어옴": "몇 시간 뒤 해 질 녘 — 그는 상자까지 챙겨 이미 떠났다",
       "소리": "느린 어쿠스틱 기타로 바뀐 같은 선율 · 파도 · 먼 뱃고동",
-      "소품": { "상자": "치워짐", "시식대": "펼친 채 · 파라솔만 접힘", "선크림": "물가 계단 옆 빈자리 바닥에", "폰": "화면밖", "따오기": "화면밖", "과자봉지": "화면밖", "일정판": "시식대 옆", "감자튀김": "화면밖" }
+      "소품": { "상자": "없음", "시식대": "펼친 채 · 파라솔만 접힘", "선크림": "물가 계단 옆 빈자리 바닥에", "폰": "화면밖", "따오기": "화면밖", "과자봉지": "화면밖", "일정판": "시식대 옆", "감자튀김": "화면밖" }
     },
     {
       "cut": "C15b", "t": 45.0, "dur": 2.0, "in": 0.5, "out": 2.5, "band": "결",
