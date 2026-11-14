@@ -178,6 +178,24 @@ test('view: 처음 값은 간단히(index.html), 간단히에도 할 일 설명�
   for (const f of ['skills-shot-migrate', 'skills-shot-confirm', 'skills-shot-confirm-action', 'skills-shot-at', 'skills-shot-private', 'skills-shot-gems', 'gemini-guide-5-slash']) assert.ok(fs.existsSync(path.join(__dirname, '../assets', `${f}.webp`)), f);
 });
 
+test('view: 세 보기 모두에 SHIFT 강의 문의 구역이 있고, 인쇄에서는 저장 · 강의 · 반응 구역이 함께 숨어 번호가 건너뛰지 않는다', () => {
+  const a = { where: 'both', who: 'mine', account: 'personal', gptHas: ['drafts'], gemHas: ['plain'] };
+  const rec = run(a);
+  for (const layout of ['quick', 'guided', 'deep']) {
+    const h = V.result({ rec, answers: a, layout, plan: null, checks: {}, feedbackGiven: null, content: C }).html;
+    const sec = (h.match(/<section class="([^"]*)"><h2[^>]*>[^]*?<\/section>/g) || []);
+    const lec = sec.find(x => x.includes('AI 특강이 필요하면'));
+    assert.ok(lec, layout);
+    assert.match(lec, /^<section class="block no-print">/, layout);
+    assert.match(lec, /href="https:\/\/synk\.im\/shift\/#services"/, layout);
+    assert.match(lec, /aria-hidden="true"/, layout);
+    assert.doesNotMatch(lec, /↗/, layout);
+    // 번호 붙은 구역 가운데 인쇄에 남는 것은 숨는 것보다 앞에만 있다(종이의 번호가 이어진다)
+    const kinds = sec.map(x => /no-print/.test(x.slice(0, 40)));
+    assert.ok(kinds.lastIndexOf(false) < kinds.indexOf(true) || kinds.indexOf(true) < 0, layout + ' ' + kinds.join(','));
+  }
+});
+
 test('sanitize: 모르는 값은 버리고, 공유 링크(#r=)로 와도 안전하다', () => {
   assert.deepEqual(R.sanitize({ where: 'x', who: 'mine', gptHas: ['files', 'zzz'], evil: '<script>' }), { who: 'mine', gptHas: ['files'] });
   const rec = run({ where: '<img onerror=1>', who: 'mine' });
