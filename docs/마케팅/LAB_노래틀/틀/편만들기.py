@@ -79,7 +79,12 @@ def lay_claps(wav, mp3, samples, rest, first, beat, gain_db):
         c = cut[i % len(cut)]
         a_ = int(t * gs.SR)
         n = min(len(c), len(y) - a_)
-        y[a_:a_ + n] += c[:n]
+        g = 1.0
+        for _ in range(40):  # 손뼉 자리 봉우리가 0.95를 넘지 않을 때까지 그 손뼉만 줄인다 — 곡 전체를 낮추면 손뼉 판만 1.7dB 작게 들렸다(11-14)
+            if np.abs(y[a_:a_ + n] + c[:n] * g).max() <= 0.95:
+                break
+            g *= 0.89
+        y[a_:a_ + n] += c[:n] * g
     peak = float(np.abs(y).max())
     if peak > 0.99:
         y *= 0.99 / peak
