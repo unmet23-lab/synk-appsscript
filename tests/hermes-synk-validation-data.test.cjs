@@ -7,7 +7,11 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const {validateData}=require('../tools/hermes-synk/validation-data.cjs');
 const helpers=require('../tools/hermes-synk/validation.cjs');
-const repo=path.resolve(__dirname,'..'),sha=x=>crypto.createHash('sha256').update(x).digest('hex');
+const {공용작업본}=require('../tools/lib/공용작업본.js');
+// 운영에서 헤르메스는 작업 기록의 repo_root로 공용 작업본(plugin REPO_ROOT)을 넘기고, 도구는 그곳의 영상/node_modules에서
+// ajv·typescript를 찾는다. 시험도 같은 repo_root를 줘야 node_modules 없는 새 사본(세션·예약 회차 워크트리)에서 운영과 같게 돈다(2026-11-14).
+// 공용 작업본이나 보통 클론(CI)에서는 shared가 repo와 같다. 어디에도 런타임이 없으면 도구는 그대로 RUNTIME_UNAVAILABLE로 닫힌다.
+const repo=path.resolve(__dirname,'..'),shared=공용작업본(repo),sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 function fixture(t,{files,changes,sourceFiles={},checks}){
   const base=fs.mkdtempSync(path.join(os.tmpdir(),'synk-data-'));
   t.after(()=>{if(path.dirname(path.resolve(base))!==path.resolve(os.tmpdir())||!path.basename(base).startsWith('synk-data-'))throw new Error('Unsafe cleanup');fs.rmSync(base,{recursive:true,force:true});});
@@ -16,7 +20,7 @@ function fixture(t,{files,changes,sourceFiles={},checks}){
   for(const [rel,text]of Object.entries(files))put(candidateRoot,rel,text);
   for(const [rel,text]of Object.entries(sourceFiles))put(sourceRoot,rel,text);
   const fixed=changes.map(change=>{if(change.kind==='add')return {...change,beforeSha256:null};const before=sourceFiles[change.path]??'';put(sourceRoot,change.path,before);return {...change,beforeSha256:sha(before)};});
-  return {taskDir:base,request:{source_root:repo,repo_root:repo},prepared:{candidateRoot,sourceRoot,changes:fixed,candidateFiles:Object.keys(files).map(path=>({path}))},report:{checks},evidence,env:helpers.cleanEnvironment(path.join(base,'environment')),helpers};
+  return {taskDir:base,request:{source_root:repo,repo_root:shared},prepared:{candidateRoot,sourceRoot,changes:fixed,candidateFiles:Object.keys(files).map(path=>({path}))},report:{checks},evidence,env:helpers.cleanEnvironment(path.join(base,'environment')),helpers};
 }
 const SCHEMA=JSON.stringify({type:'object',required:['limit'],additionalProperties:false,properties:{limit:{type:'integer',minimum:1,maximum:100}}});
 function jsonFixture(t,{data='{"limit":5}',schema=SCHEMA,body="const value=require('../data.json');assert.equal(value.limit,5);",changes=[{path:'data.json',kind:'modify'}],extra={},sourceExtra={}}={}){
@@ -142,7 +146,7 @@ test('TSX uses the installed JSX runtime and verifies executed component output'
 function trustedFixtureRuntime(f,{dependency:fixtureDependency}={}){
   const root=f.prepared.sourceRoot,compiler=path.join(root,'node_modules/typescript');fs.mkdirSync(path.join(compiler,'bin'),{recursive:true});
   fs.writeFileSync(path.join(compiler,'package.json'),JSON.stringify({name:'typescript',version:'7.0.2-fixture'}));
-  const officialCompiler=path.join(repo,'영상/node_modules/typescript/bin/tsc');
+  const officialCompiler=path.join(shared,'영상/node_modules/typescript/bin/tsc');
   fs.writeFileSync(path.join(compiler,'bin/tsc'),"const r=require('node:child_process').spawnSync(process.execPath,["+JSON.stringify(officialCompiler)+",...process.argv.slice(2)],{stdio:'inherit',env:process.env});process.exit(r.status??1);");
   if(fixtureDependency){const pkg=path.join(root,'node_modules/fixture-runtime');fs.mkdirSync(pkg);for(const [rel,text]of Object.entries({'package.json':JSON.stringify({name:'fixture-runtime',version:'1.0.0',main:'index.cjs',types:'index.d.ts',...fixtureDependency}),'index.cjs':'exports.value=1;','index.d.ts':'export declare const value:number;'}))fs.writeFileSync(path.join(pkg,rel),text);}
   f.request.source_root=root;return path.join(root,'node_modules');

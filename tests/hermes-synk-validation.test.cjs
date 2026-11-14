@@ -6,6 +6,10 @@ const os=require('node:os');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const {validateTask,tapSummary,cleanEnvironment,spansExecuted}=require('../tools/hermes-synk/validation.cjs');
+const {공용작업본}=require('../tools/lib/공용작업본.js');
+// 운영의 작업 기록처럼 repo_root에 공용 작업본(plugin REPO_ROOT)을 둔다. 데이터 검증 도구가 그곳의 영상/node_modules에서
+// ajv·typescript를 찾으므로, node_modules 없는 새 사본(세션·예약 회차 워크트리)에서도 운영과 같게 돈다(2026-11-14).
+const sharedRoot=공용작업본(path.resolve(__dirname,'..'));
 function fixture(t,{files,changes,sourceFiles={},checks=[],goal='completed'}={}){
   const base=fs.mkdtempSync(path.join(os.tmpdir(),'synk-validation-'));
   t.after(()=>{if(path.dirname(path.resolve(base))!==path.resolve(os.tmpdir())||!path.basename(base).startsWith('synk-validation-'))throw new Error('Fixture cleanup escaped temp root');fs.rmSync(base,{recursive:true,force:true});});
@@ -13,7 +17,7 @@ function fixture(t,{files,changes,sourceFiles={},checks=[],goal='completed'}={})
   fs.mkdirSync(candidateRoot,{recursive:true});fs.mkdirSync(work);fs.mkdirSync(sourceRoot);
   const content=files||{'docs/note.md':'A short verified note.\n'};
   for(const [rel,text]of Object.entries(content)){const file=path.join(candidateRoot,rel);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,text);}
-  fs.writeFileSync(path.join(taskDir,'request.json'),JSON.stringify({id:path.basename(taskDir),integration_policy:'auto_verified_v1',workspace_root:work}));
+  fs.writeFileSync(path.join(taskDir,'request.json'),JSON.stringify({id:path.basename(taskDir),integration_policy:'auto_verified_v1',workspace_root:work,repo_root:sharedRoot}));
   fs.writeFileSync(path.join(taskDir,'native.exit'),'0');
   fs.writeFileSync(path.join(work,'.synk-completion.json'),JSON.stringify({version:1,task_id:path.basename(taskDir),goal_status:goal,summary:'Finished the requested fixture.',checks}));
   const fixedChanges=(changes||Object.keys(content).map(p=>({path:p,kind:'modify'}))).map(change=>{
