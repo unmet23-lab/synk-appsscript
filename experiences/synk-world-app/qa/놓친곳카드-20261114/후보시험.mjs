@@ -55,13 +55,22 @@ async function run(view,seeded){
   await page.waitForSelector('#panel-content [data-position-board]',{timeout:30000});await sleep(1200);
   out.card=await page.evaluate(()=>{const c=document.querySelector('#panel-content [data-position-missed]');if(!c)return null;
    return {skill:c.dataset.positionMissed,text:c.innerText.replace(/\s+/g,' ').trim(),steps:[...c.querySelectorAll('.wmis-again li')].map(li=>`${li.dataset.step}:${li.dataset.state}`),
-    before:!!c.compareDocumentPosition(document.querySelector('#panel-content .wpos-group'))&Node.DOCUMENT_POSITION_FOLLOWING,
+    before:!!(c.compareDocumentPosition(document.querySelector('#panel-content .wpos-group'))&Node.DOCUMENT_POSITION_FOLLOWING),
     attentionHasSame:!!document.querySelector(`#panel-content [data-position-attention] li[data-skill="${c.dataset.positionMissed}"]`),
     overflow:document.documentElement.scrollWidth>innerWidth+1,cardWidth:Math.round(c.getBoundingClientRect().width)};});
   if(out.card&&record){await sleep(1500);await page.evaluate(async()=>{const box=document.querySelector('#panel-content'),card=box?.querySelector('[data-position-missed]');if(!box||!card)return;const to=card.offsetTop-24,from=box.scrollTop;for(let i=1;i<=60;i++){box.scrollTop=from+(to-from)*i/60;await new Promise(r=>setTimeout(r,25));}});await sleep(4000);}
   if(out.card){await page.locator('#panel-content [data-position-missed]').scrollIntoViewIfNeeded();await sleep(500);
    await page.locator('#panel-content [data-position-missed]').screenshot({path:path.join(OUT,`카드-${view.width}.png`)});}
   await page.screenshot({path:path.join(OUT,`판-${view.width}.png`)});
+  // SYNK_LANGS=en,mn: 같은 기기 기록으로 언어만 바꿔(이 기기 저장값) 다시 열고 카드를 읽는다.
+  for(const lang of (process.env.SYNK_LANGS||'').split(',').filter(Boolean)){
+   await page.evaluate(l=>localStorage.setItem('synk.world.lang',l),lang);await page.reload({timeout:90000});await sleep(3000);
+   await page.evaluate(()=>[...document.querySelectorAll('[data-view=position]')].find(b=>b.offsetParent)?.click());
+   await page.waitForSelector('#panel-content [data-position-missed]',{timeout:30000});await sleep(800);
+   const card=page.locator('#panel-content [data-position-missed]');await card.scrollIntoViewIfNeeded();
+   out[lang]=await card.evaluate(c=>({text:c.innerText.replace(/\s+/g,' ').trim(),overflow:document.documentElement.scrollWidth>innerWidth+1}));
+   await card.screenshot({path:path.join(OUT,`카드-${view.width}-${lang}.png`)});
+  }
  }catch(error){out.failure=String(error).slice(0,400);await page.screenshot({path:path.join(OUT,`실패-${view.width}.png`)}).catch(()=>{});}
  out.fromCandidate=[...fromCandidate];out.errors=errors.slice(0,12);out.failed=failed.slice(0,12);
  await browser.close();return out;
