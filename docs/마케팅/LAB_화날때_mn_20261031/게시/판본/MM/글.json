@@ -427,7 +427,7 @@
         "줄높이": 1.45,
         "최대줄": 1,
         "가운데": true,
-        "글자크기": 48,
+        "글자크기": 30,
         "글꼴": "'Inter Tight', 'SUIT', 'Myanmar Text', sans-serif"
       }
     },
