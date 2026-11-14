@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1d94b-62d0-70d0-8b7e-6fac57b3998e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one image with the fixed composition, Mongle’s flat sideways peek, and the grandmother’s clasped-hands smile.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle peeks slyly at the lit cake while Grandmother smiles with clasped hands and happy tears."}}
+{"type":"turn.completed","usage":{"input_tokens":84065,"cached_input_tokens":65280,"cache_write_input_tokens":0,"output_tokens":1190,"reasoning_output_tokens":214}}

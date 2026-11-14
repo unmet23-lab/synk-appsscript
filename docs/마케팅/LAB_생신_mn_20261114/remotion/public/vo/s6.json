@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s6",
+ "text": "근데...",
+ "dur": 0.8,
+ "words": [
+  {
+   "text": "근데...",
+   "start": 0.02,
+   "end": 0.8
+  }
+ ],
+ "source": {
+  "key": "e2249dfefad717e9df6fc569492efe26",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1114,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "정말 생신 축하드려요! 그러다 갑자기 멈칫하며 꿍꿍이가 생긴다.",
+   "next": "촛불은 내가 끌게!"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 417
+ }
+}

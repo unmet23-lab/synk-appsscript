@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s3",
+ "text": "생신 축하드려요!",
+ "dur": 1.327,
+ "words": [
+  {
+   "text": "생신",
+   "start": 0.03,
+   "end": 0.374
+  },
+  {
+   "text": "축하드려요!",
+   "start": 0.435,
+   "end": 1.327
+  }
+ ],
+ "source": {
+  "key": "f34b335bbf69c7c48f7aa487678795c4",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1114,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 459
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "생신 축하드려요! 생신 축하드려요! 정말 생신 축하드려요!",
+ "dur": 4.197,
+ "words": [
+  {
+   "text": "생신",
+   "start": 0.02,
+   "end": 0.321
+  },
+  {
+   "text": "축하드려요!",
+   "start": 0.382,
+   "end": 0.984
+  },
+  {
+   "text": "생신",
+   "start": 1.185,
+   "end": 1.486
+  },
+  {
+   "text": "축하드려요!",
+   "start": 1.547,
+   "end": 2.129
+  },
+  {
+   "text": "정말",
+   "start": 2.591,
+   "end": 2.953
+  },
+  {
+   "text": "생신",
+   "start": 3.013,
+   "end": 3.294
+  },
+  {
+   "text": "축하드려요!",
+   "start": 3.354,
+   "end": 4.197
+  }
+ ],
+ "source": {
+  "key": "4748147a6a91329eba6503092a9b8eda",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1114,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 462
+ }
+}

@@ -1,0 +1,93 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1114,
+  "lufs": -16
+ },
+ "made": "2026-11-14T09:15:19.375Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "생일 축하해!",
+   "dur": 0.887,
+   "syllablesPerSec": 5.64,
+   "src": "s1.wav",
+   "key": "ccc1b15e776c6580b1cf782c84360c0d",
+   "words": 2
+  },
+  {
+   "id": "s2",
+   "text": "생일 축하해요!",
+   "dur": 1.18,
+   "syllablesPerSec": 5.08,
+   "src": "s2.wav",
+   "key": "f8aaf0debfd677ae9a38e83b1166c001",
+   "words": 2
+  },
+  {
+   "id": "s3",
+   "text": "생신 축하드려요!",
+   "dur": 1.327,
+   "syllablesPerSec": 5.28,
+   "src": "s3.wav",
+   "key": "f34b335bbf69c7c48f7aa487678795c4",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "생신 축하드려요! 생신 축하드려요! 정말 생신 축하드려요!",
+   "dur": 4.197,
+   "syllablesPerSec": 5.48,
+   "src": "m4.wav",
+   "key": "4748147a6a91329eba6503092a9b8eda",
+   "words": 7
+  },
+  {
+   "id": "s6",
+   "text": "근데...",
+   "dur": 0.8,
+   "syllablesPerSec": 2.5,
+   "src": "s6.wav",
+   "key": "e2249dfefad717e9df6fc569492efe26",
+   "words": 1
+  },
+  {
+   "id": "m8",
+   "text": "촛불은 내가 끌게!",
+   "dur": 1.194,
+   "syllablesPerSec": 5.86,
+   "src": "m8.wav",
+   "key": "40d6bc6b773d3b9b38eaf1d46e9ecd78",
+   "words": 3
+  },
+  {
+   "id": "s9",
+   "text": "후우~!",
+   "dur": 0.564,
+   "syllablesPerSec": 3.55,
+   "src": "s9.wav",
+   "key": "c048adad830e1df8e0efbb283da5ff72",
+   "words": 1
+  },
+  {
+   "id": "m10",
+   "text": "케이크도 내 거!",
+   "dur": 1.123,
+   "syllablesPerSec": 5.34,
+   "src": "m10.wav",
+   "key": "5019adc121d6fb8cc37d4b49f63fd40d",
+   "words": 3
+  }
+ ]
+}

@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m8",
+ "text": "촛불은 내가 끌게!",
+ "dur": 1.194,
+ "words": [
+  {
+   "text": "촛불은",
+   "start": 0.02,
+   "end": 0.418
+  },
+  {
+   "text": "내가",
+   "start": 0.544,
+   "end": 0.761
+  },
+  {
+   "text": "끌게!",
+   "start": 0.833,
+   "end": 1.194
+  }
+ ],
+ "source": {
+  "key": "40d6bc6b773d3b9b38eaf1d46e9ecd78",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1114,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "근데... 할머니께 갑자기 반말로, 신나서 뻔뻔하게 말한다.",
+   "next": "후우~!"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 502
+ }
+}

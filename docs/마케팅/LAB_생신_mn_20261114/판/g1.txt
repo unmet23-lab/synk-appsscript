@@ -1,0 +1,20 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, table and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cozy indoor light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its café, counter, cup or boss).
+
+FORMAT: portrait 2:3. Camera at the height of the tabletop, looking straight across the table.
+
+SET: a cozy Korean family living room on a grandmother's birthday. Back wall: plain warm-cream felt wallpaper with a soft vertical texture, a low wooden cabinet far behind, one small blank picture frame (no picture inside, no writing). The top 26% of the image is ONLY this plain wall — nothing important there.
+A low dark-walnut Korean floor table (soban) runs across the image; its tabletop surface is at about 60% of the image height, and its thick wooden front edge and front panel fill the lower part of the image down to the bottom (the lower 38% of the image is mostly that wooden front panel — keep it plain).
+
+GRANDMOTHER (felt doll): sits on a floor cushion BEHIND the table on the LEFT side, seen from the chest up, her body between about 6% and 38% of the image width, her head between about 28% and 46% of the image height. Big round felt head, glossy black bead eyes with no white sclera, small round wire glasses, soft pink felt cheeks, silver-grey felt hair pulled into a neat round bun, a lilac felt cardigan over a cream blouse, a tiny pearl brooch. Expression: curious and a little puzzled — head tilted slightly, eyebrows raised, small closed mouth. She faces right toward the mascot.
+
+ON THE TABLE (left of centre, between about 30% and 56% of the image width): a round white cream birthday cake topped with felt strawberries, with FIVE slim pastel candles standing on it, all LIT with small steady warm flames. In front of the cake: a small bowl of seaweed soup and a little plate of japchae noodles (felt food), modest, not crowding.
+
+MONGLE (the mascot from the SECOND attached image): stands upright ON the tabletop to the RIGHT of the cake, the middle of its scalloped hem at about 70% of the image width, its hem sitting on the tabletop, its body about 22% of the image width wide. Shown in three-quarter view turned toward the grandmother (facing left), standing straight and proud like a child about to give a greeting, small open smile, a light blush. Next to Mongle on the table (to its right, NOT touching it): a small gift box wrapped in mint paper with a cream ribbon.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. Mongle has NO arms, NO legs, NO hands — never.
+
+Leave clear empty space around Mongle and between Mongle and the cake. Exactly ONE Mongle, exactly ONE grandmother, nobody else.
+Absolutely no text, letters, numbers, logos, symbols or watermarks anywhere — no writing on the cake, no number candles, no banner.
