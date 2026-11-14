@@ -923,6 +923,7 @@
 - 원인: HEAD의 태그는 v0.22.2였지만 같은 커밋의 `install-stamp.json`이 baseVersion 0.21.5를 담았다. 플러그인 검사는 git 태그보다 유효한 설치 기록을 먼저 쓴다.
 - 고침: 원래 기록·SHA를 보존하고 공식 `scripts/write_install_stamp.py`가 만든 후보의 커밋·버전·distance를 대조한 뒤 설치 기록만 원자 교체했다. 코드·플러그인 조건·선택 세대·bootstrap 완료 영수증은 그대로다. 실제 진행 대화·자식·예약 회차가 비었을 때 공식 gateway restart를 불렀다.
 - 다시 확인: 같은 코드의 baseVersion 0.22.2, 플러그인 enabled=true·error=null·명령 9개 등록. restart 명령은 기동 확인 시간초과로 exit 1이었으나 중복 start 없이 05:44 Telegram polling healthy·Gateway running을 확인했고, 05:50 감시 health=ok였다. CPU가 바쁠 때 10초 플러그인 로딩과 90초 감시 수집 제한이 한 회차 실패할 수 있어, 명령 종료만으로 꺼졌다고 단정하지 않는다. 원본·유휴 근거는 `.tmp/hermes-version-stamp-20261109T202759Z/`.
+- 11-14 재발 확인: 설치 기록의 생성 시각은 11-11이었고, 같은 릴리스 커밋을 다시 0.21.5로 표시하고 있었다. 공식 원격 태그의 커밋과 로컬 HEAD가 모두 v0.22.2의 커밋임을 대조했다. 기존 설치 기록을 보존하고 공식 생성기에 확인한 커밋과 버전을 명시해 다시 만들었다. 버전, 표시 버전, 커밋 거리, 생성 시각 외의 필드는 그대로인지 확인했다. 호환성 조건과 인증 설정은 바꾸지 않았다. 공식 플러그인 진단이 통과했고, 재시작 뒤 텔레그램에서 `/synk_attention`, 팁 목록과 상세, 실제 감시 알림에 대한 「자세히」 답장이 모두 응답했다. 설치 기록이 다시 낡는 원인은 아직 확정하지 않았다. 관련 상류 보고는 [Hermes 이슈 147782](https://github.com/NousResearch/hermes-agent/issues/147782)다.
 
 ### 팁 적용안이 「OAuth session expired」로 실패하고, 재부팅에 죽은 실행의 잠금이 3시간 동안 다음 회차를 막는다 (2026-11-04 Claude)
 - 증상: 예약 「SYNK 팁 적용안」이 11-04 14:31 · 15:42 · 16:24 · 16:49에 구독 경로에서 `Failed to authenticate: OAuth session expired and could not be refreshed`로 끝나 카드가 안 만들어졌다. 그 뒤 회차는 `이미 도는 중이다(잠금 N분 전)`와 종료 코드 3으로 바로 끝났다.
