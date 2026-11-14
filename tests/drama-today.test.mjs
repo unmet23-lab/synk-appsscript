@@ -52,7 +52,7 @@ test('기록 A(어제 6번 줄 끝맺음 노트 · B 안 함 · 입장 검사 �
  assert.equal(again.why.evidence.lineId, 's1e01-6');
  assert.equal(again.why.evidence.notes, 3);
  assert.equal(again.why.evidence.coached, true);
- assert.equal(again.why.text, '어제 「한참 헤맸어요」라고 할 때 끝이 반말처럼 들렸어요. 그 자리에서 다시 해서 고쳤어요.');
+ assert.equal(again.why.text, '어제 「한참 헤맸어요」라고 할 때 끝이 반말처럼 들렸어요. 그 자리에서는 다시 해서 고쳤어요. 대사를 안 보고도 되는지 오늘 다른 상황에서 확인해요.');
  for (const t of visible(r.today)) assert.ok(!STUDIO.test(t), t);
  // 근거 시각이 실제 기록의 마지막 노트 시도와 같다.
  const turns = readTurns(r.events).filter((t) => t.lineId === 's1e01-6' && t.phase === 'scene');

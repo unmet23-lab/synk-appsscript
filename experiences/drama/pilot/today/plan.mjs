@@ -113,8 +113,12 @@ function againItem({ turns, scene, nowMs, tz, today }) {
  if (!c) return null;
  const kind = c.last.choice.slice(5), when = whenWord(c.noteAt, nowMs, tz), tail = lineTail(c.line.text, c.line.id);
  const yo = kind === 'ending' && isYo(c.line.id);
- const text = `${when} 「${tail}」${noteSaid(kind, c.line.id)}${c.retakePass ? ' 그 자리에서 다시 해서 고쳤어요.' : ''}`;
  const situation = c.open.type === 'situation';
+ // 그 자리에서 고쳤으면 오늘 무엇을 확인하는지까지 말한다(11-14 설계 세션 검수 — 이미 고쳤는데 왜 또 하는지가 비어 보였다).
+ // 새 상황은 첫 제출 전에 한국어 답을 보이지 않으므로 「대사를 안 보고도」가 사실이다.
+ const fixed = !c.retakePass ? '' : situation ? ' 그 자리에서는 다시 해서 고쳤어요. 대사를 안 보고도 되는지 오늘 다른 상황에서 확인해요.'
+  : ' 그 자리에서는 다시 해서 고쳤어요. 오늘 장면에서 한 번 더 해 봐요.';
+ const text = `${when} 「${tail}」${noteSaid(kind, c.line.id)}${fixed}`;
  return {
   kind: 'again',
   title: situation ? c.pair.title : '1화에서 그 대사 한 번 더',
