@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /**
- * 세션 우선순위 — Claude Code 세션 프로세스를 「보통 아래」로 낮춘다 (2026-11-15).
+ * 세션 우선순위 — Claude Code 세션 프로세스를 CPU 「보통 아래」 · 디스크 「낮음」으로 낮춘다 (2026-11-15).
  *
  * 왜 있나: 유호님 「채팅이 너무 느리게쳐지거든? 아예 안쳐지기도해. 특이하게 클로드 앱 쓸때만」 → 「웅 그럼 그렇게 고쳐줘」.
  *   재 보니 CPU 24코어가 100%였다. 여러 세션이 띄운 렌더(Remotion · 크롬) · ffmpeg · 시험 묶음 · 최종본 검사 · 백업이
@@ -96,6 +96,30 @@ function 조상읽기(시작) {
   return 파워셸(명령, 60000);
 }
 
+/* 디스크 우선순위(I/O priority) — CPU 등급만 낮추면 디스크 차례는 그대로라, 세션들이 저장소를 통째로 훑는 grep(초당 98MB 읽기)
+ * · 렌더 · 영상 처리가 C:를 막아(디스크 사용 433% · 대기 2.5) 같은 C:에 대화를 쓰는 Claude 앱 입력이 또 멈췄다(11-15 두 번째 실측).
+ * NtSetInformationProcess(33)으로 「낮음」(1)으로 둔다 — 자식도 물려받는다(11-15 확인: 낮춘 세션에서 띄운 PowerShell이 io 1). 「보통」(2)일 때만 바꾼다. */
+const 디스크준비 = 'Add-Type -TypeDefinition \'using System; using System.Runtime.InteropServices; public static class SynkIo { '
+  + '[DllImport("ntdll.dll")] static extern int NtSetInformationProcess(IntPtr h, int c, ref int v, int l); '
+  + '[DllImport("ntdll.dll")] static extern int NtQueryInformationProcess(IntPtr h, int c, ref int v, int l, out int r); '
+  + '[DllImport("kernel32.dll")] static extern IntPtr OpenProcess(int a, bool i, int p); [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h); '
+  + 'public static bool Low(int pid) { IntPtr h = OpenProcess(0x1200, false, pid); if (h == IntPtr.Zero) return false; int v = -1, r; '
+  + 'NtQueryInformationProcess(h, 33, ref v, 4, out r); bool ok = false; if (v == 2) { int n = 1; ok = NtSetInformationProcess(h, 33, ref n, 4) == 0; } CloseHandle(h); return ok; } }\'; ';
+
+/** pid들의 디스크 우선순위를 「보통」에서 「낮음」으로. 바꾼 수. 덧붙여 GPT 앱 codex.exe 행들을 돌려준다(훅이 한 번에 쓰게). */
+function 디스크낮추기(pids, 코덱스도 = false) {
+  const 목록 = pids.filter((p) => Number.isInteger(p) && p > 0).join(',');
+  const 명령 = 디스크준비
+    + `$n=0; foreach ($p in @(${목록 || '0'})) { if ($p -gt 0 -and [SynkIo]::Low($p)) { $n++ } }; `
+    + (코덱스도
+      ? `$c=@(Get-CimInstance Win32_Process -Filter "Name='codex.exe'" -Property ProcessId,ParentProcessId,Name,ExecutablePath | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath); `
+        + `foreach ($x in $c) { if ($x.ExecutablePath -like '*OpenAI.Codex*' -and [SynkIo]::Low([int]$x.ProcessId)) { $n++ } }; `
+      : '$c=@(); ')
+    + 'ConvertTo-Json -InputObject @(@{ n = $n; codex = $c }) -Compress -Depth 4';
+  const [결과] = 파워셸(명령, 90000);
+  return { 바꿈: Number(결과 && 결과.n) || 0, 코덱스: (결과 && 결과.codex) ? [].concat(결과.codex) : [] };
+}
+
 function 낮추기(pid, 보통만 = false) {
   try {
     if (보통만 && os.getPriority(pid) !== 보통) return false;
@@ -113,20 +137,23 @@ function main(argv) {
     const 대상 = 세션과자손(표);
     let 바꿈 = 0;
     for (const pid of 대상) if (낮추기(pid, true)) 바꿈 += 1;
-    process.stdout.write(`세션과 자손 ${대상.length}개 가운데 「보통」이던 ${바꿈}개를 「보통 아래」로 낮췄다\n`);
+    let 디스크 = 0;
+    try { 디스크 = 디스크낮추기(대상).바꿈; } catch { /* CPU만 바꾼 채 둔다 */ }
+    process.stdout.write(`세션과 자손 ${대상.length}개 가운데 CPU 「보통」이던 ${바꿈}개를 「보통 아래」로, 디스크 「보통」이던 ${디스크}개를 「낮음」으로 낮췄다\n`);
     return 0;
   }
+  let 세션 = null;
   try {
-    const pid = 조상세션(조상읽기(process.pid), process.pid);
-    if (pid) 낮추기(pid);
+    세션 = 조상세션(조상읽기(process.pid), process.pid);
+    if (세션) 낮추기(세션);
   } catch {
     // 훅은 세션 시작을 막지 않는다 — 실패하면 조용히 그대로 둔다
   }
   try {
-    // GPT 앱은 다시 켜면 codex.exe가 「보통」으로 뜬다 — Claude 세션이 시작될 때마다 함께 맞춘다(그 뒤 띄우는 GPT 일부터 낮게)
-    for (const 행 of 파워셸("Get-CimInstance Win32_Process -Filter \"Name='codex.exe'\" -Property ProcessId,ParentProcessId,Name,ExecutablePath | Select-Object ProcessId,ParentProcessId,Name,ExecutablePath | ConvertTo-Json -Compress", 60000)) {
-      if (코덱스인가(행)) 낮추기(Number(행.ProcessId), true);
-    }
+    // 세션의 디스크 우선순위도 낮추고, GPT 앱은 다시 켜면 codex.exe가 「보통」으로 뜨니 Claude 세션이 시작될 때마다 함께 맞춘다
+    // (그 뒤 띄우는 GPT 일부터 낮게). PowerShell 한 번으로 한다 — CPU가 꽉 찬 때 PowerShell을 띄우는 데만 몇 초가 든다.
+    const { 코덱스 } = 디스크낮추기(세션 ? [세션] : [], true);
+    for (const 행 of 코덱스) if (코덱스인가(행)) 낮추기(Number(행.ProcessId), true);
   } catch {
     // 그대로 둔다
   }
