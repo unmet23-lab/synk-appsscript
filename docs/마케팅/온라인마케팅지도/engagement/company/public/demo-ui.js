@@ -43,12 +43,12 @@ function demoBanner() {
   // 10-24 간편판: 개인·팀·전체 그래프 화면을 SNS 성과로 옮겨 데모 입구를 거뒀다(주소로 여는 ?demo=1은 그대로).
   if (!isDemoMode()) return '';
   const data=state.data?.demo, people=data?.people||[];
-  return `<aside class="demo-banner demo-banner-compact" aria-label="데모 데이터 안내"><div class="demo-banner-copy"><strong><span class="demo-badge">DEMO</span>가상 데이터</strong><details id="demo-information"><summary>예시 정보</summary><p>크루 ${people.length}명 · 채널 ${number(data?.channelCount??state.data?.channels?.length)}개 · 가상 게시글 ${number(data?.postCount)}개. 실제로 올리거나 모은 기록이 아니에요. 읽기만 할 수 있고, 지워 달라고 할 때까지 남겨 둬요.</p></details></div><div class="demo-banner-controls"><select data-demo-persona aria-label="데모 크루 선택">${people.map(person=>`<option value="${escape(person.id)}" ${person.id===data?.personaId?'selected':''}>${escape(person.name)} · ${escape(person.teamName)}</option>`).join('')}</select><a href="${escape(demoScreenUrl(false))}">실제 데이터로 돌아가기</a></div></aside>`;
+  return `<aside class="demo-banner demo-banner-compact" aria-label="데모 데이터 안내"><div class="demo-banner-copy"><strong><span class="demo-badge">데모</span>가상 데이터 미리보기</strong><details id="demo-information"><summary>예시 구성 보기</summary><p>크루 ${people.length}명 · 채널 ${number(data?.channelCount??state.data?.channels?.length)}개 · 가상 게시물 ${number(data?.postCount)}개 기준의 읽기 전용 화면이에요. 실제 운영 기록은 변경되지 않아요.</p></details></div><div class="demo-banner-controls"><select data-demo-persona aria-label="데모 크루 선택">${people.map(person=>`<option value="${escape(person.id)}" ${person.id===data?.personaId?'selected':''}>${escape(person.name)} · ${escape(person.teamName)}</option>`).join('')}</select><a href="${escape(demoScreenUrl(false))}">실제 데이터로 돌아가기</a></div></aside>`;
 }
 function demoAllowsAction(action,target) {
   if (!isDemoMode()) return true;
   if (['tab','marketing-section','command-tab'].includes(action)) return ['marketing','mine','team','all','overview','analysis','history'].includes(target.dataset.tab);
-  return ['workspace-sidebar-toggle','workspace-sidebar-close','reload','logout','chart-mode','growth-metric','report-view','team-scope','team-overview-retry','team-overview-select','range','move-range','metric-focus','platform-focus','channel-detail','member-filter','analysis-content','analysis-view','day','post-detail','refresh','close-modal','comparison-more'].includes(action);
+  return ['workspace-sidebar-toggle','workspace-sidebar-close','workspace-mobile-menu','workspace-mobile-close','reload','logout','chart-mode','growth-metric','report-view','team-scope','team-overview-retry','team-overview-select','range','move-range','metric-focus','platform-focus','channel-detail','member-filter','analysis-content','analysis-view','day','post-detail','refresh','close-modal','comparison-more'].includes(action);
 }
 document.addEventListener('click',event=>{
   if(!isDemoMode())return;

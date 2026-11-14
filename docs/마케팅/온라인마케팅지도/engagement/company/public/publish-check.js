@@ -45,7 +45,7 @@ function publishCheckPanel(){
 function pcList(){
   const data=pc.data,records=data.records,waiting=pc.waiting||[],total=data.review.length,draft=pc.draft,q=pc.query.trim().toLowerCase();
   const active=records.filter(row=>!row.archived),archived=records.filter(row=>row.archived),hit=text=>!q||text.includes(q);
-  let order=0;const head=(key,title,count,rows)=>`<h3 class="mt-list-group" data-publish-group="${key}" ${rows.some(Boolean)?'':'hidden'}><span class="mt-num">${String(++order).padStart(2,'0')}</span>${escape(title)} <b>${mtNum(count)}</b></h3>`;
+  let order=0;const head=(key,title,count,rows)=>`<h2 class="mt-list-group" data-publish-group="${key}" ${rows.some(Boolean)?'':'hidden'}><span class="mt-num">${String(++order).padStart(2,'0')}</span>${escape(title)} <b>${mtNum(count)}</b></h2>`;
   const waitItem=row=>{const text=String(row.title||'').toLowerCase(),tone=row.status==='needs-work'?'alert':'wait';return `<button type="button" class="mt-item" data-publish-action="package" data-href="${escape(row.href||'')}" data-publish-row="01" data-search="${escape(text)}" ${hit(text)?'':'hidden'}>${mtLed(tone)}<span><strong>${escape(row.title||'제목 없는 묶음')}</strong><small><em data-tone="${tone}">${escape(row.statusLabel||'게시 전 점검')}</em>${pcGlyphs(row.channelFormats)}</small></span><span class="mt-item-end pc-out">열기</span></button>`;};
   const recordItem=(row,key)=>{const text=pcSearch(row);return `<button type="button" class="mt-item" data-publish-action="open" data-id="${escape(row.id)}" data-publish-row="${key}" data-search="${escape(text)}" aria-current="${draft?.id===row.id}" ${hit(text)?'':'hidden'}><span class="mt-tile" aria-hidden="true">${mtIcon(row.media?.kind==='image'?'image':'file')}</span><span><strong>${escape(row.title||'제목 없는 점검')}</strong><small><em data-tone="${total&&row.checkCount>=total?'ok':'wait'}">${mtNum(row.checkCount)}/${mtNum(total)}</em><span class="mt-item-text">${escape(row.media?.name||'파일 없음')}</span></small></span><span class="mt-item-end">${escape(pcWhen(row.updatedAt,false))}</span></button>`;};
   const fresh=draft&&!draft.id?`<button type="button" class="mt-item" data-publish-action="draft" aria-current="true"><span class="mt-tile" aria-hidden="true">${mtIcon('plus')}</span><span><strong>${escape(draft.title||'새 점검')}</strong><small>저장 전</small></span><span class="mt-item-end"></span></button>`:'';
@@ -53,7 +53,7 @@ function pcList(){
   const waitHit=waiting.map(row=>hit(String(row.title||'').toLowerCase())),activeHit=active.map(row=>hit(pcSearch(row))),archivedHit=archived.map(row=>hit(pcSearch(row)));
   const groups=`${waiting.length?head('01','점검 기다림',waiting.length,waitHit)+waiting.map(waitItem).join(''):''}${active.length||fresh?head('02','저장한 기록',active.length,[...activeHit,!!fresh])+fresh+active.map(row=>recordItem(row,'02')).join(''):''}${pc.archived&&archived.length?head('03','보관',archived.length,archivedHit)+archived.map(row=>recordItem(row,'03')).join(''):''}`;
   const found=[...waitHit,...activeHit,...(pc.archived?archivedHit:[]),!!fresh].some(Boolean);
-  return `<aside class="mt-list" aria-label="점검 목록">${tools}${groups}<p class="mt-list-empty" data-publish-none ${q&&!found?'':'hidden'}>찾는 기록이 없어요.</p>${!records.length&&!waiting.length&&!fresh?'<p class="mt-list-empty">아직 저장한 기록이 없어요.</p>':''}</aside>`;
+  return `<div class="mt-list" role="region" aria-label="점검 목록">${tools}${groups}<p class="mt-list-empty" data-publish-none ${q&&!found?'':'hidden'}>찾는 기록이 없어요.</p>${!records.length&&!waiting.length&&!fresh?'<p class="mt-list-empty">아직 저장한 기록이 없어요.</p>':''}</div>`;
 }
 // 휴대폰 띠: 목록보다 앞에 두어 「바꾸기」로 펼친 목록 위에 「닫기」가 남는다(넓은 화면에서는 숨는다).
 function pcBand(){
@@ -62,7 +62,7 @@ function pcBand(){
 }
 function pcDetail(){
   const data=pc.data,draft=pc.draft;
-  if(!draft)return `<div class="mt-detail"><div class="mt-detail-empty"><img src="${mtFelt('publish')}" alt="" width="120" height="110" decoding="async"><strong>${data.canWrite?'목록에서 기록을 고르거나 새 점검을 만들어요':'읽기만 할 수 있는 계정이라 새 점검을 만들 수 없어요'}</strong></div></div>`;
+  if(!draft)return `<div class="mt-detail"><div class="mt-detail-empty"><strong>${data.canWrite?'목록에서 기록을 고르거나 새 점검을 만들어요':'읽기만 할 수 있는 계정이라 새 점검을 만들 수 없어요'}</strong></div></div>`;
   const write=data.canWrite&&!draft.archived,total=data.review.length,done=pcDone(draft),media=draft.media,lock=!write||pc.saving?'disabled':'',key=escape(draft.id||'new');
   let rows=[];try{rows=publishRules.analyze(media,draft.preset);}catch{rows=[];}
   const preset=publishRules.presets.find(row=>row.id===draft.preset)||publishRules.presets[0];
@@ -81,7 +81,7 @@ function pcDetail(){
   const checks=data.review.map(item=>{const check=draft.checks[item.id]||{checked:false,note:''},id=escape(item.id);return `<div class="pc-check"><span class="mt-led" data-publish-led="${id}" data-tone="${pcTone(check)}" aria-hidden="true"></span><label class="mt-check"><input type="checkbox" data-publish-check="${id}" ${check.checked?'checked':''}><span>${escape(item.label)}</span></label><details class="pc-note" id="pc-note-${id}-${key}" data-publish-fold="note:${id}" ${(pc.folds['note:'+item.id]??Boolean(check.note))?'open':''}><summary>근거</summary><textarea data-publish-note="${id}" maxlength="1200" rows="2" aria-label="${escape(item.label)} 근거" placeholder="본 장면 · 실제 자료 · 고칠 것">${escape(check.note||'')}</textarea></details></div>`;}).join('');
   const body=`<fieldset class="pc-fields" ${lock}>${sec('audience','01','누가 보고 무엇을 얻나요',pcShort(draft.audience),area('audience','누가 보고 무엇을 얻나요',600,'보는 사람의 상황과, 보고 나서 할 수 있는 일'),!draft.audience)}${sec('rights','02','소재·음악 사용권',pcShort(draft.rights),area('rights','소재·음악 사용권과 출처',1800,'만든 사람 · 원본 주소 · 라이선스 · 쓸 수 있는 범위'),!draft.rights)}${sec('measurement','03','확인할 반응과 조건',pcShort(draft.measurement),area('measurement','확인할 반응과 조건',1000,'예: 올린 뒤 7일의 저장·공유 비율, 견줄 편과 조건'),!draft.measurement)}${sec('checks','04',`직접 본 ${total}칸`,`${done}/${total} · 자동 점수가 아니에요`,`<div class="pc-rows">${checks}</div>`,true)}</fieldset>`;
   const foot=`<div class="mt-form-foot"><span class="mt-note" data-publish-dirty>${pc.dirty?'저장하지 않은 변경이 있어요.':'기록은 내 계정에서만 볼 수 있어요.'}</span>${draft.id?pcButton('기록 받기','export','','small'):''}${draft.id&&data.canWrite?pcButton(draft.archived?'복원':'보관','archive',pc.saving?'disabled':'','small'):''}${write?`<button class="btn primary" type="submit" ${pc.saving||pc.reading?'disabled':''}>${pc.saving?'저장 중…':'점검 기록 저장'}</button>`:''}</div>`;
-  return `<form class="mt-detail pc-sheet" data-publish-form>${pc.error?mtError(pc.error):''}${top}${pcNow(draft,write,total,done)}${file}${body}${foot}</form>`;
+  return `<form class="mt-detail pc-sheet" data-publish-form><h2 class="sr-only">점검 내용</h2>${pc.error?mtError(pc.error):''}${top}${pcNow(draft,write,total,done)}${file}${body}${foot}</form>`;
 }
 // 「지금 할 일」: 남은 칸이 있으면 포스터(화면의 주 단추 「남은 칸 보기」), 다 봤거나 보관·읽기만이면 옅은 판.
 function pcNow(draft,write,total,done){const tool='publish',attrs='data-publish-now';

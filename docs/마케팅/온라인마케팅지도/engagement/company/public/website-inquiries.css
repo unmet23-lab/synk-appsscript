@@ -1,66 +1,73 @@
-/* 문의 접수(website-inquiries.js) — 제작 도구 13판 A 「목록 + 상세」(2026-10-21). 공통 어휘는 maker-tools.css, 여기는 이 탭에만 쓰는 것.
-   signal.css보다 앞에 읽히므로 선택자는 :root .synk-workspace .mt 아래로 둔다. 인라인 style 없이 클래스 · data 속성만 쓴다. */
+/* 문의 접수(website-inquiries.js) — 순수 검정(#000000) & 가는 구분선. 공통 어휘는 maker-tools.css에 두고,
+   여기는 이 탭에만 쓰는 규칙만 둔다. 인라인 style 없이 클래스 · data 속성만 쓴다. */
 :root .synk-workspace .mt .wi-sync{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin:-6px 0 18px}
 :root .synk-workspace .mt .wi-sync .mt-notice{flex:1 1 380px;min-width:0;margin:0}
-:root .synk-workspace .mt .wi-sync .mt-notice strong{font-weight:var(--w-strong);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .wi-sync .mt-notice p{margin-top:3px;font-weight:var(--w-body);color:var(--mt-ink-3)}
+:root .synk-workspace .mt .wi-sync .mt-notice strong{font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .wi-sync .mt-notice p{margin-top:3px;font-weight:var(--w-body);color:var(--mt-ink-3,#9AA5B6)}
 :root .synk-workspace .mt .wi-sync .mt-actions{flex:none}
-/* 수집이 멈추면 줄을 판으로 키운다(평소에는 한 줄로 조용히). */
-:root .synk-workspace .mt .wi-sync[data-tone=alert]{padding:12px 14px;border-radius:16px;background:var(--mt-coral-wash)}
-:root .synk-workspace .mt .wi-sync[data-tone=alert] .mt-notice strong{color:var(--mt-coral-ink)}
+:root .synk-workspace .mt .wi-sync[data-tone=alert]{padding:12px 14px;border-radius:8px;border:1px solid rgba(249,112,102,.32);background:rgba(249,112,102,.10)}
+:root .synk-workspace .mt .wi-sync[data-tone=alert] .mt-notice strong{color:var(--mt-coral-ink,#FFDAD6)}
 :root .synk-workspace .mt .wi-foot{margin-top:14px}
+
 /* 서버가 계산한 제품별 관심 등록. 상세·목록은 기존 문의 접수 판을 그대로 쓴다. */
-:root .synk-workspace .mt .wi-registrations{margin:0 0 22px;padding:16px;border:1px solid var(--mt-line);border-radius:18px;background:var(--mt-paper)}
+:root .synk-workspace .mt .wi-registrations{margin:0 0 22px;padding:16px;border:1px solid var(--mt-line,rgba(255,255,255,.13));border-radius:8px;background:#000000}
 :root .synk-workspace .mt .wi-registration-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-bottom:8px}
-:root .synk-workspace .mt .wi-registrations h2{margin:0;font-size:17px;color:var(--mt-ink)}
+:root .synk-workspace .mt .wi-registrations h2{margin:0;font-size:17px;color:var(--mt-ink,#FFFFFF)}
 :root .synk-workspace .mt .wi-registration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
-:root .synk-workspace .mt .wi-registration-card{min-width:0;padding:14px;border-radius:14px;background:var(--mt-surface)}
+:root .synk-workspace .mt .wi-registration-card{min-width:0;padding:14px;border-radius:8px;border:1px solid var(--mt-line,rgba(255,255,255,.13));background:var(--mt-surface,#07080A)}
 :root .synk-workspace .mt .wi-registration-card h3{margin:0 0 12px;font-size:15px}
-:root .synk-workspace .mt .wi-registration-card h3 button{max-width:100%;padding:5px 8px;border:1px solid var(--mt-line);border-radius:10px;background:var(--mt-paper);color:var(--mt-ink);font:inherit;font-weight:var(--w-strong);text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
-:root .synk-workspace .mt .wi-registration-card h3 button[aria-pressed=true]{background:var(--mt-lapis-deep);border-color:var(--mt-lapis-deep);color:#fff}
-:root .synk-workspace .mt .wi-registration-card h3 button:focus-visible{outline:2px solid var(--mt-lapis);outline-offset:3px}
+:root .synk-workspace .mt .wi-registration-card h3 button{max-width:100%;padding:6px 10px;border:1px solid var(--mt-control-line,#78808E);border-radius:6px;background:#000000;color:var(--mt-ink,#FFFFFF);font:inherit;font-weight:var(--w-strong);text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+:root .synk-workspace .mt .wi-registration-card h3 button:hover{border-color:#FFFFFF}
+:root .synk-workspace .mt .wi-registration-card h3 button[aria-pressed=true]{background:#FFFFFF;border-color:#FFFFFF;color:#08090C}
+:root .synk-workspace .mt .wi-registration-card h3 button:focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}
 :root .synk-workspace .mt .wi-registration-card dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 6px;margin:0}
-:root .synk-workspace .mt .wi-registration-card dt{font-size:12px;color:var(--mt-ink-3)}
-:root .synk-workspace .mt .wi-registration-card dd{margin:3px 0 0;font-size:21px;font-weight:var(--w-strong);color:var(--mt-ink)}
-:root .synk-workspace .mt .wi-registration-card dd small{margin-left:3px;font-size:12px;font-weight:var(--w-body)}
-:root .synk-workspace .mt .wi-sources{margin-top:14px;font-size:12px;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-registration-card dt{font-size:13px;color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .wi-registration-card dd{margin:3px 0 0;font-size:21px;font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF);font-variant-numeric:tabular-nums}
+:root .synk-workspace .mt .wi-registration-card dd small{margin-left:3px;font-size:13px;font-weight:var(--w-body);color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .wi-sources{margin-top:14px;font-size:13px;color:var(--mt-ink-2,#D0D6E0)}
 :root .synk-workspace .mt .wi-sources summary{cursor:pointer}
 :root .synk-workspace .mt .wi-sources ul{margin:10px 0;padding:0;list-style:none}
 :root .synk-workspace .mt .wi-sources li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 10px;padding:5px 0;overflow-wrap:anywhere}
-:root .synk-workspace .mt .wi-sources strong{max-width:100%;overflow-wrap:anywhere}
-:root .synk-workspace .mt .wi-sources .mt-note{font-size:12px}
-:root .synk-workspace .mt .wi-product-filter{margin:0 0 12px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-lapis-deep);overflow-wrap:anywhere}
+:root .synk-workspace .mt .wi-sources strong{max-width:100%;overflow-wrap:anywhere;color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .wi-sources .mt-note{font-size:13px}
+:root .synk-workspace .mt .wi-product-filter{margin:0 0 12px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF);overflow-wrap:anywhere}
 :root .synk-workspace .mt .wi-registration-note{margin:0 0 12px;overflow-wrap:anywhere}
-:root .synk-workspace .mt .wi-item .mt-item-text{color:var(--mt-ink-3)}
-:root .synk-workspace .mt .wi-item[aria-current=true] .mt-item-text{color:rgba(255,255,255,.74)}
-/* 답변 초안: 메일이 아니라 초안이라는 띠를 위에 두고 옅은 청금석 판에 담는다. */
-:root .synk-workspace .mt .wi-draft{padding:4px;border-radius:16px;background:var(--mt-lapis-wash)}
-:root .synk-workspace .mt .wi-draft-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;margin:0;padding:7px 10px 8px;font-size:13px;font-weight:var(--w-label);line-height:1.4;color:var(--mt-lapis-deep)}
+:root .synk-workspace .mt .wi-item .mt-item-text{color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .wi-item[aria-current=true] .mt-item-text{color:var(--mt-ink-2,#D0D6E0)}
+
+/* 답변 초안 */
+:root .synk-workspace .mt .wi-draft{padding:8px;border:1px solid var(--mt-line-2,rgba(255,255,255,.20));border-radius:8px;background:var(--mt-surface,#07080A)}
+:root .synk-workspace .mt .wi-draft-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;margin:0;padding:6px 10px 8px;font-size:13px;font-weight:var(--w-label);line-height:1.4;color:var(--mt-ink-2,#D0D6E0)}
 :root .synk-workspace .mt .wi-draft-bar span:empty{display:none}
-:root .synk-workspace .mt .wi-draft .mt-field textarea{border-color:transparent;border-radius:12px}
+:root .synk-workspace .mt .wi-draft .mt-field textarea{border-color:var(--mt-control-line,#78808E);border-radius:6px;background:#000000}
 :root .synk-workspace .mt .wi-facts .wi-email{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
-:root .synk-workspace .mt .wi-original{margin:0;max-height:440px;overflow:auto;padding:14px 16px;border-radius:14px;background:var(--mt-surface);font:var(--w-body) 14.5px/1.75 var(--mt-sans);color:var(--mt-ink);white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all}
-:root .synk-workspace .mt .wi-hint{margin:0 0 10px;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-original{margin:0;max-height:440px;overflow:auto;padding:14px 16px;border:1px solid var(--mt-line,rgba(255,255,255,.13));border-radius:8px;background:var(--mt-surface,#07080A);font:var(--w-body) 14.5px/1.75 var(--mt-sans);color:var(--mt-ink,#FFFFFF);white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root .synk-workspace .mt .wi-original::-webkit-scrollbar{width:4px;height:4px}
+:root .synk-workspace .mt .wi-original::-webkit-scrollbar-track{background:transparent}
+:root .synk-workspace .mt .wi-original::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px}
+:root .synk-workspace .mt .wi-original::-webkit-scrollbar-button{display:none;width:0;height:0}
+:root .synk-workspace .mt .wi-hint{margin:0 0 10px;color:var(--mt-ink-2,#D0D6E0)}
 :root .synk-workspace .mt .wi-sheet .mt-field textarea{min-height:200px}
 :root .synk-workspace .mt .wi-sheet .mt-field+.mt-note,:root .synk-workspace .mt .wi-status-row+.mt-note{margin-top:8px}
 :root .synk-workspace .mt .wi-status-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:16px 0 6px}
-:root .synk-workspace .mt .wi-status-label{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .wi-status{display:inline-flex;flex-wrap:wrap;gap:2px;max-width:100%;padding:3px;border-radius:19px;background:var(--mt-surface-2)}
-:root .synk-workspace .mt .wi-status label{position:relative;display:inline-flex;align-items:center;min-height:32px;padding:0 13px;border-radius:999px;font:var(--w-label) 13.5px/1 var(--mt-sans);color:var(--mt-ink-2);white-space:nowrap;cursor:pointer}
+:root .synk-workspace .mt .wi-status-label{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .wi-status{display:inline-flex;flex-wrap:wrap;gap:2px;max-width:100%;padding:3px;border:1px solid var(--mt-control-line,#78808E);border-radius:6px;background:var(--mt-surface,#07080A)}
+:root .synk-workspace .mt .wi-status label{position:relative;display:inline-flex;align-items:center;min-height:32px;padding:0 13px;border-radius:4px;font:var(--w-label) 13.5px/1 var(--mt-sans);color:var(--mt-ink-2,#D0D6E0);white-space:nowrap;cursor:pointer}
 :root .synk-workspace .mt .wi-status input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
-:root .synk-workspace .mt .wi-status label:has(input:checked){background:var(--mt-paper);color:var(--mt-ink);font-weight:var(--w-strong);box-shadow:0 1px 2px rgba(8,9,12,.12)}
-:root .synk-workspace .mt .wi-status label:focus-within{outline:2px solid var(--mt-lapis);outline-offset:1px}
+:root .synk-workspace .mt .wi-status label:has(input:checked){background:#FFFFFF;color:#08090C;font-weight:var(--w-strong);box-shadow:none}
+:root .synk-workspace .mt .wi-status label:focus-within{outline:2px solid #FFFFFF;outline-offset:1px}
 :root .synk-workspace .mt .wi-status label:has(input:disabled){opacity:.55;cursor:not-allowed}
 :root .synk-workspace .mt .wi-status input:disabled{cursor:not-allowed}
 :root .synk-workspace .mt .wi-fields:disabled .mt-sec>summary{cursor:default}
 :root .synk-workspace .mt .wi-sheet .mt-sec[data-wi-fold=message][open]>summary .mt-sum{display:none}
-/* 03 문의 지우기: 확인 판은 수집 멈춤 판과 같은 코랄 판이다(되돌릴 수 없는 일에만 코랄을 쓴다). */
+
+/* 03 문의 지우기 */
 :root .synk-workspace .mt .wi-erase-lead{margin:0 0 12px}
 :root .synk-workspace .mt .wi-erase-error{margin:0 0 12px}
-:root .synk-workspace .mt .wi-erase{padding:14px 16px;border-radius:16px;background:var(--mt-coral-wash);scroll-margin:96px 0}
+:root .synk-workspace .mt .wi-erase{padding:14px 16px;border-radius:8px;border:1px solid rgba(249,112,102,.32);background:rgba(249,112,102,.10);scroll-margin:96px 0}
 :root .synk-workspace .mt .wi-erase:focus{outline:none}
-:root .synk-workspace .mt .wi-erase>strong{display:block;font-weight:var(--w-strong);color:var(--mt-coral-ink)}
-:root .synk-workspace .mt .wi-erase ul{margin:8px 0 14px;padding-left:18px;font-size:14px;line-height:1.6;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .wi-erase>strong{display:block;font-weight:var(--w-strong);color:var(--mt-coral-ink,#FFDAD6)}
+:root .synk-workspace .mt .wi-erase ul{margin:8px 0 14px;padding-left:18px;font-size:14px;line-height:1.6;color:var(--mt-ink-2,#D0D6E0)}
 :root .synk-workspace .mt .wi-erase li+li{margin-top:4px}
 :root .synk-workspace .mt .wi-erase .mt-link{white-space:normal}
 :root .synk-workspace .mt .wi-erase .mt-actions+.mt-note{margin-top:10px}

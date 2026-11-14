@@ -172,8 +172,8 @@ test('the drawer and sheet: one opener, Esc and the scrim close, focus returns, 
 });
 
 test('the wide video screen: the band under the film is as wide as the film, the side columns reach the bottom; the script sheet is as tall as its lines (E9)',()=>{
-  const css=read('film.css');
-  assert.match(css,/:is\(html\.sx\.has-room-head:not\(\.is-staff\) \.sx-review,\.sx-review:has\(>\.sx-room-bar\.is-head\)\):not\(\.is-compare\) \.sx-dr-bottom\{left:calc\(var\(--col\) \+ 2\*var\(--dr-m\)\);right:calc\(var\(--col\) \+ 2\*var\(--dr-m\)\)\}/);
+  const css=read('film.css')+'\n'+read('film-legacy.css');
+  assert.match(css,/:is\(html\.sx\.has-room-head:not\(\.is-staff\) \.sx-review,\.sx-review:has\(>\.sx-room-bar\.is-head\)\):not\(\.is-compare\) \.sx-dr-bottom\{left:calc\(var\(--left-col\) \+ 2\*var\(--dr-m\)\);right:calc\(var\(--right-col\) \+ 2\*var\(--dr-m\)\)\}/);
   assert.match(css,/\.sx-draft\.is-script:has\(>\.sx-room-bar\.is-head\)\) \.sx-sheet\{height:auto;max-height:100%\}/);
   // 821~1180 가로 창: 머리 단계 줄이 방 그림 위로 뻗어도 읽히게 그늘(3a 남은 것).
   assert.match(css,/@media \(min-width:821px\) and \(max-width:1180px\) and \(min-aspect-ratio:10001\/10000\)\{html\.sx\.has-room-head:not\(\.is-staff\) \.app-header::before\{/);

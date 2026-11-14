@@ -1,11 +1,10 @@
 {
- "startedAt": "2026-10-20T11:08:28.065Z",
- "talk": "talk-class-homework-20261020",
+ "startedAt": "2026-11-14T16:32:09.852Z",
+ "talk": "atlas-trail-stage3",
  "served": [
   "/teacher-world/homework-review.mjs",
   "/teacher-world/homework-review.css",
-  "/teacher-world/topik4-homework.json",
-  "/teacher-world/topik4-homework-key.json"
+  "/teacher-world/topik4-homework.json"
  ],
  "measures": {
   "1280-01-plan-none": {
@@ -16,10 +15,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 8,
+   "targets": 9,
    "primary": 1,
    "state": "ready",
-   "height": 884
+   "height": 872
   },
   "390-01-plan-none": {
    "innerWidth": 390,
@@ -29,10 +28,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 8,
+   "targets": 9,
    "primary": 1,
    "state": "ready",
-   "height": 1269
+   "height": 1295
   },
   "1280-02-week3": {
    "innerWidth": 1280,
@@ -42,10 +41,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 34,
+   "targets": 35,
    "primary": 1,
    "state": "ready",
-   "height": 2521
+   "height": 2509
   },
   "390-02-week3": {
    "innerWidth": 390,
@@ -55,10 +54,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 34,
+   "targets": 35,
    "primary": 1,
    "state": "ready",
-   "height": 4196
+   "height": 4236
   },
   "1280-03-markbar": {
    "innerWidth": 1280,
@@ -68,38 +67,12 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 50,
+   "targets": 51,
    "primary": 1,
    "state": "ready",
-   "height": 3022
+   "height": 3058
   },
   "1280-04-draft": {
-   "innerWidth": 1280,
-   "visualWidth": 1280,
-   "docOverflow": 0,
-   "overflowing": [],
-   "small": [],
-   "shortTargets": [],
-   "clipped": [],
-   "targets": 40,
-   "primary": 1,
-   "state": "ready",
-   "height": 3044
-  },
-  "1280-05-confirm": {
-   "innerWidth": 1280,
-   "visualWidth": 1280,
-   "docOverflow": 0,
-   "overflowing": [],
-   "small": [],
-   "shortTargets": [],
-   "clipped": [],
-   "targets": 40,
-   "primary": 1,
-   "state": "ready",
-   "height": 3137
-  },
-  "1280-06-returned": {
    "innerWidth": 1280,
    "visualWidth": 1280,
    "docOverflow": 0,
@@ -110,7 +83,33 @@
    "targets": 41,
    "primary": 1,
    "state": "ready",
-   "height": 3178
+   "height": 3022
+  },
+  "1280-05-confirm": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 41,
+   "primary": 1,
+   "state": "ready",
+   "height": 3115
+  },
+  "1280-06-returned": {
+   "innerWidth": 1280,
+   "visualWidth": 1280,
+   "docOverflow": 0,
+   "overflowing": [],
+   "small": [],
+   "shortTargets": [],
+   "clipped": [],
+   "targets": 42,
+   "primary": 1,
+   "state": "ready",
+   "height": 3153
   },
   "1280-07-conflict": {
    "innerWidth": 1280,
@@ -120,10 +119,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 36,
+   "targets": 37,
    "primary": 1,
    "state": "ready",
-   "height": 2490
+   "height": 2475
   },
   "1280-12-reloaded-other": {
    "innerWidth": 1280,
@@ -133,10 +132,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 38,
+   "targets": 39,
    "primary": 1,
    "state": "ready",
-   "height": 2697
+   "height": 2679
   },
   "1280-08-week2-verdict": {
    "innerWidth": 1280,
@@ -146,7 +145,7 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 78,
+   "targets": 79,
    "primary": 1,
    "state": "ready",
    "height": 3833
@@ -159,10 +158,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 48,
+   "targets": 49,
    "primary": 1,
    "state": "ready",
-   "height": 4355
+   "height": 4526
   },
   "390-04-editor": {
    "innerWidth": 390,
@@ -172,10 +171,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 38,
+   "targets": 39,
    "primary": 1,
    "state": "ready",
-   "height": 4252
+   "height": 4316
   },
   "1280-11-relinked": {
    "innerWidth": 1280,
@@ -185,10 +184,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 22,
+   "targets": 23,
    "primary": 0,
    "state": "ready",
-   "height": 1746
+   "height": 1761
   },
   "1280-09-unavailable": {
    "innerWidth": 1280,
@@ -198,7 +197,7 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 5,
+   "targets": 6,
    "primary": 0,
    "state": "unavailable",
    "height": 800
@@ -211,10 +210,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 5,
+   "targets": 6,
    "primary": 0,
    "state": "unavailable",
-   "height": 844
+   "height": 864
   },
   "1280-10-week5-grid": {
    "innerWidth": 1280,
@@ -224,10 +223,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 37,
+   "targets": 38,
    "primary": 1,
    "state": "ready",
-   "height": 2443
+   "height": 2433
   },
   "390-10-week5-grid": {
    "innerWidth": 390,
@@ -237,10 +236,10 @@
    "small": [],
    "shortTargets": [],
    "clipped": [],
-   "targets": 37,
+   "targets": 38,
    "primary": 1,
    "state": "ready",
-   "height": 4123
+   "height": 4195
   }
  },
  "checks": [
@@ -307,6 +306,14 @@
    "name": "390-01-plan-none 검은 주 단추 1개 이하",
    "ok": true,
    "detail": 1
+  },
+  {
+   "name": "정답은 인증된 교사 경로로 읽는다",
+   "ok": true
+  },
+  {
+   "name": "정적 정답 파일은 공개하지 않는다",
+   "ok": true
   },
   {
    "name": "시작일을 고르면 1주차 열림·첫 마감을 미리 보인다",
@@ -541,7 +548,7 @@
    "name": "쓰던 첨삭이 있을 때 그 학생의 공유가 바뀜: 교사 화면이 그 자리에서 기록을 거르고 첨삭은 그대로",
    "ok": true,
    "detail": {
-    "before": "계정 연결 대기",
+    "before": "계정 연결 전",
     "applied": true,
     "draft": true,
     "marks": 3,
@@ -789,7 +796,7 @@
      "returnedAt": null,
      "revision": 1,
      "submissionRevision": 3,
-     "teacherId": "a7a039a4-7b79-43ec-8757-b50586fbf28f",
+     "teacherId": "a85916ec-72a7-4b46-b7cb-2e2333dd3279",
      "updatedAt": "2027-03-26T01:25:00.000Z"
     }
    }
@@ -821,7 +828,7 @@
     "returnedAt": null,
     "revision": 2,
     "submissionRevision": 3,
-    "teacherId": "a7a039a4-7b79-43ec-8757-b50586fbf28f",
+    "teacherId": "a85916ec-72a7-4b46-b7cb-2e2333dd3279",
     "updatedAt": "2027-03-26T01:25:00.000Z"
    }
   },
@@ -1161,7 +1168,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1171,7 +1178,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1181,7 +1188,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1191,7 +1198,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1201,7 +1208,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "403 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "403 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1211,7 +1218,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "404 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1221,7 +1228,7 @@
     {
      "tag": "390",
      "type": "http",
-     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "404 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "390",
@@ -1237,7 +1244,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1247,7 +1254,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1257,7 +1264,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1267,7 +1274,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1277,7 +1284,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "403 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "403 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1287,7 +1294,7 @@
     {
      "tag": "1280",
      "type": "http",
-     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "404 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "1280",
@@ -1297,7 +1304,7 @@
     {
      "tag": "390",
      "type": "http",
-     "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+     "text": "404 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
     },
     {
      "tag": "390",
@@ -1311,7 +1318,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "1280",
@@ -1321,7 +1328,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "1280",
@@ -1331,7 +1338,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "1280",
@@ -1341,7 +1348,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "409 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "409 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "1280",
@@ -1351,7 +1358,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "403 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "403 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "1280",
@@ -1361,7 +1368,7 @@
   {
    "tag": "1280",
    "type": "http",
-   "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "404 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "1280",
@@ -1371,7 +1378,7 @@
   {
    "tag": "390",
    "type": "http",
-   "text": "404 http://127.0.0.1:60132/functions/v1/synk-classroom/api/teacher/homework?classId=5ce90ee8-f531-44e5-af7d-c3f5721648bc"
+   "text": "404 http://127.0.0.1:56832/functions/v1/synk-classroom/api/teacher/homework?classId=f971903f-ebf8-4e0c-8211-da8afd71d54c"
   },
   {
    "tag": "390",
@@ -1379,5 +1386,5 @@
    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
   }
  ],
- "finishedAt": "2026-10-20T11:08:39.988Z"
+ "finishedAt": "2026-11-14T16:32:24.339Z"
 }

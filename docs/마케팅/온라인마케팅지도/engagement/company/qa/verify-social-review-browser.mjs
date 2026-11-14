@@ -18,7 +18,7 @@ mkdirSync(out, { recursive: true });
 const fixtureTemp = mkdtempSync(join(tmpdir(), 'synk-social-review-fixture-run-'));
 const port = 47950 + Math.floor(Math.random() * 40);
 const child = spawn(process.execPath, [join(here, 'verify-social-review-fixture.mjs'), String(port)], { env: { ...process.env, TEMP: fixtureTemp, TMP: fixtureTemp }, stdio: ['pipe', 'pipe', 'inherit'] });
-const { links } = await new Promise((done, fail) => {
+const { links, revisedSchedule } = await new Promise((done, fail) => {
   let text = '';
   child.stdout.on('data', chunk => { text += chunk; const line = text.split(/\r?\n/).find(row => row.startsWith('{')); if (line) done(JSON.parse(line)); });
   child.on('exit', code => fail(new Error('fixture exited ' + code)));
@@ -63,13 +63,16 @@ async function audit(page, name) {
 // 글꼴은 고객 상담과 같은 /consultation/assets/ 파일이다(CSP font-src 'self', 10-24). 막히면 기기 글꼴로 조용히 바뀌므로 받은 상태를 본다.
 async function fonts(page, name, problems) {
   const f = await page.evaluate(async () => { await document.fonts.ready;
+    // An error page has no numeric content. Verify the declared Latin/numeric
+    // faces can actually load without forcing decorative numbers into the UI.
+    await Promise.all([document.fonts.load('16px "SYNK Latin"', 'SYNK'), document.fonts.load('16px "DM Mono"', '0123')]);
     return { suit: document.fonts.check('16px "SUIT Variable"'), faces: [...document.fonts].map(face => ({ family: face.family.replace(/["']/g, ''), weight: face.weight, status: face.status })),
       suitFetches: performance.getEntriesByType('resource').filter(entry => new URL(entry.name).pathname === '/consultation/assets/SUIT-Variable.woff2').map(entry => entry.initiatorType) }; });
   const loaded = family => f.faces.some(face => face.family === family && face.status === 'loaded'), faces = JSON.stringify(f.faces);
   check(`${name}: SUIT 글꼴을 받아 씀`, f.suit && loaded('SUIT Variable'), faces);
   // HTML의 preload가 CSS보다 먼저 받고, CSS의 @font-face가 그 받은 것을 그대로 쓴다(crossorigin이 어긋나면 두 번 받는다)
   check(`${name}: SUIT는 preload로 한 번만 받음`, f.suitFetches.length === 1 && f.suitFetches[0] === 'link', f.suitFetches.join(','));
-  check(`${name}: SYNK Latin·DM Mono도 받음`, loaded('SYNK Latin') && loaded('DM Mono'), faces);
+  check(`${name}: 선언한 SYNK Latin·DM Mono 원천을 실제로 받음`, loaded('SYNK Latin') && loaded('DM Mono'), faces);
   check(`${name}: 글꼴 받기 실패 없음`, !f.faces.some(face => face.status === 'error'), faces);
   check(`${name}: 글꼴 CSP 거절 없음`, !problems.console.some(text => /font/i.test(text) && /Content Security Policy/i.test(text)), problems.console.join(' | '));
 }
@@ -103,7 +106,9 @@ for (const width of [1440, 390]) {
   check(`${name}: 그때 남긴 의견 둘`, sheet.includes('두 번째 사진은 원두가') && sheet.includes('가격 문구는 빼 주세요'));
   const summaries = await page.$$eval('.change summary', list => list.map(s => s.textContent)), groups = await page.$$eval('.change-group', list => list.map(g => g.textContent));
   check(`${name}: 게시물 전체 다음에 계정 소제목 하나`, summaries[0].startsWith('올라가는 때') && groups.length === 1 && groups[0] === '모루 커피 · 인스타그램', summaries[0] + ' / ' + groups.join(' | '));
-  for (const want of ['문구뺀 줄 1', '사진 2 바뀜', '첫 댓글', '문구 2 고침', '10월'])
+  const scheduleDate = value => new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric' }).format(new Date(value));
+  const scheduleChange = `${scheduleDate(revisedSchedule.before)} → ${scheduleDate(revisedSchedule.after)}`;
+  for (const want of ['문구뺀 줄 1', '사진 2 바뀜', '첫 댓글', '문구 2 고침', scheduleChange])
     check(`${name}: 바뀐 곳 「${want}」`, summaries.some(text => text.includes(want)), summaries.join(' | '));
   check(`${name}: 다섯 항목은 처음에 접혀 있음`, (await page.$$eval('.change details', list => list.filter(d => d.open).length)) === 0);
   if (width === 390) {

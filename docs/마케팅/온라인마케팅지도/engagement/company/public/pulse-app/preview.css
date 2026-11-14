@@ -48,3 +48,28 @@
   .preview-player-controls .button{padding:0 12px}
   .preview-choice-heading,.preview-choice-row{grid-template-columns:minmax(0,1fr) 54px 62px}
 }
+/* 고객 검토 구획(#000 순수 검정 · 가는 선, 직원 화면 html.is-staff 제외) */
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) :is(.preview-samples,.preview-animatic){color:#fff;min-width:0}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) :is(.preview-samples>p,.preview-animatic>p,.preview-player-narration,.preview-confirmation-snapshot ol){color:#d0d6e0;font-size:15px;line-height:1.6}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-sample-grid{gap:20px}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-sample{padding:18px 0 0;border-radius:0;background:#000;box-shadow:none;border-top:1px solid rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-sample-image{border-radius:0;background:#07080a;border:1px solid rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-aspects{gap:8px 16px}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-aspects div{padding:4px 0;border-radius:0;background:transparent;border-bottom:1px solid rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) :is(.preview-aspects dt,.preview-choice-row small){font-size:13px;color:#9aa5b6}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-aspects dd{color:#fff;font-size:14px}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-choice-table{border-radius:0;box-shadow:none;border-top:1px solid rgba(255,255,255,.13);border-bottom:1px solid rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-choice-heading{background:#07080a;color:#9aa5b6;font-size:13px;padding:8px 10px}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-choice-row{padding:8px 10px;border-top-color:rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-choice-row>span{min-width:0;overflow-wrap:anywhere;color:#fff}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) :is(.preview-history-item,.preview-test-section){border-top-color:rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) :is(.preview-test-section video,.preview-player-screen){border-radius:0;background:#000;border:1px solid rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-player-caption{border-radius:0;background:rgba(0,0,0,.84);border-top:1px solid rgba(255,255,255,.13)}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-player-range{accent-color:#fff}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-player-timeline{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-player-timeline button{border-radius:0;background:#000;box-shadow:inset 0 0 0 1px #78808e;color:#d0d6e0;font-size:13px;cursor:pointer}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-player-timeline button[aria-current=true]{background:#fff;color:#000;box-shadow:none}
+html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) .preview-player-status{color:#fde68a}
+@media (max-width:380px){
+  html.sx:not(.is-staff) :is(.sx-shell[data-tab=direction],.sx-shell[data-tab=storyboard],.sx-review) :is(.preview-choice-heading,.preview-choice-row){grid-template-columns:minmax(0,1fr) 46px 52px;padding:8px 6px}
+}

@@ -260,6 +260,94 @@ test('돌리기 — 넓은 CI와 같은 120초 개별 한도를 Node 실행 인�
   assert.equal(실행.설정.timeout, 15 * 60e3, '전체 한도는 그대로다');
 });
 
+function 긴목록실행(t, { 응답 = () => ({ status: 0 }), 경과 = 0, 시각보정 = 0, 한도ms = 900000 } = {}) {
+  const root = 저장소(t, {}), calls = [], 파일 = require.resolve('../tools/관련시험.js');
+  const 안require = require('node:module').createRequire(파일), 모듈 = { exports: {} };
+  const 시험 = Array.from({ length: 700 }, (_, i) => `tests/공백 있는 경로/${'검사대상'.repeat(9)}-${i}.test.js`);
+  let now = 1794690000000, monotonic = 0n;
+  require('node:vm').runInNewContext(fs.readFileSync(파일, 'utf8'), {
+    require: id => id === 'node:child_process' ? { spawnSync: (command, args, options) => {
+      const selected = args.filter(arg => !arg.startsWith('--'));
+      calls.push({ command, args: [...args], options, selected });
+      const result = 응답(calls.length, selected);
+      if (!result.noTap) {
+        const fail = result.failed || 0;
+        const text = ['TAP version 13', ...selected.map((file, i) => `${i < fail ? 'not ok' : 'ok'} ${i + 1} - ${file}`),
+          `1..${selected.length}`, `# tests ${selected.length}`, `# pass ${selected.length - fail}`, `# fail ${fail}`, '# cancelled 0'].join('\n');
+        fs.writeFileSync(args.find(arg => arg.startsWith('--test-reporter-destination=')).split('=').slice(1).join('='), text);
+      }
+      const elapsed = typeof 경과 === 'function' ? 경과(calls.length) : 경과;
+      now += elapsed + (typeof 시각보정 === 'function' ? 시각보정(calls.length) : 시각보정);
+      monotonic += BigInt(elapsed) * 1000000n;
+      return result;
+    } } : 안require(id),
+    module: 모듈, __dirname: path.dirname(파일), __filename: 파일,
+    process: { ...process, platform: 'win32', hrtime: { bigint: () => monotonic } }, Buffer, console,
+    Date: class extends Date { static now() { return now; } },
+  });
+  const result = 모듈.exports.돌리기({ root, 시험, 워크트리: true, 새파일: ['tests/new.test.js'], 자리: false, 한도ms });
+  return { result, calls, 시험, 관련: 모듈.exports };
+}
+
+test('Windows 긴 시험 목록은 빠뜨리거나 중복하지 않고 모두 실행하며 환경과 개별 한도를 보존한다', t => {
+  const { result, calls, 시험 } = 긴목록실행(t, { 경과: 1500 });
+  assert.ok(calls.length > 1, '32,767자를 넘는 명령 하나로 실행하지 않는다');
+  assert.deepEqual(calls.flatMap(call => call.selected), 시험);
+  for (const [index, call] of calls.entries()) {
+    const quotedLength = [call.command, ...call.args].map(arg => '"' + arg.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/g, '$1$1') + '"').join(' ').length;
+    assert.ok(quotedLength < 32767, quotedLength);
+    assert.ok(call.args.includes('--test-timeout=120000'));
+    assert.equal(call.options.timeout, 900000 - 1500 * index, '뒷 묶음은 남은 시간만 쓴다');
+    assert.equal(call.options.env.CI, '1');
+    assert.equal(call.options.env.SYNK_새파일, '["tests/new.test.js"]');
+    assert.equal(call.options.env.NODE_TEST_CONTEXT, undefined);
+  }
+  assert.equal(result.통과함, true); assert.equal(result.시험, 시험.length); assert.equal(result.통과, 시험.length);
+  assert.equal(result.실패수, 0); assert.equal(result.묶음.실행, result.묶음.전체);
+});
+
+test('긴 목록의 실제 실패와 실행 오류를 뒤 묶음의 결과로 덮지 않는다', t => {
+  const failed = 긴목록실행(t, { 응답: () => ({ status: 1, failed: 1 }) });
+  assert.equal(failed.calls.length, 1); assert.equal(failed.result.통과함, false); assert.equal(failed.result.실패수, 1);
+  assert.equal(failed.관련.시간만넘김(failed.result), false);
+  const spawnError = 긴목록실행(t, { 응답: () => ({ status: null, error: { code: 'ENOENT' }, noTap: true }) });
+  assert.equal(spawnError.calls.length, 1); assert.equal(spawnError.result.통과함, false);
+  assert.match(spawnError.result.이유, /ENOENT/); assert.equal(spawnError.관련.시간만넘김(spawnError.result), false);
+});
+
+test('뒤 묶음 시간 초과는 앞의 통과 수를 보존하되 전체 완료로 표시하지 않는다', t => {
+  const { result, calls, 관련: subject } = 긴목록실행(t, { 응답: index => index === 1 ? { status: 0 } : { status: null, error: { code: 'ETIMEDOUT' }, noTap: true } });
+  assert.equal(calls.length, 2); assert.equal(result.통과함, false); assert.equal(result.시간넘김, true);
+  assert.equal(result.통과, calls[0].selected.length); assert.equal(result.시험, calls[0].selected.length); assert.ok(result.시험 < result.묶음.선택파일); assert.equal(subject.시간만넘김(result), true);
+});
+
+test('앞 묶음이 전체 시간을 소진하면 남은 묶음을 새 한도로 실행하지 않는다', t => {
+  const { result, calls } = 긴목록실행(t, { 경과: 2000, 한도ms: 1000 });
+  assert.equal(calls.length, 1); assert.equal(result.통과함, false); assert.equal(result.시간넘김, true);
+  assert.ok(result.묶음.실행 < result.묶음.전체);
+});
+
+test('시스템 시각이 앞뒤로 보정돼도 실제 경과 시간으로 남은 한도와 실행 시간을 센다', t => {
+  for (const correction of [20000, -20000]) {
+    const { result, calls } = 긴목록실행(t, {
+      경과: index => index === 1 ? 890000 : 5000,
+      시각보정: index => index === 1 ? correction : 0,
+    });
+    assert.equal(calls.length, 2, '시각 보정 때문에 남은 묶음을 건너뛰지 않는다');
+    assert.equal(calls[1].options.timeout, 10000, '시각 보정으로 실행 한도를 늘리거나 줄이지 않는다');
+    assert.equal(result.통과함, true); assert.equal(result.초, 895);
+  }
+});
+
+test('한도 0은 기존처럼 전체 제한 없이 실행하며 실제 실패를 시간 초과로 넘기지 않는다', t => {
+  const passed = 긴목록실행(t, { 한도ms: 0, 경과: 1000000 });
+  assert.ok(passed.calls.length > 1); assert.equal(passed.result.통과함, true);
+  assert.ok(passed.calls.every(call => call.options.timeout === 0));
+  const failed = 긴목록실행(t, { 한도ms: 0, 응답: () => ({ status: 1, failed: 1 }) });
+  assert.equal(failed.calls.length, 1); assert.equal(failed.result.통과함, false); assert.equal(failed.result.실패수, 1);
+  assert.equal(failed.관련.시간만넘김(failed.result), false);
+});
+
 test('돌리기 — 한도를 넘기면 시간넘김을 남기고, 그때까지 깨진 것이 없을 때만 시간만넘김이다(10-22)', (t) => {
   const root = 저장소(t, {
     'tests/느림.test.js': "require('node:test')('오래 걸림', () => new Promise((r) => setTimeout(r, 20000)));\n",

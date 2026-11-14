@@ -340,7 +340,7 @@ test('a photo order reads as photos from the stage line to the first sheet, and 
   const text=project({answers:{package:'photo',models:['F02']},casting:{modelId:'F02'},scenes:[{id:'s1',revision:1,title:'첫 장',description:'캔을 든 반신',duration:3}],rounds:[{round:1,kind:'script',oneLine:'한 줄',scenes:[{id:'s1',revision:1}],sentAt:'2026-11-12T03:00:00.000Z'}]});
   assert.equal('photo' in draftModel(text),false);
   const textHtml=draftView(draftModel(text));
-  assert.match(textHtml,/<div class="sx-draft sx-dr is-script" data-draft/);assert.match(textHtml,/글 콘티 · 1판/);assert.match(textHtml,/<span>이대로 장면 이미지 만들기<\/span>/);assert.doesNotMatch(textHtml,/첫 장 · 1판|is-photo/);
+  assert.match(textHtml,/<div class="sx-draft sx-dr is-script" data-draft/);assert.match(textHtml,/글 콘티 1판/);assert.match(textHtml,/<span>이대로 장면 이미지 만들기<\/span>/);assert.doesNotMatch(textHtml,/첫 장 · 1판|is-photo/);
   assert.equal(journalModel(text).items.find(item=>item.id==='r:1').what,'글 콘티 1판을 보냈어요');
   // 방의 큰 그림 칸 설명(F2): 사진 상품은 움직임 · 장면 이미지 · 완성 영상을 말하지 않는다.
   assert.match(room,/<p class="sx-small sx-room-cap">첫 장 1판 · 1장<\/p>/);assert.doesNotMatch(room,/움직이는 동안/);

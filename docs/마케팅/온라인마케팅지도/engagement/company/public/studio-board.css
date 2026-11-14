@@ -1,16 +1,16 @@
-/* 제작 상황판 소재(studio-board.js) — 데스크는 maker-tools.css 공통 어휘로 그리고, 여기는 소재 모달(남기기 · 고치기)만. 시그널 모달 위에 얹는다. */
+/* 제작 상황판 소재(studio-board.js) — Pure Black #000000 */
 :root #overlay .swb-material-form textarea{min-height:130px;resize:vertical}
 :root #overlay .swb-material-form [hidden]{display:none!important}
-:root #overlay .swb-material-options{padding:14px 0;border-block:1px solid var(--sg-line)}
-:root #overlay .swb-material-options>summary{display:flex;align-items:center;gap:8px;list-style:none;font-size:14px;font-weight:650;line-height:1.5;color:var(--sg-ink);cursor:pointer}
+:root #overlay .swb-material-options{padding:14px 0;border-block:1px solid var(--ws-hairline,rgba(255,255,255,.13))}
+:root #overlay .swb-material-options>summary{display:flex;align-items:center;gap:8px;list-style:none;font-size:14px;font-weight:600;line-height:1.5;color:var(--ws-ink,#FFFFFF);cursor:pointer}
 :root #overlay .swb-material-options>summary::-webkit-details-marker{display:none}
-:root #overlay .swb-material-options>summary::after{content:'';width:8px;height:8px;margin-left:auto;border-right:1.6px solid var(--sg-ink-3);border-bottom:1.6px solid var(--sg-ink-3);transform:rotate(45deg) translateY(-2px)}
+:root #overlay .swb-material-options>summary::after{content:'';width:8px;height:8px;margin-left:auto;border-right:1.6px solid var(--ws-muted,#9AA5B6);border-bottom:1.6px solid var(--ws-muted,#9AA5B6);transform:rotate(45deg) translateY(-2px)}
 :root #overlay .swb-material-options[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
-:root #overlay .swb-material-options>summary span{font-size:12.5px;font-weight:500;color:var(--sg-ink-3)}
+:root #overlay .swb-material-options>summary span{font-size:13px;font-weight:500;color:var(--ws-muted,#9AA5B6)}
 :root #overlay .swb-material-options>.form-stack{margin-top:16px}
-:root #overlay .swb-consent{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;background:var(--sg-surface-1);font-size:13.5px;line-height:1.6;color:var(--sg-ink)}
-:root #overlay .swb-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--sg-ink)}
+:root #overlay .swb-consent{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));border-radius:6px;background:var(--ws-surface-2,#0E1015);font-size:13.5px;line-height:1.65;color:var(--ws-ink,#FFFFFF)}
+:root #overlay .swb-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:#FFFFFF}
 :root #overlay .swb-consent span{min-width:0;overflow-wrap:anywhere}
-:root #overlay .swb-scope-hint{margin:0;font-size:13px;line-height:1.6;color:var(--sg-ink-3)}
+:root #overlay .swb-scope-hint{margin:0;font-size:13px;line-height:1.65;color:var(--ws-muted,#9AA5B6)}
 :root #overlay .swb-material-actions{justify-content:space-between;flex-wrap:wrap;gap:10px}
 :root #overlay .swb-material-actions>.btn{max-width:100%;white-space:normal}

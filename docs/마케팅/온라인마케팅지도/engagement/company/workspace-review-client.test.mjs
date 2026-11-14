@@ -112,7 +112,7 @@ function fixture(features=['production','clients','pages'],options={}){
  g.overlay={};const context=vm.createContext(g);vm.runInContext(sources['workspace-access.js']+'\n'+sources['workspace.js']+'\n'+sources['workroom.js'],context);
  for(const [file,names]of [['app.js',['render','renderCommandResults','channelSearchText']],['marin-home.js',['marinWorkroomPage']],['maker-tools.js',['makerToolsMovedPanel']],['studio.js',['swNow']]])for(const n of names)vm.runInContext(fn(file,n),context);
  vm.runInContext("wrDeskDrafts=()=>[];wrWorkingPlan=()=>null;wrDeskGuide=()=>'';wrPages=()=>'<section>PAGES</section>';",context);
- const run=s=>vm.runInContext(s,context);return Object.assign(h,{context,state,run,results,events,click:action=>{const target={dataset:action,disabled:false,isConnected:true},e={target:{closest:()=>target},preventDefault(){},stopImmediatePropagation(){this.stopped=true;}};for(const f of events.click||[]){f(e);if(e.stopped)break;}}});
+ const run=s=>vm.runInContext(s,context);return Object.assign(h,{context,state,run,results,events,click:action=>{const target={dataset:action,disabled:false,isConnected:true,closest:()=>null},e={target:{closest:()=>target},preventDefault(){},stopImmediatePropagation(){this.stopped=true;}};for(const f of events.click||[]){f(e);if(e.stopped)break;}}});
 }
 
 for(const section of ['clients','pages'])test('first home shortcut preserves workroom '+section,()=>{

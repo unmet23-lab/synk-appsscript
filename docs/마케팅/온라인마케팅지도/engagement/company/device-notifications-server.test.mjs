@@ -11,6 +11,8 @@ import {hash} from './store.mjs';
 import {createPushSender} from '../../../../../tools/company-messenger/web-push-service.mjs';
 
 const endpoint='https://fcm.googleapis.com/fcm/send/SYNTHETIC-CAPABILITY';
+// 메시지와 회사 알림이 같은 시계를 써야 느린 실행에서도 새 메시지가 미래로 분류되지 않는다.
+test.beforeEach(t=>{t.mock.timers.enable({apis:['Date'],now:Date.now()});});
 // 통화는 합성 LiveKit 대역으로만 켠다(실제 키·방 없음). 통화 시계는 회사 시계와 같게 둔다.
 // send를 주면 기록한 뒤 그 송신기로 넘긴다(없으면 바로 201).
 async function fixture(t,{enabled=true,voice=null,send=null}={}){
@@ -31,7 +33,7 @@ async function fixture(t,{enabled=true,voice=null,send=null}={}){
     const text=await response.text();return {status:response.status,headers:response.headers,text,data:response.headers.get('content-type')?.includes('application/json')&&text?JSON.parse(text):null};
   }
   const register=(user='owner',url=endpoint)=>request('/api/device-notifications',{user,body:{subscription:{endpoint:url},label:'합성 기기'}});
-  return {get app(){return app},get base(){return base},sent,users,tokens,request,register,advance(){at=new Date(Date.parse(at)+1000).toISOString();},async restart(){await app.stop();await start();}};
+  return {get app(){return app},get base(){return base},sent,users,tokens,request,register,advance(){at=new Date(Date.parse(at)+1000).toISOString();t.mock.timers.setTime(Date.parse(at));},async restart(){await app.stop();await start();}};
 }
 
 test('push defaults off without creating VAPID credentials and exposes no registration or transport',async t=>{

@@ -170,8 +170,9 @@ const firstIg = { channelId: 'moru-ig', format: 'carousel', text: priced, media:
   options: { firstComment: '원두 이야기는 프로필 링크에서 볼 수 있어요.', altText: '모루 드립백 봉투와 커피 한 잔', hashtags: '#모루커피 #드립백' },
   copyVariants: [{ id: 'second', text: '두 번째 주에도 같은 루틴으로.\n물 온도는 92도면 충분해요.\n\n#모루커피 #드립백' }] };
 const firstFb = { channelId: 'moru-fb', format: 'video', text: '15초 안에 담은 모루의 아침. 새 원두는 이번 주부터 매장과 온라인에서 만나요.', media: [film], options: { link: 'https://moru.example/drip' } };
+const revisedSchedule = { before: day(3, 12), after: day(4, 12) };
 const before = await post({ title: '가을 첫 잔 — 드립백 새 원두', body: '모루 드립백 가을 원두 소개. 인스타는 사진 두 장, 페이스북은 15초 예고편으로 올려요.', recurrence: { intervalDays: 7, maxOccurrences: 3 }, variants: [firstIg, firstFb] },
-  { schedules: [[day(3, 12), ['moru-ig', 'moru-fb']]], link: { label: '모루 마케팅팀 검토', expiresInHours: 120 }, answers: [
+  { schedules: [[revisedSchedule.before, ['moru-ig', 'moru-fb']]], link: { label: '모루 마케팅팀 검토', expiresInHours: 120 }, answers: [
     { decision: 'comment', name: '김지은', comment: '두 번째 사진은 원두가 더 잘 보이는 컷이면 좋겠어요.' },
     { decision: 'reject', name: '박서준 · 모루 마케팅', comment: '가격 문구는 빼 주세요. 첫 댓글은 「프로필 맨 위 링크」로 바꿔 주세요.\n두 번째 주 문구의 물 온도는 90도로, 올리는 날은 하루 미뤄 주세요.' },
   ] });
@@ -179,6 +180,6 @@ const revised = await revise(before, { variants: [
   { ...firstIg, text: moruText, media: [moru1, moru3], options: { ...firstIg.options, firstComment: '원두 이야기는 프로필 맨 위 링크에서 볼 수 있어요.' },
     copyVariants: firstIg.copyVariants.map(copy => ({ ...copy, text: copy.text.replace('92도', '90도') })) },
   firstFb,
-] }, [[day(4, 12), ['moru-ig', 'moru-fb']]]);
+] }, [[revisedSchedule.after, ['moru-ig', 'moru-fb']]]);
 
-console.log(JSON.stringify({ base: origin + '/social-review', links: { daily, customer, approved, optional, long, revoked, revised, before, notoken: origin + '/social-review' }, directory }));
+console.log(JSON.stringify({ base: origin + '/social-review', links: { daily, customer, approved, optional, long, revoked, revised, before, notoken: origin + '/social-review' }, revisedSchedule, directory }));

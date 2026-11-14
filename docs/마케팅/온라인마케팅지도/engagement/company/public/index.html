@@ -3,68 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#060709">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="SYNK Workspace">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <title>SYNK Workspace · 싱크 워크스페이스</title>
-  <link rel="icon" href="/wordmark.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#000000">
+  <title>SYNK Workspace</title>
+  <link rel="icon" href="/brand-logo.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/messenger-icon.png">
-  <link rel="preload" href="/font.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/inter.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/content.css">
   <link rel="stylesheet" href="/benchmark.css">
   <link rel="stylesheet" href="/studio.css">
   <link rel="stylesheet" href="/studio-board.css">
   <link rel="stylesheet" href="/studio-review.css">
-  <script src="/benchmark.js" defer></script>
-  <script src="/content.js" defer></script>
-  <script src="/studio.js" defer></script>
-  <script src="/studio-board.js" defer></script>
-  <script src="/studio-review.js" defer></script>
-  <script src="/workspace-access.js" defer></script>
-  <script src="/workspace.js" defer></script>
-  <script src="/team-overview.js" defer></script>
-  <script src="/team-trends.js" defer></script>
   <link rel="stylesheet" href="/team-trends.css">
-  <script src="/comparison-charts.js" defer></script>
-  <script src="/demo-ui.js" defer></script>
-  <script src="/growth-home.js" defer></script>
-  <script src="/growth-history.js" defer></script>
-  <script src="/chart-hover.js" defer></script>
-  <script src="/marin-work.js" defer></script>
-  <script src="/workroom.js" defer></script>
-  <script src="/social-workspace.js" defer></script>
   <link rel="stylesheet" href="/social-workspace.css">
-  <script src="/social-simple.js" defer></script>
   <link rel="stylesheet" href="/social-simple.css">
-  <script src="/marketing-map.js" defer></script>
   <link rel="stylesheet" href="/marketing-map.css">
-  <script src="/client-project-screen-plan.js" defer></script>
-  <script src="/client-project-screen.js" defer></script>
-  <script src="/client-project-news.js" defer></script>
-  <script src="/client-projects.js" defer></script>
-  <script src="/client-startup.js" defer></script>
-  <script src="/client-progress-update.js" defer></script>
-  <script src="/client-drafts.js" defer></script>
-  <script src="/client-materials.js" defer></script>
-  <script src="/client-material-usage.js" defer></script>
-  <script src="/client-reply-templates.js" defer></script>
-  <script src="/client-rights.js" defer></script>
-  <script src="/client-search.js" defer></script>
-  <script src="/client-delivery-check.js" defer></script>
-  <script src="/client-delivery.js" defer></script>
-  <script src="/client-delivery-archive.js" defer></script>
-  <script src="/client-closeout.js" defer></script>
-  <script src="/client-completion-records.js" defer></script>
-  <script src="/client-kickoff.js" defer></script>
-  <script src="/client-changes.js" defer></script>
-  <script src="/client-scene-requests.js" defer></script>
-  <script src="/client-schedule.js" defer></script>
-  <script src="/brand-quality.js" defer></script>
   <link rel="stylesheet" href="/client-projects.css">
   <link rel="stylesheet" href="/client-project-screen.css">
   <link rel="stylesheet" href="/client-project-news.css">
@@ -86,26 +39,8 @@
   <link rel="stylesheet" href="/client-scene-requests.css">
   <link rel="stylesheet" href="/client-schedule.css">
   <link rel="stylesheet" href="/brand-quality.css">
-  <script src="/publish-rules.js" defer></script>
-  <script src="/publish-check.js" defer></script>
-  <script src="/publication-flow.js" defer></script>
-  <script src="/publication-learning-plan.js" defer></script>
-  <script src="/subtitle-lab.js" defer></script>
-  <script src="/creator-sources.js" defer></script>
-  <script src="/weekly-summary.js" defer></script>
-  <script src="/automation-health.js" defer></script>
-  <script src="/website-inquiries.js" defer></script>
-  <script src="/maker-tools.js" defer></script>
-  <script src="/creative-research.js" defer></script>
-  <script src="/company-guide.js" defer></script>
-  <script src="/marin-home.js" defer></script>
-  <script src="/synk-id.js" defer></script>
-  <script src="/teaching.js" defer></script>
   <link rel="stylesheet" href="/teaching.css">
-  <script src="/device-notifications.js" defer></script>
   <link rel="stylesheet" href="/device-notifications.css">
-  <script src="/member-organization.js" defer></script>
-  <script src="/app.js" defer></script>
   <link rel="stylesheet" href="/comparison-charts.css">
   <link rel="stylesheet" href="/growth-home.css">
   <link rel="stylesheet" href="/growth-history.css">
@@ -127,11 +62,76 @@
   <link rel="stylesheet" href="/member-organization.css">
   <link rel="stylesheet" href="/client-desk.css">
   <link rel="stylesheet" href="/workspace-access.css">
+  <link rel="stylesheet" href="/admin-workspace.css">
 </head>
 <body>
-  <a class="skip-link" href="#main">본문으로 이동</a>
-  <div id="app"><div class="initial-loading"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><p>우리 팀의 워크스페이스를 준비하고 있어요.</p><span class="loading-line"></span></div></div>
-  <div id="overlay"></div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="app" class="boot-shell">
+    <div class="boot-card" role="status" aria-live="polite">
+      <img src="/brand-logo.svg" alt="SYNK" class="brand-logo" width="44" height="18">
+      <p>워크스페이스를 불러오고 있어요.</p>
+    </div>
+  </div>
+  <div id="overlay" aria-live="polite"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="/benchmark.js"></script>
+  <script src="/content.js"></script>
+  <script src="/studio.js"></script>
+  <script src="/studio-board.js"></script>
+  <script src="/studio-review.js"></script>
+  <script src="/workspace-access.js"></script>
+  <script src="/workspace.js"></script>
+  <script src="/team-overview.js"></script>
+  <script src="/team-trends.js"></script>
+  <script src="/comparison-charts.js"></script>
+  <script src="/demo-ui.js"></script>
+  <script src="/growth-home.js"></script>
+  <script src="/growth-history.js"></script>
+  <script src="/chart-hover.js"></script>
+  <script src="/marin-work.js"></script>
+  <script src="/workroom.js"></script>
+  <script src="/social-workspace.js"></script>
+  <script src="/social-simple.js"></script>
+  <script src="/marketing-map.js"></script>
+  <script src="/client-project-screen-plan.js"></script>
+  <script src="/client-project-screen.js"></script>
+  <script src="/client-project-news.js"></script>
+  <script src="/client-projects.js"></script>
+  <script src="/client-startup.js"></script>
+  <script src="/client-progress-update.js"></script>
+  <script src="/client-drafts.js"></script>
+  <script src="/client-materials.js"></script>
+  <script src="/client-material-usage.js"></script>
+  <script src="/client-reply-templates.js"></script>
+  <script src="/client-rights.js"></script>
+  <script src="/client-search.js"></script>
+  <script src="/client-delivery-check.js"></script>
+  <script src="/client-delivery.js"></script>
+  <script src="/client-delivery-archive.js"></script>
+  <script src="/client-closeout.js"></script>
+  <script src="/client-completion-records.js"></script>
+  <script src="/client-kickoff.js"></script>
+  <script src="/client-changes.js"></script>
+  <script src="/client-scene-requests.js"></script>
+  <script src="/client-schedule.js"></script>
+  <script src="/brand-quality.js"></script>
+  <script src="/publish-rules.js"></script>
+  <script src="/publish-check.js"></script>
+  <script src="/publication-flow.js"></script>
+  <script src="/publication-learning-plan.js"></script>
+  <script src="/subtitle-lab.js"></script>
+  <script src="/creator-sources.js"></script>
+  <script src="/weekly-summary.js"></script>
+  <script src="/automation-health.js"></script>
+  <script src="/website-inquiries.js"></script>
+  <script src="/maker-tools.js"></script>
+  <script src="/creative-research.js"></script>
+  <script src="/company-guide.js"></script>
+  <script src="/marin-home.js"></script>
+  <script src="/synk-id.js"></script>
+  <script src="/teaching.js"></script>
+  <script src="/device-notifications.js"></script>
+  <script src="/member-organization.js"></script>
+  <script src="/admin-workspace.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

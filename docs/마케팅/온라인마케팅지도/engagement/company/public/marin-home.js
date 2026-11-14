@@ -32,32 +32,34 @@ function nextActionButton(label,action,extra='',primary=false){return `<button t
 function nextDueText(due){if(!due)return '';const value=due.precision==='instant'&&Number.isFinite(Date.parse(due.value))?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(due.value))+' (한국 시간)':due.value;return [due.label,value].filter(Boolean).join(' · ');}
 function nextActionCard(row){
   const action=safeNextAction(row.action),source={messenger:'대화 업무',client:'고객 업무',publication:'게시 · SNS'}[row.source]||'내 업무';
-  return `<article class="next-card" aria-labelledby="next-task-title"><div class="next-meta"><span>${escape(source)}</span>${row.due?`<span class="next-due">${escape(nextDueText(row.due))}</span>`:''}</div><h2 id="next-task-title">${escape(row.title)}</h2>${row.context?`<p class="next-context">${escape(row.context)}</p>`:''}<div class="next-reasons"><h3>이 일을 추천하는 이유</h3>${(row.reasons||[]).map(reason=>`<p>${escape(reason.text)}</p>`).join('')}</div>${row.checks?.length?`<div class="next-checks"><h3>열어서 확인할 것</h3><ul>${row.checks.map(check=>`<li>${escape(check)}</li>`).join('')}</ul></div>`:''}<div class="next-actions">${action?nextActionButton(action.label,'next-open',`data-key="${escape(row.key)}"`,true):'<p>원본 연결을 확인하지 못했어요.</p>'}${nextActionButton('다른 일 보기','next-skip')}${nextActionButton('도움받기','next-help',`aria-expanded="${marinNext.help}" aria-controls="next-help"`)}</div>${marinNext.help?`<div id="next-help" class="next-help"><p>막힌 부분과 필요한 자료를 원본에서 확인하고, 담당 크루에게 알려주세요. 기존 대화와 검토 흐름에서 함께 해결할 수 있어요.</p>${action?nextActionButton('원본에서 함께 확인하기','next-open',`data-key="${escape(row.key)}"`):''}</div>`:''}</article>`;
+  return `<article class="next-card" aria-labelledby="next-task-title"><div class="next-meta"><span class="next-source-chip">${escape(source)}</span>${row.due?`<span class="next-due">${escape(nextDueText(row.due))}</span>`:''}</div><h2 id="next-task-title">${escape(row.title)}</h2>${row.context?`<p class="next-context">${escape(row.context)}</p>`:''}<div class="next-reasons"><h3>이 일을 먼저 추천하는 이유</h3>${(row.reasons||[]).map(reason=>`<p>${escape(reason.text)}</p>`).join('')}</div>${row.checks?.length?`<div class="next-checks"><h3>열어서 확인할 것</h3><ul>${row.checks.map(check=>`<li>${escape(check)}</li>`).join('')}</ul></div>`:''}<div class="next-actions">${action?nextActionButton(action.label,'next-open',`data-key="${escape(row.key)}"`,true):'<p class="muted">원본 연결을 확인하지 못했어요.</p>'}${nextActionButton('다른 일 보기','next-skip')}${nextActionButton('도움받기','next-help',`aria-expanded="${marinNext.help}" aria-controls="next-help"`)}</div>${marinNext.help?`<div id="next-help" class="next-help"><p>막힌 부분과 필요한 자료를 원본 화면에서 확인하고 담당 동료에게 알려 주세요. 기존 대화와 검토 흐름에서 함께 해결할 수 있어요.</p>${action?nextActionButton('원본에서 함께 확인하기','next-open',`data-key="${escape(row.key)}"`):''}</div>`:''}</article>`;
 }
 function marinNextHtml(){
   const data=marinNext.data;
-  if(!marinNext.started)return `<div class="next-start">${nextActionButton('다음 할 일 추천','next-recommend','',true)}<p>마감과 내 차례를 살펴, 지금 할 수 있는 일부터.</p></div>`;
+  if(!marinNext.started)return `<div class="next-start"><div class="next-start-copy"><strong>내 차례인 업무부터 차례로 살펴봐요</strong><p>대화·고객 프로젝트·게시 흐름에서 마감과 대기 상태를 대조해 지금 바로 이어갈 한 가지 일을 제안해요.</p></div>${nextActionButton('다음 할 일 추천받기','next-recommend','',true)}</div>`;
   let html=marinNext.pending?'<p class="next-status" role="status">현재 업무를 확인하고 있어요…</p>':'';
-  if(marinNext.error)html+=`<p class="next-warning" role="alert">${escape(marinNext.error)}</p>`;
+  if(marinNext.error)html+=`<p class="next-warning is-error" role="alert">${escape(marinNext.error)}</p>`;
   if(marinNext.note)html+=`<p class="next-status" role="status">${escape(marinNext.note)}</p>`;
   if(data?.status==='partial'||data?.status==='unknown'){
     const missing=Object.entries(data.coverage||{}).filter(([,value])=>value?.status!=='ok').map(([key])=>({messenger:'대화 업무',client:'고객 업무',publication:'게시 · SNS'}[key]||key));
-    html+=`<p class="next-warning">${data.status==='partial'?'일부 업무를 확인하지 못했어요. 확인된 범위에서 추천해요.':'업무를 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.'}${missing.length?` <span>미확인: ${escape(missing.join(', '))}</span>`:''}</p>`;
+    html+=`<p class="next-warning">${data.status==='partial'?'일부 업무를 확인하지 못했어요. 확인된 범위에서 먼저 추천해요.':'업무를 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.'}${missing.length?` <span>미확인: ${escape(missing.join(', '))}</span>`:''}</p>`;
   }
   if(data?.next)html+=nextActionCard(data.next);
   else if(data&&data.status!=='unknown'&&!marinNext.pending){
     const skipped=data.totalCount>0&&data.excludedCount===data.totalCount;
-    html+=`<div class="next-empty"><h2>${skipped?'지금 보여 드릴 추천을 모두 봤어요':data.status==='empty'?'확인한 업무에 지금 내 차례인 일이 없어요':'확인된 범위에 추천할 일이 없어요'}</h2><p>${skipped?'넘긴 업무는 그대로 남아 있어요. 다시 보거나 전체 목록에서 골라 주세요.':'대화 업무, 고객 업무, 게시·SNS에서 확인해요. 다른 크루를 기다리는 일은 추천에서 빼 두었어요.'}</p></div>`;
+    html+=`<div class="next-empty"><h2>${skipped?'지금 보여 드릴 추천을 모두 확인했어요':data.status==='empty'?'확인한 업무 중 지금 내 차례인 일이 없어요':'확인된 범위에 추천할 일이 없어요'}</h2><p>${skipped?'넘긴 업무는 원본에 그대로 남아 있어요. 다시 보거나 전체 업무 목록에서 골라 주세요.':'대화 업무, 고객 프로젝트, 게시·SNS에서 확인했어요. 다른 동료를 기다리는 일은 추천에서 빼 두었어요.'}</p></div>`;
   }
-  if(data?.unavailableCount)html+=`<p class="next-warning">담당·검토 크루를 확인해야 하는 업무 ${escape(String(data.unavailableCount))}개가 있어요. 전체 업무에서 확인해 주세요.</p>`;
-  if(data?.alternatives?.length)html+=`<details class="next-alternatives"><summary>다음 후보 ${escape(String(data.alternatives.length))}개 보기</summary><ul>${data.alternatives.map(row=>`<li><button type="button" data-action="next-open" data-key="${escape(row.key)}" ${marinNext.pending?'disabled':''}><span><strong>${escape(row.title)}</strong><small>${escape(nextDueText(row.due)||row.reasons?.[0]?.text||'원본에서 확인')}</small></span>${icon('arrow')}</button></li>`).join('')}</ul></details>`;
+  if(data?.unavailableCount)html+=`<p class="next-warning">담당·검토자를 확인해야 하는 업무 ${escape(String(data.unavailableCount))}건이 있어요. 전체 업무에서 확인해 주세요.</p>`;
+  if(data?.alternatives?.length)html+=`<details class="next-alternatives"><summary>다음 후보 ${escape(String(data.alternatives.length))}건 보기</summary><ul>${data.alternatives.map(row=>`<li><button type="button" data-action="next-open" data-key="${escape(row.key)}" ${marinNext.pending?'disabled':''}><span><strong>${escape(row.title)}</strong><small>${escape(nextDueText(row.due)||row.reasons?.[0]?.text||'원본에서 확인')}</small></span>${icon('arrow')}</button></li>`).join('')}</ul></details>`;
   html+=`<div class="next-footer">${nextActionButton('새로 확인','next-recommend')}${marinNext.excluded.length?nextActionButton('넘긴 추천 다시 보기','next-restore'):''}${nextActionButton('전체 업무 보기','next-all')}</div>`;
-  if(data?.generatedAt&&Number.isFinite(Date.parse(data.generatedAt)))html+=`<p class="next-asof">${escape(new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'}).format(new Date(data.generatedAt)))} 확인 · 처리와 완료는 원본에서 직접 해요.</p>`;
+  if(data?.generatedAt&&Number.isFinite(Date.parse(data.generatedAt)))html+=`<p class="next-asof">${escape(new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'}).format(new Date(data.generatedAt)))} 확인 · 처리와 완료는 각 원본 화면에서 직접 진행해요.</p>`;
   return html;
 }
 function marinHomePage(){
   ensureMarinSession();ensureMarinNextSession();
-  return `${waHome()}<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><p>오늘의 업무</p><h1 id="next-heading">지금, 무엇부터 할까요?</h1><p>내 차례인 일에서 다음 행동을 골라드려요.</p></header><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div><details class="next-assistant" ${marinNext.asking?'open':''}><summary>마린에게 직접 묻기</summary>${marinConversationPage()}</details></section>`;
+  const scopeTop=typeof waScopeBar==='function'?waScopeBar():'';
+  const quickTools=typeof waHomeTools==='function'?waHomeTools():'';
+  return `${scopeTop}<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><p class="next-eyebrow">배정 작업 보드</p><h1 id="next-heading">지금, 무엇부터 이어갈까요?</h1><p>배정된 업무에서 지금 내 차례인 일을 골라 원본 화면으로 바로 이어드려요.</p></header><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div><details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span><span class="next-assistant-hint">등록된 업무·결정 검색</span></summary>${marinConversationPage()}</details></section>${quickTools}`;
 }
 function captureMarinNextView(){
   const root=document.getElementById('next-action');if(!root)return null;
@@ -130,6 +132,7 @@ function resetMarinHome({clearStorage=true,clearRecommendation=true}={}){
   if(typeof resetCompanyGuide==='function')resetCompanyGuide();
   if(typeof resetWorkroom==='function')resetWorkroom({clearStorage});
   if(typeof resetMarinWork==='function')resetMarinWork();
+  if(typeof resetAdminWorkspace==='function')resetAdminWorkspace();
   if(clearStorage&&marinHome.userId)try{sessionStorage.removeItem(marinSessionKey(marinHome.userId));}catch{}
   Object.assign(marinHome,{userId:null,entries:[],draft:'',pending:false,error:'',request:marinHome.request+1,composing:false});
 }
@@ -145,9 +148,9 @@ function marinConversationHtml(){
 }
 function marinConversationPage(){
   ensureMarinSession();
-  return `<section class="marin-home ${marinHome.entries.length?'has-conversation':''}" id="marin-home" aria-labelledby="marin-heading"><h2 id="marin-heading" class="sr-only">마린에게 물어보기</h2><div class="marin-conversation" id="marin-conversation" tabindex="0" role="log" aria-label="마린과의 대화" aria-live="polite" aria-relevant="additions text">${marinConversationHtml()}</div><div class="marin-compose"><form id="marin-form"><label class="sr-only" for="marin-input">마린에게 물어보기</label><textarea id="marin-input" rows="2" maxlength="1000" placeholder="어떤 업무를 찾고 있나요?" aria-describedby="marin-help">${escape(marinHome.draft)}</textarea><button type="submit" id="marin-send" aria-label="마린에게 보내기" ${marinHome.pending||!marinHome.draft.trim()?'disabled':''}>${icon('arrow')}</button></form><div class="marin-input-foot"><p id="marin-help">회사에 등록된 업무에서 찾아드려요.</p>${marinHome.entries.length?'<button type="button" data-action="marin-clear">대화 비우기</button>':''}</div><div id="marin-error" class="marin-error" role="alert" ${marinHome.error?'':'hidden'}>${marinHome.error?`${escape(marinHome.error)} <button type="button" data-action="marin-retry">다시 시도</button>`:''}</div></div><div class="home-prompt-suggestions" aria-label="질문 예시">${['오늘 처리할 일','자리 비운 동안 바뀐 것','확정된 결정 찾아줘'].map(prompt=>`<button type="button" data-action="marin-suggest" data-prompt="${escape(prompt)}">${escape(prompt)}${icon('right')}</button>`).join('')}</div></section>`;
+  return `<section class="marin-home ${marinHome.entries.length?'has-conversation':''}" id="marin-home" aria-labelledby="marin-heading"><h2 id="marin-heading" class="sr-only">마린에게 물어보기</h2><div class="marin-conversation" id="marin-conversation" tabindex="0" role="log" aria-label="마린과의 대화" aria-live="polite" aria-relevant="additions text">${marinConversationHtml()}</div><div class="marin-compose"><form id="marin-form"><label class="sr-only" for="marin-input">마린에게 물어보기</label><textarea id="marin-input" rows="2" maxlength="1000" placeholder="찾고 있는 업무나 확정된 결정을 물어보세요" aria-describedby="marin-help">${escape(marinHome.draft)}</textarea><button type="submit" id="marin-send" aria-label="마린에게 보내기" ${marinHome.pending||!marinHome.draft.trim()?'disabled':''}>${icon('arrow')}</button></form><div class="marin-input-foot"><p id="marin-help">회사에 등록된 업무 기록과 결정에서 찾아드려요.</p>${marinHome.entries.length?'<button type="button" data-action="marin-clear">대화 비우기</button>':''}</div><div id="marin-error" class="marin-error" role="alert" ${marinHome.error?'':'hidden'}>${marinHome.error?`${escape(marinHome.error)} <button type="button" data-action="marin-retry">다시 시도</button>`:''}</div></div><div class="home-prompt-suggestions" aria-label="질문 예시">${['오늘 처리할 일','자리 비운 동안 바뀐 것','확정된 결정 찾아줘'].map(prompt=>`<button type="button" data-action="marin-suggest" data-prompt="${escape(prompt)}">${escape(prompt)}${icon('right')}</button>`).join('')}</div></section>`;
 }
-function marinHomeShell(content){return workspaceAppShell(content,{title:'홈'});}
+function marinHomeShell(content){return workspaceAppShell(content,{title:'오늘'});}
 
 function marinWorkroomPage(){
   if(typeof contentWorkroomPage==='function')return contentWorkroomPage();
@@ -156,9 +159,8 @@ function marinWorkroomPage(){
 }
 function resizeMarinInput(input=document.getElementById('marin-input')){
   if(!input)return;
-  input.style.height='auto';const height=input.scrollHeight;
-  input.style.height=`${Math.min(144,Math.max(27,height))}px`;
-  input.style.overflowY=height>144?'auto':'hidden';
+  const lineCount=String(input.value||'').split('\n').length;
+  input.rows=Math.min(6,Math.max(2,lineCount));
 }
 function syncMarinHome({scroll=false}={}){
   if(state.tab!=='home'||!state.user)return;
@@ -195,12 +197,11 @@ async function dispatchMarinAction(entryIndex,actionIndex){
   selectWorkspaceView(action.view,action.section,action.teamId);state.error='';state.report=null;render();window.scrollTo(0,0);if(reportTabs())await loadReport();if(state.tab==='content')await loadContentWorkspace();return true;
 }
 function marinAccountDialog(){
-  // 레일 계정(11-06 새 판): 위 막대가 빠지며 플랫폼 링크 · 회사 이름 · 내 업무 카드가 이 메뉴로 왔다. 찾기는 휴대폰 아래 막대에 없어서 여기에도 둔다(넓은 화면은 레일에 있다).
-  const descriptions={handbook:'직원 안내 · 학생 복지 · 수업 · 상담',members:'크루와 팀 관리',settings:'회사 정보와 수집 설정'};
+  const descriptions={handbook:'직원 안내 · 학생 복지 · 수업 기준',members:'소속 회사와 담당 업무 확인',admin:'직원 관리와 초대 및 성과 확인',settings:'회사 정보 · 초대 · 수집 설정'};
   const entry=(label,description,action,view,extra='')=>`<button type="button" class="workspace-settings-link${extra}" data-action="${action}" ${action==='command-tab'?`data-tab="${view}"`:''}>${workspaceFeltIcon(view)}<span><strong>${escape(label)}</strong><small>${escape(description)}</small></span>${icon('right')}</button>`;
   const company=state.data?.companyName&&state.data.companyName!=='SYNK'?` · ${state.data.companyName}`:'';
-  const platform=state.platformUrl?`<a class="workspace-settings-link" href="${escape(state.platformUrl)}" rel="noreferrer" referrerpolicy="no-referrer">${workspaceFeltIcon('marketing')}<span><strong>SYNK 플랫폼</strong><small>플랫폼 앱으로 이동</small></span>${icon('external')}</a>`:'';
-  modal('계정',escape((state.user?.name||'')+company),`<nav class="workspace-settings-list" aria-label="계정과 워크스페이스">${entry('찾기','프로젝트 · 자료 · 메뉴','command','marketing',' account-find')}${typeof openMarinProfile==='function'?entry('내 업무 카드','맡은 일과 소개','marin-profile','members'):''}${workspaceUtilityTabs().map(([id,label])=>entry(id==='settings'?'워크스페이스 관리':label,descriptions[id],'command-tab',id)).join('')}${entry('로그인 정보','내 아이디 확인과 비밀번호','account-login-info','settings')}${entry('SYNK ID','계정 연결과 로그인 관리','synk-id-account','settings')}${platform}</nav><div class="workspace-settings-footer">${button('로그아웃','logout','logout','quiet')}</div>`);
+  const platform=state.platformUrl?`<a class="workspace-settings-link" href="${escape(state.platformUrl)}" rel="noreferrer" referrerpolicy="no-referrer">${workspaceFeltIcon('external')}<span><strong>SYNK 플랫폼</strong><small>플랫폼 앱으로 이동</small></span>${icon('external')}</a>`:'';
+  modal('계정',escape((state.user?.name||'')+company),`<nav class="workspace-settings-list" aria-label="계정과 워크스페이스">${entry('찾기','프로젝트 · 자료 · 메뉴','command','marketing',' account-find')}${typeof openMarinProfile==='function'?entry('내 업무 카드','맡은 역할과 협업 방식','marin-profile','members'):''}${workspaceUtilityTabs().map(([id,label])=>entry(label,descriptions[id]||'','command-tab',id)).join('')}${entry('로그인 정보','내 이메일 확인과 비밀번호 변경','account-login-info','lock')}${entry('SYNK ID','계정 연결과 로그인 관리','synk-id-account','user')}${entry('이 기기의 알림','브라우저 푸시 알림 켜기·끄기','device-notifications-open','bell')}${platform}</nav><div class="workspace-settings-footer">${button('로그아웃','logout','logout','quiet')}</div>`);
 }
 document.addEventListener('input',event=>{if(event.target.id!=='marin-input')return;marinHome.draft=event.target.value;saveMarinSession();resizeMarinInput(event.target);const send=document.getElementById('marin-send');if(send)send.disabled=marinHome.pending||!marinHome.draft.trim();});
 window.addEventListener('resize',()=>{if(typeof state!=='undefined'&&state.tab==='home')resizeMarinInput();});

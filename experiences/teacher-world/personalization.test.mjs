@@ -16,6 +16,13 @@ const save=(s,answers={},actor=DEMO_TEACHER)=>updatePersonalization(s,actor,{act
 const action=(s,type,actor=DEMO_TEACHER)=>updatePersonalization(s,actor,{action:type,revision:read(s,actor).revision},options).personalization;
 const fails=(run,code)=>assert.throws(run,error=>error.code===code);
 
+test('teacher entry can import the shipped personalization UI before mounting the DOM',async()=>{
+  // The connected UI harness replaces this import with a stub. Load the real
+  // module too: a malformed nested template must not leave the whole teacher page blank.
+  const ui=await import('./personalization-ui.mjs');
+  assert.equal(typeof ui.createPersonalizationUI,'function');
+});
+
 test('old saved state migrates without resetting assignments, evidence, counters or its caller',()=>{
   const old=state();delete old.personalization;
   createAssignment(old,DEMO_TEACHER,{classId:'class-morning',learnerIds:['demo-nara'],contentId:'reading-detail',dueAt:new Date(NOW+86400000).toISOString()},options);

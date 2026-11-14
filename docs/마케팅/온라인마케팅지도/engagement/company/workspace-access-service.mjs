@@ -7,15 +7,21 @@ export function createWorkspaceAccessService({store,clock=()=>new Date().toISOSt
   function admin(actor){const live=actor&&store.get('users',actor.id);if(!live?.active||live.role!=='admin')throw fail('회사와 역할 지정은 관리자만 할 수 있어요.',403);return live;}
   function catalog(actor){const live=actor&&store.get('users',actor.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);return {access:workspaceAccess(live),companies:WORKSPACE_COMPANIES,duties:WORKSPACE_DUTIES,classification:WORKSPACE_MENU_CLASSIFICATION};}
   function audit(actor,action,subject,details){const id=randomUUID();store.put('audit',id,{id,userId:actor.id,action,subject,...details,at:clock()});}
+  function isLegacyBody(body){return !!body&&typeof body==='object'&&!body.workspaceProfile&&typeof body.email==='string';}
+  function legacyRecord(token,body){
+    // Preserve the public ID before and after acceptance. The original issue
+    // time is unknown; do not infer it from the token's expiry.
+    return {id:'legacy-'+hash('workspace-legacy-invite:'+token.hash),email:body.email.trim().toLowerCase(),name:body.name,role:body.role||'member',teamId:body.teamId||null,
+      workspaceProfile:{memberships:[],duties:[]},status:'pending',legacy:true,tokenHash:token.hash,createdAt:null,expiresAt:token.expiresAt};
+  }
   function legacyPending(){
     const rows=[];
     for(const token of store.db.prepare("SELECT hash,body,expiresAt FROM tokens WHERE purpose='invite' AND expiresAt>?").all(clock())){
       let body;try{body=JSON.parse(token.body);}catch{continue;}
-      if(!body||typeof body!=='object'||body.workspaceProfile||typeof body.email!=='string')continue;
+      if(!isLegacyBody(body))continue;
       // The old token has no public invitation ID or creation timestamp. Keep its
       // contract intact and expose a separate, non-credential ID for cancellation.
-      rows.push({id:'legacy-'+hash('workspace-legacy-invite:'+token.hash),email:body.email.trim().toLowerCase(),name:body.name,role:body.role||'member',teamId:body.teamId||null,
-        workspaceProfile:{memberships:[],duties:[]},status:'pending',legacy:true,tokenHash:token.hash,createdAt:null,expiresAt:token.expiresAt});
+      rows.push(legacyRecord(token,body));
     }
     return rows;
   }
@@ -77,13 +83,13 @@ export function createWorkspaceAccessService({store,clock=()=>new Date().toISOSt
     return {invitation,name:body.name,role:body.role,memberships:body.workspaceProfile?.memberships||[],duties:body.workspaceProfile?.duties||[],expiresAt:invitation.expiresAt};
   }
   function accepted(invitation,userId){
-    const row=store.get('workspaceInvites',invitation.body.id);
+    const row=isLegacyBody(invitation.body)?legacyRecord(invitation,invitation.body):store.get('workspaceInvites',invitation.body.id);
     if(row)store.put('workspaceInvites',row.id,{...row,status:'accepted',acceptedAt:clock(),userId});
   }
   function list(actor){
     admin(actor);
     const rows=[...store.all('workspaceInvites'),...legacyPending()].map(({tokenHash,workspaceProfile,invitedBy,...row})=>({...row,status:row.status==='pending'&&Date.parse(row.expiresAt)<=Date.parse(clock())?'expired':row.status,memberships:workspaceProfile.memberships}));
-    const newest=(a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'');
+    const newest=(a,b)=>(b.createdAt||b.acceptedAt||b.revokedAt||'').localeCompare(a.createdAt||a.acceptedAt||a.revokedAt||'');
     return [...rows.filter(row=>row.status==='pending').sort(newest),...rows.filter(row=>row.status!=='pending').sort(newest).slice(0,100)];
   }
   function revoke(actor,id){

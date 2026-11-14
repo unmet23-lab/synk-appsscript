@@ -18,7 +18,7 @@ const never=()=>new Promise(()=>{});
 function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',synkUserId:id},request,onFetch,guard=false}={}){
   const calls=[],moves=[],events=new Map(),windowEvents=new Map(),listeners=new Set(),notes=[],notices=[],timers=new Map(),signals=[];
   let currentAuth=auth,currentMe=me,timerId=0,focused=true;
-  const element=(tag='div')=>({tag,style:{display:''},inert:false,innerHTML:'',textContent:'',className:'',children:[],attributes:{},isConnected:true,disabled:false,setAttribute(key,value){this.attributes[key]=value;},append(...nodes){this.children.push(...nodes);},replaceChildren(...nodes){this.children=[...nodes];},before(note){notes.push(note);},remove(){this.isConnected=false;}});
+  const element=(tag='div')=>({tag,hidden:false,classList:{values:new Set(),add(v){this.values.add(v);},remove(v){this.values.delete(v);},contains(v){return this.values.has(v);}},style:{display:''},inert:false,innerHTML:'',textContent:'',className:'',children:[],attributes:{},isConnected:true,disabled:false,setAttribute(key,value){this.attributes[key]=value;},append(...nodes){this.children.push(...nodes);},replaceChildren(...nodes){this.children=[...nodes];},before(note){notes.push(note);},remove(){this.isConnected=false;}});
   const content=element(),overlay=element(),toast=element(),panel=element(),messenger=element();
   const state={user:null,csrf:'',data:null,report:null,authMode:'login',hypeRequest:0,tab:'messenger'};
   const document={hidden:false,hasFocus:()=>focused,addEventListener(name,fn){if(!events.has(name))events.set(name,[]);events.get(name).push(fn);},
@@ -54,7 +54,7 @@ function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',s
     setFocus(value){focused=value;},windowEvent(name){for(const fn of windowEvents.get(name)||[])fn({type:name});},
     get me(){return currentMe;},setMe:v=>{currentMe=v;},get auth(){return currentAuth;},
     bootEvents(){for(const fn of events.get('DOMContentLoaded')||[])fn();},renewals:()=>calls.filter(row=>row.operation==='renew').length,
-    masked:()=>content.style.display==='none'&&content.inert===true,intervalRunning:()=>[...timers.values()].some(value=>value.repeat&&value.ms===20_000)};
+    masked:()=>content.hidden===true&&content.classList.contains('synk-native-hidden')&&content.inert===true,intervalRunning:()=>[...timers.values()].some(value=>value.repeat&&value.ms===20_000)};
   return f;
 }
 const failStatus=(f,times)=>{let left=times;return (operation)=>operation==='status'&&left-->0?{ok:false,error:{code:'COMPANY_UNAVAILABLE',message:'회사 서버에 요청하지 못했어요. 잠시 뒤 다시 해 주세요.'}}:undefined;};

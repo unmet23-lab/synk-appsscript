@@ -107,6 +107,7 @@ import { buildTeamTrends } from './team-trends.mjs';
 import { buildContentLeaders } from './content-leaders.mjs';
 import {createCompanyWork} from './company-work.mjs';
 import {createWorkspaceAccessService} from './workspace-access-service.mjs';
+import {createAdminWorkspace} from './admin-workspace.mjs';
 import {hasWorkspaceFeature,requireWorkspaceFeature,workspaceRouteFeature} from './workspace-access.mjs';
 import { createAssistantService } from './assistant-service.mjs';
 import { createClientWorkflowService } from './client-workflow.mjs';
@@ -542,6 +543,7 @@ export function createCompanyApp(options={}) {
   function readAutomationHealth(user){return {...automationHealth.get(user),...(user.role==='admin'?{websiteInquiries:{...websiteInquiries.health(user),schedulerEnabled:automationHealthSchedule}}:{}),monitor:{...automationMonitor,serverMustStayRunning:true,inAppOnly:true}};}
   const workspaceProfiles=createWorkspaceAccessService({store,clock});
   const companyWork=createCompanyWork({store,clock});
+  const readAdminWorkspace=createAdminWorkspace({store,clock,report,membersFor:user=>visibleMembers(store,user),channelsFor:user=>visibleChannels(user).map(channel=>safeChannel(channel,user)),workspaceProfiles});
   const crewProfiles=createCrewProfileService({store,clock});
   const practiceSync=createPracticeSyncService({store,clock});
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
@@ -559,7 +561,7 @@ export function createCompanyApp(options={}) {
   for(const channel of store.all('channels').filter(x=>x.recentStatus==='collecting'))store.put('channels',channel.id,{...channel,...recentFields(planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},recentPolicyChannel(channel),clock())),recentStatus:'error',recentLastError:'최근 게시물 수집이 멈춰서 다시 시도해요.'});
   function pending(c){const h=c.pendingHandoffId&&store.get('handoffs',c.pendingHandoffId);return h?.status==='awaiting-connection'?h:null;}
   function incoming(user,c){return !!pending(c)?.toOwnerIds.includes(user.id);}
-  function visibleChannels(user) {if(!hasWorkspaceFeature(user,'social'))return [];return store.all('channels').filter(c=>canReadChannel(user,c)||incoming(user,c));}
+  function visibleChannels(user) {if(!hasWorkspaceFeature(user,'pages'))return [];return store.all('channels').filter(c=>canReadChannel(user,c)||incoming(user,c));}
   function channelFor(user,id,mode='read') {const c=store.get('channels',id);const allowed=c&&(mode==='write'?canWriteChannel(user,c):mode==='connect'?(user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c))):canReadChannel(user,c)||incoming(user,c));if(!allowed)throw httpError('채널을 찾지 못했어요. 새로고침해 주세요.',404);return c;}
   function admin(user) {if(user.role!=='admin')throw httpError('관리자만 바꿀 수 있어요.',403);}
   function audit(user,action,subject,details={}) {const id=randomUUID();store.put('audit',id,{id,userId:user.id,action,subject,...details,at:clock()});}
@@ -1882,6 +1884,10 @@ export function createCompanyApp(options={}) {
     if(['GET','HEAD'].includes(method)&&clientMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveDeliveryMedia(req,res,store.directory,clientProjects.mediaFor(user,clientMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.mediaFor(latest.user,clientMediaRoute[1]);});}
     if(['GET','HEAD'].includes(method)&&studioMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,studio.readableMedia(user,studioMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);studio.readableMedia(latest.user,studioMediaRoute[1]);});}
     if(method==='GET'&&path.startsWith('/api/')){if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/admin-workspace'){
+        if(demoRequest)throw httpError('관리자 화면은 실제 작업실에서 확인해 주세요.',403);
+        return send(res,200,readAdminWorkspace(user,url.searchParams));
+      }
       if(path==='/api/automation-health'){
         if(demoRequest)throw httpError('자동화 상태는 실제 작업실에서 확인해 주세요.');
         if(url.search)throw httpError('내 자동화 상태만 확인할 수 있습니다.');
@@ -2052,6 +2058,7 @@ export function createCompanyApp(options={}) {
       throw httpError('요청을 찾을 수 없습니다.',404);
     }
     const files={'/automation-health.js':['public/automation-health.js','text/javascript; charset=utf-8'],'/automation-health.css':['public/automation-health.css','text/css; charset=utf-8'],'/weekly-summary.js':['public/weekly-summary.js','text/javascript; charset=utf-8'],'/weekly-summary.css':['public/weekly-summary.css','text/css; charset=utf-8'],'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
+    Object.assign(files,{'/admin-workspace.js':['public/admin-workspace.js','text/javascript; charset=utf-8'],'/admin-workspace.css':['public/admin-workspace.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/signal.css':['public/signal.css','text/css; charset=utf-8'],'/member-organization.js':['public/member-organization.js','text/javascript; charset=utf-8'],'/member-organization.css':['public/member-organization.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
     if(path==='/teacher-world'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/teacher-world/'});return res.end();}

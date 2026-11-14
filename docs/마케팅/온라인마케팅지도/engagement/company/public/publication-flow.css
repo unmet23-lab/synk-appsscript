@@ -1,10 +1,8 @@
-/* 게시 준비·성과(publication-flow.js) — 시그널 13판 A 「목록 + 상세」에서 이 탭에만 쓰는 규칙(2026-10-20 Claude).
-   공통 어휘(머리 · 계기판 · 목록 · 상세 · 지금 할 일 · 번호 구역 · 표 · 입력 칸 · 파일 놓기 칸)는 maker-tools.css에 있다.
-   이 파일은 maker-tools.css 뒤, signal.css 앞에 읽히므로 선택자는 :root .synk-workspace .mt 아래로 둔다. 인라인 style은 쓰지 않는다.
-   크림·파스텔 상자 · 카드 색 테 · 왼쪽 색 막대 없이 1px 선과 옅은 판으로만 나눈다. */
+/* 게시 준비·성과(publication-flow.js) — 순수 검정(#000000) & 가는 구분선.
+   공통 어휘는 maker-tools.css에 있고, 여기에는 이 탭에만 쓰는 규칙만 둔다. 인라인 style은 쓰지 않는다. */
 
 /* ── 알림 줄 · 접는 칸 안쪽 ── */
-:root .synk-workspace .mt .pf-status{margin:0 0 14px;font-size:13.5px;font-weight:var(--w-label);line-height:1.6;color:var(--mt-lapis-deep);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-status{margin:0 0 14px;font-size:13.5px;font-weight:var(--w-label);line-height:1.6;color:var(--mt-ink-2,#D0D6E0);overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-status:empty{display:none}
 :root .synk-workspace .mt .pf-fold-body{padding:12px 14px 6px;min-width:0}
 :root .synk-workspace .mt .mt-fold[open]>.pf-fold-body{padding-left:2px;padding-right:2px}
@@ -13,15 +11,15 @@
 /* ── 목록 ── */
 :root .synk-workspace .mt .mt-item.is-two>.mt-led{margin:6px 3px 0}
 :root .synk-workspace .mt .mt-item small>span:not(.mt-glyphs){overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-:root .synk-workspace .mt .mt-item small [data-pf-auto],:root .synk-workspace .mt .mt-item small>[data-pf-auto]{color:var(--mt-lapis-deep)}
-:root .synk-workspace .mt .mt-item[aria-current=true] small>[data-pf-auto]{color:rgba(255,255,255,.74)}
-:root .synk-workspace .mt .pf-list-foot{display:grid;gap:10px;margin-top:10px;padding:14px 10px 2px;border-top:1px solid var(--mt-line)}
+:root .synk-workspace .mt .mt-item small [data-pf-auto],:root .synk-workspace .mt .mt-item small>[data-pf-auto]{color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .mt-item[aria-current=true] small>[data-pf-auto]{color:#D0D6E0}
+:root .synk-workspace .mt .pf-list-foot{display:grid;gap:10px;margin-top:10px;padding:14px 10px 2px;border-top:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .pf-list-more{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
 :root .synk-workspace .mt .pf-list-close{display:none}
 :root .synk-workspace .mt .pf-list-foot .mt-link{justify-self:start;white-space:normal;text-align:left;line-height:1.45}
 
 /* ── 상세 머리 · 지금 할 일 ── */
-:root .synk-workspace .mt .mt-detail-head .mt-thumb video{background:var(--mt-face)}
+:root .synk-workspace .mt .mt-detail-head .mt-thumb video{background:#000000}
 :root .synk-workspace .mt .mt-detail-head .mt-chips .mt-glyphs{margin-right:2px}
 :root .synk-workspace .mt .mt-now .mt-actions{gap:10px 16px}
 :root .synk-workspace .mt .mt-now:not(.is-poster) .mt-actions{margin-top:10px}
@@ -31,7 +29,6 @@
 :root .synk-workspace .mt .pf-numbers{min-width:0}
 :root .synk-workspace .mt .pf-numbers fieldset{min-width:0;margin:0;padding:0;border:0}
 :root .synk-workspace .mt .pf-numbers-table{table-layout:fixed;--pf-num-w:136px}
-/* 채널 열이 많아도 지표 이름 열이 찌그러지지 않게 표의 최소 폭을 둔다 — 감싼 칸보다 넓으면 옆으로 넘겨 본다. */
 :root .synk-workspace .mt .pf-numbers-table[data-cols="2"]{min-width:calc(84px + 2 * var(--pf-num-w))}
 :root .synk-workspace .mt .pf-numbers-table[data-cols="3"]{min-width:calc(96px + 3 * var(--pf-num-w))}
 :root .synk-workspace .mt .pf-numbers-table[data-cols="4"]{min-width:calc(96px + 4 * var(--pf-num-w))}
@@ -39,15 +36,15 @@
 :root .synk-workspace .mt .pf-numbers-table[data-cols="6"]{min-width:calc(96px + 6 * var(--pf-num-w))}
 :root .synk-workspace .mt .pf-numbers-table thead th:first-child{width:auto}
 :root .synk-workspace .mt .pf-numbers-table thead th.n{width:var(--pf-num-w);vertical-align:bottom}
-:root .synk-workspace .mt .pf-numbers-table thead th.n small{display:block;margin-top:4px;font-size:11.5px;font-weight:var(--w-label);color:var(--mt-ink-4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root .synk-workspace .mt .pf-numbers-table thead th.n small{display:block;margin-top:4px;font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3,#9AA5B6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :root .synk-workspace .mt .pf-numbers-table thead th .mt-glyphs{vertical-align:-5px}
 :root .synk-workspace .mt .pf-numbers-table thead th:focus-visible{outline-offset:-2px}
-:root .synk-workspace .mt .pf-numbers-table th[scope=row]{font-size:14px;font-weight:var(--w-label);color:var(--mt-ink-2);word-break:keep-all;overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-numbers-table th[scope=row]{font-size:14px;font-weight:var(--w-label);color:var(--mt-ink-2,#D0D6E0);word-break:keep-all;overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-numbers-table td.n{overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-numbers-table td.n small{white-space:normal}
-:root .synk-workspace .mt .pf-unit{margin-left:1px;font-size:12.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
-:root .synk-workspace .mt .pf-numbers-table [data-pf-cmp]{color:var(--mt-lapis-deep)}
-:root .synk-workspace .mt .mt-group-row.is-input th span{color:var(--mt-butter-ink)}
+:root .synk-workspace .mt .pf-unit{margin-left:1px;font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .pf-numbers-table [data-pf-cmp]{color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .mt-group-row.is-input th span{color:var(--mt-butter-ink,#FDE68A)}
 :root .synk-workspace .mt .pf-numbers-table .mt-cell-input{justify-content:flex-end}
 :root .synk-workspace .mt .pf-numbers-table .mt-cell-input input::-webkit-outer-spin-button,:root .synk-workspace .mt .pf-numbers-table .mt-cell-input input::-webkit-inner-spin-button{appearance:none;margin:0}
 :root .synk-workspace .mt .pf-numbers-table .mt-cell-input input{appearance:textfield;-moz-appearance:textfield}
@@ -57,18 +54,18 @@
 :root .synk-workspace .mt .pf-window-note{margin-bottom:10px}
 :root .synk-workspace .mt .pf-more{margin-top:12px}
 :root .synk-workspace .mt .pf-more .mt-scroll{margin-top:2px}
-:root .synk-workspace .mt .pf-reasons{display:grid;gap:8px;margin:12px 0 6px;font-size:13px;line-height:1.55;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .pf-reasons{display:grid;gap:8px;margin:12px 0 6px;font-size:13px;line-height:1.55;color:var(--mt-ink-3,#9AA5B6)}
 :root .synk-workspace .mt .pf-reasons li{display:grid;gap:1px}
-:root .synk-workspace .mt .pf-reasons b{font-weight:var(--w-strong);color:var(--mt-ink-2)}
+:root .synk-workspace .mt .pf-reasons b{font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
 
 /* ── 게시 기록 ── */
-:root .synk-workspace .mt .pf-post{padding:14px 0;border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .pf-post{padding:14px 0;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .pf-post:first-child{padding-top:4px}
 :root .synk-workspace .mt .pf-post-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:start}
 :root .synk-workspace .mt .pf-post-head .mt-glyphs{margin-top:1px}
-:root .synk-workspace .mt .pf-post-head strong{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.4;overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-post-head small{display:block;margin-top:2px;font-size:12.5px;line-height:1.5;color:var(--mt-ink-3);overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-post-head small [data-pf-auto]{color:var(--mt-lapis-deep)}
+:root .synk-workspace .mt .pf-post-head strong{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.4;color:var(--mt-ink,#FFFFFF);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-post-head small{display:block;margin-top:2px;font-size:13px;line-height:1.5;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-post-head small [data-pf-auto]{color:var(--mt-ink-2,#D0D6E0)}
 :root .synk-workspace .mt .pf-post>.mt-note{margin-top:8px}
 :root .synk-workspace .mt .pf-post>.mt-actions{margin-top:10px}
 :root .synk-workspace .mt .pf-post+.mt-note{margin-top:12px}
@@ -84,24 +81,24 @@
 :root .synk-workspace .mt .pf-lookup-note .mt-note+.mt-note{margin-top:2px}
 
 /* ── 주소 열림 확인 ── */
-:root .synk-workspace .mt .pf-link-check{margin-top:12px;padding:12px 0 0;border-top:1px dashed var(--mt-line-2);min-width:0}
+:root .synk-workspace .mt .pf-link-check{margin-top:12px;padding:12px 0 0;border-top:1px dashed var(--mt-line-2,rgba(255,255,255,.20));min-width:0}
 :root .synk-workspace .mt .pf-link-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:4px}
-:root .synk-workspace .mt .pf-link-head h5{font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .pf-link-time,:root .synk-workspace .mt .pf-link-boundary{margin-top:3px;font-size:12.5px;line-height:1.55;color:var(--mt-ink-3);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-link-head h5{font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .pf-link-time,:root .synk-workspace .mt .pf-link-boundary{margin-top:3px;font-size:13px;line-height:1.55;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-link-check .mt-actions{margin-top:8px}
 :root .synk-workspace .mt .pf-link-check .mt-note{overflow-wrap:anywhere}
 
 /* ── 게시 묶음 · 게시 전 점검 ── */
-:root .synk-workspace .mt .pf-package{padding:14px 0 8px;border-top:1px solid var(--mt-line)}
+:root .synk-workspace .mt .pf-package{padding:14px 0 8px;border-top:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .pf-package-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 16px}
 :root .synk-workspace .mt .pf-package-head>div:first-child{min-width:0}
-:root .synk-workspace .mt .pf-package-head strong{display:block;font-size:15px;font-weight:var(--w-strong);line-height:1.4;overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-package-head small{display:block;margin-top:2px;font-size:12.5px;color:var(--mt-ink-3);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-package-head strong{display:block;font-size:15px;font-weight:var(--w-strong);line-height:1.4;color:var(--mt-ink,#FFFFFF);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-package-head small{display:block;margin-top:2px;font-size:13px;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-outputs{display:grid;gap:10px;margin:12px 0 10px}
 :root .synk-workspace .mt .pf-outputs li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start}
-:root .synk-workspace .mt .pf-outputs strong{display:block;font-size:14px;font-weight:var(--w-strong)}
-:root .synk-workspace .mt .pf-outputs small{display:block;margin-top:1px;font-size:12.5px;color:var(--mt-ink-3);overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-output-video>summary{margin-top:4px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-lapis-deep);cursor:pointer;list-style:none}
+:root .synk-workspace .mt .pf-outputs strong{display:block;font-size:14px;font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .pf-outputs small{display:block;margin-top:1px;font-size:13px;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-output-video>summary{margin-top:4px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0);cursor:pointer;list-style:none}
 :root .synk-workspace .mt .pf-output-video>summary::-webkit-details-marker{display:none}
 :root .synk-workspace .mt .pf-output-video[open]>summary{margin-bottom:8px}
 :root .synk-workspace .mt [data-pf-package-overview][hidden]{display:none!important}
@@ -109,84 +106,92 @@
 :root .synk-workspace .mt .pf-checks{display:grid;gap:8px;margin:6px 0 10px}
 :root .synk-workspace .mt .pf-checks li{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.5;overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-checks li>div{min-width:0}
-:root .synk-workspace .mt .pf-checks strong{font-weight:var(--w-strong)}
-:root .synk-workspace .mt .pf-checks p{margin-top:2px;font-size:12.5px;color:var(--mt-ink-3)}
-:root .synk-workspace .mt .pf-checks-fold h5{margin:10px 0 2px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .pf-video{display:block;width:100%;max-height:360px;border-radius:12px;background:var(--mt-face);object-fit:contain}
+:root .synk-workspace .mt .pf-checks strong{font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .pf-checks p{margin-top:2px;font-size:13px;color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .pf-checks-fold h5{margin:10px 0 2px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .pf-video{display:block;width:100%;max-height:360px;border-radius:8px;border:1px solid var(--mt-line,rgba(255,255,255,.13));background:#000000;object-fit:contain}
 :root .synk-workspace .mt .pf-review-host:empty{display:none}
-:root .synk-workspace .mt .pf-review{margin-top:14px;padding-top:16px;border-top:1px solid var(--mt-line-2);min-width:0}
+:root .synk-workspace .mt .pf-review{margin-top:14px;padding-top:16px;border-top:1px solid var(--mt-line-2,rgba(255,255,255,.20));min-width:0}
 :root .synk-workspace .mt .pf-review-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px 14px;margin-bottom:6px}
-:root .synk-workspace .mt .pf-review-head h4{font-size:16px;font-weight:var(--w-title);letter-spacing:-.015em}
-:root .synk-workspace .mt .pf-review-head p{margin-top:2px;font-size:13px;color:var(--mt-ink-3);overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-review-media{padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .pf-review-head h4{font-size:16px;font-weight:var(--w-title);letter-spacing:-.015em;color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .pf-review-head p{margin-top:2px;font-size:13px;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-review-media{padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .pf-review-videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:10px 0}
 :root .synk-workspace .mt .pf-review-videos>section{min-width:0}
-:root .synk-workspace .mt .pf-review-videos h5{margin-bottom:6px;font-size:13.5px;font-weight:var(--w-strong)}
-:root .synk-workspace .mt .pf-review-text h5{margin:12px 0 4px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-2)}
+:root .synk-workspace .mt .pf-review-videos h5{margin-bottom:6px;font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .pf-review-text h5{margin:12px 0 4px;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
 :root .synk-workspace .mt .pf-review-text p{font-size:13.5px;line-height:1.7;overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-review-text pre{max-height:280px;overflow:auto;margin:0;padding:10px 12px;border-radius:10px;background:var(--mt-paper-2);font:inherit;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-review-text pre{max-height:280px;overflow:auto;margin:0;padding:10px 12px;border:1px solid var(--mt-line,rgba(255,255,255,.13));border-radius:6px;background:var(--mt-paper-2,#07080A);font:inherit;font-size:13px;line-height:1.7;color:var(--mt-ink-2,#D0D6E0);white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root .synk-workspace .mt .pf-review-text pre::-webkit-scrollbar{width:4px;height:4px}
+:root .synk-workspace .mt .pf-review-text pre::-webkit-scrollbar-track{background:transparent}
+:root .synk-workspace .mt .pf-review-text pre::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px}
+:root .synk-workspace .mt .pf-review-text pre::-webkit-scrollbar-button{display:none;width:0;height:0}
 :root .synk-workspace .mt .pf-review-text .mt-link{white-space:normal;overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-review .mt-error{margin:8px 0}
 :root .synk-workspace .mt .pf-review .pf-status{margin:8px 0}
-:root .synk-workspace .mt .pf-review-pending>h5,:root .synk-workspace .mt .pf-review-auto>h5{margin:16px 0 2px;font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .pf-review-check{padding:12px 0;border-bottom:1px solid var(--mt-line);min-width:0}
+:root .synk-workspace .mt .pf-review-pending>h5,:root .synk-workspace .mt .pf-review-auto>h5{margin:16px 0 2px;font-size:13.5px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .pf-review-check{padding:12px 0;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13));min-width:0}
 :root .synk-workspace .mt .pf-review-check-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-:root .synk-workspace .mt .pf-review-check-head h5{margin-right:auto;font-size:14.5px;font-weight:var(--w-strong)}
+:root .synk-workspace .mt .pf-review-check-head h5{margin-right:auto;font-size:14.5px;font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF)}
 :root .synk-workspace .mt .pf-review-check>.mt-note{margin-top:4px}
 :root .synk-workspace .mt .pf-review-check fieldset{min-width:0;margin:0;padding:0;border:0}
 :root .synk-workspace .mt .pf-review-check .mt-form-row{margin:8px 0 6px}
 :root .synk-workspace .mt .pf-review-check .mt-form-row>.mt-field:first-child{flex:0 1 180px}
 :root .synk-workspace .mt .pf-review-check button[type=submit]{margin-top:8px}
-:root .synk-workspace .mt .pf-review-audit,:root .synk-workspace .mt .pf-review-note{margin-top:4px;font-size:12.5px;line-height:1.6;color:var(--mt-ink-3);white-space:pre-wrap;overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-review-audit,:root .synk-workspace .mt .pf-review-note{margin-top:4px;font-size:13px;line-height:1.6;color:var(--mt-ink-3,#9AA5B6);white-space:pre-wrap;overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-review-done{margin-top:14px}
 :root .synk-workspace .mt .pf-review-records>.mt-actions{margin-top:14px}
 
 /* ── 다음 편 실험 ── */
 :root .synk-workspace .mt .pf-exp-list{display:grid;gap:4px;margin-top:8px}
-:root .synk-workspace .mt .pf-exp-card{padding:14px 0;border-bottom:1px solid var(--mt-line);min-width:0}
+:root .synk-workspace .mt .pf-exp-card{padding:14px 0;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13));min-width:0}
 :root .synk-workspace .mt .pf-exp-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 10px;align-items:start}
 :root .synk-workspace .mt .pf-exp-head .mt-glyphs{margin-top:1px}
-:root .synk-workspace .mt .pf-exp-head strong{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.4;overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-exp-head small{display:block;margin-top:1px;font-size:12.5px;color:var(--mt-ink-3)}
-:root .synk-workspace .mt .pf-exp-summary{margin-top:8px;font-size:14px;line-height:1.6;color:var(--mt-ink-2)}
-:root .synk-workspace .mt .pf-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin:12px 0 4px;border-top:1px solid var(--mt-line)}
-:root .synk-workspace .mt .pf-facts>div{min-width:0;padding:10px 12px 10px 0;border-bottom:1px solid var(--mt-line)}
-:root .synk-workspace .mt .pf-facts dt{font-size:12.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
-:root .synk-workspace .mt .pf-facts dd{margin-top:3px;font-size:18px;font-weight:var(--w-title);letter-spacing:-.01em}
-:root .synk-workspace .mt .pf-facts dd small{margin-left:2px;font-size:12.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
-:root .synk-workspace .mt .pf-facts>div>small{display:block;margin-top:2px;font-size:11.5px;line-height:1.45;color:var(--mt-ink-3);overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-facts [data-pf-standing]{color:var(--mt-lapis-deep)}
-:root .synk-workspace .mt .pf-exp{margin-top:12px;padding-top:12px;border-top:1px dashed var(--mt-line-2)}
-:root .synk-workspace .mt .pf-exp h4{font-size:15px;font-weight:var(--w-title);line-height:1.4;overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-exp>p{margin-top:4px;font-size:13.5px;line-height:1.6;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .pf-exp-head strong{display:block;font-size:14.5px;font-weight:var(--w-strong);line-height:1.4;color:var(--mt-ink,#FFFFFF);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-exp-head small{display:block;margin-top:1px;font-size:13px;color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .pf-exp-summary{margin-top:8px;font-size:14px;line-height:1.6;color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .pf-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin:12px 0 4px;border-top:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .pf-facts>div{min-width:0;padding:10px 12px 10px 0;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .pf-facts dt{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .pf-facts dd{margin-top:3px;font-size:18px;font-weight:var(--w-title);letter-spacing:-.01em;color:var(--mt-ink,#FFFFFF);font-variant-numeric:tabular-nums}
+:root .synk-workspace .mt .pf-facts dd small{margin-left:2px;font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3,#9AA5B6)}
+:root .synk-workspace .mt .pf-facts>div>small{display:block;margin-top:2px;font-size:13px;line-height:1.45;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-facts [data-pf-standing]{color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .pf-exp{margin-top:12px;padding-top:12px;border-top:1px dashed var(--mt-line-2,rgba(255,255,255,.20))}
+:root .synk-workspace .mt .pf-exp h4{font-size:15px;font-weight:var(--w-title);line-height:1.4;color:var(--mt-ink,#FFFFFF);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-exp>p{margin-top:4px;font-size:13.5px;line-height:1.6;color:var(--mt-ink-3,#9AA5B6)}
 :root .synk-workspace .mt .pf-exp .mt-actions{margin-top:10px}
 :root .synk-workspace .mt .pf-evidence{margin-top:12px}
-:root .synk-workspace .mt .pf-limits{margin:6px 0 0 18px;list-style:disc;font-size:12.5px;line-height:1.6;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .pf-limits{margin:6px 0 0 18px;list-style:disc;font-size:13px;line-height:1.6;color:var(--mt-ink-3,#9AA5B6)}
 :root .synk-workspace .mt .pf-learning-updated{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:12px}
 
 /* ── 새 게시 묶음 · 게시 기록 폼 ── */
-:root .synk-workspace .mt .mt-detail.is-form>.mt-step{border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .mt-detail.is-form>.mt-step{border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .pf-package-form fieldset{display:block;min-width:0;margin:0;padding:0;border:0}
-:root .synk-workspace .mt .pf-package-form .mt-step:last-of-type{border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .pf-package-form .mt-step:last-of-type{border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .pf-package-form .mt-form-row{margin:0}
 :root .synk-workspace .mt .pf-package-form .mt-field>span small{margin-left:8px}
 :root .synk-workspace .mt .pf-upload fieldset{display:grid;gap:10px;justify-items:start;min-width:0;margin:0;padding:0;border:0}
 :root .synk-workspace .mt .pf-upload .mt-drop{width:100%}
 :root .synk-workspace .mt .pf-inbox{display:grid;gap:10px;min-width:0}
 :root .synk-workspace .mt .pf-inbox-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
-:root .synk-workspace .mt .pf-inbox-head strong{font-size:14px;font-weight:var(--w-strong);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .pf-inbox-list{display:grid;gap:8px;max-height:320px;overflow:auto;overscroll-behavior:contain;padding:2px}
+:root .synk-workspace .mt .pf-inbox-head strong{font-size:14px;font-weight:var(--w-strong);color:var(--mt-ink-2,#D0D6E0)}
+:root .synk-workspace .mt .pf-inbox-list{display:grid;gap:8px;max-height:320px;overflow:auto;overscroll-behavior:contain;padding:2px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root .synk-workspace .mt .pf-inbox-list::-webkit-scrollbar{width:4px;height:4px}
+:root .synk-workspace .mt .pf-inbox-list::-webkit-scrollbar-track{background:transparent}
+:root .synk-workspace .mt .pf-inbox-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px}
+:root .synk-workspace .mt .pf-inbox-list::-webkit-scrollbar-button{display:none;width:0;height:0}
 :root .synk-workspace .mt .pf-inbox .mt-choice small{overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-inbox .mt-tile svg{width:16px;height:16px}
-:root .synk-workspace .mt .pf-inbox-entry{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--mt-line-2)}
-:root .synk-workspace .mt .pf-inbox-entry strong{display:block;font-size:14px;font-weight:var(--w-strong);overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-inbox-entry p{margin-top:2px;font-size:12.5px;line-height:1.55;color:var(--mt-ink-3);overflow-wrap:anywhere}
-:root .synk-workspace .mt .pf-inbox-choice{padding:12px 14px;border-radius:14px;background:var(--mt-butter-wash);box-shadow:inset 0 0 0 1px rgba(245,196,69,.5)}
-:root .synk-workspace .mt .pf-inbox-choice strong{display:block;font-size:14px;font-weight:var(--w-strong)}
-:root .synk-workspace .mt .pf-inbox-choice p{margin-top:2px;font-size:13px;line-height:1.6;color:var(--mt-ink-2);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-inbox-entry{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;border-radius:8px;border:1px solid var(--mt-line-2,rgba(255,255,255,.20));background:var(--mt-surface,#07080A)}
+:root .synk-workspace .mt .pf-inbox-entry strong{display:block;font-size:14px;font-weight:var(--w-strong);color:var(--mt-ink,#FFFFFF);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-inbox-entry p{margin-top:2px;font-size:13px;line-height:1.55;color:var(--mt-ink-3,#9AA5B6);overflow-wrap:anywhere}
+:root .synk-workspace .mt .pf-inbox-choice{padding:12px 14px;border-radius:8px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.32)}
+:root .synk-workspace .mt .pf-inbox-choice strong{display:block;font-size:14px;font-weight:var(--w-strong);color:#FDE68A}
+:root .synk-workspace .mt .pf-inbox-choice p{margin-top:2px;font-size:13px;line-height:1.6;color:var(--mt-ink-2,#D0D6E0);overflow-wrap:anywhere}
 :root .synk-workspace .mt .pf-inbox-choice .mt-actions{margin-top:10px}
 :root .synk-workspace .mt .pf-inbox-settings .pf-fold-body{display:grid;gap:8px}
-:root .synk-workspace .mt .pf-inbox-path{padding:8px 10px;border-radius:10px;background:var(--mt-paper-2);font:500 12px/1.6 var(--mt-mono);overflow-wrap:anywhere;user-select:all}
+:root .synk-workspace .mt .pf-inbox-path{padding:8px 10px;border-radius:6px;border:1px solid var(--mt-line,rgba(255,255,255,.13));background:var(--mt-paper-2,#07080A);font:500 13px/1.6 var(--mt-mono,'DM Mono',monospace);color:var(--mt-ink-2,#D0D6E0);overflow-wrap:anywhere;user-select:all}
 :root .synk-workspace .mt .pf-subtitles{margin-top:2px}
 :root .synk-workspace .mt .pf-subtitles .pf-fold-body{display:grid;gap:10px;justify-items:start}
 :root .synk-workspace .mt .pf-subtitles .mt-field{width:100%}
@@ -198,11 +203,11 @@
 @container mt (max-width:700px){
   :root .synk-workspace .mt .pf-status{margin-bottom:12px}
   :root .synk-workspace .mt .mt-desk.is-picking .pf-list-close{display:inline-flex;justify-self:end}
-  :root .synk-workspace .mt .pf-numbers-table{--pf-num-w:112px}
+  :root .synk-workspace .mt .pf-numbers-table{--pf-num-w:116px}
   :root .synk-workspace .mt .pf-numbers-table th[scope=row]{font-size:13.5px}
   :root .synk-workspace .mt .pf-numbers-table .mt-cell-input{gap:4px;padding:0 8px}
-  :root .synk-workspace .mt .pf-numbers-table .mt-cell-input input{width:56px}
-  :root .synk-workspace .mt .pf-numbers-table .mt-cell-input input::placeholder{font-size:12.5px}
+  :root .synk-workspace .mt .pf-numbers-table .mt-cell-input input{width:60px;font-size:16px}
+  :root .synk-workspace .mt .pf-numbers-table .mt-cell-input input::placeholder{font-size:13px}
   :root .synk-workspace .mt .pf-save .mt-field,:root .synk-workspace .mt .pf-save .mt-field:first-child{flex:1 1 100%}
   :root .synk-workspace .mt .pf-post-head{grid-template-columns:auto minmax(0,1fr)}
   :root .synk-workspace .mt .pf-post-head>.mt-link{grid-column:2}

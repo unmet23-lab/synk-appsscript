@@ -84,7 +84,7 @@ function bqBand(kind){
 function bqDetail(kind){
   const brand=kind==='brand',draft=bq.drafts[kind],rows=bqRows(kind),write=!!bq.data.canWrite;
   if(!draft){const title=!write?'읽기만 할 수 있는 계정이에요':rows.length?(brand?'목록에서 양식을 고르거나 새로 만들어요':'목록에서 서비스를 고르거나 새로 등록해요'):(brand?'승인 자료를 골라 첫 양식을 만들어요':'확인할 서비스를 먼저 등록해요');
-    return `<div class="mt-detail">${bq.error?mtError(bq.error):''}<div class="mt-detail-empty"><img src="${mtFelt(kind)}" alt="" width="120" height="110" decoding="async"><strong>${escape(title)}</strong>${write?`<button type="button" class="btn primary" data-bq-action="new" data-kind="${kind}" ${bq.saving?'disabled':''}>${mtIcon('plus')}${brand?'새 제작 양식':'새 운영 확인'}</button>`:''}</div></div>`;}
+    return `<div class="mt-detail">${bq.error?mtError(bq.error):''}<div class="mt-detail-empty"><strong>${escape(title)}</strong>${write?`<button type="button" class="btn primary" data-bq-action="new" data-kind="${kind}" ${bq.saving?'disabled':''}>${mtIcon('plus')}${brand?'새 제작 양식':'새 운영 확인'}</button>`:''}</div></div>`;}
   return brand?bqRecipeSheet(draft):bqOperationSheet(draft);
 }
 function bqSec(kind,draft,name,num,title,sum,body,open,tone=''){const key=escape(draft.id||'new');return mtSec({num,title,sum,sumTone:tone,open:bq.folds[kind][name]??open,body,attrs:`id="bq-sec-${kind}-${name}-${key}" data-bq-fold="${kind}:${name}"`});}

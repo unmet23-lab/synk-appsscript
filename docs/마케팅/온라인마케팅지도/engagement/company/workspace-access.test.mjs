@@ -249,10 +249,59 @@ test('company work is isolated by company and owner, with revision conflicts and
   assert.equal((await one('/api/company-work/SHIFT',{title:'bad date',date:'2026-02-30'})).status,400);
   assert.equal((await client(add('viewer','viewer',profile('SHIFT')))('/api/company-work/SHIFT',{title:'denied'})).status,403);
 });
+
+test('inactive member assignments retain their stored roles and revision without restoring access',async t=>{
+  const {app,add,a,client}=await fixture(t),user=add('stopped','member',profile('LAB'));
+  app.store.put('users',user.id,{...user,active:false,workspaceProfile:{...profile('LAB'),revision:7}});
+  const listed=(await a('/api/state')).data.members.find(row=>row.id===user.id);
+  assert.equal(listed.active,false);
+  assert.equal(listed.workspaceAccess.revision,7);
+  assert.deepEqual(listed.workspaceAccess.memberships,[{company:'LAB',role:'teacher'}]);
+  assert.deepEqual(listed.workspaceAccess.features,[]);
+  assert.equal(listed.workspaceAccess.admin,false);
+  assert.equal(listed.workspaceAccess.legacy,false);
+  const route='/api/members/'+user.id+'/workspace-profile';
+  assert.equal((await a(route,{revision:0,workspaceProfile:profile('SHIFT')})).status,409);
+  assert.equal(app.store.get('users',user.id).workspaceProfile.revision,7);
+  const saved=await a(route,{revision:7,workspaceProfile:profile('SHIFT','PULSE')});
+  assert.equal(saved.status,200);
+  assert.equal(saved.data.access.revision,8);
+  assert.deepEqual(saved.data.access.features,[]);
+  assert.deepEqual(saved.data.access.companies,[]);
+  assert.equal(app.store.get('users',user.id).active,false);
+  for(const revision of [0,7])assert.equal((await a(route,{revision,workspaceProfile:profile('PATH')})).status,409);
+  const current=app.store.get('users',user.id);
+  assert.equal(current.workspaceProfile.revision,8);
+  assert.deepEqual(current.workspaceProfile.memberships,profile('SHIFT','PULSE').memberships);
+  assert.deepEqual(workspaceAccess(current).features,[]);
+  for(const route of ['/api/workspace-access','/api/company-work/SHIFT','/api/client-projects'])assert.equal((await client(current)(route)).status,401,route);
+  const refreshed=(await a('/api/state')).data.members.find(row=>row.id===user.id);
+  assert.equal(refreshed.workspaceAccess.revision,8);
+  assert.deepEqual(refreshed.workspaceAccess.memberships,current.workspaceProfile.memberships);
+});
+
+test('company work creation retries are idempotent and scoped to owner and company',async t=>{
+  const {app,add,client}=await fixture(t),one=client(add('retry-one','member',profile('PATH','SHIFT'))),two=client(add('retry-two','member',profile('SHIFT')));
+  const input={title:'응답 유실 뒤 재시도',note:'합성 저장',requestId:'11111111-1111-4111-8111-111111111111'};
+  const [first,retry]=await Promise.all([one('/api/company-work/SHIFT',input),one('/api/company-work/SHIFT',input)]);
+  assert.equal(first.status,201);assert.equal(retry.status,201);
+  assert.equal(first.data.item.id,retry.data.item.id);assert.equal(retry.data.item.revision,1);
+  assert.equal(app.store.all('companyWork').length,1);
+  assert.equal(app.store.all('audit').filter(row=>row.action==='company-work-created').length,1);
+  assert.equal((await one('/api/company-work/SHIFT',{...input,title:'다른 입력'})).status,409);
+  assert.equal((await one('/api/company-work/SHIFT',{...input,requestId:'invalid'})).status,400);
+  const otherOwner=await two('/api/company-work/SHIFT',input),otherCompany=await one('/api/company-work/PATH',input);
+  assert.equal(otherOwner.status,201);assert.equal(otherCompany.status,201);
+  assert.equal(new Set([first.data.item.id,otherOwner.data.item.id,otherCompany.data.item.id]).size,3);
+});
 test('legacy users retain their old access until explicitly assigned',async t=>{
   const {add,client,a}=await fixture(t),user=add('legacy'),c=client(user);
   assert.equal((await c('/api/content-workspace')).status,200);
   assert.equal((await c('/api/workspace-access')).data.access.legacy,true);
+  for(const company of ['PATH','SHIFT']){
+    assert.equal((await c('/api/company-work/'+company)).status,403);
+    assert.equal((await c('/api/company-work/'+company,{title:'unassigned work'})).status,403);
+  }
   assert.equal((await a('/api/members/'+user.id+'/workspace-profile',{revision:0,workspaceProfile:{memberships:[],duties:[]}})).status,200);
   assert.equal((await client(user)('/api/content-workspace')).status,403);
 });
@@ -289,17 +338,22 @@ test('legacy access does not grant new company work and assignment enables only 
   assert.equal((await assigned('/api/company-work/PATH')).status,403);
 });
 
-test('assigned social and pages duties skip unauthorized optional sources without hiding source failures',async t=>{
+test('social and pages duties keep separate access without hiding assigned optional source failures',async t=>{
   const {app,add,client}=await fixture(t);
   for(const duty of ['social','pages']){
     const user=add('optional-'+duty,'member',{...profile('PATH'),duties:[duty]}),c=client(user);
     const social=await c('/api/social/workspace'),weekly=await c('/api/weekly-summary');
+    assert.equal((await c('/api/client-projects')).status,403);
+    if(duty==='pages'){
+      assert.equal(social.status,403,'page management does not grant SNS access');
+      assert.equal(weekly.status,403,'page management does not grant SNS reporting');
+      assert.equal((await c('/api/content-workspace')).status,403);
+      continue;
+    }
     assert.equal(social.status,200,duty+' opens SNS without client management');
     assert.deepEqual(social.data.clientSources,[]);
     assert.equal(weekly.status,200);
     assert.deepEqual(weekly.data.sections.filter(section=>section.status==='partial').map(section=>section.id),[],duty+' treats unassigned sources as empty');
-    assert.equal((await c('/api/client-projects')).status,403);
-    if(duty==='pages')assert.equal((await c('/api/content-workspace')).status,403);
   }
   const user=add('optional-clients','member',{...profile('PULSE'),duties:['social']}),c=client(user),read=app.clientProjects.workspace;
   app.clientProjects.workspace=()=>{throw new Error('synthetic optional-source failure');};
@@ -310,6 +364,49 @@ test('assigned social and pages duties skip unauthorized optional sources withou
   }finally{app.clientProjects.workspace=read;}
 });
 
+
+
+test('page management permits assigned channels without granting SNS publishing or analytics',async t=>{
+  const {add,client}=await fixture(t),user=add('pages-only','member',{...profile('PATH'),duties:['pages']}),call=client(user);
+  assert.deepEqual(workspaceAccess(user).features.sort(),['pages','path']);
+  const registered=await call('/api/channels',{urls:['https://www.youtube.com/@workspace-review-fixture']});
+  assert.equal(registered.status,201);
+  assert.equal(registered.data.added.length,1);
+  assert.deepEqual((await call('/api/state')).data.channels.map(row=>row.id),[registered.data.added[0].id]);
+  for(const route of ['/api/social/workspace','/api/analytics','/api/publication-workflow'])assert.equal((await call(route)).status,403,route);
+  assert.equal((await call('/api/social/posts',{})).status,403);
+});
+
+test('production keeps team channel record access independently of SNS privileges',async t=>{
+  const {app,add,client}=await fixture(t);
+  const author=add('producer','member',profile('PULSE')),lead=add('production-lead','manager',profile('PULSE')),outsider=add('other-lead','manager',profile('PULSE'));
+  for(const [user,teamId] of [[author,'production'],[lead,'production'],[outsider,'other']])app.store.put('users',user.id,{...user,teamId});
+  app.store.put('channels','production-channel',{id:'production-channel',teamId:'production',ownerIds:[author.id],active:true,platform:'youtube'});
+  const service=createContentService({store:app.store});
+  const draft=service.generate(author,{seriesId:'synkbrief-use',topic:'팀 제작 검증',channelId:'production-channel'}).draft;
+  assert.equal(service.readDraft(lead,draft.id).draft.id,draft.id);
+  assert.throws(()=>service.readDraft(outsider,draft.id),{status:404});
+  assert.equal((await client(lead)('/api/content-drafts/'+draft.id)).status,200);
+  assert.equal((await client(lead)('/api/social/workspace')).status,403);
+});
+
+test('invitation management retains every pending code after newer closed history and over 100 pending codes',async t=>{
+  const {app,a,client}=await fixture(t);
+  const first=await a('/api/members/invite',{name:'Old pending',email:'old-pending@example.test',workspaceProfile:profile('LAB')});
+  assert.equal(first.status,201);
+  const existing=app.store.get('workspaceInvites',first.data.id);
+  app.store.put('workspaceInvites',existing.id,{...existing,createdAt:'2026-01-01T00:00:00.000Z'});
+  for(let i=0;i<105;i++){
+    app.store.put('workspaceInvites','closed-'+i,{...existing,id:'closed-'+i,status:'revoked',createdAt:'2026-11-14T00:00:00.000Z'});
+    app.store.put('workspaceInvites','pending-'+i,{...existing,id:'pending-'+i,status:'pending',createdAt:'2026-11-14T00:00:00.000Z'});
+  }
+  const rows=(await a('/api/workspace-invites')).data.invites;
+  assert.equal(rows.filter(row=>row.status==='pending').length,106);
+  assert.equal(rows.filter(row=>row.status==='revoked').length,100);
+  assert.ok(rows.some(row=>row.id===first.data.id));
+  assert.equal((await a('/api/workspace-invites/'+first.data.id+'/revoke',{})).status,200);
+  assert.equal((await client()('/api/workspace-invite/inspect',{token:first.data.code})).status,403);
+});
 test('service calls used by shared cards recheck assigned features even with a stale caller',async t=>{
   const {app,add}=await fixture(t),user=add('author','member',profile('PULSE')),content=createContentService({store:app.store}),clients=createClientProjectsService({store:app.store});
   const draft=content.generate(user,{seriesId:'synkbrief-use',topic:'합성 시험 기획'}).draft;

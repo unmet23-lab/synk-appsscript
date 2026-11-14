@@ -57,7 +57,7 @@ test('member listings limit scope and never expose credentials or coworkers emai
   assert.deepEqual(visibleMembers(store,{...users[0],active:false}),[]);
 });
 
-test('owner management requires current social access while legacy and admin permissions remain compatible',()=>{
+test('owner management requires current channel-management access while legacy and admin permissions remain compatible',()=>{
   const target=channel('social',['person'],'alpha'),profile=duties=>({version:1,memberships:[{company:'LAB',role:'teacher'}],duties});
   for(const [person,expected] of [
     [user('person','manager','alpha'),true],

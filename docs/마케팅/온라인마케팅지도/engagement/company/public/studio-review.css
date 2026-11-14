@@ -1,35 +1,36 @@
-/* 제작 상황판 검토실 · 예시(studio-review.js) — 13판 A의 작업 상세 안 「01 완성본 · 의견」과 예시 상세, 그리고 모달(버전 올리기 · 좋은 예시로 남기기 · 예시 자세히).
-   완성본 화면(영상 · 이미지 · 글 · 링크)은 데스크(.mt)와 모달(#overlay) 둘 다에서 그려지므로 두 곳에 같이 건다. 색 테 · 크림 상자 없이 1px 선과 옅은 판만 쓴다. */
-:root .synk-workspace .mt .swr-room{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+/* 제작 상황판 검토실 · 예시(studio-review.js) — Pure Black #000000 */
+:root .synk-workspace .mt .swr-room{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
 :root .synk-workspace .mt .swr-viewer,:root .synk-workspace .mt .swr-feedback{min-width:0}
 :root .synk-workspace .mt .swr-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;margin:0 0 12px}
 :root .synk-workspace .mt .swr-toolbar .mt-field{flex:1 1 180px}
-:root .synk-workspace .mt .swr-comparison{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
-:root .synk-workspace .mt .swr-screen{min-width:0;overflow:hidden;border:1px solid var(--mt-line-2);border-radius:16px;background:var(--mt-paper)}
+:root .synk-workspace .mt .swr-comparison{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+:root .synk-workspace .mt .swr-screen{min-width:0;overflow:hidden;border:1px solid var(--mt-line-2);border-radius:8px;background:var(--mt-paper-2)}
 :root .synk-workspace .mt .swr-screen>header{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-bottom:1px solid var(--mt-line)}
-:root .synk-workspace .mt .swr-screen>header span{font-size:12.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
+:root .synk-workspace .mt .swr-screen>header span{font-size:13px;font-weight:var(--w-label);color:var(--mt-ink-3)}
 :root .synk-workspace .mt .swr-screen>header strong{font-size:14.5px;font-weight:var(--w-strong);line-height:1.4;overflow-wrap:anywhere}
-:root .synk-workspace .mt .swr-screen>footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;padding:9px 14px;border-top:1px solid var(--mt-line);font-size:12.5px;line-height:1.5;color:var(--mt-ink-3)}
-:root :is(.synk-workspace .mt,#overlay) .swr-media-frame{position:relative;min-width:0;background:var(--mt-face,#17181C);text-align:center}
-:root :is(.synk-workspace .mt,#overlay) .swr-media-frame video{display:block;width:100%;height:auto;min-height:200px;max-height:520px;background:#0B0C0F;object-fit:contain}
+:root .synk-workspace .mt .swr-screen>footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;padding:9px 14px;border-top:1px solid var(--mt-line);font-size:13px;line-height:1.5;color:var(--mt-ink-3)}
+:root :is(.synk-workspace .mt,#overlay) .swr-media-frame{position:relative;min-width:0;background:#000000;text-align:center}
+:root :is(.synk-workspace .mt,#overlay) .swr-media-frame video{display:block;width:100%;height:auto;min-height:200px;max-height:520px;background:#000000;object-fit:contain}
 :root :is(.synk-workspace .mt,#overlay) .swr-media-frame img{display:block;width:auto;max-width:100%;height:auto;max-height:600px;margin:0 auto;object-fit:contain}
-:root :is(.synk-workspace .mt,#overlay) .swr-media-error{margin:0;padding:12px 14px;background:#FFF0EE;color:#B23A2D;font-size:13.5px;line-height:1.55;text-align:left}
+:root :is(.synk-workspace .mt,#overlay) .swr-media-error{margin:0;padding:12px 14px;background:rgba(249,112,102,.10);color:#FFDAD6;font-size:13.5px;line-height:1.55;text-align:left}
 :root :is(.synk-workspace .mt,#overlay) .swr-media-error[hidden]{display:none}
-:root :is(.synk-workspace .mt,#overlay) .swr-text{min-height:220px;max-height:520px;overflow:auto;padding:20px 22px;background:#fff;font-size:15px;line-height:1.9;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2}
-:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:220px;padding:28px 20px;background:#F5F5F4;text-align:center}
-:root :is(.synk-workspace .mt,#overlay) .swr-link>span{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;color:rgba(8,9,12,.76)}
+:root :is(.synk-workspace .mt,#overlay) .swr-text{min-height:220px;max-height:520px;overflow:auto;padding:20px 22px;background:#07080A;color:#FFFFFF;font-size:15px;line-height:1.85;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root :is(.synk-workspace .mt,#overlay) .swr-text::-webkit-scrollbar{width:4px;height:4px}
+:root :is(.synk-workspace .mt,#overlay) .swr-text::-webkit-scrollbar-button{display:none;width:0;height:0}
+:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:220px;padding:28px 20px;background:#07080A;color:#FFFFFF;text-align:center}
+:root :is(.synk-workspace .mt,#overlay) .swr-link>span{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;border:1px solid rgba(255,255,255,.20);background:#0E1015;color:#FFFFFF}
 :root :is(.synk-workspace .mt,#overlay) .swr-link>span svg{width:18px;height:18px}
-:root :is(.synk-workspace .mt,#overlay) .swr-link h3{font-size:16px;font-weight:650;line-height:1.4}
-:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media) p{margin:0;font-size:14px;line-height:1.6;color:rgba(8,9,12,.58)}
+:root :is(.synk-workspace .mt,#overlay) .swr-link h3{font-size:16px;font-weight:600;line-height:1.45;color:#FFFFFF}
+:root :is(.synk-workspace .mt,#overlay) :is(.swr-link,.swr-no-media) p{margin:0;font-size:14px;line-height:1.65;color:#9AA5B6}
 :root .synk-workspace .mt .swr-guide{margin-top:10px}
-:root .synk-workspace .mt .swr-share{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--mt-surface)}
-:root .synk-workspace .mt .swr-share p{flex:1 1 260px;font-size:14px;line-height:1.55;color:var(--mt-ink-2)}
+:root .synk-workspace .mt .swr-share{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:14px;padding:12px 14px;border:1px solid var(--mt-line);border-radius:6px;background:var(--mt-surface)}
+:root .synk-workspace .mt .swr-share p{flex:1 1 260px;font-size:14px;line-height:1.6;color:var(--mt-ink-2)}
 :root .synk-workspace .mt .swr-share strong{font-weight:var(--w-strong);color:var(--mt-ink)}
 :root .synk-workspace .mt .swr-feedback-head{display:flex;align-items:center;gap:8px;margin:0 0 10px}
 :root .synk-workspace .mt .swr-feedback-head h4{font-size:15.5px;font-weight:var(--w-title);letter-spacing:-.015em}
-:root .synk-workspace .mt .swr-note-form{display:grid;gap:10px;padding:12px;border-radius:16px;background:var(--mt-surface)}
+:root .synk-workspace .mt .swr-note-form{display:grid;gap:10px;padding:14px;border:1px solid var(--mt-line);border-radius:6px;background:var(--mt-surface)}
 :root .synk-workspace .mt .swr-note-form textarea{min-height:96px}
-:root .synk-workspace .mt .swr-note-form .form-error{padding:8px 12px;border-radius:12px;background:var(--mt-coral-wash);color:var(--mt-coral-ink);font-size:13.5px;font-weight:var(--w-label);line-height:1.5}
+:root .synk-workspace .mt .swr-note-form .form-error{padding:8px 12px;border:1px solid rgba(249,112,102,.34);border-radius:6px;background:var(--mt-coral-wash);color:var(--mt-coral-ink);font-size:13.5px;font-weight:var(--w-label);line-height:1.5}
 :root .synk-workspace .mt .swr-note-form .form-error:empty{display:none}
 :root .synk-workspace .mt .swr-note-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr);gap:8px}
 :root .synk-workspace .mt .swr-note-options .mt-field:only-child{grid-column:1/-1}
@@ -48,20 +49,18 @@
 :root .synk-workspace .mt .swr-note>footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:13px;color:var(--mt-ink-3)}
 :root .synk-workspace .mt .swr-empty{display:grid;justify-items:start;gap:6px;padding:14px 2px}
 :root .synk-workspace .mt .swr-empty strong{font-size:15px;font-weight:var(--w-strong);color:var(--mt-ink-2)}
-:root .synk-workspace .mt .swr-empty p{font-size:14px;line-height:1.6;color:var(--mt-ink-3)}
-:root .synk-workspace .mt .swr-example-media{margin:0 0 16px;overflow:hidden;border-radius:16px}
+:root .synk-workspace .mt .swr-empty p{font-size:14px;line-height:1.65;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .swr-example-media{margin:0 0 16px;overflow:hidden;border:1px solid var(--mt-line);border-radius:8px}
 :root .synk-workspace .mt .swe-notes{display:grid;gap:16px}
 :root .synk-workspace .mt .swe-notes h3{margin:0 0 4px;font-size:13.5px;font-weight:var(--w-label);color:var(--mt-ink-3)}
-:root .synk-workspace .mt .swe-notes p{font-size:15.5px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
-/* 나란히 견주기는 두 화면이 270px 안팎 남을 때만 두 칸이다(목록 316px · 상세 여백을 빼고). 의견 칸(296px)이 오른쪽에 붙는
-   1120px부터 1300px 전까지는 남는 폭이 모자라 한 칸으로 쌓는다. */
+:root .synk-workspace .mt .swe-notes p{font-size:15px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+
 @container mt (min-width:1000px) and (max-width:1119.98px){
   :root .synk-workspace .mt .swr-comparison.has-comparison{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @container mt (min-width:1300px){
   :root .synk-workspace .mt .swr-comparison.has-comparison{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-/* 더 넓으면 화면 오른쪽에 의견을 둔다. 의견 칸이 좁으니 관점 · 장면 시간은 한 줄씩. */
 @container mt (min-width:1120px){
   :root .synk-workspace .mt .swr-room{grid-template-columns:minmax(0,1fr) 296px}
   :root .synk-workspace .mt .swr-note-options{grid-template-columns:minmax(0,1fr)}
@@ -71,23 +70,24 @@
   :root .synk-workspace .mt .swr-note-options{grid-template-columns:minmax(0,1fr)}
   :root .synk-workspace .mt .swr-media-frame video{max-height:70vh}
 }
-/* 모달 — 버전 올리기 · 좋은 예시로 남기기 · 예시 자세히(기획 화면의 팀 예시에서도 열린다). */
+
+/* 모달 — 버전 올리기 · 좋은 예시로 남기기 · 예시 자세히 */
 :root #overlay .swr-version-form [hidden]{display:none}
-:root #overlay .swr-version-form input[type=file]{max-width:100%;padding:14px 12px;border:1.5px dashed var(--sg-line-2);border-radius:14px;background:var(--sg-paper-2);font-size:13.5px}
-:root #overlay .swr-version-form small{font-size:12.5px;font-weight:500;line-height:1.6;color:var(--sg-ink-3)}
+:root #overlay .swr-version-form input[type=file]{max-width:100%;padding:14px 12px;border:1px dashed var(--ws-control-border,#78808E);border-radius:6px;background:var(--ws-surface-2,#0E1015);color:#FFFFFF;font-size:13.5px}
+:root #overlay .swr-version-form small{font-size:13px;font-weight:500;line-height:1.6;color:var(--ws-muted,#9AA5B6)}
 :root #overlay .swr-version-form [name=text]{min-height:240px;font-size:15px;line-height:1.85}
-:root #overlay .swr-upload-status{margin:0;font-size:13.5px;line-height:1.6;color:var(--sg-lapis-deep)}
+:root #overlay .swr-upload-status{margin:0;font-size:13.5px;line-height:1.6;color:#FFFFFF}
 :root #overlay .swr-upload-status:empty{display:none}
-:root #overlay .swr-share-context{padding:14px 16px;border-radius:16px;background:var(--sg-surface-1)}
-:root #overlay .swr-share-context>span{font-size:12.5px;font-weight:600;color:var(--sg-ink-3)}
-:root #overlay .swr-share-context>strong{display:block;margin-top:4px;font-size:15.5px;font-weight:650;line-height:1.5;overflow-wrap:anywhere}
-:root #overlay .swr-share-context>p{margin-top:6px;font-size:13.5px;line-height:1.6;color:var(--sg-ink-2)}
-:root #overlay .swr-consent{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.6;color:var(--sg-ink)}
-:root #overlay .swr-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--sg-ink)}
+:root #overlay .swr-share-context{padding:14px 16px;border-radius:6px;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));background:var(--ws-surface-2,#0E1015)}
+:root #overlay .swr-share-context>span{font-size:13px;font-weight:600;color:var(--ws-muted,#9AA5B6)}
+:root #overlay .swr-share-context>strong{display:block;margin-top:4px;font-size:15.5px;font-weight:600;line-height:1.5;color:#FFFFFF;overflow-wrap:anywhere}
+:root #overlay .swr-share-context>p{margin-top:6px;font-size:13.5px;line-height:1.65;color:var(--ws-ink-2,#D0D6E0)}
+:root #overlay .swr-consent{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.65;color:var(--ws-ink,#FFFFFF)}
+:root #overlay .swr-consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:#FFFFFF}
 :root #overlay .swr-example-detail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
-:root #overlay .swr-example-detail-media{min-width:0;overflow:hidden;border:1px solid var(--sg-line-2);border-radius:16px}
+:root #overlay .swr-example-detail-media{min-width:0;overflow:hidden;border:1px solid var(--ws-hairline,rgba(255,255,255,.13));border-radius:8px}
 :root #overlay .swr-example-detail-copy{min-width:0}
-:root #overlay .swr-example-detail-copy h3{margin:18px 0 6px;font-size:14px;font-weight:650;color:var(--sg-ink-3)}
-:root #overlay .swr-example-detail-copy>p{font-size:15px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
-:root #overlay .swr-example-detail-copy>footer{margin:20px 0 12px;padding-top:12px;border-top:1px solid var(--sg-line);font-size:13px;line-height:1.6;color:var(--sg-ink-3)}
+:root #overlay .swr-example-detail-copy h3{margin:18px 0 6px;font-size:14px;font-weight:600;color:var(--ws-muted,#9AA5B6)}
+:root #overlay .swr-example-detail-copy>p{font-size:15px;line-height:1.75;color:#FFFFFF;white-space:pre-wrap;overflow-wrap:anywhere}
+:root #overlay .swr-example-detail-copy>footer{margin:20px 0 12px;padding-top:12px;border-top:1px solid var(--ws-hairline,rgba(255,255,255,.13));font-size:13px;line-height:1.6;color:var(--ws-muted,#9AA5B6)}
 @media (max-width:760px){:root #overlay .swr-example-detail{grid-template-columns:minmax(0,1fr)}}

@@ -24,7 +24,17 @@ const icons = {
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>', check: '<path d="m5 12 4 4L19 6"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.01"/>', globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', copy: '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M5 16H3V3h13v2"/>',
-  external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', inbox: '<path d="m3 3-2 12v6h22v-6L21 3ZM1 15h6l2 3h6l2-3h6"/>'
+  external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', inbox: '<path d="m3 3-2 12v6h22v-6L21 3ZM1 15h6l2 3h6l2-3h6"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  edit: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/>',
+  megaphone: '<path d="m3 11 15-5v12L3 13v-2Z"/><path d="M8 14v5a2 2 0 0 0 2 2h1"/><path d="M18 9a3 3 0 0 1 0 6"/>',
+  book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 5.1-5.1 2.1 2.1-5.1 5.1-2.1Z"/>',
+  presentation: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M8 10h8"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>'
 };
 const icon = (name, extra = '') => `<svg class="icon ${extra}" viewBox="0 0 24 24" aria-hidden="true">${icons[name] || icons.grid}</svg>`;
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -44,7 +54,7 @@ const shiftDate = (date, offset) => new Date(Date.parse(`${date}T00:00:00Z`) + o
 const formatDate = date => date ? date.slice(5).replace('-', '.') : '—';
 const time = value => { if (!value) return '수집 전'; const d = new Date(value); return Number.isFinite(d.getTime()) ? timeFormatter.format(d) : '—'; };
 const safeUrl = value => { try { const u = new URL(value, location.origin); return ['http:', 'https:'].includes(u.protocol) ? u.href : '#'; } catch { return '#'; } };
-const state = { workspaceSidebarOpen:false, workspaceSidebarView:'', user: null, csrf: '', data: null, report: null, tab: 'home', marketingView: 'summary', channelStatus: 'all', scope: 'mine', teamId: '', collectionFilter: 'attention', analysisView: 'daily', range: 'week', start: shiftDate(dateToday(), -6), end: dateToday(), ownerId: '', platform: '', channel: '', channelSearch: '', channelPlatform: '', metric: 'views', chartMode: 'change', error: '', loading: false, authMode: 'login', authToken: '', reportRequest: 0, modalRequest: 0, returnFocus: null, initialized: false };
+const state = { workspaceToolsOpen:false, pendingBareLanding:false, workspaceSidebarOpen:false, workspaceSidebarView:'', workspaceMobileMenuOpen:false, user: null, csrf: '', data: null, report: null, tab: 'home', marketingView: 'summary', channelStatus: 'all', scope: 'mine', teamId: '', collectionFilter: 'attention', analysisView: 'daily', range: 'week', start: shiftDate(dateToday(), -6), end: dateToday(), ownerId: '', platform: '', channel: '', channelSearch: '', channelPlatform: '', metric: 'views', chartMode: 'change', error: '', loading: false, authMode: 'login', authToken: '', reportRequest: 0, modalRequest: 0, returnFocus: null, initialized: false };
 let toastTimer, pollTimer, hypePollTimer, collectionPollPending=false;
 Object.assign(state, {historyRange:'all',historyGroup:'day',historyStart:'',historyEnd:'',historyDate:'',hype:null,hypeScope:'',hypeError:'',hypeRequest:0});
 const isAdmin = () => state.user?.role === 'admin';
@@ -70,6 +80,7 @@ async function api(path, body, method = body === undefined ? 'GET' : 'POST', {si
     finally{if(onAbort)signal.removeEventListener('abort',onAbort);}
   };
   const authStamp=companyAuthSnapshot();
+  const adminWrite=method!=='GET'&&state.tab==='admin'&&isAdmin()&&typeof adminIsTrackedWrite==='function'&&adminIsTrackedWrite(path);
   if(authStamp.userId&&typeof ensureNativeSynkCompanySession==='function'){
     const recovery=ensureNativeSynkCompanySession();if(recovery?.then)await wait(recovery);
     if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
@@ -87,26 +98,36 @@ async function api(path, body, method = body === undefined ? 'GET' : 'POST', {si
     if (response.status === 401 && state.user) clearCompanySessionView();
     throw err;
   }
+  if(adminWrite&&typeof adminNoteWriteSucceeded==='function')adminNoteWriteSucceeded(authStamp);
   return content;
 }
 // Track every identity assignment, including expiry messages from the messenger module.
 // A logout followed by the same account still starts a distinct session generation.
 let companyAuthGeneration=0;
+let pendingInviteRecovery=null;
+function clearPendingInviteRecovery(){pendingInviteRecovery=null;}
+function setPendingInviteRecovery(entry){pendingInviteRecovery=entry;}
+function takePendingInviteRecovery(stamp=companyAuthSnapshot()){const entry=pendingInviteRecovery;pendingInviteRecovery=null;return entry&&companyAuthCurrent(entry.stamp)&&companyAuthCurrent(stamp)?entry:null;}
+function inviteResultMarkup({id='',name='',inviteUrl='',code='',localOnly=false}={}){
+  return `<div class="invite-result"${id?` data-invite-result-id="${escape(id)}"`:''}><div class="form-success">${escape(name)} 님의 초대 링크를 만들었어요.</div><p class="notice">아래 링크를 그 크루에게 직접 보내 주세요. 링크에서 이름과 비밀번호를 정하면 로그인할 수 있어요.</p>${localOnly ? '<div class="note-box">이 링크는 지금 이 컴퓨터에서만 열려요. 크루 컴퓨터에서 열려면 회사 서버에 연결해야 해요.</div>' : ''}<div class="link-row"><input readonly aria-label="팀원 초대 링크" value="${escape(inviteUrl)}">${button('복사', 'copy', 'copy', '', `data-value="${escape(inviteUrl)}"`)}</div><div class="field"><span>초대 코드</span><div class="link-row"><input readonly aria-label="초대 코드" value="${escape(code)}">${button('복사', 'copy', 'copy', '', `data-value="${escape(code)}"`)}</div></div><p class="tiny muted">3일 동안 한 번 사용해요. 초대한 직원에게만 전달해 주세요. 초대 관리에서 취소할 수 있어요.</p></div>`;
+}
 for(const key of ['user','csrf']){
   let value=state[key];
   Object.defineProperty(state,key,{enumerable:true,configurable:false,get:()=>value,set(next){
-    if(key==='user'?(value?.id||null)!==(next?.id||null):value!==next){companyAuthGeneration++;if(key==='user'&&value?.id&&typeof resetWorkroom==='function')resetWorkroom();if(typeof clientDeskReset==='function')clientDeskReset();}
+    if(key==='user'?(value?.id||null)!==(next?.id||null):value!==next){companyAuthGeneration++;clearPendingInviteRecovery();if(key==='user'&&value?.id&&typeof resetWorkroom==='function')resetWorkroom();if(typeof clientDeskReset==='function')clientDeskReset();if(typeof resetAdminWorkspace==='function')resetAdminWorkspace();}
     value=next;
     globalThis.SynkDeviceNotifications?.syncIdentity({userId:state.user?.id||null,csrf:state.csrf||'',generation:companyAuthGeneration});
   }});
 }
 const companyAuthSnapshot=()=>({generation:companyAuthGeneration,userId:state.user?.id||null});
-const companyAuthCurrent=stamp=>stamp.generation===companyAuthGeneration&&stamp.userId===(state.user?.id||null);
+const companyAuthCurrent=stamp=>Boolean(stamp)&&stamp.generation===companyAuthGeneration&&stamp.userId===(state.user?.id||null);
 const companyAuthChanged=()=>Object.assign(new Error('로그인 상태가 바뀌어 이전 요청을 적용하지 않았어요.'),{code:'SESSION_CHANGED'});
 function clearCompanySessionView(){
-  state.hypeRequest++;state.hype=null;
+  clearPendingInviteRecovery();
+  state.hypeRequest++;state.hype=null;state.workspaceToolsOpen=false;state.workspaceMobileMenuOpen=false;state.pendingBareLanding=false;
   if(typeof resetContentWorkspace==='function')resetContentWorkspace();
   if(typeof resetStudioWorkspace==='function')resetStudioWorkspace();
+  if(typeof resetAdminWorkspace==='function')resetAdminWorkspace();
   state.user=null;state.csrf='';state.data=null;state.report=null;closeModal();renderAuth();
 }
 
@@ -199,6 +220,7 @@ async function initialize() {
     if (!state.user || state.authMode === 'join') { renderAuth(); return; }
     // A SYNK ID round trip that failed while a company session was already open: say so once; the open session stays.
     if (!isDemoMode() && typeof takeSynkReturnFailure === 'function' && takeSynkReturnFailure()) notify('SYNK ID로 들어오지 못했어요. 지금 들어와 있는 회사 계정은 그대로예요.');
+    if (!isDemoMode() && !requestedView && !params.get('invite') && !params.get('setup') && location.search === '' && location.hash === '') state.pendingBareLanding = true;
     await loadState();
     if(reportTabs())await loadReport();
     if(state.tab==='content')await loadContentWorkspace();
@@ -208,20 +230,22 @@ async function initialize() {
     if (status.get('connected')) { const purpose=status.get('connectionPurpose'),comments=purpose==='comments',publishing=purpose==='publishing';notify(publishing?'게시 권한을 연결했어요. SNS 계정 관리에서 자동 게시를 켜 주세요.':comments?'댓글 권한을 연결했어요. SNS 문의함에서 댓글 수집을 켜 주세요.':'계정을 연결했어요. 첫 수집 결과는 채널 카드에 보여요.');selectWorkspaceView(comments||publishing?'social':'channels',publishing?'accounts':comments?'inbox':'');render(); }
     if (status.get('connectionError')) { notify(status.get('connectionError')); state.tab = 'channels'; render(); }
     if (status.has('connected') || status.has('connectionError')) { const resultUrl=new URL(location.href);if(status.get('connected')&&['comments','publishing'].includes(status.get('connectionPurpose'))){resultUrl.searchParams.set('tab','social');resultUrl.searchParams.set('section',status.get('connectionPurpose')==='publishing'?'accounts':'inbox');}resultUrl.searchParams.delete('connected');resultUrl.searchParams.delete('connectionError');resultUrl.searchParams.delete('connectionPurpose');history.replaceState(null,'',resultUrl.pathname+resultUrl.search+resultUrl.hash); }
-  } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>워크스페이스를 열지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 불러오기', 'reload', 'refresh', 'primary')}</div></main>`;if(typeof renderSynkPlatformEntryRecovery==='function')renderSynkPlatformEntryRecovery(err); }
+  } catch (err) { if(err.code==='SESSION_CHANGED')return; app.classList?.add('boot-shell'); app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>워크스페이스를 열지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 불러오기', 'reload', 'refresh', 'primary')}</div></main>`;if(typeof renderSynkPlatformEntryRecovery==='function')renderSynkPlatformEntryRecovery(err); }
 }
 // Team and settings links depend on the role, so the first choice runs before sign-in fails them; choose them again once the user is known.
-function selectRequestedView() { const requested = state.requestedView; state.requestedView = null; if (['members','settings'].includes(requested?.[0]) && state.tab !== requested[0]) selectWorkspaceView(...requested); }
+function selectRequestedView() { const requested = state.requestedView; state.requestedView = null; if (['members','settings','admin'].includes(requested?.[0]) && state.tab !== requested[0]) selectWorkspaceView(...requested); }
 async function loadState() {
   // Polling passes {quiet:true}: an unchanged answer keeps the screen as it is, a changed one repaints in the background.
   const quiet=arguments[0]?.quiet===true;
   const authStamp=companyAuthSnapshot();if(!authStamp.userId)throw companyAuthChanged();
   const organizationStamp=typeof organizationWriteStamp==='function'?organizationWriteStamp():null;
-  const data=await api('/api/state');if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
+  let data;
+  try{data=await api('/api/state');}catch(err){if(!quiet&&typeof adminOnStateLoadFailed==='function')adminOnStateLoadFailed(err);throw err;}
+  if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
   if(organizationStamp!==null&&organizationStamp!==organizationWriteStamp())return loadState({quiet});
   if(!isDemoMode()&&data.user?.id!==authStamp.userId){clearCompanySessionView();throw companyAuthChanged();}
   const signature=JSON.stringify(data);if(quiet&&signature===state.dataSignature)return null;state.dataSignature=signature;
-  state.data=data;state.user=data.user||state.user;initializeDemoRange(data);resetTeamOverview();if(typeof resetTeamTrends==='function')resetTeamTrends(quiet);normalizeMarketingScope();if(quiet&&typeof renderBackground==='function')renderBackground();else render();return data;
+  state.data=data;state.user=data.user||state.user;initializeDemoRange(data);resetTeamOverview();if(typeof resetTeamTrends==='function')resetTeamTrends(quiet);normalizeMarketingScope();if(!quiet&&typeof waApplyBareLanding==='function')waApplyBareLanding();if(!quiet&&typeof adminOnStateLoaded==='function')adminOnStateLoaded();if(quiet&&typeof renderBackground==='function')renderBackground();else render();return data;
 }
 async function loadReport() {
   const quiet = arguments[0]?.quiet === true, paint = quiet && typeof renderBackground === 'function' ? renderBackground : render;
@@ -269,12 +293,13 @@ async function loadHype() {
 }
 
 function renderAuth() {
+  clearPendingInviteRecovery();
   if(typeof resetTeachingWorkspace==='function')resetTeachingWorkspace();
   if(typeof resetNativeSynkCompanyView==='function')resetNativeSynkCompanyView();
   if(typeof wpSyncIdentity==='function')wpSyncIdentity();
   if(typeof resetMarinHome==='function')resetMarinHome();
   if(typeof hideChartLeaders==='function')hideChartLeaders(true);
-  state.workspaceSidebarOpen=false;state.workspaceSidebarView='';
+  state.workspaceToolsOpen=false;state.workspaceSidebarOpen=false;state.workspaceSidebarView='';state.workspaceMobileMenuOpen=false;state.pendingBareLanding=false;
   resetWorkspaceModule();
   const join = state.authMode === 'join', setup = state.authMode === 'setup', help = state.authMode === 'help', reset = state.authMode === 'reset';
   // One login rule (2026-11-12): 「SYNK ID로 로그인」 first; the company password form folds under its own name and opens by itself
@@ -283,7 +308,9 @@ function renderAuth() {
   const afterNote = login && typeof afterLoginTarget === 'function' && afterLoginTarget() ? '<p class="auth-after-note" role="status">로그인하면 PULSE 직원 화면으로 돌아가요.</p>' : '';
   const title = setup ? '우리 회사 공간 만들기' : join ? '팀에 합류하기' : help ? '로그인이 막혔나요?' : reset ? (state.resetLink?.retry ? '링크를 확인하지 못했어요' : state.resetLink?.error ? '이 링크는 쓸 수 없어요' : '새 비밀번호 정하기') : '다시 만나 반가워요';
   const description = setup ? '처음 한 번, 회사 이름과 관리자 계정을 등록해 주세요.' : join ? '초대받은 이름과 로그인할 비밀번호를 정해 주세요.' : help ? '메일 없이 다시 들어오는 길이에요. 맞는 것을 골라 주세요.' : reset ? (state.resetLink?.retry ? '링크가 아직 살아 있을 수 있어요. 잠시 뒤 다시 확인해 주세요.' : state.resetLink?.error ? '새 링크를 받거나 다른 길로 들어와 주세요.' : state.resetLink?.loginId ? `${escape(state.resetLink.name)} 님 계정의 비밀번호를 새로 정해요.` : '관리자가 만든 비밀번호 재설정 링크예요.') : '회사 계정으로 대화, 마케팅, 제작 업무를 함께 이어가세요.';
-  app.innerHTML = `<main class="auth-layout" id="main"><header class="auth-bar"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><span class="auth-edition">WORKSPACE</span></header><section class="auth-intro" aria-labelledby="auth-poster-title"><div class="auth-poster"><div class="auth-poster-top"><span class="auth-poster-scope">SYNK · 팀</span><span class="auth-poster-stage">팀원 전용</span></div><div class="auth-poster-media" aria-hidden="true"><img src="/messenger/assets/signal-laptop.webp" alt="" width="640" height="640" decoding="async"></div><div class="auth-poster-text"><div class="eyebrow">WORK · TEACH · CREATE</div><h1 id="auth-poster-title"><span class="auth-poster-name">SYNK Workspace</span><span class="auth-poster-word">워크<br>스페이스</span></h1><p class="lead">우리 팀의 일, 한곳에서 이어져요.</p></div><span class="auth-poster-caption" aria-hidden="true">SYNK WORKSPACE · 싱크 워크스페이스</span></div><dl class="auth-readouts"><div><dt>MESSENGER</dt><dd>대화와 파일을 한곳에</dd></div><div><dt>MARKETING</dt><dd>채널 변화와 성과</dd></div><div><dt>STUDIO</dt><dd>기획과 좋은 예시</dd></div></dl></section><section class="auth-form-side"><div class="auth-form-card"><div class="eyebrow">${setup ? 'GET STARTED' : join ? 'YOU ARE INVITED' : help ? 'ACCOUNT HELP' : reset ? 'NEW PASSWORD' : 'WELCOME BACK'}</div><h2 tabindex="-1">${title}</h2><p class="auth-description">${description}</p>${help ? authHelpBody() : reset ? authResetBody() : `${login ? `${afterNote}<details class="auth-company" id="auth-company"${companyOpen ? ' open' : ''}><summary>회사 비밀번호로 로그인</summary>` : ''}<form class="form-stack" id="auth-form" data-form="auth">${state.authNotice && !setup && !join ? `<div class="auth-notice" role="status">${escape(state.authNotice)}</div>` : ''}<div class="form-error" role="alert"></div>${setup ? '<label class="field">회사 이름<input name="companyName" required maxlength="100" value="SYNK" autocomplete="organization"></label>' : ''}${setup || join ? '<label class="field">내 이름<input name="name" required maxlength="80" autocomplete="name" placeholder="이름을 입력해 주세요"></label>' : ''}${!join ? `<label class="field">${setup?'이메일':'회사 계정 이메일'}<input name="email" type="${setup?'email':'text'}" required autocomplete="username" placeholder="${setup?'name@company.com':'초대받은 회사 계정 이메일'}" maxlength="254" value="${setup?'':escape(state.authPrefill||'')}"></label>` : ''}<label class="field">${login ? '회사 비밀번호' : '비밀번호'}<input name="password" type="password" required ${setup || join ? 'minlength="9" maxlength="256" autocomplete="new-password" placeholder="9자 이상으로 입력해 주세요"' : 'autocomplete="current-password" placeholder="회사 비밀번호를 입력해 주세요"'}></label>${login ? '<p class="auth-company-note">SYNK ID 비밀번호가 아니라, 회사에서 정한 비밀번호예요.</p>' : ''}${setup && !state.authToken ? '<label class="field">관리자 시작 코드<input name="setupToken" required autocomplete="off" placeholder="회사 프로그램의 시작 코드를 입력해 주세요"><small>처음 실행한 컴퓨터의 관리자 시작 화면에서 확인할 수 있어요.</small></label>' : ''}<button class="btn primary auth-submit" type="submit">${setup ? '회사 공간 만들기' : join ? '초대 수락하고 시작하기' : '로그인'}${icon('arrow')}</button></form>${login ? '</details><button type="button" class="text-button auth-help-link" data-action="auth-help">로그인이 막혔나요?</button>' : ''}<div class="auth-form-footer">${join ? '초대 링크는 한 번만 사용할 수 있어요.<br><button type="button" class="text-button" data-action="auth-login">이미 계정이 있다면 로그인</button>' : setup ? '관리자만 크루를 초대하고 전체 현황을 관리할 수 있어요.' : '계정이 없다면 회사 관리자에게 초대를 요청해 주세요.'}</div>`}</div></section></main>`;
+  const eyebrow = setup ? '처음 설정' : join ? '팀 초대 수락' : help ? '로그인 도움말' : reset ? '새 비밀번호' : '회사 계정 로그인';
+  app.classList?.remove('boot-shell');
+  app.innerHTML = `<main class="auth-layout" id="main"><div class="auth-shell-inner"><header class="auth-brand-head"><div class="auth-brand"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><span>SYNK Workspace</span></div><span class="auth-brand-badge">팀 업무 공간</span></header><section class="auth-form-card" aria-labelledby="auth-card-title"><div class="auth-card-head"><div class="eyebrow">${eyebrow}</div><h1 id="auth-card-title" tabindex="-1">${title}</h1><p class="auth-description">${description}</p></div>${help ? authHelpBody() : reset ? authResetBody() : `${login ? `${afterNote}<details class="auth-company auth-company-disclosure" id="auth-company"${companyOpen ? ' open' : ''}><summary>회사 비밀번호로 로그인</summary>` : ''}<form class="form-stack" id="auth-form" data-form="auth">${state.authNotice && !setup && !join ? `<div class="auth-notice" role="status">${escape(state.authNotice)}</div>` : ''}<div class="form-error" role="alert"></div>${setup ? '<label class="field">회사 이름<input name="companyName" required maxlength="100" value="SYNK" autocomplete="organization"></label>' : ''}${setup || join ? '<label class="field">내 이름<input name="name" required maxlength="80" autocomplete="name" placeholder="이름을 입력해 주세요"></label>' : ''}${!join ? `<label class="field">${setup?'이메일':'회사 계정 이메일'}<input name="email" type="${setup?'email':'text'}" required autocomplete="username" placeholder="${setup?'name@company.com':'초대받은 회사 계정 이메일'}" maxlength="254" value="${setup?'':escape(state.authPrefill||'')}"></label>` : ''}<label class="field">${login ? '회사 비밀번호' : '비밀번호'}<input name="password" type="password" required ${setup || join ? 'minlength="9" maxlength="256" autocomplete="new-password" placeholder="9자 이상으로 입력해 주세요"' : 'autocomplete="current-password" placeholder="회사 비밀번호를 입력해 주세요"'}></label>${login ? '<p class="auth-company-note">SYNK ID 비밀번호가 아니라, 회사에서 정한 비밀번호예요.</p>' : ''}${setup && !state.authToken ? '<label class="field">관리자 시작 코드<input name="setupToken" required autocomplete="off" placeholder="회사 프로그램의 시작 코드를 입력해 주세요"><small>처음 실행한 컴퓨터의 관리자 시작 화면에서 확인할 수 있어요.</small></label>' : ''}<button class="btn primary auth-submit" type="submit">${setup ? '회사 공간 만들기' : join ? '초대 수락하고 시작하기' : '로그인'}${icon('arrow')}</button></form>${login ? '</details><div class="auth-secondary-actions"><button type="button" class="text-button auth-help-link" data-action="auth-help">로그인이 막혔나요?</button></div>' : ''}<div class="auth-form-footer">${join ? '초대 링크는 한 번만 사용할 수 있어요.<br><button type="button" class="text-button" data-action="auth-login">이미 계정이 있다면 로그인</button>' : setup ? '관리자만 크루를 초대하고 전체 현황을 관리할 수 있어요.' : '계정이 없다면 회사 관리자에게 초대를 요청해 주세요.'}</div>`}</section></div></main>`;
   if(!setup&&!join&&!help&&!reset&&typeof installSynkLogin==='function')void installSynkLogin();
   if(help)void installAuthHelpSynk();
   waAuthMount(join);
@@ -294,7 +321,7 @@ function renderAuth() {
 const untilFormatter = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false });
 const untilTime = value => { const date = new Date(value); return Number.isFinite(date.getTime()) ? untilFormatter.format(date) : ''; };
 function authHelpBody() {
-  return `<div class="auth-help"><section class="auth-help-way"><h3>SYNK ID를 연결했다면</h3><p>회사 비밀번호 없이 들어올 수 있어요. SYNK ID 화면에서 가입할 때 쓴 방법(Google 또는 이메일) 그대로 들어오면 돼요. 들어온 뒤 오른쪽 위 계정 단추 → 로그인 정보에서 회사 계정 이메일을 보고, 회사 비밀번호가 아직 없으면 바로 정할 수 있어요.</p><div class="synk-login-entry"><button type="button" class="btn synk-id-button" id="auth-help-synk" aria-describedby="auth-help-synk-note" disabled>SYNK ID로 로그인</button><p class="table-foot" id="auth-help-synk-note" role="status">연결 상태를 확인하고 있어요.</p></div></section><section class="auth-help-way"><h3>회사 비밀번호를 잊었다면</h3><p>회사 관리자에게 「비밀번호 재설정 링크」를 부탁해 주세요. 링크는 60분 동안 한 번 쓸 수 있고, 열면 내 회사 계정 이메일이 보여요. 새 비밀번호를 정하면 다른 기기의 로그인은 모두 끝나요.</p></section><section class="auth-help-way"><h3>회사 계정 이메일이 기억나지 않으면</h3><p>초대받을 때 쓴 이메일이에요. 예전 메신저 아이디는 회사 비밀번호를 정하기 전까지만 쓸 수 있어요. 관리자가 팀·크루 화면에서 알려 줄 수 있어요.</p></section><p class="auth-help-admin">관리자 계정이 막혔다면 서버를 맡은 운영 담당에게 「관리자 복구 링크」를 부탁해 주세요. 서버에서 30분짜리 링크를 만들어 드려요.</p><div class="auth-form-footer"><button type="button" class="text-button" data-action="auth-login">로그인으로 돌아가기</button></div></div>`;
+  return `<div class="auth-help auth-help-steps"><section class="auth-help-way auth-help-step"><h3>SYNK ID를 연결했다면</h3><p>회사 비밀번호 없이 들어올 수 있어요. SYNK ID 화면에서 가입할 때 쓴 방법(Google 또는 이메일) 그대로 들어오면 돼요. 들어온 뒤 계정 메뉴 → 로그인 정보에서 회사 계정 이메일을 보고, 회사 비밀번호가 아직 없으면 바로 정할 수 있어요.</p><div class="synk-login-entry"><button type="button" class="btn primary synk-id-button" id="auth-help-synk" aria-describedby="auth-help-synk-note" disabled>SYNK ID로 로그인</button><p class="table-foot synk-id-login-note" id="auth-help-synk-note" role="status">연결 상태를 확인하고 있어요.</p></div></section><section class="auth-help-way auth-help-step"><h3>회사 비밀번호를 잊었다면</h3><p>회사 관리자에게 「비밀번호 재설정 링크」를 부탁해 주세요. 링크는 60분 동안 한 번 쓸 수 있고, 열면 내 회사 계정 이메일이 보여요. 새 비밀번호를 정하면 다른 기기의 로그인은 모두 끝나요.</p></section><section class="auth-help-way auth-help-step"><h3>회사 계정 이메일이 기억나지 않으면</h3><p>초대받을 때 쓴 이메일이에요. 예전 메신저 아이디는 회사 비밀번호를 정하기 전까지만 쓸 수 있어요. 관리자가 사람·조직 화면에서 알려 줄 수 있어요.</p></section><p class="auth-help-admin">관리자 계정이 막혔다면 서버를 맡은 운영 담당에게 「관리자 복구 링크」를 부탁해 주세요. 서버에서 30분짜리 링크를 만들어 드려요.</p><div class="auth-form-footer"><button type="button" class="text-button" data-action="auth-login">로그인으로 돌아가기</button></div></div>`;
 }
 function authResetBody() {
   const link = state.resetLink;
@@ -308,7 +335,7 @@ async function inspectResetLink() {
   try { const link = await api('/api/password-reset/inspect', { token }); if (current()) state.resetLink = { name: String(link.name || ''), loginId: String(link.loginId || ''), expiresAt: link.expiresAt }; }
   // Only a 403 means the link itself is spent or expired. A busy limit or a broken connection keeps the link to check again.
   catch (error) { if (current()) state.resetLink = error.status === 403 ? { error: error.message } : { error: error.status ? error.message : '연결이 끊겨 링크를 확인하지 못했어요. 인터넷 연결을 확인하고 다시 확인해 주세요.', retry: true }; }
-  if (current()) { renderAuth(); ($('#auth-reset-form input[name="password"]') || $('[data-action="auth-reset-retry"]') || $('.auth-form-card h2'))?.focus(); }
+  if (current()) { renderAuth(); ($('#auth-reset-form input[name="password"]') || $('[data-action="auth-reset-retry"]') || $('.auth-form-card h1, .auth-form-card h2'))?.focus(); }
 }
 async function installAuthHelpSynk() {
   const button = $('#auth-help-synk'), note = $('#auth-help-synk-note');
@@ -327,12 +354,15 @@ function shell(content) {
   if(typeof teachingPrepareRender==='function')teachingPrepareRender();
   const practiceEdit=typeof wpCaptureEdit==='function'?wpCaptureEdit():null;
   if(practiceEdit?.composing){syncWorkspaceLocation();return;}
+  if(state.tab==='admin'&&typeof adminIsComposing==='function'&&adminIsComposing()){adminState.deferredRender=true;syncWorkspaceLocation();return;}
   if(state.tab==='home'&&typeof marinHomeShell==='function'){
+    if(typeof adminWorkspaceSyncMount==='function')adminWorkspaceSyncMount();
     if(typeof hideChartLeaders==='function')hideChartLeaders();
     const input=document.getElementById('marin-input'),editing=input&&document.activeElement===input,selection=editing?[input.selectionStart,input.selectionEnd,input.selectionDirection]:null,logTop=document.getElementById('marin-conversation')?.scrollTop;
     if(editing&&marinHome.composing){syncWorkspaceLocation();mountWorkspaceModule();return;}
     const nextView=typeof captureMarinNextView==='function'?captureMarinNextView():null;
-    app.innerHTML=marinHomeShell(content);renderedTab='home';state.workspaceSidebarOpen=false;syncWorkspaceSidebar();syncWorkspaceLocation();mountWorkspaceModule();syncMarinHome();
+    app.classList?.remove('boot-shell');
+    app.innerHTML=marinHomeShell(content);renderedTab='home';state.workspaceSidebarOpen=false;syncWorkspaceToolsDrawer();syncWorkspaceLocation();mountWorkspaceModule();syncMarinHome();
     if(typeof ensureTeachingWorkspace==='function')ensureTeachingWorkspace();
     if(logTop!=null){const log=document.getElementById('marin-conversation');if(log)log.scrollTop=logTop;}
     if(typeof restoreMarinNextView==='function')restoreMarinNextView(nextView);
@@ -342,17 +372,19 @@ function shell(content) {
   if(typeof hideChartLeaders==='function')hideChartLeaders();
   const openDetails=[...(app.querySelectorAll?.('details[id][open]')||[])].map(element=>element.id);
   const focused=app.contains(document.activeElement)?document.activeElement:null;
-  const focusSelector=focused?['data-action','data-org-action','data-tab','data-mode','data-view','data-metric','data-filter','data-org-filter','data-brand','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date'].filter(key=>focused.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(focused.getAttribute(key))}"]`).join(''):'';
+  const focusedSelection=focused&&focused.matches?.('[data-admin-search]')&&Number.isInteger(focused.selectionStart)?[focused.selectionStart,focused.selectionEnd,focused.selectionDirection||'none']:null;
+  const focusSelector=focused?['data-action','data-org-action','data-tab','data-mode','data-view','data-metric','data-filter','data-org-filter','data-brand','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date','data-admin-search','data-admin-company','data-admin-status','data-admin-tab','data-admin-member','data-admin-action','data-admin-invite-status','data-admin-preset'].filter(key=>focused.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(focused.getAttribute(key))}"]`).join(''):'';
   const tabs=workspaceAvailableTabs(),utilityTabs=workspaceUtilityTabs();
   const primaryView=workspacePrimaryView(),active=[...tabs,...utilityTabs].find(row=>row[0]===primaryView),data=state.data||{},attention=(data.collection?.needsConnection||0)+(data.collection?.needsReconnect||0)+(data.collection?.failed||0);
   const entering=renderedTab!==state.tab;renderedTab=state.tab;
   const kept=typeof workspaceRepaintCapture==='function'?workspaceRepaintCapture(app,entering):null;
   if(kept?.deferred){syncWorkspaceLocation();return;}
   if(state.workspaceSidebarView&&state.workspaceSidebarView!==primaryView&&['marketing','messenger'].includes(primaryView))state.workspaceSidebarOpen=false;state.workspaceSidebarView=primaryView;
+  app.classList?.remove('boot-shell');
   app.innerHTML=workspaceAppShell(content,{entering,title:active?.[1]});
-  syncWorkspaceSidebar();
+  syncWorkspaceToolsDrawer();
   if(typeof wpRestoreEdit==='function')wpRestoreEdit(practiceEdit);
-  if(focusSelector&&!kept?.focus){const target=app.querySelector(focusSelector);if(target&&!target.closest('[inert],[hidden]'))target.focus({preventScroll:true});else if(target)document.getElementById('workspace-sidebar-toggle')?.focus({preventScroll:true});}
+  if(focusSelector&&!kept?.focus){const target=app.querySelector(focusSelector);if(target&&!target.closest('[inert],[hidden]')){target.focus({preventScroll:true});if(focusedSelection&&target.matches?.('[data-admin-search]'))try{target.setSelectionRange(...focusedSelection);}catch{}}else if(target)document.getElementById('ws-tools-toggle')?.focus({preventScroll:true});}
   for(const id of openDetails){const element=document.getElementById(id);if(element?.tagName==='DETAILS')element.open=true;}
   if(typeof workspaceRepaintRestore==='function')workspaceRepaintRestore(app,kept);
   syncWorkspaceLocation();
@@ -362,9 +394,10 @@ function shell(content) {
   if(state.tab==='workroom'&&typeof ensureWorkroom==='function')ensureWorkroom();
   if(state.tab==='social'&&typeof socialWorkspaceEnsure==='function')socialWorkspaceEnsure();
   if(state.tab==='handbook'&&typeof ensureCompanyGuide==='function')ensureCompanyGuide();
+  if(typeof adminWorkspaceSyncMount==='function')adminWorkspaceSyncMount();
 }
-function render() { waNormalizeView(); if(typeof clientSearchSyncIdentity==='function')clientSearchSyncIdentity(); if(typeof wpSyncIdentity==='function')wpSyncIdentity(); if(typeof wrSuspendDaily==='function'&&(!state.user||state.tab!=='workroom'))wrSuspendDaily(); if (!state.user) { if(state.tab==='teaching'&&!isDemoMode()&&typeof renderTeachingOnly==='function')renderTeachingOnly();else renderAuth();return; } if (!state.data) return; if(isDemoMode() && (!['overview','analysis','history'].includes(state.tab)||state.marketingView==='channels'))selectWorkspaceView('all'); if(['channels','collection','studio'].includes(state.tab))selectWorkspaceView(state.tab); if (!isAdmin() && state.tab === 'settings') state.tab = 'home'; if(isMarketingWorkspace())state.lastMarketingTab=state.tab; shell(({ lectures:waWorkPage,path:waWorkPage,teaching:typeof teachingWorkspacePage==='function'?teachingWorkspacePage:()=>'',home: typeof marinHomePage==='function'?marinHomePage:()=>'<section class="empty"><h1>홈을 준비하고 있어요</h1><p>잠시 뒤 다시 불러와 주세요.</p></section>', social: renderSocialWorkspace, workroom: marinWorkroomPage, handbook: companyGuidePage, overview: marketingPage, analysis: analysisPage, history: historyPage, members: membersPage, settings: settingsPage, messenger: messengerWorkspacePage, content: contentPage })[state.tab]()); }
-function pageHeading(kicker,title,description,actions='') { const names={'EXPLORE YOUR GROWTH':'성과 분석','CHANNEL LIBRARY':'채널','PEOPLE & TEAMS':'팀·크루','COLLECTION CENTER':'수집 센터'};return `<header class="page-heading"><div><h1>${names[kicker]||title}</h1><p>${description}</p></div>${actions?`<div class="heading-actions">${actions}</div>`:''}</header>`; }
+function render() { waNormalizeView(); if(typeof clientSearchSyncIdentity==='function')clientSearchSyncIdentity(); if(typeof wpSyncIdentity==='function')wpSyncIdentity(); if(typeof wrSuspendDaily==='function'&&(!state.user||state.tab!=='workroom'))wrSuspendDaily(); if (!state.user) { if(state.tab==='teaching'&&!isDemoMode()&&typeof renderTeachingOnly==='function')renderTeachingOnly();else renderAuth();return; } if (!state.data) return; if(isDemoMode() && (!['overview','analysis','history'].includes(state.tab)||state.marketingView==='channels'))selectWorkspaceView('all'); if(['channels','collection','studio'].includes(state.tab))selectWorkspaceView(state.tab); if (!isAdmin() && ['settings','admin'].includes(state.tab)) state.tab = 'home'; if(state.tab!=='admin'&&typeof adminLeaveIfNeeded==='function')adminLeaveIfNeeded(); if(isMarketingWorkspace())state.lastMarketingTab=state.tab; shell(({ lectures:waWorkPage,path:waWorkPage,teaching:typeof teachingWorkspacePage==='function'?teachingWorkspacePage:()=>'',home: typeof marinHomePage==='function'?marinHomePage:()=>'<section class="empty"><h1>홈을 준비하고 있어요</h1><p>잠시 뒤 다시 불러와 주세요.</p></section>', social: renderSocialWorkspace, workroom: marinWorkroomPage, handbook: companyGuidePage, overview: marketingPage, analysis: analysisPage, history: historyPage, members: membersPage, admin: typeof adminWorkspacePage==='function'?adminWorkspacePage:()=>'', settings: settingsPage, messenger: messengerWorkspacePage, content: contentPage })[state.tab]()); }
+function pageHeading(kicker,title,description,actions='') { const names={'EXPLORE YOUR GROWTH':'성과 분석','CHANNEL LIBRARY':'채널','PEOPLE & TEAMS':'사람·조직','COLLECTION CENTER':'수집 센터'};return `<header class="page-heading"><div><h1>${names[kicker]||title}</h1><p>${description}</p></div>${actions?`<div class="heading-actions">${actions}</div>`:''}</header>`; }
 function marketingScopeDescription() {
   return state.scope === 'mine' ? '내가 맡은 채널의 성과예요.' : state.scope === 'team' ? '팀마다 성과를 나란히 비교해요.' : isAdmin() ? '회사 전체 채널의 성과와 수집 상태예요.' : '내가 볼 수 있는 채널을 모두 모았어요.';
 }
@@ -377,8 +410,8 @@ function marketingScopeEmpty() {
   // An administrator gets the first running team even without one of their own, so a missing team here means none is running.
   const paused = noTeam && isAdmin() && (state.data?.teams || []).some(team => team.active === false);
   const title = paused ? '운영 중인 팀이 없어요' : noTeam ? '팀을 만들면 팀별 현황이 보여요' : state.scope === 'mine' ? '내가 맡은 채널이 아직 없어요' : state.scope === 'team' ? '이 팀에 연결된 채널이 없어요' : '등록된 채널이 아직 없어요';
-  const description = paused ? '팀·크루에서 멈춘 팀을 다시 운영하거나 새 팀을 만들어 주세요.' : noTeam ? (isAdmin() ? '팀을 만들고 크루와 채널을 넣어 주세요. 그러면 팀마다 비교할 수 있어요.' : '아직 속한 팀이 없어요. 관리자에게 팀에 넣어 달라고 해 주세요.') : state.scope === 'mine' ? '채널을 맡거나 새로 등록하면 내 성과만 따로 볼 수 있어요.' : '채널을 등록하고 계정을 연결하면 성과가 여기에 보여요.';
-  const actions = noTeam ? (isAdmin()?button('팀·크루로 가기','tab','users','primary','data-tab="members"'):'') : !isViewer()?button('채널 화면으로 가기','tab','link','primary','data-tab="channels"'):'';
+  const description = paused ? '사람·조직에서 멈춘 팀을 다시 운영하거나 새 팀을 만들어 주세요.' : noTeam ? (isAdmin() ? '팀을 만들고 크루와 채널을 넣어 주세요. 그러면 팀마다 비교할 수 있어요.' : '아직 속한 팀이 없어요. 관리자에게 팀에 넣어 달라고 해 주세요.') : state.scope === 'mine' ? '채널을 맡거나 새로 등록하면 내 성과만 따로 볼 수 있어요.' : '채널을 등록하고 계정을 연결하면 성과가 여기에 보여요.';
+  const actions = noTeam ? (isAdmin()?button('사람·조직으로 가기','tab','users','primary','data-tab="members"'):'') : !isViewer()?button('채널 화면으로 가기','tab','link','primary','data-tab="channels"'):'';
   return `<section class="marketing-scope-empty">${empty(title,description,actions,false,noTeam?'users':'link')}</section>`;
 }
 function contextBar({ period = true } = {}) {
@@ -403,7 +436,7 @@ function hypeSection() {
   const status = error ? '불러오지 못함' : !feed ? '불러오는 중' : !connected ? '연결 전' : collection.enabled === false ? '자동 확인 꺼짐' : collection.collectingChannels ? '게시물 확인 중' : '30분마다 확인';
   const emptyTitle = error ? '하이라이트를 불러오지 못했어요' : !feed ? '새 반응을 확인하고 있어요' : !connected ? '계정을 연결하면 하이라이트가 시작돼요' : !feed.observedPostCount ? '첫 반응을 기다리는 중이에요' : '아직 눈에 띄는 반응이 없어요';
   const emptyText = error ? escape(error) : !feed ? '연결된 채널의 기록을 모으는 중이에요.' : !connected ? '연결하면 최근 7일 게시물 가운데 눈에 띄는 반응을 여기에 보여 드려요.' : !feed.observedPostCount ? '최근 게시물 수치가 모이면 여기에 보여 드릴게요.' : '기준을 넘은 게시물이 아직 없어요. 새 반응이 쌓이면 다시 볼게요.';
-  return `<section class="hype-section" id="hype-spotlight" aria-labelledby="hype-heading"><div class="hype-heading"><div><div class="eyebrow">TEAM SPOTLIGHT</div><h2 id="hype-heading">지금 눈에 띄는 게시물<span aria-hidden="true">↗</span></h2><p>${escape(scopeLabel())} · 최근 7일 게시물 · 위 기간과 상관없이 지금 반응을 봐요</p></div><div class="hype-controls"><span class="hype-status ${connected && collection.enabled !== false ? 'is-on' : ''}"><i></i>${status}</span>${button('고르는 기준','hype-rules','info','small quiet')}</div></div>${items.length ? `<div class="hype-grid" data-count="${items.length}">${items.map((item,index)=>hypeCard(item,index)).join('')}</div>` : `<div class="hype-empty"><span class="hype-empty-symbol" aria-hidden="true">✦</span><div><h3>${emptyTitle}</h3><p>${emptyText}</p></div>${button(error?'다시 불러오기':'예시 보기',error?'hype-refresh':'hype-preview',error?'refresh':'play','small')}</div>`}<div class="hype-footer"><span>${feed ? `연결 ${connected}/${collection.activeChannels || 0}개 · 최근 확인한 게시물 ${number(feed.observedPostCount || 0)}개` : '연결된 채널의 실제 수치로 골라요.'}${collection.partialChannels ? ` · 일부만 수집 ${collection.partialChannels}개` : ''}${collection.backoffChannels ? ` · 다시 시도 기다림 ${collection.backoffChannels}개` : ''}</span><span>${collection.nextCheckAt ? `다음 수집 ${time(collection.nextCheckAt)}` : collection.lastCheckedAt ? `마지막 수집 ${time(collection.lastCheckedAt)}` : '첫 수집 뒤에 시작해요'}${button('새로고침','hype-refresh','refresh','small quiet')}</span></div></section>`;
+  return `<section class="hype-section" id="hype-spotlight" aria-labelledby="hype-heading"><div class="hype-heading"><div><div class="eyebrow">팀 하이라이트</div><h2 id="hype-heading">지금 눈에 띄는 게시물<span aria-hidden="true">↗</span></h2><p>${escape(scopeLabel())} · 최근 7일 게시물 · 위 기간과 상관없이 지금 반응을 봐요</p></div><div class="hype-controls"><span class="hype-status ${connected && collection.enabled !== false ? 'is-on' : ''}"><i></i>${status}</span>${button('고르는 기준','hype-rules','info','small quiet')}</div></div>${items.length ? `<div class="hype-grid" data-count="${items.length}">${items.map((item,index)=>hypeCard(item,index)).join('')}</div>` : `<div class="hype-empty"><span class="hype-empty-symbol" aria-hidden="true">✦</span><div><h3>${emptyTitle}</h3><p>${emptyText}</p></div>${button(error?'다시 불러오기':'예시 보기',error?'hype-refresh':'hype-preview',error?'refresh':'play','small')}</div>`}<div class="hype-footer"><span>${feed ? `연결 ${connected}/${collection.activeChannels || 0}개 · 최근 확인한 게시물 ${number(feed.observedPostCount || 0)}개` : '연결된 채널의 실제 수치로 골라요.'}${collection.partialChannels ? ` · 일부만 수집 ${collection.partialChannels}개` : ''}${collection.backoffChannels ? ` · 다시 시도 기다림 ${collection.backoffChannels}개` : ''}</span><span>${collection.nextCheckAt ? `다음 수집 ${time(collection.nextCheckAt)}` : collection.lastCheckedAt ? `마지막 수집 ${time(collection.lastCheckedAt)}` : '첫 수집 뒤에 시작해요'}${button('새로고침','hype-refresh','refresh','small quiet')}</span></div></section>`;
 }
 function hypeCard(item,index=0) {
   const acceleration = item.kind === 'acceleration';
@@ -440,7 +473,7 @@ function healthPanel() {
 function dateTodayFrom(value) { const date = new Date(value); return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(date) : ''; }
 function todayActions() {
   const items = healthItems().filter(item => (item.action && !['none','wait'].includes(item.action)) || item.status === 'partial').slice(0,3), setup = (state.data.oauthProviders || []).filter(row => !row.configured && !row.publicApiConfigured).length;
-  return `<section class="home-panel action-panel"><div class="section-head"><div><div class="eyebrow">NEXT TO DO</div><h2>오늘 할 일</h2></div><span class="quiet-label">${isViewer() ? '담당자가 처리해요' : '급한 것부터'}</span></div><div class="today-action-list">${isAdmin() && setup ? `<button class="today-action" data-action="tab" data-tab="settings"><span class="action-symbol">${icon('settings')}</span><span class="action-copy"><strong>플랫폼 연결 준비 ${setup}개 남음</strong><span>준비해야 크루가 자기 계정으로 연결할 수 있어요</span></span>${icon('right')}</button>` : ''}${items.map(item => { const channel = state.data.channels.find(row => row.id === item.channelId); return `<button class="today-action" data-action="${isViewer() ? 'channel-history' : item.action === 'connect' && canConnectChannel(channel) ? 'connect' : 'collection-focus'}" data-id="${escape(item.channelId)}"><span class="action-symbol ${item.action === 'connect' ? 'blue' : ''}">${icon(item.action === 'connect' ? 'link' : 'refresh')}</span><span class="action-copy"><strong>${escape(item.label || '수집 살펴보기')}</strong><span>${escape(channelName(channel))}</span></span>${icon('right')}</button>`; }).join('')}${!items.length && !(isAdmin() && setup) ? `<div class="all-clear">${icon('check')}<strong>지금 할 일이 없어요.</strong><span>새로 생기면 여기에 모아 드려요.</span></div>` : ''}</div></section>`;
+  return `<section class="home-panel action-panel"><div class="section-head"><div><div class="eyebrow">우선 확인</div><h2>오늘 할 일</h2></div><span class="quiet-label">${isViewer() ? '담당자가 처리해요' : '급한 것부터'}</span></div><div class="today-action-list">${isAdmin() && setup ? `<button class="today-action" data-action="tab" data-tab="settings"><span class="action-symbol">${icon('settings')}</span><span class="action-copy"><strong>플랫폼 연결 준비 ${setup}개 남음</strong><span>준비해야 크루가 자기 계정으로 연결할 수 있어요</span></span>${icon('right')}</button>` : ''}${items.map(item => { const channel = state.data.channels.find(row => row.id === item.channelId); return `<button class="today-action" data-action="${isViewer() ? 'channel-history' : item.action === 'connect' && canConnectChannel(channel) ? 'connect' : 'collection-focus'}" data-id="${escape(item.channelId)}"><span class="action-symbol ${item.action === 'connect' ? 'blue' : ''}">${icon(item.action === 'connect' ? 'link' : 'refresh')}</span><span class="action-copy"><strong>${escape(item.label || '수집 살펴보기')}</strong><span>${escape(channelName(channel))}</span></span>${icon('right')}</button>`; }).join('')}${!items.length && !(isAdmin() && setup) ? `<div class="all-clear">${icon('check')}<strong>지금 할 일이 없어요.</strong><span>새로 생기면 여기에 모아 드려요.</span></div>` : ''}</div></section>`;
 }
 function topContentSection(report) {
   const posts = (report?.byPost || []).filter(post => validNumber(post.metrics?.views?.period?.delta)).sort((a,b) => b.metrics.views.period.delta-a.metrics.views.period.delta).slice(0,3);
@@ -461,7 +494,7 @@ function readinessNote() {
   if (!state.data.deployment?.localOnly && ready >= 4) return '';
   return `<div class="workspace-status">${icon('info')}<div>${state.data.deployment?.localOnly ? '<strong>지금은 이 컴퓨터에서만 돌고 있어요</strong><span>크루가 각자 들어오려면 회사 서버에 연결해야 해요.</span>' : ''}${ready < 4 ? `<span>플랫폼 연결 준비 ${ready}/4 · ${isAdmin() ? '설정에서 플랫폼 연결을 준비해 주세요.' : '관리자가 먼저 플랫폼 연결을 준비해야 해요.'}</span>` : ''}</div>${isAdmin() && ready < 4 ? button('설정 열기', 'tab', '', 'small quiet', 'data-tab="settings"') : ''}</div>`;
 }
-function filters() { return `<div class="analysis-filters"><span class="context-label">조건</span>${canManageTeam() && state.scope !== 'mine' ? `<select aria-label="담당자 선택" class="filter-select" data-filter="ownerId"><option value="">모든 담당자</option>${(state.data.members || []).filter(row => row.active !== false && (!state.teamId || row.teamId === state.teamId)).map(row => `<option value="${escape(row.id)}" ${state.ownerId === row.id ? 'selected' : ''}>${escape(row.name)}</option>`).join('')}</select>` : ''}<select aria-label="플랫폼 선택" class="filter-select" data-filter="platform"><option value="">모든 플랫폼</option>${[...new Set([...Object.keys(PLATFORMS),...scopedChannels().map(c=>platformKey(c.platform))])].map(key => [key,platformLabel(key)]).map(([key,label]) => `<option value="${key}" ${state.platform === key ? 'selected' : ''}>${label}</option>`).join('')}</select><select aria-label="채널 선택" class="filter-select" data-filter="channel"><option value="">모든 채널</option>${scopedChannels().filter(row => (!state.platform || platformKey(row.platform) === state.platform) && (!state.ownerId || row.owners?.some(owner => owner.id === state.ownerId))).map(row => `<option value="${escape(row.id)}" ${state.channel === row.id ? 'selected' : ''}>${escape(channelName(row))}</option>`).join('')}</select><span class="filter-note">이 화면의 모든 표와 그래프에 같이 적용돼요.</span></div>`; }
+function filters() { return `<div class="analysis-filters"><span class="context-label">조건</span>${canManageTeam() && state.scope !== 'mine' ? `<select aria-label="담당자 선택" class="filter-select" data-filter="ownerId"><option value="">모든 담당자</option>${(state.data.members || []).filter(row => (row.active !== false && (!state.teamId || row.teamId === state.teamId)) || (Boolean(state.ownerId) && row.id === state.ownerId)).map(row => `<option value="${escape(row.id)}" ${state.ownerId === row.id ? 'selected' : ''}>${escape(row.name)}${row.active === false ? ' (이용 중지)' : ''}</option>`).join('')}</select>` : ''}<select aria-label="플랫폼 선택" class="filter-select" data-filter="platform"><option value="">모든 플랫폼</option>${[...new Set([...Object.keys(PLATFORMS),...scopedChannels().map(c=>platformKey(c.platform))])].map(key => [key,platformLabel(key)]).map(([key,label]) => `<option value="${key}" ${state.platform === key ? 'selected' : ''}>${label}</option>`).join('')}</select><select aria-label="채널 선택" class="filter-select" data-filter="channel"><option value="">모든 채널</option>${scopedChannels().filter(row => (!state.platform || platformKey(row.platform) === state.platform) && (!state.ownerId || row.owners?.some(owner => owner.id === state.ownerId))).map(row => `<option value="${escape(row.id)}" ${state.channel === row.id ? 'selected' : ''}>${escape(channelName(row))}</option>`).join('')}</select><span class="filter-note">이 화면의 모든 표와 그래프에 같이 적용돼요.</span></div>`; }
 
 function chartSection(report) {
   const metric = report?.metrics?.[state.metric];
@@ -476,14 +509,14 @@ function chartSvg(daily, label) {
   const width = 900, height = 270, pad = { left: 48, right: 20, top: 48, bottom: 35 }, min = Math.min(0, ...known), max = Math.max(1, ...known), extent = max - min;
   const x = i => pad.left + i / Math.max(1, values.length - 1) * (width - pad.left - pad.right);
   const y = value => height - pad.bottom - ((value - min) / extent) * (height - pad.top - pad.bottom);
-  const grid = [0, .5, 1].map(ratio => { const value = min + ratio * extent; return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y(value)}" y2="${y(value)}" stroke="#edf0f5"/><text x="${pad.left - 10}" y="${y(value) + 4}" text-anchor="end" fill="#8a94a5" font-size="10">${escape(compactNumber(value))}</text>`; }).join('');
+  const grid = [0, .5, 1].map(ratio => { const value = min + ratio * extent; return `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y(value)}" y2="${y(value)}" stroke="rgba(255,255,255,0.12)"/><text x="${pad.left - 10}" y="${y(value) + 4}" text-anchor="end" fill="#9AA5B6" font-size="11">${escape(compactNumber(value))}</text>`; }).join('');
   const segments = []; let current = [];
   values.forEach((value, i) => { if (validNumber(value)) current.push([x(i), y(value)]); else if (current.length) { segments.push(current); current = []; } }); if (current.length) segments.push(current);
   const paths = segments.map(points => {const line=points.map(([px,py],i)=>`${i?'L':'M'}${px.toFixed(1)},${py.toFixed(1)}`).join(' ');return `<path d="${line} L${points.at(-1)[0].toFixed(1)},${y(0).toFixed(1)} L${points[0][0].toFixed(1)},${y(0).toFixed(1)} Z" fill="url(#growth-fill)"/><path class="chart-line" d="${line}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;}).join('');
   const step = Math.max(1, Math.ceil(daily.length / 7));
-  const labels = daily.map((row, i) => (i % step === 0 || i === daily.length - 1) ? `<text x="${x(i)}" y="${height - 8}" fill="#8993a4" font-size="10" text-anchor="middle">${formatDate(row.date)}</text>` : '').join('');
+  const labels = daily.map((row, i) => (i % step === 0 || i === daily.length - 1) ? `<text x="${x(i)}" y="${height - 8}" fill="#9AA5B6" font-size="11" text-anchor="middle">${formatDate(row.date)}</text>` : '').join('');
   const first=values.findIndex(validNumber);
-  const dots = daily.map((row,i)=>{if(!validNumber(values[i]))return '';const tx=Math.max(pad.left,Math.min(width-188,x(i)-75)),ty=Math.max(2,y(values[i])-48);return `<g class="chart-point" role="button" tabindex="${i===first?'0':'-1'}" data-chart-point data-action="day" data-date="${row.date}" aria-label="${row.date} ${escape(label)} ${number(values[i])}, 상위 콘텐츠 및 상세 보기"><line class="chart-crosshair" x1="${x(i)}" x2="${x(i)}" y1="${pad.top}" y2="${height-pad.bottom}"/><circle class="chart-hit" cx="${x(i)}" cy="${y(values[i])}" r="12" fill="transparent"/><circle class="chart-dot" cx="${x(i)}" cy="${y(values[i])}" r="${daily.length>50?2:3.5}" fill="#fff" stroke="currentColor" stroke-width="2"/><g class="chart-callout" aria-hidden="true" pointer-events="none"><rect x="${tx}" y="${ty}" width="166" height="35" rx="7"/><text x="${tx+11}" y="${ty+22}">${formatDate(row.date)} · ${number(values[i])}</text></g></g>`;}).join('');
+  const dots = daily.map((row,i)=>{if(!validNumber(values[i]))return '';const tx=Math.max(pad.left,Math.min(width-188,x(i)-75)),ty=Math.max(2,y(values[i])-48);return `<g class="chart-point" role="button" tabindex="${i===first?'0':'-1'}" data-chart-point data-action="day" data-date="${row.date}" aria-label="${row.date} ${escape(label)} ${number(values[i])}, 상위 콘텐츠 및 상세 보기"><line class="chart-crosshair" x1="${x(i)}" x2="${x(i)}" y1="${pad.top}" y2="${height-pad.bottom}"/><circle class="chart-hit" cx="${x(i)}" cy="${y(values[i])}" r="12" fill="transparent"/><circle class="chart-dot" cx="${x(i)}" cy="${y(values[i])}" r="${daily.length>50?2:3.5}" fill="#08090C" stroke="currentColor" stroke-width="2"/><g class="chart-callout" aria-hidden="true" pointer-events="none"><rect x="${tx}" y="${ty}" width="166" height="35" rx="7"/><text x="${tx+11}" y="${ty+22}">${formatDate(row.date)} · ${number(values[i])}</text></g></g>`;}).join('');
   return `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="group" aria-label="${escape(label)} ${state.chartMode==='change'?'하루 증감':'누적 수치'} 그래프. 점을 가리키거나 방향키로 날짜를 고르면 상위 콘텐츠가 보여요. Enter를 누르면 그날 상세가 열려요."><defs><linearGradient id="growth-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".13"/><stop offset="100%" stop-color="currentColor" stop-opacity=".01"/></linearGradient></defs>${grid}${paths}${dots}${labels}</svg>`;
 }
 function compactNumber(value) { const abs = Math.abs(value); return abs >= 1e8 ? `${(value / 1e8).toFixed(1).replace('.0', '')}억` : abs >= 1e4 ? `${(value / 1e4).toFixed(1).replace('.0', '')}만` : number(Math.round(value)); }
@@ -494,7 +527,7 @@ function commandModal(){
 }
 function renderCommandResults(value){
   const menuAliases={path:'path 상담·정착',members:'사람·조직 직원'};
-  const q=value.trim().toLocaleLowerCase(),menuQ=value.trim().toLowerCase(),menus=[...workspaceAvailableTabs(),...workspaceMarketingTabs.filter(([id])=>waViewAllowed(id)).map(([id,label,glyph])=>[id,`마케팅 · ${label}`,glyph]),...workspaceUtilityTabs()].filter(([id,label])=>!menuQ||`${label} ${menuAliases[id]||''}`.toLowerCase().includes(menuQ));
+  const q=value.trim().toLocaleLowerCase(),menuQ=value.trim().toLowerCase(),menus=[...workspaceAvailableTabs().map(([id,label,glyph])=>[id,workspaceNavDisplayLabel(id,label),glyph,label]),...workspaceMarketingTabs.filter(([id])=>waViewAllowed(id)).map(([id,label,glyph])=>[id,`마케팅 · ${label}`,glyph,label]),...workspaceUtilityTabs().map(([id,label,glyph])=>[id,label,glyph,label])].filter(([id,display,,raw])=>!menuQ||`${display} ${raw} ${menuAliases[id]||''}`.toLowerCase().includes(menuQ));
   const channels=(state.data?.channels||[]).filter(c=>!q||channelSearchText(c).includes(q)).slice(0,8);
   $('.command-results',overlay).innerHTML=`${menus.length?'<div class="command-label">메뉴</div>':''}${menus.map(([id,label,glyph])=>`<button class="command-item" data-action="command-tab" data-tab="${id}">${icon(glyph)}<span>${label}</span>${icon('right')}</button>`).join('')}${channels.length?'<div class="command-label">채널</div>':''}${channels.map(c=>`<button class="command-item" data-action="command-channel" data-id="${escape(c.id)}">${platformMark(c.platform)}<span><strong>${escape(channelName(c))}</strong><small>${escape((c.owners||[]).map(u=>u.name).join(', '))} · ${escape(c.teamName||'팀 없음')}</small></span>${icon('right')}</button>`).join('')}${!menus.length&&!channels.length?'<p class="command-empty">맞는 결과가 없어요. 다른 이름으로 찾아보세요.</p>':''}`;
 }
@@ -543,7 +576,7 @@ async function loginInfoModal() {
   // Opened from the settings window, whose entry button disappears: closing returns to the account button instead.
   const fromDialog = overlay.contains(document.activeElement);
   modal('로그인 정보', escape(state.user?.name || ''), '<p class="notice" role="status">로그인 정보를 불러오고 있어요.</p>');
-  if (fromDialog) state.returnFocus = $('.rail-me') || null;
+  if (fromDialog) state.returnFocus = $('[data-action="marin-account"]') || $('#ws-tools-toggle') || null;
   const request = state.modalRequest;
   try {
     const [me, synk] = await Promise.all([api('/api/me'), typeof synkCompanyRequest === 'function' ? synkCompanyRequest('status').catch(() => null) : null]);
@@ -617,6 +650,7 @@ function capabilityCard(capability) {
 
 function modal(title, subtitle, body, wide = false, drawer = false) {
   if(typeof hideChartLeaders==='function')hideChartLeaders();
+  if(state.workspaceToolsOpen&&typeof setWorkspaceToolsOpen==='function'){document.getElementById('ws-tools-toggle')?.focus({preventScroll:true});setWorkspaceToolsOpen(false,{restoreFocus:false});}
   state.modalRequest++;
   if(!(overlay.querySelector('.modal')&&state.returnFocus&&!app.contains(document.activeElement))){
     state.returnFocus = document.activeElement;
@@ -632,14 +666,18 @@ function closeModal() {
   const returnFocus=state.returnFocus,context=state.returnFocusContext;
   const sameContext=!context||(context.userId===(state.user?.id||null)&&context.tab===state.tab);
   state.modalRequest++; overlay.innerHTML = ''; document.body.classList.remove('modal-open'); state.returnFocus = null; state.returnFocusContext = null;
-  if(!canRestore||!sameContext||!returnFocus)return;
-  if(returnFocus.isConnected!==false&&!returnFocus.disabled&&!returnFocus.closest?.('[inert],[hidden]')){returnFocus.focus?.();return;}
-  const selector=returnFocus.hasAttribute?['data-action','data-org-action','data-tab','data-mode','data-view','data-metric','data-filter','data-org-filter','data-brand','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date'].filter(key=>returnFocus.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(returnFocus.getAttribute(key))}"]`).join(''):'';
-  const matched=selector?app.querySelector(selector):null;
-  if(matched&&!matched.disabled&&!matched.closest('[inert],[hidden]')){matched.focus({preventScroll:true});return;}
-  if(returnFocus.hasAttribute?.('data-org-action')||returnFocus.closest?.('.organization-page')){
-    app.querySelector('.organization-page [data-org-action="reset"],.organization-page [data-org-filter="query"],.organization-page [data-org-action="refresh"]')?.focus({preventScroll:true});
+  if(canRestore&&sameContext&&returnFocus){
+    if(returnFocus.isConnected!==false&&!returnFocus.disabled&&!returnFocus.closest?.('[inert],[hidden]')){returnFocus.focus?.();}
+    else{
+      const selector=returnFocus.hasAttribute?['data-action','data-org-action','data-tab','data-mode','data-view','data-metric','data-filter','data-org-filter','data-brand','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date','data-admin-search','data-admin-company','data-admin-status','data-admin-tab','data-admin-member','data-admin-action','data-admin-invite-status','data-admin-preset'].filter(key=>returnFocus.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(returnFocus.getAttribute(key))}"]`).join(''):'';
+      const matched=selector?app.querySelector(selector):null;
+      if(matched&&!matched.disabled&&!matched.closest('[inert],[hidden]')){matched.focus({preventScroll:true});}
+      else if(returnFocus.hasAttribute?.('data-org-action')||returnFocus.closest?.('.organization-page')){
+        app.querySelector('.organization-page [data-org-action="reset"],.organization-page [data-org-filter="query"],.organization-page [data-org-action="refresh"]')?.focus({preventScroll:true});
+      }
+    }
   }
+  if(typeof adminOnModalClosed==='function')adminOnModalClosed();
 }
 function addChannelModal() { modal('채널 등록', '채널 주소를 한 줄에 하나씩 붙여 넣어 주세요.', `<form class="form-stack" data-form="add-channels"><div class="form-error" role="alert"></div><label class="field">채널 주소<textarea name="urls" required placeholder="https://www.youtube.com/@우리채널\nhttps://www.instagram.com/우리계정/\nhttps://www.facebook.com/우리페이지\nhttps://www.tiktok.com/@우리계정"></textarea><small>여러 주소를 한 번에 등록할 수 있어요. 이미 있는 주소는 건너뛰어요.</small></label>${isAdmin() ? `<label class="field">담당자<select name="ownerId">${(state.data.members || []).filter(row => row.active !== false && row.role !== 'viewer').map(row => `<option value="${escape(row.id)}" ${row.id === state.user.id ? 'selected' : ''}>${escape(row.name)}</option>`).join('')}</select></label>` : ''}<div class="note-box">${icon('info')}<div>등록한 뒤 채널 카드에서 <strong>계정 연결</strong>을 눌러 주세요. 첫 수집이 끝나면 콘텐츠와 수치가 보여요.</div></div><div class="modal-actions">${button('취소', 'close-modal')}<button type="submit" class="btn primary">등록하기${icon('plus')}</button></div></form>`); }
 async function dayModal(date) {
@@ -727,9 +765,10 @@ document.addEventListener('click', async event => {
   const target = event.target.closest('[data-action]'); if (!target || target.disabled) return;
   const action = target.dataset.action, id = target.dataset.id;
   try {
-    if(target.closest('#workspace-sidebar')&&workspaceSidebarBlocksContent())setWorkspaceSidebar(false);
-    if(action==='workspace-sidebar-toggle'){setWorkspaceSidebar(!workspaceSidebarExpanded());return;}
-    if(action==='workspace-sidebar-close'){setWorkspaceSidebar(false);return;}
+    if(action==='workspace-tools-toggle'||action==='workspace-sidebar-toggle'||action==='workspace-mobile-menu'){setWorkspaceToolsOpen(!workspaceToolsOpen());return;}
+    if(action==='workspace-tools-close'||action==='workspace-sidebar-close'||action==='workspace-mobile-close'){setWorkspaceToolsOpen(false);return;}
+    if(target.closest('#ws-tools-drawer')&&typeof setWorkspaceToolsOpen==='function'){document.getElementById('ws-tools-toggle')?.focus({preventScroll:true});setWorkspaceToolsOpen(false,{restoreFocus:false});}
+    if(action==='device-notifications-open'){closeModal();void globalThis.SynkDeviceNotifications?.open();return;}
     if (action === 'share-workspace') { shareWorkspaceView(); return; }
     if (action === 'messenger-retry') { retryWorkspaceModule(); return; }
     if (action === 'command') { commandModal(); return; }
@@ -743,9 +782,9 @@ document.addEventListener('click', async event => {
     if (action === 'command-tab') { closeModal(); selectWorkspaceView(target.dataset.tab); state.report = null; render(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); window.scrollTo(0,0); return; }
     if (action === 'command-channel') { closeModal(); state.scope = 'all'; state.teamId = ''; state.channelSearch = ''; state.channelPlatform = ''; state.tab = 'channels'; render(); await historyDrawer(id); return; }
     if (action === 'reload') { location.reload(); return; }
-    if (action === 'auth-login') { state.authMode = 'login'; state.authToken = ''; state.resetLink = null; renderAuth(); const email = $('#auth-form input[name="email"]'); if (email?.closest('details:not([open])')) $('.auth-form-card h2')?.focus(); else email?.focus(); return; }
+    if (action === 'auth-login') { state.authMode = 'login'; state.authToken = ''; state.resetLink = null; renderAuth(); const email = $('#auth-form input[name="email"]'); if (email?.closest('details:not([open])')) $('.auth-form-card h1, .auth-form-card h2')?.focus(); else email?.focus(); return; }
     if (action === 'auth-reset-retry') { if (state.authMode !== 'reset' || !state.authToken) return; state.resetLink = null; renderAuth(); await inspectResetLink(); return; }
-    if (action === 'auth-help') { state.authMode = 'help'; state.authToken = ''; state.resetLink = null; state.authNotice = ''; renderAuth(); $('.auth-form-card h2')?.focus?.(); return; }
+    if (action === 'auth-help') { state.authMode = 'help'; state.authToken = ''; state.resetLink = null; state.authNotice = ''; renderAuth(); $('.auth-form-card h1, .auth-form-card h2')?.focus?.(); return; }
     if (action === 'account-login-info') { await loginInfoModal(); return; }
     if (action === 'member-password-reset') { const row = state.data.members.find(row => row.id === id); if (!row) return; confirmModal('비밀번호 재설정 링크를 만들까요?', `${escape(row.name)} 님(${escape(row.email || '')})이 새 비밀번호를 정할 수 있는 링크를 만들어요. 60분 동안 한 번 쓸 수 있고, 전에 만든 링크는 못 쓰게 돼요. 링크를 직접 열어 봐도 비밀번호를 넣기 전에는 아무것도 바뀌지 않아요.`, 'member-password-reset-confirm', id); return; }
     if (action === 'member-password-reset-confirm') { target.disabled = true; const result = await api(`/api/members/${encodeURIComponent(id)}/password-reset`, {}); const until = untilTime(result.expiresAt); const heading = $('#modal-title', overlay); if (heading) heading.textContent = '비밀번호 재설정 링크'; $('.modal-body', overlay).innerHTML = `<div class="invite-result"><div class="form-success">${escape(result.name)} 님의 비밀번호 재설정 링크를 만들었어요.</div><p class="notice">회사 계정 이메일 <strong>${escape(result.loginId)}</strong> · ${escape(until)}까지 한 번 쓸 수 있어요. 아래 링크를 그 크루에게만 직접 보내 주세요.</p><div class="link-row"><input readonly aria-label="비밀번호 재설정 링크" value="${escape(result.resetUrl)}">${button('복사', 'copy', 'copy', '', `data-value="${escape(result.resetUrl)}"`)}</div><p class="tiny muted">링크에서 새 비밀번호를 정하면 그 크루의 다른 로그인은 모두 끝나요. 다시 만들면 이 링크는 못 써요.</p><div class="modal-actions">${button('닫기', 'close-modal')}</div></div>`; return; }
@@ -776,8 +815,8 @@ document.addEventListener('click', async event => {
     if (action === 'tab') { if(target.tagName==='A'&&(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return; event.preventDefault(); selectWorkspaceView(target.dataset.tab); state.error = ''; state.report = null; render(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); window.scrollTo(0,0); return; }
     if (action === 'social-view') { selectWorkspaceView('social',target.dataset.view); state.error=''; render(); return; }
     if (action === 'close-modal') { closeModal(); return; }
-    if (action === 'logout') { const stamp=companyAuthSnapshot();await globalThis.SynkDeviceNotifications?.beforeLogout().catch(()=>{});if(!companyAuthCurrent(stamp))return;const logoutResult=await logoutSynkCompany(); if(!logoutResult.done)return; const teachingWarning=typeof logoutTeachingForCompany==='function'?await logoutTeachingForCompany():'';if(!companyAuthCurrent(stamp))return; clearInterval(pollTimer); clearInterval(hypePollTimer); state.hypeRequest++; state.hype = null; if(typeof resetContentWorkspace==='function')resetContentWorkspace(); if(typeof resetStudioWorkspace==='function')resetStudioWorkspace(); if(typeof socialWorkspaceReset==='function')socialWorkspaceReset(); state.user = null; state.csrf = ''; state.data = null; state.report = null; state.authMode = 'login'; state.tab='home'; closeModal(); renderAuth(); if(logoutResult.warning||teachingWarning)notify([logoutResult.warning,teachingWarning].filter(Boolean).join(' ')); return; }
-    if (action === 'refresh') { target.disabled = true; await loadState(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); notify('최신 상태로 불러왔어요.'); return; }
+    if (action === 'logout') { const stamp=companyAuthSnapshot();await globalThis.SynkDeviceNotifications?.beforeLogout().catch(()=>{});if(!companyAuthCurrent(stamp))return;const logoutResult=await logoutSynkCompany(); if(!logoutResult.done)return; const teachingWarning=typeof logoutTeachingForCompany==='function'?await logoutTeachingForCompany():'';if(!companyAuthCurrent(stamp))return; clearInterval(pollTimer); clearInterval(hypePollTimer); clearPendingInviteRecovery(); state.hypeRequest++; state.hype = null; state.workspaceToolsOpen = false; state.workspaceMobileMenuOpen = false; state.pendingBareLanding = false; if(typeof resetContentWorkspace==='function')resetContentWorkspace(); if(typeof resetStudioWorkspace==='function')resetStudioWorkspace(); if(typeof socialWorkspaceReset==='function')socialWorkspaceReset(); if(typeof resetAdminWorkspace==='function')resetAdminWorkspace(); state.user = null; state.csrf = ''; state.data = null; state.report = null; state.authMode = 'login'; state.tab='home'; closeModal(); renderAuth(); if(logoutResult.warning||teachingWarning)notify([logoutResult.warning,teachingWarning].filter(Boolean).join(' ')); return; }
+    if (action === 'refresh') { target.disabled = true; if(state.tab==='admin'&&typeof adminManualRefresh==='function'){await adminManualRefresh();notify('최신 상태로 불러왔어요.');return;} await loadState(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); notify('최신 상태로 불러왔어요.'); return; }
     if (action === 'add-channel') { addChannelModal(); return; }
     if (action === 'day') { await dayModal(target.dataset.date); return; }
     if (action === 'chart-mode') { state.chartMode = target.dataset.mode; render(); return; }
@@ -819,6 +858,8 @@ document.addEventListener('submit', async event => {
   const form = event.target.closest('form[data-form]'); if (!form) return;
   event.preventDefault();
   const submit = form.querySelector('button[type="submit"]'), error = form.querySelector('.form-error'), values = Object.fromEntries(new FormData(form));
+  const inviteSubmit = form.dataset.form === 'invite', inviteStamp = inviteSubmit ? companyAuthSnapshot() : null, inviteModalRequest = state.modalRequest;
+  const inviteOwned = () => Boolean(inviteStamp) && companyAuthCurrent(inviteStamp) && state.modalRequest === inviteModalRequest && form.isConnected !== false;
   if (submit) submit.disabled = true; if (error) error.textContent = '';
   try {
     switch (form.dataset.form) {
@@ -843,7 +884,7 @@ document.addEventListener('submit', async event => {
         await api(endpoint, values); state.authMode = 'login'; state.authToken = ''; state.authNotice = ''; state.authPrefill = '';
         if (endpoint === '/api/login' && typeof rememberWorkspaceLogin === 'function') rememberWorkspaceLogin('password');
         const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;if(synkEntry===false)break;
-        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.passwordSet = me.passwordSet === true; state.user = me.user; state.csrf = me.csrfToken || ''; if(state.user&&!isDemoMode()&&typeof continueAfterLogin==='function'&&continueAfterLogin())break; if(state.user)selectRequestedView(); await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
+        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.passwordSet = me.passwordSet === true; state.user = me.user; state.csrf = me.csrfToken || ''; if(state.user&&!isDemoMode()&&typeof continueAfterLogin==='function'&&continueAfterLogin())break; const hadRequested = Boolean(state.requestedView?.[0]); if(state.user)selectRequestedView(); if(endpoint==='/api/login'&&!isDemoMode()&&!hadRequested&&location.search===''&&location.hash==='')state.pendingBareLanding=true; await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
       }
       case 'add-channels': {
         const urls = values.urls.split(/\r?\n/).map(url => url.trim()).filter(Boolean), results = { added: [], existing: [], errors: [] };
@@ -858,15 +899,38 @@ document.addEventListener('submit', async event => {
       case 'invite': {
         if (values.role === 'manager' && !values.teamId) throw new Error('팀장으로 초대하려면 팀을 골라 주세요.');
         values.teamId = values.teamId || null;values.workspaceProfile=waReadFields(form);
-        const result = await api('/api/members/invite', values); await loadState();
-        $('.modal-body', overlay).innerHTML = `<div class="invite-result"><div class="form-success">${escape(values.name)} 님의 초대 링크를 만들었어요.</div><p class="notice">아래 링크를 그 크루에게 직접 보내 주세요. 링크에서 이름과 비밀번호를 정하면 로그인할 수 있어요.</p>${state.data.deployment?.localOnly ? '<div class="note-box">이 링크는 지금 이 컴퓨터에서만 열려요. 크루 컴퓨터에서 열려면 회사 서버에 연결해야 해요.</div>' : ''}<div class="link-row"><input readonly aria-label="팀원 초대 링크" value="${escape(result.inviteUrl)}">${button('복사', 'copy', 'copy', '', `data-value="${escape(result.inviteUrl)}"`)}</div><label class="field">초대 코드<input readonly aria-label="초대 코드" value="${escape(result.code)}"></label><p class="tiny muted">3일 동안 한 번 사용해요. 초대한 직원에게만 전달해 주세요. 초대 관리에서 취소할 수 있어요.</p></div>`; break;
+        const result = await api('/api/members/invite', values);
+        if (!companyAuthCurrent(inviteStamp)) break;
+        let localOnly = Boolean(state.data?.deployment?.localOnly);
+        try { if (companyAuthCurrent(inviteStamp)) await loadState(); }
+        catch (loadErr) { if (loadErr?.code === 'SESSION_CHANGED' || !companyAuthCurrent(inviteStamp)) break; }
+        if (!companyAuthCurrent(inviteStamp)) break;
+        localOnly = Boolean(state.data?.deployment?.localOnly);
+        if (inviteOwned()) {
+          const body = form.closest?.('.modal-body') || (state.modalRequest === inviteModalRequest ? $('.modal-body', overlay) : null);
+          if (body) body.innerHTML = inviteResultMarkup({ id: result.id, name: values.name, inviteUrl: result.inviteUrl, code: result.code, localOnly });
+        } else {
+          setPendingInviteRecovery({ stamp: inviteStamp, id: result.id || '', name: values.name || '', inviteUrl: result.inviteUrl || '', code: result.code || '', expiresAt: result.expiresAt || '', localOnly });
+          notify(`${values.name} 님 초대를 만들었어요. 초대 관리에서 결과를 한 번 볼 수 있어요.`);
+        }
+        break;
       }
       case 'password': { if (values.password !== values.confirmPassword) throw new Error('새 비밀번호 두 칸이 서로 달라요.'); const first = state.passwordSet === false; await api('/api/account/password', { oldPassword: values.oldPassword, password: values.password }); const me = await api('/api/me'); state.csrf = me.csrfToken || ''; state.user = me.user; state.passwordSet = me.passwordSet === true; form.reset(); if (form.closest('#overlay')) closeModal(); else if (state.tab === 'settings') render(); notify(first ? '회사 비밀번호를 정했어요. 이제 회사 계정 이메일과 이 비밀번호로도 들어올 수 있어요.' : '회사 비밀번호를 바꿨어요. 이 기기는 그대로이고, 다른 기기에서는 다시 로그인해야 해요.'); break; }
       case 'settings': { const hoursKst = settingsHoursPayload(values); await api('/api/settings', { companyName: values.companyName, hourKst: hoursKst[0], hoursKst, enabled: values.enabled === 'on' }); await loadState(); notify(hoursKst.length === 2 ? `회사 이름과 수집 시각(하루 두 번 · ${hoursKst.map(h => String(h).padStart(2, '0') + ':00').join(' · ')})을 저장했어요.` : '회사 이름과 수집 시각(하루 한 번)을 저장했어요.'); break; }
       case 'pulse-auto-reply': { const input = { dailyUsd: Number(values.dailyUsd), monthlyUsd: Number(values.monthlyUsd), perProjectDaily: Number(values.perProjectDaily), enabled: values.enabled === 'on' }; if (values.removeKey === 'on') { input.apiKey = ''; input.enabled = false; } else if (values.apiKey) input.apiKey = values.apiKey; await api('/api/settings/pulse-auto-reply', input); await loadState(); notify(input.enabled ? '자동 안내를 켰어요. 이제부터 들어오는 문의에 먼저 답해요.' : '자동 안내 설정을 저장했어요.'); break; }
     }
-  } catch (err) { if(err.code==='SESSION_CHANGED')return; if (error?.isConnected) error.textContent = err.message; else notify(err.message); }
-  finally { if (submit?.isConnected) submit.disabled = false; }
+  } catch (err) {
+    if(err.code==='SESSION_CHANGED')return;
+    if (inviteSubmit) {
+      if (!companyAuthCurrent(inviteStamp)) return;
+      const uncertain = !err?.status ? '연결이 끊겨 초대 발급 결과를 확인하지 못했어요. 중복 발급을 막기 위해 다시 보내지 않았으니 초대 관리에서 대기 중 초대를 확인해 주세요.' : '';
+      if (inviteOwned() && error?.isConnected !== false) error.textContent = uncertain || err.message;
+      else notify(uncertain || `초대를 만들지 못했어요: ${err.message}`);
+      return;
+    }
+    if (error?.isConnected) error.textContent = err.message; else notify(err.message);
+  }
+  finally { if (inviteSubmit ? (inviteOwned() && submit?.isConnected !== false) : submit?.isConnected) submit.disabled = false; }
 });
 document.addEventListener('keydown', event => {
   if (!overlay.children.length) return;

@@ -17,7 +17,7 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',synkUserId:id},request,onMe,onFetch}={}){
   const calls=[],moves=[],events=new Map(),listeners=new Set(),notes=[],notices=[];
   let renders=0,authRenders=0,polls=0,currentAuth=auth,currentMe=me;
-  const element=()=>({style:{display:''},inert:false,innerHTML:'',draft:'unsaved company draft',isConnected:true,setAttribute(){},append(){},before(note){notes.push(note);},remove(){this.isConnected=false;}});
+  const element=()=>({hidden:false,classList:{values:new Set(),add(v){this.values.add(v);},remove(v){this.values.delete(v);},contains(v){return this.values.has(v);}},style:{display:''},inert:false,innerHTML:'',draft:'unsaved company draft',isConnected:true,setAttribute(){},append(){},before(note){notes.push(note);},remove(){this.isConnected=false;}});
   const content=element(),overlay=element(),toast=element(),panel=element(),messenger=element();
   const state={user:null,csrf:'',data:null,report:null,authMode:'login',hypeRequest:0,tab:'messenger'};
   const document={hidden:false,hasFocus:()=>true,addEventListener(name,fn){if(!events.has(name))events.set(name,[]);events.get(name).push(fn);},
@@ -79,15 +79,15 @@ test('an auth change delivered before an older final status reply cannot reveal 
 test('temporary native checking masks company content and an open modal without discarding drafts, then verified renewal restores both',async()=>{
   const f=fixture();f.bootEvents();await f.run('initialize()');f.overlay.innerHTML='<form>private company draft</form>';
   f.emit({configured:true,signedIn:false,status:'restoring',sessionGeneration:1,account:null});
-  assert.equal(f.content.style.display,'none');assert.equal(f.content.inert,true);
-  assert.equal(f.overlay.style.display,'none','the modal is a sibling of #app and must also be masked');assert.equal(f.overlay.inert,true);
+  assert.equal(f.content.hidden,true);assert.equal(f.content.inert,true);
+  assert.equal(f.overlay.hidden,true,'the modal is a sibling of #app and must also be masked');assert.equal(f.overlay.inert,true);
   assert.equal(f.content.draft,'unsaved company draft');assert.match(f.overlay.innerHTML,/private company draft/);
   await flush();f.emit(signedIn());await flush();
-  assert.equal(f.content.style.display,'');assert.equal(f.overlay.style.display,'');assert.equal(f.content.inert,false);assert.equal(f.overlay.inert,false);assert.match(f.overlay.innerHTML,/private company draft/);
+  assert.equal(f.content.hidden,false);assert.equal(f.overlay.hidden,false);assert.equal(f.content.inert,false);assert.equal(f.overlay.inert,false);assert.match(f.overlay.innerHTML,/private company draft/);
 });
 test('explicit company logout leaves the new login screen visible after native sign-out emits synchronously',async()=>{
   const f=fixture();f.bootEvents();await f.run('initialize()');await f.run('logoutAction()');await flush();
-  assert.equal(f.state.user,null);assert.equal(f.counts().authRenders,1);assert.equal(f.content.style.display,'');assert.equal(f.content.inert,false);
+  assert.equal(f.state.user,null);assert.equal(f.counts().authRenders,1);assert.equal(f.content.hidden,false);assert.equal(f.content.inert,false);
 });
 
 for(const delivery of ['before guarded reply','after guarded reply before caller'])test('native renewal never unmasks the old company after an account event '+delivery,async()=>{
@@ -95,13 +95,13 @@ for(const delivery of ['before guarded reply','after guarded reply before caller
   let reads=0,maskedAtAccountChange=false;
   f.desktop.authStatus=async()=>{
     const snapshot=f.auth;
-    if(++reads===2){const change=()=>{f.emit(signedIn(other,2));maskedAtAccountChange=f.content.style.display==='none';};if(delivery==='before guarded reply')queueMicrotask(change);else queueMicrotask(()=>queueMicrotask(change));}
+    if(++reads===2){const change=()=>{f.emit(signedIn(other,2));maskedAtAccountChange=f.content.hidden===true&&f.content.classList.contains('synk-native-hidden');};if(delivery==='before guarded reply')queueMicrotask(change);else queueMicrotask(()=>queueMicrotask(change));}
     return snapshot;
   };
   await f.run('renewSynkCompanySession()');await flush();
   assert.equal(f.auth.account.synk_user_id,other);assert.equal(f.auth.sessionGeneration,2);assert.equal(maskedAtAccountChange,true);
-  assert.equal(f.content.style.display,'none','stale renewal must not reveal company A after native account B');assert.equal(f.content.inert,true);
-  assert.equal(f.overlay.style.display,'none');assert.equal(f.overlay.inert,true);assert.match(f.overlay.innerHTML,/private company A draft/);
+  assert.equal(f.content.hidden,true,'stale renewal must not reveal company A after native account B');assert.equal(f.content.inert,true);
+  assert.equal(f.overlay.hidden,true);assert.equal(f.overlay.inert,true);assert.match(f.overlay.innerHTML,/private company A draft/);
   assert.equal(f.calls.some(v=>v.operation==='logout'),false,'a stale local reply does not revoke a newer native account');
 });
 test('native renewal account rejection still logs out the old company and redirects',async()=>{
@@ -115,14 +115,14 @@ test('same-account refresh emitted inside renewal immediately restores the prese
     if(operation==='status')return {enabled:true,session:'synk'};
     if(operation==='renew'){
       current.emit({configured:true,signedIn:false,status:'restoring',sessionGeneration:1,account:null});
-      assert.equal(current.content.style.display,'none');assert.equal(current.overlay.inert,true);
+      assert.equal(current.content.hidden,true);assert.equal(current.overlay.inert,true);
       current.emit(signedIn());
     }
     return {ok:true};
   }});
   f.bootEvents();await f.run('initialize()');f.overlay.innerHTML='<form>same account unsaved draft</form>';
   await f.run('renewSynkCompanySession()');
-  assert.equal(f.content.style.display,'','the completed renewal must not wait for another 20-second tick');
+  assert.equal(f.content.hidden,false,'the completed renewal must not wait for another 20-second tick');
   assert.equal(f.overlay.inert,false);assert.match(f.overlay.innerHTML,/same account unsaved draft/);
   assert.equal(f.calls.filter(row=>row.operation==='renew').length,1);assert.equal(f.moves.length,0);
 });
@@ -157,8 +157,8 @@ for(const delivery of ['before guarded reply','after guarded reply before caller
 test('native identity checking masks the body sibling messenger iframe without deleting its draft',async()=>{
   const f=fixture();f.bootEvents();await f.run('initialize()');f.messenger.innerHTML='unsaved iframe draft';
   f.emit({configured:true,signedIn:false,status:'restoring',sessionGeneration:1,account:null});
-  assert.equal(f.messenger.style.display,'none');assert.equal(f.messenger.inert,true);assert.equal(f.messenger.innerHTML,'unsaved iframe draft');
-  await flush();f.emit(signedIn());await flush();assert.equal(f.messenger.style.display,'');assert.equal(f.messenger.inert,false);
+  assert.equal(f.messenger.hidden,true);assert.equal(f.messenger.inert,true);assert.equal(f.messenger.innerHTML,'unsaved iframe draft');
+  await flush();f.emit(signedIn());await flush();assert.equal(f.messenger.hidden,false);assert.equal(f.messenger.inert,false);
 });
 test('foreground renewal restores an expired company session for the same employee without rendering or losing drafts',async()=>{
   const f=fixture({onFetch:path=>path==='/api/synk-id/challenge'?{data:{challenge:'recovery-challenge'}}:null,request(operation,_params,current){
@@ -191,7 +191,7 @@ for(const failure of ['different employee','different native account','revoked',
     }return {ok:true};
   }});
   f.bootEvents();await f.run('initialize()');f.messenger.innerHTML='private iframe draft';f.setMe({user:null,synkUserId:null});
-  await f.run('renewSynkCompanySession()');assert.equal(f.state.user.id,'company-A');assert.equal(f.state.csrf,'csrf-A');assert.equal(f.messenger.inert,true);assert.equal(f.messenger.style.display,'none');assert.equal(f.messenger.innerHTML,'private iframe draft');assert.equal(f.moves.length,0);
+  await f.run('renewSynkCompanySession()');assert.equal(f.state.user.id,'company-A');assert.equal(f.state.csrf,'csrf-A');assert.equal(f.messenger.inert,true);assert.equal(f.messenger.hidden,true);assert.equal(f.messenger.innerHTML,'private iframe draft');assert.equal(f.moves.length,0);
   await assert.rejects(async()=>f.run('ensureNativeSynkCompanySession()'));
 });
 test('a foreground restore challenge is abandoned when the native account changes before exchange',async()=>{

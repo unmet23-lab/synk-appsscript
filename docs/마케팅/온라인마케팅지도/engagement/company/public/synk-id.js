@@ -95,16 +95,16 @@ async function prepareNativeSynkCompanyEntry(){
   finally{synkConnectionPending=false;}
 }
 function maskNativeSynkCompany(mask){
-  const content=document.querySelector('#app');if(!content?.style)return;
+  const content=document.querySelector('#app');if(!content)return;
   if(mask&&!synkNativeMask){
-    const note=document.createElement('div');note.className='initial-loading';note.style.padding='0 16px';note.setAttribute('role','status');note.setAttribute('aria-live','polite');
-    const logo=document.createElement('img');logo.className='brand-logo';logo.src='/wordmark.svg';logo.alt='싱ㅋ';
+    const note=document.createElement('div');note.className='initial-loading synk-id-mask-note';note.setAttribute('role','status');note.setAttribute('aria-live','polite');
+    const logo=document.createElement('img');logo.className='brand-logo';logo.src='/wordmark.svg';logo.alt='SYNK';
     const text=document.createElement('p');text.textContent='플랫폼의 SYNK ID 연결을 확인하고 있어요.';
     const line=document.createElement('span');line.className='loading-line';note.append(logo,text,line);content.before(note);
-    const nodes=['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching'].map(selector=>document.querySelector(selector)).filter(node=>node?.style).map(node=>({node,display:node.style.display,inert:node.inert}));
-    synkNativeMask={note,nodes,logo,help:false,failures:0,attempt:0,lastError:'',reason:null,action:null,reconnecting:false,blocked:false,reopenPending:false,retryTimer:null,helpTimer:null};for(const {node}of nodes){node.style.display='none';node.inert=true;}
+    const nodes=['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching','#workspace-call'].map(selector=>document.querySelector(selector)).filter(Boolean).map(node=>({node,hidden:Boolean(node.hidden),masked:Boolean(node.classList?.contains('synk-native-hidden')),inert:node.inert}));
+    synkNativeMask={note,nodes,logo,help:false,failures:0,attempt:0,lastError:'',reason:null,action:null,reconnecting:false,blocked:false,reopenPending:false,retryTimer:null,helpTimer:null};for(const {node}of nodes){node.hidden=true;node.classList?.add('synk-native-hidden');node.inert=true;}
     synkNativeMask.helpTimer=synkCheckTimer(showNativeSynkHelp,SYNK_CHECK_HELP_MS);scheduleNativeSynkCheck();
-  }else if(!mask&&synkNativeMask){clearTimeout(synkNativeMask.retryTimer);clearTimeout(synkNativeMask.helpTimer);for(const {node,display,inert}of synkNativeMask.nodes){node.style.display=display;node.inert=inert;}synkNativeMask.note.remove();synkNativeMask=null;}
+  }else if(!mask&&synkNativeMask){clearTimeout(synkNativeMask.retryTimer);clearTimeout(synkNativeMask.helpTimer);for(const {node,hidden,masked,inert}of synkNativeMask.nodes){node.hidden=hidden;if(!masked)node.classList?.remove('synk-native-hidden');node.inert=inert;}synkNativeMask.note.remove();synkNativeMask=null;}
 }
 // While masked, nothing else may trigger a check: the chat frame held focus, so no focus event comes back.
 function scheduleNativeSynkCheck(){
@@ -119,7 +119,7 @@ function updateNativeSynkReason(){const mask=synkNativeMask;if(mask?.reason)mask
 function showNativeSynkHelp(){
   const mask=synkNativeMask;if(!mask||mask.help)return updateNativeSynkReason();
   mask.help=true;clearTimeout(mask.helpTimer);
-  const card=document.createElement('div');card.className='empty';card.style.wordBreak='keep-all';
+  const card=document.createElement('div');card.className='empty synk-id-card';
   const title=document.createElement('h3');title.textContent='SYNK ID 연결을 아직 확인하지 못했어요';
   const reason=document.createElement('p'),hint=document.createElement('p');hint.textContent='자동으로 계속 확인하고 있어요. 다시 연결해도 안 되면 플랫폼에서 SYNK Workspace를 다시 열어 주세요.';
   const action=document.createElement('button');action.type='button';action.className='btn primary';action.textContent='다시 연결';action.onclick=()=>void reconnectNativeSynkCompany();
@@ -275,7 +275,7 @@ function consumeSynkReturn(){
 function takeSynkReturnFailure(){consumeSynkReturn();const code=synkReturnFailure;synkReturnFailure=null;return code;}
 async function installSynkLogin(){
   const form=document.querySelector('#auth-form');if(!form||document.querySelector('#synk-id-login'))return;
-  const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn synk-id-button" id="synk-id-login" aria-describedby="synk-id-login-note" disabled>SYNK ID로 로그인</button><p class="table-foot" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';
+  const section=document.createElement('section');section.className='synk-login-entry';section.innerHTML='<button type="button" class="btn primary synk-id-button" id="synk-id-login" aria-describedby="synk-id-login-note" disabled>SYNK ID로 로그인</button><p class="synk-id-login-note" id="synk-id-login-note" role="status">연결 상태를 확인하고 있어요.</p>';
   // The company password form folds under #auth-company (app.js); the SYNK ID entry stands above it.
   (form.closest?.('#auth-company')||form).before(section);
   const button=section.querySelector('button'),note=section.querySelector('p'),failure=takeSynkReturnFailure(),failureText=failure?synkLoginFailureText(failure):'';
@@ -316,7 +316,7 @@ async function beginSynkCompany(action,params={},button,note){
     const account=await waitForNativeSynk();
     if(action!=='login'){
       const title=action==='link'?'이 SYNK ID를 연결할까요?':'이 SYNK ID 연결을 해제할까요?';
-      modal(title,escape(account.account?.display_name||'인증한 SYNK ID'),`<p class="table-foot">${action==='link'?'현재 회사 계정에 이 SYNK ID를 연결합니다. 다른 직원의 계정으로 바뀌지 않아요.':'회사 기록은 유지하고 이 SYNK ID로 들어오는 연결을 해제합니다.'}</p><button type="button" class="btn synk-id-button" id="synk-id-confirm">${action==='link'?'확인하고 연결':'확인하고 해제'}</button><button type="button" class="text-button" id="synk-id-confirm-cancel">취소</button><p id="synk-id-confirm-note" role="status"></p>`);
+      modal(title,escape(account.account?.display_name||'인증한 SYNK ID'),`<p class="table-foot">${action==='link'?'현재 회사 계정에 이 SYNK ID를 연결합니다. 다른 직원의 계정으로 바뀌지 않아요.':'회사 기록은 유지하고 이 SYNK ID로 들어오는 연결을 해제합니다.'}</p><div class="modal-actions"><button type="button" class="btn quiet" id="synk-id-confirm-cancel">취소</button><button type="button" class="btn primary synk-id-button" id="synk-id-confirm">${action==='link'?'확인하고 연결':'확인하고 해제'}</button></div><p id="synk-id-confirm-note" class="table-foot" role="status"></p>`);
       await new Promise((resolve,reject)=>{const confirm=document.querySelector('#synk-id-confirm');const timeout=setTimeout(()=>reject(new Error('연결 확인이 만료됐어요. 다시 시작해 주세요.')),60_000);confirm.onclick=()=>{clearTimeout(timeout);confirm.disabled=true;resolve();};document.querySelector('#synk-id-confirm-cancel').onclick=()=>{clearTimeout(timeout);closeModal();reject(new Error('SYNK ID 연결 변경을 취소했어요.'));};});
     }
     await synkCompanyRequest('exchange',{challenge:challenge.challenge,confirm:true});location.replace('/?tab=messenger');
@@ -330,8 +330,8 @@ async function openSynkIdentityDialog(){
     if(!status.enabled||(!getSynkDesktopBridge()&&!status.browserEnabled)){modal('SYNK ID 연결','연결 준비 중','<p class="table-foot">현재는 기존 회사 계정으로 이용할 수 있어요. 공통 로그인 설정이 완료되면 여기에서 연결할 수 있어요.</p>');return;}
     if(!status.canLink){modal('SYNK ID 연결','회사 비밀번호 확인이 필요해요','<p class="table-foot">회사 비밀번호를 먼저 설정한 뒤 다시 연결해 주세요. 직원 권한과 기존 기록을 지키기 위해 현재 회사 계정의 비밀번호를 확인해요.</p>');return;}
     const action=status.linked?'unlink':'link',label=status.linked?'SYNK ID 연결 해제':'SYNK ID 연결';
-    modal(label,escape(state.user?.name||'내 회사 계정'),`<form id="synk-id-link-form" class="form-stack"><p class="table-foot">${status.linked?'현재 연결된 SYNK ID로 다시 인증해 주세요. 회사 기록은 그대로 보관돼요.':'기존 회사 계정의 본인 확인 후 SYNK ID를 연결해요. 직원 초대와 권한은 회사에서 따로 관리해요.'}</p><label class="field">현재 회사 비밀번호<input name="currentPassword" type="password" autocomplete="current-password" required maxlength="256"></label><label class="synk-confirm-label"><input type="checkbox" required> 이 회사 계정의 SYNK ID ${status.linked?'연결 해제':'연결'}를 확인했어요.</label><button class="btn synk-id-button" type="submit">${label}</button><p id="synk-id-link-note" role="status"></p></form>`);
-    document.querySelector('#synk-id-link-form').onsubmit=event=>{event.preventDefault();const form=event.currentTarget,values=Object.fromEntries(new FormData(form));form.elements.currentPassword.value='';void beginSynkCompany(action,values,form.querySelector('button'),form.querySelector('p[role="status"]'));};
+    modal(label,escape(state.user?.name||'내 회사 계정'),`<form id="synk-id-link-form" class="form-stack"><p class="table-foot">${status.linked?'현재 연결된 SYNK ID로 다시 인증해 주세요. 회사 기록은 그대로 보관돼요.':'기존 회사 계정의 본인 확인 후 SYNK ID를 연결해요. 직원 초대와 권한은 회사에서 따로 관리해요.'}</p><label class="field">현재 회사 비밀번호<input name="currentPassword" type="password" autocomplete="current-password" required maxlength="256"></label><label class="synk-confirm-label"><input type="checkbox" required><span>이 회사 계정의 SYNK ID ${status.linked?'연결 해제':'연결'}를 확인했어요.</span></label><div class="modal-actions"><button type="button" class="btn quiet" data-action="close-modal">취소</button><button class="btn primary synk-id-button" type="submit">${label}</button></div><p id="synk-id-link-note" class="table-foot" role="status"></p></form>`);
+    document.querySelector('#synk-id-link-form').onsubmit=event=>{event.preventDefault();const form=event.currentTarget,values=Object.fromEntries(new FormData(form));form.elements.currentPassword.value='';void beginSynkCompany(action,values,form.querySelector('button[type="submit"]'),form.querySelector('p[role="status"]'));};
   }catch(error){notify(error.message);}
 }
 document.addEventListener('click',event=>{if(event.target.closest?.('[data-action="synk-id-account"]'))void openSynkIdentityDialog();});

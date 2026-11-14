@@ -6,3 +6,18 @@ html[data-text-size=large]{font-size:20px}html[data-text-size=large] body{font-s
 @media(max-width:1100px){.intro{padding:23px}.intro h1{font-size:28px}.personal-steps{grid-template-columns:1fr}.personal-head h2{font-size:21px}}@media(max-width:600px){.intro{padding:23px 20px;min-height:180px}.intro h1{font-size:28px;line-height:1.45}.personal-panel{padding:21px 19px}.personal-head{display:block}.personal-state{display:inline-block;margin-top:11px}.personal-fields{grid-template-columns:1fr}.personal-steps{grid-template-columns:1fr}.personal-head h2{font-size:21px}.personal-actions{gap:9px 14px}.personal-feedback{align-items:flex-start}.personal-feedback>span{flex-basis:100%}.personalization-dialog{padding:22px}.intro .eyebrow{font-size:9px}.topbar>div{gap:8px}.topbar .demo-badge{padding:8px 13px}.topbar .text-button{font-size:11px}html[data-text-size=large] .topbar .text-button{font-size:12px}html[data-text-size=large] .sidebar nav{grid-template-columns:1fr}html[data-text-size=large] .nav-button{font-size:16px}}
 
 .personal-guidance{font-size:14px;line-height:1.8;margin:14px 0;color:#4c4240}html[data-text-size=large] .personal-guidance{font-size:17px}.personalization-dialog .dialog-header [data-personal=close]{white-space:nowrap;flex-shrink:0}.personal-steps p{margin-top:6px}
+/* 교사 화면 전용 검정 플랫폼 맞춤 설정 (TD1: student.html에는 적용되지 않음) */
+html[data-teacher-app] .personal-panel{border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:20px 22px;margin:20px 0;background:#08090C;color:#FFFFFF}
+html[data-teacher-app] .personal-head .eyebrow{font-size:13px;font-weight:700;color:#93B8FF;letter-spacing:0}
+html[data-teacher-app] .personal-head h2{font-size:20px;font-weight:700;color:#FFFFFF}
+html[data-teacher-app] .personal-state{background:#10131A!important;background-image:none!important;border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:0 10px;min-height:28px;display:inline-flex;align-items:center;font-size:13px;font-weight:600;color:#D4D9E2}
+html[data-teacher-app] .personal-reason,html[data-teacher-app] .personal-guidance{color:#D4D9E2}
+html[data-teacher-app] .personal-steps li{background:#000000;border:1px solid rgba(255,255,255,.10);border-radius:10px;color:#FFFFFF}
+html[data-teacher-app] .personal-steps li:before{color:#93B8FF}
+html[data-teacher-app] .personal-scope,html[data-teacher-app] .personal-fields small{color:#9AA5B6;font-size:13px}
+html[data-teacher-app] .personal-feedback{border-top-color:rgba(255,255,255,.10);color:#D4D9E2}
+html[data-teacher-app] .personal-feedback .felt-button,html[data-teacher-app] .personal-manage button{min-height:44px;font-size:13px}
+html[data-teacher-app] .personal-display{border:1px solid rgba(255,255,255,.10);border-radius:10px;background:#000000}
+html[data-teacher-app] .personal-display summary{color:#FFFFFF;min-height:44px;display:flex;align-items:center}
+html[data-teacher-app] .consent-line{color:#FFFFFF}
+html[data-teacher-app] .consent-line input{accent-color:#93B8FF}

@@ -1,12 +1,291 @@
-.device-notifications-dialog{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid #e7dcd5;border-radius:14px;background:#fff;color:#332926;font-family:SUIT,system-ui,sans-serif;box-shadow:0 18px 70px #30241930;overflow:auto;word-break:keep-all;overflow-wrap:anywhere}
-.device-notifications-dialog::backdrop{background:#24202b65;backdrop-filter:blur(3px)}
-.device-notifications-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:24px;border-bottom:1px solid #eee6e0}.device-notifications-head h2{font-size:20px;margin:0;line-height:1.5}.device-notifications-head p{font-size:13px;color:#776960;line-height:1.6;margin:7px 0 0}.device-notifications-head button{width:44px;height:44px;border-radius:10px;flex:none;background:none;border:0;color:#665850;font-size:26px;cursor:pointer}
-.device-notifications-body{padding:24px}.device-notification-status{padding:0 0 16px}.device-notification-status>strong{display:block;font-size:17px;line-height:1.6;color:#46352c}.device-notification-status>p,.device-notifications-privacy,.device-notifications-loading{font-size:13px;line-height:1.85;color:#776960;margin:10px 0}.device-notifications-privacy{margin:0 0 20px;padding:16px 18px;background:#f8f5ef;border:1px solid #e8e0d7;border-radius:10px}
-.device-label-field{display:block;margin:16px 0}.device-label-field span{display:block;font-size:13px;font-weight:650;margin-bottom:8px}.device-label-field input{width:100%;box-sizing:border-box;min-height:46px;border:1px solid #d8ccc3;border-radius:6px;padding:10px 12px;font:inherit;font-size:14px;background:#fff;color:#332926}
-.device-notification-primary{display:block;width:100%;min-height:48px;padding:12px 20px;background:#e9907c url("/messenger/assets/felt-v2/texture-coral.webp") center/288px 288px repeat;border:1px solid #d57e6b;border-radius:10px;color:#321d19;font:inherit;font-size:14px;line-height:1.5;font-weight:750;text-shadow:none;cursor:pointer}
-.device-notification-link{min-height:44px;padding:10px 4px;font:inherit;font-size:13px;border:0;background:none;color:#79543e;text-decoration:underline;text-underline-offset:4px;cursor:pointer}.device-notifications-dialog button:disabled{opacity:.6;cursor:wait}.device-notifications-dialog button:focus-visible,.device-notifications-dialog input:focus-visible{outline:2px solid #ad5242;outline-offset:3px}
-.device-notification-error{font-size:13px;line-height:1.8;color:#a23b30;margin:12px 0}.device-notification-devices{margin-top:24px;padding-top:20px;border-top:1px solid #eee6e0}.device-notification-devices h3{font-size:14px;margin:0 0 12px}.device-notification-devices>p{font-size:13px;color:#817166}.device-notification-devices article{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid #f0e9e3}.device-notification-devices article>div{min-width:0}.device-notification-devices strong{font-size:13px;line-height:1.6}.device-notification-devices small{display:block;font-size:12px;line-height:1.7;color:#88766b;margin-top:4px}.device-notification-devices button{flex:none}
-@media(max-width:390px){.device-notifications-head,.device-notifications-body{padding:18px}.device-notifications-head h2{font-size:18px}.device-notification-status>strong{font-size:15px}.device-notification-devices article{gap:8px}.device-notification-primary{padding:12px 18px}}
+/* Device Notifications Dialog — SYNK Carbon Pure Black (#000000) */
+.device-notifications-dialog {
+  width: min(500px, calc(100vw - 24px));
+  max-height: calc(100dvh - 28px);
+  padding: 0;
+  border: 1px solid var(--ws-line-muted);
+  border-radius: var(--ws-radius-lg);
+  background: var(--ws-surface);
+  color: var(--ws-ink);
+  font-family: var(--ws-sans);
+  box-shadow: var(--ws-shadow-lg);
+  overflow: auto;
+  scrollbar-gutter: stable;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
 
-.device-notifications-head>div{min-width:0}.device-notifications-dialog{scrollbar-gutter:stable}.device-notifications-head button:hover{background:#f5f0ea}.device-label-field input{border-radius:10px}.device-notification-devices article{padding:16px 0}.device-notification-devices small{color:#716258}.device-notification-link{max-width:100%;white-space:normal}.device-notification-primary:hover{filter:brightness(.98)}
-@media(max-width:390px){.device-notification-devices article{flex-wrap:wrap;gap:10px}.device-notifications-head,.device-notifications-body{padding:20px}.device-notification-devices button{margin-left:0}}
+.device-notifications-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.76);
+}
+
+.device-notifications-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--ws-line);
+  background: var(--ws-surface);
+}
+
+.device-notifications-head > div {
+  min-width: 0;
+}
+
+.device-notifications-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--ws-ink);
+}
+
+.device-notifications-head p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ws-ink-muted);
+}
+
+.device-notifications-head button {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ws-radius-sm);
+  flex: none;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ws-ink-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.device-notifications-head button:hover {
+  background: var(--ws-surface-subtle);
+  border-color: var(--ws-line-muted);
+  color: var(--ws-ink);
+}
+
+.device-notifications-body {
+  padding: 20px 22px 22px;
+}
+
+.device-notification-status {
+  padding: 0 0 14px;
+}
+
+.device-notification-status > strong {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 640;
+  line-height: 1.45;
+  color: var(--ws-ink);
+}
+
+.device-notification-status > p,
+.device-notifications-privacy,
+.device-notifications-loading {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--ws-ink-secondary);
+}
+
+.device-notifications-privacy {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  background: var(--ws-surface-subtle);
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-radius-sm);
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+}
+
+.device-label-field {
+  display: block;
+  margin: 0 0 14px;
+}
+
+.device-label-field span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 580;
+  color: var(--ws-ink-secondary);
+}
+
+.device-label-field input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--ws-control-line);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-canvas);
+  color: var(--ws-ink);
+  font: 450 13.5px/1.4 var(--ws-sans);
+}
+
+.device-notification-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.device-notification-primary {
+  flex: 1 1 200px;
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid var(--ws-cta);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-cta);
+  color: var(--ws-cta-ink);
+  font: 640 13.5px/1.4 var(--ws-sans);
+  cursor: pointer;
+}
+
+.device-notification-primary:hover:not(:disabled) {
+  background: var(--ws-cta-hover);
+  border-color: var(--ws-cta-hover);
+}
+
+.device-notification-primary.is-active {
+  background: var(--ws-surface-subtle);
+  border-color: var(--ws-control-line);
+  color: var(--ws-ink);
+}
+
+.device-notification-primary.is-active:hover:not(:disabled) {
+  background: #161A24;
+}
+
+.device-notification-link {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid var(--ws-line-muted);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-ink-secondary);
+  font: 550 13px/1.35 var(--ws-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.device-notification-link:hover:not(:disabled) {
+  background: #161A24;
+  border-color: var(--ws-control-line);
+  color: var(--ws-ink);
+}
+
+.device-notifications-dialog button:disabled {
+  opacity: 0.52;
+  cursor: wait;
+}
+
+.device-notifications-dialog button:focus-visible,
+.device-notifications-dialog input:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 2px;
+}
+
+.device-notification-error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ws-danger-line);
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-danger-bg);
+  color: var(--ws-danger);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.device-notification-devices {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ws-line);
+}
+
+.device-notification-devices h3 {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  font-weight: 630;
+  color: var(--ws-ink);
+}
+
+.device-notification-devices > p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ws-ink-muted);
+}
+
+.device-notification-devices article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ws-line);
+}
+
+.device-notification-devices article:last-child {
+  border-bottom: 0;
+}
+
+.device-notification-devices article > div {
+  min-width: 0;
+}
+
+.device-notification-devices strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ws-ink);
+}
+
+.device-notification-devices small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ws-ink-muted);
+}
+
+.device-notification-devices button {
+  flex: none;
+}
+
+@media (max-width: 700px) {
+  .device-label-field input {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .device-notifications-head,
+  .device-notifications-body {
+    padding: 16px;
+  }
+
+  .device-notification-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .device-notification-primary {
+    flex: none;
+    width: 100%;
+  }
+
+  .device-notification-devices article {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

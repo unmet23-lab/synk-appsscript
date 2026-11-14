@@ -31,7 +31,11 @@ test('every signed-in role can open the people directory and only an administrat
   }
 });
 
-test('roles without settings access stay on the home screen as before',async()=>{
+test('the shared people directory opens for members and viewers while settings remains restricted',async()=>{
+  for(const role of ['member','viewer']){
+    const f=fixture({role,search:'?tab=members'});await f.run('initialize()');
+    assert.equal(f.state.tab,'members');assert.equal(f.seen.tabAtLoad,'members');
+  }
   for(const [role,search] of [['manager','?tab=settings'],['member','?tab=settings'],['viewer','?tab=settings']]){
     const f=fixture({role,search});await f.run('initialize()');assert.equal(f.state.tab,'home',`${role} ${search}`);
   }

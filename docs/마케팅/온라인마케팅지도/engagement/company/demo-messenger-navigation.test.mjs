@@ -25,9 +25,10 @@ function fixture(href=initialUrl){
   return{state,context,document,location,address,navigations,notifications,renders,requests,app,run,target,dispatch,ordinaryActions:()=>ordinaryActions,mounts:()=>mounts,polls:()=>polls,reports:()=>reports,installShell(){context.mountWorkspaceModule=()=>mounts++;run(appSource.slice(appSource.indexOf('function shell('),appSource.indexOf('function render()')));}};
 }
 
-function sidebarDom(f){
+function toolsDrawerDom(f){
   const nodes=new Map(),make=()=>({hidden:false,inert:false,style:{},attrs:{},contains:()=>false,setAttribute(key,value){this.attrs[key]=String(value);},focus(){f.document.activeElement=this;}});
-  for(const id of ['workspace-sidebar-content','workspace-sidebar-toggle','workspace-sidebar-scrim','main'])nodes.set(id,make());
+  for(const id of ['ws-tools-drawer','ws-tools-toggle','ws-tools-scrim','main'])nodes.set(id,make());
+  const entry=make();nodes.set('entry',entry);nodes.get('ws-tools-drawer').querySelector=()=>entry;nodes.get('ws-tools-drawer').contains=node=>node===entry;
   const shell=make();f.document.querySelector=selector=>selector==='.app-shell'?shell:null;f.document.getElementById=id=>nodes.get(id)||null;
   return{nodes,shell,get:id=>nodes.get(id)};
 }
@@ -67,7 +68,7 @@ test('workroom entries exit demo and reload the real account before personal wor
 
 test('the actual demo shell exposes an enabled messenger entry with its real-account transition explained',()=>{
   const f=fixture();f.installShell();f.run("shell('<p>demo graph</p>')");
-  const messenger=f.app.innerHTML.match(/<button\b[^>]*data-tab="messenger"[^>]*>/)?.[0];assert.ok(messenger);assert.doesNotMatch(messenger,/\bdisabled(?:\s|=|>)/);assert.match(messenger,/aria-description="[^"]*실제 계정[^"]*"/);
+  const messenger=f.app.innerHTML.match(/<button\b[^>]*data-tab="messenger"[^>]*>/)?.[0];assert.ok(messenger);assert.doesNotMatch(messenger,/\bdisabled(?:\s|=|>)/);assert.match(f.app.innerHTML,/<section\b[^>]*data-tools-group="primary" aria-label="실제 공간으로 이동">(?:(?!<\/section>)[\s\S])*data-tab="messenger"/);assert.match(f.app.innerHTML,/실제 공간으로 나가기/);
 });
 
 test('a fresh messenger page loads the real authenticated user and state before rendering its workspace',async()=>{
@@ -107,38 +108,27 @@ test('messenger navigation outside demo mode keeps the normal app handler and cu
   const event=f.dispatch(f.target());assert.equal(event.stopped,false);assert.equal(event.defaultPrevented,false);assert.equal(f.ordinaryActions(),1);assert.equal(f.location.href,before);assert.equal(f.navigations.length,0);
 });
 
-test('desktop context stays visible and preserves manual collapse around the menu-free messenger while the mobile menu closes on workspace entry',()=>{
+test('the tools drawer opens on request, survives a refresh, and closes on navigation while restoring focus',()=>{
   const initial=vm.runInNewContext(appSource.split('\n').find(line=>line.startsWith('const state ='))+'\nstate;', {dateToday:()=> '2026-09-30',shiftDate:()=> '2026-09-24'});
-  assert.equal(initial.workspaceSidebarOpen,false);
-  const f=fixture('http://localhost:4191/?tab=history&demo=1'),dom=sidebarDom(f);f.state.workspaceSidebarOpen=initial.workspaceSidebarOpen;f.installShell();
-  f.run("shell('<p>기존 분석</p>')");assert.equal(dom.get('workspace-sidebar-content').inert,false);assert.equal(dom.get('workspace-sidebar-toggle').attrs['aria-expanded'],'true');
-  f.run('setWorkspaceSidebar(false)');assert.equal(f.mounts(),1,'manual collapse must not remount the page or messenger');assert.equal(f.renders.length,0);assert.equal(dom.get('workspace-sidebar-content').hidden,true);
-  f.run("shell('<p>갱신된 분석</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'desktop collapse survives background refresh');
-  f.run("selectWorkspaceView('workroom');shell('<p>작업실</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'desktop collapse survives navigation');
-  f.run('setWorkspaceSidebar(true)');assert.equal(f.renders.length,0);assert.equal(dom.get('workspace-sidebar-content').hidden,false);assert.equal(dom.get('workspace-sidebar-toggle').attrs['aria-expanded'],'true');
-  f.run("shell('<p>갱신된 분석</p>')");assert.equal(f.state.workspaceSidebarOpen,true);assert.equal(dom.shell.attrs['data-sidebar-open'],'true');
-  f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.run('workspaceSidebarExpanded()'),false,'the conversation list is the messenger menu, so no duplicated context menu exists');
-  assert.doesNotMatch(f.app.innerHTML,/id="workspace-sidebar/);assert.match(f.app.innerHTML,/<nav class="workspace-rail"[^>]*>(?:(?!<\/nav>)[\s\S])*data-tab="social"/,'desktop navigation remains available');assert.equal(dom.get('main').inert,false);
-  f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.tab,'history');assert.equal(f.run('workspaceSidebarExpanded()'),true,'the desktop context returns as the user left it');
-  f.run("setWorkspaceSidebar(false);selectWorkspaceView('messenger');shell(messengerWorkspacePage());selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.run('workspaceSidebarExpanded()'),false,'desktop collapse survives the messenger');assert.equal(dom.get('workspace-sidebar-content').hidden,true);
-  f.run('setWorkspaceSidebar(true)');f.context.window.matchMedia=()=>({matches:true});f.run("selectWorkspaceView('workroom');shell('<p>작업실</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'mobile defaults to a closed drawer');
-  f.run("setWorkspaceSidebar(true);shell('<p>작업실 갱신</p>')");assert.equal(f.state.workspaceSidebarOpen,true,'refreshing the same workspace does not close the menu');assert.equal(dom.get('main').inert,true);
-  f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(dom.get('main').inert,false,'entering the messenger closes the drawer and releases the page');
-  f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.state.tab,'history');assert.equal(dom.get('workspace-sidebar-content').hidden,true);
+  assert.equal(initial.workspaceToolsOpen,false);
+  const f=fixture('http://localhost:4191/?tab=history&demo=1'),dom=toolsDrawerDom(f);f.state.workspaceToolsOpen=false;f.installShell();
+  f.run("shell('<p>기존 분석</p>')");assert.equal(dom.get('ws-tools-drawer').hidden,true);assert.equal(dom.get('ws-tools-drawer').inert,true);assert.equal(dom.get('main').inert,false);
+  f.run('setWorkspaceToolsOpen(true)');assert.equal(dom.get('ws-tools-drawer').hidden,false);assert.equal(dom.get('ws-tools-drawer').inert,false);assert.equal(dom.get('ws-tools-toggle').attrs['aria-expanded'],'true');assert.equal(dom.get('main').inert,true);assert.equal(f.document.activeElement,dom.get('entry'));assert.equal(f.mounts(),1);assert.equal(f.renders.length,0);
+  f.run("shell('<p>갱신된 분석</p>')");assert.equal(f.state.workspaceToolsOpen,true);assert.equal(dom.shell.attrs['data-tools-open'],'true');
+  f.run('setWorkspaceToolsOpen(false)');assert.equal(f.document.activeElement,dom.get('ws-tools-toggle'));assert.equal(dom.get('main').inert,false);assert.equal(dom.get('ws-tools-scrim').hidden,true);
+  for(const tab of ['workroom','messenger','marketing']){f.run('setWorkspaceToolsOpen(true)');f.run('selectWorkspaceView('+JSON.stringify(tab)+')');f.run('syncWorkspaceToolsDrawer()');assert.equal(f.state.workspaceToolsOpen,false);assert.equal(dom.get('ws-tools-drawer').hidden,true);assert.equal(dom.get('main').inert,false);}
 });
 
-test('sidebar toggles retain the hidden messenger frame without rendering and a stale open state never blocks the menu-free messenger',()=>{
-  const f=fixture('http://localhost:4191/?tab=history'),dom=sidebarDom(f),messages=[];f.state.tab='history';
-  const host={style:{},inert:true,hidden:true},frame={src:'/messenger/',contentWindow:{postMessage:(message,origin)=>messages.push({message,origin})}},slot={getBoundingClientRect:()=>({left:66,top:90,width:1134,height:700})};
+test('tools toggles preserve the persistent messenger frame, block its background while open and retain draft focus after closure',()=>{
+  const f=fixture('http://localhost:4191/?tab=history'),dom=toolsDrawerDom(f),messages=[];f.state.tab='history';
+  const host={style:{},classList:{add(){},remove(){}},inert:true,hidden:true},frame={src:'/messenger/',draft:'unsent private message',contentWindow:{postMessage:(message,origin)=>messages.push({message,origin})}},slot={getBoundingClientRect:()=>({left:66,top:90,width:1134,height:700})};
   Object.assign(f.context,{persistedHost:host,persistedFrame:frame,persistedSlot:slot});f.run('Object.assign(workspaceModule,{host:persistedHost,frame:persistedFrame,slot:persistedSlot})');
-  f.run('setWorkspaceSidebar(false)');assert.equal(dom.get('workspace-sidebar-content').hidden,true);assert.equal(host.inert,true);assert.deepEqual(host.style,{},'the hidden messenger frame keeps its place');assert.equal(dom.get('main').inert,false);
-  f.run('setWorkspaceSidebar(true)');assert.equal(dom.get('workspace-sidebar-content').hidden,false);assert.equal(host.inert,true);assert.deepEqual(host.style,{});assert.equal(messages.at(-1).message.visible,false);
-  f.document.activeElement={};f.context.window.matchMedia=()=>({matches:true});f.run('syncWorkspaceSidebar()');assert.equal(f.document.activeElement,dom.get('workspace-sidebar-toggle'),'page focus moves inside the mobile menu before the page becomes inert');assert.equal(dom.get('main').inert,true);assert.equal(dom.get('workspace-sidebar-scrim').hidden,false);assert.equal(host.inert,true);
-  const modalInput={};dom.nodes.set('overlay',{children:[modalInput]});f.document.activeElement=modalInput;f.run('syncWorkspaceSidebar()');assert.equal(f.document.activeElement,modalInput,'an existing modal keeps its own focus');dom.nodes.delete('overlay');
-  f.run('setWorkspaceSidebar(false)');assert.equal(dom.get('main').inert,false);assert.equal(dom.get('workspace-sidebar-scrim').hidden,true);assert.equal(f.document.activeElement,dom.get('workspace-sidebar-toggle'));
-  f.state.tab='messenger';f.state.workspaceSidebarOpen=true;f.document.activeElement=frame;f.run('syncWorkspaceSidebar()');
-  assert.equal(f.run('workspaceSidebarBlocksContent()'),false,'a stale open state cannot cover the messenger');assert.equal(dom.get('main').inert,false);assert.equal(f.document.activeElement,frame,'typing in the messenger keeps its focus');assert.equal(host.style.left,'66px');assert.equal(host.style.width,'1134px');
-  assert.equal(f.run('workspaceModule.frame'),frame);assert.equal(f.run('workspaceModule.host'),host);assert.equal(frame.src,'/messenger/');assert.equal(f.renders.length,0);assert.equal(f.mounts(),0);assert.equal(f.app.innerHTML,'');
+  f.run('setWorkspaceToolsOpen(false)');assert.equal(host.inert,true);assert.deepEqual(host.style,{});assert.equal(dom.get('main').inert,false);
+  f.run('setWorkspaceToolsOpen(true)');assert.equal(host.inert,true);assert.equal(dom.get('main').inert,true);assert.equal(messages.at(-1).message.visible,false);assert.equal(f.document.activeElement,dom.get('entry'));
+  const modalInput={};dom.nodes.set('overlay',{children:[modalInput]});f.document.activeElement=modalInput;f.run('syncWorkspaceToolsDrawer()');assert.equal(f.document.activeElement,modalInput);dom.nodes.delete('overlay');
+  f.run('setWorkspaceToolsOpen(false)');f.state.tab='messenger';f.state.workspaceSidebarOpen=true;f.document.activeElement=frame;f.run('syncWorkspaceToolsDrawer()');assert.equal(f.run('workspaceBlocksBackground()'),false);assert.equal(dom.get('main').inert,false);assert.equal(host.inert,false);assert.equal(f.document.activeElement,frame);
+  f.run('setWorkspaceToolsOpen(true)');assert.equal(host.inert,true);assert.equal(messages.at(-1).message.visible,false);f.run('setWorkspaceToolsOpen(false)');assert.equal(host.inert,false);assert.equal(messages.at(-1).message.visible,true);
+  assert.equal(f.run('workspaceModule.frame'),frame);assert.equal(f.run('workspaceModule.host'),host);assert.equal(frame.src,'/messenger/');assert.equal(frame.draft,'unsent private message');assert.equal(host.style.left,'66px');assert.equal(host.style.width,'1134px');assert.equal(f.renders.length,0);assert.equal(f.mounts(),0);assert.equal(f.app.innerHTML,'');
 });
 
 test('demo mode permits sidebar open and close actions without authorizing any API writes',()=>{

@@ -30,6 +30,7 @@ function fixture({url='http://localhost:4191/',storage=new Map()}={}){
     render:()=>renders.push({tab:state.tab,userId:state.user?.id}),notify:message=>notifications.push(message),api(path,body,method){return new Promise((resolve,reject)=>requests.push({path,body,method,resolve,reject}));},
   });
   const run=source=>vm.runInContext(source,context);run(helpers+'\n'+workspaceSource+'\n'+demoSource+'\n'+homeSource);
+  run(appSource.slice(appSource.indexOf('let companyAuthGeneration='),appSource.indexOf('function inviteResultMarkup(')));
   const dispatch=(type,target,props={})=>{const event={target,prevented:false,preventDefault(){this.prevented=true;},...props};for(const row of handlers.filter(row=>row.type===type))row.handler(event);return event;};
   return{state,context,location,document,nodes,handlers,windowHandlers,requests,renders,notifications,posted,created,storage,timers,run,dispatch,element,home:run('marinHome')};
 }
@@ -136,14 +137,14 @@ test('weekly summary action is fixed and exact task deep links survive a fresh w
   assert.equal(await home.run('dispatchMarinAction(0,0)'),true);assert.equal(home.location.href,'http://localhost:4191/?tab=social&section=results','주간 정리는 SNS 성과로(10-24)');assert.equal(home.requests.length,0);
 });
 
-test('a home refresh preserves the focused prompt and caret with teaching in the rail and guidance in settings',()=>{
+test('a home refresh preserves the focused prompt and caret with teaching and guidance reachable in Tools',()=>{
   const f=fixture();f.run("ensureMarinSession();marinHome.draft='성과를 확인하고 싶어요'");const input=f.nodes.get('marin-input');input.value=f.home.draft;input.selectionStart=3;input.selectionEnd=5;input.focus();
   let markup='';const app={get innerHTML(){return markup;},set innerHTML(value){markup=value;const replacement=f.element('textarea');replacement.id='marin-input';f.nodes.set('marin-input',replacement);f.document.activeElement=null;},querySelectorAll:()=>[],contains:()=>true,querySelector:()=>null};
   Object.assign(f.context,{app,renderedTab:'home'});f.run(appSource.slice(appSource.indexOf('function shell('),appSource.indexOf('function render()')));f.run('shell(marinHomePage())');
   assert.equal(f.document.activeElement,f.nodes.get('marin-input'));assert.equal(f.nodes.get('marin-input').value,f.home.draft);assert.equal(f.nodes.get('marin-input').selectionStart,3);assert.equal(f.nodes.get('marin-input').selectionEnd,5);
-  const rail=markup.match(/<nav class="workspace-rail"[\s\S]*?<\/nav>/)?.[0]||'';
-  // 11-13 사람·조직을 같은 레일에 추가 — 아래 찾기 · 계정과 기존 입력 보존은 유지한다.
-  assert.equal((rail.match(/<button[^>]*data-action="tab"/g)||[]).length,6);assert.match(rail,/data-tab="home"[\s\S]*data-tab="messenger"[\s\S]*data-tab="workroom"[\s\S]*data-tab="social"[\s\S]*data-tab="members"[\s\S]*data-tab="teaching"/);assert.match(rail,/data-action="command"[\s\S]*data-action="marin-account"/);assert.doesNotMatch(rail,/data-tab="handbook"/);assert.doesNotMatch(markup,/id="workspace-sidebar(?:-toggle)?"|class="home-workspaces"|class="home-resume"|class="rail-account"|class="workspace-appbar"/);assert.equal((markup.match(/data-action="marin-account"/g)||[]).length,1);assert.doesNotMatch(markup,/data-tab="settings"/);assert.equal(f.requests.length,0);
+  const tools=markup.match(/<aside class="ws-tools-drawer"[\s\S]*?<\/aside>/)?.[0]||'';
+  // The same permitted destinations live in Tools; refresh still preserves IME and selection.
+  assert.equal((tools.match(/<button[^>]*data-action="tab"/g)||[]).length,7);assert.match(tools,/data-tab="home"[\s\S]*data-tab="messenger"[\s\S]*data-tab="workroom"[\s\S]*data-tab="social"[\s\S]*data-tab="members"[\s\S]*data-tab="teaching"/);assert.match(tools,/data-action="command"/);assert.equal((tools.match(/data-tab="handbook"/g)||[]).length,1,'the shared handbook remains reachable in Tools');assert.doesNotMatch(markup,/id="workspace-sidebar(?:-toggle)?"|class="workspace-rail"|class="home-workspaces"|class="home-resume"|class="rail-account"|class="workspace-appbar"/);assert.equal((markup.match(/data-action="marin-account"/g)||[]).length,1);assert.doesNotMatch(markup,/data-tab="settings"/);assert.equal(f.requests.length,0);
   const composing=f.nodes.get('marin-input');f.dispatch('compositionstart',composing);f.run('shell(marinHomePage())');assert.equal(f.nodes.get('marin-input'),composing,'an ongoing IME composition cannot be replaced by a background refresh');assert.equal(f.document.activeElement,composing);
 });
 
@@ -176,7 +177,7 @@ test('skipping and restoring recommendations only change this session exclusion 
   const f=nextFixture();const initial=f.run('requestMarinNext()');f.requests[0].resolve(nextResponse());await initial;
   f.click('next-skip');assert.equal(f.requests.length,2);assert.deepEqual(plain(f.requests[1].body.exclusions),['messenger:task-1:revision-1']);
   f.requests[1].resolve(nextResponse({status:'empty',next:null,totalCount:1,excludedCount:1}));await tick();
-  assert.match(f.root.innerHTML,/추천을 모두 봤어요/);assert.match(f.root.innerHTML,/넘긴 업무는 그대로/);assert.doesNotMatch(f.root.innerHTML,/지금 내 차례인 일이 없어요/);
+  assert.match(f.root.innerHTML,/추천을 모두 확인했어요/);assert.match(f.root.innerHTML,/넘긴 업무는 원본에 그대로/);assert.doesNotMatch(f.root.innerHTML,/지금 내 차례인 일이 없어요/);
   const restored=nextFixture({storage:f.storage});assert.deepEqual(plain(restored.next.excluded),['messenger:task-1:revision-1']);assert.equal(restored.next.started,true);assert.equal(restored.next.data,null,'a restored session must re-read task contents');
   f.click('next-restore');assert.equal(f.requests.length,3);assert.deepEqual(plain(f.requests[2].body),{intent:'next-action',exclusions:[]});
   f.requests[2].resolve(nextResponse());await tick();assert.deepEqual(plain(f.next.excluded),[]);assert.deepEqual(JSON.parse(f.storage.get('synk-next-action:session:crew-a')).excluded,[]);
@@ -230,11 +231,11 @@ test('an old account response cannot overwrite or unlock a newer recommendation 
 
 test('partial, unknown, unavailable, empty and skipped results keep their distinct meaning',async()=>{
   const cases=[
-    {data:nextResponse({status:'partial',coverage:{messenger:{status:'ok'},client:{status:'error'},publication:{status:'ok'}}}).data,matches:[/일부 업무를 확인하지 못했어요/,/확인된 범위에서 추천해요/,/미확인: 고객 업무/,/합성 원본 제목/],absent:/지금 내 차례인 일이 없어요/},
-    {data:nextResponse({status:'unknown',next:null,totalCount:0,coverage:{messenger:{status:'error'},client:{status:'error'},publication:{status:'error'}}}).data,matches:[/업무를 불러오지 못했어요/,/새로 확인/],absent:/지금 내 차례인 일이 없어요|추천을 모두 봤어요/},
-    {data:nextResponse({status:'empty',next:null,totalCount:0}).data,matches:[/확인한 업무에 지금 내 차례인 일이 없어요/],absent:/업무를 불러오지 못했어요|추천을 모두 봤어요/},
-    {data:nextResponse({status:'empty',next:null,totalCount:0,unavailableCount:2}).data,matches:[/담당·검토 크루를 확인해야 하는 업무 2개/,/전체 업무에서 확인/],absent:/추천을 모두 봤어요/},
-    {data:nextResponse({status:'empty',next:null,totalCount:2,excludedCount:2}).data,matches:[/추천을 모두 봤어요/,/넘긴 업무는 그대로/],absent:/지금 내 차례인 일이 없어요/},
+    {data:nextResponse({status:'partial',coverage:{messenger:{status:'ok'},client:{status:'error'},publication:{status:'ok'}}}).data,matches:[/일부 업무를 확인하지 못했어요/,/확인된 범위에서 먼저 추천해요/,/미확인: 고객 업무/,/합성 원본 제목/],absent:/지금 내 차례인 일이 없어요/},
+    {data:nextResponse({status:'unknown',next:null,totalCount:0,coverage:{messenger:{status:'error'},client:{status:'error'},publication:{status:'error'}}}).data,matches:[/업무를 불러오지 못했어요/,/새로 확인/],absent:/지금 내 차례인 일이 없어요|추천을 모두 확인했어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:0}).data,matches:[/확인한 업무 중 지금 내 차례인 일이 없어요/],absent:/업무를 불러오지 못했어요|추천을 모두 확인했어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:0,unavailableCount:2}).data,matches:[/담당·검토자를 확인해야 하는 업무 2건/,/전체 업무에서 확인/],absent:/추천을 모두 확인했어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:2,excludedCount:2}).data,matches:[/추천을 모두 확인했어요/,/넘긴 업무는 원본에 그대로/],absent:/지금 내 차례인 일이 없어요/},
   ];
   for(const {data,matches,absent}of cases){const f=nextFixture(),pending=f.run('requestMarinNext()');f.requests[0].resolve({data});await pending;for(const pattern of matches)assert.match(f.root.innerHTML,pattern);assert.doesNotMatch(f.root.innerHTML,absent);}
 });

@@ -9,7 +9,7 @@ export const WORKSPACE_DUTIES = Object.freeze([
   {id:'social',label:'SNS·마케팅',features:['social','production','pages']},
   {id:'production',label:'콘텐츠 제작',features:['production']},
   {id:'clients',label:'제작 고객 관리',features:['clients']},
-  {id:'pages',label:'페이지·채널 관리',features:['pages','social']},
+  {id:'pages',label:'페이지·채널 관리',features:['pages']},
   {id:'feedback',label:'체험 의견 확인',features:['feedback']}
 ]);
 const featureIds=['teaching','path','lectures','production','clients','social','pages','feedback'];
@@ -58,7 +58,7 @@ export function hasWorkspaceFeature(user,feature){
   const access=workspaceAccess(user);
   // Old accounts retain their existing permissions until the owner assigns them.
   // New invitations always have a validated profile, so this cannot be opted into.
-  return Boolean(user&&user.active!==false&&(access.admin||access.legacy&&!['path','lectures'].includes(feature)||access.features.includes(feature)));
+  return Boolean(user&&user.active!==false&&(access.admin||access.legacy&&featureIds.includes(feature)&&!['path','lectures'].includes(feature)||access.features.includes(feature)));
 }
 export function requireWorkspaceFeature(user,feature){
   if(!user||user.active===false)throw fail('먼저 회사 계정으로 로그인해 주세요.',401);
@@ -66,7 +66,8 @@ export function requireWorkspaceFeature(user,feature){
 }
 export function workspaceRouteFeature(path){
   if(path.startsWith('/api/teaching/'))return 'teaching';
-  if(/^\/api\/(?:social(?:\/|$)|channels(?:\/|$)|collect$|analytics$|day$|export\.csv$|hype$|team-overview$|team-trends$|post-performance(?:\/|$)|publication-|weekly-summary$|oauth\/)/.test(path))return 'social';
+  if(/^\/api\/(?:channels(?:\/|$)|oauth\/)/.test(path))return 'pages';
+  if(/^\/api\/(?:social(?:\/|$)|collect$|analytics$|day$|export\.csv$|hype$|team-overview$|team-trends$|post-performance(?:\/|$)|publication-|weekly-summary$)/.test(path))return 'social';
   if(/^\/api\/(?:client-|customer-workspaces(?:\/|$)|personas(?:\/|$)|pulse-|settings\/pulse-)/.test(path))return 'clients';
   if(/^\/api\/(?:content-|creative-research(?:\/|$)|daily-trends(?:\/|$)|studio-|creator-|brand-quality(?:\/|$)|research-production(?:\/|$)|automation-health$|workroom-guide$|workroom-source\/|workroom-practice\/)/.test(path))return 'production';
   if(path.startsWith('/api/trial-feedback/'))return 'feedback';

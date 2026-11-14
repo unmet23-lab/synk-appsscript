@@ -9,11 +9,21 @@ const validUser = user => !!user && typeof user.id === 'string' && !!user.id && 
 const owns = (user, channel) => Array.isArray(channel?.ownerIds) && channel.ownerIds.includes(user.id);
 const sameTeam = (user, channel) => teamOf(user) !== null && teamOf(user) === teamOf(channel);
 
-export function canReadChannel(user, channel) {
-  if (!validUser(user) || !channel || !hasWorkspaceFeature(user,'social')) return false;
+// Record-level ownership is shared by channel management and production drafts.
+// Each feature entry point must also enforce its own workspace capability.
+export function canReadChannelRecord(user, channel) {
+  if (!validUser(user) || !channel) return false;
   if (user.role === 'admin') return true;
   if (owns(user, channel)) return true;
   return (user.role === 'manager' || user.role === 'viewer') && sameTeam(user, channel);
+}
+
+export function canWriteChannelRecord(user, channel) {
+  return user?.role !== 'viewer' && canReadChannelRecord(user, channel);
+}
+
+export function canReadChannel(user, channel) {
+  return hasWorkspaceFeature(user,'pages') && canReadChannelRecord(user,channel);
 }
 
 export function canWriteChannel(user, channel) {
@@ -21,7 +31,7 @@ export function canWriteChannel(user, channel) {
 }
 
 export function canManageOwners(user, channel) {
-  return validUser(user) && !!channel && hasWorkspaceFeature(user,'social') && (user.role === 'admin' || (user.role === 'manager' && sameTeam(user, channel)));
+  return validUser(user) && !!channel && hasWorkspaceFeature(user,'pages') && (user.role === 'admin' || (user.role === 'manager' && sameTeam(user, channel)));
 }
 
 function safeMember(store, user, full) {

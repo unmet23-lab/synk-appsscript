@@ -86,7 +86,8 @@ test('전체 보기: 사업별로 묶고 미개설 계획·장기 계획은 확�
   assert.match(richHtml, /yuhokorean/);
   assert.match(richHtml, /한국어 학습 표현·숏폼/);
   const lab = mmPage(D, 'all', null, { business: 'SHIFT' });
-  assert.doesNotMatch(lab.split('<aside')[1], /@lab-vn-yt/, '사업 거르기');
+  const filtered=lab.match(/<div class="mm-pane" aria-live="polite">([\s\S]*)/);assert.ok(filtered,'사업별 계정 목록이 있다');
+  assert.doesNotMatch(filtered[1], /@lab-vn-yt/, '선택한 SHIFT의 계정 목록에 LAB 전용 계정이 섞이지 않는다');
   const kr = mmAllView(D).countries.find(c => c.code === 'KR');
   assert.equal(kr.role, 'SHIFT · PULSE');
   assert.equal(new Set(kr.accounts.map(a => a.id)).size, kr.accounts.length, '같은 계정은 한 번만');

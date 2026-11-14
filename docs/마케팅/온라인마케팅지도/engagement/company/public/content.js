@@ -38,7 +38,7 @@ const cpOption = (value,label,selected) => `<option value="${escape(value)}" ${v
 const cpText = value => escape(Array.isArray(value)?value.join(' · '):value);
 const cpList = values => `<ul>${(values||[]).map(value=>`<li>${cpText(value)}</li>`).join('')}</ul>`;
 function contentPage() {
-  const heading=pageHeading('CONTENT','콘텐츠 기획','아이디어를 정리하고 좋은 콘텐츠에서 배워요.',cpButton('제작 기준','guide','info','quiet'));
+  const heading=pageHeading('콘텐츠','콘텐츠 기획','아이디어를 정리하고 좋은 콘텐츠에서 배워요.',cpButton('제작 기준','guide','info','quiet'));
   if(!cp.data)return heading+(cp.error?`<div class="cp-message" role="alert">${escape(cp.error)}${cpButton('다시 불러오기','reload','refresh')}</div>`:'<div class="loading-panel"><span class="loading-line"></span><p>제작 양식과 기획함을 불러오고 있어요.</p></div>');
   const selected=['benchmarks','discover'].includes(cp.view)?'examples':cp.view;
   const blank=cpBlank(),draft=cpDraft(),hasWorkingPlan=Boolean(draft||cp.draftId||selected==='plan')||Object.keys(blank).some(key=>JSON.stringify(cp.input?.[key]??blank[key])!==JSON.stringify(blank[key]));

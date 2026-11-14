@@ -483,7 +483,7 @@ export function mountHomeworkReview({root,request,loadContent=()=>fetchJson('./t
   if(!content)return message('alert',T.contentError);
   const list=rows(),sec=node('section','hr-week-body'),head=node('header','hr-week-head'),title=node('div','hr-week-title');
   const t=clock(),stage=t<win.start?['info','열리기 전']:t>win.due?['idle','마감 지남 · 늦게 내도 받아요']:['ok','마감 전'];
-  title.append(node('p','hr-kicker',`WEEK ${String(w).padStart(2,'0')} · ${content.writing.id} · ${content.reading.id}`),node('h3','',`${w}주차 · ${content.writing.title}`),
+  title.append(node('p','hr-kicker',`${String(w).padStart(2,'0')}주차 · ${content.writing.id} · ${content.reading.id}`),node('h3','',`${w}주차 · ${content.writing.title}`),
    node('p','hr-week-meta',`${homeworkDate(win.start,{time:false})} 열림 · 마감 ${homeworkDate(win.due)} · 읽기 ${content.reading.title}`));
   head.append(title,chip(stage[0],stage[1]));
   const grid=node('div','hr-grid');grid.append(listView(list),editorView());

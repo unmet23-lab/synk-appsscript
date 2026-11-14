@@ -252,7 +252,7 @@ test('a customer with a request gets the new room; the review and delivery tabs 
   const script=request({status:'confirmed',rounds:[{round:1,kind:'script',oneLine:'한 문장',scenes:[{id:'s',revision:1}]}]});
   const draft=projectView({...roomState2(script),tab:'draft'});
   assert.match(draft,/^<div class="sx-draft sx-dr is-script"/);
-  assert.doesNotMatch(draft,/ONE LINE|ROUND|CUTS|CUT \d/,'the words a customer reads are Korean');assert.match(draft,/1판 · 1컷/);assert.match(draft,/광고가 남길 한 문장/);
+  assert.doesNotMatch(draft,/ONE LINE|ROUND|CUTS|CUT \d/,'the words a customer reads are Korean');const sheetHead=draft.match(/<header class="sx-sheet-head">([\s\S]*?)<\/header>/);assert.ok(sheetHead);assert.match(sheetHead[1].replace(/<[^>]+>/g,''),/글 콘티 1판\s*1컷/);assert.match(draft,/광고가 남길 한 문장/);
   assert.match(projectView({...roomState2(script),tab:'draft',error:'그사이 새 소식이 생겼어요',conflict:true}),/role="alert"[\s\S]*data-action="refresh"/,'a conflict on the draft can be refreshed from the draft');
   // 판 3: 영상이 오기 전 review 탭(옛 링크 · 알림)은 고객 방으로. 판 3b: 묻기는 화면이 아니라 일지 — 옛 contact 탭은 방(일지가 있는 곳). 단계 줄은 앱 머리에 한 번.
   const legacy=projectView({...roomState2(script),tab:'review'});

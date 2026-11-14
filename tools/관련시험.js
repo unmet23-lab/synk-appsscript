@@ -458,6 +458,31 @@ function 자리설정(root, 자리) {
 /** 새파일: 이번 push로 처음 들어가는 경로 — SYNK_새파일(JSON 배열)로 넘긴다. push 전 작업본에서는 아직 추적 밖이라
  *  git ls-files로 훑는 시험이 못 본다(10-21 지면폰트 ⑦ 빨강 두 번이 모두 새 지면이었다 — tests/_git밖.js 이번push새파일).
  *  자리: 위 「자리」 — 시험이 { 폴더, 수, 기다림ms, 간격ms }를 주거나 false로 끈다. 결과의 자리 = { 번호, 수, 기다린초 }. */
+// Windows CreateProcess는 전체 명령줄을 UTF-16 32,767자로 제한한다. 모든 인자를
+// 따옴표로 감쌌을 때의 역슬래시/따옴표 이스케이프까지 세어 여유 있는 크기로 나눈다.
+function 명령인자길이(value) {
+  const text = String(value);
+  let extra = 3, slashes = 0; // 여닫는 따옴표와 구분 공백
+  for (const char of text) {
+    if (char === '\\') slashes++;
+    else { if (char === '"') extra += slashes + 1; slashes = 0; }
+  }
+  return text.length + extra + slashes;
+}
+function 시험인자묶음(시험, 고정) {
+  if (process.platform !== 'win32') return [시험];
+  const fixed = [process.execPath, ...고정].reduce((sum, arg) => sum + 명령인자길이(arg), 0) + 20;
+  const batches = []; let batch = [], length = fixed;
+  for (const file of 시험) {
+    const size = 명령인자길이(file);
+    if (fixed + size > 30000) throw new Error('시험 파일 경로가 Windows 명령 길이 한도를 넘는다');
+    if (batch.length && length + size > 30000) { batches.push(batch); batch = []; length = fixed; }
+    batch.push(file); length += size;
+  }
+  if (batch.length) batches.push(batch);
+  return batches;
+}
+
 function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, 새파일 = [], 자리 = undefined }) {
   if (!시험.length) return { 통과함: true, 시험: 0, 통과: 0, 실패수: 0, 실패: [], 초: 0 };
   const tap = path.join(os.tmpdir(), `synk-관련시험-${process.pid}-${Date.now()}.tap`);
@@ -466,28 +491,49 @@ function 돌리기({ root, 시험, 워크트리 = false, 한도ms = 15 * 60e3, �
   delete env.NODE_TEST_CONTEXT;
   if (워크트리) env.CI = '1';
   if (새파일.length) env.SYNK_새파일 = JSON.stringify(새파일);
-  const 설정 = 자리설정(root, 자리);
-  const 잡음 = 설정 ? 자리잡기(설정.폴더, 설정) : null;
   // 한 번에 도는 시험 파일 수 — 기본(CPU-1)이면 자리 둘이 함께 돌 때 CPU를 넘겨 서로 느려진다(현장노트 시험_화면확인 동시 실행).
   const 동시 = Math.max(2, Math.floor((os.availableParallelism ? os.availableParallelism() : os.cpus().length) / 3));
-  const 시작 = Date.now();
-  let r;
+  const 고정 = ['--test', '--test-timeout=120000', `--test-concurrency=${동시}`, '--test-reporter=tap'];
+  let 묶음;
+  try { 묶음 = 시험인자묶음(시험, [...고정, `--test-reporter-destination=${tap}`]); }
+  catch (error) { return { ...tap읽기('', root), 통과함: false, 초: 0, 이유: error.message }; }
+  const 설정 = 자리설정(root, 자리);
+  const 잡음 = 설정 ? 자리잡기(설정.폴더, 설정) : null;
+  const 시작 = process.hrtime.bigint();
+  const 경과ms = () => Number((process.hrtime.bigint() - 시작) / 1000000n);
+  const 합계 = { 시험: 0, 통과: 0, 실패수: 0, 취소: 0, 실패: [] };
+  let r = { status: 0 }, 실행수 = 0;
   try {
-    // 넓은 CI와 같은 개별 한도: 걸린 제품 시험이 뒤에 기다리는 시험의 자리를 계속 쥐지 않게 한다.
-    r = spawnSync(process.execPath, ['--test', '--test-timeout=120000', `--test-concurrency=${동시}`, '--test-reporter=tap', `--test-reporter-destination=${tap}`, ...시험],
-      { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: 한도ms, maxBuffer: 64 << 20 });
+    for (let index = 0; index < 묶음.length; index++) {
+      const remaining = 한도ms === 0 ? 0 : index === 0 ? 한도ms : 한도ms - 경과ms();
+      if (한도ms > 0 && remaining <= 0) { r = { status: null, error: { code: 'ETIMEDOUT' } }; break; }
+      const output = index === 0 ? tap : `${tap}.${index}`;
+      let 글 = '';
+      try {
+        // 묶음마다 시간을 다시 주지 않는다. 하나의 자리와 전체 한도 안에서 모든 선택 파일을 실행한다.
+        r = spawnSync(process.execPath, [...고정, `--test-reporter-destination=${output}`, ...묶음[index]],
+          { cwd: root, env, encoding: 'utf8', windowsHide: true, timeout: remaining, maxBuffer: 64 << 20 });
+        실행수++;
+        try { 글 = fs.readFileSync(output, 'utf8'); } catch { /* 실행 오류도 아래에서 실패로 반환한다. */ }
+      } finally { fs.rmSync(output, { force: true }); }
+      const current = tap읽기(글, root);
+      합계.시험 = 합계.시험 === null || current.시험 === null ? null : 합계.시험 + current.시험;
+      합계.통과 += current.통과; 합계.실패수 += current.실패수; 합계.취소 += current.취소;
+      합계.실패.push(...current.실패);
+      // 한 묶음의 실제 실패나 실행 오류를 뒤 묶음의 통과/시간 초과가 가리지 못하게 한다.
+      if (r.error || r.status !== 0 || current.실패수) break;
+    }
   } finally {
     if (잡음) 잡음.놓기();
   }
-  let 글 = '';
-  try { 글 = fs.readFileSync(tap, 'utf8'); } catch { /* 아래 */ } finally { fs.rmSync(tap, { force: true }); }
-  const 결과 = { ...tap읽기(글, root), 초: Math.round((Date.now() - 시작) / 1000), ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
+  const 결과 = { ...합계, 초: Math.round(경과ms() / 1000), ...(묶음.length > 1 ? { 묶음: { 전체: 묶음.length, 실행: 실행수, 선택파일: 시험.length } } : {}), ...(잡음 ? { 자리: { 번호: 잡음.번호, 수: 잡음.수, 기다린초: 잡음.기다린초 } } : {}) };
   if (r.error && r.error.code === 'ETIMEDOUT') {
     // 끊기기 전까지의 결과는 TAP에 남는다 — 그때까지 깨진 것이 없으면 시간만넘김()이 참이다(바쁜 PC에서 느렸을 뿐일 수 있다).
     const 한도글 = 한도ms >= 60e3 ? `${Math.round(한도ms / 60e3)}분` : `${Math.round(한도ms / 1000)}초`;
     return { ...결과, 통과함: false, 시간넘김: true, 이유: `${한도글} 안에 끝나지 않았다` };
   }
-  return { ...결과, 통과함: r.status === 0 && 결과.실패수 === 0, ...(r.status !== 0 && !결과.실패수 ? { 이유: `node --test 종료 ${r.status}` } : {}) };
+  if (r.error) return { ...결과, 통과함: false, 이유: `node --test 실행 실패 (${r.error.code || r.error.message})` };
+  return { ...결과, 통과함: r.status === 0 && 실행수 === 묶음.length && 결과.실패수 === 0, ...(r.status !== 0 && !결과.실패수 ? { 이유: `node --test 종료 ${r.status}` } : {}) };
 }
 
 /** 한도만 넘기고 그때까지 깨진 시험은 없었나(돌리기 결과). 바로올리기는 이때 막지 않고 주의만 남긴다(10-22). */

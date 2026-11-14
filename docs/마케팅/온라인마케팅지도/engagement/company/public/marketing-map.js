@@ -250,12 +250,12 @@ function mmPage(D,view,code,options={}){
   const pane=c?mmDetail(v,c,opts):all?mmAllList(all,options.business||'',opts):mmList(v,opts);
   const am=options.accountMap,opsNote=am?`운영 상태 ${mmEsc(mmWhen(am.generatedAt)||mmWhen(am.sourceAt)||'시각 미상')} 기준`:'로그인 · 게시 · 수집 상태는 관리자 운영 자료가 오면 계정마다 보여요';
   return `<div class="mm-page" data-mm-view="${mmEsc(view)}">`
-    +`<header class="ss-head mm-head"><div class="ss-head-copy"><div class="ss-eyebrow">SYNK WORKSPACE / SOCIAL</div><h1>나라 지도</h1><p class="ss-lede">${mmEsc(lede)}</p></div>${switcher}</header>`
+    +`<header class="ss-head mm-head"><div class="ss-head-copy"><div class="ss-eyebrow">SNS · 마케팅</div><h1>나라 지도</h1><p class="ss-lede">${mmEsc(lede)}</p></div>${switcher}</header>`
     +meterHtml
     +`<div class="mm-stage"><div class="mm-box"><div class="mm-scroll">${mmSvg(D,v,c?.code)}</div>`
     +`<ul class="mm-legend" aria-label="색 안내"><li><span class="mm-sw mm-sw-active"></span>계정 있음</li><li><span class="mm-sw mm-sw-target"></span>${v.brand==='PULSE'?'타깃 시장':'준비 중'}</li><li><span class="mm-sw"></span>그 밖</li></ul>`
     +`<div class="mm-tip" role="status" hidden></div></div>`
-    +`<aside class="mm-pane" aria-live="polite">${pane}</aside></div>`
+    +`<div class="mm-pane" aria-live="polite">${pane}</div></div>`
     +`<p class="mm-foot">계정 원장 ${mmEsc(mmKst(D.generatedAt))} 기준${D.targetsUpdatedAt?` · PULSE 타깃 ${mmEsc(String(D.targetsUpdatedAt).slice(5).replace('-','월 '))}일 정리`:''} · ${opsNote} · 나라 경계 Natural Earth <button class="ss-link mm-refresh" type="button" data-mm-action="reload">다시 불러오기</button></p>`
     +`</div>`;
 }

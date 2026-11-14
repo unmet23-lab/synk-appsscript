@@ -29,8 +29,8 @@ const VIDEO_WORDS=/영상|장면 이미지|순간|재생|길이가|자막|다음
 
 test('the photo review screen speaks of photos: tag, sentence, note box without a clock, and nothing about films',()=>{
   const p=project('photo',{versions:[shot('v1','1차 사진')]}),html=projectView(state(p));
-  assert.match(html,/<p class="sx-small">사진 확인 · /);
-  assert.match(html,/<p class="sx-review-line sx-serif">1차 사진이에요\. 바꿀 곳이 있으면 의견을 남겨 주세요\.<\/p>/);
+  assert.match(html,/<h1 class="sx-serif">1차 사진<\/h1>/);
+  assert.match(html,/<p class="sx-review-line">1차 사진이에요\. 바꿀 곳이 있으면 의견을 남겨 주세요\.<\/p>/);
   assert.match(html,/<div class="sx-say-row"><textarea name="text" rows="1" required maxlength="3000" placeholder="이 사진에 남길 의견" aria-label="이 사진에 남길 의견" data-grow>/,'no clock in front of the note box');
   assert.match(html,/<input type="hidden" name="seconds" value="">/,'the form still sends an empty time');
   assert.match(html,/<p class="sx-j-hint" data-when="typing">사진에서 고칠 곳은 <span class="is-wide">오른쪽<\/span><span class="is-phone">사진 아래<\/span> 의견 칸에 남겨 주세요\.<\/p>/);
@@ -39,13 +39,13 @@ test('the photo review screen speaks of photos: tag, sentence, note box without 
   assert.doesNotMatch(html,VIDEO_WORDS);
   // 영상 상품은 그대로다.
   const film=projectView(state(project('s15',{versions:[clip('v1','1차 시안')]})));
-  assert.match(film,/<p class="sx-small">영상 확인 · /);assert.match(film,/1차 시안이에요\. 바꿀 곳이 있으면 그 순간에 의견을 남겨 주세요\./);
+  assert.match(film,/<h1 class="sx-serif">1차 시안<\/h1>/);assert.match(film,/1차 시안이에요\. 바꿀 곳이 있으면 그 순간에 의견을 남겨 주세요\./);
   assert.match(film,/<div class="sx-say-row"><output class="sx-no sx-say-clock round-clock" data-live-clock>0:00<\/output><textarea name="text" rows="1" required maxlength="3000" placeholder="이 순간에 남길 의견" aria-label="이 순간에 남길 의견" data-grow>/);
   assert.match(film,/영상에서 고칠 곳은 <span class="is-wide">오른쪽<\/span><span class="is-phone">영상 아래<\/span> 의견 칸에, 그 장면에서 남겨 주세요\./);
   assert.match(film,/<p id="video-error" class="sx-small sx-review-error" hidden>영상을 재생하지 못했어요\./);assert.doesNotMatch(film,/data-photo-error|사진 확인|이 사진에/);
   // 영상 상품에 그림 판을 올린 경우도 전과 같다(사진 말은 사진 상품에만).
   const still=projectView(state(project('s15',{versions:[shot('v1','표지 시안')]})));
-  assert.match(still,/영상 확인 · /);assert.match(still,/data-live-clock>0:00/);assert.match(still,/그 순간에 의견을 남겨 주세요/);assert.doesNotMatch(still,/data-photo-error|is-plain|data-photo-shot|sx-dr-zoom/);assert.match(still,/<div class="sx-dr-box" data-film-box><img src="[^"]*\/pulse\/api\/media\/v1" alt="표지 시안"><\/div>/,'a still on a film order stays a plain picture');
+  assert.match(still,/<h1 class="sx-serif">표지 시안<\/h1>/);assert.match(still,/data-live-clock>0:00/);assert.match(still,/그 순간에 의견을 남겨 주세요/);assert.doesNotMatch(still,/data-photo-error|is-plain|data-photo-shot|sx-dr-zoom/);assert.match(still,/<div class="sx-dr-box" data-film-box><img src="[^"]*\/pulse\/api\/media\/v1" alt="표지 시안"><\/div>/,'a still on a film order stays a plain picture');
 });
 
 test('notes on a photo carry no time column, drafts and sent alike; a film keeps the time or 「전체」',()=>{
@@ -64,7 +64,7 @@ test('notes on a photo carry no time column, drafts and sent alike; a film keeps
   assert.doesNotMatch(film,/is-plain/);
   // 사진 상품에 영상 파일을 올린 판: 시각이 살아 있어 시계 · 시각 줄 · 영상 말 그대로(시각 없는 의견만 칸 없이).
   const mixed=projectView(state(project('photo',{versions:[clip('v1','움직이는 시안')],feedback:{drafts:[{id:'d1',current:true,versionId:'v1',versionLabel:'움직이는 시안',items:[{id:'i1',text:'3초쯤',seconds:3},{id:'i2',text:'전체로',seconds:null}]}]}})));
-  assert.match(mixed,/영상 확인 · /);assert.match(mixed,/data-live-clock>0:00/);assert.match(mixed,/placeholder="이 순간에 남길 의견"/);assert.match(mixed,/data-action="seek" data-version="v1" data-seconds="3">0:03<\/button>/);
+  assert.match(mixed,/<video id="review-video"/);assert.match(mixed,/data-live-clock>0:00/);assert.match(mixed,/placeholder="이 순간에 남길 의견"/);assert.match(mixed,/data-action="seek" data-version="v1" data-seconds="3">0:03<\/button>/);
   assert.match(mixed,/<article class="sx-note-row is-draft is-plain" ><div><p class="sx-body">전체로<\/p>/);
 });
 
@@ -232,7 +232,7 @@ test('in English a photo order never reads film or watch on the review, approval
   const finals=make=>[make('v2','2차','preview',{approvedAt:at}),make('f1','F1','final',{guide:'G',approvedPreviewId:'v2'})];
   const screens=(pkg,make)=>{
     const review=project(pkg,{versions:[make('v1','V1'),make('v2','V2')],feedback:stale});
-    const ready=project(pkg,{versions:[make('v1','V1')]});
+    const ready=project(pkg,{versions:[{...make('v1','V1'),createdAt:null}]});
     const done=project(pkg,{stage:'delivered',versions:finals(make),feedback:{canDraft:false},extra:{closeout:{deliveryKey:'k1',approvedPreviewId:'v2',canConfirm:true,files:[{id:'f1',label:'F1'}]}}});
     return [projectView(state(ready)),projectView(state(review)),projectView(state(review,{versionId:'v1'})),projectView(state(done)),projectView(state(done,{versionId:'v2'})),roomView(roomModel(done)),approve(pkg==='photo'?{photo:true}:{})].join('\n');
   };
@@ -244,9 +244,9 @@ test('in English a photo order never reads film or watch on the review, approval
     await setLocale('en');
     const photo=screens('photo',shot),words=photo.replace(/<(?:script|style)[\s\S]*?<\/(?:script|style)>/g,' ').replace(/<[^>]*?(?:aria-label|placeholder|alt|title)="([^"]*)"[^>]*>/g,' $1 ').replace(/<[^>]+>/g,' ');
     assert.doesNotMatch(words,/\b(?:films?|watch(?:ing|ed)?|videos?|clips?|footage)\b/i);
-    for(const text of ['Photo review · ','Make the final photos from this preview?','Your final photos are here','See the final photos','Final photos · ','I agree to have the final photos made as shown.','After looking at the new one, write down any notes you still need.','aria-label="View V1 larger"','data-close="Close"','data-zoom="Zoom in"'])assert.ok(photo.includes(text),text);
+    for(const text of ['Photo review</p>','Make the final photos from this preview?','Your final photos are here','See the final photos','Final photos · ','I agree to have the final photos made as shown.','After looking at the new one, write down any notes you still need.','aria-label="View V1 larger"','data-close="Close"','data-zoom="Zoom in"'])assert.ok(photo.includes(text),text);
     const film=screens('s15',clip);
-    for(const text of ['Film review · ','Make the final film from this preview?','Your final film is here','See the final film','Final film · ','I agree to have the final film made as shown.','After watching the new one, write down any notes you still need.'])assert.ok(film.includes(text),text);
+    for(const text of ['Film review</p>','Make the final film from this preview?','Your final film is here','See the final film','Final film · ','I agree to have the final film made as shown.','After watching the new one, write down any notes you still need.'])assert.ok(film.includes(text),text);
     assert.match(installationGuide(installationEnvironment({userAgent:'Chrome/130.0'}),{connected:true,photo:true}).notes.join(' '),/you can review photos, leave notes and approve in your browser\./);
   }finally{await setLocale('ko');}
   // 승인 창 · 승인 알림은 사진 판일 때만 사진 문맥으로 부른다.

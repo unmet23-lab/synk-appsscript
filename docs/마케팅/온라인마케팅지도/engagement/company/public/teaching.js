@@ -14,7 +14,8 @@ function resetTeachingWorkspace(){
 function syncTeachingGeometry(){
   const host=teachingModule.host,slot=document.getElementById('teaching-module-slot');if(!host)return;
   const visible=state.tab==='teaching'&&!!slot;host.hidden=!visible;
-  host.inert=!visible||Boolean(document.getElementById('overlay')?.children.length);
+  const blocked=Boolean(document.getElementById('overlay')?.children.length)||(typeof workspaceBlocksBackground==='function'&&workspaceBlocksBackground());
+  host.inert=!visible||blocked;
   if(!visible)return;
   const rect=slot.getBoundingClientRect();host.style.left=(rect.left+window.scrollX)+'px';host.style.top=(rect.top+window.scrollY)+'px';host.style.width=rect.width+'px';
   slot.style.minHeight=Math.ceil(host.getBoundingClientRect().height)+'px';
@@ -40,7 +41,7 @@ function ensureTeachingWorkspace(){
   if(!slot){teachingPrepareRender();return;}
   if(teachingModule.host){slot.replaceChildren();syncTeachingGeometry();return;}
   const host=document.createElement('section');host.id='workspace-teaching';host.className='teaching-workspace';
-  host.innerHTML='<header class="teaching-heading"><div><p class="teaching-kicker">SYNK Workspace · 내 수업</p><h1>학생 기록으로 다음 수업을 준비해요</h1><p>담당 반 학생이 공유한 학습 기록을 보고, 과제를 보내고, 챙길 일을 정해요.</p></div><button id="sign-out" class="plain" hidden>내 수업 로그아웃</button></header><div id="teacher-intro"></div><p id="notice" class="notice" role="status" aria-live="polite">로그인을 확인하고 있어요.</p><section id="setup" class="teaching-setup" hidden><h2>로그인을 준비하고 있어요</h2><p>교사용 SYNK ID 로그인이 준비되면 여기서 담당 반을 열 수 있어요.</p></section><div class="teaching-login-actions"><button id="connect" class="teaching-connect" hidden>SYNK ID로 로그인</button><button id="cancel-connect" class="plain" hidden>로그인 취소</button></div><section id="teacher-workspace" hidden aria-label="담당 반"></section><footer class="teaching-footnote">담당 반 학생이 공유한 학습 기록만 보여요. 학생의 개인 맞춤 설정은 자동으로 넘어오지 않아요.</footer>';
+  host.innerHTML='<header class="teaching-heading"><div><p class="teaching-kicker">SYNK LAB · 내 수업</p><h1>학생 기록으로 다음 수업을 준비해요</h1><p>담당 반 학생이 공유한 학습 기록을 보고, 과제를 보내고, 챙길 일을 정해요.</p></div><button id="sign-out" class="plain" hidden>내 수업 로그아웃</button></header><div id="teacher-intro"></div><p id="notice" class="notice" role="status" aria-live="polite">로그인을 확인하고 있어요.</p><section id="setup" class="teaching-setup" hidden><h2>로그인을 준비하고 있어요</h2><p>교사용 SYNK ID 로그인이 준비되면 여기서 담당 반을 열 수 있어요.</p></section><div class="teaching-login-actions"><button id="connect" class="teaching-connect" hidden>SYNK ID로 로그인</button><button id="cancel-connect" class="plain" hidden>로그인 취소</button></div><section id="teacher-workspace" hidden aria-label="담당 반"></section><footer class="teaching-footnote">담당 반 학생이 공유한 학습 기록만 보여요. 학생의 개인 맞춤 설정은 자동으로 넘어오지 않아요.</footer>';
   teachingModule.host=host;teachingModule.owner=teachingOwner();slot.replaceChildren();document.body.append(host);syncTeachingGeometry();
   teachingModule.observer=new ResizeObserver(syncTeachingGeometry);teachingModule.observer.observe(host);
   const epoch=++teachingModule.epoch,owner=teachingModule.owner;
@@ -56,7 +57,8 @@ function ensureTeachingWorkspace(){
 }
 function renderTeachingOnly(){
   teachingPrepareRender();
-  app.innerHTML='<div class="teaching-only-shell"><header class="teaching-only-bar"><a href="/" aria-label="싱크 워크스페이스"><img src="/wordmark.svg" alt="싱ㅋ" width="92" height="38"></a><span>내 수업</span><a class="teaching-company-entry" href="/">회사 업무로 이동</a></header><main id="main" tabindex="-1">'+teachingWorkspacePage()+'</main></div>';
+  app.classList?.remove('boot-shell');
+  app.innerHTML='<div class="teaching-only-shell"><header class="teaching-only-bar"><a href="/" aria-label="싱크 워크스페이스"><img src="/wordmark.svg" alt="SYNK" width="92" height="38"></a><span>내 수업</span><a class="teaching-company-entry" href="/">회사 업무로 이동</a></header><main id="main" tabindex="-1">'+teachingWorkspacePage()+'</main></div>';
   resetWorkspaceModule();ensureTeachingWorkspace();
 }
 async function logoutTeachingForCompany(){

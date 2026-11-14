@@ -6,11 +6,11 @@ import vm from 'node:vm';
 
 // 2026-10-23 로그인 되찾기 화면: 재설정 링크는 플랫폼·SYNK 입구보다 먼저 열리고, 쓴 뒤에는 아이디를 채운 로그인으로 돌아간다.
 const source=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
-const organizationSource=readFileSync(new URL('./public/member-organization.js',import.meta.url),'utf8');
 const between=(start,end)=>{const from=source.indexOf(start),to=source.indexOf(end,from+start.length);assert.ok(from>=0&&to>from,start);return source.slice(from,to);};
 const initializeSource=between('async function initialize()','async function loadState()');
 const recoverySource=between('const untilFormatter','function shell(content)');
 const membersSource=between('function membersPage()','function pulseAutoReplyPanel()');
+const organizationSource=readFileSync(new URL('./public/member-organization.js',import.meta.url),'utf8');
 const passwordSource=between('function passwordPanel()','function recentRuns(');
 const reply=(data,status=200)=>({ok:status>=200&&status<300,status,json:async()=>data});
 

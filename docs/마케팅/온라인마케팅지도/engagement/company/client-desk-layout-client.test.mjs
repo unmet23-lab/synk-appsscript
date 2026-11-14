@@ -19,4 +19,32 @@ test('a tab click only changes which sections are shown and keyboard arrows move
 test('the list puts my turn first in workflow order, then the rest, then archived',()=>{const f=fixture();f.context.rows=[{id:'a',stage:'planning',title:'에이',customerName:'고객',ownerName:'갑',messages:[]},{id:'b',stage:'review',title:'비',customerName:'고객',ownerName:'을',messages:[{author:'customer',resolved:false}]},{id:'c',stage:'received',title:'씨',customerName:'고객',ownerName:'병',messages:[]},{id:'z',stage:'archived',title:'제트',customerName:'고객',ownerName:'정',messages:[]}];f.run('clientDesk.projectGroups=[{projectId:"c",counts:{actionable:2}},{projectId:"b",counts:{actionable:1}},{projectId:"a",counts:{actionable:0,waiting:1}}]');const html=f.run('cdProjectRows(rows,null,clientDesk.data)'),at=key=>html.indexOf(`data-id="${key}"`);assert.ok(at('c')<at('b')&&at('b')<at('a')&&at('a')<at('z'));assert.match(html,/내 차례<b>2<\/b>/);assert.match(html,/진행 중<b>1<\/b>/);assert.match(html,/보관<b>1<\/b>/);assert.match(html,/data-id="b"[^>]*data-turn="mine"/);assert.doesNotMatch(html,/data-id="a"[^>]*data-turn/);assert.match(html,/요청 1/);assert.match(html,/data-client-project-contact="a"/);});
 test('head numbers filter the list and search also matches the owner',()=>{const f=fixture();f.run('clientDesk.data.projects=[{id:"a",stage:"planning",title:"에이",customerName:"고객",ownerName:"김담당",receiptId:"",messages:[{author:"customer",resolved:false}]},{id:"b",stage:"review",title:"비",customerName:"고객",ownerName:"이담당",receiptId:"",nextContactDate:"2000-01-01",messages:[]},{id:"c",stage:"review",title:"씨",customerName:"고객",ownerName:"박담당",receiptId:"",nextContactDate:"2999-01-01",messages:[{author:"customer",resolved:true}]}]');const ids=()=>f.run('cdVisibleRows(clientDesk.data).map(row=>row.id).join()');assert.equal(ids(),'a,b,c');f.run('clientDesk.quick="requests"');assert.equal(ids(),'a');f.run('clientDesk.quick="contact"');assert.equal(ids(),'b');f.run('clientDesk.quick=null;clientDesk.search="박담"');assert.equal(ids(),'c');});
 test('the head keeps the follow-up count hook and offers the numbers as list filters',()=>{const f=fixture(),html=f.run('clientDeskPanel()');assert.match(html,/class="client-desk cdx"/);assert.match(html,/data-client-quick="requests"/);assert.match(html,/data-client-quick="contact"[^>]*><strong data-client-followup-due-count>/);assert.match(html,/data-client-search-action="open"/);assert.match(html,/data-client-filter-value="all"/);assert.match(html,/data-client-search /);assert.match(html,/data-client-project-results/);});
-test('the poster stands a different felt object for each stage and the server serves all six',()=>{const f=fixture(),stages=['received','planning','producing','review','delivered','archived'],plan={primary:{title:'시안을 고객에게 보내기',href:'?tab=workroom&section=clients',actionLabel:'시안 열기'},counts:{actionable:1,waiting:0},reason:'',workflowStale:false,attentionSections:[]},art=html=>html.match(/<img class="cps-next-art" src="([^"]+)"/)?.[1]||null;const shown=stages.map(stage=>{f.run(`project.stage=${JSON.stringify(stage)}`);const html=f.run(`cpsNext(project,${JSON.stringify(plan)})`);assert.match(html,/data-state="act"/);return art(html);});assert.deepEqual(shown,stages.map(stage=>`/client-desk-stage-${stage}.webp`));f.run('project.stage="archived"');const calm=f.run('cpsNext(project,{primary:null,counts:{actionable:0,waiting:0},reason:"",workflowStale:false,attentionSections:[]})');assert.match(calm,/data-state="calm"/);assert.equal(art(calm),'/client-desk-stage-archived.webp');assert.doesNotMatch(calm,/cps-next-word/);assert.equal(art(f.run('cpsNext(project,{primary:null,counts:null,reason:"",workflowStale:true,attentionSections:[]})')),null);f.run('project.stage="<b>"');assert.equal(art(f.run(`cpsNext(project,${JSON.stringify(plan)})`)),null);const server=readFileSync(new URL('server.mjs',import.meta.url),'utf8');assert.ok(server.includes("for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];"));for(const stage of stages)assert.ok(existsSync(new URL(`public/client-desk-stage-${stage}.webp`,import.meta.url)),stage);});
+test('the next-action card preserves actions and calm or stale states while the separate stage track remains current',()=>{
+  const f=fixture(),stages=['received','planning','producing','review','delivered','archived'];
+  const plan={primary:{title:'시안을 고객에게 보내기',href:'?tab=workroom&section=clients&project='+id,actionLabel:'시안 열기'},counts:{actionable:1,waiting:0},reason:'',workflowStale:false,attentionSections:[]};
+  stages.forEach(stage=>{
+    f.run(`project.stage=${JSON.stringify(stage)}`);
+    const html=f.run(`cpsNext(project,${JSON.stringify(plan)})`);
+    assert.match(html,/data-state="act"/);
+    assert.match(html,/시안을 고객에게 보내기/);
+    assert.match(html,/data-project-screen="primary"/);
+    assert.ok(html.includes(`data-project-id="${id}"`));
+    assert.match(html,/시안 열기/);
+    assert.doesNotMatch(html,/<img|cps-next-art/);
+    assert.equal((f.run('cpsTrack(project,clientDesk.data)').match(/aria-current="step"/g)||[]).length,1);
+  });
+  f.run('project.stage="archived"');
+  const calm=f.run('cpsNext(project,{primary:null,counts:{actionable:0,waiting:0},reason:"",workflowStale:false,attentionSections:[]})');
+  assert.match(calm,/data-state="calm"/);assert.match(calm,/보관한 프로젝트예요/);
+  assert.doesNotMatch(calm,/cps-next-word|data-project-screen="primary"|<img/);
+  const stale=f.run('cpsNext(project,{primary:null,counts:null,reason:"",workflowStale:true,attentionSections:[]})');
+  assert.match(stale,/data-state="stale"/);assert.match(stale,/data-client="refresh"/);
+  assert.doesNotMatch(stale,/data-project-screen="primary"|<img/);
+  f.run('project.stage="<b>"');
+  assert.doesNotMatch(f.run(`cpsNext(project,${JSON.stringify(plan)})`),/<b>|<img/);
+});
+test('legacy stage artwork remains available through all six existing static routes',()=>{
+  const stages=['received','planning','producing','review','delivered','archived'],server=readFileSync(new URL('server.mjs',import.meta.url),'utf8');
+  assert.ok(server.includes("for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];"));
+  for(const stage of stages)assert.ok(existsSync(new URL(`public/client-desk-stage-${stage}.webp`,import.meta.url)),stage);
+});

@@ -1,6 +1,6 @@
 import {requireWorkspaceFeature,hasWorkspaceFeature} from './workspace-access.mjs';
 import { randomUUID } from 'node:crypto';
-import { canReadChannel, canWriteChannel } from './organization.mjs';
+import { canReadChannelRecord, canWriteChannelRecord } from './organization.mjs';
 import { getContentCatalog, generateContentIdeas, renderBriefMarkdown } from './content-engine.mjs';
 import { createBenchmarkService } from './benchmarks.mjs';
 
@@ -27,9 +27,9 @@ export function createContentService({store,clock=()=>new Date().toISOString(),f
   const benchmarks=createBenchmarkService({store,clock,seriesIds:getContentCatalog().series.map(series=>series.id)});
   function current(user){const active=user?.id&&store.get('users',user.id);if(!active?.active)throw fail('로그인 상태를 다시 확인해 주세요.',401);requireWorkspaceFeature(active,'production');return active;}
   function writable(user){user=current(user);if(user.role==='viewer')throw fail('보기 전용 계정이라 기획을 고치거나 검색할 수 없어요.',403);return user;}
-  function canRead(user,row){if(!hasWorkspaceFeature(user,'production'))return false;if(row.ownerId===user.id||user.role==='admin')return true;if(!row.channelId||!['manager','viewer'].includes(user.role)||!user.teamId)return false;const channel=store.get('channels',row.channelId);return !!channel&&channel.teamId===user.teamId&&canReadChannel(user,channel);}
+  function canRead(user,row){if(!hasWorkspaceFeature(user,'production'))return false;if(row.ownerId===user.id||user.role==='admin')return true;if(!row.channelId||!['manager','viewer'].includes(user.role)||!user.teamId)return false;const channel=store.get('channels',row.channelId);return !!channel&&channel.teamId===user.teamId&&canReadChannelRecord(user,channel);}
   function getRow(kind,id,user){const row=store.get(kind,string(id,100,'기록 ID',true));if(!row||!canRead(user,row))throw fail(kind==='contentReferences'?'이 참고 자료를 찾지 못했어요. 새로고침해 주세요.':'이 기획을 찾지 못했어요. 새로고침해 주세요.',404);return row;}
-  function channelFor(user,id){if(!id)return null;const channel=store.get('channels',string(id,100,'채널 ID',true));if(!channel||channel.active===false||!canWriteChannel(user,channel))throw fail('담당 채널을 찾지 못했어요. 새로고침한 뒤 다시 골라 주세요.',404);return channel;}
+  function channelFor(user,id){if(!id)return null;const channel=store.get('channels',string(id,100,'채널 ID',true));if(!channel||channel.active===false||!canWriteChannelRecord(user,channel))throw fail('담당 채널을 찾지 못했어요. 새로고침한 뒤 다시 골라 주세요.',404);return channel;}
   function ownerName(row){return {...row,ownerName:store.get('users',row.ownerId)?.name||'이전 담당자'};}
   function searchSettings(){const configured=!!store.secret(keyId)?.apiKey;return {provider:configured?'exa':'manual',configured,notice:configured?'검색 API가 연결되었습니다. 검색할 때 주제와 기간이 Exa에 전달되며 이용 요금이 발생할 수 있습니다. 검색 결과는 인기 여부가 검증된 자료가 아닙니다.':'저장한 참고 자료와 담당 채널 게시물을 찾습니다. 최신 릴스는 외부 검색 링크에서 직접 확인할 수 있습니다.'};}
   function workspace(user){
@@ -102,7 +102,7 @@ export function createContentService({store,clock=()=>new Date().toISOString(),f
   function localResults(user,query,since,until){
     const tokens=query.toLocaleLowerCase().split(/\s+/).filter(Boolean),matches=(...parts)=>tokens.every(token=>parts.join(' ').toLocaleLowerCase().includes(token));
     const results=store.all('contentReferences').filter(row=>canRead(user,row)&&matches(row.title,row.creator,row.formatNotes)&&(!row.publishedAt||recent(row.publishedAt,since,until))).map(row=>({...ownerName(row),referenceId:row.id,source:'saved-reference',dateStatus:row.publishedAt?'user-submitted':'unknown'}));
-    const channels=new Map(store.all('channels').filter(c=>c.active!==false&&canReadChannel(user,c)&&isConnected(c)).map(c=>[c.id,c]));
+    const channels=new Map(store.all('channels').filter(c=>c.active!==false&&canReadChannelRecord(user,c)&&isConnected(c)).map(c=>[c.id,c]));
     const observations=[...store.all('snapshots'),...store.all('hypeObservations')].filter(row=>row.source?.startsWith('api:')&&(!row.expiresAt||Date.parse(row.expiresAt)>until));
     for(const post of store.all('posts')){
       const channel=channels.get(post.channelId);if(!channel||!post.source?.startsWith('api:')||post.expiresAt&&Date.parse(post.expiresAt)<=until||!recent(post.publishedAt,since,until)||!matches(post.title,channel.displayName))continue;

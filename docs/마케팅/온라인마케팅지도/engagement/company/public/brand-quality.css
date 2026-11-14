@@ -1,50 +1,53 @@
-/* 브랜드 제작실 · 품질·운영 확인 — 시그널 13판 A 「목록 + 상세」 간소판(brand-quality.js). 공통 어휘는 maker-tools.css에 있고, 여기에는 이 두 탭에만 쓰는 규칙만 둔다.
-   이 파일은 signal.css보다 앞에 읽히므로 선택자를 :root .synk-workspace .mt 아래로 둔다. CSP style-src 'self' — 인라인 style을 쓰지 않는다. */
+/* 브랜드 제작실 · 품질·운영 확인 — 순수 검정(#000000) & 가는 구분선 (brand-quality.js)
+   공통 어휘는 maker-tools.css에 있고, 여기에는 이 두 탭에만 쓰는 규칙만 둔다. CSP style-src 'self'. */
 :root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-tile svg{width:16px;height:16px}
-:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-item[aria-current=true] .mt-led:is(:not([data-tone]),[data-tone=""]){background:rgba(255,255,255,.42)}
-:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-item[aria-current=true] .mt-led[data-tone=off]{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-item[aria-current=true] .mt-led:is(:not([data-tone]),[data-tone=""]){background:#FFFFFF}
+:root .synk-workspace .mt:is([data-mt=brand],[data-mt=quality]) .mt-item[aria-current=true] .mt-led[data-tone=off]{box-shadow:inset 0 0 0 1.5px var(--mt-ink-3,#9AA5B6)}
 :root .synk-workspace .mt .bq-title{display:block;margin-top:8px}
-:root .synk-workspace .mt .bq-title input{display:block;width:100%;min-height:0;margin:0;padding:2px 0 6px;border:0;border-bottom:1px solid transparent;border-radius:0;background:transparent;font:var(--w-display) 28px/1.2 var(--mt-sans);letter-spacing:-.035em;color:var(--mt-ink);box-shadow:none;outline:0}
-:root .synk-workspace .mt .bq-title input::placeholder{color:var(--mt-ink-4);font-weight:var(--w-title)}
-:root .synk-workspace .mt .bq-title input:hover:not(:disabled){border-bottom-color:var(--mt-line-2)}
-:root .synk-workspace .mt .bq-title input:focus{border-bottom-color:var(--mt-lapis)}
+:root .synk-workspace .mt .bq-title input{display:block;width:100%;min-height:0;margin:0;padding:2px 0 6px;border:0;border-bottom:1px solid transparent;border-radius:0;background:transparent;font:var(--w-display,700) 24px/1.28 var(--mt-sans,'Pretendard Variable',Pretendard,sans-serif);letter-spacing:-.025em;color:var(--mt-ink,#FFFFFF);box-shadow:none;outline:0}
+:root .synk-workspace .mt .bq-title input::placeholder{color:var(--mt-ink-3,#9AA5B6);font-weight:var(--w-title,650)}
+:root .synk-workspace .mt .bq-title input:hover:not(:disabled){border-bottom-color:var(--mt-line-2,rgba(255,255,255,.20))}
+:root .synk-workspace .mt .bq-title input:focus{border-bottom-color:#FFFFFF}
 :root .synk-workspace .mt .bq-target{margin-top:4px}
 :root .synk-workspace .mt .bq-leds{display:inline-flex;align-items:center;gap:3px;margin-right:2px}
 :root .synk-workspace .mt .bq-leds .mt-led{width:7px;height:7px;margin:0}
 :root .synk-workspace .mt .bq-leds .mt-led[data-tone=alert]{box-shadow:none}
 :root .synk-workspace .mt .bq-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}
 :root .synk-workspace .mt .bq-sources .mt-check{font-size:13.5px}
-:root .synk-workspace .mt .bq-entry{display:grid;gap:4px;margin:0 0 16px;padding:14px 16px 2px;border-radius:16px;background:var(--mt-paper-2)}
-:root .synk-workspace .mt .bq-entry h4{font-size:15px;line-height:1.4;font-weight:var(--w-title)}
+:root .synk-workspace .mt .bq-entry{display:grid;gap:4px;margin:0 0 16px;padding:14px 16px 2px;border:1px solid var(--mt-line,rgba(255,255,255,.13));border-radius:8px;background:var(--mt-paper-2,#07080A)}
+:root .synk-workspace .mt .bq-entry h4{font-size:15px;line-height:1.4;font-weight:var(--w-title,650);color:var(--mt-ink,#FFFFFF)}
 :root .synk-workspace .mt .bq-entry .mt-form-row{margin:8px 0 10px}
 :root .synk-workspace .mt .bq-entry>.mt-field{margin-bottom:14px}
-:root .synk-workspace .mt .bq-versions{border-top:1px solid var(--mt-line)}
-:root .synk-workspace .mt .bq-version{padding:14px 2px;border-bottom:1px solid var(--mt-line)}
+:root .synk-workspace .mt .bq-versions{border-top:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .bq-version{padding:14px 2px;border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
 :root .synk-workspace .mt .bq-version-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
-:root .synk-workspace .mt .bq-version-head strong{font-size:15px;font-weight:var(--w-title)}
-:root .synk-workspace .mt .bq-version-head>span:not(.mt-actions){font-size:13px;color:var(--mt-ink-3)}
+:root .synk-workspace .mt .bq-version-head strong{font-size:15px;font-weight:var(--w-title,650);color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .bq-version-head>span:not(.mt-actions){font-size:13px;color:var(--mt-ink-3,#9AA5B6)}
 :root .synk-workspace .mt .bq-version-head .mt-actions{margin-left:auto}
-:root .synk-workspace .mt .bq-version pre{margin:10px 0 0;padding:12px 14px;border-radius:12px;background:var(--mt-surface);font:var(--w-body) 13.5px/1.7 var(--mt-sans);color:var(--mt-ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
-:root .synk-workspace .mt .bq-items{border-top:1px solid var(--mt-line)}
-:root .synk-workspace .mt .bq-item{border-bottom:1px solid var(--mt-line)}
-:root .synk-workspace .mt .bq-item>summary{display:grid;grid-template-columns:auto max-content max-content minmax(0,1fr) 14px;align-items:center;gap:10px;padding:12px 2px;list-style:none;font-size:14px;cursor:pointer}
+:root .synk-workspace .mt .bq-version pre{margin:10px 0 0;padding:12px 14px;border:1px solid var(--mt-line,rgba(255,255,255,.13));border-radius:6px;background:var(--mt-surface,#07080A);font:var(--w-body,450) 13.5px/1.7 var(--mt-sans,'Pretendard Variable',Pretendard,sans-serif);color:var(--mt-ink-2,#D0D6E0);white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+:root .synk-workspace .mt .bq-version pre::-webkit-scrollbar{width:4px;height:4px}
+:root .synk-workspace .mt .bq-version pre::-webkit-scrollbar-track{background:transparent}
+:root .synk-workspace .mt .bq-version pre::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:999px}
+:root .synk-workspace .mt .bq-version pre::-webkit-scrollbar-button{display:none;width:0;height:0}
+:root .synk-workspace .mt .bq-items{border-top:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .bq-item{border-bottom:1px solid var(--mt-line,rgba(255,255,255,.13))}
+:root .synk-workspace .mt .bq-item>summary{display:grid;grid-template-columns:auto max-content max-content minmax(0,1fr) 14px;align-items:center;gap:10px;min-height:44px;padding:10px 2px;list-style:none;font-size:14px;cursor:pointer}
 :root .synk-workspace .mt .bq-item>summary::-webkit-details-marker{display:none}
-:root .synk-workspace .mt .bq-item>summary::after{content:'';width:14px;height:14px;background:var(--mt-chev) center/14px no-repeat;opacity:.5;transform:rotate(90deg)}
+:root .synk-workspace .mt .bq-item>summary::after{content:'';width:14px;height:14px;background:var(--mt-chev) center/14px no-repeat;opacity:.7;transform:rotate(90deg)}
 :root .synk-workspace .mt .bq-item[open]>summary::after{transform:rotate(-90deg)}
-:root .synk-workspace .mt .bq-item>summary strong{font-weight:var(--w-strong)}
-:root .synk-workspace .mt .bq-item>summary em{font-style:normal;font-size:13px;font-weight:var(--w-strong);color:var(--mt-ink-3);white-space:nowrap}
-:root .synk-workspace .mt .bq-item>summary em[data-tone=ok]{color:var(--mt-green-ink)}
-:root .synk-workspace .mt .bq-item>summary em[data-tone=alert]{color:var(--mt-coral-ink)}
-:root .synk-workspace .mt .bq-item>summary>span:not(.mt-led){min-width:0;font-size:13px;color:var(--mt-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root .synk-workspace .mt .bq-item>summary strong{font-weight:var(--w-strong,600);color:var(--mt-ink,#FFFFFF)}
+:root .synk-workspace .mt .bq-item>summary em{font-style:normal;font-size:13px;font-weight:var(--w-strong,600);color:var(--mt-ink-3,#9AA5B6);white-space:nowrap}
+:root .synk-workspace .mt .bq-item>summary em[data-tone=ok]{color:var(--mt-green-ink,#9BE0B5)}
+:root .synk-workspace .mt .bq-item>summary em[data-tone=alert]{color:var(--mt-coral-ink,#FFDAD6)}
+:root .synk-workspace .mt .bq-item>summary>span:not(.mt-led){min-width:0;font-size:13px;color:var(--mt-ink-3,#9AA5B6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :root .synk-workspace .mt .bq-item-body{display:grid;gap:12px;padding:0 2px 16px 20px}
 :root .synk-workspace .mt .bq-item-body .mt-form-row{margin:0}
 :root .synk-workspace .mt .bq-item-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px}
 :root .synk-workspace .mt .bq-foot{margin-top:14px}
 :root .synk-workspace .mt .bq-sheet .mt-form-row{align-items:flex-start}
-/* workroom.css의 .wr-workroom select{margin-top:8px}가 칸 안 셀렉트를 8px 내려 이름표와 어긋나게 한다. */
 :root .synk-workspace .mt .bq-sheet .mt-field select{margin:0}
 @container mt (max-width:700px){
-  :root .synk-workspace .mt .bq-title input{font-size:22px}
+  :root .synk-workspace .mt .bq-title input{font-size:21px}
   :root .synk-workspace .mt .bq-sources{grid-template-columns:minmax(0,1fr)}
   :root .synk-workspace .mt .bq-item>summary{grid-template-columns:auto minmax(0,1fr) auto 14px;row-gap:4px}
   :root .synk-workspace .mt .bq-item>summary>span:not(.mt-led){grid-column:2/-1;grid-row:2}
@@ -52,5 +55,5 @@
   :root .synk-workspace .mt .bq-sheet>.mt-error{order:-3}
   :root .synk-workspace .mt .bq-version-head .mt-actions{margin-left:0}
   :root .synk-workspace .mt .bq-sheet .mt-facts[data-cols="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
-  :root .synk-workspace .mt .bq-sheet .mt-facts[data-cols="3"]>div:nth-child(3){border-top:0;border-left:1px solid var(--mt-line);padding-left:14px}
+  :root .synk-workspace .mt .bq-sheet .mt-facts[data-cols="3"]>div:nth-child(3){border-top:0;border-left:1px solid var(--mt-line,rgba(255,255,255,.13));padding-left:14px}
 }

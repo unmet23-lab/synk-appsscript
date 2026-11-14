@@ -35,13 +35,13 @@ test('native session renewal is single-flight and uses the current company CSRF'
 });
 
 test('native identity loss immediately masks the persistent classroom outside the company app tree',()=>{
-  const f=fixture(),nodes=new Map(['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching'].map(key=>[key,{style:{display:''},inert:false,before(){}}]));
+  const f=fixture(),nodes=new Map(['#app','#overlay','#toast','#workspace-messenger','#workspace-teaching','#workspace-call'].map(key=>[key,{hidden:false,classList:{values:new Set(),add(v){this.values.add(v);},remove(v){this.values.delete(v);},contains(v){return this.values.has(v);}},style:{display:''},inert:false,before(){}}]));
   f.document.querySelector=selector=>nodes.get(selector)||null;f.document.createElement=()=>({className:'',style:{},setAttribute(){},append(){},remove(){}});
   let changed;f.desktop.onAuthChanged=callback=>{changed=callback;};
   f.run("synkNativeVerifiedAccount='teacher-a';synkConnectionPending=true;installNativeSynkObserver()");
   changed({signedIn:false,status:'signed-out',sessionGeneration:2});
-  assert.equal(nodes.get('#workspace-teaching').style.display,'none');assert.equal(nodes.get('#workspace-teaching').inert,true);
-  f.run('maskNativeSynkCompany(false)');assert.equal(nodes.get('#workspace-teaching').style.display,'');assert.equal(nodes.get('#workspace-teaching').inert,false);
+  for(const node of nodes.values()){assert.equal(node.hidden,true);assert.equal(node.classList.contains('synk-native-hidden'),true);assert.equal(node.inert,true);}
+  f.run('maskNativeSynkCompany(false)');for(const node of nodes.values()){assert.equal(node.hidden,false);assert.equal(node.classList.contains('synk-native-hidden'),false);assert.equal(node.inert,false);}
 });
 
 test('an already verified native account enters the linked company without another button or login prompt',async()=>{

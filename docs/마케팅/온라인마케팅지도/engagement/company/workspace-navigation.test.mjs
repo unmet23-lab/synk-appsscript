@@ -4,30 +4,45 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import {randomUUID} from 'node:crypto';
 
 const source=readFileSync(new URL('./public/workspace.js',import.meta.url),'utf8');
 const teamOverviewSource=readFileSync(new URL('./public/team-overview.js',import.meta.url),'utf8');
 const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'utf8');
 const workroomSource=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8');
 const accessSource=readFileSync(new URL('./public/workspace-access.js',import.meta.url),'utf8');
+const appSource=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
 
-function accessFormFixture({user=null}={}){
-  const handlers=new Map(),calls=[],notifications=[],state={user,tab:'lectures',authMode:'login',modalRequest:0};
-  let response={},failure=null;
+function accessFormFixture({realApi=false,user=null}={}){
+  const handlers=new Map(),nodes=new Map(),calls=[],notifications=[],state={user,tab:'lectures',authMode:'login',modalRequest:0};
+  let response={},failure=null,implementation=null;
   const context=vm.createContext({state,URL,URLSearchParams,location:new URL('https://workspace.example.test/'),
-    document:{addEventListener(type,handler){handlers.set(type,handler);}},
+    document:{addEventListener(type,handler){handlers.set(type,handler);},getElementById:id=>nodes.get(id)||null},
     FormData:class extends URLSearchParams{constructor(form){super(form.fields);}},
-    api:async(path,input)=>{calls.push({path,input});if(failure)throw failure;return response;},
+    api:async(path,input)=>{calls.push({path,input});if(implementation)return implementation(path,input);if(failure)throw failure;return response;},
+    crypto:{randomUUID},queueMicrotask,escape:value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),icon:()=>'',button:()=>'',
     renderAuth(){},closeModal(){},loadState:async()=>{},renderBackground(){},notify:message=>notifications.push(message),
   });
+  if(realApi){
+    const transport=context.api;
+    Object.assign(context,{demoApiUrl:path=>path,isDemoMode:()=>false,clearCompanySessionView(){},fetch:async(path,options)=>{
+      const body=await transport(path,options.body===undefined?undefined:JSON.parse(options.body));
+      return {ok:true,status:200,json:async()=>body};
+    }});
+    const start=appSource.indexOf('async function api('),end=appSource.indexOf('function clearCompanySessionView()',start);
+    assert.ok(start>=0&&end>start,'load the actual API and session-generation fence');
+    vm.runInContext(appSource.slice(start,end),context);
+  }
   vm.runInContext(accessSource,context);
-  return {calls,notifications,state,respond:value=>{response=value;},reject:error=>{failure=error;},
+  const dispatch=async(type,target)=>{handlers.get(type)({target,preventDefault(){},stopImmediatePropagation(){}});await new Promise(resolve=>setImmediate(resolve));};
+  return {calls,notifications,state,nodes,context,respond:value=>{response=value;},reject:error=>{failure=error;},handle:fn=>{implementation=fn;},
     run:script=>vm.runInContext(script,context),
     async submit(kind,fields,dataset={}){
       const submit={disabled:false},error={textContent:''},form={fields,dataset:{form:kind,...dataset},isConnected:true,querySelector:selector=>selector==='[type="submit"]'?submit:error};
-      handlers.get('submit')({target:form,preventDefault(){},stopImmediatePropagation(){}});
-      await new Promise(resolve=>setImmediate(resolve));return {submit,error};
+      await dispatch('submit',form);return {form,submit,error};
     },
+    resubmit:record=>dispatch('submit',record.form),
+    click:action=>{const target={dataset:{action},disabled:false,closest:()=>null};return dispatch('click',{closest:()=>target});},
   };
 }
 
@@ -70,7 +85,7 @@ function fixture(role='admin'){
   const resizeHandlers=[],messageHandlers=[],windowHandlers=new Map(),documentHandlers=new Map(),state={user:{id:'tester',role},tab:'overview',marketingView:'summary',scope:'mine',teamId:'',reportRequest:0},cp={view:'library'},location=new URL('http://localhost:4191/');
   const context=workspaceClientContext({state,cp,location,URL,URLSearchParams,
     canManageTeam:()=>['admin','manager'].includes(state.user?.role),isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',
-    window:{addEventListener(type,handler){if(type==='resize')resizeHandlers.push(handler);if(type==='message')messageHandlers.push(handler);windowHandlers.set(type,[...(windowHandlers.get(type)||[]),handler]);},scrollTo(){}},document:{hidden:false,addEventListener(type,handler){documentHandlers.set(type,[...(documentHandlers.get(type)||[]),handler]);},getElementById(){return null;}},
+    window:{addEventListener(type,handler){if(type==='resize')resizeHandlers.push(handler);if(type==='message')messageHandlers.push(handler);windowHandlers.set(type,[...(windowHandlers.get(type)||[]),handler]);},scrollTo(){}},document:{hidden:false,addEventListener(type,handler){documentHandlers.set(type,[...(documentHandlers.get(type)||[]),handler]);},getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return [];}},
     MutationObserver:class{observe(){}},history:{replaceState(_a,_b,value){location.href=new URL(value,location).href;}},
     crypto:{randomUUID:()=> 'test-share'},render(){},icon:()=>'',
   });
@@ -193,7 +208,7 @@ test('resize before the app state script loads does not break workspace initiali
 });
 
 test('people remains available within the server member scope for every signed-in role',()=>{
-  for(const [role,count] of [['admin',2],['manager',1],['member',1],['viewer',1]]){
+  for(const [role,count] of [['admin',3],['manager',1],['member',1],['viewer',1]]){
     const f=fixture(role);assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching']);
     assert.equal(f.run('workspaceUtilityTabs().length'),count);
     f.run("selectWorkspaceView('members');syncWorkspaceLocation()");
@@ -204,7 +219,7 @@ test('people remains available within the server member scope for every signed-i
 test('server computed admin access includes all company tabs',()=>{
   const f=fixture('admin');f.state.user.workspaceAccess=workspaceAccess({...f.state.user,active:true});
   assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','social','members','teaching','path','lectures']);
-  assert.equal(f.run('workspaceUtilityTabs().length'),2);
+  assert.deepEqual(Array.from(f.run('workspaceUtilityTabs().map(row=>row[0])')),['handbook','admin','settings']);
 });
 
 test('teaching has a canonical direct entry without leaking marketing filters into classroom links',()=>{
@@ -315,10 +330,10 @@ test('old marketing entries open the SNS three screens; the demo address keeps t
   }
   const plan=fixture();plan.run("selectWorkspaceView('content','examples');syncWorkspaceLocation()");assert.equal(plan.state.tab,'content');assert.equal(plan.location.searchParams.get('section'),'examples','기획 화면은 메뉴에서만 빠지고 바로 여는 길은 남는다');
   const demo=fixture();demo.location.search='?demo=1';demo.run("selectWorkspaceView('team')");assert.equal(demo.state.tab,'overview');assert.equal(demo.run('marketingScope()'),'team');
-  const menu=fixture();menu.state.tab='social';menu.context.socialWorkspaceSection=()=>'today';const html=menu.run('workspaceContextMenu()');
+  const menu=fixture();menu.state.tab='social';menu.context.socialWorkspaceSection=()=>'today';const html=menu.run('workspaceInlineSubnav()');
   assert.match(html,/data-view="today"/);assert.match(html,/data-view="results"/);assert.match(html,/data-view="accounts"/);
   assert.doesNotMatch(html,/data-view="(compose|calendar|queue|bulk|inbox|settings|overview)"|내 현황|팀 현황|전체 현황|콘텐츠 기획|채널·수집/);
-  menu.state.tab='workroom';assert.match(menu.run('workspaceContextMenu()'),/data-action="social-view" data-view="results"/);
+  menu.state.tab='workroom';assert.match(menu.run('workspaceToolsDrawer()'),/data-action="tab" data-tab="social"/,'the SNS workspace remains reachable from Tools after the persistent side menu is removed');
 });
 
 
@@ -333,4 +348,87 @@ test('assigned company features filter navigation and reject deep links; concurr
   f.run("wa.company='SHIFT'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','members','lectures']);
   f.run("wa.company='PULSE'");assert.deepEqual(Array.from(f.run('workspaceAvailableTabs().map(row=>row[0])')),['home','messenger','workroom','members']);
   f.run("selectWorkspaceView('lectures')");assert.equal(f.state.tab,'lectures');assert.equal(f.run('wa.company'),'all');
+});
+
+test('a concurrent company source link opens its requested workroom section even when another section is already allowed',()=>{
+  const f=withWorkroom(fixture('member'));
+  f.state.user.workspaceAccess=workspaceAccess({role:'member',active:true,workspaceProfile:{memberships:[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}],duties:['pages'],revision:1}});
+  f.state.data={workspaceCatalog:{companies:WORKSPACE_COMPANIES,duties:WORKSPACE_DUTIES}};
+  f.run("wa.userId=state.user.id;wa.company='SHIFT';wrIdentity();selectWorkspaceView('workroom','clients');waNormalizeView();syncWorkspaceLocation()");
+  assert.equal(f.state.tab,'workroom');assert.equal(f.run('wa.company'),'all');assert.equal(f.run('wr.view'),'clients');
+  assert.equal(f.location.searchParams.get('section'),'clients');
+  f.state.user.workspaceAccess=workspaceAccess({role:'member',active:true,workspaceProfile:{memberships:[{company:'SHIFT',role:'instructor'}],duties:['pages'],revision:2}});
+  f.run("wa.company='SHIFT';selectWorkspaceView('workroom','clients');waNormalizeView()");
+  assert.notEqual(f.run('wr.view'),'clients');assert.equal(f.run("waFeature('clients')"),false);
+});
+
+test('skipping production in one company does not suppress its first load after switching to PULSE',async()=>{
+  const f=withWorkroom(fixture('member')),calls=[];
+  f.state.user.workspaceAccess=workspaceAccess({role:'member',active:true,workspaceProfile:{memberships:[{company:'SHIFT',role:'instructor'},{company:'PULSE',role:'producer'}],duties:['pages'],revision:1}});
+  f.state.data={workspaceCatalog:{companies:WORKSPACE_COMPANIES,duties:WORKSPACE_DUTIES}};f.state.tab='workroom';
+  Object.assign(f.context,{api:async path=>{calls.push(path);return path==='/api/workroom-guide'?{series:[]}:{drafts:[]};},renderBackground(){}});
+  f.run("wa.userId=state.user.id;wa.company='SHIFT';wrEnsureDaily=()=>{};ensureWorkroom()");
+  assert.deepEqual(calls,[]);assert.equal(f.run('wr.attempted'),false);
+  f.run("wa.company='PULSE';ensureWorkroom()");await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(calls,['/api/workroom-guide','/api/content-workspace']);
+  assert.deepEqual(JSON.parse(f.run('JSON.stringify(wr.content)')),{drafts:[]});assert.equal(f.run('wr.loading'),false);
+});
+
+test('a successful lecture save supersedes a still pending initial list without accepting its stale response',async()=>{
+  const f=accessFormFixture(),pending=[];
+  f.state.user={id:'tester',role:'member'};
+  f.handle((path,input)=>input?Promise.resolve({id:'created',revision:1}):new Promise(resolve=>pending.push(resolve)));
+  f.run("wa.userId='tester';wa.workKey='tester:SHIFT'");const first=f.run('waLoadWork()');
+  await f.submit('wa-work',{title:'새 강의',date:'2026-12-01',note:'준비',status:'open'},{company:'SHIFT',id:'',revision:'0'});
+  const row={id:'created',title:'새 강의',revision:1};
+  if(pending[1])pending[1]({items:[row]});
+  pending[0]({items:[]});await first;await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(pending.length,2,'saving must request a fresh list even while the previous GET is pending');
+  assert.deepEqual(JSON.parse(f.run('JSON.stringify(wa.work.items)')),[row]);assert.equal(f.run('wa.workLoading'),false);
+});
+
+test('an invitation can be inspected again after a transient failure without accepting a revoked code',async()=>{
+  const f=accessFormFixture(),submit={disabled:true},name={value:''},host={innerHTML:'',textContent:'',setAttribute(key,value){this[key]=value;}};
+  f.nodes.set('wa-invite-summary',host);f.nodes.set('auth-form',{querySelector:selector=>selector==='[type="submit"]'?submit:selector==='[name="name"]'?name:null});
+  Object.assign(f.state,{authMode:'join',authToken:'synthetic-invitation-token-1234567890'});let attempts=0;
+  f.handle(()=>{if(++attempts===1)throw Object.assign(new Error('일시적인 연결 오류'),{status:503});return {name:'검증 직원',memberships:[{company:'SHIFT',role:'instructor'}]};});
+  await f.run('waInspectInvite()');assert.equal(submit.disabled,true);assert.match(host.innerHTML,/data-action="wa-invite-retry"/);
+  await f.click('wa-invite-retry');assert.equal(attempts,2);assert.equal(submit.disabled,false);assert.equal(name.value,'검증 직원');assert.equal(f.run('wa.inviteError'),'');
+  f.handle(()=>{throw Object.assign(new Error('취소된 초대'),{status:403});});
+  await f.click('wa-invite-retry');assert.equal(submit.disabled,true);assert.equal(f.run('wa.invite'),null);assert.match(host.innerHTML,/취소된 초대/);
+});
+
+test('a new work form retains its request identity across an ambiguous save retry',async()=>{
+  const f=accessFormFixture();let html='',posts=0;
+  f.context.modal=(_title,_description,body)=>{html=body;};f.run('waWorkModal()');
+  const requestId=html.match(/data-request-id="([^"]+)"/)?.[1];assert.match(requestId||'',/^[0-9a-f-]{36}$/i);
+  f.handle((_path,input)=>{if(!input)return {items:[]};if(++posts===1)throw new Error('응답 연결 끊김');return {item:{id:'created',revision:1}};});
+  const form=await f.submit('wa-work',{title:'검증 강의',note:'준비',date:'2026-12-01',status:'open'},{company:'SHIFT',id:'',revision:'0',requestId});
+  assert.equal(form.submit.disabled,false);assert.match(form.error.textContent,/연결 끊김/);
+  await f.resubmit(form);
+  const submissions=f.calls.filter(row=>row.input);assert.equal(submissions.length,2);
+  assert.deepEqual(JSON.parse(JSON.stringify(submissions[0].input)),JSON.parse(JSON.stringify(submissions[1].input)));
+  assert.equal(submissions[1].input.requestId,requestId);assert.equal(submissions[1].input.revision,0);
+  f.run('waWorkModal()');assert.notEqual(html.match(/data-request-id="([^"]+)"/)?.[1],requestId);
+});
+
+test('a late save from a previous account cannot close or reset the current account work form',async()=>{
+  const f=accessFormFixture({realApi:true});let resolveSave,closed=0;
+  f.state.user={id:'first',role:'member'};f.context.closeModal=()=>closed++;
+  f.handle((_path,input)=>input?new Promise(resolve=>{resolveSave=resolve;}):{items:[]});
+  await f.submit('wa-work',{title:'이전 계정 강의',status:'open'},{company:'SHIFT',id:'',revision:'0'});
+  f.state.user={id:'second',role:'member'};f.run("wa.userId='second';wa.workKey='second:SHIFT';wa.request=20;wa.workLoading=true");
+  resolveSave({item:{id:'first-record'}});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(closed,0,'the previous account response must not close a current modal');
+  assert.equal(f.run('wa.request'),20);assert.equal(f.run('wa.workLoading'),true);assert.deepEqual(f.notifications,[]);
+  assert.equal(f.calls.length,1);
+});
+
+test('a save finishing after its form was dismissed does not close a later dialog',async()=>{
+  const f=accessFormFixture({realApi:true});let resolveSave,closed=0;
+  f.state.user={id:'tester',role:'member'};f.context.closeModal=()=>closed++;
+  f.handle((_path,input)=>input?new Promise(resolve=>{resolveSave=resolve;}):{items:[]});
+  const first=await f.submit('wa-work',{title:'첫 강의',status:'open'},{company:'SHIFT',id:'',revision:'0'});
+  first.form.isConnected=false;resolveSave({item:{id:'created'}});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(closed,0,'a detached form must not close a replacement dialog');
 });
