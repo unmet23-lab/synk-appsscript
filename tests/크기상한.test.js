@@ -31,6 +31,9 @@ const 자리 = {
   '영상 관문 지적': ['.claude/workflows/video-gate.js', /^const 지적한도 = (\d+)/m, n => `${n}개`],
   '헤르메스 요청': ['tools/hermes-synk/plugin/__init__.py', /^MAX_REQUEST_CHARS = (\d+)/m, 자],
   '헤르메스 답': ['tools/hermes-synk/plugin/__init__.py', /^MAX_REPLY_CHARS = (\d+)/m, 자],
+  '기록 찾기 출력': ['tools/기록찾기.js', /^const 출력한도 = (\d+);/m, 자],
+  '메모 목록 줄 수': ['tools/기록찾기.js', /^const 메모한도 = \{ 줄: (\d+), 글자: \d+ \};/m, n => `${n}줄`],
+  '메모 목록 크기': ['tools/기록찾기.js', /^const 메모한도 = \{ 줄: \d+, 글자: (\d+) \};/m, n => `${n / 1000}KB`],
   '저장 · 파일 하나': ['tools/git-storage-policy.json', /"maxBlobBytes": (\d+)/, MiB],
   '저장 · 한 번에 올리는 양': ['tools/git-storage-policy.json', /"maxTotalBytes": (\d+)/, MiB],
 };
