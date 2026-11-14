@@ -76,7 +76,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   const inks=[];   // 음절마다 다 쓴 잉크(칸 [0,1]²)
   const stats=[];  // 음절마다 {n 모형 획을 따라간 획 수, ord 차례대로 쓴 수, dir 바른 방향 수, r 마지막 판정}
   const showAccept=on=>{btnAccept.classList.toggle('off',!on);btnAccept.disabled=!on;};
-  box.classList.remove('done','cmp');box.classList.toggle('knows',knows);cv.setAttribute('aria-label',L('이름 쓰는 칸',{w:word}));cmp.hidden=true;
+  box.classList.remove('done','cmp');box.scrollTop=0;box.classList.toggle('knows',knows);cv.setAttribute('aria-label',L('이름 쓰는 칸',{w:word}));cmp.hidden=true;
   // 음절 줄(원고지 칸): 쓴 음절은 내 잉크, 지금 음절은 엷은 붉은 면
   row.innerHTML=syl.map((s,k)=>`<i class="nt-cell${s.gap?' gap':''}" data-k="${k}"></i>`).join('');
   const cell=k=>row.querySelector(`[data-k="${k}"]`);
@@ -254,11 +254,15 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const addCell=sel=>{const c=document.createElement('i');c.className='nt-cg';c.innerHTML='<canvas></canvas>';cmp.querySelector(sel).appendChild(c);return c;};
    cmp.hidden=false;box.classList.add('cmp');paintRow();
    const cells=syl.map(s=>({s,m:addCell('.nt-cmp-model'),y:addCell('.nt-cmp-mine')}));
-   cmp.style.removeProperty('--cg');{const over=cmp.scrollHeight-cmp.clientHeight;if(over>0)cmp.style.setProperty('--cg',Math.max(32,Math.floor(cells[0].m.offsetWidth-over/2-2))+'px');}
+   const rec=$('#ntRec'),newBest=prev!=null&&total>prev;rec.textContent=prev!=null&&!newBest?L('지난 최고',{p:prev}):'';$('#ntTry').textContent=attempt>1?L('도전 횟수',{n:attempt}):'';
+   const delta=$('#ntDelta');delta.textContent=newBest?`+${total-prev}`:'';
+   // 비교판이 칸보다 길면 글자 칸을 줄인다 — 가운데 맞춤은 넘친 만큼 위아래로 잘려 scrollHeight로 다 잡히지 않으므로 위에서부터 쌓아 잰다. 점수 줄의 도전 횟수 · 지난 최고 · 오른 점수를 먼저 채운 뒤에 잰다(다시 쓴 판에서 점수 줄이 두 줄이 된다)
+   cmp.style.removeProperty('--cg');cmp.style.justifyContent='flex-start';{const pb=parseFloat(getComputedStyle(cmp).paddingBottom)||0;
+    for(let n=0;n<3;n++){const over=cmp.lastElementChild.getBoundingClientRect().bottom+pb-cmp.getBoundingClientRect().bottom;if(over<=.5)break;cmp.style.setProperty('--cg',Math.max(24,Math.floor(cells[0].m.offsetWidth-over/2-1))+'px');}}
+   cmp.style.justifyContent='';
    // 음절 점수: 90점 넘으면 초록, 가장 낮은 음절이 90점 아래면 붉게 + 가장 많이 잃은 곳(순서 · 방향 · 모양) 꼬리표 — 다시 쓸 때 볼 곳
    const low=per.indexOf(Math.min(...per));
    cells.forEach(({y},k)=>{const tag=k===low&&per[k]<90&&syl.length<5?weakTag(sylParts(k)):null;y.insertAdjacentHTML('beforeend',`<b class="nt-cs${per[k]>=90?' good':k===low&&per[k]<90?' low':''}">${per[k]}${tag?`<em>${L(tag)}</em>`:''}</b>`);});
-   const rec=$('#ntRec'),newBest=prev!=null&&total>prev;rec.textContent=prev!=null&&!newBest?L('지난 최고',{p:prev}):'';$('#ntTry').textContent=attempt>1?L('도전 횟수',{n:attempt}):'';
    const sc=$('#ntScore');sc.classList.remove('land');
    const sz=cells[0].m.offsetWidth||60,c=sz*d,lwc=sz*.05;
    const prep=cvs=>{cvs.width=cvs.height=Math.round(c);const g=cvs.getContext('2d');g.setTransform(d,0,0,d,0,0);return g;};
@@ -272,21 +276,23 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const landed=()=>{if(finished||phase!=='compare')return;sc.classList.add('land');const tr=tier(total);
     if(tr==='full'){SND.felt('done');SND.sfx('pix_sparkle',.5);}else if(tr==='top')SND.felt('done');else if(tr==='hi')SND.felt('reward');else SND.felt('ok');
     if(newBest){rec.innerHTML=`<b class="nt-best">${L('최고 기록')}</b>`;if(tr!=='full')SND.sfx('pix_sparkle',.35);}
-    const info={score:total,attempt,prev},r=coach.final(info);say(finalLine(info),r?.dur||0);};
-   const delta=$('#ntDelta');delta.textContent=prev!=null&&total>prev?`+${total-prev}`:'';hint.textContent='';
+    const info={score:total,attempt,prev},r=coach.final(info);say(finalLine(info),r?.dur||0);showKeep();};
+   hint.textContent='';
    (function f(t){const u=dur?Math.min(1,(t-t0)/dur):1;let left=u*total2;
     for(const o of mine){o.g.clearRect(0,0,sz,sz);drawGuide(o.g,m=>{for(const st of o.ghost){const sh=shapeOf(st.k,st.p.map(([a,b])=>[a*sz,b*sz]));nib(m,sh.p,sh.K,{h:lwc*LOOK.gh,a:LOOK.a,m:LOOK.gm});}},{fill:'rgba(194,74,55,.13)'});
      for(const p of o.list){if(left<=0)break;const n=Math.min(p.length,Math.ceil(left));paintInk(o.g,p.slice(0,n),lwc,n===p.length);left-=p.length;}}
     const v=Math.round(total*u);sc.textContent=String(v);if(v-tickAt>=9&&u<1){tickAt=v;SND.felt('tick');}
     if(u<1)cmpRaf=requestAnimationFrame(f);else landed();})(t0);
   }
+  // 아주 낮은 화면(높이 540 아래)에서는 카드 안이 스크롤된다 — 말풍선이 붙어 「학생증에 넣을게요」가 아래로 밀리면 보이게 내려 준다
+  function showKeep(){if(box.scrollHeight<=box.clientHeight+1)return;const k=btnKeep.getBoundingClientRect(),r=box.getBoundingClientRect();if(k.bottom>r.bottom-6)box.scrollTop+=k.bottom-r.bottom+10;}
   // 서하 말풍선(점수 바로 아래): 한국어 줄 + 학생 언어 번역, 목소리가 도는 동안 이름 옆 물결
   function say(id,dur){const ko=VO[id];if(!ko)return;const tr=L(ko);
    hint.innerHTML=`<span class="nt-say"><b class="nt-who${dur?' talk':''}">${L('서하')}<i aria-hidden="true"></i></b><span class="nt-line"><span lang="ko">${ko}</span>${tr!==ko?`<small>${tr}</small>`:''}</span></span>`;
    if(dur)setTimeout(()=>hint.querySelector('.nt-who')?.classList.remove('talk'),dur*1000);}
   // 다시 써 보기: 이름 처음 음절부터(시범은 저절로 보이지 않는다 — 「획순 보기」로), 점수는 이번 판과 견준다
   const retry=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;
-   phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;skipLabel('지난 글씨로 넣을게요');box.classList.remove('cmp');inks.length=0;stats.length=0;i=0;
+   phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;skipLabel('지난 글씨로 넣을게요');box.classList.remove('cmp');box.scrollTop=0;inks.length=0;stats.length=0;i=0;
    row.querySelectorAll('.nt-cell').forEach(c=>{c.innerHTML='';});SND.felt('page');openSyllable(false);};
   const keep=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;finish(true);};
   function cleanup(){cancelAnimationFrame(soRaf);cancelAnimationFrame(cmpRaf);demoRun++;clearTimeout(idleT);coach.hush();clearTimeout(timer);clearTimeout(acceptT);clearTimeout(swT);clearTimeout(swT2);
