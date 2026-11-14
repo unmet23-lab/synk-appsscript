@@ -596,3 +596,25 @@ test('a read-only or unfinished connection cannot change its folders', async () 
   engine.config.readOnly = false; engine.config.repositoryId = null;
   await assert.rejects(engine.changeSources([engine.config.sources[0]]), /백업을 설정한 뒤/);
 });
+
+// 끝판 카본 folders A1: every backup since the folder went is partial (a program keeps a file open in another folder);
+// the newer partial backup with the folder in it is the one a restore takes it from, and it stays.
+for (const how of ['taken out', 'not found']) {
+  test(`a folder ${how} while every later backup is partial keeps the newer partial backup that has it`, async () => {
+    const { engine, fail, advance, snapshots, more } = await fixture({ folders: 2 });
+    const [first] = engine.config.sources;
+    await engine.setAutomatic(true);
+    await engine.runOnce({});
+    const complete = snapshots.at(-1).id;
+    advance(61 * 60000); fail.backup = 3; fail.items = [path.join(first, 'mail.pst')];
+    assert.equal((await engine.runOnce({})).outcome, 'partial');
+    const newer = engine.config.lastPartial.id;
+    assert.equal(snapshots.find(s => s.id === newer).paths.length, 2, 'it has both folders');
+    if (how === 'taken out') await engine.changeSources([first]); else await fs.rm(more[0], { recursive: true });
+    advance(61 * 60000); assert.equal((await engine.runOnce({})).outcome, 'partial');
+    advance(2 * DAY); assert.equal((await engine.runOnce({})).outcome, 'partial');
+    const ids = snapshots.map(s => s.id);
+    assert.ok(ids.includes(complete), 'the complete one');
+    assert.ok(ids.includes(newer), 'the newer partial one with the folder');
+  });
+}

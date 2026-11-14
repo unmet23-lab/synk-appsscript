@@ -143,6 +143,7 @@ async function foldersAfterSetup(t) {
   const busy = (await app.call('removeSource', [extra])).value;
   assert.equal(busy.ok, false);
   assert.match(busy.error, /예약 백업이 도는 중/);
+  assert.equal(busy.code, 'RUN_ACTIVE', 'as other window operations say it');
   host.lockFree = true;
 
   host.calls.length = 0; host.dialogs.push({ method: 'dialog.message', value: { response: 1 } });

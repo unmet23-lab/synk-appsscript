@@ -802,11 +802,12 @@ class BackupEngine extends EventEmitter {
     const removed = (this.config.removedSources || []).filter(r => { r.since ??= new Date(now).toISOString(); return !(now - Date.parse(r.since) >= REMOVED_KEEP); });
     this.config.removedSources = removed.length ? removed : null;
     const chosen = folder => this.config.sources.some(s => same(s, folder)) || removed.some(r => same(r.path, folder));
-    // A chosen folder the latest complete snapshot lacks (it could not be found) — or one taken out not 30 days ago —
-    // keeps, the same way, the newest complete snapshot that has it and — when newer — the newest partial one: an
-    // unplugged drive's only backup stays (4.2).
+    // Each chosen folder — and one taken out not 30 days ago — keeps the backups a restore takes it from (restoreBases):
+    // the newest complete snapshot that has it and, when newer, the newest partial one that has it. That partial one
+    // need not be the newest of all: a folder taken out or not found while every backup since is partial is only in an
+    // older partial one (끝판 카본 folders A1) — and an unplugged drive's only backup stays (4.2).
     for (const folder of foldersOf(own.filter(s => s.tags.includes(VERIFIED) || listed(s)))) {
-      if (holds(latest, folder) || !chosen(folder)) continue;
+      if (!chosen(folder)) continue;
       const complete = own.find(s => s.tags.includes(VERIFIED) && holds(s, folder)), newer = own.find(s => listed(s) && holds(s, folder));
       if (complete) hold(complete);
       if (newer && (!complete || Date.parse(newer.time) > Date.parse(complete.time))) hold(newer);

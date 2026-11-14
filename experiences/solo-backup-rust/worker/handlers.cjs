@@ -115,7 +115,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
         if (!read && !switching && context.engine.job) return {ok:false,error:'진행 중인 작업이 끝난 뒤 다시 눌러 주세요.'};
         if ((context.engine.config?.readOnly || context.engine.config?.mode === 'restore') && !contract[name].allowedReadOnly) return {ok:false,error:'복구 전용 연결입니다.',code:'READ_ONLY'};
         try { profiles.boundaries(); const result=await action(context,...args); push(); return {ok:true,value:result}; }
-        catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message)}; }
+        catch(e) { if(safeErrors) {const clean=fileSelection.safeError(e);return {ok:false,error:clean.message,code:clean.code};}return {ok:false,error:context.engine.clean(e.message),...(e.code==='RUN_ACTIVE'?{code:'RUN_ACTIVE'}:{})}; }
       } finally { if (claimed) dialogBusy=false; if (held) engineUnlock(); }
     });
   }
@@ -147,7 +147,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     // Folders after setup (STAGE1_DESIGN.md 4.2 「폴더 더하기 · 빼기」): the dialog first, and only then the engine lock
     // for the change — a scheduled run is not held up while a dialog is open. Taking one out says its backups go in 30 days.
     async function changeSources(next) {
-      if (!await engineLock()) throw new Error('예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.');
+      if (!await engineLock()) throw Object.assign(new Error('예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.'), { code: 'RUN_ACTIVE' });
       try { const engine = profiles.current; await engine.changeSources(next(engine.config?.sources || [])); }
       finally { engineUnlock(); }
     }

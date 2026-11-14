@@ -727,6 +727,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: `CI=1 node --test --test-reporter=tap tests/ci-wide-dependencies.test.js`를 혼자 돌려 다 통과하면, 내 변경의 시험을 따로 돌린 숫자와 함께 `--시험건너뜀 "<그 시험 · 혼자 통과 · 내 시험 숫자>"`를 붙여 다시 올린다(까닭이 커밋 메시지에 남는다). 내 빌드처럼 무거운 일은 올리기가 끝날 때까지 멈춰 둔다.
 - 다시 확인: 세 번째 실행이 `[올림]` · `origin 확인 ✓`(`86814ae98`), 곧이어 무거운 일 없이 올린 다음 push는 관련 시험 245/245 · 71초(`aec62269b`).
 
+### 워크트리에서 바로올리기의 관련 시험이 `experiences/synk-world-app/qa/` 둘을 「Cannot find package 'ts-fsrs'」로 깨뜨린다 — `npm ci --prefix packages/atlas` (2026-11-15 Claude)
+- 증상: 업무 백업만 바꾼 `--실행`이 「관련 시험 깨짐」으로 멈췄고, 깨진 것은 `atlas-next-account.test.mjs` · `world-life-next.test.mjs`의 1번 줄(파일을 읽자마자)이었다. 혼자 돌리면 `ERR_MODULE_NOT_FOUND: Cannot find package 'ts-fsrs' imported from packages/atlas/src/memory/fsrs.mjs`.
+- 원인: 그 시험이 부르는 `packages/atlas`는 자기 `package.json`에 `ts-fsrs`를 두는데(11-10부터), 새로 뜬 워크트리에는 그 폴더의 `node_modules`가 없다. 바뀐 경로와는 무관하다.
+- 고침: 그 워크트리에서 `npm ci --prefix packages/atlas --no-audit --no-fund`(잠금 파일 그대로, `node_modules`는 Git 밖) 뒤 다시 올린다. 깔 수 없으면 두 시험만 깨진 것을 확인하고 `--시험건너뜀 "<까닭>"`.
+- 다시 확인: 깐 뒤 두 시험 91/91, 다시 올린 `--실행`이 관련 시험을 건너뛰지 않고 통과.
+
 ### 맞는 키인데 `git fetch` · `바로올리기`가 「Permission denied (publickey)」를 번갈아 낸다 — GitHub 쪽 성능 저하일 때가 있다 (2026-11-04 Claude)
 - 증상: 11-04 19시대에 `git fetch` · `ls-remote` · `바로올리기 따라가기`가 `git@github.com: Permission denied (publickey).`로 끝났다. 같은 키로 `ssh -T git@github.com`이 몇 초 간격으로 「Hi unmet23-lab!」와 실패를 번갈아 냈고, `ssh -v`에는 `Offering public key` 뒤 `Authentications that can continue`만 남았다. 바로 앞 시각까지 같은 명령이 됐다.
 - 원인: 이 PC의 키 · 권한 · 설정은 그대로였고(키 ACL은 본인 `(R)` 하나), 그 시각 githubstatus.com의 Git Operations · Actions가 `degraded_performance`였다. GitHub이 까닭을 따로 밝힌 것은 아니어서, 확인한 것은 「같은 키가 번갈아 받아들여지고 그때 GitHub이 성능 저하였다」까지다.
