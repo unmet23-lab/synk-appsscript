@@ -29,7 +29,9 @@ async function fixture(t,options={}){
     const cookie=actor?'synk_company_session='+app.store.mint('session',actor.id,{csrfToken:'admin-fixture-csrf'},30):'';
     return async(path,body,headers={})=>{
       const res=await fetch(base+path,{method:body===undefined?'GET':'POST',
-        headers:{Cookie:cookie,...(body===undefined?{}:{Origin:app.origin,'Content-Type':'application/json','X-CSRF-Token':'admin-fixture-csrf'}),...headers},
+        // Synchronous fixture writes can outlast the HTTP idle timeout on a busy runner.
+        // Start each request on a fresh connection so an expired test socket cannot mask its API assertions.
+        headers:{Connection:'close',Cookie:cookie,...(body===undefined?{}:{Origin:app.origin,'Content-Type':'application/json','X-CSRF-Token':'admin-fixture-csrf'}),...headers},
         ...(body===undefined?{}:{body:JSON.stringify(body)})});
       return {status:res.status,data:await res.json()};
     };
