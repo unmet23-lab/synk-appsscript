@@ -175,10 +175,13 @@
   "end": "",
   "endSize": 62,
   "endLineNormal": false,
-  "coverAt": 9.33,
-  "hello": "",
-  "helloName": "",
-  "helloRead": "",
-  "helloVo": "",
-  "helloSec": 1
+  "coverAt": 10.73,
+  "hello": "¡Oppa,",
+  "helloName": "멕시코!",
+  "helloRead": "mek-si-ko",
+  "helloVo": "오빠, 멕시코!",
+  "helloSec": 1.4,
+  "_원문": {
+    "hello": "오빠(여자가 손위 남자 형제를 부르는 말)"
+  }
 }

@@ -175,10 +175,13 @@
   "end": "",
   "endSize": 62,
   "endLineNormal": false,
-  "coverAt": 9.33,
-  "hello": "",
-  "helloName": "",
-  "helloRead": "",
-  "helloVo": "",
-  "helloSec": 1
+  "coverAt": 10.53,
+  "hello": "Oppa,",
+  "helloName": "호주!",
+  "helloRead": "ho-ju",
+  "helloVo": "오빠, 호주!",
+  "helloSec": 1.2,
+  "_원문": {
+    "hello": "오빠(여자가 손위 남자 형제를 부르는 말)"
+  }
 }

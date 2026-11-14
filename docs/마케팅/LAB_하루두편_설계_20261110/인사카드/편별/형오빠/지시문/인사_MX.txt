@@ -1,0 +1,25 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+A real handmade needle-felt diorama photographed with a macro lens, like a still from a stop-motion short film.
+
+Look reference: the THIRD attached image is an earlier still from this same series (the same Mongle, the same axolotl, the same sky-blue felt and wood). Match its materials, colors, lighting and the design of the axolotl. Do NOT copy Mongle's pose or expression from it.
+
+Set: a plain sky-blue wool felt backdrop (flat pressed craft felt, clean, evenly lit, with an even non-directional mottled surface — no brushed streaks, no diagonal grain, no waves) fills the upper part. A warm wooden tabletop fills the bottom 34% of the image (the back edge of the tabletop is at about 66% of the image height); the front strip of the tabletop is empty wood, softly out of focus.
+
+Character — Mongle: the character in the SECOND attached image: a small coral-red needle-felted ghost-shaped blob with a wavy scalloped hem and one line of cream running stitch. Mongle has no arms, no legs, no hands. Its eyes are glossy solid black bead eyes with no whites.
+
+Action (one clear gag, readable in one second): Mongle has just called the axolotl "big brother" — and the axolotl can't believe it. ONE small needle-felted pink axolotl (pale pink body, frilly magenta gills, exactly as in the third image) sits on the tabletop next to Mongle. It turns toward Mongle and points at its own chest with one tiny front foot, head tilted, a puzzled "me…?" face. Mongle sits beside it wearing the same frilly magenta axolotl-gill headband, turned toward the axolotl, beaming at it with adoring big glossy black bead eyes, a wide open happy mouth and two small soft-pink blush patches, as if it has just shouted the word. Mongle keeps its normal soft rounded ghost shape. Mongle is about 24% of the image height, the axolotl about half as tall; both faces are large enough to read at a glance; they rest on the tabletop at about 72% of the image height.
+
+Lettering: handmade felt lettering appliqued flat onto the sky-blue felt backdrop like a handmade banner. Copy the FIRST attached image exactly — the same letters, the same order, the same three lines, the same letter shapes:
+   - Line 1: ¡Oppa, — thick cream-white wool felt cut-out letters, starting with an upside-down exclamation mark ¡ and ending with the comma.
+   - Line 2: 멕시코! — larger, thick coral-red wool felt cut-out letters, each backed by a slightly larger cream felt layer so every letter has a clean cream outline. Copy the Korean syllable blocks 멕, 시 and 코 stroke for stroke from the first image.
+   - Line 3: mek-si-ko — small letters hand-embroidered in cream thread (neat backstitch).
+   Tiny visible stitches hold the felt letters on the backdrop. The lettering block is centered horizontally and no wider than 60% of the image width. Its top edge is at about 25% of the image height and its bottom edge at about 41% — leave a generous band of plain sky-blue felt above it. Above the lettering there is only plain sky-blue felt.
+
+Layout: Mongle and the axolotl sit in the middle band of the image, between 42% and 73% of the image height — Mongle's face is at about 58% of the image height and must stay above 68%, and inside the central 76% of the width — clear empty margin on the left and right edges. They do not touch or overlap the lettering.
+
+Craft quality: tidy, deliberate craftsmanship. All surfaces are tightly felted and smooth with only a short soft fuzz; no long stray fibers, no swirl patterns, no busy texture. Big simple shapes with few details. Soft natural daylight from the upper left, gentle contact shadows on the wood.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. No clouds. Nothing else is added.

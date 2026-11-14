@@ -175,10 +175,13 @@
   "end": "",
   "endSize": 62,
   "endLineNormal": false,
-  "coverAt": 9.33,
-  "hello": "",
-  "helloName": "",
-  "helloRead": "",
-  "helloVo": "",
-  "helloSec": 1
+  "coverAt": 10.48,
+  "hello": "Unnie,",
+  "helloName": "미국!",
+  "helloRead": "mi-guk",
+  "helloVo": "언니, 미국!",
+  "helloSec": 1.15,
+  "_원문": {
+    "hello": "언니(여자가 손위 여자 형제를 부르는 말)"
+  }
 }
