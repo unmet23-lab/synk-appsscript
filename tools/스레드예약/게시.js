@@ -75,8 +75,10 @@ function 최종확인판정(편들, 공용) {
 function 마지막json(글) {
   const 줄들 = String(글 || '').split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
   for (let i = 줄들.length - 1; i >= 0; i--) {
-    if (!줄들[i].startsWith('{')) continue;
-    try { return JSON.parse(줄들[i]); } catch { /* 다음 줄 */ }
+    /* ego가 줄 앞에 보이지 않는 글자를 붙여 내는 때가 있어 첫 「{」부터 읽는다(11-14 첫 실행에서 already 줄을 못 읽었다). */
+    const 시작 = 줄들[i].indexOf('{');
+    if (시작 < 0) continue;
+    try { return JSON.parse(줄들[i].slice(시작)); } catch { /* 다음 줄 */ }
   }
   return null;
 }
@@ -108,7 +110,8 @@ function main(argv) {
       줄.까닭 = !fs.existsSync(스크립트) ? 스크립트 : EGO;
     } else {
       const r = spawnSync(EGO, ['nodejs', '-e', `await import('file:///${스크립트}')`], { encoding: 'utf8', timeout: 9 * 60 * 1000, windowsHide: true });
-      const j = 마지막json(r.stdout);
+      /* ego는 스크립트의 console.log를 표준 오류로 내는 때가 있다(11-14 첫 실행). 둘 다 본다. */
+      const j = 마지막json(r.stdout) || 마지막json(r.stderr);
       줄.종료 = r.status;
       줄.출력 = j || String(r.stdout || r.stderr || (r.error && r.error.message) || '').slice(-300);
       줄.결과 = j && j.ok ? '게시됨' : j && j.already ? '이미 올라가 있음' : j && j.reason ? `올리지 못함: ${j.reason}` : '올리지 못함';
