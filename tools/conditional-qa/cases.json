@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 140,
+  "expectedCount": 141,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1124,6 +1124,14 @@
       "name": "the outfit photos stay the copies the casting book builds (full body · look 1 · look 2)",
       "group": "캐스팅북 공개 빌드와 PULSE 사진 바이트 대조",
       "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S141",
+      "file": "tests/스레드예약_PC상태기록.test.js",
+      "name": "PC 상태 기록: 한 줄을 열두 칸으로 남긴다",
+      "group": "Windows 네이티브 PC 상태 기록",
+      "route": "windows",
       "profile": "default"
     }
   ]

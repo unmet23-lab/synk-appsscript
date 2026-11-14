@@ -4,12 +4,14 @@
 
 | 실행 위치 | 등록 항목 | 실행 조건 |
 |---|---:|---|
-| GitHub Windows | 44 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic(0.5.0 · 1단계 갈래 · 회차 실행기 · 추천 자료 계획기), 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더 |
+| GitHub Windows | 45 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic(0.5.0 · 1단계 갈래 · 회차 실행기 · 추천 자료 계획기), 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더, Python 표준 모듈을 쓰는 PC 상태 기록 |
 | GitHub Linux | 12 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화, 컷 연속성 검사의 그림 · 영상(파이썬 그림 라이브러리) |
 | Windows 로컬 | 84 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA·Windows 글꼴과 OCR |
-| 합계 | 140 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다. S128은 11-12에 등록한 [컷 연속성 검사의 얼굴 빛 값](#cut-continuity-images) 시험이다 — 11-11 `ce56e974c`가 등록 없이 넣어 syntax-check가 33회 빨갰다. S129~S135는 11-13에 등록한 [업무 백업 1단계 갈래와 추천 자료](#solo-backup-rust) 시험이다 — 11-10 `26d6e9e72`(S135)와 11-12~13 1단계 갈래(S129~S134)가 등록 없이 넣어 wide-tests(experiences)가 Linux에서 건너뛰고 빨갰다. S136은 같은 날 등록한 0.5.0의 Windows 경로 규칙 시험이다 — Linux에서 실패해 wide-tests(experiences)를 빨갛게 했다. S137은 같은 날 밤 갈래에 더한 8.3 짧은 이름 루트 시험이다 — `skip:`을 다음 줄에 써 아래 훑기가 못 보고 wide-tests(experiences)를 빨갛게 했다 |
+| 합계 | 141 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다. S128은 11-12에 등록한 [컷 연속성 검사의 얼굴 빛 값](#cut-continuity-images) 시험이다 — 11-11 `ce56e974c`가 등록 없이 넣어 syntax-check가 33회 빨갰다. S129~S135는 11-13에 등록한 [업무 백업 1단계 갈래와 추천 자료](#solo-backup-rust) 시험이다 — 11-10 `26d6e9e72`(S135)와 11-12~13 1단계 갈래(S129~S134)가 등록 없이 넣어 wide-tests(experiences)가 Linux에서 건너뛰고 빨갰다. S136은 같은 날 등록한 0.5.0의 Windows 경로 규칙 시험이다 — Linux에서 실패해 wide-tests(experiences)를 빨갛게 했다. S137은 같은 날 밤 갈래에 더한 8.3 짧은 이름 루트 시험이다 — `skip:`을 다음 줄에 써 아래 훑기가 못 보고 wide-tests(experiences)를 빨갛게 했다 |
 
 11-14 등록 누락 보완: S138은 Windows 실제 프로세스 소유자 검사, S139·S140은 캐스팅북 원본/공개 사진의 실제 바이트 대조다. 앞 표의 숫자는 현재 `cases.json`의 실제 경로별 집계다. 캐스팅북 공개 이미지 126파일은 기존 입력에 없었으므로 실제 로컬 일꾼 실행 전 명시 목록·SHA로 추가한다.
+
+11-14 밤에 추가된 PC 상태 기록 시험은 Linux에서 건너뛰지만 등록부에 없어 `syntax-check`를 실패시켰다. S141로 GitHub Windows에 등록했다. Windows와 Linux 모두 Python 3.14를 준비하며, S141은 임시 LOCALAPPDATA에 실제 Windows API의 상태 기록 한 줄을 만들고 열두 칸을 확인한다.
 
 같은 날 실제 일꾼은 84건을 모두 통과했지만, 등록한 사진 126개가 `tested-tree.json`에 없어 마지막 읽기 범위 검사에서 실패했다. S139·S140이 읽는 `docs/마케팅/PULSE_AI모델_캐스팅_20260930/site/img/`를 검사 대상에 추가했다. 사진 변경은 앞 커밋의 통과를 이어받지 않고 새 검사를 요구한다. 이웃 문서와 등록되지 않은 입력에 대한 기존 검사는 유지한다.
 

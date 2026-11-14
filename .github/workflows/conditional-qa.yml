@@ -116,8 +116,7 @@ jobs:
           cargo build --locked --release --target wasm32-unknown-unknown --manifest-path tools/text-compare-bench/rust/Cargo.toml
       # S117–S119 · S128 — tools/컷연속성검사.py needs NumPy · Pillow · OpenCV · SciPy (and ffmpeg above). The versions are the ones
       # verified on the PC, and every wheel is pinned by SHA-256, so a changed or missing file is red instead of a skip.
-      - name: set up Python for the cut continuity image tests
-        if: runner.os == 'Linux'
+      - name: set up Python for native Windows and image tests
         uses: actions/setup-python@v6
         with:
           python-version: '3.14'
