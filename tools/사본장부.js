@@ -80,7 +80,9 @@ function 갈래(경로, 뿌리, 첫째) {
   if (p.startsWith(`${local}/synk/기록닫기/`)) return '도구 임시';
   if (/\/temp\/claude\/.+\/scratchpad\//.test(p)) return '세션 임시';
   if (p.startsWith(`${공용}/.claude/worktrees/`) || /^[a-z]:\/synk-worktrees\/synk-appsscript\//.test(p)) return 'Claude 사본';
-  if (p.startsWith(`${home}/.codex/worktrees/`) || p.startsWith(`${공용}/.codex/worktrees/`) || p.startsWith(`${home}/documents/synk-worktrees/`)) return 'GPT 사본';
+  // GPT 사본은 11-15부터 D:/SYNK-worktrees/codex/<이름>/<저장소>에 생긴다(Codex 「워크트리 루트」 · AGENTS). 옛 자리 셋도 그대로 본다.
+  if (p.startsWith(`${home}/.codex/worktrees/`) || p.startsWith(`${공용}/.codex/worktrees/`) || p.startsWith(`${home}/documents/synk-worktrees/`)
+    || /^[a-z]:\/synk-worktrees\/codex\//.test(p)) return 'GPT 사본';
   return '그 밖';
 }
 

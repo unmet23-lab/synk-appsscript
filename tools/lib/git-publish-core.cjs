@@ -1792,9 +1792,14 @@ async function 따라가기(옵션 = {}) {
 }
 
 /** 옵션: 저장소 · 실행 · 되살림 → 워크트리에서 큰 미디어 폴더를 sparse-checkout으로 뺀다. */
-/** 앱 · 예약 회차가 쓰는 D: 세션 사본 자리인가(…/SYNK-worktrees/SYNK-appsscript/<이름>). 바깥 사본 `Documents/SYNK-worktrees/<이름>`은 아니다. */
+/**
+ * D: 세션 사본 자리인가. 앱 · 예약 회차가 쓰는 `…/SYNK-worktrees/SYNK-appsscript/<이름>`과,
+ * 11-15부터 GPT(Codex) 사본이 생기는 `…/SYNK-worktrees/codex/<이름>[/<저장소>]`다. 바깥 사본 `Documents/SYNK-worktrees/<이름>`은 아니다.
+ */
 function D세션사본인가(폴더) {
-  return /[\\/]SYNK-worktrees[\\/]SYNK-appsscript[\\/][^\\/]+[\\/]?$/i.test(String(폴더));
+  const p = String(폴더);
+  return /[\\/]SYNK-worktrees[\\/]SYNK-appsscript[\\/][^\\/]+[\\/]?$/i.test(p)
+    || /[\\/]SYNK-worktrees[\\/]codex[\\/][^\\/]+([\\/][^\\/]+)?[\\/]?$/i.test(p);
 }
 
 async function 가볍게(옵션 = {}) {

@@ -44,6 +44,8 @@ test('갈래: 경로만 보고 자리를 나눈다', () => {
   assert.equal(본(`${뿌리}/.codex/worktrees/atlas-core`), 'GPT 사본');
   assert.equal(본(`${집}/.codex/worktrees/path-live/SYNK-appsscript`), 'GPT 사본');
   assert.equal(본(`${집}/Documents/SYNK-worktrees/sns-agg`), 'GPT 사본');
+  assert.equal(본('D:/SYNK-worktrees/codex/workspace-x/SYNK-appsscript'), 'GPT 사본');
+  assert.equal(본('D:\\SYNK-worktrees\\codex\\atlas-core-format1104\\SYNK-appsscript'), 'GPT 사본');
   assert.equal(본(`${로컬}/synk/ops/SYNK-appsscript`), '운영 사본');
   assert.equal(본(`${로컬}/hermes/runtime/synk-tasks/synk-1/workspace`), '헤르메스');
   assert.equal(본(`${로컬}/Temp/claude/abc/11111111-2222-3333-4444-555555555555/scratchpad/rec-wt`), '세션 임시');

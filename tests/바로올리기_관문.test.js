@@ -479,8 +479,10 @@ test('가볍게: 워크트리에서만 큰 미디어 폴더를 작업본에서 �
 
 test('가볍게: D: 세션 사본 자리에서는 빼지 않는다(되살림은 그대로) — 옛 안내를 읽은 세션이 비우지 않게', async (t) => {
   const 핵심 = require(path.join(REPO, 'tools', 'lib', 'git-publish-core.cjs'));
-  for (const p of ['D:\\SYNK-worktrees\\SYNK-appsscript\\sched-a-1109-0700', 'D:/SYNK-worktrees/SYNK-appsscript/kind-lamport-3b49d6/']) assert.equal(핵심.D세션사본인가(p), true, p);
-  for (const p of ['C:\\Users\\me\\Documents\\SYNK-worktrees\\talk-x', 'C:\\Users\\me\\Documents\\SYNK-appsscript\\.claude\\worktrees\\a', 'D:\\SYNK-worktrees\\SYNK-appsscript']) assert.equal(핵심.D세션사본인가(p), false, p);
+  for (const p of ['D:\\SYNK-worktrees\\SYNK-appsscript\\sched-a-1109-0700', 'D:/SYNK-worktrees/SYNK-appsscript/kind-lamport-3b49d6/',
+    'D:\\SYNK-worktrees\\codex\\workspace-x-20261115\\SYNK-appsscript', 'D:/SYNK-worktrees/codex/atlas-core-format1104']) assert.equal(핵심.D세션사본인가(p), true, p);
+  for (const p of ['C:\\Users\\me\\Documents\\SYNK-worktrees\\talk-x', 'C:\\Users\\me\\Documents\\SYNK-appsscript\\.claude\\worktrees\\a', 'D:\\SYNK-worktrees\\SYNK-appsscript',
+    'D:\\SYNK-worktrees\\codex', 'C:\\Users\\me\\.codex\\worktrees\\path-live\\SYNK-appsscript']) assert.equal(핵심.D세션사본인가(p), false, p);
   const 판 = 새판(t, { 파일: { 'a.txt': '1\n', 'docs/캐릭터/정본_4K/까몽.png': Buffer.alloc(10, 2) } });
   const 폴더 = path.join(판.뿌리, 'SYNK-worktrees', 'SYNK-appsscript', 'sched-a');
   판.공용.g('worktree', 'add', '-q', '-b', 'worktree-sched-a', 폴더, 'HEAD');
