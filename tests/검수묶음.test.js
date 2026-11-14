@@ -1602,9 +1602,9 @@ test('그록 대체(정책 판 6 · 11-08): 백엔드는 GPT·아르곤이 둘 �
   const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
   const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, ...덧 });
-  // ① 새 묶음은 판 6 — 필수는 그대로 GPT 하나, 차례는 GPT → 아르곤 → 그록 → Fable
+  // ① 새 묶음은 판 7(11-14 — Claude 백엔드는 판 6과 같다) — 필수는 그대로 GPT 하나, 차례는 GPT → 아르곤 → 그록 → Fable
   const a = await 준비('k-sub');
-  assert.equal(증명.정책판, 6); assert.equal(a.목록.정책.판, 6); assert.deepEqual(a.목록.정책.필수, ['GPT']); assert.deepEqual(증명.실제필수(a.목록.정책), ['GPT']);
+  assert.equal(증명.정책판, 7); assert.equal(a.목록.정책.판, 7); assert.deepEqual(a.목록.정책.필수, ['GPT']); assert.deepEqual(증명.실제필수(a.목록.정책), ['GPT']);
   assert.deepEqual(증명.대체순서(a.목록.정책), ['GPT', '아르곤', '그록', 'Fable']); assert.equal(증명.그록대체정책(a.목록.정책), true);
   assert.equal(증명.필수글(a.목록.정책), 'GPT(한도·로그인으로 막히면 아르곤 → 그록 → Fable · 그록이 대신 본 사슬은 그록 P2도 처리를 적는다)');
   assert.deepEqual(증명.대신할검수자(a.목록.정책, 'GPT'), ['GPT', '아르곤', '그록', 'Fable']);
@@ -1735,9 +1735,9 @@ test('그록 대체는 화면·GPT 작성·옛 판에 들지 않는다(11-08): �
   const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
   const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 바탕: r.바탕, ...덧 });
-  // 화면: 판 6이어도 대체 순서가 없다 — 아르곤이 막히면 그록이 읽어도 Fable이 대신하고, 그록 P2는 막지 않는다
+  // 화면: 판 6부터(지금 7)도 대체 순서가 없다 — 아르곤이 막히면 그록이 읽어도 Fable이 대신하고, 그록 P2는 막지 않는다
   const s = await 준비('k-screen', { 종류: '화면' });
-  assert.equal(s.목록.정책.판, 6); assert.equal(증명.대체순서(s.목록.정책), null); assert.equal(증명.그록대체정책(s.목록.정책), false);
+  assert.equal(s.목록.정책.판, 7); assert.equal(증명.대체순서(s.목록.정책), null); assert.equal(증명.그록대체정책(s.목록.정책), false);
   assert.deepEqual(증명.대신할검수자(s.목록.정책, '아르곤'), ['아르곤', 'Fable']);
   assert.match(api.검수자들.아르곤.막힘말(s.목록), /화면은 Fable 최종 검수로 가고/);
   assert.match(api.검수자들.그록.막힘말(s.목록), /이 묶음에서 그록은 대체 순서 밖이니 그 차례\(아르곤 · Fable\)대로 간다/);
@@ -1750,9 +1750,11 @@ test('그록 대체는 화면·GPT 작성·옛 판에 들지 않는다(11-08): �
   await api.아르곤보내기(s2.폴더, s2.목록, { call: 한도로('아르곤'), 몫: 몫충분 });
   await api.그록보내기(s2.폴더, s2.목록, { call: 답하기() });
   assert.equal(api.검수확인(s2.폴더).사유.join(' / '), 'Fable 생략 묶음이지만 아르곤이 한도·로그인으로 막혀 Fable 검수로 대신해야 한다');
-  // GPT 작성(대체 없음)은 판 6에서도 그록이 들지 않는다
-  const g = 증명.정책만들기({ 종류: '백엔드', 작성자: 'GPT' }, []);
+  // GPT 작성은 판 6에서 대신이 없고 그록이 들지 않는다. 판 7(11-14)은 GPT 자리만 아르곤이 대신하고 그록은 여전히 들지 않는다
+  const g = 증명.정책만들기({ 종류: '백엔드', 작성자: 'GPT' }, [], { 판: 6 });
   assert.equal(g.판, 6); assert.equal(증명.대체순서(g), null); assert.deepEqual(증명.대신할검수자(g, 'GPT'), ['GPT']); assert.equal(증명.끝판정책(g), true, '판 6도 판 5의 끝 판 규칙을 잇는다');
+  const g7 = 증명.정책만들기({ 종류: '백엔드', 작성자: 'GPT' }, []);
+  assert.equal(g7.판, 7); assert.equal(증명.대체순서(g7), null); assert.equal(증명.그록대체정책(g7), false); assert.deepEqual(증명.대신할검수자(g7, 'GPT'), ['GPT', '아르곤']); assert.equal(증명.끝판정책(g7), true);
   // 판 5로 봉인한 묶음: 정책 꼴(봉인 해시)이 11-08 전 그대로이고, GPT·아르곤이 막히면 그록이 읽어도 Fable이 대신한다
   const o = await 준비('k-old', { 종류: '백엔드', 정책판: 5 });
   assert.deepEqual(o.목록.정책, { 판: 5, 작성자: 'Claude', 종류: '백엔드', GPT구독: '유지', 필수: ['GPT'], 예외: null });
@@ -1774,5 +1776,5 @@ test('그록 대체는 화면·GPT 작성·옛 판에 들지 않는다(11-08): �
   assert.deepEqual(증명.대체순서(증명.정책만들기(종료, [])), ['아르곤', '그록', 'Fable']);
   assert.deepEqual(증명.다시검수자들(o.목록.정책, [{ 출처: '그록' }]), ['GPT']);
   assert.deepEqual(증명.다시검수자들(증명.정책만들기({ 종류: '백엔드' }, []), [{ 출처: '그록' }]), ['GPT']);
-  assert.throws(() => 증명.정책만들기({ 종류: '백엔드' }, [], { 판: 7 }), /정책 판/);
+  assert.throws(() => 증명.정책만들기({ 종류: '백엔드' }, [], { 판: 8 }), /정책 판/);
 });
