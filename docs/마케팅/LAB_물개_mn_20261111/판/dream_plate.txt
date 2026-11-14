@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached photograph. Return the SAME photograph with exactly two things removed: (1) the needle-felted puppy with a blue snorkel mask and yellow snorkel swimming in the middle of the pool; (2) the small coral needle-felted ghost-shaped character in the lower left corner, on the cream wool rim.
+
+Where they were, show what was behind them: the same rippling blue wool water with white wool wave curls filling the round pool, and the same thick cream wool rim of the pool continuing naturally around the lower left, with the same pastel wool ground below it and the same fluffy cream cloud border.
+
+Keep everything else exactly as it is: the same tall 9:16 framing and size, the same camera position, the same lighting, colors, wool fibers and depth of field. Every remaining object stays in exactly the same place and size. Do not add any new object, character, animal, text, letter or symbol. The result must look like the same photograph taken a moment before anyone arrived.

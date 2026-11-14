@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached photograph. Return the SAME photograph with exactly two things removed: (1) the small coral needle-felted ghost-shaped character wearing a blue snorkel mask on the navy felt ledge in the lower left, with its reflection in the glass; (2) the gray spotted needle-felted seal sitting on the rock behind the glass on the right, including its paws and whiskers.
+
+Where they were, show what was behind them: the same navy felt ledge continuing straight, the same floor with the same warm light reflections, and inside the tank the same blue-green wool water with the same light rays and warm reflections on the glass, the same mossy felt rock continuing naturally (now empty), and the same green wool seaweed.
+
+Keep everything else exactly as it is: the same tall 9:16 framing and size, the same camera position, the same lighting, colors, wool fibers and depth of field. Every remaining object stays in exactly the same place and size. Do not add any new object, character, animal, text, letter or symbol. The result must look like the same photograph taken a moment before anyone arrived.
