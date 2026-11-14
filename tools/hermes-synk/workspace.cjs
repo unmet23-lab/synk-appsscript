@@ -14,7 +14,9 @@ const LIMITS = Object.freeze({ files: 20000, bytes: 128 * 1024 * 1024,
   metadata: 64 * 1024 * 1024, retained: 8, retainedBytes: 512 * 1024 * 1024, prepareMs: 150000 });
 const SOURCE_EXTENSIONS = new Set(('.js .cjs .mjs .jsx .ts .tsx .mts .cts .css .scss .sass .less .html .htm .md .mdx .txt .json .jsonc .yaml .yml .toml .xml .sh .bash .ps1 .cmd .bat .py .sql .prisma .graphql .gql .ini .cfg .conf').split(' '));
 const SOURCE_NAMES = new Set(['AGENTS.md', 'CLAUDE.md', 'Dockerfile', 'Makefile', 'Procfile', 'CMakeLists.txt', '.gitignore', '.gitattributes', '.editorconfig', '.dockerignore', 'yarn.lock', 'bun.lock']);
-const DEFAULT_SCOPE = Object.freeze(['AGENTS.md', 'CLAUDE.md', 'docs/AI_운영원칙.md', 'docs/문서_지도.md', 'docs/_ops/트랙.md', 'docs/_ops/결정.md', 'docs/참고카드', 'docs/현장노트',
+// Trusted operating rules plus the field-note index only. The field-note archive is opened by an
+// explicit --scope when a task needs it, so one old note cannot hold every phone request (11-14).
+const DEFAULT_SCOPE = Object.freeze(['AGENTS.md', 'CLAUDE.md', 'docs/AI_운영원칙.md', 'docs/문서_지도.md', 'docs/_ops/트랙.md', 'docs/_ops/결정.md', 'docs/참고카드', 'docs/현장노트/README.md',
   'package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lock', '.gitignore', '.gitattributes',
   'tools/git-storage-check.cjs', 'tools/git-storage-policy.json', 'tools/git잠금.js']);
 const EXCLUDED_DIR = /^(?:\.git|\.tmp|\.cache|\.next|\.nuxt|\.venv|venv|node_modules|dist|build|out|coverage|vendor|target|cache|__pycache__|artifacts|qa-output|playwright-report|test-results|\.codex|\.claude|backups)$/i;
@@ -23,7 +25,8 @@ const OID = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 const TASK_ID = /^synk-[0-9a-f]{12}$/;
 
 class Hold extends Error {
-  constructor(code) { super(code); this.code = code; }
+  // detail carries only a validated repository-relative path and a fixed rule name, never file bytes.
+  constructor(code, detail = null) { super(code); this.code = code; this.detail = detail; }
 }
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const canonical = value => fs.realpathSync(path.resolve(value));
@@ -96,17 +99,41 @@ function rejectIgnoredScope(repo, scope, limits, filterArgs) {
   const ignored = git(repo, ['check-ignore', '--stdin', '-z'], { limits, filterArgs, input: Buffer.from(names.join('\0') + '\0'), allowExitOne: true });
   if (ignored.length) throw new Hold('IGNORED_SCOPE_SOURCE');
 }
+// Embedded media is blocked only when real payload follows the comma. A prose mention
+// (`data:image/` or `;base64,`) or a runtime template (`;base64,${...}`, `;base64,' + b64`)
+// carries no bytes; the same rule was fixed for the backup checker on 11-11.
+// A payload counts when it is valid padded base64 of at least one byte (`AQIDBA==`, `AAAA`),
+// or any base64 run of 16+ characters (the earlier bound, kept so nothing is weakened).
+// An empty payload (`;base64,${…}`, `;base64,' + b64`, prose) and an invalid-length word pass.
+function embeddedMedia(text) {
+  const head = /data:\s*(?:image|audio|video|application\/(?:pdf|octet-stream))\/?[^,\s"'`]{0,160};base64\s*,\s*([A-Za-z0-9+/]*)(=*)/gi;
+  for (const match of text.matchAll(head)) {
+    const length = match[1].length, pad = match[2].length;
+    if (length >= 16) return true;
+    if (length >= 2 && (pad === 0 && length % 4 === 0 || pad === 1 && length % 4 === 3 || pad === 2 && length % 4 === 2)) return true;
+  }
+  return false;
+}
+const SECRET_RULES = Object.freeze([
+  ['private-key', /-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----/],
+  ['token-signature', /\b(?:sk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}|AIza[A-Za-z0-9_-]{30,})\b/],
+  ['jwt', /\beyJ[A-Za-z0-9_-]{18,}\.[A-Za-z0-9_-]{18,}\.[A-Za-z0-9_-]{18,}\b/],
+  ['embedded-media', { test: embeddedMedia }],
+  ['credential-literal', /["'](?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password)["']\s*:\s*["'][A-Za-z0-9_+/=.-]{16,}["']/i],
+]);
 function rejectSecrets(bytes) {
   if (bytes.includes(0)) throw new Hold('BINARY_SOURCE');
   let text;
   try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
   catch { throw new Hold('NON_UTF8_SOURCE'); }
-  if (/-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\b(?:sk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{20,}|AIza[A-Za-z0-9_-]{30,})\b/.test(text)
-      || /\beyJ[A-Za-z0-9_-]{18,}\.[A-Za-z0-9_-]{18,}\.[A-Za-z0-9_-]{18,}\b/.test(text)
-      || /data:(?:image|audio|video|application\/(?:pdf|octet-stream))[^,]*;base64,/i.test(text)
-      || /["'](?:api[_-]?key|access[_-]?token|refresh[_-]?token|client[_-]?secret|password)["']\s*:\s*["'][A-Za-z0-9_+/=.-]{16,}["']/i.test(text)) {
-    throw new Hold('SECRET_OR_EMBEDDED_MEDIA');
+  for (const [rule, pattern] of SECRET_RULES) if (pattern.test(text)) throw new Hold('SECRET_OR_EMBEDDED_MEDIA', { rule });
+}
+// Attach the already validated relative path to a content hold. No bytes or match text.
+function withPath(error, rel) {
+  if (error instanceof Hold && ['SECRET_OR_EMBEDDED_MEDIA', 'BINARY_SOURCE', 'NON_UTF8_SOURCE', 'SOURCE_FILE_LIMIT'].includes(error.code) && safeRelative(rel)) {
+    error.detail = { ...(error.detail || {}), path: rel };
   }
+  return error;
 }
 function trustedFile(root, rel) {
   if (!safeRelative(rel)) throw new Hold('UNSAFE_PATH');
@@ -208,11 +235,11 @@ function capture(repo, limits, filterArgs, keepBytes, scope) {
     const file = trustedFile(repo, rel);
     if (!file) { if (headTree.has(rel)) deletions.push(rel); continue; }
     const size = Number(file.stat.size);
-    if (size > limits.singleFile) throw new Hold('SOURCE_FILE_LIMIT');
+    if (size > limits.singleFile) throw withPath(new Hold('SOURCE_FILE_LIMIT'), rel);
     total += size;
     if (total > limits.bytes || files.length >= limits.files) throw new Hold('SOURCE_TOTAL_LIMIT');
     const bytes = fs.readFileSync(file.full);
-    rejectSecrets(bytes);
+    try { rejectSecrets(bytes); } catch (error) { throw withPath(error, rel); }
     const after = fs.statSync(file.full, { bigint: true });
     if (statKey(file.stat) !== statKey(after) || bytes.length !== size) throw new Hold('SOURCE_CHANGED');
     files.push({ path: rel, sha256: digest(bytes), mode: Number(file.stat.mode) & 0o111 ? '100755' : '100644',
@@ -527,13 +554,14 @@ async function prepareWorkspace({ repo, taskDir, taskId, scope: requestedScope, 
         writeReceipt(receiptFile, { ...saved, state: 'held', failureCode: code, heldAt: new Date().toISOString() });
       } catch { /* leave the original receipt, never overwrite a different task */ }
     }
-    return { ok: false, code,
+    const blocked = error instanceof Hold && error.detail && safeRelative(error.detail.path || '') ? error.detail : null;
+    return { ok: false, code, ...(blocked ? { blockedPath: blocked.path, blockedRule: /^[a-z-]{1,40}$/.test(blocked.rule || '') ? blocked.rule : null } : {}),
       integration: 'not_merged', sourceRoot: repo, source_root: repo };
   } finally {
     if (lockAcquired) { try { fs.unlinkSync(ownedLock); } catch { /* no recursive cleanup */ } }
   }
 }
-function inspectSource({ repo, scope: requestedScope, limits: overrides }) {
+function inspectSource({ repo, scope: requestedScope, limits: overrides, contentScan = false }) {
   const limits = { ...LIMITS, ...overrides };
   repo = canonical(repo);
   const scope = normalizeScope(requestedScope);
@@ -542,7 +570,7 @@ function inspectSource({ repo, scope: requestedScope, limits: overrides }) {
   const head = parseTree(git(repo, ['ls-tree', '-r', '-z', state.head], { limits, filterArgs: filters }), limits);
   const names = new Set([...head.keys(), ...state.tracked, ...state.untracked.filter(safeSource)]);
   let files = 0, bytes = 0, oversized = 0;
-  const unsafeDirty = [], holds = new Set();
+  const unsafeDirty = [], holds = new Set(), blocked = [];
   try { rejectIgnoredScope(repo, scope, limits, filters); }
   catch (error) { holds.add(error.code || 'SOURCE_INSPECTION_FAILED'); }
   for (const rel of names) {
@@ -556,6 +584,13 @@ function inspectSource({ repo, scope: requestedScope, limits: overrides }) {
       if (!file) continue;
       files++; bytes += Number(file.stat.size);
       if (Number(file.stat.size) > limits.singleFile) oversized++;
+      else if (contentScan) {
+        try { rejectSecrets(fs.readFileSync(file.full)); }
+        catch (error) {
+          holds.add(error.code || 'SOURCE_INSPECTION_FAILED');
+          if (blocked.length < 20) blocked.push({ path: rel, code: error.code || 'SOURCE_INSPECTION_FAILED', rule: error.detail?.rule || null });
+        }
+      }
     } catch (error) { holds.add(error.code || 'SOURCE_INSPECTION_FAILED'); }
   }
   if (files > limits.files || bytes > limits.bytes) holds.add('SOURCE_TOTAL_LIMIT');
@@ -563,11 +598,20 @@ function inspectSource({ repo, scope: requestedScope, limits: overrides }) {
   if (unsafeDirty.length) holds.add('UNSAFE_DIRTY_TRACKED');
   return { ok: true, readOnly: true, sourceRoot: repo, baseCommit: state.head, scope, sourceFiles: files, sourceBytes: bytes,
     unsafeDirtyCount: unsafeDirty.length, unsafeDirtySample: unsafeDirty.slice(0, 8), oversizedFiles: oversized,
-    preparableByMetadata: holds.size === 0, holds: [...holds], contentSecretScan: 'not_run', limits };
+    preparableByMetadata: holds.size === 0, holds: [...holds], contentSecretScan: contentScan ? 'run' : 'not_run', blocked, limits };
 }
 async function main(argv) {
   const options = {};
-  if (argv.shift() !== 'prepare') throw new Hold('INVALID_COMMAND');
+  const command = argv.shift();
+  if (command === 'inspect') {
+    // Read-only preflight: metadata + content rules over the effective scope. Prints paths/rule names only.
+    if (argv.length < 2 || argv[0] !== '--repo' || (argv.length !== 2 && (argv.length !== 4 || argv[2] !== '--scope-json'))) throw new Hold('INVALID_ARGUMENT');
+    let scope = [];
+    try { if (argv[3] !== undefined) scope = JSON.parse(argv[3]); } catch { throw new Hold('INVALID_SCOPE'); }
+    const { limits, ...result } = inspectSource({ repo: argv[1], scope, contentScan: true });
+    return { ...result, ok: result.holds.length === 0 };
+  }
+  if (command !== 'prepare') throw new Hold('INVALID_COMMAND');
   for (let i = 0; i < argv.length; i += 2) {
     if (!['--repo', '--task-dir', '--task-id', '--scope-json'].includes(argv[i]) || !argv[i + 1] || options[argv[i]]) throw new Hold('INVALID_ARGUMENT');
     options[argv[i]] = argv[i + 1];
@@ -584,6 +628,6 @@ function captureScopedSource({ repo, scope, keepBytes = true, limits = LIMITS })
   repo = canonical(repo);
   return capture(repo, { ...LIMITS, ...limits }, disabledFilters(repo, limits), keepBytes, scope);
 }
-module.exports = { prepareWorkspace, inspectSource, captureScopedSource, safeSource, rejectSecrets, normalizeScope, DEFAULT_SCOPE, LIMITS, main };
+module.exports = { prepareWorkspace, inspectSource, captureScopedSource, safeSource, rejectSecrets, normalizeScope, DEFAULT_SCOPE, LIMITS, SECRET_RULES, main };
 if (require.main === module) main(process.argv.slice(2)).catch(e => ({ ok: false, code: e.code || 'WORKSPACE_PREPARE_FAILED' }))
   .then(result => { process.stdout.write(JSON.stringify(result) + '\n'); process.exitCode = result.ok ? 0 : 2; });

@@ -174,7 +174,8 @@ function readCardStatus(root, matches) {
   const counts = { applied: 0, pending: 0, unknown: 0 };
   for (const row of found) {
     if (row.status.startsWith('적용함')) counts.applied++;
-    else if (row.status === '새로') counts.pending++;
+    // Same buckets as overview.cjs stage(): 적용 중 is still pending, not 기타.
+    else if (/^(?:새로|적용 ?중)/.test(row.status)) counts.pending++;
     else counts.unknown++;
   }
   return { available: true, total: rows.length, matched: found.length, unreadable, limited, counts, omitted: Math.max(0, found.length - 4), items: found.slice(0, 4), snapshot: { complete: !limited && !unreadable, items: rows } };
@@ -240,7 +241,7 @@ function formatStatus(report) {
   lines.push('', '참고카드 · 파일에 기록된 상태');
   if (!cards.available) lines.push(cards.error);
   else {
-    lines.push(`일치 ${cards.matched}/${cards.total}장 · 적용함 ${cards.counts.applied} · 새로 ${cards.counts.pending} · 기타/미기록 ${cards.counts.unknown}`);
+    lines.push(`일치 ${cards.matched}/${cards.total}장 · 적용함 ${cards.counts.applied} · 새로·적용 중 ${cards.counts.pending} · 기타/미기록 ${cards.counts.unknown}`);
     for (const card of cards.items) lines.push(`- ${card.title}: ${card.status} · ${card.when}`);
     if (cards.unreadable || cards.limited) lines.push(`안전하게 못 읽은 카드 ${cards.unreadable}장${cards.limited ? ' · 목록 상한으로 일부 미조회' : ''}`);
     if (cards.omitted) lines.push(`그 밖에 ${cards.omitted}장`);
@@ -285,4 +286,4 @@ async function main(args = process.argv.slice(2)) {
 
 if (require.main === module) main().catch(() => { process.stderr.write('상태 조회 실패. 사용: node tools/hermes-synk/status.cjs [전체|검색어] [--json]\n'); process.exitCode = 1; });
 
-module.exports = { readStatus, formatStatus, normalizeQuery, plain, safePath, readText, readCodex, runtimeSummary, MAX_TEXT };
+module.exports = { readStatus, readCardStatus, formatStatus, normalizeQuery, plain, safePath, readText, readCodex, runtimeSummary, MAX_TEXT };

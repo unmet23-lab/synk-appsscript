@@ -147,7 +147,7 @@ class PluginTests(unittest.TestCase):
         return {"state":"integrated","needs_attention":False,"verified":True}
 
     def test_registers_native_commands_and_tool(self):
-        self.assertEqual(set(self.ctx.commands), {"synk", "synk-status", "synk-tasks", "synk-claude", "synk-codex", "synk-release", "synk-recover", "synk-today", "synk-continue"})
+        self.assertEqual(set(self.ctx.commands), {"synk", "synk-status", "synk-tasks", "synk-claude", "synk-codex", "synk-release", "synk-recover", "synk-today", "synk-continue", "synk-attention"})
         self.assertEqual(set(self.ctx.tools), {"synk_work"})
         self.assertEqual(self.ctx.hooks, {"pre_gateway_dispatch": [plugin._pre_dispatch]})
         self.assertIn("recover", plugin.SCHEMA["parameters"]["properties"]["action"]["enum"])
@@ -165,7 +165,8 @@ class PluginTests(unittest.TestCase):
         plugin._pre_dispatch(event=message)
         self.assertEqual(before, (paths[0].read_bytes(), paths[0].stat().st_mtime_ns))
         report = self.ctx.commands["synk"]("팁")
-        self.assertIn("처리 대기", report)
+        self.assertIn("접수 당시 기록: 장부와 대조하기 전", report)
+        self.assertIn("지금 장부와 카드를 조회한 결과는 아닙니다.", report)
         self.assertIn("장부", report)
 
     def test_tip_pre_dispatch_storage_failure_keeps_existing_conversation(self):
@@ -1436,6 +1437,162 @@ prepareWorkspace({repo:args['--repo'],taskDir:args['--task-dir'],taskId:args['--
         self.assertEqual(plugin._APPROVAL_MATCHES["77"][1], "그거 해줘")
         self.assertIsNone(plugin._approval_dispatch(event=Record(event, source=Record(source, user_id="999", chat_id="999")),
                                                     gateway=Opaque(), session_store=Opaque()))
+
+    # ── 11-14 알림 → 상세 · 판단 대기 · 접수 흐름 · 준비 막힘 진단 ─────────────────────────
+    def alert_files(self, *, status="sent", message_id="555", created=None):
+        """Write a monitor alert the way monitor.cjs + automation.py do. Generic fixture."""
+        from datetime import datetime, timezone
+        alert_id = "event-" + "1a2b3c4d" + "0" * 16
+        folder = self.root / "hermes/runtime/synk-automation"
+        (folder / "outbox").mkdir(parents=True, exist_ok=True)
+        (folder / "config.json").write_text(json.dumps({"recipient": "12345"}), encoding="utf-8")
+        created = created or datetime.now(timezone.utc).isoformat()
+        (folder / "outbox" / (alert_id + ".json")).write_text(json.dumps({
+            "id": alert_id, "kind": "attention", "policy": "attention_only_v1", "needs_attention": True, "createdAt": created,
+            "events": [{"id": "backup-onedrive", "fingerprint": "f", "incident": "inc-1", "needs_attention": True}],
+            "text": "SYNK · 판단이 필요한 일"}), encoding="utf-8")
+        (folder / "outbox" / (alert_id + ".claim")).write_text(created, encoding="utf-8")
+        receipt = {"id": alert_id, "status": status}
+        if status == "sent":
+            receipt["message_id"] = message_id
+        (folder / "outbox" / (alert_id + ".receipt.json")).write_text(json.dumps(receipt), encoding="utf-8")
+        (folder / "state.json").write_text(json.dumps({"checkedAt": created,
+            "observed": {"backup-onedrive": {"id": "backup-onedrive", "kind": "backup", "title": "PC 백업 · OneDrive 실패", "detail": "마지막 성공이 오래됨"}},
+            "attentionObserved": {"backup-onedrive": "inc-1"}}), encoding="utf-8")
+        return "1a2b3c4d"
+
+    def real_node(self):
+        """Run the actual read-only helpers from this checkout with the real node binary."""
+        if not NODE:
+            self.skipTest("node unavailable")
+        real_root = Path(__file__).resolve().parents[1]
+        return [patch.object(plugin, "REPO_ROOT", real_root),
+                patch.object(plugin.shutil, "which", side_effect=lambda name: NODE if name == "node" else "C:/trusted bin/" + name)]
+
+    def test_alert_reply_with_explicit_word_becomes_fixed_read_only_command(self):
+        code = self.alert_files()
+        hook = self.ctx.hooks["pre_gateway_dispatch"][0]
+        for text, asked in (("자세히", "자세히"), ("진단해줘!", "진단"), (" 자세히 알려줘 ", "자세히")):
+            decision = hook(event=self.telegram_event(text, reply_to="555"))
+            self.assertEqual(decision, {"action": "rewrite", "text": f"/synk_attention {code} {asked}"})
+        # Ordinary replies, other senders, links, unknown or unsent alerts stay normal conversation.
+        self.assertIsNone(hook(event=self.telegram_event("고마워", reply_to="555")))
+        self.assertIsNone(hook(event=self.telegram_event("자세히", reply_to="555", user="999")))
+        self.assertIsNone(hook(event=self.telegram_event("자세히", reply_to="555", chat_type="group")))
+        self.assertIsNone(hook(event=self.telegram_event("자세히 https://example.com/x", reply_to="555")))
+        self.assertIsNone(hook(event=self.telegram_event("자세히", reply_to="556")))
+        self.assertIsNone(hook(event=self.telegram_event("자세히")))
+        self.assertEqual(self.ctx.calls, [])
+        # A link in the reply keeps the existing tip intake path (one receipt, the link message only).
+        self.assertEqual(len(list((self.root / "hermes/runtime/synk-tip-intake").glob("tip-*.json"))), 1)
+
+    def test_unconfirmed_alert_send_has_no_reply_target(self):
+        self.alert_files(status="unconfirmed")
+        self.assertIsNone(self.ctx.hooks["pre_gateway_dispatch"][0](event=self.telegram_event("자세히", reply_to="555")))
+
+    def test_attention_command_runs_real_read_only_helper_and_changes_nothing(self):
+        code = self.alert_files()
+        state = self.root / "hermes/runtime/synk-automation/state.json"
+        before = state.read_bytes(), state.stat().st_mtime_ns
+        patches = self.real_node()
+        for patcher in patches:
+            patcher.start()
+        try:
+            decision = self.ctx.hooks["pre_gateway_dispatch"][0](event=self.telegram_event("자세히", reply_to="555"))
+            detail = self.ctx.commands["synk-attention"](decision["text"].split(maxsplit=1)[1])
+            view = self.ctx.commands["synk-attention"]("")
+            diagnose = self.ctx.commands["synk"]("판단 " + code + " 진단")
+            bad = self.ctx.commands["synk-attention"](code + " ; rm -rf")
+            self.env["HERMES_SESSION_USER_ID"] = self.env["HERMES_SESSION_CHAT_ID"] = "999"
+            with patch.dict(os.environ, {"TELEGRAM_ALLOWED_USERS": "12345,999"}):
+                other = self.ctx.commands["synk-attention"](code)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("SYNK 알림 " + code, detail)
+        self.assertIn("PC 백업 · OneDrive 실패", detail)
+        self.assertIn("이 사건은 지금도 열려 있습니다.", detail)
+        self.assertIn("감시가 잡은 사건은 1건입니다.", view)
+        self.assertIn("/synk_attention " + code, view)
+        self.assertIn("위 상태와 설명은 감시가 실제로 모은 기록입니다.", diagnose)
+        self.assertNotIn("범위에서", diagnose)
+        self.assertIn("사용법", bad)
+        self.assertIn("이 대화로 보낸 감시 알림이 아닙니다. 그래서 내용을 열지 않았습니다.", other)
+        self.assertEqual((state.read_bytes(), state.stat().st_mtime_ns), before)
+        self.assertEqual(self.ctx.calls, [])
+        self.assertFalse((self.root / "hermes/runtime/synk-tasks").exists())
+
+    def test_expired_alert_detail_fails_closed(self):
+        code = self.alert_files(created="2026-10-01T00:00:00+00:00")
+        patches = self.real_node()
+        for patcher in patches:
+            patcher.start()
+        try:
+            output = self.ctx.commands["synk-attention"](code)
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("만든 지 7일이 지났습니다. 그래서 이 번호로는 더 열지 않습니다.", output)
+        self.assertNotIn("OneDrive", output)
+
+    def test_tip_id_shows_read_time_trace_with_real_helper(self):
+        plugin._pre_dispatch(event=self.telegram_event("https://www.instagram.com/p/ExampleTip07/?exln=fixture", message_id="790"))
+        receipt_path = next((self.root / "hermes/runtime/synk-tip-intake").glob("tip-*.json"))
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        self.assertEqual(receipt["refs"][0]["lookupKey"], "ExampleTip07")
+        before = receipt_path.read_bytes()
+        patches = self.real_node()
+        for patcher in patches:
+            patcher.start()
+        try:
+            output = self.ctx.commands["synk"]("팁 " + receipt["id"])
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("게시물은 접수할 때 확인한 ID로 식별했습니다.", output)
+        self.assertIn("주소 뒤에 붙은 모르는 꼬리표 1개는 식별에 쓰지 않았습니다.", output)
+        self.assertIn("배포와 사용자 효과는 검증 기록이 없습니다.", output)
+        self.assertNotIn("fixture", output)
+        patches = self.real_node()
+        for patcher in patches:
+            patcher.start()
+        try:
+            listing = self.ctx.commands["synk"]("팁")
+        finally:
+            for patcher in reversed(patches):
+                patcher.stop()
+        self.assertIn("접수 당시 기록은 「장부와 대조하기 전」입니다.", listing)
+        self.assertIn("지금 조회한 결과:", listing)
+        self.assertNotIn("처리 대기", listing)
+        self.assertEqual(receipt_path.read_bytes(), before)
+
+    def test_tool_description_follows_current_role_source(self):
+        description = plugin.SCHEMA["description"]
+        self.assertIn("docs/AI_운영원칙.md", description)
+        self.assertIn("GPT 또는 Claude", description)
+        self.assertNotIn("당분간", description)
+
+    def test_workspace_hold_reports_safe_relative_path_and_rule_not_contents(self):
+        script = self.repo / "tools/hermes-synk/workspace.cjs"
+        script.parent.mkdir(parents=True)
+        script.write_text("", encoding="utf-8")
+        directory = plugin._tasks_dir() / "synk-0123456789ab"
+        for blocked, shown in (("docs/현장노트/예시.md", True), ("../outside.md", False), ("C:/abs.md", False)):
+            response = subprocess.CompletedProcess([], 2, json.dumps({"ok": False, "code": "SECRET_OR_EMBEDDED_MEDIA",
+                                                                     "blockedPath": blocked, "blockedRule": "embedded-media"}), "")
+            with patch.object(plugin.subprocess, "run", return_value=response):
+                with self.assertRaises(plugin.PrepareHold) as raised:
+                    self.real_prepare_workspace(self.repo, directory, "synk-0123456789ab")
+            self.assertEqual(raised.exception.path, blocked if shown else "")
+        with patch.object(plugin, "_prepare_workspace", side_effect=plugin.PrepareHold("SECRET_OR_EMBEDDED_MEDIA", "docs/현장노트/예시.md", "embedded-media")):
+            output = self.request("codex", "읽기만 하고 답해줘")
+        self.assertIn("SECRET_OR_EMBEDDED_MEDIA", output)
+        self.assertIn("검사에 걸린 파일은 docs/현장노트/예시.md 입니다. 걸린 규칙은 「글 안에 넣은 실제 그림이나 소리 데이터」입니다.", output)
+        self.assertIn("비밀 검사는 끄지 않았습니다.", output)
+        record = self.records()[0]
+        self.assertEqual((record["state"], record["failure_code"], record["failure_path"], record["failure_rule"]),
+                         ("launch_failed", "SECRET_OR_EMBEDDED_MEDIA", "docs/현장노트/예시.md", "embedded-media"))
+        self.assertEqual([call for call in self.ctx.calls if call[0] == "terminal"], [])
 
 
 if __name__ == "__main__":

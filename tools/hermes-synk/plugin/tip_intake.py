@@ -30,6 +30,8 @@ MAX_RECEIPT_BYTES = 32_000
 ID_RE = re.compile(r"tip-[a-f0-9]{24}")
 URL_RE = re.compile(r"https?://[^\s<>\"']+", re.I)
 TRACKING = {"fbclid", "gclid", "dclid", "msclkid"}
+INSTAGRAM_KNOWN_QUERY = {"igsh", "igshid", "img_index"}
+INSTAGRAM_POST_URL = re.compile(r"https://www\.instagram\.com/(?:p|reel|tv)/([A-Za-z0-9_-]+)/")
 PRIVATE_QUERY = re.compile(r"token|auth|secret|password|signature|credential|api.?key|^key$|^sig$|^x-amz-", re.I)
 CODE_CONTEXT = re.compile(r"코드|파일|저장소|레포(?:지토리)?|\b(?:code|files?|repo(?:sitory)?|git|source|script)\b|\b[\w.-]+\.(?:py|js|cjs|mjs|ts|tsx|html|css|json|yaml|yml)\b", re.I)
 WORK_ACTION = re.compile(r"고쳐(?:줘|주세요)|수정해|구현해|배포해|적용해|만들어(?:줘|주세요)|진행해|(?:커밋|푸시|push|commit)해|(?:(?:^|[.!?\n])\s*(?:please\s+)?(?:(?:can|could|would|will)\s+you\s+(?:please\s+)?)?|,\s*(?:can|could|would|will)\s+you\s+(?:please\s+)?)(?:fix|implement|deploy|commit|push|update|change|build|create)\b", re.I)
@@ -115,9 +117,17 @@ def canonical_url(raw):
     instagram = host in {"instagram.com", "www.instagram.com", "m.instagram.com", "instagr.am"}
     match = re.fullmatch(r"/(reel|reels|p|tv)/([A-Za-z0-9_-]+)/?", value.path) if instagram else None
     if match and not path_ambiguous:
-        exact = all(key.lower() in {"igsh", "igshid", "img_index"} for key, _ in remaining)
+        # The post ID in an unambiguous /p|reel|tv/<ID>/ path is the identity. Share/tracking
+        # query keys (11-14 observed: cplk, exln, mdxt, rpxt, srtk, vrfl, obrf, psln) do not
+        # change which post it is. Private-looking keys already dropped the whole reference
+        # above. Only unknown key names are kept, never their values.
         url = "https://www.instagram.com/" + ("reel" if match[1] in {"reel", "reels"} else match[1]) + "/" + match[2] + "/"
-        return {"kind": "url", "url": url, "lookupKey": match[2] if exact else None, "exact": exact}
+        ref = {"kind": "url", "url": url, "lookupKey": match[2], "exact": True}
+        ignored = sorted({key.lower() for key, _ in remaining} - INSTAGRAM_KNOWN_QUERY)
+        if ignored:
+            ref["identityBasis"] = "instagram-post-path"
+            ref["ignoredQueryKeys"] = [key if re.fullmatch(r"[a-z0-9_]{1,24}", key) else "?" for key in ignored][:8]
+        return ref
     youtube = host in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "www.youtu.be"}
     video = None
     if youtube:
@@ -274,7 +284,10 @@ def capture(home, event, allowed_users, *, now=None):
             record = _read(home, path)
             if record.get("ownerHash") != owner or record.get("messageId") != message_id:
                 raise IntakeError("TIP_IDENTITY_MISMATCH")
-            combined = list({json.dumps(ref, sort_keys=True): ref for ref in record["refs"] + refs}.values())
+            # Keep the stored historical reference; a newer parser shape of the same URL is not a new share.
+            known = {(ref.get("kind"), ref.get("url") or ref.get("reference")) for ref in record["refs"]}
+            fresh = [ref for ref in refs if (ref.get("kind"), ref.get("url") or ref.get("reference")) not in known]
+            combined = list({json.dumps(ref, sort_keys=True): ref for ref in record["refs"] + fresh}.values())
             if combined == record["refs"]:
                 return record
             if len(combined) > MAX_REFS:
@@ -359,3 +372,21 @@ def reconcile(home, owner, receipt_id, read_ledger, *, now=None):
             current.pop("errorCode", None)
         _write(home, locked, current)
         return current
+
+
+def ref_identity(ref):
+    """Read-time identity without rewriting a receipt.
+
+    receipt   — exact identity recorded at intake.
+    recovered — an older receipt kept exact=false only because of an unknown Instagram query,
+                but its stored URL is the sanitized post path that only the unambiguous
+                Instagram branch produces. Shown as a candidate, never written back.
+    """
+    if not isinstance(ref, dict) or ref.get("kind") != "url" or not isinstance(ref.get("url"), str):
+        return {"key": None, "basis": "none"}
+    if ref.get("exact") is True and ref.get("lookupKey") and lookup_key(ref["url"]) == ref["lookupKey"]:
+        return {"key": ref["lookupKey"], "basis": "receipt"}
+    match = INSTAGRAM_POST_URL.fullmatch(ref["url"])
+    if match and ref.get("exact") is False and ref.get("lookupKey") is None:
+        return {"key": match[1], "basis": "recovered"}
+    return {"key": None, "basis": "none"}

@@ -26,7 +26,9 @@ function attentionNotification(events) {
   return {id, kind:'attention',policy:POLICY,needs_attention:true,
     events:events.map(x=>({id:x.id,fingerprint:x.attention_fingerprint,incident:x.incident||'',needs_attention:true})),
     text:'SYNK · 판단이 필요한 일\n'+events.slice(0,6).map(x=>'- '+x.title+(x.detail?'\n  '+x.detail:'')).join('\n')
-      +(events.length>6?'\n그 밖에 '+(events.length-6)+'건 · /synk_today 에서 전체 확인':'')};
+      +(events.length>6?'\n그 밖에 '+(events.length-6)+'건 · /synk_today 에서 전체 확인':'')
+      // The alert number is the stored outbox id; attention.cjs reads it back. Same id, no extra message.
+      +'\n\n이 알림의 번호는 '+id.slice(6,14)+'입니다. 자세한 내용은 /synk_attention '+id.slice(6,14)+' 로 볼 수 있습니다.\n이 알림에 「자세히」라고 답장해도 됩니다.'};
 }
 // Keeps needs_attention:true because the sender delivers nothing else; it is only ever built for an incident someone was alerted to.
 function recoveryNotification(events) {

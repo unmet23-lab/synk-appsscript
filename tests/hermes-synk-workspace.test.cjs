@@ -6,7 +6,7 @@ const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
-const { prepareWorkspace, inspectSource, safeSource } = require('../tools/hermes-synk/workspace.cjs');
+const { prepareWorkspace, inspectSource, safeSource, rejectSecrets } = require('../tools/hermes-synk/workspace.cjs');
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-workspace-test-'));
@@ -329,16 +329,63 @@ test('ignored dependencies and out-of-scope drafts are excluded without blocking
   assert.equal(fs.existsSync(path.join(result.path, 'other/drafts/current.html')), false);
 });
 
-test('default scope includes required field notes, decision record and Git lock inspector', async t => {
+test('default scope includes the field-note index, decision record and Git lock inspector but not the note archive', async t => {
   const f = fixture(t);
+  f.write('docs/현장노트/README.md', 'Field note index: read a note by explicit scope.\n');
   f.write('docs/현장노트/윈도우_셸.md', 'Read tool notes before using the shell.\n');
   f.write('docs/_ops/결정.md', 'Record confirmed decisions here.\n');
   f.write('tools/git잠금.js', 'console.log("Read-only fixture lock inspector");\n');
   const result = await prepareWorkspace({ ...f.options, scope: [] });
   assert.equal(result.ok, true, JSON.stringify(result));
-  for (const included of ['docs/현장노트', 'docs/_ops/결정.md', 'tools/git잠금.js']) assert.ok(result.scope.includes(included));
-  for (const materialized of ['docs/현장노트/윈도우_셸.md', 'docs/_ops/결정.md', 'tools/git잠금.js']) {
+  for (const included of ['docs/현장노트/README.md', 'docs/_ops/결정.md', 'tools/git잠금.js']) assert.ok(result.scope.includes(included));
+  for (const materialized of ['docs/현장노트/README.md', 'docs/_ops/결정.md', 'tools/git잠금.js']) {
     assert.equal(fs.existsSync(path.join(result.path, materialized)), true);
   }
+  assert.equal(fs.existsSync(path.join(result.path, 'docs/현장노트/윈도우_셸.md')), false);
   assert.equal(fs.existsSync(path.join(result.path, 'src/current.js')), false);
+});
+
+test('embedded-media rule blocks only real payload and reports the safe relative path and rule name', async t => {
+  const prose = 'The old rule matched `data:image/` or `;base64,` in an explanation.\n'
+    + 'const uri = `data:image/png;base64,${buffer.toString("base64")}`;\n'
+    + "const other = 'data:image/webp;base64,' + b64;\n";
+  assert.doesNotThrow(() => rejectSecrets(Buffer.from(prose)));
+  const payload = 'x = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB";\n';
+  assert.throws(() => rejectSecrets(Buffer.from(payload)), error => error.code === 'SECRET_OR_EMBEDDED_MEDIA' && error.detail.rule === 'embedded-media');
+  const keyText = 'token = "' + 'sk-' + 'ant-' + 'A'.repeat(30) + '"\n';
+  assert.throws(() => rejectSecrets(Buffer.from(keyText)), error => error.detail.rule === 'token-signature' && !JSON.stringify(error.detail).includes('AAAA'));
+  const f = fixture(t);
+  f.write('docs/현장노트/README.md', prose);
+  f.write('docs/_ops/트랙.md', payload);
+  const result = await prepareWorkspace({ ...f.options, scope: [] });
+  assert.equal(result.ok, false);
+  assert.equal(result.code, 'SECRET_OR_EMBEDDED_MEDIA');
+  assert.equal(result.blockedPath, 'docs/_ops/트랙.md');
+  assert.equal(result.blockedRule, 'embedded-media');
+  assert.ok(!JSON.stringify(result).includes('iVBOR'));
+  const inspected = inspectSource({ repo: f.repo, scope: [], contentScan: true });
+  assert.deepEqual(inspected.blocked, [{ path: 'docs/_ops/트랙.md', code: 'SECRET_OR_EMBEDDED_MEDIA', rule: 'embedded-media' }]);
+  assert.equal(inspected.contentSecretScan, 'run');
+});
+
+// ── Astra D 지적 재현(GD2) ──────────────────────────────────────────────────────
+test('GD2: short but valid embedded base64 payloads are blocked; prose and empty templates still pass', () => {
+  const blocked = [
+    'const embedded = "data:application/octet-stream;base64,AQIDBA==";\n',
+    "const tiny = 'data:image/png;base64,AAAA';\n",
+    'x = "data:audio/wav;base64,AQI=";\n',
+    'y = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=";\n',
+    'z = "data:video/mp4;base64,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";\n',
+  ];
+  for (const text of blocked) assert.throws(() => rejectSecrets(Buffer.from(text)), error => error.detail.rule === 'embedded-media', text);
+  const allowed = [
+    'The old rule matched `data:image/` or `;base64,` in an explanation.\n',
+    'const uri = `data:image/png;base64,${buffer.toString("base64")}`;\n',
+    "const other = 'data:image/webp;base64,' + b64;\n",
+    'Write data:image/png;base64,example in docs as a placeholder.\n',
+  ];
+  for (const text of allowed) assert.doesNotThrow(() => rejectSecrets(Buffer.from(text)), text);
+  // Other secret rules keep their conditions.
+  assert.throws(() => rejectSecrets(Buffer.from('-----BEGIN PRIVATE KEY-----\n')), error => error.detail.rule === 'private-key');
+  assert.throws(() => rejectSecrets(Buffer.from('t = "eyJ' + 'a'.repeat(20) + '.' + 'b'.repeat(20) + '.' + 'c'.repeat(20) + '"\n')), error => error.detail.rule === 'jwt');
 });

@@ -54,6 +54,32 @@ class TipIntakeTests(unittest.TestCase):
                     self.assertEqual((result["url"], result["lookupKey"], result["exact"]),
                                      (case["url"], case["key"], case["exact"]))
 
+    def test_instagram_unknown_share_keys_keep_post_identity_with_key_names_only(self):
+        ref = intake.canonical_url("https://www.instagram.com/p/ExampleTip03/?img_index=2&exln=VALUE-NOT-KEPT&psln=x")
+        self.assertEqual((ref["lookupKey"], ref["exact"], ref["identityBasis"]), ("ExampleTip03", True, "instagram-post-path"))
+        self.assertEqual(ref["ignoredQueryKeys"], ["exln", "psln"])
+        self.assertNotIn("VALUE-NOT-KEPT", json.dumps(ref))
+        self.assertNotIn("identityBasis", intake.canonical_url("https://www.instagram.com/p/ExampleTip03/?igsh=x"))
+        self.assertIsNone(intake.canonical_url("https://www.instagram.com/p/ExampleTip03/?api_key=x"))
+        self.assertEqual(intake.lookup_key("https://www.instagram.com/reel/ExampleTip04/?srtk=1"), "ExampleTip04")
+
+    def test_redelivered_old_receipt_keeps_its_historical_reference_shape(self):
+        row = self.capture(event("https://www.instagram.com/p/ExampleTip06/?cplk=1"))
+        path = self.path(row)
+        # Simulate a receipt written by the previous parser (unknown query → exact=false).
+        old = json.loads(path.read_text(encoding="utf-8"))
+        old["refs"] = [{"kind": "url", "url": "https://www.instagram.com/p/ExampleTip06/", "lookupKey": None, "exact": False}]
+        path.write_text(json.dumps(old), encoding="utf-8")
+        before = path.read_bytes()
+        again = self.capture(event("https://www.instagram.com/p/ExampleTip06/?cplk=1"))
+        self.assertEqual(again["refs"], old["refs"])
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual(intake.ref_identity(old["refs"][0]), {"key": "ExampleTip06", "basis": "recovered"})
+        self.assertEqual(intake.ref_identity({"kind": "url", "url": "https://example.com/p/ExampleTip06/", "lookupKey": None, "exact": False})["basis"], "none")
+        # The explicit ledger check still only uses identities recorded at intake.
+        read = lambda cmd, arg: {"ok": True, "rows": [{"row": 3, "게시물ID": "ExampleTip06"}]}
+        self.assertEqual(intake.reconcile(self.home, self.owner, row["id"], read)["status"], "pending")
+
     def test_share_receipt_is_minimal_and_durable_before_any_model(self):
         row = self.capture(event(URL + "\n이런 그림은 어떻게 만드는거야?"))
         saved = self.path(row).read_text(encoding="utf-8")

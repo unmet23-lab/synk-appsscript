@@ -48,7 +48,8 @@ HELP = """SYNK 작업
 /synk_codex <요청> — 공식 Codex CLI에 작업 요청
 /synk_tasks [작업 ID] — 접수한 작업의 실행 상태
 /synk_today — 상태·맡긴 작업·확인이 필요한 일
-/synk 팁 — 모델 응답 전 접수한 공유 자료·장부 반영 상태
+/synk_attention [알림 번호] — 지금 판단이 필요한 일만 보여 줍니다. 알림 번호를 붙이면 그 알림의 지금 상태를 보여 줍니다. 감시 알림에 「자세히」라고 답장해도 됩니다.
+/synk 팁 [접수ID] — 접수한 공유 자료를 보여 줍니다. 접수 ID를 붙이면 장부, 카드, 적용 기록까지 단계별로 보여 줍니다.
 /synk_release <작업 ID> 종료확인 — 실행 상태 미확인 작업의 접수 잠금 정리
 /synk_recover — 미전달된 공식 작업 결과의 전달 재개
 /synk_continue <문장> — 자동 모드에 막혀 건너뛴 단계를 그 문장 그대로 이어 가기(막힘 알림에 답장해도 됨)
@@ -65,6 +66,26 @@ HELP = """SYNK 작업
 
 class UserError(Exception):
     """Only explicitly composed, non-secret text may cross the Telegram boundary."""
+
+
+class PrepareHold(UserError):
+    """A known preparation hold. path/rule are a validated repo-relative path and a fixed rule name."""
+
+    def __init__(self, code: str, path: str = "", rule: str = ""):
+        super().__init__("격리 작업본 준비를 보류했습니다. 코드: " + code + ". CLI는 시작하지 않았습니다.")
+        self.code, self.path, self.rule = code, path, rule
+
+
+PREPARE_RULE_LABELS = {"embedded-media": "글 안에 넣은 실제 그림이나 소리 데이터", "token-signature": "인증 토큰처럼 보이는 값",
+                       "jwt": "로그인 토큰처럼 보이는 값", "private-key": "개인 키", "credential-literal": "비밀번호나 키 값"}
+
+
+def _safe_repo_relative(value) -> str:
+    """Return a displayable repository-relative path or an empty string. Never file contents."""
+    if (not isinstance(value, str) or not value or len(value) > 300 or value.startswith(("/", "-"))
+            or any(char in value for char in '\\:*?<>|"\x00\r\n') or any(part in {"", ".", ".."} for part in value.split("/"))):
+        return ""
+    return value
 
 
 def _env(name: str, default: str = "") -> str:
@@ -919,6 +940,95 @@ def _overview() -> str:
     return result.stdout.strip()[:MAX_REPLY_CHARS] or "통합 상태 응답이 비어 있습니다."
 
 
+def _read_only_node(script_name: str, args: list[str], failure: str) -> str:
+    """Run a fixed read-only helper with argv only. Its stdout is composed, non-secret text."""
+    script = REPO_ROOT / "tools" / "hermes-synk" / script_name
+    executable = shutil.which("node")
+    if not executable or not script.is_file():
+        raise UserError(failure)
+    result = subprocess.run([executable, str(script), *args], cwd=str(REPO_ROOT), stdin=subprocess.DEVNULL,
+                            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=35, shell=False,
+                            env={**os.environ, "HERMES_HOME": str(_home())})
+    if result.returncode or not result.stdout.strip():
+        raise UserError(failure)
+    return result.stdout.strip()[:MAX_REPLY_CHARS]
+
+
+ALERT_CODE = re.compile(r"[a-f0-9]{8}")
+
+
+def _attention(route: dict, query: str) -> str:
+    parts = query.strip().split()
+    failure = "판단 대기 기록을 읽지 못했습니다. 사건이 없다는 뜻은 아닙니다. /synk_today 로 확인해 주세요."
+    if not parts:
+        return _read_only_node("attention.cjs", ["view", "--user", route["user_id"]], failure)
+    if len(parts) > 2 or not ALERT_CODE.fullmatch(parts[0]) or (len(parts) == 2 and parts[1] not in {"자세히", "진단"}):
+        return ("사용법은 세 가지입니다.\n/synk_attention 은 지금 판단할 일을 보여 줍니다.\n/synk_attention <알림 번호 8자> 는 그 알림의 상태를 보여 줍니다.\n"
+                "감시 알림에 「자세히」라고 답장해도 됩니다.")
+    return _read_only_node("attention.cjs", ["alert", *parts, "--user", route["user_id"]], failure)
+
+
+# Explicit words only. Anything else in a reply to an alert stays a normal conversation.
+ALERT_REPLY_WORDS = {"자세히": "자세히", "자세히알려줘": "자세히", "자세히보여줘": "자세히", "상세": "자세히",
+                     "진단": "진단", "진단해줘": "진단", "진단해주세요": "진단", "원인알려줘": "진단", "원인진단해줘": "진단"}
+
+
+def _alert_code_for_message(message_id: str) -> str:
+    """Find the monitor alert whose confirmed Telegram message ID is message_id. Read-only."""
+    if not re.fullmatch(r"[0-9]{1,24}", message_id or ""):
+        return ""
+    folder = _home() / "runtime" / "synk-automation" / "outbox"
+    try:
+        _checked_spool_path(folder)
+        receipts = sorted(folder.glob("event-*.receipt.json"), key=lambda path: path.stat().st_mtime_ns, reverse=True)[:400]
+    except (OSError, UserError):
+        return ""
+    found = []
+    for path in receipts:
+        if not re.fullmatch(r"event-[a-f0-9]{24}\.receipt\.json", path.name) or path.is_symlink():
+            continue
+        try:
+            receipt = json.loads(path.read_text(encoding="utf-8")) if path.stat().st_size <= 20000 else {}
+        except (OSError, ValueError):
+            continue
+        if receipt.get("status") == "sent" and str(receipt.get("message_id") or "") == message_id:
+            found.append(path.name[6:14])
+    return found[0] if len(found) == 1 else ""
+
+
+def _alert_reply_dispatch(event=None, **_kwargs):
+    """A reply to a sent monitor alert saying 「자세히」/「진단해줘」 becomes a fixed read-only command."""
+    try:
+        if event is None or getattr(event, "internal", False) or getattr(event, "media_urls", None):
+            return None
+        source = getattr(event, "source", None)
+        platform = getattr(source, "platform", None)
+        platform = getattr(platform, "value", platform)
+        user_id = str(getattr(source, "user_id", "") or "")
+        allowed = {part for part in re.split(r"[\s,;]+", os.environ.get("TELEGRAM_ALLOWED_USERS", "")) if part}
+        if (platform != "telegram" or str(getattr(source, "chat_type", "") or "") != "dm" or not user_id.isdecimal()
+                or user_id not in allowed or str(getattr(source, "chat_id", "") or "") != user_id):
+            return None
+        text = getattr(event, "text", None)
+        reply_to = str(getattr(event, "reply_to_message_id", "") or "")
+        if not reply_to or not isinstance(text, str) or len(text) > 40 or re.search(r"https?://", text, re.I):
+            return None
+        asked = ALERT_REPLY_WORDS.get(re.sub(r"[\s.,!?~。！？]+", "", text))
+        code = _alert_code_for_message(reply_to) if asked else ""
+        if not code:
+            return None
+        # Only the fixed command crosses; the user's words are not passed on as instructions.
+        return {"action": "rewrite", "text": f"/synk_attention {code} {asked}"}
+    except Exception:
+        return None
+
+
+def _tip_trace(route: dict, receipt_id: str) -> str:
+    owner = _tip_module().owner_hash(route)
+    return _read_only_node("tip-trace.cjs", ["--id", receipt_id, "--owner", owner],
+                           "접수 흐름을 읽지 못했습니다. 그래서 장부 연결이나 적용 완료로 판단하지 않았습니다.")
+
+
 def _additional_workspaces() -> list[Path]:
     """Only these existing sibling repositories may extend the native CLI scope."""
     directories = []
@@ -980,7 +1090,9 @@ def _prepare_workspace(source: Path, directory: Path, task_id: str, scope: list[
                      "WORKTREE_CONFIG_REQUIRED", "WORKSPACE_SCOPE_MISMATCH", "INVALID_SCOPE", "IGNORED_SCOPE_SOURCE"}
             code = result.get("code") if isinstance(result, dict) else ""
             code = code if code in known else "WORKSPACE_PREPARE_FAILED"
-            raise UserError("격리 작업본 준비를 보류했습니다. 코드: " + code + ". CLI는 시작하지 않았습니다.")
+            blocked = _safe_repo_relative(result.get("blockedPath")) if isinstance(result, dict) else ""
+            rule = result.get("blockedRule") if isinstance(result, dict) and result.get("blockedRule") in PREPARE_RULE_LABELS else ""
+            raise PrepareHold(code, blocked, rule)
         worktree = Path(result["workspace_root"])
         original = Path(result.get("source_root") or result.get("sourceRoot") or "")
         expected = directory.resolve() / "workspace"
@@ -1189,11 +1301,18 @@ def _request(ctx, route: dict, engine: str, task: str, *, repository: str = "", 
             record["state"] = "launch_failed"
             record["failure_stage"] = "workspace_or_cli_preparation"
             _write_json(directory / "request.json", record)
-            coded = re.fullmatch(r"격리 작업본 준비를 보류했습니다\. 코드: ([A-Z_]{1,50})\. CLI는 시작하지 않았습니다\.", str(error)) if isinstance(error, UserError) else None
-            code = coded[1] if coded else "WORKSPACE_OR_CLI_PREPARE_FAILED"
+            code = error.code if isinstance(error, PrepareHold) else "WORKSPACE_OR_CLI_PREPARE_FAILED"
             record["failure_code"] = code
-            _write_json(directory / "request.json", record)
             detail = "준비 보류 코드: " + code + "."
+            if isinstance(error, PrepareHold) and error.path:
+                # Only the relative path and the rule name; the file's bytes never leave the PC.
+                record["failure_path"] = error.path
+                if error.rule:
+                    record["failure_rule"] = error.rule
+                detail += (" 검사에 걸린 파일은 " + error.path + " 입니다."
+                           + (" 걸린 규칙은 「" + PREPARE_RULE_LABELS[error.rule] + "」입니다." if error.rule else "")
+                           + " PC에서 그 파일을 확인하거나, 필요한 파일만 --scope 로 좁혀 다시 맡겨 주세요. 비밀 검사는 끄지 않았습니다.")
+            _write_json(directory / "request.json", record)
             raise UserError(f"{task_id}: {detail} 실행하지 않았습니다. 준비 결과를 확인하고 새 메시지로 요청해 주세요.") from None
         try:
             result = _dispatch(ctx, "terminal", {"command": command, "workdir": workspace["workspace_root"],
@@ -1641,6 +1760,9 @@ def _pre_dispatch(event=None, **kwargs):
     decision = _approval_dispatch(event=event, **kwargs)
     if decision is not None:
         return decision
+    decision = _alert_reply_dispatch(event=event, **kwargs)
+    if decision is not None:
+        return decision
     try:
         allowed = {part for part in re.split(r"[\s,;]+", os.environ.get("TELEGRAM_ALLOWED_USERS", "")) if part}
         _tip_module().capture(_home(), event, allowed)
@@ -1682,13 +1804,21 @@ def _tip_status(route, query=""):
             if len(parts) != 1 or not helper.ID_RE.fullmatch(parts[0]):
                 return "사용법: /synk 팁 · /synk 팁 <tip-접수ID> · /synk 팁 확인 <tip-접수ID>"
             rows = [helper.read_receipt(_home(), owner, parts[0])]
+            try:
+                return _tip_trace(route, rows[0]["id"])
+            except UserError:
+                pass  # fall back to the stored receipt only; no completion is inferred
             snapshot = {"complete": True}
         else:
+            try:
+                return _read_only_node("tip-trace.cjs", ["--list", "--owner", owner], "")
+            except UserError:
+                pass  # fall back to the stored receipt states only, labelled as such
             snapshot = helper.list_receipts(_home(), owner)
             rows = snapshot["items"]
-        lines = ["공유 자료 접수 · 설치 뒤 받은 자료만 표시"]
+        lines = ["공유 자료 접수 목록입니다.", "아래 상태는 접수하거나 「팁 확인」을 했을 때 저장한 기록입니다. 지금 장부와 카드를 조회한 결과는 아닙니다."]
         for row in rows[:10]:
-            label = {"pending": "처리 대기", "reconciled": "장부 일치 확인", "ambiguous": "장부 중복 확인 필요"}[row["status"]]
+            label = {"pending": "접수 당시 기록: 장부와 대조하기 전", "reconciled": "접수 당시 기록: 장부와 일치", "ambiguous": "접수 당시 기록: 장부 중복 확인 필요"}[row["status"]]
             lines.append(f"- {row['id']} · {label} · {_safe_text(row['receivedAt'], 40)}")
             if parts:
                 for ref in row["refs"]:
@@ -1697,7 +1827,7 @@ def _tip_status(route, query=""):
             lines.append("이 조회 범위에 접수 기록이 없습니다. 기존 대화 원문이 삭제됐다는 뜻은 아닙니다.")
         if not snapshot["complete"]:
             lines.append("읽지 못한 기록 또는 조회 상한이 있어 전체 상태는 미확인입니다.")
-        lines.append("/synk 팁 확인 <ID> 는 기존 장부를 읽어 대조합니다. 처리하지 못한 자료는 원문 메시지를 다시 공유해 기존 팁 접수를 이어 갈 수 있습니다.")
+        lines.append("/synk 팁 <ID> 는 접수, 장부, 카드, 적용 기록을 단계별로 보여 줍니다. /synk 팁 확인 <ID> 는 기존 장부를 읽어 대조합니다. 처리하지 못한 자료는 원문 메시지를 다시 공유해 기존 팁 접수를 이어 갈 수 있습니다.")
         return "\n".join(lines)[:MAX_REPLY_CHARS]
     except (helper.IntakeError, OSError, ValueError, TypeError, subprocess.TimeoutExpired):
         return "팁 접수·장부 상태를 확인하지 못했습니다. 원문 메시지는 기존 대화에서 확인해 주세요. 새 모델 호출·장부 쓰기는 하지 않았습니다."
@@ -1715,6 +1845,8 @@ def _handle(ctx, action: str, *, query: str = "", engine: str = "", task: str = 
             return _overview()
         if action == "tips":
             return _tip_status(route, query)
+        if action == "attention":
+            return _attention(route, query)
         if action == "tasks":
             return _tasks(ctx, route, query)
         if action == "request":
@@ -1735,9 +1867,9 @@ def _handle(ctx, action: str, *, query: str = "", engine: str = "", task: str = 
 
 SCHEMA = {
     "name": "synk_work",
-    "description": "등록된 사용자의 SYNK 개인 텔레그램에서 상태를 AI 없이 조회하거나, 명시적으로 맡긴 작업을 공식 Claude Code/Codex CLI에 전달한다. GPT를 당분간 쓰지 않는 동안(결정 10-19)은 백엔드·헤르메스를 포함해 기본 담당이 모두 Claude이고, Codex는 사용자가 직접 지정할 때만 쓴다. 기존 팁 수집은 이 도구로 대체하지 않는다.",
+    "description": "등록된 사용자의 SYNK 개인 텔레그램에서 상태를 AI 없이 조회하거나, 명시적으로 맡긴 작업을 공식 Claude Code/Codex CLI에 전달한다. 담당은 docs/AI_운영원칙.md의 역할 표를 따른다(백엔드는 GPT 또는 Claude). 사용자가 담당을 말하면 그대로 쓰고, 담당이나 모델을 임의로 바꾸거나 우회하지 않는다. 기존 팁 수집은 이 도구로 대체하지 않는다.",
     "parameters": {"type": "object", "properties": {
-        "action": {"type": "string", "enum": ["status", "overview", "tasks", "tips", "request", "release", "recover"]},
+        "action": {"type": "string", "enum": ["status", "overview", "attention", "tasks", "tips", "request", "release", "recover"]},
         "query": {"type": "string", "description": "상태 검색어 또는 정확한 synk- 작업 ID. 생략하면 전체/최근 작업."},
         "engine": {"type": "string", "enum": ["claude", "codex"], "description": "request일 때 실제 담당 공식 CLI."},
         "repository": {"type": "string", "enum": ["appsscript", "talk", "website"], "description": "이번에 수정할 저장소 하나. 명시가 없거나 모호하면 appsscript. 복수 저장소는 실행 보류한다."},
@@ -1763,6 +1895,8 @@ def register(ctx):
             return _handle(ctx, "overview")
         if command in {"팁", "tips"}:
             return _handle(ctx, "tips", query=args)
+        if command in {"판단", "attention"}:
+            return _handle(ctx, "attention", query=args)
         return _handle(ctx, "help")
 
     ctx.register_command("synk", handler=synk, description="SYNK 작업 사용법·상태 조회", args_hint="[상태 검색어]")
@@ -1771,6 +1905,8 @@ def register(ctx):
     ctx.register_command("synk-codex", handler=lambda raw: _handle(ctx, "request", engine="codex", task=raw), description="Codex CLI에 SYNK 작업 요청", args_hint="<요청>")
     ctx.register_command("synk-tasks", handler=lambda raw: _handle(ctx, "tasks", query=raw), description="휴대폰에서 맡긴 작업 조회", args_hint="[작업 ID]")
     ctx.register_command("synk-today", handler=lambda raw: _handle(ctx, "overview"), description="SYNK 통합 상태·확인이 필요한 일 조회")
+    ctx.register_command("synk-attention", handler=lambda raw: _handle(ctx, "attention", query=raw),
+                         description="지금 판단이 필요한 일과 감시 알림의 상세를 읽기만 해서 보여 줍니다", args_hint="[알림 번호] [자세히]")
 
     def release(raw):
         parts = raw.strip().split(maxsplit=1)

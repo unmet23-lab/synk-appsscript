@@ -11,7 +11,7 @@ const { promisify } = require('node:util');
 const status = require('./status.cjs');
 const { awakeSince } = require('./awake-time.cjs');
 const { tipWorkerSnapshot } = require('./tip-worker-status.cjs');
-const { tipIntakeSnapshot, lookupHash } = require('./tip-intake-status.cjs');
+const { tipIntakeSnapshot, lookupHash, sourceSentences } = require('./tip-intake-status.cjs');
 const { sanitizePerformance } = require('../operations-home/performance-summary.cjs');
 const { sanitizeCollection, carryFailingSince, healthRows } = require('./sns-health.cjs');
 const runFile = promisify(execFile);
@@ -685,7 +685,7 @@ async function snsSnapshot({ hermesHome, now, remoteRefresh, readSnsRemote }) {
 
 function stage(value) {
   if (String(value).startsWith('적용함')) return 'applied';
-  if (['새로', '적용 중', '적용중'].includes(value)) return 'pending';
+  if (/^(?:새로|적용 ?중)/.test(String(value))) return 'pending';
   if (['버림', '안 맞음'].includes(value)) return 'discarded';
   return 'unknown';
 }
@@ -966,7 +966,17 @@ function formatOverview(report) {
   const worker = snapshot.tipWorker;
   if (worker) lines.push(worker.available ? `- 팁 적용안 처리 ${worker.observedState}${worker.stale ? ' · 마지막확인 오래됨' : ''}${worker.cooldownActive ? ' · 풀림 ' + formatTime(worker.cooldownUntil) : ''} · 기록 ${formatTime(worker.checkedAt)} · 현재 인증 미조회` : '- 팁 적용안 처리 기록 미확인 · 현재 인증 미조회');
   const intake = snapshot.tipIntake;
-  if (intake) lines.push(intake.available ? `- 팁 접수 장부 연결 대기 ${intake.counts.pending} · 연결 기록 ${intake.counts.reconciled} · 중복 확인 ${intake.counts.ambiguous}${intake.counts.stale ? ' · 오래됨 ' + intake.counts.stale : ''}${!intake.complete ? ' · 일부 미확인/최대 100건 표시' : ''}` : '- 팁 접수 기록 미확인(기존 공유 대화 보존 여부와 별개)');
+  if (intake) lines.push(intake.available ? `- 접수 당시 기록으로는 장부와 대조하기 전인 팁 접수가 ${intake.counts.pending}건입니다. 장부와 일치한 접수는 ${intake.counts.reconciled}건입니다. 중복 확인이 필요한 접수는 ${intake.counts.ambiguous}건입니다.`
+    + (intake.counts.stale ? ` 하루 넘게 대조되지 않은 접수는 ${intake.counts.stale}건입니다.` : '') + (!intake.complete ? ' 일부 기록은 미확인이고 최대 100건만 셌습니다.' : '') : '- 팁 접수 기록 미확인(기존 공유 대화 보존 여부와 별개)');
+  const flow = intake?.available && intake.traceCounts;
+  if (flow && flow.receipts) lines.push(`- 지금 장부 사본과 카드 원문을 다시 읽었습니다.${flow.sources ? ' ' + sourceSentences(flow.sources, { formatTime }).join(' ') : ''} 최근 팁 접수 ${flow.receipts}건 가운데 장부에서 확정한 연결은 ${flow.ledgerLinked}건입니다.`
+    + (flow.ledgerCandidate ? ` 부분 조회나 오래된 장부 사본에서 찾은 후보 연결은 ${flow.ledgerCandidate}건입니다.` : '')
+    + ` 확정한 참고 카드 연결은 ${flow.carded}건입니다. 그중 ${flow.appliedRecord}건에는 적용 기록이 있습니다.`
+    + (flow.cardCandidate ? ` 일부만 읽은 카드에서 찾은 후보 카드는 ${flow.cardCandidate}건입니다.` : '')
+    + (flow.appliedCandidate ? ` 후보 카드 가운데 ${flow.appliedCandidate}건에는 적용 기록이 있습니다.` : '')
+    + (flow.recovered ? ` 저장된 주소 경로로 식별한 접수는 ${flow.recovered}건입니다.` : '') + (flow.outsideCoverage ? ` 장부 조회 범위 밖일 수 있는 접수는 ${flow.outsideCoverage}건입니다.` : '')
+    + (flow.issues ? ` 장부나 카드에서 확인할 점이 있는 접수는 ${flow.issues}건입니다.` : '')
+    + ' 배포와 효과 검증 기록은 모으지 않아 없습니다. 한 건씩 보려면 /synk 팁 <접수ID> 를 보내 주세요.');
   if (intake?.available && intake.capReached) lines.push('- 새 접수 저장 한도 도달 · 기존 기록 보존 · 새 접수 저장 여부 확인 필요');
   if (intake?.scanLimited) lines.push('- 접수 목록 확인은 최대 2,000개 범위 · 전체 중 최신 100개 여부 미확인');
   lines.push(snapshot.research.remoteStatusAvailable ? `- 조사 서버 조회 ${formatTime(snapshot.research.remoteCheckedAt)}${snapshot.research.stale ? ' · 오래됨/연결 미확인' : ' · 저장된 영수증 기준'}` : '- 조사는 기존 결과를 재사용합니다(현재 원격 상태 미확인).');
@@ -1035,9 +1045,9 @@ async function readOverview({ root = ROOT, hermesHome = homeDefault(), now = new
   const source = sourceResult.status === 'fulfilled' ? sourceResult.value : {};
   const ledger = ledgerResult.status === 'fulfilled' ? ledgerResult.value : { available: false, stale: true, checkedAt: null, rows: [] };
   const tipWorker = tipWorkerSnapshot({ root, now: clock, sourceRoot: tipWorkerRoot });
-  const tipIntake = tipIntakeSnapshot({ hermesHome, now: clock, ledger });
   const track = source.snapshot?.track || { available: false, complete: false, items: [] };
   const cards = source.snapshot?.cards || { available: false, complete: false, items: [] };
+  const tipIntake = tipIntakeSnapshot({ hermesHome, now: clock, ledger, cards });
   const tips = reconcileTips(cards, ledger);
   const tasks = taskResult.status === 'fulfilled' ? taskResult.value : { available: false, complete: false, items: [] };
   const research = researchResult.status === 'fulfilled' ? researchResult.value : { available: false, remoteVerified: false, items: [] };
