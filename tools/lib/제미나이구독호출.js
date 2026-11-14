@@ -311,7 +311,10 @@ async function main(argv = process.argv.slice(2)) {
       ...(schema ? ['--json-schema', schema] : []),
     ];
     const input = JSON.stringify({ event: 'user', message: { content: 도구없이 + prompt } }) + '\n';
-    const 받음 = await agy받기({ args, cwd: 방, input, env: 비밀환경걷기(), 제한Ms: timeoutMs + 30_000 });
+    // agy는 켜질 때 15분에 한 번 스스로 업데이트를 확인한다. 그 확인이 콘솔 없이 `agy --version`을 띄워
+    // 유호님 화면에 Windows Terminal 창이 떴다(11-15). 값은 'true'여야 한다('1'은 무시하고 확인했다).
+    // 업데이트는 예약 「SYNK agy 업데이트」(tools/agy업데이트.js)가 하루 한 번 따로 한다.
+    const 받음 = await agy받기({ args, cwd: 방, input, env: { ...비밀환경걷기(), AGY_CLI_DISABLE_AUTO_UPDATE: 'true' }, 제한Ms: timeoutMs + 30_000 });
     try {
       const 기록 = 기록만들기(받음, { model, thinking, selectedModel });
       const 절대출력 = path.resolve(out);

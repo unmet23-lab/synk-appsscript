@@ -794,6 +794,13 @@
 - 고침: agy 판 확인 · 올리기는 `agy update` 하나로 한다. winget으로 agy를 올리지 않고, 막힘을 `--force`로 넘기지 않는다 — 넘기면 1.5.4로 내려간다(`winget upgrade --all`도 같은 자리에서 멈춘다). 나머지 셋은 `claude update`(터미널 CLI만 — 앱 내장 판은 앱이 올린다, `tools/도구판점검.js` 머리), `npm i -g @openai/codex@latest @google/gemini-cli@latest`, `grok update --check` 뒤 `grok update`.
 - 다시 확인: 11-11 `agy update` → 「current version 1.5.5 … already on the latest version」(종료 0), `agy --version` 1.5.5. 같은 날 `claude update`로 터미널 CLI 2.1.316 → 2.1.322, codex 0.167.0 · gemini-cli 0.67.0 · grok 1.0.77은 이미 최신.
 
+<a id="agy-auto-update-window"></a>
+### agy의 자동 업데이트 확인이 15분에 한 번 유호님 화면에 Windows Terminal 창을 띄운다 — `AGY_CLI_DISABLE_AUTO_UPDATE=true`로 끄고 하루 한 번 `agy update`를 돌린다 (2026-11-15 Claude)
+- 증상: 11-15 유호님이 「갑자기 윈도우 터미널창 뜨는거 왜 이런거야?」라고 물으셨다. 창을 기록해 보니 카본 검수가 돌 때 제목이 `…\Google.AntigravityCLI_…\agy.exe`인 터미널 창이 가끔 떴다(05:21:01, 05:36:07, 06:32:59).
+- 원인: agy는 켜질 때 마지막 확인 뒤 15분이 지났으면(`~/.gemini/antigravity-cli/last_check.timestamp`의 수정 시각) `agy --bg-updater …`를 뒤에서 띄운다. 이 업데이터는 콘솔 없이 떠서, 그 아래 `agy --version`이 새 콘솔을 받아 터미널 창으로 열린다. 부르는 쪽이 `windowsHide: true`여도 막지 못한다. `windowsHide`로 부른 `agy --version`과 `agy -p /usage` 자체는 창을 띄우지 않았다.
+- 고침: 사용자 환경 변수 `AGY_CLI_DISABLE_AUTO_UPDATE=true`를 걸었고, `tools/lib/제미나이구독호출.js`도 agy에 같은 값을 넘긴다. 값은 `true`여야 한다. `1`을 주면 업데이터가 그대로 떴다. 업데이트는 예약 「SYNK agy 업데이트」가 하루 한 번 `tools/agy업데이트.js`(`agy update`)로 한다. 변수가 켜져 있어도 `agy update`는 된다. 사용자 환경 변수는 이미 떠 있는 Claude 앱과 GPT 앱에는 앱을 다시 켤 때까지 들어가지 않는다. 그동안 앱 셸에서 agy를 바로 부르면 창이 뜰 수 있다.
+- 다시 확인: 마지막 확인 시각을 1시간 전으로 돌리고 같은 꼴로 agy를 부른다. `true`이면 cli 로그에 「auto_updater.go:247] Auto-update disabled via environment variable AGY_CLI_DISABLE_AUTO_UPDATE」가 찍히고 `--bg-updater`가 뜨지 않으며 마지막 확인 시각도 그대로다(11-15 06:35). `1`이면 「Spawned background update process」가 찍히고 창이 떴다(11-15 06:32).
+
 ### 검수 도중 origin의 다른 커밋이 같은 화면 파일 · 셸 판 번호를 바꿔, 검수한 바이트와 올릴 바이트가 어긋난다 — 먼저 올려 커밋을 고정하고 `다시 … --끝 <커밋>`으로 마지막 확인을 받는다 (2026-11-12 Claude)
 - 증상: PULSE 사진 상품의 옷 · 머리(`pulse-photo-looks-screen-20261112`) — 화면 검수(카본 → Fable 5.2 → 다시 검수)가 도는 두 시간 남짓 사이에 다른 세션의 PULSE 커밋 셋이 master에 올라와 `film-views.mjs` · `room-view.mjs` · `app.mjs` · `film.css` · `desk-view.mjs`와 셸 판 이름(`sw.js` v48 — 내가 쓰려던 번호)과 그 이름을 보는 시험 넷을 바꿨다. 합친 뒤 다시 검수 묶음을 만들자마자 origin이 또 움직여 그 묶음의 시험 파일 하나가 다시 달라졌다(`확인`은 파일 해시가 하나라도 다르면 「검수 뒤 파일 변경」).
 - 원인: `확인`은 검수가 본 바이트와 지금 바이트를 파일마다 그대로 견준다. 작업본 끝(`끝: 작업본`)으로 묶은 검수는 올리는 순간의 origin에 따라 바이트가 달라질 수 있고, PULSE 화면처럼 여러 세션이 같은 파일 · 같은 판 번호를 고치는 때는 검수 한 바퀴(Fable 15 ~ 30분)보다 origin이 빨리 움직인다.
