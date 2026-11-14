@@ -140,39 +140,39 @@
   "lang": "en",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "Big bro & big sis\nin Korean?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Same big bro,\ntwo names!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "Big bro",
+  "colB": "Big sis",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Boys call their big bro this",
+    "Girls call their big bro this",
+    "Boys call their big sis this",
+    "Girls call their big sis this"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "Girls don’t say “형”!",
+    "Boys don’t say “언니”!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "What boys say",
+  "rowF": "What girls say",
   "rowSize": 64,
-  "end": "",
+  "end": "Depends on who’s talking!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 10.53,
@@ -182,6 +182,19 @@
   "helloVo": "오빠, 호주!",
   "helloSec": 1.2,
   "_원문": {
-    "hello": "오빠(여자가 손위 남자 형제를 부르는 말)"
+    "hello": "오빠(여자가 손위 남자 형제를 부르는 말)",
+    "hook": "손위 남자 형제와 손위 여자 형제를 한국어로?",
+    "reveal": "같은 손위 남자 형제, 이름은 둘!",
+    "colA": "손위 남자 형제",
+    "colB": "손위 여자 형제",
+    "means.0": "남자는 손위 남자 형제를 이렇게 불러요",
+    "means.1": "여자는 손위 남자 형제를 이렇게 불러요",
+    "means.2": "남자는 손위 여자 형제를 이렇게 불러요",
+    "means.3": "여자는 손위 여자 형제를 이렇게 불러요",
+    "why.0": "여자는 「형」이라고 하지 않아요!",
+    "why.1": "남자는 「언니」라고 하지 않아요!",
+    "rowM": "남자가 하는 말",
+    "rowF": "여자가 하는 말",
+    "end": "누가 말하느냐에 달렸어요!"
   }
 }

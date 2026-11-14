@@ -388,6 +388,31 @@ test('재료 — 글에 줄 바꿈이 있으면 「 / 」가 줄 바꿈 자리�
   assert.ok(!fs.readFileSync(path.join(방, '밖2', '질문.md'), 'utf8').includes('줄이 바뀌는 자리'));
 });
 
+test('재료 — 인사가 붙은 판본은 장면 설명 속 때(N초에 · 부터 · ~)도 인사 길이만큼 밀고, 같은 글이 다시 뜨는 줄에는 되풀이 표시를 단다(11-15)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const 줄 = [
+    { id: 'hello', 칸: '진행', 글: 'Oppa,', 원문: '오빠', 초: [0, 1.2] },
+    { id: 'means.1a', 칸: '뜻', 글: 'Girls call their big bro this', 원문: '여자는 손위 남자 형제를 이렇게 불러요', 초: [9.95, 11.4], 장면: '여동생 말풍선이 바뀐다. 0.6초 뒤 반짝 소리' },
+    { id: 'reveal', 칸: '진행', 글: 'Same big bro, two names!', 원문: '같은 형, 이름은 둘!', 초: [11.4, 13.1] },
+    { id: 'ko.hyeong', 칸: '한국어', 글: '형!', 초: [11.4, 14.9], 장면: '남동생이 형에게 안긴다 — 11.9초에 위 띠가 바뀌고 22.35초~끝까지 이름표' },
+    { id: 'means.1', 칸: '뜻', 글: 'Girls call their big bro this', 원문: '여자는 손위 남자 형제를 이렇게 불러요', 초: [14.9, 17.1] },
+  ];
+  const { 편, 글파일 } = 판본글만들기(방, { 판본: 'AU', 언어: 'en', 나라: ['AU'], 틀: '이야기', 인사: { 초: 1.2 }, 줄, 퀴즈: [] });
+  M.재료만들기(글파일, { 편, 밖: path.join(방, '밖'), 기록: [] });
+  const q = fs.readFileSync(path.join(방, '밖', '질문.md'), 'utf8');
+  assert.match(q, /13\.1초에 위 띠가 바뀌고 23\.55초~끝까지 이름표/);
+  assert.match(q, /0\.6초 뒤 반짝 소리/);
+  assert.match(q, /5\. \(14\.9초\) Girls call their big bro this \(앞 2줄과 같은 글이 다시 뜬다\)/);
+  assert.ok(!/2\. \(9\.95초\) Girls call their big bro this \(앞/.test(q));
+  assert.match(q, /「같은 말이 두 번」 결함으로 적지 않는다/);
+  // 인사가 없고 되풀이가 없는 판본은 장면 초 · 표시를 건드리지 않는다
+  const 둘 = 판본글만들기(fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-')), { 판본: 'AU', 언어: 'en', 나라: ['AU'], 틀: '이야기', 줄: 줄.slice(2, 4), 퀴즈: [] });
+  M.재료만들기(둘.글파일, { 편: 둘.편, 밖: path.join(방, '밖2'), 기록: [] });
+  const q2 = fs.readFileSync(path.join(방, '밖2', '질문.md'), 'utf8');
+  assert.match(q2, /11\.9초에 위 띠가 바뀌고 22\.35초~끝까지/);
+  assert.ok(!q2.includes('같은 글이 다시 뜬다'));
+});
+
 test('재료 — 노래 틀: 「…」로 끝나는 다리 글은 일부러 끊은 말이라고 알리고, 손뼉 · 말하기 줄이 없는 노래만 판은 웃음 물음에 손뼉을 넣지 않는다(11-14)', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
   const 노래줄 = (차례) => [

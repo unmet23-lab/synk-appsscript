@@ -1411,6 +1411,12 @@
 - 고침: 같은 턴에 꼭 돌려야 하면 `general-purpose`에 `model: opus`를 주고 글 첫 줄에 「`.claude/agents/<이름>.md`를 읽고 머리말 아래 본문을 그대로 따르라」를 쓴다 — 정의 글을 그대로 시험하는 길이기도 하다(이때 짚어 준 「정의 글이 모호한 곳」 다섯을 정의에 반영했다). 아니면 턴을 한 번 끝낸 뒤 이름으로 부른다.
 - 다시 확인: 정의를 쓴 뒤 Agent 도구의 오류 글에 뜨는 「Available agents」 목록에 그 이름이 있는지 본다. 이름으로 부른 에이전트의 모델은 `<세션 id>/subagents/agent-<id>.jsonl`의 `"model"` 칸(정의의 `model: opus` → `claude-opus-5-5`였다).
 
+### Edit 도구가 D: 작업 사본의 `tests\뜻검사.test.js`에 「File does not exist」를 낸다 — Read는 된다 (2026-11-15 Claude)
+- 증상: D: 작업 사본에서 `tools\뜻검사.js`는 Edit로 고쳐졌다. 그런데 같은 사본의 `tests\뜻검사.test.js`는 Read로 열린 뒤에도 Edit가 「File does not exist」로 두 번 거절했다.
+- 원인: 확인하지 못했다. 파일 이름의 한글 정규화나 도구의 파일 상태 기록과 관련된 것으로 보인다.
+- 고침: 그 자리에서 node 스크립트(Write로 스크래치에 쓴 것)로 「한 번만 있는 글을 찾아 바꾸기」를 했다. 같은 글이 두 번 있으면 멈추게 했다.
+- 다시 확인: 바꾼 뒤 그 파일의 시험(`node --test tests/뜻검사.test.js`)을 돌려 새 시험이 도는지 본다.
+
 ## Hermes(텔레그램 팁 봇)
 
 봇 구성·장부·카드 절차는 [참고 카드 README](../참고카드/README.md)와 Hermes 스킬 폴더(`%LOCALAPPDATA%\hermes\skills\research\synk-tip-review\`)에 있다.

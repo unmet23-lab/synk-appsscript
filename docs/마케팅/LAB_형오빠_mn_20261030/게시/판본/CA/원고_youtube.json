@@ -1,0 +1,24 @@
+{
+  "id": "판본-CA-youtube",
+  "brand": "LAB",
+  "platform": "youtube",
+  "language": "en",
+  "audioLanguage": "en",
+  "alteredContent": false,
+  "format": "shorts",
+  "madeForKids": false,
+  "category": "Education",
+  "title": "Oppa or hyeong? Depends on who’s talking 👀 #learnkorean",
+  "caption": "Korean has four words for older siblings, and the one you use depends on whether you’re a guy or a girl. Guys: 형 (hyeong), 누나 (nuna). Girls: 오빠 (oppa), 언니 (eonni).\nCalling your older brother in for supper at the cottage? If you’re a girl, it’s 오빠 (oppa)!\nAnd yes, girls call their boyfriend 오빠 too.\n\nSYNK LAB\n#learnkorean #koreanculture #kdrama",
+  "pinnedComment": "Quick quiz: say you’re a girl. What do you call your big bro? 👇",
+  "_원문": {
+    "title": "오빠야 형이야? 누가 말하느냐에 달렸다 👀 #learnkorean",
+    "caption": "한국어에는 손위 형제를 부르는 말이 넷 있고, 어느 말을 쓰는지는 네가 남자냐 여자냐에 달렸다. 남자: 형, 누나. 여자: 오빠, 언니.\n별장에서 저녁 먹으라고 손위 남자 형제를 부른다? 네가 여자라면 오빠다!\n그리고 맞다, 여자들은 남자친구도 오빠라고 부른다.\n\nSYNK LAB\n#learnkorean #koreanculture #kdrama",
+    "pinnedComment": "짧은 퀴즈: 네가 여자라고 하자. 손위 남자 형제를 뭐라고 불러? 👇"
+  },
+  "_칸": {
+    "caption": {
+      "2": "예문"
+    }
+  }
+}
