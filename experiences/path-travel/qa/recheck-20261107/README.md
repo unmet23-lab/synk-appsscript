@@ -53,6 +53,10 @@ synk-policy `e7edd3c`(11-07 17:28 KST) — 자료 세 파일과 그 자료를 �
 3. `qa/recheck-<YYYYMMDD>/`를 새로 만들고 이 폴더의 `apply-recheck.mjs`·`gen-ledger.mjs`를 본떠 반영기·대장을 둔다. `tests/path-travel-live-catalog.test.mjs`는 확인일로 그 폴더를 찾는다.
 4. `node --test tests/path-travel-*.test.mjs` → 공개(아래)와 같은 길.
 5. 자료를 공개한 뒤 synk.im PATH 첫 화면 · 홈 PATH 칸의 예시 하루를 새 확인일 30일 안의 날로 다시 굽는다 — [리디자인 설명 5-2절](../../../../docs/디자인/synk.im_리디자인_20261106/README.md#5-2-예시-하루-다시-굽기-장소-자료를-다시-확인할-때마다)(11-08 더함, 예약 지시문 8번).
+6. 그록봇 「서울 하루 장소 자료 출처 확인」 루틴(매주 금요일, [그록봇 루틴](../../../../docs/_ops/그록봇_루틴.md))이 남긴 「바뀐 값 목록」을 먼저 읽는다. 11-14 시험 실행이 찾은 둘은 Claude가 직접 열어 사실로 확인했다(11-14 추가).
+   - 운현궁 설명에 드라마 제목이 빠져 「인기 드라마 의 촬영 장소」로 공개돼 있다. 출처에는 「<궁>」이 있다. 꺾쇠가 태그로 지워진 것으로 보인다. 제목을 되살리고, 같은 꼴로 지워진 글이 더 있는지 찾는다.
+   - 발우공양의 출처 페이지(visitseoul.net KOP030871)가 「찾을 수 없음」으로 바뀌었다. 새 출처를 찾거나, 못 찾으면 운영 안내를 「확인 필요」로 둔다.
+   - 기간 값 셋이 11월 말에 끝난다. 운현궁 야간 개방(11-29), 서울공예박물관 야간개관(11-30), 서울역사박물관 야간 개방 확대(11-30)다.
 
 공개: 공개본의 세 자료 파일은 원본 바이트 그대로라 `node tools/공개.js 올리기 try/travel/places-v2.mjs=experiences/path-travel/places-v2.mjs try/travel/real-places.mjs=… try/travel/real-course-data.mjs=… --후보폴더 <폴더>`로 후보를 만들고(공개 도구가 부르는 쪽 `?v=`만 바꾼다), `검수묶음.mjs 준비 … --종류 화면 --페이블생략 "<까닭>"` → 아르곤 → `--실행`. 화면 코드까지 다시 실을 때는 SYNK-website **origin 판**(`codex/company-conversations`)의 `sync-travel-experience.mjs`를 워크트리로 받아 돌린다 — 공용 `Documents/SYNK-website` 작업본은 origin보다 37커밋 뒤(11-07)라 옛 목록이 지워진 파일을 찾다 멈춘다. origin 판은 origin/master 사본으로 92개 파일을 내고 자료 세 파일이 공개본과 같았다(11-07 확인).
 
