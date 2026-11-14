@@ -19,6 +19,9 @@ const roster = JSON.parse(read('roster-v2.json')).models;
 // 11-03 전에 나간 공유 주소는 셋째 자리에 목소리 번호가 있다. 지금 화면은 그 자리를 읽지 않고, 다시 공유하면 0으로 적는다.
 const sharedHash = '#p-F02.1.0~F04.0.2';
 const reshared = '#p-F02.1.0~F04.0.0';
+// PULSE_QA_CPU=<배율>(예: 6)이면 CDP로 브라우저 CPU를 그만큼 늦춰 돌고, 시간 제한도 그 배율만큼 늘린다 — 부하가 큰 PC에서 나는 흔들림을
+// 재현하고 고친 뒤 확인할 때 쓴다(11-15, 현장 노트 「page.goto가 #만 바꾸면」).
+const CPU = Math.max(1, Number(process.env.PULSE_QA_CPU) || 1);
 
 
 // 원고 그대로 실행한다. build-site.cjs가 만드는 자료 꼴을 따르되 사진·영상은 무해한 SVG로 바꾸고, 실제 계정·바깥 주소는 쓰지 않는다.
@@ -48,7 +51,7 @@ function fixture() {
     read('site-src/template.html').replace(/@@([A-Z]+)@@/g, (_, key) => rep[key]) + '</html>';
 }
 
-test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_000 }, async t => {
+test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_000 * CPU }, async t => {
   const { chromium } = require(require.resolve('playwright', { paths: [ROOT, path.join(os.homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules')] }));
   // 빌드 뒤에는 같은 동작을 생성된 HTML에서도 확인할 수 있다(site/는 git 밖 — 빌드한 작업본에서).
   const built = process.env.PULSE_QA_PAGE || '';
@@ -84,7 +87,8 @@ test('PULSE: 공유·문의·스와이프 실제 Chrome 회귀', { timeout: 120_
   async function withPage(pkg, fn, options = {}, ask = '') {
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'no-preference', ...options });
     const page = await context.newPage(), errors = [];
-    page.setDefaultTimeout(5000);
+    page.setDefaultTimeout(5000 * CPU);
+    if (CPU > 1) await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: CPU });
     page.on('pageerror', error => errors.push(error.message));
     await context.route('**/*', route => route.request().url().startsWith(url) || route.request().url().startsWith('data:') ? route.continue() : route.abort());
     await page.addInitScript(({ pkg, ask }) => {
