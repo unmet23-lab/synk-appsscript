@@ -65,6 +65,7 @@ const Shade: React.FC = () => {
 };
 
 // 큰 글자가 곧 말 — at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄만).
+// v14(11-14 맥락 없는 Opus 컷 전수 P1 「사과 답장이 글로만 1.4~1.7초 — 다시 켰다는 작은 글을 놓치면 「뽑았는데 AI가 답했다」로 읽힘」): 작은 글(출처 · 맥락 줄)은 블록 시작(from)에 먼저 뜨고, 큰 줄은 at 시각에 뜬다 — from과 at[0]이 같은 줄은 그대로다
 const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
@@ -78,7 +79,7 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
   };
   return (
     <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: deep ? '0 0 3px rgba(0,0,0,0.55), 0 1px 12px rgba(0,0,0,0.55)' : '0 1px 10px rgba(0,0,0,0.45)' }}>
-      {meta ? <div style={{ ...up(0, at ? 0 : undefined), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18, maxWidth: 820, wordBreak: 'keep-all', lineHeight: 1.3, whiteSpace: 'pre-line' }}>{meta}</div> : null}
+      {meta ? <div style={{ ...up(0), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#D2D2D2', marginBottom: 18, maxWidth: 820, wordBreak: 'keep-all', lineHeight: 1.3, whiteSpace: 'pre-line' }}>{meta}</div> : null}
       {lines.map((l, i) => (
         <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === 0 ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
