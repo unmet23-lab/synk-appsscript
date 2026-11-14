@@ -81,7 +81,7 @@ export function createWorkspaceAccessService({store,clock=()=>new Date().toISOSt
   function revoke(actor,id){
     const by=admin(actor);return store.transaction(()=>{
       admin(by);const row=store.get('workspaceInvites',id)||legacyPending().find(row=>row.id===id);if(!row)throw fail('초대를 찾지 못했어요.',404);
-      if(row.status!=='pending')throw fail('이미 사용하거나 취소한 초대예요.',409);
+      if(row.status!=='pending'||Date.parse(row.expiresAt)<=Date.parse(clock()))throw fail('이미 만료되었거나 사용·취소된 초대예요.',409);
       store.db.prepare("DELETE FROM tokens WHERE hash=? AND purpose='invite'").run(row.tokenHash);
       store.put('workspaceInvites',id,{...row,status:'revoked',revokedAt:clock()});audit(by,'workspace-invite-revoked',id,{});return {ok:true};
     });

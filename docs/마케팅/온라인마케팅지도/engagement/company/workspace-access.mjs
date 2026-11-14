@@ -58,7 +58,7 @@ export function hasWorkspaceFeature(user,feature){
   const access=workspaceAccess(user);
   // Old accounts retain their existing permissions until the owner assigns them.
   // New invitations always have a validated profile, so this cannot be opted into.
-  return Boolean(user&&user.active!==false&&(access.admin||access.legacy||access.features.includes(feature)));
+  return Boolean(user&&user.active!==false&&(access.admin||access.legacy&&!['path','lectures'].includes(feature)||access.features.includes(feature)));
 }
 export function requireWorkspaceFeature(user,feature){
   if(!user||user.active===false)throw fail('먼저 회사 계정으로 로그인해 주세요.',401);

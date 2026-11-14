@@ -85,6 +85,31 @@ test('admin can bind existing public statistics reader without creating owner or
  assert.equal((await a('/api/analytics?business=LAB')).data.unassignedChannelCount,1);
  assert.equal((await a('/api/settings',{enabled:true,hoursKst:[9,24]})).status,400);
 });
+test('public reader binding preserves a running recent collection on the target or another reader channel',async t=>{
+ const results=[];
+ for(const scope of ['target','reader']){
+  let release,started;const began=new Promise(resolve=>{started=resolve;}),hold=new Promise(resolve=>{release=resolve;});
+  const {app,client,admin}=await fixture(t,async(c,credentials,options)=>{started(options);await hold;return {channel:{externalId:c.id},posts:[],coverage:{status:'complete'},warnings:[]};});
+  const a=await client(),target=(await a('/api/channels',{urls:'https://youtube.com/@recent-target-'+scope})).data.added[0];
+  const collecting=scope==='target'?target:(await a('/api/channels',{urls:'https://youtube.com/@recent-reader'})).data.added[0];
+  await a(`/api/channels/${collecting.id}/connection`,{apiKey:'synthetic-recent-key'});
+  app.store.setSecret('collection:youtube-public',{accessToken:'synthetic-reader',refreshToken:'synthetic-refresh',clientId:'synthetic-client',clientSecret:'synthetic-secret',connectedBy:admin.id,channelIds:scope==='reader'?[collecting.id]:[],expiresAt:new Date(Date.now()+3600000).toISOString()});
+  app.enqueueCollection(admin,app.store.get('channels',collecting.id),{mode:'recent'});
+  try{
+   assert.ok((await began).recentSince);
+   const channelBefore=app.store.get('channels',collecting.id),targetBefore=app.store.get('channels',target.id),readerBefore=app.store.secret('collection:youtube-public'),auditBefore=app.store.all('audit');
+   assert.equal(channelBefore.recentStatus,'collecting');assert.notEqual(channelBefore.status,'collecting');
+   const response=await a(`/api/channels/${target.id}/public-collection`,{});
+   results.push({scope,status:response.status,recentStatus:app.store.get('channels',collecting.id).recentStatus});
+   if(response.status===409){
+    assert.deepEqual(app.store.get('channels',collecting.id),channelBefore);assert.deepEqual(app.store.get('channels',target.id),targetBefore);
+    assert.deepEqual(app.store.secret('collection:youtube-public'),readerBefore);assert.deepEqual(app.store.all('audit'),auditBefore);
+   }
+  }finally{release();await app.waitForIdle();}
+ }
+ assert.deepEqual(results,[{scope:'target',status:409,recentStatus:'collecting'},{scope:'reader',status:409,recentStatus:'collecting'}]);
+});
+
 test('collector stores real zero/null, no first-observation growth, day drilldown and idempotency',async t=>{
  let views=100;const collect=async()=>({channel:{externalId:'channel1',displayName:'Channel One',followers:0,views:views},posts:[{externalId:'video1',url:'https://www.youtube.com/watch?v=video1',title:'One',publishedAt:'2026-01-01T00:00:00Z',metrics:{views,likes:0,comments:3,shares:null,saves:null,reach:null}}],coverage:{status:'complete',ownerAuthorized:false},warnings:[]});
  const {app,client}=await fixture(t,collect);const a=await client();const c=(await a('/api/channels',{urls:'https://youtube.com/@hello'})).data.added[0];

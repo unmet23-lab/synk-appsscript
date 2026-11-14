@@ -11,9 +11,9 @@ import {createWorkspaceAccessService} from './workspace-access-service.mjs';
 import {hash} from './store.mjs';
 
 const profile=(...companies)=>({memberships:companies.map(company=>({company,role:{LAB:'teacher',PATH:'counselor',SHIFT:'instructor',PULSE:'producer'}[company]})),duties:[]});
-async function fixture(t){
+async function fixture(t,{clock}={}){
   const dir=await mkdtemp(join(tmpdir(),'synk-workspace-access-'));
-  const app=createCompanyApp({dataDir:dir,port:0,allowTestHost:true,schedule:false});
+  const app=createCompanyApp({dataDir:dir,port:0,allowTestHost:true,schedule:false,...(clock?{clock}:{})});
   const address=await app.start(),base='http://127.0.0.1:'+address.port;
   t.after(async()=>{await app.stop();await rm(dir,{recursive:true,force:true});});
   const add=(name,role='member',workspaceProfile)=>{const u=app.store.createUser({name,email:name+'@example.test',role});if(workspaceProfile)app.store.put('users',u.id,{...u,workspaceProfile:{...workspaceProfile,revision:1}});return app.store.get('users',u.id);};
@@ -254,6 +254,60 @@ test('legacy users retain their old access until explicitly assigned',async t=>{
   assert.equal((await a('/api/members/'+user.id+'/workspace-profile',{revision:0,workspaceProfile:{memberships:[],duties:[]}})).status,200);
   assert.equal((await client(user)('/api/content-workspace')).status,403);
 });
+test('expired invitations reject stale cancellation without rewriting their history',async t=>{
+  let at=new Date().toISOString();
+  const {app,a}=await fixture(t,{clock:()=>at});
+  const issued=await a('/api/members/invite',{name:'만료 합성 직원',email:'expired-cancel@example.test',workspaceProfile:profile('PATH')});
+  assert.equal(issued.status,201);
+  const id=issued.data.id,before=app.store.get('workspaceInvites',id),audit=app.store.all('audit');
+  const token=app.store.db.prepare('SELECT * FROM tokens WHERE hash=?').get(before.tokenHash);
+  for(const offset of [0,1]){
+    at=new Date(Date.parse(before.expiresAt)+offset).toISOString();
+    assert.equal((await a('/api/workspace-invites')).data.invites.find(row=>row.id===id).status,'expired');
+    assert.equal((await a('/api/workspace-invites/'+id+'/revoke',{})).status,409);
+    assert.deepEqual(app.store.get('workspaceInvites',id),before);
+    assert.deepEqual(app.store.db.prepare('SELECT * FROM tokens WHERE hash=?').get(before.tokenHash),token);
+    assert.deepEqual(app.store.all('audit'),audit);
+  }
+});
+
+test('legacy access does not grant new company work and assignment enables only its company',async t=>{
+  const {app,add,client,a}=await fixture(t),user=add('legacy-company'),c=client(user),before=app.store.all('companyWork'),results=[];
+  for(const company of ['PATH','SHIFT']){
+    results.push({company,read:(await c('/api/company-work/'+company)).status,write:(await c('/api/company-work/'+company,{title:'미배정 합성 업무'})).status});
+  }
+  assert.deepEqual(results,[{company:'PATH',read:403,write:403},{company:'SHIFT',read:403,write:403}]);
+  assert.deepEqual(app.store.all('companyWork'),before);
+  assert.equal((await c('/api/content-workspace')).status,200);
+  assert.equal((await a('/api/company-work/PATH',{title:'관리자 합성 업무'})).status,201);
+  assert.equal((await a('/api/members/'+user.id+'/workspace-profile',{revision:0,workspaceProfile:profile('SHIFT')})).status,200);
+  const assigned=client(user);
+  assert.equal((await assigned('/api/company-work/SHIFT',{title:'배정된 합성 강의'})).status,201);
+  assert.equal((await assigned('/api/company-work/SHIFT')).status,200);
+  assert.equal((await assigned('/api/company-work/PATH')).status,403);
+});
+
+test('assigned social and pages duties skip unauthorized optional sources without hiding source failures',async t=>{
+  const {app,add,client}=await fixture(t);
+  for(const duty of ['social','pages']){
+    const user=add('optional-'+duty,'member',{...profile('PATH'),duties:[duty]}),c=client(user);
+    const social=await c('/api/social/workspace'),weekly=await c('/api/weekly-summary');
+    assert.equal(social.status,200,duty+' opens SNS without client management');
+    assert.deepEqual(social.data.clientSources,[]);
+    assert.equal(weekly.status,200);
+    assert.deepEqual(weekly.data.sections.filter(section=>section.status==='partial').map(section=>section.id),[],duty+' treats unassigned sources as empty');
+    assert.equal((await c('/api/client-projects')).status,403);
+    if(duty==='pages')assert.equal((await c('/api/content-workspace')).status,403);
+  }
+  const user=add('optional-clients','member',{...profile('PULSE'),duties:['social']}),c=client(user),read=app.clientProjects.workspace;
+  app.clientProjects.workspace=()=>{throw new Error('synthetic optional-source failure');};
+  try{
+    const weekly=await c('/api/weekly-summary');
+    assert.equal(weekly.status,200);
+    assert.ok(weekly.data.sections.some(section=>section.status==='partial'),'an assigned source error is still reported');
+  }finally{app.clientProjects.workspace=read;}
+});
+
 test('service calls used by shared cards recheck assigned features even with a stale caller',async t=>{
   const {app,add}=await fixture(t),user=add('author','member',profile('PULSE')),content=createContentService({store:app.store}),clients=createClientProjectsService({store:app.store});
   const draft=content.generate(user,{seriesId:'synkbrief-use',topic:'합성 시험 기획'}).draft;

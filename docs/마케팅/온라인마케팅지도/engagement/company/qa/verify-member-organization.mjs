@@ -18,14 +18,24 @@ const probe = createServer();
 await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
 const port = probe.address().port;
 await new Promise(resolve => probe.close(resolve));
-const app = createCompanyApp({ dataDir: directory, port, allowTestHost: true, schedule: false });
-const report = { checks: [], errors: [], screenshots: [] };
-let browser,failure;
+const report = { checks: [], errors: [], screenshots: [], blockedBrowserRequests: 0, blockedServerRequests: 0 };
+const originalFetch = globalThis.fetch;
+let app,browser,failure;
 const heldRequestReleases=[];
 function heldRequest(){let release;const promise=new Promise(resolve=>{release=resolve;});heldRequestReleases.push(release);return {promise,release};}
 const visibleIds=page=>page.locator('.org-table tbody [data-org-action="detail"]').evaluateAll(elements=>elements.map(element=>element.dataset.id).sort());
 function check(label, value = true) { assert.ok(value, label); report.checks.push(label); }
 try {
+  // The browser talks to the disposable server; that server must never call another service.
+  globalThis.fetch = async () => { report.blockedServerRequests++; throw new Error('External requests are disabled in organization QA'); };
+  app = createCompanyApp({
+    dataDir: directory, messengerDataDir: join(directory, 'messenger'),
+    host: '127.0.0.1', port, origin: `http://127.0.0.1:${port}`, platformUrl: `http://127.0.0.1:${port}`,
+    allowTestHost: true, schedule: false, workNotificationsEnabled: false, webPushEnabled: false,
+    synkIdentityConfig: null, teachingConfig: null, synkCustomerIdentityConfig: null,
+    messengerDriveStorage: { active: async () => null, status: async () => ({ provider: 'local' }) },
+    collector: async () => { throw new Error('Collection is not part of organization QA'); }
+  });
   await mkdir(output, { recursive: true });
   const person = (id, name, role = 'member', teamId = null) => app.store.createUser({ email: `${id}@example.test`, name, role, teamId, password: 'organization-browser-fixture' });
   for (const [id, name] of [['learning', '교육팀'], ['production', '제작팀']]) app.store.put('teams', id, { id, name, active: true });
@@ -51,7 +61,12 @@ try {
   const address = await app.start(), base = `http://127.0.0.1:${address.port}`;
   browser = await chromium.launch({ headless: true, executablePath: process.env.MESSENGER_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe', env: 크롬환경() });
   async function session(user, viewport = { width: 1440, height: 1000 }, options = {}) {
-    const context = await browser.newContext({ viewport,...options });
+    const context = await browser.newContext({ viewport,...options,serviceWorkers: 'block' });
+    await context.route('**/*',route=>{
+      const url=new URL(route.request().url());
+      if(url.origin===base||['data:','blob:'].includes(url.protocol))return route.continue();
+      report.blockedBrowserRequests++;return route.abort();
+    });
     await context.addCookies([{ name: 'synk_company_session', value: app.store.mint('session', user.id, { csrfToken: 'org-browser-csrf' }, 30), url: base }]);
     const page = await context.newPage();
     page.on('pageerror', error => report.errors.push(error.message));
@@ -346,15 +361,16 @@ try {
   check('late reload after real sign-out cannot restore the directory or old editor');
   await signedOut.context.close();
   check('no browser runtime errors', report.errors.length === 0);
+  check('no requests outside the disposable QA server', report.blockedBrowserRequests === 0 && report.blockedServerRequests === 0);
 } catch(error){
   failure=error;report.failure={name:error.name,message:error.message};
 } finally {
   for(const release of heldRequestReleases)release();
-  await finishOrganizationQa({failure,
+  try { await finishOrganizationQa({failure,
     writeReport:()=>writeFile(join(output,'report.json'),JSON.stringify(report,null,2)),
     closeBrowser:async()=>{if(browser)await browser.close();},
-    stopApp:()=>app.stop(),
+    stopApp:()=>app?.stop(),
     removeDirectory:()=>rm(directory,{recursive:true,force:true})
-  });
+  }); } finally { globalThis.fetch = originalFetch; }
 }
 console.log(JSON.stringify({ checks: report.checks.length, errors: report.errors, output }, null, 2));

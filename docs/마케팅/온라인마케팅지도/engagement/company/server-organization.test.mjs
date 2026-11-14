@@ -75,8 +75,16 @@ test('invite role/team are applied from the invitation and cannot be overridden 
   assert.equal(joined.status,201);assert.equal(joined.data.user.role,'viewer');assert.equal(joined.data.user.teamId,'alpha');
   const saved=app.store.all('users').find(row=>row.email==='readonly@example.test');assert.equal(saved.role,'viewer');assert.equal(saved.teamId,'alpha');
   assert.equal((await guest('/api/join',{token,name:'Again',password})).status,403);
-  denied(await a('/api/members/invite',{name:'Manager',email:'manager@example.test',role:'manager',teamId:null}));
-  denied(await a('/api/members/invite',{name:'Invalid',email:'invalid@example.test',role:'unexpected',teamId:'alpha'}));
+  const invitations=app.store.all('workspaceInvites'),tokens=app.store.db.prepare("SELECT hash FROM tokens WHERE purpose='invite' ORDER BY hash").all();
+  for(const input of [
+    {name:'Manager',email:'manager@example.test',role:'manager',teamId:null},
+    {name:'Invalid',email:'invalid@example.test',role:'unexpected',teamId:'alpha'},
+    {name:'Admin',email:'admin-invite@example.test',role:'admin',teamId:'alpha'},
+  ]){
+    assert.equal((await a('/api/members/invite',{...input,workspaceProfile:{memberships:[{company:'LAB',role:'teacher'}],duties:[]}})).status,400);
+    assert.deepEqual(app.store.all('workspaceInvites'),invitations);
+    assert.deepEqual(app.store.db.prepare("SELECT hash FROM tokens WHERE purpose='invite' ORDER BY hash").all(),tokens);
+  }
 });
 
 test('an administrator can change only their own team while keeping the current session and revoking older sessions',async t=>{

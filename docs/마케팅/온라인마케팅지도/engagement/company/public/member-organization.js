@@ -146,7 +146,28 @@ document.addEventListener('click', async event => {
       if (submit) { submit.disabled = false; submit.focus(); }
       notify(action === 'keep-draft' ? '작성한 초안을 유지했어요. 저장하면 반영돼요.' : '최신 업무 정보로 바꿨어요.');
     }
-    else if (action === 'refresh') { target.disabled = true; await loadState(); notify('직원 정보를 새로 불러왔어요.'); }
+    else if (action === 'refresh') {
+      const auth = companyAuthSnapshot(), modalReq = state.modalRequest, hadTargetFocus = document.activeElement === target;
+      const restoreFocus = hadTargetFocus || !document.activeElement || document.activeElement === document.body;
+      target.disabled = true;
+      try {
+        await loadState();
+        if (companyAuthCurrent(auth)) {
+          if (restoreFocus && state.tab === 'members' && state.modalRequest === modalReq && (!document.activeElement || document.activeElement === document.body || document.activeElement === target)) {
+            document.querySelector('.organization-page [data-org-action="refresh"]')?.focus({ preventScroll: true });
+          }
+          notify('직원 정보를 새로 불러왔어요.');
+        }
+      } catch (refreshErr) {
+        if (target.isConnected) {
+          target.disabled = false;
+          if (hadTargetFocus && companyAuthCurrent(auth) && state.tab === 'members' && state.modalRequest === modalReq && (!document.activeElement || document.activeElement === document.body)) {
+            target.focus({ preventScroll: true });
+          }
+        }
+        throw refreshErr;
+      }
+    }
     else if (action === 'reload-detail') {
       const form = target.closest('[data-org-form]');
       if (!form) return;
@@ -205,11 +226,19 @@ document.addEventListener('submit', async event => {
     // A delayed write response may already be superseded by another administrator.
     // Refresh canonical state after the write; never apply that response to the directory.
     organizationWriteVersion++;
-    await loadState();
-    if (request === state.modalRequest && form.isConnected) closeModal();
-    notify('업무 정보를 저장했어요.');
+    try {
+      await loadState();
+      if (request === state.modalRequest && form.isConnected) closeModal();
+      if (companyAuthCurrent(form._organizationAuth)) notify('업무 정보를 저장했어요.');
+    } catch (refreshError) {
+      if (request === state.modalRequest && form.isConnected) closeModal();
+      if (refreshError?.code !== 'SESSION_CHANGED' && companyAuthCurrent(form._organizationAuth)) notify('업무 정보는 저장했지만 직원 목록을 새로 불러오지 못했어요. 새로고침해 확인해 주세요.');
+    }
   } catch (error) {
-    if (error.code !== 'SESSION_CHANGED' && form.isConnected) errorBox.textContent = error.message;
+    if (error?.code !== 'SESSION_CHANGED' && companyAuthCurrent(form._organizationAuth)) {
+      if (request === state.modalRequest && form.isConnected) errorBox.textContent = error.message;
+      else notify(error.message);
+    }
   } finally {
     organizationWriteVersion++;
     unlock();

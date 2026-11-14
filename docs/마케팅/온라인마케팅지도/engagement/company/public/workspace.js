@@ -6,7 +6,7 @@ const workspaceViewNames={overview:'마케팅 현황',analysis:'성과 분석',h
 // 레일(11-06 새 판): 오늘 · 메신저 · 작업실 · SNS · 수업. 셋째 값은 빠른 검색 목록의 icon() 이름, 레일 그림은 workspaceRailGlyph.
 const workspacePrimaryTabs=[['home','오늘','clock'],['messenger','메신저','chat'],['workroom','작업실','bookmark'],['social','SNS','calendar'],['members','사람','users'],['teaching','LAB 수업','users'],['path','PATH 업무','users'],['lectures','SHIFT 강의','calendar']];
 // One application frame for every workspace; only its contextual menu changes.
-function workspaceHasContextMenu(){return typeof state!=='undefined'&&['workroom','social'].includes(workspacePrimaryView());}
+function workspaceHasContextMenu(){if(typeof state==='undefined')return false;const view=workspacePrimaryView();return view==='workroom'||view==='social'&&(typeof waFeature!=='function'||waFeature('social'));}
 function workspaceSidebarExpanded(){if(!workspaceHasContextMenu())return false;return window.matchMedia('(max-width:700px)').matches?Boolean(state.workspaceSidebarOpen):!state.workspaceSidebarCollapsed;}
 function workspaceGlyph(kind){return kind==='search'?'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>':'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';}
 function workspaceContextMenu(){
@@ -18,7 +18,7 @@ function workspaceContextMenu(){
   }else if(view==='handbook'){
     const categories=typeof cg!=='undefined'?cg.data?.categories||[]:[];
     items=[{id:'all',label:'한눈에'},...categories].map(row=>link(row.id,row.label,'info','company-guide-category',`data-id="${escape(row.id)}"`,typeof cg!=='undefined'&&!cg.selected&&cg.category===row.id)).join('');
-  }else if(view==='social'){
+  }else if(view==='social'&&(typeof waFeature!=='function'||waFeature('social'))){
     title='SNS·마케팅';
     const turn=typeof snsSimple!=='undefined'&&snsSimple.data&&typeof ssMyTurn==='function'?ssMyTurn(snsSimple.data):0;
     items=[['map','나라 지도','globe'],['today','오늘','clock'],['results','성과','chart'],['accounts','계정','users']].map(([id,label,glyph])=>link(id,label,glyph,'social-view',`data-view="${id}"`,state.tab==='social'&&typeof socialWorkspaceSection==='function'&&socialWorkspaceSection()===id).replace('</span></button>',`</span>${id==='today'&&turn?`<b class="nav-count social-turn" aria-label="내 차례 ${turn}">${turn}</b>`:''}</button>`)).join('');

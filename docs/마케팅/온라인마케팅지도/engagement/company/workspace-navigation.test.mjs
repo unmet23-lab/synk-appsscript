@@ -11,8 +11,8 @@ const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'ut
 const workroomSource=readFileSync(new URL('./public/workroom.js',import.meta.url),'utf8');
 const accessSource=readFileSync(new URL('./public/workspace-access.js',import.meta.url),'utf8');
 
-function accessFormFixture(){
-  const handlers=new Map(),calls=[],notifications=[],state={user:null,tab:'lectures'};
+function accessFormFixture({user=null}={}){
+  const handlers=new Map(),calls=[],notifications=[],state={user,tab:'lectures',authMode:'login',modalRequest:0};
   let response={},failure=null;
   const context=vm.createContext({state,URL,URLSearchParams,location:new URL('https://workspace.example.test/'),
     document:{addEventListener(type,handler){handlers.set(type,handler);}},
@@ -40,13 +40,16 @@ test('invite form parses raw codes and links and enters join only after server i
     assert.equal(f.state.authMode,'join');assert.equal(f.state.authToken,token);assert.equal(form.submit.disabled,false);
   }
   const invalid=accessFormFixture(),bad=await invalid.submit('wa-code',{code:'bad-code'});
-  assert.equal(invalid.calls.length,0);assert.match(bad.error.textContent,/다시 확인/);assert.equal(invalid.state.authMode,undefined);
+  assert.equal(invalid.calls.length,0);assert.match(bad.error.textContent,/다시 확인/);assert.equal(invalid.state.authMode,'login');assert.equal(invalid.state.authToken,undefined);
   const revoked=accessFormFixture();revoked.reject(new Error('취소된 초대예요.'));
-  const denied=await revoked.submit('wa-code',{code:token});assert.equal(denied.error.textContent,'취소된 초대예요.');assert.equal(revoked.state.authMode,undefined);
+  const denied=await revoked.submit('wa-code',{code:token});assert.equal(denied.error.textContent,'취소된 초대예요.');assert.equal(revoked.state.authMode,'login');assert.equal(revoked.state.authToken,undefined);
+  const moved=accessFormFixture();let finish;moved.respond(new Promise(resolve=>{finish=resolve;}));
+  const pending=moved.submit('wa-code',{code:token});moved.state.authMode='reset';finish({memberships:[]});await pending;
+  assert.equal(moved.state.authMode,'reset');assert.equal(moved.state.authToken,undefined,'a late response cannot enter join after the auth view changes');
 });
 
 test('member form submits concurrent roles with a revision and displays assignment warnings',async()=>{
-  const f=accessFormFixture();f.respond({warnings:['기존 고객 업무의 담당자를 다시 지정해 주세요.']});
+  const f=accessFormFixture({user:{id:'synthetic-admin',role:'admin'}});f.respond({warnings:['기존 고객 업무의 담당자를 다시 지정해 주세요.']});
   const fields=[['waCompany','SHIFT'],['waRole_SHIFT','instructor'],['waCompany','PULSE'],['waRole_PULSE','producer'],['waDuty','social']];
   await f.submit('wa-member',fields,{id:'synthetic-member',revision:'3'});
   assert.equal(f.calls[0].path,'/api/members/synthetic-member/workspace-profile');
@@ -55,7 +58,7 @@ test('member form submits concurrent roles with a revision and displays assignme
 });
 
 test('lecture form saves company and revision then refreshes its list; failures remain editable',async()=>{
-  const f=accessFormFixture();f.respond({items:[]});
+  const f=accessFormFixture({user:{id:'synthetic-staff',role:'member'}});f.respond({items:[]});
   await f.submit('wa-work',{title:'합성 강의',date:'2026-12-01',note:'준비',status:'open'},{id:'synthetic-lecture',company:'SHIFT',revision:'4'});
   assert.equal(f.calls[0].path,'/api/company-work/SHIFT/synthetic-lecture');assert.equal(f.calls[0].input.revision,4);
   assert.equal(f.calls[1].path,'/api/company-work/SHIFT');assert.equal(f.notifications[0],'저장했어요.');

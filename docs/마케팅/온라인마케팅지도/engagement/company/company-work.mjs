@@ -5,7 +5,7 @@ const definitions={PATH:{feature:'path',title:'상담·정착 업무'},SHIFT:{fe
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 export function createCompanyWork({store,clock=()=>new Date().toISOString()}){
   function current(actor,company,write=false){
-    const definition=definitions[company],user=actor&&store.get('users',actor.id);
+    const definition=Object.hasOwn(definitions,company)?definitions[company]:null,user=actor&&store.get('users',actor.id);
     if(!definition)throw fail('업무 공간을 찾지 못했어요.',404);
     requireWorkspaceFeature(user,definition.feature);
     if(write&&user.role==='viewer')throw fail('보기 전용 계정이에요.',403);

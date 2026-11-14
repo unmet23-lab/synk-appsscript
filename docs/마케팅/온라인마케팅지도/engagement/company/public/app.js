@@ -95,7 +95,7 @@ let companyAuthGeneration=0;
 for(const key of ['user','csrf']){
   let value=state[key];
   Object.defineProperty(state,key,{enumerable:true,configurable:false,get:()=>value,set(next){
-    if(key==='user'?(value?.id||null)!==(next?.id||null):value!==next){companyAuthGeneration++;if(typeof clientDeskReset==='function')clientDeskReset();}
+    if(key==='user'?(value?.id||null)!==(next?.id||null):value!==next){companyAuthGeneration++;if(key==='user'&&value?.id&&typeof resetWorkroom==='function')resetWorkroom();if(typeof clientDeskReset==='function')clientDeskReset();}
     value=next;
     globalThis.SynkDeviceNotifications?.syncIdentity({userId:state.user?.id||null,csrf:state.csrf||'',generation:companyAuthGeneration});
   }});
@@ -342,7 +342,7 @@ function shell(content) {
   if(typeof hideChartLeaders==='function')hideChartLeaders();
   const openDetails=[...(app.querySelectorAll?.('details[id][open]')||[])].map(element=>element.id);
   const focused=app.contains(document.activeElement)?document.activeElement:null;
-  const focusSelector=focused?['data-action','data-tab','data-mode','data-view','data-metric','data-filter','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date'].filter(key=>focused.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(focused.getAttribute(key))}"]`).join(''):'';
+  const focusSelector=focused?['data-action','data-org-action','data-tab','data-mode','data-view','data-metric','data-filter','data-org-filter','data-brand','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date'].filter(key=>focused.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(focused.getAttribute(key))}"]`).join(''):'';
   const tabs=workspaceAvailableTabs(),utilityTabs=workspaceUtilityTabs();
   const primaryView=workspacePrimaryView(),active=[...tabs,...utilityTabs].find(row=>row[0]===primaryView),data=state.data||{},attention=(data.collection?.needsConnection||0)+(data.collection?.needsReconnect||0)+(data.collection?.failed||0);
   const entering=renderedTab!==state.tab;renderedTab=state.tab;
@@ -493,7 +493,8 @@ function commandModal(){
   renderCommandResults('');
 }
 function renderCommandResults(value){
-  const q=value.trim().toLocaleLowerCase(),menus=[...workspaceAvailableTabs(),...workspaceMarketingTabs.filter(([id])=>waViewAllowed(id)).map(([id,label,glyph])=>[id,`마케팅 · ${label}`,glyph]),...workspaceUtilityTabs()].filter(([,label])=>!q||label.includes(q));
+  const menuAliases={path:'path 상담·정착',members:'사람·조직 직원'};
+  const q=value.trim().toLocaleLowerCase(),menuQ=value.trim().toLowerCase(),menus=[...workspaceAvailableTabs(),...workspaceMarketingTabs.filter(([id])=>waViewAllowed(id)).map(([id,label,glyph])=>[id,`마케팅 · ${label}`,glyph]),...workspaceUtilityTabs()].filter(([id,label])=>!menuQ||`${label} ${menuAliases[id]||''}`.toLowerCase().includes(menuQ));
   const channels=(state.data?.channels||[]).filter(c=>!q||channelSearchText(c).includes(q)).slice(0,8);
   $('.command-results',overlay).innerHTML=`${menus.length?'<div class="command-label">메뉴</div>':''}${menus.map(([id,label,glyph])=>`<button class="command-item" data-action="command-tab" data-tab="${id}">${icon(glyph)}<span>${label}</span>${icon('right')}</button>`).join('')}${channels.length?'<div class="command-label">채널</div>':''}${channels.map(c=>`<button class="command-item" data-action="command-channel" data-id="${escape(c.id)}">${platformMark(c.platform)}<span><strong>${escape(channelName(c))}</strong><small>${escape((c.owners||[]).map(u=>u.name).join(', '))} · ${escape(c.teamName||'팀 없음')}</small></span>${icon('right')}</button>`).join('')}${!menus.length&&!channels.length?'<p class="command-empty">맞는 결과가 없어요. 다른 이름으로 찾아보세요.</p>':''}`;
 }
@@ -617,12 +618,29 @@ function capabilityCard(capability) {
 function modal(title, subtitle, body, wide = false, drawer = false) {
   if(typeof hideChartLeaders==='function')hideChartLeaders();
   state.modalRequest++;
-  state.returnFocus = document.activeElement;
+  if(!(overlay.querySelector('.modal')&&state.returnFocus&&!app.contains(document.activeElement))){
+    state.returnFocus = document.activeElement;
+    state.returnFocusContext = { userId: state.user?.id || null, tab: state.tab };
+  }
   overlay.innerHTML = `<div class="modal-backdrop ${drawer ? 'drawer-backdrop' : ''}"><section class="modal ${wide ? 'wide' : ''} ${drawer ? 'drawer' : ''}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-head"><div><h2 id="modal-title">${title}</h2>${subtitle ? `<p>${subtitle}</p>` : ''}</div><button type="button" class="modal-close" data-action="close-modal" aria-label="닫기">${icon('close')}</button></header><div class="modal-body">${body}</div></section></div>`;
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => (overlay.querySelector('input:not([type="hidden"]),textarea,select') || overlay.querySelector('button'))?.focus());
 }
-function closeModal() { if(typeof clientSearchCancel==='function')clientSearchCancel();state.modalRequest++; overlay.innerHTML = ''; document.body.classList.remove('modal-open'); state.returnFocus?.focus?.(); state.returnFocus = null; }
+function closeModal() {
+  if(typeof clientSearchCancel==='function')clientSearchCancel();
+  const active=document.activeElement,canRestore=!active||active===document.body||active===document.documentElement||overlay.contains(active);
+  const returnFocus=state.returnFocus,context=state.returnFocusContext;
+  const sameContext=!context||(context.userId===(state.user?.id||null)&&context.tab===state.tab);
+  state.modalRequest++; overlay.innerHTML = ''; document.body.classList.remove('modal-open'); state.returnFocus = null; state.returnFocusContext = null;
+  if(!canRestore||!sameContext||!returnFocus)return;
+  if(returnFocus.isConnected!==false&&!returnFocus.disabled&&!returnFocus.closest?.('[inert],[hidden]')){returnFocus.focus?.();return;}
+  const selector=returnFocus.hasAttribute?['data-action','data-org-action','data-tab','data-mode','data-view','data-metric','data-filter','data-org-filter','data-brand','data-date','data-scope','data-range','data-chart','data-id','data-channel-search','data-channel-platform','data-scope-team','data-comparison-filter','data-demo-persona','data-history-action','data-history-field','data-history-value','data-history-date','data-team-trend-action','data-team-trend-value','data-team-trend-team','data-team-trend-compare','data-team-trend-date'].filter(key=>returnFocus.hasAttribute(key)).map(key=>`[${key}="${CSS.escape(returnFocus.getAttribute(key))}"]`).join(''):'';
+  const matched=selector?app.querySelector(selector):null;
+  if(matched&&!matched.disabled&&!matched.closest('[inert],[hidden]')){matched.focus({preventScroll:true});return;}
+  if(returnFocus.hasAttribute?.('data-org-action')||returnFocus.closest?.('.organization-page')){
+    app.querySelector('.organization-page [data-org-action="reset"],.organization-page [data-org-filter="query"],.organization-page [data-org-action="refresh"]')?.focus({preventScroll:true});
+  }
+}
 function addChannelModal() { modal('채널 등록', '채널 주소를 한 줄에 하나씩 붙여 넣어 주세요.', `<form class="form-stack" data-form="add-channels"><div class="form-error" role="alert"></div><label class="field">채널 주소<textarea name="urls" required placeholder="https://www.youtube.com/@우리채널\nhttps://www.instagram.com/우리계정/\nhttps://www.facebook.com/우리페이지\nhttps://www.tiktok.com/@우리계정"></textarea><small>여러 주소를 한 번에 등록할 수 있어요. 이미 있는 주소는 건너뛰어요.</small></label>${isAdmin() ? `<label class="field">담당자<select name="ownerId">${(state.data.members || []).filter(row => row.active !== false && row.role !== 'viewer').map(row => `<option value="${escape(row.id)}" ${row.id === state.user.id ? 'selected' : ''}>${escape(row.name)}</option>`).join('')}</select></label>` : ''}<div class="note-box">${icon('info')}<div>등록한 뒤 채널 카드에서 <strong>계정 연결</strong>을 눌러 주세요. 첫 수집이 끝나면 콘텐츠와 수치가 보여요.</div></div><div class="modal-actions">${button('취소', 'close-modal')}<button type="submit" class="btn primary">등록하기${icon('plus')}</button></div></form>`); }
 async function dayModal(date) {
   modal(`${escape(date.replaceAll('-', '.'))}의 기록`, '그날 기록과 콘텐츠마다 전날보다 늘거나 준 양이에요.', '<div class="loading-panel"><span class="loading-line"></span></div>', true, true);

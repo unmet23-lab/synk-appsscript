@@ -376,7 +376,13 @@ export function createCompanyApp(options={}) {
     return publicationInboxTick;
   }
   const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:collectionCredentialsFor,isConnected:hasConnection,fetchImpl:options.postPerformanceFetch,autoTrack:performanceAutoTrack}),['list','observations']);
-  socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance:postPerformance,clock,...options.socialMarketingOptions});
+  // Optional source lists omit unassigned features; their direct APIs and errors keep their own checks.
+  function optionalWorkspace(service,feature,empty){return {...service,workspace(user){
+    const live=user?.id&&store.get('users',user.id);
+    return live?.active&&!hasWorkspaceFeature(live,feature)?empty():service.workspace(user);
+  }};}
+  const clientProjectSources=optionalWorkspace(clientProjects,'clients',()=>({projects:[]}));
+  socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects:clientProjectSources,performance:postPerformance,clock,...options.socialMarketingOptions});
   const authorizeSocialPublish=input=>{socialProvider.assertUnique?.(input.channel);return socialPublishing.assertExecution({...input,continuation:input.continuation===true||input.phase==='media-fetch'});};
   const socialPublishMedia=createSocialPublishMedia({store,clock,origin,resolveMedia:socialMarketing.resolveMedia,authorizePublish:authorizeSocialPublish,...options.socialPublishMediaOptions});
   const socialProvider=options.socialProvider??(options.socialProviderFactory||createSocialPublishingProvider)({store,clock,getProviderConfig:providerConfig,getCredentials:credentialsFor,resolveMedia:socialMarketing.resolveMedia,issueMediaUrl:(ref,input)=>socialPublishMedia.issue(ref,input),authorizePublish:authorizeSocialPublish,allowedBaseUrls:(process.env.SYNK_SOCIAL_PROVIDER_ALLOWED_URLS||'').split(',').map(x=>x.trim()).filter(Boolean),...options.socialProviderOptions});
@@ -481,7 +487,7 @@ export function createCompanyApp(options={}) {
   const weeklySummarySchedule=options.weeklySummarySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   if(typeof weeklySummarySchedule!=='boolean')throw httpError('주간 정리 자동 실행 설정을 확인해 주세요.');
   const weeklyRuntime=runtimeJob('weekly',weeklySummarySchedule,60000);
-  const weeklySummary=createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow:{workspace:readPublicationWorkday},publicationLearning,socialPublishing,clientProjects,clientWorkflow,contentService:content,clock,taskSummary:(user,period)=>messenger.weeklySummaryForCompanyUser(user.id,{...period,today:new Date(Date.parse(clock())+9*3600000).toISOString().slice(0,10)})});
+  const weeklySummary=createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow:{workspace:readPublicationWorkday},publicationLearning,socialPublishing,clientProjects:clientProjectSources,clientWorkflow:optionalWorkspace(clientWorkflow,'clients',()=>({items:[]})),contentService:optionalWorkspace(content,'production',()=>({drafts:[]})),clock,taskSummary:(user,period)=>messenger.weeklySummaryForCompanyUser(user.id,{...period,today:new Date(Date.parse(clock())+9*3600000).toISOString().slice(0,10)})});
   let weeklySummaryError=false;
   function scanWeeklySummary(){if(stopRequested)return;beginRuntime(weeklyRuntime);try{const result=weeklySummary.scanDue();weeklySummaryError=false;finishRuntime(weeklyRuntime,true);return result;}catch{weeklySummaryError=true;finishRuntime(weeklyRuntime,false);}}
   function readWeeklySummary(user,options={}){const result=weeklySummary.get(user,options);return {...result,schedule:{...result.schedule,enabled:weeklySummarySchedule,serverMustStayRunning:true,status:weeklySummaryError?'error':weeklySummarySchedule?'enabled':'disabled'}};}
@@ -1706,7 +1712,7 @@ export function createCompanyApp(options={}) {
           if(!reader?.accessToken||!reader.refreshToken||!reader.clientId||!reader.clientSecret||!store.get('users',reader.connectedBy)?.active)throw httpError('기존 공개 통계 조회 연결을 먼저 확인해 주세요.',409);
           if(reader.channelIds?.includes(c.id)&&!c.collectionDisabled)return {channel:safeChannel(c,user),scope:'public-statistics-only'};
           // 기존 리더와 새 대상 모두 조회 중에는 연결 상태와 allowlist를 바꾸지 않는다.
-          if(c.status==='collecting'||store.all('channels').some(row=>reader.channelIds?.includes(row.id)&&row.status==='collecting'))throw httpError('공개 통계 수집이 진행 중이에요. 끝난 뒤 연결해 주세요.',409);
+          if(c.status==='collecting'||c.recentStatus==='collecting'||store.all('channels').some(row=>reader.channelIds?.includes(row.id)&&(row.status==='collecting'||row.recentStatus==='collecting')))throw httpError('공개 통계 수집이 진행 중이에요. 끝난 뒤 연결해 주세요.',409);
           store.setSecret('collection:youtube-public',{...reader,channelIds:[...new Set([...(reader.channelIds||[]),c.id])]});
           store.put('channels',c.id,{...c,...COLLECTION_RESET,collectionDisabled:false,connectionVersion:(c.connectionVersion||0)+1});audit(user,'public-collection-connected',c.id);
           return {channel:safeChannel(store.get('channels',c.id),user),scope:'public-statistics-only'};

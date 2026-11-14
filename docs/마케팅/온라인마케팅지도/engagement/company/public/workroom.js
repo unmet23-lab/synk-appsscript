@@ -11,23 +11,45 @@ function resetWorkroom({clearStorage=false}={}){
   Object.assign(wr,{userId:null,guide:null,content:null,loading:false,attempted:false,error:'',request:wr.request+1,view:'desk',phase:'plan',series:'synkbrief-use',platform:'all',limit:8,daily:null,dailyDate:'',dailyRegion:'KR',dailyPlatform:'all',dailyLoading:false,dailyPollFetching:false,dailyAttempted:false,dailyError:'',dailyRequest:wr.dailyRequest+1,dailyActionRequest:wr.dailyActionRequest+1,dailyPlanRequest:wr.dailyPlanRequest+1,dailyCollecting:false,dailySaving:false,dailyLimits:new Map(),dailyPollTimer:null,dailyPollUntil:0,dailyFetchedAt:0,dailyLoadedDay:''});
 }
 function wrIdentity(){
-  if(!state.user)return;
-  if(wr.userId!==state.user.id){resetWorkroom();wr.userId=state.user.id;const params=new URLSearchParams(location.search);if(state.tab==='workroom'&&['desk','trends','tools','pages','clients'].includes(params.get('section')))wr.view=params.get('section');if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['weekly','publication','publish','subtitles','sources','brand','quality','inquiries','productions','automation'].includes(params.get('tool')))makerTools.view=params.get('tool');try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
+  if(!state.user){if(wr.userId)resetWorkroom();return;}
+  if(wr.userId!==state.user.id){
+    const nextView=wr.userId===null&&state.tab==='workroom'&&['desk','trends','tools','pages','clients'].includes(wr.view)?wr.view:'';
+    resetWorkroom();wr.userId=state.user.id;
+    const params=new URLSearchParams(location.search),urlSection=(!params.get('tab')||params.get('tab')==='workroom')?params.get('section'):'';
+    const section=nextView&&nextView!=='desk'?nextView:(urlSection||nextView);
+    if(state.tab==='workroom'&&['desk','trends','tools','pages','clients'].includes(section))wr.view=section;
+    if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['weekly','publication','publish','subtitles','sources','brand','quality','inquiries','productions','automation'].includes(params.get('tool')))makerTools.view=params.get('tool');
+    try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
+}
+function wrClearProduction(){
+  wr.request++;wr.loading=false;wr.attempted=false;wr.error='';
 }
 function ensureWorkroom(){
   if(!state.user)return;wrIdentity();
-  if(!wr.attempted&&!wr.loading)void loadWorkroom();
+  if(!waFeature('production'))wrClearProduction();
+  else if(!wr.attempted&&!wr.loading)void loadWorkroom();
   if(waFeature('production'))wrEnsureDaily();
   if(waFeature('production')&&typeof crEnsure==='function')crEnsure();
   if(waFeature('production')&&typeof makerToolsEnsure==='function')makerToolsEnsure();
   if(waFeature('clients')&&typeof clientDeskEnsure==='function')clientDeskEnsure();
 }
 async function loadWorkroom(){
-  if(!waFeature('production')){wr.attempted=true;wr.loading=false;return;}
-  const userId=state.user?.id;if(!userId)return;wr.userId=userId;const request=++wr.request;wr.loading=true;wr.attempted=true;wr.error='';
+  if(!state.user){wrClearProduction();return;}
+  wrIdentity();
+  if(!waFeature('production')){wrClearProduction();return;}
+  if(wr.loading)return;
+  const userId=state.user.id,auth=typeof companyAuthSnapshot==='function'?companyAuthSnapshot():null,request=++wr.request;wr.loading=true;wr.attempted=true;wr.error='';
   if(state.tab==='workroom')render();
   const results=await Promise.allSettled([api('/api/workroom-guide'),api('/api/content-workspace')]);
-  if(request!==wr.request||state.user?.id!==userId)return;
+  if(request!==wr.request||state.user?.id!==userId||wr.userId!==userId)return;
+  if(!waFeature('production')){wrClearProduction();if(state.tab==='workroom')(typeof renderBackground==='function'?renderBackground:render)();return;}
+  const authAdvanced=Boolean(auth&&typeof companyAuthCurrent==='function'&&!companyAuthCurrent(auth));
+  if(authAdvanced||results.some(result=>result.status==='rejected'&&result.reason?.code==='SESSION_CHANGED')){
+    wrClearProduction();
+    if(!authAdvanced)wr.attempted=true;
+    if(state.tab==='workroom'){if(authAdvanced)void loadWorkroom();else(typeof renderBackground==='function'?renderBackground:render)();}
+    return;
+  }
   if(results[0].status==='fulfilled')wr.guide=results[0].value;
   if(results[1].status==='fulfilled')wr.content=results[1].value;
   wr.error=results.filter(result=>result.status==='rejected').map(result=>result.reason?.message||'자료를 불러오지 못했어요. 다시 불러와 주세요.').join(' ');wr.loading=false;
@@ -57,7 +79,7 @@ function wrDesk(){
   const workingTitle=working?(cp.draftId?(cp.activeDraft?.id===cp.draftId?cp.activeDraft.title||'제목 없는 기획':'저장한 기획'):cp.input?.topic||'쓰던 기획'):'';
   const workingPanel=working?`<aside class="wr-desk-working"><div><span>${cp.draftId?'열어 둔 기획':'쓰던 기획이 있어요'}</span><strong>${escape(workingTitle)}</strong></div>${wrButton('이어 쓰기','resume','','primary')}</aside>`:'';
   const recent=wr.content||typeof cp!=='undefined'&&cp.userId===state.user?.id&&cp.data?drafts.length?`<ul class="wr-desk-drafts">${drafts.slice(0,3).map(row=>`<li><div><strong>${escape(row.title||'제목 없는 기획')}</strong><span>${escape(wr.guide.series.find(s=>s.id===row.seriesId)?.name||'콘텐츠 기획')} · ${escape(({draft:'아이디어',review:'검토 중',ready:'제작 준비'})[row.status]||'상태 모름')} · ${escape(wrDeskDate(row.updatedAt||row.createdAt))} 저장</span></div>${wrButton(viewer?'보기':'이어 쓰기','draft',`data-id="${escape(row.id)}"`,'quiet')}</li>`).join('')}</ul>`:`<div class="wr-desk-empty"><p>아직 저장한 기획이 없어요.</p><span>${viewer?'볼 수 있는 기획은 기획함에 있어요.':'위에서 유형을 고르고 첫 기획을 시작해 보세요.'}</span></div>`:`<p class="wr-desk-empty" role="status">${wr.loading?'저장한 기획을 불러오고 있어요.':'저장한 기획을 불러오지 못했어요.'}</p>`;
-  return `<div class="wr-desk" data-workroom-desk>${workingPanel}<section class="wr-desk-start" aria-labelledby="wr-desk-start-title"><div class="wr-desk-start-copy"><span class="wr-kicker">새로 만들기</span><h2 id="wr-desk-start-title">어떤 콘텐츠를 만들까요?</h2><p>유형을 고르고 주제와 보여 줄 결과부터 정해요.</p></div><div class="wr-desk-start-form"><label>콘텐츠 유형<select data-action="workroom-series" aria-label="콘텐츠 유형">${wr.guide.series.map(row=>`<option value="${escape(row.id)}" ${series?.id===row.id?'selected':''}>${escape(row.name)}</option>`).join('')}</select></label>${series?`<p class="wr-desk-series-note">${escape(series.concept)}</p>`:''}${viewer?'<p class="wr-desk-role">보기 전용 계정이라 기획을 쓰거나 고칠 수 없어요.</p>':wrButton('새 기획 시작','plan',`data-id="${escape(series?.id||'')}"`,'primary wr-desk-main-action')}<span class="wr-desk-start-note">${viewer?'저장한 기획과 제작 기준은 아래에서 볼 수 있어요.':'고른 유형으로 기획 쓰는 화면이 열려요.'}</span></div></section><section class="wr-desk-recent" aria-labelledby="wr-desk-recent-title"><div class="wr-desk-section-head"><div><h2 id="wr-desk-recent-title">저장한 기획</h2><p>최근에 저장한 것부터 보여요.</p></div>${wrButton('기획함 열기','library','','small quiet')}</div>${recent}</section><section class="wr-desk-check"><img src="/messenger/assets/sticker-check.webp" alt="" width="48" height="48"><div><h2>완성한 콘텐츠가 있나요?</h2><p>올리기 전에 파일 규격과 검토할 것을 점검해요.</p></div><div class="wr-actions">${wrButton('게시 전 점검','publish','','primary')}</div></section><section class="wks-desk-link"><div><h2>올린 편이 잘됐나요?</h2><p>편마다 24·72시간 조회와 평소 대비 배수를 SNS 성과에서 봐요.</p></div><button type="button" class="btn" data-action="social-view" data-view="results">SNS 성과 보기</button></section><section class="ah-desk-link"><div><h2>자동화가 잘 돌고 있나요?</h2><p>멈춘 작업과 직접 볼 것을 한곳에서 확인해요.</p></div>${wrButton('자동화 상태 보기','automation','','quiet')}</section><details id="wr-desk-guide" class="wr-desk-guide"><summary><img src="/messenger/assets/sticker-book.webp" alt="" width="30" height="30"><span>제작 팁과 유형 안내</span><small>준비물 · 제작 기준 · 양식</small></summary><div class="wr-desk-guide-body">${wrDeskGuide()}</div></details></div>`;
+  return `<div class="wr-desk" data-workroom-desk>${workingPanel}<section class="wr-desk-start" aria-labelledby="wr-desk-start-title"><div class="wr-desk-start-copy"><span class="wr-kicker">새로 만들기</span><h2 id="wr-desk-start-title">어떤 콘텐츠를 만들까요?</h2><p>유형을 고르고 주제와 보여 줄 결과부터 정해요.</p></div><div class="wr-desk-start-form"><label>콘텐츠 유형<select data-action="workroom-series" aria-label="콘텐츠 유형">${wr.guide.series.map(row=>`<option value="${escape(row.id)}" ${series?.id===row.id?'selected':''}>${escape(row.name)}</option>`).join('')}</select></label>${series?`<p class="wr-desk-series-note">${escape(series.concept)}</p>`:''}${viewer?'<p class="wr-desk-role">보기 전용 계정이라 기획을 쓰거나 고칠 수 없어요.</p>':wrButton('새 기획 시작','plan',`data-id="${escape(series?.id||'')}"`,'primary wr-desk-main-action')}<span class="wr-desk-start-note">${viewer?'저장한 기획과 제작 기준은 아래에서 볼 수 있어요.':'고른 유형으로 기획 쓰는 화면이 열려요.'}</span></div></section><section class="wr-desk-recent" aria-labelledby="wr-desk-recent-title"><div class="wr-desk-section-head"><div><h2 id="wr-desk-recent-title">저장한 기획</h2><p>최근에 저장한 것부터 보여요.</p></div>${wrButton('기획함 열기','library','','small quiet')}</div>${recent}</section><section class="wr-desk-check"><img src="/messenger/assets/sticker-check.webp" alt="" width="48" height="48"><div><h2>완성한 콘텐츠가 있나요?</h2><p>올리기 전에 파일 규격과 검토할 것을 점검해요.</p></div><div class="wr-actions">${wrButton('게시 전 점검','publish','','primary')}</div></section>${typeof waFeature!=='function'||waFeature('social')?'<section class="wks-desk-link"><div><h2>올린 편이 잘됐나요?</h2><p>편마다 24·72시간 조회와 평소 대비 배수를 SNS 성과에서 봐요.</p></div><button type="button" class="btn" data-action="social-view" data-view="results">SNS 성과 보기</button></section>':''}<section class="ah-desk-link"><div><h2>자동화가 잘 돌고 있나요?</h2><p>멈춘 작업과 직접 볼 것을 한곳에서 확인해요.</p></div>${wrButton('자동화 상태 보기','automation','','quiet')}</section><details id="wr-desk-guide" class="wr-desk-guide"><summary><img src="/messenger/assets/sticker-book.webp" alt="" width="30" height="30"><span>제작 팁과 유형 안내</span><small>준비물 · 제작 기준 · 양식</small></summary><div class="wr-desk-guide-body">${wrDeskGuide()}</div></details></div>`;
 }
 async function wrResumePlan(){
   if(!wrWorkingPlan())return;

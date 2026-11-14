@@ -6,6 +6,20 @@ import {join} from 'node:path';
 import {Store} from './store.mjs';
 import {createCompanyWork} from './company-work.mjs';
 
+test('unknown and inherited company keys cannot read or create company work',async t=>{
+  const directory=await mkdtemp(join(tmpdir(),'synk-company-work-keys-')),store=new Store(directory);
+  t.after(async()=>{store.close();await rm(directory,{recursive:true,force:true});});
+  const user={id:'admin',name:'Admin',role:'admin',active:true};store.put('users',user.id,user);
+  const service=createCompanyWork({store}),beforeWork=store.all('companyWork'),beforeAudit=store.all('audit');
+  for(const company of ['constructor','toString','__proto__','unknown']){
+    assert.throws(()=>service.workspace(user,company),{status:404},company);
+    assert.throws(()=>service.save(user,company,null,{title:'Must not be saved'}),{status:404},company);
+    assert.deepEqual(store.all('companyWork'),beforeWork);assert.deepEqual(store.all('audit'),beforeAudit);
+  }
+  assert.equal(service.workspace(user,'PATH').company,'PATH');
+  assert.equal(service.workspace(user,'SHIFT').company,'SHIFT');
+});
+
 test('invalid company-work values never erase saved fields or advance revision/audit',async t=>{
   const directory=await mkdtemp(join(tmpdir(),'synk-company-work-validation-')),store=new Store(directory);
   t.after(async()=>{store.close();await rm(directory,{recursive:true,force:true});});

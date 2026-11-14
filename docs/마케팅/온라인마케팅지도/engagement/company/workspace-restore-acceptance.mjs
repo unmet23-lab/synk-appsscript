@@ -112,7 +112,7 @@ async function snapshot(directory){
         let retention;try{retention=JSON.parse(await readFile(join(root,'media-retention.json'),'utf8'));}catch{throw issue('MEDIA_RETENTION_INVALID');}
         const personaNames=personaMediaNameSet(company.db),retained=personaRetainedSha(company.db);
         const noVault=[...new Set(list.files.filter(file=>personaNames.has(file.diskName)||retained.sha.has(file.sha256)).map(file=>file.sha256))].sort();
-        if(manifest.mediaRetention!=='media-retention.json'||!object(retention)||retention.schema!=='synk-workspace-media-retention/v1'||retention.createdAt!==list.createdAt||retention.manifestSha256!==sha(listBytes)||retention.legacyDeleted!==retained.legacy||serial(retention.noVault)!==serial(noVault))throw issue('MEDIA_RETENTION_INVALID');
+        if(manifest.mediaRetention!=='media-retention.json'||!object(retention)||retention.schema!=='synk-workspace-media-retention/v1'||!validDate(retention.createdAt)||retention.createdAt!==list.createdAt||retention.manifestSha256!==sha(listBytes)||retention.legacyDeleted!==retained.legacy||serial(retention.noVault)!==serial(noVault))throw issue('MEDIA_RETENTION_INVALID');
         retentionValidated=true;
       }
     }else if(before.has('media-retention.json')||manifest.mediaRetention!==undefined){
