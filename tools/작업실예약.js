@@ -566,7 +566,7 @@ function readyFolders(root) {
     try {
       const prep = 묶음.readJson(path.join(dir, '게시', '준비.json'));
       if (prep.작업실등록 === true && READY_STATE.test(String(prep.상태 || '')) && prep.검사 && prep.검사.결과 !== '고칠 것'
-        && !(최종확인.required(prep) && 최종확인.read({ dir })?.결과 !== '통과')) out.push(dir); // 최종 확인 전 편은 대기열에 넣지 않는다(11-13)
+        && !(최종확인.required(prep) && !최종확인.OPEN.has(최종확인.read({ dir })?.결과))) out.push(dir); // 최종 확인 전 편은 대기열에 넣지 않는다(11-13)
     } catch { /* 깨진 준비.json은 건너뛴다 — 예약큐가 보인다 */ }
   }
   return out;

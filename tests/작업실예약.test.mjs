@@ -245,9 +245,19 @@ test('SNS 두 브랜드 편은 최종 확인(컷 전수) 통과 기록이 없거
   fs.rmSync(확인.recordFile({ dir: f.dir }));
   assert.ok(reasons().every((r) => /최종 확인\(컷 전수\) 통과 기록이 없다/.test(r)));
   assert.deepEqual(f.예약.readyFolders(root), [], '최종 확인 전 편은 대기열에 넣지 않는다');
-  확인.write(묶음.load(f.dir), '미흡', '끝 3초 약함');
+  assert.throws(() => 확인.write(묶음.load(f.dir), '미흡', '끝 3초 약함'), /--갈래가 있어야/);
+  assert.throws(() => 확인.write(묶음.load(f.dir), '미흡', '끝 3초 약함', { 갈래: '없는갈래' }), /모르는 갈래/);
+  확인.write(묶음.load(f.dir), '미흡', '끝 3초 약함', { 갈래: '끝약함' });
   assert.ok(reasons().every((r) => /「미흡」/.test(r) && /끝 3초 약함/.test(r)));
   assert.deepEqual(f.예약.readyFolders(root), []);
+  // 11-15 「작은 흠은 올리기」 — 작은 흠만 남은 편은 등록된다. 독립 검수와 남은 흠 메모가 있어야 쓴다
+  assert.throws(() => 확인.write(묶음.load(f.dir), '작은 흠', '넥타이 매듭이 컷마다 다름', { 갈래: '소품튐' }), /독립검수/);
+  assert.throws(() => 확인.write(묶음.load(f.dir), '작은 흠', '흠', { 독립검수: 'Fable 5.2 — 한 번 봐서는 안 보임', 갈래: '소품튐' }), /남은 흠을 메모에/);
+  확인.write(묶음.load(f.dir), '작은 흠', '넥타이 매듭이 컷마다 다름 — 다음 편 컷표 소품 칸으로', { 독립검수: 'Fable 5.2 — 한 번 봐서는 안 보임', 갈래: '소품튐,점프컷' });
+  const 이력 = fs.readFileSync(확인.historyFile({ dir: f.dir }), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  assert.deepEqual(이력.slice(-2).map((x) => [x.결과, x.갈래.join('+')]), [['미흡', '끝약함'], ['작은 흠', '소품튐+점프컷']], '판정마다 이력 한 줄이 쌓인다');
+  assert.ok(reasons().every((r) => !/최종 확인/.test(r)), '작은 흠 기록이면 막지 않는다');
+  assert.deepEqual(f.예약.readyFolders(root).map((d) => path.basename(d)), ['yuhobuilds_시험_20261021']);
   확인.write(묶음.load(f.dir), '통과', '다시 봄', { 독립검수: 'Fable 5.2 — 다시 구울 컷 없음' });
   const video = path.join(f.dir, 'remotion', 'out', 'a_final.mp4');
   fs.appendFileSync(video, Buffer.from([0]));

@@ -12,6 +12,15 @@ const 묶음 = require('./게시묶음.js');
 const FINAL_FROM = '2026-11-14';
 const BRANDS = new Set(['synkbrief', 'yuhobuilds']);
 const FILE = '최종확인.json';
+// 등록을 여는 결과 둘(11-15 유호님 「작은 흠은 올리기」). 「작은 흠」은 시청자가 평소 속도로 한 번 봐서는 알아채기 어려운 흠만 남은 편이다.
+// 그날 올리고, 남은 흠은 메모에 적어 다음 편의 검사 항목으로 넘긴다. 큰 흠과 작은 흠의 뜻은 제작절차.md 「미흡하면 다시」에 있다.
+// 11-13~14에는 통과와 미흡 둘뿐이라 넥타이 매듭 같은 흠이 6초 멈춘 화면과 같은 무게로 편을 막았고, 아홉 편 가운데 둘만 올라갔다.
+const OPEN = new Set(['통과', '작은 흠']);
+// 흠의 갈래 — 미흡과 작은 흠을 쓸 때 꼭 고른다(11-15 유호님 「그 실수와 작업내용을 기억해서 다음번에는 같은 실수 안하도록 시스템화」).
+// 메모 글만으로는 같은 실수가 몇 편에서 되풀이됐는지 셀 수 없어서 갈래를 정해 둔다. tools/흠장부.js가 편마다의 이력을 모아 센다.
+const KINDS = ['멈춘화면', '끝약함', '사람굳음', '인물튐', '소품튐', '점프컷', '같은구도반복', '글자표', '숫자불일치', '사실', '이해안됨', '소리', '화면작음어두움', '기타'];
+const HISTORY = '최종확인_이력.jsonl';
+function historyFile(bundle) { return path.join(bundle.dir, '게시', HISTORY); }
 
 // 슬롯이나 판 시각 가운데 하나라도 FINAL_FROM 뒤면 관문에 든다(슬롯은 그대로 두고 판 시각만 옮긴 편도 — Fable 검수 12)
 function required(prep) {
@@ -51,8 +60,8 @@ function problem(bundle) {
   const how = `최종 확인 세션이 컷 전수를 본 뒤 node tools/최종확인.js "${bundle.dir}" 통과 --메모 "…"`;
   const r = read(bundle);
   if (!r) return `최종 확인(컷 전수) 통과 기록이 없다 — ${how}`;
-  if (r.결과 !== '통과') return `최종 확인이 「${r.결과 || '모름'}」이다${r.메모 ? `(${r.메모})` : ''} — 고친 판을 다시 컷 전수한 뒤 ${how}`;
-  if (!String(r.독립검수 || '').trim()) return `최종 확인 통과 기록에 맥락 없는 독립 검수가 없다 — 측정 묶음만으로는 11-13 여섯 편 가운데 둘만 잡혔다. ${how} --독립검수 "누가 · 판정"`;
+  if (!OPEN.has(r.결과)) return `최종 확인이 「${r.결과 || '모름'}」이다${r.메모 ? `(${r.메모})` : ''} — 고친 판을 다시 컷 전수한 뒤 ${how}`;
+  if (!String(r.독립검수 || '').trim()) return `최종 확인 ${r.결과} 기록에 맥락 없는 독립 검수가 없다 — 측정 묶음만으로는 11-13 여섯 편 가운데 둘만 잡혔다. ${how} --독립검수 "누가 · 판정"`;
   const rows = new Map((r.파일 || []).map((f) => [f.경로, f]));
   for (const [rel, file] of videos(bundle)) {
     const row = rows.get(rel);
@@ -63,18 +72,25 @@ function problem(bundle) {
   return null;
 }
 
-// 결과: '통과' | '미흡' · 메모: 무엇을 봤나 / 무엇이 걸렸나 · 독립검수: 맥락 없는 눈(Fable 5.2 등)의 판정 한 줄 — 통과에는 꼭
+// 결과: '통과' | '작은 흠' | '미흡' · 메모: 무엇을 봤나 / 무엇이 걸렸나 · 독립검수: 맥락 없는 눈(Fable 5.2 등)의 판정 한 줄 — 통과에는 꼭
 // (11-13 최종 확인 여섯 편: 측정 묶음은 둘만 잡았고 끝 3초 · 멈춘 카드 · 숫자 불일치는 맥락 없는 Fable 5.2 독립 검수가 찾았다)
-function write(bundle, 결과, 메모, { 검수 = '', 독립검수 = '' } = {}) {
-  if (!['통과', '미흡'].includes(결과)) throw new Error(`결과는 「통과」나 「미흡」이다: ${결과}`);
-  if (결과 === '통과' && !String(독립검수 || '').trim()) throw new Error('통과에는 --독립검수 "누가 · 판정"(맥락 없는 독립 검수)이 있어야 한다');
+function write(bundle, 결과, 메모, { 검수 = '', 독립검수 = '', 갈래 = [] } = {}) {
+  const 갈래들 = [...new Set([].concat(갈래 || []).flatMap((g) => String(g).split(/[,\s]+/)).filter(Boolean))];
+  const 모르는 = 갈래들.filter((g) => !KINDS.includes(g));
+  if (모르는.length) throw new Error(`모르는 갈래: ${모르는.join(', ')} — ${KINDS.join(' · ')} 가운데서 고른다`);
+  if (결과 !== '통과' && ['통과', '작은 흠', '미흡'].includes(결과) && !갈래들.length) throw new Error(`${결과}에는 --갈래가 있어야 한다(쉼표로 여럿) — ${KINDS.join(' · ')}`);
+  if (!['통과', '작은 흠', '미흡'].includes(결과)) throw new Error(`결과는 「통과」, 「작은 흠」, 「미흡」 가운데 하나다: ${결과}`);
+  if (OPEN.has(결과) && !String(독립검수 || '').trim()) throw new Error(`${결과}에는 --독립검수 "누가 · 판정"(맥락 없는 독립 검수)이 있어야 한다`);
+  if (결과 === '작은 흠' && String(메모 || '').trim().length < 10) throw new Error('작은 흠에는 남은 흠을 메모에 적는다 — 다음 편의 검사 항목으로 넘긴다');
   const files = [...videos(bundle)].map(([rel, file]) => ({ 경로: rel, 바이트: fs.statSync(file).size, sha256: sha256(file) }));
   if (!files.length) throw new Error('이 편에 올릴 영상이 없다 — 준비.json 판 · 「최종본」을 본다');
   const record = { 도구: 'tools/최종확인.js', 결과, 시각: new Date().toISOString(), 메모: String(메모 || ''), ...(검수 ? { 검수 } : {}),
-    ...(String(독립검수 || '').trim() ? { 독립검수: String(독립검수).trim() } : {}), 파일: files };
+    ...(String(독립검수 || '').trim() ? { 독립검수: String(독립검수).trim() } : {}), ...(갈래들.length ? { 갈래: 갈래들 } : {}), 파일: files };
   fs.mkdirSync(path.dirname(recordFile(bundle)), { recursive: true });
+  // 이력: 최종확인.json은 마지막 판정으로 덮이므로 판정마다 한 줄을 따로 쌓는다(영상 지문은 빼고). 흠 장부가 이 줄을 센다.
+  fs.appendFileSync(historyFile(bundle), JSON.stringify({ 결과, 시각: record.시각, 갈래: 갈래들, 메모: record.메모 }) + '\n');
   fs.writeFileSync(recordFile(bundle), JSON.stringify(record, null, 2) + '\n');
   return record;
 }
 
-module.exports = { required, problem, write, read, videos, recordFile, FINAL_FROM, BRANDS, FILE };
+module.exports = { required, problem, write, read, videos, recordFile, FINAL_FROM, BRANDS, FILE, OPEN, KINDS, HISTORY, historyFile };
