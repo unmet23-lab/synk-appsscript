@@ -15,7 +15,8 @@ import {caseMetadata,GAME_ID as ENTRY_GAME} from '../entry-check/learning.mjs';
 import {activeRules,minutes} from '../entry-check/core.mjs';
 
 // 판 2(11-14 다음 판): 그 자리 · 나중에 다시가 뺀 답을 거르고 도움을 practice.helped로 읽음 · 접힌 기록의 분모 · 짧은 연습은 마지막 놓침 뒤만.
-export const MISSED_SPOT_POLICY=Object.freeze({version:'world-missed-spot-2',
+// 판 3(11-15): 짧은 연습의 「마지막 놓침 뒤」를 기록 순서와 시각 둘 다로 잰다(다른 기기 기록을 받아 붙인 경우).
+export const MISSED_SPOT_POLICY=Object.freeze({version:'world-missed-spot-3',
  // 「그 자리」: Trail에는 근무 경계가 없어(손님마다 결정 하나) 근무지가 같고 · 손님 도착 시각이 늘고 · 이 사이 안에 이어진 제시만 같은 자리로 본다.
  sittingGapMs:30*60000,
  // 좁혀 짚기(안내문 줄 · 놓친 방향)는 서로 다른 문항에서 이만큼 이상 · 놓친 수의 과반일 때만(조작 실수와 언어 오답은 기록에서 안 갈린다 — kit/return-practice.mjs 머리).
