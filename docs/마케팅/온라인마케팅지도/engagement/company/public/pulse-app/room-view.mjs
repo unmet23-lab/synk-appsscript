@@ -104,8 +104,10 @@ const screenShots=(p,state)=>(state==='review'?previews(p).slice(-1):state==='de
 // 보내 주신 의뢰서: 길이 · 구성 다음에 받으실 날(접수일 + 기간, 달력 기준 — 결정 11-07)을 둔다.
 // 「길이 · 구성」은 briefRows의 줄 이름과 견주는 값이라 번역하지 않는다(보일 때는 roomPaper가 옮긴다).
 // waiting: 이 건이 지금도 제작 자리 차례를 기다리는지(서버가 실은 project.seat) — 날 없이 굳힌 제안이어도 자리가 났으면 「결제 안내는 자리가 나는 대로」를 붙이지 않는다(6-B 카본 A1).
+// 11-13에 의뢰서에 더한 세 줄은 이 여덟 줄 요약에 넣지 않는다(11-14) — 앞쪽 칸을 비운 손님에게서 「받고 싶은 날」 · 「최종 확인」을 요약 밖으로 밀어냈다. 의뢰서 전체(확인 화면 · 직원 화면)에는 그대로 보인다.
+const ROOM_BRIEF_SKIP=['꼭 붙일 표시','얼마나 과감하게','목소리']; // i18n-skip
 function roomBrief(r,answers,waiting=false){
-  const rows=briefRows(answers).filter(row=>!row.missing).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성'); // i18n-skip
+  const rows=briefRows(answers).filter(row=>!row.missing&&!ROOM_BRIEF_SKIP.includes(row.key)).slice(0,8).map(row=>[row.key,row.value]),pkg=pkgOf(answers),at=rows.findIndex(([key])=>key==='길이 · 구성'); // i18n-skip
   // 날짜는 방향을 보내 드릴 때 한 번 정해 보인다(결제 · 자료 시점이 정해지기 전 달력 날짜를 약속하지 않는다 — 설계 검토 3).
   // 방향 제안이 오면 거기 적힌 날 하나만 보인다(같은 화면에 날짜 둘이 서지 않게 — 설계 검토 9).
   // 판 4(화면 검수 F1): 결제를 확인한 뒤에는 그때 정한 날(payment.dueDate — 결제일 + 기간, 담당자가 고칠 수 있음), 결제 차례에는 날짜 대신 결제 카드와 같은 「결제한 날부터 N일」.

@@ -36,7 +36,7 @@ test('the server serves every new file and the service worker caches the shell b
   for(const name of ["'film.css'","'film-legacy.css'","'reel-wide','reel-tall'","'reel-wide-poster','reel-tall-poster','shard','end'","'file-gift-set','file-gift-ampoule','file-gift-jar','still-shards','still-lid'","'sheet-gift-'","'model-scene-'","NotoSerifKR-300.woff2"])assert.ok(server.includes(name),name);
   for(const name of ['film.css','film-legacy.css','film-home.mjs','film-review.mjs','assets/NotoSerifKR-300.woff2'])assert.ok(sw.includes(name),name);
   assert.doesNotMatch(sw,/reel-(wide|tall)\.mp4/,'the reel is not stored on the device');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v63-waitlist-20261114';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v64-request-followups-20261114';/);
 });
 test('the step-five still is the sharp re-render and its layer keeps the logo readable on wide monitors',()=>{
   // 11-10: 1080×864 영상 장면은 유호님 화면(1440 · 1.5배)에서 2배로 늘어나 흐렸다 → 같은 구도를 2520×2016으로 다시 구웠다.

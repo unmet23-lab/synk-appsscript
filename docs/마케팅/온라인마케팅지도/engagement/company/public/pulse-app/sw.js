@@ -61,7 +61,9 @@
 // app.mjs · views.mjs · film-home.mjs · request-flow.mjs · room-view.mjs · film-views.mjs · api.mjs · film.css · staff.css · i18n/en.mjs · 글꼴 조각(와 목록 밖의 직원 결제 칸 모듈)이 바뀌었다. 목록은 그대로이고 판만 올린다.
 // v63(11-14): 알림 명단(운영 조각 6-C, v62 위) — 대기까지 찬 첫 화면 안내에 「열리면 메일로 알려 드릴까요?」 메일 한 칸 · 「알림을 걸어 두었어요」 한 줄로
 // film-home.mjs · app.mjs · api.mjs · film.css · i18n/en.mjs가 바뀌었다(글꼴 조각은 새 글자가 없어 그대로). 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v63-waitlist-20261114';
+// v64(11-14): 의뢰서 탭 후속(v63 위) — 고객 방 「보내 주신 의뢰서」 요약에서 「꼭 붙일 표시」 · 「얼마나 과감하게」 · 「목소리」 세 줄을 빼고, 직원의 방향 제안 창 · 1차안 보내기 창에
+// 손님이 고른 과감함 · 꼭 붙일 표시를 알려 주는 문단을 넣었다(room-view.mjs · views.mjs · app.mjs). 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v64-request-followups-20261114';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

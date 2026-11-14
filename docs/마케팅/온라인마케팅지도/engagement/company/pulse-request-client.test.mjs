@@ -321,3 +321,50 @@ test('staff and customer dialogs for the request flow are complete',()=>{
   assert.doesNotMatch(empty,/data-form="desk-send"/,'no form until scenes are visible to the customer');
   assert.doesNotMatch(empty,/보낼까요|0컷/,'no question about sending nothing');assert.match(empty,/아직 보낼 장면이 없어요/);
 });
+// 의뢰서 탭 후속 셋(11-14): 고객 방 요약 · 방향 제안 · 1차안 보내기가 새 세 답을 제자리에서 읽는다.
+test('the room summary keeps its eight lines for date and approver, the three new answers stay on the full sheet',()=>{
+  // 앞쪽 칸을 비운 손님: 새 세 줄이 요약에 들면 「받고 싶은 날」 · 「최종 확인」이 여덟 줄 밖으로 밀린다
+  const sparse={...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],package:'s15',win:'laugh',bold:'twist',notice:'alcohol',noticeText:'지나친 음주는 건강에 해롭습니다',voice:'narration',modelChoice:'ask',date:'2026-12-01',approver:'one',contactName:'김담당',email:'a@example.com'};
+  const sheet=briefRows(sparse).filter(row=>!row.missing).map(row=>row.key);
+  for(const key of ['꼭 붙일 표시','얼마나 과감하게','목소리'])assert.ok(sheet.includes(key),`${key} stays on the full request sheet`);
+  const keys=roomModel(project(request({answers:{...sparse,models:[]},submittedAt:'2026-11-14T00:00:00.000Z'}))).brief.map(([key])=>key);
+  for(const key of ['꼭 붙일 표시','얼마나 과감하게','목소리'])assert.ok(!keys.includes(key),`${key} is not in the room summary`);
+  for(const key of ['받고 싶은 날','최종 확인'])assert.ok(keys.includes(key),`${key} is back in the room summary: ${keys.join(' / ')}`);
+  assert.ok(keys.length<=9,'eight request lines plus the delivery day');
+});
+test('staff dialogs show what the customer picked where it is used: boldness on the direction proposal, required notice on the first draft',()=>{
+  const direction=bold=>dialogContent('desk-direction',{options:[],round:1,modelId:'',price:390000,dueDate:'2026-11-20',revisions:2,noModel:true,models:[],assets:[],bold});
+  assert.match(direction('safe'),/손님이 「정석대로」를 골랐어요\. 두 안 모두 이 업종 광고가 익숙하게 쓰는 장면 안에서 잡아요\./);
+  assert.match(direction('twist'),/손님이 「조금 다르게」를 골랐어요\. 한 안은 정석대로, 한 안은 같은 업종 광고가 잘 하지 않는 장면을 하나 넣은 안으로 잡아요\./);
+  assert.match(direction('wild'),/손님이 「확 다르게」를 골랐어요\. 두 안 모두 말이 안 되는 설정까지 가 본 쪽으로 잡아요\./);
+  for(const id of ['safe','twist','wild'])assert.match(direction(id),/무엇을 고르든 제품 사실과 피할 말은 지켜요\./);
+  for(const none of ['',undefined,'loud'])assert.doesNotMatch(direction(none),/desk-guide/,'no guide line when the customer left it to us');
+  // 의뢰서가 손님에게 한 약속과 같은 말이다(조금 다르게 = 하나는 정석으로 함께)
+  assert.match(BOLD.find(item=>item.id==='twist').note,/방향 두 안 가운데 하나는 정석으로 함께 보내 드려요/);
+  const send=extra=>dialogContent('desk-send',{count:2,kind:'images',oneLine:'한 문장',...extra});
+  const on=send({notice:'alcohol',noticeText:'지나친 음주는 <b>건강</b>에 해롭습니다'});
+  // 손님이 적은 글은 누구의 글인지 밝힌다 — 확인이 끝난 문구로 읽히면 안 된다
+  assert.match(on,/꼭 붙일 표시가 있는 의뢰예요\(주류\)\. 손님이 의뢰서에 적은 고지 문구나 심의 번호는 「지나친 음주는 &lt;b&gt;건강&lt;\/b&gt;에 해롭습니다」예요\. 손님이 적은 그대로라 맞는 문구인지 확인이 필요해요\. 의뢰서에서 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리기로 했어요\. 장면에 문구가 나오는 자리와 때가 들어 있는지 보고 보내요\./);
+  assert.ok(on.indexOf('desk-guide')<on.indexOf('data-form="desk-send"'),'the notice line comes before the form');
+  assert.match(send({notice:'kids'}),/꼭 붙일 표시가 있는 의뢰예요\(어린이 제품\)\. 의뢰서에서 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리기로 했어요\./);
+  assert.doesNotMatch(send({notice:'kids'}),/손님이 의뢰서에 적은/,'no quoted line when the customer wrote nothing');
+  // 사진 상품에는 문구가 나오는 「때」가 없다
+  const photo=send({photo:true,notice:'alcohol'});
+  assert.match(photo,/사진에 문구가 들어갈 자리가 잡혀 있는지 보고 보내요\./);assert.doesNotMatch(photo,/자리와 때/);
+  // 「잘 모르겠어요」와 비운 칸은 의뢰서가 둘 다 「저희가 확인해요」라고 보인다 — 보내기 창도 둘 다 확인 줄을 띄운다
+  assert.match(send({notice:'unsure'}),/손님이 꼭 붙일 표시가 있는 업종인지 모르겠다고 했어요\. 의뢰서에서 저희가 확인하기로 했어요\. 표시가 필요한 업종인지 확인한 뒤에 보내요\./);
+  assert.match(send({notice:''}),/꼭 붙일 표시 칸이 비어 있는 의뢰예요\. 의뢰서에서 비운 칸은 저희가 확인하기로 했어요\. 표시가 필요한 업종인지 확인한 뒤에 보내요\./);
+  // 손님 글은 무엇으로 끝날지 모른다 — 받침이 있으면 「이에요」, 없으면 「예요」
+  for(const [text,tail] of [['질병의 예방 및 치료를 위한 의약품이 아님','이에요'],['2026-심의-0001','이에요'],['심의필 제2026-0002호','예요'],['지나친 음주는 건강에 해롭습니다.','예요']])assert.ok(send({notice:'health-food',noticeText:text}).includes(`심의 번호는 「${text}」${tail}. 손님이 적은 그대로라`),`${text} → ${tail}`);
+  assert.equal(briefRows(emptyAnswers()).find(row=>row.key==='꼭 붙일 표시').missing,'저희가 확인해요','the request sheet makes that promise for a blank answer');
+  for(const none of [{},{notice:'none'},{notice:'주류'}])assert.doesNotMatch(send(none),/desk-guide/,'no notice line for none, unknown values, or a project without a request');
+  for(const id of NOTICES.map(item=>item.id))assert.ok(send({notice:id}).includes(`의뢰예요(${noticeLabel(id)})`),`${id} shows its label`);
+});
+test('the app hands the customer answers to the two staff dialogs (boldness to the direction proposal, required notice to the first draft)',async()=>{
+  // 이 값이 빠지면 창은 안내 줄 없이 조용히 그려진다 — 창을 여는 줄에 실려 있는지 원문으로 본다
+  const app=await readFile(new URL('./public/pulse-app/app.mjs',import.meta.url),'utf8');
+  const line=action=>app.split(/\r?\n/).find(row=>row.includes(`if(action==='${action}')`))||'';
+  assert.match(line('desk-direction'),/a=r\.answers\|\|\{\}/);
+  assert.ok(line('desk-direction').includes("openDialog('desk-direction',{...trOf(),bold:a.bold||'',"),'the direction dialog gets the boldness answer');
+  assert.ok(line('desk-send').includes("...(st.request?.answers?{notice:st.request.answers.notice||'',noticeText:st.request.answers.noticeText||''}:{})});return;}"),'the send dialog gets the notice answers, and nothing when the project has no request');
+});
