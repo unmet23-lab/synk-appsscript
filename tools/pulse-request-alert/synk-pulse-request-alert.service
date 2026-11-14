@@ -1,0 +1,28 @@
+[Unit]
+Description=SYNK PULSE new request Telegram alert (read-only company DB, one line per request number)
+Documentation=https://github.com/unmet23-lab/synk-appsscript/blob/master/tools/pulse-request-alert/README.md
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -I /opt/synk-pulse-request-alert/alert.py
+StateDirectory=synk-pulse-request-alert
+StateDirectoryMode=0700
+UMask=0077
+Nice=10
+TimeoutStartSec=90
+MemoryMax=128M
+TasksMax=16
+CPUQuota=25%
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6

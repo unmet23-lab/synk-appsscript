@@ -86,3 +86,8 @@ experiences/topik-items/review/reports/atlas-world-learning-20261028-tea-root-re
 
 # 판본 글(판본글/1)의 SHA-256이 뜻 검수 지문이다(tools/돌림표.js · tools/lib/판본잇기.js) — Windows 체크아웃도 같은 바이트를 쓴다.
 docs/마케팅/*/게시/판본/*/글.json text eol=lf
+
+# 회사 주 노드에 그대로 까는 PULSE 새 의뢰 알림(스크립트 · systemd 단위) — 윈도우 체크아웃도 LF로 받아 서버 바이트와 해시가 같다(2026-11-14).
+tools/pulse-request-alert/*.py text eol=lf
+tools/pulse-request-alert/*.service text eol=lf
+tools/pulse-request-alert/*.timer text eol=lf

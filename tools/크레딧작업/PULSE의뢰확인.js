@@ -3,8 +3,9 @@
  * 새 PULSE 의뢰서 1차 확인 — Windows 작업 스케줄러 「SYNK PULSE 의뢰 확인」이 10분마다 부른다(2026-11-04).
  * 새 의뢰가 없으면 AI를 부르지 않는다(비용 0). 있으면 의뢰서 · 파일을 git 밖으로 내려받고, Claude는 그것을 읽어 직원만 보는 메모 하나를 쓴다.
  * 손님에게 보내는 일(묻기 · 1차안)은 하지 않는다 — 그건 유호님이 보고 정한다.
- * 텔레그램(링크 · 손님 연락처 없음)은 두 번: 새 의뢰를 찾은 순간 한 줄(Claude를 부르기 전, 의뢰 번호마다 한 번), 메모가 남으면 한 줄.
- * 11-10 구매 점검(M5)에서 구독 로그인이 끊기자 메모 단계가 실패해 새 의뢰 알림까지 같이 사라졌다 — 알림이 메모에 묶이지 않게 나눴다.
+ * 텔레그램(링크 · 손님 연락처 없음)은 메모가 남으면 한 줄, 멈추면 한 줄이다.
+ * 「새 의뢰」 한 줄은 11-14부터 회사 서버가 보낸다(tools/pulse-request-alert — 1분마다, 의뢰 번호마다 한 번). 이 작업은 10분마다 PC에서만 돌아
+ *   PC가 꺼져 있으면 알림이 늦었다. 11-10 구매 점검(M5)에서 알림을 메모와 떼어 놓은 것은 서버로 옮기며 그대로 지켜진다. 옛 장부 알린의뢰.json은 남겨 둔다.
  * 11-13 되풀이: 보관(archived)된 시험 의뢰 둘이 「접수됨 · 메모 0」으로 남아 10분마다 다시 집혔고, 서버는 보관된 프로젝트의 메모를 거절해
  *   Claude만 이틀 동안 209번 돌았다(무료 크레딧 약 35달러어치 · 알림 없음). 그래서
  *   ① 보관된 의뢰는 고르지 않고 ② Claude가 쓴 메모는 올리기 전에 작업 방(메모대기/)에 남겨, 올리기가 막혀도 다음 회차는 AI 없이 그 메모만 다시 올리며
@@ -20,23 +21,6 @@ const fs = require('fs');
 const path = require('path');
 const 의뢰 = require('../PULSE의뢰.js');
 const 자료도구 = require('../PULSE자료.js');
-
-// 메모가 남기 전까지 10분마다 같은 의뢰를 다시 찾으므로, 알린 번호를 작업 방에 적어 두고 번호마다 한 번만 보낸다.
-// 보내지 못했으면(헤르메스 실패 · 예외) 적지 않는다 — 다음 회차가 다시 보낸다.
-async function 새의뢰알림(ctx, 새것) {
-  const 파일 = path.join(ctx.방, '알린의뢰.json');
-  let 알린 = {};
-  try { const 읽은 = JSON.parse(fs.readFileSync(파일, 'utf8')); if (읽은 && typeof 읽은 === 'object' && !Array.isArray(읽은)) 알린 = 읽은; } catch { /* 처음이거나 깨졌으면 빈 장부 */ }
-  if (알린[새것.번호]) return false;
-  const 제목 = String(새것.제목 ?? '').replace(/\s+/g, ' ').trim().slice(0, 80);
-  let 결과;
-  try { 결과 = await ctx.알림(`PULSE 새 의뢰 ${새것.번호}${제목 ? ` · ${제목}` : ''}\n작업실 PULSE에 들어왔어요. 1차 확인 메모는 이어서 남길게요.`); } catch { return false; }
-  if (결과 && typeof 결과.code === 'number' && 결과.code !== 0) return false;
-  알린[새것.번호] = (ctx.지금 ? new Date(ctx.지금) : new Date()).toISOString();
-  const 남길 = Object.fromEntries(Object.entries(알린).sort((가, 나) => String(가[1]).localeCompare(String(나[1]))).slice(-200));
-  try { fs.mkdirSync(ctx.방, { recursive: true }); fs.writeFileSync(파일, JSON.stringify(남길, null, 2) + '\n'); } catch { /* 알림은 이미 갔다 — 장부를 못 써도 작업은 잇는다 */ }
-  return true;
-}
 
 // ── 되풀이 막기(11-13) ──
 const 번호꼴 = /^P-\d{4}-[0-9A-F]{4}$/;
@@ -135,7 +119,6 @@ module.exports = {
   시간제한: 30 * 60 * 1000,
   구독대체: true,
   메모만,
-  새의뢰알림,
   고르기,
   메모올리기,
   최대돌림,
@@ -147,8 +130,7 @@ module.exports = {
     const 장부 = 장부읽기(시도파일(ctx));
     const 새것 = 고르기(await 쓸.목록(ws), 장부);
     if (!새것) return { 할일: false, 이유: '새 의뢰 없음' };
-    // 내려받기 · 메모가 실패해도 새 의뢰는 먼저 알린다.
-    await 새의뢰알림(ctx, 새것);
+    // 「새 의뢰」 한 줄은 회사 서버가 이미 보냈다(11-14, tools/pulse-request-alert). 여기서는 다시 보내지 않는다.
     // 앞 회차에 Claude가 쓴 메모가 올리기에서 막혀 남아 있으면 AI를 다시 부르지 않고 그 메모부터 올린다.
     const 대기 = 대기읽기(ctx, 새것.번호);
     if (대기) return { 할일: false, 이유: (await 메모올리기(ctx, ws, 새것, 대기)) ? '남겨 둔 메모를 올림' : '남겨 둔 메모 올리기 실패' };

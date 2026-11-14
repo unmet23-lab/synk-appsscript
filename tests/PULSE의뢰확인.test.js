@@ -1,7 +1,7 @@
 'use strict';
 
-// PULSE 의뢰 확인 — 새 의뢰 알림이 Claude 메모와 따로, 의뢰 번호마다 한 번만 가는지(11-10 구매 점검 M5),
-// 그리고 같은 의뢰를 끝없이 다시 돌리지 않는지(11-13 — 보관된 시험 의뢰 둘에 Claude가 209번 돌았다).
+// PULSE 의뢰 확인 — 같은 의뢰를 끝없이 다시 돌리지 않는지(11-13 — 보관된 시험 의뢰 둘에 Claude가 209번 돌았다),
+// 그리고 「새 의뢰」 한 줄은 이제 회사 서버가 보내므로(11-14, tests/pulse-request-alert.test.js) PC가 다시 보내지 않는지.
 // 임시 폴더와 가짜 알림 · 가짜 작업실만 쓴다. 작업실 · 텔레그램 · Claude는 건드리지 않는다.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -32,55 +32,16 @@ const 답 = (o = {}) => ({ 글: JSON.stringify({ summary: '요약이에요.', li
 const 장부 = (방) => { try { return JSON.parse(fs.readFileSync(path.join(방, '메모시도.json'), 'utf8')); } catch { return {}; } };
 const 대기있나 = (방, 번호) => fs.existsSync(path.join(방, '메모대기', `${번호}.json`));
 
-test('새 의뢰는 번호마다 한 번만 알리고 장부에 남긴다', async () => {
+test('「새 의뢰」 한 줄은 PC가 보내지 않는다 — 회사 서버가 보낸다(11-14), 사전 확인은 바로 내려받는다', async () => {
   const 방 = 방만들기();
   const { 보낸, 알림 } = 알림모음();
-  const ctx = { 방, 알림, 지금: '2026-11-10T05:00:00.000Z' };
-  const 새것 = { 번호: 'P-1110-AB12', 제목: '  오미톡\n오미자   스파클링 ' };
-  assert.equal(await 작업.새의뢰알림(ctx, 새것), true);
-  assert.equal(await 작업.새의뢰알림(ctx, 새것), false);
-  assert.equal(보낸.length, 1);
-  assert.match(보낸[0], /^PULSE 새 의뢰 P-1110-AB12 · 오미톡 오미자 스파클링\n/);
-  assert.doesNotMatch(보낸[0], /https?:|@/);
-  const 알린 = JSON.parse(fs.readFileSync(path.join(방, '알린의뢰.json'), 'utf8'));
-  assert.deepEqual(알린, { 'P-1110-AB12': '2026-11-10T05:00:00.000Z' });
-  // 다른 번호는 따로 알린다.
-  assert.equal(await 작업.새의뢰알림(ctx, { 번호: 'P-1110-CD34', 제목: '' }), true);
-  assert.match(보낸[1], /^PULSE 새 의뢰 P-1110-CD34\n/);
-});
-
-test('보내지 못하면 장부에 적지 않아 다음 회차가 다시 보낸다', async () => {
-  const 방 = 방만들기();
-  const 새것 = { 번호: 'P-1110-EF56', 제목: '시험' };
-  const 실패 = 알림모음({ code: 1, stderr: 'hermes down' });
-  assert.equal(await 작업.새의뢰알림({ 방, 알림: 실패.알림 }, 새것), false);
-  const 던짐 = 알림모음(() => { throw new Error('spawn failed'); });
-  assert.equal(await 작업.새의뢰알림({ 방, 알림: 던짐.알림 }, 새것), false);
-  assert.equal(fs.existsSync(path.join(방, '알린의뢰.json')), false);
-  const 성공 = 알림모음({ code: 0, 건너뜀: true });
-  assert.equal(await 작업.새의뢰알림({ 방, 알림: 성공.알림 }, 새것), true);
-  assert.equal(성공.보낸.length, 1);
-});
-
-test('깨진 장부는 빈 장부로 읽고, 제목은 80자에서 자른다', async () => {
-  const 방 = 방만들기();
-  fs.writeFileSync(path.join(방, '알린의뢰.json'), '{깨짐');
-  const { 보낸, 알림 } = 알림모음();
-  assert.equal(await 작업.새의뢰알림({ 방, 알림 }, { 번호: 'P-1110-0A0B', 제목: '가'.repeat(200) }), true);
-  const 첫줄 = 보낸[0].split('\n')[0];
-  assert.equal(첫줄, `PULSE 새 의뢰 P-1110-0A0B · ${'가'.repeat(80)}`);
-});
-
-test('메모가 실패해도 새 의뢰 알림은 사전 확인에서 먼저 간다(내려받기보다 앞)', async () => {
-  const 방 = 방만들기();
-  const { 보낸, 알림 } = 알림모음();
-  const 차례 = [];
-  const { 의뢰도구 } = 가짜도구([줄('P-1113-0001')]);
-  const 받기 = 의뢰도구.받기;
-  의뢰도구.받기 = async (...a) => { 차례.push(`받기(알림 ${보낸.length})`); return 받기(...a); };
+  const { 부름, 의뢰도구 } = 가짜도구([줄('P-1113-0001')]);
   const r = await 작업.사전확인({ 방, 알림, 의뢰도구 });
   assert.equal(r.할일, true);
-  assert.deepEqual(차례, ['받기(알림 1)'], '내려받을 때 이미 알림이 갔다');
+  assert.deepEqual(부름, ['connect', '목록', '받기 P-1113-0001']);
+  assert.equal(보낸.filter((글) => /^PULSE 새 의뢰/.test(글)).length, 0);
+  assert.equal(fs.existsSync(path.join(방, '알린의뢰.json')), false, '옛 장부를 새로 쓰지 않는다');
+  assert.equal(작업.새의뢰알림, undefined);
 });
 
 test('고르기 — 접수됐고 메모가 없는 의뢰만, 보관된 프로젝트 · 멈춘 의뢰 · 번호 꼴이 아닌 것은 고르지 않는다', () => {
@@ -116,8 +77,8 @@ test('메모가 올라가면 한 번 알리고 남긴 것 · 장부 줄을 지�
   assert.equal(올린[0][1].summary.length, 1000);
   assert.equal(대기있나(방, 'P-1113-0002'), false);
   assert.deepEqual(장부(방), {});
-  assert.equal(보낸.length, 2);
-  assert.match(보낸[1], /^PULSE 의뢰 P-1113-0002 · P-1113-0002 제목\n1차 확인 메모를 작업실에 남겼어요/);
+  assert.equal(보낸.length, 1, '메모 알림 하나뿐 — 새 의뢰 한 줄은 서버가 보낸다');
+  assert.match(보낸[0], /^PULSE 의뢰 P-1113-0002 · P-1113-0002 제목\n1차 확인 메모를 작업실에 남겼어요/);
   assert.doesNotMatch(보낸.join('\n'), /https?:|@/);
 });
 
