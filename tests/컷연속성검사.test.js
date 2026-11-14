@@ -1307,6 +1307,11 @@ const 걸려야 = [
   'she holds herself still.',
   'the guard keeps everyone still.',
   'the cold floor keeps everyone still.',
+  // 11-14 참고 카드 41행 — 남의 연기 견본의 끝 문장(표정 · 시선 · 자세가 주어이고 목적어 없이 끝나는 hold)
+  'The snarl holds as hard breaths move through the nose.',
+  'The revolted expression holds.',
+  'her stare held until the cut.',
+  'the pose holds to the last frame.',
   // 감수한 오탐(진단 문서의 알려진 한계) — 실물에 없는 꼴이라 풀어 주는 갈래를 두지 않는다. 물건을 멈추는 말은 주어를 밝혀 쓴다
   'the clock hands stay still.',
   'she walks along the shore of a perfectly still lake.',
@@ -1397,6 +1402,10 @@ const 안걸려야 = [
   'the claw tugs upward twice, but the dog does not budge.',
   "The tower's steel lattice stays rigid and sharp-edged as it passes.",
   'the teacher beams with the same wide, fixed smile and wide-open eyes.',
+  // 끝까지 남는 모습을 산 모습으로 쓴 끝 문장(지시문 틀 ACTION · 11-14) · 목적어를 받는 hold · 카메라가 얼굴에 머무는 말은 정지 말이 아니다
+  'To the last frame the closed-lip smile stays, lips together, while she keeps breathing calmly and blinks once.',
+  'her expression holds a hint of worry as she breathes out.',
+  'the close-up of her face holds as she breathes.',
 ];
 // 사람 기척이 하나도 없는 판 — 주어 없는 절 · they는 앞 절의 물건을 따르고, 장면 전체를 멈추는 말도 물건의 것이다(박자 한 줄을 붙이지 않고 넣는다)
 const 물건판 = [

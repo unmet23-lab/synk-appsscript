@@ -606,6 +606,10 @@ _몸칸 = r"(?:head|body|hands?|face|gaze|eyes|shoulders?|arms?|legs?|feet|finge
     r"\bnothing(?: else| at all)?(?: in the (?:frame|shot|room|scene|picture|background))? (?:moves|stirs)\b|\bnot a (?:single )?thing (?:moves|stirs)\b",   # 장면 전체 — 「Nothing moves.」 · 「nothing else moves.」(「nothing on the door moves」는 물건 문장이라 이 꼴이 아니다)
     r"\b(?:never|does not|doesn[’']t|do not|don[’']t|did not|didn[’']t) reacts?\b",   # 「stares straight ahead … and never reacts」
     r"\b(?:face|expression)\s+(?:stays?|remains?)\s+(?:completely\s+|totally\s+|perfectly\s+)?blank\b",   # 「His face stays blank」
+    # 표정 · 시선 · 자세가 주어이고 목적어 없이 끝나는 hold — 「The snarl holds as …」 · 「The revolted expression holds.」(11-14 참고 카드 41행: 남의 연기 견본의 끝 문장 꼴, 실물 9,278파일에 0번).
+    #   face · smile은 넣지 않는다(「the close-up of her face holds」는 카메라 말이고, 「keeps that smile」은 실물 p6-22c라 풀어 두었다). 끝 모습은 「… stays, lips together, while she breathes」로 쓴다
+    r"\b(?:looks?|stares?|expressions?|snarls?|glares?|scowls?|frowns?|grimaces?|poses?|postures?)\s+(?:holds|hold|held)\b"
+    r"(?=\s*(?:[.,;:!?—–)\n]|$|(?:as|while|until|for|through|throughout|to|there)\b))",
     r"\bfrozen\b",
     r"\bfr(?:eezes?|eezing|oze)\b(?![- ]frame)(?!(?<=freezing)\s+(?:rain|cold|wind|air|fog|mist|drizzle|temperatures?|weather|night|morning|point)\b)",
     # 자리 · 자세 · 모양을 지키라는 말은 정지 말이 아니다(실물): 「the guests stay where they are」 · 「she stays seated … to the last frame — she does not stand up」 · 「the dog does not budge」 ·
