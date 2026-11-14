@@ -38,7 +38,7 @@ function assertScheduledTimers(timers, { background = false, push = false, local
   const actual = timers.filter(row => named.has(row.callback.name)).map(row => [row.callback.name, row.milliseconds]);
   assert.deepEqual(actual.sort(), Object.entries(independent).sort(), 'only the permitted service schedules start');
   assert.deepEqual(timers.filter(row => !named.has(row.callback.name)).map(row => row.milliseconds).sort((a,b)=>a-b),
-    [...(background ? [15000,15000,60000,60000] : [15000]), ...(push ? [30000] : [])].sort((a,b)=>a-b));
+    [...(background ? [15000,15000,60000,60000,5*60000] : [15000]), ...(push ? [30000] : [])].sort((a,b)=>a-b));
 }
 
 async function fixture(t) {

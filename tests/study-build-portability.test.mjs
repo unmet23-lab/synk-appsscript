@@ -33,6 +33,10 @@ test('Study output and cache tokens survive LF/CRLF source and checkout changes'
   write('experiences/synk-world-app/world-writing-items.json', JSON.stringify({ contentHash: 'fixture', items: [] }));
   write('experiences/brand-opening/world-strings.mjs', `export default ${JSON.stringify(Object.fromEntries(REUSED_KEYS.map(k => [k, { ko: '가', en: 'a', mn: 'а' }])))};\n`);
   write('docs/브랜드_폰트/SUIT/SUIT-Variable.woff2', Buffer.from([0, 1, 2, 3]));
+  for (const weight of ['Medium', 'Bold']) {
+    write(`experiences/entry-check/kit/fonts/InterTight-${weight}.woff2`, Buffer.from([4, 5, 6, 7]));
+  }
+  write('docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
   const run = (...args) => {
     const result = spawnSync(process.execPath, [path.join(root, product, 'build.mjs'), ...args], { cwd: root, encoding: 'utf8' });
     assert.equal(result.error, undefined); assert.equal(result.status, 0, result.stderr);

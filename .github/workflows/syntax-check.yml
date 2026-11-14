@@ -69,6 +69,7 @@ jobs:
             /desktop/assets/launcher/*.webp
             /experiences/synk-account/assets/**
             /experiences/learning-hub/assets/**
+            /experiences/korean-study/dist/study/assets/synk-paper.svg
             /experiences/synk-town/assets/ask/**
             /experiences/path-vr/assets/path-vr-felt-800.webp
             /experiences/seoul-arrival/assets/img/train.webp
