@@ -254,9 +254,10 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    const addCell=sel=>{const c=document.createElement('i');c.className='nt-cg';c.innerHTML='<canvas></canvas>';cmp.querySelector(sel).appendChild(c);return c;};
    cmp.hidden=false;box.classList.add('cmp');paintRow();
    const cells=syl.map(s=>({s,m:addCell('.nt-cmp-model'),y:addCell('.nt-cmp-mine')}));
-   const rec=$('#ntRec'),newBest=prev!=null&&total>prev;rec.textContent=prev!=null&&!newBest?L('지난 최고',{p:prev}):'';$('#ntTry').textContent=attempt>1?L('도전 횟수',{n:attempt}):'';
+   const rec=$('#ntRec'),newBest=prev!=null&&total>prev;rec.textContent=prev!=null&&!newBest?L('지난 최고',{p:prev}):'';if(newBest)rec.innerHTML=`<b class="nt-best" style="visibility:hidden">${L('최고 기록')}</b>`;$('#ntTry').textContent=attempt>1?L('도전 횟수',{n:attempt}):'';
    const delta=$('#ntDelta');delta.textContent=newBest?`+${total-prev}`:'';
-   // 비교판이 칸보다 길면 글자 칸을 줄인다 — 가운데 맞춤은 넘친 만큼 위아래로 잘려 scrollHeight로 다 잡히지 않으므로 위에서부터 쌓아 잰다. 점수 줄의 도전 횟수 · 지난 최고 · 오른 점수를 먼저 채운 뒤에 잰다(다시 쓴 판에서 점수 줄이 두 줄이 된다)
+   $('#ntScore').textContent=String(total);   // 점수는 0부터 오르며 숫자 칸이 넓어진다 — 옆 도장 · 지난 최고의 줄바꿈이 다 오른 뒤와 같도록 최종 점수를 넣고 잰다
+   // 비교판이 칸보다 길면 글자 칸을 줄인다 — 가운데 맞춤은 넘친 만큼 위아래로 잘려 scrollHeight로 다 잡히지 않으므로 위에서부터 쌓아 잰다. 점수 줄의 도전 횟수 · 지난 최고 · 오른 점수를 먼저 채운 뒤에 잰다(다시 쓴 판에서 점수 줄이 두 줄이 된다). 새 최고 판의 「최고 기록」 도장은 점수가 다 오른 뒤 찍히므로 같은 도장을 보이지 않게 먼저 넣어 자리를 잡는다(다시 검수 d 지적 1)
    cmp.style.removeProperty('--cg');cmp.style.justifyContent='flex-start';{const pb=parseFloat(getComputedStyle(cmp).paddingBottom)||0;
     for(let n=0;n<3;n++){const over=cmp.lastElementChild.getBoundingClientRect().bottom+pb-cmp.getBoundingClientRect().bottom;if(over<=.5)break;cmp.style.setProperty('--cg',Math.max(24,Math.floor(cells[0].m.offsetWidth-over/2-1))+'px');}}
    cmp.style.justifyContent='';
