@@ -30,40 +30,76 @@ const inside = (folder, item) => {
   if (typeof item !== 'string' || item.length <= base.length + 1 || item.slice(0, base.length).toLowerCase() !== base.toLowerCase() || !/[\\/]/.test(item[base.length])) return null;
   return item.slice(base.length + 1).replace(/[\\/]+/g, '/').replace(/\/$/, '') || null;
 };
+/** A partial snapshot's list as stored (workbackup-unreadable.json), or an error. */
+function checkList(list) {
+  if (list?.v !== 1 || !Array.isArray(list.unreadable) || list.unreadable.some(p => typeof p !== 'string') || typeof list.cut !== 'boolean') throw new Error('읽지 못한 파일 목록의 형식을 확인하지 못했습니다.');
+  return list;
+}
+/** `rel` (inside a folder, forward slashes) is one of `blind` (lower-cased) or under one of them. */
+const covered = (blind, rel) => { const parts = rel.toLowerCase().split('/'); for (let i = 1; i <= parts.length; i++) if (blind.has(parts.slice(0, i).join('/'))) return true; return false; };
+/** Something under `rel` is in `blind`. */
+const unreadUnder = (blind, rel) => { const k = rel.toLowerCase() + '/'; for (const b of blind) if (b.startsWith(k)) return true; return false; };
+/** A snapshot whose folder list a restore can follow: 1 to 30 plain Windows folders. */
+const sanePaths = s => Array.isArray(s.paths) && s.paths.length && s.paths.length <= 30 && !s.paths.some(p => typeof p !== 'string' || !/^[A-Za-z]:[\\/]/.test(p) || p.split(/[\\/]/).some(part => part === '..' || part === '.'));
+/** 「지금 상태」 (4.2): the backup each folder is restored from — the newest complete one that holds it, or a newer
+ *  partial one whose list is whole and does not say the folder itself could not be read; a folder no complete one
+ *  holds comes from the newest partial one that does. The same per-folder choice retain() keeps (GPT GA1, 끝판 카본
+ *  nowstate A2 · A3). `complete` and `listed` newest first; `listOf(s)` reads a partial one's list. */
+async function restoreBases(latest, complete, listed, listOf) {
+  const sets = [];
+  for (const folder of foldersOf([latest, ...complete, ...listed])) {
+    const c = complete.find(s => holds(s, folder)), p = listed.find(s => holds(s, folder));
+    let snapshot = c, cut = false;
+    if (p && (!c || Date.parse(p.time) > Date.parse(c.time))) {
+      const list = await listOf(p), unknown = list.cut || list.unreadable.some(item => same(item, folder));
+      if (!c) { snapshot = p; cut = unknown; } else if (!unknown) snapshot = p;
+    }
+    sets.push({ snapshot, original: folder, cut });
+  }
+  return sets;
+}
 /** 「지금 상태」 (4.2): of the paths a backup could not read (`wanted`, inside its folder; `manifest` is what it holds),
- *  what comes from the earlier backups `seen` (newest first: { had, blind, cut, selector, at } — `blind` what that one
- *  could not read itself). File by file, the first earlier backup that has the file gives it; the first that could
- *  read where it would be and does not have it shows it was gone by then, so no older copy comes back. A folder it
- *  could not read is gathered the same way, file by file — an earlier partial one may lack some of its files too
- *  (GPT workbackup-nowstate GA2). A path no backup has is told in `notFound`. */
-function gatherEarlier(wanted, manifest, seen) {
+ *  what comes from the earlier backups `seen` (newest first: { selector, at, cut, blind, had | load() } — `blind` what
+ *  that one could not read itself; a listing is read only when needed). File by file, the first earlier backup that
+ *  has the file gives it; the first that could read where it would be and does not have it shows it was gone by then,
+ *  so no older copy comes back — nor an older folder of that name (끝판 카본 A4). A folder it could not read is
+ *  gathered the same way, file by file (GPT GA2), from the earlier ones down to the first that read all of it (끝판 A1).
+ *  A path under one that is a file is left out — the folder became a file (끝판 A4). A path no backup has is in `notFound`. */
+async function gatherEarlier(wanted, manifest, seen) {
   const extra = [], notFound = [], folders = [], taken = new Set();
-  const covered = (blind, rel) => { const parts = rel.toLowerCase().split('/'); for (let i = 1; i <= parts.length; i++) if (blind.has(parts.slice(0, i).join('/'))) return true; return false; };
-  const pick = rel => {
+  const had = async e => (e.had ??= await e.load());
+  const could = (e, rel) => !e.cut && !covered(e.blind, rel);
+  const first = async rel => {
     for (const e of seen) {
-      const node = e.had.nodes.get(rel.toLowerCase());
-      if (node?.type === 'file') return { e, node };
-      if (!e.cut && !covered(e.blind, rel)) return null;
+      const node = (await had(e)).nodes.get(rel.toLowerCase());
+      if (node) return { e, node };
+      if (could(e, rel)) return null;
     }
     return null;
   };
-  const take = rel => {
-    const k = rel.toLowerCase(), got = pick(rel);
-    if (got && !taken.has(k) && !manifest.nodes.has(k)) { taken.add(k); extra.push({ selector: got.e.selector, name: got.node.name, size: got.node.size, backupAt: got.e.at }); }
-    return !!got;
+  const take = async rel => {
+    const k = rel.toLowerCase(), got = await first(rel);
+    if (got?.node.type !== 'file') return false;
+    if (!taken.has(k) && !manifest.nodes.has(k)) { taken.add(k); extra.push({ selector: got.e.selector, name: got.node.name, size: got.node.size, backupAt: got.e.at }); }
+    return true;
   };
   for (const rel of wanted) {
     const k = rel.toLowerCase();
     if (manifest.nodes.get(k)?.type === 'file') continue;
-    const kind = seen.map(e => e.had.nodes.get(k)?.type).find(Boolean);
+    const kind = (await first(rel))?.node.type;
     if (kind === 'dir') {
       folders.push(rel);
       const files = new Set();
-      for (const e of seen) for (const n of e.had.nodes.values()) if (n.type === 'file' && n.name.toLowerCase().startsWith(k + '/')) files.add(n.name);
-      for (const file of files) take(file);
-    } else if (!kind || !take(rel)) notFound.push(rel);
+      for (const e of seen) {
+        for (const n of (await had(e)).nodes.values()) if (n.type === 'file' && n.name.toLowerCase().startsWith(k + '/')) files.add(n.name);
+        if (could(e, rel) && !unreadUnder(e.blind, rel)) break;
+      }
+      for (const file of files) await take(file);
+    } else if (!kind || !(await take(rel))) notFound.push(rel);
   }
-  return { extra, notFound, folders };
+  const fileNames = new Set([...manifest.nodes.values()].filter(n => n.type === 'file').map(n => n.name.toLowerCase()).concat(extra.map(e => e.name.toLowerCase())));
+  const under = name => { const parts = name.toLowerCase().split('/'); for (let i = 1; i < parts.length; i++) if (fileNames.has(parts.slice(0, i).join('/'))) return true; return false; };
+  return { extra: extra.filter(e => !under(e.name)), notFound, folders };
 }
 /** The run record's count of folders not found, when there were any. */
 const gone = n => n > 0 ? { missing: n } : {};
@@ -544,7 +580,9 @@ class BackupEngine extends EventEmitter {
         this.stage('읽지 못한 파일 목록 저장 중');
         await this.run(['backup', '--stdin', '--stdin-filename', 'workbackup-unreadable.json', '--host', this.config.vaultId, '--tag', `${APP},vault:${this.config.vaultId},${runTag},meta`],
           { stdinText: JSON.stringify({ v: 1, unreadable, cut }) });
-        if ((await this.snapshots([runTag, 'meta'])).length !== 1) throw new Error('읽지 못한 파일 목록을 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
+        const metas = await this.snapshots([runTag, 'meta']);
+        if (metas.length !== 1) throw new Error('읽지 못한 파일 목록을 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
+        await this.keepList(metas[0].id, { v: 1, unreadable, cut });
       }
       this.stage('저장 구조 확인 중');
       try { await this.run(['check'], { timeoutMs: 1800000 }); }
@@ -618,9 +656,22 @@ class BackupEngine extends EventEmitter {
       for await (const chunk of input) { text += decoder.write(chunk); if (text.length > 64 * 1024 * 1024) throw new Error('읽지 못한 파일 목록이 너무 큽니다.'); }
       text += decoder.end();
     } });
-    const list = json(text);
-    if (list?.v !== 1 || !Array.isArray(list.unreadable) || list.unreadable.some(p => typeof p !== 'string') || typeof list.cut !== 'boolean') throw new Error('읽지 못한 파일 목록의 형식을 확인하지 못했습니다.');
-    return list;
+    return checkList(json(text));
+  }
+  /** A list snapshot's content, kept in the state folder by its id once read (it never changes): retain() reads the
+   *  lists of every partial snapshot it walks each run, and reading them from the repository each hour is slow. */
+  async cachedList(meta) {
+    this.listCache ||= new Map();
+    if (this.listCache.has(meta.id)) return this.listCache.get(meta.id);
+    const file = path.join(this.stateDir, 'lists', `${meta.id}.json`);
+    let list = null;
+    try { list = checkList(JSON.parse(await fs.readFile(file, 'utf8'))); } catch { list = null; }
+    if (!list) { list = await this.unreadableList(meta); await this.keepList(meta.id, list); }
+    this.listCache.set(meta.id, list); return list;
+  }
+  async keepList(id, list) {
+    if (!isId(id)) return;
+    try { await fs.mkdir(path.join(this.stateDir, 'lists'), { recursive: true }); await atomic(path.join(this.stateDir, 'lists', `${id}.json`), JSON.stringify(list)); } catch { /* only a cache */ }
   }
   async fullCheck() {
     this.stage('전체 데이터 점검 중 — 큰 백업은 오래 걸릴 수 있습니다');
@@ -711,14 +762,42 @@ class BackupEngine extends EventEmitter {
       const complete = own.find(s => s.tags.includes(VERIFIED) && holds(s, folder)), newer = own.find(s => listed(s) && holds(s, folder));
       if (complete) hold(complete);
       if (newer && (!complete || Date.parse(newer.time) > Date.parse(complete.time))) hold(newer);
-      // No backup has read all of it yet (its complete place is a partial snapshot, or there is none): the partial
-      // ones before that place stay too, as for the whole vault above (끝판 카본 A1).
-      if (!complete || complete.tags.includes('partial')) for (const s of own) if (listed(s) && holds(s, folder) && (!complete || Date.parse(s.time) < Date.parse(complete.time))) hold(s);
+      // No backup has read all of it yet: while its complete place is a partial snapshot, the partial ones before that
+      // place stay too, as for the whole vault above (끝판 카본 missing A1). With no complete one at all, its first
+      // partial one takes that place and only the newest stays besides — not every one, hour after hour (nowstate A1).
+      if (!complete) { const first = own.filter(s => listed(s) && holds(s, folder)).at(-1); if (first) hold(first); }
+      else if (complete.tags.includes('partial')) for (const s of own) if (listed(s) && holds(s, folder) && Date.parse(s.time) < Date.parse(complete.time)) hold(s);
+    }
+    // Each path a kept partial snapshot could not read keeps the newest older backup that could read it — the one a
+    // 「지금 상태」 restore takes it from (4.2 정리 규칙 「U 파일마다 그 파일이 든 가장 새 판」; GPT nowstate-c GA1: a file only
+    // a middle partial one read). One that could not read it holds none of it and is passed; one whose list is unknown
+    // may hold it and is kept on the way; a folder with something under it unread goes on to older ones. A file no
+    // backup ever read keeps nothing, so one always locked does not keep every hour's snapshot.
+    const listOf = s => (s.tags.includes('partial') && listsOf(s).length === 1 ? this.cachedList(listsOf(s)[0]) : null);
+    for (const base of own.filter(s => keep.has(s.id) && listed(s))) {
+      const list = await listOf(base);
+      for (const folder of base.paths || []) {
+        let left = [...new Set(list.unreadable.map(item => inside(folder, item)).filter(Boolean).map(rel => rel.toLowerCase()))];
+        for (const s of own) {
+          if (!left.length) break;
+          if (s.id === base.id || Date.parse(s.time) >= Date.parse(base.time) || !holds(s, folder) || !(s.tags.includes(VERIFIED) || s.tags.includes('partial'))) continue;
+          const known = await listOf(s), partial = s.tags.includes('partial');
+          const unknown = partial && (!known || known.cut || known.unreadable.some(item => same(item, folder)));
+          const blind = new Set((known?.unreadable || []).map(item => inside(folder, item)).filter(Boolean).map(rel => rel.toLowerCase()));
+          left = left.filter(rel => {
+            if (unknown) { hold(s); return true; }
+            if (covered(blind, rel)) return true;
+            hold(s); return unreadUnder(blind, rel);
+          });
+        }
+      }
     }
     const ids = all.filter(s => !keep.has(s.id) && mine(s) && now - Date.parse(s.time) > DAY).map(s => s.id);
     if (!ids.length) return;
     this.stage('24시간이 지난 이전 백업 정리 중');
     for (let i = 0; i < ids.length; i += 100) await this.run(['forget', ...ids.slice(i, i + 100)]);
+    const gone = new Set(ids);
+    for (const id of gone) { this.listCache?.delete(id); await fs.rm(path.join(this.stateDir, 'lists', `${id}.json`), { force: true }).catch(() => {}); }
     await this.run(['prune', ...(this.isCloud() ? ['--max-repack-size', '0'] : [])]);
   }
   async restoreLatest({ parent }) {
@@ -740,36 +819,26 @@ class BackupEngine extends EventEmitter {
         await require('./recommended.cjs').restoreWhole(this, base, latest);
         return this.getState();
       }
-      const sane = s => Array.isArray(s.paths) && s.paths.length && s.paths.length <= 30 && !s.paths.some(p => typeof p !== 'string' || !/^[A-Za-z]:[\\/]/.test(p) || p.split(/[\\/]/).some(part => part === '..' || part === '.'));
-      if (!sane(latest)) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
-      // A folder missing from the latest backup comes from the newest complete one that has it — the backups retain()
-      // keeps for it (4.2 「사라진 원본 폴더」); 복구경로.json says from when.
-      const complete = (await this.snapshots([VERIFIED])).filter(s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1'));
-      const sets = latest.paths.map(original => ({ snapshot: latest, original }));
-      for (const folder of foldersOf(complete)) if (!sets.some(set => same(set.original, folder))) sets.push({ snapshot: complete.find(s => holds(s, folder)), original: folder });
-      if (sets.length > 30 || sets.some(set => !sane(set.snapshot))) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
+      if (!sanePaths(latest)) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
       let target, fromEarlier = 0, inNone = 0;
       try {
         this.stage('복구할 파일 목록 확인 중');
-        // 「지금 상태」 (4.2): a folder that a partial snapshot newer than the complete place holds comes from it — what
-        // it read is newer — and each file it could not read from the newest earlier backup that has it (the ones
-        // retain() keeps). Its list must be whole; a cut one leaves the complete place as before.
-        const own = (await this.snapshots()).filter(s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1'));
-        const listed = own.filter(s => s.tags.includes('partial') && listsIn(own, s).length === 1);
-        const lists = new Map(), listOf = async s => { if (!lists.has(s.id)) lists.set(s.id, await this.unreadableList(listsIn(own, s)[0])); return lists.get(s.id); };
-        const newer = listed.find(s => Date.parse(s.time) > Date.parse(latest.time) && sane(s));
-        if (newer) {
-          // A folder only it holds (not there when the complete one was made) comes from it whatever its list (GPT GA1).
-          for (const folder of newer.paths) if (!sets.some(set => same(set.original, folder))) sets.push({ snapshot: newer, original: folder });
-          if (!(await listOf(newer)).cut) for (const set of sets) if (holds(newer, set.original)) set.snapshot = newer;
-          if (sets.length > 30) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
-        }
+        // 「지금 상태」 (4.2): each folder from its own newest backup (restoreBases — a missing folder from the backups
+        // retain() keeps for it, a newer partial one's content over the complete one's), and what that one could not
+        // read from the earlier ones (gatherEarlier). 복구경로.json says from when.
+        const all = (await this.snapshots()).filter(s => s.hostname === this.config.vaultId && !s.tags.includes('recommended-verified-v1'));
+        const listed = all.filter(s => s.tags.includes('partial') && listsIn(all, s).length === 1 && sanePaths(s));
+        const complete = all.filter(s => s.tags.includes(VERIFIED) && sanePaths(s));
+        const listOf = s => this.cachedList(listsIn(all, s)[0]);
+        const sets = await restoreBases(latest, complete, listed, listOf);
+        if (!sets.length || sets.length > 30) throw new Error('복구할 작업 폴더 목록을 확인하지 못했습니다.');
         for (const set of sets) {
-          if (!set.snapshot.tags.includes('partial') || listsIn(own, set.snapshot).length !== 1) continue;
-          const list = await listOf(set.snapshot);
-          set.cut = list.cut;
-          set.wanted = [...new Set(list.unreadable.map(item => inside(set.original, item)).filter(Boolean))];
-          set.earlier = own.filter(s => s.id !== set.snapshot.id && Date.parse(s.time) < Date.parse(set.snapshot.time) && (s.tags.includes(VERIFIED) || listed.includes(s)) && holds(s, set.original) && sane(s));
+          if (set.snapshot.tags.includes('partial')) {
+            // A list that is not exactly one says nothing of what it could not read (끝판 A5).
+            if (listsIn(all, set.snapshot).length !== 1) set.cut = true;
+            else { const list = await listOf(set.snapshot); set.cut ||= list.cut; set.wanted = [...new Set(list.unreadable.map(item => inside(set.original, item)).filter(Boolean))]; }
+          }
+          set.earlier = all.filter(s => s.id !== set.snapshot.id && Date.parse(s.time) < Date.parse(set.snapshot.time) && (complete.includes(s) || listed.includes(s)) && holds(s, set.original));
         }
         const plans = [];
         for (const [index, { snapshot, original, wanted = [], earlier = [], cut = false }] of sets.entries()) {
@@ -780,16 +849,25 @@ class BackupEngine extends EventEmitter {
           // before a destination is created. List every node, including hardlinks.
           await this.run(['ls', '--json', '--recursive', selector], { consumeStdout: async stream => { manifest = await readManifest(stream, base); } });
           const name = `${String(index + 1).padStart(2, '0')}-${path.win32.basename(original).replace(/[<>:"/\\|?*]/g, '_') || '드라이브'}`;
-          // What it could not read: from the earlier backups that hold this folder, file by file (gatherEarlier).
-          const seen = [];
-          if (wanted.length) for (const s of earlier) {
-            const from = `${s.id}:${subtree}`;
-            let had;
-            await this.run(['ls', '--json', '--recursive', from], { consumeStdout: async stream => { had = await readManifest(stream, base); } });
-            const list = s.tags.includes('partial') ? await listOf(s) : null;
-            seen.push({ selector: from, at: s.time, had, cut: !!list?.cut, blind: new Set((list?.unreadable || []).map(item => inside(original, item)).filter(Boolean).map(rel => rel.toLowerCase())) });
-          }
-          const { extra, notFound, folders } = gatherEarlier(wanted, manifest, seen);
+          // What it could not read: from the earlier backups that hold this folder, each listed only when needed.
+          const seen = earlier.map(s => {
+            const e = { selector: `${s.id}:${subtree}`, at: s.time, cut: false, blind: new Set() };
+            e.load = async () => {
+              let had;
+              await this.run(['ls', '--json', '--recursive', e.selector], { consumeStdout: async stream => { had = await readManifest(stream, base); } });
+              if (s.tags.includes('partial')) {
+                if (listsIn(all, s).length !== 1) e.cut = true;
+                else {
+                  const list = await listOf(s);
+                  e.cut = list.cut || list.unreadable.some(item => same(item, original));
+                  e.blind = new Set(list.unreadable.map(item => inside(original, item)).filter(Boolean).map(rel => rel.toLowerCase()));
+                }
+              }
+              return had;
+            };
+            return e;
+          });
+          const { extra, notFound, folders } = await gatherEarlier(wanted, manifest, seen);
           plans.push({ original, selector, name, manifest, backupAt: snapshot.time, extra, notFound, folders, cut });
         }
         const space = await fs.statfs(base, { bigint: true });
@@ -1027,4 +1105,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier };
+module.exports = { BackupEngine, APP, VERIFIED, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier, restoreBases };

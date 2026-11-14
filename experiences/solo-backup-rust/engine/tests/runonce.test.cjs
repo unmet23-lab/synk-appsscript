@@ -20,7 +20,9 @@ async function fixture({ provider = 'local', folders = 1 } = {}) {
   const repositoryId = 'd'.repeat(64);
   const engine = new BackupEngine({ stateDir: path.join(root, 'state'), resticPath: 'fixture', secretStore, now: () => now, intervalMs: 3600000, runner: async (args, opts = {}) => {
     calls.push(args.includes('--stdin') ? 'backup-list' : args[0]); seen[args[0]] = args;
-    const tagged = () => snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, paths: ['/workbackup-unreadable.json'], tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
+    const tagged = () => snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, paths: ['/workbackup-unreadable.json'], stdinText: opts.stdinText, tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
+    // A list snapshot read back (cachedList, when the state folder has no copy).
+    if (args[0] === 'dump') { const s = snapshots.find(x => x.id === args[1]); if (s?.stdinText !== undefined) await opts.consumeStdout(require('node:stream').Readable.from([Buffer.from(s.stdinText)])); return ''; }
     // The list of a partial snapshot: its own stdin snapshot (4.2 「완료본 · 부분 판 · 채움 판」).
     if (args[0] === 'backup' && args.includes('--stdin')) { if (fail.list) throw Object.assign(new Error('fixture list'), { exitCode: fail.list }); stdin.push(opts.stdinText); if (!fail.listGhost) tagged(); return ''; }
     if (args[0] === 'cat') return JSON.stringify({ id: repositoryId });
@@ -439,4 +441,79 @@ test('retain leaves recommended-backup snapshots alone and does not take one for
   assert.equal((await engine.runOnce({})).outcome, 'complete');
   assert.equal(engine.config.warning, null, 'cleaned up, not held back');
   assert.deepEqual(snapshots.map(s => s.id).sort(), [engine.config.lastBackup.id, foreign.id, past.id].sort());
+});
+
+// 끝판 카본 nowstate A1: a folder no complete backup holds, while every run is partial.
+test('a folder no complete backup holds keeps its first and newest partial ones, not every one', async () => {
+  const { engine, fail, advance, snapshots, more } = await fixture({ folders: 2 });
+  await fs.rm(more[0], { recursive: true });
+  await engine.setAutomatic(true);
+  assert.equal((await engine.runOnce({})).missing, 1, 'the first complete backup lacks the second folder');
+  await fs.mkdir(more[0]);
+  fail.backup = 3; fail.items = ['C:\\work\\mail.pst'];
+  const partials = [];
+  for (let i = 0; i < 3; i++) { advance(2 * DAY); assert.equal((await engine.runOnce({})).outcome, 'partial'); partials.push(engine.config.lastPartial.id); }
+  const left = snapshots.filter(s => !s.tags.includes('meta')).map(s => s.id);
+  assert.deepEqual(left.sort(), [engine.config.lastBackup.id, partials[0], partials[2]].sort(), 'the middle one goes');
+});
+
+// 4.2 정리 규칙 「U 파일마다 그 파일이 든 가장 새 판」 (GPT nowstate-c GA1).
+const metaIds = snapshots => snapshots.filter(s => s.tags.includes('meta')).map(s => s.id);
+test('a path the newest partial backup could not read keeps the newest older backup that read it', async () => {
+  const { engine, fail, advance, snapshots } = await fixture();
+  const inFolder = name => path.join(engine.config.sources[0], name);
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  advance(61 * 60000); fail.backup = 3; fail.items = [inFolder('mail.pst')];
+  await engine.runOnce({});
+  const reader = engine.config.lastPartial.id;
+  advance(2 * DAY); fail.items = [inFolder('report.txt')];
+  await engine.runOnce({});
+  const ids = snapshots.map(s => s.id);
+  assert.ok(ids.includes(reader), 'report.txt is newest in the earlier partial backup: it stays');
+  assert.equal(metaIds(snapshots).length, 2, 'with its list');
+});
+
+test('a file no backup could read keeps nothing more: one always locked does not keep every hour', async () => {
+  const { engine, fail, advance, snapshots } = await fixture();
+  const locked = path.join(engine.config.sources[0], 'mail.pst');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const complete = engine.config.lastBackup.id;
+  fail.backup = 3; fail.items = [locked];
+  for (let i = 0; i < 3; i++) { advance(2 * DAY); assert.equal((await engine.runOnce({})).outcome, 'partial'); }
+  assert.deepEqual(snapshots.filter(s => !s.tags.includes('meta')).map(s => s.id).sort(), [complete, engine.config.lastPartial.id].sort());
+});
+
+// GPT nowstate-c GA1 as found: a folder no complete backup holds, a file only the middle partial one read.
+test('in a folder no complete backup holds, the middle partial backup that alone read a file stays', async () => {
+  const { engine, fail, advance, snapshots, more } = await fixture({ folders: 2 });
+  await fs.rm(more[0], { recursive: true });
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  await fs.mkdir(more[0]);
+  const report = path.join(engine.config.sources[1], 'report.txt'), mail = path.join(engine.config.sources[0], 'mail.pst');
+  fail.backup = 3;
+  const partials = [];
+  for (const items of [[report], [mail], [report]]) { advance(2 * DAY); fail.items = items; await engine.runOnce({}); partials.push(engine.config.lastPartial.id); }
+  const ids = snapshots.map(s => s.id);
+  assert.ok(ids.includes(partials[1]), 'the only copy of report.txt');
+  assert.ok(ids.includes(partials[0]) && ids.includes(partials[2]));
+});
+
+test('lists are kept in the state folder, read from the repository when missing, and dropped with their snapshots', async () => {
+  const { engine, fail, advance, snapshots, calls } = await fixture();
+  const inFolder = name => path.join(engine.config.sources[0], name);
+  const listDir = path.join(engine.stateDir, 'lists');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  fail.backup = 3; fail.items = [inFolder('a.pst')];
+  advance(61 * 60000); await engine.runOnce({});
+  assert.deepEqual(await fs.readdir(listDir), metaIds(snapshots).map(id => `${id}.json`), 'kept when saved');
+  await fs.rm(listDir, { recursive: true }); engine.listCache = null; calls.length = 0;
+  advance(61 * 60000); fail.items = [inFolder('b.pst')]; await engine.runOnce({});
+  assert.ok(calls.includes('dump'), 'read back from the repository');
+  advance(2 * DAY); fail.items = [inFolder('c.pst')]; calls.length = 0; await engine.runOnce({});
+  assert.ok(!calls.includes('dump'), 'then from the state folder');
+  assert.deepEqual((await fs.readdir(listDir)).sort(), metaIds(snapshots).map(id => `${id}.json`).sort(), 'forgotten lists dropped');
 });
