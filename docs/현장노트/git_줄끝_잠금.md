@@ -1133,6 +1133,8 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 
 - 덧붙임(11-14, origin에서 여러 번 고쳐진 줄 · Claude): 트랙이 「남김」이 아니어도 막힌다. 공용 작업본의 트랙이 HEAD보다 47줄 뒤처진 사이 origin에서 서울로 줄이 두 번 고쳐져 있었다. 그 뒤처진 줄을 고쳐 `--조각`으로 올리니 「내가 고친 줄이 원격 판에 그대로 없다」로 멈췄다. 작업본의 그 줄을 origin 최신 내용으로 맞추고 다시 고쳐도 같은 자리에서 멈췄다. 3방향이 내 새 줄을 더 옛 판의 고침으로 짝지었기 때문이다. 고침: `git worktree add --no-checkout --detach <사본> origin/master` → `git -C <사본> sparse-checkout init --cone` → `set docs/_ops tools tests` → `checkout`으로 origin 판을 받아 그 사본에서 고치고, 사본 안에서 `node ../../../tools/바로올리기.js docs/_ops/트랙.md docs/_ops/결정.md -F <메시지 파일> --실행`을 돌린다. `--저장소` 옵션은 지금 도구에 없다. 사본을 통째로 올리므로 내 변경만 있어야 한다. 다시 확인: 사본의 `git diff --stat`이 내가 고친 줄만 보이고, 올린 뒤 `git show origin/master:docs/_ops/트랙.md`에 내 줄이 있다.
 
+- 덧붙임(11-14 밤, 작은 사본에 .github이 없을 때 · Claude): 위 사본을 `docs/_ops tools tests`만으로 받으면 바로올리기가 트랙 · 결정 두 줄 올리기에도 관련 시험 27개를 고른다. 그 가운데 `tests/ci읽기대조.test.js`는 `.github/workflows`가 없어 깨지고, `tests/hermes-synk-workspace.test.cjs`는 혼자 9분쯤 걸려 15분 제한에 걸린다. 첫 실행은 「[실패] The "path" argument must be of type string. Received null」로, 둘째 실행은 「관련 시험 깨짐 — 15분 안에 끝나지 않았다」로 멈췄다. 고침: `git -C <사본> sparse-checkout add .github`로 워크플로까지 받는다. 그러면 도구가 「기록 전용 경로뿐이라 관련 시험 없음(CI도 records-check만 돈다)」으로 보고 바로 올린다. `--시험건너뜀`은 자동 모드 판정기가 막으니 쓰지 않는다. 다시 확인: 올리기 출력의 「관련 시험: 기록 전용 경로뿐이라 없음」과 「origin 확인 ✓」(`8af281506`).
+
 ### 판본 글 원천을 LF로 써서 렌더하면 올리기 · 따라가기 뒤 CRLF로 내려와 렌더 지문이 어긋난다 — 사슬 확인은 줄끝만 다른 글을 같은 글로 본다 (2026-11-10 Claude)
 
 - 증상: 「화날때」 26판본을 올린 직후 `node tools/판본글잇기.js 확인 <편> 전부`와 `node tools/글자검사.js 판본 <편> <키>`가 모든 판본을 「영상이 지금 판본 글로 구운 것이 아니다(렌더 뒤 글이 바뀜)」로 짚었다. 돌림표는 ready 그대로였다(뜻 지문은 LF 고정 글.json, 글자 지문은 영상이라).
