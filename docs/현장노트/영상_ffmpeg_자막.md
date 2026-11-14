@@ -40,7 +40,8 @@
 - 일레븐 v4 새 배역은 공식 API가 힉스필드 경유보다 약 5배 싸다 → 공유 목소리를 더해 굽고 값은 머리글로 읽는다 (아래 「목소리·받아쓰기」 끝)
 - Remotion에서 CSS `mask-image: url()`을 쓰면 렌더마다 몇 프레임씩 가면이 빠진다(11-09 M32 여섯 장) → 기다리는 `<Img>`에 `crossOrigin="anonymous"`, 낼 판은 번지는 구간을 낱프레임으로 잰다 (아래 「렌더(Remotion·Playwright)」 끝)
 - 새 편의 Remotion 틀과 부품 폴더는 `node tools/새편.js <편 폴더> --실행`으로 세운다(synkbrief 11-12 · LAB 11-13부터, LAB 노래 · 퀴즈 편은 제 틀) — 앞 편의 `remotion/`을 복사하거나 `node_modules`를 편끼리 잇지 않는다. 옛 편 · 연결이 끊긴 편도 같은 명령이고 그때는 부품만 잇는다 ([자세히](#remotion-parts))
-- 11-15부터 스마트 앱 컨트롤이 서명 없는 Remotion 프레임 추출기(`remotion.exe`)를 막아, `OffthreadVideo`를 쓰는 편은 렌더가 「spawn UNKNOWN」으로 멈춘다 → 보안 설정은 건드리지 않고 `@remotion/media`의 `Video`(`disallowFallbackToOffthreadVideo`)로 바꾼다 ([자세히](#remotion-sac))
+- 11-15 02:33~03:51에는 스마트 앱 컨트롤이 서명 없는 Remotion 프레임 추출기(`remotion.exe`)를 막아, `OffthreadVideo`를 쓰는 편은 렌더가 「spawn UNKNOWN」으로 멈췄다. 03:51에 스마트 앱 컨트롤을 꺼서 지금은 막히지 않는다 → 다시 켜지면 `@remotion/media`의 `Video`(`disallowFallbackToOffthreadVideo`)로 바꾼다 ([자세히](#remotion-sac))
+- Remotion 압축은 11-15부터 NVIDIA GPU(NVENC, High 프로파일)로 한다. 화질은 x264 slow와 같고 CPU는 덜 든다 → GPU를 쓰지 않으려면 `SYNK_RENDER_CPU=1`을 준다. 새 편 설정은 편틀을 따른다 ([자세히](#remotion-gpu))
 
 ## 목차
 
@@ -924,6 +925,23 @@ emotion.cmd`가 남아 있다.
 - 원인: 부품 폴더(`%LOCALAPPDATA%/synk/remotion-parts/remotion-4.0.535-…/node_modules/@remotion/compositor-win32-x64-msvc/remotion.exe`)의 서명 없는 추출기를 스마트 앱 컨트롤이 막았다. PowerShell에서 직접 띄우면 「애플리케이션 제어 정책에서 이 파일을 차단했습니다」가 나오고, CodeIntegrity 로그에 3077이 남는다. 같은 폴더의 `ffmpeg.exe`와 `ffprobe.exe`는 막히지 않았다. `OffthreadVideo`는 프레임마다 이 추출기를 부르므로 영상 컷이 있는 편은 모두 걸린다. 스마트 앱 컨트롤 자체는 [윈도우 노트](윈도우_셸.md#smart-app-control)를 본다.
 - 고침: 보안 설정을 끄거나 추출기를 다른 이름으로 옮기지 않는다. 편의 `Film.tsx`에서 `OffthreadVideo`를 `import { Video } from '@remotion/media'`로 바꾸고, `startFrom`을 `trimBefore`로 바꾸고, `objectFit="fill"`과 `disallowFallbackToOffthreadVideo`를 준다(막힌 추출기로 돌아가지 않게). `@remotion/media`는 편 틀 부품에 이미 들어 있고, 브라우저 안에서 프레임을 읽어 추출기가 필요 없다. `Audio`는 그대로 둔다(소리는 ffmpeg이 섞는다).
 - 다시 확인: B44 첫 여섯 장을 바꾼 부품으로 렌더해 11-14 판(`OffthreadVideo`)의 같은 장과 견주니 SSIM 0.9935였다(같은 길을 두 번 렌더한 차이와 같은 크기). 25.3초 전체 렌더와 마감(−14.6 LUFS)도 끝났다.
+- 11-15 03:51 덧붙임: 유호님이 스마트 앱 컨트롤을 끄셨다([결정](../_ops/결정.md)). 그 뒤 `remotion.exe`를 직접 띄워도 막히지 않았고, `OffthreadVideo`가 든 LAB 노래 편도 렌더됐다(08:04). `Video`로 바꾼 편은 그대로 둬도 된다. 스마트 앱 컨트롤이 다시 켜지면 위 고침을 쓴다.
+
+<a id="remotion-gpu"></a>
+### Remotion 렌더의 압축을 GPU로 — 화질은 같고 CPU는 덜 든다. GPU가 있는지 확인하는 줄과 High 프로파일은 설정에 직접 붙인다 (2026-11-15 Claude)
+- 증상: LAB 렌더를 돌리면 CPU가 100%까지 올랐다. 편 설정은 화면 그리기만 GPU(`setChromiumOpenGlRenderer("angle")`)로 하고, 압축은 CPU 전용 x264 `slow`로 했다. Remotion의 하드웨어 가속은 기본값이 「끔」이라 이 PC의 RTX 5090 인코더(NVENC)는 한 번도 쓰이지 않았다.
+- 원인: 하드웨어 가속은 `Config.setHardwareAcceleration("if-possible")`로 켜야 한다. 그런데 "if-possible"은 GPU가 있는지 보지 않는다. Windows와 Linux이면 언제나 `h264_nvenc`를 고르므로, NVIDIA GPU가 없는 PC에서는 렌더가 멈춘다. 또 Remotion의 NVENC 기본은 Main 프로파일인데, 올림 기준([제작 방식 v2 §2-4](../마케팅/콘텐츠_제작방식_v2_20261002.md))은 H.264 High다. `영상사전검사.mjs`는 코덱만 봐서 Main도 통과시킨다. 참고로 Remotion은 `x264Preset`을 NVENC에도 `-preset slow`로 넘긴다.
+- 고침: 편틀(`tools/편틀`), 노래 틀, 퀴즈 틀, 그리고 11-15까지의 LAB 편 65개의 `remotion.config.ts` 끝에 GPU 줄을 넣었다(x264 줄이 없는 TOPIK 두 편은 뺐다). `nvidia-smi -L`에 GPU가 보일 때만 하드웨어 가속을 켜고, `overrideFfmpegCommand`로 `h264_nvenc` 바로 뒤에 `-profile:v high`를 붙인다. GPU가 없거나 `SYNK_RENDER_CPU=1`을 주면 옛 x264 `slow` 그대로다.
+- 다시 확인: 같은 손실 없는 PNG 기준과 견줬다. 다른 세션 때문에 CPU가 97~100%인 때 쟀다. 시험 파일은 `D:\claude-tmp-gpurender-20261115`에 있다.
+
+  | 편 | x264 slow (VMAF · 압축 CPU) | NVENC (VMAF · 압축 CPU) |
+  |---|---|---|
+  | LAB 생신 MN, 13.9초 | 98.18 · 77초 | 98.30 · 10초 |
+  | LAB 노래 잠깐만, 16.5초, 영상 클립이 든 편 | 98.33 · 70초 | High 98.34 · 8초 |
+  | synkbrief 필라테스예약, 첫 15초 | 98.85 · 93초 | High 98.93 · 8초 |
+
+  가장 나쁜 장의 PSNR도 NVENC 쪽이 같거나 높았다(생신 43.7 대 48.6). 생신 한 편을 두 방식으로 번갈아 세 번씩 렌더하니, 걸린 시간은 55~74초 대 55~66초로 같았고 CPU는 144~149초 대 82~133초로 평균 45% 줄었다. 한 편이 빨라지지 않는 까닭은 시간 대부분이 브라우저가 장면을 그리는 몫이기 때문이다. 대신 같이 도는 다른 일이 CPU를 더 받는다. 고친 실제 편 설정으로 렌더하면 로그에 `Encoder: h264_nvenc, hardware accelerated: true`, ffprobe에 `profile=High`가 나온다. `SYNK_RENDER_CPU=1`이면 `libx264`에 High다. `tests/편틀.test.js` · `tests/새편.test.js` 35/35 통과.
+- 남은 것: GeForce 드라이버는 NVENC를 동시에 열 수 있는 수에 한도가 있다(이 드라이버의 한도는 확인 안 함). 렌더가 그보다 많이 한꺼번에 돌면 넘친 렌더가 멈출 수 있다. 그때는 `SYNK_RENDER_CPU=1`로 돌린다.
 
 ## 목소리·받아쓰기
 
