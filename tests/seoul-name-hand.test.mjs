@@ -186,6 +186,8 @@ test('서하 응원: 점수 층 · 다시 쓴 판 · 꼬리표 · 줄 파일과 
  assert.equal(finalLine({score:80,attempt:2,prev:82}),'rdown');
  assert.equal(finalLine({score:82,attempt:3,prev:82}),'fhi');    // 지난 최고와 같으면 점수 층 말(「최고 기록까지 조금만 더」는 뜻이 어긋남, 카본 A6)
  assert.equal(finalLine({score:70,attempt:2,prev:70}),'fmid');
+ assert.equal(finalLine({score:45,attempt:2,prev:92}),'fmid');   // 크게 떨어지면 「조금만 더」가 아니라 「한 번만 더 써 보면」(최종 검수 F2)
+ assert.equal(finalLine({score:85,attempt:2,prev:92}),'rdown');
  assert.equal(finalLine({score:100,attempt:2,prev:100}),'r100');
  assert.deepEqual([100,95,85,60].map(tier),['full','top','hi','mid']);
  assert.equal(weakTag({ord:.5,dir:1,like:.98}),'순서');

@@ -768,7 +768,7 @@ async function writeName(r,ko,knows,raw){
   await say(r,'seoha',knows?'여기 칸에 써 주면 돼요.':'제가 흐리게 써 둘게요. 위에 따라 써 봐요.');
   $('#vn').classList.remove('on');$('#s-gate').classList.remove('focus');$('#s-gate').classList.add('writing');
   const res=await nameTrace.run(ko,{knows,called}).finally(()=>$('#s-gate').classList.remove('writing'));guard(r);
-  if(res.sign){state.sign=res.sign;save({sign:res.sign});await say(r,'seoha',knows?'글씨 예쁘다! 학생증에 이대로 넣을게요.':'와, 처음 쓴 거 맞아요? 학생증에 이대로 넣을게요.');}
+  if(res.sign){state.sign=res.sign;save({sign:res.sign});if(res.score==null||res.score>=92)await say(r,'seoha','글씨 예쁘다! 학생증에 이대로 넣을게요.');else await say(r,'seoha','좋아요! 학생증에 이대로 넣을게요.');}
   else await say(r,'seoha','괜찮아요. 쓰는 건 다음에 같이 해 봐요.');
 }
 async function gate(r){

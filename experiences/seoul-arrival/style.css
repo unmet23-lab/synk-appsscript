@@ -151,6 +151,8 @@ p{text-wrap:pretty}
 .trace-skip{margin-top:12px;min-height:44px;padding:0 18px;border-radius:22px;font-size:14px;font-weight:600;color:var(--ink);background:var(--glass2);box-shadow:inset 0 0 0 1px var(--line2);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 /* 부스 · 이름 손글씨 겉 v2(11-14 유호님 「AI 티」 → 시안 A 「명부 한 장」): 신입생 명부 카드 한 장 위 원고지 칸에 넓적 촉으로 쓴다. 흐린 글씨 · 잉크는 획 모형에서 name-ink.mjs가 그린다(설계 이름손글씨.md 「겉 v2」) */
 .trace.nt{top:50%;width:min(88%,330px,calc(100dvh - 300px))}
+/* 짧은 화면(아이폰 SE 사파리 548 등): 비교판이 뜨며 카드가 길어져도 머리줄이 화면 밖으로 나가지 않게, 넘치는 만큼은 카드 안에서 내린다(최종 검수 F3) */
+@media (max-height:640px){.trace.nt{top:calc(50% + 25px);max-height:calc(100dvh - 62px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}}
 .nt-card{position:relative;padding:15px 15px 4px;text-align:left;color:#15171C;background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");border-radius:2px;box-shadow:0 1px 1px rgba(0,0,0,.08),0 10px 24px -8px rgba(0,0,0,.45),0 40px 70px -30px rgba(0,0,0,.7)}
 .nt-hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:9px;border-bottom:1.5px solid #15171C}
 .nt-hd b{font-size:12.5px;font-weight:620;letter-spacing:-.01em}
@@ -183,7 +185,7 @@ p{text-wrap:pretty}
 .nt-order.demo .nto-route,.nt-order.demo .nto-arrow{opacity:0!important}
 .nto-run{fill:none;stroke:#C24A37;stroke-width:2.4px;stroke-linecap:round;stroke-linejoin:round;opacity:0}
 .nto-n{fill:#C24A37;font:600 11px var(--sans);text-anchor:middle;dominant-baseline:central;letter-spacing:0;opacity:0;transition:opacity .3s}
-.nto-s.shown .nto-n{opacity:.4}.nto-s.shown.cur .nto-n{opacity:1}.nto-s.done .nto-n{opacity:0}
+.nto-s.shown .nto-n{opacity:.4}.nto-s.shown.cur .nto-n{opacity:1}.nto-s.done .nto-n{opacity:.2}.nto-s.done.ok .nto-n{opacity:0}
 .nto-nib{fill:#C24A37;opacity:0}
 .nt .trace-hint{display:flex;gap:10px;align-items:baseline;width:auto;max-width:none;min-height:56px;margin:0;padding:12px 2px 6px;transform:none;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;font-size:13.5px;font-weight:560;line-height:1.38;color:#1B1E25;text-align:left}
 .nt-cnt{flex:none;font:500 11px var(--mono);letter-spacing:.02em;color:#6A6F78}.nt-cnt b{font-weight:500;color:#C24A37}
@@ -195,7 +197,7 @@ p{text-wrap:pretty}
 .trace.nt .trace-btns,.trace.nt .nt-skip{transition:opacity .3s}
 .trace.nt.done .trace-btns,.trace.nt.done .nt-skip{opacity:0;pointer-events:none}
 .nto-ok{fill:none;stroke:#2F6B4F;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .3s}
-.nto-s.done .nto-ok{opacity:.85}
+.nto-s.done.ok .nto-ok{opacity:.85}
 .nt-order.demo .nto-ok{opacity:0}
 .nt-card::before{content:"";position:absolute;inset:5px;border:1px solid rgba(21,23,28,.07);pointer-events:none}
 .nt .trace-skip:focus-visible{outline:2px solid #C24A37;outline-offset:-4px}
@@ -209,7 +211,7 @@ p{text-wrap:pretty}
 .nt-cmp-l{font-size:11.5px;font-weight:600;color:#6A6F78;letter-spacing:.02em}
 .nt-cmp-model,.nt-cmp-mine{display:flex;gap:6px}
 .nt-cmp-mine{margin-bottom:17px}
-.nt-cg{position:relative;display:block;flex:1 1 0;min-width:0;max-width:78px;aspect-ratio:1;box-shadow:inset 0 0 0 1px rgba(194,74,55,.32)}
+.nt-cg{position:relative;display:block;flex:1 1 0;min-width:0;max-width:var(--cg,78px);aspect-ratio:1;box-shadow:inset 0 0 0 1px rgba(194,74,55,.32)}
 .nt-cg canvas{position:absolute;inset:0;width:100%;height:100%}
 .nt-cs{position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);white-space:nowrap;text-align:center;font:500 10.5px var(--mono);letter-spacing:.02em;color:#5E636C}
 .nt-cmp-s{display:flex;align-items:center;gap:10px;padding-top:6px;border-top:1px solid #ECEAE6}

@@ -70,7 +70,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   let W=0,lw=10,i=0,model=[],shapes=[],strokes=[],wet=[],last=null,pid=null,ptype='',penT=-1e9,lastT=0,timer=0,acceptT=0,finished=false,switching=false,swT=0,swT2=0;
   let soLen=[],soDone=[],soCur=0,soFoc=-1,soRaf=0,demoRun=0,demoing=false,guideOn=!knows,live=null;
   // 다 쓴 뒤 비교(11-14 유호님 「제대로 쓴 글씨 · 직접 쓴 글씨 비교 … 다시하기」): 음절마다 획 순서 · 방향을 센 값과 마지막 판정, 시도 · 점수
-  let phase='write',attempt=1,best=null,lastScore=null,cmpRaf=0,idleT=0,idled=false;
+  let phase='write',attempt=1,best=null,lastScore=null,cmpRaf=0,idleT=0,idled=false,bestInks=null,okMark=[],lastW=0;
   // 서하 선배 목소리(name-coach.mjs): 바로잡기 · 칭찬 · 끝 점수 줄. 소리를 끄면 글만 남는다
   const coach=createCoach({SND});coach.warm();
   const inks=[];   // 음절마다 다 쓴 잉크(칸 [0,1]²)
@@ -124,7 +124,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   function soShow(quiet){
    soCur=soDone.indexOf(false);
    so.classList.toggle('on',guideOn);
-   so.querySelectorAll('.nto-s').forEach((g,k)=>{g.classList.add('shown');g.classList.toggle('cur',k===soCur);g.classList.toggle('done',!!soDone[k]);});
+   so.querySelectorAll('.nto-s').forEach((g,k)=>{g.classList.add('shown');g.classList.toggle('cur',k===soCur);g.classList.toggle('done',!!soDone[k]);g.classList.toggle('ok',!!okMark[k]);});
    drawGuides();
    if(!quiet)tip();
    soLoop(soCur);
@@ -155,7 +155,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
 
   function openSyllable(auto){
    switching=false;last=null;pid=null;live=null;
-   model=syllableStrokes(syl[i].ch);strokes=[];wet=[];soDone=model.map(()=>false);clearTimeout(timer);clearTimeout(acceptT);showAccept(false);
+   model=syllableStrokes(syl[i].ch);strokes=[];wet=[];soDone=model.map(()=>false);okMark=[];clearTimeout(timer);clearTimeout(acceptT);showAccept(false);
    guideOn=!knows;pad.getAnimations().forEach(a=>a.cancel());fit();paintRow();coach.syllable();armIdle(auto&&!knows?13000:9000);
    if(i&&!reduce)pad.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'});
    if(auto&&!knows)setTimeout(()=>{if(!finished&&!strokes.length&&active===self)demo();},420);
@@ -165,6 +165,8 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   function armIdle(ms){clearTimeout(idleT);if(idled)return;idleT=setTimeout(()=>{if(finished||phase!=='write'||strokes.length)return;if(demoing||switching){armIdle(4000);return;}if(coach.idle())idled=true;},ms);}
   function fit(){
    W=pad.offsetWidth;lw=Math.max(9,W*.05);   // 배치 크기로 잰다(13판과 같다)
+   if(lastW&&W&&W!==lastW){const k=W/lastW,sc=p=>p.map(([x,y,t])=>[x*k,y*k,t]);wet=wet.map(sc);if(live)live=sc(live);if(last)last={x:last.x*k,y:last.y*k};}
+   if(W)lastW=W;
    for(const c of [cv,dry,guide]){c.width=Math.round(W*d);c.height=Math.round(W*d);}
    shapes=model.map(s=>shapeOf(s.k,s.p.map(([u,v])=>[u*W,v*W])));
    soBuild();redraw();paintLive();if(!demoing)soShow(true);else drawGuides();
@@ -211,7 +213,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    // 기대한 획 = 아직 긋지도 · 덮지도 않은 가장 앞 획(덜 덮인 획 하나 때문에 뒤 획이 모두 「순서 틀림」이 되지 않게). 조금 비켜 써도 기대한 획과 꼴 · 방향이 같으면 그 획으로 본다(fitsStroke)
    const st=stats[i]||(stats[i]={n:0,ord:0,dir:0,r:null,tried:new Set()}),stk=strokes[strokes.length-1],expect=model.findIndex((_,k)=>!soDone[k]&&!st.tried.has(k));
    let w=which(model,stk,lw/W);if(expect>=0&&w.k!==expect){const m=fitsStroke(model[expect],stk,lw/W);if(m)w={k:expect,rev:m.rev};}
-   const fresh=w.k>=0&&!soDone[w.k]&&!st.tried.has(w.k);if(fresh){st.tried.add(w.k);st.n++;if(w.k===expect)st.ord++;if(!w.rev)st.dir++;}
+   const fresh=w.k>=0&&!soDone[w.k]&&!st.tried.has(w.k);if(fresh){st.tried.add(w.k);st.n++;if(w.k===expect)st.ord++;if(!w.rev)st.dir++;if(w.k===expect&&!w.rev)okMark[w.k]=true;}
    const r=score(model,strokes,lw/W);api.last=r;st.r=r;
    const before=soDone.filter(Boolean).length;soDone=model.map((_,k)=>soDone[k]||r.done[k]);soShow(true);
    const got=soDone.filter(Boolean).length;if(got>before)SND.felt('step',got-1);
@@ -224,10 +226,14 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    else hint.textContent=L('조금만 더 써 보세요');
    acceptT=setTimeout(()=>{if(!finished&&strokes.length)showAccept(true);},2500);};
   const cancelPt=e=>{if(e.pointerId===pid){last=null;pid=null;if(live){wet.push(live);live=null;paintLive();redraw();}}};
-  const clear=e=>{e?.stopPropagation();if(switching||phase!=='write')return;clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();strokes=[];wet=[];live=null;last=null;pid=null;stats[i]=null;redraw();paintLive();soDone=model.map(()=>false);showAccept(false);soShow(false);SND.felt('page');};
+  const clear=e=>{e?.stopPropagation();if(switching||phase!=='write')return;clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();strokes=[];wet=[];live=null;last=null;pid=null;stats[i]=null;okMark=[];redraw();paintLive();soDone=model.map(()=>false);showAccept(false);soShow(false);SND.felt('page');};
   const order=e=>{e.stopPropagation();if(switching||phase!=='write')return;clearTimeout(timer);clearTimeout(swT2);demo();};
   const accept=e=>{e.stopPropagation();if(!strokes.length||switching||btnAccept.disabled)return;nextSyllable();};
-  const skip=e=>{e.stopPropagation();finish(false);};
+  const skipLabel=k=>{const sp=btnSkip.querySelector('span');if(sp){sp.dataset.l=k;sp.textContent=L(k);}};
+  const skip=e=>{e.stopPropagation();if(switching||finished)return;
+   // 다시 쓰는 중이면 그만둬도 앞서 다 쓴 이름 가운데 가장 잘 쓴 판이 학생증에 들어간다
+   if(attempt>1&&bestInks?.length){clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();live=null;last=null;pid=null;paintLive();inks.length=0;bestInks.forEach(s=>inks.push(s));lastScore=best;finish(true);return;}
+   finish(false);};
 
   // ── 다 쓴 뒤 비교: 바른 글씨(모형) · 내 글씨(쓴 자리 · 크기 그대로) · 닮은 정도. 막지 않는다 — 「다시 써 보기」 또는 「학생증에 넣을게요」 ──
   // 음절 점수: 닮은 정도(모형 가운데 선과의 거리) · 획 덮음 · 획 순서 · 방향(엉뚱한 획은 깎는다). 흐린 글씨 위를 바르게 따라 쓰면 90점대, 비뚤면 70점대
@@ -240,11 +246,13 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    if(finished)return;
    phase='compare';switching=false;cancelAnimationFrame(soRaf);clr(xd);clr(xg);so.innerHTML='';pad.getAnimations().forEach(a=>a.cancel());
    const per=syl.map((_,k)=>sylScore(k)),total=Math.round(per.reduce((a,b)=>a+b,0)/per.length),prev=best;
+   if(prev==null||total>prev)bestInks=inks.map(s=>s.map(p=>p.map(q=>q.slice())));
    lastScore=total;best=Math.max(best??0,total);clearTimeout(idleT);SND.felt('open');
    cmp.querySelector('.nt-cmp-model').innerHTML=cmp.querySelector('.nt-cmp-mine').innerHTML='';
    const addCell=sel=>{const c=document.createElement('i');c.className='nt-cg';c.innerHTML='<canvas></canvas>';cmp.querySelector(sel).appendChild(c);return c;};
    cmp.hidden=false;box.classList.add('cmp');paintRow();
    const cells=syl.map(s=>({s,m:addCell('.nt-cmp-model'),y:addCell('.nt-cmp-mine')}));
+   cmp.style.removeProperty('--cg');{const over=cmp.scrollHeight-cmp.clientHeight;if(over>0)cmp.style.setProperty('--cg',Math.max(32,Math.floor(cells[0].m.offsetWidth-over/2-2))+'px');}
    // 음절 점수: 90점 넘으면 초록, 가장 낮은 음절이 90점 아래면 붉게 + 가장 많이 잃은 곳(순서 · 방향 · 모양) 꼬리표 — 다시 쓸 때 볼 곳
    const low=per.indexOf(Math.min(...per));
    cells.forEach(({y},k)=>{const tag=k===low&&per[k]<90&&syl.length<5?weakTag(sylParts(k)):null;y.insertAdjacentHTML('beforeend',`<b class="nt-cs${per[k]>=90?' good':k===low&&per[k]<90?' low':''}">${per[k]}${tag?`<em>${L(tag)}</em>`:''}</b>`);});
@@ -276,7 +284,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    if(dur)setTimeout(()=>hint.querySelector('.nt-who')?.classList.remove('talk'),dur*1000);}
   // 다시 써 보기: 이름 처음 음절부터(시범은 저절로 보이지 않는다 — 「획순 보기」로), 점수는 이번 판과 견준다
   const retry=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;
-   phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;box.classList.remove('cmp');inks.length=0;stats.length=0;i=0;
+   phase='write';attempt++;coach.hush();cancelAnimationFrame(cmpRaf);cmp.hidden=true;skipLabel('지난 글씨로 넣을게요');box.classList.remove('cmp');inks.length=0;stats.length=0;i=0;
    row.querySelectorAll('.nt-cell').forEach(c=>{c.innerHTML='';});SND.felt('page');openSyllable(false);};
   const keep=e=>{e?.stopPropagation();if(phase!=='compare'||finished)return;finish(true);};
   function cleanup(){cancelAnimationFrame(soRaf);cancelAnimationFrame(cmpRaf);demoRun++;clearTimeout(idleT);coach.hush();clearTimeout(timer);clearTimeout(acceptT);clearTimeout(swT);clearTimeout(swT2);
@@ -292,7 +300,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
     if(phase!=='compare'){clr(xg);clr(xd);live=null;paintLive();so.innerHTML='';pad.getAnimations().forEach(a=>a.cancel());signLine();}}
    // 칸 · 줄 DOM은 세션끼리 같이 쓴다 — 닫는 사이에 새 세션이 열렸으면(다시 열기) 옛 세션의 늦은 정리는 손대지 않는다(화면 검수 A5)
    const mine=()=>!active||active===self;
-   setTimeout(()=>{if(mine())box.classList.remove('on');setTimeout(()=>{if(!mine())return;strokes=[];wet=[];clr(x);clr(xd);clr(xg);cmp.hidden=true;box.classList.remove('done','knows','cmp');so.innerHTML='';row.innerHTML='';hint.textContent='';box.querySelectorAll('.nt-fly').forEach(g=>g.remove());},500);done({sign,skipped:!ok&&!quiet,cancelled:!!quiet});},quiet?0:ok?1500:200);
+   setTimeout(()=>{if(mine())box.classList.remove('on');setTimeout(()=>{if(!mine())return;strokes=[];wet=[];clr(x);clr(xd);clr(xg);cmp.hidden=true;box.classList.remove('done','knows','cmp');so.innerHTML='';row.innerHTML='';hint.textContent='';box.querySelectorAll('.nt-fly').forEach(g=>g.remove());},500);done({sign,skipped:!ok&&!quiet,cancelled:!!quiet,score:ok?lastScore:null,attempt});},quiet?0:ok?1500:200);
   }
   function signLine(){
    const n=inks.length,gaps=syl.slice(0,n).filter(s=>s.gap).length;if(!n||!W)return;
@@ -311,7 +319,7 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
    paths(){const b=cv.getBoundingClientRect(),k=b.width/W;return model.map(s=>s.p.map(([u,v])=>[b.left+u*W*k,b.top+v*W*k]));},
    state(){return {i,n:syl.length,word,knows,done:soDone.slice(),hint:hint.textContent,accept:!btnAccept.classList.contains('off'),demo:demoing,phase,attempt,score:lastScore,best,said:coach.said,stats:stats.map(x=>x&&{n:x.n,ord:x.ord,dir:x.dir})};},
   };
-  hint.textContent=HINT;box.classList.add('on');
+  skipLabel('넘어가기');hint.textContent=HINT;box.classList.add('on');
   requestAnimationFrame(()=>{if(!finished)openSyllable(true);});
   return self;
  }

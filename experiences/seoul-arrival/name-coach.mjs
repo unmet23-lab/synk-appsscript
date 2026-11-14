@@ -20,6 +20,7 @@ export function finalLine({score,attempt=1,prev=null}){
  if(attempt<=1||prev==null){if(score>=100)return 'f100';if(score>=92)return 'ftop';if(score>=80)return 'fhi';if(score>=65)return 'fmid';return 'flow';}
  if(score>=100)return 'r100';
  if(score===prev)return score>=80?'fhi':'fmid';
+ if(prev-score>10)return 'fmid';
  return score>prev?'rup':'rdown';
 }
 // 점수 층(소리 · 색): 100 · 92 · 80 · 그 아래
