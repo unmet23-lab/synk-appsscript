@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "아니요… 괜찮아요…",
+ "dur": 1.636,
+ "words": [
+  {
+   "text": "아니요…",
+   "start": 0.21,
+   "end": 0.534
+  },
+  {
+   "text": "괜찮아요…",
+   "start": 0.675,
+   "end": 1.636
+  }
+ ],
+ "source": {
+  "key": "a26dbb2ee27e4b77882d03f1c1d46580",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "tonedown",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1136,
+   "lufs": -17,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 462
+ }
+}

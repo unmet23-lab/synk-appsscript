@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1136,
+  "lufs": -17
+ },
+ "made": "2026-11-13T22:28:20.905Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "몇 시간 하실 거예요?",
+   "dur": 1.107,
+   "syllablesPerSec": 7.23,
+   "src": "s1.wav",
+   "key": "491967a47985db6d7d0b32d9264d221e",
+   "words": 4
+  },
+  {
+   "id": "m1",
+   "text": "한 시간만요!",
+   "dur": 0.998,
+   "syllablesPerSec": 5.01,
+   "src": "m1.wav",
+   "key": "5d0721297e31307e3143f55971d4851a",
+   "words": 2
+  },
+  {
+   "id": "s2",
+   "text": "손님, 연장하시겠어요?",
+   "dur": 1.883,
+   "syllablesPerSec": 4.78,
+   "src": "s2.wav",
+   "key": "77aa21a3d8ce6b99fe0ed5821eb83f5b",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "아니요… 괜찮아요…",
+   "dur": 1.636,
+   "syllablesPerSec": 4.28,
+   "src": "m2.wav",
+   "key": "a26dbb2ee27e4b77882d03f1c1d46580",
+   "words": 2
+  }
+ ]
+}

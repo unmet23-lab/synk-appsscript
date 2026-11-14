@@ -1,0 +1,5 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE square image, 1:1, sharp and detailed, on a plain pure white background.
+
+Two separate needle-felted clock hands for a felt wall clock, lying flat side by side with a wide gap between them, photographed straight from above with a macro lens: on the left, a LONG thin minute hand; on the right, a SHORT thicker hour hand. Both are made of dark chocolate-brown wool felt with a slightly rounded tip at one end and a small round felt hub at the other end, visible wool fibers. They lie perfectly straight and vertical (tips pointing up). No shadow, no clock face, nothing else in the picture, no text.

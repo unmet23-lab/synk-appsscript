@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "몇 시간 하실 거예요?",
+ "dur": 1.107,
+ "words": [
+  {
+   "text": "몇",
+   "start": 0.02,
+   "end": 0.131
+  },
+  {
+   "text": "시간",
+   "start": 0.195,
+   "end": 0.369
+  },
+  {
+   "text": "하실",
+   "start": 0.416,
+   "end": 0.606
+  },
+  {
+   "text": "거예요?",
+   "start": 0.653,
+   "end": 1.107
+  }
+ ],
+ "source": {
+  "key": "491967a47985db6d7d0b32d9264d221e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1136,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 125
+ }
+}
