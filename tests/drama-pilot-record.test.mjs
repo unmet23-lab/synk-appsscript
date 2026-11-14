@@ -14,6 +14,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import PILOT from '../experiences/drama/pilot/content.mjs';
+import { planRevisit } from '../experiences/drama/pilot/takes.mjs';
 
 const require = createRequire(import.meta.url);
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -41,7 +42,7 @@ function rig() {
   return { box, recorder: Drama.createRecorder({ owner }), later: (minutes = 1) => { box.now += minutes * 60000; } };
 }
 
-test('④ 받아 적기가 막힌 동안(서버 사정 · 꺼짐 · 오늘 횟수 끝) B는 보임 · 시도가 남지 않고, 받아 적기가 돌아온 날 첫 판정이 혼자 해 봄 → 8일째 C', () => {
+test('④ 받아 적기가 막힌 동안(서버 사정 · 꺼짐 · 오늘 횟수 끝) B는 보임 · 시도가 남지 않고, 받아 적기가 돌아온 날 첫 판정이 혼자 해 봄 → 3일째 C', () => {
   const r = rig();
   const scene = r.recorder.open({ lineId: SCENE.id, skillId: SCENE.skill, phase: 'scene' });
   r.later(); scene.take({ kind: 'down' });
@@ -56,8 +57,9 @@ test('④ 받아 적기가 막힌 동안(서버 사정 · 꺼짐 · 오늘 횟�
   const first = again.take(ok(PASS, { correct: true, assessable: true }));
   assert.equal(first.attemptNo, 1); assert.equal(first.verdict, 'correct'); assert.equal(first.independent, true);
   assert.equal(r.recorder.seen(B.lineId), true);
-  r.box.now += 7.5 * 86400000;
-  assert.equal(r.recorder.delayedDue(T6), true, 'B를 미뤘어도 C(7~10일 창)가 이어진다');
+  r.box.now += 3.5 * 86400000;
+  const plan = planRevisit(r.recorder.review({ lineIds: [SCENE.id], transferId: B.lineId, delayedId: T6.lineId }), { now: r.box.now });
+  assert.equal(plan.delayed, true, 'B를 미뤘어도 C(3일째부터, 설계 §18-2)가 이어진다');
 });
 
 test('④ B: 받아 적기까지 간 첫 테이크(안 들림 · 판정 보류 포함)는 B를 쓰고(11-02 규칙 그대로), 모범을 보면 그 자리에서 쓴다', () => {

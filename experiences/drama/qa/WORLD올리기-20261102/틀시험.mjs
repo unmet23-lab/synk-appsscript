@@ -5,7 +5,10 @@
 //   드라마 통로(SYNKDramaHost)를 세운 뒤 /drama/를 같은 출처 게임 틀로 연다(app-shell launchGame과 같은 allow).
 // · 드라마 통로의 take는 /fake/take로 간다: talk와 같은 판정기(tools/lib/드라마판정.mjs judgeLine · nextTake)와 같은 대사 은행(dramaLines)으로
 //   판정하고, 받아 적은 글만 아래 TRANSCRIPTS 차례로 정해 둔다(받아쓰기 흉내 — 소리는 보지 않는다). 응답 꼴은 talk world-speaking take 그대로.
-// · /drama/는 공개 빌드처럼 index.html에 data-drama="world"를 단다. ?limit=1이면 status가 오늘 횟수 0, ?off=1이면 드라마 스위치 꺼짐, ?down=1이면 take가 unavailable(받아 적기 실패), ?c=1이면 7.5일 전 t9 판정을 미리 남겨 C 카드를 본다.
+// · /drama/는 공개 빌드처럼 index.html에 data-drama="world"를 단다. ?limit=1이면 status가 오늘 횟수 0, ?off=1이면 드라마 스위치 꺼짐, ?down=1이면 take가 unavailable(받아 적기 실패), ?c=1이면 3.2일 전 t9 판정을 미리 남겨 C 카드를 본다(11-14부터 3일 — 설계 §18-2).
+// · ?r=1(설계 §18-6, 시연 영상 녹화 길): 첫날 기록 — 장면 6번 줄 「요」 빠짐(되묻기 → 빈칸 열림 → 코치 노트) · 테이크 2 통과 · 7 · 8번 통과 · B(t9) 판정 —
+//   을 3일 전으로 남겨 첫 화면에 「다시 만나기 · 지난번 빠뜨린 「요」, 다시」를 본다. 복습 테이크의 받아 적기는 「…헤맸어요」(통과), ?miss=1이면 「…헤맸어」(같은 실수 → 근거 카드).
+//   &days=<n>으로 며칠 전인지 바꾼다(기본 3 — 같은 시각의 3일 전). &c=0이면 B(t9)를 남기지 않는다 — 복습을 마친 뒤 C 카드가 이어 뜨지 않게.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,8 +32,11 @@ const TRANSCRIPTS = {
  's1e01-8': ['정말요? 선배님 덕분에 살았어요'],
  's1e01-t4': ['선생님, 혹시 복사실이 어디에 있는지 아세요?'],
  's1e01-t9': ['선배님, 혹시 편의점이 어디에 있는지 아세요?'], // 11-03 새 상황 t4 → t9
- 's1e01-t6': ['길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?'], // 11-03 C(7~10일 뒤 문항, 설계 §17)
+ 's1e01-t6': ['길을 잃었어요. 새솔대 정문이 어디에 있는지 아세요?'], // 11-03 C(설계 §17 — 11-14부터 3일째)
 };
+// ?r=1 복습 테이크(설계 §18-6) — 6번 줄을 처음 말하는 테이크가 복습이다(첫날 기록은 부모 창이 미리 남긴다).
+const REVIEW_TRANSCRIPTS = { 's1e01-6': ['네, 맞아요. 길을 잃어서 한참 헤맸어요'] };
+const REVIEW_MISS = { 's1e01-6': ['네, 맞아요. 길을 잃어서 한참 헤맸어', '네, 맞아요. 길을 잃어서 한참 헤맸어요'] };
 // --받아적기 <json>: 대사마다의 받아 적힌 글 차례를 바꾼다(쇼케이스 영상판 녹화 — 콘티 흐름의 말을 그대로, 판정은 같은 판정기).
 if (opt('--받아적기')) Object.assign(TRANSCRIPTS, JSON.parse(fs.readFileSync(opt('--받아적기'), 'utf8')));
 const used = new Map();
@@ -65,14 +71,28 @@ window.SYNKDramaHost = Object.freeze({ status: () => call({ action: 'status' }),
 // WORLD prepareGame처럼 호스트가 준비된 뒤에 틀을 연다.
 await learnHost.ready();
 // ?c=1(설계 §17): 7.5일 전 시계로 t9 새 상황 첫 판정(혼자 해 봄 · 맞음)을 미리 남겨 두면 틀의 첫 화면에 C(t6) 카드가 나와야 한다.
-if (q.get('c') === '1') {
+if (q.get('c') === '1' || q.get('r') === '1') {
  // 계정 기록이 다 모인 뒤에 남겨야 첫 노출이 확정돼 판정된 첫 시도(혼자 해 봄)가 된다 — 실제로도 t9는 동기화가 끝난 화면에서 낸다.
  for (let i = 0; i < 50 && learnHost.status().complete !== true; i++) await new Promise((r) => setTimeout(r, 100));
- const past = () => new Date(Date.now() - 7.5 * 86400000).toISOString();
+ // 기본: 복습(?r=1)은 꼭 3일 전 같은 시각(화면에 「3일 전」), C만 보는 ?c=1은 3.2일 전.
+ const ago = Number(q.get('days')) > 0 ? Number(q.get('days')) : q.get('r') === '1' ? 3 : 3.2;
+ const past = () => new Date(Date.now() - ago * 86400000).toISOString();
  const g = learnHost.createGame({ gameId: 'drama-s1', clock: past }, DramaLearning.engine.createGame, DramaLearning.engine.createLearningSync);
  await new Promise((r) => setTimeout(r, 400)); // 기록 잠금(Web Lock)을 받은 뒤에 남긴다 — 받기 전이면 reason storage(판정 없음)
- const pid = g.present({ id: 'drama-s1.transfer.s1e01-t9', itemKey: 's1e01-t9', familyKey: 's1e01-t9', skillId: 'ko.speaking.ask', modality: 'speaking', difficulty: 2, responseFormat: 'spoken', audioRequired: false });
- g.answer(pid, { correct: true, assessable: true, attemptNo: 1 });
+ const say = (phase, lineId, skillId, choices, { help = [], assessable = false, correct = null } = {}) => {
+  const pid = g.present({ id: 'drama-s1.' + phase + '.' + lineId, itemKey: lineId, familyKey: lineId, skillId, modality: 'speaking', difficulty: phase === 'transfer' ? 2 : 1, responseFormat: 'spoken', audioRequired: false });
+  g.help(pid, 'text');
+  choices.forEach((c, i) => { for (const [at, kind] of help) if (at === i) g.help(pid, kind); g.answer(pid, { correct: phase === 'transfer' ? correct : null, assessable: i === 0 && assessable, attemptNo: i + 1, choice: { selectedId: c, correctId: 'pass' } }); });
+  for (const [at, kind] of help) if (at === choices.length) g.help(pid, kind);
+ };
+ if (q.get('r') === '1') {
+  // 실제 화면으로 밟는 길과 같은 기록: 첫 노트 → 되묻기, 둘째 노트 → 빈칸 열림(answer), 셋째 노트 → 장면 뒤 코치 노트(explanation) → 테이크 2(answer 뒤 통과).
+  say('scene', 's1e01-6', 'ko.speaking.explain', ['note-ending', 'note-ending', 'note-ending'], { help: [[2, 'answer'], [3, 'explanation']] });
+  say('scene', 's1e01-7', 'ko.speaking.ask', ['pass']);
+  say('scene', 's1e01-8', 'ko.speaking.thank', ['pass']);
+  say('retake', 's1e01-6', 'ko.speaking.explain', ['pass'], { help: [[0, 'answer']] });
+ }
+ if (q.get('c') !== '0') say('transfer', 's1e01-t9', 'ko.speaking.ask', ['pass'], { assessable: true, correct: true });
  await g.flush(); g.dispose();
 }
 const f = document.createElement('iframe'); f.className = 'game-frame'; f.title = '드라마 말하기 · 1화'; f.allow = 'autoplay; fullscreen; microphone'; f.src = (q.get('world') === 'live' ? '/live/drama/' : '/drama/') + (q.get('nowebgl') === '1' ? '?nowebgl=1' : '');
@@ -83,7 +103,8 @@ function reply(res, status, value) { const b = Buffer.from(JSON.stringify(value)
 const server = http.createServer(async (req, res) => {
  const url = new URL(req.url, `http://127.0.0.1:${port}`);
  try {
-  if (url.pathname === '/') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return res.end(PARENT); }
+  // 부모 쪽을 새로 열면 받아 적기 차례도 처음부터(녹화 · ?r=1&miss=1을 다시 돌릴 때 앞 회차의 셈이 남지 않게).
+  if (url.pathname === '/') { used.clear(); res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return res.end(PARENT); }
   if (url.pathname === '/log') return reply(res, 200, log);
   if (url.pathname.startsWith('/fake/')) {
    let raw = ''; for await (const c of req) raw += c;
@@ -104,7 +125,8 @@ const server = http.createServer(async (req, res) => {
    if (body.seconds > line.answerSec + 5) { log.push({ line: line.id, status: 'too_long', seconds: body.seconds }); return reply(res, 200, { ok: true, status: 'too_long' }); }
    // ?down=1: status는 켜짐인데 받아 적기가 실패(운영 11-01~ OpenAI 429와 같은 꼴) — 화면은 「지금은 받아쓰기를 못 해요」.
    if (url.searchParams.get('down') === '1') { log.push({ line: line.id, status: 'unavailable' }); return reply(res, 200, { ok: true, status: 'unavailable' }); }
-   const list = TRANSCRIPTS[line.id] || [line.line], n = used.get(line.id) || 0; used.set(line.id, n + 1);
+   const review = url.searchParams.get('r') === '1' && (url.searchParams.get('miss') === '1' ? REVIEW_MISS : REVIEW_TRANSCRIPTS)[line.id];
+   const list = review || TRANSCRIPTS[line.id] || [line.line], n = used.get(line.id) || 0; used.set(line.id, n + 1);
    const transcript = list[Math.min(n, list.length - 1)];
    const result = judgeLine(line.spec, { transcript, seconds: body.seconds, speechSeconds: body.seconds, language: '' });
    const gated = result.status !== 'ok';

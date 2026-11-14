@@ -20,16 +20,18 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import PILOT from '../experiences/drama/pilot/content.mjs';
+import { planRevisit, daysSince, REVISIT_DAYS } from '../experiences/drama/pilot/takes.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const GAME = 'drama-s1';
 const SCENE_LINES = PILOT.scene.filter((x) => x.type === 'student').map((x) => x.id);
 const B_ID = PILOT.transfer.id, C_ID = PILOT.delayed.id;
 const DAY = 86400000;
-// Atlas 지연 관측 d7 창(설계 §17): 기준 시도 + 7일 ~ + 10일.
-const C_OPEN = 7 * DAY, C_CLOSE = 10 * DAY;
+// C · 다시 만나기는 B 판정 날(기준 시각)에서 학습일(새벽 4시에 바뀜) 3일째부터다(11-14 설계 §18-2 — 옛 Atlas d7 창 7~10일 대신). 끝은 없다.
+const { revisitFacts } = createRequire(import.meta.url)('../experiences/drama/pilot/learning-entry.cjs');
 const JUDGED = new Set(['pass', 'note-ending', 'note-length', 'note-missing']);
-const TYPES = ['practice.presented', 'practice.attempted', 'practice.helped', 'record.excluded'];
+// decision.made: 틀린 장면 다시(revisitFacts)가 보임이 이 게임 결정에서 나왔는지 본다(GPT 검수 GA2 — 빠지면 (라)가 0).
+const TYPES = ['decision.made', 'practice.presented', 'practice.attempted', 'practice.helped', 'record.excluded'];
 
 // 목록 파일 → [{no, email}]. 이메일은 비교에만 쓰고 결과에 내지 않는다.
 export function readParticipants(text) {
@@ -45,7 +47,7 @@ export function readParticipants(text) {
 }
 
 const time = (e) => Date.parse(e.at);
-const phaseOf = (p) => { const m = /^drama-s1\.(scene|retake|transfer)\.(.+)$/.exec(p.taskId || ''); return m ? { phase: m[1], line: m[2] } : null; };
+const phaseOf = (p) => { const m = /^drama-s1\.(scene|retake|transfer|review)\.(.+)$/.exec(p.taskId || ''); return m ? { phase: m[1], line: m[2] } : null; };
 
 // 한 계정의 드라마 사건 → 그 사람의 줄. 사건은 서버 순서(server_seq)로 온다.
 export function personOf(events = []) {
@@ -96,6 +98,13 @@ export function personOf(events = []) {
   };
   person.b = transferRow(B_ID);
   person.c = transferRow(C_ID);
+  // 틀린 장면 다시 · C 자격: 화면과 같은 재료(장면 · 복습 보임의 첫 판정 시도 — 테이크 2 제외, B 보임의 첫 판정 시도 시각).
+  const facts = revisitFacts(events, { lineIds: SCENE_LINES, transferId: B_ID });
+  // C 자격은 화면 카드와 같이 B를 판정까지 말한 첫 시각(안 들림 뒤 통과도 든다 — GPT 검수 GA4). (나)의 「혼자 해 봄 · 맞음」 셈은 그대로 판정(verdict)으로 센다.
+  person.bAt = Number.isFinite(facts.transferAt) ? facts.transferAt : null;
+  if (person.bAt != null && person.c?.judged) person.c.days = daysSince(person.bAt, person.c.at);
+  person.review = { facts, mistaken: Object.values(facts.history).some((list) => list.some((r) => r.choice.startsWith('note-'))),
+    reviewed: events.some((e) => e?.type === 'practice.presented' && String(e.taskId || '').startsWith(`${GAME}.review.`) && attempts.get(e.id)?.some((a) => JUDGED.has(a.choice) && !excluded.has(a.id))) };
   return person;
 }
 
@@ -103,7 +112,9 @@ export function personOf(events = []) {
 //  (가) 장면을 끝낸 사람 / 노트 없이 끝난 사람 / 노트를 받은 사람 / 고친 사람(테이크 2 첫 판정 시도에 그 노트 종류가 없음)
 //      + 같은 노트 다시 · 테이크 2 판정 없음 · 테이크 2 안 함, 노트 종류별
 //  (나) 장면을 끝낸 사람 / B를 본 사람 / B 판정 있음(혼자 해 봄) / 맞음 + 모범 먼저 · 판정 없이 지나감 · 「제가 한 말과 달라요」로 뺀 판정
-//  (다) C 자격(B 판정 있음) / 창 전 · 창 안 미시도 · 창 놓침 / C를 본 사람 / C 판정 있음 / 맞음
+//  (다) C 자격(B 판정 있음) / 3일째 전 · 3일째부터 미시도 / C를 본 사람 / C 판정 있음 / 맞음 + B → C 날 차이(11-14 설계 §18-2 — 창 끝 없음)
+//  (라) 틀린 장면 다시(11-14 설계 §18): 장면 · 복습의 첫 판정에 고칠 점이 있었던 사람 / 복습을 판정까지 한 사람 / 다시 만나기가 닫힌 사람 /
+//      아직 열림 — 3일째가 됨(다시 만나기 차례) · 3일째 전. 셈은 화면과 같은 규칙(learning-entry revisitFacts → takes planRevisit)이다.
 //  인식: 안 들림 · 인식 불명(unclear) · 판정 보류(hold) 테이크 수와 사람 수
 export function aggregate(people, asOf = Date.now()) {
   const rows = people.map((x) => ({ no: x.no, account: x.account, ...personOf(x.events || []) }));
@@ -112,7 +123,9 @@ export function aggregate(people, asOf = Date.now()) {
   const noted = rows.filter((r) => r.note);
   const kinds = {}; for (const r of noted) kinds[r.note.kind] = (kinds[r.note.kind] || 0) + 1;
   const bEligible = rows.filter((r) => r.b?.judged);
-  const cWindow = (r) => { const t = r.b.at; return asOf < t + C_OPEN ? 'before' : asOf <= t + C_CLOSE ? 'open' : 'after'; };
+  const cEligible = rows.filter((r) => r.bAt != null);
+  const cWindow = (r) => (daysSince(r.bAt, asOf) >= REVISIT_DAYS ? 'open' : 'before');
+  const plans = rows.map((r) => (r.review?.mistaken ? planRevisit(r.review.facts, { now: asOf }) : null));
   const times = rows.map((r) => r.firstTakeSeconds).filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
   return {
     asOf: new Date(asOf).toISOString(),
@@ -122,15 +135,18 @@ export function aggregate(people, asOf = Date.now()) {
       sameAgain: n((r) => r.take2?.status === 'same'), take2Unjudged: n((r) => r.take2?.status === 'unjudged'), take2None: n((r) => r.take2?.status === 'none'), kinds },
     na: { sceneDone: scene.length, bSeen: n((r) => r.b), bJudged: bEligible.length, bCorrect: n((r) => r.b?.correct), bHintFirst: n((r) => r.b?.hintFirst && !r.b.judged),
       bUnjudged: n((r) => r.b && !r.b.judged && !r.b.hintFirst && !r.b.excludedJudged), bExcluded: n((r) => r.b?.excludedJudged && !r.b.judged), sceneDoneNoB: n((r) => r.sceneDone && !r.b) },
-    da: { eligible: bEligible.length, beforeWindow: bEligible.filter((r) => !r.c && cWindow(r) === 'before').length, openNotTried: bEligible.filter((r) => !r.c && cWindow(r) === 'open').length,
-      missed: bEligible.filter((r) => !r.c && cWindow(r) === 'after').length, cSeen: n((r) => r.c), cJudged: n((r) => r.c?.judged), cCorrect: n((r) => r.c?.correct),
-      cHintFirst: n((r) => r.c?.hintFirst && !r.c.judged), cUnjudged: n((r) => r.c && !r.c.judged && !r.c.hintFirst && !r.c.excludedJudged), cExcluded: n((r) => r.c?.excludedJudged && !r.c.judged) },
+    da: { eligible: cEligible.length, beforeWindow: cEligible.filter((r) => !r.c && cWindow(r) === 'before').length, openNotTried: cEligible.filter((r) => !r.c && cWindow(r) === 'open').length,
+      cSeen: n((r) => r.c), cJudged: n((r) => r.c?.judged), cCorrect: n((r) => r.c?.correct),
+      cHintFirst: n((r) => r.c?.hintFirst && !r.c.judged), cUnjudged: n((r) => r.c && !r.c.judged && !r.c.hintFirst && !r.c.excludedJudged), cExcluded: n((r) => r.c?.excludedJudged && !r.c.judged),
+      cDays: rows.map((r) => r.c?.days).filter((v) => Number.isFinite(v)).sort((a, b) => a - b) },
+    ra: { spoke: n((r) => Object.keys(r.review?.facts?.history || {}).length > 0), mistaken: n((r) => r.review?.mistaken), reviewed: n((r) => r.review?.reviewed), closed: plans.filter((p) => p && !p.mistakes.length).length,
+      due: plans.filter((p) => p?.due).length, waiting: plans.filter((p) => p && p.mistakes.length && !p.due).length },
     recognition: { unheardTakes: rows.reduce((s, r) => s + r.unheard, 0), unclearTakes: rows.reduce((s, r) => s + r.unclear, 0), holdTakes: rows.reduce((s, r) => s + r.hold, 0),
       people: n((r) => r.unheard + r.unclear + r.hold > 0) },
     firstTakeSeconds: { people: times.length, median: times.length ? times[Math.floor((times.length - 1) / 2)] : null, values: times },
     rows: rows.map((r) => ({ no: r.no, account: !r.account?.found ? 'none' : r.account.learningEnabled ? 'on' : 'off', events: r.events, sceneDone: r.sceneDone,
       note: r.note?.kind ?? null, take2: r.take2?.status ?? null, b: !r.b ? null : r.b.judged ? (r.b.correct ? 'correct' : 'incorrect') : r.b.hintFirst ? 'hint' : 'unjudged',
-      c: !r.c ? (r.b?.judged ? cWindow(r) : null) : r.c.judged ? (r.c.correct ? 'correct' : 'incorrect') : r.c.hintFirst ? 'hint' : 'unjudged',
+      c: !r.c ? (r.bAt != null ? cWindow(r) : null) : r.c.judged ? (r.c.correct ? 'correct' : 'incorrect') : r.c.hintFirst ? 'hint' : 'unjudged',
       unheard: r.unheard, unclear: r.unclear, hold: r.hold, firstTakeSeconds: r.firstTakeSeconds })),
   };
 }
@@ -154,10 +170,15 @@ export function report(a) {
     `  맞은 사람 ${of(a.na.bCorrect, a.na.bJudged)}`,
     `  판정 없음: 모범 먼저 ${a.na.bHintFirst} · 판정 없이 지나감 ${a.na.bUnjudged} · 「제가 한 말과 달라요」로 뺀 판정 ${a.na.bExcluded}`,
     '',
-    '(다) 8일 뒤에도(C, 7~10일 창)',
-    `  C 자격(B 판정 있음) ${a.da.eligible}명 — 창 전 ${a.da.beforeWindow} · 창 안 아직 ${a.da.openNotTried} · 창 놓침 ${a.da.missed}`,
+    '(다) 3일 뒤에도(C, B 판정 날 + 3일째부터)',
+    `  C 자격(B를 판정까지 말함 — 화면 카드와 같은 기준) ${a.da.eligible}명 — 3일째 전 ${a.da.beforeWindow} · 3일째부터 아직 ${a.da.openNotTried}`,
     `  C를 시도한 사람 ${of(a.da.cSeen, a.da.eligible)}`,
     `  맞은 사람 ${of(a.da.cCorrect, a.da.cSeen)} (판정 있음 ${a.da.cJudged} · 모범 먼저 ${a.da.cHintFirst} · 판정 없음 ${a.da.cUnjudged} · 뺀 판정 ${a.da.cExcluded})`,
+    `  B → C 날 차이(판정 둘 다 있는 사람): ${a.da.cDays.length ? a.da.cDays.map((d) => `${d}일`).join(' · ') : '-'}`,
+    '',
+    '(라) 틀린 장면 다시(3일째 다시 만나기)',
+    `  첫 판정에 고칠 점이 있었던 사람 ${of(a.ra.mistaken, a.ra.spoke)}(장면 줄을 판정까지 말한 사람 기준) · 복습을 판정까지 한 사람 ${a.ra.reviewed}명`,
+    `  다시 만나기가 닫힌 사람 ${of(a.ra.closed, a.ra.mistaken)} — 아직 열림: 3일째가 됨 ${a.ra.due} · 3일째 전 ${a.ra.waiting}`,
     '',
     `인식: 안 들림 ${a.recognition.unheardTakes}테이크 · 인식 불명 ${a.recognition.unclearTakes} · 판정 보류 ${a.recognition.holdTakes} (사람 ${a.recognition.people}명)`,
     `장면 시작 → 첫 테이크: ${a.firstTakeSeconds.people}명 · 가운데값 ${a.firstTakeSeconds.median ?? '-'}초`,
@@ -225,8 +246,8 @@ function managementQuery() {
 export function dramaOnly(events = []) {
   const pids = new Set(events.filter((e) => e.type === 'practice.presented' && String(e.taskId || '').startsWith(`${GAME}.`)).map((e) => e.id));
   const attemptIds = new Set(events.filter((e) => e.type === 'practice.attempted' && pids.has(e.presentationId)).map((e) => e.id));
-  return events.filter((e) => (e.type === 'practice.presented' && pids.has(e.id)) || (['practice.attempted', 'practice.helped'].includes(e.type) && pids.has(e.presentationId))
-    || (e.type === 'record.excluded' && attemptIds.has(e.targetId)));
+  return events.filter((e) => (e.type === 'decision.made' && e.experienceId === GAME) || (e.type === 'practice.presented' && pids.has(e.id))
+    || (['practice.attempted', 'practice.helped'].includes(e.type) && pids.has(e.presentationId)) || (e.type === 'record.excluded' && attemptIds.has(e.targetId)));
 }
 
 async function main(argv) {

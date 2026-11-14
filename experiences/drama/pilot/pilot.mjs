@@ -18,7 +18,7 @@
 //    있을 때만 남고, 호스트는 학습 기록 동의가 켜진 계정에서만 보낸다 — 없으면 아무것도 남지 않는다. 받아 적은 글 · 소리는 넣지 않고,
 //    「혼자 해 봄」 여부는 서버가 테이크 응답의 trail로 정한다.
 import { STR, endingFix } from './strings.mjs';
-import { newAttemptState, resetAttempts, beginTake, talkObservation, nextCount, settleTake, createMicSignal } from './takes.mjs';
+import { newAttemptState, resetAttempts, beginTake, talkObservation, nextCount, settleTake, createMicSignal, planRevisit, revisitDue, learningDate, REVISIT_DAYS, NOTE_ORDER } from './takes.mjs';
 
 const $ = (id) => document.getElementById(id);
 const ui = { stage: $('stage'), still: $('still'), loop: $('loop'), reply: $('reply'), subs: $('subs'), slate: $('slate'), panel: $('panel'), dialog: $('dialog'), voice: $('voice'), chip: $('analysisChip'), lang: $('langBtn'),
@@ -55,7 +55,6 @@ const FALLBACK = {
  },
  assets: { listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp', backdrop: 'media/taeo-still-blur.webp', nextImage: 'media/next-fair.webp' },
 };
-const NOTE_ORDER = { ending: 0, length: 1, missing: 2 };
 
 // 화면 언어(11-03, 몽골 시범 §7 ②): WORLD에서 고른 언어를 따른다 — 같은 출처 localStorage 'synk.world.lang'(brand-opening/world-lang.mjs와
 // 같은 키 · 값 ko · en · mn), 주소의 ?lang=이 먼저. 고르기 전이면 기기 언어(한국어 · 키릴 몽골어 · 그 밖은 영어). 언어 단추는 한국어와 학습자
@@ -89,7 +88,9 @@ const S = {
  // 새 상황 모범을 이 창에서 본 적이 있는지(다시하기에도 남김 — 서버 transferRevealed와 같은 뜻, 새 보관 없음).
  revealedEver: false,
  firstExposure: null,      // bootstrap·reset이 준 값(이번 실행 시작 때 새 상황이 처음인지)
- pendingB: null,           // 첫 화면 「남겨 둔 새 상황」 카드: true | false | null(모름 — 다시 묻는다)
+ // 첫 화면 카드(설계 §18-3): { plan(planRevisit — 틀린 장면 · 다시 만나기, null 모름), delayed(C), held(남겨 둔 B) } — true | false | null(모름 — 다시 묻는다)
+ cards: null,
+ review: null,             // 틀린 장면 복습 한 바퀴 {lineId, mistake, trail}
  upload: null, rec: null, micWait: null, playing: false, listenLoop: '', loopHeld: false,
  step: 'boot', render: null,
  orb: null, orbAction: null, cardKey: null, // 음성 구 · 구를 눌렀을 때 할 일 · 지금 떠 있는 대사 카드(올라오는 움직임은 새 카드에만)
@@ -127,7 +128,7 @@ function cardIn(key) {
 }
 
 /* ───────── 위 띠: 회차 알약 · 진행 띠 ───────── */
-const PHASE_TAG = { intro: 'EP.01 · Scene 2', scene: 'EP.01 · Scene 2', take2: 'EP.01 · One more', transfer: 'New situation', wrap: 'EP.01 · Today' };
+const PHASE_TAG = { intro: 'EP.01 · Scene 2', scene: 'EP.01 · Scene 2', take2: 'EP.01 · One more', review: 'EP.01 · Review', transfer: 'New situation', wrap: 'EP.01 · Today' };
 function progCells() { return S.boot ? sceneItems().length + 3 : 10; }
 function setProg(n) {
  const total = progCells();
@@ -776,13 +777,17 @@ function openInWorld() {
 }
 
 // 첫 화면: 회차 표지(「Episode 01 · 개강 첫날 · 나는 한국에 막 온 유학생」)가 장면 위에 남고, 아래 유리 카드에 상대 · 때와 곳 · 시작 단추.
+// 카드(설계 §18-3): 다시 만나기(3일이 지난 틀린 장면) > C(처음 보는 문항) > 남겨 둔 B 가운데 하나, 그 아래 「지난번 틀린 장면」 줄(스스로 복습).
 function intro() {
  const s = newScope(); S.step = 'intro'; S.render = intro; S.cardKey = null;
+ if (inWorld() && S.trail) S.cards = { ...(S.cards || {}), ...cardsNow() };
  checkCards(s);
  stageMode('still'); subs(null); hideMic(); setPhase('intro', 0); pushStill();
  slate(tx('episodeTitle'), { k: 'Episode 01', sub: tx('heroLine'), ms: 0 });
  cardIn('intro');
- const held = S.pendingB === true && S.delayedDue !== true, card = S.delayedDue === true || held;
+ const c = S.cards || {}, due = c.plan?.due || null;
+ const delayed = !due && c.delayed === true, held = !due && !delayed && c.held === true, card = !!due || delayed || held;
+ const list = (c.plan?.mistakes || []).filter((m) => m !== due);
  panel(h('div', { class: 'intro' },
   h('dl', { class: 'cast' },
    h('div', {}, h('dt', {}, tx('partner')), h('dd', {}, tx('rolePartner'))),
@@ -790,7 +795,8 @@ function intro() {
   ),
   h('p', { class: 'lead' }, tx('logline')),
   h('p', { class: 'fine synth' }, tx('synthetic')),
-  S.delayedDue === true
+  due ? revisitCard(due, s)
+   : delayed
    ? h('div', { class: 'card situation delayed' }, h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'New situation', h('b', {}, tx('delayedTitle'))),
     h('p', { class: 'fine' }, tx('delayedLead')),
     h('div', { class: 'row' }, h('button', { type: 'button', class: 'pill', on: { click: () => { if (live(s)) runTransfer('delayed'); } } }, tx('delayedStart'))))
@@ -799,42 +805,65 @@ function intro() {
     h('p', { class: 'fine' }, tx('heldLead')),
     h('div', { class: 'row' }, h('button', { type: 'button', class: 'pill', on: { click: () => { if (live(s)) runTransfer('held'); } } }, tx('heldStart'))))
    : null,
+  list.length ? mistakeList(list, s) : null,
   h('button', { type: 'button', class: card ? 'ghost big' : 'pill big', on: { click: () => { if (live(s)) runScene(0); } } }, h('span', { class: 'ic play', 'aria-hidden': 'true' }), tx(card ? 'delayedSkip' : 'start')),
  ));
 }
+const lineItem = (id) => studentItems().find((x) => x.id === id);
+// 그때의 날(「3일 전 · 11월 13일」) — 영상 · 화면에서 며칠 뒤인지 한눈에 보이게(설계 검토 7).
+function whenText(m) {
+ const d = learningDate(m.at), ago = tx('ago', m.ago);
+ return S.lang === 'ko' ? `${ago} · ${d.getMonth() + 1}월 ${d.getDate()}일` : S.lang === 'mn' ? `${ago} · ${d.getMonth() + 1}-р сарын ${d.getDate()}`
+  : `${ago} · ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+}
+// 다시 만나기 카드 — 3일이 지난 맨 앞 실수 하나. 대사는 빈칸 그대로(답 꼴을 미리 보이지 않는다).
+function revisitCard(m, s) {
+ const it = lineItem(m.lineId);
+ return h('div', { class: 'card situation delayed revisit' },
+  h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'Revisit', h('b', {}, tx('revisitTitle')[m.kind])),
+  it ? h('p', { class: 'cardline ko', lang: 'ko' }, blanked(it.text, it)) : null,
+  h('p', { class: 'fine' }, tx('revisitLead', whenText(m))),
+  h('div', { class: 'row' }, h('button', { type: 'button', class: 'pill', on: { click: () => { if (live(s)) runReview(m.lineId); } } }, tx('revisitStart'))));
+}
+// 「지난번 틀린 장면」 — 날과 상관없이 스스로 골라 다시 한다. 3일 전에 고쳐 본 줄은 ✓와 「3일째에 다시」.
+function mistakeList(list, s) {
+ return h('div', { class: 'card mistakes' }, h('p', { class: 'k' }, 'Retry', h('b', {}, tx('mistakesTitle'))),
+  h('ul', { class: 'mistake-list' }, list.map((m) => {
+   const it = lineItem(m.lineId); if (!it) return null;
+   return h('li', {},
+    h('span', { class: `tag ${m.fixed ? 'fixed' : ''}` }, m.fixed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, tx('kindLabel')[m.kind]),
+    h('span', { class: 'what' }, h('span', { class: 'ko', lang: 'ko' }, blanked(it.text, it)), m.fixed && !m.due ? h('span', { class: 'fine' }, tx('mistakeFixed')) : null),
+    h('button', { type: 'button', class: 'ghost small', on: { click: () => { if (live(s)) runReview(m.lineId); } } }, tx('mistakeRetry')));
+  })));
+}
 
-// 첫 화면 카드 둘. 계정 기록이 아직 덜 모였으면(null) 첫 화면에 있는 동안 잠시 간격을 두고 다시 묻고, 끝내 모르면 내지 않는다(문항을 아낀다).
-//  · C(설계 §17): WORLD 안에서 받아쓰기가 켜져 있고 기록기가 「d7 차례 · t6 처음」이라 할 때.
-//  · 남겨 둔 B(11-03, 몽골 시범 §7 ④): 받아쓰기가 켜져 있고 이 계정이 장면 줄은 봤는데 새 상황은 안 봤을 때 — 받아쓰기가 막혀 「나중에 다시」로
-//    둔 학생이 장면을 다시 하지 않고 B만 할 수 있게. C가 차례면 내지 않는다(C는 B 판정이 있어야 오니 둘이 함께 올 일은 없다).
-async function checkCards(s) {
+// 첫 화면 카드 재료를 지금 기록으로 한 번 읽는다(모르는 칸은 null). WORLD 안 · 기록기가 있을 때만.
+//  · plan: 틀린 장면 · 다시 만나기(planRevisit) — 받아쓰기와 상관없이 연다(복습은 문항을 쓰지 않는다).
+//  · delayed(C, 설계 §18-2 — t9 판정 날 + 3일째 · t6 안 봄)와 남겨 둔 B(11-03, 몽골 시범 §7 ④)는 받아쓰기를 지금 쓸 수 있을 때만 — 동의 거절이면
+//    내리고(칩에서 다시 켜면 첫 화면이 다시 묻는다, 화면 검수 F4), status가 잠깐 실패했으면 모름.
+const revisitDays = () => S.boot?.lesson?.revisit?.days || REVISIT_DAYS;
+const lineRank = (id) => { const items = studentItems(), k = items.findIndex((x) => x.id === id); return items[k] === goalItem() ? -1 : k; };
+function cardsNow() {
  const C = S.boot?.lesson?.delayed, B = S.boot?.lesson?.transfer;
+ const plan = S.trail?.review ? planRevisit(S.trail.review({ lineIds: studentItems().map((x) => x.id), transferId: B?.id || null, delayedId: C?.id || null }), { days: revisitDays(), rank: lineRank }) : { mistakes: [], due: null, unknown: [], delayed: false };
+ const off = S.consent === 'no' ? false : analysisCapable() ? undefined : W.statusFailed ? null : false;
+ const delayed = !C ? false : off !== undefined ? off : plan ? plan.delayed : null;
+ const held = !B || !S.trail?.seen || delayed === true ? false : off !== undefined ? off : heldTransfer(B);
+ return { plan, delayed, held };
+}
+// 보이는 카드만 견준다 — 모름 → 없음처럼 화면이 그대로면 다시 그리지 않는다(다시 그리면 그사이 칩으로 연 받아쓰기 창이 닫힌다).
+const cardsKey = (c) => JSON.stringify([c?.plan?.due ? [c.plan.due.lineId, c.plan.due.kind] : null, (c?.plan?.mistakes || []).map((m) => [m.lineId, m.kind, m.fixed]), c?.delayed === true, c?.held === true]);
+// 기록이 덜 모였으면(null) 첫 화면에 있는 동안 잠시 간격을 두고 다시 읽고, 끝내 모르면 그 카드는 내지 않는다(문항을 아낀다).
+async function checkCards(s) {
  if (!inWorld() || !S.trail) return;
- const wantC = !!C && !!S.trail.delayedDue && S.delayedDue !== false;
- const wantB = !!B && !!S.trail.seen && S.pendingB !== false;
- if (!wantC && !wantB) return;
  await null; // 첫 화면을 다 그린 뒤에 묻는다 — 그리는 도중 다시 그리면 앞 판 단추가 끝난 범위에 묶인다
- // 받아쓰기를 끈(동의 거절) 동안은 카드를 내리고 묻지 않는다 — 칩에서 다시 켜면 첫 화면이 다시 묻는다(화면 검수 F4).
- if (S.consent === 'no') {
-  if (S.delayedDue === true || S.pendingB === true) { if (S.delayedDue === true) S.delayedDue = null; if (S.pendingB === true) S.pendingB = null; if (live(s)) intro(); }
-  return;
- }
  for (let i = 0; i < 12 && live(s); i++) {
-  // 받아쓰기를 지금 못 쓰면 내지 않는다(status가 잠깐 실패했으면 모름으로 두고 다시 묻는다). 동의 · 받아 적기 실패는 lazy 기록이 막는다.
   if (W.statusFailed) await retryWorldStatus();
   if (!live(s)) return;
-  const off = analysisCapable() ? undefined : W.statusFailed ? null : false;
-  const due = !wantC ? false : off !== undefined ? off : S.trail.delayedDue({ lineId: C.id, skillId: C.skill });
-  const held = !wantB || due === true ? false : off !== undefined ? off : heldTransfer(B);
-  // 보이는 카드가 바뀌면 어느 쪽이든 다시 그린다 — 카드가 있었는데 한도 · 꺼짐 · 창 만료로 차례가 아니게 됐으면 카드를 거둔다(화면 검수 A3).
-  // 모름 → 없음처럼 화면이 그대로면 다시 그리지 않는다(다시 그리면 그사이 칩으로 연 받아쓰기 창이 닫힌다).
-  if (due !== null && held !== null) {
-   const changed = (wantC && (due === true) !== (S.delayedDue === true)) || (wantB && (held === true) !== (S.pendingB === true));
-   if (wantC) S.delayedDue = due;
-   if (wantB) S.pendingB = held;
-   if (changed && live(s)) intro();
-   return;
-  }
+  const next = cardsNow();
+  if (cardsKey(next) !== cardsKey(S.cards)) { S.cards = next; if (live(s)) intro(); return; }
+  S.cards = next;
+  if (next.plan && next.delayed !== null && next.held !== null) return;
   await sleep(s, 2500);
  }
 }
@@ -897,7 +926,7 @@ async function actorBeat(item, s, { from } = {}) {
  if (ok && cues?.left()) { await sleep(s, cues.left()); if (!live(s)) return false; }
  if (!ok) {
   if (cues) subs(item.text, meaningOf(item), 'Taeo', null, meaningLang(item)); // 소리가 안 나면 시각을 읽을 수 없다 — 대사를 통째로
-  const v = await choose(s, (go) => [stepper(S.step === 'scene' ? 'scene' : 'take2'), h('div', { class: 'beat' }, h('p', { class: 'actor-line', lang: 'ko' }, item.text), h('div', { class: 'notice quiet' }, tx('mediaFail')),
+  const v = await choose(s, (go) => [stepper(S.step === 'scene' ? 'scene' : S.step === 'review' ? 'review' : 'take2'), h('div', { class: 'beat' }, h('p', { class: 'actor-line', lang: 'ko' }, item.text), h('div', { class: 'notice quiet' }, tx('mediaFail')),
    h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('again') } }, tx('replay')), h('button', { type: 'button', class: 'pill', on: { click: () => go('next') } }, tx('continue'))))]);
   if (v === 'again') return actorBeat(item, s, { from });
  }
@@ -924,14 +953,16 @@ function turnPanel(item, s, ctx, extra = []) {
  const L = line(item.id);
  const showFull = L.opened || micUnusable() || ctx.mode === 'readAlong';
  const practice = ctx.mode === 'practice' && !L.practiceOpened;
- const hint = practice ? tx('cardHintPractice') : ctx.phase === 'retake' ? tx('cardHintRetake') : showFull ? tx('cardHintFull') : tx('cardHint');
+ const hint = practice ? tx('cardHintPractice') : ctx.phase === 'retake' ? tx('cardHintRetake') : ctx.phase === 'review' && !showFull ? tx('cardHintReview') : showFull ? tx('cardHintFull') : tx('cardHint');
+ const was = ctx.phase === 'review' ? S.review?.mistake?.kind : null;
  const p = choose(s, (go) => {
   if (micUnusable()) hideMic();
   else orbMode('listening', 'Tap to speak', { action: () => go('record'), aria: tx('record') });
   return [
-   stepper(ctx.phase === 'scene' ? 'scene' : 'take2'),
+   stepper(ctx.phase === 'scene' ? 'scene' : ctx.phase === 'review' ? 'review' : 'take2'),
    h('div', { class: 'turn' },
-    h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), ctx.phase === 'retake' ? 'One more · Your turn' : 'Your turn', h('b', {}, hint)),
+    h('p', { class: 'k' }, h('span', { class: 'dot', 'aria-hidden': 'true' }), ctx.phase === 'retake' ? 'One more · Your turn' : ctx.phase === 'review' ? 'Review · Your turn' : 'Your turn', h('b', {}, hint)),
+    was ? h('p', { class: 'review-tag' }, tx('reviewTag', tx('kindLabel')[was])) : null,
     micNotice(),
     ...extra,
     practice
@@ -1030,6 +1061,8 @@ async function studentTurn(item, s, ctx) {
  // 이 차례의 학습 기록. 테이크 2에서 「다시 녹음」으로 돌아와도 같은 차례라 보임을 다시 열지 않고 시도 번호를 잇는다.
  let P;
  if (ctx.phase === 'retake' && S.retake && S.retake.trail !== undefined) P = S.retake.trail;
+ // 복습(설계 §18-4): 결과 화면의 「다시 해 보기」는 같은 보임의 시도 2, 3…으로 잇는다 — 「처음 말한 결과」는 그 보임의 첫 판정 시도.
+ else if (ctx.phase === 'review' && S.review && S.review.trail !== undefined) P = S.review.trail;
  else {
   // 장면 줄의 차례는 줄 상태에 둔다 — 장면이 끝난 뒤 그 줄에 준 코치 노트를 같은 보임의 도움(explanation)으로 남긴다(afterScene).
   // 같은 줄을 다시 그려도 보임을 새로 열지 않는다(노트가 시도 없는 새 보임에 붙지 않게, 화면 검수 A2).
@@ -1038,6 +1071,7 @@ async function studentTurn(item, s, ctx) {
   if (ctx.phase === 'scene') L.trail = P;
   // 테이크 2 앞의 코치 카드(afterScene)가 이 줄의 한국어 대사 전체와 모범 듣기를 이미 보였다.
   if (ctx.phase === 'retake' && S.retake) { S.retake.trail = P; P?.help('answer'); }
+  if (ctx.phase === 'review' && S.review) { S.review.trail = P; if (S.review.answerShown) P?.help('answer'); }
  }
  // 카드가 보인 정도를 도움으로 남긴다 — turnPanel과 같은 조건(연습 모드는 뜻만 보여 한국어 도움이 없다). 차례 안에서 마이크가 막혀 대사가
  // 다 펼쳐지는 것까지 잡게 카드를 그릴 때마다 본다(같은 도움은 한 번만 남는다).
@@ -1046,7 +1080,7 @@ async function studentTurn(item, s, ctx) {
   P?.help('text');
   if (L.opened || micUnusable() || ctx.mode === 'readAlong') P?.help('answer');
  };
- const stepKey = ctx.phase === 'scene' ? 'scene' : 'take2';
+ const stepKey = ctx.phase === 'scene' ? 'scene' : ctx.phase === 'review' ? 'review' : 'take2';
  let invalid = 0;   // 이 차례에서 서버가 받지 않은 녹음(413·422) 수
  while (live(s)) {
   stageMode('listen', listenOf(item, ctx));
@@ -1082,7 +1116,7 @@ async function studentTurn(item, s, ctx) {
   }
   const d = res.data;
   // 테이크 2에서 받아 적은 글이 있는 unclear는 판정 보류(명세 밖)로 결과 화면에 보인다. 장면 안에서는 인물 되묻기로 둔다.
-  if (ctx.phase === 'retake' && d.status === 'unclear' && String(d.transcript || '').trim()) return ctx.onDone({ take, data: { ...d, observation: { kind: 'pending', note: null, sure: false } } });
+  if ((ctx.phase === 'retake' || ctx.phase === 'review') && d.status === 'unclear' && String(d.transcript || '').trim()) return ctx.onDone({ take, data: { ...d, observation: { kind: 'pending', note: null, sure: false } } });
   if (d.status === 'unclear' || d.status === 'no_speech') {
    L.unheard += 1;
    if (L.unheard >= 3) {
@@ -1090,7 +1124,7 @@ async function studentTurn(item, s, ctx) {
     const v = await selfCheckPanel(s, take, 'unheardSelf', stepKey);
     if (v === 'again') continue;
     if (v == null) return;
-    return ctx.onDone({ take });
+    return ctx.onDone({ take, unheard: true });
    }
    await reask(s, L.unheard === 1 ? 1 : 2, item);
    continue;
@@ -1098,7 +1132,8 @@ async function studentTurn(item, s, ctx) {
   // status ok — 판정이 있는 테이크
   L.unheard = 0;
   const obs = d.observation || { kind: 'pending', note: null };
-  if (ctx.phase === 'retake') return ctx.onDone({ take, data: d });
+  // 테이크 2 · 복습은 되묻기 셋을 돌지 않고 판정된 첫 테이크로 결과에 간다(안 들림만 되묻기).
+  if (ctx.phase === 'retake' || ctx.phase === 'review') return ctx.onDone({ take, data: d });
   L.last = { obs, takeId: take.id, transcript: d.transcript || '' };
   if (obs.kind === 'note' && obs.note) {
    L.misses += 1;
@@ -1225,7 +1260,7 @@ async function retakeResult(item, r) {
   data?.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, data.transcript)) : null,
   msg ? h('p', { class: passed ? 'lead passed' : 'lead' }, passed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, msg) : null,
   hedge ? h('p', { class: 'fine' }, tx('noteHedge')) : null,
-  !data && r.take ? h('p', { class: 'fine' }, tx(r.invalid ? 'invalidSelf' : analysisOn() ? 'apiDown' : inWorld() && W.limit ? 'dailyLimit' : 'practiceOnly')) : null,
+  !data && r.take ? h('p', { class: 'fine' }, tx(r.invalid ? 'invalidSelf' : r.unheard ? 'unheardSelf' : analysisOn() ? 'apiDown' : inWorld() && W.limit ? 'dailyLimit' : 'practiceOnly')) : null,
   data?.transcript ? (checked ? h('p', { class: 'fine' }, tx(checked === 'differs' ? 'differsAck' : 'sameAck'))
    : h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('same') } }, tx('same')), h('button', { type: 'button', class: 'ghost', on: { click: () => go('differs') } }, tx('differs')))) : null,
   (noteTake || t2) ? h('div', { class: 'compare' }, h('p', { class: 'fine' }, tx('compare')),
@@ -1239,6 +1274,100 @@ async function retakeResult(item, r) {
   if (v === 'again') return runRetake();
   return S.today?.retake ? S.today.finish(null) : runTransfer(); // 「오늘」(깃발 뒤)에서 연 테이크 2면 다음 차례로
  }
+}
+
+/* ───────── 틀린 장면 복습(설계 §18-4, 유호님 11-14) ───────── */
+// 첫 화면에서 고른 틀린 줄 하나: 표지 → 그 줄 앞 선배 대사(처음부터) → 내 차례(빈칸 카드 + 「지난번: 끝맺음」) → 판정된 첫 테이크 → 결과 + 튜터 카드.
+// 결과의 「다시 해 보기」는 같은 바퀴(같은 보임의 시도 2, 3…), 첫 화면에서 다시 고르면 새 바퀴다.
+async function runReview(lineId) {
+ const items = sceneItems(), idx = items.findIndex((x) => x.id === lineId), item = items[idx];
+ if (!item || item.type !== 'student') return intro();
+ const again = S.review?.lineId === lineId;
+ // 장면 줄 상태(빈칸 열림 · 어긋남 · 안 들림)는 복습 차례마다 비운다 — 「다시 해 보기」도 빈칸부터.
+ S.lines.delete(lineId);
+ (S.reviewChain ||= new Set()).add(lineId);
+ if (!again) {
+  // WORLD 줄당 테이크 상한(takes.mjs beginTake 9번)은 바퀴마다 센다.
+  if (inWorld()) { W.attempts.attempts.delete(`review:${lineId}`); W.counts.delete(`review:${lineId}`); }
+  S.review = { lineId, mistake: (S.cards?.plan?.mistakes || []).find((m) => m.lineId === lineId) || null, trail: undefined, lastTakeId: null };
+ }
+ const s = newScope(); S.step = 'review'; S.render = null; S.cardKey = null;
+ stageMode('still'); subs(null); hideMic(); panel(); setPhase('review', 0);
+ if (!again) { slate(tx('reviewSlate'), { k: 'Review', ms: 1200 }); await sleep(s, 1650); if (!live(s)) return; }
+ hideSlate();
+ const prev = items.slice(0, idx).reverse().find((x) => x.type === 'actor');
+ if (prev) { await actorBeat(prev, s, { from: prev.videoStart }); if (!live(s)) return; }
+ return studentTurn(item, s, { phase: 'review', onDone: (r) => reviewResult(item, r || {}) });
+}
+function leaveReview() { if (S.review) S.lines.delete(S.review.lineId); S.review = null; S.trail?.flush(); }
+
+// 결과: 지난번(갈래 · 날) → 받아 적은 글(이 창 메모리) → 판정 한 줄 → 정답 줄 → 튜터 카드 「왜?」. 받아쓰기가 없으면 스스로 확인 + 같은 튜터 카드.
+async function reviewResult(item, r) {
+ const s = newScope(); S.step = 'review-done'; S.render = () => reviewResult(item, r);
+ const R = S.review || (S.review = { lineId: item.id, mistake: null, trail: undefined, lastTakeId: null });
+ if (r.take) R.lastTakeId = r.take.id;
+ stageMode('still'); subs(null); hideMic(); S.cardKey = null;
+ const data = r.data, obs = data?.observation, passed = !!data && obs?.kind === 'pass';
+ const was = R.mistake?.kind || null, note = obs?.kind === 'note' && obs.note ? obs.note : null;
+ const tutor = item.tutor?.[note?.kind || was] || null;
+ // 3일째 전의 통과는 고침 표시만이고, 대사 전체를 보고 한 통과는 닫히지 않는다(설계 검토 1 · 4) — 학생에게도 그렇게 말한다.
+ const early = !!R.mistake && !revisitDue(R.mistake.at, Date.now(), revisitDays());
+ // 이 결과를 낸 시도가 도움을 받았나: 카드를 열었거나, 앞 결과 화면에서 대사 전체 · 모범을 봤다(다시 그려도 그 시도의 값을 지킨다).
+ if (r.helped === undefined) r.helped = !!(line(item.id).opened || micUnusable() || R.answerShown);
+ const helped = r.helped;
+ if (!R.answerShown) { R.answerShown = true; R.trail?.help('answer'); }
+ let msg = null, hedge = false;
+ if (data) {
+  if (passed) msg = was ? tx('reviewPass')[was] : tx('t2PracticePass');
+  else if (note) { msg = note.kind === was ? tx('reviewSame')[was] : noteLines(note)[0]; hedge = true; }
+  else msg = tx('t2Pending');
+ }
+ if (passed && !r.celebrated) { r.celebrated = true; celebrate(s); }
+ const take = takeById(R.lastTakeId);
+ const fresh = inWorld() && S.trail ? cardsNow() : null;
+ if (fresh) S.cards = { ...(S.cards || {}), ...fresh };
+ const others = (S.cards?.plan?.mistakes || []).filter((m) => m.lineId !== item.id && !S.reviewChain?.has(m.lineId));
+ let checked = r.selfCheck || null;
+ const render = () => choose(s, (go) => [stepper('review'), h('div', { class: 'director review' },
+  h('p', { class: 'k' }, 'Review', h('b', {}, tx('reviewSlate'))),
+  R.mistake ? h('p', { class: 'fine last' }, tx('reviewLast')[R.mistake.kind](whenText(R.mistake))) : null,
+  data?.transcript ? h('div', { class: 'heard' }, h('p', { class: 'fine' }, tx('heardAs')), h('p', { class: 'ko', lang: 'ko' }, data.transcript)) : null,
+  msg ? h('p', { class: passed ? 'lead passed' : 'lead' }, passed ? h('span', { class: 'tick on', 'aria-hidden': 'true' }) : null, msg) : null,
+  passed && (helped || early) ? h('p', { class: 'fine' }, helped ? tx('reviewHelped') : tx('reviewEarly', revisitDays())) : null,
+  hedge ? h('p', { class: 'fine' }, tx('noteHedge')) : null,
+  !data ? h('p', { class: 'fine' }, tx(r.invalid ? 'invalidSelf' : !r.take ? 'reviewNoTake' : r.unheard ? 'unheardSelf' : analysisOn() ? 'apiDown' : inWorld() && W.limit ? 'dailyLimit' : 'reviewSelf')) : null,
+  data?.transcript ? (checked ? h('p', { class: 'fine' }, tx(checked === 'differs' ? 'differsAck' : 'sameAck'))
+   : h('div', { class: 'row' }, h('button', { type: 'button', class: 'ghost', on: { click: () => go('same') } }, tx('same')), h('button', { type: 'button', class: 'ghost', on: { click: () => go('differs') } }, tx('differs')))) : null,
+  h('div', { class: 'card' }, h('p', { class: 'ko line', lang: 'ko' }, item.text), meaningOf(item) ? h('p', { class: 'mean', lang: meaningLang(item) }, meaningOf(item)) : null),
+  tutor ? tutorCard(item, tutor, note) : null,
+  h('div', { class: 'row aux' }, take ? mineBtn(take, s) : null, item.modelAudio ? soundBtn(tx('modelListen'), item.modelAudio, s) : null),
+  h('div', { class: 'row main' }, h('button', { type: 'button', class: 'pill', on: { click: () => go('home') } }, tx('reviewHome')),
+   h('button', { type: 'button', class: 'ghost', data: { rec: '1' }, on: { click: () => go('again') } }, tx('mistakeRetry')),
+   others.length ? h('button', { type: 'button', class: 'link', on: { click: () => go('next') } }, tx('reviewNext')) : null))]);
+ for (;;) {
+  const p = render(); cardIn('review-done');
+  const v = await p;
+  if (!live(s) || v == null) return;
+  if (v === 'same' || v === 'differs') { checked = v; r.selfCheck = v; if (v === 'differs') R.trail?.excludeLast(); continue; }
+  if (v === 'again') return runReview(item.id);
+  leaveReview();
+  if (v === 'next' && others.length) return runReview(others[0].lineId);
+  S.reviewChain = null;
+  return intro();
+ }
+}
+// 튜터 카드 「왜?」 — 규칙 한 문장(화면 언어) · 반말 → 높임 꼴 또는 핵심 말 · 근거(대본 칸 글 그대로). 생성하지 않는 저작 글이다(설계 §18-5, content.mjs TUTOR).
+function tutorCard(item, t, note) {
+ const rule = t.rule?.[S.lang] || t.rule?.en || t.rule?.ko || '';
+ const yo = (w) => { const i = w.lastIndexOf('요'); return i < 0 ? [w] : [w.slice(0, i), h('span', { class: 'yo' }, '요'), w.slice(i + 1)]; };
+ const src = t.source?.kind === '대사' ? item.text : t.source?.text;
+ return h('div', { class: 'card tutor' },
+  h('p', { class: 'k' }, 'Why', h('b', {}, tx('tutorTitle'))),
+  h('p', { class: 'rule', lang: S.lang }, rule),
+  t.from ? h('p', { class: 'fix ko', lang: 'ko' }, h('s', {}, t.from), ' → ', ...yo(t.to)) : null,
+  t.words ? h('p', { class: 'fine keys' }, tx('tutorKeys'), ' ', ...t.words.flatMap((k, i) => [i ? ' · ' : null, h('b', { lang: 'ko' }, `「${k}」`)])) : null,
+  note?.kind === 'missing' && note.word ? h('p', { class: 'fine' }, tx('noteMissing', note.word)) : null,
+  src ? h('p', { class: 'fine src' }, tx('tutorSource', tx('srcLabel')[t.source.kind] || t.source.kind, src)) : null);
 }
 
 /* ───────── 새 상황 ───────── */
@@ -1293,7 +1422,7 @@ async function runTransfer(kind = 'transfer', { rerender = false } = {}) {
   // C · 남겨 둔 B를 마치면 첫 화면으로 — 기록이 남았으면 카드를 거둔다(Atlas가 그 문항을 본 것으로 안다), 아니면 카드가 남는다.
   if (v === 'finish') {
    if (today) { S.trail?.flush(); return S.today.finish(T); }
-   if (fromIntro) { if (T.trail?.recorded) { if (delayed) S.delayedDue = false; else S.pendingB = false; } S.trail?.flush(); return backToIntro(kind); }
+   if (fromIntro) { if (T.trail?.recorded && S.cards) S.cards = { ...S.cards, [delayed ? 'delayed' : 'held']: false }; S.trail?.flush(); return backToIntro(kind); }
    return wrap();
   }
   if (v === 'later') return today ? S.today.leave(T) : backToIntro(kind);
@@ -1341,7 +1470,7 @@ function heldPanel(s, T) {
 // B를 쓰지 않고 떠난다 — 장면 뒤면 마침 화면(「남겨 뒀어요」), 첫 화면에서 왔으면 첫 화면. 첫 화면 카드는 기록으로 다시 정한다.
 function leaveHeld(T) {
  if (T.today && S.today) return S.today.leave(T);
- T.deferred = true; S.pendingB = null; S.trail?.flush();
+ T.deferred = true; if (S.cards) S.cards = { ...S.cards, held: null }; S.trail?.flush();
  return T.fromIntro ? backToIntro('held') : wrap();
 }
 // 첫 화면에서 연 남겨 둔 B를 떠날 때는 그 판 상태(S.transfer)를 비운다 — 그 뒤 「1화 처음부터」로 장면을 하고 여는 B가 지난 테이크 · 기록기를
@@ -1509,7 +1638,7 @@ async function restart() {
  if (!live(s)) return;
  if (!r?.ok || !r.data?.ok) return resetFailed();
  clearTakes();
- S.lines.clear(); S.retake = null; S.transfer = null; S.micNoticeShown = false; S.sentRun = false; S.pendingB = null;
+ S.lines.clear(); S.retake = null; S.transfer = null; S.micNoticeShown = false; S.sentRun = false; S.cards = null; S.review = null; S.reviewChain = null;
  // C는 기록 · 모범 본 사실은 두고 이번 판의 테이크 흔적만 비운다(화면 검수 F2).
  if (S.delayedRun) Object.assign(S.delayedRun, { tries: 0, spoke: 0, last: null, lastTakeId: null, selfCheck: null, unheard: 0, invalid: 0 });
  if (inWorld()) resetAttempts(W.delayedAttempts);
@@ -1529,7 +1658,7 @@ ui.lang.addEventListener('click', () => {
  S.lang = S.lang === 'ko' ? S.home : 'ko';
  applyStaticText();
  // 녹음·마이크 허용 대기·전송 중이 아니면 지금 단계를 새 언어로 다시 그린다(intro·wrap 등 상태를 잃지 않는 단계만).
- if (!S.rec && !S.micWait && !S.upload && ['intro', 'wrap', 'transfer', 'take2-done', 'reset-fail', 'outside'].includes(S.step) && S.render) S.render();
+ if (!S.rec && !S.micWait && !S.upload && ['intro', 'wrap', 'transfer', 'take2-done', 'review-done', 'reset-fail', 'outside'].includes(S.step) && S.render) S.render();
 });
 window.addEventListener('pagehide', () => { stopRecorder(true); S.upload?.abort(); clearTakes(); S.trail?.flush(); });
 

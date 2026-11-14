@@ -58,6 +58,48 @@ export function settleTake(state, { phase, turn, out, reviewed }) {
     trail: trailOf({ phase, status: out.status, transcript: out.transcript, observation: out.observation, independentEligible, reviewed: reviewed === true }) };
 }
 
+// 다시 만나기(설계 §18, 유호님 11-14 「3일로」): 기록기 review()가 읽은 재료로 첫 화면 카드를 정한다. 간격은 드라마 정책(lesson.revisit.days)이고
+// Atlas 공통 간격(Temper 1 · 7 · 30일)은 쓰지 않는다. 날은 기기 시계의 학습일로 센다 — 저녁에 틀린 학생이 3일째 아침에 열어도 카드가 있게.
+// 학습일은 새벽 4시에 바뀐다(Atlas · 「오늘」 한 장 today/plan.mjs의 DAY_START_HOUR와 같은 자 — 새벽 1시 연습은 전날로 센다, 11-14).
+export const REVISIT_DAYS = 3;
+export const NOTE_ORDER = Object.freeze({ ending: 0, length: 1, missing: 2 });
+export const DAY_START_HOUR = 4;
+// 기기 현지 날짜에서 새벽 4시 전이면 전날 — 절대 시간 4시간을 빼지 않는다(서머타임이 바뀌는 날 현지 4시와 어긋나지 않게 — 코드 검수 GA1).
+// 그 시각의 학습일(현지 날짜, 새벽 4시 전이면 전날) — 화면의 「11월 ○일」도 이 날을 쓴다(날 수와 날짜가 어긋나지 않게).
+export const learningDate = (ms) => { const d = new Date(ms); if (d.getHours() < DAY_START_HOUR) d.setDate(d.getDate() - 1); return d; };
+const dayNo = (ms) => { const d = learningDate(ms); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); };
+// 그 시각에서 학습일로 며칠 지났는지(같은 학습일 0).
+export const daysSince = (at, now = Date.now()) => (Number.isFinite(at) && Number.isFinite(now) ? dayNo(now) - dayNo(at) : null);
+export const revisitDue = (at, now, days = REVISIT_DAYS) => { const n = daysSince(at, now); return n != null && n >= days; };
+// facts: 기록기 review()의 돌려줌(null이면 모름). rank(lineId): 대본 차례 · 목표 줄(작을수록 앞). 줄마다 첫 판정 시도의 차례(history)를 따라
+// 실수가 열려 있는지 정한다(설계 §18-1, 설계 검토 1 · 4):
+//  · 첫 판정이 고칠 점(note-*)이면 실수가 열린다(그 시각이 기준). 테이크 2는 history에 없다.
+//  · 기준에서 달력 3일째 전의 통과는 「고침」 표시(fixed)만 하고 다시 만나기는 그대로 둔다 — 같은 날 스스로 복습한 학생도 3일 뒤 다시 본다.
+//    3일째 전의 고칠 점은 기준을 옮기지 않는다.
+//  · 3일째부터의 첫 판정이 통과이고 그 전에 대사 전체를 보지 않았으면 닫힌다. 대사를 보고 통과했으면 고침 표시만. 고칠 점이면 그 시각으로 다시 3일.
+// 돌려줌 null(모름) 또는 { mistakes(차례대로 {lineId, kind, at, fixed, ago, due}), due(3일이 지난 맨 앞 실수 | null), unknown(접혀 못 읽은 줄),
+// delayed(C: t9 판정 + 3일째 · t6 안 봄 — true | false | null(모름)) }. C 자격은 실수와 상관없고, 첫 화면 카드 차례만 실수 → C다(설계 검토 2).
+export function planRevisit(facts, { now = Date.now(), days = REVISIT_DAYS, rank = () => 0 } = {}) {
+  if (!facts || !facts.history || typeof facts.history !== 'object') return null;
+  const mistakes = [];
+  for (const [lineId, list] of Object.entries(facts.history)) {
+    let open = null, fixed = false;
+    for (const r of Array.isArray(list) ? list : []) {
+      const note = typeof r?.choice === 'string' && r.choice.startsWith('note-') ? r.choice.slice(5) : null;
+      if (!Number.isFinite(r?.at) || !note && r?.choice !== 'pass' || note && NOTE_ORDER[note] == null) continue;
+      if (!open) { if (note) { open = { kind: note, at: r.at }; fixed = false; } continue; }
+      if (!revisitDue(open.at, r.at, days)) { fixed = !note; continue; }
+      if (note) { open = { kind: note, at: r.at }; fixed = false; } else if (r.helped) fixed = true; else { open = null; fixed = false; }
+    }
+    if (open) mistakes.push({ lineId, kind: open.kind, at: open.at, fixed });
+  }
+  mistakes.sort((a, b) => NOTE_ORDER[a.kind] - NOTE_ORDER[b.kind] || rank(a.lineId) - rank(b.lineId) || a.at - b.at);
+  for (const m of mistakes) Object.assign(m, { ago: daysSince(m.at, now), due: revisitDue(m.at, now, days) });
+  const delayed = facts.transferAt === undefined ? null : !revisitDue(facts.transferAt, now, days) ? false
+    : facts.delayedSeen === false ? true : facts.delayedSeen === true ? false : null;
+  return { mistakes, due: mistakes.find((m) => m.due) || null, unknown: Array.isArray(facts.unknown) ? facts.unknown : [], delayed };
+}
+
 // Reed 마이크 알림(2026-11-08): 녹음하는 동안 같은 출처의 다른 창(WORLD 셸 · 나란히 띄운 마을)이 효과음 · 진동 · 말소리를 0으로 두게 알린다.
 // experiences/brand-opening/world-sound.mjs createMicSignal과 같은 규약의 사본이다 — 공개 빌드가 드라마의 가져오기 셋을 고정 검사하고 brand-opening
 // 경로로 바꿔 주지 않아 여기 둔다(가져오기 주소의 ?v= 토큰은 공개 빌드 · 공개 도구가 내용 해시로 붙여, 새 pilot은 늘 새 takes 주소를 부른다). 받는 쪽은 공유 열쇠 synk.world.mic(가장 최근 박동 시각, 15초 지나면 닫힘)만 읽고, 주체마다 synk.world.mic:<주체>를 따로 둬

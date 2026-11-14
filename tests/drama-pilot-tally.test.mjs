@@ -30,6 +30,7 @@ async function play(plan) {
   plan.scene.forEach((takes, i) => { const L = rec.open({ lineId: LINES[i].id, skillId: LINES[i].skill, phase: 'scene' }); L.help('text'); for (const t of takes) L.take(t); lines[LINES[i].id] = L; });
   if (plan.note) lines[plan.note].help('explanation');
   if (plan.retake) { const line = LINES.find((x) => x.id === (plan.note || LINES[0].id)); const R = rec.open({ lineId: line.id, skillId: line.skill, phase: 'retake' }); R.help('answer'); for (const t of plan.retake) t === 'exclude' ? R.excludeLast() : R.take(t); }
+  if (plan.review) { const V = rec.open({ lineId: LINES[0].id, skillId: LINES[0].skill, phase: 'review' }); for (const t of plan.review) V.take(t); }
   for (const [key, steps] of [['b', PILOT.transfer], ['c', PILOT.delayed]].map(([k, item]) => [k, plan[k] && { item, steps: plan[k] }]).filter(([, v]) => v).map(([k, v]) => [k, v])) {
     const T = rec.open({ lineId: steps.item.id, skillId: steps.item.skill, phase: 'transfer', lazy: key === 'c' ? true : 'transcribed' });
     for (const s of steps.steps) s === 'hint' ? T.help('answer') : s === 'exclude' ? T.excludeLast() : T.take(s);
@@ -63,7 +64,7 @@ async function cohort() {
   ];
 }
 
-test('§1 분모 줄: (가) 노트 · 고침, (나) B 판정 있음 · 맞음, (다) C 자격 · 창 · 시도 · 맞음, 인식 불명 · 보류', async () => {
+test('§1 분모 줄: (가) 노트 · 고침, (나) B 판정 있음 · 맞음, (다) C 자격 · 3일째 · 시도 · 맞음, (라) 틀린 장면 다시, 인식 불명 · 보류', async () => {
   const people = await cohort();
   const bAt = Math.max(...people.flatMap((p) => p.events).map((e) => Date.parse(e.at)));
   const a = aggregate(people, bAt + 8 * 86400000);
@@ -71,16 +72,35 @@ test('§1 분모 줄: (가) 노트 · 고침, (나) B 판정 있음 · 맞음, (
   assert.deepEqual(a.accounts, { found: 7, learningEnabled: 6, withDramaRecord: 6 });
   assert.deepEqual(a.ga, { sceneDone: 5, noNote: 1, noted: 4, fixed: 1, sameAgain: 1, take2Unjudged: 1, take2None: 1, kinds: { ending: 2, length: 1, missing: 1 } });
   assert.deepEqual(a.na, { sceneDone: 5, bSeen: 5, bJudged: 2, bCorrect: 1, bHintFirst: 1, bUnjudged: 1, bExcluded: 1, sceneDoneNoB: 0 });
-  assert.deepEqual(a.da, { eligible: 2, beforeWindow: 0, openNotTried: 1, missed: 0, cSeen: 1, cJudged: 1, cCorrect: 1, cHintFirst: 0, cUnjudged: 0, cExcluded: 0 });
+  // C 자격은 화면 카드와 같이 B를 판정까지 말한 첫 시각(GPT 검수 GA4): M01 · M02 · M03(안 들림 뒤 통과) · M04(모범 먼저 뒤 통과). M05는 그 판정을 뺐다.
+  assert.deepEqual(a.da, { eligible: 4, beforeWindow: 0, openNotTried: 3, cSeen: 1, cJudged: 1, cCorrect: 1, cHintFirst: 0, cUnjudged: 0, cExcluded: 0, cDays: [0] });
+  // (라) 틀린 장면 다시(11-14): 장면 첫 판정에 고칠 점 — M01 끝맺음 · M03 길이(안 들림 건너뜀) · M04 빠진 말(보류 건너뜀) · M05 끝맺음. 8일 뒤라 모두 다시 만나기 차례.
+  // 분모: 장면 줄을 판정까지 말한 사람(M01~M06 — 장면을 끝내지 않은 M06도 든다, GA5).
+  assert.deepEqual(a.ra, { spoke: 6, mistaken: 4, reviewed: 0, closed: 0, due: 4, waiting: 0 });
+  // DB · 관리 API · --사건 길은 dramaOnly로 거른 사건을 넣는다 — 그래도 (다) · (라)가 같아야 한다(GA2: 결정 사건이 빠져 0이 됐다).
+  const filtered = aggregate(people.map((p) => ({ ...p, events: dramaOnly(p.events) })), bAt + 8 * 86400000);
+  assert.deepEqual(filtered.ra, a.ra);
+  assert.deepEqual(filtered.da, a.da);
   assert.deepEqual(a.recognition, { unheardTakes: 2, unclearTakes: 0, holdTakes: 2, people: 3 });
   assert.equal(a.firstTakeSeconds.people, 6);
   assert.deepEqual(a.rows.map((r) => [r.no, r.account, r.note, r.take2, r.b, r.c]), [
-    ['M01', 'on', 'ending', 'fixed', 'correct', 'correct'], ['M02', 'on', null, null, 'incorrect', 'open'], ['M03', 'on', 'length', 'same', 'unjudged', null],
-    ['M04', 'on', 'missing', 'none', 'hint', null], ['M05', 'on', 'ending', 'unjudged', 'unjudged', null], ['M06', 'on', null, null, null, null],
+    ['M01', 'on', 'ending', 'fixed', 'correct', 'correct'], ['M02', 'on', null, null, 'incorrect', 'open'], ['M03', 'on', 'length', 'same', 'unjudged', 'open'],
+    ['M04', 'on', 'missing', 'none', 'hint', 'open'], ['M05', 'on', 'ending', 'unjudged', 'unjudged', null], ['M06', 'on', null, null, null, null],
     ['M07', 'off', null, null, null, null], ['M08', 'none', null, null, null, null]]);
-  // C 창: B 판정 하루 뒤는 창 전, 열하루 뒤는 놓침(0으로 채우지 않고 따로 센다).
-  assert.equal(aggregate(people, bAt + 86400000).da.beforeWindow, 1);
-  assert.equal(aggregate(people, bAt + 11 * 86400000).da.missed, 1);
+  // C · 다시 만나기(11-14 설계 §18-2): B 판정 하루 뒤는 3일째 전, 열하루 뒤에도 창이 닫히지 않는다(끝 없음).
+  assert.equal(aggregate(people, bAt + 86400000).da.beforeWindow, 3);
+  assert.equal(aggregate(people, bAt + 86400000).ra.waiting, 4);
+  assert.equal(aggregate(people, bAt + 11 * 86400000).da.openNotTried, 3);
+});
+
+test('(라) 복습 보임의 판정도 센다 — 거른 사건으로도(GPT 검수 GA3)', async () => {
+  const events = await play({ scene: [[ok('note', 'ending')], [ok('pass')], [ok('pass')]], review: [ok('pass')] });
+  for (const evs of [events, dramaOnly(events)]) {
+    const a = aggregate([{ no: 'R1', account: ON, events: evs }], Date.now());
+    assert.equal(a.ra.mistaken, 1);
+    assert.equal(a.ra.reviewed, 1, '복습 첫 판정이 있다');
+    assert.equal(a.ra.waiting, 1, '같은 날 복습 통과는 고침 표시만 — 3일째 전이라 아직 열림');
+  }
 });
 
 test('보고: 「N명 중 n명」 꼴, %가 없고 이메일 · 계정 id · 받아 적은 글이 없다', async () => {
@@ -104,7 +124,8 @@ test('다른 WORLD 게임 사건 · 다른 문항 뺌은 셈에 넣지 않는다
   const other = [{ type: 'practice.presented', id: 'x1', taskId: 'world-speaking.cafe.1', at: events[0].at }, { type: 'practice.attempted', id: 'x2', presentationId: 'x1', attemptNo: 1, verdict: 'correct', at: events[0].at },
     { type: 'record.excluded', id: 'x3', targetId: 'x2', at: events[0].at }, { type: 'decision.made', id: 'x4', at: events[0].at }];
   const kept = dramaOnly([...events, ...other]);
-  assert.ok(kept.every((e) => !String(e.id).startsWith('x')));
+  assert.ok(kept.every((e) => !String(e.id).startsWith('x')), '다른 게임의 결정 사건(experienceId 없음)도 뺀다');
+  assert.ok(kept.some((e) => e.type === 'decision.made' && e.experienceId === 'drama-s1'), '드라마 결정 사건은 남긴다(revisitFacts가 본다)');
   assert.equal(kept.filter((e) => e.type === 'practice.attempted').length, 3);
 });
 
@@ -133,7 +154,7 @@ test('DB 읽기: read only 거래 하나에서 SELECT · SET LOCAL만, 연결표
   assert.equal(mode, 'read only');
   assert.ok(queries.every((q) => /^\s*(select|set local)/i.test(q.text)), '쓰기 문장 없음');
   assert.ok(queries.some((q) => /statement_timeout/.test(q.text)));
-  assert.deepEqual(out.map((p) => [p.no, p.account.found, p.account.learningEnabled ?? null, p.events.length]), [['M01', true, true, people[0].events.filter((e) => e.type !== 'decision.made' && e.type !== 'experience.completed').length], ['M02', true, false, 0], ['M03', false, null, 0]]);
+  assert.deepEqual(out.map((p) => [p.no, p.account.found, p.account.learningEnabled ?? null, p.events.length]), [['M01', true, true, people[0].events.filter((e) => e.type !== 'experience.completed').length], ['M02', true, false, 0], ['M03', false, null, 0]]);
   assert.ok(!JSON.stringify(out).includes('@'));
 });
 

@@ -6841,7 +6841,8 @@ var DramaLearning = (() => {
       var GAME_ID = "drama-s1";
       var factory = (config) => learning.createGame({ ...config, map });
       var engine = Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync });
-      var PHASES = ["scene", "retake", "transfer"];
+      var PHASES = ["scene", "retake", "transfer", "review"];
+      var JUDGED = ["pass", "note-ending", "note-length", "note-missing"];
       var HELPS = ["text", "answer", "explanation"];
       var NOTE_KINDS = ["ending", "length", "missing"];
       var identifier = (value) => typeof value === "string" && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -6874,6 +6875,37 @@ var DramaLearning = (() => {
         if (outcome?.kind === "unheard") return { correct: null, assessable: false, reason: "unanswered" };
         if (outcome?.kind === "off" || outcome?.kind === "down") return { correct: null, assessable: false };
         return null;
+      }
+      function revisitFacts(events, { lineIds = [], transferId = null } = {}) {
+        const lines = new Set(lineIds.filter(identifier)), byId = new Map(events.map((e) => [e.id, e]));
+        const gone = new Set(events.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
+        const presented = /* @__PURE__ */ new Map(), shownLines = /* @__PURE__ */ new Set();
+        for (const e of events) {
+          if (e.type !== "practice.presented" || gone.has(e.id)) continue;
+          const d = byId.get(e.decisionId), m = /^drama-s1\.(scene|retake|transfer|review)\.([a-zA-Z0-9_.:-]+)$/.exec(e.taskId || "");
+          if (d?.type !== "decision.made" || d.experienceId !== GAME_ID || !m || m[2] !== e.itemKey) continue;
+          shownLines.add(e.itemKey);
+          presented.set(e.id, { lineId: e.itemKey, phase: m[1], first: null, answers: [] });
+        }
+        events.forEach((e, k) => {
+          const p = presented.get(e.presentationId);
+          if (!p || gone.has(e.id)) return;
+          const at = Date.parse(e.at);
+          if (!Number.isFinite(at)) return;
+          if (e.type === "practice.helped" && e.level === "answer") p.answers.push(k);
+          if (e.type !== "practice.attempted" || !JUDGED.includes(e.choice?.selectedId)) return;
+          if (!p.first || e.attemptNo < p.first.no) p.first = { no: e.attemptNo, choice: e.choice.selectedId, at, k };
+        });
+        const history = {};
+        let transferAt = null;
+        for (const p of presented.values()) {
+          if (!p.first) continue;
+          if (p.phase === "transfer" && p.lineId === transferId) transferAt = transferAt == null ? p.first.at : Math.min(transferAt, p.first.at);
+          if ((p.phase === "scene" || p.phase === "review") && lines.has(p.lineId))
+            (history[p.lineId] ||= []).push({ at: p.first.at, choice: p.first.choice, helped: p.answers.some((k) => k < p.first.k) });
+        }
+        for (const list of Object.values(history)) list.sort((a, b) => a.at - b.at);
+        return { history, transferAt, shown: shownLines };
       }
       function createRecorder({ win = typeof window === "undefined" ? null : window, owner = findHost(win), onError = () => {
       } } = {}) {
@@ -6949,6 +6981,25 @@ var DramaLearning = (() => {
             }
           });
         }
+        function review({ lineIds = [], transferId = null, delayedId = null } = {}) {
+          return safe(() => {
+            const c = game();
+            if (typeof c.events !== "function" || typeof c.summary !== "function") return null;
+            const summary = c.summary();
+            if (summary?.storage?.available !== true || summary.evidenceComplete !== true) return null;
+            const facts = revisitFacts(c.events(), { lineIds, transferId });
+            const seen2 = (id) => identifier(id) ? c.exposure({ itemKey: id, familyKey: id }).seen : null;
+            const unknown = lineIds.filter((id) => identifier(id) && !facts.shown.has(id) && seen2(id) !== false);
+            const transferUnknown = identifier(transferId) && !facts.shown.has(transferId) && seen2(transferId) !== false;
+            const delayed = seen2(delayedId);
+            return {
+              history: facts.history,
+              unknown,
+              transferAt: transferUnknown ? void 0 : facts.transferAt,
+              delayedSeen: delayed === true || delayed === false ? delayed : null
+            };
+          });
+        }
         function delayedDue({ lineId, skillId }) {
           if (!identifier(lineId) || map.getNode(skillId)?.kind !== "skill") return false;
           return safe(() => {
@@ -6969,7 +7020,7 @@ var DramaLearning = (() => {
             return v === true || v === false ? v : null;
           });
         }
-        return Object.freeze({ open, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
+        return Object.freeze({ open, review, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
       }
       function createRehearsalHost({ accountKey, revision, connected, transport, storage, win = typeof window === "undefined" ? null : window }) {
         const prefix = `synk.drama.rehearsal.${accountKey}.r${revision}.`;
@@ -6979,7 +7030,7 @@ var DramaLearning = (() => {
         if (win) win.SYNKLearningHost = host;
         return host;
       }
-      module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, judgedAs, createRecorder, createRehearsalHost };
+      module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, judgedAs, revisitFacts, createRecorder, createRehearsalHost };
     }
   });
   return require_learning_entry();

@@ -7,6 +7,8 @@ import * as takes from '../../experiences/drama/pilot/takes.mjs';
 export function publicLesson(lesson) {
   return {id:lesson.id,title:lesson.title,notices:lesson.notices,role:lesson.role,
     reasks:lesson.reasks,coach:lesson.coach,nextEpisode:lesson.nextEpisode,
+    // 다시 만나기 간격(설계 §18-2) — 장면 줄의 tutor(튜터 근거)는 scene에 그대로 실린다(정답 보호 대상이 아닌 보고 말하기 줄).
+    ...(lesson.revisit?{revisit:{days:lesson.revisit.days}}:{}),
     assets:lesson.assets?{listenLoop:lesson.assets.listenLoop,poster:lesson.assets.poster,backdrop:lesson.assets.backdrop}:undefined,
     scene:lesson.scene.map(({spec,...line})=>line),
     // promptKo는 답 낱말을 쓰지 않는 한국어 상황 글, reviewed는 칸 명세 검수 통과 여부(모범 카드의 안내 글이 달라진다).

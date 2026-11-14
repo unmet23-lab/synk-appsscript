@@ -52,6 +52,6 @@ test('표지 제목은 낱말 사이에서만 줄이 바뀌고(긴 몽골어 제
   assert.match(pilot, /title\.split\(' '\)\.flatMap/);
   assert.match(pilot, /querySelectorAll\('\.w > span'\)/);
   assert.match(fs.readFileSync(path.join(REPO, 'experiences/drama/pilot/pilot.css'), 'utf8'), /\.slate \.t \.w \{ white-space: nowrap; \}/);
-  assert.match(pilot, /\(due === true\) !== \(S\.delayedDue === true\)/);
-  assert.match(pilot, /\(held === true\) !== \(S\.pendingB === true\)/);
+  // 11-14(설계 §18-3): 다시 만나기 · C · 남겨 둔 B · 틀린 장면 줄을 한 열쇠(cardsKey)로 견준다.
+  assert.match(pilot, /if \(cardsKey\(next\) !== cardsKey\(S\.cards\)\) \{ S\.cards = next; if \(live\(s\)\) intro\(\); return; \}/);
 });

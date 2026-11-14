@@ -234,3 +234,30 @@ a.pill { display: inline-flex; align-items: center; justify-content: center; tex
 @media (prefers-reduced-motion: reduce) {
  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* 틀린 장면 복습 · 다시 만나기 · 튜터 카드(11-14, 설계 §18) */
+.card.revisit { background: rgba(255,207,92,.07); box-shadow: inset 0 0 0 1px rgba(255,207,92,.26); }
+.card.revisit .k .dot { background: var(--warm); box-shadow: 0 0 10px var(--warm); }
+.card.revisit .cardline { margin: 4px 0 6px; font-size: 15px; font-weight: 700; line-height: 1.55; }
+.card.mistakes { margin: 8px 0 4px; padding: 10px 12px; }
+.mistake-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.mistake-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tag btn' 'what what'; align-items: center; gap: 2px 8px; }
+.mistake-list li > .tag { grid-area: tag; justify-self: start; }
+.mistake-list li > .what { grid-area: what; }
+.mistake-list li > button { grid-area: btn; }
+.mistake-list .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--warm); white-space: nowrap; }
+.mistake-list .tag.fixed { color: var(--accent-2); }
+.mistake-list .tag .tick { width: 13px; height: 13px; margin: 0; }
+.mistake-list .tag .tick.on::after { left: 4px; top: 2px; width: 3px; height: 6px; }
+.mistake-list .what { display: flex; flex-direction: column; min-width: 0; }
+.mistake-list .what .ko { font-size: 13px; line-height: 1.5; }
+.mistake-list .what .fine { font-size: 11px; margin: 0; }
+.ghost.small { height: 30px; padding: 0 11px; font-size: 12px; white-space: nowrap; }
+.review-tag { display: inline-block; margin: 0 0 6px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: var(--warm); background: rgba(255,207,92,.1); box-shadow: inset 0 0 0 1px rgba(255,207,92,.24); }
+.review .last { margin: 0 0 6px; color: var(--dim); }
+.card.tutor { background: rgba(139,123,255,.08); box-shadow: inset 0 0 0 1px rgba(139,123,255,.28); }
+.card.tutor .rule { margin: 2px 0 6px; font-size: 14.5px; font-weight: 600; line-height: 1.55; color: var(--ink); }
+.card.tutor .fix { margin: 2px 0 6px; }
+.card.tutor .fix s { color: var(--muted); text-decoration-color: var(--slip); text-decoration-thickness: 2px; }
+.card.tutor .keys b { color: var(--ink); font-weight: 700; }
+.card.tutor .src { margin: 4px 0 0; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.08); }

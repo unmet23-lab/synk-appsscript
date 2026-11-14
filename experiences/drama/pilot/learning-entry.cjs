@@ -11,7 +11,10 @@ const map = createMap(require('../../../strata/maps/ko-speaking.json'));
 const GAME_ID = 'drama-s1';
 const factory = config => learning.createGame({ ...config, map });
 const engine = Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync });
-const PHASES = ['scene', 'retake', 'transfer'];
+// review(11-14, 설계 §18): 첫 화면에서 지난번 틀린 장면 줄을 다시 하는 차례 — 장면처럼 판정 없음(unassessed) + 판정 갈래(choice).
+const PHASES = ['scene', 'retake', 'transfer', 'review'];
+// 판정된 시도의 갈래(choice) — 실수 읽기(review)는 이것만 센다. hold · unclear는 판정 보류라 건너뛴다.
+const JUDGED = ['pass', 'note-ending', 'note-length', 'note-missing'];
 // explanation: 장면이 끝난 뒤 그 줄에 준 코치 노트(11-03, 몽골 시범 §7 ①). 노트 종류는 그 줄 마지막 판정 시도의 choice가 말한다.
 const HELPS = ['text', 'answer', 'explanation'];
 const NOTE_KINDS = ['ending', 'length', 'missing'];
@@ -51,6 +54,42 @@ function answerOf(outcome) {
   if (outcome?.kind === 'unheard') return { correct: null, assessable: false, reason: 'unanswered' };
   if (outcome?.kind === 'off' || outcome?.kind === 'down') return { correct: null, assessable: false };
   return null;
+}
+
+// 다시 만나기의 재료를 Atlas 사건에서 읽는다(설계 §18-1) — 빈칸 놀이 kit/return-practice.mjs와 같이 이 게임의 결정 → 보임 → 시도를 잇는다.
+// history: 줄마다 장면(scene) · 복습(review) 보임의 「첫 판정 시도」를 시각 차례로 [{at, choice, helped}] — 테이크 2(retake)는 코치 노트를 본
+// 뒤라 넣지 않는다. 판정 보류 · 안 들림 · 「제가 한 말과 달라요」로 뺀 시도(record.excluded)는 건너뛴다. helped는 그 시도 전에 같은 보임에서
+// 대사 전체(answer 도움)를 봤는지. transferAt: 새 상황 B의 판정된 첫 시도 가운데 가장 이른 시각(없으면 null). shown: 남은 사건에 보임이 있는 줄.
+// 받아 적은 글은 원래 기록에 없다. 화면(review)과 집계 도구(tools/드라마시범집계.mjs)가 함께 쓴다.
+function revisitFacts(events, { lineIds = [], transferId = null } = {}) {
+  const lines = new Set(lineIds.filter(identifier)), byId = new Map(events.map(e => [e.id, e]));
+  const gone = new Set(events.filter(e => e.type === 'record.excluded').map(e => e.targetId));
+  const presented = new Map(), shownLines = new Set();
+  for (const e of events) {
+    if (e.type !== 'practice.presented' || gone.has(e.id)) continue;
+    const d = byId.get(e.decisionId), m = /^drama-s1\.(scene|retake|transfer|review)\.([a-zA-Z0-9_.:-]+)$/.exec(e.taskId || '');
+    if (d?.type !== 'decision.made' || d.experienceId !== GAME_ID || !m || m[2] !== e.itemKey) continue;
+    shownLines.add(e.itemKey);
+    presented.set(e.id, { lineId: e.itemKey, phase: m[1], first: null, answers: [] });
+  }
+  // 「그 시도 전에 대사 전체(answer)를 봤나」는 사건 차례(배열 자리)로 가른다 — 시각은 ms가 같을 수 있다(결과 화면이 판정 바로 뒤 도움을 남긴다).
+  events.forEach((e, k) => {
+    const p = presented.get(e.presentationId); if (!p || gone.has(e.id)) return;
+    const at = Date.parse(e.at); if (!Number.isFinite(at)) return;
+    if (e.type === 'practice.helped' && e.level === 'answer') p.answers.push(k);
+    if (e.type !== 'practice.attempted' || !JUDGED.includes(e.choice?.selectedId)) return;
+    if (!p.first || e.attemptNo < p.first.no) p.first = { no: e.attemptNo, choice: e.choice.selectedId, at, k };
+  });
+  const history = {};
+  let transferAt = null;
+  for (const p of presented.values()) {
+    if (!p.first) continue;
+    if (p.phase === 'transfer' && p.lineId === transferId) transferAt = transferAt == null ? p.first.at : Math.min(transferAt, p.first.at);
+    if ((p.phase === 'scene' || p.phase === 'review') && lines.has(p.lineId))
+      (history[p.lineId] ||= []).push({ at: p.first.at, choice: p.first.choice, helped: p.answers.some(k => k < p.first.k) });
+  }
+  for (const list of Object.values(history)) list.sort((a, b) => a.at - b.at);
+  return { history, transferAt, shown: shownLines };
 }
 
 // 차례 하나(장면의 한 줄 · 테이크 2 · 새 상황) = Atlas 보임(present) 하나. 그 차례의 테이크가 시도 1, 2, …가 된다.
@@ -100,9 +139,28 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
       get recorded() { return !!pid; },
     });
   }
-  // 7~10일 뒤 처음 보는 문항(설계 §17): Atlas 지연 관측(followups, d7 창)이 이 문항의 측정 칸(같은 게임 · 지도판 · 능력 · 새 상황 난이도 2 ·
-  // spoken · speaking)으로 「due」이고, 이 문항을 한 번도 보이지 않았을 때만 참. 기록이 아직 덜 모였으면(동기화 전 · 저장 실패) null —
-  // 화면은 잠시 뒤 다시 묻고, 모르면 내보내지 않는다(거짓 관측 · 문항 낭비를 막는다). 리듬 게임 delayedSupplemental과 같은 꼴.
+  // 지난번 틀린 장면 줄 · 다시 만나기의 재료(설계 §18). 정책(3일 · 고침과 닫힘 · 고르는 차례)은 화면(takes.mjs planRevisit)이 정하고,
+  // 여기서는 기록을 읽기만 한다(revisitFacts). 기록이 덜 모였거나 저장할 수 없으면 null(모름). 접힌 기록(장부로 접힌 오래된 항목)에는 고른
+  // 칸이 없다 — 본 적은 있는데(exposure) 남은 사건에 그 줄의 보임이 없으면 「모름(unknown)」으로 돌려 「실수 없음」과 가른다(설계 검토 3).
+  function review({ lineIds = [], transferId = null, delayedId = null } = {}) {
+    return safe(() => {
+      const c = game();
+      if (typeof c.events !== 'function' || typeof c.summary !== 'function') return null;
+      const summary = c.summary();
+      if (summary?.storage?.available !== true || summary.evidenceComplete !== true) return null;
+      const facts = revisitFacts(c.events(), { lineIds, transferId });
+      const seen = id => (identifier(id) ? c.exposure({ itemKey: id, familyKey: id }).seen : null);
+      const unknown = lineIds.filter(id => identifier(id) && !facts.shown.has(id) && seen(id) !== false);
+      const transferUnknown = identifier(transferId) && !facts.shown.has(transferId) && seen(transferId) !== false;
+      const delayed = seen(delayedId);
+      return { history: facts.history, unknown, transferAt: transferUnknown ? undefined : facts.transferAt,
+        delayedSeen: delayed === true || delayed === false ? delayed : null };
+    });
+  }
+  // 7~10일 뒤 처음 보는 문항: Atlas 지연 관측(followups, d7 창)이 이 문항의 측정 칸(같은 게임 · 지도판 · 능력 · 새 상황 난이도 2 ·
+  // spoken · speaking)으로 「due」이고, 이 문항을 한 번도 보이지 않았을 때만 참. 기록이 덜 모였으면 null.
+  // 11-14부터 WORLD 드라마 첫 화면의 C 차례는 이 창 대신 드라마 정책 3일(review · takes.mjs planRevisit)로 정한다(설계 §18-2).
+  // 이 함수는 깃발 뒤 「오늘」 한 장(today/gather.mjs)이 아직 부르므로 그대로 둔다 — 그쪽이 3일 정책으로 옮기면 지운다.
   function delayedDue({ lineId, skillId }) {
     if (!identifier(lineId) || map.getNode(skillId)?.kind !== 'skill') return false;
     return safe(() => {
@@ -124,7 +182,7 @@ function createRecorder({ win = typeof window === 'undefined' ? null : window, o
     if (!identifier(lineId)) return null;
     return safe(() => { const v = game().exposure({ itemKey: lineId, familyKey: lineId }).seen; return v === true || v === false ? v : null; });
   }
-  return Object.freeze({ open, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
+  return Object.freeze({ open, review, delayedDue, seen, flush: () => safe(() => coach?.flush?.()) });
 }
 
 // 이PC 시범 서버의 리허설 계정(합성 계정)으로 왕복을 볼 때만 쓴다. WORLD 안에서는 WORLD가 세운 호스트를 쓴다(findHost).
@@ -136,4 +194,4 @@ function createRehearsalHost({ accountKey, revision, connected, transport, stora
   return host;
 }
 
-module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, judgedAs, createRecorder, createRehearsalHost };
+module.exports = { GAME_ID, mapVersion: map.map_ver, engine, answerOf, judgedAs, revisitFacts, createRecorder, createRehearsalHost };

@@ -5,7 +5,7 @@
 // 미디어는 tools/build-drama-pilot-assets.mjs가 승인 자산에서 정리한 것(새 생성 0). 음성만 있는 대사는 정지 사진+원래 녹음이며 립싱크 영상이 아니다.
 import fs from 'node:fs';
 import ep01 from '../s1/ep01.mjs';
-import { MEANING_MN, PROMPT_MN } from './content-mn.mjs';
+import { MEANING_MN, PROMPT_MN, TUTOR_MN } from './content-mn.mjs';
 import { dramaSpecOf, dramaReviewStatus } from '../../../tools/lib/drama-spec-review-unit.mjs';
 
 // 새 상황 카드(도움 언어). 대본 상황 「다음 수업 전에 마실 것을 사려는데 편의점을 못 찾아, 오늘 처음 인사한 같은 과의 다른 선배께」를 옮긴 것
@@ -135,6 +135,52 @@ function withCues(scene) {
  return scene;
 }
 
+// 틀린 장면 복습의 튜터 근거(11-14, 설계 §18-5 — 유호님 「복습할때도 튜터처럼 왜 잘못말했는지 이런 근거가 꼭 필요해」). 장면 학생 줄 × 판정 갈래마다
+// 규칙 한 문장(한 · 영, 몽골어는 content-mn.mjs TUTOR_MN 짝)과 근거. 생성하지 않고 대본 칸을 근거로 붙인다 — source.text는 대본 칸(배운것 · 문법) 글의
+// 한 토막과 글자 그대로 같아야 한다(withTutor가 대조해 다르면 멈춘다). from → to는 학생 말이 아니라 대본 줄에서 만든 반말 → 높임 꼴(받아 적은 글은
+// 기록에 없다 — README 「학습 기록」). words는 빠진 말 갈래에서 보일 그 줄의 핵심 말(판정 명세의 핵심 말과 같아야 한다 — 칸 이름은 명세 칸 이름과 겹치지 않게).
+const LEARNED = { kind: '배운것', text: '선배에게는 「-요」와 「선배님」' };
+const grammar = (text) => ({ kind: '문법', text });
+// 길이 갈래는 대본에 길이 규칙 칸이 없다 — 근거는 그 줄 자체(대사)다. 화면이 대사 글을 그대로 붙인다(설계 검토 6a).
+const LINE = { kind: '대사' };
+export const TUTOR = {
+ 's1e01-6': {
+  ending: { from: '헤맸어', to: '헤맸어요', source: LEARNED, en: "「헤맸어」 is how you talk to a friend. To a senior you've just met, add 「요」 at the end and say 「헤맸어요」 to show respect." },
+  missing: { words: ['길을 잃어서', '헤맸어요'], source: grammar('-아/어서(까닭)'), en: 'Give the reason first with 「-아/어서」, as in 「길을 잃어서」 (because I got lost), then say what happened: 「헤맸어요」.' },
+  length: { source: LINE, en: "Don't stop at 「네, 맞아요.」 Go on to the reason (「길을 잃어서」) and what you did (「한참 헤맸어요」)." },
+ },
+ 's1e01-7': {
+  ending: { from: '알아?', to: '아세요?', source: LEARNED, en: "「알아?」 is how you ask a friend. To a senior you've just met, ask politely with 「아세요?」." },
+  missing: { words: ['도서관', '어디에 있는지'], source: grammar('-는지 알다'), en: 'To ask politely where something is, ask indirectly with 「-는지 알다」: 「도서관이 어디에 있는지 아세요?」' },
+  length: { source: LINE, en: "Don't stop at 「네, 선배님!」 Use 「그런데」 to change the topic and ask where the library is." },
+ },
+ 's1e01-8': {
+  ending: { from: '살았어', to: '살았어요', source: LEARNED, en: '「살았어」 is how you talk to a friend. To a senior, add 「요」 at the end and thank them with 「살았어요」.' },
+  missing: { words: ['덕분에', '살았어요'], source: grammar('덕분에'), en: 'When thanking someone, first give them credit with 「선배님 덕분에」 (thanks to you), then finish with 「살았어요」.' },
+  length: { source: LINE, en: "Don't stop at 「정말요?」 Go on to 「선배님 덕분에 살았어요」." },
+ },
+};
+// 대본 칸과 대조해 장면 학생 줄에 tutor를 붙인다. 근거 글 · 핵심 말 · 높임 꼴이 대본과 어긋나거나 몽골어 짝의 한국어 글이 다르면 멈춘다.
+function withTutor(scene) {
+ for (const line of scene) {
+  if (line.type !== 'student') continue;
+  const t = TUTOR[line.id], row = dining.find((x) => x.id === line.id);
+  if (!t || !row) throw new Error(`튜터 근거 없음: ${line.id}`);
+  const out = {};
+  for (const [kind, v] of Object.entries(t)) {
+   const ko = TUTOR_MN[line.id]?.[kind]?.[0], mn = TUTOR_MN[line.id]?.[kind]?.[1];
+   if (!ko || !mn) throw new Error(`튜터 글 없음: ${line.id} ${kind}`);
+   const field = v.source.kind === '배운것' ? [ep01.배운것] : v.source.kind === '문법' ? row.문법 || [] : null;
+   if (field ? !field.some((x) => x.includes(v.source.text)) : v.source.kind !== '대사' || v.source.text) throw new Error(`튜터 근거가 대본 칸에 없다: ${line.id} ${kind}`);
+   if (v.to && !line.text.includes(v.to)) throw new Error(`높임 꼴이 대본 줄에 없다: ${line.id} ${kind}`);
+   if (v.words && v.words.join('|') !== row.명세.keys.map((k) => k.word).join('|')) throw new Error(`핵심 말이 명세와 다르다: ${line.id}`);
+   out[kind] = { ...(v.from ? { from: v.from, to: v.to } : {}), ...(v.words ? { words: v.words } : {}), source: v.source, rule: { ko, en: v.en, mn } };
+  }
+  line.tutor = out;
+ }
+ return scene;
+}
+
 export const PILOT = {
  id: 's1e01-pilot',
  title: '1화 · 개강 첫날 — 점심, 태오 선배',
@@ -146,7 +192,7 @@ export const PILOT = {
  role: { me: '새로 온 유학생', partner: '권태오 · 3학년 선배', place: '점심시간, 캠퍼스' },
  // 상대 → 나 → 상대 → 나(목표) → 상대 → 나 → 상대. 내 대사는 셋.
  // 쇼케이스 영상을 구워 넣으면 a1·a2·a3은 그 영상으로, 6·7번 줄의 듣는 고리와 6번 줄 첫 되묻기도 그 영상으로 바뀐다(withShowcase).
- scene: withCues(withMongolian(withShowcase([
+ scene: withTutor(withCues(withMongolian(withShowcase([
   actor('a1', 0, { audio: '/media/senior-01.mp3', image: STILL }),
   student('s1e01-6', '/media/model-6.mp3'),
   actor('a2', 1, { audio: null, image: STILL }), // 선배 2는 쇼케이스 C2 영상(웃음 + 대사)으로만 — withShowcase가 붙인다
@@ -154,7 +200,7 @@ export const PILOT = {
   actor('a3', 2, { audio: '/media/senior-03.mp3', image: STILL }),
   student('s1e01-8', '/media/model-8.mp3'),
   actor('a4', 3, { audio: '/media/senior-04.mp3', image: STILL, last: true }),
- ]))),
+ ])))),
  // 장면 안 1번째 어긋남에 선배가 되묻는 녹음(ep01 되묻기.선배 순서 그대로).
  reasks: ep01.되묻기.선배.map((text, i) => ({ text, audio: `/media/senior-ask-${i + 1}.mp3` })),
  // audio가 null이면 녹음 전 — 화면에 코치 글만 보이고 소리는 내지 않는다.
@@ -183,6 +229,8 @@ export const PILOT = {
   text: T6.말,
   spec: { ...dramaSpecOf({ row: T6, kind: 'unseen' }), reviewed: dramaReviewStatus({ row: T6, kind: 'unseen', day: null, before: null }, ep01.id).status === 'passed' },
  },
+ // 다시 만나기(설계 §18-2, 유호님 11-14 「8일이면 너무 길어 3일로」): 드라마 정책 — Atlas 공통 간격(Temper 1 · 7 · 30일)은 쓰지 않는다.
+ revisit: { days: 3 },
  nextEpisode: { title: ep01.예고.제목, line: '태오 선배가 데려간 동아리 박람회에서 동갑내기 친구를 만난다. 처음으로 말을 놓아 볼까?' },
  assets: {
   manifest: '/media/manifest.json',

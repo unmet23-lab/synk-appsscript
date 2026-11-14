@@ -139,7 +139,7 @@ export function createPilotServer({lesson,root=path.join(REPO,'experiences','dra
         let form;try{form=await new Response(bytes,{headers:{'content-type':type}}).formData();}catch{throw new PilotError('invalid_form');}
         const lineId=form.get('lineId'),phase=form.get('phase'),requestId=form.get('requestId');
         if(form.get('consent')!=='yes')throw new PilotError('consent_required',403);
-        if(!studentLines.has(lineId)||!['scene','retake','transfer'].includes(phase)||
+        if(!studentLines.has(lineId)||!['scene','retake','transfer','review'].includes(phase)||
           ((phase==='transfer')!==(lineId===lesson.transfer.id)))throw new PilotError('invalid_line');
         if(typeof requestId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId))throw new PilotError('invalid_request_id');
         // 완료된 같은 업로드의 재전송은 다시 과금하지 않는다. 녹음은 보관하지 않는다.
