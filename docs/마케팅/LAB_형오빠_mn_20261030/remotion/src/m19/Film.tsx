@@ -1,10 +1,12 @@
 // LAB 몽골 M19 「ах = 형 · 오빠」 — 집에 막 들어온 형(오빠)에게 남동생은 「형!」, 여동생은 「오빠!」(핵심 장면), 그다음 동생이 손위를
 // 부르는 장면 넷(형 · 오빠 · 누나 · 언니)이 원본 박자마다 바뀌고, 끝은 가족 소파 위 2×2 표 → «Хэн дуудахаас хамаарна!».
 // 장면 그림은 판/*.png(GPT 이미지 2.5, 몽글 정본은 생김새 참고로만). 전부 useCurrentFrame()으로만 움직인다.
+// 11-13 판본 틀: 그 나라 글(물음 · 읽는 법 · 풀이 · ✗ 까닭 · 이름표 머리 · 범례 · 끝 줄)과 글자 크기 · 줄 높이는 판본/<KEY>.json(판본.ts)에서 읽는다 — 그림 · 소리 · 박자 · 카메라는 그대로.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
-import { END, KEY, LOCS, OOPS, SCENES, type Loc, type LocPack } from './data';
+import { END, KEY, OOPS, SCENES } from './data';
 import { fr, T } from './timeline';
+import { LocPack } from './판본';
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8' };
 const MN = "'Inter Tight', 'SUIT', sans-serif";
@@ -14,10 +16,16 @@ const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE_IO = Easing.bezier(0.65, 0, 0.35, 1);
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
 const K = 1080 / 941; // 장면 그림(941×1672) → 화면(1080×1920)
-// 두 채널 판(11-06): 그 나라 글 묶음 — 몽골 판은 LOCS.mn이라 예전 렌더 그대로
-const LocCtx = React.createContext<LocPack>(LOCS.mn);
-const useL = () => React.useContext(LocCtx);
-const wsOf = (L: LocPack) => (L === LOCS.mn ? 'nowrap' : 'pre-line') as React.CSSProperties['whiteSpace'];
+// 판본 글 묶음(판본/<KEY>.json) — Film이 받은 꾸러미 p를 띠 · 이름표 · 범례 · 끝 줄이 같이 읽는다. 몽골판은 꾸러미의 칸(meanOneLine · meanLineH · revealMeanSize · endLineNormal · 빈 why)으로 예전 렌더 그대로
+const LocCtx = React.createContext<LocPack | null>(null);
+const useL = () => {
+  const L = React.useContext(LocCtx);
+  if (!L) throw new Error('판본 글이 없다 — Film에 p(판본/<KEY>.json)를 넘긴다');
+  return L;
+};
+const wsOf = (L: LocPack) => (L.meanOneLine ? 'nowrap' : 'pre-line') as React.CSSProperties['whiteSpace'];
+// ✗ 까닭 줄(why)이 찬 판본(두 채널 판 짜임) — 띠의 낱말엔 ✗를 긋지 않고 풀이 줄을 먼저 띄운 뒤 ✗ 때 빨간 까닭 줄을 더한다. 빈 판본(몽골판)은 띠 낱말에 ✗
+const hasWhy = (L: LocPack) => L.why.some((s) => s.trim() !== '');
 const fadeIn = (t: number, at: number, d = 0.3) => interpolate(t, [at, at + d], [0, 1], { ...clamp, easing: EASE_OUT });
 
 // 지금 장면: -1 = 핵심(둘이), 0~3 = SCENES, 4 = 가족 소파
@@ -128,6 +136,7 @@ const band: React.CSSProperties = { position: 'absolute', left: 60, width: 860, 
 const BottomBand: React.FC = () => {
   const L = useL();
   const ws = wsOf(L);
+  const why = hasWhy(L);
   const t = useCurrentFrame() / 30;
   const k = sceneAt(t);
   if (k === 4) return null;
@@ -146,7 +155,7 @@ const BottomBand: React.FC = () => {
     const ko = stage === 2 ? '오빠' : '형';
     const read = stage === 2 ? L.reads[1] : L.reads[0];
     const x = stage === 1 ? interpolate(t, [T.wrong, T.wrong + 0.15], [0, 1], clamp) : 0;
-    const xs = L.why ? 0 : x; // 11-07 두 채널 판 v3: 띠의 낱말엔 ✗를 긋지 않는다 — ✗는 말풍선에만
+    const xs = why ? 0 : x; // 11-07 두 채널 판 v3: 띠의 낱말엔 ✗를 긋지 않는다 — ✗는 말풍선에만
     return (
       <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 28, position: 'relative' }}>
@@ -154,10 +163,10 @@ const BottomBand: React.FC = () => {
           <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 56, color: C.coralShade, opacity: 1 - 0.45 * xs }}>🔊 {read}</div>
           {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
         </div>
-        {/* 11-07 두 채널 판 시험관 둘 「여동생의 형!이 맞는 말처럼 보임」 → 첫 「형」에 「남자가 부르는 말」 줄을 먼저 — 여동생이 형! 하는 순간 어긋남이 보인다(몽골 판은 why가 null이라 그대로) */}
-        {L.why && stage <= 1 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: stage === 0 ? fadeIn(t, T.boy + 0.15, 0.2) : 1 }}>{L.means[0]}</div> : null}
-        {stage === 2 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L === LOCS.mn ? 44 : L.meanSize, lineHeight: L === LOCS.mn ? 1.2 : L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.reveal + 0.15, 0.2) }}>{L.means[1]}</div> : null}
-        {stage === 1 && L.why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong + 0.1, 0.2) }}>{L.why[0]}</div> : null}
+        {/* 11-07 두 채널 판 시험관 둘 「여동생의 형!이 맞는 말처럼 보임」 → 첫 「형」에 「남자가 부르는 말」 줄을 먼저 — 여동생이 형! 하는 순간 어긋남이 보인다(몽골 판은 why가 비어 그대로) */}
+        {why && stage <= 1 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: stage === 0 ? fadeIn(t, T.boy + 0.15, 0.2) : 1 }}>{L.means[0]}</div> : null}
+        {stage === 2 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.revealMeanSize, lineHeight: L.meanLineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.reveal + 0.15, 0.2) }}>{L.means[1]}</div> : null}
+        {stage === 1 && why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong + 0.1, 0.2) }}>{L.why[0]}</div> : null}
       </div>
     );
   }
@@ -175,7 +184,7 @@ const BottomBand: React.FC = () => {
   if (k === 2 && t < T.fix2) {
     // 누나 장면: 남동생이 먼저 「언니!」 — ✗(wrong2) → 「누나!」(fix2)
     const x = interpolate(t, [T.wrong2, T.wrong2 + 0.15], [0, 1], clamp);
-    const xs = L.why ? 0 : x;
+    const xs = why ? 0 : x;
     return (
       <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 28, position: 'relative' }}>
@@ -183,8 +192,8 @@ const BottomBand: React.FC = () => {
           <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: C.coralShade, opacity: 1 - 0.45 * xs }}>🔊 {L.reads[3]}</div>
           {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
         </div>
-        {L.why ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.scenes[2] + 0.2, 0.2) }}>{L.means[3]}</div> : null}
-        {L.why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong2 + 0.1, 0.2) }}>{L.why[1]}</div> : null}
+        {why ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.scenes[2] + 0.2, 0.2) }}>{L.means[3]}</div> : null}
+        {why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong2 + 0.1, 0.2) }}>{L.why[1]}</div> : null}
       </div>
     );
   }
@@ -195,7 +204,7 @@ const BottomBand: React.FC = () => {
         <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade }}>{sc.ko}</div>
         <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: C.coralShade }}>🔊 {L.reads[k]}</div>
       </div>
-      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L === LOCS.mn ? 1.2 : L.lineH, color: C.brown, marginTop: 10, opacity: mm, transform: `translateY(${(1 - mm) * 12}px)`, whiteSpace: ws, textAlign: 'center' }}>{L.means[k]}</div>
+      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.meanLineH, color: C.brown, marginTop: 10, opacity: mm, transform: `translateY(${(1 - mm) * 12}px)`, whiteSpace: ws, textAlign: 'center' }}>{L.means[k]}</div>
     </div>
   );
 };
@@ -214,7 +223,7 @@ const Tag: React.FC<{ at: [number, number]; head: string; a: string; b: string; 
   return (
     <div style={{ position: 'absolute', left: x - 250, top: y - 190, width: 500, display: 'flex', flexDirection: 'column', alignItems: 'center', transform: `scale(${o})`, transformOrigin: '50% 100%' }}>
       <div style={{ background: 'rgba(255,253,248,0.97)', borderRadius: 30, padding: '8px 20px 14px', boxShadow: '0 8px 20px rgba(60,20,10,0.25)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.headSize, lineHeight: L === LOCS.mn ? undefined : L.lineH, color: C.brown }}>{head}</div>
+        <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.headSize, lineHeight: L.endLineNormal ? undefined : L.lineH, color: C.brown }}>{head}</div>
         <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
           {chip(a, BLUE)}
           {chip(b, PINK)}
@@ -243,8 +252,8 @@ const Legend: React.FC = () => {
   const dot = (c: string) => <span style={{ display: 'inline-block', width: 34, height: 34, borderRadius: 17, background: c, marginRight: 14, transform: 'translateY(4px)' }} />;
   return (
     <div style={{ ...band, top: 1200, padding: '22px 30px 26px', opacity: a, alignItems: 'flex-start', paddingLeft: 50 }}>
-      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.rowSize, lineHeight: L === LOCS.mn ? undefined : L.lineH, color: C.brown }}>{dot(BLUE)}{L.rowM}</div>
-      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.rowSize, lineHeight: L === LOCS.mn ? undefined : L.lineH, color: C.brown, marginTop: 8 }}>{dot(PINK)}{L.rowF}</div>
+      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.rowSize, lineHeight: L.endLineNormal ? undefined : L.lineH, color: C.brown }}>{dot(BLUE)}{L.rowM}</div>
+      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.rowSize, lineHeight: L.endLineNormal ? undefined : L.lineH, color: C.brown, marginTop: 8 }}>{dot(PINK)}{L.rowF}</div>
     </div>
   );
 };
@@ -257,7 +266,7 @@ const EndLine: React.FC = () => {
   const bump = interpolate(t, [T.bump, T.bump + 0.15, T.bump + 0.4], [0, 1, 0], clamp);
   return (
     <div style={{ ...band, top: 1220, padding: '36px 30px 40px', opacity: a, transform: `translateY(${(1 - a) * 16}px) scale(${1 + 0.05 * bump})` }}>
-      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.endSize, lineHeight: L === LOCS.mn ? undefined : L.lineH, color: C.brown, textAlign: 'center', whiteSpace: 'pre-line' }}>{L.end}</div>
+      <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.endSize, lineHeight: L.endLineNormal ? undefined : L.lineH, color: C.brown, textAlign: 'center', whiteSpace: 'pre-line' }}>{L.end}</div>
     </div>
   );
 };
@@ -305,8 +314,9 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ loc?: Loc }> = ({ loc = 'mn' }) => (
-  <LocCtx.Provider value={LOCS[loc]}>
+// p = 판본 글(판본/<KEY>.json) — Root가 판본마다 컴포지션 m19-<KEY>로 넘긴다. 읽는 법 · 풀이는 형 · 오빠 · 누나 · 언니 차례
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => (
+  <LocCtx.Provider value={p}>
   <AbsoluteFill style={{ backgroundColor: '#E9DCC4' }}>
     <Plate />
     <BottomBand />
