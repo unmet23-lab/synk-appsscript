@@ -248,12 +248,27 @@ async function 장면(page,길='틀린길'){
    const 시작=Date.now();let 고름=0;
    while(Date.now()-시작<480000){
     await page.waitForTimeout(600);
-    const st=await f.locator('html').evaluate(()=>({done:document.documentElement.dataset.done||'',err:document.body.dataset.error||'',zones:!document.getElementById('zones').hidden,replies:!document.getElementById('replies').hidden}));
+    const st=await f.locator('html').evaluate(()=>({done:document.documentElement.dataset.done||'',err:document.body.dataset.error||'',zones:!document.getElementById('zones').hidden,replies:!document.getElementById('replies').hidden,
+     wrong:!document.getElementById('notice').hidden&&!!document.querySelector('#notice-body mark,#notice-body .why')}));
     if(st.err){안됨('환승 러시',st.err);break;}
+    // 틀린 순간(11-14 「틀린 순간」 시안): 잘못 고르면 안내문이 놓친 방송 문장에 표시를 하고 까닭을 단다(app.mjs afterWrong, 약 4초). 처음 한 번만 찍는다.
+    if(st.wrong&&!기록.환승틀림){
+     await page.waitForTimeout(700);
+     기록.환승틀림={고른차례:고름,안내:await f.locator('#notice').innerText().catch(()=>'')};
+     // 바로 앞 고르기 직후 화면(고른 칸만 채워지고 나머지는 흐림)을 틀린 순간의 고르는 판으로 남긴다
+     if(fs.existsSync(path.join(폴더,'13c-pick-last.png')))fs.copyFileSync(path.join(폴더,'13c-pick-last.png'),path.join(폴더,'13c-game-wrong-pick.png'));
+     await 찍기('13b-game-wrong');
+     const b=await f.locator('#notice').boundingBox();
+     if(b)await 띠찍기('13b-game-wrong',Math.max(0,b.y-200),Math.min(844,b.y+b.height+20));
+     continue;
+    }
     if(st.done)break;
     if(st.replies){await f.locator('#replies button').first().click();await page.waitForTimeout(400);continue;}
     // 고를 차례에는 길 안내 표지판(#pick)이 아래에서 0.9초에 걸쳐 올라온다(11-12 「B 표지판」) — 첫 고르기는 판이 다 올라온 뒤 찍는다
-    if(st.zones){if(고름===0){await f.locator('#pick[data-on]').waitFor({timeout:5000}).catch(()=>{});await page.waitForTimeout(950);await 찍기('13-game-pick');await 띠찍기('13-game-pick',464,844);}else await page.waitForTimeout(500);await f.locator('#zones button').nth(고름%3).click();고름++;await page.waitForTimeout(600);}
+    if(st.zones){if(고름===0){await f.locator('#pick[data-on]').waitFor({timeout:5000}).catch(()=>{});await page.waitForTimeout(950);await 찍기('13-game-pick');await 띠찍기('13-game-pick',464,844);}else await page.waitForTimeout(500);await f.locator('#zones button').nth(고름%3).click();고름++;
+     // 고른 칸 표시는 0.4초 뒤 판과 함께 내려간다(pickpanel.mjs) — 그 전에 찍어 두고, 틀린 고르기로 밝혀지면 위에서 이름을 붙인다
+     if(!기록.환승틀림)await page.screenshot({path:path.join(폴더,'13c-pick-last.png'),animations:'disabled',caret:'hide'}).catch(()=>{});
+     await page.waitForTimeout(600);}
    }
    기록.환승={고름,초:Math.round((Date.now()-시작)/1000)};말('환승 러시',기록.환승);
    await page.waitForTimeout(2500);await 찍기('14-game-result');
