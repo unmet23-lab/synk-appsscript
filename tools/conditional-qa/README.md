@@ -4,10 +4,18 @@
 
 | 실행 위치 | 등록 항목 | 실행 조건 |
 |---|---:|---|
-| GitHub Windows | 41 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic(0.5.0 · 1단계 갈래 · 회차 실행기 · 추천 자료 계획기), 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더 |
-| GitHub Linux | 11 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화, 컷 연속성 검사의 그림 · 영상(파이썬 그림 라이브러리) |
-| Windows 로컬 | 82 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA·Windows 글꼴과 OCR |
-| 합계 | 137 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다. S128은 11-12에 등록한 [컷 연속성 검사의 얼굴 빛 값](#cut-continuity-images) 시험이다 — 11-11 `ce56e974c`가 등록 없이 넣어 syntax-check가 33회 빨갰다. S129~S135는 11-13에 등록한 [업무 백업 1단계 갈래와 추천 자료](#solo-backup-rust) 시험이다 — 11-10 `26d6e9e72`(S135)와 11-12~13 1단계 갈래(S129~S134)가 등록 없이 넣어 wide-tests(experiences)가 Linux에서 건너뛰고 빨갰다. S136은 같은 날 등록한 0.5.0의 Windows 경로 규칙 시험이다 — Linux에서 실패해 wide-tests(experiences)를 빨갛게 했다. S137은 같은 날 밤 갈래에 더한 8.3 짧은 이름 루트 시험이다 — `skip:`을 다음 줄에 써 아래 훑기가 못 보고 wide-tests(experiences)를 빨갛게 했다 |
+| GitHub Windows | 44 | Hermes Windows 경로·복구, OneDrive, ASAR, 대소문자, 가짜 자격 증명, 업무 백업의 실제 restic(0.5.0 · 1단계 갈래 · 회차 실행기 · 추천 자료 계획기), 임시 폴더 자동 정리의 실제 robocopy · 연결 폴더 |
+| GitHub Linux | 12 | 현재 Rust 원천을 WASM으로 빌드, ffmpeg 실제 실행, 공개된 WORLD 계정 묶음의 드라마 동기화, 컷 연속성 검사의 그림 · 영상(파이썬 그림 라이브러리) |
+| Windows 로컬 | 84 | 암호·Caddy·비공개/보관 자산·브라우저·Talk/WORLD·문서 SHA·Windows 글꼴과 OCR |
+| 합계 | 140 | `cases.json`의 S001~S113을 삭제할 수 없다. S114는 11-03에 더한 암호화 모듈 시험이다 S115는 11-04에 더한 드라마 공개본 검사다 S116은 11-09에 더한 [업무 백업 실제 restic](#solo-backup-restic) 시험이다. S117~S119는 같은 날 더한 [컷 연속성 검사의 그림 · 영상](#cut-continuity-images) 시험이다. S120~S122는 11-10 글자 검사의 실제 fontTools·HarfBuzz, Chrome, ffmpeg·Windows OCR 시험이다. S123~S127은 11-11에 더한 `tests/tmp자동정리.test.js`의 Windows 전용 시험 다섯(실제 robocopy로 정리 대기를 먼 자리에 내려놓기 · 끊긴 뒤 이어 옮기기 · 연결 폴더 끊고 다시 잇기 · 드라이브를 넘는 되돌리기)이다 — 11-10 `171259080`이 등록 없이 넣어 Linux에서 건너뛰었고 syntax-check가 31회 빨갰다. S128은 11-12에 등록한 [컷 연속성 검사의 얼굴 빛 값](#cut-continuity-images) 시험이다 — 11-11 `ce56e974c`가 등록 없이 넣어 syntax-check가 33회 빨갰다. S129~S135는 11-13에 등록한 [업무 백업 1단계 갈래와 추천 자료](#solo-backup-rust) 시험이다 — 11-10 `26d6e9e72`(S135)와 11-12~13 1단계 갈래(S129~S134)가 등록 없이 넣어 wide-tests(experiences)가 Linux에서 건너뛰고 빨갰다. S136은 같은 날 등록한 0.5.0의 Windows 경로 규칙 시험이다 — Linux에서 실패해 wide-tests(experiences)를 빨갛게 했다. S137은 같은 날 밤 갈래에 더한 8.3 짧은 이름 루트 시험이다 — `skip:`을 다음 줄에 써 아래 훑기가 못 보고 wide-tests(experiences)를 빨갛게 했다 |
+
+11-14 등록 누락 보완: S138은 Windows 실제 프로세스 소유자 검사, S139·S140은 캐스팅북 원본/공개 사진의 실제 바이트 대조다. 앞 표의 숫자는 현재 `cases.json`의 실제 경로별 집계다. 캐스팅북 공개 이미지 126파일은 기존 입력에 없었으므로 실제 로컬 일꾼 실행 전 명시 목록·SHA로 추가한다.
+
+새 Git 밖 입력은 `node tools/conditional-qa/reregister.cjs --add --reason "<추가 이유>" <경로…>`로 미리 보고, 검토한 동일 목록에 `--apply`를 붙인다(한 번 50개 이하). 기존 등록 항목에는 `--add`를 쓰지 않는다. 추적 소스·중복·저장소 밖 실경로는 거절하며, 기존 blob과 목록 항목은 보존한다. 실제 쓰기는 기존 일꾼 잠금을 잡은 동안만 하고, 자동 실행 중이면 기다린다. 단순 등록이나 로컬 단독 시험을 일꾼 전체 통과로 보고하지 않는다.
+
+`--add`에 넘기는 경로는 디스크에서 확인한 실제 저장소 상대 경로와 대소문자까지 같아야 한다. 8.3 짧은 이름과 junction을 통한 별칭은 거절한다. 기존 항목을 다시 등록할 때는 그 항목의 이름을 보존한다.
+
+`--add`로 새로 등록하는 이름은 디스크 정본의 저장소 상대 경로와 대소문자까지 같아야 한다. 8.3 짧은 이름·junction·대소문자 별칭은 거절한다. 기존 행의 이름과 `--add` 없는 재등록은 보존한다.
 
 `conditional-qa.yml`은 master의 각 push에 세 관문을 건다. 파일과 시험 이름이 일치하는 실제 Node 시험 이벤트가 정확히 한 번 통과해야 한다. skip/todo, 이름 변경, 누락, 중복, 프로세스 실패·시간 초과는 실패다. 기존 syntax/wide CI에 처음 생긴 조건부 제외도 등록되지 않았으면 실패한다. 새 제외를 추가할 때에는 재현 입력과 자동 실행 경로를 함께 등록한다. 등록된 이름을 바꿀 때에는 같은 ID의 이름과 시험을 함께 바꾼다.
 

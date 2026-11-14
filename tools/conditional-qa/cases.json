@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 137,
+  "expectedCount": 140,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1100,6 +1100,30 @@
       "name": "roots given by a short name are the real folders, and a place inside them is refused by either name",
       "group": "업무 백업 1단계 — 갈라 온 엔진 · 회차 실행기 · 잠금(실제 restic)",
       "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S138",
+      "file": "desktop/tests/local-server-owner.test.cjs",
+      "name": "this PC: our own listening server is ours, a closed port is not",
+      "group": "로컬 서버 소유자 실제 Windows 확인",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S139",
+      "file": "tests/pulse-casting-hair-photos.test.mjs",
+      "name": "the hair photos are byte copies of the casting book build (hair 2 · 3, and F04 hair 1 = the book portrait)",
+      "group": "캐스팅북 공개 빌드와 PULSE 사진 바이트 대조",
+      "route": "local",
+      "profile": "default"
+    },
+    {
+      "id": "S140",
+      "file": "tests/pulse-casting-hair-photos.test.mjs",
+      "name": "the outfit photos stay the copies the casting book builds (full body · look 1 · look 2)",
+      "group": "캐스팅북 공개 빌드와 PULSE 사진 바이트 대조",
+      "route": "local",
       "profile": "default"
     }
   ]

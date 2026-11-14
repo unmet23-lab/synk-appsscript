@@ -126,6 +126,120 @@ export const Workspace다음할일원문 = Object.freeze({ implementationReview:
 // 11-13 직원 조직 기능 한정 사용자 승인. 다른 작업의 작성·검수 정책은 유지한다.
 export const Workspace조직작업ID = 'workspace-organization-20261113';
 export const Workspace조직원문 = Object.freeze({ implementationReview: '이번 작업은 GPT가 설계·구현·검토 진행' });
+// 2026-11-14 직접 승인. 원 정책·packet을 바꾸지 않고 이 작업의 남은 GPT 검수만 카본으로 대체한다.
+export const Workspace검수대체 = Object.freeze({
+  taskId: 'workspace-repair-20261114-gpt-quota-fallback',
+  authorizationSha256: '90b2f01abcd9a1031f4c25d9ec6fe6ee330e4c09e8ebcdaccfe401b9e30385a2',
+  quotaSha256: 'efb6436d0af2054ace6b38320b086ff2cf8aeca2540f6fd018137868ff594449',
+});
+const Workspace회사경로 = 'docs/마케팅/온라인마케팅지도/engagement/company/';
+const Workspace공용작업본 = path.join(os.homedir(), 'Documents/SYNK-appsscript');
+// 최초 입력은 이미 봉인된 이번 작업의 원문이다. 이름만 바꾼 다른 작업은 받지 않는다.
+const Workspace대체범위 = {
+  'workspace-repair-qa-inputs-20261114': {
+    first: 'workspace-repair-qa-inputs-20261114', input: '78629ee9fff8e7c8f1ae8900f3998411fbb1651a68b7f231cd0fc4757085b258',
+    rounds: ['-r2', '-r3', '-r4'], // 같은 QA 원천의 세 번째 재현 뒤 설계 검수·수정 확인 한 회차만 명시 허용.
+    paths: ['.github/workflows/syntax-check.yml', 'tests/conditional-qa-reregister.test.cjs', 'tests/conditional-qa.test.cjs', 'tools/conditional-qa/cases.json', 'tools/conditional-qa/reregister.cjs'],
+  },
+  'workspace-repair-access-final-20261114': {
+    first: 'workspace-repair-access-r2-20261114', input: 'ed38802262b8932090811fe7b5e9b17b6775a27e11829cf38d189005e128b01d',
+    paths: ['client-projects.mjs', 'company-work.mjs', 'company-work.test.mjs', 'content-service.mjs', 'member-organization.mjs', 'member-organization.test.mjs', 'organization.mjs', 'organization.test.mjs', 'server-channel-collection.test.mjs', 'server-member-organization.test.mjs', 'server-organization.test.mjs', 'server.mjs', 'server.test.mjs', 'social-marketing-edge.test.mjs', 'social-marketing.test.mjs', 'social-publishing.test.mjs', 'store.mjs', 'workspace-access-service.mjs', 'workspace-access.mjs', 'workspace-access.test.mjs'].map(p => Workspace회사경로 + p),
+  },
+  'workspace-repair-review-substitution-20261114': {
+    first: 'workspace-repair-review-substitution-20261114', input: '4e2d4fd43d89b725d8ccd4be98be10946e1aed4ead586e65ab0500d5de5037a1',
+    rounds: ['-r2', '-r3', '-r4'], // 같은 도구 사슬의 원격 6줄 합침을 실제 검수하는 끝판 한 회차만 허용.
+    paths: ['tests/검수Workspace대체.test.mjs', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs'],
+  },
+  'company-workspace67-local-tools-20261114': {
+    first: 'company-workspace67-local-tools-20261114', input: '11439785c7a534daa97c3edc6149f58e11df24760ab86d181c315fa32d326dca',
+    paths: ['carry-local.cjs', 'carry-local.test.cjs', 'preparation-input.pending.json', 'prepare-local.cjs', 'prepare-local.test.cjs', 'release-contract.cjs', 'release-contract.test.cjs'],
+  },
+  'company-workspace67-product-20261114': {
+    first: 'company-workspace67-product-20261114', repo: '.tmp/company-workspace67-final-20261114',
+    paths: ['Dockerfile.dockerignore', 'client-projects.mjs', 'client-search-client.test.mjs', 'company-work.mjs', 'company-work.test.mjs', 'content-service.mjs', 'demo-messenger-navigation.test.mjs', 'direct-tab-role-client.test.mjs', 'growth-home-client.test.mjs', 'login-recovery-client.test.mjs', 'marin-home-client.test.mjs', 'member-organization-qa.test.mjs', 'member-organization.mjs', 'member-organization.test.mjs', 'organization.mjs', 'organization.test.mjs', 'public/app.js', 'public/index.html', 'public/marin-home.js', 'public/member-organization.css', 'public/member-organization.js', 'public/workroom.js', 'public/workspace-access.css', 'public/workspace-access.js', 'public/workspace.js', 'qa/member-organization-support.mjs', 'qa/verify-member-organization.mjs', 'server-channel-collection.test.mjs', 'server-member-organization.test.mjs', 'server-organization.test.mjs', 'server.mjs', 'server.test.mjs', 'social-publishing.test.mjs', 'store.mjs', 'synk-native-entry-client.test.mjs', 'workroom-client.test.mjs', 'workspace-access-service.mjs', 'workspace-access-test-context.mjs', 'workspace-access.mjs', 'workspace-access.test.mjs', 'workspace-navigation.test.mjs', 'workspace-restore-acceptance.mjs', 'workspace-restore-acceptance.test.mjs', 'workspace-review-client.test.mjs'].map(p => 'candidate/' + Workspace회사경로 + p),
+  },
+  'company-workspace67-operators-20261114': {
+    first: 'company-workspace67-operators-20261114', repo: '.tmp/company-workspace67-carry-20261114',
+    paths: ['lineage-ha-rest-67.cjs', 'port67/admission67.cjs', 'port67/admission67.test.cjs', 'port67/lib67.cjs', 'port67/make-final-pins.cjs', 'port67/p67-operators.cjs', 'port67/port-root67.cjs', 'port67/run-local-67.cjs', 'port67/run67.cjs', 'public-health-release67-watch.cjs', 'read-inert-artifacts-67.cjs', 'read-inert-progress-67.cjs', 'run-deploy-67.sh', 'run-stage-relay-67.sh', 'seal67.cjs'],
+  },
+};
+const 대체폴더 = '대체승인';
+const Workspace범위찾기 = 목록 => Workspace대체범위[(목록?.이름 || '').replace(/-r[234]$/, '')];
+const 같은대체경로 = (a, b) => process.platform === 'win32' ? path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase() : path.resolve(a) === path.resolve(b);
+/** 현재 폴더에서 해시로 이어진 실제 조상만 읽는다. 다른 작업 이름·순환·합침은 허용하지 않는다. */
+export function Workspace대체사슬(폴더, 목록) {
+  const chain = [목록], seen = new Set([path.resolve(폴더)]);
+  const scope = Workspace범위찾기(목록);
+  // 아직 만들지 않은 67 두 묶음은 지정 저장소·정확한 파일 집합·공용 검수 폴더 하나만 허용한다.
+  // 첫 결속은 wx로 한 번만 쓰며, 뒤 고리는 그 첫 결속이 여전히 유효해야 한다.
+  const 위치검사 = (folder, meta) => {
+    if (scope?.repo && !같은대체경로(folder, 안전경로(Workspace공용작업본, `.tmp/검수/${meta.이름}`))) throw new Error('Workspace 대체 승인 최초 검수의 고정 폴더가 아니다');
+  };
+  위치검사(폴더, 목록);
+  while (Object.hasOwn(chain[0].증명, '앞')) {
+    const current = chain[0], previous = current.앞?.폴더;
+    if (!previous || seen.has(path.resolve(previous)) || seen.size >= 4) throw new Error('Workspace 대체 승인 사슬 경로가 잘못됐다');
+    seen.add(path.resolve(previous));
+    const parent = JSON.parse(fs.readFileSync(path.join(previous, '묶음.json'), 'utf8'));
+    위치검사(previous, parent);
+    if (parent.이름 !== current.증명.앞.이름 || parent.증명?.검토입력해시 !== current.증명.앞.검토입력해시) throw new Error('Workspace 대체 승인 앞 사슬 결속 불일치');
+    chain.unshift(parent);
+  }
+  if (scope?.repo && chain.length > 1) {
+    const first = chain[0], receipt = Workspace대체읽기(안전경로(Workspace공용작업본, `.tmp/검수/${first.이름}`), first);
+    if (!receipt) throw new Error('Workspace 대체 승인 최초 결속이 없다 — 새 사슬에 자동 승계하지 않는다');
+  }
+  return chain;
+}
+/** 순수 결속 계약. 파일을 쓰거나 일반 정책·검수자 목록을 바꾸지 않는다. */
+export function Workspace대체결속(목록, 원GPT = [], 사슬 = [목록]) {
+  const p = 목록?.증명, 정책 = 목록?.정책, base = (목록?.이름 || '').replace(/-r[234]$/, ''), scope = Workspace대체범위[base];
+  if (목록?.판 !== 2 || !scope || 목록.갈래 === '합침'
+      || 정책?.판 !== 6 || 정책.종류 !== '백엔드' || 정책.작성자 !== 'GPT' || !정책.필수?.includes('GPT')
+      || 정책.예외 || 정책.사용자지정 || 정책.담당예외 || !Array.isArray(p?.파일) || !p.파일.length
+      || !Array.isArray(목록.묶음) || !목록.묶음.length || !/^[a-f0-9]{64}$/.test(p.검토입력해시 || '')
+      || 정규해시(정책) !== 정규해시(p.정책)) throw new Error('이번 Workspace 작업의 GPT 대체 승인 범위가 아니다');
+  const first = 사슬[0], names = [scope.first, base, ...(scope.rounds || ['-r2', '-r3']).map(s => base + s)].filter((x, i, a) => a.indexOf(x) === i);
+  if (first?.이름 !== scope.first || (scope.input && first?.증명?.검토입력해시 !== scope.input) || first.증명.앞
+      || 사슬.at(-1) !== 목록 || new Set(사슬.map(m => m.이름)).size !== 사슬.length
+      || 사슬.some((m, i) => !names.includes(m.이름) || (i && names.indexOf(m.이름) <= names.indexOf(사슬[i - 1].이름))
+        || m.갈래 === '합침' || m.저장소 !== first.저장소 || m.바탕?.커밋 !== first.바탕?.커밋
+        || !Array.isArray(m.증명?.파일) || !m.증명.파일.length || m.증명.파일.some(f => !scope.paths.includes(f.경로))
+        || (scope.repo && (!같은대체경로(m.저장소, 안전경로(Workspace공용작업본, scope.repo)) || 정규해시(m.증명.파일.map(f => f.경로).sort()) !== 정규해시([...scope.paths].sort())))
+        || m.증명.배포후보 // 회사 67은 정확한 source proof와 회사 핀 문맥만 쓴다.
+        || (i && (m.증명.앞?.이름 !== 사슬[i - 1].이름 || m.증명.앞?.검토입력해시 !== 사슬[i - 1].증명.검토입력해시)))) throw new Error('이번 Workspace 승인 원천·최초 검수 사슬 범위가 아니다');
+  for (const m of 사슬) {
+    const { 검토입력해시, 표식, ...body } = m.증명;
+    if (정규해시(body) !== 검토입력해시 || 표식 !== `END_OF_FINAL_REVIEW_${검토입력해시}`) throw new Error('Workspace 대체 승인 사슬 입력 증명 불일치');
+  }
+  return { version: 1, ...Workspace검수대체, review: 목록.이름, reviewInputHash: p.검토입력해시,
+    policySha256: 정규해시(정책), sourcesSha256: 정규해시(p.파일), candidateSha256: 정규해시(p.배포후보 ?? null),
+    previousInputHash: p.앞?.검토입력해시 ?? null,
+    packets: 목록.묶음.map(b => ({ name: b.이름, sha256: b.sha256 })),
+    chain: 사슬.map(m => ({ review: m.이름, inputHash: m.증명.검토입력해시 })),
+    originalGPT: 원GPT, requiredReviewers: ['아르곤', 'Claude'] };
+}
+export function Workspace원GPT지문(폴더, 목록) {
+  return 목록.묶음.flatMap(b => {
+    const 경로 = `GPT-${b.이름}.json`, f = 안전경로(폴더, 경로);
+    return fs.existsSync(f) ? [{ path: 경로, sha256: sha256(fs.readFileSync(f)) }] : [];
+  });
+}
+/** 승인·실제 한도 원문·기존 GPT 응답·정확한 packet/원천을 매번 다시 대조한다. 새 후보에는 승계하지 않는다. */
+export function Workspace대체읽기(폴더, 목록) {
+  const record = 안전경로(폴더, `${대체폴더}/결속.json`);
+  if (!fs.existsSync(record)) {
+    if (fs.existsSync(안전경로(폴더, 대체폴더))) throw new Error('Workspace 대체 승인 부분 기록·결속 누락');
+    return null;
+  }
+  const saved = JSON.parse(fs.readFileSync(record, 'utf8'));
+  for (const [file, expected] of [['사용자.json', Workspace검수대체.authorizationSha256], ['GPT막힘.json', Workspace검수대체.quotaSha256]]) {
+    if (sha256(fs.readFileSync(안전경로(폴더, `${대체폴더}/${file}`))) !== expected) throw new Error('Workspace 대체 승인·한도 원문 SHA 불일치');
+  }
+  const expected = Workspace대체결속(목록, Workspace원GPT지문(폴더, 목록), Workspace대체사슬(폴더, 목록));
+  if (정규해시(saved) !== 정규해시(expected)) throw new Error('Workspace 대체 승인 packet·원천·기존 GPT 응답 결속 불일치');
+  return { ...saved, receiptSha256: sha256(fs.readFileSync(record)) };
+}
 // 같은 날 후속 지시: 구현뿐 아니라 현재 Codex의 직접 검수와 마감도 승인했다.
 export const 사이트점검단독작업ID = 'site-audit-self-review-20261110';
 export const 사이트점검단독원문 = Object.freeze({ implementation: '이번 수정은 GPT가 직접 진행', review: '너 혼자 직접 검수하고 진행해' });
