@@ -48,7 +48,8 @@ function 첫컴포지션(rootTsx) {
 function 사본지우기(dir) {
   const nm = path.join(dir, 'node_modules');
   try { if (fs.lstatSync(nm).isSymbolicLink()) fs.rmdirSync(nm); } catch (e) { if (e.code !== 'ENOENT') throw e; }
-  fs.rmSync(dir, { recursive: true, force: true });
+  // 같은 날 두 번째: junction을 끊은 뒤에도 렌더 직후 파일 손잡이가 잠깐 남아 EPERM(몇 초 뒤엔 그냥 지워짐) — 잠깐씩 다시 시도한다
+  fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
 }
 
 function 복사(src, dst) {

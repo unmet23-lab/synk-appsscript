@@ -117,7 +117,7 @@ export const Film: React.FC = () => {
 
       {MASTER ? <Audio src={staticFile('master.wav')} /> : <>
       {/* 배경음(일레븐랩스 연주곡 — 살금살금 피치카토 · 나무 타악 · 뮤트 트럼펫). 반전(S.reveal)에서 조금 올라오고, 끝 줄을 속삭이기 직전(S.stop)에 끊는다 — 끝 줄은 스튜디오 공간 소리 위에서(음악층 ⑲ · 준비.json 「음악꺼짐판단」) */}
-      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(S.stop - 0.25), sec(S.stop + 0.05)], [0.06, 0.1, 0.1, 0.14, 0.14, 0], clamp)} />
+      <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, [0, sec(0.8), sec(S.reveal - 0.3), sec(S.reveal + 0.3), sec(S.stop - 0.25), sec(S.stop + 0.05)], [0.06, 0.1, 0.1, 0.17, 0.17, 0], clamp)} />
       {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
