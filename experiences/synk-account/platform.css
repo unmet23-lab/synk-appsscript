@@ -210,9 +210,6 @@ body.launcher{margin:0;min-height:100vh;background:var(--paper);color:var(--ink)
 .account-panel h2{font-size:var(--t15);font-weight:600}
 .account-panel p{margin-top:2px;font-size:var(--t13);color:var(--ink-3)}
 .account-panel .actions{display:flex;flex-wrap:wrap;gap:10px}
-.study-entry{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;margin-bottom:40px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.study-entry h2{font-size:var(--t17);font-weight:600}
-.study-entry p{margin-top:2px;max-width:48em;font-size:var(--t15);color:var(--ink-2)}
 /* WORLD는 휴대폰에서(2026-11-11, desktop/renderer/world-phone.mjs): 선반 아래 위 1px 검정 선 + 글 + 흰 판 위 QR. 좁은 창(휴대폰)은 QR 대신 여는 단추. */
 .world-phone{display:flex;align-items:center;justify-content:space-between;gap:40px;margin-top:64px;padding-top:28px;border-top:1px solid var(--ink)}
 .world-phone-copy{min-width:0}
@@ -448,7 +445,6 @@ body.launcher .platform-continuity :focus-visible{outline:2px solid var(--ink);o
   .shelf-item .label{padding:16px 4px 0}
   .shelf-item .go{padding:10px 4px 0}
   .peek,.shelf-item .go{opacity:1;transform:none}
-  .study-entry{margin-bottom:24px}
   .world-phone{margin-top:48px;padding-top:20px}
   .world-phone-qr,.world-phone-hint{display:none}
   .world-phone-open{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:16px;padding:0 20px;border-radius:999px;background:var(--ink);color:var(--paper);text-decoration:none}

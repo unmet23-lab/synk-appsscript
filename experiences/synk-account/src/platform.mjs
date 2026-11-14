@@ -156,10 +156,7 @@ function recentSection() {
  const recents=library.read().recent.filter(item=>listedItem(item.id));
  return recents.length?`<section class="block recent-block" aria-labelledby="recent-block-title"><div class="block-head"><h2 id="recent-block-title">최근에 연 앱</h2>${button('기록 지우기','clear-recent','','plain')}<p>${continuity?.connected()?'계정에 저장한 최근 기록이에요.':'이 기기에서 연 기록이에요.'} 앱 안에서 어디까지 했는지는 각 앱에 남아요.</p></div><ul class="rows">${recents.map(item=>recentRow(item.id,opened(item),item)).join('')}</ul></section>`:'';
 }
-// 한국어 공부(synk.im/study/ · experiences/korean-study): WORLD 밖에서 바로 하는 학습. 앱 목록·라이브러리 계약(PLATFORM_APP_IDS)에 넣지 않는 링크 칸이라
-// 계정 문서·저장 형식은 그대로다. 내 홈 인사 바로 아래, 앱 선반 위에 한 줄로 둔다(결정 10-28 — WORLD보다 먼저).
-const STUDY_URL='https://synk.im/study/';
-function studyEntry() { return `<section class="study-entry" data-study-entry aria-labelledby="study-title"><div><h2 id="study-title">한국어 공부</h2><p>TOPIK II 쓰기를 한 가지씩 같이 고쳐 가요. 설치나 캐릭터 설정 없이 바로 시작해요.</p></div><a class="sb-btn soft" href="${STUDY_URL}" target="_blank" rel="noopener noreferrer">바로 시작하기 ↗</a></section>`; }
+// 한국어 공부(synk.im/study/) 칸은 2026-11-14에 뺐다 — 유호님 「이대로 절대 공개하면 안될것같아」 → 「오늘 내리기」. 공개본 study/는 이 계정 홈으로 넘긴다(결정 11-14).
 // 내 홈 첫 줄: 로그인한 이름(「○○ 님」), 로그인 전이면 SYNK ID 로그인 링크.
 function whoLine() {
  if (typeof window.synkDesktop?.authStatus === 'function') { const name=nativeIdentity.account?.display_name;return nativeIdentity.signedIn?esc(name?`${name} 님`:'SYNK ID로 로그인했어요'):nativeIdentity.status==='loading'?'로그인 상태를 확인하고 있어요.':'<a href="./client.html?product=platform">SYNK ID로 로그인</a>'; }
@@ -178,7 +175,7 @@ function homePage() {
  const shelfItems=[...mine,solioHomeItem(!mine.length)];if(shelfItems.length<4&&!mineIds.includes('path')){const path=homeItem('path',false);if(path)shelfItems.push(path);}
  // 두 줄 인사(시안 A): 최근에 연 앱이 있으면 그 앱을 이어서 열자고, 없으면(손님 포함) 한 ID로 여는 곳이라고. 상대 날짜는 넣지 않는다.
  const last=itemById(state.recent[0]?.id), title=last?`최근에 연 ${esc(last.name.replace(/^SYNK /,''))},<br><span>이어서 열까요?</span>`:'SYNK 앱과 솔리오,<br><span>한 ID로 열어요.</span>';
- return `<section class="hello" aria-labelledby="home-title"><p class="who">${whoLine()}</p><h1 id="home-title">${title}</h1></section>`+studyEntry()+accountPanel()
+ return `<section class="hello" aria-labelledby="home-title"><p class="who">${whoLine()}</p><h1 id="home-title">${title}</h1></section>`+accountPanel()
  + `<ul class="shelf home-shelf count-${shelfItems.length}" aria-label="내 앱과 솔리오">${shelfItems.join('')}</ul>${hasShortcuts?'':'<p class="shelf-note">솔리오 소개와 웹에서 여는 면접 연습을 먼저 두었어요.</p>'}`
  + worldPhoneSection({qrSrc:'./assets/world-qr.svg',openHref:platformPublicEntry('world')});
 }

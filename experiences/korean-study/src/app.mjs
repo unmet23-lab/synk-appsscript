@@ -25,7 +25,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  if(feedback===undefined)feedback=createFeedbackClient({storage:session,fetcher,base,now});
  const getOwner=()=>{const account=feedback?.owner?.();if(!account)return owner();try{const v=storage.getItem(`${SLOT_KEY}.${account}`);return v?.startsWith(`${account}-`)&&/^[a-zA-Z0-9_-]{1,80}$/.test(v)?v:account;}catch{return account;}};
  let lang=chooseLang({storage}),t=makeT(lang),bank=null,who=getOwner(),legacy=null,state=load(),saveFailed=false,ui={},semanticSeq=0;
- let progress=null,progressStatus={phase:'local'},progressTicket=0,progressTimer=null,progressText=null,lastEnter=null;
+ let progress=null,progressStatus={phase:'local'},progressTicket=0,progressTimer=null,progressText=null;
  const aiReady=()=>{const s=feedback?.status?.();return s?.connected&&s.enabled&&s.studyVersion===1&&s.bankHash===bank?.sourceHash;};
  // v2 칸이 있으면 그대로(읽을 수 없게 깨졌어도 「있음」으로 보고 옛 칸을 다시 옮기지 않는다 — Fable 설계 P3-11). 없을 때만 v1을 문항을 받은 뒤 옮긴다.
  function load(){
@@ -45,7 +45,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  function progressHtml(){
   const phase=progressStatus.phase,key=phase==='blocked'?(['LEARNING_DISABLED','REVISION_CONFLICT'].includes(progressStatus.code)?'sync.consent':'sync.blocked'):`sync.${phase}`;
   const retry=['blocked','conflict','disabled'].includes(phase),conflict=phase==='conflict';
-  return `<p class="st-note" role="status" data-phase="${esc(phase)}">${esc(t(key))}</p>`+(retry?`<button class="st-quiet" data-sync-retry>${esc(t('sync.retry'))}</button>`:'')
+  return `<p class="st-note" role="status">${esc(t(key))}</p>`+(retry?`<button class="st-quiet" data-sync-retry>${esc(t('sync.retry'))}</button>`:'')
    +(conflict?` <button class="st-quiet" data-sync-export>${esc(t('sync.export'))}</button> <button class="st-quiet" data-sync-remote>${esc(t('sync.remote'))}</button>`:'')
    +(phase==='slot'?`<button class="st-quiet" data-sync-account>${esc(t('sync.account'))}</button>`:'');
  }
@@ -91,25 +91,16 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  const examples=sc=>['formal','polite','plain'].map(b=>bank.pool.find(c=>c.bin===b&&!checkCard(c)&&!sc.cards.includes(c.key))).filter(Boolean);
 
  // ── 그리기 ──
- // 위 띠는 조용하게: 저장 상태 한 줄 + 연결 알약 하나. 연결이 무엇을 하는지 설명하는 줄(ai.connectNote)은 아래 작은 안내로 옮겼다(11-14 다시 입힘 — 지우지 않음).
- function shell(body,kind='',enter=false){
-  const connected=!!feedback?.status?.().connected;
-  return `<header class="st-top"><p class="st-brand"><img src="assets/synk-paper.svg" alt="SYNK" width="181" height="128"></p><h1>${esc(t('study.title'))}</h1><label class="st-lang"><span class="st-vh">${esc(t('study.lang'))}</span><select data-st-lang>${LANGS.map(l=>`<option value="${l}" ${l===lang?'selected':''}>${esc(LANG_NAMES[l])}</option>`).join('')}</select></label></header>`
-   +`<div class="st-bar"><div class="st-ai-connect" data-study-sync>${progressHtml()}</div>`
-   +`<div class="st-ai-connect" data-st-ai>${connected?`<p class="st-note">${esc(t(aiReady()?'ai.connected':'ai.notReady'))}</p>`:''}<button class="st-pill" ${connected?'data-st-disconnect':'data-st-connect'}>${esc(t(connected?'ai.disconnect':'ai.connect'))}</button></div></div>`
+ function shell(body){
+  return `<header class="st-top"><p class="st-brand">SYNK</p><h1>${esc(t('study.title'))}</h1><label class="st-lang"><span>${esc(t('study.lang'))}</span><select data-st-lang>${LANGS.map(l=>`<option value="${l}" ${l===lang?'selected':''}>${esc(LANG_NAMES[l])}</option>`).join('')}</select></label></header>`
    +(saveFailed?`<p class="st-alert" role="alert">${esc(t('study.saveFail'))}</p>`:'')
+   +`<div class="st-ai-connect"><p class="st-note">${esc(t(feedback?.status?.().connected?(aiReady()?'ai.connected':'ai.notReady'):'ai.connectNote'))}</p><button class="st-quiet" ${feedback?.status?.().connected?'data-st-disconnect':'data-st-connect'}>${esc(t(feedback?.status?.().connected?'ai.disconnect':'ai.connect'))}</button></div>`
    +(ui.loginError?`<p class="st-alert" role="alert">${esc(t('ai.loginError'))}</p>`:'')
    +(ui.authLost?`<p class="st-alert" role="alert">${esc(t('ai.expired'))}</p>`:'')
-   +`<section class="st-scene" data-scene="${esc(kind)}" ${enter?'data-enter':''} aria-live="polite" ${ui.reading?'aria-busy="true"':''}>${body}</section>`
-   +`<footer class="st-foot"><details><summary>${esc(t('study.lead'))}</summary>${connected?'':`<p>${esc(t('ai.connectNote'))}</p>`}<p>${esc(t('study.device'))}</p></details></footer>`;
+   +`<div class="st-ai-connect" data-study-sync>${progressHtml()}</div>`
+   +`<section class="st-scene" aria-live="polite" ${ui.reading?'aria-busy="true"':''}>${body}</section>`
+   +`<footer class="st-foot"><p>${esc(t('study.lead'))}</p><p>${esc(t('study.device'))}</p></footer>`;
  }
- // 제목: 첫 문장은 크게, 나머지는 같은 줄 아래 회색으로(참고 장부 4절 「제목은 … 둘째 줄은 회색으로 이어 쓴다」). 글자는 그대로다.
- const head=(text,tag='h2')=>{const s=String(text??''),m=s.match(/^(.+?[.?!。])\s+(\S[\s\S]*)$/);return `<${tag} class="st-h">${m?`${esc(m[1])} <span class="st-h2">${esc(m[2])}</span>`:esc(s)}</${tag}>`;};
- // 해설 속 「…」 안 말만 굵게(글자는 그대로).
- const qb=(v,keep=[])=>esc(v).replace(/「([^」]{1,40})」/g,(m,q)=>keep.includes(q)?`「<b>${q}</b>」`:m);
- const charCount=v=>String(v||'').replace(/\r?\n/g,'').length;
- // 표시한 문장: 끝 어절에만 물결선(글자는 그대로 — textContent가 문장 그대로다).
- const markLi=(s,k='off')=>{const v=String(s),i=k==='quote'?-1:v.trimEnd().lastIndexOf(' ');return `<li data-k="${k}">${i>0?`${esc(v.slice(0,i+1))}<mark>${esc(v.slice(i+1))}</mark>`:`<mark>${esc(v)}</mark>`}</li>`;};
  const actions=(main,{stop=true}={})=>`<div class="st-actions">${main}${stop?`<button class="st-quiet" data-st-stop>${esc(t('study.stop'))}</button>`:''}</div>`;
  const dataHtml=data=>`<div class="st-data" lang="ko">${data.source?`<p class="st-source">${esc(data.source)}</p>`:''}${(data.tables||[]).map(tb=>`<table><caption>${esc(tb.caption)}</caption><thead><tr>${tb.columns.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${tb.rows.map(r=>`<tr>${r.map((c,i)=>i?`<td>${esc(c)}</td>`:`<th scope="row">${esc(c)}</th>`).join('')}</tr>`).join('')}</tbody></table>`).join('')}${(data.lists||[]).map(l=>`<div class="st-list"><strong>${esc(l.caption)}</strong><ul>${l.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`).join('')}</div>`;
  // 54번: 주제와 질문만(예시답은 빌드가 빼서 오지 않는다). 시험의 600~700자 대신 글의 첫 부분 세 문장.
@@ -122,20 +113,17 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  function writeHtml(sc){
   const it=item(sc.itemId);if(!it)return restHtml({why:'no-items'});
   const key=draftKey(sc),text=state.drafts[key]?.text||'',marks=sc.semantic?(sc.quote&&text.includes(sc.quote)?[sc.quote]:[]):sc.mode==='revise'?marksOf(text,it).slice(0,6):[];
-  // 표시한 문장이 「확인하지 못한 끝」뿐이면 코랄(틀림)이 아니라 점선으로 보인다.
-  const o=sc.mode==='revise'&&!sc.semantic?observeWrite(text,it):null,markKind=v=>o&&o.unknown.includes(v)&&![...o.offSentences,...o.flagged].includes(v)?'unknown':'off';
   // 표시할 문장이 없는 고쳐 쓰기(자료 미연결·붙여넣기)는 「표시한 문장」이라 말하지 않고 원래 과제 안내를 보인다.
-  // 짜임: 제목 · 도움 · 표시한 문장 → 시험지(종이) → 내 글(유리 답안지) — 넓은 화면은 시험지 왼쪽 · 나머지 오른쪽(study.css).
-  return `<div class="st-write" data-mode="${sc.mode==='revise'&&!sc.semantic?'revise':'new'}"><div class="st-write-head">${head(sc.semantic&&sc.rewrite?sc.rewrite:t(sc.mode==='revise'&&marks.length&&!sc.semantic?'write.revise':it.type===54?'write.task54':'write.task'))}`
+  return `<h2 class="st-h">${esc(sc.semantic&&sc.rewrite?sc.rewrite:t(sc.mode==='revise'&&marks.length&&!sc.semantic?'write.revise':it.type===54?'write.task54':'write.task'))}</h2>`
    +(sc.support===2?`<div class="st-help"><p class="st-help-title">${esc(t('write.forms'))}</p>${formsTable()}</div>`:'')
    +(sc.semantic&&sc.guidance?`<div class="st-help" data-ai-guidance><p>${esc(sc.guidance.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(sc.guidance.example)}</blockquote></div>`:'')
-   +(marks.length?`<ul class="st-marks" lang="ko">${marks.map(s=>markLi(s,sc.semantic?'quote':markKind(s))).join('')}</ul>`:'')
-   +`</div><div class="st-question" lang="ko"><div class="st-paper-head" aria-hidden="true"><span>TOPIK II</span><span>쓰기 ${it.type}</span></div><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type===54?it.label:it.instruction)}</p>${it.type===54?promptHtml(it):dataHtml(it.data)}</div>`
-   +`<div class="st-write-mine"><label class="st-label" for="st-text">${esc(t('write.label'))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady()?(it.type===53?600:1400):4000}" spellcheck="false" data-st-text>${esc(text)}</textarea>${Number.isFinite(it.min)&&Number.isFinite(it.max)?`<p class="st-counter"><b data-st-count>${charCount(text)}</b> / ${it.min}–${it.max}</p>`:''}<p class="st-note">${esc(t('writing.countNote'))}</p>`
+   +(marks.length?`<ul class="st-marks" lang="ko">${marks.map(s=>`<li><mark>${esc(s)}</mark></li>`).join('')}</ul>`:'')
+   +`<div class="st-question" lang="ko"><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type===54?it.label:it.instruction)}</p>${it.type===54?promptHtml(it):dataHtml(it.data)}</div>`
+   +`<label class="st-label" for="st-text">${esc(t('write.label'))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady()?(it.type===53?600:1400):4000}" spellcheck="false" data-st-text>${esc(text)}</textarea><p class="st-note">${esc(t('writing.countNote'))}</p>`
    +(aiReady()?`<p class="st-note" data-ai-consent>${esc(t('ai.consent'))}</p>`:'')
    +(ui.short?`<p class="st-alert" role="status">${esc(t('write.short'))}</p>`:'')
-   +(sc.phase==='self'?`<div class="st-help" data-st-self><p>${esc(t('self.q'))}</p></div>`+actions(`<button class="st-main" data-st-check>${esc(t('self.go'))} <span aria-hidden="true">→</span></button>`)
-     :actions(`<button class="st-main" data-st-done>${esc(t(aiReady()?'ai.read':'write.done'))} <span aria-hidden="true">→</span></button>`))+`</div></div>`;
+   +(sc.phase==='self'?`<div class="st-help" data-st-self><p>${esc(t('self.q'))}</p></div>`+actions(`<button class="st-main" data-st-check>${esc(t('self.go'))}</button>`)
+     :actions(`<button class="st-main" data-st-done>${esc(t(aiReady()?'ai.read':'write.done'))}</button>`));
  }
  function seenHtml(sc){
   if(ui.reading)return `<p class="st-fact" role="status">${esc(t('ai.reading'))}</p><button class="st-quiet" data-st-stop>${esc(t('study.stop'))}</button>`;
@@ -146,12 +134,8 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   // 사실만 말한다: 틀린 끝 · 확인한 끝 · 확인하지 못한 끝. 내용과 구성은 평가하지 않았다는 줄은 늘 붙는다.
   const line=w.off&&w.flags?`${t('writing.focus.found',{total:w.total,off:w.off})} ${t('seen.flags',{n:w.flags})}`:w.off?t('writing.focus.found',{total:w.total,off:w.off}):w.flags?t('seen.flags',{n:w.flags})
    :sc.pasted?t('seen.pasted'):sc.verdict==='correct'?(sc.indep?t('writing.focus.independent'):t('seen.helpedOk')):sc.linked===false?t('seen.unlinked'):t('seen.unknown');
-  // 판 색: 고칠 끝이 있으면 off, 판정 correct이고 붙여 넣은 글이 아니면 ok(초록 하나), 그 밖은 unknown.
-  const tone=w.off||w.flags?'off':sc.verdict==='correct'&&!sc.pasted?'ok':'unknown';
-  const listed=[...off.map(s=>[s,'off']),...flagged.map(s=>[s,'off']),...unknown.map(s=>[s,'unknown'])].slice(0,6);
-  return (ui.aiError?`<p class="st-alert" role="status">${esc(t(ui.aiError==='cancelled'?'ai.cancelled':['limit','budget'].includes(ui.aiError)?'ai.limit':'ai.failed'))}</p>`:'')+head(t('seen.title'))+(it?`<p class="st-sub" lang="ko">${esc(it.label)}</p>`:'')
-   +`<div class="st-seen" data-tone="${tone}"><p class="st-fact" data-tone="${tone}">${esc(line)}</p><p class="st-count">${esc(t('writing.focus.counts',{plain:w.plain,total:w.total}))}</p></div>`
-   +(listed.length?`<ul class="st-marks" lang="ko">${listed.map(([s,k])=>markLi(s,k)).join('')}</ul>`:'')
+  return (ui.aiError?`<p class="st-alert" role="status">${esc(t(ui.aiError==='cancelled'?'ai.cancelled':['limit','budget'].includes(ui.aiError)?'ai.limit':'ai.failed'))}</p>`:'')+`<h2 class="st-h">${esc(t('seen.title'))}</h2>${it?`<p class="st-sub" lang="ko">${esc(it.label)}</p>`:''}<p class="st-fact">${esc(line)}</p><p class="st-count">${esc(t('writing.focus.counts',{plain:w.plain,total:w.total}))}</p>`
+   +([...off,...flagged,...unknown].length?`<ul class="st-marks" lang="ko">${[...off,...flagged,...unknown].slice(0,6).map(s=>`<li><mark>${esc(s)}</mark></li>`).join('')}</ul>`:'')
    +`<p class="st-note">${esc(t('writing.focus.limit'))}</p>`+actions(`<button class="st-main" data-st-next>${esc(t(label))} <span aria-hidden="true">→</span></button>`,{stop:n.scene!=='rest'});
  }
  function semanticHtml(sc){
@@ -169,12 +153,10 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
     +(sc.phase==='check'&&!ok?`<div class="st-help" data-ai-hint><p>${esc(f.help.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(f.help.example)}</blockquote></div>`:'')
     +actions(`<button class="st-main" data-ai-advance>${esc(t(sc.phase==='practice'||ok?'ai.revise':'ai.try'))}</button>`):`<button class="st-quiet" data-st-stop>${esc(t('study.stop'))}</button>`)+note;
  }
- // 몇 번째인지: 글자 「n / 전체」 그대로 + 칸 띠(겉).
- const progressRow=(i,total)=>`<p class="st-progress"><span class="st-segs" aria-hidden="true">${Array.from({length:Math.min(total,12)},(_,k)=>`<i data-k="${k<i?'done':k===i?'now':'next'}"></i>`).join('')}</span>${esc(t('writing.focus.drill.count',{n:i+1,total}))}</p>`;
  function sortHtml(sc,list,{lead}){
   const key=list[sc.i],c=card(key);if(!c)return '';
   const picked=sc.pick,ok=picked===c.bin,words=c.text.split(' '),last=words.pop();
-  return `<p class="st-task">${esc(lead)}</p>${progressRow(sc.i,list.length)}`
+  return `<p class="st-note">${esc(lead)}</p><p class="st-progress">${esc(t('writing.focus.drill.count',{n:sc.i+1,total:list.length}))}</p>`
    +`<p class="st-sentence" lang="ko">${picked?`${esc(words.join(' '))} <mark>${esc(last)}</mark>`:esc(c.text)}</p>`
    +`<div class="st-bins" role="group">${['formal','polite','plain'].map(b=>`<button class="st-bin" data-st-bin="${b}" ${picked?'disabled':''} ${picked&&b===c.bin?'data-answer="true"':''} ${picked&&b===picked&&!ok?'data-wrong="true"':''}><span>${esc(t(`writing.focus.bin.${b}`))}</span> <span lang="ko">${esc(BIN_FORM[b])}</span></button>`).join('')}</div>`
    +(picked?`<p class="st-result" data-ok="${ok}" role="status">${esc(ok?t('writing.focus.drill.right'):t('writing.focus.drill.wrong',{bin:t(`writing.focus.bin.${c.bin}`)}))}</p>`+actions(`<button class="st-main" data-st-advance>${esc(t('next.continue'))} <span aria-hidden="true">→</span></button>`):'');
@@ -183,16 +165,16 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   const f=form(list[sc.i]);if(!f)return '';
   const done=sc.graded!=null,right=sc.graded===true,[before,after]=f.stem.split(f.target);
   const probeLine=right?t('writing.focus.drill.right'):sc.graded==='typo'?t('probe.formUnsure'):t('probe.formMiss');
-  return `<p class="st-task">${esc(lead)}</p>${progressRow(sc.i,list.length)}`
+  return `<p class="st-note">${esc(lead)}</p><p class="st-progress">${esc(t('writing.focus.drill.count',{n:sc.i+1,total:list.length}))}</p>`
    +`<p class="st-sentence" lang="ko">${esc(before)}<u>${esc(f.target)}</u>${esc(after??'')}</p>`
    +`<label class="st-label" for="st-form">${esc(t('form.input'))}</label><input id="st-form" lang="ko" type="text" autocomplete="off" spellcheck="false" maxlength="40" data-st-form value="${esc(done?sc.input:ui.input||'')}" ${done?'readonly':''}>`
-   +(done&&!reveal?`<p class="st-result" data-ok="${sc.graded==='typo'?'typo':right}" role="status">${esc(probeLine)}</p>`+actions(`<button class="st-main" data-st-advance>${esc(t('next.continue'))} <span aria-hidden="true">→</span></button>`)
-   :done?`<p class="st-result" data-ok="${right}" role="status">${esc(right?t('writing.focus.drill.right'):t('form.answer'))} ${right?'':`<span lang="ko">${esc(f.answer)}</span>`}</p><p class="st-explain"><small>${esc(t('form.why'))}</small> <span lang="ko">${qb(f.explain,[esc(f.answer)])}</span></p>`+actions(`<button class="st-main" data-st-advance>${esc(t('next.continue'))} <span aria-hidden="true">→</span></button>`)
+   +(done&&!reveal?`<p class="st-result" data-ok="${right}" role="status">${esc(probeLine)}</p>`+actions(`<button class="st-main" data-st-advance>${esc(t('next.continue'))} <span aria-hidden="true">→</span></button>`)
+   :done?`<p class="st-result" data-ok="${right}" role="status">${esc(right?t('writing.focus.drill.right'):t('form.answer'))} ${right?'':`<span lang="ko">${esc(f.answer)}</span>`}</p><p class="st-explain"><small>${esc(t('form.why'))}</small> <span lang="ko">${esc(f.explain)}</span></p>`+actions(`<button class="st-main" data-st-advance>${esc(t('next.continue'))} <span aria-hidden="true">→</span></button>`)
      :actions(`<button class="st-main" data-st-grade>${esc(t('form.check'))}</button>`));
  }
  function findHtml(f,sc){
   const done=sc.found!=null,picks=done?sc.picks:ui.picks||[];
-  return `<p class="st-task">${esc(t('find.lead'))}</p><ol class="st-find" lang="ko">${f.sentences.map((s,i)=>`<li><button class="st-pickline" data-st-line="${i}" aria-pressed="${picks.includes(i)}" ${done?'disabled':''} ${done&&f.off.includes(i)?'data-answer="true"':''}>${esc(s)}${done&&f.off.includes(i)?` <span class="st-tag" lang="${lang}">${esc(t('find.tag'))}</span>`:''}</button></li>`).join('')}</ol>`
+  return `<p class="st-note">${esc(t('find.lead'))}</p><ol class="st-find" lang="ko">${f.sentences.map((s,i)=>`<li><button class="st-pickline" data-st-line="${i}" aria-pressed="${picks.includes(i)}" ${done?'disabled':''} ${done&&f.off.includes(i)?'data-answer="true"':''}>${esc(s)}${done&&f.off.includes(i)?` <span class="st-tag" lang="${lang}">${esc(t('find.tag'))}</span>`:''}</button></li>`).join('')}</ol>`
    +(done?`<p class="st-result" data-ok="${sc.found}" role="status">${esc(t(sc.found?'find.right':'find.wrong'))}</p><p class="st-explain" lang="ko">${esc(f.explain)}</p>`+actions(`<button class="st-main" data-st-advance>${esc(t('next.continue'))} <span aria-hidden="true">→</span></button>`)
      :actions(`<button class="st-main" data-st-findcheck ${picks.length?'':'disabled'}>${esc(t('form.check'))}</button>`));
  }
@@ -223,22 +205,19 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
  }
  function restHtml(sc){
   const key={done:'rest.done','no-items':'rest.noItems','tried-all':'rest.triedAll',enough:'rest.triedAll','alone-once':'rest.alone',later:'rest.alone'}[sc.why]||'study.stopped';
-  return `<div class="st-rest" data-k="${['done','alone-once'].includes(sc.why)?'ok':'pause'}"><p class="st-fact">${esc(t(key))}</p></div>`;
+  return `<p class="st-fact">${esc(t(key))}</p>`;
  }
  function resumeHtml(){
   return `<h2 class="st-h">${esc(t('resume.title'))}</h2><p class="st-note">${esc(t('resume.note'))}</p>`+actions(`<button class="st-main" data-st-resume>${esc(t('study.resumeHere'))} <span aria-hidden="true">→</span></button><button class="st-plain" data-st-fresh>${esc(t('resume.fresh'))}</button>`,{stop:false});
  }
  function paint(focus=true){
   syncOwner();
-  if(bank&&!sceneValid(state.scene)){const keep=ui;go();ui=keep;lastEnter=null;paint(focus);return;}
+  if(bank&&!sceneValid(state.scene)){const keep=ui;go();ui=keep;paint(focus);return;}
   const sc=state.scene;let body;
-  if(ui.stopped)body=`<div class="st-rest" data-k="pause"><p class="st-fact">${esc(t('study.stopped'))}</p></div>`+actions(`<button class="st-main" data-st-unstop>${esc(t('study.resumeHere'))} <span aria-hidden="true">→</span></button>`,{stop:false});
+  if(ui.stopped)body=`<p class="st-fact">${esc(t('study.stopped'))}</p>`+actions(`<button class="st-main" data-st-unstop>${esc(t('study.resumeHere'))} <span aria-hidden="true">→</span></button>`,{stop:false});
   else if(ui.resume)body=resumeHtml();
   else body=sc.id==='semantic'?semanticHtml(sc):sc.id==='write'?writeHtml(sc):sc.id==='seen'?seenHtml(sc):sc.id==='probe'?probeHtml(sc):sc.id==='method'?methodHtml(sc):restHtml(sc);
-  const kind=ui.stopped?'stopped':ui.resume?'resume':sc.id==='semantic'?`semantic-${sc.phase}`:sc.id||'';
-  // 장면이 바뀔 때만 들어오는 움직임(같은 장면을 다시 그릴 때 — 카드 고름 · 언어 바꿈 — 는 걸지 않는다). 겉만이고 흐름에는 쓰지 않는다.
-  const enterKey=[kind,sc.i,sc.step,sc.mode,sc.itemId,sc.did].join('|'),enter=enterKey!==lastEnter;lastEnter=enterKey;
-  root.innerHTML=shell(body,kind,enter);root.lang=lang;
+  root.innerHTML=shell(body);root.lang=lang;
   if(focus)(root.querySelector('[data-st-text]:not([readonly]), [data-st-form]:not([readonly]), .st-scene .st-main, .st-scene button'))?.focus({preventScroll:true});
  }
 
@@ -308,7 +287,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   if(b.hasAttribute('data-sync-remote')){if(!progress||!confirm(t('sync.confirm')))return;b.disabled=true;const active=progress;semanticSeq++;feedback?.cancel?.();ui={...ui,reading:false};void active.useServer().then(()=>{if(active===progress)paint(false);});return;}
   if(b.hasAttribute('data-sync-account')){const account=feedback?.owner?.();if(!account)return;try{storage.removeItem(`${SLOT_KEY}.${account}`);}catch{saveFailed=true;paint(false);return;}syncOwner();void connectProgress().then(()=>paint(false));return;}
   if(b.hasAttribute('data-st-connect')){b.disabled=true;void feedback?.login().catch(()=>{ui.loginError=true;paint(false);});return;}
-  if(b.hasAttribute('data-st-disconnect')){semanticSeq++;try{feedback?.disconnect();}catch{ui.loginError=true;}syncOwner();const keep=ui;go();ui=keep;lastEnter=null;paint();return;}
+  if(b.hasAttribute('data-st-disconnect')){semanticSeq++;try{feedback?.disconnect();}catch{ui.loginError=true;}syncOwner();const keep=ui;go();ui=keep;paint();return;}
   if(b.hasAttribute('data-st-stop')){semanticSeq++;const cancelled=!!ui.reading;if(cancelled)feedback?.cancel?.();save();ui={stopped:true,cancelled};paint();return;}
   if(b.dataset.aiChoice&&sc.id==='semantic'&&!sc.pick&&['check','practice'].includes(sc.phase)){
    state=recordSemantic(state,{feedback:sc.feedback,itemId:sc.itemId,attempt:sc.checkedAt,stage:sc.phase,pick:b.dataset.aiChoice},{now:now()});setScene({...sc,pick:b.dataset.aiChoice});return;}
@@ -342,7 +321,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   const el=ev.target,sc=state.scene;
   if(el.matches('[data-st-text]')){const k=draftKey(sc),{pasted,...d}=state.drafts[k]||{checkedAt:null};const text=el.value.slice(0,4000);
    // 글을 다 지우면 붙여 넣은 글자 셈도 처음부터(아르곤 A2). 남은 글보다 많이 셀 수 없다.
-   state={...state,drafts:{...state.drafts,[k]:{...d,...(text.trim()&&pasted?{pasted:Math.min(pasted,text.length)}:{}),text,updatedAt:iso()}}};const cnt=root.querySelector('[data-st-count]');if(cnt)cnt.textContent=String(charCount(text));if(ui.short){ui.short=false;root.querySelector('.st-alert[role=status]')?.remove();}save();return;}
+   state={...state,drafts:{...state.drafts,[k]:{...d,...(text.trim()&&pasted?{pasted:Math.min(pasted,text.length)}:{}),text,updatedAt:iso()}}};if(ui.short){ui.short=false;root.querySelector('.st-alert[role=status]')?.remove();}save();return;}
   if(el.matches('[data-st-form]')){ui.input=el.value;return;}
   if(el.matches('[data-st-mine]')){const i=el.dataset.stMine;ui.mine={...(ui.mine||{}),[i]:el.value};const r=checkChange(el.value),out=root.querySelector(`[data-st-mine-state="${i}"]`);if(out){out.dataset.ok=r&&r.ok!=null?String(r.ok):'';out.textContent=r?mineMsg(r):'';}return;}
  }
@@ -376,7 +355,7 @@ export function createStudy({root,storage=globalThis.localStorage,session=global
   else if(!has){try{session?.setItem('synk.study.resumed',who);}catch{}} // 이 탭에서 처음 시작한 칸이면 새로 고침 때 다시 묻지 않는다
   // 저장된 장면이 그 문항이 내려간 장면이거나 쉼이면 다시 정한다(쉼 뒤 하루가 지나면 다음 쓰기가 열린다).
   const sc=state.scene,valid=sceneValid(sc);
-  if(!valid||sc.id==='rest'){const keep=ui;go();ui=keep;lastEnter=null;paint();return;}
+  if(!valid||sc.id==='rest'){const keep=ui;go();ui=keep;paint();return;}
   paint();
  }
  return {start,state:()=>state};

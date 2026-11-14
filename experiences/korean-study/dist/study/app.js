@@ -2248,7 +2248,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     }
   };
   let lang = chooseLang({ storage }), t = makeT(lang), bank = null, who = getOwner(), legacy = null, state = load(), saveFailed = false, ui = {}, semanticSeq = 0;
-  let progress = null, progressStatus = { phase: "local" }, progressTicket = 0, progressTimer = null, progressText = null, lastEnter = null;
+  let progress = null, progressStatus = { phase: "local" }, progressTicket = 0, progressTimer = null, progressText = null;
   const aiReady = () => {
     const s = feedback?.status?.();
     return s?.connected && s.enabled && s.studyVersion === 1 && s.bankHash === bank?.sourceHash;
@@ -2312,7 +2312,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
   function progressHtml() {
     const phase = progressStatus.phase, key = phase === "blocked" ? ["LEARNING_DISABLED", "REVISION_CONFLICT"].includes(progressStatus.code) ? "sync.consent" : "sync.blocked" : `sync.${phase}`;
     const retry = ["blocked", "conflict", "disabled"].includes(phase), conflict = phase === "conflict";
-    return `<p class="st-note" role="status" data-phase="${esc(phase)}">${esc(t(key))}</p>` + (retry ? `<button class="st-quiet" data-sync-retry>${esc(t("sync.retry"))}</button>` : "") + (conflict ? ` <button class="st-quiet" data-sync-export>${esc(t("sync.export"))}</button> <button class="st-quiet" data-sync-remote>${esc(t("sync.remote"))}</button>` : "") + (phase === "slot" ? `<button class="st-quiet" data-sync-account>${esc(t("sync.account"))}</button>` : "");
+    return `<p class="st-note" role="status">${esc(t(key))}</p>` + (retry ? `<button class="st-quiet" data-sync-retry>${esc(t("sync.retry"))}</button>` : "") + (conflict ? ` <button class="st-quiet" data-sync-export>${esc(t("sync.export"))}</button> <button class="st-quiet" data-sync-remote>${esc(t("sync.remote"))}</button>` : "") + (phase === "slot" ? `<button class="st-quiet" data-sync-account>${esc(t("sync.account"))}</button>` : "");
   }
   const paintProgress = () => {
     const panel = root.querySelector("[data-study-sync]");
@@ -2444,20 +2444,9 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
   }
   const toScene = (n) => n.scene === "write" ? { id: "write", itemId: n.itemId, support: n.support, mode: n.mode || "new", why: n.why, phase: "edit" } : n.scene === "probe" ? { id: "probe", probe: n.probe, cards: n.cards || [], forms: n.forms || [], i: 0 } : n.scene === "method" ? { id: "method", method: n.method, cards: n.cards || [], forms: n.forms || [], find: n.find || null, mineFrom: n.mineFrom || null, step: 0, i: 0 } : { id: "rest", why: n.why };
   const examples = (sc) => ["formal", "polite", "plain"].map((b) => bank.pool.find((c) => c.bin === b && !checkCard(c) && !sc.cards.includes(c.key))).filter(Boolean);
-  function shell(body, kind = "", enter = false) {
-    const connected = !!feedback?.status?.().connected;
-    return `<header class="st-top"><p class="st-brand"><img src="assets/synk-paper.svg" alt="SYNK" width="181" height="128"></p><h1>${esc(t("study.title"))}</h1><label class="st-lang"><span class="st-vh">${esc(t("study.lang"))}</span><select data-st-lang>${LANGS.map((l) => `<option value="${l}" ${l === lang ? "selected" : ""}>${esc(LANG_NAMES[l])}</option>`).join("")}</select></label></header><div class="st-bar"><div class="st-ai-connect" data-study-sync>${progressHtml()}</div><div class="st-ai-connect" data-st-ai>${connected ? `<p class="st-note">${esc(t(aiReady() ? "ai.connected" : "ai.notReady"))}</p>` : ""}<button class="st-pill" ${connected ? "data-st-disconnect" : "data-st-connect"}>${esc(t(connected ? "ai.disconnect" : "ai.connect"))}</button></div></div>` + (saveFailed ? `<p class="st-alert" role="alert">${esc(t("study.saveFail"))}</p>` : "") + (ui.loginError ? `<p class="st-alert" role="alert">${esc(t("ai.loginError"))}</p>` : "") + (ui.authLost ? `<p class="st-alert" role="alert">${esc(t("ai.expired"))}</p>` : "") + `<section class="st-scene" data-scene="${esc(kind)}" ${enter ? "data-enter" : ""} aria-live="polite" ${ui.reading ? 'aria-busy="true"' : ""}>${body}</section><footer class="st-foot"><details><summary>${esc(t("study.lead"))}</summary>${connected ? "" : `<p>${esc(t("ai.connectNote"))}</p>`}<p>${esc(t("study.device"))}</p></details></footer>`;
+  function shell(body) {
+    return `<header class="st-top"><p class="st-brand">SYNK</p><h1>${esc(t("study.title"))}</h1><label class="st-lang"><span>${esc(t("study.lang"))}</span><select data-st-lang>${LANGS.map((l) => `<option value="${l}" ${l === lang ? "selected" : ""}>${esc(LANG_NAMES[l])}</option>`).join("")}</select></label></header>` + (saveFailed ? `<p class="st-alert" role="alert">${esc(t("study.saveFail"))}</p>` : "") + `<div class="st-ai-connect"><p class="st-note">${esc(t(feedback?.status?.().connected ? aiReady() ? "ai.connected" : "ai.notReady" : "ai.connectNote"))}</p><button class="st-quiet" ${feedback?.status?.().connected ? "data-st-disconnect" : "data-st-connect"}>${esc(t(feedback?.status?.().connected ? "ai.disconnect" : "ai.connect"))}</button></div>` + (ui.loginError ? `<p class="st-alert" role="alert">${esc(t("ai.loginError"))}</p>` : "") + (ui.authLost ? `<p class="st-alert" role="alert">${esc(t("ai.expired"))}</p>` : "") + `<div class="st-ai-connect" data-study-sync>${progressHtml()}</div><section class="st-scene" aria-live="polite" ${ui.reading ? 'aria-busy="true"' : ""}>${body}</section><footer class="st-foot"><p>${esc(t("study.lead"))}</p><p>${esc(t("study.device"))}</p></footer>`;
   }
-  const head = (text2, tag = "h2") => {
-    const s = String(text2 ?? ""), m = s.match(/^(.+?[.?!。])\s+(\S[\s\S]*)$/);
-    return `<${tag} class="st-h">${m ? `${esc(m[1])} <span class="st-h2">${esc(m[2])}</span>` : esc(s)}</${tag}>`;
-  };
-  const qb = (v, keep = []) => esc(v).replace(/「([^」]{1,40})」/g, (m, q) => keep.includes(q) ? `「<b>${q}</b>」` : m);
-  const charCount = (v) => String(v || "").replace(/\r?\n/g, "").length;
-  const markLi = (s, k = "off") => {
-    const v = String(s), i = k === "quote" ? -1 : v.trimEnd().lastIndexOf(" ");
-    return `<li data-k="${k}">${i > 0 ? `${esc(v.slice(0, i + 1))}<mark>${esc(v.slice(i + 1))}</mark>` : `<mark>${esc(v)}</mark>`}</li>`;
-  };
   const actions = (main, { stop = true } = {}) => `<div class="st-actions">${main}${stop ? `<button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>` : ""}</div>`;
   const dataHtml = (data) => `<div class="st-data" lang="ko">${data.source ? `<p class="st-source">${esc(data.source)}</p>` : ""}${(data.tables || []).map((tb) => `<table><caption>${esc(tb.caption)}</caption><thead><tr>${tb.columns.map((c) => `<th scope="col">${esc(c)}</th>`).join("")}</tr></thead><tbody>${tb.rows.map((r) => `<tr>${r.map((c, i) => i ? `<td>${esc(c)}</td>` : `<th scope="row">${esc(c)}</th>`).join("")}</tr>`).join("")}</tbody></table>`).join("")}${(data.lists || []).map((l) => `<div class="st-list"><strong>${esc(l.caption)}</strong><ul>${l.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>`;
   const promptHtml = (it) => `<div class="st-data" lang="ko"><p>${esc(it.prompt)}</p>${(it.questions || []).length ? `<ul>${it.questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul>` : ""}</div>`;
@@ -2474,8 +2463,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     const it = item(sc.itemId);
     if (!it) return restHtml({ why: "no-items" });
     const key = draftKey(sc), text2 = state.drafts[key]?.text || "", marks = sc.semantic ? sc.quote && text2.includes(sc.quote) ? [sc.quote] : [] : sc.mode === "revise" ? marksOf(text2, it).slice(0, 6) : [];
-    const o = sc.mode === "revise" && !sc.semantic ? observeWrite(text2, it) : null, markKind = (v) => o && o.unknown.includes(v) && ![...o.offSentences, ...o.flagged].includes(v) ? "unknown" : "off";
-    return `<div class="st-write" data-mode="${sc.mode === "revise" && !sc.semantic ? "revise" : "new"}"><div class="st-write-head">${head(sc.semantic && sc.rewrite ? sc.rewrite : t(sc.mode === "revise" && marks.length && !sc.semantic ? "write.revise" : it.type === 54 ? "write.task54" : "write.task"))}` + (sc.support === 2 ? `<div class="st-help"><p class="st-help-title">${esc(t("write.forms"))}</p>${formsTable()}</div>` : "") + (sc.semantic && sc.guidance ? `<div class="st-help" data-ai-guidance><p>${esc(sc.guidance.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(sc.guidance.example)}</blockquote></div>` : "") + (marks.length ? `<ul class="st-marks" lang="ko">${marks.map((s) => markLi(s, sc.semantic ? "quote" : markKind(s))).join("")}</ul>` : "") + `</div><div class="st-question" lang="ko"><div class="st-paper-head" aria-hidden="true"><span>TOPIK II</span><span>쓰기 ${it.type}</span></div><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type === 54 ? it.label : it.instruction)}</p>${it.type === 54 ? promptHtml(it) : dataHtml(it.data)}</div><div class="st-write-mine"><label class="st-label" for="st-text">${esc(t("write.label"))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady() ? it.type === 53 ? 600 : 1400 : 4e3}" spellcheck="false" data-st-text>${esc(text2)}</textarea>${Number.isFinite(it.min) && Number.isFinite(it.max) ? `<p class="st-counter"><b data-st-count>${charCount(text2)}</b> / ${it.min}–${it.max}</p>` : ""}<p class="st-note">${esc(t("writing.countNote"))}</p>` + (aiReady() ? `<p class="st-note" data-ai-consent>${esc(t("ai.consent"))}</p>` : "") + (ui.short ? `<p class="st-alert" role="status">${esc(t("write.short"))}</p>` : "") + (sc.phase === "self" ? `<div class="st-help" data-st-self><p>${esc(t("self.q"))}</p></div>` + actions(`<button class="st-main" data-st-check>${esc(t("self.go"))} <span aria-hidden="true">→</span></button>`) : actions(`<button class="st-main" data-st-done>${esc(t(aiReady() ? "ai.read" : "write.done"))} <span aria-hidden="true">→</span></button>`)) + `</div></div>`;
+    return `<h2 class="st-h">${esc(sc.semantic && sc.rewrite ? sc.rewrite : t(sc.mode === "revise" && marks.length && !sc.semantic ? "write.revise" : it.type === 54 ? "write.task54" : "write.task"))}</h2>` + (sc.support === 2 ? `<div class="st-help"><p class="st-help-title">${esc(t("write.forms"))}</p>${formsTable()}</div>` : "") + (sc.semantic && sc.guidance ? `<div class="st-help" data-ai-guidance><p>${esc(sc.guidance.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(sc.guidance.example)}</blockquote></div>` : "") + (marks.length ? `<ul class="st-marks" lang="ko">${marks.map((s) => `<li><mark>${esc(s)}</mark></li>`).join("")}</ul>` : "") + `<div class="st-question" lang="ko"><p class="st-instruction"><b>${it.type}.</b> ${esc(it.type === 54 ? it.label : it.instruction)}</p>${it.type === 54 ? promptHtml(it) : dataHtml(it.data)}</div><label class="st-label" for="st-text">${esc(t("write.label"))}</label><textarea id="st-text" lang="ko" rows="8" maxlength="${aiReady() ? it.type === 53 ? 600 : 1400 : 4e3}" spellcheck="false" data-st-text>${esc(text2)}</textarea><p class="st-note">${esc(t("writing.countNote"))}</p>` + (aiReady() ? `<p class="st-note" data-ai-consent>${esc(t("ai.consent"))}</p>` : "") + (ui.short ? `<p class="st-alert" role="status">${esc(t("write.short"))}</p>` : "") + (sc.phase === "self" ? `<div class="st-help" data-st-self><p>${esc(t("self.q"))}</p></div>` + actions(`<button class="st-main" data-st-check>${esc(t("self.go"))}</button>`) : actions(`<button class="st-main" data-st-done>${esc(t(aiReady() ? "ai.read" : "write.done"))}</button>`));
   }
   function seenHtml(sc) {
     if (ui.reading) return `<p class="st-fact" role="status">${esc(t("ai.reading"))}</p><button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>`;
@@ -2484,9 +2472,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     const label = { probe: "next.probe", method: "next.method", write: n.mode === "revise" ? "next.revise" : "next.write", rest: "next.rest" }[n.scene];
     const flagged = o?.flagged || [], unknown = sc.verdict === "unassessed" && !w.off && !w.flags ? o?.unknown || [] : [];
     const line = w.off && w.flags ? `${t("writing.focus.found", { total: w.total, off: w.off })} ${t("seen.flags", { n: w.flags })}` : w.off ? t("writing.focus.found", { total: w.total, off: w.off }) : w.flags ? t("seen.flags", { n: w.flags }) : sc.pasted ? t("seen.pasted") : sc.verdict === "correct" ? sc.indep ? t("writing.focus.independent") : t("seen.helpedOk") : sc.linked === false ? t("seen.unlinked") : t("seen.unknown");
-    const tone = w.off || w.flags ? "off" : sc.verdict === "correct" && !sc.pasted ? "ok" : "unknown";
-    const listed = [...off.map((s) => [s, "off"]), ...flagged.map((s) => [s, "off"]), ...unknown.map((s) => [s, "unknown"])].slice(0, 6);
-    return (ui.aiError ? `<p class="st-alert" role="status">${esc(t(ui.aiError === "cancelled" ? "ai.cancelled" : ["limit", "budget"].includes(ui.aiError) ? "ai.limit" : "ai.failed"))}</p>` : "") + head(t("seen.title")) + (it ? `<p class="st-sub" lang="ko">${esc(it.label)}</p>` : "") + `<div class="st-seen" data-tone="${tone}"><p class="st-fact" data-tone="${tone}">${esc(line)}</p><p class="st-count">${esc(t("writing.focus.counts", { plain: w.plain, total: w.total }))}</p></div>` + (listed.length ? `<ul class="st-marks" lang="ko">${listed.map(([s, k]) => markLi(s, k)).join("")}</ul>` : "") + `<p class="st-note">${esc(t("writing.focus.limit"))}</p>` + actions(`<button class="st-main" data-st-next>${esc(t(label))} <span aria-hidden="true">→</span></button>`, { stop: n.scene !== "rest" });
+    return (ui.aiError ? `<p class="st-alert" role="status">${esc(t(ui.aiError === "cancelled" ? "ai.cancelled" : ["limit", "budget"].includes(ui.aiError) ? "ai.limit" : "ai.failed"))}</p>` : "") + `<h2 class="st-h">${esc(t("seen.title"))}</h2>${it ? `<p class="st-sub" lang="ko">${esc(it.label)}</p>` : ""}<p class="st-fact">${esc(line)}</p><p class="st-count">${esc(t("writing.focus.counts", { plain: w.plain, total: w.total }))}</p>` + ([...off, ...flagged, ...unknown].length ? `<ul class="st-marks" lang="ko">${[...off, ...flagged, ...unknown].slice(0, 6).map((s) => `<li><mark>${esc(s)}</mark></li>`).join("")}</ul>` : "") + `<p class="st-note">${esc(t("writing.focus.limit"))}</p>` + actions(`<button class="st-main" data-st-next>${esc(t(label))} <span aria-hidden="true">→</span></button>`, { stop: n.scene !== "rest" });
   }
   function semanticHtml(sc) {
     const f = sc.feedback, question2 = sc.phase === "check" ? f.check : f.practice;
@@ -2496,23 +2482,22 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
     const picked = sc.pick, ok = picked === question2.correct;
     return `<h2 class="st-h">${esc(t(sc.phase === "check" ? "ai.check" : "ai.practice"))}</h2>` + (sc.phase === "check" ? `<details class="st-note"><summary>${esc(t("ai.source"))}</summary>${item(sc.itemId).type === 53 ? dataHtml(item(sc.itemId).data) : promptHtml(item(sc.itemId))}</details>` : "") + `<p class="st-fact">${esc(question2.prompt)}</p><div class="st-ai-choices">${question2.options.map((o) => `<button class="st-bin" lang="ko" data-ai-choice="${o.id}" ${picked ? "disabled" : ""} ${picked && o.id === question2.correct ? 'data-answer="true"' : ""}>${esc(o.text)}</button>`).join("")}</div>` + (picked ? `<p class="st-explain" data-ai-result data-ok="${ok}">${esc(question2.why)}</p>` + (sc.phase === "check" && !ok ? `<div class="st-help" data-ai-hint><p>${esc(f.help.explanation)}</p><blockquote class="st-sentence" lang="ko">${esc(f.help.example)}</blockquote></div>` : "") + actions(`<button class="st-main" data-ai-advance>${esc(t(sc.phase === "practice" || ok ? "ai.revise" : "ai.try"))}</button>`) : `<button class="st-quiet" data-st-stop>${esc(t("study.stop"))}</button>`) + note;
   }
-  const progressRow = (i, total) => `<p class="st-progress"><span class="st-segs" aria-hidden="true">${Array.from({ length: Math.min(total, 12) }, (_, k) => `<i data-k="${k < i ? "done" : k === i ? "now" : "next"}"></i>`).join("")}</span>${esc(t("writing.focus.drill.count", { n: i + 1, total }))}</p>`;
   function sortHtml(sc, list, { lead }) {
     const key = list[sc.i], c = card(key);
     if (!c) return "";
     const picked = sc.pick, ok = picked === c.bin, words = c.text.split(" "), last = words.pop();
-    return `<p class="st-task">${esc(lead)}</p>${progressRow(sc.i, list.length)}<p class="st-sentence" lang="ko">${picked ? `${esc(words.join(" "))} <mark>${esc(last)}</mark>` : esc(c.text)}</p><div class="st-bins" role="group">${["formal", "polite", "plain"].map((b) => `<button class="st-bin" data-st-bin="${b}" ${picked ? "disabled" : ""} ${picked && b === c.bin ? 'data-answer="true"' : ""} ${picked && b === picked && !ok ? 'data-wrong="true"' : ""}><span>${esc(t(`writing.focus.bin.${b}`))}</span> <span lang="ko">${esc(BIN_FORM[b])}</span></button>`).join("")}</div>` + (picked ? `<p class="st-result" data-ok="${ok}" role="status">${esc(ok ? t("writing.focus.drill.right") : t("writing.focus.drill.wrong", { bin: t(`writing.focus.bin.${c.bin}`) }))}</p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : "");
+    return `<p class="st-note">${esc(lead)}</p><p class="st-progress">${esc(t("writing.focus.drill.count", { n: sc.i + 1, total: list.length }))}</p><p class="st-sentence" lang="ko">${picked ? `${esc(words.join(" "))} <mark>${esc(last)}</mark>` : esc(c.text)}</p><div class="st-bins" role="group">${["formal", "polite", "plain"].map((b) => `<button class="st-bin" data-st-bin="${b}" ${picked ? "disabled" : ""} ${picked && b === c.bin ? 'data-answer="true"' : ""} ${picked && b === picked && !ok ? 'data-wrong="true"' : ""}><span>${esc(t(`writing.focus.bin.${b}`))}</span> <span lang="ko">${esc(BIN_FORM[b])}</span></button>`).join("")}</div>` + (picked ? `<p class="st-result" data-ok="${ok}" role="status">${esc(ok ? t("writing.focus.drill.right") : t("writing.focus.drill.wrong", { bin: t(`writing.focus.bin.${c.bin}`) }))}</p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : "");
   }
   function formHtml(sc, list, { lead, reveal = true }) {
     const f = form(list[sc.i]);
     if (!f) return "";
     const done = sc.graded != null, right = sc.graded === true, [before, after2] = f.stem.split(f.target);
     const probeLine = right ? t("writing.focus.drill.right") : sc.graded === "typo" ? t("probe.formUnsure") : t("probe.formMiss");
-    return `<p class="st-task">${esc(lead)}</p>${progressRow(sc.i, list.length)}<p class="st-sentence" lang="ko">${esc(before)}<u>${esc(f.target)}</u>${esc(after2 ?? "")}</p><label class="st-label" for="st-form">${esc(t("form.input"))}</label><input id="st-form" lang="ko" type="text" autocomplete="off" spellcheck="false" maxlength="40" data-st-form value="${esc(done ? sc.input : ui.input || "")}" ${done ? "readonly" : ""}>` + (done && !reveal ? `<p class="st-result" data-ok="${sc.graded === "typo" ? "typo" : right}" role="status">${esc(probeLine)}</p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : done ? `<p class="st-result" data-ok="${right}" role="status">${esc(right ? t("writing.focus.drill.right") : t("form.answer"))} ${right ? "" : `<span lang="ko">${esc(f.answer)}</span>`}</p><p class="st-explain"><small>${esc(t("form.why"))}</small> <span lang="ko">${qb(f.explain, [esc(f.answer)])}</span></p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : actions(`<button class="st-main" data-st-grade>${esc(t("form.check"))}</button>`));
+    return `<p class="st-note">${esc(lead)}</p><p class="st-progress">${esc(t("writing.focus.drill.count", { n: sc.i + 1, total: list.length }))}</p><p class="st-sentence" lang="ko">${esc(before)}<u>${esc(f.target)}</u>${esc(after2 ?? "")}</p><label class="st-label" for="st-form">${esc(t("form.input"))}</label><input id="st-form" lang="ko" type="text" autocomplete="off" spellcheck="false" maxlength="40" data-st-form value="${esc(done ? sc.input : ui.input || "")}" ${done ? "readonly" : ""}>` + (done && !reveal ? `<p class="st-result" data-ok="${right}" role="status">${esc(probeLine)}</p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : done ? `<p class="st-result" data-ok="${right}" role="status">${esc(right ? t("writing.focus.drill.right") : t("form.answer"))} ${right ? "" : `<span lang="ko">${esc(f.answer)}</span>`}</p><p class="st-explain"><small>${esc(t("form.why"))}</small> <span lang="ko">${esc(f.explain)}</span></p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : actions(`<button class="st-main" data-st-grade>${esc(t("form.check"))}</button>`));
   }
   function findHtml(f, sc) {
     const done = sc.found != null, picks = done ? sc.picks : ui.picks || [];
-    return `<p class="st-task">${esc(t("find.lead"))}</p><ol class="st-find" lang="ko">${f.sentences.map((s, i) => `<li><button class="st-pickline" data-st-line="${i}" aria-pressed="${picks.includes(i)}" ${done ? "disabled" : ""} ${done && f.off.includes(i) ? 'data-answer="true"' : ""}>${esc(s)}${done && f.off.includes(i) ? ` <span class="st-tag" lang="${lang}">${esc(t("find.tag"))}</span>` : ""}</button></li>`).join("")}</ol>` + (done ? `<p class="st-result" data-ok="${sc.found}" role="status">${esc(t(sc.found ? "find.right" : "find.wrong"))}</p><p class="st-explain" lang="ko">${esc(f.explain)}</p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : actions(`<button class="st-main" data-st-findcheck ${picks.length ? "" : "disabled"}>${esc(t("form.check"))}</button>`));
+    return `<p class="st-note">${esc(t("find.lead"))}</p><ol class="st-find" lang="ko">${f.sentences.map((s, i) => `<li><button class="st-pickline" data-st-line="${i}" aria-pressed="${picks.includes(i)}" ${done ? "disabled" : ""} ${done && f.off.includes(i) ? 'data-answer="true"' : ""}>${esc(s)}${done && f.off.includes(i) ? ` <span class="st-tag" lang="${lang}">${esc(t("find.tag"))}</span>` : ""}</button></li>`).join("")}</ol>` + (done ? `<p class="st-result" data-ok="${sc.found}" role="status">${esc(t(sc.found ? "find.right" : "find.wrong"))}</p><p class="st-explain" lang="ko">${esc(f.explain)}</p>` + actions(`<button class="st-main" data-st-advance>${esc(t("next.continue"))} <span aria-hidden="true">→</span></button>`) : actions(`<button class="st-main" data-st-findcheck ${picks.length ? "" : "disabled"}>${esc(t("form.check"))}</button>`));
   }
   function mineHtml(sc) {
     const text2 = lastText(sc.mineFrom), list = marksOf(text2, item(sc.mineFrom)).slice(0, 3);
@@ -2540,7 +2525,7 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
   }
   function restHtml(sc) {
     const key = { done: "rest.done", "no-items": "rest.noItems", "tried-all": "rest.triedAll", enough: "rest.triedAll", "alone-once": "rest.alone", later: "rest.alone" }[sc.why] || "study.stopped";
-    return `<div class="st-rest" data-k="${["done", "alone-once"].includes(sc.why) ? "ok" : "pause"}"><p class="st-fact">${esc(t(key))}</p></div>`;
+    return `<p class="st-fact">${esc(t(key))}</p>`;
   }
   function resumeHtml() {
     return `<h2 class="st-h">${esc(t("resume.title"))}</h2><p class="st-note">${esc(t("resume.note"))}</p>` + actions(`<button class="st-main" data-st-resume>${esc(t("study.resumeHere"))} <span aria-hidden="true">→</span></button><button class="st-plain" data-st-fresh>${esc(t("resume.fresh"))}</button>`, { stop: false });
@@ -2551,19 +2536,15 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       const keep = ui;
       go();
       ui = keep;
-      lastEnter = null;
       paint(focus);
       return;
     }
     const sc = state.scene;
     let body;
-    if (ui.stopped) body = `<div class="st-rest" data-k="pause"><p class="st-fact">${esc(t("study.stopped"))}</p></div>` + actions(`<button class="st-main" data-st-unstop>${esc(t("study.resumeHere"))} <span aria-hidden="true">→</span></button>`, { stop: false });
+    if (ui.stopped) body = `<p class="st-fact">${esc(t("study.stopped"))}</p>` + actions(`<button class="st-main" data-st-unstop>${esc(t("study.resumeHere"))} <span aria-hidden="true">→</span></button>`, { stop: false });
     else if (ui.resume) body = resumeHtml();
     else body = sc.id === "semantic" ? semanticHtml(sc) : sc.id === "write" ? writeHtml(sc) : sc.id === "seen" ? seenHtml(sc) : sc.id === "probe" ? probeHtml(sc) : sc.id === "method" ? methodHtml(sc) : restHtml(sc);
-    const kind = ui.stopped ? "stopped" : ui.resume ? "resume" : sc.id === "semantic" ? `semantic-${sc.phase}` : sc.id || "";
-    const enterKey = [kind, sc.i, sc.step, sc.mode, sc.itemId, sc.did].join("|"), enter = enterKey !== lastEnter;
-    lastEnter = enterKey;
-    root.innerHTML = shell(body, kind, enter);
+    root.innerHTML = shell(body);
     root.lang = lang;
     if (focus) root.querySelector("[data-st-text]:not([readonly]), [data-st-form]:not([readonly]), .st-scene .st-main, .st-scene button")?.focus({ preventScroll: true });
   }
@@ -2735,7 +2716,6 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       const keep = ui;
       go();
       ui = keep;
-      lastEnter = null;
       paint();
       return;
     }
@@ -2897,8 +2877,6 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       const k = draftKey(sc), { pasted, ...d } = state.drafts[k] || { checkedAt: null };
       const text2 = el.value.slice(0, 4e3);
       state = { ...state, drafts: { ...state.drafts, [k]: { ...d, ...text2.trim() && pasted ? { pasted: Math.min(pasted, text2.length) } : {}, text: text2, updatedAt: iso2() } } };
-      const cnt = root.querySelector("[data-st-count]");
-      if (cnt) cnt.textContent = String(charCount(text2));
       if (ui.short) {
         ui.short = false;
         root.querySelector(".st-alert[role=status]")?.remove();
@@ -2995,7 +2973,6 @@ function createStudy({ root, storage = globalThis.localStorage, session = global
       const keep = ui;
       go();
       ui = keep;
-      lastEnter = null;
       paint();
       return;
     }

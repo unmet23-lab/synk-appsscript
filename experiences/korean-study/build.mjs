@@ -18,11 +18,6 @@ const esbuild = require(path.join(REPO, 'node_modules/esbuild'));
 const SRC = path.join(HERE, 'src');
 const BANK = path.join(REPO, 'experiences/synk-world-app/world-writing-items.json');
 const FONT = path.join(REPO, 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2');
-const EXTRA_ASSETS = [
-  ['experiences/entry-check/kit/fonts/InterTight-Medium.woff2', 'InterTight-Medium.woff2'],
-  ['experiences/entry-check/kit/fonts/InterTight-Bold.woff2', 'InterTight-Bold.woff2'],
-  ['docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg', 'synk-paper.svg'],
-];
 const check = process.argv.includes('--check');
 const OUT = check ? fs.mkdtempSync(path.join(os.tmpdir(), 'synk-study-')) : path.join(HERE, 'dist/study');
 const sha = buf => createHash('sha256').update(buf).digest('hex');
@@ -79,8 +74,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   write('app.js', built.outputFiles[0].contents);
   write('study.css', text(path.join(SRC, 'study.css')));
   fs.copyFileSync(FONT, path.join(OUT, 'assets/SUIT-Variable.woff2'));
-  // 11-14 다시 입힘: 라틴 · 키릴은 캠퍼스 판(입장 검사)과 같은 Inter Tight 파일, 로고는 승인 정밀 SVG(어두운 바탕용 Paper) 그대로.
-  for (const [from, to] of EXTRA_ASSETS) fs.copyFileSync(path.join(REPO, from), path.join(OUT, 'assets', to));
 
   let html = text(path.join(SRC, 'index.html'));
   for (const f of ['study.css', 'app.js']) {
