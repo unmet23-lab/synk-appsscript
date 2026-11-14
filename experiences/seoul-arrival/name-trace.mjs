@@ -232,7 +232,9 @@ export function createNameTrace({$,L,SND,reduce,sleep}){
   const skipLabel=k=>{const sp=btnSkip.querySelector('span');if(sp){sp.dataset.l=k;sp.textContent=L(k);}};
   const skip=e=>{e.stopPropagation();if(switching||finished)return;
    // 다시 쓰는 중이면 그만둬도 앞서 다 쓴 이름 가운데 가장 잘 쓴 판이 학생증에 들어간다
-   if(attempt>1&&bestInks?.length){clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();live=null;last=null;pid=null;paintLive();inks.length=0;bestInks.forEach(s=>inks.push(s));lastScore=best;finish(true);return;}
+   if(attempt>1&&bestInks?.length){clearTimeout(timer);clearTimeout(acceptT);if(demoing)demoStop();live=null;last=null;pid=null;paintLive();inks.length=0;bestInks.forEach(s=>inks.push(s));lastScore=best;
+    // 위 성명 줄도 그 판으로 다시 채운다(직인이 찍히는 동안 이번 판의 일부만 보이지 않게 — 다시 검수 FA2)
+    row.querySelectorAll('.nt-cell').forEach((c,k)=>{c.innerHTML=inks[k]?.length?inkSvg([inks[k]],{width:lw/W*1.2}):'';});finish(true);return;}
    finish(false);};
 
   // ── 다 쓴 뒤 비교: 바른 글씨(모형) · 내 글씨(쓴 자리 · 크기 그대로) · 닮은 정도. 막지 않는다 — 「다시 써 보기」 또는 「학생증에 넣을게요」 ──
