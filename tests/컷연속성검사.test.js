@@ -1406,6 +1406,7 @@ const 안걸려야 = [
   'To the last frame the closed-lip smile stays, lips together, while she keeps breathing calmly and blinks once.',
   'her expression holds a hint of worry as she breathes out.',
   'the close-up of her face holds as she breathes.',
+  'The warm cinematic look holds throughout the clip.',
 ];
 // 사람 기척이 하나도 없는 판 — 주어 없는 절 · they는 앞 절의 물건을 따르고, 장면 전체를 멈추는 말도 물건의 것이다(박자 한 줄을 붙이지 않고 넣는다)
 const 물건판 = [
