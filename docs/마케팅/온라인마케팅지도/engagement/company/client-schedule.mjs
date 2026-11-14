@@ -54,7 +54,10 @@ export function buildClientSchedule(row,{now=new Date().toISOString(),canEdit=fa
   const hrefs={kickoff:workroom(row,'kickoff'),preview:link(row,'review'),customer:customerWaiting[0]?.href||link(row,'review'),revision:sceneRequests.pendingCount||!feedbackTarget?workroom(row,'requests'):feedbackLink(row,feedbackTarget),delivery:workroom(row,'delivery')};
   const fullyDelivered=hasFinal&&completed.customer&&completed.revision&&waiting.length===0,active=plan.enabled&&row.stage!=='archived'&&!fullyDelivered;
   const milestones=ids.map(id=>{const targetDate=plan.targets[id],status=id==='revision'&&!requestCount?'not_required':completed[id]?'complete':dateState(targetDate,today);return {id,label:targetLabels[id],targetDate,status,statusLabel:stateLabels[status],reason:reasons[id],href:hrefs[id],overdue:active&&status==='overdue',due:active&&status==='due'};});
-  const agreedDueDate=validDate(row.dueDate)?row.dueDate:'',remainingDays=agreedDueDate?distance(today,agreedDueDate,calendar):null,estimatedFinishDate=plan.remainingWorkDays===null?'':shift(today,plan.remainingWorkDays,calendar);
+  // 합의한 전달일: 프로젝트 기록에 적은 날, 없으면 PULSE 결제 칸의 받으실 날(확인한 결제만)을 읽을 때 파생한다 — row.dueDate · schedulePlan에 쓰지 않는다
+  // (쓰면 계획 없는 의뢰 프로젝트마다 「날짜 없는 일」 · 「일정이 늦어지고 있어요」가 뜨고 직원 저장이 두 날짜를 갈라놓는다 — 운영판 설계 S4 · 운영 조각 8-A).
+  const paidDue=row.studio?.request?.payment?.status==='confirmed'&&validDate(row.studio.request.payment.dueDate)?row.studio.request.payment.dueDate:'';
+  const agreedDueDate=validDate(row.dueDate)?row.dueDate:paidDue,agreedDueSource=validDate(row.dueDate)?'project':paidDue?'payment':'',remainingDays=agreedDueDate?distance(today,agreedDueDate,calendar):null,estimatedFinishDate=plan.remainingWorkDays===null?'':shift(today,plan.remainingWorkDays,calendar);
   let risk={status:'unknown',text:'남은 작업일을 적으면 전달일과 비교해 드려요.'};
   if(!plan.enabled)risk={status:'not_configured',text:'목표일을 정하면 늦어지는 곳을 알려 드려요.'};
   else if(fullyDelivered)risk={status:'complete',text:'최종본이 올라갔고 남은 요청이 없어요.'};
@@ -65,7 +68,7 @@ export function buildClientSchedule(row,{now=new Date().toISOString(),canEdit=fa
   else if(estimatedFinishDate)risk={status:'on_track',text:'이대로 가면 전달일 안에 끝나요. 남은 작업일로 어림한 거예요.'};
   if(!active)for(const item of waiting){item.overdue=false;item.due=false;}
   const pendingCount=active?milestones.filter(item=>item.due||item.overdue).length+waiting.filter(item=>item.due||item.overdue).length+( ['at_risk','overdue','due'].includes(risk.status)?1:0):0,status=row.stage==='archived'?'archived':!plan.enabled?'disabled':fullyDelivered?'complete':pendingCount?'attention':'tracking';
-  return {...plan,canEdit:!!canEdit&&row.stage!=='archived',calendarLabel:calendar==='weekdays'?'평일만':'달력대로',checkedAt:now,today,status,statusLabel:statusLabels[status],pendingCount,agreedDueDate,estimatedFinishDate,remainingDays,risk,milestones,waiting,history:records(row.schedulePlan?.history).map(entry=>({at:entry.at,...configuration(entry)}))};
+  return {...plan,canEdit:!!canEdit&&row.stage!=='archived',calendarLabel:calendar==='weekdays'?'평일만':'달력대로',checkedAt:now,today,status,statusLabel:statusLabels[status],pendingCount,agreedDueDate,agreedDueSource,estimatedFinishDate,remainingDays,risk,milestones,waiting,history:records(row.schedulePlan?.history).map(entry=>({at:entry.at,...configuration(entry)}))};
 }
 
 export function applyClientScheduleAction(row,input,{actor,at}={}){

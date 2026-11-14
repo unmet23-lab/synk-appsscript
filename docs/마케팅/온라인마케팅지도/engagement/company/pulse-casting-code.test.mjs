@@ -180,7 +180,7 @@ test('the client room wires the box: save fills the casting form, submits it, an
   assert.doesNotMatch(app,/voice-play|\.voice-play|'play','pause','ended'/,'the voice sample buttons and their audio listener are gone');
   assert.match(castingView({modelId:'F02'}),/data-choices-model="F02"/);assert.match(castingView({}),/data-choices-model=""/);
   assert.doesNotMatch(view.split('\n').filter(line=>!line.trim().startsWith('//')).join('\n'),/\(\?<[!=]/,'no regex lookbehind: Safari before 16.4 would fail to load the whole client room');
-  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v64-request-followups-20261114';/);
+  assert.match(readFileSync(new URL('sw.js',appDir),'utf8'),/const CACHE = 'synk-pulse-shell-v65-ledger-20261114';/);
 });
 
 async function fixture(t){

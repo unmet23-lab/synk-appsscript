@@ -150,7 +150,7 @@ test('머리 띠: 갈 곳 셋과 지금 자리, 알림 숫자는 글 · 숫자�
 test('연결: 쉬기 칸 · 단계 탭 · 알림 숫자 · 직원 CSS는 직원 화면에서만',()=>{
   const app=read('app.mjs');
   assert.ok(app.includes("if(action==='intake-sheet'&&s.mode==='staff'){if(!s.staffIntake?.canEdit)return;"),'크루는 쉬기 칸을 열 수 없다');
-  assert.ok(app.includes("if(s.project||s.brands)withLeave(async()=>{resetContext();try{await loadWorkspace();}catch(error){notice(error.message);}openSheet();});else openSheet();"),'다른 화면이면 쓰던 글을 물은 뒤 첫 화면으로 돌아가 연다');
+  assert.ok(app.includes("if(s.project||s.brands||s.ledger)withLeave(async()=>{resetContext();try{await loadWorkspace();}catch(error){notice(error.message);}openSheet();});else openSheet();"),'다른 화면(프로젝트 · 고객 브랜드 · 운영판)이면 쓰던 글을 물은 뒤 첫 화면으로 돌아가 연다');
   assert.ok(app.includes("if(action==='staff-stage'){s.staffStage=button.dataset.stage||'';render();return;}"));
   assert.ok(app.includes("s.staffIntake=['open','paused'].includes(result?.state)?result:null;s.intakeSheet=false;"),'저장하면 쉬기 칸을 닫는다');
   assert.ok(app.includes('castingCodeSave=null;s.brands=null;s.intakeSheet=false;s.seatsSheet=false;}'),'다른 화면으로 가면 쉬기 칸 · 자리 칸은 닫힌다');

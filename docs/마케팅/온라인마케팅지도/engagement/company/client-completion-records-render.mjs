@@ -24,7 +24,7 @@ function validate(report){
   return report;
 }
 function valueText(value){return value===null?'':typeof value==='boolean'?(value?'예':'아니요'):String(value);}
-function csvCell(value){const text=valueText(value);const protectedText=/^[\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]*[=+\-@\uff1d\uff0b\uff0d\uff20]/u.test(text)||/^[\t\r\n]/.test(text)?"'"+text:text;return '"'+protectedText.replaceAll('"','""')+'"';}
+export function csvCell(value){const text=valueText(value);const protectedText=/^[\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]*[=+\-@\uff1d\uff0b\uff0d\uff20]/u.test(text)||/^[\t\r\n]/.test(text)?"'"+text:text;return '"'+protectedText.replaceAll('"','""')+'"';}
 
 /** One rectangular CSV. Each section row is represented by its labelled cells. */
 export function renderCompletionCsv(report){

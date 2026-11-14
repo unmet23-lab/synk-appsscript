@@ -58,6 +58,7 @@ import { createProjectLocale } from './pulse-locale.mjs';
 import { createPulseMailService } from './pulse-mail.mjs';
 import { createPulseMailOpen } from './pulse-mail-open.mjs';
 import { createPulseWaitlist } from './pulse-waitlist.mjs';
+import { pulseLedger, pulseLedgerCsv } from './pulse-ledger.mjs';
 import { CASTING_MODELS } from './public/pulse-app/casting-catalog.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
@@ -1850,6 +1851,16 @@ export function createCompanyApp(options={}) {
         if(url.search)throw httpError('내 자동화 상태만 확인할 수 있습니다.');
         return send(res,200,readAutomationHealth(user));
       }
+      // 운영판 장부(운영 조각 8-A · 설계 S4): 그 직원이 지금 읽을 수 있는 프로젝트 줄만(readableSources) 세고 합계도 그 줄의 합 — 관리자는 전부, 직원은 자기가 볼 수 있는 건.
+      // ?month=YYYY-MM 하나만 받는다. .csv는 같은 장부를 월 CSV로(수식 첫 글자 막음 · UTF-8 BOM).
+      if(path==='/api/pulse/ledger'||path==='/api/pulse/ledger.csv'){
+        if(demoRequest)throw httpError('운영판은 실제 작업실에서 확인해 주세요.');
+        if([...url.searchParams.keys()].some(key=>key!=='month')||url.searchParams.getAll('month').length>1)throw httpError('볼 달만 골라 주세요.');
+        const month=url.searchParams.get('month')||'';if(month&&!/^20\d{2}-(0[1-9]|1[0-2])$/.test(month))throw httpError('볼 달만 골라 주세요.');
+        const ledger=pulseLedger(clientProjects.readableSources(user),{month,now:clock()});
+        if(path.endsWith('.csv')){res.writeHead(200,{...responseHeaders('text/csv; charset=utf-8'),'Content-Disposition':`attachment; filename="pulse-ledger-${ledger.month}.csv"`});return res.end(pulseLedgerCsv(ledger));}
+        return send(res,200,ledger);
+      }
       if(path==='/api/weekly-summary'){
         if(demoRequest)throw httpError('주간 정리는 실제 작업실에서 확인해 주세요.');
         if([...url.searchParams.keys()].some(key=>key!=='week')||url.searchParams.getAll('week').length>1)throw httpError('확인할 주만 선택해 주세요.');
@@ -2041,7 +2052,7 @@ export function createCompanyApp(options={}) {
     files['/client-desk.css']=['public/client-desk.css','text/css; charset=utf-8'];files['/client-desk-pulse.webp']=['public/client-desk-pulse.webp','image/webp'];for(const stage of ['received','planning','producing','review','delivered','archived'])files['/client-desk-stage-'+stage+'.webp']=['public/client-desk-stage-'+stage+'.webp','image/webp'];
     files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
     files['/pulse-app/index.html']=files['/pulse-app/'];
-    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','persona-view.mjs','my-models.mjs','brand-desk-view.mjs','boot-locale.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','films-view.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js','motion.mjs','request-data.mjs','request-flow.mjs','request-backend.mjs','film-views.mjs','film-home.mjs','film-review.mjs','room-view.mjs','desk-view.mjs','demo-film.mjs','i18n.mjs','i18n/en.mjs','casting-choice.mjs','locale-menu.mjs','ledger-view.mjs','persona-view.mjs','my-models.mjs','brand-desk-view.mjs','boot-locale.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
     // 의뢰 흐름(2026-11-04) 스타일 · 그림. 영상 둘은 mp4라 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).
     for(const file of ['slate.css','slate-screens.css','slate-legacy.css','film.css','film-legacy.css','staff.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
     // 시사실 판(2026-11-05) 그림 · 영상. 쇼릴 mp4 둘은 git 밖 — 운영 원문은 회사 릴리스 후보(완성 광고 영상과 같은 길).

@@ -618,3 +618,46 @@ test('운영 조각 6-C 알림 명단: 메일이 켜진 full에만 notify · 같
   assert.ok(serverSource.includes('pulseWaitlistTimer=setInterval(()=>{void pulseWaitlist.tick().catch(()=>{});},5*60000);pulseWaitlistTimer.unref();'),'5분 타이머');
   assert.equal(serverSource.split('clearInterval(pulseWaitlistTimer)').length-1,2,'멈춤 두 길 모두 타이머를 끈다');
 });
+
+// 운영 조각 8-A(설계 S4 「운영판」): 장부 길 — 권한별 응답 · 달 고르기 · CSV, 옛 화면(금액 없이)과 새 화면(금액 · 받은 곳 · 실수령)의 결제 확인, 일정 파생.
+test('운영 조각 8-A 운영판 장부: 읽을 수 있는 프로젝트만 · 합계도 그 줄의 합, 달 하나만 받음, 월 CSV(BOM · 수식 막기), 결제 확인은 옛 · 새 화면 모두, 일정은 결제의 받으실 날로 파생',async t=>{
+  const f=await fixture(t);
+  // 새 화면: 요청 금액으로 확인 · 받은 곳 · 실수령.
+  const paid=await confirmedOnly(f,{name:'탄산수 하나'});
+  await paid.act({action:'payment_request',amount:290000});
+  const confirmed=(await paid.act({action:'payment_confirm',ref:'K-1',channel:'direct',net:250000})).data.project.studio.request.payment;
+  assert.deepEqual([confirmed.status,confirmed.amount,confirmed.channel,confirmed.net],['confirmed',290000,'direct',250000]);
+  // 옛 화면: 금액 · 받은 곳 없이 확인(요청도 없이) — 막히지 않고, 운영판은 「금액 없음」으로 센다.
+  const old=await confirmedOnly(f,{name:'탄산수 둘'});
+  assert.equal((await old.act({action:'payment_confirm',ref:'K-2'})).data.project.studio.request.payment.status,'confirmed');
+  let r=await f.staff('/api/pulse/ledger');
+  assert.equal(r.status,200,JSON.stringify(r.data));
+  const month=r.data.current;assert.equal(r.data.month,month);
+  assert.deepEqual([r.data.summary.revenue,r.data.summary.confirmed,r.data.summary.net,r.data.summary.noAmount],[290000,1,250000,1]);
+  assert.equal(r.data.rows.length,2);
+  const row=r.data.rows.find(item=>item.id===paid.id);
+  assert.deepEqual([row.status,row.amount,row.channel,row.net,row.package],['confirmed',290000,'direct',250000,'15초']);
+  assert.ok(!JSON.stringify(r.data).includes('paymentLog')&&!JSON.stringify(r.data).includes('K-1'),'이력 · 주문 번호 원본은 안 내린다');
+  // 다른 팀 매니저: 읽을 수 있는 프로젝트가 없으면 줄도 합계도 없다.
+  const other=f.app.store.createUser({name:'다른 팀',email:'other@pulse-synthetic.test',role:'manager',teamId:'other-team'});
+  const otherToken=f.app.store.mint('session',other.id,{csrfToken:'other-csrf'},120),base='http://127.0.0.1:'+f.app.server.address().port;
+  const asOther=await fetch(base+'/api/pulse/ledger',{headers:{Cookie:'synk_company_session='+otherToken}});
+  const otherData=await asOther.json();
+  assert.equal(asOther.status,200,JSON.stringify(otherData));assert.deepEqual([otherData.rows.length,otherData.summary.revenue,otherData.summary.noAmount],[0,0,0]);
+  // 로그인 없이는 401, 달은 하나만 · 꼴이 맞아야.
+  assert.equal((await fetch(base+'/api/pulse/ledger')).status,401);
+  for(const query of ['?month=2026-13','?month=2026-11&month=2026-10','?team=a','?month=11','?month=0026-11'])assert.equal((await f.staff('/api/pulse/ledger'+query)).status,400,query);
+  // 지난달을 고르면 이번 달 확인 건은 없다.
+  const [y,m]=month.split('-').map(Number),last=new Date(Date.UTC(y,m-2,1)).toISOString().slice(0,7);
+  r=await f.staff('/api/pulse/ledger?month='+last);assert.deepEqual([r.data.month,r.data.rows.length,r.data.summary.revenue],[last,0,0]);
+  // 월 CSV.
+  const csv=await fetch(base+'/api/pulse/ledger.csv?month='+month,{headers:{Cookie:'synk_company_session='+(f.app.store.mint('session',f.app.store.all('users').find(u=>u.role==='admin').id,{csrfToken:'c'},120))}});
+  assert.equal(csv.status,200);assert.match(csv.headers.get('content-type'),/^text\/csv; charset=utf-8/);
+  assert.match(csv.headers.get('content-disposition'),new RegExp(`attachment; filename="pulse-ledger-${month}\.csv"`));
+  const text=new TextDecoder('utf-8',{ignoreBOM:true}).decode(await csv.arrayBuffer());
+  assert.ok(text.startsWith('\ufeff"접수 번호"'));assert.ok(text.includes('"탄산수 하나"')||text.includes('"직접"'));
+  // 일정 파생: 프로젝트 기록에 전달일을 안 썼는데 일정 카드의 합의한 전달일은 결제의 받으실 날, 계획이 꺼져 있어 경고는 없다.
+  const list=(await f.staff('/api/client-projects')).data.projects,project=list.find(item=>item.id===paid.id);
+  assert.equal(project.dueDate,'');assert.equal(project.schedule.agreedDueDate,confirmed.dueDate);assert.equal(project.schedule.agreedDueSource,'payment');
+  assert.deepEqual([project.schedule.status,project.schedule.pendingCount],['disabled',0]);
+});
