@@ -103,6 +103,11 @@ async function gatherEarlier(wanted, manifest, seen) {
 }
 /** The run record's count of folders not found, when there were any. */
 const gone = n => n > 0 ? { missing: n } : {};
+/** How long a folder taken out of the backup keeps its backups (4.2 「폴더 더하기 · 빼기」). */
+const REMOVED_KEEP = 30 * DAY;
+/** A taken-out folder's entry in the settings: its path, when it was taken out, and — once a cleanup has seen it —
+ *  that cleanup's time (`since`), from which the 30 days count. */
+const removedEntry = r => typeof r?.path === 'string' && Number.isFinite(Date.parse(r.at)) && (r.since === undefined || Number.isFinite(Date.parse(r.since)));
 /** Unreadable items kept for a partial snapshot's list; past this the list says it is cut short. */
 const UNREADABLE_MAX = 200000;
 /** restic's JSON error lines, however they are split into chunks: each `item` goes to onItem. A line past
@@ -179,7 +184,8 @@ class BackupEngine extends EventEmitter {
     catch (e) { if (e.code !== 'ENOENT') throw new Error('설정 파일이 손상되었습니다. 복구 키로 별도 PC에서 복구할 수 있습니다.'); }
     if (this.config) {
       const c = this.config;
-      if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))) throw new Error('설정 형식이 올바르지 않습니다.');
+      if (c.schema !== 1 || !['backup', 'restore'].includes(c.mode) || !/^[a-f0-9-]{36}$/.test(c.vaultId) || !Array.isArray(c.sources) || (c.repositoryId !== null && !isId(c.repositoryId))
+        || (c.removedSources != null && !(Array.isArray(c.removedSources) && c.removedSources.every(removedEntry)))) throw new Error('설정 형식이 올바르지 않습니다.');
       normalizeProtection(c);
       if ((c.provider?.type || 'local') !== this.providerType) throw new Error('백업 프로필과 저장소 종류가 다릅니다.');
       if (this.isCloud()) {
@@ -230,6 +236,7 @@ class BackupEngine extends EventEmitter {
       cloudConnection: this.isCloud() && c && !c.repositoryId && this.cloudCredentials ? { endpoint: c.provider.endpoint, bucket: c.provider.bucket } : !c && this.connection ? { endpoint: this.connection.endpoint, bucket: this.connection.bucket } : null,
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
       recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, missingSources: c?.missingSources || [],
+      removedSources: (c?.removedSources || []).map(r => ({ path: r.path, at: r.at, until: new Date(Date.parse(r.since ?? r.at) + REMOVED_KEEP).toISOString() })),
       lastRestore: c?.lastRestore || null, health: c?.health || null, lastError: c?.lastError || null,
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
@@ -524,6 +531,40 @@ class BackupEngine extends EventEmitter {
     if (!this.config.automatic) throw new Error('보호 시작으로 자동 백업을 먼저 켜 주세요.');
     this.config.pausedUntil = null; await this.save(); return this.getState();
   }
+  /** The folders, changed after setup (4.2 「폴더 더하기 · 빼기」). A folder added is checked as at setup; a folder taken
+   *  out is kept in `removedSources`, and its backups stay 30 days (retain) and come back with a whole restore until
+   *  then. Taken out and added again, it is a chosen folder as before. At least one folder stays. */
+  async changeSources(sources) {
+    return this.operation('sources', async () => {
+      if (this.config?.mode !== 'backup' || this.config.readOnly || !this.config.repositoryId) throw new Error('백업을 설정한 뒤 폴더를 바꿀 수 있습니다.');
+      if (!Array.isArray(sources) || sources.some(s => typeof s !== 'string')) throw new Error('백업할 폴더를 확인해 주세요.');
+      const old = this.config.sources;
+      const kept = old.filter(o => sources.some(s => same(s, o)));
+      const asked = sources.filter((s, i) => !old.some(o => same(o, s)) && sources.findIndex(t => same(t, s)) === i);
+      const added = [];
+      if (asked.length) {
+        for (const real of await validateSources(asked, [...this.forbidden(), ...(!this.isCloud() ? [path.dirname(this.config.repository)] : [])])) {
+          if ([...kept, ...added].some(k => same(k, real))) continue; // the same folder by another spelling
+          if ([...kept, ...added].some(k => overlap(k, real))) throw new Error('서로 포함되는 작업 폴더는 하나만 선택해 주세요.');
+          added.push(real);
+        }
+      }
+      const next = [...kept, ...added];
+      if (!next.length) throw new Error('백업할 폴더를 하나 이상 남겨 주세요.');
+      if (next.length > 30) throw new Error('백업할 폴더를 1~30개 선택해 주세요.');
+      const removed = old.filter(o => !next.some(s => same(s, o)));
+      if (!added.length && !removed.length) return this.getState();
+      const at = new Date(this.now()).toISOString();
+      const out = [...(this.config.removedSources || []).filter(r => ![...next, ...removed].some(p => same(p, r.path))), ...removed.map(p => ({ path: p, at }))];
+      // A folder taken out is no longer one that is missing: the notice of it goes with it.
+      const before = missingWarning(this.config.missingSources || []);
+      const missing = (this.config.missingSources || []).filter(m => next.some(s => same(s, m)));
+      if (before && typeof this.config.warning === 'string' && this.config.warning.includes(before)) this.config.warning = this.config.warning.replace(before, missingWarning(missing) || '').trim() || null;
+      this.config.missingSources = missing.length ? missing : null;
+      this.config.sources = next; this.config.removedSources = out.length ? out : null;
+      await this.save(); return this.getState();
+    });
+  }
   async protectNow({ registerStartup } = {}) {
     this.assertBackupReady();
     return this.operation('protect', async () => {
@@ -755,10 +796,17 @@ class BackupEngine extends EventEmitter {
     if (latest.tags.includes('partial')) for (const s of own) if (listed(s) && Date.parse(s.time) < Date.parse(latest.time)) hold(s);
     const partial = own.find(listed);
     if (partial && Date.parse(partial.time) > Date.parse(latest.time)) hold(partial);
-    // A folder the latest complete snapshot lacks (it could not be found) keeps, the same way, the newest complete
-    // snapshot that has it and — when newer — the newest partial one: an unplugged drive's only backup stays (4.2).
+    // A folder taken out keeps its backups 30 days (4.2 「폴더 더하기 · 빼기」), counted from the first cleanup that saw it
+    // out, by this clock — the server's for a cloud vault — so a PC clock set wrong when it was taken out cannot end
+    // them early. Then it leaves the list, and its backups go like any other.
+    const removed = (this.config.removedSources || []).filter(r => { r.since ??= new Date(now).toISOString(); return !(now - Date.parse(r.since) >= REMOVED_KEEP); });
+    this.config.removedSources = removed.length ? removed : null;
+    const chosen = folder => this.config.sources.some(s => same(s, folder)) || removed.some(r => same(r.path, folder));
+    // A chosen folder the latest complete snapshot lacks (it could not be found) — or one taken out not 30 days ago —
+    // keeps, the same way, the newest complete snapshot that has it and — when newer — the newest partial one: an
+    // unplugged drive's only backup stays (4.2).
     for (const folder of foldersOf(own.filter(s => s.tags.includes(VERIFIED) || listed(s)))) {
-      if (holds(latest, folder)) continue;
+      if (holds(latest, folder) || !chosen(folder)) continue;
       const complete = own.find(s => s.tags.includes(VERIFIED) && holds(s, folder)), newer = own.find(s => listed(s) && holds(s, folder));
       if (complete) hold(complete);
       if (newer && (!complete || Date.parse(newer.time) > Date.parse(complete.time))) hold(newer);
@@ -891,7 +939,9 @@ class BackupEngine extends EventEmitter {
             if (!written || written.bytes !== file.size) throw new Error('이전 백업에서 가져온 파일의 크기가 기록과 다릅니다.');
           }
           fromEarlier += extra.length; inNone += notFound.length;
-          mapping.push({ original, restoredFolder: name, backupAt,
+          // A folder taken out of the backup comes back too while its backups stay (4.2 「폴더 더하기 · 빼기」) — said here.
+          const removedAt = (this.config.removedSources || []).find(r => same(r.path, original))?.at;
+          mapping.push({ original, restoredFolder: name, backupAt, ...(removedAt ? { removedAt } : {}),
             ...(extra.length ? { fromEarlier: extra.map(f => ({ path: f.name, backupAt: f.backupAt })) } : {}),
             ...(folders.length ? { foldersFromEarlier: folders } : {}), ...(notFound.length ? { inNoBackup: notFound } : {}), ...(cut ? { listCut: true } : {}) });
         }

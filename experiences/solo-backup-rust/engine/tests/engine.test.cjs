@@ -258,6 +258,31 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     clock += 3 * DAY; await engine.backupNow();
     assert.equal((await engine.snapshots()).length, 1, 'found again: the hold goes');
   });
+  await t.test('a folder taken out keeps its last backup 30 days and comes back with a whole restore, saying when it was taken out (4.2 「폴더 더하기 · 빼기」)', async () => {
+    const [first, second] = engine.config.sources, held = engine.config.lastBackup.id;
+    const original = digest(await fs.readFile(path.join(second, 'original.dat')));
+    try {
+      await engine.changeSources([first]);
+      await engine.backupNow();
+      assert.deepEqual((await engine.snapshots([VERIFIED]))[0].paths, [first], 'only the folders chosen now');
+      clock += 3 * DAY; await engine.backupNow();
+      const kept = await engine.snapshots();
+      assert.equal(kept.length, 2);
+      assert.ok(kept.some(s => s.id === held), 'the last backup with the folder stays');
+      await engine.restoreLatest({ parent: restore });
+      const mapping = JSON.parse(await fs.readFile(path.join(engine.config.lastRestore.path, '복구경로.json'), 'utf8'));
+      const out = mapping.find(m => m.original === second);
+      assert.equal(out.removedAt, engine.config.removedSources[0].at, 'says when it was taken out');
+      assert.equal(out.backupAt, kept.find(s => s.id === held).time);
+      assert.equal(digest(await fs.readFile(path.join(engine.config.lastRestore.path, out.restoredFolder, 'original.dat'))), original);
+      assert.equal(mapping.find(m => m.original === first).removedAt, undefined);
+      clock += 31 * DAY; await engine.backupNow();
+      assert.equal((await engine.snapshots()).length, 1, 'after 30 days it goes');
+      assert.equal(engine.config.removedSources, null);
+    } finally { await engine.changeSources([first, second]); }
+    await engine.backupNow();
+    assert.deepEqual([...(await engine.snapshots([VERIFIED]))[0].paths].sort(), [first, second].sort(), 'added again: backed up as before (restic sorts the paths)');
+  });
   await t.test('scheduler waits for interval and does not overlap an active job', async () => {
     await engine.setAutomatic(true); let calls = 0; const backup = engine.backupNow;
     engine.backupNow = async () => { calls++; engine.lastAttempt = clock; };

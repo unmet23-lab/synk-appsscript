@@ -34,9 +34,9 @@ test('failed status subscription rejects so existing app activates polling fallb
 test('bridge, worker and native method contract preserves all existing app actions',()=>{
   const contract=require('../contract/methods.json');const api=load({});
   const original=[...fs.readFileSync(path.resolve(root,'../solo-backup/src/preload.cjs'),'utf8').matchAll(/call\('([^']+)'\)/g)].map(m=>m[1]).sort();
-  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended'].sort();
+  const expected=[...original,'previewRecommended','startRecommended','backupRecommended','restoreRecommended','addSources','removeSource'].sort();
   assert.deepEqual(Object.keys(contract).sort(),expected);
   assert.deepEqual(Object.keys(api).filter(x=>x!=='onState').sort(),expected);
-  for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials'])assert.equal(contract[name].allowedReadOnly,false);
+  for(const name of ['backupNow','protectNow','startAutomatic','setupCloud','updateCloudCredentials','addSources','removeSource'])assert.equal(contract[name].allowedReadOnly,false);
   for(const name of ['restoreLatest','restoreSelected','openFileCatalog'])assert.equal(contract[name].allowedReadOnly,true);
 });

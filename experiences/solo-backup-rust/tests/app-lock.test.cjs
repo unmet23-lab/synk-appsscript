@@ -36,7 +36,7 @@ function appWorker(stateDir, hostState) {
         else if (m.method === 'engine.lock') { value = hostState.lockFree; if (value) hostState.held = true; }
         else if (m.method === 'engine.unlock') { hostState.held = false; value = true; }
         else if (m.method === 'run.progress') value = hostState.progress;
-        else if (m.method.startsWith('dialog.')) { const d = hostState.dialogs.shift(); ok = !!d && d.method === m.method; value = d?.value; }
+        else if (m.method.startsWith('dialog.')) { const d = hostState.dialogs.shift(); ok = !!d && d.method === m.method; value = d?.value; (hostState.asked ||= []).push(a[0]); }
         else ok = false;
         send(ok ? { callResult: m.call, ok: true, value } : { callResult: m.call, ok: false, code: 'TEST_HOST' });
       } else if (m.id && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); }
@@ -108,4 +108,57 @@ test('window operations take the engine lock, read the run\'s settings first, ke
   assert.ok(host.calls.filter(c => c === 'engine.lock').length - before <= 1, 'at most the recovery check took the lock');
   await app.call('$shutdown');
   assert.equal(await app.exited, 0);
+  // A subtest of this registered one (S-list in tests/conditional-qa.test.cjs), as it skips off Windows with it.
+  await t.test('after setup folders are added and taken out: the dialog first, then the lock; taking one out says its backups go in 30 days', foldersAfterSetup);
 });
+
+// 4.2 「폴더 더하기 · 빼기」: after setup the window adds and takes out folders — the dialog first, the engine lock
+// only for the change, so a scheduled run is not held up while a dialog is open.
+async function foldersAfterSetup(t) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'swb-folders-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const data = path.join(root, 'data'), more = path.join(root, 'more'), repo = path.join(root, 'repo'), keys = path.join(root, 'keys'), state = path.join(root, 'state');
+  for (const d of [data, more, repo, keys, state]) fs.mkdirSync(d, { recursive: true });
+  const host = { lockFree: true, held: false, progress: null, calls: [], dialogs: [
+    { method: 'dialog.open', value: { canceled: false, filePaths: [data] } },
+    { method: 'dialog.open', value: { canceled: false, filePaths: [repo] } },
+    { method: 'dialog.save', value: { canceled: false, filePath: path.join(keys, 'recovery.json') } }] };
+  const app = appWorker(state, host);
+  assert.equal((await app.call('$boot')).ok, true);
+  for (const m of ['chooseSources', 'chooseTarget', 'setup', 'saveRecoveryKit']) assert.equal((await app.call(m)).value.ok, true, m);
+
+  host.calls.length = 0; host.dialogs.push({ method: 'dialog.open', value: { canceled: false, filePaths: [more] } });
+  const added = (await app.call('addSources')).value;
+  assert.equal(added.ok, true, added.error);
+  const [kept, extra] = added.value.sources;
+  assert.equal(added.value.sources.length, 2);
+  assert.ok(host.calls.indexOf('dialog.open') < host.calls.indexOf('engine.lock'), 'the dialog before the lock');
+  assert.equal(host.held, false);
+
+  host.dialogs.push({ method: 'dialog.message', value: { response: 0 } });
+  assert.equal((await app.call('removeSource', [extra])).value.value.sources.length, 2, 'cancelled: nothing changes');
+  assert.match(host.asked.at(-1).detail, /30일 뒤 지워집니다/);
+
+  host.lockFree = false; host.dialogs.push({ method: 'dialog.message', value: { response: 1 } });
+  const busy = (await app.call('removeSource', [extra])).value;
+  assert.equal(busy.ok, false);
+  assert.match(busy.error, /예약 백업이 도는 중/);
+  host.lockFree = true;
+
+  host.calls.length = 0; host.dialogs.push({ method: 'dialog.message', value: { response: 1 } });
+  const removed = (await app.call('removeSource', [extra])).value;
+  assert.equal(removed.ok, true, removed.error);
+  assert.deepEqual(removed.value.sources, [kept]);
+  assert.equal(removed.value.removedSources[0].path, extra);
+  assert.ok(host.calls.indexOf('dialog.message') < host.calls.indexOf('engine.lock'), 'the dialog before the lock');
+  assert.equal(host.held, false);
+
+  const last = (await app.call('removeSource', [kept])).value;
+  assert.equal(last.ok, false);
+  assert.match(last.error, /하나 이상/);
+  const unknown = (await app.call('removeSource', [path.join(root, 'elsewhere')])).value;
+  assert.equal(unknown.ok, false);
+  assert.equal(host.dialogs.length, 0, 'no dialog for a refused one');
+  await app.call('$shutdown');
+  assert.equal(await app.exited, 0);
+}

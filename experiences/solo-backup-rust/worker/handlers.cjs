@@ -144,6 +144,27 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     },{switching:true});
     handle('selectProfile', (_context, name) => { profiles.select(name); return state(); }, { switching: true });
     handle('chooseSources', async ({ engine, selection }) => { if (engine.config?.repositoryId || (engine.isCloud() && engine.config)) throw new Error('설정한 작업 폴더는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업할 작업 폴더 선택', true); if (picked) { await engine.resetUnfinishedSetup(); selection.sources = picked; } return [...selection.sources]; }, { lock: false });
+    // Folders after setup (STAGE1_DESIGN.md 4.2 「폴더 더하기 · 빼기」): the dialog first, and only then the engine lock
+    // for the change — a scheduled run is not held up while a dialog is open. Taking one out says its backups go in 30 days.
+    async function changeSources(next) {
+      if (!await engineLock()) throw new Error('예약 백업이 도는 중입니다. 끝나면 다시 눌러 주세요.');
+      try { const engine = profiles.current; await engine.changeSources(next(engine.config?.sources || [])); }
+      finally { engineUnlock(); }
+    }
+    const backupReady = engine => { if (engine.config?.mode !== 'backup' || engine.config.readOnly || !engine.config.repositoryId) throw new Error('백업을 설정한 뒤 폴더를 바꿀 수 있습니다.'); };
+    handle('addSources', async ({ engine }) => {
+      backupReady(engine);
+      const picked = await folder('백업에 더할 작업 폴더 선택', true); if (!picked) return state();
+      await changeSources(sources => [...sources, ...picked]); return state();
+    }, { lock: false });
+    handle('removeSource', async ({ engine }, folderPath) => {
+      backupReady(engine);
+      if (typeof folderPath !== 'string' || !engine.config.sources.includes(folderPath)) throw new Error('뺄 폴더를 목록에서 골라 주세요.');
+      if (engine.config.sources.length < 2) throw new Error('백업할 폴더를 하나 이상 남겨 주세요.');
+      const answer = await dialog.showMessageBox(null, { type: 'question', message: '이 폴더를 백업에서 뺄까요?', detail: `${folderPath}\n\n이 폴더의 백업은 30일 뒤 지워집니다. 그때까지는 되살릴 수 있습니다. 폴더 안의 파일은 그대로 둡니다.`, buttons: ['취소', '빼기'], defaultId: 0, cancelId: 0 });
+      if (answer.response !== 1) return state();
+      await changeSources(sources => sources.filter(s => s !== folderPath)); return state();
+    }, { lock: false });
     handle('chooseTarget', async ({ engine, selection }) => { if (engine.isCloud() || engine.config?.repositoryId) throw new Error('설정한 저장소는 이 시험판에서 변경할 수 없습니다.'); const picked = await folder('백업을 보관할 폴더 선택'); if (picked) { profiles.assertLocalTarget(picked[0]); await engine.resetUnfinishedSetup(); selection.target = picked[0]; } return selection.target; }, { lock: false });
     handle('reuseLocalSources', ({ engine, selection }) => { if (!engine.isCloud() || engine.config) throw new Error('새 클라우드 연결에서만 폴더를 가져올 수 있습니다.'); selection.sources = [...(profiles.engines.local.config?.sources || [])]; return state(); }, { lock: false });
     handle('setup', async ({ engine, selection }) => { profiles.assertLocalTarget(selection.target); await engine.setup({ sources: selection.sources, parent: selection.target }); return state(); });

@@ -10,6 +10,7 @@
     'selectProfile', 'reuseLocalSources', 'setupCloud',
     'updateCloudCredentials', 'recoverCredential',
     'getState', 'chooseSources', 'chooseTarget', 'setup',
+    'addSources', 'removeSource',
     'saveRecoveryKit', 'startAutomatic', 'setAutomatic',
     'backupNow', 'restoreLatest', 'checkRepository',
     'protectNow', 'pauseAutomatic', 'resumeAutomatic', 'probeRestore',

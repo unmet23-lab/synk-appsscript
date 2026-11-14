@@ -517,3 +517,82 @@ test('lists are kept in the state folder, read from the repository when missing,
   assert.ok(!calls.includes('dump'), 'then from the state folder');
   assert.deepEqual((await fs.readdir(listDir)).sort(), metaIds(snapshots).map(id => `${id}.json`).sort(), 'forgotten lists dropped');
 });
+
+// 4.2 「폴더 더하기 · 빼기」: folders change after setup; one taken out keeps its backups 30 days.
+test('folders are added and taken out after setup — checked as at setup, at least one stays, one taken out is listed till its backups go', async () => {
+  const { engine, advance, root } = await fixture({ folders: 2 });
+  const [first, second] = engine.config.sources;
+  const third = path.join(root, 'source3'); await fs.mkdir(third);
+  await engine.changeSources([first, second, third]);
+  assert.deepEqual(engine.config.sources, [first, second, await fs.realpath(third)]);
+  await assert.rejects(engine.changeSources([first, second, third, path.join(root, 'nowhere')]), /ENOENT/);
+  await fs.mkdir(path.join(first, 'sub'));
+  await assert.rejects(engine.changeSources([first, second, third, path.join(first, 'sub')]), /서로 포함되는 작업 폴더/);
+  await assert.rejects(engine.changeSources([first, engine.stateDir]), /겹칩니다/);
+  await assert.rejects(engine.changeSources([]), /하나 이상/);
+  await engine.changeSources([first, second, third.toUpperCase()]);
+  assert.equal(engine.config.sources.length, 3, 'the same folder in other letters is no change');
+  const at = Date.now(); advance(0);
+  await engine.changeSources([first, third]);
+  assert.deepEqual(engine.config.sources, [first, await fs.realpath(third)]);
+  const [out] = engine.getState().removedSources;
+  assert.equal(out.path, second);
+  assert.equal(Date.parse(out.until) - Date.parse(out.at), 30 * DAY);
+  assert.ok(Math.abs(Date.parse(out.at) - at) < 60000);
+  await engine.changeSources([first, third, second]);
+  assert.deepEqual(engine.getState().removedSources, [], 'added again: chosen as before');
+  assert.equal(engine.config.removedSources, null);
+  // A list of taken-out folders that is not as written is refused like any other settings fault.
+  const settings = path.join(engine.stateDir, 'settings.json');
+  for (const bad of [[{ path: 1, at: new Date().toISOString() }], [{ path: second, at: 'later' }], [{ path: second, at: new Date().toISOString(), since: 'x' }], {}]) {
+    await fs.writeFile(settings, JSON.stringify({ ...engine.config, removedSources: bad }));
+    await assert.rejects(new BackupEngine({ stateDir: engine.stateDir, resticPath: 'fixture', secretStore, runner: async () => '' }).open(), /설정 형식/);
+  }
+});
+
+test('a folder taken out keeps its last backup 30 days from the first cleanup that saw it out, then it goes', async () => {
+  const { engine, advance, snapshots } = await fixture({ folders: 2 });
+  const [first] = engine.config.sources;
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const held = snapshots.at(-1).id;
+  await engine.changeSources([first]);
+  advance(61 * 60000);
+  assert.equal((await engine.runOnce({})).outcome, 'complete');
+  assert.deepEqual(snapshots.at(-1).paths, [first], 'only the folders chosen now');
+  const { since, at } = engine.config.removedSources[0];
+  assert.equal(since, snapshots.at(-1).time, 'the first cleanup that saw it out');
+  assert.notEqual(since, at);
+  assert.equal(engine.getState().removedSources[0].until, new Date(Date.parse(since) + 30 * DAY).toISOString(), 'counted from that cleanup');
+  advance(2 * DAY); await engine.runOnce({});
+  assert.deepEqual(snapshots.map(s => s.id).sort(), [held, engine.config.lastBackup.id].sort(), 'the newest backup and the last one with the folder');
+  advance(27 * DAY); await engine.runOnce({});
+  assert.ok(snapshots.some(s => s.id === held), 'still kept on day 29');
+  advance(2 * DAY); await engine.runOnce({});
+  assert.deepEqual(snapshots.map(s => s.id), [engine.config.lastBackup.id], 'gone after 30 days');
+  assert.equal(engine.config.removedSources, null);
+  assert.deepEqual(engine.getState().removedSources, []);
+});
+
+test('a missing folder taken out is no longer missing, and its notice goes', async () => {
+  const { engine, advance, more } = await fixture({ folders: 2 });
+  const [first] = engine.config.sources;
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  await fs.rm(more[0], { recursive: true });
+  advance(61 * 60000);
+  assert.equal((await engine.runOnce({})).missing, 1);
+  assert.match(engine.config.warning, /찾을 수 없어/);
+  await engine.changeSources([first]);
+  assert.deepEqual(engine.getState().missingSources, []);
+  assert.equal(engine.config.warning, null);
+  assert.equal(engine.getState().removedSources.length, 1);
+});
+
+test('a read-only or unfinished connection cannot change its folders', async () => {
+  const { engine } = await fixture();
+  engine.config.readOnly = true;
+  await assert.rejects(engine.changeSources([engine.config.sources[0]]), /백업을 설정한 뒤/);
+  engine.config.readOnly = false; engine.config.repositoryId = null;
+  await assert.rejects(engine.changeSources([engine.config.sources[0]]), /백업을 설정한 뒤/);
+});

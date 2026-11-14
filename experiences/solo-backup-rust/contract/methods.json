@@ -81,6 +81,18 @@
     "dialog": true,
     "allowedReadOnly": false
   },
+  "addSources": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": false
+  },
+  "removeSource": {
+    "mutating": true,
+    "timeoutMs": 0,
+    "dialog": true,
+    "allowedReadOnly": false
+  },
   "setup": {
     "mutating": true,
     "timeoutMs": 1800000,
