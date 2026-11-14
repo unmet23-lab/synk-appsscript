@@ -50,7 +50,8 @@ export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is
 export const JOURNAL_SHOWN=5;
 const askForm=ask=>`<form class="sx-ask-reply" data-form="ask" data-id="${esc(ask.id||'')}"><textarea name="text" rows="1" maxlength="1000" placeholder="${esc(t('글로 답하거나 파일을 보내 주세요'))}" aria-label="${esc(t('{label} 답',{label:ask.label}))}"></textarea><div class="sx-ask-tools"><label class="sx-quiet"><input type="file" class="sr" name="file" data-ask-file><span data-ask-name>${esc(t('파일 고르기'))}</span></label><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button></div></form>`;
 // talk(「말만 보기」 — 운영 조각 4 · 설계 S1): 켜면 말 줄(문의 · 답 · 담당자 글)만 보인다 — 사건 · 소식 줄이 늘어도 문답이 묻히지 않게. 말 줄과 다른 줄이 함께 있을 때만 단추를 둔다.
-export function journalView(j,{place='column',here=null,video=false,photo=false,open=false,all=false,talk=false,owner=t('담당자')}={}){
+// attach(운영 조각 8-B): 이 서버가 문의 사진을 받을 때만(messagePhotos) 묻기 칸에 「사진 붙이기」와 미리 보기 칸을 그린다. 고른 사진은 app.mjs가 메모리에 두고 칸을 채운다(sayPhotoChips).
+export function journalView(j,{place='column',here=null,video=false,photo=false,open=false,all=false,talk=false,owner=t('담당자'),attach=false}={}){
   const overlay=place!=='column',isHere=go=>!!go&&!!here&&go.tab===here.tab&&(!go.versionId||go.versionId===here.versionId||!!go.final&&!!here.finals);
   const when=at=>at&&stamp(at)?` · <time datetime="${esc(at)}">${esc(stamp(at))}</time>`:'';
   // 「열기」 · 「이 화면」은 머리 줄 끝에. 지금 화면의 일감을 가리키는 인용은 그 글이 바로 옆에 있으니 머리 줄만 둔다(같은 말이 한 화면에 두 번 서지 않게).
@@ -59,7 +60,9 @@ export function journalView(j,{place='column',here=null,video=false,photo=false,
     const here=isHere(item.go),tail=item.go?(here?`<span class="sx-j-here">${esc(t('지금 화면'))}</span>`:`<button type="button" class="sx-quiet" data-journal-go="${esc(item.go.tab)}"${item.go.versionId?` data-version="${esc(item.go.versionId)}"`:''}>${esc(t('열기',null,'open'))}</button>`):'';
     const meta=`<p class="sx-j-meta"><b>${esc(item.name)}</b>${item.what?` ${esc(item.what)}`:''}${item.kind==='progress'&&stageName(item.stage)?` · ${esc(stageName(item.stage,j.photo))}`:''}${when(item.at)}</p>`;
     // 작업 소식(운영 조각 4): 글 전문 + 그림 넷까지, 그림 아래 「작업 중인 화면이에요 · 완성본이 아니에요」.
-    const shots=item.kind==='progress'&&item.pictures?.length?`<figure class="sx-j-shots" data-count="${item.pictures.length}"><div>${item.pictures.map(src=>`<img src="${esc(src)}" alt="" loading="lazy" decoding="async">`).join('')}</div><figcaption class="sx-small sx-j-wip">${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</figcaption></figure>`:'';
+    // 문의에 붙인 사진(운영 조각 8-B)도 같은 띠로 그린다 — 「작업 중」 안내는 소식 그림에만, 문의 사진 띠에는 「사진 N장」 이름.
+    const progress=item.kind==='progress',pics=(progress||item.kind==='talk')&&item.pictures?.length?item.pictures:[];
+    const shots=pics.length?`<figure class="sx-j-shots" data-count="${pics.length}"${progress?'':` aria-label="${esc(t('사진 {count}장',{count:pics.length}))}"`}><div>${pics.map(src=>`<img src="${esc(src)}" alt="" loading="lazy" decoding="async"${progress?'':' data-keep-pic'}>`).join('')}</div>${progress?`<figcaption class="sx-small sx-j-wip">${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</figcaption>`:''}</figure>`:'';
     const body=(item.kind==='talk'||item.kind==='progress')&&item.text?`<p class="sx-body sx-j-text">${esc(item.text)}</p>${shots}`:item.kind==='quote'&&(!here||place==='drawer')?`<p class="sx-j-quote">${esc(item.text)}</p>`:shots;
     return `<li class="sx-j-row is-${esc(item.kind)}${tail?' has-tail':''}" data-who="${esc(item.who)}" data-journal-id="${esc(item.id)}" tabindex="-1">${meta}${tail}${body}</li>`;
   };
@@ -70,12 +73,17 @@ export function journalView(j,{place='column',here=null,video=false,photo=false,
     <header class="sx-j-head"><h2 class="sx-serif" id="room-journal-title">${esc(t('담당자와 나눈 말'))}</h2>${overlay?`<button type="button" class="sx-quiet sx-j-close" data-journal-do="close">${esc(t('닫기'))}</button>`:''}</header>
     ${asks?`<div class="sx-j-pin" aria-label="${esc(t('답해 주실 것'))}">${asks}</div>`:''}
     ${j.pinned.next?`<p class="sx-j-next"><span>${esc(t('지금 담당자 안내'))}</span>${esc(j.pinned.next)}</p>`:''}
-    <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000" required placeholder="${esc(t('담당자에게 물어보세요'))}" aria-label="${esc(t('담당자에게 물어보기'))}" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button>${video?`<p class="sx-j-hint" data-when="typing">${photo?withMarks(t('사진에서 고칠 곳은 {where} 의견 칸에 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('사진 아래',null,'where'))}</span>`}):withMarks(t('영상에서 고칠 곳은 {where} 의견 칸에, 그 장면에서 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('영상 아래',null,'where'))}</span>`})}</p>`:''}</form>
+    <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000"${attach?'':' required'} placeholder="${esc(t('담당자에게 물어보세요'))}" aria-label="${esc(t('담당자에게 물어보기'))}" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button>${attach?sayAttach():''}${video?`<p class="sx-j-hint" data-when="typing">${photo?withMarks(t('사진에서 고칠 곳은 {where} 의견 칸에 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('사진 아래',null,'where'))}</span>`}):withMarks(t('영상에서 고칠 곳은 {where} 의견 칸에, 그 장면에서 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('영상 아래',null,'where'))}</span>`})}</p>`:''}</form>
     ${filter?`<p class="sx-j-tools"><button type="button" class="sx-quiet sx-j-filter" data-journal-do="talk" aria-pressed="${talk?'true':'false'}">${esc(t('말만 보기'))}</button></p>`:''}
     ${items.length?`<ol class="sx-j-list" aria-label="${esc(t('지난 말'))}">${shown.map(row).join('')}</ol>`:talk?`<p class="sx-small sx-j-empty">${esc(t('나눈 말이 아직 없어요'))}</p>`:''}
     ${rest>0?`<button type="button" class="sx-quiet sx-j-more" data-journal-do="more" aria-expanded="${all?'true':'false'}">${esc(all?t('최근 말만 보기'):t('이전 말 {count}개 더 보기',{count:rest}))}</button>`:''}
   </aside>`;
 }
+// 문의 사진(운영 조각 8-B): 고르기 단추(이름 없는 파일 칸 — 그리기 기억 · 되살리기가 건드리지 않는다, 보내는 동안 잠김 data-mutate — 카본 A1)와 고른 사진의 미리 보기 칸.
+const sayAttach=()=>`<div class="sx-j-attach"><label class="sx-quiet sx-j-pick"><input type="file" class="sr" accept="image/png,image/jpeg" multiple data-say-photos data-mutate><span>${esc(t('사진 붙이기'))}</span></label><span class="sx-j-note" data-say-note role="status">${esc(t('JPG · PNG 4장까지'))}</span></div><ul class="sx-j-chips" data-say-chips aria-label="${esc(t('붙인 사진'))}" hidden></ul>`;
+const chipX='<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8"/></svg>';
+// 고른 사진 미리 보기(items: {src} — blob 주소). 빼기 단추는 보내는 동안 잠긴다(data-mutate).
+export const sayPhotoChips=items=>items.map((item,i)=>`<li><img src="${esc(item.src)}" alt="" decoding="async"><button type="button" class="sx-j-chip-x" data-say-photo-remove="${i}" data-mutate aria-label="${esc(t('사진 {n} 빼기',{n:i+1}))}">${chipX}</button></li>`).join('');
 // 서랍 · 시트로 뜨는가: 방향 · 완성 광고는 늘, 1차안 · 영상은 휴대폰 · 세로 화면에서만. 방은 늘 흐름 안.
 export const JOURNAL_SHEET='(max-width: 820px), (max-aspect-ratio: 1/1)';
 export const journalOverlay=box=>!!box&&(box.dataset.place==='drawer'||box.dataset.place==='side'&&!!globalThis.matchMedia?.(JOURNAL_SHEET)?.matches);

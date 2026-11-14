@@ -60,7 +60,7 @@ export function createClientMaterialsService({store,clientProjects,clock=()=>new
     }
     for(const asset of records(studio.assets).filter(asset=>uuid(asset.id))){
       const url=stored(asset)?'/api/client-projects/'+row.id+'/studio/media/'+asset.id:'';
-      const item=add({id:'asset:'+asset.id,category:asset.author==='customer'?'received':'reference',kind:kind(asset.fileName,asset.mimeType),label:asset.fileName,fileName:asset.fileName,sourceLabel:asset.author==='customer'?'고객이 PULSE에 올림':'PULSE 제작 자료',visibility:publicAssets.has(asset.id)?'customer':'internal',status:asset.author==='customer'?'received':'reference',openUrl:url,downloadUrl:url,updatedAt:asset.at,byteSize:asset.byteSize,mimeType:asset.mimeType});assets.set(asset.id,item);
+      const item=add({id:'asset:'+asset.id,category:asset.author==='customer'?'received':'reference',kind:kind(asset.fileName,asset.mimeType),label:asset.fileName,fileName:asset.fileName,sourceLabel:asset.author==='customer'?(asset.purpose==='message'?'고객 문의 사진':'고객이 PULSE에 올림'):'PULSE 제작 자료',visibility:publicAssets.has(asset.id)?'customer':'internal',status:asset.author==='customer'?'received':'reference',openUrl:url,downloadUrl:url,updatedAt:asset.at,byteSize:asset.byteSize,mimeType:asset.mimeType});assets.set(asset.id,item);
     }
     for(const [list,type,tab]of [[records(studio.references),'참고','direction'],[records(studio.concepts),'기획','concepts'],[records(studio.scenes),'장면','storyboard']])for(const card of list){
       if(!uuid(card.id))continue;

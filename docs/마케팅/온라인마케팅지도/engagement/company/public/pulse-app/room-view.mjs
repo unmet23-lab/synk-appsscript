@@ -207,6 +207,8 @@ export function progressLines(p){
   const list=Array.isArray(requestOf(p)?.progress)?requestOf(p).progress:[];
   return list.filter(item=>item&&typeof item.id==='string'&&typeof item.text==='string'&&Number.isFinite(Date.parse(item.at||''))).map(item=>({id:item.id,at:item.at,stage:typeof item.stage==='string'?item.stage:'',text:item.text,pictures:(Array.isArray(item.assets)?item.assets:[]).map(id=>assetById(p,id)).filter(asset=>asset?.mimeType?.startsWith('image/')&&assetUrl(asset)).slice(0,4).map(asset=>assetUrl(asset))})).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at));
 }
+// 문의에 붙인 사진(운영 조각 8-B): 글이 가리키는 사진 가운데 이 화면이 받은 그림만, 넷까지.
+export const messagePictures=(p,m)=>(Array.isArray(m?.photos)?m.photos:[]).map(id=>assetById(p,id)).filter(asset=>asset?.mimeType?.startsWith('image/')&&assetUrl(asset)).slice(0,4).map(asset=>assetUrl(asset));
 // 차례가 저희에게 넘어온 때: 손님이 마지막으로 넘겨준 일(보냄 · 답 · 고름 · 의견 · 확인)과 결제 확인 가운데 가장 늦은 때. 못 읽으면 null.
 function turnSince(r){
   const d=r?.directionProposal,times=[r?.submittedAt,r?.approvedAt,r?.payment?.confirmedAt,r?.modelProposal?.answeredAt,d?.answeredAt,d?.prior?.answeredAt,...(r?.asks||[]).map(ask=>ask.answeredAt),...(r?.rounds||[]).flatMap(round=>[round.feedbackAt,round.approvedAt])].map(value=>Date.parse(value||'')).filter(Number.isFinite);
@@ -318,7 +320,7 @@ export function journalModel(p){
   }
   for(const fb of st.feedbackRounds?.rounds||[])if(fb.submittedAt){const count=(fb.items||[]).length;add({id:'f:'+fb.id,at:fb.submittedAt,who:'me',name:me,kind:'event',what:fb.versionLabel?t('{label}에 의견 {count}개를 보냈어요',{label:fb.versionLabel,count}):photo?t('사진에 의견 {count}개를 보냈어요',{count}):t('영상에 의견 {count}개를 보냈어요',{count})});}
   // 문의와 답: 3a 묻기 화면과 같은 거름(영상 의견 하나하나는 영상 화면에만).
-  for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?t('자동 안내'):m.authorName||owner):me,kind:'talk',what:m.author==='staff'?'':t('문의',null,'journal'),text:m.text||''});
+  for(const m of p?.messages||[])if(m.action==='support'&&m.author!=='staff'||m.author==='staff')add({id:'m:'+m.id,ref:m.id,at:m.at,who:m.author==='staff'?(m.automated?'auto':'staff'):'me',name:m.author==='staff'?(m.automated?t('자동 안내'):m.authorName||owner):me,kind:'talk',what:m.author==='staff'?'':t('문의',null,'journal'),text:m.text||'',pictures:messagePictures(p,m)});
   for(const c of st.comments||[])if(c.targetType==='project')add({id:'c:'+c.id,ref:c.id,at:c.at,who:c.author==='customer'?'me':'staff',name:c.author==='customer'?me:c.authorName||owner,kind:'talk',what:'',text:c.text||''});
   const receipt=p?.closeout?.receipt;
   // 앞선 수령 확인(판 3c — 최종본을 더 올려 묶음이 바뀌어도 남는다). 옛 서버는 이 목록을 안 내려 지금 묶음 확인만 보인다.
@@ -373,7 +375,8 @@ const dayGap=(from,to)=>Math.round((Date.parse(to+'T00:00:00Z')-Date.parse(from+
 const mediaOf=(p,asset)=>asset?`/api/client-projects/${encodeURIComponent(p.id)}/studio/media/${encodeURIComponent(asset.id)}`:'';
 // 대표 그림: 확인 단계는 손님이 보낸 제품 사진(앞면 먼저), 그 뒤는 우리가 올린 가장 최근 그림(장면 · 작업 소식), 없으면 손님 사진.
 function staffPicture(p,stage){
-  const images=(p.studio?.assets||[]).filter(asset=>asset?.id&&String(asset.mimeType||'').startsWith('image/'));
+  // 손님 문의 사진(purpose message — 운영 조각 8-B)은 제품 사진이 아니라 대표 그림에서 뺀다.
+  const images=(p.studio?.assets||[]).filter(asset=>asset?.id&&asset.purpose!=='message'&&String(asset.mimeType||'').startsWith('image/'));
   const theirs=images.filter(asset=>asset.author==='customer').sort((a,b)=>(a.slot==='front'?0:1)-(b.slot==='front'?0:1));
   const ours=images.filter(asset=>asset.author!=='customer').sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
   const pick=stage==='check'?theirs[0]||ours[0]:ours[0]||theirs[0];

@@ -306,7 +306,9 @@ export function createCompanyApp(options={}) {
   const scanPulseAutoReplies=()=>pulseAutoReply.tick().catch(()=>{});
   let pulseRequestTimer=null;
   // 6시간마다: 보관 기간 뒤 지우기 → 공개 의뢰서 90일 정리. 서버 시작 직후 회차는 예고만 낸다(판 4 설계 11-6 · Fable 5.2 설계 검토 P3 — 복원 직후 바로 지우지 않게).
-  const retirePulseRequests=()=>pulseRequests.retireUnconfirmed().catch(()=>{});
+  // 같은 회차에 문의 사진(운영 조각 8-B): 붙지 않은 채 한 시간 지난 올려 둔 사진을 거두고 커밋 뒤 파일을 지운다(서버 끝판 카본 A2).
+  const sweepPulseMessageUploads=async()=>{let removed=[];try{removed=pulseStudio.sweepMessageUploads();}catch{return;}for(const file of removed)await pulseRequests.discardProjectFile(file).catch(()=>{});};
+  const retirePulseRequests=()=>pulseRequests.retireUnconfirmed().catch(()=>{}).then(sweepPulseMessageUploads);
   clientProjects.subscribeChanges(()=>{if(!pulseAutoReplyTimer||pulseAutoReplySoonTimer)return;pulseAutoReplySoonTimer=setTimeout(()=>{pulseAutoReplySoonTimer=null;void scanPulseAutoReplies();},1500);pulseAutoReplySoonTimer.unref?.();});
   const clientStartupTemplates=createClientStartupTemplatesService({store,clientProjects,clock});
   const clientSearch=createClientSearchService({store,clientProjects});
@@ -1021,6 +1023,15 @@ export function createCompanyApp(options={}) {
           const csrf=req.headers['x-pulse-csrf'];
           const file=await pulseRequests.receiveProjectFile(req,{session:()=>{const context=clientProjects.session(customerToken);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw httpError('고객 화면을 다시 열어 주세요.',403);return context;},client:clientAddress(req)});
           try{const result=pulseStudio.addRequestFile(customerToken,csrf,file);renewCustomerDevice();return send(res,201,result);}catch(error){await pulseRequests.discardProjectFile(file);throw error;}
+        }
+        // 문의 사진(운영 조각 8-B): 담당자에게 묻는 글에 붙일 JPG · PNG 한 장. 메시지 전용 자산으로 두고, 글에 붙이는 것은 문의 보내기(support의 photos)다.
+        // 보내기 전에 끊긴 채 한 시간 지난 사진은 이때 거둬(removed) 커밋 뒤 디스크에서 지운다.
+        if(path==='/pulse/api/studio/message-photo'){
+          const csrf=req.headers['x-pulse-csrf'];
+          const file=await pulseRequests.receiveMessagePhoto(req,{session:()=>{const context=clientProjects.session(customerToken);if(typeof csrf!=='string'||context.auth.body.csrf!==csrf)throw httpError('고객 화면을 다시 열어 주세요.',403);return context;},client:clientAddress(req)});
+          let result;try{result=pulseStudio.addMessagePhoto(customerToken,csrf,file);}catch(error){await pulseRequests.discardProjectFile(file);throw error;}
+          const {removed,...state}=result;for(const old of removed||[])await pulseRequests.discardProjectFile(old).catch(()=>{});
+          renewCustomerDevice();return send(res,201,state);
         }
         // 고객 전용 인물 사진을 고객 방에서 더 보낼 때(판 3). 인물 사진은 프로젝트 자료가 아니라 인물 출처 문서로 간다(초대 링크로 원본이 열리지 않는다).
         if(path==='/pulse/api/persona/source'){
@@ -2191,7 +2202,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,pulseRequests,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  return {server,store,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

@@ -28,11 +28,11 @@ const {parse}=createRequire(import.meta.url)('acorn');
 const MODULES=[
   {file:'server.mjs',scope:['body'],blocks:["'/pulse/api/"]},
   {file:'pulse-requests.mjs',
-    scope:['busy','text','link','one','many','markets','normalizeRequestAnswers','requestFileKind','inDraft','inMedia','count','assertDisk','draftOf','start','read','save','receive','removeFile','newNumber','submit','receiveProjectFile','assertCasting','applyRequestAction','personaRequestOf','personaFileKind','receivePersonaFile'],
+    scope:['busy','text','link','one','many','markets','normalizeRequestAnswers','requestFileKind','inDraft','inMedia','count','assertDisk','draftOf','start','read','save','receive','removeFile','newNumber','submit','receiveProjectFile','receiveMessagePhoto','assertCasting','applyRequestAction','personaRequestOf','personaFileKind','receivePersonaFile'],
     actions:{customer:['request_save','request_submit','request_answer','answer_model','answer_direction','submit_draft_review','approve_draft'],staff:['request_note','request_ask','request_confirm','propose_model','send_draft','propose_direction','request_contact','settle_direction','payment_request','payment_confirm','payment_cancel','due_change','progress_save','progress_post','progress_withdraw']},
     staffFlags:['staff'],messageArgs:{link:2}},
   {file:'pulse-studio.mjs',
-    scope:['customer','customerWrite','revision','studioOf','keys','capacity','commit','mutate','customerMutate','customerState','addRequestFile','removeRequestFile','customerAction'],
+    scope:['customer','customerWrite','revision','studioOf','keys','capacity','commit','mutate','customerMutate','customerState','addRequestFile','removeRequestFile','addMessagePhoto','customerAction'],
     actions:{customer:['approve','confirm_delivery','submit_kickoff_source','request_submit'],staff:['save_translation','request_strategy_review','save_concept','save_scene','reorder_scenes'],legacy:['save_strategy','confirm_strategy','save_preferences','save_reference','remove_reference','select_concept','review_scene','comment']},
     staffFlags:['user'],indirect:{'approval.reason':'client-preview-approval.mjs'}},
   {file:'client-projects.mjs',
@@ -40,6 +40,8 @@ const MODULES=[
     actions:{customer:['submit_kickoff_source','confirm_delivery','feedback','approve','support'],staff:[]},
     codeHelpers:{clean:{label:2,required:3,codes:4}}},
   {file:'pulse-live.mjs',scope:['customerRead','customerState','selection']},
+  // 문의 사진(운영 조각 8-B): 손님 문의 보내기(support의 photos)와 사진 올리기가 부르는 확인 — 모두 손님 길이다.
+  {file:'pulse-message-photos.mjs',scope:'*'},
   {file:'pulse-feedback-rounds.mjs',scope:['text','seconds','requiredId','currentPreview','findDraft','applyFeedbackRoundAction'],
     actions:{customer:['save_feedback_draft','remove_feedback_draft_item','submit_feedback_round'],staff:['classify_feedback_round']},staffFlags:['staff'],
     exclude:{'수정 범위는 담당자만 정리할 수 있어요.':'직원 액션(분류)을 부를 때의 역할 막음','의견 초안과 보내기는 고객 화면에서만 할 수 있어요.':'직원이 손님 액션을 부를 때'}},

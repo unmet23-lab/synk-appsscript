@@ -253,6 +253,8 @@ export function createPulseAutoReplyService({store,clientProjects,snapshot,clock
       const messages=row.messages||[];
       messages.forEach((message,index)=>{
         if(message.author!=='customer'||message.action!=='support'||message.resolved||message.at<=c.enabledAt||message.at>at||seen.has(`${row.id}:${message.id}`))return;
+        // 사진을 붙인 문의(운영 조각 8-B)는 자동 안내가 사진을 보지 못하니 담당자가 답한다 — API를 부르지 않는다.
+        if(Array.isArray(message.photos)&&message.photos.length)return;
         // 담당자가 그사이 고객에게 답했으면 API를 부르지 않는다(붙이는 쪽에서도 한 번 더 막는다).
         if(messages.slice(index+1).some(m=>m.author==='staff'&&m.visibility==='customer'&&!m.automated))return;
         out.push({row,message});

@@ -65,7 +65,9 @@
 // 손님이 고른 과감함 · 꼭 붙일 표시를 알려 주는 문단을 넣었다(room-view.mjs · views.mjs · app.mjs). 목록은 그대로이고 판만 올린다.
 // v65(11-14): 운영판(운영 조각 8-A, v64 위) — 직원 머리의 「운영판」 탭(여섯 달 매출 · 받을 돈 · 4주 일정 · 건별 표 · 월 CSV), 결제 확인 창의 받은 곳 · 금액 · 실수령 칸으로
 // app.mjs · views.mjs · staff.css · 새 직원 모듈 ledger-view.mjs(목록 밖 — 직원만 늦게 불러온다) · 글꼴 조각이 바뀌었다. 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v65-ledger-20261114';
+// v66(11-15): 문의 사진(운영 조각 8-B, v65 위) — 고객 방 일지의 묻기 칸에 「사진 붙이기」(JPG · PNG 넷까지 · 미리 보기와 빼기), 보낸 문의 줄의 사진 띠, 직원 화면의 문의 사진으로
+// app.mjs · film-views.mjs · room-view.mjs · views.mjs · film.css · staff.css · i18n/en.mjs가 바뀌었다(글꼴 조각은 새 글자가 없어 그대로). 목록은 그대로이고 판만 올린다.
+const CACHE = 'synk-pulse-shell-v66-message-photos-20261115';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

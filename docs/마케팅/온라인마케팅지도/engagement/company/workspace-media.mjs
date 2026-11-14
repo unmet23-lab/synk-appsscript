@@ -50,6 +50,8 @@ export function workspaceMediaNames(database){
     if(!Array.isArray(project.versions))throw new Error('고객 프로젝트의 파일 버전 기록을 확인해 주세요.');
     for(const version of project.versions)if(version.media)names.push(version.media.diskName);
     if(project.studio?.assets){if(!Array.isArray(project.studio.assets))throw new Error('PULSE 기획 자료 기록을 확인해 주세요.');for(const asset of project.studio.assets)names.push(asset.diskName);}
+    // 올려 두고 아직 글에 안 붙은 문의 사진(운영 조각 8-B — 자산이 아니라 따로 둔다).
+    if(project.studio?.messageUploads){if(!Array.isArray(project.studio.messageUploads))throw new Error('PULSE 문의 사진 기록을 확인해 주세요.');for(const upload of project.studio.messageUploads)names.push(upload.diskName);}
     if(project.intake?.files){if(!Array.isArray(project.intake.files))throw new Error('고객 접수 자료 기록을 확인해 주세요.');for(const file of project.intake.files)names.push(file.diskName);}
   }
   for(const row of database.prepare("SELECT body FROM documents WHERE kind='clientDeliveryDrafts'").all()){

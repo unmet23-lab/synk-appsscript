@@ -1206,6 +1206,19 @@ html.sx:not(.is-staff) .header-actions .install-button::before{display:none}
 .sx-j-say textarea:focus{border-bottom-color:var(--sx-ink)}
 .sx-j-say textarea::placeholder{color:rgba(244,241,234,.46)}
 .sx-j-say .sx-go{padding:7px 0}
+/* 운영 조각 8-B: 문의에 사진 붙이기 — 고르기(숨은 파일 칸의 이름표) · 넷까지 작은 미리 보기와 빼기 단추. 보낸 문의의 사진은 소식 그림과 같은 띠(.sx-j-shots). */
+.sx-j-attach{grid-column:1/-1;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px;min-width:0}
+.sx-j-pick{position:relative;cursor:pointer}
+.sx-j-pick:has(input:focus-visible){outline:2px solid currentColor;outline-offset:3px}
+.sx-j-pick:has(input:disabled){opacity:.45;cursor:default;text-decoration:none}
+.sx-j-note{font-size:13px;line-height:1.5;color:var(--sx-dim)}
+.sx-j-chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0;padding:0;list-style:none}
+.sx-j-chips[hidden]{display:none}
+.sx-j-chips li{position:relative;display:block}
+.sx-j-chips img{display:block;width:72px;height:72px;object-fit:cover;background:#000}
+.sx-j-chip-x{position:absolute;top:0;right:0;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;background:rgba(11,11,11,.74);color:var(--sx-ink);cursor:pointer}
+.sx-j-chip-x svg{width:11px;height:11px;stroke:currentColor;stroke-width:1.6;fill:none}
+.sx-j-chip-x:disabled{opacity:.4;cursor:default}
 .sx-j-hint{grid-column:1/-1;font-size:13px;line-height:1.5;color:var(--sx-dim)}
 /* 영상 의견 안내는 묻기 칸에 글을 쓰기 시작할 때만 — 같은 안내가 한 화면에 세 번 서지 않게. */
 .sx-j-hint[data-when=typing]{display:none}

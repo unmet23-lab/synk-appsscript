@@ -13,6 +13,7 @@ import {createPersonaGuard} from './pulse-personas.mjs';
 import {withTranslation,staffSources,translationStaffView,localizeCustomerProject,inlineObject} from './pulse-translations.mjs';
 import {serverText,staffDisplayName,createStaffNames} from './pulse-locale.mjs';
 import {postedProgressAssetIds,progressPurpose,assertProgressUpload} from './pulse-progress.mjs';
+import {MESSAGE_PHOTOS,isMessagePhoto,attachedPhotoIds,messageUploadsOf,sweepUnsentPhotos} from './pulse-message-photos.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const UUID=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
@@ -53,8 +54,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     return ids;
   }
   // 작업 소식 그림은 손님에게 직원이 올린 파일 이름을 내리지 않는다(설계 S1) — 형식만 남긴 이름. 소식 전용(purpose progress)이 아니어도 올린 소식이 가리키는 직원 그림이면 같다(GPT 서버 검수 GA1).
-  // 직원 보기에는 purpose를 함께 싣는다.
-  function media(row,asset,staff,hideName=false){const progress=progressPurpose(asset);return {id:asset.id,fileName:!staff&&(progress||hideName)?`progress.${asset.mimeType==='image/png'?'png':'jpg'}`:asset.fileName,mimeType:asset.mimeType,byteSize:asset.byteSize,url:staff?`/api/client-projects/${row.id}/studio/media/${asset.id}`:`/pulse/api/studio/media/${asset.id}`,...(staff&&progress?{purpose:'progress'}:{})};}
+  // 직원 보기에는 purpose를 함께 싣는다(작업 소식 그림 progress · 손님 문의 사진 message — 직원 화면이 대표 그림 · 고르기 목록에서 문의 사진을 뺀다).
+  function media(row,asset,staff,hideName=false){const progress=progressPurpose(asset);return {id:asset.id,fileName:!staff&&(progress||hideName)?`progress.${asset.mimeType==='image/png'?'png':'jpg'}`:asset.fileName,mimeType:asset.mimeType,byteSize:asset.byteSize,url:staff?`/api/client-projects/${row.id}/studio/media/${asset.id}`:`/pulse/api/studio/media/${asset.id}`,...(staff&&progress?{purpose:'progress'}:staff&&isMessagePhoto(asset)?{purpose:'message'}:{})};}
   function view(row,staff=false){
     const studio=studioOf(row),visible=visibleAssetIds(studio);
     const posted=new Set(postedProgressAssetIds(studio));
@@ -188,13 +189,37 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const {row}=customerWrite(token,csrf),studio=studioOf(row),who=actor(row),request=studio.request;
     if(!request?.files?.some(item=>item.id===fileId))throw fail('파일을 찾지 못했어요.',404);
     if(request.status==='confirmed'||request.confirmedAt)throw fail('확인이 끝난 자료예요. 바꿀 내용은 담당자에게 알려 주세요.',409);
-    if(studio.scenes.some(scene=>scene.assetId===fileId)||(request.asks||[]).some(ask=>ask.fileId===fileId))throw fail('이미 쓰고 있는 파일이에요. 담당자에게 알려 주세요.',409);
+    if(studio.scenes.some(scene=>scene.assetId===fileId)||(request.asks||[]).some(ask=>ask.fileId===fileId)||attachedPhotoIds(row).has(fileId))throw fail('이미 쓰고 있는 파일이에요. 담당자에게 알려 주세요.',409);
     const asset=studio.assets.find(item=>item.id===fileId),attached=row.intake?.files?.find(item=>item.id===fileId),diskName=asset?.diskName||attached?.diskName;
     if((asset&&asset.author!=='customer')||!diskName)throw fail('파일을 찾지 못했어요.',404);
     studio.assets=studio.assets.filter(item=>item.id!==fileId);studio.request={...request,files:request.files.filter(item=>item.id!==fileId)};
     commit(attached?{...row,intake:{...row.intake,files:row.intake.files.filter(item=>item.id!==fileId)}}:row,studio,'PULSE 제작 request_file_remove',who);
     return {...customerState(token),removed:{diskName}};
   });}
+  // 문의 사진 한 장을 올려 둔다(운영 조각 8-B — pulse-message-photos.mjs). 자산이 아니라 손님만의 올려 둔 목록(studio.messageUploads)에 두고,
+  // 글에 붙이는 것(자산으로 옮김)은 문의 보내기(support의 photos)가 한다. 붙지 않은 채 한 시간 지난 사진은 먼저 거두고(removed — 부른 쪽이 커밋 뒤 지움),
+  // 자산 + 올려 둔 사진 120 · 문의 사진(보낸 것 + 올려 둔 것) 40 · 올려 둔 사진 8을 넘지 않게 한다.
+  function addMessagePhoto(token,csrf,file){return store.transaction(()=>{
+    const {row}=customerWrite(token,csrf),studio=studioOf(row),who=actor(row);
+    const swept=sweepUnsentPhotos(messageUploadsOf(studio),Date.parse(clock()));
+    capacity([...studio.assets,...swept.uploads],MESSAGE_PHOTOS.assets);
+    if(studio.assets.filter(isMessagePhoto).length+swept.uploads.length>=MESSAGE_PHOTOS.perProject)throw fail('문의 사진은 한 프로젝트에 40장까지 붙일 수 있어요. 더 보낼 사진은 드라이브 링크로 알려 주세요.',409);
+    if(swept.uploads.length>=MESSAGE_PHOTOS.pending)throw fail('아직 보내지 않은 사진이 많아요. 문의를 먼저 보내 주세요.',409);
+    studio.messageUploads=[...swept.uploads,{id:file.id,diskName:file.diskName,fileName:file.fileName,mimeType:file.mimeType,byteSize:file.byteSize,...who,at:file.at}];
+    commit(row,studio,'PULSE 문의 사진',who);
+    return {...customerState(token),photo:{id:file.id},removed:swept.removed};
+  });}
+  // 정리 예약(6시간마다 — 서버 끝판 카본 A2): 모든 프로젝트에서 붙지 않은 채 한 시간 지난 올려 둔 사진을 뺀다. 지울 파일 이름을 돌려준다(부른 쪽이 커밋 뒤 지움).
+  // 손님 · 직원이 한 일이 아니므로 판 번호 · 마지막 움직임(90일 정리의 시계)은 건드리지 않는다.
+  function sweepMessageUploads(){
+    const now=Date.parse(clock()),removed=[];if(!Number.isFinite(now))return removed;
+    for(const {id} of store.all('clientProjects'))store.transaction(()=>{
+      const row=store.get('clientProjects',id),uploads=messageUploadsOf(row?.studio);if(!uploads.length)return;
+      const swept=sweepUnsentPhotos(uploads,now);if(swept.uploads.length===uploads.length)return;
+      store.put('clientProjects',id,{...row,studio:{...row.studio,messageUploads:swept.uploads}});removed.push(...swept.removed);
+    });
+    return removed;
+  }
   function customerAction(token,csrf,input){
     if(['confirm_delivery','submit_kickoff_source'].includes(input?.action)){customerWrite(token,csrf);clientProjects.customerAction(token,csrf,input);return customerState(token);}
     return store.transaction(()=>{
@@ -209,5 +234,5 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   // 서버 안에서만 부른다: 자동 안내가 읽는 고객 화면 사실(고객용 프로젝트 보기 + 고객에게 공개된 스튜디오).
   // 자동 안내의 근거(손님 보기). 이 건의 제작 자리(seat)도 손님 방과 같이 싣는다(6-B 서버 검수 GA2).
   function customerSnapshot(projectId){const row=store.get('clientProjects',projectId);if(!row)throw fail('그 프로젝트를 찾지 못했어요.',404);const seat=seatOf(row);return {...clientProjects.customerSnapshot(projectId),studio:view(row),...(seat?{seat}:{})};}
-  return {addRequestFile,removeRequestFile,customerState,staffState,customerMutate,staffMutate,assertCustomerUpload,assertStaffUpload,customerUpload,staffUpload,customerMedia,staffMedia,customerAction,customerSnapshot};
+  return {addRequestFile,removeRequestFile,addMessagePhoto,sweepMessageUploads,customerState,staffState,customerMutate,staffMutate,assertCustomerUpload,assertStaffUpload,customerUpload,staffUpload,customerMedia,staffMedia,customerAction,customerSnapshot};
 }

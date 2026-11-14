@@ -112,7 +112,9 @@ test('one place to ask: the journal on every screen with its own support form an
   assert.match(review,/class="sx-quiet sx-j-ask-open " data-room-do="journal">담당자에게 묻기</,'on a phone the ask opens the sheet; on a wide screen the journal is beside the film');
   assert.equal(review.split('data-form="support"').length-1,1,'the video screen keeps one ask box — in the journal');
   const app=read('app.mjs');
-  assert.match(app,/if\(type==='support'\)\{const text=String\(values\.text\|\|''\)\.trim\(\);if\(!text\)\{form\.elements\.text\.focus\(\);return;\}await mutate\(\(\)=>projectAction\('support',\{text\}\)/);
+  // 운영 조각 8-B: 글이나 사진 하나는 있어야 보내고, 사진은 id로 함께 간다(사진이 없으면 전처럼 글만).
+  assert.match(app,/if\(type==='support'\)\{const text=String\(values\.text\|\|''\)\.trim\(\),items=form\.querySelector\('\[data-say-photos\]'\)\?sayItems\(\)\.slice\(\):\[\];if\(!text&&!items\.length\)\{/);
+  assert.match(app,/return await projectAction\('support',\{text,\.\.\.\(items\.length\?\{photos:items\.map\(item=>item\.id\)\}:\{\}\)\}\)/);
   assert.match(app,/if\(stage==='journal'\|\|stage==='contact'\)\{openJournal\(\);return;\}/,'any old ask path opens the journal where you are');
   assert.doesNotMatch(app,/s\.tab='review';s\.reviewPanel='ask'/,'asking no longer borrows the video screen');
 });

@@ -357,3 +357,7 @@ html.is-staff .desk-pay-channel .desk-check{margin:0 0 10px}
   html.is-staff .ledger-table td[data-label="이름"]::before{display:none}
 }
 @media (prefers-reduced-motion:reduce){html.is-staff .staff-pic img{transition:none}html.is-staff .staff-card:hover .staff-pic img{transform:none}}
+/* 운영 조각 8-B: 손님 문의에 붙은 사진 — 작은 띠, 누르면 원본을 새 창에 */
+html.is-staff .comment-photos{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+html.is-staff .comment-photos a{display:block;line-height:0}
+html.is-staff .comment-photos img{display:block;height:96px;width:auto;max-width:100%;object-fit:contain;background:#111;border-radius:4px}

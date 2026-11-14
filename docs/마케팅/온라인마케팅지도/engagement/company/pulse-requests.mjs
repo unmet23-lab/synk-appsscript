@@ -23,6 +23,7 @@ export const REQUEST_LIMITS=Object.freeze({
   startsPerHourByClient:20,startsPerDay:300,submitsPerDay:50,savesPerHourByClient:1200,uploadsPerHourByClient:200,
   uploadBytesPerDayByClient:2*1024**3,uploadBytesPerDay:10*1024**3,
   filesPerDraft:30,bytesPerDraft:400*1024**2,fileBytes:100*1024**2,attachmentBytes:30*1024**2,
+  messagePhotoBytes:15*1024**2, // 문의 사진 한 장(운영 조각 8-B) — 휴대폰 사진이 넉넉히 들어가는 크기
   minimumFreeBytes:20*1024**3,
 });
 // 오류 문장은 한국어 그대로 둔다 — 고정 문장은 화면이 그 문장을 키로 번역하고(i18n.mjs), 손님 글이 끼는 동적 문장만
@@ -448,8 +449,42 @@ export function createPulseRequests({store,clientProjects,clock=()=>new Date().t
       return {id,purpose,diskName,fileName,mimeType:kind.inline?mimeType:'application/octet-stream',byteSize:size,sha256:sha.digest('hex'),inline:kind.inline,at:clock()};
     }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
   }
+  // 문의 사진(운영 조각 8-B · 설계 S1 「④ 문의에 사진 붙이기」): 손님이 담당자에게 묻는 글에 붙이는 JPG · PNG 한 장. 의뢰 자료(request.files)와 섞지 않고
+  // 부른 쪽(pulse-studio addMessagePhoto)이 메시지 전용 자산(purpose message)으로 둔다. 문턱 · 디스크 검사 · 서명 확인은 자료 더 보내기와 같고, 크기는 15MB까지.
+  async function receiveMessagePhoto(req,{session,client=''}){
+    const before=session();
+    if(before.row.stage==='archived')throw fail('보관된 프로젝트예요.',409);
+    count('upload:'+digest(client),1,REQUEST_LIMITS.uploadsPerHourByClient,3600000);
+    await assertDisk();
+    const header=key=>{const value=req.headers[key];if(value==null)return '';try{return decodeURIComponent(value);}catch{throw fail('파일 이름을 확인해 주세요.');}};
+    const fileName=text(header('x-file-name'),200),mimeType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase();
+    if(!fileName)throw fail('파일 정보를 확인해 주세요.');
+    const photo=()=>fail('문의에는 사진(JPG · PNG)만 붙일 수 있어요.',415);
+    if(!['image/png','image/jpeg'].includes(mimeType))throw photo();
+    let kind;try{kind=requestFileKind(mimeType,fileName);}catch{throw photo();}
+    if(!kind.inline)throw photo();
+    const limit=REQUEST_LIMITS.messagePhotoBytes,tooBig=()=>fail('사진은 한 장에 15MB까지 붙일 수 있어요.',413);
+    const declared=Number(req.headers['content-length']);if(declared>limit)throw tooBig();
+    if(declared){count('bytes:'+digest(client),declared,REQUEST_LIMITS.uploadBytesPerDayByClient,86400000);count('bytes:all',declared,REQUEST_LIMITS.uploadBytesPerDay,86400000);}
+    const id=randomUUID(),temporary=inMedia(id+'.upload');
+    await mkdir(media(),{recursive:true,mode:0o700});
+    const handle=await open(temporary,'wx',0o600),sha=createHash('sha256');let size=0,head=Buffer.alloc(0);
+    try{
+      for await(const chunk of req.iterator({destroyOnReturn:false})){
+        size+=chunk.length;if(size>limit){req.resume();throw tooBig();}
+        if(head.length<4096)head=Buffer.concat([head,chunk.subarray(0,4096-head.length)]);
+        sha.update(chunk);let offset=0;while(offset<chunk.length){const {bytesWritten}=await handle.write(chunk,offset,chunk.length-offset);offset+=bytesWritten;}
+      }
+      await handle.close();
+      if(!size||!validRequestFile(kind,mimeType,head))throw fail('파일 내용이 형식과 달라요. 다른 파일을 골라 주세요.',415);
+      if(!declared){count('bytes:'+digest(client),size,REQUEST_LIMITS.uploadBytesPerDayByClient,86400000);count('bytes:all',size,REQUEST_LIMITS.uploadBytesPerDay,86400000);}
+      const diskName=`${id}.${kind.extension}`;
+      await rename(temporary,inMedia(diskName));
+      return {id,diskName,fileName,mimeType,byteSize:size,sha256:sha.digest('hex'),at:clock()};
+    }catch(error){await handle.close().catch(()=>{});await unlink(temporary).catch(()=>{});throw error;}
+  }
   const discardProjectFile=async file=>{await unlink(inMedia(file.diskName)).catch(()=>{});};
-  return {start,read,save,receive,removeFile,draftFilePath,submit,pruneDrafts,retireUnconfirmed,receiveProjectFile,receivePersonaFile,discardProjectFile,limits:REQUEST_LIMITS};
+  return {start,read,save,receive,removeFile,draftFilePath,submit,pruneDrafts,retireUnconfirmed,receiveProjectFile,receivePersonaFile,receiveMessagePhoto,discardProjectFile,limits:REQUEST_LIMITS};
 }
 export async function streamDraftFile(res,{paths,file},req){
   let path,info;
@@ -886,11 +921,12 @@ export function requestView(studio,{staff=false}={}){
   // 담당자가 고친 메일 주소 · 끈 사실은 손님 보기에 내리지 않는다(고객 방은 초대 링크를 가진 누구나 연다).
   // paymentFlow는 직원 보기에도 둔다 — 직원 화면의 결제 줄 · 글 콘티 판 고르기 · 의견 다시 묶기는 이 서버에서만 켠다(화면 묶음이 서버보다 먼저 나가도 옛 서버에 모르는 칸을 보내지 않게).
   // castingLooks(2026-11-10 옷 · 머리 고르기): 이 서버가 방향 고르기의 옷 · 머리(answer_direction outfit · hair)를 안다 — 화면은 이것이 있을 때만 그 줄을 그리고 칸을 보낸다.
+  // messagePhotos(운영 조각 8-B): 이 서버가 문의 사진(POST /pulse/api/studio/message-photo · support의 photos)을 받는다 — 손님 화면은 이것이 있을 때만 「사진 붙이기」를 그린다.
   // modelProposalLooks(2026-11-12 사진 상품): 이 서버가 모델 답(answer_model)의 outfit · hair를 안다 — 화면은 이것이 있을 때만 모델 제안 카드에 그 줄을 그리고 칸을 보낸다.
   // paymentLedger: 이 서버가 결제 이력을 쌓고 payment_confirm의 amount · channel · net을 안다 — 직원 화면은 이것이 있을 때만 그 칸을 보낸다.
   // progressFeed: 이 서버가 작업 소식(progress_save · progress_post · progress_withdraw, 그림 올리기의 x-studio-purpose: progress)을 안다 — 직원 화면은 이것이 있을 때만 「소식 올리기」를 그린다.
   // dueChange: 이 서버가 받으실 날 고치기(due_change)를 안다 — 직원 화면은 이것이 있을 때만 「받으실 날 고치기」를 그린다.
-  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,modelProposalLooks:true,paymentLedger:true,progressFeed:true,dueChange:true};
+  if(staff)return {...safe,notes:notes||[],contact:contact||null,paymentLog:paymentLogOf(request),progress:progressOf(studio),paymentFlow:true,castingLooks:true,modelProposalLooks:true,paymentLedger:true,progressFeed:true,dueChange:true,messagePhotos:true};
   // 결제는 상태 · 때 · 값 · 받으실 날 · 받으실 날을 고친 때만 내린다(크몽 주문 번호 · 취소 사유 · 담당자 이름은 직원만).
   if(safe.payment){const {status,requestedAt,confirmedAt,cancelledAt,amount,dueDate,dueChangedAt}=safe.payment;safe.payment={status,...(requestedAt?{requestedAt}:{}),...(confirmedAt?{confirmedAt}:{}),...(cancelledAt?{cancelledAt}:{}),...(amount?{amount}:{}),...(dueDate?{dueDate}:{}),...(dueChangedAt?{dueChangedAt}:{})};}
   // paymentTrail(운영 조각 2 · 11-11): 일지의 결제 줄 — 다시 요청해도 앞 요청 · 취소 줄이 남게 이력에서 만든다.
@@ -904,5 +940,5 @@ export function requestView(studio,{staff=false}={}){
   // paymentFlow: 이 서버가 결제 상태와 제작 시작 동의(terms)를 안다 — 화면은 이것이 있을 때만 terms를 보낸다(서버보다 화면 묶음이 먼저 나가도 승인이 막히지 않게).
   // 작업 소식: 올린 것만 {id, at, stage?, text, assets}로(pulse-progress.mjs progressCustomerView) request.progress 자리에 싣는다. 하나도 없으면 칸을 싣지 않는다.
   const shown=progressCustomerView(studio);
-  return {...safe,...(trail.length?{paymentTrail:trail}:{}),...(shown.length?{progress:shown}:{}),paymentFlow:true,castingLooks:true,modelProposalLooks:true};
+  return {...safe,...(trail.length?{paymentTrail:trail}:{}),...(shown.length?{progress:shown}:{}),paymentFlow:true,castingLooks:true,modelProposalLooks:true,messagePhotos:true};
 }
