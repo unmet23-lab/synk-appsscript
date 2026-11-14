@@ -320,9 +320,10 @@ test('화면 캡처: 장면이 연 첫 문서의 404도 오류로 센다', async
   if (!fixture) return;
   const { r, 준비하기 } = fixture;
   const 장면 = path.join(r.뿌리, '장면.mjs');
-  fs.writeFileSync(장면, "export default async ({ page, 찍기, 주소들 }) => {\n  await page.goto(주소들['홈'].replace('index.html', 'missing.html'));\n  await 찍기('없음');\n};\n");
+  fs.writeFileSync(장면, "export default async ({ page, 찍기, 주소들 }) => {\n  await page.goto(주소들['홈'].replace('index.html', 'missing.html'));\n  await 찍기('없음');\n  await page.goto(주소들['홈']);\n  await 찍기('첫');\n};\n");
   const 둘 = await 준비하기({ 이름: '장면시험', 폴더: path.join(r.뿌리, 'out2'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 화면: ['홈=site/index.html'], 장면 });
-  assert.deepEqual(둘.목록.화면.화면들.map(x => x.이름), ['없음']);
+  assert.deepEqual(둘.목록.화면.화면들.map(x => x.이름), ['없음', '첫']);
+  assert.match(둘.목록.화면.화면들[1].주소.후, /site\/index\.html$/, '404 뒤의 정상 장면은 자기 문서 주소를 보존한다');
   assert.ok(둘.목록.화면.장들.find(x => x.이름 === '없음' && x.판 === '후').오류.some(e => /^HTTP 404 /.test(e)), '장면이 연 첫 문서의 404도 센다(Fable F5)');
 });
 
