@@ -12,7 +12,8 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const 뿌리 = path.join(__dirname, '..');
-const 읽기 = rel => fs.readFileSync(path.join(뿌리, rel), 'utf8');
+// 글은 git에 들어가는 모습(LF)으로 읽는다. Windows 작업본은 줄끝마다 CR이 붙어 한 장이 51~53자 더 세졌고, CI는 지나가는 판이 로컬에서만 6,000자에 걸렸다(2026-11-14).
+const 읽기 = rel => fs.readFileSync(path.join(뿌리, rel), 'utf8').replace(/\r\n/g, '\n');
 const 스킬 = '.claude/skills/synk-video/SKILL.md';
 const 틀 = 'docs/마케팅/제작양식/영상양식/지시문_틀.md';
 const 컷표 = 'docs/마케팅/제작양식/영상양식/컷표_틀.json';

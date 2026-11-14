@@ -314,13 +314,13 @@ test('워크트리: 크기 알림 — 늘 읽는 두 장이 상한을 넘겨 커
   const 판 = 새판(t, { 파일: { 'AGENTS.md': '# 입구\n', 'docs/_ops/결정.md': 짧은결정, 'docs/_ops/트랙.md': '# 트랙\n\n- 짧은 줄\n', 'a.txt': 'a\n' } });
   const 워 = 판.워크트리('wt');
   const 긴줄 = (머리) => `${머리} ${'가'.repeat(700)}`;   // 한글 700자 = 2,100바이트
-  워.쓰기('AGENTS.md', `# 입구\n${'x'.repeat(12 * 1024)}\n`);
+  워.쓰기('AGENTS.md', `# 입구\n${'x'.repeat(13 * 1024)}\n`);
   워.쓰기('docs/_ops/결정.md', `${짧은결정}${긴줄('| 2026-10-24 | 확정 | 긴 행')} | 근거 |\n`);
   워.쓰기('docs/_ops/트랙.md', `# 트랙\n\n- 짧은 줄\n${긴줄('- **긴 항목:**')}\n- 새 짧은 줄\n`);
   const 미리 = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 메시지: '크기' });
   assert.equal(미리.결과, '미리 보기', JSON.stringify(미리));
   assert.equal(미리.크기알림.length, 3, JSON.stringify(미리.크기알림));
-  assert.match(미리.크기알림[0], /^AGENTS\.md 12\.\dKB — 상한 11\.0KB을 넘겨 커졌다\(전 0\.0KB\)/);
+  assert.match(미리.크기알림[0], /^AGENTS\.md 13\.\dKB — 상한 12\.0KB을 넘겨 커졌다\(전 0\.0KB\)/);
   assert.match(미리.크기알림[1], /^docs\/_ops\/결정\.md에 2\.0KB 넘는 줄 1개 — 「\| 2026-10-24 \| 확정 \| 긴 행/);
   assert.match(미리.크기알림[2], /^docs\/_ops\/트랙\.md에 2\.0KB 넘는 줄 1개 — 「- \*\*긴 항목:\*\*/);
   assert.match(도구._시험.올리기글(미리), /크기 알림\(막지 않음\): AGENTS\.md/);
@@ -328,7 +328,7 @@ test('워크트리: 크기 알림 — 늘 읽는 두 장이 상한을 넘겨 커
   assert.equal(r.결과, '올림', `알림은 막지 않는다 — ${JSON.stringify(r)}`);
   assert.equal(r.크기알림.length, 3);
   // 이미 상한을 넘은 문서를 줄이는 push와, 결정·트랙을 건드리지 않는 push에는 알림이 없다
-  워.쓰기('AGENTS.md', `# 입구\n${'x'.repeat(11.5 * 1024)}\n`);
+  워.쓰기('AGENTS.md', `# 입구\n${'x'.repeat(12.5 * 1024)}\n`);
   워.쓰기('a.txt', 'b\n');
   const 줄임 = await 도구.올리기({ 저장소: 워.폴더, 모두: true, 메시지: '줄임', 실행: true });
   assert.equal(줄임.결과, '올림', JSON.stringify(줄임));
