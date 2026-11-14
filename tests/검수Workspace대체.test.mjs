@@ -169,7 +169,15 @@ test('only the pinned tool chain gets one fourth review for the upstream merge; 
   }
   const receipt=seal(f,parent.폴더);assert.deepEqual(receipt.chain.map(x=>x.review),[tool,tool+'-r2',tool+'-r3',tool+'-r4']);
   assert.throws(()=>proof.Workspace대체결속({...first.목록,이름:tool+'-r4'}),/원천.*범위/,'the fourth name cannot authorize a new first packet');
-  assert.throws(()=>proof.Workspace대체결속({...first.목록,이름:tool+'-r5'}),/범위/);
+  // Renaming the first packet only exercises the first-chain name guard; it never walks a chain.
+  assert.throws(()=>proof.Workspace대체결속({...first.목록,이름:tool+'-r5'}),/범위/,'a fifth name cannot disguise the first packet');
+  // A real fifth delta hash-linked to the sealed r4 must stop at the chain path limit itself.
+  const r4=parent,r5=writeClaim(first,path.join(f.root,tool+'-r5'),m=>{m.이름=tool+'-r5';m.갈래='델타';m.앞={이름:r4.목록.이름,폴더:r4.폴더};m.증명.앞={이름:r4.목록.이름,검토입력해시:r4.목록.증명.검토입력해시};});
+  assert.deepEqual(r5.목록.증명.앞,{이름:tool+'-r4',검토입력해시:r4.목록.증명.검토입력해시});
+  assert.throws(()=>proof.Workspace대체사슬(r5.폴더,r5.목록),/사슬 경로가 잘못됐다/);
+  assert.throws(()=>seal(f,r5.폴더),/사슬 경로가 잘못됐다/,'the actual fifth link is rejected by the chain path limit');
+  assert.equal(fs.existsSync(path.join(r5.폴더,'대체승인')),false,'nothing is sealed for the rejected fifth link');
+  assert.equal(proof.Workspace대체읽기(r4.폴더,r4.목록).review,tool+'-r4','the sealed fourth link stays valid');
 });
 
 test('approval rejects other tasks, changed binding, existing complete GPT and in-flight GPT',async t=>{

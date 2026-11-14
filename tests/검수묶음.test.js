@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 
 const root = path.resolve(__dirname, '..');
@@ -17,6 +17,8 @@ const tool = () => import(pathToFileURL(path.join(root, 'tools/검수묶음.mjs'
 for (const k of Object.keys(process.env)) if (/^GIT_/.test(k)) delete process.env[k];
 Object.assign(process.env, { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: path.join(os.tmpdir(), 'synk-review-test-no-global-config'), GIT_TERMINAL_PROMPT: '0',
   GIT_AUTHOR_NAME: '시험', GIT_AUTHOR_EMAIL: 'test@example.invalid', GIT_COMMITTER_NAME: '시험', GIT_COMMITTER_EMAIL: 'test@example.invalid' });
+// 셸에 GPT 검수 모델 바꿈(SYNK_GPT_REVIEW_MODEL)이 남아 있어도 시험은 기본값에서 시작한다 — 바꿈을 보는 시험이 스스로 켜고 끈다.
+delete process.env.SYNK_GPT_REVIEW_MODEL;
 
 function 임시저장소(t, 파일 = {}) {
   const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-review-test-'));
@@ -1214,36 +1216,71 @@ test('집계(백엔드): 아르곤이 막혀도 GPT가 끝까지 읽었으면 �
   assert.ok(집계하기({ ...백, 종류: '화면' }, [읽음], { 지적: [] }, [읽음]).조건.includes('Fable 최종 검수 전'));
 });
 
+// 가짜 codex(CODEX_BIN) — 실제 모델·계정을 부르지 않는다. 띄울 때마다 인자를 부름.log에 한 줄씩 적는다(부르지 않았는지 보려고).
+//  exec: 인자·CODEX_HOME·표준입력·답 꼴을 args.json에 적고, FAKE_CODEX가 limit·login이면 그 오류로 끝난다.
+//        답은 받은 묶음의 끝 표식·항목 번호를 그대로 돌려준다(없으면 END_X · D01-aaaa).
+//  app-server: 계정 읽기(Pro)·몫 읽기(주간 10% 사용)만 흉내 낸다 — GPT 명령이 계정을 고르고 몫을 읽게.
+// CODEX_BIN · CODEX_HOME · CODEX_BAKE_DIR(빈 굽기 장부) · FAKE_CODEX · SYNK_GPT_REVIEW_MODEL은 시험이 끝나면 되돌린다.
+function 가짜코덱스(t) {
+  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fake-codex-'));
+  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
+  const 가짜 = path.join(뿌리, 'codex.js'), 기록 = path.join(뿌리, 'args.json'), 부름 = path.join(뿌리, '부름.log');
+  fs.writeFileSync(가짜, `
+const fs = require('fs');
+const a = process.argv.slice(2);
+fs.appendFileSync(${JSON.stringify(부름)}, JSON.stringify(a) + '\\n');
+process.stdin.setEncoding('utf8');
+let 입력 = '';
+if (a[0] === 'app-server') {
+  process.stdin.on('data', d => {
+    입력 += d;
+    for (let i; (i = 입력.indexOf('\\n')) >= 0;) {
+      const 줄 = 입력.slice(0, i);
+      입력 = 입력.slice(i + 1);
+      let m;
+      try { m = JSON.parse(줄); } catch { continue; }
+      if (m.id == null) continue;
+      const result = m.method === 'account/read' ? { account: { planType: 'pro' } }
+        : m.method === 'account/rateLimits/read' ? { rateLimits: { primary: { usedPercent: 10, windowDurationMins: 10080 } } } : {};
+      process.stdout.write(JSON.stringify({ id: m.id, result }) + '\\n');
+    }
+  });
+  process.stdin.on('end', () => process.exit(0));
+} else {
+  process.stdin.on('data', d => { 입력 += d; });
+  process.stdin.on('end', () => {
+    fs.writeFileSync(${JSON.stringify(기록)}, JSON.stringify({ a, home: process.env.CODEX_HOME || null, 입력, 꼴: JSON.parse(fs.readFileSync(a[a.indexOf('--output-schema') + 1], 'utf8')) }));
+    if (process.env.FAKE_CODEX === 'limit') { process.stderr.write("ERROR: You've hit your usage limit. Try again in 2 hours.\\n"); process.exit(1); }
+    if (process.env.FAKE_CODEX === 'login') { process.stderr.write('ERROR: Not logged in\\n'); process.exit(1); }
+    const 표식 = (/자료 끝 표식: (\\S+)\\s*$/.exec(입력) || [])[1] || 'END_X';
+    const seen = [...입력.matchAll(/^### \\[([^\\]]+)\\]/gm)].map(m => m[1]);
+    fs.writeFileSync(a[a.indexOf('-o') + 1], JSON.stringify({ findings: [], seen: seen.length ? seen : ['D01-aaaa'], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 표식 }));
+    process.stdout.write(JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 12, output_tokens: 3 } }) + '\\n');
+  });
+}`);
+  const 옛 = Object.fromEntries(['CODEX_BIN', 'CODEX_HOME', 'CODEX_BAKE_DIR', 'FAKE_CODEX', 'SYNK_GPT_REVIEW_MODEL'].map(k => [k, process.env[k]]));
+  t.after(() => { for (const [k, v] of Object.entries(옛)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } });
+  Object.assign(process.env, { CODEX_BIN: 가짜, CODEX_HOME: path.join(뿌리, '다른계정'), CODEX_BAKE_DIR: path.join(뿌리, '굽기장부없음') });
+  delete process.env.FAKE_CODEX;
+  delete process.env.SYNK_GPT_REVIEW_MODEL;
+  const 읽기 = () => JSON.parse(fs.readFileSync(기록, 'utf8'));
+  return { 뿌리, 읽기,
+    부른것: () => { const { a } = 읽기(); return { 모델: a[a.indexOf('-m') + 1], 추론: a.find(x => x.startsWith('model_reasoning_effort=')) }; },
+    부름수: () => (fs.existsSync(부름) ? fs.readFileSync(부름, 'utf8').split('\n').filter(Boolean).length : 0) };
+}
+
 test('GPT 부르기: codex exec를 본 계정·읽기 전용·빈 폴더·답 꼴로 한 번 부르고, 한도·로그인 오류는 막힘으로 읽힌다', async t => {
   const { GPT부르기, GPT검수, 답꼴 } = await tool();
   // 11-11 유호님 「응, sol max로」: 모델·추론은 검수 도구에 고정 — 앱 기본값이 바뀌어도 검수 강도가 따라 바뀌지 않는다
   assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' });
   assert.ok(Object.isFrozen(GPT검수));
-  const 뿌리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-fake-codex-'));
-  t.after(() => fs.rmSync(뿌리, { recursive: true, force: true, maxRetries: 5 }));
-  const 가짜 = path.join(뿌리, 'codex.js'), 기록 = path.join(뿌리, 'args.json');
-  fs.writeFileSync(가짜, `
-const fs = require('fs');
-const a = process.argv.slice(2);
-let 입력 = '';
-process.stdin.on('data', d => { 입력 += d; });
-process.stdin.on('end', () => {
-  fs.writeFileSync(${JSON.stringify(기록)}, JSON.stringify({ a, home: process.env.CODEX_HOME || null, 입력, 꼴: JSON.parse(fs.readFileSync(a[a.indexOf('--output-schema') + 1], 'utf8')) }));
-  if (process.env.FAKE_CODEX === 'limit') { process.stderr.write("ERROR: You've hit your usage limit. Try again in 2 hours.\\n"); process.exit(1); }
-  if (process.env.FAKE_CODEX === 'login') { process.stderr.write('ERROR: Not logged in\\n'); process.exit(1); }
-  fs.writeFileSync(a[a.indexOf('-o') + 1], JSON.stringify({ findings: [], seen: ['D01-aaaa'], coverage: { reviewed: '전부', limitations: '', complete: true, missing: [] }, endMarker: 'END_X' }));
-  process.stdout.write(JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 12, output_tokens: 3 } }) + '\\n');
-});`);
-  const 옛 = { bin: process.env.CODEX_BIN, home: process.env.CODEX_HOME, mode: process.env.FAKE_CODEX };
-  t.after(() => { for (const [k, v] of [['CODEX_BIN', 옛.bin], ['CODEX_HOME', 옛.home], ['FAKE_CODEX', 옛.mode]]) { if (v === undefined) delete process.env[k]; else process.env[k] = v; } });
-  Object.assign(process.env, { CODEX_BIN: 가짜, CODEX_HOME: path.join(뿌리, '다른계정') });
-  delete process.env.FAKE_CODEX;
-  const 굽기계정 = { 이름: 'bake3', home: path.join(뿌리, 'bake3') };
+  const 가짜 = 가짜코덱스(t);
+  const 굽기계정 = { 이름: 'bake3', home: path.join(가짜.뿌리, 'bake3') };
   const r = await GPT부르기({ prompt: '묶음 글\n자료 끝 표식: END_X\n', schema: 답꼴, thinking: 'high', timeoutMs: 60_000, 계정: 굽기계정 });
   assert.equal(JSON.parse(r.text).endMarker, 'END_X');
   assert.deepEqual(r.usage, { input_tokens: 12, output_tokens: 3 });
   assert.equal(r.selectedModel, 'gpt-6.1-sol-high · 굽기 장부 bake3');
-  const 본 = JSON.parse(fs.readFileSync(기록, 'utf8'));
+  const 본 = 가짜.읽기();
   assert.equal(본.home, 굽기계정.home, '고른 계정의 CODEX_HOME으로');
   assert.equal(본.입력, '묶음 글\n자료 끝 표식: END_X\n', '묶음은 표준입력으로');
   assert.deepEqual(본.꼴.required, 답꼴.required);
@@ -1253,27 +1290,153 @@ process.stdin.on('end', () => {
   assert.match(빈, /synk-gpt-review-[^\\/]+[\\/]empty$/, '-C는 저장소가 아니라 빈 임시 폴더(읽기 전용 실행은 파일 읽기도 거절한다)');
   assert.ok(!fs.existsSync(빈), '끝나면 임시 폴더를 지운다');
   await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
-  const 기본 = JSON.parse(fs.readFileSync(기록, 'utf8'));
+  const 기본 = 가짜.읽기();
   assert.equal(기본.home, null, '계정을 안 주면 본 계정(~/.codex) — 밖의 CODEX_HOME을 따르지 않는다');
   assert.ok(기본.a.includes('model_reasoning_effort="max"'), '수준을 안 주면 GPT검수의 추론(max)');
   assert.equal(기본.a[기본.a.indexOf('-m') + 1], 'gpt-6.1-sol');
-  // 한 회차만 다른 모델로(SYNK_GPT_REVIEW_MODEL) — 부른 모델이 -m과 결과의 모델 칸에 그대로 남고, 기본값은 바뀌지 않는다
-  const 옛모델 = process.env.SYNK_GPT_REVIEW_MODEL;
-  t.after(() => { if (옛모델 === undefined) delete process.env.SYNK_GPT_REVIEW_MODEL; else process.env.SYNK_GPT_REVIEW_MODEL = 옛모델; });
+  // 환경변수 SYNK_GPT_REVIEW_MODEL이 있는 동안(한 회차 뒤 저절로 풀리지 않는다) — 부른 모델이 -m과 결과의 모델 칸에 그대로 남고, 기본값은 바뀌지 않는다
   process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
   const 바꿈 = await GPT부르기({ prompt: 'x\n자료 끝 표식: END_X\n', schema: 답꼴, timeoutMs: 60_000 });
   assert.equal(바꿈.selectedModel, 'gpt-6-astra-max · 본 계정(~/.codex)');
-  const 바꿈기록 = JSON.parse(fs.readFileSync(기록, 'utf8'));
-  assert.equal(바꿈기록.a[바꿈기록.a.indexOf('-m') + 1], 'gpt-6-astra');
+  assert.equal(가짜.부른것().모델, 'gpt-6-astra');
+  // 부른 뒤 실패해도 오류에 실제로 부른 모델·추론·계정이 붙는다 — 검수보내기가 기본 모델(gpt-6.1-sol-null)을 적지 않게
+  process.env.FAKE_CODEX = 'limit';
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /quota/.test(e.message) && e.selectedModel === 'gpt-6-astra-max · 본 계정(~/.codex)');
+  assert.equal(가짜.부른것().모델, 'gpt-6-astra', '한도로 끝난 그 부름도 astra였다');
+  delete process.env.FAKE_CODEX;
+  // 이름 꼴이 아니면 codex를 띄우지 않고 멈춘다 — 부르지 않았으니 오류에 모델이 붙지 않는다
   process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /모델 이름 꼴이 아니다/);
+  let 부름앞 = 가짜.부름수();
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /모델 이름 꼴이 아니다/.test(e.message) && !('selectedModel' in e));
+  assert.equal(가짜.부름수(), 부름앞, '이름 꼴이 아니면 codex를 띄우지 않는다');
   delete process.env.SYNK_GPT_REVIEW_MODEL;
   assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' }, '기본값은 그대로다');
   process.env.FAKE_CODEX = 'limit';
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /quota/);
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /quota/.test(e.message) && e.selectedModel === 'gpt-6.1-sol-max · 본 계정(~/.codex)');
   process.env.FAKE_CODEX = 'login';
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), /login/);
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000, 계정: null }), /quota — 주간 90% 아래인 Pro 계정이 없다/);
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6.1-sol-max · 본 계정(~/.codex)');
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, thinking: 'high', timeoutMs: 60_000, 계정: 굽기계정 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6.1-sol-high · 굽기 장부 bake3');
+  부름앞 = 가짜.부름수();
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000, 계정: null }), e => /quota — 주간 90% 아래인 Pro 계정이 없다/.test(e.message) && !('selectedModel' in e));
+  assert.equal(가짜.부름수(), 부름앞, '계정이 없으면 부르지 않는다');
+});
+
+test('GPT 모델·추론 한 곳(11-14 후속): 공식 GPT보내기 → GPT부르기 → 가짜 codex — 성공·한도·로그인 결과의 모델·수준이 실제로 넘긴 -m·추론과 같고, 이름 꼴이 아닌 환경 모델은 아무것도 쓰기 전에 멈추며, 환경 모델은 지울 때까지 검수마다 보인다', async t => {
+  const { 준비하기, GPT보내기, GPT부르기, GPT검수 } = await tool();
+  const 가짜 = 가짜코덱스(t);
+  const r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const 준비 = 이름 => 준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  // GPT 명령(main)과 같은 꼴: --수준을 안 주면 수준 null, call은 고른 계정(여기서는 본 계정)으로 GPT부르기
+  const 보내기 = async (x, 덧 = {}) => {
+    const 알림 = [];
+    await GPT보내기(x.폴더, x.목록, { 수준: null, call: a => GPT부르기({ ...a, 계정: { 이름: null, home: null } }), 몫: () => null, 알리기: m => 알림.push(m), ...덧 });
+    return { 보냄: 알림.filter(m => / 보냄 · /.test(m)), 결과: JSON.parse(fs.readFileSync(path.join(x.폴더, 'GPT-A.json'), 'utf8')) };
+  };
+  const 본계정 = '본 계정(~/.codex)';
+
+  // ① 기본값: sol · max — 수준을 안 줘도 결과의 수준은 실제로 넘긴 max, 보내기 안내에는 「기본 모델」
+  const 기본 = await 준비('기본');
+  const d = await 보내기(기본);
+  assert.deepEqual(가짜.부른것(), { 모델: 'gpt-6.1-sol', 추론: 'model_reasoning_effort="max"' });
+  assert.equal(d.결과.상태, '읽음');
+  assert.equal(d.결과.모델, `gpt-6.1-sol-max · ${본계정}`);
+  assert.equal(d.결과.수준, 'max');
+  assert.deepEqual(d.결과.모델설정, { 모델: 'gpt-6.1-sol', 추론: 'max', 환경바꿈: false });
+  assert.equal(d.보냄.length, 1);
+  assert.match(d.보냄[0], /gpt-6\.1-sol-max · 기본 모델/);
+  assert.doesNotMatch(d.보냄[0], /적용/);
+  // ② 명시한 --수준은 그대로 -c와 결과에
+  const h = await 보내기(await 준비('높음'), { 수준: 'high' });
+  assert.equal(가짜.부른것().추론, 'model_reasoning_effort="high"');
+  assert.equal(h.결과.모델, `gpt-6.1-sol-high · ${본계정}`);
+  assert.equal(h.결과.수준, 'high');
+  // ③ 환경 모델: 이름이 다른 두 검수를 이어 보내도 둘 다 바꾼 모델로 가고, 보내기 안내·결과에 바꿈이 보이며, 도구는 환경을 지우지 않는다
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  for (const 이름 of ['바꿈-1', '바꿈-2']) {
+    const s = await 보내기(await 준비(이름));
+    assert.equal(가짜.부른것().모델, 'gpt-6-astra', 이름);
+    assert.equal(s.결과.상태, '읽음', 이름);
+    assert.equal(s.결과.모델, `gpt-6-astra-max · ${본계정}`, 이름);
+    assert.deepEqual(s.결과.모델설정, { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: true }, 이름);
+    assert.match(s.보냄[0], /gpt-6-astra-max · 환경변수 SYNK_GPT_REVIEW_MODEL 적용\(기본 gpt-6\.1-sol 아님/, 이름);
+    assert.equal(process.env.SYNK_GPT_REVIEW_MODEL, 'gpt-6-astra', `${이름}: 한 회차 뒤에도 환경은 그대로다`);
+  }
+  // ④ 바꾼 모델로 부른 뒤 한도(11-14 재현: 수준 null · quota 종료) — 결과는 기본 gpt-6.1-sol-null이 아니라 실제로 부른 astra · max · 계정
+  process.env.FAKE_CODEX = 'limit';
+  const q = await 보내기(await 준비('바꿈-한도'));
+  assert.equal(가짜.부른것().모델, 'gpt-6-astra');
+  assert.equal(q.결과.상태, '막힘');
+  assert.equal(q.결과.차단증거?.종류, '한도');
+  assert.equal(q.결과.모델, `gpt-6-astra-max · ${본계정}`);
+  assert.equal(q.결과.수준, 'max');
+  assert.equal(q.결과.모델설정.환경바꿈, true);
+  // 읽은 답이 있는 묶음을 다시 보내다 막히면 앞 답(sol)과 그 모델은 그대로 두고, 실패들에는 이번에 부른 모델(astra)을 적는다
+  const 다시 = await 보내기(기본, { 다시: true });
+  assert.equal(다시.결과.상태, '읽음');
+  assert.equal(다시.결과.모델, `gpt-6.1-sol-max · ${본계정}`);
+  assert.deepEqual(다시.결과.답, d.결과.답);
+  assert.equal(다시.결과.모델설정.환경바꿈, false, '남긴 답의 설정은 그 답을 낸 기본 모델 그대로');
+  const 실패 = 다시.결과.실패들.at(-1);
+  assert.deepEqual({ 상태: 실패.상태, 모델: 실패.모델, 수준: 실패.수준, 모델설정: 실패.모델설정 },
+    { 상태: '막힘', 모델: `gpt-6-astra-max · ${본계정}`, 수준: 'max', 모델설정: { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: true } });
+  // ⑤ 로그인
+  process.env.FAKE_CODEX = 'login';
+  const l = await 보내기(await 준비('바꿈-로그인'));
+  assert.equal(l.결과.상태, '막힘');
+  assert.equal(l.결과.차단증거?.종류, '로그인');
+  assert.equal(l.결과.모델, `gpt-6-astra-max · ${본계정}`);
+  delete process.env.FAKE_CODEX;
+  // ⑥ 이름 꼴이 아닌 환경 모델: codex를 띄우지 않고, 결과·보내는 중 표시를 하나도 쓰지 않은 채 멈춘다(앞 결과가 있으면 그대로)
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
+  const 틀림 = await 준비('틀린모델');
+  const 부름앞 = 가짜.부름수(), 기본앞 = fs.readFileSync(path.join(기본.폴더, 'GPT-A.json'));
+  await assert.rejects(보내기(틀림), /SYNK_GPT_REVIEW_MODEL이 모델 이름 꼴이 아니다/);
+  await assert.rejects(보내기(기본, { 다시: true }), /모델 이름 꼴이 아니다/);
+  assert.equal(가짜.부름수(), 부름앞, '부르기 전에 멈춘다');
+  assert.deepEqual(fs.readdirSync(틀림.폴더).filter(f => f.startsWith('GPT-')), [], '부르지 않은 모델을 결과에 남기지 않는다');
+  assert.deepEqual(fs.readFileSync(path.join(기본.폴더, 'GPT-A.json')), 기본앞, '앞 결과도 건드리지 않는다');
+  assert.deepEqual({ ...GPT검수 }, { 모델: 'gpt-6.1-sol', 추론: 'max' });
+});
+
+test('GPT 명령(11-14 후속): 계정·보내기·완료 안내에 이번 모델·추론과 환경변수 바꿈이 보이고(이름이 다른 두 검수 연속), 이름 꼴이 아닌 환경 모델은 계정도 읽지 않고 종료 2', async t => {
+  const { 준비하기 } = await tool();
+  const 가짜 = 가짜코덱스(t);
+  const r = 임시저장소(t, { 'a.js': 'export const a = 1;\n' });
+  r.쓰기('a.js', 'export const a = 2;\n');
+  const 준비 = 이름 => 준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  // 명령 그대로(node tools/검수묶음.mjs GPT <폴더>) — 계정·몫은 가짜 app-server, 검수는 가짜 exec
+  const GPT명령 = x => {
+    const p = spawnSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), 'GPT', x.폴더], { encoding: 'utf8', env: { ...process.env }, timeout: 120_000, windowsHide: true });
+    const 파일 = path.join(x.폴더, 'GPT-A.json');
+    return { 종료: p.status, 출력: p.stdout || '', 알림: p.stderr || '', 결과: fs.existsSync(파일) ? JSON.parse(fs.readFileSync(파일, 'utf8')) : null };
+  };
+  const 줄 = (글, 식) => 글.split(/\r?\n/).find(l => 식.test(l)) || '';
+  const 세안내 = s => [줄(s.알림, /GPT 계정: /), 줄(s.알림, / 보냄 · /), 줄(s.출력, /^GPT A /)];
+  // 기본: 세 안내 모두 「기본 모델」
+  const 기본 = GPT명령(await 준비('명령-기본'));
+  assert.equal(기본.종료, 0, 기본.알림);
+  assert.match(줄(기본.알림, /GPT 계정: /), /→ 본 계정\(~\/\.codex\)/);
+  for (const l of 세안내(기본)) { assert.match(l, /gpt-6\.1-sol-max · 기본 모델/, l); assert.doesNotMatch(l, /적용/, l); }
+  assert.equal(기본.결과.모델, 'gpt-6.1-sol-max · 본 계정(~/.codex)');
+  // 환경 모델: 이름이 다른 두 검수를 이어 돌려도 둘 다 계정·보내기·완료 안내에 바꾼 모델과 환경변수가 보인다
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra';
+  for (const 이름 of ['명령-바꿈-1', '명령-바꿈-2']) {
+    const s = GPT명령(await 준비(이름));
+    assert.equal(s.종료, 0, s.알림);
+    for (const l of 세안내(s)) assert.match(l, /gpt-6-astra-max · 환경변수 SYNK_GPT_REVIEW_MODEL 적용/, `${이름}: ${l}`);
+    assert.equal(가짜.부른것().모델, 'gpt-6-astra', 이름);
+    assert.equal(s.결과.모델, 'gpt-6-astra-max · 본 계정(~/.codex)', 이름);
+    assert.deepEqual(s.결과.모델설정, { 모델: 'gpt-6-astra', 추론: 'max', 환경바꿈: true }, 이름);
+  }
+  // 이름 꼴이 아니면 계정 읽기(app-server)도 codex exec도 띄우지 않고 종료 2 — 결과를 쓰지 않는다
+  process.env.SYNK_GPT_REVIEW_MODEL = 'gpt-6-astra; rm -rf x';
+  const 틀림 = await 준비('명령-틀림'), 부름앞 = 가짜.부름수();
+  const e = GPT명령(틀림);
+  assert.equal(e.종료, 2, e.알림);
+  assert.match(e.알림, /SYNK_GPT_REVIEW_MODEL이 모델 이름 꼴이 아니다/);
+  assert.equal(가짜.부름수(), 부름앞, '계정도 읽지 않는다');
+  assert.equal(e.결과, null);
 });
 
 test('GPT 계정 고르기: Pro이고 주간 90% 아래인 계정 가운데 가장 덜 쓴 것, 없으면 null', async () => {

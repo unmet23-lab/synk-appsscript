@@ -8,6 +8,8 @@
 //   node tools/검수묶음.mjs 카본 <이름> [--수준 high|medium] [--묶음 A …] [--다시]         묶음마다 하나씩 보내고 입력 SHA·끝 표식·읽은 항목을 대조
 //     (11-11부터 Gemini 검수자의 보이는 이름은 「카본」(gemini-4-carbon high) — 명령 「아르곤」 · --검수자 아르곤도 같고, 정책 · 지적표 · 기록의 키는 옛 이름 「아르곤」 그대로다)
 //   node tools/검수묶음.mjs GPT <이름> [--수준 high|xhigh…] [--묶음 A …] [--다시]          백엔드 2차 검수(2026-10-24 GPT 하나 — 막히면 아르곤 → 그록 → Fable, 판 5까지 묶음은 아르곤 → Fable) — 아르곤과 같은 묶음·같은 대조
+//     (모델 gpt-6.1-sol · 추론 max, --수준은 추론만. 환경변수 SYNK_GPT_REVIEW_MODEL=gpt-…가 있으면 그 모델 — 도구는 이 값을 지우지 않아 셸에 남은 동안 GPT 검수마다 적용되고,
+//      계정·보내기·완료 안내와 결과의 「모델설정」에 적힌다. 모델 이름 꼴이 아니면 계정도 읽지 않고 멈춘다)
 //   node tools/검수묶음.mjs 그록 <이름> [--수준 low|medium|high|xhigh|max] [--묶음 A …] [--다시]   그록(xAI 구독 CLI, 2026-11-07) — 같은 묶음·같은 대조, 지적은 KA1…
 //     정책 판 6(2026-11-08 눈가림 시험 뒤)부터 Claude 백엔드에서 GPT·아르곤이 둘 다 한도·로그인으로 막혔을 때만 대신한다 — 그록이 대신 본 사슬은
 //     그록 P2도 처리를 적어야 닫힌다(P3는 막지 않는다). 화면·GPT 작성·판 5까지 묶음에서는 더 보는 눈이고, 낸 P0·P1은 다른 지적처럼 처리해야 닫힌다
@@ -986,10 +988,23 @@ const require코덱스 = () => require('./codex계정.js');
 // 기록 380여 건을 견주니 sol·max가 반영된 P0·P1을 100KB당 가장 많이 잡았고(1.42 · astra xhigh 1.25 · astra medium 0.47),
 // 굽기 장부 Pro의 주간 몫은 1회 0.08% 안팎으로 astra xhigh(0.1~0.3%)보다 적었다 — Pro 하나로 주 500회를 감당하는 쪽(결정 표 11-11).
 // 앱 설정과 떼어 두었으니 앱 기본값을 바꿔도 검수는 그대로다. --수준은 이 추론만 바꾼다.
-// 한 회차만 다른 모델로 볼 때(유호님이 그 회차의 모델을 정했을 때 — 11-14 「아스트라로 진행해」)는 환경변수 SYNK_GPT_REVIEW_MODEL=gpt-6-astra로 부른다.
-// 기본값은 바뀌지 않고, 결과의 「모델」 칸에는 실제로 부른 모델이 남는다. 모델 이름 꼴이 아니면 부르지 않고 멈춘다.
+// 유호님이 어느 회차의 모델을 따로 정했을 때(11-14 「아스트라로 진행해」)는 환경변수 SYNK_GPT_REVIEW_MODEL=gpt-6-astra로 부른다. 이 값은 한 회차 뒤에
+// 저절로 풀리지 않는다 — 도구는 환경을 바꾸거나 지우지 않으니 셸에 남아 있는 동안 이름이 다른 검수까지 GPT 검수마다 그 모델로 부른다. 한 회차만이면
+// 그 명령에만 붙이거나 끝난 뒤 직접 지운다(PowerShell: Remove-Item Env:SYNK_GPT_REVIEW_MODEL). 켜져 있는지는 계정·보내기·완료 안내와 결과의 「모델설정」에 보인다.
+// 기본값(GPT검수)은 바뀌지 않는다. 모델·추론은 GPT검수설정 한 곳에서 정해 codex exec의 -m·-c와 성공·실패 결과의 「모델」·「수준」 칸이 같은 값을 쓰고,
+// 모델 이름 꼴이 아니면 계정도 읽지 않고 어느 모델도 부르지 않은 채 멈춘다(결과 파일을 쓰지 않는다).
 export const GPT검수 = Object.freeze({ 모델: 'gpt-6.1-sol', 추론: 'max' });
 const 추론들 = ['minimal', 'low', 'medium', 'high', 'xhigh', 'ultra', 'max'];
+const GPT모델환경 = 'SYNK_GPT_REVIEW_MODEL';
+/** GPT 검수가 부를 모델·추론. 추론은 --수준(thinking)이 있으면 그것, 없으면 GPT검수.추론. 모델은 환경변수가 있으면 그것(환경바꿈 true), 없으면 GPT검수.모델.
+ *  환경 모델이 이름 꼴이 아니면 던진다 — 부르기 전의 설정 오류라 이 오류에는 부른 모델(selectedModel)이 없다. */
+export function GPT검수설정(thinking = null) {
+  const 바꿈모델 = (process.env[GPT모델환경] || '').trim();
+  if (바꿈모델 && !/^gpt-[a-z0-9][a-z0-9.-]{0,40}$/.test(바꿈모델)) throw new Error(`${GPT모델환경}이 모델 이름 꼴이 아니다: ${JSON.stringify(바꿈모델.slice(0, 60))} — 어느 모델도 부르지 않았다`);
+  return { 모델: 바꿈모델 || GPT검수.모델, 추론: thinking || GPT검수.추론, 환경바꿈: Boolean(바꿈모델) };
+}
+/** 계정·보내기·완료 안내의 모델 글 — 기본과 환경변수 바꿈을 헷갈리지 않게 늘 어느 쪽인지 적는다. */
+export const GPT설정글 = s => `${s.모델}-${s.추론} · ${s.환경바꿈 ? `환경변수 ${GPT모델환경} 적용(기본 ${GPT검수.모델} 아님 — 지울 때까지 GPT 검수마다)` : `기본 모델(${GPT모델환경} 없음)`}`;
 const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초, 11-04~11 max 회차 가운데 가장 긴 것이 26분(astra 1,573초 · sol 1,097초) — 큰 묶음의 여유
 const GPT주간한계 = 90;  // 주간 이만큼(%) 넘게 쓴 계정은 검수에 쓰지 않는다
 const 굽기뿌리 = () => process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake');
@@ -1045,13 +1060,14 @@ function codex실행(args, 입력, timeoutMs, home = null) {
   });
 }
 /** 아르곤 부르기와 같은 꼴: { prompt, schema, thinking, timeoutMs, 계정 } → { text, selectedModel, usage }. 한도·로그인은 막힘으로 읽히는 오류로 던진다.
- *  모델·추론은 GPT검수 값을 늘 -m·-c로 넘긴다 — 본 계정·굽기 장부 폴더의 config.toml(만들 때 옮긴 옛 값)이 무엇이든 같은 모델로 본다. */
+ *  모델·추론은 GPT검수설정 값을 늘 -m·-c로 넘긴다 — 본 계정·굽기 장부 폴더의 config.toml(만들 때 옮긴 옛 값)이 무엇이든 같은 모델로 본다.
+ *  부르러 간 뒤의 실패(시간 초과·한도·로그인·종료 코드·답 파일 없음)도 오류의 selectedModel에 성공과 같은 「모델-추론 · 계정」을 붙인다 —
+ *  검수보내기가 실패 결과에 기본 모델을 적지 않게. 계정 없음·환경 모델 이름 꼴 아님은 부르기 전이라 붙이지 않는다. */
 export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs = GPT제한분 * 60_000, 계정 = { 이름: null, home: null } }) {
   const { 코덱스오류, 한도문구, 로그인문구 } = require코덱스();
   if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
-  const 바꿈모델 = (process.env.SYNK_GPT_REVIEW_MODEL || '').trim();
-  if (바꿈모델 && !/^gpt-[a-z0-9][a-z0-9.-]{0,40}$/.test(바꿈모델)) throw new Error(`SYNK_GPT_REVIEW_MODEL이 모델 이름 꼴이 아니다: ${바꿈모델.slice(0, 60)}`);
-  const 모델 = 바꿈모델 || GPT검수.모델, 추론 = thinking || GPT검수.추론;
+  const { 모델, 추론 } = GPT검수설정(thinking);
+  const selectedModel = `${모델}-${추론} · ${계정말(계정)}`;
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gpt-review-'));
   try {
     const 빈 = path.join(임시, 'empty'), 꼴파일 = path.join(임시, 'schema.json'), 답파일 = path.join(임시, 'answer.json');
@@ -1069,7 +1085,10 @@ export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs 
     if (!fs.existsSync(답파일)) throw new Error('codex exec가 답 파일을 남기지 않았다');
     let usage = null;
     for (const 줄 of r.출력.split(/\r?\n/)) { if (!줄.startsWith('{')) continue; try { const e = JSON.parse(줄); if (e?.type === 'turn.completed' && e.usage) usage = e.usage; } catch { /* 사건 아님 */ } }
-    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel: `${모델}-${추론} · ${계정말(계정)}`, usage };
+    return { text: fs.readFileSync(답파일, 'utf8'), selectedModel, usage };
+  } catch (e) {
+    if (e instanceof Error) e.selectedModel = selectedModel;
+    throw e;
   } finally { fs.rmSync(임시, { recursive: true, force: true, maxRetries: 3 }); }
 }
 /** 그 계정의 주간·5시간 몫(app-server, 토큰 0). 남은 몫으로 아르곤과 같은 꼴. 못 읽으면 null. */
@@ -1100,7 +1119,7 @@ export const 검수자들 = {
         // 다시 검수에서 아르곤이 낸 지적을 다시 볼 때는 아직 안 본 GPT가 먼저다 — 그록은 GPT·아르곤이 둘 다 막힌 뒤에만(대신할검수자)
         ? `아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. GPT가 이 다시 검수를 아직 안 봤으면 GPT ${목록.이름}로, GPT도 막혔으면 그록 ${목록.이름}로, 그록도 막히면 ${페이블할것(목록)}로 대신하고, 끝 보고에 그렇게 적는다`
         : `아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않는다 — 백엔드(GPT가 막혀 대신한 검수)는 그록으로 대신하고(그록 ${목록.이름}, 그록도 막히면 ${페이블할것(목록)}), 끝 보고에 그렇게 적는다`) },
-  GPT: { 출처: 'GPT', 번호앞: 'G', 모델: GPT검수.모델, 기본수준: () => GPT검수.추론, 제한분: () => GPT제한분, 몫: GPT몫읽기,
+  GPT: { 출처: 'GPT', 번호앞: 'G', 모델: GPT검수.모델, 기본수준: () => GPT검수.추론, 제한분: () => GPT제한분, 몫: GPT몫읽기, 설정: GPT검수설정,
     수준검사: 수준 => { if (수준 != null && !추론들.includes(수준)) throw new Error(`--수준은 ${추론들.join('·')} 가운데 하나(받음 ${수준}) — 빼면 ${GPT검수.추론}`); },
     막힘말: 목록 => (GPT자리대체정책(목록?.정책)
       ? `GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. GPT 작성 묶음(정책 판 7)이라 카본이 GPT 자리를 대신한다(카본 ${목록.이름} — 모든 묶음을 끝까지). 카본도 막히면 더 내려가지 않고, 몫이 돌아온 뒤 --다시로 보낸다. Claude 검수는 그대로 받는다. 끝 보고에 대신한 것을 적고, 올리기와 끝 보고 전에 GPT 몫을 다시 읽어 풀렸으면 GPT 확인까지 받는다`
@@ -1151,6 +1170,11 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
   if (!자) throw new Error(`모르는 검수자: ${누구}`);
   수준 = 수준 === undefined ? 자.기본수준(목록.종류) : 수준;
   자.수준검사(수준);
+  // GPT만: 부를 모델·추론을 여기서 한 번 정해(GPT검수설정) 보내기 안내·call 인자·성공·실패 결과에 같이 쓴다. 환경 모델이 이름 꼴이 아니면
+  // 표시·결과를 하나도 쓰지 않고 여기서 멈춘다 — 부르지 않은 모델을 부른 것처럼 남기지 않게. 다른 검수자는 설정이 없어 그대로다.
+  const 설정 = 자.설정 ? 자.설정(수준) : null;
+  if (설정) 수준 = 설정.추론;
+  const 부를모델 = 설정 ? 설정.모델 : 자.모델;
   몫 ||= 자.몫;
   const 결과들 = [], 내표시들 = [];
   try {
@@ -1179,23 +1203,25 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
     if (!표시잡기(폴더, 표시, 내표시)) { 알리기(`${자.출처} 묶음 ${묶음.이름}: 그새 다른 프로세스가 보내기 시작했다 — 건너뜀`); continue; }
     내표시들.push([표시, 내표시.표]);
     const 앞몫 = await 몫();
-    let 기록 = null, 오류 = null, 답 = null;
+    let 기록 = null, 오류 = null, 답 = null, 부른모델 = null;
     if (앞몫?.주간 === 0) 오류 = `주간 몫이 다 찼다(초기화 ${앞몫.주간초기화 || '?'}) — limit remaining 0`;
     else {
-      알리기(`${자.출처} 묶음 ${묶음.이름} 보냄 · ${수준 || '설정 그대로'} · ${Math.round(입력.length / 1024)}KB · 항목 ${묶음.항목.length}개${앞몫 ? ` · 주간 몫 ${퍼(앞몫.주간)}` : ''}`);
-      try { 기록 = await call({ model: 자.모델, thinking: 수준, prompt: 입력.toString('utf8'), schema: 목록.갈래 === '델타' ? 다시답꼴 : 답꼴, timeoutMs: 자.제한분(수준) * 60_000 }); }
-      catch (e) { 오류 = e.message; }
+      알리기(`${자.출처} 묶음 ${묶음.이름} 보냄 · ${설정 ? GPT설정글(설정) : 수준 || '설정 그대로'} · ${Math.round(입력.length / 1024)}KB · 항목 ${묶음.항목.length}개${앞몫 ? ` · 주간 몫 ${퍼(앞몫.주간)}` : ''}`);
+      try { 기록 = await call({ model: 부를모델, thinking: 수준, prompt: 입력.toString('utf8'), schema: 목록.갈래 === '델타' ? 다시답꼴 : 답꼴, timeoutMs: 자.제한분(수준) * 60_000 }); }
+      catch (e) { 오류 = e.message; if (설정 && typeof e?.selectedModel === 'string') 부른모델 = e.selectedModel; }
       if (기록) { try { 답 = JSON.parse(기록.text); } catch { 오류 = '답이 JSON이 아니다'; } }
     }
     const 차단증거 = 막힘증거(누구, 오류, 앞몫);
     const 대조 = 답 ? 답대조(묶음, 답) : { 상태: 차단증거 ? '막힘' : '실패', 표식맞음: false, 빠진항목: [] };
-    const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 기록?.selectedModel || (자.모델 ? `${자.모델}-${수준}` : 자.출처), 보낸때: new Date(시작).toISOString(),
+    // 모델 칸: 답이 오면 그 답을 낸 모델, 부른 뒤 실패면 GPT부르기가 오류에 붙인 모델, 그 밖(부르기 전 막힘·가짜 call)은 이번에 부를 모델·추론
+    const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 기록?.selectedModel || 부른모델 || (부를모델 ? `${부를모델}-${수준}` : 자.출처), ...(설정 ? { 모델설정: 설정 } : {}), 보낸때: new Date(시작).toISOString(),
       초: Math.round((Date.now() - 시작) / 1000), ...대조, 오류, 실패원문: 오류, 원문: 기록?.text ?? null, 차단증거, usage: 기록?.usage ?? null, 몫: { 앞: 앞몫, 뒤: 기록 || 오류 ? await 몫() : 앞몫 }, 답 };
     알리기(`${자.출처} 묶음 ${묶음.이름} · ${r.초}초 · ${r.상태}${r.빠진항목.length ? ` · 빠진 항목 ${r.빠진항목.join(',')}` : ''}${Array.isArray(답?.findings) ? ` · 지적 ${답.findings.length}건` : ''}${오류 ? ` · ${오류.slice(0, 240)}` : ''}${몫글(r.몫)}`);
     // 다시 보낸 답이 못 쓰는 것(잘림·실패·막힘)이면 앞의 쓸 만한 답과 그 지적을 그대로 두고 이번 시도만 실패들에 적는다
     // — 결과 파일과 지적표가 같은 답을 가리키게.
     if (!쓸만한가(r) && 쓸만한가(앞결과)) {
-      const 둠 = { ...앞결과, 실패들: [...(앞결과.실패들 || []), { 보낸때: r.보낸때, 초: r.초, 수준, 상태: r.상태, 오류: r.오류, 빠진항목: r.빠진항목 }] };
+      // GPT는 실패한 이번 시도의 모델·설정도 적는다(남긴 앞 답의 모델과 다를 수 있다)
+      const 둠 = { ...앞결과, 실패들: [...(앞결과.실패들 || []), { 보낸때: r.보낸때, 초: r.초, 수준, 상태: r.상태, 오류: r.오류, 빠진항목: r.빠진항목, ...(설정 ? { 모델: r.모델, 모델설정: 설정 } : {}) }] };
       writeJson(파일, 둠);
       알리기(`묶음 ${묶음.이름}: 다시 보낸 답이 ${r.상태}라 앞의 ${앞결과.상태} 답과 지적을 그대로 둔다`);
       결과들.push(둠);
@@ -2658,12 +2684,15 @@ async function main(argv) {
     return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
   }
   if (o.명령 === 'GPT') {
+    // 모델·추론은 GPT검수설정 한 곳에서 — 계정·보내기·완료 안내와 결과가 같은 값을 적는다. --수준이나 환경 모델이 틀리면 계정도 읽지 않고 멈춘다.
+    let 설정;
+    try { 검수자들.GPT.수준검사(o.수준 || null); 설정 = GPT검수설정(o.수준 || null); } catch (e) { console.error(e.message); return 2; }
     const 계정들 = await GPT계정들읽기();
     const 계정 = GPT계정가리기(계정들);
-    알리기(`GPT 계정: ${계정들.map(a => `${계정말(a)} ${a.요금제 || '?'} 주간 ${a.주간사용 ?? '?'}%`).join(' · ')} → ${계정 ? 계정말(계정) : `없음(주간 ${GPT주간한계}% 아래인 Pro 계정 없음 — 막힘으로 적는다)`}`);
+    알리기(`GPT 계정: ${계정들.map(a => `${계정말(a)} ${a.요금제 || '?'} 주간 ${a.주간사용 ?? '?'}%`).join(' · ')} → ${계정 ? 계정말(계정) : `없음(주간 ${GPT주간한계}% 아래인 Pro 계정 없음 — 막힘으로 적는다)`} · 모델 ${GPT설정글(설정)}`);
     await GPT보내기(폴더, 목록, { 수준: o.수준 || null, 고른: o.묶음 || null, 다시: Boolean(o.다시), call: a => GPT부르기({ ...a, 계정 }), 몫: () => (계정 ? GPT몫읽기(계정) : null), 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록, 'GPT');
-    console.log(`GPT ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === 'GPT').length}건 → ${path.join(폴더, '지적표.md')}`);
+    console.log(`GPT ${상태들.map(b => `${b.이름} ${b.상태}`).join(' · ')} · 지적 ${표.지적.filter(x => x.출처 === 'GPT').length}건 · 이번 모델 ${GPT설정글(설정)} → ${path.join(폴더, '지적표.md')}`);
     if (목록.정책?.사용자지정) {
       console.log(`다음: ${필수글(목록.정책)}. 모든 묶음 뒤 배포판정준비 → 배포판정받기. candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다.`);
       return 상태들.every(b => b.상태 === '읽음') ? 0 : 1;
