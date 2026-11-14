@@ -76,10 +76,12 @@ function updateFooterDate(source,manifest){
 // 공개본에 쓸 파일을 쓰지 않고 만든다. 공개(release를 공개로 돌림) 전에 한 번 돌려 쪽 모양이 안 맞으면 release를 만들기 전에 멈춘다.
 function planSite({publicDir,manifest,clientFile}){
   const writes=[];
-  const read=relative=>{const file=safeTarget(publicDir,relative);if(fs.existsSync(file))return fs.readFileSync(file,'utf8');if(!fs.existsSync(path.join(publicDir,'.git')))return null;try{return run('git',['show','HEAD:'+relative],publicDir)+'\n';}catch{return null;}};
-  const put=(relative,value)=>writes.push({relative,value});
+  // Windows 체크아웃의 줄끝도 해시를 구하기 전에 공개본과 같은 LF로 맞춘다.
+  const lf=value=>value.replace(/\r\n?/g,'\n');
+  const read=relative=>{const file=safeTarget(publicDir,relative);if(fs.existsSync(file))return lf(fs.readFileSync(file,'utf8'));if(!fs.existsSync(path.join(publicDir,'.git')))return null;try{return lf(run('git',['show','HEAD:'+relative],publicDir)+'\n');}catch{return null;}};
+  const put=(relative,value)=>writes.push({relative,value:lf(value)});
   put(FEED,JSON.stringify(manifest,null,2)+'\n');
-  const client=fs.readFileSync(clientFile,'utf8'),hash=crypto.createHash('sha256').update(client).digest('hex').slice(0,12);
+  const client=lf(fs.readFileSync(clientFile,'utf8')),hash=crypto.createHash('sha256').update(client).digest('hex').slice(0,12);
   put('desktop/releases/client.js',client);
   const knowledgeHashes={};
   for(const relative of ['knowledge.json','en/knowledge.json']){const before=read(relative);if(before===null)continue;const value=updateSiteText(before,manifest);knowledgeHashes[relative]=crypto.createHash('sha256').update(value).digest('hex').slice(0,12);put(relative,value);}

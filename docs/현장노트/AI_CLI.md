@@ -817,6 +817,14 @@
 
 ## Claude API
 
+### 배포 후보 검수의 「후」가 라이브를 찍었다 — 후보 바이트를 문서별로 적용하고 확인한다 (2026-11-14 GPT)
+
+- 증상: 솔리오 0.4.89 후보 검수에서 `--화면 https://synk.im/`로 찍은 후 화면에 이전 0.4.88이 보였다. 앞 판은 실제 후보를 별도 촬영해 바로잡았고, 다음 품질 요청에서 도구를 고쳤다.
+- 원인: `검수묶음.mjs`는 후보 `.앞판`을 전 캡처에만 끼웠고 후 캡처는 URL의 서버 내용을 그대로 받았다. 전체 화면의 적용 기록을 한 번만 합치면 일부 누락도 숨을 수 있다.
+- 고침: synk.im 후보의 후 화면은 로컬 공개 트리 서버를 주소로 준다. 후보 SHA를 확인한 바이트와 삭제 404를 끼운 뒤, Chromium의 커밋된 문서 식별자와 실제 응답 바이트 SHA를 함께 대조한다. 다운로드·다른 탭·이전 문서·iframe이 주 문서의 증거를 대신하지 못하며 SPA는 같은 문서를 유지한다. 캡처 도중 주 문서가 바뀌면 거절한다. 후보의 공개 경로만 기록하고 요청의 인증 쿼리·조각·사용자 정보는 주소와 오류 기록에서 제거한다. 일반 후보의 새 파일은 앞에서 404로, 사용자지정 검수는 지정 바탕으로 찍는다. 외부 URL·후보 미적용·후 캡처 실패는 준비를 막는다.
+- 구조 재검토: 요청 사건을 문서 전환으로 본 두 회차에서 P1이 반복되어 구현을 멈추고 Opus 5.5(Fable 한도 대체)의 설계 검토를 받았다. URL로 읽는 CDP `Page.getResourceContent`는 route로 낸 주 문서를 못 읽거나 다른 자원의 내용을 돌려줬다. `Network.getResponseBody`의 requestId를 현재 frameId·loaderId에 묶어 실제 본문을 대조한다. 원문은 [CDP 명세](https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json), 실측·검수는 솔리오 품질 QA에 남긴다.
+- 다시 확인: 낡은 로컬 서버의 실제 Chrome 캡처, 최종 후만 재촬영, 추가/삭제, 잘못된 SHA, 외부 URL/302, 일부 화면 누락, 장면 이동, 잘못된 주소뿌리의 낡은 HTML+후보 CSS를 회귀 시험으로 확인했다. [시험](../../tests/검수묶음.test.js), [후속 기록](../../experiences/synk-account/qa/solio-quality-20261114/README.md).
+
 ### Claude CLI의 긴 JSON이 이어진 응답으로 나뉘면 result.result에는 마지막 조각만 남는다 (2026-11-09 GPT)
 - 증상: 공식 CLI는 success·정산 비용을 반환했지만 `result.result`를 JSON으로 읽으면 `Unexpected token 'L'`이었다. 별도의 짧은 수정 응답은 JSON 코드 블록 뒤 설명 때문에 전체 파싱이 실패했다.
 - 원인: 해당 긴 응답의 실제 assistant text 블록은 두 message ID에 걸쳐 나왔고 끝 조각만 최종 result에 실렸다. 원본 stream-json에는 앞 조각까지 있었다. 작은 응답은 JSON 외 설명을 포함했다.

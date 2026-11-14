@@ -264,13 +264,13 @@ test('준비 → 아르곤(가짜) → 처리 → 집계: 생성물은 빼고, �
   assert.ok(막힌집계(K막힘).some(x => /GPT·아르곤·그록 검수가 막혀 Fable 검수로 대신/.test(x)), 막힌집계(K막힘).join(' / '));
 });
 
-test('화면 캡처: 「전」은 바뀐 파일만 바탕 판으로 끼우고, 두 폭의 그림 차이·보이는 글 차이·새 콘솔 오류를 묶음에 싣는다', async t => {
+async function 화면캡처시험(t) {
   let browser;
   try {
     const { chromium } = require('playwright');
     browser = await chromium.launch({ channel: 'chrome', headless: true }).catch(() => chromium.launch({ headless: true }));
   } catch { /* 아래에서 건너뜀 */ }
-  if (!browser) return t.skip('브라우저를 띄울 수 없다(playwright·Chrome 없음)');
+  if (!browser) { t.skip('브라우저를 띄울 수 없다(playwright·Chrome 없음)'); return null; }
   await browser.close();
   const { 준비하기, 페이블하기 } = await tool();
   const 쪽 = (글, 꾸밈 = 'style.css') => `<!doctype html><html lang="ko"><meta charset="utf-8"><link rel="icon" href="data:,"><title>시험</title><link rel="stylesheet" href="./${꾸밈}"><main><h1>SYNK</h1><p id="p">${글}</p></main><script src="./app.js"></script></html>`;
@@ -280,6 +280,13 @@ test('화면 캡처: 「전」은 바뀐 파일만 바탕 판으로 끼우고, �
   r.쓰기('site/look.css', 'main{font:20px sans-serif;padding:30px;margin:0 auto;max-width:900px;background:#fde}');
   r.쓰기('site/index.html', 쪽('새 글 — 길게 바꾼 글', 'look.css'));
   r.쓰기('site/app.js', 'console.error("새로 생긴 오류");\n');
+  return { r, 준비하기, 페이블하기 };
+}
+
+test('화면 캡처: 「전」은 바뀐 파일만 바탕 판으로 끼우고, 두 폭의 그림 차이·보이는 글 차이·새 콘솔 오류를 묶음에 싣는다', async t => {
+  const fixture = await 화면캡처시험(t);
+  if (!fixture) return;
+  const { r, 준비하기 } = fixture;
   const { 폴더, 목록 } = await 준비하기({ 이름: '화면시험', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 화면: ['홈=site/index.html'] });
   const 장 = (판, 기기) => 목록.화면.장들.find(x => x.판 === 판 && x.기기 === 기기 && x.이름 === '홈');
   for (const 판 of ['전', '후']) for (const 기기 of ['1440', '390']) assert.ok(fs.existsSync(path.join(폴더, 장(판, 기기).그림)), `${판} ${기기} 그림`);
@@ -293,19 +300,43 @@ test('화면 캡처: 「전」은 바뀐 파일만 바탕 판으로 끼우고, �
   assert.match(묶음글, /새 오류: 콘솔 새로 생긴 오류/);
   assert.match(묶음글, /-.*옛 글[\s\S]*\+.*새 글/);
   assert.match(fs.readFileSync(path.join(폴더, 'fable.md'), 'utf8'), /\| 홈 \| 1440 \| `캡처\/전\/1440\/홈\.png` \| `캡처\/후\/1440\/홈\.png` \|/);
+});
+
+test('화면 캡처: Fable 앞에서는 고친 후만 다시 찍고 준비 때의 전을 보존한다', async t => {
+  const fixture = await 화면캡처시험(t);
+  if (!fixture) return;
+  const { r, 준비하기, 페이블하기 } = fixture;
+  const { 폴더 } = await 준비하기({ 이름: '화면시험', 폴더: r.출력, 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 화면: ['홈=site/index.html'] });
   // 고친 뒤(Fable 앞): 후만 다시 찍어 준비 때의 전과 견준다
   r.쓰기('site/app.js', 'document.title = "고침";\n');
   await 페이블하기(폴더, { 시험: false });
   const 페 = JSON.parse(fs.readFileSync(path.join(폴더, '페이블자료.json'), 'utf8'));
   assert.ok(!페.화면.장들.find(x => x.판 === '후' && x.기기 === '1440').오류.length, '고친 뒤 후 그림에는 오류가 없다');
   assert.ok(페.화면.장들.some(x => x.판 === '전' && x.그림.startsWith('캡처/전/')), '전은 준비 때 그림');
+});
+
+test('화면 캡처: 장면이 연 첫 문서의 404도 오류로 센다', async t => {
+  const fixture = await 화면캡처시험(t);
+  if (!fixture) return;
+  const { r, 준비하기 } = fixture;
+  const 장면 = path.join(r.뿌리, '장면.mjs');
+  fs.writeFileSync(장면, "export default async ({ page, 찍기, 주소들 }) => {\n  await page.goto(주소들['홈'].replace('index.html', 'missing.html'));\n  await 찍기('없음');\n};\n");
+  const 둘 = await 준비하기({ 이름: '장면시험', 폴더: path.join(r.뿌리, 'out2'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 화면: ['홈=site/index.html'], 장면 });
+  assert.deepEqual(둘.목록.화면.화면들.map(x => x.이름), ['없음']);
+  assert.ok(둘.목록.화면.장들.find(x => x.이름 === '없음' && x.판 === '후').오류.some(e => /^HTTP 404 /.test(e)), '장면이 연 첫 문서의 404도 센다(Fable F5)');
+});
+
+test('화면 캡처: 같은 이름의 장면 둘을 구분하고 바뀐 글을 묶음에 싣는다', async t => {
+  const fixture = await 화면캡처시험(t);
+  if (!fixture) return;
+  const { r, 준비하기 } = fixture;
+  r.쓰기('site/app.js', 'document.title = "고침";\n');
   // --장면: 장면이 찍은 이름(같은 이름 두 번이면 -2)이 화면 목록·묶음 항목이 된다(아르곤 A1)
   const 장면 = path.join(r.뿌리, '장면.mjs');
-  fs.writeFileSync(장면, "export default async ({ page, 찍기, 주소들 }) => {\n  await page.goto(주소들['홈'].replace('index.html', 'missing.html'));\n  await 찍기('없음');\n  await page.goto(주소들['홈']);\n  await 찍기('첫');\n  await page.evaluate(() => { document.querySelector('#p').textContent = '눌러서 바뀐 글'; });\n  await 찍기('첫');\n};\n");
+  fs.writeFileSync(장면, "export default async ({ page, 찍기, 주소들 }) => {\n  await page.goto(주소들['홈']);\n  await 찍기('첫');\n  await page.evaluate(() => { document.querySelector('#p').textContent = '눌러서 바뀐 글'; });\n  await 찍기('첫');\n};\n");
   const 둘 = await 준비하기({ 이름: '장면시험', 폴더: path.join(r.뿌리, 'out2'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 화면: ['홈=site/index.html'], 장면 });
-  assert.deepEqual(둘.목록.화면.화면들.map(x => x.이름), ['없음', '첫', '첫-2']);
-  assert.match(둘.목록.화면.화면들[1].주소.후, /site\/index\.html$/);
-  assert.ok(둘.목록.화면.장들.find(x => x.이름 === '없음' && x.판 === '후').오류.some(e => /^HTTP 404 /.test(e)), '장면이 연 첫 문서의 404도 센다(Fable F5)');
+  assert.deepEqual(둘.목록.화면.화면들.map(x => x.이름), ['첫', '첫-2']);
+  assert.match(둘.목록.화면.화면들[0].주소.후, /site\/index\.html$/);
   const 둘글 = 둘.목록.묶음.map(b => fs.readFileSync(path.join(둘.폴더, b.파일), 'utf8')).join('\n');
   assert.match(둘글, /화면 「첫」/);
   assert.match(둘글, /화면 「첫-2」[\s\S]*눌러서 바뀐 글/);
@@ -358,7 +389,8 @@ test('「전」 판보기(배포 후보, 11-01): 후보 뿌리는 후보 경로�
   assert.equal(찾기('https://synk.im/en/'), null, '밖의 사이트는 건드리지 않는다');
 });
 
-test('화면 캡처(배포 후보, 11-01): 「전」은 바탕 커밋의 낡은 dist가 아니라 후보의 .앞판(지금 공개본)을 끼우고, 후보가 없으면 지금처럼 바탕 판', async t => {
+// 각 회귀는 독립 후보와 서버를 쓴다. 한 시험에 캡처를 누적해 CI의 120초 제한을 넘기지 않는다.
+async function 후보캡처시험(t, 후보만들기 = true) {
   let browser;
   try {
     const { chromium } = require('playwright');
@@ -370,48 +402,342 @@ test('화면 캡처(배포 후보, 11-01): 「전」은 바탕 커밋의 낡은 
   const { 정적서버 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
   const 쪽 = 글 => `<!doctype html><html lang="ko"><meta charset="utf-8"><link rel="icon" href="data:,"><title>시험</title><main><p id="p">${글}</p></main></html>`;
   // 10-31 home-slim-20261031-c 꼴: 바탕 커밋의 dist는 공개본보다 낡았고, 합친 다른 가지가 dist/en/index.html을 바꿔 바탕과 작업본이 다르다
-  const r = 임시저장소(t, { 'dist/index.html': 쪽('바탕 홈'), 'dist/en/index.html': 쪽('바탕 영어 줄이기 전'), 'site/content.mjs': "export const 홈 = '옛';\n" });
+  const r = 임시저장소(t, { 'dist/index.html': 쪽('바탕 홈'), 'dist/en/index.html': 쪽('바탕 영어 줄이기 전'), 'dist/en/new/index.html': 쪽('바탕에만 있는 새 쪽'), 'site/content.mjs': "export const 홈 = '옛';\n" });
   r.쓰기('site/content.mjs', "export const 홈 = '새';\n");
   r.쓰기('dist/en/index.html', 쪽('합친 가지의 영어'));
-  const 후보 = { 'index.html': 쪽('후보 홈'), 'en/index.html': 쪽('후보 영어'), 'en/new/index.html': 쪽('새 쪽') };
+  const 후보 = { 'index.html': 쪽('후보 홈'), 'en/index.html': 쪽('후보 영어'), 'en/new/index.html': 쪽('후보 새 쪽 전용') };
   const 공개본 = { 'index.html': 쪽('공개본 홈'), 'en/index.html': 쪽('공개본 영어 줄인 뒤') };
   // 후 = 공개 트리(지금 공개본 + 후보)를 내주는 이 PC 서버 — 전도 같은 주소다(바꿔 끼우는 것은 도구)
   const 공개트리 = path.join(r.뿌리, 'pub');
-  넣기(공개트리, 후보);
+  넣기(공개트리, 공개본); // 서버가 낡은 판이어도 후 캡처는 후보 바이트여야 한다.
   const 서버 = await 정적서버(공개트리);
   t.after(() => 서버.닫기());
   const 글 = (폴더, 목록, 판, 이름) => fs.readFileSync(path.join(폴더, 목록.화면.장들.find(x => x.판 === 판 && x.기기 === '1440' && x.이름 === 이름).그림.replace(/\.png$/, '.txt')), 'utf8');
+  // 공개 도구(--후보폴더)가 쓴 꼴: 후보 바이트 · .앞판(그 공개 커밋의 blob) · 후보.json. 원고 안의 무시 안 된 qa/에 둔다 —
+  // 후보 자신(과 그 .앞판)이 모든 공개 경로를 품어도 후보 뿌리로 뽑히면 안 된다(GPT GA1). 검수 범위는 --경로로 원고만.
+  const 후보폴더 = path.join(r.저장소, 'qa', 'pub-cand');
+  if (후보만들기) {
+    넣기(후보폴더, 후보); 넣기(path.join(후보폴더, '.앞판'), 공개본);
+    fs.writeFileSync(path.join(후보폴더, '후보.json'), JSON.stringify({ 판: 1, 종류: 'synk.im', 위: 'abc123', 계획: '0abf52b987c8',
+      항목: Object.entries(후보).map(([경로, v]) => ({ 경로, 종류: 공개본[경로] ? '바꿈' : '새', sha256: crypto.createHash('sha256').update(v).digest('hex'), 모드: '100644' })),
+      앞판: Object.fromEntries(Object.entries(공개본).map(([경로, v]) => [경로, 블롭(v)])) }));
+  }
+  const 옵션 = 이름 => ({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 배포후보: 후보폴더, 경로: ['site', 'dist'] });
+  const api = await tool();
+  return { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 };
+}
 
+test('화면 캡처(배포 후보, 11-01): 후보가 없으면 바탕 판을 끼운다', async t => {
+  const f = await 후보캡처시험(t, false); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
   const 없음 = await 준비하기({ 이름: '바탕전', 폴더: path.join(r.뿌리, 'out-base'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕,
     화면: [`영어=${서버.주소}/en/`, '정적=dist/en/index.html'] });
   assert.match(글(없음.폴더, 없음.목록, '전', '영어'), /바탕 영어 줄이기 전/, '후보가 없으면 지금처럼 바뀐 파일만 바탕 판');
   assert.match(글(없음.폴더, 없음.목록, '전', '정적'), /바탕 영어 줄이기 전/);
   assert.equal(없음.목록.화면.전앞판, undefined);
   assert.match(fs.readFileSync(path.join(없음.폴더, 'fable.md'), 'utf8'), /전 = 바탕 판, 후 = 지금 판/);
+});
 
-  // 공개 도구(--후보폴더)가 쓴 꼴: 후보 바이트 · .앞판(그 공개 커밋의 blob) · 후보.json. 원고 안의 무시 안 된 qa/에 둔다 —
-  // 후보 자신(과 그 .앞판)이 모든 공개 경로를 품어도 후보 뿌리로 뽑히면 안 된다(GPT GA1). 검수 범위는 --경로로 원고만.
-  const 후보폴더 = path.join(r.저장소, 'qa', 'pub-cand');
-  넣기(후보폴더, 후보); 넣기(path.join(후보폴더, '.앞판'), 공개본);
-  fs.writeFileSync(path.join(후보폴더, '후보.json'), JSON.stringify({ 판: 1, 종류: 'synk.im', 위: 'abc123', 계획: '0abf52b987c8',
-    항목: Object.entries(후보).map(([경로, v]) => ({ 경로, 종류: 공개본[경로] ? '바꿈' : '새', sha256: crypto.createHash('sha256').update(v).digest('hex'), 모드: '100644' })),
-    앞판: Object.fromEntries(Object.entries(공개본).map(([경로, v]) => [경로, 블롭(v)])) }));
+test('화면 캡처(배포 후보, 11-01): 앞판과 후보를 주소와 정적 경로에 끼우고 증명에 묶는다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
   const 있음 = await 준비하기({ 이름: '앞판전', 폴더: path.join(r.뿌리, 'out-cand'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 배포후보: 후보폴더, 경로: ['site', 'dist'],
     화면: [`영어=${서버.주소}/en/`, `새쪽=${서버.주소}/en/new/`, '정적=dist/en/index.html'] });
   assert.deepEqual(있음.목록.파일.map(f => f.경로), ['dist/en/index.html', 'site/content.mjs']);
   assert.match(글(있음.폴더, 있음.목록, '전', '영어'), /공개본 영어 줄인 뒤/, '주소 화면의 전 = 후보의 .앞판(지금 공개본)');
   assert.doesNotMatch(글(있음.폴더, 있음.목록, '전', '영어'), /바탕 영어|합친 가지/);
-  assert.match(글(있음.폴더, 있음.목록, '후', '영어'), /후보 영어/, '후는 서버가 내주는 그대로');
+  assert.match(글(있음.폴더, 있음.목록, '후', '영어'), /후보 영어/, '후는 낡은 서버 대신 검수 후보');
   assert.match(글(있음.폴더, 있음.목록, '전', '정적'), /공개본 영어 줄인 뒤/, '저장소 경로 화면도 후보 뿌리(dist/)로 이어 공개본');
-  assert.match(글(있음.폴더, 있음.목록, '후', '정적'), /합친 가지의 영어/);
+  assert.match(글(있음.폴더, 있음.목록, '후', '정적'), /후보 영어/);
   assert.match(글(있음.폴더, 있음.목록, '전', '새쪽'), /그 판에 없음/, '후보가 「새」로 적은 쪽은 공개본에 없다(404)');
   assert.match(글(있음.폴더, 있음.목록, '후', '새쪽'), /새 쪽/);
   assert.deepEqual(있음.목록.화면.전앞판, { 앞판: 2, 새: 1, 끼움: ['en/index.html', 'en/new/index.html'], 뿌리찾기: { 뿌리: 'dist/', 동률: [] } });
+  assert.deepEqual(있음.목록.화면.후후보.끼움, ['en/index.html', 'en/new/index.html']);
+  assert.match(있음.목록.화면.후후보.manifestSha256, /^[a-f0-9]{64}$/);
   assert.ok(!있음.목록.화면.못끼움.includes('dist/en/index.html'), '공개본으로 끼운 파일은 못 끼운 것으로 세지 않는다');
   assert.deepEqual(있음.목록.증명.후보앞판, { 위: 'abc123', 항목: Object.fromEntries(Object.entries(공개본).map(([경로, v]) => [경로, 블롭(v)])) }, '전 캡처가 쓴 앞판이 증명에 묶인 그 판이다');
   const 묶음글 = 있음.목록.묶음.map(b => fs.readFileSync(path.join(있음.폴더, b.파일), 'utf8')).join('\n');
   assert.match(묶음글, /화면 「영어」[^\n]*\(전: 같은 주소에 배포 후보의 파일은 지금 공개본\(\.앞판\), 그 밖의 바뀐 파일은 바탕 판\)/);
   assert.match(fs.readFileSync(path.join(있음.폴더, 'fable.md'), 'utf8'), /전 = 지금 공개본\(배포 후보의 \.앞판 2개를 끼움/);
+});
+
+for (const 이름 of ['영어', '새쪽', '정적']) test(`화면 캡처(배포 후보, 11-01): 최종 검수의 ${이름} 후 캡처도 후보 뿌리를 찾는다`, async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  const 있음 = await 준비하기({ 이름: '앞판전', 폴더: path.join(r.뿌리, 'out-cand'), 저장소: r.저장소, 종류: '화면', 바탕: r.바탕, 배포후보: 후보폴더, 경로: ['site', 'dist'],
+    화면: [{ 영어: `영어=${서버.주소}/en/`, 새쪽: `새쪽=${서버.주소}/en/new/`, 정적: '정적=dist/en/index.html' }[이름]] });
+  // 최종 검수는 「후」만 다시 찍는다. 정적 경로도 후보 뿌리를 계속 찾아야 한다.
+  await api.페이블하기(있음.폴더, { 시험: false });
+  const 최종 = JSON.parse(fs.readFileSync(path.join(있음.폴더, '페이블자료.json'), 'utf8'));
+  const 캡처 = 최종.화면 || 최종.자료?.화면;
+  assert.ok(캡처, '최종 캡처 자료');
+  const 후장들 = 캡처.장들.filter(x => x.판 === '후');
+  assert.deepEqual(후장들.map(x => `${x.기기}/${x.이름}`).sort(), [`1440/${이름}`, `390/${이름}`].sort());
+  assert.ok(후장들.every(x => x.후보끼움.length > 0));
+});
+
+test('화면 캡처(배포 후보, 11-01): 사용자지정 후보의 전은 지정한 바탕이다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  const { 후보읽기 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const 있음 = { 목록: { 설정: api.설정만들기(옵션('화면계약')), 파일: [{ 경로: 'dist/en/index.html' }, { 경로: 'site/content.mjs' }], 증명: { 배포후보: 후보읽기(후보폴더) } } };
+  // 사용자지정 검수처럼 앞판 증명이 없으면, 공개본에 없는 새 후보라도 전은 지정 바탕이다.
+  const 사용자폴더 = path.join(r.뿌리, 'out-custom');
+  const 사용자화면 = await api.화면찍기({ ...있음.목록.설정, 파일경로들: 있음.목록.파일.map(x => x.경로), 화면: [{ 이름: '새쪽', 전: { 종류: '경로', 값: 'dist/en/new/index.html' }, 후: { 종류: '경로', 값: 'dist/en/new/index.html' } }] }, 사용자폴더,
+    { 후보: 있음.목록.증명.배포후보, 후보앞판: { 판: new Map(), 증명: null } });
+  assert.equal(사용자화면.전앞판, undefined);
+  assert.match(글(사용자폴더, { 화면: 사용자화면 }, '전', '새쪽'), /바탕에만 있는 새 쪽/);
+  assert.match(글(사용자폴더, { 화면: 사용자화면 }, '후', '새쪽'), /후보 새 쪽 전용/);
+  assert.doesNotMatch(글(사용자폴더, { 화면: 사용자화면 }, '후', '새쪽'), /바탕에만/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 앞판 파일이 없는 새 후보의 전은 404다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  const { 후보읽기 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const 있음 = { 목록: { 설정: api.설정만들기(옵션('화면계약')), 파일: [{ 경로: 'dist/en/index.html' }, { 경로: 'site/content.mjs' }], 증명: { 배포후보: 후보읽기(후보폴더) } } };
+  // 새 파일만 있어 .앞판 증명이 없는 일반 후보도 전은 404다. 사용자지정 여부와 구분한다.
+  const 새폴더 = path.join(r.뿌리, 'new-only-candidate');
+  넣기(새폴더, { 'en/new/index.html': 후보['en/new/index.html'] });
+  const 새후보 = { ...있음.목록.증명.배포후보, 항목: 있음.목록.증명.배포후보.항목.filter(x => x.경로 === 'en/new/index.html') };
+  const 새출력 = path.join(r.뿌리, 'out-new-only');
+  const 새화면 = await api.화면찍기({ ...있음.목록.설정, 배포후보: 새폴더, 파일경로들: 있음.목록.파일.map(x => x.경로), 화면: [{ 이름: '새쪽', 전: { 종류: '경로', 값: 'dist/en/new/index.html' }, 후: { 종류: '경로', 값: 'dist/en/new/index.html' } }] }, 새출력,
+    { 후보: 새후보, 후보앞판: { 판: new Map(), 증명: null }, 앞판씀: true });
+  assert.match(글(새출력, { 화면: 새화면 }, '전', '새쪽'), /그 판에 없음/);
+  assert.match(글(새출력, { 화면: 새화면 }, '후', '새쪽'), /후보 새 쪽 전용/);
+});
+
+test('화면 캡처(배포 후보, 11-01): SPA 이동은 같은 문서를 인정하고 외부 주소는 거절한다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  const spa장면 = path.join(r.뿌리, 'spa-scene.mjs');
+  fs.writeFileSync(spa장면, `export default async ({page,찍기,주소들})=>{await page.goto(주소들.정상);await page.evaluate(()=>history.pushState({},'', '/en/new/'));await 찍기('같은문서');}`);
+  const spa = await 준비하기({ ...옵션('SPA정상'), 화면: [`정상=${서버.주소}/en/`], 장면: spa장면 });
+  assert.match(글(spa.폴더, spa.목록, '후', '같은문서'), /후보 영어/);
+  assert.ok(spa.목록.화면.장들.filter(x => x.판 === '후').every(x => x.문서경로 === 'en/index.html' && x.주소.endsWith('/en/new/')));
+  await assert.rejects(() => 준비하기({ ...옵션('외부거절'), 화면: ['외부=https://synk.im/en/'] }), /외부 라이브 주소 불가/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 다른 탭이 받은 후보로 원래 탭을 증명하지 않는다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  넣기(공개트리, { 'unmapped.html': 쪽('후보 밖 화면') });
+  const 다른탭장면 = path.join(r.뿌리, 'other-tab-scene.mjs');
+  fs.writeFileSync(다른탭장면, `export default async ({page,찍기,주소들})=>{await page.goto(${JSON.stringify(서버.주소+'/unmapped.html')});const other=await page.context().newPage();await other.goto(주소들.정상);await 찍기('원래탭');}`);
+  await assert.rejects(() => 준비하기({ ...옵션('다른탭거절'), 화면: [`정상=${서버.주소}/en/`], 장면: 다른탭장면 }), /하나도 끼우지 못했다.*원래탭/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 후보가 없는 화면 한 장도 거절한다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  넣기(공개트리, { 'unmapped.html': 쪽('후보 밖 화면') });
+  await assert.rejects(() => 준비하기({ ...옵션('한장누락거절'), 화면: [`정상=${서버.주소}/en/`, `누락=${서버.주소}/unmapped.html`] }), /하나도 끼우지 못했다.*누락/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 외부 주소로의 리다이렉트를 거절한다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  const http = require('node:http');
+  const outside = http.createServer((_req, res) => { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(쪽('리다이렉트 뒤')); });
+  await new Promise(resolve => outside.listen(0, '127.0.0.2', resolve));t.after(() => outside.close());
+  const 외부주소 = `http://127.0.0.2:${outside.address().port}/landing`;
+  assert.match(await (await fetch(외부주소)).text(), /리다이렉트 뒤/);
+  const redirect = http.createServer((req, res) => {
+    if (req.url === '/jump') { res.writeHead(302, { location: 외부주소 }); res.end(); }
+    else { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(쪽('리다이렉트 뒤')); }
+  });
+  await new Promise(resolve => redirect.listen(0, '127.0.0.1', resolve));t.after(() => redirect.close());
+  await assert.rejects(() => 준비하기({ ...옵션('이동거절'), 화면: [`정상=${서버.주소}/en/`, `이동=http://127.0.0.1:${redirect.address().port}/jump`] }), /외부 라이브 주소 불가/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 장면이 후보 밖 페이지로 옮기면 거절한다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  넣기(공개트리, { 'unmapped.html': 쪽('후보 밖 화면') });
+  const 장면 = path.join(r.뿌리, 'scene.mjs');
+  fs.writeFileSync(장면, `export default async ({page,찍기,주소들})=>{await page.goto(주소들.정상);await 찍기('처음');await page.goto(${JSON.stringify(서버.주소+'/unmapped.html')});await 찍기('장면누락');}`);
+  await assert.rejects(() => 준비하기({ ...옵션('장면거절'), 화면: [`정상=${서버.주소}/en/`], 장면 }), /하나도 끼우지 못했다.*장면누락/);
+});
+
+test('화면 캡처(배포 후보, 11-01): CSS가 적용돼도 주 문서 후보가 누락되면 거절한다', async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  // CSS 후보 하나가 적용돼도, 잘못된 주소뿌리로 주 문서 후보를 놓치면 거절한다.
+  넣기(공개트리, { 'en/index.html': 쪽('낡은 본문')+'<link rel="stylesheet" href="/style.css">' });
+  넣기(후보폴더, { 'style.css': 'body { color: #123; }' });
+  const 메타 = JSON.parse(fs.readFileSync(path.join(후보폴더, '후보.json'), 'utf8'));
+  메타.항목.push({ 경로: 'style.css', 종류: '새', sha256: crypto.createHash('sha256').update('body { color: #123; }').digest('hex'), 모드: '100644' });
+  fs.writeFileSync(path.join(후보폴더, '후보.json'), JSON.stringify(메타));
+  await assert.rejects(() => 준비하기({ ...옵션('주문서누락거절'), 화면: [`본문=${서버.주소}/en/`], 주소뿌리: [`${서버.주소}/en/=site/en/`] }), /후 주 문서를 끼우지 못했다/);
+});
+
+async function 접두후보캡처시험(t) {
+  const f = await 후보캡처시험(t); if (!f) return null;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션 } = f;
+  const http = require('node:http');
+  // CSS 후보 하나가 적용돼도, 잘못된 주소뿌리로 주 문서 후보를 놓치면 거절한다.
+  넣기(공개트리, { 'en/index.html': 쪽('낡은 본문')+'<link rel="stylesheet" href="/style.css">' });
+  넣기(후보폴더, { 'style.css': 'body { color: #123; }' });
+  const 메타 = JSON.parse(fs.readFileSync(path.join(후보폴더, '후보.json'), 'utf8'));
+  메타.항목.push({ 경로: 'style.css', 종류: '새', sha256: crypto.createHash('sha256').update('body { color: #123; }').digest('hex'), 모드: '100644' });
+  fs.writeFileSync(path.join(후보폴더, '후보.json'), JSON.stringify(메타));
+  const prefix = http.createServer((req, res) => {
+    if (req.url === '/jump') { res.writeHead(302, { location: '/preview/en/index.html' }); res.end(); }
+    else if (req.url === '/report.csv') { res.writeHead(200, { 'content-type': 'text/csv', 'content-disposition': 'attachment; filename="report.csv"' }); res.end('test,value\n1,2'); }
+    else if (req.url.startsWith('/callback?')) { res.writeHead(400); res.end('bad request'); }
+    else if (req.url.startsWith('/network?')) { req.socket.destroy(); }
+    else if (req.url === '/style-redirect') { res.writeHead(302, { location: '/preview/style.css' }); res.end(); }
+    else if (req.url === '/preview/style.css') { res.writeHead(200, { 'content-type': 'text/css' }); res.end('body { color: blue; }'); }
+    else if (req.url.startsWith('/plain')) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(쪽('후보 없는 문서')); }
+    else { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(쪽('리다이렉트의 낡은 본문')+'<link rel="stylesheet" href="/preview/style.css"><iframe src="/preview/en/index.html"></iframe>'); }
+  });
+  await new Promise(resolve => prefix.listen(0, '127.0.0.1', resolve));t.after(() => prefix.close());
+  const prefix주소 = `http://127.0.0.1:${prefix.address().port}`;
+  const 추가장면 = (이름, 내용) => { const f = path.join(r.뿌리, 이름+'.mjs'); fs.writeFileSync(f, 내용); return f; };
+  const 접두옵션 = 이름 => ({ ...옵션(이름), 화면: [`본문=${prefix주소}/preview/en/index.html`], 주소뿌리: [`${prefix주소}/preview/=dist/`] });
+  return { ...f, prefix주소, 접두옵션, 추가장면 };
+}
+
+test('화면 캡처(배포 후보, 11-01): 리다이렉트가 낡은 주 문서를 반환하면 거절한다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  await assert.rejects(() => 준비하기({ ...옵션('접두주소이동거절'), 화면: [`본문=${prefix주소}/jump`], 주소뿌리: [`${prefix주소}/preview/=dist/`] }), /후 주 문서를 끼우지 못했다/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 다운로드 뒤에 받은 CSS로 낡은 주 문서를 증명하지 않는다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  const 다운로드장면 = 추가장면('download-scene', `export default async ({page,찍기,판})=>{await page.goto(${JSON.stringify(prefix주소+'/jump')});if(판==='후'){await Promise.all([page.waitForEvent('download'),page.evaluate(()=>{const a=document.createElement('a');a.href='/report.csv';document.body.append(a);a.click();})]);await page.addStyleTag({url:'/preview/style.css'});}await 찍기('다운로드뒤');}`);
+  await assert.rejects(() => 준비하기({ ...접두옵션('다운로드거절'), 장면: 다운로드장면 }), /후 주 문서를 끼우지 못했다/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 인증 쿼리는 오류와 캡처 묶음에 남기지 않는다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  // 인증값은 장면에서만 만들고 주소에서 지운다. 응답·실패 오류와 모든 캡처/묶음 기록에도 다시 나타나면 안 된다.
+  const 비밀 = 'SYNTHETIC_AUTH_SECRET_ONLY_FOR_TEST';
+  const 비밀장면 = 추가장면('secret-scene', `export default async ({page,찍기,주소들,판})=>{await page.goto(주소들.본문+'?code=${비밀}');await page.evaluate(()=>history.replaceState({},'', '/clean'));if(판==='후')await page.evaluate(async()=>{await fetch('/callback?code=${비밀}');await fetch('/network?token=${비밀}').catch(()=>{});console.error('/callback?code=${비밀}');});await 찍기('인증뒤');}`);
+  const 비밀결과 = await 준비하기({ ...접두옵션('비밀없음'), 장면: 비밀장면 });
+  assert.equal(비밀결과.목록.화면.장들.filter(x => x.판 === '후').length, 2);
+  assert.ok(비밀결과.목록.화면.장들.filter(x => x.판 === '후').every(x => x.문서경로 === 'en/index.html' && x.오류.some(s => s.includes('HTTP 400')) && x.오류.some(s => s.includes('요청 실패'))));
+  const 글파일확인 = dir => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const f = path.join(dir, e.name); if (e.isDirectory()) 글파일확인(f); else if (/\.(?:json|md|txt|patch|tap)$/.test(e.name)) assert.ok(!fs.readFileSync(f, 'utf8').includes(비밀), `비밀 문자열이 남은 파일: ${e.name}`); } };
+  글파일확인(비밀결과.폴더);
+});
+
+test('화면 캡처(배포 후보, 11-01): 현재 문서의 후보 CSS를 인정한다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  const CSS장면 = 추가장면('css-scene', `export default async ({page,찍기,판})=>{await page.goto(${JSON.stringify(prefix주소+'/plain-a')});if(판==='후')await page.addStyleTag({url:'/preview/style.css'});await 찍기('CSS후보');}`);
+  const CSS결과 = await 준비하기({ ...접두옵션('CSS정상'), 장면: CSS장면 });
+  assert.ok(CSS결과.목록.화면.장들.filter(x => x.판 === '후').every(x => x.후보끼움.includes('style.css')));
+});
+
+test('화면 캡처(배포 후보, 11-01): 리다이렉트로 받은 서버 CSS를 후보로 인정하지 않는다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  const CSS이동 = 추가장면('css-redirect-scene', `export default async ({page,찍기,판})=>{await page.goto(${JSON.stringify(prefix주소+'/plain-a')});if(판==='후')await page.addStyleTag({url:'/style-redirect'});await 찍기('CSS서버');}`);
+  await assert.rejects(() => 준비하기({ ...접두옵션('CSS서버거절'), 장면: CSS이동 }), /하나도 끼우지 못했다.*CSS서버/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 이전 문서의 후보 CSS는 다음 문서 증거에서 뺀다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  const CSS다음 = 추가장면('css-next-scene', `export default async ({page,찍기,판})=>{await page.goto(${JSON.stringify(prefix주소+'/plain-a')});if(판==='후')await page.addStyleTag({url:'/preview/style.css'});await page.goto(${JSON.stringify(prefix주소+'/plain-b')});await 찍기('다음문서');}`);
+  await assert.rejects(() => 준비하기({ ...접두옵션('이전CSS거절'), 장면: CSS다음 }), /하나도 끼우지 못했다.*다음문서/);
+});
+
+test('화면 캡처(배포 후보, 11-01): 캡처 중 주 문서가 바뀌면 거절한다', async t => {
+  const f = await 접두후보캡처시험(t); if (!f) return;
+  const { 준비하기, api, r, 쪽, 후보, 공개본, 공개트리, 서버, 글, 후보폴더, 옵션, prefix주소, 접두옵션, 추가장면 } = f;
+  const 캡처이동 = 추가장면('capture-navigation-scene', `export default async ({page,찍기,주소들,판})=>{await page.goto(주소들.본문);if(판==='후')await page.evaluate(()=>{const old=scrollTo;let moved=false;window.scrollTo=(...a)=>{old(...a);if(!moved){moved=true;location.href='/plain-b';}}});await 찍기('도중이동');}`);
+  await assert.rejects(() => 준비하기({ ...접두옵션('캡처도중이동거절'), 장면: 캡처이동 }), /후 화면 캡처가 끝나지 않았다/);
+});
+
+test('후보 응답 형식: MIME과 문자셋이 다른 응답은 같은 바이트여도 제외한다', async () => {
+  const { 후보응답형식맞음: 맞음 } = await import(pathToFileURL(path.join(root, 'tools/lib/검수캡처.mjs')));
+  assert.equal(맞음({ mimeType: 'text/html', charset: 'utf-8' }, 'index.html'), true);
+  assert.equal(맞음({ mimeType: 'TEXT/HTML', charset: 'UTF-8' }, 'index.html'), true);
+  assert.equal(맞음({ mimeType: 'text/plain', charset: 'utf-8' }, 'index.html'), false);
+  assert.equal(맞음({ mimeType: 'text/html', charset: 'windows-1252' }, 'index.html'), false);
+  assert.equal(맞음({ mimeType: 'text/html' }, 'index.html'), false);
+  assert.equal(맞음({ mimeType: 'text/css', charset: 'utf-8' }, 'style.css'), true);
+  assert.equal(맞음({ mimeType: 'text/plain', charset: 'utf-8' }, 'style.css'), false);
+  assert.equal(맞음({ mimeType: 'image/png', charset: '' }, 'image.png'), true);
+  assert.equal(맞음({ mimeType: 'text/plain', charset: 'utf-8' }, 'gone.html', true), true);
+  assert.equal(맞음({ mimeType: 'text/html', charset: 'utf-8' }, 'gone.html', true), false);
+});
+
+for (const [이름, 형식, 인정] of [
+  ['plain', 'text/plain; charset=utf-8', false],
+  ['html', 'text/html; charset=utf-8', true],
+  ['latin1', 'text/html; charset=windows-1252', false],
+  ['charset없음', 'text/html', false],
+]) test(`후보 응답 MIME: 리다이렉트 HTML ${이름}`, async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, r, 후보, 옵션, 글 } = f;
+  const http = require('node:http');
+  const server = http.createServer((req, res) => {
+    if (req.url === '/jump') { res.writeHead(302, { location: '/preview/en/index.html' }); res.end(); }
+    else { res.writeHead(200, { 'content-type': 형식, 'x-content-type-options': 'nosniff' }); res.end(후보['en/index.html']); }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => server.close());
+  const 주소 = `http://127.0.0.1:${server.address().port}`;
+  const 실행 = () => 준비하기({ ...옵션(`MIME-${이름}`), 화면: [`본문=${주소}/jump`], 주소뿌리: [`${주소}/preview/=dist/`] });
+  if (!인정) await assert.rejects(실행, /후보 파일을 하나도 끼우지 못했다/);
+  else {
+    const 결과 = await 실행();
+    assert.equal(글(결과.폴더, 결과.목록, '후', '본문'), '후보 영어');
+    assert.ok(결과.목록.화면.장들.filter(x => x.판 === '후').every(x => x.후보끼움.includes('en/index.html') && x.문서덧));
+  }
+});
+
+for (const 잘못된형식 of [false, true]) test(`후보 응답 MIME: CSS ${잘못된형식 ? 'plain nosniff는 제외' : '정상 route는 적용'}`, async t => {
+  const f = await 후보캡처시험(t); if (!f) return;
+  const { 준비하기, r, 후보, 후보폴더, 옵션 } = f;
+  const css = 'body { color: rgb(17, 34, 51); }';
+  const html = 후보['en/index.html'] + `<link rel="stylesheet" href="${잘못된형식 ? '/style-jump' : '/preview/style.css'}">`;
+  넣기(후보폴더, { 'en/index.html': html, 'style.css': css });
+  const manifestPath = path.join(후보폴더, '후보.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  manifest.항목.find(x => x.경로 === 'en/index.html').sha256 = crypto.createHash('sha256').update(html).digest('hex');
+  manifest.항목.push({ 경로: 'style.css', 종류: '새', sha256: crypto.createHash('sha256').update(css).digest('hex'), 모드: '100644' });
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+  const http = require('node:http');
+  const server = http.createServer((req, res) => {
+    if (req.url === '/style-jump') { res.writeHead(302, { location: '/preview/style.css' }); res.end(); }
+    else if (req.url === '/preview/style.css') { res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'x-content-type-options': 'nosniff' }); res.end(css); }
+    else { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(html); }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => server.close());
+  const 주소 = `http://127.0.0.1:${server.address().port}`;
+  const 장면 = path.join(r.뿌리, 'mime-css-scene.mjs');
+  fs.writeFileSync(장면, `export default async ({page,찍기,주소들,판})=>{await page.goto(주소들.본문);await 찍기('CSS형식');if(판==='후'){const color=await page.evaluate(()=>getComputedStyle(document.body).color);if(color!==${JSON.stringify(잘못된형식 ? 'rgb(0, 0, 0)' : 'rgb(17, 34, 51)')})throw new Error('CSS 색이 다르다: '+color);}}`);
+  const 결과 = await 준비하기({ ...옵션('CSS형식'), 화면: [`본문=${주소}/preview/en/index.html`], 주소뿌리: [`${주소}/preview/=dist/`], 장면 });
+  const 장들 = 결과.목록.화면.장들.filter(x => x.판 === '후');
+  assert.equal(장들.length, 2);
+  assert.ok(장들.every(x => x.후보끼움.includes('en/index.html') && x.문서덧));
+  assert.ok(장들.every(x => x.후보끼움.includes('style.css') === !잘못된형식));
+});
+
+test('후 후보 판보기: 새 파일·삭제·캐시 주소를 잇고 외부 주소와 바뀐 바이트를 거절한다', async t => {
+  const api = await tool();
+  const r = 임시저장소(t, { 'a.txt': 'old' });
+  const 폴더 = path.join(r.뿌리, 'candidate');
+  넣기(폴더, { 'index.html': 'candidate' });
+  const 후보 = { 항목: [
+    { 경로: 'index.html', 종류: '새', sha256: crypto.createHash('sha256').update('candidate').digest('hex') },
+    { 경로: 'gone.html', 종류: '지움', sha256: null },
+  ] };
+  const 보기 = api.후판보기만들기(() => undefined, { 후보, 폴더, 뿌리: 'dist/' });
+  assert.equal(보기('dist/index.html').toString(), 'candidate');
+  assert.equal(보기(`${api.공개표}gone.html`), null);
+  assert.equal(보기('other.js'), undefined);
+  const 찾기 = api.전경로찾기만들기({ 명시찾기: () => null, 경로찾기: () => null, 아는: 보기.아는 });
+  assert.equal(찾기('http://localhost:1234/?v=new'), `${api.공개표}index.html`);
+  assert.doesNotThrow(() => api.후보화면주소확인(['http://127.0.0.1:1234/', 'http://localhost:1234/a']));
+  for (const 주소 of ['https://synk.im/', 'http://localhost.evil.invalid/', undefined]) assert.throws(() => api.후보화면주소확인([주소]), /외부 라이브 주소 불가/);
+  fs.writeFileSync(path.join(폴더, 'index.html'), 'changed');
+  assert.throws(() => api.후판보기만들기(() => undefined, { 후보, 폴더 }), /캡처 중 배포 후보가 바뀌었다/);
 });
 
 test('가져온 캡처(--캡처): 전·후/<기기>/<이름>.png를 그대로 견주고, fable.md 표에 1440·390 밖의 기기도 싣는다', async t => {

@@ -48,8 +48,8 @@ bindMemberUnderstandingEditor(root,{controller:memberUnderstanding,getReport:()=
 const labels = { home:'내 홈', solio:'솔리오', benefits:'회원 혜택', account:'내 계정', discover:'둘러보기', library:'내 라이브러리', updates:'새소식', downloads:'다운로드', settings:'플랫폼 설정', help:'도움말', app:'앱 상세' };
 const news = [
  {id:'solio',app:'platform',label:'솔리오',date:'2026.11.13',title:'솔리오를 열었어요',body:'AI 1인기업을 위한 통합 업무 앱 SYNK SOLIO(싱크 솔리오)를 위 메뉴에 두었어요. AI 구독 계정판은 솔리오의 「AI 구독 관리」로, 내 성향은 「내 계정 → 맞춤 정보」로 옮겼어요. 플레저는 오른쪽 프로필 메뉴의 「회원 혜택」에 있어요. 백업·복구는 준비하고 있어요.'},
- {id:'fortune-pause',app:'platform',label:'회원 혜택',date:'2026.10.30',title:'무료 운세는 잠시 쉬어요',body:'무료 운세를 다시 손보는 동안 잠시 내려 두었어요. 그동안 회원 혜택은 내 성향, AI 구독 계정판, 플레저 세 가지예요. 계정에 저장한 운세 기록은 지우지 않았어요.'},
- {id:'world-settings',app:'world',label:'SYNK WORLD',date:'2026.10.19',title:'내 성향에서 고른 도움 방식을 WORLD도 따라요',body:'회원 혜택의 「내 성향」에서 도움 방식이나 설명 길이를 바꾸면, 같은 SYNK ID로 하는 WORLD 연습에도 그대로 쓰여요.'},
+ {id:'fortune-pause',app:'platform',label:'회원 혜택',date:'2026.10.30',title:'무료 운세는 잠시 쉬어요',body:'무료 운세를 다시 손보는 동안 잠시 내려 두었어요. 당시 회원 혜택은 내 성향, AI 구독 계정판, 플레저 세 가지였어요. 계정에 저장한 운세 기록은 지우지 않았어요. 지금은 내 성향을 프로필 → 내 계정 → 맞춤 정보에서, AI 구독을 솔리오 → AI 구독 관리에서, 플레저를 프로필 → 회원 혜택에서 열어요.'},
+ {id:'world-settings',app:'world',label:'SYNK WORLD',date:'2026.10.19',title:'내 성향에서 고른 도움 방식을 WORLD도 따라요',body:'회원 혜택에 있던 「내 성향」에서 도움 방식이나 설명 길이를 바꾸면, 같은 SYNK ID로 하는 WORLD 연습에도 그대로 쓰여요. 지금은 프로필 → 내 계정 → 맞춤 정보에서 바꿔요.'},
  {id:'benefits',app:'platform',label:'회원 혜택',date:'2026.10.18',title:'회원 혜택을 네 가지로 정리했어요',body:'회원 혜택은 이제 내 성향, AI 구독 계정판, 플레저, 무료 운세예요. 대화 리허설과 가족 이야기 앨범은 서비스를 마쳤어요.'},
  {id:'auto-update',app:'platform',label:'PC 앱',date:'2026.10.14',title:'Windows PC 앱이 스스로 업데이트해요',body:'Windows용 SYNK PC 앱은 새 판이 나오면 스스로 받아 설치하고 다시 켜져요. Mac은 새 판을 받아 두면 DMG를 열어 앱을 바꿔 주세요.'},{id:'workspace',app:'messenger',label:'SYNK Workspace',date:'2026.10.09',title:'사내 메신저가 SYNK Workspace가 됐어요',body:'대화와 자료, 작업실을 쓰던 사내 메신저의 이름을 SYNK Workspace로 바꿨어요. 교사는 같은 앱의 「내 수업」에서 맡은 반을 챙겨요.'}
 ];

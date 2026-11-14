@@ -32,6 +32,15 @@ const 형식표 = {
   '.mp4': 'video/mp4', '.webm': 'video/webm', '.glb': 'model/gltf-binary', '.gltf': 'model/gltf+json', '.wasm': 'application/wasm', '.ktx2': 'image/ktx2', '.bin': 'application/octet-stream',
 };
 export const 형식of = p => 형식표[path.extname(p).toLowerCase()] || 'application/octet-stream';
+const 없는쪽형식 = 'text/plain; charset=utf-8', 없는쪽본문 = '그 판에 없음';
+
+/** 같은 바이트라도 브라우저가 다른 형식으로 읽은 응답은 후보 증거가 아니다. */
+export function 후보응답형식맞음(response, 경로, 없었음 = false) {
+  const [형식, ...인자] = (없었음 ? 없는쪽형식 : 형식of(경로)).split(';');
+  const 문자셋 = 인자.map(s => s.trim()).find(s => s.startsWith('charset='))?.slice(8) || '';
+  return String(response.mimeType || '').trim().toLowerCase() === 형식
+    && String(response.charset || '').trim().toLowerCase() === 문자셋;
+}
 const 이PC = new Set(['127.0.0.1', 'localhost', '[::1]', '::1']);
 
 /** 저장소 폴더를 그대로 내주는 정적 서버(이 PC만). 폴더 주소는 끝 / 로 돌려보내 상대 경로가 맞게 한다. */
@@ -100,12 +109,80 @@ export async function 판입히기(context, { 판보기, 경로찾기, 기록, �
     let 경로, 몸;
     // 처리기 안 예외는 잡히지 않은 거절이 되어 준비가 죽고 요청은 시간 초과까지 멈춘다 — 못 푼 요청은 그대로 넘기고 적는다
     try { 경로 = 경로찾기(route.request().url()); 몸 = 경로 ? 판보기(경로) : undefined; }
-    catch (e) { 못푼.push(`${route.request().url()}: ${String(e).split('\n')[0].slice(0, 160)}`); return route.continue(); }
+    catch (e) { 못푼.push(`${주소표시(route.request().url())}: ${오류표시(e).split('\n')[0].slice(0, 160)}`); return route.continue(); }
     if (몸 === undefined) return route.continue();
-    기록.add(경로);
-    if (몸 === null) return route.fulfill({ status: 404, contentType: 'text/plain; charset=utf-8', body: '그 판에 없음' });
+    기록.add(경로, route.request());
+    if (몸 === null) return route.fulfill({ status: 404, contentType: 없는쪽형식, body: 없는쪽본문 });
     return route.fulfill({ status: 200, contentType: 형식of(경로), body: 몸, headers: { 'cache-control': 'no-store' } });
   });
+}
+
+// 요청의 인증 쿼리·조각·사용자 정보는 캡처 목록이나 검수용 오류 글에 남기지 않는다.
+export function 주소표시(u) {
+  try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.origin + x.pathname : x.protocol; }
+  catch { return '[주소 없음]'; }
+}
+const 오류표시 = e => String(e).replace(/https?:\/\/[^\s"'<>]+|\/[^\s"'<>?]*\?[^\s"'<>]*/g, u => {
+  if (/^https?:\/\//.test(u)) return 주소표시(u);
+  return u.split(/[?#]/, 1)[0];
+});
+
+/** 요청이 아니라 커밋된 문서와 실제 응답 바이트를 증명한다. 후보의 후 캡처에서만 쓴다. */
+async function 후보문서증명(context, page, 후보) {
+  const cdp = await context.newCDPSession(page), 문서들 = new Map(), 응답들 = new Map(), 세대들 = new Map();
+  cdp.on('Page.frameNavigated', ({ frame: f }) => {
+    세대들.set(f.id, (세대들.get(f.id) || 0) + 1);
+    문서들.set(`${f.id}/${f.loaderId}`, 주소표시(f.url));
+  });
+  cdp.on('Network.responseReceived', e => {
+    let p, b;
+    try { p = 후보.경로찾기(주소표시(e.response.url)); if (!p || !후보.아는(p)) return; b = 후보.판보기(p); }
+    catch { return; }
+    if (b === undefined) return;
+    응답들.set(e.requestId, { id: e.requestId, frame: e.frameId, loader: e.loaderId, 종류: e.type, 경로: p,
+      상태맞음: e.response.status === (b === null ? 404 : 200) && 후보응답형식맞음(e.response, p, b === null),
+      기대: sha(b === null ? Buffer.from(없는쪽본문) : b), 맞음: false, 끝: false });
+  });
+  cdp.on('Network.loadingFinished', ({ requestId }) => {
+    const r = 응답들.get(requestId);
+    if (!r || !r.상태맞음) return;
+    r.끝 = true;
+    r.확인 = cdp.send('Network.getResponseBody', { requestId }).then(b => {
+      r.맞음 = sha(Buffer.from(b.body, b.base64Encoded ? 'base64' : 'utf8')) === r.기대;
+    }).catch(() => { r.맞음 = false; });
+  });
+  cdp.on('Network.loadingFailed', ({ requestId }) => { const r = 응답들.get(requestId); if (r) { r.끝 = false; r.맞음 = false; } });
+  await cdp.send('Page.enable');
+  await cdp.send('Network.enable');
+  const 현재 = async () => {
+    const { frameTree } = await cdp.send('Page.getFrameTree'), 프레임들 = new Map();
+    const 모으기 = t => { const f = t.frame; 프레임들.set(f.id, { loader: f.loaderId, 세대: 세대들.get(f.id) || 0 }); for (const x of t.childFrames || []) 모으기(x); };
+    모으기(frameTree);
+    const 주 = frameTree.frame, 주소 = 문서들.get(`${주.id}/${주.loaderId}`);
+    if (!주소) throw new Error('커밋된 주 문서를 확인하지 못했다');
+    return { 주: 주.id, 주소, 프레임들 };
+  };
+  const 같은프레임 = (a, b, id) => {
+    const x = a.프레임들.get(id), y = b.프레임들.get(id);
+    return Boolean(x && y && x.loader === y.loader && x.세대 === y.세대);
+  };
+  const 주같음 = (a, b) => a.주 === b.주 && 같은프레임(a, b, a.주);
+  return {
+    시작: 현재,
+    끝: async 앞 => {
+      const 뒤 = await 현재();
+      if (!주같음(앞, 뒤)) throw new Error('캡처 중 주 문서가 바뀌었다');
+      const 현재응답 = r => r.끝 && 같은프레임(앞, 뒤, r.frame) && 뒤.프레임들.get(r.frame)?.loader === r.loader;
+      const 받은 = [...응답들.values()].filter(현재응답);
+      await Promise.all(받은.map(r => r.확인));
+      const 마지막 = await 현재();
+      if (!주같음(앞, 마지막)) throw new Error('캡처 중 주 문서가 바뀌었다');
+      const 맞은 = 받은.filter(r => r.맞음 && r.끝 && 같은프레임(앞, 마지막, r.frame));
+      return { 문서경로: 후보.주경로찾기(마지막.주소),
+        문서덧: 맞은.find(r => r.frame === 마지막.주 && r.종류 === 'Document')?.경로 || null,
+        덧쓴: [...new Set(맞은.map(r => r.경로))].sort() };
+    },
+  };
 }
 
 export async function 브라우저열기() {
@@ -119,21 +196,22 @@ async function 맥락열기(browser, 기기, 판, 시각) {
   const context = await browser.newContext({ ...기기.설정, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce', serviceWorkers: 'block' });
   if (시각) await context.clock.setFixedTime(new Date(시각));
   const 덧기록 = new Set();
-  if (판.덧) await 판입히기(context, { ...판.덧, 기록: 덧기록 });
   const 오류 = [];
   // 같은 곳(origin)의 실패만 센다 — 첫 문서 응답은 페이지 주소가 아직 about:blank라 연 주소(상태.기준)로 본다.
   const 상태 = { 기준: null };
   const 같은곳 = (a, b) => { try { return new URL(a).origin === new URL(b).origin; } catch { return false; } };
   const page = await context.newPage();
+  const 증명 = 판.증명 ? await 후보문서증명(context, page, 판.증명) : null;
+  if (판.덧) await 판입히기(context, { ...판.덧, 기록: 덧기록 });
   const 곳 = () => 상태.기준 || page.url();
-  const 짧게 = u => { try { const x = new URL(u); return 같은곳(u, 곳()) ? x.pathname + x.search : u; } catch { return u; } };
+  const 짧게 = u => { try { const x = new URL(u); return 같은곳(u, 곳()) ? x.pathname : 주소표시(u); } catch { return '[주소 없음]'; } };
   // 주 문서 응답은 곳과 상관없이 센다(--장면이 연 첫 문서는 이때 page.url()이 아직 about:blank)
   const 주문서 = r => { try { return r.request().isNavigationRequest() && r.frame() === page.mainFrame(); } catch { return false; } };
   context.on('response', r => { if (r.status() >= 400 && (주문서(r) || 같은곳(r.url(), 곳())) && !/\/favicon\.ico$/.test(r.url())) 오류.push(`HTTP ${r.status()} ${짧게(r.url())}`); });
   context.on('requestfailed', q => { const e = q.failure()?.errorText || ''; if (!/ERR_ABORTED/.test(e) && 같은곳(q.url(), 곳())) 오류.push(`요청 실패 ${짧게(q.url())} ${e}`); });
-  page.on('console', m => { if (m.type() === 'error') 오류.push(`콘솔 ${m.text().replace(/\s+/g, ' ').slice(0, 300)}`); });
-  page.on('pageerror', e => 오류.push(`페이지 오류 ${String(e).split('\n')[0].slice(0, 300)}`));
-  return { context, page, 오류, 덧기록, 상태 };
+  page.on('console', m => { if (m.type() === 'error') 오류.push(`콘솔 ${오류표시(m.text()).replace(/\s+/g, ' ').slice(0, 300)}`); });
+  page.on('pageerror', e => 오류.push(`페이지 오류 ${오류표시(e).split('\n')[0].slice(0, 300)}`));
+  return { context, page, 오류, 덧기록, 증명, 상태 };
 }
 
 /** 글꼴·늦게 뜨는 그림을 기다리고 끝까지 한 번 훑는다(스크롤로 나타나는 지면). */
@@ -174,7 +252,8 @@ export async function 안정된그림(page, 찍는법, { 횟수 = 6, 간격 = 50
   return { 그림: 한장으로(앞), 흔들림: true, 찍은수: 횟수, 조각: 앞.length };
 }
 
-async function 한장(page, { 폴더, 판, 기기, 이름, 오류 }) {
+async function 한장(page, { 폴더, 판, 기기, 이름, 오류, 증명 }) {
+  const 앞 = 증명 ? await 증명.시작() : null;
   await 가라앉히기(page);
   const 잼 = await page.evaluate(() => ({ inner: innerWidth, visual: Math.round(visualViewport?.width || innerWidth), scroll: document.documentElement.scrollWidth,
     글: document.body ? document.body.innerText : '' }));
@@ -196,11 +275,12 @@ async function 한장(page, { 폴더, 판, 기기, 이름, 오류 }) {
       : 잘림 ? 자리(0, 최대높이) : 기본;
   };
   const { 그림, 흔들림, 조각 } = await 안정된그림(page, 찍는법);
+  const 문서 = 증명 ? await 증명.끝(앞) : null;
   const 파일 = path.join(폴더, 판, 기기.이름, `${이름}.png`);
   fs.mkdirSync(path.dirname(파일), { recursive: true });
   fs.writeFileSync(파일, 그림);
   fs.writeFileSync(파일.replace(/\.png$/, '.txt'), 잼.글);
-  return { 이름, 판, 기기: 기기.이름, 주소: page.url(), 그림: 파일, 넘침, 높이: 잰.높이, 잘림: 잰.높이 > 최대높이, ...(조각 > 1 ? { 조각 } : {}),
+  return { 이름, 판, 기기: 기기.이름, 주소: 주소표시(page.url()), ...(문서 || {}), 그림: 파일, 넘침, 높이: 잰.높이, 잘림: 잰.높이 > 최대높이, ...(조각 > 1 ? { 조각 } : {}),
     흔들림, 글길이: 잼.글.length, 글sha: sha(잼.글).slice(0, 12), 오류: [...new Set(오류)] };
 }
 
@@ -282,7 +362,7 @@ export async function 찍기({ 화면들 = [], 장면 = null, 판들, 폴더, �
             let 붙임 = 바탕이름;
             for (let k = 2; 쓴이름.has(붙임); k++) 붙임 = `${바탕이름}-${k}`;
             쓴이름.add(붙임);
-            const r = await 한장(m.page, { 폴더, 판: 판.이름, 기기, 이름: 붙임, 오류: m.오류 });
+            const r = await 한장(m.page, { 폴더, 판: 판.이름, 기기, 이름: 붙임, 오류: m.오류, 증명: m.증명 });
             장들.push(r);
             return r;
           };
@@ -296,8 +376,8 @@ export async function 찍기({ 화면들 = [], 장면 = null, 판들, 폴더, �
             await 찍음(화면.이름);
           }
         } catch (e) {
-          못연.push({ 판: 판.이름, 기기: 기기.이름, 화면: 화면.이름, 오류: String(e).split('\n')[0].slice(0, 300) });
-          알리기(`캡처 실패 ${판.이름} ${기기.이름} ${화면.이름 || '장면'}: ${String(e).split('\n')[0].slice(0, 160)}`);
+          못연.push({ 판: 판.이름, 기기: 기기.이름, 화면: 화면.이름, 오류: 오류표시(e).split('\n')[0].slice(0, 300) });
+          알리기(`캡처 실패 ${판.이름} ${기기.이름} ${화면.이름 || '장면'}: ${오류표시(e).split('\n')[0].slice(0, 160)}`);
         } finally {
           for (const p of m.덧기록) 덧쓴.add(p);
           await m.context.close();

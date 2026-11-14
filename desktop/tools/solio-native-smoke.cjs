@@ -4,7 +4,7 @@
 // 계정 · 구독 · 성향은 모두 합성이다(member-insight-fixture의 합성 저장소를 쓰는 미리 올림 파일을 임시 프로필 안에 만든다). 바깥 요청은 막는다.
 // 사용: node desktop/tools/solio-native-smoke.cjs  (출력 SYNK_SOLIO_OUT, 기본 .tmp/solio-20261113/pc-shots)
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
-const root=path.resolve(__dirname,'..'),out=process.env.SYNK_SOLIO_OUT||path.resolve(root,'../.tmp/solio-20261113/pc-shots'),prefix='SYNK_SOLIO_QA ';
+const root=path.resolve(process.env.SYNK_SOLIO_SOURCE_ROOT||path.join(__dirname,'..')),out=process.env.SYNK_SOLIO_OUT||path.resolve(root,'../.tmp/solio-20261113/pc-shots'),prefix='SYNK_SOLIO_QA ';
 if(!process.versions.electron){
   const profile=fs.mkdtempSync(path.join(os.tmpdir(),'synk-solio-'));
   try{
@@ -78,6 +78,17 @@ if(!process.versions.electron){
           check('member-home-'+tag,ok(info,info.shelf==='messenger,solio'),{...info,shot:shoot?await capture('member-home-'+tag):null});
           info=await go("document.getElementById('account-button').click()");
           check('member-profile-menu-'+tag,info.profileMenu&&await run("document.getElementById('account-button').getAttribute('aria-expanded')==='true'&&[...document.querySelectorAll('#profile-menu [data-profile]')].map(n=>n.dataset.profile).join()==='account,benefits,sign-out'"),{...info,shot:shoot&&theme==='day'?await capture('member-profile-menu-'+tag):null});
+          // 실제 Chromium 키 입력으로 Tab 내부 이동과 양방향 이탈을 확인한다.
+          const tab=async shift=>{window.webContents.focus();for(const type of ['keyDown','keyUp'])window.webContents.sendInputEvent({type,keyCode:'Tab',modifiers:shift?['shift']:[]});await settle();};
+          await tab(false);
+          check('member-profile-tab-inside-'+tag,await run("!document.getElementById('profile-menu').hidden&&document.activeElement?.dataset.profile==='benefits'"));
+          await tab(false);await tab(false);
+          check('member-profile-tab-out-'+tag,await run("document.getElementById('profile-menu').hidden&&document.getElementById('account-button').getAttribute('aria-expanded')==='false'&&!document.activeElement.closest('#profile-menu,#account-button')"));
+          await run("document.getElementById('account-button').click();document.getElementById('account-button').focus()");
+          check('member-profile-button-focus-'+tag,await run("!document.getElementById('profile-menu').hidden"));
+          await tab(true);
+          check('member-profile-shift-tab-out-'+tag,await run("document.getElementById('profile-menu').hidden&&document.getElementById('account-button').getAttribute('aria-expanded')==='false'&&!document.activeElement.closest('#profile-menu,#account-button')"));
+          await run("document.getElementById('account-button').click()");
           info=await go("document.getElementById('profile-menu').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))");
           check('member-profile-menu-escape-'+tag,!info.profileMenu&&info.focus==='account-button');
           info=await go("document.getElementById('account-button').click();document.querySelector('[data-profile=benefits]').click()");

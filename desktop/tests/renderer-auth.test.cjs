@@ -125,6 +125,8 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     emit(channel,value){if(channel==='auth')currentAuth=value;for(const callback of subscriptions.get(channel)||[])callback(value);},
     async click(id){const callback=element(id).handlers.get('click');assert.equal(typeof callback,'function');await callback();},
     async action(dataset){await documentHandlers.get('click')({target:{closest:()=>({dataset})}});},
+    async clickOutside(){await documentHandlers.get('click')({target:{closest:()=>null}});},
+    focusIn(target){documentHandlers.get('focusin')?.({target});},
     publicBenefitControl(){
       const match=element('benefit-detail').innerHTML.match(/<(a|button)\b([^>]+)>(?:웹에서 열기|여는 중…)[\s\S]*?<\/\1>/);
       assert.ok(match,'rendered public benefit control must exist');const [,tag,attrs]=match,dataset={};
@@ -620,6 +622,110 @@ test('SOLIO sits in the top menu, the old benefit routes reach their new places 
   await f.action({profile:'benefits'});assert.equal(f.element('profile-menu').hidden,true);assert.equal(f.view(),'benefits');
   await f.click('account-button');f.element('profile-menu').handlers.get('keydown')({key:'Escape',preventDefault(){}});assert.equal(f.element('profile-menu').hidden,true);assert.equal(f.element('account-button').attributes.get('aria-expanded'),'false');
   await f.click('account-button');await f.action({profile:'account'});assert.equal(f.view(),'account');assert.equal(f.element('profile-menu').hidden,true);
+});
+
+test('the profile menu stays open across Tab moves inside the menu and account button, closes without stealing focus when Tab leaves both, and keeps Escape, outside click and item actions',async()=>{
+  const indexHtml=fs.readFileSync(path.join(RENDERER,'index.html'),'utf8');
+  assert.deepEqual([...indexHtml.matchAll(/data-profile="([^"]+)"/g)].map(match=>match[1]),['account','benefits','sign-out']);
+  const f=await fixture({initialAuth:account('tab-member',['messenger','care']),bridgeOverrides:{authSignOut:async()=>({ok:true})}});
+  assert.equal(await f.ready,'true');
+  const menu=f.element('profile-menu'),accountButton=f.element('account-button');
+  const parsed=new ContinuityElement('div');
+  parsed.innerHTML='<p class="profile-menu-who" id="profile-menu-who"></p><button type="button" data-profile="account">내 계정</button><button type="button" data-profile="benefits">회원 혜택</button><button type="button" class="profile-menu-out" data-profile="sign-out">로그아웃</button>';
+  const items=parsed.querySelectorAll('button');
+  assert.equal(items.length,3);
+  for(const item of items){
+    item.focus=()=>{f.document.activeElement=item;};
+    item.closest=selector=>selector==='#profile-menu,#account-button'?menu:selector==='button'?item:null;
+  }
+  menu.contains=node=>node===menu||parsed.contains(node);
+  menu.querySelector=selector=>parsed.querySelector(selector);
+  let accountFocusCalls=0;
+  accountButton.focus=()=>{accountFocusCalls++;f.document.activeElement=accountButton;};
+  accountButton.contains=node=>node===accountButton;
+  accountButton.closest=selector=>selector==='#profile-menu,#account-button'||selector==='button'?accountButton:null;
+  const navSettings={id:'nav-settings',closest:selector=>selector==='button'?navSettings:null,focus(){f.document.activeElement=navSettings;}};
+  const footerShortcut=f.element('download-shortcut');
+  footerShortcut.closest=selector=>selector==='button'?footerShortcut:null;
+  footerShortcut.focus=()=>{f.document.activeElement=footerShortcut;};
+  const tabMove=(hostId,from,to)=>{
+    to.focus();
+    f.element(hostId).handlers.get('focusout')({target:from,relatedTarget:to});
+    f.focusIn(to);
+  };
+
+  // 메뉴 항목 사이와 메뉴 ↔ 계정 단추 사이 이동은 열림과 aria-expanded="true"를 유지한다.
+  await f.click('account-button');
+  assert.equal(menu.hidden,false);
+  assert.equal(accountButton.attributes.get('aria-expanded'),'true');
+  assert.equal(f.document.activeElement,items[0]);
+  tabMove('profile-menu',items[0],items[1]);
+  assert.equal(menu.hidden,false);assert.equal(accountButton.attributes.get('aria-expanded'),'true');
+  tabMove('profile-menu',items[1],items[2]);
+  assert.equal(menu.hidden,false);assert.equal(accountButton.attributes.get('aria-expanded'),'true');
+  tabMove('profile-menu',items[2],items[0]);
+  tabMove('profile-menu',items[0],accountButton);
+  assert.equal(menu.hidden,false);assert.equal(accountButton.attributes.get('aria-expanded'),'true');assert.equal(f.document.activeElement,accountButton);
+  tabMove('account-button',accountButton,items[0]);
+  assert.equal(menu.hidden,false);assert.equal(accountButton.attributes.get('aria-expanded'),'true');assert.equal(f.document.activeElement,items[0]);
+
+  // Tab으로 메뉴 밖으로 나가면 닫히고, 바깥 초점을 계정 단추로 강제로 되돌리지 않는다.
+  const focusBeforeTabOut=accountFocusCalls;
+  tabMove('profile-menu',items[2],footerShortcut);
+  assert.equal(menu.hidden,true);
+  assert.equal(accountButton.attributes.get('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,footerShortcut);
+  assert.equal(accountFocusCalls,focusBeforeTabOut);
+
+  // Shift+Tab으로 계정 단추 밖(주 메뉴)으로 나가도 닫히고, 바깥 초점을 되돌리지 않는다.
+  await f.click('account-button');
+  tabMove('profile-menu',items[0],accountButton);
+  assert.equal(menu.hidden,false);assert.equal(accountButton.attributes.get('aria-expanded'),'true');
+  const focusBeforeShiftTabOut=accountFocusCalls;
+  tabMove('account-button',accountButton,navSettings);
+  assert.equal(menu.hidden,true);
+  assert.equal(accountButton.attributes.get('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,navSettings);
+  assert.equal(accountFocusCalls,focusBeforeShiftTabOut);
+
+  // relatedTarget 없이 바깥 요소에 focusin만 들어온 경우에도 닫히며 초점을 빼앗지 않는다.
+  await f.click('account-button');
+  footerShortcut.focus();
+  f.focusIn(footerShortcut);
+  assert.equal(menu.hidden,true);
+  assert.equal(accountButton.attributes.get('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,footerShortcut);
+  assert.equal(accountFocusCalls,focusBeforeShiftTabOut);
+
+  // Escape · 바깥 클릭 · 메뉴 항목 동작은 그대로 보존한다.
+  await f.click('account-button');
+  menu.handlers.get('keydown')({key:'Escape',preventDefault(){}});
+  assert.equal(menu.hidden,true);
+  assert.equal(accountButton.attributes.get('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,accountButton);
+  assert.equal(accountFocusCalls,focusBeforeShiftTabOut+1);
+
+  await f.click('account-button');
+  footerShortcut.focus();
+  await f.clickOutside();
+  assert.equal(menu.hidden,true);
+  assert.equal(accountButton.attributes.get('aria-expanded'),'false');
+  assert.equal(f.document.activeElement,footerShortcut);
+  assert.equal(accountFocusCalls,focusBeforeShiftTabOut+1);
+
+  await f.click('account-button');
+  await f.action({profile:'benefits'});
+  assert.equal(menu.hidden,true);assert.equal(accountButton.attributes.get('aria-expanded'),'false');assert.equal(f.view(),'benefits');
+
+  await f.click('account-button');
+  await f.action({profile:'account'});
+  assert.equal(menu.hidden,true);assert.equal(accountButton.attributes.get('aria-expanded'),'false');assert.equal(f.view(),'account');
+
+  await f.click('account-button');
+  f.setAuth(signedOut);
+  await f.action({profile:'sign-out'});
+  await settleLibrary();
+  assert.equal(menu.hidden,true);assert.equal(accountButton.attributes.has('aria-expanded'),false);
 });
 
 test('pinning PLEASURE to home only adds that favorite, needs the care grant, and guests still get the sign-in dialog from the account button',async()=>{

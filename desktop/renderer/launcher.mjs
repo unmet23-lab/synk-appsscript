@@ -295,7 +295,8 @@ function renderSolio(){
 }
 // 맞춤 정보(내 계정 → 맞춤 정보): 보일 때만 내 성향을 불러오고, 떠나거나 창이 뒤로 가면 끈다.
 function renderInsightView(){if(view!=='insight'){memberInsight.setVisible(false);return;}memberInsight.setVisible(!document.hidden);renderInsight();}
-// 오른쪽 프로필 메뉴: 로그인한 회원만. 펼침 단추(aria-expanded) — Esc · 바깥 누름 · 항목 누름 · 화면 이동 · 로그아웃에 닫힌다.
+// 오른쪽 프로필 메뉴: 로그인한 회원만. 펼침 단추(aria-expanded) — Esc · 초점 이탈 · 바깥 누름 · 항목 누름 · 화면 이동 · 로그아웃에 닫힌다.
+function inProfileControl(node){return !!node&&(node===$('profile-menu')||node===$('account-button')||Boolean(node.closest?.('#profile-menu,#account-button'))||Boolean($('profile-menu').contains?.(node))||Boolean($('account-button').contains?.(node)));}
 function syncProfileMenu(){const signedIn=!!bridge&&!!auth.signedIn;if(!signedIn)profileOpen=false;$('profile-menu').hidden=!profileOpen;if(signedIn){$('account-button').setAttribute('aria-expanded',String(profileOpen));$('account-button').setAttribute('aria-controls','profile-menu');}else{$('account-button').removeAttribute('aria-expanded');$('account-button').removeAttribute('aria-controls');}}
 function closeProfileMenu({focus=false}={}){if(!profileOpen)return;profileOpen=false;syncProfileMenu();if(focus)$('account-button').focus?.();}
 function onAccountButton(){if(!bridge||!auth.signedIn){openAccount();return;}profileOpen=!profileOpen;syncProfileMenu();if(profileOpen)$('profile-menu').querySelector?.('button')?.focus?.();}
@@ -360,8 +361,12 @@ function toggleSelectedFavorite(){return toggleFavorite(prefs.selected);}
 $('favorite').addEventListener('click',toggleSelectedFavorite);
 $('download-shortcut').addEventListener('click',()=>showView('downloads'));$('footer-settings').addEventListener('click',()=>showView('settings'));
 $('account-button').addEventListener('click',onAccountButton);for(const id of ['settings-login','library-account'])$(id).addEventListener('click',openAccount);
-// 프로필 메뉴는 Esc로 닫고 계정 단추로 초점을 돌려준다(문서 keydown은 명령 메뉴가 쓴다).
-for(const id of ['profile-menu','account-button'])$(id).addEventListener('keydown',event=>{if(event.key==='Escape'&&profileOpen){event.preventDefault?.();closeProfileMenu({focus:true});}});
+// 프로필 메뉴는 Esc로 닫고 계정 단추로 초점을 돌려주며, Tab/Shift+Tab으로 초점이 메뉴·계정 단추 밖으로 나가면 초점을 되돌리지 않고 닫는다(문서 keydown은 명령 메뉴가 쓴다).
+for(const id of ['profile-menu','account-button']){
+  $(id).addEventListener('keydown',event=>{if(event.key==='Escape'&&profileOpen){event.preventDefault?.();closeProfileMenu({focus:true});}});
+  $(id).addEventListener('focusout',event=>{const next=event.relatedTarget;if(profileOpen&&next&&!inProfileControl(next))closeProfileMenu();});
+}
+document.addEventListener('focusin',event=>{if(profileOpen&&!inProfileControl(event.target))closeProfileMenu();});
 async function openSignUp(){
   if(typeof bridge?.authSignUp!=='function'||auth.signedIn||['restoring','signing-in','signing-out'].includes(auth.status)||signUpPending||accountRetryPending)return;
   if(!$('account-dialog').open)$('account-dialog').showModal();

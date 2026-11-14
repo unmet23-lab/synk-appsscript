@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const {validateRelease,updateSiteText,releaseDay,updateHomeNews,updateFooterDate,stageSite}=require('../tools/publish-platform-release.cjs');
+const {validateRelease,updateSiteText,releaseDay,updateHomeNews,updateFooterDate,planSite,stageSite}=require('../tools/publish-platform-release.cjs');
 const sample=()=>({schemaVersion:1,product:'platform',channel:'preview',version:'0.4.4',releaseId:'platform-preview-0.4.4',buildId:'20261014.1',publishedAt:'2026-10-14T00:00:00.000Z',artifacts:[['win32','x64','win','exe'],['darwin','arm64','mac','dmg'],['darwin','x64','mac','dmg']].map(([platform,arch,os,ext])=>({platform,arch,url:`https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-${os}-${arch}.${ext}`,bytes:123,sha256:'a'.repeat(64),asarSHA256:'b'.repeat(64)}))});
 test('publication requires every platform and never changes bytes under the same version',()=>{
  const release=sample();assert.equal(validateRelease(release).length,3);assert.doesNotThrow(()=>validateRelease(release,structuredClone(release)));
@@ -21,6 +21,25 @@ test('static links and update manifest advance together while unrelated content 
 });
 test('unrelated release links remain unchanged',()=>{
  const other='https://github.com/unmet23-lab/synk-policy/releases/download/other/product.exe';assert.equal(updateSiteText(other,sample()),other);
+});
+
+test('CRLF checkout outputs LF before client and knowledge cache hashes, then stages identical bytes',t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-release-lf-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));
+ const release=sample(),links=release.artifacts.map(a=>`<a href="${a.url}">download</a>`).join('\r\n');
+ const home=`<html>\r\n<body data-knowledge="/knowledge.json?v=deadbeef">${links}\r\nPreview 0.4.3\n</body></html>\r\n`;
+ for(const [file,value] of Object.entries({'index.html':home,'knowledge.json':'{\r\n "version":"Preview 0.4.3"\r\n}\r\n','llms.txt':'Preview 0.4.3\r\nKEEP\n','docs/platform.md':'Preview 0.4.3\r\n'})){
+  fs.mkdirSync(path.dirname(path.join(directory,file)),{recursive:true});fs.writeFileSync(path.join(directory,file),value);
+ }
+ const client=path.join(directory,'input-client.js');fs.writeFileSync(client,'// client\r\n// two\n');
+ const writes=planSite({publicDir:directory,manifest:release,clientFile:client}),values=Object.fromEntries(writes.map(x=>[x.relative,x.value]));
+ const hash=value=>require('node:crypto').createHash('sha256').update(value).digest('hex').slice(0,12);
+ for(const {relative,value} of writes)assert(!value.includes('\r'),relative);
+ assert(values['index.html'].includes('/knowledge.json?v='+hash(values['knowledge.json'])));
+ assert(values['index.html'].includes('/desktop/releases/client.js?v='+hash(values['desktop/releases/client.js'])));
+ assert.deepEqual(JSON.parse(values['desktop/releases/preview.json']),release);
+ stageSite({publicDir:directory,manifest:release,clientFile:client});
+ for(const {relative,value} of writes)assert.equal(fs.readFileSync(path.join(directory,relative),'utf8'),value,relative);
+ assert.equal(stageSite({publicDir:directory,manifest:release,clientFile:client}).length,0);
 });
 // 2026-11-08: 홈 소식 줄(#now)은 synk.im 빌드(SYNK-website site-v10/build.mjs)와 같은 모양 — 최신순 셋을 펼치고 나머지는 「지난 소식 N」 접이 안.
 const li=(href,date,who,title)=>`<li><a href="${href}"><time datetime="${date}">${date.replace(/-/g,'.')}</time><span class="news-who"><i class="dot dot-synk" aria-hidden="true"></i>${who}</span><span class="news-what"><span class="news-title">${title}</span></span><span class="news-go" aria-hidden="true">→</span></a></li>`;
