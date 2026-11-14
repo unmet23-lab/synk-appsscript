@@ -40,6 +40,23 @@ function repository(t) {
   const commit = message => { run('add', '-A'); run('commit', '-q', '--allow-empty', '-m', message); return run('rev-parse', 'HEAD').trim(); };
   return { dir, run, put, commit };
 }
+test('casting photo inputs stay readable and any photo change requires a fresh verification', t => {
+  const g = repository(t), folder = 'docs/마케팅/PULSE_AI모델_캐스팅_20260930/site/';
+  const photos = ['img/F04/hero-s.webp', 'img/M01/hair-2-s.webp', 'img/M21/look-2-s.webp'].map(file => folder + file);
+  const unrelated = folder + 'notes.md';
+  for (const file of photos) g.put(file, 'original photo');
+  g.put(unrelated, 'not a test input'); const base = g.commit('casting inputs');
+  const commits = photos.map(file => { g.put(file, 'changed photo'); return g.commit('photo changed'); });
+  g.put(unrelated, 'notes changed'); const notes = g.commit('notes changed');
+  const changes = testedChanges(g.dir, base, notes, git);
+  for (const commit of commits) assert.equal(changes.get(commit).unchanged, false, 'a photo change must not carry an earlier pass');
+  assert.equal(changes.get(notes).unchanged, true, 'nearby documents remain outside the tested tree');
+  ensureTestedTree(g.dir);
+  const trace = path.join(scratch(t), 'trace');
+  const code = `const fs=require('node:fs'); for (const file of ${JSON.stringify(photos.map(file => path.join(g.dir, file)))}) fs.readFileSync(file); fs.existsSync(${JSON.stringify(path.join(g.dir, unrelated))});`;
+  cp.execFileSync(process.execPath, ['-e', code], { env: { ...process.env, ...traceEnvironment(g.dir, trace) }, windowsHide: true });
+  assert.deepEqual(touchedOutside(trace), [unrelated], 'photo reads are tracked inputs; unrelated probes still fail the run');
+});
 test('a real history: docs off the list leave the tested tree alone, a kept doc or a merged code change does not', t => {
   const g = repository(t), kept = KEPT_DOCS.find(entry => !entry.endsWith('/')) || `${KEPT_DOCS[0]}a.js`;
   g.put('tools/a.js', '1'); g.put('docs/_ops/트랙.md', '1'); g.put(kept, '1'); const base = g.commit('base');
