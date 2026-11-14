@@ -39,7 +39,9 @@ test('카드: 표·결과 파일·끝 표식 줄·멈출 화면이 들어가고,
   assert.ok(글.startsWith(`[SYNK GPT 인계 · 결제권한-20261022 · ${표}]`));
   assert.ok(글.includes(`마지막 줄: ${끝표식} ${표}`));
   assert.ok(글.includes(path.join(폴더, '결과.md').split(path.sep).join('/')), '결과 파일은 / 경로로');
-  assert.match(글, /비밀번호·인증 코드·휴대폰 2단계 인증·캡차·결제 확인 화면이 나오면 거기서 멈추고/);
+  assert.match(글, /비밀번호·인증 코드·2단계 인증\(휴대폰·인증 앱\)·캡차·본인확인 화면이 나오거나 비밀번호 재설정·계정 복구로 넘어가면 거기서 멈추고/);
+  // 결제는 화면이 아니라 돈을 내는 마지막 단계에서 멈춘다 — 확인 화면 없는 명령·API 충전도(11-14 아스트라 GA1)
+  assert.match(글, /실제로 돈을 내는 일\(구입·충전·결제를 끝내는 클릭·명령·API 호출\)은 할 일에 적혀 있어도, 확인 화면이 없어도 그 직전에 멈추고/);
   assert.match(글, /적힌 일만 한다/);
   assert.match(글, /대상: console\.cloud\.google\.com/);
   assert.equal(fs.readFileSync(path.join(폴더, '지시.md'), 'utf8'), 글 + '\n');

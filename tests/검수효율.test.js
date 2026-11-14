@@ -1,5 +1,5 @@
 'use strict';
-// 검수 효율 여섯 가지(2026-10-31, 운영 원칙 「검수 효율 여섯 가지」) — 모델을 부르지 않고 등급 글·설계 관문·후보 차이·끝 판·P2 미룸·끝 판 시험을 본다.
+// 검수 효율 여섯 가지(2026-10-31 — 지금 기준은 운영 원칙 「검수 판정표」) — 모델을 부르지 않고 등급 글·설계 관문·후보 차이·끝 판·P2 미룸·끝 판 카본 안내를 본다.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
@@ -182,16 +182,18 @@ test('P2·P3만 고친 판은 다음 판으로 미룬다(판 5) — 함께올림
   assert.deepEqual((await api.다시하기({ 이름: 'old2', 폴더: path.join(r.뿌리, 'old2'), 앞: o.폴더 })).목록.대상, []);
 });
 
-test('서비스 백엔드 끝 판 시험: 11-14까지 통과한 Claude 작성 서비스 코드만 아르곤 끝 판을 안내한다', async () => {
+test('서비스 백엔드 끝 판 카본(11-14부터 상시): 통과한 Claude 작성 서비스 코드만 끝 판을 안내한다', async (t) => {
   const { 끝판시험말 } = await tool();
   const 목록 = { 이름: 'town-engine', 종류: '백엔드', 정책: { 작성자: 'Claude', 예외: null }, 끝: '작업본', 바탕: { 커밋: 'abcdef1234' }, 저장소: 'C:/repo', 설정: { 경로: ['experiences/synk-town'] } };
   const 확인 = (경로, 통과 = true) => ({ 통과, 증명: { 최종파일: [{ 경로, 역할: '소스' }] } });
-  const 안 = new Date('2026-11-01T00:00:00Z');
-  assert.match(끝판시험말(목록, 확인('experiences/synk-town/core.mjs'), { 지금: 안 }), /11-14까지.*준비 town-engine-끝판 --종류 백엔드 --바탕 abcdef123 --저장소 C:\/repo --경로 experiences\/synk-town --시험결과.*아르곤 town-engine-끝판/);
-  assert.match(끝판시험말(목록, 확인('엔진_콘텐츠AI.js'), { 지금: 안 }), /끝판/);
-  for (const 경로 of ['tools/바로올리기.js', 'tests/a.test.js', 'experiences/x/qa/a.mjs', 'experiences/x/a.test.mjs', 'docs/a.md']) assert.equal(끝판시험말(목록, 확인(경로), { 지금: 안 }), null, 경로);
-  assert.equal(끝판시험말(목록, 확인('lib/a.js', false), { 지금: 안 }), null, '배포 조건이 차기 전에는 안내하지 않는다');
-  assert.equal(끝판시험말(목록, 확인('lib/a.js'), { 지금: new Date('2026-11-15T00:00:00Z') }), null, '시험 기간이 끝나면 저절로 멈춘다');
-  assert.equal(끝판시험말({ ...목록, 정책: { 작성자: 'GPT' } }, 확인('lib/a.js'), { 지금: 안 }), null);
-  assert.equal(끝판시험말({ ...목록, 이름: 'town-engine-끝판' }, 확인('lib/a.js'), { 지금: 안 }), null, '끝 판 묶음에서 또 안내하지 않는다');
+  assert.match(끝판시험말(목록, 확인('experiences/synk-town/core.mjs')), /끝 판 카본.*준비 town-engine-끝판 --종류 백엔드 --바탕 abcdef123 --저장소 C:\/repo --경로 experiences\/synk-town --시험결과.*아르곤 town-engine-끝판/);
+  assert.match(끝판시험말(목록, 확인('엔진_콘텐츠AI.js')), /끝판/);
+  for (const 경로 of ['tools/바로올리기.js', 'tests/a.test.js', 'experiences/x/qa/a.mjs', 'experiences/x/a.test.mjs', 'docs/a.md']) assert.equal(끝판시험말(목록, 확인(경로)), null, 경로);
+  assert.equal(끝판시험말(목록, 확인('lib/a.js', false)), null, '배포 조건이 차기 전에는 안내하지 않는다');
+  // 날짜 조건이 없다(11-14부터 상시) — 시계를 한참 뒤로 돌려도 안내한다. 누가 new Date() 종료일을 되살리면 여기서 걸린다.
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2027-06-01T00:00:00Z') });
+  assert.match(끝판시험말(목록, 확인('lib/a.js')), /끝 판 카본/, '날짜가 지나도 안내한다(11-14부터 상시)');
+  t.mock.timers.reset();
+  assert.equal(끝판시험말({ ...목록, 정책: { 작성자: 'GPT' } }, 확인('lib/a.js')), null);
+  assert.equal(끝판시험말({ ...목록, 이름: 'town-engine-끝판' }, 확인('lib/a.js')), null, '끝 판 묶음에서 또 안내하지 않는다');
 });
