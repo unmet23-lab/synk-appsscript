@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached photograph. Return the SAME photograph with exactly one change: remove the small coral needle-felted ghost-shaped character that sits on the navy felt ledge in the lower left, and remove its faint reflection in the glass.
+
+Where it was, show what was behind it: the same navy felt ledge continuing straight, the same gray-blue floor, and the same aquarium glass with the same deep blue-green wool water, mossy gray felt rocks and green wool seaweed continuing naturally.
+
+Keep everything else exactly as it is: the same tall 9:16 framing and size, the same seal in the same pose and place, the same lighting, colors, wool fibers and depth of field. Do not add any new object, character, animal, text, letter or symbol.
