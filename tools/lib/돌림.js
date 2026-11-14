@@ -132,7 +132,8 @@ function bundlesOf(accounts) {
  *   existing: [{ original, account, time(ISO), file, fixed, gone, seenAt? }] — 이미 있는 판(예약 · 게시 · 만든 사람이 단 판 · 지난 돌림 판). file은 그 판 파일 지문.
  *     gone인 줄의 seenAt(ISO)은 그 계정이 그 원본을 다른 길로 이미 올린 때(「같은이야기」 · 「이미받음」) — 씨앗 계정이면 씨앗 첫 판 시각으로 세고(②),
  *     그 판은 이 원본의 판으로 ① · ⑥(같은 플랫폼 20시간 · 같은 언어 묶음 24시간 · 유튜브 24시간 다섯 채널)에 든다. 칸은 차지하지 않는다
- *   → { cells: [{ account, day, slot, format, time, ms, original|null, why|null }], seeds: { id: ms } }
+ *   → { cells: [{ account, day, slot, format, time, ms, original|null, why|null, whyCode? }], seeds: { id: ms }, received: { account: [원본 id…] } }
+ *     whyCode는 빈 칸 까닭 코드(WHY_CODES). received는 그 계정이 이미 받았거나 이번 셈에서 받는 원본이다(걸지 않은 돌림 판의 원본은 뺀다 — --다시가 뺄 수 있다)
  * existing에는 원본이 아닌 편의 판도 넣는다(original: null) — 그 칸은 이미 찼다. gone은 나가지 않는 판(보류 · 취소됨 · 지움) —
  * 칸은 비지만 그 계정은 그 원본을 다시 받지 않는다. trial은 첫 판 확인 전 계정 — 판이 하나도 없을 때만 칸 하나를 받는다.
  */
@@ -141,6 +142,8 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
   const byId = new Map(originals.map((o) => [o.id, o]));
   const platesOf = new Map(originals.map((o) => [o.id, []])); // 원본마다 판(ms · 플랫폼 · 언어)
   const posted = new Map(Object.keys(accounts).map((k) => [k, new Set()]));
+  const 굳은판 = new Map(Object.keys(accounts).map((k) => [k, new Set()])); // 걸렸거나 사람이 단 판 · 나가지 않은 판의 원본
+  const 바뀔판 = new Map(Object.keys(accounts).map((k) => [k, new Set()])); // 걸지 않은 돌림 판의 원본(--다시가 뺄 수 있다)
   const postedAt = new Map(Object.keys(accounts).map((k) => [k, new Map()])); // 계정 → 원본 → 그 판 시각(ms, 나가지 않는 판 · 다른 길로 받은 것은 -Infinity) — 연재 차례(⑦)
   const occupied = new Set(); // `${account}|${day}|${slot time}`
   const seeds = {};
@@ -161,6 +164,7 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
     if (p.gone) {
       if (p.original) {
         posted.get(p.account)?.add(p.original);
+        굳은판.get(p.account)?.add(p.original);
         if (!postedAt.get(p.account).has(p.original)) postedAt.get(p.account).set(p.original, -Infinity);
         // 다른 길로 이미 올린 때(seenAt)가 있으면 — ⓐ 씨앗 계정은 씨앗 첫 판으로 센다(안 그러면 그 원본은 씨앗 판이 영영 없어 다른 계정이 못 받는다)
         // ⓑ 그 판을 이 원본의 판으로 넣는다(11-11 Fable 검수: @synkkorean의 지마 영어판(11-10 21:00) · 버마어 틱톡 판이 창 밖에 있어, 같은 말 채널이나
@@ -187,6 +191,8 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
     // 씨앗 판도 같다(11-11 P3-1) — 걸리지 않은 채 지나간 씨앗 판은 씨앗 첫 판으로 세지 않는다(나가지 않은 판의 24시간 뒤를 다른 계정의 문으로 삼지 않게.
     // 그 씨앗 계정이 그 원본을 받은 것으로는 남는다). 다른 씨앗 판이 있으면 그 판이, 없으면 씨앗이 다시 올릴 때까지 다른 계정은 기다린다.
     if (p.original) note(p.original, p.account, ms, p.file || null, { seedOk: !missed });
+    // 걸지 않은 돌림 판은 --다시가 뺄 수 있다 — 받은 원본(received)에서 뺀다(그 판본이 낡으면 판본할일이 그 원본을 후보로 다시 본다, 11-15 P3-4)
+    if (p.original) (p.generated && !p.booked ? 바뀔판 : 굳은판).get(p.account)?.add(p.original);
   }
   // 원본마다 기다린 순서(씨앗 첫 판 · 쓸 수 있게 된 날 · 이름) — 오래 기다린 것부터 창에 든다.
   const ageOf = (o) => seeds[o.id] ?? (o.readyFrom ? Date.parse(o.readyFrom + 'T00:00:00Z') : Infinity);
@@ -232,7 +238,7 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
         if (!slot.time || !slot.format) continue;
         const ms = T.zonedMs(day, slot.time, T.tzOf(a));
         const cell = { account: key, day, slot: slot.time, format: slot.format, time: T.isoAt(ms, T.tzOf(a)), ms, original: null, why: null };
-        if (occupied.has(`${key}|${day}|${slot.time}`)) { cell.why = '이미 찬 칸'; cell.taken = true; cells.push(cell); continue; }
+        if (occupied.has(`${key}|${day}|${slot.time}`)) { cell.why = '이미 찬 칸'; cell.whyCode = WHY_CODES.TAKEN; cell.taken = true; cells.push(cell); continue; }
         const g = `${a.platform}|${slot.format}`;
         if (!groups.has(g)) groups.set(g, []);
         groups.get(g).push(cell);
@@ -248,6 +254,7 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
       const list = all.filter((cell) => {
         if (!accounts[cell.account].trial || !trialUsed.has(cell.account)) return true;
         cell.why = '첫 판 확인 전 — 건 첫 판을 예약 목록에서 확인하고 postRouteVerified를 true로 바꾸면 다음 칸을 받는다';
+        cell.whyCode = WHY_CODES.TRIAL;
         return false;
       });
       const cand = new Map();
@@ -270,19 +277,20 @@ function plan({ accounts, originals, existing = [], from, days = 5, cfg: given =
         ok.sort((x, y) => ageOf(x) - ageOf(y) || x.id.localeCompare(y.id));
         const win = ok.slice(0, cfg.window).sort((x, y) => hashOf(`${cell.account}|${x.id}`).localeCompare(hashOf(`${cell.account}|${y.id}`)));
         cand.set(cell, [...win, ...ok.slice(cfg.window)].map((o) => o.id));
-        if (!ok.length) cell.why = whyEmpty(cell, a, originals, posted.get(cell.account), seeds, cfg, useSpares, platesOf, waitsFor, tookOrder);
+        if (!ok.length) { const w = whyEmpty(cell, a, originals, posted.get(cell.account), seeds, cfg, useSpares, platesOf, waitsFor, tookOrder); cell.why = w.text; cell.whyCode = w.code; }
       }
       // 유튜브는 이 무리 밖(앞 날 · 이미 있는 판)의 같은 원본 판 시각도 넘겨 흐른 24시간 창으로 다섯을 센다
       const prior = new Map();
       if (platform === 'youtube') for (const o of originals) prior.set(o.id, platesOf.get(o.id).filter((p) => p.platform === 'youtube').map((p) => p.ms));
       match(list, cand, cap, accounts, platform, { prior, span: cfg.capHours * HOUR });
-      for (const cell of list) if (cell.original) { cell.why = null; note(cell.original, cell.account, cell.ms); if (accounts[cell.account].trial) trialUsed.add(cell.account); }
-        else if (!cell.why) cell.why = '같은 플랫폼에서 원본이 겹침(원본 모자람)';
+      for (const cell of list) if (cell.original) { cell.why = null; delete cell.whyCode; note(cell.original, cell.account, cell.ms); if (accounts[cell.account].trial) trialUsed.add(cell.account); }
+        else if (!cell.why) { cell.why = '같은 플랫폼에서 원본이 겹침(원본 모자람)'; cell.whyCode = WHY_CODES.CROWDED; }
     }
   }
   // 확인용 판 목록 — 이미 있던 판과 이번에 채운 칸(같은 언어 묶음 겹침을 overlaps로 다시 본다)
   const plates = [...platesOf].flatMap(([original, list]) => list.map((p) => ({ original, account: p.account, ms: p.ms, file: p.file })));
-  return { cells, seeds, range, byId, plates };
+  const received = Object.fromEntries([...posted].map(([k, set]) => [k, [...set].filter((id) => !(바뀔판.get(k)?.has(id) && !굳은판.get(k)?.has(id))).sort()]));
+  return { cells, seeds, range, byId, plates, received };
 }
 
 // 시각 at을 더하면 at이 든 어느 span 안에 cap보다 많이 몰리는지(이미 있던 몰림은 at과 상관없으면 세지 않는다).
@@ -323,15 +331,32 @@ function match(list, cand, cap, accounts, platform, { prior = new Map(), span = 
   for (const cell of list) augment(cell, new Set());
 }
 
+// 빈 칸 까닭 코드(cell.whyCode) — 까닭 글(cell.why)은 사람이 읽는 말이라 바뀔 수 있다. 도구(tools/판본할일.js)는 이 코드로 가른다
+// (11-15 Fable 5.2 판본 회차 검수 지적 6: 글 낱말로 가르면 글이 바뀔 때 회차가 말없이 「만들 판본 없음」으로 끝난다).
+const WHY_CODES = Object.freeze({
+  TAKEN: 'taken', // 이미 찬 칸
+  TRIAL: 'trial', // 첫 판 확인 전
+  NONE: 'none', // 그 형식 원본 없음
+  STOPPED: 'stopped', // 원본이 모두 멈춤
+  EXHAUSTED: 'exhausted', // 그 계정이 원본을 다 올림 — 판본으로 못 푼다
+  VERSION: 'version', // 안 받은 원본의 그 키 판본이 아직 못 듦
+  EARLY: 'early', // 안 받은 원본이 모두 쓸날 전
+  SERIES: 'series', // 연재 앞 차례를 먼저 받아야 한다
+  SEED: 'seed', // 씨앗 계정이 아직 안 올렸거나 14시 점검 전
+  SAME_FILE: 'sameFile', // 같은 언어 묶음의 다른 계정이 같은 파일을 받음
+  OVERLAP: 'overlap', // 같은 플랫폼 20시간(같은 언어 묶음 24시간) 겹침
+  CROWDED: 'crowded', // 같은 플랫폼에서 원본이 겹침(원본 모자람)
+});
+
 function whyEmpty(cell, a, originals, mine, seeds, cfg, useSpares, platesOf = new Map(), waitsFor = () => null, tookOrder = () => false) {
   const same = originals.filter((o) => o.format === cell.format && !(o.spare && !useSpares));
-  if (!same.length) return `${cell.format} 원본 없음`;
+  if (!same.length) return { code: WHY_CODES.NONE, text: `${cell.format} 원본 없음` };
   const live = same.filter((o) => !o.stopped);
-  if (!live.length) return `${cell.format} 원본이 모두 멈춤`;
+  if (!live.length) return { code: WHY_CODES.STOPPED, text: `${cell.format} 원본이 모두 멈춤` };
   // 안 받은 원본부터 센다 — 판본 준비를 먼저 거르면, 받을 원본이 남았는데 그 판본이 검수 전인 계정이 「다 올림」으로 잘못 나온다
   // (11-11 Fable 검수: 지마를 받은 채널 가운데 화날때 판본이 검수 전인 곳). 「다 올림」은 정말 안 받은 원본이 없을 때만이다.
   const unseen = live.filter((o) => !mine.has(o.id) && !tookOrder(o, cell.account));
-  if (!unseen.length) return `이 계정이 ${cell.format} 원본을 다 올림`;
+  if (!unseen.length) return { code: WHY_CODES.EXHAUSTED, text: `이 계정이 ${cell.format} 원본을 다 올림` };
   const notReady = unseen.filter((o) => !o.versions?.[a.versionKey]?.ready);
   const early = unseen.filter((o) => o.versions?.[a.versionKey]?.ready && o.readyFrom && cell.day < o.readyFrom);
   const fresh = unseen.filter((o) => !notReady.includes(o) && !early.includes(o));
@@ -345,18 +370,18 @@ function whyEmpty(cell, a, originals, mine, seeds, cfg, useSpares, platesOf = ne
     if (notReady.length) bits.push(`${a.versionKey} 판본이 아직 못 듦 ${notReady.length}편(${reasons.slice(0, 2).join(' · ')}${reasons.length > 2 ? ' …' : ''})`);
     if (early.length) bits.push(`쓸날 전 ${early.length}편`);
     const head = unseen.length < live.length ? `안 받은 ${cell.format} 원본 ${unseen.length}편이 아직 못 나간다` : `${a.versionKey} 판본이 검수를 넘긴 ${cell.format} 원본 없음`;
-    return `${head} — ${bits.join(' · ')}`;
+    return { code: notReady.length ? WHY_CODES.VERSION : WHY_CODES.EARLY, text: `${head} — ${bits.join(' · ')}` };
   }
   // 연재 차례(⑦) — 받을 수 있는 원본이 모두 앞 차례를 기다리는 때(앞 차례 판본이 검수 전이거나, 이 칸보다 뒤에 걸려 있다)
   const waiting = fresh.filter((o) => waitsFor(o, cell.account, cell.ms) !== null);
   if (waiting.length === fresh.length) {
     const o = waiting[0];
-    return `연재 「${o.series.id}」 ${waitsFor(o, cell.account, cell.ms)}번째를 먼저 받아야 한다(차례 고정 — 그 판본이 검수 전이거나 이 칸보다 뒤에 걸려 있다)`;
+    return { code: WHY_CODES.SERIES, text: `연재 「${o.series.id}」 ${waitsFor(o, cell.account, cell.ms)}번째를 먼저 받아야 한다(차례 고정 — 그 판본이 검수 전이거나 이 칸보다 뒤에 걸려 있다)` };
   }
-  if (!a.seed && fresh.every((o) => seeds[o.id] === undefined || cell.ms < checkpointOf(seeds[o.id], cfg))) return '씨앗 계정이 아직 안 올렸거나 14시 점검 전';
+  if (!a.seed && fresh.every((o) => seeds[o.id] === undefined || cell.ms < checkpointOf(seeds[o.id], cfg))) return { code: WHY_CODES.SEED, text: '씨앗 계정이 아직 안 올렸거나 14시 점검 전' };
   const open = fresh.filter((o) => !(!a.seed && (seeds[o.id] === undefined || cell.ms < checkpointOf(seeds[o.id], cfg))));
-  if (open.length && open.every((o) => sameFile(platesOf.get(o.id) || [], cell.account, a, fileOf(o, a)))) return '같은 언어 묶음의 다른 계정이 같은 파일을 받음 — 나라별판(다른 파일)이 있어야 한다';
-  return '같은 플랫폼 20시간(같은 언어 묶음은 24시간) 겹침';
+  if (open.length && open.every((o) => sameFile(platesOf.get(o.id) || [], cell.account, a, fileOf(o, a)))) return { code: WHY_CODES.SAME_FILE, text: '같은 언어 묶음의 다른 계정이 같은 파일을 받음 — 나라별판(다른 파일)이 있어야 한다' };
+  return { code: WHY_CODES.OVERLAP, text: '같은 플랫폼 20시간(같은 언어 묶음은 24시간) 겹침' };
 }
 
-module.exports = { DEFAULTS, FORMATS, plan, checkpointOf, clashes, crowded, addDays, hashOf, groupOf, sameGroup, sameFile, overlaps, bundlesOf };
+module.exports = { DEFAULTS, FORMATS, WHY_CODES, plan, checkpointOf, clashes, crowded, addDays, hashOf, groupOf, sameGroup, sameFile, overlaps, bundlesOf };

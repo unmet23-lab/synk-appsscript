@@ -9,10 +9,16 @@
  *   시험용: --표 <돌림표 --json 결과 파일>(돌림표를 부르지 않는다) · --원장 <sns-계정.json> · --폴더 <편 폴더들이 있는 곳, 기본 docs/마케팅> · --지금 <ISO>
  *
  * 줄 세우는 법:
- *   ① 계정마다 가장 이른 빈 이야기 칸의 까닭을 가른다 — 「판본」(그 계정 판본 키의 판본이 아직 못 듦) · 「첫판」(첫 판 확인 전 — 14시 회차가
- *      공개를 확인하면 열린다) · 「원본」(그 계정이 이야기 원본을 다 받음 — 판본으로는 못 푼다, 새 원본이 있어야 한다).
+ *   ① 계정마다 빈 이야기 칸을 이른 차례로 보며 까닭을 가른다 — 「판본」(그 계정 판본 키의 판본이 아직 못 듦) · 「첫판」(첫 판 확인 전 — 14시 회차가
+ *      공개를 확인하면 열린다) · 「원본」(그 계정이 이야기 원본을 다 받음 — 판본으로는 못 푼다, 새 원본이 있어야 한다). 까닭은 돌림표 칸의 whyCode
+ *      (tools/lib/돌림.js WHY_CODES)로 가르고, 코드가 없는 옛 출력만 까닭 글로 가른다(11-15 Fable 5.2 판본 회차 검수 지적 6).
+ *      가장 이른 칸이 씨앗 대기 · 연재 · 같은 언어 묶음 · 겹침이어도 그 계정을 버리지 않고 뒤 칸을 본다 — 「판본」 · 「첫판」 칸이 있으면 그 칸으로
+ *      줄에 넣고, 없으면 「기다림」으로 보고에 보인다(지적 5: 가장 이른 칸만 보면 뒤 칸이 판본이 없어 비어도 말없이 빠졌다). 그런 칸만 있어도
+ *      안 받은 이야기 원본 가운데 그 키 판본이 못 든 것이 있으면 「판본」 줄로 넣는다 — 돌림은 들 수 있는 원본이 하나라도 있으면 「판본」 까닭을
+ *      내지 않기 때문이다(11-15 Opus 5.5 대체 검수 P2-1).
  *   ② 「판본」 계정을 빈 칸이 이른 차례로, 그 뒤에 「첫판」 계정을 이른 차례로 둔다(첫 판 확인 전 계정은 확인 뒤에야 받으니 뒤).
- *   ③ 계정의 후보 = 돌림에 오른 이야기 원본(형식 이야기 · 쓸날이 날짜 · 멈춤 · 예비 아님) 가운데 그 키 판본이 아직 못 드는 것.
+ *   ③ 계정의 후보 = 돌림에 오른 이야기 원본(형식 이야기 · 쓸날이 날짜 · 멈춤 · 예비 아님) 가운데 그 키 판본이 아직 못 드는 것. 그 줄의 계정이
+ *      모두 이미 받은 원본(돌림표 received)은 뺀다 — 받은 원본의 판본이 뒤에 낡아도 그 계정의 빈 칸은 못 채운다(지적 4, 돌림.js의 unseen 거름과 같다).
  *      이미 구워 검수만 남은 판본(「뜻 검수 전」 …)을 글부터 써야 하는 판본(「판본 없음」)보다 앞에 둔다 — 덜 들고 칸을 먼저 채운다.
  *   ④ 같은 키를 기다리는 계정은 한 줄로 묶고(가장 앞선 계정의 갈래 · 빈 칸), 한 키가 상한을 다 쓰지 않게 키 차례로 하나씩 돌아가며 고른다.
  * 씨앗 계정(rotationSeed)의 빈 칸은 줄 편(영어 · 몽골 · 두 채널)이 채우는 칸이라 세지 않는다.
@@ -27,8 +33,17 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
 
-function 갈래(why) {
-  const w = String(why || '');
+const { WHY_CODES } = require('./lib/돌림.js');
+const 코드갈래 = { [WHY_CODES.VERSION]: '판본', [WHY_CODES.TRIAL]: '첫판', [WHY_CODES.EXHAUSTED]: '원본' };
+
+/** 빈 칸의 갈래 — 칸(whyCode가 있으면 그것)이나 까닭 글을 받는다 */
+function 갈래(칸) {
+  if (칸 && typeof 칸 === 'object') {
+    if (칸.whyCode) return 코드갈래[칸.whyCode] || '그밖';
+    return 갈래(칸.why);
+  }
+  // 코드가 없는 옛 돌림표 출력만 — 글 낱말로 가른다
+  const w = String(칸 || '');
   if (w.includes('판본이 아직 못 듦')) return '판본';
   if (w.includes('첫 판 확인 전')) return '첫판';
   if (w.includes('원본을 다 올림')) return '원본';
@@ -58,7 +73,7 @@ function 원본읽기(root, pieces) {
 
 /**
  * @param {{ 표: object, 원장: object, 원본들: Map<string, object>, 상한?: number }} 입력
- * @returns {{ 줄: object[], 남은: number, 원본없음: object[], 첫판전: string[], 키없음: string[] }}
+ * @returns {{ 줄: object[], 남은: number, 원본없음: object[], 첫판전: string[], 키없음: string[], 기다림: object[] }}
  */
 function 할일({ 표, 원장, 원본들, 상한 = 6 }) {
   const accounts = (원장 && 원장.accounts) || {};
@@ -67,42 +82,61 @@ function 할일({ 표, 원장, 원본들, 상한 = 6 }) {
     .filter((p) => { const o = 원본들.get(p); return o && o.형식 === '이야기' && !o.멈춤 && !o.예비 && DAY.test(String(o.쓸날 || '')); })
     .sort((a, b) => String(원본들.get(a).쓸날).localeCompare(String(원본들.get(b).쓸날)) || a.localeCompare(b));
 
-  // ① 계정마다 가장 이른 빈 이야기 칸
-  const first = new Map();
+  const received = (표 && 표.received) || {};
+  // ① 계정마다 빈 이야기 칸을 이른 차례로
+  const 빈칸들 = new Map();
   for (const c of (표 && 표.cells) || []) {
     if (c.format !== '이야기' || c.taken || c.original) continue;
-    const seen = first.get(c.account);
-    if (!seen || Date.parse(c.time) < Date.parse(seen.time)) first.set(c.account, c);
+    if (!빈칸들.has(c.account)) 빈칸들.set(c.account, []);
+    빈칸들.get(c.account).push(c);
   }
 
   const waiting = [];
   const 원본없음 = [];
   const 키없음 = [];
-  for (const [account, cell] of first) {
+  const 기다림 = [];
+  for (const [account, cells] of 빈칸들) {
     const row = accounts[account] || {};
     if (row.rotationSeed) continue; // 씨앗 칸은 줄 편이 채운다
-    const kind = 갈래(cell.why);
-    if (kind === '원본') { 원본없음.push({ 계정: account, 빈칸: cell.time, 한국: 한국시각(cell.time) }); continue; }
-    if (kind !== '판본' && kind !== '첫판') continue;
+    cells.sort((a, b) => Date.parse(a.time) - Date.parse(b.time));
     const key = String(row.rotationVersion || row.countryCode || '').toUpperCase();
+    let cell = cells.find((c) => ['판본', '첫판'].includes(갈래(c)));
+    let 이갈래 = cell ? 갈래(cell) : null;
+    // 돌림은 들 수 있는 안 받은 원본이 하나라도 있으면 「판본」 까닭을 내지 않는다 — 그 원본이 씨앗 대기 · 겹침 · 모자람으로 막혀 칸이 비어도,
+    // 판본이 못 든 다른 안 받은 원본이 있으면 그 판본을 만들어 칸을 채울 수 있다(11-15 Opus 5.5 대체 검수 P2-1). 받은 원본(received)을 아는
+    // 출력에서만 이렇게 본다(옛 출력은 받은 원본을 몰라 모든 원본이 안 받은 것으로 보인다).
+    if (!cell && key && 표 && 표.received && !cells.some((c) => 갈래(c) === '원본')) {
+      const 못든 = story.some((p) => !(received[account] || []).includes(p) && !(versions[p][key] && versions[p][key].ready));
+      if (못든) { cell = cells[0]; 이갈래 = '판본'; }
+    }
+    if (!cell) {
+      const 다 = cells.find((c) => 갈래(c) === '원본');
+      if (다) 원본없음.push({ 계정: account, 빈칸: 다.time, 한국: 한국시각(다.time) });
+      else 기다림.push({ 계정: account, 빈칸: cells[0].time, 한국: 한국시각(cells[0].time), 까닭: cells[0].why || cells[0].whyCode || '?' });
+      continue;
+    }
     if (!key) { 키없음.push(account); continue; }
-    waiting.push({ 계정: account, 키: key, 갈래: kind, 빈칸: cell.time, 언어: row.language || null });
+    waiting.push({ 계정: account, 키: key, 갈래: 이갈래, 빈칸: cell.time, 언어: row.language || null });
   }
   // ② 「판본」 계정 먼저, 그 안에서는 빈 칸이 이른 차례
   waiting.sort((a, b) => (a.갈래 === b.갈래 ? 0 : a.갈래 === '판본' ? -1 : 1) || Date.parse(a.빈칸) - Date.parse(b.빈칸) || a.계정.localeCompare(b.계정));
   원본없음.sort((a, b) => Date.parse(a.빈칸) - Date.parse(b.빈칸) || a.계정.localeCompare(b.계정));
+  기다림.sort((a, b) => Date.parse(a.빈칸) - Date.parse(b.빈칸) || a.계정.localeCompare(b.계정));
 
   // 같은 키를 기다리는 계정은 한 줄로 묶는다(가장 앞선 계정의 갈래 · 빈 칸) — 한 키가 한 바퀴에 두 번 고르지 않는다
   const lanes = [];
   for (const w of waiting) {
     const lane = lanes.find((l) => l.키 === w.키);
-    if (lane) { lane.계정들.push(w.계정); continue; }
-    // ③ 그 키 판본이 아직 못 드는 이야기 원본 — 검수만 남은 것을 앞에
-    const 후보 = story
-      .filter((p) => !(versions[p][w.키] && versions[p][w.키].ready))
-      .map((p) => ({ 편: p, 상태: versions[p][w.키] ? (versions[p][w.키].why || '검수 전') : '판본 없음', 있는판본: Boolean(versions[p][w.키]) }))
+    if (lane) lane.계정들.push(w.계정);
+    else lanes.push({ 키: w.키, 계정들: [w.계정], 갈래: w.갈래, 빈칸: w.빈칸, 언어: w.언어 });
+  }
+  // ③ 그 키 판본이 아직 못 드는 이야기 원본 가운데 그 줄 계정이 모두 받은 것은 빼고 — 검수만 남은 것을 앞에
+  for (const lane of lanes) {
+    lane.후보 = story
+      .filter((p) => !(versions[p][lane.키] && versions[p][lane.키].ready))
+      .filter((p) => lane.계정들.some((a) => !(received[a] || []).includes(p)))
+      .map((p) => ({ 편: p, 상태: versions[p][lane.키] ? (versions[p][lane.키].why || '검수 전') : '판본 없음', 있는판본: Boolean(versions[p][lane.키]) }))
       .sort((a, b) => Number(b.있는판본) - Number(a.있는판본));
-    lanes.push({ 키: w.키, 계정들: [w.계정], 갈래: w.갈래, 빈칸: w.빈칸, 언어: w.언어, 후보 });
   }
 
   // ④ 키 차례로 하나씩 돌아가며
@@ -125,6 +159,7 @@ function 할일({ 표, 원장, 원본들, 상한 = 6 }) {
     원본없음,
     첫판전: waiting.filter((w) => w.갈래 === '첫판').map((w) => w.계정),
     키없음,
+    기다림,
   };
 }
 
@@ -169,6 +204,7 @@ function main(argv) {
   if (out.남은) console.log(`상한 밖에 남은 줄 ${out.남은}`);
   if (out.첫판전.length) console.log(`첫 판 확인 전 계정 ${out.첫판전.length}(14시 회차가 공개를 확인하면 열린다): ${out.첫판전.join(' · ')}`);
   if (out.원본없음.length) console.log(`돌 원본이 없는 계정 ${out.원본없음.length}(판본으로는 못 푼다 — 판본 틀이 든 새 원본이 있어야 한다): ${out.원본없음.map((r) => `${r.계정} ${r.한국}`).join(' · ')}`);
+  if (out.기다림.length) console.log(`판본과 상관없이 기다리는 계정 ${out.기다림.length}(안 받은 원본의 그 키 판본은 다 있는데 씨앗 대기 · 연재 · 같은 언어 묶음 · 겹침 · 원본 모자람 · 쓸날 전 · 원본 없음으로 빈다 — 판본을 만들어도 칸이 안 찬다): ${out.기다림.map((r) => `${r.계정} ${r.한국} ${r.까닭}`).join(' · ')}`);
   if (out.키없음.length) console.log(`판본 키가 없는 계정 ${out.키없음.length}(원장 rotationVersion · countryCode): ${out.키없음.join(' · ')}`);
   return 0;
 }

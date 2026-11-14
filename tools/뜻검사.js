@@ -38,6 +38,21 @@
  * 요약 견주기: 기준 「핵심」(낱말 묶음 — 판본 글 「기준」, 없으면 퀴즈 정답 원문 · 기획.md 「한 문장」에서 뽑는다) 가운데 요약이
  * 짚은 묶음 비율 0.6 이상 같음 · 0.3 아래 다름 · 그 사이 모호(확인할 것 — 세션이 --판정으로 정한다).
  * 종료 코드: 0 통과 · 1 고칠 것 · 3 확인할 것 · 2 사용법 · 실행 오류.
+ *
+ * 11-15(Fable 5.2 판본 회차 · 「미안」 농담 인사 검수): ① 인사 카드(hello · hello.name · hello.read · hello.vo)는 그림 한 장에 세 줄이 함께 뜨는 한
+ *   화면이라 시험지에도 한 줄(「Sorry, / 〔한국어 글: 이 나라 이름〕! / ho-ju」)로 싣는다 — 따로 싣고 뒤 셋을 가리니 시험관이 농담을 못 보고
+ *   「¡Hola」에 닫는 느낌표가 없다는 결함을 짚었다. ② 같은 밖 폴더에 재료를 다시 만들면 앞 회차의 시험지 · 재료 · 답 · 채점을 지우지 않고
+ *   <밖>/앞회차/<n>/로 옮기고, 시험지가 글자 하나 다르지 않으면 채점이 앞 회차 답의 지적(모름줄 · 불편 · 결함)을 이번 답과 함께 센다 —
+ *   같은 시험지를 다시 받아 지적이 안 나온 것은 위험이 없다는 증거가 아니다. 앞회차/의 모든 회차 가운데 지금과 시험지가 같은 것을 센다.
+ *   같은 시험관(이름)이 여러 회차에 같은 줄을 짚은 것은 한 명으로 센다. ③ 기본 밖 폴더는 공용 작업본의 .tmp/뜻검사/<편>/<키>다
+ *   (워크트리 · 회차 사본에서 돌아도 — 사본을 지우면 증거가 같이 사라졌다). 사본 세션의 Write · Edit는 공용 작업본 경로를 막으므로 시험관 답은
+ *   사본 안 임시 폴더에 받은 뒤 「답넣기」로 넣는다:
+ *     node tools/뜻검사.js 답넣기 <밖 폴더> <시험관> <답 파일>   ← 답 안의 JSON을 읽어 본 뒤 <밖>/답_<시험관>.md로 넣는다
+ *   재료에는 만든 저장소(「만든곳」)를 적는다. 다른 사본이 만들고 아직 시험관 답을 다 받지 않은 12시간 안의 재료가 있으면 그 자리에 재료를 다시 만들지 않는다.
+ *   답넣기는 답 파일 옆에 시험관에게 준 질문.md가 있고 지금 시험지와 같을 때만 받는다(다른 판본 · 앞 회차의 답을 막는다).
+ *   채점은 채점에 들어간 답을 <밖>/채점답/에 남긴다. 그 뒤 같은 시험관의 답이 바뀌거나 없어지면(codex -o를 다시 돌림 · 답넣기로 덮음) 다음 채점이
+ *   앞 채점을 앞회차/<n>/로 옮기고 그 지적을 함께 센다 — 덮어서 앞 지적을 지우는 길을 막는다(11-15 셋째 검수 P2-2).
+ *   다른 사본이 만든 재료로 「채점 --기록」을 하면 이 저장소의 같은 편에 적되, 이 저장소의 판본 글이 재료의 지문과 같을 때만 적는다.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -46,6 +61,15 @@ const 프로필 = require('./lib/현지화프로필.js');
 const 잇기 = require('./lib/판본잇기.js');
 
 const REPO = path.resolve(__dirname, '..');
+const { 공용작업본 } = require('./lib/공용작업본.js');
+// 증거(질문 · 답 · 채점)는 공용 작업본의 .tmp에 둔다 — 워크트리 · 예약 회차 사본의 .tmp는 사본을 지우면 같이 사라진다(11-15 Fable 5.2 판본 회차 검수 9)
+const 메인 = 공용작업본(REPO);
+// 같은 폴더인가 — 윈도우 경로는 대소문자를 가리지 않는다(같은 사본을 대소문자만 다르게 열면 남의 사본으로 보였다, 11-15 다시 검수 P3)
+const 같은곳 = (a, b) => { const x = path.resolve(String(a)), y = path.resolve(String(b)); return process.platform === 'win32' ? x.toLowerCase() === y.toLowerCase() : x === y; };
+// 준비.json에 그대로 들어가는 자유 글(--눈확인 · --판정 까닭)에 절대 경로를 받지 않는다 — 공개 저장소다(11-15 다시 검수 P3)
+const 절대경로 = /(?<![A-Za-z])[A-Za-z]:[\\/](?=[\w.~가-힣-])|(?:^|[\s(「"'`=])\/(?:Users|home|[a-z]|mnt\/[a-z])\//;
+// 판정 JSON의 글 값만 꺼낸다 — JSON 글로 식을 걸면 「보기 "B:"」가 「B:\"」가 되어 경로로 잘못 걸렸다(11-15 셋째 검수 P3-3)
+const 글값들 = (v) => (typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(글값들) : []);
 const 도구 = 'tools/뜻검사.js';
 const 고칠 = '고칠 것', 확인 = '확인할 것', 통과 = '통과';
 const 기본시험관 = ['sonnet', 'haiku'];
@@ -59,7 +83,13 @@ function kst(ms = Date.now()) {
 const rel = (p) => path.relative(REPO, p).split(path.sep).join('/');
 // 준비.json에 적는 기록 자리 — 저장소 밖(세션 임시 폴더)이면 폴더 · 파일 이름만 남긴다. 준비.json은 공개 저장소에 올라가고 절대 경로에는 사용자 폴더
 // 이름이 든다(11-14: D: 워크트리 · C: 임시 폴더라 상대 경로가 안 되어 절대 경로가 39줄 들어갔다 — tools/현지어대조.js 「기록자리」와 같은 꼴)
-const 기록자리 = (p) => { const r = rel(p); return r.startsWith('..') || path.isAbsolute(r) ? `(저장소 밖)/${path.basename(path.dirname(p))}/${path.basename(p)}` : r; };
+const 기록자리 = (p) => {
+  for (const 뿌리 of [REPO, 메인]) {
+    const r = path.relative(뿌리, p);
+    if (!r.startsWith('..') && !path.isAbsolute(r)) return r.split(path.sep).join('/');
+  }
+  return `(저장소 밖)/${path.basename(path.dirname(p))}/${path.basename(p)}`;
+};
 const 찾음 = (수준, 코드, 말, 덧 = {}) => ({ 수준, 코드, 말, ...덧 });
 // --판정 「줄」의 갈래(머리말 · 채점하기 참고): 하나(글) 또는 겹치지 않는 여럿(목록)이 모두 아래 셋에 들 때만 「원본 · 틀」처럼 한 글로, 아니면 null
 const 판정갈래 = ['원본', '전제', '틀'];
@@ -269,13 +299,31 @@ function 재료만들기(글파일, { 편 = null, 밖, 기록 = null } = {}) {
   // 8.6초와 13.7초). 11-15 haiku 셋이 이것을 「같은 말이 두 번」 결함으로 짚어 판정으로 못 넘겼다. 같은 글이 다시 뜨는 줄에 시험지 표시를 단다.
   const 처음본글 = new Map();
   let 되풀이있음 = false;
+  // 인사 카드(11-12 「(가) 인사 카드」 — tools/lib/판본잇기.js 「인사」)는 그림 한 장에 인사말 / 한글 나라 이름 / 읽는 법 세 줄이 함께 굽혀 있고
+  // 목소리가 그것을 읽는다. 지도는 이를 hello(진행) · hello.name(한국어) · hello.read(읽기) · hello.vo(한국어 소리) 네 줄로 싣는데, 시험지가 넷을
+  // 따로 보이고 뒤 셋을 「한국어 — 뜻을 모른다」로 가리니 시험관이 「Sorry, 호주!」 농담을 못 본 채 채점했고(11-15 Fable 5.2 「미안」 농담 인사
+  // 검수 3), 「¡Hola」만 보고 닫는 느낌표가 없다는 화면 결함을 짚었다(11-14 「미안」 MX · PY 막힘). 화면 그대로 한 줄로 묶는다 — 한글 나라
+  // 이름은 그 나라 사람이 읽는 법 · 상징 그림 · 목소리로 알아보는 것이라 「이 나라 이름」이라고 밝힌다. 판본 글(글.json)은 그대로라 지문은 안 바뀐다.
+  const 인사줄 = (k) => 줄들.find((z) => z.id === k);
+  const 인사묶음 = 인사줄('hello') && 인사줄('hello.name') ? { 이름: 인사줄('hello.name'), 읽기: 인사줄('hello.read'), 소리: 인사줄('hello.vo') } : null;
+  const 인사딸린 = new Set(['hello.name', 'hello.read', 'hello.vo']);
+  let 줄수 = 0;
   for (const z of 줄들) {
-    const n = 번호.size + 1;
+    if (인사묶음 && 인사딸린.has(z.id) && 번호.has(z.id)) continue;
+    const n = ++줄수;
     번호.set(z.id, n);
     const 초 = Array.isArray(z.초) ? `${z.초[0]}초` : '';
     // 그림 설명은 그 줄 끝에 붙인다(11-10 실측: 줄 사이에 따로 두니 시험관이 앞 줄의 그림으로 읽었다)
     const 그림 = z.장면 && z.장면 !== 앞장면 ? `   [그림: ${장면초(z.장면)}]` : '';
     if (z.장면) 앞장면 = z.장면;
+    if (인사묶음 && z.id === 'hello') {
+      const 끝부호 = (String(인사묶음.이름.글).trim().match(/[\p{P}\p{S}]+$/u) || [''])[0];
+      const 조각 = [딱지로(String(z.글)).replace(/\n/g, ' / '), `〔한국어 글: 이 나라 이름〕${끝부호}`];
+      if (인사묶음.읽기) 조각.push(String(인사묶음.읽기.글).replace(/\n/g, ' / '));
+      for (const k of 인사딸린) if (인사줄(k)) 번호.set(k, n);
+      보일줄.push(`${n}. ${초 ? `(${초}) ` : ''}${조각.join(' / ')}   [인사 카드: 이 줄들이 그림 한 장에 함께 뜬다 — 〔한국어 글〕은 이 나라 이름을 한글로 쓴 것${인사묶음.읽기 ? '이고 그 아래가 읽는 법' : ''}이다${인사묶음.소리 ? '. 목소리가 이 인사를 한국어 소리로 읽는다' : ''}]${그림}`);
+      continue;
+    }
     const 딱지 = z.칸 === '한국어' ? 한국어딱지.get(알맹이(z.글)) : null;
     if (판본글.한국어칸.has(z.칸)) { 보일줄.push(`${n}. ${초 ? `(${초}) ` : ''}[한국어 글${딱지 ? ` ${딱지}` : ''} · 소리 — 너는 아직 뜻을 모른다]${그림}`); continue; }
     const 글열쇠 = String(z.글).trim();
@@ -305,7 +353,7 @@ function 재료만들기(글파일, { 편 = null, 밖, 기록 = null } = {}) {
   const 차례있음 = 판.줄.some((z) => ['clap', 'say'].includes(String(z.id)));
   const 질문 = [
     `너는 ${나라이름.join(' · ') || L.이름 + ' 쓰는 나라'} 사람이고 ${L.이름}로 생각한다. 한국어는 이제 막 배우기 시작해서 한글과 한국어 소리는 아직 뜻을 모른다. ${곳}에서 한국어를 가르치는 짧은 영상을 처음 봤다.`,
-    `아래는 그 영상 화면에 나온 글을 나온 순서대로 적은 것이다. 줄 끝 [그림: …]은 그 줄이 나올 때 화면에 보이는 그림이고, [한국어 …] 줄은 한국어 글 · 소리라 너는 뜻을 모른다(그 줄을 모른다고 적지 않아도 된다).${판.줄.some((z) => String(z.글 || '').includes('\n')) ? ' 글 속 「 / 」는 화면에서 줄이 바뀌는 자리다(빗금이 화면에 보이는 것이 아니다).' : ''}${한국어딱지.size ? ' 〔한국어 글 ㉮〕처럼 딱지가 붙은 것은 앞에 나온 같은 딱지의 한국어 글이 그 자리에 그대로 적혀 있다는 뜻이다(글자 모양이 같다는 것만 안다).' : ''} 이 글만 보고 답해라 — 파일 · 인터넷 · 도구는 쓰지 않는다.`,
+    `아래는 그 영상 화면에 나온 글을 나온 순서대로 적은 것이다. 줄 끝 [그림: …]은 그 줄이 나올 때 화면에 보이는 그림이고, [한국어 …] 줄은 한국어 글 · 소리라 너는 뜻을 모른다(그 줄을 모른다고 적지 않아도 된다).${인사묶음 || 판.줄.some((z) => String(z.글 || '').includes('\n')) ? ' 글 속 「 / 」는 화면에서 줄이 바뀌는 자리다(빗금이 화면에 보이는 것이 아니다).' : ''}${한국어딱지.size ? ' 〔한국어 글 ㉮〕처럼 딱지가 붙은 것은 앞에 나온 같은 딱지의 한국어 글이 그 자리에 그대로 적혀 있다는 뜻이다(글자 모양이 같다는 것만 안다).' : ''} 이 글만 보고 답해라 — 파일 · 인터넷 · 도구는 쓰지 않는다.`,
     '',
     ...보일줄,
     '',
@@ -329,17 +377,19 @@ function 재료만들기(글파일, { 편 = null, 밖, 기록 = null } = {}) {
     '  "결함": [{"줄": 줄 번호, "까닭": "글 자체가 망가진 것만 — 네모 · 이상한 기호로 보이는 글자, 다른 언어 글자가 섞임, 문장이 중간에 끊김, 같은 말이 두 번"}]',
     '}',
     // 11-10 판본 시범: haiku가 〔한국어 글 ㉮〕 딱지를 화면 결함으로 짚었다 — 시험지 표시는 화면 글이 아니라고 못 박는다
-    `없는 칸은 빈 목록 []으로 둔다. 결함은 글이 망가진 것만 적는다(뜻 · 박자 불만은 모름줄). 줄 번호 · (초) · [그림: …] · [한국어 …]${한국어딱지.size ? ' · 〔한국어 글 ㉮〕' : ''}${판.줄.some((z) => String(z.글 || '').includes('\n')) ? ' · 「 / 」' : ''}는 이 시험지가 단 표시라 화면에 나오는 글이 아니다 — 결함으로 적지 않는다.${자리표시 ? ` 글 속 ${자리표시}은 화면에서 숫자 · 낱말이 들어가는 자리다(화면에는 중괄호가 보이지 않는다) — 결함 · 모름줄로 적지 않는다.` : ''}${줄임끝 ? ' 「…」로 끝나는 줄은 다음에 나오는 노래 낱말(한국어 줄)로 이어지게 일부러 끊은 말이다 — 끊긴 문장 결함으로 적지 않는다(무엇으로 이어지는지 모르겠으면 모름줄에 적는다).' : ''}${되풀이있음 ? ' 「(앞 N줄과 같은 글이 다시 뜬다)」가 붙은 줄은 영상이 같은 말을 다시 부르는 장면에서 같은 풀이를 일부러 다시 보이는 자리다(표시는 시험지가 단 것이다) — 「같은 말이 두 번」 결함으로 적지 않는다(되풀이가 거슬리거나 흐름이 늘어지면 모름줄에 적는다).' : ''}`,
+    `없는 칸은 빈 목록 []으로 둔다. 결함은 글이 망가진 것만 적는다(뜻 · 박자 불만은 모름줄). 줄 번호 · (초) · [그림: …] · [한국어 …]${인사묶음 ? ' · [인사 카드: …] · 〔한국어 글: 이 나라 이름〕' : ''}${한국어딱지.size ? ' · 〔한국어 글 ㉮〕' : ''}${인사묶음 || 판.줄.some((z) => String(z.글 || '').includes('\n')) ? ' · 「 / 」' : ''}는 이 시험지가 단 표시라 화면에 나오는 글이 아니다 — 결함으로 적지 않는다.${자리표시 ? ` 글 속 ${자리표시}은 화면에서 숫자 · 낱말이 들어가는 자리다(화면에는 중괄호가 보이지 않는다) — 결함 · 모름줄로 적지 않는다.` : ''}${줄임끝 ? ' 「…」로 끝나는 줄은 다음에 나오는 노래 낱말(한국어 줄)로 이어지게 일부러 끊은 말이다 — 끊긴 문장 결함으로 적지 않는다(무엇으로 이어지는지 모르겠으면 모름줄에 적는다).' : ''}${되풀이있음 ? ' 「(앞 N줄과 같은 글이 다시 뜬다)」가 붙은 줄은 영상이 같은 말을 다시 부르는 장면에서 같은 풀이를 일부러 다시 보이는 자리다(표시는 시험지가 단 것이다) — 「같은 말이 두 번」 결함으로 적지 않는다(되풀이가 거슬리거나 흐름이 늘어지면 모름줄에 적는다).' : ''}`,
     '',
   ].join('\n');
   fs.mkdirSync(밖, { recursive: true });
-  for (const f of fs.readdirSync(밖)) if (/^답_.*\.md$/.test(f) || f === '채점.json') fs.rmSync(path.join(밖, f), { force: true });
+  const 앞회차 = 앞회차옮기기(밖, 질문);
   fs.writeFileSync(path.join(밖, '질문.md'), 질문);
   const 재료 = {
     도구, 시각: kst(), 글: path.resolve(글파일), 지문: 판.지문, 편: 편 ? path.basename(path.resolve(편)) : d.편 || null, 편폴더: 편 ? path.resolve(편) : null,
     판본: d.판본 || null, 언어: L.코드, 문자: L.문자, 나라: 나라들, 틀: d.틀 || null, 기준, 퀴즈,
-    줄: 줄들.map((z) => ({ 번호: 번호.get(z.id), id: z.id, 칸: z.칸, 웃음: 웃음칸.has(z.칸) || z.대조 === '웃음' })),
+    줄: 줄들.map((z) => ({ 번호: 번호.get(z.id), id: z.id, 칸: z.칸, 웃음: 웃음칸.has(z.칸) || z.대조 === '웃음', ...(인사묶음 && 인사딸린.has(z.id) ? { 묶음: 'hello' } : {}) })),
     딱지경고, 시험관, 시험관넷: 넷,
+    ...(앞회차 ? { 앞회차 } : {}),
+    만든곳: REPO,
   };
   // 받은 때의 셈은 시험지를 만드는 이때 한 번 세어 재료에 적는다(11-12 다시 검수 3 P1-셈1) — 채점 --기록은 이 값을 옮겨 적기만 한다. 채점할 때마다 그때의
   // 이웃 기록으로 다시 세던 동안에는, 재료를 만든 뒤 이웃 편이 두 걸음으로 다시 받아지면(처음통과가 새 시각이 된다) 정당한 시험관 둘 통과가 「넷이어야 한다」로 얼었다.
@@ -348,19 +398,122 @@ function 재료만들기(글파일, { 편 = null, 밖, 기록 = null } = {}) {
   return 재료;
 }
 
-function 부르는법(밖, 시험관) {
+/**
+ * 같은 밖 폴더에 재료를 다시 만들 때 앞 회차의 시험지 · 재료 · 답 · 채점을 지우지 않고 <밖>/앞회차/<n>/로 옮긴다 →
+ * { 번호, 시각, 같은시험지, 시험관 } | null. 답이 하나도 없던 재료는 그냥 지운다(앞 회차들은 채점이 앞회차/를 훑어 찾는다).
+ * 11-15 Fable 5.2 「미안」 농담 인사 검수 2: 캐나다 2회차 시험지가 1회차와 글자 하나 다르지 않았는데 1회차 답은 지워지고 2회차만 채점됐다.
+ */
+function 앞회차옮기기(밖, 질문) {
+  채점답옮기기(밖); // 채점한 뒤 답이 바뀐 채로 다시 만들면 그 채점을 먼저 한 회차로 남긴다
+  fs.rmSync(path.join(밖, '채점답'), { recursive: true, force: true }); // 지금 답과 같다 — 아래에서 답과 함께 옮긴다
+  const 옮길 = fs.readdirSync(밖).filter((f) => /^답_.*\.md$/.test(f) || ['채점.json', '재료.json', '질문.md'].includes(f));
+  const 답 = 옮길.filter((f) => /^답_.*\.md$/.test(f));
+  let 앞재료 = null;
+  try { 앞재료 = 판본글.readJson(path.join(밖, '재료.json')); } catch { /* 없거나 깨짐 */ }
+  const 앞질문 = fs.existsSync(path.join(밖, '질문.md')) ? fs.readFileSync(path.join(밖, '질문.md'), 'utf8') : null;
+  // 다른 사본이 만들고 아직 채점하지 않은 재료(12시간 안 · 그 사본이 아직 있다)면 멈춘다 — 결과 자리는 모든 사본이 함께 쓰는 공용 작업본 하나라,
+  // 그 사본이 받는 중인 시험지를 지우거나 그 답을 이 재료로 채점하게 된다(11-15 Opus 5.5 대체 검수 P1-2)
+  const 그곳 = 앞재료 && 앞재료.만든곳;
+  // 잠금은 「답이 다 있지 않다」로 건다 — 「채점 전」으로 걸면 GPT 답을 기다리며 한 번 채점한 사본의 자리를 남이 다시 만들어 늦은 답이 섞였다(11-15 다시 검수 P2)
+  const 답다있음 = [].concat((앞재료 && 앞재료.시험관) || []).every((t) => fs.existsSync(path.join(밖, `답_${t}.md`)));
+  if (그곳 && !같은곳(그곳, REPO) && fs.existsSync(그곳) && !답다있음
+    && Date.now() - Date.parse(앞재료.시각 || '') < 12 * 3600 * 1000) {
+    throw new Error(`다른 사본(${path.basename(그곳)})이 ${앞재료.시각}에 이 자리에 시험지를 만들고 아직 답을 다 받지 않았다 — 그 사본이 이 판본을 보는 중이다. 이 판본은 건너뛰고, 그 사본이 끝난 뒤(답이 다 들어오거나 사본이 지워지면 풀린다) 다시 한다`);
+  }
+  if (!답.length) {
+    for (const f of 옮길) fs.rmSync(path.join(밖, f), { force: true });
+    return null;
+  }
+  const { n, 자리 } = 새회차자리(밖);
+  for (const f of 옮길) fs.renameSync(path.join(밖, f), path.join(자리, f));
+  return { 번호: n, 시각: (앞재료 && 앞재료.시각) || null, 같은시험지: 앞질문 === 질문, 시험관: 답.map((f) => f.slice(2, -3)) };
+}
+
+/** 앞회차/의 다음 번호 폴더를 만든다 → { n, 자리 } */
+function 새회차자리(밖) {
+  const 모음 = path.join(밖, '앞회차');
+  fs.mkdirSync(모음, { recursive: true });
+  let n = 1;
+  while (fs.existsSync(path.join(모음, String(n)))) n += 1;
+  const 자리 = path.join(모음, String(n));
+  fs.mkdirSync(자리);
+  return { n, 자리 };
+}
+
+/**
+ * 채점에 들어간 답(<밖>/채점답/)과 지금 답이 다르면(바뀜 · 없어짐) 그 채점을 앞회차/<n>/로 옮긴다 → 옮긴 번호 | null.
+ * 옮기는 것: 채점답의 답들 · 채점.json, 그리고 질문.md · 재료.json의 복사본(지금 회차도 같은 시험지를 쓴다). 11-15 셋째 검수 P2-2.
+ */
+function 채점답옮기기(밖) {
+  const 남긴곳 = path.join(밖, '채점답');
+  if (!fs.existsSync(남긴곳)) return null;
+  const 남긴답 = fs.readdirSync(남긴곳).filter((f) => /^답_.*\.md$/.test(f));
+  const 바뀜 = 남긴답.some((f) => { const 지금 = path.join(밖, f); return !fs.existsSync(지금) || fs.readFileSync(지금, 'utf8') !== fs.readFileSync(path.join(남긴곳, f), 'utf8'); });
+  if (!바뀜) return null;
+  const { n, 자리 } = 새회차자리(밖);
+  for (const f of 남긴답) fs.renameSync(path.join(남긴곳, f), path.join(자리, f));
+  for (const f of ['질문.md', '재료.json']) if (fs.existsSync(path.join(밖, f))) fs.copyFileSync(path.join(밖, f), path.join(자리, f));
+  if (fs.existsSync(path.join(밖, '채점.json'))) fs.renameSync(path.join(밖, '채점.json'), path.join(자리, '채점.json'));
+  fs.rmSync(남긴곳, { recursive: true, force: true });
+  return n;
+}
+
+/**
+ * 앞 회차 가운데 지금과 시험지가 글자 하나 다르지 않은 회차들의 답 → [{ 회차, 시각, 시험관, 칸(모름줄 · 불편 · 결함), 줄(id), 까닭 }].
+ * 앞회차/의 모든 번호를 본다(바로 앞 회차만 보면 Q1 → Q2 → Q1로 되돌린 때 첫 회차를 못 센다 — 11-15 P3-2). 시험지가 같으면 줄 번호도 같으니
+ * 지금 재료의 줄로 줄을 찾는다. 한국어 줄 · 읽기 줄의 모름줄 · 결함은 뺀다.
+ */
+function 앞회차답(밖, 재료) {
+  const out = [];
+  const 모음 = path.join(밖, '앞회차');
+  let 지금질문;
+  try { 지금질문 = fs.readFileSync(path.join(밖, '질문.md'), 'utf8'); } catch { return out; }
+  if (!fs.existsSync(모음)) return out;
+  const 줄 = (n) => 재료.줄.find((z) => z.번호 === Number(n) && !z.묶음) || 재료.줄.find((z) => z.번호 === Number(n));
+  const 번호들 = fs.readdirSync(모음).filter((x) => /^\d+$/.test(x)).map(Number).sort((a, b) => a - b);
+  for (const n of 번호들) {
+    const 자리 = path.join(모음, String(n));
+    let q;
+    try { q = fs.readFileSync(path.join(자리, '질문.md'), 'utf8'); } catch { continue; }
+    if (q !== 지금질문) continue;
+    let 시각 = null;
+    try { 시각 = 판본글.readJson(path.join(자리, '재료.json')).시각 || null; } catch { /* 재료 없이 남긴 회차 */ }
+    for (const f of fs.readdirSync(자리).filter((x) => /^답_.*\.md$/.test(x)).sort()) {
+      let a;
+      try { a = 답읽기(fs.readFileSync(path.join(자리, f), 'utf8')); } catch { continue; }
+      for (const 칸 of ['모름줄', '불편', '결함']) {
+        for (const x of [].concat(a[칸] || [])) {
+          if (!x || x.줄 === undefined) continue;
+          const z = 줄(x.줄);
+          if (칸 !== '불편' && 판본글.한국어칸.has(z?.칸)) continue;
+          out.push({ 회차: n, 시각, 시험관: f.slice(2, -3), 칸, 줄: z?.id || `줄 ${x.줄}`, 까닭: x.까닭 || '' });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function 부르는법(밖, 시험관, 도장 = '') {
   const q = path.join(밖, '질문.md');
+  // 사본 세션의 Write · Edit는 공용 작업본 경로를 막는다(현장 노트 AI_CLI 「워크트리 세션의 훅」) — 밖이 이 저장소 밖이면 사본 안에 받고 답넣기로 넣는다(11-15 P1-1)
+  const 안쪽 = !path.relative(REPO, 밖).startsWith('..') && !path.isAbsolute(path.relative(REPO, 밖));
+  // 시험관 폴더는 판본마다 따로 — 판본끼리 같은 폴더를 쓰면 앞 판본의 답.md가 남아 다른 판본의 답으로 들어갔다(11-15 다시 검수 P1)
+  // 같은 판본을 다시 받을 때도 새 폴더 — 폴더 이름에 재료 시각을 넣는다(같은 폴더면 시험관이 앞 회차 자기 답을 읽고 답했다, 11-15 셋째 검수 P2-1)
+  const 판본자리 = `${path.basename(path.dirname(밖))}_${path.basename(밖)}${도장 ? `_${도장}` : ''}`;
+  const 넣는곳 = (s) => (안쪽 ? `${path.join(밖, `답_${s}.md`)}에 넣는다` : `사본 안 새 빈 폴더(.tmp/시험관/${판본자리}/${s}/ — 이 질문.md를 함께 둔다)의 답.md에 쓰게 한 뒤 node tools/뜻검사.js 답넣기 "${밖}" ${s} <그 답.md>로 넣는다(옆에 같은 질문.md가 없는 답 · 재료보다 먼저 쓴 답은 거절한다)`);
   return 시험관.map((s) => (s === 'gpt'
     ? `  gpt    → node tools/codex계정.js exec --skip-git-repo-check -C <빈 폴더> -s read-only -o "${path.join(밖, '답_gpt.md')}" - < "${q}"`
     : s === 'fable'
       // Fable은 5.2로만(유호님 11-11 · 11-13) — 이 PC의 Claude 설정이 「fable」 별칭을 claude-fable-5-2로 묶는다
-      ? `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Fable 5.2 하위 에이전트(Agent model: fable — 설정이 claude-fable-5-2로 묶음, 답 기록의 model 칸이 claude-fable-5-2인지 확인)에게 질문.md 내용을 그대로 주고, 최종 답을 ${path.join(밖, `답_${s}.md`)}에 넣는다`
-      : `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Agent(model: ${s})에게 질문.md 내용을 그대로 주고, 최종 답을 ${path.join(밖, `답_${s}.md`)}에 넣는다`)).join('\n');
+      ? `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Fable 5.2 하위 에이전트(Agent model: fable — 설정이 claude-fable-5-2로 묶음, 답 기록의 model 칸이 claude-fable-5-2인지 확인)에게 질문.md 내용을 그대로 주고 최종 답을 ${넣는곳(s)}`
+      : `  ${s.padEnd(6)} → 이 대화 맥락이 없는 새 Agent(model: ${s})에게 질문.md 내용을 그대로 주고 최종 답을 ${넣는곳(s)}`)).join('\n');
 }
 
 // ── 채점 ─────────────────────────────────────────────────────────────────
 function 채점하기(밖, { 사람판정 = {} } = {}) {
   const 재료 = 판본글.readJson(path.join(밖, '재료.json'));
+  const 옮긴채점 = 채점답옮기기(밖);
   const out = [];
   const 시험관답 = {};
   for (const s of 재료.시험관) {
@@ -373,11 +526,25 @@ function 채점하기(밖, { 사람판정 = {} } = {}) {
     const m = f.match(/^답_(.+)\.md$/);
     if (m && !시험관답[m[1]] && !재료.시험관.includes(m[1])) { try { 시험관답[m[1]] = 답읽기(fs.readFileSync(path.join(밖, f), 'utf8')); } catch { /* 넣은 답이 깨졌으면 뺀다 */ } }
   }
-  const id = (n) => 재료.줄.find((z) => z.번호 === Number(n))?.id || `줄 ${n}`;
+  const 줄찾기 = (n) => 재료.줄.find((z) => z.번호 === Number(n) && !z.묶음) || 재료.줄.find((z) => z.번호 === Number(n));
+  // 채점에 들어가는 답을 남긴다(못 읽은 답은 안 들어가니 남기지 않는다) — 뒤에 바뀌면 다음 채점이 이 채점을 앞 회차로 옮긴다
+  fs.rmSync(path.join(밖, '채점답'), { recursive: true, force: true });
+  if (Object.keys(시험관답).length) {
+    fs.mkdirSync(path.join(밖, '채점답'), { recursive: true });
+    for (const s of Object.keys(시험관답)) fs.copyFileSync(path.join(밖, `답_${s}.md`), path.join(밖, '채점답', `답_${s}.md`));
+  }
+  const id = (n) => 줄찾기(n)?.id || `줄 ${n}`;
   // 한국어 · 읽기 줄은 시험관이 못 읽는 게 정상이다 — 그 줄의 「모름줄」 · 「결함」은 세지 않는다(11-10 실측: 둘 다 한국어 줄을 짚어 「같이 짚음」이 났다)
-  const 한국어줄 = (n) => 판본글.한국어칸.has(재료.줄.find((z) => z.번호 === Number(n))?.칸);
+  const 한국어줄 = (n) => 판본글.한국어칸.has(줄찾기(n)?.칸);
   const 시험관별 = {};
   const 줄짚음 = { 모름줄: new Map(), 불편: new Map() };
+  // 같은 시험관(이름)이 같은 줄을 여러 회차에 짚으면 한 명으로 센다 — 같은 모델을 다시 부른 것은 새 시험관이 아니다(11-15 P3-1). 글은 이어 붙여 보인다
+  const 짚기 = (칸, k, 누구, 글) => {
+    if (!줄짚음[칸].has(k)) 줄짚음[칸].set(k, []);
+    const list = 줄짚음[칸].get(k);
+    const e = list.find((v) => v.누구 === 누구);
+    if (e) e.글 += ` / ${글}`; else list.push({ 누구, 글 });
+  };
   const 요약다름 = [], 요약모호 = [], 웃음안됨 = [], 웃음모호 = [];
   // --판정의 시험관 칸 — 답이 없는 시험관 이름은 조용히 넘기지 않는다(이름 하나 틀리면 판정이 안 먹은 줄 모른다)
   for (const s of Object.keys(사람판정)) {
@@ -419,15 +586,21 @@ function 채점하기(밖, { 사람판정 = {} } = {}) {
       for (const x of [].concat(a[칸] || [])) {
         if (!x || x.줄 === undefined) continue;
         if (칸 === '모름줄' && 한국어줄(x.줄)) continue;
-        const k = id(x.줄);
-        if (!줄짚음[칸].has(k)) 줄짚음[칸].set(k, []);
-        줄짚음[칸].get(k).push(`${s}: ${x.까닭 || ''}`);
+        짚기(칸, id(x.줄), s, `${s}: ${x.까닭 || ''}`);
       }
     }
     for (const x of [].concat(a.결함 || [])) {
       if (!x || x.줄 === undefined || 한국어줄(x.줄)) continue;
       out.push(찾음(고칠, '화면결함', `${s}가 화면 결함을 짚었다 — ${id(x.줄)}: ${x.까닭 || ''}`, { 시험관: s, 줄: id(x.줄) }));
     }
+  }
+  // 같은 시험지였던 앞 회차의 지적을 이번 답과 함께 센다 — 모름줄 · 불편은 같은 줄 짚음에 더하고(다른 시험관 둘 이상이면 고칠 것 · 모름줄은 --판정 「줄」로
+  // 내릴 수 있다), 결함은 한 명이어도 고칠 것이다. 같은 시험지를 다시 받아 지적이 안 나온 것은 위험이 없다는 증거가 아니다(11-15 「미안」 검수 2).
+  const 앞지적 = 앞회차답(밖, 재료);
+  for (const x of 앞지적) {
+    const 누구 = `앞 회차 ${x.회차}(같은 시험지${x.시각 ? ` · ${x.시각}` : ''}) ${x.시험관}`;
+    if (x.칸 === '결함') { out.push(찾음(고칠, '화면결함', `${누구}가 화면 결함을 짚었다 — ${x.줄}: ${x.까닭}`, { 시험관: x.시험관, 줄: x.줄, 앞회차: x.회차 })); continue; }
+    짚기(x.칸, x.줄, x.시험관, `${누구}: ${x.까닭}`);
   }
   const n = Object.keys(시험관답).length;
   if (요약다름.length >= 2) out.push(찾음(고칠, '요약다름', `시험관 ${요약다름.join(' · ')}의 요약이 기준과 다르다(${재료.기준?.한문장 || '핵심 낱말'})`));
@@ -444,7 +617,8 @@ function 채점하기(밖, { 사람판정 = {} } = {}) {
   const 줄판정 = 사람판정.줄 && typeof 사람판정.줄 === 'object' ? 사람판정.줄 : {};
   const 내린줄 = [];
   for (const [칸, map] of Object.entries(줄짚음)) {
-    for (const [k, list] of map) {
+    for (const [k, 짚음] of map) {
+      const list = 짚음.map((v) => v.글);
       const 코드 = 칸 === '모름줄' ? '같이짚음' : '불편';
       const 판 = 칸 === '모름줄' ? 줄판정[k] : null;
       const 갈래 = 판 ? 판정갈래읽기(판.갈래) : null;
@@ -464,6 +638,7 @@ function 채점하기(밖, { 사람판정 = {} } = {}) {
   const 다시 = 걸린것.filter((c) => 기록.some((r) => (r.걸린것 || []).includes(c)));
   const 채점 = { 도구, 시각: kst(), 글: 재료.글, 지문: 재료.지문, 편: 재료.편, 판본: 재료.판본, 언어: 재료.언어, 결과, 찾음: out, 시험관별, 걸린것, 다음은넷: 다시.length > 0, 다시나온것: 다시, 시험관넷: 재료.시험관넷 };
   if (내린줄.length) 채점.판정줄 = 내린줄;
+  if (재료.앞회차 || 앞지적.length || 옮긴채점) 채점.앞회차 = { ...(재료.앞회차 || {}), ...(옮긴채점 ? { 옮긴채점 } : {}), 센회차: [...new Set(앞지적.map((x) => x.회차))], 센지적: 앞지적.length };
   if (사람고침.length) 채점.사람판정 = 사람고침;
   fs.writeFileSync(path.join(밖, '채점.json'), JSON.stringify(채점, null, 2) + '\n');
   return { 재료, 채점 };
@@ -477,8 +652,10 @@ function 보이기(채점, 밖) {
   }
   for (const [s, v] of Object.entries(채점.시험관별)) console.log(`  ${s}: 요약 ${v.요약.판정}(${v.요약.비율 ?? '-'}) · 웃음 ${v.웃음.판정} · 풀기 ${v.풀기.map((p) => (p.맞음 ? 'O' : 'X')).join('') || '-'}`);
   for (const x of 채점.사람판정 || []) console.log(`  사람 판정: ${x.시험관} ${x.칸} ${x.앞} → ${x.뒤} — ${x.까닭}`);
+  if (채점.앞회차?.옮긴채점) console.log(`  앞 채점 뒤 답이 바뀌어 그 채점을 앞회차/${채점.앞회차.옮긴채점}/로 옮겼다`);
+  if (채점.앞회차?.센지적) console.log(`  앞 회차 ${채점.앞회차.센회차.join(' · ')}(지금과 같은 시험지)의 지적 ${채점.앞회차.센지적}을 함께 셌다`);
   if (채점.다음은넷) console.log(`  다음 판은 시험관 넷 — 같은 실수가 다시 나왔다(${채점.다시나온것.join(' · ')})`);
-  console.log(`  채점: ${rel(path.join(밖, '채점.json'))}`);
+  console.log(`  채점: ${기록자리(path.join(밖, '채점.json'))}`);
 }
 
 const 종료코드 = (결과) => (결과 === 고칠 ? 1 : 결과 === 확인 ? 3 : 0);
@@ -490,7 +667,7 @@ function main(argv) {
     else if (argv[i].startsWith('--')) { 값[argv[i].slice(2)] = argv[i + 1]; i += 1; } else 위치.push(argv[i]);
   }
   const 명령 = 위치[0];
-  const 쓰는법 = '쓰는 법: node tools/뜻검사.js 재료 <판본 글.json> [--편 <원본 편 폴더>] [--밖 <폴더>] | 판본 <편 폴더> <판본 키> [--밖 <폴더>] | 채점 <밖 폴더> [--판정 <json>] [--기록]';
+  const 쓰는법 = '쓰는 법: node tools/뜻검사.js 재료 <판본 글.json> [--편 <원본 편 폴더>] [--밖 <폴더>] | 판본 <편 폴더> <판본 키> [--밖 <폴더>] | 답넣기 <밖 폴더> <시험관> <답 파일> | 채점 <밖 폴더> [--판정 <json>] [--기록]';
   const 도장 = kst().replace(/[-:]/g, '').slice(0, 13);
   if (명령 === '재료' || 명령 === '판본') {
     let 글파일, 편 = 값.편 || null, 키 = null;
@@ -511,15 +688,46 @@ function main(argv) {
       if (!글파일) { console.error(쓰는법); return 2; }
     }
     const 이름 = 편 ? `${path.basename(path.resolve(편))}/${키 || path.basename(글파일, '.json')}` : `${path.basename(글파일, '.json')}-${도장}`;
-    const 밖 = path.resolve(값.밖 || path.join(REPO, '.tmp', '뜻검사', 이름));
+    const 밖 = path.resolve(값.밖 || path.join(메인, '.tmp', '뜻검사', 이름));
     const 재료 = 재료만들기(글파일, { 편, 밖 });
     if (키 && !재료.판본) { 재료.판본 = 키; 재료.시험관셈 = 받은때셈(재료); fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료, null, 2) + '\n'); }
-    console.log(`재료: ${rel(밖)} · ${재료.언어} · 줄 ${재료.줄.length} · 퀴즈 ${재료.퀴즈.length}문제 · 기준 「${재료.기준.한문장 || '없음'}」`);
+    if (재료.앞회차 && 재료.앞회차.번호 && fs.existsSync(path.join(밖, '앞회차', String(재료.앞회차.번호), '채점.json'))) console.log(`앞 회차 ${재료.앞회차.번호}의 채점(준비.json 「기록」이 가리키던 것)은 이제 ${기록자리(path.join(밖, '앞회차', String(재료.앞회차.번호), '채점.json'))}에 있다`);
+    if (재료.앞회차 && 재료.앞회차.번호) console.log(`앞 회차 답을 ${기록자리(path.join(밖, '앞회차', String(재료.앞회차.번호), '재료.json')).replace(/\/재료\.json$/, '')}로 옮겼다 — ${재료.앞회차.같은시험지 ? '시험지가 글자 하나 다르지 않다: 채점이 앞 회차 지적을 함께 센다' : '시험지가 바뀌었다: 앞 회차 지적은 세지 않는다'}`);
+    console.log(`재료: ${기록자리(밖)} · ${재료.언어} · 줄 ${재료.줄.length} · 퀴즈 ${재료.퀴즈.length}문제 · 기준 「${재료.기준.한문장 || '없음'}」`);
     console.log(`시험관 ${재료.시험관.length}${재료.시험관넷.넷 ? ` — 시험관 넷: ${재료.시험관넷.까닭.join(' · ')}` : ''}`);
     for (const w of 재료.딱지경고) console.log(`  ${w.수준 === 고칠 ? '✗' : '?'} ${w.말}`);
     console.log('다음 — 서로 답을 보이지 않고:');
-    console.log(부르는법(밖, 재료.시험관));
+    console.log(부르는법(밖, 재료.시험관, String(재료.시각 || '').replace(/[-:+]/g, '').slice(0, 13)));
     console.log(`그다음: node tools/뜻검사.js 채점 "${밖}"${재료.편폴더 ? ' --기록' : ''}`);
+    return 0;
+  }
+  if (명령 === '답넣기') {
+    // 사본 세션은 공용 작업본 경로에 Write · Edit를 못 한다 — 시험관 답을 사본 안에 받은 뒤 이 명령으로 넣는다(11-15 Opus 5.5 대체 검수 P1-1)
+    const [, 밖0, 누구, 답파일] = 위치;
+    const 밖 = 밖0 && path.resolve(밖0);
+    if (!밖 || !누구 || !답파일 || !fs.existsSync(path.join(밖, '재료.json'))) { console.error(`${쓰는법}\n  (답넣기: 재료.json이 있는 밖 폴더 · 시험관 이름 · 답 파일)`); return 2; }
+    if (!/^[a-z0-9][a-z0-9.-]{0,30}$/i.test(누구)) { console.error(`시험관 이름이 이상하다(${누구}) — sonnet · haiku · opus · gpt · fable 꼴로 준다`); return 2; }
+    let 재료;
+    try { 재료 = 판본글.readJson(path.join(밖, '재료.json')); } catch (e) { console.error(`재료.json을 못 읽었다(${e.message})`); return 2; }
+    // 다른 사본이 만든 재료에는 넣지 않는다 — 그 사본의 시험지에 대한 답인지 알 수 없다(11-15 다시 검수 P2)
+    if (재료.만든곳 && !같은곳(재료.만든곳, REPO)) { console.error(`다른 사본(${path.basename(재료.만든곳)})이 만든 재료다 — 이 사본의 답을 넣지 않는다. 「판본」 명령으로 재료부터 다시 만든다`); return 2; }
+    // 재료보다 먼저 쓴 답은 다른 시험지의 답이다(앞 판본 · 앞 회차의 답.md가 남은 것 — 11-15 다시 검수 P1)
+    const 재료때 = Date.parse(재료.시각 || '');
+    if (!fs.existsSync(답파일)) { console.error(`답 파일이 없다: ${답파일}`); return 2; }
+    if (Number.isFinite(재료때) && fs.statSync(답파일).mtimeMs < 재료때 - 2000) { console.error(`답 파일(${path.basename(답파일)})이 재료(${재료.시각})보다 먼저 쓰였다 — 다른 시험지의 답이다. 이 시험지로 시험관을 다시 부른다`); return 2; }
+    // 답 옆의 질문.md가 지금 시험지와 같아야 이 시험지의 답이다 — 판본 사이 · 회차 사이를 함께 묶는다(11-15 셋째 검수 P2-1)
+    const 옆질문 = path.join(path.dirname(path.resolve(답파일)), '질문.md');
+    if (!fs.existsSync(옆질문) || fs.readFileSync(옆질문, 'utf8') !== fs.readFileSync(path.join(밖, '질문.md'), 'utf8')) {
+      console.error(`답 파일 옆에 ${fs.existsSync(옆질문) ? '다른 시험지(질문.md)가 있다' : '시험관에게 준 질문.md가 없다'} — 이 밖의 질문.md를 새 빈 폴더에 두고 그 시험관을 다시 부른다`);
+      return 2;
+    }
+    const 글 = fs.readFileSync(답파일, 'utf8');
+    try { 답읽기(글); } catch (e) { console.error(`답을 못 읽었다 — 안에 JSON 하나가 있어야 한다(${e.message}) · 넣지 않았다`); return 2; }
+    const 곳 = path.join(밖, `답_${누구}.md`);
+    const 있었다 = fs.existsSync(곳);
+
+    fs.writeFileSync(곳, 글);
+    console.log(`넣었다: ${기록자리(곳)}${있었다 ? ' (앞 답을 덮었다 — 그 답이 채점에 들어갔으면 다음 채점이 앞 채점을 앞회차로 옮겨 함께 센다)' : ''}`);
     return 0;
   }
   if (명령 === '채점') {
@@ -530,12 +738,27 @@ function main(argv) {
     // --눈확인 "<본 것>" — 확인할 것(시험관 하나만 짚은 줄 · 불편)만 남았을 때, 세션이 그 지적을 하나씩 보고 그대로 두기로 한 까닭을 적으면 「통과」로
     // 적는다(tools/글자검사.js와 같은 꼴). 고칠 것(둘 이상 같이 짚음 · 화면 결함 · 정답 오류)은 못 넘긴다. 요약 · 웃음 「모호」는 --판정으로 먼저 정한다.
     const 눈확인 = typeof 값.눈확인 === 'string' && 값.눈확인.trim() ? 값.눈확인.trim() : null;
+    if ((눈확인 && 절대경로.test(눈확인)) || 글값들(사람판정).some((t) => 절대경로.test(t))) { console.error('--눈확인 · --판정 까닭에 절대 경로를 적지 않는다 — 준비.json은 공개 저장소에 올라간다. 저장소 기준(docs/… · .tmp/…)이나 줄 id · 초로 적는다'); return 2; }
     const 모호남음 = 채점.찾음.some((f) => ['요약모호', '웃음모호', '답없음', '답못읽음', '시험관모자람', '풀기없음'].includes(f.코드));
     const 넘김 = 채점.결과 === 확인 && 눈확인 && !모호남음;
     if (눈확인 && 채점.결과 === 확인 && 모호남음) console.error('--눈확인으로 넘기지 못했다 — 요약 · 웃음 「모호」는 --판정으로 정하고, 빠진 시험관 답은 채운 뒤 다시 채점한다');
     if (넘김) { 채점.눈확인 = 눈확인; 채점.결과 = 통과; fs.writeFileSync(path.join(밖, '채점.json'), JSON.stringify(채점, null, 2) + '\n'); }
     if (값.기록) {
       if (!재료.편폴더 || !재료.판본) { console.error('재료에 편 폴더 · 판본이 없어 기록하지 못했다 — 「판본」 명령이나 --편으로 재료를 만든다'); return 2; }
+      // 다른 사본이 만든 재료(11-15 Opus 5.5 대체 검수 P1-2) — 결과 자리는 공용 작업본 하나라 앞 회차 사본의 재료로 오늘 사본이 채점할 수 있다.
+      // 그 사본의 준비.json이 아니라 이 저장소의 같은 편에 적고, 이 저장소의 판본 글이 재료의 지문과 같을 때만 적는다.
+      if (재료.만든곳 && !같은곳(재료.만든곳, REPO)) {
+        const 상대편 = path.relative(재료.만든곳, 재료.편폴더);
+        const 지금편 = path.join(REPO, 상대편);
+        const 지금글 = path.join(지금편, path.relative(재료.편폴더, 재료.글));
+        if (상대편.startsWith('..') || path.isAbsolute(상대편) || !fs.existsSync(지금글) || 판본글.sha256(지금글) !== 재료.지문) {
+          console.error(`다른 사본(${path.basename(재료.만든곳)})이 만든 재료다 — 이 저장소의 같은 판본 글(${상대편.startsWith('..') ? '없음' : rel(지금글)})이 없거나 지문이 달라 기록하지 않았다. 「판본」 명령으로 재료부터 다시 만든다`);
+          return 2;
+        }
+        console.log(`다른 사본(${path.basename(재료.만든곳)})이 만든 재료다 — 이 저장소의 판본 글 지문이 같아 이 저장소의 같은 편(${rel(지금편)})에 적는다`);
+        재료.편폴더 = 지금편;
+        재료.글 = 지금글;
+      }
       const 지금지문 = 판본글.sha256(재료.글);
       if (지금지문 !== 재료.지문) { console.error(`재료를 만든 뒤 판본 글이 바뀌었다 — 재료부터 다시 만든다(${rel(재료.글)})`); return 2; }
       // 판본 틀에서 뽑은 글이면 원천(판본 글 · 지도 · 원고)이 그사이 바뀌지 않았는지도 본다 — 낡은 글.json에 통과를 적지 않는다
@@ -560,6 +783,7 @@ function main(argv) {
       if (넘김) { 기록.눈확인 = 눈확인; 기록.확인할것 = 채점.찾음.filter((f) => f.수준 === 확인).length; }
       if (채점.판정줄) 기록.판정줄 = 채점.판정줄;
       if (채점.사람판정) 기록.사람판정 = 채점.사람판정;
+      if (채점.앞회차) 기록.앞회차 = 채점.앞회차;
       const 준비 = 판본글.검수쓰기(재료.편폴더, 재료.판본, '뜻', 기록);
       console.log(`준비.json 「돌림」.판본[${재료.판본}].검수.뜻 = ${채점.결과} (${rel(준비)})`);
       // 뜻 통과를 적었어도 영상이 지금 글 · 그림으로 구운 것이 아니면 돌림에 못 든다 — 여기서 바로 알린다(11-11: 뜻 검사만 다시 받고 렌더를 빠뜨리는 길)
@@ -579,4 +803,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error(e.message); process.exitCode = 2; }
 }
 
-module.exports = { main, 재료만들기, 채점하기, 요약견주기, 웃음견주기, 핵심묶음, 답읽기, 줄기, 넷판단, 시험관모자람, 받은때셈, 지난기록, 문자갈래, 기본시험관, 넷시험관 };
+module.exports = { main, 재료만들기, 채점하기, 앞회차옮기기, 앞회차답, 채점답옮기기, 요약견주기, 웃음견주기, 핵심묶음, 답읽기, 줄기, 넷판단, 시험관모자람, 받은때셈, 지난기록, 문자갈래, 기본시험관, 넷시험관 };

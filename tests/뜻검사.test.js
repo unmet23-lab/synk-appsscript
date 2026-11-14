@@ -290,10 +290,12 @@ test('채점 --눈확인 — 한 시험관만 짚은 확인할 것은 본 메모
   for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답({ ...좋은, 모름줄: [{ 줄: 1, 까닭: '모르겠다' }] }));
   assert.equal(조용히(() => M.main(['채점', 밖, '--기록', '--눈확인', '봤다'])), 1);
   assert.equal(검수().결과, '고칠 것');
-  // 요약 모호 · 빠진 답은 메모로 못 넘긴다(--판정 · 답 채우기가 먼저)
-  for (const s of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${s}.md`), 답(좋은));
-  fs.rmSync(path.join(밖, `답_${재료.시험관[0]}.md`));
-  assert.equal(조용히(() => M.main(['채점', 밖, '--기록', '--눈확인', '봤다'])), 3);
+  // 요약 모호 · 빠진 답은 메모로 못 넘긴다(--판정 · 답 채우기가 먼저) — 새 밖에서(같은 밖에서 답을 바꾸면 앞 채점의 지적을 함께 센다, 11-15)
+  const 밖2 = path.join(방, '밖2');
+  조용히(() => M.main(['판본', 편, 'TH', '--밖', 밖2]));
+  fs.writeFileSync(path.join(밖2, '재료.json'), JSON.stringify({ ...JSON.parse(fs.readFileSync(path.join(밖2, '재료.json'), 'utf8')), 딱지경고: [] }));
+  for (const s of 재료.시험관.slice(1)) fs.writeFileSync(path.join(밖2, `답_${s}.md`), 답(좋은));
+  assert.equal(조용히(() => M.main(['채점', 밖2, '--기록', '--눈확인', '봤다'])), 3);
   assert.equal(검수().결과, '확인할 것');
 });
 
@@ -552,4 +554,249 @@ test('받은 때의 셈은 재료를 만든 때 한 번 세어 재료에 적고 
     if (앞 === undefined) delete process.env.SYNK_MARKETING_DIR; else process.env.SYNK_MARKETING_DIR = 앞;
     fs.rmSync(방, { recursive: true, force: true });
   }
+});
+
+// 11-15 Fable 5.2 판본 회차 · 「미안」 농담 인사 검수 — 인사 카드 한 줄 · 같은 시험지 앞 회차
+const 인사판 = (방, 덧 = {}) => 판본글만들기(방, {
+  판본: 'AU', 언어: 'en', 나라: ['AU'], 틀: '이야기', 인사: { 초: 1.2 }, 퀴즈: [],
+  줄: [
+    { id: 'hello', 칸: '진행', 글: 'Sorry,', 원문: '미안', 초: [0, 1.2], 장면: '인사 장면 — 몽글이 캥거루 주머니 속' },
+    { id: 'hello.name', 칸: '한국어', 글: '호주!', 초: [0, 1.2] },
+    { id: 'hello.read', 칸: '읽기', 글: 'ho-ju', 초: [0, 1.2] },
+    { id: 'hello.vo', 칸: '한국어', 글: '쏘리, 호주!', 초: [0, 1.2] },
+    { id: 'scene', 칸: '머리', 글: 'I bumped into my boss.', 원문: '사장님과 부딪쳤다', 초: [1.2, 3] },
+    { id: 'ko.1', 칸: '한국어', 글: '미안.', 초: [3, 4] },
+    { id: 'end', 칸: '끝질문', 글: 'Who do you say sorry to?', 원문: '누구에게 사과해?', 초: [4, 6] },
+  ],
+  ...덧,
+});
+
+test('재료 — 인사 카드는 한 줄로(인사말 / 〔이 나라 이름〕+끝 부호 / 읽는 법), 묶인 줄은 같은 번호 · 그 줄 지적은 hello로 센다(11-15)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  const 재료 = M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  const q = fs.readFileSync(path.join(밖, '질문.md'), 'utf8');
+  assert.match(q, /\n1\. \(0초\) Sorry, \/ 〔한국어 글: 이 나라 이름〕! \/ ho-ju {3}\[인사 카드: 이 줄들이 그림 한 장에 함께 뜬다 — 〔한국어 글〕은 이 나라 이름을 한글로 쓴 것이고 그 아래가 읽는 법이다\. 목소리가 이 인사를 한국어 소리로 읽는다\] {3}\[그림: 인사 장면/);
+  assert.match(q, /\n2\. \(1\.2초\) I bumped into my boss\./);
+  assert.match(q, /\n3\. \(3초\) \[한국어 글/);
+  assert.ok(!/\n5\./.test(q), '인사 넷이 한 줄이라 줄은 넷');
+  assert.match(q, /\[인사 카드: …\] · 〔한국어 글: 이 나라 이름〕/);
+  assert.match(q, /「 \/ 」는 화면에서 줄이 바뀌는 자리다/);
+  assert.deepEqual(재료.줄.filter((z) => z.번호 === 1).map((z) => `${z.id}${z.묶음 ? '*' : ''}`), ['hello', 'hello.name*', 'hello.read*', 'hello.vo*']);
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과', 결함: [{ 줄: 1, 까닭: '여는 느낌표만 있다' }] }));
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과', 모름줄: [{ 줄: 1, 까닭: '왜 나라에 사과하나' }] }));
+  const { 채점 } = M.채점하기(밖);
+  assert.ok(채점.찾음.some((x) => x.코드 === '화면결함' && x.줄 === 'hello'), JSON.stringify(채점.찾음));
+  assert.ok(채점.찾음.some((x) => x.코드 === '같이짚음' && x.줄 === 'hello'), '묶인 줄은 진행 줄이라 모름줄도 센다');
+  // hello.name이 없는 판(인사말만)은 예전처럼 그 줄만 보인다
+  const 둘 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const 하나 = 인사판(둘, { 줄: [{ id: 'hello', 칸: '진행', 글: 'Hi!', 원문: '안녕', 초: [0, 1.2] }, { id: 'scene', 칸: '머리', 글: 'Boss', 원문: '사장', 초: [1.2, 3] }] });
+  M.재료만들기(하나.글파일, { 편: 하나.편, 밖: path.join(둘, '밖'), 기록: [] });
+  const q2 = fs.readFileSync(path.join(둘, '밖', '질문.md'), 'utf8');
+  assert.match(q2, /\n1\. \(0초\) Hi!\n/);
+  assert.ok(!q2.includes('[인사 카드'));
+});
+
+test('재료를 같은 밖에 다시 만들면 앞 회차를 앞회차/<n>/로 옮기고, 같은 시험지면 채점이 앞 회차 지적을 함께 센다 — 같은 시험관은 한 명으로(11-15)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과', 불편: [{ 줄: 4, 까닭: '흔한 고정관념' }], 모름줄: [{ 줄: 4, 까닭: '누구에게?' }] }));
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과', 모름줄: [{ 줄: 2, 까닭: '누가 부딪쳤나' }] }));
+  M.채점하기(밖);
+  // 2회차 — 시험지 글자 그대로
+  const 재료2 = M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  assert.deepEqual({ 번호: 재료2.앞회차.번호, 같은시험지: 재료2.앞회차.같은시험지, 시험관: 재료2.앞회차.시험관 }, { 번호: 1, 같은시험지: true, 시험관: ['haiku', 'sonnet'] });
+  for (const x of ['질문.md', '재료.json', '답_sonnet.md', '답_haiku.md', '채점.json']) assert.ok(fs.existsSync(path.join(밖, '앞회차', '1', x)), x);
+  assert.ok(!fs.existsSync(path.join(밖, '답_sonnet.md')));
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과', 모름줄: [{ 줄: 2, 까닭: '또 모름' }, { 줄: 4, 까닭: '여전히 누구에게?' }] }));
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과' }));
+  const { 채점 } = M.채점하기(밖);
+  const 불편 = 채점.찾음.find((x) => x.코드 === '불편');
+  assert.ok(불편 && 불편.수준 === '확인할 것' && /앞 회차 1\(같은 시험지/.test(불편.말), JSON.stringify(채점.찾음));
+  const 같이 = 채점.찾음.find((x) => x.코드 === '같이짚음' && x.줄 === 'scene');
+  assert.ok(같이 && 같이.수준 === '고칠 것', '앞 회차 haiku와 이번 sonnet — 다른 시험관 둘');
+  const 한명 = 채점.찾음.find((x) => x.줄 === 'end' && x.코드 === '같이짚음');
+  assert.ok(한명 && 한명.수준 === '확인할 것' && /여전히 누구에게/.test(한명.말) && /누구에게\?/.test(한명.말), '같은 sonnet이 두 회차에 짚은 줄은 한 명 — 글은 이어 붙인다');
+  assert.deepEqual(채점.앞회차.센회차, [1]);
+  assert.equal(채점.앞회차.센지적, 3);
+  // 3회차 — 시험지가 바뀌면(글을 고침) 앞 회차 지적은 세지 않는다
+  const 글 = JSON.parse(fs.readFileSync(글파일, 'utf8'));
+  글.줄[4].글 = 'I crashed into my boss.';
+  fs.writeFileSync(글파일, JSON.stringify(글, null, 2));
+  const 재료3 = M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  assert.equal(재료3.앞회차.번호, 2);
+  assert.equal(재료3.앞회차.같은시험지, false);
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과' }));
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과' }));
+  const 셋 = M.채점하기(밖).채점;
+  assert.ok(!셋.찾음.some((x) => ['불편', '같이짚음'].includes(x.코드)), JSON.stringify(셋.찾음));
+});
+
+test('앞 회차 — 같은 시험지의 앞 결함은 한 명이어도 고칠 것, 답 없이 다시 만든 재료는 옮기지 않고, Q1 → Q2 → Q1로 되돌려도 첫 회차를 센다(11-15)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  const 원래 = fs.readFileSync(글파일, 'utf8');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] }); // Q1
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과', 결함: [{ 줄: 2, 까닭: '같은 말이 두 번' }], 모름줄: [{ 줄: 3, 까닭: '한국어 줄' }] }));
+  const 재료b = M.재료만들기(글파일, { 편, 밖, 기록: [] }); // 답을 받기 전에 시험지만 다시 만든다 — 그 재료는 옮기지 않는다
+  assert.equal(재료b.앞회차.번호, 1);
+  const 재료c = M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  assert.equal(재료c.앞회차, undefined, '답 없는 재료는 옮기지 않는다');
+  assert.ok(!fs.existsSync(path.join(밖, '앞회차', '2')));
+  // Q2로 한 바퀴
+  const 글 = JSON.parse(원래);
+  글.줄[4].글 = 'I crashed into my boss.';
+  fs.writeFileSync(글파일, JSON.stringify(글, null, 2));
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과' }));
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과' }));
+  M.채점하기(밖);
+  // Q1로 되돌림
+  fs.writeFileSync(글파일, 원래);
+  const 재료d = M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  assert.equal(재료d.앞회차.번호, 2);
+  assert.equal(재료d.앞회차.같은시험지, false);
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과' }));
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과' }));
+  const { 채점 } = M.채점하기(밖);
+  const 결함 = 채점.찾음.find((x) => x.코드 === '화면결함');
+  assert.ok(결함 && 결함.수준 === '고칠 것' && 결함.앞회차 === 1 && 결함.줄 === 'scene', JSON.stringify(채점.찾음));
+  assert.ok(!채점.찾음.some((x) => x.줄 === 'ko.1'), '앞 회차의 한국어 줄 모름은 세지 않는다');
+  assert.equal(채점.결과, '고칠 것');
+  assert.deepEqual(M.앞회차답(밖, JSON.parse(fs.readFileSync(path.join(밖, '재료.json'), 'utf8'))).map((x) => `${x.회차}:${x.칸}:${x.줄}`), ['1:결함:scene']);
+});
+
+test('답넣기 — 옆에 같은 질문.md가 있는 이 사본 재료의 답만, 재료보다 늦게 쓴 것만 넣는다 · 못 읽는 답 · 이상한 이름은 넣지 않는다(11-15)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  const 시험방 = (누구) => { const d = path.join(방, '시험관', 누구); fs.mkdirSync(d, { recursive: true }); fs.copyFileSync(path.join(밖, '질문.md'), path.join(d, '질문.md')); return path.join(d, '답.md'); };
+  const 받은곳 = 시험방('sonnet');
+  fs.writeFileSync(받은곳, '앞말\n\`\`\`json\n' + 답({ 요약: '사과' }) + '\n\`\`\`');
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'sonnet', 받은곳])), 0);
+  assert.equal(fs.readFileSync(path.join(밖, '답_sonnet.md'), 'utf8'), fs.readFileSync(받은곳, 'utf8'));
+  const 깨진 = 시험방('haiku');
+  fs.writeFileSync(깨진, '답이 없다');
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'haiku', 깨진])), 2);
+  assert.ok(!fs.existsSync(path.join(밖, '답_haiku.md')));
+  assert.equal(조용히(() => M.main(['답넣기', 밖, '../밖', 받은곳])), 2);
+  assert.equal(조용히(() => M.main(['답넣기', path.join(방, '없는밖'), 'sonnet', 받은곳])), 2);
+  // 옆에 질문.md가 없거나 다른 시험지면 받지 않는다(다른 판본 · 앞 회차의 답 — 셋째 검수 P2-1)
+  const 맨답 = path.join(방, '맨답.md');
+  fs.writeFileSync(맨답, 답({ 요약: '사과' }));
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'haiku', 맨답])), 2);
+  const 남의 = path.join(방, '남의', 'haiku');
+  fs.mkdirSync(남의, { recursive: true });
+  fs.writeFileSync(path.join(남의, '질문.md'), '다른 판본의 시험지');
+  fs.writeFileSync(path.join(남의, '답.md'), 답({ 요약: '다른 판본' }));
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'haiku', path.join(남의, '답.md')])), 2);
+  // 재료보다 먼저 쓴 답은 받지 않는다(다시 검수 P1)
+  const 옛답 = 시험방('opus');
+  fs.writeFileSync(옛답, 답({ 요약: '앞 회차' }));
+  const 한시간전 = new Date(Date.now() - 3600 * 1000);
+  fs.utimesSync(옛답, 한시간전, 한시간전);
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'opus', 옛답])), 2);
+  assert.ok(!fs.existsSync(path.join(밖, '답_opus.md')));
+  // 다른 사본이 만든 재료에는 넣지 않는다(다시 검수 P2) · 대소문자만 다른 같은 사본은 같은 곳이다(다시 검수 P3)
+  const 재료 = JSON.parse(fs.readFileSync(path.join(밖, '재료.json'), 'utf8'));
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify({ ...재료, 만든곳: fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-남사본-')) }));
+  const 새답 = 시험방('gpt');
+  fs.writeFileSync(새답, 답({ 요약: '사과' }));
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'gpt', 새답])), 2);
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify({ ...재료, 만든곳: process.platform === 'win32' ? 재료.만든곳.toLowerCase() : 재료.만든곳 }));
+  assert.equal(조용히(() => M.main(['답넣기', 밖, 'gpt', 새답])), 0);
+});
+
+test('채점답 — 채점한 뒤 같은 시험관의 답이 바뀌면(codex -o를 다시 · 답넣기로 덮음) 다음 채점이 앞 채점을 앞회차로 옮기고 그 지적을 함께 센다(11-15 셋째 검수 P2-2)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  fs.writeFileSync(path.join(밖, '답_gpt.md'), 답({ 요약: '사과', 결함: [{ 줄: 2, 까닭: '네모 글자' }] }));
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), '깨진 답');
+  const 첫 = M.채점하기(밖).채점;
+  assert.equal(첫.결과, '고칠 것');
+  assert.deepEqual(fs.readdirSync(path.join(밖, '채점답')), ['답_gpt.md'], '못 읽은 답은 채점에 안 들어가 남기지 않는다');
+  // 같은 답으로 다시 채점(눈확인 · 판정을 더할 때)은 옮기지 않는다
+  M.채점하기(밖);
+  assert.ok(!fs.existsSync(path.join(밖, '앞회차')));
+  // 못 읽은 답을 고쳐 넣는 것도 옮기지 않는다
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과' }));
+  M.채점하기(밖);
+  assert.ok(!fs.existsSync(path.join(밖, '앞회차')));
+  // gpt 답을 깨끗한 답으로 덮으면 — 앞 채점이 앞회차/1로 가고 그 결함을 함께 센다
+  fs.writeFileSync(path.join(밖, '답_gpt.md'), 답({ 요약: '사과' }));
+  const 둘 = M.채점하기(밖).채점;
+  assert.equal(둘.앞회차.옮긴채점, 1);
+  for (const x of ['답_gpt.md', '답_sonnet.md', '채점.json', '질문.md', '재료.json']) assert.ok(fs.existsSync(path.join(밖, '앞회차', '1', x)), x);
+  assert.match(fs.readFileSync(path.join(밖, '앞회차', '1', '답_gpt.md'), 'utf8'), /네모 글자/);
+  assert.equal(둘.결과, '고칠 것');
+  assert.ok(둘.찾음.some((x) => x.코드 === '화면결함' && x.앞회차 === 1));
+  // 채점에 들어간 답을 지워도 같다
+  fs.rmSync(path.join(밖, '답_sonnet.md'));
+  const 셋 = M.채점하기(밖).채점;
+  assert.equal(셋.앞회차.옮긴채점, 2);
+  // 채점답이 지금 답과 다른 채로 재료를 다시 만들면 그 채점을 먼저 한 회차로 남긴다
+  M.채점하기(밖);
+  fs.writeFileSync(path.join(밖, '답_gpt.md'), 답({ 요약: '또 바꿈' }));
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  const 번호들 = fs.readdirSync(path.join(밖, '앞회차')).sort();
+  assert.deepEqual(번호들, ['1', '2', '3', '4']);
+  assert.match(fs.readFileSync(path.join(밖, '앞회차', '4', '답_gpt.md'), 'utf8'), /또 바꿈/);
+  assert.ok(!fs.existsSync(path.join(밖, '채점답')));
+});
+
+test('채점 --눈확인 · --판정 까닭에 절대 경로가 있으면 받지 않는다 — 준비.json은 공개 저장소에 올라간다(11-15 다시 검수 P3)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과', 모름줄: [{ 줄: 2, 까닭: '흐림' }] }));
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과' }));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--눈확인', 'C:\\Users\\누구\\프레임.png를 열어 봤다'])), 2);
+  const 판정 = path.join(방, '판정.json');
+  fs.writeFileSync(판정, JSON.stringify({ 줄: { scene: { 갈래: '원본', 까닭: 'D:/사본/그림을 봤다' } } }));
+  assert.equal(조용히(() => M.main(['채점', 밖, '--판정', 판정])), 2);
+  assert.notEqual(조용히(() => M.main(['채점', 밖, '--눈확인', '2초 프레임에서 본 것 — 원본 박자, https://example.com/a 참고'])), 2);
+  assert.equal(조용히(() => M.main(['채점', 밖, '--눈확인', '/c/Users/누구/프레임에서 봤다'])), 2);
+  fs.writeFileSync(판정, JSON.stringify({ 줄: { scene: { 갈래: '원본', 까닭: '보기 "B:" 뒤가 맞다는 원본 박자' } } }));
+  assert.notEqual(조용히(() => M.main(['채점', 밖, '--판정', 판정])), 2);
+});
+
+test('다른 사본 — 다른 사본이 만들고 아직 채점하지 않은 12시간 안의 재료는 덮지 않고, 다른 사본의 재료로는 이 저장소에 같은 판본 글이 없으면 기록하지 않는다(11-15 P1-2)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-'));
+  const { 편, 글파일 } = 인사판(방);
+  const 밖 = path.join(방, '밖');
+  const 재료 = M.재료만들기(글파일, { 편, 밖, 기록: [] });
+  const 남 = fs.mkdtempSync(path.join(os.tmpdir(), '뜻검사-남사본-'));
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify({ ...재료, 만든곳: 남 }));
+  assert.throws(() => M.재료만들기(글파일, { 편, 밖, 기록: [] }), /다른 사본\(.+\)이 .+ 아직 답을 다 받지 않았다/);
+  // 한 번 채점했어도(GPT 답 대기) 답이 다 있지 않으면 잠근다(다시 검수 P2)
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과' }));
+  fs.writeFileSync(path.join(밖, '채점.json'), '{}');
+  assert.throws(() => M.재료만들기(글파일, { 편, 밖, 기록: [] }), /아직 답을 다 받지 않았다/);
+  for (const 누구 of 재료.시험관) fs.writeFileSync(path.join(밖, `답_${누구}.md`), 답({ 요약: '사과' }));
+  assert.doesNotThrow(() => M.재료만들기(글파일, { 편, 밖, 기록: [] }), '답이 다 들어왔으면 다시 만든다(앞 회차로 옮긴다)');
+  // 12시간이 지났거나 그 사본이 지워졌으면 다시 만든다
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify({ ...재료, 만든곳: 남, 시각: '2026-01-01T00:00:00+09:00' }));
+  assert.doesNotThrow(() => M.재료만들기(글파일, { 편, 밖, 기록: [] }));
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify({ ...재료, 만든곳: path.join(남, '지워진사본') }));
+  assert.doesNotThrow(() => M.재료만들기(글파일, { 편, 밖, 기록: [] }));
+  // 다른 사본의 재료로 채점 --기록 — 그 사본 안의 편은 이 저장소에 없다 → 기록하지 않는다(그 사본의 준비.json도 그대로)
+  const 남편 = path.join(남, 'docs', '마케팅', 'LAB_시험퀴즈_20261110');
+  fs.mkdirSync(path.join(남편, '게시'), { recursive: true });
+  fs.copyFileSync(path.join(편, '게시', '준비.json'), path.join(남편, '게시', '준비.json'));
+  fs.copyFileSync(글파일, path.join(남편, '글_TH.json'));
+  const 새재료 = JSON.parse(fs.readFileSync(path.join(밖, '재료.json'), 'utf8'));
+  fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify({ ...새재료, 만든곳: 남, 편폴더: 남편, 글: path.join(남편, '글_TH.json'), 판본: 'TH' }));
+  fs.writeFileSync(path.join(밖, '답_sonnet.md'), 답({ 요약: '사과' }));
+  fs.writeFileSync(path.join(밖, '답_haiku.md'), 답({ 요약: '사과' }));
+  const 앞준비 = fs.readFileSync(path.join(남편, '게시', '준비.json'), 'utf8');
+  assert.equal(조용히(() => M.main(['채점', 밖, '--기록'])), 2);
+  assert.equal(fs.readFileSync(path.join(남편, '게시', '준비.json'), 'utf8'), 앞준비);
 });

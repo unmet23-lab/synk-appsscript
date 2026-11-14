@@ -270,3 +270,14 @@ test('명령줄 --판본 — 글.json을 통째로 대조해 검수.현지어에
   assert.equal(spawnSync(process.execPath, [도구, '--판본', 편], { env, encoding: 'utf8' }).status, 1);
   fs.rmSync(방, { recursive: true, force: true });
 });
+
+test('메모 칸 — --뜻대조 · --판정에 절대 경로가 있으면 카본을 부르기 전에 받지 않는다(준비.json은 공개 저장소 · 11-15)', () => {
+  const TOOL = path.join(__dirname, '..', 'tools', '현지어대조.js');
+  const run = (...args) => spawnSync(process.execPath, [TOOL, ...args], { encoding: 'utf8', env: { ...process.env, SYNK_LOCALCHECK_DIR: fs.mkdtempSync(path.join(os.tmpdir(), '현지-')) } });
+  const r = run('--판본', '없는편', '--키', 'XX', '--기록', '--뜻대조', 'D:/사본/직역.md를 원문과 견줬다 — 걸린 줄 없음');
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /절대 경로를 적지 않는다/);
+  const p = run('--판본', '없는편', '--키', 'XX', '--판정', String.raw`hook=C:\Users\누구 그림 참고`);
+  assert.equal(p.status, 1);
+  assert.match(p.stderr, /절대 경로를 적지 않는다/);
+});

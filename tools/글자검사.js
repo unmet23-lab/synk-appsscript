@@ -28,7 +28,9 @@
  *       편 폴더에 판본지도.json이 있으면(판본 틀의 판본 글에서 글.json을 뽑는 편 — tools/lib/판본잇기.js) 검사 전에 글.json을 원천에 맞추고,
  *       영상이 지금 판본 글 · 원본 자산으로 구운 것이 아니거나 렌더 기록이 없으면(렌더.json 글 · 영상 · 자산 지문 — tools/lib/판본잇기.js 렌더문제) 「영상낡음」 고칠 것을 낸다.
  *   --엔진없이는 크롬 잼을 건너뛴다 — 그 실행은 「엔진잼없음」(못 봄)이 남고 기록 「엔진잼」이 「건너뜀」이다.
- * 결과 파일: .tmp/글자검사/<편>/<판본>/결과.json(전 · 뒤 단독은 .tmp/글자검사/<이름>-<시각>/).
+ * 결과 파일: 공용 작업본의 .tmp/글자검사/<편>/<판본>/결과.json(전 · 뒤 단독은 .tmp/글자검사/<이름>-<시각>/). 워크트리 · 예약 회차 사본에서 돌아도
+ *   공용 작업본에 둔다 — 사본의 .tmp는 사본을 지우면 같이 사라져 준비.json 「기록」이 가리킬 곳이 없어졌다(11-15 Fable 5.2 판본 회차 검수 9).
+ *   준비.json에 적는 자리는 저장소(또는 공용 작업본) 기준 상대 경로이고, 그 밖이면 「(저장소 밖)/<폴더>/<파일>」만 적는다(공개 저장소 — 절대 경로 금지).
  * 종료 코드: 0 통과 · 1 고칠 것 · 3 확인할 것만(넘기지 못한 판단 · 못 봄) · 2 사용법 · 실행 오류.
  */
 const fs = require('node:fs');
@@ -39,12 +41,22 @@ const 프로필 = require('./lib/현지화프로필.js');
 const 잇기 = require('./lib/판본잇기.js');
 
 const REPO = path.resolve(__dirname, '..');
+const { 공용작업본 } = require('./lib/공용작업본.js');
+const 메인 = 공용작업본(REPO);
 const 도구 = 'tools/글자검사.js';
 
 function kst(ms = Date.now()) {
   return new Date(ms + 9 * 3600 * 1000).toISOString().replace(/\.\d+Z$/, '+09:00');
 }
 const rel = (p) => path.relative(REPO, p).split(path.sep).join('/');
+// 준비.json에 적는 자리 — tools/뜻검사.js 「기록자리」와 같은 꼴(D: 워크트리에서 C: 공용 작업본을 rel로 적으면 사용자 폴더가 든 절대 경로가 된다)
+const 기록자리 = (p) => {
+  for (const 뿌리 of [REPO, 메인]) {
+    const r = path.relative(뿌리, p);
+    if (!r.startsWith('..') && !path.isAbsolute(r)) return r.split(path.sep).join('/');
+  }
+  return `(저장소 밖)/${path.basename(path.dirname(p))}/${path.basename(p)}`;
+};
 
 function 인자들(argv) {
   const 값 = {}, 여럿 = { 기준: [] }, 위치 = [];
@@ -94,13 +106,13 @@ function 보이기(결과, json) {
     console.log(`확인할 것 ${확인할것.length} — 판단 ${셈(검사.판단)}(--눈확인) · 못 봄 ${셈(검사.못봄)}(--직접봄)`);
     확인할것.forEach((f) => console.log(`  ? [${검사.갈래말[검사.갈래(f.코드)]}] ${f.줄 ? `[${f.줄}] ` : ''}${f.말}`));
   }
-  for (const g of 결과.좁은 || []) console.log(`  좁은 여백 ${g.초}초 · ${g.자리} ${g.여백}px → ${rel(g.자른)}`);
+  for (const g of 결과.좁은 || []) console.log(`  좁은 여백 ${g.초}초 · ${g.자리} ${g.여백}px → ${기록자리(g.자른)}`);
   if (결과.판정 === 검사.확인 && 결과.남은코드) {
     const 남은 = 결과.남은코드;
     if (남은[검사.판단].length) console.log(`  남은 판단(${남은[검사.판단].join(' · ')}) — 다 본 뒤 --눈확인 "<본 것>"`);
     if (남은[검사.못봄].length) console.log(`  남은 못 봄(${남은[검사.못봄].join(' · ')}) — 눈확인으로는 못 넘긴다. 프레임을 직접 보고 --직접봄 "<어느 프레임(N초)에서 무엇을 봤는지>"`);
   }
-  console.log(`  기록: ${rel(결과.결과파일)}`);
+  console.log(`  기록: ${기록자리(결과.결과파일)}`);
 }
 
 function 종료코드(판정) {
@@ -197,10 +209,10 @@ function 기록만들기(결과) {
   const 풀이 = 결과.풀이;
   const 넘긴코드 = {};
   for (const g of [검사.판단, 검사.못봄]) if (풀이.넘긴[g].length) 넘긴코드[g] = 풀이.넘긴[g];
-  const 기록 = { 결과: 결과.판정, 지문: 결과.지문, 시각: 결과.시각, 도구, 기록: rel(결과.결과파일),
+  const 기록 = { 결과: 결과.판정, 지문: 결과.지문, 시각: 결과.시각, 도구, 기록: 기록자리(결과.결과파일),
     고칠것: 결과.찾음.filter((x) => x.수준 === 검사.고칠).length, 확인할것: 결과.찾음.filter((x) => x.수준 === 검사.확인).length,
     엔진잼: 결과.엔진잼, 글자인식: 결과.글자인식,
-    기준: 결과.기준판.map((b) => ({ ...(b.키 ? { 키: b.키, 언어: b.언어 } : { 키: null, 언어: null, 파일: rel(b.파일) }), ...(b.밀림 ? { 밀림: b.밀림 } : {}) })),
+    기준: 결과.기준판.map((b) => ({ ...(b.키 ? { 키: b.키, 언어: b.언어 } : { 키: null, 언어: null, 파일: 기록자리(b.파일) }), ...(b.밀림 ? { 밀림: b.밀림 } : {}) })),
     넘긴코드 };
   if (결과.기준뺌.length) 기록.기준뺌 = 결과.기준뺌.map((b) => ({ 키: b.키, 언어: b.언어, 까닭: b.까닭, ...(b.코드 ? { 코드: b.코드 } : {}) }));
   if (결과.눈확인) 기록.눈확인 = 결과.눈확인;
@@ -219,6 +231,11 @@ async function main(argv) {
     console.error('--직접봄에는 어느 프레임에서 무엇을 봤는지를 적는다 — 본 프레임의 시각(「11.5초」)을 하나 이상 넣는다(예: --직접봄 "1초 · 11.5초 · 19.5초 끝 카드 — 오른쪽 선 안, 네모 글자 없음")');
     return 2;
   }
+  // 준비.json에 그대로 들어가는 메모에 절대 경로를 받지 않는다 — 공개 저장소다(11-15 다시 검수 P3)
+  const 절대경로 = /(?<![A-Za-z])[A-Za-z]:[\\/](?=[\w.~가-힣-])|(?:^|[\s(「"'`=])\/(?:Users|home|[a-z]|mnt\/[a-z])\//;
+  for (const k of ['눈확인', '직접봄']) {
+    if (typeof 값[k] === 'string' && 절대경로.test(값[k])) { console.error(`--${k}에 절대 경로를 적지 않는다 — 준비.json은 공개 저장소에 올라간다. 저장소 기준(docs/… · .tmp/…)이나 초로 적는다`); return 2; }
+  }
   // 결과에 갈래 · 판정 풀이를 붙인다(보이기 · 기록이 쓴다)
   const 판정붙이기 = (결과, 메모들 = {}) => {
     결과.찾음 = 검사.갈래붙이기(결과.찾음);
@@ -235,7 +252,7 @@ async function main(argv) {
     const L = 프로필.언어(자료.언어);
     if (!L) { console.error(`언어 프로필에 없는 언어: ${자료.언어}`); return 2; }
     const r = await 렌더전(글파일, L, { 엔진: !값.엔진없이 });
-    const 밖 = path.resolve(값.밖 || path.join(REPO, '.tmp', '글자검사', `${path.basename(글파일, '.json')}-${도장}`));
+    const 밖 = path.resolve(값.밖 || path.join(메인, '.tmp', '글자검사', `${path.basename(글파일, '.json')}-${도장}`));
     fs.mkdirSync(밖, { recursive: true });
     const 결과 = 판정붙이기({ 도구, 시각, 단계: '렌더 전', 이름: path.basename(글파일), 언어: L.코드, 글: 글파일, 글지문: r.판.지문, 엔진잼: r.엔진잼, 판정: null, 찾음: r.찾음, 잰것: r.잰것, 글꼴: r.글꼴, 결과파일: path.join(밖, '결과.json') });
     fs.writeFileSync(결과.결과파일, JSON.stringify(결과, null, 2) + '\n');
@@ -247,7 +264,7 @@ async function main(argv) {
     const 영상 = 위치[1];
     const L = 프로필.언어(값.언어);
     if (!영상 || !L) { console.error(`${쓰는법}\n  --언어는 언어 프로필 코드(${프로필.언어목록().join(' ')})`); return 2; }
-    const 밖 = path.resolve(값.밖 || path.join(REPO, '.tmp', '글자검사', `${path.basename(영상, path.extname(영상))}-${도장}`));
+    const 밖 = path.resolve(값.밖 || path.join(메인, '.tmp', '글자검사', `${path.basename(영상, path.extname(영상))}-${도장}`));
     const 찾음 = [];
     let 글지문 = null, 엔진잼 = null;
     if (값.글) { const r = await 렌더전(값.글, L, { 엔진: !값.엔진없이 }); 찾음.push(...r.찾음); 글지문 = r.판.지문; 엔진잼 = r.엔진잼; }
@@ -267,7 +284,7 @@ async function main(argv) {
     const L = 프로필.언어(찾은.판본.언어);
     if (!L) { console.error(`판본 ${키}의 언어(${찾은.판본.언어})가 언어 프로필에 없다`); return 2; }
     if (!찾은.영상 || !fs.existsSync(찾은.영상)) { console.error(`판본 ${키}의 영상이 없다: ${찾은.판본.파일}`); return 2; }
-    const 밖 = path.resolve(값.밖 || path.join(REPO, '.tmp', '글자검사', path.basename(path.resolve(편)), 키));
+    const 밖 = path.resolve(값.밖 || path.join(메인, '.tmp', '글자검사', path.basename(path.resolve(편)), 키));
     const 찾음 = [];
     // 판본 틀에서 뽑는 글(편 폴더 판본지도.json — tools/lib/판본잇기.js)이면 검사 전에 글.json을 원천에 맞추고, 영상이 지금 글로 구운 것인지 본다
     const 이음 = 잇기.검사전(편, 키, 찾은.판본);

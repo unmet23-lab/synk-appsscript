@@ -699,3 +699,15 @@ test('기준 고르기 — 씨앗 판(EN · MN)도 글자 기록이 있으면 �
     fs.rmSync(방, { recursive: true, force: true });
   }
 });
+
+test('메모 칸 — --눈확인 · --직접봄에 절대 경로가 있으면 검사 전에 받지 않는다(준비.json은 공개 저장소 · 11-15)', () => {
+  const TOOL = path.join(__dirname, '..', 'tools', '글자검사.js');
+  const run = (...args) => spawnSync(process.execPath, [TOOL, ...args], { encoding: 'utf8' });
+  for (const [k, v] of [['--눈확인', String.raw`C:\Users\누구\프레임.png를 봤다`], ['--직접봄', '11.5초 /c/Users/누구/a.png'], ['--눈확인', 'D:/사본/.tmp/a를 열어 봤다']]) {
+    const r = run('판본', '없는편', 'XX', k, v);
+    assert.equal(r.status, 2, k);
+    assert.match(r.stderr, /절대 경로를 적지 않는다/);
+  }
+  const 보통 = run('판본', '없는편', 'XX', '--눈확인', '11.5초 오른쪽 여백 — 원본 박자, 비율 9:16');
+  assert.doesNotMatch(보통.stderr, /절대 경로/);
+});

@@ -362,6 +362,9 @@ function 호출준비() {
 async function 판본검사(argv) {
   const 편 = 인자(argv, '--판본');
   const 키 = 인자(argv, '--키');
+  // 준비.json에 그대로 들어가는 메모에 절대 경로를 받지 않는다 — 공개 저장소다. 카본 호출 전에 본다(뒤에서 거절하면 다시 부른 줄의 결과가 버려진다, 11-15 셋째 검수 P3-4)
+  const 절대경로 = /(?<![A-Za-z])[A-Za-z]:[\\/](?=[\w.~가-힣-])|(?:^|[\s(「"'`=])\/(?:Users|home|[a-z]|mnt\/[a-z])\//;
+  if ([인자(argv, '--뜻대조'), ...인자들(argv, '--판정')].some((t) => 절대경로.test(String(t || '')))) { console.error('--뜻대조 · --판정에 절대 경로를 적지 않는다 — 준비.json은 공개 저장소에 올라간다. 저장소 기준(docs/… · .tmp/…)이나 줄 id로 적는다'); return 1; }
   if (!편 || !키 || 편.startsWith('--') || 키.startsWith('--')) {
     console.error('쓰는 법: node tools/현지어대조.js --판본 <편 폴더> --키 <판본 키> [--기록 --뜻대조 "<본 것>"] [--판정 "<줄 id>=<까닭>"]… [--다시 <id,…> | --다시모두]');
     return 1;
@@ -438,7 +441,11 @@ async function 판본검사(argv) {
   const 상대 = path.relative(저장소, 밖).split(path.sep).join('/');
   // 결과 파일이 이 저장소 밖(회차 사본에서 돌리면 공용 작업본의 .tmp)에 있어도 절대 경로는 적지 않는다 — 준비.json은 공개 저장소에 올라가고
   // 절대 경로에는 사용자 폴더 이름이 든다(11-11 Fable 5.2 다시 검수 8-2 P3). 폴더 · 파일 이름만 남긴다.
-  const 기록자리 = 상대.startsWith('..') || path.isAbsolute(상대) ? `(저장소 밖)/${path.basename(path.dirname(밖))}/${path.basename(밖)}` : 상대;
+  // 회차 사본 · 워크트리에서 돌면 결과는 공용 작업본의 .tmp에 있다 — 그 뿌리 기준 상대 경로(.tmp/현지어대조/…)로 적어 나중에 찾게 한다(11-15)
+  const 메인상대 = path.relative(require('./lib/공용작업본.js').공용작업본(저장소), 밖).split(path.sep).join('/');
+  const 기록자리 = !상대.startsWith('..') && !path.isAbsolute(상대) ? 상대
+    : !메인상대.startsWith('..') && !path.isAbsolute(메인상대) ? 메인상대
+      : `(저장소 밖)/${path.basename(path.dirname(밖))}/${path.basename(밖)}`;
   const 값 = {
     결과: 판.결과, 지문, 시각: 기록.시각, 도구: 'tools/현지어대조.js', 줄: 결과.줄.length, 다시본줄: 결과.다시본줄, 이은줄: 결과.이은줄,
     문법모델: 호출.문법모델, 역모델: 호출.역모델, 기록: 기록자리,

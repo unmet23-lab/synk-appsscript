@@ -793,7 +793,7 @@ function main() {
     return;
   }
   if (has('--json')) {
-    console.log(JSON.stringify({ from, days, cells: run.result.cells.map(({ ms, ...c }) => c), notReady: run.notReady, closedStory: run.closedStory, waiting: run.waiting, sameLanguage: sameLanguageReport(run),
+    console.log(JSON.stringify({ from, days, cells: run.result.cells.map(({ ms, ...c }) => c), received: run.result.received || {}, notReady: run.notReady, closedStory: run.closedStory, waiting: run.waiting, sameLanguage: sameLanguageReport(run),
       versions: Object.fromEntries(run.originals.map((o) => [o.id, Object.fromEntries(Object.entries(o.versions).map(([k, v]) => [k, { ready: v.ready, why: v.why || null }]))])) }, null, 2));
   } else printPlan(run, opts);
   if (has('--쓰기')) {

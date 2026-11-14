@@ -163,3 +163,107 @@ test('명령줄 — --표 · --원장 · --폴더로 돌림표를 부르지 않�
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// 11-15 Fable 5.2 판본 회차 검수 지적 4 · 5 · 6 — 까닭 코드 · 뒤 칸 · 받은 원본
+test('갈래 — 칸의 까닭 코드로 가르고, 코드가 없을 때만 까닭 글로 가른다', () => {
+  assert.equal(갈래({ whyCode: 'version', why: '글이 바뀌어도' }), '판본');
+  assert.equal(갈래({ whyCode: 'trial' }), '첫판');
+  assert.equal(갈래({ whyCode: 'exhausted' }), '원본');
+  assert.equal(갈래({ whyCode: 'overlap', why: 못듦('BR', 2) }), '그밖', '코드가 글보다 앞선다');
+  assert.equal(갈래({ whyCode: 'seed' }), '그밖');
+  assert.equal(갈래({ why: 첫판 }), '첫판');
+  assert.equal(갈래({}), '그밖');
+});
+
+test('가장 이른 빈 칸이 겹침 · 씨앗 대기여도 뒤 칸의 판본 까닭을 본다 — 판본과 상관없는 계정은 기다림으로', () => {
+  const 겹침 = '같은 플랫폼 20시간(같은 언어 묶음은 24시간) 겹침';
+  const t = {
+    ...표,
+    cells: [
+      cell('lab-my-youtube', '2026-11-14T13:00:00+08:00', 겹침, { whyCode: 'overlap' }),
+      cell('lab-my-youtube', '2026-11-16T13:00:00+08:00', 못듦('MY', 2), { whyCode: 'version' }),
+      cell('lab-br-youtube', '2026-11-14T13:00:00-03:00', '씨앗 계정이 아직 안 올렸거나 14시 점검 전', { whyCode: 'seed' }),
+      cell('lab-br-youtube', '2026-11-15T13:00:00-03:00', 겹침, { whyCode: 'overlap' }),
+    ],
+  };
+  const out = 할일({ 표: t, 원장, 원본들, 상한: 10 });
+  assert.deepEqual([...new Set(out.줄.map((r) => r.키))], ['MY']);
+  assert.equal(out.줄[0].한국, '11-16 14:00', '줄의 빈 칸은 판본 까닭이 있는 칸이다');
+  assert.deepEqual(out.기다림.map((r) => `${r.계정} ${r.한국}`), ['lab-br-youtube 11-15 01:00']);
+  assert.match(out.기다림[0].까닭, /씨앗/);
+});
+
+test('그 줄 계정이 모두 받은 원본은 후보에서 뺀다 — 한 계정이라도 안 받았으면 남긴다', () => {
+  const t = { ...표, received: { 'lab-br-youtube': ['LAB_나_mn_20261101', 'LAB_다_mn_20261102'], 'lab-br-tiktok': ['LAB_다_mn_20261102'], 'lab-my-youtube': ['LAB_나_mn_20261101'] } };
+  const out = 할일({ 표: t, 원장, 원본들, 상한: 50 });
+  const of = (key) => out.줄.filter((r) => r.키 === key).map((r) => r.편.split('_')[1]);
+  assert.deepEqual(of('BR'), ['나'], 'BR 줄: 나는 틱톡이 안 받았다, 다는 둘 다 받았다');
+  assert.deepEqual(of('MY'), ['다'], 'MY 줄: 나는 이미 받았다');
+  assert.deepEqual(of('KG'), ['나', '다'], 'received에 없는 계정은 아무것도 안 받은 것으로 본다');
+});
+
+test('실제 돌림.plan 출력 — whyCode · received를 그대로 읽어 받은 원본의 낡은 판본을 후보로 내지 않는다', () => {
+  const 돌림 = require('../tools/lib/돌림.js');
+  const accounts = {
+    'seed-ig': { platform: 'instagram', language: 'mn', versionKey: 'MN', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['13:00'], dailyFormats: ['이야기'], seed: true, dailyFrom: '2099-01-01' },
+    'yt-br': { platform: 'youtube', language: 'pt-BR', versionKey: 'BR', timeZone: 'America/Sao_Paulo', dailyTimes: ['13:00'], dailyFormats: ['이야기'] },
+  };
+  const originals = [
+    { id: 'LAB_가_mn_20261031', format: '이야기', versions: { BR: { ready: true } } },
+    { id: 'LAB_나_mn_20261101', format: '이야기', versions: { BR: { ready: false, why: '뜻 검수 전' } } },
+    { id: 'LAB_다_mn_20261102', format: '이야기', versions: { BR: { ready: false, why: '뜻 검수 전' } } },
+  ];
+  const existing = [
+    ...originals.map((o, i) => ({ original: o.id, account: 'seed-ig', time: `2026-10-1${i}T13:00:00+08:00` })),
+    { original: 'LAB_가_mn_20261031', account: 'yt-br', time: '2026-11-01T13:00:00-03:00' },
+    { original: 'LAB_다_mn_20261102', account: 'yt-br', time: '2026-11-02T13:00:00-03:00' }, // 받은 뒤 판본이 낡았다
+  ];
+  const r = 돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 2 });
+  const empty = r.cells.filter((c) => c.account === 'yt-br' && !c.original);
+  assert.equal(empty.length, 2);
+  for (const c of empty) assert.equal(c.whyCode, 돌림.WHY_CODES.VERSION, c.why);
+  assert.deepEqual(r.received['yt-br'], ['LAB_가_mn_20261031', 'LAB_다_mn_20261102']);
+
+  const versions = Object.fromEntries(originals.map((o) => [o.id, o.versions]));
+  const 원장2 = { accounts: { 'seed-ig': { countryCode: 'MN', rotationSeed: true }, 'yt-br': { countryCode: 'BR', language: 'pt-BR' } } };
+  const out = 할일({ 표: { from: '2026-11-20', days: 2, versions, cells: r.cells, received: r.received }, 원장: 원장2, 원본들, 상한: 10 });
+  assert.deepEqual(out.줄.map((x) => `${x.편}|${x.키}`), ['LAB_나_mn_20261101|BR']);
+  assert.equal(out.줄[0].갈래, '판본');
+});
+
+test('판본 까닭이 없어도 — 판본이 못 든 안 받은 원본이 있으면 「판본」 줄로, 다 들었으면 기다림으로(11-15 Opus 5.5 대체 검수 P2-1)', () => {
+  const 겹침 = '같은 플랫폼 20시간(같은 언어 묶음은 24시간) 겹침';
+  const t = {
+    ...표,
+    received: { 'lab-my-youtube': ['LAB_가_mn_20261031'], 'lab-br-youtube': ['LAB_나_mn_20261101', 'LAB_다_mn_20261102'] },
+    cells: [
+      cell('lab-my-youtube', '2026-11-14T13:00:00+08:00', 겹침, { whyCode: 'overlap' }),
+      cell('lab-br-youtube', '2026-11-14T13:00:00-03:00', '씨앗 계정이 아직 안 올렸거나 14시 점검 전', { whyCode: 'seed' }),
+    ],
+  };
+  const out = 할일({ 표: t, 원장, 원본들, 상한: 10 });
+  assert.deepEqual(out.줄.map((r) => `${r.편.split('_')[1]}/${r.키}`), ['나/MY', '다/MY'], '나 · 다의 MY 판본이 못 들었다 — 만들면 칸이 찰 수 있다');
+  assert.equal(out.줄[0].갈래, '판본');
+  assert.deepEqual(out.기다림.map((r) => r.계정), ['lab-br-youtube'], 'BR은 안 받은 가의 BR 판본이 들었다 — 판본으로 못 푼다');
+  // 받은 원본을 모르는 옛 출력에서는 이 셈을 하지 않는다
+  const 옛 = 할일({ 표: { ...t, received: undefined }, 원장, 원본들, 상한: 10 });
+  assert.deepEqual(옛.줄, []);
+  assert.equal(옛.기다림.length, 2);
+});
+
+test('돌림 received — 걸지 않은 돌림 판의 원본은 받은 원본에서 뺀다(--다시가 뺄 수 있다), 걸린 판 · 사람이 단 판은 넣는다(11-15 P3-4)', () => {
+  const 돌림 = require('../tools/lib/돌림.js');
+  const accounts = {
+    'seed-ig': { platform: 'instagram', language: 'mn', versionKey: 'MN', timeZone: 'Asia/Ulaanbaatar', dailyTimes: ['13:00'], dailyFormats: ['이야기'], seed: true, dailyFrom: '2099-01-01' },
+    'yt-br': { platform: 'youtube', language: 'pt-BR', versionKey: 'BR', timeZone: 'America/Sao_Paulo', dailyTimes: ['13:00'], dailyFormats: ['이야기'] },
+  };
+  const originals = ['LAB_가_mn_20261031', 'LAB_나_mn_20261101', 'LAB_다_mn_20261102'].map((id) => ({ id, format: '이야기', versions: { BR: { ready: true } } }));
+  const existing = [
+    ...originals.map((o, i) => ({ original: o.id, account: 'seed-ig', time: `2026-10-1${i}T13:00:00+08:00`, booked: true })),
+    { original: 'LAB_가_mn_20261031', account: 'yt-br', time: '2026-11-21T13:00:00-03:00', generated: true, booked: true },
+    { original: 'LAB_나_mn_20261101', account: 'yt-br', time: '2026-11-22T13:00:00-03:00', generated: true, booked: false },
+    { original: 'LAB_다_mn_20261102', account: 'yt-br', time: '2026-11-01T13:00:00-03:00', generated: false, booked: false },
+  ];
+  const r = 돌림.plan({ accounts, originals, existing, from: '2026-11-20', days: 3 });
+  assert.deepEqual(r.received['yt-br'], ['LAB_가_mn_20261031', 'LAB_다_mn_20261102']);
+});
