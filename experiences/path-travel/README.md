@@ -1,5 +1,13 @@
 # SYNK PATH 개인화 서울 여행
 
+## 2026-11-14 공유 카드
+
+서울 하루 쪽은 이제 자기 공유 카드를 쓴다. 카드 그림은 [assets/og-travel-ko.jpg](assets/og-travel-ko.jpg)이고, 서울 하루 첫 화면(「오늘, 뭐 하고 싶어요?」와 고르기 여섯)을 찍었다. 그 전에는 PATH 첫 화면 카드를 빌려 써서, 링크를 나누면 면접 연습 장면이 나갔다.
+
+- 다시 굽기: `node experiences/path-travel/qa/make-share-card.cjs [--url <주소>]`. PATH 카드와 같은 설정(1440×756 창을 두 배로 찍어 1200×630 JPEG)으로 굽고, [index.html](index.html)의 카드 주소 끝 `?v=`를 새 그림의 sha256 앞 12자리로 고쳐 쓴다.
+- 첫 화면의 제목이나 고르기 이름이 바뀌면 카드를 다시 굽고 `og:image:alt`도 손으로 맞춘다. 어긋나면 [tests/path-travel-share-card.test.mjs](../../tests/path-travel-share-card.test.mjs)가 알려 준다.
+- 공개는 synk.im 공개 도구로 `try/travel/index.html`과 `try/travel/assets/og-travel-ko.jpg`를 올린다. 공개본의 `index.html`은 공개 전용 줄(`./synk-account/…` 경로 등)이 원천과 다르므로, 지금 공개본에 바뀐 줄만 얹는다.
+
 ## 2026-10-19 다음 판 · 하고 싶은 것 → 몇 시간 · 로컬 적용
 
 유호님이 정한 네 가지(하고 싶은 것 → 몇 시간 순서 · 구운 펠트 물건 + 움직임 · 사진 카드 + 경로 띠 · 엔진도 같이)로 만든 판이다. 10-19 커밋했고(PATH 시험 21개 포함, origin `d951cd544`) 같은 날 저녁 공개했다.
