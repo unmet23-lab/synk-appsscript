@@ -1,32 +1,47 @@
 {
  "tool": "tools/나레이션굽기.mjs",
  "id": "V9",
- "text": "이 비교표, 그대로 가져가세요.",
- "dur": 1.908,
+ "text": "이 표 만드는 글, 아래에 그대로 있어요.",
+ "dur": 2.098,
  "words": [
   {
    "text": "이",
-   "start": 0.04,
-   "end": 0.059
+   "start": 0.05,
+   "end": 0.064
   },
   {
-   "text": "비교표,",
-   "start": 0.154,
-   "end": 0.573
+   "text": "표",
+   "start": 0.139,
+   "end": 0.242
+  },
+  {
+   "text": "만드는",
+   "start": 0.287,
+   "end": 0.583
+  },
+  {
+   "text": "글,",
+   "start": 0.627,
+   "end": 0.76
+  },
+  {
+   "text": "아래에",
+   "start": 1.116,
+   "end": 1.324
   },
   {
    "text": "그대로",
-   "start": 0.915,
-   "end": 1.144
+   "start": 1.383,
+   "end": 1.591
   },
   {
-   "text": "가져가세요.",
-   "start": 1.201,
-   "end": 1.908
+   "text": "있어요.",
+   "start": 1.649,
+   "end": 2.098
   }
  ],
  "source": {
-  "key": "02f9f5e67b5d46fb7b9971daf1fe1d30",
+  "key": "fbe998d9ec1c3af286224c356705b040",
   "voice": {
    "id": "tc_5c3c52cb5827e00008dd7f3b",
    "name": "범수"
@@ -50,6 +65,6 @@
   "limit": 0.89,
   "clippedSource": 0,
   "clippedOut": 0,
-  "topPitchHz": 146
+  "topPitchHz": 160
  }
 }

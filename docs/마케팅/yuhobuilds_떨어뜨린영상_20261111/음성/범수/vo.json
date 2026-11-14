@@ -15,7 +15,7 @@
   "seed": 1112,
   "lufs": -17
  },
- "made": "2026-11-10T23:12:15.837Z",
+ "made": "2026-11-14T09:53:27.655Z",
  "lines": [
   {
    "id": "V1",
@@ -100,11 +100,11 @@
   },
   {
    "id": "V7",
-   "text": "지난 편이랑 같다고 떨어진 편은, 열에 여섯이 터졌고요.",
-   "dur": 2.892,
-   "syllablesPerSec": 7.61,
+   "text": "제일 크게 터진 영상들은, 전부 떨어뜨린 쪽에 있었어요.",
+   "dur": 3.012,
+   "syllablesPerSec": 7.3,
    "src": "V7.wav",
-   "key": "d019fe11b35b38110b2b89f632789eb3",
+   "key": "2f71ba15baa0c99918c785031528be59",
    "words": 8
   },
   {
@@ -119,20 +119,20 @@
   {
    "id": "V8",
    "text": "지금은 AI한테 틀린 곳만 찾게 하고, 잘될지는 올려서, 사람 반응으로 재 보는 중이에요.",
-   "dur": 4.624,
-   "syllablesPerSec": 7.14,
+   "dur": 4.342,
+   "syllablesPerSec": 7.6,
    "src": "V8.wav",
    "key": "aa271f727b5400ca3186c73caf4d3bae",
    "words": 13
   },
   {
    "id": "V9",
-   "text": "이 비교표, 그대로 가져가세요.",
-   "dur": 2.017,
-   "syllablesPerSec": 5.95,
+   "text": "이 표 만드는 글, 아래에 그대로 있어요.",
+   "dur": 2.098,
+   "syllablesPerSec": 7.15,
    "src": "V9.wav",
-   "key": "02f9f5e67b5d46fb7b9971daf1fe1d30",
-   "words": 4
+   "key": "fbe998d9ec1c3af286224c356705b040",
+   "words": 7
   }
  ]
 }
