@@ -5,6 +5,7 @@ The model can write only work/, so receipts and the run's source inventory live
 outside it. A fresh HTTP observation is required before a report can be saved.
 """
 from datetime import datetime, timezone
+from contextlib import contextmanager
 from html.parser import HTMLParser
 import hashlib
 import http.client
@@ -13,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import socket
 import ssl
 import stat
@@ -23,6 +25,7 @@ from urllib.parse import parse_qs, urlsplit, urljoin
 HOME = Path('/var/lib/synk-argon-77yuhbs')
 ROLES = ('full', 'yt-tt', 'meta-brand')
 MAX_BODY = 5 * 1024 * 1024
+FETCH_SECONDS = 45
 
 
 class Refused(Exception):
@@ -92,10 +95,46 @@ class PublicConnection(http.client.HTTPSConnection):
             raise
 
 
+@contextmanager
+def fetch_budget():
+    # The production CLI runs on Linux's main thread. An alarm also interrupts
+    # getresponse() while headers trickle in, which socket idle timeouts cannot.
+    # Windows offline tests retain the cooperative deadline in _fetch().
+    if not hasattr(signal, 'setitimer'):
+        yield
+        return
+    if signal.getitimer(signal.ITIMER_REAL)[0]:
+        raise Refused('SOURCE_FETCH_TIMER_IN_USE')
+    previous = signal.getsignal(signal.SIGALRM)
+
+    def expired(signum, frame):
+        # OSError lets socket.create_connection close its still-local socket.
+        # fetch() translates it after connection and alarm cleanup finish.
+        raise TimeoutError('SOURCE_FETCH_TIMEOUT')
+
+    signal.signal(signal.SIGALRM, expired)
+    try:
+        signal.setitimer(signal.ITIMER_REAL, FETCH_SECONDS)
+        yield
+    finally:
+        try:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+        finally:
+            signal.signal(signal.SIGALRM, previous)
+
+
 def fetch(url, role):
     original = role_url(role, url)
+    try:
+        with fetch_budget():
+            return _fetch(original, role)
+    except TimeoutError as exc:
+        raise Refused('SOURCE_FETCH_TIMEOUT') from exc
+
+
+def _fetch(original, role):
     current = original
-    deadline = time.monotonic() + 45
+    deadline = time.monotonic() + FETCH_SECONDS
     for _ in range(4):
         u = urlsplit(current)
         connection = PublicConnection(u.hostname, timeout=15)
@@ -168,7 +207,15 @@ def find(value, key):
 def plain(value):
     if not isinstance(value, dict):
         return ''
-    return value.get('simpleText') or value.get('content') or ''.join(x.get('text', '') for x in value.get('runs', []) if isinstance(x, dict))
+    for key in ('simpleText', 'content'):
+        if isinstance(value.get(key), str) and value[key]:
+            return value[key]
+    runs = value.get('runs')
+    return ''.join(x['text'] for x in runs if isinstance(x, dict) and isinstance(x.get('text'), str)) if isinstance(runs, list) else ''
+
+
+def object_value(value):
+    return value if isinstance(value, dict) else {}
 
 
 def extract(body, url):
@@ -186,15 +233,18 @@ def extract(body, url):
             data = json.JSONDecoder().raw_decode(html[match.end():])[0]
         except ValueError as exc:
             raise Refused('SOURCE_CONTENT_NOT_AVAILABLE') from exc
+        if not isinstance(data, dict):
+            raise Refused('SOURCE_CONTENT_NOT_AVAILABLE')
         # The root endpoint identifies the requested video, unlike recommended
         # videos elsewhere in ytInitialData or generic/undefined canonical tags.
-        video_id = data.get('currentVideoEndpoint', {}).get('watchEndpoint', {}).get('videoId')
+        endpoint = object_value(data.get('currentVideoEndpoint'))
+        video_id = object_value(endpoint.get('watchEndpoint')).get('videoId')
         if video_id != parse_qs(urlsplit(url).query).get('v', [None])[0]:
             raise Refused('SOURCE_PAGE_IDENTITY_UNPROVEN')
-        primary = next(find(data, 'videoPrimaryInfoRenderer'), {})
-        secondary = next(find(data, 'videoSecondaryInfoRenderer'), {})
+        primary = object_value(next(find(data, 'videoPrimaryInfoRenderer'), {}))
+        secondary = object_value(next(find(data, 'videoSecondaryInfoRenderer'), {}))
         result['title'] = plain(primary.get('title'))
-        result['creator'] = plain(next(find(secondary, 'videoOwnerRenderer'), {}).get('title'))
+        result['creator'] = plain(object_value(next(find(secondary, 'videoOwnerRenderer'), {})).get('title'))
         result['publishedText'] = plain(primary.get('dateText'))
         result['description'] = plain(secondary.get('attributedDescription')) or plain(secondary.get('description'))
         views = next(find(primary, 'originalViewCount'), '')

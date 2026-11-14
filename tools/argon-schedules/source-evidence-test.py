@@ -3,9 +3,14 @@
 import copy
 import importlib.util
 import json
+import http.client
+import http.server
 from pathlib import Path
+import signal
 import socket
 import tempfile
+import threading
+import time
 import unittest
 from unittest.mock import patch, Mock
 
@@ -184,6 +189,151 @@ class EvidenceTest(unittest.TestCase):
         response.read1.return_value = b'x' * (e.MAX_BODY + 1)
         with patch.object(e, 'PublicConnection', return_value=connection), self.assertRaisesRegex(e.Refused, 'SOURCE_TOO_LARGE'):
             e.fetch(URL, 'full')
+
+    def test_socket_timeout_is_a_stable_refusal_and_closes_connection(self):
+        connection = Mock()
+        connection.getresponse.side_effect = TimeoutError('read timed out')
+        with patch.object(e, 'PublicConnection', return_value=connection), self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+            e.fetch(URL, 'full')
+        connection.close.assert_called_once()
+
+    @unittest.skipUnless(hasattr(signal, 'setitimer'), 'Production Linux deadline')
+    def test_total_budget_interrupts_slow_headers_and_restores_alarm(self):
+        previous = signal.getsignal(signal.SIGALRM)
+        connection = Mock()
+        connection.getresponse.side_effect = lambda: time.sleep(2)
+        started = time.monotonic()
+        with patch.object(e, 'FETCH_SECONDS', .1), patch.object(e, 'PublicConnection', return_value=connection):
+            with self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+                e.fetch(URL, 'full')
+        self.assertLess(time.monotonic() - started, 1)
+        connection.close.assert_called_once()
+        self.assertEqual(signal.getitimer(signal.ITIMER_REAL), (0, 0))
+        self.assertEqual(signal.getsignal(signal.SIGALRM), previous)
+
+    @unittest.skipUnless(hasattr(signal, 'setitimer'), 'Production Linux deadline')
+    def test_dripping_http_headers_stop_at_total_deadline(self):
+        class SlowHeaders(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                try:
+                    for byte in b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nbody':
+                        self.wfile.write(bytes([byte]))
+                        self.wfile.flush()
+                        time.sleep(.03)
+                except OSError:
+                    pass
+
+            def log_message(self, *args):
+                pass
+
+        server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), SlowHeaders)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        connection = http.client.HTTPConnection('127.0.0.1', server.server_port, timeout=1)
+        try:
+            started = time.monotonic()
+            with patch.object(e, 'FETCH_SECONDS', .2), patch.object(e, 'PublicConnection', return_value=connection):
+                with self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+                    e.fetch(URL, 'full')
+            self.assertLess(time.monotonic() - started, 1)
+            self.assertIsNone(connection.sock)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    @unittest.skipUnless(hasattr(signal, 'setitimer'), 'Production Linux deadline')
+    def test_total_budget_is_shared_across_redirects(self):
+        connection = Mock()
+        response = connection.getresponse.return_value
+        response.status = 302
+        response.getheader.return_value = URL
+        connection.getresponse.side_effect = lambda: (time.sleep(.06), response)[1]
+        with patch.object(e, 'FETCH_SECONDS', .1), patch.object(e, 'PublicConnection', return_value=connection):
+            with self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+                e.fetch(URL, 'full')
+        self.assertLess(connection.getresponse.call_count, 4)
+        self.assertEqual(connection.close.call_count, connection.getresponse.call_count)
+
+    @unittest.skipUnless(hasattr(signal, 'setitimer'), 'Production Linux deadline')
+    def test_alarm_at_cleanup_still_restores_previous_handler(self):
+        previous = signal.getsignal(signal.SIGALRM)
+        set_timer = signal.setitimer
+
+        def pending_alarm(which, seconds):
+            result = set_timer(which, seconds)
+            if seconds == 0:
+                raise TimeoutError('pending alarm during cancellation')
+            return result
+
+        with patch.object(e.signal, 'setitimer', side_effect=pending_alarm), patch.object(e, '_fetch', return_value=b'ok'):
+            with self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+                e.fetch(URL, 'full')
+        self.assertEqual(signal.getsignal(signal.SIGALRM), previous)
+        self.assertEqual(signal.getitimer(signal.ITIMER_REAL), (0, 0))
+
+    @unittest.skipUnless(hasattr(signal, 'setitimer'), 'Production Linux deadline')
+    def test_alarm_during_tcp_connect_closes_socket_owned_by_stdlib(self):
+        raw = Mock()
+        raw.connect.side_effect = lambda address: time.sleep(2)
+        address = [(socket.AF_INET, socket.SOCK_STREAM, 6, '', ('8.8.8.8', 443))]
+        with patch.object(e, 'FETCH_SECONDS', .1), patch.object(socket, 'getaddrinfo', return_value=address), patch.object(socket, 'socket', return_value=raw):
+            with self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+                e.fetch(URL, 'full')
+        raw.connect.assert_called_once()
+        raw.close.assert_called_once()
+
+    @unittest.skipUnless(hasattr(signal, 'setitimer'), 'Production Linux deadline')
+    def test_fetch_preserves_an_existing_alarm(self):
+        previous = signal.getsignal(signal.SIGALRM)
+        signal.setitimer(signal.ITIMER_REAL, 10)
+        try:
+            with patch.object(e, 'PublicConnection') as connection, self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMER_IN_USE$'):
+                e.fetch(URL, 'full')
+            connection.assert_not_called()
+            self.assertGreater(signal.getitimer(signal.ITIMER_REAL)[0], 0)
+            self.assertEqual(signal.getsignal(signal.SIGALRM), previous)
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+
+    def test_malformed_youtube_shapes_are_refused_without_tracebacks(self):
+        target = {'watchEndpoint': {'videoId': 'abcdefghijk'}}
+        bad = [None, [], 5, 'text', {'currentVideoEndpoint': None}, {'currentVideoEndpoint': {'watchEndpoint': []}},
+               {'currentVideoEndpoint': target, 'videoPrimaryInfoRenderer': None},
+               {'currentVideoEndpoint': target, 'videoPrimaryInfoRenderer': {'title': {'runs': None}}},
+               {'currentVideoEndpoint': target, 'videoPrimaryInfoRenderer': {'title': {'runs': [{'text': 9}]}}}]
+        for index, data in enumerate(bad):
+            code = 'SOURCE_PAGE_IDENTITY_UNPROVEN' if index in (4, 5) else 'SOURCE_CONTENT_NOT_AVAILABLE'
+            with self.subTest(data=data), self.assertRaisesRegex(e.Refused, '^' + code + '$'):
+                e.extract(('var ytInitialData = ' + json.dumps(data)).encode(), URL)
+
+    def test_optional_malformed_youtube_fields_do_not_invent_text(self):
+        primary = {'title': {'simpleText': 'Actual title'}, 'dateText': {'simpleText': 'Nov 13, 2026'}}
+        data = {'currentVideoEndpoint': {'watchEndpoint': {'videoId': 'abcdefghijk'}}, 'videoPrimaryInfoRenderer': primary}
+        for bad in (None, 7, [], 'text'):
+            data['videoSecondaryInfoRenderer'] = bad
+            result = e.extract(('var ytInitialData = ' + json.dumps(data)).encode(), URL)
+            self.assertEqual((result['title'], result['description'], result['creator']), ('Actual title', '', ''))
+            data['videoSecondaryInfoRenderer'] = {'videoOwnerRenderer': bad, 'description': {'content': 9, 'runs': [{'text': 'Actual caption'}]}}
+            result = e.extract(('var ytInitialData = ' + json.dumps(data)).encode(), URL)
+            self.assertEqual((result['description'], result['creator']), ('Actual caption', ''))
+            primary['title'] = {'simpleText': bad, 'content': bad, 'runs': [{'text': 'Actual title'}]}
+            self.assertEqual(e.extract(('var ytInitialData = ' + json.dumps(data)).encode(), URL)['title'], 'Actual title' if bad != 'text' else 'text')
+            primary['title'] = {'simpleText': 'Actual title'}
+
+    def test_failed_reads_do_not_write_source_evidence(self):
+        self.entry['sourceUrl'] = 'https://www.youtube.com/watch?v=ABCDEFGHIJK'
+        proof = e.evidence_dir('full') / (e.hashlib.sha256(self.entry['sourceUrl'].encode()).hexdigest() + '.json')
+        with patch.object(e, 'fetch', side_effect=e.Refused('SOURCE_FETCH_TIMEOUT')) as read:
+            with self.assertRaisesRegex(e.Refused, '^SOURCE_FETCH_TIMEOUT$'):
+                e.source_read('full', self.entry['sourceUrl'])
+            read.assert_called_once_with(self.entry['sourceUrl'], 'full')
+        self.assertFalse(proof.exists())
+        with patch.object(e, 'fetch', return_value=b'var ytInitialData = null') as read:
+            with self.assertRaisesRegex(e.Refused, '^SOURCE_CONTENT_NOT_AVAILABLE$'):
+                e.source_read('full', self.entry['sourceUrl'])
+            read.assert_called_once_with(self.entry['sourceUrl'], 'full')
+        self.assertFalse(proof.exists())
 
     def test_youtube_extracts_only_target_primary_metadata(self):
         data = {'primary': {'videoPrimaryInfoRenderer': {'title': {'runs': [{'text': 'Target'}]}, 'dateText': {'simpleText': 'Nov 13, 2026'},
