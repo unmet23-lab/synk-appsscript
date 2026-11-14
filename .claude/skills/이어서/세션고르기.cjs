@@ -886,6 +886,18 @@ function 나누기(기록들, 끝들, 옵션) {
     자식들.get(p).push(r.sessionId);
   }
 
+  /* 예약 실행의 뒤 회차(11-14 점검): 같은 예약의 더 늦게 뜬 회차가 있으면 앞 회차의 남은 일은 그 회차가 origin과 장부에서
+   * 이어받는다. 그래서 완료로 끝난 앞 회차는 보고에 「다음 회차 몫」 같은 걸림 표현이 있어도 깨우지 않고 보관한다(워크트리는
+   * 아래에서 그대로 본다). 2주 실측에서 예약 회차가 276번 깨어났고 196번은 5분 안에 할 일 없이 끝났다. 한꺼번에 깨어난 회차는
+   * 앱의 예약 동시 실행 한도 밖에서 돌아 자리와 메모리를 함께 썼다. 끊긴 회차와 유호님 지시를 기다리는 회차는 위에서 먼저 갈린다. */
+  const 예약마지막 = new Map();
+  for (const r of 기록들) {
+    if (!r.scheduledTaskId) continue;
+    const t = Number(r.createdAt) || 0;
+    if (t > (예약마지막.get(r.scheduledTaskId) || 0)) 예약마지막.set(r.scheduledTaskId, t);
+  }
+  const 뒤회차있나 = (r) => Boolean(r.scheduledTaskId) && Number(r.createdAt) > 0 && (예약마지막.get(r.scheduledTaskId) || 0) > Number(r.createdAt);
+
   const 판정 = new Map();
   for (const r of 대상) {
     const id = r.sessionId;
@@ -951,6 +963,7 @@ function 나누기(기록들, 끝들, 옵션) {
      * 도구 응답을 기다린다는 요약이 있으면 보고가 깨끗해 보여도 끝난 일이 아니라 깨운다. */
     if (s.상태 === 'completed' && !쪽지남음 && !s.도구기다림) {
       let 막힘 = 바로보관 ? '' : 옵션.바로보관막힘 || '바로 보관을 끔';
+      let 뒤회차 = false;
       /* 앱의 비활성 자동 보관에서 빼 둔 세션(autoArchiveExempt)은 유호님이 남겨 둔 것이라 보관하지 않는다(10-20 Fable). */
       if (!막힘 && r.autoArchiveExempt === true) 막힘 = '앱 자동 보관 제외 표시';
       if (!막힘) {
@@ -962,14 +975,15 @@ function 나누기(기록들, 끝들, 옵션) {
         else {
           const 글 = [요약.status_detail, r.turnWrapUp && r.turnWrapUp.description, r.lastTurnReport, 보고.글];
           const 걸림 = 보고걸림(글.filter((x) => typeof x === 'string' && x).join('\n'));
-          if (걸림) 막힘 = `마지막 보고에 ${걸림}`;
+          if (걸림 && 뒤회차있나(r)) 뒤회차 = true;
+          else if (걸림) 막힘 = `마지막 보고에 ${걸림}`;
         }
       }
       if (!막힘 && 기본.워크트리) {
         const w = 워크트리판(r);
         if (!w.깨끗) 막힘 = `워크트리 ${w.까닭 || '상태를 모름'}`;
       }
-      if (!막힘) 판정.set(id, { ...기본, 칸: '보관', 이유: r.scheduledTaskId ? '예약 실행이 완료로 끝남' : '완료로 끝났고 남은 일 없음' });
+      if (!막힘) 판정.set(id, { ...기본, 칸: '보관', 이유: 뒤회차 ? '예약 실행이 완료로 끝났고 뒤 회차가 이어받음' : r.scheduledTaskId ? '예약 실행이 완료로 끝남' : '완료로 끝났고 남은 일 없음' });
       else if (오래됨 && !전부) 판정.set(id, { ...기본, 칸: '오래쉼', 이유: `완료로 끝났지만 ${막힘}` });
       else 판정.set(id, { ...기본, 칸: '보냄', 이유: `완료로 끝났지만 ${막힘} — 스스로 확인하고 보관` });
       continue;

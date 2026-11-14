@@ -483,6 +483,23 @@ test('나누기: 완료로 끝났고 마지막 보고가 깨끗하면 예약 실
   assert.equal(r.보관.find((s) => s.id === 대화형.sessionId).이유, '완료로 끝났고 남은 일 없음');
 });
 
+test('나누기: 완료로 끝난 예약 회차는 같은 예약의 뒤 회차가 떴으면 보고에 걸림 표현이 있어도 깨우지 않고 보관한다', () => {
+  const 앞 = 완료({ scheduledTaskId: 'daily-lab', createdAt: 지금 - 600 * 분 });
+  const 뒤 = 완료({ scheduledTaskId: 'daily-lab', createdAt: 지금 - 120 * 분 });
+  const 다른예약 = 완료({ scheduledTaskId: 'daily-brief', createdAt: 지금 - 600 * 분 });
+  const 대화형 = 완료({ createdAt: 지금 - 600 * 분 });
+  const 더러운앞 = 완료({ scheduledTaskId: 'daily-lab', createdAt: 지금 - 900 * 분, cwd: 'C:\\work\\repo\\.claude\\worktrees\\y' });
+  const 걸린보고 = '이 회차 편은 올렸습니다. CI 미확인.';
+  const 세션들 = [[앞, 걸린보고], [뒤, 걸린보고], [다른예약, 걸린보고], [대화형, 걸린보고], [더러운앞, 걸린보고]];
+  const r = 완료판(세션들, { 워크트리상태: (x) => (x.sessionId === 더러운앞.sessionId ? { 깨끗: false, 까닭: '미커밋 1개' } : { 깨끗: true }) });
+  assert.equal(칸(r, 앞.sessionId), '보관');
+  assert.equal(r.보관.find((s) => s.id === 앞.sessionId).이유, '예약 실행이 완료로 끝났고 뒤 회차가 이어받음');
+  assert.equal(칸(r, 뒤.sessionId), '보냄', '가장 늦은 회차는 지금처럼 깨운다');
+  assert.equal(칸(r, 다른예약.sessionId), '보냄', '다른 예약의 회차는 뒤 회차가 아니다');
+  assert.equal(칸(r, 대화형.sessionId), '보냄', '대화형 세션은 그대로다');
+  assert.equal(칸(r, 더러운앞.sessionId), '보냄', '워크트리에 미커밋이 있으면 뒤 회차가 있어도 보관하지 않는다');
+});
+
 test('나누기: 바로 보관은 확실할 때만 — 애매하거나 못 읽으면 지금처럼 깨운다', () => {
   /* 10-20 완료 세션의 실제 보고에서 뽑은 문장들 — 앱은 completed로 분류했지만 남은 일이 있다. */
   const 애매한보고 = {
