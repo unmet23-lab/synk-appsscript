@@ -41,11 +41,35 @@ GPT와 Claude가 전체 후보를 검수했다. 발견한 P1을 고친 뒤 최�
 
 기존 92개 자료의 ID와 소유자, 생성일, 공개 범위, 팀, 상태, 보관 여부, 메모, 가이드 추가일은 모두 그대로였다. 이 필드들의 전후 해시가 전부 같았다. 새 자료 10개는 회사 공개 범위이고 보관되지 않았다. 각각 제작 단계 5개와 준비물 목록을 갖추고 있다. 브랜드 적용 제안은 총 20개다. 운영 DB에서 읽은 자료를 기존 `researchProductionBrief`에 전달해 모든 제안의 원문 주소와 확인 한계, 제작 지침이 제작 준비문으로 이어지는 것도 확인했다. 실제 제작 건이나 게시물은 만들지 않았다.
 
-매일 05:00 전체 조사, 20:00 YouTube·TikTok 조사, 23:00 Meta·브랜드 조사의 timer는 모두 enabled·active였다. 기존 날짜별 가이드 상한은 하루 전체 합계 10개다. 따라서 세 회차가 각각 10개씩 등록하는 구조가 아니다. 참고로 반영 뒤 첫 정규 예약은 11월 14일 20:00이며, 이 기록을 마칠 때는 아직 실행 전이다. 이번에는 정규 예약이 부르는 동일한 전체 조사 서비스를 직접 시작해 자동 저장과 자동 가져오기까지 확인했다.
+매일 05:00 전체 조사, 20:00 YouTube·TikTok 조사, 23:00 Meta·브랜드 조사의 timer는 모두 enabled·active였다. 기존 날짜별 가이드 상한은 하루 전체 합계 10개다. 따라서 세 회차가 각각 10개씩 등록하는 구조가 아니다. 최초 복구 확인은 정규 예약이 부르는 동일한 전체 조사 서비스를 직접 시작해 진행했다. 이후 첫 정규 예약인 11월 14일 20시 회차도 자동 시작부터 문서 저장과 회사 앱 수신까지 확인했다. 자세한 결과는 아래 후속 확인에 있다.
 
 Workspace 담당자는 기존 데이터 계약을 그대로 사용하면 된다. 자료는 `creativeResearchEntries`에 저장된다. 가져오기 결과는 `creativeResearchReports`에 남는다. 날짜별 신규 가이드 수는 `creativeResearchGuideDays`에서 확인한다. 원문 주소와 확인 시각을 유지하고 `research.productionGuide` 및 `research.applications`를 제작에 전달한다.
 
 기존 `GET /api/research-production`은 보관되지 않은 회사 제작 가이드를 후보로 돌려준다. 선택한 `{entryId, applicationIndex}`와 revision은 기존 POST에 보낸다. `researchProductionLinks`가 시안과 제작 건을 연결한다. 원문과 제작 가이드는 `initialBrief`로 이어진다. 이번 복구에서는 별도 화면이나 게시 기능을 만들지 않는다.
+
+### 20시 정규 실행과 CI 후속 확인
+
+유호님의 추가 요청으로 11월 14일 20:00 YouTube·TikTok 정규 회차와 복구 커밋 `8aef2a47047051a73c830368766eb5a2cb29633a`의 CI를 확인했다. 이 확인에서는 수집 서비스를 수동으로 시작하거나 예약을 바꾸지 않았다.
+
+정규 timer는 20:00:00 KST에 작동했다. 서비스는 20:00:01에 시작해 20:18:46에 정상 완료했다. 실제 모델은 `gemini-4-carbon-high`였다. 원문 확인에 성공한 자료는 21개이며, 최종 보고서는 이 가운데 9개를 담았다. 보고서의 7개는 기존 수집 이력에 없는 원문이고 2개는 기존 원문을 다시 확인한 것이다. 모든 항목은 YouTube 공개 페이지를 읽은 결과다. TikTok 개별 광고는 익명 접근에서 로그인 또는 공통 화면으로 이동해 제외됐다. 영상과 음성을 재생해 분석한 결과는 아니다.
+
+보고서 ID는 `synk-creative-yt-tt-2026-11-14-201705`다. 저장 전 회사 앱 형식과 이번 회차의 원문 증거를 통과했다. [Google 문서](https://docs.google.com/document/d/1aYwO_1qBcUs5uzeeRoeePBRo_qkWSFBwjr4Xj-LUXmI/edit)에 저장한 뒤 다시 읽은 SHA-256도 `74322405a877d6c01bfef847ffd2148b16d02bca597fd0e71d942fc1df3cb68e`로 일치했다.
+
+회사 앱은 20:18:14에 같은 보고서를 자동으로 가져왔다. 기존 자료 2개를 갱신했다. 오늘 신규 가이드 10개가 이미 등록돼 있어 새 후보 7개는 하루 상한으로 등록하지 않았다. 영수증은 `itemCount=9`, `createdCount=0`, `updatedCount=2`, `addedGuideCount=0`, `deferredGuideCount=7`이다. 하루 상한으로 건너뛴 후보는 보고서에 남지만 다음 날 자동으로 이월되는 대기열은 아니다. 전체 자료는 102개, 회사 가이드는 99개, 오늘 신규 가이드는 10개를 유지했다.
+
+기존 102개 자료의 ID와 소유자, 생성일, 공개 범위, 팀, 상태, 보관 여부, 메모, 가이드 추가일은 전후 해시가 모두 같았다. 완료 뒤 timer는 enabled·active 상태로 다음 날인 11월 15일 20:00 KST를 기다렸다. 원래 예약에 따른 실행과 문서 저장, 회사 앱 자동 수신, 하루 상한 적용까지 확인했다.
+
+해당 커밋의 CI는 전체 통과가 아니다. 원래 실패 기록을 보존하며 다음과 같이 확인했다.
+
+| CI | 결과 | 확인한 원인 |
+|---|---|---|
+| [records-check](https://github.com/unmet23-lab/synk-appsscript/actions/runs/43581400871) | 통과 | 기록 검사 완료 |
+| [syntax-check](https://github.com/unmet23-lab/synk-appsscript/actions/runs/43581400830) | 실패 | `tests/받은뒤검사.test.js:168`에서 드리미나 모듈을 가져올 때 CI에 없는 비공개 캔버스 설정 파일을 읽으려 했다. |
+| [wide-tests](https://github.com/unmet23-lab/synk-appsscript/actions/runs/43581400808) | 실패 | 회사 시험 2개는 기존 예상 예약 목록에 5분 대기열 작업이 빠져 있었다. 로컬에서도 같은 차이를 재현했다. 루트와 desktop은 각각 조건부 제외 2개와 1개의 등록 누락으로 실패했다. tools와 experiences 작업은 통과했다. |
+| [conditional-qa](https://github.com/unmet23-lab/synk-appsscript/actions/runs/43581400833) | 취소 | 완료된 통과로 세지 않는다. |
+| [conditional-qa-local](https://github.com/unmet23-lab/synk-appsscript/actions/runs/43581738995) | 실패 | 11월 13일 커밋 `2018705c93625787a721e074646191e7a61d17c1`의 영수증을 가리킨다. 82개 중 81개가 통과했고 client 리허설 서버 준비가 시간 제한을 넘겼다. |
+
+수집 복구 커밋은 위 실패를 낸 시험과 회사 서버 코드를 바꾸지 않았다. 이 결과는 수집 전용 검사 79개와 올리기 관련 검사 66개가 통과한 것과 구분한다. 별도 영역의 CI 실패를 이 복구에서 해결했다고 보고하지 않는다. 해당 후속 작업은 [Workspace 구조 재점검](../../docs/_ops/코드구조_전수조사_20261023/재점검_20261113.md)의 기존 CI 보완과 연결한다. 이번 추가 요청의 정규 실행 및 CI 결과 확인은 마쳤다.
 
 ## 2026-11-11 · 실행 모델을 gemini-4-carbon-high로
 
