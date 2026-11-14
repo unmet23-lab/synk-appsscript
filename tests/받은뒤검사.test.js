@@ -177,8 +177,13 @@ r = 크레딧내기.받은뒤(os.path.join(편, "꾸러미"), os.path.join(편, 
 print("끝코드", r)
 print("없는컷표", 크레딧내기.받은뒤(os.path.join(편, "받음", "없는", "꾸러미"), os.path.join(편, "받음"), None, ["C1"]))
 `;
+  // import가 읽는 캔버스 설정만 시험 입력으로 둔다. 실제 로그인 홈은 Linux와 Windows 모두 읽지 않는다.
+  const 시험홈 = path.join(편, '시험홈');
+  const 캔버스폴더 = path.join(시험홈, '.ai-tools', 'dreamina-canvas');
+  fs.mkdirSync(캔버스폴더, { recursive: true });
+  fs.writeFileSync(path.join(캔버스폴더, '캔버스.txt'), 'test-canvas-not-a-real-project', 'utf8');
   const r = spawnSync('python', ['-X', 'utf8', '-c', py, 굽기폴더, 편], { encoding: 'utf8', timeout: 300000,
-    env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
+    env: { ...process.env, HOME: 시험홈, USERPROFILE: 시험홈, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /받은 뒤 검사 — 편 .* · 이번에 잰 판 1개/);
   assert.match(r.stdout, /✓ C1\.mp4/);
