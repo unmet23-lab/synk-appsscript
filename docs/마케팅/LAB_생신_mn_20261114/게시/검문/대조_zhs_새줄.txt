@@ -1,0 +1,23 @@
+언어: 간체 중국어(zh-Hans) · 나라 CN · 문법 채점 gemini-4-carbon(high) · 직역 역번역 gemini-3.8-flash(high) · 구독 문(agy 로그인 계정)
+줄 3 · 묶음 1(12줄씩 섞음) · 다시 본 줄 3
+
+■ 줄마다 (원문 안 보여 주고 채점 · 섞어 보냄)
+[1] · 직역 — 거름망 통과
+  원문: 🙇 큰절까지 하며 생신 인사? 너무 과해!
+  번역: 🙇 磕头拜寿？太夸张了！
+  문법: 정상
+  직역: 🙇 머리를 조아려 장수를 빌다? 너무 과장됐다!
+[2] · 직역 — 거름망 통과
+  원문: 👫 친구: 생일
+  번역: 👫 朋友：생일
+  문법: 정상
+  직역: 👫 친구: 생일
+[3] · 직역 — 거름망 통과
+  원문: 👵 어른: 생신 ✓
+  번역: 👵 长辈：생신 ✓
+  문법: 정상
+  직역: 👵 웃어른: 생신 ✓
+
+결과: 거름망 통과 3줄 · 검수 필요 0줄 — 간체 중국어 · 역번역 뜻 대조(원문과 견줌)는 따로
+기록: C:\Users\q1212\AppData\Local\Temp\claude\8912ac716ceca2da\1f84a58a-e6ca-40ca-ac47-617e005ff470\scratchpad\검문\zhs_새줄.txt.대조.json
+Opus 직역 역번역 질문: C:\Users\q1212\AppData\Local\Temp\claude\8912ac716ceca2da\1f84a58a-e6ca-40ca-ac47-617e005ff470\scratchpad\검문\zhs_새줄.txt.대조.역번역_질문.md — 원문을 안 본 새 Agent(model: opus)에게 주고, 답을 파일로 받아 node tools/현지어대조.js --대조표 "C:\Users\q1212\AppData\Local\Temp\claude\8912ac716ceca2da\1f84a58a-e6ca-40ca-ac47-617e005ff470\scratchpad\검문\zhs_새줄.txt.대조.json" --역번역답 <답 파일>

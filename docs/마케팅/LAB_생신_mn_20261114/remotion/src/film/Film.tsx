@@ -114,7 +114,8 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
           </div>
           {koLine}
           {/* v5: 읽기 44 → 50px · 꼬리 40 → 44px(이해 시험 v4 셋이 「작은 줄을 못 읽음」) */}
-          {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 50, color: '#4F3F33', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
+          {/* 두 채널 판(11-14): 로마자 「saeng-sin chu-ka-deu-ryeo-yo」(28자)는 50px로 말풍선 안 폭(680px)을 넘어 「yo」만 줄이 넘어갔다 — 긴 읽기만 44px 한 줄 */}
+          {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: read.length > 22 ? 44 : 50, whiteSpace: 'nowrap', color: '#4F3F33', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
           {tag ? <div style={{ marginTop: 8, fontFamily: enFont, fontWeight: 800, fontSize: 44, color: '#4F3F33', lineHeight: Math.max(1.15, L.lineH) }}>→ {tag}</div> : null}
         </div>
       </div>

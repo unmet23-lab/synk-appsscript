@@ -1,0 +1,13 @@
+언어: 간체 중국어(zh-Hans) · 나라 CN · 문법 채점 gemini-4-carbon(high) · 직역 역번역 gemini-3.8-flash(high) · 구독 문(agy 로그인 계정)
+줄 1 · 묶음 1(12줄씩 섞음) · 다시 본 줄 1
+
+■ 줄마다 (원문 안 보여 주고 채점 · 섞어 보냄)
+[1] · 직역 — 거름망 통과
+  원문: 😏 사실 내가 노리는 건……
+  번역: 😏 其实我要的是……
+  문법: 정상
+  직역: 😏 사실 내가 원하는 것은……
+
+결과: 거름망 통과 1줄 · 검수 필요 0줄 — 간체 중국어 · 역번역 뜻 대조(원문과 견줌)는 따로
+기록: C:\Users\q1212\AppData\Local\Temp\claude\8912ac716ceca2da\1f84a58a-e6ca-40ca-ac47-617e005ff470\scratchpad\검문\zhs_근데.txt.대조.json
+Opus 직역 역번역 질문: C:\Users\q1212\AppData\Local\Temp\claude\8912ac716ceca2da\1f84a58a-e6ca-40ca-ac47-617e005ff470\scratchpad\검문\zhs_근데.txt.대조.역번역_질문.md — 원문을 안 본 새 Agent(model: opus)에게 주고, 답을 파일로 받아 node tools/현지어대조.js --대조표 "C:\Users\q1212\AppData\Local\Temp\claude\8912ac716ceca2da\1f84a58a-e6ca-40ca-ac47-617e005ff470\scratchpad\검문\zhs_근데.txt.대조.json" --역번역답 <답 파일>
